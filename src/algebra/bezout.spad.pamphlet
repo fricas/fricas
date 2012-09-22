@@ -28,88 +28,88 @@
 ++   discriminants using Bezout matrices.
 -- Currently unused.
 
-BezoutMatrix(R,UP,M,Row,Col): Exports == Implementation where
+BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
   R    : Ring
   UP   : UnivariatePolynomialCategory R
   Row  : FiniteLinearAggregate R
   Col  : FiniteLinearAggregate R
-  M    : MatrixCategory(R,Row,Col)
+  M    : MatrixCategory(R, Row, Col)
   I  ==> Integer
   lc ==> leadingCoefficient
 
   Exports ==> with
-    sylvesterMatrix: (UP,UP) -> M
-      ++ sylvesterMatrix(p,q) returns the Sylvester matrix for the two
+    sylvesterMatrix : (UP, UP) -> M
+      ++ sylvesterMatrix(p, q) returns the Sylvester matrix for the two
       ++ polynomials p and q.
-    bezoutMatrix: (UP,UP) -> M
-      ++ bezoutMatrix(p,q) returns the Bezout matrix for the two
+    bezoutMatrix : (UP, UP) -> M
+      ++ bezoutMatrix(p, q) returns the Bezout matrix for the two
       ++ polynomials p and q.
 
     if R has CommutativeRing then
-      bezoutResultant: (UP,UP) -> R
-       ++ bezoutResultant(p,q) computes the resultant of the two
+      bezoutResultant : (UP, UP) -> R
+       ++ bezoutResultant(p, q) computes the resultant of the two
        ++ polynomials p and q by computing the determinant of a Bezout matrix.
 
-      bezoutDiscriminant: UP -> R
+      bezoutDiscriminant : UP -> R
        ++ bezoutDiscriminant(p) computes the discriminant of a polynomial p
        ++ by computing the determinant of a Bezout matrix.
 
   Implementation ==> add
 
-    sylvesterMatrix(p,q) ==
+    sylvesterMatrix(p, q) ==
       n1 := degree p; n2 := degree q; n := n1 + n2
-      sylmat : M := new(n,n,0)
+      sylmat : M := new(n, n, 0)
       minR := minRowIndex sylmat; minC := minColIndex sylmat
       maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
       p0 := p
       -- fill in coefficients of 'p'
       while not zero? p0 repeat
         coef := lc p0; deg := degree p0; p0 := reductum p0
-        -- put bk = coef(p,k) in sylmat(minR + i,minC + i + (n1 - k))
+        -- put bk = coef(p, k) in sylmat(minR + i, minC + i + (n1 - k))
         for i in 0..n2 - 1 repeat
-          qsetelt!(sylmat,minR + i,minC + n1 - deg + i,coef)
+          qsetelt!(sylmat, minR + i, minC + n1 - deg + i, coef)
       q0 := q
       -- fill in coefficients of 'q'
       while not zero? q0 repeat
         coef := lc q0; deg := degree q0; q0 := reductum q0
         for i in 0..n1-1 repeat
-          qsetelt!(sylmat,minR + n2 + i,minC + n2 - deg + i,coef)
+          qsetelt!(sylmat, minR + n2 + i, minC + n2 - deg + i, coef)
       sylmat
 
-    bezoutMatrix(p,q) ==
+    bezoutMatrix(p, q) ==
     -- This function computes the Bezout matrix for 'p' and 'q'.
     -- See Knuth, The Art of Computer Programming, Vol. 2, p. 619, # 12.
     -- One must have deg(p) >= deg(q), so the arguments are reversed
     -- if this is not the case.
       n1 := degree p; n2 := degree q; n := n1 + n2
-      n1 < n2 => bezoutMatrix(q,p)
+      n1 < n2 => bezoutMatrix(q, p)
       m1 : I := n1 - 1; m2 : I := n2 - 1; m : I := n - 1
       -- 'sylmat' will be a matrix consisting of the first n1 columns
       -- of the standard Sylvester matrix for 'p' and 'q'
-      sylmat : M := new(n,n1,0)
+      sylmat : M := new(n, n1, 0)
       minR := minRowIndex sylmat; minC := minColIndex sylmat
       maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
       p0 := p
       -- fill in coefficients of 'p'
       while not ground? p0 repeat
         coef := lc p0; deg := degree p0; p0 := reductum p0
-        -- put bk = coef(p,k) in sylmat(minR + i,minC + i + (n1 - k))
+        -- put bk = coef(p, k) in sylmat(minR + i, minC + i + (n1 - k))
         -- for i = 0...
         -- quit when i > m2 or when i + (n1 - k) > m1, whichever happens first
-        for i in 0..min(m2,deg - 1) repeat
-          qsetelt!(sylmat,minR + i,minC + n1 - deg + i,coef)
+        for i in 0..min(m2, deg - 1) repeat
+          qsetelt!(sylmat, minR + i, minC + n1 - deg + i, coef)
       q0 := q
       -- fill in coefficients of 'q'
       while not zero? q0 repeat
         coef := lc q0; deg := degree q0; q0 := reductum q0
-        -- put ak = coef(q,k) in sylmat(minR + n1 + i,minC + i + (n2 - k))
+        -- put ak = coef(q, k) in sylmat(minR + n1 + i, minC + i + (n2 - k))
         -- for i = 0...
         -- quit when i > m1 or when i + (n2 - k) > m1, whichever happens first
         -- since n2 - k >= 0, we quit when i + (n2 - k) > m1
         for i in 0..(deg + n1 - n2 - 1) repeat
-          qsetelt!(sylmat,minR + n2 + i,minC + n2 - deg + i,coef)
+          qsetelt!(sylmat, minR + n2 + i, minC + n2 - deg + i, coef)
       -- 'bezmat' will be the 'Bezout matrix' as described in Knuth
-      bezmat : M := new(n1,n1,0)
+      bezmat : M := new(n1, n1, 0)
       for i in 0..m2 repeat
         -- replace A_i by (b_0 A_i + ... + b_{n_2-1-i} A_{n_2 - 1}) -
         -- (a_0 B_i + ... + a_{n_2-1-i} B_{n_2-1}), as in Knuth
@@ -120,9 +120,9 @@ BezoutMatrix(R,UP,M,Row,Col): Exports == Implementation where
             -- add b_deg A_{n_2 - deg} to the new A_i
             coef := lc q0
             for k in minC..maxC repeat
-              c := coef * qelt(sylmat,minR + m2 - i - deg,k) +
-                          qelt(bezmat,minR + m2 - i,k)
-              qsetelt!(bezmat,minR + m2 - i,k,c)
+              c := coef * qelt(sylmat, minR + m2 - i - deg, k) +
+                          qelt(bezmat, minR + m2 - i, k)
+              qsetelt!(bezmat, minR + m2 - i, k, c)
           q0 := reductum q0
         p0 := p
         while not zero? p0 repeat
@@ -131,25 +131,25 @@ BezoutMatrix(R,UP,M,Row,Col): Exports == Implementation where
             coef := lc p0
             -- subtract a_deg B_{n_2 - deg} from the new A_i
             for k in minC..maxC repeat
-              c := -coef * qelt(sylmat,minR + m - i - deg,k) +
-                           qelt(bezmat,minR + m2 - i,k)
-              qsetelt!(bezmat,minR + m2 - i,k,c)
+              c := -coef * qelt(sylmat, minR + m - i - deg, k) +
+                           qelt(bezmat, minR + m2 - i, k)
+              qsetelt!(bezmat, minR + m2 - i, k, c)
           p0 := reductum p0
       for i in n2..m1 repeat for k in minC..maxC repeat
-        qsetelt!(bezmat,minR + i,k,qelt(sylmat,minR + i,k))
+        qsetelt!(bezmat, minR + i, k, qelt(sylmat, minR + i, k))
       bezmat
 
     if R has CommutativeRing then
 
-      bezoutResultant(f,g) == determinant bezoutMatrix(f,g)
+      bezoutResultant(f, g) == determinant bezoutMatrix(f, g)
 
       if R has IntegralDomain then
 
         bezoutDiscriminant f ==
           degMod4 := (degree f) rem 4
           (degMod4 = 0) or (degMod4 = 1) =>
-            (bezoutResultant(f,differentiate f) exquo (lc f)) :: R
-          -((bezoutResultant(f,differentiate f) exquo (lc f)) :: R)
+            (bezoutResultant(f, differentiate f) exquo (lc f)) :: R
+          -((bezoutResultant(f, differentiate f) exquo (lc f)) :: R)
 
       else
 
@@ -157,8 +157,8 @@ BezoutMatrix(R,UP,M,Row,Col): Exports == Implementation where
             lc f = 1 =>
               degMod4 := (degree f) rem 4
               (degMod4 = 0) or (degMod4 = 1) =>
-                bezoutResultant(f,differentiate f)
-              -bezoutResultant(f,differentiate f)
+                bezoutResultant(f, differentiate f)
+              -bezoutResultant(f, differentiate f)
             error "bezoutDiscriminant: leading coefficient must be 1"
 
 @

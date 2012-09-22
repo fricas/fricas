@@ -21,7 +21,7 @@
 ++   positiveRemainder, symmetricRemainder, multiplicativeValuation, mulmod,
 ++   odd?, powmod, random, rational, rational?, rationalIfCan, shift, submod
 ++ Description:  An \spad{IntegerNumberSystem} is a model for the integers.
-IntegerNumberSystem(): Category ==
+IntegerNumberSystem() : Category ==
   Join(UniqueFactorizationDomain, EuclideanDomain, OrderedIntegralDomain,
          DifferentialRing, ConvertibleTo Integer, RetractableTo Integer,
            LinearlyExplicitRingOver Integer, ConvertibleTo InputForm,
@@ -38,21 +38,21 @@ IntegerNumberSystem(): Category ==
    length   : % -> %
       ++ length(a) length of \spad{a} in digits.
    shift    : (%, %) -> %
-      ++ shift(a,i) shift \spad{a} by i digits.
+      ++ shift(a, i) shift \spad{a} by i digits.
    bit?     : (%, %) -> Boolean
-      ++ bit?(n,i) returns true if and only if i-th bit of n is a 1.
+      ++ bit?(n, i) returns true if and only if i-th bit of n is a 1.
    positiveRemainder     : (%, %) -> %
-      ++ positiveRemainder(a,b) (where \spad{b > 1}) yields r
+      ++ positiveRemainder(a, b) (where \spad{b > 1}) yields r
       ++ where \spad{0 <= r < b} and \spad{r == a rem b}.
    symmetricRemainder     : (%, %) -> %
-      ++ symmetricRemainder(a,b) (where \spad{b > 1}) yields r
+      ++ symmetricRemainder(a, b) (where \spad{b > 1}) yields r
       ++ where \spad{ -b/2 <= r < b/2 }.
-   rational?: % -> Boolean
+   rational? : % -> Boolean
       ++ rational?(n) tests if n is a rational number
       ++ (see \spadtype{Fraction Integer}).
    rational : % -> Fraction Integer
       ++ rational(n) creates a rational number (see \spadtype{Fraction Integer})..
-   rationalIfCan: % -> Union(Fraction Integer, "failed")
+   rationalIfCan : % -> Union(Fraction Integer, "failed")
       ++ rationalIfCan(n) creates a rational number, or returns "failed" if this is not possible.
 -- FIXME: strange random distribution used (#227).
    random   : () -> %
@@ -67,16 +67,16 @@ IntegerNumberSystem(): Category ==
       ++ dec(x) returns \spad{x - 1}.
    mask     : % -> %
       ++ mask(n) returns \spad{2^n-1} (an n bit mask).
-   addmod   : (%,%,%) -> %
-      ++ addmod(a,b,p), \spad{0<=a,b<p>1}, means \spad{a+b mod p}.
-   submod   : (%,%,%) -> %
-      ++ submod(a,b,p), \spad{0<=a,b<p>1}, means \spad{a-b mod p}.
-   mulmod   : (%,%,%) -> %
-      ++ mulmod(a,b,p), \spad{0<=a,b<p>1}, means \spad{a*b mod p}.
-   powmod   : (%,%,%) -> %
-      ++ powmod(a,b,p), \spad{0<=a,b<p>1}, means \spad{a^b mod p}.
-   invmod   : (%,%) -> %
-      ++ invmod(a,b), \spad{0<=a<b>1}, \spad{(a,b)=1} means \spad{1/a mod b}.
+   addmod   : (%, %, %) -> %
+      ++ addmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a+b mod p}.
+   submod   : (%, %, %) -> %
+      ++ submod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a-b mod p}.
+   mulmod   : (%, %, %) -> %
+      ++ mulmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a*b mod p}.
+   powmod   : (%, %, %) -> %
+      ++ powmod(a, b, p), \spad{0<=a, b<p>1}, means \spad{a^b mod p}.
+   invmod   : (%, %) -> %
+      ++ invmod(a, b), \spad{0<=a<b>1}, \spad{(a, b)=1} means \spad{1/a mod b}.
 
  add
    characteristic()         == 0
@@ -88,25 +88,25 @@ IntegerNumberSystem(): Category ==
    mask n                   == dec shift(1, n)
    rational? x              == true
    euclideanSize(x)         ==
-        x=0 => error "euclideanSize called on zero"
+        x = 0 => error "euclideanSize called on zero"
         x<0 => (-convert(x)@Integer)::NonNegativeInteger
         convert(x)@Integer::NonNegativeInteger
-   convert(x:%):Float       == (convert(x)@Integer)::Float
-   convert(x:%):DoubleFloat  == (convert(x)@Integer)::DoubleFloat
-   convert(x:%):InputForm   == convert(convert(x)@Integer)
-   retract(x:%):Integer     == convert(x)@Integer
-   convert(x:%):Pattern(Integer)== convert(x)@Integer ::Pattern(Integer)
+   convert(x : %) : Float       == (convert(x)@Integer)::Float
+   convert(x : %) : DoubleFloat  == (convert(x)@Integer)::DoubleFloat
+   convert(x : %) : InputForm   == convert(convert(x)@Integer)
+   retract(x : %) : Integer     == convert(x)@Integer
+   convert(x : %) : Pattern(Integer)== convert(x)@Integer ::Pattern(Integer)
    factor x          == factor(x)$IntegerFactorizationPackage(%)
    squareFree x      == squareFree(x)$IntegerFactorizationPackage(%)
    prime? x          == prime?(x)$IntegerPrimesPackage(%)
    factorial x       == factorial(x)$IntegerCombinatoricFunctions(%)
    binomial(n, m)    == binomial(n, m)$IntegerCombinatoricFunctions(%)
-   permutation(n, m) == permutation(n,m)$IntegerCombinatoricFunctions(%)
+   permutation(n, m) == permutation(n, m)$IntegerCombinatoricFunctions(%)
    retractIfCan(x:%):Union(Integer, "failed") == convert(x)@Integer
 
    init() == 0
 
-   -- iterates in order 0,1,-1,2,-2,3,-3,...
+   -- iterates in order 0, 1, -1, 2, -2, 3, -3, ...
    nextItem(n) ==
      zero? n => 1
      n>0 => -n
@@ -115,7 +115,7 @@ IntegerNumberSystem(): Category ==
    patternMatch(x, p, l) ==
      patternMatch(x, p, l)$PatternMatchIntegerNumberSystem(%)
 
-   rational(x:%):Fraction(Integer) ==
+   rational(x : %) : Fraction(Integer) ==
      (convert(x)@Integer)::Fraction(Integer)
 
    rationalIfCan(x:%):Union(Fraction Integer, "failed") ==
@@ -124,7 +124,7 @@ IntegerNumberSystem(): Category ==
    symmetricRemainder(x, n) ==
       r := x rem n
       r = 0 => r
-      if n < 0 then n:=-n
+      if n < 0 then n := -n
       r > 0 =>
          2 * r > n => r - n
          r
@@ -133,8 +133,8 @@ IntegerNumberSystem(): Category ==
 
    invmod(a, b) ==
       if negative? a then a := positiveRemainder(a, b)
-      c := a; c1:% := 1
-      d := b; d1:% := 0
+      c := a; c1 : % := 1
+      d := b; d1 : % := 0
       while not zero? d repeat
          q := c quo d
          r := c-q*d
@@ -150,7 +150,7 @@ IntegerNumberSystem(): Category ==
       if negative? x then x := positiveRemainder(x, p)
       zero? x => 0
       zero? n => 1
-      y:% := 1
+      y : % := 1
       z := x
       repeat
          if odd? n then y := mulmod(y, z, p)
@@ -188,7 +188,7 @@ to Codemist Common Lisp but is not defined in Common Lisp.
 -- QSOR, QSXOR, QSLEFTSHIFT, QSADDMOD, QSDIFMOD, QSMULTMOD
 
 
-SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
+SingleInteger() : Join(IntegerNumberSystem, Logic, OpenMath, _
    Canonical, canonicalsClosed) with
 
    qconvert : Integer -> %
@@ -211,15 +211,15 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
       ++ n \/ m  returns the bit-by-bit logical {\em or} of
       ++ the single integers n and m.
    "xor": (%, %) -> %
-      ++ xor(n,m)  returns the bit-by-bit logical {\em xor} of
+      ++ xor(n, m)  returns the bit-by-bit logical {\em xor} of
       ++ the single integers n and m.
    Not  : % -> %
       ++ Not(n) returns the bit-by-bit logical {\em not} of the single integer n.
-   And  : (%,%) -> %
-      ++ And(n,m)  returns the bit-by-bit logical {\em and} of
+   And  : (%, %) -> %
+      ++ And(n, m)  returns the bit-by-bit logical {\em and} of
       ++ the single integers n and m.
-   Or   : (%,%) -> %
-      ++ Or(n,m)  returns the bit-by-bit logical {\em or} of
+   Or   : (%, %) -> %
+      ++ Or(n, m)  returns the bit-by-bit logical {\em or} of
       ++ the single integers n and m.
 
  == add
@@ -231,7 +231,7 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
    MULTIPLIER ==> 314159269$Lisp    -- from Knuth's table
    MODULUS ==> 2147483647$Lisp      -- 2^31-1
 
-   writeOMSingleInt(dev: OpenMathDevice, x: %): Void ==
+   writeOMSingleInt(dev : OpenMathDevice, x : %) : Void ==
     if x < 0 then
       OMputApp(dev)
       OMputSymbol(dev, "arith1", "unary_minus")
@@ -240,10 +240,10 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
     else
       OMputInteger(dev, convert(x))
 
-   OMwrite(x: %): String ==
-    s: String := ""
+   OMwrite(x : %) : String ==
+    s : String := ""
     sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-    dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+    dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
     OMputObject(dev)
     writeOMSingleInt(dev, x)
     OMputEndObject(dev)
@@ -251,10 +251,10 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
     s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
     s
 
-   OMwrite(x: %, wholeObj: Boolean): String ==
-    s: String := ""
+   OMwrite(x : %, wholeObj : Boolean) : String ==
+    s : String := ""
     sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-    dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+    dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
     if wholeObj then
       OMputObject(dev)
     writeOMSingleInt(dev, x)
@@ -264,12 +264,12 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
     s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
     s
 
-   OMwrite(dev: OpenMathDevice, x: %): Void ==
+   OMwrite(dev : OpenMathDevice, x : %) : Void ==
     OMputObject(dev)
     writeOMSingleInt(dev, x)
     OMputEndObject(dev)
 
-   OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+   OMwrite(dev : OpenMathDevice, x : %, wholeObj : Boolean) : Void ==
     if wholeObj then
       OMputObject(dev)
     writeOMSingleInt(dev, x)
@@ -277,9 +277,9 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
       OMputEndObject(dev)
 
    reducedSystem m      == m pretend Matrix(Integer)
-   coerce(x):OutputForm == (convert(x)@Integer)::OutputForm
-   convert(x:%):Integer == x pretend Integer
-   i:Integer * y:%      == i::% * y
+   coerce(x) : OutputForm == (convert(x)@Integer)::OutputForm
+   convert(x : %) : Integer == x pretend Integer
+   i : Integer * y : %      == i::% * y
    0         == 0$Lisp
    1         == 1$Lisp
    base()    == 2$Lisp
@@ -288,44 +288,44 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
    x = y     == eql_SI(x, y)$Lisp
    _~ x      == not_SI(x)$Lisp
    not(x)    == not_SI(x)$Lisp
-   _/_\(x,y) == and_SI(x, y)$Lisp
-   _\_/(x,y) == or_SI(x, y)$Lisp
+   _/_\(x, y) == and_SI(x, y)$Lisp
+   _\_/(x, y) == or_SI(x, y)$Lisp
    Not(x)    == not_SI(x)$Lisp
-   And(x,y)  == and_SI(x, y)$Lisp
-   Or(x,y)   == or_SI(x, y)$Lisp
-   xor(x,y)  == xor_SI(x, y)$Lisp
+   And(x, y)  == and_SI(x, y)$Lisp
+   Or(x, y)   == or_SI(x, y)$Lisp
+   xor(x, y)  == xor_SI(x, y)$Lisp
    x < y     == less_SI(x, y)$Lisp
    inc x     == inc_SI(x)$Lisp
    dec x     == dec_SI(x)$Lisp
    - x       == minus_SI(x)$Lisp
    x + y     == add_SI(x, y)$Lisp
-   x:% - y:% == sub_SI(x, y)$Lisp
-   x:% * y:% == mul_SI(x, y)$Lisp
-   x:% ^ n:NonNegativeInteger == ((EXPT(x, n)$Lisp) pretend Integer)::%
+   x : % - y : % == sub_SI(x, y)$Lisp
+   x : % * y : % == mul_SI(x, y)$Lisp
+   x : % ^ n : NonNegativeInteger == ((EXPT(x, n)$Lisp) pretend Integer)::%
    x quo y   == quo_SI(x, y)$Lisp
    x rem y   == rem_SI(x, y)$Lisp
    divide(x, y)   == CONS(quo_SI(x, y)$Lisp, rem_SI(x, y)$Lisp)$Lisp
-   gcd(x,y)  == GCD(x,y)$Lisp
+   gcd(x, y)  == GCD(x, y)$Lisp
    abs(x)    == abs_SI(x)$Lisp
    odd?(x)   == odd?_SI(x)$Lisp
    zero?(x)  == zero?_SI(x)$Lisp
 --   one?(x)   == ONEP(x)$Lisp
    one?(x)   == x = 1
-   max(x,y)  == max_SI(x, y)$Lisp
-   min(x,y)  == min_SI(x, y)$Lisp
+   max(x, y)  == max_SI(x, y)$Lisp
+   min(x, y)  == min_SI(x, y)$Lisp
    hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
    length(x) == INTEGER_-LENGTH(x)$Lisp
-   shift(x,n)    == lshift_SI(x, n)$Lisp
-   mulmod(a,b,p) == mulmod_SI(a, b, p)$Lisp
-   addmod(a,b,p) == addmod_SI(a, b, p)$Lisp
-   submod(a,b,p) == submod_SI(a, b, p)$Lisp
+   shift(x, n)    == lshift_SI(x, n)$Lisp
+   mulmod(a, b, p) == mulmod_SI(a, b, p)$Lisp
+   addmod(a, b, p) == addmod_SI(a, b, p)$Lisp
+   submod(a, b, p) == submod_SI(a, b, p)$Lisp
    negative?(x)  == negative?_SI$Lisp x
 
 
    reducedSystem(m, v) ==
         [m pretend Matrix(Integer), v pretend Vector(Integer)]
 
-   positiveRemainder(x,n) ==
+   positiveRemainder(x, n) ==
       r := rem_SI(x, n)$Lisp
       negative?_SI(r)$Lisp =>
           negative?_SI(n)$Lisp => sub_SI(x, n)$Lisp
@@ -334,7 +334,7 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
 
    qconvert(x : Integer) : % == x pretend %
 
-   coerce(x:Integer):% ==
+   coerce(x : Integer) : % ==
       (x <= max pretend Integer) and (x >= min pretend Integer) =>
         x pretend %
       error "integer too large to represent in a machine word"
@@ -342,14 +342,14 @@ SingleInteger(): Join(IntegerNumberSystem, Logic, OpenMath,_
 -- FIXME: strange random distribution used (#227).
    random() ==
       seed := REMAINDER((MULTIPLIER*seed)$Lisp, MODULUS)$Lisp
-      REMAINDER(seed,BASE)$Lisp
+      REMAINDER(seed, BASE)$Lisp
 
    random(n) == RANDOM(n)$Lisp
 
-   UCA ==> Record(unit:%,canonical:%,associate:%)
+   UCA ==> Record(unit : %, canonical : %, associate : %)
    unitNormal x ==
-      x < 0 => [-1,-x,-1]$UCA
-      [1,x,1]$UCA
+      x < 0 => [-1, -x, -1]$UCA
+      [1, x, 1]$UCA
 
 @
 

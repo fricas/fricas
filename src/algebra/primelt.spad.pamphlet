@@ -20,36 +20,36 @@
 ++   PrimitiveElement provides functions to compute primitive elements
 ++   in algebraic extensions;
 ++ Keywords: algebraic, extension, primitive.
-PrimitiveElement(F): Exports == Implementation where
+PrimitiveElement(F) : Exports == Implementation where
   F : Join(Field, CharacteristicZero)
 
   SY  ==> Symbol
   P   ==> Polynomial F
   UP  ==> SparseUnivariatePolynomial F
-  RC  ==> Record(coef1: Integer, coef2: Integer, prim:UP)
-  REC ==> Record(coef: List Integer, poly:List UP, prim: UP)
+  RC  ==> Record(coef1 : Integer, coef2 : Integer, prim : UP)
+  REC ==> Record(coef : List Integer, poly : List UP, prim : UP)
 
   Exports ==> with
-    primitiveElement: (P, SY, P, SY) -> RC
+    primitiveElement : (P, SY, P, SY) -> RC
       ++ primitiveElement(p1, a1, p2, a2) returns \spad{[c1, c2, q]}
       ++ such that \spad{k(a1, a2) = k(a)}
       ++ where \spad{a = c1 a1 + c2 a2, and q(a) = 0}.
       ++ The pi's are the defining polynomials for the ai's.
       ++ The p2 may involve a1, but p1 must not involve a2.
       ++ This operation uses \spadfun{resultant}.
-    primitiveElement: (List P, List SY) -> REC
-      ++ primitiveElement([p1,...,pn], [a1,...,an]) returns
-      ++ \spad{[[c1,...,cn], [q1,...,qn], q]}
-      ++ such that then \spad{k(a1,...,an) = k(a)},
+    primitiveElement : (List P, List SY) -> REC
+      ++ primitiveElement([p1, ..., pn], [a1, ..., an]) returns
+      ++ \spad{[[c1, ..., cn], [q1, ..., qn], q]}
+      ++ such that then \spad{k(a1, ..., an) = k(a)},
       ++ where \spad{a = a1 c1 + ... + an cn},
       ++ \spad{ai = qi(a)}, and \spad{q(a) = 0}.
       ++ The pi's are the defining polynomials for the ai's.
       ++ This operation uses the technique of
       ++ \spadglossSee{groebner bases}{Groebner basis}.
-    primitiveElement: (List P, List SY, SY) -> REC
-      ++ primitiveElement([p1,...,pn], [a1,...,an], a) returns
-      ++ \spad{[[c1,...,cn], [q1,...,qn], q]}
-      ++ such that then \spad{k(a1,...,an) = k(a)},
+    primitiveElement : (List P, List SY, SY) -> REC
+      ++ primitiveElement([p1, ..., pn], [a1, ..., an], a) returns
+      ++ \spad{[[c1, ..., cn], [q1, ..., qn], q]}
+      ++ such that then \spad{k(a1, ..., an) = k(a)},
       ++ where \spad{a = a1 c1 + ... + an cn},
       ++ \spad{ai = qi(a)}, and \spad{q(a) = 0}.
       ++ The pi's are the defining polynomials for the ai's.
@@ -60,15 +60,15 @@ PrimitiveElement(F): Exports == Implementation where
     import PolyGroebner(F)
 
     multi     : (UP, SY) -> P
-    randomInts: (NonNegativeInteger, NonNegativeInteger) -> List Integer
+    randomInts : (NonNegativeInteger, NonNegativeInteger) -> List Integer
     findUniv  : (List P, SY, SY) -> Union(P, "failed")
     incl?     : (List SY, List SY) -> Boolean
     triangularLinearIfCan:(List P,List SY,SY) -> Union(List UP,"failed")
-    innerPrimitiveElement: (List P, List SY, SY) -> REC
+    innerPrimitiveElement : (List P, List SY, SY) -> REC
 
-    multi(p, v)            == multivariate(map((f1: F): F +-> f1, p), v)
+    multi(p, v)            == multivariate(map((f1 : F) : F +-> f1, p), v)
     randomInts(n, m)       == [symmetricRemainder(random(m)$Integer, m) for i in 1..n]
-    incl?(a, b)            == every?((s1: SY): Boolean +-> member?(s1, b), a)
+    incl?(a, b)            == every?((s1 : SY) : Boolean +-> member?(s1, b), a)
     primitiveElement(l, v) == primitiveElement(l, v, new()$SY)
 
     primitiveElement(p1, a1, p2, a2) ==
@@ -94,11 +94,11 @@ PrimitiveElement(F): Exports == Implementation where
       for v in lv repeat
         ((u := findUniv(l, v, w)) case "failed") or
           (degree(p := univariate(u::P, v)) ~= 1) => return "failed"
-        (bc := extendedEuclidean(univariate leadingCoefficient p, pw,1))
+        (bc := extendedEuclidean(univariate leadingCoefficient p, pw, 1))
            case "failed" => error "Should not happen"
-        ll := concat(map((z1: F): F +-> z1,
-                (- univariate(coefficient(p,0)) * bc.coef1) rem pw), ll)
-      concat(map((f1: F): F +-> f1, pw), reverse! ll)
+        ll := concat(map((z1 : F) : F +-> z1,
+                (- univariate(coefficient(p, 0)) * bc.coef1) rem pw), ll)
+      concat(map((f1 : F) : F +-> f1, pw), reverse! ll)
 
     primitiveElement(l, vars, uu) ==
       u    := uu::P
@@ -126,25 +126,25 @@ PrimitiveElement(F): Exports == Implementation where
 ++   FunctionsSpacePrimitiveElement provides functions to compute
 ++   primitive elements in functions spaces;
 ++ Keywords: algebraic, extension, primitive.
-FunctionSpacePrimitiveElement(R, F): Exports == Implementation where
-  R: Join(IntegralDomain, Comparable, CharacteristicZero)
-  F: FunctionSpace R
+FunctionSpacePrimitiveElement(R, F) : Exports == Implementation where
+  R : Join(IntegralDomain, Comparable, CharacteristicZero)
+  F : FunctionSpace R
 
   SY  ==> Symbol
   P   ==> Polynomial F
   K   ==> Kernel F
   UP  ==> SparseUnivariatePolynomial F
-  REC ==> Record(primelt:F, poly:List UP, prim:UP)
+  REC ==> Record(primelt : F, poly : List UP, prim : UP)
 
   Exports ==> with
-    primitiveElement: List F -> Record(primelt:F, poly:List UP, prim:UP)
-      ++ primitiveElement([a1,...,an]) returns \spad{[a, [q1,...,qn], q]}
-      ++ such that then \spad{k(a1,...,an) = k(a)},
+    primitiveElement : List F -> Record(primelt : F, poly : List UP, prim : UP)
+      ++ primitiveElement([a1, ..., an]) returns \spad{[a, [q1, ..., qn], q]}
+      ++ such that then \spad{k(a1, ..., an) = k(a)},
       ++ \spad{ai = qi(a)}, and \spad{q(a) = 0}.
       ++ This operation uses the technique of
       ++ \spadglossSee{groebner bases}{Groebner basis}.
     if F has AlgebraicallyClosedField then
-      primitiveElement: (F,F)->Record(primelt:F,pol1:UP,pol2:UP,prim:UP)
+      primitiveElement : (F, F)->Record(primelt : F, pol1 : UP, pol2 : UP, prim : UP)
         ++ primitiveElement(a1, a2) returns \spad{[a, q1, q2, q]}
         ++ such that \spad{k(a1, a2) = k(a)},
         ++ \spad{ai = qi(a)}, and \spad{q(a) = 0}.
@@ -158,10 +158,10 @@ FunctionSpacePrimitiveElement(R, F): Exports == Implementation where
     import PolynomialCategoryLifting(IndexedExponents K,
                             K, R, SparseMultivariatePolynomial(R, K), P)
 
-    F2P: (F, List SY) -> P
-    K2P: (K, List SY) -> P
+    F2P : (F, List SY) -> P
+    K2P : (K, List SY) -> P
 
-    F2P(f, l) == inv(denom(f)::F) * map((k1: K): P +-> K2P(k1, l), (r1: R): P +-> r1::F::P, numer f)
+    F2P(f, l) == inv(denom(f)::F) * map((k1 : K) : P +-> K2P(k1, l), (r1 : R) : P +-> r1::F::P, numer f)
 
     K2P(k, l) ==
       ((v := symbolIfCan k) case SY) and member?(v::SY, l) => v::SY::P
@@ -181,11 +181,11 @@ FunctionSpacePrimitiveElement(R, F): Exports == Implementation where
       import PolynomialCategoryQuotientFunctions(IndexedExponents K,
                             K, R, SparseMultivariatePolynomial(R, K), F)
 
-      F2UP: (UP, K, UP) -> UP
-      getpoly: (UP, F) -> UP
+      F2UP : (UP, K, UP) -> UP
+      getpoly : (UP, F) -> UP
 
       F2UP(p, k, q) ==
-        ans:UP := 0
+        ans : UP := 0
         while not zero? p repeat
           f   := univariate(leadingCoefficient p, k)
           ans := ans + ((numer f) q)
@@ -198,7 +198,7 @@ FunctionSpacePrimitiveElement(R, F): Exports == Implementation where
         b   := (bb := new()$SY)::F
         l   := [aa, bb]$List(SY)
         p1  := minPoly(k1 := retract(a1)@K)
-        p2  := map((z1: F): F +-> subst(ratDenom(z1, [k1]), [k1], [a]),
+        p2  := map((z1 : F) : F +-> subst(ratDenom(z1, [k1]), [k1], [a]),
                                                  minPoly(retract(a2)@K))
         rec := primitiveElement(F2P(p1 a, l), aa, F2P(p2 b, l), bb)
         w   := rec.coef1 * a1 + rec.coef2 * a2
@@ -219,7 +219,7 @@ FunctionSpacePrimitiveElement(R, F): Exports == Implementation where
 --        one? degree r =>
         (degree r = 1) =>
           k := retract(g)@K
-          univariate(-coefficient(r,0)/leadingCoefficient r,k,minPoly k)
+          univariate(-coefficient(r, 0)/leadingCoefficient r, k, minPoly k)
         error "GCD not of degree 1"
 
 @

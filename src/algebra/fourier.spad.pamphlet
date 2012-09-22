@@ -22,27 +22,27 @@
 ++ Keywords:
 ++ References:
 ++ Description:
-FourierComponent(E:OrderedSet):
+FourierComponent(E : OrderedSet):
        OrderedSet with
-         sin: E -> %
+         sin : E -> %
          ++ sin(x) makes a sin kernel for use in Fourier series
-         cos: E -> %
+         cos : E -> %
          ++ cos(x) makes a cos kernel for use in Fourier series
-         sin?: % -> Boolean
+         sin? : % -> Boolean
          ++ sin?(x) returns true if term is a sin, otherwise false
-         argument: % -> E
+         argument : % -> E
          ++ argument(x) returns the argument of a given sin/cos expressions
     ==
   add
    --representations
-   Rep:=Record(SinIfTrue:Boolean, arg:E)
-   e:E
-   x,y:%
-   sin e == [true,e]
-   cos e == [false,e]
+   Rep := Record(SinIfTrue : Boolean, arg : E)
+   e : E
+   x, y : %
+   sin e == [true, e]
+   cos e == [false, e]
    sin? x == x.SinIfTrue
    argument x == x.arg
-   coerce(x):OutputForm ==
+   coerce(x) : OutputForm ==
      hconcat((if x.SinIfTrue then "sin" else "cos")::OutputForm,
               bracket((x.arg)::OutputForm))
    x<y ==
@@ -65,62 +65,62 @@ FourierComponent(E:OrderedSet):
 ++ Keywords:
 ++ References:
 ++ Description:
-FourierSeries(R:Join(CommutativeRing,Algebra(Fraction Integer)),
-              E:Join(OrderedSet,AbelianGroup)):
+FourierSeries(R : Join(CommutativeRing, Algebra(Fraction Integer)),
+              E : Join(OrderedSet, AbelianGroup)):
        Algebra(R) with
          if E has Canonical and R has Canonical then Canonical
-         coerce: R -> %
+         coerce : R -> %
          ++ coerce(r) converts coefficients into Fourier Series
-         coerce: FourierComponent(E) -> %
+         coerce : FourierComponent(E) -> %
          ++ coerce(c) converts sin/cos terms into Fourier Series
-         makeSin: (E,R) -> %
-         ++ makeSin(e,r) makes a sin expression with given argument and coefficient
-         makeCos: (E,R) -> %
-         ++ makeCos(e,r) makes a sin expression with given argument and coefficient
-    == FreeModule(R,FourierComponent(E))
+         makeSin : (E, R) -> %
+         ++ makeSin(e, r) makes a sin expression with given argument and coefficient
+         makeCos : (E, R) -> %
+         ++ makeCos(e, r) makes a sin expression with given argument and coefficient
+    == FreeModule(R, FourierComponent(E))
   add
    --representations
-   Term := Record(k:FourierComponent(E),c:R)
+   Term := Record(k : FourierComponent(E), c : R)
    Rep  := List Term
-   multiply : (Term,Term) -> %
-   w,x1,x2:%
-   t1,t2:Term
-   n:NonNegativeInteger
-   z:Integer
-   e:FourierComponent(E)
-   a:E
-   r:R
-   1 == [[cos 0,1]]
+   multiply : (Term, Term) -> %
+   w, x1, x2 : %
+   t1, t2 : Term
+   n : NonNegativeInteger
+   z : Integer
+   e : FourierComponent(E)
+   a : E
+   r : R
+   1 == [[cos 0, 1]]
    coerce e ==
       sin? e and zero? argument e => 0
       if argument e < 0  then
-           not sin? e => e:=cos(- argument e)
-           return [[sin(- argument e),-1]]
-      [[e,1]]
-   multiply(t1,t2) ==
-     r:=(t1.c*t2.c)*(1/2)
-     s1:=argument t1.k
-     s2:=argument t2.k
-     sum:=s1+s2
-     diff:=s1-s2
+           not sin? e => e := cos(- argument e)
+           return [[sin(- argument e), -1]]
+      [[e, 1]]
+   multiply(t1, t2) ==
+     r := (t1.c*t2.c)*(1/2)
+     s1 := argument t1.k
+     s2 := argument t2.k
+     sum := s1+s2
+     diff := s1-s2
      sin? t1.k =>
        sin? t2.k =>
-         makeCos(diff,r) + makeCos(sum,-r)
-       makeSin(sum,r) + makeSin(diff,r)
+         makeCos(diff, r) + makeCos(sum, -r)
+       makeSin(sum, r) + makeSin(diff, r)
      sin? t2.k =>
-       makeSin(sum,r) + makeSin(diff,r)
-     makeCos(diff,r) + makeCos(sum,r)
+       makeSin(sum, r) + makeSin(diff, r)
+     makeCos(diff, r) + makeCos(sum, r)
    x1*x2 ==
      null x1 => 0
      null x2 => 0
-     +/[+/[multiply(t1,t2) for t2 in x2] for t1 in x1]
-   makeCos(a,r) ==
-      a<0 => [[cos(-a),r]]
-      [[cos a,r]]
-   makeSin(a,r) ==
+     +/[+/[multiply(t1, t2) for t2 in x2] for t1 in x1]
+   makeCos(a, r) ==
+      a<0 => [[cos(-a), r]]
+      [[cos a, r]]
+   makeSin(a, r) ==
       zero? a => []
-      a<0 => [[sin(-a),-r]]
-      [[sin a,r]]
+      a<0 => [[sin(-a), -r]]
+      [[sin a, r]]
 
 @
 \section{License}

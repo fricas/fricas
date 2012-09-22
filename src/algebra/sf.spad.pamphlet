@@ -23,7 +23,7 @@
 ++ References:
 ++ Description:
 ++ The category of real numeric domains, i.e. convertible to floats.
-RealConstant(): Category ==
+RealConstant() : Category ==
   Join(ConvertibleTo DoubleFloat, ConvertibleTo Float)
 
 @
@@ -42,7 +42,7 @@ RealConstant(): Category ==
 ++ numbers.  The real numbers form an ordered normed field.  Note that
 ++ we have purposely not included \spadtype{DifferentialRing} or the elementary
 ++ functions (see \spadtype{TranscendentalFunctionCategory}) in the definition.
-RealNumberSystem(): Category ==
+RealNumberSystem() : Category ==
   Join(Field, OrderedRing, RealConstant, RetractableTo Integer,
        RetractableTo Fraction Integer, RadicalCategory,
         ConvertibleTo Pattern Float, PatternMatchable Float,
@@ -51,15 +51,15 @@ RealNumberSystem(): Category ==
       ++ norm x returns the same as absolute value.
     ceiling : % -> %
       ++ ceiling x returns the small integer \spad{>= x}.
-    floor: % -> %
+    floor : % -> %
       ++ floor x returns the largest integer \spad{<= x}.
     wholePart  : % -> Integer
       ++ wholePart x returns the integer part of x.
     fractionPart : % -> %
       ++ fractionPart x returns the fractional part of x.
-    truncate: % -> %
+    truncate : % -> %
       ++ truncate x returns the integer between x and 0 closest to x.
-    round: % -> %
+    round : % -> %
       ++ round x computes the integer closest to x.
     abs  : % -> %
       ++ abs x returns the absolute value of x.
@@ -70,8 +70,8 @@ RealNumberSystem(): Category ==
    truncate x          == (negative? x => -floor(-x); floor x)
    round x          == (negative? x => truncate(x-1/2::%); truncate(x+1/2::%))
    norm x           == abs x
-   coerce(x:Fraction Integer):% == numer(x)::% / denom(x)::%
-   convert(x:%):Pattern(Float)  == convert(x)@Float :: Pattern(Float)
+   coerce(x : Fraction Integer) : % == numer(x)::% / denom(x)::%
+   convert(x : %) : Pattern(Float)  == convert(x)@Float :: Pattern(Float)
 
    floor x ==
       x1 := (wholePart x) :: %
@@ -124,43 +124,43 @@ RealNumberSystem(): Category ==
 ++ the attributes do not hold.  In particular associative("+")
 ++ does not hold.  Algorithms defined over a field need special
 ++ considerations when the field is a floating point system.
-FloatingPointSystem(): Category == Join(RealNumberSystem(), Approximate) with
-   float: (Integer,Integer) -> %
-      ++ float(a,e) returns \spad{a * base() ^ e}.
-   float: (Integer,Integer,PositiveInteger) -> %
-      ++ float(a,e,b) returns \spad{a * b ^ e}.
-   order: % -> Integer
+FloatingPointSystem() : Category == Join(RealNumberSystem(), Approximate) with
+   float : (Integer, Integer) -> %
+      ++ float(a, e) returns \spad{a * base() ^ e}.
+   float : (Integer, Integer, PositiveInteger) -> %
+      ++ float(a, e, b) returns \spad{a * b ^ e}.
+   order : % -> Integer
       ++ order x is the order of magnitude of x.
       ++ Note: \spad{base ^ order x <= |x| < base ^ (1 + order x)}.
-   base: () -> PositiveInteger
+   base : () -> PositiveInteger
       ++ base() returns the base of the \spadfunFrom{exponent}{FloatingPointSystem}.
-   exponent: % -> Integer
+   exponent : % -> Integer
       ++ exponent(x) returns the \spadfunFrom{exponent}{FloatingPointSystem} part of x.
-   mantissa: % -> Integer
+   mantissa : % -> Integer
       ++ mantissa(x) returns the mantissa part of x.
   -- round?: () -> B
   --    ++ round?() returns the rounding or chopping.
-   toString: (%, NonNegativeInteger) -> String
-      ++ \spad{toString(x,n)} returns a string representation of x
+   toString : (%, NonNegativeInteger) -> String
+      ++ \spad{toString(x, n)} returns a string representation of x
       ++ truncated to n decimal digits.
-   bits: () -> PositiveInteger
+   bits : () -> PositiveInteger
       ++ bits() returns ceiling's precision in bits.
-   digits: () -> PositiveInteger
+   digits : () -> PositiveInteger
       ++ digits() returns ceiling's precision in decimal digits.
-   precision: () -> PositiveInteger
+   precision : () -> PositiveInteger
       ++ precision() returns the precision in digits base.
 
    if % has arbitraryPrecision then
-      bits: PositiveInteger -> PositiveInteger
+      bits : PositiveInteger -> PositiveInteger
         ++ bits(n) set the \spadfunFrom{precision}{FloatingPointSystem} to n bits.
-      digits: PositiveInteger -> PositiveInteger
+      digits : PositiveInteger -> PositiveInteger
         ++ digits(d) set the \spadfunFrom{precision}{FloatingPointSystem} to d digits.
-      precision: PositiveInteger -> PositiveInteger
+      precision : PositiveInteger -> PositiveInteger
         ++ precision(n) set the precision in the base to n decimal digits.
-      increasePrecision: Integer -> PositiveInteger
+      increasePrecision : Integer -> PositiveInteger
         ++ increasePrecision(n) increases the current
         ++ \spadfunFrom{precision}{FloatingPointSystem} by n decimal digits.
-      decreasePrecision: Integer -> PositiveInteger
+      decreasePrecision : Integer -> PositiveInteger
         ++ decreasePrecision(n) decreases the current
         ++ \spadfunFrom{precision}{FloatingPointSystem} precision by n decimal digits.
    if not (% has arbitraryExponent) then
@@ -171,21 +171,21 @@ FloatingPointSystem(): Category == Join(RealNumberSystem(), Approximate) with
     --  maxExponent: () -> Integer
     --    ++ maxExponent() returns the max Exponent of float
       if not (% has arbitraryPrecision) then
-         min: () -> %
+         min : () -> %
           ++ min() returns the minimum floating point number.
-         max: () -> %
+         max : () -> %
           ++ max() returns the maximum floating point number.
  add
    float(ma, ex) == float(ma, ex, base())
-   digits() == max(1,4004 * (bits()-1) quo 13301)::PositiveInteger
+   digits() == max(1, 4004 * (bits()-1) quo 13301)::PositiveInteger
 
-   toString(x:%, n:NonNegativeInteger):String ==
-       x1:=round x
-       x0:=abs(x-x1)
-       tenn:=float(1,n::Integer,10)
-       x2:= round(tenn*x0)
-       res:List String:= [convert(retract(x1))@String,".",convert(retract(x2))@String]
-       reduce(concat,res)
+   toString(x : %, n : NonNegativeInteger) : String ==
+       x1 := round x
+       x0 := abs(x-x1)
+       tenn := float(1, n::Integer, 10)
+       x2 := round(tenn*x0)
+       res:List String := [convert(retract(x1))@String,".",convert(retract(x2))@String]
+       reduce(concat, res)
 @
 
 \section{domain DFLOAT DoubleFloat}
@@ -194,23 +194,23 @@ the printed format of floating point numbers. The format of the numbers
 follows the common lisp format specification for floats. First we include
 Greg's email to show the use of this feature:
 \begin{verbatim}
-PS: For those who use the Doublefloat domain
+PS : For those who use the Doublefloat domain
     there is an another (undocumented) patch that adds a
     lisp format to the DoubleFloat output routine. Copy
     int/algebra/DFLOAT.spad to your working directory,
     patch it, compile it and ")lib" it when necessary.
 
 
-(1) -> )boot $useBFasDefault:=false
+(1) -> )boot $useBFasDefault := false
 
 (SPADLET |$useBFasDefault| NIL)
 Value = NIL
-(1) -> a:= matrix [ [0.5978,0.2356], [0.4512,0.2355] ]
+(1) -> a := matrix [ [0.5978, 0.2356], [0.4512, 0.2355] ]
 
         +      0.5978               0.2356       +
    (1)  |                                        |
         +0.45119999999999999  0.23549999999999999+
-                               Type: Matrix DoubleFloat
+                               Type : Matrix DoubleFloat
 (2) -> )lib DFLOAT
    DoubleFloat is now explicitly exposed in frame initial
    DoubleFloat will be automatically loaded when needed
@@ -218,13 +218,13 @@ from /home/greg/Axiom/DFLOAT.NRLIB/code
 (2) -> doubleFloatFormat("~,4,,F")
 
    (2)  "~G"
-                               Type: String
+                               Type : String
 (3) -> a
 
         +0.5978  0.2356+
    (3)  |              |
         +0.4512  0.2355+
-                               Type: Matrix DoubleFloat
+                               Type : Matrix DoubleFloat
 
 \end{verbatim}
 So it is clear that he has added a new function called
@@ -235,15 +235,15 @@ On page 582 we find:
 
 \begin{quote}
 A format directive consists of a tilde (\~{}), optional prefix
-parameters separated by commas, optional colon (:) and at-sign (@)
+parameters separated by commas, optional colon (: ) and at-sign (@)
 modifiers, and a single character indicating what kind of directive this is.
 The alphabetic case of the directive character is ignored. The prefix
 parameters are generally integers, notated as optionally signed decimal
 numbers.
 
 X3J13 voted in June 1987 (80) to specify that if both colon and at-sign
-modifiers are present, they may appear in either order; thus \~{}:@R
-and \~{}@:R mean the same thing. However, it is traditional to put the
+modifiers are present, they may appear in either order; thus \~{}: @R
+and \~{}@: R mean the same thing. However, it is traditional to put the
 colon first, and all examples in the book put colon before at-signs.
 \end{quote}
 
@@ -256,7 +256,7 @@ On page 588 we find:
 {\sl Fixed-format floating-point}. The next {\sl arg} is printed as a
 floating point number.
 
-The full form is {\sl \~{}w,d,k,overfowchar,padchar}F. The parameter
+The full form is {\sl \~{}w, d, k, overfowchar, padchar}F. The parameter
 {\sl w} is the width of the filed to be printed; {\sl d} is the number
 of digits to print after the decimal point; {\sl k} is a scale factor
 that defaults to zero.
@@ -288,7 +288,7 @@ needed.
 If the {\sl w} parameter is omitted, then the field is of variable width.
 In effect, a value is chosen for {\sl w} in such a way that no leading pad
 characters need to be printed and exactly {\sl d} characters will follow
-the decimal point. For example, the directive \~{},2F will print exactly
+the decimal point. For example, the directive \~{}, 2F will print exactly
 two digits after the decimal point and as many as necessary before the
 decimal point.
 
@@ -374,7 +374,7 @@ complex number.)
 ++ \spadtype{Float} is that it is much more expensive than small floats when the latter can be used.
 -- I've put some timing comparisons in the notes for the Float
 -- domain about the difference in speed between the two domains.
-DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
+DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    TranscendentalFunctionCategory, SpecialFunctionCategory, _
    ConvertibleTo InputForm) with
       _/   : (%, Integer) -> %
@@ -383,10 +383,10 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
         ++ exp1() returns the natural log base \spad{2.718281828...}.
       log2 :  % -> %
         ++ log2(x) computes the logarithm with base 2 for x.
-      log10: % -> %
+      log10 : % -> %
         ++ log10(x) computes the logarithm with base 10 for x.
-      atan : (%,%) -> %
-        ++ atan(x,y) computes the arc tangent from x with phase y.
+      atan : (%, %) -> %
+        ++ atan(x, y) computes the arc tangent from x with phase y.
       qlog : % -> %
         ++ qlog(x) computes natural logarithm of x.  It assumes that
         ++ \spad{x > 0}.
@@ -395,29 +395,29 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
         ++ \spad{x >= 0}.
       doubleFloatFormat : String -> String
         ++ change the output format for doublefloats using lisp format strings
-      rationalApproximation: (%, NonNegativeInteger) -> Fraction Integer
+      rationalApproximation : (%, NonNegativeInteger) -> Fraction Integer
         ++ rationalApproximation(f, n) computes a rational approximation
         ++ r to f with relative error \spad{< 10^(-n)}.
-      rationalApproximation: (%, NonNegativeInteger, NonNegativeInteger) -> Fraction Integer
+      rationalApproximation : (%, NonNegativeInteger, NonNegativeInteger) -> Fraction Integer
          ++ rationalApproximation(f, n, b) computes a rational
          ++ approximation r to f with relative error \spad{< b^(-n)}
          ++ (that is, \spad{|(r-f)/f| < b^(-n)}).
 
  == add
-   format: String := "~A"
-   MER ==> Record(MANTISSA:Integer,EXPONENT:Integer)
+   format : String := "~A"
+   MER ==> Record(MANTISSA : Integer, EXPONENT : Integer)
 
-   manexp: % -> MER
+   manexp : % -> MER
 
-   doubleFloatFormat(s:String): String ==
-     ss: String := format
+   doubleFloatFormat(s : String) : String ==
+     ss : String := format
      format := s
      ss
 
-   OMwrite(x: %): String ==
-     s: String := ""
+   OMwrite(x : %) : String ==
+     s : String := ""
      sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-     dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+     dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
      OMputObject(dev)
      OMputFloat(dev, convert x)
      OMputEndObject(dev)
@@ -425,10 +425,10 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
      s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
      s
 
-   OMwrite(x: %, wholeObj: Boolean): String ==
-     s: String := ""
+   OMwrite(x : %, wholeObj : Boolean) : String ==
+     s : String := ""
      sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-     dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+     dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
      if wholeObj then
        OMputObject(dev)
      OMputFloat(dev, convert x)
@@ -438,19 +438,19 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
      s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
      s
 
-   OMwrite(dev: OpenMathDevice, x: %): Void ==
+   OMwrite(dev : OpenMathDevice, x : %) : Void ==
      OMputObject(dev)
      OMputFloat(dev, convert x)
      OMputEndObject(dev)
 
-   OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+   OMwrite(dev : OpenMathDevice, x : %, wholeObj : Boolean) : Void ==
      if wholeObj then
        OMputObject(dev)
      OMputFloat(dev, convert x)
      if wholeObj then
        OMputEndObject(dev)
 
-   checkComplex(x:%):% == c_to_r(x)$Lisp
+   checkComplex(x : %) : % == c_to_r(x)$Lisp
 
    base()           == FLOAT_-RADIX(0$%)$Lisp
    mantissa x       == manexp(x).MANTISSA
@@ -463,31 +463,31 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
    max()            == MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp
    min()            == MOST_-NEGATIVE_-DOUBLE_-FLOAT$Lisp
    order(a) == precision() + exponent a - 1
-   0                == FLOAT(0$Lisp,MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
-   1                == FLOAT(1$Lisp,MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
+   0                == FLOAT(0$Lisp, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
+   1                == FLOAT(1$Lisp, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
    -- rational approximation to e accurate to 23 digits
-   exp1()           == FLOAT(534625820200,MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp / FLOAT(196677847971,MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
+   exp1()           == FLOAT(534625820200, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp / FLOAT(196677847971, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
    pi()             == FLOAT(PI$Lisp, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
-   coerce(x:%):OutputForm ==
-     x >= 0 => message(FORMAT(NIL$Lisp,format,x)$Lisp pretend String)
-     - (message(FORMAT(NIL$Lisp,format,-x)$Lisp pretend String))
-   convert(x:%):InputForm == convert(x pretend DoubleFloat)$InputForm
+   coerce(x : %) : OutputForm ==
+     x >= 0 => message(FORMAT(NIL$Lisp, format, x)$Lisp pretend String)
+     - (message(FORMAT(NIL$Lisp, format, -x)$Lisp pretend String))
+   convert(x : %) : InputForm == convert(x pretend DoubleFloat)$InputForm
    x < y            == less_DF(x, y)$Lisp
    - x              == minus_DF(x)$Lisp
    x + y            == add_DF(x, y)$Lisp
-   x:% - y:%        == sub_DF(x, y)$Lisp
-   x:% * y:%        == mul_DF(x, y)$Lisp
-   i:Integer * x:%  == mul_DF_I(x, i)$Lisp
-   max(x,y)         == max_DF(x, y)$Lisp
-   min(x,y)         == min_DF(x, y)$Lisp
+   x : % - y : %        == sub_DF(x, y)$Lisp
+   x : % * y : %        == mul_DF(x, y)$Lisp
+   i : Integer * x : %  == mul_DF_I(x, i)$Lisp
+   max(x, y)         == max_DF(x, y)$Lisp
+   min(x, y)         == min_DF(x, y)$Lisp
    x = y            == eql_DF(x, y)$Lisp
-   x:% / i:Integer  == div_DF_I(x, i)$Lisp
+   x : % / i : Integer  == div_DF_I(x, i)$Lisp
    sqrt x           == checkComplex sqrt_DF(x)$Lisp
    qsqrt x          == qsqrt_DF(x)$Lisp
    log10 x          == checkComplex LOG10(x)$Lisp
-   x:% ^ i:Integer == expt_DF_I(x, i)$Lisp
-   x:% ^ y:%       == checkComplex expt_DF(x, y)$Lisp
-   coerce(i:Integer):% == FLOAT(i, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
+   x : % ^ i : Integer == expt_DF_I(x, i)$Lisp
+   x : % ^ y : %       == checkComplex expt_DF(x, y)$Lisp
+   coerce(i : Integer) : % == FLOAT(i, MOST_-POSITIVE_-DOUBLE_-FLOAT$Lisp)$Lisp
    exp x            == exp_DF(x)$Lisp
    log x            == checkComplex log_DF(x)$Lisp
    qlog x           == qlog_DF(x)$Lisp
@@ -525,7 +525,7 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
    acsch x          == asinh(1/x)
    acoth x          == atanh(1/x)
    asech x          == acosh(1/x)
-   x:% / y:%        == div_DF(x, y)$Lisp
+   x : % / y : %        == div_DF(x, y)$Lisp
    negative? x      == negative?_DF(x)$Lisp
    zero? x          == zero?_DF(x)$Lisp
    hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
@@ -538,19 +538,19 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
    sfz              ==> z pretend DoubleFloat
    airyAi x         == airyAi(sfx)$SFSFUN pretend %
    airyBi x         == airyBi(sfx)$SFSFUN pretend %
-   besselI(x,y)     == besselI(sfx, sfy)$SFSFUN pretend %
-   besselJ(x,y)     == besselJ(sfx, sfy)$SFSFUN pretend %
-   besselK(x,y)     == besselK(sfx, sfy)$SFSFUN pretend %
-   besselY(x,y)     == besselY(sfx, sfy)$SFSFUN pretend %
-   Beta(x,y)        == Beta(sfx,sfy)$SFSFUN pretend %
+   besselI(x, y)     == besselI(sfx, sfy)$SFSFUN pretend %
+   besselJ(x, y)     == besselJ(sfx, sfy)$SFSFUN pretend %
+   besselK(x, y)     == besselK(sfx, sfy)$SFSFUN pretend %
+   besselY(x, y)     == besselY(sfx, sfy)$SFSFUN pretend %
+   Beta(x, y)        == Beta(sfx, sfy)$SFSFUN pretend %
    digamma x        == digamma(sfx)$SFSFUN pretend %
    Gamma x          == Gamma(sfx)$SFSFUN pretend %
 -- not implemented in SFSFUN
---   Gamma(x,y)       == Gamma(sfx,sfy)$SFSFUN pretend %
-   polygamma(x,y)   ==
+--   Gamma(x, y)       == Gamma(sfx, sfy)$SFSFUN pretend %
+   polygamma(x, y)   ==
        if (n := retractIfCan(sfx)@Union(Integer, "failed")) case Integer _
           and n >= 0
-       then polygamma(n::Integer::NonNegativeInteger,sfy)$SFSFUN pretend %
+       then polygamma(n::Integer::NonNegativeInteger, sfy)$SFSFUN pretend %
        else error "polygamma: first argument should be a nonnegative integer"
 
    FSFUN ==> FloatSpecialFunctions
@@ -584,12 +584,12 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
        to_sf(weierstrassPPrime(bfx, bfy, bfz)$FELFUN)
 
    wholePart x            == TRUNCATE(x)$Lisp
-   float(ma,ex,b)   == ma*(b::%)^ex
-   convert(x:%):DoubleFloat == x pretend DoubleFloat
-   convert(x:%):Float == convert(x pretend DoubleFloat)$Float
+   float(ma, ex, b)   == ma*(b::%)^ex
+   convert(x : %) : DoubleFloat == x pretend DoubleFloat
+   convert(x : %) : Float == convert(x pretend DoubleFloat)$Float
    rationalApproximation(x, d) == rationalApproximation(x, d, 10)
 
-   atan(x,y) ==
+   atan(x, y) ==
       x = 0 =>
          y > 0 => pi()/2
          y < 0 => -pi()/2
@@ -600,13 +600,13 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
       if y < 0 then theta := - theta
       theta
 
-   retract(x:%):Fraction(Integer) ==
+   retract(x : %) : Fraction(Integer) ==
      rationalApproximation(x, (precision() - 1)::NonNegativeInteger, base())
 
    retractIfCan(x:%):Union(Fraction Integer, "failed") ==
      rationalApproximation(x, (precision() - 1)::NonNegativeInteger, base())
 
-   retract(x:%):Integer ==
+   retract(x : %) : Integer ==
      x = ((n := wholePart x)::%) => n
      error "Not an integer"
 
@@ -614,25 +614,25 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
      x = ((n := wholePart x)::%) => n
      "failed"
 
-   sign(x) == retract FLOAT_-SIGN(x,1)$Lisp
-   abs x   == FLOAT_-SIGN(1,x)$Lisp
+   sign(x) == retract FLOAT_-SIGN(x, 1)$Lisp
+   abs x   == FLOAT_-SIGN(1, x)$Lisp
 
 
 
    manexp(x) ==
-      zero? x => [0,0]
+      zero? x => [0, 0]
       s := sign x; x := abs x
-      if x > max()$% then return [s*mantissa(max())+1,exponent max()]
-      me:Record(man:%,exp:Integer) := MANEXP(x)$Lisp
-      two53:= base()^precision()
-      [s*wholePart(two53 * me.man ),me.exp-precision()]
+      if x > max()$% then return [s*mantissa(max())+1, exponent max()]
+      me : Record(man : %, exp : Integer) := MANEXP(x)$Lisp
+      two53 := base()^precision()
+      [s*wholePart(two53 * me.man ), me.exp-precision()]
 
--- rationalApproximation(y,d,b) ==
+-- rationalApproximation(y, d, b) ==
 --    this is the quotient remainder algorithm (requires wholePart operation)
 --    x := y
 --    if b < 2 then error "base must be > 1"
 --    tol := (b::%)^d
---    p0,p1,q0,q1 : Integer
+--    p0, p1, q0, q1 : Integer
 --    p0 := 0; p1 := 1; q0 := 1; q1 := 0
 --    repeat
 --       a := wholePart x
@@ -641,31 +641,31 @@ DoubleFloat(): Join(FloatingPointSystem, DifferentialRing, OpenMath,
 --       q2 := q0+a*q1
 --       if x = 0 or tol*abs(q2*y-(p2::%)) < abs(q2*y) then
 --          return (p2/q2)
---       (p0,p1) := (p1,p2)
---       (q0,q1) := (q1,q2)
+--       (p0, p1) := (p1, p2)
+--       (q0, q1) := (q1, q2)
 --       x := 1/x
 
-   rationalApproximation(f,d,b) ==
+   rationalApproximation(f, d, b) ==
       -- this algorithm expresses f as n / d where d = BASE ^ k
       -- then all arithmetic operations are done over the integers
       (nu, ex) := manexp f
       BASE := base()
       ex >= 0 => (nu * BASE ^ (ex::NonNegativeInteger))::Fraction(Integer)
-      de :Integer := BASE^((-ex)::NonNegativeInteger)
+      de : Integer := BASE^((-ex)::NonNegativeInteger)
       b < 2 => error "base must be > 1"
       tol := b^d
       s := nu; t := de
-      p0:Integer := 0; p1:Integer := 1; q0:Integer := 1; q1:Integer := 0
+      p0 : Integer := 0; p1 : Integer := 1; q0 : Integer := 1; q1 : Integer := 0
       repeat
-         (q,r) := divide(s, t)
+         (q, r) := divide(s, t)
          p2 := q*p1+p0
          q2 := q*q1+q0
          r = 0 or tol*abs(nu*q2-de*p2) < de*abs(p2) => return(p2/q2)
-         (p0,p1) := (p1,p2)
-         (q0,q1) := (q1,q2)
-         (s,t) := (t,r)
+         (p0, p1) := (p1, p2)
+         (q0, q1) := (q1, q2)
+         (s, t) := (t, r)
 
-   x:% ^ r:Fraction Integer ==
+   x : % ^ r : Fraction Integer ==
       zero? x =>
          zero? r => error "0^0 is undefined"
          negative? r => error "division by 0"

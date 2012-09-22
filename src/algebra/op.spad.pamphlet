@@ -20,16 +20,16 @@
 ++   A basic operator is an object that can be applied to a list of
 ++   arguments from a set, the result being a kernel over that set.
 ++ Keywords: operator, kernel.
-BasicOperator(): Exports == Implementation where
+BasicOperator() : Exports == Implementation where
   O   ==> OutputForm
   P   ==> AssociationList(Symbol, None)
-  L   ==> List Record(key:Symbol, entry:None)
+  L   ==> List Record(key : Symbol, entry : None)
   SEX ==> InputForm
 
   Exports ==> OrderedSet with
     name      : % -> Symbol
       ++ name(op) returns the name of op.
-    properties: % -> P
+    properties : % -> P
       ++ properties(op) returns the list of all the properties
       ++ currently attached to op.
     copy      : % -> %
@@ -67,7 +67,7 @@ BasicOperator(): Exports == Implementation where
     display    : (%, List O -> O)      -> %
       ++ display(op, foo) attaches foo as the "%display" property
       ++ of op. If op has a "%display" property f, then \spad{op(a1,...,an)}
-      ++ gets converted to OutputForm as \spad{f(a1,...,an)}.
+      ++ gets converted to OutputForm as \spad{f(a1, ..., an)}.
     display    : (%, O -> O)           -> %
       ++ display(op, foo) attaches foo as the "%display" property
       ++ of op. If op has a "%display" property f, then \spad{op(a)}
@@ -76,7 +76,7 @@ BasicOperator(): Exports == Implementation where
     input      : (%, List SEX -> SEX)  -> %
       ++ input(op, foo) attaches foo as the "%input" property
       ++ of op. If op has a "%input" property f, then \spad{op(a1,...,an)}
-      ++ gets converted to InputForm as \spad{f(a1,...,an)}.
+      ++ gets converted to InputForm as \spad{f(a1, ..., an)}.
     input      : % -> Union(List SEX -> SEX, "failed")
       ++ input(op) returns the "%input" property of op if
       ++ it has one attached, "failed" otherwise.
@@ -87,7 +87,7 @@ BasicOperator(): Exports == Implementation where
     assert     : (%, Symbol) -> %
       ++ assert(op, s) attaches property s to op.
       ++ Argument op is modified "in place", i.e. no copy is made.
-    deleteProperty!: (%, Symbol) -> %
+    deleteProperty! : (%, Symbol) -> %
       ++ deleteProperty!(op, s) unattaches property s from op.
       ++ Argument op is modified "in place", i.e. no copy is made.
     property      : (%, Symbol) -> Union(None, "failed")
@@ -103,7 +103,7 @@ BasicOperator(): Exports == Implementation where
 
   Implementation ==> add
     -- if narg < 0 then the operator has variable arity.
-    Rep := Record(opname:Symbol, narg:SingleInteger, props:P)
+    Rep := Record(opname : Symbol, narg : SingleInteger, props : P)
 
     -- some internal properties
     LESS?   := "%less?"::Symbol
@@ -113,7 +113,7 @@ BasicOperator(): Exports == Implementation where
     SEXPR   := '%input
 
 
-    oper: (Symbol, SingleInteger, P) -> %
+    oper : (Symbol, SingleInteger, P) -> %
 
     is?(op, s)           == name(op) = s
     name op              == op.opname
@@ -132,12 +132,12 @@ BasicOperator(): Exports == Implementation where
     nary? op             == negative?(op.narg)
     equality(op, func)   == setProperty(op, EQUAL?, func pretend None)
     comparison(op, func) == setProperty(op, LESS?, func pretend None)
-    display(op:%, f:O -> O)        == display(op, (l1: List(O)): O +-> f first l1)
+    display(op : %, f : O -> O)        == display(op, (l1 : List(O)) : O +-> f first l1)
     deleteProperty!(op, name)     == (remove!(name, properties op); op)
     setProperty(op, name, valu)    == (op.props.name := valu; op)
-    coerce(op:%):OutputForm        == name(op)::OutputForm
-    input(op:%, f:List SEX -> SEX) == setProperty(op, SEXPR, f pretend None)
-    display(op:%, f:List O -> O)   == setProperty(op, DISPLAY, f pretend None)
+    coerce(op : %) : OutputForm        == name(op)::OutputForm
+    input(op : %, f : List SEX -> SEX) == setProperty(op, SEXPR, f pretend None)
+    display(op : %, f : List O -> O)   == setProperty(op, DISPLAY, f pretend None)
 
     display op ==
       (u := property(op, DISPLAY)) case "failed" => "failed"
@@ -202,18 +202,18 @@ BasicOperator(): Exports == Implementation where
 ++   This package exports functions to set some commonly used properties
 ++   of operators, including properties which contain functions.
 ++ Keywords: operator.
-BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
+BasicOperatorFunctions1(A : SetCategory) : Exports == Implementation where
   OP   ==> BasicOperator
 
   Exports ==> with
     evaluate        : (OP, List A)      -> Union(A, "failed")
       ++ evaluate(op, [a1,...,an]) checks if op has an "%eval"
-      ++ property f. If it has, then \spad{f(a1,...,an)} is returned, and
+      ++ property f. If it has, then \spad{f(a1, ..., an)} is returned, and
       ++ "failed" otherwise.
     evaluate        : (OP, List A -> A) -> OP
       ++ evaluate(op, foo) attaches foo as the "%eval" property
       ++ of op. If op has an "%eval" property f, then applying op
-      ++ to \spad{(a1,...,an)} returns the result of \spad{f(a1,...,an)}.
+      ++ to \spad{(a1, ..., an)} returns the result of \spad{f(a1, ..., an)}.
     evaluate        : (OP, A -> A)      -> OP
       ++ evaluate(op, foo) attaches foo as the "%eval" property
       ++ of op. If op has an "%eval" property f, then applying op
@@ -222,10 +222,10 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
       ++ evaluate(op) returns the value of the "%eval" property of
       ++ op if it has one, and "failed" otherwise.
     derivative      : (OP, List (List A -> A)) -> OP
-      ++ derivative(op, [foo1,...,foon]) attaches [foo1,...,foon] as
+      ++ derivative(op, [foo1, ..., foon]) attaches [foo1, ..., foon] as
       ++ the "%diff" property of op. If op has an "%diff" property
-      ++ \spad{[f1,...,fn]} then applying a derivation D to \spad{op(a1,...,an)}
-      ++ returns \spad{f1(a1,...,an) * D(a1) + ... + fn(a1,...,an) * D(an)}.
+      ++ \spad{[f1, ..., fn]} then applying a derivation D to \spad{op(a1, ..., an)}
+      ++ returns \spad{f1(a1, ..., an) * D(a1) + ... + fn(a1, ..., an) * D(an)}.
     derivative      : (OP, A -> A) -> OP
       ++ derivative(op, foo) attaches foo as the "%diff" property
       ++ of op. If op has an "%diff" property f, then applying a
@@ -233,7 +233,7 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
     derivative      : OP -> Union(List(List A -> A), "failed")
       ++ derivative(op) returns the value of the "%diff" property of
       ++ op if it has one, and "failed" otherwise.
-    constantOperator: A -> OP
+    constantOperator : A -> OP
       ++ constantOperator(a) returns a nullary operator op
       ++ such that \spad{op()} always evaluate to \spad{a}.
     constantOpIfCan : OP -> Union(A, "failed")
@@ -246,34 +246,34 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
     CONST   := '%constant
     DIFF    := '%diff
 
-    evaluate(op:OP, func:A -> A) == evaluate(op, (l1: List(A)): A +-> func first l1)
+    evaluate(op : OP, func : A -> A) == evaluate(op, (l1 : List(A)) : A +-> func first l1)
 
     evaluate op ==
       (func := property(op, EVAL)) case "failed" => "failed"
       (func::None) pretend (List A -> A)
 
-    evaluate(op:OP, args:List A) ==
+    evaluate(op : OP, args : List A) ==
       (func := property(op, EVAL)) case "failed" => "failed"
       ((func::None) pretend (List A -> A)) args
 
-    evaluate(op:OP, func:List A -> A) ==
+    evaluate(op : OP, func : List A -> A) ==
       setProperty(op, EVAL, func pretend None)
 
     derivative op ==
       (func := property(op, DIFF)) case "failed" => "failed"
       ((func::None) pretend List(List A -> A))
 
-    derivative(op:OP, grad:List(List A -> A)) ==
+    derivative(op : OP, grad : List(List A -> A)) ==
       setProperty(op, DIFF, grad pretend None)
 
-    derivative(op:OP, f:A -> A) ==
+    derivative(op : OP, f : A -> A) ==
       unary? op or nary? op =>
-        derivative(op, [(l1: List(A)): A +-> f first l1]$List(List A -> A))
+        derivative(op, [(l1 : List(A)) : A +-> f first l1]$List(List A -> A))
       error "Operator is not unary"
 
     cdisp   : (OutputForm, List OutputForm) -> OutputForm
     csex    : (InputForm,  List InputForm) -> InputForm
-    eqconst?: (OP, OP) -> Boolean
+    eqconst? : (OP, OP) -> Boolean
     constOp : A -> OP
 
     cdisp(a, l) == a
@@ -283,13 +283,13 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
       (va := property(a, CONST)) case "failed" => not has?(b, CONST)
       ((vb := property(b, CONST)) case None) and
          ((va::None) pretend A) = ((vb::None) pretend A)
-    opconst:OP
+    opconst : OP
     if A has Comparable then
-      ltconst?: (OP, OP) -> Boolean
+      ltconst? : (OP, OP) -> Boolean
       ltconst?(a, b) ==
         (va := property(a, CONST)) case "failed" => has?(b, CONST)
         ((vb := property(b, CONST)) case None) and
-           smaller?((va::None) pretend A,(vb::None) pretend A)
+           smaller?((va::None) pretend A, (vb::None) pretend A)
       opconst :=
         comparison(equality(operator('constant, 0), eqconst?), ltconst?)
     else
@@ -297,7 +297,7 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
 
     constOp a ==
       setProperty(display(copy opconst,
-        (l1: List(OutputForm)): OutputForm +-> cdisp(a::OutputForm, l1)),
+        (l1 : List(OutputForm)) : OutputForm +-> cdisp(a::OutputForm, l1)),
                                                   CONST, a pretend None)
 
     constantOpIfCan op ==
@@ -306,7 +306,7 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
       "failed"
 
     if A has ConvertibleTo InputForm then
-      constantOperator a == input(constOp a,  (l1: List(InputForm)): InputForm +-> csex(convert a, l1))
+      constantOperator a == input(constOp a,  (l1 : List(InputForm)) : InputForm +-> csex(convert a, l1))
     else
       constantOperator a == constOp a
 
@@ -323,7 +323,7 @@ BasicOperatorFunctions1(A : SetCategory): Exports == Implementation where
 ++ already attached to them. The semantics that is attached here is not
 ++ dependent on the set in which the operators will be applied.
 ++ Keywords: operator.
-CommonOperators(): Exports == Implementation where
+CommonOperators() : Exports == Implementation where
   OP  ==> BasicOperator
   O   ==> OutputForm
   POWER ==> '%power
@@ -333,7 +333,7 @@ CommonOperators(): Exports == Implementation where
   DUMMYVAR ==> '%dummyVar
 
   Exports ==> with
-    operator: Symbol -> OP
+    operator : Symbol -> OP
         ++ operator(s) returns an operator with name s, with the
         ++ appropriate semantics if s is known. If s is not known,
         ++ the result has no semantics.
@@ -345,9 +345,9 @@ CommonOperators(): Exports == Implementation where
     dexp       : O -> O
     dfact      : O -> O
     startUp    : Boolean -> Void
-    setDummyVar: (OP, NonNegativeInteger) -> OP
+    setDummyVar : (OP, NonNegativeInteger) -> OP
 
-    brandNew?:Reference(Boolean) := ref true
+    brandNew? : Reference(Boolean) := ref true
 
     opalg   := operator('rootOf, 2)$OP
     oproot  := operator('nthRoot, 2)
@@ -511,7 +511,7 @@ CommonOperators(): Exports == Implementation where
 
     anyop   := [oppren, opdiff, opbox, opquote]
     allop   := concat(concat(concat(concat(concat(
-                            algop,elemop),primop),combop),specop),anyop)
+                            algop, elemop), primop), combop), specop), anyop)
 
     -- odd and even single argument operators, must be maintained current!
     evenop := [opcos, opsec, opcosh, opsech, opabs]
@@ -520,7 +520,7 @@ CommonOperators(): Exports == Implementation where
                 opacoth, opsi, opshi, operf]
 
 -- operators whose second argument is a dummy variable
-    dummyvarop1 := [opdiff,opalg, opint, opsum, opprod]
+    dummyvarop1 := [opdiff, opalg, opint, opsum, opprod]
 -- operators whose second and third arguments are dummy variables
     dummyvarop2 := [opdint, opdsum, opdprod]
 
@@ -553,18 +553,18 @@ CommonOperators(): Exports == Implementation where
       display(opEllipticE2, dEllipticE2)
       display(opfact, dfact)
       display(opquote, dquote)
-      display(opperm, (z1: List O): O +-> supersub('A::O, z1))
-      display(opbinom, (z1: List O): O +-> binomial(first z1, second z1))
-      display(oppow, (z1: List O): O +-> first(z1) ^ second(z1))
-      display(opsum, (z1: List O): O +-> sum(first z1, second z1, third z1))
-      display(opprod, (z1: List O): O +-> prod(first z1, second z1, third z1))
-      display(opint, (z1: List O): O +-> int(first z1 * hconcat('d::O, second z1),
+      display(opperm, (z1 : List O) : O +-> supersub('A::O, z1))
+      display(opbinom, (z1 : List O) : O +-> binomial(first z1, second z1))
+      display(oppow, (z1 : List O) : O +-> first(z1) ^ second(z1))
+      display(opsum, (z1 : List O) : O +-> sum(first z1, second z1, third z1))
+      display(opprod, (z1 : List O) : O +-> prod(first z1, second z1, third z1))
+      display(opint, (z1 : List O) : O +-> int(first z1 * hconcat('d::O, second z1),
                                                    empty(), third z1))
-      input(oppren, (z1: List InputForm): InputForm +-> convert concat(convert("("::Symbol)@InputForm,
+      input(oppren, (z1 : List InputForm) : InputForm +-> convert concat(convert("("::Symbol)@InputForm,
                             concat(z1, convert(")"::Symbol)@InputForm)))
-      input(oppow, (z1: List InputForm): InputForm +-> convert concat(convert("^"::Symbol)@InputForm, z1))
+      input(oppow, (z1 : List InputForm) : InputForm +-> convert concat(convert("^"::Symbol)@InputForm, z1))
       input(oproot,
-            (z1: List InputForm): InputForm +-> convert [convert("^"::Symbol)@InputForm, first z1, 1 / second z1])
+            (z1 : List InputForm) : InputForm +-> convert [convert("^"::Symbol)@InputForm, first z1, 1 / second z1])
       for op in algop   repeat assert(op, ALGOP)
       for op in rtrigop repeat assert(op, 'rtrig)
       for op in htrigop repeat assert(op, 'htrig)

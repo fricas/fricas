@@ -19,10 +19,10 @@
 ++ for finding closed form first integrals of nonlinear ordinary
 ++ differential equations of order 1.
 ++ Keywords: differential equation, ODE
-NonLinearFirstOrderODESolver(R, F): Exports == Implementation where
-  R: Join(Comparable, EuclideanDomain, RetractableTo Integer,
+NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
+  R : Join(Comparable, EuclideanDomain, RetractableTo Integer,
           LinearlyExplicitRingOver Integer, CharacteristicZero)
-  F: Join(AlgebraicallyClosedFunctionSpace R, TranscendentalFunctionCategory,
+  F : Join(AlgebraicallyClosedFunctionSpace R, TranscendentalFunctionCategory,
           PrimitiveFunctionCategory)
 
   N   ==> NonNegativeInteger
@@ -33,15 +33,15 @@ NonLinearFirstOrderODESolver(R, F): Exports == Implementation where
   K   ==> Kernel F
   U   ==> Union(F, "failed")
   P   ==> SparseMultivariatePolynomial(R, K)
-  REC ==> Record(coef:Q, logand:F)
-  SOL ==> Record(particular: F,basis: List F)
-  BER ==> Record(coef1:F, coefn:F, exponent:N)
+  REC ==> Record(coef : Q, logand : F)
+  SOL ==> Record(particular : F, basis : List F)
+  BER ==> Record(coef1 : F, coefn : F, exponent : N)
 
   Exports ==> with
-    solve: (F, F, OP, SY) -> U
-      ++ solve(M(x,y), N(x,y), y, x) returns \spad{F(x,y)} such that
-      ++ \spad{F(x,y) = c} for a constant \spad{c} is a first integral
-      ++ of the equation \spad{M(x,y) dx + N(x,y) dy  = 0}, or
+    solve : (F, F, OP, SY) -> U
+      ++ solve(M(x, y), N(x, y), y, x) returns \spad{F(x, y)} such that
+      ++ \spad{F(x, y) = c} for a constant \spad{c} is a first integral
+      ++ of the equation \spad{M(x, y) dx + N(x, y) dy  = 0}, or
       ++ "failed" if no first-integral can be found.
 
   Implementation ==> add
@@ -53,15 +53,15 @@ NonLinearFirstOrderODESolver(R, F): Exports == Implementation where
     checkRiccati     : (F, F, K) -> Union(List F, "failed")
     solveRiccati     : (List F, OP, SY, F) -> Union(F, "failed")
     partSolRiccati   : (List F, OP, SY, F) -> Union(F, "failed")
-    integratingFactor: (F, F, SY, SY) -> U
+    integratingFactor : (F, F, SY, SY) -> U
 
     unk    := new()$SY
-    kunk:K := kernel unk
+    kunk : K := kernel unk
 
     solve(m, n, y, x) ==
--- first replace the operator y(x) by a new symbol z in m(x,y) and n(x,y)
-      lk:List(K) := [retract(yx := y(x::F))@K]
-      lv:List(F) := [kunk::F]
+-- first replace the operator y(x) by a new symbol z in m(x, y) and n(x, y)
+      lk : List(K) := [retract(yx := y(x::F))@K]
+      lv : List(F) := [kunk::F]
       mm := eval(m, lk, lv)
       nn := eval(n, lk, lv)
 -- put over a common denominator (to balance m and n)
@@ -73,7 +73,7 @@ NonLinearFirstOrderODESolver(R, F): Exports == Implementation where
         mu := u::F
         mm := mm * mu
         nn := nn * mu
-        eval(int(mm,x) + int(nn-int(differentiate(mm,unk),x), unk),[kunk],[yx])
+        eval(int(mm, x) + int(nn-int(differentiate(mm, unk), x), unk), [kunk], [yx])
 -- check for Bernoulli equation
       (w := checkBernoulli(m, n, k1 := first lk)) case BER =>
         solveBernoulli(w::BER, y, x, yx)

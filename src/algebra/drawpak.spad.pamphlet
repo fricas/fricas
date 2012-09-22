@@ -16,17 +16,17 @@
 ++ for drawing complex functions.
 C ==> Complex DoubleFloat
 S ==> Segment DoubleFloat
-PC ==> Record(rr:SF, th:SF)
+PC ==> Record(rr : SF, th : SF)
 INT ==> Integer
 SF ==> DoubleFloat
 NNI ==> NonNegativeInteger
 VIEW3D ==> ThreeDimensionalViewport
 ARRAY2 ==> TwoDimensionalArray
 
-DrawComplex(): Exports == Implementation where
+DrawComplex() : Exports == Implementation where
   Exports == with
-    drawComplex: (C -> C,S,S,Boolean) -> VIEW3D
-      ++ drawComplex(f,rRange,iRange,arrows?)
+    drawComplex : (C -> C, S, S, Boolean) -> VIEW3D
+      ++ drawComplex(f, rRange, iRange, arrows?)
       ++ draws a complex function as a height field.
       ++ It uses the complex norm as the height and the complex argument as the color.
       ++ It will optionally draw arrows on the surface indicating the direction
@@ -42,8 +42,8 @@ DrawComplex(): Exports == Implementation where
       ++ Call the functions \axiomFunFrom{setRealSteps}{DrawComplex} and
       ++ \axiomFunFrom{setImagSteps}{DrawComplex} to change the
       ++ number of steps used in each direction.
-    drawComplexVectorField: (C -> C,S,S) -> VIEW3D
-      ++ drawComplexVectorField(f,rRange,iRange)
+    drawComplexVectorField : (C -> C, S, S) -> VIEW3D
+      ++ drawComplexVectorField(f, rRange, iRange)
       ++ draws a complex vector field using arrows on the \spad{x--y} plane.
       ++ These vector fields should be viewed from the top by pressing the
       ++ "XY" translate button on the 3-d viewport control panel.\newline
@@ -57,30 +57,30 @@ DrawComplex(): Exports == Implementation where
       ++ Call the functions \axiomFunFrom{setRealSteps}{DrawComplex} and
       ++ \axiomFunFrom{setImagSteps}{DrawComplex} to change the
       ++ number of steps used in each direction.
-    setRealSteps: INT -> INT
+    setRealSteps : INT -> INT
       ++ setRealSteps(i)
       ++ sets to i the number of steps to use in the real direction
       ++ when drawing complex functions. Returns i.
-    setImagSteps: INT -> INT
+    setImagSteps : INT -> INT
       ++ setImagSteps(i)
       ++ sets to i  the number of steps to use in the imaginary direction
       ++ when drawing complex functions. Returns i.
-    setClipValue: SF-> SF
+    setClipValue : SF-> SF
       ++ setClipValue(x)
       ++ sets to x the maximum value to plot when drawing complex functions. Returns x.
   Implementation == add
     -- relative size of the arrow head compared to the length of the arrow
     arrowScale : SF := (0.125)::SF
-    arrowAngle: SF := pi()-pi()/(20::SF)    -- angle of the arrow head
-    realSteps: INT  := 11     -- the number of steps in the real direction
-    imagSteps: INT  := 11     -- the number of steps in the imaginary direction
-    clipValue: SF  := 10::SF -- the maximum length of a vector to draw
+    arrowAngle : SF := pi()-pi()/(20::SF)    -- angle of the arrow head
+    realSteps : INT  := 11     -- the number of steps in the real direction
+    imagSteps : INT  := 11     -- the number of steps in the imaginary direction
+    clipValue : SF  := 10::SF -- the maximum length of a vector to draw
 
 
     -- Add an arrow head to a line segment, which starts at 'p1', ends at 'p2',
     -- has length 'len', and and angle 'arg'.  We pass 'len' and 'arg' as
     -- arguments since they were already computed by the calling program
-    makeArrow(p1:Point SF, p2:Point SF, len: SF, arg:SF):List List Point SF ==
+    makeArrow(p1 : Point SF, p2 : Point SF, len : SF, arg : SF) : List List Point SF ==
       c1 := cos(arg + arrowAngle)
       s1 := sin(arg + arrowAngle)
       c2 := cos(arg - arrowAngle)
@@ -92,20 +92,20 @@ DrawComplex(): Exports == Implementation where
       [[p1, p2, p3], [p2, p4]]
 
     -- clip a value in the interval (-clip...clip)
-    clipFun(x:SF):SF ==
+    clipFun(x : SF) : SF ==
       min(max(x, -clipValue), clipValue)
 
     drawComplex(f, realRange, imagRange, arrows?) ==
       delReal := (hi(realRange) - lo(realRange))/realSteps::SF
       delImag := (hi(imagRange) - lo(imagRange))/imagSteps::SF
-      funTable: ARRAY2(PC) :=
-         new((realSteps::NNI)+1, (imagSteps::NNI)+1, [0,0]$PC)
+      funTable : ARRAY2(PC) :=
+         new((realSteps::NNI)+1, (imagSteps::NNI)+1, [0, 0]$PC)
       real := lo(realRange)
       for i in 1..realSteps+1 repeat
         imag := lo(imagRange)
         for j in 1..imagSteps+1 repeat
           z := f complex(real, imag)
-          funTable(i,j) := [clipFun(sqrt norm z), argument(z)]$PC
+          funTable(i, j) := [clipFun(sqrt norm z), argument(z)]$PC
           imag := imag + delImag
         real := real + delReal
       llp := empty()$(List List Point SF)
@@ -114,7 +114,7 @@ DrawComplex(): Exports == Implementation where
         imag := lo(imagRange)
         lp := empty()$(List Point SF)
         for j in 1..imagSteps+1 repeat
-          p := point [real, imag, funTable(i,j).rr, funTable(i,j).th]
+          p := point [real, imag, funTable(i, j).rr, funTable(i, j).th]
           lp := cons(p, lp)
           imag := imag + delImag
         real := real + delReal
@@ -125,8 +125,8 @@ DrawComplex(): Exports == Implementation where
         for i in 1..realSteps+1 repeat
           imag := lo(imagRange)
           for j in 1..imagSteps+1 repeat
-            arg := funTable(i,j).th
-            p1 := point [real,imag, funTable(i,j).rr, arg]
+            arg := funTable(i, j).th
+            p1 := point [real, imag, funTable(i, j).rr, arg]
             len := delReal*2.0::SF
             p2 := point [p1.1 + len*cos(arg), p1.2 + len*sin(arg),
                          p1.3, p1.4]
@@ -136,7 +136,7 @@ DrawComplex(): Exports == Implementation where
           real := real + delReal
       makeViewport3D(space, "Complex Function")$VIEW3D
 
-    drawComplexVectorField(f, realRange, imagRange): VIEW3D ==
+    drawComplexVectorField(f, realRange, imagRange) : VIEW3D ==
       -- compute the steps size of the grid
       delReal := (hi(realRange) - lo(realRange))/realSteps::SF
       delImag := (hi(imagRange) - lo(imagRange))/imagSteps::SF

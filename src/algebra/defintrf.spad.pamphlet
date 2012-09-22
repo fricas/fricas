@@ -19,7 +19,7 @@
 ++ Description:
 ++   \spadtype{DefiniteIntegrationTools} provides common tools used
 ++   by the definite integration of both rational and elementary functions.
-DefiniteIntegrationTools(R, F): Exports == Implementation where
+DefiniteIntegrationTools(R, F) : Exports == Implementation where
   R : Join(GcdDomain, Comparable, RetractableTo Integer,
            LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory, AlgebraicallyClosedField,
@@ -36,27 +36,27 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
   OFE ==> OrderedCompletion F
   UPZ ==> SparseUnivariatePolynomial Z
   UPQ ==> SparseUnivariatePolynomial Q
-  REC ==> Record(left:Q, right:Q)
-  REC2==> Record(endpoint:Q, dir:Z)
+  REC ==> Record(left : Q, right : Q)
+  REC2==> Record(endpoint : Q, dir : Z)
   U   ==> Union(fin:REC, halfinf:REC2, all:"all", failed:"failed")
   IGNOR ==> "noPole"
 
   Exports ==> with
-    ignore?: String -> B
+    ignore? : String -> B
       ++ ignore?(s) is true if s is the string that tells the integrator
       ++ to assume that the function has no pole in the integration interval.
-    computeInt: (K, F, OFE, OFE, B) -> Union(OFE, "failed")
+    computeInt : (K, F, OFE, OFE, B) -> Union(OFE, "failed")
       ++ computeInt(x, g, a, b, eval?) returns the integral of \spad{f} for x
       ++ between a and b, assuming that g is an indefinite integral of
       ++ \spad{f} and \spad{f} has no pole between a and b.
       ++ If \spad{eval?} is true, then \spad{g} can be evaluated safely
       ++ at \spad{a} and \spad{b}, provided that they are finite values.
       ++ Otherwise, limits must be computed.
-    checkForZero: (P,  SE, OFE, OFE, B) -> Union(B, "failed")
+    checkForZero : (P,  SE, OFE, OFE, B) -> Union(B, "failed")
       ++ checkForZero(p, x, a, b, incl?) is true if p has a zero for x between
       ++ a and b, false otherwise, "failed" if this cannot be determined.
       ++ Check for a and b inclusive if incl? is true, exclusive otherwise.
-    checkForZero: (UP, OFE, OFE, B) -> Union(B, "failed")
+    checkForZero : (UP, OFE, OFE, B) -> Union(B, "failed")
       ++ checkForZero(p, a, b, incl?) is true if p has a zero between
       ++ a and b, false otherwise, "failed" if this cannot be determined.
       ++ Check for a and b inclusive if incl? is true, exclusive otherwise.
@@ -84,7 +84,7 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
     checkDeriv  : (UP, OFE, OFE) -> Union(B, "failed")
     sameSign    : (UP, OFE, OFE) -> Union(B, "failed")
     intrat      : (OFE, OFE) -> U
-    findRealZero: (UPZ, U, B) -> List REC
+    findRealZero : (UPZ, U, B) -> List REC
 
     variation(p, a)      == var p(monomial(1, 1)$UP - a::UP)
     keeprec?(a, rec)     == (a > rec.right) or (a < rec.left)
@@ -148,13 +148,13 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
       u::B
 
     maprat p ==
-      ans:UPQ := 0
+      ans : UPQ := 0
       while p ~= 0 repeat
         (r := retractIfCan(c := leadingCoefficient p)@Union(Q,"failed"))
           case "failed"  => return "failed"
         ans := ans + monomial(r::Q, degree p)
         p   := reductum p
-      map(numer,(splitDenominator ans).num
+      map(numer, (splitDenominator ans).num
          )$SparseUnivariatePolynomialFunctions2(Q, Z)
 
     intrat(a, b) ==
@@ -180,7 +180,7 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
       i case all => realZeros p
       i case halfinf =>
         empty?(l := realZeros p) => empty()
-        bounds:REC :=
+        bounds : REC :=
           i.halfinf.dir > 0 => [i.halfinf.endpoint, "max"/[t.right for t in l]]
           ["min"/[t.left for t in l], i.halfinf.endpoint]
         l := [u::REC for t in l | (u := refine(p, t, bounds)) case REC]
@@ -201,7 +201,7 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
       (zb? := zero? p(bb := r::F)) and incl? => true
       (va := variation(p, aa)) case "failed" or
                    (vb := variation(p, bb)) case "failed" => "failed"
-      m:Z := 0
+      m : Z := 0
       if za? then m := inc m
       if zb? then m := inc m
       odd?(v := va::Z - vb::Z) =>          -- p has an odd number of roots
@@ -253,7 +253,7 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
       u::Z::F
 
     var q ==
-      i:Z := 0
+      i : Z := 0
       (lastCoef := negative leadingCoefficient q) case "failed" =>
         "failed"
       while ((q := reductum q) ~= 0) repeat
@@ -277,7 +277,7 @@ DefiniteIntegrationTools(R, F): Exports == Implementation where
 ++   compute definite integrals of rational functions.
 
 
-RationalFunctionDefiniteIntegration(R): Exports == Implementation where
+RationalFunctionDefiniteIntegration(R) : Exports == Implementation where
   R : Join(EuclideanDomain, Comparable, CharacteristicZero,
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
 
@@ -289,11 +289,11 @@ RationalFunctionDefiniteIntegration(R): Exports == Implementation where
   U   ==> Union(f1:OFE, f2:List OFE, fail:"failed", pole:"potentialPole")
 
   Exports ==> with
-    integrate: (RF, SegmentBinding OFE) -> U
+    integrate : (RF, SegmentBinding OFE) -> U
       ++ integrate(f, x = a..b) returns the integral of
       ++ \spad{f(x)dx} from a to b.
       ++ Error: if f has a pole for x between a and b.
-    integrate: (RF, SegmentBinding OFE, String) -> U
+    integrate : (RF, SegmentBinding OFE, String) -> U
       ++ integrate(f, x = a..b, "noPole") returns the
       ++ integral of \spad{f(x)dx} from a to b.
       ++ If it is not possible to check whether f has a pole for x
@@ -303,11 +303,11 @@ RationalFunctionDefiniteIntegration(R): Exports == Implementation where
       ++ if the last argument is not "noPole".
 -- the following two are contained in the above, but they are for the
 -- interpreter... DO NOT COMMENT OUT UNTIL THE INTERPRETER IS BETTER!
-    integrate: (RF, SegmentBinding ORF) -> U
+    integrate : (RF, SegmentBinding ORF) -> U
       ++ integrate(f, x = a..b) returns the integral of
       ++ \spad{f(x)dx} from a to b.
       ++ Error: if f has a pole for x between a and b.
-    integrate: (RF, SegmentBinding ORF, String) -> U
+    integrate : (RF, SegmentBinding ORF, String) -> U
       ++ integrate(f, x = a..b, "noPole") returns the
       ++ integral of \spad{f(x)dx} from a to b.
       ++ If it is not possible to check whether f has a pole for x
@@ -322,9 +322,9 @@ RationalFunctionDefiniteIntegration(R): Exports == Implementation where
     import OrderedCompletionFunctions2(RF, FE)
 
     int   : (RF, SE, OFE, OFE, Boolean) -> U
-    nopole: (RF, SE, OFE, OFE) -> U
+    nopole : (RF, SE, OFE, OFE) -> U
 
-    integrate(f:RF, s:SegmentBinding OFE) ==
+    integrate(f : RF, s : SegmentBinding OFE) ==
       int(f, variable s, lo segment s, hi segment s, false)
 
     nopole(f, x, a, b) ==
@@ -338,15 +338,15 @@ RationalFunctionDefiniteIntegration(R): Exports == Implementation where
         ans := concat!(ans, [v::OFE])
       [ans]
 
-    integrate(f:RF, s:SegmentBinding ORF) ==
+    integrate(f : RF, s : SegmentBinding ORF) ==
       int(f, variable s, map(x +-> x::FE, lo segment s),
                          map(x +-> x::FE, hi segment s), false)
 
-    integrate(f:RF, s:SegmentBinding ORF, str:String) ==
+    integrate(f : RF, s : SegmentBinding ORF, str : String) ==
       int(f, variable s, map(x +-> x::FE, lo segment s),
                          map(x +-> x::FE, hi segment s), ignore? str)
 
-    integrate(f:RF, s:SegmentBinding OFE, str:String) ==
+    integrate(f : RF, s : SegmentBinding OFE, str : String) ==
       int(f, variable s, lo segment s, hi segment s, ignore? str)
 
     int(f, x, a, b, ignor?) ==

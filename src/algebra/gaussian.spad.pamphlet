@@ -24,13 +24,13 @@
 ++ Description:
 ++ This category represents the extension of a ring by a square
 ++ root of -1.
-ComplexCategory(R:CommutativeRing): Category ==
+ComplexCategory(R : CommutativeRing) : Category ==
   Join(MonogenicAlgebra(R, SparseUnivariatePolynomial R), FullyRetractableTo R,
    DifferentialExtension R, FullyEvalableOver R, FullyPatternMatchable(R),
     Patternable(R), FullyLinearlyExplicitRingOver R, CommutativeRing) with
-     imaginary:   () -> %          ++ imaginary() = sqrt(-1) = %i.
-     conjugate:   % -> %           ++ conjugate(x + %i y) returns x - %i y.
-     complex  :   (R, R) -> %      ++ complex(x,y) constructs x + %i*y.
+     imaginary :   () -> %          ++ imaginary() = sqrt(-1) = %i.
+     conjugate :   % -> %           ++ conjugate(x + %i y) returns x - %i y.
+     complex  :   (R, R) -> %      ++ complex(x, y) constructs x + %i*y.
      imag     :   % -> R           ++ imag(x) returns imaginary part of x.
      real     :   % -> R           ++ real(x) returns real part of x.
      norm     :   % -> R           ++ norm(x) returns x * conjugate(x)
@@ -52,15 +52,15 @@ ComplexCategory(R:CommutativeRing): Category ==
        ConvertibleTo Complex DoubleFloat
        ConvertibleTo Complex Float
      if R has RealNumberSystem then
-       abs: % -> %
+       abs : % -> %
          ++ abs(x) returns the absolute value of x = sqrt(norm(x)).
      if R has arbitraryPrecision then arbitraryPrecision
      if R has TranscendentalFunctionCategory then
        TranscendentalFunctionCategory
-       argument: % -> R  ++ argument(x) returns the angle made by (0,1) and (0,x).
+       argument : % -> R  ++ argument(x) returns the angle made by (0, 1) and (0, x).
        if R has RadicalCategory then RadicalCategory
        if R has RealNumberSystem then
-         polarCoordinates: % -> Record(r:R, phi:R)
+         polarCoordinates : % -> Record(r : R, phi : R)
            ++ polarCoordinates(x) returns (r, phi) such that x = r * exp(%i * phi).
      if R has IntegerNumberSystem then
        UniqueFactorizationDomain
@@ -69,7 +69,7 @@ ComplexCategory(R:CommutativeRing): Category ==
        rational     : % -> Fraction Integer
          ++ rational(x) returns x as a rational number.
          ++ Error: if x is not a rational number.
-       rationalIfCan: % -> Union(Fraction Integer, "failed")
+       rationalIfCan : % -> Union(Fraction Integer, "failed")
          ++ rationalIfCan(x) returns x as a rational number, or
          ++ "failed" if x is not a rational number.
      if R has PolynomialFactorizationExplicit and R has EuclideanDomain then
@@ -79,59 +79,59 @@ ComplexCategory(R:CommutativeRing): Category ==
                                        R, Vector R, Vector R, Matrix R)
        SUP ==> SparseUnivariatePolynomial
        characteristicPolynomial x ==
-          v := monomial(1,1)$SUP(R)
+          v := monomial(1, 1)$SUP(R)
           v^2 - trace(x)*v^1 + norm(x)*v^0
        if R has PolynomialFactorizationExplicit and R has EuclideanDomain then
           SupR ==> SparseUnivariatePolynomial R
           Sup ==> SparseUnivariatePolynomial %
           import FactoredFunctionUtilities Sup
-          import UnivariatePolynomialCategoryFunctions2(R,SupR,%,Sup)
-          import UnivariatePolynomialCategoryFunctions2(%,Sup,R,SupR)
-          pp,qq:Sup
+          import UnivariatePolynomialCategoryFunctions2(R, SupR, %, Sup)
+          import UnivariatePolynomialCategoryFunctions2(%, Sup, R, SupR)
+          pp, qq : Sup
           if R has IntegerNumberSystem then
-             myNextPrime: (%,NonNegativeInteger) -> %
-             myNextPrime(x,n ) == -- prime is actually in R, and = 3(mod 4)
-                xr:=real(x)-4::R
+             myNextPrime : (%, NonNegativeInteger) -> %
+             myNextPrime(x, n ) == -- prime is actually in R, and = 3(mod 4)
+                xr := real(x)-4::R
                 while not prime? xr repeat
-                   xr:=xr-4::R
-                complex(xr,0)
-             --!TT:=InnerModularGcd(%,Sup,32719 :: %,myNextPrime)
-             --!gcdPolynomial(pp,qq) == modularGcd(pp,qq)$TT
-             solveLinearPolynomialEquation(lp:List Sup,p:Sup) ==
-               solveLinearPolynomialEquation(lp,p)$ComplexIntegerSolveLinearPolynomialEquation(R,%)
+                   xr := xr-4::R
+                complex(xr, 0)
+             --!TT := InnerModularGcd(%, Sup, 32719 :: %, myNextPrime)
+             --!gcdPolynomial(pp, qq) == modularGcd(pp, qq)$TT
+             solveLinearPolynomialEquation(lp : List Sup, p : Sup) ==
+               solveLinearPolynomialEquation(lp, p)$ComplexIntegerSolveLinearPolynomialEquation(R, %)
 
-          normPolynomial: Sup -> SupR
+          normPolynomial : Sup -> SupR
           normPolynomial pp ==
-              map(retract@(%->R), pp * map(conjugate,pp))
+              map(retract@(%->R), pp * map(conjugate, pp))
           factorPolynomial pp ==
-              refine(squareFree pp,factorSquareFreePolynomial)
+              refine(squareFree pp, factorSquareFreePolynomial)
           factorSquareFreePolynomial pp ==
-              pnorm:=normPolynomial pp
-              k:R:=0
-              while degree gcd(pnorm,differentiate pnorm)>0 repeat
-                 k:=k+1
-                 pnorm:=normPolynomial
-                          elt(pp,monomial(1,1)-monomial(complex(0,k),0))
-              fR:=factorSquareFreePolynomial pnorm
+              pnorm := normPolynomial pp
+              k : R := 0
+              while degree gcd(pnorm, differentiate pnorm)>0 repeat
+                 k := k+1
+                 pnorm := normPolynomial
+                          elt(pp, monomial(1, 1)-monomial(complex(0, k), 0))
+              fR := factorSquareFreePolynomial pnorm
               numberOfFactors fR = 1 =>
                   makeFR(1,[["irred",pp,1]])
               lF:List Record(flg:Union("nil", "sqfr", "irred", "prime"),
-                             fctr:Sup, xpnt:Integer):=[]
+                             fctr : Sup, xpnt : Integer) := []
               for u in factorList fR repeat
-                  p1:=map((z:R):% +->z::%,u.fctr)
+                  p1 := map((z : R) : % +->z::%, u.fctr)
                   if not zero? k then
-                     p1:=elt(p1,monomial(1,1)+monomial(complex(0,k),0))
-                  p2:=gcd(p1,pp)
-                  lF:=cons(["irred",p2,1],lF)
-                  pp:=(pp exquo p2)::Sup
-              makeFR(pp,lF)
+                     p1 := elt(p1, monomial(1, 1)+monomial(complex(0, k), 0))
+                  p2 := gcd(p1, pp)
+                  lF := cons(["irred",p2,1],lF)
+                  pp := (pp exquo p2)::Sup
+              makeFR(pp, lF)
 
        if R has IntegerNumberSystem then
 
            factor x ==
-               y: Complex Integer := complex(convert(real x)@Integer,
+               y : Complex Integer := complex(convert(real x)@Integer,
                                              convert(imag x)@Integer)
-               z: Factored Complex Integer :=
+               z : Factored Complex Integer :=
                      factor(y)$GaussianFactorizationPackage
                map(f +-> complex(real(f)::R, imag(f)::R),
                    z)$FactoredFunctions2(Complex Integer, %)
@@ -139,7 +139,7 @@ ComplexCategory(R:CommutativeRing): Category ==
            squareFree x == factor x
 
            prime? x ==
-               y: Complex Integer := complex(convert(real x)@Integer,
+               y : Complex Integer := complex(convert(real x)@Integer,
                                              convert(imag x)@Integer)
                prime?(y)$GaussianFactorizationPackage
 
@@ -154,19 +154,19 @@ ComplexCategory(R:CommutativeRing): Category ==
        x = y            == real(x) = real(y) and imag(x) = imag(y)
        x + y            == complex(real x + real y, imag x + imag y)
        - x              == complex(- real x, - imag x)
-       r:R * x:%        == complex(r * real x, r * imag x)
-       coordinates(x:%) == [real x, imag x]
-       n:Integer * x:%  == complex(n * real x, n * imag x)
-       differentiate(x:%, d:R -> R) == complex(d real x, d imag x)
+       r : R * x : %        == complex(r * real x, r * imag x)
+       coordinates(x : %) == [real x, imag x]
+       n : Integer * x : %  == complex(n * real x, n * imag x)
+       differentiate(x : %, d : R -> R) == complex(d real x, d imag x)
 
        definingPolynomial() ==
-         monomial(1,2)$(SUP R) + monomial(1,0)$(SUP R)
+         monomial(1, 2)$(SUP R) + monomial(1, 0)$(SUP R)
 
-       reduce(pol:SUP R) ==
-         part:= (monicDivide(pol,definingPolynomial())).remainder
-         complex(coefficient(part,0),coefficient(part,1))
+       reduce(pol : SUP R) ==
+         part := (monicDivide(pol, definingPolynomial())).remainder
+         complex(coefficient(part, 0), coefficient(part, 1))
 
-       lift(x) == monomial(real x,0)$(SUP R)+monomial(imag x,1)$(SUP R)
+       lift(x) == monomial(real x, 0)$(SUP R)+monomial(imag x, 1)$(SUP R)
 
        minimalPolynomial x ==
          zero? imag x =>
@@ -174,7 +174,7 @@ ComplexCategory(R:CommutativeRing): Category ==
          monomial(1, 2)$(SUP R) - monomial(trace x, 1)$(SUP R)
            + monomial(norm x, 0)$(SUP R)
 
-       coordinates(x:%, v:Vector %):Vector(R) ==
+       coordinates(x : %, v : Vector %) : Vector(R) ==
          ra := real(a := v(minIndex v))
          rb := real(b := v(maxIndex v))
          (#v ~= 2) or
@@ -184,7 +184,7 @@ ComplexCategory(R:CommutativeRing): Category ==
          ix := imag x
          [d::R * (rx * ib - ix * rb), d::R * (ra * ix - ia * rx)]
 
-       coerce(x:%):OutputForm ==
+       coerce(x : %) : OutputForm ==
          re := (r := real x)::OutputForm
          ie := (i := imag x)::OutputForm
          zero? i => re
@@ -198,7 +198,7 @@ ComplexCategory(R:CommutativeRing): Category ==
          zero? r => ip
          re + ip
 
-       retract(x:%):R ==
+       retract(x : %) : R ==
          not zero?(imag x) =>
            error "Imaginary part is nonzero. Cannot retract."
          real x
@@ -207,48 +207,48 @@ ComplexCategory(R:CommutativeRing): Category ==
          not zero?(imag x) => "failed"
          real x
 
-       x:% * y:% ==
+       x : % * y : % ==
          complex(real x * real y - imag x * imag y,
                   imag x * real y + imag y * real x)
 
-       reducedSystem(m:Matrix %):Matrix R ==
+       reducedSystem(m : Matrix %) : Matrix R ==
          vertConcat(map(real, m), map(imag, m))
 
-       reducedSystem(m:Matrix %, v:Vector %):
-        Record(mat:Matrix R, vec:Vector R) ==
+       reducedSystem(m : Matrix %, v : Vector %):
+        Record(mat : Matrix R, vec : Vector R) ==
          rh := reducedSystem(v::Matrix %)@Matrix(R)
          [reducedSystem(m)@Matrix(R), column(rh, minColIndex rh)]
 
        if R has RealNumberSystem then
-         abs(x:%):%        == (sqrt norm x)::%
+         abs(x : %) : %        == (sqrt norm x)::%
 
        if R has RealConstant then
-         convert(x:%):Complex(DoubleFloat) ==
-          complex(convert(real x)@DoubleFloat,convert(imag x)@DoubleFloat)
+         convert(x : %) : Complex(DoubleFloat) ==
+          complex(convert(real x)@DoubleFloat, convert(imag x)@DoubleFloat)
 
-         convert(x:%):Complex(Float) ==
+         convert(x : %) : Complex(Float) ==
            complex(convert(real x)@Float, convert(imag x)@Float)
 
        if R has ConvertibleTo InputForm then
-         convert(x:%):InputForm ==
+         convert(x : %) : InputForm ==
            convert([convert('complex), convert real x,
                     convert imag x]$List(InputForm))@InputForm
 
        if R has ConvertibleTo Pattern Integer then
-         convert(x:%):Pattern Integer ==
+         convert(x : %) : Pattern Integer ==
             convert(x)$ComplexPattern(Integer, R, %)
        if R has ConvertibleTo Pattern Float then
-         convert(x:%):Pattern Float ==
+         convert(x : %) : Pattern Float ==
             convert(x)$ComplexPattern(Float, R, %)
 
        if R has PatternMatchable Integer then
-         patternMatch(x:%, p:Pattern Integer,
-          l:PatternMatchResult(Integer, %)) ==
+         patternMatch(x : %, p : Pattern Integer,
+          l : PatternMatchResult(Integer, %)) ==
            patternMatch(x, p, l)$ComplexPatternMatch(Integer, R, %)
 
        if R has PatternMatchable Float then
-         patternMatch(x:%, p:Pattern Float,
-          l:PatternMatchResult(Float, %)) ==
+         patternMatch(x : %, p : Pattern Float,
+          l : PatternMatchResult(Float, %)) ==
            patternMatch(x, p, l)$ComplexPatternMatch(Float, R, %)
 
        if R has Comparable then
@@ -274,22 +274,22 @@ ComplexCategory(R:CommutativeRing): Category ==
            complex(real(x) / r, - imag(x) / r)
 
        if R has IntegralDomain then
-         _exquo(x:%, r:R) ==
+         _exquo(x : %, r : R) ==
 --           one? r => x
            (r = 1) => x
            (r1 := real(x) exquo r) case "failed" => "failed"
            (r2 := imag(x) exquo r) case "failed" => "failed"
            complex(r1, r2)
 
-         _exquo(x:%, y:%) ==
+         _exquo(x : %, y : %) ==
            zero? imag y => x exquo real y
            x * conjugate(y) exquo norm(y)
 
-         recip(x:%) == 1 exquo x
+         recip(x : %) == 1 exquo x
 
          if R has OrderedRing then
            unitNormal x ==
-             zero? x => [1,x,1]
+             zero? x => [1, x, 1]
              (u := recip x) case % => [x, 1, u]
              zero? real x =>
                c := unitNormal imag x
@@ -303,7 +303,7 @@ ComplexCategory(R:CommutativeRing): Category ==
              [c.unit ::%, x, c.associate ::%]
          else
            unitNormal x ==
-             zero? x => [1,x,1]
+             zero? x => [1, x, 1]
              (u := recip x) case % => [x, 1, u]
              zero? real x =>
                c := unitNormal imag x
@@ -322,27 +322,27 @@ ComplexCategory(R:CommutativeRing): Category ==
           if R has IntegerNumberSystem then
             x rem y ==
               zero? imag y =>
-                yr:=real y
+                yr := real y
                 complex(symmetricRemainder(real(x), yr),
                         symmetricRemainder(imag(x), yr))
               divide(x, y).remainder
             x quo y ==
               zero? imag y =>
-                yr:= real y
-                xr:= real x
-                xi:= imag x
-                complex((xr-symmetricRemainder(xr,yr)) quo yr,
-                        (xi-symmetricRemainder(xi,yr)) quo yr)
+                yr := real y
+                xr := real x
+                xi := imag x
+                complex((xr-symmetricRemainder(xr, yr)) quo yr,
+                        (xi-symmetricRemainder(xi, yr)) quo yr)
               divide(x, y).quotient
 
           else
             x rem y ==
               zero? imag y =>
-                yr:=real y
-                complex(real(x) rem yr,imag(x) rem yr)
+                yr := real y
+                complex(real(x) rem yr, imag(x) rem yr)
               divide(x, y).remainder
             x quo y ==
-              zero? imag y => complex(real x quo real y,imag x quo real y)
+              zero? imag y => complex(real x quo real y, imag x quo real y)
               divide(x, y).quotient
 
           divide(x, y) ==
@@ -371,7 +371,7 @@ ComplexCategory(R:CommutativeRing): Category ==
                pi2 := pi1 * half
                x = 0 => if y >= 0 then pi2 else -pi2
 
-               -- Atan in (-pi/2,pi/2]
+               -- Atan in (-pi/2, pi/2]
                theta := atan(y * recip(x)::R)
 
                x >= 0 => theta      -- I or IV
@@ -455,7 +455,7 @@ ComplexCategory(R:CommutativeRing): Category ==
            polarCoordinates x ==
              [sqrt norm x, (negative?(t := argument x) => t + 2 * pi(); t)]
 
-           x:% ^ q:Fraction(Integer) ==
+           x : % ^ q : Fraction(Integer) ==
              zero? q =>
                zero? x => error "0 ^ 0 is undefined"
                1
@@ -468,14 +468,14 @@ ComplexCategory(R:CommutativeRing): Category ==
              complex(ax * cos tx, ax * sin tx)
 
          else if R has RadicalCategory then
-           x:% ^ q:Fraction(Integer) ==
+           x : % ^ q : Fraction(Integer) ==
              zero? q =>
                zero? x => error "0 ^ 0 is undefined"
                1
              r := real x
              zero?(i := imag x) => (r ^ q)::%
              t := numer(q) * recip(denom(q)::R)::R * argument x
-             e:R := norm(x) ^ (q / (2::Fraction(Integer)))
+             e : R := norm(x) ^ (q / (2::Fraction(Integer)))
              complex(e * cos t, e * sin t)
 
 @
@@ -494,11 +494,11 @@ ComplexCategory(R:CommutativeRing): Category ==
 ++ Description:
 ++ This package supports converting complex expressions to patterns
 ComplexPattern(R, S, CS) : C == T where
-    R: SetCategory
-    S: Join(ConvertibleTo Pattern R, CommutativeRing)
-    CS: ComplexCategory S
+    R : SetCategory
+    S : Join(ConvertibleTo Pattern R, CommutativeRing)
+    CS : ComplexCategory S
     C == with
-       convert: CS -> Pattern R
+       convert : CS -> Pattern R
           ++ convert(cs) converts the complex expression cs to a pattern
 
     T == add
@@ -525,14 +525,14 @@ ComplexPattern(R, S, CS) : C == T where
 ++ Description:
 ++ This package supports matching patterns involving complex expressions
 ComplexPatternMatch(R, S, CS) : C == T where
-    R: SetCategory
-    S: Join(PatternMatchable R, CommutativeRing)
-    CS: ComplexCategory S
+    R : SetCategory
+    S : Join(PatternMatchable R, CommutativeRing)
+    CS : ComplexCategory S
     PMRS ==> PatternMatchResult(R, CS)
     PS   ==> Polynomial S
     C == with
        if PS has PatternMatchable(R) then
-           patternMatch: (CS, Pattern R, PMRS) -> PMRS
+           patternMatch : (CS, Pattern R, PMRS) -> PMRS
              ++ patternMatch(cexpr, pat, res) matches the pattern pat to the
              ++ complex expression cexpr. res contains the variables of pat
              ++ which are already matched and their matches.
@@ -545,14 +545,14 @@ ComplexPatternMatch(R, S, CS) : C == T where
 
        ivar : PS := '%i::PS
 
-       makeComplex(p:PS):CS ==
+       makeComplex(p : PS) : CS ==
           up := univariate p
           degree up > 1 => error "not linear in %i"
-          icoef:=leadingCoefficient(up)
-          rcoef:=leadingCoefficient(reductum p)
-          complex(rcoef,icoef)
+          icoef := leadingCoefficient(up)
+          rcoef := leadingCoefficient(reductum p)
+          complex(rcoef, icoef)
 
-       makePoly(cs:CS):PS == real(cs)*ivar + imag(cs)::PS
+       makePoly(cs : CS) : PS == real(cs)*ivar + imag(cs)::PS
 
        if PS has PatternMatchable(R) then
           patternMatch(cs, pat, result) ==
@@ -578,23 +578,23 @@ ComplexPatternMatch(R, S, CS) : C == T where
 ++ \spadtype {Complex(R)} creates the domain of elements of the form
 ++ \spad{a + b * i} where \spad{a} and b come from the ring R,
 ++ and i is a new element such that \spad{i^2 = -1}.
-Complex(R:CommutativeRing): ComplexCategory(R) with
+Complex(R : CommutativeRing) : ComplexCategory(R) with
      if R has OpenMath then OpenMath
    == add
-       Rep := Record(real:R, imag:R)
+       Rep := Record(real : R, imag : R)
 
        if R has OpenMath then
-         writeOMComplex(dev: OpenMathDevice, x: %): Void ==
+         writeOMComplex(dev : OpenMathDevice, x : %) : Void ==
           OMputApp(dev)
           OMputSymbol(dev, "complex1", "complex_cartesian")
           OMwrite(dev, real x)
           OMwrite(dev, imag x)
           OMputEndApp(dev)
 
-         OMwrite(x: %): String ==
-          s: String := ""
+         OMwrite(x : %) : String ==
+          s : String := ""
           sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-          dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+          dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
           OMputObject(dev)
           writeOMComplex(dev, x)
           OMputEndObject(dev)
@@ -602,10 +602,10 @@ Complex(R:CommutativeRing): ComplexCategory(R) with
           s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
           s
 
-         OMwrite(x: %, wholeObj: Boolean): String ==
-          s: String := ""
+         OMwrite(x : %, wholeObj : Boolean) : String ==
+          s : String := ""
           sp := OM_-STRINGTOSTRINGPTR(s)$Lisp
-          dev: OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
+          dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML)
           if wholeObj then
             OMputObject(dev)
           writeOMComplex(dev, x)
@@ -615,12 +615,12 @@ Complex(R:CommutativeRing): ComplexCategory(R) with
           s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
           s
 
-         OMwrite(dev: OpenMathDevice, x: %): Void ==
+         OMwrite(dev : OpenMathDevice, x : %) : Void ==
           OMputObject(dev)
           writeOMComplex(dev, x)
           OMputEndObject(dev)
 
-         OMwrite(dev: OpenMathDevice, x: %, wholeObj: Boolean): Void ==
+         OMwrite(dev : OpenMathDevice, x : %, wholeObj : Boolean) : Void ==
           if wholeObj then
             OMputObject(dev)
           writeOMComplex(dev, x)
@@ -632,7 +632,7 @@ Complex(R:CommutativeRing): ComplexCategory(R) with
        zero? x          == zero?(x.real) and zero?(x.imag)
 --       one? x           == one?(x.real) and zero?(x.imag)
        one? x           == ((x.real) = 1) and zero?(x.imag)
-       coerce(r:R):%    == [r, 0]
+       coerce(r : R) : %    == [r, 0]
        complex(r, i)   == [r, i]
        real x           == x.real
        imag x           == x.imag
@@ -640,7 +640,7 @@ Complex(R:CommutativeRing): ComplexCategory(R) with
            x + y == [x.real + y.real, x.imag + y.imag]
                            -- by re-defining this here, we save 5 fn calls
            x - y == [x.real - y.real, x.imag - y.imag]
-           x:% * y:% ==
+           x : % * y : % ==
                [x.real * y.real - x.imag * y.imag,
                 x.imag * y.real + y.imag * x.real] -- here we save nine!
 
@@ -652,7 +652,7 @@ Complex(R:CommutativeRing): ComplexCategory(R) with
            Ops
 
        if R has IntegralDomain then
-         _exquo(x:%, y:%) == -- to correct bad defaulting problem
+         _exquo(x : %, y : %) == -- to correct bad defaulting problem
            zero? y.imag => x exquo y.real
            x * conjugate(y) exquo norm(y)
 
@@ -672,9 +672,9 @@ Complex(R:CommutativeRing): ComplexCategory(R) with
 ++ Description:
 ++   This package extends maps from underlying rings to maps between
 ++   complex over those rings.
-ComplexFunctions2(R:CommutativeRing, S:CommutativeRing): with
-    map:     (R -> S, Complex R) -> Complex S
-      ++ map(f,u) maps f onto real and imaginary parts of u.
+ComplexFunctions2(R : CommutativeRing, S : CommutativeRing) : with
+    map :     (R -> S, Complex R) -> Complex S
+      ++ map(f, u) maps f onto real and imaginary parts of u.
  == add
     map(fn, gr) == complex(fn real gr, fn imag gr)
 
@@ -691,7 +691,7 @@ ComplexFunctions2(R:CommutativeRing, S:CommutativeRing): with
 ++ AMS Classifications:
 ++ Keywords: complex, polynomial factorization, factor
 ++ References:
-ComplexFactorization(RR,PR) : C == T where
+ComplexFactorization(RR, PR) : C == T where
   RR   :    EuclideanDomain   -- R is Z or Q
   PR   :    UnivariatePolynomialCategory Complex RR
   R    ==>  Complex RR
@@ -709,62 +709,62 @@ ComplexFactorization(RR,PR) : C == T where
   T  == add
      SUP    ==> SparseUnivariatePolynomial
      fUnion ==> Union("nil", "sqfr", "irred", "prime")
-     FF     ==> Record(flg:fUnion, fctr:PR, xpnt:Integer)
-     SAEF   :=  SimpleAlgebraicExtensionAlgFactor(SUP RN,GRN,SUP GRN)
-     UPCF2  :=  UnivariatePolynomialCategoryFunctions2(R,PR,GRN,SUP GRN)
-     UPCFB  :=  UnivariatePolynomialCategoryFunctions2(GRN,SUP GRN,R,PR)
+     FF     ==> Record(flg : fUnion, fctr : PR, xpnt : Integer)
+     SAEF   :=  SimpleAlgebraicExtensionAlgFactor(SUP RN, GRN, SUP GRN)
+     UPCF2  :=  UnivariatePolynomialCategoryFunctions2(R, PR, GRN, SUP GRN)
+     UPCFB  :=  UnivariatePolynomialCategoryFunctions2(GRN, SUP GRN, R, PR)
 
-     myMap(r:R) : GRN ==
+     myMap(r : R) : GRN ==
        R is GI   =>
-         cr :GI := r pretend GI
-         complex((real cr)::RN,(imag cr)::RN)
+         cr : GI := r pretend GI
+         complex((real cr)::RN, (imag cr)::RN)
        R is GRN  => r pretend GRN
 
-     compND(cc:GRN):Record(cnum:GI,cden:Integer) ==
-       ccr:=real cc
-       cci:=imag cc
-       dccr:=denom ccr
-       dcci:=denom cci
-       ccd:=lcm(dccr,dcci)
+     compND(cc : GRN) : Record(cnum : GI, cden : Integer) ==
+       ccr := real cc
+       cci := imag cc
+       dccr := denom ccr
+       dcci := denom cci
+       ccd := lcm(dccr, dcci)
        [complex(((ccd exquo dccr)::Integer)*numer ccr,
-                ((ccd exquo dcci)::Integer)*numer cci),ccd]
+                ((ccd exquo dcci)::Integer)*numer cci), ccd]
 
-     conv(f:SUP GRN) :Record(convP:SUP GI, convD:RN) ==
-       pris:SUP GI :=0
-       dris:Integer:=1
-       dris1:Integer:=1
-       pdris:Integer:=1
+     conv(f : SUP GRN) : Record(convP : SUP GI, convD : RN) ==
+       pris : SUP GI := 0
+       dris : Integer := 1
+       dris1 : Integer := 1
+       pdris : Integer := 1
        for i in 0..(degree f) repeat
-         (cf:= coefficient(f,i)) = 0 => "next i"
-         cdf:=compND cf
-         dris:=lcm(cdf.cden,dris1)
-         pris:=((dris exquo dris1)::Integer)*pris +
+         (cf := coefficient(f,i)) = 0 => "next i"
+         cdf := compND cf
+         dris := lcm(cdf.cden, dris1)
+         pris := ((dris exquo dris1)::Integer)*pris +
                ((dris exquo cdf.cden)::Integer)*
-                 monomial(cdf.cnum,i)$(SUP GI)
-         dris1:=dris
-       [pris,dris::RN]
+                 monomial(cdf.cnum, i)$(SUP GI)
+         dris1 := dris
+       [pris, dris::RN]
 
-     backConv(ffr:Factored SUP GRN) : Factored PR ==
+     backConv(ffr : Factored SUP GRN) : Factored PR ==
        R is GRN =>
-         makeFR((unit ffr) pretend PR,[[f.flg,(f.fctr) pretend PR,f.xpnt]
+         makeFR((unit ffr) pretend PR, [[f.flg, (f.fctr) pretend PR, f.xpnt]
                                         for f in factorList ffr])
        R is GI  =>
-         const:=unit ffr
-         ris: List FF :=[]
+         const := unit ffr
+         ris : List FF := []
          for ff in factorList ffr repeat
-           fact:=primitivePart(conv(ff.fctr).convP)
-           expf:=ff.xpnt
-           ris:=cons([ff.flg,fact pretend PR,expf],ris)
-           lc:GRN := myMap leadingCoefficient(fact pretend PR)
-           const:= const*(leadingCoefficient(ff.fctr)/lc)^expf
-         uconst:GI:= compND(coefficient(const,0)).cnum
-         makeFR((uconst pretend R)::PR,ris)
+           fact := primitivePart(conv(ff.fctr).convP)
+           expf := ff.xpnt
+           ris := cons([ff.flg, fact pretend PR, expf], ris)
+           lc : GRN := myMap leadingCoefficient(fact pretend PR)
+           const := const*(leadingCoefficient(ff.fctr)/lc)^expf
+         uconst : GI := compND(coefficient(const, 0)).cnum
+         makeFR((uconst pretend R)::PR, ris)
 
 
      factor(pol : PR)  : Factored PR ==
-       ratPol:SUP GRN := 0
-       ratPol:=map(myMap,pol)$UPCF2
-       ffr:=factor ratPol
+       ratPol : SUP GRN := 0
+       ratPol := map(myMap, pol)$UPCF2
+       ffr := factor ratPol
        backConv ffr
 
 @
@@ -783,13 +783,13 @@ ComplexFactorization(RR,PR) : C == T where
 ++ Description:
 ++ This package provides the generalized euclidean algorithm which is
 ++ needed as the basic step for factoring polynomials.
-ComplexIntegerSolveLinearPolynomialEquation(R,CR): C == T
+ComplexIntegerSolveLinearPolynomialEquation(R, CR) : C == T
  where
   CP ==> SparseUnivariatePolynomial CR
-  R:IntegerNumberSystem
-  CR:ComplexCategory(R)
+  R : IntegerNumberSystem
+  CR : ComplexCategory(R)
   C == with
-      solveLinearPolynomialEquation: (List CP,CP) -> Union(List CP,"failed")
+      solveLinearPolynomialEquation : (List CP,CP) -> Union(List CP,"failed")
                    ++ solveLinearPolynomialEquation([f1, ..., fn], g)
                    ++ where (fi relatively prime to each other)
                    ++ returns a list of ai such that
@@ -797,25 +797,25 @@ ComplexIntegerSolveLinearPolynomialEquation(R,CR): C == T
                    ++ equivalently g/prod fj = sum (ai/fi)
                    ++ or returns "failed" if no such list exists
   T == add
-      oldlp:List CP := []
-      slpePrime:R:=(2::R)
-      oldtable:Vector List CP := empty()
-      solveLinearPolynomialEquation(lp,p) ==
+      oldlp : List CP := []
+      slpePrime : R := (2::R)
+      oldtable : Vector List CP := empty()
+      solveLinearPolynomialEquation(lp, p) ==
          if (oldlp ~= lp) then
             -- we have to generate a new table
-            deg:= _+/[degree u for u in lp]
-            ans:Union(Vector List CP,"failed"):="failed"
-            slpePrime:=67108859::R   -- 2^26 -5 : a prime
+            deg := _+/[degree u for u in lp]
+            ans : Union(Vector List CP, "failed") := "failed"
+            slpePrime := 67108859::R   -- 2^26 -5 : a prime
                  -- a good test case for this package is
                  --  (good question?)
             while (ans case "failed") repeat
-              ans:=tablePow(deg,complex(slpePrime,0),lp)$GenExEuclid(CR,CP)
+              ans := tablePow(deg, complex(slpePrime, 0), lp)$GenExEuclid(CR, CP)
               if (ans case "failed") then
-                 slpePrime:=  slpePrime-4::R
+                 slpePrime :=  slpePrime-4::R
                  while not prime?(slpePrime)$IntegerPrimesPackage(R) repeat
-                   slpePrime:= slpePrime-4::R
-            oldtable:=(ans:: Vector List CP)
-         answer:=solveid(p,complex(slpePrime,0),oldtable)
+                   slpePrime := slpePrime-4::R
+            oldtable := (ans:: Vector List CP)
+         answer := solveid(p, complex(slpePrime, 0), oldtable)
          answer
 
 @

@@ -28,7 +28,7 @@
 ++   in existing matrices, rather than creating new matrices.  This
 ++   package works only for matrices of type Matrix and uses the
 ++   internal representation of this type.
-StorageEfficientMatrixOperations(R): Exports == Implementation where
+StorageEfficientMatrixOperations(R) : Exports == Implementation where
   R     : Ring
   M   ==> Matrix R
   NNI ==> NonNegativeInteger
@@ -36,37 +36,37 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
   REP ==> PrimitiveArray PrimitiveArray R
 
   Exports ==> with
-    copy! : (M,M) -> M
-      ++ \spad{copy!(c,a)} copies the matrix \spad{a} into the matrix c.
+    copy! : (M, M) -> M
+      ++ \spad{copy!(c, a)} copies the matrix \spad{a} into the matrix c.
       ++ Error: if \spad{a} and c do not have the same
       ++ dimensions.
-    plus! : (M,M,M) -> M
-      ++ \spad{plus!(c,a,b)} computes the matrix sum \spad{a + b} and stores the
+    plus! : (M, M, M) -> M
+      ++ \spad{plus!(c, a, b)} computes the matrix sum \spad{a + b} and stores the
       ++ result in the matrix c.
       ++ Error: if \spad{a}, b, and c do not have the same dimensions.
-    minus! : (M,M) -> M
-      ++ \spad{minus!(c,a)} computes \spad{-a} and stores the result in the
+    minus! : (M, M) -> M
+      ++ \spad{minus!(c, a)} computes \spad{-a} and stores the result in the
       ++ matrix c.
       ++ Error: if a and c do not have the same dimensions.
-    minus! : (M,M,M) -> M
-      ++ \spad{!minus!(c,a,b)} computes the matrix difference \spad{a - b}
+    minus! : (M, M, M) -> M
+      ++ \spad{!minus!(c, a, b)} computes the matrix difference \spad{a - b}
       ++ and stores the result in the matrix c.
       ++ Error: if \spad{a}, b, and c do not have the same dimensions.
-    leftScalarTimes! : (M,R,M) -> M
-      ++ \spad{leftScalarTimes!(c,r,a)} computes the scalar product
+    leftScalarTimes! : (M, R, M) -> M
+      ++ \spad{leftScalarTimes!(c, r, a)} computes the scalar product
       ++ \spad{r * a} and stores the result in the matrix c.
       ++ Error: if \spad{a} and c do not have the same dimensions.
-    rightScalarTimes! : (M,M,R) -> M
-      ++ \spad{rightScalarTimes!(c,a,r)} computes the scalar product
+    rightScalarTimes! : (M, M, R) -> M
+      ++ \spad{rightScalarTimes!(c, a, r)} computes the scalar product
       ++ \spad{a * r} and stores the result in the matrix c.
       ++ Error: if \spad{a} and c do not have the same dimensions.
-    times! : (M,M,M) -> M
-      ++ \spad{times!(c,a,b)} computes the matrix product \spad{a * b}
+    times! : (M, M, M) -> M
+      ++ \spad{times!(c, a, b)} computes the matrix product \spad{a * b}
       ++ and stores the result in the matrix c.
       ++ Error: if \spad{a}, b, and c do not have
       ++ compatible dimensions.
-    power! : (M,M,M,M,NNI) -> M
-      ++ \spad{power!(a,b,c,m,n)} computes m ^ n and stores the result in
+    power! : (M, M, M, M, NNI) -> M
+      ++ \spad{power!(a, b, c, m, n)} computes m ^ n and stores the result in
       ++ \spad{a}. The matrices b and c are used to store intermediate results.
       ++ Error: if \spad{a}, b, c, and m are not square
       ++ and of the same dimensions.
@@ -79,18 +79,18 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
     rep : M -> REP
     rep m == m pretend REP
 
-    copy!(c,a) ==
+    copy!(c, a) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
         error "copy!: matrices of incompatible dimensions"
       aa := rep a; cc := rep c
       for i in 0..(m-1) repeat
-        aRow := qelt(aa,i); cRow := qelt(cc,i)
+        aRow := qelt(aa, i); cRow := qelt(cc, i)
         for j in 0..(n-1) repeat
-          qsetelt!(cRow,j,qelt(aRow,j))
+          qsetelt!(cRow, j, qelt(aRow, j))
       c
 
-    plus!(c,a,b) ==
+    plus!(c, a, b) ==
       m := nrows a; n := ncols a
       not((nrows b) = m and (ncols b) = n) =>
         error "plus!: matrices of incompatible dimensions"
@@ -98,23 +98,23 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         error "plus!: matrices of incompatible dimensions"
       aa := rep a; bb := rep b; cc := rep c
       for i in 0..(m-1) repeat
-        aRow := qelt(aa,i); bRow := qelt(bb,i); cRow := qelt(cc,i)
+        aRow := qelt(aa, i); bRow := qelt(bb, i); cRow := qelt(cc, i)
         for j in 0..(n-1) repeat
-          qsetelt!(cRow,j,qelt(aRow,j) + qelt(bRow,j))
+          qsetelt!(cRow, j, qelt(aRow, j) + qelt(bRow, j))
       c
 
-    minus!(c,a) ==
+    minus!(c, a) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
         error "minus!: matrices of incompatible dimensions"
       aa := rep a; cc := rep c
       for i in 0..(m-1) repeat
-        aRow := qelt(aa,i); cRow := qelt(cc,i)
+        aRow := qelt(aa, i); cRow := qelt(cc, i)
         for j in 0..(n-1) repeat
-          qsetelt!(cRow,j,-qelt(aRow,j))
+          qsetelt!(cRow, j, -qelt(aRow, j))
       c
 
-    minus!(c,a,b) ==
+    minus!(c, a, b) ==
       m := nrows a; n := ncols a
       not((nrows b) = m and (ncols b) = n) =>
         error "minus!: matrices of incompatible dimensions"
@@ -122,55 +122,55 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
         error "minus!: matrices of incompatible dimensions"
       aa := rep a; bb := rep b; cc := rep c
       for i in 0..(m-1) repeat
-        aRow := qelt(aa,i); bRow := qelt(bb,i); cRow := qelt(cc,i)
+        aRow := qelt(aa, i); bRow := qelt(bb, i); cRow := qelt(cc, i)
         for j in 0..(n-1) repeat
-          qsetelt!(cRow,j,qelt(aRow,j) - qelt(bRow,j))
+          qsetelt!(cRow, j, qelt(aRow, j) - qelt(bRow, j))
       c
 
-    leftScalarTimes!(c,r,a) ==
+    leftScalarTimes!(c, r, a) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
         error "leftScalarTimes!: matrices of incompatible dimensions"
       aa := rep a; cc := rep c
       for i in 0..(m-1) repeat
-        aRow := qelt(aa,i); cRow := qelt(cc,i)
+        aRow := qelt(aa, i); cRow := qelt(cc, i)
         for j in 0..(n-1) repeat
-          qsetelt!(cRow,j,r * qelt(aRow,j))
+          qsetelt!(cRow, j, r * qelt(aRow, j))
       c
 
-    rightScalarTimes!(c,a,r) ==
+    rightScalarTimes!(c, a, r) ==
       m := nrows a; n := ncols a
       not((nrows c) = m and (ncols c) = n) =>
         error "rightScalarTimes!: matrices of incompatible dimensions"
       aa := rep a; cc := rep c
       for i in 0..(m-1) repeat
-        aRow := qelt(aa,i); cRow := qelt(cc,i)
+        aRow := qelt(aa, i); cRow := qelt(cc, i)
         for j in 0..(n-1) repeat
-          qsetelt!(cRow,j,qelt(aRow,j) * r)
+          qsetelt!(cRow, j, qelt(aRow, j) * r)
       c
 
-    copyCol!: (ARR,REP,Integer,Integer) -> ARR
-    copyCol!(bCol,bb,j,n1) ==
-      for i in 0..n1 repeat qsetelt!(bCol,i,qelt(qelt(bb,i),j))
+    copyCol! : (ARR, REP, Integer, Integer) -> ARR
+    copyCol!(bCol, bb, j, n1) ==
+      for i in 0..n1 repeat qsetelt!(bCol, i, qelt(qelt(bb, i), j))
 
-    times!(c,a,b) ==
+    times!(c, a, b) ==
       m := nrows a; n := ncols a; p := ncols b
       not((nrows b) = n and (nrows c) = m and (ncols c) = p) =>
         error "times!: matrices of incompatible dimensions"
       aa := rep a; bb := rep b; cc := rep c
-      bCol : ARR := new(n,0)
+      bCol : ARR := new(n, 0)
       m1 := (m :: Integer) - 1; n1 := (n :: Integer) - 1
       for j in 0..(p-1) repeat
-        copyCol!(bCol,bb,j,n1)
+        copyCol!(bCol, bb, j, n1)
         for i in 0..m1 repeat
-          aRow := qelt(aa,i); cRow := qelt(cc,i)
+          aRow := qelt(aa, i); cRow := qelt(cc, i)
           sum : R := 0
           for k in 0..n1 repeat
-            sum := sum + qelt(aRow,k) * qelt(bCol,k)
-          qsetelt!(cRow,j,sum)
+            sum := sum + qelt(aRow, k) * qelt(bCol, k)
+          qsetelt!(cRow, j, sum)
       c
 
-    power!(a,b,c,m,p) ==
+    power!(a, b, c, m, p) ==
       mm := nrows a; nn := ncols a
       not(mm = nn) =>
         error "power!: matrix must be square"
@@ -181,24 +181,24 @@ StorageEfficientMatrixOperations(R): Exports == Implementation where
       not((nrows m) = mm and (ncols m) = nn) =>
         error "power!: matrices of incompatible dimensions"
       flag := false
-      copy!(b,m)
+      copy!(b, m)
       repeat
         if odd? p then
           flag =>
-            times!(c,b,a)
-            copy!(a,c)
+            times!(c, b, a)
+            copy!(a, c)
           flag := true
-          copy!(a,b)
+          copy!(a, b)
 --        one? p => return a
         (p = 1) => return a
         p := p quo 2
-        times!(c,b,b)
-        copy!(b,c)
+        times!(c, b, b)
+        copy!(b, c)
 
     m ^ n ==
       not square? m => error "^: matrix must be square"
       a := copy m; b := copy m; c := copy m
-      power!(a,b,c,m,n)
+      power!(a, b, c, m, n)
 
 @
 \section{License}

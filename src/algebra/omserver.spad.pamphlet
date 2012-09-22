@@ -24,17 +24,17 @@
 ++ Description: \spadtype{OpenMathServerPackage} provides the necessary
 ++ operations to run AXIOM as an OpenMath server, reading/writing objects
 ++ to/from a port.  Please note the facilities available here are very basic.
-++ The idea is that a user calls e.g. \axiom{Omserve(4000,60)} and then
+++ The idea is that a user calls e.g. \axiom{Omserve(4000, 60)} and then
 ++ another process sends OpenMath objects to port 4000 and reads the result.
 
-OpenMathServerPackage(): with
+OpenMathServerPackage() : with
   OMreceive : OpenMathConnection -> Any
   ++ OMreceive(c) reads an OpenMath object from connection \axiom{c} and
   ++ returns the appropriate AXIOM object.
   OMsend    : (OpenMathConnection, Any) -> Void
-  ++ OMsend(c,u) attempts to output \axiom{u} on \aciom{c} in OpenMath.
+  ++ OMsend(c, u) attempts to output \axiom{u} on \aciom{c} in OpenMath.
   OMserve   : (SingleInteger, SingleInteger) -> Void
-  ++ OMserve(portnum,timeout) puts AXIOM into server mode on port number
+  ++ OMserve(portnum, timeout) puts AXIOM into server mode on port number
   ++ \axiom{portnum}.  The parameter \axiom{timeout} specifies the timeout
   ++ period for the connection.
  == add
@@ -45,13 +45,13 @@ OpenMathServerPackage(): with
 
 
 
-  OMreceive(conn: OpenMathConnection): Any ==
-    dev: OpenMathDevice := OMconnInDevice(conn)
+  OMreceive(conn : OpenMathConnection) : Any ==
+    dev : OpenMathDevice := OMconnInDevice(conn)
     OMsetEncoding(dev, OMencodingUnknown)
     OMread(dev)
 
-  OMsend(conn: OpenMathConnection, value: Any): Void ==
-    dev: OpenMathDevice := OMconnOutDevice(conn)
+  OMsend(conn : OpenMathConnection, value : Any) : Void ==
+    dev : OpenMathDevice := OMconnOutDevice(conn)
     OMsetEncoding(dev, OMencodingXML)
     --retractable?(value)$AnyFunctions1(Expression Integer) =>
     --  OMwrite(dev, retract(value)$AnyFunctions1(Expression Integer), true)
@@ -66,10 +66,10 @@ OpenMathServerPackage(): with
     retractable?(value)$AnyFunctions1(String) =>
       OMwrite(dev, retract(value)$AnyFunctions1(String), true)
 
-  OMserve(portNum: SingleInteger, timeout: SingleInteger): Void ==
-    conn: OpenMathConnection := OMmakeConn(timeout)
+  OMserve(portNum : SingleInteger, timeout : SingleInteger) : Void ==
+    conn : OpenMathConnection := OMmakeConn(timeout)
     OMbindTCP(conn, portNum)
-    val: Any
+    val : Any
     while true repeat
       val := OMreceive(conn)
       OMsend(conn, val)

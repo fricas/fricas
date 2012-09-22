@@ -32,43 +32,43 @@
 ++   See \spadtype{PrimeField} for a domain that does check.
 
 
-InnerPrimeField(p:PositiveInteger): Exports == Implementation where
+InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
 
   I   ==> Integer
   NNI ==> NonNegativeInteger
   PI  ==> PositiveInteger
-  TBL ==> Table(PI,NNI)
-  R   ==> Record(key:PI,entry:NNI)
+  TBL ==> Table(PI, NNI)
+  R   ==> Record(key : PI, entry : NNI)
   SUP ==> SparseUnivariatePolynomial
   OUT ==> OutputForm
 
-  Exports ==> Join(FiniteFieldCategory,FiniteAlgebraicExtensionField(%),_
+  Exports ==> Join(FiniteFieldCategory, FiniteAlgebraicExtensionField(%), _
                 ConvertibleTo(Integer))
 
   Implementation ==> IntegerMod p add
 
-    initializeElt:() -> Void
-    initializeLog:() -> Void
+    initializeElt : () -> Void
+    initializeLog : () -> Void
 
 -- global variables ====================================================
 
-    primitiveElt:PI:=1
+    primitiveElt : PI := 1
     -- for the lookup the primitive Element computed by createPrimitiveElement()
 
-    sizeCG  :=(p-1) pretend NonNegativeInteger
+    sizeCG  := (p-1) pretend NonNegativeInteger
     -- the size of the cyclic group
 
-    facOfGroupSize := nil()$(List Record(factor:Integer,exponent:Integer))
+    facOfGroupSize := nil()$(List Record(factor : Integer, exponent : Integer))
     -- the factorization of the cyclic group size
 
-    initlog?:Boolean:=true
+    initlog? : Boolean := true
     -- gets false after initialization of the logarithm table
 
-    initelt?:Boolean:=true
+    initelt? : Boolean := true
     -- gets false after initialization of the primitive Element
 
 
-    discLogTable:Table(PI,TBL):=table()$Table(PI,TBL)
+    discLogTable : Table(PI, TBL) := table()$Table(PI, TBL)
     -- tables indexed by the factors of the size q of the cyclic group
     -- discLogTable.factor is a table of with keys
     -- primitiveElement() ^ (i * (q quo factor)) and entries i for
@@ -80,10 +80,10 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
     generator() == 1
 
     -- This uses x^(p-1)=1 (mod p), so x^(q(p-1)+r) = x^r (mod p)
-    x:% ^ n:Integer ==
+    x : % ^ n : Integer ==
       zero?(n) => 1
       zero?(x) => 0
-      r := positiveRemainder(n,p-1)::NNI
+      r := positiveRemainder(n, p-1)::NNI
       ((x pretend IntegerMod p) ^$IntegerMod(p) r) pretend %
 
     if p <= convert(max()$SingleInteger)@Integer then
@@ -97,7 +97,7 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
         zero?(y := convert(x)@Integer) => "failed"
         invmod(y, p)::%
 
-    convert(x:%) == x pretend I
+    convert(x : %) == x pretend I
 
     normalElement() == 1
 
@@ -106,7 +106,7 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
     characteristic() == p
 
     factorsOfCyclicGroupSize() ==
-      p=2 => facOfGroupSize -- this fixes an infinite loop of functions
+      p = 2 => facOfGroupSize -- this fixes an infinite loop of functions
                             -- calls, problem was that factors factor(1)
                             -- is the empty list
       if empty? facOfGroupSize then initializeElt()
@@ -116,7 +116,7 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
 
     tableForDiscreteLogarithm(fac) ==
       if initlog? then initializeLog()
-      tbl:=search(fac::PI,discLogTable)$Table(PI,TBL)
+      tbl := search(fac::PI, discLogTable)$Table(PI, TBL)
       tbl case "failed" =>
         error "tableForDiscreteLogarithm: argument must be prime divisor_
  of the order of the multiplicative group"
@@ -127,9 +127,9 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
       index(primitiveElt)
 
     initializeElt() ==
-      facOfGroupSize:=factors(factor(sizeCG)$I)$(Factored I)
+      facOfGroupSize := factors(factor(sizeCG)$I)$(Factored I)
       -- get a primitive element
-      primitiveElt:=lookup(createPrimitiveElement())
+      primitiveElt := lookup(createPrimitiveElement())
       -- set initialization flag
       initelt? := false
       void$Void
@@ -137,39 +137,39 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
     initializeLog() ==
       if initelt? then initializeElt()
       -- set up tables for discrete logarithm
-      limit:Integer:=30
+      limit : Integer := 30
       -- the minimum size for the discrete logarithm table
       for f in facOfGroupSize repeat
-        fac:=f.factor
-        base:%:=primitiveElement() ^ (sizeCG quo fac)
-        l:Integer:=length(fac)$Integer
-        n:Integer:=0
-        if odd?(l)$Integer then n:=shift(fac,-(l quo 2))
-                           else n:=shift(1,(l quo 2))
+        fac := f.factor
+        base : % := primitiveElement() ^ (sizeCG quo fac)
+        l : Integer := length(fac)$Integer
+        n : Integer := 0
+        if odd?(l)$Integer then n := shift(fac, -(l quo 2))
+                           else n := shift(1, (l quo 2))
         if n < limit then
-          d:=(fac-1) quo limit + 1
-          n:=(fac-1) quo d + 1
-        tbl:TBL:=table()$TBL
-        a:%:=1
+          d := (fac-1) quo limit + 1
+          n := (fac-1) quo d + 1
+        tbl : TBL := table()$TBL
+        a : % := 1
         for i in (0::NNI)..(n-1)::NNI repeat
-          insert!([lookup(a),i::NNI]$R,tbl)$TBL
-          a:=a*base
-        insert!([fac::PI,copy(tbl)$TBL]_
-               $Record(key:PI,entry:TBL),discLogTable)$Table(PI,TBL)
+          insert!([lookup(a), i::NNI]$R, tbl)$TBL
+          a := a*base
+        insert!([fac::PI, copy(tbl)$TBL]_
+               $Record(key : PI, entry : TBL), discLogTable)$Table(PI, TBL)
       -- tell user about initialization
       --    print("discrete logarithm table initialized"::OUT)
       -- set initialization flag
       initlog? := false
       void$Void
 
-    degree(x):PI == 1::PositiveInteger
-    extensionDegree():PI == 1::PositiveInteger
+    degree(x) : PI == 1::PositiveInteger
+    extensionDegree() : PI == 1::PositiveInteger
 
 --    sizeOfGroundField() == p::NonNegativeInteger
 
     inGroundField?(x)  == true
 
-    coordinates(x) == new(1,x)$(Vector %)
+    coordinates(x) == new(1, x)$(Vector %)
 
     represents(v)  == v.1
 
@@ -177,17 +177,17 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
 
     retractIfCan(x) == x
 
-    basis() == new(1,1::%)$(Vector %)
-    basis(n:PI) ==
+    basis() == new(1, 1::%)$(Vector %)
+    basis(n : PI) ==
       n = 1 => basis()
       error("basis: argument must divide extension degree")
 
     definingPolynomial() ==
-      monomial(1,1)$(SUP %) - monomial(1,0)$(SUP %)
+      monomial(1, 1)$(SUP %) - monomial(1, 0)$(SUP %)
 
 
     minimalPolynomial(x) ==
-      monomial(1,1)$(SUP %) - monomial(x,0)$(SUP %)
+      monomial(1, 1)$(SUP %) - monomial(x, 0)$(SUP %)
 
     charthRoot x == x
 
@@ -212,8 +212,8 @@ InnerPrimeField(p:PositiveInteger): Exports == Implementation where
 ++   Error: if p is not prime.
 ++   Note: this domain does not check that argument is a prime.
 --++   with new compiler, want to put the error check before the add
-PrimeField(p:PositiveInteger): Exp == Impl where
-  Exp ==> Join(FiniteFieldCategory,FiniteAlgebraicExtensionField(%),_
+PrimeField(p : PositiveInteger) : Exp == Impl where
+  Exp ==> Join(FiniteFieldCategory, FiniteAlgebraicExtensionField(%), _
     ConvertibleTo(Integer))
   Impl ==>  InnerPrimeField(p) add
     if not prime?(p)$IntegerPrimesPackage(Integer) then

@@ -29,38 +29,38 @@ Z   ==> Integer
 N   ==> NonNegativeInteger
 SUP ==> SparseUnivariatePolynomial
 
-IntegerCombinatoricFunctions(I:IntegerNumberSystem): with
-   binomial: (I, I) -> I
-      ++ \spad{binomial(n,r)} returns the binomial coefficient
-      ++ \spad{C(n,r) = n!/(r! (n-r)!)}, where \spad{n >= r >= 0}.
+IntegerCombinatoricFunctions(I : IntegerNumberSystem) : with
+   binomial : (I, I) -> I
+      ++ \spad{binomial(n, r)} returns the binomial coefficient
+      ++ \spad{C(n, r) = n!/(r! (n-r)!)}, where \spad{n >= r >= 0}.
       ++ This is the number of combinations of n objects taken r at a time.
-   factorial: I -> I
+   factorial : I -> I
       ++ \spad{factorial(n)} returns \spad{n!}. this is the product of all
       ++ integers between 1 and n (inclusive).
       ++ Note: \spad{0!} is defined to be 1.
-   multinomial: (I, List I) -> I
-      ++ \spad{multinomial(n,[m1,m2,...,mk])} returns the multinomial
+   multinomial : (I, List I) -> I
+      ++ \spad{multinomial(n, [m1, m2, ..., mk])} returns the multinomial
       ++ coefficient \spad{n!/(m1! m2! ... mk!)}.
-   partition: I -> I
+   partition : I -> I
       ++ \spad{partition(n)} returns the number of partitions of the integer n.
       ++ This is the number of distinct ways that n can be written as
       ++ a sum of positive integers.
-   permutation: (I, I) -> I
-      ++ \spad{permutation(n)} returns \spad{!P(n,r) = n!/(n-r)!}. This is
+   permutation : (I, I) -> I
+      ++ \spad{permutation(n)} returns \spad{!P(n, r) = n!/(n-r)!}. This is
       ++ the number of permutations of n objects taken r at a time.
-   stirling1: (I, I) -> I
-      ++ \spad{stirling1(n,m)} returns the Stirling number of the first kind
-      ++ denoted \spad{S[n,m]}.
-   stirling2: (I, I) -> I
-      ++ \spad{stirling2(n,m)} returns the Stirling number of the second kind
-      ++ denoted \spad{SS[n,m]}.
-   catalan: I -> I
+   stirling1 : (I, I) -> I
+      ++ \spad{stirling1(n, m)} returns the Stirling number of the first kind
+      ++ denoted \spad{S[n, m]}.
+   stirling2 : (I, I) -> I
+      ++ \spad{stirling2(n, m)} returns the Stirling number of the second kind
+      ++ denoted \spad{SS[n, m]}.
+   catalan : I -> I
       ++ \spad{catalan(n)} returns the n-th Catalan number
  == add
-   F : Record(Fn:I, Fv:I) := [0,1]
-   B : Record(Bn:I, Bm:I, Bv:I) := [0,0,0]
-   S : Record(Sn:I, Sp:SUP I) := [0,0]
-   P : IndexedFlexibleArray(I,0) := new(1,1)$IndexedFlexibleArray(I,0)
+   F : Record(Fn : I, Fv : I) := [0, 1]
+   B : Record(Bn : I, Bm : I, Bv : I) := [0, 0, 0]
+   S : Record(Sn : I, Sp : SUP I) := [0, 0]
+   P : IndexedFlexibleArray(I, 0) := new(1, 1)$IndexedFlexibleArray(I, 0)
 
    partition n ==
       -- This is the number of ways of expressing n as a sum of positive
@@ -72,10 +72,10 @@ IntegerCombinatoricFunctions(I:IntegerNumberSystem): with
       m := #P
       n < 0 => error "partition is not defined for negative integers"
       n < m::I => P(convert(n)@Z)
-      concat!(P, new((convert(n+1)@Z - m)::N,0)$IndexedFlexibleArray(I,0))
+      concat!(P, new((convert(n+1)@Z - m)::N, 0)$IndexedFlexibleArray(I, 0))
       for i in m..convert(n)@Z repeat
-         s:I := 1
-         t:I := 0
+         s : I := 1
+         t : I := 0
          for k in 1.. repeat
             l := (3*k*k-k) quo 2
             l > i => break
@@ -88,7 +88,7 @@ IntegerCombinatoricFunctions(I:IntegerNumberSystem): with
       P(convert(n)@Z)
 
    factorial n ==
-      s,f,t : I
+      s, f, t : I
       n < 0 => error "factorial not defined for negative integers"
       if n <= F.Fn then s := f := 1 else (s, f) := F
       for k in convert(s+1)@Z .. convert(n)@Z by 2 repeat
@@ -98,18 +98,18 @@ IntegerCombinatoricFunctions(I:IntegerNumberSystem): with
       F.Fv := f
 
    binomial(n, m) ==
-      s,b:I
+      s, b : I
       n < 0 or m < 0 or m > n => 0
       m = 0 => 1
       n < 2*m => binomial(n, n-m)
-      (s,b) := (0,1)
+      (s, b) := (0, 1)
       if B.Bn = n then
          B.Bm = m+1 =>
             b := (B.Bv * (m+1)) quo (n-m)
             B.Bn := n
             B.Bm := m
             return(B.Bv := b)
-         if m >= B.Bm then (s := B.Bm; b := B.Bv) else (s,b) := (0,1)
+         if m >= B.Bm then (s := B.Bm; b := B.Bv) else (s, b) := (0, 1)
       for k in convert(s+1)@Z .. convert(m)@Z repeat
         b := (b*(n-k::I+1)) quo k::I
       B.Bn := n
@@ -119,22 +119,22 @@ IntegerCombinatoricFunctions(I:IntegerNumberSystem): with
    multinomial(n, m) ==
       for t in m repeat t < 0 => return 0
       n < _+/m => 0
-      s:I := 1
+      s : I := 1
       for t in m repeat s := s * factorial t
       factorial n quo s
 
    permutation(n, m) ==
-      t:I
+      t : I
       m < 0 or n < m => 0
       m := n-m
-      p:I := 1
+      p : I := 1
       for k in convert(m+1)@Z .. convert(n)@Z by 2 repeat
          if k::I = n then t := n else t := (k*(k+1))::I
          p := p * t
       p
 
    stirling1(n, m) ==
-      -- Definition: (-1)^(n-m) S[n,m] is the number of
+      -- Definition: (-1)^(n-m) S[n, m] is the number of
       -- permutations of n symbols which have m cycles.
       n < 0 or m < 1 or m > n => 0
       m = n => 1
@@ -146,18 +146,18 @@ IntegerCombinatoricFunctions(I:IntegerNumberSystem): with
       coefficient(S.Sp, convert(m)@Z :: N)
 
    stirling2(n, m) ==
-      -- definition: SS[n,m] is the number of ways of partitioning
+      -- definition: SS[n, m] is the number of ways of partitioning
       -- a set of n elements into m non-empty subsets
       n < 0 or m < 1 or m > n => 0
       m = 1 or n = m => 1
-      s:I := if odd? m then -1 else 1
-      t:I := 0
+      s : I := if odd? m then -1 else 1
+      t : I := 0
       for k in 1..convert(m)@Z repeat
          s := -s
          t := t + s * binomial(m, k::I) * k::I ^ (convert(n)@Z :: N)
       t quo factorial m
 
-   catalan(n) == (binomial(2*n,n) exquo (n+1))::I
+   catalan(n) == (binomial(2*n, n) exquo (n+1))::I
 
 @
 \section{License}

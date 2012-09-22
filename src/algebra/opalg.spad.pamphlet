@@ -17,11 +17,11 @@
 ++ Date Last Updated: 17 June 1993
 ++ Description:
 ++ Algebra of ADDITIVE operators on a module.
-ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
+ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
   O    ==> OutputForm
   OP   ==> BasicOperator
   FG   ==> FreeGroup OP
-  RM   ==> Record(coef:R, monom:FG)
+  RM   ==> Record(coef : R, monom : FG)
   TERM ==> List RM
   FAB  ==> FreeAbelianGroup TERM
 
@@ -31,22 +31,22 @@ ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
     if R has CharacteristicNonZero then CharacteristicNonZero
     if R has CommutativeRing then
       Algebra(R)
-      adjoint: % -> %
+      adjoint : % -> %
         ++ adjoint(op) returns the adjoint of the operator \spad{op}.
-      adjoint: (%, %) -> %
+      adjoint : (%, %) -> %
         ++ adjoint(op1, op2) sets the adjoint of op1 to be op2.
         ++ op1 must be a basic operator
       conjug  : R -> R
         ++ conjug(x)should be local but conditional
-    evaluate: (%, M -> M) -> %
+    evaluate : (%, M -> M) -> %
       ++ evaluate(f, u +-> g u) attaches the map g to f.
       ++ f must be a basic operator
       ++ g MUST be additive, i.e. \spad{g(a + b) = g(a) + g(b)} for
       ++ any \spad{a}, \spad{b} in M.
       ++ This implies that \spad{g(n a) = n g(a)} for
       ++ any \spad{a} in M and integer \spad{n > 0}.
-    evaluateInverse: (%, M -> M) -> %
-        ++ evaluateInverse(x,f) \undocumented
+    evaluateInverse : (%, M -> M) -> %
+        ++ evaluateInverse(x, f) \undocumented
     "^": (%, Integer) -> %
         ++ op^n \undocumented
     opeval  : (OP, M) -> M
@@ -68,10 +68,10 @@ ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
     inv      : TERM -> %
     termeval : (TERM, M) -> M
     rmeval   : (RM, M) -> M
-    monomeval: (FG, M) -> M
-    opInvEval: (OP, M) -> M
+    monomeval : (FG, M) -> M
+    opInvEval : (OP, M) -> M
     mkop     : (R, FG) -> %
-    termprod0: (Integer, TERM, TERM) -> %
+    termprod0 : (Integer, TERM, TERM) -> %
     termprod : (Integer, TERM, TERM) -> TERM
     termcopy : TERM -> TERM
     trm2O    : (Integer, TERM) -> O
@@ -80,36 +80,36 @@ ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
     nocopy   : OP -> %
 
     1                   == makeop(1, 1)
-    coerce(n:Integer):% == n::R::%
-    coerce(r:R):%       == (zero? r => 0; makeop(r, 1))
-    coerce(op:OP):%     == nocopy copy op
-    nocopy(op:OP):%     == makeop(1, op::FG)
-    elt(x:%, r:M)       == +/[t.exp * termeval(t.gen, r) for t in terms x]
+    coerce(n : Integer) : % == n::R::%
+    coerce(r : R) : %       == (zero? r => 0; makeop(r, 1))
+    coerce(op : OP) : %     == nocopy copy op
+    nocopy(op : OP) : %     == makeop(1, op::FG)
+    elt(x : %, r : M)       == +/[t.exp * termeval(t.gen, r) for t in terms x]
     rmeval(t, r)        == t.coef * monomeval(t.monom, r)
     termcopy t          == [[rm.coef, rm.monom] for rm in t]
     characteristic()    == characteristic()$R
     mkop(r, fg)         == [[r, fg]$RM]$TERM :: %
-    evaluate(f, g)   == nocopy setProperty(retract(f)@OP,OPEVAL,g pretend None)
+    evaluate(f, g)   == nocopy setProperty(retract(f)@OP, OPEVAL, g pretend None)
 
     if R has OrderedSet then
       makeop(r, fg) == (r >= 0 => mkop(r, fg); - mkop(-r, fg))
     else makeop(r, fg) == mkop(r, fg)
 
-    inv(t:TERM):% ==
+    inv(t : TERM) : % ==
       empty? t => 1
       c := first(t).coef
       m := first(t).monom
       inv(rest t) * makeop(1, inv m) * (recip(c)::R::%)
 
-    x:% ^ i:Integer ==
+    x : % ^ i : Integer ==
       i = 0 => 1
-      i > 0 => expt(x,i pretend PositiveInteger)$RepeatedSquaring(%)
+      i > 0 => expt(x, i pretend PositiveInteger)$RepeatedSquaring(%)
       (inv(retract(x)@TERM)) ^ (-i)
 
     evaluateInverse(f, g) ==
       nocopy setProperty(retract(f)@OP, INVEVAL, g pretend None)
 
-    coerce(x:%):O ==
+    coerce(x : %) : O ==
       zero? x => (0$R)::O
       reduce(_+, [trm2O(t.exp, t.gen) for t in terms x])$List(O)
 
@@ -129,7 +129,7 @@ ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
       (m = 1) => c::O
       c::O * m::O
 
-    x:% * y:% ==
+    x : % * y : % ==
       +/[ +/[termprod0(t.exp * s.exp, t.gen, s.gen) for s in terms y]
           for t in terms x]
 
@@ -213,19 +213,19 @@ ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
       monomadj : FG -> %
       opadj    : OP -> %
 
-      r:R * x:%        == r::% * x
-      x:% * r:R        == x * (r::%)
+      r : R * x : %        == r::% * x
+      x : % * r : R        == x * (r::%)
       adjoint x        == +/[t.exp * termadj(t.gen) for t in terms x]
       rmadj t          == conjug(t.coef) * monomadj(t.monom)
       adjoint(op, adj) == nocopy setProperty(retract(op)@OP, OPADJ, adj::None)
 
       termadj t ==
-        ans:% := 1
+        ans : % := 1
         for rm in t repeat ans := rmadj(rm) * ans
         ans
 
       monomadj m ==
-        ans:% := 1
+        ans : % := 1
         for rec in factors m repeat ans := (opadj(rec.gen) ^ rec.exp) * ans
         ans
 
@@ -234,7 +234,7 @@ ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
            error "adjoint: operator does not have a defined adjoint"
         (adj::None) pretend %
 
-      if R has conjugate:R -> R then conjug r == conjugate r else conjug r == r
+      if R has conjugate : R -> R then conjug r == conjugate r else conjug r == r
 
 @
 \section{domain OP Operator}
@@ -245,7 +245,7 @@ ModuleOperator(R: Ring, M:LeftModule(R)): Exports == Implementation where
 ++ Date Last Updated: 12 February 1993
 ++ Description:
 ++ Algebra of ADDITIVE operators over a ring.
-Operator(R: Ring) == ModuleOperator(R,R)
+Operator(R : Ring) == ModuleOperator(R, R)
 
 @
 \section{License}

@@ -47,7 +47,7 @@
 ++   contain ``\verb+\[+'' and ``\verb+\]+'', respectively, so that
 ++   the TeX section will be printed in LaTeX display math mode.
 
-TexFormat(): public == private where
+TexFormat() : public == private where
   E      ==> OutputForm
   I      ==> Integer
   L      ==> List
@@ -56,43 +56,43 @@ TexFormat(): public == private where
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
-    coerce:   E -> %
+    coerce :   E -> %
       ++ coerce(o) changes o in the standard output format to TeX
       ++ format.
-    convert:  (E,I) -> %
-      ++ convert(o,step) changes o in standard output format to
+    convert :  (E, I) -> %
+      ++ convert(o, step) changes o in standard output format to
       ++ TeX format and also adds the given step number. This is useful
       ++ if you want to create equations with given numbers or have the
       ++ equation numbers correspond to the interpreter step numbers.
-    convert:  (E,I,E) -> %
-      ++ convert(o,step,type) changes o in standard output format to
+    convert :  (E, I, E) -> %
+      ++ convert(o, step, type) changes o in standard output format to
       ++ TeX format and also adds the given step number and type. This
       ++ is useful if you want to create equations with given numbers
       ++ or have the equation numbers correspond to the interpreter step
       ++ numbers.
-    display:  (%, I) -> Void
-      ++ display(t,width) outputs the TeX formatted code t so that each
+    display :  (%, I) -> Void
+      ++ display(t, width) outputs the TeX formatted code t so that each
       ++ line has length less than or equal to \spadvar{width}.
-    display:  % -> Void
+    display :  % -> Void
       ++ display(t) outputs the TeX formatted code t so that each
       ++ line has length less than or equal to the value set by
       ++ the system command \spadsyscom{set output length}.
-    epilogue: % -> L S
+    epilogue : % -> L S
       ++ epilogue(t) extracts the epilogue section of a TeX form t.
-    tex:      % -> L S
+    tex :      % -> L S
       ++ tex(t) extracts the TeX section of a TeX form t.
-    new:      () -> %
+    new :      () -> %
       ++ new() create a new, empty object. Use \spadfun{setPrologue!},
       ++ \spadfun{setTex!} and \spadfun{setEpilogue!} to set the various
       ++ components of this object.
-    prologue: % -> L S
+    prologue : % -> L S
       ++ prologue(t) extracts the prologue section of a TeX form t.
-    setEpilogue!: (%, L S) -> L S
-      ++ setEpilogue!(t,strings) sets the epilogue section of a TeX form t to strings.
-    setTex!:  (%, L S) -> L S
-      ++ setTex!(t,strings) sets the TeX section of a TeX form t to strings.
-    setPrologue!: (%, L S) -> L S
-      ++ setPrologue!(t,strings) sets the prologue section of a TeX form t to strings.
+    setEpilogue! : (%, L S) -> L S
+      ++ setEpilogue!(t, strings) sets the epilogue section of a TeX form t to strings.
+    setTex! :  (%, L S) -> L S
+      ++ setTex!(t, strings) sets the TeX section of a TeX form t to strings.
+    setPrologue! : (%, L S) -> L S
+      ++ setPrologue!(t, strings) sets the prologue section of a TeX form t to strings.
 
   private == add
     import OutputForm
@@ -105,9 +105,9 @@ TexFormat(): public == private where
 
     -- local variable declarations and definitions
 
-    expr: E
-    prec,opPrec: I
-    str:  S
+    expr : E
+    prec, opPrec : I
+    str :  S
     blank         : S := " \  "
 
     maxPrec       : I   := 1000000
@@ -157,27 +157,27 @@ TexFormat(): public == private where
 
     -- local function signatures
 
-    addBraces:      S -> S
-    addBrackets:    S -> S
-    group:          S -> S
-    formatBinary:   (Sy, L E, I) -> S
-    formatFunction: (E, L E, I) -> S
-    formatMatrix:   L E -> S
-    formatNary:     (Sy, S, I, L E, I) -> S
-    formatNaryNoGroup: (Sy, S, I, L E, I) -> S
-    formatNullary:  Sy -> S
-    formatPlex:     (Sy, L E, I) -> S
-    formatSpecial:  (Sy, L E, I) -> S
-    formatUnary:    (Sy, E, I) -> S
-    formatExpr:      (E, I) -> S
-    newWithNum:     I -> %
-    parenthesize:   S -> S
-    precondition:   E -> E
-    postcondition:  S -> S
-    splitLong:      (S,I) -> L S
-    splitLong1:     (S,I) -> L S
-    stringify:      E -> S
-    ungroup:        S -> S
+    addBraces :      S -> S
+    addBrackets :    S -> S
+    group :          S -> S
+    formatBinary :   (Sy, L E, I) -> S
+    formatFunction : (E, L E, I) -> S
+    formatMatrix :   L E -> S
+    formatNary :     (Sy, S, I, L E, I) -> S
+    formatNaryNoGroup : (Sy, S, I, L E, I) -> S
+    formatNullary :  Sy -> S
+    formatPlex :     (Sy, L E, I) -> S
+    formatSpecial :  (Sy, L E, I) -> S
+    formatUnary :    (Sy, E, I) -> S
+    formatExpr :      (E, I) -> S
+    newWithNum :     I -> %
+    parenthesize :   S -> S
+    precondition :   E -> E
+    postcondition :  S -> S
+    splitLong :      (S, I) -> L S
+    splitLong1 :     (S, I) -> L S
+    stringify :      E -> S
+    ungroup :        S -> S
 
     -- public function definitions
 
@@ -185,19 +185,19 @@ TexFormat(): public == private where
 --    [["\["]$(L S), [""]$(L S), ["\]"]$(L S)]$Rep
       [["$$"]$(L S), [""]$(L S), ["$$"]$(L S)]$Rep
 
-    newWithNum(stepNum: I) : % ==
+    newWithNum(stepNum : I) : % ==
 --    num : S := concat("%AXIOM STEP NUMBER: ",string(stepNum)$S)
 --    [["\["]$(L S), [""]$(L S), ["\]",num]$(L S)]$Rep
       num : S := concat(concat("\leqno(",string(stepNum)$S),")")$S
       [["$$"]$(L S), [""]$(L S), [num,"$$"]$(L S)]$Rep
 
-    coerce(expr : E): % ==
+    coerce(expr : E) : % ==
       f : % := new()$%
       f.TeX := [postcondition
           formatExpr(precondition expr, minPrec)]$(L S)
       f
 
-    convert(expr : E, stepNum : I): % ==
+    convert(expr : E, stepNum : I) : % ==
       f : % := newWithNum(stepNum)
       f.TeX := [postcondition
           formatExpr(precondition expr, minPrec)]$(L S)
@@ -207,7 +207,7 @@ TexFormat(): public == private where
         sayTeX$Lisp s
 
     display(f : %, len : I) ==
-      s,t : S
+      s, t : S
       for s in f.prolog repeat sayExpr s
       for s in f.TeX repeat
         for t in splitLong(s, len) repeat sayExpr t
@@ -225,34 +225,34 @@ TexFormat(): public == private where
     setTex!(f : %, l : L S)  == f.TeX := l
     setEpilogue!(f : %, l : L S) == f.epilog := l
 
-    coerce(f : %): E ==
-      s,t : S
+    coerce(f : %) : E ==
+      s, t : S
       l : L S := nil
-      for s in f.prolog repeat l := concat(s,l)
+      for s in f.prolog repeat l := concat(s, l)
       for s in f.TeX repeat
         for t in splitLong(s, (_$LINELENGTH$Lisp pretend Integer) - 4) repeat
-          l := concat(t,l)
-      for s in f.epilog repeat l := concat(s,l)
+          l := concat(t, l)
+      for s in f.epilog repeat l := concat(s, l)
       (reverse l) :: E
 
     -- local function definitions
 
-    ungroup(str: S): S ==
+    ungroup(str : S) : S ==
       len : I := #str
       len < 2 => str
       lbrace : Character := char "{"
       rbrace : Character := char "}"
       -- drop leading and trailing braces
       if (str.1 =$Character lbrace) and (str.len =$Character rbrace) then
-        u : US := segment(2,len-1)$US
+        u : US := segment(2, len-1)$US
         str := str.u
       str
 
-    postcondition(str: S): S ==
+    postcondition(str : S) : S ==
       str := ungroup str
       len : I := #str
       plus : Character := char "+"
-      minus: Character := char "-"
+      minus : Character := char "-"
       len < 4 => str
       for i in 1..(len-1) repeat
         if (str.i =$Character plus) and (str.(i+1) =$Character minus)
@@ -261,7 +261,7 @@ TexFormat(): public == private where
 
     stringify expr == (mathObject2String$Lisp expr) pretend S
 
-    lineConcat( line : S, lines: L S ) : L S ==
+    lineConcat( line : S, lines : L S ) : L S ==
       length := #line
 
       if ( length > 0 ) then
@@ -277,10 +277,10 @@ TexFormat(): public == private where
         else if ( line.1 = char "\" ) and length > 1 and ( line.2 = char "%" ) then
           line := concat(" ", line)
 
-        lines := concat(line,lines)$List(S)
+        lines := concat(line, lines)$List(S)
       lines
 
-    splitLong(str : S, len : I): L S ==
+    splitLong(str : S, len : I) : L S ==
       -- this blocks into lines
       if len < 20 then len := _$LINELENGTH$Lisp
       splitLong1(str, len)
@@ -299,7 +299,7 @@ TexFormat(): public == private where
         -- is slightly too long)
 
         ss = "\\" =>
-          l := lineConcat( concat(s,ss), l )
+          l := lineConcat( concat(s, ss), l )
           s := ""
           ls := 0
 
@@ -308,11 +308,11 @@ TexFormat(): public == private where
         -- place certain tokens on their own lines for clarity
 
         ownLine : Boolean :=
-          u : US := segment(1,4)$US
+          u : US := segment(1, 4)$US
           (lss > 3) and ("\end" = ss.u) => true
-          u      := segment(1,5)$US
+          u      := segment(1, 5)$US
           (lss > 4) and ("\left" = ss.u) => true
-          u      := segment(1,6)$US
+          u      := segment(1, 6)$US
           (lss > 5) and (("\right" = ss.u) or ("\begin" = ss.u)) => true
           false
 
@@ -482,7 +482,7 @@ TexFormat(): public == private where
         group s
 
     formatMatrix(args : L E) : S ==
-      -- format for args is [[ROW ...],[ROW ...],[ROW ...]]
+      -- format for args is [[ROW ...], [ROW ...], [ROW ...]]
       -- generate string for formatting columns (centered)
       cols : S := "{"
       for i in 2..#(first(args) pretend L E) repeat
@@ -654,9 +654,9 @@ TexFormat(): public == private where
 ++   to TeX format anything that has a coercion to the standard output
 ++   format.
 
-TexFormat1(S : SetCategory): public == private where
+TexFormat1(S : SetCategory) : public == private where
   public  ==  with
-    coerce: S -> TexFormat()
+    coerce : S -> TexFormat()
       ++ coerce(s) provides a direct coercion from a domain S to
       ++ TeX format. This allows the user to skip the step of first
       ++ manually coercing the object to standard output format before
@@ -665,7 +665,7 @@ TexFormat1(S : SetCategory): public == private where
   private == add
     import TexFormat()
 
-    coerce(s : S): TexFormat ==
+    coerce(s : S) : TexFormat ==
       coerce(s :: OutputForm)$TexFormat
 
 @

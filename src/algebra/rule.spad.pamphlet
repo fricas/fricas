@@ -17,7 +17,7 @@
 ++ Date Created: 24 Oct 1988
 ++ Date Last Updated: 26 October 1993
 ++ Keywords: pattern, matching, rule.
-RewriteRule(Base, R, F): Exports == Implementation where
+RewriteRule(Base, R, F) : Exports == Implementation where
   Base   : SetCategory
   R      : Join(Ring, PatternMatchable Base, Comparable,
                                  ConvertibleTo Pattern Base)
@@ -32,15 +32,15 @@ RewriteRule(Base, R, F): Exports == Implementation where
       ++ rule(f, g) creates the rewrite rule: \spad{f == eval(g, g is f)},
       ++ with left-hand side f and right-hand side g.
     rule    : (F, F, List Symbol) -> %
-      ++ rule(f, g, [f1,...,fn]) creates the rewrite rule
-      ++ \spad{f == eval(eval(g, g is f), [f1,...,fn])},
+      ++ rule(f, g, [f1, ..., fn]) creates the rewrite rule
+      ++ \spad{f == eval(eval(g, g is f), [f1, ..., fn])},
       ++ that is a rule with left-hand side f and right-hand side g;
-      ++ The symbols f1,...,fn are the operators that are considered
+      ++ The symbols f1, ..., fn are the operators that are considered
       ++ quoted, that is they are not evaluated during any rewrite,
       ++ but just applied formally to their arguments.
-    suchThat: (%, List Symbol, List F -> Boolean) -> %
-      ++ suchThat(r, [a1,...,an], f) returns the rewrite rule r with
-      ++ the predicate \spad{f(a1,...,an)} attached to it.
+    suchThat : (%, List Symbol, List F -> Boolean) -> %
+      ++ suchThat(r, [a1, ..., an], f) returns the rewrite rule r with
+      ++ the predicate \spad{f(a1, ..., an)} attached to it.
     pattern : % -> P
       ++ pattern(r) returns the pattern corresponding to
       ++ the left hand side of the rule r.
@@ -49,8 +49,8 @@ RewriteRule(Base, R, F): Exports == Implementation where
     rhs     : % -> F
       ++ rhs(r) returns the right hand side of the rule r.
     elt     : (%, F, PositiveInteger) -> F
-      ++ elt(r,f,n) or r(f, n) applies the rule r to f at most n times.
-    quotedOperators: % -> List Symbol
+      ++ elt(r, f, n) or r(f, n) applies the rule r to f at most n times.
+    quotedOperators : % -> List Symbol
       ++ quotedOperators(r) returns the list of operators
       ++ on the right hand side of r that are considered
       ++ quoted, that is they are not evaluated during any rewrite,
@@ -61,10 +61,10 @@ RewriteRule(Base, R, F): Exports == Implementation where
     import PatternFunctions1(Base, F)
     import FunctionSpaceAssertions(R, F)
 
-    Rep := Record(pat: P, lft: F, rgt: F, qot: List Symbol)
+    Rep := Record(pat : P, lft : F, rgt : F, qot : List Symbol)
 
     mkRule      : (P, F, F, List Symbol) -> %
-    transformLhs: P -> Record(plus: F, times: F)
+    transformLhs : P -> Record(plus : F, times : F)
     bad?        : Union(List P, "failed") -> Boolean
     appear?     : (P, List P) -> Boolean
     opt         : F -> P
@@ -75,18 +75,18 @@ RewriteRule(Base, R, F): Exports == Implementation where
     rhs x                    == x.rgt
     quotedOperators x        == x.qot
     mkRule(pt, p, s, l)      == [pt, p, s, l]
-    coerce(eq:Equation F):%  == rule(lhs eq, rhs eq, empty())
+    coerce(eq : Equation F) : %  == rule(lhs eq, rhs eq, empty())
     rule(l, r)               == rule(l, r, empty())
-    elt(r:%, s:F) == applyRules([r pretend RewriteRule(Base, R, F)], s)
+    elt(r : %, s : F) == applyRules([r pretend RewriteRule(Base, R, F)], s)
 
     suchThat(x, l, f) ==
-      mkRule(suchThat(pattern x,l,f),  lhs x, rhs x, quotedOperators x)
+      mkRule(suchThat(pattern x, l, f),  lhs x, rhs x, quotedOperators x)
 
     x = y ==
      (lhs x = lhs y) and (rhs x = rhs y) and
         (quotedOperators x = quotedOperators y)
 
-    elt(r:%, s:F, n:PositiveInteger) ==
+    elt(r : %, s : F, n : PositiveInteger) ==
       applyRules([r pretend RewriteRule(Base, R, F)], s, n)
 
 -- remove the extra properties from the constant symbols in f
@@ -110,7 +110,7 @@ RewriteRule(Base, R, F): Exports == Implementation where
       retractIfCan(f)@Union(R, "failed") case R => convert f
       convert optional f
 
--- appear?(x, [p1,...,pn]) is true if x appears as a variable in
+-- appear?(x, [p1, ..., pn]) is true if x appears as a variable in
 -- a composite pattern pi.
     appear?(x, l) ==
       for p in l | p ~= x repeat
@@ -137,7 +137,7 @@ RewriteRule(Base, R, F): Exports == Implementation where
       bad? isTimes p => [0, new()$Symbol :: F]
       [0, 1]
 
-    coerce(x:%):OutputForm ==
+    coerce(x : %) : OutputForm ==
       infix(" == "::Symbol::OutputForm,
             lhs(x)::OutputForm, rhs(x)::OutputForm)
 
@@ -153,7 +153,7 @@ RewriteRule(Base, R, F): Exports == Implementation where
 ++   This package apply rewrite rules to expressions, calling
 ++   the pattern matcher.
 ++ Keywords: pattern, matching, rule.
-ApplyRules(Base, R, F): Exports == Implementation where
+ApplyRules(Base, R, F) : Exports == Implementation where
   Base   : SetCategory
   R      : Join(Ring, PatternMatchable Base, Comparable,
                                  ConvertibleTo Pattern Base)
@@ -167,25 +167,25 @@ ApplyRules(Base, R, F): Exports == Implementation where
 
   Exports ==> with
     applyRules  : (List RR, F) -> F
-      ++ applyRules([r1,...,rn], expr) applies the rules
-      ++ r1,...,rn to f an unlimited number of times, i.e. until
-      ++ none of r1,...,rn is applicable to the expression.
+      ++ applyRules([r1, ..., rn], expr) applies the rules
+      ++ r1, ..., rn to f an unlimited number of times, i.e. until
+      ++ none of r1, ..., rn is applicable to the expression.
     applyRules  : (List RR, F, PositiveInteger) -> F
-      ++ applyRules([r1,...,rn], expr, n) applies the rules
-      ++ r1,...,rn to f a most n times.
-    localUnquote: (F, List Symbol) -> F
-      ++ localUnquote(f,ls) is a local function.
+      ++ applyRules([r1, ..., rn], expr, n) applies the rules
+      ++ r1, ..., rn to f a most n times.
+    localUnquote : (F, List Symbol) -> F
+      ++ localUnquote(f, ls) is a local function.
 
   Implementation ==> add
     import PatternFunctions1(Base, F)
 
-    splitRules: List RR -> Record(lker: List K,lval: List F,rl: List RR)
+    splitRules : List RR -> Record(lker : List K, lval : List F, rl : List RR)
     localApply  : (List K, List F, List RR, F, PositiveInteger) -> F
     rewrite     : (F, PR, List Symbol) -> F
     app         : (List RR, F) -> F
     applist     : (List RR, List F) -> List F
     isit        : (F, P) -> PR
-    isitwithpred: (F, P, List P, List PR) -> PR
+    isitwithpred : (F, P, List P, List PR) -> PR
 
     applist(lrule, arglist)  == [app(lrule, arg) for arg in arglist]
 
@@ -204,7 +204,7 @@ ApplyRules(Base, R, F): Exports == Implementation where
     applyRules(l, s) ==
       rec := splitRules l
       repeat
-        (new:= localApply(rec.lker,rec.lval,rec.rl,s,1)) = s => return s
+        (new:= localApply(rec.lker, rec.lval, rec.rl, s, 1)) = s => return s
         s := new
 
     applyRules(l, s, n) ==
@@ -252,10 +252,10 @@ ApplyRules(Base, R, F): Exports == Implementation where
           return rewrite(rhs r, u, quotedOperators r)
       (k := retractIfCan(subject)@Union(K, "failed")) case K =>
         operator(k::K) applist(lrule, argument(k::K))
-      (l := isPlus  subject) case List(F) => +/applist(lrule,l::List(F))
-      (l := isTimes subject) case List(F) => */applist(lrule,l::List(F))
-      (e := isPower subject) case Record(val:F, exponent:Integer) =>
-        ee := e::Record(val:F, exponent:Integer)
+      (l := isPlus  subject) case List(F) => +/applist(lrule, l::List(F))
+      (l := isTimes subject) case List(F) => */applist(lrule, l::List(F))
+      (e := isPower subject) case Record(val : F, exponent : Integer) =>
+        ee := e::Record(val : F, exponent : Integer)
         f  := app(lrule, ee.val)
         positive?(ee.exponent) => f ^ (ee.exponent)::NonNegativeInteger
         recip(f)::F ^ (- ee.exponent)::NonNegativeInteger
@@ -272,7 +272,7 @@ ApplyRules(Base, R, F): Exports == Implementation where
 ++ Description:
 ++   A ruleset is a set of pattern matching rules grouped together.
 ++ Keywords: pattern, matching, rule.
-Ruleset(Base, R, F): Exports == Implementation where
+Ruleset(Base, R, F) : Exports == Implementation where
   Base   : SetCategory
   R      : Join(Ring, PatternMatchable Base, Comparable,
                                  ConvertibleTo Pattern Base)
@@ -282,12 +282,12 @@ Ruleset(Base, R, F): Exports == Implementation where
   RR ==> RewriteRule(Base, R, F)
 
   Exports ==> Join(SetCategory, Eltable(F, F)) with
-    ruleset: List RR -> %
-      ++ ruleset([r1,...,rn]) creates the rule set \spad{{r1,...,rn}}.
+    ruleset : List RR -> %
+      ++ ruleset([r1, ..., rn]) creates the rule set \spad{{r1, ..., rn}}.
     rules  : % -> List RR
       ++ rules(r) returns the rules contained in r.
     elt    : (%, F, PositiveInteger) -> F
-      ++ elt(r,f,n) or r(f, n) applies all the rules of r to f at most n times.
+      ++ elt(r, f, n) or r(f, n) applies all the rules of r to f at most n times.
 
   Implementation ==> add
     import ApplyRules(Base, R, F)
@@ -295,10 +295,10 @@ Ruleset(Base, R, F): Exports == Implementation where
     Rep := Set RR
 
     ruleset l                        == set(l)$Rep
-    coerce(x:%):OutputForm           == coerce(x)$Rep
+    coerce(x : %) : OutputForm           == coerce(x)$Rep
     x = y                            == x =$Rep y
-    elt(x:%, f:F)                    == applyRules(rules x, f)
-    elt(r:%, s:F, n:PositiveInteger) == applyRules(rules r, s, n)
+    elt(x : %, f : F)                    == applyRules(rules x, f)
+    elt(r : %, s : F, n : PositiveInteger) == applyRules(rules r, s, n)
     rules x                          == parts(x)$Rep
 
 @

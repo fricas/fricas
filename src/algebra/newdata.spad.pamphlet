@@ -13,13 +13,13 @@
 Putting (or omitting) the final call to {\bf FORCE-OUPUT} in {\bf iprint}
 is controversial:
 \begin{verbatim}
-Waldek: iprint is used to print (regular) triangular sets.
+Waldek : iprint is used to print (regular) triangular sets.
   Unconditional flush defeats buffering optimizations, so IMHO
   it should be done only for some streams (for example streams
   connected to terminals).
   Flushing output should be done when the outupt is complete,
   while iprint clearly is used to compose bigger units from small parts.
-Tim: unless the princ contains a newline there is no guarantee that
+Tim : unless the princ contains a newline there is no guarantee that
   the output will appear. if the output is intended to be a prompt,
   for instance, which does not contain a newline then the flush
   is needed to force the output to appear.
@@ -39,15 +39,15 @@ Tim: unless the princ contains a newline there is no guarantee that
 ++ Description: A package to print strings without line-feed
 ++ nor carriage-return.
 
-InternalPrintPackage(): Exports == Implementation where
+InternalPrintPackage() : Exports == Implementation where
 
   Exports ==  with
-     iprint: String -> Void
+     iprint : String -> Void
        ++ \axiom{iprint(s)} prints \axiom{s} at the current position
        ++ of the cursor.
 
   Implementation == add
-     iprint(s:String) ==
+     iprint(s : String) ==
           PRINC(coerce(s)@Symbol)$Lisp
           FORCE_-OUTPUT()$Lisp
 
@@ -65,66 +65,66 @@ InternalPrintPackage(): Exports == Implementation where
 ++ Keywords:
 ++ References:
 ++ Description:
-++   \axiom{TabulatedComputationPackage(Key ,Entry)} provides some modest support
+++   \axiom{TabulatedComputationPackage(Key , Entry)} provides some modest support
 ++   for dealing with operations with type \axiom{Key -> Entry}. The result of
 ++   such operations can be stored and retrieved with this package by using
 ++   a hash-table. The user does not need to worry about the management of
 ++   this hash-table. However, onnly one hash-table is built by calling
-++   \axiom{TabulatedComputationPackage(Key ,Entry)}.
+++   \axiom{TabulatedComputationPackage(Key , Entry)}.
 ++ Version: 2.
 
-TabulatedComputationPackage(Key ,Entry): Exports == Implementation where
-  Key: SetCategory
-  Entry: SetCategory
+TabulatedComputationPackage(Key , Entry) : Exports == Implementation where
+  Key : SetCategory
+  Entry : SetCategory
   N ==> NonNegativeInteger
   H ==> HashTable(Key, Entry, "UEQUAL")
   iprintpack ==> InternalPrintPackage()
 
   Exports ==  with
-     initTable!: () -> Void
+     initTable! : () -> Void
        ++ \axiom{initTable!()} initializes the hash-table.
-     printInfo!: (String, String) -> Void
-       ++ \axiom{printInfo!(x,y)} initializes the mesages to be printed
+     printInfo! : (String, String) -> Void
+       ++ \axiom{printInfo!(x, y)} initializes the mesages to be printed
        ++ when manipulating items from the hash-table. If
        ++ a key is retrieved then \axiom{x} is displayed. If an item is
        ++ stored then \axiom{y} is displayed.
-     startStats!: (String) -> Void
+     startStats! : (String) -> Void
        ++ \axiom{startStats!(x)} initializes the statisitics process and
        ++ sets the comments to display when statistics are printed
-     printStats!: () -> Void
+     printStats! : () -> Void
        ++ \axiom{printStats!()} prints the statistics.
-     clearTable!: () -> Void
+     clearTable! : () -> Void
        ++ \axiom{clearTable!()} clears the hash-table and assumes that
        ++ it will no longer be used.
-     usingTable?: () -> Boolean
+     usingTable? : () -> Boolean
        ++ \axiom{usingTable?()} returns true iff the hash-table is used
-     printingInfo?: () -> Boolean
+     printingInfo? : () -> Boolean
        ++ \axiom{printingInfo?()} returns true iff messages are printed
        ++ when manipulating items from the hash-table.
-     makingStats?: () -> Boolean
+     makingStats? : () -> Boolean
        ++ \axiom{makingStats?()} returns true iff the statisitics process
        ++ is running.
-     extractIfCan: Key -> Union(Entry,"failed")
+     extractIfCan : Key -> Union(Entry,"failed")
        ++ \axiom{extractIfCan(x)} searches the item whose key is \axiom{x}.
-     insert!: (Key, Entry) -> Void
-       ++ \axiom{insert!(x,y)} stores the item whose key is \axiom{x} and whose
+     insert! : (Key, Entry) -> Void
+       ++ \axiom{insert!(x, y)} stores the item whose key is \axiom{x} and whose
        ++ entry is \axiom{y}.
 
   Implementation == add
-     table?: Boolean := false
-     t: H := empty()
-     info?: Boolean := false
-     stats?: Boolean := false
-     used: NonNegativeInteger := 0
-     ok: String := "o"
-     ko: String := "+"
-     domainName: String := empty()$String
+     table? : Boolean := false
+     t : H := empty()
+     info? : Boolean := false
+     stats? : Boolean := false
+     used : NonNegativeInteger := 0
+     ok : String := "o"
+     ko : String := "+"
+     domainName : String := empty()$String
 
-     initTable!(): Void ==
+     initTable!() : Void ==
        table? := true
        t := empty()
        void()
-     printInfo!(s1: String, s2: String): Void ==
+     printInfo!(s1 : String, s2 : String) : Void ==
        (empty? s1) or (empty? s2) => void()
        not usingTable? =>
          error "in printInfo!()$TBCMPPK: not allowed to use hashtable"
@@ -132,7 +132,7 @@ TabulatedComputationPackage(Key ,Entry): Exports == Implementation where
        ok := s1
        ko := s2
        void()
-     startStats!(s: String): Void ==
+     startStats!(s : String) : Void ==
        empty? s => void()
        not table? =>
          error "in startStats!()$TBCMPPK: not allowed to use hashtable"
@@ -140,18 +140,18 @@ TabulatedComputationPackage(Key ,Entry): Exports == Implementation where
        used := 0
        domainName := s
        void()
-     printStats!(): Void ==
+     printStats!() : Void ==
        not table? =>
          error "in printStats!()$TBCMPPK: not allowed to use hashtable"
        not stats? =>
          error "in printStats!()$TBCMPPK: statistics not started"
        output(" ")$OutputPackage
-       title: String := concat("*** ", concat(domainName," Statistics ***"))
+       title : String := concat("*** ", concat(domainName," Statistics ***"))
        output(title)$OutputPackage
-       n: N := #t
+       n : N := #t
        output("   Table     size: ", n::OutputForm)$OutputPackage
        output("   Entries reused: ", used::OutputForm)$OutputPackage
-     clearTable!(): Void ==
+     clearTable!() : Void ==
        not table? =>
          error "in clearTable!()$TBCMPPK: not allowed to use hashtable"
        t := empty()
@@ -163,15 +163,15 @@ TabulatedComputationPackage(Key ,Entry): Exports == Implementation where
      usingTable?() == table?
      printingInfo?() == info?
      makingStats?() == stats?
-     extractIfCan(k: Key): Union(Entry,"failed") ==
+     extractIfCan(k : Key) : Union(Entry,"failed") ==
        not table? => "failed" :: Union(Entry,"failed")
-       s: Union(Entry,"failed") := search(k,t)
+       s : Union(Entry,"failed") := search(k,t)
        s case Entry =>
          if info? then iprint(ok)$iprintpack
          if stats? then used := used + 1
          return s
        "failed" :: Union(Entry,"failed")
-     insert!(k: Key, e:Entry): Void ==
+     insert!(k : Key, e : Entry) : Void ==
        not table? => void()
        t.k := e
        if info? then iprint(ko)$iprintpack
@@ -204,21 +204,21 @@ TabulatedComputationPackage(Key ,Entry): Exports == Implementation where
 ++    are equal iff they have the sane values and the same
 ++    conditions (so their status do not matter).
 
-SplittingNode(V,C) : Exports == Implementation where
+SplittingNode(V, C) : Exports == Implementation where
 
-  V:Join(SetCategory,Aggregate)
-  C:Join(SetCategory,Aggregate)
+  V : Join(SetCategory, Aggregate)
+  C : Join(SetCategory, Aggregate)
   Z ==> Integer
   B ==> Boolean
   O ==> OutputForm
-  VT ==> Record(val:V, tower:C)
-  VTB ==> Record(val:V, tower:C, flag:B)
+  VT ==> Record(val : V, tower : C)
+  VTB ==> Record(val : V, tower : C, flag : B)
 
   Exports ==  SetCategory with
 
      empty : () -> %
        ++ \axiom{empty()} returns the same as
-       ++ \axiom{[empty()$V,empty()$C,false]$%}
+       ++ \axiom{[empty()$V, empty()$C, false]$%}
      empty? : % -> B
        ++ \axiom{empty?(n)} returns true iff the node n is \axiom{empty()$%}.
      value : % -> V
@@ -227,96 +227,96 @@ SplittingNode(V,C) : Exports == Implementation where
        ++ \axiom{condition(n)} returns the condition of the node n.
      status : % -> B
        ++ \axiom{status(n)} returns the status of the node n.
-     construct : (V,C,B) -> %
-       ++ \axiom{construct(v,t,b)} returns the non-empty node with
+     construct : (V, C, B) -> %
+       ++ \axiom{construct(v, t, b)} returns the non-empty node with
        ++ value v, condition t and flag b
-     construct : (V,C) -> %
-       ++ \axiom{construct(v,t)} returns the same as
-       ++ \axiom{construct(v,t,false)}
+     construct : (V, C) -> %
+       ++ \axiom{construct(v, t)} returns the same as
+       ++ \axiom{construct(v, t, false)}
      construct : VT ->  %
        ++ \axiom{construct(vt)} returns the same as
-       ++ \axiom{construct(vt.val,vt.tower)}
+       ++ \axiom{construct(vt.val, vt.tower)}
      construct : List VT ->  List %
        ++ \axiom{construct(lvt)} returns the same as
-       ++ \axiom{[construct(vt.val,vt.tower) for vt in lvt]}
+       ++ \axiom{[construct(vt.val, vt.tower) for vt in lvt]}
      construct : (V, List C) -> List %
-       ++ \axiom{construct(v,lt)} returns the same as
-       ++ \axiom{[construct(v,t) for t in lt]}
+       ++ \axiom{construct(v, lt)} returns the same as
+       ++ \axiom{[construct(v, t) for t in lt]}
      copy : % -> %
        ++ \axiom{copy(n)} returns a copy of n.
-     setValue! : (%,V) -> %
-       ++ \axiom{setValue!(n,v)} returns n whose value
+     setValue! : (%, V) -> %
+       ++ \axiom{setValue!(n, v)} returns n whose value
        ++ has been replaced by v if it is not
        ++ empty, else an error is produced.
-     setCondition! : (%,C) -> %
-       ++ \axiom{setCondition!(n,t)} returns n whose condition
+     setCondition! : (%, C) -> %
+       ++ \axiom{setCondition!(n, t)} returns n whose condition
        ++ has been replaced by t if it is not
        ++ empty, else an error is produced.
-     setStatus!: (%,B) -> %
-       ++ \axiom{setStatus!(n,b)} returns n whose status
+     setStatus! : (%, B) -> %
+       ++ \axiom{setStatus!(n, b)} returns n whose status
        ++ has been replaced by b if it is not
        ++ empty, else an error is produced.
      setEmpty! : % -> %
        ++ \axiom{setEmpty!(n)} replaces n by \axiom{empty()$%}.
-     infLex? : (%,%,(V,V) -> B,(C,C) -> B) -> B
-       ++ \axiom{infLex?(n1,n2,o1,o2)} returns true iff
-       ++ \axiom{o1(value(n1),value(n2))} or
+     infLex? : (%, %, (V, V) -> B, (C, C) -> B) -> B
+       ++ \axiom{infLex?(n1, n2, o1, o2)} returns true iff
+       ++ \axiom{o1(value(n1), value(n2))} or
        ++ \axiom{value(n1) = value(n2)} and
-       ++ \axiom{o2(condition(n1),condition(n2))}.
-     subNode? : (%,%,(C,C) -> B) -> B
-       ++ \axiom{subNode?(n1,n2,o2)} returns true iff
+       ++ \axiom{o2(condition(n1), condition(n2))}.
+     subNode? : (%, %, (C, C) -> B) -> B
+       ++ \axiom{subNode?(n1, n2, o2)} returns true iff
        ++ \axiom{value(n1) = value(n2)} and
-       ++ \axiom{o2(condition(n1),condition(n2))}
+       ++ \axiom{o2(condition(n1), condition(n2))}
 
   Implementation == add
 
      Rep ==> VTB
 
-     rep(n:%):Rep == n pretend Rep
-     per(r:Rep):% == r pretend %
+     rep(n : %) : Rep == n pretend Rep
+     per(r : Rep) : % == r pretend %
 
-     empty() == per [empty()$V,empty()$C,false]$Rep
-     empty?(n:%) == empty?((rep n).val)$V and  empty?((rep n).tower)$C
-     value(n:%) == (rep n).val
-     condition(n:%) == (rep n).tower
-     status(n:%) == (rep n).flag
-     construct(v:V,t:C,b:B) ==  per [v,t,b]$Rep
-     construct(v:V,t:C) == [v,t,false]$%
-     construct(vt:VT) == [vt.val,vt.tower]$%
-     construct(lvt:List VT) == [[vt]$% for vt in lvt]
-     construct(v:V,lt: List C) == [[v,t]$% for t in lt]
-     copy(n:%) == per copy rep n
-     setValue!(n:%,v:V) ==
+     empty() == per [empty()$V, empty()$C, false]$Rep
+     empty?(n : %) == empty?((rep n).val)$V and  empty?((rep n).tower)$C
+     value(n : %) == (rep n).val
+     condition(n : %) == (rep n).tower
+     status(n : %) == (rep n).flag
+     construct(v : V, t : C, b : B) ==  per [v, t, b]$Rep
+     construct(v : V, t : C) == [v, t, false]$%
+     construct(vt : VT) == [vt.val, vt.tower]$%
+     construct(lvt : List VT) == [[vt]$% for vt in lvt]
+     construct(v : V, lt : List C) == [[v, t]$% for t in lt]
+     copy(n : %) == per copy rep n
+     setValue!(n : %, v : V) ==
         (rep n).val := v
         n
-     setCondition!(n:%,t:C) ==
+     setCondition!(n : %, t : C) ==
         (rep n).tower := t
         n
-     setStatus!(n:%,b:B) ==
+     setStatus!(n : %, b : B) ==
         (rep n).flag := b
         n
-     setEmpty!(n:%) ==
+     setEmpty!(n : %) ==
         (rep n).val := empty()$V
         (rep n).tower := empty()$C
         n
-     infLex?(n1,n2,o1,o2) ==
-        o1((rep n1).val,(rep n2).val) => true
+     infLex?(n1, n2, o1, o2) ==
+        o1((rep n1).val, (rep n2).val) => true
         (rep n1).val = (rep n2).val =>
-           o2((rep n1).tower,(rep n2).tower)
+           o2((rep n1).tower, (rep n2).tower)
         false
-     subNode?(n1,n2,o2) ==
+     subNode?(n1, n2, o2) ==
         (rep n1).val = (rep n2).val =>
-           o2((rep n1).tower,(rep n2).tower)
+           o2((rep n1).tower, (rep n2).tower)
         false
      -- sample() == empty()
-     n1:% = n2:% ==
+     n1 : % = n2 : % ==
         (rep n1).val ~= (rep n2).val => false
         (rep n1).tower = (rep n2).tower
-     n1:% ~= n2:% ==
+     n1 : % ~= n2 : % ==
         (rep n1).val = (rep n2).val => false
         (rep n1).tower ~= (rep n2).tower
-     coerce(n:%):O ==
-        l1,l2,l3,l : List O
+     coerce(n : %) : O ==
+        l1, l2, l3, l : List O
         l1 := [message("value == "), ((rep n).val)::O]
         o1 : O := blankSeparate l1
         l2 := [message(" tower == "), ((rep n).tower)::O]
@@ -326,7 +326,7 @@ SplittingNode(V,C) : Exports == Implementation where
             o3 := message(" closed == true")
           else
             o3 := message(" closed == false")
-        l := [o1,o2,o3]
+        l := [o1, o2, o3]
         bracket commaSeparate l
 
 @
@@ -368,17 +368,17 @@ SplittingNode(V,C) : Exports == Implementation where
 ++    is only used to create the root of \axiom{a}
 ++    with no children.
 
-SplittingTree(V,C) : Exports == Implementation where
+SplittingTree(V, C) : Exports == Implementation where
 
-  V:Join(SetCategory,Aggregate)
-  C:Join(SetCategory,Aggregate)
+  V : Join(SetCategory, Aggregate)
+  C : Join(SetCategory, Aggregate)
   B ==> Boolean
   O ==> OutputForm
   NNI ==> NonNegativeInteger
-  VT ==> Record(val:V, tower:C)
-  VTB ==> Record(val:V, tower:C, flag:B)
-  S ==> SplittingNode(V,C)
-  A ==> Record(root:S,subTrees:List(%))
+  VT ==> Record(val : V, tower : C)
+  VTB ==> Record(val : V, tower : C, flag : B)
+  S ==> SplittingNode(V, C)
+  A ==> Record(root : S, subTrees : List(%))
 
   Exports ==  Join(RecursiveAggregate(S), shallowlyMutable, _
        finiteAggregate) with
@@ -398,53 +398,53 @@ SplittingTree(V,C) : Exports == Implementation where
        ++ represents the starting point of the
        ++ evaluation \axiom{value(s)} under the
        ++ hypothesis \axiom{condition(s)}.
-     construct : (V,C, List %) -> %
-       ++ \axiom{construct(v,t,la)} creates a splitting tree
+     construct : (V, C, List %) -> %
+       ++ \axiom{construct(v, t, la)} creates a splitting tree
        ++ with value (i.e. root vertex) given by
-       ++ \axiom{[v,t]$S} and with \axiom{la} as
+       ++ \axiom{[v, t]$S} and with \axiom{la} as
        ++ children list.
-     construct : (V,C,List S) -> %
-       ++ \axiom{construct(v,t,ls)} creates a splitting tree
+     construct : (V, C, List S) -> %
+       ++ \axiom{construct(v, t, ls)} creates a splitting tree
        ++ with value (i.e. root vertex) given by
-       ++ \axiom{[v,t]$S} and with children list given by
+       ++ \axiom{[v, t]$S} and with children list given by
        ++ \axiom{[[s]$% for s in ls]}.
-     construct : (V,C,V,List C) -> %
-       ++ \axiom{construct(v1,t,v2,lt)} creates a splitting tree
+     construct : (V, C, V, List C) -> %
+       ++ \axiom{construct(v1, t, v2, lt)} creates a splitting tree
        ++ with value (i.e. root vertex) given by
-       ++ \axiom{[v,t]$S} and with children list given by
-       ++ \axiom{[[[v,t]$S]$% for s in ls]}.
+       ++ \axiom{[v, t]$S} and with children list given by
+       ++ \axiom{[[[v, t]$S]$% for s in ls]}.
      conditions : % -> List C
        ++ \axiom{conditions(a)} returns the list of the conditions
        ++ of the leaves of a
      result : % -> List VT
        ++ \axiom{result(a)} where \axiom{ls} is the leaves list of \axiom{a}
-       ++ returns \axiom{[[value(s),condition(s)]$VT for s in ls]}
+       ++ returns \axiom{[[value(s), condition(s)]$VT for s in ls]}
        ++ if the computations are terminated in \axiom{a} else
        ++ an error is produced.
-     nodeOf? : (S,%) -> B
-       ++ \axiom{nodeOf?(s,a)} returns true iff some node of \axiom{a}
+     nodeOf? : (S, %) -> B
+       ++ \axiom{nodeOf?(s, a)} returns true iff some node of \axiom{a}
        ++ is equal to \axiom{s}
-     subNodeOf? : (S,%,(C,C) -> B) -> B
-       ++ \axiom{subNodeOf?(s,a,sub?)} returns true iff for some node
+     subNodeOf? : (S, %, (C, C) -> B) -> B
+       ++ \axiom{subNodeOf?(s, a, sub?)} returns true iff for some node
        ++ \axiom{n} in \axiom{a} we have \axiom{s = n} or
-       ++ \axiom{status(n)} and \axiom{subNode?(s,n,sub?)}.
-     remove : (S,%) -> %
-       ++ \axiom{remove(s,a)} returns the splitting tree obtained
+       ++ \axiom{status(n)} and \axiom{subNode?(s, n, sub?)}.
+     remove : (S, %) -> %
+       ++ \axiom{remove(s, a)} returns the splitting tree obtained
        ++ from a by removing every sub-tree \axiom{b} such
        ++ that \axiom{value(b)} and \axiom{s} have the same
        ++ value, condition and status.
-     remove! : (S,%) -> %
-       ++ \axiom{remove!(s,a)} replaces a by remove(s,a)
-     splitNodeOf! : (%,%,List(S)) -> %
-       ++ \axiom{splitNodeOf!(l,a,ls)} returns \axiom{a} where the children
+     remove! : (S, %) -> %
+       ++ \axiom{remove!(s, a)} replaces a by remove(s, a)
+     splitNodeOf! : (%, %, List(S)) -> %
+       ++ \axiom{splitNodeOf!(l, a, ls)} returns \axiom{a} where the children
        ++ list of \axiom{l} has been set to
-       ++ \axiom{[[s]$% for s in ls | not nodeOf?(s,a)]}.
+       ++ \axiom{[[s]$% for s in ls | not nodeOf?(s, a)]}.
        ++ Thus, if \axiom{l} is not a node of \axiom{a}, this
        ++ latter splitting tree is unchanged.
-     splitNodeOf! : (%,%,List(S),(C,C) -> B) -> %
-       ++ \axiom{splitNodeOf!(l,a,ls,sub?)} returns \axiom{a} where the children
+     splitNodeOf! : (%, %, List(S), (C, C) -> B) -> %
+       ++ \axiom{splitNodeOf!(l, a, ls, sub?)} returns \axiom{a} where the children
        ++ list of \axiom{l} has been set to
-       ++ \axiom{[[s]$% for s in ls | not subNodeOf?(s,a,sub?)]}.
+       ++ \axiom{[[s]$% for s in ls | not subNodeOf?(s, a, sub?)]}.
        ++ Thus, if \axiom{l} is not a node of \axiom{a}, this
        ++ latter splitting tree is unchanged.
 
@@ -453,33 +453,33 @@ SplittingTree(V,C) : Exports == Implementation where
 
      Rep ==> A
 
-     rep(n:%):Rep == n pretend Rep
-     per(r:Rep):% == r pretend %
+     rep(n : %) : Rep == n pretend Rep
+     per(r : Rep) : % == r pretend %
 
-     construct(s:S) ==
-        per [s,[]]$A
-     construct(v:V,t:C,la:List(%)) ==
-        per [[v,t]$S,la]$A
-     construct(v:V,t:C,ls:List(S)) ==
-        per [[v,t]$S,[[s]$% for s in ls]]$A
-     construct(v1:V,t:C,v2:V,lt:List(C)) ==
-        [v1,t,([v2,lt]$S)@(List S)]$%
+     construct(s : S) ==
+        per [s, []]$A
+     construct(v : V, t : C, la : List(%)) ==
+        per [[v, t]$S, la]$A
+     construct(v : V, t : C, ls : List(S)) ==
+        per [[v, t]$S, [[s]$% for s in ls]]$A
+     construct(v1 : V, t : C, v2 : V, lt : List(C)) ==
+        [v1, t, ([v2, lt]$S)@(List S)]$%
 
-     empty?(a:%) == empty?((rep a).root) and empty?((rep a).subTrees)
+     empty?(a : %) == empty?((rep a).root) and empty?((rep a).subTrees)
      empty() == [empty()$S]$%
 
-     remove(s:S,a:%) ==
+     remove(s : S, a : %) ==
        empty? a => a
        (s = value(a)) and (status(s) = status(value(a))) => empty()$%
        la := children(a)
        lb : List % := []
        while (not empty? la) repeat
-          lb := cons(remove(s,first la), lb)
+          lb := cons(remove(s, first la), lb)
           la := rest la
-       lb := reverse remove(empty?,lb)
-       [value(value(a)),condition(value(a)),lb]$%
+       lb := reverse remove(empty?, lb)
+       [value(value(a)), condition(value(a)), lb]$%
 
-     remove!(s:S,a:%) ==
+     remove!(s : S, a : %) ==
        empty? a => a
        (s = value(a)) and (status(s) = status(value(a))) =>
          (rep a).root := empty()$S
@@ -488,56 +488,56 @@ SplittingTree(V,C) : Exports == Implementation where
        la := children(a)
        lb : List % := []
        while (not empty? la) repeat
-          lb := cons(remove!(s,first la), lb)
+          lb := cons(remove!(s, first la), lb)
           la := rest la
-       lb := reverse remove(empty()$%,lb)
-       setchildren!(a,lb)
+       lb := reverse remove(empty()$%, lb)
+       setchildren!(a, lb)
 
-     value(a:%) ==
+     value(a : %) ==
         (rep a).root
-     children(a:%) ==
+     children(a : %) ==
         (rep a).subTrees
-     leaf?(a:%) ==
+     leaf?(a : %) ==
         empty? a => false
         empty? (rep a).subTrees
-     setchildren!(a:%,la:List(%)) ==
+     setchildren!(a : %, la : List(%)) ==
         (rep a).subTrees := la
         a
-     setvalue!(a:%,s:S) ==
+     setvalue!(a : %, s : S) ==
         (rep a).root := s
         s
-     cyclic?(a:%) == false
-     map(foo:(S -> S),a:%) ==
+     cyclic?(a : %) == false
+     map(foo : (S -> S), a : %) ==
        empty? a => a
        b : % := [foo(value(a))]$%
        leaf? a => b
-       setchildren!(b,[map(foo,c) for c in children(a)])
-     map!(foo:(S -> S),a:%) ==
+       setchildren!(b, [map(foo, c) for c in children(a)])
+     map!(foo : (S -> S), a : %) ==
        empty? a => a
-       setvalue!(a,foo(value(a)))
+       setvalue!(a, foo(value(a)))
        leaf? a => a
-       setchildren!(a,[map!(foo,c) for c in children(a)])
-     copy(a:%) ==
-       map(copy,a)
-     eq?(a1:%,a2:%) ==
+       setchildren!(a, [map!(foo, c) for c in children(a)])
+     copy(a : %) ==
+       map(copy, a)
+     eq?(a1 : %, a2 : %) ==
        error "in eq? from SPLTREE : unimplemented"
-     nodes(a:%) ==
+     nodes(a : %) ==
        empty? a => []
        leaf? a => [a]
-       cons(a,concat([nodes(c) for c in children(a)]))
-     leaves(a:%) ==
+       cons(a, concat([nodes(c) for c in children(a)]))
+     leaves(a : %) ==
        empty? a => []
        leaf? a => [value(a)]
        concat([leaves(c) for c in children(a)])
-     members(a:%) ==
+     members(a : %) ==
        empty? a => []
        leaf? a => [value(a)]
-       cons(value(a),concat([members(c) for c in children(a)]))
-     #(a:%) ==
+       cons(value(a), concat([members(c) for c in children(a)]))
+     #(a : %) ==
        empty? a => 0$NNI
        leaf? a => 1$NNI
        reduce("+",[#c for c in children(a)],1$NNI)$(List NNI)
-     a1:% = a2:% ==
+     a1 : % = a2 : % ==
        empty? a1 => empty? a2
        empty? a2 => false
        leaf? a1 =>
@@ -547,20 +547,20 @@ SplittingTree(V,C) : Exports == Implementation where
        value(a1) ~=$S value(a2) => false
        children(a1) = children(a2)
      -- sample() == [sample()$S]$%
-     localCoerce(a:%,k:NNI):O ==
+     localCoerce(a : %, k : NNI) : O ==
        s : String
        if k = 1 then  s := "* " else s := "-> "
        for i in 2..k repeat s := concat("-+",s)$String
-       ro : O := left(hconcat(message(s)$O,value(a)::O)$O)$O
+       ro : O := left(hconcat(message(s)$O, value(a)::O)$O)$O
        leaf? a => ro
-       lo : List O := [localCoerce(c,k+1) for c in children(a)]
-       lo := cons(ro,lo)
+       lo : List O := [localCoerce(c, k+1) for c in children(a)]
+       lo := cons(ro, lo)
        vconcat(lo)$O
-     coerce(a:%):O ==
+     coerce(a : %) : O ==
        empty? a => vconcat(message(" ")$O,message("* []")$O)
        vconcat(message(" ")$O,localCoerce(a,1))
 
-     extractSplittingLeaf(a:%) ==
+     extractSplittingLeaf(a : %) ==
        empty? a => "failed"::Union(%,"failed")
        status(value(a))$S => "failed"::Union(%,"failed")
        la := children(a)
@@ -571,69 +571,69 @@ SplittingTree(V,C) : Exports == Implementation where
           la := rest la
        "failed"::Union(%,"failed")
 
-     updateStatus!(a:%) ==
+     updateStatus!(a : %) ==
        la := children(a)
        (empty? la) or (status(value(a))$S) => a
        done := true
        while (not empty? la) and done repeat
           done := done and status(value(updateStatus! first la))
           la := rest la
-       setStatus!(value(a),done)$S
+       setStatus!(value(a), done)$S
        a
 
-     result(a:%) ==
+     result(a : %) ==
        empty? a => []
        not status(value(a))$S =>
           error"in result from SLPTREE : mad cow!"
        ls : List S := leaves(a)
-       [[value(s),condition(s)]$VT for s in ls]
+       [[value(s), condition(s)]$VT for s in ls]
 
-     conditions(a:%) ==
+     conditions(a : %) ==
        empty? a => []
        ls : List S := leaves(a)
        [condition(s) for s in ls]
 
-     nodeOf?(s:S,a:%) ==
+     nodeOf?(s : S, a : %) ==
        empty? a => false
        s =$S value(a) => true
        la := children(a)
-       while (not empty? la) and (not nodeOf?(s,first la)) repeat
+       while (not empty? la) and (not nodeOf?(s, first la)) repeat
           la := rest la
        not empty? la
 
-     subNodeOf?(s:S,a:%,sub?:((C,C) -> B)) ==
+     subNodeOf?(s : S, a : %, sub? : ((C, C) -> B)) ==
        empty? a => false
        -- s =$S value(a) => true
-       status(value(a)$%)$S and subNode?(s,value(a),sub?)$S => true
+       status(value(a)$%)$S and subNode?(s, value(a), sub?)$S => true
        la := children(a)
-       while (not empty? la) and (not subNodeOf?(s,first la,sub?)) repeat
+       while (not empty? la) and (not subNodeOf?(s, first la, sub?)) repeat
           la := rest la
        not empty? la
 
-     splitNodeOf!(l:%,a:%,ls:List(S)) ==
+     splitNodeOf!(l : %, a : %, ls : List(S)) ==
        ln := removeDuplicates ls
        la : List % := []
        while not empty? ln repeat
-          if not nodeOf?(first ln,a)
+          if not nodeOf?(first ln, a)
             then
               la := cons([first ln]$%, la)
           ln := rest ln
        la := reverse la
-       setchildren!(l,la)$%
-       if empty? la then (rep l).root := [empty()$V,empty()$C,true]$S
+       setchildren!(l, la)$%
+       if empty? la then (rep l).root := [empty()$V, empty()$C, true]$S
        updateStatus!(a)
 
-     splitNodeOf!(l:%,a:%,ls:List(S),sub?:((C,C) -> B)) ==
+     splitNodeOf!(l : %, a : %, ls : List(S), sub? : ((C, C) -> B)) ==
        ln := removeDuplicates ls
        la : List % := []
        while not empty? ln repeat
-          if not subNodeOf?(first ln,a,sub?)
+          if not subNodeOf?(first ln, a, sub?)
             then
               la := cons([first ln]$%, la)
           ln := rest ln
        la := reverse la
-       setchildren!(l,la)$%
-       if empty? la then (rep l).root := [empty()$V,empty()$C,true]$S
+       setchildren!(l, la)$%
+       if empty? la then (rep l).root := [empty()$V, empty()$C, true]$S
        updateStatus!(a)
 
 @

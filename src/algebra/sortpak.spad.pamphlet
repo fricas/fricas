@@ -14,46 +14,46 @@
 )abbrev package SORTPAK SortPackage
 ++ Description:
 ++ This package exports sorting algorithnms
-SortPackage(S,A) : Exports == Implementation where
-  S: Type
-  A: Join(IndexedAggregate(Integer,S), finiteAggregate, shallowlyMutable)
+SortPackage(S, A) : Exports == Implementation where
+  S : Type
+  A : Join(IndexedAggregate(Integer, S), finiteAggregate, shallowlyMutable)
 
   Exports == with
-    bubbleSort!: (A,(S,S) -> Boolean) -> A
-        ++ bubbleSort!(a,f) \undocumented
-    insertionSort!: (A, (S,S) -> Boolean) -> A
-        ++ insertionSort!(a,f) \undocumented
+    bubbleSort! : (A, (S, S) -> Boolean) -> A
+        ++ bubbleSort!(a, f) \undocumented
+    insertionSort! : (A, (S, S) -> Boolean) -> A
+        ++ insertionSort!(a, f) \undocumented
     if S has OrderedSet then
-      bubbleSort!: A -> A
+      bubbleSort! : A -> A
         ++ bubbleSort!(a) \undocumented
-      insertionSort!: A -> A
+      insertionSort! : A -> A
         ++ insertionSort! \undocumented
 
   Implementation == add
-    bubbleSort!(m,f) ==
+    bubbleSort!(m, f) ==
       n := #m
       for i in 1..(n-1) repeat
         for j in n..(i+1) by -1 repeat
-          if f(m.j,m.(j-1)) then swap!(m,j,j-1)
+          if f(m.j, m.(j-1)) then swap!(m, j, j-1)
       m
-    insertionSort!(m,f) ==
+    insertionSort!(m, f) ==
       for i in 2..#m repeat
         j := i
-        while j > 1 and f(m.j,m.(j-1)) repeat
-          swap!(m,j,j-1)
+        while j > 1 and f(m.j, m.(j-1)) repeat
+          swap!(m, j, j-1)
           j := (j - 1) pretend PositiveInteger
       m
     if S has OrderedSet then
-      bubbleSort!(m) == bubbleSort!(m,_<$S)
-      insertionSort!(m) == insertionSort!(m,_<$S)
+      bubbleSort!(m) == bubbleSort!(m, _<$S)
+      insertionSort!(m) == insertionSort!(m, _<$S)
     if A has UnaryRecursiveAggregate(S) then
-      bubbleSort!(m,fn) ==
+      bubbleSort!(m, fn) ==
         empty? m => m
         l := m
         while not empty? (r := l.rest) repeat
-           r := bubbleSort!(r,fn)
+           r := bubbleSort!(r, fn)
            x := l.first
-           if fn(r.first,x) then
+           if fn(r.first, x) then
              l.first := r.first
              r.first := x
            l.rest := r

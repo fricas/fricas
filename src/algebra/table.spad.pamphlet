@@ -32,15 +32,15 @@ testsuite "HASHTBL"
 ++   By varying the hashfn parameter, tables suited for different
 ++   purposes can be obtained.
 
-HashTable(Key, Entry, hashfn): Exports == Implementation where
+HashTable(Key, Entry, hashfn) : Exports == Implementation where
     Key : SetCategory
     Entry : Type
-    hashfn: String --  Union("EQ", "UEQUAL", "CVEC", "ID")
+    hashfn : String --  Union("EQ", "UEQUAL", "CVEC", "ID")
 
     Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
 
     Implementation ==> add
-        Pair ==> Record(key: Key, entry: Entry)
+        Pair ==> Record(key : Key, entry : Entry)
         Ex   ==> OutputForm
         failMsg := GENSYM()$Lisp
 
@@ -51,13 +51,13 @@ Originally we were implementing equality here via
 \begin{verbatim}
         t1 = t2              == EQ(t1, t2)$Lisp
 \end{verbatim}
-but this is wrong: we do not want that the internal order of the keys matters.
+but this is wrong : we do not want that the internal order of the keys matters.
 Not implementing equality here means that equality comes from
 [[TableAggregate]], which is fine.
 
 <<TEST TABLE>>=
 testcase "equality"
-l := [[1, 1], [2, 2], [3, 3]]$List Record(key: INT, entry: INT);
+l := [[1, 1], [2, 2], [3, 3]]$List Record(key : INT, entry : INT);
 testEquals("construct(l)$TABLE(INT, INT)", "construct(reverse l)$TABLE(INT, INT)")
 
 @
@@ -65,10 +65,10 @@ testEquals("construct(l)$TABLE(INT, INT)", "construct(reverse l)$TABLE(INT, INT)
 <<domain HASHTBL HashTable>>=
         keys t               == HKEYS(t)$Lisp
         # t                  == HCOUNT(t)$Lisp
-        setelt(t, k, e)      == HPUT(t,k,e)$Lisp
-        remove!(k:Key, t:%) ==
+        setelt(t, k, e)      == HPUT(t, k, e)$Lisp
+        remove!(k : Key, t : %) ==
           r := HGET2(t, k, failMsg)$Lisp
-          not EQ(r,failMsg)$Lisp =>
+          not EQ(r, failMsg)$Lisp =>
             HREM(t, k)$Lisp
             r pretend Entry
           "failed"
@@ -76,7 +76,7 @@ testEquals("construct(l)$TABLE(INT, INT)", "construct(reverse l)$TABLE(INT, INT)
         empty() ==
             MAKE_-HASHTABLE(INTERN(hashfn)$Lisp)$Lisp
 
-        search(k:Key, t:%)  ==
+        search(k : Key, t : %)  ==
             r := HGET2(t, k, failMsg)$Lisp
             not EQ(r, failMsg)$Lisp => r pretend Entry
             "failed"
@@ -99,7 +99,7 @@ testEquals("construct(l)$TABLE(INT, INT)", "construct(reverse l)$TABLE(INT, INT)
 ++   This domain is used to provide a conditional "add" domain
 ++   for the implementation of \spadtype{Table}.
 
-InnerTable(Key: SetCategory, Entry: Type, addDom) : Exports ==
+InnerTable(Key : SetCategory, Entry : Type, addDom) : Exports ==
        Implementation where
     addDom : Join(TableAggregate(Key, Entry), finiteAggregate)
     Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
@@ -126,7 +126,7 @@ InnerTable(Key: SetCategory, Entry: Type, addDom) : Exports ==
 ++   domain is consistent with Lisp EQUAL otherwise an
 ++   \spadtype{AssociationList}
 
-Table(Key : SetCategory, Entry : Type):Exports == Implementation where
+Table(Key : SetCategory, Entry : Type) : Exports == Implementation where
     Exports ==> Join(TableAggregate(Key, Entry), finiteAggregate)
 
     Implementation ==> InnerTable(Key, Entry,
@@ -151,7 +151,7 @@ Table(Key : SetCategory, Entry : Type):Exports == Implementation where
 ++   This domain provides tables where the keys are compared using
 ++   \spadfun{eq?}.  Thus keys are considered equal only if they
 ++   are the same instance of a structure.
-EqTable(Key: SetCategory, Entry: Type) ==
+EqTable(Key : SetCategory, Entry : Type) ==
       HashTable(Key, Entry, "EQ")
 
 @
@@ -191,25 +191,25 @@ StringTable(Entry : Type) ==
 ++ Description:
 ++   A sparse table has a default entry, which is returned if no other
 ++   value has been explicitly stored for a key.
-GeneralSparseTable(Key, Entry, Tbl, dent): TableAggregate(Key, Entry) == Impl
+GeneralSparseTable(Key, Entry, Tbl, dent) : TableAggregate(Key, Entry) == Impl
   where
     Key : SetCategory
     Entry : BasicType
-    Tbl:  TableAggregate(Key, Entry)
-    dent: Entry
+    Tbl :  TableAggregate(Key, Entry)
+    dent : Entry
 
     Impl ==> Tbl add
         Rep := Tbl
 
-        elt(t:%, k:Key) ==
+        elt(t : %, k : Key) ==
             (u := search(k, t)$Rep) case "failed" => dent
             u::Entry
 
-        setelt(t:%, k:Key, e:Entry) ==
+        setelt(t : %, k : Key, e : Entry) ==
             e = dent => (remove!(k, t); e)
             setelt(t, k, e)$Rep
 
-        search(k:Key, t:%) ==
+        search(k : Key, t : %) ==
             (u := search(k, t)$Rep) case "failed" => dent
             u
 

@@ -22,12 +22,12 @@
 ++ Keywords: polynomial, fraction, transformation
 PolynomialCategoryQuotientFunctions(E, V, R, P, F):
  Exports == Implementation where
-  E: OrderedAbelianMonoidSup
-  V: OrderedSet
-  R: Ring
-  P: PolynomialCategory(R, E, V)
-  F: Field with
-    coerce: P -> %
+  E : OrderedAbelianMonoidSup
+  V : OrderedSet
+  R : Ring
+  P : PolynomialCategory(R, E, V)
+  F : Field with
+    coerce : P -> %
     numer : % -> P
     denom : % -> P
 
@@ -38,24 +38,24 @@ PolynomialCategoryQuotientFunctions(E, V, R, P, F):
     variables   : F -> List V
       ++ variables(f) returns the list of variables appearing
       ++ in the numerator or the denominator of f.
-    mainVariable: F -> Union(V, "failed")
+    mainVariable : F -> Union(V, "failed")
       ++ mainVariable(f) returns the highest variable appearing
       ++ in the numerator or the denominator of f, "failed" if
       ++ f has no variables.
     univariate  : (F, V) -> RF
       ++ univariate(f, v) returns f viewed as a univariate
       ++ rational function in v.
-    multivariate: (RF, V) -> F
+    multivariate : (RF, V) -> F
       ++ multivariate(f, v) applies both the numerator and
       ++ denominator of f to v.
     univariate  : (F, V, UP) -> UP
       ++ univariate(f, x, p) returns f viewed as a univariate
       ++ polynomial in x, using the side-condition \spad{p(x) = 0}.
     isPlus      : F -> Union(List F, "failed")
-      ++ isPlus(p) returns [m1,...,mn] if \spad{p = m1 + ... + mn} and
+      ++ isPlus(p) returns [m1, ..., mn] if \spad{p = m1 + ... + mn} and
       ++ \spad{n > 1}, "failed" otherwise.
     isTimes     : F -> Union(List F, "failed")
-      ++ isTimes(p) returns \spad{[a1,...,an]} if
+      ++ isTimes(p) returns \spad{[a1, ..., an]} if
       ++ \spad{p = a1 ... an} and \spad{n > 1},
       ++ "failed" otherwise.
     isExpt      : F -> Union(Record(var:V, exponent:Integer), "failed")
@@ -66,7 +66,7 @@ PolynomialCategoryQuotientFunctions(E, V, R, P, F):
       ++ "failed" otherwise.
 
   Implementation ==> add
-    P2UP: (P, V) -> UP
+    P2UP : (P, V) -> UP
 
     univariate(f, x) == P2UP(numer f, x) / P2UP(denom f, x)
 
@@ -105,13 +105,13 @@ PolynomialCategoryQuotientFunctions(E, V, R, P, F):
       v := x::P::F
       ((numer f) v) / ((denom f) v)
 
-    mymerge:(List V,List V) ->List V
-    mymerge(l:List V,m:List V):List V==
+    mymerge : (List V, List V) ->List V
+    mymerge(l : List V, m : List V) : List V==
          empty? l => m
          empty? m => l
-         first l = first m => cons(first l,mymerge(rest l,rest m))
-         first l > first m => cons(first l,mymerge(rest l,m))
-         cons(first m,mymerge(l,rest m))
+         first l = first m => cons(first l, mymerge(rest l, rest m))
+         first l > first m => cons(first l, mymerge(rest l, m))
+         cons(first m, mymerge(l, rest m))
 
     variables f ==
       mymerge(variables numer f, variables denom f)
@@ -120,10 +120,10 @@ PolynomialCategoryQuotientFunctions(E, V, R, P, F):
       (den := denom f) ~= 1 =>
         numer f ~= 1 => "failed"
         (ur := isExpt den) case "failed" => [den::F, -1]
-        r := ur::Record(var:V, exponent:NonNegativeInteger)
+        r := ur::Record(var : V, exponent : NonNegativeInteger)
         [r.var::P::F, - (r.exponent::Integer)]
       (ur := isExpt numer f) case "failed" => "failed"
-      r := ur::Record(var:V, exponent:NonNegativeInteger)
+      r := ur::Record(var : V, exponent : NonNegativeInteger)
       [r.var::P::F, r.exponent::Integer]
 
     isExpt f ==
@@ -131,10 +131,10 @@ PolynomialCategoryQuotientFunctions(E, V, R, P, F):
 --        one? numer f =>
         (numer f) = 1 =>
           (ur := isExpt denom f) case "failed" => "failed"
-          r := ur::Record(var:V, exponent:NonNegativeInteger)
+          r := ur::Record(var : V, exponent : NonNegativeInteger)
           [r.var, - (r.exponent::Integer)]
         "failed"
-      r := ur::Record(var:V, exponent:NonNegativeInteger)
+      r := ur::Record(var : V, exponent : NonNegativeInteger)
 --      one? denom f => [r.var, r.exponent::Integer]
       (denom f) = 1 => [r.var, r.exponent::Integer]
       "failed"
@@ -180,7 +180,7 @@ PolynomialCategoryQuotientFunctions(E, V, R, P, F):
 ++   fractions than on polynomials.
 ++ Keywords: polynomial, fraction
 -- Do not make into a domain!
-RationalFunction(R:IntegralDomain): Exports == Implementation where
+RationalFunction(R : IntegralDomain) : Exports == Implementation where
   V  ==> Symbol
   P  ==> Polynomial R
   Q  ==> Fraction P
@@ -191,27 +191,27 @@ RationalFunction(R:IntegralDomain): Exports == Implementation where
     variables   : Q -> List V
       ++ variables(f) returns the list of variables appearing
       ++ in the numerator or the denominator of f.
-    mainVariable: Q -> Union(V, "failed")
+    mainVariable : Q -> Union(V, "failed")
       ++ mainVariable(f) returns the highest variable appearing
       ++ in the numerator or the denominator of f, "failed" if
       ++ f has no variables.
     univariate  : (Q, V) -> Fraction SparseUnivariatePolynomial Q
       ++ univariate(f, v) returns f viewed as a univariate
       ++ rational function in v.
-    multivariate: (Fraction SparseUnivariatePolynomial Q, V) -> Q
+    multivariate : (Fraction SparseUnivariatePolynomial Q, V) -> Q
       ++ multivariate(f, v) applies both the numerator and
       ++ denominator of f to v.
     eval        : (Q, V, Q) -> Q
       ++ eval(f, v, g) returns f with v replaced by g.
     eval        : (Q, List V, List Q) -> Q
-      ++ eval(f, [v1,...,vn], [g1,...,gn]) returns f with
+      ++ eval(f, [v1, ..., vn], [g1, ..., gn]) returns f with
       ++ each vi replaced by gi in parallel, i.e. vi's appearing
       ++ inside the gi's are not replaced.
     eval        : (Q, Equation Q) -> Q
       ++ eval(f, v = g) returns f with v replaced by g.
       ++ Error: if v is not a symbol.
     eval        : (Q, List Equation Q) -> Q
-      ++ eval(f, [v1 = g1,...,vn = gn]) returns f with
+      ++ eval(f, [v1 = g1, ..., vn = gn]) returns f with
       ++ each vi replaced by gi in parallel, i.e. vi's appearing
       ++ inside the gi's are not replaced.
       ++ Error: if any vi is not a symbol.
@@ -220,27 +220,27 @@ RationalFunction(R:IntegralDomain): Exports == Implementation where
 
   Implementation ==> add
     foo  : (List V, List Q, V) -> Q
-    peval: (P, List V, List Q) -> Q
+    peval : (P, List V, List Q) -> Q
 
-    coerce(r:R):Q            == r::P::Q
+    coerce(r : R) : Q            == r::P::Q
     variables f              == variables(f)$QF
     mainVariable f           == mainVariable(f)$QF
     univariate(f, x)         == univariate(f, x)$QF
     multivariate(f, x)       == multivariate(f, x)$QF
-    eval(x:Q, s:V, y:Q)      == eval(x, [s], [y])
-    eval(x:Q, eq:Equation Q) == eval(x, [eq])
+    eval(x : Q, s : V, y : Q)      == eval(x, [s], [y])
+    eval(x : Q, eq : Equation Q) == eval(x, [eq])
     foo(ls, lv, x)           == match(ls, lv, x, x::Q)$ListToMap(V, Q)
 
-    eval(x:Q, l:List Equation Q) ==
+    eval(x : Q, l : List Equation Q) ==
       eval(x, [retract(lhs eq)@V for eq in l]$List(V),
               [rhs eq for eq in l]$List(Q))
 
-    eval(x:Q, ls:List V, lv:List Q) ==
+    eval(x : Q, ls : List V, lv : List Q) ==
       peval(numer x, ls, lv) / peval(denom x, ls, lv)
 
     peval(p, ls, lv) ==
       map(z1 +-> foo(ls, lv, z1), z2 +-> z2::Q,
-          p)$PolynomialCategoryLifting(IndexedExponents V,V,R,P,Q)
+          p)$PolynomialCategoryLifting(IndexedExponents V, V, R, P, Q)
 
 @
 \section{License}

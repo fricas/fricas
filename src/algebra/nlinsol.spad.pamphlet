@@ -20,9 +20,9 @@
 ++ that attempts to retract the coefficients of the equations before
 ++ solving.
 
-RetractSolvePackage(Q, R): Exports == Implementation where
-  Q: IntegralDomain
-  R: Join(IntegralDomain, RetractableTo Q)
+RetractSolvePackage(Q, R) : Exports == Implementation where
+  Q : IntegralDomain
+  R : Join(IntegralDomain, RetractableTo Q)
 
   PQ  ==> Polynomial Q
   FQ  ==> Fraction PQ
@@ -33,8 +33,8 @@ RetractSolvePackage(Q, R): Exports == Implementation where
   SSP ==> SystemSolvePackage
 
   Exports ==> with
-    solveRetract: (List P, List SY) -> List List EQ F
-      ++ solveRetract(lp,lv) finds the solutions of the list lp of
+    solveRetract : (List P, List SY) -> List List EQ F
+      ++ solveRetract(lp, lv) finds the solutions of the list lp of
       ++ rational functions with respect to the list of symbols lv.
       ++ The function tries to retract all the coefficients of the equations
       ++ to Q before solving if possible.
@@ -44,9 +44,9 @@ RetractSolvePackage(Q, R): Exports == Implementation where
     FQ2F   : FQ -> F
     PQ2P   : PQ -> P
     QIfCan : List P -> Union(List FQ, "failed")
-    PQIfCan: P -> Union(FQ, "failed")
+    PQIfCan : P -> Union(FQ, "failed")
 
-    PQ2P p   == map((q1: Q): R +-> q1::R, p)$PolynomialFunctions2(Q, R)
+    PQ2P p   == map((q1 : Q) : R +-> q1::R, p)$PolynomialFunctions2(Q, R)
     FQ2F f   == PQ2P numer f / PQ2P denom f
     LEQQ2F l == [equation(FQ2F lhs eq, FQ2F rhs eq) for eq in l]
 
@@ -56,7 +56,7 @@ RetractSolvePackage(Q, R): Exports == Implementation where
       [LEQQ2F l for l in solve(u::List(FQ), lv)$SSP(Q)]
 
     QIfCan l ==
-      ans:List(FQ) := empty()
+      ans : List(FQ) := empty()
       for p in l repeat
         (u := PQIfCan p) case "failed" => return "failed"
         ans := concat(u::FQ, ans)
@@ -67,7 +67,7 @@ RetractSolvePackage(Q, R): Exports == Implementation where
         (r := retractIfCan(ground p)@Union(Q,"failed")) case Q => r::Q::PQ::FQ
         "failed"
       up := univariate(p, s := u::SY)
-      ans:FQ := 0
+      ans : FQ := 0
       while up ~= 0 repeat
         (v := PQIfCan leadingCoefficient up) case "failed" => return "failed"
         ans := ans + monomial(1, s, degree up)$PQ * (v::FQ)
@@ -87,7 +87,7 @@ RetractSolvePackage(Q, R): Exports == Implementation where
 ++ solving. The solutions are given in the algebraic closure of R whenever
 ++ possible.
 
-NonLinearSolvePackage(R:IntegralDomain): Exports == Implementation where
+NonLinearSolvePackage(R : IntegralDomain) : Exports == Implementation where
   Z   ==> Integer
   Q   ==> Fraction Z
   SY  ==> Symbol
@@ -98,17 +98,17 @@ NonLinearSolvePackage(R:IntegralDomain): Exports == Implementation where
   SOL ==> RetractSolvePackage
 
   Exports ==> with
-    solveInField:    (List P, List SY) -> List List EQ
-      ++ solveInField(lp,lv) finds the solutions of the list lp of
+    solveInField :    (List P, List SY) -> List List EQ
+      ++ solveInField(lp, lv) finds the solutions of the list lp of
       ++ rational functions with respect to the list of symbols lv.
-    solveInField:     List P       -> List List EQ
+    solveInField :     List P       -> List List EQ
       ++ solveInField(lp) finds the solution of the list lp of rational
       ++ functions with respect to all the symbols appearing in lp.
-    solve:           (List P, List SY) -> List List EQ
-      ++ solve(lp,lv) finds the solutions in the algebraic closure of R
+    solve :           (List P, List SY) -> List List EQ
+      ++ solve(lp, lv) finds the solutions in the algebraic closure of R
       ++ of the list lp of
       ++ rational functions with respect to the list of symbols lv.
-    solve:            List P       -> List List EQ
+    solve :            List P       -> List List EQ
       ++ solve(lp) finds the solution in the algebraic closure of R
       ++ of the list lp of rational
       ++ functions with respect to all the symbols appearing in lp.
@@ -119,7 +119,7 @@ NonLinearSolvePackage(R:IntegralDomain): Exports == Implementation where
     if R has AlgebraicallyClosedField then
       import RationalFunction(R)
 
-      expandSol: List EQ -> List List EQ
+      expandSol : List EQ -> List List EQ
       RIfCan   : F -> Union(R, "failed")
       addRoot  : (EQ, List List EQ) -> List List EQ
       allRoots : List P -> List List EQ
@@ -130,8 +130,8 @@ NonLinearSolvePackage(R:IntegralDomain): Exports == Implementation where
       addRoot(eq, l) == [concat(eq, sol) for sol in l]
       evalSol(ls, l) == [equation(lhs eq, eval(rhs eq, l)) for eq in ls]
 
--- converts [p1(a1),...,pn(an)] to
--- [[a1=v1,...,an=vn]] where vi ranges over all the zeros of pi
+-- converts [p1(a1), ..., pn(an)] to
+-- [[a1=v1, ..., an=vn]] where vi ranges over all the zeros of pi
       allRoots l ==
         empty? l => [empty()$List(EQ)]
         z := allRoots rest l
@@ -152,7 +152,7 @@ NonLinearSolvePackage(R:IntegralDomain): Exports == Implementation where
                  luniv := concat(u::P - r::R::P, luniv)
             else return [l]
         empty? luniv => [l]
-        [concat(z, concat(evalSol(lsubs,z), lassign)) for z in allRoots luniv]
+        [concat(z, concat(evalSol(lsubs, z), lassign)) for z in allRoots luniv]
 
       RIfCan f ==
         ((n := retractIfCan(numer f)@Union(R,"failed")) case R) and

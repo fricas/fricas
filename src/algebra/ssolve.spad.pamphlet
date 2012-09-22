@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{axiom,amsthm,amsmath}
+\usepackage{axiom, amsthm, amsmath}
 \newtheorem{ToDo}{ToDo}[section]
 
 \begin{document}
@@ -19,7 +19,7 @@ unfortunately.
 
 <<domain SMPEXPR SparseMultivariatePolynomialExpressions>>=
 )abb domain SMPEXPR SparseMultivariatePolynomialExpressions
-SparseMultivariatePolynomialExpressions(R: Ring): Exports == Implementation where
+SparseMultivariatePolynomialExpressions(R : Ring) : Exports == Implementation where
 
     Exports ==> PolynomialCategory(R, IndexedExponents NonNegativeInteger, NonNegativeInteger) with
 
@@ -29,28 +29,28 @@ SparseMultivariatePolynomialExpressions(R: Ring): Exports == Implementation wher
     Implementation ==> SparseMultivariatePolynomial(R, NonNegativeInteger) add
 
         if R has TranscendentalFunctionCategory then
-            log(p: %): % ==
+            log(p : %) : % ==
                 ground? p => coerce log ground p
                 output(hconcat("log p for p= ", p::OutputForm))$OutputPackage
                 error "SUPTRAFUN: log only defined for elements of the coefficient ring"
 
-            exp(p: %): % ==
+            exp(p : %) : % ==
                 ground? p => coerce exp ground p
                 output(hconcat("exp p for p= ", p::OutputForm))$OutputPackage
                 error "SUPTRAFUN: exp only defined for elements of the coefficient ring"
-            sin(p: %): % ==
+            sin(p : %) : % ==
                 ground? p => coerce sin ground p
                 output(hconcat("sin p for p= ", p::OutputForm))$OutputPackage
                 error "SUPTRAFUN: sin only defined for elements of the coefficient ring"
-            asin(p: %): % ==
+            asin(p : %) : % ==
                 ground? p => coerce asin ground p
                 output(hconcat("asin p for p= ", p::OutputForm))$OutputPackage
                 error "SUPTRAFUN: asin only defined for elements of the coefficient ring"
-            cos(p: %): % ==
+            cos(p : %) : % ==
                 ground? p => coerce cos ground p
                 output(hconcat("cos p for p= ", p::OutputForm))$OutputPackage
                 error "SUPTRAFUN: cos only defined for elements of the coefficient ring"
-            acos(p: %): % ==
+            acos(p : %) : % ==
                 ground? p => coerce acos ground p
                 output(hconcat("acos p for p= ", p::OutputForm))$OutputPackage
                 error "SUPTRAFUN: acos only defined for elements of the coefficient ring"
@@ -76,43 +76,43 @@ It uses the method of undetermined coefficients.
   Let's see.
 
   Try to compute the equation without resorting to power series. I.e., %
-  [[c: SUP SUP F]], and [[f: SUP SUP F -> SUP SUP F]]. Won't this make the
+  [[c : SUP SUP F]], and [[f : SUP SUP F -> SUP SUP F]]. Won't this make the
   computation of coefficients terribly slow?
 
   I could also try to replace transcendental kernels with variables\dots
 
   Unfortunately, [[SUP F]] does not have [[TRANFUN]] -- well, it can't, of
   course. However, I'd like to be able to compute %
-  [[sin(1+monomial(1,1)$UFPS SUP EXPR INT)]].
+  [[sin(1+monomial(1, 1)$UFPS SUP EXPR INT)]].
 \end{ToDo}
 
 <<package UTSSOL TaylorSolve>>=
 )abb package UTSSOL TaylorSolve
-TaylorSolve(F, UTSF, UTSSMPF): Exports == Implementation where
-    F: Field
+TaylorSolve(F, UTSF, UTSSMPF) : Exports == Implementation where
+    F : Field
     SMPF  ==> SparseMultivariatePolynomialExpressions F
-    UTSF: UnivariateTaylorSeriesCategory F
-    UTSSMPF: UnivariateTaylorSeriesCategory SMPF
+    UTSF : UnivariateTaylorSeriesCategory F
+    UTSSMPF : UnivariateTaylorSeriesCategory SMPF
     NNI  ==> NonNegativeInteger
 
     Exports == with
-        seriesSolve: (UTSSMPF -> UTSSMPF, List F) -> UTSF
+        seriesSolve : (UTSSMPF -> UTSSMPF, List F) -> UTSF
 
     Implementation == add
-<<implementation: UTSSOL TaylorSolve>>
+<<implementation : UTSSOL TaylorSolve>>
 @
 
 [[coeffs]] is the stream of coefficients of the solution.  We store in [[st.2]]
 the stream of all coefficients, and in [[st.1]] the stream starting with the
 first coefficient that has possibly not yet been computed.
 
-Consider an arbitrary equation $f\big(x, y(x)\big)=0$. When setting $x=0$, we
+Consider an arbitrary equation $f\big(x, y(x)\big)=0$. When setting $x = 0$, we
 obtain $f\big(0, y(0)\big)=0$. It is not necessarily the case that this
 determines $y(0)$ uniquely, so we need one initial value that satisfies this
 equation.
 \begin{ToDo}
   [[seriesSolve]] should check that the given initial values satisfy $f\big(0, y(0),
-  y'(0),...\big) = 0$.
+  y'(0), ...\big) = 0$.
 \end{ToDo}
 Now consider the derivatives of $f$, where we write $y$ instead of $y(x)$ for
 better readability:
@@ -121,40 +121,40 @@ better readability:
 \end{equation*}
 and
 \begin{align*}
-  \frac{d^2}{dx^2}f(x, y)&=f_{1,1}(x, y)\\
-                         &+f_{1,2}(x, y)y^\prime\\
-                         &+f_{2,1}(x, y)y^\prime\\
-                         &+f_{2,2}(x, y)(y^\prime)^2\\
+  \frac{d^2}{dx^2}f(x, y)&=f_{1, 1}(x, y)\\
+                         &+f_{1, 2}(x, y)y^\prime\\
+                         &+f_{2, 1}(x, y)y^\prime\\
+                         &+f_{2, 2}(x, y)(y^\prime)^2\\
                          &+f_2(x, y)y^{\prime\prime}.
 \end{align*}
 In general, $\frac{d^2}{dx^2}f(x, y)$ depends only linearly on
 $y^{\prime\prime}$.
 
 \begin{ToDo}
-  This points to another possibility: Since we know that we only need to solve
+  This points to another possibility : Since we know that we only need to solve
   linear equations, we could compute two values and then use interpolation.
-  This might be a bit slower, but more importantly: can we still check that we
+  This might be a bit slower, but more importantly : can we still check that we
   have enough initial values? Furthermore, we then really need that $f$ is
   analytic, i.e., operators are not necessarily allowed anymore. However, it
   seems that composition is allowed.
 \end{ToDo}
 
-<<implementation: UTSSOL TaylorSolve>>=
+<<implementation : UTSSOL TaylorSolve>>=
         seriesSolve(f, l) ==
             l1 := [e::SMPF for e in l]::Stream SMPF
-            s1: Stream Integer := generate(inc, 0)$Stream(Integer)
+            s1 : Stream Integer := generate(inc, 0)$Stream(Integer)
             l2 := map(i +-> monomial(1, monomial(1, i::NNI)
                                                 $IndexedExponents(NNI))
                             $SMPF, s1)$StreamFunctions2(Integer, SMPF)
 
-            coeffs: Stream SMPF := concat(l1, l2)
-            st: List Stream SMPF := [coeffs, coeffs]
+            coeffs : Stream SMPF := concat(l1, l2)
+            st : List Stream SMPF := [coeffs, coeffs]
 
-            next: () -> F :=
-                nr: Stream SMPF := st.1
-                res: F
+            next : () -> F :=
+                nr : Stream SMPF := st.1
+                res : F
 
-                if ground?(coeff: SMPF := first nr)$SMPF then
+                if ground?(coeff : SMPF := first nr)$SMPF then
 -- If the next element was already calculated, we can simply return it:
 
                     res := ground coeff
@@ -164,8 +164,8 @@ $y^{\prime\prime}$.
 -- Otherwise, we have to find the first non-satisfied relation and solve it.  It
 -- should be linear, or a single non-constant monomial. That is, the solution
 -- should be unique.
-                    eqs: Stream SMPF := coefficients f series(st.2)
-                    eq: SMPF
+                    eqs : Stream SMPF := coefficients f series(st.2)
+                    eq : SMPF
                     while zero?(eq := first eqs) repeat eqs := rest eqs
 
                     vars := variables eq
@@ -183,7 +183,7 @@ $y^{\prime\prime}$.
                     if not one?(# vars) or degree(eq, first vars) > 1 then
                         if monomial? eq then
                             for var in vars repeat
-                                i: Integer := 1
+                                i : Integer := 1
                                 while ground?(nr.i) or (retract(nr.i)@NNI ~= var) repeat
                                     i := i+1
                                 nr.i := 0
@@ -221,12 +221,12 @@ $y^{\prime\prime}$.
 
 <<package EXPRSOL ExpressionSolve>>=
 )abb package EXPRSOL ExpressionSolve
-ExpressionSolve(R, F, UTSF, UTSSMPF): Exports == Implementation where
-    R: Join(Comparable, IntegralDomain, ConvertibleTo InputForm)
-    F: FunctionSpace R
-    UTSF: UnivariateTaylorSeriesCategory F
+ExpressionSolve(R, F, UTSF, UTSSMPF) : Exports == Implementation where
+    R : Join(Comparable, IntegralDomain, ConvertibleTo InputForm)
+    F : FunctionSpace R
+    UTSF : UnivariateTaylorSeriesCategory F
     SMPF ==> SparseMultivariatePolynomialExpressions F
-    UTSSMPF: UnivariateTaylorSeriesCategory SMPF
+    UTSSMPF : UnivariateTaylorSeriesCategory SMPF
     OP   ==> BasicOperator
     SY   ==> Symbol
     NNI  ==> NonNegativeInteger
@@ -234,11 +234,11 @@ ExpressionSolve(R, F, UTSF, UTSSMPF): Exports == Implementation where
 
     Exports == with
 
-        seriesSolve: (F, OP, SY, List F) -> UTSF
-        replaceDiffs: (F, OP, Symbol) -> F
+        seriesSolve : (F, OP, SY, List F) -> UTSF
+        replaceDiffs : (F, OP, Symbol) -> F
 
     Implementation == add
-<<implementation: EXPRSOL ExpressionSolve>>
+<<implementation : EXPRSOL ExpressionSolve>>
 @
 
 The general method is to transform the given expression into a form which can
@@ -249,7 +249,7 @@ We need to replace the differentiation operator by the corresponding function
 in the power series category, and make composition explicit. Furthermore, we
 need to replace the variable by the corresponding variable in the power series.
 It turns out that the compiler doesn't find the right definition of
-[[monomial(1,1)]]. Thus we introduce it as a second argument. In fact, maybe
+[[monomial(1, 1)]]. Thus we introduce it as a second argument. In fact, maybe
 that's even cleaner. Also, we need to tell the compiler that kernels that are
 independent of the main variable should be coerced to elements of the
 coefficient ring, since it will complain otherwise.
@@ -261,7 +261,7 @@ coefficient ring, since it will complain otherwise.
   \end{verbatim}
 \end{ToDo}
 
-<<implementation: EXPRSOL ExpressionSolve>>=
+<<implementation : EXPRSOL ExpressionSolve>>=
         opelt := operator('elt)$OP
         opdiff := operator('D)$OP
         opcoerce := operator('coerce)$OP
@@ -293,7 +293,7 @@ coefficient ring, since it will complain otherwise.
         seriesSolve(expr, op, sy, l) ==
             ex := replaceDiffs(expr, op, sy)
             f := compiledFunction(ex, name op, sy)$MKF
-            seriesSolve(x +-> f(x, monomial(1,1)$UTSSMPF),
+            seriesSolve(x +-> f(x, monomial(1, 1)$UTSSMPF),
                         l)$TaylorSolve(F, UTSF, UTSSMPF)
 @
 %$
@@ -323,8 +323,8 @@ testLibraryError("seriesSolve(D(f x, x, 2) - f x - 1, f, x, [1])$SSOLVE")
 testcase "Bell numbers"
 U ==> UFPS SMPEXPR FRAC INT
 USOLVE ==> UTSSOL(FRAC INT, UFPS FRAC INT, U)
-h(z: U): U ==
-    x := monomial(1,1)$U
+h(z : U) : U ==
+    x := monomial(1, 1)$U
     z.(x*recip(1+x)) - 1 - x*z
 testEquals("coefficient(seriesSolve(h, [])$USOLVE, 6)", "203")
 
@@ -338,11 +338,11 @@ R ==> FRAC POLY INT
 U ==> UTS(R, t, 0)
 UE ==> UTS(SMPEXPR R, t, 0)
 USOLVE ==> UTSSOL(R, U, UE)
-t0 := monomial(1,1)$UE;
-Fxeq0 f == map(c +-> map(d +-> eval(d, 'x=0), c), f)
-Fyeq0 f == map(c +-> map(d +-> eval(d, 'y=0), c), f)
-Fyeqx f == map(c +-> map(d +-> eval(d, 'y=x), c), f)
-s: UE -> UE
+t0 := monomial(1, 1)$UE;
+Fxeq0 f == map(c +-> map(d +-> eval(d, 'x = 0), c), f)
+Fyeq0 f == map(c +-> map(d +-> eval(d, 'y = 0), c), f)
+Fyeqx f == map(c +-> map(d +-> eval(d, 'y = x), c), f)
+s : UE -> UE
 s := f +-> (-1*t0*x*y^3+((-4*t0+1)*x+-1*t0)*y^2+((2*t0+-1)*x^2+-1*t0*x)*y+t0*x^2)*f+((_
   t0*x^2+2*t0*x+t0)*y^2*Fyeqx f+((-1*t0*y^2+2*t0*x*y+-1*t0*x^2)*Fyeq0 f+(((t0*x+t0)*y_
   ^2+(-1*t0*x^2+-1*t0*x)*y)*Fxeq0 f+(-1*x*y^2+x^2*y))));

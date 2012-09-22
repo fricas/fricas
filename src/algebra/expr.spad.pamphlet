@@ -18,7 +18,7 @@
 ++ Date Last Updated: October 1993 (P.Gianni), February 1995 (MB)
 ++ Description: Expressions involving symbolic functions.
 ++ Keywords: operator, kernel, function.
-Expression(R : Comparable): Exports == Implementation where
+Expression(R : Comparable) : Exports == Implementation where
   Q   ==> Fraction Integer
   K   ==> Kernel %
   MP  ==> SparseMultivariatePolynomial(R, K)
@@ -41,13 +41,13 @@ Expression(R : Comparable): Exports == Implementation where
       CombinatorialOpsCategory
       LiouvillianFunctionCategory
       SpecialFunctionCategory
-      reduce: % -> %
+      reduce : % -> %
         ++ reduce(f) simplifies all the unreduced algebraic quantities
         ++ present in f by applying their defining relations.
-      number?: % -> Boolean
+      number? : % -> Boolean
         ++ number?(f) tests if f is rational
-      simplifyPower: (%,Integer) -> %
-        ++ simplifyPower(f,n) \undocumented{}
+      simplifyPower : (%, Integer) -> %
+        ++ simplifyPower(f, n) \undocumented{}
       if R has GcdDomain then
         factorPolynomial : SUP  % -> Factored SUP %
            ++ factorPolynomial(p) \undocumented{}
@@ -70,7 +70,7 @@ Expression(R : Comparable): Exports == Implementation where
 
 
     retNotUnit     : % -> R
-    retNotUnitIfCan: % -> Union(R, "failed")
+    retNotUnitIfCan : % -> Union(R, "failed")
 
     belong? op == true
 
@@ -105,7 +105,7 @@ Expression(R : Comparable): Exports == Implementation where
             commonk   : (%, %) -> List K
             commonk0  : (List K, List K) -> List K
             toprat    : % -> %
-            algkernels: List K -> List K
+            algkernels : List K -> List K
             algtower  : % -> List K
             evl       : (MP, K, SparseUnivariatePolynomial %) -> Fraction MP
             evl0      : (MP, K) -> SparseUnivariatePolynomial Fraction MP
@@ -116,13 +116,13 @@ Expression(R : Comparable): Exports == Implementation where
       --      one? x           == one?(x)$Rep
             one? x           == (x = 1)$Rep
             zero? x          == zero?(x)$Rep
-            - x:%            == -$Rep x
-            n:Integer * x:%  == n *$Rep x
+            - x : %            == -$Rep x
+            n : Integer * x : %  == n *$Rep x
             coerce(n : Integer) ==  coerce(n)$Rep@Rep::%
-            x:% * y:%        == algreduc(x *$Rep y, commonk(x, y))
-            x:% + y:%        == algreduc(x +$Rep y, commonk(x, y))
-            (x:% - y:%):%    == algreduc(x -$Rep y, commonk(x, y))
-            x:% / y:%        == algreduc(x /$Rep y, commonk(x, y))
+            x : % * y : %        == algreduc(x *$Rep y, commonk(x, y))
+            x : % + y : %        == algreduc(x +$Rep y, commonk(x, y))
+            (x : % - y : %) : %    == algreduc(x -$Rep y, commonk(x, y))
+            x : % / y : %        == algreduc(x /$Rep y, commonk(x, y))
 
             number?(x : %) : Boolean ==
                 if R has RetractableTo(Integer) then
@@ -143,31 +143,31 @@ Expression(R : Comparable): Exports == Implementation where
                     (first args)^(n*second(args))
                 reduc(x ^$Rep n, algtower(x))
 
-            x:% ^ n:NonNegativeInteger ==
+            x : % ^ n : NonNegativeInteger ==
                 n = 0 => 1$%
                 n = 1 => x
                 simplifyPower(numerator x, n pretend Integer) /
                   simplifyPower(denominator x, n pretend Integer)
 
-            x:% ^ n:Integer ==
+            x : % ^ n : Integer ==
                 n = 0 => 1$%
                 n = 1 => x
                 n = -1 => 1/x
                 simplifyPower(numerator x, n) / simplifyPower(denominator x, n)
 
-            x:% ^ n:PositiveInteger ==
+            x : % ^ n : PositiveInteger ==
                 n = 1 => x
                 simplifyPower(numerator x, n pretend Integer) /
                   simplifyPower(denominator x, n pretend Integer)
 
             smaller?(x : %, y : %)  == smaller?(x, y)$Rep
-            x:% = y:%        == (x - y) =$Rep 0$Rep
+            x : % = y : %        == (x - y) =$Rep 0$Rep
             numer x          == numer(x)$Rep
             denom x          == denom(x)$Rep
 
             EREP := Record(num : MP, den : MP)
 
-            coerce(p : MP):%   == [p, 1]$EREP pretend %
+            coerce(p : MP) : %   == [p, 1]$EREP pretend %
 
             coerce(p : Polynomial(R)) : % ==
                 en := poly_to_MP(p)
@@ -249,7 +249,7 @@ Expression(R : Comparable): Exports == Implementation where
                    x1 := retract(eval(q, sas, k::%))@%
                 reduc(x1, akl)
 
-            x:MP / y:MP ==
+            x : MP / y : MP ==
                 reduc(x /$Rep y, commonk(x /$Rep 1$MP, y /$Rep 1$MP))
 
             -- since we use the reduction from FRAC SMP which asssumes
@@ -257,7 +257,7 @@ Expression(R : Comparable): Exports == Implementation where
             -- from the denominators
 
             reducedSystem(m : Matrix %) : Matrix(R) ==
-                mm:Matrix(MP) := reducedSystem(map(toprat, m))$Rep
+                mm : Matrix(MP) := reducedSystem(map(toprat, m))$Rep
                 reducedSystem(mm)$MP
 
             reducedSystem(m : Matrix %, v : Vector %):
@@ -359,7 +359,7 @@ Expression(R : Comparable): Exports == Implementation where
                 hypergeometricF(la, lb, x) == hypergeometricF(la, lb, x)$FSF
                 meijerG(la, lb, lc, ld, x) == meijerG(la, lb, lc, ld, x)$FSF
 
-            x:% ^ y:%                 == x ^$CF y
+            x : % ^ y : %                 == x ^$CF y
             factorial x               == factorial(x)$CF
             binomial(n, m)            == binomial(n, m)$CF
             permutation(n, m)         == permutation(n, m)$CF
@@ -404,7 +404,7 @@ Expression(R : Comparable): Exports == Implementation where
             evl0(p, k) ==
                 numer univariate(p::Fraction(MP),
                   k)$PolynomialCategoryQuotientFunctions(IndexedExponents K,
-                                                         K,R,MP,Fraction MP)
+                                                         K, R, MP, Fraction MP)
 
             -- uses some operations from Rep instead of % in order not to
             -- reduce recursively during those operations.
@@ -429,13 +429,13 @@ Expression(R : Comparable): Exports == Implementation where
                     gcdPolynomial(p, q)$GcdDomain_&(%)
 
                 factorPolynomial(x : SUP %) : Factored SUP % ==
-                    uf:= factor(x pretend SUP(Rep))$SupFractionFactorizer(
-                                              IndexedExponents K,K,R,MP)
+                    uf := factor(x pretend SUP(Rep))$SupFractionFactorizer(
+                                              IndexedExponents K, K, R, MP)
                     uf pretend Factored SUP %
 
-                squareFreePolynomial(x:SUP %) : Factored SUP % ==
-                    uf:= squareFree(x pretend SUP(Rep))$SupFractionFactorizer(
-                                                IndexedExponents K,K,R,MP)
+                squareFreePolynomial(x : SUP %) : Factored SUP % ==
+                    uf := squareFree(x pretend SUP(Rep))$SupFractionFactorizer(
+                                                IndexedExponents K, K, R, MP)
                     uf pretend Factored SUP %
 
             if R is AN then
@@ -446,7 +446,7 @@ Expression(R : Comparable): Exports == Implementation where
                     (monomial(x, 0$IndexedExponents(K))$MP)::%
 
             if (R has RetractableTo Integer) then
-                x:% ^ r:Q                  == x ^$AF r
+                x : % ^ r : Q                  == x ^$AF r
                 minPoly k                  == minPoly(k)$AF
                 definingPolynomial x       == definingPolynomial(x)$AF
                 retract(x : %) : Q         == retract(x)$Rep
@@ -454,7 +454,7 @@ Expression(R : Comparable): Exports == Implementation where
 
                 if not(R is AN) then
                     k2expr  : KAN -> %
-                    smp2expr: SparseMultivariatePolynomial(Integer, KAN) -> %
+                    smp2expr : SparseMultivariatePolynomial(Integer, KAN) -> %
                     R2AN    : R  -> Union(AN, "failed")
                     k2an    : K  -> Union(AN, "failed")
                     smp2an  : MP -> Union(AN, "failed")
@@ -470,8 +470,8 @@ Expression(R : Comparable): Exports == Implementation where
                                Integer, KAN), %)
 
                     retractIfCan(x : %) : Union(AN, "failed") ==
-                        ((n:= smp2an numer x) case AN) and
-                          ((d:= smp2an denom x) case AN)
+                        ((n := smp2an numer x) case AN) and
+                          ((d := smp2an denom x) case AN)
                             => (n::AN) / (d::AN)
                         "failed"
 
@@ -535,7 +535,7 @@ Expression(R : Comparable): Exports == Implementation where
                     -- handle subscripted symbols by renaming -> eval
                     -- -> renaming back
                     llsym : List List Symbol := [variables g for g in lg]
-                    lsym : List Symbol:= removeDuplicates concat llsym
+                    lsym : List Symbol := removeDuplicates concat llsym
                     lsd : List Symbol := select (scripted?, lsym)
                     empty? lsd =>
                         eval(f, ls, [compiledFunction(g, x) for g in lg])
@@ -544,7 +544,7 @@ Expression(R : Comparable): Exports == Implementation where
                         [(i::%)= (j::%) for i in lsd for j in ns]
                     lbackwardSubs : List Equation % :=
                         [(j::%)= (i::%) for i in lsd for j in ns]
-                    nlg : List % :=[subst(g, lforwardSubs) for g in lg]
+                    nlg : List % := [subst(g, lforwardSubs) for g in lg]
                     res : % :=
                         eval(f, ls, [compiledFunction(g, x) for g in nlg])
                     subst(res, lbackwardSubs)
@@ -566,30 +566,30 @@ Expression(R : Comparable): Exports == Implementation where
             Rep := MP
             0              == 0$Rep
             1              == 1$Rep
-            - x:%          == -$Rep x
-            n:Integer *x:% == n *$Rep x
-            x:% * y:%      == x *$Rep y
-            x:% + y:%      == x +$Rep y
-            x:% = y:%      == x =$Rep y
-            smaller?(x:%, y:%)      == smaller?(x, y)$Rep
+            - x : %          == -$Rep x
+            n : Integer *x : % == n *$Rep x
+            x : % * y : %      == x *$Rep y
+            x : % + y : %      == x +$Rep y
+            x : % = y : %      == x =$Rep y
+            smaller?(x : %, y : %)      == smaller?(x, y)$Rep
             numer x        == x@Rep
-            coerce(p:MP):% == p
+            coerce(p : MP) : % == p
 
             coerce(p : Polynomial(R)) : % ==
                 poly_to_MP(p) pretend %
 
-            reducedSystem(m:Matrix %):Matrix(R) ==
+            reducedSystem(m : Matrix %) : Matrix(R) ==
               reducedSystem(m)$Rep
 
-            reducedSystem(m:Matrix %, v:Vector %):
-             Record(mat:Matrix R, vec:Vector R) ==
+            reducedSystem(m : Matrix %, v : Vector %):
+             Record(mat : Matrix R, vec : Vector R) ==
               reducedSystem(m, v)$Rep
 
             if R has ConvertibleTo InputForm then
-              convert(x:%):InputForm == convert(x)$Rep
+              convert(x : %) : InputForm == convert(x)$Rep
 
             if R has PatternMatchable Integer then
-              kintmatch: (K,Pattern Integer,PatternMatchResult(Integer,Rep))
+              kintmatch : (K, Pattern Integer, PatternMatchResult(Integer, Rep))
                                          -> PatternMatchResult(Integer, Rep)
 
               kintmatch(k, p, l) ==
@@ -597,8 +597,8 @@ Expression(R : Comparable): Exports == Implementation where
                   )$PatternMatchKernel(Integer, %)
                     pretend PatternMatchResult(Integer, Rep)
 
-              patternMatch(x:%, p:Pattern Integer,
-               l:PatternMatchResult(Integer, %)) ==
+              patternMatch(x : %, p : Pattern Integer,
+               l : PatternMatchResult(Integer, %)) ==
                 patternMatch(x@Rep, p,
                              l pretend PatternMatchResult(Integer, Rep),
                               kintmatch
@@ -607,7 +607,7 @@ Expression(R : Comparable): Exports == Implementation where
                                   pretend PatternMatchResult(Integer, %)
 
             if R has PatternMatchable Float then
-              kfltmatch: (K, Pattern Float, PatternMatchResult(Float, Rep))
+              kfltmatch : (K, Pattern Float, PatternMatchResult(Float, Rep))
                                          -> PatternMatchResult(Float, Rep)
 
               kfltmatch(k, p, l) ==
@@ -615,8 +615,8 @@ Expression(R : Comparable): Exports == Implementation where
                   )$PatternMatchKernel(Float, %)
                     pretend PatternMatchResult(Float, Rep)
 
-              patternMatch(x:%, p:Pattern Float,
-               l:PatternMatchResult(Float, %)) ==
+              patternMatch(x : %, p : Pattern Float,
+               l : PatternMatchResult(Float, %)) ==
                 patternMatch(x@Rep, p,
                              l pretend PatternMatchResult(Float, Rep),
                               kfltmatch
@@ -634,21 +634,21 @@ Expression(R : Comparable): Exports == Implementation where
           Rep := FreeAbelianGroup K
 
           0              == 0$Rep
-          x:% + y:%      == x +$Rep y
-          x:% = y:%      == x =$Rep y
-          smaller?(x:%, y:%)      == smaller?(x, y)$Rep
-          coerce(k:K):%  == coerce(k)$Rep
+          x : % + y : %      == x +$Rep y
+          x : % = y : %      == x =$Rep y
+          smaller?(x : %, y : %)      == smaller?(x, y)$Rep
+          coerce(k : K) : %  == coerce(k)$Rep
           kernels x      == [f.gen for f in terms x]
-          coerce(x:R):%  == (zero? x => 0; constantKernel(x)::%)
-          retract(x:%):R == (zero? x => 0; retNotUnit x)
-          coerce(x:%):OutputForm == coerce(x)$Rep
+          coerce(x : R) : %  == (zero? x => 0; constantKernel(x)::%)
+          retract(x : %) : R == (zero? x => 0; retNotUnit x)
+          coerce(x : %) : OutputForm == coerce(x)$Rep
           kereval(k, lk, lv) ==
-            match(lk, lv, k, (x2:K):% +->
-              map(x1+->eval(x1,lk,lv), x2))
+            match(lk, lv, k, (x2 : K) : % +->
+              map(x1+->eval(x1, lk, lv), x2))
 
           subeval(k, lk, lv) ==
             match(lk, lv, k,
-              (x:K):% +->
+              (x : K) : % +->
                 kernel(operator x, [subst(a, lk, lv) for a in argument x]))
 
           isPlus x ==
@@ -660,73 +660,73 @@ Expression(R : Comparable): Exports == Implementation where
             t := first l
             [t.exp, t.gen]
 
-          eval(x:%, lk:List K, lv:List %) ==
+          eval(x : %, lk : List K, lv : List %) ==
             _+/[t.exp * kereval(t.gen, lk, lv) for t in terms x]
 
-          subst(x:%, lk:List K, lv:List %) ==
+          subst(x : %, lk : List K, lv : List %) ==
             _+/[t.exp * subeval(t.gen, lk, lv) for t in terms x]
 
           retractIfCan(x:%):Union(R, "failed") ==
             zero? x => 0
             retNotUnitIfCan x
 
-          if R has AbelianGroup then -(x:%) == -$Rep x
+          if R has AbelianGroup then -(x : %) == -$Rep x
 
 --      else      -- R is not an AbelianMonoid
 --        if R has SemiGroup then
 --    Rep := FreeGroup K
 --    1              == 1$Rep
---    x:% * y:%      == x *$Rep y
---    x:% = y:%      == x =$Rep y
---    coerce(k:K):%  == k::Rep
+--    x: % * y: %      == x *$Rep y
+--    x: % = y: %      == x =$Rep y
+--    coerce(k: K): %  == k::Rep
 --    kernels x      == [f.gen for f in factors x]
---    coerce(x:R):%  == (one? x => 1; constantKernel x)
---    retract(x:%):R == (one? x => 1; retNotUnit x)
---    coerce(x:%):OutputForm == coerce(x)$Rep
+--    coerce(x: R): %  == (one? x => 1; constantKernel x)
+--    retract(x: %): R == (one? x => 1; retNotUnit x)
+--    coerce(x: %): OutputForm == coerce(x)$Rep
 
 --    retractIfCan(x:%):Union(R, "failed") ==
 --      one? x => 1
 --      retNotUnitIfCan x
 
---    if R has Group then inv(x:%):% == inv(x)$Rep
+--    if R has Group then inv(x: %): % == inv(x)$Rep
 
         else   -- R is nothing
             import ListToMap(K, %)
 
             Rep := K
 
-            smaller?(x:%, y:%)      == smaller?(x, y)$Rep
-            x:% = y:%      == x =$Rep y
-            coerce(k:K):%  == k
+            smaller?(x : %, y : %)      == smaller?(x, y)$Rep
+            x : % = y : %      == x =$Rep y
+            coerce(k : K) : %  == k
             kernels x      == [x pretend K]
-            coerce(x:R):%  == constantKernel x
-            retract(x:%):R == retNotUnit x
+            coerce(x : R) : %  == constantKernel x
+            retract(x : %) : R == retNotUnit x
             retractIfCan(x:%):Union(R, "failed") == retNotUnitIfCan x
-            coerce(x:%):OutputForm               == coerce(x)$Rep
+            coerce(x : %) : OutputForm               == coerce(x)$Rep
 
-            eval(x:%, lk:List K, lv:List %) ==
-              match(lk, lv, x pretend K, (x1:K):% +->
+            eval(x : %, lk : List K, lv : List %) ==
+              match(lk, lv, x pretend K, (x1 : K) : % +->
                 map(x2+->eval(x2, lk, lv), x1))
 
             subst(x, lk, lv) ==
-              match(lk, lv, x pretend K, (x1:K):% +->
+              match(lk, lv, x pretend K, (x1 : K) : % +->
                   kernel(operator x1, [subst(a, lk, lv) for a in argument x1]))
 
             if R has ConvertibleTo InputForm then
-              convert(x:%):InputForm == convert(x)$Rep
+              convert(x : %) : InputForm == convert(x)$Rep
 
 --          if R has PatternMatchable Integer then
---            convert(x:%):Pattern(Integer) == convert(x)$Rep
+--            convert(x: %): Pattern(Integer) == convert(x)$Rep
 --
---            patternMatch(x:%, p:Pattern Integer,
---             l:PatternMatchResult(Integer, %)) ==
---              patternMatch(x pretend K,p,l)$PatternMatchKernel(Integer, %)
+--            patternMatch(x: %, p: Pattern Integer,
+--             l: PatternMatchResult(Integer, %)) ==
+--              patternMatch(x pretend K, p, l)$PatternMatchKernel(Integer, %)
 --
 --          if R has PatternMatchable Float then
---            convert(x:%):Pattern(Float) == convert(x)$Rep
+--            convert(x: %): Pattern(Float) == convert(x)$Rep
 --
---            patternMatch(x:%, p:Pattern Float,
---             l:PatternMatchResult(Float, %)) ==
+--            patternMatch(x: %, p: Pattern Float,
+--             l: PatternMatchResult(Float, %)) ==
 --              patternMatch(x pretend K, p, l)$PatternMatchKernel(Float, %)
 
 @
@@ -737,23 +737,23 @@ Expression(R : Comparable): Exports == Implementation where
 ++ Date Created: 8 Oct 1991
 ++ Description: This package provides a coerce from polynomials over
 ++ algebraic numbers to \spadtype{Expression AlgebraicNumber}.
-PolynomialAN2Expression():Target == Implementation where
+PolynomialAN2Expression() : Target == Implementation where
   EXPR ==> Expression(Integer)
   AN ==> AlgebraicNumber
   PAN ==> Polynomial AN
   SY ==> Symbol
   Target ==> with
-      coerce: Polynomial AlgebraicNumber -> Expression(Integer)
+      coerce : Polynomial AlgebraicNumber -> Expression(Integer)
         ++ coerce(p) converts the polynomial \spad{p} with algebraic number
         ++ coefficients to \spadtype{Expression Integer}.
-      coerce: Fraction Polynomial AlgebraicNumber -> Expression(Integer)
+      coerce : Fraction Polynomial AlgebraicNumber -> Expression(Integer)
         ++ coerce(rf) converts \spad{rf}, a fraction of polynomial \spad{p} with
         ++ algebraic number coefficients to \spadtype{Expression Integer}.
   Implementation ==> add
-    coerce(p:PAN):EXPR ==
+    coerce(p : PAN) : EXPR ==
         map(x+->x::EXPR, x+->x::EXPR, p)$PolynomialCategoryLifting(
                                   IndexedExponents SY, SY, AN, PAN, EXPR)
-    coerce(rf:Fraction PAN):EXPR ==
+    coerce(rf : Fraction PAN) : EXPR ==
         numer(rf)::EXPR / denom(rf)::EXPR
 
 @
@@ -765,14 +765,14 @@ PolynomialAN2Expression():Target == Implementation where
 ++ Description: Lifting of maps to Expressions.
 ++ Date Created: 16 Jan 1989
 ++ Date Last Updated: 22 Jan 1990
-ExpressionFunctions2(R: Comparable, S : Comparable):
+ExpressionFunctions2(R : Comparable, S : Comparable):
  Exports == Implementation where
   K   ==> Kernel R
   F2  ==> FunctionSpaceFunctions2(R, Expression R, S, Expression S)
   E2  ==> ExpressionSpaceFunctions2(Expression R, Expression S)
 
   Exports ==> with
-    map: (R -> S, Expression R) -> Expression S
+    map : (R -> S, Expression R) -> Expression S
       ++ map(f, e) applies f to all the constants appearing in e.
 
   Implementation == add
@@ -791,18 +791,18 @@ ExpressionFunctions2(R: Comparable, S : Comparable):
 ++ Date Created: 21 Mar 1989
 ++ Date Last Updated: 23 May 1990
 ++ Keywords: pattern, matching.
-FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
-  R: Comparable
-  F: FunctionSpace R
-  D: Type
+FunctionSpaceAttachPredicates(R, F, D) : Exports == Implementation where
+  R : Comparable
+  F : FunctionSpace R
+  D : Type
 
   K  ==> Kernel F
 
   Exports ==> with
-    suchThat: (F, D -> Boolean) -> F
+    suchThat : (F, D -> Boolean) -> F
       ++ suchThat(x, foo) attaches the predicate foo to x;
       ++ error if x is not a symbol.
-    suchThat: (F, List(D -> Boolean)) -> F
+    suchThat : (F, List(D -> Boolean)) -> F
       ++ suchThat(x, [f1, f2, ..., fn]) attaches the predicate
       ++ f1 and f2 and ... and fn to x.
       ++ Error: if x is not a symbol.
@@ -813,10 +813,10 @@ FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
     PMPRED  := '%pmpredicate
 
     st   : (K, List Any) -> F
-    preds: K -> List Any
+    preds : K -> List Any
     mkk  : BasicOperator -> F
 
-    suchThat(p:F, f:D -> Boolean) == suchThat(p, [f])
+    suchThat(p : F, f : D -> Boolean) == suchThat(p, [f])
     mkk op                        == kernel(op, empty()$List(F))
 
     preds k ==
@@ -833,7 +833,7 @@ FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
       setProperty(kk, PMPRED, concat(preds k, l) pretend None)
       kernel(kk, empty()$List(F))
 
-    suchThat(p:F, l:List(D -> Boolean)) ==
+    suchThat(p : F, l : List(D -> Boolean)) ==
       retractIfCan(p)@Union(Symbol, "failed") case Symbol =>
         st(retract(p)@K, [f::Any for f in l])
       error "suchThat must be applied to symbols only"
@@ -848,9 +848,9 @@ FunctionSpaceAttachPredicates(R, F, D): Exports == Implementation where
 ++ Date Created: 21 Mar 1989
 ++ Date Last Updated: 23 May 1990
 ++ Keywords: pattern, matching.
-FunctionSpaceAssertions(R, F): Exports == Implementation where
-  R: Comparable
-  F: FunctionSpace R
+FunctionSpaceAssertions(R, F) : Exports == Implementation where
+  R : Comparable
+  F : FunctionSpace R
 
   K  ==> Kernel F
   PMOPT   ==> '%pmoptional
@@ -861,15 +861,15 @@ FunctionSpaceAssertions(R, F): Exports == Implementation where
 --    assert  : (F, String) -> F
 --      ++ assert(x, s) makes the assertion s about x.
 --      ++ Error: if x is not a symbol.
-    constant: F -> F
+    constant : F -> F
       ++ constant(x) tells the pattern matcher that x should
       ++ match only the symbol 'x and no other quantity.
       ++ Error: if x is not a symbol.
-    optional: F -> F
+    optional : F -> F
       ++ optional(x) tells the pattern matcher that x can match
       ++ an identity (0 in a sum, 1 in a product or exponentiation).
       ++ Error: if x is not a symbol.
-    multiple: F -> F
+    multiple : F -> F
       ++ multiple(x) tells the pattern matcher that x should
       ++ preferably match a multi-term quantity in a sum or product.
       ++ For matching on lists, multiple(x) tells the pattern matcher
@@ -921,21 +921,21 @@ FunctionSpaceAssertions(R, F): Exports == Implementation where
 ++ Date Created: 21 Mar 1989
 ++ Date Last Updated: 23 May 1990
 ++ Keywords: pattern, matching.
-AttachPredicates(D:Type): Exports == Implementation where
+AttachPredicates(D : Type) : Exports == Implementation where
   FE ==> Expression Integer
 
   Exports ==> with
-    suchThat: (Symbol, D -> Boolean) -> FE
+    suchThat : (Symbol, D -> Boolean) -> FE
       ++ suchThat(x, foo) attaches the predicate foo to x.
-    suchThat: (Symbol, List(D -> Boolean)) -> FE
+    suchThat : (Symbol, List(D -> Boolean)) -> FE
       ++ suchThat(x, [f1, f2, ..., fn]) attaches the predicate
       ++ f1 and f2 and ... and fn to x.
 
   Implementation ==> add
     import FunctionSpaceAttachPredicates(Integer, FE, D)
 
-    suchThat(p:Symbol, f:D -> Boolean)       == suchThat(p::FE, f)
-    suchThat(p:Symbol, l:List(D -> Boolean)) == suchThat(p::FE, l)
+    suchThat(p : Symbol, f : D -> Boolean)       == suchThat(p::FE, f)
+    suchThat(p : Symbol, l : List(D -> Boolean)) == suchThat(p::FE, l)
 
 @
 \section{package PMASS PatternMatchAssertions}
@@ -947,19 +947,19 @@ AttachPredicates(D:Type): Exports == Implementation where
 ++ Date Created: 21 Mar 1989
 ++ Date Last Updated: 23 May 1990
 ++ Keywords: pattern, matching.
-PatternMatchAssertions(): Exports == Implementation where
+PatternMatchAssertions() : Exports == Implementation where
   FE ==> Expression Integer
 
   Exports ==> with
 --    assert  : (Symbol, String) -> FE
 --      ++ assert(x, s) makes the assertion s about x.
-    constant: Symbol -> FE
+    constant : Symbol -> FE
       ++ constant(x) tells the pattern matcher that x should
       ++ match only the symbol 'x and no other quantity.
-    optional: Symbol -> FE
+    optional : Symbol -> FE
       ++ optional(x) tells the pattern matcher that x can match
       ++ an identity (0 in a sum, 1 in a product or exponentiation).;
-    multiple: Symbol -> FE
+    multiple : Symbol -> FE
       ++ multiple(x) tells the pattern matcher that x should
       ++ preferably match a multi-term quantity in a sum or product.
       ++ For matching on lists, multiple(x) tells the pattern matcher
@@ -985,7 +985,7 @@ PatternMatchAssertions(): Exports == Implementation where
 ++  is that Pi is coercible to the float types, and not Expression.
 ++ Date Created: 21 Feb 1990
 ++ Date Last Updated: 12 Mai 1992
-Pi(): Exports == Implementation where
+Pi() : Exports == Implementation where
   PZ ==> Polynomial Integer
   UP ==> SparseUnivariatePolynomial Integer
   RF ==> Fraction UP
@@ -994,49 +994,49 @@ Pi(): Exports == Implementation where
                    RetractableTo Fraction Integer, RealConstant,
                    CoercibleTo DoubleFloat, CoercibleTo Float,
                    ConvertibleTo RF, ConvertibleTo InputForm) with
-    pi: () -> % ++ pi() returns the symbolic %pi.
+    pi : () -> % ++ pi() returns the symbolic %pi.
   Implementation ==> RF add
     Rep := RF
 
     sympi := '%pi
 
-    p2sf: UP -> DoubleFloat
+    p2sf : UP -> DoubleFloat
     p2f : UP -> Float
     p2o : UP -> OutputForm
     p2i : UP -> InputForm
-    p2p:  UP -> PZ
+    p2p :  UP -> PZ
 
     pi()                    == (monomial(1, 1)$UP :: RF) pretend %
-    convert(x:%):RF         == x pretend RF
-    convert(x:%):Float      == x::Float
-    convert(x:%):DoubleFloat == x::DoubleFloat
-    coerce(x:%):DoubleFloat  == p2sf(numer x) / p2sf(denom x)
-    coerce(x:%):Float       == p2f(numer x) / p2f(denom x)
+    convert(x : %) : RF         == x pretend RF
+    convert(x : %) : Float      == x::Float
+    convert(x : %) : DoubleFloat == x::DoubleFloat
+    coerce(x : %) : DoubleFloat  == p2sf(numer x) / p2sf(denom x)
+    coerce(x : %) : Float       == p2f(numer x) / p2f(denom x)
     p2o p                   == outputForm(p, sympi::OutputForm)
     p2i p                   == convert p2p p
 
     p2p p ==
-      ans:PZ := 0
+      ans : PZ := 0
       while p ~= 0 repeat
         ans := ans + monomial(leadingCoefficient(p)::PZ, sympi, degree p)
         p   := reductum p
       ans
 
-    coerce(x:%):OutputForm ==
+    coerce(x : %) : OutputForm ==
       (r := retractIfCan(x)@Union(UP, "failed")) case UP => p2o(r::UP)
       p2o(numer x) / p2o(denom x)
 
-    convert(x:%):InputForm ==
+    convert(x : %) : InputForm ==
       (r := retractIfCan(x)@Union(UP, "failed")) case UP => p2i(r::UP)
       p2i(numer x) / p2i(denom x)
 
     p2sf p ==
-      map((x:Integer):DoubleFloat+->x::DoubleFloat,
+      map((x : Integer) : DoubleFloat+->x::DoubleFloat,
         p)$SparseUnivariatePolynomialFunctions2(Integer, DoubleFloat)
           (pi()$DoubleFloat)
 
     p2f p ==
-      map((x:Integer):Float+->x::Float,
+      map((x : Integer) : Float+->x::Float,
         p)$SparseUnivariatePolynomialFunctions2(Integer, Float)
           (pi()$Float)
 
@@ -1051,18 +1051,18 @@ Pi(): Exports == Implementation where
 ++ integer coefficients to any Expression type.
 ++ Date Created: 21 Feb 1990
 ++ Date Last Updated: 21 Feb 1990
-PiCoercions(R : Join(Comparable, IntegralDomain)): with
-  coerce: Pi -> Expression R
+PiCoercions(R : Join(Comparable, IntegralDomain)) : with
+  coerce : Pi -> Expression R
     ++ coerce(f) returns f as an Expression(R).
  == add
-  p2e: SparseUnivariatePolynomial Integer -> Expression R
+  p2e : SparseUnivariatePolynomial Integer -> Expression R
 
-  coerce(x:Pi):Expression(R) ==
+  coerce(x : Pi) : Expression(R) ==
     f := convert(x)@Fraction(SparseUnivariatePolynomial Integer)
     p2e(numer f) / p2e(denom f)
 
   p2e p ==
-    map((x1:Integer):Expression(R)+->x1::Expression(R),
+    map((x1 : Integer) : Expression(R)+->x1::Expression(R),
       p)$SparseUnivariatePolynomialFunctions2(Integer, Expression R)
         (pi()$Expression(R))
 

@@ -14,30 +14,30 @@
 )abbrev domain OVAR OrderedVariableList
 ++ Description:
 ++ This domain implements ordered variables
-OrderedVariableList(VariableList:List Symbol):
+OrderedVariableList(VariableList : List Symbol):
   Join(OrderedFinite, ConvertibleTo Symbol, ConvertibleTo InputForm,
        ConvertibleTo Pattern Float, ConvertibleTo Pattern Integer) with
-         variable: Symbol -> Union(%,"failed")
+         variable : Symbol -> Union(%,"failed")
                 ++ variable(s) returns a member of the variable set or failed
     == add
        VariableList := removeDuplicates VariableList
        Rep := PositiveInteger
-       s1,s2:%
-       convert(s1):Symbol == VariableList.((s1::Rep)::PositiveInteger)
-       coerce(s1):OutputForm == (convert(s1)@Symbol)::OutputForm
-       convert(s1):InputForm == convert(convert(s1)@Symbol)
-       convert(s1):Pattern(Integer) == convert(convert(s1)@Symbol)
-       convert(s1):Pattern(Float) == convert(convert(s1)@Symbol)
+       s1, s2 : %
+       convert(s1) : Symbol == VariableList.((s1::Rep)::PositiveInteger)
+       coerce(s1) : OutputForm == (convert(s1)@Symbol)::OutputForm
+       convert(s1) : InputForm == convert(convert(s1)@Symbol)
+       convert(s1) : Pattern(Integer) == convert(convert(s1)@Symbol)
+       convert(s1) : Pattern(Float) == convert(convert(s1)@Symbol)
        index i   == i::%
        lookup j  == j :: Rep
        size ()   == #VariableList
-       variable(exp:Symbol) ==
+       variable(exp : Symbol) ==
             for i in 1.. for exp2 in VariableList repeat
-                if exp=exp2 then return i::PositiveInteger::%
+                if exp = exp2 then return i::PositiveInteger::%
             "failed"
        s1 < s2 == s2 <$Rep s1
        s1 = s2 == s1 =$Rep s2
-       latex(x:%):String      == latex(convert(x)@Symbol)
+       latex(x : %) : String      == latex(convert(x)@Symbol)
        hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
 
 @
@@ -46,17 +46,17 @@ OrderedVariableList(VariableList:List Symbol):
 )abbrev domain VARIABLE Variable
 ++ Description:
 ++ This domain implements variables
-Variable(sym:Symbol): Join(SetCategory, CoercibleTo Symbol) with
+Variable(sym : Symbol) : Join(SetCategory, CoercibleTo Symbol) with
         coerce  : % -> Symbol
                 ++ coerce(x) returns the symbol
-        variable: () -> Symbol
+        variable : () -> Symbol
                 ++ variable() returns the symbol
     == add
-        coerce(x:%):Symbol     == sym
-        coerce(x:%):OutputForm == sym::OutputForm
+        coerce(x : %) : Symbol     == sym
+        coerce(x : %) : OutputForm == sym::OutputForm
         variable()             == sym
         x = y                  == true
-        latex(x:%):String      == latex sym
+        latex(x : %) : String      == latex sym
 
 @
 \section{domain RULECOLD RuleCalled}
@@ -64,14 +64,14 @@ Variable(sym:Symbol): Join(SetCategory, CoercibleTo Symbol) with
 )abbrev domain RULECOLD RuleCalled
 ++ Description:
 ++ This domain implements named rules
-RuleCalled(f:Symbol): SetCategory with
-        name: % -> Symbol
+RuleCalled(f : Symbol) : SetCategory with
+        name : % -> Symbol
                 ++ name(x) returns the symbol
  == add
   name r                 == f
-  coerce(r:%):OutputForm == f::OutputForm
+  coerce(r : %) : OutputForm == f::OutputForm
   x = y                  == true
-  latex(x:%):String      == latex f
+  latex(x : %) : String      == latex f
 
 @
 \section{domain FUNCTION FunctionCalled}
@@ -79,14 +79,14 @@ RuleCalled(f:Symbol): SetCategory with
 )abbrev domain FUNCTION FunctionCalled
 ++ Description:
 ++ This domain implements named functions
-FunctionCalled(f:Symbol): SetCategory with
-        name: % -> Symbol
+FunctionCalled(f : Symbol) : SetCategory with
+        name : % -> Symbol
                 ++ name(x) returns the symbol
   == add
    name r                 == f
-   coerce(r:%):OutputForm == f::OutputForm
+   coerce(r : %) : OutputForm == f::OutputForm
    x = y                  == true
-   latex(x:%):String      == latex f
+   latex(x : %) : String      == latex f
 
 @
 \section{domain ANON AnonymousFunction}
@@ -94,8 +94,8 @@ FunctionCalled(f:Symbol): SetCategory with
 )abbrev domain ANON AnonymousFunction
 ++ Description:
 ++ This domain implements anonymous functions
-AnonymousFunction():SetCategory == add
-  coerce(x:%):OutputForm == x pretend OutputForm
+AnonymousFunction() : SetCategory == add
+  coerce(x : %) : OutputForm == x pretend OutputForm
 
 @
 \section{License}

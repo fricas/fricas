@@ -38,13 +38,13 @@
 ++  J. Grabmeier, A. Scheerhorn: Finite Fields in AXIOM.
 ++  AXIOM Technical Report Series, ATR/5 NP2522.
 ++ Description:
-++  FiniteFieldHomomorphisms(F1,GF,F2) exports coercion functions of
+++  FiniteFieldHomomorphisms(F1, GF, F2) exports coercion functions of
 ++  elements between the fields {\em F1} and {\em F2}, which both must be
 ++  finite simple algebraic extensions of the finite ground field {\em GF}.
-FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
-  F1: FiniteAlgebraicExtensionField(GF)
-  GF: FiniteFieldCategory
-  F2: FiniteAlgebraicExtensionField(GF)
+FiniteFieldHomomorphisms(F1, GF, F2) : Exports == Implementation where
+  F1 : FiniteAlgebraicExtensionField(GF)
+  GF : FiniteFieldCategory
+  F2 : FiniteAlgebraicExtensionField(GF)
  -- the homomorphism can only convert elements w.r.t. the last extension .
   -- Adding a function 'groundField()' which returns the ground field of GF
   -- as a variable of type FiniteFieldCategory in the new compiler, one
@@ -64,7 +64,7 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
 
   Exports ==> with
 
-    coerce: F1  ->  F2
+    coerce : F1  ->  F2
       ++ coerce(x) is the homomorphic image of x from
       ++ {\em F1} in {\em F2}. Thus {\em coerce} is a
       ++ field homomorphism between the fields extensions
@@ -75,7 +75,7 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       ++ Note that the other coercion function in the
       ++ \spadtype{FiniteFieldHomomorphisms} is a left inverse.
 
-    coerce: F2  ->  F1
+    coerce : F2  ->  F1
       ++ coerce(x) is the homomorphic image of x from
       ++ {\em F2} in {\em F1}, where {\em coerce} is a
       ++ field homomorphism between the fields extensions
@@ -85,71 +85,71 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       ++ the extension degree of {\em F1}.
       ++ Note that the other coercion function in the
       ++ \spadtype{FiniteFieldHomomorphisms} is a left inverse.
-    -- coerce(coerce(x:F1)@F2)@F1 = x and coerce(coerce(y:F2)@F1)@F2 = y
+    -- coerce(coerce(x: F1)@F2)@F1 = x and coerce(coerce(y: F2)@F1)@F2 = y
 
   Implementation ==> add
 
 -- global variables ===================================================
 
-    degree1:NNI:= extensionDegree()$F1
-    degree2:NNI:= extensionDegree()$F2
+    degree1 : NNI := extensionDegree()$F1
+    degree2 : NNI := extensionDegree()$F2
     -- the degrees of the last extension
 
     -- a necessary condition for the one field being an subfield of
     -- the other one is, that the respective extension degrees are
     -- multiples
-    if max(degree1,degree2) rem min(degree1,degree2) ~= 0 then
+    if max(degree1, degree2) rem min(degree1, degree2) ~= 0 then
       error "FFHOM: one extension degree must divide the other one"
 
-    conMat1to2:M:= zero(degree2,degree1)$M
+    conMat1to2 : M := zero(degree2, degree1)$M
     -- conversion matrix for the conversion direction F1 -> F2
-    conMat2to1:M:= zero(degree1,degree2)$M
+    conMat2to1 : M := zero(degree1, degree2)$M
     -- conversion matrix for the conversion direction F2 -> F1
 
-    repType1:=representationType()$F1
-    repType2:=representationType()$F2
+    repType1 := representationType()$F1
+    repType2 := representationType()$F2
     -- the representation types of the fields
 
-    init?:Boolean:=true
+    init? : Boolean := true
     -- gets false after initialization
 
-    defPol1:=definingPolynomial()$F1
-    defPol2:=definingPolynomial()$F2
+    defPol1 := definingPolynomial()$F1
+    defPol2 := definingPolynomial()$F2
     -- the defining polynomials of the fields
 
 
 -- functions ==========================================================
 
 
-    compare: (SUP GF,SUP GF) -> Boolean
+    compare : (SUP GF, SUP GF) -> Boolean
     -- compares two polynomials
 
-    convertWRTsameDefPol12: F1  ->  F2
-    convertWRTsameDefPol21: F2  ->  F1
+    convertWRTsameDefPol12 : F1  ->  F2
+    convertWRTsameDefPol21 : F2  ->  F1
     -- homomorphism if the last extension of F1 and F2 was build up
     -- using the same defining polynomials
 
-    convertWRTdifferentDefPol12: F1  ->  F2
-    convertWRTdifferentDefPol21: F2  ->  F1
+    convertWRTdifferentDefPol12 : F1  ->  F2
+    convertWRTdifferentDefPol21 : F2  ->  F1
     -- homomorphism if the last extension of F1 and F2 was build up
     -- with different defining polynomials
 
-    initialize: () -> Void
+    initialize : () -> Void
     -- computes the conversion matrices
 
-    compare(g:(SUP GF),f:(SUP GF)) ==
+    compare(g : (SUP GF), f : (SUP GF)) ==
       degree(f)$(SUP GF)  >$NNI degree(g)$(SUP GF) => true
       degree(f)$(SUP GF) <$NNI degree(g)$(SUP GF) => false
-      equal:Integer:=0
-      for i in degree(f)$(SUP GF)..0 by -1 while equal=0 repeat
-        not zero?(coefficient(f,i)$(SUP GF))$GF and _
-             zero?(coefficient(g,i)$(SUP GF))$GF => equal:=1
-        not zero?(coefficient(g,i)$(SUP GF))$GF and _
-             zero?(coefficient(f,i)$(SUP GF))$GF => equal:=(-1)
-        (f1:=lookup(coefficient(f,i)$(SUP GF))$GF) >$PositiveInteger _
-         (g1:=lookup(coefficient(g,i)$(SUP GF))$GF) =>  equal:=1
-        f1 <$PositiveInteger g1 => equal:=(-1)
-      equal=1 => true
+      equal : Integer := 0
+      for i in degree(f)$(SUP GF)..0 by -1 while equal = 0 repeat
+        not zero?(coefficient(f, i)$(SUP GF))$GF and _
+             zero?(coefficient(g, i)$(SUP GF))$GF => equal := 1
+        not zero?(coefficient(g, i)$(SUP GF))$GF and _
+             zero?(coefficient(f, i)$(SUP GF))$GF => equal := (-1)
+        (f1 := lookup(coefficient(f, i)$(SUP GF))$GF) >$PositiveInteger _
+         (g1 := lookup(coefficient(g, i)$(SUP GF))$GF) =>  equal := 1
+        f1 <$PositiveInteger g1 => equal := (-1)
+      equal = 1 => true
       false
 
     initialize() ==
@@ -161,33 +161,33 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       --  size of the ground field)
       defPol1 =$(SUP GF) defPol2 =>
         -- new code using reducedQPowers
-        mat:=zero(degree1,degree1)$M
-        arr:=reducedQPowers(defPol1)$FFPOLY(GF)
+        mat := zero(degree1, degree1)$M
+        arr := reducedQPowers(defPol1)$FFPOLY(GF)
         for i in 1..degree1 repeat
-          setColumn!(mat,i,vectorise(arr.(i-1),degree1)$SUP(GF))$M
+          setColumn!(mat, i, vectorise(arr.(i-1), degree1)$SUP(GF))$M
           -- old code
           -- here one of the representation types must be "normal"
-          --a:=basis()$FFP(GF,defPol1).2  -- the root of the def. polynomial
-          --setColumn!(mat,1,coordinates(a)$FFP(GF,defPol1))$M
+          --a := basis()$FFP(GF, defPol1).2  -- the root of the def. polynomial
+          --setColumn!(mat, 1, coordinates(a)$FFP(GF, defPol1))$M
           --for i in 2..degree1 repeat
-          --  a:= a ^$FFP(GF,defPol1) size()$GF
-          --  setColumn!(mat,i,coordinates(a)$FFP(GF,defPol1))$M
+          --  a := a ^$FFP(GF, defPol1) size()$GF
+          --  setColumn!(mat, i, coordinates(a)$FFP(GF, defPol1))$M
           --for the direction "normal" -> "polynomial" we have to multiply the
           -- coordinate vector of an element of the normal basis field with
           -- the matrix 'mat'. In this case 'mat' is the correct conversion
           -- matrix for the conversion of F1 to F2, its inverse the correct
           -- inversion matrix for the conversion of F2 to F1
         repType1 = "normal" =>  -- repType2 = "polynomial"
-          conMat1to2:=copy(mat)
-          conMat2to1:=copy(inverse(mat)$M :: M)
+          conMat1to2 := copy(mat)
+          conMat2to1 := copy(inverse(mat)$M :: M)
           --we finish the function for one case, hence reset initialization flag
           init? := false
           void()$Void
           -- print("'normal' <=> 'polynomial' matrices initialized"::OUT)
         -- in the other case we have to change the matrices
         -- repType2 = "normal" and repType1 = "polynomial"
-        conMat2to1:=copy(mat)
-        conMat1to2:=copy(inverse(mat)$M :: M)
+        conMat2to1 := copy(mat)
+        conMat1to2 := copy(inverse(mat)$M :: M)
         -- print("'normal' <=> 'polynomial' matrices initialized"::OUT)
         --we finish the function for one case, hence reset initialization flag
         init? := false
@@ -195,19 +195,19 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       -- 2) in the case of different def. polynomials we have to order the
       --    fields to get the same isomorphism, if the package is called with
       --    the fields F1 and F2 swapped.
-      dPbig:= defPol2
-      rTbig:= repType2
-      dPsmall:= defPol1
-      rTsmall:= repType1
-      degbig:=degree2
-      degsmall:=degree1
-      if compare(defPol2,defPol1) then
-        degsmall:=degree2
-        degbig:=degree1
-        dPbig:= defPol1
-        rTbig:= repType1
-        dPsmall:= defPol2
-        rTsmall:= repType2
+      dPbig := defPol2
+      rTbig := repType2
+      dPsmall := defPol1
+      rTsmall := repType1
+      degbig := degree2
+      degsmall := degree1
+      if compare(defPol2, defPol1) then
+        degsmall := degree2
+        degbig := degree1
+        dPbig := defPol1
+        rTbig := repType1
+        dPsmall := defPol2
+        rTsmall := repType2
       -- 3) in every case we need a conversion between the polynomial
       --  represented fields. Therefore we compute 'root' as a root of the
       --  'smaller' def. polynomial in the 'bigger' field.
@@ -217,14 +217,14 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       --  matrix, we got the coordinates of the corresponding element in the
       --  'bigger' field.
       -- compute the root of dPsmall in the 'big' field
-      root:=rootOfIrreduciblePoly(dPsmall)$FFPOL2(FFP(GF,dPbig),GF)
+      root := rootOfIrreduciblePoly(dPsmall)$FFPOL2(FFP(GF, dPbig), GF)
       -- set up matrix for polynomial conversion
-      matsb:=zero(degbig,degsmall)$M
-      qsetelt!(matsb,1,1,1$GF)$M
-      a:=root
+      matsb := zero(degbig, degsmall)$M
+      qsetelt!(matsb, 1, 1, 1$GF)$M
+      a := root
       for i in 2..degsmall repeat
-        setColumn!(matsb,i,coordinates(a)$FFP(GF,dPbig))$M
-        a := a *$FFP(GF,dPbig) root
+        setColumn!(matsb, i, coordinates(a)$FFP(GF, dPbig))$M
+        a := a *$FFP(GF, dPbig) root
       --  the conversion from 'big' to 'small': we can't invert matsb
       --  directly, because it has degbig rows and degsmall columns and
       --  may be no square matrix. Therefore we construct a square matrix
@@ -232,25 +232,25 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       --  Now we get the conversion matrix 'matbs' for the conversion from
       --  'big' to 'small' by putting the columns of mat at the indices
       --  of the linear independent rows of matsb to columns of matbs.
-      ra:I:=1   -- the rank
-      mat:M:=transpose(row(matsb,1))$M -- has already rank 1
-      rowind:I:=2
-      iVec:Vector I:=new(degsmall,1$I)$(Vector I)
+      ra : I := 1   -- the rank
+      mat : M := transpose(row(matsb, 1))$M -- has already rank 1
+      rowind : I := 2
+      iVec : Vector I := new(degsmall, 1$I)$(Vector I)
       while ra < degsmall repeat
-        if rank(vertConcat(mat,transpose(row(matsb,rowind))$M)$M)$M > ra then
-          mat:=vertConcat(mat,transpose(row(matsb,rowind))$M)$M
-          ra:=ra+1
+        if rank(vertConcat(mat, transpose(row(matsb, rowind))$M)$M)$M > ra then
+          mat := vertConcat(mat, transpose(row(matsb, rowind))$M)$M
+          ra := ra+1
           iVec.ra := rowind
-        rowind:=rowind + 1
-      mat:=inverse(mat)$M :: M
-      matbs:=zero(degsmall,degbig)$M
+        rowind := rowind + 1
+      mat := inverse(mat)$M :: M
+      matbs := zero(degsmall, degbig)$M
       for i in 1..degsmall repeat
-        setColumn!(matbs,iVec.i,column(mat,i)$M)$M
+        setColumn!(matbs, iVec.i, column(mat, i)$M)$M
       -- print(matsb::OUT)
       -- print(matbs::OUT)
       -- 4) if the 'bigger' field is "normal" we have to compose the
       --  polynomial conversion with a conversion from polynomial to normal
-      --  between the FFP(GF,dPbig) and FFNBP(GF,dPbig) the 'bigger'
+      --  between the FFP(GF, dPbig) and FFNBP(GF, dPbig) the 'bigger'
       --  field. Therefore we compute a conversion matrix 'mat' as in 1)
       --  Multiplying with the inverse of 'mat' yields the desired
       --  conversion from polynomial to normal. Multiplying this matrix by
@@ -258,57 +258,57 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       --  'small polynomial' to 'big normal'.
       -- set up matrix 'mat' for polynomial to normal
       if rTbig = "normal" then
-        arr:=reducedQPowers(dPbig)$FFPOLY(GF)
-        mat:=zero(degbig,degbig)$M
+        arr := reducedQPowers(dPbig)$FFPOLY(GF)
+        mat := zero(degbig, degbig)$M
         for i in 1..degbig repeat
-          setColumn!(mat,i,vectorise(arr.(i-1),degbig)$SUP(GF))$M
+          setColumn!(mat, i, vectorise(arr.(i-1), degbig)$SUP(GF))$M
         -- old code
-        --a:=basis()$FFP(GF,dPbig).2  -- the root of the def.Polynomial
-        --setColumn!(mat,1,coordinates(a)$FFP(GF,dPbig))$M
+        --a := basis()$FFP(GF, dPbig).2  -- the root of the def.Polynomial
+        --setColumn!(mat, 1, coordinates(a)$FFP(GF, dPbig))$M
         --for i in 2..degbig repeat
-        --  a:= a ^$FFP(GF,dPbig) size()$GF
-        --  setColumn!(mat,i,coordinates(a)$FFP(GF,dPbig))$M
+        --  a := a ^$FFP(GF, dPbig) size()$GF
+        --  setColumn!(mat, i, coordinates(a)$FFP(GF, dPbig))$M
         -- print(inverse(mat)$M::OUT)
-        matsb:= (inverse(mat)$M :: M) * matsb
+        matsb := (inverse(mat)$M :: M) * matsb
         -- print("inv *.."::OUT)
-        matbs:=matbs * mat
+        matbs := matbs * mat
         -- 5) if the 'smaller' field is "normal" we have first to convert
         --    from 'small normal' to 'small polynomial', that is from
-        --    FFNBP(GF,dPsmall) to FFP(GF,dPsmall). Therefore we compute a
+        --    FFNBP(GF, dPsmall) to FFP(GF, dPsmall). Therefore we compute a
         --    conversion matrix 'mat' as in 1). Multiplying with  'mat'
         --    yields the desired conversion from normal to polynomial.
         --    Multiplying the above computed 'matsb' with 'mat' we got the
         --    matrix for converting form 'small normal' to 'big normal'.
       -- set up matrix 'mat' for normal to polynomial
       if rTsmall = "normal" then
-        arr:=reducedQPowers(dPsmall)$FFPOLY(GF)
-        mat:=zero(degsmall,degsmall)$M
+        arr := reducedQPowers(dPsmall)$FFPOLY(GF)
+        mat := zero(degsmall, degsmall)$M
         for i in 1..degsmall repeat
-          setColumn!(mat,i,vectorise(arr.(i-1),degsmall)$SUP(GF))$M
+          setColumn!(mat, i, vectorise(arr.(i-1), degsmall)$SUP(GF))$M
       -- old code
-      --b:FFP(GF,dPsmall):=basis()$FFP(GF,dPsmall).2
-      --setColumn!(mat,1,coordinates(b)$FFP(GF,dPsmall))$M
+      --b: FFP(GF, dPsmall) := basis()$FFP(GF, dPsmall).2
+      --setColumn!(mat, 1, coordinates(b)$FFP(GF, dPsmall))$M
       --for i in 2..degsmall repeat
-      --  b:= b ^$FFP(GF,dPsmall) size()$GF
-      --  setColumn!(mat,i,coordinates(b)$FFP(GF,dPsmall))$M
+      --  b := b ^$FFP(GF, dPsmall) size()$GF
+      --  setColumn!(mat, i, coordinates(b)$FFP(GF, dPsmall))$M
         -- print(mat::OUT)
-        matsb:= matsb * mat
-        matbs:= (inverse(mat) :: M) * matbs
+        matsb := matsb * mat
+        matbs := (inverse(mat) :: M) * matbs
       -- now 'matsb' is the correct conversion matrix for 'small' to 'big'
       -- and 'matbs' the correct one for 'big' to 'small'.
       -- depending on the above ordering the conversion matrices are
       -- initialized
       dPbig =$(SUP GF) defPol2 =>
-        conMat1to2 :=matsb
-        conMat2to1 :=matbs
+        conMat1to2 := matsb
+        conMat2to1 := matbs
         -- print(conMat1to2::OUT)
         -- print(conMat2to1::OUT)
         -- print("conversion matrices initialized"::OUT)
         --we finish the function for one case, hence reset initialization flag
         init? := false
         void()$Void
-      conMat1to2 :=matbs
-      conMat2to1 :=matsb
+      conMat1to2 := matbs
+      conMat2to1 := matsb
       -- print(conMat1to2::OUT)
       -- print(conMat2to1::OUT)
       -- print("conversion matrices initialized"::OUT)
@@ -317,13 +317,13 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       void()$Void
 
 
-    coerce(x:F1) ==
+    coerce(x : F1) ==
       inGroundField?(x)$F1 => retract(x)$F1 :: F2
       -- if x is already in GF then we can use a simple coercion
       defPol1 =$(SUP GF) defPol2 => convertWRTsameDefPol12(x)
       convertWRTdifferentDefPol12(x)
 
-    convertWRTsameDefPol12(x:F1)  ==
+    convertWRTsameDefPol12(x : F1)  ==
       repType1 = repType2 => x pretend F2
       -- same ground fields, same defining polynomials, same
       -- representation types --> F1 = F2, x is already in F2
@@ -343,13 +343,13 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       -- here a conversion matrix is necessary, (see initialize())
       represents(conMat1to2 *$(Matrix GF) coordinates(x)$F1)$F2
 
-    convertWRTdifferentDefPol12(x:F1) ==
+    convertWRTdifferentDefPol12(x : F1) ==
       if init? then initialize()
       -- if we want to convert into a 'smaller' field, we have to test,
       -- whether the element is in the subfield of the 'bigger' field, which
       -- corresponds to the 'smaller' field
       if degree1 > degree2 then
-        if positiveRemainder(degree2,degree(x)$F1) ~= 0 then
+        if positiveRemainder(degree2, degree(x)$F1) ~= 0 then
           error "coerce: element doesn't belong to smaller field"
       represents(conMat1to2 *$(Matrix GF) coordinates(x)$F1)$F2
 
@@ -357,13 +357,13 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
 -- '1' exchanged by '2' in all domain and variable names
 
 
-    coerce(x:F2) ==
+    coerce(x : F2) ==
       inGroundField?(x)$F2 => retract(x)$F2 :: F1
       -- if x is already in GF then we can use a simple coercion
       defPol1 =$(SUP GF) defPol2 => convertWRTsameDefPol21(x)
       convertWRTdifferentDefPol21(x)
 
-    convertWRTsameDefPol21(x:F2)  ==
+    convertWRTsameDefPol21(x : F2)  ==
       repType1 = repType2 => x pretend F1
       -- same ground fields, same defining polynomials,
       -- same representation types --> F1 = F2, that is:
@@ -378,10 +378,10 @@ FiniteFieldHomomorphisms(F1,GF,F2): Exports == Implementation where
       if init? then initialize()
       represents(conMat2to1 *$(Matrix GF) coordinates(x)$F2)$F1
 
-    convertWRTdifferentDefPol21(x:F2) ==
+    convertWRTdifferentDefPol21(x : F2) ==
       if init? then initialize()
       if degree2 > degree1 then
-        if positiveRemainder(degree1,degree(x)$F2) ~= 0 then
+        if positiveRemainder(degree1, degree(x)$F2) ~= 0 then
           error "coerce: element doesn't belong to smaller field"
       represents(conMat2to1 *$(Matrix GF) coordinates(x)$F2)$F1
 

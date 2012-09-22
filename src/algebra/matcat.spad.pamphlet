@@ -24,7 +24,7 @@ should be put into \spadtype{MatrixCategory}.
 Note however that a domain in \spadtype{RectangularMatrixCategory} is not
 automatically a domain in \spadtype{MatrixCategory}.  The precise reasons for
 this choice are unclear, but we note that domains in
-\spadtype{DirectProductCategory(n,R)}, which are expected as parameters of
+\spadtype{DirectProductCategory(n, R)}, which are expected as parameters of
 \spadtype{RectangularMatrixCategory}, do not satisfy
 \spadtype{FiniteLinearAggregate R} as required in \spadtype{MatrixCategory}.
 Another reason is that \spadtype{RectangularMatrixCategory} does not export
@@ -86,7 +86,7 @@ testsuite "MATCAT"
 ++   be obtained by calling the function \spadfun{minColIndex}.  The index of
 ++   the first element of a Row is the same as the index of the
 ++   first column in a matrix and vice versa.
-MatrixCategory(R,Row,Col): Category == Definition where
+MatrixCategory(R, Row, Col) : Category == Definition where
   R   : Join(SemiRng, AbelianMonoid)
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
@@ -94,7 +94,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
   NNI ==> NonNegativeInteger
   UR ==> Union(R, "one")
 
-  Definition ==> Join(TwoDimensionalArrayCategory(R,Row,Col),
+  Definition ==> Join(TwoDimensionalArrayCategory(R, Row, Col),
       shallowlyMutable, finiteAggregate) with
 
 --% Predicates
@@ -102,13 +102,13 @@ MatrixCategory(R,Row,Col): Category == Definition where
      square?  : % -> Boolean
        ++ \spad{square?(m)} returns true if m is a square matrix
        ++ (i.e. if m has the same number of rows as columns) and false otherwise.
-     diagonal?: % -> Boolean
+     diagonal? : % -> Boolean
        ++ \spad{diagonal?(m)} returns true if the matrix m is square and
        ++ diagonal (i.e. all entries of m not on the diagonal are zero) and
        ++ false otherwise.
-     symmetric?: % -> Boolean
+     symmetric? : % -> Boolean
        ++ \spad{symmetric?(m)} returns true if the matrix m is square and
-       ++ symmetric (i.e. \spad{m[i,j] = m[j,i]} for all i and j) and false
+       ++ symmetric (i.e. \spad{m[i, j] = m[j, i]} for all i and j) and false
        ++ otherwise.
      if R has AbelianGroup then
          antisymmetric? : % -> Boolean
@@ -118,20 +118,20 @@ MatrixCategory(R,Row,Col): Category == Definition where
 
 --% Creation
 
-     zero: (NonNegativeInteger,NonNegativeInteger) -> %
-       ++ \spad{zero(m,n)} returns an m-by-n zero matrix.
-     matrix: List List R -> %
+     zero : (NonNegativeInteger, NonNegativeInteger) -> %
+       ++ \spad{zero(m, n)} returns an m-by-n zero matrix.
+     matrix : List List R -> %
        ++ \spad{matrix(l)} converts the list of lists l to a matrix, where the
        ++ list of lists is viewed as a list of the rows of the matrix.
-     scalarMatrix: (NonNegativeInteger,R) -> %
-       ++ \spad{scalarMatrix(n,r)} returns an n-by-n matrix with r's on the
+     scalarMatrix : (NonNegativeInteger, R) -> %
+       ++ \spad{scalarMatrix(n, r)} returns an n-by-n matrix with r's on the
        ++ diagonal and zeroes elsewhere.
-     diagonalMatrix: List R -> %
+     diagonalMatrix : List R -> %
        ++ \spad{diagonalMatrix(l)} returns a diagonal matrix with the elements
        ++ of l on the diagonal.
-     diagonalMatrix: List % -> %
-       ++ \spad{diagonalMatrix([m1,...,mk])} creates a block diagonal matrix
-       ++ M with block matrices {\em m1},...,{\em mk} down the diagonal,
+     diagonalMatrix : List % -> %
+       ++ \spad{diagonalMatrix([m1, ..., mk])} creates a block diagonal matrix
+       ++ M with block matrices {\em m1}, ..., {\em mk} down the diagonal,
        ++ with 0 block matrices elsewhere.
        ++ More precisly: if \spad{ri := nrows mi}, \spad{ci := ncols mi},
        ++ then m is an (r1+..+rk) by (c1+..+ck) - matrix  with entries
@@ -139,74 +139,74 @@ MatrixCategory(R,Row,Col): Category == Definition where
        ++ \spad{(r1+..+r(l-1)) < i <= r1+..+rl} and
        ++ \spad{(c1+..+c(l-1)) < i <= c1+..+cl},
        ++ \spad{m.i.j} = 0  otherwise.
-     kroneckerProduct : (%,%) -> %
-       ++ kroneckerProduct(a,b) calculates the Kronecker product
+     kroneckerProduct : (%, %) -> %
+       ++ kroneckerProduct(a, b) calculates the Kronecker product
        ++ of the matrices a and b.
        ++ This corresponds to tensor product of corresponding operators.
      kroneckerProduct : List(%) -> %
        ++ kroneckerProduct([a1, a2, ..., an]) calculates the
        ++ Kronecker product of the matrices a1, a2, ..., an.
        ++ This corresponds to tensor product of corresponding operators.
-     kroneckerSum : (%,%) -> %
-       ++ kroneckerSum(a,b) calculates the Kronecker sum
+     kroneckerSum : (%, %) -> %
+       ++ kroneckerSum(a, b) calculates the Kronecker sum
        ++ of the matrices a and b.
      kroneckerSum : List(%) -> %
        ++ kroneckerSum([a1, a2, ..., an]) calculates the
        ++ Kronecker sum of the matrices a1, a2, ..., an.
-     coerce: Col -> %
+     coerce : Col -> %
        ++ \spad{coerce(col)} converts the column col to a column matrix.
-     transpose: Row -> %
+     transpose : Row -> %
        ++ \spad{transpose(r)} converts the row r to a row matrix.
 
 --% Creation of new matrices from old
 
-     transpose: % -> %
+     transpose : % -> %
        ++ \spad{transpose(m)} returns the transpose of the matrix m.
-     squareTop: % -> %
+     squareTop : % -> %
        ++ \spad{squareTop(m)} returns an n-by-n matrix consisting of the first
        ++ n rows of the m-by-n matrix m. Error: if
        ++ \spad{m < n}.
-     horizConcat: (%,%) -> %
-       ++ \spad{horizConcat(x,y)} horizontally concatenates two matrices with
+     horizConcat : (%, %) -> %
+       ++ \spad{horizConcat(x, y)} horizontally concatenates two matrices with
        ++ an equal number of rows. The entries of y appear to the right
        ++ of the entries of x.  Error: if the matrices
        ++ do not have the same number of rows.
-     vertConcat: (%,%) -> %
-       ++ \spad{vertConcat(x,y)} vertically concatenates two matrices with an
+     vertConcat : (%, %) -> %
+       ++ \spad{vertConcat(x, y)} vertically concatenates two matrices with an
        ++ equal number of columns. The entries of y appear below
        ++ of the entries of x.  Error: if the matrices
        ++ do not have the same number of columns.
 
 --% Part extractions/assignments
 
-     listOfLists: % -> List List R
+     listOfLists : % -> List List R
        ++ \spad{listOfLists(m)} returns the rows of the matrix m as a list
        ++ of lists.
-     elt: (%,List Integer,List Integer) -> %
-       ++ \spad{elt(x,rowList,colList)} returns an m-by-n matrix consisting
+     elt : (%, List Integer, List Integer) -> %
+       ++ \spad{elt(x, rowList, colList)} returns an m-by-n matrix consisting
        ++ of elements of x, where \spad{m = # rowList} and \spad{n = # colList}.
-       ++ If \spad{rowList = [i<1>,i<2>,...,i<m>]} and \spad{colList =
-       ++ [j<1>,j<2>,...,j<n>]}, then the \spad{(k,l)}th entry of
-       ++ \spad{elt(x,rowList,colList)} is \spad{x(i<k>,j<l>)}.
-     setelt: (%,List Integer,List Integer, %) -> %
-       ++ \spad{setelt(x,rowList,colList,y)} destructively alters the matrix x.
-       ++ If y is \spad{m}-by-\spad{n}, \spad{rowList = [i<1>,i<2>,...,i<m>]}
-       ++ and \spad{colList = [j<1>,j<2>,...,j<n>]}, then \spad{x(i<k>,j<l>)}
-       ++ is set to \spad{y(k,l)} for \spad{k = 1,...,m} and \spad{l = 1,...,n}.
-     swapRows!: (%,Integer,Integer) -> %
-       ++ \spad{swapRows!(m,i,j)} interchanges the \spad{i}th and \spad{j}th
+       ++ If \spad{rowList = [i<1>, i<2>, ..., i<m>]} and \spad{colList =
+       ++ [j<1>, j<2>, ..., j<n>]}, then the \spad{(k, l)}th entry of
+       ++ \spad{elt(x, rowList, colList)} is \spad{x(i<k>, j<l>)}.
+     setelt : (%, List Integer, List Integer, %) -> %
+       ++ \spad{setelt(x, rowList, colList, y)} destructively alters the matrix x.
+       ++ If y is \spad{m}-by-\spad{n}, \spad{rowList = [i<1>, i<2>, ..., i<m>]}
+       ++ and \spad{colList = [j<1>, j<2>, ..., j<n>]}, then \spad{x(i<k>, j<l>)}
+       ++ is set to \spad{y(k, l)} for \spad{k = 1, ..., m} and \spad{l = 1, ..., n}.
+     swapRows! : (%, Integer, Integer) -> %
+       ++ \spad{swapRows!(m, i, j)} interchanges the \spad{i}th and \spad{j}th
        ++ rows of m. This destructively alters the matrix.
-     swapColumns!: (%,Integer,Integer) -> %
-       ++ \spad{swapColumns!(m,i,j)} interchanges the \spad{i}th and \spad{j}th
+     swapColumns! : (%, Integer, Integer) -> %
+       ++ \spad{swapColumns!(m, i, j)} interchanges the \spad{i}th and \spad{j}th
        ++ columns of m. This destructively alters the matrix.
-     subMatrix: (%,Integer,Integer,Integer,Integer) -> %
-       ++ \spad{subMatrix(x,i1,i2,j1,j2)} extracts the submatrix
-       ++ \spad{[x(i,j)]} where the index i ranges from \spad{i1} to \spad{i2}
+     subMatrix : (%, Integer, Integer, Integer, Integer) -> %
+       ++ \spad{subMatrix(x, i1, i2, j1, j2)} extracts the submatrix
+       ++ \spad{[x(i, j)]} where the index i ranges from \spad{i1} to \spad{i2}
        ++ and the index j ranges from \spad{j1} to \spad{j2}.
-     setsubMatrix!: (%,Integer,Integer,%) -> %
-       ++ \spad{setsubMatrix(x,i1,j1,y)} destructively alters the
-       ++ matrix x. Here \spad{x(i,j)} is set to \spad{y(i-i1+1,j-j1+1)} for
-       ++ \spad{i = i1,...,i1-1+nrows y} and \spad{j = j1,...,j1-1+ncols y}.
+     setsubMatrix! : (%, Integer, Integer, %) -> %
+       ++ \spad{setsubMatrix(x, i1, j1, y)} destructively alters the
+       ++ matrix x. Here \spad{x(i, j)} is set to \spad{y(i-i1+1, j-j1+1)} for
+       ++ \spad{i = i1, ..., i1-1+nrows y} and \spad{j = j1, ..., j1-1+ncols y}.
 
 --% Arithmetic
 
@@ -246,7 +246,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
            ++ matrix x.  Error: if the matrix is not square.
      if R has IntegralDomain then
        "exquo": (%,R) -> Union(%,"failed")
-         ++ \spad{exquo(m,r)} computes the exact quotient of the elements
+         ++ \spad{exquo(m, r)} computes the exact quotient of the elements
          ++ of m by r, returning \axiom{"failed"} if this is not possible.
      if R has Field then
        "/": (%,R) -> %
@@ -255,32 +255,32 @@ MatrixCategory(R,Row,Col): Category == Definition where
 --% Linear algebra
 
      if R has EuclideanDomain then
-       rowEchelon: % -> %
+       rowEchelon : % -> %
          ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
-       columnSpace: % -> List Col
+       columnSpace : % -> List Col
          ++ \spad{columnSpace(m)} returns a sublist of columns of the matrix m
          ++ forming a basis of its column space
      if R has IntegralDomain then
-       rank: % -> NonNegativeInteger
+       rank : % -> NonNegativeInteger
          ++ \spad{rank(m)} returns the rank of the matrix m.
-       nullity: % -> NonNegativeInteger
+       nullity : % -> NonNegativeInteger
          ++ \spad{nullity(m)} returns the nullity of the matrix m. This is
          ++ the dimension of the null space of the matrix m.
-       nullSpace: % -> List Col
+       nullSpace : % -> List Col
          ++ \spad{nullSpace(m)} returns a basis for the null space of
          ++ the matrix m.
      if R has CommutativeRing then
-       determinant: % -> R
+       determinant : % -> R
          ++ \spad{determinant(m)} returns the determinant of the matrix m.
          ++ Error: if the matrix is not square.
-       minordet: % -> R
+       minordet : % -> R
          ++ \spad{minordet(m)} computes the determinant of the matrix m using
          ++ minors. Error: if the matrix is not square.
-       Pfaffian: % -> R
+       Pfaffian : % -> R
          ++ \spad{Pfaffian(m)} returns the Pfaffian of the matrix m.
          ++ Error: if the matrix is not antisymmetric.
      if R has Field then
-       inverse: % -> Union(%,"failed")
+       inverse : % -> Union(%,"failed")
          ++ \spad{inverse(m)} returns the inverse of the matrix m.
          ++ If the matrix is not invertible, "failed" is returned.
          ++ Error: if the matrix is not square.
@@ -316,7 +316,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
        mr := minRowIndex x; mc := minColIndex x
        for i in 0..(nRows - 1) repeat
          for j in (i + 1)..(nRows - 1) repeat
-           qelt(x,mr + i,mc + j) ~= qelt(x,mr + j,mc + i) => return false
+           qelt(x, mr + i, mc + j) ~= qelt(x, mr + j, mc + i) => return false
        true
 
      if R has AbelianGroup then
@@ -331,32 +331,32 @@ MatrixCategory(R,Row,Col): Category == Definition where
 
 --% Creation of matrices
 
-     zero(rows,cols) == new(rows,cols,0)
+     zero(rows, cols) == new(rows, cols, 0)
 
-     matrix(l: List List R) ==
-       null l => new(0,0,0)
+     matrix(l : List List R) ==
+       null l => new(0, 0, 0)
        -- error check: this is a top level function
        rows : NonNegativeInteger := 1; cols := # first l
        cols = 0 => error "matrices with zero columns are not supported"
        for ll in rest l repeat
          cols ~= # ll => error "matrix: rows of different lengths"
          rows := rows + 1
-       ans := new(rows,cols,0)
+       ans := new(rows, cols, 0)
        for i in minr(ans)..maxr(ans) for ll in l repeat
          for j in minc(ans)..maxc(ans) for r in ll repeat
-           qsetelt!(ans,i,j,r)
+           qsetelt!(ans, i, j, r)
        ans
 
-     scalarMatrix(n,r) ==
-       ans := zero(n,n)
+     scalarMatrix(n, r) ==
+       ans := zero(n, n)
        for i in minr(ans)..maxr(ans) for j in minc(ans)..maxc(ans) repeat
-         qsetelt!(ans,i,j,r)
+         qsetelt!(ans, i, j, r)
        ans
 
-     diagonalMatrix(l: List R) ==
-       n := #l; ans := zero(n,n)
+     diagonalMatrix(l : List R) ==
+       n := #l; ans := zero(n, n)
        for i in minr(ans)..maxr(ans) for j in minc(ans)..maxc(ans) _
-           for r in l repeat qsetelt!(ans,i,j,r)
+           for r in l repeat qsetelt!(ans, i, j, r)
        ans
 
      maybe_1 : UR :=
@@ -414,7 +414,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
                  kronecker_prod1(res, k, dl, l, 0, 0, "one")
              res
 
-         kroneckerProduct(a: %, b: %) == kroneckerProduct([a, b])
+         kroneckerProduct(a : %, b : %) == kroneckerProduct([a, b])
 
          kroneckerSum(l : List(%)) : % ==
              k := #l
@@ -451,21 +451,21 @@ MatrixCategory(R,Row,Col): Category == Definition where
                  n0 := n0*nr
              res
 
-         kroneckerSum(a: %, b: %) == kroneckerSum([a, b])
+         kroneckerSum(a : %, b : %) == kroneckerSum([a, b])
 
-         diagonalMatrix(list: List %) ==
+         diagonalMatrix(list : List %) ==
            rows : NonNegativeInteger := 0
            cols : NonNegativeInteger := 0
            for mat in list repeat
              rows := rows + nrows mat
              cols := cols + ncols mat
-           ans := zero(rows,cols)
+           ans := zero(rows, cols)
            loR := minr ans; loC := minc ans
            for mat in list repeat
              hiR := loR + nrows(mat) - 1; hiC := loC + nrows(mat) - 1
              for i in loR..hiR for k in minr(mat)..maxr(mat) repeat
                for j in loC..hiC for l in minc(mat)..maxc(mat) repeat
-                 qsetelt!(ans,i,j,qelt(mat,k,l))
+                 qsetelt!(ans, i, j, qelt(mat, k, l))
              loR := hiR + 1; loC := hiC + 1
            ans
 
@@ -475,58 +475,58 @@ MatrixCategory(R,Row,Col): Category == Definition where
      else
          Ops
 
-     coerce(v:Col) ==
-       x := new(#v,1,0)
+     coerce(v : Col) ==
+       x := new(#v, 1, 0)
        one := minc(x)
        for i in minr(x)..maxr(x) for k in mini(v)..maxi(v) repeat
-         qsetelt!(x,i,one,qelt(v,k))
+         qsetelt!(x, i, one, qelt(v, k))
        x
 
-     transpose(v:Row) ==
-       x := new(1,#v,0)
+     transpose(v : Row) ==
+       x := new(1, #v, 0)
        one := minr(x)
        for j in minc(x)..maxc(x) for k in mini(v)..maxi(v) repeat
-         qsetelt!(x,one,j,qelt(v,k))
+         qsetelt!(x, one, j, qelt(v, k))
        x
 
-     transpose(x:%) ==
-       ans := new(ncols x,nrows x,0)
+     transpose(x : %) ==
+       ans := new(ncols x, nrows x, 0)
        for i in minr(ans)..maxr(ans) repeat
          for j in minc(ans)..maxc(ans) repeat
-           qsetelt!(ans,i,j,qelt(x,j,i))
+           qsetelt!(ans, i, j, qelt(x, j, i))
        ans
 
      squareTop x ==
        nrows x < (cols := ncols x) =>
          error "squareTop: number of columns exceeds number of rows"
-       ans := new(cols,cols,0)
+       ans := new(cols, cols, 0)
        for i in minr(x)..(minr(x) + cols - 1) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt!(ans,i,j,qelt(x,i,j))
+           qsetelt!(ans, i, j, qelt(x, i, j))
        ans
 
-     horizConcat(x,y) ==
+     horizConcat(x, y) ==
        (rows := nrows x) ~= nrows y =>
          error "HConcat: matrices must have same number of rows"
-       ans := new(rows,(cols := ncols x) + ncols y,0)
+       ans := new(rows, (cols := ncols x) + ncols y, 0)
        for i in minr(x)..maxr(x) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt!(ans,i,j,qelt(x,i,j))
+           qsetelt!(ans, i, j, qelt(x, i, j))
        for i in minr(y)..maxr(y) repeat
          for j in minc(y)..maxc(y) repeat
-           qsetelt!(ans,i,j + cols,qelt(y,i,j))
+           qsetelt!(ans, i, j + cols, qelt(y, i, j))
        ans
 
-     vertConcat(x,y) ==
+     vertConcat(x, y) ==
        (cols := ncols x) ~= ncols y =>
          error "HConcat: matrices must have same number of columns"
-       ans := new((rows := nrows x) + nrows y,cols,0)
+       ans := new((rows := nrows x) + nrows y, cols, 0)
        for i in minr(x)..maxr(x) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt!(ans,i,j,qelt(x,i,j))
+           qsetelt!(ans, i, j, qelt(x, i, j))
        for i in minr(y)..maxr(y) repeat
          for j in minc(y)..maxc(y) repeat
-           qsetelt!(ans,i + rows,j,qelt(y,i,j))
+           qsetelt!(ans, i + rows, j, qelt(y, i, j))
        ans
 
 --% Part extraction/assignment
@@ -536,44 +536,44 @@ MatrixCategory(R,Row,Col): Category == Definition where
        for i in maxr(x)..minr(x) by -1 repeat
          l : List R := nil()
          for j in maxc(x)..minc(x) by -1 repeat
-           l := cons(qelt(x,i,j),l)
-         ll := cons(l,ll)
+           l := cons(qelt(x, i, j), l)
+         ll := cons(l, ll)
        ll
 
-     swapRows!(x,i1,i2) ==
+     swapRows!(x, i1, i2) ==
        (i1 < minr(x)) or (i1 > maxr(x)) or (i2 < minr(x)) or _
            (i2 > maxr(x)) => error "swapRows!: index out of range"
        i1 = i2 => x
        for j in minc(x)..maxc(x) repeat
-         r := qelt(x,i1,j)
-         qsetelt!(x,i1,j,qelt(x,i2,j))
-         qsetelt!(x,i2,j,r)
+         r := qelt(x, i1, j)
+         qsetelt!(x, i1, j, qelt(x, i2, j))
+         qsetelt!(x, i2, j, r)
        x
 
-     swapColumns!(x,j1,j2) ==
+     swapColumns!(x, j1, j2) ==
        (j1 < minc(x)) or (j1 > maxc(x)) or (j2 < minc(x)) or _
            (j2 > maxc(x)) => error "swapColumns!: index out of range"
        j1 = j2 => x
        for i in minr(x)..maxr(x) repeat
-         r := qelt(x,i,j1)
-         qsetelt!(x,i,j1,qelt(x,i,j2))
-         qsetelt!(x,i,j2,r)
+         r := qelt(x, i, j1)
+         qsetelt!(x, i, j1, qelt(x, i, j2))
+         qsetelt!(x, i, j2, r)
        x
 
-     elt(x:%,rowList:List Integer,colList:List Integer) ==
+     elt(x : %, rowList : List Integer, colList : List Integer) ==
        for ei in rowList repeat
          (ei < minr(x)) or (ei > maxr(x)) =>
            error "elt: index out of range"
        for ej in colList repeat
          (ej < minc(x)) or (ej > maxc(x)) =>
            error "elt: index out of range"
-       y := new(# rowList,# colList,0)
+       y := new(# rowList, # colList, 0)
        for ei in rowList for i in minr(y)..maxr(y) repeat
          for ej in colList for j in minc(y)..maxc(y) repeat
-           qsetelt!(y,i,j,qelt(x,ei,ej))
+           qsetelt!(y, i, j, qelt(x, ei, ej))
        y
 
-     setelt(x:%,rowList:List Integer,colList:List Integer,y:%) ==
+     setelt(x : %, rowList : List Integer, colList : List Integer, y : %) ==
        for ei in rowList repeat
          (ei < minr(x)) or (ei > maxr(x)) =>
            error "setelt: index out of range"
@@ -584,10 +584,10 @@ MatrixCategory(R,Row,Col): Category == Definition where
          error "setelt: matrix has bad dimensions"
        for ei in rowList for i in minr(y)..maxr(y) repeat
          for ej in colList for j in minc(y)..maxc(y) repeat
-           qsetelt!(x,ei,ej,qelt(y,i,j))
+           qsetelt!(x, ei, ej, qelt(y, i, j))
        y
 
-     subMatrix(x,i1,i2,j1,j2) ==
+     subMatrix(x, i1, i2, j1, j2) ==
        (i2 < i1) => error "subMatrix: bad row indices"
        (j2 < j1) => error "subMatrix: bad column indices"
        (i1 < minr(x)) or (i2 > maxr(x)) =>
@@ -596,13 +596,13 @@ MatrixCategory(R,Row,Col): Category == Definition where
          error "subMatrix: index out of range"
        rows := (i2 - i1 + 1) pretend NonNegativeInteger
        cols := (j2 - j1 + 1) pretend NonNegativeInteger
-       y := new(rows,cols,0)
+       y := new(rows, cols, 0)
        for i in minr(y)..maxr(y) for k in i1..i2 repeat
          for j in minc(y)..maxc(y) for l in j1..j2 repeat
-           qsetelt!(y,i,j,qelt(x,k,l))
+           qsetelt!(y, i, j, qelt(x, k, l))
        y
 
-     setsubMatrix!(x,i1,j1,y) ==
+     setsubMatrix!(x, i1, j1, y) ==
        i2 := i1 + nrows(y) -1
        j2 := j1 + ncols(y) -1
        (i1 < minr(x)) or (i2 > maxr(x)) =>
@@ -611,7 +611,7 @@ MatrixCategory(R,Row,Col): Category == Definition where
          error "setsubMatrix!: inserted matrix too big, use subMatrix to restrict it"
        for i in minr(y)..maxr(y) for k in i1..i2 repeat
          for j in minc(y)..maxc(y) for l in j1..j2 repeat
-           qsetelt!(x,k,l,qelt(y,i,j))
+           qsetelt!(x, k, l, qelt(y, i, j))
        x
 
 --% Arithmetic
@@ -619,10 +619,10 @@ MatrixCategory(R,Row,Col): Category == Definition where
      x + y ==
        ((r := nrows x) ~= nrows y) or ((c := ncols x) ~= ncols y) =>
          error "can't add matrices of different dimensions"
-       ans := new(r,c,0)
+       ans := new(r, c, 0)
        for i in minr(x)..maxr(x) repeat
          for j in minc(x)..maxc(x) repeat
-           qsetelt!(ans,i,j,qelt(x,i,j) + qelt(y,i,j))
+           qsetelt!(ans, i, j, qelt(x, i, j) + qelt(y, i, j))
        ans
 
      if R has AbelianGroup then
@@ -636,69 +636,69 @@ MatrixCategory(R,Row,Col): Category == Definition where
              ans
 
          - x == map((r1 : R) : R +-> - r1, x)
-         m:Integer * x:% == map((r1 : R) : R +-> m * r1, x)
+         m : Integer * x : % == map((r1 : R) : R +-> m * r1, x)
 
-     a:R * x:% == map((r1: R): R +-> a * r1,x)
-     x:% * a:R == map((r1: R): R +-> r1 * a,x)
+     a : R * x : % == map((r1 : R) : R +-> a * r1, x)
+     x : % * a : R == map((r1 : R) : R +-> r1 * a, x)
 
-     x:% * y:% ==
+     x : % * y : % ==
        (ncols x ~= nrows y) =>
          error "can't multiply matrices of incompatible dimensions"
-       ans := new(nrows x,ncols y,0)
+       ans := new(nrows x, ncols y, 0)
        for i in minr(x)..maxr(x) repeat
          for j in minc(y)..maxc(y) repeat
            entry :=
              sum : R := 0
              for k in minr(y)..maxr(y) for l in minc(x)..maxc(x) repeat
-               sum := sum + qelt(x,i,l) * qelt(y,k,j)
+               sum := sum + qelt(x, i, l) * qelt(y, k, j)
              sum
-           qsetelt!(ans,i,j,entry)
+           qsetelt!(ans, i, j, entry)
        ans
 
-     -- positivePower:(%,Integer) -> %
-     positivePower(x,n) ==
+     -- positivePower: (%, Integer) -> %
+     positivePower(x, n) ==
 --       one? n => x
        (n = 1) => x
-       odd? n => x * positivePower(x,n - 1)
-       y := positivePower(x,n quo 2)
+       odd? n => x * positivePower(x, n - 1)
+       y := positivePower(x, n quo 2)
        y * y
 
      if R has Monoid then
-         x:% ^ n:NonNegativeInteger ==
+         x : % ^ n : NonNegativeInteger ==
              not((nn := nrows x) = ncols x) => error "^: matrix must be square"
              zero? n => scalarMatrix(nn, 1)
              positivePower(x, n)
 
      --if R has ConvertibleTo InputForm then
-       --convert(x:%):InputForm ==
+       --convert(x: %): InputForm ==
          --convert [convert('matrix)@InputForm,
                   --convert listOfLists x]$List(InputForm)
 
      if Col has shallowlyMutable then
 
-       x:% * v:Col ==
+       x : % * v : Col ==
          ncols(x) ~= #v =>
            error "can't multiply matrix A and vector v if #cols A ~= #v"
-         w : Col := new(nrows x,0)
+         w : Col := new(nrows x, 0)
          for i in minr(x)..maxr(x) for k in mini(w)..maxi(w) repeat
            w.k :=
              sum : R := 0
              for j in minc(x)..maxc(x) for l in mini(v)..maxi(v) repeat
-               sum := sum + qelt(x,i,j) * v(l)
+               sum := sum + qelt(x, i, j) * v(l)
              sum
          w
 
      if Row has shallowlyMutable then
 
-       v:Row * x:% ==
+       v : Row * x : % ==
          nrows(x) ~= #v =>
            error "can't multiply vector v and matrix A if #rows A ~= #v"
-         w : Row := new(ncols x,0)
+         w : Row := new(ncols x, 0)
          for j in minc(x)..maxc(x) for k in mini(w)..maxi(w) repeat
            w.k :=
              sum : R := 0
              for i in minr(x)..maxr(x) for l in mini(v)..maxi(v) repeat
-               sum := sum + qelt(x,i,j) * v(l)
+               sum := sum + qelt(x, i, j) * v(l)
              sum
          w
 
@@ -723,7 +723,7 @@ Its row-echelon form is
          |            |
          +0  0   0   1+
 \end{verbatim}
-And indeed, \verb|@[[2,2,2],[1,0,1],[2,0,1]]| is a $\mathbb Q$-basis of the
+And indeed, \verb|@[[2, 2, 2], [1, 0, 1], [2, 0, 1]]| is a $\mathbb Q$-basis of the
 column space.  Reversing the extracted columns is not strictly necessary, but
 makes the result look more natural.
 
@@ -734,10 +734,10 @@ matrix would give another basis of the column space.
      if R has EuclideanDomain then
         columnSpace M ==
             M2 := rowEchelon M
-            basis: List Col := []
-            n: Integer := ncols M
-            m: Integer := nrows M
-            indRow: Integer := 1
+            basis : List Col := []
+            n : Integer := ncols M
+            m : Integer := nrows M
+            indRow : Integer := 1
             for k in 1..n while indRow <= m repeat
                 if not zero?(M2.(indRow, k)) then
                     basis := cons(column(M, k), basis)
@@ -748,7 +748,7 @@ matrix would give another basis of the column space.
 
 <<TEST MATCAT>>=
 testcase "columnSpace"
-M := matrix [[1,2,3],[4,5,6],[7,8,9],[1,1,1]];
+M := matrix [[1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 1, 1]];
 testEquals("columnSpace M", "[[1,4,7,1],[2,5,8,1]]")
 testEquals("columnSpace transpose M", "[[1,2,3],[4,5,6]]")
 testEquals("columnSpace [[0,0]]", "[]")
@@ -765,10 +765,10 @@ multiplication.
 <<category MATCAT MatrixCategory>>=
 
      if R has CommutativeRing then
-        B0(n: PositiveInteger): % ==
-            matrix [[(if i=j+1 and odd? j _
+        B0(n : PositiveInteger) : % ==
+            matrix [[(if i = j+1 and odd? j _
                       then -1 _
-                      else if i=j-1 and odd? i _
+                      else if i = j-1 and odd? i _
                            then 1 _
                            else 0) for j in 1..n] for i in 1..n]
 
@@ -799,9 +799,9 @@ where we split $A$ as follows:
 \end{equation}
 <<category MATCAT MatrixCategory>>=
         SUPR ==> SparseUnivariatePolynomial R
-        PfChar(A: %): SUPR ==
+        PfChar(A : %) : SUPR ==
             n := nrows A
-            (n = 2) => monomial(1$R,2)$SUPR + qelt(A, 1, 2)::SUPR
+            (n = 2) => monomial(1$R, 2)$SUPR + qelt(A, 1, 2)::SUPR
             M := subMatrix(A, 3, n, 3, n)
             r := subMatrix(A, 1, 1, 3, n)
             s := subMatrix(A, 3, n, 2, 2)
@@ -811,15 +811,15 @@ where we split $A$ as follows:
 
             B := B0((n-2)::PositiveInteger)
             C := r*B
-            g: List R := [qelt(C*s,1,1), qelt(A,1,2), 1]
+            g : List R := [qelt(C*s, 1, 1), qelt(A, 1, 2), 1]
             if d >= 4 then
                 B := M*B
                 for i in 4..d by 2 repeat
                     C := C*B
-                    g := cons(qelt(C*s,1,1), g)
+                    g := cons(qelt(C*s, 1, 1), g)
             g := reverse! g
 
-            res: SUPR := 0
+            res : SUPR := 0
             for i in 0..d by 2 for j in 2..d+2 repeat
                 c := coefficient(p, i)
                 for e in first(g, j) for k in 2..-d by -2 repeat
@@ -844,8 +844,8 @@ The Pfaffian is the constant term of the \emph{Pfaffian-characteristic
 testcase "Pfaffian"
 m n == matrix [[(if i = j then 0 _
                           else if i < j _
-                               then x[i,j] _
-                               else -x[j,i]) for i in 1..n] for j in 1..n]
+                               then x[i, j] _
+                               else -x[j, i]) for i in 1..n] for j in 1..n]
 testEquals("Pfaffian [[0,1,0,0],[-1,0,0,0],[0,0,0,1],[0,0,-1,0]]", "1")
 testEquals("Pfaffian [[0, u, v, w],[-u, 0, x, y],[-v,-x,0,z],[-w,-y,-z,0]]", _
            "u*z-v*y+w*x")
@@ -861,26 +861,26 @@ testLibraryError "Pfaffian [[1,2,3],[0,0,0]]"
 <<category MATCAT MatrixCategory>>=
      if R has IntegralDomain then
        x exquo a ==
-         ans := new(nrows x,ncols x,0)
+         ans := new(nrows x, ncols x, 0)
          for i in minr(x)..maxr(x) repeat
            for j in minc(x)..maxc(x) repeat
              entry :=
                (r := (qelt(x,i,j) exquo a)) case "failed" =>
                  return "failed"
                r :: R
-             qsetelt!(ans,i,j,entry)
+             qsetelt!(ans, i, j, entry)
          ans
 
      if R has Field then
-       x / r == map((r1: R): R +-> r1 / r,x)
+       x / r == map((r1 : R) : R +-> r1 / r, x)
 
-       x:% ^ n:Integer ==
+       x : % ^ n : Integer ==
          not((nn:= nrows x) = ncols x) => error "^: matrix must be square"
-         zero? n => scalarMatrix(nn,1)
-         positive? n => positivePower(x,n)
+         zero? n => scalarMatrix(nn, 1)
+         positive? n => positivePower(x, n)
          (xInv := inverse x) case "failed" =>
            error "^: matrix must be invertible"
-         positivePower(xInv :: %,-n)
+         positivePower(xInv :: %, -n)
 
 @
 \section{category RMATCAT RectangularMatrixCategory}
@@ -890,7 +890,7 @@ testLibraryError "Pfaffian [[1,2,3],[0,0,0]]"
 ++ Date Created: 1987
 ++ Date Last Updated: July 1990
 ++ Basic Operations:
-++ Related Domains: RectangularMatrix(m,n,R)
+++ Related Domains: RectangularMatrix(m, n, R)
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords:
@@ -901,13 +901,13 @@ testLibraryError "Pfaffian [[1,2,3],[0,0,0]]"
 ++   dimensions.  The dimensions of the matrix will be parameters of the
 ++   domain.  Domains in this category will be R-modules and will be
 ++   non-mutable.
-RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
-  m,n : NonNegativeInteger
+RectangularMatrixCategory(m, n, R, Row, Col) : Category == Definition where
+  m, n : NonNegativeInteger
   R   : Join(SemiRng, AbelianMonoid)
-  Row : DirectProductCategory(n,R)
-  Col : DirectProductCategory(m,R)
+  Row : DirectProductCategory(n, R)
+  Col : DirectProductCategory(m, R)
 
-  Definition ==> Join(BiModule(R,R),HomogeneousAggregate(R), _
+  Definition ==> Join(BiModule(R, R), HomogeneousAggregate(R), _
       finiteAggregate) with
 
     if R has Finite then Finite
@@ -916,7 +916,7 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
 
 --% Matrix creation
 
-    matrix: List List R -> %
+    matrix : List List R -> %
       ++ \spad{matrix(l)} converts the list of lists l to a matrix, where the
       ++ list of lists is viewed as a list of the rows of the matrix.
 
@@ -925,13 +925,13 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
     square?  : % -> Boolean
       ++ \spad{square?(m)} returns true if m is a square matrix (i.e. if m
       ++ has the same number of rows as columns) and false otherwise.
-    diagonal?: % -> Boolean
+    diagonal? : % -> Boolean
       ++ \spad{diagonal?(m)} returns true if the matrix m is square and diagonal
       ++ (i.e. all entries of m not on the diagonal are zero) and false
       ++ otherwise.
-    symmetric?: % -> Boolean
+    symmetric? : % -> Boolean
       ++ \spad{symmetric?(m)} returns true if the matrix m is square and
-      ++ symmetric (i.e. \spad{m[i,j] = m[j,i]} for all \spad{i} and j) and
+      ++ symmetric (i.e. \spad{m[i, j] = m[j, i]} for all \spad{i} and j) and
       ++ false otherwise.
     if R has AbelianGroup then
         antisymmetric? : % -> Boolean
@@ -939,9 +939,9 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
           ++ square and antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for
           ++ all i and j) and false otherwise.
 
-    antisymmetric?: % -> Boolean
+    antisymmetric? : % -> Boolean
       ++ \spad{antisymmetric?(m)} returns true if the matrix m is square and
-      ++ antisymmetric (i.e. \spad{m[i,j] = -m[j,i]} for all \spad{i} and j)
+      ++ antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for all \spad{i} and j)
       ++ and false otherwise.
 
 --% Size inquiries
@@ -965,43 +965,43 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
 
 --% Part extractions
 
-    listOfLists: % -> List List R
+    listOfLists : % -> List List R
       ++ \spad{listOfLists(m)} returns the rows of the matrix m as a list
       ++ of lists.
-    elt: (%,Integer,Integer) -> R
-      ++ \spad{elt(m,i,j)} returns the element in the \spad{i}th row and
+    elt : (%, Integer, Integer) -> R
+      ++ \spad{elt(m, i, j)} returns the element in the \spad{i}th row and
       ++ \spad{j}th column of the matrix m.
       ++ Error: if indices are outside the proper
       ++ ranges.
-    qelt: (%,Integer,Integer) -> R
-      ++ \spad{qelt(m,i,j)} returns the element in the \spad{i}th row and
+    qelt : (%, Integer, Integer) -> R
+      ++ \spad{qelt(m, i, j)} returns the element in the \spad{i}th row and
       ++ \spad{j}th column of
       ++ the matrix m. Note: there is NO error check to determine if indices are
       ++ in the proper ranges.
-    elt: (%,Integer,Integer,R) -> R
-      ++ \spad{elt(m,i,j,r)} returns the element in the \spad{i}th row and
+    elt : (%, Integer, Integer, R) -> R
+      ++ \spad{elt(m, i, j, r)} returns the element in the \spad{i}th row and
       ++ \spad{j}th column of the matrix m, if m has an \spad{i}th row and a
       ++ \spad{j}th column, and returns r otherwise.
-    row: (%,Integer) -> Row
-      ++ \spad{row(m,i)} returns the \spad{i}th row of the matrix m.
+    row : (%, Integer) -> Row
+      ++ \spad{row(m, i)} returns the \spad{i}th row of the matrix m.
       ++ Error: if the index is outside the proper range.
-    column: (%,Integer) -> Col
-      ++ \spad{column(m,j)} returns the \spad{j}th column of the matrix m.
+    column : (%, Integer) -> Col
+      ++ \spad{column(m, j)} returns the \spad{j}th column of the matrix m.
       ++ Error: if the index outside the proper range.
 
 --% Map and Zip
 
-    map: (R -> R,%) -> %
-      ++ \spad{map(f,a)} returns b, where \spad{b(i,j) = a(i,j)} for all i, j.
-    map:((R,R) -> R,%,%) -> %
-      ++ \spad{map(f,a,b)} returns c, where c is such that
-      ++ \spad{c(i,j) = f(a(i,j),b(i,j))} for all \spad{i}, j.
+    map : (R -> R, %) -> %
+      ++ \spad{map(f, a)} returns b, where \spad{b(i, j) = a(i, j)} for all i, j.
+    map : ((R, R) -> R, %, %) -> %
+      ++ \spad{map(f, a, b)} returns c, where c is such that
+      ++ \spad{c(i, j) = f(a(i, j), b(i, j))} for all \spad{i}, j.
 
 --% Arithmetic
 
     if R has IntegralDomain then
       "exquo": (%,R) -> Union(%,"failed")
-        ++ \spad{exquo(m,r)} computes the exact quotient of the elements
+        ++ \spad{exquo(m, r)} computes the exact quotient of the elements
         ++ of m by r, returning \axiom{"failed"} if this is not possible.
     if R has Field then
       "/": (%,R) -> %
@@ -1010,18 +1010,18 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
 --% Linear algebra
 
     if R has EuclideanDomain then
-      rowEchelon: % -> %
+      rowEchelon : % -> %
         ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
-      columnSpace: % -> List Col
+      columnSpace : % -> List Col
         ++ \spad{columnSpace(m)} returns a sublist of columns of the matrix m
         ++ forming a basis of its column space.
     if R has IntegralDomain then
-      rank: % -> NonNegativeInteger
+      rank : % -> NonNegativeInteger
         ++ \spad{rank(m)} returns the rank of the matrix m.
-      nullity: % -> NonNegativeInteger
+      nullity : % -> NonNegativeInteger
         ++ \spad{nullity(m)} returns the nullity of the matrix m. This is
         ++ the dimension of the null space of the matrix m.
-      nullSpace: % -> List Col
+      nullSpace : % -> List Col
         ++ \spad{nullSpace(m)}+ returns a basis for the null space of
         ++ the matrix m.
    add
@@ -1033,9 +1033,9 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
 
          lookup x ==
              s := size()$R
-             pow: Integer := 1
+             pow : Integer := 1
              l := listOfLists(x)
-             res: Integer := 1
+             res : Integer := 1
              for r in l repeat
                  for c in r repeat
                      res := res + (lookup(c)$R-1)*pow
@@ -1045,12 +1045,12 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
          index i ==
              s := size()$R
              old := divide(i-1, s)
-             res: List List R := []
+             res : List List R := []
 
              for i in 1..m repeat
-                 row: List R := []
+                 row : List R := []
                  for j in 1..n repeat
-                     el:R := index((old.remainder + 1)::PositiveInteger)$R
+                     el : R := index((old.remainder + 1)::PositiveInteger)$R
                      row := cons(el, row)
                      old := divide(old.quotient, s)
                  res := cons(reverse! row, res)
@@ -1074,7 +1074,7 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
        mr := minRowIndex x; mc := minColIndex x
        for i in 0..(n - 1) repeat
          for j in (i + 1)..(n - 1) repeat
-           qelt(x,mr + i,mc + j) ~= qelt(x,mr + j,mc + i) => return false
+           qelt(x, mr + i, mc + j) ~= qelt(x, mr + j, mc + i) => return false
        true
 
      if R has AbelianGroup then
@@ -1096,7 +1096,7 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
 ++ Date Created: 1987
 ++ Date Last Updated: July 1990
 ++ Basic Operations:
-++ Related Domains: SquareMatrix(ndim,R)
+++ Related Domains: SquareMatrix(ndim, R)
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords:
@@ -1107,34 +1107,34 @@ RectangularMatrixCategory(m,n,R,Row,Col): Category == Definition where
 ++   allows different representations and indexing schemes.  Rows and
 ++   columns may be extracted with rows returned as objects of
 ++   type Row and colums returned as objects of type Col.
-SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
+SquareMatrixCategory(ndim, R, Row, Col) : Category == Definition where
   ndim : NonNegativeInteger
   R    : Join(SemiRng, AbelianMonoid)
-  Row  : DirectProductCategory(ndim,R)
-  Col  : DirectProductCategory(ndim,R)
+  Row  : DirectProductCategory(ndim, R)
+  Col  : DirectProductCategory(ndim, R)
   I ==> Integer
 
-  Definition ==> Join(SemiRng, AbelianMonoid, BiModule(R, R),_
-                      RectangularMatrixCategory(ndim,ndim,R,Row,Col),_
+  Definition ==> Join(SemiRng, AbelianMonoid, BiModule(R, R), _
+                      RectangularMatrixCategory(ndim, ndim, R, Row, Col), _
                       FullyRetractableTo R) with
     if R has SemiRing then SemiRing
     if R has Ring then
         DifferentialExtension R
         FullyLinearlyExplicitRingOver R
     if R has CommutativeRing then Module(R)
-    scalarMatrix: R -> %
+    scalarMatrix : R -> %
       ++ \spad{scalarMatrix(r)} returns an n-by-n matrix with r's on the
       ++ diagonal and zeroes elsewhere.
-    diagonalMatrix: List R -> %
+    diagonalMatrix : List R -> %
       ++ \spad{diagonalMatrix(l)} returns a diagonal matrix with the elements
       ++ of l on the diagonal.
-    diagonal: % -> Row
+    diagonal : % -> Row
       ++ \spad{diagonal(m)} returns a row consisting of the elements on the
       ++ diagonal of the matrix m.
-    trace: % -> R
+    trace : % -> R
       ++ \spad{trace(m)} returns the trace of the matrix m. this is the sum
       ++ of the elements on the diagonal of the matrix m.
-    diagonalProduct: % -> R
+    diagonalProduct : % -> R
       ++ \spad{diagonalProduct(m)} returns the product of the elements on the
       ++ diagonal of the matrix m.
     "*": (%,Col) -> Col
@@ -1148,17 +1148,17 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
 
     if R has CommutativeRing then
       Algebra R
-      determinant: % -> R
+      determinant : % -> R
         ++ \spad{determinant(m)} returns the determinant of the matrix m.
-      minordet: % -> R
+      minordet : % -> R
         ++ \spad{minordet(m)} computes the determinant of the matrix m
         ++ using minors.
-      Pfaffian: % -> R
+      Pfaffian : % -> R
          ++ \spad{Pfaffian(m)} returns the Pfaffian of the matrix m.
          ++ Error: if the matrix is not antisymmetric.
 
     if R has Field then
-      inverse: % -> Union(%,"failed")
+      inverse : % -> Union(%,"failed")
         ++ \spad{inverse(m)} returns the inverse of the matrix m, if that
         ++ matrix is invertible and returns "failed" otherwise.
       "^": (%,Integer) -> %
@@ -1173,32 +1173,32 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
     mini ==> minIndex
     maxi ==> maxIndex
 
-    positivePower:(%,Integer) -> %
-    positivePower(x,n) ==
+    positivePower : (%, Integer) -> %
+    positivePower(x, n) ==
 --      one? n => x
       (n = 1) => x
-      odd? n => x * positivePower(x,n - 1)
-      y := positivePower(x,n quo 2)
+      odd? n => x * positivePower(x, n - 1)
+      y := positivePower(x, n quo 2)
       y * y
 
     if R has Monoid then
-        x:% ^ n:NonNegativeInteger ==
+        x : % ^ n : NonNegativeInteger ==
             zero? n => scalarMatrix 1
             positivePower(x, n)
 
-    coerce(r:R) == scalarMatrix r
+    coerce(r : R) == scalarMatrix r
 
-    differentiate(x:%,d:R -> R) == map(d,x)
+    differentiate(x : %, d : R -> R) == map(d, x)
 
     diagonal x ==
-      v:Vector(R) := new(ndim,0)
+      v : Vector(R) := new(ndim, 0)
       for i in minr x .. maxr x
         for j in minc x .. maxc x
           for k in minIndex v .. maxIndex v repeat
             qsetelt!(v, k, qelt(x, i, j))
       directProduct v
 
-    retract(x:%):R ==
+    retract(x : %) : R ==
       diagonal? x => retract diagonal x
       error "Not retractable"
 
@@ -1208,7 +1208,7 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
 
     if R has Ring then
 
-        equation2R: Vector % -> Matrix R
+        equation2R : Vector % -> Matrix R
 
         equation2R v ==
             ans : Matrix(Col) := new(ndim, #v, 0)
@@ -1222,9 +1222,9 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
             reduce(vertConcat, [equation2R row(x, i)
                                for i in minr x .. maxr x])$List(Matrix R)
 
-        reducedSystem(m:Matrix %, v:Vector %
+        reducedSystem(m : Matrix %, v : Vector %
                      ) : Record(mat : Matrix R, vec : Vector R) ==
-            vh:Vector(R) :=
+            vh : Vector(R) :=
                 empty? v => new(0, 0)
                 rh := reducedSystem(v::Matrix %)@Matrix(R)
                 column(rh, minColIndex rh)
@@ -1233,23 +1233,23 @@ SquareMatrixCategory(ndim,R,Row,Col): Category == Definition where
     trace x ==
       tr : R := 0
       for i in minr(x)..maxr(x) for j in minc(x)..maxc(x) repeat
-        tr := tr + x(i,j)
+        tr := tr + x(i, j)
       tr
 
     diagonalProduct x ==
       pr : R := x(minr(x), minc(x))
       for i in (minr(x) + 1)..maxr(x) for j in (minc(x) + 1)..maxc(x) repeat
-        pr := pr * x(i,j)
+        pr := pr * x(i, j)
       pr
 
     if R has Field then
 
-      x:% ^ n:Integer ==
+      x : % ^ n : Integer ==
         zero? n => scalarMatrix 1
-        positive? n => positivePower(x,n)
+        positive? n => positivePower(x, n)
         (xInv := inverse x) case "failed" =>
           error "^: matrix must be invertible"
-        positivePower(xInv :: %,-n)
+        positivePower(xInv :: %, -n)
 
 @
 <<TEST MATCAT>>=
@@ -1298,8 +1298,8 @@ statistics()
 \eject
 \begin{thebibliography}{99}
 \bibitem{1} G. Rote, Division-free algorithms for the determinant and the
-  Pfaffian, in: H. Alt (Ed.), Computational Discrete Mathematics, in: Lecture
+  Pfaffian, in : H. Alt (Ed.), Computational Discrete Mathematics, in : Lecture
   Notes in Comput. Sci., vol. 2122, Springer, Berlin, 2001, pp. 119--135.
-  MR1911585 (2003g:65062), \url{http://page.mi.fu-berlin.de/rote/Papers/abstract/Division-free+algorithms+for+the+determinant+and+the+Pfaffian:+algebraic+and+combinatorial+approaches.html}
+  MR1911585 (2003g : 65062), \url{http : //page.mi.fu-berlin.de/rote/Papers/abstract/Division-free+algorithms+for+the+determinant+and+the+Pfaffian : +algebraic+and+combinatorial+approaches.html}
 \end{thebibliography}
 \end{document}

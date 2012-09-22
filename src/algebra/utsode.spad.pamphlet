@@ -19,7 +19,7 @@
 ++ Keywords: differential equation, ODE, Taylor series
 ++ Examples:
 ++ References:
-UnivariateTaylorSeriesODESolver(Coef,UTS):_
+UnivariateTaylorSeriesODESolver(Coef, UTS) : _
  Exports == Implementation where
   ++ This package provides Taylor series solutions to regular
   ++ linear or non-linear ordinary differential equations of
@@ -34,30 +34,30 @@ UnivariateTaylorSeriesODESolver(Coef,UTS):_
   STT ==> StreamTaylorSeriesOperations(Coef)
 
   Exports ==> with
-    stFunc1: (UTS -> UTS) -> (ST -> ST)
+    stFunc1 : (UTS -> UTS) -> (ST -> ST)
       ++ stFunc1(f) is a local function exported due to compiler problem.
       ++ This function is of no interest to the top-level user.
-    stFunc2: ((UTS,UTS) -> UTS) -> ((ST,ST) -> ST)
+    stFunc2 : ((UTS, UTS) -> UTS) -> ((ST, ST) -> ST)
       ++ stFunc2(f) is a local function exported due to compiler problem.
       ++ This function is of no interest to the top-level user.
-    stFuncN: FN -> ((L ST) -> ST)
+    stFuncN : FN -> ((L ST) -> ST)
       ++ stFuncN(f) is a local function xported due to compiler problem.
       ++ This function is of no interest to the top-level user.
-    fixedPointExquo: (UTS,UTS) -> UTS
-      ++ fixedPointExquo(f,g) computes the exact quotient of \spad{f} and
+    fixedPointExquo : (UTS, UTS) -> UTS
+      ++ fixedPointExquo(f, g) computes the exact quotient of \spad{f} and
       ++ \spad{g} using a fixed point computation.
-    ode1: ((UTS -> UTS),Coef) -> UTS
-      ++ ode1(f,c) is the solution to \spad{y' = f(y)}
+    ode1 : ((UTS -> UTS), Coef) -> UTS
+      ++ ode1(f, c) is the solution to \spad{y' = f(y)}
       ++ such that \spad{y(a) = c}.
-    ode2: ((UTS, UTS) -> UTS,Coef,Coef) -> UTS
-      ++ ode2(f,c0,c1) is the solution to \spad{y'' = f(y,y')} such that
+    ode2 : ((UTS, UTS) -> UTS, Coef, Coef) -> UTS
+      ++ ode2(f, c0, c1) is the solution to \spad{y'' = f(y, y')} such that
       ++ \spad{y(a) = c0} and \spad{y'(a) = c1}.
-    ode: (FN,List Coef) -> UTS
-      ++ ode(f,cl) is the solution to \spad{y<n>=f(y,y',..,y<n-1>)} such that
+    ode : (FN, List Coef) -> UTS
+      ++ ode(f, cl) is the solution to \spad{y<n>=f(y, y', .., y<n-1>)} such that
       ++ \spad{y<i>(a) = cl.(i+1)} for i in 0..(n - 1).
-    mpsode:(L Coef,L FN) -> L UTS
-      ++ mpsode(r,f) solves the system of differential equations
-      ++ \spad{dy[i]/dx =f[i] [x,y[1],y[2],...,y[n]]},
+    mpsode : (L Coef, L FN) -> L UTS
+      ++ mpsode(r, f) solves the system of differential equations
+      ++ \spad{dy[i]/dx =f[i] [x, y[1], y[2], ..., y[n]]},
       ++ \spad{y[i](a) = r[i]} for i in 1..n.
 
   Implementation ==> add
@@ -67,73 +67,73 @@ UnivariateTaylorSeriesODESolver(Coef,UTS):_
     stFuncN f == ls +-> coefficients f map(series, ls)$ListFunctions2(ST, UTS)
 
     import StreamTaylorSeriesOperations(Coef)
-    divloopre:(Coef,ST,Coef,ST,ST) -> ST
-    divloopre(hx,tx,hy,ty,c) == delay(concat(hx*hy,hy*(tx-(ty*c))))
-    divloop: (Coef,ST,Coef,ST) -> ST
+    divloopre : (Coef, ST, Coef, ST, ST) -> ST
+    divloopre(hx, tx, hy, ty, c) == delay(concat(hx*hy, hy*(tx-(ty*c))))
+    divloop : (Coef, ST, Coef, ST) -> ST
     divloop(hx, tx, hy, ty) == YS(s +-> divloopre(hx, tx, hy, ty, s))
 
-    sdiv:(ST,ST) -> ST
-    sdiv(x,y) == delay
+    sdiv : (ST, ST) -> ST
+    sdiv(x, y) == delay
       empty? x => empty()
       empty? y => error "stream division by zero"
       hx := frst x; tx := rst x
       hy := frst y; ty := rst y
       zero? hy =>
-        zero? hx => sdiv(tx,ty)
+        zero? hx => sdiv(tx, ty)
         error "stream division by zero"
       rhy := recip hy
       rhy case "failed" => error "stream division:no reciprocal"
-      divloop(hx,tx,rhy::Coef,ty)
+      divloop(hx, tx, rhy::Coef, ty)
 
-    fixedPointExquo(f,g) == series sdiv(coefficients f,coefficients g)
+    fixedPointExquo(f, g) == series sdiv(coefficients f, coefficients g)
 
 -- first order
 
-    ode1re: (ST -> ST,Coef,ST) -> ST
-    ode1re(f,c,y) == lazyIntegrate(c,f y)$STT
+    ode1re : (ST -> ST, Coef, ST) -> ST
+    ode1re(f, c, y) == lazyIntegrate(c, f y)$STT
 
-    iOde1: ((ST -> ST),Coef) -> ST
+    iOde1 : ((ST -> ST), Coef) -> ST
     iOde1(f, c) == YS(s +-> ode1re(f, c, s))
 
-    ode1(f,c) == series iOde1(stFunc1 f,c)
+    ode1(f, c) == series iOde1(stFunc1 f, c)
 
 -- second order
 
-    ode2re: ((ST,ST)-> ST,Coef,Coef,ST) -> ST
-    ode2re(f,c0,c1,y)==
-      yi := lazyIntegrate(c1,f(y,deriv(y)$STT))$STT
-      lazyIntegrate(c0,yi)$STT
+    ode2re : ((ST, ST)-> ST, Coef, Coef, ST) -> ST
+    ode2re(f, c0, c1, y)==
+      yi := lazyIntegrate(c1, f(y, deriv(y)$STT))$STT
+      lazyIntegrate(c0, yi)$STT
 
-    iOde2: ((ST,ST) -> ST,Coef,Coef) -> ST
+    iOde2 : ((ST, ST) -> ST, Coef, Coef) -> ST
     iOde2(f, c0, c1) == YS(s +-> ode2re(f, c0, c1, s))
 
-    ode2(f,c0,c1) == series iOde2(stFunc2 f,c0,c1)
+    ode2(f, c0, c1) == series iOde2(stFunc2 f, c0, c1)
 
 -- nth order
 
-    odeNre: (List ST -> ST,List Coef,List ST) -> List ST
-    odeNre(f,cl,yl) ==
+    odeNre : (List ST -> ST, List Coef, List ST) -> List ST
+    odeNre(f, cl, yl) ==
       -- yl is [y, y', ..., y<n>]
-      -- integrate [y',..,y<n>] to get [y,..,y<n-1>]
-      yil := [lazyIntegrate(c,y)$STT for c in cl for y in rest yl]
-      -- use y<n> = f(y,..,y<n-1>)
-      concat(yil,[f yil])
+      -- integrate [y', .., y<n>] to get [y, .., y<n-1>]
+      yil := [lazyIntegrate(c, y)$STT for c in cl for y in rest yl]
+      -- use y<n> = f(y, .., y<n-1>)
+      concat(yil, [f yil])
 
-    iOde: ((L ST) -> ST,List Coef) -> ST
+    iOde : ((L ST) -> ST, List Coef) -> ST
     iOde(f, cl) == first YS(ls +-> odeNre(f, cl, ls), #cl + 1)
 
-    ode(f,cl) == series iOde(stFuncN f,cl)
+    ode(f, cl) == series iOde(stFuncN f, cl)
 
-    simulre:(L Coef,L ((L ST) -> ST),L ST) -> L ST
-    simulre(cst,lsf,c) ==
-      [lazyIntegrate(csti,lsfi concat(monom(1,1)$STT,c))_
+    simulre : (L Coef, L ((L ST) -> ST), L ST) -> L ST
+    simulre(cst, lsf, c) ==
+      [lazyIntegrate(csti, lsfi concat(monom(1, 1)$STT, c))_
           for csti in cst for lsfi in lsf]
-    iMpsode:(L Coef,L ((L ST) -> ST)) -> L ST
+    iMpsode : (L Coef, L ((L ST) -> ST)) -> L ST
     iMpsode(cs, lsts) == YS(ls +-> simulre(cs, lsts, ls), #cs)
-    mpsode(cs,lsts) ==
---       stSol := iMpsode(cs,map(stFuncN,lsts)$L2(FN,(L ST) -> ST))
-      stSol := iMpsode(cs,[stFuncN(lst) for lst in lsts])
-      map(series,stSol)$L2(ST,UTS)
+    mpsode(cs, lsts) ==
+--       stSol := iMpsode(cs, map(stFuncN, lsts)$L2(FN, (L ST) -> ST))
+      stSol := iMpsode(cs, [stFuncN(lst) for lst in lsts])
+      map(series, stSol)$L2(ST, UTS)
 
 @
 \section{License}

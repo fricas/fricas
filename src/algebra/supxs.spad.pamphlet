@@ -28,9 +28,9 @@
 ++   series in one variable with coefficients in an arbitrary ring.  The
 ++   parameters of the type specify the coefficient ring, the power series
 ++   variable, and the center of the power series expansion.  For example,
-++   \spad{SparseUnivariatePuiseuxSeries(Integer,x,3)} represents Puiseux
+++   \spad{SparseUnivariatePuiseuxSeries(Integer, x, 3)} represents Puiseux
 ++   series in \spad{(x - 3)} with \spadtype{Integer} coefficients.
-SparseUnivariatePuiseuxSeries(Coef,var,cen): Exports == Implementation where
+SparseUnivariatePuiseuxSeries(Coef, var, cen) : Exports == Implementation where
   Coef : Ring
   var  : Symbol
   cen  : Coef
@@ -38,40 +38,40 @@ SparseUnivariatePuiseuxSeries(Coef,var,cen): Exports == Implementation where
   NNI  ==> NonNegativeInteger
   OUT  ==> OutputForm
   RN   ==> Fraction Integer
-  SUTS ==> SparseUnivariateTaylorSeries(Coef,var,cen)
-  SULS ==> SparseUnivariateLaurentSeries(Coef,var,cen)
+  SUTS ==> SparseUnivariateTaylorSeries(Coef, var, cen)
+  SULS ==> SparseUnivariateLaurentSeries(Coef, var, cen)
   SUPS ==> InnerSparseUnivariatePowerSeries(Coef)
 
-  Exports ==> Join(UnivariatePuiseuxSeriesConstructorCategory(Coef,SULS),_
+  Exports ==> Join(UnivariatePuiseuxSeriesConstructorCategory(Coef, SULS), _
                    RetractableTo SUTS) with
-    coerce: Variable(var) -> %
+    coerce : Variable(var) -> %
       ++ coerce(var) converts the series variable \spad{var} into a
       ++ Puiseux series.
-    differentiate: (%,Variable(var)) -> %
-      ++ \spad{differentiate(f(x),x)} returns the derivative of
+    differentiate : (%, Variable(var)) -> %
+      ++ \spad{differentiate(f(x), x)} returns the derivative of
       ++ \spad{f(x)} with respect to \spad{x}.
     if Coef has Algebra Fraction Integer then
-      integrate: (%,Variable(var)) -> %
+      integrate : (%, Variable(var)) -> %
         ++ \spad{integrate(f(x))} returns an anti-derivative of the power
         ++ series \spad{f(x)} with constant coefficient 0.
         ++ We may integrate a series when we can divide coefficients
         ++ by integers.
 
-  Implementation ==> UnivariatePuiseuxSeriesConstructor(Coef,SULS) add
+  Implementation ==> UnivariatePuiseuxSeriesConstructor(Coef, SULS) add
 
-    Rep := Record(expon:RN,lSeries:SULS)
+    Rep := Record(expon : RN, lSeries : SULS)
 
-    getExpon: % -> RN
+    getExpon : % -> RN
     getExpon pxs == pxs.expon
 
     variable x == var
     center   x == cen
 
-    coerce(v: Variable(var)) ==
-      zero? cen => monomial(1,1)
-      monomial(1,1) + monomial(cen,0)
+    coerce(v : Variable(var)) ==
+      zero? cen => monomial(1, 1)
+      monomial(1, 1) + monomial(cen, 0)
 
-    coerce(uts:SUTS) == uts :: SULS :: %
+    coerce(uts : SUTS) == uts :: SULS :: %
 
     retractIfCan(upxs:%):Union(SUTS,"failed") ==
       (uls := retractIfCan(upxs)@Union(SULS,"failed")) case "failed" =>
@@ -79,22 +79,22 @@ SparseUnivariatePuiseuxSeries(Coef,var,cen): Exports == Implementation where
       retractIfCan(uls :: SULS)@Union(SUTS,"failed")
 
     if Coef has "*": (Fraction Integer, Coef) -> Coef then
-      differentiate(upxs:%,v:Variable(var)) == differentiate upxs
+      differentiate(upxs : %, v : Variable(var)) == differentiate upxs
 
     if Coef has Algebra Fraction Integer then
-      integrate(upxs:%,v:Variable(var)) == integrate upxs
+      integrate(upxs : %, v : Variable(var)) == integrate upxs
 
 --% OutputForms
 
-    coerce(x:%): OUT ==
+    coerce(x : %) : OUT ==
       sups : SUPS := laurentRep(x) pretend SUPS
       st := getStream sups; refer := getRef sups
       if not(explicitlyEmpty? st or explicitEntries? st) _
         and (nx := retractIfCan(elt refer)@Union(I,"failed")) case I then
         count : NNI := _$streamCount$Lisp
-        degr := min(count,(nx :: I) + count + 1)
-        extend(sups,degr)
-      seriesToOutputForm(st,refer,variable x,center x,rationalPower x)
+        degr := min(count, (nx :: I) + count + 1)
+        extend(sups, degr)
+      seriesToOutputForm(st, refer, variable x, center x, rationalPower x)
 
 @
 \section{License}

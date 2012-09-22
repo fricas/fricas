@@ -14,7 +14,7 @@
 )abbrev package NORMRETR NormRetractPackage
 ++ Description:
 ++ This package \undocumented
-NormRetractPackage(F, ExtF, SUEx, ExtP, n):C  == T where
+NormRetractPackage(F, ExtF, SUEx, ExtP, n) : C  == T where
   F          :   FiniteFieldCategory
   ExtF       :   FiniteAlgebraicExtensionField(F)
   SUEx       :   UnivariatePolynomialCategory ExtF
@@ -34,33 +34,33 @@ NormRetractPackage(F, ExtF, SUEx, ExtP, n):C  == T where
 
   T  ==> add
 
-      normFactors(p:ExtP):List ExtP ==
+      normFactors(p : ExtP) : List ExtP ==
           facs : List ExtP := [p]
           for i in 1..n-1 repeat
              member?((p := Frobenius p), facs) => return facs
              facs := cons(p, facs)
           facs
 
-      Frobenius(ff:ExtP):ExtP ==
-         fft:ExtP:=0
+      Frobenius(ff : ExtP) : ExtP ==
+         fft : ExtP := 0
          while ff ~= 0 repeat
-           fft:=fft + monomial(map(Frobenius, leadingCoefficient ff),
+           fft := fft + monomial(map(Frobenius, leadingCoefficient ff),
                                degree ff)
-           ff:=reductum ff
+           ff := reductum ff
          fft
 
       retractIfCan(ff:ExtP):Union(P, "failed") ==
-         fft:P:=0
+         fft : P := 0
          while ff ~= 0 repeat
            lc : SUEx := leadingCoefficient ff
-           plc: SUP F := 0
+           plc : SUP F := 0
            while lc ~= 0 repeat
-              lclc:ExtF := leadingCoefficient lc
+              lclc : ExtF := leadingCoefficient lc
               (retlc := retractIfCan lclc) case "failed" => return "failed"
               plc := plc + monomial(retlc::F, degree lc)
               lc := reductum lc
-           fft:=fft+monomial(plc, degree ff)
-           ff:=reductum ff
+           fft := fft+monomial(plc, degree ff)
+           ff := reductum ff
          fft
 
 @
@@ -96,8 +96,8 @@ TwoFactorize(F) : C == T
       ++ generalSqFr(p) returns the square-free factorisation of polynomial p,
       ++ a sparse univariate polynomial (sup) over a
       ++ sup over F.
-    twoFactor    : (P,Integer)  ->  Factored P
-      ++ twoFactor(p,n) returns the factorisation of polynomial p,
+    twoFactor    : (P, Integer)  ->  Factored P
+      ++ twoFactor(p, n) returns the factorisation of polynomial p,
       ++ a sparse univariate polynomial (sup) over a
       ++ sup over F.
       ++ Also, p is assumed primitive and square-free and n is the
@@ -112,11 +112,11 @@ TwoFactorize(F) : C == T
   T == add
     PI ==> PositiveInteger
     NNI ==> NonNegativeInteger
-    import CommuteUnivariatePolynomialCategory(F,R,P)
+    import CommuteUnivariatePolynomialCategory(F, R, P)
 
                    ----  Local Functions  ----
     exchangeVars   :           P          -> P
-    exchangeVarTerm:        (R, NNI)      -> P
+    exchangeVarTerm :        (R, NNI)      -> P
     pthRoot        :     (R, NNI, NNI)    -> R
 
     exchangeVars(p : P) : P ==
@@ -124,24 +124,24 @@ TwoFactorize(F) : C == T
        exchangeVarTerm(leadingCoefficient p, degree p) +
           exchangeVars(reductum p)
 
-    exchangeVarTerm(c:R, e:NNI) : P ==
+    exchangeVarTerm(c : R, e : NNI) : P ==
        c = 0 => 0
        monomial(monomial(leadingCoefficient c, e)$R, degree c)$P +
           exchangeVarTerm(reductum c, e)
 
-    pthRoot(poly:R,p:NonNegativeInteger,PthRootPow:NonNegativeInteger):R ==
+    pthRoot(poly : R, p : NonNegativeInteger, PthRootPow : NonNegativeInteger) : R ==
        tmp := divideExponents(map((x : F) : F +-> (x::F)^PthRootPow, poly), p)
        tmp case "failed" => error "consistency error in TwoFactor"
        tmp
 
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flg:fUnion, fctr:P, xpnt:Integer)
+    FF     ==> Record(flg : fUnion, fctr : P, xpnt : Integer)
 
-    generalSqFr(m:P): Factored P ==
+    generalSqFr(m : P) : Factored P ==
        m = 0 => 0
        degree m = 0 =>
-         l:=squareFree(leadingCoefficient m)
-         makeFR(unit(l)::P,[[u.flg,u.fctr::P,u.xpnt] for u in factorList l])
+         l := squareFree(leadingCoefficient m)
+         makeFR(unit(l)::P, [[u.flg, u.fctr::P, u.xpnt] for u in factorList l])
        cont := content m
        m := (m exquo cont)::P
        sqfrm := squareFree m
@@ -149,19 +149,19 @@ TwoFactorize(F) : C == T
        unitPart := unit sqfrm
        for u in factorList sqfrm repeat
           u.flg = "nil" =>
-             uexp:NNI:=(u.xpnt)::NNI
-             nfacs:=squareFree(exchangeVars u.fctr)
+             uexp : NNI := (u.xpnt)::NNI
+             nfacs := squareFree(exchangeVars u.fctr)
              for v in factorList nfacs repeat
-                pfaclist:=cons([v.flg, exchangeVars v.fctr, v.xpnt*uexp],
+                pfaclist := cons([v.flg, exchangeVars v.fctr, v.xpnt*uexp],
                               pfaclist)
              unitPart := unit(nfacs)^uexp * unitPart
-          pfaclist := cons(u,pfaclist)
+          pfaclist := cons(u, pfaclist)
        cont ~= 1 =>
            sqp := squareFree cont
-           contlist:=[[w.flg,(w.fctr)::P,w.xpnt] for w in factorList sqp]
-           pfaclist:= append(contlist, pfaclist)
-           makeFR(unit(sqp)*unitPart,pfaclist)
-       makeFR(unitPart,pfaclist)
+           contlist := [[w.flg, (w.fctr)::P, w.xpnt] for w in factorList sqp]
+           pfaclist := append(contlist, pfaclist)
+           makeFR(unit(sqp)*unitPart, pfaclist)
+       makeFR(unitPart, pfaclist)
 
     doTwoFactor : (P, Boolean) -> Factored P
 
@@ -174,51 +174,51 @@ TwoFactorize(F) : C == T
     doTwoFactor(m : P, do_ext : Boolean) : Factored P ==
        m = 0 => 0
        degree m = 0 =>
-         l:=factor(leadingCoefficient m)$DistinctDegreeFactorize(F,R)
-         makeFR(unit(l)::P,[[u.flg,u.fctr::P,u.xpnt] for u in factorList l])
-       ll:List FF
-       ll:=[]
-       unitPart:P
-       cont:=content m
+         l := factor(leadingCoefficient m)$DistinctDegreeFactorize(F, R)
+         makeFR(unit(l)::P, [[u.flg, u.fctr::P, u.xpnt] for u in factorList l])
+       ll : List FF
+       ll := []
+       unitPart : P
+       cont := content m
        if degree(cont)>0 then
-          m1:=m exquo cont
+          m1 := m exquo cont
           m1 case "failed" => error "content doesn't divide"
-          m:=m1
-          contfact:=factor(cont)$DistinctDegreeFactorize(F,R)
-          unitPart:=(unit contfact)::P
-          ll:=[[w.flg,(w.fctr)::P,w.xpnt] for w in factorList contfact]
+          m := m1
+          contfact := factor(cont)$DistinctDegreeFactorize(F, R)
+          unitPart := (unit contfact)::P
+          ll := [[w.flg, (w.fctr)::P, w.xpnt] for w in factorList contfact]
        else
-          unitPart:=cont::P
-       sqfrm:=squareFree m
+          unitPart := cont::P
+       sqfrm := squareFree m
        for u in factors sqfrm repeat
-           expo:=u.exponent
+           expo := u.exponent
            if expo < 0 then error "negative exponent in a factorisation"
-           expon:NonNegativeInteger:=expo::NonNegativeInteger
-           fac:=u.factor
-           degree fac = 1 => ll:=[["irred",fac,expon],:ll]
+           expon : NonNegativeInteger := expo::NonNegativeInteger
+           fac := u.factor
+           degree fac = 1 => ll := [["irred",fac,expon],:ll]
            differentiate fac = 0 =>
               -- the polynomial is  inseparable w.r.t. its main variable
-              map(differentiate,fac) = 0 =>
-                p:=characteristic$F
-                PthRootPow:=(size$F exquo p)::NonNegativeInteger
-                m1:=divideExponents(
+              map(differentiate, fac) = 0 =>
+                p := characteristic$F
+                PthRootPow := (size$F exquo p)::NonNegativeInteger
+                m1 := divideExponents(
                        map(x +-> pthRoot(x, p, PthRootPow), fac), p)
                 m1 case "failed" => error "consistency error in TwoFactor"
-                res:=generalTwoFactor m1
-                unitPart:=unitPart*unit(res)^((p*expon)::NNI)
-                ll:=[:[[v.flg,v.fctr,expon *p*v.xpnt] for v in factorList res],:ll]
-              m2:=generalTwoFactor swap fac
-              unitPart:=unitPart*unit(m2)^(expon::NNI)
-              ll:=[:[[v.flg,swap v.fctr,expon*v.xpnt] for v in factorList m2],:ll]
-           ydeg:="max"/[degree w for w in coefficients fac]
+                res := generalTwoFactor m1
+                unitPart := unitPart*unit(res)^((p*expon)::NNI)
+                ll := [:[[v.flg, v.fctr, expon *p*v.xpnt] for v in factorList res], :ll]
+              m2 := generalTwoFactor swap fac
+              unitPart := unitPart*unit(m2)^(expon::NNI)
+              ll := [:[[v.flg, swap v.fctr, expon*v.xpnt] for v in factorList m2], :ll]
+           ydeg := "max"/[degree w for w in coefficients fac]
            twoF := doFactor(fac, ydeg, do_ext)
            nfl := factorList(twoF)
            #nfl = 1 and nfl(1).flg case "nil" =>
                return twoF
-           unitPart:=unitPart*unit(twoF)^expon
-           ll:=[:[[v.flg,v.fctr,expon*v.xpnt] for v in factorList twoF],
-                :ll]
-       makeFR(unitPart,ll)
+           unitPart := unitPart*unit(twoF)^expon
+           ll := [:[[v.flg, v.fctr, expon*v.xpnt] for v in factorList twoF],
+                 :ll]
+       makeFR(unitPart, ll)
 
     -- factorization of a primitive square-free bivariate polynomial --
     twoFactor(m : P, dx : Integer) : Factored P ==
@@ -247,13 +247,13 @@ TwoFactorize(F) : C == T
             lfacth := rest lfacth
             if (c := leadingCoefficient leadingCoefficient ff) ~= 1 then
                 ff := ((inv c)::SUEx)*ff
-            not ((ffu:= retractIfCan(ff)$Normp) case "failed") =>
+            not ((ffu := retractIfCan(ff)$Normp) case "failed") =>
                     lfactk := cons(ffu::P, lfactk)
             normfacs := normFactors(ff)$Normp
             lfacth := [g for g in lfacth | not member?(g, normfacs)]
             ffn := */normfacs
             lfactk := cons(retractIfCan(ffn)$Normp::P, lfactk)
-        */[primeFactor(ff1,1) for ff1 in lfactk]
+        */[primeFactor(ff1, 1) for ff1 in lfactk]
 
     doExtension(m : P, dx : Integer) : Factored P ==
         ln : List(PI) := [2, 3, 5, 7, 9, 11, 13, 17, 19, 23, 29]
@@ -261,8 +261,8 @@ TwoFactorize(F) : C == T
             nsize := size()$F ^ n
             res1 :=
                 nsize < 1000 => doExtension1(m, n, dx,
-                      FiniteFieldCyclicGroupExtension(F,n))
-                doExtension1(m, n, dx, FiniteFieldExtension(F,n))
+                      FiniteFieldCyclicGroupExtension(F, n))
+                doExtension1(m, n, dx, FiniteFieldExtension(F, n))
             nthFlag(res1, 1) = "prime" => return res1
         error "doExtension : Impossible"
 

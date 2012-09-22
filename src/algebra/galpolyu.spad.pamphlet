@@ -27,88 +27,88 @@
 ++ \spadtype{UnivariatePolynomialCategory} or to \spadtype{Factored}
 ++ (July 1994).
 
-GaloisGroupPolynomialUtilities(R,UP): Exports == Implementation where
+GaloisGroupPolynomialUtilities(R, UP) : Exports == Implementation where
   R : Ring
   UP : UnivariatePolynomialCategory R
   N ==> NonNegativeInteger
   P ==> PositiveInteger
 
   Exports ==> with
-    monic?: UP -> Boolean
+    monic? : UP -> Boolean
       ++ monic?(p) tests if p is monic (i.e. leading coefficient equal to 1).
-    unvectorise: Vector R -> UP
+    unvectorise : Vector R -> UP
       ++ unvectorise(v) returns the polynomial which has for coefficients the
       ++ entries of v in the increasing order.
-    reverse: UP -> UP
+    reverse : UP -> UP
       ++ reverse(p) returns the reverse polynomial of p.
-    scaleRoots: (UP,R) -> UP
-      ++ scaleRoots(p,c) returns the polynomial which has c times the roots
+    scaleRoots : (UP, R) -> UP
+      ++ scaleRoots(p, c) returns the polynomial which has c times the roots
       ++ of p.
-    shiftRoots: (UP,R) -> UP
-      ++ shiftRoots(p,c) returns the polynomial which has for roots c added
+    shiftRoots : (UP, R) -> UP
+      ++ shiftRoots(p, c) returns the polynomial which has for roots c added
       ++ to the roots of p.
-    degreePartition: Factored UP -> Multiset N
+    degreePartition : Factored UP -> Multiset N
       ++ degreePartition(f) returns the degree partition (i.e. the multiset
       ++ of the degrees of the irreducible factors) of
       ++ the polynomial f.
-    factorOfDegree: (P, Factored UP) -> UP
-      ++ factorOfDegree(d,f) returns a factor of degree d of the factored
+    factorOfDegree : (P, Factored UP) -> UP
+      ++ factorOfDegree(d, f) returns a factor of degree d of the factored
       ++ polynomial f. Such a factor shall exist.
-    factorsOfDegree: (P, Factored UP) -> List UP
-      ++ factorsOfDegree(d,f) returns the factors of degree d of the factored
+    factorsOfDegree : (P, Factored UP) -> List UP
+      ++ factorsOfDegree(d, f) returns the factors of degree d of the factored
       ++ polynomial f.
 
   Implementation ==> add
 
     import Factored UP
 
-    factorsOfDegree(d:P,r:Factored UP):List UP ==
+    factorsOfDegree(d : P, r : Factored UP) : List UP ==
       lfact : List UP := empty()
       for fr in factors r | degree(fr.factor)=(d::N) repeat
         for i in 1..fr.exponent repeat
-          lfact := cons(fr.factor,lfact)
+          lfact := cons(fr.factor, lfact)
       lfact
 
-    factorOfDegree(d:P,r:Factored UP):UP ==
+    factorOfDegree(d : P, r : Factored UP) : UP ==
       factor : UP := 0
       for i in 1..numberOfFactors r repeat
-        factor := nthFactor(r,i)
+        factor := nthFactor(r, i)
         if degree(factor)=(d::N) then return factor
       error "factorOfDegree: Bad arguments"
 
-    degreePartition(r:Factored UP):Multiset N ==
-      multiset([ degree(nthFactor(r,i)) for i in 1..numberOfFactors r ])
+    degreePartition(r : Factored UP) : Multiset N ==
+      multiset([ degree(nthFactor(r, i)) for i in 1..numberOfFactors r ])
 
---    monic?(p:UP):Boolean == one? leadingCoefficient p
-    monic?(p:UP):Boolean == (leadingCoefficient p) = 1
+--    monic?(p: UP): Boolean == one? leadingCoefficient p
+    monic?(p : UP) : Boolean == (leadingCoefficient p) = 1
 
-    unvectorise(v:Vector R):UP ==
+    unvectorise(v : Vector R) : UP ==
       p : UP := 0
-      for i in 1..#v repeat p := p + monomial(v(i),(i-1)::N)
+      for i in 1..#v repeat p := p + monomial(v(i), (i-1)::N)
       p
 
-    reverse(p:UP):UP ==
+    reverse(p : UP) : UP ==
       r : UP := 0
       n := degree(p)
-      for i in 0..n repeat r := r + monomial(coefficient(p,(n-i)::N),i)
+      for i in 0..n repeat r := r + monomial(coefficient(p, (n-i)::N), i)
       r
 
-    scaleRoots(p:UP,c:R):UP ==
+    scaleRoots(p : UP, c : R) : UP ==
 --      one? c => p
       (c = 1) => p
       n := degree p
-      zero? c => monomial(leadingCoefficient p,n)
+      zero? c => monomial(leadingCoefficient p, n)
       r : UP := 0
       mc : R := 1
       for i in n..0 by -1 repeat
-        r := r + monomial(mc*coefficient(p,i),i)
+        r := r + monomial(mc*coefficient(p, i), i)
         mc := mc*c
       r
 
-    import UnivariatePolynomialCategoryFunctions2(R,UP,UP,
+    import UnivariatePolynomialCategoryFunctions2(R, UP, UP,
      SparseUnivariatePolynomial UP)
 
-    shiftRoots(p:UP,c:R):UP == elt(map(coerce,p),monomial(1,1)$UP-c::UP)::UP
+    shiftRoots(p : UP, c : R) : UP == elt(map(coerce, p), monomial(1, 1)$UP-c::UP)::UP
 
 @
 \section{License}

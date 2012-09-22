@@ -17,41 +17,41 @@
 ++ Date Created: ???
 ++ Date Last Updated: 14 May 1991
 ++ Description: Test for linear dependence.
-LinearDependence(S, R): Exports == Implementation where
-  S: IntegralDomain
-  R: LinearlyExplicitRingOver S
+LinearDependence(S, R) : Exports == Implementation where
+  S : IntegralDomain
+  R : LinearlyExplicitRingOver S
 
   Q ==> Fraction S
 
   Exports ==> with
-    linearlyDependent?: Vector R -> Boolean
-      ++ \spad{linearlyDependent?([v1,...,vn])} returns true if
+    linearlyDependent? : Vector R -> Boolean
+      ++ \spad{linearlyDependent?([v1, ..., vn])} returns true if
       ++ the vi's are linearly dependent over S, false otherwise.
     linearDependence  : Vector R -> Union(Vector S, "failed")
-      ++ \spad{linearDependence([v1,...,vn])} returns \spad{[c1,...,cn]} if
+      ++ \spad{linearDependence([v1, ..., vn])} returns \spad{[c1, ..., cn]} if
       ++ \spad{c1*v1 + ... + cn*vn = 0} and not all the ci's are 0,
       ++ "failed" if the vi's are linearly independent over S.
     if S has Field then
-      solveLinear: (Vector R, R) -> Union(Vector S, "failed")
-        ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+      solveLinear : (Vector R, R) -> Union(Vector S, "failed")
+        ++ \spad{solveLinear([v1, ..., vn], u)} returns \spad{[c1, ..., cn]}
         ++ such that \spad{c1*v1 + ... + cn*vn = u},
         ++ "failed" if no such ci's exist in S.
-      solveLinear: (Matrix R, Vector R) -> Union(Vector S, "failed")
-        ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+      solveLinear : (Matrix R, Vector R) -> Union(Vector S, "failed")
+        ++ \spad{solveLinear([v1, ..., vn], u)} returns \spad{[c1, ..., cn]}
         ++ such that \spad{c1*v1 + ... + cn*vn = u},
         ++ "failed" if no such ci's exist in S.
     else
-      solveLinear: (Vector R, R) -> Union(Vector Q, "failed")
-        ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+      solveLinear : (Vector R, R) -> Union(Vector Q, "failed")
+        ++ \spad{solveLinear([v1, ..., vn], u)} returns \spad{[c1, ..., cn]}
         ++ such that \spad{c1*v1 + ... + cn*vn = u},
         ++ "failed" if no such ci's exist in the quotient field of S.
-      solveLinear: (Matrix R, Vector R) -> Union(Vector Q, "failed")
-        ++ \spad{solveLinear([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+      solveLinear : (Matrix R, Vector R) -> Union(Vector Q, "failed")
+        ++ \spad{solveLinear([v1, ..., vn], u)} returns \spad{[c1, ..., cn]}
         ++ such that \spad{c1*v1 + ... + cn*vn = u},
         ++ "failed" if no such ci's exist in the quotient field of S.
 
   Implementation ==> add
-    aNonZeroSolution: Matrix S -> Union(Vector S, "failed")
+    aNonZeroSolution : Matrix S -> Union(Vector S, "failed")
 
     aNonZeroSolution m ==
       empty?(ns := nullSpace m) => "failed"
@@ -93,20 +93,20 @@ LinearDependence(S, R): Exports == Implementation where
       solveLinear(m : Matrix R, v : Vector R) : Union(Vector Q, "failed") ==
         v = zero(#v) => new(ncols(m), 0)
         sys := reducedSystem(m, v)
-        particularSolution(map((z1:S):Q +-> z1::Q, sys.mat)$MatrixCategoryFunctions2(S,
-               Vector S,Vector S,Matrix S,Q,Vector Q,Vector Q,Matrix Q),
-                  map((z1:S):Q +-> z1 ::Q, sys.vec)$VectorFunctions2(S, Q)
+        particularSolution(map((z1 : S) : Q +-> z1::Q, sys.mat)$MatrixCategoryFunctions2(S,
+               Vector S, Vector S, Matrix S, Q, Vector Q, Vector Q, Matrix Q),
+                  map((z1 : S) : Q +-> z1 ::Q, sys.vec)$VectorFunctions2(S, Q)
                                     )$LinearSystemMatrixPackage(Q,
                                            Vector Q, Vector Q, Matrix Q)
 
 
 --rhx: Suggested improvement...
---      lift(q1:S): Q == q1::Q
+--      lift(q1: S): Q == q1::Q
 --      solveLinear(m : Matrix R, v : Vector R) : Union(Vector Q, "failed") ==
 --        v = zero(#v) => new(ncols(m), 0)
---        sys: Record(mat:Matrix S, vec: Vector S) := reducedSystem(m, v)
+--        sys: Record(mat: Matrix S, vec: Vector S) := reducedSystem(m, v)
 --        mm: Matrix Q := map(lift@(S->Q), sys.mat)$MatrixCategoryFunctions2(
---            S,Vector S,Vector S,Matrix S,Q,Vector Q,Vector Q,Matrix Q)
+--            S, Vector S, Vector S, Matrix S, Q, Vector Q, Vector Q, Matrix Q)
 --        vv: Vector Q := map(lift@(S->Q), sys.vec)$VectorFunctions2(S, Q)
 --        particularSolution(mm, vv)$LinearSystemMatrixPackage(
 --            Q, Vector Q, Vector Q, Matrix Q)
@@ -120,28 +120,28 @@ LinearDependence(S, R): Exports == Implementation where
 ++ Date Created: ???
 ++ Date Last Updated: 14 May 1991
 ++ Description: Test for linear dependence over the integers.
-IntegerLinearDependence(R): Exports == Implementation where
-  R: LinearlyExplicitRingOver Integer
+IntegerLinearDependence(R) : Exports == Implementation where
+  R : LinearlyExplicitRingOver Integer
 
   Z ==> Integer
 
   Exports ==> with
-    linearlyDependentOverZ?: Vector R -> Boolean
-      ++ \spad{linearlyDependentOverZ?([v1,...,vn])} returns true if the
+    linearlyDependentOverZ? : Vector R -> Boolean
+      ++ \spad{linearlyDependentOverZ?([v1, ..., vn])} returns true if the
       ++ vi's are linearly dependent over the integers, false otherwise.
     linearDependenceOverZ  : Vector R -> Union(Vector Z, "failed")
-      ++ \spad{linearlyDependenceOverZ([v1,...,vn])} returns
-      ++ \spad{[c1,...,cn]} if
+      ++ \spad{linearlyDependenceOverZ([v1, ..., vn])} returns
+      ++ \spad{[c1, ..., cn]} if
       ++ \spad{c1*v1 + ... + cn*vn = 0} and not all the ci's are 0, "failed"
       ++ if the vi's are linearly independent over the integers.
     solveLinearlyOverQ     : (Vector R, R) ->
                                       Union(Vector Fraction Z, "failed")
-      ++ \spad{solveLinearlyOverQ([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+      ++ \spad{solveLinearlyOverQ([v1, ..., vn], u)} returns \spad{[c1, ..., cn]}
       ++ such that \spad{c1*v1 + ... + cn*vn = u},
       ++ "failed" if no such rational numbers ci's exist.
     solveLinearlyOverQ : (Matrix R, Vector R) ->
                                       Union(Vector Fraction Z, "failed")
-      ++ \spad{solveLinearlyOverQ([v1,...,vn], u)} returns \spad{[c1,...,cn]}
+      ++ \spad{solveLinearlyOverQ([v1, ..., vn], u)} returns \spad{[c1, ..., cn]}
       ++ such that \spad{c1*v1 + ... + cn*vn = u},
       ++ "failed" if no such rational numbers ci's exist.
 

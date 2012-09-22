@@ -50,7 +50,7 @@ representation without checking the order.
 
 IndexedDirectProductCategory(A : SetCategory, S : OrderedSet
                             ) : Category == Export where
-  Term ==> Record(k:S,c:A)
+  Term ==> Record(k : S, c : A)
 
   Export ==  AbelianProductCategory(A) with
 
@@ -58,40 +58,40 @@ IndexedDirectProductCategory(A : SetCategory, S : OrderedSet
       if A has OrderedAbelianMonoid then OrderedAbelianMonoid
       if A has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
 
-      map:           (A -> A, %) -> %
-         ++ map(f,z) returns the new element created by applying the
+      map :           (A -> A, %) -> %
+         ++ map(f, z) returns the new element created by applying the
          ++ function f to each component of the direct product element z.
-      monomial:         (A, S) -> %
-         ++ monomial(a,s) constructs a direct product element with the s
+      monomial :         (A, S) -> %
+         ++ monomial(a, s) constructs a direct product element with the s
          ++ component set to \spad{a}
-      leadingCoefficient:   % -> A
+      leadingCoefficient :   % -> A
          ++ leadingCoefficient(z) returns the coefficient of the leading
          ++ (with respect to the ordering on the indexing set)
          ++ monomial of z.
          ++ Error: if z has no support.
-      leadingSupport:   % -> S
+      leadingSupport :   % -> S
          ++ leadingSupport(z) returns the index of leading
          ++ (with respect to the ordering on the indexing set) monomial of z.
          ++ Error: if z has no support.
-      reductum:      % -> %
+      reductum :      % -> %
          ++ \spad{reductum(z)} returns a new element created by removing the
          ++ leading coefficient/support pair from the element z.
          ++ Error: if z has no support.
-      construct: List Term -> %
+      construct : List Term -> %
          ++ \spad{construct(l)} takes a list of terms and creates
          ++ the object with these components.
-      constructOrdered: List Term -> %
+      constructOrdered : List Term -> %
          ++ \spad{constructOrdered(l)} takes a list of terms and creates
          ++ the object with these components.
          ++ The list is assumed to be sorted (in reverse order) with respect
          ++ to the ordering of S and no checking is performed.
          ++ Caution: This should only be used in cases where
          ++ this condition is assured. If in doubt use construct
-      leadingTerm: % -> Term
+      leadingTerm : % -> Term
          ++ \spad{leadingTerm(x)} returns the leading
          ++ (with respect to the ordering on the indexing set) term of z.
          ++ Error: if z has no support.
-      listOfTerms: % -> List Term
+      listOfTerms : % -> List Term
           ++ \spad{listOfTerms(x)} returns a list \spad{lt} of terms with type
           ++ \spad{Record(k: S, c: R)} such that \spad{x} equals
           ++ \spad{constructOrdered lt}.
@@ -108,9 +108,9 @@ which lies at the basis polynomials of all sorts.
 All items have finite support.
 The ordered set $S$ is considered as the ``basis elements'' and the elements
 from $A$ as ``coefficients''. An items are represented as list of pairs
-of type [[Record(k:S,c:A)]] such that each basis element appears at most once.
+of type [[Record(k : S, c : A)]] such that each basis element appears at most once.
 The list is sorted \emph{in reverse order} according to the ordering of $S$.
-The \emph{leading term} of an object is the pair $[s,a]$ with $s$ maximal
+The \emph{leading term} of an object is the pair $[s, a]$ with $s$ maximal
 and thus the first entry in the list representing the object.
 
 <<domain IDPO IndexedDirectProductObject>>=
@@ -125,26 +125,26 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
                           ) : IndexedDirectProductCategory(A, S)
  == add
     --representations
-       Term ==>  Record(k:S,c:A)
-       Rep:=  List Term
+       Term ==>  Record(k : S, c : A)
+       Rep :=  List Term
     --declarations
-       x,y: %
-       f: A -> A
-       s: S
+       x, y : %
+       f : A -> A
+       s : S
        lx : List Term
     --define
        x = y ==
          while not null x and not null y repeat
            x.first.k ~= y.first.k => return false
            x.first.c ~= y.first.c => return false
-           x:=x.rest
-           y:=y.rest
+           x := x.rest
+           y := y.rest
          null x and null y
 
-       coerce(x:%):OutputForm ==
+       coerce(x : %) : OutputForm ==
           bracket [rarrow(t.k :: OutputForm, t.c :: OutputForm) for t in x]
 
-       -- sample():% == [[sample()$S,sample()$A]$Term]$Rep
+       -- sample(): % == [[sample()$S, sample()$A]$Term]$Rep
 
        SMALLER_DEF ==>
            smaller?(x : %, y : %) : Boolean ==
@@ -165,8 +165,8 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
 
        if A has AbelianMonoid then
 
-           monomial(r,s) == (r = 0 => 0; [[s,r]])
-           map(f,x) == [[tm.k,a] for tm in x | not((a:=f(tm.c)) = 0$A)]
+           monomial(r, s) == (r = 0 => 0; [[s, r]])
+           map(f, x) == [[tm.k, a] for tm in x | not((a := f(tm.c)) = 0$A)]
 
            reductum x     == (null x => 0; rest x)
            leadingCoefficient x  == (null x => 0; x.first.c)
@@ -176,8 +176,8 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
                    cmp_0_y ==> smaller?(0$A, y.first.c)
 
        else
-           monomial(r,s) == [[s,r]]
-           map(f,x) == [[tm.k,f(tm.c)] for tm in x]
+           monomial(r, s) == [[s, r]]
+           map(f, x) == [[tm.k, f(tm.c)] for tm in x]
 
            reductum x     == rest x
            leadingCoefficient x  ==
@@ -194,9 +194,9 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
           x.first.k
 
        -- ordering of terms
-       compareterm:(Term,Term) -> Boolean
+       compareterm : (Term, Term) -> Boolean
 
-       compareterm(a:Term,b:Term):Boolean ==
+       compareterm(a : Term, b : Term) : Boolean ==
           a.k > b.k
 
        construct(lx) ==
@@ -214,7 +214,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
 
        qsetrest! ==> RPLACD$Lisp
 
-       hashUpdate!(s : HashState, x : %): HashState ==
+       hashUpdate!(s : HashState, x : %) : HashState ==
            xl := x::Rep
            for t in xl repeat
                s := hashUpdate!(s, t.k)$S
@@ -230,7 +230,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
                 while not empty? x and not empty? y repeat
                         newcell := empty()
                         if x.first.k = y.first.k then
-                                r:= x.first.c + y.first.c
+                                r := x.first.c + y.first.c
                                 if not zero? r then
                                         newcell := cons([x.first.k, r], empty())
                                 x := rest x
@@ -290,21 +290,21 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
            n * x  ==
                n = 0 => 0
                n = 1 => x
-               [[u.k,a] for u in x | (a:=n*u.c) ~= 0$A]
+               [[u.k, a] for u in x | (a := n*u.c) ~= 0$A]
 
        if A has AbelianGroup then
-           -x == [[u.k,-u.c] for u in x]
+           -x == [[u.k, -u.c] for u in x]
            (n : Integer) * (x : %)  ==
                  n = 0 => 0
                  n = 1 => x
-                 [[u.k,a] for u in x | (a:=n*u.c) ~= 0$A]
+                 [[u.k, a] for u in x | (a := n*u.c) ~= 0$A]
 
 
            x - y ==
                null x => -y
                null y => x
-               endcell: Rep := empty()
-               res:  Rep := empty()
+               endcell : Rep := empty()
+               res :  Rep := empty()
                while not empty? x and not empty? y repeat
                    newcell := empty()
                    if x.first.k = y.first.k then
@@ -335,8 +335,8 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
        if A has CancellationAbelianMonoid then
            subtractIfCan(x, y) ==
                null y => x
-               endcell: Rep := empty()
-               res:  Rep := empty()
+               endcell : Rep := empty()
+               res :  Rep := empty()
                while not empty? x and not empty? y repeat
                    newcell := empty()
                    if x.first.k = y.first.k then

@@ -28,45 +28,45 @@
 ++   is determined by the Name parameter.  The type of the contents
 ++   of the file is determined by S.
 
-FileCategory(Name, S): Category == FCdefinition where
-    Name:      SetCategory
-    S:         SetCategory
+FileCategory(Name, S) : Category == FCdefinition where
+    Name :      SetCategory
+    S :         SetCategory
     IOMode ==> String  -- Union("input", "output", "closed")
 
     FCdefinition == SetCategory with
-        open: Name -> %
+        open : Name -> %
           ++ open(s) returns the file s open for input.
 
-        open: (Name, IOMode) -> %
-          ++ open(s,mode) returns a file s open for operation in the
+        open : (Name, IOMode) -> %
+          ++ open(s, mode) returns a file s open for operation in the
           ++ indicated mode: "input" or "output".
 
-        reopen!: (%, IOMode) -> %
-          ++ reopen!(f,mode) returns a file f reopened for operation in the
+        reopen! : (%, IOMode) -> %
+          ++ reopen!(f, mode) returns a file f reopened for operation in the
           ++ indicated mode: "input" or "output".
           ++ \spad{reopen!(f,"input")} will reopen the file f for input.
 
-        close!: % -> %
+        close! : % -> %
           ++ close!(f) returns the file f closed to input and output.
 
-        name: % -> Name
+        name : % -> Name
           ++ name(f) returns the external name of the file f.
 
-        iomode: % -> IOMode
+        iomode : % -> IOMode
           ++ iomode(f) returns the status of the file f. The input/output
           ++ status of f may be "input", "output" or "closed" mode.
 
-        read!: % -> S
+        read! : % -> S
           ++ read!(f) extracts a value from file f.  The state of f is
           ++ modified so a subsequent call to \spadfun{read!} will return
           ++ the next element.
 
-        write!: (%,S) -> S
-          ++ write!(f,s) puts the value s into the file f.
+        write! : (%, S) -> S
+          ++ write!(f, s) puts the value s into the file f.
           ++ The state of f is modified so subsequents call to \spad{write!}
           ++ will append one after another.
 
-        flush: % -> Void
+        flush : % -> Void
             ++ flush(f) make sure that buffered data in written out to
             ++ the operating system.
 
@@ -89,8 +89,8 @@ FileCategory(Name, S): Category == FCdefinition where
 ++   This domain provides a basic model of files to save arbitrary values.
 ++   The operations provide sequential access to the contents.
 
-File(S:SetCategory): FileCategory(FileName, S) with
-        readIfCan!: % -> Union(S, "failed")
+File(S : SetCategory) : FileCategory(FileName, S) with
+        readIfCan! : % -> Union(S, "failed")
             ++ readIfCan!(f) returns a value from the file f, if possible.
             ++ If f is not open for reading, or if f is at the end of file
             ++ then \spad{"failed"} is the result.
@@ -98,11 +98,11 @@ File(S:SetCategory): FileCategory(FileName, S) with
         FileState ==> SExpression
         IOMode    ==> String
 
-        Rep:=Record(fileName:    FileName,   _
-                    fileState:   FileState,  _
-                    fileIOmode:  IOMode)
+        Rep := Record(fileName :    FileName,   _
+                    fileState :   FileState,  _
+                    fileIOmode :  IOMode)
 
-        defstream(fn: FileName, mode: IOMode): FileState ==
+        defstream(fn : FileName, mode : IOMode) : FileState ==
             mode = "input"  =>
               not readable? fn => error ["File is not readable", fn]
               MAKE_-INSTREAM(fn::String)$Lisp
@@ -113,7 +113,7 @@ File(S:SetCategory): FileCategory(FileName, S) with
 
         f1 = f2 ==
             f1.fileName = f2.fileName
-        coerce(f: %): OutputForm ==
+        coerce(f : %) : OutputForm ==
             f.fileName::OutputForm
 
         open fname ==
@@ -124,7 +124,7 @@ File(S:SetCategory): FileCategory(FileName, S) with
         reopen!(f, mode) ==
             fname := f.fileName
             f.fileState := defstream(fname, mode)
-            f.fileIOmode:= mode
+            f.fileIOmode := mode
             f
         close! f ==
             SHUT(f.fileState)$Lisp
@@ -144,7 +144,7 @@ File(S:SetCategory): FileCategory(FileName, S) with
         readIfCan! f ==
             f.fileIOmode ~= "input" =>
                 error "File not in read state"
-            x: S := VMREAD(f.fileState)$Lisp
+            x : S := VMREAD(f.fileState)$Lisp
             PLACEP(x)$Lisp => "failed"
             x
         write!(f, x) ==
@@ -176,35 +176,35 @@ File(S:SetCategory): FileCategory(FileName, S) with
 ++   This domain provides an implementation of text files.  Text is stored
 ++   in these files using the native character set of the computer.
 
-TextFile: Cat == Def where
+TextFile : Cat == Def where
     StreamName ==> Union(FileName, "console")
 
     Cat == FileCategory(FileName, String) with
-        writeLine!: (%, String) -> String
-          ++ writeLine!(f,s) writes the contents of the string s
+        writeLine! : (%, String) -> String
+          ++ writeLine!(f, s) writes the contents of the string s
           ++ and finishes the current line in the file f.
           ++ The value of s is returned.
 
-        writeLine!: % -> String
+        writeLine! : % -> String
           ++ writeLine!(f) finishes the current line in the file f.
           ++ An empty string is returned.  The call \spad{writeLine!(f)} is
           ++ equivalent to \spad{writeLine!(f,"")}.
 
-        readLine!: % -> String
+        readLine! : % -> String
           ++ readLine!(f) returns a string of the contents of a line from
           ++ the file f.
 
-        readLineIfCan!: % -> Union(String, "failed")
+        readLineIfCan! : % -> Union(String, "failed")
           ++ readLineIfCan!(f) returns a string of the contents of a line from
           ++ file f, if possible.  If f is not readable or if it is
           ++ positioned at the end of file, then \spad{"failed"} is returned.
 
-        readIfCan!: % -> Union(String, "failed")
+        readIfCan! : % -> Union(String, "failed")
           ++ readIfCan!(f) returns a string of the contents of a line from
           ++ file f, if possible.  If f is not readable or if it is
           ++ positioned at the end of file, then \spad{"failed"} is returned.
 
-        endOfFile?: % -> Boolean
+        endOfFile? : % -> Boolean
           ++ endOfFile?(f) tests whether the file f is positioned after the
           ++ end of all text.  If the file is open for output, then
           ++ this test is always true.
@@ -212,21 +212,21 @@ TextFile: Cat == Def where
     Def == File(String) add
         FileState ==> SExpression
 
-        Rep := Record(fileName:   FileName,    _
-                      fileState:  FileState,   _
-                      fileIOmode: String)
+        Rep := Record(fileName :   FileName,    _
+                      fileState :  FileState,   _
+                      fileIOmode : String)
 
         read! f      == readLine! f
         readIfCan! f == readLineIfCan! f
 
         readLine! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            s: String := read_-line(f.fileState)$Lisp
+            s : String := read_-line(f.fileState)$Lisp
             PLACEP(s)$Lisp => error "End of file"
             s
         readLineIfCan! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            s: String := read_-line(f.fileState)$Lisp
+            s : String := read_-line(f.fileState)$Lisp
             PLACEP(s)$Lisp => "failed"
             s
         write!(f, x) ==
@@ -264,10 +264,10 @@ TextFile: Cat == Def where
 ++   This domain provides an implementation of binary files. Data is
 ++   accessed one byte at a time as a small integer.
 
-BinaryFile: Cat == Def where
+BinaryFile : Cat == Def where
 
     Cat == FileCategory(FileName, SingleInteger) with
-        readIfCan!: % -> Union(SingleInteger, "failed")
+        readIfCan! : % -> Union(SingleInteger, "failed")
             ++ readIfCan!(f) returns a value from the file f, if possible.
             ++ If f is not open for reading, or if f is at the end of file
             ++ then \spad{"failed"} is the result.
@@ -275,27 +275,27 @@ BinaryFile: Cat == Def where
 --      "#": % -> SingleInteger
 --          ++ #(f) returns the length of the file f in bytes.
 
-        position: % -> SingleInteger
+        position : % -> SingleInteger
             ++ position(f) returns the current byte-position in the file f.
 
-        position!: (%, SingleInteger) -> SingleInteger
+        position! : (%, SingleInteger) -> SingleInteger
             ++ position!(f, i) sets the current byte-position to i.
 
     Def == File(SingleInteger) add
         FileState ==> SExpression
 
-        Rep := Record(fileName:   FileName,    _
-                      fileState:  FileState,   _
-                      fileIOmode: String)
+        Rep := Record(fileName :   FileName,    _
+                      fileState :  FileState,   _
+                      fileIOmode : String)
 
 --      direc : Symbol := INTERN("DIRECTION","KEYWORD")$Lisp
 --      input : Symbol := INTERN("INPUT","KEYWORD")$Lisp
 --      output : Symbol := INTERN("OUTPUT","KEYWORD")$Lisp
 --      eltype : Symbol := INTERN("ELEMENT-TYPE","KEYWORD")$Lisp
---      bytesize : SExpression := LIST(QUOTE(UNSIGNED$Lisp)$Lisp,8)$Lisp
+--      bytesize : SExpression := LIST(QUOTE(UNSIGNED$Lisp)$Lisp, 8)$Lisp
 
 
-        defstream(fn: FileName, mode: String): FileState ==
+        defstream(fn : FileName, mode : String) : FileState ==
             mode = "input"  =>
               not readable? fn => error ["File is not readable", fn]
               BINARY_OPEN_INPUT(fn::String)$Lisp
@@ -313,7 +313,7 @@ BinaryFile: Cat == Def where
         reopen!(f, mode) ==
             fname := f.fileName
             f.fileState := defstream(fname, mode)
-            f.fileIOmode:= mode
+            f.fileIOmode := mode
             f
 
         close! f ==
@@ -333,10 +333,10 @@ BinaryFile: Cat == Def where
         readIfCan! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
             BINARY_SELECT_INPUT(f.fileState)$Lisp
-            n:SingleInteger:=BINARY_READBYTE()$Lisp
+            n : SingleInteger := BINARY_READBYTE()$Lisp
             n = -1 => "failed"
             n::Union(SingleInteger,"failed")
---          READ_-BYTE(f.fileState,NIL$Lisp,
+--          READ_-BYTE(f.fileState, NIL$Lisp,
 --                   "failed"::Union(SingleInteger,"failed"))$Lisp
         write!(f, x) ==
             f.fileIOmode ~= "output" => error "File not in write state"
@@ -349,9 +349,9 @@ BinaryFile: Cat == Def where
         position f ==
            f.fileIOmode ~= "input"  => error "file must be in read state"
            FILE_-POSITION(f.fileState)$Lisp
-        position!(f,i) ==
+        position!(f, i) ==
            f.fileIOmode ~= "input"  => error "file must be in read state"
-           (FILE_-POSITION(f.fileState,i)$Lisp ; i)
+           (FILE_-POSITION(f.fileState, i)$Lisp ; i)
 
 @
 \section{domain KAFILE KeyedAccessFile}
@@ -372,15 +372,15 @@ BinaryFile: Cat == Def where
 ++  and as a file object.
 
 
-KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
+KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
     Name  ==> FileName
     Key   ==> String
     Entry :   SetCategory
 
     KAFcategory ==
-        Join(FileCategory(Name, Record(key: Key, entry: Entry)),
+        Join(FileCategory(Name, Record(key : Key, entry : Entry)),
              TableAggregate(Key, Entry), finiteAggregate) with
-                 pack!: % -> %
+                 pack! : % -> %
                      ++ pack!(f) reorganizes the file f on disk to recover
                      ++ unused space.
 
@@ -390,12 +390,12 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
         IOMode    ==> String
 
 
-        Cons:= Record(car: SExpression, cdr: SExpression)
-        Rep := Record(fileName:    Name,     _
-                      fileState:   FileState,   _
-                      fileIOmode:  IOMode)
+        Cons := Record(car : SExpression, cdr : SExpression)
+        Rep := Record(fileName :    Name,     _
+                      fileState :   FileState,   _
+                      fileIOmode :  IOMode)
 
-        defstream(fn: Name, mode: IOMode): FileState ==
+        defstream(fn : Name, mode : IOMode) : FileState ==
             mode = "input"  =>
                 rMkIstream(fn::String)$Lisp
             mode = "output" =>
@@ -405,7 +405,7 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
         ---- From Set ----
         f1 = f2 ==
             f1.fileName = f2.fileName
-        coerce(f: %): OutputForm ==
+        coerce(f : %) : OutputForm ==
             f.fileName::OutputForm
 
         ---- From FileCategory ----
@@ -430,10 +430,10 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
             f
         read! f ==
             f.fileIOmode ~= "input" => error ["File not in read state",f]
-            ks: List Symbol := RKEYIDS(f.fileName)$Lisp
+            ks : List Symbol := RKEYIDS(f.fileName)$Lisp
             null ks => error ["Attempt to read empty file", f]
             ix := random(#ks)$Integer
-            k: String := PNAME(ks.ix)$Lisp
+            k : String := PNAME(ks.ix)$Lisp
             [k, SPADRREAD(k, f.fileState)$Lisp]
         write!(f, pr) ==
             f.fileIOmode ~= "output" => error ["File not in write state",f]
@@ -450,25 +450,25 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
             open fn
         keys f ==
             close! f
-            l: List SExpression := RKEYIDS(f.fileName)$Lisp
+            l : List SExpression := RKEYIDS(f.fileName)$Lisp
             [PNAME(n)$Lisp for n in l]
         # f ==
             # keys f
-        elt(f,k) ==
+        elt(f, k) ==
             reopen!(f, "input")
             SPADRREAD(k, f.fileState)$Lisp
-        setelt(f,k,e) ==
+        setelt(f, k, e) ==
             -- Leaves f in a safe, closed state.  For speed use "write".
             reopen!(f, "output")
-            UNWIND_-PROTECT(write!(f, [k,e]), close! f)$Lisp
+            UNWIND_-PROTECT(write!(f, [k, e]), close! f)$Lisp
             close! f
             e
-        search(k,f) ==
+        search(k, f) ==
             not member?(k, keys f) => "failed"   -- can't trap RREAD error
             reopen!(f, "input")
             (SPADRREAD(k, f.fileState)$Lisp)@Entry
-        remove!(k:String,f:%)  ==
-            result := search(k,f)
+        remove!(k : String, f : %)  ==
+            result := search(k, f)
             result case "failed" => result
             close! f
             RDROPITEMS(NAMESTRING(f.fileName)$Lisp, LIST(k)$Lisp)$Lisp
@@ -493,30 +493,30 @@ KeyedAccessFile(Entry): KAFcategory == KAFcapsule where
 ++ References:
 ++ Description:
 ++   This domain provides a simple way to save values in files.
-Library(): TableAggregate(String, Any) with
-         library:  FileName -> %
+Library() : TableAggregate(String, Any) with
+         library :  FileName -> %
              ++ library(ln) creates a new library file.
-         pack!: % -> %
+         pack! : % -> %
              ++ pack!(f) reorganizes the file f on disk to recover
              ++ unused space.
 
          elt : (%, Symbol) -> Any
-             ++ elt(lib,k) or lib.k  extracts the value corresponding to the key \spad{k}
+             ++ elt(lib, k) or lib.k  extracts the value corresponding to the key \spad{k}
              ++ from the library \spad{lib}.
 
          setelt : (%, Symbol, Any) -> Any
              ++ \spad{lib.k := v} saves the value \spad{v} in the library
              ++ \spad{lib}.  It can later be extracted using the key \spad{k}.
 
-         close!: % -> %
+         close! : % -> %
           ++ close!(f) returns the library f closed to input and output.
 
 
     == KeyedAccessFile(Any) add
          Rep := KeyedAccessFile(Any)
          library f == open f
-         elt(f:%,v:Symbol) == elt(f, string v)
-         setelt(f:%, v:Symbol, val:Any) == setelt(f, string v, val)
+         elt(f : %, v : Symbol) == elt(f, string v)
+         setelt(f : %, v : Symbol, val : Any) == setelt(f, string v, val)
 
 @
 \section{License}

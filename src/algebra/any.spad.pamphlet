@@ -26,9 +26,9 @@
 ++    the interpreter and some of the internal \spadtype{Expression}
 ++    code).
 
-None():SetCategory == add
+None() : SetCategory == add
     coerce(none:%):OutputForm == "NONE" :: OutputForm
-    x:% = y:% == EQ(x,y)$Lisp
+    x : % = y : % == EQ(x, y)$Lisp
 
 @
 \section{package NONE1 NoneFunctions1}
@@ -47,14 +47,14 @@ None():SetCategory == add
 ++   It particular it includes a particulary dangerous coercion from
 ++   any other type to \spadtype{None}.
 
-NoneFunctions1(S:Type): Exports == Implementation where
+NoneFunctions1(S : Type) : Exports == Implementation where
   Exports ==> with
-    coerce: S -> None
+    coerce : S -> None
       ++ coerce(x) changes \spad{x} into an object of type
       ++ \spadtype{None}.
 
   Implementation ==> add
-    coerce(s:S):None == s pretend None
+    coerce(s : S) : None == s pretend None
 
 @
 \section{domain ANY Any}
@@ -77,9 +77,9 @@ NoneFunctions1(S:Type): Exports == Implementation where
 ++   losing any of the original information. Any object can be converted
 ++   to one of \spadtype{Any}.
 
-Any(): SetCategory with
+Any() : SetCategory with
         any             : (SExpression, None) -> %
-          ++ any(type,object) is a technical function for creating
+          ++ any(type, object) is a technical function for creating
           ++ an object of \spadtype{Any}. Arugment \spad{type} is a \spadgloss{LISP} form
           ++ for the type of \spad{object}.
         domainOf        : % -> OutputForm
@@ -95,7 +95,7 @@ Any(): SetCategory with
           ++ obj(a) essentially returns the original object that was
           ++ converted to \spadtype{Any} except that the type is forced
           ++ to be \spadtype{None}.
-        showTypeInOutput: Boolean -> String
+        showTypeInOutput : Boolean -> String
           ++ showTypeInOutput(bool) affects the way objects of
           ++ \spadtype{Any} are displayed. If \spad{bool} is true
           ++ then the type of the original object that was converted
@@ -103,9 +103,9 @@ Any(): SetCategory with
           ++ false, it will not be printed.
 
  == add
-     Rep := Record(dm: SExpression, ob: None)
+     Rep := Record(dm : SExpression, ob : None)
 
-     printTypeInOutputP:Reference(Boolean) := ref false
+     printTypeInOutputP : Reference(Boolean) := ref false
 
      obj x      == x.ob
      dom x      == x.dm
@@ -131,11 +131,11 @@ Any(): SetCategory with
       b=> "Type of object will be displayed in output of a member of Any"
       "Type of object will not be displayed in output of a member of Any"
 
-     coerce(x):OutputForm ==
+     coerce(x) : OutputForm ==
        obj1 : OutputForm := objectOf x
        not deref printTypeInOutputP => obj1
        dom1 :=
-         p:Symbol := prefix2String(devaluate(x.dm)$Lisp)$Lisp
+         p : Symbol := prefix2String(devaluate(x.dm)$Lisp)$Lisp
          atom?(p pretend SExpression) => list(p)$List(Symbol)
          list(p)$Symbol
        hconcat cons(obj1,
@@ -165,15 +165,15 @@ Any(): SetCategory with
 ++   and forth between objects of \spadtype{Any} and objects of other
 ++   types.
 
-AnyFunctions1(S:Type): with
+AnyFunctions1(S : Type) : with
         coerce      : S -> Any
           ++ coerce(s) creates an object of \spadtype{Any} from the
           ++ object \spad{s} of type \spad{S}.
-        retractIfCan: Any -> Union(S, "failed")
+        retractIfCan : Any -> Union(S, "failed")
           ++ retractIfCan(a) tries change \spad{a} into an object
           ++ of type \spad{S}. If it can, then such an object is
           ++ returned. Otherwise, "failed" is returned.
-        retractable?: Any -> Boolean
+        retractable? : Any -> Boolean
           ++ retractable?(a) tests if \spad{a} can be converted
           ++ into an object of type \spad{S}.
         retract     : Any -> S
@@ -184,10 +184,10 @@ AnyFunctions1(S:Type): with
     == add
         import NoneFunctions1(S)
 
-        Sexpr:SExpression := devaluate(S)$Lisp
+        Sexpr : SExpression := devaluate(S)$Lisp
 
         retractable? a  == dom(a) = Sexpr
-        coerce(s:S):Any == any(Sexpr, s::None)
+        coerce(s : S) : Any == any(Sexpr, s::None)
 
         retractIfCan a ==
             retractable? a => obj(a) pretend S

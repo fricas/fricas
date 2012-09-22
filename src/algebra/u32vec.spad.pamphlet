@@ -29,9 +29,9 @@ U32Vector() : OneDimensionalArrayAggregate Integer == add
    empty()                     == Qnew(0$Lisp, 0$Lisp)
    new(n, x)                   == Qnew (n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x:%, i:Integer)         == Qelt(x, i)
+   elt(x : %, i : Integer)         == Qelt(x, i)
    qsetelt!(x, i, s)          == Qsetelt(x, i, s)
-   setelt(x:%, i:Integer, s:Integer) == Qsetelt(x, i, s)
+   setelt(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
    fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
 
 @
@@ -98,9 +98,9 @@ U16Vector() : OneDimensionalArrayAggregate Integer == add
    empty()                     == Qnew(0$Lisp, 0$Lisp)
    new(n, x)                   == Qnew (n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x:%, i:Integer)         == Qelt(x, i)
+   elt(x : %, i : Integer)         == Qelt(x, i)
    qsetelt!(x, i, s)          == Qsetelt(x, i, s)
-   setelt(x:%, i:Integer, s:Integer) == Qsetelt(x, i, s)
+   setelt(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
    fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
 
 @
@@ -167,9 +167,9 @@ U8Vector() : OneDimensionalArrayAggregate Integer == add
    empty()                     == Qnew(0$Lisp, 0$Lisp)
    new(n, x)                   == Qnew (n, x)
    qelt(x, i)                  == Qelt(x, i)
-   elt(x:%, i:Integer)         == Qelt(x, i)
+   elt(x : %, i : Integer)         == Qelt(x, i)
    qsetelt!(x, i, s)          == Qsetelt(x, i, s)
-   setelt(x:%, i:Integer, s:Integer) == Qsetelt(x, i, s)
+   setelt(x : %, i : Integer, s : Integer) == Qsetelt(x, i, s)
    fill!(x, s)       == (for i in 0..((Qsize x) - 1) repeat Qsetelt(x, i, s); x)
 
 @
@@ -393,7 +393,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 for i in ds..ns repeat
                     v1(i) := Qmuladdmod(c2, v2(i - ds), v1(i), p)
 
-        divide!(r0 : PA, r1 : PA, res : PA, p: Integer) : Void ==
+        divide!(r0 : PA, r1 : PA, res : PA, p : Integer) : Void ==
             dr0 := degree(r0) pretend SingleInteger
             dr1 := degree(r1) pretend SingleInteger
             c0 := r1(dr1)
@@ -411,7 +411,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     dr0 := dr0 - 1
                     if dr0 < 0 then break
 
-        remainder!(r0 : PA, r1 : PA, p: Integer) : Void ==
+        remainder!(r0 : PA, r1 : PA, p : Integer) : Void ==
             dr0 := degree(r0) pretend SingleInteger
             dr1 := degree(r1) pretend SingleInteger
             c0 := r1(dr1)
@@ -478,8 +478,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
             mul_by_scalar(r0, dr0, c, p)
             r0
 
-        gcd(a : PrimitiveArray PA, lo : Integer, hi: Integer, p: Integer) _
-              : PA ==
+        gcd(a : PrimitiveArray PA, lo : Integer, hi : Integer, p : Integer) _
+               : PA ==
             res := a(lo)
             for i in (lo + 1)..hi repeat
                 res := gcd(a(i), res, p)
@@ -498,8 +498,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
             divide!(tmp1, pp, tmp2, p)
             mul(v1, tmp2, p)
 
-        lcm(a : PrimitiveArray PA, lo : Integer, hi: Integer, p: Integer) _
-              : PA ==
+        lcm(a : PrimitiveArray PA, lo : Integer, hi : Integer, p : Integer) _
+               : PA ==
             res := a(lo)
             for i in (lo + 1)..hi repeat
                 res := lcm2(a(i), res, p)
@@ -574,23 +574,23 @@ U32VectorPolynomialOperations() : Export == Implementation where
             inner_mul(x, y, z, xdeg, ydeg, m pretend SingleInteger, p)
             z
 
-        pow(x : PA, n : PositiveInteger, d: NonNegativeInteger, _
+        pow(x : PA, n : PositiveInteger, d : NonNegativeInteger, _
             p : Integer) : PA ==
             one? n => x
             odd?(n)$Integer =>
                 truncated_multiplication(x,
                     pow(truncated_multiplication(x, x, d, p),
-                        shift(n,-1) pretend PositiveInteger,
+                        shift(n, -1) pretend PositiveInteger,
                         d,
                         p),
                     d,
                     p)
             pow(truncated_multiplication(x, x, d, p),
-                shift(n,-1) pretend PositiveInteger,
+                shift(n, -1) pretend PositiveInteger,
                 d,
                 p)
 
-        differentiate(x: PA, p: Integer): PA ==
+        differentiate(x : PA, p : Integer) : PA ==
             d := #x - 1
             if zero? d then empty()$PA
             else
@@ -600,7 +600,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     r.i := Qmul(i1, x.i1, p)
                 r
 
-        differentiate(x: PA, n: NonNegativeInteger, p: Integer): PA ==
+        differentiate(x : PA, n : NonNegativeInteger, p : Integer) : PA ==
             zero? n => x
             d := #x - 1
             if d < n then empty()$PA

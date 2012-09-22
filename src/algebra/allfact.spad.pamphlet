@@ -26,14 +26,14 @@
 ++ MultivariateFactorize can factor multivariate polynomials over R.
 
 
-MRationalFactorize(E,OV,R,P) : C == T
+MRationalFactorize(E, OV, R, P) : C == T
  where
   E   :   OrderedAbelianMonoidSup
   OV  :   OrderedSet
   R   :   Join(EuclideanDomain, CharacteristicZero)  -- with factor over R[x]
   FR  ==> Fraction R
-  P  :    PolynomialCategory(FR,E,OV)
-  MPR ==> SparseMultivariatePolynomial(R,OV)
+  P  :    PolynomialCategory(FR, E, OV)
+  MPR ==> SparseMultivariatePolynomial(R, OV)
   SUP ==> SparseUnivariatePolynomial
 
   C  == with
@@ -43,23 +43,23 @@ MRationalFactorize(E,OV,R,P) : C == T
 
   T  == add
      IE     ==> IndexedExponents OV
-     PCLFRR ==> PolynomialCategoryLifting(E,OV,FR,P,MPR)
-     PCLRFR ==> PolynomialCategoryLifting(IE,OV,R,MPR,P)
-     MFACT  ==> MultivariateFactorize(OV,IE,R,MPR)
+     PCLFRR ==> PolynomialCategoryLifting(E, OV, FR, P, MPR)
+     PCLRFR ==> PolynomialCategoryLifting(IE, OV, R, MPR, P)
+     MFACT  ==> MultivariateFactorize(OV, IE, R, MPR)
      UPCF2  ==> UnivariatePolynomialCategoryFunctions2
 
-     numer1(c:FR): MPR   == (numer c) :: MPR
-     numer2(pol:P) : MPR == map(coerce,numer1,pol)$PCLFRR
-     coerce1(d:R) : P == (d::FR)::P
-     coerce2(pp:MPR) :P == map(coerce,coerce1,pp)$PCLRFR
+     numer1(c : FR) : MPR   == (numer c) :: MPR
+     numer2(pol : P) : MPR == map(coerce, numer1, pol)$PCLFRR
+     coerce1(d : R) : P == (d::FR)::P
+     coerce2(pp : MPR) : P == map(coerce, coerce1, pp)$PCLRFR
 
-     factor(p:P) : Factored P ==
-       pden:R:=lcm([denom c for c in coefficients p])
-       pol :P:= (pden::FR)*p
-       ipol:MPR:= map(coerce,numer1,pol)$PCLFRR
-       ffact:=(factor ipol)$MFACT
-       (1/pden)*map(coerce,coerce1,(unit ffact))$PCLRFR *
-           _*/[primeFactor(map(coerce,coerce1,u.factor)$PCLRFR,
+     factor(p : P) : Factored P ==
+       pden : R := lcm([denom c for c in coefficients p])
+       pol : P := (pden::FR)*p
+       ipol : MPR := map(coerce, numer1, pol)$PCLFRR
+       ffact := (factor ipol)$MFACT
+       (1/pden)*map(coerce, coerce1, (unit ffact))$PCLRFR *
+           _*/[primeFactor(map(coerce, coerce1, u.factor)$PCLRFR,
                            u.exponent) for u in factors ffact]
 
 @
@@ -83,7 +83,7 @@ MRationalFactorize(E,OV,R,P) : C == T
 ++ with rational function coefficients, i.e. themselves fractions of
 ++ polynomials.
 
-MPolyCatRationalFunctionFactorizer(E,OV,R,PRF) : C == T
+MPolyCatRationalFunctionFactorizer(E, OV, R, PRF) : C == T
  where
   R     :   IntegralDomain
   F     ==> Fraction Polynomial R
@@ -92,7 +92,7 @@ MPolyCatRationalFunctionFactorizer(E,OV,R,PRF) : C == T
   OV    :   OrderedSet  with
                 convert : % -> Symbol
                   ++ convert(x) converts x to a symbol
-  PRF   :   PolynomialCategory(F,E,OV)
+  PRF   :   PolynomialCategory(F, E, OV)
   NNI   ==> NonNegativeInteger
   P     ==> Polynomial R
   ISE   ==> IndexedExponents  SE
@@ -100,7 +100,7 @@ MPolyCatRationalFunctionFactorizer(E,OV,R,PRF) : C == T
   UP    ==> SparseUnivariatePolynomial P
   UF    ==> SparseUnivariatePolynomial F
   UPRF  ==> SparseUnivariatePolynomial PRF
-  QuoForm   ==> Record(sup:P,inf:P)
+  QuoForm   ==> Record(sup : P, inf : P)
 
   C  == with
      totalfract  :        PRF             ->   QuoForm
@@ -108,21 +108,21 @@ MPolyCatRationalFunctionFactorizer(E,OV,R,PRF) : C == T
        ++ themselves fractions of polynomials and returns a record
        ++ containing the numerator and denominator resulting from
        ++ putting prf over a common denominator.
-     pushdown    :      (PRF,OV)          ->   PRF
-       ++ pushdown(prf,var) pushes all top level occurences of the
+     pushdown    :      (PRF, OV)          ->   PRF
+       ++ pushdown(prf, var) pushes all top level occurences of the
        ++ variable var into the coefficient domain for the polynomial prf.
-     pushdterm   :      (UPRF,OV)         ->   PRF
-       ++ pushdterm(monom,var) pushes all top level occurences of the
+     pushdterm   :      (UPRF, OV)         ->   PRF
+       ++ pushdterm(monom, var) pushes all top level occurences of the
        ++ variable var into the coefficient domain for the monomial monom.
-     pushup      :      (PRF,OV)          ->   PRF
-       ++ pushup(prf,var) raises all occurences of the
+     pushup      :      (PRF, OV)          ->   PRF
+       ++ pushup(prf, var) raises all occurences of the
        ++ variable var in the coefficients of the polynomial prf
        ++ back to the polynomial level.
-     pushucoef   :       (UP,OV)          ->   PRF
-       ++ pushucoef(upoly,var) converts the anonymous univariate
+     pushucoef   :       (UP, OV)          ->   PRF
+       ++ pushucoef(upoly, var) converts the anonymous univariate
        ++ polynomial upoly to a polynomial in var over rational functions.
-     pushuconst  :        (F,OV)          ->   PRF
-       ++ pushuconst(r,var) takes a rational function and raises
+     pushuconst  :        (F, OV)          ->   PRF
+       ++ pushuconst(r, var) takes a rational function and raises
        ++ all occurances of the variable var to the polynomial level.
      factor      :        PRF             ->   Factored PRF
        ++ factor(prf) factors a polynomial with rational function
@@ -132,20 +132,20 @@ MPolyCatRationalFunctionFactorizer(E,OV,R,PRF) : C == T
   T  == add
 
         ----  factorization of p ----
-     factor(p:PRF) : Factored PRF ==
-       truelist:List OV :=variables p
-       tp:=totalfract(p)
-       nump:P:= tp.sup
-       denp:F:=inv(tp.inf ::F)
-       ffact : List(Record(irr:PRF,pow:Integer))
-       flist:Factored P
+     factor(p : PRF) : Factored PRF ==
+       truelist : List OV := variables p
+       tp := totalfract(p)
+       nump : P := tp.sup
+       denp : F := inv(tp.inf ::F)
+       ffact : List(Record(irr : PRF, pow : Integer))
+       flist : Factored P
        if R is Fraction Integer then
-         flist:=
-           ((factor nump)$MRationalFactorize(ISE,SE,Integer,P))
+         flist :=
+           ((factor nump)$MRationalFactorize(ISE, SE, Integer, P))
                           pretend (Factored P)
        else
          if R has FiniteFieldCategory  then
-            flist:= ((factor nump)$MultFiniteFactorize(SE,ISE,R,P))
+            flist := ((factor nump)$MultFiniteFactorize(SE, ISE, R, P))
                     pretend (Factored P)
 
          else
@@ -153,62 +153,62 @@ MPolyCatRationalFunctionFactorizer(E,OV,R,PRF) : C == T
 
             else
               if R has CharacteristicZero then
-                flist:= ((factor nump)$MultivariateFactorize(SE,ISE,R,P))
+                flist := ((factor nump)$MultivariateFactorize(SE, ISE, R, P))
                                                 pretend (Factored P)
               else error "can't happen"
-       ffact:=[[u.factor::F::PRF,u.exponent] for u in factors flist]
-       fcont:=(unit flist)::F::PRF
+       ffact := [[u.factor::F::PRF, u.exponent] for u in factors flist]
+       fcont := (unit flist)::F::PRF
        for x in truelist repeat
-         fcont:=pushup(fcont,x)
-         ffact:=[[pushup(ff.irr,x),ff.pow] for ff in ffact]
-       (denp*fcont)*(_*/[primeFactor(ff.irr,ff.pow) for ff in ffact])
+         fcont := pushup(fcont, x)
+         ffact := [[pushup(ff.irr, x), ff.pow] for ff in ffact]
+       (denp*fcont)*(_*/[primeFactor(ff.irr, ff.pow) for ff in ffact])
 
 
 -- the following functions are used to "push" x in the coefficient ring -
 
         ----  push x in the coefficient domain for a polynomial ----
-     pushdown(g:PRF,x:OV) : PRF ==
+     pushdown(g : PRF, x : OV) : PRF ==
        ground? g => g
-       rf:PRF:=0$PRF
-       ug:=univariate(g,x)
+       rf : PRF := 0$PRF
+       ug := univariate(g, x)
        while ug ~= 0 repeat
-         rf:=rf+pushdterm(ug,x)
+         rf := rf+pushdterm(ug, x)
          ug := reductum ug
        rf
 
       ----  push x in the coefficient domain for a term ----
-     pushdterm(t:UPRF,x:OV):PRF ==
-       n:=degree(t)
-       cf:=monomial(1,convert x,n)$P :: F
+     pushdterm(t : UPRF, x : OV) : PRF ==
+       n := degree(t)
+       cf := monomial(1, convert x, n)$P :: F
        cf * leadingCoefficient t
 
                ----  push back the variable  ----
-     pushup(f:PRF,x:OV) :PRF ==
-       ground? f => pushuconst(retract f,x)
-       v:=mainVariable(f)::OV
-       g:=univariate(f,v)
-       multivariate(map((y : PRF) : PRF +-> pushup(y, x),g),v)
+     pushup(f : PRF, x : OV) : PRF ==
+       ground? f => pushuconst(retract f, x)
+       v := mainVariable(f)::OV
+       g := univariate(f, v)
+       multivariate(map((y : PRF) : PRF +-> pushup(y, x), g), v)
 
       ----  push x back from the coefficient domain ----
-     pushuconst(r:F,x:OV):PRF ==
-       xs:SE:=convert x
+     pushuconst(r : F, x : OV) : PRF ==
+       xs : SE := convert x
        degree(denom r,xs)>0 => error "bad polynomial form"
-       inv((denom r)::F)*pushucoef(univariate(numer r,xs),x)
+       inv((denom r)::F)*pushucoef(univariate(numer r, xs), x)
 
 
-     pushucoef(c:UP,x:OV):PRF ==
+     pushucoef(c : UP, x : OV) : PRF ==
        c = 0 => 0
-       monomial((leadingCoefficient c)::F::PRF,x,degree c) +
-                 pushucoef(reductum c,x)
+       monomial((leadingCoefficient c)::F::PRF, x, degree c) +
+                 pushucoef(reductum c, x)
 
 
            ----  write p with a common denominator  ----
 
-     totalfract(p:PRF) : QuoForm ==
-       p=0 => [0$P,1$P]$QuoForm
-       for x in variables p repeat p:=pushdown(p,x)
-       g:F:=retract p
-       [numer g,denom g]$QuoForm
+     totalfract(p : PRF) : QuoForm ==
+       p = 0 => [0$P, 1$P]$QuoForm
+       for x in variables p repeat p := pushdown(p, x)
+       g : F := retract p
+       [numer g, denom g]$QuoForm
 
 @
 \section{package MPCPF MPolyCatPolyFactorizer}
@@ -231,7 +231,7 @@ MPolyCatRationalFunctionFactorizer(E,OV,R,PRF) : C == T
 ++ set of variables with coefficients which are polynomials in all the other
 ++ variables.
 
-MPolyCatPolyFactorizer(E,OV,R,PPR) : C == T
+MPolyCatPolyFactorizer(E, OV, R, PPR) : C == T
  where
   R     :   EuclideanDomain
   E     :   OrderedAbelianMonoidSup
@@ -239,10 +239,10 @@ MPolyCatPolyFactorizer(E,OV,R,PPR) : C == T
   OV    :   OrderedSet  with
                  convert : % -> Symbol
                    ++ convert(x) converts x to a symbol
-                 variable: Symbol -> Union(%, "failed")
+                 variable : Symbol -> Union(%, "failed")
                    ++ variable(s) makes an element from symbol s or fails.
   PR    ==> Polynomial R
-  PPR   :   PolynomialCategory(PR,E,OV)
+  PPR   :   PolynomialCategory(PR, E, OV)
   NNI   ==> NonNegativeInteger
   ISY   ==> IndexedExponents Symbol
   SE    ==> Symbol
@@ -257,20 +257,20 @@ MPolyCatPolyFactorizer(E,OV,R,PPR) : C == T
              ---  Local Functions  ----
   T  == add
 
-     import PushVariables(R,E,OV,PPR)
+     import PushVariables(R, E, OV, PPR)
 
         ----  factorization of p ----
-     factor(p:PPR) : Factored PPR ==
-       ground? p => nilFactor(p,1)
+     factor(p : PPR) : Factored PPR ==
+       ground? p => nilFactor(p, 1)
        c := content p
        p := (p exquo c)::PPR
-       vars:List OV :=variables p
-       g:PR:=retract pushdown(p, vars)
-       flist := factor(g)$GeneralizedMultivariateFactorize(Symbol,ISY,R,R,PR)
-       ffact : List(Record(irr:PPR,pow:Integer))
-       ffact:=[[pushup(u.factor::PPR,vars),u.exponent] for u in factors flist]
-       fcont:=(unit flist)::PPR
-       nilFactor(c*fcont,1)*(_*/[primeFactor(ff.irr,ff.pow) for ff in ffact])
+       vars : List OV := variables p
+       g : PR := retract pushdown(p, vars)
+       flist := factor(g)$GeneralizedMultivariateFactorize(Symbol, ISY, R, R, PR)
+       ffact : List(Record(irr : PPR, pow : Integer))
+       ffact := [[pushup(u.factor::PPR, vars), u.exponent] for u in factors flist]
+       fcont := (unit flist)::PPR
+       nilFactor(c*fcont, 1)*(_*/[primeFactor(ff.irr, ff.pow) for ff in ffact])
 
 @
 \section{package GENMFACT GeneralizedMultivariateFactorize}
@@ -289,7 +289,7 @@ MPolyCatPolyFactorizer(E,OV,R,PPR) : C == T
 ++   This is the top level package for doing multivariate factorization
 ++ over basic domains like \spadtype{Integer} or \spadtype{Fraction Integer}.
 
-GeneralizedMultivariateFactorize(OV,E,S,R,P) : C == T
+GeneralizedMultivariateFactorize(OV, E, S, R, P) : C == T
  where
   R          :   IntegralDomain
                     -- with factor on R[x]
@@ -297,10 +297,10 @@ GeneralizedMultivariateFactorize(OV,E,S,R,P) : C == T
   OV    :   OrderedSet  with
                  convert : % -> Symbol
                    ++ convert(x) converts x to a symbol
-                 variable: Symbol -> Union(%, "failed")
+                 variable : Symbol -> Union(%, "failed")
                    ++ variable(s) makes an element from symbol s or fails.
   E          :   OrderedAbelianMonoidSup
-  P          :   PolynomialCategory(R,E,OV)
+  P          :   PolynomialCategory(R, E, OV)
 
   C == with
     factor      :      P  ->  Factored P
@@ -308,17 +308,17 @@ GeneralizedMultivariateFactorize(OV,E,S,R,P) : C == T
       ++ domain
 
   T == add
-    factor(p:P) : Factored P ==
-      R has FiniteFieldCategory => factor(p)$MultFiniteFactorize(OV,E,R,P)
+    factor(p : P) : Factored P ==
+      R has FiniteFieldCategory => factor(p)$MultFiniteFactorize(OV, E, R, P)
       R is Polynomial(S) and S has EuclideanDomain =>
-         factor(p)$MPolyCatPolyFactorizer(E,OV,S,P)
+         factor(p)$MPolyCatPolyFactorizer(E, OV, S, P)
       R is Fraction(S) and S has CharacteristicZero and
         S has EuclideanDomain =>
-            factor(p)$MRationalFactorize(E,OV,S,P)
+            factor(p)$MRationalFactorize(E, OV, S, P)
       R is Fraction Polynomial S =>
-         factor(p)$MPolyCatRationalFunctionFactorizer(E,OV,S,P)
+         factor(p)$MPolyCatRationalFunctionFactorizer(E, OV, S, P)
       R has CharacteristicZero and R has EuclideanDomain =>
-               factor(p)$MultivariateFactorize(OV,E,R,P)
+               factor(p)$MultivariateFactorize(OV, E, R, P)
       R has GcdDomain => squareFree p
       error "factor for this domain is unimplemented"
 
@@ -354,18 +354,18 @@ RationalFunctionFactorizer(R) : C == T
        ++ the polynomial fraction r.
   T  == add
 
-     factorFraction(p:FP) : Fraction Factored(P) ==
+     factorFraction(p : FP) : Fraction Factored(P) ==
        R is Fraction Integer =>
-         MR:=MRationalFactorize(IndexedExponents SE,SE,
-                                Integer,P)
+         MR := MRationalFactorize(IndexedExponents SE, SE,
+                                Integer, P)
          (factor(numer p)$MR)/ (factor(denom p)$MR)
 
        R has FiniteFieldCategory =>
-         FF:=MultFiniteFactorize(SE,IndexedExponents SE,R,P)
+         FF := MultFiniteFactorize(SE, IndexedExponents SE, R, P)
          (factor(numer p))$FF/(factor(denom p))$FF
 
        R has CharacteristicZero =>
-          MFF:=MultivariateFactorize(SE,IndexedExponents SE,R,P)
+          MFF := MultivariateFactorize(SE, IndexedExponents SE, R, P)
           (factor(numer p))$MFF/(factor(denom p))$MFF
        error "case not handled"
 
@@ -387,12 +387,12 @@ RationalFunctionFactorizer(R) : C == T
 ++ polynomials over the quotient field of a ring S such that the package
 ++ MultivariateFactorize works for S
 
-SupFractionFactorizer(E,OV,R,P) : C == T
+SupFractionFactorizer(E, OV, R, P) : C == T
  where
   E   :   OrderedAbelianMonoidSup
   OV  :   OrderedSet
   R   :   GcdDomain
-  P   :   PolynomialCategory(R,E,OV)
+  P   :   PolynomialCategory(R, E, OV)
   FP  ==> Fraction P
   SUP ==> SparseUnivariatePolynomial
 
@@ -406,33 +406,33 @@ SupFractionFactorizer(E,OV,R,P) : C == T
        ++ pairwise relatively prime.
 
   T  == add
-     MFACT  ==> MultivariateFactorize(OV,E,R,P)
-     MSQFR  ==> MultivariateSquareFree(E,OV,R,P)
+     MFACT  ==> MultivariateFactorize(OV, E, R, P)
+     MSQFR  ==> MultivariateSquareFree(E, OV, R, P)
      UPCF2  ==> UnivariatePolynomialCategoryFunctions2
 
-     factor(p:SUP FP) : Factored SUP FP  ==
-       p=0 => 0
+     factor(p : SUP FP) : Factored SUP FP  ==
+       p = 0 => 0
        R has CharacteristicZero and R has EuclideanDomain =>
          pden : P := lcm [denom c for c in coefficients p]
          pol  : SUP FP := (pden::FP)*p
-         ipol: SUP P := map(numer,pol)$UPCF2(FP,SUP FP,P,SUP P)
-         ffact: Factored SUP P := 0
+         ipol : SUP P := map(numer, pol)$UPCF2(FP, SUP FP, P, SUP P)
+         ffact : Factored SUP P := 0
          ffact := factor(ipol)$MFACT
-         makeFR((1/pden * map(coerce,unit ffact)$UPCF2(P,SUP P,FP,SUP FP)),
+         makeFR((1/pden * map(coerce, unit ffact)$UPCF2(P, SUP P, FP, SUP FP)),
          [["prime",map(coerce,u.factor)$UPCF2(P,SUP P,FP,SUP FP),
             u.exponent] for u in factors ffact])
        squareFree p
 
-     squareFree(p:SUP FP) : Factored SUP FP  ==
-       p=0 => 0
+     squareFree(p : SUP FP) : Factored SUP FP  ==
+       p = 0 => 0
        pden : P := lcm [denom c for c in coefficients p]
        pol  : SUP FP := (pden::FP)*p
-       ipol: SUP P := map(numer,pol)$UPCF2(FP,SUP FP,P,SUP P)
-       ffact: Factored SUP P := 0
+       ipol : SUP P := map(numer, pol)$UPCF2(FP, SUP FP, P, SUP P)
+       ffact : Factored SUP P := 0
        if R has CharacteristicZero and R has EuclideanDomain then
          ffact := squareFree(ipol)$MSQFR
        else ffact := squareFree(ipol)
-       makeFR((1/pden * map(coerce,unit ffact)$UPCF2(P,SUP P,FP,SUP FP)),
+       makeFR((1/pden * map(coerce, unit ffact)$UPCF2(P, SUP P, FP, SUP FP)),
          [["sqfr",map(coerce,u.factor)$UPCF2(P,SUP P,FP,SUP FP),
             u.exponent] for u in factors ffact])
 

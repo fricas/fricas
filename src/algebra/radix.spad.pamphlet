@@ -27,44 +27,44 @@
 ++   This domain allows rational numbers to be presented as repeating
 ++   decimal expansions or more generally as repeating expansions in any base.
 
-RadixExpansion(bb): Exports == Implementation where
+RadixExpansion(bb) : Exports == Implementation where
   bb   :  Integer
   I   ==> Integer
   NNI ==> NonNegativeInteger
   OUT ==> OutputForm
   RN  ==> Fraction Integer
   ST  ==> Stream Integer
-  QuoRem ==> Record(quotient: Integer, remainder: Integer)
+  QuoRem ==> Record(quotient : Integer, remainder : Integer)
 
   Exports ==> QuotientFieldCategory(Integer) with
-    coerce: % -> Fraction Integer
+    coerce : % -> Fraction Integer
       ++ coerce(rx) converts a radix expansion to a rational number.
-    fractionPart: % -> Fraction Integer
+    fractionPart : % -> Fraction Integer
       ++ fractionPart(rx) returns the fractional part of a radix expansion.
-    wholeRagits: % -> List Integer
+    wholeRagits : % -> List Integer
       ++ wholeRagits(rx) returns the ragits of the integer part
       ++ of a radix expansion.
-    fractRagits: % -> Stream Integer
+    fractRagits : % -> Stream Integer
       ++ fractRagits(rx) returns the ragits of the fractional part
       ++ of a radix expansion.
-    prefixRagits: % -> List Integer
+    prefixRagits : % -> List Integer
       ++ prefixRagits(rx) returns the non-cyclic part of the ragits
       ++ of the fractional part of a radix expansion.
       ++ For example, if \spad{x = 3/28 = 0.10 714285 714285 ...},
-      ++ then \spad{prefixRagits(x)=[1,0]}.
-    cycleRagits: % -> List Integer
+      ++ then \spad{prefixRagits(x)=[1, 0]}.
+    cycleRagits : % -> List Integer
       ++ cycleRagits(rx) returns the cyclic part of the ragits of the
       ++ fractional part of a radix expansion.
       ++ For example, if \spad{x = 3/28 = 0.10 714285 714285 ...},
-      ++ then \spad{cycleRagits(x) = [7,1,4,2,8,5]}.
-    wholeRadix: List Integer -> %
+      ++ then \spad{cycleRagits(x) = [7, 1, 4, 2, 8, 5]}.
+    wholeRadix : List Integer -> %
       ++ wholeRadix(l) creates an integral radix expansion from a list
       ++ of ragits.
-      ++ For example, \spad{wholeRadix([1,3,4])} will return \spad{134}.
-    fractRadix: (List Integer, List Integer) -> %
-      ++ fractRadix(pre,cyc) creates a fractional radix expansion
+      ++ For example, \spad{wholeRadix([1, 3, 4])} will return \spad{134}.
+    fractRadix : (List Integer, List Integer) -> %
+      ++ fractRadix(pre, cyc) creates a fractional radix expansion
       ++ from a list of prefix ragits and a list of cyclic ragits.
-      ++ For example, \spad{fractRadix([1],[6])} will return \spad{0.16666666...}.
+      ++ For example, \spad{fractRadix([1], [6])} will return \spad{0.16666666...}.
 
   Implementation ==> add
     -- The efficiency of arithmetic operations is poor.
@@ -73,17 +73,17 @@ RadixExpansion(bb): Exports == Implementation where
     -- as demanded.
 
     bb < 2 => error "Radix base must be at least 2"
-    Rep := Record(sgn: Integer,      int: List Integer,
-                  pfx: List Integer, cyc: List Integer)
+    Rep := Record(sgn : Integer,      int : List Integer,
+                  pfx : List Integer, cyc : List Integer)
 
-    q:     RN
-    qr:    QuoRem
-    a,b:   %
-    n:     I
+    q :     RN
+    qr :    QuoRem
+    a, b :   %
+    n :     I
 
-    radixInt:    (I, I)    -> List I
-    radixFrac:   (I, I, I) -> Record(pfx: List I, cyc: List I)
-    checkRagits: List I    -> Boolean
+    radixInt :    (I, I)    -> List I
+    radixFrac :   (I, I, I) -> Record(pfx : List I, cyc : List I)
+    checkRagits : List I    -> Boolean
 
     -- Arithmetic operations
     characteristic() == 0
@@ -97,7 +97,7 @@ RadixExpansion(bb): Exports == Implementation where
     n * a == (n     * a::RN)::%
     a * b == (a::RN * b::RN)::%
     a / b == (a::RN / b::RN)::%
-    (i:I) / (j:I) == (i/j)@RN :: %
+    (i : I) / (j : I) == (i/j)@RN :: %
     a < b == a::RN < b::RN
     a = b == a.sgn = b.sgn and a.int = b.int and
              a.pfx = b.pfx and a.cyc = b.cyc
@@ -105,15 +105,15 @@ RadixExpansion(bb): Exports == Implementation where
     denom a == denom(a::RN)
 
     -- Algebraic coercions
-    coerce(a):RN == (wholePart a) :: RN + fractionPart a
-    coerce(n):%  == n :: RN :: %
-    coerce(q):%  ==
+    coerce(a) : RN == (wholePart a) :: RN + fractionPart a
+    coerce(n) : %  == n :: RN :: %
+    coerce(q) : %  ==
       s := 1; if q < 0 then (s := -1; q := -q)
-      qr      := divide(numer q,denom q)
-      whole   := radixInt (qr.quotient,bb)
-      fractn  := radixFrac(qr.remainder,denom q,bb)
+      qr      := divide(numer q, denom q)
+      whole   := radixInt (qr.quotient, bb)
+      fractn  := radixFrac(qr.remainder, denom q, bb)
       cycle   := (fractn.cyc = [0] => nil(); fractn.cyc)
-      [s,whole,fractn.pfx,cycle]
+      [s, whole, fractn.pfx, cycle]
 
     retractIfCan(a):Union(RN,"failed") == a::RN
     retractIfCan(a):Union(I,"failed") ==
@@ -140,7 +140,7 @@ RadixExpansion(bb): Exports == Implementation where
       a.sgn*n/d
 
     wholeRagits  a == a.int
-    fractRagits  a == concat(construct(a.pfx)@ST,repeating a.cyc)
+    fractRagits  a == concat(construct(a.pfx)@ST, repeating a.cyc)
     prefixRagits a == a.pfx
     cycleRagits  a == a.cyc
 
@@ -155,18 +155,18 @@ RadixExpansion(bb): Exports == Implementation where
 
     ALPHAS : String := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-    intToExpr(i:I): OUT ==
+    intToExpr(i : I) : OUT ==
       -- computes a digit for bases between 11 and 36
       i < 10 => i :: OUT
-      elt(ALPHAS,(i-10) + minIndex(ALPHAS)) :: OUT
+      elt(ALPHAS, (i-10) + minIndex(ALPHAS)) :: OUT
 
-    exprgroup(le: List OUT): OUT ==
+    exprgroup(le : List OUT) : OUT ==
       empty? le      => error "exprgroup needs non-null list"
       empty? rest le => first le
       abs bb <= 36 => hconcat le
       blankSeparate le
 
-    intgroup(li: List I): OUT ==
+    intgroup(li : List I) : OUT ==
       empty? li      => error "intgroup needs non-null list"
       empty? rest li =>
          abs bb <= 36 => intToExpr first(li)
@@ -175,15 +175,15 @@ RadixExpansion(bb): Exports == Implementation where
       abs bb <= 36 => hconcat [intToExpr(i) for i in li]
       blankSeparate [i :: OUT for i in li]
 
-    overBar(li: List I): OUT == overbar intgroup li
+    overBar(li : List I) : OUT == overbar intgroup li
 
-    coerce(a): OUT ==
+    coerce(a) : OUT ==
       le : List OUT := nil()
-      if not null a.cyc then le := concat(overBar  a.cyc,le)
-      if not null a.pfx then le := concat(intgroup a.pfx,le)
+      if not null a.cyc then le := concat(overBar  a.cyc, le)
+      if not null a.pfx then le := concat(intgroup a.pfx, le)
       if not null le    then le := concat("." :: OUT,le)
-      if not null a.int then le := concat(intgroup a.int,le)
-      else le := concat(0 :: OUT,le)
+      if not null a.int then le := concat(intgroup a.int, le)
+      else le := concat(0 :: OUT, le)
       rex := exprgroup le
       if a.sgn < 0 then -rex else rex
 
@@ -193,15 +193,15 @@ RadixExpansion(bb): Exports == Implementation where
         error "Each ragit (digit) must be between 0 and base-1"
       true
 
-    radixInt(n,bas) ==
-      rits: List I := nil()
+    radixInt(n, bas) ==
+      rits : List I := nil()
       while abs n ~= 0 repeat
-        qr   := divide(n,bas)
+        qr   := divide(n, bas)
         n    := qr.quotient
-        rits := concat(qr.remainder,rits)
+        rits := concat(qr.remainder, rits)
       rits
 
-    radixFrac(num,den,bas) ==
+    radixFrac(num, den, bas) ==
       -- Rits is the sequence of quotient/remainder pairs
       -- in calculating the radix expansion of the rational number.
       -- We wish to find p and c such that
@@ -215,11 +215,11 @@ RadixExpansion(bb): Exports == Implementation where
       qr    := divide(bas * num, den)
       i : I := 0
       qr1i  := qr2i := qr
-      rits: List QuoRem := [qr]
+      rits : List QuoRem := [qr]
       until qr1i = qr2i repeat
-        qr1i := divide(bas * qr1i.remainder,den)
-        qrt  := divide(bas * qr2i.remainder,den)
-        qr2i := divide(bas * qrt.remainder,den)
+        qr1i := divide(bas * qr1i.remainder, den)
+        qrt  := divide(bas * qr2i.remainder, den)
+        qr2i := divide(bas * qrt.remainder, den)
         rits := concat(qr2i, concat(qrt, rits))
         i    := i + 1
       rits := reverse! rits
@@ -245,8 +245,8 @@ RadixExpansion(bb): Exports == Implementation where
           cfound := true
       if not cfound then c := n
       -- 4. Now produce the lists of ragits.
-      ritspfx: List I := nil()
-      ritscyc: List I := nil()
+      ritspfx : List I := nil()
+      ritscyc : List I := nil()
       for i in 1..p repeat
         ritspfx := concat(first(rits).quotient, ritspfx)
         rits    := rest rits
@@ -273,20 +273,20 @@ RadixExpansion(bb): Exports == Implementation where
 ++   This domain allows rational numbers to be presented as repeating
 ++   binary expansions.
 
-BinaryExpansion(): Exports == Implementation where
+BinaryExpansion() : Exports == Implementation where
   Exports ==> QuotientFieldCategory(Integer) with
-    coerce: % -> Fraction Integer
+    coerce : % -> Fraction Integer
       ++ coerce(b) converts a binary expansion to a rational number.
-    coerce: % -> RadixExpansion(2)
+    coerce : % -> RadixExpansion(2)
       ++ coerce(b) converts a binary expansion to a radix expansion with base 2.
-    fractionPart: % -> Fraction Integer
+    fractionPart : % -> Fraction Integer
       ++ fractionPart(b) returns the fractional part of a binary expansion.
-    binary: Fraction Integer -> %
+    binary : Fraction Integer -> %
       ++ binary(r) converts a rational number to a binary expansion.
 
   Implementation ==> RadixExpansion(2) add
     binary r == r :: %
-    coerce(x:%): RadixExpansion(2) == x pretend RadixExpansion(2)
+    coerce(x : %) : RadixExpansion(2) == x pretend RadixExpansion(2)
 
 @
 \section{domain DECIMAL DecimalExpansion}
@@ -305,21 +305,21 @@ BinaryExpansion(): Exports == Implementation where
 ++ Description:
 ++   This domain allows rational numbers to be presented as repeating
 ++   decimal expansions.
-DecimalExpansion(): Exports == Implementation where
+DecimalExpansion() : Exports == Implementation where
   Exports ==> QuotientFieldCategory(Integer) with
-    coerce: % -> Fraction Integer
+    coerce : % -> Fraction Integer
       ++ coerce(d) converts a decimal expansion to a rational number.
-    coerce: % -> RadixExpansion(10)
+    coerce : % -> RadixExpansion(10)
       ++ coerce(d) converts a decimal expansion to a radix expansion
       ++ with base 10.
-    fractionPart: % -> Fraction Integer
+    fractionPart : % -> Fraction Integer
       ++ fractionPart(d) returns the fractional part of a decimal expansion.
-    decimal: Fraction Integer -> %
+    decimal : Fraction Integer -> %
       ++ decimal(r) converts a rational number to a decimal expansion.
 
   Implementation ==> RadixExpansion(10) add
     decimal r == r :: %
-    coerce(x:%): RadixExpansion(10) == x pretend RadixExpansion(10)
+    coerce(x : %) : RadixExpansion(10) == x pretend RadixExpansion(10)
 
 @
 \section{domain HEXADEC HexadecimalExpansion}
@@ -339,21 +339,21 @@ DecimalExpansion(): Exports == Implementation where
 ++   This domain allows rational numbers to be presented as repeating
 ++   hexadecimal expansions.
 
-HexadecimalExpansion(): Exports == Implementation where
+HexadecimalExpansion() : Exports == Implementation where
   Exports ==> QuotientFieldCategory(Integer) with
-    coerce: % -> Fraction Integer
+    coerce : % -> Fraction Integer
       ++ coerce(h) converts a hexadecimal expansion to a rational number.
-    coerce: % -> RadixExpansion(16)
+    coerce : % -> RadixExpansion(16)
       ++ coerce(h) converts a hexadecimal expansion to a radix expansion
       ++ with base 16.
-    fractionPart: % -> Fraction Integer
+    fractionPart : % -> Fraction Integer
       ++ fractionPart(h) returns the fractional part of a hexadecimal expansion.
-    hex: Fraction Integer -> %
+    hex : Fraction Integer -> %
       ++ hex(r) converts a rational number to a hexadecimal expansion.
 
   Implementation ==> RadixExpansion(16) add
     hex r == r :: %
-    coerce(x:%): RadixExpansion(16) == x pretend RadixExpansion(16)
+    coerce(x : %) : RadixExpansion(16) == x pretend RadixExpansion(16)
 
 @
 \section{package RADUTIL RadixUtilities}
@@ -371,10 +371,10 @@ HexadecimalExpansion(): Exports == Implementation where
 ++ References:
 ++ Description:
 ++   This package provides tools for creating radix expansions.
-RadixUtilities: Exports == Implementation where
+RadixUtilities : Exports == Implementation where
   Exports ==> with
-    radix: (Fraction Integer,Integer) -> Any
-      ++ radix(x,b) converts x to a radix expansion in base b.
+    radix : (Fraction Integer, Integer) -> Any
+      ++ radix(x, b) converts x to a radix expansion in base b.
   Implementation ==> add
     radix(q, b) ==
       coerce(q :: RadixExpansion(b))$AnyFunctions1(RadixExpansion b)

@@ -19,20 +19,20 @@
 ++ Uses algorithm given in section 3 of P. S. Wang "An improved
 ++ multivariate polynomial factoring algorithm", Math. of Comput. 32,
 ++ 1978, p. 1215--1231, generalized to arbitrary euclidean domain.
-LeadingCoefDetermination(OV,E,Z,P) : C == T
+LeadingCoefDetermination(OV, E, Z, P) : C == T
  where
   OV    :   OrderedSet
   E     :   OrderedAbelianMonoidSup
   Z     :   EuclideanDomain
   BP        ==> SparseUnivariatePolynomial Z
-  P         :   PolynomialCategory(Z,E,OV)
+  P         :   PolynomialCategory(Z, E, OV)
   NNI       ==> NonNegativeInteger
-  LeadFact  ==> Record(polfac:List(P),correct:Z,corrfact:List(BP))
-  ParFact   ==> Record(irr:P,pow:Integer)
-  FinalFact ==> Record(contp:Z,factors:List(ParFact))
+  LeadFact  ==> Record(polfac : List(P), correct : Z, corrfact : List(BP))
+  ParFact   ==> Record(irr : P, pow : Integer)
+  FinalFact ==> Record(contp : Z, factors : List(ParFact))
 
   C == with
-   polCase  : (Z,NNI,List(Z)) -> Boolean
+   polCase  : (Z, NNI, List(Z)) -> Boolean
      ++ polCase(contprod, numFacts, evallcs), where contprod is the
      ++ product of the content of the leading coefficient of
      ++ the polynomial to be factored with the content of the
@@ -41,9 +41,9 @@ LeadingCoefDetermination(OV,E,Z,P) : C == T
      ++ the evaluated factors of the leadingCoefficient, returns
      ++ true if the factors of the leading Coefficient can be
      ++ distributed with this valuation.
-   distFact : (Z,List(BP),FinalFact,List(Z),List(OV),List(Z)) ->
+   distFact : (Z, List(BP), FinalFact, List(Z), List(OV), List(Z)) ->
                                               Union(LeadFact,"failed")
-     ++ distFact(contm,unilist,plead,vl,lvar,lval), where contm is
+     ++ distFact(contm, unilist, plead, vl, lvar, lval), where contm is
      ++ the content of the evaluated polynomial, unilist is the list
      ++ of factors of the evaluated polynomial, plead is the complete
      ++ factorization of the leading coefficient, vl is the list
@@ -53,76 +53,76 @@ LeadingCoefDetermination(OV,E,Z,P) : C == T
      ++ factors,
 
   T == add
-    distribute: (Z,List(BP),List(P),List(Z),List(OV),List(Z)) -> LeadFact
-    checkpow  : (Z,Z) -> NNI
+    distribute : (Z, List(BP), List(P), List(Z), List(OV), List(Z)) -> LeadFact
+    checkpow  : (Z, Z) -> NNI
 
-    polCase(d:Z,nk:NNI,lval:List(Z)):Boolean ==
+    polCase(d : Z, nk : NNI, lval : List(Z)) : Boolean ==
       -- d is the product of the content lc m (case polynomial)
       -- and the cont of the polynomial evaluated
-      q:Z
-      distlist:List(Z) := [d]
+      q : Z
+      distlist : List(Z) := [d]
       for i in 1..nk repeat
         q := unitNormal(lval.i).canonical
         for j in 0..(i-1)::NNI repeat
           y := distlist.((i-j)::NNI)
           while y ~= 1  repeat
-            y := gcd(y,q)
+            y := gcd(y, q)
             q := q quo y
-          if q=1 then return false
-        distlist := append(distlist,[q])
+          if q = 1 then return false
+        distlist := append(distlist, [q])
       true
 
-    checkpow(a:Z,b:Z) : NonNegativeInteger ==
-      qt: Union(Z,"failed")
+    checkpow(a : Z, b : Z) : NonNegativeInteger ==
+      qt : Union(Z,"failed")
       for i in 0.. repeat
-        qt:= b exquo a
+        qt := b exquo a
         if qt case "failed" then return i
-        b:=qt::Z
+        b := qt::Z
 
-    distribute(contm:Z,unilist:List(BP),pl:List(P),vl:List(Z),
-                              lvar:List(OV),lval:List(Z)): LeadFact ==
-      d,lcp : Z
-      nf:NNI:=#unilist
+    distribute(contm : Z, unilist : List(BP), pl : List(P), vl : List(Z),
+                              lvar : List(OV), lval : List(Z)) : LeadFact ==
+      d, lcp : Z
+      nf : NNI := #unilist
       for i in 1..nf repeat
           lcp := leadingCoefficient (unilist.i)
-          d:= gcd(lcp,vl.i)
+          d := gcd(lcp, vl.i)
           pl.i := (lcp quo d)*pl.i
           d := vl.i quo d
           unilist.i := d*unilist.i
           contm := contm quo d
       if contm ~= 1 then for i in 1..nf repeat pl.i := contm*pl.i
-      [pl,contm,unilist]$LeadFact
+      [pl, contm, unilist]$LeadFact
 
-    distFact(contm:Z,unilist:List(BP),plead:FinalFact,
+    distFact(contm : Z, unilist : List(BP), plead : FinalFact,
              vl:List(Z),lvar:List(OV),lval:List(Z)):Union(LeadFact,"failed") ==
-      h:NonNegativeInteger
-      c,d : Z
-      lpol:List(P):=[]
-      lexp:List(Integer):=[]
-      nf:NNI := #unilist
+      h : NonNegativeInteger
+      c, d : Z
+      lpol : List(P) := []
+      lexp : List(Integer) := []
+      nf : NNI := #unilist
       vl := reverse vl --lpol and vl reversed so test from right to left
       for fpl in plead.factors repeat
-       lpol:=[fpl.irr,:lpol]
-       lexp:=[fpl.pow,:lexp]
-      vlp:List(Z):= [1$Z for i in 1..nf]
+       lpol := cons(fpl.irr, lpol)
+       lexp := cons(fpl.pow, lexp)
+      vlp : List(Z) := [1$Z for i in 1..nf]
       aux : List(P) := [1$P for i in 1..nf]
       for i in 1..nf repeat
         c := contm*leadingCoefficient unilist.i
-        c=1 or c=-1  => "next i"
+        c = 1 or c = -1  => "next i"
         for k in 1..(# lpol) repeat
-          lexp.k=0 => "next factor"
-          h:= checkpow(vl.k,c)
+          lexp.k = 0 => "next factor"
+          h := checkpow(vl.k, c)
           if h ~= 0 then
-           if h>lexp.k then return "failed"
-           lexp.k:=lexp.k-h
+           if h > lexp.k then return "failed"
+           lexp.k := lexp.k-h
            aux.i := aux.i*(lpol.k ^ h)
-           d:= vl.k^h
-           vlp.i:= vlp.i*d
-           c:= c quo d
-        if contm=1 then vlp.i:=c
+           d := vl.k^h
+           vlp.i := vlp.i*d
+           c := c quo d
+        if contm = 1 then vlp.i := c
       for k in 1..(# lpol) repeat if lexp.k ~= 0 then return "failed"
-      contm =1 => [[vlp.i*aux.i for i in 1..nf],1,unilist]$LeadFact
-      distribute(contm,unilist,aux,vlp,lvar,lval)
+      contm = 1 => [[vlp.i*aux.i for i in 1..nf], 1, unilist]$LeadFact
+      distribute(contm, unilist, aux, vlp, lvar, lval)
 
 @
 \section{License}

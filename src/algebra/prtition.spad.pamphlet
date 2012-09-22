@@ -19,7 +19,7 @@
 ++ Keywords:
 ++ Examples:
 ++ References:
-Partition: Exports == Implementation where
+Partition : Exports == Implementation where
   ++ Partition is an OrderedCancellationAbelianMonoid which is used
   ++ as the basis for symmetric polynomial representation of the
   ++ sums of powers in SymmetricPolynomial.  Thus, \spad{(5 2 2 1)} will
@@ -32,21 +32,21 @@ Partition: Exports == Implementation where
 
   Exports ==> Join(OrderedCancellationAbelianMonoid,
                    ConvertibleTo List Integer) with
-    partition: L I -> %
+    partition : L I -> %
       ++ partition(li) converts a list of integers li to a partition
-    powers: L I -> L L I
+    powers : L I -> L L I
       ++ powers(li) returns a list of 2-element lists.  For each 2-element
       ++ list, the first element is an entry of li and the second
       ++ element is the multiplicity with which the first element
       ++ occurs in li.  There is a 2-element list for each value
       ++ occurring in l.
-    pdct: % -> I
+    pdct : % -> I
       ++ \spad{pdct(a1^n1 a2^n2 ...)} returns
       ++ \spad{n1! * a1^n1 * n2! * a2^n2 * ...}.
       ++ This function is used in the package \spadtype{CycleIndicators}.
-    conjugate: % -> %
+    conjugate : % -> %
       ++ conjugate(p) returns the conjugate partition of a partition p
-    coerce:% -> List Integer
+    coerce : % -> List Integer
       ++ coerce(p) coerces a partition into a list of integers
 
   Implementation ==> add
@@ -56,10 +56,10 @@ Partition: Exports == Implementation where
     Rep := List Integer
     0 == nil()
 
-    coerce (s:%) == s pretend List Integer
+    coerce (s : %) == s pretend List Integer
     convert x == copy(x pretend L I)
 
-    partition list == sort((i1:Integer, i2: Integer): Boolean +-> i2 < i1,list)
+    partition list == sort((i1 : Integer, i2 : Integer) : Boolean +-> i2 < i1, list)
 
     x < y ==
       empty? x => not empty? y
@@ -68,7 +68,7 @@ Partition: Exports == Implementation where
       first x < first y
 
     x = y ==
-        EQUAL(x,y)$Lisp
+        EQUAL(x, y)$Lisp
 --      empty? x => empty? y
 --      empty? y => false
 --      first x = first y => rest x = rest y
@@ -77,17 +77,17 @@ Partition: Exports == Implementation where
     x + y ==
       empty? x => y
       empty? y => x
-      first x > first y => concat(first x,rest(x) + y)
-      concat(first y,x + rest(y))
-    n:NNI * x:% == (zero? n => 0; x + (subtractIfCan(n,1) :: NNI) * x)
+      first x > first y => concat(first x, rest(x) + y)
+      concat(first y, x + rest(y))
+    n : NNI * x : % == (zero? n => 0; x + (subtractIfCan(n, 1) :: NNI) * x)
 
-    dp: (I,%) -> %
-    dp(i,x) ==
+    dp : (I, %) -> %
+    dp(i, x) ==
       empty? x => 0
       first x = i => rest x
-      concat(first x,dp(i,rest x))
+      concat(first x, dp(i, rest x))
 
-    remv: (I,%) -> UN
+    remv : (I, %) -> UN
     remv(i,x) == (member?(i,x) => dp(i,x); "failed")
 
     subtractIfCan(x, y) ==
@@ -99,36 +99,36 @@ Partition: Exports == Implementation where
       subtractIfCan((aa :: %), rest y)
 
     li1 : L I  --!! 'bite' won't compile without this
-    bite: (I,L I) -> L I
-    bite(i,li) ==
-      empty? li => concat(0,nil())
+    bite : (I, L I) -> L I
+    bite(i, li) ==
+      empty? li => concat(0, nil())
       first li = i =>
-        li1 := bite(i,rest li)
-        concat(first(li1) + 1,rest li1)
-      concat(0,li)
+        li1 := bite(i, rest li)
+        concat(first(li1) + 1, rest li1)
+      concat(0, li)
 
     li : L I  --!!  'powers' won't compile without this
     powers l ==
       empty? l => nil()
-      li := bite(first l,rest l)
-      concat([first l,first(li) + 1],powers(rest li))
+      li := bite(first l, rest l)
+      concat([first l, first(li) + 1], powers(rest li))
 
     conjugate x == conjugate(x pretend Rep)$PartitionsAndPermutations
 
-    mkterm: (I,I) -> OUT
-    mkterm(i1,i2) ==
+    mkterm : (I, I) -> OUT
+    mkterm(i1, i2) ==
       i2 = 1 => (i1 :: OUT) ^ (" " :: OUT)
       (i1 :: OUT) ^ (i2 :: OUT)
 
-    mkexp1: L L I -> L OUT
+    mkexp1 : L L I -> L OUT
     mkexp1 lli ==
       empty? lli => nil()
       li := first lli
       empty?(rest lli) and second(li) = 1 =>
-        concat(first(li) :: OUT,nil())
-      concat(mkterm(first li,second li),mkexp1(rest lli))
+        concat(first(li) :: OUT, nil())
+      concat(mkterm(first li, second li), mkexp1(rest lli))
 
-    coerce(x:%):OUT ==
+    coerce(x : %) : OUT ==
         empty? (x pretend Rep) => coerce(x pretend Rep)$Rep
         paren(reduce("*",mkexp1(powers(x pretend Rep))))
 
@@ -142,31 +142,31 @@ Partition: Exports == Implementation where
 )abbrev domain SYMPOLY SymmetricPolynomial
 ++ Description:
 ++ This domain implements symmetric polynomial
-SymmetricPolynomial(R:Ring) == PolynomialRing(R,Partition) add
-       Term:=  Record(k:Partition,c:R)
-       Rep:=  List Term
+SymmetricPolynomial(R : Ring) == PolynomialRing(R, Partition) add
+       Term :=  Record(k : Partition, c : R)
+       Rep :=  List Term
 
 -- override PR implementation because coeff. arithmetic too expensive (??)
 
        if R has EntireRing then
-         (p1:%) * (p2:%)  ==
+         (p1 : %) * (p2 : %)  ==
             null p1 => 0
             null p2 => 0
             zero?(p1.first.k) => p1.first.c * p2
 --            one? p2 => p1
             (p2 = 1) => p1
-            +/[[[t1.k+t2.k,t1.c*t2.c]$Term for t2 in p2]
+            +/[[[t1.k+t2.k, t1.c*t2.c]$Term for t2 in p2]
                    for t1 in reverse(p1)]
                    -- This 'reverse' is an efficiency improvement:
                    -- reduces both time and space [Abbott/Bradford/Davenport]
         else
-         (p1:%) * (p2:%)  ==
+         (p1 : %) * (p2 : %)  ==
             null p1 => 0
             null p2 => 0
             zero?(p1.first.k) => p1.first.c * p2
 --            one? p2 => p1
             (p2 = 1) => p1
-            +/[[[t1.k+t2.k,r]$Term for t2 in p2 | (r:=t1.c*t2.c) ~= 0]
+            +/[[[t1.k+t2.k, r]$Term for t2 in p2 | (r := t1.c*t2.c) ~= 0]
                  for t1 in reverse(p1)]
                   -- This 'reverse' is an efficiency improvement:
                   -- reduces both time and space [Abbott/Bradford/Davenport]

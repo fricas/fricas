@@ -33,7 +33,7 @@
 ++     \spad{x+y  = #(X+Y)}   \tab{30}disjoint union
 ++     \spad{x-y  = #(X-Y)}   \tab{30}relative complement
 ++     \spad{x*y  = #(X*Y)}   \tab{30}cartesian product
-++     \spad{x^y = #(X^Y)}  \tab{30}\spad{X^Y = \{g| g:Y->X\}}
+++     \spad{x^y = #(X^Y)}  \tab{30}\spad{X^Y = \{g| g: Y->X\}}
 ++
 ++   The non-negative integers have a natural construction as cardinals
 ++     \spad{0 = #\{\}}, \spad{1 = \{0\}}, \spad{2 = \{0, 1\}}, ..., \spad{n = \{i| 0 <= i < n\}}.
@@ -48,38 +48,38 @@
 ++   Three commonly encountered cardinal numbers are
 ++      \spad{a = #Z}       \tab{30}countable infinity
 ++      \spad{c = #R}       \tab{30}the continuum
-++      \spad{f = #\{g| g:[0,1]->R\}}
+++      \spad{f = #\{g| g: [0, 1]->R\}}
 ++
 ++   In this domain, these values are obtained using
 ++      \spad{a := Aleph 0}, \spad{c := 2^a}, \spad{f := 2^c}.
 ++
-CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
+CardinalNumber : Join(OrderedSet, AbelianMonoid, Monoid,
                         RetractableTo NonNegativeInteger, CommutativeStar) with
         "-": (%,%) -> Union(%,"failed")
            ++ \spad{x - y} returns an element z such that \spad{z+y=x} or "failed"
            ++ if no such element exists.
         "^": (%, %) -> %
             ++ \spad{x^y} returns \spad{#(X^Y)} where \spad{X^Y} is defined
-            ++  as \spad{\{g| g:Y->X\}}.
+            ++  as \spad{\{g| g: Y->X\}}.
 
-        Aleph: NonNegativeInteger -> %
+        Aleph : NonNegativeInteger -> %
             ++ Aleph(n) provides the named (infinite) cardinal number.
 
-        finite?: % -> Boolean
+        finite? : % -> Boolean
             ++ finite?(\spad{a}) determines whether
             ++ \spad{a} is a finite cardinal,
             ++ i.e. an integer.
 
-        countable?: % -> Boolean
+        countable? : % -> Boolean
             ++ countable?(\spad{a}) determines
             ++ whether \spad{a} is a countable cardinal,
             ++ i.e. an integer or \spad{Aleph 0}.
 
-        generalizedContinuumHypothesisAssumed?: () -> Boolean
+        generalizedContinuumHypothesisAssumed? : () -> Boolean
             ++ generalizedContinuumHypothesisAssumed?()
             ++ tests if the hypothesis is currently assumed.
 
-        generalizedContinuumHypothesisAssumed:  Boolean -> Boolean
+        generalizedContinuumHypothesisAssumed :  Boolean -> Boolean
             ++ generalizedContinuumHypothesisAssumed(bool)
             ++ is used to dictate whether the hypothesis is to be assumed.
     == add
@@ -87,20 +87,20 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
         FINord   ==> -1
         DUMMYval ==> -1
 
-        Rep := Record(order: Integer, ival: Integer)
+        Rep := Record(order : Integer, ival : Integer)
 
-        GCHypothesis: Reference(Boolean) := ref false
+        GCHypothesis : Reference(Boolean) := ref false
 
         -- Creation
         0           == [FINord, 0]
         1           == [FINord, 1]
-        coerce(n:NonNegativeInteger):% == [FINord, n]
+        coerce(n : NonNegativeInteger) : % == [FINord, n]
         Aleph n     == [n, DUMMYval]
 
         -- Output
         ALEPHexpr := "Aleph"::OutputForm
 
-        coerce(x: %): OutputForm ==
+        coerce(x : %) : OutputForm ==
             x.order = FINord => (x.ival)::OutputForm
             prefix(ALEPHexpr, [(x.order)::OutputForm])
 
@@ -114,7 +114,7 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
             x.order > y.order => false
             finite? x         => x.ival < y.ival
             false    -- equal transfinites
-        x:% + y:% ==
+        x : % + y : % ==
             finite? x and finite? y => [FINord, x.ival+y.ival]
             max(x, y)
         x - y ==
@@ -122,11 +122,11 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
             finite? x => [FINord, x.ival-y.ival]
             x > y     => x
             "failed" -- equal transfinites
-        x:% * y:% ==
+        x : % * y : % ==
             finite? x and finite? y => [FINord, x.ival*y.ival]
             x = 0 or y = 0          => 0
             max(x, y)
-        n:NonNegativeInteger * x:% ==
+        n : NonNegativeInteger * x : % ==
             finite? x => [FINord, n*x.ival]
             n = 0     => 0
             x
@@ -136,7 +136,7 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
                 error "0^0 not defined for cardinal numbers."
             finite? y =>
                 not finite? x => x
-                [FINord,x.ival^(y.ival)::NNI]
+                [FINord, x.ival^(y.ival)::NNI]
             x = 0 => 0
             x = 1 => 1
             GCHypothesis() => [max(x.order-1, y.order) + 1, DUMMYval]
@@ -145,7 +145,7 @@ CardinalNumber: Join(OrderedSet, AbelianMonoid, Monoid,
         finite? x    == x.order = FINord
         countable? x == x.order < 1
 
-        retract(x:%):NonNegativeInteger ==
+        retract(x : %) : NonNegativeInteger ==
           finite? x => (x.ival)::NNI
           error "Not finite"
 

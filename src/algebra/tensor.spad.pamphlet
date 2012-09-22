@@ -1,7 +1,7 @@
-% -*- mode: Noweb; noweb-code-mode: aldor-mode -*-
+% -*- mode : Noweb; noweb-code-mode : aldor-mode -*-
 
 \documentclass{article}
-\usepackage{axiom,amsthm,amsmath,url}
+\usepackage{axiom, amsthm, amsmath, url}
 \newtheorem{ToDo}{ToDo}[section]
 \usepackage{a4wide}
 \newcommand{\Axiom}{{\tt Axiom}}
@@ -28,9 +28,9 @@
 ++ References:
 ++ Description:
 ++   Category of tensor products of modules over commutative rings.
-TensorProductCategory(R:CommutativeRing, M : Module(R), N : Module(R)):Category == Module(R) with
-    tensor: (M, N) -> %
-      ++ \spad{tensor(x,y)} constructs the tensor product
+TensorProductCategory(R : CommutativeRing, M : Module(R), N : Module(R)) : Category == Module(R) with
+    tensor : (M, N) -> %
+      ++ \spad{tensor(x, y)} constructs the tensor product
       ++ of the elements \spad{x} and \spad{y}.
 @
 \section{category TENSPRP TensorProductProperty}
@@ -48,10 +48,10 @@ TensorProductCategory(R:CommutativeRing, M : Module(R), N : Module(R)):Category 
 ++ References:
 ++ Description:
 ++   Universal property of tensor products.
-TensorProductProperty(R:CommutativeRing, M : Module(R), N : Module(R), _
-      MxN : TensorProductCategory(R, M, N), S : Module(R)): Category == with
-    eval: (MxN, (M, N) -> S) -> S
-      ++ \spad{eval(x,f)} evaluates the bivariate function \spad{f}
+TensorProductProperty(R : CommutativeRing, M : Module(R), N : Module(R), _
+      MxN : TensorProductCategory(R, M, N), S : Module(R)) : Category == with
+    eval : (MxN, (M, N) -> S) -> S
+      ++ \spad{eval(x, f)} evaluates the bivariate function \spad{f}
       ++ linearly on the tensor product.
 @
 \section{domain TENSOR TensorProduct}
@@ -92,23 +92,23 @@ order on the monomials.
 ++   of the respective bases. The factor domains must provide
 ++   operations \spad{listOfTerms}, whose result is assumed
 ++   to be stored in reverse order.
-TensorProduct(R: CommutativeRing, B1: OrderedSet, B2: OrderedSet, _
-    M1: FreeModuleCategory(R, B1), M2: FreeModuleCategory(R, B2)): TPcat == TPimp where
-    TPcat == Join(TensorProductCategory(R,M1,M2), _
-        FreeModuleCategory(R,Product(B1,B2))) with
+TensorProduct(R : CommutativeRing, B1 : OrderedSet, B2 : OrderedSet, _
+    M1 : FreeModuleCategory(R, B1), M2 : FreeModuleCategory(R, B2)) : TPcat == TPimp where
+    TPcat == Join(TensorProductCategory(R, M1, M2), _
+        FreeModuleCategory(R, Product(B1, B2))) with
             if M1 has Algebra(R) and M2 has Algebra(R) then Algebra(R)
 
-    TERM1 ==> Record(k: B1, c: R)
-    TERM2 ==> Record(k: B2, c: R)
-    B1xB2 ==> Product(B1,B2)
-    TERM  ==> Record(k: B1xB2, c: R)
+    TERM1 ==> Record(k : B1, c : R)
+    TERM2 ==> Record(k : B2, c : R)
+    B1xB2 ==> Product(B1, B2)
+    TERM  ==> Record(k : B1xB2, c : R)
 
     TPimp == FreeModule(R, Product(B1, B2)) add
         import TERM1, TERM2, TERM, B1xB2
 
-        termgreater?:(TERM,TERM)->Boolean
+        termgreater? : (TERM, TERM)->Boolean
 
-        termgreater?(t1: TERM, t2: TERM) == t2.k < t1.k
+        termgreater?(t1 : TERM, t2 : TERM) == t2.k < t1.k
 
         <<TensorProduct - tensor>>
 
@@ -119,12 +119,12 @@ TensorProduct(R: CommutativeRing, B1: OrderedSet, B2: OrderedSet, _
 \subsection{Output}
 
 <<TensorProduct - outform>>=
-coerce(x:%):OutputForm ==
+coerce(x : %) : OutputForm ==
     zero? x => (0$R) ::OutputForm
-    le: List OutputForm := nil
-    rec: TERM
+    le : List OutputForm := nil
+    rec : TERM
     for rec in reverse listOfTerms x repeat
-      ko:OutputForm := tensor((first rec k)::OutputForm,
+      ko : OutputForm := tensor((first rec k)::OutputForm,
                               (second rec k)::OutputForm)
       rec.c = 1 => le := cons(ko, le)
       le := cons(rec.c :: OutputForm * ko, le)
@@ -134,10 +134,10 @@ coerce(x:%):OutputForm ==
 \subsection{Creating tensors}
 
 <<TensorProduct - tensor>>=
-tensor(x1:M1,x2:M2):% ==
+tensor(x1 : M1, x2 : M2) : % ==
     zero? x1 or zero? x2 => return 0
-    ltx1:List TERM1 := listOfTerms x1
-    ltx2:List TERM2 := listOfTerms x2
+    ltx1 : List TERM1 := listOfTerms x1
+    ltx2 : List TERM2 := listOfTerms x2
     <<TensorProduct - tensor - result construct>>
 
 @
@@ -151,28 +151,28 @@ The following table shows a comparison of speed
 for tensoring two elements with $n$ terms and different methods
 of finishing the tensor product.
 <<profiling.input>>=
-n:=1000
+n := 1000
 
-M:=FreeModule(Integer,Symbol)
-N:=FreeModule(Integer,Symbol)
-MxN:=TensorProduct(Integer,Symbol,Symbol,M,N)
+M := FreeModule(Integer, Symbol)
+N := FreeModule(Integer, Symbol)
+MxN := TensorProduct(Integer, Symbol, Symbol, M, N)
 
-aa:= [subscript('a,[k])::M for k in 1..n];
-bb:= [subscript('b,[k])::N for k in 1..n];
+aa := [subscript('a, [k])::M for k in 1..n];
+bb := [subscript('b, [k])::N for k in 1..n];
 
-a:=reduce(+,aa);
-b:=reduce(+,bb);
+a := reduce(+, aa);
+b := reduce(+, bb);
 
-)lisp (require :sb-sprof)
-)lisp (sb-sprof:start-profiling)
-t:=tensor(a,b)$MxN;
-)lisp (sb-sprof:stop-profiling)
-)lisp (sb-sprof:report)
+)lisp (require : sb-sprof)
+)lisp (sb-sprof : start-profiling)
+t := tensor(a, b)$MxN;
+)lisp (sb-sprof : stop-profiling)
+)lisp (sb-sprof : report)
 @
 
 We compare the following methods.
 \begin{enumerate}
-\item sum: adding elementary tensors term by term (very slow)
+\item sum : adding elementary tensors term by term (very slow)
 <<TensorProduct - tensor - result sum>>=
 res : % := 0
 for s1 in ltx1 repeat
@@ -180,42 +180,42 @@ for s1 in ltx1 repeat
         res := res + monom([s1.k, s2.k], s1.c*s2.c)
 res
 @
-\item concat!: append elementary tensors at the end
+\item concat! : append elementary tensors at the end
 <<TensorProduct - tensor - result concat!>>=
 res : List TERM := []
 for s1 in ltx1 repeat
     for s2 in ltx2 repeat
-        res := concat!(res,[[s1.k, s2.k], s1.c*s2.c]$TERM)
+        res := concat!(res, [[s1.k, s2.k], s1.c*s2.c]$TERM)
 res pretend %
 @
 
-\item construct: using [[constructOrdered]] without checking
+\item construct : using [[constructOrdered]] without checking
 if the list of terms is ordered
 <<TensorProduct - tensor - result construct>>=
 res : List TERM := []
 for s1 in reverse ltx1 repeat
     for s2 in reverse ltx2 repeat
-        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM,res)
+        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM, res)
 constructOrdered res
 @
-\item reverse+sort!: sort the list of terms before committing
+\item reverse+sort! : sort the list of terms before committing
 <<TensorProduct - tensor - result sort!>>=
 res : List TERM := []
 for s1 in reverse ltx1 repeat
     for s2 in reverse ltx2 repeat
-        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM,res)
-res:=sort!(termgreater?,res)
+        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM, res)
+res := sort!(termgreater?, res)
 constructOrdered res
 @
 
-\item reverse+sorted?+sort!: only sort the list if it is not sorted
+\item reverse+sorted?+sort! : only sort the list if it is not sorted
 <<TensorProduct - tensor - result sorted? + sort!>>=
 res : List TERM := []
 for s1 in reverse ltx1 repeat
     for s2 in reverse ltx2 repeat
-        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM,res)
-if not sorted?(termgreater?,res) then
-    res:=sort!(termgreater?,res)
+        res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM, res)
+if not sorted?(termgreater?, res) then
+    res := sort!(termgreater?, res)
 constructOrdered res
 @
 \end{enumerate}
@@ -241,22 +241,22 @@ Again experiments show a large speed gain by pushing
 the sorting of the result to the very end.
 
 <<TensorProduct - algebra multiplication>>=
-(x1:% * x2:%):% ==
+(x1 : % * x2 : %) : % ==
     res : List TERM := empty()
     for t1 in listOfTerms x1 repeat
         for t2 in listOfTerms x2 repeat
             -- the coefficients
-            t1c:R := t1.c
-            t2c:R := t2.c
+            t1c : R := t1.c
+            t2c : R := t2.c
             -- the basis elements
-            t1k:B1xB2 := t1.k
-            t2k:B1xB2 := t2.k
+            t1k : B1xB2 := t1.k
+            t2k : B1xB2 := t2.k
             t1a : M1 := monomial(t1.c, first t1k)
             t1b : M2 := monomial(1, second t1k)
             t2a : M1 := monomial(t2.c, first t2k)
             t2b : M2 := monomial(1, second t2k)
-            for t in listOfTerms tensor(t1a*t2a,t1b*t2b) repeat
-                res:=cons(t,res)
+            for t in listOfTerms tensor(t1a*t2a, t1b*t2b) repeat
+                res := cons(t, res)
     construct res
 @
 
@@ -267,8 +267,8 @@ See comment in DivisionRing() (catdef.spad):
 -- but knownInfo cannot handle the following commented
 --    if % has CharacteristicZero then Algebra Fraction Integer
 \end{verbatim}
-Same here: we want TensorPowerCategory(2,R,M)
-to be TenworProductCategory(R,M,M),
+Same here : we want TensorPowerCategory(2, R, M)
+to be TenworProductCategory(R, M, M),
 but apparently knownInfo cannot handle conditionals in categories.
 <<category TENSPC TensorPowerCategory>>=
 )abbrev category TENSPC TensorPowerCategory
@@ -284,27 +284,27 @@ but apparently knownInfo cannot handle conditionals in categories.
 ++ References:
 ++ Description:
 ++   Category of tensor powers of modules over commutative rings.
-TensorPowerCategory(n:NonNegativeInteger, R:CommutativeRing, M : Module(R)):Category == Module(R) with
-        tensor: (List M) -> %
-          ++ \spad{tensor([x1,x2,...,xn])} constructs the tensor
-          ++ product of \spad{x1,x2,...,xn}.
+TensorPowerCategory(n : NonNegativeInteger, R : CommutativeRing, M : Module(R)) : Category == Module(R) with
+        tensor : (List M) -> %
+          ++ \spad{tensor([x1, x2, ..., xn])} constructs the tensor
+          ++ product of \spad{x1, x2, ..., xn}.
         if M has Algebra(R) then Algebra(R)
 -- knownInfo cannot the following commented
---    if n is 2 then TensorProductCategory(R,M,M)
+--    if n is 2 then TensorProductCategory(R, M, M)
 -- workaround
-        TensorProductCategory(R,M,M)
+        TensorProductCategory(R, M, M)
     add
 --    if n is 2 then
-        tensor(a:M,b:M):% ==
+        tensor(a : M, b : M) : % ==
             --workaround knownInfo bug
-            not n=2 => error "not of order 2!"
-            tensor [a,b]
+            not n = 2 => error "not of order 2!"
+            tensor [a, b]
 @
 
 \section{domain TENSPOW TensorPower}
 We rely on the fact that Vector OrderedSet is an OrderedSet
 with deglex order;
-[[DirectProduct(n,B)]] does \emph{not} have OrderedSet.
+[[DirectProduct(n, B)]] does \emph{not} have OrderedSet.
 
 <<domain TENSPOW TensorPower>>=
 )abbrev domain TENSPOW TensorPower
@@ -322,17 +322,17 @@ with deglex order;
 ++   Tensor powers of a free module over a commutative ring.
 ++   It is represented as a free module over the cartesian power
 ++   of the basis.
-TensorPower(n:NonNegativeInteger, R : CommutativeRing, B : OrderedSet, _
-    M : FreeModuleCategory(R, B)): TPcat == TPimp where
-    TPcat == Join(TensorPowerCategory(n,R,M), FreeModuleCategory(R,Vector(B))) with
-        tensor:List B -> %
+TensorPower(n : NonNegativeInteger, R : CommutativeRing, B : OrderedSet, _
+    M : FreeModuleCategory(R, B)) : TPcat == TPimp where
+    TPcat == Join(TensorPowerCategory(n, R, M), FreeModuleCategory(R, Vector(B))) with
+        tensor : List B -> %
 
-    TERM1 ==> Record(k: B, c: R)
+    TERM1 ==> Record(k : B, c : R)
 
     Bn ==> Vector B
     Bntmp ==> List B
-    TERM  ==> Record(k: Bn, c: R)
-    TERMtmp ==> Record(k:Bntmp, c:R)
+    TERM  ==> Record(k : Bn, c : R)
+    TERMtmp ==> Record(k : Bntmp, c : R)
 
     TPimp == FreeModule(R, Bn) add
         <<TensorPower - out>>
@@ -344,19 +344,19 @@ TensorPower(n:NonNegativeInteger, R : CommutativeRing, B : OrderedSet, _
 
 
 <<TensorPower - out>>=
-coerce(x:%):OutputForm ==
+coerce(x : %) : OutputForm ==
     zero? x => (0$R) :: OutputForm
     le : List OutputForm := nil
-    rec:TERM
+    rec : TERM
     for rec in reverse listOfTerms x repeat
-      ko:OutputForm := reduce(tensor,[b::OutputForm for b in parts rec k])
+      ko : OutputForm := reduce(tensor, [b::OutputForm for b in parts rec k])
       rec.c = 1 => le := cons(ko, le)
       le := cons(rec.c :: OutputForm * ko, le)
     reduce("+",le)
 @
 \subsection{Creating tensors}
 
-[[partialTensor(bb,xx)]] computes the tensor product
+[[partialTensor(bb, xx)]] computes the tensor product
 of the basis elements [[bb]] with the tensor product
 of the elements of xx. The result is a list of terms
 in non-reversed order.
@@ -367,33 +367,33 @@ and also no sorting is required.
 
 
 <<TensorPower - tensor>>=
-partialTensor:(List B,List M)->List TERMtmp
+partialTensor : (List B, List M)->List TERMtmp
 
 
-partialTensor(bb:List B, xx:List M):List TERMtmp ==
-    res:List TERMtmp
-    x1:M:=first xx
-    xr:List M := rest xx
-    s1:List TERM1
-    tt:List TERMtmp
+partialTensor(bb : List B, xx : List M) : List TERMtmp ==
+    res : List TERMtmp
+    x1 : M := first xx
+    xr : List M := rest xx
+    s1 : List TERM1
+    tt : List TERMtmp
     if empty? xr then
         for s1 in listOfTerms x1 repeat
-            res:=cons([ cons(s1.k,bb),s1.c], res)
+            res := cons([ cons(s1.k, bb), s1.c], res)
       else
         for s1 in listOfTerms x1 repeat
-            for tt in partialTensor(cons(s1.k,bb), xr) repeat
-                res:=cons([tt k,s1 c*tt c],res)
+            for tt in partialTensor(cons(s1.k, bb), xr) repeat
+                res := cons([tt k, s1 c*tt c], res)
     reverse res
 
-tensor(bb:List B):% == monomial(1,vector bb)
+tensor(bb : List B) : % == monomial(1, vector bb)
 
-tensor(xx:List M):% ==
+tensor(xx : List M) : % ==
     not size?(xx,n) => error "wrong size"
-    any?(zero?,xx) => 0
-    res:List TERM := []
-    tt:TERMtmp
+    any?(zero?, xx) => 0
+    res : List TERM := []
+    tt : TERMtmp
     for tt in partialTensor(empty()$(List B), xx) repeat
-        res:=cons([vector reverse tt k, tt c],res)
+        res := cons([vector reverse tt k, tt c], res)
     constructOrdered reverse res
 
 @
@@ -403,20 +403,20 @@ We must reconstruct the elements of the factors. Take all terms,
 extract the coefficients, take the product of the basis elements
 in the algebras and tensorize.
 <<TensorPower - algebra multiplication>>=
-(x1:% * x2:%):% ==
+(x1 : % * x2 : %) : % ==
     res : List TERM := empty()
     for t1 in listOfTerms x1 repeat
         for t2 in listOfTerms x2 repeat
             -- the coefficients
-            t1c:R := t1.c
-            t2c:R := t2.c
+            t1c : R := t1.c
+            t2c : R := t2.c
             -- the basis elements
-            t1k:Bn := t1.k
-            t2k:Bn := t2.k
-            t1t2:% :=  (t1 c)*(t2 c)*tensor([monomial(1,b1)*monomial(1,b2)_
+            t1k : Bn := t1.k
+            t2k : Bn := t2.k
+            t1t2 : % :=  (t1 c)*(t2 c)*tensor([monomial(1, b1)*monomial(1, b2)_
                 for b1 in parts t1 k for b2 in parts t2 k])
             for t in listOfTerms t1t2 repeat
-                res:=cons(t,res)
+                res := cons(t, res)
     construct res
 @
 
@@ -435,20 +435,20 @@ in the algebras and tensorize.
 ++ References:
 ++ Description:
 ++   linear extensions of maps on the basis
-TensorPowerFunctions2(n:NonNegativeInteger, R:CommutativeRing, B:OrderedSet, M1:FreeModuleCategory(R,B),M2:Module(R)): public == private where
-    TERM1 ==> Record(k:S, c:R)
-    M1xM1 ==> TensorPower(n,R,B,M1)
+TensorPowerFunctions2(n : NonNegativeInteger, R : CommutativeRing, B : OrderedSet, M1 : FreeModuleCategory(R, B), M2 : Module(R)) : public == private where
+    TERM1 ==> Record(k : S, c : R)
+    M1xM1 ==> TensorPower(n, R, B, M1)
     public ==> with
-        linearExtend:(List B->M2,M1xM1)->M2
-        ++ \spad{linearExtend:(f,x)} returns the linear extension
+        linearExtend : (List B->M2, M1xM1)->M2
+        ++ \spad{linearExtend: (f, x)} returns the linear extension
         ++ of a multilinear map defined on the basis of M2 applied to a linear combination
 
     private ==> add
-        f:List B->M2
-        x: M1xM1
-        t: TERM1
-        linearExtend(f,x) ==
-            res:M2:= 0
+        f : List B->M2
+        x : M1xM1
+        t : TERM1
+        linearExtend(f, x) ==
+            res : M2 := 0
             for t in listOfTerms x repeat
                 res := res + (t c)*f(parts t k)
             res
@@ -483,9 +483,9 @@ Coalgebra(R : CommutativeRing, MxM : Module R) : Category == _
         Module(R) with
     coproduct : % -> MxM
       ++ \spad{coproduct(x)} computes the coproduct of an element \spad{x}
-    counit: % -> R
+    counit : % -> R
       ++ \spad{counit(x)} evaluates the counit at an element \spad{x}
---Coalgebra(R : CommutativeRing, MxM : TensorPowerCategory(2,R, %)) : Category == _
+--Coalgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)) : Category == _
 
 @
 

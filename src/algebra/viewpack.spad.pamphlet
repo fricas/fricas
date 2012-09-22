@@ -24,7 +24,7 @@
 ++ Description: ViewportPackage provides functions for creating GraphImages
 ++ and TwoDimensionalViewports from lists of lists of points.
 
-ViewportPackage():Exports == Implementation where
+ViewportPackage() : Exports == Implementation where
   DROP    ==> DrawOption
   GRIMAGE ==> GraphImage
   L       ==> List
@@ -35,29 +35,29 @@ ViewportPackage():Exports == Implementation where
 
   Exports ==> with
 
-    graphCurves : (L L P,PAL,PAL,PI,L DROP) -> GRIMAGE
-      ++ graphCurves([[p0],[p1],...,[pn]],ptColor,lineColor,ptSize,[options])
+    graphCurves : (L L P, PAL, PAL, PI, L DROP) -> GRIMAGE
+      ++ graphCurves([[p0], [p1], ..., [pn]], ptColor, lineColor, ptSize, [options])
       ++ creates a \spadtype{GraphImage} from the list of lists of points, p0
       ++ throught pn, using the options specified in the list \spad{options}.
       ++ The graph point color is specified by \spad{ptColor}, the graph line
       ++ color is specified by \spad{lineColor}, and the size of the points is
       ++ specified by \spad{ptSize}.
     graphCurves : L L P -> GRIMAGE
-      ++ graphCurves([[p0],[p1],...,[pn]]) creates a \spadtype{GraphImage} from
+      ++ graphCurves([[p0], [p1], ..., [pn]]) creates a \spadtype{GraphImage} from
       ++ the list of lists of points indicated by p0 through pn.
-    graphCurves : (L L P,L DROP) -> GRIMAGE
-      ++ graphCurves([[p0],[p1],...,[pn]],[options]) creates a
+    graphCurves : (L L P, L DROP) -> GRIMAGE
+      ++ graphCurves([[p0], [p1], ..., [pn]], [options]) creates a
       ++ \spadtype{GraphImage} from the list of lists of points, p0 throught pn,
       ++ using the options specified in the list \spad{options}.
-    drawCurves : (L L P,PAL,PAL,PI,L DROP) -> VIEW2D
-      ++ drawCurves([[p0],[p1],...,[pn]],ptColor,lineColor,ptSize,[options])
+    drawCurves : (L L P, PAL, PAL, PI, L DROP) -> VIEW2D
+      ++ drawCurves([[p0], [p1], ..., [pn]], ptColor, lineColor, ptSize, [options])
       ++ creates a \spadtype{TwoDimensionalViewport} from the list of lists of
       ++ points, p0 throught pn, using the options specified in the list
       ++ \spad{options}. The point color is specified by \spad{ptColor}, the
       ++ line color is specified by \spad{lineColor}, and the point size is
       ++ specified by \spad{ptSize}.
-    drawCurves : (L L P,L DROP) -> VIEW2D
-      ++ drawCurves([[p0],[p1],...,[pn]],[options]) creates a
+    drawCurves : (L L P, L DROP) -> VIEW2D
+      ++ drawCurves([[p0], [p1], ..., [pn]], [options]) creates a
       ++ \spadtype{TwoDimensionalViewport} from the list of lists of points,
       ++ p0 throught pn, using the options specified in the list \spad{options};
     coerce : GRIMAGE -> VIEW2D
@@ -72,42 +72,42 @@ ViewportPackage():Exports == Implementation where
 --% Functions that return GraphImages
 
     graphCurves(listOfListsOfPoints) ==
-      graphCurves(listOfListsOfPoints, pointColorDefault(),_
-                  lineColorDefault(), pointSizeDefault(),nil())
+      graphCurves(listOfListsOfPoints, pointColorDefault(), _
+                  lineColorDefault(), pointSizeDefault(), nil())
 
-    graphCurves(listOfListsOfPoints,optionsList) ==
-      graphCurves(listOfListsOfPoints, pointColorDefault(),_
-                  lineColorDefault(), pointSizeDefault(),optionsList)
+    graphCurves(listOfListsOfPoints, optionsList) ==
+      graphCurves(listOfListsOfPoints, pointColorDefault(), _
+                  lineColorDefault(), pointSizeDefault(), optionsList)
 
-    graphCurves(listOfListsOfPoints,ptColor,lineColor,ptSize,optionsList) ==
+    graphCurves(listOfListsOfPoints, ptColor, lineColor, ptSize, optionsList) ==
       len := #listOfListsOfPoints
       listOfPointColors : L PAL := [ptColor for i in 1..len]
       listOfLineColors  : L PAL := [lineColor for i in 1..len]
       listOfPointSizes  : L PI  := [ptSize  for i in 1..len]
-      makeGraphImage(listOfListsOfPoints,listOfPointColors, _
-                         listOfLineColors,listOfPointSizes,optionsList)
+      makeGraphImage(listOfListsOfPoints, listOfPointColors, _
+                         listOfLineColors, listOfPointSizes, optionsList)
 
 --% Functions that return Two Dimensional Viewports
 
-    drawCurves(listOfListsOfPoints,optionsList) ==
-      drawCurves(listOfListsOfPoints,pointColorDefault(),_
-                 lineColorDefault(),pointSizeDefault(),optionsList)
+    drawCurves(listOfListsOfPoints, optionsList) ==
+      drawCurves(listOfListsOfPoints, pointColorDefault(), _
+                 lineColorDefault(), pointSizeDefault(), optionsList)
 
-    drawCurves(ptLists:L L P,ptColor:PAL,lColor:PAL,ptSize:PI,optList:L DROP) ==
+    drawCurves(ptLists : L L P, ptColor : PAL, lColor : PAL, ptSize : PI, optList : L DROP) ==
       v := viewport2D()
-      options(v,optList)
-      g :=  graphCurves(ptLists,ptColor,lColor,ptSize,optList)
-      putGraph(v,g,1)
+      options(v, optList)
+      g :=  graphCurves(ptLists, ptColor, lColor, ptSize, optList)
+      putGraph(v, g, 1)
       makeViewport2D v
 
 --% Coercions
 
-    coerce(graf:GRIMAGE):VIEW2D ==
+    coerce(graf : GRIMAGE) : VIEW2D ==
       if (key graf = 0) then makeGraphImage graf
       v := viewport2D()
       title(v,"VIEW2D")
---      dimensions(v,viewPosDefault().1,viewPosDefault().2,viewSizeDefault().1,viewSizeDefault().2)
-      putGraph(v,graf,1::PI)
+--      dimensions(v, viewPosDefault().1, viewPosDefault().2, viewSizeDefault().1, viewSizeDefault().2)
+      putGraph(v, graf, 1::PI)
       makeViewport2D v
 
 @

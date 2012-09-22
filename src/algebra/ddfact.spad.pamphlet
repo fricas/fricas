@@ -28,18 +28,18 @@
 ++   to use trace instead of the norm and a table for computing
 ++   Frobenius as suggested by Naudin and Quitte .
 
-DistinctDegreeFactorize(F,FP): C == T
+DistinctDegreeFactorize(F, FP) : C == T
   where
    F  : FiniteFieldCategory
    FP : UnivariatePolynomialCategory(F)
 
    fUnion ==> Union("nil", "sqfr", "irred", "prime")
-   FFE    ==> Record(flg:fUnion, fctr:FP, xpnt:Integer)
+   FFE    ==> Record(flg : fUnion, fctr : FP, xpnt : Integer)
    NNI       == NonNegativeInteger
    Z         == Integer
-   fact      == Record(deg : NNI,prod : FP)
-   ParFact   == Record(irr:FP,pow:Z)
-   FinalFact == Record(cont:F,factors:List(ParFact))
+   fact      == Record(deg : NNI, prod : FP)
+   ParFact   == Record(irr : FP, pow : Z)
+   FinalFact == Record(cont : F, factors : List(ParFact))
 
    C == with
       factor        :         FP      -> Factored FP
@@ -47,8 +47,8 @@ DistinctDegreeFactorize(F,FP): C == T
       factorSquareFree :         FP      -> Factored FP
         ++ factorSquareFree(p) produces the complete factorization of the
         ++ square free polynomial p.
-      distdfact       :   (FP,Boolean)  -> FinalFact
-        ++ distdfact(p,sqfrflag) produces the complete factorization
+      distdfact       :   (FP, Boolean)  -> FinalFact
+        ++ distdfact(p, sqfrflag) produces the complete factorization
         ++ of the polynomial p returning an internal data structure.
         ++ If argument sqfrflag is true, the polynomial is assumed square free.
       separateDegrees :         FP      -> List fact
@@ -58,14 +58,14 @@ DistinctDegreeFactorize(F,FP): C == T
         ++ separateFactors(lfact) takes the list produced by
         ++ \spadfunFrom{separateDegrees}{DistinctDegreeFactorization}
         ++ and produces the complete list of factors.
-      exptMod         :   (FP,NNI,FP)   -> FP
-        ++ exptMod(u,k,v) raises the polynomial u to the kth power
+      exptMod         :   (FP, NNI, FP)   -> FP
+        ++ exptMod(u, k, v) raises the polynomial u to the kth power
         ++ modulo the polynomial v.
-      trace2PowMod     :   (FP,NNI,FP)   -> FP
-        ++ trace2PowMod(u,k,v) produces the sum of \spad{u^(2^i)} for i running
+      trace2PowMod     :   (FP, NNI, FP)   -> FP
+        ++ trace2PowMod(u, k, v) produces the sum of \spad{u^(2^i)} for i running
         ++ from 1 to k all computed modulo the polynomial v.
-      tracePowMod     :   (FP,NNI,FP)   -> FP
-        ++ tracePowMod(u,k,v) produces the sum of \spad{u^(q^i)}
+      tracePowMod     :   (FP, NNI, FP)   -> FP
+        ++ tracePowMod(u, k, v) produces the sum of \spad{u^(q^i)}
         ++ for i running and q= size F
       irreducible?    :         FP      -> Boolean
         ++ irreducible?(p) tests whether the polynomial p is irreducible.
@@ -73,191 +73,191 @@ DistinctDegreeFactorize(F,FP): C == T
 
    T == add
       --declarations
-      D:=ModMonic(F,FP)
-      import UnivariatePolynomialSquareFree(F,FP)
+      D := ModMonic(F, FP)
+      import UnivariatePolynomialSquareFree(F, FP)
 
       --local functions
-      notSqFr : (FP,FP -> List(FP)) -> List(ParFact)
+      notSqFr : (FP, FP -> List(FP)) -> List(ParFact)
       ddffact : FP -> List(FP)
-      ddffact1 : (FP,Boolean) -> List fact
+      ddffact1 : (FP, Boolean) -> List fact
       ranpol :         NNI       -> FP
 
       charF : Boolean := characteristic()$F = 2
 
       --construct a random polynomial of random degree < d
-      ranpol(d:NNI):FP ==
-        k1: NNI := 0
+      ranpol(d : NNI) : FP ==
+        k1 : NNI := 0
         while k1 = 0 repeat k1 := random d
         -- characteristic F = 2
         charF =>
-           u:=0$FP
-           for j in 1..k1 repeat u:=u+monomial(random()$F,j)
+           u := 0$FP
+           for j in 1..k1 repeat u := u+monomial(random()$F, j)
            u
-        u := monomial(1,k1)
-        for j in 0..k1-1 repeat u:=u+monomial(random()$F,j)
+        u := monomial(1, k1)
+        for j in 0..k1-1 repeat u := u+monomial(random()$F, j)
         u
 
-      notSqFr(m:FP,appl: FP->List(FP)):List(ParFact) ==
-        factlist : List(ParFact) :=empty()
+      notSqFr(m : FP, appl : FP->List(FP)) : List(ParFact) ==
+        factlist : List(ParFact) := empty()
         llf : List FFE
-        fln :List(FP) := empty()
-        if (lcm:=leadingCoefficient m) ~= 1 then m:=(inv lcm)*m
-        llf:= factorList(squareFree(m))
+        fln : List(FP) := empty()
+        if (lcm := leadingCoefficient m) ~= 1 then m := (inv lcm)*m
+        llf := factorList(squareFree(m))
         for lf in llf repeat
-          d1:= lf.xpnt
+          d1 := lf.xpnt
           pol := lf.fctr
-          if (lcp:=leadingCoefficient pol) ~= 1 then pol := (inv lcp)*pol
-          degree pol=1 => factlist:=cons([pol,d1]$ParFact,factlist)
+          if (lcp := leadingCoefficient pol) ~= 1 then pol := (inv lcp)*pol
+          degree pol = 1 => factlist := cons([pol, d1]$ParFact, factlist)
           fln := appl(pol)
-          factlist :=append([[pf,d1]$ParFact for pf in fln],factlist)
+          factlist := append([[pf, d1]$ParFact for pf in fln], factlist)
         factlist
 
       -- compute u^k mod v (requires call to setPoly of multiple of v)
       -- characteristic not equal 2
-      exptMod(u:FP,k:NNI,v:FP):FP == (reduce(u)$D^k) pretend FP rem v
+      exptMod(u : FP, k : NNI, v : FP) : FP == (reduce(u)$D^k) pretend FP rem v
 
       -- compute u^k mod v (requires call to setPoly of multiple of v)
       -- characteristic equal 2
-      trace2PowMod(u:FP,k:NNI,v:FP):FP ==
-        uu:=u
-        for i in 1..k repeat uu:=(u+uu*uu) rem v
+      trace2PowMod(u : FP, k : NNI, v : FP) : FP ==
+        uu := u
+        for i in 1..k repeat uu := (u+uu*uu) rem v
         uu
 
       -- compute u+u^q+..+u^(q^k) mod v
       -- (requires call to setPoly of multiple of v) where q=size< F
-      tracePowMod(u:FP,k:NNI,v:FP):FP ==
-        u1 :D :=reduce(u)$D
+      tracePowMod(u : FP, k : NNI, v : FP) : FP ==
+        u1 : D := reduce(u)$D
         uu : D := u1
-        for i in 1..k repeat uu:=(u1+frobenius uu)
+        for i in 1..k repeat uu := (u1+frobenius uu)
         (lift uu) rem v
 
       -- compute u^(1+q+..+q^k) rem v where q=#F
       -- (requires call to setPoly of multiple of v)
       -- frobenius map is used
-      normPowMod(u:FP,k:NNI,v:FP):FP ==
-        u1 :D :=reduce(u)$D
+      normPowMod(u : FP, k : NNI, v : FP) : FP ==
+        u1 : D := reduce(u)$D
         uu : D := u1
-        for i in 1..k repeat uu:=(u1*frobenius uu)
+        for i in 1..k repeat uu := (u1*frobenius uu)
         (lift uu) rem v
 
       --find the factorization of m as product of factors each containing
       --terms of equal degree .
       -- if testirr=true the function returns the first factor found
-      ddffact1(m:FP,testirr:Boolean):List(fact) ==
-        p:=size$F
-        dg:NNI :=0
-        ddfact:List(fact):=empty()
+      ddffact1(m : FP, testirr : Boolean) : List(fact) ==
+        p := size$F
+        dg : NNI := 0
+        ddfact : List(fact) := empty()
         --evaluation of x^p mod m
-        k1:NNI
-        u:= m
+        k1 : NNI
+        u := m
         du := degree u
         setPoly u
-        mon: FP := monomial(1,1)
+        mon : FP := monomial(1, 1)
         v := mon
         for k1 in 1.. while k1 <= (du quo 2) repeat
             v := lift frobenius reduce(v)$D
-            g := gcd(v-mon,u)
+            g := gcd(v-mon, u)
             dg := degree g
             dg =0  => "next k1"
             if leadingCoefficient g ~= 1 then g := (inv leadingCoefficient g)*g
-            ddfact := cons([k1,g]$fact,ddfact)
+            ddfact := cons([k1, g]$fact, ddfact)
             testirr => return ddfact
             u := u quo g
             du := degree u
             du = 0 => return ddfact
             setPoly u
-        cons([du,u]$fact,ddfact)
+        cons([du, u]$fact, ddfact)
 
       -- test irreducibility
-      irreducible?(m:FP):Boolean ==
-        mf:fact:=first ddffact1(m,true)
+      irreducible?(m : FP) : Boolean ==
+        mf : fact := first ddffact1(m, true)
         degree m = mf.deg
 
       --export ddfact1
-      separateDegrees(m:FP):List(fact) == ddffact1(m,false)
+      separateDegrees(m : FP) : List(fact) == ddffact1(m, false)
 
       --find the complete factorization of m, using the result of ddfact1
-      separateFactors(distf : List fact) :List FP ==
+      separateFactors(distf : List fact) : List FP ==
         ddfact := distf
-        n1:Integer
-        p1:=size()$F
-        if charF then n1:=length(p1)-1
-        newaux,aux,ris : List FP
+        n1 : Integer
+        p1 := size()$F
+        if charF then n1 := length(p1)-1
+        newaux, aux, ris : List FP
         ris := empty()
-        t,fprod : FP
+        t, fprod : FP
         for ffprod in ddfact repeat
           fprod := ffprod.prod
           d := ffprod.deg
-          degree fprod = d => ris := cons(fprod,ris)
-          aux:=[fprod]
+          degree fprod = d => ris := cons(fprod, ris)
+          aux := [fprod]
           setPoly fprod
           while not (empty? aux) repeat
             t := ranpol(2*d)
-            if charF then t:=trace2PowMod(t,(n1*d-1)::NNI,fprod)
-            else t:=exptMod(tracePowMod(t,(d-1)::NNI,fprod),
-                                     (p1 quo 2)::NNI,fprod)-1$FP
-            newaux:=empty()
+            if charF then t := trace2PowMod(t, (n1*d-1)::NNI, fprod)
+            else t := exptMod(tracePowMod(t, (d-1)::NNI, fprod),
+                                     (p1 quo 2)::NNI, fprod)-1$FP
+            newaux := empty()
             for u in aux repeat
-                g := gcd(u,t)
-                dg:= degree g
-                dg=0 or dg = degree u => newaux:=cons(u,newaux)
+                g := gcd(u, t)
+                dg := degree g
+                dg = 0 or dg = degree u => newaux := cons(u, newaux)
                 v := u quo g
-                if dg=d then ris := cons(inv(leadingCoefficient g)*g,ris)
-                        else newaux := cons(g,newaux)
-                if degree v=d then ris := cons(inv(leadingCoefficient v)*v,ris)
-                              else newaux := cons(v,newaux)
-            aux:=newaux
+                if dg = d then ris := cons(inv(leadingCoefficient g)*g, ris)
+                        else newaux := cons(g, newaux)
+                if degree v = d then ris := cons(inv(leadingCoefficient v)*v, ris)
+                              else newaux := cons(v, newaux)
+            aux := newaux
         ris
 
-      --distinct degree algorithm for monic ,square-free polynomial
-      ddffact(m:FP):List(FP)==
-        ddfact:=ddffact1(m,false)
+      --distinct degree algorithm for monic , square-free polynomial
+      ddffact(m : FP) : List(FP)==
+        ddfact := ddffact1(m, false)
         empty? ddfact => [m]
         separateFactors ddfact
 
       --factorize a general polynomial with distinct degree algorithm
       --if test=true no check is executed on square-free
-      distdfact(m:FP,test:Boolean):FinalFact ==
-        factlist: List(ParFact):= empty()
-        fln : List(FP) :=empty()
+      distdfact(m : FP, test : Boolean) : FinalFact ==
+        factlist : List(ParFact) := empty()
+        fln : List(FP) := empty()
 
         --make m monic
         if (lcm := leadingCoefficient m) ~= 1 then m := (inv lcm)*m
 
         --is x^d factor of m?
         if (d := minimumDegree m)>0 then
-          m := (monicDivide (m,monomial(1,d))).quotient
-          factlist := [[monomial(1,1),d]$ParFact]
-        d:=degree m
+          m := (monicDivide (m, monomial(1, d))).quotient
+          factlist := [[monomial(1, 1), d]$ParFact]
+        d := degree m
 
         --is m constant?
-        d=0 => [lcm,factlist]$FinalFact
+        d = 0 => [lcm, factlist]$FinalFact
 
         --is m linear?
-        d=1 => [lcm,cons([m,d]$ParFact,factlist)]$FinalFact
+        d = 1 => [lcm, cons([m, d]$ParFact, factlist)]$FinalFact
 
         --m is square-free
         test =>
           fln := ddffact m
-          factlist := append([[pol,1]$ParFact for pol in fln],factlist)
-          [lcm,factlist]$FinalFact
+          factlist := append([[pol, 1]$ParFact for pol in fln], factlist)
+          [lcm, factlist]$FinalFact
 
-        --factorize the monic,square-free terms
-        factlist:= append(notSqFr(m,ddffact),factlist)
-        [lcm,factlist]$FinalFact
+        --factorize the monic, square-free terms
+        factlist := append(notSqFr(m, ddffact), factlist)
+        [lcm, factlist]$FinalFact
 
       --factorize the polynomial m
-      factor(m:FP) ==
+      factor(m : FP) ==
         m = 0 => 0
-        flist := distdfact(m,false)
+        flist := distdfact(m, false)
         makeFR(flist.cont::FP,[["prime",u.irr,u.pow]$FFE
                                  for u in flist.factors])
 
 
       --factorize the square free polynomial m
-      factorSquareFree(m:FP) ==
+      factorSquareFree(m : FP) ==
         m = 0 => 0
-        flist := distdfact(m,true)
+        flist := distdfact(m, true)
         makeFR(flist.cont::FP,[["prime",u.irr,u.pow]$FFE
                                  for u in flist.factors])
 

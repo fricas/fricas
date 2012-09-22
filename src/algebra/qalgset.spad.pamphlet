@@ -16,7 +16,7 @@
 ++ Date Created: March 13, 1992
 ++ Date Last Updated: June 12, 1992
 ++ Basic Operations:
-++ Related Constructors:GroebnerPackage
+++ Related Constructors: GroebnerPackage
 ++ See Also: QuasiAlgebraicSet2
 ++ AMS Classifications:
 ++ Keywords: Zariski closed sets, quasi-algebraic sets
@@ -54,33 +54,33 @@
 ++ The ordering in groebner basis computation is determined by
 ++ the data type of the input polynomials.  If it is possible
 ++ we suggest to use refinements of total degree orderings.
-QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
+QuasiAlgebraicSet(R, Var, Expon, Dpoly) : C == T
  where
    R         :  GcdDomain
    Expon     :  OrderedAbelianMonoidSup
    Var       :  OrderedSet
-   Dpoly     :  PolynomialCategory(R,Expon,Var)
+   Dpoly     :  PolynomialCategory(R, Expon, Var)
    NNI      ==> NonNegativeInteger
-   newExpon ==> Product(NNI,Expon)
-   newPoly  ==> PolynomialRing(R,newExpon)
+   newExpon ==> Product(NNI, Expon)
+   newPoly  ==> PolynomialRing(R, newExpon)
    Ex       ==> OutputForm
-   mrf      ==> MultivariateFactorize(Var,Expon,R,Dpoly)
+   mrf      ==> MultivariateFactorize(Var, Expon, R, Dpoly)
    Status   ==> Union(Boolean,"failed") -- empty or not, or don't know
 
    C == Join(SetCategory, CoercibleTo OutputForm) with
   --- should be Object instead of SetCategory, bug in LIST Object ---
   --- equality is not implemented ---
-     empty: () -> %
+     empty : () -> %
        ++ empty() returns the empty quasi-algebraic set
-     quasiAlgebraicSet:   (List Dpoly, Dpoly) -> %
-       ++ quasiAlgebraicSet(pl,q) returns the quasi-algebraic set
+     quasiAlgebraicSet :   (List Dpoly, Dpoly) -> %
+       ++ quasiAlgebraicSet(pl, q) returns the quasi-algebraic set
        ++ with defining equations p = 0 for p belonging to the list pl, and
        ++ defining inequation q ~= 0.
-     status: % -> Status
+     status : % -> Status
        ++ status(s) returns true if the quasi-algebraic set is empty,
        ++ false if it is not, and "failed" if not yet known
-     setStatus: (%, Status) -> %
-       ++ setStatus(s,t) returns the same representation for s, but
+     setStatus : (%, Status) -> %
+       ++ setStatus(s, t) returns the same representation for s, but
        ++ asserts the following: if t is true, then s is empty,
        ++ if t is false, then s is non-empty, and if t = "failed",
        ++ then no assertion is made (that is, "don't know").
@@ -89,13 +89,13 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
        ++ empty?(s) returns
        ++ true if the quasialgebraic set s has no points,
        ++ and false otherwise.
-     definingEquations: % -> List Dpoly
+     definingEquations : % -> List Dpoly
        ++ definingEquations(s) returns a list of defining polynomials
        ++ for equations, that is, for the Zariski closed part of s.
-     definingInequation: % -> Dpoly
+     definingInequation : % -> Dpoly
        ++ definingInequation(s) returns a single defining polynomial for the
        ++ inequation, that is, the Zariski open part of s.
-     idealSimplify:% -> %
+     idealSimplify : % -> %
        ++ idealSimplify(s) returns a different and presumably simpler
        ++ representation of s with the defining polynomials for the
        ++ equations
@@ -103,7 +103,7 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
        ++ inequation reduced with respect to the basis, using Buchberger's
        ++ algorithm.
      if (R has EuclideanDomain) and (R has CharacteristicZero) then
-       simplify:% -> %
+       simplify : % -> %
          ++ simplify(s) returns a different and presumably simpler
          ++ representation of s with the defining polynomials for the
          ++ equations
@@ -111,12 +111,12 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
          ++ inequation reduced with respect to the basis, using a heuristic
          ++ algorithm based on factoring.
    T  == add
-     Rep := Record(status:Status,zero:List Dpoly, nzero:Dpoly)
-     x:%
+     Rep := Record(status : Status, zero : List Dpoly, nzero : Dpoly)
+     x : %
 
-     import GroebnerPackage(R,Expon,Var,Dpoly)
-     import GroebnerPackage(R,newExpon,Var,newPoly)
-     import GroebnerInternalPackage(R,Expon,Var,Dpoly)
+     import GroebnerPackage(R, Expon, Var, Dpoly)
+     import GroebnerPackage(R, newExpon, Var, newPoly)
+     import GroebnerInternalPackage(R, Expon, Var, Dpoly)
 
                        ----  Local Functions  ----
 
@@ -127,32 +127,32 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
 
 
      if (R has EuclideanDomain) and (R has CharacteristicZero) then
-       factorset (y:Dpoly):List Dpoly ==
+       factorset (y : Dpoly) : List Dpoly ==
          ground? y => []
          [j.factor for j in factors factor$mrf  y]
 
        simplify x ==
          if x.status case "failed" then
-           x:=quasiAlgebraicSet(zro:=groebner x.zero, redPol(x.nzero,zro))
-         (pnzero:=x.nzero)=0 => empty()
-         nzro:=factorset pnzero
-         mset:=minset [factorset p for p in x.zero]
-         mset:=[setDifference(s,nzro) for s in mset]
-         zro:=groebner [*/s for s in mset]
+           x := quasiAlgebraicSet(zro := groebner x.zero, redPol(x.nzero, zro))
+         (pnzero := x.nzero)=0 => empty()
+         nzro := factorset pnzero
+         mset := minset [factorset p for p in x.zero]
+         mset := [setDifference(s, nzro) for s in mset]
+         zro := groebner [*/s for s in mset]
          member? (1$Dpoly, zro) => empty()
          [x.status, zro, primitivePart redPol(*/nzro, zro)]
 
-     npoly(f:Dpoly) : newPoly ==
+     npoly(f : Dpoly) : newPoly ==
        zero? f => 0
        monomial(leadingCoefficient f, [0, degree f])$newPoly +
              npoly(reductum f)
 
      oldpoly(q:newPoly) : Union(Dpoly,"failed") ==
-       q=0$newPoly => 0$Dpoly
-       dq:newExpon:=degree q
+       q = 0$newPoly => 0$Dpoly
+       dq : newExpon := degree q
        n : NNI := first(dq)
        n ~= 0 => "failed"
-       ((g:=oldpoly reductum q) case "failed") => "failed"
+       ((g := oldpoly reductum q) case "failed") => "failed"
        monomial(leadingCoefficient q, second(dq))$Dpoly + (g::Dpoly)
 
      coerce x ==
@@ -161,37 +161,37 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
                  hconcat( x.nzero::Ex, " != 0"::Ex)]
 
      empty? x ==
-       if x.status case "failed" then x:=idealSimplify x
+       if x.status case "failed" then x := idealSimplify x
        x.status :: Boolean
 
      empty() == [true::Status, [1$Dpoly], 0$Dpoly]
      status x == x.status
-     setStatus(x,t) == [t,x.zero,x.nzero]
+     setStatus(x, t) == [t, x.zero, x.nzero]
      definingEquations x == x.zero
      definingInequation x == x.nzero
      quasiAlgebraicSet(z0,n0) == ["failed", z0, n0]
 
      idealSimplify x ==
        x.status case Boolean => x
-       z0:= x.zero
-       n0:= x.nzero
+       z0 := x.zero
+       n0 := x.nzero
        empty? z0 => [false, z0, n0]
        member? (1$Dpoly, z0) => empty()
        tp : newPoly := (monomial(1, [1, 0$Expon])$newPoly * npoly n0) - 1
-       ngb:=groebner concat(tp, [npoly g for g in z0])
+       ngb := groebner concat(tp, [npoly g for g in z0])
        member? (1$newPoly, ngb) => empty()
-       gb:List Dpoly:=nil
+       gb : List Dpoly := nil
        while not empty? ngb repeat
-         if ((f:=oldpoly ngb.first) case Dpoly) then gb:=concat(f, gb)
-         ngb:=ngb.rest
+         if ((f := oldpoly ngb.first) case Dpoly) then gb := concat(f, gb)
+         ngb := ngb.rest
        [false::Status, gb, primitivePart redPol(n0, gb)]
 
 
      minset lset ==
        empty? lset => lset
-       [s for s  in lset | not (overset?(s,lset))]
+       [s for s  in lset | not (overset?(s, lset))]
 
-     overset?(p,qlist) ==
+     overset?(p, qlist) ==
        empty? qlist => false
        or/[(brace$(Set Dpoly) q) <$(Set Dpoly) (brace$(Set Dpoly) p) for q in qlist]
 
@@ -203,7 +203,7 @@ QuasiAlgebraicSet(R, Var,Expon,Dpoly) : C == T
 ++ Date Created: March 13, 1992
 ++ Date Last Updated: June 12, 1992
 ++ Basic Operations:
-++ Related Constructors:GroebnerPackage, IdealDecompositionPackage,
+++ Related Constructors: GroebnerPackage, IdealDecompositionPackage,
 ++                      PolynomialIdeal
 ++ See Also: QuasiAlgebraicSet
 ++ AMS Classifications:
@@ -241,16 +241,16 @@ QuasiAlgebraicSet2(vl) : C == T where
    F        ==> Fraction R
    Var      ==> OrderedVariableList vl
    NNI      ==> NonNegativeInteger
-   Expon    ==> DirectProduct(#vl,NNI)
-   Dpoly    ==> DistributedMultivariatePolynomial(vl,F)
+   Expon    ==> DirectProduct(#vl, NNI)
+   Dpoly    ==> DistributedMultivariatePolynomial(vl, F)
    QALG     ==> QuasiAlgebraicSet(F, Var, Expon, Dpoly)
    newExpon ==> DirectProduct(#newvl, NNI)
-   newPoly  ==> DistributedMultivariatePolynomial(newvl,F)
+   newPoly  ==> DistributedMultivariatePolynomial(newvl, F)
    newVar   ==> OrderedVariableList newvl
    Status   ==> Union(Boolean,"failed") -- empty or not, or don't know
 
    C == with
-     radicalSimplify:QALG -> QALG
+     radicalSimplify : QALG -> QALG
        ++ radicalSimplify(s) returns a different and presumably simpler
        ++ representation of s with the defining polynomials for the
        ++ equations
@@ -259,51 +259,51 @@ QuasiAlgebraicSet2(vl) : C == T where
        ++ using groebner basis of radical ideals
    T  == add
                 ----  Local Functions  ----
-     ts:=new()$Symbol
-     newvl:=concat(ts, vl)
-     tv:newVar:=(variable ts)::newVar
+     ts := new()$Symbol
+     newvl := concat(ts, vl)
+     tv : newVar := (variable ts)::newVar
      npoly         :     Dpoly            ->  newPoly
      oldpoly       :     newPoly          ->  Union(Dpoly,"failed")
      f             :     Var              ->  newPoly
      g             :     newVar           ->  Dpoly
 
-     import PolynomialIdeal(F,newExpon,newVar,newPoly)
-     import GroebnerPackage(F,Expon,Var,Dpoly)
-     import GroebnerPackage(F,newExpon,newVar,newPoly)
+     import PolynomialIdeal(F, newExpon, newVar, newPoly)
+     import GroebnerPackage(F, Expon, Var, Dpoly)
+     import GroebnerPackage(F, newExpon, newVar, newPoly)
      import IdealDecompositionPackage(newvl)
      import QuasiAlgebraicSet(F, Var, Expon, Dpoly)
-     import PolynomialCategoryLifting(Expon,Var,F,Dpoly,newPoly)
-     import PolynomialCategoryLifting(newExpon,newVar,F,newPoly,Dpoly)
-     f(v:Var):newPoly ==
+     import PolynomialCategoryLifting(Expon, Var, F, Dpoly, newPoly)
+     import PolynomialCategoryLifting(newExpon, newVar, F, newPoly, Dpoly)
+     f(v : Var) : newPoly ==
        variable((convert v)@Symbol)@Union(newVar,"failed")::newVar
          ::newPoly
-     g(v:newVar):Dpoly ==
+     g(v : newVar) : Dpoly ==
        v = tv => 0
        variable((convert v)@Symbol)@Union(Var,"failed")::Var::Dpoly
 
-     npoly(p:Dpoly) : newPoly ==  map(z1 +-> f z1, z2 +-> z2::newPoly, p)
+     npoly(p : Dpoly) : newPoly ==  map(z1 +-> f z1, z2 +-> z2::newPoly, p)
 
      oldpoly(q:newPoly) : Union(Dpoly,"failed") ==
-       (x:=mainVariable q) case "failed" => (leadingCoefficient q)::Dpoly
+       (x := mainVariable q) case "failed" => (leadingCoefficient q)::Dpoly
        (x::newVar = tv) => "failed"
        map(z1 +-> g z1, z2 +-> z2::Dpoly, q)
 
      radicalSimplify x ==
        status(x)$QALG = true => x     -- x is empty
-       z0:=definingEquations x
-       n0:=definingInequation x
-       t:newPoly:= coerce(tv)$newPoly
-       tp:newPoly:= t * (npoly n0) - 1$newPoly
-       gen:List newPoly:= concat(tp, [npoly g for g in z0])
-       id:=ideal gen
-       ngb:=generators radical(id)
+       z0 := definingEquations x
+       n0 := definingInequation x
+       t : newPoly := coerce(tv)$newPoly
+       tp : newPoly := t * (npoly n0) - 1$newPoly
+       gen : List newPoly := concat(tp, [npoly g for g in z0])
+       id := ideal gen
+       ngb := generators radical(id)
        member? (1$newPoly, ngb) => empty()$QALG
-       gb:List Dpoly:=nil
+       gb : List Dpoly := nil
        while not empty? ngb repeat
-         if ((k:=oldpoly ngb.first) case Dpoly) then gb:=concat(k, gb)
-         ngb:=ngb.rest
-       y:=quasiAlgebraicSet(gb, primitivePart normalForm(n0, gb))
-       setStatus(y,false::Status)
+         if ((k := oldpoly ngb.first) case Dpoly) then gb := concat(k, gb)
+         ngb := ngb.rest
+       y := quasiAlgebraicSet(gb, primitivePart normalForm(n0, gb))
+       setStatus(y, false::Status)
 
 @
 \section{License}

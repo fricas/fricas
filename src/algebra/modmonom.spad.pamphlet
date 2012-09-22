@@ -15,31 +15,31 @@
 ++ Description:
 ++ This package \undocumented
 -- Currently unused.
-ModuleMonomial(IS: OrderedSet,
-               E: SetCategory,
-               ff:(MM, MM) -> Boolean): T == C where
+ModuleMonomial(IS : OrderedSet,
+               E : SetCategory,
+               ff : (MM, MM) -> Boolean) : T == C where
 
-   MM ==> Record(index:IS, exponent:E)
+   MM ==> Record(index : IS, exponent : E)
 
    T == OrderedSet  with
-        exponent: % -> E
+        exponent : % -> E
                 ++ exponent(x) \undocumented
-        index: % -> IS
+        index : % -> IS
                 ++ index(x) \undocumented
-        coerce: MM -> %
+        coerce : MM -> %
                 ++ coerce(x) \undocumented
-        coerce: % -> MM
+        coerce : % -> MM
                 ++ coerce(x) \undocumented
-        construct: (IS, E) -> %
-                ++ construct(i,e) \undocumented
+        construct : (IS, E) -> %
+                ++ construct(i, e) \undocumented
    C == MM  add
         Rep:= MM
-        x:% < y:% == ff(x::Rep, y::Rep)
-        exponent(x:%):E == x.exponent
-        index(x:%): IS == x.index
-        coerce(x:%):MM == x::Rep::MM
-        coerce(x:MM):% == x::Rep::%
-        construct(i:IS, e:E):% == [i, e]$MM::Rep::%
+        x : % < y : % == ff(x::Rep, y::Rep)
+        exponent(x : %) : E == x.exponent
+        index(x : %) : IS == x.index
+        coerce(x : %) : MM == x::Rep::MM
+        coerce(x : MM) : % == x::Rep::%
+        construct(i : IS, e : E) : % == [i, e]$MM::Rep::%
 
 @
 \section{domain GMODPOL GeneralModulePolynomial}
@@ -48,59 +48,59 @@ ModuleMonomial(IS: OrderedSet,
 ++ Description:
 ++ This package \undocumented
 -- Currently unused.
-GeneralModulePolynomial(vl, R, IS, E, ff, P): public  ==  private where
-  vl: List(Symbol)
-  R: CommutativeRing
-  IS: OrderedSet
+GeneralModulePolynomial(vl, R, IS, E, ff, P) : public  ==  private where
+  vl : List(Symbol)
+  R : CommutativeRing
+  IS : OrderedSet
   NNI ==> NonNegativeInteger
-  E: DirectProductCategory(#vl, NNI)
-  MM ==> Record(index:IS, exponent:E)
-  ff: (MM, MM) -> Boolean
+  E : DirectProductCategory(#vl, NNI)
+  MM ==> Record(index : IS, exponent : E)
+  ff : (MM, MM) -> Boolean
   OV  ==> OrderedVariableList(vl)
-  P: PolynomialCategory(R, E, OV)
+  P : PolynomialCategory(R, E, OV)
   ModMonom ==> ModuleMonomial(IS, E, ff)
 
 
   public  ==  Join(Module(P), Module(R))  with
-        leadingCoefficient: % -> R
+        leadingCoefficient : % -> R
                 ++ leadingCoefficient(x) \undocumented
-        leadingMonomial: % -> ModMonom
+        leadingMonomial : % -> ModMonom
                 ++ leadingMonomial(x) \undocumented
-        leadingExponent: % -> E
+        leadingExponent : % -> E
                 ++ leadingExponent(x) \undocumented
-        leadingIndex: % -> IS
+        leadingIndex : % -> IS
                 ++ leadingIndex(x) \undocumented
-        reductum: % -> %
+        reductum : % -> %
                 ++ reductum(x) \undocumented
-        monomial: (R, ModMonom) -> %
-                ++ monomial(r,x) \undocumented
-        unitVector: IS -> %
+        monomial : (R, ModMonom) -> %
+                ++ monomial(r, x) \undocumented
+        unitVector : IS -> %
                 ++ unitVector(x) \undocumented
-        build: (R, IS, E) -> %
-                ++ build(r,i,e) \undocumented
-        multMonom: (R, E, %) -> %
-                ++ multMonom(r,e,x) \undocumented
+        build : (R, IS, E) -> %
+                ++ build(r, i, e) \undocumented
+        multMonom : (R, E, %) -> %
+                ++ multMonom(r, e, x) \undocumented
         "*": (P,%) -> %
                 ++ p*x \undocumented
 
 
   private  ==  FreeModule(R, ModMonom)  add
         Rep:= FreeModule(R, ModMonom)
-        leadingMonomial(p:%):ModMonom == leadingSupport(p)$Rep
-        leadingExponent(p:%):E == exponent(leadingMonomial p)
-        leadingIndex(p:%):IS == index(leadingMonomial p)
-        unitVector(i:IS):% == monomial(1,[i, 0$E]$ModMonom)
+        leadingMonomial(p : %) : ModMonom == leadingSupport(p)$Rep
+        leadingExponent(p : %) : E == exponent(leadingMonomial p)
+        leadingIndex(p : %) : IS == index(leadingMonomial p)
+        unitVector(i : IS) : % == monomial(1, [i, 0$E]$ModMonom)
 
 
  -----------------------------------------------------------------------------
 
-        build(c:R, i:IS, e:E):%  ==  monomial(c, construct(i, e))
+        build(c : R, i : IS, e : E) : %  ==  monomial(c, construct(i, e))
 
  -----------------------------------------------------------------------------
 
      ----   WARNING: assumes c ~= 0
 
-        multMonom(c:R, e:E, mp:%):%  ==
+        multMonom(c : R, e : E, mp : %) : %  ==
             zero? mp => mp
             monomial(c * leadingCoefficient mp, [leadingIndex mp,
                      e + leadingExponent mp]) + multMonom(c, e, reductum mp)
@@ -108,7 +108,7 @@ GeneralModulePolynomial(vl, R, IS, E, ff, P): public  ==  private where
  -----------------------------------------------------------------------------
 
 
-        ((p:P) * (mp:%)):%  ==
+        ((p : P) * (mp : %)) : %  ==
             zero? p => 0
             multMonom(leadingCoefficient p, degree p, mp) +
                reductum(p) * mp

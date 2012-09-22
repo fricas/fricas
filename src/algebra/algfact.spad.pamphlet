@@ -21,11 +21,11 @@
 ++ algebraic extension of a field over which we can factor UP's;
 ++ Keywords: factorization, algebraic extension, univariate polynomial
 
-InnerAlgFactor(F, UP, AlExt, AlPol): Exports == Implementation where
+InnerAlgFactor(F, UP, AlExt, AlPol) : Exports == Implementation where
   F    : Field
   UP   : UnivariatePolynomialCategory F
-  AlPol: UnivariatePolynomialCategory AlExt
-  AlExt : Join(Field, CharacteristicZero, MonogenicAlgebra(F,UP))
+  AlPol : UnivariatePolynomialCategory AlExt
+  AlExt : Join(Field, CharacteristicZero, MonogenicAlgebra(F, UP))
   NUP   ==> SparseUnivariatePolynomial UP
   N     ==> NonNegativeInteger
   Z     ==> Integer
@@ -34,7 +34,7 @@ InnerAlgFactor(F, UP, AlExt, AlPol): Exports == Implementation where
 
 
   Exports ==> with
-    factor: (AlPol, UP -> FR)  ->  Factored AlPol
+    factor : (AlPol, UP -> FR)  ->  Factored AlPol
       ++ factor(p, f) returns a prime factorisation of p;
       ++ f is a factorisation map for elements of UP;
 
@@ -42,17 +42,17 @@ InnerAlgFactor(F, UP, AlExt, AlPol): Exports == Implementation where
     pnorm        : AlPol -> UP
     convrt       : AlPol -> NUP
     change       : UP    -> AlPol
-    perturbfactor: (AlPol, Z, UP -> FR) -> List AlPol
+    perturbfactor : (AlPol, Z, UP -> FR) -> List AlPol
     irrfactor    : (AlPol, Z, UP -> FR) -> List AlPol
 
 
     perturbfactor(f, k, fact) ==
-      pol   := monomial(1$AlExt,1)-
-               monomial(reduce monomial(k::F,1)$UP ,0)
+      pol   := monomial(1$AlExt, 1)-
+               monomial(reduce monomial(k::F, 1)$UP , 0)
       newf  := elt(f, pol)
       lsols := irrfactor(newf, k, fact)
       pol   := monomial(1, 1) +
-               monomial(reduce monomial(k::F,1)$UP,0)
+               monomial(reduce monomial(k::F, 1)$UP, 0)
       [elt(pp, pol) for pp in lsols]
 
     ---  factorize the square-free parts of f  ---
@@ -60,19 +60,19 @@ InnerAlgFactor(F, UP, AlExt, AlPol): Exports == Implementation where
       degree(f) =$N 1 => [f]
       newf := f
       nn   := pnorm f
-      --newval:RN:=1
-      --pert:=false
+      --newval: RN := 1
+      --pert := false
       --if not SqFr? nn then
-      --  pert:=true
-      --  newterm:=perturb(f)
-      --  newf:=newterm.ppol
-      --  newval:=newterm.pval
-      --  nn:=newterm.nnorm
+      --  pert := true
+      --  newterm := perturb(f)
+      --  newf := newterm.ppol
+      --  newval := newterm.pval
+      --  nn := newterm.nnorm
       listfact := factors fact nn
       #listfact =$N 1 =>
         first(listfact).exponent =$Z 1 => [f]
         perturbfactor(f, k + 1, fact)
-      listerm:List(AlPol):= []
+      listerm : List(AlPol) := []
       for pelt in listfact repeat
         g    := gcd(change(pelt.factor), newf)
         newf := (newf exquo g)::AlPol
@@ -91,7 +91,7 @@ InnerAlgFactor(F, UP, AlExt, AlPol): Exports == Implementation where
     newp := map(x +-> x::UP, p)$UPCF2(F, UP, UP, NUP)
 
     pnorm  q == resultant(convrt q, newp)
-    change q == map(coerce, q)$UPCF2(F,UP,AlExt,AlPol)
+    change q == map(coerce, q)$UPCF2(F, UP, AlExt, AlPol)
 
     convrt q ==
       swap(map(lift, q)$UPCF2(AlExt, AlPol,
@@ -110,14 +110,14 @@ InnerAlgFactor(F, UP, AlExt, AlPol): Exports == Implementation where
 ++ algebraic extension of the rational numbers (\spadtype{Fraction Integer}).
 ++ Keywords: factorization, algebraic extension, univariate polynomial
 
-SimpleAlgebraicExtensionAlgFactor(UP,SAE,UPA):Exports==Implementation where
+SimpleAlgebraicExtensionAlgFactor(UP, SAE, UPA) : Exports==Implementation where
   UP : UnivariatePolynomialCategory Fraction Integer
   SAE : Join(Field, CharacteristicZero,
                          MonogenicAlgebra(Fraction Integer, UP))
-  UPA: UnivariatePolynomialCategory SAE
+  UPA : UnivariatePolynomialCategory SAE
 
   Exports ==> with
-    factor: UPA -> Factored UPA
+    factor : UPA -> Factored UPA
       ++ factor(p) returns a prime factorisation of p.
 
   Implementation ==> add
@@ -137,8 +137,8 @@ SimpleAlgebraicExtensionAlgFactor(UP,SAE,UPA):Exports==Implementation where
 ++ Factorization of univariate polynomials with coefficients which
 ++ are rational functions with integer coefficients.
 
-RationalFunctionFactor(UP): Exports == Implementation where
-  UP: UnivariatePolynomialCategory Fraction Polynomial Integer
+RationalFunctionFactor(UP) : Exports == Implementation where
+  UP : UnivariatePolynomialCategory Fraction Polynomial Integer
 
   SE ==> Symbol
   P  ==> Polynomial Integer
@@ -146,11 +146,11 @@ RationalFunctionFactor(UP): Exports == Implementation where
   UPCF2 ==> UnivariatePolynomialCategoryFunctions2
 
   Exports ==> with
-    factor: UP -> Factored UP
+    factor : UP -> Factored UP
       ++ factor(p) returns a prime factorisation of p.
 
   Implementation ==> add
-    likuniv: (P, SE, P) -> UP
+    likuniv : (P, SE, P) -> UP
 
     dummy := new()$SE
 
@@ -159,10 +159,10 @@ RationalFunctionFactor(UP): Exports == Implementation where
                                           RF, UP)
 
     factor p ==
-      d  := denom(q := elt(p,dummy::P :: RF))
+      d  := denom(q := elt(p, dummy::P :: RF))
       map(x +-> likuniv(x, dummy, d),
           factor(numer q)$MultivariateFactorize(SE,
-               IndexedExponents SE,Integer,P))$FactoredFunctions2(P, UP)
+               IndexedExponents SE, Integer, P))$FactoredFunctions2(P, UP)
 
 @
 \section{package SAERFFC SAERationalFunctionAlgFactor}
@@ -177,14 +177,14 @@ RationalFunctionFactor(UP): Exports == Implementation where
 ++ algebraic extension of \spadtype{Fraction Polynomial Integer}.
 ++ Keywords: factorization, algebraic extension, univariate polynomial
 
-SAERationalFunctionAlgFactor(UP, SAE, UPA): Exports == Implementation where
+SAERationalFunctionAlgFactor(UP, SAE, UPA) : Exports == Implementation where
   UP : UnivariatePolynomialCategory Fraction Polynomial Integer
   SAE : Join(Field, CharacteristicZero,
                       MonogenicAlgebra(Fraction Polynomial Integer, UP))
-  UPA: UnivariatePolynomialCategory SAE
+  UPA : UnivariatePolynomialCategory SAE
 
   Exports ==> with
-    factor: UPA -> Factored UPA
+    factor : UPA -> Factored UPA
       ++ factor(p) returns a prime factorisation of p.
 
   Implementation ==> add
@@ -204,8 +204,8 @@ SAERationalFunctionAlgFactor(UP, SAE, UPA): Exports == Implementation where
 ++ Factorization of univariate polynomials with coefficients in
 ++ \spadtype{AlgebraicNumber}.
 
-AlgFactor(UP): Exports == Implementation where
-  UP: UnivariatePolynomialCategory AlgebraicNumber
+AlgFactor(UP) : Exports == Implementation where
+  UP : UnivariatePolynomialCategory AlgebraicNumber
 
   N   ==> NonNegativeInteger
   Z   ==> Integer
@@ -217,16 +217,16 @@ AlgFactor(UP): Exports == Implementation where
   FR  ==> Factored UP
 
   Exports ==> with
-    factor: (UP, List AN) -> FR
-      ++ factor(p, [a1,...,an]) returns a prime factorisation of p
-      ++ over the field generated by its coefficients and a1,...,an.
-    factor: UP            -> FR
+    factor : (UP, List AN) -> FR
+      ++ factor(p, [a1, ..., an]) returns a prime factorisation of p
+      ++ over the field generated by its coefficients and a1, ..., an.
+    factor : UP            -> FR
       ++ factor(p) returns a prime factorisation of p
       ++ over the field generated by its coefficients.
     split : UP            -> FR
       ++ split(p) returns a prime factorisation of p
       ++ over its splitting field.
-    doublyTransitive?: UP -> Boolean
+    doublyTransitive? : UP -> Boolean
       ++ doublyTransitive?(p) is true if p is irreducible over
       ++ over the field K generated by its coefficients, and
       ++ if \spad{p(X) / (X - a)} is irreducible over
@@ -242,14 +242,14 @@ AlgFactor(UP): Exports == Implementation where
     ifactor : (SUP, List K) -> Factored SUP
     extend  : (UP, Z) -> FR
     allk    : List AN -> List K
-    downpoly: UP  -> UPQ
-    liftpoly: UPQ -> UP
+    downpoly : UP  -> UPQ
+    liftpoly : UPQ -> UP
     irred?  : UP  -> Boolean
 
     allk l       == removeDuplicates concat [tower x for x in l]
     liftpoly p   == map(x +-> x::AN,  p)$UPCF2(Q, UPQ, AN, UP)
-    downpoly p   == map(x +-> retract(x)@Q, p)$UPCF2(AN, UP ,Q, UPQ)
-    ifactor(p,l) == (fact(p pretend UP, l)) pretend Factored(SUP)
+    downpoly p   == map(x +-> retract(x)@Q, p)$UPCF2(AN, UP , Q, UPQ)
+    ifactor(p, l) == (fact(p pretend UP, l)) pretend Factored(SUP)
     factor p     == fact(p, allk coefficients p)
 
     factor(p, l) ==
@@ -281,10 +281,10 @@ AlgFactor(UP): Exports == Implementation where
       empty? l =>
         dr := factor(downpoly p)$RationalFactorize(UPQ)
         (liftpoly unit dr) *
-          _*/[primeFactor(liftpoly dc.factor,dc.exponent)
+          _*/[primeFactor(liftpoly dc.factor, dc.exponent)
             for dc in factors dr]
       q   := minPoly(alpha := "max"/l)$AN
-      newl  := remove((x : K): Boolean +-> alpha = x, l)
+      newl  := remove((x : K) : Boolean +-> alpha = x, l)
       sae := SimpleAlgebraicExtension(AN, SUP, q)
       ups := SparseUnivariatePolynomial sae
       fr  := factor(map(x +-> reduce univariate(x, alpha, q),

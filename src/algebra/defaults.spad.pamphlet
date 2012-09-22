@@ -22,21 +22,21 @@
 
 )bo PUSH('RepeatedSquaring, $mutableDomains)
 
-RepeatedSquaring(S): Exports == Implementation where
-   S: SetCategory with
+RepeatedSquaring(S) : Exports == Implementation where
+   S : SetCategory with
         "*":(%,%)->%
              ++ x*y returns the product of x and y
    Exports == with
-     expt: (S,PositiveInteger) -> S
+     expt : (S, PositiveInteger) -> S
        ++ expt(r, i) computes r^i  by repeated squaring
    Implementation == add
-     x: S
-     n: PositiveInteger
+     x : S
+     n : PositiveInteger
      expt(x, n) ==
 --        one? n => x
         (n = 1) => x
-        odd?(n)$Integer=> x * expt(x*x,shift(n,-1) pretend PositiveInteger)
-        expt(x*x,shift(n,-1) pretend PositiveInteger)
+        odd?(n)$Integer=> x * expt(x*x, shift(n, -1) pretend PositiveInteger)
+        expt(x*x, shift(n, -1) pretend PositiveInteger)
 
 @
 \section{package REPDB RepeatedDoubling}
@@ -54,22 +54,22 @@ RepeatedSquaring(S): Exports == Implementation where
 
 )bo PUSH('RepeatedDoubling, $mutableDomains)
 
-RepeatedDoubling(S):Exports ==Implementation where
-   S: SetCategory with
+RepeatedDoubling(S) : Exports ==Implementation where
+   S : SetCategory with
         "+":(%,%)->%
                 ++ x+y returns the sum of x and y
    Exports == with
-     double: (PositiveInteger,S) -> S
+     double : (PositiveInteger, S) -> S
        ++ double(i, r) multiplies r by i using repeated doubling.
    Implementation == add
-     x: S
-     n: PositiveInteger
-     double(n,x) ==
+     x : S
+     n : PositiveInteger
+     double(n, x) ==
 --        one? n => x
         (n = 1) => x
         odd?(n)$Integer =>
-           x + double(shift(n,-1) pretend PositiveInteger,(x+x))
-        double(shift(n,-1) pretend PositiveInteger,(x+x))
+           x + double(shift(n, -1) pretend PositiveInteger, (x+x))
+        double(shift(n, -1) pretend PositiveInteger, (x+x))
 
 @
 \section{package FLASORT FiniteLinearAggregateSort}
@@ -88,28 +88,28 @@ RepeatedDoubling(S):Exports ==Implementation where
 
 )bo PUSH('FiniteLinearAggregateSort, $mutableDomains)
 
-FiniteLinearAggregateSort(S, V): Exports == Implementation where
-  S: Type
-  V: Join(FiniteLinearAggregate(S), shallowlyMutable)
+FiniteLinearAggregateSort(S, V) : Exports == Implementation where
+  S : Type
+  V : Join(FiniteLinearAggregate(S), shallowlyMutable)
 
   B ==> Boolean
   I ==> Integer
 
   Exports ==> with
-    quickSort: ((S, S) -> B, V) -> V
+    quickSort : ((S, S) -> B, V) -> V
       ++ quickSort(f, agg) sorts the aggregate agg with the ordering function
       ++ f using the quicksort algorithm.
     heapSort : ((S, S) -> B, V) -> V
       ++ heapSort(f, agg) sorts the aggregate agg with the ordering function
       ++ f using the heapsort algorithm.
-    shellSort: ((S, S) -> B, V) -> V
+    shellSort : ((S, S) -> B, V) -> V
       ++ shellSort(f, agg) sorts the aggregate agg with the ordering function
       ++ f using the shellSort algorithm.
 
   Implementation ==> add
     siftUp   : ((S, S) -> B, V, I, I) -> Void
-    partition: ((S, S) -> B, V, I, I, I) -> I
-    QuickSort: ((S, S) -> B, V, I, I) -> V
+    partition : ((S, S) -> B, V, I, I, I) -> I
+    QuickSort : ((S, S) -> B, V, I, I) -> V
 
     quickSort(l, r) == QuickSort(l, r, minIndex r, maxIndex r)
 
@@ -117,7 +117,7 @@ FiniteLinearAggregateSort(S, V): Exports == Implementation where
       t := qelt(r, i)
       while (j := 2*i+1) < n repeat
         if (k := j+1) < n and l(qelt(r, j), qelt(r, k)) then j := k
-        if l(t,qelt(r,j)) then
+        if l(t, qelt(r, j)) then
            qsetelt!(r, i, qelt(r, j))
            qsetelt!(r, j, t)
            i := j
@@ -126,7 +126,7 @@ FiniteLinearAggregateSort(S, V): Exports == Implementation where
     heapSort(l, r) ==
       not zero? minIndex r => error "not implemented"
       n := (#r)::I
-      for k in shift(n,-1) - 1 .. 0 by -1 repeat siftUp(l, r, k, n)
+      for k in shift(n, -1) - 1 .. 0 by -1 repeat siftUp(l, r, k, n)
       for k in n-1 .. 1 by -1 repeat
          swap!(r, 0, k)
          siftUp(l, r, 0, k)
@@ -157,7 +157,7 @@ FiniteLinearAggregateSort(S, V): Exports == Implementation where
             if (n = 1) and l(qelt(r, j), qelt(r, i)) then swap!(r, i, j)
             n < 2 => return r
             -- for the moment split at the middle item
-            k := partition(l, r, i, j, i + shift(n,-1))
+            k := partition(l, r, i, j, i + shift(n, -1))
             if k - i < j - k then
                 QuickSort(l, r, i, k - 1)
                 i := k
@@ -168,7 +168,7 @@ FiniteLinearAggregateSort(S, V): Exports == Implementation where
     shellSort(l, r) ==
       m := minIndex r
       n := maxIndex r
-      -- use Knuths gap sequence: 1,4,13,40,121,...
+      -- use Knuths gap sequence: 1, 4, 13, 40, 121, ...
       g := 1
       while g <= (n-m) repeat g := 3*g+1
       g := g quo 3
@@ -176,7 +176,7 @@ FiniteLinearAggregateSort(S, V): Exports == Implementation where
          for i in m+g..n repeat
             j := i-g
             while j >= m and l(qelt(r, j+g), qelt(r, j)) repeat
-               swap!(r,j,j+g)
+               swap!(r, j, j+g)
                j := j-g
          g := g quo 3
       r

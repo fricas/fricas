@@ -26,31 +26,31 @@
 ++   This category provides operations on ranges, or {\em segments}
 ++   as they are called.
 
-SegmentCategory(S:Type): Category == Type with
-    SEGMENT: (S, S) -> %
+SegmentCategory(S : Type) : Category == Type with
+    SEGMENT : (S, S) -> %
         ++ \spad{l..h} creates a segment with l and h as the endpoints.
-    BY: (%, Integer) -> %
+    BY : (%, Integer) -> %
         ++ \spad{s by n} creates a new segment in which only every \spad{n}-th
         ++ element is used.
-    lo: % -> S
+    lo : % -> S
         ++ lo(s) returns the first endpoint of s.
         ++ Note: \spad{lo(l..h) = l}.
-    hi: % -> S
+    hi : % -> S
         ++ hi(s) returns the second endpoint of s.
         ++ Note: \spad{hi(l..h) = h}.
-    low: % -> S
+    low : % -> S
         ++ low(s) returns the first endpoint of s.
         ++ Note: \spad{low(l..h) = l}.
-    high: % -> S
+    high : % -> S
         ++ high(s) returns the second endpoint of s.
         ++ Note: \spad{high(l..h) = h}.
-    incr: % -> Integer
+    incr : % -> Integer
         ++ incr(s) returns \spad{n}, where s is a segment in which every
         ++ \spad{n}-th element is used.
         ++ Note: \spad{incr(l..h by n) = n}.
-    segment: (S, S) -> %
-        ++ segment(i,j) is an alternate way to create the segment \spad{i..j}.
-    convert: S -> %
+    segment : (S, S) -> %
+        ++ segment(i, j) is an alternate way to create the segment \spad{i..j}.
+    convert : S -> %
         ++ convert(i) creates the segment \spad{i..i}.
 
     if S has ConvertibleTo InputForm then ConvertibleTo InputForm
@@ -73,19 +73,19 @@ SegmentCategory(S:Type): Category == Type with
 ++ Description:
 ++   This category provides an interface for expanding segments to
 ++   a stream of elements.
-SegmentExpansionCategory(S: OrderedRing, L: StreamAggregate(S)): Category ==
+SegmentExpansionCategory(S : OrderedRing, L : StreamAggregate(S)) : Category ==
     SegmentCategory(S) with
-      expand: List % -> L
+      expand : List % -> L
         ++ expand(l) creates a new value of type L in which each segment
         ++ \spad{l..h by k} is replaced with \spad{l, l+k, ... lN},
         ++ where \spad{lN <= h < lN+k}.
-        ++ For example, \spad{expand [1..4, 7..9] = [1,2,3,4,7,8,9]}.
-      expand: % -> L
+        ++ For example, \spad{expand [1..4, 7..9] = [1, 2, 3, 4, 7, 8, 9]}.
+      expand : % -> L
         ++ expand(l..h by k) creates value of type L with elements
         ++ \spad{l, l+k, ... lN} where \spad{lN <= h < lN+k}.
-        ++ For example, \spad{expand(1..5 by 2) = [1,3,5]}.
-      map: (S -> S, %) -> L
-        ++ map(f,l..h by k) produces a value of type L by applying f
+        ++ For example, \spad{expand(1..5 by 2) = [1, 3, 5]}.
+      map : (S -> S, %) -> L
+        ++ map(f, l..h by k) produces a value of type L by applying f
         ++ to each of the succesive elements of the segment, that is,
         ++ \spad{[f(l), f(l+k), ..., f(lN)]}, where \spad{lN <= h < lN+k}.
 
@@ -106,37 +106,37 @@ SegmentExpansionCategory(S: OrderedRing, L: StreamAggregate(S)): Category ==
 ++ Description:
 ++   This type is used to specify a range of values from type \spad{S}.
 
-Segment(S:Type): SegmentCategory(S) with
+Segment(S : Type) : SegmentCategory(S) with
     if S has SetCategory then SetCategory
     if S has OrderedRing then SegmentExpansionCategory(S, List S)
   == add
 
-    Rep := Record(low: S, high: S, incr: Integer)
+    Rep := Record(low : S, high : S, incr : Integer)
 
-    a..b == [a,b,1]
+    a..b == [a, b, 1]
     lo s == s.low
     low s == s.low
     hi s == s.high
     high s == s.high
     incr s == s.incr
-    segment(a,b) == [a,b,1]
+    segment(a, b) == [a, b, 1]
     BY(s, r) == [lo s, hi s, r]
 
     if S has SetCategory then
-      (s1:%) = (s2:%) ==
-        s1.low = s2.low and s1.high=s2.high and s1.incr = s2.incr
+      (s1 : %) = (s2 : %) ==
+        s1.low = s2.low and s1.high = s2.high and s1.incr = s2.incr
 
-      coerce(s:%):OutputForm ==
+      coerce(s : %) : OutputForm ==
         seg := SEGMENT(s.low::OutputForm, s.high::OutputForm)
         s.incr = 1 => seg
         infix(" by "::OutputForm, seg, s.incr::OutputForm)
 
-    convert(a: S): % == [a,a,1]
+    convert(a : S) : % == [a, a, 1]
 
     if S has ConvertibleTo InputForm then
         INFORM1 ==> InputFormFunctions1(%)
 
-        convert(s: %): InputForm ==
+        convert(s : %) : InputForm ==
 
             seg := packageCall('SEGMENT,
                                [convert(low s)@InputForm,
@@ -147,7 +147,7 @@ Segment(S:Type): SegmentCategory(S) with
                              [seg, convert(incr s)@InputForm])$INFORM1
 
     if S has OrderedRing then
-      expand(ls: List %):List S ==
+      expand(ls : List %) : List S ==
         lr := nil()$List(S)
         for s in ls repeat
           l := lo s
@@ -165,7 +165,7 @@ Segment(S:Type): SegmentCategory(S) with
         reverse! lr
 
       expand(s : %) == expand([s]$List(%))$%
-      map(f : S->S, s : %): List S ==
+      map(f : S->S, s : %) : List S ==
         lr := nil()$List(S)
         l := lo s
         h := hi s
@@ -197,25 +197,25 @@ Segment(S:Type): SegmentCategory(S) with
 ++ Description:
 ++   This package provides operations for mapping functions onto segments.
 
-SegmentFunctions2(R:Type, S:Type): public == private where
+SegmentFunctions2(R : Type, S : Type) : public == private where
   public ==> with
-    map: (R -> S, Segment R) -> Segment S
-        ++ map(f,l..h) returns a new segment \spad{f(l)..f(h)}.
+    map : (R -> S, Segment R) -> Segment S
+        ++ map(f, l..h) returns a new segment \spad{f(l)..f(h)}.
 
     if R has OrderedRing then
-      map: (R -> S, Segment R) -> List S
-        ++ map(f,s) expands the segment s, applying \spad{f} to each
+      map : (R -> S, Segment R) -> List S
+        ++ map(f, s) expands the segment s, applying \spad{f} to each
         ++ value.  For example, if \spad{s = l..h by k}, then the list
-        ++ \spad{[f(l), f(l+k),..., f(lN)]} is computed, where
+        ++ \spad{[f(l), f(l+k), ..., f(lN)]} is computed, where
         ++ \spad{lN <= h < lN+k}.
 
 
   private ==> add
-    map(f : R->S, r : Segment R): Segment S ==
-      SEGMENT(f lo r,f hi r)$Segment(S)
+    map(f : R->S, r : Segment R) : Segment S ==
+      SEGMENT(f lo r, f hi r)$Segment(S)
 
     if R has OrderedRing then
-     map(f : R->S, r : Segment R): List S ==
+     map(f : R->S, r : Segment R) : List S ==
        lr := nil()$List(S)
        l := lo r
        h := hi r
@@ -247,12 +247,12 @@ SegmentFunctions2(R:Type, S:Type): public == private where
 ++ Description:
 ++   This domain is used to provide the function argument syntax \spad{v=a..b}.
 ++   This is used, for example, by the top-level \spadfun{draw} functions.
-SegmentBinding(S:Type): Type with
-  equation: (Symbol, Segment S) -> %
-      ++ equation(v,a..b) creates a segment binding value with variable
+SegmentBinding(S : Type) : Type with
+  equation : (Symbol, Segment S) -> %
+      ++ equation(v, a..b) creates a segment binding value with variable
       ++ \spad{v} and segment \spad{a..b}.  Note that the interpreter parses
       ++ \spad{v=a..b} to this form.
-  variable: % -> Symbol
+  variable : % -> Symbol
       ++ variable(segb) returns the variable from the left hand side of
       ++ the \spadtype{SegmentBinding}.  For example, if \spad{segb} is
       ++ \spad{v=a..b}, then \spad{variable(segb)} returns \spad{v}.
@@ -264,8 +264,8 @@ SegmentBinding(S:Type): Type with
   if S has SetCategory then SetCategory
   if S has ConvertibleTo InputForm then ConvertibleTo InputForm
  == add
-  Rep := Record(var:Symbol, seg:Segment S)
-  equation(x,s) == [x, s]
+  Rep := Record(var : Symbol, seg : Segment S)
+  equation(x, s) == [x, s]
   variable b    == b.var
   segment b     == b.seg
 
@@ -273,7 +273,7 @@ SegmentBinding(S:Type): Type with
 
      b1 = b2       == variable b1 = variable b2 and segment b1 = segment b2
 
-     coerce(b:%):OutputForm ==
+     coerce(b : %) : OutputForm ==
        variable(b)::OutputForm = segment(b)::OutputForm
 
   if S has ConvertibleTo InputForm then
@@ -300,9 +300,9 @@ SegmentBinding(S:Type): Type with
 ++ Description:
 ++   This package provides operations for mapping functions onto
 ++   \spadtype{SegmentBinding}s.
-SegmentBindingFunctions2(R:Type, S:Type): with
-  map: (R -> S, SegmentBinding R) -> SegmentBinding S
-      ++ map(f,v=a..b) returns the value given by \spad{v=f(a)..f(b)}.
+SegmentBindingFunctions2(R : Type, S : Type) : with
+  map : (R -> S, SegmentBinding R) -> SegmentBinding S
+      ++ map(f, v=a..b) returns the value given by \spad{v=f(a)..f(b)}.
  == add
   map(f, b) ==
     equation(variable b, map(f, segment b)$SegmentFunctions2(R, S))
@@ -325,15 +325,15 @@ SegmentBindingFunctions2(R:Type, S:Type): with
 ++  This domain provides segments which may be half open.
 ++  That is, ranges of the form \spad{a..} or \spad{a..b}.
 
-UniversalSegment(S: Type): SegmentCategory(S) with
-    SEGMENT: S -> %
+UniversalSegment(S : Type) : SegmentCategory(S) with
+    SEGMENT : S -> %
         ++ \spad{l..} produces a half open segment,
         ++ that is, one with no upper bound.
-    segment: S -> %
+    segment : S -> %
         ++ segment(l) is an alternate way to construct the segment \spad{l..}.
     coerce : Segment S -> %
         ++ coerce(x) allows \spadtype{Segment} values to be used as %.
-    hasHi: % -> Boolean
+    hasHi : % -> Boolean
         ++ hasHi(s) tests whether the segment s has an upper bound.
 
     if S has SetCategory then SetCategory
@@ -344,19 +344,19 @@ UniversalSegment(S: Type): SegmentCategory(S) with
 --    expand : (%, S) -> Stream S
 
   == add
-    Rec  ==> Record(low: S, high: S, incr: Integer)
-    Rec2 ==> Record(low: S, incr: Integer)
+    Rec  ==> Record(low : S, high : S, incr : Integer)
+    Rec2 ==> Record(low : S, incr : Integer)
     SEG ==> Segment S
 
     Rep := Union(Rec2, Rec)
-    a,b : S
+    a, b : S
     s : %
-    i: Integer
+    i : Integer
     ls : List %
 
     segment a == [a, 1]$Rec2 :: Rep
-    segment(a,b) == [a,b,1]$Rec :: Rep
-    BY(s,i) ==
+    segment(a, b) == [a, b, 1]$Rec :: Rep
+    BY(s, i) ==
       s case Rec => [lo s, hi s, i]$Rec ::Rep
       [lo s, i]$Rec2 :: Rep
 
@@ -383,26 +383,26 @@ UniversalSegment(S: Type): SegmentCategory(S) with
       (s :: Rec).incr
 
     SEGMENT(a) == segment a
-    SEGMENT(a,b) == segment(a,b)
+    SEGMENT(a, b) == segment(a, b)
 
-    coerce(sg : SEG): % == segment(lo sg, hi sg)
+    coerce(sg : SEG) : % == segment(lo sg, hi sg)
 
-    convert a == [a,a,1]
+    convert a == [a, a, 1]
 
     if S has SetCategory then
 
-       (s1:%) = (s2:%) ==
+       (s1 : %) = (s2 : %) ==
           s1 case Rec2 =>
              s2 case Rec2 =>
                  s1.low = s2.low and s1.incr = s2.incr
              false
           s1 case Rec =>
              s2 case Rec =>
-                 s2.low = s2.low and s1.high=s2.high and s1.incr=s2.incr
+                 s2.low = s2.low and s1.high = s2.high and s1.incr = s2.incr
              false
           false
 
-       coerce(s: %): OutputForm ==
+       coerce(s : %) : OutputForm ==
          seg :=
            e := (lo s)::OutputForm
            hasHi s => SEGMENT(e, (hi s)::OutputForm)
@@ -414,7 +414,7 @@ UniversalSegment(S: Type): SegmentCategory(S) with
     if S has ConvertibleTo InputForm then
         INFORM1 ==> InputFormFunctions1(%)
 
-        convert(s: %): InputForm ==
+        convert(s : %) : InputForm ==
             if hasHi s then
                 seg := packageCall('SEGMENT,
                                    [convert(low s)@InputForm,
@@ -429,26 +429,26 @@ UniversalSegment(S: Type): SegmentCategory(S) with
 
 
     if S has OrderedRing then
-      expand(s:%)       == expand([s])
-      map(f:S->S, s:%)  == map(f, expand s)
+      expand(s : %)       == expand([s])
+      map(f : S->S, s : %)  == map(f, expand s)
 
-      plusInc(t: S, a: S): S == t + a
+      plusInc(t : S, a : S) : S == t + a
 
-      expand(ls: List %):Stream S ==
-        st:Stream S := empty()
+      expand(ls : List %) : Stream S ==
+        st : Stream S := empty()
         null ls => st
 
-        lb:List(Segment S) := nil()
+        lb : List(Segment S) := nil()
         while not null ls and hasHi first ls repeat
             s  := first ls
             ls := rest ls
             ns := BY(SEGMENT(lo s, hi s), incr s)$Segment(S)
-            lb := concat!(lb,ns)
+            lb := concat!(lb, ns)
         if not null ls then
             s := first ls
-            st: Stream S := generate(x +-> x + incr(s)::S, lo s)
+            st : Stream S := generate(x +-> x + incr(s)::S, lo s)
         else
-            st: Stream S := empty()
+            st : Stream S := empty()
         concat(construct expand(lb),  st)
 
 @
@@ -468,24 +468,24 @@ UniversalSegment(S: Type): SegmentCategory(S) with
 ++ Description:
 ++   This package provides operations for mapping functions onto segments.
 
-UniversalSegmentFunctions2(R:Type, S:Type): with
-    map: (R -> S, UniversalSegment R) -> UniversalSegment S
-        ++ map(f,seg) returns the new segment obtained by applying
+UniversalSegmentFunctions2(R : Type, S : Type) : with
+    map : (R -> S, UniversalSegment R) -> UniversalSegment S
+        ++ map(f, seg) returns the new segment obtained by applying
         ++ f to the endpoints of seg.
 
     if R has OrderedRing then
-      map: (R -> S, UniversalSegment R) -> Stream S
-        ++ map(f,s) expands the segment s, applying \spad{f} to each value.
+      map : (R -> S, UniversalSegment R) -> Stream S
+        ++ map(f, s) expands the segment s, applying \spad{f} to each value.
 
 
   == add
-    map(f:R -> S, u:UniversalSegment R):UniversalSegment S ==
+    map(f : R -> S, u : UniversalSegment R) : UniversalSegment S ==
       s := f lo u
       hasHi u => segment(s, f hi u)
       segment s
 
     if R has OrderedRing then
-      map(f:R -> S, u:UniversalSegment R): Stream S ==
+      map(f : R -> S, u : UniversalSegment R) : Stream S ==
         map(f, expand u)$StreamFunctions2(R, S)
 
 @
@@ -505,12 +505,12 @@ UniversalSegmentFunctions2(R:Type, S:Type): with
 ++ Description:
 ++   This package provides operations to create incrementing functions.
 
-IncrementingMaps(R:Join(Monoid, AbelianSemiGroup)): with
-    increment: () -> (R -> R)
+IncrementingMaps(R : Join(Monoid, AbelianSemiGroup)) : with
+    increment : () -> (R -> R)
         ++ increment() produces a function which adds \spad{1} to whatever
         ++ argument it is given.  For example, if {f := increment()} then
         ++ \spad{f x} is \spad{x+1}.
-    incrementBy: R -> (R -> R)
+    incrementBy : R -> (R -> R)
         ++ incrementBy(n) produces a function which adds \spad{n} to whatever
         ++ argument it is given.  For example, if {f := increment(n)} then
         ++ \spad{f x} is \spad{x+n}.

@@ -25,11 +25,11 @@
 ++ References:
 ++ Description: A domain which models the integer representation
 ++ used by machines in the AXIOM-NAG link.
-MachineInteger(): Exports == Implementation where
+MachineInteger() : Exports == Implementation where
 
   S ==> String
 
-  Exports ==> Join(FortranMachineTypeCategory,IntegerNumberSystem) with
+  Exports ==> Join(FortranMachineTypeCategory, IntegerNumberSystem) with
     maxint : PositiveInteger -> PositiveInteger
      ++ maxint(u) sets the maximum integer in the model to u
     maxint : () -> PositiveInteger
@@ -41,24 +41,24 @@ MachineInteger(): Exports == Implementation where
 
     MAXINT : PositiveInteger := 2^32
 
-    maxint():PositiveInteger == MAXINT
+    maxint() : PositiveInteger == MAXINT
 
-    maxint(new:PositiveInteger):PositiveInteger ==
+    maxint(new : PositiveInteger) : PositiveInteger ==
       old := MAXINT
       MAXINT := new
       old
 
-    coerce(u:Expression Integer):Expression(%) ==
-      map(coerce,u)$ExpressionFunctions2(Integer,%)
+    coerce(u : Expression Integer) : Expression(%) ==
+      map(coerce, u)$ExpressionFunctions2(Integer, %)
 
-    coerce(u:Integer):% ==
+    coerce(u : Integer) : % ==
       import S
       abs(u) > MAXINT =>
-        message: S := concat [convert(u)@S,"  > MAXINT(",convert(MAXINT)@S,")"]
+        message : S := concat [convert(u)@S,"  > MAXINT(",convert(MAXINT)@S,")"]
         error message
       u pretend %
 
-    retract(u:%):Integer == u pretend Integer
+    retract(u : %) : Integer == u pretend Integer
 
     retractIfCan(u:%):Union(Integer,"failed") == u pretend Integer
 
@@ -79,7 +79,7 @@ MachineInteger(): Exports == Implementation where
 ++ References:
 ++ Description: A domain which models the floating point representation
 ++ used by machines in the AXIOM-NAG link.
-MachineFloat(): Exports == Implementation where
+MachineFloat() : Exports == Implementation where
 
   PI  ==> PositiveInteger
   NNI ==> NonNegativeInteger
@@ -90,8 +90,8 @@ MachineFloat(): Exports == Implementation where
   SUP ==> SparseUnivariatePolynomial
   SF  ==> DoubleFloat
 
-  Exports ==> Join(FloatingPointSystem,FortranMachineTypeCategory,Field,
-      RetractableTo(Float),RetractableTo(Fraction(Integer)),CharacteristicZero) with
+  Exports ==> Join(FloatingPointSystem, FortranMachineTypeCategory, Field,
+      RetractableTo(Float), RetractableTo(Fraction(Integer)), CharacteristicZero) with
     precision : PI -> PI
       ++ precision(p) sets the number of digits in the model to p
     precision : () -> PI
@@ -116,15 +116,15 @@ MachineFloat(): Exports == Implementation where
       ++ mantissa(u) returns the mantissa of u
     exponent  : % -> I
       ++ exponent(u) returns the exponent of u
-    changeBase : (I,I,PI) -> %
-      ++ changeBase(exp,man,base) \undocumented{}
+    changeBase : (I, I, PI) -> %
+      ++ changeBase(exp, man, base) \undocumented{}
 
   Implementation ==> add
 
     import F
     import FI
 
-    Rep := Record(mantissa:I,exponent:I)
+    Rep := Record(mantissa : I, exponent : I)
 
     -- Parameters of the Floating Point Representation
     P : PI := 16      -- Precision
@@ -139,47 +139,47 @@ MachineFloat(): Exports == Implementation where
 
 
     -- locals
-    locRound:(FI)->I
-    checkExponent:(%)->%
-    normalise:(%)->%
-    newPower:(PI,PI)->Void
+    locRound : (FI)->I
+    checkExponent : (%)->%
+    normalise : (%)->%
+    newPower : (PI, PI)->Void
 
     retractIfCan(u:%):Union(FI,"failed") ==
       mantissa(u)*(B/1)^(exponent(u))
 
-    wholePart(u:%):Integer ==
-       man:I:=mantissa u
-       exp:I:=exponent u
-       f:=
+    wholePart(u : %) : Integer ==
+       man : I := mantissa u
+       exp : I := exponent u
+       f :=
            positive? exp => man*B^(exp pretend PI)
            zero? exp => man
            wholePart(man/B^((-exp) pretend PI))
-    normalise(u:%):% ==
+    normalise(u : %) : % ==
       -- We want the largest possible mantissa, to ensure a canonical
       -- representation.
       exp : I  := exponent u
       man : I  := mantissa u
       BB  : I  := B pretend I
       sgn : I := sign man ; man := abs man
-      zero? man => [0,0]$Rep
+      zero? man => [0, 0]$Rep
       if man < MMAX then
         while man < MMAX repeat
           exp := exp - 1
           man := man * BB
       if man > MMAX then
-        q1:FI:= man/1
-        BBF:FI:=BB/1
+        q1 : FI := man/1
+        BBF : FI := BB/1
         while wholePart(q1) > MMAX repeat
-          q1:= q1 / BBF
-          exp:=exp + 1
+          q1 := q1 / BBF
+          exp := exp + 1
         man := locRound(q1)
-      positive?(sgn) => checkExponent [man,exp]$Rep
-      checkExponent [-man,exp]$Rep
+      positive?(sgn) => checkExponent [man, exp]$Rep
+      checkExponent [-man, exp]$Rep
 
-    mantissa(u:%):I == elt(u,mantissa)$Rep
-    exponent(u:%):I == elt(u,exponent)$Rep
+    mantissa(u : %) : I == elt(u, mantissa)$Rep
+    exponent(u : %) : I == elt(u, exponent)$Rep
 
-    newPower(base:PI,prec:PI):Void ==
+    newPower(base : PI, prec : PI) : Void ==
       power   : PI := 1
       target  : PI := 10^prec
       current : PI := base
@@ -188,13 +188,13 @@ MachineFloat(): Exports == Implementation where
       MMAX  := B^POWER
       void()
 
-    changeBase(exp:I,man:I,base:PI):% ==
+    changeBase(exp : I, man : I, base : PI) : % ==
       newExp : I  := 0
       f      : FI := man*(base pretend I)::FI^exp
       sign   : I  := sign f
       f      : FI := abs f
       newMan : I  := wholePart f
-      zero? f => [0,0]$Rep
+      zero? f => [0, 0]$Rep
       BB     : FI := (B pretend I)::FI
       if newMan < MMAX then
         while newMan < MMAX repeat
@@ -206,114 +206,114 @@ MachineFloat(): Exports == Implementation where
           newExp := newExp + 1
           f := f/BB
           newMan := wholePart f
-      [sign*newMan,newExp]$Rep
+      [sign*newMan, newExp]$Rep
 
-    checkExponent(u:%):% ==
+    checkExponent(u : %) : % ==
       exponent(u) < EMIN or exponent(u) > EMAX =>
         message :S := concat(["Exponent out of range: ",
                               convert(EMIN)@S, "..", convert(EMAX)@S])$S
         error message
       u
 
-    coerce(u:%):OutputForm ==
+    coerce(u : %) : OutputForm ==
       coerce(u::F)
 
-    coerce(u:MachineInteger):% ==
-      checkExponent changeBase(0,retract(u)@Integer,10)
+    coerce(u : MachineInteger) : % ==
+      checkExponent changeBase(0, retract(u)@Integer, 10)
 
-    coerce(u:%):F ==
+    coerce(u : %) : F ==
       oldDigits : PI := digits(P)$F
-      r : F := float(mantissa u,exponent u,B)$Float
+      r : F := float(mantissa u, exponent u, B)$Float
       digits(oldDigits)$F
       r
 
-    coerce(u:F):% ==
-      checkExponent changeBase(exponent(u)$F,mantissa(u)$F,base()$F)
+    coerce(u : F) : % ==
+      checkExponent changeBase(exponent(u)$F, mantissa(u)$F, base()$F)
 
-    coerce(u:I):% ==
-       checkExponent changeBase(0,u,10)
+    coerce(u : I) : % ==
+       checkExponent changeBase(0, u, 10)
 
-    coerce(u:FI):% == (numer u)::%/(denom u)::%
+    coerce(u : FI) : % == (numer u)::%/(denom u)::%
 
-    retract(u:%):FI ==
+    retract(u : %) : FI ==
       value : Union(FI,"failed") := retractIfCan(u)
       value case "failed" => error "Cannot retract to a Fraction Integer"
       value::FI
 
-    retract(u:%):F == u::F
+    retract(u : %) : F == u::F
 
     retractIfCan(u:%):Union(F,"failed") == u::F::Union(F,"failed")
 
     retractIfCan(u:%):Union(I,"failed") ==
-      value:FI := mantissa(u)*(B pretend I)::FI^exponent(u)
+      value : FI := mantissa(u)*(B pretend I)::FI^exponent(u)
       zero? fractionPart(value) => wholePart(value)::Union(I,"failed")
       "failed"::Union(I,"failed")
 
-    retract(u:%):I ==
+    retract(u : %) : I ==
       result : Union(I,"failed") := retractIfCan u
       result = "failed" => error "Not an Integer"
       result::I
 
-    precision(p: PI):PI ==
+    precision(p : PI) : PI ==
       old : PI := P
-      newPower(B,p)
+      newPower(B, p)
       P := p
       old
 
-    precision():PI == P
+    precision() : PI == P
 
-    base(b:PI):PI ==
+    base(b : PI) : PI ==
       old : PI := b
-      newPower(b,P)
+      newPower(b, P)
       B := b
       old
 
-    base():PI == B
+    base() : PI == B
 
-    maximumExponent(u:I):I ==
+    maximumExponent(u : I) : I ==
       old : I := EMAX
       EMAX := u
       old
 
-    maximumExponent():I == EMAX
+    maximumExponent() : I == EMAX
 
-    minimumExponent(u:I):I ==
+    minimumExponent(u : I) : I ==
       old : I := EMIN
       EMIN := u
       old
 
-    minimumExponent():I == EMIN
+    minimumExponent() : I == EMIN
 
-    0 == [0,0]$Rep
-    1 == changeBase(0,1,10)
+    0 == [0, 0]$Rep
+    1 == changeBase(0, 1, 10)
 
-    zero?(u:%):Boolean == u=[0,0]$Rep
-
-
-
-    f1:%
-    f2:%
+    zero?(u : %) : Boolean == u=[0, 0]$Rep
 
 
-    locRound(x:FI):I ==
+
+    f1 : %
+    f2 : %
+
+
+    locRound(x : FI) : I ==
       abs(fractionPart(x)) >= 1/2 => wholePart(x)+sign(x)
       wholePart(x)
 
     recip f1 ==
       zero? f1 => "failed"
-      normalise [ locRound(B^(2*POWER)/mantissa f1),-(exponent f1 + 2*POWER)]
+      normalise [ locRound(B^(2*POWER)/mantissa f1), -(exponent f1 + 2*POWER)]
 
     f1 * f2 ==
-      normalise [mantissa(f1)*mantissa(f2),exponent(f1)+exponent(f2)]$Rep
+      normalise [mantissa(f1)*mantissa(f2), exponent(f1)+exponent(f2)]$Rep
 
-    f1 ^(p:FI) ==
+    f1 ^(p : FI) ==
       ((f1::F)^p)::%
 
 --inline
     f1 / f2 ==
       zero? f2 => error "division by zero"
       zero? f1 => 0
-      f1=f2 => 1
+      f1 = f2 => 1
       normalise [locRound(mantissa(f1)*B^(2*POWER)/mantissa(f2)),
          exponent(f1)-(exponent f2 + 2*POWER)]
 
@@ -321,12 +321,12 @@ MachineFloat(): Exports == Implementation where
 
     f1 exquo f2 == f1/f2
 
-    divide(f1,f2) == [ f1/f2,0]
+    divide(f1, f2) == [ f1/f2, 0]
 
     f1 quo f2 == f1/f2
     f1 rem f2 == 0
-    u:I * f1 ==
-      normalise [u*mantissa(f1),exponent(f1)]$Rep
+    u : I * f1 ==
+      normalise [u*mantissa(f1), exponent(f1)]$Rep
 
     f1 = f2 == mantissa(f1)=mantissa(f2) and exponent(f1)=exponent(f2)
 
@@ -340,13 +340,13 @@ MachineFloat(): Exports == Implementation where
          e1 > e2 + POWER + 2 =>
                zero? f1 => f2
                f1
-         normalise [m1*(B pretend I)^((e1-e2) pretend NNI)+m2,e2]$Rep
+         normalise [m1*(B pretend I)^((e1-e2) pretend NNI)+m2, e2]$Rep
       e2 > e1 + POWER +2 =>
                zero? f2 => f1
                f2
-      normalise [m2*(B pretend I)^((e2-e1) pretend NNI)+m1,e1]$Rep
+      normalise [m2*(B pretend I)^((e2-e1) pretend NNI)+m1, e1]$Rep
 
-    - f1 == [- mantissa f1,exponent f1]$Rep
+    - f1 == [- mantissa f1, exponent f1]$Rep
 
     f1 - f2 == f1 + (-f2)
 
@@ -363,7 +363,7 @@ MachineFloat(): Exports == Implementation where
       sign(m1) = 0 and sign(m2) = -1 => false
       true
 
-    characteristic():NNI == 0
+    characteristic() : NNI == 0
 
 @
 \section{domain MCMPLX MachineComplex}
@@ -381,7 +381,7 @@ MachineFloat(): Exports == Implementation where
 ++ References:
 ++ Description: A domain which models the complex number representation
 ++ used by machines in the AXIOM-NAG link.
-MachineComplex():Exports == Implementation where
+MachineComplex() : Exports == Implementation where
 
   Exports ==> Join (FortranMachineTypeCategory,
                     ComplexCategory(MachineFloat)) with
@@ -398,20 +398,20 @@ MachineComplex():Exports == Implementation where
 
   Implementation ==> Complex MachineFloat add
 
-    coerce(u:Complex Float):% ==
-      complex(real(u)::MachineFloat,imag(u)::MachineFloat)
+    coerce(u : Complex Float) : % ==
+      complex(real(u)::MachineFloat, imag(u)::MachineFloat)
 
-    coerce(u:Complex Integer):% ==
-      complex(real(u)::MachineFloat,imag(u)::MachineFloat)
+    coerce(u : Complex Integer) : % ==
+      complex(real(u)::MachineFloat, imag(u)::MachineFloat)
 
-    coerce(u:Complex MachineInteger):% ==
-      complex(real(u)::MachineFloat,imag(u)::MachineFloat)
+    coerce(u : Complex MachineInteger) : % ==
+      complex(real(u)::MachineFloat, imag(u)::MachineFloat)
 
-    coerce(u:Complex MachineFloat):% ==
-      complex(real(u),imag(u))
+    coerce(u : Complex MachineFloat) : % ==
+      complex(real(u), imag(u))
 
-    coerce(u:%):Complex Float ==
-      complex(real(u)::Float,imag(u)::Float)
+    coerce(u : %) : Complex Float ==
+      complex(real(u)::Float, imag(u)::Float)
 
 @
 \section{License}

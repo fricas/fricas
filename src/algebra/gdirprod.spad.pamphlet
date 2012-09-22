@@ -25,60 +25,60 @@
 ++    This package provides ordering functions on vectors which
 ++ are suitable parameters for OrderedDirectProduct.
 
-OrderingFunctions(dim,S) : T == C  where
+OrderingFunctions(dim, S) : T == C  where
   dim : NonNegativeInteger
   S         : OrderedAbelianMonoid
   VS       == Vector S
 
   T ==  with
-     pureLex    :  (VS,VS)  -> Boolean
-       ++ pureLex(v1,v2) return true if the vector v1 is less than the
+     pureLex    :  (VS, VS)  -> Boolean
+       ++ pureLex(v1, v2) return true if the vector v1 is less than the
        ++ vector v2 in the lexicographic ordering.
-     totalLex   :  (VS,VS)  -> Boolean
-       ++ totalLex(v1,v2) return true if the vector v1 is less than the
+     totalLex   :  (VS, VS)  -> Boolean
+       ++ totalLex(v1, v2) return true if the vector v1 is less than the
        ++ vector v2 in the ordering which is total degree refined by
        ++ lexicographic ordering.
-     reverseLex :  (VS,VS)  -> Boolean
-       ++ reverseLex(v1,v2) return true if the vector v1 is less than the
+     reverseLex :  (VS, VS)  -> Boolean
+       ++ reverseLex(v1, v2) return true if the vector v1 is less than the
        ++ vector v2 in the ordering which is total degree refined by
        ++ the reverse lexicographic ordering.
 
   C == add
-    n:NonNegativeInteger:=dim
+    n : NonNegativeInteger := dim
 
  -- pure lexicographical ordering
-    pureLex(v1:VS,v2:VS) : Boolean ==
+    pureLex(v1 : VS, v2 : VS) : Boolean ==
       for i in 1..n repeat
-        if qelt(v1,i) < qelt(v2,i) then return true
-        if qelt(v2,i) < qelt(v1,i) then return false
+        if qelt(v1, i) < qelt(v2, i) then return true
+        if qelt(v2, i) < qelt(v1, i) then return false
       false
 
  -- total ordering refined with lex
-    totalLex(v1:VS,v2:VS) :Boolean ==
-      n1:S:=0
-      n2:S:=0
+    totalLex(v1 : VS, v2 : VS) : Boolean ==
+      n1 : S := 0
+      n2 : S := 0
       for i in 1..n repeat
-        n1:= n1+qelt(v1,i)
-        n2:=n2+qelt(v2,i)
+        n1 := n1+qelt(v1, i)
+        n2 := n2+qelt(v2, i)
       n1<n2 => true
       n2<n1 => false
       for i in 1..n repeat
-        if qelt(v1,i) < qelt(v2,i) then return true
-        if qelt(v2,i) < qelt(v1,i) then return false
+        if qelt(v1, i) < qelt(v2, i) then return true
+        if qelt(v2, i) < qelt(v1, i) then return false
       false
 
  -- reverse lexicographical ordering
-    reverseLex(v1:VS,v2:VS) :Boolean ==
-      n1:S:=0
-      n2:S:=0
+    reverseLex(v1 : VS, v2 : VS) : Boolean ==
+      n1 : S := 0
+      n2 : S := 0
       for i in 1..n repeat
-        n1:= n1+qelt(v1,i)
-        n2:=n2+qelt(v2,i)
+        n1 := n1+qelt(v1, i)
+        n2 := n2+qelt(v2, i)
       n1<n2 => true
       n2<n1 => false
       for i in reverse(1..n) repeat
-        if qelt(v2,i) < qelt(v1,i) then return true
-        if qelt(v1,i) < qelt(v2,i) then return false
+        if qelt(v2, i) < qelt(v1, i) then return true
+        if qelt(v1, i) < qelt(v2, i) then return false
       false
 
 @
@@ -102,14 +102,14 @@ OrderingFunctions(dim,S) : T == C  where
 ++ vectors. This type is a suitable third argument for
 ++ \spadtype{GeneralDistributedMultivariatePolynomial}.
 
-OrderedDirectProduct(dim:NonNegativeInteger,
-                     S:OrderedAbelianMonoidSup,
-                      f:(Vector(S),Vector(S))->Boolean):T
+OrderedDirectProduct(dim : NonNegativeInteger,
+                     S : OrderedAbelianMonoidSup,
+                      f : (Vector(S), Vector(S))->Boolean) : T
                              == C where
-   T == DirectProductCategory(dim,S)
-   C == DirectProduct(dim,S) add
-        Rep:=Vector(S)
-        x:% < y:% == f(x::Rep,y::Rep)
+   T == DirectProductCategory(dim, S)
+   C == DirectProduct(dim, S) add
+        Rep := Vector(S)
+        x : % < y : % == f(x::Rep, y::Rep)
 
 @
 \section{domain HDP HomogeneousDirectProduct}
@@ -131,25 +131,25 @@ OrderedDirectProduct(dim:NonNegativeInteger,
 ++ lexicographic ordering. This type is a suitable third argument for
 ++ \spadtype{GeneralDistributedMultivariatePolynomial}.
 
-HomogeneousDirectProduct(dim,S) : T == C where
+HomogeneousDirectProduct(dim, S) : T == C where
    dim : NonNegativeInteger
    S         : OrderedAbelianMonoidSup
 
-   T == DirectProductCategory(dim,S)
-   C == DirectProduct(dim,S) add
-        Rep:=Vector(S)
-        v1:% < v2:% ==
+   T == DirectProductCategory(dim, S)
+   C == DirectProduct(dim, S) add
+        Rep := Vector(S)
+        v1 : % < v2 : % ==
  -- reverse lexicographical ordering
-          n1:S:=0
-          n2:S:=0
+          n1 : S := 0
+          n2 : S := 0
           for i in 1..dim repeat
-            n1:= n1+qelt(v1,i)
-            n2:=n2+qelt(v2,i)
+            n1 := n1+qelt(v1, i)
+            n2 := n2+qelt(v2, i)
           n1<n2 => true
           n2<n1 => false
           for i in reverse(1..dim) repeat
-            if qelt(v2,i) < qelt(v1,i) then return true
-            if qelt(v1,i) < qelt(v2,i) then return false
+            if qelt(v2, i) < qelt(v1, i) then return true
+            if qelt(v1, i) < qelt(v2, i) then return false
           false
 
 @
@@ -174,33 +174,33 @@ HomogeneousDirectProduct(dim,S) : T == C where
 ++ within each block. This type is a suitable third argument for
 ++ \spadtype{GeneralDistributedMultivariatePolynomial}.
 
-SplitHomogeneousDirectProduct(dimtot,dim1,S) : T == C where
+SplitHomogeneousDirectProduct(dimtot, dim1, S) : T == C where
    NNI ==> NonNegativeInteger
-   dim1,dimtot : NNI
+   dim1, dimtot : NNI
    S         : OrderedAbelianMonoidSup
 
-   T == DirectProductCategory(dimtot,S)
-   C == DirectProduct(dimtot,S) add
-        Rep:=Vector(S)
-        lessThanRlex(v1:%,v2:%,low:NNI,high:NNI):Boolean ==
+   T == DirectProductCategory(dimtot, S)
+   C == DirectProduct(dimtot, S) add
+        Rep := Vector(S)
+        lessThanRlex(v1 : %, v2 : %, low : NNI, high : NNI) : Boolean ==
  -- reverse lexicographical ordering
-          n1:S:=0
-          n2:S:=0
+          n1 : S := 0
+          n2 : S := 0
           for i in low..high repeat
-            n1:= n1+qelt(v1,i)
-            n2:=n2+qelt(v2,i)
+            n1 := n1+qelt(v1, i)
+            n2 := n2+qelt(v2, i)
           n1<n2 => true
           n2<n1 => false
           for i in reverse(low..high) repeat
-            if qelt(v2,i) < qelt(v1,i) then return true
-            if qelt(v1,i) < qelt(v2,i) then return false
+            if qelt(v2, i) < qelt(v1, i) then return true
+            if qelt(v1, i) < qelt(v2, i) then return false
           false
 
-        (v1:% < v2:%):Boolean ==
-          lessThanRlex(v1,v2,1,dim1) => true
+        (v1 : % < v2 : %) : Boolean ==
+          lessThanRlex(v1, v2, 1, dim1) => true
           for i in 1..dim1 repeat
-                if qelt(v1,i) ~= qelt(v2,i) then return false
-          lessThanRlex(v1,v2,dim1+1,dimtot)
+                if qelt(v1, i) ~= qelt(v2, i) then return false
+          lessThanRlex(v1, v2, dim1+1, dimtot)
 
 @
 \section{License}

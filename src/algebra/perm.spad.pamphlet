@@ -24,7 +24,7 @@
 ++ Description: PermutationCategory provides a categorial environment
 ++  for subgroups of bijections of a set (i.e. permutations)
 
-PermutationCategory(S:SetCategory): Category  ==  Group with
+PermutationCategory(S : SetCategory) : Category  ==  Group with
     cycle   :  List S       ->  %
       ++ cycle(ls) coerces a cycle {\em ls}, i.e. a list with not
       ++ repetitions to a permutation, which maps {\em ls.i} to
@@ -37,13 +37,13 @@ PermutationCategory(S:SetCategory): Category  ==  Group with
       ++ {\em ls.i} to {\em ls.i+1}, indices modulo the length of the list,
       ++ then these permutations are mutiplied.
       ++ Error: if repetitions occur in one cycle.
-    eval  :  (%,S)          ->  S
+    eval  :  (%, S)          ->  S
       ++ eval(p, el) returns the image of {\em el} under the
       ++ permutation p.
-    elt  :  (%,S)          ->  S
+    elt  :  (%, S)          ->  S
       ++ elt(p, el) returns the image of {\em el} under the
       ++ permutation p.
-    orbit :  (%,S)          ->  Set S
+    orbit :  (%, S)          ->  Set S
       ++ orbit(p, el) returns the orbit of {\em el} under the
       ++ permutation p, i.e. the set which is given by applications of
       ++ the powers of p to {\em el}.
@@ -77,7 +77,7 @@ PermutationCategory(S:SetCategory): Category  ==  Group with
 ++   The internal representation of permuatations are two lists
 ++   of equal length representing preimages and images.
 
-Permutation(S:SetCategory): public == private where
+Permutation(S : SetCategory) : public == private where
 
   B        ==> Boolean
   PI       ==> PositiveInteger
@@ -87,12 +87,12 @@ Permutation(S:SetCategory): public == private where
   V        ==> Vector
   PT       ==> Partition
   OUTFORM  ==> OutputForm
-  RECCYPE  ==> Record(cycl: L L S, permut: %)
-  RECPRIM  ==> Record(preimage: L S, image : L S)
+  RECCYPE  ==> Record(cycl : L L S, permut : %)
+  RECPRIM  ==> Record(preimage : L S, image : L S)
 
   public ==> PermutationCategory S with
 
-    listRepresentation:  %                ->  RECPRIM
+    listRepresentation :  %                ->  RECPRIM
       ++ listRepresentation(p) produces a representation {\em rep} of
       ++ the permutation p as a list of preimages and images, i.e
       ++ p maps {\em (rep.preimage).k} to {\em (rep.image).k} for all
@@ -157,8 +157,8 @@ Permutation(S:SetCategory): public == private where
       coerceImages    :  L S              ->  %
         ++ coerceImages(ls) coerces the list {\em ls} to a permutation
         ++ whose image is given by {\em ls} and the preimage is fixed
-        ++ to be {\em [1,...,n]}.
-        ++ Note: {coerceImages(ls)=coercePreimagesImages([1,...,n],ls)}.
+        ++ to be {\em [1, ..., n]}.
+        ++ Note: {coerceImages(ls)=coercePreimagesImages([1, ..., n], ls)}.
         ++ We assume that both preimage and image do not contain repetitions.
 
   private ==> add
@@ -184,67 +184,67 @@ domain.
 
     -- variables
 
-    p,q      : %
+    p, q      : %
     exp      : I
 
     -- local functions first, signatures:
 
-    smallerElement? : (S,S) -> B
-    rotateCycle: L S -> L S
-    coerceCycle: L L S -> %
-    smallerCycle?: (L S, L S)  -> B
-    shorterCycle?:(L S, L S)  -> B
-    permord:(RECCYPE,RECCYPE)  -> B
-    coerceToCycle:(%,B) -> L L S
-    duplicates?: L S -> B
+    smallerElement? : (S, S) -> B
+    rotateCycle : L S -> L S
+    coerceCycle : L L S -> %
+    smallerCycle? : (L S, L S)  -> B
+    shorterCycle? : (L S, L S)  -> B
+    permord : (RECCYPE, RECCYPE)  -> B
+    coerceToCycle : (%, B) -> L L S
+    duplicates? : L S -> B
 
-    smallerElement?(a:S, b:S): B ==
+    smallerElement?(a : S, b : S) : B ==
       S has OrderedSet => a <$S b
       S has Finite     => lookup a < lookup b
       false
 
-    rotateCycle(cyc: L S): L S ==
+    rotateCycle(cyc : L S) : L S ==
       -- smallest element is put in first place
       -- doesn't change cycle if underlying set
       -- is not ordered or not finite.
-      min:S := first cyc
-      minpos:I := 1           -- 1 = minIndex cyc
+      min : S := first cyc
+      minpos : I := 1           -- 1 = minIndex cyc
       for i in 2..maxIndex cyc repeat
-        if smallerElement?(cyc.i,min) then
+        if smallerElement?(cyc.i, min) then
           min  := cyc.i
           minpos := i
 --      one? minpos => cyc
       (minpos = 1) => cyc
-      concat(last(cyc,((#cyc-minpos+1)::NNI)),first(cyc,(minpos-1)::NNI))
+      concat(last(cyc, ((#cyc-minpos+1)::NNI)), first(cyc, (minpos-1)::NNI))
 
-    coerceCycle(lls : L L S): % ==
+    coerceCycle(lls : L L S) : % ==
       perm : % := 1
       for lists in reverse lls repeat
         perm := cycle lists * perm
       perm
 
-    smallerCycle?(cyca: L S, cycb: L S): B ==
+    smallerCycle?(cyca : L S, cycb : L S) : B ==
       #cyca ~= #cycb =>
         #cyca < #cycb
       for i in cyca for j in cycb repeat
         i ~= j => return smallerElement?(i, j)
       false
 
-    shorterCycle?(cyca: L S, cycb: L S): B ==
+    shorterCycle?(cyca : L S, cycb : L S) : B ==
       #cyca < #cycb
 
-    permord(pa: RECCYPE, pb : RECCYPE): B ==
+    permord(pa : RECCYPE, pb : RECCYPE) : B ==
       for i in pa.cycl for j in pb.cycl repeat
         i ~= j => return smallerCycle?(i, j)
       #pa.cycl < #pb.cycl
 
-    coerceToCycle(p: %, doSorting?: B): L L S ==
+    coerceToCycle(p : %, doSorting? : B) : L L S ==
       preim := p.1
       im := p.2
       cycles := nil()$(L L S)
       while not null preim repeat
         -- start next cycle
-        firstEltInCycle: S := first preim
+        firstEltInCycle : S := first preim
         nextCycle : L S := list firstEltInCycle
         preim := rest preim
         nextEltInCycle := first im
@@ -252,9 +252,9 @@ domain.
         while nextEltInCycle ~= firstEltInCycle repeat
           nextCycle := cons(nextEltInCycle, nextCycle)
           i := position(nextEltInCycle, preim)
-          preim := delete(preim,i)
+          preim := delete(preim, i)
           nextEltInCycle := im.i
-          im := delete(im,i)
+          im := delete(im, i)
         nextCycle := reverse nextCycle
         -- check on 1-cycles, we don't list these
         if not null rest nextCycle then
@@ -265,24 +265,24 @@ domain.
       not doSorting? => cycles
       -- sort cycles
       S has OrderedSet or S has Finite =>
-        sort(smallerCycle?,cycles)$(L L S)
-      sort(shorterCycle?,cycles)$(L L S)
+        sort(smallerCycle?, cycles)$(L L S)
+      sort(shorterCycle?, cycles)$(L L S)
 
-    duplicates? (ls : L S ): B ==
+    duplicates? (ls : L S ) : B ==
       x := copy ls
       while not null x repeat
-        member? (first x ,rest x) => return true
+        member? (first x , rest x) => return true
         x := rest x
       false
 
     -- now the exported functions
 
     listRepresentation p ==
-      s : RECPRIM := [p.1,p.2]
+      s : RECPRIM := [p.1, p.2]
 
     coercePreimagesImages preImageAndImage ==
-      preImage: List S := []
-      image: List S := []
+      preImage : List S := []
+      image : List S := []
       for i in preImageAndImage.1
         for pi in preImageAndImage.2 repeat
           if i ~= pi then
@@ -299,7 +299,7 @@ we have to sort them out here.
 Note that before [[patch--50]] this read
 \begin{verbatim}
       coercePreimagesImages preImageAndImage ==
-      p : % := [preImageAndImage.1,preImageAndImage.2]
+      p : % := [preImageAndImage.1, preImageAndImage.2]
 \end{verbatim}
 causing bugs when computing [[movedPoints]], [[fixedPoints]], [[even?]],
 [[odd?]], etc., as reported in Issue~\#295.
@@ -308,13 +308,13 @@ The other coercion facilities check for fixed points. It also seems that [[*]]
 removes fixed points from its result.
 
 <<TEST PERM>>=
-  p := coercePreimagesImages([[1,2,3],[1,2,3]])
+  p := coercePreimagesImages([[1, 2, 3], [1, 2, 3]])
   movedPoints p    -- should return {}
   even? p          -- should return true
-  p := coercePreimagesImages([[0,1,2,3],[3,0,2,1]])$PERM ZMOD 4
+  p := coercePreimagesImages([[0, 1, 2, 3], [3, 0, 2, 1]])$PERM ZMOD 4
   fixedPoints p    -- should return {2}
-  q := coercePreimagesImages([[0,1,2,3],[1,0]])$PERM ZMOD 4
-  fixedPoints(p*q) -- should return {2,0}
+  q := coercePreimagesImages([[0, 1, 2, 3], [1, 0]])$PERM ZMOD 4
+  fixedPoints(p*q) -- should return {2, 0}
   even?(p*q)       -- should return false
 @
 
@@ -332,7 +332,7 @@ removes fixed points from its result.
         (p.2).i ~= (q.2).pos => return false
       true
 
-    orbit(p ,el) ==
+    orbit(p , el) ==
       -- start with a 1-element list:
       out : Set S := brace list el
       el2 := eval(p, el)
@@ -347,7 +347,7 @@ removes fixed points from its result.
       partition([#c for c in coerceToCycle(p, false)])$Partition
 
     order p ==
-      ord: I := lcm removeDuplicates convert cyclePartition p
+      ord : I := lcm removeDuplicates convert cyclePartition p
       ord::NNI
 
     sign(p) ==
@@ -362,33 +362,33 @@ removes fixed points from its result.
     odd?(p) ==  odd?(#(p.1) - numberOfCycles p)
 
     pa < pb ==
-      pacyc:= coerceToCycle(pa,true)
-      pbcyc:= coerceToCycle(pb,true)
+      pacyc:= coerceToCycle(pa, true)
+      pbcyc:= coerceToCycle(pb, true)
       for i in pacyc for j in pbcyc repeat
         i ~= j => return smallerCycle? ( i, j )
       maxIndex pacyc < maxIndex pbcyc
 
-    coerce(lls : L L S): % == coerceCycle lls
+    coerce(lls : L L S) : % == coerceCycle lls
 
-    coerce(ls : L S): % == cycle ls
+    coerce(ls : L S) : % == cycle ls
 
-    sort(inList : L %): L % ==
+    sort(inList : L %) : L % ==
       not (S has OrderedSet or S has Finite) => inList
-      ownList: L RECCYPE := nil()$(L RECCYPE)
+      ownList : L RECCYPE := nil()$(L RECCYPE)
       for sigma in inList repeat
         ownList :=
-          cons([coerceToCycle(sigma,true),sigma]::RECCYPE, ownList)
+          cons([coerceToCycle(sigma, true), sigma]::RECCYPE, ownList)
       ownList := sort(permord, ownList)$(L RECCYPE)
       outList := nil()$(L %)
       for rec in ownList repeat
         outList := cons(rec.permut, outList)
       reverse outList
 
-    coerce (p: %): OUTFORM ==
-      cycles: L L S := coerceToCycle(p,true)
+    coerce (p : %) : OUTFORM ==
+      cycles : L L S := coerceToCycle(p, true)
       outfmL : L OUTFORM := nil()
       for cycle in cycles repeat
-        outcycL: L OUTFORM := nil()
+        outcycL : L OUTFORM := nil()
         for elt in cycle repeat
           outcycL := cons(elt :: OUTFORM, outcycL)
         outfmL := cons(paren blankSeparate reverse outcycL, outfmL)
@@ -447,7 +447,7 @@ removes fixed points from its result.
           imOfq := delete(imOfq, j)
       [append(preimOfqp, preimOfq), append(imOfqp, imOfq)]
 
-    1 == new(2,empty())$Rep
+    1 == new(2, empty())$Rep
 
     inv p  == [p.2, p.1]
 
@@ -465,7 +465,7 @@ removes fixed points from its result.
 
       coerceImages (image) ==
         preImage : L S := [i::S for i in 1..maxIndex image]
-        coercePreimagesImages [preImage,image]
+        coercePreimagesImages [preImage, image]
 @
 
 Up to [[patch--50]] we did not check for duplicates.
@@ -475,7 +475,7 @@ Up to [[patch--50]] we did not check for duplicates.
 
       coerceImages (image) ==
         preImage : L S := [index(i::PI)::S for i in 1..maxIndex image]
-        coercePreimagesImages [preImage,image]
+        coercePreimagesImages [preImage, image]
 @
 
 Up to [[patch--50]] we did not check for duplicates.

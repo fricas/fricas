@@ -12,9 +12,9 @@
 \section{package WEIER WeierstrassPreparation}
 <<package WEIER WeierstrassPreparation>>=
 )abbrev package WEIER WeierstrassPreparation
-++ Author:William H. Burge
-++ Date Created:Sept 1988
-++ Date Last Updated:Feb 15 1992
+++ Author: William H. Burge
+++ Date Created: Sept 1988
+++ Date Last Updated: Feb 15 1992
 ++ Basic Operations:
 ++ Related Domains:
 ++ Also See:
@@ -24,14 +24,14 @@
 ++ References:
 ++ Description: This package implements the Weierstrass preparation
 ++ theorem f for multivariate power series.
-++ weierstrass(v,p) where v is a variable, and p is a
+++ weierstrass(v, p) where v is a variable, and p is a
 ++ TaylorSeries(R) in which there is term of form c*v^s where c is
 ++ a constant.  Let s be minimal as above.  The result
 ++ is a list of TaylorSeries coefficients A[i] of the
 ++ equivalent polynomial
 ++ A = A[0] + A[1]*v + A[2]*v^2 + ... + A[s-1]*v^(s-1) + v^s
 ++ such that p=A*B , B being a TaylorSeries of minimum degree 0
-WeierstrassPreparation(R): Defn == Impl where
+WeierstrassPreparation(R) : Defn == Impl where
     R : Field
     VarSet==>Symbol
     SMP ==> Polynomial R
@@ -50,8 +50,8 @@ WeierstrassPreparation(R): Defn == Impl where
 
     Defn ==>  with
 
-        weierstrass:(VarSet,SMPS)->L SMPS
-          ++\spad{weierstrass(v,ts)} where v is a variable and ts is
+        weierstrass : (VarSet, SMPS)->L SMPS
+          ++\spad{weierstrass(v, ts)} where v is a variable and ts is
           ++ a TaylorSeries, implements the Weierstrass Preparation
           ++ Theorem. The result is a list of TaylorSeries that
           ++ are the coefficients of the equivalent series.
@@ -62,9 +62,9 @@ WeierstrassPreparation(R): Defn == Impl where
         import StreamTaylorSeriesOperations SMPS
 
 
-        map1==>map$(ST2(SMP,SUP))
-        map2==>map$(ST2(StS,SMP))
-        map3==>map$(ST2(StS,StS))
+        map1==>map$(ST2(SMP, SUP))
+        map2==>map$(ST2(StS, SMP))
+        map3==>map$(ST2(StS, StS))
 
         qqq : (NNI, SMPS, ST SMPS) -> ((ST SMPS) -> ST SMPS)
 
@@ -83,27 +83,27 @@ WeierstrassPreparation(R): Defn == Impl where
                     )$(L SMPS)
 
         streamlikeUniv(p : SUP, n : NNI) : StS ==
-          if n=0
-          then cons(coef (p,0), empty()$StS)
-          else cons(coef (p,n),streamlikeUniv(p,(n-1)::NNI))
+          if n = 0
+          then cons(coef(p, 0), empty()$StS)
+          else cons(coef(p, n), streamlikeUniv(p, (n-1)::NNI))
 
         transpose(s : ST StS) : ST StS ==delay(
            if empty?(s)
            then empty()$(ST StS)
-           else cons(map2(first, s),transpose(map3(rest, rst s))))
+           else cons(map2(first, s), transpose(map3(rest, rst s))))
 
-        zp==>map$StreamFunctions3(SUP,NNI,StS)
+        zp==>map$StreamFunctions3(SUP, NNI, StS)
 
         NO_COEFF ==> "can not find power of variable with constant coefficient"
 
         sts2stst(var : VarSet, sts : StS) : ST StS ==
            si0 : ST NNI := (integers 0) pretend ST NNI
            zp((x, y) +-> streamlikeUniv(x, y),
-             map1((p : SMP) : SUP +-> univariate(p, var), sts),si0)
+             map1((p : SMP) : SUP +-> univariate(p, var), sts), si0)
 
         tp(v : VarSet, sts : StS) : ST StS == transpose sts2stst(v, sts)
 
-        map4==>map$(ST2 (StS,StS))
+        map4==>map$(ST2 (StS, StS))
 
         maptake(n : NNI, p : ST StS) : ST SMPS ==
             map4((ss : StS) : StS +-> first(ss, n), p) pretend ST SMPS
@@ -132,12 +132,12 @@ WeierstrassPreparation(R): Defn == Impl where
             f := if e case "failed"
                      then error "no reciprocal"
                      else e::StS
-            q := (YSS qqq(a,f pretend SMPS,rest p))
-            maptake(a,(p*q) pretend ST StS)
+            q := (YSS qqq(a, f pretend SMPS, rest p))
+            maptake(a, (p*q) pretend ST StS)
 
-        qq:(NNI,SMPS,ST SMPS,ST SMPS)->ST SMPS
-        qq(a,e,p,c)==
-            cons(e,(-e)*mapdrop(a,(p*c)pretend(ST StS)))
+        qq : (NNI, SMPS, ST SMPS, ST SMPS)->ST SMPS
+        qq(a, e, p, c)==
+            cons(e, (-e)*mapdrop(a, (p*c)pretend(ST StS)))
 
         qqq(a, e, p) ==  s +-> qq(a, e, p, s)
 
@@ -145,7 +145,7 @@ WeierstrassPreparation(R): Defn == Impl where
 
         weierstrass(v, smps) ==
             coefficient(smps, 0) ~= 0 => empty()
-            transback wei (v,smps)
+            transback wei (v, smps)
 
 @
 \section{License}

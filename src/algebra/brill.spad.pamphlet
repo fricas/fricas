@@ -28,69 +28,69 @@
 ++ [3] John Brillhart, On the Euler and Bernoulli polynomials,
 ++ J. Reine Angew. Math., v. 234, (1969), pp. 45-64
 
-BrillhartTests(UP): Exports == Implementation where
+BrillhartTests(UP) : Exports == Implementation where
   N ==> NonNegativeInteger
   Z ==> Integer
-  UP: UnivariatePolynomialCategory Z
+  UP : UnivariatePolynomialCategory Z
 
   Exports ==> with
-    brillhartIrreducible?: UP -> Boolean -- See [1]
+    brillhartIrreducible? : UP -> Boolean -- See [1]
       ++ brillhartIrreducible?(p) returns \spad{true} if p can be shown to be
       ++ irreducible by a remark of Brillhart, \spad{false} is inconclusive.
-    brillhartIrreducible?: (UP,Boolean) -> Boolean -- See [1]
-      ++ brillhartIrreducible?(p,noLinears) returns \spad{true} if p can be
+    brillhartIrreducible? : (UP, Boolean) -> Boolean -- See [1]
+      ++ brillhartIrreducible?(p, noLinears) returns \spad{true} if p can be
       ++ shown to be irreducible by a remark of Brillhart, \spad{false} else.
       ++ If noLinears is \spad{true}, we are being told p has no linear factors
       ++ \spad{false} does not mean that p is reducible.
-    brillhartTrials: () -> N
+    brillhartTrials : () -> N
       ++ brillhartTrials() returns the number of tests in
       ++ \spadfun{brillhartIrreducible?}.
-    brillhartTrials: N -> N
+    brillhartTrials : N -> N
       ++ brillhartTrials(n) sets to n the number of tests in
       ++ \spadfun{brillhartIrreducible?} and returns the previous value.
-    noLinearFactor?: UP -> Boolean -- See [3] p. 47
+    noLinearFactor? : UP -> Boolean -- See [3] p. 47
       ++ noLinearFactor?(p) returns \spad{true} if p can be shown to have no
       ++ linear factor by a theorem of Lehmer, \spad{false} else. I insist on
       ++ the fact that \spad{false} does not mean that p has a linear factor.
 
   Implementation ==> add
 
-    import GaloisGroupFactorizationUtilities(Z,UP,Float)
+    import GaloisGroupFactorizationUtilities(Z, UP, Float)
 
-    squaredPolynomial(p:UP):Boolean ==
+    squaredPolynomial(p : UP) : Boolean ==
       d := degree p
       d = 0 => true
       odd? d => false
       squaredPolynomial reductum p
 
-    primeEnough?(n:Z,b:Z):Boolean ==
+    primeEnough?(n : Z, b : Z) : Boolean ==
        -- checks if n is prime, with the possible exception of
        -- factors whose product is at most b
        import Float
-       bb: Float := b::Float
+       bb : Float := b::Float
        for i in 2..b repeat
-           while (d:= n exquo i) case Integer repeat
-                 n:=d::Integer
-                 bb:=bb / i::Float
+           while (d := n exquo i) case Integer repeat
+                 n := d::Integer
+                 bb := bb / i::Float
                  bb < 1$Float => return false
                  --- we over-divided, so it can't be prime
        prime? n
 
-    brillharttrials: N := 6
-    brillhartTrials():N == brillharttrials
+    brillharttrials : N := 6
+    brillhartTrials() : N == brillharttrials
 
-    brillhartTrials(n:N):N ==
-      (brillharttrials,n) := (n,brillharttrials)
+    brillhartTrials(n : N) : N ==
+      (brillharttrials, n) := (n, brillharttrials)
       n
 
-    brillhartIrreducible?(p:UP):Boolean ==
-      brillhartIrreducible?(p,noLinearFactor? p)
+    brillhartIrreducible?(p : UP) : Boolean ==
+      brillhartIrreducible?(p, noLinearFactor? p)
 
-    brillhartIrreducible?(p:UP,noLinears:Boolean):Boolean == -- See [1]
+    brillhartIrreducible?(p : UP, noLinears : Boolean) : Boolean == -- See [1]
       zero? brillharttrials => false
       origBound := (largeEnough := rootBound(p)+1)
       -- see remarks 2 and 4
-      even0 := even? coefficient(p,0)
+      even0 := even? coefficient(p, 0)
       even1 := even? p(1)
       polyx2 := squaredPolynomial(p)
       prime? p(largeEnough) => true
@@ -98,22 +98,22 @@ BrillhartTests(UP): Exports == Implementation where
 --      one? brillharttrials => false
       (brillharttrials = 1) => false
       largeEnough := largeEnough+1
-      primeEnough?(p(largeEnough),if noLinears then 4 else 2) => true
+      primeEnough?(p(largeEnough), if noLinears then 4 else 2) => true
       not polyx2 and
-       primeEnough?(p(-largeEnough),if noLinears then 4 else 2) => true
+       primeEnough?(p(-largeEnough), if noLinears then 4 else 2) => true
       if odd? largeEnough then
         if even0 then largeEnough := largeEnough+1
       else
         if even1 then largeEnough := largeEnough+1
-      count :=(if polyx2 then 2 else 1)*(brillharttrials-2)+largeEnough
+      count := (if polyx2 then 2 else 1)*(brillharttrials-2)+largeEnough
       for i in (largeEnough+1)..count repeat
         small := if noLinears then (i-origBound)^2 else (i-origBound)
-        primeEnough?(p(i),small) => return true
-        not polyx2 and primeEnough?(p(-i),small) => return true
+        primeEnough?(p(i), small) => return true
+        not polyx2 and primeEnough?(p(-i), small) => return true
       false
 
-    noLinearFactor?(p:UP):Boolean ==
-      (odd? leadingCoefficient p) and (odd? coefficient(p,0)) and (odd? p(1))
+    noLinearFactor?(p : UP) : Boolean ==
+      (odd? leadingCoefficient p) and (odd? coefficient(p, 0)) and (odd? p(1))
 
 @
 \section{License}

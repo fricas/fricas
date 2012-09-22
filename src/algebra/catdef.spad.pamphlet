@@ -29,7 +29,7 @@
 ++   \spad{-(-x) = x}
 ++   \spad{x+(-x) = 0}
 -- following domain must be compiled with subsumption disabled
-AbelianGroup(): Category == CancellationAbelianMonoid with
+AbelianGroup() : Category == CancellationAbelianMonoid with
     --operations
       "-": % -> %                      ++ -x is the additive inverse of x.
       "-": (%,%) -> %                  ++ x-y is the difference of x and y
@@ -37,15 +37,15 @@ AbelianGroup(): Category == CancellationAbelianMonoid with
                        -- subsumes the partial subtraction from previous
       "*": (Integer,%) -> %            ++ n*x is the product of x by the integer n.
     add
-      (x:% - y:%):% == x+(-y)
+      (x : % - y : %) : % == x+(-y)
       subtractIfCan(x:%, y:%):Union(%, "failed") == (x-y) :: Union(%,"failed")
-      n:NonNegativeInteger * x:% == (n::Integer) * x
+      n : NonNegativeInteger * x : % == (n::Integer) * x
       import RepeatedDoubling(%)
       if not (% has Ring) then
-        n:Integer * x:% ==
-          zero? n => 0
-          n>0 => double(n pretend PositiveInteger,x)
-          double((-n) pretend PositiveInteger,-x)
+          n : Integer * x : % ==
+              zero? n => 0
+              n>0 => double(n pretend PositiveInteger, x)
+              double((-n) pretend PositiveInteger, -x)
 
 @
 
@@ -70,25 +70,25 @@ AbelianGroup(): Category == CancellationAbelianMonoid with
 ++   \spad{rightIdentity("+":(%,%)->%,0)}\tab{30}\spad{ x+0=x }
 -- following domain must be compiled with subsumption disabled
 -- define SourceLevelSubset to be EQUAL
-AbelianMonoid(): Category == AbelianSemiGroup with
+AbelianMonoid() : Category == AbelianSemiGroup with
     --operations
-      0: constant -> %
+      0 : constant -> %
         ++ 0 is the additive identity element.
-      sample: constant -> %
+      sample : constant -> %
         ++ sample yields a value of type %
-      zero?: % -> Boolean
+      zero? : % -> Boolean
         ++ zero?(x) tests if x is equal to 0.
       "*": (NonNegativeInteger,%) -> %
         ++ n * x is left-multiplication by a non negative integer
     add
       import RepeatedDoubling(%)
       zero? x == x = 0
-      n:PositiveInteger * x:% == (n::NonNegativeInteger) * x
+      n : PositiveInteger * x : % == (n::NonNegativeInteger) * x
       sample() == 0
       if not (% has Ring) then
-        n:NonNegativeInteger * x:% ==
-          zero? n => 0
-          double(n pretend PositiveInteger,x)
+          n : NonNegativeInteger * x : % ==
+              zero? n => 0
+              double(n pretend PositiveInteger, x)
 
 @
 
@@ -111,7 +111,7 @@ AbelianMonoid(): Category == AbelianSemiGroup with
 ++ Axioms:
 ++   \spad{associative("+":(%,%)->%)}\tab{30}\spad{ (x+y)+z = x+(y+z) }
 ++   \spad{commutative("+":(%,%)->%)}\tab{30}\spad{ x+y = y+x }
-AbelianSemiGroup(): Category == SetCategory with
+AbelianSemiGroup() : Category == SetCategory with
     --operations
       "+": (%,%) -> %                  ++ x+y computes the sum of x and y.
       "*": (PositiveInteger,%) -> %
@@ -120,7 +120,7 @@ AbelianSemiGroup(): Category == SetCategory with
     add
       import RepeatedDoubling(%)
       if not (% has Ring) then
-        n:PositiveInteger * x:% == double(n,x)
+          n : PositiveInteger * x : % == double(n, x)
 
 @
 
@@ -145,13 +145,13 @@ AbelianSemiGroup(): Category == SetCategory with
 ++   \spad{(1::R)::% = 1::%}
 ++   \spad{b*x = (b::%)*x}
 ++   \spad{r*(a*b) = (r*a)*b = a*(r*b)}
-Algebra(R:CommutativeRing): Category ==
+Algebra(R : CommutativeRing) : Category ==
   Join(Ring, Module R) with
     --operations
-      coerce: R -> %
+      coerce : R -> %
           ++ coerce(r) maps the ring element r to a member of the algebra.
  add
-  coerce(x:R):% == x * 1$%
+  coerce(x : R) : % == x * 1$%
 
 @
 \section{category BASTYPE BasicType}
@@ -170,11 +170,11 @@ Algebra(R:CommutativeRing): Category ==
 ++ Description:
 ++ \spadtype{BasicType} is the basic category for describing a collection
 ++ of elements with \spadop{=} (equality).
-BasicType(): Category == with
-      "=": (%,%) -> Boolean    ++ x=y tests if x and y are equal.
+BasicType() : Category == with
+      "=": (%,%) -> Boolean    ++ x = y tests if x and y are equal.
       "~=": (%,%) -> Boolean   ++ x~=y tests if x and y are not equal.
    add
-      _~_=(x:%,y:%) : Boolean == not(x=y)
+      _~_=(x : %, y : %) : Boolean == not(x = y)
 
 @
 \section{category BMODULE BiModule}
@@ -219,9 +219,9 @@ BiModule(R : SemiRng, S : SemiRng) : Category ==
 ++
 ++ Axioms:
 ++   \spad{c = a+b <=> c-b = a}
-CancellationAbelianMonoid(): Category == AbelianMonoid with
+CancellationAbelianMonoid() : Category == AbelianMonoid with
     --operations
-      subtractIfCan: (%,%) -> Union(%,"failed")
+      subtractIfCan : (%,%) -> Union(%,"failed")
          ++ subtractIfCan(x, y) returns an element z such that \spad{z+y=x}
          ++ or "failed" if no such element exists.
 
@@ -241,8 +241,8 @@ CancellationAbelianMonoid(): Category == AbelianMonoid with
 ++ References:
 ++ Description:
 ++ Rings of Characteristic Non Zero
-CharacteristicNonZero():Category == Ring with
-    charthRoot: % -> Union(%,"failed")
+CharacteristicNonZero() : Category == Ring with
+    charthRoot : % -> Union(%,"failed")
        ++ charthRoot(x) returns the pth root of x
        ++ where p is the characteristic of the ring.
 
@@ -261,7 +261,7 @@ CharacteristicNonZero():Category == Ring with
 ++ References:
 ++ Description:
 ++ Rings of Characteristic Zero.
-CharacteristicZero():Category == Ring
+CharacteristicZero() : Category == Ring
 
 @
 \section{category COMRING CommutativeRing}
@@ -280,8 +280,8 @@ CharacteristicZero():Category == Ring
 ++ The category of commutative rings with unity, i.e. rings where
 ++ \spadop{*} is commutative, and which have a multiplicative identity.
 ++ element.
---CommutativeRing():Category == Join(Ring,BiModule(%:Ring,%:Ring)) with
-CommutativeRing():Category == Join(Ring, BiModule(%,%), CommutativeStar)
+--CommutativeRing(): Category == Join(Ring, BiModule(%: Ring, %: Ring)) with
+CommutativeRing() : Category == Join(Ring, BiModule(%, %), CommutativeStar)
 
 @
 
@@ -305,25 +305,25 @@ CommutativeRing():Category == Join(Ring, BiModule(%,%), CommutativeStar)
 ++   \spad{differentiate(x+y) = differentiate(x)+differentiate(y)}
 ++   \spad{differentiate(x*y) = x*differentiate(y) + differentiate(x)*y}
 
-DifferentialRing(): Category == Ring with
-    differentiate: % -> %
+DifferentialRing() : Category == Ring with
+    differentiate : % -> %
          ++ differentiate(x) returns the derivative of x.
          ++ This function is a simple differential operator
          ++ where no variable needs to be specified.
-    D: % -> %
+    D : % -> %
          ++ D(x) returns the derivative of x.
          ++ This function is a simple differential operator
          ++ where no variable needs to be specified.
-    differentiate: (%, NonNegativeInteger) -> %
+    differentiate : (%, NonNegativeInteger) -> %
          ++ differentiate(x, n) returns the n-th derivative of x.
-    D: (%, NonNegativeInteger) -> %
+    D : (%, NonNegativeInteger) -> %
          ++ D(x, n) returns the n-th derivative of x.
   add
     D r == differentiate r
     differentiate(r, n) ==
-      for i in 1..n repeat r := differentiate r
-      r
-    D(r,n) == differentiate(r,n)
+        for i in 1..n repeat r := differentiate r
+        r
+    D(r, n) == differentiate(r, n)
 
 @
 
@@ -343,37 +343,37 @@ DifferentialRing(): Category == Ring with
 ++ Differential extensions of a ring R.
 ++ Given a differentiation on R, extend it to a differentiation on %.
 
-DifferentialExtension(R:Ring): Category == Ring with
+DifferentialExtension(R : Ring) : Category == Ring with
     --operations
-    differentiate: (%, R -> R) -> %
+    differentiate : (%, R -> R) -> %
        ++ differentiate(x, deriv) differentiates x extending
        ++ the derivation deriv on R.
-    differentiate: (%, R -> R, NonNegativeInteger) -> %
+    differentiate : (%, R -> R, NonNegativeInteger) -> %
        ++ differentiate(x, deriv, n) differentiate x n times
        ++ using a derivation which extends deriv on R.
-    D: (%, R -> R) -> %
+    D : (%, R -> R) -> %
        ++ D(x, deriv) differentiates x extending
        ++ the derivation deriv on R.
-    D: (%, R -> R, NonNegativeInteger) -> %
+    D : (%, R -> R, NonNegativeInteger) -> %
        ++ D(x, deriv, n) differentiate x n times
        ++ using a derivation which extends deriv on R.
     if R has DifferentialRing then DifferentialRing
     if R has PartialDifferentialRing(Symbol) then
              PartialDifferentialRing(Symbol)
   add
-    differentiate(x:%, derivation: R -> R, n:NonNegativeInteger):% ==
+    differentiate(x : %, derivation : R -> R, n : NonNegativeInteger) : % ==
       for i in 1..n repeat x := differentiate(x, derivation)
       x
-    D(x:%, derivation: R -> R) == differentiate(x, derivation)
-    D(x:%, derivation: R -> R, n:NonNegativeInteger) ==
+    D(x : %, derivation : R -> R) == differentiate(x, derivation)
+    D(x : %, derivation : R -> R, n : NonNegativeInteger) ==
             differentiate(x, derivation, n)
 
     if R has DifferentialRing then
-      differentiate x == differentiate(x, differentiate$R)
+        differentiate x == differentiate(x, differentiate$R)
 
     if R has PartialDifferentialRing Symbol then
-      differentiate(x:%, v:Symbol):% ==
-        differentiate(x, (s : R) : R +-> differentiate(s, v)$R)
+        differentiate(x : %, v : Symbol) : % ==
+            differentiate(x, (s : R) : R +-> differentiate(s, v)$R)
 
 @
 \section{category DIVRING DivisionRing}
@@ -393,7 +393,7 @@ DifferentialExtension(R:Ring): Category == Ring with
 ++ i.e. a not necessarily commutative ring where
 ++ all non-zero elements have multiplicative inverses.
 
-DivisionRing(): Category ==
+DivisionRing() : Category ==
  Join(EntireRing, Algebra Fraction Integer) with
       "^": (%,Integer) -> %
           ++ x^n returns x raised to the integer power n.
@@ -404,19 +404,18 @@ DivisionRing(): Category ==
 -- but knownInfo cannot handle the following commented
 --    if % has CharacteristicZero then Algebra Fraction Integer
     add
-      n: Integer
-      x: %
+      n : Integer
+      x : %
       import RepeatedSquaring(%)
-      x ^ n: Integer ==
-         zero? n => 1
-         zero? x =>
-            n<0 => error "division by zero"
-            x
-         n<0 =>
-            expt(inv x,(-n) pretend PositiveInteger)
-         expt(x,n pretend PositiveInteger)
+      x ^ n : Integer ==
+          zero? n => 1
+          zero? x =>
+              n<0 => error "division by zero"
+              x
+          n<0 => expt(inv x, (-n) pretend PositiveInteger)
+          expt(x, n pretend PositiveInteger)
 --    if % has CharacteristicZero() then
-      q:Fraction(Integer) * x:% == numer(q) * inv(denom(q)::%) * x
+      q : Fraction(Integer) * x : % == numer(q) * inv(denom(q)::%) * x
 
 @
 
@@ -447,42 +446,42 @@ DivisionRing(): Category ==
 EntireRing() : Category == Join(Ring, BiModule(%, %), noZeroDivisors) with
     --operations
       "exquo": (%,%) -> Union(%,"failed")
-            ++ exquo(a,b) either returns an element c such that
+            ++ exquo(a, b) either returns an element c such that
             ++ \spad{c*b=a} or "failed" if no such element can be found.
-      unitNormal: % -> Record(unit:%,canonical:%,associate:%)
+      unitNormal : % -> Record(unit : %, canonical : %, associate : %)
             ++ unitNormal(x) tries to choose a canonical element
             ++ from the associate class of x.
             ++ The attribute canonicalUnitNormal, if asserted, means that
             ++ the "canonical" element is the same across all associates of x
-            ++ if \spad{unitNormal(x) = [u,c,a]} then
+            ++ if \spad{unitNormal(x) = [u, c, a]} then
             ++ \spad{u*c = x}, \spad{a*u = 1}.
-      unitCanonical: % -> %
+      unitCanonical : % -> %
             ++ \spad{unitCanonical(x)} returns \spad{unitNormal(x).canonical}.
-      associates?: (%,%) -> Boolean
-        ++ associates?(x,y) tests whether x and y are associates, i.e.
+      associates? : (%, %) -> Boolean
+        ++ associates?(x, y) tests whether x and y are associates, i.e.
         ++ differ by a unit factor.
-      unit?: % -> Boolean
+      unit? : % -> Boolean
         ++ unit?(x) tests whether x is a unit, i.e. is invertible.
  add
       -- declaration
-      x,y: %
+      x, y : %
       -- definitions
-      UCA ==> Record(unit:%,canonical:%,associate:%)
+      UCA ==> Record(unit : %, canonical : %, associate : %)
       if not (% has Field) then
-        unitNormal(x) == [1$%,x,1$%]$UCA -- the non-canonical definition
+        unitNormal(x) == [1$%, x, 1$%]$UCA -- the non-canonical definition
       unitCanonical(x) == unitNormal(x).canonical -- always true
       recip(x) == if zero? x then "failed" else _exquo(1$%,x)
       unit?(x) == (recip x case "failed" => false; true)
       if % has canonicalUnitNormal then
-         associates?(x,y) ==
-           (unitNormal x).canonical = (unitNormal y).canonical
-       else
-         associates?(x,y) ==
-           zero? x => zero? y
-           zero? y => false
-           x exquo y case "failed" => false
-           y exquo x case "failed" => false
-           true
+          associates?(x, y) ==
+              (unitNormal x).canonical = (unitNormal y).canonical
+      else
+          associates?(x, y) ==
+              zero? x => zero? y
+              zero? y => false
+              x exquo y case "failed" => false
+              y exquo x case "failed" => false
+              true
 
 @
 
@@ -507,135 +506,136 @@ EntireRing() : Category == Join(Ring, BiModule(%, %), noZeroDivisors) with
 ++   multiplicativeValuation\tab{25}\spad{Size(a*b)=Size(a)*Size(b)}
 ++   additiveValuation\tab{25}\spad{Size(a*b)=Size(a)+Size(b)}
 
-EuclideanDomain(): Category == PrincipalIdealDomain with
+EuclideanDomain() : Category == PrincipalIdealDomain with
     --operations
-      sizeLess?: (%,%) -> Boolean
-         ++ sizeLess?(x,y) tests whether x is strictly
+      sizeLess? : (%, %) -> Boolean
+         ++ sizeLess?(x, y) tests whether x is strictly
          ++ smaller than y with respect to the \spadfunFrom{euclideanSize}{EuclideanDomain}.
-      euclideanSize: % -> NonNegativeInteger
+      euclideanSize : % -> NonNegativeInteger
          ++ euclideanSize(x) returns the euclidean size of the element x.
          ++ Error: if x is zero.
-      divide: (%,%) -> Record(quotient:%,remainder:%)
-         ++ divide(x,y) divides x by y producing a record containing a
+      divide : (%, %) -> Record(quotient : %, remainder : %)
+         ++ divide(x, y) divides x by y producing a record containing a
          ++ \spad{quotient} and \spad{remainder},
          ++ where the remainder is smaller (see \spadfunFrom{sizeLess?}{EuclideanDomain})
          ++ than the divisor y.
       "quo" : (%,%) -> %
-         ++ x quo y is the same as \spad{divide(x,y).quotient}.
+         ++ x quo y is the same as \spad{divide(x, y).quotient}.
          ++ See \spadfunFrom{divide}{EuclideanDomain}.
       "rem": (%,%) -> %
-         ++ x rem y is the same as \spad{divide(x,y).remainder}.
+         ++ x rem y is the same as \spad{divide(x, y).remainder}.
          ++ See \spadfunFrom{divide}{EuclideanDomain}.
-      extendedEuclidean: (%,%) -> Record(coef1:%,coef2:%,generator:%)
+      extendedEuclidean : (%, %) -> Record(coef1 : %, coef2 : %, generator : %)
                      -- formerly called princIdeal
-            ++ extendedEuclidean(x,y) returns a record rec where
+            ++ extendedEuclidean(x, y) returns a record rec where
             ++ \spad{rec.coef1*x+rec.coef2*y = rec.generator} and
             ++ rec.generator is a gcd of x and y.
             ++ The gcd is unique only
             ++ up to associates if \spadatt{canonicalUnitNormal} is not asserted.
             ++ \spadfun{principalIdeal} provides a version of this operation
             ++ which accepts an arbitrary length list of arguments.
-      extendedEuclidean: (%,%,%) -> Union(Record(coef1:%,coef2:%),"failed")
+      extendedEuclidean : (%,%,%) -> Union(Record(coef1:%,coef2:%),"failed")
                      -- formerly called expressIdealElt
-          ++ extendedEuclidean(x,y,z) either returns a record rec
+          ++ extendedEuclidean(x, y, z) either returns a record rec
           ++ where \spad{rec.coef1*x+rec.coef2*y=z} or returns "failed"
           ++ if z cannot be expressed as a linear combination of x and y.
-      multiEuclidean: (List %,%) -> Union(List %,"failed")
-          ++ multiEuclidean([f1,...,fn],z) returns a list of coefficients
+      multiEuclidean : (List %,%) -> Union(List %,"failed")
+          ++ multiEuclidean([f1, ..., fn], z) returns a list of coefficients
           ++ \spad{[a1, ..., an]} such that
           ++ \spad{ z / prod fi = sum aj/fj}.
           ++ If no such list of coefficients exists, "failed" is returned.
     add
       -- declarations
-      x,y,z: %
-      l: List %
+      x, y, z : %
+      l : List %
       -- definitions
-      sizeLess?(x,y) ==
-            zero? y => false
-            zero? x => true
-            euclideanSize(x)<euclideanSize(y)
-      x quo y == divide(x,y).quotient --divide must be user-supplied
-      x rem y == divide(x,y).remainder
+      sizeLess?(x, y) ==
+          zero? y => false
+          zero? x => true
+          euclideanSize(x)<euclideanSize(y)
+      x quo y == divide(x, y).quotient --divide must be user-supplied
+      x rem y == divide(x, y).remainder
       x exquo y ==
-         zero? y => "failed"
-         qr:=divide(x,y)
-         zero?(qr.remainder) => qr.quotient
-         "failed"
-      gcd(x,y) ==                --Euclidean Algorithm
-         x:=unitCanonical x
-         y:=unitCanonical y
-         while not zero? y repeat
-            (x,y):= (y,x rem y)
-            y:=unitCanonical y             -- this doesn't affect the
-                                           -- correctness of Euclid's algorithm,
-                                           -- but
-                                           -- a) may improve performance
-                                           -- b) ensures gcd(x,y)=gcd(y,x)
-                                           --    if canonicalUnitNormal
-         x
-      IdealElt ==> Record(coef1:%,coef2:%,generator:%)
-      unitNormalizeIdealElt(s:IdealElt):IdealElt ==
-         (u,c,a):=unitNormal(s.generator)
---         one? a => s
-         (a = 1) => s
-         [a*s.coef1,a*s.coef2,c]$IdealElt
-      extendedEuclidean(x,y) ==         --Extended Euclidean Algorithm
-         s1:=unitNormalizeIdealElt([1$%,0$%,x]$IdealElt)
-         s2:=unitNormalizeIdealElt([0$%,1$%,y]$IdealElt)
-         zero? y => s1
-         zero? x => s2
-         while not zero?(s2.generator) repeat
-            qr:= divide(s1.generator, s2.generator)
-            s3:=[s1.coef1 - qr.quotient * s2.coef1,
+          zero? y => "failed"
+          qr := divide(x, y)
+          zero?(qr.remainder) => qr.quotient
+          "failed"
+      gcd(x, y) ==                --Euclidean Algorithm
+          x := unitCanonical x
+          y := unitCanonical y
+          while not zero? y repeat
+              (x, y) := (y, x rem y)
+              y := unitCanonical y     -- this doesn't affect the
+                                       -- correctness of Euclid's algorithm,
+                                       -- but
+                                       -- a) may improve performance
+                                       -- b) ensures gcd(x, y)=gcd(y, x)
+                                       --    if canonicalUnitNormal
+          x
+      IdealElt ==> Record(coef1 : %, coef2 : %, generator : %)
+      unitNormalizeIdealElt(s : IdealElt) : IdealElt ==
+          (u, c, a) := unitNormal(s.generator)
+--          one? a => s
+          (a = 1) => s
+          [a*s.coef1, a*s.coef2, c]$IdealElt
+      extendedEuclidean(x, y) ==         --Extended Euclidean Algorithm
+          s1 := unitNormalizeIdealElt([1$%, 0$%, x]$IdealElt)
+          s2 := unitNormalizeIdealElt([0$%, 1$%, y]$IdealElt)
+          zero? y => s1
+          zero? x => s2
+          while not zero?(s2.generator) repeat
+              qr := divide(s1.generator, s2.generator)
+              s3 := [s1.coef1 - qr.quotient * s2.coef1,
                  s1.coef2 - qr.quotient * s2.coef2, qr.remainder]$IdealElt
-            s1:=s2
-            s2:=unitNormalizeIdealElt s3
-         if not(zero?(s1.coef1)) and not sizeLess?(s1.coef1,y)
-           then
-              qr:= divide(s1.coef1,y)
-              s1.coef1:= qr.remainder
-              s1.coef2:= s1.coef2 + qr.quotient * x
+              s1 := s2
+              s2 := unitNormalizeIdealElt s3
+          if not(zero?(s1.coef1)) and not sizeLess?(s1.coef1, y) then
+              qr := divide(s1.coef1, y)
+              s1.coef1 := qr.remainder
+              s1.coef2 := s1.coef2 + qr.quotient * x
               s1 := unitNormalizeIdealElt s1
-         s1
+          s1
 
-      TwoCoefs ==> Record(coef1:%,coef2:%)
-      extendedEuclidean(x,y,z) ==
-         zero? z => [0,0]$TwoCoefs
-         s:= extendedEuclidean(x,y)
-         (w:= z exquo s.generator) case "failed" => "failed"
-         zero? y =>
-            [s.coef1 * w, s.coef2 * w]$TwoCoefs
-         qr:= divide((s.coef1 * w), y)
-         [qr.remainder, s.coef2 * w + qr.quotient * x]$TwoCoefs
+      TwoCoefs ==> Record(coef1 : %, coef2 : %)
+      extendedEuclidean(x, y, z) ==
+          zero? z => [0, 0]$TwoCoefs
+          s := extendedEuclidean(x, y)
+          (w := z exquo s.generator) case "failed" => "failed"
+          zero? y => [s.coef1 * w, s.coef2 * w]$TwoCoefs
+          qr := divide((s.coef1 * w), y)
+          [qr.remainder, s.coef2 * w + qr.quotient * x]$TwoCoefs
+
       principalIdeal l ==
-         l = [] => error "empty list passed to principalIdeal"
-         rest l = [] =>
-              uca:=unitNormal(first l)
-              [[uca.unit],uca.canonical]
-         rest rest l = [] =>
-             u:= extendedEuclidean(first l,second l)
-             [[u.coef1, u.coef2], u.generator]
-         v:=principalIdeal rest l
-         u:= extendedEuclidean(first l,v.generator)
-         [[u.coef1,:[u.coef2*vv for vv in v.coef]],u.generator]
-      expressIdealMember(l,z) ==
-         z = 0 => [0 for v in l]
-         pid := principalIdeal l
-         (q := z exquo (pid.generator)) case "failed" => "failed"
-         [q*v for v in pid.coef]
-      multiEuclidean(l,z) ==
-         n := #l
-         zero? n => error "empty list passed to multiEuclidean"
-         n = 1 => [z]
-         l1 := copy l
-         l2 := split!(l1, n quo 2)
-         u:= extendedEuclidean(*/l1, */l2, z)
-         u case "failed" => "failed"
-         v1 := multiEuclidean(l1,u.coef2)
-         v1 case "failed" => "failed"
-         v2 := multiEuclidean(l2,u.coef1)
-         v2 case "failed" => "failed"
-         concat(v1,v2)
+          l = [] => error "empty list passed to principalIdeal"
+          rest l = [] =>
+              uca := unitNormal(first l)
+              [[uca.unit], uca.canonical]
+          rest rest l = [] =>
+              u := extendedEuclidean(first l, second l)
+              [[u.coef1, u.coef2], u.generator]
+          v := principalIdeal rest l
+          u := extendedEuclidean(first l, v.generator)
+          [[u.coef1, :[u.coef2*vv for vv in v.coef]], u.generator]
+
+      expressIdealMember(l, z) ==
+          z = 0 => [0 for v in l]
+          pid := principalIdeal l
+          (q := z exquo (pid.generator)) case "failed" => "failed"
+          [q*v for v in pid.coef]
+
+      multiEuclidean(l, z) ==
+          n := #l
+          zero? n => error "empty list passed to multiEuclidean"
+          n = 1 => [z]
+          l1 := copy l
+          l2 := split!(l1, n quo 2)
+          u := extendedEuclidean(*/l1, */l2, z)
+          u case "failed" => "failed"
+          v1 := multiEuclidean(l1, u.coef2)
+          v1 case "failed" => "failed"
+          v2 := multiEuclidean(l2, u.coef1)
+          v2 case "failed" => "failed"
+          concat(v1, v2)
 
 @
 
@@ -689,7 +689,7 @@ Thus the work of building the domain only happens once.
 If this function has never been called before we call the
 <<EuclideanDomain>>=
 (DEFUN |EuclideanDomain| NIL
-  (LET (#:G83585)
+  (LET (#: G83585)
     (COND
       (|EuclideanDomain;AL|)
       (T (SETQ |EuclideanDomain;AL| (|EuclideanDomain;|))))))
@@ -698,7 +698,7 @@ If this function has never been called before we call the
 \subsubsection{The First Call Domain Function}
 <<EuclideanDomain;>>=
 (DEFUN |EuclideanDomain;| NIL
-  (PROG (#1=#:G83583)
+  (PROG (#1=#: G83583)
     (RETURN
       (PROG1
         (LETT #1#
@@ -711,20 +711,20 @@ If this function has never been called before we call the
                 ((|euclideanSize| ((|NonNegativeInteger|) |$|)) T)
                 ((|divide|
                   ((|Record|
-                    (|:| |quotient| |$|)
-                    (|:| |remainder| |$|))
+                    (|: | |quotient| |$|)
+                    (|: | |remainder| |$|))
                   |$| |$|)) T)
                 ((|quo| (|$| |$| |$|)) T)
                 ((|rem| (|$| |$| |$|)) T)
                 ((|extendedEuclidean|
                   ((|Record|
-                    (|:| |coef1| |$|)
-                    (|:| |coef2| |$|)
-                    (|:| |generator| |$|))
+                    (|: | |coef1| |$|)
+                    (|: | |coef2| |$|)
+                    (|: | |generator| |$|))
                   |$| |$|)) T)
                 ((|extendedEuclidean|
                   ((|Union|
-                      (|Record| (|:| |coef1| |$|) (|:| |coef2| |$|))
+                      (|Record| (|: | |coef1| |$|) (|: | |coef2| |$|))
                       "failed")
                     |$| |$| |$|)) T)
                 ((|multiEuclidean|
@@ -766,7 +766,7 @@ If this function has never been called before we call the
 ++   \spad{a*(b/a) = b}
 ++   \spad{inv(a) = 1/a}
 
-Field(): Category == Join(EuclideanDomain,UniqueFactorizationDomain,
+Field() : Category == Join(EuclideanDomain, UniqueFactorizationDomain,
   DivisionRing, canonicalUnitNormal, canonicalsClosed) with
     --operations
       "/": (%,%) -> %
@@ -774,23 +774,23 @@ Field(): Category == Join(EuclideanDomain,UniqueFactorizationDomain,
         ++ Error: if y is 0.
     add
       --declarations
-      x,y: %
-      n: Integer
+      x, y : %
+      n : Integer
       -- definitions
-      UCA ==> Record(unit:%,canonical:%,associate:%)
+      UCA ==> Record(unit : %, canonical : %, associate : %)
       unitNormal(x) ==
-          if zero? x then [1$%,0$%,1$%]$UCA else [x,1$%,inv(x)]$UCA
+          if zero? x then [1$%, 0$%, 1$%]$UCA else [x, 1$%, inv(x)]$UCA
       unitCanonical(x) == if zero? x then x else 1
-      associates?(x,y) == if zero? x then zero? y else not(zero? y)
-      inv x ==((u:=recip x) case "failed" => error "not invertible"; u)
-      x exquo y == (y=0 => "failed"; x / y)
-      gcd(x,y) == 1
+      associates?(x, y) == if zero? x then zero? y else not(zero? y)
+      inv x ==((u := recip x) case "failed" => error "not invertible"; u)
+      x exquo y == (y = 0 => "failed"; x / y)
+      gcd(x, y) == 1
       euclideanSize(x) == 0
       prime? x == false
       squareFree x == x::Factored(%)
       factor x == x::Factored(%)
       x / y == (zero? y => error "catdef: division by zero"; x * inv(y))
-      divide(x,y) == [x / y,0]
+      divide(x, y) == [x / y, 0]
 
 @
 \section{category FINITE Finite}
@@ -813,28 +813,28 @@ Field(): Category == Join(EuclideanDomain,UniqueFactorizationDomain,
 ++ Axioms:
 ++   \spad{lookup(index(n)) = n}
 ++   \spad{index(lookup(s)) = s}
-Finite(): Category == Join(SetCategory, ConvertibleTo InputForm) with
+Finite() : Category == Join(SetCategory, ConvertibleTo InputForm) with
     --operations
-      size: () ->  NonNegativeInteger
+      size : () ->  NonNegativeInteger
         ++ size() returns the number of elements in the set.
-      index: PositiveInteger -> %
+      index : PositiveInteger -> %
         ++ index(i) takes a positive integer i less than or equal
         ++ to \spad{size()} and
         ++ returns the \spad{i}-th element of the set. This operation establishs a bijection
         ++ between the elements of the finite set and \spad{1..size()}.
-      lookup: % -> PositiveInteger
+      lookup : % -> PositiveInteger
         ++ lookup(x) returns a positive integer such that
         ++ \spad{x = index lookup x}.
-      random: () -> %
+      random : () -> %
         ++ random() returns a random element from the set.
-      enumerate: () -> List %
+      enumerate : () -> List %
         ++ enumerate() returns list of elements of the set.
   add
       random() == index((1+random(size()$%))::PositiveInteger)
 
       enumerate() == [index(i::PositiveInteger) for i in 1..size()]
 
-      convert(x: %): InputForm ==
+      convert(x : %) : InputForm ==
           packageCall('index, [convert(lookup(x))@InputForm]
                      )$InputFormFunctions1(%)
 
@@ -855,20 +855,20 @@ Finite(): Category == Join(SetCategory, ConvertibleTo InputForm) with
 ++ S is \spadtype{FullyLinearlyExplicitRingOver R} means that S is a
 ++ \spadtype{LinearlyExplicitRingOver R} and, in addition, if R is a
 ++ \spadtype{LinearlyExplicitRingOver Integer}, then so is S
-FullyLinearlyExplicitRingOver(R:Ring):Category ==
+FullyLinearlyExplicitRingOver(R : Ring) : Category ==
   LinearlyExplicitRingOver R with
     if (R has LinearlyExplicitRingOver Integer) then
             LinearlyExplicitRingOver Integer
  add
   if not(R is Integer) then
-    if (R has LinearlyExplicitRingOver Integer) then
-      reducedSystem(m:Matrix %):Matrix(Integer) ==
-        reducedSystem(reducedSystem(m)@Matrix(R))
+      if (R has LinearlyExplicitRingOver Integer) then
+          reducedSystem(m : Matrix %) : Matrix(Integer) ==
+              reducedSystem(reducedSystem(m)@Matrix(R))
 
-      reducedSystem(m:Matrix %, v:Vector %):
-        Record(mat:Matrix(Integer), vec:Vector(Integer)) ==
-          rec := reducedSystem(m, v)@Record(mat:Matrix R, vec:Vector R)
-          reducedSystem(rec.mat, rec.vec)
+          reducedSystem(m : Matrix %, v : Vector %) :
+                Record(mat : Matrix(Integer), vec : Vector(Integer)) ==
+              rec := reducedSystem(m, v)@Record(mat : Matrix R, vec : Vector R)
+              reducedSystem(rec.mat, rec.vec)
 
 @
 \section{category GCDDOM GcdDomain}
@@ -890,51 +890,54 @@ FullyLinearlyExplicitRingOver(R:Ring):Category ==
 ++ However, if such a \spadfun{factor} operation exist, factorization will be
 ++ unique up to order and units.
 
-GcdDomain(): Category == Join(IntegralDomain, LeftOreRing) with
+GcdDomain() : Category == Join(IntegralDomain, LeftOreRing) with
     --operations
-      gcd: (%,%) -> %
-            ++ gcd(x,y) returns the greatest common divisor of x and y.
-            -- gcd(x,y) = gcd(y,x) in the presence of canonicalUnitNormal,
+      gcd : (%, %) -> %
+            ++ gcd(x, y) returns the greatest common divisor of x and y.
+            -- gcd(x, y) = gcd(y, x) in the presence of canonicalUnitNormal,
             -- but not necessarily elsewhere
-      gcd: List(%) -> %
+      gcd : List(%) -> %
             ++ gcd(l) returns the common gcd of the elements in the list l.
-      lcm: (%,%) -> %
-            ++ lcm(x,y) returns the least common multiple of x and y.
-            -- lcm(x,y) = lcm(y,x) in the presence of canonicalUnitNormal,
+      lcm : (%, %) -> %
+            ++ lcm(x, y) returns the least common multiple of x and y.
+            -- lcm(x, y) = lcm(y, x) in the presence of canonicalUnitNormal,
             -- but not necessarily elsewhere
-      lcm: List(%) -> %
+      lcm : List(%) -> %
             ++ lcm(l) returns the least common multiple of the elements of the list l.
-      gcdPolynomial: (SparseUnivariatePolynomial %, SparseUnivariatePolynomial %) ->
+      gcdPolynomial : (SparseUnivariatePolynomial %, SparseUnivariatePolynomial %) ->
            SparseUnivariatePolynomial %
-            ++ gcdPolynomial(p,q) returns the greatest common divisor (gcd) of
+            ++ gcdPolynomial(p, q) returns the greatest common divisor (gcd) of
             ++ univariate polynomials over the domain
     add
-      lcm(x: %,y: %) ==
-        y = 0 => 0
-        x = 0 => 0
-        LCM : Union(%,"failed") := y exquo gcd(x,y)
-        LCM case % =>  x * LCM
-        error "bad gcd in lcm computation"
-      lcm(l:List %) == reduce(lcm,l,1,0)
-      gcd(l:List %) == reduce(gcd,l,0,1)
+      lcm(x : %, y : %) ==
+          y = 0 => 0
+          x = 0 => 0
+          LCM : Union(%,"failed") := y exquo gcd(x,y)
+          LCM case % =>  x * LCM
+          error "bad gcd in lcm computation"
+      lcm(l : List %) == reduce(lcm, l, 1, 0)
+      gcd(l : List %) == reduce(gcd, l, 0, 1)
       SUP ==> SparseUnivariatePolynomial
-      gcdPolynomial(p1,p2) ==
-        zero? p1 => unitCanonical p2
-        zero? p2 => unitCanonical p1
-        c1:= content(p1); c2:= content(p2)
-        p1:= (p1 exquo c1)::SUP %
-        p2:= (p2 exquo c2)::SUP %
-        if (e1:=minimumDegree p1) > 0 then p1:=(p1 exquo monomial(1,e1))::SUP %
-        if (e2:=minimumDegree p2) > 0 then p2:=(p2 exquo monomial(1,e2))::SUP %
-        e1:=min(e1,e2); c1:=gcd(c1,c2)
-        p1:=
-           degree p1 = 0 or degree p2 = 0 => monomial(c1,0)
-           p:= subResultantGcd(p1,p2)
-           degree p = 0 => monomial(c1,0)
-           c2:= gcd(leadingCoefficient p1,leadingCoefficient p2)
-           unitCanonical(c1 * primitivePart(((c2*p) exquo leadingCoefficient p)::SUP %))
-        zero? e1 => p1
-        monomial(1,e1)*p1
+      gcdPolynomial(p1, p2) ==
+          zero? p1 => unitCanonical p2
+          zero? p2 => unitCanonical p1
+          c1 := content(p1); c2 := content(p2)
+          p1 := (p1 exquo c1)::SUP %
+          p2 := (p2 exquo c2)::SUP %
+          if (e1 := minimumDegree p1) > 0 then
+              p1 := (p1 exquo monomial(1, e1))::SUP %
+          if (e2 := minimumDegree p2) > 0 then
+              p2 := (p2 exquo monomial(1, e2))::SUP %
+          e1 := min(e1, e2); c1 := gcd(c1, c2)
+          p1 :=
+              degree p1 = 0 or degree p2 = 0 => monomial(c1, 0)
+              p := subResultantGcd(p1, p2)
+              degree p = 0 => monomial(c1, 0)
+              c2 := gcd(leadingCoefficient p1, leadingCoefficient p2)
+              unitCanonical(c1 * primitivePart(((c2*p) exquo
+                                     leadingCoefficient p)::SUP %))
+          zero? e1 => p1
+          monomial(1, e1)*p1
 
       lcmCoef(c1, c2) ==
           g := gcd(c1, c2)
@@ -963,26 +966,26 @@ GcdDomain(): Category == Join(IntegralDomain, LeftOreRing) with
 ++ Axioms:
 ++   \spad{leftInverse("*":(%,%)->%,inv)}\tab{30}\spad{ inv(x)*x = 1 }
 ++   \spad{rightInverse("*":(%,%)->%,inv)}\tab{30}\spad{ x*inv(x) = 1 }
-Group(): Category == Join(Monoid, unitsKnown) with
+Group() : Category == Join(Monoid, unitsKnown) with
     --operations
-      inv: % -> %               ++ inv(x) returns the inverse of x.
+      inv : % -> %               ++ inv(x) returns the inverse of x.
       "/": (%,%) -> %           ++ x/y is the same as x times the inverse of y.
       "^": (%,Integer) -> %    ++ x^n returns x raised to the integer power n.
-      conjugate: (%,%) -> %
-        ++ conjugate(p,q) computes \spad{inv(q) * p * q}; this is 'right action
+      conjugate : (%, %) -> %
+        ++ conjugate(p, q) computes \spad{inv(q) * p * q}; this is 'right action
         ++ by conjugation'.
-      commutator: (%,%) -> %
-        ++ commutator(p,q) computes \spad{inv(p) * inv(q) * p * q}.
+      commutator : (%, %) -> %
+        ++ commutator(p, q) computes \spad{inv(p) * inv(q) * p * q}.
     add
       import RepeatedSquaring(%)
-      x:% / y:% == x*inv(y)
-      recip(x:%) == inv(x)
-      x:% ^ n:Integer ==
-         zero? n => 1
-         n<0 => expt(inv(x),(-n) pretend PositiveInteger)
-         expt(x,n pretend PositiveInteger)
-      conjugate(p,q) == inv(q) * p * q
-      commutator(p,q) == inv(p) * inv(q) * p * q
+      x : % / y : % == x*inv(y)
+      recip(x : %) == inv(x)
+      x : % ^ n : Integer ==
+          zero? n => 1
+          n < 0 => expt(inv(x), (-n) pretend PositiveInteger)
+          expt(x, n pretend PositiveInteger)
+      conjugate(p, q) == inv(q) * p * q
+      commutator(p, q) == inv(p) * inv(q) * p * q
 
 @
 \section{category INTDOM IntegralDomain}
@@ -1001,8 +1004,8 @@ Group(): Category == Join(Monoid, unitsKnown) with
 ++ The category of commutative integral domains, i.e. commutative
 ++ rings with no zero divisors.
 ++
-IntegralDomain(): Category ==
---  Join(CommutativeRing, Algebra(%:CommutativeRing), EntireRing) with
+IntegralDomain() : Category ==
+--  Join(CommutativeRing, Algebra(%: CommutativeRing), EntireRing) with
   Join(CommutativeRing, Algebra(%), EntireRing)
 
 @
@@ -1068,11 +1071,11 @@ LeftOreRing : Category == EntireRing with
 ++ References:
 ++ Description:
 ++ An extension ring with an explicit linear dependence test.
-LinearlyExplicitRingOver(R:Ring): Category == Ring with
-  reducedSystem: Matrix % -> Matrix R
+LinearlyExplicitRingOver(R : Ring) : Category == Ring with
+  reducedSystem : Matrix % -> Matrix R
     ++ reducedSystem(A) returns a matrix B such that \spad{A x = 0} and \spad{B x = 0}
     ++ have the same solutions in R.
-  reducedSystem: (Matrix %,Vector %) -> Record(mat:Matrix R,vec:Vector R)
+  reducedSystem : (Matrix %, Vector %) -> Record(mat : Matrix R, vec : Vector R)
     ++ reducedSystem(A, v) returns a matrix B and a vector w such that
     ++ \spad{A x = v} and \spad{B x = w} have the same solutions in R.
 
@@ -1097,9 +1100,9 @@ LinearlyExplicitRingOver(R:Ring): Category == Ring with
 ++   \spad{(a*b)*x = a*(b*x)}
 ++   \spad{(a+b)*x = (a*x)+(b*x)}
 ++   \spad{a*(x+y) = (a*x)+(a*y)}
-Module(R:CommutativeRing): Category == BiModule(R,R)
+Module(R : CommutativeRing) : Category == BiModule(R, R)
   add
-    if not(R is %) then x:%*r:R == r*x
+    if not(R is %) then x : %*r : R == r*x
 
 @
 \section{category MONOID Monoid}
@@ -1124,15 +1127,15 @@ Module(R:CommutativeRing): Category == BiModule(R,R)
 ++
 ++ Conditional attributes:
 ++    unitsKnown\tab{15}\spadfun{recip} only returns "failed" on non-units
-Monoid(): Category == SemiGroup with
+Monoid() : Category == SemiGroup with
     --operations
-      1: constant ->  %                   ++ 1 is the multiplicative identity.
-      sample: constant -> %               ++ sample yields a value of type %
-      one?: % -> Boolean                  ++ one?(x) tests if x is equal to 1.
+      1 : constant ->  %                   ++ 1 is the multiplicative identity.
+      sample : constant -> %               ++ sample yields a value of type %
+      one? : % -> Boolean                  ++ one?(x) tests if x is equal to 1.
       "^": (%,NonNegativeInteger) -> %
           ++ x^n returns the repeated product
           ++ of x n times, i.e. exponentiation.
-      recip: % -> Union(%,"failed")
+      recip : % -> Union(%,"failed")
           ++ recip(x) tries to compute the multiplicative inverse for x
           ++ or "failed" if it cannot find the inverse (see unitsKnown).
     add
@@ -1140,12 +1143,12 @@ Monoid(): Category == SemiGroup with
       one? x == x = 1
       sample() == 1
       recip x ==
---       one? x => x
-       (x = 1) => x
-       "failed"
-      x:% ^ n:NonNegativeInteger ==
-         zero? n => 1
-         expt(x,n pretend PositiveInteger)
+--          one? x => x
+          (x = 1) => x
+          "failed"
+      x : % ^ n : NonNegativeInteger ==
+          zero? n => 1
+          expt(x, n pretend PositiveInteger)
 
 @
 
@@ -1165,7 +1168,7 @@ Monoid(): Category == SemiGroup with
 ++ Ordered sets which are also abelian groups, such that the addition preserves
 ++ the ordering.
 
-OrderedAbelianGroup(): Category ==
+OrderedAbelianGroup() : Category ==
         Join(OrderedCancellationAbelianMonoid, AbelianGroup)
 
 @
@@ -1185,7 +1188,7 @@ OrderedAbelianGroup(): Category ==
 ++ Ordered sets which are also abelian monoids, such that the addition
 ++ preserves the ordering.
 
-OrderedAbelianMonoid(): Category ==
+OrderedAbelianMonoid() : Category ==
         Join(OrderedAbelianSemiGroup, AbelianMonoid)
 
 @
@@ -1212,10 +1215,10 @@ OrderedAbelianMonoid(): Category ==
 ++   \spad{sup(a,b)-b \~~= "failed"}
 ++   \spad{x-a \~~= "failed" and x-b \~~= "failed" => x >= sup(a,b)}
 
-OrderedAbelianMonoidSup(): Category == OrderedCancellationAbelianMonoid with
+OrderedAbelianMonoidSup() : Category == OrderedCancellationAbelianMonoid with
     --operation
-      sup: (%,%) -> %
-        ++ sup(x,y) returns the least element from which both
+      sup : (%, %) -> %
+        ++ sup(x, y) returns the least element from which both
         ++ x and y can be subtracted.
 
 @
@@ -1236,7 +1239,7 @@ OrderedAbelianMonoidSup(): Category == OrderedCancellationAbelianMonoid with
 ++ preserves the ordering.
 ++   \spad{ x < y => x+z < y+z}
 
-OrderedAbelianSemiGroup(): Category == Join(OrderedSet, AbelianSemiGroup)
+OrderedAbelianSemiGroup() : Category == Join(OrderedSet, AbelianSemiGroup)
 
 @
 
@@ -1248,7 +1251,7 @@ OrderedAbelianSemiGroup(): Category == Join(OrderedSet, AbelianSemiGroup)
 ++ Date Last Updated: May 25, 2008
 ++ Description:  Semigroups with compatible ordering.
 
-OrderedSemiGroup(): Category == Join(OrderedSet, SemiGroup)
+OrderedSemiGroup() : Category == Join(OrderedSet, SemiGroup)
 
 @
 
@@ -1268,7 +1271,7 @@ OrderedSemiGroup(): Category == Join(OrderedSet, SemiGroup)
 ++ Ordered sets which are also abelian cancellation monoids, such that the addition
 ++ preserves the ordering.
 
-OrderedCancellationAbelianMonoid(): Category ==
+OrderedCancellationAbelianMonoid() : Category ==
         Join(OrderedAbelianMonoid, CancellationAbelianMonoid)
 
 @
@@ -1287,7 +1290,7 @@ OrderedCancellationAbelianMonoid(): Category ==
 ++ Description:
 ++ Ordered finite sets.
 
-OrderedFinite(): Category == Join(OrderedSet, Finite)
+OrderedFinite() : Category == Join(OrderedSet, Finite)
 
 @
 \section{category OINTDOM OrderedIntegralDomain}
@@ -1306,7 +1309,7 @@ OrderedFinite(): Category == Join(OrderedSet, Finite)
 ++ and the arithmetic operations are compatible
 ++
 
-OrderedIntegralDomain(): Category ==
+OrderedIntegralDomain() : Category ==
   Join(IntegralDomain, OrderedRing)
 
 @
@@ -1331,7 +1334,7 @@ OrderedIntegralDomain(): Category ==
 ++   \spad{x < y => x*z < y*z}
 ++   \spad{x < y => z*x < z*y}
 
-OrderedMonoid(): Category == Join(OrderedSemiGroup, Monoid)
+OrderedMonoid() : Category == Join(OrderedSemiGroup, Monoid)
 
 @
 \section{category ORDRING OrderedRing}
@@ -1353,10 +1356,10 @@ OrderedMonoid(): Category == Join(OrderedSemiGroup, Monoid)
 ++ Axiom:
 ++   \spad{0<a and b<c => ab< ac}
 
-OrderedRing(): Category == Join(OrderedAbelianGroup,Ring,Monoid) with
-     positive?: % -> Boolean
+OrderedRing() : Category == Join(OrderedAbelianGroup, Ring, Monoid) with
+     positive? : % -> Boolean
        ++ positive?(x) tests whether x is strictly greater than 0.
-     negative?: % -> Boolean
+     negative? : % -> Boolean
        ++ negative?(x) tests whether x is strictly less than 0.
      sign     : % -> Integer
        ++ sign(x) is 1 if x is positive, -1 if x is negative, 0 if x equals 0.
@@ -1366,15 +1369,15 @@ OrderedRing(): Category == Join(OrderedAbelianGroup,Ring,Monoid) with
      positive? x == x>0
      negative? x == x<0
      sign x ==
-       positive? x => 1
-       negative? x => -1
-       zero? x => 0
-       error "x satisfies neither positive?, negative? or zero?"
+         positive? x => 1
+         negative? x => -1
+         zero? x => 0
+         error "x satisfies neither positive?, negative? or zero?"
      abs x ==
-       positive? x => x
-       negative? x => -x
-       zero? x => 0
-       error "x satisfies neither positive?, negative? or zero?"
+         positive? x => x
+         negative? x => -x
+         zero? x => 0
+         error "x satisfies neither positive?, negative? or zero?"
 
 @
 
@@ -1384,9 +1387,9 @@ OrderedRing(): Category == Join(OrderedAbelianGroup,Ring,Monoid) with
 ++ Description:
 ++ The class of set equipped with possibly unnatural linear order
 ++ (needed for technical reasons).
-Comparable(): Category == SetCategory with
+Comparable() : Category == SetCategory with
   --operations
-    smaller?: (%,%) -> Boolean
+    smaller? : (%, %) -> Boolean
       ++ smaller?(x, y) is a strict total ordering on the elements of the set.
 @
 
@@ -1397,7 +1400,7 @@ Comparable(): Category == SetCategory with
 ++ The class of partially ordered sets, that is sets equipped with
 ++ transitive and reflexive relation \spad{<=}.
 
-PartialOrder(): Category == with
+PartialOrder() : Category == with
     "<": (%,%) -> Boolean
       ++ x < y is a less than test.
     ">":         (%, %) -> Boolean
@@ -1430,35 +1433,35 @@ PartialOrder(): Category == with
 ++ Keywords:
 ++ References:
 ++ Description:
-++ The class of totally ordered sets, that is, sets such that for each pair of elements \spad{(a,b)}
+++ The class of totally ordered sets, that is, sets such that for each pair of elements \spad{(a, b)}
 ++ exactly one of the following relations holds \spad{a<b or a=b or b<a}
 ++ and the relation is transitive, i.e.  \spad{a<b and b<c => a<c}.
 ++ This order should be the natural order on given structure.
 
-OrderedSet(): Category == Join(Comparable, PartialOrder) with
+OrderedSet() : Category == Join(Comparable, PartialOrder) with
   --operations
 
-    max: (%,%) -> %
+    max : (%, %) -> %
       ++ max(x,y) returns the maximum of x and y relative to "<".
-    min: (%,%) -> %
+    min : (%, %) -> %
       ++ min(x,y) returns the minimum of x and y relative to "<".
   add
     -- transitional definitions
     smaller?(x, y) == x < y
 
   --declarations
-    x,y: %
+    x, y : %
   --definitions
   -- These really ought to become some sort of macro
-    max(x,y) ==
-      x > y => x
-      y
-    min(x,y) ==
-      x > y => y
-      x
-    ((x: %) >  (y: %)) : Boolean == y < x
-    ((x: %) >= (y: %)) : Boolean == not (x < y)
-    ((x: %) <= (y: %)) : Boolean == not (y < x)
+    max(x, y) ==
+        x > y => x
+        y
+    min(x, y) ==
+        x > y => y
+        x
+    ((x : %) >  (y : %)) : Boolean == y < x
+    ((x : %) >= (y : %)) : Boolean == not (x < y)
+    ((x : %) <= (y : %)) : Boolean == not (y < x)
 
 @
 \section{category PDRING PartialDifferentialRing}
@@ -1477,52 +1480,53 @@ OrderedSet(): Category == Join(Comparable, PartialOrder) with
 ++ A partial differential ring with differentiations indexed by a parameter type S.
 ++
 ++ Axioms:
-++   \spad{differentiate(x+y,e) = differentiate(x,e)+differentiate(y,e)}
-++   \spad{differentiate(x*y,e) = x*differentiate(y,e) + differentiate(x,e)*y}
+++   \spad{differentiate(x+y, e) = differentiate(x, e)+differentiate(y, e)}
+++   \spad{differentiate(x*y, e) = x*differentiate(y, e) + differentiate(x, e)*y}
 
-PartialDifferentialRing(S:SetCategory): Category == Ring with
-    differentiate: (%, S) -> %
-        ++ differentiate(x,v) computes the partial derivative of x
+PartialDifferentialRing(S : SetCategory) : Category == Ring with
+    differentiate : (%, S) -> %
+        ++ differentiate(x, v) computes the partial derivative of x
         ++ with respect to v.
-    differentiate: (%, List S) -> %
-        ++ differentiate(x,[s1,...sn]) computes successive partial derivatives,
+    differentiate : (%, List S) -> %
+        ++ differentiate(x, [s1, ...sn]) computes successive partial derivatives,
         ++ i.e. \spad{differentiate(...differentiate(x, s1)..., sn)}.
-    differentiate: (%, S, NonNegativeInteger) -> %
+    differentiate : (%, S, NonNegativeInteger) -> %
         ++ differentiate(x, s, n) computes multiple partial derivatives, i.e.
         ++ n-th derivative of x with respect to s.
-    differentiate: (%, List S, List NonNegativeInteger) -> %
-        ++ differentiate(x, [s1,...,sn], [n1,...,nn]) computes
+    differentiate : (%, List S, List NonNegativeInteger) -> %
+        ++ differentiate(x, [s1, ..., sn], [n1, ..., nn]) computes
         ++ multiple partial derivatives, i.e.
-    D: (%, S) -> %
-        ++ D(x,v) computes the partial derivative of x
+    D : (%, S) -> %
+        ++ D(x, v) computes the partial derivative of x
         ++ with respect to v.
-    D: (%, List S) -> %
-        ++ D(x,[s1,...sn]) computes successive partial derivatives,
+    D : (%, List S) -> %
+        ++ D(x, [s1, ...sn]) computes successive partial derivatives,
         ++ i.e. \spad{D(...D(x, s1)..., sn)}.
-    D: (%, S, NonNegativeInteger) -> %
+    D : (%, S, NonNegativeInteger) -> %
         ++ D(x, s, n) computes multiple partial derivatives, i.e.
         ++ n-th derivative of x with respect to s.
-    D: (%, List S, List NonNegativeInteger) -> %
-        ++ D(x, [s1,...,sn], [n1,...,nn]) computes
+    D : (%, List S, List NonNegativeInteger) -> %
+        ++ D(x, [s1, ..., sn], [n1, ..., nn]) computes
         ++ multiple partial derivatives, i.e.
         ++ \spad{D(...D(x, s1, n1)..., sn, nn)}.
   add
-    differentiate(r:%, l:List S) ==
-      for s in l repeat r := differentiate(r, s)
-      r
+    differentiate(r : %, l : List S) ==
+        for s in l repeat r := differentiate(r, s)
+        r
 
-    differentiate(r:%, s:S, n:NonNegativeInteger) ==
-      for i in 1..n repeat r := differentiate(r, s)
-      r
+    differentiate(r : %, s : S, n : NonNegativeInteger) ==
+        for i in 1..n repeat r := differentiate(r, s)
+        r
 
-    differentiate(r:%, ls:List S, ln:List NonNegativeInteger) ==
-      for s in ls for n in ln repeat r := differentiate(r, s, n)
-      r
+    differentiate(r : %, ls : List S, ln : List NonNegativeInteger) ==
+        for s in ls for n in ln repeat r := differentiate(r, s, n)
+        r
 
-    D(r:%, v:S) == differentiate(r,v)
-    D(r:%, lv:List S) == differentiate(r,lv)
-    D(r:%, v:S, n:NonNegativeInteger) == differentiate(r,v,n)
-    D(r:%, lv:List S, ln:List NonNegativeInteger) == differentiate(r, lv, ln)
+    D(r : %, v : S) == differentiate(r, v)
+    D(r : %, lv : List S) == differentiate(r, lv)
+    D(r : %, v : S, n : NonNegativeInteger) == differentiate(r, v, n)
+    D(r : %, lv : List S, ln : List NonNegativeInteger) ==
+        differentiate(r, lv, ln)
 
 @
 \section{category PFECAT PolynomialFactorizationExplicit}
@@ -1545,70 +1549,71 @@ PartialDifferentialRing(S:SetCategory): Category == Ring with
 ++ in the current release of axiom.
 -- Currently unused.
 
-PolynomialFactorizationExplicit(): Category == Definition where
+PolynomialFactorizationExplicit() : Category == Definition where
   P ==> SparseUnivariatePolynomial %
   Definition ==>
     UniqueFactorizationDomain with
     -- operations
-       squareFreePolynomial: P -> Factored(P)
+       squareFreePolynomial : P -> Factored(P)
               ++ squareFreePolynomial(p) returns the
               ++ square-free factorization of the
               ++ univariate polynomial p.
-       factorPolynomial: P -> Factored(P)
+       factorPolynomial : P -> Factored(P)
               ++ factorPolynomial(p) returns the factorization
               ++ into irreducibles of the univariate polynomial p.
-       factorSquareFreePolynomial: P -> Factored(P)
+       factorSquareFreePolynomial : P -> Factored(P)
               ++ factorSquareFreePolynomial(p) factors the
               ++ univariate polynomial p into irreducibles
               ++ where p is known to be square free
               ++ and primitive with respect to its main variable.
-       gcdPolynomial: (P, P) -> P
-              ++ gcdPolynomial(p,q) returns the gcd of the univariate
+       gcdPolynomial : (P, P) -> P
+              ++ gcdPolynomial(p, q) returns the gcd of the univariate
               ++ polynomials p qnd q.
               -- defaults to Euclidean, but should be implemented via
               -- modular or p-adic methods.
-       solveLinearPolynomialEquation: (List P, P) -> Union(List P,"failed")
+       solveLinearPolynomialEquation : (List P, P) -> Union(List P,"failed")
               ++ solveLinearPolynomialEquation([f1, ..., fn], g)
               ++ (where the fi are relatively prime to each other)
               ++ returns a list of ai such that
               ++ \spad{g/prod fi = sum ai/fi}
               ++ or returns "failed" if no such list of ai's exists.
        if % has CharacteristicNonZero then
-         conditionP: Matrix % -> Union(Vector %,"failed")
+         conditionP : Matrix % -> Union(Vector %,"failed")
               ++ conditionP(m) returns a vector of elements, not all zero,
               ++ whose \spad{p}-th powers (p is the characteristic of the domain)
               ++ are a solution of the homogenous linear system represented
               ++ by m, or "failed" is there is no such vector.
-         charthRoot: % -> Union(%,"failed")
+         charthRoot : % -> Union(%,"failed")
               ++ charthRoot(r) returns the \spad{p}-th root of r, or "failed"
               ++ if none exists in the domain.
               -- this is a special case of conditionP, but often the one we want
       add
-        gcdPolynomial(f,g) ==
-           zero? f => g
-           zero? g => f
-           cf:=content f
-           if not one? cf then f:=(f exquo cf)::P
-           cg:=content g
-           if not one? cg then g:=(g exquo cg)::P
-           ans:=subResultantGcd(f,g)$P
-           gcd(cf,cg)*(ans exquo content ans)::P
+        gcdPolynomial(f, g) ==
+            zero? f => g
+            zero? g => f
+            cf := content f
+            if not one? cf then f := (f exquo cf)::P
+            cg := content g
+            if not one? cg then g := (g exquo cg)::P
+            ans := subResultantGcd(f, g)$P
+            gcd(cf, cg)*(ans exquo content ans)::P
         if % has CharacteristicNonZero then
-          charthRoot f ==
-             -- to take p'th root of f, solve the system X-fY=0,
-             -- so solution is [x,y]
-             -- with x^p=X and y^p=Y, then (x/y)^p = f
-             zero? f => 0
-             m:Matrix % := matrix [[1,-f]]
-             ans:= conditionP m
-             ans case "failed" => "failed"
-             (ans.1) exquo (ans.2)
+            charthRoot f ==
+                -- to take p'th root of f, solve the system X-fY=0,
+                -- so solution is [x, y]
+                -- with x^p=X and y^p=Y, then (x/y)^p = f
+                zero? f => 0
+                m : Matrix % := matrix [[1, -f]]
+                ans := conditionP m
+                ans case "failed" => "failed"
+                (ans.1) exquo (ans.2)
         if % has Field then
-          solveLinearPolynomialEquation(lf,g) ==
-            multiEuclidean(lf,g)$P
-        else solveLinearPolynomialEquation(lf,g) ==
-               LPE ==> LinearPolynomialEquationByFractions %
-               solveLinearPolynomialEquationByFractions(lf,g)$LPE
+            solveLinearPolynomialEquation(lf, g) ==
+                multiEuclidean(lf, g)$P
+        else
+            solveLinearPolynomialEquation(lf, g) ==
+                LPE ==> LinearPolynomialEquationByFractions %
+                solveLinearPolynomialEquationByFractions(lf, g)$LPE
 
 @
 \section{category PID PrincipalIdealDomain}
@@ -1631,15 +1636,15 @@ PolynomialFactorizationExplicit(): Category == Definition where
 ++ finitely generated ideals are principal. It is not clear
 ++ what we would mean by an infinitely generated ideal.
 
-PrincipalIdealDomain(): Category == GcdDomain with
+PrincipalIdealDomain() : Category == GcdDomain with
     --operations
-      principalIdeal: List % -> Record(coef:List %,generator:%)
-         ++ principalIdeal([f1,...,fn]) returns a record whose
+      principalIdeal : List % -> Record(coef : List %, generator : %)
+         ++ principalIdeal([f1, ..., fn]) returns a record whose
          ++ generator component is a generator of the ideal
-         ++ generated by \spad{[f1,...,fn]} whose coef component satisfies
+         ++ generated by \spad{[f1, ..., fn]} whose coef component satisfies
          ++ \spad{generator = sum (input.i * coef.i)}
-      expressIdealMember: (List %,%) -> Union(List %,"failed")
-         ++ expressIdealMember([f1,...,fn],h) returns a representation
+      expressIdealMember : (List %,%) -> Union(List %,"failed")
+         ++ expressIdealMember([f1, ..., fn], h) returns a representation
          ++ of h as a linear combination of the fi or "failed" if h
          ++ is not in the ideal generated by the fi.
 
@@ -1689,20 +1694,20 @@ RightModule(R : SemiRng) : Category == AbelianSemiGroup with
 ++ The category of rings with unity, always associative, but
 ++ not necessarily commutative.
 
---Ring(): Category == Join(Rng,Monoid,LeftModule(%:Rng)) with
-Ring(): Category == Join(Rng,SemiRing,LeftModule(%), unitsKnown) with
+--Ring(): Category == Join(Rng, Monoid, LeftModule(%: Rng)) with
+Ring() : Category == Join(Rng, SemiRing, LeftModule(%), unitsKnown) with
     --operations
-      characteristic: () -> NonNegativeInteger
+      characteristic : () -> NonNegativeInteger
         ++ characteristic() returns the characteristic of the ring
         ++ this is the smallest positive integer n such that
         ++ \spad{n*x=0} for all x in the ring, or zero if no such n
         ++ exists.
         --We can not make this a constant, since some domains are mutable
-      coerce: Integer -> %
+      coerce : Integer -> %
         ++ coerce(i) converts the integer i to a member of the given domain.
 --    recip: % -> Union(%,"failed") -- inherited from Monoid
    add
-      n:Integer
+      n : Integer
       coerce(n) == n * 1$%
 
 @
@@ -1753,7 +1758,7 @@ SemiRing() : Category == Join(SemiRng, AbelianMonoid, Monoid)
 ++
 ++ Conditional attributes:
 ++   \spadnoZeroDivisors\tab{25}\spad{  ab = 0 => a=0 or b=0}
-Rng(): Category == Join(AbelianGroup,SemiRng)
+Rng() : Category == Join(AbelianGroup, SemiRng)
 
 @
 
@@ -1778,7 +1783,7 @@ Rng(): Category == Join(AbelianGroup,SemiRng)
 ++
 ++ Conditional attributes:
 ++    \spad{CommutativeStar}\tab{30}\spad{ x*y = y*x }
-SemiGroup(): Category == SetCategory with
+SemiGroup() : Category == SetCategory with
     --operations
       "*": (%,%) -> %                  ++ x*y returns the product of x and y.
       "^": (%,PositiveInteger) -> %
@@ -1786,7 +1791,7 @@ SemiGroup(): Category == SetCategory with
           ++ of x n times, i.e. exponentiation.
     add
       import RepeatedSquaring(%)
-      x:% ^ n:PositiveInteger == expt(x,n)
+      x : % ^ n : PositiveInteger == expt(x, n)
 
 @
 \section{category SETCAT SetCategory}
@@ -1808,19 +1813,19 @@ SemiGroup(): Category == SetCategory with
 ++
 ++ Conditional Attributes:
 ++    canonical\tab{15}data structure equality is the same as \spadop{=}
-SetCategory(): Category == Join(BasicType,CoercibleTo OutputForm) with
+SetCategory() : Category == Join(BasicType, CoercibleTo OutputForm) with
     --operations
-      hash: % -> SingleInteger  ++ hash(s) calculates a hash code for s.
+      hash : % -> SingleInteger  ++ hash(s) calculates a hash code for s.
       hashUpdate! : (HashState, %) -> HashState
          ++ hashUpdate!(hs, s) computes new HashState form old and s
          ++ used for incremental computation of hash values.
          ++ hashUpdate! might destructively work on its first argument.
-      latex: % -> String       ++ latex(s) returns a LaTeX-printable output
+      latex : % -> String       ++ latex(s) returns a LaTeX-printable output
                                ++ representation of s.
   add
       hash(s : %) : SingleInteger ==
           value(hashUpdate!(new()$HashState, s))$HashState
-      latex(s : %): String       == "\mbox{\bf Unimplemented}"
+      latex(s : %) : String       == "\mbox{\bf Unimplemented}"
 
 @
 
@@ -1848,11 +1853,11 @@ SetCategory(): Category == Join(BasicType,CoercibleTo OutputForm) with
 ++
 ++ Conditional attributes:
 ++   infinite\tab{15}repeated \spad{nextItem}'s are never "failed".
-StepThrough(): Category == SetCategory with
+StepThrough() : Category == SetCategory with
     --operations
-      init: constant -> %
+      init : constant -> %
         ++ init() chooses an initial object for stepping.
-      nextItem: % -> Union(%,"failed")
+      nextItem : % -> Union(%,"failed")
         ++ nextItem(x) returns the next item, or "failed" if domain is exhausted.
 
 @
@@ -1873,9 +1878,9 @@ StepThrough(): Category == SetCategory with
 ++ we can constructively factor members into a product of
 ++ a finite number of irreducible elements.
 
-UniqueFactorizationDomain(): Category == GcdDomain with
+UniqueFactorizationDomain() : Category == GcdDomain with
     --operations
-      prime?: % -> Boolean
+      prime? : % -> Boolean
             ++ prime?(x) tests if x can never be written as the product of two
             ++ non-units of the ring,
             ++ i.e., x is an irreducible element.
@@ -1883,14 +1888,14 @@ UniqueFactorizationDomain(): Category == GcdDomain with
             ++ squareFree(x) returns the square-free factorization of x
             ++ i.e. such that the factors are pairwise relatively prime
             ++ and each has multiple prime factors.
-      squareFreePart: % -> %
+      squareFreePart : % -> %
             ++ squareFreePart(x) returns a product of prime factors of
             ++ x each taken with multiplicity one.
-      factor: % -> Factored(%)
+      factor : % -> Factored(%)
             ++ factor(x) returns the factorization of x into irreducibles.
  add
   squareFreePart x ==
-    unit(s := squareFree x) * _*/[f.factor for f in factors s]
+      unit(s := squareFree x) * _*/[f.factor for f in factors s]
 
   prime? x == # factorList factor x = 1
 
@@ -1911,13 +1916,13 @@ UniqueFactorizationDomain(): Category == GcdDomain with
 ++ Description:
 ++ Vector Spaces (not necessarily finite dimensional) over a field.
 
-VectorSpace(S:Field): Category ==  Module(S) with
+VectorSpace(S : Field) : Category ==  Module(S) with
     "/"      : (%, S) -> %
       ++ x/y divides the vector x by the scalar y.
-    dimension: () -> CardinalNumber
+    dimension : () -> CardinalNumber
       ++ dimension() returns the dimensionality of the vector space.
   add
-    (v:% / s:S):% == inv(s) * v
+    (v : % / s : S) : % == inv(s) * v
 
 @
 \section{License}

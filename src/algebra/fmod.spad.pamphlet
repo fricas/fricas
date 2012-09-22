@@ -25,7 +25,7 @@
 ++ IntegerMod(n) creates the ring of integers reduced modulo the integer
 ++ n.
 
-IntegerMod(p:PositiveInteger):
+IntegerMod(p : PositiveInteger):
  Join(CommutativeRing, Finite, ConvertibleTo Integer, StepThrough) == add
   size()           == p
   characteristic() == p
@@ -33,32 +33,32 @@ IntegerMod(p:PositiveInteger):
 
 -- Code is duplicated for the optimizer to kick in.
   if p <= convert(max()$SingleInteger)@Integer then
-    Rep:= SingleInteger
+    Rep := SingleInteger
     q := p::SingleInteger
 
-    bloodyCompiler: Integer -> %
+    bloodyCompiler : Integer -> %
     bloodyCompiler n == positiveRemainder(n, p)$Integer pretend %
 
-    convert(x:%):Integer == convert(x)$Rep
-    coerce(x):OutputForm == coerce(x)$Rep
-    coerce(n:Integer):%  == bloodyCompiler n
+    convert(x : %) : Integer == convert(x)$Rep
+    coerce(x) : OutputForm == coerce(x)$Rep
+    coerce(n : Integer) : %  == bloodyCompiler n
     0                    == 0$Rep
     1                    == 1$Rep
     init                 == 0$Rep
     nextItem(n)          ==
-                              m:=n+1
-                              m=0 => "failed"
+                              m := n+1
+                              m = 0 => "failed"
                               m
     x = y                == x =$Rep y
-    x:% * y:%            == mulmod(x, y, q)
-    n:Integer * x:%      == mulmod(bloodyCompiler n, x, q)
+    x : % * y : %            == mulmod(x, y, q)
+    n : Integer * x : %      == mulmod(bloodyCompiler n, x, q)
     x + y                == addmod(x, y, q)
     x - y                == submod(x, y, q)
     random()             == random(q)$Rep
     index a              == positiveRemainder(a::%, q)
     - x                  == (zero? x => 0; q -$Rep x)
 
-    x:% ^ n:NonNegativeInteger ==
+    x : % ^ n : NonNegativeInteger ==
       n < p => powmod(x, n::Rep, q)
       powmod(convert(x)@Integer, n, p)$Integer :: Rep
 
@@ -71,27 +71,27 @@ IntegerMod(p:PositiveInteger):
     hashUpdate!(hs, s) == update!(hs, s pretend SingleInteger)$HashState
 
   else
-    Rep:= Integer
+    Rep := Integer
 
-    convert(x:%):Integer == convert(x)$Rep
-    coerce(n:Integer):%  == positiveRemainder(n::Rep, p)
-    coerce(x):OutputForm == coerce(x)$Rep
+    convert(x : %) : Integer == convert(x)$Rep
+    coerce(n : Integer) : %  == positiveRemainder(n::Rep, p)
+    coerce(x) : OutputForm == coerce(x)$Rep
     0                    == 0$Rep
     1                    == 1$Rep
     init                 == 0$Rep
     nextItem(n)          ==
-                              m:=n+1
-                              m=0 => "failed"
+                              m := n+1
+                              m = 0 => "failed"
                               m
     x = y                == x =$Rep y
-    x:% * y:%            == mulmod(x, y, p)
-    n:Integer * x:%      == mulmod(positiveRemainder(n::Rep, p), x, p)
+    x : % * y : %            == mulmod(x, y, p)
+    n : Integer * x : %      == mulmod(positiveRemainder(n::Rep, p), x, p)
     x + y                == addmod(x, y, p)
     x - y                == submod(x, y, p)
     random()             == random(p)$Rep
     index a              == positiveRemainder(a::Rep, p)
     - x                  == (zero? x => 0; p -$Rep x)
-    x:% ^ n:NonNegativeInteger == powmod(x, n::Rep, p)
+    x : % ^ n : NonNegativeInteger == powmod(x, n::Rep, p)
 
     recip x ==
        (c1, c2, g) := extendedEuclidean(x, p)$Rep

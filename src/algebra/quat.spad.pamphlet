@@ -27,24 +27,24 @@
 ++   \spadtype{QuaternionCategory} describes the category of quaternions
 ++   and implements functions that are not representation specific.
 
-QuaternionCategory(R: CommutativeRing): Category ==
+QuaternionCategory(R : CommutativeRing) : Category ==
   Join(Algebra R, FullyRetractableTo R, DifferentialExtension R,
    FullyEvalableOver R, FullyLinearlyExplicitRingOver R) with
 
-     conjugate: % -> %
+     conjugate : % -> %
        ++ conjugate(q) negates the imaginary parts of quaternion \spad{q}.
-     imagI:   % -> R
+     imagI :   % -> R
        ++ imagI(q) extracts the imaginary i part of quaternion \spad{q}.
-     imagJ:   % -> R
+     imagJ :   % -> R
        ++ imagJ(q) extracts the imaginary j part of quaternion \spad{q}.
-     imagK:   % -> R
+     imagK :   % -> R
        ++ imagK(q) extracts the imaginary k part of quaternion \spad{q}.
-     norm:    % -> R
+     norm :    % -> R
        ++ norm(q) computes the norm of \spad{q} (the sum of the
        ++ squares of the components).
-     quatern: (R,R,R,R) -> %
-       ++ quatern(r,i,j,k) constructs a quaternion from scalars.
-     real:    % -> R
+     quatern : (R, R, R, R) -> %
+       ++ quatern(r, i, j, k) constructs a quaternion from scalars.
+     real :    % -> R
        ++ real(q) extracts the real part of quaternion \spad{q}.
 
      if R has EntireRing then EntireRing
@@ -68,7 +68,7 @@ QuaternionCategory(R: CommutativeRing): Category ==
          ++ rational number. Error: if this is not
          ++ possible. If \spad{rational?(q)} is true, the
          ++ conversion will be done and the rational number returned.
-       rationalIfCan: % -> Union(Fraction Integer, "failed")
+       rationalIfCan : % -> Union(Fraction Integer, "failed")
          ++ rationalIfCan(q) returns \spad{q} as a rational number,
          ++ or "failed" if this is not possible.
          ++ Note: if \spad{rational?(q)} is true, the conversion
@@ -94,16 +94,16 @@ QuaternionCategory(R: CommutativeRing): Category ==
            imagJ x - imagJ y, imagK x - imagK y)
        - x              ==
          quatern(- real x, - imagI x, - imagJ x, - imagK x)
-       r:R * x:%        ==
+       r : R * x : %        ==
          quatern(r * real x, r * imagI x, r * imagJ x, r * imagK x)
-       n:Integer * x:%  ==
+       n : Integer * x : %  ==
          quatern(n * real x, n * imagI x, n * imagJ x, n * imagK x)
-       differentiate(x:%, d:R -> R) ==
+       differentiate(x : %, d : R -> R) ==
          quatern(d real x, d imagI x, d imagJ x, d imagK x)
-       coerce(r:R)      ==
-         quatern(r,0$R,0$R,0$R)
-       coerce(n:Integer)      ==
-         quatern(n :: R,0$R,0$R,0$R)
+       coerce(r : R)      ==
+         quatern(r, 0$R, 0$R, 0$R)
+       coerce(n : Integer)      ==
+         quatern(n :: R, 0$R, 0$R, 0$R)
        one? x ==
 --         one? real x and zero? imagI x and
          (real x) = 1 and zero? imagI x and
@@ -111,7 +111,7 @@ QuaternionCategory(R: CommutativeRing): Category ==
        zero? x ==
          zero? real x and zero? imagI x and
            zero? imagJ x and zero? imagK x
-       retract(x):R ==
+       retract(x) : R ==
          not (zero? imagI x and zero? imagJ x and zero? imagK x) =>
            error "Cannot retract quaternion."
          real x
@@ -120,17 +120,17 @@ QuaternionCategory(R: CommutativeRing): Category ==
            "failed"
          real x
 
-       coerce(x:%):OutputForm ==
-         part,z : OutputForm
+       coerce(x : %) : OutputForm ==
+         part, z : OutputForm
          y : %
          zero? x => (0$R) :: OutputForm
          not zero?(real x) =>
-           y := quatern(0$R,imagI(x),imagJ(x),imagK(x))
+           y := quatern(0$R, imagI(x), imagJ(x), imagK(x))
            zero? y => real(x) :: OutputForm
            (real(x) :: OutputForm) + (y :: OutputForm)
          -- we know that the real part is 0
          not zero?(imagI(x)) =>
-           y := quatern(0$R,0$R,imagJ(x),imagK(x))
+           y := quatern(0$R, 0$R, imagJ(x), imagK(x))
            z :=
              part := 'i::OutputForm
 --             one? imagI(x) => part
@@ -140,7 +140,7 @@ QuaternionCategory(R: CommutativeRing): Category ==
            z + (y :: OutputForm)
          -- we know that the real part and i part are 0
          not zero?(imagJ(x)) =>
-           y := quatern(0$R,0$R,0$R,imagK(x))
+           y := quatern(0$R, 0$R, 0$R, imagK(x))
            z :=
              part := 'j::OutputForm
 --             one? imagJ(x) => part
@@ -160,7 +160,7 @@ QuaternionCategory(R: CommutativeRing): Category ==
            (inv norm x) * conjugate x
 
        if R has ConvertibleTo InputForm then
-         convert(x:%):InputForm ==
+         convert(x : %) : InputForm ==
            l : List InputForm := [convert('quatern),
              convert(real x)$R, convert(imagI x)$R, convert(imagJ x)$R,
                convert(imagK x)$R]
@@ -209,22 +209,22 @@ QuaternionCategory(R: CommutativeRing): Category ==
 ++   over a commutative ring. The main constructor function is
 ++   \spadfun{quatern} which takes 4 arguments: the real part,
 ++   the i imaginary part, the j imaginary part and the k imaginary part.
-GeneralQuaternion(R:CommutativeRing, p : R, q : R): QuaternionCategory(R)_
+GeneralQuaternion(R : CommutativeRing, p : R, q : R) : QuaternionCategory(R)_
      == add
-  Rep := Record(r:R,i:R,j:R,k:R)
+  Rep := Record(r : R, i : R, j : R, k : R)
 
-  0 == [0,0,0,0]
-  1 == [1,0,0,0]
+  0 == [0, 0, 0, 0]
+  1 == [1, 0, 0, 0]
 
-  a,b,c,d : R
-  x,y : %
+  a, b, c, d : R
+  x, y : %
 
   real  x == x.r
   imagI x == x.i
   imagJ x == x.j
   imagK x == x.k
 
-  quatern(a,b,c,d) == [a,b,c,d]
+  quatern(a, b, c, d) == [a, b, c, d]
   x*y == [x.r*y.r + p*x.i*y.i + q*x.j*y.j - p*q*x.k*y.k,
            x.r*y.i + x.i*y.r + q*(x.k*y.j - x.j*y.k),
             x.r*y.j + x.j*y.r + p*(x.i*y.k - x.k*y.i),
@@ -235,7 +235,7 @@ GeneralQuaternion(R:CommutativeRing, p : R, q : R): QuaternionCategory(R)_
 )abbrev domain QUAT Quaternion
 ++ Description: \spadtype{Quaternion} implements Hamilton quaternions
 ++   over a commutative ring.
-Quaternion(R:CommutativeRing): QuaternionCategory(R) ==
+Quaternion(R : CommutativeRing) : QuaternionCategory(R) ==
    GeneralQuaternion(R, -1, -1)
 @
 
@@ -256,18 +256,18 @@ Quaternion(R:CommutativeRing): QuaternionCategory(R) ==
 ++    two quaternion domains.  The function \spadfun{map} is used by
 ++    the system interpreter to coerce between quaternion types.
 
-QuaternionCategoryFunctions2(QR,R,QS,S) : Exports ==
+QuaternionCategoryFunctions2(QR, R, QS, S) : Exports ==
   Implementation where
     R  : CommutativeRing
     S  : CommutativeRing
     QR : QuaternionCategory R
     QS : QuaternionCategory S
     Exports == with
-      map:     (R -> S, QR) -> QS
-        ++ map(f,u) maps f onto the component parts of the quaternion
+      map :     (R -> S, QR) -> QS
+        ++ map(f, u) maps f onto the component parts of the quaternion
         ++ u.
     Implementation == add
-      map(fn : R -> S, u : QR): QS ==
+      map(fn : R -> S, u : QR) : QS ==
         quatern(fn real u, fn imagI u, fn imagJ u, fn imagK u)$QS
 
 @

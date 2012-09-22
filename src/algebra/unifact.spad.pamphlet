@@ -31,9 +31,9 @@ UnivariateFactorize(ZP) : public == private where
 
   FR        ==>  Factored ZP
   fUnion    ==>  Union("nil", "sqfr", "irred", "prime")
-  FFE       ==>  Record(flg:fUnion, fctr:ZP, xpnt:Z)
-  ParFact   ==>  Record(irr: ZP,pow: Z)
-  FinalFact ==>  Record(contp: Z,factors:List(ParFact))
+  FFE       ==>  Record(flg : fUnion, fctr : ZP, xpnt : Z)
+  ParFact   ==>  Record(irr : ZP, pow : Z)
+  FinalFact ==>  Record(contp : Z, factors : List(ParFact))
 
 
   public == with
@@ -42,8 +42,8 @@ UnivariateFactorize(ZP) : public == private where
      factorSquareFree  :           ZP              -> FR
        ++ factorSquareFree(m) returns the factorization of m square free
        ++ polynomial
-     henselFact        :      (ZP,Boolean)         -> FinalFact
-       ++ henselFact(m,flag) returns the factorization of m,
+     henselFact        :      (ZP, Boolean)         -> FinalFact
+       ++ henselFact(m, flag) returns the factorization of m,
        ++ FinalFact is a Record s.t. FinalFact.contp=content m,
        ++ FinalFact.factors=List of irreducible factors
        ++ of m with exponent , if flag =true the polynomial is
@@ -56,7 +56,7 @@ UnivariateFactorize(ZP) : public == private where
      quadratic   :           ZP      -> List(ZP)
      remp        :        (Z, PI)    -> Z
      negShiftz   :        (Z, PI)    -> Z
-     negShiftp   :        (ZP,PI)    -> ZP
+     negShiftp   :        (ZP, PI)    -> ZP
      bound       :           ZP      -> PI
      choose      :           ZP      -> FirstStep
      eisenstein  :           ZP      -> Boolean
@@ -66,39 +66,39 @@ UnivariateFactorize(ZP) : public == private where
 
                  ---   declarations  ---
      CYC       ==> CyclotomicPolynomialPackage()
-     DDRecord  ==> Record(factor: ZP,degree: Z)
+     DDRecord  ==> Record(factor : ZP, degree : Z)
      DDList    ==> List DDRecord
-     FirstStep ==> Record(prime:PI,factors:DDList)
-     ContPrim  ==> Record(cont: Z,prim: ZP)
+     FirstStep ==> Record(prime : PI, factors : DDList)
+     ContPrim  ==> Record(cont : Z, prim : ZP)
 
-     import GeneralHenselPackage(Z,ZP)
+     import GeneralHenselPackage(Z, ZP)
      import ModularDistinctDegreeFactorizer ZP
 
 
-     factor(m: ZP) ==
-       flist := henselFact(m,false)
-       ctp:=unitNormal flist.contp
+     factor(m : ZP) ==
+       flist := henselFact(m, false)
+       ctp := unitNormal flist.contp
        makeFR((ctp.unit)::ZP,cons(["nil",ctp.canonical::ZP,1$Z]$FFE,
                       [["prime",u.irr,u.pow]$FFE for u in flist.factors]))
 
-     factorSquareFree(m: ZP) ==
-       flist := henselFact(m,true)
-       ctp:=unitNormal flist.contp
+     factorSquareFree(m : ZP) ==
+       flist := henselFact(m, true)
+       ctp := unitNormal flist.contp
        makeFR((ctp.unit)::ZP,cons(["nil",ctp.canonical::ZP,1$Z]$FFE,
                      [["prime",u.irr,u.pow]$FFE for u in flist.factors]))
 
 
      -- Integer square root: returns 0 if t is non-positive
-     sqroot(t: Z): Z  ==
+     sqroot(t : Z) : Z  ==
       t <= 0 => 0
-      s:Integer:=t::Integer
-      s:=approxSqrt(s)$IntegerRoots(Integer)
-      t:=s::Z
+      s : Integer := t::Integer
+      s := approxSqrt(s)$IntegerRoots(Integer)
+      t := s::Z
       t
 
      -- Eisenstein criterion: returns true if polynomial is
      -- irreducible. Result of false in inconclusive.
-     eisenstein(m : ZP): Boolean ==
+     eisenstein(m : ZP) : Boolean ==
        -- calculate the content of the terms after the first
        c := content reductum m
        c = 0 => false
@@ -113,30 +113,30 @@ UnivariateFactorize(ZP) : public == private where
        m := reductum m
        while m ~= 0 repeat
          trail := leadingCoefficient m
-         m:= reductum m
+         m := reductum m
        fc := factor(c) :: Factored(Z)
        for r in factors fc repeat
          if (r.exponent = 1) and (0 ~= (lead rem r.factor)) and
            (0 ~= (trail rem (r.factor ^ 2))) then return true
        false
 
-     negShiftz(n: Z,Modulus:PI): Z ==
+     negShiftz(n : Z, Modulus : PI) : Z ==
        if n < 0 then n := n+Modulus
        n > (Modulus quo 2) => n-Modulus
        n
 
-     negShiftp(pp: ZP,Modulus:PI): ZP ==
+     negShiftp(pp : ZP, Modulus : PI) : ZP ==
        map(x +-> negShiftz(x, Modulus), pp)
 
      -- Choose the bound for the coefficients of factors
-     bound(m: ZP):PI ==
-       nm,nmq2,lcm,bin0,bin1:NNI
-       cbound,j : PI
-       k:NNI
+     bound(m : ZP) : PI ==
+       nm, nmq2, lcm, bin0, bin1 : NNI
+       cbound, j : PI
+       k : NNI
        lcm := abs(leadingCoefficient m)::NNI
        nm := (degree m)::NNI
-       nmq2:NNI := nm quo 2
-       norm: Z := sqroot(+/[coefficient(m,k)^2 for k in 0..nm])
+       nmq2 : NNI := nm quo 2
+       norm : Z := sqroot(+/[coefficient(m, k)^2 for k in 0..nm])
        if nmq2 ~= 1 then nm := (nmq2-1)::NNI
        else nm := nmq2
        bin0 := nm
@@ -148,35 +148,35 @@ UnivariateFactorize(ZP) : public == private where
          if cbound<j then cbound := j
        (2*cbound*lcm)::PI -- adjusted by lcm to prepare for exquo in ghensel
 
-     remp(t: Z,q:PI): Z == ((t := t rem q)<0 => t+q ;t)
+     remp(t : Z, q : PI) : Z == ((t := t rem q)<0 => t+q ;t)
 
-     numFactors(ddlist:DDList): Z ==
-       ans: Z := 0
+     numFactors(ddlist : DDList) : Z ==
+       ans : Z := 0
        for dd in ddlist repeat
          (d := degree(dd.factor)) = 0 => nil
          ans := ans + ((d pretend Z) exquo dd.degree):: Z
        ans
 
-     -- select the prime,try up to 4 primes,
+     -- select the prime, try up to 4 primes,
      -- choose the one yielding the fewest factors, but stopping if
      -- fewer than 9 factors
-     choose(m: ZP):FirstStep ==
-       qSave:PI := 1
-       ddSave:DDList := []
-       numberOfFactors: Z := 0
+     choose(m : ZP) : FirstStep ==
+       qSave : PI := 1
+       ddSave : DDList := []
+       numberOfFactors : Z := 0
        lcm := leadingCoefficient m
-       k: Z := 1
+       k : Z := 1
        ddRep := 5
-       disc:ZP:=0
-       q:PI:=2
+       disc : ZP := 0
+       q : PI := 2
        while k<ddRep repeat
          -- q must be a new prime number at each iteration
-         q:=nextPrime(q)$IntegerPrimesPackage(Z) pretend PI
-         (rr:=lcm rem q) = 0$Z => "next prime"
-         disc:=gcd(m,differentiate m,q)
+         q := nextPrime(q)$IntegerPrimesPackage(Z) pretend PI
+         (rr := lcm rem q) = 0$Z => "next prime"
+         disc := gcd(m, differentiate m, q)
          (degree disc) ~= 0 => "next prime"
          k := k+1
-         newdd := ddFact(m,q)
+         newdd := ddFact(m, q)
          ((n := numFactors(newdd)) < 9) =>
            ddSave := newdd
            qSave := q
@@ -185,11 +185,11 @@ UnivariateFactorize(ZP) : public == private where
            ddSave := newdd
            qSave := q
            numberOfFactors := n
-       [qSave,ddSave]$FirstStep
+       [qSave, ddSave]$FirstStep
 
-     -- Find the factors of m,primitive, square-free, with lc positive
+     -- Find the factors of m, primitive, square-free, with lc positive
      -- and mindeg m = 0
-     henselfact1(m: ZP):List(ZP) ==
+     henselfact1(m : ZP) : List(ZP) ==
       zero? degree m =>
 --          one? m => []
           (m = 1) => []
@@ -197,51 +197,51 @@ UnivariateFactorize(ZP) : public == private where
       selected := choose(m)
       (numFactors(selected.factors) = 1$Z) => [m]
       q := selected.prime
-      fl := separateFactors(selected.factors,q)
+      fl := separateFactors(selected.factors, q)
       --choose the bound
       cbound := bound(m)
-      completeHensel(m,fl,q,cbound)
+      completeHensel(m, fl, q, cbound)
 
      -- check for possible degree reduction
      -- could use polynomial decomposition ?
-     henselfact(m: ZP):List ZP ==
-      deggcd:=degree m
-      mm:= m
-      while not zero? mm repeat (deggcd:=gcd(deggcd, degree mm); mm:=reductum mm)
+     henselfact(m : ZP) : List ZP ==
+      deggcd := degree m
+      mm := m
+      while not zero? mm repeat (deggcd := gcd(deggcd, degree mm); mm := reductum mm)
       deggcd>1 and deggcd<degree m =>
          faclist := henselfact1(divideExponents(m, deggcd)::ZP)
          "append"/[henselfact1 multiplyExponents(mm, deggcd) for mm in faclist]
       henselfact1 m
 
-     quadratic(m: ZP):List(ZP) ==
-       d,d2: Z
-       d := coefficient(m,1)^2-4*coefficient(m,0)*coefficient(m,2)
+     quadratic(m : ZP) : List(ZP) ==
+       d, d2 : Z
+       d := coefficient(m, 1)^2-4*coefficient(m, 0)*coefficient(m, 2)
        d2 := sqroot(d)
        (d-d2^2) ~= 0 => [m]
-       alpha: Z := coefficient(m,1)+d2
-       beta: Z := 2*coefficient(m,2)
-       d := gcd(alpha,beta)
+       alpha : Z := coefficient(m, 1)+d2
+       beta : Z := 2*coefficient(m, 2)
+       d := gcd(alpha, beta)
        if d ~= 1 then
          alpha := alpha quo d
          beta := beta quo d
-       m0: ZP := monomial(beta,1)+monomial(alpha,0)
-       cons(m0,[(m exquo m0):: ZP])
+       m0 : ZP := monomial(beta, 1)+monomial(alpha, 0)
+       cons(m0, [(m exquo m0):: ZP])
 
-     isPowerOf2(n : Z): Boolean ==
+     isPowerOf2(n : Z) : Boolean ==
        n = 1 => true
-       qr : Record(quotient: Z, remainder: Z) := divide(n,2)
+       qr : Record(quotient : Z, remainder : Z) := divide(n, 2)
        qr.remainder = 1 => false
        isPowerOf2 qr.quotient
 
-     subMinusX(supPol : SUPZ): ZP ==
-       minusX : SUPZ := monomial(-1,1)$SUPZ
-       (elt(supPol,minusX)$SUPZ) pretend ZP
+     subMinusX(supPol : SUPZ) : ZP ==
+       minusX : SUPZ := monomial(-1, 1)$SUPZ
+       (elt(supPol, minusX)$SUPZ) pretend ZP
 
 --   Factorize the polynomial m, test=true if m is known to be
 --   square-free, false otherwise.
 --   FinalFact.contp=content m, FinalFact.factors=List of irreducible
 --   factors with exponent .
-     henselFact(m: ZP,test:Boolean):FinalFact ==
+     henselFact(m : ZP, test : Boolean) : FinalFact ==
       factorlist : List(ParFact) := []
       c : Z
 
@@ -256,19 +256,19 @@ UnivariateFactorize(ZP) : public == private where
 
       -- is x^d factor of m?
       if (d := minimumDegree m) >0 then
-        m := (monicDivide(m,monomial(1,d))).quotient
-        factorlist := [[monomial(1,1),d]$ParFact]
+        m := (monicDivide(m, monomial(1, d))).quotient
+        factorlist := [[monomial(1, 1), d]$ParFact]
 
       d := degree m
 
       -- is m constant?
-      d=0 => [c,factorlist]$FinalFact
+      d = 0 => [c, factorlist]$FinalFact
 
       -- is m linear?
-      d=1 => [c,cons([m,1]$ParFact,factorlist)]$FinalFact
+      d = 1 => [c, cons([m, 1]$ParFact, factorlist)]$FinalFact
 
       -- does m satisfy Eisenstein's criterion?
-      eisenstein m => [c,cons([m,1]$ParFact,factorlist)]$FinalFact
+      eisenstein m => [c, cons([m, 1]$ParFact, factorlist)]$FinalFact
 
       lcPol : ZP := leadingCoefficient(m) :: ZP
 
@@ -276,36 +276,36 @@ UnivariateFactorize(ZP) : public == private where
       -lcPol = reductum(m) =>    -- if true, both will = 1
         for fac in
           (cyclotomicDecomposition(degree m)$CYC pretend List ZP) repeat
-            factorlist := cons([fac,1]$ParFact,factorlist)
-        [c,factorlist]$FinalFact
+            factorlist := cons([fac, 1]$ParFact, factorlist)
+        [c, factorlist]$FinalFact
 
       -- is m odd cyclotomic (x^(2*n+1) + 1)?
       odd?(d) and (lcPol = reductum(m)) =>
         for sfac in cyclotomicDecomposition(degree m)$CYC repeat
-           fac:=subMinusX sfac
+           fac := subMinusX sfac
            if leadingCoefficient fac < 0 then fac := -fac
-           factorlist := cons([fac,1]$ParFact,factorlist)
-        [c,factorlist]$FinalFact
+           factorlist := cons([fac, 1]$ParFact, factorlist)
+        [c, factorlist]$FinalFact
 
       -- is the poly of the form x^n + 1 with n a power of 2?
       -- if so, then irreducible
       isPowerOf2(d) and (lcPol = reductum(m)) =>
-        factorlist := cons([m,1]$ParFact,factorlist)
-        [c,factorlist]$FinalFact
+        factorlist := cons([m, 1]$ParFact, factorlist)
+        [c, factorlist]$FinalFact
 
       -- is m quadratic?
-      d=2 =>
-       lfq:List(ZP) := quadratic m
-       #lfq=1 => [c,cons([lfq.first,1]$ParFact,factorlist)]$FinalFact
-       (lf0,lf1) := (lfq.first,second lfq)
-       if lf0=lf1 then factorlist := cons([lf0,2]$ParFact,factorlist)
-       else factorlist := append([[v,1]$ParFact for v in lfq],factorlist)
-       [c,factorlist]$FinalFact
+      d = 2 =>
+       lfq : List(ZP) := quadratic m
+       #lfq = 1 => [c, cons([lfq.first, 1]$ParFact, factorlist)]$FinalFact
+       (lf0, lf1) := (lfq.first, second lfq)
+       if lf0 = lf1 then factorlist := cons([lf0, 2]$ParFact, factorlist)
+       else factorlist := append([[v, 1]$ParFact for v in lfq], factorlist)
+       [c, factorlist]$FinalFact
 
       -- m is square-free
       test =>
         fln := henselfact(m)
-        [c,append(factorlist,[[pf,1]$ParFact for pf in fln])]$FinalFact
+        [c, append(factorlist, [[pf, 1]$ParFact for pf in fln])]$FinalFact
 
       -- find the square-free decomposition of m
       irrFact := squareFree(m)
@@ -315,13 +315,13 @@ UnivariateFactorize(ZP) : public == private where
       for l1 in llf repeat
         d1 := l1.exponent
         pol := l1.factor
-        degree pol=1 => factorlist := cons([pol,d1]$ParFact,factorlist)
-        degree pol=2 =>
+        degree pol = 1 => factorlist := cons([pol, d1]$ParFact, factorlist)
+        degree pol = 2 =>
           fln := quadratic(pol)
-          factorlist := append([[pf,d1]$ParFact for pf in fln],factorlist)
+          factorlist := append([[pf, d1]$ParFact for pf in fln], factorlist)
         fln := henselfact(pol)
-        factorlist := append([[pf,d1]$ParFact for pf in fln],factorlist)
-      [c,factorlist]$FinalFact
+        factorlist := append([[pf, d1]$ParFact for pf in fln], factorlist)
+      [c, factorlist]$FinalFact
 
 @
 \section{License}

@@ -53,8 +53,8 @@
 ++   Note: the user has the responsibility to ensure that
 ++   {\em defpol} is irreducible.
 
-FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
-  defpol:SparseUnivariatePolynomial GF): Exports == Implementation where
+FiniteFieldExtensionByPolynomial(GF : FiniteFieldCategory, _
+  defpol : SparseUnivariatePolynomial GF) : Exports == Implementation where
 --  GF     : FiniteFieldCategory
 --  defpol : SparseUnivariatePolynomial GF
 
@@ -62,9 +62,9 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
   NNI  ==> NonNegativeInteger
   SUP  ==> SparseUnivariatePolynomial
   I    ==> Integer
-  R    ==> Record(key:PI,entry:NNI)
-  TBL  ==> Table(PI,NNI)
-  SAE  ==> SimpleAlgebraicExtension(GF,SUP GF,defpol)
+  R    ==> Record(key : PI, entry : NNI)
+  TBL  ==> Table(PI, NNI)
+  SAE  ==> SimpleAlgebraicExtension(GF, SUP GF, defpol)
   OUT  ==> OutputForm
 
   Exports ==> FiniteAlgebraicExtensionField(GF)
@@ -73,37 +73,37 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
 
 -- global variables ====================================================
 
-    Rep:=SAE
+    Rep := SAE
 
-    extdeg:PI        := degree(defpol)$(SUP GF) pretend PI
+    extdeg : PI        := degree(defpol)$(SUP GF) pretend PI
     -- the extension degree
 
     alpha            := new()$Symbol :: OutputForm
     -- a new symbol for the output form of field elements
 
-    sizeCG:Integer := size()$GF^extdeg - 1
+    sizeCG : Integer := size()$GF^extdeg - 1
     -- the order of the multiplicative group
 
-    facOfGroupSize := nil()$(List Record(factor:Integer,exponent:Integer))
+    facOfGroupSize := nil()$(List Record(factor : Integer, exponent : Integer))
     -- the factorization of sizeCG
 
-    normalElt:PI:=1
+    normalElt : PI := 1
     -- for the lookup of the normal Element computed by
     -- createNormalElement
 
-    primitiveElt:PI:=1
+    primitiveElt : PI := 1
     -- for the lookup of the primitive Element computed by
     -- createPrimitiveElement()
 
-    initlog?:Boolean:=true
+    initlog? : Boolean := true
     -- gets false after initialization of the discrete logarithm table
 
-    initelt?:Boolean:=true
+    initelt? : Boolean := true
     -- gets false after initialization of the primitive and the
     -- normal element
 
 
-    discLogTable:Table(PI,TBL):=table()$Table(PI,TBL)
+    discLogTable : Table(PI, TBL) := table()$Table(PI, TBL)
     -- tables indexed by the factors of sizeCG,
     -- discLogTable(factor) is a table  with keys
     -- primitiveElement() ^ (i * (sizeCG quo factor)) and entries i for
@@ -113,72 +113,72 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
 -- functions ===========================================================
 
 --    createNormalElement() ==
---      a:=primitiveElement()
---      nElt:=generator()
+--      a := primitiveElement()
+--      nElt := generator()
 --      for i in 1.. repeat
 --        normal? nElt => return nElt
---        nElt:=nElt*a
+--        nElt := nElt*a
 --      nElt
 
-    generator() == reduce(monomial(1,1)$SUP(GF))$Rep
+    generator() == reduce(monomial(1, 1)$SUP(GF))$Rep
     norm x   == resultant(defpol, lift x)
 
-    initializeElt: () -> Void
-    initializeLog: () -> Void
-    basis(n:PI) ==
+    initializeElt : () -> Void
+    initializeLog : () -> Void
+    basis(n : PI) ==
       (extdeg rem n) ~= 0 => error "argument must divide extension degree"
-      a:%:=norm(primitiveElement(),n)
+      a : % := norm(primitiveElement(), n)
       vector [a^i for i in 0..n-1]
 
     degree(x) ==
-      y:%:=1
-      m:=zero(extdeg,extdeg+1)$(Matrix GF)
+      y : % := 1
+      m := zero(extdeg, extdeg+1)$(Matrix GF)
       for i in 1..extdeg+1 repeat
-        setColumn!(m,i,coordinates(y))$(Matrix GF)
-        y:=y*x
+        setColumn!(m, i, coordinates(y))$(Matrix GF)
+        y := y*x
       rank(m)::PI
 
-    minimalPolynomial(x:%) ==
-      y:%:=1
-      m:=zero(extdeg,extdeg+1)$(Matrix GF)
+    minimalPolynomial(x : %) ==
+      y : % := 1
+      m := zero(extdeg, extdeg+1)$(Matrix GF)
       for i in 1..extdeg+1 repeat
-        setColumn!(m,i,coordinates(y))$(Matrix GF)
-        y:=y*x
-      v:=first nullSpace(m)$(Matrix GF)
-      +/[monomial(v.(i+1),i)$(SUP GF) for i in 0..extdeg]
+        setColumn!(m, i, coordinates(y))$(Matrix GF)
+        y := y*x
+      v := first nullSpace(m)$(Matrix GF)
+      +/[monomial(v.(i+1), i)$(SUP GF) for i in 0..extdeg]
 
 
     normal?(x) ==
-      l:List List GF:=[entries coordinates x]
-      a:=x
+      l : List List GF := [entries coordinates x]
+      a := x
       for i in 2..extdeg repeat
-        a:=Frobenius(a)
-        l:=concat(l,entries coordinates a)$(List List GF)
+        a := Frobenius(a)
+        l := concat(l, entries coordinates a)$(List List GF)
       ((rank matrix(l)$(Matrix GF)) = extdeg::NNI) => true
       false
 
 
-    a:GF * x:% == a *$Rep x
-    n:I * x:% == n *$Rep x
+    a : GF * x : % == a *$Rep x
+    n : I * x : % == n *$Rep x
     -x == -$Rep x
     random() == random()$Rep
-    coordinates(x:%) == coordinates(x)$Rep
+    coordinates(x : %) == coordinates(x)$Rep
     represents(v) == represents(v)$Rep
-    coerce(x:GF):% == coerce(x)$Rep
+    coerce(x : GF) : % == coerce(x)$Rep
     definingPolynomial() == defpol
     retract(x) == retract(x)$Rep
     retractIfCan(x) == retractIfCan(x)$Rep
     index(x) == index(x)$Rep
     lookup(x) == lookup(x)$Rep
-    x:%/y:% == x /$Rep y
-    x:%/a:GF == x/coerce(a)
---    x:% / a:GF ==
+    x : %/y : % == x /$Rep y
+    x : %/a : GF == x/coerce(a)
+--    x: % / a: GF ==
 --      a = 0$GF => error "division by zero"
 --      x * inv(coerce(a))
-    x:% * y:% == x *$Rep y
-    x:% + y:% == x +$Rep y
-    x:% - y:% == x -$Rep y
-    x:% = y:% == x =$Rep y
+    x : % * y : % == x *$Rep y
+    x : % + y : % == x +$Rep y
+    x : % - y : % == x -$Rep y
+    x : % = y : % == x =$Rep y
     basis() == basis()$Rep
     0 == 0$Rep
     1 == 1$Rep
@@ -191,7 +191,7 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
 
     tableForDiscreteLogarithm(fac) ==
       if initlog? then initializeLog()
-      tbl:=search(fac::PI,discLogTable)$Table(PI,TBL)
+      tbl := search(fac::PI, discLogTable)$Table(PI, TBL)
       tbl case "failed" =>
         error "tableForDiscreteLogarithm: argument must be prime divisor_
  of the order of the multiplicative group"
@@ -206,15 +206,15 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
       index(normalElt)
 
     initializeElt() ==
-      facOfGroupSize:=factors(factor(sizeCG)$Integer)
+      facOfGroupSize := factors(factor(sizeCG)$Integer)
       -- get a primitive element
-      pE:=createPrimitiveElement()
-      primitiveElt:=lookup(pE)
+      pE := createPrimitiveElement()
+      primitiveElt := lookup(pE)
       -- create a normal element
-      nElt:=generator()
+      nElt := generator()
       while not normal? nElt repeat
-        nElt:=nElt*pE
-      normalElt:=lookup(nElt)
+        nElt := nElt*pE
+      normalElt := lookup(nElt)
       -- set elements initialization flag
       initelt? := false
       void()$Void
@@ -222,32 +222,32 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
     initializeLog() ==
       if initelt? then initializeElt()
 -- set up tables for discrete logarithm
-      limit:Integer:=30
+      limit : Integer := 30
     -- the minimum size for the discrete logarithm table
       for f in facOfGroupSize repeat
-        fac:=f.factor
-        base:%:=primitiveElement() ^ (sizeCG quo fac)
-        l:Integer:=length(fac)$Integer
-        n:Integer:=0
-        if odd?(l)$Integer then n:=shift(fac,-(l quo 2))
-                           else n:=shift(1,(l quo 2))
+        fac := f.factor
+        base : % := primitiveElement() ^ (sizeCG quo fac)
+        l : Integer := length(fac)$Integer
+        n : Integer := 0
+        if odd?(l)$Integer then n := shift(fac, -(l quo 2))
+                           else n := shift(1, (l quo 2))
         if n < limit then
-          d:=(fac-1) quo limit + 1
-          n:=(fac-1) quo d + 1
-        tbl:TBL:=table()$TBL
-        a:%:=1
+          d := (fac-1) quo limit + 1
+          n := (fac-1) quo d + 1
+        tbl : TBL := table()$TBL
+        a : % := 1
         for i in (0::NNI)..(n-1)::NNI repeat
-          insert!([lookup(a),i::NNI]$R,tbl)$TBL
-          a:=a*base
-        insert!([fac::PI,copy(tbl)$TBL]_
-               $Record(key:PI,entry:TBL),discLogTable)$Table(PI,TBL)
+          insert!([lookup(a), i::NNI]$R, tbl)$TBL
+          a := a*base
+        insert!([fac::PI, copy(tbl)$TBL]_
+               $Record(key : PI, entry : TBL), discLogTable)$Table(PI, TBL)
       -- set logarithm initialization flag
       initlog? := false
       -- tell user about initialization
       --print("discrete logarithm tables initialized"::OUT)
       void()$Void
 
-    coerce(e:%):OutputForm == outputForm(lift(e),alpha)
+    coerce(e : %) : OutputForm == outputForm(lift(e), alpha)
 
     extensionDegree() == extdeg
 
@@ -287,8 +287,8 @@ FiniteFieldExtensionByPolynomial(GF:FiniteFieldCategory,_
 ++   polynomial constructed by
 ++   \spadfunFrom{createIrreduciblePoly}{FiniteFieldPolynomialPackage} from
 ++   \spadtype{FiniteFieldPolynomialPackage}.
-FiniteFieldExtension(GF, n): Exports == Implementation where
-  GF: FiniteFieldCategory
+FiniteFieldExtension(GF, n) : Exports == Implementation where
+  GF : FiniteFieldCategory
   n : PositiveInteger
   Exports ==> FiniteAlgebraicExtensionField(GF)
   -- MonogenicAlgebra(GF, SUP) with  -- have to check this
@@ -318,10 +318,10 @@ FiniteFieldExtension(GF, n): Exports == Implementation where
 ++  J. Grabmeier, A. Scheerhorn: Finite Fields in AXIOM.
 ++   AXIOM Technical Report Series, ATR/5 NP2522.
 ++ Description:
-++   InnerFiniteField(p,n) implements finite fields with \spad{p^n} elements
+++   InnerFiniteField(p, n) implements finite fields with \spad{p^n} elements
 ++   where p is assumed prime but does not check.
 ++   For a version which checks that p is prime, see \spadtype{FiniteField}.
-InnerFiniteField(p:PositiveInteger, n:PositiveInteger) ==
+InnerFiniteField(p : PositiveInteger, n : PositiveInteger) ==
      FiniteFieldExtension(InnerPrimeField p, n)
 
 @
@@ -343,12 +343,12 @@ InnerFiniteField(p:PositiveInteger, n:PositiveInteger) ==
 ++  J. Grabmeier, A. Scheerhorn: Finite Fields in AXIOM.
 ++   AXIOM Technical Report Series, ATR/5 NP2522.
 ++ Description:
-++  FiniteField(p,n) implements finite fields with p^n elements.
+++  FiniteField(p, n) implements finite fields with p^n elements.
 ++  This packages checks that p is prime.
 ++  For a non-checking version, see \spadtype{InnerFiniteField}.
-FiniteField(p:PositiveInteger, n:PositiveInteger): _
+FiniteField(p : PositiveInteger, n : PositiveInteger) : _
    FiniteAlgebraicExtensionField(PrimeField p) ==_
-   FiniteFieldExtensionByPolynomial(PrimeField p,_
+   FiniteFieldExtensionByPolynomial(PrimeField p, _
        createIrreduciblePoly(n)$FiniteFieldPolynomialPackage(PrimeField p))
   -- old code for generating irreducible polynomials:
   -- now "better" order (sparse polys first)

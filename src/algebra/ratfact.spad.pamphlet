@@ -40,29 +40,29 @@ RationalFactorize(RP) : public == private where
 
   private  ==> add
      import GaloisGroupFactorizer (BP)
-     ParFact   ==> Record(irr:BP,pow:I)
-     FinalFact ==> Record(contp:I,factors:List(ParFact))
-     URNI      ==> UnivariatePolynomialCategoryFunctions2(RN,RP,I,BP)
-     UIRN      ==> UnivariatePolynomialCategoryFunctions2(I,BP,RN,RP)
+     ParFact   ==> Record(irr : BP, pow : I)
+     FinalFact ==> Record(contp : I, factors : List(ParFact))
+     URNI      ==> UnivariatePolynomialCategoryFunctions2(RN, RP, I, BP)
+     UIRN      ==> UnivariatePolynomialCategoryFunctions2(I, BP, RN, RP)
      fUnion    ==> Union("nil", "sqfr", "irred", "prime")
-     FFE       ==> Record(flg:fUnion, fctr:RP, xpnt:I)
+     FFE       ==> Record(flg : fUnion, fctr : RP, xpnt : I)
 
-     factor(p:RP) : Factored(RP) ==
+     factor(p : RP) : Factored(RP) ==
        p = 0 => 0
-       pden: I := lcm([denom c for c in coefficients p])
+       pden : I := lcm([denom c for c in coefficients p])
        pol : RP := pden*p
-       ipol: BP := map(numer,pol)$URNI
-       ffact: FinalFact := henselFact(ipol,false)
+       ipol : BP := map(numer, pol)$URNI
+       ffact : FinalFact := henselFact(ipol, false)
        makeFR(((ffact.contp)/pden)::RP,
          [["prime",map(coerce,u.irr)$UIRN,u.pow]$FFE
                              for u in ffact.factors])
 
-     factorSquareFree(p:RP) : Factored(RP) ==
+     factorSquareFree(p : RP) : Factored(RP) ==
        p = 0 => 0
-       pden: I := lcm([denom c for c in coefficients p])
+       pden : I := lcm([denom c for c in coefficients p])
        pol : RP := pden*p
-       ipol: BP := map(numer,pol)$URNI
-       ffact: FinalFact := henselFact(ipol,true)
+       ipol : BP := map(numer, pol)$URNI
+       ffact : FinalFact := henselFact(ipol, true)
        makeFR(((ffact.contp)/pden)::RP,
          [["prime",map(coerce,u.irr)$UIRN,u.pow]$FFE
                              for u in ffact.factors])

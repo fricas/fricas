@@ -26,19 +26,19 @@
 ++ are not explicitly computed.
 ++ Keywords: integration.
 ++ Examples: )r RATINT INPUT
-IntegrationResult(F:Field): Exports == Implementation where
+IntegrationResult(F : Field) : Exports == Implementation where
   O   ==> OutputForm
   B   ==> Boolean
   Z   ==> Integer
   Q   ==> Fraction Integer
   SE  ==> Symbol
   UP  ==> SparseUnivariatePolynomial F
-  LOG ==> Record(scalar:Q, coeff:UP, logand:UP)
-  NE  ==> Record(integrand:F, intvar:F)
+  LOG ==> Record(scalar : Q, coeff : UP, logand : UP)
+  NE  ==> Record(integrand : F, intvar : F)
 
   Exports ==> (Module Q, RetractableTo F) with
-    mkAnswer: (F, List LOG, List NE) -> %
-      ++ mkAnswer(r,l,ne) creates an integration result from
+    mkAnswer : (F, List LOG, List NE) -> %
+      ++ mkAnswer(r, l, ne) creates an integration result from
       ++ a rational part r, a logarithmic part l, and a non-elementary part ne.
     ratpart : % -> F
       ++ ratpart(ir) returns the rational part of an integration result
@@ -48,19 +48,19 @@ IntegrationResult(F:Field): Exports == Implementation where
       ++ notelem(ir) returns the non-elementary part of an integration result
     elem?   : % -> B
       ++ elem?(ir) tests if an integration result is elementary over F?
-    integral: (F, F) -> %
-      ++ integral(f,x) returns the formal integral of f with respect to x
-    differentiate: (%, F -> F) -> F
-      ++ differentiate(ir,D) differentiates ir with respect to the derivation D.
+    integral : (F, F) -> %
+      ++ integral(f, x) returns the formal integral of f with respect to x
+    differentiate : (%, F -> F) -> F
+      ++ differentiate(ir, D) differentiates ir with respect to the derivation D.
     if F has PartialDifferentialRing(SE) then
-      differentiate: (%, Symbol) -> F
-        ++ differentiate(ir,x) differentiates ir with respect to x
+      differentiate : (%, Symbol) -> F
+        ++ differentiate(ir, x) differentiates ir with respect to x
     if F has RetractableTo Symbol then
-      integral: (F, Symbol) -> %
-        ++ integral(f,x) returns the formal integral of f with respect to x
+      integral : (F, Symbol) -> %
+        ++ integral(f, x) returns the formal integral of f with respect to x
 
   Implementation ==> add
-    Rep := Record(ratp: F, logp: List LOG, nelem: List NE)
+    Rep := Record(ratp : F, logp : List LOG, nelem : List NE)
 
     timelog : (Q, LOG) -> LOG
     timene  : (Q, NE)  -> NE
@@ -68,30 +68,30 @@ IntegrationResult(F:Field): Exports == Implementation where
     NE2O    : NE       -> O
     Q2F     : Q        -> F
     nesimp  : List NE  -> List NE
-    neselect: (List NE, F) -> F
-    pLogDeriv: (LOG, F -> F) -> F
+    neselect : (List NE, F) -> F
+    pLogDeriv : (LOG, F -> F) -> F
     pNeDeriv : (NE,  F -> F) -> F
 
 
-    alpha:O := new()$Symbol :: O
+    alpha : O := new()$Symbol :: O
 
     - u               == (-1$Z) * u
     0                 == mkAnswer(0, empty(), empty())
-    coerce(x:F):%     == mkAnswer(x, empty(), empty())
+    coerce(x : F) : %     == mkAnswer(x, empty(), empty())
     ratpart u         == u.ratp
     logpart u         == u.logp
     notelem u         == u.nelem
     elem? u           == empty? notelem u
     mkAnswer(x, l, n) == [x, l, nesimp n]
     timelog(r, lg)    == [r * lg.scalar, lg.coeff, lg.logand]
-    integral(f:F,x:F) == (zero? f => 0; mkAnswer(0, empty(), [[f, x]]))
+    integral(f : F, x : F) == (zero? f => 0; mkAnswer(0, empty(), [[f, x]]))
     timene(r, ne)     == [Q2F(r) * ne.integrand, ne.intvar]
-    n:Z * u:%         == (n::Q) * u
+    n : Z * u : %         == (n::Q) * u
     Q2F r             == numer(r)::F / denom(r)::F
     neselect(l, x)    == _+/[ne.integrand for ne in l | ne.intvar = x]
 
     if F has RetractableTo Symbol then
-      integral(f:F, x:Symbol):% == integral(f, x::F)
+      integral(f : F, x : Symbol) : % == integral(f, x::F)
 
     LOG2O rec ==
 --      one? degree rec.coeff =>
@@ -103,7 +103,7 @@ IntegrationResult(F:Field): Exports == Implementation where
         (cc := Q2F(rec.scalar) * lastc) = 1 => logandp
         cc = -1 => - logandp
         cc::O * logandp
-      coeffp:O := (outputForm(rec.coeff, alpha) = 0::Z::O)@O
+      coeffp : O := (outputForm(rec.coeff, alpha) = 0::Z::O)@O
       logandp :=
            alpha * prefix('log::O, [outputForm(rec.logand, alpha)])
       if (cc := Q2F(rec.scalar)) ~= 1 then
@@ -111,7 +111,7 @@ IntegrationResult(F:Field): Exports == Implementation where
       sum(logandp, coeffp)
 
     nesimp l ==
-      [[u,x] for x in removeDuplicates!([ne.intvar for ne in l]$List(F))
+      [[u, x] for x in removeDuplicates!([ne.intvar for ne in l]$List(F))
                                            | (u := neselect(l, x)) ~= 0]
 
     if (F has LiouvillianFunctionCategory) and (F has RetractableTo Symbol) then
@@ -127,7 +127,7 @@ IntegrationResult(F:Field): Exports == Implementation where
         elem? u and empty? logpart u => ratpart u
         "failed"
 
-    r:Q * u:% ==
+    r : Q * u : % ==
       r = 0 => 0
       mkAnswer(Q2F(r) * ratpart u, map(x1+->timelog(r, x1), logpart u),
                                           map(x1+->timene(r, x1), notelem u))
@@ -138,10 +138,10 @@ IntegrationResult(F:Field): Exports == Implementation where
                                     nesimp concat(notelem u, notelem v))
 
     if F has PartialDifferentialRing(Symbol) then
-      differentiate(u:%, x:Symbol):F ==
+      differentiate(u : %, x : Symbol) : F ==
         differentiate(u, x1+->differentiate(x1, x))
 
-    differentiate(u:%, derivation:F -> F):F ==
+    differentiate(u : %, derivation : F -> F) : F ==
       derivation ratpart u +
           _+/[pLogDeriv(log, derivation) for log in logpart u]
                + _+/[pNeDeriv(ne, derivation) for ne in notelem u]
@@ -163,15 +163,15 @@ IntegrationResult(F:Field): Exports == Implementation where
         Q2F(log.scalar) * c * derivation(ans) / ans
       numlog := map(derivation, log.logand)
       diflog := extendedEuclidean(log.logand, log.coeff,
-                                    numlog)::Record(coef1:UP, coef2:UP)
+                                    numlog)::Record(coef1 : UP, coef2 : UP)
       algans := diflog.coef1
-      ans:F := 0
+      ans : F := 0
       for i in 0..(n-1) repeat
         algans := algans * monomial(1, 1) rem log.coeff
         ans := ans + coefficient(algans, i)
       Q2F(log.scalar) * ans
 
-    coerce(u:%):O ==
+    coerce(u : %) : O ==
       (r := retractIfCan u) case F => r::F::O
       l := reverse! [LOG2O f for f in logpart u]$List(O)
       if ratpart u ~= 0 then l := concat(ratpart(u)::O, l)
@@ -191,7 +191,7 @@ IntegrationResult(F:Field): Exports == Implementation where
 ++ Date Created: 1987
 ++ Date Last Updated: 12 August 1992
 ++ Keywords: integration.
-IntegrationResultFunctions2(E, F): Exports == Implementation where
+IntegrationResultFunctions2(E, F) : Exports == Implementation where
   E : Field
   F : Field
 
@@ -201,47 +201,47 @@ IntegrationResultFunctions2(E, F): Exports == Implementation where
   IRF ==> IntegrationResult F
   UPE ==> SparseUnivariatePolynomial E
   UPF ==> SparseUnivariatePolynomial F
-  NEE ==> Record(integrand:E, intvar:E)
-  NEF ==> Record(integrand:F, intvar:F)
-  LGE ==> Record(scalar:Q, coeff:UPE, logand:UPE)
-  LGF ==> Record(scalar:Q, coeff:UPF, logand:UPF)
-  NLE ==> Record(coeff:E, logand:E)
-  NLF ==> Record(coeff:F, logand:F)
+  NEE ==> Record(integrand : E, intvar : E)
+  NEF ==> Record(integrand : F, intvar : F)
+  LGE ==> Record(scalar : Q, coeff : UPE, logand : UPE)
+  LGF ==> Record(scalar : Q, coeff : UPF, logand : UPF)
+  NLE ==> Record(coeff : E, logand : E)
+  NLF ==> Record(coeff : F, logand : F)
   UFE ==> Union(Record(mainpart:E, limitedlogs:List NLE), "failed")
   URE ==> Union(Record(ratpart:E, coeff:E), "failed")
   UE  ==> Union(E, "failed")
 
   Exports ==> with
-    map: (E -> F, IRE) -> IRF
-        ++ map(f,ire) \undocumented
-    map: (E -> F, URE) -> Union(Record(ratpart:F, coeff:F), "failed")
-        ++ map(f,ure) \undocumented
-    map: (E -> F,  UE) -> Union(F, "failed")
-        ++ map(f,ue) \undocumented
-    map: (E -> F, UFE) ->
+    map : (E -> F, IRE) -> IRF
+        ++ map(f, ire) \undocumented
+    map : (E -> F, URE) -> Union(Record(ratpart:F, coeff:F), "failed")
+        ++ map(f, ure) \undocumented
+    map : (E -> F,  UE) -> Union(F, "failed")
+        ++ map(f, ue) \undocumented
+    map : (E -> F, UFE) ->
                Union(Record(mainpart:F, limitedlogs:List NLF), "failed")
-        ++ map(f,ufe) \undocumented
+        ++ map(f, ufe) \undocumented
 
   Implementation ==> add
     import SparseUnivariatePolynomialFunctions2(E, F)
 
-    NEE2F: (E -> F, NEE) -> NEF
-    LGE2F: (E -> F, LGE) -> LGF
-    NLE2F: (E -> F, NLE) -> NLF
+    NEE2F : (E -> F, NEE) -> NEF
+    LGE2F : (E -> F, LGE) -> LGF
+    NLE2F : (E -> F, NLE) -> NLF
 
     NLE2F(func, r)         == [func(r.coeff), func(r.logand)]
     NEE2F(func, n)         == [func(n.integrand), func(n.intvar)]
     map(func:E -> F, u:UE) == (u case "failed" => "failed"; func(u::E))
 
-    map(func:E -> F, ir:IRE) ==
+    map(func : E -> F, ir : IRE) ==
       mkAnswer(func ratpart ir, [LGE2F(func, f) for f in logpart ir],
                                    [NEE2F(func, g) for g in notelem ir])
 
-    map(func:E -> F, u:URE) ==
+    map(func : E -> F, u : URE) ==
       u case "failed" => "failed"
       [func(u.ratpart), func(u.coeff)]
 
-    map(func:E -> F, u:UFE) ==
+    map(func : E -> F, u : UFE) ==
       u case "failed" => "failed"
       [func(u.mainpart), [NLE2F(func, f) for f in u.limitedlogs]]
 

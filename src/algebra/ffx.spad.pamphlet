@@ -19,14 +19,14 @@
 ++ This package exports the function generateIrredPoly that computes
 ++ a monic irreducible polynomial of degree n over a finite field.
 
-IrredPolyOverFiniteField(GF:FiniteFieldCategory): Exports == Impl where
+IrredPolyOverFiniteField(GF : FiniteFieldCategory) : Exports == Impl where
   N    ==> PositiveInteger
   Z    ==> Integer
   SUP  ==> SparseUnivariatePolynomial GF
-  QR   ==> Record(quotient: Z, remainder: Z)
+  QR   ==> Record(quotient : Z, remainder : Z)
 
   Exports ==> with
-    generateIrredPoly: N -> SUP
+    generateIrredPoly : N -> SUP
       ++ generateIrredPoly(n) generates an irreducible univariate
       ++ polynomial of the given degree n over the finite field.
 
@@ -34,14 +34,14 @@ IrredPolyOverFiniteField(GF:FiniteFieldCategory): Exports == Impl where
     import DistinctDegreeFactorize(GF, SUP)
 
     getIrredPoly  : (Z, N) -> SUP
-    qAdicExpansion: Z -> SUP
+    qAdicExpansion : Z -> SUP
 
     p := characteristic()$GF :: N
     q := size()$GF :: N
 
-    qAdicExpansion(z : Z): SUP ==
+    qAdicExpansion(z : Z) : SUP ==
       -- expands z as a sum of powers of q, with coefficients in GF
-      -- z = HornerEval(qAdicExpansion z,q)
+      -- z = HornerEval(qAdicExpansion z, q)
       qr := divide(z, q)
       zero?(qr.remainder) => monomial(1, 1) * qAdicExpansion(qr.quotient)
       r := index(qr.remainder pretend N)$GF :: SUP
@@ -53,9 +53,9 @@ IrredPolyOverFiniteField(GF:FiniteFieldCategory): Exports == Impl where
       -- until we find an irreducible one. The obviously reducible ones
       -- are avoided.
       mon := monomial(1, n)$SUP
-      pol: SUP := 0
-      found: Boolean := false
-      end: Z := q^n - 1
+      pol : SUP := 0
+      found : Boolean := false
+      end : Z := q^n - 1
       while not ((end < start) or found) repeat
         if gcd(start, p) = 1 then
           if irreducible?(pol := mon + qAdicExpansion(start)) then

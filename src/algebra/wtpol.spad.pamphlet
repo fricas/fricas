@@ -29,68 +29,68 @@
 ++ in the sense that only non-zero terms are represented.
 -- Currently unused
 
-WeightedPolynomials(R:Ring,VarSet: OrderedSet, E:OrderedAbelianMonoidSup,
-                           P:PolynomialCategory(R,E,VarSet),
-                             vl:List VarSet, wl:List NonNegativeInteger,
-                              wtlevel:NonNegativeInteger):
+WeightedPolynomials(R : Ring, VarSet : OrderedSet, E : OrderedAbelianMonoidSup,
+                           P : PolynomialCategory(R, E, VarSet),
+                             vl : List VarSet, wl : List NonNegativeInteger,
+                              wtlevel : NonNegativeInteger):
        Ring with
          if R has CommutativeRing then Algebra(R)
-         coerce: % -> P
+         coerce : % -> P
                  ++ convert back into a "P", ignoring weights
          if R has Field then "/": (%,%) -> Union(%,"failed")
                  ++ x/y division (only works if minimum weight
                  ++ of divisor is zero, and if R is a Field)
-         coerce: P -> %
+         coerce : P -> %
                  ++ coerce(p) coerces p into Weighted form, applying weights and ignoring terms
-         changeWeightLevel: NonNegativeInteger -> Void
+         changeWeightLevel : NonNegativeInteger -> Void
                  ++ changeWeightLevel(n) changes the weight level to the new value given:
                  ++ NB: previously calculated terms are not affected
     ==
   add
    --representations
-   Rep  := PolynomialRing(P,NonNegativeInteger)
-   p:P
-   w,x1,x2:%
-   n:NonNegativeInteger
-   z:Integer
+   Rep  := PolynomialRing(P, NonNegativeInteger)
+   p : P
+   w, x1, x2 : %
+   n : NonNegativeInteger
+   z : Integer
    changeWeightLevel(n) ==
-        wtlevel:=n
-   lookupList:List Record(var:VarSet, weight:NonNegativeInteger)
+        wtlevel := n
+   lookupList : List Record(var : VarSet, weight : NonNegativeInteger)
    if #vl ~= #wl then error "incompatible length lists in WeightedPolynomial"
-   lookupList:=[[v,n] for v in vl for n in wl]
+   lookupList := [[v, n] for v in vl for n in wl]
    -- local operation
-   innercoerce:(p,z) -> %
-   lookup:Varset -> NonNegativeInteger
+   innercoerce : (p, z) -> %
+   lookup : Varset -> NonNegativeInteger
    lookup v ==
-      l:=lookupList
+      l := lookupList
       while l ~= [] repeat
         v = l.first.var => return l.first.weight
-        l:=l.rest
+        l := l.rest
       0
-   innercoerce(p,z) ==
+   innercoerce(p, z) ==
       z<0 => 0
       zero? p => 0
-      mv:= mainVariable p
+      mv := mainVariable p
       mv case "failed" => monomial(p,0)
-      n:=lookup(mv)
-      up:=univariate(p,mv)
-      ans:%
-      ans:=0
+      n := lookup(mv)
+      up := univariate(p, mv)
+      ans : %
+      ans := 0
       while not zero? up  repeat
-        d:=degree up
-        f:=n*d
-        lcup:=leadingCoefficient up
-        up:=up-leadingMonomial up
-        mon:=monomial(1,mv,d)
+        d := degree up
+        f := n*d
+        lcup := leadingCoefficient up
+        up := up-leadingMonomial up
+        mon := monomial(1, mv, d)
         f<=z =>
-            tmp:= innercoerce(lcup,z-f)
+            tmp := innercoerce(lcup, z-f)
             while not zero? tmp repeat
-              ans:=ans+ monomial(mon*leadingCoefficient(tmp),degree(tmp)+f)
-              tmp:=reductum tmp
+              ans := ans+ monomial(mon*leadingCoefficient(tmp), degree(tmp)+f)
+              tmp := reductum tmp
       ans
-   coerce(p):% == innercoerce(p,wtlevel)
+   coerce(p) : % == innercoerce(p, wtlevel)
    coerce(w):P ==  "+"/[c for c in coefficients w]
-   coerce(p:%):OutputForm ==
+   coerce(p : %) : OutputForm ==
      zero? p => (0$Integer)::OutputForm
      degree p = 0 => leadingCoefficient(p):: OutputForm
      reduce("+",(reverse [paren(c::OutputForm) for c in coefficients p])
@@ -108,9 +108,9 @@ WeightedPolynomials(R:Ring,VarSet: OrderedSet, E:OrderedAbelianMonoidSup,
    -x1 == -(x1::Rep)
    x1 * x2 ==
      -- Note that this is probably an extremely inefficient definition
-     w:=x1 *$Rep x2
+     w := x1 *$Rep x2
      while degree(w) > wtlevel repeat
-           w:=reductum w
+           w := reductum w
      w
 
 @
@@ -134,25 +134,25 @@ WeightedPolynomials(R:Ring,VarSet: OrderedSet, E:OrderedAbelianMonoidSup,
 ++ in the sense that only non-zero terms are represented.
 -- Currently unused
 
-OrdinaryWeightedPolynomials(R:Ring,
-                             vl:List Symbol, wl:List NonNegativeInteger,
-                              wtlevel:NonNegativeInteger):
+OrdinaryWeightedPolynomials(R : Ring,
+                             vl : List Symbol, wl : List NonNegativeInteger,
+                              wtlevel : NonNegativeInteger):
        Ring with
          if R has CommutativeRing then Algebra(R)
-         coerce: % -> Polynomial(R)
+         coerce : % -> Polynomial(R)
                  ++ coerce(p) converts back into a Polynomial(R), ignoring weights
-         coerce: Polynomial(R) -> %
+         coerce : Polynomial(R) -> %
                 ++ coerce(p) coerces a Polynomial(R) into Weighted form,
                 ++ applying weights and ignoring terms
          if R has Field then "/": (%,%) -> Union(%,"failed")
                  ++ x/y division (only works if minimum weight
                  ++ of divisor is zero, and if R is a Field)
-         changeWeightLevel: NonNegativeInteger -> Void
+         changeWeightLevel : NonNegativeInteger -> Void
                  ++ changeWeightLevel(n) This changes the weight level to the new value given:
                  ++ NB: previously calculated terms are not affected
-    == WeightedPolynomials(R,Symbol,IndexedExponents(Symbol),
+    == WeightedPolynomials(R, Symbol, IndexedExponents(Symbol),
                            Polynomial(R),
-                            vl,wl,wtlevel)
+                            vl, wl, wtlevel)
 
 @
 \section{License}

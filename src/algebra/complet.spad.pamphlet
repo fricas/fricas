@@ -17,12 +17,12 @@
 ++ Description: Adjunction of two real infinites quantities to a set.
 ++ Date Created: 4 Oct 1989
 ++ Date Last Updated: 1 Nov 1989
-OrderedCompletion(R:SetCategory): Exports == Implementation where
+OrderedCompletion(R : SetCategory) : Exports == Implementation where
   B ==> Boolean
 
   Exports ==> Join(SetCategory, FullyRetractableTo R) with
     plusInfinity : () -> %        ++ plusInfinity() returns +infinity.
-    minusInfinity: () -> %        ++ minusInfinity() returns  -infinity.
+    minusInfinity : () -> %        ++ minusInfinity() returns  -infinity.
     finite?      : %  -> B
       ++ finite?(x) tests if x is finite.
     infinite?    : %  -> B
@@ -33,19 +33,19 @@ OrderedCompletion(R:SetCategory): Exports == Implementation where
     if R has AbelianGroup then AbelianGroup
     if R has OrderedRing then OrderedRing
     if R has IntegerNumberSystem then
-      rational?: % -> Boolean
+      rational? : % -> Boolean
         ++ rational?(x) tests if x is a finite rational number.
       rational : % -> Fraction Integer
         ++ rational(x) returns x as a finite rational number.
         ++ Error: if x cannot be so converted.
-      rationalIfCan: % -> Union(Fraction Integer, "failed")
+      rationalIfCan : % -> Union(Fraction Integer, "failed")
         ++ rationalIfCan(x) returns x as a finite rational number if
         ++ it is one and "failed" otherwise.
 
   Implementation ==> add
-    Rep := Union(fin:R, inf:B)  -- true = +infinity, false = -infinity
+    Rep := Union(fin : R, inf : B)  -- true = +infinity, false = -infinity
 
-    coerce(r:R):%          == [r]
+    coerce(r : R) : %          == [r]
     retract(x:%):R         == (x case fin => x.fin; error "Not finite")
     finite? x              == x case fin
     infinite? x            == x case inf
@@ -56,7 +56,7 @@ OrderedCompletion(R:SetCategory): Exports == Implementation where
       x case fin => x.fin
       "failed"
 
-    coerce(x:%):OutputForm ==
+    coerce(x : %) : OutputForm ==
       x case fin => (x.fin)::OutputForm
       e := 'infinity::OutputForm
       x.inf => empty() + e
@@ -77,7 +77,7 @@ OrderedCompletion(R:SetCategory): Exports == Implementation where
     if R has AbelianGroup then
       0 == [0$R]
 
-      n:Integer * x:% ==
+      n : Integer * x : % ==
         x case inf =>
           n > 0 => x
           n < 0 => [not(x.inf)]
@@ -97,7 +97,7 @@ OrderedCompletion(R:SetCategory): Exports == Implementation where
         [x.fin + y.fin]
 
     if R has OrderedRing then
-      fininf: (B, R) -> %
+      fininf : (B, R) -> %
 
       1                == [1$R]
       characteristic() == characteristic()$R
@@ -107,7 +107,7 @@ OrderedCompletion(R:SetCategory): Exports == Implementation where
         r < 0 => [not b]
         error "Undefined product"
 
-      x:% * y:% ==
+      x : % * y : % ==
         x case inf =>
           y case inf =>
             xor(x.inf, y.inf) => minusInfinity()
@@ -147,18 +147,18 @@ OrderedCompletion(R:SetCategory): Exports == Implementation where
 ++ Description: Lifting of maps to ordered completions.
 ++ Date Created: 4 Oct 1989
 ++ Date Last Updated: 4 Oct 1989
-OrderedCompletionFunctions2(R, S): Exports == Implementation where
-  R, S: SetCategory
+OrderedCompletionFunctions2(R, S) : Exports == Implementation where
+  R, S : SetCategory
 
   ORR ==> OrderedCompletion R
   ORS ==> OrderedCompletion S
 
   Exports ==> with
-    map: (R -> S, ORR) -> ORS
+    map : (R -> S, ORR) -> ORS
       ++ map(f, r) lifts f and applies it to r, assuming that
       ++ f(plusInfinity) = plusInfinity and that
       ++ f(minusInfinity) = minusInfinity.
-    map: (R -> S, ORR, ORS, ORS) -> ORS
+    map : (R -> S, ORR, ORS, ORS) -> ORS
       ++ map(f, r, p, m) lifts f and applies it to r, assuming that
       ++ f(plusInfinity) = p and that f(minusInfinity) = m.
 
@@ -180,7 +180,7 @@ OrderedCompletionFunctions2(R, S): Exports == Implementation where
 ++ Description: Adjunction of a complex infinity to a set.
 ++ Date Created: 4 Oct 1989
 ++ Date Last Updated: 1 Nov 1989
-OnePointCompletion(R:SetCategory): Exports == Implementation where
+OnePointCompletion(R : SetCategory) : Exports == Implementation where
   B ==> Boolean
 
   Exports ==> Join(SetCategory, FullyRetractableTo R) with
@@ -188,31 +188,31 @@ OnePointCompletion(R:SetCategory): Exports == Implementation where
       ++  infinity() returns infinity.
     finite?  : %  -> B
       ++ finite?(x) tests if x is finite.
-    infinite?: %  -> B
+    infinite? : %  -> B
       ++ infinite?(x) tests if x is infinite.
     if R has AbelianGroup then AbelianGroup
     if R has OrderedRing then OrderedRing
     if R has IntegerNumberSystem then
-      rational?: % -> Boolean
+      rational? : % -> Boolean
         ++ rational?(x) tests if x is a finite rational number.
       rational : % -> Fraction Integer
         ++ rational(x) returns x as a finite rational number.
         ++ Error: if x is not a rational number.
-      rationalIfCan: % -> Union(Fraction Integer, "failed")
+      rationalIfCan : % -> Union(Fraction Integer, "failed")
         ++ rationalIfCan(x) returns x as a finite rational number if
         ++ it is one, "failed" otherwise.
 
   Implementation ==> add
     Rep := Union(R, "infinity")
 
-    coerce(r:R):%          == r
+    coerce(r : R) : %          == r
     retract(x:%):R         == (x case R => x::R; error "Not finite")
     finite? x              == x case R
     infinite? x            == x case "infinity"
     infinity()             == "infinity"
     retractIfCan(x:%):Union(R, "failed") == (x case R => x::R; "failed")
 
-    coerce(x:%):OutputForm ==
+    coerce(x : %) : OutputForm ==
       x case "infinity" => 'infinity::OutputForm
       x::R::OutputForm
 
@@ -224,7 +224,7 @@ OnePointCompletion(R:SetCategory): Exports == Implementation where
     if R has AbelianGroup then
       0 == 0$R
 
-      n:Integer * x:% ==
+      n : Integer * x : % ==
         x case "infinity" =>
           zero? n => error "Undefined product"
           infinity()
@@ -240,7 +240,7 @@ OnePointCompletion(R:SetCategory): Exports == Implementation where
         x::R + y::R
 
     if R has OrderedRing then
-      fininf: R -> %
+      fininf : R -> %
 
       1                == 1$R
       characteristic() == characteristic()$R
@@ -249,7 +249,7 @@ OnePointCompletion(R:SetCategory): Exports == Implementation where
         zero? r => error "Undefined product"
         infinity()
 
-      x:% * y:% ==
+      x : % * y : % ==
         x case "infinity" =>
           y case "infinity" => y
           fininf(y::R)
@@ -284,17 +284,17 @@ OnePointCompletion(R:SetCategory): Exports == Implementation where
 ++ Description: Lifting of maps to one-point completions.
 ++ Date Created: 4 Oct 1989
 ++ Date Last Updated: 4 Oct 1989
-OnePointCompletionFunctions2(R, S): Exports == Implementation where
-  R, S: SetCategory
+OnePointCompletionFunctions2(R, S) : Exports == Implementation where
+  R, S : SetCategory
 
   OPR ==> OnePointCompletion R
   OPS ==> OnePointCompletion S
 
   Exports ==> with
-    map: (R -> S, OPR) -> OPS
+    map : (R -> S, OPR) -> OPS
       ++ map(f, r) lifts f and applies it to r, assuming that
       ++ f(infinity) = infinity.
-    map: (R -> S, OPR, OPS) -> OPS
+    map : (R -> S, OPR, OPS) -> OPS
       ++ map(f, r, i) lifts f and applies it to r, assuming that
       ++ f(infinity) = i.
 
@@ -314,12 +314,12 @@ OnePointCompletionFunctions2(R, S): Exports == Implementation where
 ++ Description: Default infinity signatures for the interpreter;
 ++ Date Created: 4 Oct 1989
 ++ Date Last Updated: 4 Oct 1989
-Infinity(): with
+Infinity() : with
   infinity     : () -> OnePointCompletion Integer
     ++ infinity() returns infinity.
   plusInfinity : () -> OrderedCompletion  Integer
     ++ plusInfinity() returns plusIinfinity.
-  minusInfinity: () -> OrderedCompletion  Integer
+  minusInfinity : () -> OrderedCompletion  Integer
     ++ minusInfinity() returns minusInfinity.
  == add
   infinity()      == infinity()$OnePointCompletion(Integer)

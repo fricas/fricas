@@ -20,7 +20,7 @@
 ++ References:
 ++ Description:
 ++ This package exports plotting tools
-PlotTools(): Exports == Implementation where
+PlotTools() : Exports == Implementation where
   L   ==> List
 --  Pt  ==> TwoDimensionalPoint
   SEG ==> Segment
@@ -32,7 +32,7 @@ PlotTools(): Exports == Implementation where
   VIEW2D ==> TwoDimensionalViewport
 
   Exports ==> with
-    calcRanges: L L Pt             -> L SEG SF
+    calcRanges : L L Pt             -> L SEG SF
         ++ calcRanges(l) \undocumented
 
   Implementation ==> add
@@ -45,39 +45,39 @@ PlotTools(): Exports == Implementation where
     import PointPackage(SF)
 
     --%Local functions
-    xRange0: L Pt -> SEG SF
-    xRange: L L Pt -> SEG SF
-    yRange0: L Pt -> SEG SF
-    yRange: L L Pt -> SEG SF
-    drawToScaleRanges: (SEG SF,SEG SF) -> L SEG SF
+    xRange0 : L Pt -> SEG SF
+    xRange : L L Pt -> SEG SF
+    yRange0 : L Pt -> SEG SF
+    yRange : L L Pt -> SEG SF
+    drawToScaleRanges : (SEG SF, SEG SF) -> L SEG SF
 
-    drawToScaleRanges(xVals,yVals) ==
+    drawToScaleRanges(xVals, yVals) ==
       xDiff := (xHi := hi xVals) - (xLo := lo xVals)
       yDiff := (yHi := hi yVals) - (yLo := lo yVals)
       pad := abs(yDiff - xDiff)/2
-      yDiff > xDiff => [segment(xLo - pad,xHi + pad),yVals]
-      [xVals,segment(yLo - pad,yHi + pad)]
+      yDiff > xDiff => [segment(xLo - pad, xHi + pad), yVals]
+      [xVals, segment(yLo - pad, yHi + pad)]
 
-    select : (L Pt,Pt -> SF,(SF,SF) -> SF) -> SF
-    select(l,f,g) ==
+    select : (L Pt, Pt -> SF, (SF, SF) -> SF) -> SF
+    select(l, f, g) ==
       m := f first l
-      for p in rest l repeat m := g(m,f p)
+      for p in rest l repeat m := g(m, f p)
       m
 
-    xRange0(list:L Pt) == select(list,xCoord,min) .. select(list,xCoord,max)
-    yRange0(list:L Pt) == select(list,yCoord,min) .. select(list,yCoord,max)
+    xRange0(list : L Pt) == select(list, xCoord, min) .. select(list, xCoord, max)
+    yRange0(list : L Pt) == select(list, yCoord, min) .. select(list, yCoord, max)
 
-    select2: (L L Pt,L Pt -> SF,(SF,SF) -> SF) -> SF
-    select2(l,f,g) ==
+    select2 : (L L Pt, L Pt -> SF, (SF, SF) -> SF) -> SF
+    select2(l, f, g) ==
       m := f first l
-      for p in rest l repeat m := g(m,f p)
+      for p in rest l repeat m := g(m, f p)
       m
 
-    xRange(list:L L Pt) ==
-      select2(list,(u1: L(Pt)): SF +-> lo(xRange0(u1)),min) .. select2(list,(v1: L(Pt)): SF +-> hi(xRange0(v1)),max)
+    xRange(list : L L Pt) ==
+      select2(list, (u1 : L(Pt)) : SF +-> lo(xRange0(u1)), min) .. select2(list, (v1 : L(Pt)) : SF +-> hi(xRange0(v1)), max)
 
-    yRange(list:L L Pt) ==
-      select2(list,(u1: L(Pt)): SF +-> lo(yRange0(u1)),min) .. select2(list,(v1: L(Pt)): SF +-> hi(yRange0(v1)),max)
+    yRange(list : L L Pt) ==
+      select2(list, (u1 : L(Pt)) : SF +-> lo(yRange0(u1)), min) .. select2(list, (v1 : L(Pt)) : SF +-> hi(yRange0(v1)), max)
 
   --%Exported Functions
     calcRanges(llp) ==

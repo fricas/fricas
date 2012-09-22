@@ -16,22 +16,22 @@
 ++ Date Created: 19 July 1990
 ++ Date Last Updated: 13 September 1991
 ++ Basic Operations:
-++ Related Constructors:DifferentialPolynomialCategory
-++ See Also:OrderedDifferentialVariable,
+++ Related Constructors: DifferentialPolynomialCategory
+++ See Also: OrderedDifferentialVariable,
 ++          SequentialDifferentialVariable,
 ++          DifferentialSparseMultivariatePolynomial.
-++ AMS Classifications:12H05
+++ AMS Classifications: 12H05
 ++ Keywords: differential indeterminates, ranking, order, weight
 ++ References:Ritt, J.F. "Differential Algebra" (Dover, 1950).
 ++ Description:
 ++   \spadtype{DifferentialVariableCategory} constructs the
 ++   set of derivatives of a given set of
 ++   (ordinary) differential indeterminates.
-++   If x,...,y is an ordered set of differential indeterminates,
+++   If x, ..., y is an ordered set of differential indeterminates,
 ++   and the prime notation is used for differentiation, then
 ++   the set of derivatives (including
 ++   zero-th order) of the differential indeterminates is
-++   x,\spad{x'},\spad{x''},..., y,\spad{y'},\spad{y''},...
+++   x, \spad{x'}, \spad{x''}, ..., y, \spad{y'}, \spad{y''}, ...
 ++   (Note: in the interpreter, the n-th derivative of y is displayed as
 ++   y with a subscript n.)  This set is
 ++   viewed as a set of algebraic indeterminates, totally ordered in a
@@ -68,10 +68,10 @@
 ++   This weight function can then be extended to the set of
 ++   all differential polynomials, providing a graded ring
 ++   structure.
-DifferentialVariableCategory(S:OrderedSet): Category ==
+DifferentialVariableCategory(S : OrderedSet) : Category ==
   Join(OrderedSet, RetractableTo S) with
     -- Examples:
-    -- v:=makeVariable('s,5)
+    -- v := makeVariable('s, 5)
     makeVariable  : (S, NonNegativeInteger) -> %
        ++ makeVariable(s, n) returns the n-th derivative of a
        ++ differential indeterminate s as an algebraic indeterminate.
@@ -94,19 +94,19 @@ DifferentialVariableCategory(S:OrderedSet): Category ==
        -- Example: differentiate(v)
     differentiate : (%, NonNegativeInteger) -> %
        ++ differentiate(v, n) returns the n-th derivative of v.
-       -- Example: differentiate(v,2)
+       -- Example: differentiate(v, 2)
     coerce        : S  -> %
        ++ coerce(s) returns s, viewed as the zero-th order derivative of s.
-       -- Example: coerce('s); differentiate(%,5)
+       -- Example: coerce('s); differentiate(%, 5)
  add
     import NumberFormats
-    coerce (s:S):% == makeVariable(s, 0)
+    coerce (s : S) : % == makeVariable(s, 0)
     differentiate v     == differentiate(v, 1)
     differentiate(v, n) == makeVariable(variable v, n + order v)
     retractIfCan v == (zero?(order v) => variable v; "failed")
     v = u      == (variable v = variable u) and (order v = order u)
 
-    coerce(v:%):OutputForm ==
+    coerce(v : %) : OutputForm ==
       a := variable(v)::OutputForm
       zero?(nn := order v) => a
       sub(a, outputForm nn)
@@ -127,11 +127,11 @@ DifferentialVariableCategory(S:OrderedSet): Category ==
 ++ Author:  William Sit
 ++ Date Created: 19 July 1990
 ++ Date Last Updated: 13 September 1991
-++ Basic Operations:differentiate, order, variable,<
+++ Basic Operations: differentiate, order, variable, <
 ++ Related Domains: OrderedVariableList,
 ++                  SequentialDifferentialVariable.
 ++ See Also: DifferentialVariableCategory
-++ AMS Classifications:12H05
+++ AMS Classifications: 12H05
 ++ Keywords: differential indeterminates, orderly ranking.
 ++ References:Kolchin, E.R. "Differential Algebra and Algebraic Groups"
 ++   (Academic Press, 1973).
@@ -147,10 +147,10 @@ DifferentialVariableCategory(S:OrderedSet): Category ==
 ++   defines an orderly ranking \spadfun{<} on derivatives u via the
 ++   lexicographic order on the pair
 ++   (\spadfun{order}(u), \spadfun{variable}(u)).
-OrderlyDifferentialVariable(S:OrderedSet):DifferentialVariableCategory(S)
+OrderlyDifferentialVariable(S : OrderedSet) : DifferentialVariableCategory(S)
   == add
-    Rep := Record(var:S, ord:NonNegativeInteger)
-    makeVariable(s,n) == [s, n]
+    Rep := Record(var : S, ord : NonNegativeInteger)
+    makeVariable(s, n) == [s, n]
     variable v     == v.var
     order v        == v.ord
 
@@ -161,11 +161,11 @@ OrderlyDifferentialVariable(S:OrderedSet):DifferentialVariableCategory(S)
 ++ Author:  William Sit
 ++ Date Created: 19 July 1990
 ++ Date Last Updated: 13 September 1991
-++ Basic Operations:differentiate, order, variable, <
+++ Basic Operations: differentiate, order, variable, <
 ++ Related Domains: OrderedVariableList,
 ++                  OrderlyDifferentialVariable.
-++ See Also:DifferentialVariableCategory
-++ AMS Classifications:12H05
+++ See Also: DifferentialVariableCategory
+++ AMS Classifications: 12H05
 ++ Keywords: differential indeterminates, sequential ranking.
 ++ References:Kolchin, E.R. "Differential Algebra and Algebraic Groups"
 ++   (Academic Press, 1973).
@@ -181,10 +181,10 @@ OrderlyDifferentialVariable(S:OrderedSet):DifferentialVariableCategory(S)
 ++   lexicographic order on the pair
 ++   (\spadfun{variable}(u), \spadfun{order}(u)).
 
-SequentialDifferentialVariable(S:OrderedSet):DifferentialVariableCategory(S)
+SequentialDifferentialVariable(S : OrderedSet) : DifferentialVariableCategory(S)
   == add
-    Rep := Record(var:S, ord:NonNegativeInteger)
-    makeVariable(s,n) == [s, n]
+    Rep := Record(var : S, ord : NonNegativeInteger)
+    makeVariable(s, n) == [s, n]
     variable v     == v.var
     order v        == v.ord
     v < u ==
@@ -198,10 +198,10 @@ SequentialDifferentialVariable(S:OrderedSet):DifferentialVariableCategory(S)
 ++ Author:  William Sit
 ++ Date Created: 19 July 1990
 ++ Date Last Updated: 13 September 1991
-++ Basic Operations:PolynomialCategory
-++ Related Constructors:DifferentialVariableCategory
+++ Basic Operations: PolynomialCategory
+++ Related Constructors: DifferentialVariableCategory
 ++ See Also:
-++ AMS Classifications:12H05
+++ AMS Classifications: 12H05
 ++ Keywords: differential indeterminates, ranking, differential polynomials,
 ++           order, weight, leader, separant, initial, isobaric
 ++ References:Kolchin, E.R. "Differential Algebra and Algebraic Groups"
@@ -233,70 +233,70 @@ SequentialDifferentialVariable(S:OrderedSet):DifferentialVariableCategory(S)
 ++   in the given differential indeterminates.
 ++
 
-DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
+DifferentialPolynomialCategory(R : Ring, S : OrderedSet,
     V : DifferentialVariableCategory S, E : OrderedAbelianMonoidSup) :
               Category ==
-  Join(PolynomialCategory(R,E,V),
+  Join(PolynomialCategory(R, E, V),
        DifferentialExtension R, RetractableTo S) with
     -- Examples:
-    -- s:=makeVariable('s)
-    -- p:= 3*(s 1)^2 + s*(s 2)^3
+    -- s := makeVariable('s)
+    -- p := 3*(s 1)^2 + s*(s 2)^3
     --  all functions below have default implementations
     --  using primitives from V
 
-    makeVariable: S -> (NonNegativeInteger -> %)
+    makeVariable : S -> (NonNegativeInteger -> %)
        ++ makeVariable(s) views s as a differential
        ++ indeterminate,  in such a way that the n-th
        ++ derivative of s may be simply referenced as z.n
-       ++ where z :=makeVariable(s).
+       ++ where z := makeVariable(s).
        ++ Note: In the interpreter, z is
        ++ given as an internal map, which may be ignored.
        -- Example: makeVariable('s); %.5
 
-    differentialVariables: % ->  List S
+    differentialVariables : % ->  List S
       ++ differentialVariables(p) returns a list of differential
       ++ indeterminates occurring in a differential polynomial p.
     order : (%, S) -> NonNegativeInteger
-      ++ order(p,s) returns the order of the differential
+      ++ order(p, s) returns the order of the differential
       ++ polynomial p in differential indeterminate s.
     order : %   -> NonNegativeInteger
       ++ order(p) returns the order of the differential polynomial p,
       ++ which is the maximum number of differentiations of a
       ++ differential indeterminate, among all those appearing in p.
-    degree: (%, S) -> NonNegativeInteger
+    degree : (%, S) -> NonNegativeInteger
       ++ degree(p, s) returns the maximum degree of
       ++ the differential polynomial p viewed as a differential polynomial
       ++ in the differential indeterminate s alone.
-    weights: % -> List NonNegativeInteger
+    weights : % -> List NonNegativeInteger
       ++ weights(p) returns a list of weights of differential monomials
       ++ appearing in differential polynomial p.
-    weight: %   -> NonNegativeInteger
+    weight : %   -> NonNegativeInteger
       ++ weight(p) returns the maximum weight of all differential monomials
       ++ appearing in the differential polynomial p.
-    weights: (%, S) -> List NonNegativeInteger
+    weights : (%, S) -> List NonNegativeInteger
       ++ weights(p, s) returns a list of
       ++ weights of differential monomials
       ++ appearing in the differential polynomial p when p is viewed
       ++ as a differential polynomial in the differential indeterminate s
       ++ alone.
-    weight: (%, S) -> NonNegativeInteger
+    weight : (%, S) -> NonNegativeInteger
       ++ weight(p, s) returns the maximum weight of all differential
       ++ monomials appearing in the differential polynomial p
       ++ when p is viewed as a differential polynomial in
       ++ the differential indeterminate s alone.
-    isobaric?: % -> Boolean
+    isobaric? : % -> Boolean
       ++ isobaric?(p) returns true if every differential monomial appearing
       ++ in the differential polynomial p has same weight,
       ++ and returns false otherwise.
-    leader: %   -> V
+    leader : %   -> V
       ++ leader(p) returns the derivative of the highest rank
       ++ appearing in the differential polynomial p
       ++ Note: an error occurs if p is in the ground ring.
-    initial:%   -> %
+    initial : %   -> %
       ++ initial(p) returns the
       ++ leading coefficient when the differential polynomial p
       ++ is written as a univariate polynomial in its leader.
-    separant:%  -> %
+    separant : %  -> %
       ++ separant(p) returns the
       ++ partial derivative of the differential polynomial p
       ++ with respect to its leader.
@@ -304,7 +304,7 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
       InnerEvalable(S, R)
       InnerEvalable(S, %)
       Evalable %
-      makeVariable: % -> (NonNegativeInteger -> %)
+      makeVariable : % -> (NonNegativeInteger -> %)
        ++ makeVariable(p) views p as an element of a differential
        ++ ring,  in such a way that the n-th
        ++ derivative of p may be simply referenced as z.n
@@ -314,15 +314,15 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
        -- Example: makeVariable(p); %.5; makeVariable(%^2); %.2
 
  add
-    p:%
-    s:S
+    p : %
+    s : S
     makeVariable s == n +-> makeVariable(s, n)::%
 
     if R has IntegralDomain then
-      differentiate(p:%, d:R -> R) ==
-        ans:% := 0
+      differentiate(p : %, d : R -> R) ==
+        ans : % := 0
         l := variables p
-        while (u:=retractIfCan(p)@Union(R, "failed")) case "failed" repeat
+        while (u := retractIfCan(p)@Union(R, "failed")) case "failed" repeat
           t := leadingMonomial p
           lc := leadingCoefficient t
           ans := ans + d(lc)::% * (t exquo lc)::%
@@ -330,61 +330,61 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
           p := reductum p
         ans + d(u::R)::%
 
-    order (p:%):NonNegativeInteger ==
+    order (p : %) : NonNegativeInteger ==
       ground? p => 0
       "max"/[order v for v in variables p]
-    order (p:%,s:S):NonNegativeInteger ==
+    order (p : %, s : S) : NonNegativeInteger ==
       ground? p => 0
-      empty? (vv:= [order v for v in variables p | (variable v) = s ]) =>0
+      empty? (vv := [order v for v in variables p | (variable v) = s ]) =>0
       "max"/vv
 
     degree (p, s) ==
-      d:NonNegativeInteger:=0
+      d : NonNegativeInteger := 0
       for lp in monomials p repeat
-        lv:= [v for v in variables lp | (variable v) = s ]
-        if not empty? lv then d:= max(d, +/degree(lp, lv))
+        lv := [v for v in variables lp | (variable v) = s ]
+        if not empty? lv then d := max(d, +/degree(lp, lv))
       d
 
     weights p ==
-      ws:List NonNegativeInteger := nil
-      empty? (mp:=monomials p) => ws
+      ws : List NonNegativeInteger := nil
+      empty? (mp := monomials p) => ws
       for lp in mp repeat
-        lv:= variables lp
+        lv := variables lp
         if not empty? lv then
-          dv:= degree(lp, lv)
-          w:=+/[(weight v) * d for v in lv for d in dv]$(List NonNegativeInteger)
-          ws:= concat(ws, w)
+          dv := degree(lp, lv)
+          w := +/[(weight v) * d for v in lv for d in dv]$(List NonNegativeInteger)
+          ws := concat(ws, w)
       ws
     weight p ==
-      empty? (ws:=weights p) => 0
+      empty? (ws := weights p) => 0
       "max"/ws
 
     weights (p, s) ==
-      ws:List NonNegativeInteger := nil
-      empty?(mp:=monomials p) => ws
+      ws : List NonNegativeInteger := nil
+      empty?(mp := monomials p) => ws
       for lp in mp repeat
-        lv:= [v for v in variables lp | (variable v) = s ]
+        lv := [v for v in variables lp | (variable v) = s ]
         if not empty? lv then
-          dv:= degree(lp, lv)
-          w:=+/[(weight v) * d for v in lv for d in dv]$(List NonNegativeInteger)
-          ws:= concat(ws, w)
+          dv := degree(lp, lv)
+          w := +/[(weight v) * d for v in lv for d in dv]$(List NonNegativeInteger)
+          ws := concat(ws, w)
       ws
-    weight (p,s)  ==
-      empty? (ws:=weights(p,s)) => 0
+    weight (p, s)  ==
+      empty? (ws := weights(p, s)) => 0
       "max"/ws
 
     isobaric? p == (# removeDuplicates weights p) = 1
 
     leader p ==             -- depends on the ranking
-      vl:= variables p
+      vl := variables p
       -- it's not enough just to look at leadingMonomial p
       -- the term-ordering need not respect the ranking
       empty? vl => error "leader is not defined "
       "max"/vl
-    initial p == leadingCoefficient univariate(p,leader p)
+    initial p == leadingCoefficient univariate(p, leader p)
     separant p == differentiate(p, leader p)
 
-    coerce(s:S):%   == s::V::%
+    coerce(s : S) : %   == s::V::%
 
     retractIfCan(p:%):Union(S, "failed") ==
       (v := retractIfCan(p)@Union(V,"failed")) case "failed" => "failed"
@@ -397,28 +397,28 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
 
       makeVariable p == n +-> differentiate(p, n)
 
-      eval(p:%, sl:List S, rl:List R) ==
-        ordp:= order p
-        vl  := concat [[makeVariable(s,j)$V for j in  0..ordp]
+      eval(p : %, sl : List S, rl : List R) ==
+        ordp := order p
+        vl  := concat [[makeVariable(s, j)$V for j in  0..ordp]
                                 for s in sl]$List(List V)
-        rrl:=nil$List(R)
+        rrl := nil$List(R)
         for r in rl repeat
-          t:= r
-          rrl:= concat(rrl,
+          t := r
+          rrl := concat(rrl,
                 concat(r, [t := differentiate t for i in 1..ordp]))
         eval(p, vl, rrl)
 
-      eval(p:%, sl:List S, rl:List %) ==
-        ordp:= order p
-        vl  := concat [[makeVariable(s,j)$V for j in  0..ordp]
+      eval(p : %, sl : List S, rl : List %) ==
+        ordp := order p
+        vl  := concat [[makeVariable(s, j)$V for j in  0..ordp]
                                 for s in sl]$List(List V)
-        rrl:=nil$List(%)
+        rrl := nil$List(%)
         for r in rl repeat
-          t:=r
-          rrl:=concat(rrl,
-               concat(r, [t:=differentiate t for i in 1..ordp]))
+          t := r
+          rrl := concat(rrl,
+               concat(r, [t := differentiate t for i in 1..ordp]))
         eval(p, vl, rrl)
-      eval(p:%, l:List Equation %) ==
+      eval(p : %, l : List Equation %) ==
         eval(p, [retract(lhs e)@S for e in l]$List(S),
               [rhs e for e in l]$List(%))
 
@@ -429,10 +429,10 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
 ++ Author:  William Sit
 ++ Date Created: 19 July 1990
 ++ Date Last Updated: 13 September 1991
-++ Basic Operations:DifferentialPolynomialCategory
+++ Basic Operations: DifferentialPolynomialCategory
 ++ Related Constructors:
 ++ See Also:
-++ AMS Classifications:12H05
+++ AMS Classifications: 12H05
 ++ Keywords: differential indeterminates, ranking, differential polynomials,
 ++           order, weight, leader, separant, initial, isobaric
 ++ References:Kolchin, E.R. "Differential Algebra and Algebraic Groups"
@@ -446,17 +446,17 @@ DifferentialPolynomialCategory(R:Ring,S:OrderedSet,
 
 DifferentialSparseMultivariatePolynomial(R, S, V):
      Exports == Implementation where
-  R: Ring
-  S: OrderedSet
-  V: DifferentialVariableCategory S
+  R : Ring
+  S : OrderedSet
+  V : DifferentialVariableCategory S
   E   ==> IndexedExponents(V)
-  PC  ==> PolynomialCategory(R,IndexedExponents(V),V)
+  PC  ==> PolynomialCategory(R, IndexedExponents(V), V)
   PCL ==> PolynomialCategoryLifting
   P   ==> SparseMultivariatePolynomial(R, V)
   SUP ==> SparseUnivariatePolynomial
   SMP ==> SparseMultivariatePolynomial(R, S)
 
-  Exports ==> Join(DifferentialPolynomialCategory(R,S,V,E),
+  Exports ==> Join(DifferentialPolynomialCategory(R, S, V, E),
                    RetractableTo SMP)
 
   Implementation ==> P add
@@ -466,7 +466,7 @@ DifferentialSparseMultivariatePolynomial(R, S, V):
                                   IndexedExponents V, V, R, %, SMP)
       "failed"
 
-    coerce(p:SMP):% ==
+    coerce(p : SMP) : % ==
       map(x +-> x::V::%, x +-> x::%, p)$PCL(IndexedExponents S, S, R, SMP, %)
 
 @
@@ -476,10 +476,10 @@ DifferentialSparseMultivariatePolynomial(R, S, V):
 ++ Author:  William Sit
 ++ Date Created: 24 September, 1991
 ++ Date Last Updated: 7 February, 1992
-++ Basic Operations:DifferentialPolynomialCategory
+++ Basic Operations: DifferentialPolynomialCategory
 ++ Related Constructors: DifferentialSparseMultivariatePolynomial
 ++ See Also:
-++ AMS Classifications:12H05
+++ AMS Classifications: 12H05
 ++ Keywords: differential indeterminates, ranking, differential polynomials,
 ++           order, weight, leader, separant, initial, isobaric
 ++ References:Kolchin, E.R. "Differential Algebra and Algebraic Groups"
@@ -494,15 +494,15 @@ DifferentialSparseMultivariatePolynomial(R, S, V):
 
 OrderlyDifferentialPolynomial(R):
      Exports == Implementation where
-  R: Ring
+  R : Ring
   S  ==> Symbol
   V  ==> OrderlyDifferentialVariable S
   E   ==> IndexedExponents(V)
   SMP ==> SparseMultivariatePolynomial(R, S)
-  Exports ==> Join(DifferentialPolynomialCategory(R,S,V,E),
+  Exports ==> Join(DifferentialPolynomialCategory(R, S, V, E),
                    RetractableTo SMP)
 
-  Implementation ==> DifferentialSparseMultivariatePolynomial(R,S,V)
+  Implementation ==> DifferentialSparseMultivariatePolynomial(R, S, V)
 
 @
 \section{domain SDPOL SequentialDifferentialPolynomial}
@@ -511,10 +511,10 @@ OrderlyDifferentialPolynomial(R):
 ++ Author:  William Sit
 ++ Date Created: 24 September, 1991
 ++ Date Last Updated: 7 February, 1992
-++ Basic Operations:DifferentialPolynomialCategory
+++ Basic Operations: DifferentialPolynomialCategory
 ++ Related Constructors: DifferentialSparseMultivariatePolynomial
 ++ See Also:
-++ AMS Classifications:12H05
+++ AMS Classifications: 12H05
 ++ Keywords: differential indeterminates, ranking, differential polynomials,
 ++           order, weight, leader, separant, initial, isobaric
 ++ References:Kolchin, E.R. "Differential Algebra and Algebraic Groups"
@@ -528,15 +528,15 @@ OrderlyDifferentialPolynomial(R):
 
 SequentialDifferentialPolynomial(R):
      Exports == Implementation where
-  R: Ring
+  R : Ring
   S  ==> Symbol
   V  ==> SequentialDifferentialVariable S
   E   ==> IndexedExponents(V)
   SMP ==> SparseMultivariatePolynomial(R, S)
-  Exports ==> Join(DifferentialPolynomialCategory(R,S,V,E),
+  Exports ==> Join(DifferentialPolynomialCategory(R, S, V, E),
                    RetractableTo SMP)
 
-  Implementation ==> DifferentialSparseMultivariatePolynomial(R,S,V)
+  Implementation ==> DifferentialSparseMultivariatePolynomial(R, S, V)
 
 @
 \section{License}

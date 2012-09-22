@@ -17,39 +17,39 @@
 ++ Date Created: 25 April 1990
 ++ Date Last Updated: 9 June 1993
 ++ Keywords: elementary, function, integration.
-IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
+IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
   K   ==> Kernel F
   SE  ==> Symbol
   P   ==> SparseMultivariatePolynomial(R, K)
   UP  ==> SparseUnivariatePolynomial F
   IR  ==> IntegrationResult F
-  ANS ==> Record(special:F, integrand:F)
+  ANS ==> Record(special : F, integrand : F)
   U   ==> Union(ANS, "failed")
 
   Exp ==> with
-    varselect: (List K, SE) -> List K
-      ++ varselect([k1,...,kn], x) returns the ki which involve x.
+    varselect : (List K, SE) -> List K
+      ++ varselect([k1, ..., kn], x) returns the ki which involve x.
     kmax     : List K -> K
-      ++ kmax([k1,...,kn]) returns the top-level ki for integration.
+      ++ kmax([k1, ..., kn]) returns the top-level ki for integration.
     ksec     : (K, List K, SE) -> K
-      ++ ksec(k, [k1,...,kn], x) returns the second top-level ki
+      ++ ksec(k, [k1, ..., kn], x) returns the second top-level ki
       ++ after k involving x.
     union    : (List K, List K) -> List K
       ++ union(l1, l2) returns set-theoretic union of l1 and l2.
     vark     : (List F, SE) -> List K
-      ++ vark([f1,...,fn],x) returns the set-theoretic union of
-      ++ \spad{(varselect(f1,x),...,varselect(fn,x))}.
+      ++ vark([f1, ..., fn], x) returns the set-theoretic union of
+      ++ \spad{(varselect(f1, x), ..., varselect(fn, x))}.
     if R has IntegralDomain then
-      removeConstantTerm: (F, SE) -> F
+      removeConstantTerm : (F, SE) -> F
         ++ removeConstantTerm(f, x) returns f minus any additive constant
         ++ with respect to x.
     if R has GcdDomain and F has ElementaryFunctionCategory then
-      mkPrim: (F, SE) -> F
+      mkPrim : (F, SE) -> F
         ++ mkPrim(f, x) makes the logs in f which are linear in x
         ++ primitive with respect to x.
       if R has ConvertibleTo Pattern Integer and R has PatternMatchable Integer
         and F has LiouvillianFunctionCategory and F has RetractableTo SE then
-          intPatternMatch: (F, SE, (F, SE) -> IR, (F, SE) -> U) -> IR
+          intPatternMatch : (F, SE, (F, SE) -> IR, (F, SE) -> U) -> IR
             ++ intPatternMatch(f, x, int, pmint) tries to integrate \spad{f}
             ++ first by using the integration function \spad{int}, and then
             ++ by using the pattern match intetgration function \spad{pmint}
@@ -59,7 +59,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
 
     ALGOP := '%alg
 
-    better?: (K, K) -> Boolean
+    better? : (K, K) -> Boolean
 
     union(l1, l2)   == setUnion(l1, l2)
     varselect(l, x) == [k for k in l | member?(x, variables(k::F))]
@@ -87,16 +87,16 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
         (u := isPlus(num := numer f)) case "failed" =>
           freeOf?(num::F, x) => 0
           f
-        ans:P := 0
+        ans : P := 0
         for term in u::List(P) repeat
           if not freeOf?(term::F, x) then ans := ans + term
         ans / den
 
     if R has GcdDomain and F has ElementaryFunctionCategory then
-      psimp     : (P, SE) -> Record(coef:Integer, logand:F)
+      psimp     : (P, SE) -> Record(coef : Integer, logand : F)
       cont      : (P, List K) -> P
       logsimp   : (F, SE) -> F
-      linearLog?: (K, F, SE)  -> Boolean
+      linearLog? : (K, F, SE)  -> Boolean
 
       logsimp(f, x) ==
         r1 := psimp(numer f, x)
@@ -133,7 +133,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
             ir := int(f, x)
             empty?(l := notelem ir) => ir
             ans := ratpart ir
-            nl:List(Record(integrand:F, intvar:F)) := empty()
+            nl : List(Record(integrand : F, intvar : F)) := empty()
             lg := logpart ir
             for rec in l repeat
               u := pmint(rec.integrand, retract(rec.intvar))
@@ -157,7 +157,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R): Exp == Impl where
 ++ Date Created: 1 February 1988
 ++ Date Last Updated: 2 November 1995
 ++ Keywords: elementary, function, integration.
-ElementaryRischDE(R, F): Exports == Implementation where
+ElementaryRischDE(R, F) : Exports == Implementation where
   R : Join(GcdDomain, Comparable, CharacteristicZero,
            RetractableTo Integer, LinearlyExplicitRingOver Integer)
   F : Join(TranscendentalFunctionCategory, AlgebraicallyClosedField,
@@ -173,20 +173,20 @@ ElementaryRischDE(R, F): Exports == Implementation where
   UP  ==> SparseUnivariatePolynomial F
   RF  ==> Fraction UP
   GP  ==> LaurentPolynomial(F, UP)
-  Data ==> List Record(coeff:Z, argument:P)
-  RRF ==> Record(mainpart:F,limitedlogs:List NL)
-  NL  ==> Record(coeff:F,logand:F)
+  Data ==> List Record(coeff : Z, argument : P)
+  RRF ==> Record(mainpart : F, limitedlogs : List NL)
+  NL  ==> Record(coeff : F, logand : F)
   U   ==> Union(RRF, "failed")
   UF  ==> Union(F, "failed")
   UUP ==> Union(UP, "failed")
   UGP ==> Union(GP, "failed")
   URF ==> Union(RF, "failed")
   UEX ==> Union(Record(ratpart:F,  coeff:F), "failed")
-  PSOL==> Record(ans:F, right:F, sol?:Boolean)
+  PSOL==> Record(ans : F, right : F, sol? : Boolean)
   FAIL==> error("Function not supported by Risch d.e.")
 
   Exports ==> with
-    rischDE: (Z, F, F, SE, (F, LF) -> U, (F, F) -> UEX) -> PSOL
+    rischDE : (Z, F, F, SE, (F, LF) -> U, (F, F) -> UEX) -> PSOL
          ++ rischDE(n, f, g, x, lim, ext) returns \spad{[y, h, b]} such that
          ++ \spad{dy/dx + n df/dx y = h} and \spad{b := h = g}.
          ++ The equation \spad{dy/dx + n df/dx y = g} has no solution
@@ -207,31 +207,31 @@ ElementaryRischDE(R, F): Exports == Implementation where
     ALGOP := '%alg
     PRIM := 'prim
 
-    RF2GP:     RF -> GP
+    RF2GP :     RF -> GP
     makeData  : (F, SE, K)    -> Data
     normal0   : (Z, F, F, SE) -> UF
-    normalise0: (Z, F, F, SE) -> PSOL
+    normalise0 : (Z, F, F, SE) -> PSOL
     normalise : (Z, F, F, F, SE, K, (F, LF) -> U, (F, F) -> UEX) -> PSOL
-    rischDEalg: (Z, F, F, F, K, LK, SE, (F, LF) -> U, (F, F) -> UEX) -> PSOL
-    rischDElog: (LK, RF, RF, SE, K, UP->UP,(F,LF)->U,(F,F)->UEX) -> URF
-    rischDEexp: (LK, LK, RF, RF, SE, K, UP->UP,(F,LF)->U,(F,F)->UEX) -> URF
-    polyDElog : (LK, UP, UP,UP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UUP
-    polyDEexp : (LK, LK, UP, UP,UP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UUP
-    gpolDEexp : (LK, LK, UP, GP,GP,SE,K,UP->UP,(F,LF)->U,(F,F)->UEX) -> UGP
+    rischDEalg : (Z, F, F, F, K, LK, SE, (F, LF) -> U, (F, F) -> UEX) -> PSOL
+    rischDElog : (LK, RF, RF, SE, K, UP->UP, (F, LF)->U, (F, F)->UEX) -> URF
+    rischDEexp : (LK, LK, RF, RF, SE, K, UP->UP, (F, LF)->U, (F, F)->UEX) -> URF
+    polyDElog : (LK, UP, UP, UP, SE, K, UP->UP, (F, LF)->U, (F, F)->UEX) -> UUP
+    polyDEexp : (LK, LK, UP, UP, UP, SE, K, UP->UP, (F, LF)->U, (F, F)->UEX) -> UUP
+    gpolDEexp : (LK, LK, UP, GP, GP, SE, K, UP->UP, (F, LF)->U, (F, F)->UEX) -> UGP
     boundAt0  : (LK, LK, F, Z,  Z,    SE, K, (F, LF) -> U) -> Z
     boundInf  : (LK, LK, F, Z,  Z, Z, SE, K, (F, LF) -> U) -> Z
-    logdegrad : (LK, F, UP, Z, SE, K,(F,LF)->U, (F,F) -> UEX) -> UUP
-    expdegrad : (LK, F, UP, Z, SE, K,(F,LF)->U, (F,F) -> UEX) -> UUP
+    logdegrad : (LK, F, UP, Z, SE, K, (F, LF)->U, (F, F) -> UEX) -> UUP
+    expdegrad : (LK, F, UP, Z, SE, K, (F, LF)->U, (F, F) -> UEX) -> UUP
     logdeg    : (UP, F, Z, SE, F, (F, LF) -> U, (F, F) -> UEX) -> UUP
     expdeg    : (UP, F, Z, SE, F, (F, LF) -> U, (F, F) -> UEX) -> UUP
-    exppolyint: (UP, (Z, F) -> PSOL) -> UUP
+    exppolyint : (UP, (Z, F) -> PSOL) -> UUP
     RRF2F     : RRF -> F
     logdiff   : (List K, List K) -> List K
 
     prim?(k : K, x : SE) : Boolean ==
         is?(k, 'log) or has?(operator k, PRIM)
 
-    tab:AssociationList(F, Data) := table()
+    tab : AssociationList(F, Data) := table()
 
     RF2GP f == (numer(f)::GP exquo denom(f)::GP)::GP
 
@@ -247,8 +247,8 @@ ElementaryRischDE(R, F): Exports == Implementation where
       has?(operator kx, ALGOP) =>
         rec := primitiveElement(kx::F, k::F)
         y   := rootOf(rec.prim)
-        lk:LK := [kx, k]
-        lv:LF := [(rec.pol1) y, (rec.pol2) y]
+        lk : LK := [kx, k]
+        lv : LF := [(rec.pol1) y, (rec.pol2) y]
         rc := rischDE(n, eval(f, lk, lv), eval(g, lk, lv), x, limint, extint)
         rc.sol? => [eval(rc.ans, retract(y)@K, rec.primelt), rc.right, true]
         [0, 0, false]
@@ -282,7 +282,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
         tab.f := data := makeData(f, x, k)
       else data := data1::Data
       f'  := nfprime := n * differentiate(f, x)
-      p:P := 1
+      p : P := 1
       for v in data | (m := n * v.coeff) > 0 repeat
         p  := p * v.argument ^ (m::N)
         f' := f' - m * differentiate(v.argument::F, x) / (v.argument::F)
@@ -296,7 +296,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
       if (data1:= search(f, tab)) case "failed" then
         tab.f := data := makeData(f, x, k)
       else data := data1::Data
-      p:P := 1
+      p : P := 1
       for v in data | (m := n * v.coeff) > 0 repeat
         p  := p * v.argument ^ (m::N)
         f  := f - v.coeff * log(v.argument::F)
@@ -479,7 +479,7 @@ ElementaryRischDE(R, F): Exports == Implementation where
 -- case a = 1, degree(b) = 0, and (exp integrate b) is not in F
 -- this implies no cancellation at infinity
     logdeg(c, f, n, x, t', limitedint, extint) ==
-      answr:UP := 0
+      answr : UP := 0
       repeat
         zero? c => return answr
         (n < 0) or ((m := degree c)::Z > n) => return "failed"
@@ -509,17 +509,17 @@ ElementaryRischDE(R, F): Exports == Implementation where
                                                case "failed" => "failed"
           degree(u1::GP) > n => "failed"
           retractIfCan(al.polyPart * u1::GP)@Union(UP, "failed")
-        expdeg(c, intf0, n, x, first argument t, limint,extint)
+        expdeg(c, intf0, n, x, first argument t, limint, extint)
       expdeg(c, intf0, n, x, first argument t, limint, extint)
 
 -- case a = 1, degree(b) = 0, and (exp integrate b) is not a monomial
 -- this implies no cancellation at infinity
     expdeg(c, f, n, x, eta, limitedint, extint) ==
-      answr:UP := 0
+      answr : UP := 0
       repeat
         zero? c => return answr
         (n < 0) or ((m := degree c)::Z > n) => return "failed"
-        u := rischDE(1, f + m * eta, leadingCoefficient c, x,limitedint,extint)
+        u := rischDE(1, f + m * eta, leadingCoefficient c, x, limitedint, extint)
         ~u.sol? => return "failed"
         zero? m => return(answr + u.ans::UP)
         n   := m::Z - 1
