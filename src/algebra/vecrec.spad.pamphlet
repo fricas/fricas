@@ -171,17 +171,17 @@ VectorModularReconstructor() : Export == Implementation where
             -- invariant: r0 = t0*y + s0*x, r1 = t1*y + s1*x
             -- we do not need t0 and t1, so we do not compute them
             j := degree(y)
-            r0 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            r0 := new(qcoerce(j+1)@NonNegativeInteger, 0)$PA
             copy_first(r0, y, j + 1)
             dr0 := j
             -- s0 is 0
-            s0 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            s0 := new(qcoerce(j+1)@NonNegativeInteger, 0)$PA
             ds0 := 0$Integer
-            r1 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            r1 := new(qcoerce(j+1)@NonNegativeInteger, 0)$PA
             dr1 := degree(x)
             copy_first(r1, x, dr1 + 1)
             -- s1 is 1
-            s1 := new((j+1) pretend NonNegativeInteger, 0)$PA
+            s1 := new(qcoerce(j+1)@NonNegativeInteger, 0)$PA
             s1(0) := 1
             ds1 := 0$Integer
             while dr1 > i repeat
@@ -266,7 +266,7 @@ VectorModularReconstructor() : Export == Implementation where
                r1 := mul(r1, cden, p)
                remainder!(r1, modulus, p)
                (deg_r1 := degree(r1)) < bound =>
-                   rp := new((deg_r1 + 1) pretend NonNegativeInteger, 0)$PA
+                   rp := new(qcoerce(deg_r1 + 1)@NonNegativeInteger, 0)$PA
                    copy_first(rp, r1, deg_r1 + 1)
                    nums(j) := rp
                    dens(j) := cden
@@ -295,9 +295,9 @@ VectorModularReconstructor() : Export == Implementation where
                 for j in 0..(k - 1) repeat
                     if ci(j) ~= 0 then m := m + 1
             nnvars := var_cnt + 1
-            nexps := new((m*nnvars) pretend NonNegativeInteger, _
+            nexps := new(qcoerce(m*nnvars)@NonNegativeInteger, _
                          0)$SortedExponentVector
-            ncoeffs := new(m pretend NonNegativeInteger, 0)$U32Vector
+            ncoeffs := new(qcoerce(m)@NonNegativeInteger, 0)$U32Vector
             pi_cnt := #poly_offsets
             npo := new(pi_cnt, 0)$VI
             pi : Integer := 1
@@ -327,7 +327,7 @@ VectorModularReconstructor() : Export == Implementation where
                             oei0 := oei0 + 1
                         nexps(nei) := j
                         nei := nei + 1
-                oei := oei + var_cnt pretend SingleInteger
+                oei := oei + qconvert(var_cnt)@SingleInteger
             for i in pi..pi_cnt repeat npo(i) := nm
             [nnvars, npo, nexps, ncoeffs]
 
@@ -346,8 +346,8 @@ VectorModularReconstructor() : Export == Implementation where
                 hi := hi - 1
                 cden := lcm(dens, li, hi, p)
                 dcden := degree(cden)
-                tmpp1 := new((dcden + 1) pretend NonNegativeInteger, 0)$PA
-                tmpp2 := new((dcden + 1) pretend NonNegativeInteger, 0)$PA
+                tmpp1 := new(qcoerce(dcden + 1)@NonNegativeInteger, 0)$PA
+                tmpp2 := new(qcoerce(dcden + 1)@NonNegativeInteger, 0)$PA
                 for i in li..hi repeat
                     copy_first(tmpp1, cden, dcden + 1)
                     for j in 0..dcden repeat tmpp2(j) := 0
@@ -367,20 +367,20 @@ VectorModularReconstructor() : Export == Implementation where
                         dresi := degree(resi)
                         if dresi > dtmp then
                             dtmp := dresi
-                            tmpp1 := new((dtmp + 1) _
-                                          pretend NonNegativeInteger, 0)$PA
-                            tmpp2 := new((dtmp + 1) _
-                                          pretend NonNegativeInteger, 0)$PA
+                            tmpp1 := new(qcoerce(dtmp + 1)@ _
+                                          NonNegativeInteger, 0)$PA
+                            tmpp2 := new(qcoerce(dtmp + 1)@ _
+                                          NonNegativeInteger, 0)$PA
                         else
                             for j in 0..dtmp repeat tmpp2(j) := 0
                         copy_first(tmpp1, resi, dresi + 1)
                         divide!(tmpp1, cfactor, tmpp2, p)
                         dt := degree(tmpp2)
-                        res(i) := new((dt + 1) pretend NonNegativeInteger, 0)$PA
+                        res(i) := new(qcoerce(dt + 1)@NonNegativeInteger, 0)$PA
                         copy_first(res(i), tmpp2, dt + 1)
             res
 
-        reconstruct(var_cnt : Integer, block_offsets : VI, _
+        reconstruct(var_cnt : Integer, block_offsets : VI,
                     poly_offsets : VI, exps : SortedExponentVector, _
                     nums : PPA, dens : PPA, p : Integer) : PDR ==
             ppa := remove_denoms(block_offsets, nums, dens, p)
