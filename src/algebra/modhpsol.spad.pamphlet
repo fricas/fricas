@@ -179,7 +179,7 @@ NaiveBeckermannLabahnModular : with
     mp := new(m, empty()$PA)$VPA
     m2 : Integer := 0
     for k in 1..m repeat
-        mp(k) := new(m1 pretend NonNegativeInteger, 0)$PA
+        mp(k) := new(qcoerce(m1)@NonNegativeInteger, 0)$PA
         vk := mp(k)
         vk(m2) := 1
         m2 := m2 + vn(k) + 1
@@ -194,7 +194,7 @@ NaiveBeckermannLabahnModular : with
     n := #v
     i : SingleInteger := (n - 1)::SingleInteger
     while i > 0 repeat
-        v(i pretend NonNegativeInteger) := v((i - 1) pretend NonNegativeInteger)
+        v(qcoerce(i)@NonNegativeInteger) := v(qcoerce(i - 1)@NonNegativeInteger)
         i := i - 1
     v(0) := 0
 
@@ -228,7 +228,7 @@ NaiveBeckermannLabahnModular : with
                 maxd := vd(k)
         pi = 0 =>
              "iterate"
-        vcinv := mulmod(p-1, invmod(vc(pi), p pretend SingleInteger), _
+        vcinv := mulmod(p-1, invmod(vc(pi), qconvert(p)@SingleInteger), _
                             p)
         for k in 1..m repeat
             if vc(k) ~= 0 and vd(k) >= 0 and k ~= pi then
@@ -363,8 +363,8 @@ NaiveBeckermannLabahnModular : with
           if vd(i) >= 0 then
               nvd(j) := vd(i)
               for k in 1..nc repeat
-                  vnk1 := (vn(k) + 1) pretend SingleInteger
-                  resjk := new(vnk1 pretend NonNegativeInteger, 0)$PA
+                  vnk1 := qconvert(vn(k) + 1)@SingleInteger
+                  resjk := new(qcoerce(vnk1)@NonNegativeInteger, 0)$PA
                   for i1 in 0..(vnk1 - 1) repeat
                       resjk(i1) := mi(m2 + i1)
                   m2 := m2 + vnk1
@@ -452,7 +452,6 @@ InnerModularHermitePade : with
     MS ==> NaiveBeckermannLabahnModular
     VMR ==> VectorModularReconstructor
     VIR ==> VectorIntegerReconstructor
-    K1 ==> SingleInteger
 
     Qmul ==> QSMULMOD32$Lisp
     Qmuladd ==> QSMULADDMOD64_-32$Lisp
@@ -474,7 +473,7 @@ InnerModularHermitePade : with
         coeffs := pss.eval1coeffbuf
         exps := pss.eval1expbuf
         n := #coeffs
-        ns := n pretend SingleInteger
+        ns := qconvert(n)@SingleInteger
         for t0 in polu repeat
             if i >= n then
                 nn := 2*n
@@ -517,8 +516,8 @@ InnerModularHermitePade : with
                 nm := eval1a(numer(nlcq), pt, pss)
                 dm := eval1a(denom(nlcq), pt, pss)
                 dm = 0 => return "failed"
-                dms := dm pretend K1
-                nlc := Qmul(nm, invmod(dms, p pretend K1), p)
+                dms := qconvert(dm)@SingleInteger
+                nlc := Qmul(nm, invmod(dms, qconvert(p)@SingleInteger), p)
                 ress(j) := nlc
             resl := cons(ress, resl)
         reverse!(resl)
@@ -679,7 +678,7 @@ InnerModularHermitePade : with
         res
 
     compute_blocks(offsets : VI, rowlen : Integer, nsols : Integer) : VI ==
-        block_offsets := new(nsols pretend NonNegativeInteger, 0)$VI
+        block_offsets := new(qcoerce(nsols)@NonNegativeInteger, 0)$VI
         for i in 1..nsols repeat
             block_offsets(i) := offsets((i - 1)*rowlen + 1)
         block_offsets
@@ -1319,14 +1318,14 @@ ModularHermitePade() : with
            nn :=
               n > 0 => n
               #lfi
-           pa := new(nn pretend NonNegativeInteger, 0)$PA
+           pa := new(qcoerce(nn)@NonNegativeInteger, 0)$PA
            for j in 0..(nn - 1) for el in lfi repeat
                nm := positiveRemainder(numer(el), prime)
                dm := positiveRemainder(denom(el), prime)
                dm = 0 => return "failed"
-               dms := dm pretend K1
-               nlc := Qmul(nm, invmod(dms, prime pretend K1), prime)
-               pa(j) := nlc pretend K1
+               dms := qconvert(dm)@K1
+               nlc := Qmul(nm, invmod(dms, qconvert(prime)@K1), prime)
+               pa(j) := qconvert(nlc)@K1
            resl := cons(pa, resl)
        reverse!(resl)
 
@@ -1335,16 +1334,16 @@ ModularHermitePade() : with
                prime : Integer) : Union(List(PA), "failed") ==
        resl := empty()$List(PA)
        for lfi in llfi repeat
-           pa := new(n pretend NonNegativeInteger, 0)$PA
+           pa := new(qcoerce(n)@NonNegativeInteger, 0)$PA
            for j in 0..(n - 1) for el in lfi repeat
                nm := modpeval(numer(el), vars, pts, prime
                              )$InnerModularHermitePade
                dm := modpeval(denom(el), vars, pts, prime
                              )$InnerModularHermitePade
                dm = 0 => return "failed"
-               dms := dm pretend K1
-               nlc := Qmul(nm, invmod(dms, prime pretend K1), prime)
-               pa(j) := nlc pretend K1
+               dms := qconvert(dm)@K1
+               nlc := Qmul(nm, invmod(dms, qconvert(prime)@K1), prime)
+               pa(j) := qconvert(nlc)@K1
            resl:= cons(pa, resl)
        reverse!(resl)
 
@@ -1356,7 +1355,7 @@ ModularHermitePade() : with
            if m < sigma then
                nlcq := leadingCoefficient(pfi)
                nc := positiveRemainder(nlcq, prime)
-               pa(m) := nc pretend K1
+               pa(m) := qconvert(nc)@K1
            pfi := reductum pfi
        pa
 
@@ -1378,7 +1377,7 @@ ModularHermitePade() : with
                 sigma : Integer, qval : Integer, p : Integer) : PA ==
        m := #nres
        gvp := gen(gv0, p, qval)
-       res := new(sigma pretend NonNegativeInteger, 0)$PA
+       res := new(qcoerce(sigma)@NonNegativeInteger, 0)$PA
        for i in 1..m repeat
            truncated_mul_add(gvp(i), nres(i), res, sigma - 1, _
                            p)$U32VectorPolynomialOperations
@@ -1393,7 +1392,7 @@ ModularHermitePade() : with
        lp := []@List(Integer)
        kind = 'qdiffHP or kind = 'qshiftHP => true
        m := #degs
-       degs_sum := (reduce(_+, degs) + m) pretend NNI
+       degs_sum := qcoerce(reduce(_+, degs) + m)@NNI
        ve : Vector Integer := vector [d::Integer for d in degs]
        pts :=
            kind = 'diffHP => empty()$PA

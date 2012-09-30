@@ -270,7 +270,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         coeffs := pss.eval1coeffbuf
         exps := pss.eval1expbuf
         n := #coeffs
-        ns := n pretend SingleInteger
+        ns := qconvert(n)@SingleInteger
         for t0 in polu repeat
             if not(i < ns) then
                 nn := 2*n
@@ -283,7 +283,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
                 exps := nexps
                 pss.eval1expbuf := exps
                 n := nn
-                ns := n pretend SingleInteger
+                ns := qconvert(n)@SingleInteger
             t1 := t0.c pretend SmpRep
             exps(i) := t0.k
             if t1 case Integer then
@@ -295,7 +295,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         ptk : Integer := 1
         pk : SingleInteger := 0
         for j in (i - 1)..0 by -1 repeat
-            ki := exps(j) pretend SingleInteger
+            ki := qconvert(exps(j))@SingleInteger
             while pk < ki repeat
                 ptk := Qmul(ptk, pt, p)
                 pk := pk + 1
@@ -350,7 +350,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         msize := pss.sizem
         if dg < pss.degg then
             pss.degg := dg
-            nsize := ((dg + 1)*msize) pretend NonNegativeInteger
+            nsize := qcoerce((dg + 1)*msize)@NonNegativeInteger
             pss.expdata := pack_exps(dg, msize, mu)
             pss.coeffdata := new(nsize, 0)$PA
         repack1(res1, pss.coeffdata, dg, mu)
@@ -603,7 +603,7 @@ ModularAlgebraicGcdTools2 : Exports == Implementation where
 
     pack_exps(dg : Integer, msize : Integer, mu : MD
              ) : SortedExponentVector ==
-        nsize := ((dg + 1)*msize) pretend NonNegativeInteger
+        nsize := qcoerce((dg + 1)*msize)@NonNegativeInteger
         exps := new(2*nsize, 0)$SortedExponentVector
         for i in 0..dg repeat
             for j in 0..(msize - 1) repeat
@@ -668,13 +668,13 @@ ModularAlgebraicGcdTools2 : Exports == Implementation where
         rr1(0) ~= 1 => "failed"
         icl := rr(2)
         dx := degree(x)
-        res := new((dx + 1) pretend NonNegativeInteger, x(0))$PPA
+        res := new(qcoerce(dx + 1)@NonNegativeInteger, x(0))$PPA
         for l in 0..(dx - 1) repeat
             pp := mul(icl, x(l), p)
             remainder!(pp, m, p)
             dpp := degree(pp)
             dnpp : Integer := (dpp < 0 => 0; dpp)
-            npp := new((dnpp + 1) pretend NonNegativeInteger, 0)$PA
+            npp := new(qcoerce(dnpp + 1)@NonNegativeInteger, 0)$PA
             copy_first(npp, pp, dpp + 1)
             res(l) := npp
         res(dx) := new(1, 1)$PA
@@ -687,17 +687,17 @@ ModularAlgebraicGcdTools2 : Exports == Implementation where
       i < j => x
       cy := leadingCoefficient(y)
       c := leadingCoefficient(x)
-      i1 := (i - 1) pretend NonNegativeInteger
+      i1 := qcoerce(i - 1)@NonNegativeInteger
       res := new(i1 + 1, qelt(x, 0))$PPA
       m := mu.sm
       p := mu.sp
-      del := (i - j) pretend NonNegativeInteger
+      del := qcoerce(i - j)@NonNegativeInteger
       for l in 0..(del - 1) repeat
           pp1 := mul(cy, x(l), p)
           remainder!(pp1, m, p)
           degpp1 := degree(pp1)
           degnpp1 : Integer := (degpp1 < 0 => 0; degpp1)
-          npp1 := new((degnpp1 + 1) pretend NonNegativeInteger, 0)$PA
+          npp1 := new(qcoerce(degnpp1 + 1)@NonNegativeInteger, 0)$PA
           copy_first(npp1, pp1, degpp1 + 1)
           res(l) := npp1
       for l in 0..(j - 1) repeat
@@ -715,7 +715,7 @@ ModularAlgebraicGcdTools2 : Exports == Implementation where
           remainder!(pp1, m, p)
           degpp1 := degree(pp1)
           degnpp1 : Integer := (degpp1 < 0 => 0; degpp1)
-          npp1 := new((degnpp1 + 1) pretend NonNegativeInteger, 0)$PA
+          npp1 := new(qcoerce(degnpp1 + 1)@NonNegativeInteger, 0)$PA
           copy_first(npp1, pp1, degpp1 + 1)
           res(l1) := npp1
       res
@@ -805,7 +805,7 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
         msize := first(sizes)
         size0 := (dg + 1)*msize
         ns := #sizes+1
-        nsize := (ns*size0) pretend NonNegativeInteger
+        nsize := qcoerce(ns*size0)@NonNegativeInteger
         exps := new(nsize, 0)$SortedExponentVector
         pack_exps0(exps, cons(size0, sizes), ns, 0)
         exps
@@ -860,7 +860,8 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
         while not((dx := degree(ux)) < dm1) repeat
             c := leadingCoefficient(ux)
             c := mreduction1(c, rest(lm), rest(lv), p)
-            ux := reductum(ux) - monomial(c, (dx - dm1) pretend NonNegativeInteger)*rm
+            ux := reductum(ux) -
+                    monomial(c, qcoerce(dx - dm1)@NonNegativeInteger)*rm
         ux := map((c : MP) : MP +-> mreduction1(c, rest(lm), rest(lv), p), ux)
         multivariate(ux, v1)
 
@@ -884,7 +885,7 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
             while (dr0 := degree(r0)) >= dr1 repeat
                 c0 := leadingCoefficient(r0)
                 c0 := mreduction1(c0, lm, lv, p)
-                cm := monomial(c0, (dr0 - dr1) pretend NonNegativeInteger)$MPU
+                cm := monomial(c0, qcoerce(dr0 - dr1)@NonNegativeInteger)$MPU
                 r0 := c1*reductum(r0) - cm*reductum(r1)
                 s0 := c1*s0 - cm*s1
                 t0 := c1*t0 - cm*t1
@@ -934,10 +935,10 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
         i < j => x
         cy : MP := leadingCoefficient(y)
         c := leadingCoefficient(x)
-        cm := c*monomial(1, (i - j) pretend NonNegativeInteger)
+        cm := c*monomial(1, qcoerce(i - j)@NonNegativeInteger)
         if i > j then
             ccx := leadingCoefficient(reductum(x))
-            cmm := monomial(1, (i - j - 1) pretend NonNegativeInteger)
+            cmm := monomial(1, qcoerce(i - j - 1)@NonNegativeInteger)
             ccy := leadingCoefficient(reductum(y))
             c2 := cy*ccx - c*ccy
             cm := mreduction(cy*cm + c2*cmm, mu)

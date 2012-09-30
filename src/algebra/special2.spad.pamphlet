@@ -288,14 +288,14 @@ FloatSpecialFunctions() : Exports == Implementation where
             re_a := real(a)
             re_a < (1/2)::Float =>
                 l := l + 5
-                bits((l + 3*length(l)$I + 10) pretend PI)$RF
+                bits(qcoerce(l + 3*length(l)$I + 10)@PI)$RF
                 re_aint := round(re_a)
                 a1 := a - complex(re_aint, 0)
                 a1 = 0 => error "Pole of Gamma"
                 r_pi := pi()$Float
                 ap := r_pi*a1
                 -r_pi*cos(ap)/sin(ap) + digamma_aux(1 - a, l)
-            bits((l + 3*length(l)$I + 10) pretend PI)$RF
+            bits(qcoerce(l + 3*length(l)$I + 10)@PI)$RF
             digamma_aux(a, l)
         finally
             bits(l0)$RF
@@ -495,7 +495,7 @@ FloatSpecialFunctions() : Exports == Implementation where
         x < (-190436/$RN 517656)::Float => error "x < -exp(-1)"
         x < (-190434/$RN 517656)::Float =>
             cbit2 := cbit quo 2
-            bits((cbit + cbit2) pretend PositiveInteger)$Float
+            bits(qcoerce(cbit + cbit2)@PositiveInteger)$Float
             e1 := exp(-1::Float)
             h2 := x + e1
             h := sqrt(h2)
@@ -534,7 +534,7 @@ FloatSpecialFunctions() : Exports == Implementation where
                 eps := abs_z*eps
             lambert_via_newton1(z, w, eps)
         cbit2 := cbit quo 2
-        bits((cbit + cbit2) pretend PositiveInteger)
+        bits(qcoerce(cbit + cbit2)@PositiveInteger)
         e1 := exp(-1$Float)
         h2 := z + complex(e1, 0)
         h := sqrt(h2)
@@ -604,14 +604,14 @@ FloatLiouvilianFunctions() : Exports == Implementation where
 
     gamma() : FF ==
         (obits := bits()$RF) <= G.precision => complex(G.value, 0)
-        nbits := max(obits, 2*G.precision) pretend PositiveInteger
+        nbits := qcoerce(max(obits, 2*G.precision))@PositiveInteger
         try
             bits(nbits)$RF
             G.value := -digamma(1$RF)$FloatSpecialFunctions
             G.precision := nbits
             complex(G.value, 0)
         finally
-            bits(obits pretend PositiveInteger)$RF
+            bits(qcoerce(obits)@PositiveInteger)$RF
 
     erf_series(z : FF, n : Integer) : FF ==
         z2 := z*z
@@ -647,7 +647,7 @@ FloatLiouvilianFunctions() : Exports == Implementation where
            dnz := nz::DoubleFloat
            (sp := prec*(694@I/1000)::DF) > dnz =>
                npf := (2000@I/693)::DF*dnz + prec::DF
-               np := retract(round(npf))@I pretend PositiveInteger
+               np := qcoerce(retract(round(npf))@I)@PositiveInteger
                nf := exp(1)$DoubleFloat*dnz + sp
                n := retract(round(nf))@I
                bits(np)
@@ -706,7 +706,7 @@ FloatLiouvilianFunctions() : Exports == Implementation where
            dnz := nz::DoubleFloat
            (sp := prec*(694@I/1000)::DF) > dnz =>
                npf := (2000@I/693)::DF*dnz + prec::DF
-               np := retract(round(npf))@I pretend PositiveInteger
+               np := qcoerce(retract(round(npf))@I)@PositiveInteger
                nf := exp(1)$DF*dnz + sp
                n := retract(round(nf/(2::DF)))@I
                bits(np)
@@ -786,7 +786,7 @@ FloatLiouvilianFunctions() : Exports == Implementation where
            dnz := nz::DoubleFloat
            (sp := prec*(694@I/1000)::DF) > dnz =>
                npf := (2000@I/693)::DF*dnz + prec::DF
-               np := retract(round(npf))@I pretend PositiveInteger
+               np := qcoerce(retract(round(npf))@I)@PositiveInteger
                nf := exp(1)$DF*dnz + sp
                n := retract(round(nf/(2::DF)))@I
                bits(np)
@@ -859,7 +859,7 @@ FloatLiouvilianFunctions() : Exports == Implementation where
            dnz := sqrt(nz::DF)
            (sp := prec*(694@I/1000)::DF) > dnz =>
                npf := (2000@I/693)::DF*dnz + prec::DF
-               np := retract(round(npf))@I pretend PositiveInteger
+               np := qcoerce(retract(round(npf))@I)@PositiveInteger
                nf := exp(1)$DF*dnz + sp
                n := retract(round(nf))@I
                bits(np)
@@ -934,7 +934,7 @@ FloatLiouvilianFunctions() : Exports == Implementation where
            dnz := sqrt(nz::DF)
            (sp := prec*(694@I/1000)::DF) > dnz =>
                npf := (2000@I/693)::DF*dnz + prec::DF
-               np := retract(round(npf))@I pretend PositiveInteger
+               np := qcoerce(retract(round(npf))@I)@PositiveInteger
                nf := exp(1)$DF*dnz + sp
                n := retract(round(nf/(2::DF)))@I
                bits(np)
@@ -1002,7 +1002,7 @@ FloatLiouvilianFunctions() : Exports == Implementation where
            dnz := sqrt(nz::DF)
            (sp := prec*(694@I/1000)::DF) > dnz =>
                npf := (2000@I/693)::DF*dnz + prec::DF
-               np := retract(round(npf))@I pretend PositiveInteger
+               np := qcoerce(retract(round(npf))@I)@PositiveInteger
                nf := exp(1)$DF*dnz + sp
                n := retract(round(nf/(2::DF)))@I
                bits(np)

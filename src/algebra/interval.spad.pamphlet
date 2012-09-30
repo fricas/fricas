@@ -84,8 +84,8 @@ Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : Interv
       l = prec => float(m - 1, eu)
       dig : Integer := base()
       l < prec =>
-          float(m*dig^((prec - l) pretend PositiveInteger) - 1, eu - prec + l)
-      float(m - dig^((l - prec) pretend PositiveInteger), eu)
+          float(m*dig^(qcoerce(prec - l)@PositiveInteger) - 1, eu - prec + l)
+      float(m - dig^(qcoerce(l - prec)@ PositiveInteger), eu)
 
   roundUp(u : R) : R   ==
       zero?(u) => u
@@ -96,8 +96,8 @@ Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : Interv
       l = prec => float(m + 1, eu)
       dig : Integer := base()
       l < prec =>
-          float(m*dig^((prec - l) pretend PositiveInteger) + 1, eu - prec + l)
-      float(m + dig^((l - prec) pretend PositiveInteger), eu)
+          float(m*dig^(qcoerce(prec - l)@PositiveInteger) + 1, eu - prec + l)
+      float(m + dig^(qcoerce(l - prec)@PositiveInteger), eu)
 
   -- Sometimes the float representation does not use all the bits (e.g. when
   -- representing an integer in software using arbitrary-length Integers as
@@ -107,11 +107,11 @@ Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : Interv
   normaliseFloat(u : R) : R ==
     zero? u => u
     m : Integer := mantissa u
-    b : Integer := bits() pretend Integer
+    b : Integer := bits() :: Integer
     l : Integer := length(m)
     if l < b then
-      BASE : Integer := base()$R pretend Integer
-      float(m*BASE^((b-l) pretend PositiveInteger), exponent(u)-b+l)
+      BASE : Integer := base()$R :: Integer
+      float(m*BASE^(qcoerce(b - l)@PositiveInteger), exponent(u) - b + l)
     else
       u
 

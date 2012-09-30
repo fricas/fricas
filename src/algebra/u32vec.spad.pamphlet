@@ -313,20 +313,20 @@ U32VectorPolynomialOperations() : Export == Implementation where
         modInverse ==> invmod
 
         copy_first(np : PA, op : PA, n : Integer) : Void ==
-            ns := n pretend SingleInteger
+            ns := qconvert(n)@SingleInteger
             for j in 0..(ns - 1) repeat
                 np(j) := op(j)
 
         copy_slice(np : PA, op : PA, m : Integer, _
                     n : Integer) : Void ==
-            ms := m pretend SingleInteger
-            ns := n pretend SingleInteger
+            ms := qconvert(m)@SingleInteger
+            ns := qconvert(n)@SingleInteger
             for j in ms..(ms + ns - 1) repeat
                 np(j) := op(j)
 
         eval_at(v : PA, deg : Integer, pt : Integer, _
                p : Integer) : Integer ==
-            i : SingleInteger := deg::SingleInteger
+            i : SingleInteger := qconvert(deg)@SingleInteger
             res : Integer := 0
             while not(i < 0) repeat
                 res := Qmuladdmod(pt, res, v(i), p)
@@ -335,8 +335,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
 
         to_mod_pa(s : SparseUnivariatePolynomial Integer, p : Integer) : PA ==
             zero?(s) => new(1, 0)$PA
-            n0 := degree(s) pretend SingleInteger
-            ncoeffs := new((n0+1) pretend NonNegativeInteger, 0)$PA
+            n0 := qconvert(degree(s))@SingleInteger
+            ncoeffs := new(qcoerce(n0+1)@NonNegativeInteger, 0)$PA
             while not(zero?(s)) repeat
                 n := degree(s)
                 ncoeffs(n) := positiveRemainder(leadingCoefficient(s), p)
@@ -345,15 +345,15 @@ U32VectorPolynomialOperations() : Export == Implementation where
 
         vector_add_mul(v1 : PA, v2 : PA, m : Integer, n : Integer, _
                          c : Integer, p : Integer) : Void ==
-            ms := m pretend SingleInteger
-            ns := n pretend SingleInteger
+            ms := qconvert(m)@SingleInteger
+            ns := qconvert(n)@SingleInteger
             for i in ms..ns repeat
                 v1(i) := Qmuladdmod(c, v2(i), v1(i), p)
 
         mul_by_binomial(v : PA, n : Integer, pt : Integer, _
                           p : Integer) : Void ==
             prev_coeff : Integer := 0
-            ns := n pretend SingleInteger
+            ns := qconvert(n)@SingleInteger
             for i in 0..(ns - 1) repeat
                 pp := v(i)
                 v(i) := Qmuladdmod(pt, pp, prev_coeff, p)
@@ -365,7 +365,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
 
         mul_by_scalar(v : PA, n : Integer, c : Integer, _
                         p : Integer) : Void ==
-            ns := n pretend SingleInteger
+            ns := qconvert(n)@SingleInteger
             for i in 0..ns repeat
                 v(i) := Qmul(c, v(i), p)
 
@@ -379,8 +379,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
                             v2 : PA, c2 : Integer, _
                             n : Integer, delta : Integer, _
                             p : Integer) : Void ==
-            ns := n pretend SingleInteger
-            ds := delta pretend SingleInteger
+            ns := qconvert(n)@SingleInteger
+            ds := qconvert(delta)@SingleInteger
             if not(c1 = 1) then
                 ns + 1 < ds =>
                     for i in 0..ns repeat
@@ -394,8 +394,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     v1(i) := Qmuladdmod(c2, v2(i - ds), v1(i), p)
 
         divide!(r0 : PA, r1 : PA, res : PA, p : Integer) : Void ==
-            dr0 := degree(r0) pretend SingleInteger
-            dr1 := degree(r1) pretend SingleInteger
+            dr0 := qconvert(degree(r0))@SingleInteger
+            dr1 := qconvert(degree(r1))@SingleInteger
             c0 := r1(dr1)
             c0 := modInverse(c0, p)
             while not(dr0 < dr1) repeat
@@ -412,8 +412,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     if dr0 < 0 then break
 
         remainder!(r0 : PA, r1 : PA, p : Integer) : Void ==
-            dr0 := degree(r0) pretend SingleInteger
-            dr1 := degree(r1) pretend SingleInteger
+            dr0 := qconvert(degree(r0))@SingleInteger
+            dr1 := qconvert(degree(r1))@SingleInteger
             c0 := r1(dr1)
             c0 := modInverse(c0, p)
             while not(dr0 < dr1) repeat
@@ -429,25 +429,25 @@ U32VectorPolynomialOperations() : Export == Implementation where
                     if dr0 < 0 then break
 
         gcd(x : PA, y : PA, p : Integer) : PA ==
-            dr0 := degree(y) pretend SingleInteger
+            dr0 := qconvert(degree(y))@SingleInteger
             dr1 : SingleInteger
             if dr0 < 0 then
                 tmpp := x
                 x := y
                 y := tmpp
                 dr1 := dr0
-                dr0 := degree(y) pretend SingleInteger
+                dr0 := qconvert(degree(y))@SingleInteger
             else
-                dr1 := degree(x) pretend SingleInteger
+                dr1 := qconvert(degree(x))@SingleInteger
             dr0 < 0 => return new(1, 0)$PA
-            r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
+            r0 := new(qcoerce(dr0 + 1)@NonNegativeInteger, 0)$PA
             copy_first(r0, y, dr0 + 1)
             dr1 < 0 =>
                 c := r0(dr0)
                 c := modInverse(c, p)
                 mul_by_scalar(r0, dr0, c, p)
                 return r0
-            r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
+            r1 := new(qcoerce(dr1 + 1)@NonNegativeInteger, 0)$PA
             copy_first(r1, x, dr1 + 1)
             while 0 < dr1 repeat
                 while not(dr0 < dr1) repeat
@@ -492,8 +492,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
             dv2 = dpp =>
                 v1
             dpp = 0 => mul(v1, v2, p)
-            tmp1 := new((dv2 + 1) pretend NonNegativeInteger, 0)$PA
-            tmp2 := new((dv2 - dpp + 1) pretend NonNegativeInteger, 0)$PA
+            tmp1 := new(qcoerce(dv2 + 1)@NonNegativeInteger, 0)$PA
+            tmp2 := new(qcoerce(dv2 - dpp + 1)@NonNegativeInteger, 0)$PA
             copy_first(tmp1, v2, dv2 + 1)
             divide!(tmp1, pp, tmp2, p)
             mul(v1, tmp2, p)
@@ -509,8 +509,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
                       SingleInteger, Integer) -> Void
 
         mul(x : PA, y : PA, p : Integer) : PA ==
-            xdeg := degree(x) pretend SingleInteger
-            ydeg := degree(y) pretend SingleInteger
+            xdeg := qconvert(degree(x))@SingleInteger
+            ydeg := qconvert(degree(y))@SingleInteger
             if xdeg > ydeg then
                 tmpp := x
                 tmp := xdeg
@@ -523,7 +523,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
             xdeg < 0 => x
             xdeg = 0 and xcoeffs(0) = 1 => copy(y)
             zdeg : SingleInteger := xdeg + ydeg
-            zdeg0 := ((zdeg + 1)::Integer) pretend NonNegativeInteger
+            zdeg0 := qcoerce((zdeg + 1)::Integer)@NonNegativeInteger
             zcoeffs := new(zdeg0, 0)$PA
             inner_mul(xcoeffs, ycoeffs, zcoeffs, xdeg, ydeg, zdeg, p)
             zcoeffs
@@ -562,16 +562,16 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 z(i) := Qrem(ss, p)
 
         truncated_mul_add(x, y, z, m, p) ==
-            xdeg := (#x - 1) pretend SingleInteger
-            ydeg := (#y - 1) pretend SingleInteger
-            inner_mul(x, y, z, xdeg, ydeg, m pretend SingleInteger, p)
+            xdeg := qconvert(#x - 1)@SingleInteger
+            ydeg := qconvert(#y - 1)@SingleInteger
+            inner_mul(x, y, z, xdeg, ydeg, qconvert(m)@SingleInteger, p)
 
         truncated_multiplication(x, y, m, p) ==
-            xdeg := (#x - 1) pretend SingleInteger
-            ydeg := (#y - 1) pretend SingleInteger
-            z := new((m pretend SingleInteger + 1)
-                        pretend NonNegativeInteger, 0)$PA
-            inner_mul(x, y, z, xdeg, ydeg, m pretend SingleInteger, p)
+            xdeg := qconvert(#x - 1)@SingleInteger
+            ydeg := qconvert(#y - 1)@SingleInteger
+            z := new(qcoerce(qconvert(m)@SingleInteger + 1
+                            )@NonNegativeInteger, 0)$PA
+            inner_mul(x, y, z, xdeg, ydeg, qconvert(m)@SingleInteger, p)
             z
 
         pow(x : PA, n : PositiveInteger, d : NonNegativeInteger, _
@@ -580,13 +580,13 @@ U32VectorPolynomialOperations() : Export == Implementation where
             odd?(n)$Integer =>
                 truncated_multiplication(x,
                     pow(truncated_multiplication(x, x, d, p),
-                        shift(n, -1) pretend PositiveInteger,
+                        qcoerce(shift(n, -1))@PositiveInteger,
                         d,
                         p),
                     d,
                     p)
             pow(truncated_multiplication(x, x, d, p),
-                shift(n, -1) pretend PositiveInteger,
+                qcoerce(shift(n, -1))@PositiveInteger,
                 d,
                 p)
 
@@ -605,30 +605,30 @@ U32VectorPolynomialOperations() : Export == Implementation where
             d := #x - 1
             if d < n then empty()$PA
             else
-                r := new((d-n+1) pretend NonNegativeInteger, 0)$PA
+                r := new(qcoerce(d-n+1)@NonNegativeInteger, 0)$PA
                 for i in n..d repeat
                     j := i-n
                     f := j+1
                     for k in j+2..i repeat f := Qmul(f, k, p)
-                    r.(j pretend NonNegativeInteger) := Qmul(f, x.i, p)
+                    r.(qcoerce(j)@NonNegativeInteger) := Qmul(f, x.i, p)
                 r
 
         extended_gcd(x : PA, y : PA, p : Integer) : List(PA) ==
-            dr0 := degree(x) pretend SingleInteger
+            dr0 := qconvert(degree(x))@SingleInteger
             dr1 : SingleInteger
             swapped : Boolean := false
             t0 : PA
             if dr0 < 0 then
                 (x, y) := (y, x)
                 dr1 := dr0
-                dr0 := degree(x) pretend SingleInteger
+                dr0 := qconvert(degree(x))@SingleInteger
                 swapped := true
             else
-                dr1 := degree(y) pretend SingleInteger
+                dr1 := qconvert(degree(y))@SingleInteger
             dr1 < 0 =>
                 dr0 < 0 =>
                     return [new(1, 0)$PA, new(1, 0)$PA, new(1, 1)$PA]
-                r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
+                r0 := new(qcoerce(dr0 + 1)@NonNegativeInteger, 0)$PA
                 copy_first(r0, x, dr0 + 1)
                 c := r0(dr0)
                 c := modInverse(c, p)
@@ -642,14 +642,14 @@ U32VectorPolynomialOperations() : Export == Implementation where
             dt := (dr0 > 0 => dr0 - 1 ; 0)
             ds := (dr1 > 0 => dr1 - 1 ; 0)
             -- invariant: r0 = s0*x + t0*y, r1 = s1*x + t1*y
-            r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
-            t0 := new((dt + 1) pretend NonNegativeInteger, 0)$PA
-            s0 := new((ds + 1) pretend NonNegativeInteger, 0)$PA
+            r0 := new(qcoerce(dr0 + 1)@NonNegativeInteger, 0)$PA
+            t0 := new(qcoerce(dt + 1)@NonNegativeInteger, 0)$PA
+            s0 := new(qcoerce(ds + 1)@NonNegativeInteger, 0)$PA
             copy_first(r0, x, dr0 + 1)
             s0(0) := 1
-            r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
-            t1 := new((dt + 1) pretend NonNegativeInteger, 0)$PA
-            s1 := new((ds + 1) pretend NonNegativeInteger, 0)$PA
+            r1 := new(qcoerce(dr1 + 1)@NonNegativeInteger, 0)$PA
+            t1 := new(qcoerce(dt + 1)@NonNegativeInteger, 0)$PA
+            s1 := new(qcoerce(ds + 1)@NonNegativeInteger, 0)$PA
             copy_first(r1, y, dr1 + 1)
             t1(0) := 1
             while dr1 > 0 repeat
@@ -690,13 +690,13 @@ U32VectorPolynomialOperations() : Export == Implementation where
             [r0, s0, t0]
 
         resultant(x : PA, y : PA, p : Integer) : Integer ==
-            dr0 := degree(x) pretend SingleInteger
+            dr0 := qconvert(degree(x))@SingleInteger
             dr0 < 0 => 0
-            dr1 := degree(y) pretend  SingleInteger
+            dr1 := qconvert(degree(y))@SingleInteger
             dr1 < 0 => 0
-            r0 := new((dr0 + 1) pretend NonNegativeInteger, 0)$PA
+            r0 := new(qcoerce(dr0 + 1)@NonNegativeInteger, 0)$PA
             copy_first(r0, x, dr0 + 1)
-            r1 := new((dr1 + 1) pretend NonNegativeInteger, 0)$PA
+            r1 := new(qcoerce(dr1 + 1)@NonNegativeInteger, 0)$PA
             copy_first(r1, y, dr1 + 1)
             res : SingleInteger := 1
             repeat
