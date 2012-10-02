@@ -344,7 +344,7 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
    factorSFBRlcUnitInner : (List VarSet, SupS, R) ->
                                          Union(Factored SupS,"failed")
    hensel(pp, vv, r, factors) ==
-      origFactors := factors
+      origFactors := [map(z1 +->eval(z1, vv, r), f) for f in factors]
       totdegree : Integer := 0
       proddegree : Integer :=
                    "max"/[degree(u,vv) for u in coefficients pp]
@@ -440,6 +440,7 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
         zero? eval(leadingCoefficient pp,lvpp,substns ) => "next"
         ppR := map(z1 +-> (retract eval(z1, lvpp, substns))::R, pp)
         degree gcd(ppR,differentiate ppR)>0 => "next"
+        not(unit?(content(ppR))) => "next"
         break
      [substns, ppR]
    chooseSLPEViableSubstitutions(lvpolys, lpolys, pp) ==
@@ -492,6 +493,7 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
      solveLinearPolynomialEquationByFractions(lpolys, pp)$LPEBFS
 
    solveLinearPolynomialEquationByRecursion(lpolys, pp) ==
+     pp = 0 => [0 for u in lpolys]
      lvpolys := removeDuplicates!
                   concat [ concat [variables z for z in coefficients u]
                                                for u in lpolys]
@@ -528,16 +530,24 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
        -- coefficient of the input
        nfact > oldnfact => "next"   -- can't be a good reduction
        oldnfact := nfact
-       factors := [(lcpp exquo leadingCoefficient u.fctr)::S * raise u.fctr
+       lcpp0 := eval(lcpp, lv, cVS.substnsField)
+       factors := [(lcpp0 exquo leadingCoefficient u.fctr)::S * raise u.fctr
                   for u in factorList factorsR]
        ppAdjust := (lcppPow := lcpp^#(rest factors)) * pp
        lvppList := lv
+       sl := cVS.substnsField
        OK := true
-       for u in lvppList for v in cVS.substnsField repeat
-           hen := hensel(ppAdjust, u, v, factors)
+       for u in lv for v in cVS.substnsField repeat
+           lvppList := rest(lvppList)
+           sl := rest(sl)
+           ppa := map((z : S) : S +-> eval(z, lvppList, sl), ppAdjust)
+           lcpp1 := eval(lcpp, lvppList, sl)
+           factors := [monomial(lcpp1, degree(f)) + reductum(f)
+                       for f in factors]
+           hen := hensel(ppa, u, v, factors)
            hen case "failed" =>
                OK := false
-               "leave"
+               break
            factors := hen.fctrs
        OK => break
      factors := [ (lc := content w;
