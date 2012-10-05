@@ -39,13 +39,15 @@ GenExEuclid(R, BP) : C == T
          ++ compBound(p, lp)
          ++ computes a bound for the coefficients of the solution
          ++ polynomials.
-         ++ Given a polynomial right hand side p, and a list lp of left hand side polynomials.
+         ++ Given a polynomial right hand side p, and a list lp of left
+         ++ hand side polynomials.
          ++ Exported because it depends on the valuation.
        tablePow :    (NNI,R,L BP)     -> Union(Vector(L BP),"failed")
          ++ tablePow(maxdeg, prime, lpol) constructs the table with the
          ++ coefficients of the Extended Euclidean Algorithm for lpol.
-         ++ Here the right side is \spad{x^k}, for k less or equal to maxdeg.
-         ++ The operation returns "failed" when the elements are not coprime modulo prime.
+         ++ Here the right side is \spad{x^k}, for k less to maxdeg.
+         ++ The operation returns "failed" when the elements are not
+         ++ coprime modulo prime.
        solveid  : (BP,R,Vector L BP) -> Union(L BP,"failed")
          ++ solveid(h, prime, table) computes the coefficients of the
          ++ extended euclidean algorithm for a list of polynomials
@@ -101,35 +103,31 @@ GenExEuclid(R, BP) : C == T
 
     FP := EuclideanModularRing(R, BP, R, reduction, merge, exactquo)
 
-    --make table global variable!
-    table : Vector L BP
-    import GeneralHenselPackage(R, BP)
-
                        --local  functions
     makeProducts :    L BP   -> L BP
-    liftSol : (L BP,BP,R,R,Vector L BP,BP,NNI) -> Union(L BP,"failed")
+    liftSol : (L BP, BP, R, R, L BP, Vector L FP, BP, NNI
+              ) -> Union(L BP, "failed")
 
     reduceList(lp : L BP, lmod : R) : L FP ==[reduce(ff, lmod) for ff in lp]
 
     coerceLFP(lf : L FP) : L BP == [fm::BP for fm in lf]
 
-    liftSol(oldsol : L BP, err : BP, lmod : R, lmodk : R,
-           table:Vector L BP,m:BP,bound:NNI):Union(L BP,"failed") ==
-      euclideanSize(lmodk) > bound => "failed"
-      d := degree err
-      ftab : Vector L FP :=
-        map(x +-> reduceList(x, lmod), table)$VectorFunctions2(List BP, List FP)
-      sln : L FP := [0$FP for xx in ftab.1 ]
-      for i in 0 .. d |(cc := coefficient(err, i)) ~= 0 repeat
-        sln := [slp+reduce(cc::BP, lmod)*pp
-              for pp in ftab.(i+1) for slp in sln]
-      nsol := [f-lmodk*reduction(g::BP, lmod) for f in oldsol for g in sln]
-      lmodk1 := lmod*lmodk
-      nsol := [reduction(slp, lmodk1) for slp in nsol]
-      lpolys : L BP := table.(#table)
-      (fs := +/[f*g for f in lpolys for g in nsol]) = m => nsol
-      a : BP := ((fs-m) exquo lmodk1)::BP
-      liftSol(nsol, a, lmod, lmodk1, table, m, bound)
+    liftSol(oldsol : L BP, err : BP, lmod : R, lmodk : R, lpolys : L BP,
+           ftab : Vector L FP, m : BP, bound : NNI) : Union(L BP, "failed") ==
+        repeat
+            euclideanSize(lmodk) > bound => return "failed"
+            d := degree err
+            sln : L FP := [0$FP for xx in ftab.1 ]
+            for i in 0 .. d | (cc := coefficient(err, i)) ~= 0 repeat
+                sln := [slp + reduce(cc::BP, lmod)*pp
+                        for pp in ftab.(i+1) for slp in sln]
+            nsol := [f - lmodk*reduction(g::BP, lmod) for f in oldsol
+                                                      for g in sln]
+            lmodk := lmod*lmodk
+            nsol := [reduction(slp, lmodk) for slp in nsol]
+            (fs := +/[f*g for f in lpolys for g in nsol]) = m => return nsol
+            err := ((fs-m) exquo lmodk)::BP
+            oldsol := nsol
 
     makeProducts(listPol : L BP) : L BP ==
       #listPol < 2 => listPol
@@ -177,8 +175,8 @@ GenExEuclid(R, BP) : C == T
         multiE := multiEuclidean(listP, 1$FP)
         multiE case "failed" => "failed"
         ftable : Vector L FP := new(mdeg+1, [])
-        fl : L FP := [ff::FP for ff in multiE]
-        ftable.1 := [fpol for fpol in fl]
+        fl : L FP := multiE::(L FP)
+        ftable.1 := fl
         x : FP := reduce(monomial(1, 1), pmod)
         for i in 2..mdeg repeat ftable.i :=
             [tpol*x rem fpol for tpol in ftable.(i-1) for fpol in listP]
@@ -200,7 +198,7 @@ GenExEuclid(R, BP) : C == T
         -- Compute bound
         bound := compBound(m, lpolys)
         a : BP := ((fs-m) exquo pmod)::BP
-        liftSol(soln, a, pmod, pmod, table, m, bound)
+        liftSol(soln, a, pmod, pmod, lpolys, ftab, m, bound)
 
 @
 \section{License}
