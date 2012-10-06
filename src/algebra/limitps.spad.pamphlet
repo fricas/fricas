@@ -377,12 +377,28 @@ PowerSeriesLimitPackage(R, FE) : Exports == Implementation where
         complLimit(localsubst(fcn, xK, 1, g::FE), x)
       complLimit(eval(fcn, xK, inv(xK::FE)), x)
 
-    limit(fcn, eq, str) ==
+    limit2(fcn : FE, eq : EQ FE, str : String,
+           do_lim : (FE, SY, FE, String) -> RESULT) : RESULT ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
         error "limit:left hand side must be a variable"
       x := xx :: SY; a := rhs eq
+      do_lim(fcn, x, a, str)
+
+    limit3(fcn : FE, x : SY, a : FE, str : String) : RESULT ==
       xK := retract(x::FE)@Kernel(FE)
       limitPlus(localsubst(fcn, xK, direction str, a), x)
+
+    if R is Integer and FE is Expression(Integer) then
+
+        limit(fcn : FE, eq : EQ FE, str : String) ==
+            limit2(fcn, eq, str,
+                (f : FE, x : SY, a : FE, s : String) : RESULT +->
+                (is_exp_log(f, x) => mrv_limit(fcn, eq, str)$MrvLimitPackage;
+                 limit3(f, x, a, s)))
+
+    else
+        limit(fcn : FE, eq : EQ FE, str : String) ==
+            limit2(fcn, eq, str, limit3)
 
     anyRootsOrAtrigs? fcn ==
       -- determines if 'fcn' has any kernels which are roots
