@@ -204,6 +204,7 @@ AlgebraicallyClosedFunctionSpace(R : Join(Comparable, IntegralDomain)):
       ++ new symbols which display as \spad{'%z0}, \spad{'%z1}, ...;
       ++ The new symbols are bound in the interpreter
       ++ to the respective values.
+    rootSum : (%, SparseUnivariatePolynomial %, Symbol) -> %
   add
     rootOf(p : %) ==
       empty?(l := variables p) => error "rootOf: constant expression"
@@ -316,6 +317,8 @@ AlgebraicFunction(R, F) : Exports == Implementation where
     rootOf  : (UP, SE) -> F
       ++ rootOf(p, y) returns y such that \spad{p(y) = 0}.
       ++ The object returned displays as \spad{'y}.
+    rootSum : (F, UP, SE) -> F
+      ++ rootSum(expr, p, s)
     operator : OP -> OP
       ++ operator(op) returns a copy of \spad{op} with the domain-dependent
       ++ properties appropriate for \spad{F}.
@@ -353,8 +356,9 @@ AlgebraicFunction(R, F) : Exports == Implementation where
 
     opalg  := operator('rootOf)$CommonOperators
     oproot := operator('nthRoot)$CommonOperators
+    oprootsum := operator('%root_sum)$CommonOperators
 
-    belong? op == has?(op, ALGOP)
+    belong? op == has?(op, ALGOP) or is?(op, '%root_sum)
     dalg l     == second(l)::OutputForm
 
     rootOf(p, x) ==
@@ -379,6 +383,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
     operator op ==
       is?(op,  'rootOf) => opalg
       is?(op, 'nthRoot) => oproot
+      is?(op, '%root_sum) => oprootsum
       error "Unknown operator"
 
     if R has AlgebraicallyClosedField then
@@ -425,12 +430,67 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         lc2 := leadingCoefficient(p2)
         lc1 = lc2 => p1 = p2
         lc2*p1 = lc1*p2
+
     evaluate(opalg, ialg)$BasicOperatorFunctions1(F)
     setProperty(opalg, SPECIALDIFF,
                               dvalg@((List F, SE) -> F) pretend None)
     setProperty(opalg, SPECIALDISP,
                               dalg@(List F -> OutputForm) pretend None)
     setProperty(opalg, SPECIALEQUAL, eqopalg@((K, K) -> Boolean) pretend None)
+
+    POLYCATQ ==> PolynomialCategoryQuotientFunctions(IndexedExponents(K),
+                                                     K, R, P, F)
+
+    root_sum1(expr : F, p : UP, x : F) : F ==
+        expr = 0 => 0
+        nexpr := univariate(expr, (k := retract(x)@K), p)$POLYCATQ
+        xs := retract(x)@SE
+        every?((c : F) : Boolean +-> D(c, xs) = 0, coefficients(nexpr)) =>
+            res : F := 0
+            for i in 0..(degree(p) - 1) repeat
+                nexpr := nexpr rem p
+                res := res + coefficient(nexpr, i)
+                nexpr := monomial(1, 1)$UP*nexpr
+            res
+        kernel(oprootsum, [nexpr(x), x, p(x)])
+
+    rootSum(expr : F, p : UP, s : SE) : F ==
+        k := kernel(s)$K
+        root_sum1(expr, p, k::F)
+
+    irootsum(l : List F) : F ==
+        p := univariate(p := l.3, retract(x := l.2)@K)
+        degree denom p > 0 => error "roofSum: variable appears in denom of p"
+        root_sum1(l.1, numer(p), x)
+
+    drootsum(l : List F) : OutputForm ==
+        dv := retract(l.2)@K
+        p := univariate(numer(l.3), dv)
+        sum((l.1)::OutputForm,
+            outputForm(p, dv::OutputForm) = (0$Z)::OutputForm)
+
+    dvrootsum(l : List F, x : SE) : F ==
+        print("dvrootsum"::OutputForm)
+        print(l::OutputForm)
+        dv := retract(alpha := l.2)@K
+        dvs := retract(alpha)@SE
+        p : UP := numer(univariate(l.3, dv))
+        print(p::OutputForm)
+        dalpha := - (map((s : F) : F +-> differentiate(s, x), p) alpha)
+            / ((differentiate p) alpha)
+        expr := l.1
+        nexpr := dalpha*differentiate(expr, dvs) +
+                 differentiate(expr, x)
+        print(nexpr::OutputForm)
+        nexpr = 0 => 0
+        root_sum1(nexpr, p, alpha)
+
+    evaluate(oprootsum, irootsum)$BasicOperatorFunctions1(F)
+
+    setProperty(oprootsum, SPECIALDIFF,
+                        dvrootsum@((List F, SE) -> F) pretend None)
+    setProperty(oprootsum, SPECIALDISP,
+                        drootsum@(List F -> OutputForm) pretend None)
 
     if R has RetractableTo Integer then
       import PolynomialRoots(IndexedExponents K, K, R, P, F)
