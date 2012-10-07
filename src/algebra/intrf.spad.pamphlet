@@ -214,6 +214,38 @@ MonomialExtensionTools(F, UP) : Exports == Implementation where
       [qr.quotient, eeu.coef2 / rec.normal, eeu.coef1 / rec.special]
 
 @
+
+<<package PIT ParallelIntegrationTools>>=
+)abbrev package PIT ParallelIntegrationTools
+ParallelIntegrationTools(R, V, P) : Exports == Implementation where
+    R : Field
+    V : OrderedSet
+    P : PolynomialCategory(R, IndexedExponents V, V)
+
+    Exports ==> with
+        split      : (P, P -> P) -> Record(normal : P, special : P)
+          ++ split(p, D) returns \spad{[n,s]} such that \spad{p = n s},
+          ++ all the squarefree factors of n are normal w.r.t. D,
+          ++ and s is special w.r.t. D.
+          ++ D is the derivation to use.
+
+    Implementation ==> add
+
+        split(p, der) ==
+            (v := mainVariable(p)) case "failed" => [p, 1]
+            up := univariate(p, v)
+            p0 := content(up)
+            up1 := map((x : P) : P +-> (x exquo p0) :: P, up)
+            rec0 := split(p0, der)
+            p1 := multivariate(up1, v)
+            gder := gcd(p1, der p)
+            gdif := gcd(p1, differentiate(p1, v))
+            pbar := (gder exquo gdif)::P
+            ground?(pbar) => [rec0.normal*p1, rec0.special]
+            rec1 := split((p1 exquo pbar)::P, der)
+            [rec0.normal*rec1.normal, rec0.special*pbar*rec1.special]
+@
+
 \section{package INTHERTR TranscendentalHermiteIntegration}
 <<package INTHERTR TranscendentalHermiteIntegration>>=
 )abbrev package INTHERTR TranscendentalHermiteIntegration
