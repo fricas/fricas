@@ -331,7 +331,7 @@ DEFPARAMETER($setOptions, '(
       LITERALS
       $printLoadMsgs
       (on off)
-      on)
+      off)
      (bottomup
       "display bottom up modemap selection"
       development
