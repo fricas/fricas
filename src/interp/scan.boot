@@ -52,13 +52,14 @@ scanKeyWords := [ _
            ['"break",   "BREAK" ],_
            ['"by",        "BY" ],_
            ['"case",     "CASE" ],_
+           ['"catch",  "CATCH"], _
            ['"default",  "DEFAULT" ],_
            ['"define",  "DEFN" ],_
            ['"do",        "DO"],_
            ['"else",    "ELSE" ],_
-           ['"exit",    "EXIT" ],_
            ['"exquo",   "EXQUO"], _
            ['"export","EXPORT" ],_
+           ['"finally", "FINALLY"], _
            ['"for",      "FOR" ],_
            ['"free",    "FREE" ],_
            ['"from",    "FROM" ],_
@@ -74,6 +75,7 @@ scanKeyWords := [ _
            ['"local", "local" ],_
            ['"macro", "MACRO" ],_
            ['"mod", "MOD" ],_
+           ['"not", "NOT" ], _
            ['"or", "OR" ],_
            ['"pretend","PRETEND" ],_
            ['"quo","QUO" ],_
@@ -82,6 +84,7 @@ scanKeyWords := [ _
            ['"return","RETURN" ],_
            ['"rule","RULE" ],_
            ['"then","THEN" ],_
+           ['"try", "TRY"], _
            ['"until", "UNTIL" ],_
            ['"where","WHERE" ],_
            ['"while","WHILE" ],_
@@ -110,6 +113,7 @@ scanKeyWords := [ _
            ['"^","CARAT" ],_
            ['"..","SEG" ],_
            ['"#","#" ],_
+           ['"#1", "#1" ],_
            ['"&","AMPERSAND" ],_
            ['"$","$" ],_
            ['"/","SLASH" ],_
@@ -237,6 +241,21 @@ DEFVAR($ln)
 DEFVAR($n)
 DEFVAR($r)
 DEFVAR($sz)
+DEFPARAMETER($was_nonblank, false)
+
+DEFVAR($comment_indent, 0)
+DEFVAR($current_comment_block, nil)
+DEFVAR($last_nonempty_linepos, nil)
+DEFVAR($spad_scanner, false)
+
+finish_comment() ==
+    NULL($current_comment_block) => nil
+    pos :=
+        $comment_indent = 0 =>
+            first(rest(rest($linepos))) - 1
+        first(rest(rest($last_nonempty_linepos)))
+    PUSH([pos, :NREVERSE($current_comment_block)], $COMBLOCKLIST)
+    $current_comment_block := nil
 
 --  lineoftoks  bites off a token-dq from a line-stream
 --  returning the token-dq and the rest of the line-stream
@@ -273,6 +292,7 @@ lineoftoks(s)==
    $n:local:=nil
    $sz:local := nil
    $floatok:local:=true
+   $was_nonblank := false
    not nextline s => CONS(nil,nil)
    if null scanIgnoreLine($ln,$n) -- line of spaces or starts ) or >
    then cons(nil,$r)
@@ -280,14 +300,19 @@ lineoftoks(s)==
       toks:=[]
       a:= incPrefix?('"command",1,$ln)
       a =>
-                 $ln:=SUBSTRING($ln,8,nil)
-                 b:= dqUnit constoken($ln,$linepos,["command",$ln],0)
-                 cons([[b,s]],$r)
+           $ln := SUBSTRING($ln, 8, nil)
+           b := dqUnit constoken($ln, $linepos, ["command", $ln], 0)
+           cons([[b, s]], $r)
 
-      while $n<$sz repeat toks:=dqAppend(toks,scanToken())
+      while $n<$sz repeat
+          tok := scanToken()
+          if tok and $spad_scanner then finish_comment()
+          toks:=dqAppend(toks, tok)
       if null toks
       then cons([],$r)
-      else cons([[toks,s]],$r)
+      else
+          $last_nonempty_linepos := $linepos
+          cons([[toks,s]],$r)
 
 
 scanToken () ==
@@ -310,13 +335,16 @@ scanToken () ==
             startsId? ch              => scanWord  (false)
             c=SPACE                   =>
                            scanSpace ()
+                           $was_nonblank := false
                            []
             c = STRING_CHAR           => scanString ()
             digit? ch                 => scanNumber ()
             c=ESCAPE                  => scanEscape()
             scanError ()
       null b => nil
-      dqUnit constoken(ln,linepos,b,n+lnExtraBlanks linepos)
+      nb := $was_nonblank and b.0 = "key" and b.1 = "("
+      $was_nonblank := true
+      dqUnit constoken1(ln, linepos, b, n + lnExtraBlanks linepos, nb)
 
 -- to pair badge and badgee
 
@@ -337,16 +365,19 @@ lfrinteger (r,x)==["integer",CONCAT (r,CONCAT('"r",x))]
 --lfrfloat(a,w,v)==["rfloat",CONCAT(a,'"r.",v)]
 lffloat(a, w, e) == ["float", [a, w, e]]
 lfstring x==if #x=1 then ["char",x] else ["string",x]
-lfcomment x== ["comment", x]
+lfcomment (n, lp, x) == ["comment", x]
 lfnegcomment x== ["negcomment", x]
 lferror x==["error",x]
 lfspaces x==["spaces",x]
 
-constoken(ln,lp,b,n)==
+constoken1(ln, lp, b, n, nb) ==
 --  [b.0,b.1,cons(lp,n)]
        a:=cons(b.0,b.1)
+       if nb then ncPutQ(a, "nonblank", true)
        ncPutQ(a,"posn",cons(lp,n))
        a
+
+constoken(ln, lp, b, n) == constoken1(ln, lp, b, n, false)
 
 scanEscape()==
          $n:=$n+1
@@ -395,7 +426,13 @@ scanNegComment()==
 scanComment()==
       n:=$n
       $n:=$sz
-      lfcomment SUBSTRING($ln,n,nil)
+      c_str := SUBSTRING($ln,n,nil)
+      if $spad_scanner then
+          if not(n = $comment_indent) then
+              finish_comment()
+          $comment_indent := n
+          PUSH(CONCAT(make_full_CVEC(n, '" "), c_str), $current_comment_block)
+      lfcomment(n, $linepos, c_str)
 
 
 scanPunct()==
@@ -470,13 +507,10 @@ scanS()==
                   str:=SUBSTRING($ln,n,mn-n)-- before escape
                   $n:=mn+1
                   a:=scanEsc() -- case of end of line when false
-                  b:=if a
-                     then
-                       ec := $ln.$n
-                       $n:=$n+1
-                       CONCAT(ec, scanS())
-                      else scanS()
-                  e_concat(str, b)
+                  not(a) => CONCAT(str, scanS())
+                  ec := $ln.$n
+                  $n := $n + 1
+                  e_concat(str, CONCAT(ec, scanS()))
 
 --idChar? x== scanLetter x or DIGITP x or MEMQ(x,'(_? _%))
 
@@ -526,7 +560,7 @@ scanWord(esp) ==
           $floatok:=false
           if esp or aaa.0
           then lfid w
-          else if keyword? w
+          else if (keyword? w and ($spad_scanner or w ~= '"not"))
                then
                   $floatok:=true
                   lfkey w
