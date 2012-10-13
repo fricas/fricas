@@ -92,7 +92,7 @@ at load time.
         |oldParserAutoloadOnceTrigger|
         |parse_Expression|
         |spadCompile|
-        init-boot/spad-reader))
+        ))
 
 ;;; This is the {\bf spad compiler} subsystem. It is only needed by
 ;;; developers who write or modify algebra code.

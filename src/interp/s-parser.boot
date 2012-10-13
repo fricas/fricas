@@ -214,6 +214,20 @@ repetition(delimiter, fn) ==
     val => push_lform0(nreverse(val))
     nil
 
+getSignatureDocumentation2(n1, n2) ==
+    val1 := getSignatureDocumentation(n1) => val1
+    not(n2) =>
+        $COMBLOCKLIST is [[n, :val], :rr] and n1 <= n =>
+            $COMBLOCKLIST := rr
+            val
+        nil
+    nr := n2 + 1
+    for pp in $COMBLOCKLIST repeat
+        if pp is [n, :val] and n1 <= n and n <= n2 then
+            nr := n
+    nr <= n2 => getSignatureDocumentation(nr)
+    nil
+
 -- category : if expression then category [else category]
 --          | '(' category* ')'
 --          | application [':' expression]
@@ -250,13 +264,13 @@ parse_Category() ==
                 nil
             MUST match_symbol "}"
             push_lform2("CATEGORY", pop_stack_1(), tail_val)
-    G1 := LINE_-NUMBER CURRENT_-LINE
+    G1 := current_line_number()
     not(parse_Application()) => nil
     MUST
         OR(
               AND(match_symbol ":", MUST parse_Expression(),
                   push_form3("Signature", pop_stack_2(), pop_stack_1(),
-                             getSignatureDocumentation(G1))),
+                      getSignatureDocumentation2(G1, current_line_number()))),
               AND(push_form1("Attribute", pop_stack_1()),
                   ACTION recordAttributeDocumentation(top_of_stack(), G1)))
 

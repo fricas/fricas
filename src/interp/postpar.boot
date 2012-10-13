@@ -126,7 +126,6 @@ postConstruct u ==
   u
 
 postError msg ==
-  BUMPERRORCOUNT 'precompilation
   xmsg:=
     BOUNDP("$defOp") and not $InteractiveMode =>
         [$defOp, '": " , :msg]
