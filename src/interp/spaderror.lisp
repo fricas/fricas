@@ -114,8 +114,8 @@
 #+:GCL
 (eval-when
  (load eval)
- (unembed 'system:universal-error-handler)
- (embed 'system:universal-error-handler
+ (UNEMBED 'system:universal-error-handler)
+ (EMBED 'system:universal-error-handler
             '(lambda (type correctable? op
                            continue-string error-string &rest args)
                (block

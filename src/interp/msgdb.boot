@@ -340,7 +340,6 @@ sayKeyedMsgLocal(key, args) ==
   sayMSG msg'
 
 throwKeyedErrorMsg(kind,key,args) ==
-  BUMPERRORCOUNT kind
   sayMSG '" "
   if $testingSystem then sayMSG $testingErrorPrefix
   sayKeyedMsg(key,args)
