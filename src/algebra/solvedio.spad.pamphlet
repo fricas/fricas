@@ -61,9 +61,6 @@ DiophantineSolutionPackage() : Cat == Capsule where
   Solutions ==> Record(varOrder: LS, inhom: Union(ListSol,"failed"),
                        hom : ListSol)
 
-  Node ==> Record(vert : VI, free : B)
-  Graph ==> Record(vn : Vector(Node), dim : NI, zeroNode : I)
-
   Cat ==> with
 
     dioSolve : EPOLI -> Solutions
@@ -73,6 +70,8 @@ DiophantineSolutionPackage() : Cat == Capsule where
 
   Capsule ==> add
 
+    Node ==> Record(vert : VI, is_free : B)
+    Graph ==> Record(vn : Vector(Node), dim : NI, zeroNode : I)
     import I
     import POLI
 
@@ -130,8 +129,8 @@ DiophantineSolutionPackage() : Cat == Capsule where
       -- return all solutions (paths) from node ind to node zeroNode
       sols := empty()$ListSol
       node := graph.vn.ind
-      node.free =>
-        node.free := false
+      node.is_free =>
+        node.is_free := false
         v := node.vert
         k := if ind < graph.zeroNode then m else n
         for i in k..graph.dim repeat
@@ -149,7 +148,7 @@ DiophantineSolutionPackage() : Cat == Capsule where
               findSolutions(sol, v.i, m, i, graph, flag)
             sols := append(s, sols)$ListSol
             sol.i := x
-        node.free := true
+        node.is_free := true
         sols
       sols
 
