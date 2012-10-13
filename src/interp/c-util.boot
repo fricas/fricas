@@ -462,7 +462,6 @@ printDashedLine() ==
    '"--------------------------------------------------------------------------"
 
 stackSemanticError(msg,expr) ==
-  BUMPERRORCOUNT "semantic"
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
   if atom msg then msg:= LIST msg
   entry:= [msg,expr]

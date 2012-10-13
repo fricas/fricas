@@ -298,10 +298,6 @@
 
 ; 14.6 Miscellaneous
 
-(defun QSORT (l)
- (declare (special sortgreaterp))
-  (NREVERSE (sort (copy-seq l) SORTGREATERP)))
-
 (defun SORTBY (keyfn l)
  (declare (special sortgreaterp))
   (nreverse (sort (copy-seq l) SORTGREATERP :key keyfn)))
@@ -446,14 +442,6 @@
   (if length (subseq cvec start (+ start length)) (subseq cvec start)))
 
 ; 17.3 Searching
-
-;;- (defun strpos (what in start dontcare)
-;;-    (setq what (string what) in (string in))
-;;-    (if dontcare (progn (setq dontcare (character dontcare))
-;;-                    (search what in :start2 start
-;;-                            :test #'(lambda (x y) (or (eql x dontcare)
-;;-                                                      (eql x y)))))
-;;-                 (search what in :start2 start)))
 
 (defun strpos (what in start dontcare)
    (setq what (string what) in (string in))
@@ -627,8 +615,6 @@
 
 (defvar *embedded-functions* nil)
 
-(defun EMBEDDED () (mapcar #'car *embedded-functions*))
-
 (defun EMBED (CURRENT-BINDING NEW-DEFINITION)
   (PROG
       (OP BV BODY OLD-DEF)
@@ -654,6 +640,7 @@
                 ( 'T
                   NEW-DEFINITION ) ) )
             ( 'T
+              (BREAK)
               `((LAMBDA (,CURRENT-BINDING) ,NEW-DEFINITION) ',OLD-DEF)))
             )
       (SETF NEW-DEFINITION (COERCE NEW-DEFINITION 'FUNCTION))

@@ -31,9 +31,6 @@
 
 )package "BOOT"
 
-recordSignatureDocumentation(opSig,lineno) ==
-  recordDocumentation(rest postTransform opSig,lineno)
-
 getSignatureDocumentation(lineno) ==
     $docList : local := nil
     recordDocumentation("Signature", lineno)
