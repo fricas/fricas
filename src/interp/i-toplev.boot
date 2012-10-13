@@ -88,7 +88,6 @@ interpsysInitialization() ==
 interpsys_restart() ==
   $IOindex := 1
   $InteractiveFrame := makeInitialModemapFrame()
-  $printLoadMsgs := 'off
   loadExposureGroupData()
   statisticsInitialization()
   initHist()

@@ -92,7 +92,7 @@ loadLib cname ==
   not update? =>
      loadLibNoUpdate(cname, cname, fullLibName)
   kind := GETDATABASE(cname,'CONSTRUCTORKIND)
-  if $printLoadMsgs = "on" then
+  if $printLoadMsgs then
     sayKeyedMsg("S2IL0002",[namestring fullLibName,kind,cname])
   load_quietly(fullLibName)
   clearConstructorCache cname
@@ -118,7 +118,7 @@ loadLib cname ==
 
 loadLibNoUpdate(cname, libName, fullLibName) ==
   kind := GETDATABASE(cname,'CONSTRUCTORKIND)
-  if $printLoadMsgs = "on" then
+  if $printLoadMsgs then
     sayKeyedMsg("S2IL0002",[namestring fullLibName,kind,cname])
   if CATCH('VERSIONCHECK, load_quietly(fullLibName)) = -1
     then
@@ -307,6 +307,7 @@ lisplibDoRename(libName) ==
     [libName,'ERRORLIB])
 
 lisplibError(cname,fname,type,cn,fn,typ,error) ==
+  $bootStrapMode and error = "wrongType" => nil
   sayMSG bright ['"  Illegal ",$spadLibFT]
   error in '(duplicateAbb  wrongType) =>
     sayKeyedMsg("S2IL0007",
