@@ -58,8 +58,6 @@
 (defvar |$getPutTrace| nil)
 (defvar /TRACENAMES NIL)
 
-(defvar ind)
-
 ;************************************************************************
 ;         SYSTEM COMMANDS
 ;************************************************************************
@@ -67,9 +65,6 @@
 (defun |fin| ()
   (SETQ *EOF* 'T)
   (THROW 'SPAD_READER NIL))
-
-(defun |sort| (seq spadfn)
-    (sort (copy-seq seq) (function (lambda (x y) (SPADCALL X Y SPADFN)))))
 
 (defun QUOTIENT2 (X Y) (values (TRUNCATE X Y)))
 
