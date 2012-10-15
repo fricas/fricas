@@ -458,3 +458,97 @@ COMP370(fn) ==
     nbody := ["DEFUN", fname, args, :body]
     if $comp370_apply then
         FUNCALL($comp370_apply, fname, nbody)
+
+MKPF(l, op) ==
+    if FLAGP(op, "NARY") then
+        l := MKPFFLATTEN1(l, op, nil)
+    MKPF1(l, op)
+
+MKPFFLATTEN(x, op) ==
+    ATOM(x) => x
+    EQL(first(x), op) => [op, :MKPFFLATTEN1(rest x, op, nil)]
+    [MKPFFLATTEN(first x, op), :MKPFFLATTEN(rest x, op)]
+
+MKPFFLATTEN1(l, op, r) ==
+    NULL(l) => r
+    x := MKPFFLATTEN(first(l), op)
+    MKPFFLATTEN1(rest l, op, APPEND(r, (x is [=op, :r1] => r1; [x])))
+
+MKPF1(l, op) ==
+    op = "PLUS" =>
+        l := S_-(l, '(0 (ZERO)))
+        NULL(l) => 0
+        rest(l) => ["PLUS", :l]
+        first(l)
+    op = "TIMES" =>
+        not(NULL(S_*(l, '(0 (ZERO))))) => 0
+        l := S_-(l, '(1 (ONE)))
+        NULL(l) => 1
+        rest(l) => ["TIMES", :l]
+        first(l)
+    op = "QUOTIENT" =>
+        BREAK()
+        l is [x, y] =>
+            EQL(x, 0) => 0
+            EQL(y, 1) => x
+            ["QUOTIENT", :l]
+        FAIL()
+    op = "MINUS" =>
+        rest(l) => FAIL()
+        x := first(l)
+        NUMBERP(x) => -x
+        EQCAR(x, "MINUS") => first(rest(x))
+        ["MINUS", :l]
+    op = "DIFFERENCE" => BREAK()
+    op = "EXPT" =>
+        l is [x, y] =>
+            EQL(y, 0) => 1
+            EQL(y, 1) => x
+            member(x, '(0 1 (ZERO) (ONE))) => x
+            ["EXPT", :l]
+        FAIL() 
+    op = "OR" =>
+        MEMBER(true, l) => ["QUOTE", true]
+        l := REMOVE(false, l)
+        NULL(l) => false
+        rest(l) => ["OR", :l]
+        first(l)
+    op = "or" =>
+        MEMBER(true, l) => true
+        l := REMOVE(false, l)
+        NULL(l) => false
+        rest(l) => ["or", :l]
+        first(l)
+    op = "NULL" =>
+        rest(l) => FAIL()
+        l is [["NULL", :l1]] => first(l1)
+        first(l) = true => false
+        NULL(first(l)) => ["QUOTE", true]
+        ["NULL", :l]
+    op = "and" =>
+        l := REMOVE(true, REMOVE("true", l))
+        NULL(l) => true
+        rest(l) => ["and", :l]
+        first(l)
+    op = "AND" =>
+        l := REMOVE(true, REMOVE("true", l))
+        NULL(l) => ["QUOTE", true]
+        rest(l) => ["AND", :l]
+        first(l)
+    op = "PROGN" =>
+        l := REMOVE(nil, l)
+        NULL(l) => nil
+        rest(l) => ["PROGN", :l]
+        first(l)
+    op = "SEQ" =>
+        l is [["EXIT", :l1], :.] => first(l1)
+        rest(l) => ["SEQ", :l]
+        first(l)
+    op = "LIST" =>
+        l => ["LIST", :l]
+        nil
+    op = "CONS" =>
+        rest(l) => ["CONS", :l]
+        first(l)
+    [op, :l]
+

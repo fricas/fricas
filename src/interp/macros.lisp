@@ -100,7 +100,7 @@
 
 (def-boot-var |$postStack|                          "???")
 (def-boot-var |$previousTime|                       "???")
-(def-boot-val |$printLoadMsgs|  '|off|          "Interpreter>SetVarT.boot")
+(def-boot-val |$printLoadMsgs|  nil          "Interpreter>SetVarT.boot")
 (def-boot-var |$PrintOnly|                          "Compiler>LispLib.boot")
 (def-boot-var |$reportBottomUpFlag|                 "Interpreter>SetVarT.boot")
 (def-boot-var |$returnMode|                         "???")
@@ -334,85 +334,6 @@
   "Evaluates an object and returns it with QUOTE wrapped around it."
   (if (NUMBERP X) X (LIST 'QUOTE X)))
 
-; 7.8 Iteration
-
-; 7.8.2 General Iteration
-
-(DEFUN MKPF (L OP)
-  (if (FLAGP OP 'NARY) (SETQ L (MKPFFLATTEN-1 L OP NIL)))
-  (MKPF1 L OP))
-
-(DEFUN MKPFFLATTEN (X OP)
-  (COND ((ATOM X) X)
-        ((EQL (CAR X) OP) (CONS OP (MKPFFLATTEN-1 (CDR X) OP NIL)))
-        ((CONS (MKPFFLATTEN (CAR X) OP) (MKPFFLATTEN (CDR X) OP)))))
-
-(DEFUN MKPFFLATTEN-1 (L OP R)
-  (let (X)
-    (if (NULL L)
-        R
-        (MKPFFLATTEN-1 (CDR L) OP
-           (APPEND R (if (EQCAR (SETQ X
-                                      (MKPFFLATTEN (CAR L) OP)) OP)
-                         (CDR X) (LIST X)))))))
-
-(DEFUN MKPF1 (L OP)
-  (let (X) (case OP (PLUS (COND ((EQL 0 (SETQ X (LENGTH
-                                                 (SETQ L (S- L '(0 (ZERO))))))) 0)
-                                ((EQL 1 X) (CAR L))
-                                ((CONS 'PLUS L)) ))
-                 (TIMES (COND ((S* L '(0 (ZERO))) 0)
-                              ((EQL 0 (SETQ X (LENGTH
-                                               (SETQ L (S- L '(1 (ONE))))))) 1)
-                              ((EQL 1 X) (CAR L))
-                              ((CONS 'TIMES L)) ))
-                 (QUOTIENT (COND ((> (LENGTH L)) (fail))
-                                 ((EQL 0 (CAR L)) 0)
-                                 ((EQL (CADR L) 1) (CAR L))
-                                 ((CONS 'QUOTIENT L)) ))
-                 (MINUS (COND ((CDR L) (FAIL))
-                              ((NUMBERP (SETQ X (CAR L))) (- X))
-                              ((EQCAR X 'MINUS) (CADR X))
-                              ((CONS 'MINUS L))  ))
-                 (DIFFERENCE (BREAK))
-                 (EXPT (COND ((> (LENGTH L) 2) (FAIL))
-                             ((EQL 0 (CADR L)) 1)
-                             ((EQL 1 (CADR L)) (CAR L))
-                             ((|member| (CAR L) '(0 1 (ZERO) (ONE))) (CAR L))
-                             ((CONS 'EXPT L)) ))
-                 (OR (COND ((MEMBER 'T L) ''T)
-                           ((EQL 0 (SETQ X (LENGTH (SETQ L (REMOVE NIL L))))) NIL)
-                           ((EQL 1 X) (CAR L))
-                           ((CONS 'OR L)) ))
-                 (|or| (COND ((MEMBER 'T L) 'T)
-                             ((EQL 0 (SETQ X (LENGTH (SETQ L (REMOVE NIL L))))) NIL)
-                             ((EQL 1 X) (CAR L))
-                             ((CONS 'or L)) ))
-                 (NULL (COND ((CDR L) (FAIL))
-                             ((EQCAR (CAR L) 'NULL) (CADAR L))
-                             ((EQL (CAR L) 'T) NIL)
-                             ((NULL (CAR L)) ''T)
-                             ((CONS 'NULL L)) ))
-                 (|and| (COND ((EQL 0 (SETQ X (LENGTH
-                                               (SETQ L (REMOVE T (REMOVE '|true| L)))))) T)
-                              ((EQL 1 X) (CAR L))
-                              ((CONS '|and| L)) ))
-                 (AND (COND ((EQL 0 (SETQ X (LENGTH
-                                             (SETQ L (REMOVE T (REMOVE '|true| L)))))) ''T)
-                            ((EQL 1 X) (CAR L))
-                            ((CONS 'AND L)) ))
-                 (PROGN (COND ((AND (NOT (ATOM L)) (NULL (LAST L)))
-                               (if (CDR L) `(PROGN . ,L) (CAR L)))
-                              ((NULL (SETQ L (REMOVE NIL L))) NIL)
-                              ((CDR L) (CONS 'PROGN L))
-                              ((CAR L))))
-                 (SEQ (COND ((EQCAR (CAR L) 'EXIT) (CADAR L))
-                            ((CDR L) (CONS 'SEQ L))
-                            ((CAR L))))
-                 (LIST (if L (cons 'LIST L)))
-                 (CONS (if (cdr L) (cons 'CONS L) (car L)))
-                 (t (CONS OP L) ))))
-
 (defvar $TRACELETFLAG NIL "Also referred to in Comp.Lisp")
 
 (defvar $BOOT NIL)
@@ -488,14 +409,6 @@
         ((> N 0) (CONS (CAR X) (TAKE (1- N) (CDR X))))
         ((>= (setq m (+ (length x) N)) 0) (DROP m x))
         ((CROAK (list "Bad args to DROP" N X)))))
-
-(DEFUN TRUNCLIST (L TL) "Truncate list L at the point marked by TL."
-  (let ((U L)) (TRUNCLIST-1 L TL) U))
-
-(DEFUN TRUNCLIST-1 (L TL)
-  (COND ((ATOM L) L)
-        ((EQL (CDR L) TL) (RPLACD L NIL))
-        ((TRUNCLIST-1 (CDR L) TL))))
 
 ; 15.4 Substitution of Expressions
 

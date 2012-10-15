@@ -229,7 +229,7 @@ This helper function is listed below.
 ;;; files.
 (defun boot-load (file)
   (let ((name (concat $SPADROOT "/autoload/" (pathname-name file))))
-    (if (eq |$printLoadMsgs| '|on|)
+    (if |$printLoadMsgs|
 	(|sayKeyedMsg| 'S2IL0030 (list name)))
     (load name)))
 

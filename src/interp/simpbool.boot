@@ -150,9 +150,7 @@ orDel(a,l) ==
     ?ORDER(a,h) => [a,:l]
     [h,:orDel(a,t)]
   [a]
-ordList l ==
-  l is [h,:t] and t => orDel(h,ordList t)
-  l
+
 ordUnion(a,b) ==
   a isnt [c,:r] => b
   b isnt [d,:s] => a
