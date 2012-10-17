@@ -348,8 +348,8 @@ scanToken () ==
 
 -- to pair badge and badgee
 
--- lfid x== ["id",INTERN x]
-lfid x== ["id",INTERN(x, '"BOOT")]
+DEFPARAMETER($boot_package, FIND_-PACKAGE('"BOOT"))
+lfid x== ["id", INTERN(x, $boot_package)]
 
 lfkey x==["key",keyword x]
 

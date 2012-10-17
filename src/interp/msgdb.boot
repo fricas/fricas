@@ -92,11 +92,10 @@ string2Words l ==
 wordFrom(l,i) ==
   maxIndex := MAXINDEX l
   k := or/[j for j in i..maxIndex | l.j ~= char ('_ ) ] or return nil
-  buf := '""
+  k0 := k
   while k <= maxIndex and (c := l.k) ~= char ('_ ) repeat
-    buf := STRCONC(buf,c)
     k := k + 1
-  [buf,k+1]
+  [SUBSEQ(l, k0, k), k + 1]
 
 DEFPARAMETER($msg_hash, nil)
 
