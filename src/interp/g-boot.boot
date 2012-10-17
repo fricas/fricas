@@ -160,21 +160,15 @@ compTran1(x) ==
     if u = "MAKEPROP" and $TRACELETFLAG then
         rplac(first x, "MAKEPROP-SAY")
     MEMQ(u, '(SPADLET SETQ LET)) =>
-        if NOT($BOOT) or MEMQ($FUNNAME, $traceletFunctions) then
-            NCONC(x, $FUNNAME_TAIL)
-            RPLACA(x, "LETT")
-        else if $TRACELETFLAG then
-            -- this devious trick (due to RDJ) is needed since the compile
-            -- looks only at global variables in top-level environment;
-            -- thus SPADLET cannot itself test for such flags (7/83).
-            RPLACA(x, "/TRACE-LET")
-        else if u = "LET" then RPLACA(x, "SPADLET")
+        NCONC(x, $FUNNAME_TAIL)
+        RPLACA(x, "LETT")
         compTran1(CDDR x)
         NOT(u = "SETQ") =>
             IDENTP(CADR(x)) => PUSHLOCVAR(CADR(x))
             EQCAR(CADR(x), "FLUID") =>
                 PUSH(CADADR(x), $fluidVars)
                 rplac(CADR(x), CADADR(x))
+            BREAK()
             MAPC(FUNCTION PUSHLOCVAR, LISTOFATOMS(CADR x))
     MEMQ(u, '(PROG LAMBDA)) =>
         $newBindings : local := nil
@@ -231,17 +225,6 @@ compFluidize(x) ==
     b := compFluidize(QCDR(x))
     a => CONS(a, b)
     b
-
-compFluidize1(x) ==
-    x and SYMBOLP(x) and x ~= "$" and x ~= "$$" and _
-      SCHAR('"$", 0) = SCHAR(PNAME(x), 0) _
-      and not(DIGITP (SCHAR(PNAME(x), 1))) => ["FLUID", x]
-    ATOM(x) => x
-    QCAR(x) = "FLUID" => x
-    a := compFluidize1(QCAR(x))
-    b := compFluidize1(QCDR(x))
-    a = QCAR(x) and b = QCDR(x) => x
-    CONS(a, b)
 
 PUSHLOCVAR(x) ==
     x ~= "$" and SCHAR('"$", 0) = SCHAR(PNAME(x), 0) _
