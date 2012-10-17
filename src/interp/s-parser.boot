@@ -2,6 +2,7 @@
 
 DEFPARAMETER($ParseMode, NIL)
 DEFPARAMETER($LABLASOC, NIL)
+DEFVAR($NONBLANK, nil)
 
 
 -- PURPOSE: This file sets up properties which are used by the Boot lexical
@@ -522,7 +523,7 @@ parse_Primary1() ==
     OR(
        AND(parse_VarForm(),
            OPTIONAL AND(
-              NONBLANK, current_symbol() = "(", MUST parse_Enclosure(),
+              $NONBLANK, current_symbol() = "(", MUST parse_Enclosure(),
               push_reduction("parse_Primary1",
                              [pop_stack_2(), pop_stack_1()]))),
        parse_Quad(), parse_String(), parse_IntegerTok(),
@@ -603,7 +604,7 @@ parse_Sexpr1() ==
 
 parse_NBGliphTok(tok) ==
    AND(match_current_token("KEYWORD", tok),
-       NONBLANK,
+       $NONBLANK,
        ACTION(advance_token()))
 
 parse_AnyId() ==

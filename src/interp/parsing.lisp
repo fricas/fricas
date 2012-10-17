@@ -167,7 +167,7 @@ NonBlank is true if the token is not preceded by a blank."
 
 (defun try-get-token (token)
   (let ((tok (get-token token)))
-    (if tok (progn (incf Valid-Tokens) token))))
+    (if tok (progn (setf Valid-Tokens (|inc_SI| Valid-Tokens)) token))))
 
 (defun |current_symbol|() (make-symbol-of (current-token)))
 
@@ -180,14 +180,14 @@ NonBlank is true if the token is not preceded by a blank."
 
 (defun current-token ()
   "Returns the current token getting a new one if necessary."
-  (if (> Valid-Tokens 0)
+  (if (|greater_SI| Valid-Tokens 0)
       Current-Token
       (try-get-token Current-Token)))
 
 (defun next-token ()
   "Returns the token after the current token, or NIL if there is none after."
   (current-token)
-  (if (> Valid-Tokens 1)
+  (if (|greater_SI| Valid-Tokens 1)
       Next-Token
       (progn
           (try-get-token Next-Token))))
@@ -197,12 +197,12 @@ NonBlank is true if the token is not preceded by a blank."
   "Makes the next token be the current token."
   (case Valid-Tokens
     (0 (try-get-token (Current-Token)))
-    (1 (decf Valid-Tokens)
+    (1 (setf  Valid-Tokens (|dec_SI| Valid-Tokens))
        (setq Prior-Token (copy-token Current-Token))
        (try-get-token Current-Token))
     (2 (setq Prior-Token (copy-token Current-Token))
        (setq Current-Token (copy-token Next-Token))
-       (decf Valid-Tokens))))
+       (setf Valid-Tokens (|dec_SI| Valid-Tokens)))))
 
 (defparameter |$token_reader| 'get-boot-token "Tokenizing function")
 

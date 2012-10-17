@@ -75,7 +75,6 @@ serverReadLine(stream) ==
   FORCE_-OUTPUT()
   not $SpadServer =>
     read_-line(stream)
-  IN_-STREAM: fluid := stream
   _*EOF_*: fluid := NIL
   line :=
    while not $EndServerSession and not _*EOF_* repeat

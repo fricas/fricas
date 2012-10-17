@@ -12,7 +12,9 @@ DEFPARAMETER($compiler_InteractiveFrame,
                     addBinding('$Information, nil,
                                 makeInitialModemapFrame())))
 
-set_nonblank(val) == SETF(NONBLANK, val)
+DEFPARAMETER($NONBLANK, nil)
+
+set_nonblank(val) == SETF($NONBLANK, val)
 
 current_line_number() ==
     tok := CURRENT_-TOKEN()
