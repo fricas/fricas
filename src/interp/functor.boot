@@ -217,19 +217,7 @@ DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes) ==
       code is [x,name,number,u'] and MEMQ(x,'(SETELT QSETREFV)) =>
         update(u',copyvec,[[name,:number],:sofar])
   for i in 6..n repeat
-    for u in copyvec.i repeat
-      [name,:count]:=u
-      j:=i+1
-      while j<= MIN(n,i+63) and LASSOC(name,copyvec.j) = count+j-i repeat j:=j+1
-             --Maximum length of an MVC is 64 words
-      j:=j-1
-      j > i+2 =>
-        for k in i..j repeat copyvec.k:=delete([name,:count+k-i],copyvec.k)
-        code:=[['REPLACE, name, instantiatedBase,
-                 INTERN('"START1",'"KEYWORD"), count,
-                  INTERN('"START2",'"KEYWORD"), i,
-                   INTERN('"END2",'"KEYWORD"), j+1],:code]
-    copyvec.i =>
+    if copyvec.i then
       v:=[($QuickCode => 'QREFELT;'ELT),instantiatedBase,i]
       for u in copyvec.i repeat
         [name,:count]:=u

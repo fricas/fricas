@@ -161,34 +161,6 @@ make_path_from_file(char *s, char *t)
    4. If the appropriate other access permission bit is set, access is
       allowed.  Otherwise, permission is defined.   */
 
-
-/* Return 1 if the process has write access of file as explained above.
-   Otherwise, return 0.  */
-
-static inline int
-axiom_has_write_access(const struct stat* file_info)
-{
-   int effetive_uid = geteuid();
-
-   if (effetive_uid == 0)
-      return 1;
-
-   if (effetive_uid == file_info->st_uid)
-      return file_info->st_mode & S_IWUSR;
-
-#ifdef S_IWGRP
-   if (getegid() == file_info->st_gid)
-      return file_info->st_mode & S_IWGRP;
-#endif
-
-#ifdef S_IWOTH
-   return file_info->st_mode & S_IWOTH;
-#else
-   return 0;
-#endif
-}
-
-
 /* Return
      -1 if the file designated by PATH is inexistent.
       0 if the file exists but wirte access is denied.
