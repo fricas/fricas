@@ -55,7 +55,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include "debug.h"
 
 int useAscii;

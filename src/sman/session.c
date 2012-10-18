@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* #define DEBUG */
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include <stdlib.h>
 #include <sys/time.h>
 #include <stdio.h>

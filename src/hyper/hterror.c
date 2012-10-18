@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _HTERROR_C
 #define HTERROR
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include "debug.h"
 
 #include "lex.h"

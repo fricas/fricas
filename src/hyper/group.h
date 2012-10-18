@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _GROUP_H_
 #define _GROUP_H_ 1
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include "hyper.h"
 
 extern GroupItem   *gTopOfGroupStack;

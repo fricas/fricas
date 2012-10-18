@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #define _SPOONCOMP_C
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 
 #include <stdlib.h>
 #include <unistd.h>

@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #define _POT3D_C
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 
 #include "header.h"
 #include "all_3d.H1"

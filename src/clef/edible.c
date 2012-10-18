@@ -31,7 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -49,7 +49,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 
-#include "axiom-c-macros.h"
 #include "edible.h"
 #include "com.h"
 #include "bsdsignal.h"
