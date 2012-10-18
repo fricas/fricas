@@ -1,0 +1,122 @@
+1) The bootstrap problem...
+
+The current FriCAS compiler compiles each constructor (category, domain
+or package) separately.  In order to perform type checking FriCAS
+needs type information from other constructors.  To collect
+type information about a constructor FriCAS must compile it.
+This creates a bootstrap problem: in order to compile a constructor
+one must first compile many other constructors.
+
+In principle the bootstrap problem could be avoided by organizing algebra
+into layers, so that layer 0 is independent of other layers and
+each higher layer depends only on lower layers.  However, the current
+FriCAS algebra contains a lot of cyclic dependencies: for example, a
+substantial part of algebra depends on 'Integer', but 'Integer' has
+a rich structure and depends on many categories which in turn depend
+on 'Integer'.
+
+2) ... and its solution
+
+In the past (in Axiom era) significant part of bootstrap problem
+was avoided simply by using type information collected in the earlier
+and stored in databases 'interp.daase' and 'category.daase'.
+This solution meant that any attempt to change the signature of an
+exported operation was likely to cause build failure.
+
+FriCAS bootstrap procedure uses different approach.  It proceeds
+in several phases.  First phases of bootstrap collect database
+information.  To save time first phases work in a single
+Lisp image and keep database information only in memory.
+Then we dump databases and use them for main compilation.
+
+Using the type information stored in databases solves only part of
+the bootstrap problem: internally, FriCAS types are represented by
+executable code and sometimes FriCAS needs to load actual compiled
+code.  FriCAS needs to load categories given as arguments to 'Join',
+because 'Join' is implemented as a runtime operation.  Also
+FriCAS needs to load a category given as an argument to a constructor
+if this category itself has arguments.
+
+During normal compilation FriCAS tries to optimize (i.e., expand inline)
+calls to operations from core domains, which are listed in the
+'$optimizableConstructorNames' variable.  To do this, FriCAS has
+to load these domains.  In the Axiom period this optimization required
+keeping compiled Lisp corresponding to a collection of categories and
+domains sufficient to cut cycles involving core domains.
+Currently FriCAS has a special flag '$bootstrapDomains' to
+disable this optimization.
+
+Even after using the '$bootstrapDomains' flag there are still
+cyclic load dependencies caused by constructor arguments, but
+those problem are resolved using the '$bootStrapMode' flag
+which causes relaxed type checking and skips executable parts
+of categories.
+
+First three stages of bootstrap are done by 'boo_db.input'
+input file.  In first stage Fricas parses all of algebra
+and saves resulting parse tree (using special '$SaveParseOnly'
+flag to delay processing).  Next, the 'processGlobals' function
+from 'src/interp/ncomp.boot' is run.  This function in examines
+(via 'processGlobals1') all constructor definitions and
+computes computes basic database information about domains
+and categories.  Next, 'processGlobals' compiles all
+categories.  Normal category compilation immediatly loads
+freshly compiled category which causes load dependencies.
+'processGlobals' compiles categories without loading them
+which avoids most of dependencies (in particular avoids
+dependencies due to arguments of 'Join').  'processGlobals'
+avoids dependencies due to types of category arguments by
+first compiling categories which have simple argument types
+and only later categories with complicated argument types.
+In this way complicated argument types can run  code of
+categories which were compiled earlier.
+
+When 'processGlobals' finishes the running FriCAS image has compiled
+code of all categories and enough database information to
+do '$bootStrapMode' compilation of all domains.  Note that
+'processGlobals' in doing only in-memory work, nothing is
+stored on disc.
+
+The second bootstrap stage is '$bootStrapMode' compilation of
+all constructors.
+
+In the third stage we compile all categories and core domains
+(the one which are subjest to optimization, so must be
+available for loading) using '$bootstrapDomains' flag.
+
+At the end of stage three we dump databases.
+
+In the next stage we compile categories and core domains in
+normal mode (this is done by the 'oboo3.input' input file
+generated from the makefile).
+
+The first four stages are purely sequential.  After that
+we a ready to compile the rest of algebra in arbitrary
+order.  In fact, since all constructors which we need to
+load were compiled earlier and all type information
+needed for compilation is in databases there are no
+dependencies.  So, the last bootstrap stage goes in
+parallel.
+
+At the end of last stage we rebuild databases to include
+information not needed for compilation (basicaly info for
+FriCAS browser) which were absent in earlier databases.
+
+Note that after bootstrap running 'make' recompiles modified
+files using old database information and old categories and
+core domains ignoring any dependencies between modified files.
+This means that 'make' mail fail or produce wrong result
+due to ignored dependencies.  However, changing only
+implementation part, without change to list of exported
+functions should work fine.  Also, adding new exported functions
+that nobody uses is fine too.  Removing exported function and
+all its users should work, but if somebody forgets about some
+remaining use the compiler will not detect an error and the
+failure will happen only later (at runtime or during mext
+recompilation).  Change that adds exported function and
+tries to use it may fail.  Since after compilation 'make'
+rebuilds databases such change may be split into two, one
+which only adds exported function, and another which uses
+new function.  Still, in case of more complicated functions
+it is probably simpler just to re-run bootstrap.
+
