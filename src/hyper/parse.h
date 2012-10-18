@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _PARSE_H_
 #define _PARSE_H_ 1
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include "hterror.h"
 
 #ifdef SUNplatform

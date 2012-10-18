@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _PARSE_PASTE_H_
 #define _PARSE_PASTE_H_ 1
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include "hyper.h"
 
 extern short int gInPaste;

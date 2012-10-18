@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   RadioBox.
   ****/
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 
 #include "debug.h"
 

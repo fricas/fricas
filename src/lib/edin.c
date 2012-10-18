@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* #define debug 1 */
 
 #include <stdlib.h>
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #if defined(MACOSXplatform)
 #include "/usr/include/unistd.h"
 #else

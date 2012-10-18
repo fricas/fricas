@@ -47,7 +47,7 @@ into place.
 
 */
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #ifndef MSYSplatform
 
 #include <stdio.h>

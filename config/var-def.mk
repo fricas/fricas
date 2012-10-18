@@ -123,7 +123,7 @@ fricas_build_libdir = $(fricas_builddir)/lib
 fricas_build_mandir = $(fricas_builddir)/man
 
 fricas_configdir = $(abs_top_builddir)/config
-axiom_c_macros = $(fricas_configdir)/axiom-c-macros.h
+fricas_c_macros = $(fricas_configdir)/fricas_c_macros.h
 
 LATEX = @LATEX@
 

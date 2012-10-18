@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * SMW Feb 91
  */
 #define _HTHITS_C
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 
 #include "debug.h"
 

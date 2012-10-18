@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #define _HASH_C
 #include "debug.h"
 

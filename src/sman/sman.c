@@ -45,7 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/wait.h>
 #include <signal.h>
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 
 #if defined(SUN4OS5platform) || defined(HP10platform)
 #include <sys/stropts.h>

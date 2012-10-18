@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* HyperDoc database file manager */
 
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 #include "hyper.h"
 #include <sys/stat.h>
 #include <errno.h>

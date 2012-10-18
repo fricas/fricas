@@ -1,10 +1,10 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2012-03-08],
+AC_INIT([FriCAS], [2012-10-18],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
-AC_CONFIG_HEADERS([config/axiom-c-macros.h])
+AC_CONFIG_HEADERS([config/fricas_c_macros.h])
 # AM_INIT_AUTOMAKE([foreign])
 AC_PREREQ([2.59])
 

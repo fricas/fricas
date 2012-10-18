@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #  include <netinet/in.h>
 #endif
 
-#include "axiom-c-macros.h"
+#include "fricas_c_macros.h"
 
 /* On Windows, a socket identifier is not a file descriptor.  It is
    represented by an integer type, but that integer type is not just
