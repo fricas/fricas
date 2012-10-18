@@ -104,17 +104,6 @@ isValidType form ==
       not (GETDATABASE(opOf x, 'CONSTRUCTORKIND) = 'domain)
 
 selectMms1(op,tar,args1,args2,$Coerce) ==
-    -- for new compiler/old world compatibility, sometimes have to look
-    -- for operations given two names.
-
-    -- NEW COMPILER COMPATIBILITY ON
-
-    op = "**" =>
-        APPEND(selectMms2("**",tar,args1,args2,$Coerce),
-               selectMms2("^",tar,args1,args2,$Coerce))
-
-    -- NEW COMPILER COMPATIBILITY OFF
-
     selectMms2(op,tar,args1,args2,$Coerce)
 
 coerceConvertMmSelection(funName,m1,m2) ==

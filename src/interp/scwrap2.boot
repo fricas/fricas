@@ -38,14 +38,6 @@ spad_syntax_error(wanted, parsing) ==
 fakeloopInclude(name, n) ==
     handle_input_file(name, function fakeloopInclude0, [name, n])
 
-fakeNc(name) ==
-    $InteractiveMode : local := false
-    TOKEN_-STACK_-CLEAR()
-    $curent_line_number := 0
-    a := ncloopIncFileName name
-    res := fakeloopInclude(name, nil)
-    -- PRETTYPRINT(res)
-    nil
 
 DEFPARAMETER($COMBLOCKLIST, nil)
 DEFPARAMETER($docList, nil)
