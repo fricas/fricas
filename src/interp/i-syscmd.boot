@@ -369,10 +369,6 @@ queryClients () ==
 
 
 close args ==
-  $saturn =>
-    sayErrorly('"Obsolete system command", _
-      ['" The )close  system command is obsolete in this version of AXIOM.",
-       '" Please use Close from the File menu instead."])
   quiet:local:= false
   null $SpadServer =>
     throwKeyedMsg('"S2IZ0071", [])
@@ -2091,20 +2087,12 @@ nopilesSpad2Cmd l ==
 pquit() == pquitSpad2Cmd()
 
 pquitSpad2Cmd() ==
-  $saturn =>
-    sayErrorly('"Obsolete system command", _
-      ['" The )pquit system command is obsolete in this version of AXIOM.",
-       '" Please select Exit from the File Menu instead."])
   $quitCommandType :local := 'protected
   quitSpad2Cmd()
 
 quit() == quitSpad2Cmd()
 
 quitSpad2Cmd() ==
-  $saturn =>
-    sayErrorly('"Obsolete system command", _
-      ['" The )quit system command is obsolete in this version of AXIOM.",
-       '" Please select Exit from the File Menu instead."])
   $quitCommandType ~= 'protected => leaveScratchpad()
   x := UPCASE queryUserKeyedMsg("S2IZ0031",NIL)
   MEMQ(STRING2ID_-N(x,1),'(Y YES)) => leaveScratchpad()
@@ -2118,10 +2106,6 @@ leaveScratchpad () == QUIT()
 read l == readSpad2Cmd l
 
 readSpad2Cmd l ==
-  ---$saturn =>
-  ---  sayErrorly('"Obsolete system command", _
-  ---    ['" The )read  system command is obsolete in this version of AXIOM.",
-  ---     '" Please use Open from the File menu instead."])
   $InteractiveMode : local := true
   quiet := nil
   ifthere := nil

@@ -564,7 +564,7 @@ genDomainView(viewName, c, viewSelector) ==
   c is ['CATEGORY, ., :l] => genDomainOps(viewName, viewName, c)
   code:= c
   $e := augModemapsFromCategory(viewName, viewName, nil, c, $e)
-  cd := ['LET, viewName, [viewSelector, viewName, mkDomainConstructor code]]
+  cd := ['LET, viewName]
   if null member(cd,$getDomainCode) then
           $getDomainCode:= [cd,:$getDomainCode]
   viewName
@@ -573,10 +573,7 @@ genDomainOps(viewName,dom,cat) ==
   oplist:= getOperationAlist(dom,dom,cat)
   siglist:= [sig for [sig,:.] in oplist]
   oplist:= substNames(dom,viewName,dom,oplist)
-  cd:=
-    ['LET,viewName,['mkOpVec,dom,['LIST,:
-      [['LIST,MKQ op,['LIST,:[mkDomainConstructor mode for mode in sig]]]
-        for [op,sig] in siglist]]]]
+  cd := ['LET, viewName]
   $getDomainCode:= [cd,:$getDomainCode]
   for [opsig,cond,:.] in oplist for i in 0.. repeat
     if opsig in $ConditionalOperators then cond:=nil
