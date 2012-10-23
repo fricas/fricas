@@ -770,8 +770,7 @@
     (declare (special curoutstream
                       |$algebraOutputStream|))
     (setq val (catch 'spad_reader
-                (catch 'TOP_LEVEL
-                  (apply (symbol-function func) args))))
+                  (apply (symbol-function func) args)))
     (cons val (get-output-stream-string *standard-output*))))
 
 (defun |breakIntoLines| (str)
