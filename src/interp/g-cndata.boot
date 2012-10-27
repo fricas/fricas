@@ -89,9 +89,6 @@ maximalSuperType d ==
 getConstructorAbbreviation op ==
   constructor?(op) or throwKeyedMsg("S2IL0015",[op])
 
-getConstructorUnabbreviation op ==
-  abbreviation?(op) or throwKeyedMsg("S2IL0019",[op])
-
 mkUserConstructorAbbreviation(c,a,type) ==
   if not atom c then c := first c  --  Existing constructors will be wrapped
   constructorAbbreviationErrorCheck(c,a,type,'abbreviationError)

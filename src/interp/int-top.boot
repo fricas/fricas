@@ -435,8 +435,6 @@ ncError() ==
 --  This data structure is used to carry information between phases.
 
 --% phParse: carrier[tokens,...] -> carrier[ptree, tokens,...]
---)line (defun pretty (x) (boottran::reallyprettyprint x))
---)line (defun packagetran (x) (boot::|packageTran|))
 phParse(carrier,ptree) ==
     phBegin 'Parsing
     if $ncmParse then
