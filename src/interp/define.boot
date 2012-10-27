@@ -930,6 +930,8 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
     $mutableDomain => 'LAMBDA
     'spad_CLAM
   compForm:= LIST [fn,[lambdaOrSlam,vl,:bodyl]]
+  auxfn := INTERNL(fn, '";")
+  LAM_,EVALANDFILEACTQ(["DECLAIM", ["NOTINLINE", auxfn]])
   if kind = 'category
       then u:= compAndDefine compForm
       else u:=COMP compForm
