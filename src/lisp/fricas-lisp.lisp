@@ -385,7 +385,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 ))               
 
 (defun c-args-to-gcl (arguments)
-   (declare (safety 3))
    (mapcar (lambda (x) (c-type-to-ffi (nth 1 x))) arguments))
 
 (defun gcl-foreign-call (name c-name return-type arguments)

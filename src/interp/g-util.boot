@@ -85,12 +85,6 @@ REMALIST(alist,prop) ==
     if null (l := QCDR l) or null rest l then ok := NIL
   alist
 
-deleteLassoc(x,y) ==
-  y is [[a,:.],:y'] =>
-    EQ(x,a) => y'
-    [first y,:deleteLassoc(x,y')]
-  y
-
 --% association list functions
 
 deleteAssoc(x,y) ==
@@ -137,16 +131,6 @@ stringPrefix?(pref,str) ==
     not EQL(SCHAR(pref,i),SCHAR(str,i)) => ok := NIL
     i := i + 1
   ok
-
-stringChar2Integer(str,pos) ==
-  -- replaces GETSTRINGDIGIT in UT LISP
-  -- returns small integer represented by character in position pos
-  -- in string str. Returns NIL if not a digit or other error.
-  if IDENTP str then str := PNAME str
-  null (STRINGP(str) and
-    INTEGERP(pos) and (pos >= 0) and (pos < QCSIZE(str))) => NIL
-  not DIGITP(d := SCHAR(str,pos)) => NIL
-  DIG2FIX d
 
 dropLeadingBlanks str ==
   str := object2String str
@@ -331,26 +315,6 @@ sublisNQ(al,e) ==
     v := fn(al,rest e)
     EQ(a,u) and EQ(rest e,v) => e
     [u,:v]
-
--- function for turning strings in tex format
-
-str2Outform s ==
-  parse := ncParseFromString s or systemError '"String for TeX will not parse"
-  parse2Outform parse
-
-parse2Outform x ==
-  x is [op,:argl] =>
-    nargl := [parse2Outform y for y in argl]
-    op = 'construct => ['BRACKET,['ARGLST,:[parse2Outform y for y in argl]]]
-    op = 'brace and nargl is [[BRACKET,:r]] => ['BRACE,:r]
-    [op,:nargl]
-  x
-
-str2Tex s ==
-  outf := str2Outform s
-  val := coerceInt(mkObj(wrap outf, '(OutputForm)), '(TexFormat))
-  val := objValUnwrap val
-  CAR val.1
 
 opOf x ==
   atom x => x

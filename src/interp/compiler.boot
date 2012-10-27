@@ -362,7 +362,6 @@ compSymbol(s,m,e) ==
       not isFunction(s,e) and null ($compForModeIfTrue=true) then errorRef s
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ["no mode found for",s]
-  -- m = $OutputForm or m = $Symbol => [['QUOTE,s],m,e]
   not isFunction(s,e) => errorRef s
 
 convertOrCroak(T,m) ==
