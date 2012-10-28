@@ -226,7 +226,6 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
   -- otherwise set to conditions in which
   code=nil => nil
   code='noBranch => nil
-  isMacro(code,$e) => nil --RDJ: added 3/16/83
   code is ['add,base,:codelist] =>
     codelist:=
       [v for u in codelist | (v:= DescendCode(u,flag,viewAssoc,EnvToPass))~=nil]

@@ -1106,9 +1106,6 @@ doIt(item,$predl) ==
   item is ["where",b,:l] => doItWhere(item, $predl, $e)
   item is ["MDEF",:.] => [.,.,$e]:= compOrCroak(item,$EmptyMode,$e)
   item is ['DEF,[op,:.],:.] =>
-    body := isMacro(item, $e) =>
-        SAY(["converted function", op, "to macro"])
-        $e:= put(op, 'macro, [body], $e)
     [.,.,$e]:= t:= compOrCroak(item,$EmptyMode,$e)
     RPLACA(item,"CodeDefine")
         --Note that DescendCode, in CodeDefine, is looking for this
