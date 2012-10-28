@@ -1430,14 +1430,19 @@ FiniteGraph(S) : Category == Definition where
 
   add
 
+   import List(OBJT)
+   import List(ARROW)
+   import List(Loop)
+   import List(NonNegativeInteger)
+
    math_to_string ==> mathObject2String$Lisp
 
    getVertexIndex(s : %, o : S) : NNI ==
        for i in 1.. for v in getVertices(s) repeat
            if v.value = o then return i
 
-   addArrow!(s : %, name : String, o1 : S, o2 : S) : % ==
-       addArrow!(s, name, getVertexIndex(s, o1), getVertexIndex(s, o2))
+   addArrow!(s : %, aname : String, o1 : S, o2 : S) : % ==
+       addArrow!(s, aname, getVertexIndex(s, o1), getVertexIndex(s, o2))
 
    isDirected?() == true
 
@@ -1465,8 +1470,9 @@ FiniteGraph(S) : Category == Definition where
    -- otherwise it is 0. In computing, this matrix makes it easy to find
    -- subgraphs, and to reverse a directed graph.
    adjacencyMatrix(s : %) : Matrix NNI ==
+    n := #(getVertices s)
     m : List List NNI := [[if isDirectSuccessor?(s, u, v) then 1::NNI else 0::NNI_
-                        for u in 1..#(getVertices s)]for v in 1..#(getVertices s)]
+                        for u in 1..n] for v in 1..n]
     matrix(m)
 
    -- a local function used by laplacianMatrix to calculate the value for

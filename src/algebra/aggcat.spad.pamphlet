@@ -58,6 +58,9 @@ Aggregate : Category == Type with
   eq?(a, b) == EQ(a, b)$Lisp
   sample() == empty()
   if % has finiteAggregate then
+
+      import Integer
+
       empty? a   == #a = 0
       less?(a, n) == #a < n
       more?(a, n) == #a > n
@@ -157,6 +160,9 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
    if S has Evalable S then
        eval(u : %, l : List Equation S) : % == map(x +-> eval(x, l), u)
    if % has finiteAggregate then
+
+       import List(S)
+
        #c                   == # parts c
        any?(f, c) ==
            for x in parts c | f x repeat return true
@@ -246,6 +252,9 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
  add
    if % has finiteAggregate then
+
+       import List(S)
+
        find(f : S -> Boolean, c : %) == find(f, parts c)
        reduce(f : (S, S)->S, x : %) == reduce(f, parts x)
        reduce(f : (S, S)->S, x : %, s : S) == reduce(f, parts x, s)
@@ -526,6 +535,10 @@ DictionaryOperations(S : Type) : Category ==
 ++ Principal operations are thus destructive (non-copying) ones.
 Dictionary(S : Type) : Category ==
  DictionaryOperations S add
+
+   import Integer
+   import List(S)
+
    dictionary l ==
        d := dictionary()
        for x in l repeat insert!(x, d)
@@ -696,6 +709,10 @@ FiniteSetAggregate(S : SetCategory) : Category ==
         ++ min(u) returns the smallest element of aggregate u.
 
  add
+
+   import NonNegativeInteger
+   import List(S)
+
    s <= t          == s = intersect(s, t)
    s < t           == #s < #t and s <= t
    s = t           == #s = #t and empty? difference(s, t)
@@ -1035,6 +1052,9 @@ TableAggregate(Key : SetCategory, Entry : Type) : Category ==
      ++ elements fn(x, y) where x and y are corresponding elements from t1
      ++ and t2 respectively.
  add
+
+   import Integer
+
    table()             == empty()
    table l             == dictionary l
 -- empty()             == dictionary()
@@ -1199,6 +1219,9 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
       setvalue! : (%, S) -> S
         ++ setvalue!(u, x) sets the value of node u to x.
  add
+
+   import List(%)
+
    elt(x,"value") == value x
    if % has shallowlyMutable then
        setelt(x,"value",y) == setvalue!(x,y)
@@ -1491,6 +1514,9 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
          ++ and \axiom{w = first(u, n)}, returning \axiom{v}.
          ++ Note: afterwards \axiom{rest(u, n)} returns \axiom{empty()}.
  add
+
+  import Integer
+
   cycleMax ==> 1000
 
   findCycle : % -> %
@@ -1673,6 +1699,9 @@ StreamAggregate(S : Type) : Category ==
         ++ have an infinite number of elements.
         ++ Note: for many datatypes, \axiom{possiblyInfinite?(s) = not explictlyFinite?(s)}.
  add
+
+   import Integer
+
    c2 : (%, %) -> S
 
    explicitlyFinite? x == not cyclic? x
@@ -1946,6 +1975,9 @@ FiniteLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
 OneDimensionalArrayAggregate(S : Type) : Category ==
     Join(FiniteLinearAggregate S, shallowlyMutable)
   add
+
+    import Integer
+
     parts x         == [qelt(x, i) for i in minIndex x .. maxIndex x]
     sort!(f, a) == quickSort(f, a)$FiniteLinearAggregateSort(S, %)
 
