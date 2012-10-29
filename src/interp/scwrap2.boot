@@ -125,9 +125,7 @@ $trans_key := [ _
                 ["WHERE", "where"], _
                 ["WHILE", "while"], _
                 ["WITH", "with"], _
-                ["SETTAB", "("], _
                 ["BACKSET", ";"], _
-                ["BACKTAB", ")"], _
                 ["CATCH", "catch"], _
                 ["TRY", "try"], _
                 ["FINALLY", "finally"]]
