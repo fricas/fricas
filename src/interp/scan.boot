@@ -47,48 +47,48 @@ CLOSEANGLE  := QENUM('">   ", 0)
 QUESTION    := QENUM('"?   ",0)
 
 scanKeyWords := [ _
-           ['"add",      "ADD" ],_
-           ['"and",      "AND" ],_
-           ['"break",   "BREAK" ],_
-           ['"by",        "BY" ],_
-           ['"case",     "CASE" ],_
-           ['"catch",  "CATCH"], _
+           ['"add",      "add"], _
+           ['"and",      "and"],_
+           ['"break",   "break" ],_
+           ['"by",        "by"], _
+           ['"case",     "case" ],_
+           ['"catch",  "catch"], _
            ['"default",  "DEFAULT" ],_
            ['"define",  "DEFN" ],_
            ['"do",        "DO"],_
-           ['"else",    "ELSE" ],_
-           ['"exquo",   "EXQUO"], _
+           ['"else",    "else"], _
+           ['"exquo",   "exquo"], _
            ['"export","EXPORT" ],_
-           ['"finally", "FINALLY"], _
-           ['"for",      "FOR" ],_
+           ['"finally", "finally"], _
+           ['"for",      "for"], _
            ['"free",    "FREE" ],_
            ['"from",    "FROM" ],_
-           ['"has",      "HAS" ],_
-           ['"if",       "IF" ],_
-           ['"import", "IMPORT" ],_
-           ['"in", "IN" ],_
+           ['"has",      "has"],_
+           ['"if",       "if"], _
+           ['"import", "import"], _
+           ['"in", "in"], _
            ['"inline", "INLINE" ],_
-           ['"is", "IS" ],_
-           ['"isnt", "ISNT" ],_
+           ['"is", "is"],_
+           ['"isnt", "isnt"],_
            ['"iterate", "ITERATE"],_
            ['"local", "local" ],_
            ['"macro", "MACRO" ],_
            ['"mod", "MOD" ],_
-           ['"not", "NOT" ], _
-           ['"or", "OR" ],_
-           ['"pretend","PRETEND" ],_
-           ['"quo","QUO" ],_
-           ['"rem","REM" ],_
-           ['"repeat","REPEAT" ],_
-           ['"return","RETURN" ],_
+           ['"not", "not"], _
+           ['"or", "or"], _
+           ['"pretend", "pretend"], _
+           ['"quo", "quo"], _
+           ['"rem", "rem"], _
+           ['"repeat", "repeat"],_
+           ['"return", "return"],_
            ['"rule","RULE" ],_
-           ['"then","THEN" ],_
-           ['"try", "TRY"], _
-           ['"until", "UNTIL" ],_
-           ['"where","WHERE" ],_
-           ['"while","WHILE" ],_
-           ['"with","WITH" ],_
-           ['"yield", "YIELD" ],_
+           ['"then", "then"],_
+           ['"try", "try"], _
+           ['"until", "until"], _
+           ['"where", "where"], _
+           ['"while", "while"],_
+           ['"with", "with"], _
+           ['"yield", "yield"], _
            ['"|","BAR"],_
            ['".","DOT" ],_
            ['"::","COERCE" ],_
@@ -201,12 +201,12 @@ scanPun:=scanPunCons()
 for i in   [ _
    ["EQUAL"    ,"="], _
    ["TIMES"    ,"*"], _
-   ["HAS"      ,"has"], _
-   ["CASE"     ,"case"], _
-   ["EXQUO",    "exquo"], _
-   ["REM"      ,"rem"], _
+   ["has",      "has"], _
+   ["case",     "case"], _
+   ["exquo",    "exquo"], _
+   ["rem",      "rem"], _
    ["MOD"      ,"mod"], _
-   ["QUO"      ,"quo"], _
+   ["quo",      "quo"], _
    ["SLASH"    ,"/"], _
    ["BACKSLASH","\"], _
    ["SLASHSLASH"    ,"//"], _
@@ -224,7 +224,7 @@ for i in   [ _
    ["LE"       ,"<="], _
    ["GE"       ,">="], _
    ["NOTEQUAL" ,"~="], _
-   ["BY"       ,"by"], _
+   ["by",       "by"], _
    ["ARROW"       ,"->"], _
    ["LARROW"       ,"<-"], _
    ["BAR"       ,"|"], _

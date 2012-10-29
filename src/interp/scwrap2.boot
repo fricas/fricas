@@ -73,67 +73,36 @@ $trans_table := [["id", "IDENTIFIER"], ["key", "KEYWORD"], _
 
 -- ["BREAK", "leave"], _
 $trans_key := [ _
-                ["ADD", "add"], _
-                ["AND", "and"], _
                 ["ARROW", "->"], _
                 ["AT", "@"], _
                 ["BAR", "|"], _
                 ["BECOMES", ":="], _
-                ["BY", "by"], _
                 ["CARAT", "^"], _
-                ["CASE", "case"], _
                 ["COERCE", "::"], _
                 ["COLON", ":"], _
                 ["COMMA", ","], _
                 ["DEF", "=="], _
-                ["DIV", "div"], _
                 ["DOT", "."], _
-                ["ELSE", "else"], _
                 ["EQUAL", "="], _
                 ["EXIT", "=>"], _
-                ["EXIT2", "exit"], _
-                ["EXQUO", "exquo"], _
-                ["FOR", "for"], _
                 ["GE", ">="], _
                 ["GIVES", "+->"], _
                 ["GT", ">"], _
-                ["HAS", "has"], _
-                ["IF", "if"], _
-                ["IMPORT", "import"], _
-                ["IN", "in"], _
-                ["IS", "is"], _
                 ["LE", "<="], _
-                ["LEAVE", "leave"], _
                 ["LT", "<"], _
                 ["MDEF", "==>"], _
                 ["MINUS", "-"], _
-                ["NOT", "not"], _
                 ["NOTEQUAL", "~="], _
-                ["OR", "or"], _
                 ["PLUS", "+"], _
-                ["QUO", "quo"], _
-                ["PRETEND", "pretend"], _
-                ["REM", "rem"], _
-                ["REPEAT", "repeat"], _
-                ["RETURN", "return"], _
                 ["SEG", ".."], _
                 ["SEMICOLON", ";"], _
                 ["SLASH", "/"], _
-                ["THEN", "then"], _
                 ["TIMES", "*"], _
-                ["UNTIL", "until"], _
-                ["WHERE", "where"], _
-                ["WHILE", "while"], _
-                ["WITH", "with"], _
-                ["BACKSET", ";"], _
-                ["CATCH", "catch"], _
-                ["TRY", "try"], _
-                ["FINALLY", "finally"]]
+                ["BACKSET", ";"]]
 
 $trans_key_id := [ _
-                ["BREAK", "break"], _
+                ["break", "break"], _
                 ["DEFAULT", "default"], _
-                ["FREE", "free"], _
                 ["RULE", "rule"], _
                 ["fooo", "baaar"] _
                 ]
@@ -187,7 +156,7 @@ ntokreader(token) ==
             ntok1 := first $toklst
             ntype1 := first(ntok1)
             nsym := ntok1.1
-            if ntype1 = "key" and nsym in ["THEN", "ELSE"] then
+            if ntype1 = "key" and nsym in ["then", "else"] then
                 return ntokreader(token)
         type1 = "key" and sym = "BACKSET" and $ignorable_backset =>
             ntokreader(token)
@@ -199,7 +168,7 @@ ntokreader(token) ==
             ntok1 := first $toklst
             ntype1 := first(ntok1)
             nsym := ntok1.1
-            if ntype1 = "key" and nsym in ["THEN", "ELSE",
+            if ntype1 = "key" and nsym in ["then", "else",
                   "COMMA", "SEMICOLON"] then
                 PUSH($ignored_tab, $tab_states)
                 $ignored_tab := true

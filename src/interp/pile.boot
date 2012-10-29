@@ -170,7 +170,7 @@ pileCforest x==
    else if null cdr x
         then
            f:= car x
-           if EQ(tokPart CAAR f,"IF")
+           if EQ(tokPart CAAR f,"if")
            then enPile f
            else f
         else enPile separatePiles x
