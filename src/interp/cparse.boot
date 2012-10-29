@@ -309,15 +309,15 @@ npInfGeneric s== npDDInfKey s  and
                    (npEqKey "BACKSET" or true)
 
 npConditional f==
-  if  npEqKey "IF" and (npLogical() or npTrap()) and
+  if  npEqKey "if" and (npLogical() or npTrap()) and
                    (npEqKey "BACKSET" or true)
   then
            if npEqKey "SETTAB"
-           then if npEqKey "THEN"
+           then if npEqKey "then"
                 then  (APPLY(f,nil) or npTrap()) and npElse(f)
                         and npEqKey "BACKTAB"
                 else  npMissing "then"
-           else if npEqKey "THEN"
+           else if npEqKey "then"
                 then (APPLY(f,nil) or npTrap()) and npElse(f)
                 else npMissing "then"
   else false
@@ -333,8 +333,8 @@ npElse(f)==
 
 npBacksetElse()==
     if npEqKey "BACKSET"
-    then npEqKey "ELSE"
-    else npEqKey "ELSE"
+    then npEqKey "else"
+    else npEqKey "else"
 
 npWConditional f==
     if npConditional f
@@ -468,7 +468,7 @@ npCoerceTo() == npTypedForm("COERCE",function pfCoerceto)
 
 npColonQuery() == npTypedForm("ATAT",function pfRetractTo)
 
-npPretend() == npTypedForm("PRETEND",function pfPretend)
+npPretend() == npTypedForm("pretend", function pfPretend)
 
 npTypeStyle()==
  npCoerceTo() or npRestrict() or npPretend() or npColonQuery()
@@ -487,7 +487,7 @@ npProduct()==
                        ,function npPower)
 
 npRemainder()==
-    npLeftAssoc('(REM QUO EXQUO)  ,function npProduct)
+    npLeftAssoc(["rem", "quo", "exquo"], function npProduct)
 
 npTerm()==
    npInfGeneric '(MINUS PLUS) and (npRemainder()
@@ -508,7 +508,7 @@ npInterval()==
      (npArith() and npPush(pfInfApplication(npPop2(),npPop2(),npPop1())))
             or npPush(pfApplication(npPop1(),npPop1()))) or true)
 
-npBy()== npLeftAssoc ('(BY),function npInterval)
+npBy()== npLeftAssoc(["by"], function npInterval)
 
 npAmpersand()==  npEqKey "AMPERSAND" and (npName() or npTrap())
 npAmpersandFrom()== npAmpersand()  and npFromdom()
@@ -527,13 +527,13 @@ npRelation()==
             function npSynthetic)
 
 npQuiver()  ==    npRightAssoc('(ARROW LARROW),function npRelation)
-npDiscrim() ==    npLeftAssoc ('(CASE HAS), function npQuiver)
+npDiscrim() ==    npLeftAssoc(["case", "has"], function npQuiver)
 
-npDisjand() ==    npLeftAssoc('(AND ),function npDiscrim)
+npDisjand() == npLeftAssoc(["and"], function npDiscrim)
 
-npLogical()   ==  npLeftAssoc('(OR ),function npDisjand)
+npLogical() == npLeftAssoc(["or"], function npDisjand)
 npSuch() == npLeftAssoc( '(BAR),function npLogical)
-npMatch()   ==    npLeftAssoc ('(IS ISNT ), function npSuch)
+npMatch()   ==  npLeftAssoc(["is", "isnt"], function npSuch)
 
 npType()    ==  npMatch()  and
                 a:=npPop1()
@@ -633,31 +633,31 @@ npDefinitionOrStatement()==
 npVoid()== npAndOr("DO",function npStatement,function pfNovalue)
 
 npReturn()==
-         npEqKey "RETURN" and
+         npEqKey "return" and
           (npExpress() or npPush pfNothing()) and
            (npEqKey "FROM" and (npName() or npTrap()) and
               npPush pfReturn (npPop2(),npPop1()) or
                 npPush pfReturnNoName npPop1())
 npLoop()==
      npIterators() and
-      (npCompMissing "REPEAT" and
+      (npCompMissing "repeat" and
          (npAssign() or npTrap()) and
             npPush pfLp(npPop2(),npPop1()))
                 or
-                  npEqKey "REPEAT" and (npAssign() or npTrap()) and
+                  npEqKey "repeat" and (npAssign() or npTrap()) and
                        npPush pfLoop1 npPop1 ()
 
 npSuchThat()==npAndOr("BAR",function npLogical,function pfSuchthat)
 
-npWhile()==npAndOr ("WHILE",function npLogical,function pfWhile)
+npWhile() == npAndOr("while", function npLogical, function pfWhile)
 
 npForIn()==
-  npEqKey "FOR" and (npVariable() or npTrap()) and (npCompMissing "IN")
+  npEqKey "for" and (npVariable() or npTrap()) and (npCompMissing "in")
       and ((npBy()  or npTrap()) and
          npPush pfForin(npPop2(),npPop1()))
 
 npBreak()==
-     npEqKey "BREAK" and  npPush pfBreak pfNothing ()
+     npEqKey "break" and  npPush pfBreak pfNothing ()
 
 npIterate()==
      npEqKey "ITERATE" and  npPush pfIterate pfNothing ()
@@ -672,7 +672,7 @@ npSQualTypelist()== npListing function npQualType
 npQualTypelist()== npPC function npSQualTypelist
                              and npPush pfUnSequence npPop1 ()
 
-npImport()==npAndOr("IMPORT",function npQualTypelist,function pfImport)
+npImport() == npAndOr("import", function npQualTypelist, function pfImport)
 
 npInline()==npAndOr("INLINE",function npQualTypelist,function pfInline)
 
@@ -708,13 +708,13 @@ npMacro()== npEqKey "MACRO" and  npPP function npMdef
 npRule()== npEqKey "RULE" and  npPP function npSingleRule
 
 npAdd(extra)==
-     npEqKey "ADD" and
+     npEqKey "add" and
        a:=npState()
        npDefinitionOrStatement() or npTrap()
-       npEqPeek "IN" =>
+       npEqPeek "in" =>
                npRestore a
                (npVariable() or npTrap()) and
-                     npCompMissing "IN"  and
+                     npCompMissing "in"  and
                          (npDefinitionOrStatement() or npTrap()) and
                             npPush pfAdd(npPop2(),npPop1(),extra)
        npPush pfAdd(pfNothing(),npPop1(),extra)
@@ -725,13 +725,13 @@ npDefaultValue()==
          and  npPush [pfAdd(pfNothing(),npPop1(),pfNothing())]
 
 npWith(extra)==
-     npEqKey "WITH" and
+     npEqKey "with" and
        a:=npState()
        npCategoryL() or npTrap()
-       npEqPeek "IN" =>
+       npEqPeek "in" =>
                npRestore a
                (npVariable() or npTrap()) and
-                     npCompMissing "IN"  and
+                     npCompMissing "in"  and
                           (npCategoryL() or npTrap()) and
                               npPush pfWith(npPop2(),npPop1(),extra)
        npPush pfWith(pfNothing(),npPop1(),extra)
@@ -800,7 +800,7 @@ npListing (p)==npList(p,"COMMA",function pfListOf)
 npQualified(f)==
     if FUNCALL f
     then
-     while npEqKey "WHERE" and (npDefinition() or npTrap()) repeat
+     while npEqKey "where" and (npDefinition() or npTrap()) repeat
              npPush pfWhere(npPop1(),npPop1())
      true
     else  npLetQualified  f
@@ -808,7 +808,7 @@ npQualified(f)==
 npLetQualified f==
       npEqKey "LET" and
       (npDefinition() or npTrap()) and
-      npCompMissing "IN"  and
+      npCompMissing "in"  and
       (FUNCALL f or npTrap()) and
       npPush pfWhere(npPop2(),npPop1())
 
