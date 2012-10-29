@@ -66,8 +66,6 @@ init_parser_properties() ==
           ["add", 400, 120],   ["with", 2000, 400, ["parse_InfixWith"]], _
           ["has", 400, 400], _
           ["where", 121, 104], _
-          ["when", 112, 190], _
-          ["otherwise", 119, 190, ["parse_Suffix"]], _
           ["is", 400, 400],    ["isnt", 400, 400], _
           ["and", 250, 251],   ["or", 200, 201], _
           ["/\", 250, 251],   ["\/", 200, 201], _
@@ -86,7 +84,6 @@ init_parser_properties() ==
           ["until", 130, 190, ["parse_Loop"]], _
           ["repeat", 130, 190, ["parse_Loop"]], _
           ["import", 120, 0, ["parse_Import"]], _
-          ["unless"], _
           ["add", 900, 120], _
           ["with", 1000, 300, ["parse_With"]], _
           ["has", 400, 400], _
@@ -102,8 +99,6 @@ init_parser_properties() ==
           ["~", 260, 259, nil], _
           ["=", 400, 700], _
           ["return", 202, 201, ["parse_Return"]], _
-          ["leave", 202, 201, ["parse_Leave"]], _
-          ["exit", 202, 201, ["parse_Exit"]], _
           ["from"], _
           ["iterate"], _
           ["yield"], _
@@ -112,7 +107,6 @@ init_parser_properties() ==
           ["catch", 0, 114], _
           ["finally", 0, 114], _
           ["|", 0, 190], _
-          ["suchthat"], _
           ["then", 0, 114], _
           ["else", 0, 114]] repeat
         MAKEOP(j, "Nud")
@@ -339,19 +333,6 @@ parse_Return() ==
     not(match_symbol "return") => nil
     MUST parse_Expression()
     push_form1("return", pop_stack_1())
-
-parse_Exit() ==
-    not(match_symbol "exit") => nil
-    OR(parse_Expression(), push_reduction("parse_Exit", "$NoValue"))
-    push_form1("exit", pop_stack_1())
-
-parse_Leave() ==
-    not(match_symbol "leave") => nil
-    OR(parse_Expression(), push_reduction("parse_Leave", "$NoValue"))
-    match_symbol "from" =>
-        MUST parse_Label()
-        push_form2("leaveFrom", pop_stack_1(), pop_stack_1())
-    push_form1("leave", pop_stack_1())
 
 parse_Seg() ==
     not(parse_GliphTok "..") => nil

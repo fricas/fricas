@@ -71,7 +71,6 @@ scanKeyWords := [ _
            ['"is", "IS" ],_
            ['"isnt", "ISNT" ],_
            ['"iterate", "ITERATE"],_
-           ['"leave",  "LEAVE"],_
            ['"local", "local" ],_
            ['"macro", "MACRO" ],_
            ['"mod", "MOD" ],_
