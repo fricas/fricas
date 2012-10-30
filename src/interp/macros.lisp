@@ -107,8 +107,6 @@
 (def-boot-var |$semanticErrorStack|                 "???")
 (def-boot-val |$SetFunctions| nil  "checked in SetFunctionSlots")
 
-(def-boot-val $SPAD nil                             "Is this Spad code?")
-
 (def-boot-val |$timerOn| t                          "???")
 (def-boot-var |$topOp|                             "See displayPreCompilationErrors")
 (def-boot-var |$tracedSpadModemap|                  "Interpreter>Trace.boot")
@@ -335,8 +333,6 @@
   (if (NUMBERP X) X (LIST 'QUOTE X)))
 
 (defvar $TRACELETFLAG NIL "Also referred to in Comp.Lisp")
-
-(defvar $BOOT NIL)
 
 ; 10.1 The Property List
 
@@ -706,18 +702,17 @@
 (defun |make_BF| (MT EP) (LIST |$BFtag| MT EP))
 
 (defun |make_float| (int frac fraclen exp)
-    (if (AND $SPAD |$useBFasDefault|)
-        (if (= frac 0)
+    (if (= frac 0)
           (|make_BF| int exp)
-          (|make_BF| (+ (* int (expt 10 fraclen)) frac) (- exp fraclen)) )
-        (read-from-string
-          (format nil "~D.~v,'0De~D" int fraclen frac exp))) )
+          (|make_BF| (+ (* int (expt 10 fraclen)) frac) (- exp fraclen)) ))
 
-(defun print-full (expr &optional (stream *standard-output*))
+(defun |print_full2| (expr stream)
    (let ((*print-circle* t) (*print-array* t) *print-level* *print-length*)
      (print expr stream)
      (terpri stream)
      (finish-output stream)))
+
+(defun |print_full1| (expr) (|print_full2| expr *standard-output*))
 
 ;; moved here from preparse.lisp
 

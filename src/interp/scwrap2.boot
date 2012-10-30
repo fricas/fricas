@@ -48,8 +48,6 @@ DEFVAR($restore_list, nil)
 spadCompile(name) ==
     $comp370_apply : local := FUNCTION PRINT_-DEFUN
     _*FILEACTQ_-APPLY_* : local := FUNCTION PRINT_-DEFUN
-    $SPAD : local := true
-    $BOOT : local := false
     _*EOF_* : local := false
     _/EDITFILE : local := name
     $InteractiveMode : local := false

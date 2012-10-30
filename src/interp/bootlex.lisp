@@ -50,8 +50,7 @@
 (defvar |$compiler_output_stream|)
 
 (defun print-defun (name body)
-    (let ((st |$compiler_output_stream|))
-        (print-full body st) ))
+    (|print_full2| body |$compiler_output_stream|) )
 
 (defvar Keywords 
    '(|add| |and| |by| |catch| |case| |else| |exit|

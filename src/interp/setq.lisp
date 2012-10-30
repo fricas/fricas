@@ -74,7 +74,6 @@
 
 ;; These were originally in SPAD LISP
 
-(SETQ $BOOT NIL)
 (setq |$interpOnly| nil)
 (SETQ |$testingSystem| NIL)
 (SETQ |$permitWhere| NIL)
@@ -491,11 +490,6 @@
 
 ;; ---- end of initial settings for variables used in test.boot
 
-;; Next flag determines whether to use BF as default floating point
-;; type. (actually, now means NewFloat)
-
-; "Determines whether to use BF as default floating point type."
-(SETQ |$useBFasDefault| 'T)
 
 ;; By default, don't generate info files with old compiler.
 (setq |$profileCompiler| nil)

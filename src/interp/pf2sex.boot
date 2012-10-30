@@ -338,10 +338,8 @@ float2Sex [i_str, fr_str, e_str] ==
   exp_part := string_to_int(e_str)
   bfForm := make_float(int_part, string_to_int(fr_str),
     LENGTH fr_str, exp_part)
-  $useBFasDefault =>
-    [., frac, exp] := bfForm
-    [["$elt", intNewFloat(), 'float], frac, exp, 10]
-  bfForm
+  [., frac, exp] := bfForm
+  [["$elt", intNewFloat(), 'float], frac, exp, 10]
 
 loopIters2Sex iterList ==
   result := nil

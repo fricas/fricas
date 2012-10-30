@@ -542,7 +542,7 @@ dcData con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
   sayBrightly '"Operation data from slot 1"
-  PRINT_-FULL $infovec.1
+  print_full1 $infovec.1
   vec := getCodeVector()
   vec := (PAIRP vec => rest vec; vec)
   sayBrightly ['"Information vector has ",SIZE vec,'" entries"]
@@ -659,15 +659,15 @@ infovec con ==
   sayBrightly '"---------------slot 0 is template-------------------"
   ppTemplate u.0
   sayBrightly '"---------------slot 1 is op table-------------------"
-  PRINT_-FULL u.1
+  print_full1 u.1
   sayBrightly '"---------------slot 2 is attribute list-------------"
-  PRINT_-FULL u.2
+  print_full1 u.2
   sayBrightly '"---------------slot 3.0 is catpredvec---------------"
-  PRINT_-FULL u.3.0
+  print_full1 u.3.0
   sayBrightly '"---------------slot 3.1 is catinfovec---------------"
-  PRINT_-FULL u.3.1
+  print_full1 u.3.1
   sayBrightly '"---------------slot 3.2 is catvec-------------------"
-  PRINT_-FULL u.3.2
+  print_full1 u.3.2
   sayBrightly '"---------------tail of slot 3 is datavector---------"
   dcData1 CDDDR u.3
   'done

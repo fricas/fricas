@@ -123,8 +123,6 @@ ncTopLevel() ==
 -- the Bill Burge's parser.
   _*EOF_*: fluid := NIL
   $InteractiveMode :fluid := true
-  $BOOT: fluid := NIL
-  $SPAD: fluid := true
   $e:fluid := $InteractiveFrame
   ncIntLoop()
 
