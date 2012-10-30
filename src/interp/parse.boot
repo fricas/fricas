@@ -171,23 +171,13 @@ parseHas [x,y] ==
       x is [a] => a
       ["and",:x]
     fn y ==
-      if $InteractiveMode then y:= unabbrevAndLoad y
       y is [":" ,op,['Mapping,:map]] =>
          op:= (STRINGP op => INTERN op; op)
          [['SIGNATURE,op,map]]
       y is ['Join,:u] => "append"/[fn z for z in u]
       y is ['CATEGORY,:u] => "append"/[fn z for z in u]
       y is ['SIGNATURE,:.] => [y]
-      $InteractiveMode => parseHasRhs y
       [makeNonAtomic y]
-
-parseHasRhs u ==   --$InteractiveMode = true
-  get(u,'value,$CategoryFrame) is [D,m,.]
-    and m in '((Mode) (Type) (Category)) => m
-  y := abbreviation? u =>
-    loadIfNecessary y => [unabbrevAndLoad y]
-    BREAK()
-  BREAK()
 
 parseDEF [$lhs,tList,specialList,body] ==
   setDefOp $lhs
@@ -218,20 +208,17 @@ parseCategory x ==
   ['CATEGORY,key,:l]
 
 parseAnd u ==
-  $InteractiveMode => ["and",:parseTranList u]
   null u => 'true
   null rest u => first u
   parseIf [parseTran first u,parseAnd rest u,"false"]
 
 parseOr u ==
-  $InteractiveMode => ["or",:parseTranList u]
   null u => 'false
   null rest u => first u
   (x:= parseTran first u) is ['not,y] => parseIf [y,parseOr rest u,'true]
   true => parseIf [x,'true,parseOr rest u]
 
 parseNot u ==
-  $InteractiveMode => ['not,parseTran first u]
   parseTran ['IF,first u,:'(false true)]
 
 parseExit [a,:b] ==
@@ -299,8 +286,8 @@ parseIf t ==
   t isnt [p,a,b] => t
   ifTran(parseTran p,parseTran a,parseTran b) where
     ifTran(p,a,b) ==
-      null($InteractiveMode) and p='true  => a
-      null($InteractiveMode) and p='false  => b
+      p = 'true  => a
+      p = 'false  => b
       p is ['not,p'] => ifTran(p',b,a)
       p is ['IF,p',a',b'] => ifTran(p',ifTran(a',COPY a,COPY b),ifTran(b',a,b))
       p is ['SEQ,:l,['exit,1,p']] =>

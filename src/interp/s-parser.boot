@@ -310,7 +310,7 @@ parse_Suffix() ==
     push_reduction("parse_Suffix", [pop_stack_1(), pop_stack_1()])
 
 parse_TokTail() ==
-    $BOOT or current_symbol() ~= "$" => nil
+    current_symbol() ~= "$" => nil
     not(OR(match_next_token("IDENTIFIER", NIL), next_symbol() = "%",
            next_symbol() = "(")) => nil                     -- )
     G1 := COPY_-TOKEN PRIOR_-TOKEN
@@ -491,7 +491,6 @@ parse_Application() ==
 parse_Selector() ==
     not(match_symbol ".") => nil
     MUST parse_Primary()
-    $BOOT => push_form2("ELT", pop_stack_2(), pop_stack_1())
     push_reduction("parse_Selector",
                          [pop_stack_2(), pop_stack_1()])
 
@@ -507,13 +506,11 @@ parse_Primary1() ==
               $NONBLANK, current_symbol() = "(", MUST parse_Enclosure(),
               push_reduction("parse_Primary1",
                              [pop_stack_2(), pop_stack_1()]))),
-       parse_Quad(), parse_String(), parse_IntegerTok(),
+       parse_String(), parse_IntegerTok(),
        parse_FormalParameter(),
        AND(symbol_is? "'",
-          MUST OR(
-             AND($BOOT, parse_Data()),
-             AND(match_symbol "'", MUST parse_Expr 999,
-                 push_form1("QUOTE", pop_stack_1())))),
+          MUST AND(match_symbol "'", MUST parse_Expr 999,
+                   push_form1("QUOTE", pop_stack_1()))),
        parse_Sequence(), parse_Enclosure())
 
 parse_Float() == parse_SPADFLOAT()
@@ -533,10 +530,6 @@ parse_IntegerTok() == parse_NUMBER()
 
 parse_FormalParameter() == parse_ARGUMENT_DESIGNATOR()
 
-parse_Quad() ==
-    OR(AND($BOOT, match_symbol "$", push_lform0("$")),
-       AND($BOOT, parse_GliphTok("."), push_lform0(".")))
-
 parse_String() == parse_SPADSTRING()
 
 parse_VarForm() == parse_IDENTIFIER()
@@ -544,6 +537,7 @@ parse_VarForm() == parse_IDENTIFIER()
 parse_Name() == parse_IDENTIFIER()
 
 parse_Data() ==
+    -- FIXME: This makes no sense in Spad, except for symbols.
     AND(ACTION ($LABLASOC := NIL), parse_Sexpr(),
         push_form1("QUOTE", TRANSLABEL(pop_stack_1(), $LABLASOC)))
 

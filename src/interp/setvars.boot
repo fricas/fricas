@@ -75,12 +75,9 @@ resetWorkspaceVariables () ==
   -- values. Some things are reset by start and not reset by restart.
   SETQ(_/COUNTLIST                  , NIL)
   $edit_file := nil
-  SETQ(_/SOURCEFILES                , NIL)
-  SETQ($sourceFiles                 , NIL)
   SETQ(_/PRETTY                     , NIL)
   SETQ(_/SPACELIST                  , NIL)
   SETQ(_/TIMERLIST                  , NIL)
-  SETQ($BOOT                        , NIL)
   SETQ($CommandSynonymAlist         , COPY($InitialCommandSynonymAlist))
   SETQ($IOindex                     , 1  )
   SETQ($e                           , [[NIL]])

@@ -366,10 +366,7 @@ S_process(x) ==
     $PrintOnly =>
         FORMAT(true, '"~S   =====>~%", $currentLine)
         PRETTYPRINT(x)
-    if $InteractiveMode then
-        processInteractive(x, false)
-    else
-        u := compTopLevel(x, $EmptyMode, $InteractiveFrame)
-        if u then $InteractiveFrame := THIRD(u)
+    u := compTopLevel(x, $EmptyMode, $InteractiveFrame)
+    if u then $InteractiveFrame := THIRD(u)
     if $semanticErrorStack then displaySemanticErrors()
     TERPRI()
