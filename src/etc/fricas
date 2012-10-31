@@ -22,7 +22,7 @@
 #      [-h]		    show usage
 #      [-eval code]         evaluate specified code at start
 #      [-texmacs]           setup Fricas for communication in TeXmacs protocol
-#
+#      [-emacs]             setup for emacs frontend
 #
 
 MALLOCTYPE=3.1
@@ -67,6 +67,7 @@ echo "     [-list]              list workspaces only"
 echo "     [-h]                 show usage"
 echo "     [-eval code]         evaluate specified code at start"
 echo "     [-texmacs]           setup Fricas for communication in TeXmacs protocol"
+echo "     [-emacs]             setup for emacs frontend"
 }
 
 # 1. Ensure the environment is set.
@@ -129,6 +130,11 @@ markers=")lisp (setf |\$ioHook| (lambda (x &optional args) (cond ((eq x '|startP
 
 if [ "$*" = "-texmacs" ] ; then
     exec "$SPAD/bin/AXIOMsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
+fi
+
+# Start FriCAS from inside emacs. Discard output to stderr.
+if [ "$*" = "-emacs" ] ; then
+    eval "exec $SPAD/bin/sman -noclef 2>/dev/null"
 fi
 
 
