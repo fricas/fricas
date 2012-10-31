@@ -161,8 +161,8 @@ FortranCode() : public == private where
      ++ whileLoop(s, c) creates a while loop in FORTRAN.
     repeatUntilLoop : (Switch, %) -> %
      ++ repeatUntilLoop(s, c) creates a repeat ... until loop in FORTRAN.
-    goto : SingleInteger -> %
-      ++ goto(l) creates a representation of a FORTRAN GOTO statement
+    gotoJump : SingleInteger -> %
+      ++ gotoJump(l) creates a representation of a FORTRAN GOTO statement
     continue : SingleInteger -> %
       ++ continue(l) creates a representation of a FORTRAN CONTINUE labelled
       ++ with l
@@ -424,7 +424,7 @@ FortranCode() : public == private where
       lab2 := newLabel()
       bod := elt(whileRec, body)$LOOP
       APPEND(fortFormatLabelledIfGoto(sw::O, lab1, lab2)$Lisp,
-           getBody bod, getBody goto(lab1), getContinue lab2)$Lisp
+           getBody bod, getBody gotoJump(lab1), getContinue lab2)$Lisp
 
     getArrayAssign(rec : ARRAYASS) : SEX ==
       getfortarrayexp((rec.var)::O, rec.rand, rec.ints2Floats?)$Lisp
@@ -525,7 +525,7 @@ FortranCode() : public == private where
     forLoop(r : SegmentBinding PIN, increment : PIN, body : %) : % ==
       [["for"]$OP,[[r,increment,body]$FOR]$OPREC]$Rep
 
-    goto(l : SingleInteger) : % ==
+    gotoJump(l : SingleInteger) : % ==
       [["goto"]$OP,[l]$OPREC]$Rep
 
     continue(l : SingleInteger) : % ==
