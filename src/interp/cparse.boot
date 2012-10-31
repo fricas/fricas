@@ -635,7 +635,7 @@ npVoid()== npAndOr("DO",function npStatement,function pfNovalue)
 npReturn()==
          npEqKey "return" and
           (npExpress() or npPush pfNothing()) and
-           (npEqKey "FROM" and (npName() or npTrap()) and
+           (npEqKey "from" and (npName() or npTrap()) and
               npPush pfReturn (npPop2(),npPop1()) or
                 npPush pfReturnNoName npPop1())
 npLoop()==
