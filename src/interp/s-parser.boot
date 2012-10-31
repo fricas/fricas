@@ -116,10 +116,6 @@ init_parser_properties()
 symbol_is?(x) == EQ(current_symbol(), x)
 
 match_symbol(x) ==
-    symbol_is?(x) => (advance_token(); true)
-    false
-
-match_keyword(x) ==
     match_current_token("KEYWORD", x) => (advance_token(); true)
     false
 
@@ -234,18 +230,18 @@ getSignatureDocumentation2(n1, n2) ==
 
 parse_category_list(closer) ==
     MUST
-        match_keyword(closer) => push_form0("CATEGORY")
+        match_symbol(closer) => push_form0("CATEGORY")
         MUST(parse_Category())
         tail_val :=
             repetition(";", FUNCTION parse_Category) => pop_stack_1()
             nil
-        MUST match_keyword(closer)
+        MUST match_symbol(closer)
         val1 := pop_stack_1()
         IFCAR(val1) = "if" and tail_val = nil => push_lform0(val1)
         push_lform2("CATEGORY", val1, tail_val)
 
 parse_Category() ==
-    match_keyword("if") =>
+    match_symbol("if") =>
         MUST parse_Expression()
         cond := pop_stack_1()
         MUST match_symbol "then"
@@ -256,9 +252,9 @@ parse_Category() ==
                 pop_stack_1()
             nil
         push_form3("if", cond, pop_stack_1(), else_val)
-    match_keyword("(") => parse_category_list(")")
-    match_keyword("{") => parse_category_list("}")
-    match_keyword("SETTAB") => parse_category_list("BACKTAB")
+    match_symbol("(") => parse_category_list(")")
+    match_symbol("{") => parse_category_list("}")
+    match_symbol("SETTAB") => parse_category_list("BACKTAB")
     G1 := current_line_number()
     not(parse_Application()) => nil
     MUST
@@ -518,13 +514,13 @@ parse_Float() == parse_SPADFLOAT()
 
 parse_Enclosure1(closer) ==
     MUST OR(
-            AND(parse_Expr 6, MUST match_keyword(closer)),
-            AND(match_keyword(closer), push_form0("@Tuple")))
+            AND(parse_Expr 6, MUST match_symbol(closer)),
+            AND(match_symbol(closer), push_form0("@Tuple")))
 
 parse_Enclosure() ==
-    match_keyword "(" => parse_Enclosure1(")")
-    match_keyword "{" => parse_Enclosure1("}")
-    match_keyword "SETTAB" => parse_Enclosure1("BACKTAB")
+    match_symbol "(" => parse_Enclosure1(")")
+    match_symbol "{" => parse_Enclosure1("}")
+    match_symbol "SETTAB" => parse_Enclosure1("BACKTAB")
     nil
 
 parse_IntegerTok() == parse_NUMBER()
