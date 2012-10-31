@@ -282,6 +282,7 @@ parse_Expr1000() == parse_Expr 1000
 -- import : 'import' expr_1000 [',' expr_1000]*
 parse_Import() ==
     not(match_symbol "import") => nil
+    match_symbol "from" or true
     MUST parse_Expr 1000
     tail_val :=
         repetition(",", FUNCTION parse_Expr1000) => pop_stack_1()
