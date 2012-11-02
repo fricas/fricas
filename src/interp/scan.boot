@@ -63,6 +63,7 @@ scanKeyWords := [ _
            ['"for",      "for"], _
            ['"free",    "FREE" ],_
            ['"from",    "from"], _
+           ['"generate", "generate"], _
            ['"goto",    "goto"], _
            ['"has",      "has"],_
            ['"if",       "if"], _

@@ -750,7 +750,7 @@ upStreamIterSTEP(index,lower,step,upperList) ==
   s :=
     null upperList =>
       -- create the function that does the appropriate incrementing
-      genFun := 'generate
+      genFun := 'stream
       form := [mkAtreeNode genFun,
         [[mkAtreeNode 'Dollar, ['IncrementingMaps,type],
           mkAtreeNode 'incrementBy],step],lower]

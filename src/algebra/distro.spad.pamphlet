@@ -60,8 +60,8 @@ SequenceCategory(R : CommutativeRing) : Category == Exports where
       ++ \spad{firstn(x, n)} returns a list of the first n entries
     dilate : (R, %) -> %
       ++ \spad{dilate(a, x)} returns the sequence $a^n x_n$ (starting at $n=1$)
-    _generate : (R -> R, R) -> %
-      ++ \spad{generate(f, s0)} generates a stream recursively
+    sequence : (R -> R, R) -> %
+      ++ sequence(f, s0) generates a stream recursively
       ++ by applying the function f: S -> S to the last
       ++ computed value.
 @ %
@@ -131,15 +131,15 @@ Sequence(R : CommutativeRing) : SequenceCategory(R) == Implementation where
 
     firstn(x : %, n : NonNegativeInteger) : List R == entries complete first(rep x, n)$Rep
     -- generator
-    _generate(f : R -> R, r : R) : % ==
-             per ( _generate(f, r)$Rep )
+    sequence(f : R -> R, r : R) : % ==
+             per (stream(f, r)$Rep )
 
     -- output
     coerce(mm : %) : OutputForm ==
             coerce(rep mm)$Rep --$
 
     dilate(a : R, mm : %) : % ==
-            apow : % := _generate( (x : R) : R +-> x*a, a)
+            apow : % := sequence( (x : R) : R +-> x*a, a)
             multiply(apow, mm)
 @ %
 
@@ -321,11 +321,11 @@ PathArrayPackage(R : Ring) : Exports == Implementation where
 
     motzkinPathArray(aa : Stream R, bb : Stream R, cc : Stream R) : Stream S ==
         start : S := [1]
-        generate( (vv : S) : S +-> nextMotzkinRow(vv, aa, bb, cc), start)
+        stream( (vv : S) : S +-> nextMotzkinRow(vv, aa, bb, cc), start)
 
     jacobiPathArray(bb : Stream R, cc : Stream R) : Stream S ==
         start : S := [1]
-        generate( (vv : S) : S +-> nextJacobiRow(vv, bb, cc), start)
+        stream( (vv : S) : S +-> nextJacobiRow(vv, bb, cc), start)
 
     bottom(x : Stream S) : Stream R ==
         map(first$S, x)$StreamFunctions2(S, R)
@@ -721,7 +721,7 @@ then implements the two steps above.
       m1t : SUPR := monomial(first mm, 1)$SUPR
       r1 := first mm
       mtr1 : RECSRM := [[m1t], [r1], rest stream mm]$RECSRM
-      res : Stream RECSRM := generate(moment2monotonecumulantgenerator, mtr1)
+      res : Stream RECSRM := stream(moment2monotonecumulantgenerator, mtr1)
       res1 : Stream R := map( (s : RECSRM) : R +-> first (s.cum), res)$StreamFunctions2(RECSRM, R)
       sequence res1
 @ %

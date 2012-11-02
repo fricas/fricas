@@ -601,14 +601,14 @@ Stream(S) : Exports == Implementation where
     setrest! : (%, I, %) -> %
       ++ setrest!(x, n, y) sets rest(x, n) to y. The function will expand
       ++ cycles if necessary.
-    generate : (() -> S) -> %
-      ++ generate(f) creates an infinite stream all of whose elements are
+    stream : (() -> S) -> %
+      ++ stream(f) creates an infinite stream all of whose elements are
       ++ equal to \spad{f()}.
-      ++ Note: \spad{generate(f) = [f(), f(), f(), ...]}.
-    generate : (S -> S, S) -> %
-      ++ generate(f, x) creates an infinite stream whose first element is
+      ++ Note: \spad{stream(f) = [f(), f(), f(), ...]}.
+    stream : (S -> S, S) -> %
+      ++ stream(f, x) creates an infinite stream whose first element is
       ++ x and whose nth element (\spad{n > 1}) is f applied to the previous
-      ++ element. Note: \spad{generate(f, x) = [x, f(x), f(f(x)), ...]}.
+      ++ element. Note: \spad{stream(f, x) = [x, f(x), f(f(x)), ...]}.
     filterWhile : (S -> Boolean, %) -> %
       ++ filterWhile(p, s) returns \spad{[x0, x1, ..., x(n-1)]} where
       ++ \spad{s = [x0, x1, x2, ..]} and
@@ -1082,10 +1082,10 @@ Stream(S) : Exports == Implementation where
       x := expand!(x, n+1)
       setrestt!(x, n, y)
 
-    generate f    == delay concat(f(), generate f)
+    stream f    == delay concat(f(), stream f)
     gen : (S -> S, S) -> %
     gen(f, s) == delay(ss := f s; concat(ss, gen(f, ss)))
-    generate(f, s)==concat(s, gen(f, s))
+    stream(f, s)==concat(s, gen(f, s))
 
     concat(x : %, y : %) ==delay
       empty? x => y
