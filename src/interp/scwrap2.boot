@@ -17,7 +17,7 @@ DEFPARAMETER($NONBLANK, nil)
 set_nonblank(val) == SETF($NONBLANK, val)
 
 current_line_number() ==
-    tok := CURRENT_-TOKEN()
+    tok := current_token()
     tok =>
          pos := TOKEN_-NONBLANK(tok)
          pos and INTEGERP(pos) => pos
@@ -25,7 +25,7 @@ current_line_number() ==
     nil
 
 spad_syntax_error(wanted, parsing) ==
-    SPAD_ERROR_LOC(true)
+    FORMAT(true, '"******** Spad syntax error detected ********")
     if $prev_line then
         FORMAT(true, '"~&The prior line was:~%~%~5D> ~A~%~%",
            $prev_line_number, $prev_line)
@@ -44,10 +44,14 @@ DEFPARAMETER($docList, nil)
 DEFVAR($spad_scanner, false)
 DEFVAR($restore_list, nil)
 
+DEFVAR($compiler_output_stream, nil)
+
+print_defun(name, body) ==
+    print_full2(body, $compiler_output_stream)
 
 spadCompile(name) ==
-    $comp370_apply : local := FUNCTION PRINT_-DEFUN
-    _*FILEACTQ_-APPLY_* : local := FUNCTION PRINT_-DEFUN
+    $comp370_apply : local := FUNCTION print_defun
+    _*FILEACTQ_-APPLY_* : local := FUNCTION print_defun
     _*EOF_* : local := false
     _/EDITFILE : local := name
     $InteractiveMode : local := false

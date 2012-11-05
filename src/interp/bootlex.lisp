@@ -43,15 +43,6 @@
 
 (in-package "BOOT")
 
-; *** 1. BOOT file handling
-
-(defun |oldParserAutoloadOnceTrigger| () nil)
-
-(defvar |$compiler_output_stream|)
-
-(defun print-defun (name body)
-    (|print_full2| body |$compiler_output_stream|) )
-
 (defvar Keywords 
    '(|add| |and| |by| |catch| |case| |else| |exit|
      |export| |exquo| |finally| |for| |fluid| |from|
@@ -84,9 +75,4 @@ as keywords.")
         ((LET ((Y (LASSOC (FIRST X) AL)))
            (if Y (setf (FIRST X) Y) (TRANSLABEL1 (CDR X) AL))))
         ((TRANSLABEL1 (FIRST X) AL) (TRANSLABEL1 (CDR X) AL))))
-
-; **** 5. BOOT Error Handling
-
-(defun SPAD_ERROR_LOC (STR)
-  (format str "******** Boot Syntax Error detected ********"))
 

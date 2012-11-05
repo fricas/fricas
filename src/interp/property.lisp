@@ -303,7 +303,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 
   (|and| |parseAnd|)
   (CATEGORY |parseCategory|)
-  (|construct| |parseConstruct|)
+  ;; (|construct| |parseConstruct|)
   (DEF |parseDEF|)
   (|exit| |parseExit|)
   (|has| |parseHas|)

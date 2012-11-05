@@ -48,10 +48,10 @@ QUESTION    := QENUM('"?   ",0)
 
 scanKeyWords := [ _
            ['"add",      "add"], _
-           ['"and",      "and"],_
-           ['"break",   "break" ],_
+           ['"and",      "and"], _
+           ['"break",   "break"], _
            ['"by",        "by"], _
-           ['"case",     "case" ],_
+           ['"case",     "case"], _
            ['"catch",  "catch"], _
            ['"default",  "DEFAULT" ],_
            ['"define",  "DEFN" ],_
@@ -65,15 +65,15 @@ scanKeyWords := [ _
            ['"from",    "from"], _
            ['"generate", "generate"], _
            ['"goto",    "goto"], _
-           ['"has",      "has"],_
+           ['"has",      "has"], _
            ['"if",       "if"], _
            ['"import", "import"], _
            ['"in", "in"], _
            ['"inline", "INLINE" ],_
-           ['"is", "is"],_
-           ['"isnt", "isnt"],_
+           ['"is", "is"], _
+           ['"isnt", "isnt"], _
            ['"iterate", "ITERATE"],_
-           ['"local", "local" ],_
+           ['"local", "local"], _
            ['"macro", "MACRO" ],_
            ['"mod", "MOD" ],_
            ['"not", "not"], _

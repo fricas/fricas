@@ -254,11 +254,11 @@ boo_comp1(x) ==
     $returnMode : local := $EmptyMode
     $leaveLevelStack : local := []
     $CategoryFrame : local := [[[]]]
-    $insideFunctorIfTrue : local := nil
-    $insideExpressionIfTrue : local := nil
-    $insideWhereIfTrue : local := nil
-    $insideCategoryIfTrue : local := nil
-    $insideCapsuleFunctionIfTrue : local := nil
+    $insideFunctorIfTrue : local := false
+    $insideExpressionIfTrue : local := false
+    $insideWhereIfTrue : local := false
+    $insideCategoryIfTrue : local := false
+    $insideCapsuleFunctionIfTrue : local := false
     $form : local := nil
     $e : local := $EmptyEnvironment
     $genSDVar : local :=  0
