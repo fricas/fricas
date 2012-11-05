@@ -32,11 +32,6 @@
 
 (in-package "BOOT")
 
-; 0. Current I/O Stream definition
-
-(defparameter out-stream t "Current output stream.")
-(defparameter File-Closed nil   "Way to stop EOF tests for console input.")
-
 ; 1C. Token
 
 ; FUNCTIONS DEFINED IN THIS SECTION:
@@ -53,7 +48,6 @@ NonBlank is true if the token is not preceded by a blank."
 )
 
 (defparameter Prior-Token (make-token) "What did I see last")
-(defparameter nonblank t "Is there no blank in front of the current token.")
 (defparameter Current-Token (make-token) "Token at head of input stream.")
 (defparameter Next-Token (make-token)    "Next token in input stream.")
 (defparameter Valid-Tokens 0               "Number of tokens in buffer (0, 1 or 2)")
@@ -65,7 +59,7 @@ NonBlank is true if the token is not preceded by a blank."
   token)
 
 (defun Token-Print (token)
-  (format out-stream "(token (symbol ~S) (type ~S))~%"
+  (format t "(token (symbol ~S) (type ~S))~%"
           (Token-Symbol token) (Token-Type token)))
 
 ; 1D. A Reduction
@@ -79,14 +73,6 @@ NonBlank is true if the token is not preceded by a blank."
 ;               B. Routines for applying certain metagrammatical elements
 ;                  of a production (e.g., Star).
 ;               C. Token-level parsing utilities (keywords, strings, identifiers).
-
-; 2A. Routines for stacking and retrieving reductions of rules.
-
-; FUNCTIONS DEFINED IN THIS SECTION:
-;
-;       Push-Reduction Pop-Reduction
-
-(defun |next_symbol|() (NEXT-SYMBOL))
 
 ; 2B. Routines for applying certain metagrammatical elements
 ;     of a production (e.g., Star).
@@ -157,11 +143,11 @@ NonBlank is true if the token is not preceded by a blank."
 
 (defun |match_current_token|(type symbol)
   "Returns the current token if it has EQ type and (optionally) equal symbol."
-  (match-token (current-token) type symbol))
+  (match-token (|current_token|) type symbol))
 
 (defun |match_next_token|(type symbol)
   "Returns the next token if it has equal type and (optionally) equal symbol."
-  (match-token (next-token) type symbol))
+  (match-token (|next_token|) type symbol))
 
 ; *** Current Token, Next Token, Advance Token
 
@@ -169,34 +155,33 @@ NonBlank is true if the token is not preceded by a blank."
   (let ((tok (get-token token)))
     (if tok (progn (setf Valid-Tokens (|inc_SI| Valid-Tokens)) token))))
 
-(defun |current_symbol|() (make-symbol-of (current-token)))
+(defun |current_symbol|() (make-symbol-of (|current_token|)))
 
-(defun next-symbol () (make-symbol-of (next-token)))
+(defun |next_symbol|() (make-symbol-of (|next_token|)))
 
 (defun make-symbol-of (token)
   (let ((u (and token (token-symbol token))))
     (cond ((not u) nil)
           (u))))
 
-(defun current-token ()
+(defun |current_token|()
   "Returns the current token getting a new one if necessary."
   (if (|greater_SI| Valid-Tokens 0)
       Current-Token
       (try-get-token Current-Token)))
 
-(defun next-token ()
+(defun |next_token| ()
   "Returns the token after the current token, or NIL if there is none after."
-  (current-token)
+  (|current_token|)
   (if (|greater_SI| Valid-Tokens 1)
       Next-Token
       (progn
           (try-get-token Next-Token))))
 
 (defun |advance_token|()
-  (current-token)                       ;don't know why this is needed
   "Makes the next token be the current token."
   (case Valid-Tokens
-    (0 (try-get-token (Current-Token)))
+    (0 (try-get-token Current-Token))
     (1 (setf  Valid-Tokens (|dec_SI| Valid-Tokens))
        (setq Prior-Token (copy-token Current-Token))
        (try-get-token Current-Token))

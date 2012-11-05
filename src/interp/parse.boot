@@ -91,16 +91,13 @@ becomes [[(if x b a)]], etc.
 )endif
 
 parseTran x ==
-  $op: local := nil
   atom x => parseAtom x
-  [$op,:argl]:= x
-  u := g($op) where g op == (op is ['elt,op,x] => g x; op)
-  u='construct =>
-    r:= parseConstruct argl
-    $op is ['elt,:.] => [parseTran $op,:rest r]
-    r
-  SYMBOLP(u) and (fn := GET(u, 'parseTran)) => FUNCALL(fn, argl)
-  [parseTran $op,:parseTranList argl]
+  [op, :argl] := x
+  u := (op is ['elt, ., x] => x; op)
+  SYMBOLP(u) and (fn := GET(u, 'parseTran)) =>
+      if op ~= u then SAY(["parseTran op ~= u", op, u])
+      FUNCALL(fn, argl)
+  [parseTran op, :parseTranList argl]
 
 
 parseAtom x ==
@@ -111,13 +108,6 @@ parseAtom x ==
 parseTranList l ==
   atom l => parseTran l
   [parseTran first l,:parseTranList rest l]
-
-DEFPARAMETER($insideConstructIfTrue, nil)
-
-parseConstruct u ==
-  $insideConstructIfTrue: local:= true
-  l:= parseTranList u
-  ["construct",:l]
 
 parseLeftArrow u == parseTran ["LET",:u]
 

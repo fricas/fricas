@@ -83,9 +83,9 @@ at load time.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
-;;; This is the {\bf boot parser} subsystem. It is only needed by
-;;; algebra developers and developers who translate boot code to
-;;; Common Lisp.
+;;; This is the {\bf Spad parser} subsystem. It is only needed by
+;;; algebra developers.  Currently included in base system.
+#|
 (setq parse-functions
       '(
 ;;      loadparser
@@ -93,6 +93,7 @@ at load time.
         |parse_Expression|
         |spadCompile|
         ))
+|#
 
 ;;; This is the {\bf spad compiler} subsystem. It is only needed by
 ;;; developers who write or modify algebra code.

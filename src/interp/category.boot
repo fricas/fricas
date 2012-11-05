@@ -55,7 +55,7 @@ CategoryPrint(D,$e) ==
     atom first u => SAY("Alternate View corresponding to: ",u)
     PRETTYPRINT u
 
--- Compute list of parameters which occur in singntures on the
+-- Compute list of parameters which occur in signatures on the
 -- sigList, removing duplicates, and skipping "known"
 -- constuctors
 sigParams(sigList) ==

@@ -137,9 +137,6 @@ postAtom x ==
   IDENTP x and GETDATABASE(x,'NILADIC) => LIST x
   x
 
-postBlock ['Block,:l,x] ==
-  ['SEQ,:postBlockItemList l,['exit,postTran x]]
-
 postBlockItemList l == [postBlockItem x for x in l]
 
 postBlockItem x ==
@@ -340,7 +337,9 @@ postFlattenLeft(x,op) ==--
   x is [ =op,a,b] => [:postFlattenLeft(a,op),b]
   [x]
 
-postSemiColon u == postBlock ['Block,:postFlattenLeft(u,";")]
+postSemiColon u ==
+    [:l, x] := postFlattenLeft(u, ";")
+    ['SEQ, :postBlockItemList l, ["exit", postTran x]]
 
 postSignature1(op, sig) ==
     sig1 := postType sig
@@ -382,10 +381,7 @@ postTuple u ==
   u is ["@Tuple", :l, a] => (["@Tuple", :postTranList rest u])
 
 postWhere ["where",a,b] ==
-  x:=
-    b is ['Block,:c] => BREAK()
-    LIST b
-  ["where",postTran a,:postTranList x]
+    ["where", postTran a, postTran b]
 
 postWith ["with",a] ==
   $insidePostCategoryIfTrue: local := true

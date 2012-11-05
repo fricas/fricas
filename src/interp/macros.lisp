@@ -638,7 +638,7 @@
 
 (defun print-and-eval-defun (name body)
    (eval body)
-   (print-defun name body)
+   (|print_defun| name body)
    )
 
 (defun eval-defun (name body) (eval (macroexpandall body)))
@@ -791,7 +791,7 @@
   (let ((|$comp370_apply|
          (if |$InteractiveMode|
              (if |$compileDontDefineFunctions| #'compile-defun #'eval-defun)
-           #'print-defun))
+           #'|print_defun|))
      ;; following creates a null outputstream if $InteractiveMode
         (*standard-output*
          (if |$InteractiveMode| (make-broadcast-stream)
