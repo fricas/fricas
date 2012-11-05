@@ -327,8 +327,8 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
 
     compare_coeff1(nv : Integer, exps : SortedExponentVector, _
                    nexps : SortedExponentVector) : Integer ==
-        ne := #exps quo nv - 1
-        nn := #nexps quo nv - 1
+        ne := #exps - nv
+        nn := #nexps - nv
         for i in 0..(nv - 1) repeat
             nexps(nn + i) < exps(ne + i) => return -1
             nexps(nn + i) > exps(ne + i) => return 1
@@ -378,7 +378,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         bad_cnt : Integer := 0
         repeat
             t : Integer := random(p)
-            member?(t, lt) => 0
+            member?(t, lt) => "iterate"
             lt := cons(t, lt)
             xt := eval1(x, vt, t, pss)
             yt := eval1(y, vt, t, pss)
@@ -399,12 +399,12 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             if pss.degg < dg or empty?(exps) then
                 exps := nexps
                 rstate := empty(#coeffs, pss.prime)$VMR
-            if pss.degg < dg then
-                dg := pss.degg
                 bad_cnt := 0
-                good_cnt := 1
+                good_cnt := 0
+            if pss.degg < dg then dg := pss.degg
             (cc := compare_coeff1(nv + nbv, exps, nexps)) < 0 =>
-                "iterate"
+                bad_cnt := bad_cnt + 1
+                bad_cnt > good_cnt + 2 => return "failed"
             dl := merge_exponents(nv + nbv, offsets, exps, offsets,
                                    nexps)$IMODHP
             odl := dl(1)
@@ -416,6 +416,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
                 -- need reset in case of change of leading exponent
                 ncc := #exps quo (nv + nbv)
                 rstate := empty(ncc::NonNegativeInteger, p)$VMR
+                good_cnt := 0
             if ndl ~= [] then
                 -- expand coeffs
                 n0 := #coeffs
@@ -436,6 +437,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
                 coeffs := ncoeffs
 
             chinese_update(coeffs, t, rstate)$VMR
+            good_cnt := good_cnt + 1
 
             -- try reconstruction
             pp := reconstruct(rstate, nv + nbv, offsets, _
@@ -485,7 +487,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         nbv := #lvz + 1
         nv := #lv
         offsets := pss.offsetdata
-        exps : SortedExponentVector
+        exps : SortedExponentVector := empty()
         repeat
             p := (nextPrime$IntegerPrimesPackage(Integer))(random(1000000)
                     +500000)

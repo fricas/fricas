@@ -39,10 +39,19 @@ cc := 64*a^3*e^3 - 48*a^2*b*d*e^2 - 64*a^2*c^2*e^2 + 48*a^2*c*d^2*e _
  - 8*a^2*d^4 + 48*a*b^2*c*e^2 - 4*a*b^2*d^2*e - 16*a*b*c^2*d*e
  + 4*a*b*c*d^3 - 8*b^4*e^2 + 4*b^3*c*d*e - b^3*d^3
 
+lc1 := leadingCoefficient(univariate(pol, c))
+lc2 := leadingCoefficient(univariate(cc, c))
+lcg := gcd(lc1, lc2)
+lc1 := lc1 exquo lcg
+lc2 := lc2 exquo lcg
+pol := lc2*pol - lc1*cc
+testEquals("degree(pol, c)", "1")
+
 npol := resultant(univariate(pol, c), univariate(cc, c));
 nfac := factor(npol);
-nfac1 := factors(nfac).2.factor;
+nfac1 := factors(nfac).5.factor;
 fac1 := algebraicGcd(pol, nfac1, [cc], [a, b, d, e], x, [c])$mGCD
+testEquals("degree(fac1, x)", "2")
 
 -- Compute the other factor using division
 fF := Fraction(Polynomial(Integer))
