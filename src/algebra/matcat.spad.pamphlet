@@ -91,6 +91,7 @@ MatrixCategory(R, Row, Col) : Category == Definition where
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
 
+  I ==> Integer
   NNI ==> NonNegativeInteger
   UR ==> Union(R, "one")
 
@@ -123,6 +124,9 @@ MatrixCategory(R, Row, Col) : Category == Definition where
      matrix : List List R -> %
        ++ \spad{matrix(l)} converts the list of lists l to a matrix, where the
        ++ list of lists is viewed as a list of the rows of the matrix.
+     matrix: (NNI, NNI, (I,I) -> R) -> %
+       ++ \spad{matrix(n,m,f)} constructs an \spad{n * m} matrix with
+       ++ the \spad{(i,j)} entry equal to \spad{f(i,j)}.
      scalarMatrix : (NonNegativeInteger, R) -> %
        ++ \spad{scalarMatrix(n, r)} returns an n-by-n matrix with r's on the
        ++ diagonal and zeroes elsewhere.
@@ -348,6 +352,13 @@ MatrixCategory(R, Row, Col) : Category == Definition where
          for j in minc(ans)..maxc(ans) for r in ll repeat
            qsetelt!(ans, i, j, r)
        ans
+
+     matrix(n,m,f) ==
+       mat := new(n,m,0)
+       for i in minr mat..maxr mat repeat
+         for j in minc mat..maxc mat repeat
+           qsetelt!(mat,i,j,f(i,j))
+       mat
 
      scalarMatrix(n, r) ==
        ans := zero(n, n)
