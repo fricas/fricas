@@ -44,18 +44,22 @@ IndexedMatrix(R, mnRow, mnCol) : Exports == Implementation where
   Implementation ==>
     InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) add
 
+      Qelt2 ==> QAREF2O$Lisp
+      Qsetelt2 ==> QSETAREF2O$Lisp
+
       swapRows!(x, i1, i2) ==
         (i1 < minRowIndex(x)) or (i1 > maxRowIndex(x)) or _
            (i2 < minRowIndex(x)) or (i2 > maxRowIndex(x)) =>
              error "swapRows!: index out of range"
         i1 = i2 => x
-        minRow := minRowIndex x
-        xx := x pretend PrimitiveArray(PrimitiveArray(R))
-        n1 := i1 - minRow; n2 := i2 - minRow
-        row1 := qelt(xx, n1)
-        qsetelt!(xx, n1, qelt(xx, n2))
-        qsetelt!(xx, n2, row1)
-        xx pretend %
+        ro := mnRow
+        co := mnCol
+        for j in co..maxColIndex(x) repeat
+            t1 := Qelt2(x, i1, j, ro, co)
+            t2 := Qelt2(x, i2, j, ro, co)
+            Qsetelt2(x, i1, j, t2, ro, co)
+            Qsetelt2(x, i2, j, t1, ro, co)
+        x
 
       if R has CommutativeRing then
 
@@ -152,13 +156,12 @@ Matrix(R) : Exports == Implementation where
            (i2 < minRowIndex(x)) or (i2 > maxRowIndex(x)) =>
              error "swapRows!: index out of range"
         i1 = i2 => x
-        minRow := minRowIndex x
-        xx := x pretend PrimitiveArray(PrimitiveArray(R))
-        n1 := i1 - minRow; n2 := i2 - minRow
-        row1 := qelt(xx, n1)
-        qsetelt!(xx, n1, qelt(xx, n2))
-        qsetelt!(xx, n2, row1)
-        xx pretend %
+        for j in minColIndex(x)..maxColIndex(x) repeat
+            t1 := Qelt2(x, i1, j, mnRow@Integer, mnCol@Integer)
+            t2 := Qelt2(x, i2, j, mnRow@Integer, mnCol@Integer)
+            Qsetelt2(x, i1, j, t2, mnRow@Integer, mnCol@Integer)
+            Qsetelt2(x, i2, j, t1, mnRow@Integer, mnCol@Integer)
+        x
 
     if R has CommutativeRing then
 

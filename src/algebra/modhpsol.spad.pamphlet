@@ -252,70 +252,68 @@ NaiveBeckermannLabahnModular : with
 
   swap_rows(m : MPA, i : Integer, j : Integer) : Void ==
       i = j => "nothing"::Void
-      mp := m pretend PrimitiveArray PrimitiveArray PA
-      tmp := mp(i - 1)
-      mp(i - 1) := mp(j - 1)
-      mp(j - 1) := tmp
+      kmax := ncols(m)
+      for k in 1..kmax repeat
+          t1 := qelt(m, i, k)
+          t2 := qelt(m, j, k)
+          qsetelt!(m, i, k, t2)
+          qsetelt!(m, j, k, t1)
 
   mult_vector(v : PA, c : K, p : Integer) : Void ==
       n := #v
       for i in 0..(n - 1) repeat
           v(i) := mulmod(c, v(i), p)
 
-  mult_row(r : PrimitiveArray PA, c : K, p : Integer) : Void ==
-      m := #r
-      for i in 0..(m - 1) repeat mult_vector(r(i), c, p)
+  mult_row(m : MPA, i : Integer, c : K, p : Integer) : Void ==
+      jmax := ncols(m)
+      for j in 1..jmax repeat mult_vector(qelt(m, i, j), c, p)
 
   add_vector(v1 : PA, v2 : PA, c : K, k : Integer, p : Integer) : Void ==
       n := #v1
       for i in k..(n - 1) repeat
           v1(i) := muladdmod(c, v2(i - k), v1(i), p)
 
-  add_row(r1 : PrimitiveArray PA, r2 : PrimitiveArray PA, _
+  add_row(m : MPA, j1 : Integer, j2 : Integer, _
            c : K, k : Integer, p : Integer) : Void ==
-      m := #r1
-      for i in 0..(m - 1) repeat add_vector(r1(i), r2(i), c, k, p)
+      imax := ncols(m)
+      for i in 1..imax repeat
+          add_vector(qelt(m, j1, i), qelt(m, j2, i), c, k, p)
 
-  reduce_row_by_row1(rj : PrimitiveArray PA, ri : PrimitiveArray PA, _
+  reduce_row_by_row1(m : MPA, j : Integer, i : Integer, _
                         ci : Integer, cdeg : Integer, vdiff : Integer, _
                         p : Integer) : Void ==
-      rj0 := rj(ci - 1)
+      rj0 := qelt(m, j, ci)
       vdiff < 0 =>
           error "Internal error : vdiff < 0 in reduce_row_by_row1"
       k := vdiff + cdeg
       c := rj0(k)
       c ~= 0 =>
-          add_row(rj, ri, (p - c)::K, vdiff, p)
+          add_row(m, j, i, (p - c)::K, vdiff, p)
 
   top_reduce_by_row(m : MPA, i : Integer, ci : Integer, _
                   vn : Vector Integer, vd : Vector Integer, _
                   p : Integer) : Void ==
       nr := #vd
-      mp := m pretend PrimitiveArray PrimitiveArray PA
-      ri := mp(i - 1)
       mdeg := vn(ci)
       cdeg := mdeg - vd(i)
-      mcoeff := ri(ci - 1)(cdeg)
+      mcoeff := qelt(m, i, ci)(cdeg)
       minv := invmod(mcoeff, p)::K
-      mult_row(ri, minv, p)
+      mult_row(m, i, minv, p)
       for j in (i + 1)..nr repeat
-          reduce_row_by_row1(mp(j - 1), ri, ci, cdeg, vd(i) - vd(j), p)
+          reduce_row_by_row1(m, j, i, ci, cdeg, vd(i) - vd(j), p)
 
   final_reduce(m : MPA, civ : VI, vn : VI, vd : VI, p : Integer) : Void ==
       ns := #vd
       mvd := vd(1)
-      mp := m pretend PrimitiveArray PrimitiveArray PA
       for j in 1..ns repeat
           vdj := vd(j)
-          rj := mp(j - 1)
           for d in 0..(mvd - vdj) repeat
               for i in 1..ns repeat
                   i = j => "iterate"
                   vdi := vd(i)
                   vdi < vdj + d => break
-                  ri := mp(i - 1)
                   ci := civ(i)
-                  reduce_row_by_row1(rj, ri, ci, vn(ci) - vdi, d, p)
+                  reduce_row_by_row1(m, j, i, ci, vn(ci) - vdi, d, p)
 
   reduceBasis0(m : MPA, vn : Vector Integer, vd : Vector Integer, _
               p : Integer) : NBR ==
