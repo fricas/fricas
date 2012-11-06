@@ -19,16 +19,35 @@
            ,s))
 
 (defmacro QAREF2O(m i j oi oj)
-    `(QAREF1O (QAREF1O ,m ,i ,oi) ,j ,oj))
+    `(aref (the (simple-array T (* *)) ,m)
+           (|sub_SI| ,i ,oi)
+           (|sub_SI| ,j ,oj)))
 
 (defmacro QSETAREF2O (m i j r oi oj)
-    `(QSETAREF1O (QAREF1O ,m ,i ,oi) ,j ,r ,oj))
-
+    `(setf (aref (the (simple-array T (* *)) ,m) 
+                 (|sub_SI| ,i ,oi)
+                 (|sub_SI| ,j ,oj))
+           ,r))
 
 ;;; array creation
 
 (defun MAKEARR1 (size init)
     (make-array size :initial-element init))
+
+
+(defun MAKE_MATRIX (size1 size2)
+    (make-array (list size1 size2)))
+
+(defun MAKE_MATRIX1 (size1 size2 init)
+    (make-array (list size1 size2) :initial-element init))
+
+;;; array dimensions
+
+(defmacro ANROWS (v)
+    `(array-dimension (the (simple-array T (* *)) ,v) 0))
+
+(defmacro ANCOLS (v)
+    `(array-dimension (the (simple-array T (* *)) ,v) 1))
 
 ;;; string accessors
 

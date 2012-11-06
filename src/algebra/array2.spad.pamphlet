@@ -288,27 +288,21 @@ InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) : _
 
   Implementation ==> add
 
-    Rep := PrimitiveArray PrimitiveArray R
+    Qsize ==> MATRIX_SIZE$Lisp
+    Qnew ==> MAKE_MATRIX$Lisp
+    Qnew1 ==> MAKE_MATRIX1$Lisp
+    Qnrows ==> ANROWS$Lisp
+    Qncols ==> ANCOLS$Lisp
+    Qelt2 ==> QAREF2O$Lisp
+    Qsetelt2 ==> QSETAREF2O$Lisp
 
-    import PrimitiveArray R
 
---% Predicates
-
-    empty? m == empty?(m)$Rep
 
 --% Primitive array creation
 
-    empty() == empty()$Rep
+    empty() == Qnew(0, 0)
 
-    new(rows, cols, a) ==
-      rows = 0 =>
-        error "new: arrays with zero rows are not supported"
---      cols = 0 =>
---        error "new: arrays with zero columns are not supported"
-      arr : PrimitiveArray PrimitiveArray R := new(rows, empty())
-      for i in minIndex(arr)..maxIndex(arr) repeat
-        qsetelt!(arr, i, new(cols, a))
-      arr
+    new(rows, cols, a) == Qnew1(rows, cols, a)
 
 --% Size inquiries
 
@@ -317,16 +311,13 @@ InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) : _
     maxRowIndex m == nrows m + mnRow - 1
     maxColIndex m == ncols m + mnCol - 1
 
-    nrows m == (# m)$Rep
+    nrows m == Qnrows(m)
 
-    ncols m ==
-      empty? m => 0
-      # m(minIndex(m)$Rep)
+    ncols m == Qncols(m)
 
 --% Part selection/assignment
 
-    qelt(m, i, j) ==
-      qelt(qelt(m, i - minRowIndex m)$Rep, j - minColIndex m)
+    qelt(m, i, j) == Qelt2(m, i, j, mnRow, mnCol)
 
     elt(m : %, i : Integer, j : Integer) ==
       i < minRowIndex(m) or i > maxRowIndex(m) =>
@@ -335,8 +326,7 @@ InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) : _
         error "elt: index out of range"
       qelt(m, i, j)
 
-    qsetelt!(m, i, j, r) ==
-      setelt(qelt(m, i - minRowIndex m)$Rep, j - minColIndex m, r)
+    qsetelt!(m, i, j, r) == Qsetelt2(m, i, j, r, mnRow, mnCol)
 
     setelt(m : %, i : Integer, j : Integer, r : R) ==
       i < minRowIndex(m) or i > maxRowIndex(m) =>

@@ -654,15 +654,13 @@ V2L(v, source is [.,S], target is [.,T]) ==
 
 L2M(u,[.,D],[.,R]) ==
   u = '_$fromCoerceable_$ => nil
-  D is ['List,E] and isRectangularList(u,#u,# first u) =>
-    u' := nil
-    for x in u repeat
-      x' := nil
-      for y in x repeat
+  D is ['List,E] and isRectangularList(u, n := #u, m :=# first u) =>
+    v := MAKE_MATRIX(n, m)
+    for x in u for i in 0..(n-1) repeat
+      for y in x for j in 0..(m-1) repeat
         (y' := coerceInt(objNewWrap(y,E),R)) or coercionFailure()
-        x' := [objValUnwrap(y'),:x']
-      u' := [LIST2VEC reverse x',:u']
-    LIST2VEC reverse u'
+        QSETAREF2O(v, i, j, objValUnwrap(y'), 0, 0)
+    v
   coercionFailure()
 
 L2Record(l,[.,D],[.,:al]) ==
@@ -731,44 +729,53 @@ isRectangularList(x,p,q) ==
 
 --% Matrix
 
+M2VV(x) ==
+    n := ANROWS(x)
+    m := ANCOLS(x)
+    v := MAKE_-ARRAY(n)
+    for i in 0..(n - 1) repeat
+        vi := MAKE_-ARRAY(m)
+        for j in 0..(m - 1) repeat
+            QSETAREF1(vi, j, QAREF2O(x, i, j, 0, 0))
+        QSETAREF1(v, i, vi)
+    v
+
 M2L(x,[.,S],target) ==
   mid := ['Vector,['Vector,S]]
   x = '_$fromCoerceable_$ => canCoerce(mid,target)
-  (u := coerceInt(objNewWrap(x,mid),target)) or coercionFailure()
+  (u := coerceInt(objNewWrap(M2VV x, mid), target)) or coercionFailure()
   objValUnwrap u
 
 M2M(x,[.,R],[.,S]) ==
-  x = '_$fromCoerceable_$ => canCoerce(R,S)
-  n := # x
-  m := # x.0
-  v := nil
-  for i in 0..(n-1) repeat
-    u := nil
-    for j in 0..(m-1) repeat
-      y := x.i.j
-      (y' := coerceInt(objNewWrap(y,R),S)) or coercionFailure()
-      u := [objValUnwrap y',:u]
-    v := [LIST2VEC reverse u,:v]
-  LIST2VEC reverse v
+    x = '_$fromCoerceable_$ => canCoerce(R,S)
+    n := ANROWS(x)
+    m := ANCOLS(x)
+    v := MAKE_MATRIX(n, m)
+    for i in 0..(n - 1) repeat
+        for j in 0..(m - 1) repeat
+            y := QAREF2O(x, i, j, 0, 0)
+            (y' := coerceInt(objNewWrap(y, R), S)) or coercionFailure()
+            QSETAREF2O(v, i, j, objValUnwrap y', 0, 0)
+    v
 
 M2Rm(x,source is [.,R],[.,p,q,S]) ==
-  x = '_$fromCoerceable_$ => nil
-  n:= #x
-  m:= #x.0
-  n=p and m=q => M2M(x,source,[nil,S])
-  coercionFailure()
+    x = '_$fromCoerceable_$ => nil
+    n := ANROWS(x)
+    m := ANCOLS(x)
+    n = p and m = q => M2M(x, source, [nil, S])
+    coercionFailure()
 
 M2Sm(x,source is [.,R],[.,p,S]) ==
-  x = '_$fromCoerceable_$ => nil
-  n:= #x
-  m:= #x.(0)
-  n=m and m=p => M2M(x,source,[nil,S])
-  coercionFailure()
+    x = '_$fromCoerceable_$ => nil
+    n := ANROWS(x)
+    m := ANCOLS(x)
+    n = m and m = p => M2M(x, source, [nil, S])
+    coercionFailure()
 
 M2V(x,[.,S],target) ==
   mid := ['Vector,['Vector,S]]
   x = '_$fromCoerceable_$ =>  canCoerce(mid,target)
-  (u := coerceInt(objNewWrap(x,mid),target)) or coercionFailure()
+  (u := coerceInt(objNewWrap(M2VV x, mid), target)) or coercionFailure()
   objValUnwrap u
 
 --% Multivariate Polynomial
@@ -1685,34 +1692,34 @@ Var2OtherPS(u,source,target is [.,x,S]) ==
 --% Vector
 
 V2M(u,[.,D],[.,R]) ==
-  u = '_$fromCoerceable_$ =>
-    D is ['Vector,:.] => nil  -- don't have data
-    canCoerce(D,R)
+  u = '_$fromCoerceable_$ => nil
+    -- D is ['Vector,:.] => nil  -- don't have data
+    -- canCoerce(D,R)
   -- first see if we are coercing a vector of vectors
   D is ['Vector,E] and
-    isRectangularVector(u,MAXINDEX u,MAXINDEX u.0) =>
-      LIST2VEC
-        [LIST2VEC [objValUnwrap(coerceInt(objNewWrap(x.j,E),R))
-           for j in 0..MAXINDEX(x:=u.i)] for i in 0..MAXINDEX u]
+    isRectangularVector(u, n := MAXINDEX u, m := MAXINDEX u.0) =>
+      res := MAKE_MATRIX(n + 1, m + 1)
+      for i in 0..n repeat
+          x := u.i
+          for j in 0..m repeat
+              y' := objValUnwrap(coerceInt(objNewWrap(x.j, E), R))
+              QSETAREF2O(res, i, j, y', 0, 0)
+      res
   -- if not, try making it into a 1 by n matrix
   coercionFailure()
 --LIST2VEC [LIST2VEC [objValUnwrap(coerceInt(objNewWrap(u.i,D),R))
 --  for i in 0..MAXINDEX(u)]]
 
-V2Rm(u,[.,D],[.,n,m,R]) ==
+V2Rm(u, source is [., D], [., n, m, R]) ==
   u = '_$fromCoerceable_$ => nil
   D is [.,E,:.] and isRectangularVector(u,n-1,m-1) =>
-    LIST2VEC
-      [LIST2VEC [objValUnwrap(coerceInt(objNewWrap(x.j,E),R))
-         for j in 0..MAXINDEX(x:=u.i)] for i in 0..MAXINDEX u]
+      V2M(u, source, ["Matrix", R])
   coercionFailure()
 
-V2Sm(u,[.,D],[.,n,R]) ==
+V2Sm(u, source is [., D], [., n, R]) ==
   u = '_$fromCoerceable_$ => nil
   D is [.,E,:.] and isRectangularVector(u,n-1,n-1) =>
-    LIST2VEC
-      [LIST2VEC [objValUnwrap(coerceInt(objNewWrap(x.j,E),R))
-         for j in 0..MAXINDEX(x:=u.i)] for i in 0..MAXINDEX u]
+      V2M(u, source, ["Matrix", R])
   coercionFailure()
 
 isRectangularVector(x,p,q) ==
@@ -1849,7 +1856,7 @@ commuteSquareMatrix(u,source,S,target,T) ==
   S' := [sm,n,$Integer]
   for i in 0..(n-1) repeat
     for j in 0..(n-1) repeat
-      (e := u.i.j) = zero => 'iterate
+      (e := QAREF2O(u, i, j, 0, 0)) = zero => 'iterate
       (e' := coerceInt(objNewWrap(e,S),target)) or coercionFailure()
       (Eij := coerceInt(objNewWrap(makeEijSquareMatrix(i,j,n),S'),T)) or
         coercionFailure()
@@ -1859,10 +1866,9 @@ commuteSquareMatrix(u,source,S,target,T) ==
   u'
 
 makeEijSquareMatrix(i, j, dim) ==
-  -- assume using 0 based scale, makes a dim by dim matrix with a
-  -- 1 in the i,j position, zeros elsewhere
-  LIST2VEC [LIST2VEC [((i=r) and (j=c) => 1; 0)
-    for c in 0..(dim-1)] for r in 0..(dim-1)]
+    res := MAKE_MATRIX1(dim, dim, 0)
+    QSETAREF2O(res, i, j, 1, 0, 0)
+    res
 
 --% Univariate Polynomial and Sparse Univariate Polynomial
 
@@ -2034,9 +2040,6 @@ DEFPARAMETER($CoerceTable, '(                                          _
     (Tuple                                indeterm   L2Tuple) _
     (Vector                               indeterm   L2V) _
     ))_
-  ))
-
-DEFPARAMETER($CoerceTable, NCONC($CoerceTable, '( _
   (Matrix . ( _
     (List                                 indeterm   M2L) _
     (RectangularMatrix                    partial    M2Rm) _
@@ -2157,7 +2160,7 @@ DEFPARAMETER($CoerceTable, NCONC($CoerceTable, '( _
     (SquareMatrix                         indeterm   V2Sm) _
     (Stream                               indeterm   Agg2Agg) _
     ) ) _
-  ) ) )
+  ) )
 
 -- this list is too long for the parser, so it has to be split into parts
 -- specifies the commute functions

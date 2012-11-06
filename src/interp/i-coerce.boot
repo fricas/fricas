@@ -177,8 +177,8 @@ retract2Specialization object ==
     val' is [ =0,:.] => coerceInt(object, D)
     NIL
   type is ['Matrix,D] =>
-    n := # val'
-    m := # val'.0
+    n := ANROWS(val')
+    m := ANCOLS(val')
     n = m => objNew(val,['SquareMatrix,n,D])
     objNew(val,['RectangularMatrix,n,m,D])
   type is ['RectangularMatrix,n,m,D] =>
