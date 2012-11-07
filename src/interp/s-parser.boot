@@ -533,56 +533,9 @@ parse_VarForm() == parse_IDENTIFIER()
 
 parse_Name() == parse_IDENTIFIER()
 
-parse_Data() ==
-    -- FIXME: This makes no sense in Spad, except for symbols.
-    AND(ACTION ($LABLASOC := NIL), parse_Sexpr(),
-        push_form1("QUOTE", TRANSLABEL(pop_stack_1(), $LABLASOC)))
-
-parse_Sexpr() == AND(ACTION(advance_token()), parse_Sexpr1())
-
-parse_Sexpr1() ==
-    parse_AnyId() =>
-        if parse_NBGliphTok "=" then
-            MUST parse_Sexpr1()
-            $LABLASOC := [[pop_stack_2(), :top_of_stack()], :$LABLASOC]
-        true
-    match_symbol "'" =>
-        MUST parse_Sexpr1()
-        push_form1("QUOTE", pop_stack_1())
-    parse_IntegerTok() => true
-    match_symbol "-" =>
-        MUST parse_IntegerTok()
-        push_reduction("parse_Sexpr1", - pop_stack_1())
-    parse_String() => true
-    match_symbol "<" =>
-        seq_val :=
-            repetition(nil, FUNCTION parse_Sexpr1) => pop_stack_1()
-            nil
-        MUST match_symbol ">"
-        push_reduction("parse_Sexpr1", LIST2VEC(seq_val))
-    match_symbol "(" =>
-        if repetition(nil, FUNCTION parse_Sexpr1) then
-            OPTIONAL AND(
-                        parse_GliphTok ".", MUST parse_Sexpr1(),
-                        push_reduction("parse_Sexpr1",
-                                       NCONC(pop_stack_2(),
-                                             pop_stack_1())))
-        else
-            push_reduction("parse_Sexpr1", nil)
-        MUST match_symbol ")"
-    nil
-
-parse_NBGliphTok(tok) ==
-   AND(match_current_token("KEYWORD", tok),
-       $NONBLANK,
-       ACTION(advance_token()))
-
-parse_AnyId() ==
-    OR(parse_IDENTIFIER(),
-       OR(AND(symbol_is? "$",
-              push_reduction("parse_AnyId", current_symbol()),
-              ACTION advance_token()),
-        parse_AKEYWORD()))
+parse_Data() == AND(ACTION(advance_token()),
+                    OR(parse_IDENTIFIER(), parse_KEYWORD()),
+                    push_form1("QUOTE", pop_stack_1()))
 
 parse_GliphTok(tok) ==
   AND(match_current_token('KEYWORD, tok), ACTION(advance_token()))
