@@ -58,6 +58,13 @@ InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
       ++ \spad{inverse(m)} returns the inverse of the matrix m.
       ++ If the matrix is not invertible, "failed" is returned.
       ++ Error: if the matrix is not square.
+    row_operation_base : (x : M, i : I, j : I, k : I, maxC : I, pp : R
+                      ) -> Void
+      ++ row_operation_base should be local, but conditional
+    row_operation_modular : (x : M, i : I, j : I, k : I, maxC : I, pp : R, _
+                  p : I) -> Void
+      ++ row_operation_modular should be local, but conditional
+
 
   Implementation ==> add
 
@@ -77,119 +84,154 @@ InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
         qelt(x, i, j) ~= 0 => return false
       true
 
-    rowEchelon y ==
-      -- row echelon form via Gaussian elimination
-      x := copy y
-      minR := minRowIndex x; maxR := maxRowIndex x
-      minC := minColIndex x; maxC := maxColIndex x
-      i := minR
-      n : I := minR - 1
-      for j in minC..maxC repeat
-        i > maxR => return x
-        n := minR - 1
-        -- n = smallest k such that k >= i and x(k, j) ~= 0
-        for k in i..maxR repeat
-          if qelt(x, k, j) ~= 0 then (n := k; break)
-        n = minR - 1 => "no non-zeroes"
-        -- put nth row in ith position
-        if i ~= n then swapRows!(x, i, n)
-        -- divide ith row by its first non-zero entry
-        b := inv qelt(x, i, j)
-        qsetelt!(x, i, j, 1)
-        for k in (j+1)..maxC repeat qsetelt!(x, i, k, b * qelt(x, i, k))
-        -- perform row operations so that jth column has only one 1
-        for k in minR..maxR repeat
-          if k ~= i and qelt(x, k, j) ~= 0 then
-            for k1 in (j+1)..maxC repeat
-              qsetelt!(x, k, k1, qelt(x, k, k1) - qelt(x, k, j) * qelt(x, i, k1))
-            qsetelt!(x, k, j, 0)
-        -- increment i
-        i := i + 1
-      x
+    Ops ==>
+
+        row_operation_base(x : M, i : I, j : I, k : I, maxC : I, pp : R
+                          ) : Void ==
+            for k1 in j..maxC repeat
+                qsetelt!(x, k, k1, qelt(x, k, k1) - pp*qelt(x, i, k1))
+
+        row_operation_modular(x : M, i : I, j : I, k : I, maxC : I, pp : R, _
+                      p : I) : Void ==
+            pp1 := p -(pp pretend I)
+            js := qconvert(j)@SingleInteger
+            ms := qconvert(maxC)@SingleInteger
+            for k1 in js..ms repeat
+                qsetelt!(x, k, k1, QSMULADDMOD64_-32(pp1,
+                           qelt(x, i, k1), qelt(x, k, k1), p)$Lisp)
+
+        rowEchelon y ==
+            -- row echelon form via Gaussian elimination
+            -- Choose most efficient version of row operations
+            row_op : (M, I, I, I, I, R) -> Void :=
+                cc := characteristic()$R
+                cc > 0 and cc < 1000000000 and _
+                  R is PrimeField(cc::PositiveInteger) => _
+                    (x : M, i : I, j : I, k : I, maxC : I, pp : R) : Void +-> _
+                      row_operation_modular(x, i, j, k, maxC, pp, cc)
+                row_operation_base
+            x := copy y
+            minR := minRowIndex x; maxR := maxRowIndex x
+            minC := minColIndex x; maxC := maxColIndex x
+            i := minR
+            n : I := minR - 1
+            for j in minC..maxC repeat
+                i > maxR => return x
+                n := minR - 1
+                -- n = smallest k such that k >= i and x(k, j) ~= 0
+                for k in i..maxR repeat
+                    if qelt(x, k, j) ~= 0 then (n := k; break)
+                n = minR - 1 => "no non-zeroes"
+                -- put nth row in ith position
+                if i ~= n then swapRows!(x, i, n)
+                -- divide ith row by its first non-zero entry
+                b := inv qelt(x, i, j)
+                qsetelt!(x, i, j, 1)
+                for k in (j+1)..maxC repeat
+                    qsetelt!(x, i, k, b * qelt(x, i, k))
+                -- perform row operations so that jth column has only one 1
+                for k in minR..maxR repeat
+                      if k ~= i and not((pp := qelt(x, k, j)) = 0) then
+                          row_op(x, i, j + 1, k, maxC, pp)
+                          qsetelt!(x, k, j, 0)
+                -- increment i
+                i := i + 1
+            x
+
+        if Col has shallowlyMutable then
+
+            nullSpace y ==
+                x := rowEchelon y
+                minR := minRowIndex x; maxR := maxRowIndex x
+                minC := minColIndex x; maxC := maxColIndex x
+                nrow := nrows x; ncol := ncols x
+                basis : List Col := nil()
+                rk := nrow; row := maxR
+                -- compute rank = # rows - # rows of all zeroes
+                while rk > 0 and rowAllZeroes?(x, row) repeat
+                    rk := (rk - 1) :: NonNegativeInteger
+                    row := (row - 1) :: NonNegativeInteger
+                -- if maximal rank, return empty list
+                ncol <= nrow and rk = ncol => []
+                -- if rank = 0, return standard basis vectors
+                rk = 0 =>
+                    for j in minC..maxC repeat
+                        w : Col := new(ncol, 0)
+                        qsetelt!(w, j, 1)
+                        basis := cons(w, basis)
+                    basis
+                -- v contains information about initial 1's in the rows of x
+                -- if the ith row has an initial 1 in the jth column, then
+                -- v.j = i; v.j = minR - 1, otherwise
+                v : IndexedOneDimensionalArray(I, minC) := new(ncol, minR - 1)
+                for i in minR..(minR + rk - 1) repeat
+                    for j in minC.. while qelt(x, i, j) = 0 repeat j
+                    qsetelt!(v, j, i)
+                j := maxC; l := minR + ncol - 1
+                while j >= minC repeat
+                    w : Col := new(ncol, 0)
+                    -- if there is no row with an initial 1 in the jth column,
+                    -- create a basis vector with a 1 in the jth row
+                    if qelt(v, j) = minR - 1 then
+                        colAllZeroes?(x, j) =>
+                            qsetelt!(w, l, 1)
+                            basis := cons(w, basis)
+                        for k in minC..(j-1) for ll in minR..(l-1) repeat
+                            if qelt(v, k) ~= minR - 1 then
+                                qsetelt!(w, ll, -qelt(x, qelt(v, k), j))
+                        qsetelt!(w, l, 1)
+                        basis := cons(w, basis)
+                    j := j - 1; l := l - 1
+                basis
+
+        determinant y ==
+            (ndim := nrows y) ~= (ncols y) =>
+                error "determinant: matrix must be square"
+            -- Gaussian Elimination
+            ndim = 1 => qelt(y, minRowIndex y, minColIndex y)
+            x := copy y
+            minR := minRowIndex x; maxR := maxRowIndex x
+            minC := minColIndex x; maxC := maxColIndex x
+            ans : R := 1
+            for i in minR..(maxR - 1) for j in minC..(maxC - 1) repeat
+                if qelt(x, i, j) = 0 then
+                    rown := minR - 1
+                    for k in (i+1)..maxR repeat
+                        qelt(x, k, j) ~= 0 => (rown := k; break)
+                    if rown = minR - 1 then return 0
+                    swapRows!(x, i, rown); ans := -ans
+                ans := qelt(x, i, j) * ans; b := -inv qelt(x, i, j)
+                for l in (j+1)..maxC repeat
+                    qsetelt!(x, i, l, b * qelt(x, i, l))
+                for k in (i+1)..maxR repeat
+                    if not((b := qelt(x, k, j)) = 0) then
+                       for l in (j+1)..maxC repeat
+                           qsetelt!(x, k, l, qelt(x, k, l) + b * qelt(x, i, l))
+            qelt(x, maxR, maxC) * ans
+
+    -- condition to allow optimization of array accessors
+    if M is Matrix(R) then
+
+        Ops
+
+    else
+
+        Ops
+
 
     rank x ==
-      y :=
-        (rk := nrows x) > (rh := ncols x) =>
-          rk := rh
-          transpose x
-        copy x
-      y := rowEchelon y; i := maxRowIndex y
-      while rk > 0 and rowAllZeroes?(y, i) repeat
-        i := i - 1
-        rk := (rk - 1) :: NonNegativeInteger
-      rk :: NonNegativeInteger
+        y :=
+            (rk := nrows x) > (rh := ncols x) =>
+                rk := rh
+                transpose x
+            copy x
+        y := rowEchelon y; i := maxRowIndex y
+        while rk > 0 and rowAllZeroes?(y, i) repeat
+            i := i - 1
+            rk := (rk - 1)::NonNegativeInteger
+        rk::NonNegativeInteger
 
-    nullity x == (ncols x - rank x) :: NonNegativeInteger
-
-    if Col has shallowlyMutable then
-
-      nullSpace y ==
-        x := rowEchelon y
-        minR := minRowIndex x; maxR := maxRowIndex x
-        minC := minColIndex x; maxC := maxColIndex x
-        nrow := nrows x; ncol := ncols x
-        basis : List Col := nil()
-        rk := nrow; row := maxR
-        -- compute rank = # rows - # rows of all zeroes
-        while rk > 0 and rowAllZeroes?(x, row) repeat
-          rk := (rk - 1) :: NonNegativeInteger
-          row := (row - 1) :: NonNegativeInteger
-        -- if maximal rank, return empty list
-        ncol <= nrow and rk = ncol => []
-        -- if rank = 0, return standard basis vectors
-        rk = 0 =>
-          for j in minC..maxC repeat
-            w : Col := new(ncol, 0)
-            qsetelt!(w, j, 1)
-            basis := cons(w, basis)
-          basis
-        -- v contains information about initial 1's in the rows of x
-        -- if the ith row has an initial 1 in the jth column, then
-        -- v.j = i; v.j = minR - 1, otherwise
-        v : IndexedOneDimensionalArray(I, minC) := new(ncol, minR - 1)
-        for i in minR..(minR + rk - 1) repeat
-          for j in minC.. while qelt(x, i, j) = 0 repeat j
-          qsetelt!(v, j, i)
-        j := maxC; l := minR + ncol - 1
-        while j >= minC repeat
-          w : Col := new(ncol, 0)
-          -- if there is no row with an initial 1 in the jth column,
-          -- create a basis vector with a 1 in the jth row
-          if qelt(v, j) = minR - 1 then
-            colAllZeroes?(x, j) =>
-              qsetelt!(w, l, 1)
-              basis := cons(w, basis)
-            for k in minC..(j-1) for ll in minR..(l-1) repeat
-              if qelt(v, k) ~= minR - 1 then
-                qsetelt!(w, ll, -qelt(x, qelt(v, k), j))
-            qsetelt!(w, l, 1)
-            basis := cons(w, basis)
-          j := j - 1; l := l - 1
-        basis
-
-    determinant y ==
-      (ndim := nrows y) ~= (ncols y) =>
-        error "determinant: matrix must be square"
-      -- Gaussian Elimination
-      ndim = 1 => qelt(y, minRowIndex y, minColIndex y)
-      x := copy y
-      minR := minRowIndex x; maxR := maxRowIndex x
-      minC := minColIndex x; maxC := maxColIndex x
-      ans : R := 1
-      for i in minR..(maxR - 1) for j in minC..(maxC - 1) repeat
-        if qelt(x, i, j) = 0 then
-          rown := minR - 1
-          for k in (i+1)..maxR repeat
-            qelt(x, k, j) ~= 0 => (rown := k; break)
-          if rown = minR - 1 then return 0
-          swapRows!(x, i, rown); ans := -ans
-        ans := qelt(x, i, j) * ans; b := -inv qelt(x, i, j)
-        for l in (j+1)..maxC repeat qsetelt!(x, i, l, b * qelt(x, i, l))
-        for k in (i+1)..maxR repeat
-          if (b := qelt(x, k, j)) ~= 0 then
-            for l in (j+1)..maxC repeat
-              qsetelt!(x, k, l, qelt(x, k, l) + b * qelt(x, i, l))
-      qelt(x, maxR, maxC) * ans
+    nullity x == (ncols x - rank x)::NonNegativeInteger
 
     generalizedInverse(x) ==
       SUP := SparseUnivariatePolynomial R

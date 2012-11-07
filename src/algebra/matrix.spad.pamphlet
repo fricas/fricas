@@ -146,8 +146,9 @@ Matrix(R) : Exports == Implementation where
     minRowIndex x == mnRow
     minColIndex x == mnCol
 
-    -- qelt and qsetelt! are logically unnecessary, but good for
-    -- performance
+    -- qelt, qsetelt!, swapRows! and copy are logically unnecessary,
+    -- but good for performance
+
     qelt(m, i, j) == Qelt2(m, i, j, mnRow@Integer, mnCol@Integer)
     qsetelt!(m, i, j, r) == Qsetelt2(m, i, j, r, mnRow@Integer, mnCol@Integer)
 
@@ -162,6 +163,13 @@ Matrix(R) : Exports == Implementation where
             Qsetelt2(x, i1, j, t2, mnRow@Integer, mnCol@Integer)
             Qsetelt2(x, i2, j, t1, mnRow@Integer, mnCol@Integer)
         x
+
+    copy m ==
+        ans : % := MAKE_MATRIX(nrows m, ncols m)$Lisp
+        for i in minRowIndex(m)..maxRowIndex(m) repeat
+            for j in minColIndex(m)..maxColIndex(m) repeat
+                qsetelt!(ans, i, j, qelt(m, i, j))
+        ans
 
     if R has CommutativeRing then
 
