@@ -103,6 +103,7 @@ trace1 l ==
     (1 < # $options) and not hasOption($options,'nonquietly) =>
       throwKeyedMsg("S2IT0021",NIL)
     untrace l
+    clearConstructorCaches()
   hasOption($options,'stats) =>
     (1 < # $options) =>
       throwKeyedMsg("S2IT0001",['")trace ... )stats"])
