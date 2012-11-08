@@ -26,6 +26,8 @@ current_line_number() ==
 
 spad_syntax_error(wanted, parsing) ==
     FORMAT(true, '"******** Spad syntax error detected ********")
+    if wanted then
+        FORMAT(true, '"~&Expected: ~S~%", wanted)
     if $prev_line then
         FORMAT(true, '"~&The prior line was:~%~%~5D> ~A~%~%",
            $prev_line_number, $prev_line)

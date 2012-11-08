@@ -113,11 +113,32 @@ init_parser_properties() ==
 
 init_parser_properties()
 
+-- Parsing functions return true if successful or false if not.
+-- If successful the result is left on the reduction stack.
+
+-- Signal error if not successful.  Used for mandatory elements
+-- in the grammar.
+MUST(x) ==
+    x => true
+    spad_syntax_error(nil, nil)
+
+-- Return successfuly regardless of status of x.  Used for
+-- optional elements in the grammar.  Code matching 'x' must
+-- preserve number of elements on the eduction stack.
+OPTIONAL(x) == true
+
+-- The same as OPTIONAL, but used for actions.
+ACTION(x) == true
+
 symbol_is?(x) == EQ(current_symbol(), x)
 
 match_symbol(x) ==
     match_current_token("KEYWORD", x) => (advance_token(); true)
     false
+
+expect_symbol(x) ==
+    match_symbol(x) => true
+    spad_syntax_error(x, nil)
 
 DEFPARAMETER($reduction_stack, nil)
 
@@ -235,7 +256,7 @@ parse_category_list(closer) ==
         tail_val :=
             repetition(";", FUNCTION parse_Category) => pop_stack_1()
             nil
-        MUST match_symbol(closer)
+        expect_symbol(closer)
         val1 := pop_stack_1()
         IFCAR(val1) = "if" and tail_val = nil => push_lform0(val1)
         push_lform2("CATEGORY", val1, tail_val)
@@ -244,7 +265,7 @@ parse_Category() ==
     match_symbol("if") =>
         MUST parse_Expression()
         cond := pop_stack_1()
-        MUST match_symbol "then"
+        expect_symbol "then"
         MUST parse_Category()
         else_val :=
             match_symbol "else" =>
@@ -341,7 +362,7 @@ parse_Seg() ==
 parse_Conditional() ==
     not(match_symbol "if") => nil
     MUST parse_Expression()
-    MUST match_symbol "then"
+    expect_symbol "then"
     MUST parse_Expression()
     else_val :=
         match_symbol "else" =>
@@ -375,15 +396,15 @@ parse_Try() ==
 
 parse_Loop() ==
     OR(AND(repetition(nil, FUNCTION parse_Iterator),
-           MUST match_symbol "repeat", MUST parse_Expr 110,
+           expect_symbol "repeat", MUST parse_Expr 110,
            push_lform1("REPEAT", [:pop_stack_2(), pop_stack_1()])),
-       AND(match_symbol "repeat", MUST parse_Expr 110,
+       AND(expect_symbol "repeat", MUST parse_Expr 110,
            push_form1("REPEAT", pop_stack_1())))
 
 parse_Iterator() ==
     match_symbol "for" =>
         MUST parse_Primary()
-        MUST match_symbol "in"
+        expect_symbol "in"
         MUST parse_Expression()
         by_val :=
               AND(match_symbol "by", MUST parse_Expr 200) => pop_stack_1()
@@ -514,8 +535,8 @@ parse_Float() == parse_SPADFLOAT()
 
 parse_Enclosure1(closer) ==
     MUST OR(
-            AND(parse_Expr 6, MUST match_symbol(closer)),
-            AND(match_symbol(closer), push_form0("@Tuple")))
+            AND(parse_Expr 6, expect_symbol(closer)),
+            AND(expect_symbol(closer), push_form0("@Tuple")))
 
 parse_Enclosure() ==
     match_symbol "(" => parse_Enclosure1(")")
@@ -543,7 +564,7 @@ parse_GliphTok(tok) ==
 parse_Sequence() ==
     match_symbol "[" =>
         MUST(parse_Sequence1())
-        MUST(match_symbol "]")
+        expect_symbol "]"
     nil
 
 parse_Sequence1() ==

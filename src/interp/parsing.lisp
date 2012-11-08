@@ -74,27 +74,6 @@ NonBlank is true if the token is not preceded by a blank."
 ;                  of a production (e.g., Star).
 ;               C. Token-level parsing utilities (keywords, strings, identifiers).
 
-; 2B. Routines for applying certain metagrammatical elements
-;     of a production (e.g., Star).
-
-; Must means that if it is not present in the token stream, it is a syntax error.
-
-; FUNCTIONS DEFINED IN THIS SECTION:
-;
-;       MUST, OPTIONAL, ACTION
-
-(defun MUST(dothis) (or dothis (|spad_syntax_error| nil nil)))
-
-; Optional means that if it is present in the token stream, that is a good thing,
-; otherwise don't worry (like [ foo ] in BNF notation).
-
-(defun OPTIONAL (dothis) (or dothis t))
-
-; Action is something we do as a consequence of successful parsing; it is
-; inserted at the end of the conjunction of requirements for a successful
-; parse, and so should return T.
-
-(defun ACTION (dothis) (or dothis t))
 
 ; 3A.  Manipulating the token stack and reading tokens
 
