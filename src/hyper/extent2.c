@@ -490,7 +490,7 @@ init_extents(void)
     present_line_height = line_height;
     gInLine = 0;
     gInItem = 0;
-    gInAxiomCommand = 0;
+    in_fricas_command = 0;
     item_indent = 0;
     gInDesc = 0;
     indent = left_margin;
@@ -510,7 +510,7 @@ init_title_extents(HyperDocPage * page)
 {
     present_line_height = line_height;
     gInLine = 0;
-    gInAxiomCommand = 0;
+    in_fricas_command = 0;
     item_indent = 0;
     gInDesc = 0;
     indent = left_margin + page->title->x;

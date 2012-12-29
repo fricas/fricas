@@ -157,7 +157,7 @@ extern int              smoothConst;
 extern int              smoothError;
 
 extern char             *PSfilename;  /* output file name in user directory */
-extern char             *envAXIOM;    /* used for ps file paths */
+extern char             * env_fricas; /* used for ps file paths */
 
 extern Atom wm_delete_window;
 

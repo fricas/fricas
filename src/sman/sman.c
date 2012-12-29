@@ -59,7 +59,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "sockio-c.H1"
 #include "openpty.H1"
 
-char *ws_path;                  /* location of the AXIOM executable */
+char *ws_path;                  /* location of the FriCAS executable */
 int start_clef;                 /* start clef under spad */
 int start_graphics;             /* start the viewman */
 int start_nagman;               /* start the nagman */
@@ -67,7 +67,7 @@ int start_ht;                   /* start hypertex */
 int start_spadclient;           /* Start the client spad buffer */
 int start_local_spadclient;     /* Start the client spad buffer */
 int use_X;                      /* Use the X windows environment */
-int server_num;                 /* AXIOM server number */
+int server_num;                 /* FriCAS server number */
 int tpd=0;                      /* to-print-debug information */
 
 /************************************************/
@@ -115,7 +115,7 @@ unsigned char  _INTR, _QUIT, _ERASE, _KILL, _EOF, _EOL, _RES1, _RES2;
 int ptsNum, ptcNum;
 char ptsPath[20], ptcPath[20];
 
-char **new_envp;                /* new environment for AXIOM */
+char **new_envp;                /* new environment for FriCAS */
 int child_pid;                  /* child's process id */
 struct termios oldbuf;           /* the original settings */
 struct termios childbuf;         /* terminal structure for user i/o */
@@ -513,21 +513,21 @@ start_the_spadclient(void)
   if (start_clef)
 #ifdef RIOSplatform
     sprintf(command,
-            "aixterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s %s",
+            "aixterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
             ClefProgram, SpadClientProgram);
 #else
   sprintf(command,
-          "xterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s %s",
+          "xterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
           ClefProgram, SpadClientProgram);
 #endif
   else
 #ifdef RIOSplatform
     sprintf(command,
-            "aixterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s",
+            "aixterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
             SpadClientProgram);
 #else
   sprintf(command,
-          "xterm -sb -sl 500 -name axiomclient -n AXIOM -T AXIOM -e %s",
+          "xterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
           SpadClientProgram);
 #endif
   if (tpd == 1)
@@ -590,10 +590,10 @@ start_the_graphics(void)
   spawn_of_hell(GraphicsProgram, DoItAgain);
 }
 
-/* Start the AXIOM session in a separate process, */
+/* Start the FriCAS session in a separate process, */
 /* using a pseudo-terminal to catch all input and output */
 static void
-fork_Axiom(void)
+fork_FriCAS(void)
 {
   char *augmented_ws_path;  /* will append directory path */
   char *tmp_pointer;
@@ -619,7 +619,7 @@ fork_Axiom(void)
     /* Now reopen the server side, so that pg, su, etc. work properly */
 
     if ((ptsNum =  open(ptsPath, O_RDWR)) < 0 ) {
-      perror("fork_Axiom: Failed to reopen server");
+      perror("fork_FriCAS: Failed to reopen server");
       fprintf(stderr, "ptsPath=%s\n", ptsPath);
       exit(-1);
     }
@@ -673,7 +673,7 @@ fork_Axiom(void)
 }
 
 static void
-start_the_Axiom(char **envp)
+start_the_FriCAS(char **envp)
 {
   server_num = make_server_number();
   clean_up_old_sockets();
@@ -682,11 +682,11 @@ start_the_Axiom(char **envp)
     exit(-1);
   }
   if (ptyopen(&ptcNum, &ptsNum, ptcPath, ptsPath) == -1) {
-    perror("start_the_Axiom: ptyopen failed");
+    perror("start_the_FriCAS: ptyopen failed");
     exit(-1);
   }
   fix_env(envp, server_num);
-  fork_Axiom();
+  fork_FriCAS();
   close(ptsNum);
 }
 
@@ -908,7 +908,7 @@ main(int argc, char *argv[],char *envp[])
 
   init_term_io();
   init_spad_process_list();
-  start_the_Axiom(envp);
+  start_the_FriCAS(envp);
   if (open_server(SessionIOName) == -2) {
     fprintf(stderr, "Fatal error opening I/O socket\n");
     clean_up_sockets();

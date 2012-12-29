@@ -856,7 +856,7 @@ spad_busy(void)
     return get_int(session_server);
 }
 
-/* connect to AXIOM , return 0 if succesful, 1 if not */
+/* connect to FRICAS, return 0 if succesful, 1 if not */
 int
 connect_spad(void)
 {

@@ -98,8 +98,8 @@ int           followMouse = no,
   ack = 1,
   someInt,
   drawMore,
-  spadMode=no, /* yes if receiving AXIOM command and calling drawViewport */
-  spadDraw=no, /* yes if drawing viewport because of a AXIOM command */
+  spadMode=no, /* yes if receiving FriCAS command and calling drawViewport */
+  spadDraw=no, /* yes if drawing viewport because of a FriCAS command */
   pointsON  = yes,  /* these would affect the choices in buttons.c */
   connectON = yes,
   splineON  = no,
@@ -113,7 +113,7 @@ int           followMouse = no,
   queriedGraph = 0,  /* current graph queried */
   picking=0,
   dropping=0,
-  viewAloned,  /** if not connected to AXIOM **/
+  viewAloned,  /* if not connected to FriCAS */
   mono,
   totalColors,
   totalSolid,
@@ -145,7 +145,7 @@ float aspectR = 1.0;
 int     psInit=no;      /* need to call globalInitPs() each run */
 GCptr   GChead=NULL;    /* ptr to head of ps GC linked list */
 char    *PSfilename,    /* output file name used in user directory */
-  *envAXIOM;    /* used as ps file pathnames */
+  * env_fricas;    /* used as ps file pathnames */
 
 int
 main(void)
@@ -170,7 +170,7 @@ main(void)
   /**** link Xwindows to viewports - X10 feature ****/
   table        = XCreateAssocTable(nbuckets);
 
-  /**** Create AXIOM color map ****/
+  /**** Create FriCAS color map ****/
   totalColors = XInitSpadFill(dsply,scrn,&colorMap,
                               &totalHues,&totalSolidShades,
                               &totalDitheredAndSolids,&totalShades);
@@ -416,7 +416,7 @@ main(void)
   i = 123;
   code=check(write(Socket,&i,intSize));
 
-  /* Check if I am getting stuff from AXIOM or, if I am viewAlone. */
+  /* Check if I am getting stuff from FriCAS or, if I am viewAlone. */
   readViewman(&viewAloned,intSize);
   readViewman(&viewData,sizeof(view2DStruct));
   readViewman(&i,intSize);

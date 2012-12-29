@@ -691,79 +691,79 @@ PSGlobalInit(void)
 
   /* path specific file names */
 
-  if ((envAXIOM = getenv("DEVE")) != NULL) {  /* get env var AXIOM */
+  if ((env_fricas = getenv("DEVE")) != NULL) {  /* get env var AXIOM */
 
     psData[headerps].flag = yes;
-    sprintf(psData[headerps].filename, "%s%s", envAXIOM, "/Gdraws/PS/header.ps");
-    sprintf(psData[drawps].filename, "%s%s", envAXIOM, "/Gdraws/PS/draw.ps");
-    sprintf(psData[drawarcps].filename, "%s%s", envAXIOM,
+    sprintf(psData[headerps].filename, "%s%s", env_fricas, "/Gdraws/PS/header.ps");
+    sprintf(psData[drawps].filename, "%s%s", env_fricas, "/Gdraws/PS/draw.ps");
+    sprintf(psData[drawarcps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawarc.ps");
-    sprintf(psData[drawfilledps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawfilledps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drwfilled.ps");
-    sprintf(psData[drawcolorps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawcolorps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawcolor.ps");
-    sprintf(psData[fillpolyps].filename, "%s%s", envAXIOM,
+    sprintf(psData[fillpolyps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/fillpoly.ps");
-    sprintf(psData[colorpolyps].filename, "%s%s", envAXIOM,
+    sprintf(psData[colorpolyps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/colorpoly.ps");
-    sprintf(psData[fillwolps].filename, "%s%s", envAXIOM,
+    sprintf(psData[fillwolps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/fillwol.ps");
-    sprintf(psData[colorwolps].filename, "%s%s", envAXIOM,
+    sprintf(psData[colorwolps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/colorwol.ps");
-    sprintf(psData[drawpointps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawpointps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawpoint.ps");
-    sprintf(psData[drawlineps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawlineps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawline.ps");
-    sprintf(psData[drawlinesps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawlinesps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawlines.ps");
-    sprintf(psData[drawrectps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawrectps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawrect.ps");
-    sprintf(psData[drawstrps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawstrps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawstr.ps");
-    sprintf(psData[drawIstrps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawIstrps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawIstr.ps");
-    sprintf(psData[fillarcps].filename, "%s%s", envAXIOM,
+    sprintf(psData[fillarcps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/fillarc.ps");
-    sprintf(psData[setupps].filename, "%s%s", envAXIOM, "/Gdraws/PS/setup.ps");
-    sprintf(psData[endps].filename, "%s%s", envAXIOM, "/Gdraws/PS/end.ps");
+    sprintf(psData[setupps].filename, "%s%s", env_fricas, "/Gdraws/PS/setup.ps");
+    sprintf(psData[endps].filename, "%s%s", env_fricas, "/Gdraws/PS/end.ps");
   }
-  else if ((envAXIOM = getenv("AXIOM")) != NULL) {
+  else if ((env_fricas = getenv("AXIOM")) != NULL) {
     psData[headerps].flag = yes;
-    sprintf(psData[headerps].filename, "%s%s", envAXIOM,
+    sprintf(psData[headerps].filename, "%s%s", env_fricas,
             "/lib/graph/header.ps");
-    sprintf(psData[drawps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawps].filename, "%s%s", env_fricas,
             "/lib/graph/draw.ps");
-    sprintf(psData[drawarcps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawarcps].filename, "%s%s", env_fricas,
             "/lib/graph/drawarc.ps");
-    sprintf(psData[drawfilledps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawfilledps].filename, "%s%s", env_fricas,
             "/lib/graph/drwfilled.ps");
-    sprintf(psData[drawcolorps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawcolorps].filename, "%s%s", env_fricas,
             "/lib/graph/drawcolor.ps");
-    sprintf(psData[fillpolyps].filename, "%s%s", envAXIOM,
+    sprintf(psData[fillpolyps].filename, "%s%s", env_fricas,
             "/lib/graph/fillpoly.ps");
-    sprintf(psData[colorpolyps].filename, "%s%s", envAXIOM,
+    sprintf(psData[colorpolyps].filename, "%s%s", env_fricas,
             "/lib/graph/colorpoly.ps");
-    sprintf(psData[fillwolps].filename, "%s%s", envAXIOM,
+    sprintf(psData[fillwolps].filename, "%s%s", env_fricas,
             "/lib/graph/fillwol.ps");
-    sprintf(psData[colorwolps].filename, "%s%s", envAXIOM,
+    sprintf(psData[colorwolps].filename, "%s%s", env_fricas,
             "/lib/graph/colorwol.ps");
-    sprintf(psData[drawpointps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawpointps].filename, "%s%s", env_fricas,
             "/lib/graph/drawpoint.ps");
-    sprintf(psData[drawlineps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawlineps].filename, "%s%s", env_fricas,
             "/lib/graph/drawline.ps");
-    sprintf(psData[drawlinesps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawlinesps].filename, "%s%s", env_fricas,
             "/lib/graph/drawlines.ps");
-    sprintf(psData[drawrectps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawrectps].filename, "%s%s", env_fricas,
             "/lib/graph/drawrect.ps");
-    sprintf(psData[drawstrps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawstrps].filename, "%s%s", env_fricas,
             "/lib/graph/drawstr.ps");
-    sprintf(psData[drawIstrps].filename, "%s%s", envAXIOM,
+    sprintf(psData[drawIstrps].filename, "%s%s", env_fricas,
             "/lib/graph/drawIstr.ps");
-    sprintf(psData[fillarcps].filename, "%s%s", envAXIOM,
+    sprintf(psData[fillarcps].filename, "%s%s", env_fricas,
             "/lib/graph/fillarc.ps");
-    sprintf(psData[setupps].filename, "%s%s", envAXIOM,
+    sprintf(psData[setupps].filename, "%s%s", env_fricas,
             "/lib/graph/setup.ps");
-    sprintf(psData[endps].filename, "%s%s", envAXIOM,
+    sprintf(psData[endps].filename, "%s%s", env_fricas,
             "/lib/graph/end.ps");
   }
   else {

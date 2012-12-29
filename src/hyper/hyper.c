@@ -119,8 +119,8 @@ int gverify_dates = 0;          /* true when we want hypertex to verify ht.db da
 
 Sock *session_server;           /* socket connecting to session manager */
 
-int gIsAxiomServer = 0;        /* true iff HyperDoc is acting as a   */
-                                /* an Axiom server */
+/* true iff HyperDoc is acting as a FriCAS server */
+int is_fricas_server = 0;
 
 int kill_spad = 0;              /* kill spad when finished with paste file */
 
@@ -279,7 +279,7 @@ main(int argc, char **argv)
 
         /*
          * Try to establish all the socket connections I need. If I am an
-         * gIsAxiomServer and the routine fails, it will exit for me
+         * is_fricas_server and the routine fails, it will exit for me
          */
 /*        fprintf(stderr,"hyper:main:in else case\n");*/
 /*        fprintf(stderr,"hyper:main:calling  make_server_connections\n");*/
@@ -295,7 +295,7 @@ main(int argc, char **argv)
 
     /*
      * Try to establish all the socket connections I need. If I am an
-     * gIsAxiomServer and the routine fails, it will exit for me
+     * is_fricas_server and the routine fails, it will exit for me
      */
 /*    fprintf(stderr,"hyper:main:calling  make_server_connections\n");*/
     make_server_connections();
@@ -367,7 +367,7 @@ check_arguments(void)
           fprintf(stderr, "(HyperDoc) Server already in use.\n");
           exit(-1);
         }
-        gIsAxiomServer = 1;
+        is_fricas_server = 1;
         break;
       case 'i':
         if (gArgv[i][2] == 'p')
@@ -433,7 +433,7 @@ make_server_connections(void)
          * gives up and exits.
          */
 
-        if (!gIsAxiomServer)
+        if (!is_fricas_server)
             wait_time = 2;
         else
             wait_time = 1000;
@@ -441,14 +441,14 @@ make_server_connections(void)
         for (i = 0, spad_socket = NULL; i < 2 && spad_socket == NULL; i++) {
             spad_socket = connect_to_local_server(SpadServer,
                                                   MenuServer, wait_time);
-            if (gIsAxiomServer && spad_socket == NULL)
+            if (is_fricas_server && spad_socket == NULL)
                 fprintf(stderr, "(HyperDoc) Error opening FriCAS server. Retrying ...\n");
             else
                 i = 11;
         }
         if (! spad_socket) {
             fprintf(stderr, "(HyperDoc) Couldn't connect to FriCAS server!\n");
-            if (!gIsAxiomServer)
+            if (!is_fricas_server)
                 MenuServerOpened = 0;
             else {
                 fprintf(stderr, "(HyperDoc) Couldn't connect to FriCAS server!\n");
@@ -466,7 +466,7 @@ make_server_connections(void)
                 session_server =
                     connect_to_local_server(SessionServer, MenuServer,
                                             wait_time);
-                if (gIsAxiomServer && session_server == NULL) {
+                if (is_fricas_server && session_server == NULL) {
                     fprintf(stderr,
                             "(HyperDoc) Error opening SessionServer, Retrying ...\n");
                 }
@@ -475,7 +475,7 @@ make_server_connections(void)
             }
             if (session_server == NULL) {
                 fprintf(stderr, "(HyperDoc) Connection attempt to session manager timed out.\n");
-                if (gIsAxiomServer) {
+                if (is_fricas_server) {
                     fprintf(stderr,
                             "(HyperDoc) Server unable to connect to session server\n");
                     exit(-1);

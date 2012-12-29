@@ -137,8 +137,8 @@ fricas_target_datadir = $(fricas_targetdir)/share
 fricas_target_texdir = $(fricas_target_datadir)/texmf/tex
 
 
-AXIOM_X11_CFLAGS = @X_CFLAGS@ 
-AXIOM_X11_LDFLAGS = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@
+FRICAS_X11_CFLAGS = @X_CFLAGS@ 
+FRICAS_X11_LDFLAGS = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@
 
 fricas_includes = -I$(fricas_src_srcdir)/include -I$(fricas_configdir)
 

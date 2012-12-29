@@ -897,7 +897,7 @@ BesselIAsympt(v,z,n) ==
 ---Expansion good for 0<=phase(v)<Pi
 ---A&S recommend "uniform expansion" with complicated coefficients and Airy function.
 ---Debye's Formula is in 9.3.7,9.3.9,9.3.10 of A&S
----AXIOM recurrence for u_{k}
+---FriCAS recurrence for u_{k}
 ---f(0)==1::EXPR INT
 ---f(n)== (t^2)*(1-t^2)*D(f(n-1),t)/2 + (1/8)*integrate( (1-5*t^2)*f(n-1),t)
 BesselJAsymptOrder(v,z) ==

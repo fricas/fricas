@@ -96,7 +96,7 @@ extern int gTtFontIs850;
 
 
 int gActiveColor,
-    gAxiomColor,
+    fricas_color,
     gBackgroundColor,
     gBfColor,
     gControlBackgroundColor,
@@ -109,7 +109,7 @@ int gActiveColor,
     gSlColor,
     gTtColor;
 
-XFontStruct *gAxiomFont,
+XFontStruct * fricas_font,
             *gActiveFont,
             *gBfFont,
             *gEmFont,
@@ -747,12 +747,12 @@ ingItColors_and_fonts(void)
             (void) strncpy(prop, value.addr, (int) value.size);
         }
         else {
-            (void) strcpy(prop, AxiomFontDefault);
+            (void) strcpy(prop, fricas_font_default);
         }
     }
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:load_font 5\n");*/
-    load_font(&gAxiomFont, prop);
+    load_font(&fricas_font, prop);
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 7\n");*/
     if (XrmGetResource(rDB, "Axiom.hyperdoc.EmphasizeFont",
@@ -786,7 +786,7 @@ ingItColors_and_fonts(void)
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:DisplayPlanes\n");*/
     if (DisplayPlanes(gXDisplay, gXScreenNumber) == 1) {
-        gActiveColor       = gAxiomColor
+        gActiveColor       = fricas_color
                             = gControlBackgroundColor
                             = gInputBackgroundColor
                             = gBfColor
@@ -835,10 +835,10 @@ ingItColors_and_fonts(void)
         /* maintain backwards compatibility */
 
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 6\n");*/
-        gAxiomColor = get_color("AxiomColor", "Foreground", 0, &cmap);
+        fricas_color = get_color("AxiomColor", "Foreground", 0, &cmap);
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 7\n");*/
-        if (gAxiomColor == 0)
-            gAxiomColor = get_color("SpadColor", "Foreground",
+        if (fricas_color == 0)
+            fricas_color = get_color("SpadColor", "Foreground",
                 BlackPixel(gXDisplay, gXScreenNumber), &cmap);
 
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 8\n");*/

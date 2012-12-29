@@ -57,9 +57,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    implementation and Windows documentation don't always agree.  */
 
 #if HAVE_AF_LOCAL
-#  define AXIOM_AF_LOCAL AF_LOCAL
+#  define FRICAS_AF_LOCAL AF_LOCAL
 #elif HAVE_AF_UNIX
-#  define AXIOM_AF_LOCAL AF_UNIX
+#  define FRICAS_AF_LOCAL AF_UNIX
 #else
 #  error needs one of AF_LOCAL or AF_UNIX
 #endif
@@ -106,7 +106,7 @@ fricas_sleep(int n)
    we can even think about talking about sockets. */
 
 static void
-axiom_load_socket_module()
+fricas_load_socket_module()
 {
 #ifdef __WIN32__
    WSADATA wsaData;
@@ -128,10 +128,10 @@ axiom_load_socket_module()
 
 /* Get a socket identifier to a local server.  We take whatever protocol
    is the default for the address family in the SOCK_STREAM type.  */
-static inline axiom_socket
-axiom_communication_link(int family)
+static inline fricas_socket
+fricas_communication_link(int family)
 {
-   axiom_load_socket_module();
+   fricas_load_socket_module();
    return socket(family, SOCK_STREAM, 0);
 }
 
@@ -168,7 +168,7 @@ is_valid_socket(const Sock* s)
    requires cleanup.  */
 
 void
-axiom_close_socket(axiom_socket s)
+fricas_close_socket(fricas_socket s)
 {
 #ifdef __WIN32__
    shutdown(s, SD_BOTH);
@@ -182,7 +182,7 @@ axiom_close_socket(axiom_socket s)
 /* Return 1 is the last call was cancelled. */
 
 static inline int
-axiom_call_was_cancelled(void)
+fricas_call_was_cancelled(void)
 {
 #ifdef __WIN32__
    return WSAGetLastError() == WSAEINTR;
@@ -194,7 +194,7 @@ axiom_call_was_cancelled(void)
 /* Return 1 is last connect() was refused.  */
 
 static inline int
-axiom_connection_refused(void)
+fricas_connection_refused(void)
 {
 #ifdef __WIN32__
    return WSAGetLastError() == WSAECONNREFUSED;
@@ -251,12 +251,12 @@ sread(Sock *sock, char *buf, int buf_size, char *msg)
   char err_msg[256];
   errno = 0;
   do {
-    ret_val = axiom_read(sock, buf, buf_size);
-  } while (ret_val == -1 && axiom_call_was_cancelled());
+    ret_val = fricas_read(sock, buf, buf_size);
+  } while (ret_val == -1 && fricas_call_was_cancelled());
   if (ret_val == 0) {
     FD_CLR(sock->socket, &socket_mask);
     purpose_table[sock->purpose] = NULL;
-    axiom_close_socket(sock->socket);
+    fricas_close_socket(sock->socket);
     return wait_for_client_read(sock, buf, buf_size, msg);
   }
   if (ret_val == -1) {
@@ -287,7 +287,7 @@ swrite(Sock *sock,char *buf,int buf_size,char *msg)
       FD_CLR(sock->socket, &socket_mask);
       purpose_table[sock->purpose] = NULL;
       /*      printf("   closing socket %d\n", sock->socket); */
-      axiom_close_socket(sock->socket);
+      fricas_close_socket(sock->socket);
       return wait_for_client_write(sock, buf, buf_size, msg);
     } else {
       if (msg) {
@@ -306,7 +306,7 @@ sselect(int n,fd_set  *rd, fd_set  *wr, fd_set *ex, void *timeout)
   int ret_val;
   do {
     ret_val = select(n, (void *)rd, (void *)wr, (void *)ex, (struct timeval *) timeout);
-  } while (ret_val == -1 && axiom_call_was_cancelled());
+  } while (ret_val == -1 && fricas_call_was_cancelled());
   return ret_val;
 }
 
@@ -697,7 +697,7 @@ send_signal(Sock *sock, int sig)
     FD_CLR(sock->socket, &socket_mask);
     purpose_table[sock->purpose] = NULL;
 /*    printf("   closing socket %d\n", sock->socket); */
-    axiom_close_socket(sock->socket);
+    fricas_close_socket(sock->socket);
     return wait_for_client_kill(sock, sig);
   }
   return ret_val;
@@ -745,7 +745,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
 
   sock->purpose = purpose;
   /* create the socket */
-  sock->socket = axiom_communication_link(AXIOM_AF_LOCAL);
+  sock->socket = fricas_communication_link(FRICAS_AF_LOCAL);
   if (is_invalid_socket(sock)) {
     perror("opening client socket");
     free(sock);
@@ -754,7 +754,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
   /* connect socket using name specified in command line */
   memset(server[1].addr.u_addr.sa_data, 0,
          sizeof(server[1].addr.u_addr.sa_data));
-  sock->addr.u_addr.sa_family = AXIOM_AF_LOCAL;
+  sock->addr.u_addr.sa_family = FRICAS_AF_LOCAL;
   strcpy(sock->addr.u_addr.sa_data, name);
   for(i=0; i<max_con; i++) {
     code = connect(sock->socket, &sock->addr.u_addr,
@@ -765,7 +765,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
         errno != ENOENT &&
         /* Needed on Cygwin, on Linux this should never happen. */
         errno != EBADF &&
-        !axiom_connection_refused()) {
+        !fricas_connection_refused()) {
         perror("connecting server stream socket");
         return NULL;
       } else {
@@ -847,9 +847,9 @@ make_server_number(void)
 }
 
 void
-close_socket(axiom_socket socket_num, char *name)
+close_socket(fricas_socket socket_num, char *name)
 {
-  axiom_close_socket(socket_num);
+  fricas_close_socket(socket_num);
 #ifndef RTplatform
   unlink(name);
 #endif
@@ -866,7 +866,7 @@ make_server_name(char *name,char * base)
   num = getenv("SPADNUM");
   if (num == NULL) {
 /*    fprintf(stderr,
-      "\n(AXIOM Sockets) The AXIOM server number is undefined.\n");
+      "\n(FRICAS Sockets) The FRICAS server number is undefined.\n");
 */
     return -1;
   }
@@ -891,7 +891,7 @@ open_server(char *server_name)
     return -2;
   /* create the socket internet socket */
   server[0].socket = 0;
-/*  server[0].socket = axiom_communication_link(AF_INET);
+/*  server[0].socket = fricas_communication_link(AF_INET);
   if (is_invalid_socket(&server[0])) {
     server[0].socket = 0;
   } else {
@@ -916,13 +916,13 @@ open_server(char *server_name)
     listen(server[0].socket,5);
   } */
   /* Next create the local domain socket */
-  server[1].socket = axiom_communication_link(AXIOM_AF_LOCAL);
+  server[1].socket = fricas_communication_link(FRICAS_AF_LOCAL);
   if (is_invalid_socket(&server[1])) {
     perror("opening local server socket");
     server[1].socket = 0;
     return -2;
   } else {
-    server[1].addr.u_addr.sa_family = AXIOM_AF_LOCAL;
+    server[1].addr.u_addr.sa_family = FRICAS_AF_LOCAL;
     memset(server[1].addr.u_addr.sa_data, 0,
            sizeof(server[1].addr.u_addr.sa_data));
     strcpy(server[1].addr.u_addr.sa_data, name);

@@ -50,7 +50,7 @@ typedef struct _viewTriple { /* used for points in 3 space */
 } viewTriple, *viewTriplePtr;
 
 /* the xxxPRIM's are primitiveType's as deduced from the
-   components received from AXIOM. the info may be
+   components received from FriCAS. the info may be
    used in the hidden surface section */
 
 #define stillDontKnow    0

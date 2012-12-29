@@ -86,7 +86,7 @@ alloc_hd_window(void)
     halloc(MaxDownlinkDepth * sizeof(HyperDocPage *), "downlink stack");
   w->fDownLinkStackTop =
     (int *) halloc(MaxDownlinkDepth * sizeof(int), "top downlink stack");
-  w->fAxiomFrame = 0;
+  w->fricas_frame = 0;
   init_page_structs(w);
 
   /* Now I initialize the hash tables for the page */

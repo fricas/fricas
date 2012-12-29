@@ -91,7 +91,7 @@ makeGraphFromSpadData(void)
     pL->listOfPoints = p;             /** point to current point list **/
 
     for (j=0; j<pL->numberOfPoints; j++) {
-      p->x     = get_float(spadSock);         /* get numbers from AXIOM */
+      p->x     = get_float(spadSock);         /* get numbers from FriCAS */
       p->y     = get_float(spadSock);
       p->hue   = get_float(spadSock) - 1;     /* make zero based */
       p->shade = get_float(spadSock) - 1;

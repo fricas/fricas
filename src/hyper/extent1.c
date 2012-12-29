@@ -95,7 +95,7 @@ short int gExtentRegion;
 short int gInDesc;
 short int gInLine;               /* true iff there have been words printed  */
 short int gInItem;               /* true iff we are in a \item */
-short int gInAxiomCommand;            /* true iff we are in a \spadcommand */
+short int in_fricas_command;          /* true iff we are in a \spadcommand */
 short int gInTable;
 
 /* Variables for the formatting state */
@@ -192,7 +192,7 @@ compute_punctuation_extent(TextNode * node)
     if ((!(node->space & BACKSPACE)) &&
         (text_x + twidth + nextwidth > right_margin) && gInLine) {
         start_newline(present_line_height, node);
-        if (gInAxiomCommand) {
+        if (in_fricas_command) {
             text_x = indent + spadcom_indent;
         }
         else
@@ -257,7 +257,7 @@ compute_word_extent(TextNode * node)
 
     if (text_x + twidth + nextwidth > right_margin && gInLine) {
         start_newline(present_line_height, node);
-        if (gInAxiomCommand) {
+        if (in_fricas_command) {
             text_x = indent + spadcom_indent;
         }
         else
@@ -339,7 +339,7 @@ compute_dash_extent(TextNode *node)
 
     if (text_x + twidth + nextwidth > right_margin) {
         start_newline(present_line_height, node);
-        if (gInAxiomCommand) {
+        if (in_fricas_command) {
             text_x = indent + spadcom_indent;
         }
         else
@@ -1022,7 +1022,7 @@ compute_spadcommand_extent(TextNode *node)
     /*int store_y = text_y;*/
     /*int lh = present_line_height;*/
 
-    gInAxiomCommand = 1;
+    in_fricas_command = 1;
 
     push_spad_group();
 
@@ -1052,7 +1052,7 @@ compute_spadsrc_extent(TextNode *node)
     /*int store_y = text_y;*/
     /*int lh = present_line_height;*/
 
-    gInAxiomCommand = 1;
+    in_fricas_command = 1;
 
     push_spad_group();
 
@@ -1092,7 +1092,7 @@ end_spadcommand_extent(TextNode *node)
         spad_node->y = text_y - line_height + spad_node->height;
     }
     pop_group_stack();
-    gInAxiomCommand = 0;
+    in_fricas_command = 0;
     spad_node = NULL;
 }
 
@@ -1122,7 +1122,7 @@ end_spadsrc_extent(TextNode *node)
         spad_node->y = text_y - line_height + spad_node->height;
     }
     pop_group_stack();
-    gInAxiomCommand = 0;
+    in_fricas_command = 0;
     spad_node = NULL;
 }
 

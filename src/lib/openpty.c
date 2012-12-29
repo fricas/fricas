@@ -50,9 +50,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
          #include <pty.h>
       #endif
    #endif
-   #define AXIOM_USE_OPENPTY 1
+   #define FRICAS_USE_OPENPTY 1
 #else
-   #define AXIOM_USE_OPENPTY 0
+   #define FRICAS_USE_OPENPTY 0
 #endif
 
 #include "openpty.H1"
@@ -80,7 +80,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int
 ptyopen(int *controller,int * server, char *controllerPath,char * serverPath)
 {
-#if AXIOM_USE_OPENPTY
+#if FRICAS_USE_OPENPTY
    return openpty(controller, server, serverPath, 0, 0);
 #else
 #if defined(SUNplatform) || defined (HP9platform) || defined(RTplatform) ||defined(AIX370platform) || defined(BSDplatform)

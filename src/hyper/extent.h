@@ -116,7 +116,7 @@ extern int word_off_height;            /* the diff between text height and */
 
 extern short int gExtentRegion;
 
-extern short int gInAxiomCommand;     /* true iff we are in a \spadcommand */
+extern short int in_fricas_command;   /* true iff we are in a \spadcommand */
 extern short int gInDesc;
 extern short int gInItem;        /* true iff we are in a \item */
 extern short int gInLine;        /* true iff there have been words printed  */

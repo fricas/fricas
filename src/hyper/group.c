@@ -175,8 +175,8 @@ void
 push_spad_group(void)
 {
     push_group_stack();
-    gTopOfGroupStack->cur_font = gAxiomFont;
-    gTopOfGroupStack->cur_color = gAxiomColor;
+    gTopOfGroupStack->cur_font = fricas_font;
+    gTopOfGroupStack->cur_color = fricas_color;
     change_text(gTopOfGroupStack->cur_color, gTopOfGroupStack->cur_font);
 }
 

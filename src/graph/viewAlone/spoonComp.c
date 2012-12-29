@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "viewAlone.h"
@@ -55,7 +56,8 @@ spoonView3D(int type)
 {
 
   int  i,j,k,code,pipe0[2],pipe1[2];
-  char envAXIOM[100],runView[100];
+  char * env_fricas;
+  char * run_view;
   LLPoint *anLLPoint;
   LPoint *anLPoint;
   int *anIndex;
@@ -81,9 +83,22 @@ spoonView3D(int type)
 
     sprintf(errorStr,"%s",
             "(viewAlone) execution of the ThreeDimensionalViewport process");
-    sprintf(envAXIOM,"%s",getenv("AXIOM"));
-    sprintf(runView,"%s%s",envAXIOM,"/lib/view3D");
-    check(execl(runView,runView,NULL));
+    env_fricas = getenv("AXIOM");
+    {
+        size_t env_fricas_len = strlen(env_fricas);
+        if (env_fricas_len > 20000) {
+            fprintf(stderr, "AXIOM env var too long\n");
+            exit(-1);
+        }
+        run_view = malloc(env_fricas_len + strlen("/lib/view3D") + 1);
+        if(!run_view) {
+            fprintf(stderr, "(viewAlone) out of memory\n");
+            exit(-1);
+        }
+        strcpy(run_view, env_fricas);
+        strcat(run_view, "/lib/view3D");
+    }
+    check(execl(run_view, run_view, NULL));
     fprintf(stderr,"Could not execute view3D!\n");
     exit(-1);
   default:

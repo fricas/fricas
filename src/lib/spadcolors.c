@@ -173,7 +173,7 @@ HLStoRGB(HLS hls)
  * int makeColors(dsply,scrn,colorMap,total_Shades)    *
  *                                                    *
  * This routine tries to allocate an adequate color   *
- * map to be used by all the AXIOM applications       *
+ * map to be used by all the FRICAS applications       *
  * that are to be run under X Windows that use        *
  * colors that may be user-definable (e.g. viewports, *
  * HyperTeX, etc). All these application should call  *
@@ -362,7 +362,7 @@ makePermVector(Display *dsply, int scrn, unsigned long **permIndex)
  * int makeNewColorMap(dsply,colorMap,smoothHue)      *
  *                                                    *
  * This routine tries to allocate an adequate color   *
- * map to be used by the AXIOM smooth shading         *
+ * map to be used by the FRICAS smooth shading         *
  * application that is to be run under X Windows.     *
  * The colors are allocated from available space in   *
  * the colorMap and returned in the array pixels.     *
@@ -471,7 +471,7 @@ FreePixels(Display *dsply, Colormap colorMap, int num)
  *                                                    *
  * Use either makeNewColormap() OR AllocCells().      *
  * This routine tries to allocate an adequate color   *
- * map to be used by the AXIOM smooth shading         *
+ * map to be used by the FRICAS smooth shading         *
  * application that is to be run under X Windows.     *
  * The colors are allocated from available space in   *
  * the colorMap and returned in the array pixels.     *

@@ -67,7 +67,7 @@ typedef struct _LLPoint { /* meaning list of list of points */
   /* for the current 3D stuff:
      functions of 2 variables - closed is false (xmax does not close
      back to xmin) parametric surfaces of one variable (tubes) - closed
-     is user defined (from AXIOM)
+     is user defined (from FriCAS)
      */
   componentProp prop;
   int numOfLists;
