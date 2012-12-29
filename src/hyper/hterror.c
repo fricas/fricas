@@ -46,7 +46,7 @@ char ebuffer[128];
 jmp_buf jmpbuf;
 
 /*
- * This file is the error handling routine in AXIOM. The main routine is
+ * This file is the error handling routine in FriCAS. The main routine is
  * called htperror(): arguments: msg - like perror it accepts an error
  * message to be printed errno - the errno which occurred. This is so an
  * appropriate error message can be printed.

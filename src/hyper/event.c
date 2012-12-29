@@ -134,8 +134,8 @@ mainEventLoop(void)
                 else if (FD_ISSET
                     (spad_socket->socket, &rd))
                     /*
-                     * Axiom Socket do what handle_event does The 100 is
-                     * $SpadStuff in hypertex.boot
+                     * FriCAS Socket do what handle_event does The 100 is
+                     * $PageStuff in hypertex.boot
                      */
                 {
                     if (100 == get_int(spad_socket)) {
@@ -392,7 +392,7 @@ memolink(void)
 }
 
 static void
-killAxiomPage(HyperDocPage * page)
+kill_fricas_page(HyperDocPage * page)
 {
     char command[2048];
 
@@ -406,7 +406,7 @@ kill_page(HyperDocPage * page)
     page->scroll_off = 0;
     if (page->type == SpadGen) {
         hash_delete(gWindow->fPageHashTable, page->name);
-        killAxiomPage(page);
+        kill_fricas_page(page);
         free_page(page);
     }
 }
@@ -482,10 +482,10 @@ lispwindowlink_handler(HyperLink * link)
 
     if (init_top_window(NULL) != -1) {
         HyperDocPage *page = NULL;
-        int frame = gWindow->fAxiomFrame;
+        int frame = gWindow->fricas_frame;
 
         page = issue_server_command(link);
-        gWindow->fAxiomFrame = frame;
+        gWindow->fricas_frame = frame;
         gWindow->page = page;
 /*        gWindow->fWindowHashTable = gWindow->page->fLinkHashTable;*/
     }
@@ -896,7 +896,7 @@ get_new_window(void)
         input_type = FromSpadSocket;
         input_string = "";
         gWindow->page = parse_page_from_socket();
-        gWindow->fAxiomFrame = frame;
+        gWindow->fricas_frame = frame;
         XFlush(gXDisplay);
         break;
       case LinkToPage:
@@ -905,7 +905,7 @@ get_new_window(void)
             fprintf(stderr, "get_new_window: Did not find page %s\n", buf);
             /* return -1; */
         }
-        gWindow->fAxiomFrame = frame;
+        gWindow->fricas_frame = frame;
         break;
       case PopUpPage:
         val = get_int(spad_socket);
@@ -920,7 +920,7 @@ get_new_window(void)
         XMapWindow(gXDisplay, gWindow->fMainWindow);
 
         gWindow->fWindowHashTable = gWindow->page->fLinkHashTable;
-        gWindow->fAxiomFrame = frame;
+        gWindow->fricas_frame = frame;
         XFlush(gXDisplay);
         break;
       case PopUpNamedPage:
@@ -937,7 +937,7 @@ get_new_window(void)
         XMapWindow(gXDisplay, gWindow->fMainWindow);
 
         gWindow->fWindowHashTable = gWindow->page->fLinkHashTable;
-        gWindow->fAxiomFrame = frame;
+        gWindow->fricas_frame = frame;
         XFlush(gXDisplay);
         send_int(spad_socket, gWindow->fMainWindow);
         /* fprintf(stderr, "Window Id was %d\n", gWindow->fMainWindow); */

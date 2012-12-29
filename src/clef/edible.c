@@ -61,7 +61,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "edible.H1"
 #include "fnct_key.H1"
 
-#ifdef AXIOM_UNLIKELY
+#ifdef FRICAS_UNLIKELY
 #define log 1
 #define logterm 1
 #define siglog 1

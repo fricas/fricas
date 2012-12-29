@@ -58,7 +58,7 @@ static void start_scrolling(void);
 TextNode *curr_node;            /* current node being parsed. It is to be the
                                  * next one filled   */
 HashTable *gLinkHashTable;           /* the hash table of active link windows   */
-TextNode *cur_spadcom;          /* The current AXIOM command   */
+TextNode *cur_spadcom;          /* The current FRICAS command   */
 
 short int gParserMode;           /* Parser mode flag */
 short int gParserRegion;         /* Parser Region flag scrolling etc */

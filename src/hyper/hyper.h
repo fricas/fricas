@@ -81,7 +81,7 @@ extern int MenuServerOpened;
 /* These are all the colors one can use in HyperDoc. */
 
 extern int  gActiveColor,
-            gAxiomColor,
+            fricas_color,
             gBackgroundColor,
             gBfColor,
             gControlBackgroundColor,
@@ -97,7 +97,7 @@ extern int  gActiveColor,
 /* These are all the different fonts one can use in HyperDoc. */
 
 extern XFontStruct  *gActiveFont,
-                    *gAxiomFont,
+                    * fricas_font,
                     *gBfFont,
                     *gEmFont,
                     *gInputFont,
@@ -370,7 +370,7 @@ typedef struct {
   HashTable *fCondHashTable;    /* hash table for values         */
   HashTable *fPatchHashTable;   /* hash table for patch locations */
 
-  int fAxiomFrame;              /* Axiom frame number initializing window */
+  int fricas_frame;             /* FriCAS frame number initializing window */
   GC fStandardGC;               /* Graphics context for window */
   GC fInputGC;                  /* Graphics context for the input windows */
   GC fCursorGC;                 /* Graphics context for the cursors       */
@@ -416,7 +416,8 @@ extern HashTable gImageHashTable;           /* A global hash table for images */
 extern Cursor gNormalCursor;          /* The normal mouse cursor                */
 extern Cursor gActiveCursor;          /* The cursor in active regions           */
 extern Cursor gBusyCursor;            /* The clock cursor for when I am busy    */
-extern int gIsAxiomServer;            /* true iff HyperDoc is acting as an Axiom server */
+/* true iff HyperDoc is acting as an FriCAS server */
+extern int is_fricas_server;
 extern int    gArgc;                  /* original argc from main */
 extern char **gArgv;                  /* original argv from main */
 /* from lex.c */
@@ -446,7 +447,7 @@ extern int space_width;
 #define NoChar   -9999
 #define temp_dir "/tmp/"
 #define db_file_name "ht.db"
-#define def_spad "/usr/local/axiom"
+#define def_spad "/usr/local/fricas"
 
 
 /* Types of HyperDoc pages */
@@ -459,7 +460,7 @@ extern int space_width;
 #define Normal           9998
 #define UnloadedPageType 9999
 
-/* Commands from Axiom */
+/* Commands from FriCAS */
 
 #define EndOfPage        99
 #define SendLine         98
@@ -511,7 +512,7 @@ extern int space_width;
 #define KeyDefsHelpPage   "ugHyperKeysPage"
 #define InputAreaHelpPage "ugHyperInputPage"
 
-/* definitions for connecting to the Axiom server */
+/* definitions for connecting to the FriCAS server */
 
 #define Connected       0
 #define NotConnected    1
@@ -529,7 +530,7 @@ extern int space_width;
 #define RmFontDefault         "Rom14"
 #define TtFontDefault         "Erg14"
 #define ActiveFontDefault     "Bld14"
-#define AxiomFontDefault      "Erg14"
+#define fricas_font_default      "Erg14"
 #define EmphasizeFontDefault  "Itl14"
 #define BoldFontDefault       "Bld14"
 #endif
@@ -538,7 +539,7 @@ extern int space_width;
 #define RmFontDefault         "-adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1"
 #define TtFontDefault         "-adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1"
 #define ActiveFontDefault     "-adobe-courier-bold-r-normal--18-*-*-*-m-*-iso8859-1"
-#define AxiomFontDefault      "-adobe-courier-bold-o-normal--18-*-*-*-m-*-iso8859-1"
+#define fricas_font_default      "-adobe-courier-bold-o-normal--18-*-*-*-m-*-iso8859-1"
 #define EmphasizeFontDefault  "-adobe-courier-medium-o-normal--18-*-*-*-m-*-iso8859-1"
 #define BoldFontDefault       "-adobe-courier-bold-r-normal--18-*-*-*-m-*-iso8859-1"
 #endif

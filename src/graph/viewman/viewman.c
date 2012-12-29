@@ -103,7 +103,7 @@ main (void)
 #endif
   bsdSignal(SIGTERM,goodbye,DontRestartSystemCalls);
 
-  /* Connect up to AXIOM server */
+  /* Connect up to FriCAS server */
   spadSock = connect_to_local_server(SpadServer,ViewportServer,Forever);
   if (spadSock == NULL) {
     fprintf(stderr,"The viewport manager couldn't connect to FriCAS\n");
@@ -120,7 +120,7 @@ main (void)
 
   /******** getting stuff from spad and viewports ********
   *********   the viewports have priority over    ****
-  ***   AXIOM.                              ***/
+  ***   FriCAS.                              ***/
   while (1) {
     FD_ZERO(&filedes); /* zero out file descriptor */
     FD_SET(spadSock->socket,&filedes);

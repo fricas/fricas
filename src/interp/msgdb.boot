@@ -34,7 +34,7 @@
 )if false
 Description of Messages
 
-Axiom messages are read from a flat file database and returned
+FriCAS messages are read from a flat file database and returned
 as one long string.  They are preceded in the database by a key and
 this is how they are referenced from code.  For example, one key is
 S2IL0001 which means:

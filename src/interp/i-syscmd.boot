@@ -31,7 +31,7 @@
 
 )package "BOOT"
 
--- This file contains the BOOT code for the Axiom system command
+-- This file contains the BOOT code for the FriCAS system command
 -- and synonym processing facility.  The code for )trace is in the file
 -- TRACE BOOT.  The list of system commands is $SYSCOMMANDS which is
 -- initialized in SETQ LISP.
@@ -781,7 +781,7 @@ displayMacros names ==
      names
   macros := REMDUP macros
 
-  null macros => sayBrightly '"   There are no Axiom macros."
+  null macros => sayBrightly '"   There are no FriCAS macros."
 
   -- first do user defined ones
 
@@ -793,7 +793,7 @@ displayMacros names ==
             first := NIL
         displayParserMacro macro
     macro in imacs => 'iterate
-    sayBrightly (["   ",'%b, macro, '%d, " is not a known Axiom macro."])
+    sayBrightly (["   ",'%b, macro, '%d, " is not a known FriCAS macro."])
 
   -- now system ones
 

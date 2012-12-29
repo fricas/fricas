@@ -53,7 +53,8 @@ spoonView2D(void)
 {
 
   int  i,code,pipe0[2],pipe1[2],there;
-  char envAXIOM[100],runView[100];
+  char * env_fricas;
+  char * run_view;
 
   sprintf(errorStr,"%s","creating pipes");
   check(pipe(pipe0));
@@ -79,9 +80,22 @@ spoonView2D(void)
     close(pipe1[1]);
     printf("(spoon2D child) start the TwoDimensionalViewport process\n");
     sprintf(errorStr,"%s","(viewAlone) execution of the TwoDimensionalViewport process");
-    sprintf(envAXIOM,"%s",getenv("AXIOM"));
-    sprintf(runView,"%s%s",envAXIOM,"/lib/view2D");
-    check(execl(runView,runView,NULL));
+    env_fricas = getenv("AXIOM");
+    {
+        size_t env_fricas_len = strlen(env_fricas);
+        if (env_fricas_len > 20000) {
+            fprintf(stderr, "AXIOM env var too long\n");
+            exit(-1);
+        }
+        run_view = malloc(env_fricas_len + strlen("/lib/view2D") + 1);
+        if(!run_view) {
+            fprintf(stderr, "(spoon2D child) out of memory\n");
+            exit(-1);
+        }
+        strcpy(run_view, env_fricas);
+        strcat(run_view, "/lib/view2D");
+    }
+    check(execl(run_view, run_view, NULL));
     fprintf(stderr,"Could not execute view2D! Check that view2D is on your path variable.\n");
     exit(-1);
 

@@ -31,8 +31,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef AXIOM_COM_H_INCLUDED
-#define AXIOM_COM_H_INCLUDED
+#ifndef FRICAS_COM_H_INCLUDED
+#define FRICAS_COM_H_INCLUDED
 
 #ifdef __MINGW32__
 #  include <winsock2.h>
@@ -48,25 +48,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    represented by an integer type, but that integer type is not just
    plain int as in the Unix world.  It is an unsigned integer.
    Consequently, we abstract over that variation, using the typedef
-   axiom_socket.  */
+   fricas_socket.  */
 
 #ifdef __MINGW32__
-typedef SOCKET axiom_socket;
+typedef SOCKET fricas_socket;
 #else
-typedef int axiom_socket;
+typedef int fricas_socket;
 #endif
 
 
 /* Close a socket communication endpoint.  */
-extern void axiom_close_socket(axiom_socket);
+extern void fricas_close_socket(fricas_socket);
 
 typedef struct {
-  axiom_socket socket;  /* socket number returned by "socket" call */
+  fricas_socket socket;  /* socket number returned by "socket" call */
   int type;             /* socket type (AF_UNIX or AF_INET) */
   int purpose;          /* can be SessionManager, GraphicsServer, etc. */
   int pid;              /* process ID of connected socket */
   int frame;            /* spad interpreter frame (for interpreter windows) */
-  axiom_socket remote;  /* file descriptor of remote socket */
+  fricas_socket remote;  /* file descriptor of remote socket */
   union {
     struct sockaddr u_addr;
     struct sockaddr_in i_addr;
@@ -96,7 +96,7 @@ typedef struct {
 
 #define Forever 0
 
-/* Socket name for local AXIOM server and session manager */
+/* Socket name for local FRICAS server and session manager */
 
 #define SpadServer              "/tmp/.d"
 #define SessionServer           "/tmp/.s"
@@ -116,7 +116,7 @@ extern Sock clients[];
 extern fd_set socket_mask;
 extern fd_set server_mask;
 
-/* Commands sent over the AXIOM session manager or menu socket */
+/* Commands sent over the FRICAS session manager or menu socket */
 
 #define CreateFrame             1
 #define SwitchFrames            2
@@ -135,7 +135,7 @@ extern fd_set server_mask;
 
 #define CreateFrameAnswer       50
 
-/* Commands from AXIOM menu server to interpreter windows */
+/* Commands from FRICAS menu server to interpreter windows */
 
 #define ReceiveInputLine        100
 #define TestLine                101
@@ -148,13 +148,13 @@ extern fd_set server_mask;
    send().  */
 
 static inline int
-axiom_write(Sock* s, const char* buf, size_t n)
+fricas_write(Sock* s, const char* buf, size_t n)
 {
    return send(s->socket, buf, n, 0);
 }
 
 static inline int
-axiom_read(Sock* s, char* buf, size_t n)
+fricas_read(Sock* s, char* buf, size_t n)
 {
    return recv(s->socket, buf, n, 0);
 }

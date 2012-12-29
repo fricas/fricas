@@ -180,7 +180,8 @@ forkView2D(void)
   int              there;
   int  pipe0[2], pipe1[2];
 
-  char envAXIOM[100],runView[100];
+  char * env_fricas;
+  char * run_view;
 
 #ifdef DEBUG
   fprintf(stderr,"fun2D:Pipe calls for 2D\n");
@@ -218,9 +219,22 @@ forkView2D(void)
 #ifdef DEBUG
     fprintf(stderr,"Executing TwoDimensionalViewport process\n");
 #endif
-    sprintf(envAXIOM,"%s",getenv("AXIOM"));
-    sprintf(runView,"%s%s",envAXIOM,"/lib/view2D");
-    check(execl(runView,runView,NULL));
+    env_fricas = getenv("AXIOM");
+    {
+        size_t env_fricas_len = strlen(env_fricas);
+        if (env_fricas_len > 20000) {
+            fprintf(stderr, "AXIOM env var too long\n");
+            exit(-1);
+        }
+        run_view = malloc(env_fricas_len + strlen("/lib/view2D") + 1);
+        if(!run_view) {
+            fprintf(stderr, "(spoon2D child) out of memory\n");
+            exit(-1);
+        }
+        strcpy(run_view, env_fricas);
+        strcat(run_view, "/lib/view2D");
+    }
+    check(execl(run_view, run_view, NULL));
     fprintf(stderr,"The viewport manager could not execute view2D.\nCheck that view2D is on your PATH.\n");
     exit(-1);
 

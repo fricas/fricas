@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Still a problem with close_client */
 
-/* Communication interface for external AXIOM buffers */
+/* Communication interface for external FriCAS buffers */
 
 #include "fricas_c_macros.h"
 #include "debug.h"
@@ -69,7 +69,7 @@ typedef struct sock_list {      /* linked list of Sock */
 Sock_List *plSock = (Sock_List *) 0;
 Sock *spad_socket = (Sock *) 0; /* to_server socket for SpadServer */
 
-/* issue a AXIOM command to the buffer associated with a page */
+/* issue a FriCAS command to the buffer associated with a page */
 void
 issue_spadcommand(HyperDocPage *page, TextNode *command, int immediate,
                   int type)
@@ -195,33 +195,33 @@ start_user_buffer(HyperDocPage *page)
     if (access(complfile, R_OK) == 0)
 
         /*
-         * TTT says : why not invoke with "-name axiomclient" and set any
+         * TTT says : why not invoke with "-name fricasclient" and set any
          * defaults in the usual way
          */
 #ifdef RIOSplatform
         sprintf(buf,
-                "aixterm -sb -sl 500 -name axiomclient -n '%s' -T '%s'  -e  %s %s %s&",
+                "aixterm -sb -sl 500 -name fricasclient -n '%s' -T '%s'  -e  %s %s %s&",
                 title, title, spadbuf, page->name, complfile);
     else
         sprintf(buf,
-         "aixterm -sb -sl 500 -name axiomclient -n '%s' -T '%s' -e  %s %s&",
+         "aixterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s&",
                 title, title, spadbuf, page->name);
 #else
 #ifdef SUNplatform
         sprintf(buf,
-        "xterm -sb -sl 500 -name axiomclient -n '%s' -T '%s' -e  %s %s %s&",
+        "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
                 title, title, spadbuf, page->name, complfile);
     else
         sprintf(buf,
-           "xterm -sb -sl 500 -name axiomclient -n '%s' -T '%s' -e  %s %s&",
+           "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s&",
                 title, title, spadbuf, page->name);
 #else
         sprintf(buf,
-        "xterm -sb -sl 500 -name axiomclient -n '%s' -T '%s' -e  %s %s %s&",
+        "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
                 title, title, spadbuf, page->name, complfile);
     else
         sprintf(buf,
-         "xterm -sb -sl 500 -name axiomclient -n '%s' -T '%s' -e  %s '%s'&",
+         "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s '%s'&",
                 title, title, spadbuf, page->name);
 #endif
 #endif
@@ -636,7 +636,7 @@ print_to_string1(TextNode *command,int * sizeBuf)
 }
 
 /*
- * Send a lisp or spad command to the AXIOM server for execution , if
+ * Send a lisp or spad command to the FriCAS server for execution , if
  * type is link, then we wait for a HyperDoc card to be returned
  */
 
@@ -788,12 +788,12 @@ switch_frames(void)
         fprintf(stderr, "(HyperDoc) No session manager connected!\n");
         return;
     }
-    if (gWindow->fAxiomFrame == -1) {
+    if (gWindow->fricas_frame == -1) {
         fprintf(stderr, "(HyperDoc) No FriCAS frame associated with top level window!\n");
         return;
     }
     send_int(session_server, SwitchFrames);
-    send_int(session_server, gWindow->fAxiomFrame);
+    send_int(session_server, gWindow->fricas_frame);
 }
 void
 send_lisp_command(char *command)

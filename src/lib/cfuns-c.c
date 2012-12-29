@@ -138,8 +138,7 @@ make_path_from_file(char *s, char *t)
 }
 
 /* The functions writeablep() and readablep() determine write and
-   read access of a file designated by its name.  The function
-   axiom_has_write_access is a sub-routine of writeablep.
+   read access of a file designated by its name.
 
    The access is determined based on the POSIX semantics; see
    "Advanced Programming in the UNIX Environement", section 4.5.

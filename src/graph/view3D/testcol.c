@@ -59,7 +59,7 @@ viewPoints      *viewport;
 GCptr           GChead=NULL;    /* ptr to head of ps GC linked list */
 char            *PSfilename;    /* output file name used in user directory */
 int             psInit=no;      /* need to call globaInitPs() each run */
-char            *envAXIOM;      /* used for ps file paths */
+char            * env_fricas;   /* used for ps file paths */
 int             maxGreyShade=0;
 GC              globalGC1, globalGC2, anotherGC, globGC, trashGC,
                 controlMessageGC, lightingGC, volumeGC, quitGC, processGC,
@@ -115,12 +115,12 @@ int             someInt;
 
 int             drawMore;
 
-int             spadMode=no,            /* yes if receiving AXIOM command and
+int             spadMode=no,            /* yes if receiving FriCAS command and
                                            calling drawViewport */
                 spadDraw=no;            /* yes if drawing viewport for
-                                           an AXIOM command */
+                                           a FriCAS command */
 int             spadSignalReceived=0;  /* yes if current state is a result of
-                                           a signal from AXIOM */
+                                           a signal from FriCAS */
 int             inNextEvent=no;         /* true just before a call to
                                            XNextEvent */
 jmp_buf         jumpFlag;
@@ -194,7 +194,7 @@ int             finishedList=no, zoomed=yes, translated = yes,
                 gotToggle = no;
 poly            *quickList;
 
-                /** if not connected to AXIOM **/
+                /* if not connected to FriCAS */
 int             viewAloned;
 
                 /** for drawing the box **/
@@ -275,7 +275,7 @@ main(void)
   /**** link Xwindows to viewports - X10 feature ****/
   table = XCreateAssocTable(nbuckets);
 
-  /**** Create AXIOM color map ****/
+  /**** Create FriCAS color map ****/
   totalShades = 0;
   totalColors = XInitSpadFill(dsply,scrn,&colorMap,
                               &totalHues,&totalSolidShades,

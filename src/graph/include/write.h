@@ -32,9 +32,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /* These are types of files that the viewports would
-   be able to write out upon a command from AXIOM.
+   be able to write out upon a command from FriCAS.
    Note that the numbers in this list is also the order
-   in which they should appear in the AXIOM file (e.g. view3D.spad) */
+   in which they should appear in the FriCAS file (e.g. view3D.spad) */
 
 #define Pixmap          1
 #define Bitmap          2
