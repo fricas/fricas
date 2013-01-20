@@ -365,11 +365,9 @@
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
 
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
-      '((PLUS 0) (+ (|Zero|)) (|lcm| (|One|)) (STRCONC "") (|strconc| "")
-        (MAX -999999) (MIN 999999) (TIMES 1) (* (|One|)) (CONS NIL)
-        (APPEND NIL) (|append| NIL) (UNION NIL) (UNIONQ NIL) (|gcd| (|Zero|))
-        (|union| NIL) (NCONC NIL) (|and| |true|) (|or| |false|) (AND 'T)
-        (OR NIL)))
+      '((+ (|Zero|)) (|lcm| (|One|)) (|strconc| "") (* (|One|)) 
+        (|append| NIL) (|gcd| (|Zero|))
+        (|union| NIL) (|and| |true|) (|or| |false|) ))
 
 (defun |delete| (item sequence)
    (cond ((symbolp item) (remove item sequence :test #'eq))

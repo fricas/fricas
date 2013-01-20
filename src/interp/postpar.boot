@@ -285,9 +285,6 @@ postCollect [constructOp,:m,x] ==
         ['REDUCE,'append,0,[op,:itl,newBody]]
       [op,:itl,y]
 
-postTupleCollect [constructOp,:m,x] ==
-  postCollect [constructOp,:m,['construct,x]]
-
 postIteratorList x ==
   x is [p,:l] =>
     (p:= postTran p) is ['IN,y,u] =>

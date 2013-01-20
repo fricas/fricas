@@ -303,7 +303,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 
   (|and| |parseAnd|)
   (CATEGORY |parseCategory|)
-  ;; (|construct| |parseConstruct|)
   (DEF |parseDEF|)
   (|exit| |parseExit|)
   (|has| |parseHas|)
@@ -335,7 +334,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|in| |postin|)  ;" the infix operator version of in"
   (IN |postIn|)  ;" the iterator form of in"
   (REPEAT |postRepeat|)
-  (|TupleCollect| |postTupleCollect|)
   (|add| |postAdd|)
   (|Reduce| |postReduce|)
   (\, |postComma|)
@@ -392,6 +390,5 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|try| |comp_try|)
   (|Union| |compCat|)
   (|Mapping| |compCat|)
-  (VECTOR |compVector|)
   (|where| |compWhere|)
 )) (MAKEPROP (CAR X) 'SPECIAL  (CADR X)))
