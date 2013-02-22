@@ -47,7 +47,7 @@
 ++   but at the moment there is no need for this.
 FreeModuleCategory(R, S) : Category == Exports where
    R : Join(SemiRng, AbelianMonoid)
-   S : OrderedSet
+   S : Comparable
    Term ==> Record(k : S, c : R)
 
    Exports == Join(BiModule(R, R), IndexedDirectProductCategory(R, S)) with
@@ -100,7 +100,7 @@ FreeModuleCategory(R, S) : Category == Exports where
                           return smaller?(leadingCoefficient(p),
                                           leadingCoefficient(q))
                   else
-                      return leadingMonomial(p) < leadingMonomial(q)
+                      return smaller?(leadingMonomial(p), leadingMonomial(q))
 
 @
 \section{domain FM FreeModule}
@@ -224,7 +224,7 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : OrderedSet) :
 
        coefficient(x, s) ==
          null x => 0$R
-         x.first.k > s => coefficient(rest x, s)
+         smaller?(s, x.first.k) => coefficient(rest x, s)
          x.first.k = s => x.first.c
          0$R
 

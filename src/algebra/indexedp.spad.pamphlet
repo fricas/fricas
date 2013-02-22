@@ -48,15 +48,16 @@ representation without checking the order.
 ++ This category represents the direct product of some set with
 ++ respect to an ordered indexing set.
 
-IndexedDirectProductCategory(A : SetCategory, S : OrderedSet
+IndexedDirectProductCategory(A : SetCategory, S : Comparable
                             ) : Category == Export where
   Term ==> Record(k : S, c : A)
 
   Export ==  AbelianProductCategory(A) with
 
       if A has Comparable then Comparable
-      if A has OrderedAbelianMonoid then OrderedAbelianMonoid
-      if A has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
+      if S has OrderedSet then
+          if A has OrderedAbelianMonoid then OrderedAbelianMonoid
+          if A has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
 
       map :           (A -> A, %) -> %
          ++ map(f, z) returns the new element created by applying the
@@ -121,7 +122,7 @@ and thus the first entry in the list representing the object.
 ++ If A has additive structure, it is propagated coordinatewise to the
 ++ product.  Similarely, comparisons are propagated using
 ++ lexicographic ordering.
-IndexedDirectProductObject(A : SetCategory, S : OrderedSet
+IndexedDirectProductObject(A : SetCategory, S : Comparable
                           ) : IndexedDirectProductCategory(A, S)
  == add
     --representations
@@ -160,7 +161,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
                        else
                            return smaller?(x.first.c, y.first.c)
                    else
-                       x.first.k < y.first.k => return cmp_0_y
+                       smaller?(x.first.k, y.first.k) => return cmp_0_y
                        return cmp_x_0
 
        if A has AbelianMonoid then
@@ -197,7 +198,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
        compareterm : (Term, Term) -> Boolean
 
        compareterm(a : Term, b : Term) : Boolean ==
-          a.k > b.k
+          smaller?(b.k, a.k)
 
        construct(lx) ==
           sort(compareterm, lx)
@@ -235,7 +236,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
                                         newcell := cons([x.first.k, r], empty())
                                 x := rest x
                                 y := rest y
-                        else if y.first.k < x.first.k then
+                        else if smaller?(y.first.k, x.first.k) then
                                 newcell := cons(x.first, empty())
                                 x := rest x
                         else
@@ -313,7 +314,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
                            newcell := cons([x.first.k, r], empty())
                        x := rest x
                        y := rest y
-                   else if y.first.k < x.first.k then
+                   else if smaller?(y.first.k, x.first.k) then
                        newcell := cons(x.first, empty())
                        x := rest x
                    else
@@ -347,7 +348,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
                            newcell := cons([x.first.k, r], empty())
                        x := rest x
                        y := rest y
-                   else if x.first.k > y.first.k then
+                   else if smaller?(y.first.k, x.first.k) then
                        newcell := cons(x.first, empty())
                        x := rest x
                    else
@@ -385,7 +386,7 @@ IndexedDirectProductObject(A : SetCategory, S : OrderedSet
 
            x < y == smaller?(x, y)
 
-       if A has OrderedAbelianMonoidSup then
+       if S has OrderedSet and A has OrderedAbelianMonoidSup then
 
            sup(x, y) ==
                empty? y => x
