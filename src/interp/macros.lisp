@@ -741,6 +741,18 @@
                   (concatenate 'string
                                (make-string tpos :initial-element #\space)
                                (subseq str bpos))))
+        (loop
+            (let ((tloc (tabloc str)))
+                (if (null tloc) (return))
+                (let ((rloc (NEXT-TAB-LOC tloc)))
+                    (if (eql tloc rloc)
+                        (setf (aref str tloc) #\Space)
+                        (setf str
+                            (concatenate 'string
+                                (subseq str 0 tloc)
+                                (make-string (+ 1 (- rloc tloc))
+                                    :initial-element #\space)
+                                (subseq str (+ 1 tloc))))))))
          ;; remove dos CR
         (let ((lpos (maxindex str)))
           (if (eq (char str lpos) #\Return) (subseq str 0 lpos) str)))
@@ -749,6 +761,10 @@
 (defun blankp (char) (or (eq char #\Space) (eq char #\tab)))
 
 (defun nonblankloc (str) (position-if-not #'blankp str))
+
+(defun tabp (c) (equal c #\tab))
+
+(defun tabloc (str) (position-if #'tabp str))
 
 ;; stream handling for paste-in generation
 
