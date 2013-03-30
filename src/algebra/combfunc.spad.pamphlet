@@ -997,7 +997,7 @@ might not re-evaluate the operator.
 
     import List Kernel(F)
     opdiff := operator(operator('%diff)$CommonOperators)$F
-    dm := new()$SE :: F
+    dummy ==> new()$SE :: F
 
     ahalf : F := recip(2::F)::F
     athird : F    := recip(3::F)::F
@@ -1011,6 +1011,7 @@ might not re-evaluate the operator.
     grad2(l : List F, t : SE, op : OP, d2 : (F, F) -> F ) : F ==
         x1 := l(1)
         x2 := l(2)
+        dm := dummy
         differentiate(x1, t)*kernel(opdiff, [op [dm, x2], dm, x1])
              + differentiate(x2, t)*d2(x1, x2)
 
@@ -1018,8 +1019,10 @@ might not re-evaluate the operator.
         x1 := l(1)
         x2 := l(2)
         x3 := l(3)
-        differentiate(x1, t)*kernel(opdiff, [op [dm, x2, x3], dm, x1])
-           + differentiate(x2, t)*kernel(opdiff, [op [x1, dm, x3], dm, x2])
+        dm1 := dummy
+        dm2 := dummy
+        differentiate(x1, t)*kernel(opdiff, [op [dm1, x2, x3], dm1, x1])
+           + differentiate(x2, t)*kernel(opdiff, [op [x1, dm2, x3], dm2, x2])
              + differentiate(x3, t)*d3(x1, x2, x3)
 
     -- handle WeierstrassPInverse
@@ -1770,6 +1773,7 @@ might not re-evaluate the operator.
         dz := differentiate(z, t)*(lerchPhi(z, s - 1, a) -
                 a*lerchPhi(z, s, a))/z
         da := -differentiate(a, t)*s*lerchPhi(z, s + 1, a)
+        dm := dummy
         differentiate(s, t)*kernel(opdiff, [opLerchPhi [z, dm, a], dm, s])
            + dz + da
 
@@ -2086,29 +2090,33 @@ The operation [[symbolicGrad]] returns the first component of the gradient of
 
 <<package FSPECF FunctionalSpecialFunction>>=
 
+    diff1(op : OP, n : F, x : F) : F ==
+        dm := dummy
+        kernel(opdiff, [op [dm, x], dm, n])
+
     iBesselJ(l : List F, t : SE) : F ==
         n := first l; x := second l
-        differentiate(n, t)*kernel(opdiff, [opBesselJ [dm, x], dm, n])
+        differentiate(n, t)*diff1(opBesselJ, n, x)
           + differentiate(x, t) * ahalf * (besselJ (n-1, x) - besselJ (n+1, x))
 
     iBesselY(l : List F, t : SE) : F ==
         n := first l; x := second l
-        differentiate(n, t)*kernel(opdiff, [opBesselY [dm, x], dm, n])
+        differentiate(n, t)*diff1(opBesselY, n, x)
           + differentiate(x, t) * ahalf * (besselY (n-1, x) - besselY (n+1, x))
 
     iBesselI(l : List F, t : SE) : F ==
         n := first l; x := second l
-        differentiate(n, t)*kernel(opdiff, [opBesselI [dm, x], dm, n])
+        differentiate(n, t)*diff1(opBesselI, n, x)
           + differentiate(x, t)* ahalf * (besselI (n-1, x) + besselI (n+1, x))
 
     iBesselK(l : List F, t : SE) : F ==
         n := first l; x := second l
-        differentiate(n, t)*kernel(opdiff, [opBesselK [dm, x], dm, n])
+        differentiate(n, t)*diff1(opBesselK, n, x)
           - differentiate(x, t)* ahalf * (besselK (n-1, x) + besselK (n+1, x))
 
     dPolylog(l : List F, t : SE) : F ==
         s := first l; x := second l
-        differentiate(s, t)*kernel(opdiff, [opPolylog [dm, x], dm, s])
+        differentiate(s, t)*diff1(opPolylog, s, x)
            + differentiate(x, t)*polylog(s-1, x)/x
 @
 
@@ -2132,7 +2140,7 @@ respect to the first argument.
     if F has ElementaryFunctionCategory then
       iGamma2(l : List F, t : SE) : F ==
         a := first l; x := second l
-        differentiate(a, t)*kernel(opdiff, [opGamma2 [dm, x], dm, a])
+        differentiate(a, t)*diff1(opGamma2, a, x)
           - differentiate(x, t)* x ^ (a - 1) * exp(-x)
       setProperty(opGamma2, SPECIALDIFF, iGamma2@((List F, SE)->F)
                                                  pretend None)
@@ -2291,6 +2299,7 @@ component of the gradient failed, it resulted in an infinite loop for
         idvsum(op : BasicOperator, n : Integer, l : List F, x : Symbol) : F  ==
             res : F := 0
             for i in 1..n for a in l repeat
+                dm := dummy
                 nl := replace_i(l, dm, i)
                 res := res + differentiate(a, x)*kernel(opdiff, [op nl, dm, a])
             res
