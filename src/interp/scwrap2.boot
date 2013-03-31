@@ -75,7 +75,6 @@ $trans_table := [["id", "IDENTIFIER"], ["key", "KEYWORD"], _
                   ["string", "SPADSTRING"], ["char", "SPADSTRING"], _
                   ["integer", "NUMBER"], ["float", "SPADFLOAT"]]
 
--- ["BREAK", "leave"], _
 $trans_key := [ _
                 ["ARROW", "->"], _
                 ["AT", "@"], _

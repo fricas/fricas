@@ -187,7 +187,6 @@ scanDictCons()==
 scanPunCons()==
     listing := HKEYS scanKeyTable
     a := make_BVEC(256, 0)
---  SETSIZE(a,256)
     for i in 0..255 repeat SETELT_BVEC(a, i, 0)
     for k in listing repeat
        if not startsId? k.0
@@ -354,13 +353,7 @@ lfid x== ["id", INTERN(x, $boot_package)]
 
 lfkey x==["key",keyword x]
 
-lfinteger x==
-           ["integer",x]
---     if EQUAL(x,'"0")
---     then ["id",INTERN x]
---     else if EQUAL(x,'"1")
---          then ["id",INTERN x]
---          else ["integer",x]
+lfinteger x == ["integer", x]
 
 lfrinteger (r,x)==["integer",CONCAT (r,CONCAT('"r",x))]
 --lfrfloat(a,w,v)==["rfloat",CONCAT(a,'"r.",v)]
