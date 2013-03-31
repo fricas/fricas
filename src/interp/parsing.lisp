@@ -116,7 +116,7 @@ NonBlank is true if the token is not preceded by a blank."
 
 ; *** Match Token
 
-(defun match-token (token type &optional (symbol nil))
+(defun match-token (token type symbol)
   (if (and token (eq (token-type token) type))
       (if symbol (if (eq symbol (token-symbol token)) token) token)))
 

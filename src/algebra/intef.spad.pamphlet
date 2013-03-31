@@ -102,7 +102,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     unklimint   : (F, SE, List F) -> U3
     diffint     : (F, SE, K) -> IR
     tryChangeVar : (F, K, SE) -> Union(IR, "failed")
-    droponex    : (F, F, K, F) -> Union(F, "failed")
 
     prim?(k, x)      == is?(k, 'log) or has?(operator k, PRIM)
 
@@ -124,14 +123,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
       (da := differentiate(a := denom(f)::F, x)) ~= 0 and
         zero? differentiate(c := numer(f)::F / da, x) => (c * log a)::IR
       mkAnswer(0, empty(), [[f, x::F]])
-
-    droponex(f, a, ka, x) ==
-      (r := retractIfCan(f)@Union(K, "failed")) case "failed" => "failed"
-      is?(op := operator(k := r::K), OPDIFF) =>
-        (z := third(arg := argument k)) = a => op [first arg, second arg, x]
-        (u := droponex(first arg, a, ka, x)) case "failed" => "failed"
-        op [u::F, second arg, z]
-      eval(f, [ka], [x])
 
     unklimint(f, x, lu) ==
       for u in lu | u ~= 0 repeat
