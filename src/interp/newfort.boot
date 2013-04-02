@@ -786,7 +786,7 @@ fortPre1 e ==
   ELT(STRINGIMAGE e, 0) = char "%" => SUBSEQ(STRINGIMAGE e, 1)
   atom e => e
   [op, :args] := e
-  op in ["**" , '"**"] =>
+  op in ["^" , '"^"] =>
     [rand,exponent] := args
     rand = "%e" => fortPre1 ["exp", exponent]
     (IDENTP rand or STRINGP rand) and exponent=2 => ["*", rand, rand]
