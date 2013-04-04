@@ -1428,7 +1428,7 @@ writeInputLines(fn,initial) ==
         if not done then n := 0
       lineList := [vec,:lineList]
   file := histInputFileName(fn)
-  DELETE_-FILE(file)
+  maybe_delete_file(file)
   inp:= MAKE_-OUTSTREAM(file)
   for x in removeUndoLines NREVERSE lineList repeat WRITE_-LINE(x,inp)
   -- see file "undo" for definition of removeUndoLines
