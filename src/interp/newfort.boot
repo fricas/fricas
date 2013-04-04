@@ -101,7 +101,7 @@ exp2Fort2(e,prec,oldOp) ==
   unaryOps    := ['"-",'"~"]
   unaryPrecs  := [700,50]
   binaryOps   := ['"|",'"**",'"/",'".LT.",'".GT.",'".EQ.",'".LE.",'".GE.", _
-                  '"OVER",'".AND.",'".OR."]
+                  '".AND.", '".OR."]
   binaryPrecs := [0, 900, 800, 400, 400, 400, 400, 400, 800, 70, 90]
   naryOps     := ['"-",'"+",'"*",'",",'" ",'"ROW",'""]
   naryPrecs   := [700,  700, 800,  110,   0,     0,  0]
@@ -430,7 +430,7 @@ exp2FortSpecial(op,args,nargs) ==
     STRCONC('"[",first arg,tailPart,'"]")
   op = "PAREN" =>
     args := first args
-    not(first(args)="CONCATB") => fortError1 [op,:args]
+    not(first(args)="CONCATB") => fortPre1(args)
     -- Have a matrix element
     mkMat(args)
   op = "SUB" =>
@@ -795,7 +795,7 @@ fortPre1 e ==
   op = "ROOT" =>
     #args = 1 => fortPreRoot ["sqrt", first args]
     [ "**" , fortPreRoot first args , [ "/" , fortPreRoot(1), fortPreRoot first rest args] ]
-  if op in ['"OVER", "OVER"] then op := '"/"
+  if op in ['"OVER", "OVER", '"SLASH", "SLASH"] then op := '"/"
   specialOps  := '(BRACKET BRACE SUB AGGLST SUPERSUB MATRIX SEGMENT ALTSUPERSUB
                    PAREN CONCAT CONCATB QUOTE STRING SIGMA  STEP IN SIGMA2
                    INTSIGN  PI PI2 INDEFINTEGRAL)
