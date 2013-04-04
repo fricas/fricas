@@ -267,6 +267,14 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 ;;; -----------------------------------------------------------------
 
+;;; Deleting files ignoring errors
+
+(defun |maybe_delete_file| (file)
+    #-gcl (ignore-errors (delete-file file))
+    ;;; broken, but using gcl it is hard to do better
+    #+gcl (and (probe-file file) (delete-file file))
+)
+
 ;;; Chdir function
 
 #+:GCL
