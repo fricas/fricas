@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2012-10-18],
+AC_INIT([FriCAS], [2013-04-06],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -418,7 +418,7 @@ case $fricas_lisp_flavor in
        fricas_eval_flags='-eval'
        ;;
     sbcl)
-       fricas_quiet_flags='--noinform --noprint --no-userinit'
+       fricas_quiet_flags='--noinform --noprint --no-sysinit --no-userinit'
        fricas_eval_flags='--eval'
        ;;
     cmucl)
