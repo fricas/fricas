@@ -251,13 +251,13 @@ findString(char *file, char *string)
 
 #include <dirent.h>
 
-char * copy_string(char *str)
+char * fricas_copy_string(char *str)
 {
     char * res = malloc(strlen(str) + 1);
     if (res) {
         strcpy(res, str);
     } else {
-        fprintf(stderr, "Malloc failed (copy_string)\n");
+        fprintf(stderr, "Malloc failed (fricas_copy_string)\n");
     }
     return res;
 }
@@ -302,7 +302,7 @@ remove_directory(char * name)
                 fprintf(stderr, "Malloc failed (npos)\n");
                 break;
             }
-            npos->file = copy_string(fname);
+            npos->file = fricas_copy_string(fname);
             if (!(npos->file)) {
                 free(npos);
                 break;

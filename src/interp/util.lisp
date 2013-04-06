@@ -551,6 +551,9 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 )
 
 (defun fricas-restart ()
+  ;;; Need to reinitialize CUROUTSTREAM because clisp closes
+  ;;; it when dumping executable
+  (setf CUROUTSTREAM *standard-output*)
   (fricas-init)
   #+(or :GCL :poplog)
   (|spad|)
