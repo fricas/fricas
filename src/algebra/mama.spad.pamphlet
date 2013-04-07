@@ -1,0 +1,335 @@
+<<package MAMA MatrixManipulation>>=
+)abbrev package MAMA MatrixManipulation
+++ Author: Raoul Bourquin
+++ Date Created: 17 November 2012
+++ Date Last Updated: 1 December 2012
+++ Description:
+++ Some functions for manipulating (dense) matrices.
+++ Supported are various kinds of slicing, splitting
+++ and stacking of matrices. The functions resemble
+++ operations often used in numerical linear algebra
+++ algorithms.
+MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
+  R : Join(SemiRng, AbelianMonoid)
+  Row : FiniteLinearAggregate R
+  Col : FiniteLinearAggregate R
+  M : MatrixCategory(R, Row, Col)
+
+  I ==> Integer
+  PI ==> PositiveInteger
+  LI ==> List I
+  SI ==> Segment I
+  LPI ==> List PI
+  SPI ==> Segment PI
+
+
+  Exports ==> with
+
+    -- Slicing matrices
+
+    element : (M, PI, PI) -> M
+      ++ \spad{element} returns a single element out of a matrix.
+      ++ The element is put into a one by one matrix.
+
+    rowMatrix : (M, PI) -> M
+      ++ \spad{rowMatrix} returns a single row out of a matrix.
+      ++ The row is put into a one by N matrix.
+
+    rows : (M, LPI) -> M
+      ++ \spad{rows} returns several rows out of a matrix.
+      ++ The rows are stacked into a matrix.
+
+    rows : (M, SPI) -> M
+      ++ \spad{rows} returns several rows out of a matrix.
+      ++ The rows are stacked into a matrix.
+
+    columnMatrix : (M, PI) -> M
+      ++ \spad{columnMatrix} returns a single column out of a matrix.
+      ++ The column is put into a one by N matrix.
+
+    columns : (M, LPI) -> M
+      ++ \spad{columns} returns several columns out of a matrix.
+      ++ The columns are stacked into a matrix.
+
+    columns : (M, SPI) -> M
+      ++ \spad{columns} returns several columns out of a matrix.
+      ++ The columns are stacked into a matrix.
+
+    subMatrix : (M, LPI, LPI) -> M
+      ++ \spad{subMatrix} returns several elements out of a matrix.
+      ++ The elements are stacked into a submatrix.
+
+    subMatrix : (M, SPI, SPI) -> M
+      ++ \spad{subMatrix} returns several elements out of a matrix.
+      ++ The elements are stacked into a submatrix.
+
+    diagonalMatrix : (M, I) -> M
+      ++ \spad{diagonalMatrix} returns a diagonal out of a matrix.
+      ++ The diagonal is put into a matrix of same shape as the
+      ++ original one. Positive integer arguments select upper
+      ++ off-diagonals, negative ones lower off-diagonals.
+
+    diagonalMatrix : M -> M
+      ++ \spad{diagonalMatrix} returns the main diagonal out of
+      ++ a matrix. The diagonal is put into a matrix of same shape
+      ++ as the original one.
+
+    bandMatrix : (M, LI) -> M
+      ++ \spad{bandMatrix} returns multiple diagonals out of a matrix.
+      ++ The diagonals are put into a matrix of same shape as the
+      ++ original one. Positive integer arguments select upper
+      ++ off-diagonals, negative ones lower off-diagonals.
+
+    bandMatrix : (M, SI) -> M
+      ++ \spad{bandMatrix} returns multiple diagonals out of a matrix.
+      ++ The diagonals are put into a matrix of same shape as the
+      ++ original one. Positive integer arguments select upper
+      ++ off-diagonals, negative ones lower off-diagonals.
+
+    -- Stacking matrices
+
+    horizConcat : (List M) -> M
+      ++ \spad{horizConcat} concatenates matrices column wise.
+
+    vertConcat : (List M) -> M
+      ++ \spad{vertConcat} concatenates matrices row wise.
+
+    blockConcat : (List List M) -> M
+      ++ \spad{blockConcat} concatenates matrices row and
+      ++ column wise, building a block matrix. The order
+      ++ is row major as in \spad{matrix}.
+
+    -- Splitting matrices
+
+    vertSplit : (M, PI) -> List M
+      ++ \spad{vertSplit} splits a matrix into multiple
+      ++ submatrices row wise.
+
+    vertSplit : (M, LPI) -> List M
+      ++ \spad{vertSplit} splits a matrix into multiple
+      ++ submatrices row wise.
+
+    horizSplit : (M, PI) -> List M
+      ++ \spad{horizSplit} splits a matrix into multiple
+      ++ submatrices column wise.
+
+    horizSplit : (M, LPI) -> List M
+      ++ \spad{horizSplit} splits a matrix into multiple
+      ++ submatrices column wise.
+
+    blockSplit : (M, PI, PI) -> List List M
+      ++ \spad{blockSplit} splits a matrix into multiple
+      ++ submatrices row and column wise, dividing
+      ++ a matrix into blocks.
+
+    blockSplit : (M, LPI, PI) -> List List M
+      ++ \spad{blockSplit} splits a matrix into multiple
+      ++ submatrices row and column wise, dividing
+      ++ a matrix into blocks.
+
+    blockSplit : (M, PI, LPI) -> List List M
+      ++ \spad{blockSplit} splits a matrix into multiple
+      ++ submatrices row and column wise, dividing
+      ++ a matrix into blocks.
+
+    blockSplit : (M, LPI, LPI) -> List List M
+      ++ \spad{blockSplit} splits a matrix into multiple
+      ++ submatrices row and column wise, dividing
+      ++ a matrix into blocks.
+
+
+  Implementation ==> add
+
+    NNI ==> NonNegativeInteger
+
+    minr ==> minRowIndex
+    maxr ==> maxRowIndex
+    minc ==> minColIndex
+    maxc ==> maxColIndex
+
+    -- Custom function to expand Segment(PositiveInteger) into List(PositiveInteger).
+    -- This operation is not supported by the overly restrictive library implementation.
+    expand(spi : SPI) : LPI ==
+        lr := empty()$LPI
+        l : PI := lo spi
+        h : PI := hi spi
+        inc : I := incr spi
+        zero? inc => error "Cannot expand a segment with an increment of zero"
+        if inc > 0 then
+          while l <= h repeat
+            lr := concat(l, lr)
+            l := qcoerce(l + inc)@PI
+        else
+          while l >= h repeat
+            lr := concat(l, lr)
+            l := qcoerce(l + inc)@PI
+        reverse! lr
+
+
+    element(A, r, c) ==
+      matrix([[A(r,c)]])
+
+
+    rowMatrix(A:M, r:PI) : M ==
+      subMatrix(A, r, r, minc A, maxc A)
+
+
+    rows(A:M, lst:LPI) : M ==
+      nc := ncols(A)
+      nc = 0 => zero(#lst, nc)$M
+      ncp := qcoerce(nc)@PI
+      ls := expand(1..ncp)
+      subMatrix(A, lst, ls)
+
+
+    rows(A:M, si:SPI) : M ==
+      rows(A, expand(si))
+
+
+    columnMatrix(A:M, c:PI) : M ==
+      subMatrix(A, minr A, maxr A, c, c)
+
+
+    columns(A:M, lst:LPI) : M ==
+      nr := nrows(A)
+      nr = 0 => zero(nr, #lst)$M
+      nrp := qcoerce(nr)@PI
+      ls := expand(1..nrp)
+      subMatrix(A, ls, lst)
+
+
+    columns(A:M, si:SPI) : M ==
+      columns(A, expand(si))
+
+
+    fill_diagonal(B : M, A : M, nr : NNI, nc : NNI, n : I) : Void ==
+      n > (nc-1) => error "requested diagonal out of range"
+      n < 0 and abs(n) > (nr-1) => error "requested diagonal out of range"
+
+      if n >= 0 then
+        dl := min(nc-n, nr)
+        sr := minr(A)
+        sc := minc(A) + n
+      else
+        dl := min(nc, nr-abs(n))
+        sr := minr(A) + abs(n)
+        sc := minc(A)
+
+      for i in 0..(dl-1) repeat
+        qsetelt!(B, sr+i, sc+i, A(sr+i, sc+i))
+
+
+    diagonalMatrix(A, n) ==
+        nr := nrows(A)
+        nc := ncols(A)
+        B := zero(nr,nc)
+        fill_diagonal(B, A, nr, nc, n)
+        B
+
+
+    diagonalMatrix(A) ==
+      diagonalMatrix(A, 0)
+
+
+    bandMatrix(A:M, ln:LI) : M ==
+        nr := nrows(A)
+        nc := ncols(A)
+        B := zero(nr,nc)
+        for n in ln repeat
+            fill_diagonal(B, A, nr, nc, n)
+        B
+
+
+    bandMatrix(A:M, si:SI) : M ==
+      bandMatrix(A, expand(si))
+
+
+    subMatrix(A:M, lr:LPI, lc:LPI) : M ==
+        n := #lr
+        m := #lc
+        res := zero(n, m)$M
+        for i in 1..n for ii in lr repeat
+            for j in 1..m for jj in lc repeat
+                qsetelt!(res, i, j, qelt(A, ii, jj))
+        res
+
+
+    subMatrix(A:M, sr:SPI, sc:SPI) : M ==
+      subMatrix(A, low sr, high sr, low sc, high sc)
+
+
+    -- Stack matrices
+
+
+    horizConcat(LA) ==
+      reduce(horizConcat, LA)
+
+
+    vertConcat(LA) ==
+      reduce(vertConcat, LA)
+
+
+    blockConcat(LLA: List List M) : M ==
+      reduce(vertConcat, [reduce(horizConcat, LA) for LA in LLA])
+
+
+    -- Split matrices
+
+
+    vertSplit(A:M, r:PI) : List M ==
+      dr := nrows(A) exquo r
+      dr case "failed" => error "split does not result in an equal division"
+      mir := minr A
+      mic := minc A
+      mac := maxc A
+      [ subMatrix(A, mir+i*dr, mir+(i+1)*dr-1, mic, mac) for i in 0..(r-1) ]
+
+
+    vertSplit(A:M, lr:LPI) : List M ==
+      reduce("+", lr) ~= nrows(A) => error "split does not result in proper partition"
+      l : List PI := cons(1, scan(_+, lr, 1$PI)$ListFunctions2(PI,PI))
+      mir := minr(A) -1   -- additional shift because l starts at 1
+      mic := minc A
+      mac := maxc A
+      result := [ subMatrix(A, mir+l(i-1), mir+l(i)-1, mic, mac) for i in 2..#l ]
+
+
+    horizSplit(A:M, c:PI) : List M ==
+      dc := ncols(A) exquo c
+      dc case "failed" => error "split does not result in an equal division"
+      mir := minr A
+      mar := maxr A
+      mic := minc A
+      [ subMatrix(A, mir, mar, mic+i*dc, mic+(i+1)*dc-1) for i in 0..(c-1) ]
+
+
+    horizSplit(A:M, lc:LPI) : List M ==
+      reduce("+", lc) ~= ncols(A) => error "split does not result in proper partition"
+      l : List PI := cons(1, scan(_+, lc, 1$PI)$ListFunctions2(PI,PI))
+      mir := minr A
+      mar := maxr A
+      mic := minc(A) -1   -- additional shift because l starts at 1
+      result := [ subMatrix(A, mir, mar, mic+l(i-1), mic+l(i)-1) for i in 2..#l ]
+
+
+    blockSplit(A:M, nr:PI, nc:PI) : List List M ==
+      -- The map version does not work with OpenAxiom.
+      --map( (X:M):(List M) +-> horizSplit(X, nc), vertSplit(A, nr) )$ListFunctions2(M, List M)
+      [ horizSplit(X, nc) for X in vertSplit(A, nr) ]
+
+
+    blockSplit(A:M, lr:LPI, nc:PI) : List List M ==
+      --map( (X:M):(List M) +-> horizSplit(X, nc), vertSplit(A, lr) )$ListFunctions2(M, List M)
+      [ horizSplit(X, nc) for X in vertSplit(A, lr) ]
+
+
+    blockSplit(A:M, nr:PI, lc:LPI) : List List M ==
+      --map( (X:M):(List M) +-> horizSplit(X, lc), vertSplit(A, nr) )$ListFunctions2(M, List M)
+      [ horizSplit(X, lc) for X in vertSplit(A, nr) ]
+
+
+    blockSplit(A:M, lr:LPI, lc:LPI) : List List M ==
+      --map( (X:M):(List M) +-> horizSplit(X, lc), vertSplit(A, lr) )$ListFunctions2(M, List M)
+      [ horizSplit(X, lc) for X in vertSplit(A, lr) ]
+
+@
