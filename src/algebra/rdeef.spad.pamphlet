@@ -165,6 +165,7 @@ ElementaryRischDE(R, F) : Exports == Implementation where
 
   N   ==> NonNegativeInteger
   Z   ==> Integer
+  Q   ==> Fraction(Z)
   SE  ==> Symbol
   LF  ==> List F
   K   ==> Kernel F
@@ -173,7 +174,7 @@ ElementaryRischDE(R, F) : Exports == Implementation where
   UP  ==> SparseUnivariatePolynomial F
   RF  ==> Fraction UP
   GP  ==> LaurentPolynomial(F, UP)
-  Data ==> List Record(coeff : Z, argument : P)
+  Data ==> List Record(coeff : Q, argument : P)
   RRF ==> Record(mainpart : F, limitedlogs : List NL)
   NL  ==> Record(coeff : F, logand : F)
   U   ==> Union(RRF, "failed")
@@ -283,7 +284,10 @@ ElementaryRischDE(R, F) : Exports == Implementation where
       else data := data1::Data
       f'  := nfprime := n * differentiate(f, x)
       p : P := 1
-      for v in data | (m := n * v.coeff) > 0 repeat
+      for v in data | (mq := n * v.coeff) > 0 repeat
+        mu := retractIfCan(mq)@Union(Z, "failed")
+        mu case "failed" => "iterate"
+        m := mu::Z
         p  := p * v.argument ^ (m::N)
         f' := f' - m * differentiate(v.argument::F, x) / (v.argument::F)
       rec := baseRDE(univariate(f', k), univariate(p::F * g, k))
@@ -297,7 +301,10 @@ ElementaryRischDE(R, F) : Exports == Implementation where
         tab.f := data := makeData(f, x, k)
       else data := data1::Data
       p : P := 1
-      for v in data | (m := n * v.coeff) > 0 repeat
+      for v in data | (mq := n * v.coeff) > 0 repeat
+        mu := retractIfCan(mq)@Union(Z, "failed")
+        mu case "failed" => "iterate"
+        m := mu::Z
         p  := p * v.argument ^ (m::N)
         f  := f - v.coeff * log(v.argument::F)
         nfp := nfp - m * differentiate(v.argument::F, x) / (v.argument::F)
@@ -325,16 +332,16 @@ ElementaryRischDE(R, F) : Exports == Implementation where
       fnum := numer f
       fden := denom f
       for u in varselect(kernels f, x) | is?(u, 'log) repeat
-        logand := first argument u
-        if zero?(degree univariate(fden, u)) and
+        logand := first(argument(u))
+        if zero?(degree(univariate(fden, u))) and
 --           one?(degree(num := univariate(fnum, u))) then
            (degree(num := univariate(fnum, u)) = 1) then
             cf := (leadingCoefficient num) / fden
-            if (n := retractIfCan(cf)@Union(Z, "failed")) case Z then
+            if (n := retractIfCan(cf)@Union(Q, "failed")) case Q then
               if degree(numer logand, k) > 0 then
-                disasters := concat([n::Z, numer logand], disasters)
+                disasters := concat([n::Q, numer logand], disasters)
               if degree(denom logand, k) > 0 then
-                disasters := concat([-(n::Z), denom logand], disasters)
+                disasters := concat([-(n::Q), denom logand], disasters)
       disasters
 
     rischDElog(twr, f, g, x, theta, driv, limint, extint) ==
@@ -364,10 +371,10 @@ ElementaryRischDE(R, F) : Exports == Implementation where
                        case "failed" => error "Risch's theorem violated"
         (alph := validExponential(lk0, RRF2F(if0::RRF), x)) case F =>
           return
-            (ans := polyDElog(twr, alph::F * aa,
+            (ans1 := polyDElog(twr, alph::F * aa,
               differentiate(alph::F, x) * aa + alph::F * bb,
                cc, x, t, driv, limint, extint)) case "failed" => "failed"
-            alph::F * ans::UP
+            alph::F * ans1::UP
       if (da > db + 1) then n := max(0, degree(cc)::Z - da + 1)
       if (da = db + 1) then
         i := limint(- (leadingCoefficient bb) / (leadingCoefficient aa),
