@@ -33,11 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "fricas_c_macros.h"
 
-#if defined(MACOSXplatform)
-#include "/usr/include/unistd.h"
-#else
 #include <unistd.h>
-#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

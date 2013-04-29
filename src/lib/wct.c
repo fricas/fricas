@@ -43,18 +43,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(MACOSXplatform)
-#include "/usr/include/unistd.h"
-#else
 #include <unistd.h>
-#endif
 #include <string.h>
 #include <fcntl.h>
-#if defined(MACOSXplatform)
-#include "/usr/include/time.h"
-#else
 #include <time.h>
-#endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
