@@ -1,0 +1,86 @@
+#!/bin/sh -e
+
+function fail() { 
+  echo $@
+  exit 1
+}
+
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin"
+unalias -a
+
+ROOT=`pwd`
+CURL="curl -L -O -#"
+
+MACOSXVER="10.6"
+MACOSXSDK="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${MACOSXVER}.sdk"
+ARCH="x86_64"
+
+SRCDIR=`cd ${ROOT}/../..; pwd`
+
+SBCLVER="1.1.6"
+SBCLTBZ="sbcl-${SBCLVER}-x86-64-darwin-binary.tar.bz2"
+SBCLDIR="sbcl-${SBCLVER}-x86-64-darwin"
+
+NOWEBTGZ="noweb-2.10a.tgz"
+
+[ -f "${SRCDIR}/contrib/macos/mk_app" ] || \
+  fail "Please start the command in 'contrib/macos' directory."
+
+[ -d "${MACOSXSDK}" ] || \
+  fail "No MacOSX ${MACOSXVER} SDK installed."
+
+FRICASVER=`sed -n 's#.*\[FriCAS\], \[\(.*\)\],#\1#p' "${SRCDIR}/configure.ac"`
+
+[ -n "${FRICASVER}" ] || \
+  fail "Cannot extract FriCAS version number from sources."
+
+export CC="gcc -isysroot ${MACOSXSDK} -mmacosx-version-min=${MACOSXVER} -arch ${ARCH}"
+
+action=${1:-build}
+
+if [ "${action}" == "build" ]; then
+  if [ ! -f ${SBCLTBZ} ]; then
+    echo "Downloading ${SBCLTBZ}:"
+    ${CURL} "http://downloads.sf.net/sourceforge/sbcl/${SBCLVER}/${SBCLTBZ}"
+  fi
+
+  if [ ! -f ${NOWEBTGZ} ]; then
+    echo "Downloading ${NOWEBTGZ}:"
+    ${CURL} "http://axiom.svn.sf.net/svnroot/axiom/trunk/axiom/zips/${NOWEBTGZ}"
+  fi
+
+  [ -d ${SBCLDIR} ] || tar xvjf ${SBCLTBZ}
+
+  rm -rf FriCAS.app
+  mkdir -p FriCAS.app/Contents/{MacOS,Resources}
+
+  mkdir -p build
+  pushd build
+  ${SRCDIR}/configure \
+    --prefix="" \
+    --with-noweb-tarball="${ROOT}/${NOWEBTGZ}" \
+    --with-lisp="${ROOT}/${SBCLDIR}/run-sbcl.sh"
+  make
+  make DESTDIR=${ROOT}/FriCAS.app/Contents/Resources install
+  popd
+
+  sed -e "s,FRICASVER,${FRICASVER}," \
+      -e "s,MACOSXVER,${MACOSXVER}.0," \
+      Info.plist > ${ROOT}/FriCAS.app/Contents/Info.plist
+
+  ${CC} -O2 -Wall -framework CoreFoundation FriCAS.c \
+    -o FriCAS.app/Contents/MacOS/FriCAS
+
+  install appIcon.icns FriCAS.app/Contents/Resources/
+fi
+
+if [ "${action}" == "dist" ]; then
+  tar cvjf FriCAS-${FRICASVER}-${ARCH}-macos${MACOSXVER}.tbz FriCAS.app
+fi
+
+if [ "${action}" == "clean" ]; then
+  rm -vrf ${SBCLDIR}
+  rm -vrf FriCAS.app
+  rm -vrf build
+  rm -vf *~
+fi
