@@ -55,6 +55,8 @@ LiouvillianFunction(R, F) : Exports == Implementation where
       ++ li(f) denotes the logarithmic integral
     erf     : F  -> F
       ++ erf(f) denotes the error function
+    erfi    : F  -> F
+      ++ erf(f) denotes \spad{-%i*erf(%i*z)}
     dilog   : F  -> F
       ++ dilog(f) denotes the dilogarithm
     fresnelS : F  -> F
@@ -77,6 +79,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     ishi       : F  -> F
     ichi       : F  -> F
     ierf       : F  -> F
+    ierfi      : F  -> F
     ili        : F  -> F
     ili2       : F  -> F
     iint       : List F -> F
@@ -100,6 +103,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     opchi  := operator('Chi)$CommonOperators
     opli2  := operator('dilog)$CommonOperators
     operf  := operator('erf)$CommonOperators
+    operfi := operator('erfi)$CommonOperators
     opfis  := operator('fresnelS)$CommonOperators
     opfic  := operator('fresnelC)$CommonOperators
 
@@ -109,6 +113,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     Chi x               == opchi x
     Ei x                == opei x
     erf x               == operf x
+    erfi x               == operfi x
     li  x               == opli x
     dilog x             == opli2 x
     fresnelS x          == opfis x
@@ -120,6 +125,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     ishi x         == (zero? x => 0; kernel(opshi, x))
     ichi x         == kernel(opchi, x)
     ierf x         == (zero? x => 0; kernel(operf, x))
+    ierfi x         == (zero? x => 0; kernel(operfi, x))
 --    ili2 x         == (one? x => INV; kernel(opli2, x))
     ili2 x         == ((x = 1) => 0; kernel(opli2, x))
     ifis(x : F) : F == (zero? x => 0; kernel(opfis, x))
@@ -199,6 +205,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
       is?(op, 'Chi)        => opchi
       is?(op, 'li)         => opli
       is?(op, 'erf)        => operf
+      is?(op, 'erfi)        => operfi
       is?(op, 'dilog)      => opli2
       is?(op, 'fresnelC)   => opfis
       is?(op, 'fresnelS)   => opfic
@@ -211,6 +218,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     evaluate(opshi,  ishi)
     evaluate(opchi,  ichi)
     evaluate(operf,  ierf)
+    evaluate(operfi,  ierfi)
     evaluate(opli2,  ili2)
     evaluate(opfis,  ifis)
     evaluate(opfic,  ific)
@@ -223,6 +231,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     derivative(opei, (z1 : F) : F +-> exp(z1) / z1)
     derivative(opli, (z1 : F) : F +-> inv log(z1))
     derivative(operf, (z1 : F) : F +-> 2 * exp(-(z1^2)) / sqrt(pi()))
+    derivative(operfi, (z1 : F) : F +-> 2*exp(z1^2) / sqrt(pi()))
     derivative(opli2, (z1 : F) : F +-> log(z1) / (1 - z1))
     derivative(opfis, (z1 : F) : F +-> sin(pi()*z1^2/(2::F)))
     derivative(opfic, (z1 : F) : F +-> cos(pi()*z1^2/(2::F)))
