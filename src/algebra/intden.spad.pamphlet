@@ -28,6 +28,12 @@ DenominatorIntegration(R) : Exports == Implementation where
         ++ li_int(f, k, x) generates logarithmic integrals.
       poly_int : (RF, K, SY) -> DREC
         ++ poly_int(f, k, x) generates polylogarithms.
+      decompose : (UP, List(UP)) -> List(UP)
+        ++ decompse(n, [p1, ..., pn]) returns numerators of partial
+        ++ fraction decomposition of n divided by product of pi-s
+      solve_u : (F, F, Symbol) -> Union(List(List(F)), "failed")
+        ++ solve_u(f1, u, x) returns [[c1, k1], ..., [cn, kn]] such
+        ++ that f1 = c1*u^k1 + ... + cn^kn and D(ci, x) = 0 or "failed".
       factor : MP -> Factored(MP)
         ++ factor(p) should be local but conditional.
   Implementation == add
@@ -161,33 +167,30 @@ DenominatorIntegration(R) : Exports == Implementation where
     FUP ==> Factored(UP)
     PFUP ==> PartialFraction(UP)
 
-    -- Partial fraction decomposition.
-    decompose(nn : UP, elden : UP, lidens : List(UP)
-             ) : List(List(UP)) ==
-        nden1 := elden
-        ndens := lidens
-        fdens := [nilFactor(nden, 1)$FUP for nden in ndens]
-        ndf1 := nilFactor(nden1, 1)$FUP
-        fdens := cons(ndf1, fdens)
+    decompose(nn : UP, dens : List(UP)) : List(UP) ==
+        fdens := [nilFactor(nden, 1)$FUP for nden in dens]
         nd := reduce(_*, fdens)
-        -- print(nd::OutputForm)
         pfr := partialFraction(nn, nd)$PFUP
-        -- print("prf ="::OutputForm)
-        -- print(pfr::OutputForm)
         wholePart(pfr) ~= 0 =>
-             error "impossible: wholePart(pfr) ~= 0"
+            error "decompose: wholePart(pfr) ~= 0"
         nfacs := numberOfFractionalTerms(pfr)
-        elfac : SUP(F) := 0
-        res : List(List(SUP(F))) := empty()
-        for i in 1..nfacs repeat
-            ct := nthFractionalTerm(pfr, i)
-            cnum := firstNumer(ct)
-            cden := firstDenom(ct)
-            cden = ndf1 =>
-                (elfac := cnum)
-            l1 : List(SUP(F)) := [cnum, expand(cden)]
-            res := cons(l1, res)
-        cons([elfac, nden1], res)
+        res : List(UP) := []
+        for fden in fdens repeat
+            for i in 1..nfacs repeat
+                ct := nthFractionalTerm(pfr, i)
+                cnum := firstNumer(ct)
+                cden := firstDenom(ct)
+                if cden = fden then
+                    res := cons(cnum, res)
+        reverse!(res)
+
+    decompose1(nn : UP, elden : UP, lidens : List(UP)) : List(UP) ==
+        if degree(elden) > 0 then
+            lidens := cons(elden, lidens)
+        else if elden ~= 1 then error "Impossible 5"
+        res := decompose(nn, lidens)
+        degree(elden) > 0 => res
+        cons(0, res)
 
     p_power_in_q(p : MPF, q : MPF) : Integer ==
         res : Integer := 0
@@ -205,14 +208,12 @@ DenominatorIntegration(R) : Exports == Implementation where
 
 
     -- 3. Integrate single term
-    li_int1(f : F, u : F, x : Symbol) : Union(List(List(F)), "failed") ==
+    solve_u(f1 : F, u : F, x : Symbol) : Union(List(List(F)), "failed") ==
         vk := [k for k in kernels(u) | D(k::F, x) ~= 0]
-        empty?(vk) => error "li_int1: constant log"
+        empty?(vk) => error "solve_u: constant u"
         -- bogus if k1 is algebraic
         k1 := last(vk)
         -- print(k1::OutputForm)
-        deru := D(u, x)
-        f1 := f/deru
         D(f1, x) = 0 => [[f1, 0]]
         vk2 := [k for k in kernels(f1) | D(k::F, x) ~= 0]
         not(empty?(setDifference(vk2, vk))) or
@@ -274,7 +275,7 @@ DenominatorIntegration(R) : Exports == Implementation where
             return "failed"
         (ccru := retractIfCan(ccu::MPF)@Union(F, "failed")) case "failed" =>
             -- print("df1 exquo (dup*nup)) not in F"::OutputForm)
-            print(ccu::OutputForm)
+            -- print(ccu::OutputForm)
             return "failed"
         cc := ccru::F
         nf1 := (1/cc)*nf1
@@ -300,7 +301,14 @@ DenominatorIntegration(R) : Exports == Implementation where
         sl0 := lin_sol(eqsl, coefs)$Esol
         sl0 case "failed" => "failed"
         sl := sl0::List(F)
+        for c in sl repeat
+            if D(c, x) ~= 0 then return "failed"
         [[c, j::F] for c in sl for j in (-n)..m | c ~= 0]
+
+    li_int1(f : F, u : F, x : Symbol) : Union(List(List(F)), "failed") ==
+        deru := D(u, x)
+        deru = 0 => error "li_int1: constant log"
+        solve_u(f/deru, u, x)
 
     mk_li(c : F, j : Integer, u : F, s : F) : F ==
         j = -1 => c*log((log(u) + s))
@@ -322,12 +330,11 @@ DenominatorIntegration(R) : Exports == Implementation where
         empty?(lidens) => "failed"
         elden := denom(rf) exquo reduce(_*, lidens)
         elden case "failed" => error "Impossible 2"
-        dn := decompose(numer(rf), elden, lidens)
+        dn := decompose1(numer(rf), elden, lidens)
         -- print("dn ="::OutputForm)
         -- print(dn::OutputForm)
-        elfac := first(dn)
-        lifacs := rest(dn)
-        elpart : RF := first(elfac)/second(elfac)
+        elpart : RF := first(dn)/elden
+        linums := rest(dn)
         c_shift : F
         tf : F
         dummy := create()$SingletonAsOrderedSet
@@ -335,15 +342,10 @@ DenominatorIntegration(R) : Exports == Implementation where
         res : F := 0
         rfc : F
         logs : List(LOG) := []
-        for ldr in ldrs repeat
+        for ldr in ldrs for linum in linums repeat
             liden := ldr.factor
             cfac := ldr.cfactor
-            for lifac in lifacs while not(liden = second(lifac)) repeat
-                0$Integer
-            not(liden = second(lifac)) =>
-                error "Impossible 3"
             u1 := ldr.ufun
-            linum := first(lifac)
             if (deg1 := degree(liden)) > 1 then
                 rfc := rootOf(cfac)
                 c_shift := -rfc
@@ -402,27 +404,22 @@ DenominatorIntegration(R) : Exports == Implementation where
         polydens1 := [inv(leadingCoefficient(p))*p for p in polydens]
         elden := denom(rf) exquo reduce(_*, polydens1)
         elden case "failed" => error "Impossible 4"
-        dn := decompose(numer(rf), elden, polydens1)
+        dn := decompose1(numer(rf), elden, polydens1)
         -- print("dn ="::OutputForm)
         -- print(dn::OutputForm)
-        elfac := first(dn)
-        polyfacs := rest(dn)
-        elpart : RF := first(elfac)/second(elfac)
+        elpart : RF := first(dn)/elden
+        polynums1 := rest(dn)
         c_shift : F
         tf : F
         dummy := create()$SingletonAsOrderedSet
         u0 := argument(k).1
         res : F := 0
         logs : List(LOG) := []
-        for ldr in ldrs for polyden1 in polydens1 repeat
+        for ldr in ldrs for polynum1 in polynums1 repeat
             polyden := ldr.factor
             cfac := ldr.cfactor
-            for polyfac in polyfacs while not(polyden1 = second(polyfac))
-                repeat 0$Integer
-            not(polyden1 = second(polyfac)) =>
-                error "Impossible 5"
             v1 := ldr.vfun
-            polynum := leadingCoefficient(polyden)*first(polyfac)
+            polynum := leadingCoefficient(polyden)*polynum1
             rfc : F
             if (deg1 := degree(polyden)) > 1 then
                 -- print("deg1 > 1"::OutputForm)
