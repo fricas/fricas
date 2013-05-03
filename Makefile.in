@@ -55,10 +55,9 @@ all-noweb: stamp-noweb
 
 stamp-noweb:
 	@echo Making in noweb
-	( mkdir noweb && \
-	  cd noweb && \
-	  $(TAR) -zxf "@noweb_tarball@" && \
-	  cd src && \
+	[ -d noweb ] || \
+	  ( mkdir noweb && $(TAR) -zx -C noweb -f "@noweb_tarball@" )
+	( cd noweb/src &&
 	  cat Makefile \
 	      | sed -e "s|^BIN=.*|BIN=$(fricas_build_bindir)|" \
                     -e "s|^LIB=.*|LIB=$(fricas_build_libdir)|" \
