@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2013-04-06],
+AC_INIT([FriCAS], [2013-05-03],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -422,7 +422,7 @@ case $fricas_lisp_flavor in
        fricas_eval_flags='--eval'
        ;;
     cmucl)
-       fricas_quiet_flags='-batch -noinit'
+       fricas_quiet_flags='-batch -nositeinit -noinit'
        fricas_eval_flags='-eval'
        ;;
     clisp)
@@ -430,7 +430,7 @@ case $fricas_lisp_flavor in
        fricas_eval_flags='-x'
        ;;
     openmcl)
-       fricas_quiet_flags=
+       fricas_quiet_flags='--no-init'
        fricas_eval_flags='--eval'
        ;;
     lispworks)
@@ -538,7 +538,7 @@ AC_TRY_COMPILE([
 #include <sys/socket.h>
    ], [
 int flag = MSG_NOSIGNAL;
-   ], 
+   ],
    [AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Host has MSG_NOSIGNAL])],[])
 
 AC_TRY_COMPILE([
