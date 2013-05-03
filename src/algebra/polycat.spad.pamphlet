@@ -777,6 +777,9 @@ UnivariatePolynomialCategory(R : Ring) : Category ==
       ++ vectorise(p, n) returns \spad{[a0, ..., a(n-1)]} where
       ++ \spad{p = a0 + a1*x + ... + a(n-1)*x^(n-1)} + higher order terms.
       ++ The degree of polynomial p can be different from \spad{n-1}.
+    unvectorise : Vector R -> %
+      ++ unvectorise(v) returns the polynomial which has for coefficients the
+      ++ entries of v in the increasing order.
     makeSUP : % -> SparseUnivariatePolynomial R
       ++ makeSUP(p) converts the polynomial p to be of type
       ++ SparseUnivariatePolynomial over the same coefficients.
@@ -931,6 +934,13 @@ UnivariatePolynomialCategory(R : Ring) : Category ==
       for i in minIndex v .. maxIndex v repeat
         qsetelt!(v, i, coefficient(p, (i - m)::NonNegativeInteger))
       v
+
+    unvectorise(v : Vector R) : % ==
+        p : % := 0
+        for i in 1..#v repeat
+            p := p + monomial(v(i), (i-1)::NonNegativeInteger)
+        p
+
     retract(p : %) : R ==
       zero? p => 0
       zero? degree p => leadingCoefficient p
