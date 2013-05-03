@@ -465,6 +465,8 @@ AC_ARG_ENABLE([debug-compiler],
                                information to every component of a compiler])],
               [fricas_debug_compiler=$enableval])
 
+AC_SUBST(fricas_debug_compiler)
+
 fricas_algebra_optimization=nil
 
 AC_ARG_ENABLE([algebra-optimization],

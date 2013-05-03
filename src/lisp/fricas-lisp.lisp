@@ -11,11 +11,12 @@
 
 #+:sbcl
 (progn
-     (defvar *saved-terminal-io* *terminal-io*)
-     (setf *terminal-io* (make-two-way-stream *standard-input*
-                                             *standard-output*))
-     (setf sb-ext:*evaluator-mode* :interpret)
- )
+  (defvar *saved-terminal-io* *terminal-io*)
+  (setf *terminal-io* (make-two-way-stream *standard-input* *standard-output*))
+  (setf sb-ext:*invoke-debugger-hook* 
+        (lambda (sb-cond sb-hook)
+          (setf *terminal-io* *saved-terminal-io*)))
+  (setf sb-ext:*evaluator-mode* :interpret))
 
 #-:cmu
 (defun set-initial-parameters()
