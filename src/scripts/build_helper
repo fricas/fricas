@@ -1,24 +1,39 @@
 #!/bin/sh
 
 translate_boot() {
-    echo "(in-package \"BOOTTRAN\") (progn (boottoclc \"$1\" \"$output\"))" \
-                 "(quit)" | "$image"
+  "$image" <<EOF
+$optimizations
+(in-package "BOOTTRAN")
+(boottoclc "$1" "$output")
+(quit)
+EOF
 }
 
 compile_lisp() {
-    echo "(in-package \"FRICAS-LISP\")" \
-         "(progn (fricas-compile-file \"$1\" :output-file" \
-                    "\"$output\") (quit))" | "$image"
+  "$image" <<EOF
+$optimizations
+(in-package "FRICAS-LISP")
+(unless (fricas-compile-file "$1" :output-file "$output")
+  (exit-with-status 1))
+(quit)
+EOF
 }
 
 make_program () {
-    echo "(in-package \"FRICAS-LISP\") \
-          (make-program \"$output\" (quote ($*)))" | "$image"
+  "$image" <<EOF
+$optimizations
+(in-package "FRICAS-LISP")
+(unless (make-program "$output" (quote ($*)))
+  (exit-with-status 1))
+(quit)
+EOF
 }
 
 action=
 image=
 output=
+debug=
+optimizations=
 
 while test $# -gt 0 ; do
     arg=$1
@@ -33,11 +48,15 @@ while test $# -gt 0 ; do
         ;;
     --use=*)
         image=`echo $arg | sed -e 's/^--use=//'`
-        shift;
+        shift
         ;;
     --make_program|--translate_boot|--compile_lisp)
         action=$1
-        shift;
+        shift
+        ;;
+    --debug=*)
+        debug=`echo $arg | sed -e 's/^--debug=//'`
+        shift
         ;;
     *)
         break
@@ -55,9 +74,13 @@ if [ x"$image" = x ] ; then
     exit 1
 fi
 
-if [ x"output" = x ] ; then
+if [ x"$output" = x ] ; then
     echo "$0: no output specified"
     exit 1
+fi
+
+if [ x"$debug" = "xyes" ] ; then
+    optimizations="(declaim (optimize (debug 2)))"
 fi
 
 case $action in
