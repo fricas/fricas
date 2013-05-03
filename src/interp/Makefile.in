@@ -3,15 +3,17 @@ subdir = src/interp/
 
 DOC=$(fricas_target_docdir)/src/interp
 
+fricas_debug_compiler=@fricas_debug_compiler@
+
 # Command to translate Boot to Common Lisp
-BOOT_TO_LISP = \
-	$(fricas_build_helper) --translate_boot \
-		--use=$(BOOTSYS) --output=$@ $<
+BOOT_TO_LISP = $(fricas_build_helper) \
+	       --translate_boot --debug=$(fricas_debug_compiler) \
+	       --use=$(BOOTSYS) --output=$@ $<
 
 # Command to translate Common Lisp to native object code
-COMPILE_LISP = \
-	$(fricas_build_helper) --compile_lisp \
-		--output=$@ --use=$(LOADSYS) $<
+COMPILE_LISP = $(fricas_build_helper) \
+	       --compile_lisp --debug=$(fricas_debug_compiler) \
+	       --use=$(LOADSYS) --output=$@ $<
 
 AUTO=$(fricas_targetdir)/autoload
 
@@ -224,9 +226,7 @@ AUTO_from_MID=\
 $(patsubst %, $(AUTO)/%.$(LISPOBJEXT), $(AUTO_from_MID) showimp): \
     $(AUTO)/%.$(LISPOBJEXT) : %.clisp
 	@ echo 10 making $@ from $<
-	echo '(in-package "FRICAS-LISP")' \
-	     '(progn (fricas-compile-file "$<" :output-file "$(BASE)$@")' \
-	     ' (${BYE}))' | ${LOADSYS}
+	$(COMPILE_LISP)
 
 clammed.clisp: $(srcdir)/clammed.boot
 	echo '(progn (boottran::bootclam "$<" "$@") (${BYE}))' | ${BOOTSYS}

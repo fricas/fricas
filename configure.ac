@@ -457,6 +457,14 @@ esac
 AC_SUBST(fricas_fasl_type)
 AC_SUBST(fricas_fasl_type2)
 
+fricas_debug_compiler='no'
+
+AC_ARG_ENABLE([debug-compiler],
+              [AS_HELP_STRING([--enable-debug-compiler],
+                              [(for BOOT or SPAD compiler developers) add debug
+                               information to every component of a compiler])],
+              [fricas_debug_compiler=$enableval])
+
 fricas_algebra_optimization=nil
 
 AC_ARG_ENABLE([algebra-optimization],

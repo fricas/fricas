@@ -21,12 +21,19 @@ boot_lib = $(boot_sources:.boot=.lib)
 
 LISPSYS= $(fricas_build_bindir)/lisp
 
-COMPILE_LISP = \
-	$(fricas_build_helper) --compile_lisp --output=$@
+fricas_debug_compiler=@fricas_debug_compiler@
 
-BOOT_TO_LISP = \
-	$(fricas_build_helper) --translate_boot \
-	--use=./prev-stage/bootsys --output=$@ $<
+COMPILE_LISP = $(fricas_build_helper) \
+	       --compile_lisp --debug=$(fricas_debug_compiler) \
+	       --use=$(LISPSYS) --output=$@ $<
+
+BOOT_TO_LISP = $(fricas_build_helper) \
+	       --translate_boot --debug=$(fricas_debug_compiler) \
+	       --use=./prev-stage/bootsys --output=$@ $<
+
+MAKE_PROGRAM = $(fricas_build_helper) \
+	       --make_program --debug=$(fricas_debug_compiler) \
+	       --use=$(LISPSYS) --output=$@ 
 
 BOOTSYS_EXE_TARGETS = stage0/bootsys$(EXEEXT) stage1/bootsys$(EXEEXT) \
                       stage2/bootsys$(EXEEXT)
@@ -63,7 +70,7 @@ stage0/stamp_bootsys:
 	touch $@
 
 stage0/%.$(LISPOBJEXT): $(srcdir)/compiled/%.clisp
-	$(COMPILE_LISP) --use=$(LISPSYS) $<
+	$(COMPILE_LISP)
 
 stage1/stamp_bootsys: stage0/stamp_bootsys
 	@echo Building stage 1
@@ -79,17 +86,15 @@ stage1/stamp_bootsys: stage0/stamp_bootsys
 	touch $@
 
 $(FRICAS_LOCAL_LISP_object): %.$(LISPOBJEXT): $(srcdir)/%.lisp
-	$(COMPILE_LISP) --use=$(LISPSYS) $<
+	$(COMPILE_LISP)
 
 $(BOOTSYS_EXE_TARGETS): %/bootsys$(EXEEXT): \
             $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
-	$(fricas_build_helper) --make_program --output=$@ \
-		--use=$(LISPSYS) \
+	$(MAKE_PROGRAM) \
 		'$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object) $(OBJECTS))'
 
 $(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
-	$(fricas_build_helper) --make_program --output=$(BASE)$@ \
-	        --use=$(LISPSYS) \
+	$(MAKE_PROGRAM) \
 		'$(patsubst %, "%", $(FRICAS_LOCAL_LISP_object) $(OBJECTS))'
 
 .PRECIOUS: %.$(LISPOBJEXT)
@@ -97,7 +102,7 @@ $(fricas_build_bindir)/bootsys$(EXEEXT): $(OBJECTS) $(FRICAS_LOCAL_LISP_object)
 .PRECIOUS: %.boot
 
 $(boot_objects): %.$(LISPOBJEXT): %.clisp
-	$(COMPILE_LISP) --use=$(LISPSYS) $<
+	$(COMPILE_LISP)
 
 %.clisp: $(srcdir)/%.boot
 	$(BOOT_TO_LISP)
