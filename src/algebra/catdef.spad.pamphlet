@@ -46,6 +46,7 @@ AbelianGroup() : Category == CancellationAbelianMonoid with
               zero? n => 0
               n>0 => double(qcoerce(n)@PositiveInteger, x)
               double(qcoerce(-n)@PositiveInteger, -x)
+      opposite?(x,y) == x = -y
 
 @
 
@@ -54,7 +55,7 @@ AbelianGroup() : Category == CancellationAbelianMonoid with
 )abbrev category ABELMON AbelianMonoid
 ++ Author:
 ++ Date Created:
-++ Date Last Updated:
+++ Date Last Updated: May 10, 2013.
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -71,7 +72,6 @@ AbelianGroup() : Category == CancellationAbelianMonoid with
 -- following domain must be compiled with subsumption disabled
 -- define SourceLevelSubset to be EQUAL
 AbelianMonoid() : Category == AbelianSemiGroup with
-    --operations
       0 : constant -> %
         ++ 0 is the additive identity element.
       sample : constant -> %
@@ -80,6 +80,9 @@ AbelianMonoid() : Category == AbelianSemiGroup with
         ++ zero?(x) tests if x is equal to 0.
       "*": (NonNegativeInteger,%) -> %
         ++ n * x is left-multiplication by a non negative integer
+      opposite? : (%,%) -> Boolean
+        ++ \spad{opposite?(x,y)} holds if the sum of \spad{x}
+        ++ and \spad{y} is \spad{0}.
     add
       import RepeatedDoubling(%)
       zero? x == x = 0
@@ -89,6 +92,7 @@ AbelianMonoid() : Category == AbelianSemiGroup with
           n : NonNegativeInteger * x : % ==
               zero? n => 0
               double(qcoerce(n)@PositiveInteger, x)
+      opposite?(x,y) == zero?(x + y)
 
 @
 
@@ -424,7 +428,7 @@ DivisionRing() : Category ==
 )abbrev category ENTIRER EntireRing
 ++ Author:
 ++ Date Created:
-++ Date Last Updated:
+++ Date Last Updated: May 10, 2013.
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -482,6 +486,8 @@ EntireRing() : Category == Join(Ring, BiModule(%, %), noZeroDivisors) with
               x exquo y case "failed" => false
               y exquo x case "failed" => false
               true
+
+      annihilate?(x,y) == zero? x or zero? y
 
 @
 
@@ -1761,7 +1767,12 @@ SemiRing() : Category == Join(SemiRng, AbelianMonoid, Monoid)
 ++
 ++ Conditional attributes:
 ++   \spadnoZeroDivisors\tab{25}\spad{  ab = 0 => a=0 or b=0}
-Rng() : Category == Join(AbelianGroup, SemiRng)
+Rng() : Category == Join(AbelianGroup, SemiRng) with
+      annihilate? : (%,%) -> Boolean
+             ++ \spad{annihilate?(x,y)} holds when the product
+             ++ of \spad{x} and \spad{y} is \spad{0}.
+    add
+      annihilate?(x,y) == zero?(x * y)
 
 @
 
