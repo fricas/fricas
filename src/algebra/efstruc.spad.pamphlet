@@ -867,6 +867,8 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
       ++ exponentials. A kernel of the form \spad{tan(u)} is expressed
       ++ using \spad{exp(u)^2} if it is one of the \spad{ki's}, in terms of
       ++ \spad{exp(2*u)} otherwise.
+    do_liou : (OP, List GF) -> GF
+      ++ do_liou(op, lf) should be local but conditional.
 
   Implementation ==> add
     ker2explogs : (KG, List KG) -> FG
@@ -908,6 +910,30 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
     trigs2explogs(f, l) ==
       smp2explogs(numer f, l) / smp2explogs(denom f, l)
 
+
+    ker2trigs_error(op : OP, arg : List GF) : GF ==
+        print(op::OutputForm)$OutputForm
+        print(arg::OutputForm)$OutputForm
+        error "ker2trigs: cannot convert kernel to gaussian function"
+
+
+    if F has LiouvillianFunctionCategory then
+        do_liou(op, arg) ==
+            a := first(arg)
+            is?(op, 'Ei) and real(a) = 0 =>
+                complex(Ci(imag(a)), Si(imag(a)))
+            is?(op, 'erf) and real(a) = 0 => complex(0, erfi(imag(a)))
+            is?(op, 'erf) and real(a) = imag(a) =>
+                a1 := 2*real(a)/sqrt(pi())
+                complex(1, 1)*complex(fresnelC(a1), -fresnelS(a1))
+            is?(op, 'erf) and real(a) = -imag(a) =>
+                a1 := 2*real(a)/sqrt(pi())
+                complex(1, -1)*complex(fresnelC(a1), fresnelS(a1))
+            ker2trigs_error(op, arg)
+
+    else
+        do_liou(op, args) == ker2trigs_error(op, args)
+
     -- return op(arg) as f + %i g
     -- op is already an operator with semantics over R, not GR
     ker2trigs(op, arg) ==
@@ -945,9 +971,7 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
       is?(op, '%iint) =>
           complex(op [real x for x in arg]$List(F),
                   op [imag x for x in arg]$List(F))
-      print(op::OutputForm)$OutputForm
-      print(arg::OutputForm)$OutputForm
-      error "ker2trigs: cannot convert kernel to gaussian function"
+      do_liou(op, arg)
 
     sup2trigs(p, f) ==
       map(smp2trigs, p)$SparseUnivariatePolynomialFunctions2(PG, GF) f
