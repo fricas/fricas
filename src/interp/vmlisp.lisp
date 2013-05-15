@@ -387,7 +387,8 @@
        (make-array k :element-type 'character
                   :initial-contents (mapcar #'code-char l))))
 
-(defun CGREATERP (s1 s2) (string> (string s1) (string s2)))
+;;; Double negation to have boolean result
+(defun CGREATERP (s1 s2) (not (not (string> (string s1) (string s2)))))
 
 ; 17.1 Creation
 
