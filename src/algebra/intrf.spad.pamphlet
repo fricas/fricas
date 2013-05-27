@@ -271,17 +271,27 @@ TranscendentalHermiteIntegration(F, UP) : Exports == Implementation where
          ++ and all the squarefree factors of the denominator of s are
          ++ special w.r.t. D. Furthermore, h and s have no polynomial parts.
          ++ D is the derivation to use on \spadtype{UP}.
+    HermiteIntegrate : (RF, UP -> UP, UP) -> HER
+         ++ HermiteIntegrate(f, D, d0) returns \spad{[g, h, s, p]}
+         ++ such that \spad{f = Dg + g*d0 + h + s + p},
+         ++ h has a squarefree denominator normal w.r.t. D,
+         ++ and all the squarefree factors of the denominator of s are
+         ++ special w.r.t. D. Furthermore, h and s have no polynomial parts.
+         ++ D is the derivation to use on \spadtype{UP}.
 
   Implementation ==> add
     import MonomialExtensionTools(F, UP)
 
-    normalHermiteIntegrate : (RF, UP->UP) -> Record(answer : RF, lognum : UP, logden : UP)
+    normalHermiteIntegrate : (RF, UP->UP, UP) ->
+                 Record(answer : RF, lognum : UP, logden : UP)
 
-    HermiteIntegrate(f, derivation) ==
+    HermiteIntegrate(f, derivation, d0) ==
       rec := decompose(f, derivation)
-      hi  := normalHermiteIntegrate(rec.normal, derivation)
+      hi  := normalHermiteIntegrate(rec.normal, derivation, d0)
       qr  := divide(hi.lognum, hi.logden)
       [hi.answer, qr.remainder / hi.logden, rec.special, qr.quotient + rec.poly]
+
+    HermiteIntegrate(f, derivation) == HermiteIntegrate(f, derivation, 0)
 
 -- Hermite Reduction on f, every squarefree factor of denom(f) is normal wrt D
 -- this is really a "parallel" Hermite reduction, in the sense that
@@ -290,7 +300,7 @@ TranscendentalHermiteIntegration(F, UP) : Exports == Implementation where
 -- reduction steps instead of O(n^2), like Mack's algorithm
 -- (D.Mack, On Rational Integration, Univ. of Utah C.S. Tech.Rep. UCP-38, 1975)
 -- returns [g, b, d] s.t. f = g' + b/d and d is squarefree and normal wrt D
-    normalHermiteIntegrate(f, derivation) ==
+    normalHermiteIntegrate(f, derivation, d0) ==
       a := numer f
       q := denom f
       p : UP    := 0
@@ -302,9 +312,10 @@ TranscendentalHermiteIntegration(F, UP) : Exports == Implementation where
         bc :=
          extendedEuclidean(qtil, qbarhat, a)::Record(coef1 : UP, coef2 : UP)
         qr := divide(bc.coef1, qbarhat)
-        a  := bc.coef2 + qtil * qr.quotient - derivation(qr.remainder)
-               * (qhat exquo qbarhat)::UP
-        p  := p + mult * qr.remainder
+        qr_rem := qr.remainder
+        a  := bc.coef2 + qtil * qr.quotient - (derivation(qr_rem)
+                + d0*qr_rem)*(qhat exquo qbarhat)::UP
+        p  := p + mult*qr_rem
         mult := mult * qbarhat
       [p / g0, a, qhat]
 
@@ -351,6 +362,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
   REC ==> Record(ir : IR, specpart : RF, polypart : UP)
   DREC ==> Record(answer : RF, logpart : RF, ir : IR)
   PSOL==> Record(ans : F, right : F, sol? : Boolean)
+  PSOL2 ==> Record(ans : F, right : F, primpart : F, sol? : Boolean)
   FAIL==> error "Sorry - cannot handle that integrand yet"
 
   Exports ==> with
@@ -358,7 +370,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       ++ primintegrate(f, ', foo) returns \spad{[g, a]} such that
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in UP.
       ++ Argument foo is an extended integration function on F.
-    expintegrate   : (RF, UP -> UP, RF -> DREC, (Z, F) -> PSOL) -> IRF
+    expintegrate   : (RF, UP -> UP, RF -> DREC, (Z, F) -> PSOL2) -> IRF
       ++ expintegrate(f, ', foo) returns \spad{[g, a]} such that
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in F;
       ++ Argument foo is a Risch differential equation solver on F;
@@ -427,6 +439,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
 
     primintegratepoly  : (UP, F -> UF, F) -> Union(UPF, UPUP)
     expintegratepoly   : (GP, (Z, F) -> PSOL) -> Union(GPF, GPGP)
+    expintegratepoly2   : (GP, (Z, F) -> PSOL2) -> Union(GPF, GPGP)
     expextintfrac      : (RF, UP -> UP, RF) -> Union(FFR, "failed")
     explimintfrac      : (RF, UP -> UP, List RF) -> Union(NLF, "failed")
     limitedLogs        : (RF, RF -> RF, List RF) -> Union(LLG, "failed")
@@ -521,6 +534,21 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
         p   := reductum p
       zero? notelm => [answr, coef0]
       [answr, notelm + monomial(coef0, 0)]
+
+    expintegratepoly2(p, FRDE) ==
+      coef0 : F := 0
+      notelm := answr := 0$GP
+      while p ~= 0 repeat
+        ans1 := FRDE(n := degree p, a := leadingCoefficient p)
+        answr := answr + monomial(ans1.ans, n) + monomial(ans1.primpart, 0)
+        if ~ans1.sol? then         -- Risch d.e. has no complete solution
+               missing := a - ans1.right
+               if zero? n then coef0 := missing
+                          else notelm := notelm + monomial(missing, n)
+        p   := reductum p
+      zero? notelm => [answr, coef0]
+      [answr, notelm + monomial(coef0, 0)]
+
 
 -- f is either 0 or of the form p(t)/(1 + t^2)^n
 -- returns either
@@ -684,7 +712,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
 -- rec.specpart is either 0 or of the form p(t)/t^n
       special := rec.polypart::GP +
                    (numer(rec.specpart)::GP exquo denom(rec.specpart)::GP)::GP
-      (u2 := expintegratepoly(special, FRDE)) case GPGP =>
+      (u2 := expintegratepoly2(special, FRDE)) case GPGP =>
         [i1 + convert(u2.elem)@RF::IR + integral(convert(u2.notelem)@RF,
                                                  monomial(1, 1)$UP :: RF), 0]
       [i1 + convert(u2.answer)@RF::IR, u2.a0]

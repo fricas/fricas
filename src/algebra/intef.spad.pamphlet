@@ -41,6 +41,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
   U3  ==> Union(Record(mainpart:F, limitedlogs:LLG), "failed")
   ANS ==> Record(special : F, integrand : F)
   PSOL==> Record(ans : F, right : F, sol? : Boolean)
+  PSOL2 ==> Record(ans : F, right : F, primpart : F, sol? : Boolean)
   FAIL==> error "failed - cannot handle that integrand"
   OPDIFF ==> '%diff
 
@@ -444,6 +445,12 @@ ElementaryIntegration(R, F) : Exports == Implementation where
         f = u.logand => return u.coeff
       0
 
+    risch_de_solver(x3 : Integer, x4 : F, eta : F, x : SE) : PSOL2 ==
+        risch_de_ext(x3, eta, x4, x,
+                     (x5 : F, x6 : List F) : U3+-> lflimitedint(x5, x, x6),
+                     (x7 : F, x8 : F) : U2+->lfextendedint(x7, x, x8)
+                    )$ElementaryRischDEX2(R, F)
+
     expint(f, x, k) ==
       eta := first argument k
       r1  := expintegrate(univariate(f, k),
@@ -451,9 +458,8 @@ ElementaryIntegration(R, F) : Exports == Implementation where
                  (x2 : F) : F+->differentiate(x2, x),
                  monomial(differentiate(eta, x), 1)),
                (rf : RF) : DREC +-> denint_poly(rf, k, x),
-               (x3 : Integer, x4 : F) : PSOL+->rischDE(x3, eta, x4, x,
-                 (x5 : F, x6 : List F) : U3+-> lflimitedint(x5, x, x6),
-                 (x7 : F, x8 : F) : U2+->lfextendedint(x7, x, x8)))
+               (x3 : Integer, x4 : F) : PSOL2 +->
+                    risch_de_solver(x3, x4, eta, x))
       map((x1 : RF) : F+->multivariate(x1, k), r1.answer) + lfintegrate(r1.a0, x)
 
     primlimint(f, x, k, lu) ==
