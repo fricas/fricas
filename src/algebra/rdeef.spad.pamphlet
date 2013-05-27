@@ -232,8 +232,6 @@ ElementaryRischDE(R, F) : Exports == Implementation where
     prim?(k : K, x : SE) : Boolean ==
         is?(k, 'log) or has?(operator k, PRIM)
 
-    tab : AssociationList(F, Data) := table()
-
     RF2GP f == (numer(f)::GP exquo denom(f)::GP)::GP
 
     logdiff(twr, bad) ==
@@ -279,9 +277,7 @@ ElementaryRischDE(R, F) : Exports == Implementation where
 -- when f' and g are rational functions over a constant field
     normalise0(n, f, g, x) ==
       k := kernel(x)@K
-      if (data1 := search(f, tab)) case "failed" then
-        tab.f := data := makeData(f, x, k)
-      else data := data1::Data
+      data := makeData(f, x, k)
       f'  := nfprime := n * differentiate(f, x)
       p : P := 1
       for v in data | (mq := n * v.coeff) > 0 repeat
@@ -297,9 +293,7 @@ ElementaryRischDE(R, F) : Exports == Implementation where
 
 -- make f weakly normalized, and solve y' + n f' y = g
     normalise(n, nfp, f, g, x, k, limitedint, extendedint) ==
-      if (data1:= search(f, tab)) case "failed" then
-        tab.f := data := makeData(f, x, k)
-      else data := data1::Data
+      data := makeData(f, x, k)
       p : P := 1
       for v in data | (mq := n * v.coeff) > 0 repeat
         mu := retractIfCan(mq)@Union(Z, "failed")
