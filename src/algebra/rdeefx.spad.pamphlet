@@ -1,0 +1,968 @@
+<<package RDEEFX2 ElementaryRischDEX2>>=
+)abbrev package RDEEFX2 ElementaryRischDEX2
+++ Risch differential equation, wrapper for extended version.
+ElementaryRischDEX2(R, F) : Exports == Implementation where
+  R : Join(GcdDomain, Comparable, CharacteristicZero,
+           RetractableTo Integer, LinearlyExplicitRingOver Integer)
+  F : Join(TranscendentalFunctionCategory, AlgebraicallyClosedField,
+           FunctionSpace R)
+
+  Z   ==> Integer
+  SY  ==> Symbol
+  LF  ==> List F
+  UP  ==> SparseUnivariatePolynomial F
+  RRF ==> Record(mainpart : F, limitedlogs : List NL)
+  NL  ==> Record(coeff : F, logand : F)
+  U   ==> Union(RRF, "failed")
+  UEX ==> Union(Record(ratpart:F,  coeff:F), "failed")
+  PSOL2 ==> Record(ans : F, right : F, primpart : F, sol? : Boolean)
+
+  Exports ==> with
+    risch_de_ext : (Z, F, F, SY, (F, LF) -> U, (F, F) -> UEX) -> PSOL2
+         ++ risch_de_ext(n, f, g, x, lim) returns \spad{[y, h, p, b]} such that
+         ++ \spad{dy/dx + n df/dx y + exp(-nf)dp = h} and \spad{b := h = g}.
+         ++ The equation \spad{dy/dx + n df/dx y = g} has no solution
+         ++ if \spad{h \~~= g} (y is a partial solution in that case).
+         ++ Notes: lim is a limited integration function, and
+         ++ ext is an extended integration function.
+
+  Implementation ==> add
+
+    if F is Expression(R) and R has EuclideanDomain then
+
+        risch_de_ext(n, f, g, x, lim, ext) ==
+            ei_int(n, f, g, x, lim, ext)$ElementaryRischDEX(R)
+
+    else
+
+        risch_de_ext(n, f, g, x, lim, ext) ==
+            res1 := rischDE(n, f, g, x, lim, ext)$ElementaryRischDE(R, F)
+            [res1.ans, res1.right, 0, res1.sol?]
+@
+
+<<package RDEEFX ElementaryRischDEX>>=
+)abbrev package RDEEFX ElementaryRischDEX
+)boot $tryRecompileArguments := nil
+++ Risch differential equation, extended version.
+++ Description:
+++   This package generates exponential integrals corresponding
+++   to polynomial part of the integral.
+++
+ElementaryRischDEX(R) : Exports == Implementation where
+  R : Join(EuclideanDomain, Comparable, CharacteristicZero,
+           RetractableTo Integer, LinearlyExplicitRingOver Integer)
+  F ==> Expression(R)
+
+  N   ==> NonNegativeInteger
+  Z   ==> Integer
+  Q   ==> Fraction(Z)
+  SE  ==> Symbol
+  LF  ==> List F
+  K   ==> Kernel F
+  LK  ==> List K
+  P   ==> SparseMultivariatePolynomial(R, K)
+  UP  ==> SparseUnivariatePolynomial F
+  RF  ==> Fraction UP
+  RRF ==> Record(mainpart : F, limitedlogs : List NL)
+  NL  ==> Record(coeff : F, logand : F)
+  U   ==> Union(RRF, "failed")
+  UEX ==> Union(Record(ratpart:F,  coeff:F), "failed")
+  PSOL2 ==> Record(ans : F, right : F, primpart : F, sol? : Boolean)
+
+  Exports ==> with
+
+    ei_int : (Z, F, F, SE, (F, LF) -> U, (F, F) -> UEX) -> PSOL2
+
+  Implementation ==> add
+    import IntegrationTools(R, F)
+    import TranscendentalRischDE(F, UP)
+    import TranscendentalIntegration(F, UP)
+    import PolynomialCategoryQuotientFunctions(IndexedExponents K,
+                                                             K, R, P, F)
+    ALGOP := '%alg
+    PRIM := 'prim
+
+    import OutputForm
+
+    EI_REC ==> Record(factor : UP, ratpart : Z, v_part : F,
+                    alg_part : UP, u_part : F, exponent : Z,
+                    shift_part : F)
+
+    EI_REC2 ==> Record(factor : UP, ratpart : Z, v_part : F,
+                    alg_part : UP, u_part : F, exponent : Z,
+                    shift_part : F, has_part2? : Boolean,
+                    ratpart2 : Z, v_part2 : F, u_part2 : F,
+                    shift_part2 : F)
+
+    UPUP ==> SparseUnivariatePolynomial(UP)
+
+    P_to_UP(p : P, k : K) : UP ==
+        up1 := univariate(p, k)$P
+        map((c : P) : F +-> c::F, up1
+           )$SparseUnivariatePolynomialFunctions2(P, F)
+
+    UP_to_UPUP(p : UP) : UPUP ==
+        map((c : F) : UP +-> c::UP, p
+           )$SparseUnivariatePolynomialFunctions2(F, UP)
+
+    UV_REC ==> Record(u_part : F, v_part : F, exponent : Z, coeff : Z)
+
+    get_uv0(tt : F, coeffs : List(Z), vlst : List(F), ulst : List(F),
+            k : K, x : SE) : UV_REC ==
+        v0 := tt - reduce(_+, [ki::F*vi for vi in vlst for ki in coeffs], 0)
+        ku : Z := 0
+        u : F := 1
+        if is?(k, 'exp) then
+            kf := k::F
+            for ui in ulst for ki in coeffs repeat
+                ui = kf => ku := ki
+                u := u*ui
+        else
+            u := reduce(_*, [ui^ki for ui in ulst for ki in coeffs], 1)
+        kc : Z := 0
+        if is?(k, 'log) then
+            kf := k::F
+            for vi in vlst for ki in coeffs repeat
+                if vi = kf then kc := ki
+        [u, v0, ku, kc]
+
+    get_uv(tt : F, vlst : List(F), ulst : List(F), k : K, x : SE
+         ) : Union(UV_REC, "failed") ==
+        dvvec := vector([D(vi, x) for vi in vlst])$Vector(F)
+        su := particularSolutionOverQ(dvvec, D(tt, x)
+                                )$IntegerLinearDependence(F)
+        su case "failed" => "failed"
+        sv := su::Vector(Q)
+        cd := splitDenominator(sv)$InnerCommonDenominator(
+                     Integer, Q, List(Integer), Vector(Q))
+        d := cd.den
+        d ~= 1 => "failed"
+        get_uv0(tt, cd.num, vlst, ulst, k, x)
+
+    handle_factor(gd : UP, nf : UP, denf : UP, f1 : UP, r0 : Z, u0 : F,
+                  vlst : LF, ulst : LF, k : K, x : SE,
+                  known_dividing : Boolean) : Union(EI_REC, "failed") ==
+        dummy := create()$SingletonAsOrderedSet
+        deg1 : N := degree(f1)
+        tt := -$F coefficient(f1, qcoerce(deg1 - 1)$N)$UP /$F
+                ((deg1::F)*coefficient(f1, deg1)$UP)
+        f2 := eval(f1, dummy, monomial(1, 1)$UP + tt::UP)
+        not(every?((c : F) : Boolean +-> D(c, x) = 0,
+               coefficients(f2))$LF) => return "failed"
+        uvu := get_uv(tt, vlst, ulst, k, x)
+        uvu case "failed" => return "failed"
+        uv := uvu::UV_REC
+        u := uv.u_part
+        u_exp := uv.exponent
+        v0 := uv.v_part
+        tt1 : UP
+        if r0 = 0 then
+            r0 := uv.coeff
+            tt := tt - (r0::F)*(k::F)
+        else
+            u := u0^r0*u
+        tt1 := monomial(r0::F, 1)$UP + tt::UP
+        ff := nf + tt1*denf
+        if deg1 > 1 then
+            ff := resultant(monomial(denf, 1)$UPUP + ff::UPUP,
+                            UP_to_UPUP(f2))
+        f2pp : UP :=
+            deg1 = 1 => 0
+            f2
+        known_dividing =>
+            ff := ff/leadingCoefficient(ff)
+            [ff, r0, tt, f2pp, u, u_exp, v0]$EI_REC
+        ff2 := ff1 := gcd(ff, gd)
+        ff3 := (ff exquo ff1)::UP
+        while (ff2 := gcd(ff2, ff3)) ~= 1 repeat
+            ff3 := (ff3 exquo ff2)::UP
+        not(degree(ff3) = 0 or
+            (is?(k, 'exp) and reductum(ff3) = 0)) => return "failed"
+        ff1 := ff1/leadingCoefficient(ff1)
+        [ff1, r0, tt, f2pp, u, u_exp, v0]$EI_REC
+
+    Part_REC ==> Record(particular : Vector Z, basis : List Vector Z)
+
+    z_basis(a : Vector Q, b : List Vector Q
+           ) : Union(Part_REC, "failed") ==
+        (nn := #b) > 1 => error "#b > 1"
+        cd := splitDenominator(a)$InnerCommonDenominator(
+                     Integer, Q, List(Integer), Vector(Q))
+        da := cd.den
+        av := vector(cd.num)$Vector(Z)
+        nn = 0 =>
+            da ~= 1 => "failed"
+            [av, []]$Part_REC
+        bvp := first(b)
+        cd := splitDenominator(bvp)$InnerCommonDenominator(
+                     Integer, Q, List(Integer), Vector(Q))
+        db := cd.den
+        bl := cd.num
+        gb := gcd(bl)
+        bv := vector(bl)$Vector(Z)
+        n := #bv
+        for i in 1..n repeat bv(i) := (bv(i) exquo gb)::Z
+        da = 1 => [av, [bv]]$Part_REC
+        (db exquo da) case "failed" => "failed"
+        ki : Z := 0
+        di : Z := 1
+        for i in 1..n repeat
+            ai := av(i)
+            bi := bv(i)
+            (ai - ki*bi) rem di ~= 0 => return "failed"
+            di1 := (da exquo gcd(bi, da))::Z
+            di2 := (di1 exquo gcd(di1, di))::Z
+            di2 = 1 => "iterate"
+            ki1 := invmod(bi, di2)$Integer
+            (c1, c2, g) := extendedEuclidean(di, di2)
+            di := di2*di
+            ki := (ki1*c1 + ki*c2) rem di
+        av := av + ki*bv
+        for i in 1..n repeat av(i) := (av(i) exquo da)::Z
+        [av, [bv]]$Part_REC
+
+    lin_args(gd : UP, nf : UP, k : K, vlst : List(F),
+             ulst : List(F), x : SE) : List(EI_REC2) ==
+        gd1 := numer(multivariate(gd::RF, k))
+        fgd := factor(gd1)$DenominatorIntegration(R)
+        degree(nf) >$Z 1 =>
+            error "lin_args only works for linear nf"
+        a1 : F :=
+            degree(nf) = 1 => leadingCoefficient(nf)
+            0
+        a0 := coefficient(nf, 0)
+        v0 := k::F
+        vlst1 : List(F) := []
+        ulst1 : List(F) := []
+        u0 : F
+        for v in vlst for u in ulst repeat
+            v = v0 =>
+                u0 := u
+            vlst1 := cons(v, vlst1)
+            ulst1 := cons(u, ulst1)
+        dummy := create()$SingletonAsOrderedSet
+        res : List(EI_REC2) := []
+        for fac in factors(fgd) repeat
+            f1 := P_to_UP(fac.factor, k)
+            deg1 : N := degree(f1)
+            deg1 = 0 => "iterate"
+            f1 := f1/leadingCoefficient(f1)
+            tt := -$F coefficient(f1, qcoerce(deg1 - 1)$N)$UP /$F (deg1::F)
+            no_sol : Boolean := false
+            has_r0 : Boolean := false
+            f2 : UP := 0
+            r0 : Z := 0
+            r0f : F := 0
+            if deg1 > 1 then
+                f2 := eval(f1, dummy, monomial(1, 1)$UP + tt::UP)
+                f2 := f2/leadingCoefficient(f2)
+                if (a1p := D(a1, x)) ~= 0 then
+                    has_r0 := true
+                    b0 := coefficient(f2, 0)
+                    (b0p := D(b0, x)) = 0 =>
+                        no_sol := true
+                    r0f := -(deg1::F)*a1p*b0/b0p - a1
+                    r0u := retractIfCan(r0f)@Union(Z, "failed")
+                    r0u case "failed" =>
+                        no_sol := true
+                    r0 := r0u::Z
+                    f2 := (a1 + r0f)^deg1*eval(f2,
+                             dummy, monomial(1/(a1 + r0f), 1))
+                not(every?((c : F) : Boolean +-> D(c, x) = 0,
+                    coefficients(f2))$LF) => no_sol := true
+            no_sol => "iterate"
+            dv0 := -D(a1*tt + a0, x)
+            dv1 := D(tt, x)
+            dvs := [D(v, x) for v in vlst1]
+            vecf :=
+                has_r0 =>
+                    dv0 := dv0 + r0f*dv1
+                    vector(dvs)$Vector(F)
+                vector(cons(dv1, dvs))$Vector(F)
+            sol_rec := solveLinearlyOverQ(vecf, dv0)$IntegerLinearDependence(F)
+            psolu := sol_rec.particular
+            psolu case "failed" => "iterate"
+            psol := psolu::Vector(Q)
+            if has_r0 then
+                psol := vector(cons(r0::Q, entries(psol)))$Vector(Q)
+            zbu := z_basis(psol, sol_rec.basis)
+            zbu case "failed" => "iterate"
+            zb := zbu::Record(particular : Vector Z, basis : List Vector Z)
+            vec1 := zb.particular
+            r0 := vec1(1)
+            a1n := a1 + r0::F
+            tt1 := -a1n*tt - a0
+            uv1 := get_uv0(tt1, rest(entries(vec1)), vlst1, ulst1, k, x)
+            u1 := uv1.u_part*u0^r0
+            v1 := uv1.v_part
+            empty?(zb.basis)$List(Vector Z) =>
+                res := cons([f1, r0, tt1, f2, u1, 0, v1,
+                                 false, 0, 0, 1, 0]$EI_REC2, res)
+            bv := first(zb.basis)
+            r2 := bv(1)
+            uv2 := get_uv0(-tt, rest(entries(bv)), vlst1, ulst1, k, x)
+            u2 := uv2.u_part*u0^r2
+            v2 := uv2.v_part
+            res := cons([f1, r0, tt1, f2, u1, 0, v1, true,
+                          r2, -tt, u2, v2]$EI_REC2, res)
+        res
+
+    UPZ ==> SparseUnivariatePolynomial(Z)
+    SOL_REC ==> Record(ratpart : Q, alg_part : UP)
+
+    get_rational_solutions2(eq1f : F, k1 : K) : List(Q) ==
+        eq2p := numer(univariate(eq1f, k1))$RF
+        nn := degree(eq2p) +$N 1
+        vv := vectorise(eq2p, nn)
+        vm := matrix([parts(vv)$Vector(F)]$List(LF))$Matrix(F)
+        vvr : Matrix(Z) := reducedSystem(vm)
+        i : N
+        pl2 : List(UPZ) := [unvectorise(row(vvr, i)$Matrix(Z))$UPZ
+                  for i in 1..nrows(vvr)]
+        eq2z := gcd(pl2)
+        ff := factor(eq2z)$MultivariateFactorize(
+                       SingletonAsOrderedSet, N, Z, UPZ)
+        facl := factors(ff)$Factored(UPZ)
+        res : List(Q) := []
+        for facr in facl repeat
+            fac := facr.factor
+            degree(fac) ~= 1 => "iterate"
+            val1r : Q := -coefficient(fac, 0) /$Q leadingCoefficient(fac)
+            res := cons(val1r, res)
+        res
+
+    FP ==> Polynomial(F)
+    FRF ==> Fraction(FP)
+
+    get_rational_solutions(eq1 : Equation(FRF), s1 : SE, s2 : SE) : List(Q) ==
+        (rv := rhs(eq1)) ~=$FRF 0 =>
+            s1 ~= retract(lhs(eq1))@SE =>
+                error "wrong format of solution 1"
+            ru0 := retractIfCan(rv)@Union(FP, "failed")
+            ru0 case "failed" => []
+            ru1 := retractIfCan(ru0::FP)@Union(F, "failed")
+            ru1 case "failed" => []
+            ru2 := retractIfCan(ru1::F)@Union(Q, "failed")
+            ru2 case "failed" => []
+            [ru2::Q]
+        eq1p := numer(lhs(eq1))$FRF
+        member?(s2, variables(eq1p))$List(SE) =>
+                error "wrong format of solution 2"
+        k1 := kernel(s1)$K
+        eq1f := retract(eval(eq1p, s1, k1::F))@F
+        get_rational_solutions2(eq1f, k1)
+
+    F_to_FP(p : F, ls : List(SE), lk : List(K)) : FP ==
+        empty?(lk) => p::FP
+        k1 := first(lk)
+        s1 := first(ls)
+        pu := numer(univariate(p, k1))$RF
+        pu1 := map((c : F) : FP +-> F_to_FP(c, rest(ls), rest(lk)), pu
+                  )$SparseUnivariatePolynomialFunctions2(F, FP)
+        multivariate(pu1, s1)
+
+    solve_poly_eqs(eqs : List(F), s1 : SE, s2 : SE) : List SOL_REC ==
+        k1 := kernel(s1)$K
+        k2 := kernel(s2)$K
+        eqs0 := [F_to_FP(numer(eqi)::F, [s1, s2], [k1, k2])
+                 for eqi in eqs]$List(FP)
+        lsol0 := solve([ci::FRF for ci in eqs0], [s2, s1]
+                      )$SystemSolvePackage(F)
+        res : List(SOL_REC) := []
+        for sol0 in lsol0 repeat
+            #sol0 ~=$Z 2 => error "wrong format of solution 0"
+            eq0 := first(sol0)
+            eq0p := numer(lhs(eq0) - rhs(eq0))
+            eq1 := last(sol0)
+            for val1r in get_rational_solutions(eq1, s1, s2) repeat
+                val2eq := eval(eq0p, s1, val1r::F)
+                val2alg : UP := univariate(val2eq)$FP
+                res := cons([val1r, val2alg]$SOL_REC, res)
+        res
+
+    ei_args3 : (UP, UP, UP, K, LF, LF, SE) -> List(EI_REC)
+
+    ei_args0(gd : UP, nf : UP, denf : UP, k : K, vlst0 : List(F),
+          ulst0 : List(F), x : SE) : List(EI_REC) ==
+        vlst : LF := []
+        ulst : LF := []
+        kf := k::F
+        u0 : F
+        for v in vlst0 for u in ulst0 repeat
+            if v ~= kf then
+                vlst := cons(v, vlst)
+                ulst := cons(u, ulst)
+            else
+                u0 := u
+        as := new()$Symbol
+        a := kernel(as)$K
+        bs := new()$Symbol
+        b := kernel(bs)$K
+        nn := nf + (monomial(a::F, 1)$UP + b::F::UP)*denf
+        qq := gd rem nn
+        eqs0 := [numer(ci)::F for ci in coefficients(qq)]
+        lsol := solve_poly_eqs(eqs0, as, bs)
+        has_r_bad : Boolean := false
+        r_bad : Z := 0
+        if degree(denf) + 1 >= degree(nf) then
+            degree(denf) + 1 > degree(nf) =>
+                has_r_bad := true
+                r_bad := 0
+            cc := -leadingCoefficient(nf)/leadingCoefficient(denf)
+            ccu := retractIfCan(cc)@Union(Z, "failed")
+            if ccu case Z then
+                has_r_bad := true
+                r_bad := ccu::Z
+        res : List(EI_REC) := []
+        for sol in lsol repeat
+            (ru := retractIfCan(sol.ratpart)@Union(Z, "failed"))
+               case "failed" => "iterate"
+            has_r_bad and ru::Z = r_bad => "iterate"
+            res1 := handle_factor(gd, nf, denf, sol.alg_part, ru::Z, u,
+                     vlst, ulst, k, x, true)
+            res1 case "failed" => "iterate"
+            res := cons(res1::EI_REC, res)
+        nnp := differentiate(nf)*denf - differentiate(denf)*nf + a::F::UP
+        eq1 := resultant(nnp, gd)
+        ratl := get_rational_solutions2(eq1, a)
+        if has_r_bad and not(member?(r_bad::Q, ratl)) then
+            ratl := cons(r_bad::Q, ratl)
+        degd := degree(denf)
+        degn := degree(nf)
+        degn1 := max(degn, degd + 1)
+        for r0 in ratl repeat
+            (ru := retractIfCan(r0)@Union(Z, "failed")) case "failed" =>
+                "iterate"
+            ri := ru::Z
+            nn := nf + monomial(ri::F, 1)$UP * denf
+            res1l := ei_args3(gd, nn, denf, k, vlst, ulst, x)
+            for res1 in res1l repeat
+                ap := res1.alg_part
+                fac := res1.factor
+                dega : Z :=
+                    ap = 0 => 1
+                    degree(ap)
+                vp := res1.v_part
+                degree(fac) = degn1*dega => "iterate"
+                res := cons([fac, ri, res1.v_part, ap, u0^ri*res1.u_part,
+                             0, res1.shift_part]$EI_REC, res)
+        res
+
+    ei_args1(gd : UP, nf : UP, denf : UP, t : K) : Factored(P) ==
+        r : F := resultant(nf + (t::F)*denf, gd)
+        factor(numer(r))$DenominatorIntegration(R)
+
+    ei_args2(gd : UP, nf : UP, denf : UP, f_res : Factored(P),
+             t : K, k : K, vlst : List(F), ulst : List(F), x : SE
+            ) : List(EI_REC)  ==
+        log_case := is?(k, 'log)
+        n1 : Z := 0
+        rfac := factors(f_res)$Factored(P)
+        dummy := create()$SingletonAsOrderedSet
+        res : List EI_REC := []
+        degg := degree(gd)
+        for fac in rfac repeat
+            f1 := P_to_UP(fac.factor, t)
+            deg1 := degree(f1)
+            deg1 = 0 => "iterate"
+            resu := handle_factor(gd, nf, denf, f1, 0, 1, vlst, ulst,
+                                  k, x, false)
+            if resu case EI_REC then
+                res := cons(resu::EI_REC, res)
+        res
+
+    ei_args3(gd : UP, nf : UP, denf : UP, k : K, vlst : List(F),
+          ulst : List(F), x : SE) : List(EI_REC) ==
+        t := kernel(new()$Symbol)$K
+        f_res := ei_args1(gd, nf, denf, t)
+        ei_args2(gd, nf, denf, f_res, t, k, vlst, ulst, x)
+
+    dummy := create()$SingletonAsOrderedSet
+
+    ei_args(gd : UP, nf : UP, denf : UP, k : K, vlst : List(F),
+          ulst : List(F), x : SE) : List(EI_REC) ==
+        degree(gd) =$N 0 => []
+        res1 : List(EI_REC) :=
+            is?(k, 'log) =>
+                ei_args0(gd, nf, denf, k, vlst, ulst, x)
+            ei_args3(gd, nf, denf, k, vlst, ulst, x)
+        res1
+
+    my_exp(p : UP, n : N) : UP == p^n
+
+    decompose1(num : UP, den : UP, eidens : List(UP)) : List(UP) ==
+        f1 := (den exquo reduce(_*, eidens))::UP
+        if f1 ~= 1 then
+            eidens := cons(f1, eidens)
+        res := decompose(num, eidens)$DenominatorIntegration(R)
+        f1 ~= 1 => rest(res)
+        res
+
+    get_trace(fu : RF, k : K, rf1k : K, cfac : UP) : RF ==
+        Sae := SimpleAlgebraicExtension(F, UP, cfac)
+        f := multivariate(fu, k)
+        fa := univariate(f, rf1k, cfac)
+        resd := trace(reduce(fa)$Sae)$Sae
+        univariate(resd, k)
+
+    EI_RES ==> Record(primpart : F, logpart : RF, polypart : UP,
+                      specpart : RF)
+
+    solve_factor1(nf : UP, denf : UP, nfp : UP, denfp : UP, k : K, x : SE,
+                  einum : UP, bpol : UP, er : EI_REC) : EI_RES ==
+        eiden := er.factor
+        r0 := er.ratpart
+        v0 := er.v_part
+        cfac := er.alg_part
+        u0 := er.u_part
+        u_exp := er.exponent
+        vshift := er.shift_part
+        rfc : F := 0
+        rf1k : K
+        -- bpol ~= eiden => [0, 0, 0, 0]
+        if cfac ~= 0 then
+            rfc := rootOf(cfac)
+            rf1k := retract(rfc)@K
+        eiarg_num := nf + (monomial(r0::F, 1) + v0::UP + rfc::UP)*denf
+        ei_arg : RF := eiarg_num::RF/denf::RF
+        numfp1 := nfp + D(v0 + (r0::F)*(k::F), x)*denfp
+        coeff1 := numfp1*denf*u0
+        coeff1_r : RF := (monomial(1,1)$UP::RF)^u_exp*
+                                 (coeff1::RF)/(eiarg_num::RF)
+        denf1 := denom(coeff1_r)
+        coeff1_rs : RF := 0
+        dvr := divide(numer(coeff1_r), denf1)
+        lnum1 := dvr.remainder
+        if is?(k, 'exp) and (min_deg := minimumDegree(denf1)) > 0 then
+            spec_den := monomial(1, min_deg)$UP
+            denf1 := (denf1 exquo spec_den)::UP
+            auxl := decompose(lnum1, [denf1, spec_den]
+                             )$DenominatorIntegration(R)
+            lnum1 := auxl(1)
+            coeff1_rs := auxl(2)::RF/spec_den::RF
+        lnum0 := lnum1
+        if bpol ~= eiden then
+            reml := decompose1(lnum1, denf1, [bpol])
+            lnum1 := first(reml)
+        if cfac ~= 0 then
+            einum := einum rem denf1
+            ddf := differentiate(eiden) rem denf1
+            ppu := extendedEuclidean(denf1, ddf, einum)
+            ppu case "failed" => error "impossible 4"
+            einum := (ppu::Record(coef1 : UP, coef2 : UP)).coef2
+            einum := (einum*differentiate(denf1)) rem denf1
+        cu := einum exquo lnum1
+        cu case "failed" => [0, 0, 0, 0]
+        cp := cu::UP
+        cu1 := retractIfCan(cp)@Union(F, "failed")
+        cu1 case "failed" => [0, 0, 0, 0]
+        c := cu1::F
+        differentiate(c, x) ~= 0 => [0, 0, 0, 0]
+        ansp1 := c*exp(-vshift - rfc)*Ei(multivariate(ei_arg, k))
+        zzl : List(F) :=
+            cfac = 0 => [0]
+            zerosOf(cfac)
+        ansp : F := 0
+        if cfac = 0 then
+            ansp := ansp1
+        else
+            for zz in zzl repeat
+                ansp := ansp + eval(ansp1, rf1k, zz)
+        lp_cor : RF := c::UP*(lnum0::RF/denf1::RF)
+        sp_cor := c::UP*coeff1_rs
+        poly_cor := c::UP*dvr.quotient
+        if cfac ~= 0 then
+            lp_cor := get_trace(lp_cor, k, rf1k, cfac)
+            sp_cor := get_trace(sp_cor, k, rf1k, cfac)
+            poly_cor_rf := get_trace(poly_cor::RF, k, rf1k, cfac)
+            poly_cor := retract(poly_cor_rf)@UP
+        [ansp, lp_cor, poly_cor, sp_cor]
+
+    p_power_in_q(q : UP, p : UP) : Z ==
+        nn : Z := 0
+        repeat
+            nqu := q exquo p
+            nqu case "failed" => break
+            q := nqu::UP
+            nn := nn + 1
+        nn
+
+    solve_linear_factor(nf : UP, denf : UP, nfp : UP, denfp : UP,
+                        k : K, x : SE,
+                        einum : UP, er : EI_REC2) : EI_RES ==
+        cfac := er.alg_part
+        rfc : F := 0
+        rf1k : K
+        if cfac ~= 0 then
+            rfc := rootOf(cfac)
+            rf1k := retract(rfc)@K
+        r0 := er.ratpart
+        v0 := er.v_part
+        u0 := er.u_part
+        lc0 := leadingCoefficient(nf) + r0::F
+        -- XXX using lc0 only makes sense if deg(nf) = 1 and denf = 1
+        -- fortunatly, in other cases cfac = 0 and we need lc0
+        -- only to handle nonzero cfac
+        (degree(nf) ~= 1 or denf ~= 1) and cfac ~= 0 =>
+            error "cfac ~= 0 in nonlinear case"
+        eiarg_num := nf + (monomial(r0::F, 1) + (v0 + lc0*rfc)::UP)*denf
+        fac1 := er.factor
+        nn0 : Z :=
+            degree(eiarg_num) > 1 => p_power_in_q(eiarg_num, fac1)
+            1
+        nn0 = 0 =>
+            error "impossible, eiarg_num is not divisible by its factor"
+        numfp1 := nfp + D(v0 + (r0::F)*(k::F), x)*denfp
+        coeff1 := numfp1*denf*u0
+        coeff1_r : RF := (coeff1::RF)/(eiarg_num::RF)
+        denf1 := denom(coeff1_r)
+        dvr := divide(numer(coeff1_r), denf1)
+        if cfac ~= 0 then
+            einum := einum rem denf1
+            ddf := differentiate(er.factor) rem denf1
+            ppu := extendedEuclidean(denf1, ddf, einum)
+            ppu case "failed" => error "impossible 4"
+            einum := (ppu::Record(coef1 : UP, coef2 : UP)).coef2
+            einum := (einum*differentiate(denf1)) rem denf1
+        lnum1 : F :=
+            degree(fac1) > 1 => retract(dvr.remainder)@F
+            reml := decompose1(dvr.remainder, denf1, [fac1])
+            retract(first(reml))@F
+        einum1 := retract(einum)@F
+        u1 := er.u_part2
+        res1u := solve_u(einum1/lnum1, u1, x)$DenominatorIntegration(R)
+        res1u case "failed" => [0, 0, 0, 0]
+        res1 := res1u::List(List(F))
+        ansp1 : F := 0
+        lp_cor : RF := 0
+        eiarg_inc := (monomial((er.ratpart2)::F, 1)$UP + (er.v_part2)::UP)
+                     *denf
+        dummy := create()$SingletonAsOrderedSet
+        zzl : List(F) :=
+            cfac = 0 => [0]
+            zerosOf(cfac)
+        for ck in res1 repeat
+            ci := ck(1)
+            kif := ck(2)
+            ki := retract(kif)@Z
+            einumi :=
+                cfac = 0 => eiarg_num + kif*eiarg_inc
+                ((lc0 + kif)/lc0)*eiarg_num
+            nn : Z :=
+                 degree(einumi) > 1 => p_power_in_q(einumi, fac1)
+                 1
+            if nn = 0 then
+                    error "impossible, einumi not divisible by its factor"
+            ci := (nn0::F)*ci/(nn::F)
+            eiargi_r := (einumi::RF)/(denf::RF)
+            eiargi :=  multivariate(eiargi_r, k)
+            shifti :=
+                cfac = 0 => er.shift_part + kif*er.shift_part2
+                ((lc0 + kif)/lc0)*(er.shift_part + lc0*rfc)
+            ansp1 := ansp1 + ci*exp(-shifti)*Ei(eiargi)
+            coefi := ci*u0*u1^ki
+            eiargp : RF := denfp*univariate(D(eiargi, x), k)
+            lp_cor := lp_cor + (coefi::UP::RF)*eiargp/eiargi_r
+        ansp : F := 0
+        if cfac = 0 then
+            ansp := ansp1
+        else
+            lp_cor := get_trace(lp_cor, k, rf1k, cfac)
+            for zz in zzl repeat
+                ansp := ansp + eval(ansp1, rf1k, zz)
+        dvr2 := divide(numer(lp_cor), denom(lp_cor))
+        [ansp, dvr2.remainder::RF/denom(lp_cor)::RF, dvr2.quotient, 0]
+
+    linear_log_case(num : UP, den : UP, nf : UP, nfp : UP, k : K,
+                    vlst : LF, ulst : LF, x : SE) : EI_RES ==
+        al := lin_args(den, nf, k, vlst, ulst, x)
+        empty?(al) => [0, 0, 0, 0]
+        eidens := [er.factor for er in al]
+        einums := decompose1(num, den, eidens)
+        ansp : F := 0
+        lp_cor : RF := 0
+        sp_cor : RF := 0
+        poly_cor : UP := 0
+        for einum in einums for er in al repeat
+            ar1 :=
+                er.has_part2? =>
+                    solve_linear_factor(nf, 1, nfp, 1, k, x, einum, er)
+                solve_factor1(nf, 1, nfp, 1, k, x, einum, er.factor,
+                     [er.factor, er.ratpart, er.v_part, er.alg_part,
+                        er.u_part, er.exponent, er.shift_part]$EI_REC)
+            ansp := ansp + ar1.primpart
+            lp_cor := lp_cor + ar1.logpart
+            sp_cor := sp_cor + ar1.specpart
+            poly_cor := poly_cor + ar1.polypart
+        [ansp, lp_cor, poly_cor, sp_cor]
+
+    handle_nonlinear_log(num : UP, den : UP, nf : UP, denf : UP, nfp : UP,
+                         denfp : UP, k : K, x : SE, vlst : LF, ulst : LF,
+                         lei : List(EI_REC), dbasis : Vector(UP),
+                         dtrans : Matrix(Integer)) : EI_RES ==
+        n := #lei
+        m := #dbasis
+        bpols : List(UP) := []
+        lei1 : List(EI_REC) := []
+        j0 : N
+        for i in 1..m repeat
+            esum : Z := 0
+            for j in 1..n repeat
+                if dtrans(i, j) = 1 then
+                    esum := esum + 1
+                    esum = 2 => break
+                    j0 := j
+            if esum = 1 then
+                bpols := cons(dbasis(i), bpols)
+                lei1 := cons(lei(j0), lei1)
+        ansp : F := 0
+        lp_cor : RF := 0
+        sp_cor : RF := 0
+        poly_cor : UP := 0
+        not(empty?(bpols)) =>
+            einums := decompose1(num, den, bpols)
+            for einum in einums for bpol in bpols for er in lei1 repeat
+                ar1 := solve_factor1(nf, denf, nfp, denfp, k, x, einum,
+                                 bpol, er)
+                ansp := ansp + ar1.primpart
+                lp_cor := lp_cor + ar1.logpart
+                sp_cor := sp_cor + ar1.specpart
+                poly_cor := poly_cor + ar1.polypart
+            [ansp, lp_cor, poly_cor, sp_cor]
+        bpol := dbasis(1)
+        degree(bpol) ~= 1 => error "degree(bpol) ~= 1"
+        for j in 1..n for er in lei repeat
+            if dtrans(1, j) = 1 then
+                lei1 := cons(er, lei1)
+        er1 := first(lei1)
+        r0 := er1.ratpart
+        lei := rest(lei1)
+        ril := [er.ratpart - r0 for er in lei]
+        r1 := gcd(ril)
+        v0 := er1.v_part
+        v1 := first(lei).v_part - v0
+        v1 := (r1::F/(first(lei).ratpart - r0)::F)*v1
+        uvu := get_uv(v1, vlst, ulst, k, x)
+        uvu case "failed" => error "impossible, get_uv failed"
+        uv := uvu::UV_REC
+        u1 := uv.u_part*(argument(k)(1))^r1
+        er2 := [bpol, r0, v0, 0, er1.u_part, 0, er1.shift_part,
+                true, r1, v1, u1, uv.v_part]$EI_REC2
+        einums := decompose1(num, den, [bpol])
+        ar1 := solve_linear_factor(nf, denf, nfp, denfp, k, x,
+                                   first(einums), er2)
+        ar1
+
+    handle_logpart(num : UP, den : UP, nf : UP, denf : UP,
+                   nfp : UP, denfp : UP, k : K,
+                   vlst : LF, ulst : LF, x : SE) : EI_RES ==
+        is?(k, 'log) and denf = 1 and degree(nf) <=$Z 1 =>
+            linear_log_case(num, den, nf, nfp, k, vlst, ulst, x)
+        denf = 1 and degree(nf) = 0 => [0, 0, 0, 0]
+        lei := ei_args(den, nf, denf, k, vlst, ulst, x)
+        empty?(lei) => [0, 0, 0, 0]
+        eidens := [er.factor for er in lei]
+        ansp : F := 0
+        lp_cor : RF := 0
+        sp_cor : RF := 0
+        poly_cor : UP := 0
+        is?(k, 'log) =>
+            dr := gcdDecomposition(vector(eidens)$Vector(UP)
+                                  )$GcdBasis(UP)
+            dbasis := dr.basis
+            dtrans := dr.transform
+            lp := num::RF/den::RF
+            repeat
+                ar1 := handle_nonlinear_log(num, den, nf, denf, nfp, denfp,
+                          k, x, vlst, ulst, lei, dbasis, dtrans)
+                ansp := ansp + ar1.primpart
+                lp_cor := lp_cor + ar1.logpart
+                sp_cor := sp_cor + ar1.specpart
+                poly_cor := poly_cor + ar1.polypart
+                ar1.logpart = 0 => break
+                lp := lp - ar1.logpart
+                lp = 0 => break
+                num := numer(lp)
+                den := denom(lp)
+                ndbl : List(UP) := []
+                nidbl : List(Z) := []
+                m := #dbasis
+                for i in 1..m repeat
+                    bi := dbasis(i)
+                    if (den exquo bi) case UP then
+                        ndbl := cons(bi, ndbl)
+                        nidbl := cons(i, nidbl)
+                #ndbl = m =>
+                    error "no progress in handle_nonlinear_log"
+                ndbl := reverse!(ndbl)
+                nidbl := reverse!(nidbl)
+                neidens : List(UP) := []
+                ninds : List(Z) := []
+                lei1 : List(EI_REC) := []
+                n := #eidens
+                for i in 1..n for eiden in eidens for er in lei repeat
+                    if (den exquo eiden) case UP then
+                        neidens := cons(eiden, neidens)
+                        ninds := cons(i, ninds)
+                        lei1 := cons(er, lei1)
+                eidens := reverse!(neidens)
+                ninds := reverse!(ninds)
+                lei := reverse!(lei1)
+                dbasis := vector(ndbl)$Vector(UP)
+                dtrans := dtrans(nidbl, ninds)
+            [ansp, lp_cor, poly_cor, sp_cor]
+        einums := decompose1(num, den, eidens)
+        for einum in einums for er in lei repeat
+            ar1 := solve_factor1(nf, denf, nfp, denfp, k, x, einum,
+                                 er.factor, er)
+            ansp := ansp + ar1.primpart
+            lp_cor := lp_cor + ar1.logpart
+            sp_cor := sp_cor + ar1.specpart
+            poly_cor := poly_cor + ar1.polypart
+        [ansp, lp_cor, poly_cor, sp_cor]
+
+    ei_int_log(f : F, ng : UP, x : SE, k : K,
+               lim : (F, LF) -> U, ext : (F, F) -> UEX) : PSOL2 ==
+        ngu := multivariate(ng::RF, k)
+        lk := union(tower(f), tower(ngu))
+        k1 := ksec(k, varselect(lk, x), x)
+        kf := k::F
+        dk := D(kf, x)
+        r1 : F := 0
+        ansp : F := 0
+        is_sol := true
+        rh : F := 0
+        am1 : F := 0
+        for m in degree(ng)..1 by -1 repeat
+            gm := - ((m+1)::F)*dk*am1
+            if m = degree(ng) then
+                gm := gm + leadingCoefficient(ng)
+                ng := reductum(ng)
+            res1 := rischDE(1, f, gm, x, lim, ext)$ElementaryRischDE(R, F)
+            is_sol := is_sol and res1.sol?
+            am1 := res1.ans
+            kfm := kf^m
+            r1 := r1 + kfm*am1
+            rh := rh + kfm*res1.right + (m::F)*dk*am1
+        gm := retract(ng)@F - dk*am1
+        res2 := ei_int(1, f, gm, x, lim, ext)
+        r1 := r1 + res2.ans
+        rh := rh + res2.right
+        is_sol := is_sol and res2.sol?
+        [r1, rh, res2.primpart, is_sol]
+
+    ei_int_exp(f : F, ng : UP, degs : N, x : SE, k : K,
+               lim : (F, LF) -> U, ext : (F, F) -> UEX) : PSOL2 ==
+        ngu := multivariate(ng::RF, k)
+        lk := union(tower(f), tower(ngu))
+        k1 := ksec(k, varselect(lk, x), x)
+        ak := argument(k)(1)
+        kf := k::F
+        r1 : F := 0
+        ansp : F := 0
+        is_sol := true
+        rh : F := 0
+        while ng ~= 0 repeat
+            m := degree(ng) - degs
+            gm := leadingCoefficient(ng)
+            ng := reductum(ng)
+            f1 := f + (m::F)*ak
+            res1 := ei_int(1, f1, gm, x, lim, ext)
+            kfm := kf^m
+            r1 := r1 + kfm*res1.ans
+            ansp := ansp + res1.primpart
+            rh := rh + kfm*res1.right
+            is_sol := is_sol and res1.sol?
+        [r1, rh, ansp, is_sol]
+
+    ei_int(n : Z, f : F, g : F, x : SE,
+           lim : (F, LF) -> U, ext : (F, F) -> UEX) : PSOL2 ==
+        lk := varselect(union(tower(f), tower(g)), x)
+        k := kmax(lk)
+        has?(operator k, ALGOP)$BasicOperator =>
+            res5 := rischDE(n, f, g, x, lim, ext)$ElementaryRischDE(R, F)
+            [res5.ans, res5.right, 0, res5.sol?]
+        f := n*f
+        fpu := univariate(differentiate(f, x), k)
+        gu := univariate(g, k)
+        dku := univariate(differentiate(k::F, x), k)
+        denom(dku) ~= 1 => [0, 0, 0, false]
+        dk := numer(dku)
+        denfp := denom(fpu)
+        nfp := numer(fpu)
+        derivation : UP -> UP := z1 +-> denfp*differentiate(z1,
+               (z2 : F) : F +-> differentiate(z2, x), dk)
+        her := HermiteIntegrate(denfp*gu, derivation,
+                nfp)$TranscendentalHermiteIntegration(F, UP)
+        lp := her.logpart
+        a1 := multivariate(her.answer, k)
+        rr1 := lp + (her.polypart)::RF + her.specpart
+        rr1 := rr1/(denfp::RF)
+        r1 := g - multivariate(rr1, k)
+        rr1 = 0 => [a1, g, 0, true]
+        lden := denom(lp)
+        lnum := numer(lp)
+        fu := univariate(f, k)
+        denf := denom(fu)
+        nf := numer(fu)
+        denf = 1 and degree(nf) = 0 and is?(k, 'exp) =>
+            lp ~= 0 => [a1, r1, 0, false]
+            ds := denom(her.specpart)
+            reductum(ds) ~= 0 or leadingCoefficient(ds) ~= 1 =>
+                error "unexpected special part"
+            degs := degree(ds)
+            ng := monomial(1, degs)$UP*her.polypart + numer(her.specpart)
+            res5 := ei_int_exp(f, ng, degs, x, k, lim, ext)
+            a1 := a1 + res5.ans
+            r1 := r1 + res5.right
+            [a1, r1, res5.primpart, res5.sol?]
+        lk1 := [kk for kk in lk | is?(kk, 'log) or is?(kk, 'exp)]
+        vlst := [(is?(kk, 'log) => kk::F; argument(kk).1) for kk in lk1]
+        ulst := [(is?(kk, 'log) => argument(kk).1; kk::F) for kk in lk1]
+        ar1 := handle_logpart(lnum, lden, nf, denf, nfp, denfp, k,
+                              vlst, ulst, x)
+        ansp := ar1.primpart
+        lp := lp - ar1.logpart
+        her.specpart := her.specpart - ar1.specpart
+        her.polypart := her.polypart - ar1.polypart
+        lp1u := retractIfCan(lp)@Union(UP, "failed")
+        lp1u case "failed" => [a1, r1, 0, false]
+        her.polypart := her.polypart + lp1u::UP
+        her.polypart = 0 and her.specpart = 0 => [a1, g, ansp, true]
+        denf = 1 and degree(nf) = 0 and (is?(k, 'log)
+          or has?(operator k, PRIM)) =>
+            lp ~= 0 => [a1, r1, 0, false]
+            her.specpart ~= 0 => error "unexpected special part"
+            res5 := ei_int_log(f, her.polypart, x, k, lim, ext)
+            a1 := a1 + res5.ans
+            r1 := r1 + res5.right
+            [a1, r1, ansp + res5.primpart, res5.sol?]
+        rr1 := her.polypart::RF + her.specpart
+        rr1 := rr1/(denfp::RF)
+        rr1 = 0 => [a1, g, ansp, true]
+        if denf = 1 and is?(k, 'log) and degree(nf) = 1 then
+            spec1u := retractIfCan(rr1)@Union(UP, "failed")
+            spec1u case "failed" => error "impossible 9"
+            spec1p := spec1u::UP
+            if degree(spec1p) = 0 then
+                lc := leadingCoefficient(nf)
+                (rcu := retractIfCan(lc)@Union(Z, "failed")) case "failed" =>
+                    "skip"
+                rc := rcu::Z
+                u := (argument(k)(1))^rc
+                g1 := coefficient(spec1p, 0)
+                f1 := coefficient(nf, 0)
+                res4 := ei_int(1, f1, g1*u, x, lim, ext)
+                a1 := a1 + res4.ans/u
+                ansp := ansp + res4.primpart
+                rr1 := (spec1p - (res4.right/u)::UP)::RF
+                r1 := g - multivariate(rr1, k)
+                return [a1, r1, ansp, res4.sol?]
+        rr1 = 0 => [a1, g, ansp, true]
+        rr1f := multivariate(rr1, k)
+        r1 := g - rr1f
+        res6 := rischDE(1, f, rr1f, x, lim, ext)$ElementaryRischDE(R, F)
+        [a1 + res6.ans, r1 + res6.right, ansp, res6.sol?]
+
+@
+

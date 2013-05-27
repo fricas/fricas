@@ -46,6 +46,13 @@ xftestEquals("normalize(D(res, z) - csc(z)*(1-1/(%i*z)^(1/2))^(1/2))", "0")
 
 testIntegrate("asin(x/a)", "x", " ")
 
+-- sanity checks
+testIntegrate("(x+1)*exp(x)", "x", "rde")
+testIntegrate("((x^2+x+1)*exp(1/(x+1)))/(x^2+2*x+1)", "x", "rde")
+testIntegrate("((x^3-x^2-3*x+1)*exp(1/(x^2-1)))/(x^3-x^2-x+1)", "x", "rde")
+testIntegrate("x*exp(-log(x) + x)", "x", "rde")
+testIntegrate("x*exp(log(x) + x)", "x", "rde")
+
 -- used to fail due to wrong normalization
 testIntegrate("1/x*(exp(log(x)/2+x))^2", "x", "rde")
 testIntegrate("exp(x)*exp(exp(x) + 1 + log(exp(x) + 3)/2)^2/(exp(x) + 3)",
@@ -115,11 +122,11 @@ testIntegrate("1/(x^2*log(a*x^n))", "x", "poly")
 testIntegrate("x/log(x)^2", "x", "li")
 testIntegrate("1/(log(x)+3)", "x", "li")
 testIntegrate("x^2/log(x+1)", "x", "li")
-xf2testIntegrate("exp(x)/(x+1)^2", "x", "Ei")
+testIntegrate("exp(x)/(x+1)^2", "x", "Ei")
 testIntegrate("x^3/log(x^2 - 1)", "x", "li")
 -- Kelly Roach
 -- Ei integrable
-xf2testIntegrate("cos(b*x)*atan(a/x^2)", "x", "Ei")
+xf1testIntegrate("cos(b*x)*atan(a/x^2)", "x", "Ei")
 -- erf integrable
 xf2testIntegrate("cos(a*x^2+b*x)", "x", "erf")
 -- Knowles
@@ -129,9 +136,12 @@ xf1testIntegrate("exp(-1/log(x))/(x*log(x)*sqrt(log(x)))", "x", "erf")
 -- the same, but written in a different way
 xf2testIntegrate("exp(-(1/2)*log(log(x)) -1/log(x))/(x*log(x))", "x", "erf")
 
+-- sqrt(%pi)*D(erf(log(x) + 1), x)/2
+testIntegrate("exp(-log(x)^2-2*log(x)-1)/x", "x", "erf")
+
 testIntegrate("sin(x)/x", "x", "Ei")
 xf2testIntegrate("cos(x)^2/x^3", "x", "Ei")
-xf2testIntegrate("(x^2+3)*exp(x)/(x^2+3*x+2)", "x", "Ei")
+testIntegrate("(x^2+3)*exp(x)/(x^2+3*x+2)", "x", "Ei")
 testIntegrate("((x + 1)*exp(x)*log(x) - exp(x))/(log(x)^2*log(x*exp(x)/log(x)))", "x", "li")
 testIntegrate("1/(log(x)*log(li(x)))", "x", "li")
 
@@ -151,6 +161,67 @@ testIntegrate("-sin(1/x)/x", "x", "SiCi")
 testIntegrate("-cos(1/x)/x", "x", "SiCi")
 testIntegrate("((-x^3+2)*sin((x^2)/(x^3+1)))/(x^4+x)", "x", "SiCi")
 testIntegrate("((-1*x^3+2)*cos((x^2)/(x^3+1)))/(x^4+x)", "x", "SiCi")
+
+testIntegrate("(1 - exp(-x^2))^2/x^3", "x", "Ei")
+testIntegrate("((-1*x^2+2)*exp(x/(x^2+2)))/(x^3+2*x)", "x", "Ei")
+testIntegrate("(4*x^3+4*x)*exp(x^2+1)/(x^4+2*x^2-1)", "x", "Ei")
+testIntegrate("((4*log(x)+x)*exp(2*log(x)^2+x))/(2*x*log(x)^2+x^2)", "x", "Ei")
+testIntegrate("((log(x)+1)*exp(x*log(x)))/(x*log(x))", "x", "Ei")
+testIntegrate("((exp(x)+1)*exp(exp(x)+x))/(exp(x)+x)", "x", "Ei")
+testIntegrate("exp(-x^2)*exp(erf(x))/erf(x)", "x", "Ei")
+testIntegrate("((tan(x)^2+1)*exp(tan(x)+1))/(tan(x)+1)", "x", "Ei")
+testIntegrate("(x*exp(x+1))/(x^2-1)", "x", "Ei")
+testIntegrate("(exp(x+log(x)+1))/(x^2-1)", "x", "Ei")
+testIntegrate("(x*log(x)+(x^3+2*x^2-1))*exp(log(x)+x+1)/((x^3-x)*log(x)+(x^4+x^3-x^2-x))", "x", "Ei")
+testIntegrate("(x*log(x)+(x^3+2*x^2-1))*exp(x+1)/((x^2-1)*log(x)+(x^3+x^2-x-1))", "x", "Ei")
+testIntegrate("(x*log(x)+(x^3+2*x^2-1))*exp(log(log(x)) + x+1)/((x^2-1)*log(x)^2+(x^3+x^2-x-1)*log(x))", "x", "Ei")
+testIntegrate("(4*x^3*exp(x^2+1))/(x^4-1)", "x", "Ei")
+testIntegrate("(exp(-x)-1)*exp(exp(-x)+x)/(exp(-x)+x)", "x", "Ei")
+xf2testIntegrate("(((x+1)*exp(-x)+1)*exp(x/(exp(-x)+1)))/(x*exp(-x)+x)", "x", "Ei")
+testIntegrate("((-exp(-x)^4+(-x-1)*exp(-x)^3+(-x-1)*exp(-x)^2+(x+1)*exp(-x)-x)*exp(exp(-x)+x))/(exp(-x)^2-x^2)", "x", "Ei")
+testIntegrate("(4*x^3+4*x)*exp(x^2+1)/(x^4+2*x^2-1)", "x", "Ei")
+testIntegrate("((-x^2-x)*exp(-x)-x)*exp(x/(exp(-x)+1))/((2*exp(-x)^3+6*exp(-x)^2+(-x^2+6)*exp(-x)+(-x^2+2)))", "x", "Ei")
+testIntegrate("(2*exp(x)+1)*exp(exp(x)^2+exp(x))/(exp(x)+1)", "x", "Ei")
+-- the same written in different way
+testIntegrate("(2*exp(x) + 1)*exp(exp(x))*exp(exp(2*x))/(exp(x)+1)", "x", "Ei")
+-- f0 := D(Ei(log(x)^2), x)
+testIntegrate("2*exp(log(x)^2+2*log(x))/(x^3*log(x))", "x", "Ei")
+-- f1 := D(Ei(log(x)*(log(x)+1)), x)
+testIntegrate("(2*log(x)+1)*exp(log(x)^2+2*log(x))/(x^2*log(x)^2+x^2*log(x))", "x", "Ei")
+-- f2 := D(Ei((log(x)+1)^2), x)/exp(1)
+testIntegrate("2*exp(log(x)^2+2*log(x))/(x*log(x)+x)", "x", "Ei")
+-- f3 := D(Ei((log(x)+1)*(log(x)+2)), x)/exp(2)
+testIntegrate("(2*log(x)+3)*x*exp(log(x)^2+2*log(x))/(x*log(x)^2+3*x*log(x)+2*x)", "x", "Ei")
+-- f1 + f3
+testIntegrate("(((2*x^2+2)*log(x)^2+(3*x^2+5)*log(x)+2)*exp(log(x)^2+2*log(x)))/(x^2*log(x)^3+3*x^2*log(x)^2+2*x^2*log(x))", "x", "Ei")
+-- f1 + f2
+testIntegrate("((2*x^2+2*x+2)*log(x)+(x+2))*exp(log(x)^2+2*log(x))/(x^3*log(x)^2+x^3*log(x))", "x", "Ei")
+-- f0 + f1 + f2 + f3
+testIntegrate("((2*x^3+2*x^2+2*x+2)*log(x)^2+(3*x^3+4*x^2+5*x+6)*log(x)+(2*x+4))*exp(log(x)^2+2*log(x))/(x^3*log(x)^3+3*x^3*log(x)^2+2*x^3*log(x))", "x", "Ei")
+testIntegrate("((2*x^3-x^2-6*x)/(x^2+3*x+2) + (2*x-3)/(log(x)+1))*exp(x*log(x)+x)", "x", "Ei")
+testIntegrate("(x*log(x)^2+3*x*log(x)+2*x)*exp(x*log(x)+x)/(x^2*log(x)^2+2*x^2*log(x)+x^2-2)", "x", "Ei")
+testIntegrate("((2*x^2+2*x)*log(x)^2+(2*x^2+4*x+2)*log(x))*exp(x*log(x))/((x^2+2*x+1)*log(x)^2-2)", "x", "Ei")
+testIntegrate("((2*x^2+2*x)*log(x)^2+(2*x^2+4*x+2)*log(x))*x^x/((x^2+2*x+1)*log(x)^2-2)", "x", "Ei")
+testIntegrate("(a*x+a)*exp(a*log(x))/(a*x*log(x)+b*x)", "x", "Ei")
+testIntegrate("(a*x+a)*exp(a*log(x))/(a*x*log(x)+sqrt(3)*x)", "x", "Ei")
+testIntegrate("(2*a^2*x+2*a^2)*log(x)*exp(a*log(x))/(a^2*x*log(x)^2-3*x)", "x", "Ei")
+testIntegrate("(2*log(x)*exp(2^(1/2)*log(x)))/(x*log(x)^2-3*x)", "x", "Ei")
+
+-- exp(-2)*D(Ei((log(x)^2 + 2)*(log(x) + 1)), x)
+testIntegrate("(3*log(x)^2+2*log(x)+2)*exp(log(x)^3+log(x)^2+2*log(x))/(x*log(x)^3+x*log(x)^2+2*x*log(x)+2*x)", "x", "Ei")
+-- exp(-3)*D(Ei((log(x)^2 + 3)*(log(x) + 1)), x)
+testIntegrate("(3*log(x)^2+2*log(x)+3)*x*exp(log(x)^3+log(x)^2+2*log(x))/(x*log(x)^3+x*log(x)^2+3*x*log(x)+3*x)", "x", "Ei")
+-- sum
+testIntegrate("((3*x+3)*log(x)^4+(2*x+2)*log(x)^3+(9*x+11)*log(x)^2+(4*x+6)*log(x)+(6*x+6))*exp(log(x)^3+log(x)^2+2*log(x))/(x*log(x)^5+x*log(x)^4+5*x*log(x)^3+5*x*log(x)^2+6*x*log(x)+6*x)", "x", "Ei")
+
+-- D(Ei((log(x) + 1)/log(x)), x)
+testIntegrate("-exp((log(x)+1)/log(x))/(x*log(x)^2+x*log(x))", "x", "Ei")
+-- exp(1)*D(Ei((log(x) + 1)/log(x) - (log(x) + 1)), x)
+testIntegrate("(log(x)^2+1)*exp((log(x)+1)/log(x))/(x^2*log(x)^3-x^2*log(x))", "x", "Ei")
+-- sum
+testIntegrate("(log(x)^2-x*log(x)+x+1)*exp((log(x)+1)/log(x))/(x^2*log(x)^3-x^2*log(x))", "x", "Ei")
+testIntegrate("cosh(x^(1/2))-acoth(1-x)", "x", "Ei")
+
 -- Fresnel integrals
 testIntegrate("sin(x^2)", "x", "fresnel")
 testIntegrate("cos(x^2)", "x", "fresnel")
@@ -168,8 +239,8 @@ xf2testIntegrate("D(fresnelS(x^2+x), x)", "x", "fresnel")
 testIntegrate("D(fresnelC(x^2+x), x)", "x", "fresnel")
 
 -- mixed cases
-xf2testIntegrate("(x-2)*exp(-x^2)/x", "x", "spec")
-xf2testIntegrate("(2*x+4)*exp(-x^2-2*x-1)/(x+1)", "x", "spec")
+testIntegrate("(x-2)*exp(-x^2)/x", "x", "spec")
+testIntegrate("(2*x+4)*exp(-x^2-2*x-1)/(x+1)", "x", "spec")
 xf2testIntegrate("(x+2)*sin(x^2)/x", "x", "spec")
 xf2testIntegrate("(x+3)*sin(x^2+2*x+1)/(x+1)", "x", "spec")
 xf2testIntegrate("(x+2)*cos(x^2)/x", "x", "spec")
