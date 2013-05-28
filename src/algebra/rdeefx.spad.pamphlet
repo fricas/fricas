@@ -877,13 +877,16 @@ ElementaryRischDEX(R) : Exports == Implementation where
 
     ei_int(n : Z, f : F, g : F, x : SE,
            lim : (F, LF) -> U, ext : (F, F) -> UEX) : PSOL2 ==
+        (fp := D(n*f, x)) = 0 =>
+            res5 := rischDE(n, f, g, x, lim, ext)$ElementaryRischDE(R, F)
+            [res5.ans, res5.right, 0, res5.sol?]
         lk := varselect(union(tower(f), tower(g)), x)
         k := kmax(lk)
         has?(operator k, ALGOP)$BasicOperator =>
             res5 := rischDE(n, f, g, x, lim, ext)$ElementaryRischDE(R, F)
             [res5.ans, res5.right, 0, res5.sol?]
         f := n*f
-        fpu := univariate(differentiate(f, x), k)
+        fpu := univariate(fp, k)
         gu := univariate(g, k)
         dku := univariate(differentiate(k::F, x), k)
         denom(dku) ~= 1 => [0, 0, 0, false]
