@@ -187,6 +187,11 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
                normalize(ii - k::F) = 0 => return k
         i
 
+    try_real(f : F) : F ==
+        pu : Union(F, "failed") := trappedSpadEval(real(f))$Lisp
+        pu case F => pu::F
+        f
+
 -- ltan = list of tangents in the integrand after real normalization
     postSubst(f, lv, lk, ltan, x) ==
       for v in lv for k in lk repeat
@@ -203,7 +208,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         f := eval(f, ltan, [k::F for k in ltemp])
         f := eval(f, TANTEMP, 2, halfangle)
         f := eval(f, ltemp, [Khalf k for k in ltemp])
-      f := real f
+      f := try_real(f)
       f := removeSinSq f
       removeConstantTerm(f, x)
 
@@ -251,7 +256,8 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       for k in tf for v in etf repeat
           if ((vu := retractIfCan(v)@Union(K, "failed")) case K) then
               vk := vu::K
-              if is?(operator(vk), '%iint) then
+              kn := name(operator(vk))
+              if kn = '%iint or kn = 'atan then
                   ekers := cons(k, ekers)
                   evals := cons(v, evals)
       rec := rischNormalize(eval(f, tf, etf), x)
