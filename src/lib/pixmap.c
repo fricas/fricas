@@ -50,6 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pixmap.H1"
 #include "halloc.H1"
 #include "spadcolors.H1"
+#include "strutil.h"
 
 
 
@@ -74,9 +75,9 @@ zzopen(char *file,char * mode)
 
     if (file_exists(file))
         return fopen(file, mode);
-    sprintf(zfile, "%s.Z", file);
+    fricas_sprintf_to_buf1(zfile, "%s.Z", file);
     if (file_exists(zfile)) {
-        sprintf(com, "gunzip -c %s.Z 2>/dev/null", file);
+        fricas_sprintf_to_buf1(com, "gunzip -c %s.Z 2>/dev/null", file);
         return popen(com, mode);
     }
     return NULL;

@@ -41,6 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "parse.h"
 
 #include "all_hyper_proto.H1"
+#include "strutil.h"
 
 char ebuffer[128];
 jmp_buf jmpbuf;
@@ -76,21 +77,24 @@ print_page_and_filename(void)
          * Now try to inform the user as close to possible where the error
          * occurred
          */
-        sprintf(obuff, "(HyperDoc) While parsing %s on line %d\n\tin the file %s\n",
+        fricas_sprintf_to_buf3(obuff,
+                "(HyperDoc) While parsing %s on line %d\n\tin the file %s\n",
                 gPageBeingParsed->name, line_number,
                 gPageBeingParsed->filename);
     }
     else if (gPageBeingParsed->type == SpadGen) {
-        sprintf(obuff, "While parsing %s from the Spad socket\n",
+        fricas_sprintf_to_buf1(obuff,
+                "While parsing %s from the Spad socket\n",
                 gPageBeingParsed->name);
     }
     else if (gPageBeingParsed->type == Unixfd) {
-        sprintf(obuff, "While parsing %s from a Unixpipe\n",
+        fricas_sprintf_to_buf1(obuff, "While parsing %s from a Unix pipe\n",
                 gPageBeingParsed->name);
     }
     else {
         /* Unknown page type */
-        sprintf(obuff, "While parsing %s\n", gPageBeingParsed->name);
+        fricas_sprintf_to_buf1(obuff, "While parsing %s\n",
+                               gPageBeingParsed->name);
     }
     fprintf(stderr, "%s", obuff);
 }
@@ -207,10 +211,10 @@ htperror(char *msg, int errno)
     /* The first thing I do is create the error message */
 
     if (errno <= Numerrors) {
-        sprintf(obuff, "%s:%s\n", msg, errmess[errno]);
+        fricas_sprintf_to_buf2(obuff, "%s:%s\n", msg, errmess[errno]);
     }
     else {
-        sprintf(obuff, "%s:\n", msg);
+        fricas_sprintf_to_buf1(obuff, "%s:\n", msg);
         fprintf(stderr, "Unknown error type %d\n", errno);
     }
     fprintf(stderr, "%s", obuff);

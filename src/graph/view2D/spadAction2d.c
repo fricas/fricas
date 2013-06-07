@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "all_2d.H1"
 #include "util.H1"
-
+#include "strutil.h"
 
 /******************************
  * int readViewman(info,size) *
@@ -53,7 +53,7 @@ readViewman(void * info,int size)
 {
   int mold = 0;
 
-  sprintf(errorStr,"%s %d %s","read of ",size,
+  fricas_sprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
           " bytes from viewport manager\n");
   mold = check(read(0,info,size));
   return(mold);
@@ -107,7 +107,7 @@ spadAction(void)
     readViewman(&i1,intSize);
     readViewman(filename,i1);
     filename[i1] = '\0';
-    sprintf(errorStr,"writing of viewport data");
+    fricas_sprintf_to_buf1(errorStr, "%s", "writing of viewport data");
     i3 = 0;
     readViewman(&i2,intSize);
     while (i2) {
@@ -251,10 +251,12 @@ spadAction(void)
     readViewman(&i2,intSize);           /* slot to drop graph onto 0..8*/
     readViewman(&viewGoAhead,intSize);
     if (viewGoAhead < 0) {
-      sprintf(control->message,"%s%d","Couldn't put into graph ",i2+1);
+      fricas_sprintf_to_buf2(control->message, "%s%d",
+                             "Couldn't put into graph ", i2 + 1);
       writeControlMessage();
     } else {
-      sprintf(control->message,"%s%d","Dropped onto graph ",i2+1);
+      fricas_sprintf_to_buf2(control->message, "%s%d",
+                             "Dropped onto graph ", i2 + 1);
       writeControlMessage();
       freeGraph(i2);
       graphArray[i2].key = i1;

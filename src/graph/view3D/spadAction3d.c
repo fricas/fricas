@@ -44,13 +44,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.H1"
 #include "all_3d.H1"
+#include "strutil.h"
 
 int
 readViewman (void *info,int size)
 {
   int m = 0;
 
-  sprintf(errorStr,"%s","read from viewport manager\n");
+  fricas_sprintf_to_buf1(errorStr, "%s", "read from viewport manager\n");
   m = check(read( 0, info, size));
 
   return(m);
@@ -419,7 +420,7 @@ spadAction (void)
     readViewman(&i1,intSize);
     readViewman(filename,i1);
     filename[i1] = '\0';
-    sprintf(errorStr,"writing of viewport data");
+    fricas_sprintf_to_buf1(errorStr, "%s", "writing of viewport data");
     i3 = 0;
     readViewman(&i2,intSize);
     while (i2) {

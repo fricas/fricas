@@ -48,7 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Gfun.H1"
 #include "XSpadFill.H1"
 #include "util.H1"
-
+#include "strutil.h"
 
 #include "mouse11.bitmap"
 #include "mouse11.mask"
@@ -100,19 +100,21 @@ makeMessageFromData(int whichGraph)
     if ((graphStateArray[whichGraph].scaleX) > 99.0) {
       strcpy(scaleXReport,"big");
     } else {
-      sprintf(scaleXReport,"%4.1f",graphStateArray[whichGraph].scaleX);
+      fricas_sprintf_to_buf1(scaleXReport, "%4.1f",
+                             graphStateArray[whichGraph].scaleX);
     }
     if ((graphStateArray[whichGraph].scaleY) > 99.0) {
       strcpy(scaleYReport,"big");
     } else {
-      sprintf(scaleYReport,"%4.1f",graphStateArray[whichGraph].scaleY);
+      fricas_sprintf_to_buf1(scaleYReport, "%4.1f",
+                             graphStateArray[whichGraph].scaleY);
     }
     if ((graphStateArray[whichGraph].centerX) > 999.0) {
       strcpy(deltaXReport,"+big");
     } else if ((graphStateArray[whichGraph].centerX) < -999.0) {
       strcpy(deltaXReport,"-big");
     } else {
-      sprintf(deltaXReport,"%4.0f",
+      fricas_sprintf_to_buf1(deltaXReport, "%4.0f",
               -graphStateArray[whichGraph].centerX /
               graphArray[whichGraph].unitX);
     }
@@ -121,7 +123,7 @@ makeMessageFromData(int whichGraph)
     } else if ((graphStateArray[whichGraph].centerY) < -999.0) {
       strcpy(deltaYReport,"-big");
     } else {
-      sprintf(deltaYReport,"%4.0f",
+      fricas_sprintf_to_buf1(deltaYReport, "%4.0f",
               -graphStateArray[whichGraph].centerY /
               graphArray[whichGraph].unitY);
     }

@@ -47,6 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Gfun.H1"
 
 #include "all_3d.H1"
+#include "strutil.h"
 
   /* upper limit as to how many kinds of files could be written (numBits-1) */
 #define numBits (8*sizeof(int))
@@ -62,15 +63,17 @@ writeViewport (int thingsToWrite)
   viewTriple        *aPt;
   XWindowAttributes vwInfo;
   FILE              *viewDataFile;
-  char              viewDirName[80], viewDataFilename[80],
-                    viewBitmapFilename[80], viewPixmapFilename[80],
-                    command[80];
+  char              viewDirName[280], viewDataFilename[280],
+                    viewBitmapFilename[280], viewPixmapFilename[280],
+                    command[300];
 
   XGetWindowAttributes(dsply,viewport->titleWindow,&vwInfo);
-  sprintf(viewDirName,"%s%s",filename,".VIEW");
-  sprintf(command,"%s%s%s","rm -r ",viewDirName," >  /dev/null 2>&1");
+  fricas_sprintf_to_buf2(viewDirName, "%s%s", filename, ".VIEW");
+  fricas_sprintf_to_buf3(command, "%s%s%s", "rm -r ", viewDirName,
+                         " >  /dev/null 2>&1");
   code = system(command);
-  sprintf(command,"%s%s%s","mkdir ",viewDirName," > /dev/null 2>&1");
+  fricas_sprintf_to_buf3(command, "%s%s%s", "mkdir ", viewDirName,
+                         " > /dev/null 2>&1");
   system(command);
   if (0) {
     fprintf(stderr,"   Error: Cannot create %s\n",viewDirName);
@@ -78,7 +81,7 @@ writeViewport (int thingsToWrite)
   } else {
 
             /*** Create the data file ***/
-    sprintf(viewDataFilename,"%s%s",viewDirName,"/data");
+    fricas_sprintf_to_buf2(viewDataFilename, "%s%s", viewDirName, "/data");
     if ((viewDataFile = fopen(viewDataFilename,"w")) == NULL) {
       fprintf(stderr,"   Error: Cannot create %s\n",viewDataFilename);
       perror("fopen");
@@ -138,7 +141,8 @@ writeViewport (int thingsToWrite)
         switch (ii) {
         case Bitmap:
             /*** Create the pixmap (bitmaps need leaf name) ***/
-          sprintf(viewBitmapFilename,"%s%s%s",viewDirName,"/","image.bm");
+          fricas_sprintf_to_buf2(viewBitmapFilename, "%s%s",
+                                 viewDirName, "/image.bm");
           XGetWindowAttributes(dsply,viewport->viewWindow,&vwInfo);
           code = XWriteBitmapFile(dsply,viewBitmapFilename,
                                   viewport->titleWindow,vwInfo.width,
@@ -147,7 +151,8 @@ writeViewport (int thingsToWrite)
 
         case Pixmap:
             /*** Create the pixmap (bitmaps need leaf name) ***/
-          sprintf(viewPixmapFilename,"%s%s%s",viewDirName,"/","image.xpm");
+          fricas_sprintf_to_buf2(viewPixmapFilename, "%s%s",
+                                 viewDirName, "/image.xpm");
           XGetWindowAttributes(dsply,viewport->viewWindow,&vwInfo);
           write_pixmap_file(dsply,scrn,viewPixmapFilename,
                                    viewport->titleWindow,0,0,vwInfo.width,
@@ -157,7 +162,8 @@ writeViewport (int thingsToWrite)
         case Image:
             /*** Create the image (bitmaps need leaf name) ***/
           writeImage = yes;
-          sprintf(viewPixmapFilename,"%s%s%s",viewDirName,"/","image.xpm");
+          fricas_sprintf_to_buf2(viewPixmapFilename, "%s%s",
+                                 viewDirName, "/image.xpm");
           XResizeWindow(dsply,viewport->titleWindow,300,300+titleHeight);
           XResizeWindow(dsply,viewport->viewWindow,300,300);
           viewport->hueTop = totalHues-1;  viewport->hueOffset = 0;
@@ -180,7 +186,8 @@ writeViewport (int thingsToWrite)
           firstTime = 1;
           drawViewport(Xoption);
           writeTitle();
-          sprintf(viewBitmapFilename,"%s%s%s",viewDirName,"/","image.bm");
+          fricas_sprintf_to_buf2(viewBitmapFilename, "%s%s",
+                                 viewDirName, "/image.bm");
           code = XWriteBitmapFile(dsply,viewBitmapFilename,
                                   viewport->titleWindow,vwInfo.width,
                                   vwInfo.height+vwInfo.border_width+20,-1,-1);
@@ -190,7 +197,7 @@ writeViewport (int thingsToWrite)
 
         case Postscript:
             /*** Create postscript output for viewport (in axiom3D.ps) ***/
-         sprintf(PSfilename,"%s%s",viewDirName,"/axiom3D.ps");
+         fricas_sprintf_to_buf2(PSfilename, "%s%s", viewDirName, "/axiom3D.ps");
          if (PSInit(viewport->viewWindow,viewport->titleWindow) == psError)
            return(-1);
          drawViewport(PSoption);  /* write new script file in /tmp */

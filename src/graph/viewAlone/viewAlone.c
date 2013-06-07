@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "viewAlone.h"
 
 #include "all_alone.H1"
+#include "strutil.h"
 
 /************* global variables **************/
 
@@ -76,19 +77,19 @@ int main (int argc,char *argv[])
         printf("viewAlone called with argv[2]=%s\n",argv[1]);
 /******** Open files and Figure out the viewport type ********/
 
-        sprintf(filename,"%s%s",argv[1],".VIEW/data");
+        fricas_sprintf_to_buf2(filename, "%s%s", argv[1], ".VIEW/data");
         if((viewFile = fopen(filename,"r")) == NULL ) {
 
-           sprintf(filename,"%s%s",argv[1],"/data");
+           fricas_sprintf_to_buf2(filename, "%s%s", argv[1], "/data");
            if((viewFile = fopen(filename,"r")) == NULL ){
              fprintf(stderr,"Error: Cannot find the file %s%s or %s%s\n",
                   argv[1],".VIEW/data",argv[1],"/data");
              exit(-1);
            }
-           sprintf(pathname,"%s",argv[1]);
+           fricas_sprintf_to_buf1(pathname, "%s", argv[1]);
         }
         else{
-             sprintf(pathname,"%s%s",argv[1],".VIEW");
+             fricas_sprintf_to_buf2(pathname, "%s%s", argv[1], ".VIEW");
            }
         fscanf(viewFile,"%d\n",&viewType);
         printf("filename = %s\n",filename);

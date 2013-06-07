@@ -43,6 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.H1"
 #include "all_alone.H1"
+#include "strutil.h"
 
 /* #define huhDEBUG */
 
@@ -56,7 +57,7 @@ spoonView2D(void)
   char * env_fricas;
   char * run_view;
 
-  sprintf(errorStr,"%s","creating pipes");
+  fricas_sprintf_to_buf1(errorStr, "%s", "creating pipes");
   check(pipe(pipe0));
   check(pipe(pipe1));
   switch(fork()) {
@@ -71,7 +72,8 @@ spoonView2D(void)
      *   Child  *
      ************/
     printf("(spoon2D child) mapping of pipes to standard I/O for view2D\n");
-    sprintf(errorStr,"%s","(viewAlone) mapping of pipes to standard I/O for view2D");
+    fricas_sprintf_to_buf1(errorStr, "%s",
+        "(viewAlone) mapping of pipes to standard I/O for view2D");
     check(dup2(pipe0[0],0));
     check(dup2(pipe1[1],1));
     close(pipe0[0]);
@@ -79,7 +81,8 @@ spoonView2D(void)
     close(pipe1[0]);
     close(pipe1[1]);
     printf("(spoon2D child) start the TwoDimensionalViewport process\n");
-    sprintf(errorStr,"%s","(viewAlone) execution of the TwoDimensionalViewport process");
+    fricas_sprintf_to_buf1(errorStr, "%s",
+        "(viewAlone) execution of the TwoDimensionalViewport process");
     env_fricas = getenv("AXIOM");
     {
         size_t env_fricas_len = strlen(env_fricas);
@@ -236,7 +239,7 @@ makeView2DFromFileData(view2DStruct *doView2D)
             "Ran out of memory (malloc) trying to get the title.\n");
     exit(-1);
   }
-  sprintf(doView2D->title,"%s",title);
+  fricas_sprintf_to_buf1(doView2D->title, "%s", title);
   /* put in a null terminator over the newline that the fgets reads */
   doView2D->title[strlen(doView2D->title)-1] = '\0';
   fscanf(viewFile,"%d %d %d %d\n",
@@ -289,7 +292,7 @@ makeView2DFromFileData(view2DStruct *doView2D)
   for (i=0; i<maxGraphs; i++) {
     if (graphArray[i].key) {
       /** OPEN FILE FOR GRAPHS **/
-      sprintf(graphFilename,"%s%s%d",pathname,"/graph",i);
+      fricas_sprintf_to_buf3(graphFilename, "%s%s%d", pathname, "/graph", i);
       if ((graphFile = fopen(graphFilename,"r")) == NULL) {
         fprintf(stderr,"   Error: Cannot find the file %s\n",graphFilename);
         perror("fopen");

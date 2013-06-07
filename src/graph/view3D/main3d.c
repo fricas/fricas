@@ -50,6 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "XSpadFill.H1"
 #include "XShade.H1"
 #include "all_3d.H1"
+#include "strutil.h"
 
                                  /**********************/
                                  /** global variables **/
@@ -575,7 +576,8 @@ main(void)
   /** send acknowledgement to viewport manager**/
   i = 345;
 
-  sprintf(errorStr,"sending window info to viewport manager");
+  fricas_sprintf_to_buf1(errorStr, "%s",
+                         "sending window info to viewport manager");
   check(write(Socket,&(viewport->viewWindow),sizeof(Window)));
 
   viewmap = XCreatePixmap(dsply,viewport->viewWindow,
