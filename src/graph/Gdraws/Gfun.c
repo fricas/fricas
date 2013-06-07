@@ -45,7 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "hash.H1"
 #include "Gfun.H1"
-
+#include "strutil.h"
 
 /*
  * Given 2 file pointers, this function copies file ifp to file ofp
@@ -683,7 +683,7 @@ PSGlobalInit(void)
   /* path-independent global file name */
   psData[GCdictps].flag = yes;
   tmp = tempnam(NULL, "axPS");
-  sprintf(psData[GCdictps].filename, "%s", tmp);
+  fricas_sprintf_to_buf1(psData[GCdictps].filename, "%s", tmp);
   free(tmp);
   psData[setupps].flag = yes;
   psData[scriptps].flag = yes;/* new script file name */
@@ -694,76 +694,76 @@ PSGlobalInit(void)
   if ((env_fricas = getenv("DEVE")) != NULL) {  /* get env var AXIOM */
 
     psData[headerps].flag = yes;
-    sprintf(psData[headerps].filename, "%s%s", env_fricas, "/Gdraws/PS/header.ps");
-    sprintf(psData[drawps].filename, "%s%s", env_fricas, "/Gdraws/PS/draw.ps");
-    sprintf(psData[drawarcps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[headerps].filename, "%s%s", env_fricas, "/Gdraws/PS/header.ps");
+    fricas_sprintf_to_buf2(psData[drawps].filename, "%s%s", env_fricas, "/Gdraws/PS/draw.ps");
+    fricas_sprintf_to_buf2(psData[drawarcps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawarc.ps");
-    sprintf(psData[drawfilledps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawfilledps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drwfilled.ps");
-    sprintf(psData[drawcolorps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawcolorps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawcolor.ps");
-    sprintf(psData[fillpolyps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[fillpolyps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/fillpoly.ps");
-    sprintf(psData[colorpolyps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[colorpolyps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/colorpoly.ps");
-    sprintf(psData[fillwolps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[fillwolps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/fillwol.ps");
-    sprintf(psData[colorwolps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[colorwolps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/colorwol.ps");
-    sprintf(psData[drawpointps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawpointps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawpoint.ps");
-    sprintf(psData[drawlineps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawlineps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawline.ps");
-    sprintf(psData[drawlinesps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawlinesps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawlines.ps");
-    sprintf(psData[drawrectps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawrectps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawrect.ps");
-    sprintf(psData[drawstrps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawstrps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawstr.ps");
-    sprintf(psData[drawIstrps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawIstrps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/drawIstr.ps");
-    sprintf(psData[fillarcps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[fillarcps].filename, "%s%s", env_fricas,
             "/Gdraws/PS/fillarc.ps");
-    sprintf(psData[setupps].filename, "%s%s", env_fricas, "/Gdraws/PS/setup.ps");
-    sprintf(psData[endps].filename, "%s%s", env_fricas, "/Gdraws/PS/end.ps");
+    fricas_sprintf_to_buf2(psData[setupps].filename, "%s%s", env_fricas, "/Gdraws/PS/setup.ps");
+    fricas_sprintf_to_buf2(psData[endps].filename, "%s%s", env_fricas, "/Gdraws/PS/end.ps");
   }
   else if ((env_fricas = getenv("AXIOM")) != NULL) {
     psData[headerps].flag = yes;
-    sprintf(psData[headerps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[headerps].filename, "%s%s", env_fricas,
             "/lib/graph/header.ps");
-    sprintf(psData[drawps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawps].filename, "%s%s", env_fricas,
             "/lib/graph/draw.ps");
-    sprintf(psData[drawarcps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawarcps].filename, "%s%s", env_fricas,
             "/lib/graph/drawarc.ps");
-    sprintf(psData[drawfilledps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawfilledps].filename, "%s%s", env_fricas,
             "/lib/graph/drwfilled.ps");
-    sprintf(psData[drawcolorps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawcolorps].filename, "%s%s", env_fricas,
             "/lib/graph/drawcolor.ps");
-    sprintf(psData[fillpolyps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[fillpolyps].filename, "%s%s", env_fricas,
             "/lib/graph/fillpoly.ps");
-    sprintf(psData[colorpolyps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[colorpolyps].filename, "%s%s", env_fricas,
             "/lib/graph/colorpoly.ps");
-    sprintf(psData[fillwolps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[fillwolps].filename, "%s%s", env_fricas,
             "/lib/graph/fillwol.ps");
-    sprintf(psData[colorwolps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[colorwolps].filename, "%s%s", env_fricas,
             "/lib/graph/colorwol.ps");
-    sprintf(psData[drawpointps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawpointps].filename, "%s%s", env_fricas,
             "/lib/graph/drawpoint.ps");
-    sprintf(psData[drawlineps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawlineps].filename, "%s%s", env_fricas,
             "/lib/graph/drawline.ps");
-    sprintf(psData[drawlinesps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawlinesps].filename, "%s%s", env_fricas,
             "/lib/graph/drawlines.ps");
-    sprintf(psData[drawrectps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawrectps].filename, "%s%s", env_fricas,
             "/lib/graph/drawrect.ps");
-    sprintf(psData[drawstrps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawstrps].filename, "%s%s", env_fricas,
             "/lib/graph/drawstr.ps");
-    sprintf(psData[drawIstrps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[drawIstrps].filename, "%s%s", env_fricas,
             "/lib/graph/drawIstr.ps");
-    sprintf(psData[fillarcps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[fillarcps].filename, "%s%s", env_fricas,
             "/lib/graph/fillarc.ps");
-    sprintf(psData[setupps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[setupps].filename, "%s%s", env_fricas,
             "/lib/graph/setup.ps");
-    sprintf(psData[endps].filename, "%s%s", env_fricas,
+    fricas_sprintf_to_buf2(psData[endps].filename, "%s%s", env_fricas,
             "/lib/graph/end.ps");
   }
   else {
@@ -789,7 +789,7 @@ PSInit(Window vw, Window tw)
     return (psError);
   }
 
-  sprintf(psData[output].filename, "%s", PSfilename); /* output file name */
+  fricas_sprintf_to_buf1(psData[output].filename, "%s", PSfilename); /* output file name */
 
   psData[drawps].flag = no;   /* ps procedures flags */
   psData[drawarcps].flag = no;
@@ -807,7 +807,7 @@ PSInit(Window vw, Window tw)
   psData[drawIstrps].flag = no;
   psData[fillarcps].flag = no;
 
-  sprintf(psData[scriptps].filename, "%s", tmpnam(NULL));     /* script file */
+  fricas_sprintf_to_buf1(psData[scriptps].filename, "%s", tmpnam(NULL));     /* script file */
   return (Gdraws_setDimension(vw, tw));
 }
 
@@ -851,7 +851,7 @@ PSCreateContext(
   /* fill newGC with information */
 
   newGC->GCint = gc;
-  sprintf(newGC->GCchar, "%s", C_gc);
+  fricas_sprintf_to_buf1(newGC->GCchar, "%s", C_gc);
   newGC->next = NULL;
 
   if ((fp = fopen(psData[GCdictps].filename, "a")) == NULL) {

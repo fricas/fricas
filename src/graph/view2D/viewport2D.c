@@ -56,6 +56,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "spadBitmap.bitmap"
 #include "spadMask.mask"
+#include "strutil.h"
 
 #define rint(z) ((int)(z))
 
@@ -117,7 +118,7 @@ do_x_tick(Window vw, int jj, int ii, XWindowAttributes vwInfo,
     GDrawLine(unitGC, vw, jj, vwInfo.height - 8,
               jj, vwInfo.height - 4, dFlag);
 
-    sprintf(aunit, "%0.3g", ii*graphArray[0].spadUnitX);
+    fricas_sprintf_to_buf1(aunit, "%0.3g", ii*graphArray[0].spadUnitX);
     strlength = strlen(aunit);
     halflength = XTextWidth(unitFont,aunit,strlength)/2;
 
@@ -161,7 +162,7 @@ do_y_tick(Window vw, int jj, int ii, XWindowAttributes vwInfo,
     GDrawLine(unitGC, vw, 2, jj,
               6, jj, dFlag);
 
-    sprintf(aunit, "%0.3g", ii*graphArray[0].spadUnitY);
+    fricas_sprintf_to_buf1(aunit, "%0.3g", ii*graphArray[0].spadUnitY);
     strlength = strlen(aunit);
     XTextExtents(unitFont, aunit, strlength, &dummyInt,
                  &ascent, &descent, &overall);

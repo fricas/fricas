@@ -52,6 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fnct_key.H1"
 #include "prt.H1"
 #include "edin.H1"
+#include "strutil.h"
 
 
 /** Some constants for functio key defs ****/
@@ -79,7 +80,7 @@ set_editor_key(void)
 {
     int pid;
 
-    sprintf(editorfilename, "/tmp/clef%d", pid = getpid());
+    fricas_sprintf_to_buf1(editorfilename, "/tmp/clef%d", pid = getpid());
 
     if (function_key[12].str == NULL) {
         (function_key[12]).type = SPECIAL;

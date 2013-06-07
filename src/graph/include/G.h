@@ -83,7 +83,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 typedef struct _GCstruct {
   GC     GCint;
-  char           GCchar[10];
+  char           GCchar[12];
   struct _GCstruct *next;
 } GCstruct, *GCptr;
 

@@ -50,6 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.H1"
 #include "Gfun.H1"
 #include "XSpadFill.H1"
+#include "strutil.h"
 
 
 static int doit=0;  /* globish variable for picking/dropping/clearing - all sorts of
@@ -69,9 +70,10 @@ doPick (int i,int bKey)
     check(write(Socket,&(graphArray[currentGraph].key),intSize));
     check(write(Socket,&(graphStateArray[currentGraph]),
                 sizeof(graphStateStruct)));
-    sprintf(control->message,"%s%d","Picked up graph ",currentGraph+1);
+    fricas_sprintf_to_buf2(control->message, "%s%d",
+                           "Picked up graph ",currentGraph+1);
   } else
-    sprintf(control->message,"%s","This graph is empty!");
+    fricas_sprintf_to_buf1(control->message, "%s", "This graph is empty!");
   writeControlMessage();
 
 
@@ -90,10 +92,12 @@ doDrop (int i,int bKey)
   check(write(Socket,&(vCommand),intSize));
   readViewman(&viewGoAhead,intSize);
   if (viewGoAhead < 0) {
-    sprintf(control->message,"%s%d","Couldn't drop to graph ",currentGraph+1);
+    fricas_sprintf_to_buf2(control->message, "%s%d",
+                           "Couldn't drop to graph ", currentGraph+1);
     writeControlMessage();
   } else {
-    sprintf(control->message,"%s%d","Dropped onto graph ",currentGraph+1);
+    fricas_sprintf_to_buf2(control->message, "%s%d",
+                          "Dropped onto graph ", currentGraph+1);
     writeControlMessage();
     freeGraph(currentGraph);
     readViewman(&(graphArray[currentGraph].key),intSize);
@@ -191,13 +195,15 @@ buttonAction (int bKey)
 
   case pick2D:
     if (viewAloned) {
-      sprintf(control->message,"%s","Cannot pick without FriCAS!");
+      fricas_sprintf_to_buf1(control->message, "%s",
+                             "Cannot pick without FriCAS!");
       writeControlMessage();
       XSync(dsply,False);
     }
     else {
       doit = pick2D;
-      sprintf(control->message,"%s","Click on the graph to pick");
+      fricas_sprintf_to_buf1(control->message, "%s",
+                             "Click on the graph to pick");
       writeControlMessage();
       XSync(dsply,False);
     }
@@ -205,12 +211,14 @@ buttonAction (int bKey)
 
   case drop2D:
     if (viewAloned) {
-      sprintf(control->message,"%s","Cannot drop without FriCAS!");
+      fricas_sprintf_to_buf1(control->message, "%s",
+                             "Cannot drop without FriCAS!");
       writeControlMessage();
       XSync(dsply,False);
     } else {
       doit = drop2D;
-      sprintf(control->message,"%s","Click on the graph to drop");
+      fricas_sprintf_to_buf1(control->message, "%s",
+                             "Click on the graph to drop");
       writeControlMessage();
       XSync(dsply,False);
     }
@@ -218,7 +226,8 @@ buttonAction (int bKey)
 
   case query2D:
     doit = query2D;
-    sprintf(control->message,"%s","Click on the graph to query");
+    fricas_sprintf_to_buf1(control->message, "%s",
+                           "Click on the graph to query");
     writeControlMessage();
     XSync(dsply,False);
     break;
@@ -667,7 +676,7 @@ processEvents(void)
               /* print out (x,y) object-space coordinates in message area */
 
               XGetWindowAttributes(dsply,whichWindow,&graphWindowAttrib);
-              sprintf(viewport->controlPanel->message,
+              fricas_sprintf_to_buf3(viewport->controlPanel->message,
                       "       >%d<: [%6.2f,%6.2f]       ",
                       queriedGraph+1,
                       projX((((XButtonEvent *)event)->x),

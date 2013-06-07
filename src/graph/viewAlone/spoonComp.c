@@ -44,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.H1"
 #include "all_alone.H1"
-
+#include "strutil.h"
 
 
 /* This file forks a child process and exits the parent. It
@@ -62,7 +62,7 @@ spoonView3D(int type)
   LPoint *anLPoint;
   int *anIndex;
 
-  sprintf(errorStr,"%s","creating pipes");
+  fricas_sprintf_to_buf1(errorStr, "%s", "creating pipes");
   check(pipe(pipe0));
   check(pipe(pipe1));
   switch(fork()) {
@@ -72,7 +72,7 @@ spoonView3D(int type)
     exit(-1);
   case 0:
     /*  Child  */
-    sprintf(errorStr,"%s",
+    fricas_sprintf_to_buf1(errorStr, "%s",
             "(viewAlone) mapping of pipes to standard I/O for view3D");
     check(dup2(pipe0[0],0));
     check(dup2(pipe1[1],1));
@@ -81,7 +81,7 @@ spoonView3D(int type)
     close(pipe1[0]);
     close(pipe1[1]);
 
-    sprintf(errorStr,"%s",
+    fricas_sprintf_to_buf1(errorStr, "%s",
             "(viewAlone) execution of the ThreeDimensionalViewport process");
     env_fricas = getenv("AXIOM");
     {
@@ -205,7 +205,7 @@ makeView3DFromFileData(int type)
     fprintf(stderr,"Ran out of memory (malloc) trying to get the title.\n");
     exit(-1);
   }
-  sprintf(doView3D.title,"%s",title);
+  fricas_sprintf_to_buf1(doView3D.title, "%s", title);
   /* put in a null terminator over the newline that the fgets reads */
   doView3D.title[strlen(doView3D.title)-1] = '\0';
 
