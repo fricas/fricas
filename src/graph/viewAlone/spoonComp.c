@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "viewAlone.h"
 #include "mode.h"
@@ -182,6 +183,7 @@ makeView3DFromFileData(int type)
 
   int i,j,k;
   char title[256];
+  size_t title_size;
   LLPoint *anLLPoint;
   LPoint *anLPoint;
   viewTriple *aPoint;
@@ -200,14 +202,15 @@ makeView3DFromFileData(int type)
          &(doView3D.zmax));
 
   fgets(title,256,viewFile);
-  if (!(doView3D.title = (char *)malloc((strlen(title)+1) *
-                                        sizeof(char)))) {
+  title_size = strlen(title);
+  assert(title_size > 0);
+  if (!(doView3D.title = (char *)malloc(title_size))) {
     fprintf(stderr,"Ran out of memory (malloc) trying to get the title.\n");
     exit(-1);
   }
-  fricas_sprintf_to_buf1(doView3D.title, "%s", title);
+  memcpy(doView3D.title, title, title_size - 1);
   /* put in a null terminator over the newline that the fgets reads */
-  doView3D.title[strlen(doView3D.title)-1] = '\0';
+  doView3D.title[title_size-1] = '\0';
 
   fscanf(viewFile,"%f %f %f %f %f %f %f %f\n",
          &(doView3D.deltaX),
