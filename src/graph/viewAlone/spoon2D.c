@@ -34,9 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _SPOON2D_C
 #include "fricas_c_macros.h"
 
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+#include <assert.h>
 
 #include "viewAlone.h"
 
@@ -226,6 +227,7 @@ makeView2DFromFileData(view2DStruct *doView2D)
 
   int i,j,k;
   char title[256];
+  size_t title_size;
   FILE *graphFile;
   char graphFilename[256];
   pointListStruct *aList;
@@ -233,15 +235,16 @@ makeView2DFromFileData(view2DStruct *doView2D)
   printf("(spoon2D makeView2DFromFileData)\n");
   fgets(title,256,viewFile);
   printf("(spoon2D) title=%s\n",title);
-  if (!(doView2D->title =
-        (char *)malloc((strlen(title)+1) * sizeof(char)))) {
+  title_size = strlen(title);
+  assert(title_size > 0);
+  if (!(doView2D->title = (char *)malloc(title_size))) {
     fprintf(stderr,
             "Ran out of memory (malloc) trying to get the title.\n");
     exit(-1);
   }
-  fricas_sprintf_to_buf1(doView2D->title, "%s", title);
+  memcpy(doView2D->title, title, title_size - 1);
   /* put in a null terminator over the newline that the fgets reads */
-  doView2D->title[strlen(doView2D->title)-1] = '\0';
+  doView2D->title[title_size-1] = '\0';
   fscanf(viewFile,"%d %d %d %d\n",
          &(doView2D->vX),
          &(doView2D->vY),
