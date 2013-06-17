@@ -37,7 +37,8 @@ ElementaryIntegration(R, F) : Exports == Implementation where
   IRRF ==> IntegrationResult RF
   FF  ==> Record(ratpart : RF, coeff : RF)
   LLG ==> List Record(coeff : F, logand : F)
-  U2  ==> Union(Record(ratpart:F, coeff:F), "failed")
+  Ext_Rec ==> Record(ratpart:F, coeff:F)
+  U2  ==> Union(Ext_Rec, "failed")
   U3  ==> Union(Record(mainpart:F, limitedlogs:LLG), "failed")
   ANS ==> Record(special : F, integrand : F)
   PSOL==> Record(ans : F, right : F, sol? : Boolean)
@@ -103,6 +104,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     unklimint   : (F, SE, List F) -> U3
     diffint     : (F, SE, K) -> IR
     tryChangeVar : (F, K, SE) -> Union(IR, "failed")
+    try_change_var2 : (F, K, SE, F) -> Union(Ext_Rec, "reject", "failed")
 
     prim?(k, x)      == is?(k, 'log) or has?(operator k, PRIM)
 
@@ -271,7 +273,11 @@ ElementaryIntegration(R, F) : Exports == Implementation where
         ky := retract(y)@K
         r := u::Record(ratpart : F, coeff : F)
         [eval(r.ratpart, ky, rec.primelt), eval(r.coeff, ky, rec.primelt)]
-      is?(kx, 'exp) or is?(kx, 'log) => FAIL
+      is?(kx, 'exp) or is?(kx, 'log) =>
+          u2 := try_change_var2(f, kx, x, g)
+          u2 case "failed" => "failed"
+          u2 case Ext_Rec  => u2::Ext_Rec
+          FAIL
       unkextint(f, x, g)
 
     alglflimint(f, k, l, x, lu) ==
@@ -321,6 +327,19 @@ ElementaryIntegration(R, F) : Exports == Implementation where
         freeOf?(g, x) =>               -- can we do change of variables?
             map((x1 : F) : F+->eval(x1, kernel z, t::F), lfintegrate(g, z))
         "failed"
+
+    try_change_var2(f, t, x, g) ==
+        z := new()$Symbol
+        f1 := subst(f / differentiate(t::F, x), [t], [z::F])
+        not(freeOf?(f1, x)) => "reject"
+        g1 := subst(g / differentiate(t::F, x), [t], [z::F])
+        freeOf?(g1, x) =>
+            res1 := lfextendedint(f1, z, g1)
+            res1 case "failed" => "failed"
+            [eval(res1.ratpart, kernel z, t::F), res1.coeff]$Ext_Rec
+        res2 := lflimitedint(f1, z, [])
+        res2 case "failed" => "reject"
+        [eval(res2.mainpart, kernel z, t::F), 0]$Ext_Rec
 
     algexpint(f, t, y, x) ==
         (u := tryChangeVar(f, t, x)) case IR => u::IR
