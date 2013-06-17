@@ -105,9 +105,16 @@ ExpressionSpace() : Category == Defn where
       ++ kernels(f) returns the list of all the top-level kernels
       ++ appearing in f, but not the ones appearing in the arguments
       ++ of the top-level kernels.
+    kernels : List(%) -> List K
+      ++ kernels(([f1,...,fn]) returns the list of all the top-level
+      ++ kernels appearing in f1, ..., fn but not the ones appearing
+      ++ in the arguments of the top-level kernels.
     tower        : %  -> List K
       ++ tower(f) returns all the kernels appearing in f, no matter
       ++ what their levels are.
+    tower : List(%) -> List K
+      ++ tower([f1,...,fn]) returns all the kernels appearing in
+      ++ f1, ..., fn no matter what their levels are.
     operators    : %  -> List OP
       ++ operators(f) returns all the basic operators appearing in f,
       ++ no matter what their levels are.
@@ -204,8 +211,11 @@ ExpressionSpace() : Category == Defn where
     belong? op   ==
         has?(op, 'any) and (is?(op, PAREN) or is?(op, BOX))
     listk f      == parts allKernels f
-    tower f      == sort! listk f
+    tower(f : %) : List(K) == sort! listk f
     allk l       == reduce("union", [allKernels f for f in l], set())
+    tower(lf : List(%)) : List(K) == sort! parts allk(lf)
+    kernels(lf : List(%)) : List(K) ==
+        reduce(setUnion$List(K), [kernels(f) for f in lf], [])$List(List(K))
     operators f  == [operator k for k in listk f]
     height f     == reduce("max", [height k for k in kernels f], 0)
     freeOf?(x : %, s : SY)       == not member?(s, [name k for k in listk x])
@@ -935,7 +945,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
 
       if not(R has IntegralDomain) then
         mainKernel x         == mainVariable numer x
-        kernels x            == variables numer x
+        kernels(x : %) : List(K) == variables numer x
         retract(x : %) : R       == retract numer x
         retract(x : %) : PR      == smpret(numer x)::PR
         retractIfCan(x:%):Union(R,  "failed") == retract numer x
@@ -990,7 +1000,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
       par   : % -> %
 
       mainKernel x                    == mainVariable(x)$QF
-      kernels x                       == variables(x)$QF
+      kernels(x : %) : List(K)        == variables(x)$QF
       univariate(x : %, k : K)            == univariate(x, k)$QF
       isPlus x                        == isPlus(x)$QF
       isTimes x                       == isTimes(x)$QF
