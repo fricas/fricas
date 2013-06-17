@@ -139,7 +139,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
     ALGOP := '%alg
 
     K2KG      : K -> Kernel FG
-    postSubst : (F, List F, List K, List K, SE) -> F
+    postSubst : (F, List K, List F, List K, List K, SE) -> F
     rinteg    : (IR, F, SE, B) -> Union(F, List F)
     mkPrimh   : (F, SE, B) -> F
     trans?    : F -> B
@@ -193,9 +193,9 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         f
 
 -- ltan = list of tangents in the integrand after real normalization
-    postSubst(f, lv, lk, ltan, x) ==
+    postSubst(f, otf, lv, lk, ltan, x) ==
       for v in lv for k in lk repeat
-        if ((u := retractIfCan(v)@Union(K, "failed")) case K) then
+        ((u := retractIfCan(v)@Union(K, "failed")) case K) =>
            uk := u::K
            if has?(operator(uk), ALGOP) then
              f := univariate(f, uk, minPoly uk) (uk::F)
@@ -203,6 +203,17 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
               not(member?(uk, (tf := tower f))) then
                uk := find_int(uk, tf)
            f := eval(f, [uk], [k::F])
+        if is?(k, 'nthRoot) then
+           vkl := [kk for kk in kernels(v) | is?(kk, 'nthRoot)]
+           if #vkl = 1 then
+               vk := vkl(1)
+               member?(vk, otf) => "skip"
+               vkf := vk::F
+               vc := v/vkf
+               member?(vk, kernels(vc)) => "skip"
+               vkv := (k::F)/vc
+               f := univariate(f, vk, minPoly vk) (vkf)
+               f := eval(f, [vk], [vkv])
       if not(empty? ltan) then
         ltemp := [tan2temp k for k in ltan]
         f := eval(f, ltan, [k::F for k in ltemp])
@@ -212,8 +223,10 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       f := removeSinSq f
       removeConstantTerm(f, x)
 
-    inv_lst(lt : List Kernel(FG), le : List(FG)) :
-          Record(ker : List Kernel(FG), val : List(FG)) ==
+    RTG_Rec ==> Record(ker : List Kernel(FG), val : List(FG))
+    RALG_Rec ==> Record(ker : List Kernel(F), val : List(F))
+
+    inv_lst(lt : List Kernel(FG), le : List(FG)) : RTG_Rec ==
         resk : List Kernel(FG) := []
         rese :  List(FG) := []
         im := complex(0, 1)$G
@@ -232,6 +245,29 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
             resk := cons(ik, resk)
             rese := cons(ie, rese)
         [reverse(resk), reverse(rese)]
+
+    inv_alg_lst(lt : List Kernel(F)) : RALG_Rec ==
+        resk : List Kernel(F) := []
+        rese :  List(F) := []
+        im := sqrt(-1)$F
+        for k in lt repeat
+            not(is?(k, 'nthRoot)) => "iterate"
+            e1 := F2FG(k::F)
+            ckl := kernels(e1)
+            #ckl ~= 1 => "iterate"
+            ck := ckl(1)
+            ckf := ck::FG
+            e1 = ckf => "iterate"
+            e2 := FG2F(ckf)
+            ru1 := retractIfCan(e2)@Union(Kernel(F), "failed")
+            ru1 case "failed" => "iterate"
+            resk := cons(ru1::Kernel(F), resk)
+            rese := cons(k::F/FG2F(e1/ckf), rese)
+        [reverse! resk, reverse! rese]
+
+    to_real(fg : FG, rtg : RTG_Rec, ralg : RALG_Rec) : F ==
+        f := FG2F eval(fg, rtg.ker, rtg.val)
+        eval(f, ralg.ker, ralg.val)
 
 -- can handle a single unnested tangent directly, otherwise go complex for now
 -- l is the list of all the kernels containing x
@@ -260,14 +296,18 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
               if kn = '%iint or kn = 'atan then
                   ekers := cons(k, ekers)
                   evals := cons(v, evals)
-      rec := rischNormalize(eval(f, tf, etf), x)
+      f1 := eval(f, tf, etf)
+      tf1 := tower(f1)
+      rec := rischNormalize(f1, x)
       g   := rootSimp(rec.func)
-      tg  := [k for k in tower g | member?(x, variables(k::F))]$List(K)
+      tg0 := tower g
+      tg  := [k for k in tg0 | member?(x, variables(k::F))]$List(K)
       ltg := select(x1+->is?(operator x1, 'tan), tg)
       rtg := any?(x1+->has?(operator x1, RTRIG), tg)
       el  := any?(x1+->has?(operator x1, ELEM), tg)
       i : IR
       if (goComplex?(rtg, tg, ltg)) then
+          ralg := inv_alg_lst(tg0)
           gg0 := F2FG g
           tgg0 := tower(gg0)
           tgg1 := [trigs2explogs(k::FG, []) for k in tgg0]
@@ -277,15 +317,15 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
           -- but currently we do nothing
           -- rootSimp caused regression on arc trigonometric functions
           -- gg := rootSimp(gg)$AlgebraicManipulations(G, FG)
-          i := map((fg : FG) : F +-> FG2F eval(fg, rtg1.ker, rtg1.val),
+          i := map((fg : FG) : F +-> to_real(fg, rtg1, ralg),
                  lfintegrate(gg, x))
       else i := lfintegrate(g, x)
       ltg := setDifference(ltg, ltf)   -- tan's added by normalization
       okers := concat(rec.kers, ekers)
       ovals := concat(rec.vals, evals)
       (u := rinteg(i, f, x, el and ht)) case F =>
-          postSubst(u::F, ovals, okers, ltg, x)
-      [postSubst(h, ovals, okers, ltg, x) for h in u::List(F)]
+          postSubst(u::F, tf1, ovals, okers, ltg, x)
+      [postSubst(h, tf1, ovals, okers, ltg, x) for h in u::List(F)]
 
 @
 \section{License}
