@@ -65,8 +65,11 @@ spadCompile(name) ==
     $InteractiveFrame : local := $compiler_InteractiveFrame
     $MacroTable := MAKE_-HASH_-TABLE()
     $restore_list := nil
+    $ncMsgList : local := nil
     a := ncloopIncFileName name
     res := fakeloopInclude(name, nil)
+    if not($ncMsgList = nil) then
+        processMsgList($ncMsgList, nil)
     true
 
 DEFPARAMETER($toklst, nil)
