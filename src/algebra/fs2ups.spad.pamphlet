@@ -67,10 +67,12 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
   Problem ==> Record(func : String, prob : String)
   Result  ==> Union(%series : UPS, %problem : Problem)
   SIGNEF  ==> ElementaryFunctionSign(R, FE)
+  U1      ==> Union("invertible", "zero", "bad")
   OPT_MAP ==> Union(FE -> Boolean, "none")
   OPT_REC ==> Record(pos_Check? : Boolean, atan_Flag : ATANFLAG,
                      coeff_check? : OPT_MAP, inv_check? : OPT_MAP,
-                       log_x_replace : Boolean, log_x_val : FE)
+                       zero_check? : OPT_MAP, log_x_replace : Boolean,
+                        log_x_val : FE)
 
   Exports ==> with
     exprToUPS : (FE, B, ATANFLAG) -> Result
@@ -146,10 +148,10 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) is
       ++ like exprToUPS, but if \spad{log_flag} is true it replaces
       ++ logarithms of expansion variable by \spad{log_val}
-    exprToPS : (FE, B, ATANFLAG, B, FE, FE -> B, FE -> B) -> Result
+    exprToPS : (FE, B, ATANFLAG, B, FE, FE -> B, FE -> B, FE -> B) -> Result
       ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val, coef_chk,
-      ++ inv_chk) is like exprToPS(fcn, posCheck?, atanFlag, log_flag,
-      ++ log_val), but fails if \spad{coef_chk} is false for some
+      ++ inv_chk, zero_chk) is like exprToPS(fcn, posCheck?, atanFlag,
+      ++ log_flag, log_val), but fails if \spad{coef_chk} is false for some
       ++ coefficient of \spad{fcn} or if expansion process needs to
       ++ invert element of \spad{FE} for which \spad{inv_chk} is
       ++ false
@@ -218,6 +220,12 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         else
             true
 
+    check_zero(coef : FE, opt_rec : OPT_REC) : B ==
+        if opt_rec.zero_check? case (FE -> B) then
+            ((opt_rec.zero_check?)::(FE -> B))(coef)
+        else
+            coef = 0
+
     carefulNthRootIfCan(ups, n, opt_rec, rightOnly?) ==
       -- similar to 'nthRootIfCan', but it is fussy about the series
       -- it takes as an argument.  If 'n' is EVEN and 'posCheck?'
@@ -230,10 +238,13 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       posCheck? := opt_rec.pos_Check?
       n < 1 => error "nthRoot: n must be positive"
       deg := degree ups
-      if (coef := coefficient(ups, deg)) = 0 then
-        deg := order(ups, deg + ZEROCOUNT :: Expon)
-        (coef := coefficient(ups, deg)) = 0 =>
-          error "log of series with many leading zero coefficients"
+      deg1 := deg + ZEROCOUNT :: Expon
+      while check_zero(coef := coefficient(ups, deg), opt_rec)
+            and deg < deg1 repeat
+          if coef ~= 0 then ups := reductum(ups)
+          deg := order(ups, deg1)
+          (coef := coefficient(ups, deg)) = 0 =>
+              error "log of series with many leading zero coefficients"
       -- if 'posCheck?' is true, we do not allow nth roots of negative
       -- numbers when n in even
       if even?(n :: I) then
@@ -254,16 +265,16 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       [[function, problem]]
 
     exprToUPS(fcn, posCheck?, atanFlag) ==
-        i_expr_to_PS(fcn, [posCheck?, atanFlag, "none",
+        i_expr_to_PS(fcn, [posCheck?, atanFlag, "none", "none",
                            "none", false, 0]$OPT_REC)
 
     exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) ==
-        i_expr_to_PS(fcn, [posCheck?, atanFlag, "none", "none",
+        i_expr_to_PS(fcn, [posCheck?, atanFlag, "none", "none", "none",
                            log_flag, log_val]$OPT_REC)
 
     exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val,
-             coef_chk, inv_chk) ==
-       i_expr_to_PS(fcn, [posCheck?, atanFlag, coef_chk, inv_chk,
+             coef_chk, inv_chk, zero_chk) ==
+       i_expr_to_PS(fcn, [posCheck?, atanFlag, coef_chk, inv_chk, zero_chk,
                            log_flag, log_val]$OPT_REC)
 
     i_expr_to_PS(fcn, opt_rec) ==
@@ -336,10 +347,13 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       n > 0 => [(b.%series) ^ (n::PositiveInteger)]
       -- check lowest order coefficient when n < 0
       ups := b.%series; deg := degree ups
-      if (coef := coefficient(ups, deg)) = 0 then
-        deg := order(ups, deg + ZEROCOUNT :: Expon)
-        (coef := coefficient(ups, deg)) = 0 =>
-          error "inverse of series with many leading zero coefficients"
+      deg1 := deg + ZEROCOUNT :: Expon
+      while check_zero(coef := coefficient(ups, deg), opt_rec)
+            and deg < deg1 repeat
+          if coef ~= 0 then ups := reductum(ups)
+          deg := order(ups, deg1)
+          (coef := coefficient(ups, deg)) = 0 =>
+              error "inverse of series with many leading zero coefficients"
       not(check_inverse(coef, opt_rec)) =>
           stateProblem("power", "need to invert bad coefficient")
       [ups ^ n]
@@ -708,8 +722,11 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       ups := result.%series
       deg := degree ups
       coef : FE
-      if (coef := coefficient(ups, deg)) = 0 then
-          deg := order(ups, deg + ZEROCOUNT :: Expon)
+      deg1 := deg + ZEROCOUNT :: Expon
+      while check_zero(coef := coefficient(ups, deg), opt_rec)
+            and deg < deg1 repeat
+          if coef ~= 0 then ups := reductum(ups)
+          deg := order(ups, deg1)
           (coef := coefficient(ups, deg)) = 0 =>
               error "log of series with many leading zero coefficients"
       not (opt_rec.log_x_replace or zero? deg) =>
@@ -925,7 +942,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       -- series; "generalized" means that log(x) and bounded functions
       -- of x are allowed to appear in the coefficients of the series
       iExprToGenUPS(newElem fcn, [posCheck?, atanFlag, "none", "none",
-                                  false, 0]$OPT_REC)
+                                  "none", false, 0]$OPT_REC)
 
     iExprToGenUPS(fcn, opt_rec) ==
       -- converts a functional expression to a generalized power
@@ -1231,11 +1248,6 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x) : _
   SUP     ==> SparseUnivariatePolynomial Polynomial R
   Problem ==> Record(func : String, prob : String)
   Result  ==> Union(%series : UPS, %problem : Problem)
-  SIGNEF  ==> ElementaryFunctionSign(R, FE)
-  OPT_MAP ==> Union(FE -> Boolean, "none")
-  OPT_REC ==> Record(pos_Check? : Boolean, atan_Flag : ATANFLAG,
-                     coeff_check? : OPT_MAP, inv_check? : OPT_MAP,
-                       log_x_replace : Boolean, log_x_val : FE)
 
   Exports ==> with
     exprToUPS : (FE, B, ATANFLAG) -> Result
@@ -1311,10 +1323,10 @@ FunctionSpaceToUnivariatePowerSeries(R, FE, Expon, UPS, TRAN, UTS, TEXP, x) : _
       ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) is
       ++ like exprToUPS, but if \spad{log_flag} is true it replaces
       ++ logarithms of expansion variable by \spad{log_val}
-    exprToPS : (FE, B, ATANFLAG, B, FE, FE -> B, FE -> B) -> Result
+    exprToPS : (FE, B, ATANFLAG, B, FE, FE -> B, FE -> B, FE -> B) -> Result
       ++ exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val, coef_chk,
-      ++ inv_chk) is like exprToPS(fcn, posCheck?, atanFlag, log_flag,
-      ++ log_val), but fails if \spad{coef_chk} is false for some
+      ++ inv_chk, zero_chk) is like exprToPS(fcn, posCheck?, atanFlag,
+      ++ log_flag, log_val), but fails if \spad{coef_chk} is false for some
       ++ coefficient of \spad{fcn} or if expansion process needs to
       ++ invert element of \spad{FE} for which \spad{inv_chk} is
       ++ false
