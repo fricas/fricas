@@ -440,7 +440,7 @@ ThreeDimensionalViewport() : Exports == Implementation where
 
     doOptions(v : Rep) : Void ==
       v.title := title(v.optionsField,"FriCAS3D")
-      st:S := style(v.optionsField,"wireMesh")
+      st:S := style(v.optionsField, "render")
       if (st = "shade" or st = "render") then
         v.flags.style := rendered
       else if (st = "solid" or st = "opaque") then
@@ -449,7 +449,10 @@ ThreeDimensionalViewport() : Exports == Implementation where
         v.flags.style := contour
       else if (st = "smooth") then
         v.flags.style := smooth
-      else v.flags.style := wireMesh
+      else if (st = "wireMesh") then
+        v.flags.style := wireMesh
+      else
+        v.flags.style := rendered
       v.viewpoint := viewpoint(v.optionsField,
         [deref defaultTheta, deref defaultPhi, deref defaultZoom, _
           1$SF, 1$SF, 1$SF, deref defaultDeltaX, deref defaultDeltaY])
@@ -460,9 +463,10 @@ ThreeDimensionalViewport() : Exports == Implementation where
       [0,typeVIEW3D,"FriCAS3D",[viewPosDefault().1,viewPosDefault().2], _
        [viewSizeDefault().1, viewSizeDefault().2], _
         [deref defaultTheta, deref defaultPhi, deref defaultZoom, _
-          1$SF, 1$SF, 1$SF, deref defaultDeltaX, deref defaultDeltaY], [0, 27], _
-            [noControl, wireMesh, yes, no, no, no], [0$SF, 0$SF, 1$SF, 0$SF, 0$SF, 1$SF], _
-              [yes, EYED, HITHER], [0$SF, 1$SF, 0$SF, 1$SF, 0$SF, 1$SF, no, yes], _
+          1$SF, 1$SF, 1$SF, deref defaultDeltaX, deref defaultDeltaY], _
+        [0, 27], [noControl, rendered, yes, no, yes, no], _
+        [0$SF, 0$SF, 1$SF, 0$SF, 0$SF, 1$SF], _
+        [yes, EYED, HITHER], [0$SF, 1$SF, 0$SF, 1$SF, 0$SF, 1$SF, no, yes], _
                 create3Space()$SPACE3, [] ]
 
     subspace viewport ==
