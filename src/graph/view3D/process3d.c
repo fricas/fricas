@@ -321,7 +321,7 @@ buttonAction (int bKey)
     writeControlMessage();
     viewport->axesOn       = yes;
     viewport->regionOn     = no;  viewData.box = 0;
-    viewData.outlineRenderOn = 0;
+    viewData.outlineRenderOn = 1;
     viewport->monoOn       = no;
     viewport->zoomXOn      = viewport->zoomYOn = viewport->zoomZOn = yes;
     viewport->originrOn    = yes;  viewport->objectrOn    = no;
