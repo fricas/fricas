@@ -47,9 +47,6 @@
 (defvar |$doNotCompileJustPrint| nil "switch for compile")
 (defvar |$PrintCompilerMessageIfTrue| t)
 (defvar |$Rep| '|$Rep| "should be bound to gensym? checked in coerce")
-;; the following initialization of $ must not be a defvar
-;; since that make $ special
-(setq $ '$) ;; used in def of Ring which is Algebra($)
 (defvar |$scanIfTrue| nil "if t continue compiling after errors")
 (defvar |$Representation| nil "checked in compNoStacking")
 (defvar |$definition| nil "checked in DomainSubstitutionFunction")
