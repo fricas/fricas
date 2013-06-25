@@ -597,6 +597,9 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
     (eval  x)
 )
 
+;;; For evaluating categories we need to bind $.
+(defun |c_eval|(u) (let (($ '$)) (declare (special $)) (|eval| u)))
+
 ;;; Accesed from HyperDoc
 (defun |setViewportProcess| ()
   (setq |$ViewportProcessToWatch|

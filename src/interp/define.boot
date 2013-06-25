@@ -1218,7 +1218,7 @@ compForMode(x,m,e) ==
 
 compMakeCategoryObject(c,$e) ==
   not isCategoryForm(c,$e) => nil
-  u:= mkEvalableCategoryForm c => [eval u,$Category,$e]
+  u := mkEvalableCategoryForm c => [c_eval u, $Category, $e]
   nil
 
 quotifyCategoryArgument x == MKQ x
