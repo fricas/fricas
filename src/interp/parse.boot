@@ -105,11 +105,7 @@ parseAtom x ==
   x = 'break => parseLeave ['$NoValue]
   x
 
-parseTranList l ==
-  atom l => parseTran l
-  [parseTran first l,:parseTranList rest l]
-
-parseLeftArrow u == parseTran ["LET",:u]
+parseTranList l == [parseTran(y) for y in l]
 
 parseIs [a,b] == ["is",parseTran a,transIs parseTran b]
 
@@ -294,13 +290,12 @@ makeSimplePredicateOrNil p ==
   u:= isAlmostSimple p => u
   true => wrapSEQExit [['LET,g:= GENSYM(),p],g]
 
-parseWhere l == ["where",:mapInto(l,'parseTran)]
-
+parseWhere l == ["where", :parseTranList(l)]
 
 parseSeq l ==
   not (l is [:.,['exit,:.]]) =>
     postError ['"   Invalid ending to block: ",last l]
-  transSeq mapInto(l,'parseTran)
+  transSeq(parseTranList(l))
 
 transSeq l ==
   null l => nil
@@ -316,23 +311,3 @@ transSeq l ==
     ['IF,decExitLevel a,transSeq tail,decExitLevel b]
   (y:= transSeq tail) is ['SEQ,:s] => ['SEQ,item,:s]
   ['SEQ,item,['exit,1,incExitLevel y]]
-
-transCategoryItem x ==
-  x is ['SIGNATURE,lhs,rhs] =>
-    lhs is ['LISTOF,:y] =>
-      "append" /[transCategoryItem ['SIGNATURE,z,rhs] for z in y]
-    atom lhs =>
-      if STRINGP lhs then lhs:= INTERN lhs
-      rhs is ['Mapping,:m] =>
-        m is [.,'constant] => LIST ['SIGNATURE,lhs,[first m],'constant]
-        LIST ['SIGNATURE,lhs,m]
-      $transCategoryAssoc:= [[lhs,:rhs],:$transCategoryAssoc]
-      NIL
-    [op,:argl]:= lhs
-    extra:= nil
-    if rhs is ['Mapping,:m] then
-      if rest m then extra:= rest m
-                 --should only be 'constant' or 'variable'
-      rhs:= first m
-    LIST ['SIGNATURE,op,[rhs,:SUBLIS($transCategoryAssoc,argl)],:extra]
-  LIST x

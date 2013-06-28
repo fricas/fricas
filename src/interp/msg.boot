@@ -236,7 +236,6 @@ processMsgList (erMsgList,lineList) ==
         erMsgList :=
              queueUpErrors(globalNumOfLine,erMsgList)
     $outputList := append(erMsgList,$outputList)  --the nopos's
-    st := '"---------SOURCE-TEXT-&-ERRORS------------------------"
     listOutputter reverse $outputList
 
 erMsgSort erMsgList ==
