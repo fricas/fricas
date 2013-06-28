@@ -12,16 +12,17 @@ DEFPARAMETER($compiler_InteractiveFrame,
                     addBinding('$Information, nil,
                                 makeInitialModemapFrame())))
 
-DEFPARAMETER($NONBLANK, nil)
-
-set_nonblank(val) == SETF($NONBLANK, val)
-
 current_line_number() ==
     tok := current_token()
     tok =>
-         pos := TOKEN_-NONBLANK(tok)
+         pos := TOKEN_-LINE_NUM(tok)
          pos and INTEGERP(pos) => pos
          nil
+    nil
+
+current_token_is_nonblank() ==
+    tok := current_token()
+    tok => TOKEN_-NONBLANK(tok)
     nil
 
 spad_syntax_error(wanted, parsing) ==
@@ -121,7 +122,6 @@ DEFVAR($ignorable_backset)
 
 ntokreader(token) ==
     nonblank_flag := nil
-    set_nonblank(nil)
     if $toklst then
         tok1 := first $toklst
         $toklst := rest $toklst
@@ -130,6 +130,7 @@ ntokreader(token) ==
         pos := tok1.4
         line_info := first(rest(pos))
         line_no := first(rest(rest(line_info)))
+        char_no := rest(rest(pos))
         if not($curent_line_number = line_no) then
             $prev_line := $curent_line
             $prev_line_number := $curent_line_number
@@ -145,7 +146,6 @@ ntokreader(token) ==
             sym := make_float(mant_i, mant_f, mant_fl, exp)
         if sym = "(" and type1 = "key" and tok1.3 = "nonblank" then
             nonblank_flag := true
-            set_nonblank(true) 
         type := ASSQ(type1, $trans_table)
         greater_SI($paren_level, 0) and type1 = "key" and _
           sym in ["BACKSET", "BACKTAB", "SETTAB"] =>
@@ -207,9 +207,9 @@ ntokreader(token) ==
             sym :=
                 sym1 => sym1.1
                 sym
-        TOKEN_-INSTALL(sym, type, token, line_no)
+        token_install(sym, type, nonblank_flag, line_no, char_no, token)
     else
-        TOKEN_-INSTALL(nil, "*EOF", token, nil)
+        token_install(nil, "*EOF", nil, nil, 0, token)
 
 DEFVAR($token_reader)
 
