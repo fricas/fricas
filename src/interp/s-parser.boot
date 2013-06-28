@@ -517,8 +517,8 @@ parse_Primary() == OR(parse_Float(), parse_PrimaryNoFloat())
 parse_Primary1() ==
     OR(
        AND(parse_VarForm(),
-           OPTIONAL AND(
-              $NONBLANK, current_symbol() = "(", MUST parse_Enclosure(),
+           OPTIONAL AND(current_token_is_nonblank(),
+              current_symbol() = "(", MUST parse_Enclosure(),
               push_reduction("parse_Primary1",
                              [pop_stack_2(), pop_stack_1()]))),
        parse_String(), parse_IntegerTok(),

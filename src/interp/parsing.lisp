@@ -45,6 +45,8 @@ NonBlank is true if the token is not preceded by a blank."
   (Symbol nil)
   (Type nil)
   (NonBlank t)
+  (Line_num 0)
+  (Char_num 0)
 )
 
 (defparameter Prior-Token (make-token) "What did I see last")
@@ -52,10 +54,12 @@ NonBlank is true if the token is not preceded by a blank."
 (defparameter Next-Token (make-token)    "Next token in input stream.")
 (defparameter Valid-Tokens 0               "Number of tokens in buffer (0, 1 or 2)")
 
-(defun Token-Install (symbol type token &optional (nonblank t))
-  (setf (token-symbol token) symbol (token-type token) type
-        (token-nonblank token) nonblank
-  )
+(defun |token_install| (symbol type nonblank lpos cpos token)
+  (setf (token-symbol token) symbol)
+  (setf (token-type token) type)
+  (setf (token-nonblank token) nonblank)
+  (setf (token-Line_num token) lpos)
+  (setf (token-Char_num token) cpos)
   token)
 
 (defun Token-Print (token)
@@ -110,9 +114,9 @@ NonBlank is true if the token is not preceded by a blank."
 
 (defun token-stack-clear ()
    (progn (setq Valid-Tokens 0)
-          (token-install nil nil current-token nil)
-          (token-install nil nil next-token nil)
-          (token-install nil nil prior-token nil)))
+          (|token_install| nil nil nil 0 0 current-token)
+          (|token_install| nil nil nil 0 0 next-token)
+          (|token_install| nil nil nil 0 0 prior-token)))
 
 ; *** Match Token
 
