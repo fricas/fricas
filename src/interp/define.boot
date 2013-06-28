@@ -1298,16 +1298,12 @@ compCategoryItem(x,predl) ==
   --1. if x is a conditional expression, recurse; otherwise, form the predicate
   x is ["COND",[p,e]] =>
     predl':= [p,:predl]
-    e is ["PROGN",:l] => for y in l repeat compCategoryItem(y,predl')
     compCategoryItem(e,predl')
   x is ["IF",a,b,c] =>
     predl':= [a,:predl]
-    if b~="noBranch" then
-      b is ["PROGN",:l] => for y in l repeat compCategoryItem(y,predl')
-      compCategoryItem(b,predl')
+    if b ~= "noBranch" then compCategoryItem(b, predl')
     c="noBranch" => nil
     predl':= [["not",a],:predl]
-    c is ["PROGN",:l] => for y in l repeat compCategoryItem(y,predl')
     compCategoryItem(c,predl')
   pred:= (predl => MKPF(predl,"AND"); true)
 
@@ -1328,5 +1324,5 @@ compCategoryItem(x,predl) ==
   null atom op =>
     for y in op repeat compCategoryItem(["SIGNATURE",y,:sig],predl)
 
-  --4. branch on a single type or a signature %with source and target
+  --4. branch on a single type or a signature with source and target
   PUSH(MKQ [rest x,pred],$sigList)
