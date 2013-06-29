@@ -390,15 +390,15 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in F.
       ++ Returns "failed" if neither case can hold.
       ++ Argument foo is a Risch differential equation function on F.
-    primlimitedint:(RF, UP -> UP, F->UF, List RF) -> Union(NLF,"failed")
-      ++ primlimitedint(f, ', foo, [u1, ..., un]) returns
+    primlogint:(RF, UP -> UP, F->UF, List RF) -> Union(NLF,"failed")
+      ++ primlogint(f, ', foo, [u1, ..., un]) returns
       ++ \spad{[v, [c1, ..., cn], a]} such that \spad{ci' = 0},
       ++ \spad{f = v' + a + reduce(+, [ci * ui'/ui])},
       ++ and \spad{a = 0} or \spad{a} has no integral in UP.
       ++ Returns "failed" if no such v, ci, a exist.
       ++ Argument foo is an extended integration function on F.
-    explimitedint:(RF, UP->UP,(Z,F)->PSOL,List RF) -> Union(NLF,"failed")
-      ++ explimitedint(f, ', foo, [u1, ..., un]) returns
+    explogint:(RF, UP->UP,(Z,F)->PSOL,List RF) -> Union(NLF,"failed")
+      ++ explogint(f, ', foo, [u1, ..., un]) returns
       ++ \spad{[v, [c1, ..., cn], a]} such that \spad{ci' = 0},
       ++ \spad{f = v' + a + reduce(+, [ci * ui'/ui])},
       ++ and \spad{a = 0} or \spad{a} has no integral in F.
@@ -410,8 +410,8 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       ++ Error: if \spad{degree numer f >= degree denom f} or
       ++ if \spad{degree numer g >= degree denom g} or
       ++ if \spad{denom g} is not squarefree.
-    primlimintfrac    : (RF, UP -> UP, List RF) -> Union(NL, "failed")
-      ++ primlimintfrac(f, ', [u1, ..., un]) returns \spad{[v, [c1, ..., cn]]}
+    primlogintfrac    : (RF, UP -> UP, List RF) -> Union(NL, "failed")
+      ++ primlogintfrac(f, ', [u1, ..., un]) returns \spad{[v, [c1, ..., cn]]}
       ++ such that \spad{ci' = 0} and \spad{f = v' + +/[ci * ui'/ui]}.
       ++ Error: if \spad{degree numer f >= degree denom f}.
     primintfldpoly    : (UP, F -> UF, F)    -> Union(UP, "failed")
@@ -441,7 +441,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
     expintegratepoly   : (GP, (Z, F) -> PSOL) -> Union(GPF, GPGP)
     expintegratepoly2   : (GP, (Z, F) -> PSOL2) -> Union(GPF, GPGP)
     expextintfrac      : (RF, UP -> UP, RF) -> Union(FFR, "failed")
-    explimintfrac      : (RF, UP -> UP, List RF) -> Union(NLF, "failed")
+    explogintfrac      : (RF, UP -> UP, List RF) -> Union(NLF, "failed")
     limitedLogs        : (RF, RF -> RF, List RF) -> Union(LLG, "failed")
     logprmderiv        : (RF, UP -> UP)    -> RF
     logexpderiv        : (RF, UP -> UP, F) -> RF
@@ -635,9 +635,9 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
 -- returns (v in RF, c1...cn in RF, a in F) s.t. ci' = 0,
 -- and f = v' + a + +/[ci * ui'/ui]
 --                                  and a = 0 or a has no integral in UP
-    primlimitedint(f, derivation, extendedint, lu) ==
+    primlogint(f, derivation, extendedint, lu) ==
       qr := divide(numer f, denom f)
-      (u1 := primlimintfrac(qr.remainder / (denom f), derivation, lu))
+      (u1 := primlogintfrac(qr.remainder / (denom f), derivation, lu))
         case "failed" => "failed"
       (u2 := primintegratepoly(qr.quotient, extendedint,
                retract derivation monomial(1, 1))) case UPUP => "failed"
@@ -646,9 +646,9 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
 -- returns (v in RF, c1...cn in RF, a in F) s.t. ci' = 0,
 -- and f = v' + a + +/[ci * ui'/ui]
 --                                   and a = 0 or a has no integral in F
-    explimitedint(f, derivation, FRDE, lu) ==
+    explogint(f, derivation, FRDE, lu) ==
       qr := separate(f)$GP
-      (u1 := explimintfrac(qr.fracPart,derivation, lu)) case "failed" =>
+      (u1 := explogintfrac(qr.fracPart,derivation, lu)) case "failed" =>
                                                                 "failed"
       u11 := u1.answer
       ea := u1.a0
@@ -658,7 +658,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
 
 -- returns [v, c1...cn] s.t. f = v' + +/[ci * ui'/ui]
 -- f must have no polynomial part (degree numer f < degree denom f)
-    primlimintfrac(f, derivation, lu) ==
+    primlogintfrac(f, derivation, lu) ==
       zero? f => [0, empty()]
       degree numer f >= degree denom f => error "Not a proper fraction"
       r := HermiteIntegrate(f, derivation)
@@ -670,7 +670,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
 -- returns [[v, c1...cn], a] s.t. f + a = v' + +/[ci * ui'/ui]
 -- f must have no polynomial part (degree numer f < degree denom f)
 -- f must be integral above t = 0
-    explimintfrac(f, derivation, lu) ==
+    explogintfrac(f, derivation, lu) ==
         zero? f => [[0, empty()], 0]
         degree numer f >= degree denom f => error "Not a proper fraction"
         order(denom f, monomial(1,1)) > 0 => error "Not integral at t = 0"
@@ -857,7 +857,7 @@ RationalIntegration(F, UP) : Exports == Implementation where
 
     limitedint(f, lu) ==
       quorem := divide(numer f, denom f)
-      (u := primlimintfrac(quorem.remainder / (denom f), differentiate,
+      (u := primlogintfrac(quorem.remainder / (denom f), differentiate,
         lu)) case "failed" => "failed"
       [u.mainpart + integrate(quorem.quotient)::RF, u.limitedlogs]
 

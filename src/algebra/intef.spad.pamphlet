@@ -50,7 +50,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     lfextendedint : (F, SE, F) -> U2
        ++ lfextendedint(f, x, g) returns functions \spad{[h, c]} such that
        ++ \spad{dh/dx = f - cg}, if (h, c) exist, "failed" otherwise.
-    lflimitedint : (F, SE, List F) -> U3
+    lflogint : (F, SE, List F) -> U3
        ++ lflimitedint(f, x, [g1, ..., gn]) returns functions \spad{[h, [[ci, gi]]]}
        ++ such that the gi's are among \spad{[g1, ..., gn]}, and
        ++ \spad{d(h+sum(ci log(gi)))/dx = f}, if possible, "failed" otherwise.
@@ -84,11 +84,11 @@ ElementaryIntegration(R, F) : Exports == Implementation where
 
     alglfint    : (F, K, List K, SE) -> IR
     alglfextint : (F, K, List K, SE, F) -> U2
-    alglflimint : (F, K, List K, SE, List F) -> U3
+    alglflogint : (F, K, List K, SE, List F) -> U3
     primextint  : (F, SE, K, F) -> U2
     expextint   : (F, SE, K, F) -> U2
-    primlimint  : (F, SE, K, List F) -> U3
-    explimint   : (F, SE, K, List F) -> U3
+    primlflogint  : (F, SE, K, List F) -> U3
+    explflogint   : (F, SE, K, List F) -> U3
     algprimint  : (F, K, K, SE) -> IR
     algexpint   : (F, K, K, SE) -> IR
     primint     : (F, SE, K) -> IR
@@ -116,7 +116,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
                   monomial(eta', 2) + eta'::UP),
                (x6 : Integer, x2 : F, x3 : F) : Union(List F, "failed") +->
                   rischDEsys(x6, 2 * eta, x2, x3, x,
-                    (x4 : F, x5 : List F) : U3 +-> lflimitedint(x4, x, x5),
+                    (x4 : F, x5 : List F) : U3 +-> lflogint(x4, x, x5),
                     (x4 : F, x5 : F) : U2 +-> lfextendedint(x4, x, x5)))
       map((x1 : RF) : F +-> multivariate(x1, k), r1.answer) + _
             lfintegrate(r1.a0, x)
@@ -280,13 +280,13 @@ ElementaryIntegration(R, F) : Exports == Implementation where
           FAIL
       unkextint(f, x, g)
 
-    alglflimint(f, k, l, x, lu) ==
+    alglflogint(f, k, l, x, lu) ==
       symbolIfCan(kx := ksec(k, l, x)) case SE => palglimint(f, kx, k, lu)
       has?(operator kx, ALGOP) =>
         rec := primitiveElement(kx::F, k::F)
         y   := rootOf(rec.prim)
         lrhs := [(rec.pol1) y, (rec.pol2) y]$List(F)
-        (u := lflimitedint(eval(f, [kx, k], lrhs), x,
+        (u := lflogint(eval(f, [kx, k], lrhs), x,
            map((x1:F):F+->eval(x1, [kx, k], lrhs), lu))) case "failed" => "failed"
         ky := retract(y)@K
         r := u::Record(mainpart : F, limitedlogs : LLG)
@@ -337,7 +337,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
             res1 := lfextendedint(f1, z, g1)
             res1 case "failed" => "failed"
             [eval(res1.ratpart, kernel z, t::F), res1.coeff]$Ext_Rec
-        res2 := lflimitedint(f1, z, [])
+        res2 := lflogint(f1, z, [])
         res2 case "failed" => "reject"
         [eval(res2.mainpart, kernel z, t::F), 0]$Ext_Rec
 
@@ -370,14 +370,14 @@ ElementaryIntegration(R, F) : Exports == Implementation where
       has?(operator k, ALGOP) => alglfextint(f, k, l, x, g)
       unkextint(f, x, g)
 
-    lflimitedint(f, x, lu) ==
+    lflogint(f, x, lu) ==
       empty?(l := varselect(kernels f, x)) => [x::F * f, empty()]
       symbolIfCan(k := kmax(l)) case SE =>
        map((x1 : RF) : F+->multivariate(x1, k), limitedint(univariate(f, k),
                                         [univariate(u, k) for u in lu]))
-      is?(k, 'exp) => explimint(f, x, k, lu)
-      prim?(k, x)       => primlimint(f, x, k, lu)
-      has?(operator k, ALGOP) => alglflimint(f, k, l, x, lu)
+      is?(k, 'exp) => explflogint(f, x, k, lu)
+      prim?(k, x)       => primlflogint(f, x, k, lu)
+      has?(operator k, ALGOP) => alglflogint(f, k, l, x, lu)
       unklimint(f, x, lu)
 
     lfinfieldint(f, x) ==
@@ -403,7 +403,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
           (x2 : F) : F+->differentiate(x2, x),
           monomial(differentiate(first argument k, x), 1)),
         (x3 : Integer, x4 : F) : PSOL+->rischDE(x3, first argument k, x4, x,
-          (x5 : F, x6 : List F) : U3+->lflimitedint(x5, x, x6),
+          (x5 : F, x6 : List F) : U3+->lflogint(x5, x, x6),
           (x7 : F, x8 : F) : U2+->lfextendedint(x7, x, x8)),
         univariate(g, k)))
           case "failed" => "failed"
@@ -451,7 +451,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
       twr := tower f
       empty?(lg := [kk for kk in lk | not member?(kk, twr)]$List(K)) => "failed"
       is?(k, 'log) =>
-        (u2 := lflimitedint(f, x,
+        (u2 := lflogint(f, x,
           [first argument u for u in union(lg, [k])])) case "failed"
                                                              => "failed"
         cf := cfind(first argument k, u2.limitedlogs)
@@ -466,7 +466,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
 
     risch_de_solver(x3 : Integer, x4 : F, eta : F, x : SE) : PSOL2 ==
         risch_de_ext(x3, eta, x4, x,
-                     (x5 : F, x6 : List F) : U3+-> lflimitedint(x5, x, x6),
+                     (x5 : F, x6 : List F) : U3+-> lflogint(x5, x, x6),
                      (x7 : F, x8 : F) : U2+->lfextendedint(x7, x, x8)
                     )$ElementaryRischDEX2(R, F)
 
@@ -481,33 +481,33 @@ ElementaryIntegration(R, F) : Exports == Implementation where
                     risch_de_solver(x3, x4, eta, x))
       map((x1 : RF) : F+->multivariate(x1, k), r1.answer) + lfintegrate(r1.a0, x)
 
-    primlimint(f, x, k, lu) ==
+    primlflogint(f, x, k, lu) ==
       lk := varselect([a for a in tower f
                                      | k ~= a and is?(a, 'log)], x)
-      (u1 := primlimitedint(univariate(f, k),
+      (u1 := primlogint(univariate(f, k),
           (x1 : UP) : UP+->differentiate(x1,
             (x2 : F) : F+->differentiate(x2, x), differentiate(k::F, x)::UP),
               (x3 : F) : U2+->lfextlimint(x3, x, k, lk), [univariate(u, k) for u in lu]))
                                                case "failed" => "failed"
       l := [[multivariate(lg.coeff, k), multivariate(lg.logand, k)]
                                     for lg in u1.answer.limitedlogs]$LLG
-      (u2 := lflimitedint(u1.a0, x, lu)) case "failed" => "failed"
+      (u2 := lflogint(u1.a0, x, lu)) case "failed" => "failed"
       [multivariate(u1.answer.mainpart, k) + u2.mainpart,
                                               concat(u2.limitedlogs, l)]
 
-    explimint(f, x, k, lu) ==
+    explflogint(f, x, k, lu) ==
       eta := first argument k
-      (u1 := explimitedint(univariate(f, k),
+      (u1 := explogint(univariate(f, k),
         (x1 : UP) : UP+->differentiate(x1,
           (x2 : F) : F+->differentiate(x2, x),
           monomial(differentiate(eta, x), 1)),
         (x1 : Integer, x2 : F) : PSOL+->rischDE(x1, eta, x2, x,
-            (x3 : F, x4 : List F) : U3+->lflimitedint(x3, x, x4),
+            (x3 : F, x4 : List F) : U3+->lflogint(x3, x, x4),
             (x5 : F, x6 : F) : U2+->lfextendedint(x5, x, x6)),
         [univariate(u, k) for u in lu])) case "failed" => "failed"
       l := [[multivariate(lg.coeff, k), multivariate(lg.logand, k)]
                                     for lg in u1.answer.limitedlogs]$LLG
-      (u2 := lflimitedint(u1.a0, x, lu)) case "failed" => "failed"
+      (u2 := lflogint(u1.a0, x, lu)) case "failed" => "failed"
       [multivariate(u1.answer.mainpart, k) + u2.mainpart,
                                               concat(u2.limitedlogs, l)]
 
