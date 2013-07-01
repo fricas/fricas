@@ -762,7 +762,7 @@ compileCoerceMap(op,argTypes,mm) ==
 
 depthOfRecursion(opName,body) ==
   -- returns the "depth" of recursive calls of opName in body
-  mapRecurDepth(opName,nil,body)
+  mapRecurDepth(opName, [nil], body)
 
 mapRecurDepth(opName,opList,body) ==
   -- walks over the map body counting depth of recursive calls
@@ -773,10 +773,11 @@ mapRecurDepth(opName,opList,body) ==
       atom argl => 0
       argl => "MAX"/[mapRecurDepth(opName,opList,x) for x in argl]
       0
-    op in opList => argc
+    op in first(opList) => argc
     op=opName => 1 + argc
     (obj := get(op, 'value, $e)) and objVal obj is ['SPADMAP, :mapDef] =>
-      mapRecurDepth(opName,[op,:opList],getMapBody(op,mapDef))
+      opList.0 := [op, :first(opList)]
+      mapRecurDepth(opName, opList, getMapBody(op, mapDef))
         + argc
     argc
   keyedSystemError("S2GE0016",['"mapRecurDepth",
