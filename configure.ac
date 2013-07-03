@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2013-05-03],
+AC_INIT([FriCAS], [2013-07-03],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -124,20 +124,6 @@ if test -z $AWK_FOR_TARGET ; then
 fi
 
 AC_SUBST(AWK_FOR_TARGET)
-
-# Shell needed to run src/algebra/boot-sum.sh
-case $build in
-     *-solaris*)
-        AC_PATH_PROG([AUTO_GOOD_SHELL], [bash])
-        test -n "$AUTO_GOOD_SHELL" || AC_MSG_ERROR([FriCAS needs bash])
-        ;;
-     *)
-        # For now we assume that /bin/sh always exists
-        AUTO_GOOD_SHELL=/bin/sh
-        ;;
-esac
-
-AC_SUBST(AUTO_GOOD_SHELL)
 
 ## -------------------------
 ## -- Which noweb to use? --
