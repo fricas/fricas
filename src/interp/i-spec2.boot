@@ -122,7 +122,7 @@ upLispCall(op,t) ==
   -- process $Lisp calls
   if atom t then code:=getUnname t else
     [lispOp,:argl]:= t
-    null functionp lispOp.0 =>
+    not(functionp(lispOp.0) or macrop(lispOp.0)) =>
       throwKeyedMsg("S2IS0024",[lispOp.0])
     for arg in argl repeat bottomUp arg
     code:=[getUnname lispOp,
