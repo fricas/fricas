@@ -101,7 +101,6 @@
 (def-boot-var |$postStack|                          "???")
 (def-boot-var |$previousTime|                       "???")
 (def-boot-val |$printLoadMsgs|  nil          "Interpreter>SetVarT.boot")
-(def-boot-var |$PrintOnly|                          "Compiler>LispLib.boot")
 (def-boot-var |$reportBottomUpFlag|                 "Interpreter>SetVarT.boot")
 (def-boot-var |$returnMode|                         "???")
 (def-boot-var |$semanticErrorStack|                 "???")
@@ -422,13 +421,12 @@
         (SETQ FORM (CDR FORM))
         (GO LP)))
 
-(DEFUN SUBLISNQ (KEY E) (declare (special KEY)) (if (NULL KEY) E (SUBANQ E)))
+(DEFUN SUBLISNQ (KEY E) (if (NULL KEY) E (SUBANQ KEY E)))
 
-(DEFUN SUBANQ (E)
-  (declare (special key))
+(DEFUN SUBANQ (KEY E)
   (COND ((ATOM E) (SUBB KEY E))
         ((EQCAR E (QUOTE QUOTE)) E)
-        ((MAPCAR #'(LAMBDA (J) (SUBANQ J)) E))))
+        ((MAPCAR #'(LAMBDA (J) (SUBANQ KEY J)) E))))
 
 (DEFUN SUBB (X E)
   (COND ((ATOM X) E)

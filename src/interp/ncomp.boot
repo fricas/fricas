@@ -315,6 +315,7 @@ computeTargetMode(lhs, rhs) ==
 
 )endif
 
+DEFVAR($PrintOnly, false)
 DEFVAR($RawParseOnly, false)
 DEFVAR($PostTranOnly, false)
 DEFVAR($FlatParseOnly, false)
