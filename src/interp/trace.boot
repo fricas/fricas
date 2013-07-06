@@ -77,15 +77,15 @@ trace l == traceSpad2Cmd l
 traceSpad2Cmd l ==
   if l is ['Tuple, l1] then l := l1
   $mapSubNameAlist:= getMapSubNames(l)
-  trace1 augmentTraceNames(l,$mapSubNameAlist)
+  trace1(augmentTraceNames(l, $mapSubNameAlist), $options)
   traceReply()
 
-trace1 l ==
+trace1(l, options) ==
   $traceNoisely: local := NIL
-  if hasOption($options,'nonquietly) then $traceNoisely := true
-  hasOption($options,'off) =>
-    (ops := hasOption($options,'ops)) or
-      (lops := hasOption($options,'local)) =>
+  if hasOption(options, 'nonquietly) then $traceNoisely := true
+  hasOption(options, 'off) =>
+    (ops := hasOption(options, 'ops)) or
+      (lops := hasOption(options, 'local)) =>
         null l => throwKeyedMsg("S2IT0019",NIL)
         constructor := unabbrev
           atom l => l
@@ -100,14 +100,14 @@ trace1 l ==
         if lops then
           lops := rest getTraceOption lops
           untraceDomainLocalOps(constructor,lops)
-    (1 < # $options) and not hasOption($options,'nonquietly) =>
+    (1 < #options) and not hasOption(options, 'nonquietly) =>
       throwKeyedMsg("S2IT0021",NIL)
     untrace l
     clearConstructorCaches()
-  hasOption($options,'stats) =>
-    (1 < # $options) =>
+  hasOption(options, 'stats) =>
+    (1 < #options) =>
       throwKeyedMsg("S2IT0001",['")trace ... )stats"])
-    [., :opt] := first $options
+    [., :opt] := first options
     -- look for )trace )stats       to list the statistics
     --          )trace )stats reset to reset them
     null opt =>      -- list the statistics
@@ -121,21 +121,21 @@ trace1 l ==
     resetTimers()
     resetCounters()
     throwKeyedMsg("S2IT0002",NIL)
-  a:= hasOption($options,'restore) =>
+  a:= hasOption(options, 'restore) =>
     null(oldL:= $lastUntraced) => nil
-    newOptions:= delete(a,$options)
+    newOptions := delete(a, options)
     null l => trace1 oldL
     for x in l repeat
       x is [domain,:opList] and VECP domain =>
         sayKeyedMsg("S2IT0003",[devaluate domain])
-      $options:= [:newOptions,:LASSOC(x,$optionAlist)]
-      trace1 LIST x
+      options := [:newOptions, :LASSOC(x, $optionAlist)]
+      trace1(LIST x, options)
   null l => nil
   l is ["?"] => _?t()
   traceList:= [transTraceItem x for x in l] or return nil
   for x in traceList repeat $optionAlist:=
-    ADDASSOC(x,$options,$optionAlist)
-  optionList:= getTraceOptions $options
+    ADDASSOC(x, options, $optionAlist)
+  optionList:= getTraceOptions(options)
   if (domainList := LASSOC("of", optionList)) then
       LASSOC("ops", optionList) =>
         throwKeyedMsg("S2IT0004", NIL)

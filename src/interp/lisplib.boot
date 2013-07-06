@@ -80,7 +80,6 @@ isNestedInstantiation(form,deps) ==
 loadLibIfNotLoaded libName ==
   -- replaces old SpadCondLoad
   -- loads is library is not already loaded
-  $PrintOnly = 'T => NIL
   GET(libName, 'LOADED) => NIL
   loadLib libName
 

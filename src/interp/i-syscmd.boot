@@ -2785,16 +2785,8 @@ processSynonyms() ==
 -- functions for interfacing to system commands from algebra code
 -- common lisp dependent
 
-tabsToBlanks s ==
-   k := charPosition($charTab,s,0)
-   n := #s
-   k < n =>
-      k = 0 => tabsToBlanks SUBSTRING(s,1,nil)
-      STRCONC(SUBSTRING(s,0,k),$charBlank, tabsToBlanks SUBSTRING(s,k + 1,nil))
-   s
-
 doSystemCommand string ==
-   string := CONCAT('")", EXPAND_-TABS string)
+   string := CONCAT('")", string)
    LINE: fluid := string
    processSynonyms()
    string := LINE
