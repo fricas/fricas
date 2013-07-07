@@ -37,169 +37,21 @@
 
 (in-package "BOOT")
 
-(DEFPARAMETER /COUNTLIST NIL)
-(DEFPARAMETER /TIMERLIST NIL)
 (DEFPARAMETER /TRACESIZE NIL "sets limit on size of object to be mathprinted")
 (DEFPARAMETER /DEPTH 0)
 (DEFVAR CURSTRM *standard-output*)
 (DEFVAR /PRETTY () "controls pretty printing of trace output")
 (DEFPARAMETER /ECHO NIL) ;;"prevents echo of SPAD or BOOT code with /c"
-(DEFVAR |$traceNoisely| nil)
-(DEFPARAMETER |$traceDomains| t)
 
 (defun enable-backtrace (&rest arg))
+
+(defun |adjoin_equal|(x y) (ADJOIN x y :test #'equal))
+
+(defun |remove_equal|(x y) (REMOVE x y :test #'equal))
 
 (defun WHOCALLED(n) nil) ;; no way to look n frames up the stack
 
 (defun heapelapsed () 0)
-
-(DEFUN /TRACE-2 (FN OPTIONS)
-  (PROG (U FNVAL COUNTNAM TRACECODE BEFORE AFTER CONDITION
-         TRACENAME CALLER VARS BREAK FROM_CONDITION VARBREAK TIMERNAM
-         ONLYS G WITHIN_CONDITION  DEPTH_CONDITION COUNT_CONDITION
-         LETFUNCODE MATHTRACE )
-        (if (member FN /TRACENAMES :test #'eq) (/UNTRACE-2 FN NIL))
-        (SETQ OPTIONS (OPTIONS2UC OPTIONS))
-        (if (AND |$traceDomains| (|isFunctor| FN) (ATOM FN))
-            (RETURN (|traceDomainConstructor| FN OPTIONS)))
-        (SETQ MATHTRACE (/GETTRACEOPTIONS OPTIONS 'MATHPRINT))
-        (if (AND MATHTRACE (NOT (EQL (ELT (PNAME FN) 0) #\$)) (NOT (GENSYMP FN)))
-            (if (RASSOC FN |$mapSubNameAlist|)
-                (SETQ |$mathTraceList| (CONS FN |$mathTraceList|))
-                (|spadThrowBrightly|
-                  (format nil "mathprint not available for ~A" FN))))
-        (SETQ VARS (/GETTRACEOPTIONS OPTIONS 'VARS))
-        (if VARS
-            (progn (if (NOT (CDR VARS)) (SETQ VARS 'all) (SETQ VARS (CDR VARS)))
-                   (|tracelet| FN VARS)))
-        (SETQ BREAK (/GETTRACEOPTIONS OPTIONS 'BREAK))
-        (SETQ VARBREAK (/GETTRACEOPTIONS OPTIONS 'VARBREAK))
-        (if VARBREAK
-            (progn   (if (NOT (CDR VARBREAK)) (SETQ VARS 'all)
-                         (SETQ VARS (CDR VARBREAK)))
-                     (|breaklet| FN VARS)))
-        (if (and (symbolp fn) (not (boundp FN)) (not (fboundp FN)))
-            (progn
-              (COND ((|isUncompiledMap| FN)
-                     (|sayBrightly|
-                       (format nil
-           "~A must be compiled before it may be traced -- invoke ~A to compile"
-                                            FN FN)))
-                    ((|isInterpOnlyMap| FN)
-                     (|sayBrightly| (format nil
-            "~A cannot be traced because it is an interpret-only function" FN)))
-                    (T (|sayBrightly| (format nil "~A is not a function" FN))))
-              (RETURN NIL)))
-        (if (and (symbolp fn) (boundp FN)
-                 (|isDomainOrPackage| (SETQ FNVAL (EVAL FN))))
-            (RETURN (|spadTrace| FNVAL OPTIONS)))
-        (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'MASK=))
-            (MAKEPROP FN '/TRANSFORM (CADR U)))
-        (SETQ /TRACENAMES
-              (COND ((/GETTRACEOPTIONS OPTIONS 'ALIAS) /TRACENAMES)
-                    ((ATOM /TRACENAMES) (LIST FN))
-                    ((CONS FN /TRACENAMES))))
-        (SETQ TRACENAME
-              (COND ((SETQ U (/GETTRACEOPTIONS OPTIONS 'ALIAS))
-                     (STRINGIMAGE (CADR U)))
-                    (T
-                     (COND ((AND |$traceNoisely| (NOT VARS)
-                                 (NOT (|isSubForRedundantMapName| FN)))
-                            (|sayBrightly|
-                             (LIST '|%b| (|rassocSub| FN |$mapSubNameAlist|)
-                                   '|%d| "traced"))))
-                     (STRINGIMAGE FN))))
-        (COND (|$fromSpadTrace|
-               (if MATHTRACE (push (INTERN TRACENAME) |$mathTraceList|))
-               (SETQ LETFUNCODE `(EQ nil nil)) ;; No-op
-               (SETQ BEFORE
-                     (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'BEFORE))
-                         `(progn ,(CADR U) ,LETFUNCODE)
-                         LETFUNCODE)))
-              (T (SETQ BEFORE
-                       (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'BEFORE))
-                           (CADR U)))))
-        (SETQ AFTER (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'AFTER)) (CADR U)))
-        (SETQ CALLER (/GETTRACEOPTIONS OPTIONS 'CALLER))
-        (SETQ FROM_CONDITION
-              (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'FROM))
-                  (LIST 'EQ '|#9| (LIST 'QUOTE (CADR U)))
-                  T))
-        (SETQ CONDITION
-              (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'WHEN)) (CADR U) T))
-        (SETQ WITHIN_CONDITION T)
-        (COND ((SETQ U (/GETTRACEOPTIONS OPTIONS 'WITHIN))
-               (SETQ G (INTERN (STRCONC (PNAME FN) "/" (PNAME (CADR U)))))
-               (SET G 0)
-               (/TRACE-2
-                 (CADR U)
-                 `((WHEN NIL)
-                   (BEFORE (SETQ ,G (1+ ,G)))
-                   (AFTER (SETQ ,G (1- ,G)))))
-               (SETQ WITHIN_CONDITION `(> ,G 0))))
-        (SETQ COUNTNAM
-              (AND (/GETTRACEOPTIONS OPTIONS 'COUNT)
-                   (INTERN (STRCONC TRACENAME ",COUNT"))) )
-        (SETQ COUNT_CONDITION
-              (COND ((SETQ U (/GETTRACEOPTIONS OPTIONS 'COUNT))
-                     (SETQ /COUNTLIST (adjoin TRACENAME /COUNTLIST
-                                              :test 'equal))
-                     (if (AND (CDR U) (integerp (CADR U)))
-                         `(cond ((<= ,COUNTNAM ,(CADR U)) t)
-                                (t (/UNTRACE-2 ,(MKQ FN) NIL) NIL))
-                         t))
-                    (T T)))
-        (AND (/GETTRACEOPTIONS OPTIONS 'TIMER)
-             (SETQ TIMERNAM (INTERN (STRCONC TRACENAME ",TIMER")))
-             (SETQ /TIMERLIST (adjoin TRACENAME /TIMERLIST :test 'equal)))
-        (SETQ DEPTH_CONDITION
-              (if (SETQ U (/GETTRACEOPTIONS OPTIONS 'DEPTH))
-                  (if (AND (CDR U) (integerp (CADR U)))
-                      (LIST '|<=| 'FUNDEPTH (CADR U))
-                    (TRACE_OPTION_ERROR 'DEPTH))
-                  T))
-        (SETQ CONDITION
-              (MKPF
-                (LIST CONDITION WITHIN_CONDITION FROM_CONDITION COUNT_CONDITION
-                      DEPTH_CONDITION )
-                'AND))
-        (SETQ ONLYS (/GETTRACEOPTIONS OPTIONS 'ONLY))
-
-        ;TRACECODE meaning:
-        ; 0:        Caller (0,1)           print caller if 1
-        ; 1:        Value (0,1)            print value if 1
-        ; 2...:     Arguments (0,...,9)    stop if 0; print ith if i; all if 9
-        (SETQ TRACECODE
-              (if (/GETTRACEOPTIONS OPTIONS 'NT) "000"
-                  (PROG (F A V C NL BUF)
-                        (SETQ ONLYS (MAPCAR #'COND-UCASE ONLYS))
-                        (SETQ F (OR (member 'F ONLYS :test #'eq)
-                                    (member 'FULL ONLYS :test #'eq)))
-                        (SETQ A (OR F (member 'A ONLYS :test #'eq)
-                                    (member 'ARGS ONLYS :test #'eq)))
-                        (SETQ V (OR F (member 'V ONLYS :test #'eq)
-                                    (member 'VALUE ONLYS :test #'eq)))
-                        (SETQ C (OR F (member 'C ONLYS :test #'eq)
-                                    (member 'CALLER ONLYS :test #'eq)))
-                        (SETQ NL
-                              (if A '(#\9)
-                                  (mapcan #'(lambda (X)
-                                              (if (AND (INTEGERP X)
-                                                       (> X 0)
-                                                       (< X 9))
-                                                  (LIST (FETCHCHAR (STRINGIMAGE X) 0))))
-                                          onlys)))
-                        (if (NOT (OR A V C NL))
-                            (if Caller (return "119") (return "019")))
-                        (SETQ NL (APPEND NL '(\0)))
-                        (SETQ BUF (|make_CVEC| 12))
-                        (SUFFIX (if (or C Caller) #\1 #\0) BUF)
-                        (SUFFIX (if V #\1 #\0) BUF)
-                        (if A (SUFFIX #\9 BUF)
-                            (mapcar #'(lambda (x) (SUFFIX x BUF)) NL))
-                        (RETURN BUF))))
-        (/MONITOR FN TRACECODE BEFORE AFTER CONDITION TIMERNAM
-                  COUNTNAM TRACENAME BREAK )))
 
 (defun |goGetTracerHelper| (dn f oname alias options modemap)
     (lambda(&rest l)
@@ -213,49 +65,6 @@
          (|spadThrowBrightly|
            (format nil "~A has wrong format for an option" (car L))))
         ((CONS (CONS (UPCASE (CAAR L)) (CDAR L)) (OPTIONS2UC (CDR L))))))
-
-(DEFUN COND-UCASE (X) (COND ((INTEGERP X) X) ((UPCASE X))))
-
-(DEFUN /UNTRACE-2 (X OPTIONS)
- (let (u y)
-  (COND ((AND (|isFunctor| X) (ATOM X))
-         (|untraceDomainConstructor| X))
-        ((OR (|isDomainOrPackage| (SETQ U X))
-             (and (symbolp X) (boundp X)
-                  (|isDomain| (SETQ U (EVAL X)))))
-         (|spadUntrace| U OPTIONS))
-        ((EQCAR OPTIONS 'ALIAS)
-           (if |$traceNoisely|
-               (|sayBrightly| (LIST '|%b| (CADR OPTIONS) '|%d| '**untraced)))
-           (SETQ /TIMERLIST
-                 (REMOVE (STRINGIMAGE (CADR OPTIONS)) /TIMERLIST :test 'equal))
-           (SETQ /COUNTLIST
-                 (REMOVE (STRINGIMAGE (CADR OPTIONS)) /COUNTLIST :test 'equal))
-           (SETQ |$mathTraceList|
-                 (REMOVE (CADR OPTIONS) |$mathTraceList| :test 'equal))
-           (UNEMBED X))
-        ((AND (NOT (MEMBER X /TRACENAMES))
-              (NOT (|isSubForRedundantMapName| X)))
-         (|sayBrightly|
-           (LIST
-             '|%b|
-             (|rassocSub| X |$mapSubNameAlist|)
-             '|%d|
-             "not traced")))
-        (T (SETQ /TRACENAMES (REMOVE X /TRACENAMES :test 'equal))
-           (SETQ |$mathTraceList|
-                 (REMOVE (if (STRINGP X) (INTERN X) X) |$mathTraceList|))
-           (SETQ |$letAssoc| (DELASC X |$letAssoc|))
-           (setq Y (if (IS_GENVAR X) (|devaluate| (EVAL X)) X))
-           (SETQ /TIMERLIST (REMOVE (STRINGIMAGE Y) /TIMERLIST :test 'equal))
-           (SET (INTERN (STRCONC Y ",TIMER")) 0)
-           (SETQ /COUNTLIST (REMOVE (STRINGIMAGE Y) /COUNTLIST :test 'equal))
-           (SET (INTERN (STRCONC Y ",COUNT")) 0)
-           (COND ((AND |$traceNoisely| (NOT (|isSubForRedundantMapName| Y)))
-                  (|sayBrightly|
-                    (LIST '|%b| (|rassocSub| Y |$mapSubNameAlist|)
-                  '|%d| "untraced"))))
-           (UNEMBED X)))))
 
 (DEFUN MONITOR-PRINVALUE (VAL NAME)
   (let (u)
@@ -384,47 +193,9 @@
         ((AND (SETQ N (SMALL-ENOUGH-COUNT (CAR X) (1+ N) M))
               (SMALL-ENOUGH-COUNT (CDR X) N M)))))
 
-(DEFUN /GETOPTION (L OPT) (IFCDR (/GETTRACEOPTIONS L OPT)))
-
-(DEFUN /GETTRACEOPTIONS (L OPT)
-  (COND ((ATOM L) NIL)
-        ((EQ (IFCAR (CAR L)) OPT) (CAR L))
-        ((/GETTRACEOPTIONS (CDR L) OPT))))
-
-(defmacro /TRACE-LET (A B)
-  `(PROG1 (SPADLET ,A ,B)
-          . ,(mapcar #'(lambda (x) `(/tracelet-print ',x ,x))
-                     (if (ATOM A) (LIST A) A))))
-
 (defun /TRACELET-PRINT (X Y &AUX (/PRETTY 'T))
   (PRINC (STRCONC (PNAME X) ": ") *standard-output*)
   (MONITOR-PRINT Y *standard-output*))
-
-(defun /MONITOR ;;(&rest G5)
-  (G1 TRACECODE BEFORE AFTER CONDITION TIMERNAM COUNTNAM TRACENAME BREAK)
-  (PROG () ;; (G1 G4 TRACECODE BEFORE AFTER CONDITION
-         ;; TIMERNAM COUNTNAM TRACENAME BREAK)
-        ;; (dcq (G1 TRACECODE BEFORE AFTER CONDITION TIMERNAM COUNTNAM TRACENAME BREAK) G5)
-        (SETQ G4 (macro-function G1))
-        (SETQ TRACECODE (OR TRACECODE "119"))
-        (if COUNTNAM (SET COUNTNAM 0))
-        (if TIMERNAM (SET TIMERNAM 0))
-        (EMBED
-          G1
-          (LIST
-            (if G4 'MLAMBDA 'LAMBDA)
-            '(&rest G6)
-            (LIST
-              '/MONITORX
-              (QUOTE G6)
-              G1
-              (LIST
-                'QUOTE
-                (LIST
-                  TRACENAME (if G4 'MACRO) TRACECODE
-                  COUNTNAM TIMERNAM BEFORE AFTER
-                  CONDITION BREAK |$tracedModemap| ''T)))))
-        (RETURN G1)))
 
 (DEFPARAMETER |$TraceFlag| t)
 
@@ -549,20 +320,6 @@
 
 (defun |clock| ()
   (if |$timerOn| (- (TEMPUS-FUGIT) $delay) (- |$oldTime| $delay)))
-
-; Functions to trace/untrace a BPI; use as follows:
-; To trace a BPI-value <bpi>, evaluate (SETQ <name> (BPITRACE <bpi>))
-; To later untrace <bpi>, evaluate (BPITRACE <name>)
-
-(defun BPITRACE (BPI ALIAS &optional OPTIONS)
-  (SETQ NEWNAME (GENSYM))
-  (IF (identp bpi) (setq bpi (symbol-function bpi)))
-  (SET NEWNAME BPI)
-  (SETF (symbol-function NEWNAME) BPI)
-  (/TRACE-2 NEWNAME (CONS (LIST 'ALIAS ALIAS) OPTIONS))
-  NEWNAME)
-
-(defun BPIUNTRACE (X ALIAS) (/UNTRACE-2 X (LIST 'ALIAS ALIAS)))
 
 (defun SPADSYSNAMEP (STR)
   (let (n i j)

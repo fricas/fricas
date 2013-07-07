@@ -296,7 +296,7 @@ clearCmdAll() ==
   $frameRecord := nil
   $previousBindings := nil
   $variableNumberAlist := nil
-  untraceMapSubNames _/TRACENAMES
+  untraceMapSubNames $trace_names
   $InteractiveFrame := LIST LIST NIL
   resetInCoreHist()
   if $useInternalHistoryTable
