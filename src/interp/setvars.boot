@@ -73,11 +73,11 @@ resetWorkspaceVariables () ==
   -- this replaces def in DEBUG LISP
   -- this function resets many workspace variables to their default
   -- values. Some things are reset by start and not reset by restart.
-  SETQ(_/COUNTLIST                  , NIL)
+  SETQ($count_list                  , NIL)
   $edit_file := nil
   SETQ(_/PRETTY                     , NIL)
   SETQ(_/SPACELIST                  , NIL)
-  SETQ(_/TIMERLIST                  , NIL)
+  SETQ($timer_list                  , NIL)
   SETQ($CommandSynonymAlist         , COPY($InitialCommandSynonymAlist))
   SETQ($IOindex                     , 1  )
   SETQ($e                           , [[NIL]])

@@ -465,20 +465,6 @@
 
 ; 17.4 Updating operators
 
-(defun SUFFIX(id cvec)
-  "Suffixes the first char of the symbol or char ID to the string CVEC,
-    changing CVEC."
-  (unless (characterp id) (setq id (elt (string id) 0)))
-  (cond ((array-has-fill-pointer-p cvec)
-         (vector-push-extend id cvec)
-         cvec)
-        ((adjustable-array-p cvec)
-         (let ((l (length cvec)))
-           (adjust-array cvec (1+ l))
-           (setf (elt cvec l) id)
-           cvec))
-        (t (concat cvec id))))
-
 ;;-- (defun rplacstr (cvec1 start1 length1 cvec2
 ;;--                        &optional (start2 0) (length2 nil)
 ;;--                        &aux end1 end2)
@@ -610,99 +596,6 @@
                    (if (streamp st) (close st) -1)))
 
 (defun EOFP (stream) (null (peek-char nil stream nil nil)))
-
-
-; 46.0 Call tracing
-
-(defvar *embedded-functions* nil)
-
-(defun EMBED (CURRENT-BINDING NEW-DEFINITION)
-  (PROG
-      (OP BV BODY OLD-DEF)
-      (COND
-        ( (NOT (IDENTP CURRENT-BINDING))
-            (error (format nil "invalid argument ~s to EMBED"
-                      CURRENT-BINDING))) )
-      (SETQ OLD-DEF (symbol-function CURRENT-BINDING))
-      (SETQ NEW-DEFINITION
-          (COND
-            ( (NOT (consp NEW-DEFINITION))
-              NEW-DEFINITION )
-            ( (AND
-		(setf BODY (ifcdr (ifcdr NEW-DEFINITION)))
-		(or (progn (setf OP (car NEW-DEFINITION))
-		           (setf BV (car (cdr NEW-DEFINITION))))
-		    T)
-                (OR (EQ OP 'LAMBDA) (EQ OP 'MLAMBDA)))
-              (COND
-                ( (NOT (MEMQ CURRENT-BINDING (FLAT-BV-LIST BV)))
-                 `(,OP ,BV ((LAMBDA (,CURRENT-BINDING) . ,BODY) ',OLD-DEF))
-                   )
-                ( 'T
-                  NEW-DEFINITION ) ) )
-            ( 'T
-              (BREAK)
-              `((LAMBDA (,CURRENT-BINDING) ,NEW-DEFINITION) ',OLD-DEF)))
-            )
-      (SETF NEW-DEFINITION (COERCE NEW-DEFINITION 'FUNCTION))
-      (SETF (symbol-function CURRENT-BINDING) NEW-DEFINITION)
-      (push (LIST CURRENT-BINDING NEW-DEFINITION OLD-DEF) *embedded-functions*)
-      (RETURN CURRENT-BINDING) ) )
-
-(defun UNEMBED (CURRENT-BINDING)
-    (let
-      (TMP E-LIST E-HEAD CUR-DEF)
-      (SETQ E-LIST *embedded-functions*)
-      (SETQ CUR-DEF (symbol-function CURRENT-BINDING))
-      (tagbody
-       LP (if (NOT (consp E-LIST))
-              (return-from UNEMBED NIL))
-          (setf E-HEAD (car E-LIST))
-          (if (or (NOT (consp E-HEAD))
-                  (NOT (consp (cdr E-HEAD)))
-                  (NOT (EQ CURRENT-BINDING (car E-HEAD)))
-                  (NOT (EQ CUR-DEF (nth 1 E-HEAD))))
-              (progn
-                  (setf TMP E-LIST)
-                  (setf E-LIST (cdr E-LIST))
-                  (GO LP) ))
-          (setf (symbol-function CURRENT-BINDING) (nth 2 E-HEAD))
-          (if TMP
-              (setf (cdr TMP) (QCDR E-LIST))
-              (setf *embedded-functions* (QCDR E-LIST)))
-              (return-from UNEMBED CURRENT-BINDING))))
-
-(defun FLAT-BV-LIST (BV-LIST)
-  (PROG (TMP1)
-      (RETURN
-        (COND
-          ( (VARP BV-LIST)
-            (LIST BV-LIST) )
-          ( (REFVECP BV-LIST)
-	    (BREAK))
-          ( (NOT (consp BV-LIST))
-            NIL )
-          ( (EQ '= (SETQ TMP1 (QCAR BV-LIST)))
-            (FLAT-BV-LIST (QCDR BV-LIST)) )
-          ( (VARP TMP1)
-            (CONS TMP1 (FLAT-BV-LIST (QCDR BV-LIST))) )
-          ( (AND (NOT (consp TMP1)) (NOT (REFVECP TMP1)))
-            (FLAT-BV-LIST (QCDR BV-LIST)) )
-          ( 'T
-            (NCONC (FLAT-BV-LIST TMP1) (FLAT-BV-LIST (QCDR BV-LIST))) ) )) ))
-
-(defun VARP (TEST-ITEM)
-    (COND
-      ( (IDENTP TEST-ITEM)
-        TEST-ITEM )
-      ( (AND
-          (consp TEST-ITEM)
-          (OR (EQ (QCAR TEST-ITEM) 'FLUID) (EQ (QCAR TEST-ITEM) 'LEX))
-          (consp (QCDR TEST-ITEM))
-          (IDENTP (QCADR TEST-ITEM)))
-        TEST-ITEM )
-      ( 'T
-        NIL ) ) )
 
 ; 48.0 Miscellaneous CMS Interactions
 
