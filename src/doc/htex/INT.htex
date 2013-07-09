@@ -1,0 +1,375 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+%% int.htex
+%%
+%% Integer examples
+%%
+
+\Language{} provides many operations for manipulating arbitrary
+precision integers.
+In this section we will show some of those that come from \spadtype{Integer}
+itself plus some that are implemented in other packages.
+More examples of using integers are in the following sections:
+\titledspadref{Some Numbers}{ugIntroNumbers},
+\xmpref{IntegerNumberTheoryFunctions},
+\xmpref{DecimalExpansion},
+\xmpref{BinaryExpansion},
+\xmpref{HexadecimalExpansion}, and
+\xmpref{RadixExpansion}.
+
+% ----------------------------------------------------------------------
+\head{subsection}{Basic Functions}{ugxIntegerBasic}
+% ----------------------------------------------------------------------
+
+\labelSpace{3pc}
+\xtc{
+The size of an integer in \Language{} is only limited by the amount of
+computer storage you have available.
+The usual arithmetic operations are available.
+}{
+\spadcommand{2^(5678 - 4856 + 2 * 17)}
+}
+
+\xtc{
+There are a number of ways of working with the sign of an integer.
+Let's use this \spad{x} as an example.
+}{
+\spadcommand{x := -101 \bound{x}}
+}
+\xtc{
+First of all, there is the absolute value function.
+}{
+\spadcommand{abs(x) \free{x}}
+}
+\xtc{
+The \spadfunFrom{sign}{Integer} operation returns \spad{-1} if its argument
+is negative, \spad{0} if zero and \spad{1} if positive.
+}{
+\spadcommand{sign(x) \free{x}}
+}
+%
+\xtc{
+You can determine if an integer is negative in several other ways.
+}{
+\spadcommand{x < 0 \free{x}}
+}
+\xtc{
+}{
+\spadcommand{x <= -1 \free{x}}
+}
+\xtc{
+}{
+\spadcommand{negative?(x) \free{x}}
+}
+%
+\xtc{
+Similarly, you can find out if it is positive.
+}{
+\spadcommand{x > 0 \free{x}}
+}
+\xtc{
+}{
+\spadcommand{x >= 1 \free{x}}
+}
+\xtc{
+}{
+\spadcommand{positive?(x) \free{x}}
+}
+\xtc{
+This is the recommended way of determining whether an integer is zero.
+}{
+\spadcommand{zero?(x) \free{x}}
+}
+%
+
+\beginImportant
+Use the \spadfunFrom{zero?}{Integer} operation whenever you are testing any
+mathematical object for equality with zero.
+This is usually more efficient that using \spadop{=} (think of matrices:
+it is easier to tell if a matrix is zero by just checking term by term
+than constructing another ``zero'' matrix and comparing the two
+matrices term by term) and also avoids the problem that \spadop{=} is
+usually used for creating equations.
+\endImportant
+
+\xtc{
+This is the recommended way of determining
+whether an integer is equal to one.
+}{
+\spadcommand{one?(x) \free{x}}
+}
+
+\xtc{
+This syntax is used to test equality using \spadopFrom{=}{Integer}.
+It says that you want a \spadtype{Boolean} (\spad{true} or
+\spad{false}) answer rather than an equation.
+}{
+\spadcommand{(x = -101)@Boolean \free{x}}
+}
+
+\xtc{
+The operations \spadfunFrom{odd?}{Integer} and
+\spadfunFrom{even?}{Integer} determine whether an integer is odd or even,
+respectively.
+They each return a \spadtype{Boolean} object.
+}{
+\spadcommand{odd?(x) \free{x}}
+}
+\xtc{
+}{
+\spadcommand{even?(x) \free{x}}
+}
+\xtc{
+The operation \spadfunFrom{gcd}{Integer} computes the greatest common divisor of
+two integers.
+}{
+\spadcommand{gcd(56788,43688)}
+}
+\xtc{
+The operation
+\spadfunFrom{lcm}{Integer} computes their least common multiple.
+}{
+\spadcommand{lcm(56788,43688)}
+}
+\xtc{
+To determine the maximum of two integers, use \spadfunFrom{max}{Integer}.
+}{
+\spadcommand{max(678,567)}
+}
+\xtc{
+To determine the minimum, use \spadfunFrom{min}{Integer}.
+}{
+\spadcommand{min(678,567)}
+}
+
+\xtc{
+The \spadfun{reduce} operation is used to extend
+binary operations to more than two arguments.
+For example, you can use \spadfun{reduce} to find the maximum integer in
+a list or compute the least common multiple of all integers in the list.
+}{
+\spadcommand{reduce(max,[2,45,-89,78,100,-45])}
+}
+\xtc{
+}{
+\spadcommand{reduce(min,[2,45,-89,78,100,-45])}
+}
+\xtc{
+}{
+\spadcommand{reduce(gcd,[2,45,-89,78,100,-45])}
+}
+\xtc{
+}{
+\spadcommand{reduce(lcm,[2,45,-89,78,100,-45])}
+}
+
+\xtc{
+The infix operator ``/'' is {\it not} used to compute the quotient
+of integers.
+Rather, it is used to create rational numbers as described in
+\xmpref{Fraction}.
+}{
+\spadcommand{13 / 4}
+}
+\xtc{
+The infix operation \spadfunFrom{quo}{Integer} computes the integer
+quotient.
+}{
+\spadcommand{13 quo 4}
+}
+\xtc{
+The infix operation \spadfunFrom{rem}{Integer} computes the integer
+remainder.
+}{
+\spadcommand{13 rem 4}
+}
+\xtc{
+One integer is evenly divisible by another if the remainder is zero.
+The operation \spadfunFrom{exquo}{Integer} can also be used.
+See \spadref{ugTypesUnions} for an example.
+}{
+\spadcommand{zero?(167604736446952 rem 2003644)}
+}
+
+\xtc{
+The operation \spadfunFrom{divide}{Integer} returns a record of the
+quotient and remainder and thus is more efficient when both are needed.
+}{
+\spadcommand{d := divide(13,4) \bound{d}}
+}
+\xtc{
+}{
+\spadcommand{d.quotient \free{d}}
+}
+\xtc{
+Records are discussed in detail in \spadref{ugTypesRecords}.
+}{
+\spadcommand{d.remainder \free{d}}
+}
+
+% ----------------------------------------------------------------------
+\head{subsection}{Primes and Factorization}{ugxIntegerPrimes}
+% ----------------------------------------------------------------------
+
+\labelSpace{3pc}
+\xtc{
+Use the operation \spadfunFrom{factor}{Integer} to factor integers.
+It returns an object of type \spadtype{Factored Integer}.
+\index{factorization}
+See \xmpref{Factored} for a discussion of the
+manipulation of factored objects.
+}{
+\spadcommand{factor 102400}
+}
+
+\xtc{
+The operation \spadfunFrom{prime?}{Integer} returns \spad{true} or \spad{false} depending
+on whether its argument is a prime.
+\index{prime}
+}{
+\spadcommand{prime? 7}
+}
+\xtc{
+}{
+\spadcommand{prime? 8}
+}
+\xtc{
+The operation \spadfunFrom{nextPrime}{IntegerPrimesPackage} returns the
+least prime number greater than its argument.
+}{
+\spadcommand{nextPrime 100}
+}
+\xtc{
+The operation
+\spadfunFrom{prevPrime}{IntegerPrimesPackage} returns the greatest prime
+number less than its argument.
+}{
+\spadcommand{prevPrime 100}
+}
+\xtc{
+To compute all primes between two integers (inclusively), use the
+operation \spadfunFrom{primes}{IntegerPrimesPackage}.
+}{
+\spadcommand{primes(100,175)}
+}
+\xtc{
+You might sometimes want to see the factorization of an integer
+when it is considered a {\it Gaussian integer}.
+\index{Gaussian integer}
+See \xmpref{Complex} for more details.
+}{
+\spadcommand{factor(2 :: Complex Integer)}
+}
+
+% ----------------------------------------------------------------------
+\head{subsection}{Some Number Theoretic Functions}{ugxIntegerNT}
+% ----------------------------------------------------------------------
+
+\Language{} provides several number theoretic operations for integers.
+More examples are in \xmpref{IntegerNumberTheoryFunctions}.
+
+\labelSpace{1pc}
+\xtc{
+The operation \spadfunFrom{fibonacci}{IntegerNumberTheoryFunctions}
+computes the Fibonacci numbers.
+\index{Fibonacci numbers}
+The algorithm has running time
+\texht{$O\,(\log^3(n))$}{O(\spad{log(n)^3})} for argument \spad{n}.
+}{
+\spadcommand{[fibonacci(k) for k in 0..]}
+}
+\xtc{
+The operation \spadfunFrom{legendre}{IntegerNumberTheoryFunctions}
+computes the Legendre symbol for its two integer arguments where the
+second one is prime.
+If you know the second argument to be prime, use
+\spadfunFrom{jacobi}{IntegerNumberTheoryFunctions} instead where no check
+is made.
+}{
+\spadcommand{[legendre(i,11) for i in 0..10]}
+}
+\xtc{
+The operation \spadfunFrom{jacobi}{IntegerNumberTheoryFunctions} computes
+the Jacobi symbol for its two integer arguments.
+\index{Jacobi symbol}
+By convention, \spad{0} is returned if the greatest common divisor of the
+numerator and denominator is not \spad{1}.
+}{
+\spadcommand{[jacobi(i,15) for i in 0..9]}
+}
+\xtc{
+The operation \spadfunFrom{eulerPhi}{IntegerNumberTheoryFunctions} computes
+\index{Euler!phi function@{$\varphi$ function}}
+the values of Euler's \texht{$\phi$}{phi}-function where
+\texht{$\phi(n)$}{\spad{phi(n)}}
+equals the number of positive integers
+less than or equal to \spad{n} that are relatively prime to
+the positive integer \spad{n}.
+\index{phi@{$\varphi$}}
+}{
+\spadcommand{[eulerPhi i for i in 1..]}
+}
+\xtc{
+The operation \spadfunFrom{moebiusMu}{IntegerNumberTheoryFunctions}
+\index{mu@{$\mu$}}
+computes the \texht{M\"{o}bius $\mu$}{Moebius mu} function.
+\index{Moebius@{M\"{o}bius}!mu function@{$\mu$ function}}
+}{
+\spadcommand{[moebiusMu i for i in 1..]}
+}
+
+\xtc{
+Although they have somewhat limited utility, \Language{} provides
+\index{Roman numerals}
+Roman numerals.
+}{
+\spadcommand{a := roman(78) \bound{a}}
+}
+\xtc{
+}{
+\spadcommand{b := roman(87) \bound{b}}
+}
+\xtc{
+}{
+\spadcommand{a + b \free{a}\free{b}}
+}
+\xtc{
+}{
+\spadcommand{a * b \free{a}\free{b}}
+}
+\xtc{
+}{
+\spadcommand{b rem a \free{a}\free{b}}
+}

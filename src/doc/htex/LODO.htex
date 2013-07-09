@@ -1,0 +1,127 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+% lodo.htex
+\spadtype{LinearOrdinaryDifferentialOperator(A, diff)} is the domain of linear
+\index{operator!linear ordinary differential}
+ordinary differential operators with coefficients in a ring
+\spad{A} with a given derivation.
+%This includes the cases of operators which are polynomials in \spad{D}
+%acting upon scalar or vector expressions of a single variable.
+%The coefficients of the operator polynomials can be integers, rational
+%functions, matrices or elements of other domains.
+\showBlurb{LinearOrdinaryDifferentialOperator}
+
+\head{subsection}{Differential Operators with Series Coefficients}{ugxLinearOrdinaryDifferentialOperatorSeries}
+% ----------------------------------------------------------------------
+
+\noindent
+{\bf Problem:}
+Find the first few coefficients of \spad{exp(x)/x^i} of \spad{Dop phi} where
+\begin{verbatim}
+Dop := D^3 + G/x^2 * D + H/x^3 - 1
+phi := sum(s[i]*exp(x)/x^i, i = 0..)
+\end{verbatim}
+
+\noindent
+{\bf Solution:}
+\xtc{
+Define the differential.
+}{
+\spadcommand{Dx: LODO(EXPR INT, f +-> D(f, x)) \bound{Dxd}}
+}
+\xtc{
+}{
+\spadcommand{Dx := D() \free{Dxd}\bound{Dx}}
+}
+\xtc{
+Now define the differential operator \spad{Dop}.
+}{
+\spadcommand{Dop:= Dx^3 + G/x^2*Dx + H/x^3 - 1 \free{Dx}\bound{Dop}}
+}
+\xtc{
+}{
+\spadcommand{n == 3 \bound{n3}}
+}
+\xtc{
+}{
+\spadcommand{phi == reduce(+,[subscript(s,[i])*exp(x)/x^i for i in 0..n]) \bound{phi}}
+}
+\xtc{
+}{
+\spadcommand{phi1 ==  Dop(phi) / exp x \bound{phi1}\free{Dop phi}}
+}
+\xtc{
+}{
+\spadcommand{phi2 == phi1 *x^(n+3) \bound{phi2}\free{phi1}}
+}
+\xtc{
+}{
+\spadcommand{phi3 == retract(phi2)@(POLY INT) \bound{phi3}\free{phi2}}
+}
+\xtc{
+}{
+\spadcommand{pans == phi3 ::UP(x,POLY INT) \free{phi3}\bound{pans}}
+}
+\xtc{
+}{
+\spadcommand{pans1 == [coefficient(pans, (n+3-i) :: NNI) for i in 2..n+1] \bound{pans1}\free{pans}}
+}
+\xtc{
+}{
+\spadcommand{leq == solve(pans1,[subscript(s,[i]) for i in 1..n]) \bound{leq}\free{pans1}}
+}
+\xtc{
+Evaluate this for several values of \spad{n}.
+}{
+\spadcommand{leq \free{n3 leq}}
+}
+\xtc{
+}{
+\spadcommand{n==4 \bound{n4}}
+}
+\xtc{
+}{
+\spadcommand{leq \free{n4 leq}}
+}
+\xtc{
+}{
+\spadcommand{n==7 \bound{n7}}
+}
+\xtc{
+}{
+\spadcommand{leq \free{n7 leq}}
+}
+
+% ----------------------------------------------------------------------

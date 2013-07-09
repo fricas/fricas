@@ -1,0 +1,148 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+The \spadtype{WuWenTsunTriangularSet} domain constructor implements
+the characteristic set method of Wu Wen Tsun.
+This algorithm computes a list of triangular sets from a list
+of polynomials such that the algebraic variety defined by the 
+given list of polynomials decomposes into the union of the regular-zero sets 
+of the computed triangular sets.
+The constructor takes four arguments.
+The first one, {\bf R}, is the coefficient ring of the polynomials;
+it must belong to the category \spadtype{IntegralDomain}.
+The second one, {\bf E}, is the exponent monoid of the polynomials;
+it must belong to the category \spadtype{OrderedAbelianMonoidSup}.
+The third one, {\bf V}, is the ordered set of variables;
+it must belong to the category \spadtype{OrderedSet}.
+The last one is the polynomial ring;
+it must belong to the category \spadtype{RecursivePolynomialCategory(R,E,V)}.
+The abbreviation for \spadtype{WuWenTsunTriangularSet} is
+\spadtype{WUTSET}.
+
+Let us illustrate the facilities by an example.
+
+\xtc{
+Define the coefficient ring.
+}{
+\spadcommand{R := Integer \bound{R}}
+}
+\xtc{
+Define the list of variables,
+}{
+\spadcommand{ls : List Symbol := [x,y,z,t] \bound{ls}}
+}
+\xtc{
+and make it an ordered set;
+}{
+\spadcommand{V := OVAR(ls) \free{ls} \bound{V}}
+}
+\xtc{
+then define the exponent monoid.
+}{
+\spadcommand{E := IndexedExponents V \free{V} \bound{E}}
+}
+\xtc{
+Define the polynomial ring.
+}{
+\spadcommand{P := NSMP(R, V) \free{R} \free{V} \bound{P}}
+}
+\xtc{
+Let the variables be polynomial.
+}{
+\spadcommand{x: P := 'x \free{P} \bound{x}}
+}
+\xtc{
+}{
+\spadcommand{y: P := 'y \free{P} \bound{y}}
+}
+\xtc{
+}{
+\spadcommand{z: P := 'z \free{P} \bound{z}}
+}
+\xtc{
+}{
+\spadcommand{t: P := 't \free{P} \bound{t}}
+}
+\xtc{
+Now call the \spadtype{WuWenTsunTriangularSet} domain constructor.
+}{
+\spadcommand{T := WUTSET(R,E,V,P) \free{R} \free{E} \free{V} \free{P} \bound{T} }
+}
+\xtc{
+Define a polynomial system.
+}{
+\spadcommand{p1 := x ^ 31 - x ^ 6 - x - y \free{x} \free{y} \bound{p1}}
+}
+\xtc{
+}{
+\spadcommand{p2 := x ^ 8  - z \free{x} \free{z} \bound{p2}}
+}
+\xtc{
+}{
+\spadcommand{p3 := x ^ 10 - t \free{x} \free{t} \bound{p3}}
+}
+\xtc{
+}{
+\spadcommand{lp := [p1, p2, p3] \free{p1} \free{p2} \free{p3} \bound{lp}}
+}
+\xtc{
+Compute a characteristic set of the system.
+}{
+\spadcommand{characteristicSet(lp)$T \free{lp} \free{T}}
+}
+\xtc{
+Solve the system.
+}{
+\spadcommand{zeroSetSplit(lp)$T \free{lp} \free{T}}
+}
+
+
+The \spadtype{RegularTriangularSet} and \spadtype{SquareFreeRegularTriangularSet} domain constructors,
+and the  \spadtype{LazardSetSolvingPackage}, \spadtype{SquareFreeRegularTriangularSet} 
+and \spadtype{ZeroDimensionalSolvePackage} package constructors
+also provide operations to compute triangular decompositions of algebraic varieties.
+These five constructor use a special kind of characteristic sets, called regular triangular sets.
+These special characteristic sets have better properties than the general ones.
+Regular triangular sets and their related concepts are presented in
+the paper "On the Theories of Triangular sets" By P. Aubry, D. Lazard
+and M. Moreno Maza (to appear in the Journal of Symbolic Computation).
+The decomposition algorithm (due to the third author) available in the 
+four above constructors provide generally better timings than 
+the characteristic set method.
+In fact, the \spadtype{WUTSET} constructor remains interesting 
+for the purpose of manipulating characteristic sets whereas
+the other constructors are more convenient for solving polynomial systems.
+
+Note that the way of understanding triangular decompositions 
+is detailed in the example of the \spadtype{RegularTriangularSet}
+constructor.

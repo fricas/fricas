@@ -5,9 +5,6 @@ bin_PROGRAMS = htadd hypertex spadbuf hthits ex2ht
 # this is where to put the various commands
 OUTLIB=	$(fricas_target_libdir)
 
-# this is where the hypertex documentation files are
-HYPER=$(fricas_target_datadir)/hypertex
-
 HTADD=$(fricas_target_bindir)/htadd
 
 BITMAPS = mouse11.bitmap mouse11.mask sdown3d.bitmap sdown3dpr.bitmap \
@@ -74,7 +71,7 @@ ex2ht_DEPENDENCIES = $(build_libdir)/libspad.a
 
 subdir = src/hyper/
 
-.PHONY: all all-hyper util-ht
+.PHONY: all all-hyper
 .SUFFIXES:
 .SUFFIXES: .c .o .h
 
@@ -83,16 +80,9 @@ all: all-ax
 all-ax all-hyper: stamp
 	@ echo finished $(builddir)
 
-stamp: ${SCRIPTS} ${BINFILES} ${HYPER}/pages/ht.db  
+stamp: ${SCRIPTS} ${BINFILES}
 	-rm -f stamp
 	$(STAMP) stamp
-
-util-ht: stamp-util-ht
-
-stamp-util-ht: $(srcdir)/pages/util.ht
-	mkdir -p ${HYPER}/pages
-	cp $(srcdir)/pages/util.ht ${HYPER}/pages/util.ht
-	$(STAMP) stamp-util-ht
 
 mostlyclean-local:
 	-rm -f $(hypertex_objects)
@@ -101,7 +91,7 @@ mostlyclean-local:
 	-rm -f $(spadbuf_objects)
 	-rm -f $(hthits_objects)
 	-rm -f $(ex2ht_objects)
-	-rm -f stamp stamp-util-ht
+	-rm -f stamp
 
 
 clean-local: mostlyclean-local
@@ -114,33 +104,6 @@ distclean-local: clean-local
 %.$(OBJEXT): $(srcdir)/%.c $(HEADERS)
 	$(CC) $(CFLAGS) ${CCF} $(fricas_includes) $(FRICAS_X11_CFLAGS) \
 	    -I$(srcdir) -c -o $@ $<
-
-
-# We need to make sure that 'ht.db', the hypertex database file
-# is up to date. The file contains absolute offsets into the various
-# '.ht' and '.pht' files so it must reflect the current pages. In
-# order to do this we run 'htadd' in the '${HYPER}/pages' directory.
-
-# '.pht' pages are generated later from 'paste/Makefiel.in'
-
-${HYPER}/pages/ht.db: $(HTADD) $(srcdir)/pages/*.ht
-	@echo making ${HYPER}/pages from $(fricas_src_srcdir)/pages directory
-	mkdir -p ${HYPER}/pages
-	mkdir -p $(fricas_target_datadir)/viewports
-	cp $(srcdir)/pages/*.ht ${HYPER}/pages
-	(cd ${HYPER}/pages ; \
-           rm -f ht.db ; \
-           rm -f *~ ; \
-	   ${HTADD} *.ht )
-	rm -rf ${HYPER}/bitmaps
-	mkdir -p ${HYPER}/bitmaps
-	cp $(srcdir)/bitmaps/*.bitmap $(srcdir)/bitmaps/*.xbm \
-	        ${HYPER}/bitmaps
-	for A in anna.xbm.tiny door drown.bm help2.bakmap \
-	      ht_icon integral.bm sdown.bm sum.bm sup.bm ; do \
-	   cp $(srcdir)/bitmaps/$$A ${HYPER}/bitmaps ; \
-	done
-
 
 ${OUTLIB}/htsearch: $(srcdir)/htsearch
 	cp $< $@

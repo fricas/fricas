@@ -1,0 +1,1774 @@
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+%
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+%
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+%
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+\texht{\setcounter{chapter}{14}}{} % Chapter 15
+
+% *********************************************************************
+\head{chapter}{What's New in AXIOM Version 2.x}{ugWhatsNew}
+% *********************************************************************
+
+Many things have changed in this version of AXIOM and
+we describe many of the more important topics here.
+
+%------------------------------------------------------------------------
+%\head{section}{The New \Language{} Library Compiler}{ugWhatsNewAsharp}
+%------------------------------------------------------------------------
+%
+% A new compiler is now available for \Language{}.
+% The programming language is referred to as the \Language{} Extension Language
+% (or \axiomxl{} for short), and
+% improves upon the old \Language{} language in many ways.
+% The \spadcmd{)compile} command has been upgraded to be able to
+% invoke the new or old compilers.
+% The language and the compiler are described in the hard-copy
+% documentation which came with your \Language{} system.
+%
+% To ease the chore of upgrading your {\it .spad} files (old
+% compiler) to {\it .as} files (new compiler), the
+% \spadcmd{)compile} command has been given a {\tt )translate}
+% option. This invokes a special version of the old compiler which
+% parses and analyzes your old code and produces augmented code
+% using the new syntax.
+% Please be aware that the translation is not necessarily one
+% hundred percent complete or correct.
+% You should attempt to compile the output with the \axiomxl{} compiler
+% and make any necessary corrections.
+
+
+% ----------------------------------------------------------------------
+\head{section}{The NAG Library Link}{nagLinkIntro}
+% ----------------------------------------------------------------------
+
+Most of the content removed -  NAGLink is no longer included in FriCAS.
+
+% ----------------------------------------------------------------------
+\head{subsection}{General Fortran-generation utilities in \Language{}}{generalFortran}
+% ----------------------------------------------------------------------
+
+This section describes more advanced facilities which are available to users
+who wish to generate Fortran code from within \Language{}.  There are
+facilities to manipulate templates, store type information, and generate
+code fragments or complete programs.
+
+% ----------------------------------------------------------------------
+\subsubsection{Template Manipulation}
+% ----------------------------------------------------------------------
+
+A template is a skeletal program which is ``fleshed out'' with data when
+it is processed.  It is a sequence of {\em active} and {\em passive} parts:
+active parts are sequences of \Language{} commands which are processed as if they
+had been typed into the interpreter; passive parts are simply echoed
+verbatim on the Fortran output stream.
+
+Suppose, for example, that we have the following template, stored in
+the file ``test.tem'':
+\begin{verbatim}
+-- A simple template
+beginVerbatim
+      DOUBLE PRECISION FUNCTION F(X)
+      DOUBLE PRECISION X
+endVerbatim
+outputAsFortran("F",f)
+beginVerbatim
+      RETURN
+      END
+endVerbatim
+\end{verbatim}
+The passive parts lie between the two
+tokens {\tt beginVerbatim} and \texht{\linebreak}{} {\tt endVerbatim}.  There
+are two active statements: one which is simply an \Language{} (
+\texht{\verb+--+}{\-\-})
+comment, and one which produces an assignment to the current value
+of {\tt f}.  We could use it as follows:
+\begin{verbatim}
+(4) ->f := 4.0/(1+X^2)
+
+           4
+   (4)   ------
+          2
+         X  + 1
+
+(5) ->processTemplate "test.tem"
+      DOUBLE PRECISION FUNCTION F(X)
+      DOUBLE PRECISION X
+      F=4.0D0/(X*X+1.0D0)
+      RETURN
+      END
+
+   (5)  "CONSOLE"
+\end{verbatim}
+
+(A more reliable method of specifying the filename will be introduced
+below.)  Note that the Fortran assignment {\tt F=4.0D0/(X*X+1.0D0)}
+automatically converted 4.0 and 1 into DOUBLE PRECISION numbers; in
+general, the \Language{} Fortran generation facility will convert
+anything which should be a floating point object into either
+a Fortran REAL or DOUBLE PRECISION object.
+\xtc{
+Which alternative is used is determined by the command
+}{
+\spadcommand{)set fortran precision}
+}
+
+It is sometimes useful to end a template before the file itself ends (e.g. to
+allow the template to be tested incrementally or so that a piece of text
+describing how the template works can be included).  It is of course possible
+to ``comment-out'' the remainder of the file.  Alternatively, the single token
+{\tt endInput} as part of an active portion of the template will cause
+processing to be ended prematurely at that point.
+
+The \axiomFun{processTemplate} command comes in two flavours.  In the first case,
+illustrated above, it takes one argument of domain \axiomType{FileName},
+the name of the template to be processed, and writes its output on the
+current Fortran output stream.  In general, a filename can be generated
+from {\em directory}, {\em name} and {\em extension} components, using
+the operation \axiomFun{filename}, as in
+\begin{verbatim}
+processTemplate filename("","test","tem")
+\end{verbatim}
+There is an alternative version of \axiomFun{processTemplate}, which
+takes two arguments (both of domain \axiomType{FileName}).  In this case the
+first argument is the name of the template to be processed, and the
+second is the file in which to write the results.  Both versions return
+the location of the generated Fortran code as their result
+({\tt "CONSOLE"} in the above example).
+
+It is sometimes useful to be able to mix active and passive parts of a
+line or statement.  For example you might want to generate a Fortran
+Comment describing your data set.  For this kind of application we
+provide three functions as follows:
+\texht
+{
+\begin{tabular}{p{1.8in}p{2.6in}}
+\axiomFun{fortranLiteral} & writes a string on the Fortran output stream \\
+ & \\
+\axiomFun{fortranCarriageReturn} & writes a carriage return on the Fortran output stream \\
+& \\
+\axiomFun{fortranLiteralLine} & writes a string followed by a return
+on the Fortran output stream \\
+\end{tabular}
+}
+{
+\newline
+\axiomFun{fortranLiteral}\tab{25}writes a string on the Fortran output stream\newline
+\axiomFun{fortranCarriageReturn}\tab{25}writes a carriage return on the Fortran output stream\newline
+\axiomFun{fortranLiteralLine}\tab{25}writes a string followed by a return on the Fortran output stream\newline
+}
+\xtc{
+So we could create our comment as follows:
+}{
+\spadcommand{m := matrix [[1,2,3],[4,5,6]]\bound{m}}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteralLine concat ["C\ \ \ \ \ \ The\ Matrix\ has\ ", nrows(m)::String, "\ rows\ and\ ", ncols(m)::String, "\ columns"]\free{m}}
+}
+\xtc{
+or, alternatively:
+}{
+\spadcommand{fortranLiteral "C\ \ \ \ \ \ The\ Matrix\ has\ "}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral(nrows(m)::String)}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral "\ rows\ and\ "}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral(ncols(m)::String)\free{m}}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral "\ columns"}
+}
+\xtc{
+}{
+\spadcommand{fortranCarriageReturn()}
+}
+
+We should stress that these functions, together with the \axiomFun{outputAsFortran}
+function are the {\em only} sure ways
+of getting output to appear on the Fortran output stream.  Attempts to use
+\Language{} commands such as \axiomFun{output} or \axiomFunX{writeline} may appear to give
+the required result when displayed on the console, but will give the wrong
+result when Fortran and algebraic output are sent to differing locations.  On
+the other hand, these functions can be used to send helpful messages to the
+user, without interfering with the generated Fortran.
+
+% ----------------------------------------------------------------------
+\subsubsection{Manipulating the Fortran Output Stream}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranOutputStackPackage}}{}
+
+Sometimes it is useful to manipulate the Fortran output stream in a program,
+possibly without being aware of its current value.  The main use of this is
+for gathering type declarations (see ``Fortran Types'' below) but it can be useful
+in other contexts as well.  Thus we provide a set of commands to manipulate
+a stack of (open) output streams.  Only one stream can be written to at
+any given time.  The stack is never empty---its initial value is the
+console or the current value of the Fortran output stream, and can be
+determined using
+\xtc{
+}{
+\spadcommand{topFortranOutputStack()}
+}
+(see below).
+The commands available to manipulate the stack are:
+\texht{
+\begin{tabular}{ll}
+\axiomFun{clearFortranOutputStack} & resets the stack to the console \\
+ & \\
+\axiomFun{pushFortranOutputStack} & pushes a \axiomType{FileName} onto the stack \\
+ & \\
+\axiomFun{popFortranOutputStack} & pops the stack \\
+ & \\
+\axiomFun{showFortranOutputStack} & returns the current stack \\
+ & \\
+\axiomFun{topFortranOutputStack} & returns the top element of the stack \\
+\end{tabular}
+}
+{
+\newline
+\axiomFun{clearFortranOutputStack}\tab{25}resets the stack\newline
+\axiomFun{pushFortranOutputStack}\tab{25}pushes a \axiomType{FileName} onto the stack\newline
+\axiomFun{popFortranOutputStack}\tab{25}pops the stack\newline
+\axiomFun{showFortranOutputStack}\tab{25}returns the current stack\newline
+\axiomFun{topFortranOutputStack}\tab{25}returns the top element of the stack\newline
+}
+These commands are all part of \axiomType{FortranOutputStackPackage}.
+
+% ----------------------------------------------------------------------
+\subsubsection{Fortran Types}
+% ----------------------------------------------------------------------
+
+When generating code it is important to keep track of the Fortran types of
+the objects which we are generating.  This is useful for a number of reasons,
+not least to ensure that we are actually generating legal Fortran code.  The
+current type system is built up in several layers, and we shall describe each
+in turn.
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranScalarType}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranScalarType}}{}
+
+This domain represents the simple Fortran datatypes: REAL, DOUBLE PRECISION,
+COMPLEX, LOGICAL, INTEGER, and CHARACTER.
+It is possible to \axiomFun{coerce} a \axiomType{String} or \axiomType{Symbol}
+into the domain, test whether two objects are equal, and also apply
+the predicate functions \axiomFunFrom{real?}{FortranScalarType} etc.
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranType}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranType}}{}
+
+This domain represents ``full'' types: i.e., datatype plus array dimensions
+(where appropriate) plus whether or not the parameter is an external
+subprogram.  It is possible to \axiomFun{coerce} an object of
+\axiomType{FortranScalarType} into the domain or \axiomFun{construct} one
+from an element of \axiomType{FortranScalarType}, a list of
+\axiomType{Polynomial Integer}s (which can of course be simple integers or
+symbols) representing its dimensions, and
+a \axiomType{Boolean} declaring whether it is external or not.  The list
+of dimensions must be empty if the \axiomType{Boolean} is {\tt true}.
+The functions \axiomFun{scalarTypeOf}, \axiomFun{dimensionsOf} and
+\axiomFun{external?} return the appropriate
+parts, and it is possible to get the various basic Fortran Types via
+functions like \axiomFun{fortranReal}.
+\xtc{
+For example:
+}{
+\spadcommand{type:=construct(real,[i,10],false)$FortranType}
+}
+\xtc{
+or
+}{
+\spadcommand{type:=[real,[i,10],false]$FortranType\bound{type}}
+}
+\xtc{
+}{
+\spadcommand{scalarTypeOf type\free{type}}
+}
+\xtc{
+}{
+\spadcommand{dimensionsOf type\free{type}}
+}
+\xtc{
+}{
+\spadcommand{external?  type\free{type}}
+}
+\xtc{
+}{
+\spadcommand{fortranLogical()}
+}
+\xtc{
+}{
+\spadcommand{construct(integer,[],true)$FortranType}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{SymbolTable}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{SymbolTable}}{}
+
+This domain creates and manipulates a symbol table for generated Fortran code.
+This is used by \axiomType{FortranProgram} to represent the types of objects in
+a subprogram.  The commands available are:
+\texht{
+\begin{tabular}{ll}
+\axiomFun{empty} & creates a new \axiomType{SymbolTable} \\
+ & \\
+\axiomFunX{declare} & creates a new entry in a table \\
+ & \\
+\axiomFun{fortranTypeOf} & returns the type of an object in a table \\
+ & \\
+\axiomFun{parametersOf} & returns a list of all the symbols in the table \\
+ & \\
+\axiomFun{typeList} & returns a list of all objects of a given type \\
+ & \\
+\axiomFun{typeLists} & returns a list of lists of all objects sorted by type \\
+ & \\
+\axiomFun{externalList} & returns a list of all {\tt EXTERNAL} objects \\
+ & \\
+\axiomFun{printTypes} & produces Fortran type declarations from a table\\
+\end{tabular}
+}
+{
+\newline
+\axiomFun{empty}\tab{25}creates a new \axiomType{SymbolTable}\newline
+\axiomFunX{declare}\tab{25}creates a new entry in a table \newline
+\axiomFun{fortranTypeOf}\tab{25}returns the type of an object in a table \newline
+\axiomFun{parametersOf}\tab{25}returns a list of all the symbols in the table \newline
+\axiomFun{typeList}\tab{25}returns a list of all objects of a given type \newline
+\axiomFun{typeLists}\tab{25}returns a list of lists of all objects sorted by type \newline
+\axiomFun{externalList}\tab{25}returns a list of all {\tt EXTERNAL} objects \newline
+\axiomFun{printTypes}\tab{25}produces Fortran type declarations from a table\newline
+}
+\xtc{
+}{
+\spadcommand{symbols := empty()$SymbolTable\bound{symbols}}
+}
+\xtc{
+}{
+\spadcommand{declare!(X,fortranReal(),symbols)\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{declare!(M,construct(real,[i,j],false)$FortranType,symbols)\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{declare!([i,j],fortranInteger(),symbols)\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{symbols\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{fortranTypeOf(i,symbols)\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{typeList(real,symbols)\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{printTypes symbols\free{symbols}}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{TheSymbolTable}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{TheSymbolTable}}{}
+
+This domain creates and manipulates one global symbol table to be used, for
+example, during template processing. It is
+also used when
+linking to external Fortran routines. The
+information stored for each subprogram (and the main program segment, where
+relevant) is:
+\begin{itemize}
+\item its name;
+\item its return type;
+\item its argument list;
+\item and its argument types.
+\end{itemize}
+Initially, any information provided is deemed to be for the main program
+segment.
+\xtc{
+Issuing the following command indicates that from now on all information
+refers to the subprogram \axiom{F}.
+}{
+\spadcommand{newSubProgram F}
+}
+\xtc{
+It is possible to return to processing the main program segment by issuing
+the command:
+}{
+\spadcommand{endSubProgram()}
+}
+The following commands exist:
+\texht{
+\begin{tabular}{p{1.6in}p{2.8in}}
+\axiomFunX{returnType} & declares the return type of the current subprogram \\
+ & \\
+\axiomFun{returnTypeOf} & returns the return type of a subprogram \\
+ & \\
+\axiomFunX{argumentList} &  declares the argument list of the current subprogram \\
+ & \\
+\axiomFun{argumentListOf} &  returns the argument list of a subprogram \\
+ & \\
+\axiomFunX{declare} & provides type declarations for parameters of the current subprogram \\
+ & \\
+\axiomFun{symbolTableOf} & returns the symbol table  of a subprogram \\
+ & \\
+\axiomFun{printHeader} & produces the Fortran header for the current subprogram \\
+\end{tabular}
+}
+{
+\newline
+\axiomFunX{returnType}\tab{25}declares the return type of the current subprogram \newline
+\axiomFun{returnTypeOf}\tab{25}returns the return type of a subprogram \newline
+\axiomFunX{argumentList}\tab{25}declares the argument list of the current subprogram \newline
+\axiomFun{argumentListOf}\tab{25}returns the argument list of a subprogram \newline
+\axiomFunX{declare}\tab{25}provides type declarations for parameters of the current subprogram \newline
+\axiomFun{symbolTableOf}\tab{25}returns the symbol table  of a subprogram \newline
+\axiomFun{printHeader}\tab{25}produce the Fortran header for the current subprogram \newline
+}
+In addition there are versions of these commands which are parameterised by
+the name of a subprogram, and others parameterised by both the name of a
+subprogram and by an instance of \axiomType{TheSymbolTable}.
+\xtc{
+}{
+\spadcommand{newSubProgram F \bound{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{argumentList!(F,[X])\free{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{returnType!(F,real)\free{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{declare!(X,fortranReal(),F)\free{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{printHeader F\free{forPleasure}}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{Advanced Fortran Code Generation}
+% ----------------------------------------------------------------------
+
+This section describes facilities for representing Fortran statements, and
+building up complete subprograms from them.
+
+% ----------------------------------------------------------------------
+\subsubsection{Switch}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{Switch}}{}
+
+This domain is used to represent statements like {\tt x < y}.  Although
+these can be represented directly in \Language{}, it is a little cumbersome,
+since currently \Language{} performs several transformations on
+conditional operators, for example {\tt x >= y } is transformed to
+{\tt not(x < y)}, which while logically equivalent may be different
+from desired result.
+
+Instead we have a set of operations, such as \axiomFun{LT} to represent \axiom{<},
+to let us build such statements.  The available constructors are:
+\texht{
+\begin{center}
+\begin{tabular}{ll}
+\axiomFun{LT} & $<$ \\
+\axiomFun{GT} & $>$ \\
+\axiomFun{LE} & $\leq$ \\
+\axiomFun{GE} & $\geq$ \\
+\axiomFun{EQ} & $=$ \\
+\axiomFun{AND} & $and$\\
+\axiomFun{OR} & $or$ \\
+\axiomFun{NOT} & $not$ \\
+\end{tabular}
+\end{center}
+}
+{
+\newline
+\axiomFun{LT}\tab{25}\texht{$<$}{<} \newline
+\axiomFun{GT}\tab{25}\texht{$>$}{>} \newline
+\axiomFun{LE}\tab{25}\texht{$\leq$}{<=} \newline
+\axiomFun{GE}\tab{25}\texht{$\geq$}{>=} \newline
+\axiomFun{EQ}\tab{25}\texht{$=$}{=} \newline
+\axiomFun{AND}\tab{25}\texht{$and$}{{\tt and}}\newline
+\axiomFun{OR}\tab{25}\texht{$or$}{{\tt or}} \newline
+\axiomFun{NOT}\tab{25}\texht{$not$}{{\tt not}} \newline
+}
+\xtc{
+So for example:
+}{
+\spadcommand{LT(x,y)}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranCode}
+% ----------------------------------------------------------------------
+
+This domain represents code segments or operations: currently assignments,
+conditionals, blocks, comments, gotos, continues, various kinds of loops,
+and return statements.
+\xtc{
+For example we can create quite a complicated conditional statement using
+assignments, and then turn it into Fortran code:
+}{
+\spadcommand{c := cond(LT(X,Y),assign(F,X),cond(GT(Y,Z),assign(F,Y),assign(F,Z)))\bound{c}}
+}
+\xtc{
+}{
+\spadcommand{printCode c\free{c}}
+}
+
+The Fortran code is printed
+on the current Fortran output stream.
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranProgram}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranProgram}}{}
+
+This domain is used to construct complete Fortran subprograms out of
+elements of \axiomType{FortranCode}.  It is parameterised by the name of the
+target subprogram (a \axiomType{Symbol}), its return type (from
+\axiomType{Union}(\axiomType{FortranScalarType},``void'')),
+its arguments (from \axiomType{List Symbol}), and
+its symbol table (from \axiomType{SymbolTable}).  One can
+\axiomFun{coerce} elements of either \axiomType{FortranCode}
+or \axiomType{Expression} into it.
+
+\xtc{
+First of all we create a symbol table:
+}{
+\spadcommand{symbols := empty()$SymbolTable\bound{symbols}}
+}
+\xtc{
+Now put some type declarations into it:
+}{
+\spadcommand{declare!([X,Y],fortranReal(),symbols)\free{symbols}}
+}
+\xtc{
+Then (for convenience)
+we set up the particular instantiation of \axiomType{FortranProgram}
+}{
+\spadcommand{FP := FortranProgram(F,real,[X,Y],symbols)\free{symbols}\bound{FP}}
+}
+\xtc{
+Create an object of type \axiomType{Expression(Integer)}:
+}{
+\spadcommand{asp := X*sin(Y)\bound{asp}}
+}
+\xtc{
+Now \axiomFun{coerce} it into \axiomType{FP}, and print its Fortran form:
+}{
+\spadcommand{outputAsFortran(asp::FP)\free{FP asp}}
+}
+
+We can generate a \axiomType{FortranProgram} using \axiom{FortranCode}.  For
+example:
+\xtc{
+Augment our symbol table:
+}{
+\spadcommand{declare!(Z,fortranReal(),symbols)\free{symbols}\bound{Z}}
+}
+\xtc{
+and transform the conditional expression we prepared earlier:
+}{
+\spadcommand{outputAsFortran([c,returns()]::FP) \free{FP c Z}}
+}
+
+%------------------------------------------------------------------------
+\head{section}{Interactive Front-end and Language}{ugWhatsNewLanguage}
+%------------------------------------------------------------------------
+
+The \axiom{leave} keyword has been replaced by the
+\axiom{break} keyword for compatibility with the new AXIOM
+extension language.
+See section \spadref{ugLangLoopsBreak}
+for more information.
+
+Curly braces are no longer used to create sets. Instead, use
+\axiomFun{set} followed by a bracketed expression. For example,
+\xtc{
+}{
+\spadcommand{set [1,2,3,4]}
+}
+
+Curly braces are now used to enclose a block (see section
+\spadref{ugLangBlocks}
+for more information). For compatibility, a block can still be
+enclosed by parentheses as well.
+
+% ``Free functions'' created by the \axiomxl{} compiler can now be
+% loaded and used within the AXIOM interpreter. A {\it free
+% function} is a library function that is implemented outside a
+% domain or category constructor.
+
+New coercions to and from type \axiomType{Expression} have been
+added. For example, it is now possible to map a polynomial
+represented as an expression to an appropriate polynomial type.
+
+Various messages have been added or rewritten for clarity.
+
+%------------------------------------------------------------------------
+\head{section}{Library}{ugWhatsNewLibrary}
+%------------------------------------------------------------------------
+
+The \axiomType{FullPartialFractionExpansion}
+domain has been added. This domain computes factor-free full
+partial fraction expansions.
+See section
+\xmpref{FullPartialFractionExpansion}
+for examples.
+
+We have implemented the Bertrand/Cantor algorithm for integrals of
+hyperelliptic functions. This brings a major speedup for some
+classes of algebraic integrals.
+
+We have implemented a new (direct) algorithm for integrating trigonometric
+functions. This brings a speedup and an improvement in the answer
+quality.
+
+The {\sf SmallFloat} domain has been renamed
+\axiomType{DoubleFloat} and {\sf SmallInteger} has been renamed
+\axiomType{SingleInteger}. The new abbreviations as
+\axiomType{DFLOAT} and \axiomType{SINT}, respectively.
+We have defined the macro {\sf SF}, the old abbreviation for {\sf
+SmallFloat}, to expand to \axiomType{DoubleFloat} and modified
+the documentation and input file examples to use the new names
+and abbreviations. You should do the same in any private \Language{}
+files you have.
+
+We have made improvements to the differential equation solvers
+and there is a new facility for solving systems of first-order
+linear differential equations.
+In particular, an important fix was made to the solver for
+inhomogeneous linear ordinary differential equations that
+corrected the calculation of particular solutions.
+We also made improvements to the polynomial
+and transcendental equation solvers including the
+ability to solve some classes of systems of transcendental
+equations.
+
+The efficiency of power series have been improved and left and right
+expansions of \spad{tan(f(x))} at \spad{x =} a pole of \spad{f(x)}
+can now be computed.
+A number of power series bugs were fixed and the \axiomType{GeneralUnivariatePowerSeries}
+domain was added.
+The power series variable can appear in the coefficients and when this
+happens, you cannot differentiate or integrate the series.  Differentiation
+and integration with respect to other variables is supported.
+
+A domain was added for representing asymptotic expansions of a
+function at an exponential singularity.
+
+For limits, the main new feature is the exponential expansion domain used
+to treat certain exponential singularities.  Previously, such singularities
+were treated in an {\it ad hoc} way and only a few cases were covered.  Now
+AXIOM can do things like
+
+\begin{verbatim}
+limit( (x+1)^(x+1)/x^x - x^x/(x-1)^(x-1), x = %plusInfinity)
+\end{verbatim}
+
+in a systematic way.  It only does one level of nesting, though.  In other
+words, we can handle \spad{exp(} some function with a pole \spad{)}, but not
+\texht{\linebreak}{} \spad{exp(exp(} some function with a pole \spad{)).}
+
+The computation of integral bases has been improved through careful
+use of Hermite row reduction. A P-adic algorithm
+for function fields of algebraic curves in finite characteristic has also
+been developed.
+
+Miscellaneous:
+There is improved conversion of definite and indefinite integrals to
+\axiomType{InputForm};
+binomial coefficients are displayed in a new way;
+some new simplifications of radicals have been implemented;
+the operation \spadfun{complexForm} for converting to rectangular coordinates
+has been added;
+symmetric product operations have been added to \axiomType{LinearOrdinaryDifferentialOperator}.
+
+%------------------------------------------------------------------------
+\head{section}{\HyperName}{ugWhatsNewHyperDoc}
+%------------------------------------------------------------------------
+
+The buttons on the titlebar and scrollbar have been replaced
+with ones which have a 3D effect. You can change the foreground and
+background colors of these ``controls'' by including and modifying
+the following lines in your {\bf .Xdefaults} file.
+\begin{verbatim}
+Axiom.hyperdoc.ControlBackground: White
+Axiom.hyperdoc.ControlForeground: Black
+\end{verbatim}
+
+For various reasons, \HyperName{} sometimes displays a
+secondary window. You can control the size and placement of this
+window by including and modifying
+the following line in your {\bf .Xdefaults} file.
+%
+\begin{verbatim}
+Axiom.hyperdoc.FormGeometry: =950x450+100+0
+\end{verbatim}
+%
+This setting is a standard X Window System geometry specification:
+you are requesting a window 950 pixels wide by 450 deep and placed in
+the upper left corner.
+
+Some key definitions have been changed to conform more closely
+with the CUA guidelines. Press
+\texht{F9}{\downlink{F9}{ugHyperKeysPage}}
+to see the current definitions.
+
+Input boxes (for example, in the Browser) now accept paste-ins from
+the X Window System. Use the second button to paste in something
+you have previously copied or cut. An example of how you can use this
+is that you can paste the type from an \Language{} computation
+into the main Browser input box.
+
+
+%------------------------------------------------------------------------
+\head{section}{Documentation}{ugWhatsNewDocumentation}
+%------------------------------------------------------------------------
+\texht{
+We describe here a few additions to the on-line
+version of the AXIOM book which you can read with
+HyperDoc.
+}{}
+
+A section has been added to the graphics chapter, describing
+how to build \twodim{} graphs from lists of points. An example is
+given showing how to read the points from a file.
+See section \spadref{ugGraphTwoDbuild}
+for details.
+
+A further section has been added to that same chapter, describing
+how to add a \twodim{} graph to a viewport which already
+contains other graphs.
+See section
+\spadref{ugGraphTwoDappend}
+for details.
+
+Chapter 3
+and the on-line \HyperName{} help have been unified.
+
+An explanation of operation names ending in ``?'' and ``!'' has
+been added to the first chapter.
+See the
+end of the section
+\spadref{ugIntroCallFun}
+for details.
+
+An expanded explanation of using predicates has
+been added to the sixth chapter. See the
+example involving \userfun{evenRule} in the middle of the section
+\spadref{ugUserRules}
+for details.
+
+Documentation for the \spadcmd{)compile}, \spadcmd{)library} and
+\spadcmd{)load} commands has been greatly changed. This reflects
+the ability of the \spadcmd{)compile} to now invoke the \axiomxl{}
+compiler, the impending deletion of the \spadcmd{)load} command
+and the new \spadcmd{)library} command.
+The \spadcmd{)library} command replaces \spadcmd{)load} and is
+compatible with the compiled output from both the old and new
+compilers.
+
+%------------------------------------------------------------------------
+\head{section}{\axiomxl{} compiler - Enhancements and Additions}{ugTwoTwoAldor}
+%------------------------------------------------------------------------
+Content removed - \axiomxl{} (now using name {\it Aldor}) is a separate
+project.
+%
+%------------------------------------------------------------------------
+\head{section}{New polynomial domains and algorithms}{ugTwoTwoPolynomials}
+%------------------------------------------------------------------------
+Univariate polynomial factorisation over the integers has been
+enhanced by updates to the \spadtype{GaloisGroupFactorizer} type
+and friends from Frederic Lehobey (Frederic.Lehobey@lifl.fr, University of
+Lille I, France).
+
+The package constructor \spadtype{PseudoRemainderSequence}
+provides efficient algorithms by Lionel Ducos
+(Lionel.Ducos@mathlabo.univ-poitiers.fr, University of Poitiers, France)
+for computing sub-resultants.
+This leads to a speed up in many places in \Language{} where
+sub-resultants are computed (polynomial system solving,
+algebraic factorization, integration).
+
+Based on this package, the domain constructor
+\spadtype{NewSparseUnivariatePolynomial}
+extends the constructor \spadtype{SparseUnivariatePolynomial}.
+In a similar way, the \spadtype{NewSparseMultivariatePolynomial} extends
+the constructor \spadtype{SparseUnivariatePolynomial};
+it also provides some additional operations related
+to polynomial system solving by means of triangular sets.
+
+Several domain constructors implement
+regular triangular sets (or regular chains).
+Among them \spadtype{RegularTriangularSet}
+and \spadtype{SquareFreeRegularTriangularSet}.
+They also implement an algorithm by Marc Moreno Maza (marc@nag.co.uk, NAG)
+for computing triangular decompositions of polynomial systems.
+This method is refined in the package \spadtype{LazardSetSolvingPackage}
+in order to produce decompositions by means of Lazard triangular sets.
+For the case of polynomial systems with finitely many solutions,
+these decompositions can also be computed by
+the package \spadtype{LexTriangularPackage}.
+
+The domain constructor \spadtype{RealClosure} by Renaud Rioboo
+(Renaud.Rioboo@lip6.fr, University of Paris 6, France)
+provides the real closure of an ordered field.
+The implementation is based on interval arithmetic.
+Moreover, the design of this constructor and its related
+packages allows an easy use of other codings for real algebraic numbers.
+
+Based on triangular decompositions and the \spadtype{RealClosure} constructor,
+the package \spadtype{ZeroDimensionalSolvePackage}
+provides operations for computing symbolically the real or complex roots
+of polynomial systems with finitely many solutions.
+
+Polynomial arithmetic with non-commutative variables
+has been improved too by a contribution of Michel Petitot
+(Michel.Petitot@lifl.fr, University of Lille I, France).
+The domain constructors \spadtype{XRecursivePolynomial}
+and \spadtype{XDistributedPolynomial} provide
+recursive and distributed representations for these polynomials.
+They are the non-commutative equivalents for
+the \spadtype{SparseMultivariatePolynomial}
+and \spadtype{DistributedMultivariatePolynomial} constructors.
+The constructor \spadtype{LiePolynomial} implement Lie
+polynomials in the Lyndon basis.
+The constructor \spadtype{XPBWPolynomial} manage polynomials
+with non-commutative variables in
+the \texht{Poincar\'e}{Poincare\space{-1}'}-Birkhoff-Witt basis from the Lyndon basis.
+This allows to compute in the Lie Group associated with a
+free nilpotent Lie algebra by using the \spadtype{LieExponentials}
+domain constructor.
+%
+%------------------------------------------------------------------------
+\head{section}{Enhancements to HyperDoc and Graphics}{ugTwoTwoHyperdoc}
+%------------------------------------------------------------------------
+From this version of AXIOM onwards, the pixmap format used to save graphics
+images in color and to display them in HyperDoc has been changed to the
+industry-standard XPM format. See {\tt ftp://koala.inria.fr/pub/xpm}.
+%
+%------------------------------------------------------------------------
+\head{section}{Enhancements to NAGLink}{ugTwoTwoNAGLink}
+%------------------------------------------------------------------------
+Content removed -  NAGLink is no longer included in FriCAS.
+%
+%------------------------------------------------------------------------
+\head{section}{Enhancements to the Lisp system}{ugTwoTwoCCL}
+%------------------------------------------------------------------------
+Content removed - no longer relevant since FriCAS runs on different
+Lisp systems.
+
+%------------------------------------------------------------------------
+\head{section}{Changes to Spad language}{ugSpadChanges}
+%------------------------------------------------------------------------
+\begin{enumerate}
+\item \spad{\$} as name of current domain is no longer supported, use
+  \spad{\%} instead.
+
+\item Attributes are no longer supported, use niladic categories with
+  no exports instead.
+
+\item Floating point numbers without leading zero are no longer
+  supported, so instead of \spad{.01} use \spad{0.01}
+
+\item Anonymous functions using \spad{\#1}, \spad{\#2}, etc. are no
+  longer supported, to define anonymous functions use \spad{+->}.
+
+\item Braces no longer construct sets. So instead of
+  \spad{\{'sin, 'cos\}::Set(Symbol)} use
+  \spad{set(['sin, 'cos])$Set(Symbol)}.
+
+\item Old Spad used colon (\spad{:}) to denote convertion, like
+  \spad{pretend} but performing even less checking. This is no longer
+  supported, use \spad{::} or \spad{pretend} instead.
+
+\item There was an alternative spelling for brackets and braces, in
+  FriCAS this is no longer supported, so one has to write brackets and
+  braces as is.
+
+\item \spad{SubsetCategory} was handled in special way by the
+  compiler. This is no longer supported.
+
+\item Old Spad compiler used to transform relational operators
+  \spad{~=,<=,>,>=} in ways which are correct for linear order, but
+  may conflict with other uses (as partial order or when generating
+  \spad{OutputForm}). FriCAS no longer performs this transformation.
+  Similarely, Spad parser no longer treats \spad{\^} and \spad{\^=} in
+  special way.
+
+\item Quote in old Spad allowed to insert arbitray literal Lisp data,
+  FriCAS only allows symbols after quote. Code using old behaviour
+  needs to be rewritten, however it seems that this feature was almost
+  unused, so this should be no problem.
+
+\item Old Spad treated statement consisting just of constructor name
+  (with arguments if needed) as request to import the constructor.
+  FriCAS requires \spad{import} keyword.
+
+\item In FriCAS \spad{**, \^, ->} are right associative. Also, right
+  binding power of \spad{+->} is increased, which allows more natural
+  writing of code.
+
+\item Few non-working experimental features are removed, in particular
+  partial support for APL-like syntax.
+
+\item FriCAS implemented parametric macros in the Spad compiler.
+
+\item FriCAS allows simplified form for exporting constants (without
+  \spad{constant} keyword).
+
+\item FriCAS added partial support for exception handling (currently
+  only \spad{finally} part).
+
+\item The \spad{leave} construct is removed from FriCAS. Use
+  \spad{break} instead.
+
+\item \spad{div} is no longer a keyword. \spad{free}, \spad{generate},
+  \spad{goto} are FriCAS keywords.
+\end{enumerate}
+
+There are also library changes that affect user code:
+
+\begin{enumerate}
+\item \spad{**} lost its definition as exponentiation, use \spad{\^}
+  instead.
+
+\item \spad{\^} is no longer used as negation (it means exponentiation
+  now) and '\spad{\^=} no longer means inequality, use \spad{not} and
+  \spad{\~=} instead.
+
+\item Operator properties are now symbols and not strings, so instead
+  of \spad{has?(op, "even")} use \spad{has?(op, 'even)}
+
+\item There is new category \spad{Comparable}, several constructors
+  that asserted \spad{OrderedSet} now only assert \spad{Comparable}.
+\end{enumerate}
+
+%------------------------------------------------------------------
+\head{section}{ReleaseNotes}{releaseNotes}
+%------------------------------------------------------------------
+\Language{} information can be found online at
+{http://fricas.sourceforge.net}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.2.1}
+%------------------------------------------------------------------
+\begin{itemize}
+\item Improvements to 'integrate': a new routine for integration in
+  terms of Ei, better handling of algebraic integrals.
+
+\item Implemented 'erfi'.
+
+\item Derivatives of 'asec', 'asech', 'acsc' and 'acsch' use different
+  formula so that numeric evaluation of derivative will take correct
+  branch on real axis.
+
+\item Linear dependence package is changed to be consistent with
+  linear solvers.
+
+\item It is now possible to extract empty submatrices.
+
+\item Changed default style of 3D graphics.
+
+\item Support for building Mac OS application bundle.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item fixed few cases of wrong or unevaluated integrals.
+
+\item better zero test during limit computation avoids division by
+  zero.
+
+\item fixed buffer overflow problems in view3D.
+
+\item 'reducedSystem' on empty input returns basis of correct size.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.2.0}
+%------------------------------------------------------------------
+\begin{itemize}
+\item New MatrixManipulation package.
+
+\item New ParallelIntegrationTools package.
+
+\item Gruntz algorithm in now used also for finite one-sided limits.
+
+\item FriCAS has now true 2-dimensional arrays (previously they were
+emulated using vectors of vectors).
+
+\item Speedups in some matrix operations and in arithmetic with
+algebraic expressions.
+
+\item FreeModule is now more general, it allows Comparable as second
+argument.
+
+\item Changed Spad parser, it now uses common scanner with
+interpreter. Spad language is now closer to interpreter language and
+Aldor. 'leave' is removed, 'free', 'generate' and 'goto' are now
+keywords. Pile rules changed slightly, they should be more intuitve
+now. Error messages from Spad parser should be slightly better.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Fixed a few build problems.
+
+\item Eliminated division by 0 during 'normalize'.
+
+\item 'nthRootIfCan' removes leading zeros from generalized series
+  (this avoids problems with power series expanders).
+
+\item Fixed corruption of formal derivatives.
+
+\item Fixed two problems with fortan output.
+
+\item Fixed ')untrace' and ')undo'. Fixed ')trace' with ECL.
+
+\item Fixed problem with calling efricas if user default shell is
+  (t)csh.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.8}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Improvements of pattern matching integrator, it can now
+  integrate in terms of Fresnel integrals and better handles integrals
+  in terms of Si and Ci.
+
+\item Better integration of symbolic derivatives.
+
+\item Better normalization of Liouvillian functions.
+
+\item New package for computing limits using Gruntz algorithm.
+
+\item Faster removal of roots from denominators.
+
+\item New domains for mutivariate Ore algebras and partial
+  differential operators.
+
+\item New package for noncommutative Groebner bases.
+
+\item New domain for univariate power series with arbitrary exponents.
+
+\item New special functions: Shi and Chi.
+
+\item Several aggregates (in particular tables) allow more general
+  parameter types.
+
+\item New domain for hash tables using equality from underlying
+  domain.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Fixed problem with gcd failing due to bad reduction.
+
+\item Fixed series of 'acot' and Puiseux series of several special
+  functions.
+
+\item Fixed wrong factorization of differential operators.
+
+\item Fixed build problem on recent Mac OS X.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.7}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Improved integration in terms of special functions.
+
+\item Updated new graphics framework and graph theory package.
+
+\item Added routines for numerical evaluation of several special
+  functions.
+
+\item Added modular method for computing polynomial gcd over algebraic
+  extensions.
+
+\item Derivatives of fresnelC and fresnelS are changed to agree with
+  established convention.
+
+\item When printing floats groups of digits are now separated by
+  underscores (previously were separated by spaces).
+
+\item Added C code for removing directories, this speeds up full build
+  and should avoid build problems on Mac OSX.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Series expansion now handle poles of Gamma.
+
+\item Fixed derivatives of meijerG.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.6}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Added experimental graph theory package.
+
+\item Added power series expanders for Weierstrass elliptic functions
+  at 0.
+
+\item New functions: kroneckerProduct and kroneckerSum for matrices,
+  numeric weierstrassInvariants and modularInvariantJ, symbolic Jacobi
+  Zeta, double float numeric elliptic integrals.
+
+\item New domains for vectors and matrices of unsigned 8 and 16 bit
+  integers.
+
+\item Changes to Spad compiler: underscores which are not needed as
+  escape are now significant in Spad names and strings, macros with
+  parameters are supported, added partial support for exceptions,
+  braces can be used for grouping.
+
+\item A few speedups.
+
+\item Reduced disc space usage during build.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Fixed eval of hypergeometricF at 0
+
+\item Fixed problem with scope of macros.
+
+\item Worked around problems with openinig named pipes in several Lisp
+  implementations.
+
+\item Fixed a problem with searching documentation via HyperDoc.
+
+\item Fixed build problem on Mac OSX.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.5}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Added numeric version of lambertW.
+
+\item New function 'rootFactor' which tries to write roots of products
+  as products of roots.
+
+\item 'try', 'catch' and 'finally' are now Spad keywords.
+
+\item Experimental support for using gmp with Closure CL (64-bit
+  Intel/Amd only).
+
+\item New categoris CoercibleFrom and ConvertibleFrom. New domain for
+  ordinals up to epsilon0. New domain for matrices of machine
+  integers. New package for solving linear equations written as
+  expressions (faster then general expression solver).
+
+\item Functions exported by Product() are now called 'construct',
+  'first' and 'second' (instead of 'makeprod', 'selectfirst' and
+  'selectsecond' respectively).
+
+\item Some functions are now much faster, in particular bivariate
+  factorization over small finite fields.
+
+\item When using sbcl FriCAS now tries to preload statistical
+  profiler.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Fixed handling of Control-C in FriCAS compiled by recent sbcl.
+
+\item Fixed HyperDoc crash due to bad handling of '\#'.
+
+\item Fixed power series expanders for elliptic integrals.
+
+\item Fixed 'possible wild ramifcation' problem with algebraic
+  integrals.
+
+\item 'has' in interpreter now correctly handles \spad{\%}.
+
+\item Spad compiler can now handle single \spad{=>} at top level of a
+  function.
+
+\item Fixed few problems with conditional types in Spad compiler.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.4}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item New domains for combinatorial probability theory by Franz
+  Lehner.
+
+\item Improved integration of algebraic functions.
+
+\item Initial support for semirings.
+
+\item Updated framework for theory of computations.
+
+\item In Spad parser \spad{**, \^'} and \spad{->} are now
+  right-associative.
+
+\item Spad parser no longer transforms relational operators.
+
+\item Join of categories is faster which speeds up Spad compiler.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Retraction of 'rootOf' from Expression(Integer) to
+  AlgebraicNumber works now.
+
+\item Attempt to print error message about invalid type no longer
+  crash (SF 2977357).
+
+\item Fixed few problems in Spad compiler dealing with conditional
+  exports.
+
+\item HyperDoc now should find all function descriptions (previously
+  it missed several).
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.3}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Added "jet bundle" framework by Werner Seiler and Joachim Schue,
+  which includes completion procedure and symmetry analysis for PDE.
+
+\item Better splitting of group representations (added Holt-Rees
+  improvement to meatAxe).
+
+\item Added numeric versions of some elliptic integrals and few more
+  elliptic functions.
+
+\item Speeded up FFCGP (finite fields via Zech logarithms).
+
+\item New experimental flag (off by default, set via
+  setSimplifyDenomsFlag) which if on causes removal of irrationalities
+  from denominators. Usually it causes slowdown, but on some examples
+  gives huge speedup. It may go away in future (when no longer
+  needed).
+
+\item Added experimental framework for theory of computations.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Numerical solutions of polynomial systems have now required
+  accuracy (SF 2418832).
+
+\item Fixed problem with crashes during tracing.
+
+\item Fixed a problem with nested iteration (SF 3016806).
+
+\item Eliminated stack overflow when concatenating long lists.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.2}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Experimental Texmacs interface and Texmacs format output.
+
+\item Guessing package can now guess algebraic dependencies.
+
+\item Expansion into Taylor series and limits now work for most
+  special functions.
+
+\item Spad to Aldor translator is removed.
+
+\item Spad compiler no longer allows to denote sets using braces.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Fixed few cases where elementary integrals were returned
+  unevalueated or produced wrong results.
+
+\item Unwanted numerical evaluation should be no longer a problem
+  (FriCAS interpreter now very strongly prefers symbolic evaluation
+  over numerical evaluation).
+
+\item Fixed a truncation bug in guessing package which caused loss of
+  some correct solutions.
+
+\item TeX and MathML format should correctly put parentheses around
+  and inside sums and products.
+
+\item Fixed few problems with handling of Unicode.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.1}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item New graphics framework.
+
+\item Support for using GMP with sbcl on 32/64 bit AMD/Intel
+  processors (to activate it one must use '--with-gmp' option to
+  configure).
+
+\item Improvements to integration and normalization. In particular
+  integrals containing multiple non-nested roots should now work much
+  faster. Also FriCAS now can compute more integrals of Liouvillian
+  functions.
+
+\item Several new special functions.
+
+\item Improvements to efricas.
+
+\item Looking for default init file FriCAS now first tries to use
+  '.fricas.input' and only if that fails it looks for '.axiom.input'.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Numeric atan, asin and acos took wrong branch.
+
+\item WeierstrassPreparation package did not work.
+
+\item Saving and restoring history should be now more reliable.
+
+\item Fixed two bugs in Spad compiler related to conditional
+  compilation.
+
+\item Fixed a problem with rational reconstruction which affected
+  guessing package.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.1.0}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item New domains and packages: VectorSpaceBasis domain, DirichletRing
+  domain, 3D graphic output in Wavefront .obj format, specialized
+  machine precision numeric vectors and matrices (faster then general
+  vectors and matrices), Html output.
+
+\item Support Clifford algebras corresponding to non-diagonal matrix,
+  added new operations.
+
+\item 'normalize' now tries to simplify logarithms of algebraic
+  constants.
+
+\item New functions: Fresnel integrals, carmichaelLambda.
+
+\item Speed improvements: several polynomial operations are faster,
+  faster multiplication in Ore algebras, faster computation of strong
+  generating set for permutation groups, faster coercions.
+
+\item Several improvements to the guessing package (in particular new
+  option Somos for restricting attention to Somos-like sequences
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item FriCAS can now compute multiplicative inverse of a power series
+  with constant term not equal to 1.
+
+\item Fixed a problem with passing interpreter functions to algebra.
+
+\item Two bugs causing crashes in HyperDoc interface are fixed.
+
+\item FriCAS now ignores sign when deciding if number is prime.
+
+\item A failing coercion that used to crash FriCAS is now detected.
+
+\item 'has' test sometimes gave wrong result.
+
+\item Plotting fixes.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.9}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Speed improvements to polynomial multiplication, power series
+  multiplication, guessing package and coercion of polynomials to
+  expressions.
+
+\item Domains for tensor products.
+
+\item 'Complex(Integer)' is now UniqueFactorizationDomain.
+
+\item Types in interpreter are now of type 'Type' (instead of
+  'Domain') and categories in interpreter are of type 'Category'
+  (instead of 'Subdomain(Domain)').
+
+\item Interpreter functions can now return 'Type'.
+
+\item New function for files: 'flush'.
+
+\item Spad compiler: return in nested functions and nested functions
+  returning functions.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Several fixes to guessing package.
+
+\item Avoid crash when unparsing equations.
+
+\item Equation solver accepts more solutions.
+
+\item Fixed handling of 'Tuple' in Spad parser.
+
+\item Fixed miscompilation of record constructor by Spad compiler.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.8}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Improved version of guessing package. It can now handle much
+  larger problems than before. Added ability to guess functional
+  substitution equations.
+
+\item Experimental support for build using CMU CL
+
+\item Various speed improvements including faster indexing for two
+  dimensional arrays
+
+\item By default FriCAS build tries to use sbcl.
+
+\item Building no longer require patch.
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item correct definition of random() for matrices
+
+\item conditionals in .input files work again
+
+\item Spad compiler now recognizes more types as equal
+
+\item fixed problem with pattern-matching quote
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.7}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Comparisons between elements of the Expression domain are
+  undefined. Earlier versions gave confusing results for expressions
+  like '\%e < \%pi' -- now FriCAS will complain about '<' being
+  undefined.
+
+\item A domain for general quaternions was added.
+
+\item Equality in Any is now more reasonable -- it uses equality from
+  underlying domain if available.
+
+\item Messages about loading of components are switched off by
+  default.
+
+\item Release build benefits from parallel make.
+
+\item In Spad code a single quote now means that the following token
+  is a symbol.
+
+\item Reorganization of algebra sources, in particular several types
+  have changed (this may affect users Spad code).
+\end{itemize}
+
+Bug fixes, in particular:
+
+\begin{itemize}
+\item Categories with default package can be used just after
+  definition (fixes 1.0.6 regression).
+
+\item Plots involving 0 or 1 work now.
+
+\item Numbers in radix bigger than 10 appear correctly in TeX output.
+
+\item Fixed browser crashes when displaying some domains.
+
+\item Fix horizontal display of fractions.
+
+\item Allow local domains in conditionals (in Spad code).
+
+\item Fixed problem with splitting polynomials and nested extensions.
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.6}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item the axiom script is no longer installed (use fricas script
+  instead)
+
+\item some undesirable simplification are no longer done by default,
+  for example now asin(sin(3)) is left unevaluated
+
+\item support lambda expressions using '+->' syntax and nested
+  functions in Spad
+
+\item better configure, support for Dragonfly BSD
+
+\item faster bootstrap, also parallel (this does not affect speed of
+  release build)
+\end{itemize}
+
+Several bug fixes, in particular:
+
+\begin{itemize}
+\item fixed a regression introduced in 1.0.4 which caused equality for
+  nested products to sometimes give wrong result
+
+\item corrected fixed output of floating point numbers,
+
+\item operations on differential operators like symmetric power work
+  now
+
+\item fixed crashes related to coercing power series
+
+\item functions returning Void can be traced
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.5}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item improvement to normalize function, it performs now much stronger
+  simplifications than before
+
+\item better integration: due to improved normalize FriCAS can now
+  integrate many functions that it previously considered unintegrable
+
+\item improvement to Martin Rubey guessing package, for example it can
+  now guess differential equation for the generating function of
+  integer partitions
+
+\item better support for using type valued functions
+
+\item several bug fixes
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.4}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item significant speedups for some operations (for example definite
+  integration)
+
+\item support for building algebra using user-defined optimization
+  settings
+
+\item support for mouse wheel in HyperDoc browser
+
+\item included support for interfacing with Aldor
+
+\item new optional Emacs mode and efricas script to run FriCAS inside
+  emacs
+
+\item better unparse
+
+\item removed support for attributes (replaced by empty categories)
+  and use of colon for type conversions in Spad code
+
+\item a few bug fixes
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.3}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item added multiple precision Gamma and logGamma functions
+
+\item better line editing
+
+\item removed some undocumented and confusing constructs from Spad
+  language
+
+\item added new categories for semiring and ordered semigroup, direct
+  product of monoids is now a monoid
+
+\item internal cleanups and restructurings
+
+\item a few bug fixes
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.2}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item ')nopiles' command gives conventional syntax
+
+\item added pfaffian function
+
+\item ECL support
+
+\item Graphics and Hyperdoc work using openmcl or ECL
+
+\item Output may be now delimited by user defined markers
+
+\item Experimental support for using as a Lisp library
+
+\item Spad compiler is now significantly faster
+
+\item Several bug fixes
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.1}
+%------------------------------------------------------------------
+
+\begin{itemize}
+\item Graphics and Hyperdoc work using sbcl or clisp
+
+\item Builds under Cygwin (using Cygwin clisp)
+
+\item MathML support contributed by Arthur C. Ralfs
+
+\item Help files created by Tim Daly
+
+\item Added SPADEDIT script
+
+\item Full release caches all generated HyperDoc pages
+
+\item Bug fixes, including implementing some missing functions and
+  build fixes
+\end{itemize}
+
+%------------------------------------------------------------------
+\subsubsection{FriCAS 1.0.0}
+%------------------------------------------------------------------
+
+The 1.0 release is the first release of FriCAS. Below we list main
+differences compared to AXIOM September 2006.
+
+Numerous bug fixes (in particular HyperDoc in now fully functional on
+Unix systems).
+
+FriCAS includes guessing package written by Martin Rubey. This package
+provides unique ability to guess formulas for sequences of numbers or
+polynomials.
+
+Some computation, in particular involving Expression domain, should be
+much faster. FriCAS to go trough its testsuite needs only half of the
+time needed by AXIOM September 2006.
+
+Spad compilation is faster (in some cases 2 times faster).
+
+FriCAS is much more portable than AXIOM September 2006. It can be
+build on Linux, many Unix systems (for example Mac OSX and Solaris 10)
+and Windows. It can be build on top of gcl, sbcl, clisp or openmcl
+(gcl and sbcl based FriCAS is fully functional, clisp or openmcl based
+one lacks graphic support).
+
+Many unused or non-working parts are removed from FriCAS. In
+particular FriCAS does not contain support for NAG numerical library.
+
+FriCAS can be build from sources using only a few pre-generated Lisp
+files for bootstrap -- only to bootstrap Shoe translator. This means
+that modifying FriCAS algebra is now much easier.
+
+
+%------------------------------------------------------------------
+\head{section}{Online Information}{onlineInformation}
+%------------------------------------------------------------------
+\Language{} information can be found online at
+\begin{itemize}
+\item {http://fricas.sourceforge.net} -- The official homepage of
+  FriCAS.
+\item {http://axiom-wiki.newsynthesis.org} -- A wiki site related to
+  FriCAS.
+\item {http://sourceforge.net/p/fricas/code/HEAD/tree/} -- The
+  official source code repository.
+\item {https://github.com/hemmecke/fricas-svn} -- A live git mirror of
+  the official SVN repository.
+\end{itemize}
+
+%------------------------------------------------------------------
+\head{section}{Feature Complete release}{FirstRelease}
+%------------------------------------------------------------------
+The February 2005 release is the first complete release of the AXIOM
+system since it was first made available as open source.
+
+This release includes the full complement of algebra, the graphics
+subsystem, and the hyperdoc system.
+
+This full release runs on Linux and Solaris 9. The algebra runs on
+Windows.

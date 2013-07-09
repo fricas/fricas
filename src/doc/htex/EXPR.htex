@@ -1,0 +1,230 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+%
+% EXPR.htex
+
+\axiomType{Expression} is a constructor that creates domains whose
+objects can have very general symbolic forms.
+Here are some examples:
+\xtc{
+This is an object of type \axiomType{Expression Integer}.
+}{
+\spadcommand{sin(x) + 3*cos(x)^2}
+}
+\xtc{
+This is an object of type \axiomType{Expression Float}.
+}{
+\spadcommand{tan(x) - 3.45*x}
+}
+\xtc{
+This object contains symbolic function applications, sums,
+products, square roots, and a quotient.
+}{
+\spadcommand{(tan sqrt 7 - sin sqrt 11)^2 / (4 - cos(x - y))}
+}
+As you can see, \axiomType{Expression} actually takes an argument
+domain.
+The {\it coefficients} of the terms within the expression belong
+to the argument domain.
+\axiomType{Integer} and \axiomType{Float}, along with
+\axiomType{Complex Integer} and \axiomType{Complex Float}
+are the most common coefficient domains.
+\xtc{
+The choice of whether
+to use a \axiomType{Complex} coefficient domain or not is
+important since \Language{} can perform some simplifications
+on real-valued objects
+}{
+\spadcommand{log(exp  x)@Expression(Integer)} 
+}
+\xtc{
+... which are not valid on complex ones.
+}{
+\spadcommand{log(exp  x)@Expression(Complex Integer)} 
+}
+\xtc{
+Many potential coefficient domains, such as
+\axiomType{AlgebraicNumber}, are not usually used because
+\axiomType{Expression} can subsume them.
+}{
+\spadcommand{sqrt 3 + sqrt(2 + sqrt(-5)) \bound{algnum1}}
+}
+\xtc{
+}{
+\spadcommand{\% :: Expression Integer \free{algnum1}}
+}
+Note that we sometimes talk about ``an object of type
+\axiomType{Expression}.'' This is not really correct because we
+should say, for example, ``an object of type \axiomType{Expression
+Integer}'' or ``an object of type \axiomType{Expression Float}.''
+By a similar abuse of language, when we refer to an ``expression''
+in this section we will mean an object of type
+\axiomType{Expression R} for some domain {\bf R}.
+
+The \Language{} documentation contains many examples of the use
+of \axiomType{Expression}.
+For the rest of this section, we'll give you some pointers to those
+examples plus give you some idea of how to manipulate expressions.
+
+It is important for you to know that \axiomType{Expression}
+creates domains that have category \axiomType{Field}.
+Thus you can invert any non-zero expression and you shouldn't
+expect an operation like \axiomFun{factor} to give you much
+information.
+You can imagine expressions as being represented as quotients of
+``multivariate'' polynomials where the ``variables'' are kernels
+(see \xmpref{Kernel}).
+A kernel can either be a symbol such as \axiom{x} or a symbolic
+function application like \axiom{sin(x + 4)}.
+The second example is actually a nested kernel since the argument
+to \axiomFun{sin} contains the kernel \axiom{x}.
+\xtc{
+}{
+\spadcommand{height mainKernel sin(x + 4)}
+}
+Actually, the argument to \axiomFun{sin} is an expression, and so
+the structure of \axiomType{Expression} is recursive.
+\xmpref{Kernel} demonstrates how to extract the kernels in an
+expression.
+
+Use the \HyperName{} Browse facility to see what operations are
+applicable to expression.
+At the time of this writing, there were 262 operations with 147
+distinct name in \axiomType{Expression Integer}.
+For example, \axiomFunFrom{numer}{Expression} and
+\axiomFunFrom{denom}{Expression} extract the numerator and
+denominator of an expression.
+\xtc{
+}{
+\spadcommand{e := (sin(x) - 4)^2 / ( 1 - 2*y*sqrt(- y) ) \bound{e}}
+}
+\xtc{
+}{
+\spadcommand{numer e \free{e}}
+}
+\xtc{
+}{
+\spadcommand{denom e \free{e}}
+}
+\xtc{
+Use \axiomFunFrom{D}{Expression} to compute partial derivatives.
+}{
+\spadcommand{D(e, x) \free{e}}
+}
+\xtc{
+See \spadref{ugIntroCalcDeriv}
+for more examples of expressions and derivatives.
+}{
+\spadcommand{D(e, [x, y], [1, 2]) \free{e}}
+}
+See \spadref{ugIntroCalcLimits} and
+\spadref{ugIntroSeries}
+for more examples of expressions and calculus.
+Differential equations involving expressions are discussed in
+\spadref{ugProblemDEQ}.
+Chapter 8 has many advanced examples: see
+\spadref{ugProblemIntegration}
+for a discussion of \Language{}'s integration facilities.
+
+When an expression involves no ``symbol kernels'' (for example,
+\axiom{x}), it may be possible to numerically evaluate the
+expression.
+\xtc{
+If you suspect the evaluation will create a complex number,
+use \axiomFun{complexNumeric}.
+}{
+\spadcommand{complexNumeric(cos(2 - 3*\%i))}
+}
+\xtc{
+If you know it will be real, use \axiomFun{numeric}.
+}{
+\spadcommand{numeric(tan 3.8)}
+}
+The \axiomFun{numeric} operation will display an error message if
+the evaluation yields a calue with an non-zero imaginary part.
+Both of these operations have an optional second argument
+\axiom{n} which specifies that the accuracy of the approximation
+be up to \axiom{n} decimal places.
+
+When an expression involves no ``symbolic application'' kernels,
+it may be possible to convert it a polynomial or rational
+function in the variables that are present.
+\xtc{
+}{
+\spadcommand{e2 := cos(x^2 - y + 3) \bound{e2}}
+}
+\xtc{
+}{
+\spadcommand{e3 := asin(e2) - \%pi/2 \free{e2}\bound{e3}}
+}
+\xtc{
+}{
+\spadcommand{e4 := normalize(e3) \free{e3}\bound{e4}}
+}
+\xtc{
+}{
+\spadcommand{e4 :: Polynomial Integer \free{e4}}
+}
+\xtc{
+This also works for the polynomial types where specific variables
+and their ordering are given.
+}{
+\spadcommand{e4 :: DMP([x, y], Integer) \free{e4}}
+}
+
+Finally, a certain amount of simplication takes place as
+expressions are constructed.
+\xtc{
+}{
+\spadcommand{sin \%pi}
+}
+\xtc{
+}{
+\spadcommand{cos(\%pi / 4)}
+}
+\xtc{
+For simplications that involve multiple terms of the expression,
+use \axiomFun{simplify}.
+}{
+\spadcommand{tan(x)^6 + 3*tan(x)^4 + 3*tan(x)^2 + 1 \bound{tan6}}
+}
+\xtc{
+}{
+\spadcommand{simplify \% \free{tan6}}
+}
+See \spadref{ugUserRules}
+for examples of how to write your own rewrite rules for
+expressions.
+
+

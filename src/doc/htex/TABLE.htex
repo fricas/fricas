@@ -1,0 +1,175 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+%
+
+The \spadtype{Table} constructor provides a general structure
+for associative storage.
+This type provides hash tables in which data objects
+can be saved according to keys of any type.
+For a given table, specific types must be chosen for the keys and entries.
+
+\xtc{
+In this example the keys to the table are polynomials with
+integer coefficients.
+The entries in the table are strings.
+}{
+\spadcommand{t: Table(Polynomial Integer, String) := table() \bound{t}}
+}
+\xtc{
+To save an entry in the table, the \spadfunFrom{setelt}{Table} operation is used.
+This can be called directly, giving the table a key and an entry.
+}{
+\spadcommand{setelt(t, x^2 - 1, "Easy to factor") \bound{p1}\free{t}}
+}
+\xtc{
+Alternatively, you can use assignment syntax.
+}{
+\spadcommand{t(x^3 + 1) := "Harder to factor" \bound{p2}\free{p1}}
+}
+\xtc{
+}{
+\spadcommand{t(x)        := "The easiest to factor" \bound{p3}\free{p2}}
+}
+\xtc{
+Entries are retrieved from the table by calling the
+\spadfunFrom{elt}{Table} operation.
+}{
+\spadcommand{elt(t, x) \free{p3}}
+}
+\xtc{
+This operation is called when a table is ``applied'' to a key using
+this or the following syntax.
+}{
+\spadcommand{t.x \free{p3}}
+}
+\xtc{
+}{
+\spadcommand{t x \free{p3}}
+}
+\xtc{
+Parentheses are used only for grouping.  They are needed if the key is
+an infixed expression.
+}{
+\spadcommand{t.(x^2 - 1) \free{p3}}
+}
+\xtc{
+Note that the \spadfunFrom{elt}{Table} operation is used only when the
+key is known to be in the table---otherwise an error is generated.
+}{
+\spadcommand{t (x^3 + 1) \free{p3}}
+}
+
+\xtc{
+You can get a list of all the keys to a table using the
+\spadfunFrom{keys}{Table} operation.
+}{
+\spadcommand{keys t \free{p3}}
+}
+\xtc{
+If you wish to test whether a key is in a table, the
+\spadfunFrom{search}{Table} operation is used.
+This operation returns either an entry or \spad{"failed"}.
+}{
+\spadcommand{search(x, t) \free{p3}}
+}
+\xtc{
+}{
+\spadcommand{search(x^2, t) \free{p3}}
+}
+\xtc{
+The return type is a union so the success of the search can be tested
+using \spad{case}.
+\spadkey{case}
+}{
+\spadcommand{search(x^2, t) case "failed" \free{p3}}
+}
+\xtc{
+The \spadfunFromX{remove}{Table} operation is used to delete values from a
+table.
+}{
+\spadcommand{remove!(x^2-1, t) \free{p3} \bound{p4}}
+}
+\xtc{
+If an entry exists under the key, then it is returned.  Otherwise
+\spadfunFromX{remove}{Table} returns \spad{"failed"}.
+}{
+\spadcommand{remove!(x-1, t) \free{p4}\bound{p5}}
+}
+
+\xtc{
+The number of key-entry pairs can be found using the
+\spadfunFrom{\#}{Table} operation.
+}{
+\spadcommand{\#t \free{p5}}
+}
+\xtc{
+Just as \spadfunFrom{keys}{Table} returns a list of keys to the table, a
+list of all the entries can be obtained using the
+\spadfunFrom{members}{Table} operation.
+}{
+\spadcommand{members t \free{p5}}
+}
+\xtc{
+A number of useful operations take functions and map them on to the
+table to compute the result.  Here we count the entries which
+have \spad{"Hard"} as a prefix.
+}{
+\spadcommand{count(s: String +-> prefix?("Hard", s), t) \free{p5}}
+}
+
+Other table types are provided to support various needs.
+\begin{itemize}
+\item \spadtype{AssociationList} gives a list with a table view.
+This allows new entries to be appended onto the front of the list
+to cover up old entries.
+This is useful when table entries need to be stacked or when
+frequent list traversals are required.
+See \xmpref{AssociationList} for more information.
+\item \spadtype{EqTable} gives tables in which keys are considered
+equal only when they are in fact the same instance of a structure.
+See \xmpref{EqTable} for more information.
+\item \spadtype{StringTable} should be used when the keys are known to
+be strings.
+See \xmpref{StringTable} for more information.
+\item \spadtype{SparseTable} provides tables with default
+entries, so
+lookup never fails.  The \spadtype{GeneralSparseTable} constructor
+can be used to make any table type behave this way.
+See \xmpref{SparseTable} for more information.
+\item \spadtype{KeyedAccessFile} allows values to be saved in a file,
+accessed as a table.
+See \xmpref{KeyedAccessFile} for more information.
+\end{itemize}
+%
+\showBlurb{Table}

@@ -1,0 +1,298 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+\noindent
+\spadtype{CliffordAlgebra(n,K,Q)} defines a vector space of dimension
+\texht{$2^n$}{\spad{2^n}} over the field \texht{$K$}{\spad{K}} with a
+given bilinar form represented by square matrix \spad{Q}.
+If \texht{$\{e_1, \ldots, e_n\}$}{\spad{\{e(i), 1<=i<=n\}}}
+is a basis for  \texht{$K^n$}{\spad{K^n}} then
+\begin{texonly}
+$$
+\begin{array}{rcl}
+\{ & 1 \\
+   & e_i & \hbox{for } 1 \le i \le n \\
+   & e_{i_1}\ e_{i_2} & \hbox{for } 1 \le i_1 < i_2 \le n \\
+   & \ldots \\
+   & e_1 \  e_2 \  \cdots \  e_n & \}
+\end{array}
+$$
+\end{texonly}%
+\htonly
+\begin{verbatim}
+{ 1,
+  e(i) 1 <= i <= n,
+  e(i1)*e(i2) 1 <= i1 < i2 <=n,
+  ...,
+  e(1)*e(2)*...*e(n) }
+\end{verbatim}
+\endhtonly
+is a basis for the Clifford algebra.
+The algebra is defined by the relation
+\begin{texonly}
+$$
+\begin{array}{lclc}
+e_i \  e_i & = & Q(e_i) \\
+e_i \  e_j & = & -e_j \  e_i & \hbox{for } i \neq j
+\end{array}
+$$
+\end{texonly}%
+\htonly
+\begin{verbatim}
+v*v = <Qv, v>
+\end{verbatim}
+\endhtonly
+for all \texht{$v$}{\spad{v}} being linear combinations of
+\texht{$e(i)$}{\spad{e(i)}}.
+Examples of Clifford Algebras are
+gaussians (complex numbers), quaternions,
+exterior algebras and spin algebras.
+%
+
+% ----------------------------------------------------------------------
+\head{subsection}{The Complex Numbers as a Clifford Algebra}{ugxCliffordComplex}
+% ----------------------------------------------------------------------
+
+\labelSpace{5pc}
+\xtc{
+This is the field over which we will work, rational functions with
+integer coefficients.
+}{
+\spadcommand{K := Fraction Polynomial Integer \bound{K}}
+}
+\xtc{
+We use this matrix for the quadratic form.
+}{
+\spadcommand{m := matrix [[-1]] \bound{m}}
+}
+\xtc{
+We get complex arithmetic by using this domain.
+\index{complex numbers}
+}{
+\spadcommand{C := CliffordAlgebra(1, K, m) \free{K m}\bound{C}}
+}
+\xtc{
+Here is \spad{i}, the usual square root of \spad{-1.}
+}{
+\spadcommand{i: C := e(1)   \bound{i}\free{C}}
+}
+\xtc{
+Here are some examples of the arithmetic.
+}{
+\spadcommand{x := a + b * i \bound{x}\free{i}}
+}
+\xtc{
+}{
+\spadcommand{y := c + d * i \bound{y}\free{i}}
+}
+\xtc{
+See \xmpref{Complex} for examples of \Language{}'s constructor
+implementing complex numbers.
+}{
+\spadcommand{x * y \free{x y}}
+}
+
+% ----------------------------------------------------------------------
+\head{subsection}{The Quaternion Numbers as a Clifford Algebra}{ugxCliffordQuatern}
+% ----------------------------------------------------------------------
+
+\labelSpace{3pc}
+\xtc{
+This is the field over which we will work, rational functions with
+integer coefficients.
+}{
+\spadcommand{K := Fraction Polynomial Integer \bound{K}}
+}
+\xtc{
+We use this matrix for the quadratic form.
+}{
+\spadcommand{m := matrix [[-1,0],[0,-1]] \bound{m}}
+}
+\xtc{
+The resulting domain is the quaternions.
+\index{quaternions}
+}{
+\spadcommand{H  := CliffordAlgebra(2, K, m) \free{K m}\bound{H}}
+}
+\xtc{
+We use Hamilton's notation for \spad{i},\spad{j},\spad{k}.
+}{
+\spadcommand{i: H  := e(1) \free{H}\bound{i}}
+}
+\xtc{
+}{
+\spadcommand{j: H  := e(2) \free{H}\bound{j}}
+}
+\xtc{
+}{
+\spadcommand{k: H  := i * j \free{H,i,j}\bound{k}}
+}
+\xtc{
+}{
+\spadcommand{x := a + b * i + c * j + d * k \free{i j k}\bound{x}}
+}
+\xtc{
+}{
+\spadcommand{y := e + f * i + g * j + h * k \free{i j k}\bound{y}}
+}
+\xtc{
+}{
+\spadcommand{x + y \free{x y}}
+}
+\xtc{
+}{
+\spadcommand{x * y \free{x y}}
+}
+\xtc{
+See \xmpref{Quaternion} for examples of \Language{}'s constructor
+implementing quaternions.
+}{
+\spadcommand{y * x \free{x y}}
+}
+
+% ----------------------------------------------------------------------
+\head{subsection}{The Exterior Algebra on a Three Space}{ugxCliffordExterior}
+% ----------------------------------------------------------------------
+
+\labelSpace{4pc}
+\xtc{
+This is the field over which we will work, rational functions with
+integer coefficients.
+}{
+\spadcommand{K := Fraction Polynomial Integer \bound{K}}
+}
+\xtc{
+If we chose the three by three zero quadratic form, we obtain
+\index{exterior algebra}
+the exterior algebra on \spad{e(1),e(2),e(3)}.
+\index{algebra!exterior}
+}{
+\spadcommand{Ext := CliffordAlgebra(3, K, 0) \bound{Ext}\free{K}}
+}
+\xtc{
+This is a three dimensional vector algebra.
+We define \spad{i}, \spad{j}, \spad{k} as the unit vectors.
+}{
+\spadcommand{i: Ext := e(1) \free{Ext}\bound{i}}
+}
+\xtc{
+}{
+\spadcommand{j: Ext := e(2) \free{Ext}\bound{j}}
+}
+\xtc{
+}{
+\spadcommand{k: Ext := e(3) \free{Ext}\bound{k}}
+}
+\xtc{
+Now it is possible to do arithmetic.
+}{
+\spadcommand{x := x1*i + x2*j + x3*k \free{i j k}\bound{x}}
+}
+\xtc{
+}{
+\spadcommand{y := y1*i + y2*j + y3*k \free{i j k}\bound{y}}
+}
+\xtc{
+}{
+\spadcommand{x + y         \free{x y}}
+}
+\xtc{
+}{
+\spadcommand{x * y + y * x \free{x y}}
+}
+\xtc{
+On an \spad{n} space, a grade \spad{p} form has a dual \spad{n-p} form.
+In particular, in three space the dual of a grade two element identifies
+\spad{e1*e2->e3, e2*e3->e1, e3*e1->e2}.
+}{
+\spadcommand{dual2 a == coefficient(a,[2,3]) * i + coefficient(a,[3,1]) * j + coefficient(a,[1,2]) * k \free{i j k}\bound{dual2}}
+}
+\xtc{
+The vector cross product is then given by this.
+}{
+\spadcommand{dual2(x*y) \free{x y dual2}}
+}
+
+% ----------------------------------------------------------------------
+\head{subsection}{The Dirac Spin Algebra}{ugxCliffordDirac}
+% ----------------------------------------------------------------------
+
+\labelSpace{4pc}
+\index{Dirac spin algebra}
+\index{algebra!Dirac spin}
+%
+\xtc{
+In this section we will work over the field of rational numbers.
+}{
+\spadcommand{K := Fraction Integer \bound{K}}
+}
+\xtc{
+We define the quadratic form to be the Minkowski space-time metric.
+}{
+\spadcommand{g := matrix [[1,0,0,0], [0,-1,0,0], [0,0,-1,0], [0,0,0,-1]] \bound{g}}
+}
+\xtc{
+We obtain the Dirac spin algebra
+used in Relativistic Quantum Field Theory.
+\index{Relativistic Quantum Field Theory}
+}{
+\spadcommand{D := CliffordAlgebra(4, K, g) \free{K g}\bound{D}}
+}
+\xtc{
+The usual notation for the basis is \texht{$\gamma$}{\spad{gamma}}
+with a superscript.
+For \Language{} input we will use \spad{gam(i)}:
+}{
+\spadcommand{gam := [e(i)\$D for i in 1..4] \free{D}\bound{gam}}
+}
+\noindent
+There are various contraction identities of the form
+\begin{verbatim}
+g(l,t)*gam(l)*gam(m)*gam(n)*gam(r)*gam(s)*gam(t) =
+      2*(gam(s)gam(m)gam(n)gam(r) + gam(r)*gam(n)*gam(m)*gam(s))
+\end{verbatim}
+where a sum over \spad{l} and \spad{t} is implied.
+\xtc{
+Verify this identity for particular values of \spad{m,n,r,s}.
+}{
+\spadcommand{m := 1; n:= 2; r := 3; s := 4; \bound{m,n,r,s}}
+}
+\xtc{
+}{
+\spadcommand{lhs := reduce(+, [reduce(+, [ g(l,t)*gam(l)*gam(m)*gam(n)*gam(r)*gam(s)*gam(t) for l in 1..4]) for t in 1..4]) \bound{lhs}\free{g gam m n r s}}
+}
+\xtc{
+}{
+\spadcommand{rhs := 2*(gam s * gam m*gam n*gam r + gam r*gam n*gam m*gam s) \bound{rhs}\free{lhs g gam m n r s}}
+}

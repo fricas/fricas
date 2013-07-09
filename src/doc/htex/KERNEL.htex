@@ -1,0 +1,164 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+%
+% KERNEL.htex
+
+A {\it kernel} is a symbolic function application (such as
+\spad{sin(x + y)}) or a symbol (such as \spad{x}).
+More precisely, a non-symbol kernel over a set {\it S} is an operator applied
+to a given list of arguments from {\it S}.
+The operator has type \axiomType{BasicOperator}
+(see \xmpref{BasicOperator}) and the kernel object is usually part of
+an expression object (see \xmpref{Expression}).
+
+Kernels are created implicitly for you when you
+create expressions.
+\xtc{
+}{
+\spadcommand{x :: Expression Integer}
+}
+\xtc{
+You can directly create a ``symbol'' kernel by using the
+\axiomFunFrom{kernel}{Kernel} operation.
+}{
+\spadcommand{kernel x}
+}
+\xtc{
+This expression has two different kernels.
+}{
+\spadcommand{sin(x) + cos(x) \bound{sincos}}
+}
+\xtc{
+The operator \axiomFunFrom{kernels}{Expression} returns a list
+of the kernels in an object of type \axiomType{Expression}.
+}{
+\spadcommand{kernels \% \free{sincos}}
+}
+\xtc{
+This expression also has two different kernels.
+}{
+\spadcommand{sin(x)^2 + sin(x) + cos(x) \bound{sincos2}}
+}
+\xtc{
+The \spad{sin(x)} kernel is used twice.
+}{
+\spadcommand{kernels \% \free{sincos2}}
+}
+\xtc{
+An expression need not contain any kernels.
+}{
+\spadcommand{kernels(1 :: Expression Integer)}
+}
+\xtc{
+If one or more kernels are present, one of them is
+designated the {\it main} kernel.
+}{
+\spadcommand{mainKernel(cos(x) + tan(x))}
+}
+\xtc{
+Kernels can be nested. Use \axiomFunFrom{height}{Kernel} to determine
+the nesting depth.
+}{
+\spadcommand{height kernel x}
+}
+\xtc{
+This has height 2 because the \spad{x} has height 1 and then we apply
+an operator to that.
+}{
+\spadcommand{height mainKernel(sin x)}
+}
+\xtc{
+}{
+\spadcommand{height mainKernel(sin cos x)}
+}
+\xtc{
+}{
+\spadcommand{height mainKernel(sin cos (tan x + sin x))}
+}
+\xtc{
+Use the \axiomFunFrom{operator}{Kernel} operation to extract the
+operator component of the kernel.
+The operator has type \axiomType{BasicOperator}.
+}{
+\spadcommand{operator mainKernel(sin cos (tan x + sin x))}
+}
+\xtc{
+Use the \axiomFunFrom{name}{Kernel} operation to extract the name of the
+operator component of the kernel.
+The name has type \axiomType{Symbol}.
+This is really just a shortcut for a two-step process of extracting the
+operator and then calling \axiomFunFrom{name}{BasicOperator} on the
+operator.
+}{
+\spadcommand{name mainKernel(sin cos (tan x + sin x))}
+}
+\Language{} knows about functions such as \axiomFun{sin}, \axiomFun{cos}
+and so on and can make kernels and then expressions using them.
+To create a kernel and expression using an arbitrary operator, use
+\axiomFunFrom{operator}{BasicOperator}.
+\xtc{
+Now \spad{f} can be used to create symbolic function applications.
+}{
+\spadcommand{f := operator 'f \bound{f}}
+}
+\xtc{
+}{
+\spadcommand{e := f(x, y, 10) \free{f}\bound{e}}
+}
+\xtc{
+Use the \axiomFunFrom{is?}{Kernel} operation to learn if the
+operator component of a kernel is equal to a given operator.
+}{
+\spadcommand{is?(e, f) \free{f e}}
+}
+\xtc{
+You can also use a symbol or a string as the second
+argument to \axiomFunFrom{is?}{Kernel}.
+}{
+\spadcommand{is?(e, 'f) \free{e}}
+}
+\xtc{
+Use the \axiomFunFrom{argument}{Kernel} operation to get a list containing
+the argument component of a kernel.
+}{
+\spadcommand{argument mainKernel e \free{f}\free{e}}
+}
+
+Conceptually, an object of type \axiomType{Expression} can be thought
+of a quotient of multivariate polynomials, where the ``variables''
+are kernels.
+The arguments of the kernels are again expressions and so the
+structure recurses.
+See \xmpref{Expression} for examples of using kernels to
+take apart expression objects.

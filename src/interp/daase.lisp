@@ -1160,7 +1160,6 @@ database.
           (|saveUsersHashTable|)
           (|mkDependentsHashTable|)
           (|saveDependentsHashTable|)))
-; (|buildGloss|)
   (write-compress)
   (if br_data
       (write-browsedb))

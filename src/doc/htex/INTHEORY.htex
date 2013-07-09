@@ -1,0 +1,278 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+% INTHEORY.htex
+% Author: Clifton J. Williamson
+
+The \spadtype{IntegerNumberTheoryFunctions} package contains a variety of
+operations of interest to number theorists.
+\index{number theory}
+Many of these operations deal with divisibility properties of integers.
+(Recall that an integer \spad{a} divides an integer \spad{b} if there is
+an integer \spad{c} such that \spad{b = a * c}.)
+
+\xtc{
+The operation \spadfunFrom{divisors}{IntegerNumberTheoryFunctions}
+returns a list of the divisors of an integer.
+}{
+\spadcommand{div144 := divisors(144) \bound{div144}}
+}
+\xtc{
+You can now compute the number of divisors of \spad{144} and the sum of
+the divisors of \spad{144} by counting and summing the elements of the
+list we just created.
+}{
+\spadcommand{\#(div144) \free{div144}}
+}
+\xtc{
+}{
+\spadcommand{reduce(+,div144) \free{div144}}
+}
+% Blech! Why did we get rid of +/div144?
+
+Of course, you can compute the number of divisors of an integer \spad{n},
+usually denoted \spad{d(n)}, and the sum of the divisors of an integer
+\spad{n}, usually denoted \spad{\texht{$\sigma$}{sigma}(n)},
+\index{sigma@{$\sigma$}}
+without ever listing the divisors of \spad{n}.
+
+\xtc{
+In \Language{}, you can simply call the operations
+\spadfunFrom{numberOfDivisors}{IntegerNumberTheoryFunctions} and
+\spadfunFrom{sumOfDivisors}{IntegerNumberTheoryFunctions}.
+}{
+\spadcommand{numberOfDivisors(144)}
+}
+\xtc{
+}{
+\spadcommand{sumOfDivisors(144)}
+}
+
+The key is that \spad{d(n)} and
+\spad{\texht{$\sigma$}{sigma}(n)}
+are ``multiplicative functions.''
+This means that when \spad{n} and \spad{m} are relatively prime, that is, when
+\spad{n} and \spad{m} have no prime factor in common, then
+\spad{d(nm) = d(n) d(m)} and
+\spad{\texht{$\sigma$}{sigma}(nm) = \texht{$\sigma$}{sigma}(n)
+\texht{$\sigma$}{sigma}(m)}.
+Note that these functions are trivial to compute when \spad{n} is a prime
+power and are computed for general \spad{n} from the prime factorization
+of \spad{n}.
+Other examples of multiplicative functions are
+\spad{\texht{$\sigma_k$}{sigma_k}(n)}, the sum of the \eth{\spad{k}} powers of
+the divisors of \spad{n} and \texht{$\varphi(n)$}{\spad{phi(n)}}, the
+number of integers between 1 and \spad{n} which are prime to \spad{n}.
+The corresponding \Language{} operations are called
+\spadfunFrom{sumOfKthPowerDivisors}{IntegerNumberTheoryFunctions} and
+\spadfunFrom{eulerPhi}{IntegerNumberTheoryFunctions}.
+\index{phi@{$\varphi$}}
+\index{Euler!phi function@{$\varphi$ function}}
+
+An interesting function is \spad{\texht{$\mu$}{mu}(n)},
+\index{mu@{$\mu$}}
+the \texht{M\"{o}bius $\mu$}{Moebius mu} function, defined
+\index{Moebius@{M\"{o}bius}!mu function@{$\mu$ function}}
+as follows:
+\spad{\texht{$\mu$}{mu}(1) = 1}, \spad{\texht{$\mu$}{mu}(n) = 0},
+when \spad{n} is divisible by a
+square, and
+\spad{\texht{$\mu = {(-1)}^k$}{mu(n) = (-1) ^ k}}, when \spad{n}
+is the product of \spad{k} distinct primes.
+The corresponding \Language{} operation is
+\spadfunFrom{moebiusMu}{IntegerNumberTheoryFunctions}.
+This function occurs in the following theorem:
+
+\noindent
+{\bf Theorem} (\texht{M\"{o}bius}{Moebius} Inversion Formula): \newline
+%\texht{\begin{quotation}\noindent}{\newline\indent{5}}
+Let \spad{f(n)} be a function on the positive integers and let \spad{F(n)}
+be defined by
+\texht{\narrowDisplay{F(n) = \sum_{d \mid n} f(n)}}{\spad{F(n) =}
+sum of \spad{f(n)} over \spad{d | n}}
+where the sum is taken over the positive divisors of \spad{n}.
+Then the values of \spad{f(n)} can be recovered from the values of
+\spad{F(n)}:
+\texht{\narrowDisplay{f(n) = \sum_{d \mid n} \mu(n) F({{n}\over {d}})}}{\spad{f(n) =}
+sum of \spad{mu(n) F(n/d)} over \spad{d | n},}
+where again the sum is taken over the positive divisors of \spad{n}.
+
+\xtc{
+When \spad{f(n) = 1}, then \spad{F(n) = d(n)}.
+Thus, if you sum \spad{\texht{$\mu$}{mu}(d) \texht{$\cdot$}{*} d(n/d)}
+over the positive divisors
+\spad{d} of \spad{n}, you should always get \spad{1}.
+}{
+\spadcommand{f1(n) == reduce(+,[moebiusMu(d) * numberOfDivisors(quo(n,d)) for d in divisors(n)]) \bound{f1}}
+}
+\xtc{
+}{
+\spadcommand{f1(200) \free{f1}}
+}
+\xtc{
+}{
+\spadcommand{f1(846) \free{f1}}
+}
+\xtc{
+Similarly, when \spad{f(n) = n}, then \spad{F(n) = \texht{$\sigma$}{sigma}(n)}.
+Thus, if you sum \spad{\texht{$\mu$}{mu}(d) \texht{$\cdot$}{*}
+\texht{$\sigma$}{sigma}(n/d)} over the positive divisors
+\spad{d} of \spad{n}, you should always get \spad{n}.
+}{
+\spadcommand{f2(n) == reduce(+,[moebiusMu(d) * sumOfDivisors(quo(n,d)) for d in divisors(n)]) \bound{f2}}
+}
+\xtc{
+}{
+\spadcommand{f2(200) \free{f2}}
+}
+\xtc{
+}{
+\spadcommand{f2(846) \free{f2}}
+}
+
+\begin{texonly}
+The M\"{o}bius inversion formula is derived from the multiplication of
+\index{Moebius@{M\"{o}bius}!inversion formula}
+formal Dirichlet series.
+\index{Dirichlet series}
+A Dirichlet series is an infinite series of the
+\index{series!Dirichlet}
+form \narrowDisplay{\sum_{n=1}^\infty a(n) n^{-s}}
+When \narrowDisplay{
+\sum_{n=1}^\infty a(n) n^{-s} \cdot \sum_{n=1}^\infty b(n) n^{-s}
+= \sum_{n=1}^\infty c(n) n^{-s} }
+then $c(n) = \sum_{d \mid n} a(d) b(n/d).$
+\index{zeta@$\zeta$}
+Recall that the Riemann $\zeta$ function
+\index{Riemann!zeta function@{$\zeta$ function}}
+is defined by \narrowDisplay{
+\zeta(s) = \prod_p (1 - p^{-s})^{-1} = \sigma_{n = 1}^\infty n^{-s}}
+where the product is taken over the set of (positive) primes.
+Thus, \narrowDisplay{
+\zeta(s)^{-1} = \prod_p (1 - p^{-s}) = \sigma_{n=1}^\infty \mu(n) n^{-s} }
+Now if $F(n) = \sum_{d \mid n) f(d)},$ then \narrowDisplay{
+\sum f(n) n^{-s} \cdot \zeta(s) = \sum F(n) n^{-s} }
+Thus, \narrowDisplay{
+\zeta(s)^{-1} \cdot \sum F(n) n^{-s} = \sum f(n) n^{-s} }
+and $f(n) = \sum_{d \mid n} \mu(d) F(n/d)$.
+\end{texonly}
+
+The Fibonacci numbers are defined by \spad{F(1) = F(2) = 1} and
+\index{Fibonacci numbers}
+\spad{F(n) = F(n-1) + F(n-2)} for \spad{n = 3,4, ...}.
+\xtc{
+The operation \spadfunFrom{fibonacci}{IntegerNumberTheoryFunctions}
+computes the \eth{\spad{n}} Fibonacci number.
+}{
+\spadcommand{fibonacci(25)}
+}
+\xtc{
+}{
+\spadcommand{[fibonacci(n) for n in 1..15]}
+}
+\xtc{
+Fibonacci numbers can also be expressed as sums of binomial coefficients.
+}{
+\spadcommand{fib(n) == reduce(+,[binomial(n-1-k,k) for k in 0..quo(n-1,2)]) \bound{fib}}
+}
+\xtc{
+}{
+\spadcommand{fib(25) \free{fib}}
+}
+\xtc{
+}{
+\spadcommand{[fib(n) for n in 1..15] \free{fib}}
+}
+
+Quadratic symbols can be computed with the operations
+\spadfunFrom{legendre}{IntegerNumberTheoryFunctions} and
+\spadfunFrom{jacobi}{IntegerNumberTheoryFunctions}.
+The Legendre symbol
+\index{Legendre!symbol}
+\texht{$\left({a \over p}\right)$}{\spad{(a/p)}}
+is defined for integers \spad{a} and
+\spad{p} with \spad{p} an odd prime number.
+By definition, \texht{$\left({a \over p}\right)$}{\spad{(a/p) = +1}},
+when \spad{a} is a square \spad{(mod p)},
+\texht{$\left({a \over p}\right)$}{\spad{(a/p) = -1}},
+when \spad{a} is not a square \spad{(mod p)}, and
+\texht{$\left({a \over p}\right)$}{\spad{(a/p) = 0}},
+when \spad{a} is divisible by \spad{p}.
+\xtc{
+You compute \texht{$\left({a \over p}\right)$}{\spad{(a/p)}}
+via the command \spad{legendre(a,p)}.
+}{
+\spadcommand{legendre(3,5)}
+}
+\xtc{
+}{
+\spadcommand{legendre(23,691)}
+}
+The Jacobi symbol \texht{$\left({a \over n}\right)$}{\spad{(a/n)}}
+is the usual extension of the Legendre
+symbol, where \spad{n} is an arbitrary integer.
+The most important property of the Jacobi symbol is the following:
+if \spad{K} is a quadratic field with discriminant \spad{d} and quadratic
+character \texht{$\chi$}{\spad{chi}},
+then \texht{$\chi$}{\spad{chi}}\spad{(n) = (d/n)}.
+Thus, you can use the Jacobi symbol
+\index{Jacobi symbol}
+to compute, say, the class numbers of
+\index{class number}
+imaginary quadratic fields from a standard class number formula.
+\index{field!imaginary quadratic}
+\xtc{
+This function computes the class number of the imaginary
+quadratic field with discriminant \spad{d}.
+}{
+\spadcommand{h(d) == quo(reduce(+, [jacobi(d,k) for k in 1..quo(-d, 2)]), 2 - jacobi(d,2)) \bound{h}}
+}
+\xtc{
+}{
+\spadcommand{h(-163) \free{h}}   
+% h = 1
+}
+\xtc{
+}{
+\spadcommand{h(-499) \free{h}}   
+% h = 3
+}
+\xtc{
+}{
+\spadcommand{h(-1832) \free{h}}  
+% h = 26
+}
+
+
+

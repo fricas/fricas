@@ -295,7 +295,7 @@ buildGloss() ==  --called by buildDatabase (database.boot)
   $outStream: local := MAKE_-OUTSTREAM '"temp.text"
   $x : local := nil
   $attribute? : local := true     --do not surround first word
-  pathname := STRCONC(getEnv '"AXIOM",'"/algebra/gloss.text")
+  pathname := '"gloss.text"
   instream := MAKE_-INSTREAM pathname
   keypath  := '"glosskey.text"
   OBEY STRCONC('"rm -f ",keypath)

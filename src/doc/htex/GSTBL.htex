@@ -1,0 +1,83 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+%
+Sometimes when working with tables there is a natural value to use
+as the entry in all but a few cases.
+The \spadtype{GeneralSparseTable} constructor can be used to provide any
+table type with a default value for entries.
+See \xmpref{Table} for general information about tables.
+\showBlurb{GeneralSparseTable}
+
+Suppose we launched a fund-raising campaign to raise fifty thousand dollars.
+To record the contributions, we want a table with strings as keys
+(for the names) and integer entries (for the amount).
+In a data base of cash contributions, unless someone
+has been explicitly entered, it is reasonable to assume they have made
+a zero dollar contribution.
+\xtc{
+This creates a keyed access file with default entry \spad{0}.
+% By ending the next command with a semicolon, we can avoid
+% spurious test result changes.
+}{
+\spadcommand{patrons: GeneralSparseTable(String, Integer, KeyedAccessFile(Integer), 0) := table() ; \bound{patrons}}
+}
+\xtc{
+Now \spad{patrons} can be used just as any other table.
+Here we record two gifts.
+}{
+\spadcommand{patrons."Smith" := 10500 \free{patrons}\bound{smith}}
+}
+\xtc{
+}{
+\spadcommand{patrons."Jones" := 22000 \free{smith}\bound{jones}}
+}
+\xtc{
+Now let us look up the size of the contributions from Jones and Stingy.
+}{
+\spadcommand{patrons."Jones"  \free{jones}}
+}
+\xtc{
+}{
+\spadcommand{patrons."Stingy" \free{jones}}
+}
+\xtc{
+Have we met our seventy thousand dollar goal?
+}{
+\spadcommand{reduce(+, entries patrons) \free{jones}}
+}
+\noOutputXtc{
+So the project is cancelled and we can delete the data base:
+}{
+\spadcommand{)system rm -r kaf*.sdata \free{patrons}}
+}

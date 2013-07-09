@@ -1,0 +1,398 @@
+#------------------------------------------------------------------
+#---
+#--- FriCAS
+#--- Copyright (C) 2013,  Ralf Hemmecke <ralf@hemmecke.org>
+#---
+#------------------------------------------------------------------
+
+# The following filenames are the result of running
+# grep -lRe 'graphpaste\|spadgraph' *|grep 'htex$\|ht$'|sed 's,src/h\(yper/pages\|tex\)/,,;s,\..*,,'|sort -u|grep -v intro|grep -v util
+# These are the files that produce *.VIEW output via the
+#    unset DAASE; HTPATH=. ${SMAN} -noihere -paste $<
+# command.
+
+# The viewport generation for these files will be postponed to an
+# explicit call to 'cd src/hyper; make MAYBE_VIEWPORTS=viewports'
+# unless the program xvfb-run was detected during the run of
+# ./configure.
+# The reason for this delayed execution is that generation of the .xpm
+# files without the xvfb-run programm will popping up image windows in
+# X and makes working during compilation impossible.
+# The intro.htex and util.ht files are not relevant for image generation.
+GPHTS = coverex explot2d explot3d graphics SEGBIND ug01 ug07 ug08 ug10 ug11
+MAYBE_VIEWPORTS=@MAYBE_VIEWPORTS@
+XVFB=@XVFB@
+
+# The following list is the result of the following command.
+# It lists all .ht files that will not produce .pht files.
+# comm -1 -3 <(grep -R '\\\(graph\|spad\)paste{' ht/*.ht|sed 's/%.*//'|grep paste{|sed 's,^ht/\(.*\)\.ht:.*,\1,'|sort -u) <(ls ht/*.ht|sed 's,^ht/\(.*\)\.ht,\1,'|sort -u)
+HTNONPHTS= algebra aspex basic bmcat CPHelp evalex expose help		\
+  HTXAdvPage1 HTXAdvPage2 HTXAdvPage3 HTXAdvPage4 HTXAdvPage5		\
+  HTXAdvPage6 HTXAdvTopPage HTXFormatPage1 HTXFormatPage2		\
+  HTXFormatPage3 HTXFormatPage4 HTXFormatPage5 HTXFormatPage6		\
+  HTXFormatPage7 HTXFormatPage8 HTXFormatTopPage HTXIntroPage1		\
+  HTXIntroPage2 HTXIntroPage3 HTXIntroTopPage HTXLinkPage1 HTXLinkPage2	\
+  HTXLinkPage3 HTXLinkPage4 HTXLinkPage5 HTXLinkPage6 HTXLinkTopPage	\
+  HTXplay HTXTopPage HTXTryPage hyperdoc man0 mapping newuser patch	\
+  record rootpage srchkey topics type ug union
+# The following list is the result of the following command.
+# It lists all the .htex files that will not produce .pht files.
+# comm -1 -3 <(grep -R '\\spad\(paste\|command\|graph\){' htex/*.htex|sed 's/%.*//'|sed 's,^htex/\(.*\)\.htex:.*,\1,'|sort -u) <(ls htex/*.htex|sed 's,^htex/\(.*\)\.htex,\1,'|sort -u)
+HTEXNONPHTS=ug14 ug16 ug21
+
+# Let's start with a view variables that must be set before starting 'make'.
+
+###################################################################
+
+srcdir       = ${fricas_src_srcdir}/doc
+htexsrcdir   = ${srcdir}/htex
+htsrcdir     = ${srcdir}/ht
+bitmapssrcdir= $(srcdir)/bitmaps
+interpsrcdir = ${fricas_src_srcdir}/interp
+inputsrcdir  = ${fricas_src_srcdir}/input
+
+httargetdir        = $(fricas_target_datadir)/hypertex/pages
+bitmapstargetdir   = $(fricas_target_datadir)/hypertex/bitmaps
+viewportstargetdir = $(fricas_target_datadir)/viewports
+helptargetdir      = $(fricas_target_datadir)/spadhelp
+algebratargetdir   = ${fricas_targetdir}/algebra
+
+# We need access to the algebra source in order to generate a list of
+# abbreviations (filenames and corresponding constructor name.
+ALGEBRASOURCES=${fricas_src_algdir}
+
+###################################################################
+# No need to set anything below this point
+###################################################################
+
+# A few programs that are needed to generate the pht and ht files and
+# add them to the ht.db database.
+# We silently assume 'sed' to be available.
+INTERPSYS     = AXIOM=${AXIOM} $(fricas_build_bindir)/interpsys
+SMAN          = ${fricas_target_bindir}/sman
+ADD2HTDB      = ${fricas_target_bindir}/htadd
+HTEX2HT       = ${AWK} -f ${srcdir}/ht.awk
+HTEX2SECMENU  = ${AWK} -f ${srcdir}/secmenu.awk
+UGSYSCMD2HELP = ${AWK} -f ${srcdir}/syscmd.awk
+
+###################################################################
+# The current chapters. Except for 09, there exists a .htex file for
+# each chapter. ug09.tex is generated and is not needed for HyperDoc.
+# The lists of categories, domains, packages, and operations in
+# chapters 17-20 is probably out of date. It should be generated from
+# a call to FriCAS.
+#
+# All the examples sections are available in .htex format.
+#
+# Unfortunately, the chapter filenames must match the regular
+# expression "ug[0-9][0-9]", since these number will be extracted in
+# some .awk scripts. Also, currently, the generated examples chapter
+# must be 09.
+# (The g below stands for "is generated".)
+
+# 01   An Overview of \Language{}
+# 02   Using Types and Modes
+# 03   Using \HyperName{}
+# 04   Input Files and Output Styles
+# 05   Introduction to the \Language{} Interactive Language
+# 06   User-Defined Functions, Macros and Rules
+# 07   Graphics
+# 08   Advanced Problem Solving
+# 09 G Some Examples of Domains and Packages
+# 10   Interactive Programming
+# 11   Packages
+# 12   Categories
+# 13   Domains
+# 14   Browse
+# 15   What's New in AXIOM Version 2.x
+# 16   \Language{} System Commands
+# 17 g Categories (List)
+# 18 g Domains (List)
+# 19 g Packages (List)
+# 20 g Operations (List)
+# 21   Programs for FriCAS Images
+
+# The stuff that should be visible in HyperDoc
+CHAPTERS=01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21
+EXAMPLES_CHAPTER = 09
+EXAMPLES_CHAPTER_NO_LEADING_ZERO = 9
+EXAMPLES = ALIST ARRAY1 ARRAY2 BBTREE BINARY BOP BSTREE CARD CARTEN	\
+  CCLASS CHAR CLIF COMPLEX CONTFRAC CYCLES DECIMAL DERHAM DFLOAT DMP	\
+  EQ EQTBL EXIT EXPR FARRAY FILE FLOAT FNAME FPARFRAC FR FR2 FRAC GBF	\
+  GSTBL HEAP HEXADEC INT INTHEORY KAFILE KERNEL LAZM3PK LEXP LEXTRIPK	\
+  LIB LIST LODO LODO1 LODO2 LPOLY LWORD MAGMA MAPPKG1 MATRIX MKFUNC	\
+  MPOLY MSET NONE OCT ODPOL OP OVAR PERMAN PFR POLY QUAT QUAT2 RADIX	\
+  RECLOS REGSET ROMAN SEG SEGBIND SET SINT SQMATRIX SREGSET STBL	\
+  STREAM STRING STRTBL SYMBOL TABLE TEXTFILE UNISEG UP VECTOR VOID	\
+  WUTSET XPBWPOLY XPOLY XPR ZDSOLVE ZLINDEP
+NON_HD_CHAPTERS = ${EXAMPLES_CHAPTER} 17 18 19 20
+
+# The chapters used in HyperDoc that must be made from the .htex files.
+HD_CHAPTERS = ${filter-out ${NON_HD_CHAPTERS}, ${CHAPTERS}}
+HD_CHAPTERS_HTEX=$(patsubst %, ug%.htex, $(HD_CHAPTERS))
+HD_CHAPTERS_HT_FILES  =$(patsubst %, ug%.ht, $(HD_CHAPTERS))
+HD_CHAPTERS_PHT_FILES =$(patsubst %, ug%.pht, $(HD_CHAPTERS))
+HD_CHAPTERS_MENU_FILES=$(patsubst %, tmp/ug%.menu, $(HD_CHAPTERS))
+
+EXAMPLES_HTEX = $(patsubst %, %.htex, $(EXAMPLES))
+HD_EXAMPLES_HT_FILES   = $(patsubst %, %.ht, ${EXAMPLES})
+HD_EXAMPLES_PHT_FILES  = $(patsubst %, %.pht, ${EXAMPLES})
+HD_EXAMPLES_MENU_FILES = $(patsubst %, tmp/%.menu, ${EXAMPLES})
+
+HD_HTEX = ${HD_CHAPTERS_HTEX} ${EXAMPLES_HTEX}
+
+HD_INPUT_FILES  = $(patsubst %.htex, tmp/%.input,  ${HD_HTEX})
+HD_DRIVER_FILES = $(patsubst %.htex, tmp/%.driver, ${HD_HTEX})
+HD_OUT_FILES    = $(patsubst %.htex, tmp/%.out,    ${HD_HTEX})
+
+###################################################################
+# A few files exist in a source .ht format under ${htsrcdir}.
+HTEXAMPLES = exdiff exint exlap exlimit exmatrix explot2d explot3d	\
+  exseries exsum
+HTSOURCES = ${HTEXAMPLES} algebra aspex basic bmcat CPHelp evalex	\
+  expose function graphics grpthry help HTXAdvPage1 HTXAdvPage2	\
+  HTXAdvPage3 HTXAdvPage4 HTXAdvPage5 HTXAdvPage6 HTXAdvTopPage		\
+  HTXFormatPage1 HTXFormatPage2 HTXFormatPage3 HTXFormatPage4		\
+  HTXFormatPage5 HTXFormatPage6 HTXFormatPage7 HTXFormatPage8		\
+  HTXFormatTopPage HTXIntroPage1 HTXIntroPage2 HTXIntroPage3		\
+  HTXIntroTopPage HTXLinkPage1 HTXLinkPage2 HTXLinkPage3 HTXLinkPage4	\
+  HTXLinkPage5 HTXLinkPage6 HTXLinkTopPage HTXplay HTXTopPage		\
+  HTXTryPage hyperdoc man0 mapping newuser numbers patch polys	\
+  record rootpage srchkey topics type ug union util
+
+HTSOURCES_HT_FILES  = $(patsubst %, %.ht,  ${HTSOURCES})
+HTSOURCES_PHT_FILES = $(patsubst %, %.pht, ${HTSOURCES})
+HTEXAMPLES_COVEREXHT_FILES = $(patsubst %, tmp/%.coverexht, ${HTEXAMPLES})
+HTEXAMPLES_MENU_FILES = $(patsubst %, tmp/%.menu, ${HTEXAMPLES})
+
+HTGENERATED = xmpexp coverex gloss
+HTGENERATED_HT_FILES  = $(patsubst %, %.ht,   ${HTGENERATED})
+HTGENERATED_PHT_FILES = $(patsubst %, %.pht,  ${HTGENERATED})
+
+HD_HT_FILES = ${HD_CHAPTERS_HT_FILES} ${HD_EXAMPLES_HT_FILES}	\
+  ${HTSOURCES_HT_FILES} ${HTGENERATED_HT_FILES}
+HD_PHT_FILES = ${HD_CHAPTERS_PHT_FILES} ${HD_EXAMPLES_PHT_FILES}	\
+  ${HTSOURCES_PHT_FILES} ${HTGENERATED_PHT_FILES}
+# We make graphical files via indirect addressing depending on
+# ${MAYBE_VIEWPORTS}, which is supposed to be either empty or has the value "viewports"
+GPHTNAMES=
+GPHTNAMESviewports=${GPHTS}
+HD_GPHT_FILES=${patsubst %, %.pht, ${GPHTNAMES${MAYBE_VIEWPORTS}}}
+NONPHT_FILES=gloss.pht util.pht xmpexp.pht ${patsubst %,%.pht,${GPHTS}} \
+  ${patsubst %, %.pht, ${HTNONPHTS} ${HTEXNONPHTS}}
+HD_NPHT_FILES=${filter-out ${NONPHT_FILES}, ${HD_PHT_FILES}}
+
+###################################################################
+# The user guide refers to short programs that are stored under ${inputsrcdir}.
+UG_EXTRA_INPUT = arrows bouquet matrix newton ribbon vectors
+UG_EXTRA_INPUT_FILES = $(patsubst %, %.input, ${UG_EXTRA_INPUT})
+
+###################################################################
+# The actual targets...
+###################################################################
+
+.EXPORT_ALL_VARIABLES:
+
+all: copy-to-target
+
+util-ht: ${httargetdir}/util.ht
+	${STAMP} $@
+
+###################################################################
+# Make the .ht files.
+###################################################################
+# Find the long names for the abbreviations from XMPLIST from the
+# *.spad.pamphlet files.
+examples.list: $(wildcard ${ALGEBRASOURCES}/*.spad.pamphlet)
+	(for a in ${EXAMPLES}; do echo $$a; done; \
+	 sed -n 's/^)abb[a-z]* [a-z][a-z]*  *\([A-Z0-9][A-Z0-9]*\) *\([^ ]*\)/\1 \2/p' ${ALGEBRASOURCES}/*.spad.pamphlet\
+	) | sort -k1,1 | ${AWK} '{if(a==$$1){print};a=$$a}' | sort -k2 > $@
+
+xmpexp.ht: examples.list
+	echo '% !! DO NOT MODIFY BY HAND !! It is generated.' > $@
+	echo '\newcommand{\ExamplesExposedTitle}{${EXAMPLE_TITLE}}' >> $@
+	echo '\newcommand{\ExamplesExposedNumber}{${EXAMPLES_CHAPTER_NO_LEADING_ZERO}.}' >> $@ # Chapter 9
+	echo '\begin{page}{ExamplesExposedPage}{${EXAMPLES_CHAPTER_NO_LEADING_ZERO}. ${EXAMPLE_TITLE}}' >> $@
+	echo 'This is a menu of examples of some domains and packages.' >> $@
+	echo 'Click on any item below to see that section.' >> $@
+	echo '\beginscroll' >> $@
+	echo '\table{'   >> $@
+	sed 's/.* //;h;s/1/One/g;s/2/Two/g;s/3/Three/g;s/4/Four/g;s/5/Five/g;s/6/Six/g;s/7/Seven/g;s/8/Eight/g;s/9/Nine/g;s/0/Ten/g;s/^/}{/;s/$$/XmpPage} }/;H;x;s/^/{ \\downlink{/;s/\n//' examples.list >> $@
+	echo '}'       >> $@
+	echo '\endscroll'     >> $@
+	echo '\autobuttons'   >> $@
+	echo '\end{page}'     >> $@
+
+${HD_CHAPTERS_MENU_FILES}: tmp/ug%.menu: ${htexsrcdir}/ug%.htex
+# Provide chapter and section number as 2nd and 3rd arguments.
+	mkdir -p tmp
+#       ${HTEX2SECMENU} SRC CHAPTERNUMBER SECTIONNUMBER MENUDIR
+	${HTEX2SECMENU} $< $* 0 tmp > $@
+
+${HD_EXAMPLES_MENU_FILES}: tmp/%.menu: ${htexsrcdir}/%.htex examples.list
+	mkdir -p tmp
+#       ${HTEX2SECMENU} SRC CHAPTERNUMBER SECTIONNUMBER MENUDIR
+	${HTEX2SECMENU} $< ${EXAMPLES_CHAPTER_NO_LEADING_ZERO} `sed -n '/^$* /=' examples.list` tmp > $@
+
+${HTEXAMPLES_COVEREXHT_FILES}: tmp/%.coverexht: ${htsrcdir}/%.ht
+	echo "\\begin{page}{Menu$*}{`sed -n 's/^% Title: //p' $<`}" > $@
+	echo '\beginscroll\beginmenu' >> $@
+	sed -n \
+	  -e 's/^\\begin{page}\({[a-zA-Z0-9]*}\)\({.*}\)/\\menudownlink\2\1/p' \
+	  -e '/^\\\(spad\|graph\)paste/p' $< >> $@
+	echo '\endmenu\endscroll\end{page}' >> $@
+	echo >> $@
+
+coverex.ht: ${HTEXAMPLES_COVEREXHT_FILES}
+	(echo '% DO NOT EDIT! This file is generated.'; \
+	 echo;\
+	 echo '\begin{page}{ExampleCoverPage}{Examples Of FriCAS Commands}';\
+	 echo '\beginscroll\table{';\
+	 for x in $(HTEXAMPLES); do \
+	   echo "{\\downlink{`sed -n 's/^% Title: //p' ${htsrcdir}/$$x.ht`}{Menu$$x}}"; \
+	 done;\
+	 echo '}\endscroll\end{page}';\
+	 echo;\
+	 cat  ${HTEXAMPLES_COVEREXHT_FILES}\
+	) > $@
+
+gloss.text: ${htsrcdir}/gloss.text 
+	cp $< $@
+gloss.ht: gloss.text ${GLOSSARY_SCRIPTS}
+	( echo ')boot browserAutoloadOnceTrigger()'; \
+	  echo ')boot oldCompilerAutoloadOnceTrigger()'; \
+	  echo ')boot buildGloss()') \
+	| ${INTERPSYS}
+
+$(HD_CHAPTERS_HT_FILES): ug%.ht: ${htexsrcdir}/ug%.htex tmp/ug%.menu
+#	${HTEX2HT} SRC MENUDIR
+#       Chapter number will be extracted from the source filename ug??.htex
+	${HTEX2HT} $< tmp > $@
+
+${HD_EXAMPLES_HT_FILES}: %.ht: ${htexsrcdir}/%.htex tmp/%.menu examples.list
+#	${HTEX2HT} SRC MENUDIR CONSTRUCTORNAME CHAPTERNUMBER SECTIONNUMBER
+	${HTEX2HT} $< tmp `sed -n 's/^$* //p' examples.list`		\
+	    ${EXAMPLES_CHAPTER_NO_LEADING_ZERO} `sed -n '/^$* /=' examples.list` > $@
+
+${HTSOURCES_HT_FILES}: %.ht: ${htsrcdir}/%.ht
+	cp $< $@
+
+
+###################################################################
+# Generate the .help file.
+###################################################################
+# ug16.htex contains documentation about system commands
+stamp-ug16helpfiles:
+	${UGSYSCMD2HELP} ${htexsrcdir}/ug16.htex
+	${STAMP} $@
+
+###################################################################
+# Create the final ht.db database.
+###################################################################
+# Not that ht.db must exist before SMAN can be called. In fact,
+# according to page "Standard Pages" in HTXLinkPage2.ht, there must be
+# certain content in ht.db, otherwise the hypertex program will
+# immediately exit.
+#
+# So the following uses stamp-db-ht to create a ht.db with all the .ht
+# files and the creation of the .pht files depends on existing of that
+# stamp.
+###################################################################
+# Create a partial ht.db database of the .ht files.
+###################################################################
+# We need to make sure that 'ht.db', the hypertex database file
+# is up to date. The file contains absolute offsets into the various
+# '.ht' and '.pht' files so it must reflect the current pages.
+stamp-ht-db: ${HD_HT_FILES}
+# The -n flag means "create a fresh ht.db".
+	${ADD2HTDB} -n ${addprefix ./, $^}
+	${STAMP} $@
+
+###################################################################
+# Make the .pht files.
+###################################################################
+# Input files needed during the computation of the pht files.
+${UG_EXTRA_INPUT_FILES}: %: ${inputsrcdir}/%.pamphlet
+	${axiom_build_document} --tangle --output=$@ $<
+
+${HD_NPHT_FILES}: %.pht: %.ht ${UG_EXTRA_INPUT_FILES} ${SMAN} $(fricas_target_bindir)/hypertex$(EXEEXT) stamp-ht-db
+	echo $<
+	unset DAASE; HTPATH=. ${SMAN} -noihere -paste $<
+
+${HD_GPHT_FILES}: %.pht: %.ht ${UG_EXTRA_INPUT_FILES} ${SMAN} $(fricas_target_bindir)/hypertex$(EXEEXT) stamp-ht-db
+	echo $<
+	unset DAASE; HTPATH=.; export HTPATH; ${XVFB} ${SMAN} -noihere -paste $<
+
+# This target will only be taken if
+# MAYBE_VIEWPORTS=viewports
+# is set. This is supposed to be done through configure.ac.
+# The copy command should actually appear during the "copy-to-target"
+# below, but it would needlessly complicated this Makefile.
+viewports: ${HD_GPHT_FILES}
+	mkdir -p ${viewportstargetdir}
+	cp -r *.VIEW ${viewportstargetdir}
+
+###################################################################
+# Create the final ht.db database.
+###################################################################
+ht.db: ${HD_NPHT_FILES} ${HD_GPHT_FILES}
+# For chapters without commands, there will be no .pht file generated.
+# Thus, we simply add all .pht files that are available in the target directory.
+# Therefore the wildcard.
+	${ADD2HTDB} ${addprefix ./, $^}
+
+
+###################################################################
+###################################################################
+# The following targets only copy generated files to the target
+# directory.
+###################################################################
+
+copy-helpfiles: stamp-ug16helpfiles
+	mkdir -p ${helptargetdir}
+	cp *.help ${helptargetdir}
+
+###################################################################
+# The bitmap files must be copied to the right place.
+###################################################################
+stamp-bitmaps:
+	mkdir -p ${bitmapstargetdir}
+	cp -r ${bitmapssrcdir}/* ${bitmapstargetdir}
+
+###################################################################
+# Copy .pht files to target dir.
+###################################################################
+copy-phts: ${HD_NPHT_FILES} ${MAYBE_VIEWPORTS}
+	mkdir -p ${httargetdir}
+	cp *.pht ${httargetdir}
+
+###################################################################
+# Copy .ht files to target dir.
+###################################################################
+copy-hts: ${addprefix ${httargetdir}/, ${HD_HT_FILES}}
+
+${addprefix ${httargetdir}/, ${HD_HT_FILES} coverex xmpexp}: ${httargetdir}/%: %
+	mkdir -p ${httargetdir}
+	cp $< $@
+
+###################################################################
+# Copy glossdef.text and glosskey.text that were generated at the same
+# time as gloss.ht.
+###################################################################
+glossdef.text glosskey.text: gloss.ht
+copy-gloss: glossdef.text glosskey.text
+	mkdir -p ${algebratargetdir}
+	cp $^ ${algebratargetdir}
+
+###################################################################
+# We created ht.db here and then copy it to the target dir.
+###################################################################
+${httargetdir}/ht.db: ht.db
+	mkdir -p ${httargetdir}
+	cp $< $@
+
+###################################################################
+# We first create all .ht, .pht and .VIEW files here and then copy
+# them to ${httargetdir}.
+###################################################################
+copy-to-target: ${httargetdir}/ht.db stamp-bitmaps copy-phts copy-hts copy-helpfiles copy-gloss

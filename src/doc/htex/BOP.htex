@@ -1,0 +1,165 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+%
+% BOP.htex
+
+A basic operator is an object that can be symbolically
+applied to a list of arguments from a set, the result being
+a kernel over that set or an expression.
+In addition to this section, please see \xmpref{Expression}
+and \xmpref{Kernel} for additional information and examples.
+
+You create an object of type \axiomType{BasicOperator} by using the
+\axiomFunFrom{operator}{BasicOperator} operation.
+This first form of this operation has one argument and it
+must be a symbol.
+The symbol should be quoted in case the
+name has been used as an identifier to which a value
+has been assigned.
+
+A frequent application of \axiomType{BasicOperator} is the
+creation of an operator to represent the unknown function when
+solving a differential equation.
+\xtc{
+Let \axiom{y} be the unknown function in terms of \axiom{x}.
+}{
+\spadcommand{y := operator 'y \bound{y}}
+}
+%
+\xtc{
+This is how you enter
+the equation \axiom{y'' + y' + y = 0}.
+}{
+\spadcommand{deq := D(y x, x, 2) + D(y x, x) + y x = 0\bound{e1}\free{y}}
+}
+%
+\xtc{
+To solve the above equation, enter this.
+}{
+\spadcommand{solve(deq, y, x) \free{e1}\free{y}}
+}
+See \spadref{ugProblemDEQ}
+for this kind of use of \axiomType{BasicOperator}.
+
+Use the single argument form of
+\axiomFunFrom{operator}{BasicOperator} (as above) when you intend
+to use the operator to create functional expressions with an
+arbitrary number of arguments
+\xtc{
+{\it Nary} means an arbitrary number of arguments can be used
+in the functional expressions.
+}{
+\spadcommand{nary? y \free{y}}
+}
+\xtc{
+}{
+\spadcommand{unary? y \free{y}}
+}
+Use the two-argument form when you want to restrict the number of
+arguments in the functional expressions created with the operator.
+\xtc{
+This operator can only be used to create functional expressions
+with one argument.
+}{
+\spadcommand{opOne := operator('opOne, 1) \bound{opOne}}
+}
+\xtc{
+}{
+\spadcommand{nary? opOne \free{opOne}}
+}
+\xtc{
+}{
+\spadcommand{unary? opOne \free{opOne}}
+}
+\xtc{
+Use \axiomFunFrom{arity}{BasicOperator} to learn the number of
+arguments that can be used.
+It returns {\tt "false"} if the operator is nary.
+}{
+\spadcommand{arity opOne \free{opOne}}
+}
+\xtc{
+Use \axiomFunFrom{name}{BasicOperator} to learn the name of an
+operator.
+}{
+\spadcommand{name opOne \free{opOne}}
+}
+\xtc{
+Use \axiomFunFrom{is?}{BasicOperator} to learn if an operator has a
+particular name.
+}{
+\spadcommand{is?(opOne, 'z2) \free{opOne}}
+}
+\xtc{
+You can also use a string as the name to be tested against.
+}{
+\spadcommand{is?(opOne, "opOne") \free{opOne}}
+}
+
+You can attached named properties to an operator.
+These are rarely used at the top-level of the \Language{}
+interactive environment but are used with \Language{}
+library source code.
+\xtc{
+By default, an operator has no properties.
+}{
+\spadcommand{properties y \free{y}}
+}
+The interface for setting and getting properties is somewhat awkward
+because the property values are stored as values of type
+\axiomType{None}.
+\xtc{
+Attach a property by using \axiomFunFrom{setProperty}{BasicOperator}.
+}{
+\spadcommand{setProperty(y, "use", "unknown function" :: None ) \free{y}\bound{spy}}
+}
+\xtc{
+}{
+\spadcommand{properties y \free{y spy}}
+}
+\xtc{
+We {\it know} the property value has type \axiomType{String}.
+}{
+\spadcommand{property(y, "use") :: None pretend String \free{y spy}}
+}
+\xtc{
+Use \axiomFunFrom{deleteProperty!}{BasicOperator} to destructively
+remove a property.
+}{
+\spadcommand{deleteProperty!(y, "use") \free{y spy}\bound{dpy}}
+}
+\xtc{
+}{
+\spadcommand{properties y \free{dpy}}
+}
