@@ -21,6 +21,31 @@ FRICAS_SRC_TARGETS = all-algebra all-asq all-axiomsys all-book all-boot \
 .PHONY: all install $(FRICAS_SRC_TARGETS)
 all: all-ax all-contrib
 
+# If there is a directory "${PREGENERATED}/target", we can simply copy
+# its contents to ${fricas_targetdir}.
+# The pregenerated lisp files are under ${PREGENERATED}/src/algebra.
+# The .daase files are are under ${PREGENERATED}/target/algebra.
+# For more details see the "dist" target below.
+pre-gen: stamp-rootdirs
+	echo "PREGENERATED=[${PREGENERATED}]"
+	if test -z "${PREGENERATED}"; then \
+	  echo "Not using pre-generated data."; \
+	elif test ! -d "${PREGENERATED}"; then \
+	  echo "PREGENERATED directory does not exist."; \
+	  exit 1; \
+	elif echo "${PREGENERATED}"|grep ^/ >/dev/null; then\
+	  if test -d ${PREGENERATED}/target; then \
+	    cp -r ${PREGENERATED}/target/* ${fricas_targetdir}; \
+	  fi && \
+	  if test -d ${PREGENERATED}/src; then \
+	    cp -r ${PREGENERATED}/src/* src; \
+	  fi && \
+	  ${STAMP} $@; \
+	else \
+	  echo "PREGENERATED must contain an absolute path."; \
+	  exit 1; \
+	fi
+
 # Generate the efricas script.
 all-contrib: all-src
 	cd contrib/emacs && ${MAKE}
@@ -32,7 +57,7 @@ all-src: stamp-rootdirs @fricas_all_prerequisites@
 
 all-input: all-src
 
-$(FRICAS_SRC_TARGETS):
+$(FRICAS_SRC_TARGETS): pre-gen
 	cd $(build_srcdir) && $(MAKE) $@
 
 stamp-rootdirs: $(axiom_build_document)
@@ -165,7 +190,7 @@ install-contrib:
 	@echo 79 FriCAS contrib installation finished.
 
 
-mostlyclean-local:
+mostlyclean-local: clean-distdir
 	@-rm -f lastBuildDate
 
 clean-local: mostlyclean-local
@@ -186,3 +211,88 @@ $(top_builddir)/config.status: $(top_srcdir)/configure
 
 $(RECURSIVE_TARGETS): stamp-rootdirs @fricas_all_prerequisites@
 
+###################################################################
+# "make dist" creates a distribution tarball with precomputed machine
+# independent files like *.lsp, *.daase, *.ht, *.pht, *.VIEW/*, *.help.
+# Running "make dist" must be called *after* a full (out-of-source)
+# build. The "out-of-source" build is necessary, since we "cp -r" from
+# the fricas checkout directory.
+#
+# The tarball data will be temporarily copied into a local directory
+# then tar'ed and bzipped.
+#
+# We do not make this target dependent on "all", though, because it is
+# currently not possible to restart the build from an interrupted
+# build process.
+#
+# Finding the noweb tarball. If --with-noweb-tarball=... was given at
+# configure time, the variable @noweb_tarball@ will be substituted and
+# we can safely include this tarball. Otherwise, we check for
+# existence of zips/noweb-2.10a.tgz. If this is not there, then we
+# require the variable NOWEB to be set and pointing to the noweb
+# tarball.
+
+NOWEB="@noweb_tarball@"
+distdir=${PACKAGE_TARNAME}-${PACKAGE_VERSION}
+disttargetdir=${distdir}/pre-generated/target
+distsrcdir=${distdir}/pre-generated/src
+DIST_TARBALL=${distdir}.tar.bz2
+
+out-of-source-check:
+	test "${abs_builddir}" != ${abs_top_srcdir}
+
+dist-noweb:
+	NOWEB="${NOWEB}"; \
+	test -n "$$NOWEB" || NOWEB="${srcdir}/zips/noweb-2.10a.tgz"; \
+	if ! test -r "$$NOWEB"; then \
+	    echo "missing NOWEB tarball"; \
+	    echo "use 'make dist NOWEB=/path/to/noweb.tar.bz2'"; \
+	    exit 1; \
+	else \
+	    mkdir -p ${distdir}/zips; \
+	    cp "$$NOWEB" ${distdir}/zips; \
+	fi;
+
+# copy databases and algebra bootstrap files
+dbs=browse.daase category.daase compress.daase interp.daase operation.daase\
+    libdb.text comdb.text USERS.DAASE DEPENDENTS.DAASE
+
+generated_dbs=${addprefix ${disttargetdir}/algebra/, ${dbs}}
+${generated_dbs}: ${disttargetdir}/%: ${fricas_targetdir}/%
+	test -d ${disttargetdir}/algebra || mkdir -p ${disttargetdir}/algebra
+	cp -r $< $@
+
+dist-lisp: ${generated_dbs}
+	(cd src/algebra; ls -d *.NRLIB | sed 's,\.NRLIB$$,,') > nrlibs
+	mkdir -p ${distsrcdir}/algebra
+	for A in $$(cat nrlibs); do \
+	  cp src/algebra/$${A}.NRLIB/$${A}.lsp ${distsrcdir}/algebra/$${A}.lsp;\
+	done
+
+# We assume that the *.help files are available from a directory
+# ${helpsrcdir}. It is an error if this variable is not set.
+help-sanity-check:
+	test -f ${helpsrcdir}/Integer.help \
+	|| (echo "helpfiles are missing"; \
+	    echo "use 'make dist helpsrcdir=/path/to/spadhelp'"; \
+	    exit 1)
+
+# .help files that are generated during the documentation build under
+# src/doc will be taken care of by the dist-doc target.
+dist-help: help-sanity-check
+	mkdir -p ${disttargetdir}/share/spadhelp
+	cp ${helpsrcdir}/* ${disttargetdir}/share/spadhelp
+
+# Copy generated .ht and .pht and *.VIEW/* files to distribution directory.
+dist-doc:
+	cd src/doc; ${MAKE} disttargetdir="../../${disttargetdir}" dist
+
+${DIST_TARBALL}: out-of-source-check lastBuildDate dist-noweb dist-help dist-lisp dist-doc
+	cp -r ${abs_top_srcdir}/* ${distdir}
+	find ${distdir} -type d -name .svn -exec rm -rf {} \+
+	tar cjf $@ ${distdir}
+
+dist: ${DIST_TARBALL}
+
+clean-distdir:
+	-rm -rf ${distdir} ${DIST_TARBALL}

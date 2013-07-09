@@ -639,6 +639,7 @@ FRICAS_LISP
 noweb_tarball
 NOWEAVE
 NOTANGLE
+PREGENERATED
 AWK_FOR_TARGET
 MAKEINDEX
 LATEX
@@ -717,6 +718,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_pre_generated
 with_noweb_tarball
 with_lisp
 with_lisp_flavor
@@ -1368,6 +1370,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-pre-generated    Specify an absolute path to pre-generated fricas
+                          code.
   --with-noweb-tarball    specify place of the noweb-2.10a.tgz tarball
   --with-lisp=L           use L as Lisp platform
   --with-lisp-flavor=F    obsolete and ignored
@@ -3883,6 +3887,48 @@ if test -z $AWK_FOR_TARGET ; then
    AWK_FOR_TARGET=`which $AWK`
 fi
 
+
+
+## ---------------------------------
+## -- Is there pregenerated data? --
+## ---------------------------------
+##
+## FriCAS might come with precompiled files. In case there is a
+## directory "pre-generated" in the source tree, the contents of
+## directory is used instead of recompiling these files. If this
+## directory exists, it is supposed to be sane, i.e., must have been
+## generated via "make dist". If such a pre-generated directory lives
+## outside the fricas source tree, it can be given to configure via
+## --with-pre-generated=/absolute/path/to/pre-generated or given at
+## build time via "make PREGENERATED=/absolute/path/to/pre-generated".
+
+PREGENERATED=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking PREGENERATED" >&5
+$as_echo_n "checking PREGENERATED... " >&6; }
+
+# Check whether --with-pre-generated was given.
+if test "${with_pre_generated+set}" = set; then :
+  withval=$with_pre_generated; # Action if --with-pre-generated is given.
+    if echo "$withval"|grep ^/ >/dev/null; then :
+
+else
+  as_fn_error $? "--with-pre-generated must be given an absolute path." "$LINENO" 5
+fi
+     if test -d "$withval"; then :
+  PREGENERATED=$withval
+else
+  as_fn_error $? "--with-pre-generated directory does not exist." "$LINENO" 5
+fi
+else
+  # Action if --with-pre-generated is not given.
+    if test -d $fricas_top_srcdir/pre-generated; then :
+  PREGENERATED=$fricas_top_srcdir/pre-generated
+fi
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: \"$PREGENERATED\"" >&5
+$as_echo "\"$PREGENERATED\"" >&6; }
 
 
 ## -------------------------
