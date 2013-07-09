@@ -1,0 +1,370 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+The domain constructor \spadtype{Polynomial} (abbreviation: \spadtype{POLY})
+provides polynomials with an arbitrary number of unspecified
+variables.
+
+\xtc{
+It is used to create the default polynomial domains
+in \Language{}.
+Here the coefficients are integers.
+}{
+\spadcommand{x + 1}
+}
+\xtc{
+Here the coefficients have type \spadtype{Float}.
+}{
+\spadcommand{z - 2.3}
+}
+\xtc{
+And here we have a polynomial in two variables with coefficients which
+have type \spadtype{Fraction Integer}.
+}{
+\spadcommand{y^2 - z + 3/4}
+}
+
+The representation of objects of domains created by \spadtype{Polynomial}
+is that of recursive univariate polynomials.\footnote{The term
+\spad{univariate} means ``one variable.'' \spad{multivariate} means
+``possibly more than one variable.''}
+\xtc{
+This recursive structure is sometimes obvious from the display of
+a polynomial.
+}{
+\spadcommand{y ^2 + x*y + y \bound{prev}}
+}
+In this example, you see that the polynomial is stored as a polynomial in
+\spad{y} with coefficients that are polynomials in \spad{x} with integer
+coefficients.
+In fact, you really don't need to worry about the representation unless
+you are working on an advanced application where it is critical.
+The polynomial types created from
+\spadtype{DistributedMultivariatePolynomial} and
+\spadtype{NewDistributedMultivariatePolynomial} (discussed in
+\xmpref{DistributedMultivariatePolynomial}) are stored and displayed in a
+non-recursive manner.
+\xtc{
+You see a ``flat'' display of the above
+polynomial by converting to one of those types.
+}{
+\spadcommand{\% :: DMP([y,x],INT) \free{prev}}
+}
+
+We will demonstrate many of the polynomial facilities by using two
+polynomials with integer coefficients.
+\xtc{
+By default, the interpreter expands polynomial expressions, even if they
+are written in a factored format.
+}{
+\spadcommand{p := (y-1)^2 * x * z \bound{p}}
+}
+\xtc{
+See \xmpref{Factored} to see
+how to create objects in factored form directly.
+}{
+\spadcommand{q := (y-1) * x * (z+5) \bound{q}}
+}
+\xtc{
+The fully factored form can be recovered by using
+\spadfunFrom{factor}{Polynomial}.
+}{
+\spadcommand{factor(q) \free{q}}
+}
+This is the same name used for the operation to factor integers.
+Such reuse of names is called \spadglos{overloading} and makes it much easier
+to think of solving problems in general ways.
+\Language{} facilities for factoring polynomials created with
+\spadtype{Polynomial} are currently restricted to
+the integer and rational number coefficient cases.
+There are more complete facilities for factoring univariate polynomials:
+see \spadref{ugProblemFactor}.
+
+\xtc{
+The standard arithmetic operations are available for polynomials.
+}{
+\spadcommand{p - q^2\free{p q}}
+}
+\xtc{
+The operation \spadfunFrom{gcd}{Polynomial} is used to compute the
+greatest common divisor of two polynomials.
+}{
+\spadcommand{gcd(p,q) \free{p q}\bound{prev4}}
+}
+\xtc{
+In the case of \spad{p} and \spad{q}, the gcd is obvious from their
+definitions.
+We factor the gcd to show this relationship better.
+}{
+\spadcommand{factor \% \free{prev4}}
+}
+\xtc{
+The least common multiple is computed by using \spadfunFrom{lcm}{Polynomial}.
+}{
+\spadcommand{lcm(p,q) \free{p q}}
+}
+\xtc{
+Use \spadfunFrom{content}{Polynomial} to compute the greatest common divisor of the
+coefficients of the polynomial.
+}{
+\spadcommand{content p \free{p}}
+}
+
+Many of the operations on polynomials require you to specify a variable.
+For example, \spadfunFrom{resultant}{Polynomial} requires you to give the
+variable in which the polynomials should be expressed.
+\xtc{
+This computes the resultant of the values of \spad{p} and
+\spad{q}, considering them as polynomials in the variable \spad{z}.
+They do not share a root when thought of as polynomials in \spad{z}.
+}{
+\spadcommand{resultant(p,q,z) \free{p q}}
+}
+\xtc{
+This value is \spad{0} because as polynomials in \spad{x} the polynomials
+have a common root.
+}{
+\spadcommand{resultant(p,q,x) \free{p}\free{q}}
+}
+The data type used for the variables created by \spadtype{Polynomial} is
+\spadtype{Symbol}.
+As mentioned above, the representation used by \spadtype{Polynomial} is
+recursive and so there is a main variable for nonconstant polynomials.
+\xtc{
+The operation \spadfunFrom{mainVariable}{Polynomial} returns this
+variable.
+The return type is actually a union of \spadtype{Symbol} and
+\spad{"failed"}.
+}{
+\spadcommand{mainVariable p \free{p}}
+}
+\xtc{
+The latter branch of the union is be used if the polynomial has no
+variables, that is, is a constant.
+}{
+\spadcommand{mainVariable(1 :: POLY INT)}
+}
+\xtc{
+You can also use the predicate \spadfunFrom{ground?}{Polynomial} to test
+whether a polynomial is in fact a member of its ground ring.
+}{
+\spadcommand{ground? p \free{p}}
+}
+\xtc{
+}{
+\spadcommand{ground?(1 :: POLY INT)}
+}
+\xtc{
+The complete list of variables actually used in a particular polynomial is
+returned by \spadfunFrom{variables}{Polynomial}.
+For constant polynomials, this list is empty.
+}{
+\spadcommand{variables p \free{p}}
+}
+
+\xtc{
+The \spadfunFrom{degree}{Polynomial} operation returns the
+degree of a polynomial in a specific variable.
+}{
+\spadcommand{degree(p,x) \free{p}}
+}
+\xtc{
+}{
+\spadcommand{degree(p,y) \free{p}}
+}
+\xtc{
+}{
+\spadcommand{degree(p,z) \free{p}}
+}
+\xtc{
+If you give a list of variables for the second argument, a list
+of the degrees in those variables is returned.
+}{
+\spadcommand{degree(p,[x,y,z]) \free{p}}
+}
+\xtc{
+The minimum degree of a variable in a polynomial is computed using
+\spadfunFrom{minimumDegree}{Polynomial}.
+}{
+\spadcommand{minimumDegree(p,z) \free{p}}
+}
+\xtc{
+The total degree of a polynomial is returned by
+\spadfunFrom{totalDegree}{Polynomial}.
+}{
+\spadcommand{totalDegree p \free{p}}
+}
+
+\xtc{
+It is often convenient to think of a polynomial as a leading monomial plus
+the remaining terms.
+}{
+\spadcommand{leadingMonomial p \free{p}}
+}
+\xtc{
+The \spadfunFrom{reductum}{Polynomial} operation returns a polynomial
+consisting of the sum of the monomials after the first.
+}{
+\spadcommand{reductum p \free{p}}
+}
+\xtc{
+These have the obvious relationship that the original polynomial
+is equal to the leading monomial plus the reductum.
+}{
+\spadcommand{p - leadingMonomial p - reductum p \free{p}}
+}
+\xtc{
+The value returned by \spadfunFrom{leadingMonomial}{Polynomial} includes
+the coefficient of that term.
+This is extracted by using
+\spadfunFrom{leadingCoefficient}{Polynomial} on the original polynomial.
+}{
+\spadcommand{leadingCoefficient p \free{p}}
+}
+\xtc{
+The operation \spadfunFrom{eval}{Polynomial} is used to substitute a value
+for a variable in a polynomial.
+}{
+\spadcommand{p  \free{p}}
+}
+\xtc{
+This value may be another variable, a constant or a polynomial.
+}{
+\spadcommand{eval(p,x,w) \free{p}}
+}
+\xtc{
+}{
+\spadcommand{eval(p,x,1) \free{p}}
+}
+\xtc{
+Actually, all the things being substituted are just polynomials,
+some more trivial than others.
+}{
+\spadcommand{eval(p,x,y^2 - 1) \free{p}}
+}
+
+\xtc{
+Derivatives are computed using the \spadfunFrom{D}{Polynomial}
+operation.
+}{
+\spadcommand{D(p,x) \free{p}}
+}
+\xtc{
+The first argument is the polynomial and the second is the variable.
+}{
+\spadcommand{D(p,y) \free{p}}
+}
+\xtc{
+Even if the polynomial has only one variable, you must specify it.
+}{
+\spadcommand{D(p,z) \free{p}}
+}
+
+Integration of polynomials is similar and the
+\spadfunFrom{integrate}{Polynomial} operation is used.
+
+\xtc{
+Integration requires that the coefficients support division.
+Consequently,
+\Language{} converts polynomials over the integers to polynomials over
+the rational numbers before integrating them.
+}{
+\spadcommand{integrate(p,y) \free{p}}
+}
+
+It is not possible, in general, to divide two polynomials.
+In our example using polynomials over the integers, the operation
+\spadfunFrom{monicDivide}{Polynomial} divides a polynomial by a monic
+polynomial (that is, a polynomial with leading coefficient equal to 1).
+The result is a record of the quotient and remainder of the
+division.
+\xtc{
+You must specify the variable in which to express the polynomial.
+}{
+\spadcommand{qr := monicDivide(p,x+1,x) \free{p}\bound{qr}}
+}
+\xtc{
+The selectors of the components of the record are
+\spad{quotient} and \spad{remainder}.
+Issue this to extract the remainder.
+}{
+\spadcommand{qr.remainder \free{qr}}
+}
+\xtc{
+Now that we can extract the components, we can demonstrate the
+relationship among them and the arguments to our original expression
+\spad{qr := monicDivide(p,x+1,x)}.
+}{
+\spadcommand{p - ((x+1) * qr.quotient + qr.remainder) \free{p}\free{qr}}
+}
+
+\xtc{
+If the \spadopFrom{/}{Fraction} operator is used with polynomials, a
+fraction object is created.
+In this example, the result is an object of type \spadtype{Fraction
+Polynomial Integer}.
+}{
+\spadcommand{p/q \free{p}\free{q}}
+}
+\xtc{
+If you use rational numbers as polynomial coefficients, the
+resulting object is of type \spadtype{Polynomial Fraction Integer}.
+}{
+\spadcommand{(2/3) * x^2 - y + 4/5 \bound{prev1}}
+}
+\xtc{
+This can be converted to a fraction of polynomials and back again, if
+required.
+}{
+\spadcommand{\% :: FRAC POLY INT \free{prev1}\bound{prev2}}
+}
+\xtc{
+}{
+\spadcommand{\% :: POLY FRAC INT \free{prev2}\bound{prev3}}
+}
+\xtc{
+To convert the coefficients to floating point,
+map the \spadfun{numeric} operation on the coefficients of the polynomial.
+}{
+\spadcommand{map(numeric,\%) \free{prev3}}
+}
+
+For more information on related topics, see
+\xmpref{UnivariatePolynomial},
+\xmpref{MultivariatePolynomial}, and
+\xmpref{DistributedMultivariatePolynomial}.
+You can also issue the system command
+\spadcmd{)show Polynomial}
+to display the full list of operations defined by
+\spadtype{Polynomial}.

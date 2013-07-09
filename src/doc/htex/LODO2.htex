@@ -1,0 +1,187 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+% lodo2.htex
+\spadtype{LinearOrdinaryDifferentialOperator2(A, M)} is the domain of linear
+\index{operator!linear ordinary differential}
+ordinary differential operators with coefficients in the differential ring
+\spad{A} and operating on \spad{M}, an \spad{A}-module.
+This includes the cases of operators which are polynomials in \spad{D}
+acting upon scalar or vector expressions of a single variable.
+The coefficients of the operator polynomials can be integers, rational
+functions, matrices or elements of other domains.
+\showBlurb{LinearOrdinaryDifferentialOperator2}
+
+% ----------------------------------------------------------------------
+\head{subsection}{Differential Operators with Constant Coefficients}{ugxLinearOrdinaryDifferentialOperatorTwoConst}
+% ----------------------------------------------------------------------
+
+This example shows differential operators with rational
+number coefficients operating on univariate polynomials.
+
+\labelSpace{3pc}
+\xtc{
+We begin by making type assignments so we can conveniently refer
+to univariate polynomials in \spad{x} over the rationals.
+}{
+\spadcommand{Q  := Fraction Integer \bound{Q}}
+}
+\xtc{
+}{
+\spadcommand{PQ := UnivariatePolynomial('x, Q) \free{Q}\bound{PQ0}}
+}
+\xtc{
+}{
+\spadcommand{x: PQ := 'x \free{PQ0}\bound{x}}
+}
+\xtc{
+Now we assign \spad{Dx} to be the differential operator
+\spadfunFrom{D}{LinearOrdinaryDifferentialOperator2}
+corresponding to \spad{d/dx}.
+}{
+\spadcommand{Dx: LODO2(Q, PQ) := D() \free{Q PQ0}\bound{Dx}}
+}
+\xtc{
+New operators are created as polynomials in \spad{D()}.
+}{
+\spadcommand{a := Dx  + 1 \bound{a}\free{Dx}}
+}
+\xtc{
+}{
+\spadcommand{b := a + 1/2*Dx^2 - 1/2 \bound{b}\free{Dx}}
+}
+\xtc{
+To apply the operator \spad{a} to the value \spad{p} the usual function
+call syntax is used.
+}{
+\spadcommand{p := 4*x^2 + 2/3 \free{x}\bound{p}}
+}
+\xtc{
+}{
+\spadcommand{a p \free{a p}}
+}
+\xtc{
+Operator multiplication is defined by the identity \spad{(a*b) p = a(b(p))}
+}{
+\spadcommand{(a * b) p = a b p \free{a b p}}
+}
+\xtc{
+Exponentiation follows from multiplication.
+}{
+\spadcommand{c := (1/9)*b*(a + b)^2 \free{a b}\bound{c}}
+}
+\xtc{
+Finally, note that operator expressions may be applied directly.
+}{
+\spadcommand{(a^2 - 3/4*b + c) (p + 1) \free{a b c p}}
+}
+
+\head{subsection}{Differential Operators with Matrix Coefficients Operating on Vectors}{ugxLinearOrdinaryDifferentialOperatorTwoMatrix}
+% ----------------------------------------------------------------------
+
+This is another example of linear ordinary differential
+operators with non-commutative multiplication.
+Unlike the rational function case, the differential ring of
+square matrices (of a given dimension) with univariate
+polynomial entries does not form a field.
+Thus the number of operations available is more limited.
+
+\labelSpace{1pc}
+\xtc{
+In this section, the operators have three by three
+matrix coefficients with polynomial entries.
+}{
+\spadcommand{PZ   := UnivariatePolynomial(x,Integer)\bound{PZ0}}
+}
+\xtc{
+}{
+\spadcommand{x:PZ := 'x \free{PZ0}\bound{PZ}}
+}
+\xtc{
+}{
+\spadcommand{Mat  := SquareMatrix(3,PZ)\free{PZ}\bound{Mat}}
+}
+\xtc{
+The operators act on the vectors considered as a \spad{Mat}-module.
+}{
+\spadcommand{Vect := DPMM(3, PZ, Mat, PZ);\free{PZ,Mat}\bound{Vect}}
+}
+\xtc{
+}{
+\spadcommand{Modo := LODO2(Mat, Vect);\free{Mat Vect}\bound{Modo}}
+}
+\xtc{
+The matrix \spad{m} is used as a coefficient and the vectors \spad{p}
+and \spad{q} are operated upon.
+}{
+\spadcommand{m:Mat := matrix [[x^2,1,0],[1,x^4,0],[0,0,4*x^2]]\free{Mat}\bound{m}}
+}
+\xtc{
+}{
+\spadcommand{p:Vect := directProduct [3*x^2+1,2*x,7*x^3+2*x]\free{Vect}\bound{p}}
+}
+\xtc{
+}{
+\spadcommand{q: Vect := m * p\free{m p Vect}\bound{q}}
+}
+\xtc{
+Now form a few operators.
+}{
+\spadcommand{Dx : Modo := D()\bound{Dx}\free{Modo}}
+}
+\xtc{
+}{
+\spadcommand{a : Modo := Dx  + m\bound{a}\free{m Dx}}
+}
+\xtc{
+}{
+\spadcommand{b : Modo := m*Dx  + 1\bound{b}\free{m Dx}}
+}
+\xtc{
+}{
+\spadcommand{c := a*b \bound{c}\free{a b}}
+}
+\xtc{
+These operators can be applied to vector values.
+}{
+\spadcommand{a p \free{p a}}
+}
+\xtc{
+}{
+\spadcommand{b p \free{p b}}
+}
+\xtc{
+}{
+\spadcommand{(a + b + c) (p + q) \free{a b c p q}}
+}

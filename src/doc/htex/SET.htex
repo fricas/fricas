@@ -1,0 +1,151 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+%
+% SET.htex
+
+The \spadtype{Set} domain allows one to represent explicit finite sets of values.
+These are similar to lists, but duplicate elements are not allowed.
+\xtc{
+Sets can be created by giving a fixed set of values \ldots
+}{
+\spadcommand{s := set [x^2-1, y^2-1, z^2-1] \bound{s}}
+}
+\xtc{
+or by using a collect form, just as for lists.
+In either case, the set is formed from a finite collection of values.
+}{
+\spadcommand{t := set [x^i - i+1 for i in 2..10 | prime? i] \bound{t}}
+}
+
+\xtc{
+The basic operations on sets are
+\spadfunFrom{intersect}{Set}, \spadfunFrom{union}{Set},
+\spadfunFrom{difference}{Set},
+and \spadfunFrom{symmetricDifference}{Set}.
+}{
+\spadcommand{i := intersect(s,t)      \free{s t}\bound{i}}
+}
+\xtc{
+}{
+\spadcommand{u := union(s,t)          \free{s t}\bound{u}}
+}
+\xtc{
+The set \spad{difference(s,t)} contains those members of \spad{s} which
+are not in \spad{t}.
+}{
+\spadcommand{difference(s,t)          \free{s t}}
+}
+\xtc{
+The set \spad{symmetricDifference(s,t)} contains those elements which are
+in \spad{s} or \spad{t} but not in both.
+}{
+\spadcommand{symmetricDifference(s,t)          \free{s t}}
+}
+
+\xtc{
+Set membership is tested using the \spadfunFrom{member?}{Set} operation.
+}{
+\spadcommand{member?(y, s)               \free{s}}
+}
+\xtc{
+}{
+\spadcommand{member?((y+1)*(y-1), s)     \free{s}}
+}
+\xtc{
+The \spadfunFrom{subset?}{Set} function determines whether one set is a subset
+of another.
+}{
+\spadcommand{subset?(i, s)               \free{i s}}
+}
+\xtc{
+}{
+\spadcommand{subset?(u, s)               \free{u s}}
+}
+
+\xtc{
+When the base type is finite, the absolute complement of a set is
+defined.
+This finds the set of all multiplicative generators of
+\spadtype{PrimeField 11}---the integers mod \spad{11.}
+}{
+\spadcommand{gs := set [g for i in 1..11 | primitive?(g := i::PF 11)] \bound{gs}}
+}
+\xtc{
+The following values are not generators.
+}{
+\spadcommand{complement gs \free{gs}}
+}
+
+Often the members of a set are computed individually; in addition,
+values can be inserted or removed from a set over the course of a
+computation.
+\xtc{
+There are two ways to do this:
+}{
+\spadcommand{a := set [i^2 for i in 1..5] \bound{a}}
+}
+\xtc{
+One is to view a set as a data structure and to apply updating operations.
+}{
+\spadcommand{insert!(32, a) \free{a}\bound{ainsert}}
+}
+\xtc{
+}{
+\spadcommand{remove!(25, a) \free{a}\bound{aremove}}
+}
+\xtc{
+}{
+\spadcommand{a \free{aremove ainsert}}
+}
+\xtc{
+The other way is to view a set as a mathematical entity and to
+create new sets from old.
+}{
+\spadcommand{b := b0 := set [i^2 for i in 1..5] \bound{b}}
+}
+\xtc{
+}{
+\spadcommand{b := union(b, {32})         \free{b}\bound{binsert}}
+}
+\xtc{
+}{
+\spadcommand{b := difference(b, {25})    \free{binsert}\bound{bremove}}
+}
+\xtc{
+}{
+\spadcommand{b0 \free{bremove}}
+}
+
+For more information about lists, see \xmpref{List}.
+\showBlurb{Set}

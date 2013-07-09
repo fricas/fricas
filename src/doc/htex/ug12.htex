@@ -1,0 +1,801 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+\texht{\setcounter{chapter}{11}}{} % Chapter 12
+
+% *********************************************************************
+\head{chapter}{Categories}{ugCategories}
+% *********************************************************************
+
+This chapter unravels the mysteries of categories---what
+\index{category}
+they are, how they are related to domains and packages,
+\index{category!constructor}
+how they are defined in \Language{}, and how you can extend the
+\index{constructor!category}
+system to include new categories of your own.
+
+We assume that you have read the introductory material on domains
+and categories in \spadref{ugTypesBasicDomainCons}.
+There you learned that the notion of packages covered in the
+previous chapter are special cases of domains.
+While this is in fact the case, it is useful here to regard domains
+as distinct from packages.
+
+Think of a domain as a datatype, a collection of objects (the
+objects of the domain).
+From your ``sneak preview'' in the previous chapter, you might
+conclude that categories are simply named clusters of operations
+exported by domains.
+As it turns out, categories have a much deeper meaning.
+Categories are fundamental to the design of \Language{}.
+They control the interactions between domains and algorithmic
+packages, and, in fact, between all the components of \Language{}.
+
+Categories form hierarchies as shown on the inside cover pages of
+this book.
+The inside front-cover pages illustrate the basic
+algebraic hierarchy of the \Language{} programming language.
+The inside back-cover pages show the hierarchy for data
+structures.
+
+Think of the category structures of \Language{} as a foundation
+for a city on which superstructures (domains) are built.
+The algebraic hierarchy, for example, serves as a foundation for
+constructive mathematical algorithms embedded in the domains of
+\Language{}.
+Once in place, domains can be constructed, either independently or
+from one another.
+
+Superstructures are built for quality---domains are compiled into
+machine code for run-time efficiency.
+You can extend the foundation in directions beyond the space
+directly beneath the superstructures, then extend selected
+superstructures to cover the space.
+Because of the compilation strategy, changing components of the
+foundation generally means that the existing superstructures
+(domains) built on the changed parts of the foundation
+(categories) have to be rebuilt---that is, recompiled.
+
+Before delving into some of the interesting facts about categories, let's see
+how you define them in \Language{}.
+
+% *********************************************************************
+\head{section}{Definitions}{ugCategoriesDefs}
+% *********************************************************************
+
+A category is defined by a function with exactly the same format as
+\index{category!definition}
+any other function in \Language{}.
+
+% ----------------------------------------------------------------------
+\beginImportant
+The definition of a category has the syntax:
+\begin{center}
+{\it CategoryForm} : {\tt Category\quad{}==\quad{}} {\it Extensions} {\tt [ with} {\it Exports} {\tt ]}
+\end{center}
+
+The brackets {\tt [ ]} here indicate optionality.
+\endImportant
+% ----------------------------------------------------------------------
+
+
+The first example of a category definition is
+\spadtype{SetCategory},
+the most basic of the algebraic categories in \Language{}.
+\exptypeindex{SetCategory}
+
+\begin{xmpLines}
+\xmpLine{SetCategory(): Category ==}{}
+\xmpLine{   Join(Type,CoercibleTo OutputForm) with}{}
+\xmpLine{      "=" : (\%, \%) -> Boolean}{}
+\end{xmpLines}
+
+The definition starts off with the name of the
+category (\spadtype{SetCategory}); this is
+always in column one in the source file.
+%% maybe talk about naming conventions for source files? .spad or .ax?
+All parts of a category definition are then indented with respect to this
+\index{indentation}
+first line.
+
+In \chapref{ugTypes}, we talked about \spadtype{Ring} as denoting the
+class of all domains that are rings, in short, the class of all
+rings.
+While this is the usual naming convention in \Language{}, it is also
+common to use the word ``Category'' at the end of a category name for clarity.
+The interpretation of the name \spadtype{SetCategory} is, then, ``the
+category of all domains that are (mathematical) sets.''
+
+The name \spadtype{SetCategory} is followed in the definition by its
+formal parameters enclosed in parentheses \spadSyntax{()}.
+Here there are no parameters.
+As required, the type of the result of this category function is the
+distinguished name {\sf Category}.
+
+Then comes the \spadSyntax{==}.
+As usual, what appears to the right of the \spadSyntax{==} is a
+definition, here, a category definition.
+A category definition always has two parts separated by the reserved word
+\spadkey{with}
+\spad{with}.
+%\footnote{Debugging hint: it is very easy to forget
+%the \spad{with}!}
+
+The first part tells what categories the category extends.
+Here, the category extends two categories: \spadtype{Type}, the
+category of all domains, and
+\spadtype{CoercibleTo(OutputForm)}.
+%\footnote{\spadtype{CoercibleTo(OutputForm)}
+%can also be written (and is written in the definition above) without
+%parentheses.}
+The operation \spad{Join} is a system-defined operation that
+\spadkey{Join}
+forms a single category from two or more other categories.
+
+Every category other than \spadtype{Type} is an extension of some other
+category.
+If, for example, \spadtype{SetCategory} extended only the category
+\spadtype{Type}, the definition here would read ``{\tt Type with
+...}''.
+In fact, the {\tt Type} is optional in this line; ``{\tt with
+...}'' suffices.
+
+% *********************************************************************
+\head{section}{Exports}{ugCategoriesExports}
+% *********************************************************************
+
+To the right of the \spad{with} is a list of
+\spadkey{with}
+all the \spadglossSee{exports}{export} of the category.
+Each exported operation has a name and a type expressed by a
+\spadgloss{declaration} of the form
+``{\frenchspacing\tt {\it name}: {\it type}}''.
+
+Categories can export symbols, as well as
+{\tt 0} and {\tt 1} which denote
+domain constants.\footnote{The
+numbers {\tt 0} and {\tt 1} are operation names in \Language{}.}
+In the current implementation, all other exports are operations with
+types expressed as \spadglossSee{mappings}{mapping} with the syntax
+\begin{center}
+{\it
+source\quad{\tt ->}\quad target
+}
+\end{center}
+
+The category \spadtype{SetCategory} has a single export: the operation
+\spadop{=} whose type is given by the mapping {\tt (\%, \%) -> Boolean}.
+The \spadSyntax{\%} in a mapping type always means ``the domain.'' Thus
+the operation \spadop{=} takes two arguments from the domain and
+returns a value of type \spadtype{Boolean}.
+
+The source part of the mapping here is given by a {\it tuple}
+\index{tuple}
+consisting of two or more types separated by commas and enclosed in
+parentheses.
+If an operation takes only one argument, you can drop the parentheses
+around the source type.
+If the mapping has no arguments, the source part of the mapping is either
+left blank or written as \spadSyntax{()}.
+Here are examples of formats of various operations with some
+contrived names.
+
+\begin{verbatim}
+someIntegerConstant  :    $
+aZeroArgumentOperation:   () -> Integer
+aOneArgumentOperation:    Integer -> $
+aTwoArgumentOperation:    (Integer,$) -> Void
+aThreeArgumentOperation:  ($,Integer,$) -> Fraction($)
+\end{verbatim}
+
+% *********************************************************************
+\head{section}{Documentation}{ugCategoriesDoc}
+% *********************************************************************
+
+The definition of \spadtype{SetCategory} above is  missing
+an important component: its library documentation.
+\index{documentation}
+Here is its definition, complete with documentation.
+
+\begin{xmpLines}
+\xmpLine{++ Description:}{}
+\xmpLine{++ \bs{}axiomType\{SetCategory\} is the basic category}{}
+\xmpLine{++ for describing a collection of elements with}{}
+\xmpLine{++ \bs{}axiomOp\{=\} (equality) and a \bs{}axiomFun\{coerce\}}{}
+\xmpLine{++ to \bs{}axiomType\{OutputForm\}.}{}
+\xmpLine{}{}
+\xmpLine{SetCategory(): Category ==}{}
+\xmpLine{  Join(Type, CoercibleTo OutputForm) with}{}
+\xmpLine{    "=": (\%, \%) -> Boolean}{}
+\xmpLine{      ++ \bs{}axiom\{x = y\} tests if \bs{}axiom\{x\} and}{}
+\xmpLine{      ++ \bs{}axiom\{y\} are equal.}{}
+\end{xmpLines}
+
+Documentary comments are an important part of constructor definitions.
+Documentation is given both for the category itself and for
+each export.
+A description for the category precedes the code.
+Each line of the description begins in column one with \axiomSyntax{++}.
+The description starts with the word {\tt Description:}.\footnote{Other
+information such as the author's name, date of creation, and so on,
+can go in this
+area as well but are currently ignored by \Language{}.}
+All lines of the description following the initial line are
+indented by the same amount.
+
+{\texht{\sloppy}{}
+Surround the name of any constructor (with or without parameters) with an
+\texht{\verb+\axiomType{}+}{\\axiomType\{\}}.
+Similarly, surround an
+operator name with \texht{\verb+\axiomOp{}+}{\\axiomOp\{\}},
+an \Language{} operation with \texht{\verb+\axiomFun{}+}{\\axiomFun\{\}}, and a
+variable or \Language{} expression with
+\texht{\verb+\axiom{}+}{\\axiom\{\}}.
+Library documentation is given in a \TeX{}-like language so that
+it can be used both for hard-copy and for \Browse{}.
+These different wrappings cause operations and types to have
+mouse-active buttons in \Browse{}.
+For hard-copy output, wrapped expressions appear in a different font.
+The above documentation appears in hard-copy as:
+
+}
+%
+\texht{\begin{quotation}}{\indent{3}}
+%
+\axiomType{SetCategory} is the basic category
+for describing a collection of elements with \axiomOp{=}
+(equality) and a \spadfun{coerce} to \axiomType{OutputForm}.
+%
+\texht{\end{quotation}}{\indent{0}}
+%
+and
+%
+\texht{\begin{quotation}}{\indent{3}}
+%
+\axiom{x = y} tests if \axiom{x} and \axiom{y} are equal.
+%
+\texht{\end{quotation}}{\indent{0}}
+%
+
+For our purposes in this chapter, we omit the documentation from further
+category descriptions.
+
+% *********************************************************************
+\head{section}{Hierarchies}{ugCategoriesHier}
+% *********************************************************************
+
+A second example of a category is
+\spadtype{SemiGroup}, defined by:
+\exptypeindex{SemiGroup}
+
+\begin{xmpLines}
+\xmpLine{SemiGroup(): Category == SetCategory with}{}
+\xmpLine{      "*":  (\%,\%) -> \%}{}
+\xmpLine{      "^": (\%, PositiveInteger) -> \%}{}
+\end{xmpLines}
+
+This definition is as simple as that for \spadtype{SetCategory},
+except that there are two exported operations.
+Multiple exported operations are written as a \spadgloss{pile},
+that is, they all begin in the same column.
+Here you see that the category mentions another type,
+\spadtype{PositiveInteger}, in a signature.
+Any domain can be used in a signature.
+
+Since categories extend one another, they form hierarchies.
+Each category other than \spadtype{Type} has one or more parents given
+by the one or more categories mentioned before the \spad{with} part of
+the definition.
+\spadtype{SemiGroup} extends \spadtype{SetCategory} and
+\spadtype{SetCategory} extends both \spadtype{Type} and
+\spadtype{CoercibleTo (OutputForm)}.
+Since \spadtype{CoercibleTo (OutputForm)} also extends \spadtype{Type},
+the mention of \spadtype{Type} in the definition is unnecessary but
+included for emphasis.
+
+% *********************************************************************
+\head{section}{Membership}{ugCategoriesMembership}
+% *********************************************************************
+
+We say a category designates a class of domains.
+What class of domains?
+\index{category!membership}
+That is, how does \Language{} know what domains belong to what categories?
+The simple answer to this basic question is key to the design of
+\Language{}:
+
+\beginImportant
+\begin{center}
+{\bf Domains belong to categories by assertion.}
+\end{center}
+\endImportant
+
+When a domain is defined, it is asserted to belong to one or more
+categories.
+Suppose, for example, that an author of domain \spadtype{String} wishes to
+use the binary operator \spadop{*} to denote concatenation.
+Thus \spad{"hello " * "there"} would produce the string
+\spad{"hello there"}\footnote{Actually, concatenation of strings in
+\Language{} is done by juxtaposition or by using the operation
+\spadfunFrom{concat}{String}.
+The expression \spad{"hello " "there"} produces the string
+\spad{"hello there"}.}.
+The author of \spadtype{String} could then assert that \spadtype{String}
+is a member of \spadtype{SemiGroup}.
+According to our definition of \spadtype{SemiGroup}, strings
+would then also have the operation \spadop{^} defined automatically.
+Then \spad{"--" ^ 4} would produce a string of eight dashes
+\spad{"--------"}.
+Since \spadtype{String} is a member of \spadtype{SemiGroup}, it also is
+a member of \spadtype{SetCategory} and thus has an operation
+\spadop{=} for testing that two strings are equal.
+
+\texht{Now turn to the algebraic category hierarchy inside the
+front cover of this book.}{}
+Any domain that is a member of a
+category extending \spadtype{SemiGroup} is a member of
+\spadtype{SemiGroup} (that is, it {\it is} a semigroup).
+In particular, any domain asserted to be a \spadtype{Ring} is a
+semigroup since \spadtype{Ring} extends \spadtype{Monoid}, that,
+in turn, extends \spadtype{SemiGroup}.
+The definition of \spadtype{Integer} in \Language{} asserts that
+\spadtype{Integer} is a member of category
+\spadtype{IntegerNumberSystem}, that, in turn, asserts that it is
+a member of \spadtype{EuclideanDomain}.
+Now \spadtype{EuclideanDomain} extends
+\spadtype{PrincipalIdealDomain} and so on.
+If you trace up the hierarchy, you see that
+\spadtype{EuclideanDomain} extends \spadtype{Ring}, and,
+therefore, \spadtype{SemiGroup}.
+Thus \spadtype{Integer} is a semigroup and also exports the
+operations \spadop{*} and \spadop{^}.
+
+% *********************************************************************
+\head{section}{Defaults}{ugCategoriesDefaults}
+% *********************************************************************
+
+We actually omitted the last
+\index{category!defaults}
+part of the definition of
+\index{default definitions}
+\spadtype{SemiGroup} in
+\spadref{ugCategoriesHier}.
+Here now is its complete \Language{} definition.
+
+\begin{xmpLines}
+\xmpLine{SemiGroup(): Category == SetCategory with}{}
+\xmpLine{      "*": (\%, \%) -> \%}{}
+\xmpLine{      "^": (\%, PositiveInteger) -> \%}{}
+\xmpLine{    add}{}
+\xmpLine{      import RepeatedSquaring(\%)}{}
+\xmpLine{      x: \% ^ n: PositiveInteger == expt(x,n)}{}
+\end{xmpLines}
+
+The \spad{add} part at the end is used to give ``default definitions'' for
+\spadkey{add}
+exported operations.
+Once you have a multiplication operation \spadop{*}, you can
+define exponentiation
+for positive integer exponents
+using repeated multiplication:
+\begin{texonly}
+\narrowDisplay{x^n = {\underbrace{x \, x \, x \, \cdots \,
+x}_{\displaystyle n \hbox{\ times}}}}
+\end{texonly}%
+\htonly
+\begin{center}
+\spad{x ^ n = x * x * ... * x}   ( \spad{n} copies of \spad{x} )
+\end{center}
+\endhtonly
+This definition for \spadop{^} is called a {\it default} definition.
+In general, a category can give default definitions for any
+operation it exports.
+Since \spadtype{SemiGroup} and all its category descendants in the hierarchy
+export \spadop{^}, any descendant category may redefine \spadop{^} as well.
+
+A domain of category \spadtype{SemiGroup}
+(such as \spadtype{Integer}) may or may not choose to
+define its own \spadop{^} operation.
+If it does not, a default definition that is closest (in a ``tree-distance''
+sense of the hierarchy) to the domain is chosen.
+
+The part of the category definition following an \spadop{add} operation
+is a \spadgloss{capsule}, as discussed in
+\texht{the previous chapter.}{\chapref{ugPackages}.}
+The line
+\begin{verbatim}
+import RepeatedSquaring(%)
+\end{verbatim}
+references the package
+\spadtype{RepeatedSquaring(\%)}, that is, the package
+\spadtype{RepeatedSquaring} that takes ``this domain'' as its
+parameter.
+For example, if the semigroup \spadtype{Polynomial (Integer)}
+does not define its own exponentiation operation, the
+definition used may come from the package
+\spadtype{RepeatedSquaring (Polynomial (Integer))}.
+The next line gives the definition in terms of \spadfun{expt} from that
+package.
+
+The default definitions are collected to form a ``default
+package'' for the category.
+The name of the package is the same as  the category but with an
+ampersand (\spadSyntax{\&}) added at the end.
+A default package always takes an additional argument relative to the
+category.
+Here is the definition of the default package \pspadtype{SemiGroup\&} as
+automatically generated by \Language{} from the above definition of
+\spadtype{SemiGroup}.
+
+\begin{xmpLines}
+\xmpLine{SemiGroup\_\&(\%): Exports == Implementation where}{}
+\xmpLine{  \%: SemiGroup}{}
+\xmpLine{  Exports == with}{}
+\xmpLine{    "^": (\%, PositiveInteger) -> \%}{}
+\xmpLine{  Implementation == add}{}
+\xmpLine{    import RepeatedSquaring(\%)}{}
+\xmpLine{    x:\% ^ n:PositiveInteger == expt(x,n)}{}
+\end{xmpLines}
+
+% *********************************************************************
+\head{section}{Axioms}{ugCategoriesAxioms}
+% *********************************************************************
+
+In \texht{the previous section}{\spadref{ugCategoriesDefaults}} you saw the
+complete \Language{} program defining \index{axiom}
+\spadtype{SemiGroup}.
+According to this definition, semigroups (that is, are sets with
+the operations \spadopFrom{*}{SemiGroup} and
+\spadopFrom{^}{SemiGroup}.
+\exptypeindex{SemiGroup}
+
+You might ask: ``Aside from the notion of default packages, isn't
+a category just a \spadgloss{macro}, that is, a shorthand
+equivalent to the two operations \spadop{*} and \spadop{^} with
+their types?'' If a category were a macro, every time you saw the
+word \spadtype{SemiGroup}, you would rewrite it by its list of
+exported operations.
+Furthermore, every time you saw the exported operations of
+\spadtype{SemiGroup} among the exports of a constructor, you could
+conclude that the constructor exported \spadtype{SemiGroup}.
+
+A category is {\it not} a macro and here is why.
+The definition for \spadtype{SemiGroup} has documentation that states:
+
+\texht{\begin{quotation}}{\indent{3}}
+    Category \spadtype{SemiGroup} denotes the class of all multiplicative
+    semigroups, that is, a set with an associative operation \spadop{*}.
+
+    \texht{\vskip .5\baselineskip}{}
+    {Axioms:}
+
+    {\small\tt associative("*" : (\%,\%)->\%) -- (x*y)*z = x*(y*z)}
+\texht{\end{quotation}}{\indent{3}}
+
+According to the author's remarks, the mere
+exporting of an operation named \spadop{*} and \spadop{^} is not
+enough to qualify the domain as a \spadtype{SemiGroup}.
+In fact, a domain can be a semigroup only if it explicitly
+exports a \spadop{^} and
+a \spadop{*} satisfying the associativity axiom.
+
+In general, a category name implies a set of axioms, even mathematical
+theorems.
+There are numerous axioms from \spadtype{Ring}, for example,
+that are well-understood from the literature.
+No attempt is made to list them all.
+Nonetheless, all such mathematical facts are implicit by the use of the
+name \spadtype{Ring}.
+
+% *********************************************************************
+\head{section}{Correctness}{ugCategoriesCorrectness}
+% *********************************************************************
+
+While such statements are only comments,
+\index{correctness}
+\Language{} can enforce their intention simply by shifting the burden of
+responsibility onto the author of a domain.
+A domain belongs to category \spad{Ring} only if the
+author asserts that the domain  belongs to \spadtype{Ring} or
+to a category that extends \spadtype{Ring}.
+
+This principle of assertion is important for large user-extendable
+systems.
+\Language{} has a large library of operations offering facilities in
+many areas.
+Names such as \spadfun{norm} and \spadfun{product}, for example, have
+diverse meanings in diverse contexts.
+An inescapable hindrance to users would be to force those who wish to
+extend \Language{} to always invent new names for operations.
+%>> I don't think disambiguate is really a word, though I like it
+\Language{} allows you to reuse names, and then use context to disambiguate one
+from another.
+
+Here is another example of why this is important.
+Some languages, such as {\bf APL},
+\index{APL}
+denote the \spadtype{Boolean} constants \spad{true} and
+\spad{false} by the integers \spad{1} and \spad{0}.
+You may want to let infix operators \spadop{+} and \spadop{*} serve as the logical
+operators \spadfun{or} and \spadfun{and}, respectively.
+But note this: \spadtype{Boolean} is not a ring.
+The {\it inverse axiom} for \spadtype{Ring} states:
+%
+\begin{center}
+Every element \spad{x} has an additive inverse \spad{y} such that
+\spad{x + y = 0}.
+\end{center}
+%
+\spadtype{Boolean} is not a ring since \spad{true} has
+no inverse---there is no inverse element \spad{a} such that
+\spad{1 + a = 0} (in terms of booleans, \spad{(true or a) = false}).
+Nonetheless, \Language{} {\it could} easily and correctly implement
+\spadtype{Boolean} this way.
+\spadtype{Boolean} simply would not assert that it is of category
+\spadtype{Ring}.
+Thus the \spadop{+} for \spadtype{Boolean} values
+is not confused with the one for \spadtype{Ring}.
+Since the \spadtype{Polynomial} constructor requires its argument
+to be a ring, \Language{} would then refuse to build the
+domain \spadtype{Polynomial(Boolean)}. Also, \Language{} would refuse to
+wrongfully apply algorithms to \spadtype{Boolean} elements that  presume that the
+ring axioms for \spadop{+} hold.
+
+% *********************************************************************
+\head{section}{Attributes}{ugCategoriesAttributes}
+% *********************************************************************
+
+Most axioms are not computationally useful.
+Those that are can be explicitly expressed by what \Language{} calls an
+\spadgloss{attribute}.
+The attribute \spadatt{CommutativeStar}, for example, is used to assert
+that a domain has commutative multiplication.
+Its definition is given by its documentation:
+
+\texht{\begingroup \parindent=1pc \narrower\noindent}{\indent{3}}%
+    A domain \spad{R} has \spadatt{CommutativeStar}
+    if it has an operation "*": \spadsig{(R,R)}{R} such that \spad{x * y = y * x}.
+\texht{\par\endgroup}{\indent{0}}
+
+Just as you can test whether a domain has the category \spadtype{Ring}, you
+can test that a domain has a given attribute.
+
+\xtc{
+Do polynomials over the integers
+have commutative multiplication?
+}{
+\spadcommand{Polynomial Integer has CommutativeStar}
+}
+\xtc{
+Do matrices over the integers
+have commutative multiplication?
+}{
+\spadcommand{Matrix Integer has CommutativeStar}
+}
+
+Attributes are used to conditionally export and define
+operations for a domain (see \spadref{ugDomainsAssertions}).
+Attributes can also be asserted in a category definition.
+
+After mentioning category \spadtype{Ring} many times in this book,
+it is high time that we show you its definition:
+\exptypeindex{Ring}
+
+\begin{xmpLines}
+\xmpLine{Ring(): Category ==}{}
+\xmpLine{  Join(Rng,Monoid,LeftModule(\%: Rng)) with}{}
+\xmpLine{      characteristic: -> NonNegativeInteger}{}
+\xmpLine{      coerce: Integer -> \%}{}
+\xmpLine{      unitsKnown}{}
+\xmpLine{    add}{}
+\xmpLine{      n:Integer}{}
+\xmpLine{      coerce(n) == n * 1\$\%}{}
+\end{xmpLines}
+
+There are only two new things here.
+First, look at the \spadSyntax{\$\%} on the last line.
+This is not a typographic error!
+The \spadSyntax{\$} says that the \spad{1} is to come from some
+domain.
+The \spadSyntax{\%} says that the domain is ``this domain.''
+If \spadSyntax{\%} is \spadtype{Fraction(Integer)}, this line reads {\tt
+coerce(n) == n * 1\$Fraction(Integer)}.
+
+The second new thing is the presence of attribute ``\spad{unitsKnown}''.
+\Language{} can always distinguish an attribute from an operation.
+An operation has a name and a type. An attribute has no type.
+The attribute \spadatt{unitsKnown} asserts a rather subtle mathematical
+fact that is normally taken for granted when working with
+rings.\footnote{With this axiom, the units of a domain are the set of
+elements \spad{x} that each have a multiplicative
+inverse \spad{y} in the domain.
+Thus \spad{1} and \spad{-1} are units in domain \spadtype{Integer}.
+Also, for \spadtype{Fraction Integer}, the domain of rational numbers,
+all non-zero elements are units.}
+Because programs can test for this attribute, \Language{} can
+correctly handle rather more complicated mathematical structures (ones
+that are similar to rings but do not have this attribute).
+
+% *********************************************************************
+\head{section}{Parameters}{ugCategoriesParameters}
+% *********************************************************************
+
+Like domain constructors, category constructors can also have
+parameters.
+For example, category \spadtype{MatrixCategory} is a parameterized
+category for defining matrices over a ring \spad{R} so that the
+matrix domains can have
+different representations and indexing schemes.
+Its definition has the form:
+
+\begin{xmpLines}
+\xmpLine{MatrixCategory(R,Row,Col): Category ==}{}
+\xmpLine{    TwoDimensionalArrayCategory(R,Row,Col) with ...}{}
+\end{xmpLines}
+
+The category extends \spadtype{TwoDimensionalArrayCategory} with
+the same arguments.
+You cannot find \spadtype{TwoDimensionalArrayCategory} in the
+algebraic hierarchy listing.
+Rather, it is a member of the data structure hierarchy,
+given inside the back cover of this book.
+In particular, \spadtype{TwoDimensionalArrayCategory} is an extension of
+\spadtype{HomogeneousAggregate} since its elements are all one type.
+
+The domain \spadtype{Matrix(R)}, the class of matrices with coefficients
+from domain \spad{R}, asserts that it is a member of category
+\spadtype{MatrixCategory(R, Vector(R), Vector(R))}.
+The parameters of a category must also have types.
+The first parameter to \spadtype{MatrixCategory}
+\spad{R} is required to be a ring.
+The second and third are required to be domains of category
+\spadtype{FiniteLinearAggregate(R)}.\footnote{%
+This is another extension of
+\spadtype{HomogeneousAggregate} that you can see in
+the data structure hierarchy.}
+In practice, examples of categories having parameters other than
+domains are rare.
+
+Adding the declarations for parameters to the definition for
+\spadtype{MatrixCategory}, we have:
+
+\begin{xmpLines}
+\xmpLine{R: Ring}{}
+\xmpLine{(Row, Col): FiniteLinearAggregate(R)}{}
+\xmpLine{}{}
+\xmpLine{MatrixCategory(R, Row, Col): Category ==}{}
+\xmpLine{    TwoDimensionalArrayCategory(R, Row, Col) with ...}{}
+\end{xmpLines}
+
+% *********************************************************************
+\head{section}{Conditionals}{ugCategoriesConditionals}
+% *********************************************************************
+
+As categories have parameters, the actual operations exported by a
+\index{conditional}
+category can depend on these parameters.
+As an example, the operation \spadfunFrom{determinant}{MatrixCategory}
+from category \spadtype{MatrixCategory} is only exported when the
+underlying domain \spad{R} has commutative multiplication:
+
+\begin{verbatim}
+if R has CommutativeRing then
+   determinant: % -> R
+\end{verbatim}
+
+Conditionals can also define conditional extensions of a category.
+Here is a portion of the definition of \spadtype{QuotientFieldCategory}:
+\exptypeindex{QuotientFieldCategory}
+
+\begin{xmpLines}
+\xmpLine{QuotientFieldCategory(R) : Category == ... with ...}{}
+\xmpLine{     if R has OrderedSet then OrderedSet}{}
+\xmpLine{     if R has IntegerNumberSystem then}{}
+\xmpLine{       ceiling: \% -> R}{}
+\xmpLine{         ...}{}
+\end{xmpLines}
+
+Think of category \spadtype{QuotientFieldCategory(R)} as
+denoting the domain \spadtype{Fraction(R)}, the
+class of all fractions of the form \smath{a/b} for elements of \spad{R}.
+The first conditional means in English:
+``If the elements of \spad{R} are totally ordered (\spad{R}
+is an \spadtype{OrderedSet}), then so are the fractions \smath{a/b}''.
+\exptypeindex{Fraction}
+
+The second conditional is used to conditionally export an
+operation \spadfun{ceiling} which returns the smallest integer
+greater than or equal to its argument.
+Clearly, ``ceiling'' makes sense for integers but not for
+polynomials and other algebraic structures.
+Because of this conditional,
+the domain \spadtype{Fraction(Integer)} exports
+an operation
+\spadfun{ceiling}: \spadsig{Fraction Integer}{Integer}, but
+\spadtype{Fraction Polynomial Integer} does not.
+
+Conditionals can also appear in the default definitions for the
+operations of a category.
+For example, a default definition for \spadfunFrom{ceiling}{Field}
+within the part following the \spadop{add} reads:
+
+\begin{verbatim}
+if R has IntegerNumberSystem then
+    ceiling x == ...
+\end{verbatim}
+
+Here the predicate used is identical to the predicate
+in the {\tt Exports} part.
+This need not be the case.
+See \spadref{ugPackagesConds} for a more complicated example.
+
+% *********************************************************************
+\head{section}{Anonymous Categories}{ugCategoriesAndPackages}
+% *********************************************************************
+
+The part of a category to the right of a {\tt with} is also
+regarded as a category---an ``anonymous category.''
+Thus you have already seen a   category definition
+\index{category!anonymous}  in \chapref{ugPackages}.
+The {\tt Exports} part of the package \pspadtype{DrawComplex}
+(\spadref{ugPackagesAbstract}) is an anonymous category.
+This is not necessary.
+We could, instead, give this category a name:
+
+%
+\begin{xmpLines}
+\xmpLine{DrawComplexCategory(): Category == with}{}
+\xmpLine{   drawComplex: (C -> C,S,S,Boolean) -> VIEW3D}{}
+\xmpLine{   drawComplexVectorField: (C -> C,S,S) -> VIEW3D}{}
+\xmpLine{   setRealSteps: INT -> INT}{}
+\xmpLine{   setImagSteps: INT -> INT}{}
+\xmpLine{   setClipValue: DFLOAT-> DFLOAT}{}
+\end{xmpLines}
+%
+and then define \spadtype{DrawComplex} by:
+%
+\begin{xmpLines}
+\xmpLine{DrawComplex(): DrawComplexCategory == Implementation}{}
+\xmpLine{   where}{}
+\xmpLine{      ...}{}
+\end{xmpLines}
+%
+
+There is no reason, however, to give this list of exports a name
+since no other domain or package exports it.
+In fact, it is rare for a package to export a named category.
+As you will see in the next chapter, however, it is very common
+for the definition of domains to mention one or more category
+before the {\tt with}.
+\spadkey{with}

@@ -1,0 +1,232 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+ 
+The domain constructor \spadtype{DeRhamComplex} creates the
+class of differential forms of arbitrary degree over a coefficient ring.
+The De Rham complex constructor takes two arguments: a ring, \spad{coefRing,}
+and a list of coordinate variables.
+ 
+\xtc{
+This is the ring of coefficients.
+}{
+\spadcommand{coefRing := Integer \bound{coefRing}}
+}
+\xtc{
+These are the coordinate variables.
+}{
+\spadcommand{lv : List Symbol := [x,y,z] \bound{lv}}
+}
+\xtc{
+This is the De Rham complex of Euclidean three-space using
+coordinates \spad{x, y} and \spad{z.}
+}{
+\spadcommand{der := DERHAM(coefRing,lv) \free{coefRing}\free{lv}\bound{der}}
+}
+ 
+This complex allows us to describe differential forms having
+expressions of integers as coefficients.
+These coefficients can involve any number of variables, for example,
+\spad{f(x,t,r,y,u,z).}
+As we've chosen to work with ordinary
+Euclidean three-space, expressions involving these forms
+are treated as functions of
+\spad{x, y} and \spad{z} with the additional arguments
+\spad{t, r} and \spad{u} regarded as symbolic constants.
+\xtc{
+Here are some examples of coefficients.
+}{
+\spadcommand{R := Expression coefRing \free{coefRing}\bound{R}}
+}
+\xtc{
+}{
+\spadcommand{f : R := x^2*y*z-5*x^3*y^2*z^5 \free{R}\bound{f}}
+}
+\xtc{
+}{
+\spadcommand{g : R := z^2*y*cos(z)-7*sin(x^3*y^2)*z^2 \free{R}\bound{g}}
+}
+\xtc{
+}{
+\spadcommand{h : R :=x*y*z-2*x^3*y*z^2 \free{R}\bound{h}}
+}
+\xtc{
+We now define
+the multiplicative basis elements for the exterior algebra over \spad{R}.
+}{
+\spadcommand{dx : der := generator(1) \free{der}\bound{dx}}
+}
+\xtc{
+}{
+\spadcommand{dy : der := generator(2)\free{der}\bound{dy}}
+}
+\xtc{
+}{
+\spadcommand{dz : der := generator(3)\free{der}\bound{dz}}
+}
+\xtc{
+This is an alternative way to give the above assignments.
+}{
+\spadcommand{[dx,dy,dz] := [generator(i)\$der for i in 1..3] \free{der}\bound{dxyz}}
+}
+\xtc{
+Now we define some one-forms.
+}{
+\spadcommand{alpha : der := f*dx + g*dy + h*dz \bound{alpha}\free{der f g h dxyz}}
+}
+\xtc{
+}{
+\spadcommand{beta  : der := cos(tan(x*y*z)+x*y*z)*dx + x*dy \bound{beta}\free{der f g h dxyz}}
+}
+\xtc{
+A well-known theorem states that the composition of
+\spadfunFrom{exteriorDifferential}{DeRhamComplex}
+with itself is the zero map for continuous forms.
+Let's verify this theorem for \spad{alpha}.
+}{
+\spadcommand{exteriorDifferential alpha; \free{alpha}\bound{ed}}
+}
+\xtc{
+We suppressed the lengthy output of the last expression, but nevertheless, the
+composition is zero.
+}{
+\spadcommand{exteriorDifferential \% \free{ed}}
+}
+ 
+\xtc{
+Now we check that \spadfunFrom{exteriorDifferential}{DeRhamComplex}
+is a ``graded derivation'' \spad{D,} that is, \spad{D} satisfies:
+\begin{texonly}
+$$  D(a b) = D(a) b + (-1)^{degree(a)} a D(b) $$
+\end{texonly}
+\htonly
+\begin{verbatim}
+D(a*b) = D(a)*b + (-1)^degree(a)*a*D(b)
+\end{verbatim}
+\endhtonly
+}{
+\spadcommand{gamma := alpha * beta \bound{gamma}\free{alpha}\free{beta}}
+}
+\xtc{
+We try this for the one-forms \spad{alpha} and \spad{beta}.
+}{
+\spadcommand{exteriorDifferential(gamma) - (exteriorDifferential(alpha)*beta - alpha * exteriorDifferential(beta)) \free{alpha beta gamma}}
+}
+\xtc{
+Now we define some ``basic operators'' (see \xmpref{Operator}).
+\index{operator}
+}{
+\spadcommand{a : BOP := operator('a) \bound{ao}}
+}
+\xtc{
+}{
+\spadcommand{b : BOP := operator('b) \bound{bo}}
+}
+\xtc{
+}{
+\spadcommand{c : BOP := operator('c) \bound{co}}
+}
+\xtc{
+We also define
+some indeterminate one- and two-forms using these operators.
+}{
+\spadcommand{sigma := a(x,y,z) * dx + b(x,y,z) * dy + c(x,y,z) * dz \bound{sigma}\free{ao bo co dxyz}}
+}
+\xtc{
+}{
+\spadcommand{theta  := a(x,y,z) * dx * dy + b(x,y,z) * dx * dz + c(x,y,z) * dy * dz \bound{theta}\free{ao bo co dxyz}}
+}
+ 
+\xtc{
+This allows us to get formal definitions for the ``gradient'' \ldots
+}{
+\spadcommand{totalDifferential(a(x,y,z))\$der \free{ao der}}
+}
+\xtc{
+the ``curl'' \ldots
+}{
+\spadcommand{exteriorDifferential sigma \free{sigma}}
+}
+\xtc{
+and the ``divergence.''
+}{
+\spadcommand{exteriorDifferential theta \free{theta}}
+}
+ 
+\xtc{
+Note that the De Rham complex is an algebra with unity.
+This element \spad{1} is the basis for elements for zero-forms, that is,
+functions in our space.
+}{
+\spadcommand{one : der := 1 \bound{one}\free{der}}
+}
+ 
+\xtc{
+To convert a function to a function lying in the De Rham complex,
+multiply the function by ``one.''
+}{
+\spadcommand{g1 : der := a([x,t,y,u,v,z,e]) * one \free{der one ao}\bound{g1}}
+}
+\xtc{
+A current limitation of \Language{} forces you to write
+functions with more than four arguments using square brackets in this way.
+}{
+\spadcommand{h1 : der := a([x,y,x,t,x,z,y,r,u,x]) * one \free{der one ao}\bound{h1}}
+}
+ 
+\xtc{
+Now note how the system keeps track of where your coordinate functions
+are located in expressions.
+}{
+\spadcommand{exteriorDifferential g1 \free{g1}}
+}
+\xtc{
+}{
+\spadcommand{exteriorDifferential h1 \free{h1}}
+}
+ 
+\xtc{
+In this example of Euclidean three-space, the basis for the De Rham complex
+consists of the eight forms: \spad{1}, \spad{dx}, \spad{dy}, \spad{dz},
+\spad{dx*dy}, \spad{dx*dz}, \spad{dy*dz}, and \spad{dx*dy*dz}.
+}{
+\spadcommand{coefficient(gamma, dx*dy) \free{gamma dxyz}}
+}
+\xtc{
+}{
+\spadcommand{coefficient(gamma, one) \free{gamma one}}
+}
+\xtc{
+}{
+\spadcommand{coefficient(g1,one) \free{g1 one}}
+}

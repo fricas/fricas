@@ -1,0 +1,137 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+% radix.htex
+It possible to expand numbers in general bases.
+
+\labelSpace{2pc}
+\xtc{
+Here we expand \spad{111} in base \spad{5}.
+This means
+\texht{$10^2+10^1+10^0 = 4 \cdot 5^2+2 \cdot 5^1 + 5^0.$}{%
+\spad{10^2+10^1+10^0 = 4*5^2+2*5^1+5^0.}}
+}{
+\spadcommand{111::RadixExpansion(5)}
+}
+
+\xtc{
+You can expand fractions to form repeating expansions.
+}{
+\spadcommand{(5/24)::RadixExpansion(2)}
+}
+\xtc{
+}{
+\spadcommand{(5/24)::RadixExpansion(3)}
+}
+\xtc{
+}{
+\spadcommand{(5/24)::RadixExpansion(8)}
+}
+\xtc{
+}{
+\spadcommand{(5/24)::RadixExpansion(10)}
+}
+\xtc{
+For bases from 11 to 36 the letters A through Z are used.
+}{
+\spadcommand{(5/24)::RadixExpansion(12)}
+}
+\xtc{
+}{
+\spadcommand{(5/24)::RadixExpansion(16)}
+}
+\xtc{
+}{
+\spadcommand{(5/24)::RadixExpansion(36)}
+}
+\xtc{
+For bases greater than 36, the ragits are separated by blanks.
+}{
+\spadcommand{(5/24)::RadixExpansion(38)}
+}
+\xtc{
+The \spadtype{RadixExpansion} type provides operations to obtain the
+individual ragits.
+Here is a rational number in base \spad{8}.
+}{
+\spadcommand{a := (76543/210)::RadixExpansion(8) \bound{a}}
+}
+\xtc{
+The operation \spadfunFrom{wholeRagits}{RadixExpansion} returns a list of the
+ragits for the integral part of the number.
+}{
+\spadcommand{w := wholeRagits a \free{a}\bound{w}}
+}
+\xtc{
+The operations \spadfunFrom{prefixRagits}{RadixExpansion} and \spadfunFrom{cycleRagits}{RadixExpansion}
+return lists of the initial and repeating ragits in the
+fractional part of the number.
+}{
+\spadcommand{f0 := prefixRagits a \free{a}\bound{f0}}
+}
+\xtc{
+}{
+\spadcommand{f1 := cycleRagits a \free{a}\bound{f1}}
+}
+\xtc{
+You can construct any radix expansion by giving the
+whole, prefix and cycle parts.
+The declaration is necessary to let \Language{}
+know the base of the ragits.
+}{
+\spadcommand{u:RadixExpansion(8):=wholeRadix(w)+fractRadix(f0,f1) \free{w f0 f1}\bound{u}}
+}
+\xtc{
+If there is no repeating part, then the list \spad{[0]} should be used.
+}{
+\spadcommand{v: RadixExpansion(12) := fractRadix([1,2,3,11], [0]) \bound{v}}
+}
+\xtc{
+If you are not interested in the repeating nature of the expansion,
+an infinite stream of ragits can be obtained using
+\spadfunFrom{fractRagits}{RadixExpansion}.
+}{
+\spadcommand{fractRagits(u) \free{u}}
+}
+\xtc{
+Of course, it's possible to recover the fraction representation:
+}{
+\spadcommand{a :: Fraction(Integer) \free{a}}
+}
+
+\showBlurb{RadixExpansion}
+More examples of expansions are available in
+\xmpref{DecimalExpansion},
+\xmpref{BinaryExpansion}, and
+\xmpref{HexadecimalExpansion}.

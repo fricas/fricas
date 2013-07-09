@@ -1,0 +1,164 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+The domain \spadtype{KeyedAccessFile(S)} provides files which can be used as
+\index{file!keyed access}
+associative tables.
+Data values are stored in these files and can be retrieved according to
+their keys.
+The keys must be strings so this type behaves very much like the
+\spadtype{StringTable(S)} domain.
+The difference is that keyed access files reside in secondary storage while
+string tables are kept in memory.
+For more information on table-oriented operations, see the description of
+\spadtype{Table}.
+
+\xtc{
+Before a keyed access file can be used, it must first be opened.
+A new file can be created by opening it for output.
+}{
+\spadcommand{ey: KeyedAccessFile(Integer) := open("/tmp/editor.year", "output")  \bound{ey}}
+}
+\xtc{
+Just as for vectors, tables or lists, values are saved in a keyed access file
+by setting elements.
+}{
+\spadcommand{ey."Char"     := 1986 \free{ey}\bound{eya}}
+}
+\xtc{
+}{
+\spadcommand{ey."Caviness" := 1985 \free{ey}\bound{eyb}}
+}
+\xtc{
+}{
+\spadcommand{ey."Fitch"    := 1984 \free{ey}\bound{eyc}}
+}
+\xtc{
+Values are retrieved using application, in any of its syntactic forms.
+}{
+\spadcommand{ey."Char"     \free{eya}}
+}
+\xtc{
+}{
+\spadcommand{ey("Char")    \free{eya}}
+}
+\xtc{
+}{
+\spadcommand{ey "Char"     \free{eya}}
+}
+\xtc{
+Attempting to retrieve a non-existent element in this way causes an error.
+If it is not known whether a key exists, you should use the
+\spadfunFrom{search}{KeyedAccessFile} operation.
+}{
+\spadcommand{search("Char", ey)   \free{eya,eyb,eyc}\bound{eyaa}}
+}
+\xtc{
+}{
+\spadcommand{search("Smith", ey)  \free{eyaa}}
+}
+\xtc{
+When an entry is no longer needed, it can be removed from the file.
+}{
+\spadcommand{remove!("Char", ey)  \free{eyaa}\bound{eybb}}
+}
+\xtc{
+The \spadfunFrom{keys}{KeyedAccessFile} operation returns a list of all the
+keys for a given file.
+}{
+\spadcommand{keys ey  \free{eybb}}
+}
+\xtc{
+The \spadfunFrom{\#}{KeyedAccessFile} operation gives the
+number of entries.
+}{
+\spadcommand{\#ey     \free{eybb}}
+}
+
+The table view of keyed access files provides safe operations.
+That is, if the \Language{} program is terminated between file operations,
+the file is left in a consistent, current state.
+This means, however, that the operations are somewhat costly.
+For example, after each update the file is closed.
+\xtc{
+Here we add several more items to the file, then check its contents.
+}{
+\spadcommand{KE := Record(key: String, entry: Integer)  \bound{KE}}
+}
+\xtc{
+}{
+\spadcommand{reopen!(ey, "output")  \free{eybb,KE}\bound{eycc}}
+}
+\xtc{
+If many items are to be added to a file at the same time, then
+it is more efficient to use the \spadfunFromX{write}{KeyedAccessFile} operation.
+}{
+\spadcommand{write!(ey, ["van Hulzen", 1983]\$KE)  \bound{eyccA}\free{eycc}}
+}
+\xtc{
+}{
+\spadcommand{write!(ey, ["Calmet", 1982]\$KE)      \bound{eyccB}\free{eycc}}
+}
+\xtc{
+}{
+\spadcommand{write!(ey, ["Wang", 1981]\$KE)        \bound{eyccC}\free{eycc}}
+}
+\xtc{
+}{
+\spadcommand{close! ey   \free{eyccA,eyccB,eyccC}\bound{eydd}}
+}
+\xtc{
+The \spadfunFromX{read}{KeyedAccessFile} operation is also available from
+the file view, but it returns elements in a random order.
+It is generally clearer and more efficient to use the
+\spadfunFrom{keys}{KeyedAccessFile} operation and to extract elements by
+key.
+}{
+\spadcommand{keys ey     \free{eydd}}
+}
+\xtc{
+}{
+\spadcommand{members ey  \free{eydd}}
+}
+\noOutputXtc{
+}{
+\spadcommand{)system rm -r /tmp/editor.year  \free{ey}}
+}
+
+For more information on related topics,  see
+\xmpref{File},
+\xmpref{TextFile}, and
+\xmpref{Library}.
+%
+\showBlurb{KeyedAccessFile}

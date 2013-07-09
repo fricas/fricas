@@ -1,0 +1,302 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+% fr.htex
+\spadtype{Factored} creates a domain whose objects are kept in factored
+\index{factorization}
+form as long as possible.
+Thus certain operations like \spadopFrom{*}{Factored}
+(multiplication) and \spadfunFrom{gcd}{Factored} are relatively
+easy to do.
+Others, such as addition, require somewhat more work, and
+the result may not be completely factored
+unless the argument domain \spad{R} provides a
+\spadfunFrom{factor}{Factored} operation.
+Each object consists of a unit and a list of factors, where each
+factor consists of a member of \spad{R} (the {\em base}), an
+exponent, and a flag indicating what is known about the base.
+A flag may be one of \spad{"nil"}, \spad{"sqfr"}, \spad{"irred"}
+or \spad{"prime"}, which mean that nothing is known about the
+base, it is square-free, it is irreducible, or it is prime,
+respectively.
+The current restriction to factored objects of integral domains
+allows simplification to be performed without worrying about
+multiplication order.
+
+% ======================================================================
+\head{subsection}{Decomposing Factored Objects}{ugxFactoredDecomp}
+% ======================================================================
+
+\labelSpace{4pc}
+\xtc{
+In this section we will work with a factored integer.
+}{
+\spadcommand{g := factor(4312) \bound{g}}
+}
+\xtc{
+Let's begin by decomposing \spad{g} into pieces.
+The only possible units for integers are \spad{1} and \spad{-1}.
+}{
+\spadcommand{unit(g) \free{g}}
+}
+\xtc{
+There are three factors.
+}{
+\spadcommand{numberOfFactors(g) \free{g}}
+}
+\xtc{
+We can make a list of the bases, \ldots
+}{
+\spadcommand{[nthFactor(g,i) for i in 1..numberOfFactors(g)] \free{g}}
+}
+\xtc{
+and the exponents, \ldots
+}{
+\spadcommand{[nthExponent(g,i) for i in 1..numberOfFactors(g)] \free{g}}
+}
+\xtc{
+and the flags.
+You can see that all the bases (factors) are prime.
+}{
+\spadcommand{[nthFlag(g,i) for i in 1..numberOfFactors(g)] \free{g}}
+}
+\xtc{
+A useful operation for pulling apart a factored object into a list
+of records of the components is \spadfunFrom{factorList}{Factored}.
+}{
+\spadcommand{factorList(g) \free{g}}
+}
+\xtc{
+If you don't care about the flags, use \spadfunFrom{factors}{Factored}.
+}{
+\spadcommand{factors(g) \free{g}\bound{prev1}}
+}
+\xtc{
+Neither of these operations returns the unit.
+}{
+\spadcommand{first(\%).factor \free{prev1}}
+}
+
+% ======================================================================
+\head{subsection}{Expanding Factored Objects}{ugxFactoredExpand}
+% ======================================================================
+
+\labelSpace{4pc}
+\xtc{
+Recall that we are working with this factored integer.
+}{
+\spadcommand{g := factor(4312) \bound{g}}
+}
+\xtc{
+To multiply out the factors with their multiplicities, use
+\spadfunFrom{expand}{Factored}.
+}{
+\spadcommand{expand(g) \free{g}}
+}
+\xtc{
+If you would like, say, the distinct factors multiplied together
+but with multiplicity one, you could do it this way.
+}{
+\spadcommand{reduce(*,[t.factor for t in factors(g)]) \free{g}}
+}
+
+% ======================================================================
+\head{subsection}{Arithmetic with Factored Objects}{ugxFactoredArith}
+% ======================================================================
+
+\labelSpace{4pc}
+\xtc{
+We're still working with this factored integer.
+}{
+\spadcommand{g := factor(4312) \bound{g}}
+}
+\xtc{
+We'll also define this factored integer.
+}{
+\spadcommand{f := factor(246960) \bound{f}}
+}
+\xtc{
+Operations involving multiplication and division are particularly
+easy with factored objects.
+}{
+\spadcommand{f * g \free{f g}}
+}
+\xtc{
+}{
+\spadcommand{f^500 \free{f}}
+}
+\xtc{
+}{
+\spadcommand{gcd(f,g) \free{f g}}
+}
+\xtc{
+}{
+\spadcommand{lcm(f,g) \free{f g}}
+}
+\xtc{
+If we use addition and subtraction things can slow down because
+we may need to compute greatest common divisors.
+}{
+\spadcommand{f + g \free{f g}}
+}
+\xtc{
+}{
+\spadcommand{f - g \free{f g}}
+}
+\xtc{
+Test for equality with \spad{0} and \spad{1} by using
+\spadfunFrom{zero?}{Factored} and \spadfunFrom{one?}{Factored},
+respectively.
+}{
+\spadcommand{zero?(factor(0))}
+}
+\xtc{
+}{
+\spadcommand{zero?(g) \free{g}}
+}
+\xtc{
+}{
+\spadcommand{one?(factor(1))}
+}
+\xtc{
+}{
+\spadcommand{one?(f) \free{f}}
+}
+\xtc{
+Another way to get the zero and one factored objects is to use
+package calling (see \spadref{ugTypesPkgCall}).
+}{
+\spadcommand{0\$Factored(Integer)}
+}
+\xtc{
+}{
+\spadcommand{1\$Factored(Integer)}
+}
+
+% ======================================================================
+\head{subsection}{Creating New Factored Objects}{ugxFactoredNew}
+% ======================================================================
+
+The \spadfunFrom{map}{Factored} operation is used to iterate across the
+unit and bases of a factored object.
+See \xmpref{FactoredFunctions2} for a discussion of
+\spadfunFrom{map}{Factored}.
+
+\labelSpace{1pc}
+\xtc{
+The following four operations take a base and an exponent and create
+a factored object.
+They differ in handling the flag component.
+}{
+\spadcommand{nilFactor(24,2) \bound{prev2}}
+}
+\xtc{
+This factor has no associated information.
+}{
+\spadcommand{nthFlag(\%,1) \free{prev2}}
+}
+\xtc{
+This factor is asserted to be square-free.
+}{
+\spadcommand{sqfrFactor(30,2) \bound{prev3}}
+}
+\xtc{
+This factor is asserted to be irreducible.
+}{
+\spadcommand{irreducibleFactor(13,10) \bound{prev4}}
+}
+\xtc{
+This factor is asserted to be prime.
+}{
+\spadcommand{primeFactor(11,5) \bound{prev5}}
+}
+
+\xtc{
+A partial inverse to \spadfunFrom{factorList}{Factored} is
+\spadfunFrom{makeFR}{Factored}.
+}{
+\spadcommand{h := factor(-720) \bound{h}}
+}
+\xtc{
+The first argument is the unit and the second is a list of records as
+returned by \spadfunFrom{factorList}{Factored}.
+}{
+\spadcommand{h - makeFR(unit(h),factorList(h)) \free{h}}
+}
+
+% ======================================================================
+\head{subsection}{Factored Objects with Variables}{ugxFactoredVar}
+% ======================================================================
+
+\labelSpace{4pc}
+\xtc{
+Some of the operations available for polynomials are also available
+for factored polynomials.
+}{
+\spadcommand{p := (4*x*x-12*x+9)*y*y + (4*x*x-12*x+9)*y + 28*x*x - 84*x + 63 \bound{p}}
+}
+\xtc{
+}{
+\spadcommand{fp := factor(p) \free{p}\bound{fp}}
+}
+\xtc{
+You can differentiate with respect to a variable.
+}{
+\spadcommand{D(p,x) \free{p}}
+}
+\xtc{
+}{
+\spadcommand{D(fp,x) \free{fp}\bound{prev1}}
+}
+\xtc{
+}{
+\spadcommand{numberOfFactors(\%) \free{prev1}}
+}
+%  \xtc{
+%  You can also substitute a value for a variable.
+%  For a polynomial, this is straightforward and can be done in a number
+%  of ways.
+%  }{
+%  \spadcommand{eval(fp,[x],[3]) \free{fp}}
+%  }
+%  \xtc{
+%  }{
+%  \spadcommand{eval(fp,x = 3) \free{fp}}
+%  }
+%  \xtc{
+%  We can even swap the variables.
+%  }{
+%  \spadcommand{eval(fp,[x,y],[y,x]) \free{fp}}
+%  }
+%  %% Finish

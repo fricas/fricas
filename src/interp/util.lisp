@@ -65,11 +65,8 @@ at load time.
 ;;; The relative directory list specifies a search path for files
 ;;; for the current directory structure.
 (defvar $relative-directory-list
-  '("/../../src/input/"
-    "/doc/msgs/"
-    "/../../src/algebra/"
-    "/../../src/interp/"  ; for boot and lisp  files (helps fd)
-    "/doc/spadhelp/" ))
+  '("/share/msgs/"
+    "/share/spadhelp/" ))
 
 ;;; The relative directory list specifies how to find the algebra
 ;;; directory from the current {\bf AXIOM} shell variable.

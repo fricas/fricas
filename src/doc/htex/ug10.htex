@@ -1,0 +1,1031 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+\texht{\setcounter{chapter}{9}}{} % Chapter 10
+
+\begin{discard}
+% This setting is needed to get Newton's iterations to converge.
+\spadcommand{)set streams calculate 10}
+\end{discard}
+% *********************************************************************
+\head{chapter}{Interactive Programming}{ugIntProg}
+% *********************************************************************
+
+Programming in the interpreter is easy.
+So is the use of \Language{}'s graphics facility.
+Both are rather flexible and allow you to use them for many
+interesting applications.
+However, both require learning some basic ideas and skills.
+
+All graphics examples in the \Gallery{} section are either
+produced directly by interactive commands or by interpreter
+programs.
+Four of these programs are introduced here.
+By the end of this chapter you will know enough about graphics and
+programming in the interpreter to not only understand all these
+examples, but to tackle interesting and difficult problems on your
+own.
+\appxref{ugAppGraphics} lists all the remaining commands and
+programs used to create these images.
+
+% *********************************************************************
+\head{section}{Drawing Ribbons Interactively}{ugIntProgDrawing}
+% *********************************************************************
+%
+
+We begin our discussion of interactive graphics with the creation
+of a useful facility: plotting ribbons of two-graphs in
+three-space.
+Suppose you want to draw the \twodim{} graphs of \smath{n}
+functions \texht{$f_i(x), 1 \leq i \leq n,$}{\spad{f_i(x), 1 <= i
+<= 5,}} all over some fixed range of \smath{x}.
+One approach is to create a \twodim{} graph for each one, then
+superpose one on top of the other.
+What you will more than likely get is a jumbled mess.
+Even if you make each function a different color, the result is
+likely to be confusing.
+
+A better approach is to display each of the \smath{f_i(x)} in three
+\index{ribbon}
+dimensions as a ``ribbon'' of some appropriate width along the
+\smath{y}-direction, laying down each  ribbon next to the
+previous one.
+A ribbon is simply a function of \smath{x} and \smath{y} depending
+only on \smath{x.}
+
+We illustrate this for \smath{f_i(x)} defined as simple powers of
+\smath{x} for \smath{x} ranging between \smath{-1} and \smath{1}.
+
+\psXtc{
+Draw the ribbon for \texht{$z = x^2$}{\spad{z=x ^ 2}}.
+}{
+\spadgraph{draw(x^2,x=-1..1,y=0..1)}
+}{
+\epsffile[0 0 295 295]{../ps/ribbon1.ps}
+}
+
+Now that was easy!
+What you get is a ``wire-mesh'' rendition of the ribbon.
+That's fine for now.
+Notice that the mesh-size is small in both the \smath{x} and the
+\smath{y} directions.
+\Language{} normally computes points in both these directions.
+This is unnecessary.
+One step is all we need in the \smath{y}-direction.
+To have \Language{} economize on \spad{y}-points, we re-draw the
+ribbon with option \spad{var2Steps == 1}.
+
+\psXtc{
+Re-draw the ribbon, but with option \spad{var2Steps == 1}
+so that only \spad{1} step is computed in the
+\smath{y} direction.
+}{
+\spadgraph{vp := draw(x^2,x=-1..1,y=0..1,var2Steps==1) \bound{d1}}
+}{
+\epsffile[0 0 295 295]{../ps/ribbon2.ps}
+}
+
+The operation has created a viewport, that is, a graphics window
+on your screen.
+We assigned the viewport to \spad{vp} and now we manipulate
+its contents.
+
+
+Graphs are objects, like numbers and algebraic expressions.
+You may want to do some experimenting with graphs.
+For example, say
+\begin{verbatim}
+showRegion(vp, "on")
+\end{verbatim}
+to put a bounding box around the ribbon.
+Try it!
+Issue \spad{rotate(vp, -45, 90)} to rotate the
+figure \smath{-45} longitudinal degrees and \smath{90} latitudinal
+degrees.
+
+\psXtc{
+Here is a different rotation.
+This turns the graph so you can view it along the \smath{y}-axis.
+}{
+\spadcommand{rotate(vp, 0, -90)\bound{d3}\free{d1}}
+}{
+\epsffile[0 0 295 295]{../ps/ribbon2r.ps}
+}
+
+There are many other things you can do.
+In fact, most everything you can do interactively using the
+\threedim{} control panel (such as translating, zooming, resizing,
+coloring, perspective and lighting selections) can also be done
+directly by operations (see \chapref{ugGraph} for more details).
+
+When you are done experimenting, say \spad{reset(vp)} to restore the
+picture to its original position and settings.
+
+
+Let's add another ribbon to our picture---one
+for \texht{$x^3$}{\spad{x^3}}.
+Since \smath{y} ranges from \smath{0} to \smath{1} for the
+first ribbon, now let \smath{y} range from \smath{1} to
+\smath{2.}
+This puts the second ribbon next to the first one.
+
+How do you add a second ribbon to the viewport?
+One method is
+to extract the ``space'' component from the
+viewport using the operation
+\spadfunFrom{subspace}{ThreeDimensionalViewport}.
+You can think of the space component as the object inside the
+window (here, the ribbon).
+Let's call it \spad{sp}.
+To add the second ribbon, you draw the second ribbon using the
+option \spad{space == sp}.
+
+\xtc{
+Extract the space component of \spad{vp}.
+}{
+\spadcommand{sp := subspace(vp)\bound{d5}\free{d1}}
+}
+
+\psXtc{
+Add the ribbon for
+\texht{$x^3$}{\spad{x^3}} alongside that for
+\texht{$x^2$}{\spad{x^2}}.
+}{
+\spadgraph{vp := draw(x^3,x=-1..1,y=1..2,var2Steps==1, space==sp)\bound{d6}\free{d5}}
+}{
+\epsffile[0 0 295 295]{../ps/ribbons.ps}
+}
+
+Unless you moved the original viewport, the new viewport covers
+the old one.
+You might want to check that the old object is still there by
+moving the top window.
+
+Let's show quadrilateral polygon outlines on the ribbons and then
+enclose the ribbons in a box.
+
+\psXtc{
+Show quadrilateral polygon outlines.
+}{
+\spadcommand{drawStyle(vp,"shade");outlineRender(vp,"on")\bound{d10}\free{d6}}
+}{
+\epsffile[0 0 295 295]{../ps/ribbons2.ps}
+}
+\psXtc{
+Enclose the ribbons in a box.
+}{
+\spadcommand{rotate(vp,20,-60); showRegion(vp,"on")\bound{d11}\free{d10}}
+}{
+\epsffile[0 0 295 295]{../ps/ribbons2b.ps}
+}
+
+This process has become tedious!
+If we had to add two or three more ribbons, we would have to
+repeat the above steps several more times.
+It is time to write an interpreter program to help us take care of
+the details.
+
+% *********************************************************************
+\head{section}{A Ribbon Program}{ugIntProgRibbon}
+% *********************************************************************
+%
+
+The above approach creates a new viewport for each additional
+ribbon.
+A better approach is to build one object composed of all ribbons
+before creating a viewport.
+To do this, use \spadfun{makeObject} rather than \spadfun{draw}.
+The operations have similar formats, but
+\spadfun{draw} returns a viewport and
+\spadfun{makeObject} returns a space object.
+
+We now create a function \userfun{drawRibbons} of two arguments:
+\spad{flist}, a list of formulas for the ribbons you want to draw,
+and \spad{xrange}, the range over which you want them drawn.
+Using this function, you can just say
+\begin{verbatim}
+drawRibbons([x^2, x^3], x=-1..1)
+\end{verbatim}
+to do all of the work required in the last section.
+Here is the \userfun{drawRibbons} program.
+Invoke your favorite editor and create a file called {\bf ribbon.input}
+containing the following program.
+
+\begin{figXmpLines}
+\xmpLine{drawRibbons(flist, xrange) ==}{}
+\xmpLine{  sp := createThreeSpace()}{Create empty space \spad{sp}.}{}
+\xmpLine{  y0 := 0}{The initial ribbon position.}
+\xmpLine{  for f in flist repeat}{For each function \spad{f},}
+\xmpLine{    makeObject(f, xrange, y=y0..y0+1, }{\quad{}create and add a ribbon}
+\xmpLine{       space==sp, var2Steps == 1)}{\quad{}for \spad{f} to the space \spad{sp}.}
+\xmpLine{    y0 := y0 + 1}{The next ribbon position.}
+\xmpLine{  vp := makeViewport3D(sp, "Ribbons")}{Create viewport.}
+\xmpLine{  drawStyle(vp, "shade")}{Select shading style.}
+\xmpLine{  outlineRender(vp, "on")}{Show polygon outlines.}
+\xmpLine{  showRegion(vp,"on")}{Enclose in a box.}
+\xmpLine{  n := \# flist}{The number of ribbons}
+\xmpLine{  zoom(vp,n,1,n)}{Zoom in x- and z-directions.}
+\xmpLine{  rotate(vp,0,75)}{Change the angle of view.}
+\xmpLine{  vp}{Return the viewport.}
+\caption{The first \protect\pspadfun{drawRibbons} function.}\label{fig-ribdraw1}
+\end{figXmpLines}
+
+Here are some remarks on the syntax used in the \pspadfun{drawRibbons} function
+(consult \chapref{ugUser} for more details).
+Unlike most other programming languages which use semicolons,
+parentheses, or {\it begin}--{\it end} brackets to delineate the
+structure of programs, the structure of an \Language{} program is
+determined by indentation.
+The first line of the function definition always begins in column 1.
+All other lines of the function are indented with respect to the first
+line and form a \spadgloss{pile} (see \spadref{ugLangBlocks}).
+
+The definition of \userfun{drawRibbons}
+consists of a pile of expressions to be executed one after
+another.
+Each expression of the pile is indented at the same level.
+Lines 4-7 designate one single expression:
+since lines 5-7 are indented with respect to the others, these
+lines are treated as a continuation of line 4.
+Also since lines 5 and 7 have the same indentation level, these
+lines designate a pile within the outer pile.
+
+The last line of a pile usually gives the value returned by the
+pile.
+Here it is also the value returned by the function.
+\Language{} knows this is the last line of the function because it
+is the last line of the file.
+In other cases, a new expression beginning in column one signals
+the end of a function.
+
+The line \spad{drawStyle(vp,"shade")} is given after the viewport
+has been created to select the draw style.
+We have also used the \spadfunFrom{zoom}{ThreeDimensionalViewport}
+option.
+Without the zoom, the viewport region would be scaled equally in
+all three coordinate directions.
+
+Let's try the function \userfun{drawRibbons}.
+First you must read the file to give \Language{} the function definition.
+
+\xtc{
+Read the input file.
+}{
+\spadcommand{)read ribbon \bound{s0}}
+}
+\psXtc{
+Draw ribbons for \texht{$x, x^2,\dots, x^5$}{x, x^2,...,x^5}
+for \texht{$-1 \leq x \leq 1$}{-1 <= x <= 1}
+}{
+\spadgraph{drawRibbons([x^i for i in 1..5],x=-1..1) \free{s0}}
+}{
+\epsffile[0 0 295 295]{../ps/ribbons5.ps}
+}
+
+
+% *********************************************************************
+\head{section}{Coloring and Positioning Ribbons}{ugIntProgColor}
+% *********************************************************************
+%
+
+Before leaving the ribbon example, we  make two improvements.
+Normally, the color given to each point in the space is a
+function of its height within a bounding box.
+The points at the bottom of the
+box are red, those at the top are purple.
+
+To change the normal coloring, you can give
+an option \spad{colorFunction == {\it function}}.
+When \Language{} goes about displaying the data, it
+determines the range of colors used for all points within the box.
+\Language{} then distributes these numbers uniformly over the number of hues.
+Here we use the simple color function
+\texht{$(x,y) \mapsto i$}{(x,y) +-> i} for the
+\eth{\smath{i}} ribbon.
+
+Also, we add an argument \spad{yrange} so you can give the range of
+\spad{y} occupied by the ribbons.
+For example, if the \spad{yrange} is given as
+\spad{y=0..1} and there are \smath{5} ribbons to be displayed, each
+ribbon would have width \smath{0.2} and would appear in the
+range \texht{$0 \leq y \leq 1$}{\spad{0 <= y <= 1}}.
+
+Refer to lines 4-9.
+Line 4 assigns to \spad{yVar} the variable part of the
+\spad{yrange} (after all, it need not be \spad{y}).
+Suppose that \spad{yrange} is given as \spad{t = a..b} where \spad{a} and
+\spad{b} have numerical values.
+Then line 5 assigns the value of \spad{a} to the variable \spad{y0}.
+Line 6 computes the width of the ribbon by dividing the difference of
+\spad{a} and \spad{b} by the number, \spad{num}, of ribbons.
+The result is assigned to the variable \spad{width}.
+Note that in the for-loop in line 7, we are iterating in parallel; it is
+not a nested loop.
+
+\begin{figXmpLines}
+\xmpLine{drawRibbons(flist, xrange, yrange) ==}{}
+\xmpLine{  sp := createThreeSpace()}{Create empty space \spad{sp}.}
+\xmpLine{  num := \# flist}{The number of ribbons.}
+\xmpLine{  yVar := variable yrange}{The ribbon variable.}
+\xmpLine{  y0:Float    := lo segment yrange}{The first ribbon coordinate.}
+\xmpLine{  width:Float := (hi segment yrange - y0)/num}{The width of a ribbon.}
+\xmpLine{  for f in flist for color in 1..num repeat}{For each function \spad{f},}
+\xmpLine{    makeObject(f, xrange, yVar = y0..y0+width,}{\quad{}create and add ribbon to}
+\xmpLine{      var2Steps == 1, colorFunction == (x,y) +-> color, \_}{\quad{}\spad{sp} of a different color.}
+\xmpLine{      space == sp)}{}
+\xmpLine{    y0 := y0 + width}{The next ribbon coordinate.}
+\xmpLine{  vp := makeViewport3D(sp, "Ribbons")}{Create viewport.}
+\xmpLine{  drawStyle(vp, "shade")}{Select shading style.}
+\xmpLine{  outlineRender(vp, "on")}{Show polygon outlines.}
+\xmpLine{  showRegion(vp, "on")}{Enclose in a box.}
+\xmpLine{  vp}{Return the viewport.}
+\caption{The final \protect\pspadfun{drawRibbons} function.}\label{fig-ribdraw2}
+\end{figXmpLines}
+
+
+% *********************************************************************
+\head{section}{Points, Lines, and Curves}{ugIntProgPLC}
+% *********************************************************************
+%
+What you have seen so far is a high-level program using the
+graphics facility.
+We now turn to the more basic notions of points, lines, and curves
+in \threedim{} graphs.
+These facilities use small floats (objects
+of type \spadtype{DoubleFloat}) for data.
+Let us first give names to the small float values \smath{0} and
+\smath{1}.
+\xtc{
+The small float 0.
+}{
+\spadcommand{zero := 0.0@DFLOAT \bound{d1}}
+}
+\xtc{
+The small float 1.
+}{
+\spadcommand{one  := 1.0@DFLOAT \bound{d2}}
+}
+The \spadSyntax{@} sign means ``of the type.'' Thus \spad{zero} is
+\smath{0.0} of the type \spadtype{DoubleFloat}.
+You can also say \spad{0.0::DFLOAT}.
+
+Points can have four small float components: \smath{x, y, z} coordinates and an
+optional color.
+A ``curve'' is simply a list of points connected by straight line
+segments.
+\xtc{
+Create the point \spad{origin} with color zero, that is, the lowest color
+on the color map.
+}{
+\spadcommand{origin := point [zero,zero,zero,zero] \free{d1}\bound{d3}}
+}
+\xtc{
+Create the point \spad{unit} with color zero.
+}{
+\spadcommand{unit := point [one,one,one,zero] \free{d1 d2}\bound{d4}}
+}
+\xtc{
+Create the curve (well, here, a line) from
+\spad{origin} to \spad{unit}.
+}{
+\spadcommand{line := [origin, unit] \free{d3 d4} \bound{d5}}
+}
+
+We make this line segment into an arrow by adding an arrowhead.
+The arrowhead extends to,
+say, \spad{p3} on the left, and to, say, \spad{p4} on the right.
+To describe an arrow, you tell \Language{} to draw the two curves
+\spad{[p1, p2, p3]} and \spad{[p2, p4].}
+We also decide through experimentation on
+values for \spad{arrowScale}, the ratio of the size of
+the arrowhead to the stem of the arrow, and \spad{arrowAngle},
+the angle between the arrowhead and the arrow.
+
+Invoke your favorite editor and create
+an input file called {\bf arrows.input}.
+This input file first defines the values of
+%\spad{origin},\spad{unit},
+\spad{arrowAngle} and \spad{arrowScale}, then
+defines the function \userfun{makeArrow}\texht{$(p_1, p_2)$}{(p1, p2)} to
+draw an arrow from point \texht{$p_1$}{p1} to \texht{$p_2$}{p2}.
+
+\begin{xmpLines}
+%\xmpLine{origin := point [0.0@DFLOAT,0.0@DFLOAT,0.0@DFLOAT,0.0@DFLOAT]}{The point 0 with color 0.}
+%\xmpLine{unit := point [1.0@DFLOAT,1.0@DFLOAT,1.0@DFLOAT,0.0@DFLOAT]}{A second point with color 0.}
+%\xmpLine{}{}
+\xmpLine{arrowAngle := \%pi-\%pi/10.0@DFLOAT}{The angle of the arrowhead.}
+\xmpLine{arrowScale := 0.2@DFLOAT}{The size of the arrowhead}
+\xmpLine{}{\quad{}relative to the stem.}
+\xmpLine{makeArrow(p1, p2) ==}{}
+\xmpLine{  delta := p2 - p1}{The arrow.}
+\xmpLine{  len := arrowScale * length delta}{The length of the arrowhead.}
+\xmpLine{  theta := atan(delta.1, delta.2)}{The angle from the x-axis}
+\xmpLine{  c1 := len*cos(theta + arrowAngle)}{The x-coord of left endpoint.}
+\xmpLine{  s1 := len*sin(theta + arrowAngle)}{The y-coord of left endpoint.}
+\xmpLine{  c2 := len*cos(theta - arrowAngle)}{The x-coord of right endpoint.}
+\xmpLine{  s2 := len*sin(theta - arrowAngle)}{The y-coord of right endpoint.}
+\xmpLine{  z  := p2.3*(1 - arrowScale)}{The z-coord of both endpoints.}
+\xmpLine{  p3 := point [p2.1 + c1, p2.2 + s1, z, p2.4]}{The left endpoint of head.}
+\xmpLine{  p4 := point [p2.1 + c2, p2.2 + s2, z, p2.4]}{The right endpoint of head.}
+\xmpLine{  [[p1, p2, p3], [p2, p4]]}{The arrow as a list of curves.}
+\end{xmpLines}
+
+Read the file and then create
+an arrow from the point \spad{origin} to the point \spad{unit}.
+\xtc{
+Read the input file defining \userfun{makeArrow}.
+}{
+\spadcommand{)read arrows\bound{v1}}
+}
+\xtc{
+Construct the arrow (a list of two curves).
+}{
+\spadcommand{arrow := makeArrow(origin,unit)\bound{v2}\free{v1 d3 d4}}
+}
+\xtc{
+Create an empty object \spad{sp} of type \spad{ThreeSpace}.
+}{
+\spadcommand{sp := createThreeSpace()\bound{c1}}
+}
+\xtc{
+Add each curve of the arrow to the space \spad{sp}.
+}{
+\spadcommand{for a in arrow repeat sp := curve(sp,a)\bound{v3}\free{v2}\free{c1}}
+}
+\psXtc{
+Create a \threedim{} viewport containing that space.
+}{
+\spadgraph{vp := makeViewport3D(sp,"Arrow")\bound{v4}\free{v3}}
+}{
+\epsffile[0 0 295 295]{../ps/arrow.ps}
+}
+\psXtc{
+Here is a better viewing angle.
+}{
+\spadcommand{rotate(vp,200,-60)\bound{v5}\free{v4}}
+}{
+\epsffile[0 0 295 295]{../ps/arrowr.ps}
+}
+
+
+% *********************************************************************
+\head{section}{A Bouquet of Arrows}{ugIntProgColorArr}
+% *********************************************************************
+
+%\Language{} gathers up all the points of a graph and looks at the range
+%of color values given as integers.
+%If theses color values range from a minimum value of \spad{a} to a maximum
+%value of \spad{b}, then the \spad{a} values are colored red (the
+%lowest color in our spectrum), and \spad{b} values are colored
+%purple (the highest color), and those in the middle are colored
+%green.
+%When all the points are the same color as above, \Language{}
+%chooses green.
+
+Let's draw a ``bouquet'' of arrows.
+Each arrow is identical. The arrowheads are
+uniformly placed on a circle parallel to the \smath{xy}-plane.
+Thus the position of each arrow differs only
+by the angle \texht{$\theta$}{theta},
+\texht{$0 \leq \theta < 2\pi$}{\spad{0 <= theta < 2*\%pi}},
+between the arrow and
+the \smath{x}-axis on the \smath{xy}-plane.
+
+Our bouquet is rather special: each arrow has a different
+color (which won't be evident here, unfortunately).
+This is arranged by letting the color of each successive arrow be
+denoted by \texht{$\theta$}{theta}.
+In this way, the color of arrows ranges from red to green to violet.
+Here is a program to draw a bouquet of \smath{n} arrows.
+
+\begin{xmpLines}
+\xmpLine{drawBouquet(n,title) ==}{}
+\xmpLine{  angle := 0.0@DFLOAT}{The initial angle.}
+\xmpLine{  sp := createThreeSpace()}{Create empty space \spad{sp}.}
+\xmpLine{  for i in 0..n-1 repeat}{For each index i, create:}
+\xmpLine{    start := point [0.0@DFLOAT,0.0@DFLOAT,0.0@DFLOAT,angle] }{\quad{}---the point at base of arrow;}
+\xmpLine{    end   := point [cos angle, sin angle, 1.0@DFLOAT, angle]}{\quad{}---the point at tip of arrow;}
+\xmpLine{    arrow := makeArrow(start,end)}{\quad{}---the \spad{i}th arrow.}
+\xmpLine{    for a in makeArrow(start,end) repeat }{For each arrow component,}
+\xmpLine{      curve(sp,a)}{\quad{}add the component to \spad{sp}.}
+\xmpLine{    angle := angle + 2*\%pi/n}{The next angle.}
+\xmpLine{  makeViewport3D(sp,title)}{Create the viewport from \spad{sp}.}
+\end{xmpLines}
+
+\xtc{
+Read the input file.
+}{
+\spadcommand{)read bouquet\bound{b1}}
+}
+\psXtc{
+A bouquet of a dozen arrows.
+}{
+\spadgraph{drawBouquet(12,"A Dozen Arrows")\free{b1}}
+}{
+\epsffile[0 0 295 295]{../ps/bouquet.ps}
+}
+\ 
+
+% *********************************************************************
+%\head{section}{Diversion: When Things Go Wrong}{ugIntProgDivTwo}
+% *********************************************************************
+%
+%Up to now, if you have typed in all the programs exactly as they are in
+%the book, you have encountered no errors.
+%In practice, however, it is easy to make mistakes.
+%Computers are unforgiving: your program must be letter-for-letter correct
+%or you will encounter some error.
+%
+%One thing that can go wrong is that you can create a syntactically
+%incorrect program.
+%As pointed out in Diversion 1, the meaning of \Language{} programs is
+%affected by indentation.
+%
+%The \Language{} parser will ensure that all parentheses, brackets, and
+%braces balance, and that commas and operators appear in the correct
+%context.
+%For example, change line ??
+%to ??
+%and run.
+%
+%A common mistake is to misspell an identifier or operation name.
+%These are generally easy to spot since the interpreter will tell you the
+%name of the operation together with the type and number of arguments which
+%it is trying to find.
+%
+%Another mistake is to either to omit an argument or to give too many.
+%Again \Language{} will notify you of the offending operation.
+%
+%Indentation makes your programs more readable.
+%However there are several ways to create a syntactically valid program.
+%A most common problem occurs when a line is either indented improperly.
+%% either or what?
+%If this is a first line of a pile, then all the other lines will act as an
+%inner pile to the first line.
+%If it is a line of the pile other than the first line, \Language{} then
+%thinks that this line is a continuation of the previous line.
+%More frequently than not, a syntactically correct expression is created.
+%Almost never however will this be a semantically correct.
+%Only when the program is run will an error be discovered.
+%For example, change line ??
+%to ??
+%and run.
+
+% *********************************************************************
+\head{section}{Drawing Complex Vector Fields}{ugIntProgVecFields}
+% *********************************************************************
+
+We now put our arrows to good use drawing complex vector fields.
+These vector fields give a representation of complex-valued
+functions of complex variables.
+Consider a Cartesian coordinate grid of points \smath{(x, y)} in
+the plane, and some complex-valued function \smath{f} defined on
+this grid.
+At every point on this grid, compute the value of \texht{$f(x +
+iy)$}{f(x + y*\%i)} and call it \smath{z}.
+Since \smath{z} has both a real and imaginary value for a given
+\smath{(x,y)} grid point, there are four dimensions to plot.
+What do we do?
+We represent the values of \smath{z} by arrows planted at each
+grid point.
+Each arrow represents the value of \smath{z} in polar coordinates
+\texht{$(r,\theta)$}{(r, theta)}.
+The length of the arrow is proportional to \smath{r}.
+Its direction is given by \texht{$\theta$}{theta}.
+
+The code for drawing vector fields is in the file {\bf vectors.input}.
+We discuss its contents from top to bottom.
+
+Before showing you the code, we have two small
+matters to take care of.
+First, what if the function has large spikes, say, ones that go off
+to infinity?
+We define a variable \spad{clipValue} for this purpose. When
+\spad{r} exceeds the value of \spad{clipValue}, then the value of
+\spad{clipValue} is used instead of that for \spad{r}.
+For convenience, we define a function \spad{clipFun(x)} which uses
+\spad{clipValue} to ``clip'' the value of \spad{x}.
+
+%
+\begin{xmpLines}
+\xmpLine{clipValue : DFLOAT := 6}{Maximum value allowed.}
+\xmpLine{clipFun(x) == min(max(x,-clipValue),clipValue)}{}
+\end{xmpLines}
+
+Notice that we identify \spad{clipValue} as a small float but do
+not declare the type of the function \userfun{clipFun}.
+As it turns out, \userfun{clipFun} is called with a
+small float value.
+This declaration ensures that \userfun{clipFun} never does a
+conversion when it is called.
+
+The second matter concerns the possible ``poles'' of a
+function, the actual points where the spikes have infinite
+values.
+\Language{} uses normal \spadtype{DoubleFloat} arithmetic  which
+does not directly handle infinite values.
+If your function has poles, you must adjust your step size to
+avoid landing directly on them (\Language{} calls \spadfun{error}
+when asked to divide a value by \axiom{0}, for example).
+
+We set the variables \spad{realSteps} and \spad{imagSteps} to
+hold the number of steps taken in the real and imaginary
+directions, respectively.
+Most examples will have ranges centered around the origin.
+To avoid a pole at the origin, the number of points is taken
+to be odd.
+
+\begin{xmpLinesNoReset}
+\xmpLine{realSteps: INT := 25}{Number of real steps.}
+\xmpLine{imagSteps: INT := 25}{Number of imaginary steps.}
+\xmpLine{)read arrows}
+\end{xmpLinesNoReset}
+
+Now define the function \userfun{drawComplexVectorField} to draw the arrows.
+It is good practice to declare the type of the main function in
+the file.
+This one declaration is usually sufficient to ensure that other
+lower-level functions are compiled with the correct types.
+
+\begin{xmpLinesNoReset}
+\xmpLine{C := Complex DoubleFloat}{}
+\xmpLine{S := Segment DoubleFloat}{}
+\xmpLine{drawComplexVectorField: (C -> C, S, S) -> VIEW3D}{}
+\end{xmpLinesNoReset}
+
+The first argument is a function mapping complex small floats into
+complex small floats.
+The second and third arguments give the range of real and
+imaginary values as segments like \spad{a..b}.
+The result is a \threedim{} viewport.
+Here is the full function definition:
+
+\begin{xmpLinesNoReset}
+\xmpLine{drawComplexVectorField(f, realRange,imagRange) ==}{}
+\xmpLine{  delReal := (hi(realRange)-lo(realRange))/realSteps}{The real step size.}
+\xmpLine{  delImag := (hi(imagRange)-lo(imagRange))/imagSteps}{The imaginary step size.}
+\xmpLine{  sp := createThreeSpace()}{Create empty space \spad{sp}.}
+\xmpLine{  real := lo(realRange)}{The initial real value.}
+\xmpLine{  for i in 1..realSteps+1 repeat}{Begin real iteration.}
+\xmpLine{    imag := lo(imagRange)}{The initial imaginary value.}
+\xmpLine{    for j in 1..imagSteps+1 repeat}{Begin imaginary iteration.}
+\xmpLine{      z := f complex(real,imag)}{The value of \spad{f} at the point.}
+\xmpLine{      arg := argument z}{The direction of the arrow.}
+\xmpLine{      len := clipFun sqrt norm z}{The length of the arrow.}
+\xmpLine{      p1 :=  point [real, imag, 0.0@DFLOAT, arg]}{The base point of the arrow.}
+\xmpLine{      scaleLen := delReal * len}{The scaled length of the arrow.}
+\xmpLine{      p2 := point [p1.1 + scaleLen*cos(arg),}{The tip point of the arrow.}
+\xmpLine{                   p1.2 + scaleLen*sin(arg),0.0@DFLOAT, arg]}{}
+\xmpLine{      arrow := makeArrow(p1, p2)}{Create the arrow.}
+\xmpLine{      for a in arrow repeat curve(sp, a)}{Add arrow to the space \spad{sp}.}
+\xmpLine{      imag := imag + delImag}{The next imaginary value.}
+\xmpLine{    real := real + delReal}{The next real value.}
+\xmpLine{  makeViewport3D(sp, "Complex Vector Field")}{Draw it!}
+\end{xmpLinesNoReset}
+
+As a first example, let us draw \spad{f(z) == sin(z)}.
+There is no need to create a user function: just pass the
+\spadfunFrom{sin}{Complex DoubleFloat} from \spadtype{Complex DoubleFloat}.
+\xtc{
+Read the file.
+}{
+\spadcommand{)read vectors \bound{readVI}}
+}
+\psXtc{
+Draw the complex vector field of \spad{sin(x)}.
+}{
+\spadgraph{drawComplexVectorField(sin,-2..2,-2..2) \free{readVI}}
+}{
+\epsffile[0 0 295 295]{../ps/vectorSin.ps}
+}
+\ 
+
+% *********************************************************************
+\head{section}{Drawing Complex Functions}{ugIntProgCompFuns}
+% *********************************************************************
+
+Here is another way to graph a complex function of complex
+arguments.
+For each complex value \smath{z}, compute \smath{f(z)}, again
+expressing the value in polar coordinates \smath{(r,\theta{})}.
+We draw the complex valued function, again considering the
+\smath{(x,y)}-plane as the complex plane, using \smath{r} as the
+height (or \smath{z}-coordinate) and \smath{\theta} as the color.
+This is a standard plot---we learned how to do this in
+\chapref{ugGraph}---but here we write a new program to illustrate
+the creation of polygon meshes, or grids.
+
+Call this function \userfun{drawComplex}.
+It displays the points using the ``mesh'' of points.
+The function definition is in three parts.
+
+\begin{xmpLines}
+\xmpLine{drawComplex: (C -> C, S, S) -> VIEW3D}{}
+\xmpLine{drawComplex(f, realRange, imagRange) ==}{The first part.}
+\xmpLine{  delReal := (hi(realRange)-lo(realRange))/realSteps}{The real step size.}
+\xmpLine{  delImag := (hi(imagRange)-lo(imagRange))/imagSteps}{The imaginary step size.}
+\xmpLine{  llp:List List Point DFLOAT := []}{Initial list of list of points \spad{llp}.}
+\end{xmpLines}
+
+Variables \spad{delReal} and \spad{delImag} give the step
+sizes along the real and imaginary directions as computed by the values
+of the global variables \spad{realSteps} and \spad{imagSteps}.
+The mesh is represented by a list of lists of points \spad{llp},
+initially empty.
+Now \spad{[ ]} alone is ambiguous, so
+to set this initial value
+you have to tell \Language{} what type of empty list it is.
+Next comes the loop which builds \spad{llp}.
+
+\begin{xmpLinesNoReset}
+\xmpLine{  real := lo(realRange)}{The initial real value.}
+\xmpLine{  for i in 1..realSteps+1 repeat}{Begin real iteration.}
+\xmpLine{    imag := lo(imagRange)}{The initial imaginary value.}
+\xmpLine{    lp := []\$(List Point DFLOAT)}{The initial list of points \spad{lp}.}
+\xmpLine{    for j in 1..imagSteps+1 repeat}{Begin imaginary iteration.}
+\xmpLine{      z := f complex(real,imag)}{The value of \spad{f} at the point.}
+\xmpLine{      pt := point [real,imag, clipFun sqrt norm z, }{Create a point.}
+\xmpLine{                   argument z]}{}
+\xmpLine{      lp := cons(pt,lp)}{Add the point to \spad{lp}.}
+\xmpLine{      imag := imag + delImag}{The next imaginary value.}
+\xmpLine{    real := real + delReal}{The next real value.}
+\xmpLine{    llp := cons(lp, llp)}{Add \spad{lp} to \spad{llp}.}
+\end{xmpLinesNoReset}
+
+The code consists of both an inner and outer loop.
+Each pass through the inner loop adds one list \spad{lp} of points
+to the list of lists of points \spad{llp}.
+The elements of \spad{lp} are collected in reverse order.
+
+\begin{xmpLinesNoReset}
+\xmpLine{  makeViewport3D(mesh(llp), "Complex Function")}{Create a mesh and display.}
+\end{xmpLinesNoReset}
+
+The operation \spadfun{mesh} then creates an object of type
+\spadtype{ThreeSpace(DoubleFloat)} from the list of lists of points.
+This is then passed to \spadfun{makeViewport3D} to display the
+image.
+
+Now add this function directly to your {\bf vectors.input}
+file and re-read the file using \spad{)read vectors}.
+We try \userfun{drawComplex} using
+a user-defined function \spad{f}.
+
+\xtc{
+Read the file.
+}{
+\spadcommand{)read vectors \bound{readVI}}
+}
+\xtc{
+This one has a pole at \smath{z=0}.
+}{
+\spadcommand{f(z) == exp(1/z)\bound{e1}}
+}
+\psXtc{
+Draw it with an odd number of steps to avoid the pole.
+}{
+\spadgraph{drawComplex(f,-2..2,-2..2)\free{e1 readVI}}
+}{
+\epsffile[0 0 295 295]{../ps/complexExp.ps}
+}
+\ 
+
+% *********************************************************************
+\head{section}{Functions Producing Functions}{ugIntProgFunctions}
+% *********************************************************************
+
+In \spadref{ugUserMake}, you learned how to use the operation
+\spadfun{function} to create a function from symbolic formulas.
+Here we introduce a similar operation which not only
+creates functions, but functions from functions.
+
+The facility we need is provided by the package
+\spadtype{MakeUnaryCompiledFunction(E,S,T)}.
+\exptypeindex{MakeUnaryCompiledFunction}
+This package produces a unary (one-argument) compiled
+function from some symbolic data
+generated by a previous computation.\footnote{%
+\spadtype{MakeBinaryCompiledFunction} is available for binary
+functions.}
+\exptypeindex{MakeBinaryCompiledFunction}
+The \spad{E} tells where the symbolic data comes from;
+the \spad{S} and \spad{T} give \Language{} the
+source and target type of the function, respectively.
+The compiled function produced  has type
+\spadsig{\spad{S}}{\spad{T}}.
+To produce a compiled function with definition \spad{p(x) == expr}, call
+\spad{compiledFunction(expr, x)} from this package.
+The function you get has no name.
+You must to assign the function to the variable \spad{p} to give it that name.
+%
+\xtc{
+Do some computation.
+}{
+\spadcommand{(x+1/3)^5\bound{p1}}
+}
+\xtc{
+Convert this to an anonymous function of \spad{x}.
+Assign it to the variable \spad{p} to give the function a name.
+}{
+\spadcommand{p := compiledFunction(\%,x)\$MakeUnaryCompiledFunction(POLY FRAC INT,DFLOAT,DFLOAT)\bound{p2}\free{p1}}
+}
+\xtc{
+Apply the function.
+}{
+\spadcommand{p(sin(1.3))\bound{p3}\free{p2}}
+}
+
+For a more sophisticated application, read on.
+
+% *********************************************************************
+\head{section}{Automatic Newton Iteration Formulas}{ugIntProgNewton}
+% *********************************************************************
+
+We resume
+our continuing saga of arrows and complex functions.
+Suppose we want to investigate the behavior of Newton's iteration function
+\index{Newton iteration}
+in the complex plane.
+Given a function \smath{f}, we want to find the complex values
+\smath{z} such that \smath{f(z) = 0}.
+
+The first step is to produce a Newton iteration formula for
+a given \smath{f}:
+\texht{$x_{n+1} = x_n - {{f(x_n)}\over{f'(x_n)}}.$}{%
+\spad{x(n+1) = x(n) - f(x(n))/f'(x(n))}.}
+We represent this formula by a function \smath{g}
+that performs the computation on the right-hand side, that is,
+\texht{$x_{n+1} = {g}(x_n)$}{\spad{x(n+1) = g(x(n))}}.
+
+The type \spadtype{Expression Integer} (abbreviated \spadtype{EXPR
+INT}) is used to represent general symbolic expressions in
+\Language{}.
+\exptypeindex{Expression}
+To make our facility as general as possible, we assume
+\smath{f} has this type.
+Given \smath{f}, we want
+to produce a Newton iteration function \spad{g} which,
+given a complex point \texht{$x_n$}{x(n)}, delivers the next
+Newton iteration point \texht{$x_{n+1}$}{x(n+1)}.
+
+This time we write an input file called {\bf newton.input}.
+We need to import \spadtype{MakeUnaryCompiledFunction} (discussed
+in the last section), call it with appropriate types, and then define
+the function \spad{newtonStep} which references it.
+Here is the function \spad{newtonStep}:
+
+\begin{xmpLines}
+\xmpLine{C := Complex DoubleFloat}{The complex numbers.}
+\xmpLine{complexFunPack:=MakeUnaryCompiledFunction(EXPR INT,C,C)}{Package for making functions.}
+\xmpLine{}{}
+\xmpLine{newtonStep(f) ==}{Newton's iteration function.}
+\xmpLine{  fun  := complexNumericFunction f}{Function for $f$.}
+\xmpLine{  deriv := complexDerivativeFunction(f,1)}{Function for $f'$.}
+\xmpLine{  (x:C):C +->}{Return the iterator function.}
+\xmpLine{    x - fun(x)/deriv(x)}{}
+\xmpLine{}{}
+\xmpLine{complexNumericFunction f ==}{Turn an expression \spad{f} into a}
+\xmpLine{  v := theVariableIn f}{\quad{}function.}
+\xmpLine{  compiledFunction(f, v)\$complexFunPack}{}
+\xmpLine{}{}
+\xmpLine{complexDerivativeFunction(f,n) ==}{Create an nth derivative}
+\xmpLine{  v := theVariableIn f}{\quad{}function.}
+\xmpLine{  df := D(f,v,n)}{}
+\xmpLine{  compiledFunction(df, v)\$complexFunPack}{}
+\xmpLine{}{}
+\xmpLine{theVariableIn f ==  }{Returns the variable in $f$.}
+\xmpLine{  vl := variables f}{The list of variables.}
+\xmpLine{  nv := \# vl}{The number of variables.}
+\xmpLine{  nv > 1 => error "Expression is not univariate."}{}
+\xmpLine{  nv = 0 => 'x}{Return a dummy variable.}
+\xmpLine{  first vl}{}
+\end{xmpLines}
+
+Do you see what is going on here?
+A formula \spad{f} is passed into the function \userfun{newtonStep}.
+First, the function turns \spad{f} into a compiled program mapping
+complex numbers into complex numbers.  Next, it does the same thing
+for the derivative of \spad{f}.  Finally, it returns a function which
+computes a single step of Newton's iteration.
+
+The function \userfun{complexNumericFunction} extracts the variable
+from the expression \spad{f} and then turns \spad{f} into a function
+which maps complex numbers into complex numbers. The function
+\userfun{complexDerivativeFunction} does the same thing for the
+derivative of \spad{f}.  The function \userfun{theVariableIn}
+extracts the variable from the expression \spad{f}, calling the function
+\spadfun{error} if \spad{f} has more than one variable.
+It returns the dummy variable \spad{x} if \spad{f} has no variables.
+
+Let's now apply \userfun{newtonStep} to the formula for computing
+cube roots of two.
+%
+\xtc{
+Read the input file with the definitions.
+}{
+\spadcommand{)read newton\bound{n1}}
+}
+\xtc{}{
+\spadcommand{)read vectors \bound{n1a}}
+}
+
+\xtc{
+The cube root of two.
+}{
+\spadcommand{f := x^3 - 2\bound{n2}\free{n1 n1a}}
+}
+\xtc{
+Get Newton's iteration formula.
+}{
+\spadcommand{g := newtonStep f\bound{n3}\free{n2}}
+}
+\xtc{
+Let \spad{a} denote the result of
+applying Newton's iteration once to the complex number \spad{1 + \%i}.
+}{
+\spadcommand{a := g(1.0 + \%i)\bound{n4}\free{n3}}
+}
+\xtc{
+Now apply it repeatedly. How fast does it converge?
+}{
+\spadcommand{[(a := g(a)) for i in 1..]\bound{n5}\free{n4}}
+}
+\xtc{
+Check the accuracy of the last iterate.
+}{
+\spadcommand{a^3\bound{n6}\free{n5}}
+}
+
+In \xmpref{MappingPackage1}, we show how functions can be
+manipulated as objects in \Language{}.
+A useful operation to consider here is \spadop{*}, which means
+composition.
+For example \spad{g*g} causes the Newton iteration formula
+to be applied twice.
+Correspondingly, \spad{g^n} means to apply the iteration formula
+\spad{n} times.
+
+%
+\xtc{
+Apply \spad{g} twice to the point \spad{1 + \%i}.
+}{
+\spadcommand{(g*g) (1.0 + \%i)\bound{n10}\free{n3}}
+}
+\xtc{
+Apply \spad{g} 11 times.
+}{
+\spadcommand{(g^11) (1.0 + \%i)\bound{n11}\free{n10}}
+}
+
+Look now at the vector field and surface generated
+after two steps of Newton's formula for the cube root of two.
+The poles in these pictures represent bad starting values, and the
+flat areas are the regions of convergence to the three roots.
+%
+\psXtc{
+The vector field.
+}{
+\spadgraph{drawComplexVectorField(g^3,-3..3,-3..3)\free{n3}}
+}{
+\epsffile[0 0 295 295]{../ps/vectorRoot.ps}
+}
+\psXtc{
+The surface.
+}{
+\spadgraph{drawComplex(g^3,-3..3,-3..3)\free{n3}}
+}{
+\epsffile[0 0 295 295]{../ps/complexRoot.ps}
+}
+\ 
+
+

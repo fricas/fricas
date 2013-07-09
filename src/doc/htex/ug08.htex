@@ -1,0 +1,4770 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+\texht{\setcounter{chapter}{7}}{} % Chapter 8
+% viewSizeDefault [300,300]
+
+% *********************************************************************
+\head{chapter}{Advanced Problem Solving}{ugProblem}
+% *********************************************************************
+
+In this chapter we describe techniques useful in solving advanced problems
+with \Language{}.
+
+% *********************************************************************
+\head{section}{Numeric Functions}{ugProblemNumeric}
+% *********************************************************************
+%
+\Language{} provides two basic floating-point types: \axiomType{Float} and
+\axiomType{DoubleFloat}.  This section describes how to use numerical
+\index{function!numeric}
+operations defined on these types and the related complex types.
+\index{numeric operations}
+%
+As we mentioned in \chapref{ugIntro}, the \axiomType{Float} type is a software
+implementation of floating-point numbers in which the exponent and the
+\index{floating-point number}
+significand may have any number of digits.
+\index{number!floating-point}
+See \xmpref{Float} for detailed information about this domain.
+The \axiomType{DoubleFloat} (see \xmpref{DoubleFloat}) is usually a hardware
+implementation of floating point numbers, corresponding to machine double
+precision.
+The types \axiomType{Complex Float} and \axiomType{Complex DoubleFloat} are
+\index{floating-point number!complex}
+the corresponding software implementations of complex floating-point numbers.
+\index{complex!floating-point number}
+In this section the term {\it floating-point type}  means any of these
+\index{number!complex floating-point}
+four types.
+%
+The floating-point types implement the basic elementary functions.
+These include (where \axiomSyntax{\%} means
+\axiomType{DoubleFloat},
+\axiomType{Float},
+\axiomType{Complex DoubleFloat}, or
+\axiomType{Complex Float}):
+
+\noindent
+\axiomFun{exp},  \axiomFun{log}: \axiom{\% -> \%} \newline
+\axiomFun{sin},  \axiomFun{cos}, \axiomFun{tan}, \axiomFun{cot}, \axiomFun{sec}, \axiomFun{csc}: \axiom{\% -> \%} \newline
+\axiomFun{asin}, \axiomFun{acos}, \axiomFun{atan}, \axiomFun{acot}, \axiomFun{asec}, \axiomFun{acsc}: \axiom{\% -> \%}  \newline
+\axiomFun{sinh},  \axiomFun{cosh}, \axiomFun{tanh}, \axiomFun{coth}, \axiomFun{sech}, \axiomFun{csch}: \axiom{\% -> \%}  \newline
+\axiomFun{asinh}, \axiomFun{acosh}, \axiomFun{atanh}, \axiomFun{acoth}, \axiomFun{asech}, \axiomFun{acsch}: \axiom{\% -> \%}  \newline
+\axiomFun{pi}: \axiom{() -> \%}  \newline
+\axiomFun{sqrt}: \axiom{\% -> \%} \newline
+\axiomFun{nthRoot}: \axiom{(\%, Integer) -> \%}  \newline
+\axiomFunFrom{^}{Float}: \axiom{(\%, Fraction Integer) -> \%} \newline
+\axiomFunFrom{^}{Float}: \axiom{(\%, \%) -> \%}  \newline
+
+The handling of roots depends on whether the floating-point type
+\index{root!numeric approximation}
+is real or complex: for the real floating-point types,
+\axiomType{DoubleFloat} and \axiomType{Float}, if a real root exists
+the one with the same sign as the radicand is returned; for the
+complex floating-point types, the principal value is returned.
+\index{principal value}
+Also, for real floating-point types the inverse functions
+produce errors if the results are not real.
+This includes cases such as \axiom{asin(1.2)}, \axiom{log(-3.2)},
+\axiom{sqrt(-1.1)}.
+%
+\xtc{
+The default floating-point type is \axiomType{Float} so to evaluate
+functions using \axiomType{Float} or \axiomType{Complex Float}, just use
+normal decimal notation.
+}{
+\spadcommand{exp(3.1)}
+}
+\xtc{
+}{
+\spadcommand{exp(3.1 + 4.5 * \%i)}
+}
+\xtc{
+To evaluate functions using \axiomType{DoubleFloat}
+or \axiomType{Complex DoubleFloat},
+a declaration or conversion is required.
+}{
+\spadcommand{r: DFLOAT := 3.1; t: DFLOAT := 4.5; exp(r + t*\%i)}
+}
+\xtc{
+}{
+\spadcommand{exp(3.1::DFLOAT + 4.5::DFLOAT * \%i)}
+}
+%
+A number of special functions are provided by the package
+\axiomType{DoubleFloatSpecialFunctions} for the machine-precision
+\index{special functions}
+floating-point types.
+\exptypeindex{DoubleFloatSpecialFunctions}
+The special functions provided are listed below, where \axiom{F} stands for
+the types \axiomType{DoubleFloat} and \axiomType{Complex DoubleFloat}.
+The real versions of the functions yield an error if the result is not real.
+\index{function!special}
+
+\noindent
+\axiomFun{Gamma}: \axiom{F -> F}\hfill\newline
+\axiom{Gamma(z)} is the Euler gamma function,
+\index{function!Gamma}
+   \texht{$\Gamma(z)$}{\axiom{Gamma(z)}},
+   defined by
+\index{Euler!gamma function}
+   \texht{\narrowDisplay{\Gamma(z) = \int_{0}^{\infty} t^{z-1} e^{-t} dt.}%
+   }{
+\newline
+\begin{center}
+\axiom{Gamma(z) = integrate(t^(z-1)*exp(-t), t=0..\%infinity).}
+\end{center}
+   }
+
+\noindent
+\axiomFun{Beta}: \axiom{F -> F}\hfill\newline
+   \axiom{Beta(u, v)} is the Euler Beta function,
+\index{function!Euler Beta}
+   \texht{$B(u,v)$}{\axiom{B(u,v)}}, defined by
+\index{Euler!Beta function}
+   \texht{\narrowDisplay{B(u,v) = \int_{0}^{1} t^{u-1} (1-t)^{v-1} dt.}%
+   }{
+\newline
+\begin{center}
+      \axiom{Beta(u,v) = integrate(t^(u-1)*(1-t)^(b-1), t=0..1).}
+\end{center}
+   }
+   This is related to \texht{$\Gamma(z)$}{\axiom{Gamma(z)}} by
+   \texht{\narrowDisplay{B(u,v) = \frac{\Gamma(u) \Gamma(v)}{\Gamma(u + v)}.}%
+   }{
+\newline
+\begin{center}
+      \axiom{Beta(u,v) = Gamma(u)*Gamma(v)/Gamma(u + v).}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{logGamma}: \axiom{F -> F}\hfill\newline
+   \axiom{logGamma(z)} is the natural logarithm of
+\texht{$\Gamma(z)$}{\axiom{Gamma(z)}}.
+   This can often be computed even if \texht{$\Gamma(z)$}{\axiom{Gamma(z)}}
+cannot.
+%
+
+\noindent
+\axiomFun{digamma}: \axiom{F -> F}\hfill\newline
+   \axiom{digamma(z)}, also called \axiom{psi(z)},
+\index{psi @ $\psi$}
+is the function \texht{$\psi(z)$}{\axiom{psi(z)}},
+\index{function!digamma}
+   defined by \texht{\narrowDisplay{\psi(z) = \Gamma'(z)/\Gamma(z).}%
+   }{
+\newline
+\begin{center}
+      \axiom{psi(z) = Gamma'(z)/Gamma(z).}
+\end{center}
+  }%
+
+\noindent
+\axiomFun{polygamma}: \axiom{(NonNegativeInteger, F) -> F}\hfill\newline
+   \axiom{polygamma(n, z)} is the \eth{\axiom{n}} derivative of
+\index{function!polygamma}
+   \texht{$\psi(z)$}{\axiom{digamma(z)}}\texht{, written $\psi^{(n)}(z)$}{}.
+
+\noindent
+\axiomFun{besselJ}: \axiom{(F,F) -> F}\hfill\newline
+   \axiom{besselJ(v,z)} is the Bessel function of the first kind,
+\index{function!Bessel}
+   \texht{$J_\nu (z)$}{\axiom{J(v,z)}}.
+   This function satisfies the differential equation
+   \texht{\narrowDisplay{z^2 w''(z) + z w'(z) + (z^2-\nu^2)w(z) = 0.}%
+   }{
+\newline
+\begin{center}
+      \axiom{z^2*w''(z) + z*w'(z) + (z^2-v^2)*w(z) = 0.}
+\end{center}
+  }%
+
+\noindent
+\axiomFun{besselY}: \axiom{(F,F) -> F}\hfill\newline
+   \axiom{besselY(v,z)} is the Bessel function of the second kind,
+\index{function!Bessel}
+   \texht{$Y_\nu (z)$}{\axiom{Y(v,z)}}.
+   This function satisfies the same differential equation as
+   \axiomFun{besselJ}.
+   The implementation simply uses the relation
+   \texht{\narrowDisplay{Y_\nu (z) = \frac{J_\nu (z) \cos(\nu \pi) - J_{-\nu} (z)}{\sin(\nu \pi)}.}%
+   }{
+\newline
+\begin{center}
+      \axiom{Y(v,z) = (J(v,z)*cos(v*\%pi) - J(-v,z))/sin(v*\%pi).}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{besselI}: \axiom{(F,F) -> F}\hfill\newline
+   \axiom{besselI(v,z)} is the modified Bessel function of the first kind,
+\index{function!Bessel}
+   \texht{$I_\nu (z)$}{\axiom{I(v,z)}}.
+   This function satisfies the differential equation
+   \texht{\narrowDisplay{z^2 w''(z) + z w'(z) - (z^2+\nu^2)w(z) = 0.}%
+   }{
+\newline
+\begin{center}
+      \axiom{z^2 * w''(z) + z * w'(z) - (z^2+v^2)*w(z) = 0.}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{besselK}: \axiom{(F,F) -> F}\hfill\newline
+   \axiom{besselK(v,z)} is the modified Bessel function of the second kind,
+\index{function!Bessel}
+   \texht{$K_\nu (z)$}{\axiom{K(v,z)}}.
+   This function satisfies the same differential equation as \axiomFun{besselI}.
+\index{Bessel function}
+   The implementation simply uses the relation
+   \texht{\narrowDisplay{K_\nu (z) = \pi \frac{I_{-\nu} (z) - I_{\nu} (z)}{2 \sin(\nu \pi)}.}%
+   }{
+\newline
+\begin{center}
+      \axiom{K(v,z) = \%pi*(I(v,z) - I(-v,z))/(2*sin(v*\%pi)).}
+\end{center}
+   }
+
+\noindent
+\axiomFun{airyAi}: \axiom{F -> F}\hfill\newline
+   \axiom{airyAi(z)} is the Airy function \texht{$Ai(z)$}{\axiom{Ai(z)}}.
+\index{function!Airy Ai}
+   This function satisfies the differential equation
+   \texht{$w''(z) - z w(z) = 0.$}{\axiom{w''(z) - z * w(z) = 0.}}
+   The implementation simply uses the relation
+   \texht{\narrowDisplay{Ai(-z) = \frac{1}{3}\sqrt{z} ( J_{-1/3} (\frac{2}{3}z^{3/2}) + J_{1/3} (\frac{2}{3}z^{3/2}) ).}%
+   }{
+\newline
+\begin{center}
+      \axiom{Ai(-z) = 1/3 * sqrt(z) * (J(-1/3, 2/3*z^(3/2)) + J(1/3, 2/3*z^(3/2)) ).}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{airyBi}: \axiom{F -> F}\hfill\newline
+   \axiom{airyBi(z)} is the Airy function \texht{$Bi(z)$}{\axiom{Bi(z)}}.
+\index{function!Airy Bi}
+   This function satisfies the same differential equation as \axiomFun{airyAi}.
+\index{Airy function}
+   The implementation simply uses the relation
+   \texht{\narrowDisplay{Bi(-z) = \frac{1}{3}\sqrt{3 z} ( J_{-1/3} (\frac{2}{3}z^{3/2}) - J_{1/3} (\frac{2}{3}z^{3/2}) ).}%
+   }{
+\newline
+\begin{center}
+      \axiom{Bi(-z) = 1/3 *sqrt(3*z) * (J(-1/3, 2/3*z^(3/2)) - J(1/3, 2/3*z^(3/2)) ).}
+\end{center}
+   }
+
+\noindent
+\axiomFun{hypergeometric0F1}: \axiom{(F,F) -> F}\hfill\newline
+   \axiom{hypergeometric0F1(c,z)} is the hypergeometric function
+\index{function!hypergeometric}
+   \texht{${}_0 F_1 ( ; c; z)$}{\axiom{0F1(; c; z)}}.%
+
+\xtc{
+The above special functions are defined only for small floating-point types.
+If you give \axiomType{Float} arguments, they are converted to
+\axiomType{DoubleFloat} by \Language{}.
+}{
+\spadcommand{Gamma(0.5)^2}
+}
+\xtc{
+}{
+\spadcommand{a := 2.1; b := 1.1; besselI(a + \%i*b, b*a + 1)}
+}
+%
+A number of additional operations may be used to compute numerical values.
+These are special polynomial functions that can be evaluated for values in
+any commutative ring \axiom{R}, and in particular for values in any
+floating-point type.
+The following operations are provided by the package
+\axiomType{OrthogonalPolynomialFunctions}:
+\exptypeindex{OrthogonalPolynomialFunctions}
+
+\noindent
+\axiomFun{chebyshevT}: \axiom{(NonNegativeInteger, R) -> R}\hbox{}\hfill\newline
+   \axiom{chebyshevT(n,z)} is the \eth{\axiom{n}} Chebyshev polynomial of the first
+   kind, \texht{$T_n (z)$}{\axiom{T[n](z)}}.  These are defined by
+   \texht{\narrowDisplay{\frac{1-t z}{1-2 t z+t^2} = \sum_{n=0}^{\infty} T_n (z) t^n.}%
+   }{
+\newline
+\begin{center}
+   \axiom{(1-t*z)/(1-2*t*z+t^2) = sum(T[n](z) *t^n, n = 0..).}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{chebyshevU}: \axiom{(NonNegativeInteger, R) -> R}\hbox{}\hfill\newline
+   \axiom{chebyshevU(n,z)} is the \eth{\axiom{n}} Chebyshev polynomial of the second
+   kind, \texht{$U_n (z)$}{\axiom{U[n](z)}}. These are defined by
+   \texht{\narrowDisplay{\frac{1}{1-2 t z+t^2} = \sum_{n=0}^{\infty} U_n (z) t^n.}%
+   }{
+\newline
+\begin{center}
+   \axiom{1/(1-2*t*z+t^2) = sum(U[n](z) *t^n, n = 0..).}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{hermiteH}:   \axiom{(NonNegativeInteger, R) -> R}\hbox{}\hfill\newline
+   \axiom{hermiteH(n,z)} is the \eth{\axiom{n}} Hermite polynomial,
+   \texht{$H_n (z)$}{\axiom{H[n](z)}}.
+   These are defined by
+   \texht{\narrowDisplay{e^{2 t z - t^2} = \sum_{n=0}^{\infty} H_n (z) \frac{t^n}{n!}.}%
+   }{
+\newline
+\begin{center}
+   \axiom{exp(2*t*z-t^2) = sum(H[n](z)*t^n/n!, n = 0..).}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{laguerreL}:  \axiom{(NonNegativeInteger, R) -> R}\hbox{}\hfill\newline
+   \axiom{laguerreL(n,z)} is the \eth{\axiom{n}} Laguerre polynomial,
+   \texht{$L_n (z)$}{\axiom{L[n](z)}}.
+   These are defined by
+   \texht{\narrowDisplay{\frac{e^{-\frac{t z}{1-t}}}{1-t} = \sum_{n=0}^{\infty} L_n (z) \frac{t^n}{n!}.}%
+   }{
+\newline
+\begin{center}
+   \axiom{exp(-t*z/(1-t))/(1-t) = sum(L[n](z)*t^n/n!, n = 0..).}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{laguerreL}:  \axiom{(NonNegativeInteger, NonNegativeInteger, R) -> R}\hbox{}\hfill\newline
+   \axiom{laguerreL(m,n,z)} is the associated Laguerre polynomial,
+   \texht{$L^m_n (z)$}{\axiom{L<m>[n](z)}}.
+   This is the \eth{\axiom{m}} derivative of \texht{$L_n (z)$}{\axiom{L[n](z)}}.
+
+\noindent
+\axiomFun{legendreP}:  \axiom{(NonNegativeInteger, R) -> R}\hbox{}\hfill\newline
+   \axiom{legendreP(n,z)} is the \eth{\axiom{n}} Legendre polynomial,
+   \texht{$P_n (z)$}{\axiom{P[n](z)}}.  These are defined by
+   \texht{\narrowDisplay{\frac{1}{\sqrt{1-2 t z+t^2}} = \sum_{n=0}^{\infty} P_n (z) t^n.}%
+   }{
+\newline
+\begin{center}
+   \axiom{1/sqrt(1-2*z*t+t^2) = sum(P[n](z)*t^n, n = 0..).}
+\end{center}
+   }%
+
+%
+\xtc{
+These operations require non-negative integers for the indices, but otherwise
+the argument can be given as desired.
+}{
+\spadcommand{[chebyshevT(i, z) for i in 0..5]}
+}
+\xtc{
+The expression \axiom{chebyshevT(n,z)} evaluates to the \eth{\axiom{n}} Chebyshev
+\index{polynomial!Chebyshev!of the first kind}
+polynomial of the first kind.
+}{
+\spadcommand{chebyshevT(3, 5.0 + 6.0*\%i)}
+}
+\xtc{
+}{
+\spadcommand{chebyshevT(3, 5.0::DoubleFloat)}
+}
+\xtc{
+The expression \axiom{chebyshevU(n,z)} evaluates to the \eth{\axiom{n}} Chebyshev
+\index{polynomial!Chebyshev!of the second kind}
+polynomial of the second kind.
+}{
+\spadcommand{[chebyshevU(i, z) for i in 0..5]}
+}
+\xtc{
+}{
+\spadcommand{chebyshevU(3, 0.2)}
+}
+\xtc{
+The expression \axiom{hermiteH(n,z)} evaluates to the \eth{\axiom{n}} Hermite
+\index{polynomial!Hermite}
+polynomial.
+}{
+\spadcommand{[hermiteH(i, z) for i in 0..5]}
+}
+\xtc{
+}{
+\spadcommand{hermiteH(100, 1.0)}
+}
+\xtc{
+The expression \axiom{laguerreL(n,z)} evaluates to the \eth{\axiom{n}} Laguerre
+\index{polynomial!Laguerre}
+polynomial.
+}{
+\spadcommand{[laguerreL(i, z) for i in 0..4]}
+}
+\xtc{
+}{
+\spadcommand{laguerreL(4, 1.2)}
+}
+\xtc{
+}{
+\spadcommand{[laguerreL(j, 3, z) for j in 0..4]}
+}
+\xtc{
+}{
+\spadcommand{laguerreL(1, 3, 2.1)}
+}
+\xtc{
+The expression
+\index{polynomial!Legendre}
+\axiom{legendreP(n,z)} evaluates to the \eth{\axiom{n}} Legendre polynomial,
+}{
+\spadcommand{[legendreP(i,z) for i in 0..5]}
+}
+\xtc{
+}{
+\spadcommand{legendreP(3, 3.0*\%i)}
+}
+%
+
+Finally, three number-theoretic polynomial operations may be evaluated.
+\index{number theory}
+The following operations are provided by the package
+\axiomType{NumberTheoreticPolynomialFunctions}.
+\exptypeindex{NumberTheoreticPolynomialFunctions}.
+
+\noindent
+\axiomFun{bernoulliB}: \axiom{(NonNegativeInteger, R) -> R} \hbox{}\hfill\newline
+   \axiom{bernoulliB(n,z)} is the \eth{\axiom{n}} Bernoulli polynomial,
+\index{polynomial!Bernoulli}
+   \texht{$B_n (z)$}{\axiom{B[n](z)}}.  These are defined by
+   \texht{\narrowDisplay{\frac{t e^{z t}}{e^t - 1} = \sum_{n=0}^{\infty} B_n (z) \frac{t^n}{n!}.}
+   }{
+\newline
+\begin{center}
+   \axiom{t*exp(z*t)/(exp t - 1) = sum(B[n](z)*t^n/n! for n - 0..)}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{eulerE}: \axiom{(NonNegativeInteger, R) -> R} \hbox{}\hfill\newline
+   \axiom{eulerE(n,z)} is the \eth{\axiom{n}} Euler polynomial,
+\index{Euler!polynomial}
+   \texht{$E_n (z)$}{\axiom{E[n](z)}}.  These are defined by
+\index{polynomial!Euler}
+   \texht{\narrowDisplay{\frac{2 e^{z t}}{e^t + 1} = \sum_{n=0}^{\infty} E_n (z) \frac{t^n}{n!}.}%
+   }{
+\newline
+\begin{center}
+   \axiom{2*exp(z*t)/(exp t + 1) = sum(E[n](z)*t^n/n! for n - 0..)}
+\end{center}
+   }%
+
+\noindent
+\axiomFun{cyclotomic}: \axiom{(NonNegativeInteger, R) -> R}\hbox{}\hfill\newline
+   \axiom{cyclotomic(n,z)} is the \eth{\axiom{n}} cyclotomic polynomial
+   \texht{$\Phi_n (z)$}{\axiom{phi(n,z)}}.  This is the polynomial whose
+   roots are precisely the primitive \eth{\axiom{n}} roots of unity.
+\index{Euler!totient function}
+   This polynomial has degree given by the Euler totient function
+\index{function!totient}
+   \texht{$\phi(n)$}{\axiom{phi(n)}}.
+
+\xtc{
+The expression \axiom{bernoulliB(n,z)} evaluates to the \eth{\axiom{n}} Bernoulli
+\index{polynomial!Bernouilli}
+polynomial.
+}{
+\spadcommand{bernoulliB(3, z)}
+}
+\xtc{
+}{
+\spadcommand{bernoulliB(3, 0.7 + 0.4 * \%i)}
+}
+\xtc{
+The expression
+\index{polynomial!Euler}
+\axiom{eulerE(n,z)} evaluates to the \eth{\axiom{n}} Euler polynomial.
+}{
+\spadcommand{eulerE(3, z)}
+}
+\xtc{
+}{
+\spadcommand{eulerE(3, 0.7 + 0.4 * \%i)}
+}
+\xtc{
+The expression
+\index{polynomial!cyclotomic}
+\axiom{cyclotomic(n,z)} evaluates to the \eth{\axiom{n}} cyclotomic polynomial.
+\index{cyclotomic polynomial}
+}{
+\spadcommand{cyclotomic(3, z)}
+}
+\xtc{
+}{
+\spadcommand{cyclotomic(3, (-1.0 + 0.0 * \%i)^(2/3))}
+}
+
+Drawing complex functions in \Language{} is presently somewhat
+awkward compared to drawing real functions.
+It is necessary to use the \axiomFun{draw} operations that operate
+on functions rather than expressions.
+
+\psXtc{
+This is the complex exponential function\texht{ (rotated interactively).}{.}
+\index{function!complex exponential}
+When this is displayed in color, the height is the value of the real part of
+the function and the color is the imaginary part.
+Red indicates large negative imaginary values, green indicates imaginary
+values near zero and blue/violet indicates large positive imaginary values.
+}{
+\spadgraph{draw((x,y)+-> real exp complex(x,y), -2..2, -2*\%pi..2*\%pi, colorFunction == (x, y) +->  imag exp complex(x,y), title=="exp(x+\%i*y)", style=="smooth")}
+}{
+\epsffile[0 0 295 295]{../ps/compexp.ps}
+}
+
+\begin{inputonly}
+)set message test off
+\end{inputonly}
+\psXtc{
+This is the complex arctangent function.
+\index{function!complex arctangent}
+Again, the height is the real part of the function value but here
+the color indicates the function value's phase.
+The position of the branch cuts are clearly visible and one can
+see that the function is real only for a real argument.
+}{
+\spadgraph{vp := draw((x,y) +-> real atan complex(x,y), -\%pi..\%pi, -\%pi..\%pi, colorFunction==(x,y) +->argument atan complex(x,y), title=="atan(x+\%i*y)", style=="shade"); rotate(vp,-160,-45); vp}
+}{
+\epsffile[0 0 295 295]{../ps/compatan.ps}
+}
+\begin{inputonly}
+)set message test on
+\end{inputonly}
+
+\psXtc{
+This is the complex Gamma function.
+}{
+\spadgraph{draw((x,y) +-> max(min(real Gamma complex(x,y),4),-4), -\%pi..\%pi, -\%pi..\%pi, style=="shade", colorFunction == (x,y) +-> argument Gamma complex(x,y), title == "Gamma(x+\%i*y)", var1Steps == 50, var2Steps== 50)}
+}{
+\epsffile[0 0 295 295]{../ps/compgamm.ps}
+}
+
+\psXtc{
+This shows the real Beta function near the origin.
+}{
+\spadgraph{draw(Beta(x,y)/100, x=-1.6..1.7, y = -1.6..1.7, style=="shade", title=="Beta(x,y)", var1Steps==40, var2Steps==40)}
+}{
+\epsffile[0 0 295 295]{../ps/realbeta.ps}
+}
+
+\psXtc{
+This is the Bessel function \texht{$J_\alpha (x)$}{\axiom{J(alpha,x)}}
+for index \texht{$\alpha$}{\axiom{alpha}} in the range \axiom{-6..4} and
+argument \texht{$x$}{\axiom{x}} in the range \axiom{2..14}.
+}{
+\spadgraph{draw((alpha,x) +-> min(max(besselJ(alpha, x+8), -6), 6), -6..4, -6..6, title=="besselJ(alpha,x)", style=="shade", var1Steps==40, var2Steps==40)}
+}{
+\epsffile[0 0 295 295]{../ps/bessel.ps}
+}
+
+\psXtc{
+This is the modified Bessel function
+\texht{$I_\alpha (x)$}{\axiom{I(alpha,x)}}
+evaluated for various real values of the index \texht{$\alpha$}{\axiom{alpha}}
+and fixed argument \texht{$x = 5$}{\axiom{x = 5}}.
+}{
+\spadgraph{draw(besselI(alpha, 5), alpha = -12..12, unit==[5,20])}
+}{
+\epsffile[0 0 295 295]{../ps/modbess.ps}
+}
+
+\psXtc{
+This is similar to the last example
+except the index \texht{$\alpha$}{\axiom{alpha}}
+takes on complex values in a \axiom{6 x 6} rectangle  centered on the origin.
+}{
+\spadgraph{draw((x,y) +-> real besselI(complex(x/20, y/20),5), -60..60, -60..60, colorFunction == (x,y)+-> argument besselI(complex(x/20,y/20),5), title=="besselI(x+i*y,5)", style=="shade")}
+}{
+\epsffile[0 0 295 295]{../ps/modbessc.ps}
+}
+
+% *********************************************************************
+\head{section}{Polynomial Factorization}{ugProblemFactor}
+% *********************************************************************
+%
+The \Language{} polynomial factorization
+\index{polynomial!factorization}
+facilities are available for all polynomial types and a wide variety of
+coefficient domains.
+\index{factorization}
+Here are some examples.
+
+% *********************************************************************
+\head{subsection}{Integer and Rational Number Coefficients}{ugProblemFactorIntRat}
+% *********************************************************************
+
+\labelSpace{4pc}
+\xtc{
+Polynomials with integer
+\index{polynomial!factorization!integer coefficients}
+coefficients can be be factored.
+}{
+\spadcommand{v := (4*x^3+2*y^2+1)*(12*x^5-x^3*y+12) \bound{v}}
+}
+\xtc{
+}{
+\spadcommand{factor v \free{v}}
+}
+\xtc{
+Also, \Language{} can factor polynomials with
+\index{polynomial!factorization!rational number coefficients}
+rational number coefficients.
+}{
+\spadcommand{w := (4*x^3+(2/3)*x^2+1)*(12*x^5-(1/2)*x^3+12) \bound{w}}
+}
+\xtc{
+}{
+\spadcommand{factor w \free{w}}
+}
+
+% *********************************************************************
+\head{subsection}{Finite Field Coefficients}{ugProblemFactorFF}
+% *********************************************************************
+
+Polynomials with coefficients in a finite field
+\index{polynomial!factorization!finite field coefficients}
+can be also be factored.
+\index{finite field!factoring polynomial with coefficients in}
+
+\labelSpace{3pc}
+\xtc{
+}{
+\spadcommand{u : POLY(PF(19)) :=3*x^4+2*x^2+15*x+18 \bound{u}}
+}
+\xtc{
+These include the integers mod \axiom{p}, where \axiom{p} is prime, and
+extensions of these fields.
+}{
+\spadcommand{factor u \free{u}}
+}
+\xtc{
+Convert this to have coefficients in the finite
+field with \texht{$19^3$}{\axiom{19^3}} elements.
+See \spadref{ugProblemFinite} for more information
+about finite fields.
+}{
+\spadcommand{factor(u :: POLY FFX(PF 19,3)) \free{u}}
+}
+%
+
+% *********************************************************************
+\head{subsection}{Simple Algebraic Extension Field Coefficients}{ugProblemFactorAlg}
+% *********************************************************************
+
+Polynomials with coefficients in simple algebraic extensions
+\index{polynomial!factorization!algebraic extension field coefficients}
+of the rational numbers can be factored.
+\index{algebraic number}
+\index{number!algebraic}
+
+\labelSpace{2pc}
+\xtc{
+Here, \axiom{aa} and \axiom{bb} are symbolic roots of polynomials.
+}{
+\spadcommand{aa := rootOf(aa^2+aa+1) \bound{aa}}
+}
+\xtc{
+}{
+\spadcommand{p:=(x^3+aa^2*x+y)*(aa*x^2+aa*x+aa*y^2)^2 \free{aa}\bound{p}}
+}
+\xtc{
+Note that the second argument to factor can be a list of
+algebraic extensions to factor over.
+}{
+\spadcommand{factor(p,[aa]) \free{p aa}}
+}
+\xtc{
+This factors \axiom{x^2+3} over the integers.
+}{
+\spadcommand{factor(x^2+3)}
+}
+\xtc{
+Factor the same polynomial over the field obtained by adjoining
+\axiom{aa} to the rational numbers.
+}{
+\spadcommand{factor(x^2+3,[aa]) \free{aa}}
+}
+\xtc{
+Factor \axiom{x^6+108} over the same field.
+}{
+\spadcommand{factor(x^6+108,[aa]) \free{aa}}
+}
+\xtc{
+}{
+\spadcommand{bb:=rootOf(bb^3-2) \bound{bb}}
+}
+\xtc{
+}{
+\spadcommand{factor(x^6+108,[bb]) \free{bb}}
+}
+\xtc{
+Factor again over the field obtained by adjoining both \axiom{aa}
+and \axiom{bb} to the rational numbers.
+}{
+\spadcommand{factor(x^6+108,[aa,bb]) \free{aa bb}}
+}
+
+% *********************************************************************
+\head{subsection}{Factoring Rational Functions}{ugProblemFactorRatFun}
+% *********************************************************************
+
+Since fractions of polynomials form a field, every element (other than zero)
+\index{rational function!factoring}
+divides any other, so there is no useful notion of irreducible factors.
+Thus the \axiomFun{factor} operation is not very useful for fractions
+of polynomials.
+
+\xtc{
+There is, instead, a specific operation \axiomFun{factorFraction}
+that separately factors the numerator and denominator and returns
+a fraction of the factored results.
+}{
+\spadcommand{factorFraction((x^2-4)/(y^2-4))}
+}
+\xtc{
+You can also use \axiomFun{map}. This expression
+applies the \axiomFun{factor} operation
+to the numerator and denominator.
+}{
+\spadcommand{map(factor,(x^2-4)/(y^2-4))}
+}
+
+% *********************************************************************
+\head{section}{Manipulating Symbolic Roots of a Polynomial}{ugProblemSymRoot}
+% *********************************************************************
+%
+In this section we show you how to work with one root or all roots
+\index{root!symbolic}
+of a polynomial.
+These roots are represented symbolically (as opposed to being
+numeric approximations).
+See \spadref{ugxProblemOnePol} and \spadref{ugxProblemPolSys} for
+information about solving for the roots of one or more
+polynomials.
+
+% *********************************************************************
+\head{subsection}{Using a Single Root of a Polynomial}{ugxProblemSymRootOne}
+% *********************************************************************
+
+Use \axiomFun{rootOf} to get a symbolic root of a polynomial:
+\axiom{rootOf(p, x)} returns a root of \axiom{p(x)}.
+
+\labelSpace{2pc}
+\xtc{
+This creates an algebraic number \axiom{a}.
+\index{algebraic number}
+\index{number!algebraic}
+}{
+\spadcommand{a := rootOf(a^4+1,a) \bound{a}}
+}
+\xtc{
+To find the algebraic relation that defines \axiom{a},
+use \axiomFun{definingPolynomial}.
+}{
+\spadcommand{definingPolynomial a \free{a}}
+}
+\xtc{
+You can use \axiom{a} in any further expression,
+including a nested \axiomFun{rootOf}.
+}{
+\spadcommand{b := rootOf(b^2-a-1,b) \free{a}\bound{b}}
+}
+\xtc{
+Higher powers of the roots are automatically reduced during
+calculations.
+}{
+\spadcommand{a + b \free{a b}\bound{c}}
+}
+\xtc{
+}{
+\spadcommand{\% ^ 5 \free{c}}
+}
+\xtc{
+The operation \axiomFun{zeroOf} is similar to \axiomFun{rootOf},
+except that it may express the root using radicals in some cases.
+\index{radical}
+}{
+\spadcommand{rootOf(c^2+c+1,c)}
+}
+\xtc{
+}{
+\spadcommand{zeroOf(d^2+d+1,d)}
+}
+\xtc{
+}{
+\spadcommand{rootOf(e^5-2,e)}
+}
+\xtc{
+}{
+\spadcommand{zeroOf(f^5-2,f)}
+}
+
+% *********************************************************************
+\head{subsection}{Using All Roots of a Polynomial}{ugxProblemSymRootAll}
+% *********************************************************************
+
+Use \axiomFun{rootsOf} to get all symbolic roots of a polynomial:
+\axiom{rootsOf(p, x)} returns a
+list of all the roots of \axiom{p(x)}.
+If \axiom{p(x)} has a multiple root of order \axiom{n}, then that root
+\index{root!multiple}
+appears \axiom{n} times in the list.
+\texht{\typeout{Make sure these variables are x0 etc}}{}
+
+\xtc{
+Compute all the roots of \axiom{x^4 + x + 1}.
+}{
+\spadcommand{l := rootsOf(x^4 + x + 1,x) \bound{l}}
+}
+\xtc{
+As a side effect, the variables \axiom{\%x0, \%x1} and \axiom{\%x2} are bound
+to the first three roots of \axiom{x^4 + x + 1}.
+}{
+\spadcommand{\%x0^5 \free{l}}
+}
+\xtc{
+Although they all satisfy \axiom{x^4 + x + 1 = 0, \%x0, \%x1,}
+and \axiom{\%x2} are different algebraic numbers.
+To find the algebraic relation that defines each of them,
+use \axiomFun{definingPolynomial}.
+}{
+\spadcommand{definingPolynomial \%x0 \free{l}}
+}
+\xtc{
+}{
+\spadcommand{definingPolynomial \%x1 \free{l}}
+}
+\xtc{
+}{
+\spadcommand{definingPolynomial \%x2 \free{l}}
+}
+\xtc{
+We can check that the sum and product of the roots of \axiom{x^4 + x + 1} are
+its trace and norm.
+}{
+\spadcommand{x3 := last l \free{l} \bound{x3}}
+}
+\xtc{
+}{
+\spadcommand{\%x0 + \%x1 + \%x2 + x3 \free{x3}}
+}
+\xtc{
+}{
+\spadcommand{\%x0 * \%x1 * \%x2 * x3 \free{x3}}
+}
+\xtc{
+Note, that in general roots are expressions in new symbols. For
+example for \axiom{x^4 + 1} the second root is a product.
+}{
+\spadcommand{rootsOf(x^4 + 1, x)}
+}
+\xtc{
+Corresponding to the pair of operations
+\axiomFun{rootOf}/\axiomFun{zeroOf} in
+\spadref{ugxProblemOnePol}, there is
+an operation \axiomFun{zerosOf} that, like \axiomFun{rootsOf},
+computes all the roots
+of a given polynomial, but which expresses some of them in terms of
+radicals.
+}{
+\spadpaste{zerosOf(y^4 + y + 1, y) \bound{z}}
+}
+\xtc{
+As you see, only two implicit algebraic numbers were created
+(\axiom{\%y0,\%y1}), and its defining equations are below.
+The other two roots are expressed in radicals.
+}{
+\spadpaste{definingPolynomial \%y0 \free{z}}
+}
+\xtc{
+}{
+\spadcommand{definingPolynomial \%y1 \free{z}}
+}
+\xtc{
+For \axiom{x^4 + 1} all roots can be expressied in radicals.
+}{
+\spadpaste{zerosOf(x^4 + 1)}
+}
+% *********************************************************************
+\head{section}{Computation of Eigenvalues and Eigenvectors}{ugProblemEigen}
+% *********************************************************************
+%
+In this section we show you
+some of \Language{}'s facilities for computing and
+\index{eigenvalue}
+manipulating eigenvalues and eigenvectors, also called
+\index{eigenvector}
+characteristic values and characteristic vectors,
+\index{characteristic!value}
+respectively.
+\index{characteristic!vector}
+
+\texht{\vskip 4pc}{}
+
+\xtc{
+Let's first create a matrix with integer entries.
+}{
+\spadcommand{m1 := matrix [[1,2,1],[2,1,-2],[1,-2,4]] \bound{m1}}
+}
+\xtc{
+To get a list of the {\it rational} eigenvalues,
+use the operation \axiomFun{eigenvalues}.
+}{
+\spadcommand{leig := eigenvalues(m1) \free{m1} \bound{leig}}
+}
+\xtc{
+Given an explicit eigenvalue, \axiomFun{eigenvector} computes the eigenvectors
+corresponding to it.
+}{
+\spadcommand{eigenvector(first(leig),m1) \free{m1 leig}}
+}
+
+The operation \axiomFun{eigenvectors} returns a list of pairs of values and
+vectors. When an eigenvalue is rational, \Language{} gives you
+the value explicitly; otherwise, its minimal polynomial is given,
+(the polynomial of lowest degree with the eigenvalues as roots),
+together with a parametric representation of the eigenvector using the
+eigenvalue.
+This means that if you ask \Language{} to \axiomFun{solve}
+the minimal polynomial, then you can substitute these roots
+\index{polynomial!minimal}
+into the parametric form of the corresponding eigenvectors.
+\index{minimal polynomial}
+
+\xtc{
+You must be aware that unless an exact eigenvalue has been computed,
+the eigenvector may be badly in error.
+}{
+\spadcommand{eigenvectors(m1) \free{m1}}
+}
+\xtc{
+Another possibility is to use the operation
+\axiomFun{radicalEigenvectors}
+tries to compute explicitly the eigenvectors
+in terms of radicals.
+\index{radical}
+}{
+\spadcommand{radicalEigenvectors(m1) \free{m1}}
+}
+
+Alternatively, \Language{} can compute real or complex approximations to the
+\index{approximation}
+eigenvectors and eigenvalues using the operations \axiomFun{realEigenvectors}
+or \axiomFun{complexEigenvectors}.
+They each take an additional argument \texht{$\epsilon$}{\axiom{epsilon}}
+to specify the ``precision'' required.
+\index{precision}
+In the real case, this means that each approximation will be within
+\texht{$\pm\epsilon$}{plus or minus \axiom{epsilon}} of the actual
+result.
+In the complex case, this means that each approximation will be within
+\texht{$\pm\epsilon$}{plus or minus \axiom{epsilon}} of the actual result
+in each of the real and imaginary parts.
+
+\xtc{
+The precision can be specified as a \axiomType{Float} if the results are
+desired in floating-point notation, or as \axiomType{Fraction Integer} if the
+results are to be expressed using rational (or complex rational) numbers.
+}{
+\spadcommand{realEigenvectors(m1,1/1000) \free{m1}}
+}
+\xtc{
+If an \axiom{n} by \axiom{n} matrix has \axiom{n} distinct eigenvalues (and
+therefore \axiom{n} eigenvectors) the operation \axiomFun{eigenMatrix}
+gives you a matrix of the eigenvectors.
+}{
+\spadcommand{eigenMatrix(m1) \free{m1}}
+}
+\xtc{
+}{
+\spadcommand{m2 := matrix [[-5,-2],[18,7]] \bound{m2}}
+}
+\xtc{
+}{
+\spadcommand{eigenMatrix(m2) \free{m2}}
+}
+%
+%
+\xtc{
+If a symmetric matrix
+\index{matrix!symmetric}
+has a basis of orthonormal eigenvectors, then
+\index{basis!orthonormal}
+\axiomFun{orthonormalBasis} computes a list of these vectors.
+\index{orthonormal basis}
+}{
+\spadcommand{m3 := matrix [[1,2],[2,1]] \bound{m3}}
+}
+\xtc{
+}{
+\spadcommand{orthonormalBasis(m3) \free{m3}}
+}
+
+% *********************************************************************
+\head{section}{Solution of Linear and Polynomial Equations}{ugProblemLinPolEqn}
+% *********************************************************************
+%
+In this section we discuss the \Language{} facilities for solving
+systems of linear equations, finding the roots of polynomials and
+\index{linear equation}
+solving systems of polynomial equations.
+For a discussion of the solution of differential equations, see
+\spadref{ugProblemDEQ}.
+
+% *********************************************************************
+\head{subsection}{Solution of Systems of Linear Equations}{ugxProblemLinSys}
+% *********************************************************************
+
+You can use the operation \axiomFun{solve} to solve systems of linear equations.
+\index{equation!linear!solving}
+
+The operation \axiomFun{solve} takes two arguments, the list of equations and the
+list of the unknowns to be solved for.
+A system of linear equations need not have a unique solution.
+
+\xtc{
+To solve the linear system:
+\begin{texonly}
+$$
+\begin{array}{rcrcrcr}
+  x &+&   y &+&   z &=& 8 \\
+3 x &-& 2 y &+&   z &=& 0 \\
+  x &+& 2 y &+& 2 z &=& 17
+\end{array}
+$$
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{  x +   y +   z = 8} \\
+\axiom{3*x - 2*y +   z = 0} \\
+\axiom{  x + 2*y + 2*z = 17}
+\end{center}
+\endhtonly
+evaluate this expression.
+}{
+\spadcommand{solve([x+y+z=8,3*x-2*y+z=0,x+2*y+2*z=17],[x,y,z])}
+}
+
+Parameters are given as new variables starting with a percent sign and
+\spadSyntax{\%} and
+the variables are expressed in terms of the parameters.
+If the system has no solutions then the empty list is returned.
+
+\xtc{
+When you solve the linear system
+\begin{texonly}
+$$
+\begin{array}{rcrcrcr}
+  x&+&2 y&+&3 z&=&2 \\
+2 x&+&3 y&+&4 z&=&2 \\
+3 x&+&4 y&+&5 z&=&2
+\end{array}
+$$
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{  x + 2*y + 3*z = 2} \\
+\axiom{2*x + 3*y + 4*z = 2} \\
+\axiom{3*x + 4*y + 5*z = 2}
+\end{center}
+\endhtonly
+with this expression
+you get a solution involving a parameter.
+}{
+\spadcommand{solve([x+2*y+3*z=2,2*x+3*y+4*z=2,3*x+4*y+5*z=2],[x,y,z])}
+}
+
+The system can also be presented as a matrix and a vector.
+The matrix contains the coefficients of the linear equations and
+the vector contains the numbers appearing on the right-hand sides
+of the equations.
+You may input the matrix as a list of rows and the vector as a
+list of its elements.
+
+\xtc{
+To solve the system:
+\begin{texonly}
+$$
+\begin{array}{rcrcrcr}
+  x&+&  y&+&  z&=&8  \\
+3 x&-&2 y&+&  z&=&0  \\
+  x&+&2 y&+&2 z&=&17
+\end{array}
+$$
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{  x +   y +   z = 8} \\
+\axiom{3*x - 2*y +   z = 0} \\
+\axiom{  x + 2*y + 2*z = 17}
+\end{center}
+\endhtonly
+in matrix form you would evaluate this expression.
+}{
+\spadcommand{solve([[1,1,1],[3,-2,1],[1,2,2]],[8,0,17])}
+}
+
+The solutions are presented as a \pspadtype{Record} with two
+components: the component \texht{{\it particular}}{{\tt
+particular}} contains a particular solution of the given system or
+the item {\tt "failed"} if there are no solutions, the component
+\texht{{\it basis}}{{\tt basis}} contains a list of vectors that
+are a basis for the space of solutions of the corresponding
+homogeneous system.
+If the system of linear equations does not have a unique solution,
+then the \texht{{\it basis}}{{\tt basis}} component contains
+non-trivial vectors.
+
+\xtc{
+This happens when you solve the linear system
+\begin{texonly}
+$$
+\begin{array}{rcrcrcr}
+  x&+&2 y&+&3 z&=&2 \\
+2 x&+&3 y&+&4 z&=&2 \\
+3 x&+&4 y&+&5 z&=&2
+\end{array}
+$$
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{  x + 2*y + 3*z = 2} \\
+\axiom{2*x + 3*y + 4*z = 2} \\
+\axiom{3*x + 4*y + 5*z = 2}
+\end{center}
+\endhtonly
+with this command.
+}{
+\spadcommand{solve([[1,2,3],[2,3,4],[3,4,5]],[2,2,2])}
+}
+
+All solutions of this system are obtained by adding the particular
+solution with a linear combination of the \texht{{\it basis}}{{\tt
+basis}} vectors.
+
+When no solution exists then {\tt "failed"} is returned as the
+\texht{{\it particular}}{{\tt particular}} component, as follows:
+
+\xtc{
+}{
+\spadcommand{solve([[1,2,3],[2,3,4],[3,4,5]],[2,3,2])}
+}
+
+When you want to solve a system of homogeneous equations (that is,
+a system where the numbers on the right-hand sides of the
+\index{nullspace}
+equations are all zero) in the matrix form you can omit the second
+argument and use the \axiomFun{nullSpace} operation.
+
+\xtc{
+This computes the solutions of the following system of equations:
+\begin{texonly}
+$$
+\begin{array}{rcrcrcr}
+  x&+&2 y&+&3 z&=&0  \\
+2 x&+&3 y&+&4 z&=&0  \\
+3 x&+&4 y&+&5 z&=&0
+\end{array}
+$$
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{  x + 2*y + 3*z = 0} \\
+\axiom{2*x + 3*y + 4*z = 0} \\
+\axiom{3*x + 4*y + 5*z = 0}
+\end{center}
+\endhtonly
+The result is given as a list of vectors and
+these vectors form a basis for the solution space.
+}{
+\spadcommand{nullSpace([[1,2,3],[2,3,4],[3,4,5]])}
+}
+
+% *********************************************************************
+\head{subsection}{Solution of a Single Polynomial Equation}{ugxProblemOnePol}
+% *********************************************************************
+
+\Language{} can solve polynomial equations producing either approximate
+\index{polynomial!root finding}
+or exact solutions.
+\index{equation!polynomial!solving}
+Exact solutions are either members of the ground
+field or can be presented symbolically as roots of irreducible polynomials.
+
+\xtc{
+This returns the one rational root along with an irreducible
+polynomial describing the other solutions.
+}{
+\spadcommand{solve(x^3  = 8,x)}
+}
+\xtc{
+If you want solutions expressed in terms of radicals you would use this
+instead.
+\index{radical}
+}{
+\spadcommand{radicalSolve(x^3  = 8,x)}
+}
+
+The \axiomFun{solve} command always returns a value but
+\axiomFun{radicalSolve} returns only the solutions that it is
+able to express in terms of radicals.
+\index{radical}
+
+If the polynomial equation has rational coefficients
+you can ask for approximations to its real roots by calling
+solve with a second argument that specifies the ``precision''
+\index{precision}
+\texht{$\epsilon$}{\axiom{epsilon}}.
+This means that each approximation will be within
+\texht{$\pm\epsilon$}{plus or minus \axiom{epsilon}} of the actual
+result.
+
+\xtc{
+Notice that the type of second argument controls the type of the result.
+}{
+\spadcommand{solve(x^4 - 10*x^3 + 35*x^2 - 50*x + 25,.0001)}
+}
+\xtc{
+If you give a floating-point precision you get a floating-point result;
+if you give the precision as a rational number you get a rational result.
+}{
+\spadcommand{solve(x^3-2,1/1000)}
+}
+\xtc{
+If you want approximate complex results you should use the
+\index{approximation}
+command \axiomFun{complexSolve} that takes the same precision argument
+\texht{$\epsilon$}{\axiom{epsilon}}.
+}{
+\spadcommand{complexSolve(x^3-2,.0001)}
+}
+\xtc{
+Each approximation will be within
+\texht{$\pm\epsilon$}{plus or minus \axiom{epsilon}} of the actual result
+in each of the real and imaginary parts.
+}{
+\spadcommand{complexSolve(x^2-2*\%i+1,1/100)}
+}
+
+Note that if you omit the \axiomOp{=} from the first argument
+\Language{} generates an equation by equating the first argument to zero.
+Also, when only one variable is present in the equation, you
+do not need to specify the variable to be solved for, that is,
+you can omit the second argument.
+
+\xtc{
+\Language{} can also solve equations involving rational functions.
+Solutions where the denominator vanishes are discarded.
+}{
+\spadcommand{radicalSolve(1/x^3 + 1/x^2 + 1/x = 0,x)}
+}
+
+% *********************************************************************
+\head{subsection}{Solution of Systems of Polynomial Equations}{ugxProblemPolSys}
+% *********************************************************************
+
+Given a system of equations of rational functions with exact coefficients:
+\index{equation!polynomial!solving}
+\begin{texonly}
+\narrowDisplay{%
+\begin{array}{c}
+p_1(x_1, \ldots, x_n) \\ \vdots \\ p_m(x_1,\ldots,x_n)
+\end{array}}%
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{p1(x1,...,xn)} \\
+\axiom{.}             \\
+\axiom{.}             \\
+\axiom{.}             \\
+\axiom{pm(x1,...,xn)}
+\end{center}
+\endhtonly
+\Language{} can find
+numeric or symbolic solutions.
+The system is first split into irreducible components, then for
+each component, a triangular system of equations is found that reduces
+the problem to sequential solution of univariate polynomials resulting
+from substitution of partial solutions from the previous stage.
+\begin{texonly}
+\narrowDisplay{%
+\begin{array}{c}
+q_1(x_1, \ldots, x_n) \\ \vdots \\ q_m(x_n)
+\end{array}}%
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{q1(x1,...,xn)} \\
+\axiom{.} \\
+\axiom{.} \\
+\axiom{.} \\
+\axiom{qm(xn)}
+\end{center}
+\endhtonly
+
+Symbolic solutions can be presented using ``implicit'' algebraic numbers
+defined as roots of irreducible polynomials or in terms of radicals.
+\Language{} can also find approximations to the real or complex roots
+of a system of polynomial equations to any user-specified accuracy.
+
+The operation \axiomFun{solve} for systems is used in a way similar
+to \axiomFun{solve} for single equations.
+Instead of a polynomial equation, one has to give a list of
+equations and instead of a single variable to solve for, a list of
+variables.
+For solutions of single equations see \spadref{ugxProblemOnePol}.
+
+%
+\xtc{
+Use the operation \axiomFun{solve} if you want implicitly presented
+solutions.
+}{
+\spadcommand{solve([3*x^3 + y + 1,y^2 -4],[x,y])}
+}
+\xtc{
+}{
+\spadcommand{solve([x = y^2-19,y = z^2+x+3,z = 3*x],[x,y,z])}
+}
+\xtc{
+Use \axiomFun{radicalSolve} if you want your solutions expressed
+in terms of radicals.
+}{
+\spadcommand{radicalSolve([3*x^3 + y + 1,y^2 -4],[x,y])}
+}
+
+To get numeric solutions you only need to give the list of
+equations and the precision desired.
+The list of variables would be redundant information since there
+can be no parameters for the numerical solver.
+
+\xtc{
+If the precision is expressed as a floating-point number you get
+results expressed as floats.
+}{
+\spadcommand{solve([x^2*y - 1,x*y^2 - 2],.01)}
+}
+\xtc{
+To get complex numeric solutions, use the operation \axiomFun{complexSolve},
+which takes the same arguments as in the real case.
+}{
+\spadcommand{complexSolve([x^2*y - 1,x*y^2 - 2],1/1000)}
+}
+\xtc{
+It is also possible to solve systems of equations in rational functions
+over the rational numbers.
+Note that \axiom{[x = 0.0, a = 0.0]} is not returned as a solution since
+the denominator vanishes there.
+}{
+\spadcommand{solve([x^2/a = a,a = a*x],.001)}
+}
+\xtc{
+When solving equations with
+denominators, all solutions where the denominator vanishes are
+discarded.
+}{
+\spadcommand{radicalSolve([x^2/a + a + y^3 - 1,a*y + a + 1],[x,y])}
+}
+
+% *********************************************************************
+\head{section}{Limits}{ugProblemLimits}
+% *********************************************************************
+%
+To compute a limit, you must specify a functional expression,
+\index{limit}
+a variable, and a limiting value for that variable.
+If you do not specify a direction, \Language{} attempts to
+compute a two-sided limit.
+
+\xtc{
+Issue this to compute the limit
+\texht{$$\lim_{x \rightarrow 1}{{\displaystyle x^2 - 3x +
+2}\over{\displaystyle x^2 - 1}}.$$}{
+of \axiom{(x^2 - 3*x + 2)/(x^2 - 1)} as \axiom{x} approaches \axiom{1}.}
+}{
+\spadcommand{limit((x^2 - 3*x + 2)/(x^2 - 1),x = 1)}
+}
+% answer := -1/2
+
+Sometimes the limit when approached from the left is different from the
+limit from the right and, in this case, you may wish to ask for a
+one-sided limit.
+Also,
+if you have a function that is only defined on one side of a particular value,
+\index{limit!one-sided vs. two-sided}
+you can compute a one-sided limit.
+
+\xtc{
+The function \axiom{log(x)} is only defined to the right of zero,
+that is, for \axiom{x > 0}.
+Thus, when computing limits of functions involving \axiom{log(x)},
+you probably want a ``right-hand'' limit.
+}{
+\spadcommand{limit(x * log(x),x = 0,"right")}
+}
+% answer := 0
+\xtc{
+When you do not specify \axiom{"right"} or \axiom{"left"} as the
+optional fourth argument, \axiomFun{limit} tries to compute a
+two-sided limit.
+Here the limit from the left does not exist, as \Language{}
+indicates when you try to take a two-sided limit.
+}{
+\spadcommand{limit(x * log(x),x = 0)}
+}
+% answer := [left = "failed",right = 0]
+
+A function can be defined on both sides of a particular value, but
+tend to different limits as its variable approaches that value from the
+left and from the right.
+We can construct an example of this as follows:
+Since
+\texht{$\sqrt{y^2}$}{\axiom{sqrt(y^2)}}
+is simply the absolute value of \axiom{y},
+the function
+\texht{$\sqrt{y^2} / y$}{\axiom{sqrt(y^2) / y}}
+is simply the sign (\axiom{+1} or \axiom{-1}) of the nonzero
+real number \axiom{y}.
+Therefore,
+\texht{$\sqrt{y^2} / y = -1$}{\axiom{sqrt(y^2) / y = -1}}
+for \axiom{y < 0} and
+\texht{$\sqrt{y^2} / y = +1$}{\axiom{sqrt(y^2) / y = +1}}
+for \axiom{y > 0}.
+\xtc{
+This is what happens when we take the limit at \axiom{y = 0}.
+The answer returned by \Language{} gives both a
+``left-hand'' and a ``right-hand'' limit.
+}{
+\spadcommand{limit(sqrt(y^2)/y,y = 0)}
+}
+% answer := [left = -1,right = 1]
+\xtc{
+Here is another example, this time using a more complicated function.
+}{
+\spadcommand{limit(sqrt(1 - cos(t))/t,t = 0)}
+}
+% answer := [left = -sqrt(1/2),right = sqrt(1/2)]
+
+You can compute limits at infinity by passing either
+\index{limit!at infinity}
+\texht{$+\infty$ or $-\infty$}{``plus infinity'' or ``minus infinity''}
+as the third argument of \axiomFun{limit}.
+\xtc{
+To do this, use the constants \axiom{\%plusInfinity} and \axiom{\%minusInfinity}.
+}{
+\spadcommand{limit(sqrt(3*x^2 + 1)/(5*x),x = \%plusInfinity)}
+}
+\xtc{
+}{
+\spadcommand{limit(sqrt(3*x^2 + 1)/(5*x),x = \%minusInfinity)}
+}
+
+\xtc{
+You can take limits of functions with parameters.
+\index{limit!of function with parameters}
+As you can see, the limit is expressed in terms of the parameters.
+}{
+\spadcommand{limit(sinh(a*x)/tan(b*x),x = 0)}
+}
+% answer := a/b
+
+When you use \axiomFun{limit}, you are taking the limit of a real
+function of a real variable.
+\xtc{
+When you compute this,
+\Language{} returns \axiom{0} because, as a function of a real variable,
+\axiom{sin(1/z)} is always between \axiom{-1} and \axiom{1}, so \axiom{z * sin(1/z)}
+tends to \axiom{0} as \axiom{z} tends to \axiom{0}.
+}{
+\spadcommand{limit(z * sin(1/z),z = 0)}
+}
+However, as a function of a {\it complex} variable, \axiom{sin(1/z)} is badly
+\index{limit!real vs. complex}
+behaved near \axiom{0} (one says that \axiom{sin(1/z)} has an
+\index{essential singularity}
+{\it essential singularity} at \axiom{z = 0}).
+\index{singularity!essential}
+\xtc{
+When viewed as a function of a complex variable, \axiom{z * sin(1/z)}
+does not approach any limit as \axiom{z} tends to \axiom{0} in the complex plane.
+\Language{} indicates this when we call \axiomFun{complexLimit}.
+}{
+\spadcommand{complexLimit(z * sin(1/z),z = 0)}
+}
+
+%% This is used in chapter 1
+% Here is another example.
+% As \axiom{x} approaches \axiom{0} along the real axis, \axiom{exp(-1/x^2)}
+% tends to \axiom{0}.
+% % This works in the newest version of the limit code.  - cjw 11/15/91
+% \spadcommand{limit(exp(-1/x^2),x = 0)}
+% However, if \axiom{x} is allowed to approach \axiom{0} along any path in the
+% complex plane, the limiting value of \axiom{exp(-1/x^2)} depends on the
+% path taken because the function has an essential singularity at \axiom{x=0}.
+% This is reflected in the error message returned by the function.
+% \spadcommand{complexLimit(exp(-1/x^2),x = 0)}
+
+You can also take complex limits at infinity, that is, limits of a function of
+\axiom{z} as \axiom{z} approaches infinity on the Riemann sphere.
+Use the symbol \axiom{\%infinity} to denote ``complex infinity.''
+\xtc{
+As above, to compute complex limits rather than real limits, use
+\axiomFun{complexLimit}.
+}{
+\spadcommand{complexLimit((2 + z)/(1 - z),z = \%infinity)}
+}
+\xtc{
+In many cases, a limit of a real function of a real variable
+exists when the corresponding complex limit does not.
+This limit exists.
+}{
+\spadcommand{limit(sin(x)/x,x = \%plusInfinity)}
+}
+\xtc{
+But this limit does not.
+}{
+\spadcommand{complexLimit(sin(x)/x,x = \%infinity)}
+}
+
+% *********************************************************************
+\head{section}{Laplace Transforms}{ugProblemLaplace}
+% *********************************************************************
+%
+\Language{} can compute some forward Laplace transforms, mostly
+\index{Laplace transform}
+of elementary
+\index{function!elementary}
+functions
+\index{transform!Laplace}
+not involving logarithms, although some cases of
+special functions are handled.
+\xtc{
+To compute the forward Laplace transform of \axiom{F(t)} with respect to
+\axiom{t} and express the result as \axiom{f(s)}, issue the command
+\axiom{laplace(F(t), t, s)}.
+}{
+\spadcommand{laplace(sin(a*t)*cosh(a*t)-cos(a*t)*sinh(a*t), t, s)}
+}
+\xtc{
+Here are some other non-trivial examples.
+}{
+\spadcommand{laplace((exp(a*t) - exp(b*t))/t, t, s)}
+}
+\xtc{
+}{
+\spadcommand{laplace(2/t * (1 - cos(a*t)), t, s)}
+}
+\xtc{
+}{
+\spadcommand{laplace(exp(-a*t) * sin(b*t) / b^2, t, s)}
+}
+\xtc{
+}{
+\spadcommand{laplace((cos(a*t) - cos(b*t))/t, t, s)}
+}
+\xtc{
+\Language{} also knows about a few special functions.
+}{
+\spadcommand{laplace(exp(a*t+b)*Ei(c*t), t, s)}
+}
+\xtc{
+}{
+\spadcommand{laplace(a*Ci(b*t) + c*Si(d*t), t, s)}
+}
+\xtc{
+When \Language{} does not know about a particular transform,
+it keeps it as a formal transform in the answer.
+}{
+\spadcommand{laplace(sin(a*t) - a*t*cos(a*t) + exp(t^2), t, s)}
+}
+
+% *********************************************************************
+\head{section}{Integration}{ugProblemIntegration}
+% *********************************************************************
+%
+Integration is the reverse process of differentiation, that is,
+\index{integration}
+an {\it integral} of a function \axiom{f} with respect to a variable
+\axiom{x} is any function \axiom{g} such that \axiom{D(g,x)}
+is equal to \axiom{f}.
+\xtc{
+The package \axiomType{FunctionSpaceIntegration} provides the top-level
+integration operation, \axiomFunFrom{integrate}{FunctionSpaceIntegration},
+for integrating real-valued elementary functions.
+\exptypeindex{FunctionSpaceIntegration}
+}{
+\spadcommand{integrate(cosh(a*x)*sinh(a*x), x)}
+}
+\xtc{
+Unfortunately, antiderivatives of most functions cannot be expressed in
+terms of elementary functions.
+}{
+\spadcommand{integrate(log(1 + sqrt(a * x + b)) / x, x)}
+}
+Given an elementary function to integrate, \Language{} returns a formal
+integral as above only when it can prove that the integral is not
+elementary and not when it cannot determine the integral.
+In this rare case it prints a message that it cannot
+determine if an elementary integral exists.
+%
+\xtc{
+Similar functions may have antiderivatives
+\index{antiderivative}
+that look quite different because the form of the antiderivative
+depends on the sign of a constant that appears in the function.
+}{
+\spadcommand{integrate(1/(x^2 - 2),x)}
+}
+\xtc{
+}{
+\spadcommand{integrate(1/(x^2 + 2),x)}
+}
+%
+If the integrand contains parameters, then there may be several possible
+antiderivatives, depending on the signs of expressions of the parameters.
+\xtc{
+In this case \Language{} returns a list of answers that cover all
+the possible cases.
+Here you
+use the answer involving the square root of \axiom{a} when \axiom{a > 0} and
+\index{integration!result as list of real functions}
+the answer involving the square root of \axiom{-a} when \axiom{a < 0}.
+}{
+\spadcommand{integrate(x^2 / (x^4 - a^2), x)}
+}
+
+If the parameters and the variables of integration can be complex
+numbers rather than real, then the notion of sign is not defined.
+In this case all the possible answers can be expressed as one
+complex function.
+To get that function, rather than a list of real functions, use
+\axiomFunFrom{complexIntegrate}{FunctionSpaceComplexIntegration},
+which is provided by the package
+\index{integration!result as a complex functions}
+\axiomType{FunctionSpaceComplexIntegration}.
+\exptypeindex{FunctionSpaceComplexIntegration}
+
+\xtc{
+This operation is used for
+integrating complex-valued elementary functions.
+}{
+\spadcommand{complexIntegrate(x^2 / (x^4 - a^2), x)}
+}
+\xtc{
+As with the real case,
+antiderivatives for most complex-valued functions cannot be expressed
+in terms of elementary functions.
+}{
+\spadcommand{complexIntegrate(log(1 + sqrt(a * x + b)) / x, x)}
+}
+
+Sometimes \axiomFun{integrate} can involve symbolic algebraic numbers
+such as those returned by \axiomFunFrom{rootOf}{Expression}.
+To see how to work with these strange generated symbols (such as
+\axiom{\%\%a0}), see \spadref{ugxProblemSymRootAll}.
+
+Definite integration is the process of computing the area between
+\index{integration!definite}
+the \axiom{x}-axis and the curve of a function \axiom{f(x)}.
+The fundamental theorem of calculus states that if \axiom{f} is
+continuous on an interval \axiom{a..b} and if there exists a function \axiom{g}
+that is differentiable on \axiom{a..b} and such that \axiom{D(g, x)}
+is equal to \axiom{f}, then the definite integral of \axiom{f}
+for \axiom{x} in the interval \axiom{a..b} is equal to \axiom{g(b) - g(a)}.
+
+\xtc{
+The package \axiomType{RationalFunctionDefiniteIntegration} provides
+the top-level definite integration operation,
+\axiomFunFrom{integrate}{RationalFunctionDefiniteIntegration},
+for integrating real-valued rational functions.
+}{
+\spadcommand{integrate((x^4 - 3*x^2 + 6)/(x^6-5*x^4+5*x^2+4), x = 1..2)}
+}
+\Language{} checks beforehand that the function you are integrating is
+defined on the interval \axiom{a..b}, and prints an error message if it
+finds that this is not case, as in the following example:
+\begin{verbatim}
+integrate(1/(x^2-2), x = 1..2)
+
+    >> Error detected within library code:
+       Pole in path of integration
+       You are being returned to the top level
+       of the interpreter.
+\end{verbatim}
+When parameters are present in the function, the function may or may not be
+defined on the interval of integration.
+
+\xtc{
+If this is the case, \Language{} issues a warning that a pole might
+lie in the path of integration, and does not compute the integral.
+}{
+\spadcommand{integrate(1/(x^2-a), x = 1..2)}
+}
+
+If you know that you are using values of the parameter for which
+the function has no pole in the interval of integration, use the
+string {\tt "noPole"} as a third argument to
+\axiomFunFrom{integrate}{RationalFunctionDefiniteIntegration}:
+
+%
+\xtc{
+The value here is, of course, incorrect if \axiom{sqrt(a)} is between
+\axiom{1} and \axiom{2.}
+}{
+\spadcommand{integrate(1/(x^2-a), x = 1..2, "noPole")}
+}
+
+% *********************************************************************
+\head{section}{Working with Power Series}{ugProblemSeries}
+% *********************************************************************
+%
+\Language{} has very sophisticated facilities for working with power
+\index{series}
+series.
+\index{power series}
+Infinite series are represented by a list of the
+coefficients that have already been determined, together with a
+function for computing the additional coefficients if needed.
+%
+The system command that determines how many terms of a series is displayed
+is \spadcmd{)set streams calculate}.
+For the purposes of this book, we have used this system command to display
+fewer than ten terms.
+\syscmdindex{set streams calculate}
+Series can be created from expressions, from functions for the
+series coefficients, and from applications of operations on
+existing series.
+The most general function for creating a series is called
+\axiomFun{series}, although you can also use \axiomFun{taylor},
+\axiomFun{laurent} and \axiomFun{puiseux} in situations where you
+know what kind of exponents are involved.
+
+For information about solving differential equations in terms of
+power series, see \spadref{ugxProblemDEQSeries}.
+
+% *********************************************************************
+\head{subsection}{Creation of Power Series}{ugxProblemSeriesCreate}
+% *********************************************************************
+
+\labelSpace{4pc}
+\xtc{
+This is the easiest way to create a power series.
+This tells \Language{} that \axiom{x} is to be treated as a power series,
+\index{series!creating}
+so functions of \axiom{x} are again power series.
+}{
+\spadcommand{x := series 'x \bound{x}}
+}
+%
+We didn't say anything about the coefficients of the power
+series, so the coefficients are general expressions over the integers.
+This allows us to introduce denominators, symbolic constants, and other
+variables as needed.
+\xtc{
+Here the coefficients are integers (note that the coefficients
+are the Fibonacci
+\index{Fibonacci numbers}
+numbers).
+}{
+\spadcommand{1/(1 - x - x^2) \free{x}}
+}
+\xtc{
+This series has coefficients that are rational numbers.
+}{
+\spadcommand{sin(x) \free{x}}
+}
+\xtc{
+When you enter this expression
+you introduce the symbolic constants \axiom{sin(1)} and \axiom{cos(1).}
+}{
+\spadcommand{sin(1 + x) \free{x}}
+}
+\xtc{
+When you enter the expression
+the variable \axiom{a} appears in the resulting series expansion.
+}{
+\spadcommand{sin(a * x) \free{x}}
+}
+
+\xtc{
+You can also convert an expression into a series expansion.
+This expression creates the series expansion of \axiom{1/log(y)}
+about \axiom{y = 1}.
+For details and more examples, see
+\spadref{ugxProblemSeriesConversions}.
+}{
+\spadcommand{series(1/log(y),y = 1)}
+}
+
+You can create power series with more general coefficients.
+You normally accomplish this via a type declaration (see
+\spadref{ugTypesDeclare}).
+See \spadref{ugxProblemSeriesFunctions} for some warnings about
+working with declared series.
+
+\xtc{
+We declare that \axiom{y} is a one-variable Taylor series
+\index{series!Taylor}
+(\axiomType{UTS} is the abbreviation for \axiomType{UnivariateTaylorSeries})
+in the variable \axiom{z} with \axiomType{FLOAT}
+(that is, floating-point) coefficients, centered about \axiom{0.}
+Then, by assignment, we obtain the Taylor expansion of
+\axiom{exp(z)} with floating-point coefficients.
+\exptypeindex{UnivariateTaylorSeries}
+}{
+\spadcommand{y : UTS(FLOAT,'z,0) := exp(z) \bound{y}}
+}
+
+You can also create a power series by giving an explicit formula
+for its \eth{\axiom{n}} coefficient.
+For details and more examples, see
+\spadref{ugxProblemSeriesFormula}.
+
+\xtc{
+To create a series about
+\axiom{w = 0} whose \eth{\axiom{n}} Taylor coefficient
+is \axiom{1/n!}, you can evaluate this expression.
+This is the Taylor expansion of \axiom{exp(w)} at \axiom{w = 0}.
+}{
+\spadcommand{series(1/factorial(n),n,w = 0)}
+}
+%
+
+% *********************************************************************
+\head{subsection}{Coefficients of Power Series}{ugxProblemSeriesCoefficients}
+% *********************************************************************
+
+You can extract any coefficient from a power series---even one
+that hasn't been computed yet.
+This is possible because in \Language{}, infinite series are
+represented by a list of the coefficients that have already been
+determined, together with a function for computing the additional
+coefficients.
+(This is known as {\it lazy evaluation}.) When you ask for a
+\index{series!lazy evaluation}
+coefficient that hasn't yet been computed, \Language{} computes
+\index{lazy evaluation}
+whatever additional coefficients it needs and then stores them in
+the representation of the power series.
+
+\xtc{
+Here's an example of how to extract the coefficients of a power series.
+\index{series!extracting coefficients}
+}{
+\spadcommand{x := series(x) \bound{x}}
+}
+\xtc{
+}{
+\spadcommand{y := exp(x) * sin(x) \free{x} \bound{y}}
+}
+\xtc{
+This coefficient is readily available.
+}{
+\spadcommand{coefficient(y,6) \free{y}}
+}
+\xtc{
+But let's get the fifteenth coefficient of \axiom{y}.
+}{
+\spadcommand{coefficient(y,15) \free{y} \bound{y15}}
+}
+\xtc{
+If you look at \axiom{y}
+then you see that the coefficients up to order \axiom{15}
+have all been computed.
+}{
+\spadcommand{y \free{y15}}
+}
+
+% *********************************************************************
+\head{subsection}{Power Series Arithmetic}{ugxProblemSeriesArithmetic}
+% *********************************************************************
+
+You can manipulate power series using the usual arithmetic operations
+\index{series!arithmetic}
+\axiomOpFrom{+}{UnivariatePuiseuxSeries},
+\axiomOpFrom{-}{UnivariatePuiseuxSeries},
+\axiomOpFrom{*}{UnivariatePuiseuxSeries}, and
+\axiomOpFrom{/}{UnivariatePuiseuxSeries}.
+%
+
+\labelSpace{1pc}
+\xtc{
+The results of these operations are also power series.
+}{
+\spadcommand{x := series x \bound{x}}
+}
+\xtc{
+}{
+\spadcommand{(3 + x) / (1 + 7*x)}
+}
+\xtc{
+You can also compute \axiom{f(x) ^ g(x)}, where \axiom{f(x)} and \axiom{g(x)}
+are two power series.
+}{
+\spadcommand{base := 1 / (1 - x) \free{x} \bound{base}}
+}
+%
+\xtc{
+}{
+\spadcommand{expon := x * base \free{x base} \bound{expon}}
+}
+%
+\xtc{
+}{
+\spadcommand{base ^ expon \free{base expon}}
+}
+
+% *********************************************************************
+\head{subsection}{Functions on Power Series}{ugxProblemSeriesFunctions}
+% *********************************************************************
+
+Once you have created a power series, you can apply transcendental
+functions
+(for example, \axiomFun{exp}, \axiomFun{log}, \axiomFun{sin}, \axiomFun{tan},
+\axiomFun{cosh}, etc.) to it.
+
+\labelSpace{1pc}
+%
+\xtc{
+To demonstrate this, we first create the power series
+expansion of the rational function
+\texht{
+${\displaystyle x^2} \over {\displaystyle 1 - 6x + x^2}$
+}{
+\axiom{x^2/(1 - 6*x + x^2)}
+}
+about \axiom{x = 0}.
+}{
+\spadcommand{x := series 'x \bound{x}}
+}
+%
+\xtc{
+}{
+\spadcommand{rat := x^2 / (1 - 6*x + x^2) \free{x} \bound{rat}}
+}
+%
+%
+\xtc{
+If you want to compute the series expansion of
+\texht{
+$\sin\left({\displaystyle x^2} \over {\displaystyle 1 - 6x + x^2}\right)$
+}{
+\axiom{sin(x^2/(1 - 6*x + x^2))}
+}
+you simply compute the sine of \axiom{rat}.
+}{
+\spadcommand{sin(rat) \free{rat}}
+}
+%
+
+\beginImportant
+\noindent {\bf Warning:}
+the type of the coefficients of a power series may
+affect the kind of computations that you can do with that series.
+This can only happen when you have made a declaration to
+specify a series domain with a certain type of coefficient.
+\endImportant
+
+\xtc{
+If you evaluate
+then you have declared that \axiom{y} is a one variable Taylor series
+\index{series!Taylor}
+(\axiomType{UTS} is the abbreviation for \axiomType{UnivariateTaylorSeries})
+in the variable \axiom{y} with \axiomType{FRAC INT}
+(that is, fractions of integer) coefficients, centered about \axiom{0}.
+}{
+\spadcommand{y : UTS(FRAC INT,y,0) := y \bound{y}}
+}
+%
+\xtc{
+You can now compute certain power series in \axiom{y},
+{\it provided} that these series have rational coefficients.
+}{
+\spadcommand{exp(y) \free{y}}
+}
+%
+\xtc{
+You can get examples of such series
+by applying transcendental functions to
+series in \axiom{y} that have no constant terms.
+}{
+\spadcommand{tan(y^2) \free{y}}
+}
+%
+\xtc{
+}{
+\spadcommand{cos(y + y^5) \free{y}}
+}
+%
+%
+\xtc{
+Similarly, you can compute the logarithm of a power series with rational
+coefficients if the constant coefficient is \axiom{1.}
+}{
+\spadcommand{log(1 + sin(y)) \free{y}}
+}
+%
+If you wanted to apply, say, the operation \axiomFun{exp} to a power
+series with a nonzero constant coefficient \texht{$a_0$}{\axiom{a0}},
+then the constant coefficient of the result would be
+\texht{$e^{a_0}$}{\axiom{exp(a0)}}, which is {\it not} a rational number.
+Therefore, evaluating \axiom{exp(2 + tan(y))} would generate an error
+message.
+
+If you want to compute the Taylor expansion of \axiom{exp(2 + tan(y))}, you must
+ensure that the coefficient domain has an operation \axiomFun{exp} defined
+for it.
+An example of such a domain is \axiomType{Expression Integer}, the type
+of formal functional expressions over the integers.
+%
+\xtc{
+When working with coefficients of this type,
+}{
+\spadcommand{z : UTS(EXPR INT,z,0) := z \bound{z}}
+}
+\xtc{
+this presents no problems.
+}{
+\spadcommand{exp(2 + tan(z)) \free{z}}
+}
+%
+Another way to create Taylor series whose coefficients are expressions over
+the integers is to use \axiomFun{taylor} which works similarly to
+\index{series!Taylor}
+\axiomFun{series}.
+%
+\xtc{
+This is equivalent to the previous computation, except that now we
+are using the variable \axiom{w} instead of \axiom{z}.
+}{
+\spadcommand{w := taylor 'w \bound{w}}
+}
+\xtc{
+}{
+\spadcommand{exp(2 + tan(w)) \free{w}}
+}
+
+% *********************************************************************
+\head{subsection}{Converting to Power Series}{ugxProblemSeriesConversions}
+% *********************************************************************
+
+The \axiomType{ExpressionToUnivariatePowerSeries} package provides
+operations for computing series expansions of functions.
+\exptypeindex{ExpressionToUnivariatePowerSeries}
+
+\labelSpace{1pc}
+\xtc{
+Evaluate this
+to compute the Taylor expansion of \axiom{sin x} about
+\index{series!Taylor}
+\axiom{x = 0}.
+The first argument, \axiom{sin(x)}, specifies the function whose series
+expansion is to be computed and the second argument, \axiom{x = 0},
+specifies that the series is to be expanded in power of \axiom{(x - 0)},
+that is, in power of \axiom{x}.
+}{
+\spadcommand{taylor(sin(x),x = 0)}
+}
+\xtc{
+Here is the Taylor expansion of \axiom{sin x} about
+\texht{$x = \frac{\pi}{6}$}{\axiom{x = \%pi/6}}:
+}{
+\spadcommand{taylor(sin(x),x = \%pi/6)}
+}
+
+The function to be expanded into a series may have variables other than
+\index{series!multiple variables}
+the series variable.
+%
+\xtc{
+For example, we may expand \axiom{tan(x*y)} as a Taylor series in
+\axiom{x}
+}{
+\spadcommand{taylor(tan(x*y),x = 0)}
+}
+%
+\xtc{
+or as a Taylor series in \axiom{y}.
+}{
+\spadcommand{taylor(tan(x*y),y = 0)}
+}
+\xtc{
+A more interesting function is
+\texht{${\displaystyle t e^{x t}} \over {\displaystyle e^t - 1}$}{(t *
+\%e^(x*t))/(\%e^t - 1)}.
+When we expand this function as a Taylor series in \axiom{t}
+the \eth{\axiom{n}} order coefficient is the \eth{\axiom{n}} Bernoulli
+\index{Bernoulli!polynomial}
+polynomial
+\index{polynomial!Bernoulli}
+divided by \axiom{n!}.
+}{
+\spadcommand{bern := taylor(t*exp(x*t)/(exp(t) - 1),t = 0) \bound{bern}}
+}
+\xtc{
+Therefore, this and the next expression
+produce the same result.
+}{
+\spadcommand{factorial(6) * coefficient(bern,6) \free{bern}}
+}
+\xtc{
+}{
+\spadcommand{bernoulliB(6,x)}
+}
+
+Technically, a series with terms of negative degree is not considered to
+be a Taylor series, but, rather, a
+\index{series!Laurent}
+{\it Laurent series}.
+\index{Laurent series}
+If you try to compute a Taylor series expansion of
+\texht{$\frac{x}{\log x}$}{x/log(x)}
+at \axiom{x = 1} via \axiom{taylor(x/log(x),x = 1)}
+you get an error message.
+The reason is that the function has a {\it pole} at \axiom{x =
+1}, meaning that
+its series expansion about this point has terms of negative degree.
+A series with finitely many terms of negative degree is called a Laurent
+series.
+\xtc{
+You get the desired series expansion by issuing this.
+}{
+\spadcommand{laurent(x/log(x),x = 1)}
+}
+
+Similarly, a series with terms of fractional degree is neither a Taylor
+series nor a Laurent series.
+Such a series is called a
+\index{series!Puiseux}
+{\it Puiseux series}.
+\index{Puiseux series}
+The expression \axiom{laurent(sqrt(sec(x)),x = 3 * \%pi/2)}
+results in an error message
+because the series expansion about this point has terms of fractional degree.
+\xtc{
+However, this command produces what you want.
+}{
+\spadcommand{puiseux(sqrt(sec(x)),x = 3 * \%pi/2)}
+}
+
+Finally, consider the case of functions that do not have Puiseux
+expansions about certain points.
+An example of this is \texht{$x^x$}{\axiom{x^x}} about \axiom{x = 0}.
+\axiom{puiseux(x^x,x=0)}
+produces an error message because of the
+type of singularity of the function at \axiom{x = 0}.
+\xtc{
+The general function \axiomFun{series} can be used in this case.
+Notice that the series returned is not, strictly speaking, a power series
+because of the \axiom{log(x)} in the expansion.
+}{
+\spadcommand{series(x^x,x=0)}
+}
+
+\beginImportant
+The operation \axiomFun{series} returns the most general type of
+infinite series.
+The user who is not interested in distinguishing
+between various types of infinite series may wish to use this operation
+exclusively.
+\endImportant
+
+% *********************************************************************
+\head{subsection}{Power Series from Formulas}{ugxProblemSeriesFormula}
+% *********************************************************************
+
+The \axiomType{GenerateUnivariatePowerSeries} package enables you to
+\index{series!giving formula for coefficients}
+create power series from explicit formulas for their
+\eth{\axiom{n}} coefficients.
+In what follows, we construct series expansions for certain
+transcendental functions by giving formulas for their
+coefficients.
+You can also compute such series expansions directly simply by
+specifying the function and the point about which the series is to
+be expanded.
+\exptypeindex{GenerateUnivariatePowerSeries}
+See \spadref{ugxProblemSeriesConversions} for more information.
+
+Consider the Taylor expansion of \texht{$e^x$}{\axiom{\%e^x}}
+\index{series!Taylor}
+about \axiom{x = 0}:
+\texht{\narrowDisplay{%
+\begin{array}{ccl}
+e^x &=& \displaystyle 1 + x + \frac{x^2}{2} + \frac{x^3}{6} + \cdots \\ \\
+    &=& \displaystyle\sum_{n=0}^\infty \frac{x^n}{n!}
+\end{array}}%
+}{
+\begin{verbatim}
+%e^x = 1 + x + x^2/2 + x^3/6 + ...
+      = sum from n=0 to n=%infty of x^n / n!
+\end{verbatim}
+}
+The \eth{\axiom{n}} Taylor coefficient is \axiom{1/n!}.
+%
+\xtc{
+This is how you create this series in \Language{}.
+}{
+\spadcommand{series(n +-> 1/factorial(n),x = 0)}
+}
+
+The first argument specifies a formula for the \eth{\axiom{n}}
+coefficient by giving a function that maps \axiom{n} to
+\axiom{1/n!}.
+The second argument specifies that the series is to be expanded in
+powers of \axiom{(x - 0)}, that is, in powers of \axiom{x}.
+Since we did not specify an initial degree, the first term in the
+series was the term of degree 0 (the constant term).
+Note that the formula was given as an anonymous function.
+These are discussed in \spadref{ugUserAnon}.
+
+Consider the Taylor expansion of \axiom{log x} about \axiom{x = 1}:
+\texht{\narrowDisplay{%
+\begin{array}{ccl}
+\log(x) &=& \displaystyle (x - 1) - \frac{(x - 1)^2}{2} + \frac{(x - 1)^3}{3} - \cdots \\ \\
+        &=& \displaystyle\sum_{n = 1}^\infty (-1)^{n-1} \frac{(x - 1)^n}{n}
+\end{array}}%
+}{
+\begin{verbatim}
+log x = (x - 1) - \(x - 1)^2/2 + (x - 1)^3/3 - ...
+      = sum from n=1 to n=%infty of (-1)^(n-1) (x - 1)^n / n
+\end{verbatim}
+}
+If you were to evaluate the expression
+\axiom{series(n +-> (-1)^(n-1) / n, x = 1)}
+you would get an error message because \Language{} would try to
+calculate a term of degree \axiom{0} and therefore divide by \axiom{0.}
+
+\xtc{
+Instead, evaluate this.
+The third argument, \axiom{1..}, indicates that only terms of degree
+\axiom{n = 1, ...} are to be computed.
+}{
+\spadcommand{series(n +-> (-1)^(n-1)/n,x = 1,1..)}
+}
+%
+
+Next consider the Taylor expansion of an odd function, say,
+\axiom{sin(x)}:
+\begin{texonly}
+\narrowDisplay{%
+\sin(x) = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \cdots}%
+\end{texonly}%
+\htonly
+\begin{verbatim}
+sin x = x - x^3/3! + x^5/5! - ...
+\end{verbatim}
+\endhtonly
+Here every other coefficient is zero and we would like to give an
+explicit formula only for the odd Taylor coefficients.
+%
+\xtc{
+This is one way to do it.
+The third argument, \axiom{1..}, specifies that the first term to be computed
+is the term of degree 1.
+The fourth argument, \axiom{2}, specifies that we
+increment by \axiom{2} to find the degrees of subsequent terms, that is, the next
+term
+is of degree \axiom{1 + 2}, the next of degree \axiom{1 + 2 + 2}, etc.
+}{
+\spadcommand{series(n +-> (-1)^((n-1)/2)/factorial(n),x = 0,1..,2)}
+}
+%
+
+\xtc{
+The initial degree and the increment do not have to be integers.
+For example, this expression produces a series expansion of
+\texht{$\sin(x^{\frac{1}{3}})$}{\axiom{sin(x^(1/3))}}.
+}{
+\spadcommand{series(n +-> (-1)^((3*n-1)/2)/factorial(3*n),x = 0,1/3..,2/3)}
+}
+\xtc{
+While the increment must be positive, the initial degree may be negative.
+This yields the Laurent expansion of \axiom{csc(x)} at
+\axiom{x = 0}.
+% bernoulli(numer(n+1)) is necessary because bernoulli takes integer arguments
+% It looks disgusting, though.
+%
+}{
+\spadcommand{cscx := series(n +-> (-1)^((n-1)/2) * 2 * (2^n-1) * bernoulli(numer(n+1)) / factorial(n+1), x=0, -1..,2) \bound{cscx}}
+}
+\xtc{
+Of course, the reciprocal of this power series is the Taylor expansion
+of \axiom{sin(x)}.
+}{
+\spadcommand{1/cscx \free{cscx}}
+}
+%
+\xtc{
+As a final example,
+here is the Taylor expansion of \axiom{asin(x)} about \axiom{x = 0}.
+}{
+\spadcommand{asinx := series(n +-> binomial(n-1,(n-1)/2)/(n*2^(n-1)),x=0,1..,2) \bound{asinx}}
+}
+\xtc{
+When we compute the \axiom{sin} of this series, we get \axiom{x}
+(in the sense that all higher terms computed so far are zero).
+}{
+\spadcommand{sin(asinx) \free{asinx}}
+}
+
+As we discussed in \spadref{ugxProblemSeriesConversions},
+you can also use the operations \axiomFun{taylor}, \axiomFun{laurent} and
+\axiomFun{puiseux} instead of \axiomFun{series} if you know ahead of time
+what kind of exponents a series has.
+You can't go wrong using \axiomFun{series}, though.
+
+% *********************************************************************
+\head{subsection}{Substituting Numerical Values in Power Series}{ugxProblemSeriesSubstitute}
+% *********************************************************************
+
+Use \axiomFunFrom{eval}{UnivariatePowerSeriesCategory}
+\index{approximation}
+to substitute a numerical value for a variable in
+\index{series!numerical approximation}
+a power series.
+For example, here's a way to obtain numerical approximations of
+\axiom{\%e} from the Taylor series
+expansion of \axiom{exp(x)}.
+
+\labelSpace{1pc}
+\xtc{
+First you create the desired Taylor expansion.
+}{
+\spadcommand{f := taylor(exp(x)) \bound{f}}
+}
+\xtc{
+Then you evaluate the series at the value \axiom{1.0}.
+The result is a sequence of the partial sums.
+}{
+\spadcommand{eval(f,1.0)}
+}
+
+% *********************************************************************
+\head{subsection}{Example: Bernoulli Polynomials and Sums of Powers}{ugxProblemSeriesBernoulli}
+% *********************************************************************
+
+\Language{} provides operations for computing definite and
+\index{summation!definite}
+indefinite sums.
+\index{summation!indefinite}
+
+\labelSpace{3pc}
+\xtc{
+You can compute the sum of the first
+ten fourth powers by evaluating this.
+This creates a list whose entries are
+\texht{$m^4$}{\axiom{m^4}} as \texht{$m$}{\axiom{m}} ranges from 1
+to 10, and then computes the sum of the entries of that list.
+}{
+\spadcommand{reduce(+,[m^4 for m in 1..10])}
+}
+\xtc{
+You can also compute a formula for the sum of the first
+\texht{$k$}{\axiom{k}} fourth powers, where \texht{$k$}{\axiom{k}} is an
+unspecified positive integer.
+}{
+\spadcommand{sum4 := sum(m^4, m = 1..k) \bound{sum4}}
+}
+\xtc{
+This formula is valid for any positive integer \texht{$k$}{\axiom{k}}.
+For instance, if we replace \texht{$k$}{\axiom{k}} by 10,
+\index{summation!definite}
+we obtain the number we computed earlier.
+}{
+\spadcommand{eval(sum4, k = 10) \free{sum4}}
+}
+
+You can compute a formula for the sum of the first
+\texht{$k$}{\axiom{k}} \eth{\axiom{n}} powers in a similar fashion.
+Just replace the \axiom{4} in the definition of \userfun{sum4} by
+any expression not involving \texht{$k$}{\axiom{k}}.
+\Language{} computes these formulas using Bernoulli polynomials;
+\index{Bernoulli!polynomial}
+we
+\index{polynomial!Bernoulli}
+use the rest of this section to describe this method.
+
+%
+\xtc{
+First consider this function of \axiom{t} and \axiom{x}.
+}{
+\spadcommand{f := t*exp(x*t) / (exp(t) - 1) \bound{f}}
+}
+\noOutputXtc{
+Since the expressions involved get quite large, we tell
+\Language{} to show us only terms of degree up to \axiom{5.}
+}{
+\spadcommand{)set streams calculate 5 \bound{set}}
+}
+\syscmdindex{set streams calculate}
+%
+%
+\xtc{
+If we look at the Taylor expansion of \axiom{f(x, t)} about \axiom{t = 0,}
+we see that the coefficients of the powers of \axiom{t} are polynomials
+in \axiom{x}.
+}{
+\spadcommand{ff := taylor(f,t = 0) \free{f set} \bound{ff}}
+}
+%
+In fact, the \eth{\axiom{n}} coefficient in this series is essentially
+the \eth{\axiom{n}} Bernoulli polynomial:
+the \eth{\axiom{n}} coefficient of the series is
+\texht{${1 \over {n!}} B_n(x)$}{\axiom{1/n! * Bn(x)}}, where
+\texht{$B_n(x)$}{\axiom{Bn(x)}}
+is the \eth{\axiom{n}} Bernoulli polynomial.
+Thus, to obtain the \eth{\axiom{n}} Bernoulli polynomial, we multiply
+the \eth{\axiom{n}} coefficient
+of the series \axiom{ff} by \axiom{n!}.
+%
+\xtc{
+For example, the sixth Bernoulli polynomial is this.
+}{
+\spadcommand{factorial(6) * coefficient(ff,6) \free{ff}}
+}
+%
+\xtc{
+We derive some properties of the function \axiom{f(x,t)}.
+First we compute \axiom{f(x + 1,t) - f(x,t)}.
+}{
+\spadcommand{g := eval(f, x = x + 1) - f \bound{g} \free{f}}
+}
+%
+\xtc{
+If we normalize \axiom{g}, we see that it has a particularly simple form.
+}{
+\spadcommand{normalize(g) \free{g}}
+}
+%
+From this it follows that the \eth{\axiom{n}}
+coefficient in the Taylor expansion of
+\axiom{g(x,t)} at \axiom{t = 0} is
+\texht{${1\over{(n-1)\:!}}\:x^{n-1}$}{\axiom{1/(n-1)! * x^(n-1)}}.
+\xtc{
+If you want to check this, evaluate the next expression.
+}{
+\spadcommand{taylor(g,t = 0) \free{g}}
+}
+%
+However, since \axiom{g(x,t) = f(x+1,t)-f(x,t)}, it follows that the
+\eth{\axiom{n}} coefficient is
+\texht{${1 \over {n!}}\:(B_n(x+1)-B_n(x))$}{\axiom{1/n! * (Bn(x + 1) -
+Bn(x))}}.
+Equating coefficients, we see that
+\texht{${1\over{(n-1)\:!}}\:x^{n-1} = {1\over{n!}}\:(B_n(x + 1) -
+B_n(x))$}{\axiom{1/(n-1)! * x^(n-1) = 1/n! * (Bn(x + 1) - Bn(x))}}
+and, therefore,
+\texht{$x^{n-1} = {1\over{n}}\:(B_n(x + 1) -
+B_n(x))$}{\axiom{x^(n-1) = 1/n * (Bn(x + 1) - Bn(x))}}.
+%
+Let's apply this formula repeatedly, letting \axiom{x} vary between two
+integers \axiom{a} and \axiom{b}, with \axiom{a < b}:
+%
+\begin{texonly}
+\narrowDisplay{%
+\begin{array}{lcl}
+  a^{n-1}       & = & {1 \over n}   (B_n(a + 1) - B_n(a))       \\
+  (a + 1)^{n-1} & = & {1 \over n}   (B_n(a + 2) - B_n(a + 1))   \\
+  (a + 2)^{n-1} & = & {1 \over n}   (B_n(a + 3) - B_n(a + 2))   \\
+  & \vdots &                                                    \\
+  (b - 1)^{n-1} & = & {1 \over n}   (B_n(b) - B_n(b - 1))       \\
+  b^{n-1}       & = & {1 \over n}   (B_n(b + 1) - B_n(b))
+\end{array}}%
+\end{texonly}%
+\htonly
+\begin{verbatim}
+  a^(n-1)       = 1/n * (Bn(a + 1) - Bn(a))
+  (a + 1)^(n-1) = 1/n * (Bn(a + 2) - Bn(a + 1))
+  (a + 2)^(n-1) = 1/n * (Bn(a + 3) - Bn(a + 2))
+     .
+     .
+     .
+  (b - 1)^(n-1) = 1/n * (Bn(b) - Bn(b - 1))
+  b^(n-1)       = 1/n * (Bn(b + 1) - Bn(b))
+\end{verbatim}
+\endhtonly
+
+When we add these equations we find that
+the sum of the left-hand sides is
+\texht{$\sum_{m=a}^{b} m^{n-1},$}{\axiom{sum(m = a..b,m ^ (n-1))},}%
+the sum of the
+\texht{$(n-1)^{\hbox{\small\rm st}}$}{\axiom{(n-1)}-st}
+powers from \axiom{a} to \axiom{b}.
+The sum of the right-hand sides is a ``telescoping series.''
+After cancellation, the sum is simply
+\texht{${1\over{n}}\:(B_n(b + 1) -
+B_n(a))$}{\axiom{1/n * (Bn(b + 1) - Bn(a))}}.
+
+Replacing \axiom{n} by \axiom{n + 1}, we have shown that
+\begin{texonly}
+\narrowDisplay{%
+\sum_{m = a}^{b} m^n = {1 \over {\displaystyle n + 1}} \:
+(B_{n+1}(b + 1) - B_{n+1}(a)).}%
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{sum(m = a..b,m ^ n) = 1/(n + 1) * (B<n+1>(b + 1) - B<n+1>(a))}.
+\end{center}
+\endhtonly
+
+Let's use this to obtain the formula for the sum of fourth powers.
+\xtc{
+First we obtain the Bernoulli polynomial \texht{$B_5$}{\axiom{B5}}.
+}{
+\spadcommand{B5 := factorial(5) * coefficient(ff,5) \free{ff} \bound{B5}}
+}
+%
+\xtc{
+To find the sum of the first \texht{$k$}{\axiom{k}} 4th powers,
+we multiply \axiom{1/5} by
+\texht{$B_5(k+1) - B_5(1)$}{\axiom{B5(k + 1) - B5(1)}}.
+}{
+\spadcommand{1/5 * (eval(B5, x = k + 1) - eval(B5, x = 1)) \free{B5}}
+}
+%
+\xtc{
+This is the same formula that we obtained via \axiom{sum(m^4, m = 1..k)}.
+}{
+\spadcommand{sum4 \free{sum4}}
+}
+
+At this point you may want to do the same computation, but with an
+exponent other than \axiom{4.}
+For example, you might try to find a formula for the sum of the
+first \texht{$k$}{\axiom{k}} 20th powers.
+
+% *********************************************************************
+\head{section}{Solution of Differential Equations}{ugProblemDEQ}
+% *********************************************************************
+%
+In this section we discuss \Language{}'s facilities for
+\index{equation!differential!solving}
+solving
+\index{differential equation}
+differential equations in closed-form and in series.
+
+\Language{} provides facilities for closed-form solution of
+\index{equation!differential!solving in closed-form}
+single differential equations of the following kinds:
+\begin{itemize}
+\item linear ordinary differential equations, and
+\item non-linear first order ordinary differential equations
+when integrating factors can be found just by integration.
+\end{itemize}
+
+For a discussion of the solution of systems of linear and polynomial
+equations, see
+\spadref{ugProblemLinPolEqn}.
+
+% *********************************************************************
+\head{subsection}{Closed-Form Solutions of Linear Differential Equations}{ugxProblemLDEQClosed}
+% *********************************************************************
+
+A {\it differential equation} is an equation involving an unknown {\it
+function} and one or more of its derivatives.
+\index{differential equation}
+The equation is called {\it ordinary} if derivatives with respect to
+\index{equation!differential}
+only one dependent variable appear in the equation (it is called {\it
+partial} otherwise).
+The package \axiomType{ElementaryFunctionODESolver} provides the
+top-level operation \spadfun {solve} for finding closed-form solutions
+of ordinary differential equations.
+\exptypeindex{ElementaryFunctionODESolver}
+
+To solve a differential equation, you must first create an operator for
+\index{operator}
+the unknown function.
+%
+\xtc{
+We let \axiom{y} be the unknown function in terms of \axiom{x}.
+}{
+\spadcommand{y := operator 'y \bound{y}}
+}
+%
+You then type the equation using \axiomFun{D} to create the
+derivatives of the unknown function \axiom{y(x)} where \axiom{x} is any
+symbol you choose (the so-called {\it dependent variable}).
+%
+\xtc{
+This is how you enter
+the equation \axiom{y'' + y' + y = 0}.
+}{
+\spadcommand{deq := D(y x, x, 2) + D(y x, x) + y x = 0\bound{e1}\free{y}}
+}
+%
+The simplest way to invoke the \axiomFun{solve} command is with three
+arguments.
+\begin{items}
+\item the differential equation,
+\item the operator representing the unknown function,
+\item the dependent variable.
+\end{items}
+%
+\xtc{
+So, to solve the above equation, we enter this.
+}{
+\spadcommand{solve(deq, y, x) \free{e1}\free{y}}
+}
+%
+Since linear ordinary differential equations have infinitely many
+solutions, \axiomFun{solve} returns a {\it particular solution}
+\texht{$f_p$}{\axiom{f_p}}
+and a basis
+\texht{$f_1,\dots,f_n$}{\axiom{f1,...,fn}}
+for the solutions of the corresponding homogenuous equation.
+Any expression of the form
+\texht{$f_p + c_1 f_1 + \dots c_n f_n$}{\axiom{fp + c1 f1 + ... + cn fn}}
+where the \texht{$c_i$}{\axiom{ci}} do not involve
+the dependent variable is also a solution.
+This is similar to what you get when you solve systems of linear
+algebraic equations.
+
+A way to select a unique solution is to specify {\it initial
+conditions}: choose a value \axiom{a} for the dependent variable
+and specify the values of the unknown function and its derivatives
+at \axiom{a}.
+If the number of initial conditions is equal to the order of the
+equation, then the solution is unique (if it exists in closed
+form!) and \axiomFun{solve} tries to find it.
+To specify initial conditions to \axiomFun{solve}, use an
+\axiomType{Equation} of the form \axiom{x = a} for the third
+parameter instead of the dependent variable, and add a fourth
+parameter consisting of the list of values \axiom{y(a), y'(a), ...}.
+
+\xtc{
+To find the solution of \axiom{y'' + y = 0} satisfying \axiom{y(0) = y'(0) = 1},
+do this.
+}{
+\spadcommand{deq := D(y x, x, 2) + y x \bound{e2}\free{y}}
+}
+\xtc{
+You can omit the \axiom{= 0} when you enter the equation to be solved.
+}{
+\spadcommand{solve(deq, y, x = 0, [1, 1]) \free{e2}\free{y}}
+}
+%
+
+\Language{} is not limited to linear differential equations with
+constant coefficients.
+It can also find solutions when the coefficients are rational or
+algebraic functions of the dependent variable.
+Furthermore, \Language{} is not limited by the order of the equation.
+%
+\xtc{
+\Language{} can solve the following third order equations with
+polynomial coefficients.
+}{
+\spadcommand{deq := x^3 * D(y x, x, 3) + x^2 * D(y x, x, 2) - 2 * x * D(y x, x) + 2 * y x = 2 * x^4 \bound{e3}\free{y}}
+}
+\xtc{
+}{
+\spadcommand{solve(deq, y, x) \free{e3}\free{y}}
+}
+%
+%
+\xtc{
+Here we are solving a homogeneous equation.
+}{
+\spadcommand{deq := (x^9+x^3) * D(y x, x, 3) + 18 * x^8 * D(y x, x, 2) - 90 * x * D(y x, x) - 30 * (11 * x^6 - 3) * y x \bound{e4}\free{y}}
+}
+\xtc{
+}{
+\spadcommand{solve(deq, y, x) \free{e4}\free{y}}
+}
+%
+On the other hand, and in contrast with the operation
+\axiomFun{integrate}, it can happen that \Language{} finds no solution
+and that some closed-form solution still exists.
+While it is mathematically complicated to describe exactly when the
+solutions are guaranteed to be found, the following statements are
+correct and form good guidelines for linear ordinary differential
+equations:
+\begin{items}
+\item If the coefficients are constants, \Language{} finds a complete basis
+of solutions (i,e, all solutions).
+\item If the coefficients are rational functions in the dependent variable,
+\Language{} at least finds all solutions that do not involve algebraic
+functions.
+\end{items}
+%
+Note that this last statement does not mean that \Language{} does not find
+the solutions that are algebraic functions.
+It means that it is not
+guaranteed that the algebraic function solutions will be found.
+%
+\xtc{
+This is an example where all the algebraic solutions are found.
+}{
+\spadcommand{deq := (x^2 + 1) * D(y x, x, 2) + 3 * x * D(y x, x) + y x = 0 \bound{e5}\free{y}}
+}
+\xtc{
+}{
+\spadcommand{solve(deq, y, x) \free{e5}\free{y}}
+}
+
+% *********************************************************************
+\head{subsection}{Closed-Form Solutions of Non-Linear Differential Equations}{ugxProblemNLDEQClosed}
+% *********************************************************************
+
+This is an example that shows how to solve a non-linear
+first order ordinary differential equation manually when an integrating
+factor can be found just by integration.
+At the end, we show you how to solve it directly.
+
+Let's solve the differential equation \axiom{y' = y / (x + y log y)}.
+%
+\xtc{
+Using the notation
+\axiom{m(x, y) + n(x, y) y' = 0},
+we have \axiom{m = -y} and \axiom{n = x + y log y}.
+}{
+\spadcommand{m := -y \bound{m}}
+}
+\xtc{
+}{
+\spadcommand{n := x + y * log y \bound{n}}
+}
+%
+\xtc{
+We first check for exactness, that is, does \axiom{dm/dy = dn/dx}?
+}{
+\spadcommand{D(m, y) - D(n, x) \free{m n}}
+}
+%
+This is not zero, so the equation is not exact.
+Therefore we must look for
+an integrating factor: a function \axiom{mu(x,y)} such that
+\axiom{d(mu m)/dy = d(mu n)/dx}.
+Normally, we first search for \axiom{mu(x,y)} depending only on
+\axiom{x} or only on \axiom{y}.
+%
+\xtc{
+Let's search for such a \axiom{mu(x)} first.
+}{
+\spadcommand{mu := operator 'mu \bound{mu}}
+}
+\xtc{
+}{
+\spadcommand{a := D(mu(x) * m, y) - D(mu(x) * n, x) \bound{a}\free{m n mu}}
+}
+%
+%
+\xtc{
+If the above is zero for a function
+\axiom{mu} that does {\it not} depend on \axiom{y}, then
+\axiom{mu(x)} is an integrating factor.
+}{
+\spadcommand{solve(a = 0, mu, x) \free{mu a}}
+}
+%
+The solution depends on \axiom{y}, so there is no integrating
+factor that depends on \axiom{x} only.
+%
+\xtc{
+Let's look for one that depends on \axiom{y} only.
+}{
+\spadcommand{b := D(mu(y) * m, y) - D(mu(y) * n, x) \bound{b}\free{mu m}}
+}
+\xtc{
+}{
+\spadcommand{sb := solve(b = 0, mu, y) \free{mu b}\bound{sb}}
+}
+\noindent
+We've found one!
+%
+\xtc{
+The above \axiom{mu(y)} is an integrating factor.
+We must multiply our initial equation
+(that is, \axiom{m} and \axiom{n}) by the integrating factor.
+}{
+\spadcommand{intFactor := sb.basis.1 \bound{intFactor}\free{sb}}
+}
+\xtc{
+}{
+\spadcommand{m := intFactor * m \bound{m1}\free{m intFactor}}
+}
+\xtc{
+}{
+\spadcommand{n := intFactor * n \bound{n1}\free{n intFactor}}
+}
+%
+\xtc{
+Let's check for exactness.
+}{
+\spadcommand{D(m, y) - D(n, x) \free{m1 n1}}
+}
+%
+We must solve the exact equation, that is, find a function
+\axiom{s(x,y)} such that
+\axiom{ds/dx = m}  and \axiom{ds/dy = n}.
+%
+\xtc{
+We start by writing \axiom{s(x, y) = h(y) + integrate(m, x)}
+where \axiom{h(y)} is an unknown function of \axiom{y}.
+This guarantees that \axiom{ds/dx = m}.
+}{
+\spadcommand{h := operator 'h \bound{h}}
+}
+\xtc{
+}{
+\spadcommand{sol := h y + integrate(m, x) \bound{sol}\free{h m1}}
+}
+%
+%
+\xtc{
+All we want is to find \axiom{h(y)} such that
+\axiom{ds/dy = n}.
+}{
+\spadcommand{dsol := D(sol, y) \free{sol}\bound{dsol}}
+}
+\xtc{
+}{
+\spadcommand{nsol := solve(dsol = n, h, y) \free{dsol n1 h}\bound{nsol}}
+}
+%
+\xtc{
+The above particular solution is the \axiom{h(y)} we want, so we just replace
+\axiom{h(y)} by it in the implicit solution.
+}{
+\spadcommand{eval(sol, h y = nsol.particular) \free{sol h nsol}}
+}
+%
+A first integral of the initial equation is obtained by setting
+this result equal to an arbitrary constant.
+
+Now that we've seen how to solve the equation ``by hand,''
+we show you how to do it with the \axiomFun{solve} operation.
+\xtc{
+First define \axiom{y} to be an operator.
+}{
+\spadcommand{y := operator 'y \bound{y}}
+}
+\xtc{
+Next we create the differential equation.
+}{
+\spadcommand{deq := D(y x, x) = y(x) / (x + y(x) * log y x) \bound{deqi}\free{y}}
+}
+\xtc{
+Finally, we solve it.
+}{
+\spadcommand{solve(deq, y, x) \free{deqi y}}
+}
+
+% *********************************************************************
+\head{subsection}{Power Series Solutions of Differential Equations}{ugxProblemDEQSeries}
+% *********************************************************************
+
+The command to solve differential equations in power
+\index{equation!differential!solving in power series}
+series
+\index{power series}
+around
+\index{series!power}
+a particular initial point with specific initial conditions is called
+\axiomFun{seriesSolve}.
+It can take a variety of parameters, so we illustrate
+its use with some examples.
+
+\labelSpace{1pc}
+\noOutputXtc{
+Since the coefficients of some solutions
+are quite large, we reset the default to compute only seven terms.
+}{
+\spadcommand{)set streams calculate 7 \bound{c7}}
+}
+
+You can solve a single nonlinear equation of any order. For example,
+we solve  \axiom{y''' = sin(y'') * exp(y) + cos(x)}
+subject to \axiom{y(0) = 1, y'(0) = 0, y''(0) = 0}.
+
+\xtc{
+We first tell \Language{}
+that the symbol \axiom{'y} denotes a new operator.
+}{
+\spadcommand{y := operator 'y \bound{y}}
+}
+\xtc{
+Enter the differential equation using \axiom{y} like any system
+function.
+}{
+\spadcommand{eq := D(y(x), x, 3) - sin(D(y(x), x, 2))*exp(y(x)) = cos(x)\bound{eq}\free{y}}
+}
+%
+\xtc{
+Solve it around \axiom{x = 0} with the initial conditions
+\axiom{y(0) = 1, y'(0) = y''(0) = 0}.
+}{
+\spadcommand{seriesSolve(eq, y, x = 0, [1, 0, 0])\free{y}\free{eq}\free{c7}}
+}
+
+You can also solve a system of nonlinear first order equations.
+For example, we solve a system that has \axiom{tan(t)} and
+\axiom{sec(t)} as solutions.
+
+\xtc{
+We tell \Language{} that \axiom{x} is also an operator.
+}{
+\spadcommand{x := operator 'x\bound{x}}
+}
+\xtc{
+Enter the two equations forming our system.
+}{
+\spadcommand{eq1 := D(x(t), t) = 1 + x(t)^2\free{x}\free{y}\bound{eq1}}
+}
+%
+\xtc{
+}{
+\spadcommand{eq2 := D(y(t), t) = x(t) * y(t)\free{x}\free{y}\bound{eq2}}
+}
+%
+\xtc{
+Solve the system around \axiom{t = 0} with the initial conditions
+\axiom{x(0) = 0} and \axiom{y(0) = 1}.
+Notice that since we give the unknowns in the
+order \axiom{[x, y]}, the answer is a list of two series in the order
+\axiom{[series for x(t), series for y(t)]}.
+}{
+\spadcommand{seriesSolve([eq2, eq1], [x, y], t = 0, [y(0) = 1, x(0) = 0])\free{x}\free{y}\free{eq1}\free{eq2}\free{c7}}
+}
+\noindent
+The order in which we give the
+equations and the initial conditions has no effect on the order of
+the solution.
+
+% *********************************************************************
+\head{section}{Finite Fields}{ugProblemFinite}
+% *********************************************************************
+%
+
+A {\it finite field} (also called a {\it Galois field}) is a
+finite algebraic structure where one can add, multiply and divide
+under the same laws (for example, commutativity, associativity or
+distributivity) as apply to the rational, real or complex numbers.
+Unlike those three fields, for any finite field there exists a
+positive prime integer \smath{p}, called the
+\axiomFun{characteristic}, such that \texht{$p \: x = 0$}{\axiom{p *
+x = 0}} for any element \smath{x} in the finite field.
+In fact, the number of elements in a finite field is a power of
+the characteristic and for each prime \smath{p} and positive
+integer \smath{n} there exists exactly one finite field with
+\texht{$p^n$}{\axiom{p^n}} elements, up to
+isomorphism.\footnote{For more information about the algebraic
+structure and properties of finite fields, see, for example, S.
+Lang, {\it Algebra}, Second Edition, New York: Addison-Wesley
+Publishing Company, Inc., 1984, ISBN 0 201 05487 6; or R.
+Lidl, H.
+Niederreiter, {\it Finite Fields}, Encyclopedia of Mathematics and
+Its Applications, Vol.
+20, Cambridge: Cambridge Univ.
+Press, 1983, ISBN 0 521 30240 4.}
+
+When \axiom{n = 1,} the field has \smath{p} elements and is
+called a {\it prime field}, discussed in \texht{the next
+section}{\spadref{ugxProblemFinitePrime}}.
+There are several ways of implementing extensions of finite
+fields, and \Language{} provides quite a bit of freedom to allow
+you to choose the one that is best for your application.
+Moreover, we provide operations for converting among the different
+representations of extensions and different extensions of a single
+field.
+Finally, note that you usually need to package-call operations
+from finite fields if the operations do not take as an argument an
+object of the field.
+See \spadref{ugTypesPkgCall} for more information on
+package-calling.
+
+% *********************************************************************
+\head{subsection}{Modular Arithmetic and Prime Fields}{ugxProblemFinitePrime}
+% *********************************************************************
+\index{finite field}
+\index{Galois!field}
+\index{field!finite!prime}
+\index{field!prime}
+\index{field!Galois}
+\index{prime field}
+\index{modular arithmetic}
+\index{arithmetic!modular}
+
+Let \smath{n} be a positive integer.
+It is well known that you can get the same result if you perform
+addition, subtraction or multiplication of integers and then take
+the remainder on dividing by \smath{n} as if
+you had first done such remaindering on the operands, performed the
+arithmetic and then (if necessary) done remaindering again.
+This allows us to speak of arithmetic
+{\it modulo} \smath{n} or, more simply
+{\it mod} \smath{n}.
+\xtc{
+In \Language{}, you use \axiomType{IntegerMod} to do such arithmetic.
+}{
+\spadcommand{(a,b) : IntegerMod 12 \bound{abdec}}
+}
+\xtc{
+}{
+\spadcommand{(a, b) := (16, 7) \free{abdec}\bound{a b}}
+}
+\xtc{
+}{
+\spadcommand{[a - b, a * b] \free{a b}}
+}
+\begin{inputonly}
+)set message test off
+\end{inputonly}
+\xtc{
+If \smath{n} is not prime, there is only a limited notion of
+reciprocals and division.
+}{
+\spadcommand{a / b \free{a b}}
+}
+\begin{inputonly}
+)set message test on
+\end{inputonly}
+\xtc{
+}{
+\spadcommand{recip a \free{a}}
+}
+\xtc{
+Here \axiom{7} and \axiom{12} are relatively prime, so \axiom{7}
+has a multiplicative inverse modulo \axiom{12}.
+}{
+\spadcommand{recip b \free{b}}
+}
+
+If we take \smath{n} to be a prime number \smath{p},
+then taking inverses and, therefore, division are generally defined.
+\xtc{
+Use \axiomType{PrimeField} instead of \axiomType{IntegerMod}
+for \smath{n} prime.
+}{
+\spadcommand{c : PrimeField 11 := 8 \bound{c}}
+}
+\xtc{
+}{
+\spadcommand{inv c \free{c}}
+}
+\xtc{
+You can also use \axiom{1/c} and \axiom{c^(-1)} for the inverse of
+\smath{c}.
+}{
+\spadcommand{9/c \free{c}}
+}
+
+\axiomType{PrimeField} (abbreviation \axiomType{PF}) checks if its
+argument is prime when you try to use an operation from it.
+If you know the argument is prime (particularly if it is large),
+\axiomType{InnerPrimeField} (abbreviation \axiomType{IPF}) assumes
+the argument has already been verified to be prime.
+If you do use a number that is not prime, you will eventually get
+an error message, most likely a division by zero message.
+For computer science applications, the most important finite fields
+are \axiomType{PrimeField 2} and its extensions.
+
+\xtc{
+In the following examples, we work with the finite field with
+\smath{p = 101} elements.
+}{
+\spadcommand{GF101 := PF 101 \bound{GF101} }
+}
+\xtc{
+Like many domains in \Language{}, finite fields provide an operation
+for returning a random element of the domain.
+}{
+\spadcommand{x := random()\$GF101 \bound{x}\free{GF101}}
+}
+\xtc{
+}{
+\spadcommand{y : GF101 := 37 \bound{y}\free{GF101}}
+}
+\xtc{
+}{
+\spadcommand{z := x/y \bound{z}\free{x y}}
+}
+\xtc{
+}{
+\spadcommand{z * y - x \free{x y z}}
+}
+%
+\xtc{
+The element \axiom{2} is a {\it primitive element} of this field,
+\index{primitive element}
+\index{element!primitive}
+}{
+\spadcommand{pe := primitiveElement()\$GF101 \bound{pe}\free{GF101}}
+}
+%
+\xtc{
+in the sense that its powers enumerate all nonzero elements.
+}{
+\spadcommand{[pe^i for i in 0..99] \free{pe}}
+}
+%
+%
+\xtc{
+If every nonzero element is a power of a primitive element, how do you
+determine what the exponent is?
+Use
+\index{discrete logarithm}
+\axiomFun{discreteLog}.
+\index{logarithm!discrete}
+}{
+\spadcommand{ex := discreteLog(y) \bound{ex}\free{y}}
+}
+\xtc{
+}{
+\spadcommand{pe ^ ex \free{ex pe}}
+}
+%
+\xtc{
+The \axiomFun{order} of a nonzero element \smath{x} is the
+smallest positive integer \smath{t} such
+\texht{$x^t = 1$}{\axiom{x^t = 1}}.
+}{
+\spadcommand{order y \free{y}}
+}
+\xtc{
+The order of a primitive element is the defining \smath{p-1}.
+}{
+\spadcommand{order pe \free{pe}}
+}
+
+% *********************************************************************
+\head{subsection}{Extensions of Finite Fields}{ugxProblemFiniteExtensionFinite}
+% *********************************************************************
+\index{finite field}
+\index{field!finite!extension of}
+
+When you want to work with an extension of a finite field in \Language{},
+you have three choices to make:
+\begin{enumerate}
+\item Do you want to generate an extension of the prime field
+(for example, \axiomType{PrimeField 2}) or an extension of a given field?
+%
+\item Do you want to use a representation that is particularly
+efficient for multiplication, exponentiation and addition but
+uses a lot of computer memory (a representation that models the cyclic
+group structure of the multiplicative group of the field extension
+and uses a Zech logarithm table),  one that
+\index{Zech logarithm}
+uses a normal basis for the vector space structure of the field
+extension, or one that performs arithmetic modulo an irreducible
+polynomial?
+The cyclic group representation is only usable up to ``medium''
+(relative to your machine's performance)
+sized fields.
+If the field is large and the normal basis is relatively simple,
+the normal basis representation is more efficient for exponentiation than
+the irreducible polynomial representation.
+%
+\item Do you want to provide a polynomial explicitly, a root of which
+``generates'' the extension in one of the three senses in (2),
+or do you wish to have the polynomial generated for you?
+\end{enumerate}
+
+This illustrates one of the most important features of \Language{}:
+you can choose exactly the right data-type and representation to
+suit your application best.
+
+We first tell you what domain constructors to use for each case
+above, and then give some examples.
+
+\texht{\hangafter=1\hangindent=2pc}{\noindent}
+Constructors that automatically generate extensions of the prime field:
+\newline
+\axiomType{FiniteField} \newline
+\axiomType{FiniteFieldCyclicGroup} \newline
+\axiomType{FiniteFieldNormalBasis}
+
+\texht{\hangafter=1\hangindent=2pc}{\noindent}
+Constructors that generate extensions of an arbitrary field:
+\newline
+\axiomType{FiniteFieldExtension} \newline
+\axiomType{FiniteFieldExtensionByPolynomial} \newline
+\axiomType{FiniteFieldCyclicGroupExtension} \newline
+\axiomType{FiniteFieldCyclicGroupExtensionByPolynomial} \newline
+\axiomType{FiniteFieldNormalBasisExtension} \newline
+\axiomType{FiniteFieldNormalBasisExtensionByPolynomial}
+
+\texht{\hangafter=1\hangindent=2pc}{\noindent}
+Constructors that use a cyclic group representation:
+\newline
+\axiomType{FiniteFieldCyclicGroup} \newline
+\axiomType{FiniteFieldCyclicGroupExtension} \newline
+\axiomType{FiniteFieldCyclicGroupExtensionByPolynomial}
+
+\texht{\hangafter=1\hangindent=2pc}{\noindent}
+Constructors that use a normal basis representation:
+\newline
+\axiomType{FiniteFieldNormalBasis} \newline
+\axiomType{FiniteFieldNormalBasisExtension} \newline
+\axiomType{FiniteFieldNormalBasisExtensionByPolynomial}
+
+\texht{\hangafter=1\hangindent=2pc}{\noindent}
+Constructors that use an irreducible modulus polynomial representation:
+\newline
+\axiomType{FiniteField} \newline
+\axiomType{FiniteFieldExtension} \newline
+\axiomType{FiniteFieldExtensionByPolynomial}
+
+\texht{\hangafter=1\hangindent=2pc}{\noindent}
+Constructors that generate a polynomial for you:
+\newline
+\axiomType{FiniteField} \newline
+\axiomType{FiniteFieldExtension} \newline
+\axiomType{FiniteFieldCyclicGroup} \newline
+\axiomType{FiniteFieldCyclicGroupExtension} \newline
+\axiomType{FiniteFieldNormalBasis} \newline
+\axiomType{FiniteFieldNormalBasisExtension}
+
+\texht{\hangafter=1\hangindent=2pc}{\noindent}
+Constructors for which you provide a polynomial:
+\newline
+\axiomType{FiniteFieldExtensionByPolynomial} \newline
+\axiomType{FiniteFieldCyclicGroupExtensionByPolynomial} \newline
+\axiomType{FiniteFieldNormalBasisExtensionByPolynomial}
+
+These constructors are discussed in the following sections where
+we collect together descriptions of extension fields that have the
+same underlying representation.\footnote{For
+more information on the implementation aspects of finite
+fields, see
+J. Grabmeier, A. Scheerhorn, {\it Finite Fields in AXIOM,}
+Technical Report, IBM Heidelberg Scientific Center, 1992.}
+
+If you don't really care about all this detail, just use
+\axiomType{FiniteField}.
+As your knowledge of your application and its \Language{} implementation
+grows, you can come back and choose an alternative constructor that
+may improve the efficiency of your code.
+Note that the exported operations are almost the same for all constructors
+of finite field extensions and include the operations exported by
+\axiomType{PrimeField}.
+
+% *********************************************************************
+\head{subsection}{Irreducible Modulus Polynomial Representations}{ugxProblemFiniteModulus}
+% *********************************************************************
+
+All finite field extension constructors discussed in this
+\index{finite field}
+section
+\index{field!finite!extension of}
+use a representation that performs arithmetic with univariate
+(one-variable) polynomials modulo an irreducible polynomial.
+This polynomial may be given explicitly by you or automatically
+generated.
+The ground field may be the prime field or one you specify.
+See \spadref{ugxProblemFiniteExtensionFinite} for general
+information about finite field extensions.
+
+For \axiomType{FiniteField} (abbreviation \axiomType{FF}) you provide a
+prime number \smath{p} and an extension degree \smath{n}.
+This degree can be 1.
+%
+\xtc{
+\Language{} uses the prime field \axiomType{PrimeField(p)},
+here \axiomType{PrimeField 2},
+and it chooses an irreducible polynomial of degree \smath{n},
+here 12, over the ground field.
+}{
+\spadcommand{GF4096 := FF(2,12); \bound{GF4096}}
+}
+%
+
+The objects in the generated field extension are polynomials
+of degree at most \smath{n-1} with coefficients in the
+prime field.
+The polynomial indeterminate is automatically chosen by \Language{} and
+is typically something like \axiom{\%A} or \axiom{\%D}.
+These (strange) variables are {\it only} for output display;
+there are several ways to construct elements of this field.
+
+The operation \axiomFun{index} enumerates the elements of the field
+extension and accepts as argument the integers from 1 to
+\smath{p \texht{^}{^} n}.
+%
+\xtc{
+The expression
+\axiom{index(p)} always gives the indeterminate.
+}{
+\spadcommand{a := index(2)\$GF4096 \bound{a}\free{GF4096}}
+}
+%
+%
+\xtc{
+You can build polynomials in \smath{a} and calculate in
+\axiom{GF4096}.
+}{
+\spadcommand{b := a^12 - a^5 + a \bound{b}\free{a}}
+}
+\xtc{
+}{
+\spadcommand{b ^ 1000 \free{b}}
+}
+\xtc{
+}{
+\spadcommand{c := a/b \free{a b}\bound{c}}
+}
+%
+\xtc{
+Among the available operations are \axiomFun{norm} and \axiomFun{trace}.
+}{
+\spadcommand{norm c \free{c}}
+}
+\xtc{
+}{
+\spadcommand{trace c \free{c}}
+}
+%
+%
+
+Since any nonzero element is a power of a primitive element, how
+do we discover what the exponent is?
+%
+\xtc{
+The operation \axiomFun{discreteLog} calculates
+\index{discrete logarithm}
+the exponent and,
+\index{logarithm!discrete}
+if it is called with only one argument, always refers to the primitive
+element returned by \axiomFun{primitiveElement}.
+}{
+\spadcommand{dL := discreteLog a \free{a}\bound{dL}}
+}
+\xtc{
+}{
+\spadcommand{g ^ dL \free{dL g}}
+}
+
+\axiomType{FiniteFieldExtension} (abbreviation \axiomType{FFX}) is
+similar to \axiomType{FiniteField} except that the
+ground-field for \axiomType{FiniteFieldExtension} is arbitrary and
+chosen by you.
+%
+\xtc{
+In case you select the prime field as ground field, there is
+essentially no difference between the constructed two finite field
+extensions.
+}{
+\spadcommand{GF16 := FF(2,4); \bound{GF16}}
+}
+\xtc{
+}{
+\spadcommand{GF4096 := FFX(GF16,3); \bound{GF4096x}\free{GF16}}
+}
+\xtc{
+}{
+\spadcommand{r := (random()\$GF4096) ^ 20 \free{GF4096x}\bound{r}}
+}
+\xtc{
+}{
+\spadcommand{norm(r) \free{r}}
+}
+%
+
+\axiomType{FiniteFieldExtensionByPolynomial} (abbreviation \axiomType{FFP})
+is similar to \axiomType{FiniteField} and \axiomType{FiniteFieldExtension}
+but is more general.
+%
+\xtc{
+}{
+\spadcommand{GF4 := FF(2,2); \bound{GF4}}
+}
+\xtc{
+}{
+\spadcommand{f := nextIrreduciblePoly(random(6)\$FFPOLY(GF4))\$FFPOLY(GF4) \free{GF4}\bound{f}}
+}
+\xtc{
+For \axiomType{FFP} you choose both the
+ground field and the irreducible polynomial used in the representation.
+The degree of the extension is the degree of the polynomial.
+}{
+\spadcommand{GF4096 := FFP(GF4,f); \bound{GF4096y}\free{f GF4}}
+}
+\xtc{
+}{
+\spadcommand{discreteLog random()\$GF4096 \free{GF4096y}}
+}
+%
+
+% *********************************************************************
+\head{subsection}{Cyclic Group Representations}{ugxProblemFiniteCyclic}
+% *********************************************************************
+\index{finite field}
+\index{field!finite!extension of}
+
+In every finite field there exist elements whose powers are all the
+nonzero elements of the field.
+Such an element is called a {\it primitive element}.
+
+In \axiomType{FiniteFieldCyclicGroup} (abbreviation \axiomType{FFCG})
+\index{group!cyclic}
+the nonzero elements are represented by the
+powers of a fixed primitive
+\index{element!primitive}
+element
+\index{primitive element}
+of the field (that is, a generator of its
+cyclic multiplicative group).
+Multiplication (and hence exponentiation) using this representation is easy.
+To do addition, we consider our primitive element as the root of a primitive
+polynomial (an irreducible polynomial whose
+roots are all primitive).
+See \spadref{ugxProblemFiniteUtility} for examples of how to
+compute such a polynomial.
+
+%
+\xtc{
+To use \axiomType{FiniteFieldCyclicGroup} you provide a prime number and an
+extension degree.
+}{
+\spadcommand{GF81 := FFCG(3,4); \bound{GF81}}
+}
+%
+%
+\xtc{
+\Language{} uses the prime field, here \axiomType{PrimeField 3}, as the
+ground field and it chooses a primitive polynomial of degree
+\smath{n}, here 4, over the prime field.
+}{
+\spadcommand{a := primitiveElement()\$GF81 \bound{a}\free{GF81}}
+}
+%
+%
+\xtc{
+You can calculate in \axiom{GF81}.
+}{
+\spadcommand{b  := a^12 - a^5 + a \bound{b}\free{a}}
+}
+%
+\xtc{
+In this representation of finite fields the discrete logarithm
+of an element can be seen directly in its output form.
+}{
+\spadcommand{b \free{b}}
+}
+\xtc{
+}{
+\spadcommand{discreteLog b \free{b}}
+}
+%
+
+\axiomType{FiniteFieldCyclicGroupExtension} (abbreviation
+\axiomType{FFCGX}) is similar to \axiomType{FiniteFieldCyclicGroup}
+except that the ground field for
+\axiomType{FiniteFieldCyclicGroupExtension} is arbitrary and chosen
+by you.
+In case you select the prime field as ground field, there is
+essentially no difference between the constructed two finite field
+extensions.
+%
+\xtc{
+}{
+\spadcommand{GF9 := FF(3,2); \bound{GF9}}
+}
+\xtc{
+}{
+\spadcommand{GF729 := FFCGX(GF9,3); \bound{GF729}\free{GF9}}
+}
+\xtc{
+}{
+\spadcommand{r := (random()\$GF729) ^ 20 \free{GF729}\bound{r}}
+}
+\xtc{
+}{
+\spadcommand{trace(r) \free{r}}
+}
+%
+
+\axiomType{FiniteFieldCyclicGroupExtensionByPolynomial}
+(abbreviation \axiomType{FFCGP})
+is similar to \axiomType{FiniteFieldCyclicGroup} and
+\axiomType{FiniteFieldCyclicGroupExtension}
+but is more general.
+For \axiomType{FiniteFieldCyclicGroupExtensionByPolynomial} you choose both the
+ground field and the irreducible polynomial used in the representation.
+The degree of the extension is the degree of the polynomial.
+%
+\xtc{
+}{
+\spadcommand{GF3  := PrimeField 3; \bound{GF3}}
+}
+\xtc{
+We use a utility operation to generate an irreducible primitive
+polynomial (see \spadref{ugxProblemFiniteUtility}).
+The polynomial has one variable that is ``anonymous'': it displays
+as a question mark.
+}{
+\spadcommand{f := createPrimitivePoly(4)\$FFPOLY(GF3) \bound{f}\free{GF3}}
+}
+\xtc{
+}{
+\spadcommand{GF81 := FFCGP(GF3,f); \bound{GF81x}\free{f GF3}}
+}
+\xtc{
+Let's look at a random element from this field.
+}{
+\spadcommand{random()\$GF81 \free{GF81x}}
+}
+%
+
+% *********************************************************************
+\head{subsection}{Normal Basis Representations}{ugxProblemFiniteNormal}
+% *********************************************************************
+\index{finite field}
+\index{field!finite!extension of}
+\index{basis!normal}
+\index{normal basis}
+
+Let \smath{K} be a finite extension of degree \smath{n} of the
+finite field \smath{F} and let \smath{F} have \smath{q}
+elements.
+An element \smath{x} of \smath{K} is said to be
+{\it normal} over \smath{F} if the elements
+\begin{texonly}
+\narrowDisplay{1, x^q, x^{q^2}, \ldots, x^{q^{n-1}}}%
+\end{texonly}%
+\htonly
+\begin{center}
+\axiom{1, x^q, x^(q^2), ..., x^(q^(n-1))}
+\end{center}
+\endhtonly
+form a basis of \smath{K} as a vector space over \smath{F}.
+Such a basis is called a {\it normal basis}.\footnote{This
+agrees with the general definition of a normal basis because the
+\smath{n} distinct powers of the automorphism
+\texht{$x \mapsto x^q$}{\axiom{x +-> x^q}}
+constitute the Galois group of \smath{K/F}.}
+
+If \smath{x} is normal over \smath{F}, its minimal
+\index{polynomial!minimal}
+polynomial is also said to be {\it normal} over \smath{F}.
+\index{minimal polynomial}
+There exist normal bases for all finite extensions of arbitrary
+finite fields.
+
+In \axiomType{FiniteFieldNormalBasis} (abbreviation
+\axiomType{FFNB}), the elements of the finite field are represented
+by coordinate vectors with respect to a normal basis.
+
+\xtc{
+You provide a prime \smath{p} and an extension degree
+\smath{n}.
+}{
+\spadcommand{K := FFNB(3,8) \bound{K}}
+}
+%
+\Language{} uses the prime field \axiomType{PrimeField(p)},
+here \axiomType{PrimeField 3},
+and it chooses a normal polynomial of degree
+\smath{n}, here 8, over the ground field.
+The remainder class of the indeterminate is used
+as the normal element.
+The polynomial indeterminate is automatically chosen by \Language{} and
+is typically something like \axiom{\%A} or \axiom{\%D}.
+These (strange) variables are only for output display;
+there are several ways to construct elements of this field.
+The output of the basis elements is something like
+\texht{$\%A^{q^i}.$}{
+\begin{verbatim}
+   i
+  q
+%A  .
+\end{verbatim}
+}
+%
+\xtc{
+}{
+\spadcommand{a := normalElement()\$K \bound{a}\free{K}}
+}
+%
+%
+\xtc{
+You can calculate in \smath{K} using \smath{a}.
+}{
+\spadcommand{b  := a^12 - a^5 + a \bound{b}\free{a}}
+}
+
+\axiomType{FiniteFieldNormalBasisExtension} (abbreviation
+\axiomType{FFNBX}) is
+similar to \axiomType{FiniteFieldNormalBasis} except that the
+groundfield for \axiomType{FiniteFieldNormalBasisExtension} is arbitrary and
+chosen by you.
+In case you select the prime field as ground field, there is
+essentially no difference between the constructed two finite field
+extensions.
+\xtc{
+}{
+\spadcommand{GF9 := FFNB(3,2); \bound{GF9}}
+}
+\xtc{
+}{
+\spadcommand{GF729 := FFNBX(GF9,3); \bound{GF729}\free{GF9}}
+}
+\xtc{
+}{
+\spadcommand{r := random()\$GF729 \bound{r}\free{GF729}}
+}
+\xtc{
+}{
+\spadcommand{r + r^3 + r^9 + r^27 \free{r}}
+}
+
+\axiomType{FiniteFieldNormalBasisExtensionByPolynomial}
+(abbreviation \axiomType{FFNBP}) is similar to
+\axiomType{FiniteFieldNormalBasis} and
+\axiomType{FiniteFieldNormalBasisExtension} but is more general.
+For \axiomType{FiniteFieldNormalBasisExtensionByPolynomial} you
+choose both the ground field and the irreducible polynomial used
+in the representation.
+The degree of the extension is the degree of the polynomial.
+
+%
+\xtc{
+}{
+\spadcommand{GF3 := PrimeField 3; \bound{GF3}}
+}
+\xtc{
+We use a utility operation to generate an irreducible normal
+polynomial (see \spadref{ugxProblemFiniteUtility}).
+The polynomial has one variable that is ``anonymous'': it displays
+as a question mark.
+}{
+\spadcommand{f := createNormalPoly(4)\$FFPOLY(GF3) \free{GF3}\bound{f}}
+}
+\xtc{
+}{
+\spadcommand{GF81 := FFNBP(GF3,f); \bound{GF81}\free{f GF3}}
+}
+\xtc{
+Let's look at a random element from this field.
+}{
+\spadcommand{r := random()\$GF81 \free{GF81}\bound{r1}}
+}
+\xtc{
+}{
+\spadcommand{r * r^3 * r^9 * r^27 \free{r1}}
+}
+\xtc{
+}{
+\spadcommand{norm r \free{r1}}
+}
+
+% *********************************************************************
+\head{subsection}{Conversion Operations for Finite Fields}{ugxProblemFiniteConversion}
+% *********************************************************************
+\index{field!finite!conversions}
+
+\labelSpace{5pc}
+%
+\xtc{
+Let \texht{$K$}{\axiom{K}} be a finite field.
+}{
+\spadcommand{K := PrimeField 3 \bound{K}}
+}
+%
+An extension field \texht{$K_m$}{\axiom{Km}} of degree
+\smath{m} over \texht{$K$}{\axiom{K}} is a subfield of an
+extension field \texht{$K_n$}{\axiom{Kn}} of degree \smath{n}
+over \texht{$K$}{\axiom{K}} if and only if \smath{m} divides
+\smath{n}.
+\texht{
+\begin{center}
+\begin{tabular}{ccc}
+$K_n$ \\
+$|$ \\
+$K_m$ & $\Longleftrightarrow$ & $m | n$ \\
+$|$ \\
+K
+\end{tabular}
+\end{center}
+}{
+\begin{verbatim}
+Kn
+|
+Km   <==>  m | n
+|
+K
+\end{verbatim}
+}
+\axiomType{FiniteFieldHomomorphisms} provides conversion operations
+between different extensions of one
+fixed finite ground field and between different representations of
+these finite fields.
+\xtc{
+Let's choose \smath{m} and \smath{n},
+}{
+\spadcommand{(m,n) := (4,8) \bound{m n}}
+}
+\xtc{
+build the field extensions,
+}{
+\spadcommand{Km := FiniteFieldExtension(K,m) \bound{Km}\free{K m}}
+}
+\xtc{
+and pick two random elements from the smaller field.
+}{
+\spadcommand{Kn := FiniteFieldExtension(K,n) \bound{Kn}\free{K n}}
+}
+\xtc{
+}{
+\spadcommand{a1 := random()\$Km \bound{a1}\free{Km}}
+}
+\xtc{
+}{
+\spadcommand{b1 := random()\$Km \bound{b1}\free{Km}}
+}
+%
+\xtc{
+Since \smath{m} divides \smath{n},
+\texht{$K_m$}{\axiom{Km}} is a subfield of \texht{$K_n$}{\axiom{Kn}}.
+}{
+\spadcommand{a2 := a1 :: Kn \bound{a2}\free{a1 Kn}}
+}
+\xtc{
+Therefore we can convert the elements of \texht{$K_m$}{\axiom{Km}}
+into elements of \texht{$K_n$}{\axiom{Kn}}.
+}{
+\spadcommand{b2 := b1 :: Kn \bound{b2}\free{b1 Kn}}
+}
+%
+%
+\xtc{
+To check this, let's do some arithmetic.
+}{
+\spadcommand{a1+b1 - ((a2+b2) :: Km) \free{a1 a2 b1 b2 Km Kn}}
+}
+\xtc{
+}{
+\spadcommand{a1*b1 - ((a2*b2) :: Km) \free{a1 a2 b1 b2 Km Kn}}
+}
+%
+There are also conversions available for the
+situation, when \texht{$K_m$}{\axiom{Km}} and \texht{$K_n$}{\axiom{Kn}}
+are represented in different ways (see
+\spadref{ugxProblemFiniteExtensionFinite}).
+For example let's choose \texht{$K_m$}{\axiom{Km}} where the
+representation is 0 plus the cyclic multiplicative group and
+\texht{$K_n$}{\axiom{Kn}} with a normal basis representation.
+\xtc{
+}{
+\spadcommand{Km := FFCGX(K,m) \bound{Km2}\free{K m}}
+}
+\xtc{
+}{
+\spadcommand{Kn := FFNBX(K,n) \bound{Kn2}\free{K n}}
+}
+\xtc{
+}{
+\spadcommand{(a1,b1) := (random()\$Km,random()\$Km) \bound{a12 b12}\free{Km2}}
+}
+\xtc{
+}{
+\spadcommand{a2 := a1 :: Kn \bound{a22}\free{a12 Kn2}}
+}
+\xtc{
+}{
+\spadcommand{b2 := b1 :: Kn \bound{b22}\free{b12 Kn2}}
+}
+%
+\xtc{
+Check the arithmetic again.
+}{
+\spadcommand{a1+b1 - ((a2+b2) :: Km) \free{a12 a22 b12 b22 Km2}}
+}
+\xtc{
+}{
+\spadcommand{a1*b1 - ((a2*b2) :: Km) \free{a12 a22 b12 b22 Km2}}
+}
+
+% *********************************************************************
+\head{subsection}{Utility Operations for Finite Fields}{ugxProblemFiniteUtility}
+% *********************************************************************
+
+\axiomType{FiniteFieldPolynomialPackage} (abbreviation
+\axiomType{FFPOLY})
+provides operations for generating, counting and testing polynomials
+over finite fields. Let's start with a couple of definitions:
+\begin{itemize}
+\item A polynomial is {\it primitive} if its roots are primitive
+\index{polynomial!primitive}
+elements in an extension of the coefficient field of degree equal
+to the degree of the polynomial.
+\item A polynomial is {\it normal} over its coefficient field
+\index{polynomial!normal}
+if its roots are linearly independent
+elements in an extension of the coefficient field of degree equal
+to the degree of the polynomial.
+\end{itemize}
+In what follows, many of the generated polynomials have one
+``anonymous'' variable.
+This indeterminate is displayed as a question mark (\spadSyntax{?}).
+
+\xtc{
+To fix ideas, let's use the field with five elements for the first
+few examples.
+}{
+\spadcommand{GF5 := PF 5; \bound{GF5}}
+}
+%
+%
+\xtc{
+You can generate irreducible polynomials of any (positive) degree
+\index{polynomial!irreducible}
+(within the storage capabilities of the computer and your ability
+to wait) by using
+\axiomFunFrom{createIrreduciblePoly}{FiniteFieldPolynomialPackage}.
+}{
+\spadcommand{f := createIrreduciblePoly(8)\$FFPOLY(GF5) \bound{f}\free{GF5}}
+}
+%
+\xtc{
+Does this polynomial have other important properties? Use
+\axiomFun{primitive?} to test whether it is a primitive polynomial.
+}{
+\spadcommand{primitive?(f)\$FFPOLY(GF5) \free{f}}
+}
+\xtc{
+Use \axiomFun{normal?} to test whether it is a normal polynomial.
+}{
+\spadcommand{normal?(f)\$FFPOLY(GF5) \free{f}}
+}
+\noindent
+Note that this is actually a trivial case,
+because a normal polynomial of degree \smath{n}
+must have a nonzero term of degree \smath{n-1}.
+We will refer back to this later.
+
+\xtc{
+To get a primitive polynomial of degree 8 just issue this.
+}{
+\spadcommand{p := createPrimitivePoly(8)\$FFPOLY(GF5) \bound{p}\free{GF5}}
+}
+\xtc{
+}{
+\spadcommand{primitive?(p)\$FFPOLY(GF5) \free{p}}
+}
+\xtc{
+This polynomial is not normal,
+}{
+\spadcommand{normal?(p)\$FFPOLY(GF5) \free{p}}
+}
+\xtc{
+but if you want a normal one simply write this.
+}{
+\spadcommand{n := createNormalPoly(8)\$FFPOLY(GF5) \bound{n} \free{GF5}}
+}
+\xtc{
+This polynomial is not primitive!
+}{
+\spadcommand{primitive?(n)\$FFPOLY(GF5) \free{n}}
+}
+This could have been seen directly, as
+the constant term is 1 here, which is not a primitive
+element up to the factor (\axiom{-1}) raised to the degree of the
+polynomial.\footnote{Cf. Lidl, R. \& Niederreiter,
+H., {\it Finite Fields,} Encycl. of Math. 20, (Addison-Wesley, 1983),
+p.90, Th. 3.18.}
+
+What about
+polynomials that are both primitive and normal?
+The existence of such a polynomial is by no means obvious.
+\footnote{The existence of such polynomials is proved in
+Lenstra, H. W. \& Schoof, R. J., {\it Primitive
+Normal Bases for Finite Fields,} Math. Comp. 48, 1987, pp. 217-231.}
+%
+\xtc{
+If you really need one use either
+\axiomFunFrom{createPrimitiveNormalPoly}{FiniteFieldPolynomialPackage} or
+\axiomFunFrom{createNormalPrimitivePoly}{FiniteFieldPolynomialPackage}.
+}{
+\spadcommand{createPrimitiveNormalPoly(8)\$FFPOLY(GF5) \free{GF5}}
+}
+%
+
+If you want to obtain additional polynomials of the various types above
+as given by the {\bf create...} operations above, you can use the {\bf
+next...} operations.
+For instance,
+\axiomFunFrom{nextIrreduciblePoly}{FiniteFieldPolynomialPackage} yields
+the next monic irreducible polynomial with the same degree as the input
+polynomial.
+By ``next'' we mean ``next in a natural order using the terms and
+coefficients.''
+This will become more clear in the following examples.
+
+\xtc{
+This is the field with five elements.
+}{
+\spadcommand{GF5 := PF 5; \bound{GF5}}
+}
+%
+\xtc{
+Our first example irreducible polynomial, say
+of degree 3, must be ``greater'' than this.
+}{
+\spadcommand{h := monomial(1,8)\$SUP(GF5) \bound{h}\free{GF5}}
+}
+\xtc{
+You can generate it by doing this.
+}{
+\spadcommand{nh := nextIrreduciblePoly(h)\$FFPOLY(GF5) \bound{nh}\free{h}}
+}
+%
+\xtc{
+Notice that this polynomial is not the same as the one
+\axiomFunFrom{createIrreduciblePoly}{FiniteFieldPolynomialPackage}.
+}{
+\spadcommand{createIrreduciblePoly(3)\$FFPOLY(GF5) \free{GF5}}
+}
+\xtc{
+You can step through all irreducible polynomials of degree 8 over
+the field with 5 elements by repeatedly issuing this.
+}{
+\spadcommand{nh := nextIrreduciblePoly(nh)\$FFPOLY(GF5) \free{nh}}
+}
+\xtc{
+You could also ask for the total number of these.
+}{
+\spadcommand{numberOfIrreduciblePoly(5)\$FFPOLY(GF5) \free{GF5}}
+}
+
+We hope that ``natural order'' on polynomials is now clear:
+first we compare the number of monomials of
+two polynomials (``more'' is ``greater'');
+then, if necessary, the degrees of these monomials (lexicographically),
+and lastly their coefficients (also
+lexicographically, and using the operation \axiomFun{lookup} if
+our field is not a prime field).
+Also note that we make both polynomials monic before looking at the
+coefficients:
+multiplying either polynomial  by a nonzero constant
+produces the same result.
+
+%
+\xtc{
+The package
+\axiomType{FiniteFieldPolynomialPackage} also provides similar
+operations for primitive and normal polynomials. With
+the exception of the number of primitive normal polynomials;
+we're not aware of any known formula for this.
+}{
+\spadcommand{numberOfPrimitivePoly(3)\$FFPOLY(GF5) \free{GF5}}
+}
+%
+%
+\xtc{
+Take these,
+}{
+\spadcommand{m := monomial(1,1)\$SUP(GF5) \bound{m}\free{GF5}}
+}
+\xtc{
+}{
+\spadcommand{f := m^3 + 4*m^2 + m + 2 \bound{fx}\free{m}}
+}
+%
+%
+\xtc{
+and then we have:
+}{
+\spadcommand{f1 := nextPrimitivePoly(f)\$FFPOLY(GF5) \free{fx}\bound{f1}}
+}
+\xtc{
+What happened?
+}{
+\spadcommand{nextPrimitivePoly(f1)\$FFPOLY(GF5) \free{f1}}
+}
+%
+Well, for the ordering used in
+\axiomFunFrom{nextPrimitivePoly}{FiniteFieldPolynomialPackage} we
+use as first criterion a comparison of the constant terms of the
+polynomials.
+Analogously, in
+\axiomFunFrom{nextNormalPoly}{FiniteFieldPolynomialPackage} we first
+compare the monomials of degree 1 less than the degree of the
+polynomials (which is nonzero, by an earlier remark).
+%
+\xtc{
+}{
+\spadcommand{f := m^3 + m^2 + 4*m + 1 \bound{fy} \free{m}}
+}
+\xtc{
+}{
+\spadcommand{f1 := nextNormalPoly(f)\$FFPOLY(GF5) \free{fy}\bound{f1y}}
+}
+\xtc{
+}{
+\spadcommand{nextNormalPoly(f1)\$FFPOLY(GF5) \free{f1y}}
+}
+%
+\noindent
+We don't have to restrict ourselves to prime fields.
+%
+\xtc{
+Let's consider, say, a field with 16 elements.
+}{
+\spadcommand{GF16 := FFX(FFX(PF 2,2),2); \bound{GF16} }
+}
+%
+%
+\xtc{
+We can apply any of the operations described above.
+}{
+\spadcommand{createIrreduciblePoly(5)\$FFPOLY(GF16) \free{GF16}}
+}
+
+\xtc{
+\Language{} also provides operations
+for producing random polynomials of a given degree
+}{
+\spadcommand{random(5)\$FFPOLY(GF16) \free{GF16}}
+}
+\xtc{
+or with degree between two given bounds.
+}{
+\spadcommand{random(3,9)\$FFPOLY(GF16) \free{GF16}}
+}
+
+\axiomType{\axiom{FiniteFieldPolynomialPackage2}} (abbreviation
+\axiomType{FFPOLY2})
+exports an operation \axiomFun{rootOfIrreduciblePoly}
+for finding one root of an irreducible polynomial \axiom{f}
+\index{polynomial!root of}
+in an extension field of the coefficient field.
+The degree of the extension has to be a multiple of the degree of \axiom{f}.
+It is not checked whether \axiom{f} actually is irreducible.
+
+%
+\xtc{
+To illustrate this operation, we fix a ground field \axiom{GF}
+}{
+\spadcommand{GF2 := PrimeField 2; \bound{GF2}}
+}
+%
+%
+\xtc{
+and then an extension field.
+}{
+\spadcommand{F := FFX(GF2,12) \bound{F}\free{GF2}}
+}
+%
+%
+\xtc{
+We construct an irreducible polynomial over \axiom{GF2}.
+}{
+\spadcommand{f := createIrreduciblePoly(6)\$FFPOLY(GF2) \bound{fz}\free{GF2}}
+}
+%
+%
+\xtc{
+We compute a root of \axiom{f}.
+}{
+\spadcommand{root := rootOfIrreduciblePoly(f)\$FFPOLY2(F,GF2) \free{F GF2 fz}\bound{root}}
+}
+%
+%and check the result
+%\spadcommand{eval(f, monomial(1,1)\$SUP(F) = root) \free{fz F root}}
+
+%*********************************************************************
+\head{section}{Primary Decomposition of Ideals}{ugProblemIdeal}
+%*********************************************************************
+%
+\Language{} provides a facility for the primary decomposition
+\index{ideal!primary decomposition}
+of
+\index{primary decomposition of ideal}
+polynomial ideals over fields of characteristic zero.
+The algorithm
+%is discussed in \cite{gtz:gbpdpi} and
+works in essentially two steps:
+\begin{enumerate}
+\item the problem is solved for 0-dimensional ideals by ``generic''
+projection on the last coordinate
+\item a ``reduction process'' uses localization and ideal quotients
+to reduce the general case to the 0-dimensional one.
+\end{enumerate}
+The \Language{} constructor \axiomType{PolynomialIdeal}
+represents ideals with coefficients in any field and
+supports the basic ideal operations,
+including intersection, sum and quotient.
+\axiomType{IdealDecompositionPackage} contains the specific
+operations for the primary decomposition and the computation of the
+radical of an ideal with polynomial
+coefficients in a field of characteristic 0 with
+an effective algorithm for factoring polynomials.
+
+The following examples illustrate the capabilities of this facility.
+%
+\xtc{
+First consider the ideal generated by
+\texht{$x^2 + y^2 - 1$}{\axiom{x^2 + y^2 - 1}}
+(which defines a circle in the \axiom{(x,y)}-plane) and the ideal
+generated by \texht{$x^2 - y^2$}{\axiom{x^2 - y^2}} (corresponding to the
+straight lines \axiom{x = y} and \axiom{x = -y}.
+}{
+\spadcommand{(n,m) : List DMP([x,y],FRAC INT) \bound{nm}}
+}
+\xtc{
+}{
+\spadcommand{m := [x^2+y^2-1] \free{nm} \bound{m}}
+}
+\xtc{
+}{
+\spadcommand{n := [x^2-y^2] \free{nm} \bound{n}}
+}
+%
+%
+\xtc{
+We find the equations defining the intersection of the two loci.
+This correspond to the sum of the associated ideals.
+}{
+\spadcommand{id := ideal m  + ideal n \free{n m} \bound{id}}
+}
+%
+%
+\xtc{
+We can check if the locus contains only a finite number of points,
+that is, if the ideal is zero-dimensional.
+}{
+\spadcommand{zeroDim? id \free{id}}
+}
+\xtc{
+}{
+\spadcommand{zeroDim?(ideal m) \free{m}}
+}
+\xtc{
+}{
+\spadcommand{dimension ideal m \free{m}}
+}
+\xtc{
+We can find polynomial relations among the generators
+(\axiom{f} and \axiom{g} are the parametric equations of the knot).
+}{
+\spadcommand{(f,g):DMP([x,y],FRAC INT) \bound{fg}}
+}
+\xtc{
+}{
+\spadcommand{f := x^2-1 \free{fg} \bound{f}}
+}
+\xtc{
+}{
+\spadcommand{g := x*(x^2-1) \free{fg} \bound{g}}
+}
+\xtc{
+}{
+\spadcommand{relationsIdeal [f,g] \free{f g}}
+}
+
+\xtc{
+We can compute the primary decomposition of an ideal.
+}{
+\spadcommand{l: List DMP([x,y,z],FRAC INT) \bound{ll}}
+}
+\xtc{
+}{
+\spadcommand{l:=[x^2+2*y^2,x*z^2-y*z,z^2-4] \free{ll} \bound{l}}
+}
+\xtc{
+}{
+\spadcommand{ld:=primaryDecomp ideal l \free{l} \bound{ld}}
+}
+\xtc{
+We can intersect back.
+}{
+\spadcommand{reduce(intersect,ld) \free{ld}}
+}
+
+\xtc{
+We can compute the radical of every primary component.
+}{
+\spadcommand{reduce(intersect,[radical ld.i for i in 1..2]) \free{ld}}
+}
+\xtc{
+Their intersection is equal to the radical of the ideal of \axiom{l}.
+}{
+\spadcommand{radical ideal l \free{l}}
+}
+
+% *********************************************************************
+\head{section}{Computation of Galois Groups}{ugProblemGalois}
+% *********************************************************************
+%
+As a sample use of \Language{}'s algebraic number facilities,
+\index{group!Galois}
+we compute
+\index{Galois!group}
+the Galois group of the polynomial
+\texht{$p(x) = x^5 - 5 x + 12$}{\axiom{p(x) = x^5 - 5*x + 12}}.
+%
+\xtc{
+}{
+\spadcommand{p := x^5 - 5*x + 12 \bound{p}}
+}
+%
+We would like to construct a polynomial \smath{f(x)}
+such that the splitting
+\index{field!splitting}
+field
+\index{splitting field}
+of \smath{p(x)} is generated by one root of \smath{f(x)}.
+First we construct a polynomial \smath{r = r(x)} such that one
+root of \smath{r(x)} generates the field generated by two roots of
+the polynomial \smath{p(x)}.
+(As it will turn out, the field generated by two roots of
+\smath{p(x)} is, in fact, the splitting field of
+\smath{p(x)}.)
+
+From the proof of the primitive element theorem we know that
+if \smath{a} and \smath{b} are
+algebraic numbers, then the field
+\texht{${\bf Q}(a,b)$}{\axiom{Q(a,b)}} is equal to
+\texht{${\bf Q}(a+kb)$}{\axiom{Q(a + k*b)}} for an
+appropriately chosen integer \smath{k}.
+In our case, we construct the minimal polynomial of
+\texht{$a_i - a_j$}{\axiom{a[i] - a[j]}}, where
+\texht{$a_i$}{\axiom{a[i]}} and
+\texht{$a_j$}{\axiom{a[j]}} are two roots of \smath{p(x)}.
+We construct this polynomial using \axiomFun{resultant}.
+The main result we  need is the following:
+If \smath{f(x)} is a polynomial with roots
+\texht{$a_i \ldots a_m$}{\axiom{a[1]...a[m]}} and
+\smath{g(x)} is a polynomial
+with roots
+\texht{$b_i \ldots b_n$}{\axiom{b[1]...b[n]}}, then the polynomial
+\axiom{h(x) = resultant(f(y), g(x-y), y)}
+is a polynomial of degree \smath{m*n} with
+roots
+\texht{$a_i + b_j, i = 1 \ldots m, j = 1 \ldots n$}
+{\axiom{a[i] + b[j], 1 <= i <= m, 1 <= j <= n}}.
+
+\xtc{
+For \smath{f(x)} we use the polynomial \smath{p(x)}.
+For \smath{g(x)} we use the polynomial \smath{-p(-x)}.
+Thus, the polynomial we  first construct is
+\axiom{resultant(p(y), -p(y-x), y)}.
+}{
+\spadcommand{q := resultant(eval(p,x,y),-eval(p,x,y-x),y) \free{p} \bound{q}}
+}
+%
+The roots of \smath{q(x)} are
+\texht{$a_i - a_j, i \leq 1, j \leq 5$}
+{\axiom{a[i] - a[j], 1 <= i,j <= 5}}.
+Of course, there are five pairs \smath{(i,j)} with \smath{i = j},
+so \axiom{0} is a 5-fold root of \smath{q(x)}.
+%
+\xtc{
+Let's get rid of this factor.
+}{
+\spadcommand{q1 := exquo(q, x^5) \free{q} \bound{q1}}
+}
+\xtc{
+Factor the polynomial \axiom{q1}.
+}{
+\spadcommand{factoredQ := factor q1 \free{q1} \bound{factoredQ}}
+}
+%
+We see that \axiom{q1} has two irreducible factors, each of degree \axiom{10}.
+(The fact that the polynomial \axiom{q1} has two factors of
+degree \axiom{10} is enough to show
+that the Galois group of \smath{p(x)} is the dihedral group of
+order \axiom{10}.\footnote{See McKay, Soicher,  Computing Galois Groups
+over the Rationals, Journal of Number Theory 20, 273-281 (1983).
+We do not assume the results of this paper, however, and we continue with
+the computation.}
+Note that the type of \axiom{factoredQ} is \axiomType{FR POLY INT}, that is,
+\axiomType{Factored Polynomial Integer}.
+\exptypeindex{Factored}
+This is a special data type for recording factorizations of polynomials with
+integer coefficients (see \xmpref{Factored}).
+%
+\xtc{
+We can access the individual factors using the operation
+\axiomFunFrom{nthFactor}{Factored}.
+}{
+\spadcommand{r := nthFactor(factoredQ,1) \free{factoredQ} \bound{r}}
+}
+%
+
+Consider the polynomial \smath{r = r(x)}.
+This is the minimal polynomial of the difference of two roots of
+\smath{p(x)}.
+Thus, the splitting field of \smath{p(x)} contains a subfield of
+degree \axiom{10}.
+We show that this subfield is, in fact, the splitting field of
+\smath{p(x)} by showing that \smath{p(x)} factors completely
+over this field.
+%
+\xtc{
+First we create a symbolic root of the polynomial \smath{r(x)}.
+(We replaced \axiom{x} by \axiom{b} in the
+polynomial \axiom{r} so that our symbolic root would be
+printed as \axiom{b}.)
+}{
+\spadcommand{beta:AN := rootOf(eval(r,x,b)) \free{r} \bound{beta}}
+}
+\xtc{
+We next tell \Language{} to view \smath{p(x)} as a univariate polynomial
+in \axiom{x}
+with algebraic number coefficients.
+This is accomplished with this type declaration.
+}{
+\spadcommand{p := p::UP(x,INT)::UP(x,AN) \free{p} \bound{declareP}}
+}
+%
+%
+\xtc{
+Factor \smath{p(x)} over the field
+\texht{${\bf Q}(\beta)$}{\axiom{Q(beta)}}.
+(This computation will take some time!)
+}{
+\spadcommand{algFactors := factor(p,[beta]) \free{declareP beta} \bound{algFactors}}
+}
+%
+When factoring over number fields, it is important to specify the
+field over which the polynomial is to be factored, as polynomials
+have different factorizations over different fields.
+When you use the operation \axiomFun{factor}, the field over which
+the polynomial is factored is the field generated by
+\begin{enumerate}
+\item the algebraic numbers that appear
+in the coefficients of the polynomial, and
+\item the algebraic numbers that
+appear in a list passed as an optional second argument of the operation.
+\end{enumerate}
+In our case, the coefficients of \axiom{p}
+are all rational integers and only \axiom{beta}
+appears in the list, so the field is simply
+\texht{${\bf Q}(\beta)$}{\axiom{Q(beta)}}.
+%
+\xtc{
+It was necessary to give the list \axiom{[beta]}
+as a second argument of the operation
+because otherwise the polynomial would have been factored over the field
+generated by its coefficients, namely the rational numbers.
+}{
+\spadcommand{factor(p) \free{declareP}}
+}
+%
+We have shown that the splitting field of \smath{p(x)} has degree
+\axiom{10}.
+Since the symmetric group of degree 5 has only one transitive subgroup
+of order \axiom{10}, we know that the Galois group of \smath{p(x)} must be
+this group, the dihedral group
+\index{group!dihedral}
+of order \axiom{10}.
+Rather than stop here, we explicitly compute the action of the Galois
+group on the roots of \smath{p(x)}.
+
+First we assign the roots of \smath{p(x)} as the values of five
+\index{root}
+variables.
+\xtc{
+We can obtain an individual root by negating the constant coefficient of
+one of the factors of \smath{p(x)}.
+}{
+\spadcommand{factor1 := nthFactor(algFactors,1) \free{algFactors} \bound{factor1}}
+}
+\xtc{
+}{
+\spadcommand{root1 := -coefficient(factor1,0) \free{factor1} \bound{root1}}
+}
+%
+%
+\xtc{
+We can obtain a list of all the roots in this way.
+}{
+\spadcommand{roots := [-coefficient(nthFactor(algFactors,i),0) for i in 1..5] \free{algFactors} \bound{roots}}
+}
+
+The expression
+\begin{verbatim}
+- coefficient(nthFactor(algFactors, i), 0)}
+\end{verbatim}
+is the \eth{\axiom{i }} root
+of \smath{p(x)} and the elements of \axiom{roots} are the \eth{\axiom{i }}
+roots of \smath{p(x)} as \axiom{i} ranges from \axiom{1} to \axiom{5}.
+
+\xtc{
+Assign the roots as the values of the variables \axiom{a1,...,a5}.
+}{
+\spadcommand{(a1,a2,a3,a4,a5) := (roots.1,roots.2,roots.3,roots.4,roots.5) \free{roots} \bound{ais}}
+}
+%
+
+Next we express the roots of \smath{r(x)} as polynomials in
+\axiom{beta}.
+We could obtain these roots by calling the operation \axiomFun{factor}:
+\axiom{factor(r, [beta])} factors \axiom{r(x)} over
+\texht{${\bf Q}(\beta)$}{\axiom{Q(beta)}}.
+However, this is a lengthy computation and we can obtain the roots of
+\smath{r(x)} as differences of the roots \axiom{a1,...,a5} of
+\smath{p(x)}.
+Only ten of these differences are roots of \smath{r(x)} and the
+other ten are roots
+of the other irreducible factor of \axiom{q1}.
+We can determine if a given value is a root of \smath{r(x)} by evaluating
+\smath{r(x)} at that particular value.
+(Of course, the order in which factors are returned by the
+operation \axiomFun{factor}
+is unimportant and may change with different implementations of the operation.
+Therefore, we cannot predict in advance which differences are roots of
+\smath{r(x)} and which are not.)
+%
+\xtc{
+Let's look at four examples (two are roots of \smath{r(x)} and
+two are not).
+}{
+\spadcommand{eval(r,x,a1 - a2) \free{ais}}
+}
+\xtc{
+}{
+\spadcommand{eval(r,x,a1 - a3) \free{ais}}
+}
+\xtc{
+}{
+\spadcommand{eval(r,x,a1 - a4) \free{ais}}
+}
+\xtc{
+}{
+\spadcommand{eval(r,x,a1 - a5) \free{ais}}
+}
+%
+
+Take one of the differences that was a root of \smath{r(x)}
+and assign it to the variable \axiom{bb}.
+\xtc{
+For example, if \axiom{eval(r,x,a1 - a4)} returned \axiom{0}, you would
+enter this.
+}{
+\spadcommand{bb := a1 - a4 \free{ais} \bound{bb}}
+}
+Of course, if the difference is, in fact, equal to the root \axiom{beta},
+you should choose another root of \smath{r(x)}.
+
+Automorphisms of the splitting field are given by mapping a generator of
+the field, namely \axiom{beta}, to other roots of its minimal polynomial.
+Let's see what happens when \axiom{beta} is mapped to \axiom{bb}.
+%
+\xtc{
+We compute the images of the roots \axiom{a1,...,a5}
+under this automorphism:
+}{
+\spadcommand{aa1 := subst(a1,beta = bb) \free{beta bb ais} \bound{aa1}}
+}
+\xtc{
+}{
+\spadcommand{aa2 := subst(a2,beta = bb) \free{beta bb ais} \bound{aa2}}
+}
+\xtc{
+}{
+\spadcommand{aa3 := subst(a3,beta = bb) \free{beta bb ais} \bound{aa3}}
+}
+\xtc{
+}{
+\spadcommand{aa4 := subst(a4,beta = bb) \free{beta bb ais} \bound{aa4}}
+}
+\xtc{
+}{
+\spadcommand{aa5 := subst(a5,beta = bb) \free{beta bb ais} \bound{aa5}}
+}
+%
+Of course, the values \axiom{aa1,...,aa5} are simply a permutation of the values
+\axiom{a1,...,a5}.
+%
+\xtc{
+Let's find the value of \axiom{aa1} (execute as many of the following five commands
+as necessary).
+}{
+\spadcommand{(aa1 = a1) :: Boolean \free{aa1}}
+}
+\xtc{
+}{
+\spadcommand{(aa1 = a2) :: Boolean \free{aa1}}
+}
+\xtc{
+}{
+\spadcommand{(aa1 = a3) :: Boolean \free{aa1}}
+}
+\xtc{
+}{
+\spadcommand{(aa1 = a4) :: Boolean \free{aa1}}
+}
+\xtc{
+}{
+\spadcommand{(aa1 = a5) :: Boolean \free{aa1}}
+}
+%
+Proceeding in this fashion, you can find the values of
+\axiom{aa2,...aa5}.\footnote{Here you should use the
+\Clef{} line editor.
+See \spadref{ugAvailCLEF} for more information about \Clef{}.}
+You have represented the automorphism \axiom{beta -> bb}
+as a permutation of the roots \axiom{a1,...,a5}.
+If you wish, you can repeat this computation for all the roots of
+\smath{r(x)} and represent the Galois group of
+\smath{p(x)} as a subgroup of the symmetric group on five letters.
+
+Here are two other problems that you may attack in a similar fashion:
+\begin{enumerate}
+\item Show that the Galois group of
+\texht{$p(x) = x^4 + 2 x^3 - 2 x^2 - 3 x + 1$}{\axiom{
+p(x) = x^4 + 2*x^3 - 2*x^2 - 3*x + 1}}
+is the dihedral group of order eight.
+\index{group!dihedral}
+(The splitting field of this polynomial is the Hilbert class field
+\index{Hilbert class field}
+of
+\index{field!Hilbert class}
+the quadratic field
+\texht{${\bf Q}(\sqrt{145})$}{\axiom{Q(sqrt(145))}}.)
+\item Show that the Galois group of
+\texht{$p(x) = x^6 + 108$}{\axiom{p(x) = x^6 + 108}}
+has order 6 and is
+isomorphic to \texht{$S_3,$}{} the symmetric group on three letters.
+\index{group!symmetric}
+(The splitting field of this polynomial is the splitting field of
+\texht{$x^3 - 2$}{\axiom{x^3 - 2}}.)
+\end{enumerate}
+
+% *********************************************************************
+\head{section}{Non-Associative Algebras and Modelling Genetic Laws}{ugProblemGenetic}
+% *********************************************************************
+
+Many algebraic structures of mathematics and \Language{}
+have a multiplication operation \axiomOp{*} that satisfies
+the associativity law
+\index{associativity law}
+\texht{$a*(b*c) = (a*b)*c$}{\spad{a*(b*c) = (a*b)*c}}
+for all \smath{a}, \smath{b} and \smath{c}.
+The octonions (see \xmpref{Octonion}) are a well known exception.
+There are many other interesting non-associative structures, such as the
+class of
+\index{Lie algebra}
+Lie algebras.\footnote{Two \Language{} implementations of Lie algebras
+are \spadtype{LieSquareMatrix} and \spadtype{FreeNilpotentLie}.}
+Lie algebras can be used, for example, to analyse Lie symmetry algebras of
+\index{symmetry}
+partial differential
+\index{differential equation!partial}
+equations.
+\index{partial differential equation}
+In this section we show a different application of non-associative algebras,
+\index{non-associative algebra}
+the modelling of genetic laws.
+\index{algebra!non-associative}
+
+The \Language{} library contains several constructors for
+creating non-assoc\-i\-a\-tive structures,
+ranging from the categories \spadtype{Monad},
+\spadtype{NonAssociativeRng}, and
+\spadtype{FramedNonAssociativeAlgebra}, to the domains
+\spadtype{AlgebraGivenByStructuralConstants} and
+\spadtype{GenericNonAssociativeAlgebra}.
+Furthermore, the package \spadtype{AlgebraPackage} provides
+operations for analysing the structure of such algebras.\footnote{%
+The interested reader can learn more about these aspects of the
+\Language{} library from the paper
+``Computations in Algebras of Finite Rank,''
+by Johannes Grabmeier and Robert Wisbauer,
+Technical Report, IBM Heidelberg Scientific Center, 1992.}
+
+Mendel's genetic laws are often written in a form like
+\texht{
+\narrowDisplay{Aa \times Aa = {1\over 4}AA + {1\over 2}Aa + {1\over 4}aa.}}{
+\spad{Aa * Aa = (1/4)*AA + (1/2)*Aa + (1/4)*aa.}
+}
+The implementation of general algebras in \Language{} allows us to
+\index{Mendel's genetic laws}
+use this as the definition for multiplication in an algebra.
+\index{genetics}
+Hence, it is possible to study
+questions of genetic inheritance using \Language{}.
+To demonstrate this more precisely,  we discuss one example from a
+monograph of \texht{A. W\"orz-Busekros}{A. Woerz-Busekros},
+where you can also find a general setting of this theory.\footnote{%
+\texht{W\"{o}rz-Busekros}{Woerz-Busekros}, A.,
+{\it Algebras in Genetics},
+Springer Lectures Notes in Biomathematics 36, Berlin e.a. (1980).
+In particular, see example 1.3.}
+
+We assume that there is an infinitely large random mating population.
+Random mating of two gametes \texht{$a_i$}{\spad{ai}}  and
+\texht{$a_j$}{\spad{aj}} gives zygotes
+\index{zygote}
+\texht{$a_ia_j$}{\spad{ai aj}}, which produce new gametes.
+\index{gamete}
+In classical Mendelian segregation we have
+\texht{$a_ia_j = {1 \over 2}a_i+{1 \over 2}a_j$}{\spad{ai aj = (1/2)*ai+(1/2)*aj}}.
+In general, we have
+\texht{\narrowDisplay{a_ia_j = \sum_{k=1}^n \gamma_{i,j}^k\ a_k.}}%
+{\spad{ai aj = gammaij1 a1 + gammaij2 a2 + ... + gammaijn an}}
+The segregation rates \texht{$\gamma_{i,j}$}{\spad{gammaij}}
+are  the structural constants of an
+\smath{n}-dimensional algebra.
+This is provided in \Language{} by
+the constructor \spadtype{AlgebraGivenByStructuralConstants}
+(abbreviation \spadtype{ALGSC}).
+
+Consider two coupled autosomal loci with alleles
+\smath{A},\smath{a}, \smath{B}, and \smath{b}, building four
+different gametes
+\texht{$a_1 =  AB, a_2 =  Ab, a_3 =  aB,$ and $a_4 =  ab$}%
+{\spad{a1 :=  AB, a2 :=  Ab, a3 :=  aB,} and \spad{a4 :=  ab}}.
+The zygotes \texht{$a_ia_j$}{\spad{ai aj}}
+produce gametes \texht{$a_i$}{\spad{ai}} and
+\texht{$a_j$}{\spad{aj}}
+with classical Mendelian segregation.
+Zygote \texht{$a_1a_4$}{a1 a4} undergoes transition
+to \texht{$a_2a_3$}{\spad{a2 a3}}
+and vice versa with probability
+\texht{$0 \le \theta \le {1\over 2}$}{0 <= theta <= 1/2}.
+
+\xtc{
+Define a list
+\texht{$[(\gamma_{i,j}^k) 1 \le k \le 4]$}{\spad{[(gammaijk) 1 <= k <= 4]}}
+of four four-by-four matrices giving the segregation
+rates.
+We use the value \smath{1/10} for \smath{\theta}.
+}{
+\spadcommand{segregationRates : List SquareMatrix(4,FRAC INT) := [matrix [ [1, 1/2, 1/2, 9/20], [1/2, 0, 1/20, 0], [1/2, 1/20, 0, 0], [9/20, 0, 0, 0] ], matrix [ [0, 1/2, 0, 1/20], [1/2, 1, 9/20, 1/2], [0, 9/20, 0, 0], [1/20, 1/2, 0, 0] ], matrix [ [0, 0, 1/2, 1/20], [0, 0, 9/20, 0], [1/2, 9/20, 1, 1/2], [1/20, 0, 1/2, 0] ], matrix [ [0, 0, 0, 9/20], [0, 0, 1/20, 1/2], [0, 1/20, 0, 1/2], [9/20, 1/2, 1/2, 1] ] ] \bound{segregationRates}}
+}
+\xtc{
+Choose the appropriate symbols for the basis of gametes,
+}{
+\spadcommand{gametes := ['AB,'Ab,'aB,'ab]  \bound{gametes}}
+}
+\xtc{
+Define the algebra.
+}{
+\spadcommand{A := ALGSC(FRAC INT, 4, gametes, segregationRates);\bound{A}\free{gametes, segregationRates}}
+}
+
+\xtc{
+What are the probabilities for zygote
+\texht{$a_1a_4$}{a1 a4} to produce the different gametes?
+}{
+\spadcommand{a := basis()\$A;  a.1*a.4}
+}
+
+Elements in this algebra whose coefficients sum to one play a
+distinguished role.
+They represent a population with the distribution of gametes
+reflected by the coefficients with respect to the basis of
+gametes.
+
+Random mating of different populations \smath{x} and \smath{y} is described by
+their product \smath{x*y}.
+
+\xtc{
+This product is commutative only
+if the gametes are not sex-dependent, as in our example.
+}{
+\spadcommand{commutative?()\$A \free{A}}
+}
+\xtc{
+In general, it is not associative.
+}{
+\spadcommand{associative?()\$A \free{A}}
+}
+
+Random mating within a population \smath{x} is described by
+\smath{x*x.}
+The next generation is \smath{(x*x)*(x*x).}
+
+\xtc{
+Use decimal numbers to compare the distributions more easily.
+}{
+\spadcommand{x : ALGSC(DECIMAL, 4, gametes, segregationRates) :=  convert [3/10, 1/5, 1/10, 2/5]\bound{x}\free{gametes, segregationRates}}
+}
+\xtc{
+To compute directly the gametic distribution in the fifth
+generation, we use \spadfun{plenaryPower}.
+}{
+\spadcommand{plenaryPower(x,5) \free{x}}
+}
+
+We now ask two questions:
+Does this distribution converge to an equilibrium state?
+What are the distributions that are stable?
+
+\xtc{
+This is an invariant of the algebra and it is used to answer
+the first question.
+The new indeterminates describe a symbolic distribution.
+}{
+\spadcommand{q := leftRankPolynomial()\$GCNAALG(FRAC INT, 4, gametes, segregationRates) :: UP(Y, POLY FRAC INT)\bound{q}\free{gametes, segregationRates}}
+}
+\xtc{
+Because the coefficient \texht{${9 \over 20}$}{\axiom{9/20}} has absolute
+value less than 1, all distributions do converge,
+by a theorem of this theory.
+}{
+\spadcommand{factor(q :: POLY FRAC INT) \free{q}}
+}
+\xtc{
+The second question is answered by searching for idempotents in the
+algebra.
+}{
+\spadcommand{cI := conditionsForIdempotents()\$GCNAALG(FRAC INT, 4, gametes, segregationRates)\bound{cI} \free{gametes, segregationRates}}
+}
+\xtc{
+Solve these equations and look at the first solution.
+}{
+\spadcommand{gbs:= groebnerFactorize cI; gbs.1\free{cI}\bound{gbs}}
+}
+
+Further analysis using the package \spadtype{PolynomialIdeal}
+shows that there is a two-dimensional variety of equilibrium states and all
+other solutions are contained in it.
+
+\xtc{
+Choose one equilibrium state by setting two indeterminates to
+concrete values.
+}{
+\spadcommand{sol := solve concat(gbs.1,[\%x1-1/10,\%x2-1/10])\bound{sol} \free{gbs}}
+}
+\xtc{
+}{
+\spadcommand{e : A := represents reverse (map(rhs, sol.1) :: List FRAC INT)\bound{e} \free{A, sol}}
+}
+\xtc{
+Verify the result.
+}{
+\spadcommand{e*e-e \free{e}}
+}

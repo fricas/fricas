@@ -1,0 +1,318 @@
+
+% Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+%     - Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+% 
+%     - Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution.
+% 
+%     - Neither the name of The Numerical ALgorithms Group Ltd. nor the
+%       names of its contributors may be used to endorse or promote products
+%       derived from this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+% PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+% OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES-- LOSS OF USE, DATA, OR
+% PROFITS-- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+% MATRIX.htex
+
+The \spadtype{Matrix} domain provides arithmetic operations on matrices
+and standard functions from linear algebra.
+This domain is similar to the \spadtype{TwoDimensionalArray} domain, except
+that the entries for \spadtype{Matrix} must belong to a \spadtype{Ring}.
+
+% *********************************************************************
+\head{subsection}{Creating Matrices}{ugxMatrixCreate}
+% *********************************************************************
+
+There are many ways to create a matrix from a collection of
+values or from existing matrices.
+
+\xtc{
+If the matrix has almost all items equal to the same value,
+use \spadfunFrom{new}{Matrix} to create a matrix filled with that
+value and then reset the entries that are different.
+}{
+\spadcommand{m : Matrix(Integer) := new(3,3,0) \bound{m}}
+}
+\xtc{
+To change the entry in the second row, third column to \spad{5}, use
+\spadfunFrom{setelt}{Matrix}.
+}{
+\spadcommand{setelt(m,2,3,5) \free{m}\bound{m1}}
+}
+\xtc{
+An alternative syntax is to use assignment.
+}{
+\spadcommand{m(1,2) := 10 \free{m1}\bound{m2}}
+}
+\xtc{
+The matrix was {\it destructively modified}.
+\index{matrix!destructive change to}
+}{
+\spadcommand{m \free{m2}}
+}
+
+\xtc{
+If you already have the matrix entries as a list of lists,
+use \spadfunFrom{matrix}{Matrix}.
+}{
+\spadcommand{matrix [[1,2,3,4],[0,9,8,7]]}
+}
+
+\xtc{
+If the matrix is diagonal, use
+\index{matrix!diagonal}
+\spadfunFrom{diagonalMatrix}{Matrix}.
+}{
+\spadcommand{dm := diagonalMatrix [1,x^2,x^3,x^4,x^5] \bound{dm}}
+}
+\xtc{
+Use \spadfunFromX{setRow}{Matrix} and
+\spadfunFromX{setColumn}{Matrix} to change a row or column of a matrix.
+}{
+\spadcommand{setRow!(dm,5,vector [1,1,1,1,1]) \free{dm}\bound{dm1}}
+}
+\xtc{
+}{
+\spadcommand{setColumn!(dm,2,vector [y,y,y,y,y]) \free{dm1}\bound{dm2}}
+}
+
+%
+\xtc{
+Use \spadfunFrom{copy}{Matrix} to make a copy of a matrix.
+\index{matrix!copying}
+}{
+\spadcommand{cdm := copy(dm) \free{dm2}\bound{cdm}}
+}
+\xtc{
+This is useful if you intend to modify a matrix destructively but
+want a copy of the original.
+}{
+\spadcommand{setelt(dm,4,1,1-x^7) \free{dm2}\bound{setdm}}
+}
+\xtc{
+}{
+\spadcommand{[dm,cdm] \free{setdm cdm}}
+}
+
+%
+\xtc{
+Use \spadfunFrom{subMatrix}{Matrix} to extract part of an
+\index{matrix!submatrix of}
+existing matrix.
+The syntax is \spad{subMatrix({\it m, firstrow, lastrow, firstcol,
+lastcol})}.
+}{
+\spadcommand{subMatrix(dm,2,3,2,4) \free{setdm}}
+}
+
+%
+\xtc{
+To change a submatrix, use \spadfunFromX{setsubMatrix}{Matrix}.
+}{
+\spadcommand{d := diagonalMatrix [1.2,-1.3,1.4,-1.5] \bound{d}}
+}
+\xtc{
+If \spad{e} is too big to fit where you specify, an error message
+is displayed.
+Use \spadfunFrom{subMatrix}{Matrix} to extract part of \spad{e}, if
+necessary.
+}{
+\spadcommand{e := matrix [[6.7,9.11],[-31.33,67.19]] \bound{e}}
+}
+\xtc{
+This changes the submatrix of \spad{d} whose upper left corner is
+at the first row and second column and whose size is that of \spad{e}.
+}{
+\spadcommand{setsubMatrix!(d,1,2,e) \free{d e}\bound{d1}}
+}
+\xtc{
+}{
+\spadcommand{d \free{d1}}
+}
+%
+
+%
+\xtc{
+Matrices can be joined either horizontally or vertically to make
+\index{matrix!concatenating}
+new matrices.
+}{
+\spadcommand{a := matrix [[1/2,1/3,1/4],[1/5,1/6,1/7]] \bound{a}}
+}
+\xtc{
+}{
+\spadcommand{b := matrix [[3/5,3/7,3/11],[3/13,3/17,3/19]] \bound{b}}
+}
+\xtc{
+Use \spadfunFrom{horizConcat}{Matrix} to append them side to side.
+The two matrices must have the same number of rows.
+}{
+\spadcommand{horizConcat(a,b) \free{a b}}
+}
+\xtc{
+Use \spadfunFrom{vertConcat}{Matrix} to stack one upon the other.
+The two matrices must have the same number of columns.
+}{
+\spadcommand{vab := vertConcat(a,b) \free{a b}\bound{vab}}
+}
+
+%
+\xtc{
+The operation
+\spadfunFrom{transpose}{Matrix} is used to create a new matrix by reflection
+\index{matrix!transposing}
+across the main diagonal.
+}{
+\spadcommand{transpose vab \free{vab}}
+}
+
+% *********************************************************************
+\head{subsection}{Operations on Matrices}{ugxMatrixOps}
+% *********************************************************************
+
+\labelSpace{3pc}
+\xtc{
+\Language{} provides both left and right scalar multiplication.
+}{
+\spadcommand{m := matrix [[1,2],[3,4]] \bound{m}}
+}
+\xtc{
+}{
+\spadcommand{4 * m * (-5)\free{m}}
+}
+\xtc{
+You can add, subtract, and multiply matrices provided, of course, that
+the matrices have compatible dimensions.
+If not, an error message is displayed.
+}{
+\spadcommand{n := matrix([[1,0,-2],[-3,5,1]]) \bound{n}}
+}
+\xtc{
+This following product is defined but \spad{n * m} is not.
+}{
+\spadcommand{m * n \free{m n}}
+}
+
+The operations \spadfunFrom{nrows}{Matrix} and \spadfunFrom{ncols}{Matrix}
+return the number of rows and columns of a matrix.
+You can extract a row or a column of a matrix using the operations
+\spadfunFrom{row}{Matrix} and \spadfunFrom{column}{Matrix}.
+The object returned is a \spadtype{Vector}.
+\xtc{
+Here is the third column of the matrix \spad{n}.
+}{
+\spadcommand{vec := column(n,3) \free{n} \bound{vec}}
+}
+\xtc{
+You can multiply a matrix on the left by a ``row vector'' and on the right
+by a ``column vector.''
+}{
+\spadcommand{vec * m \free{vec m}}
+}
+\xtc{
+Of course, the dimensions of the vector and the matrix must be compatible
+or an error message is returned.
+}{
+\spadcommand{m * vec \free{vec m}}
+}
+
+The operation \spadfunFrom{inverse}{Matrix} computes the inverse of a
+matrix if
+\index{matrix!inverse of}
+the matrix is invertible, and returns \spad{"failed"} if not.
+\xtc{
+This Hilbert matrix is invertible.
+}{
+\spadcommand{hilb := matrix([[1/(i + j) for i in 1..3] for j in 1..3]) \bound{hilb}}
+}
+\xtc{
+}{
+\spadcommand{inverse(hilb) \free{hilb}}
+}
+\xtc{
+This matrix is not invertible.
+}{
+\spadcommand{mm := matrix([[1,2,3,4], [5,6,7,8], [9,10,11,12], [13,14,15,16]]) \bound{mm}}
+}
+\xtc{
+}{
+\spadcommand{inverse(mm) \free{mm}}
+}
+
+The operation \spadfunFrom{determinant}{Matrix} computes the determinant of a matrix
+\index{matrix!determinant of}
+provided that the entries of the matrix belong to a \spadtype{CommutativeRing}.
+\xtc{
+The above matrix \spad{mm} is not invertible and, hence, must have
+determinant \spad{0}.
+}{
+\spadcommand{determinant(mm) \free{mm}}
+}
+\xtc{
+The operation
+\spadfunFrom{trace}{SquareMatrix} computes the trace of a {\em square} matrix.
+\index{matrix!trace of}
+}{
+\spadcommand{trace(mm) \free{mm}}
+}
+
+\xtc{
+The operation \spadfunFrom{rank}{Matrix} computes the {\it rank} of a
+matrix:
+\index{matrix!rank of}
+the maximal number of linearly independent rows or columns.
+}{
+\spadcommand{rank(mm) \free{mm}}
+}
+\xtc{
+The operation \spadfunFrom{nullity}{Matrix} computes the {\it nullity} of
+a matrix: the dimension of its null space.
+}{
+\spadcommand{nullity(mm) \free{mm}}
+}
+\xtc{
+The operation \spadfunFrom{nullSpace}{Matrix} returns a list containing a basis for the
+null space of a matrix.
+Note that the nullity is the number of elements in a basis for the null space.
+}{
+\spadcommand{nullSpace(mm) \free{mm}}
+}
+\xtc{
+The operation \spadfunFrom{rowEchelon}{Matrix} returns the row echelon form of a
+\index{matrix!row echelon form of}
+matrix.
+It is easy to see that the rank of this matrix is two and that its nullity
+is also two.
+}{
+\spadcommand{rowEchelon(mm) \free{mm}}
+}
+
+For more information on related topics, see
+\spadref{ugIntroTwoDim},
+\spadref{ugProblemEigen},
+\spadref{ugxFloatHilbert},
+\xmpref{Permanent},
+\xmpref{Vector},
+\xmpref{OneDimensionalArray}, and
+\xmpref{TwoDimensionalArray}.
+%
+\showBlurb{Matrix}
