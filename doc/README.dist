@@ -1,0 +1,51 @@
+This is a description of how to generate and how to use the new
+'pre-generated' system.
+
+How to generate
+---------------
+
+The FriCAS build system comes with a new make target "dist" which
+creates a full source tarball together with pre-generated
+machine-independent data that speed up the build process.
+
+The command "make dist" has to be executed in an out-of-source build
+after completion of a full successful build. Furthermore, the source
+tree must be a clean checkout from the repository (SVN or GIT), since
+all files in this tree will be copied into the distribution.
+
+It creates a file fricas-VERSION.tar.bz2 where VERSION corresponds
+to the second argument of AC_INIT in configure.ac.
+
+Currently, one cannot simply call "make dist", but must provide a
+location for the NOWEB tarball as well as the directory of
+(not-yet-generated) .help files. The typical invocation is thus:
+
+  make NOWEB=/path/to/noweb.tar.bz2 helpsrcdir=/path/to/spadhelp dist
+
+The generated tarball will contain a "zips" subdirectory with the noweb
+tarball and a "pre-generated" subdirectory with all the
+machine-independent pre-generated files.
+
+How to use
+----------
+
+FriCAS can be configured to used machine-independent files from an
+earlier compilation.
+
+In short, the Makefile variable PREGENERATED must either be empty
+(then no pre-generated data is used) or contain the absolute path of
+the directory of pre-generated data.
+
+There are several ways to let the FriCAS build system know about where
+the pre-generated data is located. In each case the build system
+assumes that the provided data is sane and does not explicitly check.
+
+1) If there is a subdirectory "pre-generated" inside the FriCAS source
+   tree, then configure will automatically set PREGENERATED to point
+   to this directory.
+2) If configure is called with
+   --with-pre-generated=/absolute/path/to/pre-generated, then
+   PREGENERATED is set  to /absolute/path/to/pre-generated.
+3) One can call make like
+     make PREGENERATED=/absolute/path/to/pre-generated
+   which does the obvious thing.

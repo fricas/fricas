@@ -125,6 +125,38 @@ fi
 
 AC_SUBST(AWK_FOR_TARGET)
 
+## ---------------------------------
+## -- Is there pregenerated data? --
+## ---------------------------------
+##
+## FriCAS might come with precompiled files. In case there is a
+## directory "pre-generated" in the source tree, the contents of
+## directory is used instead of recompiling these files. If this
+## directory exists, it is supposed to be sane, i.e., must have been
+## generated via "make dist". If such a pre-generated directory lives
+## outside the fricas source tree, it can be given to configure via
+## --with-pre-generated=/absolute/path/to/pre-generated or given at
+## build time via "make PREGENERATED=/absolute/path/to/pre-generated".
+AC_SUBST(PREGENERATED)
+PREGENERATED=
+AC_MSG_CHECKING([PREGENERATED])
+AC_ARG_WITH([pre-generated],
+    [AS_HELP_STRING([--with-pre-generated],
+                    [Specify an absolute path to pre-generated fricas code.])],
+    # Action if --with-pre-generated is given.
+    [AS_IF([echo "$withval"|grep ^/ >/dev/null],
+           [],
+           [AC_MSG_ERROR([--with-pre-generated must be given an absolute path.])])
+     AS_IF([test -d "$withval"],
+           [PREGENERATED=$withval],
+           [AC_MSG_ERROR([--with-pre-generated directory does not exist.])])],
+    # Action if --with-pre-generated is not given.
+    [AS_IF([test -d $fricas_top_srcdir/pre-generated],
+           [PREGENERATED=$fricas_top_srcdir/pre-generated])]
+)
+AC_MSG_RESULT(["$PREGENERATED"])
+
+
 ## -------------------------
 ## -- Which noweb to use? --
 ## -------------------------

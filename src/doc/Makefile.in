@@ -395,4 +395,26 @@ ${httargetdir}/ht.db: ht.db
 # We first create all .ht, .pht and .VIEW files here and then copy
 # them to ${httargetdir}.
 ###################################################################
-copy-to-target: ${httargetdir}/ht.db stamp-bitmaps copy-phts copy-hts copy-helpfiles copy-gloss
+make-then-copy-to-target: ${httargetdir}/ht.db stamp-bitmaps copy-phts copy-hts copy-helpfiles copy-gloss
+
+# If the "${PREGENERATED}" directory exists, we assume that the files
+# have already been copied to the targetdir.
+# Note that the value of ${PREGENERATED} must be an absolute directory.
+copy-to-target: stamp-bitmaps
+	test -d ${PREGENERATED}/target/share \
+	  || ${MAKE} make-then-copy-to-target
+
+
+###################################################################
+###################################################################
+# The following targets only copy generated files to the dist
+# directory. The directory structure under ${distdir} should be
+# identical to the structure under "target".
+###################################################################
+copy-to-dist: ${httargetdir}/ht.db copy-phts copy-hts copy-helpfiles copy-gloss
+dist:
+	${MAKE} httargetdir=$(disttargetdir)/share/hypertex/pages \
+	        viewportstargetdir=$(disttargetdir)/share/viewports \
+	        helptargetdir=$(disttargetdir)/share/spadhelp \
+	        algebratargetdir=$(disttargetdir)/algebra \
+	    copy-to-dist
