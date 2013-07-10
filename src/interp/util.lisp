@@ -657,6 +657,3 @@ format string from the file [[src/doc/msgs/s2-us.msgs]].
 ;; (|xdrRead| xfoo 0.0)
 ;; (|xdrRead| xfoo (make-array 10 :element-type 'double-float ))
 ;; (setq *print-array* NIL)
-
-(setq /MAJOR-VERSION 2)
-(defun /versioncheck (n) (unless (= n /MAJOR-VERSION) (throw 'versioncheck -1)))
