@@ -273,8 +273,6 @@ initializeLisplib libName ==
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib(libName,'ERRORLIB)
   $compiler_output_stream := make_compiler_output_stream($libFile, libName)
-  if pathnameTypeId($edit_file) = 'SPAD
-    then outputLispForm('VERSION,['_/VERSIONCHECK,_/MAJOR_-VERSION])
 
 finalizeLisplib libName ==
   lisplibWrite('"constructorForm",removeZeroOne $lisplibForm,$libFile)
