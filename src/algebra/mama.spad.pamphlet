@@ -86,41 +86,7 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
       ++ original one. Positive integer arguments select upper
       ++ off-diagonals, negative ones lower off-diagonals.
 
-    -- Stacking matrices
-
-    horizConcat : (List M) -> M
-      ++ \spad{horizConcat} concatenates matrices column wise.
-
-    vertConcat : (List M) -> M
-      ++ \spad{vertConcat} concatenates matrices row wise.
-
-    blockConcat : (List List M) -> M
-      ++ \spad{blockConcat} concatenates matrices row and
-      ++ column wise, building a block matrix. The order
-      ++ is row major as in \spad{matrix}.
-
     -- Splitting matrices
-
-    vertSplit : (M, PI) -> List M
-      ++ \spad{vertSplit} splits a matrix into multiple
-      ++ submatrices row wise.
-
-    vertSplit : (M, LPI) -> List M
-      ++ \spad{vertSplit} splits a matrix into multiple
-      ++ submatrices row wise.
-
-    horizSplit : (M, PI) -> List M
-      ++ \spad{horizSplit} splits a matrix into multiple
-      ++ submatrices column wise.
-
-    horizSplit : (M, LPI) -> List M
-      ++ \spad{horizSplit} splits a matrix into multiple
-      ++ submatrices column wise.
-
-    blockSplit : (M, PI, PI) -> List List M
-      ++ \spad{blockSplit} splits a matrix into multiple
-      ++ submatrices row and column wise, dividing
-      ++ a matrix into blocks.
 
     blockSplit : (M, LPI, PI) -> List List M
       ++ \spad{blockSplit} splits a matrix into multiple
@@ -131,12 +97,6 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
       ++ \spad{blockSplit} splits a matrix into multiple
       ++ submatrices row and column wise, dividing
       ++ a matrix into blocks.
-
-    blockSplit : (M, LPI, LPI) -> List List M
-      ++ \spad{blockSplit} splits a matrix into multiple
-      ++ submatrices row and column wise, dividing
-      ++ a matrix into blocks.
-
 
   Implementation ==> add
 
@@ -261,63 +221,6 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
     -- Stack matrices
 
 
-    horizConcat(LA) ==
-      reduce(horizConcat, LA)
-
-
-    vertConcat(LA) ==
-      reduce(vertConcat, LA)
-
-
-    blockConcat(LLA: List List M) : M ==
-      reduce(vertConcat, [reduce(horizConcat, LA) for LA in LLA])
-
-
-    -- Split matrices
-
-
-    vertSplit(A:M, r:PI) : List M ==
-      dr := nrows(A) exquo r
-      dr case "failed" => error "split does not result in an equal division"
-      mir := minr A
-      mic := minc A
-      mac := maxc A
-      [ subMatrix(A, mir+i*dr, mir+(i+1)*dr-1, mic, mac) for i in 0..(r-1) ]
-
-
-    vertSplit(A:M, lr:LPI) : List M ==
-      reduce("+", lr) ~= nrows(A) => error "split does not result in proper partition"
-      l : List PI := cons(1, scan(_+, lr, 1$PI)$ListFunctions2(PI,PI))
-      mir := minr(A) -1   -- additional shift because l starts at 1
-      mic := minc A
-      mac := maxc A
-      result := [ subMatrix(A, mir+l(i-1), mir+l(i)-1, mic, mac) for i in 2..#l ]
-
-
-    horizSplit(A:M, c:PI) : List M ==
-      dc := ncols(A) exquo c
-      dc case "failed" => error "split does not result in an equal division"
-      mir := minr A
-      mar := maxr A
-      mic := minc A
-      [ subMatrix(A, mir, mar, mic+i*dc, mic+(i+1)*dc-1) for i in 0..(c-1) ]
-
-
-    horizSplit(A:M, lc:LPI) : List M ==
-      reduce("+", lc) ~= ncols(A) => error "split does not result in proper partition"
-      l : List PI := cons(1, scan(_+, lc, 1$PI)$ListFunctions2(PI,PI))
-      mir := minr A
-      mar := maxr A
-      mic := minc(A) -1   -- additional shift because l starts at 1
-      result := [ subMatrix(A, mir, mar, mic+l(i-1), mic+l(i)-1) for i in 2..#l ]
-
-
-    blockSplit(A:M, nr:PI, nc:PI) : List List M ==
-      -- The map version does not work with OpenAxiom.
-      --map( (X:M):(List M) +-> horizSplit(X, nc), vertSplit(A, nr) )$ListFunctions2(M, List M)
-      [ horizSplit(X, nc) for X in vertSplit(A, nr) ]
-
-
     blockSplit(A:M, lr:LPI, nc:PI) : List List M ==
       --map( (X:M):(List M) +-> horizSplit(X, nc), vertSplit(A, lr) )$ListFunctions2(M, List M)
       [ horizSplit(X, nc) for X in vertSplit(A, lr) ]
@@ -327,9 +230,5 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
       --map( (X:M):(List M) +-> horizSplit(X, lc), vertSplit(A, nr) )$ListFunctions2(M, List M)
       [ horizSplit(X, lc) for X in vertSplit(A, nr) ]
 
-
-    blockSplit(A:M, lr:LPI, lc:LPI) : List List M ==
-      --map( (X:M):(List M) +-> horizSplit(X, lc), vertSplit(A, lr) )$ListFunctions2(M, List M)
-      [ horizSplit(X, lc) for X in vertSplit(A, lr) ]
 
 @
