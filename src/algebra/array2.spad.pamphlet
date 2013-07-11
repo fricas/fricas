@@ -33,6 +33,12 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
 
+  PI ==> PositiveInteger
+  LPI ==> List(PI)
+  LI ==> List(Integer)
+  SI ==> Segment(Integer)
+  LSI ==> List(SI)
+
   Definition == Join(HomogeneousAggregate(R), _
       shallowlyMutable, finiteAggregate) with
 
@@ -40,6 +46,8 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
 
     new : (NonNegativeInteger, NonNegativeInteger, R) -> %
       ++ new(m, n, r) is an m-by-n array all of whose entries are r
+    qnew : (NonNegativeInteger, NonNegativeInteger) -> %
+      ++ qnew(m, n) is is an m-by-n uninitilized array
     fill! : (%, R) -> %
       ++ fill!(m, r) fills m with r's
 
@@ -80,6 +88,27 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ error check to determine if index is in proper ranges
     parts : % -> List R
       ++ parts(m) returns a list of the elements of m in row major order
+    listOfLists : % -> List List R
+       ++ \spad{listOfLists(m)} returns the rows of the array m as a list
+       ++ of lists.
+    subMatrix : (%, Integer, Integer, Integer, Integer) -> %
+       ++ \spad{subMatrix(x, i1, i2, j1, j2)} extracts the submatrix
+       ++ \spad{[x(i, j)]} where the index i ranges from \spad{i1} to \spad{i2}
+       ++ and the index j ranges from \spad{j1} to \spad{j2}.
+    elt : (%, LI, LI) -> %
+       ++ \spad{elt(x, rowList, colList)} returns an m-by-n array consisting
+       ++ of elements of x, where \spad{m = # rowList} and \spad{n = # colList}.
+       ++ If \spad{rowList = [i<1>, i<2>, ..., i<m>]} and \spad{colList =
+       ++ [j<1>, j<2>, ..., j<n>]}, then the \spad{(k, l)}th entry of
+       ++ \spad{elt(x, rowList, colList)} is \spad{x(i<k>, j<l>)}.
+    elt : (%, SI, SI) -> %
+       ++ \spad{elt(x, s1, s2)} is equivalent to
+       ++ \spad{elt(x, expand(s1), expand(s2))} but should be more
+       ++ convenient and more efficient.
+    elt : (%, LSI, LSI) -> %
+       ++ \spad{elt(x, ls1, ls1)} is equivalent to \spad{elt(x, l1, l2)}
+       ++ where li is obtained appending expansions of elements of lsi,
+       ++ but should be more convenient and more efficient.
 
 --% Part assignments
 
@@ -96,8 +125,96 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ setRow!(m, i, v) sets to ith row of m to v
     setColumn! : (%, Integer, Col) -> %
       ++ setColumn!(m, j, v) sets to jth column of m to v
+    setelt : (%, List Integer, List Integer, %) -> %
+       ++ \spad{setelt(x, rowList, colList, y)} destructively alters
+       ++ the array x.  If y is \spad{m}-by-\spad{n},
+       ++ \spad{rowList = [i<1>, i<2>, ..., i<m>]}
+       ++ and \spad{colList = [j<1>, j<2>, ..., j<n>]}, then
+       ++ \spad{x(i<k>, j<l>)}
+       ++ is set to \spad{y(k, l)} for \spad{k = 1, ..., m} and
+       ++ \spad{l = 1, ..., n}.
+    setelt : (%, SI, SI, %) -> %
+       ++ \spad{setelt(x, s1, s2)} is equivalent to
+       ++ \spad{setelt(x, expand(s1), expand(s2))} but should be more
+       ++ convenient and more  efficient.
+    setelt : (%, LSI, LSI, %) -> %
+       ++ \spad{setelt(x, ls1, ls1)} is equivalent to \spad{setelt(x, l1, l2)}
+       ++ where li is obtained appending expansions of elements of lsi,
+       ++ but should be more convenient and more efficient.
+    setsubMatrix! : (%, Integer, Integer, %) -> %
+       ++ \spad{setsubMatrix(x, i1, j1, y)} destructively alters the
+       ++ array x. Here \spad{x(i, j)} is set to \spad{y(i-i1+1, j-j1+1)} for
+       ++ \spad{i = i1, ..., i1-1+nrows y} and \spad{j = j1, ..., j1-1+ncols y}.
 
---% Map and Zip
+    -- manipulations
+
+    swapRows! : (%, Integer, Integer) -> %
+       ++ \spad{swapRows!(m, i, j)} interchanges the \spad{i}th and \spad{j}th
+       ++ rows of m. This destructively alters the array.
+    swapColumns! : (%, Integer, Integer) -> %
+       ++ \spad{swapColumns!(m, i, j)} interchanges the \spad{i}th and
+       ++ \spad{j}th columns of m. This destructively alters the array.
+    transpose : % -> %
+       ++ \spad{transpose(m)} returns the transpose of the array m.
+    squareTop : % -> %
+       ++ \spad{squareTop(m)} returns an n-by-n array consisting of the first
+       ++ n rows of the m-by-n array m. Error: if
+       ++ \spad{m < n}.
+    horizConcat : (%, %) -> %
+       ++ \spad{horizConcat(x, y)} horizontally concatenates two arrays with
+       ++ an equal number of rows. The entries of y appear to the right
+       ++ of the entries of x.  Error: if the arrays
+       ++ do not have the same number of rows.
+    horizConcat : (List %) -> %
+      ++ \spad{horizConcat(l)} horizontally concatenates all members of l
+      ++ Error: if the arrays  do not have the same number of rows.
+    vertConcat : (%, %) -> %
+       ++ \spad{vertConcat(x, y)} vertically concatenates two arrays with an
+       ++ equal number of columns. The entries of y appear below
+       ++ of the entries of x.  Error: if the arrays
+       ++ do not have the same number of columns.
+    vertConcat : (List %) -> %
+      ++ \spad{vertConcat(l)} vertically concatenates all members of l
+      ++ Error: if the arrays do not have the same number of columns.
+    blockConcat : (List List %) -> %
+      ++ \spad{blockConcat(ll)} concatenates arrays row and
+      ++ column wise, building a array from blocks. The order
+      ++ is row major as in \spad{matrix}.
+
+    vertSplit : (%, PI) -> List %
+      ++ \spad{vertSplit(a, n)} splits a into n arrays
+      ++ of equal size row wise.
+      ++ Error: if number of rows of a is not divisible by n.
+    vertSplit : (%, LPI) -> List %
+      ++ \spad{vertSplit(a, [n1, ..., ni]} splits a into
+      ++ arrays having n1, ..., ni rows.
+      ++ Error: if number of rows of a is different than
+      ++ n1+ ... + ni.
+    horizSplit : (%, PI) -> List %
+      ++ \spad{horizSplit(a, n)} splits a into n arrays
+      ++ of equal size column wise.
+      ++ Error: if number of columns of a is not divisible by n.
+    horizSplit : (%, LPI) -> List %
+      ++ \spad{horizSplit(a, [n1, n2, ..., ni])} splits a into
+      ++ arrays having n1, ..., ni columns.
+      ++ Error: if number of columns of a is different than
+      ++ n1 + ... + ni.
+    blockSplit : (%, PI, PI) -> List List %
+      ++ \spad{blockSplit(a, n, m)} splits a into n*m
+      ++ subarrays of equal size row and column wise, dividing
+      ++ a into blocks.
+      ++ Error: if number of rows of a is not divisible by n
+      ++ or number of columns of a is not divisible by m.
+    blockSplit : (%, LPI, LPI) -> List List %
+      ++ \spad{blockSplit(a, [n1,...,ni], [m1,...,mi])} splits a
+      ++ into multiple subarraus row and column wise, such that
+      ++ element at position k, l has nk rows and ml columns.
+      ++ Error: if number of rows of a is different than
+      ++ n1 + ... + ni or  number of columns of a is different
+      ++ than m1 + ... + mj
+
+
+    -- Map and Zip
 
     map : (R -> R, %) -> %
       ++ map(f, a) returns \spad{b}, where \spad{b(i, j) = f(a(i, j))} for all \spad{i, j}
@@ -114,6 +231,14 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ otherwise \spad{c(i, j) = f(r, r)}.
 
    add
+
+    minr ==> minRowIndex
+    maxr ==> maxRowIndex
+    minc ==> minColIndex
+    maxc ==> maxColIndex
+    mini ==> minIndex
+    maxi ==> maxIndex
+
 
 --% Predicates
 
@@ -159,6 +284,305 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
         for j in maxColIndex(m)..minColIndex(m) by -1 repeat
           entryList := concat(qelt(m, i, j), entryList)
       entryList
+
+    listOfLists x ==
+        ll : List List R := []
+        for i in maxr(x)..minr(x) by -1 repeat
+            l : List R := []
+            for j in maxc(x)..minc(x) by -1 repeat
+                l := cons(qelt(x, i, j), l)
+            ll := cons(l, ll)
+        ll
+
+    subMatrix(x, i1, i2, j1, j2) ==
+        (i2 + 1 < i1) => error "subMatrix: bad row indices"
+        (j2 + 1 < j1) => error "subMatrix: bad column indices"
+        rows := qcoerce(i2 - i1 + 1)@NonNegativeInteger
+        cols := qcoerce(j2 - j1 + 1)@NonNegativeInteger
+        y := qnew(rows, cols)
+        rows = 0 or cols = 0 => y
+        (i1 < minr(x)) or (i2 > maxr(x)) =>
+            error "subMatrix: index out of range"
+        (j1 < minc(x)) or (j2 > maxc(x)) =>
+            error "subMatrix: index out of range"
+        for i in minr(y)..maxr(y) for k in i1..i2 repeat
+            for j in minc(y)..maxc(y) for l in j1..j2 repeat
+                qsetelt!(y, i, j, qelt(x, k, l))
+        y
+
+    elt(x : %, rowList : List Integer, colList : List Integer) ==
+        for ei in rowList repeat
+            (ei < minr(x)) or (ei > maxr(x)) =>
+                error "elt: index out of range"
+        for ej in colList repeat
+            (ej < minc(x)) or (ej > maxc(x)) =>
+                error "elt: index out of range"
+        y := qnew(# rowList, # colList)
+        for ei in rowList for i in minr(y)..maxr(y) repeat
+            for ej in colList for j in minc(y)..maxc(y) repeat
+                qsetelt!(y, i, j, qelt(x, ei, ej))
+        y
+
+    check_seg(s : SI, lb : Integer, ub : Integer) : NonNegativeInteger ==
+        ii := incr(s)
+        i1 := low(s)
+        i2 := high(s)
+        0 < ii  =>
+            (i2 + 1 < i1) => error "check_seg: index out of range"
+            cc := qcoerce(i2 - i1 + ii)@NonNegativeInteger
+            cc < ii => cc
+            i1 < lb or ub < i2 =>
+                error "check_seg: index out of range"
+            ii = 1 => cc
+            qcoerce(cc quo ii)@NonNegativeInteger
+        ii < 0 =>
+            ii := -ii
+            (i1 + 1 < i2) or i2 < lb or ub < i1 =>
+                error "check_seg: index out of range"
+            cc := qcoerce(i1 - i2 + ii)@NonNegativeInteger
+            cc <  ii => cc
+            i2 < lb or ub < i1 =>
+                error "check_seg: index out of range"
+            ii = 1 => cc
+            qcoerce(cc quo ii)@NonNegativeInteger
+        error "chec_seg: zero increment"
+
+    elt(x : %, sr : SI, sc : SI) : % ==
+        lr := low(sr)
+        ur := high(sr)
+        lc := low(sc)
+        uc := high(sc)
+        ir := incr(sr)
+        ic := incr(sc)
+        ir = 1 and ic = 1 => subMatrix(x, lr, ur, lc, uc)
+        nr := check_seg(sr, minr(x), maxr(x))
+        nc := check_seg(sc, minc(x), maxc(x))
+        y := qnew(nr, nc)
+        nr = 0 or nc = 0 => y
+        for i in minr(y)..maxr(y) for k in lr..ur by ir repeat
+            for j in minc(y)..maxc(y) for l in lc..uc by ic repeat
+                qsetelt!(y, i, j, qelt(x, k, l))
+        y
+
+    check_segs(ls : LSI, lb : Integer, ub : Integer) : NonNegativeInteger ==
+        res : NonNegativeInteger := 0
+        for s in ls repeat
+            res := res + check_seg(s, lb, ub)
+        res
+
+    elt(x : %, lsr : LSI, lsc : LSI) : % ==
+        nr := check_segs(lsr, minr(x), maxr(x))
+        nc := check_segs(lsc, minc(x), maxc(x))
+        y := qnew(nr, nc)
+        nr = 0 or nc = 0 => y
+        i := minr(y)
+        for sr in lsr repeat
+            lr := low(sr)
+            ur := high(sr)
+            ir := incr(sr)
+            for k in lr..ur by ir repeat
+                j := minc(y)
+                for sc in lsc repeat
+                    for l in low(sc)..high(sc) by incr(sc) repeat
+                        qsetelt!(y, i, j, qelt(x, k, l))
+                        j := j + 1
+                i := i + 1
+        y
+
+    -- Setting parts
+
+    setelt(x : %, rowList : List Integer, colList : List Integer, y : %) ==
+        for ei in rowList repeat
+            (ei < minr(x)) or (ei > maxr(x)) =>
+                error "setelt: index out of range"
+        for ej in colList repeat
+            (ej < minc(x)) or (ej > maxc(x)) =>
+                error "setelt: index out of range"
+        ((# rowList) ~= (nrows y)) or ((# colList) ~= (ncols y)) =>
+            error "setelt: matrix has bad dimensions"
+        for ei in rowList for i in minr(y)..maxr(y) repeat
+            for ej in colList for j in minc(y)..maxc(y) repeat
+                qsetelt!(x, ei, ej, qelt(y, i, j))
+        y
+
+    setelt(x : %, sr : SI, sc : SI, y : %) ==
+        lr := low(sr)
+        ur := high(sr)
+        lc := low(sc)
+        uc := high(sc)
+        ir := incr(sr)
+        ic := incr(sc)
+        -- ir = 1 and ic = 1 => subMatrix(x, lr, ur, lc, uc)
+        nr := check_seg(sr, minr(x), maxr(x))
+        nc := check_seg(sc, minc(x), maxc(x))
+        nrows(y) ~= nr or ncols(y) ~= nc =>
+            error "setelt: matrix has bad dimensions"
+        nr = 0 or nc = 0 => y
+        for i in minr(y)..maxr(y) for k in lr..ur by ir repeat
+            for j in minc(y)..maxc(y) for l in lc..uc by ic repeat
+                qsetelt!(x, k, l, qelt(y, i, j))
+        y
+
+    setelt(x : %, lsr : LSI, lsc : LSI, y : %) ==
+        nr := check_segs(lsr, minr(x), maxr(x))
+        nc := check_segs(lsc, minc(x), maxc(x))
+        nrows(y) ~= nr or ncols(y) ~= nc =>
+            error "setelt: matrix has bad dimensions"
+        nr = 0 or nc = 0 => y
+        i := minr(y)
+        for sr in lsr repeat
+            lr := low(sr)
+            ur := high(sr)
+            ir := incr(sr)
+            for k in lr..ur by ir repeat
+                j := minc(y)
+                for sc in lsc repeat
+                    for l in low(sc)..high(sc) by incr(sc) repeat
+                        qsetelt!(x, k, l, qelt(y, i, j))
+                        j := j + 1
+                i := i + 1
+        y
+
+    setsubMatrix!(x, i1, j1, y) ==
+        i2 := i1 + nrows(y) - 1
+        j2 := j1 + ncols(y) - 1
+        (i1 < minr(x)) or (i2 > maxr(x)) =>
+            error "setsubMatrix!: inserted matrix too big,"
+                  " use subMatrix to restrict it"
+        (j1 < minc(x)) or (j2 > maxc(x)) =>
+            error "setsubMatrix!: inserted matrix too big,"
+                  " use subMatrix to restrict it"
+        for i in minr(y)..maxr(y) for k in i1..i2 repeat
+            for j in minc(y)..maxc(y) for l in j1..j2 repeat
+                qsetelt!(x, k, l, qelt(y, i, j))
+        x
+
+    -- Manipulations
+
+    swapRows!(x, i1, i2) ==
+        (i1 < minr(x)) or (i1 > maxr(x)) or (i2 < minr(x)) or _
+            (i2 > maxr(x)) => error "swapRows!: index out of range"
+        i1 = i2 => x
+        for j in minc(x)..maxc(x) repeat
+            r := qelt(x, i1, j)
+            qsetelt!(x, i1, j, qelt(x, i2, j))
+            qsetelt!(x, i2, j, r)
+        x
+
+    swapColumns!(x, j1, j2) ==
+        (j1 < minc(x)) or (j1 > maxc(x)) or (j2 < minc(x)) or _
+            (j2 > maxc(x)) => error "swapColumns!: index out of range"
+        j1 = j2 => x
+        for i in minr(x)..maxr(x) repeat
+            r := qelt(x, i, j1)
+            qsetelt!(x, i, j1, qelt(x, i, j2))
+            qsetelt!(x, i, j2, r)
+        x
+
+    transpose(x : %) ==
+        ans := qnew(ncols x, nrows x)
+        for i in minr(ans)..maxr(ans) repeat
+            for j in minc(ans)..maxc(ans) repeat
+                qsetelt!(ans, i, j, qelt(x, j, i))
+        ans
+
+    squareTop x ==
+        nrows x < (cols := ncols x) =>
+            error "squareTop: number of columns exceeds number of rows"
+        ans := qnew(cols, cols)
+        for i in minr(x)..(minr(x) + cols - 1) repeat
+            for j in minc(x)..maxc(x) repeat
+                qsetelt!(ans, i, j, qelt(x, i, j))
+        ans
+
+    horizConcat(x, y) == horizConcat([x, y])
+
+    horizConcat(la : List %) ==
+        empty?(la) =>
+            error "horizConcat: empty list"
+        a1 := first(la)
+        nr := nrows(a1)
+        nc := ncols(a1)
+        for a in rest(la) repeat
+            nr ~= nrows(a) =>
+                error "horizConcat: array must have same number of rows"
+            nc := nc + ncols(a)
+        ans := qnew(nr, nc)
+        for i in minr(a1)..maxr(a1) repeat
+            l := minc(ans)
+            for a in la repeat
+                for j in minc(a)..maxc(a) repeat
+                    qsetelt!(ans, i, l, qelt(a, i, j))
+                    l := l + 1
+        ans
+
+    vertConcat(x, y) == vertConcat([x, y])
+
+    vertConcat(la : List %) ==
+        empty?(la) =>
+            error "vertConcat: empty list"
+        a1 := first(la)
+        nr := nrows(a1)
+        nc := ncols(a1)
+        for a in rest(la) repeat
+            nc ~= ncols(a) =>
+                error "vertConcat: array must have same number of columns"
+            nr := nr + nrows(a)
+        ans := qnew(nr, nc)
+        l :=  minr(ans)
+        for a in la repeat
+            for i in minr(a)..maxr(a) repeat
+                for j in minc(a)..maxc(a) repeat
+                    qsetelt!(ans, l, j, qelt(a, i, j))
+                l := l + 1
+        ans
+
+    blockConcat(LLA: List List %) : % ==
+        vertConcat([horizConcat(LA) for LA in LLA])
+
+    vertSplit(A : %, r : PI) : List % ==
+      dr := nrows(A) exquo r
+      dr case "failed" => error "split does not result in an equal division"
+      mir := minr A
+      mic := minc A
+      mac := maxc A
+      [ subMatrix(A, mir+i*dr, mir+(i+1)*dr-1, mic, mac) for i in 0..(r-1) ]
+
+    vertSplit(A : %, lr : LPI) : List % ==
+        reduce("+", lr) ~= nrows(A) =>
+            error "split does not result in proper partition"
+        l : List PI := cons(1, scan(_+, lr, 1$PI)$ListFunctions2(PI,PI))
+        mir := minr(A) -1   -- additional shift because l starts at 1
+        mic := minc A
+        mac := maxc A
+        [subMatrix(A, mir+l(i-1), mir+l(i)-1, mic, mac) for i in 2..#l]
+
+    horizSplit(A : %, c : PI) : List % ==
+      dc := ncols(A) exquo c
+      dc case "failed" => error "split does not result in an equal division"
+      mir := minr A
+      mar := maxr A
+      mic := minc A
+      [ subMatrix(A, mir, mar, mic+i*dc, mic+(i+1)*dc-1) for i in 0..(c-1) ]
+
+
+    horizSplit(A : %, lc : LPI) : List % ==
+        reduce("+", lc) ~= ncols(A) =>
+            error "split does not result in proper partition"
+        l : List PI := cons(1, scan(_+, lc, 1$PI)$ListFunctions2(PI,PI))
+        mir := minr A
+        mar := maxr A
+        mic := minc(A) -1   -- additional shift because l starts at 1
+        [subMatrix(A, mir, mar, mic+l(i-1), mic+l(i)-1) for i in 2..#l]
+
+    blockSplit(A : %, nr : PI, nc : PI) : List List % ==
+      -- The map version does not work with OpenAxiom.
+      --map( (X:M):(List M) +-> horizSplit(X, nc), vertSplit(A, nr) )$ListFunctions2(M, List M)
+      [ horizSplit(X, nc) for X in vertSplit(A, nr) ]
+
+    blockSplit(A : %, lr : LPI, lc : LPI) : List List % ==
+      --map( (X:M):(List M) +-> horizSplit(X, lc), vertSplit(A, lr) )$ListFunctions2(M, List M)
+      [horizSplit(X, lc) for X in vertSplit(A, lr)]
 
 --% Creation
 
@@ -301,6 +725,8 @@ InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) : _
 --% Primitive array creation
 
     empty() == Qnew(0, 0)
+
+    qnew(rows, cols) == Qnew(rows, cols)
 
     new(rows, cols, a) == Qnew1(rows, cols, a)
 
