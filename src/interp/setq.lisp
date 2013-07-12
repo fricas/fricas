@@ -260,7 +260,7 @@
        (|time|       . "set message time")
        (|type|       . "set message type")
        (|unexpose|   . "set expose drop constructor")
-       (|version|    . "lisp (concat *build-version* \" compiled at \" *yearweek*)")
+       (|version|    . "lisp (concat *build-version* \" compiled at \" *build-date*)")
        (|wc|         . "what categories")
        (|wd|         . "what domains")
        (|wp|         . "what packages")

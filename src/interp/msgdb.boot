@@ -575,7 +575,7 @@ spadStartUpMsgs() ==
   -- messages displayed when the system starts up
   $LINELENGTH < 60 => NIL
   bar := fillerSpaces($LINELENGTH,specialChar 'hbar)
-  sayKeyedMsg("S2GL0001",[_*BUILD_-VERSION_*, _*YEARWEEK_*])
+  sayKeyedMsg("S2GL0001",[_*BUILD_-VERSION_*, _*BUILD_-DATE_*])
   sayMSG bar
   sayKeyedMsg("S2GL0018C",NIL)
   sayKeyedMsg("S2GL0018D",NIL)
