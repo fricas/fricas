@@ -1085,7 +1085,6 @@ database.
 ;  3) loading some normally autoloaded files
 ;  4) making some database entries that are computed (like ancestors)
 ;  5) writing out the databases
-;  6) write out 'warm' data to be loaded into the image at build time
 ; note that this process should be done in a clean image
 ; followed by a rebuild of the system image to include
 ; the new index pointers (e.g. *interp-stream-stamp*)
@@ -1151,7 +1150,6 @@ database.
 ;browse.daase
   (|oldCompilerAutoloadOnceTrigger|)
   (|browserAutoloadOnceTrigger|)
-#+:GCL    (|mkTopicHashTable|)
   (if br_data
       (progn
           (|buildLibdb|)
@@ -1183,7 +1181,6 @@ database.
                                         ; note: genCategoryTable creates *ancestors-hash*. write-interpdb
                                         ; does gethash calls into it rather than doing a getdatabase call.
   (write-interpdb)
-#+:GCL  (write-warmdata)
   (|createInitializers|)
   (when (probe-file (final-name "compress"))
         (delete-file (final-name "compress")))
@@ -1461,15 +1458,6 @@ database.
   (print (cons pos (get-universal-time)) out)
   (finish-output out)
   (close out)))
-
-(defun write-warmdata ()
- "write out information to be loaded into the image at build time"
- (declare (special |$topicHash|))
- (with-open-file (out "warm.data" :direction :output :if-exists :supersede)
-  (format out "(in-package \"BOOT\")~%")
-  (format out "(setq |$topicHash| (make-hash-table))~%")
-  (maphash #'(lambda (k v)
-   (format out "(setf (gethash '|~a| |$topicHash|) ~a)~%" k v)) |$topicHash|)))
 
 (defun |allConstructors| ()
  (declare (special *allconstructors*))
