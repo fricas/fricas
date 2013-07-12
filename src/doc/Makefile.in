@@ -323,12 +323,15 @@ ${HD_GPHT_FILES}: %.pht: %.ht ${UG_EXTRA_INPUT_FILES} ${SMAN} $(fricas_target_bi
 	echo $<
 	unset DAASE; HTPATH=.; export HTPATH; ${XVFB} ${SMAN} -noihere -paste $<
 
+mobius.VIEW: ${inputsrcdir}/mobius.input
+	(printenv; unset DAASE; AXIOM=${AXIOM} ${AXIOM}/bin/fricas -noht -noclef -eval ')read $<')
+
 # This target will only be taken if
 # MAYBE_VIEWPORTS=viewports
 # is set. This is supposed to be done through configure.ac.
 # The copy command should actually appear during the "copy-to-target"
 # below, but it would needlessly complicated this Makefile.
-viewports: ${HD_GPHT_FILES}
+viewports: ${HD_GPHT_FILES} mobius.VIEW
 	mkdir -p ${viewportstargetdir}
 	cp -r *.VIEW ${viewportstargetdir}
 
