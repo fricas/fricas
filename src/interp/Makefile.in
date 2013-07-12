@@ -63,9 +63,6 @@ ASCOMP= $(patsubst %, %.$(LISPOBJEXT), $(ASCOMP_files))
 
 ASAUTO= ${AUTO}/ax.$(LISPOBJEXT)
 
-TIMESTAMP=$(fricas_targetdir)/timestamp
-YEARWEEK=(progn (setq timestamp "${TIMESTAMP}") (setq boot::*build-version* "${VERSION}") (yearweek))
-
 
 .PRECIOUS:	${SAVESYS}
 .PRECIOUS:	${AXIOMSYS}
@@ -139,8 +136,9 @@ makeint.lisp: ../boot/lobj_lst
 	@ echo '${PROCLAIMS}' > makeint.lisp
 	echo '(load #-:ecl "util" #+:ecl "$(srcdir)/util.lisp")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
-	@ touch ${TIMESTAMP}
-	@ echo '${YEARWEEK}' >> makeint.lisp
+	@ echo '(progn (setq boot::*build-date*    "${BUILD_DATE}")' \
+	       '       (setq boot::*build-version* "${VERSION}"))' \
+	     >> makeint.lisp
 	echo '#+:ecl(setf fricas-lisp::*fricas-initial-lisp-objects*' \
              '(append fricas-lisp::*fricas-initial-lisp-objects*' \
              ' (quote (' >> makeint.lisp

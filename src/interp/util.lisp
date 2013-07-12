@@ -388,8 +388,7 @@ After this function is called the image is clean and can be saved.
           (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
                         :lisp-files (nth 1 el)))
       (let ((initforms nil))
-          (dolist (el '(*YEARWEEK* *BUILD-VERSION* timestamp
-                    |$createLocalLibDb|))
+          (dolist (el '(*BUILD-DATE* *BUILD-VERSION* |$createLocalLibDb|))
               (if (boundp el)
                   (push (list 'defparameter el (symbol-value el))
                         initforms)))
@@ -445,39 +444,6 @@ After this function is called the image is clean and can be saved.
 
 ;; the following are for conditional reading
 (setq |$opSysName| '"shell")
-
-#|
-We need a way of distinguishing different versions of the system.
-There used to be a way to touch the src/timestamp file whenever
-you checked in a change to the change control subsystem.
-During make PART=interp (the default for make) we set timestamp
-to the filename of this timestamp file. This function converts it
-to a luser readable string and sets the *yearweek* variable.
-
-The result of this function is a string that is printed as a banner
-when Axiom starts. The actual printing is done by the function
-[[spadStartUpMsgs]] in [[src/interp/msgdb.boot]]. It uses a
-format string from the file [[src/doc/msgs/s2-us.msgs]].
-|#
-(defun yearweek ()
- "set *yearweek* to the current time string for the version banner"
-  (declare (special timestamp) (special *yearweek*))
-  (if (and (boundp 'timestamp) (probe-file timestamp))
-      (let (sec min hour date month year day dayvec monvec)
-        (setq dayvec '("Monday" "Tuesday" "Wednesday" "Thursday"
-                       "Friday" "Saturday" "Sunday"))
-        (setq monvec '("January" "February" "March" "April" "May" "June"
-                       "July" "August" "September" "October" "November"
-                       "December"))
-        (multiple-value-setq (sec min hour date month year day)
-                             (decode-universal-time
-                              (file-write-date timestamp)))
-        (setq *yearweek*
-          (copy-seq
-              (format nil "~a ~a ~d, ~d at ~2,'0d:~2,'0d:~2,'0d "
-                      (elt dayvec day)
-                      (elt monvec (1- month)) date year hour min sec))))
-      (setq *yearweek* "no timestamp")))
 
 ;;; moved from bookvol5
 
