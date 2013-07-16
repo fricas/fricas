@@ -62,8 +62,7 @@
 ;;; Used in constructors for evaluating conditions
 (define-function '|not| #'NOT)
 
-
-(define-function 'tempus-fugit #'get-internal-run-time)
+(define-function '|get_run_time| #'get-internal-run-time)
 
 ; 9.4 Vectors and Bpis
 
@@ -545,10 +544,11 @@
 (define-function 'printexp #'princ)
 (define-function 'prin0  #'prin1)
 
-(defun |F,PRINT-ONE| (form &optional (stream *standard-output*))
- (declare (ignore stream))
+(defun |limited_print1_stdout|(form) (|limited_print1| form *standard-output*))
+
+(defun |limited_print1|(form stream)
     (let ((*print-level* 4) (*print-length* 4))
-       (prin1 form) (terpri)))
+       (prin1 form stream) (terpri stream)))
 
 (defun prettyprint (x &optional (stream *standard-output*))
   (prettyprin0 x stream) (terpri stream))

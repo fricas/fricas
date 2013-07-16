@@ -53,7 +53,7 @@
 (defmacro def-boot-val (p val where) `(defparameter ,p ,val ,where))
 
 (def-boot-val |$timerTicksPerSecond| INTERNAL-TIME-UNITS-PER-SECOND
-    "for TEMPUS-FUGIT and $TOTAL-ELAPSED-TIME")
+    "scale for get_run_time")
 (def-boot-val $boxString
   (concatenate 'string (list (code-char #x1d) (code-char #xe2)))
   "this string of 2 chars displays as a box")
@@ -96,8 +96,6 @@
 (def-boot-var |$mathTrace|                          "Interpreter>Trace.boot")
 (def-boot-var |$mathTraceList|              "Controls mathprint output for )trace.")
 
-(def-boot-val |$oldTime| 0                          "???")
-
 (def-boot-var |$postStack|                          "???")
 (def-boot-var |$previousTime|                       "???")
 (def-boot-val |$printLoadMsgs|  nil          "Interpreter>SetVarT.boot")
@@ -106,7 +104,6 @@
 (def-boot-var |$semanticErrorStack|                 "???")
 (def-boot-val |$SetFunctions| nil  "checked in SetFunctionSlots")
 
-(def-boot-val |$timerOn| t                          "???")
 (def-boot-var |$topOp|                             "See displayPreCompilationErrors")
 (def-boot-var |$tracedSpadModemap|                  "Interpreter>Trace.boot")
 (def-boot-var |$traceletFunctions|                  "???")
@@ -833,3 +830,79 @@
 
 ; end of moved fragment
 
+;;; moved from debug.lisp
+
+; NAME:    Debugging Package
+; PURPOSE: Debugging hooks for Boot code
+
+(DEFVAR |$trace_stream| *standard-output*)
+
+(defun enable-backtrace (&rest arg))
+
+(defun |adjoin_equal|(x y) (ADJOIN x y :test #'equal))
+
+(defun |remove_equal|(x y) (REMOVE x y :test #'equal))
+
+(defun WHOCALLED(n) nil) ;; no way to look n frames up the stack
+
+(defun heapelapsed () 0)
+
+(defun |goGetTracerHelper| (dn f oname alias options modemap)
+    (lambda(&rest l)
+         (|goGetTracer| l dn f oname alias options modemap)))
+
+(defun |setSf| (sym fn) (SETF (SYMBOL-FUNCTION sym) fn))
+
+(DEFUN IS_SHARP_VAR (X)
+  (AND (IDENTP X)
+       (EQL (ELT (PNAME X) 0) #\#)
+       (INTEGERP (parse-integer (symbol-name X) :start 1))))
+
+(defun |char_to_digit|(x) (digit-char-p x))
+
+(defun SPADSYSNAMEP (STR)
+  (let (n i j)
+    (AND (SETQ N (MAXINDEX STR))
+         (SETQ I (position #\. STR :start 1))
+         (SETQ J (position #\, STR :start (1+ I)))
+         (do ((k (1+ j) (1+ k)))
+             ((> k n) t)
+           (if (not (digitp (elt str k))) (return nil))))))
+
+; **********************************************************************
+;            Utility functions for Tracing Package
+; **********************************************************************
+
+(MAKEPROP '|coerce| '/TRANSFORM '(& & *))
+(MAKEPROP '|comp| '/TRANSFORM '(& * * &))
+(MAKEPROP '|compIf| '/TRANSFORM '(& * * &))
+
+;  by having no transform for the 3rd argument, it is simply not printed
+
+(MAKEPROP '|compFormWithModemap| '/TRANSFORM '(& * * & *))
+
+(defun UNVEC (X)
+  (COND ((REFVECP X) (CONS '$ (VEC_TO_TREE X)))
+        ((ATOM X) X)
+        ((CONS (UNVEC (CAR X)) (UNVEC (CDR X))))))
+
+(defun DROPENV (X) (AND X (LIST (CAR X) (CADR X))))
+
+(defun SHOWBIND (E)
+  (do ((v e (cdr v))
+       (llev 1 (1+ llev)))
+      ((not v))
+    (PRINT (LIST "LAMBDA LEVEL" LLEV))
+    (do ((w (car v) (cdr w))
+         (clev 1 (1+ clev)))
+        ((not w))
+      (PRINT (LIST "CONTOUR LEVEL" CLEV))
+      (PRINT (mapcar #'car (car W))))))
+
+
+;;; A "resumable" break loop for use in trace etc. Unfortunately this
+;;; only worked for CCL. We need to define a Common Lisp version. For
+;;; now the function is defined but does nothing.
+(defun interrupt (&rest ignore))
+
+;;; end of moved fragment

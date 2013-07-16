@@ -90,7 +90,7 @@ displayComp level ==
   SAY("$x:= ",$x)
   SAY("$m:= ",$m)
   SAY "$f:="
-  F_,PRINT_-ONE $f
+  limited_print1_stdout($f)
   nil
 
 mkErrorExpr level ==
@@ -521,7 +521,7 @@ pmatchWithSl(s,p,al) ==
     pmatchWithSl(rest s,rest p,al')
 
 elapsedTime() ==
-  currentTime:= TEMPUS_-FUGIT()
+  currentTime := get_run_time()
   elapsedSeconds:= (currentTime-$previousTime)*1.0/$timerTicksPerSecond
   $previousTime:= currentTime
   elapsedSeconds

@@ -262,7 +262,7 @@ boo_comp1(x) ==
     $form : local := nil
     $e : local := $EmptyEnvironment
     $genSDVar : local :=  0
-    $previousTime : local :=  TEMPUS_-FUGIT()
+    $previousTime : local := get_run_time()
     compTopLevel(x, $EmptyMode,  [[[]]])
     if $semanticErrorStack then displaySemanticErrors()
 
@@ -346,7 +346,7 @@ S_process(x) ==
     $form : local := nil
     $e : local := $EmptyEnvironment
     $genSDVar : local := 0
-    $previousTime : local := TEMPUS_-FUGIT()
+    $previousTime : local := get_run_time()
     $s : local := nil
     $x : local := nil
     $m : local := nil

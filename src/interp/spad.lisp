@@ -53,7 +53,6 @@
 (defvar |$env| nil "checked in isDomainValuedVariable")
 (defvar |$e| nil "checked in isDomainValuedVariable")
 (defvar |$getPutTrace| nil)
-(defvar /TRACENAMES NIL)
 
 ;************************************************************************
 ;         SYSTEM COMMANDS
@@ -93,9 +92,6 @@
 
 ; **** X. Random tables
 
-(MAKEPROP 'COND '|Nud| '(|if| |if| 130 0))
-(MAKEPROP 'CONS '|Led| '(CONS CONS 1000 1000))
-(MAKEPROP 'APPEND '|Led| '(APPEND APPEND 1000 1000))
 (MAKEPROP 'TAG '|Led| '(TAG TAG 122 121))
 (MAKEPROP 'EQUATNUM '|Nud| '(|dummy| |dummy| 0 0))
 (MAKEPROP 'EQUATNUM '|Led| '(|dummy| |dummy| 10000 0))
