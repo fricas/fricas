@@ -432,7 +432,7 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $devaluateList: local --Bound to ((#1 . dv$1)..) where &1 := devaluate #1 later
   $devaluateList:= [[arg,:b] for arg in args for b in $ModeVariableList]
 ------------------------
-  oldtime:= TEMPUS_-FUGIT()
+  oldtime := get_run_time()
   [catsig, :argsig] := sig
   catvecListMaker:=REMDUP
     [(comp(catsig, $EmptyMode, $e)).expr,
@@ -500,7 +500,7 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $getDomainCode:= nil
     --if we didn't kill this, DEFINE would insert it in the wrong place
   ans:= minimalise ans
-  SAY ['"time taken in buildFunctor: ",TEMPUS_-FUGIT()-oldtime]
+  SAY ['"time taken in buildFunctor: ", get_run_time() - oldtime]
   --sayBrightly '"------------------functor code: -------------------"
   --pp ans
   ans

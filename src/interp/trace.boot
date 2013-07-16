@@ -166,6 +166,14 @@ COND_UCASE(X) ==
     INTEGERP(X) => X
     UPCASE(X)
 
+OPTIONS2UC1(el) ==
+    ATOM(el) => spadThrowBrightly(
+        FORMAT(nil, '"~A has wrong format for an option", el))
+    CONS(UPCASE(first(el)), rest(el))
+
+OPTIONS2UC(l) ==
+    [OPTIONS2UC1(el) for el in l]
+
 -- Call tracing
 
 VARP(test_item) ==
@@ -331,7 +339,7 @@ trace3(fn, modemap, options, bin_def) ==
         $timer_list := adjoin_equal(TRACENAME, $timer_list)
     DEPTH_CONDITION :=
         (U := get_trace_option(options, 'DEPTH)) =>
-            rest(U) and INTEGERP(U.1) => ["<=", 'FUNDEPTH, U.1]
+            rest(U) and INTEGERP(U.1) => ["<=", "$monitor_fun_depth", U.1]
             TRACE_OPTION_ERROR('DEPTH)
         true
     CONDITION := MKPF([CONDITION, WITHIN_CONDITION, FROM_CONDITION,
@@ -370,11 +378,11 @@ trace3(fn, modemap, options, bin_def) ==
     G4 := MACRO_-FUNCTION(fn)
     if COUNTNAM then SET(COUNTNAM, 0)
     if TIMERNAM then SET(TIMERNAM, 0)
-    ll := ['QUOTE, [TRACENAME, if G4 then 'MACRO else false, TRACECODE,
+    ll := ['QUOTE, [INTERN(TRACENAME), if G4 then 'MACRO else false, TRACECODE,
                     COUNTNAM, TIMERNAM, BEFORE, AFTER, CONDITION,
                        BREAK, modemap, ['QUOTE, true]]]
     NEW_DEF := [if G4 then 'MLAMBDA else 'LAMBDA, ["&REST", 'G6],
-                ["/MONITORX", 'G6, fn, ll]]
+                ["monitor_x", 'G6, fn, ll]]
     bin_def => embeded_function(fn, NEW_DEF, bin_def)
     OLD_DEF := SYMBOL_-FUNCTION(fn)
     NEW_DEF := embeded_function(fn, NEW_DEF, OLD_DEF)
@@ -1094,7 +1102,7 @@ stupidIsSpadFunction fn ==
   STRPOS('"_;",PNAME fn,0,NIL)
 
 break msg ==
-  condition:= MONITOR_-EVALTRAN(_/BREAKCONDITION, nil)
+  condition := monitor_eval_tran($break_condition, nil)
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
   ENABLE_-BACKTRACE(nil)
@@ -1104,3 +1112,258 @@ break msg ==
 
 compileBoot fn ==
   SAY("need to recompile: ", fn)
+
+-- Monitor printouts
+
+monitor_eval_before(x) == EVAL(monitor_eval_tran(x, false))
+
+monitor_eval_after(x) == EVAL(monitor_eval_tran(x, true))
+
+monitor_eval_tran(x, FG) ==
+    HAS_SHARP_VAR(x) => monitor_eval_tran1(x, FG)
+    x
+
+monitor_eval_tran1(x, fg) ==
+    (n := isSharpVarWithNum(x)) => monitor_get_value(n, fg)
+    ATOM(x) => x
+    CONS(monitor_eval_tran1(first(x), fg),
+             monitor_eval_tran1(rest(x), fg))
+
+HAS_SHARP_VAR(x) ==
+    ATOM(x) and IS_SHARP_VAR(x) => true
+    ATOM(x) => false
+    HAS_SHARP_VAR(first(x)) or HAS_SHARP_VAR(rest(x))
+
+-- sets limit on size of object to be mathprinted
+DEFVAR($trace_size, false)
+
+DEFVAR($trace_stream, nil)
+DEFVAR($monitor_args, nil)
+DEFVAR($monitor_pretty, false)
+DEFPARAMETER($monitor_depth, 0)
+DEFPARAMETER($depthAlist, [])
+
+small_enough(x) ==
+    $trace_size => small_enough_count(x, 0, $trace_size) < $trace_size
+    true
+
+-- Returns number if number of nodes < m otherwise number >= m
+small_enough_count(x, n, m) ==
+    not(n < m) => n
+    VECP(x) =>
+        for i in 0..MAXINDEX(x) while n < m repeat
+            n := small_enough_count(x.i, n + 1, m)
+        n
+    ATOM(x) => n
+    n := small_enough_count(first(x), n + 1, m)
+    not(n < m) => n
+    small_enough_count(rest(x), n, m)
+
+monitor_print_value(val, name) ==
+    u := GET(name, "/TRANSFORM")
+    u =>
+        EQCAR(u, "&") =>
+            PRINC('"//", $trace_stream)
+            PRIN1(val, $trace_stream)
+            TERPRI($trace_stream)
+        PRINC("! ", $trace_stream)
+        PRIN1(EVAL(SUBST(MKQ(val), "*", first(u))), $trace_stream)
+        TERPRI($trace_stream)
+    PRINC('": ", $trace_stream)
+    NOT(small_enough(val)) => limited_print1(val, $trace_stream)
+    $monitor_pretty => PRETTYPRINT(val, $trace_stream)
+    if $mathTrace then TERPRI($trace_stream)
+    PRINMATHOR0(val, $trace_stream)
+
+monitor_blanks(n) == PRINC(make_full_CVEC(n, '" "), $trace_stream)
+
+monitor_get_value(n, fg) ==
+    n = 0 =>
+        fg => MKQ($monitor_value)
+        spadThrowBrightly('"cannot ask for value before execution")
+    n = 9 => MKQ($monitor_caller)
+    n <= SIZE($monitor_args) => MKQ(ELT($monitor_args, n - 1))
+    spadThrowBrightly(["FUNCTION", "%b", $monitor_name, "%d",
+                          '"does not have", "%b", n, "%d", '"arguments"])
+
+monitor_print_args(L, code, trans) ==
+    char_to_digit(code.2) = 0 => []
+    char_to_digit(code.2) = 9 =>
+        trans =>
+            for x in L for y in rest(trans) repeat
+                EQ(y, "*") =>
+                    PRINC('"\ ", $trace_stream)
+                    monitor_print(x, $trace_stream)
+                EQ(y, "&") =>
+                    PRINC('"\\", $trace_stream)
+                    TERPRI($trace_stream)
+                    PRINT(x, $trace_stream)
+                NOT(y) => PRINC('"! ", $trace_stream)
+                PRINC('"! ", $trace_stream)
+                monitor_print(
+                    EVAL(SUBST(MKQ(x), "*", y)), $trace_stream)
+        PRINC('": ", $trace_stream)
+        if NOT(ATOM(L)) then
+            if $mathTrace then TERPRI($trace_stream)
+            monitor_print(first(L), $trace_stream)
+            L := rest(L)
+        for el in L repeat
+            monitor_print_rest(el)
+    for istep in 2..MAXINDEX(code) repeat
+        n := char_to_digit(code.istep)
+        if NOT(n = 0) then
+            PRINC('"\", $trace_stream)
+            PRINMATHOR0(n, $trace_stream)
+            PRINC('": ", $trace_stream)
+            monitor_print_arg(L, n)
+
+monitor_print_rest(x) ==
+    NOT(small_enough(x)) =>
+        TERPRI($trace_stream)
+        monitor_blanks($monitor_depth + 1)
+        PRINC('"\", $trace_stream)
+        PRINT(x, $trace_stream)
+    if NOT($mathTrace) then PRINC('"\", $trace_stream)
+    $monitor_pretty => PRETTYPRINT(x, $trace_stream)
+    PRINMATHOR0(x, $trace_stream)
+
+monitor_print_arg(l, n) ==
+    for el in l for k in 1..n repeat
+        if k = n then monitor_print(el, $trace_stream)
+
+monitor_print(x, trace_str) ==
+    not(small_enough(x)) => limited_print1(x, trace_str)
+    $monitor_pretty => PRETTYPRINT(x, trace_str)
+    PRINMATHOR0(x, trace_str)
+
+PRINMATHOR0(x, trace_str) ==
+    $mathTrace => maprinSpecial(outputTran(x), $monitor_depth, 80)
+    PRIN0(x, trace_str)
+
+_/TRACELET_-PRINT(X, Y) ==
+    PRINC(STRCONC(PNAME(X), '": "), $trace_stream)
+    monitor_print(Y, $trace_stream)
+
+DEFPARAMETER($TraceFlag, true)
+
+monitor_x0(TRACECODE, C, TYPE, name, name1) ==
+    $TraceFlag : local := false
+    TRACECODE = '"000" => []
+    TAB(0, $trace_stream)
+    monitor_blanks($monitor_depth - 1)
+    PRIN0($monitor_fun_depth, $trace_stream)
+    sayBrightlyNT2(['"<enter", "%b", PNAME(name1), "%d"], $trace_stream)
+    if not(C = 0) then
+        EQ(TYPE, 'MACRO) => PRINT('" expanded", $trace_stream)
+        PRINT('" from ", $trace_stream)
+        PRIN0($monitor_caller, $trace_stream)
+    c_args := coerceTraceArgs2E(name1, name, $monitor_args)
+    if SPADSYSNAMEP(PNAME(name)) then
+         c_args := NREVERSE(REVERSE(c_args))
+    monitor_print_args(c_args, TRACECODE, GET(name, "/TRANSFORM"))
+    if NOT($mathTrace) then TERPRI($trace_stream)
+
+monitor_x1(TRACECODE, name, name1, V, TIMERNAM, EVAL_TIME) ==
+    $TraceFlag : local := false
+    TRACECODE = '"000" => []
+    TAB(0, $trace_stream)
+    monitor_blanks($monitor_depth - 1)
+    PRIN0($monitor_fun_depth, $trace_stream)
+    sayBrightlyNT2(['">exit ", "%b", PNAME(name1), "%d"], $trace_stream)
+    if TIMERNAM then
+        sayBrightlyNT2("(", $trace_stream) -- )
+        sayBrightlyNT2((EVAL_TIME/60.0), $trace_stream)
+        sayBrightlyNT2(" sec)", $trace_stream)
+    if V = 1 then
+        monitor_print_value(
+              coerceTraceFunValue2E(name1, name, $monitor_value),
+                name1)
+    if NOT($mathTrace) then TERPRI($trace_stream)
+
+monitor_x(args, funct, opts) ==
+    monitor_xx(args, funct, opts, $monitor_depth, $depthAlist)
+
+monitor_xx($monitor_args, funct, opts, old_depth, old_depth_alist) ==
+    stopTimer()
+    x := opts
+    name := IFCAR(x)
+    x := IFCDR(x)
+    TYPE := IFCAR(x)
+    x := IFCDR(x)
+    TRACECODE := IFCAR(x)
+    x := IFCDR(x)
+    COUNTNAM := IFCAR(x)
+    x := IFCDR(x)
+    TIMERNAM := IFCAR(x)
+    x := IFCDR(x)
+    before := IFCAR(x)
+    x := IFCDR(x)
+    AFTER := IFCAR(x)
+    x := IFCDR(x)
+    CONDITION := IFCAR(x)
+    x := IFCDR(x)
+    BREAK := IFCAR(x)
+    x := IFCDR(x)
+    TRACEDMODEMAP := IFCAR(x)
+    x := IFCDR(x)
+    BREAKCONDITION := IFCAR(x)
+    $mathTrace : local := false
+    $tracedSpadModemap : local := TRACEDMODEMAP
+    $monitor_depth : local := old_depth + 1
+    $monitor_name : local := PNAME(name)
+    name1 := rassocSub(name, $mapSubNameAlist)
+    $break_condition : local := BREAKCONDITION
+    $monitor_caller : local := rassocSub(WHOCALLED(6), $mapSubNameAlist)
+    NOT(STRINGP TRACECODE) =>
+        MOAN('"set TRACECODE to \'1911\' and restart")
+    C := char_to_digit(TRACECODE.0)
+    V := char_to_digit(TRACECODE.1)
+    A := char_to_digit(TRACECODE.2)
+    if COUNTNAM then SET(COUNTNAM,  EVAL(COUNTNAM) + 1)
+    $depthAlist : local := COPY_-TREE(old_depth_alist)
+    NOT_TOP_LEVEL := ASSQ(name, $depthAlist)
+    if NOT(NOT_TOP_LEVEL) then
+        $depthAlist := CONS(CONS(name, 1), $depthAlist)
+    else
+        RPLACD(NOT_TOP_LEVEL, CDR(NOT_TOP_LEVEL) + 1)
+    $monitor_fun_depth : local := CDR(ASSQ(name, $depthAlist))
+    CONDITION := monitor_eval_tran(CONDITION, false)
+    YES := EVAL(CONDITION)
+    if MEMQ(name, $mathTraceList) then $mathTrace := true
+    if YES and $TraceFlag then
+        monitor_x0(TRACECODE, C, TYPE, name, name1)
+    if before then monitor_eval_before(before)
+    if MEMQ('before, BREAK) then
+        break(['"Break on entering", "%b", PNAME(name1), "%d", '":"])
+    if TIMERNAM then INIT_TIME := startTimer()
+    $monitor_value : local :=
+        EQ(TYPE, 'MACRO) => MACROEXPAND(funct, $monitor_args)
+        APPLY(funct, $monitor_args)
+    stopTimer()
+    EVAL_TIME := nil
+    if TIMERNAM then
+        EVAL_TIME := timer_value() - INIT_TIME
+    if TIMERNAM and NOT(NOT_TOP_LEVEL) then
+        SET(TIMERNAM, EVAL(TIMERNAM) + EVAL_TIME)
+    if AFTER then monitor_eval_after(AFTER)
+    if YES and $TraceFlag then
+        monitor_x1(TRACECODE, name, name1, V, TIMERNAM, EVAL_TIME)
+    if MEMQ('after, BREAK) then
+        break(['"Break on exiting", "%b", PNAME(name1), "%d", '":"])
+    startTimer()
+    $monitor_value
+
+-- tracing timers
+
+DEFPARAMETER($oldTime, 0)
+DEFPARAMETER($delay, 0)
+
+timer_value() == $oldTime - $delay
+
+startTimer() ==
+    $delay := $delay + get_run_time() - $oldTime
+    get_run_time() - $delay
+
+stopTimer() == $oldTime := get_run_time()
+
+
