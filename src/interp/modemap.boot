@@ -190,30 +190,6 @@ substituteCategoryArguments(argl,catform) ==
   arglAssoc:= [[INTERNL("#",STRINGIMAGE i),:a] for i in 1.. for a in argl]
   SUBLIS(arglAssoc,catform)
 
-         --Called, by compDefineFunctor, to add modemaps for $ that may
-         --be equivalent to those of Rep. We must check that these
-         --operations are not being redefined.
-augModemapsFromCategoryRep(domainName,repDefn,functorBody,categoryForm,e) ==
-  [fnAlist,e]:= evalAndSub(domainName,domainName,domainName,categoryForm,e)
-  [repFnAlist,e]:= evalAndSub('Rep,'Rep,repDefn,getmode(repDefn,e),e)
-  compilerMessage ["Adding ",domainName," modemaps"]
-  e:= putDomainsInScope(domainName,e)
-  for [lhs:=[op,sig,:.],cond,fnsel] in fnAlist repeat
-    u := assoc(substitute('Rep, domainName, lhs), repFnAlist)
-    u and not AMFCR_redefinedList(op,functorBody) =>
-      fnsel':=CADDR u
-      e:= addModemap(op,domainName,sig,cond,fnsel',e)
-    e:= addModemap(op,domainName,sig,cond,fnsel,e)
-  e
-
-AMFCR_redefinedList(op,l) == "OR"/[AMFCR_redefined(op,u) for u in l]
-
-AMFCR_redefined(opname,u) ==
-  not(u is [op,:l]) => nil
-  op = 'DEF => opname = CAAR l
-  MEMQ(op,'(PROGN SEQ)) => AMFCR_redefinedList(opname,l)
-  op = 'COND => "OR"/[AMFCR_redefinedList(opname, rest u) for u in l]
-
 augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   [fnAlist,e]:= evalAndSub(domainName,domainView,functorForm,categoryForm,e)
   --if not $InteractiveMode then

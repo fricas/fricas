@@ -385,20 +385,9 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     -- generate slots for arguments first, then for $NRTaddForm in compAdd
     for x in argl repeat NRTgetLocalIndex x
     [.,.,$e]:= compMakeDeclaration([":",'_$,target],m,$e)
-    --The following loop sees if we can economise on ADDed operations
-    --by using those of Rep, if that is the same. Example: DIRPROD
+
     if $insideCategoryPackageIfTrue~= true  then
-      if body is ['add,ab:=[fn,:.],['CAPSULE,:cb]] and MEMQ(fn,'(List Vector))
-         and FindRep(cb) = ab
-               where FindRep cb ==
-                 u:=
-                   while cb repeat
-                     ATOM cb => return nil
-                     cb is [['LET,'Rep,v,:.],:.] => return (u:=v)
-                     cb := rest cb
-                 u
-      then $e:= augModemapsFromCategoryRep('_$,ab,cb,target,$e)
-      else $e:= augModemapsFromCategory('_$,'_$,'_$,target,$e)
+        $e := augModemapsFromCategory('_$, '_$, '_$, target, $e)
     $signature:= signature'
     parSignature:= SUBLIS($pairlis,signature')
     parForm:= SUBLIS($pairlis,form)
