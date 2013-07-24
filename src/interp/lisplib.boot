@@ -235,25 +235,23 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $lisplibSuperDomain: local := NIL
   $libFile: local := NIL
   $lisplibCategory: local := nil
+  $compiler_output_stream : local := nil
   --for categories, is rhs of definition; otherwise, is target of functor
   --will eventually become the "constructorCategory" property in lisplib
   --set in compDefineCategory1 if category, otherwise in finalizeLisplib
   libName := getConstructorAbbreviation op
   sayMSG ['"   initializing ",$spadLibFT,:bright libName,
     '"for",:bright op]
-  initializeLisplib libName
-  sayMSG ['"   compiling into ",$spadLibFT,:bright libName]
-  -- res:= FUNCALL(fn,df,m,e,prefix,fal)
-  -- sayMSG ['"   finalizing ",$spadLibFT,:bright libName]
-  -- finalizeLisplib libName
   -- following guarantee's compiler output files get closed.
   ok := false;
   UNWIND_-PROTECT(
-      PROGN(res:= FUNCALL(fn,df,m,e,prefix,fal),
+      PROGN(initializeLisplib libName,
+            sayMSG ['"   compiling into ", $spadLibFT, :bright libName],
+            res := FUNCALL(fn, df, m, e, prefix, fal),
             sayMSG ['"   finalizing ",$spadLibFT,:bright libName],
             finalizeLisplib libName,
             ok := true),
-      PROGN(CLOSE($compiler_output_stream),
+      PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
             RSHUT $libFile))
   if ok then lisplibDoRename(libName)
   filearg := $FILEP(libName, $spadLibFT)

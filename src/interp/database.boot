@@ -558,3 +558,34 @@ displayHiddenConstructors() ==
       '"there are no explicitly hidden constructors"
     else for c in $localExposureData.2 repeat
       centerAndHighlight c
+
+getOperationAlistFromLisplib x ==
+    u := GETDATABASE(x, 'OPERATIONALIST)
+    --  u := removeZeroOneDestructively u
+    null u => u          -- this can happen for Object
+    CAAR u = '_$unique => rest u
+    f := addConsDB '(NIL T ELT)
+    for [op, :sigList] in u repeat
+        for items in tails sigList repeat
+            [sig, :r] := first items
+            if r is [., :s] then
+                if s is [., :t] then
+                    if t is [.] then nil
+                    else RPLACD(s, QCDDR f)
+                else RPLACD(r, QCDR f)
+            else RPLACD(first items, f)
+            RPLACA(items, addConsDB first items)
+    u and markUnique u
+
+markUnique x ==
+    u := first x
+    RPLACA(x, '(_$unique))
+    RPLACD(x, [u, :rest x])
+    rest x
+
+--=======================================================================
+--          Creation of System Sig/Pred Vectors & Hash Tables
+--=======================================================================
+
+addConsDB x == x
+

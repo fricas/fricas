@@ -135,7 +135,7 @@ NonBlank is true if the token is not preceded by a blank."
 ; *** Current Token, Next Token, Advance Token
 
 (defun try-get-token (token)
-  (let ((tok (get-token token)))
+  (let ((tok (|ntokreader| token)))
     (if tok (progn (setf Valid-Tokens (|inc_SI| Valid-Tokens)) token))))
 
 (defun |current_symbol|() (make-symbol-of (|current_token|)))
@@ -171,9 +171,3 @@ NonBlank is true if the token is not preceded by a blank."
     (2 (setq Prior-Token (copy-token Current-Token))
        (setq Current-Token (copy-token Next-Token))
        (setf Valid-Tokens (|dec_SI| Valid-Tokens)))))
-
-(defparameter |$token_reader| 'get-boot-token "Tokenizing function")
-
-; *** Get Token
-
-(defun get-token (token) (funcall |$token_reader| token))
