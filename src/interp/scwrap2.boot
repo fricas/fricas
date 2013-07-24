@@ -211,11 +211,8 @@ ntokreader(token) ==
     else
         token_install(nil, "*EOF", nil, nil, 0, token)
 
-DEFVAR($token_reader)
-
 fakeloopInclude0(st, name, n) ==
     $lines : local := incStream(st, name)
-    $token_reader := function ntokreader
     fakeloopProcess(n,
       next(function insertpile,
         next(function lineoftoks,$lines)))

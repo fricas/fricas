@@ -37,8 +37,6 @@ to actually put the code here, we have pointers to where such
 property list manipulation is being done.
 
 Pointers:
-o  see NEWAUX LISP for some code that puts GENERIC and RENAMETOK
-   properties on identifiers for the parser
 o  coerceIntCommute puts the "commute" property on constructors.
 o  coerceRetract puts the "retract" property on constructors.
 o  there is some code at the end of SPECEVAL BOOT that puts "up"

@@ -49,7 +49,7 @@ compTopLevel(x,m,e) ==
   initEnvHashTable(e)
   initEnvHashTable($CategoryFrame)
   -- The next line allows the new compiler to be tested interactively.
-  compFun := if $newCompAtTopLevel=true then 'newComp else 'compOrCroak
+  compFun := 'compOrCroak
   x is ["DEF",:.] or x is ["where",["DEF",:.],:.] =>
     ([val,mode,.]:= FUNCALL(compFun,x,m,e); [val,mode,e])
         --keep old environment after top level function defs
@@ -345,6 +345,8 @@ primitiveType x ==
   FLOATP x => $DoubleFloat
   nil
 
+DEFPARAMETER($compForModeIfTrue, false)
+
 compSymbol(s,m,e) ==
   s="$NoValue" => ["$NoValue",$NoValueMode,e]
   isFluid s => [s,getmode(s,e) or return nil,e]
@@ -408,6 +410,7 @@ compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
   u="failed" => nil
   compForm1(form,m,e)
 
+-- FIXME: we should check the argument.
 outputComp(x,e) ==
   u:=comp(['_:_:, x, $OutputForm], $OutputForm, e) => u
   x is ['construct,:argl] =>

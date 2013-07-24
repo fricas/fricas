@@ -43,6 +43,15 @@ getDomainByteVector dom == CDDR dom.4
 
 getDomainView(domain,catform) == domain
 
+-- getting constants
+
+makeSpadConstant [fn, dollar, slot] ==
+    val := FUNCALL(fn, dollar)
+    u := dollar.slot
+    RPLACA(u, function IDENTITY)
+    RPLACD(u, val)
+    val
+
 --=======================================================
 --                 Lookup From Compiled Code
 --=======================================================
