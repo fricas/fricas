@@ -223,7 +223,7 @@ SparseMultivariatePolynomial(R : Ring, VarSet : OrderedSet) : C == T where
 --  a local functions, used in next definition
       unlikeUnivReconstruct(u : SparseUnivariatePolynomial(%), mvar : VarSet) : % ==
         zero? (d := degree u) => coefficient(u, 0)
-        monomial(leadingCoefficient u, mvar, d)+
+        monomial(leadingCoefficient u, mvar, d) +$%
             unlikeUnivReconstruct(reductum u, mvar)
 
       multivariate(u : SparseUnivariatePolynomial(%), mvar : VarSet) : % ==
@@ -249,9 +249,10 @@ SparseMultivariatePolynomial(R : Ring, VarSet : OrderedSet) : C == T where
         p*[mvar, monomial(1, k1)$D]$VPoly
 
       monomial(c : R, e : IndexedExponents(VarSet)) : % ==
-        zero? e => (c::%)
-        monomial(1, leadingSupport e, leadingCoefficient e) *
-            monomial(c, reductum e)
+          zero? e => (c::%)
+          p1 : % := monomial(c, reductum e)
+          m1 := monomial(p1, leadingCoefficient e)$D
+          [leadingSupport e, m1]$VPoly
 
       coefficient(p : %, e : IndexedExponents(VarSet)) : R ==
         zero? e =>
@@ -440,7 +441,7 @@ SparseMultivariatePolynomial(R : Ring, VarSet : OrderedSet) : C == T where
          if ground? up then leadingCoefficient(up) else [mvar, up]$VPoly
 
       if R has Field then
-        (p : %) / (r : R) == inv(r) * p
+        (p : %) / (r : R) == inv(r) *$% p
 
       if R has GcdDomain then
         content(p) ==
@@ -614,7 +615,8 @@ SparseMultivariatePolynomial(R : Ring, VarSet : OrderedSet) : C == T where
         p case R => 0
         mvar = p.v => minimumDegree p.ts
         md := minimumDegree(leadingCoefficient p.ts, mvar)
-        zero? (p1 := red p) => md
+        p1 : % := red p
+        zero?(p1) => md
         min(md, minimumDegree(p1, mvar))
 
       minimumDegree(p, Lvar) ==
