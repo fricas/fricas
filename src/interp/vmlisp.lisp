@@ -47,8 +47,6 @@
 
 ;; DEFVARS
 
-(defvar CUROUTSTREAM *standard-output*)
-
 (defvar *fileactq-apply* nil "function to apply in fileactq")
 
 ;; defuns

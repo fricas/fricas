@@ -513,10 +513,14 @@ After this function is called the image is clean and can be saved.
   (|interpsys_restart|)
 )
 
+(DEFVAR |$trace_stream| *standard-output*)
+(DEFVAR CUROUTSTREAM *standard-output*)
+
 (defun fricas-restart ()
-  ;;; Need to reinitialize CUROUTSTREAM because clisp closes
-  ;;; it when dumping executable
+  ;;; Need to reinitialize CUROUTSTREAM and |$trace_stream| because
+  ;;;  clisp closes it when dumping executable
   (setf CUROUTSTREAM *standard-output*)
+  (setf |$trace_stream| *standard-output*)
   (fricas-init)
   #+(or :GCL :poplog)
   (|spad|)
