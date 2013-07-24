@@ -835,8 +835,6 @@
 ; NAME:    Debugging Package
 ; PURPOSE: Debugging hooks for Boot code
 
-(DEFVAR |$trace_stream| *standard-output*)
-
 (defun enable-backtrace (&rest arg))
 
 (defun |adjoin_equal|(x y) (ADJOIN x y :test #'equal))
