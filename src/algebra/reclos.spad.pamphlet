@@ -998,7 +998,7 @@ RealClosure(TheField) : PUB == PRIV where
 
 
        approximate(nbe, prec) ==
-          abs(nbe) < prec => 0
+          abs(nbe) <$% prec => 0
           nbe case TheField => retract(nbe)
           appr := approximate(nbe.val, nbe.seg, prec)
           -- now appr has the good exact precision but is $
@@ -1007,7 +1007,7 @@ RealClosure(TheField) : PUB == PRIV where
        newElementIfneeded(s, o) ==
          p := definingPolynomial(s)
          degree(p) = 1 =>
-             - coefficient(p, 0) / leadingCoefficient(p)
+             -$% coefficient(p, 0) /$% leadingCoefficient(p)
          res := [s, monomial(1, 1), o, orderOfCreation ]$Rec
          orderOfCreation := orderOfCreation + 1
          res :: %
@@ -1015,7 +1015,7 @@ RealClosure(TheField) : PUB == PRIV where
        algebraicOf(s, o) ==
          pol := definingPolynomial(s)
          degree(pol) = 1 =>
-           -coefficient(pol, 0) / leadingCoefficient(pol)
+           -$% coefficient(pol, 0) /$% leadingCoefficient(pol)
          res := [s, monomial(1, 1), o, orderOfCreation ]$Rec
          orderOfCreation := orderOfCreation + 1
          res :: %
@@ -1031,7 +1031,7 @@ RealClosure(TheField) : PUB == PRIV where
         degree(pol) = 0 => "failed"
         degree(pol) = 1 =>
           if n = 1 then
-            -coefficient(pol, 0) / leadingCoefficient(pol)
+            -$% coefficient(pol, 0) /$% leadingCoefficient(pol)
           else
             "failed"
         r := rootOf(pol, n)$SEG
@@ -1041,7 +1041,7 @@ RealClosure(TheField) : PUB == PRIV where
 
        allRootsOf(pol : SUP) : List(%) ==
         degree(pol)=0 => []
-        degree(pol)=1 => [-coefficient(pol, 0) / leadingCoefficient(pol)]
+        degree(pol)=1 => [-$% coefficient(pol, 0) /$% leadingCoefficient(pol)]
         liste := allRootsOf(pol)$SEG
         res : List % := []
         for term in liste repeat
@@ -1061,15 +1061,15 @@ RealClosure(TheField) : PUB == PRIV where
           x case TheField => negative?(x)$TheField
           negative?(x.val, x.seg)$SEG
 
-       abs(x) == sign(x)*x
+       abs(x) == sign(x) *$% x
 
        sign(x) ==
           x case TheField => sign(x)$TheField
           sign(x.val, x.seg)$SEG
 
-       x < y == positive?(y-x)
+       x < y == positive?(y-x)$%
 
-       x = y == zero?(x-y)
+       x = y == zero?(x-y)$%
 
        mainCharacterization(x) ==
           x case TheField => "failed"
@@ -1203,7 +1203,7 @@ RealClosure(TheField) : PUB == PRIV where
           degree(x.val) = 0 => leadingCoefficient(x.val)
           def := definingPolynomial(x.seg)
           degree(def) = 1 =>
-            x.val.(- coefficient(def, 0) / leadingCoefficient(def))
+            x.val.(-$% coefficient(def, 0) /$% leadingCoefficient(def))
           x
 
        0 == (0$TheField) :: %

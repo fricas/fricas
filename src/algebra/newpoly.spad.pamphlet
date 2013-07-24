@@ -1600,27 +1600,27 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
        lcb : % := leadingCoefficient(b.ts)$D
        test : Z := degree(a, b.v)::Z - db
        delta : Z := max(test + 1$Z, 0$Z)
-       (a case R) or (a.v < b.v) => lcb ^ (delta::N) * a
+       (a case R) or (a.v < b.v) => lcb ^ (delta::N) *$% a@%
        a.v = b.v =>
          r : D := pseudoRemainder(a.ts, b.ts)$D
          ground?(r) => return (ground(r)$D)::Rep
          ([a.v, r]$VPoly)::Rep
        while not zero?(a) and not negative?(test) repeat
          term := monomial(leadingCoefficient(a, b.v), b.v, test::N)
-         a := lcb * a - term * b
+         a := lcb * a -$% term * b
          delta := delta - 1$Z
          test := degree(a, b.v)::Z - db
-       lcb ^ (delta::N) * a
+       lcb ^ (delta::N) *$% a
 
      pquo (a : %, b : %)  : % ==
        cPS := lazyPseudoDivide (a, b)
-       c := (cPS.coef) ^ (cPS.gap)
-       c * cPS.quotient
+       c := (cPS.coef) ^$% (cPS.gap)
+       c *$% cPS.quotient
 
      pseudoDivide(a : %, b : %) : Record (quotient : %, remainder : %) ==
        -- from RPOLCAT
        cPS := lazyPseudoDivide(a, b)
-       c := (cPS.coef) ^ (cPS.gap)
+       c := (cPS.coef) ^$% (cPS.gap)
        [c * cPS.quotient, c * cPS.remainder]
 
      lazyPrem(a : %, b : %) : % ==
@@ -1635,7 +1635,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
        test : Z := degree(a, b.v)::Z - db
        while not zero?(a) and not negative?(test) repeat
          term := monomial(leadingCoefficient(a, b.v), b.v, test::N)
-         a := lcb * a - term * b
+         a := lcb * a -$% term * b
          test := degree(a, b.v)::Z - db
        a
 
@@ -1652,8 +1652,8 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
        test : Z := degree(a, b.v)::Z - db
        while not zero?(a) and not negative?(test) repeat
          term := monomial(leadingCoefficient(a, b.v), b.v, test::N)
-         a := lcb * a - term * b
-         q := lcb * q + term
+         a := lcb * a -$% term * b
+         q := lcb * q +$% term
          test := degree(a, b.v)::Z - db
        q
 
@@ -1672,8 +1672,8 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
        delta : Z := max(test + 1$Z, 0$Z)
        while not zero?(a) and not negative?(test) repeat
          term := monomial(leadingCoefficient(a, b.v), b.v, test::N)
-         a := lcb * a - term * b
-         q := lcb * q + term
+         a := lcb * a -$% term * b
+         q := lcb * q +$% term
          delta := delta - 1$Z
          test := degree(a, b.v)::Z - db
        [lcb, (delta::N), q, a]
@@ -1692,7 +1692,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
        pow : N := 0
        while not zero?(a) and not negative?(test) repeat
          term := monomial(leadingCoefficient(a, b.v), b.v, test::N)
-         a := lcb * a - term * b
+         a := lcb * a -$% term * b
          pow := pow + 1
          test := degree(a, b.v)::Z - db
        [a, lcb, pow]
