@@ -44,7 +44,7 @@ all: all-ax
 stage2_boot_objects = $(addprefix stage2/, $(boot_objects))
 
 all-ax: stage1/stamp_bootsys lobj_lst
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" $(fricas_build_bindir)/bootsys$(EXEEXT)
+	$(MAKE) OBJECTS="$(boot_objects)" $(fricas_build_bindir)/bootsys$(EXEEXT)
 
 lobj_lst:
 	echo '$(patsubst %, "../boot/%", $(FRICAS_LOCAL_LISP_object) \
@@ -63,7 +63,7 @@ stage0/stamp_bootsys:
 	rm -rf prev-stage
 	rm -f $(stage0_boot_objects)
 	rm -f $(stage0_boot_clisp)
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(stage0_boot_objects)" stage0/bootsys$(EXEEXT)
+	$(MAKE) OBJECTS="$(stage0_boot_objects)" stage0/bootsys$(EXEEXT)
 	$(LN_S) stage0 prev-stage
 	touch $@
 
@@ -73,7 +73,7 @@ stage0/%.$(LISPOBJEXT): $(srcdir)/compiled/%.clisp
 stage1/stamp_bootsys: stage0/stamp_bootsys
 	@echo Building stage 1
 	[ -d stage1 ] || $(mkinstalldirs) stage1
-	$(MAKE) $(AX_FLAGS) OBJECTS="$(boot_objects)" stage1/bootsys$(EXEEXT)
+	$(MAKE) OBJECTS="$(boot_objects)" stage1/bootsys$(EXEEXT)
 	-rm -f $(addprefix stage1/, $(boot_objects))
 	-rm -f $(addprefix stage1/, $(boot_clisp))
 	mv $(boot_objects) stage1
