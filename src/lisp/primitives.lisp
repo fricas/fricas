@@ -565,6 +565,42 @@
 
 ; macros needed for Spad:
 
+(defun TranslateTypeSymbol (ts typeOrValue) 
+  (let ((typDecl
+          (case (cadr ts)
+            (|Void| '(null nil))
+            (|SingleInteger| '(fixnum 0))
+            (|String| '(string ""))
+            (|Boolean| '(BOOLEAN nil))
+            (|DoubleFloat| '(DOUBLE-FLOAT 0.0d0))
+            (otherwise '(nil)))))
+  (cons (car ts) (if typeOrValue (cdr typDecl) (car typDecl)))))
+
+(defun GetLispType (ts)
+  (TranslateTypeSymbol ts nil))
+
+(defun GetLispValue (ts)
+  (TranslateTypeSymbol ts 't))
+
+(defun MakeDeclarations (typSyms)
+  (let* ((tranTypSyms (mapcar #'GetLispType typSyms))
+         (lispTypSyms (remove-if-not #'cdr tranTypSyms)))
+    (mapcar #'(lambda (ts) `(declare (type ,(cdr ts) ,(car ts)))) lispTypSyms)))
+
+(defun MakeInitialValues (typSyms)
+  (let ((initVals (mapcar #'GetLispValue typSyms)))
+    (mapcar #'(lambda (v) (if (endp (cdr v)) (car v) v)) initVals)))
+
+(defmacro SDEFUN (name args body)
+  (let ((vars (mapcar #'car args))
+        (decls (MakeDeclarations (butlast args))))
+        `(defun ,name ,vars ,@decls ,body)))
+
+(defmacro SPROG (vars &rest statements)
+  (let ((names (MakeInitialValues vars))
+        (decls (MakeDeclarations vars)))
+    `(block nil (let ,names ,@decls ,@statements))))
+
 (defmacro EXIT (&rest value) `(return-from SEQ ,@value))
 
 (defmacro SEQ (&rest form)

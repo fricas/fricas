@@ -671,6 +671,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $functionStats: local:= [0,0]
     $finalEnv: local := nil
              --used by ReplaceExitEtc to get a common environment
+    $locVarsTypes: local := []
     $initCapsuleErrorCount: local:= #$semanticErrorStack
     $insideCapsuleFunctionIfTrue: local:= true
     $CapsuleModemapFrame: local:= e

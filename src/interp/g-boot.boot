@@ -179,6 +179,10 @@ compTran1(x) ==
     compTran1 u
     compTran1(rest x)
 
+compTranDryRun(x) ==
+    $insideCapsuleFunctionIfTrue : local := false
+    compTran(x)
+
 compTran(x) ==
     $fluidVars : local := nil
     $locVars : local := nil
@@ -194,13 +198,36 @@ compTran(x) ==
     $locVars := S_-(S_-(REMDUP(NREVERSE($locVars)), fluids), LISTOFATOMS (x2))
     lvars := APPEND(fluids, $locVars)
     x3 :=
-        fluids => ["PROG", lvars, ["DECLARE", ["SPECIAL", :fluids]], _
-                           ["RETURN", x3]]
-        lvars or CONTAINED("RETURN", x3) => ["PROG", lvars, ["RETURN", x3]]
+        fluids =>
+            ["SPROG", compSpadProg(lvars),
+             ["DECLARE", ["SPECIAL", :fluids]], x3]
+        lvars or CONTAINED("RETURN", x3) =>
+            ["SPROG", compSpadProg(lvars), x3]
         x3
     fluids := compFluidize(x2)
+    x2 := addTypesToArgs(x2)
     fluids => [x1, x2, ["DECLARE", ["SPECIAL", :fluids]], x3]
     [x1, x2, x3]
+
+addTypesToArgs(args) ==
+    $insideCapsuleFunctionIfTrue =>
+        sig := $signatureOfForm
+        spadTypes := [(ATOM(t) => [t]; t) for t in [:rest(sig), first(sig)]]
+        NREVERSE(PAIRLIS(args, spadTypes))
+    args
+
+addNilTypesToArgs(args) ==
+    $insideCapsuleFunctionIfTrue =>
+        [[arg, nil] for arg in args]
+    args
+
+compSpadProg(lvars) ==
+    lvarTypes := ($insideCapsuleFunctionIfTrue => $locVarsTypes; nil)
+    types := []
+    for lvar in lvars repeat
+        x := ASSOC(lvar, lvarTypes)
+        types := [[lvar, (x => rest(x); nil)], :types]
+    NREVERSE(types)
 
 compNewnam(x) ==
     ATOM(x) => nil
@@ -434,11 +461,17 @@ COMP370(fn) ==
     not(fn is [fname, [ltype, args, :body]]) => BREAK()
     args :=
         NULL(args) => args
+        LISTP(args) and $insideCapsuleFunctionIfTrue =>
+            [(STRINGP(CAR(arg)) => CONS(GENTEMP(), CDR(arg));
+              not(SYMBOLP(CAR(arg))) => BREAK();
+              arg)
+             for arg in args]
         SYMBOLP(args) => ["&REST", args]
         ATOM(args) => BREAK()
         [(STRINGP(arg) => GENTEMP(); not(SYMBOLP(arg)) => BREAK(); arg)
             for arg in args]
-    nbody := ["DEFUN", fname, args, :body]
+    defun := if $insideCapsuleFunctionIfTrue then "SDEFUN" else "DEFUN"
+    nbody := [defun, fname, args, :body]
     if $comp370_apply then
         FUNCALL($comp370_apply, fname, nbody)
 
