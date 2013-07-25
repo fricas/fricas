@@ -896,11 +896,19 @@ compHas(pred is ["has",a,b],m,$e) ==
   --b is (":",:.) => (.,.,E):= comp(b,$EmptyMode,E)
   $e:= chaseInferences(pred,$e)
   --pred':= ("has",a',b') := formatHas(pred)
-  predCode:= compHasFormat pred
+  predCode := compHasFormat1 pred
   coerce([predCode,$Boolean,$e],m)
 
-      --used in various other places to make the discrimination
+compHasFormat1(pred is ["has", a, b]) ==
+    [a, :.] := comp(a, $EmptyMode, $e) or return nil
+    b is ["ATTRIBUTE", c] => BREAK()
+    b is ["SIGNATURE", op, sig] =>
+        ["HasSignature", a,
+          mkList [MKQ op, mkList [mkDomainConstructor type for type in sig]]]
+    isDomainForm(b, $EmptyEnvironment) => ["EQUAL", a, b]
+    ["HasCategory", a, mkDomainConstructor b]
 
+--used in various other places to make the discrimination
 compHasFormat (pred is ["has",olda,b]) ==
   argl := rest $form
   formals := TAKE(#argl,$FormalMapVariableList)
