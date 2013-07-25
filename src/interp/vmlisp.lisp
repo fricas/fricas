@@ -45,10 +45,6 @@
 
 (in-package "BOOT")
 
-;; DEFVARS
-
-(defvar *fileactq-apply* nil "function to apply in fileactq")
-
 ;; defuns
 
 (defun define-function (f v)
@@ -408,21 +404,12 @@
 
 (define-function 'strconc #'concat)
 
-(defun |make_CVEC| (sint)
-    (make-array sint :fill-pointer 0 :element-type 'character))
-
 (defun |make_full_CVEC|(sint &optional (char #\space))
   (make-string sint :initial-element (if (integerp char)
                                        (code-char char)
                                        (character char))))
 
 ; 17.2 Accessing
-
-(defun QENUM (cvec ind) (char-code (char cvec ind)))
-
-(defun QESET (cvec ind charnum)
-  (setf (char cvec ind) (code-char charnum))
-  charnum)
 
 (defun string2id-n (cvec sint)
   (if (< sint 1)

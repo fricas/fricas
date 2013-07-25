@@ -49,12 +49,22 @@ DEFVAR($restore_list, nil)
 
 DEFVAR($compiler_output_stream, nil)
 
+DEFPARAMETER($file_apply, nil)
+
+output_lisp_form(form) ==
+    if $file_apply then FUNCALL($file_apply, form, form)
+
+output_lisp_defparameter(x, y) ==
+    form := ['DEFPARAMETER, x, ["QUOTE", y]]
+    output_lisp_form(form)
+    EVAL(form)
+
 print_defun(name, body) ==
     print_full2(body, $compiler_output_stream)
 
 spadCompile(name) ==
     $comp370_apply : local := FUNCTION print_defun
-    _*FILEACTQ_-APPLY_* : local := FUNCTION print_defun
+    $file_apply : local := FUNCTION print_defun
     _*EOF_* : local := false
     _/EDITFILE : local := name
     $InteractiveMode : local := false

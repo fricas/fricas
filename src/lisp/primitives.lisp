@@ -54,6 +54,18 @@
 (defmacro STR_ELT(s i)
     `(char-code (char (the string ,s) (the fixnum ,i))))
 
+(defmacro STR_SETELT(s i c)
+    (if (integerp c)
+        `(progn
+             (setf (char (the string ,s) (the fixnum ,i))
+                   (code-char (the fixnum ,c)))
+             ,c)
+        (let ((sc (gensym)))
+         `(let ((,sc ,c))
+             (setf (char (the string ,s) (the fixnum ,i))
+                   (code-char (the fixnum ,sc)))
+             ,sc))))
+
 (defmacro STR_ELT1(s i)
     `(char-code (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))))
 

@@ -32,7 +32,7 @@
 )package "BOOT"
 
 lefts u ==
-   [x for x in HKEYS  _*HASCATEGORY_-HASH_* | rest x = u]
+   [x for x in HKEYS  $has_category_hash | rest x = u]
 
 
 --============================================================================
@@ -620,7 +620,7 @@ ancestorsAdd(pred,form) == --called by ancestorsRecur
 domainsOf(conform,domname,:options) ==
   $hasArgList := IFCAR options
   conname := opOf conform
-  u := [key for key in HKEYS _*HASCATEGORY_-HASH_*
+  u := [key for key in HKEYS $has_category_hash
     | key is [anc,: =conname]]
   --u is list of pairs (a . b) where b = conname
   --we sort u then replace each b by the predicate for which this is true

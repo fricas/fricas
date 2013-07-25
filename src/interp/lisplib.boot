@@ -53,7 +53,7 @@ evalAndRwriteLispForm(key,form) ==
 rwriteLispForm(key,form) ==
   if $LISPLIB then
     rwrite( key,form,$libFile)
-    outputLispForm(key,form)
+    output_lisp_form(form)
 
 --% Uninstantiating
 

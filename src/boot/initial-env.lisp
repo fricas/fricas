@@ -31,17 +31,6 @@
 
 
 (in-package "BOOTTRAN")
-(export  '(boottocl
-          bootclam
-          boottoclc
-          boottomc
-          compile-boot-file
-          eval-boot-file
-          bo
-          boclam
-          stout
-          steval
-          sttomc))
 
 ;; The following comes from file previously known as npextras.lisp
 (defun double (x) (float x 1.D0))
@@ -71,7 +60,7 @@
 
 (defun |shoeConsole| (line)  (write-line line *terminal-io*))
 
-(defun shoeprettyprin1 (x &optional (stream *standard-output*))
+(defun shoeprettyprin1 (x stream)
   (let ((*print-pretty* t)
         (*print-array* t)
         (*print-circle* t)
@@ -82,7 +71,7 @@
 (defun reallyprettyprint (x &optional (stream *terminal-io*))
   (shoeprettyprin1 x stream) (terpri stream))
 
-(defun shoeprettyprin0 (x &optional (stream *standard-output*))
+(defun shoeprettyprin0 (x stream)
   (let ((*print-pretty* nil)
         (*print-array* t)
         (*print-circle* t)
@@ -90,7 +79,7 @@
         (*print-length* nil))
     (prin1 x stream)))
 
-(defun shoenotprettyprint (x &optional (stream *terminal-io*))
+(defun shoenotprettyprint (x stream)
   (shoeprettyprin0 x stream) (terpri stream))
 
 (defun make-full-cvec (sint &optional (char #\space))
@@ -129,9 +118,6 @@
 (defun stringimage (x)
   (write-to-string x))
 
-(defun QENUM (cvec ind)
-  (char-code (char cvec ind)))
-
 (defun charmem (a b)
   (member  a  b :test #'eql))
 
@@ -162,17 +148,11 @@
     (position table cvec :test-not #'(lambda (x y) (position y x))
               :start sint  )))
 
-(defun VEC-SETELT (vec ind val)
-  (setf (elt vec ind) val))
-
 (defun  bvec-make-full (n x)
   (make-array (list n) :element-type 'bit :initial-element x))
 
 (defun make-bvec (n)
   (bvec-make-full n 0))
-
-(defun bvec-setelt (bv i x)
-  (setf (sbit bv i) x))
 
 (defun size (l)
   (cond ((vectorp l) (length l))

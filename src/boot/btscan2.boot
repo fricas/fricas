@@ -79,7 +79,7 @@ shoeNextLine(s)==
        $n:=STRPOSL('" ",$ln,0,true)
        $sz :=# $ln
        null $n => true
-       QENUM($ln,$n)=shoeTAB =>
+       STR_ELT($ln,$n)=shoeTAB =>
                   a:=MAKE_-FULL_-CVEC (7-REM($n,8) ,'" ")
                   $ln.$n:='" ".0
                   $ln:=CONCAT(a,$ln)
@@ -97,7 +97,7 @@ shoeLineToks(s)==
    $linepos:local:=s
    not shoeNextLine s =>  CONS(nil,nil)
    null $n => shoeLineToks $r
-   fst:=QENUM($ln,0)
+   fst:=STR_ELT($ln,0)
    EQL(fst,shoeCLOSEPAREN)=>
             command:=shoeLine? $ln=>
               dq:=dqUnit shoeConstructToken
@@ -118,7 +118,7 @@ shoeLineToks(s)==
 
 shoeLispToken(s,string)==
       string:=
-            # string=0 or EQL(QENUM(string,0),QENUM('";",0))=> '""
+            # string=0 or EQL(STR_ELT(string,0),STR_ELT('";",0))=> '""
             string
       ln:=$ln
       linepos:=$linepos
@@ -130,11 +130,11 @@ shoeAccumulateLines(s,string)==
    not shoeNextLine s =>  CONS(s,string)
    null $n => shoeAccumulateLines($r,string)
    # $ln=0 => shoeAccumulateLines($r,string)
-   fst:=QENUM($ln,0)
+   fst:=STR_ELT($ln,0)
    EQL(fst,shoeCLOSEPAREN)=>
             command:=shoeLisp? $ln
             command and #command>0 =>
-                EQL(QENUM(command,0),QENUM('";",0))=>
+                EQL(STR_ELT(command,0),STR_ELT('";",0))=>
                             shoeAccumulateLines($r,string)
                 a:=STRPOS('";",command,0,nil)
                 a=>
@@ -146,7 +146,7 @@ shoeAccumulateLines(s,string)==
 
 shoeToken () ==
       ln:=$ln
-      c:=QENUM($ln,$n)
+      c:=STR_ELT($ln,$n)
       linepos:=$linepos
       n:=$n
       ch:=$ln.$n
@@ -244,24 +244,24 @@ shoeEsc()==
 shoeStartsComment()==
     if $n<$sz
     then
-         if QENUM($ln,$n)=shoePLUSCOMMENT
+         if STR_ELT($ln,$n)=shoePLUSCOMMENT
          then
             www:=$n+1
             if www>=$sz
             then false
-            else QENUM($ln,www) = shoePLUSCOMMENT
+            else STR_ELT($ln,www) = shoePLUSCOMMENT
          else false
     else false
 
 shoeStartsNegComment()==
     if $n< $sz
     then
-         if QENUM($ln,$n)=shoeMINUSCOMMENT
+         if STR_ELT($ln,$n)=shoeMINUSCOMMENT
          then
             www:=$n+1
             if www>=$sz
             then false
-            else QENUM($ln,www) = shoeMINUSCOMMENT
+            else STR_ELT($ln,www) = shoeMINUSCOMMENT
          else false
     else false
 
@@ -360,7 +360,7 @@ shoeW(b)==
        $n:=$n+1
        l:=$sz
        endid:=shoeIdEnd($ln,$n)
-       if endid=l or (not(QENUM($ln,endid) = shoeESCAPE))
+       if endid=l or (not(STR_ELT($ln,endid) = shoeESCAPE))
        then
            $n:=endid
            [b,SUBSTRING($ln,n1,endid-n1)]
@@ -392,7 +392,7 @@ shoeInteger1(zro) ==
        n:=$n
        l:= $sz
        while $n<l and shoeDigit($ln.$n) repeat $n:=$n+1
-       if $n=l or (not(QENUM($ln,$n) = shoeESCAPE))
+       if $n=l or (not(STR_ELT($ln,$n) = shoeESCAPE))
        then if n=$n and zro
             then '"0"
             else SUBSTRING($ln,n,$n-n)
@@ -416,11 +416,11 @@ shoeNumber() ==
        if $n>=$sz
        then shoeLeafInteger a
        else
-           if $floatok and QENUM($ln,$n)=shoeDOT
+           if $floatok and STR_ELT($ln,$n)=shoeDOT
            then
              n:=$n
              $n:=$n+1
-             if  $n<$sz and QENUM($ln,$n)=shoeDOT
+             if  $n<$sz and STR_ELT($ln,$n)=shoeDOT
              then
                $n:=n
                shoeLeafInteger a
@@ -434,7 +434,7 @@ shoeExponent(a,w)==
      then shoeLeafFloat(a,w,0)
      else
         n:=$n
-        c:=QENUM($ln,$n)
+        c:=STR_ELT($ln,$n)
         if c=shoeEXPONENT1 or c=shoeEXPONENT2
         then
            $n:=$n+1
@@ -448,7 +448,7 @@ shoeExponent(a,w)==
                   e:=shoeIntValue e
                   shoeLeafFloat(a,w,e)
                 else
-                  c1:=QENUM($ln,$n)
+                  c1:=STR_ELT($ln,$n)
                   if c1=shoePLUSCOMMENT or c1=shoeMINUSCOMMENT
                   then
                     $n:=$n+1
@@ -473,7 +473,7 @@ shoeError()==
       $n:=$n+1
       SoftShoeError(cons($linepos,n),
         CONCAT( '"The character whose number is ",
-                STRINGIMAGE QENUM($ln,n),'" is not a Boot character"))
+                STRINGIMAGE STR_ELT($ln,n),'" is not a Boot character"))
       shoeLeafError ($ln.n)
 
 shoeOrdToNum x== DIGIT_-CHAR_-P x
@@ -484,23 +484,23 @@ shoeKeyWordP st  ==  not null GETHASH(st,shoeKeyTable)
 
 shoeInsert(s,d) ==
       l := #s
-      h := QENUM(s,0)
+      h := STR_ELT(s,0)
       u := ELT(d,h)
       n := #u
       k:=0
       while l <= #(ELT(u,k)) repeat
           k:=k+1
       v := MAKE_-VEC(n+1)
-      for i in 0..k-1 repeat VEC_-SETELT(v,i,ELT(u,i))
-      VEC_-SETELT(v,k,s)
-      for i in k..n-1 repeat VEC_-SETELT(v,i+1,ELT(u,i))
-      VEC_-SETELT(d,h,v)
+      for i in 0..k-1 repeat QSETVELT(v, i, ELT(u, i))
+      QSETVELT(v, k, s)
+      for i in k..n-1 repeat QSETVELT(v, i + 1, ELT(u, i))
+      QSETVELT(d, h, v)
       s
 
 shoeMatch(l,i)==shoeSubStringMatch(l,shoeDict,i)
 
 shoeSubStringMatch (l,d,i)==
-       h:= QENUM(l, i)
+       h:= STR_ELT(l, i)
        u:=ELT(d,h)
        ll:=SIZE l
        done:=false
@@ -513,7 +513,7 @@ shoeSubStringMatch (l,d,i)==
                 else
                  eql:= true
                  for k in 1..ls-1 while eql repeat
-                    eql:= EQL(QENUM(s,k),QENUM(l,k+i))
+                    eql:= EQL(STR_ELT(s,k),STR_ELT(l,k+i))
                  if eql
                  then
                    s1:=s
@@ -534,8 +534,8 @@ shoeDictCons()==
       d :=
           a:=MAKE_-VEC(256)
           b:=MAKE_-VEC(1)
-          VEC_-SETELT(b,0,MAKE_-CVEC 0)
-          for i in 0..255 repeat VEC_-SETELT(a,i,b)
+          QSETVELT(b, 0, MAKE_-CVEC 0)
+          for i in 0..255 repeat QSETVELT(a, i, b)
           a
       for s in l repeat shoeInsert(s,d)
       d
@@ -544,8 +544,8 @@ shoeDictCons()==
 shoePunCons()==
     listing := HKEYS shoeKeyTable
     a:=MAKE_-BVEC 256
-    for i in 0..255 repeat BVEC_-SETELT(a,i,0)
+    for i in 0..255 repeat SETELT_BVEC(a, i, 0)
     for k in listing repeat
-       if not shoeStartsId k.0
-       then BVEC_-SETELT(a,QENUM(k,0),1)
+       if not shoeStartsId k.0 then
+           SETELT_BVEC(a, STR_ELT(k, 0), 1)
     a
