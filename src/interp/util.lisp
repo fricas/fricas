@@ -388,7 +388,7 @@ After this function is called the image is clean and can be saved.
           (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
                         :lisp-files (nth 1 el)))
       (let ((initforms nil))
-          (dolist (el '(*BUILD-DATE* *BUILD-VERSION* |$createLocalLibDb|))
+          (dolist (el '(|$build_date| |$build_version| |$createLocalLibDb|))
               (if (boundp el)
                   (push (list 'defparameter el (symbol-value el))
                         initforms)))

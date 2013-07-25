@@ -448,8 +448,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
         $byteVec :local := nil
         $NRTslot1PredicateList :=
           [simpBool x for x in $NRTslot1PredicateList]
-        outputLispForm('loadTimeStuff,
-          ['MAKEPROP,MKQ $op,''infovec,getInfovecCode()])
+        output_lisp_form(['MAKEPROP,MKQ $op,''infovec,getInfovecCode()])
       $lisplibOperationAlist:= operationAlist
       $lisplibMissingFunctions:= $CheckVectorList
     if null argl then
@@ -895,12 +894,12 @@ spadCompileOrSetq (form is [nam,[lam,vl,body]]) ==
         --good for performance (LISPLLIB size, BPI size, NILSEC)
   CONTAINED("",body) => sayBrightly ['"  ",:bright nam,'" not compiled"]
   if vl is [:vl',E] and body is [nam',: =vl'] then
-      LAM_,EVALANDFILEACTQ ['PUT,MKQ nam,MKQ 'SPADreplace,MKQ nam']
+      output_lisp_form(['PUT,MKQ nam,MKQ 'SPADreplace,MKQ nam'])
       sayBrightly ['"     ",:bright nam,'"is replaced by",:bright nam']
   else if (ATOM body or and/[ATOM x for x in body])
          and vl is [:vl',E] and not CONTAINED(E,body) then
            macform := ['XLAM,vl',body]
-           LAM_,EVALANDFILEACTQ ['PUT,MKQ nam,MKQ 'SPADreplace,MKQ macform]
+           output_lisp_form(['PUT,MKQ nam,MKQ 'SPADreplace,MKQ macform])
            sayBrightly ['"     ",:bright nam,'"is replaced by",:bright body]
   $insideCapsuleFunctionIfTrue => first COMP LIST form
   compileConstructor form
@@ -921,7 +920,7 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
     'spad_CLAM
   compForm:= LIST [fn,[lambdaOrSlam,vl,:bodyl]]
   auxfn := INTERNL(fn, '";")
-  LAM_,EVALANDFILEACTQ(["DECLAIM", ["NOTINLINE", auxfn]])
+  output_lisp_form(["DECLAIM", ["NOTINLINE", auxfn]])
   if kind = 'category
       then u:= compAndDefine compForm
       else u:=COMP compForm
@@ -1279,7 +1278,7 @@ DomainSubstitutionFunction(parameters,body) ==
   null rest $definition => body
            --should not bother if it will only be called once
   name := INTERN STRCONC(IFCAR $definition, ";CAT")
-  SETANDFILE(name,nil)
+  output_lisp_defparameter(name, nil)
   body:= ["COND",[name],['(QUOTE T),['SETQ,name,body]]]
   body
 

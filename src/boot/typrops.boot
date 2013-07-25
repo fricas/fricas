@@ -85,26 +85,26 @@ shoeKeyWords := [  _
 
 shoeKeyTable:=shoeKeyTableCons()
 
-shoeSPACE       := QENUM('"    ", 0)
+shoeSPACE       := STR_ELT('"    ", 0)
 
-shoeESCAPE      := QENUM('"__  ", 0)
-shoeLispESCAPE      := QENUM('"!  ", 0)
+shoeESCAPE      := STR_ELT('"__  ", 0)
+shoeLispESCAPE      := STR_ELT('"!  ", 0)
 
-shoeSTRING_CHAR := QENUM('"_"  ", 0)
+shoeSTRING_CHAR := STR_ELT('"_"  ", 0)
 
-shoePLUSCOMMENT := QENUM('"+   ", 0)
+shoePLUSCOMMENT := STR_ELT('"+   ", 0)
 
-shoeMINUSCOMMENT:= QENUM('"-   ", 0)
+shoeMINUSCOMMENT:= STR_ELT('"-   ", 0)
 
-shoeDOT         := QENUM('".   ", 0)
+shoeDOT         := STR_ELT('".   ", 0)
 
-shoeEXPONENT1   := QENUM('"E   ", 0)
+shoeEXPONENT1   := STR_ELT('"E   ", 0)
 
-shoeEXPONENT2   := QENUM('"e   ", 0)
+shoeEXPONENT2   := STR_ELT('"e   ", 0)
 
-shoeCLOSEPAREN  := QENUM('")   ", 0)
+shoeCLOSEPAREN  := STR_ELT('")   ", 0)
 
---shoeCLOSEANGLE  := QENUM('">   ", 0)
+--shoeCLOSEANGLE  := STR_ELT('">   ", 0)
 shoeTAB := 9
 
 

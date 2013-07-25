@@ -74,6 +74,10 @@
 (import '(BOOTTRAN::BOOTTOCLC BOOTTRAN::STTOSEX
           BOOTTRAN::|shoeRemovebootIfNec|))
 
+(in-package "BOOTTRAN")
+
+(import '(BOOT::QSETVELT BOOT::SETELT_BVEC BOOT::STR_ELT))
+
 ;;; Package containing support routines for code generated
 ;;; by Aldor compiler.
 (make-package "FOAM" :use '("FRICAS-LISP"))

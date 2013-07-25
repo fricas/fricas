@@ -101,12 +101,12 @@ database.
 
 ;;TTT 7/2/97
 ; Regarding the 'ancestors field for a category: At database build
-; time there exists a *ancestors-hash* hash table that gets filled
+; time there exists a |$ancestors_hash| hash table that gets filled
 ; with CATEGORY (not domain) ancestor information. This later provides
-; the information that goes into interp.daase This *ancestors-hash*
+; the information that goes into interp.daase This |$ancestors_hash|
 ; does not exist at normal runtime (it can be made by a call to
 ; genCategoryTable). Note that the ancestor information in
-; *ancestors-hash* (and hence interp.daase) involves #1, #2, etc
+; |$ancestors_hash| (and hence interp.daase) involves #1, #2, etc
 ; instead of R, Coef, etc. The latter thingies appear in all
 ; .NRLIB/index.KAF files. So we need to be careful when we )lib
 ; categories and update the ancestor info.
@@ -254,7 +254,7 @@ database.
 ; (x . y) and doing an equal hash into this table.
 
 (defvar *operation-hash* nil "given an operation name, what are its modemaps?")
-(defvar *hasCategory-hash* nil "answers x has y category questions")
+(defvar |$has_category_hash| nil "answers x has y category questions")
 
 (defvar *miss* nil "print out cache misses on getdatabase calls")
 
@@ -312,7 +312,7 @@ database.
 
 (defun resethashtables ()
  "set all -hash* to clean values. used to clean up core before saving system"
- (setq *hascategory-hash* (make-hash-table :test #'equal))
+ (setq |$has_category_hash| (make-hash-table :test #'equal))
  (setq *operation-hash* (make-hash-table))
  (setq *allconstructors* nil)
  (setq *compressvector* nil)
@@ -543,10 +543,10 @@ database.
    (setq pos (car stamp))
    (file-position *category-stream* pos)
    (setq keys (read *category-stream*))
-   (setq *hasCategory-hash* (make-hash-table :test #'equal))
+   (setq |$has_category_hash| (make-hash-table :test #'equal))
    (dolist (item keys)
     (setq item (unsqueeze item))
-    (setf (gethash (first item) *hasCategory-hash*) (second item))))
+    (setf (gethash (first item) |$has_category_hash|) (second item))))
   (format t "~&")))
 
 (defun |operationOpen| ()
@@ -702,7 +702,7 @@ database.
     (when (setq struct (get constructor 'database))
      (setq data (database-modemaps struct))))
    (hascategory
-    (setq table  *hasCategory-hash*)
+    (setq table  |$has_category_hash|)
     (setq stream *category-stream*)
     (setq data (gethash constructor table)))
    (object
@@ -771,7 +771,7 @@ database.
    (setq data (unsqueeze (read stream)))
    (case key ; cache the result of the database read
     (operation           (setf (gethash constructor *operation-hash*) data))
-    (hascategory         (setf (gethash constructor *hascategory-hash*) data))
+    (hascategory         (setf (gethash constructor |$has_category_hash|) data))
     (constructorkind     (setf (database-constructorkind struct) data))
     (cosig               (setf (database-cosig struct) data))
     (constructormodemap  (setf (database-constructormodemap struct) data))
@@ -993,7 +993,7 @@ database.
                    (fetchdata alist "ancestors")))
          (if (eq kind '|domain|)
              (dolist (pair (cdr (assoc "ancestors" alist :test #'string=)))
-                     (setf (gethash (cons cname (caar pair)) *hascategory-hash*)
+                     (setf (gethash (cons cname (caar pair)) |$has_category_hash|)
                            (cdr pair))))
          (if |$InteractiveMode| (setq |$CategoryFrame| |$EmptyEnvironment|)))
         (setf (database-cosig dbstruct)
@@ -1131,7 +1131,7 @@ database.
   (do-symbols (symbol)
    (when (get symbol 'database)
     (setf (get symbol 'database) nil)))
-  (setq *hascategory-hash* (make-hash-table :test #'equal))
+  (setq |$has_category_hash| (make-hash-table :test #'equal))
   (setq *operation-hash* (make-hash-table))
   (setq *allconstructors* nil)
   (setq *compressvector* nil)
@@ -1162,7 +1162,7 @@ database.
   (if br_data
       (write-browsedb))
   (write-operationdb)
- ; note: genCategoryTable creates a new *hascategory-hash* table
+ ; note: genCategoryTable creates a new |$has_category_hash| table
  ; this smashes the existing table and regenerates it.
  ; write-categorydb does getdatabase calls to write the new information
   (write-categorydb)
@@ -1178,8 +1178,8 @@ database.
                  (when (= (length d) (length (|getConstructorForm| con)))
                        (format t "   ~a has a default domain of ~a~%" con (car d))
                        (setf (database-defaultdomain dbstruct) (car d)))))))
-                                        ; note: genCategoryTable creates *ancestors-hash*. write-interpdb
-                                        ; does gethash calls into it rather than doing a getdatabase call.
+          ; note: genCategoryTable creates |$ancestors_hash|. write-interpdb
+          ; does gethash calls into it rather than doing a getdatabase call.
   (write-interpdb)
   (|createInitializers|)
   (when (probe-file (final-name "compress"))
@@ -1288,7 +1288,7 @@ database.
 
 (defun write-interpdb ()
  "build interp.daase from hash tables"
- (declare (special $spadroot) (special *ancestors-hash*))
+ (declare (special $spadroot) (special |$ancestors_hash|))
  (let (opalistpos modemapspos cmodemappos master masterpos obj (*print-pretty* t)
         concategory categorypos kind niladic cosig abbrev defaultdomain
         ancestors ancestorspos out)
@@ -1333,7 +1333,7 @@ database.
     (setq cosig (database-cosig struct))
     (setq kind (database-constructorkind struct))
     (setq defaultdomain (database-defaultdomain struct))
-    (setq ancestors (squeeze (gethash constructor *ancestors-hash*))) ;cattable.boot
+    (setq ancestors (squeeze (gethash constructor |$ancestors_hash|)))
     (if ancestors
      (progn
       (setq ancestorspos (file-position out))
@@ -1384,7 +1384,7 @@ database.
   (close out)))
 
 (defun write-categorydb ()
- "make category.daase from scratch. contains the *hasCategory-hash* table"
+ "make category.daase from scratch. contains the |$has_category_hash| table"
  (let (out master pos (*print-pretty* t))
   (print "building category.daase")
   (|genCategoryTable|)
@@ -1398,7 +1398,7 @@ database.
       (setq pos (file-position out))
       (print (squeeze value) out)))
      (push (list key pos) master))
-     *hasCategory-hash*)
+     |$has_category_hash|)
   (finish-output out)
   (setq pos (file-position out))
   (print (mapcar #'squeeze master) out)

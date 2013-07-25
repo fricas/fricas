@@ -31,6 +31,10 @@
 
 )package "BOOT"
 
+DEFVAR($has_category_hash, nil)
+DEFVAR($ancestor_hash, nil)
+DEFVAR($ct)
+
 compressHashTable(ht) == ht
 
 hasCat(domainOrCatName,catName) ==
@@ -38,21 +42,21 @@ hasCat(domainOrCatName,catName) ==
    or GETDATABASE([domainOrCatName,:catName],'HASCATEGORY)
 
 showCategoryTable con ==
-  [[b,:val] for (key :=[a,:b]) in HKEYS _*HASCATEGORY_-HASH_*
-     | a = con and (val := HGET(_*HASCATEGORY_-HASH_*,key))]
+  [[b,:val] for (key :=[a,:b]) in HKEYS $has_category_hash
+     | a = con and (val := HGET($has_category_hash, key))]
 
 displayCategoryTable(:options) ==
   conList := IFCAR options
-  SETQ($ct,MAKE_-HASHTABLE 'ID)
-  for (key:=[a,:b]) in HKEYS _*HASCATEGORY_-HASH_* repeat
-    HPUT($ct,a,[[b,:HGET(_*HASCATEGORY_-HASH_*,key)],:HGET($ct,a)])
+  $ct := MAKE_-HASHTABLE('ID)
+  for (key := [a, :b]) in HKEYS $has_category_hash repeat
+    HPUT($ct, a, [[b, :HGET($has_category_hash, key)], :HGET($ct, a)])
   for id in HKEYS $ct | null conList or MEMQ(id,conList) repeat
     sayMSG [:bright id,'"extends:"]
     PRINT HGET($ct,id)
 
 genCategoryTable() ==
-  SETQ(_*ANCESTORS_-HASH_*,  MAKE_-HASHTABLE 'ID)
-  SETQ(_*HASCATEGORY_-HASH_*,MAKE_-HASHTABLE 'UEQUAL)
+  $ancestors_hash := MAKE_-HASHTABLE('ID)
+  $has_category_hash := MAKE_-HASHTABLE('UEQUAL)
   genTempCategoryTable()
   domainList:=
     [con for con in allConstructors()
@@ -65,26 +69,26 @@ genCategoryTable() ==
     for id in specialDs], :domainTable]
   for [id,:entry] in domainTable repeat
     for [a,:b] in encodeCategoryAlist(id,entry) repeat
-      HPUT(_*HASCATEGORY_-HASH_*,[id,:a],b)
+      HPUT($has_category_hash, [id, :a], b)
   simpTempCategoryTable()
-  compressHashTable _*ANCESTORS_-HASH_*
+  compressHashTable $ancestors_hash
   simpCategoryTable()
-  compressHashTable _*HASCATEGORY_-HASH_*
+  compressHashTable $has_category_hash
 
 simpTempCategoryTable() ==
-  for id in HKEYS _*ANCESTORS_-HASH_* repeat
+  for id in HKEYS $ancestors_hash repeat
     for (u:=[a,:b]) in GETDATABASE(id,'ANCESTORS) repeat
       RPLACD(u,simpHasPred b)
 
 simpCategoryTable() == main where
   main ==
-    for key in HKEYS _*HASCATEGORY_-HASH_* repeat
-      entry := HGET(_*HASCATEGORY_-HASH_*,key)
-      null entry => HREM(_*HASCATEGORY_-HASH_*,key)
+    for key in HKEYS $has_category_hash repeat
+      entry := HGET($has_category_hash, key)
+      null entry => HREM($has_category_hash, key)
       change :=
         atom opOf entry => simpHasPred entry
         [[x,:npred] for [x,:pred] in entry | npred := simpHasPred pred]
-      HPUT(_*HASCATEGORY_-HASH_*,key,change)
+      HPUT($has_category_hash, key, change)
 
 simpHasPred(pred,:options) == main where
   main ==
@@ -162,16 +166,16 @@ genTempCategoryTable() ==
   for con in allConstructors()  repeat
     GETDATABASE(con,'CONSTRUCTORKIND) = 'category =>
       addToCategoryTable con
-  for id in HKEYS _*ANCESTORS_-HASH_* repeat
-    item := HGET(_*ANCESTORS_-HASH_*, id)
+  for id in HKEYS $ancestors_hash repeat
+    item := HGET($ancestors_hash, id)
     for (u:=[.,:b]) in item repeat
       RPLACD(u,simpCatPredicate simpBool b)
-    HPUT(_*ANCESTORS_-HASH_*,id,listSort(function GLESSEQP,item))
+    HPUT($ancestors_hash, id, listSort(function GLESSEQP, item))
 
 addToCategoryTable con ==
   u := CAAR GETDATABASE(con,'CONSTRUCTORMODEMAP) --domain
   alist := getCategoryExtensionAlist u
-  HPUT(_*ANCESTORS_-HASH_*,first u,alist)
+  HPUT($ancestors_hash, first u, alist)
   alist
 
 encodeCategoryAlist(id,alist) ==
@@ -396,7 +400,7 @@ updateCategoryTable(cname,kind) ==
 updateCategoryTableForCategory(cname) ==
   clearTempCategoryTable([[cname,'category]])
   addToCategoryTable(cname)
-  for id in HKEYS _*ANCESTORS_-HASH_* repeat
+  for id in HKEYS $ancestors_hash repeat
       for (u:=[.,:b]) in GETDATABASE(id,'ANCESTORS) repeat
         RPLACD(u,simpCatPredicate simpBool b)
 
@@ -404,23 +408,23 @@ updateCategoryTableForDomain(cname,category) ==
   clearCategoryTable(cname)
   [cname,:domainEntry]:= addDomainToTable(cname,category)
   for [a,:b] in encodeCategoryAlist(cname,domainEntry) repeat
-    HPUT(_*HASCATEGORY_-HASH_*,[cname,:a],b)
-  $doNotCompressHashTableIfTrue = true => _*HASCATEGORY_-HASH_*
-  compressHashTable _*HASCATEGORY_-HASH_*
+    HPUT($has_category_hash, [cname, :a], b)
+  $doNotCompressHashTableIfTrue = true => $has_category_hash
+  compressHashTable $has_category_hash
 
 clearCategoryTable($cname) ==
-  MAPHASH('clearCategoryTable1,_*HASCATEGORY_-HASH_*)
+  MAPHASH('clearCategoryTable1, $has_category_hash)
 
 clearCategoryTable1(key,val) ==
-  (first key = $cname) => HREM(_*HASCATEGORY_-HASH_*, key)
+  (first key = $cname) => HREM($has_category_hash, key)
   nil
 
 clearTempCategoryTable(catNames) ==
-  for key in HKEYS(_*ANCESTORS_-HASH_*) repeat
+  for key in HKEYS($ancestors_hash) repeat
     MEMQ(key,catNames) => nil
     extensions:= nil
     for (extension:= [catForm,:.]) in GETDATABASE(key,'ANCESTORS)
       repeat
         MEMQ(first catForm, catNames) => nil
         extensions:= [extension,:extensions]
-    HPUT(_*ANCESTORS_-HASH_*,key,extensions)
+    HPUT($ancestors_hash, key, extensions)

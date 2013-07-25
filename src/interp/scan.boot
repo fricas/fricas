@@ -33,18 +33,18 @@
 )package "BOOT"
 
 
-SPACE       := QENUM('"    ", 0)
-ESCAPE      := QENUM('"__  ", 0)
-STRING_CHAR := QENUM('"_"  ", 0)
-PLUSCOMMENT := QENUM('"+   ", 0)
-MINUSCOMMENT:= QENUM('"-   ", 0)
-RADIX_CHAR  := QENUM('"r   ", 0)
-DOT         := QENUM('".   ", 0)
-EXPONENT1   := QENUM('"E   ", 0)
-EXPONENT2   := QENUM('"e   ", 0)
-CLOSEPAREN  := QENUM('")   ", 0)
-CLOSEANGLE  := QENUM('">   ", 0)
-QUESTION    := QENUM('"?   ",0)
+SPACE       := STR_ELT('"    ", 0)
+ESCAPE      := STR_ELT('"__  ", 0)
+STRING_CHAR := STR_ELT('"_"  ", 0)
+PLUSCOMMENT := STR_ELT('"+   ", 0)
+MINUSCOMMENT:= STR_ELT('"-   ", 0)
+RADIX_CHAR  := STR_ELT('"r   ", 0)
+DOT         := STR_ELT('".   ", 0)
+EXPONENT1   := STR_ELT('"E   ", 0)
+EXPONENT2   := STR_ELT('"e   ", 0)
+CLOSEPAREN  := STR_ELT('")   ", 0)
+CLOSEANGLE  := STR_ELT('">   ", 0)
+QUESTION    := STR_ELT('"?   ", 0)
 
 scanKeyWords := [ _
            ['"add",      "add"], _
@@ -160,7 +160,7 @@ scanKeyTableCons()==
 
 scanInsert(s,d) ==
       l := #s
-      h := QENUM(s,0)
+      h := STR_ELT(s, 0)
       u := ELT(d,h)
       n := #u
       k:=0
@@ -178,7 +178,7 @@ scanDictCons()==
       d :=
           a:=MAKE_-VEC(256)
           b:=MAKE_-VEC(1)
-          QSETVELT(b, 0, make_CVEC 0)
+          QSETVELT(b, 0, make_full_CVEC(0, '" "))
           for i in 0..255 repeat QSETVELT(a, i, b)
           a
       for s in l repeat scanInsert(s,d)
@@ -189,8 +189,8 @@ scanPunCons()==
     a := make_BVEC(256, 0)
     for i in 0..255 repeat SETELT_BVEC(a, i, 0)
     for k in listing repeat
-       if not startsId? k.0
-       then SETELT_BVEC(a, QENUM(k, 0), 1)
+       if not startsId? k.0 then
+           SETELT_BVEC(a, STR_ELT(k, 0), 1)
     a
 
 scanKeyTable:=scanKeyTableCons()
@@ -264,8 +264,9 @@ scanIgnoreLine(ln,n)==
     if null n
     then n
     else
-       fst:=QENUM(ln,0)
-       if EQ(fst,CLOSEPAREN) and ($sz > 1) and not(EQ(QENUM(ln,1), char " "))
+       fst := STR_ELT(ln, 0)
+       if EQ(fst, CLOSEPAREN) and ($sz > 1) and
+           not(STR_ELT(ln, 1) = SPACE)
        then if incPrefix?('"command",1,ln)
             then true
             else nil
@@ -317,7 +318,7 @@ lineoftoks(s)==
 
 scanToken () ==
       ln:=$ln
-      c:=QENUM($ln,$n)
+      c := STR_ELT($ln, $n)
       linepos:=$linepos
       n:=$n
       ch:=$ln.$n
@@ -391,25 +392,23 @@ scanEsc()==
 startsComment?()==
     if $n<$sz
     then
-         if QENUM($ln,$n)=PLUSCOMMENT
-         then
+         if STR_ELT($ln, $n) = PLUSCOMMENT then
             www:=$n+1
             if www>=$sz
             then false
-            else QENUM($ln,www) = PLUSCOMMENT
-          else false
+            else STR_ELT($ln, www) = PLUSCOMMENT
+         else false
     else false
 
 startsNegComment?()==
     if $n< $sz
     then
-         if QENUM($ln,$n)=MINUSCOMMENT
-         then
+         if STR_ELT($ln, $n) = MINUSCOMMENT then
             www:=$n+1
             if www>=$sz
             then false
-            else QENUM($ln,www) = MINUSCOMMENT
-          else false
+            else STR_ELT($ln, www) = MINUSCOMMENT
+         else false
     else false
 
 scanNegComment()==
@@ -529,8 +528,8 @@ scanW(b)==             -- starts pointing to first char
        $n := inc_SI($n)          -- the first character is not tested
        l:=$sz
        endid:=posend($ln,$n)
-       if endid=l or QENUM($ln,endid)~=ESCAPE
-       then -- not escaped
+       if endid = l or STR_ELT($ln, endid) ~= ESCAPE then
+           -- not escaped
            $n:=endid
            [b, SUBSTRING($ln, n1, sub_SI(endid, n1))] -- l overflows
        else -- escape and endid~=l
@@ -567,7 +566,7 @@ spleI1(dig,zro) ==
        n:=$n
        l:= $sz
        while $n<l and FUNCALL(dig,($ln.$n)) repeat $n:=$n+1
-       if $n=l or QENUM($ln,$n)~=ESCAPE
+       if $n = l or STR_ELT($ln, $n) ~= ESCAPE
        then if n=$n and zro
             then '"0"
             else SUBSTRING($ln,n,$n-n)
@@ -594,14 +593,11 @@ scanNumber() ==
        if $n>=$sz
        then lfinteger a
        else
-         if QENUM($ln,$n)~=RADIX_CHAR
-         then
-           if $floatok and QENUM($ln,$n)=DOT
-           then
+         if STR_ELT($ln, $n) ~= RADIX_CHAR then
+           if $floatok and STR_ELT($ln, $n) = DOT then
              n:=$n
              $n:=$n+1
-             if  $n<$sz and QENUM($ln,$n)=DOT
-             then
+             if  $n<$sz and STR_ELT($ln, $n) = DOT then
                $n:=n
                lfinteger a
              else
@@ -615,12 +611,10 @@ scanNumber() ==
              if $n>=$sz
              then
                 lfrinteger(a,w)
-             else if QENUM($ln,$n)=DOT
-                  then
+             else if STR_ELT($ln, $n) = DOT then
                     n:=$n
                     $n:=$n+1
-                    if  $n<$sz and QENUM($ln,$n)=DOT
-                    then
+                    if  $n < $sz and STR_ELT($ln, $n) = DOT then
                        $n:=n
                        lfrinteger(a,w)
                     else
@@ -635,7 +629,7 @@ scanExponent(a,w)==
      then lffloat(a,w,'"0")
      else
         n:=$n
-        c:=QENUM($ln,$n)
+        c := STR_ELT($ln, $n)
         if c=EXPONENT1 or c=EXPONENT2
         then
            $n:=$n+1
@@ -648,7 +642,7 @@ scanExponent(a,w)==
                   e:=spleI(function digit?)
                   lffloat(a,w,e)
                 else
-                  c1:=QENUM($ln,$n)
+                  c1 := STR_ELT($ln, $n)
                   if c1=PLUSCOMMENT or c1=MINUSCOMMENT
                   then
                     $n:=$n+1
@@ -685,7 +679,7 @@ keyword? st  ==  not null HGET(scanKeyTable,st)
 subMatch(l,i)==substringMatch(l,scanDict,i)
 
 substringMatch (l,d,i)==
-       h:= QENUM(l, i)
+       h := STR_ELT(l, i)
        u:=ELT(d,h)
        ll:=SIZE l
        done:=false
@@ -698,7 +692,7 @@ substringMatch (l,d,i)==
                 else
                  eql:= true
                  for k in 1..ls-1 while eql repeat
-                    eql:= EQL(QENUM(s,k),QENUM(l,k+i))
+                    eql := EQL(STR_ELT(s, k), STR_ELT(l, k + i))
                  if eql
                  then
                    s1:=s

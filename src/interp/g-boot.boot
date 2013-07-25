@@ -134,7 +134,7 @@ compSPADSLAM(name, argl, bodyl) ==
     lamex := ["LAMBDA", arg,
                 ["LET", [g2],
                   ["COND", la1, la2]]]
-    SETANDFILE(al, nil)
+    output_lisp_defparameter(al, nil)
     u := [name,lamex]
     if $PrettyPrint then PRETTYPRINT(u)
     COMP370(u)

@@ -420,7 +420,8 @@ endif
 NSPADLIST = ${SPADLIST} ${EXTRASPADS} ${GUESSLIST} ${TESTLIST}
 
 stamp-db: $(patsubst %, %.spad, ${NSPADLIST})
-	if [ ! -f stamp-db ] ; then \
+	@echo doing stamp-db
+	@if [ ! -f stamp-db ] ; then \
           cp ${srcdir}/boo_db.input . ; \
           rm -f komp_all.input ; \
           for A in ${NSPADLIST} ; do \
@@ -449,7 +450,8 @@ stamp-db: $(patsubst %, %.spad, ${NSPADLIST})
         fi
 
 stamp-oboo3: stamp-db
-	if [ ! -f stamp-oboo3 ] ; then \
+	@echo doing stamp-oboo3
+	@if [ ! -f stamp-oboo3 ] ; then \
            echo "Bootstrap object copy" ; \
            for A in ${CATLIST} ${DOMLIST} ; do \
               cp $$A.NRLIB/$$A.$(FASLEXT) ${OUT}/$$A.$(FASLEXT) || exit 1 ; \
@@ -473,7 +475,8 @@ stamp-oboo3: stamp-db
 	fi
 
 stamp-bootstrap: stamp-oboo3
-	if [ ! -f stamp-bootstrap ] ; then \
+	@echo doing stamp-bootstrap
+	@if [ ! -f stamp-bootstrap ] ; then \
            $(ECHO_B) 'main-bootstrap: ' > boot.mak ; \
            for A in ${NSPADLIST} ; do \
                $(ECHO_B) $${A}.NRLIB/$${A}.lsp" " >> boot.mak ; \
@@ -515,14 +518,15 @@ do-update-spads: stamp-bootstrap spad.mak
 
 
 spad.mak : Makefile
+	@echo making spad.mak
 	$(ECHO_B) 'update-spads: ' > spad.mak
-	for A in ${NSPADLIST} ; do \
+	@for A in ${NSPADLIST} ; do \
 	    $(ECHO_B) "${OUT}"/$${A}."$(FASLEXT) " >> spad.mak ; \
 	done
-	for A in $(patsubst %, ${OUT}/%-.$(FASLEXT), ${CATDOMS}) ; do \
+	@for A in $(patsubst %, ${OUT}/%-.$(FASLEXT), ${CATDOMS}) ; do \
 	    $(ECHO_B) $${A}" " >> spad.mak ; \
 	done
-	for A in ${NSPADLIST} ; do \
+	@for A in ${NSPADLIST} ; do \
 	    echo >> spad.mak ; \
 	    echo '${OUT}/'$${A}'.$(FASLEXT): ' \
 	         $${A}.NRLIB/$${A}.$(FASLEXT) >> spad.mak ; \
@@ -534,7 +538,7 @@ spad.mak : Makefile
 	    $(ECHO_T) 'echo ")co" '$${A}'.spad | DAASE=./rf ${INTERPSYS}' \
 	        >> spad.mak ; \
 	done
-	for A in ${CATDOMS} ; do \
+	@for A in ${CATDOMS} ; do \
 	    echo >> spad.mak ; \
 	    echo '${OUT}/'$${A}'-.$(FASLEXT): ' \
 	         $${A}-.NRLIB/$${A}-.$(FASLEXT) >> spad.mak ; \
