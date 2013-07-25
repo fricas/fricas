@@ -34,6 +34,7 @@
 DEFPARAMETER($currentFunctionLevel, 0)
 DEFPARAMETER($tryRecompileArguments, true)
 DEFPARAMETER($insideCompTypeOf, false)
+DEFPARAMETER($locVarsTypes, nil)
 
 initEnvHashTable(l) ==
   for u in first(first(l)) repeat
@@ -176,6 +177,46 @@ compLambda(x is ["+->", vl, body], m, e) ==
         stackAndThrow ["compLambda: malformed argument list", x]
     stackAndThrow ["compLambda: signature needed", x]
 
+getFreeList(u, bound, free, e) ==
+    atom u =>
+        not IDENTP u => free
+        MEMQ(u,bound) => free
+        v := ASSQ(u, free) =>
+            RPLACD(v, 1 + CDR v)
+            free
+        not getmode(u, e) => free
+        [[u, :1], :free]
+    op := first u
+    MEMQ(op, '(QUOTE GO function)) => free
+    EQ(op, 'LAMBDA) =>
+        bound := UNIONQ(bound, CADR u)
+        for v in CDDR u repeat
+            free := getFreeList(v, bound, free, e)
+        free
+    EQ(op, 'PROG) =>
+        bound := UNIONQ(bound, CADR u)
+        for v in CDDR u | NOT ATOM v repeat
+            free := getFreeList(v, bound, free, e)
+        free
+    EQ(op, 'SPROG) =>
+        bound := UNIONQ(bound, [first uu for uu in CADR u])
+        for v in CDDR u | NOT ATOM v repeat
+            free := getFreeList(v, bound, free, e)
+        free
+    EQ(op, 'SEQ) =>
+        for v in rest u | NOT ATOM v repeat
+            free := getFreeList(v, bound, free, e)
+        free
+    EQ(op, 'COND) =>
+        for v in rest u repeat
+            for vv in v repeat
+                free := getFreeList(vv, bound, free, e)
+        free
+    if ATOM op then u := rest u  --Atomic functions aren't descended
+    for v in u repeat
+        free := getFreeList(v, bound, free, e)
+    free
+
 compWithMappingMode(x, m, oldE) ==
   compWithMappingMode1(x, m, oldE, $formalArgList)
 
@@ -236,49 +277,16 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   --  pass this as the environment to our inner function.
   $FUNNAME :local := nil
   $FUNNAME_TAIL : local := [nil]
-  expandedFunction := compTran CADR uu
-  frees:=FreeList(expandedFunction,vl,nil,e)
-    where FreeList(u,bound,free,e) ==
-      atom u =>
-        not IDENTP u => free
-        MEMQ(u,bound) => free
-        v:=ASSQ(u,free) =>
-          RPLACD(v,1+CDR v)
-          free
-        not getmode(u, e) => free
-        [[u,:1],:free]
-      op := first u
-      MEMQ(op, '(QUOTE GO function)) => free
-      EQ(op,'LAMBDA) =>
-        bound:=UNIONQ(bound,CADR u)
-        for v in CDDR u repeat
-          free:=FreeList(v,bound,free,e)
-        free
-      EQ(op,'PROG) =>
-        bound:=UNIONQ(bound,CADR u)
-        for v in CDDR u | NOT ATOM v repeat
-          free:=FreeList(v,bound,free,e)
-        free
-      EQ(op,'SEQ) =>
-        for v in rest u | NOT ATOM v repeat
-          free:=FreeList(v,bound,free,e)
-        free
-      EQ(op,'COND) =>
-        for v in rest u repeat
-          for vv in v repeat
-            free:=FreeList(vv,bound,free,e)
-        free
-      if ATOM op then u := rest u  --Atomic functions aren't descended
-      for v in u repeat
-        free:=FreeList(v,bound,free,e)
-      free
+  expandedFunction := compTranDryRun CADR uu
+  frees := getFreeList(expandedFunction, vl, nil, e)
   expandedFunction :=
             --One free can go by itself, more than one needs a vector
          --An A-list name . number of times used
-    #frees = 0 => ['LAMBDA,[:vl,"$$"], :CDDR expandedFunction]
+    #frees = 0 =>
+        ['LAMBDA, addNilTypesToArgs [:vl, "$$"], :CDDR expandedFunction]
     #frees = 1 =>
       vec:=first first frees
-      ['LAMBDA,[:vl,vec], :CDDR expandedFunction]
+      ['LAMBDA, addNilTypesToArgs [:vl, vec], :CDDR expandedFunction]
     scode:=nil
     vec:=nil
     locals:=nil
@@ -295,7 +303,7 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
                               ['RETURN, ['PROGN, :rest body]]]]
       else body:=[['PROG,locals,:scode,['RETURN,['PROGN,:body]]]]
     vec:=['VECTOR,:NREVERSE vec]
-    ['LAMBDA,[:vl,"$$"],:body]
+    ['LAMBDA, addNilTypesToArgs [:vl, "$$"], :body]
   fname:=['CLOSEDFN,expandedFunction]
          --Like QUOTE, but gets compiled
   uu:=
@@ -625,6 +633,8 @@ finish_setq_single(T, m, id, val, currentProplist) ==
       --all we do now is to allocate a slot number for lhs
       --e.g. the LET form below will be changed by putInLocalDomainReferences
 --+
+  saveLocVarsTypeDecl(x, id, e')
+
   if (k:=NRTassocIndex(id))
      then form:=['SETELT,"$",k,x]
      else form:=
@@ -632,6 +642,20 @@ finish_setq_single(T, m, id, val, currentProplist) ==
          ["LET",id,x,
             (isDomainForm(x, e') => ['ELT, id, 0]; first outputComp(id, e'))]
   [form,m',e']
+
+saveLocVarsTypeDecl(x, id, e) ==
+    t := getmode(id, e) =>
+        t := (t = '$EmptyMode => nil; ATOM(t) => [t]; t)
+        typeDecl := ASSOC(id, $locVarsTypes)
+        null typeDecl =>
+            if null t then
+                SAY("Local variable ", id, " lacks type.")
+            else $locVarsTypes := ACONS(id, t, $locVarsTypes)
+        t' := CDR(typeDecl)
+        not EQUAL(t, t') =>
+            if not null t' then
+                SAY("Local variable ", id, " type redefined: ", t, " to ", t')
+            RPLACD(typeDecl, t)
 
 assignError(val,m',form,m) ==
   message:=
@@ -969,6 +993,12 @@ canReturn(expr,level,exitCount,ValueFlag) ==  --SPAD: exit and friends
       pp expr
     canReturn(a,level,exitCount,nil) or canReturn(b,level,exitCount,ValueFlag)
       or canReturn(c,level,exitCount,ValueFlag)
+  op = "SPROG" =>
+      expr is [., defs, body]
+      canReturn(body, level, exitCount, ValueFlag)
+  op = "LAMBDA" =>
+      expr is [., args, :body]
+      and/[canReturn(u, level, exitCount, ValueFlag) for u in body]
   --now we have an ordinary form
   atom op => and/[canReturn(u,level,exitCount,ValueFlag) for u in expr]
   op is ["XLAM",args,bods] =>
