@@ -1190,7 +1190,9 @@ declare(var,mode) ==
 declareMap(var,mode) ==
   -- declare a Mapping property
   (v := get(var, 'value, $e)) and objVal(v) isnt ['SPADMAP, :.] =>
-    throwKeyedMsg("S2IS0019",[var])
+      objMode(v) = mode => putHist(var, 'mode, mode, $e)
+      mode = get(var, 'mode, $e) => nil
+      throwKeyedMsg("S2IS0019", [var])
   isPartialMode mode => throwKeyedMsg("S2IM0004",NIL)
   putHist(var,'mode,mode,$e)
 
