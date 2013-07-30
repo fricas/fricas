@@ -137,16 +137,16 @@ File(S : SetCategory) : FileCategory(FileName, S) with
         read! f ==
             f.fileIOmode ~= "input" =>
                 error "File not in read state"
-            x := VMREAD(f.fileState)$Lisp
+            x : None := VMREAD(f.fileState)$Lisp
             PLACEP(x)$Lisp =>
                 error "End of file"
-            x
+            x pretend S
         readIfCan! f ==
             f.fileIOmode ~= "input" =>
                 error "File not in read state"
-            x : S := VMREAD(f.fileState)$Lisp
+            x : None := VMREAD(f.fileState)$Lisp
             PLACEP(x)$Lisp => "failed"
-            x
+            x pretend S
         write!(f, x) ==
             f.fileIOmode ~= "output" =>
                 error "File not in write state"
@@ -221,14 +221,14 @@ TextFile : Cat == Def where
 
         readLine! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            s : String := read_-line(f.fileState)$Lisp
+            s : None := read_-line(f.fileState)$Lisp
             PLACEP(s)$Lisp => error "End of file"
-            s
+            s pretend String
         readLineIfCan! f ==
             f.fileIOmode ~= "input"  => error "File not in read state"
-            s : String := read_-line(f.fileState)$Lisp
+            s : None := read_-line(f.fileState)$Lisp
             PLACEP(s)$Lisp => "failed"
-            s
+            s pretend String
         write!(f, x) ==
             f.fileIOmode ~= "output" => error "File not in write state"
             PRINTEXP(x, f.fileState)$Lisp
