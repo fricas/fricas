@@ -578,14 +578,16 @@
 ; macros needed for Spad:
 
 (defun TranslateTypeSymbol (ts typeOrValue) 
-  (let ((typDecl
-          (case (cadr ts)
-            (|Void| '(null nil))
-            (|SingleInteger| '(fixnum 0))
-            (|String| '(string ""))
-            (|Boolean| '(BOOLEAN nil))
-            (|DoubleFloat| '(DOUBLE-FLOAT 0.0d0))
-            (otherwise '(nil)))))
+  (let ((typDecl (assoc (car (cdr ts))
+          '(((|Void|) (null nil))
+            ((|SingleInteger|) (fixnum 0))
+            ((|String|) (string ""))
+            ((|Boolean|) (BOOLEAN nil))
+            ((|DoubleFloat|) (DOUBLE-FLOAT 0.0d0)))
+            :test #'equal
+            )))
+  (if typDecl (setf typDecl (car (cdr typDecl)))
+              (return-from TranslateTypeSymbol (list (car ts))))
   (cons (car ts) (if typeOrValue (cdr typDecl) (car typDecl)))))
 
 (defun GetLispType (ts)
