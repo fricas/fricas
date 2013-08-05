@@ -58,7 +58,6 @@ EXEEXT = @EXEEXT@
 
 AUTOCONF = autoconf
 AWK = @AWK@
-GOOD_SHELL = @AUTO_GOOD_SHELL@
 TARGET_AWK = @AWK_FOR_TARGET@
 INSTALL = @INSTALL@
 install_sh = @install_sh@
@@ -149,10 +148,6 @@ AXIOM = @AXIOM@
 export AXIOM
 BASE = @BASE@
 export BASE
-
-## Where to find Axiom data bases.
-DAASE = $(fricas_src_datadir)
-export DAASE
 
 TMP=$(fricas_builddir)
 

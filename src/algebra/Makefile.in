@@ -401,20 +401,17 @@ TARGET_FASLS=$(patsubst %, ${OUT}/%.$(FASLEXT), ${FULL_FASL_LIST})
 SRC_LSP=$(patsubst %, %.lsp, ${FULL_FASL_LIST})
 stamp-alg: ${TARGET_FASLS} stamp-spadsrc ${TESTS}
 
-# Note that the value of ${PREGENERATED} must be an absolute directory.
-${SRC_LSP}: %: $(PREGENERATED)/src/algebra/%
-	cp $< $@
-
-${STAMP_FASLS}: stamp-fasls%: ${SRC_LSP}
-	( for A in $(patsubst %, %.lsp, ${SPADLIST$*}) ; do \
-	   echo ')lisp (compile-file "'$$A'")' ; \
+${STAMP_FASLS}: stamp-fasls% :
+	( for A in ${SPADLIST$*} ; do \
+	   echo ')lisp (fricas_compile_fasl' \
+                ' "$(PREGENERATED)/src/algebra/'$$A'.lsp"' \
+                '"${OUT}/'$$A'.${FASLEXT}")' ; \
 	done ; \
 	echo '(quit)' ) | \
 	DAASE=$(fricas_targetdir) $(INTERPSYS)
 	${STAMP} $@
 
-${TARGET_FASLS}: ${OUT}/%: ${STAMP_FASLS}
-	cp $* $@
+${TARGET_FASLS}: ${STAMP_FASLS}
 endif
 
 NSPADLIST = ${SPADLIST} ${EXTRASPADS} ${GUESSLIST} ${TESTLIST}
