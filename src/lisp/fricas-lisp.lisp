@@ -983,37 +983,24 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 ;;; Saner version of compile-file
 #+:ecl
-(defun fricas-compile-file (f &key output-file)
-    (if output-file
-        (compile-file f :output-file (relative-to-absolute output-file)
-                        :system-p t)
-        (compile-file f :system-p t)))
+(defun fricas_compile_file (f output-file)
+    (compile-file f :output-file (relative-to-absolute output-file)
+                    :system-p t))
 
 #+:poplog
-(defun fricas-compile-file (f &key output-file)
-    (if (not output-file)
-        (setf output-file (namestring (merge-pathnames ".lsp" f))))
+(defun fricas_compile_file (f output-file)
     (POP11::sysobey (concatenate 'string "cp " f " " output-file)))
 
 #-(or :ecl :poplog)
-(defun fricas-compile-file (f &key output-file)
-    (if output-file
-        (compile-file f :output-file (relative-to-absolute output-file))
-        (compile-file f)))
+(defun fricas_compile_file (f output-file)
+    (compile-file f :output-file (relative-to-absolute output-file)))
 
-(defun maybe-compile (f cf)
-    (if (or (not (probe-file cf))
-            (< (file-write-date cf) (file-write-date f)))
-        (fricas-compile-file f :output-file cf)))
-
-#-:poplog
-(defun load-maybe-compiling (f cf)
-         (maybe-compile f cf)
-         (load #-:ecl cf #+:ecl f))
-
-#+:poplog
-(defun load-maybe-compiling (f)
-    (load f))
+(defun fricas_compile_fasl (f output-file)
+#-:ecl
+    (fricas_compile_file f output-file)
+#+:ecl
+    (compile-file f :output-file (relative-to-absolute output-file))
+)
 
 (defmacro DEFCONST (name value)
    `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
