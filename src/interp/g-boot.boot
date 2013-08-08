@@ -213,7 +213,7 @@ addTypesToArgs(args) ==
     $insideCapsuleFunctionIfTrue =>
         sig := $signatureOfForm
         spadTypes := [(ATOM(t) => [t]; t) for t in [:rest(sig), first(sig)]]
-        NREVERSE(PAIRLIS(args, spadTypes))
+        [[a, :t] for a in args for t in spadTypes]
     args
 
 addNilTypesToArgs(args) ==
