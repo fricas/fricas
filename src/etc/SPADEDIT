@@ -1,0 +1,44 @@
+#! /bin/sh
+
+if [ $# -eq 0 ]; then
+    echo ""
+    echo "Error: SPADEDIT expects one or two arguments."
+    exit
+fi
+
+DEFAULTEDITOR='more +$line $name'
+DEFAULTXEDITOR='xterm -e "more +$line $name"'
+
+if [ "$AXIOMEDITOR" = "" ] ; then
+    echo ""
+    if [ ! -z "$SPADNUM" ] && [ -z "$DISPLAY" ] ; then
+        echo "Error: environment variable AXIOMEDITOR not set."
+        echo "We are in server mode but have no X."
+        echo "No default way to edit/view files."
+        exit
+     fi
+     if [ -z "$DISPLAY" ] ; then
+         echo "Warning: environment variable AXIOMEDITOR not set."
+         echo "Using 'more'."
+         echo "Press space to continue, 'q' to quit."
+         AXIOMEDITOR=$DEFAULTEDITOR
+     else
+         echo "Warning: environment variable AXIOMEDITOR not set."
+         echo "Launching 'more' in an 'xterm'."
+         echo "Press space to continue, 'q' to quit."
+         AXIOMEDITOR=$DEFAULTXEDITOR
+     fi
+fi
+
+if [ $# -eq 1 ]; then
+    name=$1
+    line=1
+    eval $AXIOMEDITOR
+else
+    f=$(basename $1 .spad)
+    h=$(grep -n "^)abb.* $f " $AXIOM/src/algebra/*.spad.pamphlet)
+    name=${h%%:*}
+    line1=${h#*:}
+    line=${line1%:*}
+    eval $AXIOMEDITOR
+fi
