@@ -1,3 +1,4 @@
+#if 0
 \documentclass{article}
 \usepackage{axiom}
 \begin{document}
@@ -109,9 +110,8 @@ symbol [[|Category|]]):
 \begin{verbatim}
 (((-1106) (-1182)) (T -1106))
 \end{verbatim}
+#endif
 
-
-<<*>>=
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -924,9 +924,3 @@ main(int argc, char * * argv)
     printinfo(iml, bml, propname, ct, interp_file, browse_file);
     return 0;
 }
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}
