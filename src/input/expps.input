@@ -1,0 +1,94 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "expps"
+testcase "STEXS"
+StrInt:= Stream Integer
+STEXSINT:= StreamExponentialSeriesOperations Integer
+-- exponential function exp(x)
+serexp1:StrInt:= repeating [1]
+-- exponential function exp(2x)
+serexp2:StrInt:= [2^k for k in 0..]
+-- exponential function 2*exp(2x)
+ser2exp2:StrInt:= [2^k for k in 1..]
+-- exponential function exp(3x)
+serexp3:StrInt:= [3^k for k in 0..]
+
+-- multiplication
+-- exp(x)*exp(2x) = exp(3x)
+serexp1exp2:= (serexp1*serexp2)$STEXSINT
+serexp1exp2trunc:= entries complete first(serexp1exp2,10)
+serexp3trunc:= entries complete first(serexp3,10)
+testEquals("serexp1exp2trunc",
+           "serexp3trunc")
+
+-- derivative
+-- d/dx exp(2x) = 2*exp(2x)
+dserexp2:= deriv(serexp2)$STEXSINT
+dserexp2trunc:= entries complete first(dserexp2,10)
+ser2exp2trunc:= entries complete first(ser2exp2,10)
+testEquals("dserexp2trunc",
+           "ser2exp2trunc")
+       
+-- integration
+-- \int 2*exp(2x) = exp(2x)
+iserexp1:= integrate(1,ser2exp2)$STEXSINT
+iserexp1trunc:= entries complete first(iserexp1,10)
+serexp2trunc:= entries complete first(serexp2,10)
+testEquals("iserexp1trunc",
+           "serexp2trunc")
+
+-- exponentiation
+-- exp x
+serexpx:= exp0(cons(1,repeating [0]))$STEXSINT       
+serexpx1:= repeating [1]
+testEquals("entries complete first(serexpx,10)",
+           "entries complete first(serexpx1,10)")
+
+-- log exp x^2
+serx2:= cons(0,cons(1,repeating [0]))
+serlog1expx2:= log1(rest exp0(cons(0,cons(1,repeating [0])))$STEXSINT)$STEXSINT
+testEquals("entries complete first(serx2,10)",
+           "entries complete first(rest serlog1expx2,10)")
+testcase "STEXST"
+StrInt:= Stream Integer
+STEXSTEXPR:= StreamExponentialSeriesTranscendentalFunctions Expression Integer
+
+-- exp(1)
+serx3:= exp(cons(1,repeating [0]))$STEXSTEXPR
+serexp1:= cons(%e,repeating([0])$Stream Expression Integer)
+testEquals("entries complete first(serx3,10)",
+           "entries complete first(serexp1,10)")
+
+-- log e = 1
+serexp1:= cons(%e, repeating([0])$Stream Expression Integer)
+loge := log(serexp1)$STEXSTEXPR
+zeros:Stream Expression Integer := cons(1, repeating [0])
+testEquals("entries complete first(loge,10)",
+           "entries complete first(zeros,10)")
+
+       
+-- transcendental manipulations with EXPR INT
+EEE:= StreamExponentialSeriesOperations EXPR INT
+EET:= StreamExponentialSeriesTranscendentalFunctions EXPR INT
+aa:Stream EXPR INT:= [a[k] for k in 1..]
+
+e0:= exp0(aa)$EEE
+e1:= exp (cons(0, aa ))$EET
+xy:= [x-y for x in e0 for y in e1]
+xy10:=entries complete first(xy,10)
+--testTrue("every?(zero?, first(xy,10))")
+testTrue("every?(zero?, xy10)")
+--xy10t:=every?(zero?, xy10)
+--testEquals("removeDuplicates xy10", "[0]")
+
+l0:= log1(aa)$EEE
+l1:= log (cons(1, aa ))$EET
+xy:= [x-y for x in l0 for y in l1]
+testTrue("every?(zero?, entries complete first(xy,10))")
+
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
+    messagePrint("expps                       0    (2)                0     (9)")$OutputForm
+
+statistics()
+expected()

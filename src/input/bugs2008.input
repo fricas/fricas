@@ -1,0 +1,140 @@
+-- )compile files needed for testing here
+)co bugs2008-ExportType.spad
+
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2008"
+testcase "equality in TBAGG (issue #412)"
+R ==> Record(key: Symbol, entry: String)
+T ==> AssociationList(Symbol, String)
+t1 := construct([[x, "ix"]$R])$T
+t2 := construct([[y, "iy"]$R])$T
+testNotEquals("t1", "t2")
+
+
+testcase "expose PartialFractionPackage (issue #309)"
+
+-- note that we cannot easily test for equality of the result of
+-- partialFraction itself: the result of partialFraction is of type Any, thus
+-- we would have to provide type information when creating the other side of
+-- the equation.  But then, the bug won't manifest.
+
+f := (x+a)/(x*(x^3+(b+c)*x^2+b*c*x))
+testEquals("numberOfFractionalTerms partialFraction(f, x)", "3")
+f := 2*x/(x^2-1)
+testEquals("numberOfFractionalTerms partialFraction(f, x)", "2")
+
+testcase "resultants for finite integraldomains (issue #413)"
+P ==> UP(x, PF 5)
+R ==> Record(coef1: P,coef2: P,resultant: PF 5)
+testEquals("resultantEuclidean(x, x)$PRS(PF 5, P)", "[0,0,0]$R")
+
+testcase "ListMultiDictionary for non-ordered SetCategories (issue #414)"
+b := empty()$LMDICT(PF 13)
+testEquals("(insert!(0, b); insert!(0, b); #b)", "2")
+
+testcase "from open-axiom: Stack missing exports (issue #415)"
+s := stack [1,2,3,1]
+testEquals("parts s", "[1,2,3,1]")
+testEquals("map(i +-> i^2, s)", "stack [1,4,9,1]")
+t := s; r := map!(i +-> i^2, s);
+testTrue "eq?(t, r)"
+
+testcase "functions +-> and blocks of instructions (issue #272)"
+g := x +-> (x+2 ; x+a)
+testEquals("g 3", "a+3")
+h := x +-> (a := 3 ; x+a)
+testEquals("h 3", "6")
+
+testcase "match not working (issue #97)"
+pattern  := "*to*"
+target   := "yorktown"
+wildcard := "*"
+testTrue "match?(pattern, target,char wildcard)"
+testEquals("match(pattern, target,char wildcard)", "5")
+
+testcase "integrate(sin(x)^2) problem (issue 292)"
+testEquals("integrate(sin(x)^2, x=0..1)", "(1 - cos(1)*sin(1))/2")
+
+testcase "HeuGcd"
+testEquals("gcd([67108859*67108859*x^2-1, 67108859*67108859*x^2+2*67108859*x +1])", "67108859*x+1")
+testEquals("gcd([0, 0, x^2-1, x^2+2*x+1])$HeuGcd(SparseUnivariatePolynomial Integer)", "(x+1)::(SparseUnivariatePolynomial Integer)")
+
+testcase "Integral of asech(x)/x"
+i1 := integrate(asech(x)/x, x)
+isym := "integral"::Symbol
+testTrue "is?(operator(kernels(i1).1), isym)"
+i2 := integrate(log((sqrt(1-x^2)+1)/x)/x, x)
+testTrue "is?(operator(kernels(i2).1), isym)"
+
+testEquals("integrate(log(sqrt(1-x^2)/x)/(x^2), x)", "(-log(sqrt(1-x^2)/x) -x*log(x+1)/2 +  x*log(x-1)/2 + 1)/x")
+
+testcase "Skew exponentiation (issue #431)"
+h: EXPR INT -> EXPR INT := f+->D(f,x)
+DoD := LODO(EXPR INT, h)
+Dx: DoD := D()
+u := operator 'u
+L := Dx + u(x)
+testEquals("L^2", "L*L")
+lodoPower(x: DoD, n: NonNegativeInteger): DoD == x^n
+testEquals("lodoPower(L, 3)", "L*L*L")
+
+f: UP(n, INT) -> UP(n, INT) := p +-> p.(n+1)
+g: UP(n, INT) -> UP(n, INT) := p +-> 0
+K := OREUP(E, UP(n, INT), morphism f, g)
+M := E::K+n
+testEquals("M^2", "M*M")
+testEquals("M^3", "M*M*M")
+
+testcase "Functions returning type"
+-- warning: the file must not be )compiled, nor )lib'd here, because this would
+-- make UNITCNT forget all counters.
+I := baseRing()$ExportType(Integer)
+testEquals("1$I", "1")
+
+testcase "Coercion to InputForm"
+str := "Integer()"
+testEquals("Integer::InputForm", "parse(str)$InputForm")
+
+iP := InputFormFunctions1(Float)
+str := "sin(2)$Float()"
+testEquals("parse(str)$InputForm", _
+           "convert([packageCall(sin)$iP, 2::InputForm])@InputForm")
+str := "Float()"
+testEquals("parse(str)$InputForm", "getType()$iP")
+str := "sin(2)@Float()"
+if1 := parse("sin(2)")$InputForm
+testEquals("parse(str)$InputForm", "atType(if1)$iP")
+str := "sin(2)::Float()"
+testEquals("parse(str)$InputForm", "coerceToType(if1)$iP")
+str := "sin(2) pretend Float()"
+testEquals("parse(str)$InputForm", "pretendOfType(if1)$iP")
+
+testcase "exp^log(x) (issue #23)"
+testEquals("exp^(2*log(x)) - (exp^log(x))^2", "0")
+
+testcase "MAP is undefined"
+R:= UP('t, INT)
+delta(x:R):R == D(x)
+W:= OREUP('x, R, 1, delta)
+x: W := 'x
+t: W:= 't
+testEquals("x*t", "t*x+1")
+
+
+testcase "Bad fixedPointExquo (issue #301)"
+a := operator 'a
+sol := seriesSolve((2*x-2)*D(a(x),x)+4*a(x),a,x=0,[1])::UTS(EXPR INT, x, 0)
+testEquals("[coefficient(sol, i) for i in 0..7]", "[1,2,3,4,5,6,7,8]")
+
+testcase "has with signature"
+testTrue("Float has exp : Float -> Float")
+testTrue("not(Float has foobar: Float -> Float)")
+
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
+    messagePrint("bugs2008                    0    (17)               0    (34)")$OutputForm
+
+statistics()
+expected()

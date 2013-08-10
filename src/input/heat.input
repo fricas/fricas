@@ -1,0 +1,25 @@
+--Copyright The Numerical Algorithms Group Limited 1996.
+-- ----------[ A x i o m ]----------
+-- ---------- Initialization ----------
+)set messages autoload off
+)set quit unprotected
+-- This is the heat equation
+u:= operator('u);
+heat:= D(u(x, t), t) - D(u(x, t), x, 2) = 0
+-- This is the similarity form of the proposed solution
+f:= operator('f);
+s:= rule(u(x, t) == f(x/sqrt(t))/sqrt(t))
+-- Apply s to the heat equation
+s(lhs(heat)) = 0
+-- Change to the similarity variable z = x/sqrt(t)
+subst(lhs(%), x = z*sqrt(t)) = 0
+-- Eliminate the denominator
+% * denom(lhs(%))
+-- Now, solve the ordinary differential equation
+eq:=%
+solve(%, f, z=0,[k1,k2])
+-- Finally, transform back to the original variables
+subst(%, z = x/sqrt(t))/sqrt(t)
+-- If we set k2 = 0 and k1 = 1/(2*sqrt(%pi)) in the previous expression,
+-- we will obtain the usual fundamental solution of the heat equation
+subst(%, [k2 = 0, k1 = 1/(2*sqrt(%pi))])

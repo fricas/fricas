@@ -1,0 +1,85 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2010"
+testcase "reverting of power series"
+Uts := UnivariateTaylorSeries(Expression(Integer),x,0)
+a := operator('a,1)
+P := series(n +-> a(n), x=0, 1..)::Uts;
+iP := revert(P);
+testEquals("polynomial(elt(iP, P), 10)", "x")
+
+testcase "coercion and types"
+Combinations(n:PI): List List INT == [elements e for e in enumerate()$SetOfMIntegersInOneToN(2, n)]
+User1(m: PI, k: PI): List List INT == (n:=m*k; Combinations n)
+User2(m: PI, k: PI): List List INT == Combinations(m*k)
+testEquals("User1(2,2)", "[[1,2],[1,3],[2,3],[1,4],[2,4],[3,4]]")
+testEquals("User2(2,2)", "[[1,2],[1,3],[2,3],[1,4],[2,4],[3,4]]")
+
+testcase "normalizing constant trigonometric functions"
+di1 := -cos(1)*sin(2^x + 1) + sin(2^x) + sin(1)*cos(2^x+1)
+testEquals("normalize(di1)", "0")
+testEquals("complexNormalize(di1)", "0")
+
+-- SF 2536411
+testcase "integrating multiple Liouvillian functions"
+f1 := 1/(Ei(x)-Ei(x-1))
+df1 := D(f1, x);
+f2 := 1/(Si(x+1)+Ci(x-1))
+df2 := D(f2, x);
+f3 := 1/(Si(Ci(x)^2+1)+Ci(Ci(x)^2-1))
+df3 := D(f3, x);
+testEquals("integrate(df1, x)", "f1")
+testEquals("integrate(df2, x)", "f2")
+testEquals("integrate(df3, x)", "f3")
+
+testcase "Weierstrass preparation"
+mT := TaylorSeries(Fraction(Integer))
+pFI := Polynomial(Fraction(Integer))
+cmpl(lt : List mT, lp : List pFI, n : Integer) : Integer ==
+    res := n + 1
+    for t1 in lt for p in lp repeat
+        t2 := p::mT
+        t := t1 - t2
+        for i in 0..(n::NonNegativeInteger) repeat
+            if coefficient(t, i) ~= 0 then res := min(res, i)
+    res
+
+ts0 := (x+y)::pFI::mT
+wP := WeierstrassPreparation(Fraction(Integer))
+r1 := weierstrass(y, ts0)$wP
+testEquals("cmpl(r1, [x], 5)", "6")
+ts := (x+y^3)::pFI::mT
+r2 := weierstrass(y, ts)$wP
+testEquals("cmpl(r2, [x, 0, 0], 5)", "6")
+r3 := weierstrass(x, ts)$wP
+testEquals("cmpl(r3, [y^3], 5)", "6")
+r4 := weierstrass(y, sin(ts))$wP
+testEquals("cmpl(r4, [x, 0, 0], 5)", "6")
+r5 := weierstrass(x, sin(ts))$wP
+testEquals("cmpl(r5, [y^3], 5)", "6")
+r6 := weierstrass(y, cos(ts) - 1)$wP
+testEquals("cmpl(r6, [x^2, 0, 0,2*x, 0, 0], 10)", "11")
+r7 := weierstrass(x, cos(ts) - 1)$wP
+testEquals("cmpl(r7, [y^6, 2*y^3], 10)", "11")
+r8 := weierstrass(y, ts + cos(ts0) - 1)$wP;
+testEquals("cmpl(r8, [-2*x -22*x^2/3 - 5884*x^3/45 -59719*x^4/21, _
+            -2*x -24*x^2 - 2348*x^3/5 - 10333166*x^4/945], 4)", "5")
+
+testcase "wrong root simplifcation"
+f0 := sqrt(x)/((a-b*x)*sqrt(a-b*x))
+lf := integrate(sqrt(x)/((a-b*x)*sqrt(a-b*x)), x)
+testEquals("normalize(D(lf(1), x) - f0)", "0")
+testEquals("normalize(D(lf(2), x) - f0)", "0")
+
+testcase "failed extended integration"
+f := log(sqrt(x+1) + sqrt(x))
+testEquals("(res := integrate(f, x); 0)", "0")
+
+testcase "wrong log simplification"
+f := (log(3*x)^2 - 1)/(x*(log(3*x)^2+ log(3*x) + 1))
+res := integrate(f, x)
+testEquals("normalize(D(res, x) - f)", "0")
+
+)set output algebra on
+statistics()

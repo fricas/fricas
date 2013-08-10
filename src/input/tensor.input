@@ -1,0 +1,241 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "TENSOR"
+testcase "TensorProduct addition"
+
+M:=FreeModule(Integer,Symbol);
+N:=FreeModule(Integer,Symbol);
+MxN ==> TensorProduct(Integer,Symbol,Symbol,M,N);
+Term ==> Record(k:Product(Symbol,Symbol),c:Integer);
+
+a1:='a1::M;
+a2:='a2::M;
+b1:='b1::M;
+b2:='b2::M;
+
+)if false
+First test:
+$$
+(a_1+a_2)\otimes(b_1+b_2)
+= a_2\otimes b_2 + a_2\otimes b_1 + a_1\otimes b_2 + a_1\otimes b_1
+= a_1\otimes b_1 + a_1\otimes b_2 + a_2\otimes b_1 + a_2\otimes b_2
+$$
+)endif
+
+t:=tensor(a1+a2,b1+b2)$MxN;
+t1:=tensor(a2,b2)$MxN + tensor(a2,b1)$MxN + _
+    tensor(a1,b2)$MxN + tensor(a1,b1)$MxN;
+
+t2:=tensor(a1,b1)$MxN + tensor(a1,b2)$MxN + _
+    tensor(a2,b1)$MxN + tensor(a2,b2)$MxN;
+
+testEquals("t1","t");
+
+testEquals("t2","t");
+
+)if false
+Second test:
+$$
+(a_1+a_2)\otimes(b_1+b_2) + a_1\otimes b_2
+= a_1\otimes b_2 + (a_1+a_2)\otimes(b_1+b_2)
+= a_2\otimes b_2 + a_2\otimes b_1 + 2a_1\otimes b_2 + a_1\otimes b_1
+$$
+)endif
+
+-- $(a_1+a_2)\otimes(b_1+b_2)$
+t3l:List Term := [[['a2, 'b2]$Product(Symbol,Symbol),1], _
+    [['a2, 'b1]$Product(Symbol,Symbol),1], _
+    [['a1, 'b2]$Product(Symbol,Symbol),2], _
+    [['a1, 'b1]$Product(Symbol,Symbol),1]];
+
+t3:= construct(t3l)$MxN;
+t3a := t+tensor(a1,b2)$MxN;
+t3b := tensor(a1,b2)$MxN + t;
+testEquals("t3","t3a");
+testEquals("t3","t3b");
+testcase "TensorProduct multiplication"
+
+)if false
+We check that
+$$
+((a_1+a_2)\otimes b_1)\cdot(a_3\otimes(b_2+b_3))
+= a_2 a_3\otimes b_1 b_3 + a_2 a_3\otimes b_1 b_2
+ + a_1 a_3\otimes b_1 b_3 + a_1 a_3\otimes b_1 b_2
+$$
+)endif
+
+B:=OrderedFreeMonoid Symbol;
+M:=XDistributedPolynomial(Symbol,Integer);
+N:=XDistributedPolynomial(Symbol,Integer);
+MxN:= TensorProduct(Integer,B,B,M,N);
+Term:= Record(k:Product(B,B),c:Integer);
+
+a1:='a1::M;
+a2:='a2::M;
+a3:='a3::M;
+b1:='b1::M;
+b2:='b2::M;
+b3:='b3::M;
+
+a1B:='a1::B;
+a2B:='a2::B;
+a3B:='a3::B;
+b1B:='b1::B;
+b2B:='b2::B;
+b3B:='b3::B;
+
+t1:=tensor(a1+a2,b1)$MxN;
+t2:=tensor(a3,b2+b3)$MxN;
+
+t1t2l:List Term :=  [[[a2B*a3B, b1B*b3B]$Product(B,B),1], _
+    [[a2B*a3B, b1B*b2B]$Product(B,B),1], _
+    [[a1B*a3B, b1B*b3B]$Product(B,B),1], _
+    [[a1B*a3B, b1B*b2B]$Product(B,B),1]];
+
+t1t2:=constructOrdered (t1t2l)$MxN;
+
+testEquals("t1*t2","t1t2")
+testcase "TensorPower - creation"
+
+-- $(a_1+a_2)\otimes(b_1+b_2)\otimes(c_1+c_2)$
+
+M:=FreeModule(Integer,Symbol);
+M3 ==> TensorPower(3,Integer,Symbol,M);
+Term ==> Record(k:Vector Symbol,c:Integer);
+
+a1:='a1::M;
+a2:='a2::M;
+a3:='a3::M;
+b1:='b1::M;
+b2:='b2::M;
+b3:='b3::M;
+c1:='c1::M;
+c2:='c2::M;
+c3:='c3::M;
+
+
+t1:=tensor([a1,a2,a3])$M3;
+t2:=tensor([b1,b2,b3])$M3;
+t3:=tensor([c1,c2,c3])$M3;
+
+s1:=t1+t2+t3;
+s2:=t2+t3+t1;
+s3:=t2+t1+t3;
+
+testEquals("s1","s2");
+testEquals("s2","s3");
+
+
+t:=tensor([a1+a2,b1+b2,c1+c2])$M3;
+
+tl:List Term := _
+   [[vector [a2,b2,c2], 1], [vector [a2,b2,c1], 1], [vector [a2,b1,c2], 1],_
+    [vector [a2,b1,c1], 1], [vector [a1,b2,c2], 1], [vector [a1,b2,c1], 1],_
+    [vector [a1,b1,c2], 1], [vector [a1,b1,c1], 1]];
+
+testEquals("t","constructOrdered(tl)$M3");
+testcase "TensorPower - multiplication"
+)if false
+The product
+
+$$
+(a_1+a_2)\otimes b_1\otimes c_1 \cdot a_3\otimes(b_2+b_3)\otimes(c_2+c_3)
+$$
+
+)endif
+
+B:=OrderedFreeMonoid Symbol;
+M:=XDistributedPolynomial(Symbol,Integer);
+M3:= TensorPower(3,Integer,B,M);
+Term:= Record(k:Vector B,c:Integer);
+
+a1:='a1::M;
+a2:='a2::M;
+a3:='a3::M;
+b1:='b1::M;
+b2:='b2::M;
+b3:='b3::M;
+c1:='c1::M;
+c2:='c2::M;
+c3:='c3::M;
+
+a1B:='a1::B;
+a2B:='a2::B;
+a3B:='a3::B;
+b1B:='b1::B;
+b2B:='b2::B;
+b3B:='b3::B;
+c1B:='c1::B;
+c2B:='c2::B;
+c3B:='c3::B;
+
+t1:=tensor([a1+a2,b1,c1])$M3;
+t2:=tensor([a3,b2+b3,c2+c3])$M3;
+
+
+t1t2l:List Term:=   [[vector [a2B * a3B,b1B * b3B,c1B * c3B], 1], [vector [a2B * a3B,b1B * b3B,c1B * c2B], 1],_
+    [vector [a2B * a3B,b1B * b2B,c1B * c3B], 1], [vector [a2B * a3B,b1B * b2B,c1B * c2B], 1],_
+    [vector [a1B * a3B,b1B * b3B,c1B * c3B], 1], [vector [a1B * a3B,b1B * b3B,c1B * c2B], 1],_
+    [vector [a1B * a3B,b1B * b2B,c1B * c3B], 1], [vector [a1B * a3B,b1B * b2B,c1B * c2B], 1]];
+
+t1t2:=constructOrdered (t1t2l)$M3;
+
+testEquals("t1*t2","t1t2")
+testcase "Tensor - linear maps"
+-- The trace $\tau(x) = \delta_{x,1}$ on the free monoid.
+
+R:=Polynomial Integer;
+B:=OrderedFreeMonoid Symbol;
+M:=XDistributedPolynomial(Symbol,R);
+M3:= TensorPower(3,R,B,M);
+Term:= Record(k:Vector B,c:R);
+
+trace:List B -> R
+trace(bb:List B):R ==
+    every?(one?, bb) => 1
+    0
+
+traceB:Vector B -> R
+traceB(bb:Vector B):R ==
+    every?(one?, parts bb) => 1
+    0
+
+
+
+e:=1::M
+a1:=('a1::B)::M;
+a2:=('a2::B)::M;
+b1:=('b1::B)::M;
+b2:=('b2::B)::M;
+c1:=('c1::B)::M;
+c2:=('c2::B)::M;
+
+s0:=s0::R;
+s1:=s1::R;
+s2:=s2::R;
+t0:=t0::R;
+t1:=t1::R;
+t2:=t2::R;
+u0:=u0::R;
+u1:=u1::R;
+u2:=u2::R;
+
+a:= s0*e + s1*a1 + s2*a2;
+b:= t0*e + t1*b1 + t2*b2;
+c:= u0*e + u1*c1 + u2*c2;
+
+tt:=tensor([a,b,c])$M3;
+
+-- from  TensorPowerFunctions2
+testEquals("linearExtend(trace,tt)","s0*t0*u0");
+
+-- from FreeModule
+testEquals("linearExtend(traceB,tt)","s0*t0*u0");
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
+    messagePrint("TENSOR                      0     (5)               0     (11)")$OutputForm
+
+
+
+statistics()
+expected()

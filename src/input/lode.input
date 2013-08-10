@@ -1,0 +1,62 @@
+--Copyright The Numerical Algorithms Group Limited 1991.
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "lode"
+SOL ==> Record(particular: EXPR INT, basis: List EXPR INT)
+y := operator y
+
+testcaseNoClear "homogeneous equation with constant coefficients"
+deq := differentiate(y x, x, 2) + differentiate(y x, x) + y x
+res := solve(deq, y, x)
+
+testEquals("res",
+           "[0, [cos(x*sqrt(3)/2)*exp(-x/2),sin(x*sqrt(3)/2)*exp(-x/2)]]$SOL")
+testEquals("eval(deq, y, res.particular + reduce(+, res.basis, 0), x)", "0")
+
+testcaseNoClear "initial value problem: y'' + y = 0, y(0) = y'(0) = 1"
+deq := differentiate(y x, x, 2) + y x
+testEquals("solve(deq, y, x = 0, [1, 1])", "sin x + cos x")
+testEquals("solve(deq = sin x, y, x)",
+           "[-x*cos x/2, [cos x, sin x]]$SOL")
+
+testcaseNoClear "inhomogeneous equations with rational coefficients"
+deq := x^3 * differentiate(y x, x, 3) + x^2 * differentiate(y x, x, 2) - _
+2 * x * differentiate(y x, x) + 2 * y x - 2 * x^4
+res := solve(deq, y, x)
+testEquals("res",
+           "[(x^5-10*x^3+20*x^2+4)/(15*x),[(2*x^3-3*x^2+1)/x, (x^3-1)/x, (x^3-3*x^2-1)/x]]$SOL")
+testEquals("eval(deq, y, res.particular + reduce(+, res.basis, 0), x)", "0")
+
+testEquals("solve(deq, y, x = 1, [b, 0, a])",
+           "(2*x^5+10*(a-b-1)*x^3+(30*b-15*a+10)*x^2+10*b+5*a-2)/(30*x)")
+
+testcaseNoClear "third order equation with nontrivial singularities"
+deq := (x^9 + x^3) * differentiate(y x, x, 3) + _
+18 * x^8 * differentiate(y x, x,2) - 90 * x * differentiate(y x, x) - _
+30 * (11*x^6-3) * y x
+res := solve(deq, y, x)
+testEquals("res",
+           "[0, [x/(x^6+1), x*exp(-sqrt 91*log x)/(x^6+1), x*exp(sqrt 91*log x)/(x^6+1)]]$SOL")
+testEquals("eval(deq, y, res.particular + reduce(+, res.basis, 0), x)", "0")
+
+
+testcaseNoClear "third order equation on a curve of genus 0"
+deq := (2*x+2)* differentiate(y x, x, 3) + 3* differentiate(y x, x, 2) + _
+(2*x^2+2*x)* differentiate(y x,x) - sqrt(x+1) * y x - 2*x^2 - x + 1
+res := solve(deq, y, x)
+testEquals("res", "[sqrt(x+1)+x, []]$SOL")
+testEquals("eval(deq, y, res.particular + reduce(+, res.basis, 0), x)", "0")
+
+testcaseNoClear "equation irreducible over the rational functions"
+deq := 2*x^3*differentiate(y x,x,2) + 3*x^2*differentiate(y x,x) - 2*y x
+res := solve(deq, y, x)
+testEquals("res", "[0,[exp(-2*sqrt(x)/x), exp(2*sqrt(x)/x)]]$SOL")
+testEquals("eval(deq, y, res.particular + reduce(+, res.basis, 0), x)", "0")
+
+
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
+    messagePrint("lode                        0     (6)               0    (13)")$OutputForm
+
+statistics()
+expected()

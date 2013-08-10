@@ -1,0 +1,125 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2012"
+
+testcase "matching types"
+-- interpreter is unable to match types containing functions in
+-- paramteters, so call fails
+l: List DMP([x,y,z],FRAC INT)
+l:=[x^2+2*y^2,x*z^2-y*z,z^2-4]
+xftestTrue("ld:=primaryDecomp ideal l ; true")
+
+testcase "hypergeometricF at 0"
+testEquals("eval(hypergeometricF([], [c], z), z=0)", "1")
+
+testcase "random"
+testTrue("random()$SingleInteger; true")
+
+testcase "normalize constant logs"
+l1 := log(4 + 2*sqrt(3))
+l2 := log(10 + 6*sqrt(3))
+xn := (4 + sqrt(3))*l1^2 + (5 - sqrt(3))*l2
+xd := (4 + sqrt(3))*l2^2 + (27/8)*(5 - sqrt(3))*l1
+testEquals("normalize(xn/xd)", "4/9")
+testEquals("normalize(xn/xd + log(1 + sqrt(2)))", "4/9 + log(1 + sqrt(2))")
+
+testcase "missing solutions"
+xftestEquals("solve([sin(x)=y,y=0],[x,y])", "[[x = 0, y = 0]]")
+eq1 := x1=(-b+sqrt(b^2-4*c))/2
+eq2 := x2=(-b-sqrt(b^2-4*c))/2
+xftestEquals("solve([eq1, eq2], [b, c])", "[[b = -x2 - x1, c = x1*x2]]")
+
+xftestEquals("solve([2=%e^(b)+c,6=%e^(1+b)+c],[b,c])", _
+             "[[b = log(4/(%e - 1)), c = (2*%e - 6)/(%e - 1)]]")
+
+-- We probably should also consider complex solutions
+xftestEquals("solve(2000*(1-%e^(-(1/10)*n))-20*n=0)", "[n = 0]")
+
+testcase "Gamma series at poles"
+
+as := approximate(series(Gamma(x), x=0), 2);
+es := 1/x + digamma(1) + (- 3*polygamma(1,1) + 3*digamma(1)^2  + %pi^2)*x/6 _
+ + (polygamma(2,1) - 3*digamma(1)*polygamma(1,1) + digamma(1)^3  + _
+   %pi^2*digamma(1))*x^2/6
+testEquals("as", "es")
+as := approximate(series(Gamma(x), x=-1), 1);
+es := -1/(x + 1) - digamma(2) + _
+  (3*polygamma(1,2) - 3*digamma(2)^2 - %pi^2)*(x + 1)/6
+testEquals("as", "es")
+
+testcase "order of Puiseux series"
+
+xx := series(x^(1/4), x = 0);
+testEquals("order(xx, 1/3)", "1/4")
+testEquals("order(xx, 1/4)", "1/4")
+testEquals("order(xx, 1/5)", "1/5")
+
+testcase "partial functions"
+
+rn := Fraction(Integer)
+uts := UnivariateTaylorSeries(rn, 'x, 0)
+uls := UnivariateLaurentSeries(rn, 'x, 0)
+pef := ElementaryFunctionsUnivariateLaurentSeries(rn, uts, uls)
+s1 := monomial(1, -1)$uls
+s2 := 1$uls
+testTrue("expIfCan(s1)$pef case _"failed_"")
+xftestTrue("expIfCan(s2)$pef case _"failed_"")
+
+testcase "acot series"
+
+sa := series(acot(x), x=0)
+xs :=cot(sa)
+testEquals("order(xs - series(x, x=0), 10)", "10")
+testEquals("limit((acot(1/2 + h) - acot(1/2))/h, h=0)", "-4/5")
+
+testcase "puiseux via lodo"
+
+s1 := series(x^(1/3), x = 0)
+s2 := series(besselJ(1, 1 + x), x=0);
+s3 := s2(s1);
+s4 := series(besselJ(1, 1 + x^(1/3)), x=0);
+s5 := series(x^(1/3)*exp(x), x = 0);
+s6 := s2(s5);
+s7 := series(besselJ(1, 1 + x^(1/3)*exp(x)), x=0);
+s12 := series(besselJ(1, 5 + x), x=0);
+s13 := s12(s1);
+s14 := series(besselJ(1, 5 + x^(1/3)), x=0);
+testEquals("order(s3 - s4, 8)", "8")
+testEquals("order(s6 - s7, 8)", "8")
+testEquals("order(s13 - s14, 7)", "7")
+
+testcase "reduction of nested roots"
+
+eI := Expression(Integer)
+x := monomial(1,1)$SparseUnivariatePolynomial(eI)
+y := rootOf(x^3+(sqrt(z)+1)/(sqrt(z)-1)*x^2+1)
+t := (y^2/(y^2+1))*(y^2/(y-1))
+testEquals("degree(numer(t), sqrt(z)::Kernel(eI))", "1")
+testTrue("degree(denom(t), sqrt(z)::Kernel(eI)) <= 1")
+
+testcase "equality of algebraic expressions"
+
+a1 := (1 - 2*x)/(1 - sqrt(2*x))
+a2 := 1 + sqrt(2*x)
+testTrue("(a1 = a2)@Boolean")
+testEquals("a1 - a2", "0")
+
+testcase "equality of rootOf"
+
+iAN := InnerAlgebraicNumber
+rr3 := rootOf((x^3 - 3*x  + 5)::SUP(Integer))
+rr4 := rootOf((x^3 - 3*x  + 5)::SUP(Integer))
+testTrue("(rr3 pretend iAN = rr4 pretend iAN)@Boolean")
+
+testcase "bad reduction in PGCD"
+
+a1 := (9751*t - 13790)*y^2 + (- 27720*t + 39202)*y + 19700*t - 27860
+a2 := (78008*t^3  - 308686*t^2  + 415824*t - 186288)*y^2 + _
+        (-221760*t^3  + 877528*t^2  - 1182040*t + 529635)*y + _
+        157600*t^3  - 623640*t^2  + 840009*t - 376441
+testTrue("every?(p +-> p = 1, [gcd(a1, a2) for i in 1..1000])")
+
+
+)set output algebra on
+statistics()

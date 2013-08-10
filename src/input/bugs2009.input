@@ -1,0 +1,145 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2009"
+
+testcase "zero testing for constants (issue #290)"
+
+testEquals("integrate((x^4*exp(2)*log(2*x)^2+(3*x^2+-2*x)*exp(x+2)*log(2*x)+(exp(2*x+2)+-1*x*exp(x+2)))/(x^4*log(2*x)^2+2*x^2*exp(x)*log(2*x)+exp(2*x)), x)", "(x^3*exp(2)^2*log(2*x)+(x+1)*exp(2)*exp(x+2))/(x^2*exp(2)*log(2*x)+exp(x+2))")
+
+testEquals("integrate(((x^2+-2*x)*exp(x+2)*log(2*x)+-1*x*exp(x+2))/(x^4*log(2*x)^2+2*x^2*exp(x)*log(2*x)+exp(2*x)), x)", "(exp(2)*exp(x+2))/(x^2*exp(2)*log(2*x)+exp(x+2))")
+
+testEquals("integrate(exp(x^2)*(exp(a)^2-exp(2*a)), x)", "0")
+testEquals("normalize(exp(4) - exp(2))", "exp(2)^2 - exp(2)")
+testEquals("normalize(exp(sqrt(5)) - exp(2)^sqrt(5))", "exp(sqrt(5)) - exp(sqrt(5))^2")
+testEquals("normalize(log(tan((1/2)*x+%pi/4))-asinh(tan(x)))", "0")
+testEquals("normalize(log((2*exp(3)+1)/sqrt(4*exp(6)+4*exp(3)+1)))", "0")
+testEquals("normalize(2*atan(exp(-3))-atan(-2*exp(-3)/(exp(-6)-1)))", "0")
+
+testEquals("normalize(log(4)^2-4*log(2)^2)", "0")
+ii := integrate(2^x/sqrt(1+4^x), x)
+testEquals("normalize(ii - asinh(2^x)/log(2))", "0")
+
+testcase "asin complex(1.0,0) (issue #138)"
+testEquals("asin complex(1.0,0)", "pi()$Complex(Float)/2")
+
+testcase "atanh 1.0 (issue #437)"
+testLibraryError("atanh 1.0")
+
+testcase "defining recurrence and type of argument (#439)"
+first [1 for m in 1..2] - m
+
+testcase "not a valid isolation interval in integral (#441)"
+testTrue("(integrate(log(z-1)*z/(z^2-1)^2, z= 1..%plusInfinity); true)")
+
+testcase "index out of range in gcdDecomposition"
+i1 := 189145300198486602596774595069726915694703755579
+i2 := 119647849214981034640025582370842880808489196080633
+testTrue("(dc:=gcdDecomposition(vector([i1, i2]))$GcdBasis(Integer); true)")
+cb := dc.basis
+ct := dc.transform
+testTrue("(#cb = 3)::Boolean")
+testEquals("[gcd(cb(1), cb(2)), gcd(cb(2), cb(3)), gcd(cb(1), cb(3))]", "[1, 1, 1]")
+testEquals("reduce('*, [cb(i)^(ct(i, 1)) for i in 1..3]) - i1", "0")
+testEquals("reduce('*, [cb(i)^(ct(i, 2)) for i in 1..3]) - i2", "0")
+
+testcase "mapping as target type"
+testTrue("(f1 := _*$Float@((NonNegativeInteger,Float) -> Float); true)")
+testTrue("abs(f1(5, 2.0) - 10.0) < 1.0e-15")
+
+testcase "equality of nested products is random (#443)"
+f := operator 'f
+testTrue("every?(c+->c, [(product(product(f i, i=1..k), k=1..n) = product(product(f j, j=1..l), l=1..n)) for m in 0..30]::List Boolean)")
+
+testcase "crashes coercing power series (#122, #136)"
+a := series(sin(x))
+-- testTrue("(a + 1.0; true)")
+-- testTrue("(1.0 + a; true)")
+testTrue("(a*1.0; true)")
+testTrue("(1.0*a; true)")
+
+b := 1.0::UnivariatePuiseuxSeries(Expression Float,x,0.0)
+testTrue("(b + 1.0; true)")
+testTrue("(1.0 + b; true)")
+testTrue("(a + b; true)")
+testTrue("(b + a; true)")
+testTrue("(a*b; true)")
+testTrue("(b*a; true)")
+
+b:= a::UnivariatePuiseuxSeries(Expression Float,x,0.0)
+testTrue("(a + b; true)")
+testTrue("(b + a; true)")
+testTrue("(a*b; true)")
+testTrue("(b*a; true)")
+
+testcase "crash in seriesSolve"
+f := operator f
+de := x^2*f(x)^3*D(f(x), x, 4) - 16*f(x)^2*D(f(x), x)^2
+testLibraryError("seriesSolve(de, f, x = 0, [1, 0, 0, 0])")
+
+testcase "factoring in SAE -- SF/2521387"
+
+F := SAE(Fraction Integer, SUP(Fraction Integer), x^2-2)
+pol := x^2-9-4*generator()$F
+testEquals("#factors(factor(pol))", "2")
+
+testcase "bad nested functions"
+Tr := Tree(Integer)
+n3 := tree(3, [])$Tr
+n2 := tree(2, [])$Tr
+mytree := tree(1, [n2, n3])$Tr
+testTrue("not(node?(mytree, n2))")
+testTrue("node?(n2, mytree)")
+testTrue("member?(1, mytree)")
+testTrue("member?(3, mytree)")
+testTrue("not(member?(4, mytree))")
+
+Ss := Set Set Integer
+s1 := [[1]]@Ss
+testTrue("subset?(s1, [[1], [2]])")
+testTrue("not(subset?(s1, [[2], [3]]))")
+
+testcase "wrong results of comparison"
+
+testLibraryError("%e > %pi")
+testLibraryError("integrate(max(1, x), x=0..2)")
+-- issue 193
+testLibraryError("4 - %pi < 0")
+testLibraryError("4 - %pi::Expression(Integer) < 0")
+testLibraryError("sqrt(2) < sqrt(3/2)")
+--issue 334
+testLibraryError("coefficient(numer(12*sin(z)^3*z), sin(z), 3)")
+
+testcase "equality in Any"
+
+-- issue 348
+a : Any := [1, 2]
+b : Any := [1, 2]
+testTrue("(a = b)@Boolean")
+b := [1, 3]
+testTrue("not((a = b)@Boolean)")
+a := "A"
+testTrue("not((a = b)@Boolean)")
+b := "A"
+testTrue("(a = b)@Boolean")
+Sae := SAE(FRAC INT, UP(x, FRAC INT), x^2-3)
+a := generator()$Sae
+b := generator()$Sae
+testTrue("(a = b)@Boolean")
+-- issue 279
+X : Set Any := ["x"]
+Y : Set Any := ["x"]
+testTrue("(X = Y)@Boolean")
+
+-- issue 352
+f5 := 5::Factored(Complex(Integer))
+testTrue("(#factors(f5) = 2)@Boolean")
+testTrue("not(prime?(5::Complex(Integer)))")
+testTrue("prime?(7::Complex(Integer))")
+
+-- missing solution
+ex1 := log((7/3)^(2*x - 7)) + log((3/7)^(4*x - 5))
+testEquals("solve(ex1)", "[x = -1]")
+
+)set output algebra on
+statistics()

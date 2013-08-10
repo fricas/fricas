@@ -1,0 +1,199 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2007"
+
+testcase "derivative of besselK (issue 355)"
+testEquals("D(besselK(a,x),x)", "-1/2*(besselK(a+1,x)+besselK(a-1,x))")
+testEquals("integrate(D(besselK(a,x),a),a)", "besselK(a,x)")
+-- limit(D(besselK(a,x),a),a=1/2)
+
+testcase "order in FreeAbelianGroup (issue 343)"
+Z2:=FreeAbelianGroup Symbol
+a:= a::FreeAbelianGroup Symbol
+b:= b::FreeAbelianGroup Symbol
+z:= 0::FreeAbelianGroup Symbol
+
+testTrue "a > -b"
+testTrue "-b < z"
+testTrue "z < a"
+
+testcase "bug in map$Set (issue 347)"
+A:Set Integer:=set [-2,-1,0]
+B:Set Integer:=set [0,1,4]
+C:=map(x +-> x^2,A)
+testTrue "test(C=B)"
+
+testcase "Bug in sqrt() for UnivariateTaylorSeries (issue 312)"
+UTSx := UTS(FRAC INT,x,0)
+monx2 := monomial(1,2)$UTSx
+testEquals("sqrt(monx2)", "monomial(1,1)$UTSx")
+
+testcase "issue 340 'divisors$IntegerNumberTheoryFunctions' incorrect for units"
+-- i.e., 1, -1
+testEquals("divisors 1", "[1]")
+testEquals("divisors(-1)", "[1]")
+
+testcase "issue 15"
+testTrue("abs(integrate(1/(1+z^4), z=0..1)::Complex Float-0.866972) < 0.00001")
+
+testcase "issue 293"
+testEquals("integrate(1/(1+x^4),x = %minusInfinity..%plusInfinity)", _
+           "sqrt(2)/2*%pi")
+
+strNoPole := "noPole"
+xftestEquals("eval(integrate(1/(a+x^4),x=0..%plusInfinity, strNoPole), a=1)", _
+           "integrate(1/(1+x^4),x=0..%plusInfinity)")
+
+testEquals("D(integrate((x^4+2*a*x^2+1)^-1, x=0..z, strNoPole), z)",
+           "(z^4+2*a*z^2+1)^-1")
+
+testcase "issue 314"
+testEquals("integrate(2*atan(x)/(1+x^2),x)", "atan(x)^2")
+
+testcase "issue 47"
+testEquals("complexForm(log(%i) - log(-%i))", "complexForm(%pi*%i)")
+
+testcase "integrate((z^a+1)^b, z) crashes (issue 100)"
+testEquals("D(integrate((z^a+1)^b, z), z)", "(z^a+1)^b")
+
+testcase "issue 184"
+testEquals("argument(-%i)", "-%pi/2")
+
+testcase "issue 308"
+testEquals("D(integrate(x^a*(x^b+1)^p, x), x)", "x^a*(x^b+1)^p")
+
+testcase "laplace(log(z), z,w) crashes (issue 101)"
+testEquals("laplace(log(z), z, w)", "(digamma 1 - log w)/w")
+testTrue "(laplace(1/sqrt(z), z, w); true)"
+testTrue "(laplace(sqrt(z), z, w); true)"
+
+testcase "issue 103"
+testEquals("solve(z=z, z)", "[0=0]")
+
+testcase "issue 114"
+dom:=(INT->INT)
+g(f:dom):dom== x+->(f(x))^2
+p(x:INT):INT == x-1
+q := g p
+testEquals("q 3", "4")
+
+testcase "issue 176"
+p := -x*y^2+x*y+x^3-x^2
+testEquals("D(factor(p),x)::POLY INT", "D(p, x)")
+
+testcase "issue 182"
+testEquals("round(3.77623)::INT", "4")
+testEquals("round(-3.77623)::INT", "-4")
+
+testcase "issue 186"
+E := Expression Integer
+F := E -> E
+compose(f:F, g:F):F == (e:E):E +-> f(g(e))
+p(e:E):E == 2*e+1
+q(e:E):E == 3*e+1
+testEquals("compose(p,q)(sin x)", "6*sin(x) + 3")
+
+testcase "issue 199"
+testEquals("D(integrate(exp(-x^2)+exp(x)/x,x),x)", "exp(-x^2)+exp(x)/x")
+
+testcase "issue 19"
+testEquals("D(0^z, z)", "0$EXPR INT")
+
+testcase "issue 211"
+testEquals("eval(D(product((1-q^(n-i))/(1-q^(m-i)), i=0..m-1), q),[n=3,m=2])",_
+           "(2*q+1)::EXPR INT")
+f:=operator `f;
+
+testEquals("D(product(f(i,q),i=0..m),q)", _
+           "product(f(j, q),j=0..m)*sum(D(f(i, q), q)/f(i, q), i=0..m)")
+
+testcase "issue 278"
+testEquals("simplifyLog(2*sqrt(2)*log(2))", "log 4 * sqrt 2")
+
+testcase "issue 83"
+testEquals("1::DMP([x],FRAC INT)::POLY FRAC INT", "1")
+testEquals("1::DMP([x],INT)::POLY INT", "1")
+vv := 1::DMP([x],FRAC INT)
+uu := vv ::POLY FRAC INT
+testEquals("1 * uu", "1")
+
+testcase "issue 102"
+testEquals("solve(sinh(z)=cosh(z), z)", "[]$List EQ EXPR INT")
+
+testcase "missing exports"
+MyFD := DirectProduct(3, PrimeField(100000000000000006579))
+myv := [3, 2, 1]::MyFD
+ii := lookup(myv)
+testEquals("index(ii)$MyFD", "[3,2,1]::MyFD")
+ii := lookup([1, 1, 1]::MyFD)
+testEquals("index(ii)$MyFD", "[1,1,1]::MyFD")
+ii := lookup([1, 1, 0]::MyFD)
+testEquals("index(ii)$MyFD", "[1,1,0]::MyFD")
+ii := lookup([1, 2, 3]::MyFD)
+testEquals("index(ii)$MyFD", "[1,2,3]::MyFD")
+testTrue "(hash([3, 2, 1]::MyFD); true)"
+
+MyFD:= Product(PrimeField(100000000000000006579), PrimeField(257))
+myv := [1, 1]$MyFD
+ii := lookup(myv)
+testEquals("index(ii)$MyFD", "[1, 1]$MyFD")
+ii := lookup([2, 1]$MyFD)
+testEquals("index(ii)$MyFD", "[2, 1]$MyFD")
+ii := lookup([1, 2]$MyFD)
+testEquals("index(ii)$MyFD", "[1, 2]$MyFD")
+ii := lookup([2, 128]$MyFD)
+testEquals("index(ii)$MyFD", "[2, 128]$MyFD")
+testTrue "(hash(myv); true)"
+
+testcase "issue 221"
+testTrue "PI has OASGP"
+
+testcase "issue 258"
+R==>RectangularMatrix(2,4, PF 2)
+testTrue "every?(zero?, [lookup(index(i)$R)$R - i for i in 1..2^8])"
+
+testcase "issue 198"
+testEquals("complexIntegrate(%i/2*e^(-%i*x^2),x)", _
+      "(sqrt %pi * sqrt(%i * log e)*erf(x*sqrt(%i*log e)))/(4*log e)")
+
+testEquals("complexIntegrate(-%i/2*e^(%i*x^2),x)", _
+      "(sqrt %pi * sqrt(-%i * log e)*erf(x*sqrt(-%i*log e)))/(4*log e)")
+
+testEquals("complexIntegrate(log(x)/(x-1),x)", "-dilog x")
+
+testEquals("complexIntegrate(2*log(x)/(x-1),x)", "-2*dilog x")
+
+testcase "issue 408"
+testTrue "abs(Gamma(1/5::EXPR INT)::EXPR DFLOAT - 4.5908437119988030532047582759) < 10.0^(-13)"
+testTrue "abs(digamma(1/5::EXPR INT)::EXPR DFLOAT + 5.2890398965921882955472079624) < 10.0^(-13)"
+testTrue "abs(besselJ(1,1::EXPR INT)::EXPR DFLOAT - 0.44005058574493351595968220371) < 10.0^(-13)"
+-- fails, because airyAi yields complex results even for real arguments
+xftestTrue "abs(airyAi(1/5::EXPR INT)::EXPR DFLOAT - 0.303703154286381994892596723) < 10.0^(-13)"
+
+testcase "issue 183"
+bt l ==
+    if empty? l
+    then empty()$BTREE INT
+    else binaryTree(bt rest(l, #l quo 2 + 1), first l, _
+                    bt first(rest l, #l quo 2))
+
+tree := bt primes(1, 20);
+testTrue "any?(even?, tree)"
+testTrue "not any?(x +-> x > 19, tree)"
+testTrue "every?(prime?, tree)"
+testTrue "not every?(x +-> x > 2, tree)"
+testTrue "member?(17, tree)"
+testTrue "not member?(4, tree)"
+
+testTrue "any?(i+->(i=1)::Boolean,[1,2,3])"
+testTrue "not every?(odd?, [1,2,3])"
+testTrue "member?(2, [1,2,3])"
+testTrue "not ([1,2,3] = [1,3,2])::Boolean"
+
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm;
+    messagePrint("bugs2007                    2    (30)               2    (66)")$OutputForm
+
+statistics()
+expected()

@@ -1,0 +1,99 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "algebraic gcd"
+
+testcase "single extension"
+-- Setup gcd routines
+pA := U32Vector
+pPA := PrimitiveArray(pA)
+mD1 := Record(svz : Symbol, sm : pA, sp : Integer)
+mOP := ModularAlgebraicGcdTools2
+mGCD := ModularAlgebraicGcd(pPA, mD1, mOP)
+
+-- helper to prepare data
+mreduction(x, z, m) == multivariate(pseudoRemainder(univariate(x, z), univariate(m, z)), z)
+
+-- case 1
+p1 := 3*t*x^2 + (-2*t^2 + 3*t)*z*x + 15*x + 15*z - 2*t^3
+q1 := 3*t*z*x^2 + 15*z*x + (-2*t^3 + 3*t)*x - 2*t^2*z + 15
+m := z^2 - t
+
+g1 := algebraicGcd(p1, q1, [m], [t], x, [z])$mGCD
+testEquals("g1", "-2*t^2*z+(3*t*x+15)")
+
+p5 := mreduction(p1^5, z, m)
+q4 := mreduction(q1^4, z, m)
+g4 := algebraicGcd(p5, q4, [m], [t], x, [z])$mGCD
+testEquals("g4", "mreduction(g1^4, z, m)")
+
+-- from clicliclic on sci.math.symbolic
+pol := (8*b*e^2 - 4*c*d*e + d^3)*x^6 + 2*(16*a*e^2 + 2*b*d*e - _
+ 4*c^2*e + c*d^2)*x^5 + 5*(8*a*d*e - 4*b*c*e + b*d^2)*x^4 _
+ + 20*(a*d^2 - b^2*e)*x^3 - 5*(8*a*b*e - 4*a*c*d + b^2*d)*x^2 _
+ - 2*(16*a^2*e + 2*a*b*d - 4*a*c^2 + b^2*c)*x _
+ - 8*a^2*d + 4*a*b*c - b^3
+
+cc := 64*a^3*e^3 - 48*a^2*b*d*e^2 - 64*a^2*c^2*e^2 + 48*a^2*c*d^2*e _
+ - 8*a^2*d^4 + 48*a*b^2*c*e^2 - 4*a*b^2*d^2*e - 16*a*b*c^2*d*e
+ + 4*a*b*c*d^3 - 8*b^4*e^2 + 4*b^3*c*d*e - b^3*d^3
+
+lc1 := leadingCoefficient(univariate(pol, c))
+lc2 := leadingCoefficient(univariate(cc, c))
+lcg := gcd(lc1, lc2)
+lc1 := lc1 exquo lcg
+lc2 := lc2 exquo lcg
+pol := lc2*pol - lc1*cc
+testEquals("degree(pol, c)", "1")
+
+npol := resultant(univariate(pol, c), univariate(cc, c));
+nfac := factor(npol);
+nfac1 := factors(nfac).5.factor;
+fac1 := algebraicGcd(pol, nfac1, [cc], [a, b, d, e], x, [c])$mGCD
+testEquals("degree(fac1, x)", "2")
+
+-- Compute the other factor using division
+fF := Fraction(Polynomial(Integer))
+ccf := univariate(cc, c)::SUP(fF)
+aE := SAE(fF, SUP(fF), ccf)
+avar := create()$SingletonAsOrderedSet
+to_aE(t : fF) : aE == reduce(univariate(t, c)::SUP(fF))$aE
+polf := map(to_aE, univariate(pol, x)::SUP(fF));
+facf1 := map(to_aE, univariate(fac1, x)::SUP(fF));
+qr := divide(polf, facf1);
+testEquals("qr.remainder", "0")
+facf2 := qr.quotient;
+from_aE(t : aE) : fF == eval(lift(t), avar, c)
+fac2fF := retract(eval(map(from_aE, facf2), avar, x))@fF;
+fac2 := numer(fac2fF)
+den := denom(fac2fF)
+testEquals("gcd(den*pol - fac1*fac2, cc)", "cc")
+
+testcase "multiple extensions"
+
+mP := Polynomial(Integer)
+mPU := SparseUnivariatePolynomial(mP)
+mD := Record(svz : List(Symbol), sm : List(mP), msizes : List(Integer), sp : Integer)
+mOP := ModularAlgebraicGcdTools3
+mGCD := ModularAlgebraicGcd(mPU, mD, mOP)
+
+m1 := (t + z2 + 1)*z1^2 - 3*z2 + t
+m2 := (t + 1)*z2^2 - 7*t
+g := x - t - z1 - z2
+g2 := algebraicGcd(g*g, g*g, [m1, m2], [t], x, [z1, z2])$mGCD
+
+testEquals("degree(g2, x)", "2")
+
+a := t*(x + z1) + z2
+b := x + t*z1 - z2
+
+f1 := a^2*g^2
+f2 := b^2*g^2
+p1 := algebraicGcd(f1, f1, [m1, m2], [t], x, [z1, z2])$mGCD;
+gg := algebraicGcd(p1, f2, [m1, m2], [t], x, [z1, z2])$mGCD;
+
+testEquals("g2 - gg", "0")
+
+)set output algebra on
+statistics()
+

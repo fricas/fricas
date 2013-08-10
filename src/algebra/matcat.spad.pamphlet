@@ -58,11 +58,7 @@ Therefore, implementations that rely on the representation of matrices used in
 of \spadfun{determinant} are a good example to look at.
 
 \section{category MATCAT MatrixCategory}
-<<TEST MATCAT>>=
-)set break resume
-)expose UnittestCount UnittestAux Unittest
-testsuite "MATCAT"
-@
+
 <<category MATCAT MatrixCategory>>=
 )abbrev category MATCAT MatrixCategory
 ++ Authors: Grabmeier, Gschnitzer, Williamson
@@ -593,16 +589,6 @@ matrix would give another basis of the column space.
 
 @
 
-<<TEST MATCAT>>=
-testcase "columnSpace"
-M := matrix [[1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 1, 1]];
-testEquals("columnSpace M", "[[1,4,7,1],[2,5,8,1]]")
-testEquals("columnSpace transpose M", "[[1,2,3],[4,5,6]]")
-testEquals("columnSpace [[0,0]]", "[]")
-testEquals("columnSpace(M::RMATRIX(4,3,INT))", _
-           "[[1,4,7,1],[2,5,8,1]]::List DIRPROD(4, INT)")
-@
-
 \subsection{Pfaffian}
 We compute the Pfaffian of an antisymmetric matrix using an algorithm by
 G\"unter Ziegler\cite{1}.  I did not check whether we really need commutative
@@ -687,23 +673,6 @@ The Pfaffian is the constant term of the \emph{Pfaffian-characteristic
             else error "Pfaffian: only defined for antisymmetric square matrices!"
 @
 
-<<TEST MATCAT>>=
-testcase "Pfaffian"
-m n == matrix [[(if i = j then 0 _
-                          else if i < j _
-                               then x[i, j] _
-                               else -x[j, i]) for i in 1..n] for j in 1..n]
-testEquals("Pfaffian [[0,1,0,0],[-1,0,0,0],[0,0,0,1],[0,0,-1,0]]", "1")
-testEquals("Pfaffian [[0, u, v, w],[-u, 0, x, y],[-v,-x,0,z],[-w,-y,-z,0]]", _
-           "u*z-v*y+w*x")
-testEquals("Pfaffian m 3", "0")
-testEquals("Pfaffian [[0,0],[0,0]]", "0")
-M := m 6;
-testEquals("(Pfaffian M)^2", "determinant M")
-testLibraryError "Pfaffian [[1,2],[0,0]]"
-testLibraryError "Pfaffian [[1,2,3],[0,0,0]]"
-
-@
 
 <<category MATCAT MatrixCategory>>=
      if R has IntegralDomain then
@@ -1099,9 +1068,7 @@ SquareMatrixCategory(ndim, R, Row, Col) : Category == Definition where
         positivePower(xInv :: %, -n)
 
 @
-<<TEST MATCAT>>=
-statistics()
-@
+
 \section{License}
 <<license>>=
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
