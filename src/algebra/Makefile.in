@@ -103,13 +103,6 @@ pamphlets=$(addsuffix .as.pamphlet, $(ALDOR_SRCS)) \
 	  Makefile.pamphlet exposed.lsp.pamphlet
 
 
-TESTS=${INPUT}/INTHEORY.input ${INPUT}/VIEW2D.input ${INPUT}/TESTFR.input \
-      ${INPUT}/TEST-MATCAT.input ${INPUT}/TEST-MTS.input \
-      ${INPUT}/TEST-POLYLIFT.input ${INPUT}/TEST-TABLE.input \
-      ${INPUT}/TEST-SSOLVE.input
-
-
-
 subdir = src/algebra/
 
 
@@ -399,7 +392,7 @@ LISTS=1 2 3 4 5 6 7 8 99
 STAMP_FASLS=${patsubst %, stamp-fasls%, ${LISTS}}
 TARGET_FASLS=$(patsubst %, ${OUT}/%.$(FASLEXT), ${FULL_FASL_LIST})
 SRC_LSP=$(patsubst %, %.lsp, ${FULL_FASL_LIST})
-stamp-alg: ${TARGET_FASLS} stamp-spadsrc ${TESTS}
+stamp-alg: ${TARGET_FASLS} stamp-spadsrc
 
 ${STAMP_FASLS}: stamp-fasls% :
 	( for A in ${SPADLIST$*} ; do \
@@ -499,7 +492,7 @@ ifneq ($(BUILD_WAY),use_lisp)
 $(patsubst %, ${OUT}/%.$(FASLEXT), ${SPADLIST}) : stamp-bootstrap
 endif
 
-stamp: stamp-src ${TESTS}
+stamp: stamp-src
 	-rm -f stamp
 	$(STAMP) stamp
 
@@ -583,33 +576,6 @@ stamp-spadsrc: ${SPADFILES}
 
 $(OUTSRC)/%.spad.pamphlet: $(srcdir)/%.spad.pamphlet
 	cp $< $@
-
-
-
-${INPUT}/TESTFR.input: $(srcdir)/fr.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST FR' --output=$@ $<
-
-${INPUT}/INTHEORY.input: $(srcdir)/numtheor.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST INTHEORY' --output=$@ $<
-
-${INPUT}/VIEW2D.input: $(srcdir)/view2D.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST VIEW2D' --output=$@ $<
-
-${INPUT}/TEST-MATCAT.input: $(srcdir)/matcat.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST MATCAT' --output=$@ $<
-
-${INPUT}/TEST-POLYLIFT.input: $(srcdir)/polycat.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST POLYLIFT' --output=$@ $<
-
-${INPUT}/TEST-TABLE.input: $(srcdir)/table.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST TABLE' --output=$@ $<
-
-${INPUT}/TEST-MTS.input: $(srcdir)/mts.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST MTS' --output=$@ $<
-
-${INPUT}/TEST-SSOLVE.input: $(srcdir)/ssolve.spad.pamphlet
-	$(axiom_build_document) --tangle='TEST SSOLVE' --output=$@ $<
-
 
 mostlyclean-local: 
 	-rm -f stamp*

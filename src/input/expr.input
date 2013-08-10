@@ -1,0 +1,40 @@
+)clear all
+foo := operator 'foo
+bar := operator 'bar
+g := foo x
+eval(g, x = x^2 + 1)
+-- chain rule can be applied formally
+differentiate(%, x)
+-- multivariate
+f := bar(x, y)
+-- parallel substitution is possible
+eval(f, [x = y, y = x])
+[differentiate(f, x), differentiate(f, y)]
+-- multivariate chain rule
+ff := eval(f, [x = x^2 * foo y, y = x + y])
+differentiate(ff, x)
+differentiate(ff, y)
+-- let's create one with commuting partial derivatives
+-- let's change the way bar is printed on the screen, make it #1 @ #2
+pbar(l:List OUTFORM):OUTFORM == infix(" @ "::SYMBOL::OUTFORM, l)
+display(bar, pbar)
+-- let's see the result
+f
+ff
+-- back to normal
+deleteProperty(bar, "%display")
+f
+-- let's give bar some partial derivatives, say bar(u, v) = u * v
+bar1 l == last l
+bar2 l == first l
+derivative(bar, [bar1, bar2]$(LIST(LIST(EXPR INT) -> EXPR INT)))
+[differentiate(f, x), differentiate(f, y)]
+[differentiate(ff, x), differentiate(ff, y)]
+-- some structural testing
+h := inv(x + f + g^2)
+isPower h
+y * g^2 * h
+isTimes %
+isPlus(denom(h)::EXPR(INT))
+isExpt(inv(g^2), "foo")
+isExpt(inv(g^2), "bar")

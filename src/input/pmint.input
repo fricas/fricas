@@ -1,0 +1,275 @@
+--Version 1.1 ---  May 10, 2005  (c) M.Bronstein and INRIA 2004-2005
+)clear all
+)set break resume
+-- Rational Functions
+
+f:=(x^7-24*x^4-4*x^2+8*x-8)/(x^8+6*x^6+12*x^4+8*x^2)
+-- should be:
+--          7      4     2
+--        x  - 24x  - 4x  + 8x - 8
+--   (1)  ------------------------
+--           8     6      4     2
+--          x  + 6x  + 12x  + 8x
+--                                            Type: Fraction Polynomial Integer
+
+g:=integrate(f,x)
+-- should be:
+--          5     3                 3     2
+--        (x  + 4x  + 4x)log(x) + 3x  + 8x  + 6x + 4
+--   (2)  ------------------------------------------
+--                        5     3
+--                       x  + 4x  + 4x
+--                                          Type: Union(Expression Integer,...)
+
+differentiate(g,x)
+-- should be:
+--         7      4     2
+--        x  - 24x  - 4x  + 8x - 8
+--   (3)  ------------------------
+--           8     6      4     2
+--          x  + 6x  + 12x  + 8x
+--                                                     Type: Expression Integer
+
+)clear all
+-- Trigonometric Functions
+
+f:=(x-tan(x))/tan(x)^2 + tan(x)
+-- should be:
+--              3
+--        tan(x)  - tan(x) + x
+--   (1)  --------------------
+--                     2
+--               tan(x)
+--                                                     Type: Expression Integer
+
+g:=integrate(f,x)
+-- should be:
+--                        2         2
+--        tan(x)log(tan(x)  + 1) - x tan(x) - 2x
+--   (2)  --------------------------------------
+--                        2tan(x)
+--                                          Type: Union(Expression Integer,...)
+
+differentiate(g,x)
+-- should be:
+--              3
+--        tan(x)  - tan(x) + x
+--   (3)  --------------------
+--                     2
+--               tan(x)
+--                                                     Type: Expression Integer
+
+)clear all
+-- Log-Exp Functions
+
+f:=(1+x+x*exp(x))*(x+log(x)+exp(x)-1)/(x+log(x)+exp(x))^2/x
+-- should be:
+--              x                       x 2     2       x    2
+--         (x %e  + x + 1)log(x) + x (%e )  + (x  + 1)%e  + x  - 1
+--   (1)  ---------------------------------------------------------
+--                2         x     2               x 2     2  x    3
+--        x log(x)  + (2x %e  + 2x )log(x) + x (%e )  + 2x %e  + x
+--                                                     Type: Expression Integer
+
+g:=integrate(f,x)
+-- should be:
+--                    x                    x
+--        (log(x) + %e  + x)log(log(x) + %e  + x) + 1
+--   (2)  -------------------------------------------
+--                                 x
+--                      log(x) + %e  + x
+--                                          Type: Union(Expression Integer,...)
+
+differentiate(g,x)
+-- should be:
+--              x                       x 2     2       x    2
+--         (x %e  + x + 1)log(x) + x (%e )  + (x  + 1)%e  + x  - 1
+--   (3)  ---------------------------------------------------------
+--                2         x     2               x 2     2  x    3
+--        x log(x)  + (2x %e  + 2x )log(x) + x (%e )  + 2x %e  + x
+--                                                     Type: Expression Integer
+
+)clear all
+-- Liouvillian special functions
+
+f:=exp(-x^2)*erf(x)/(erf(x)^3-erf(x)^2-erf(x)+1)
+
+integrate(f,x)
+-- should be:
+--    1   sqrt(%pi)     1                           1
+-- -  - ------------  - - sqrt(%pi) log(erf(x)+1) + - sqrt(%pi) log(erf(x)-1)
+--    4  erf(x) - 1     8                           8
+
+)clear all
+-- Airy Functions
+
+f:=(x-airyAi(x)*airyAiPrime(x))/(x^2-airyAi(x)^2)
+
+integrate(f,x)
+-- should be:
+--  1                    1
+--  - log(x+airyAi(x)) + - log(x-airyAi(x))
+--  2                    2
+
+f:=x^2*airyAi(x)
+-- should be:
+--         2
+--   (1)  x airyAi(x)
+--                                                     Type: Expression Integer
+
+g:=integrate(f,x)
+-- should be:
+--  -airyAi(x) + airyAiPrime(x) x
+
+)clear all
+-- Bessel functions
+
+f:=besselJ(y+1,x)/besselJ(y,x)
+
+g:=integrate(f,x)
+-- should be:
+--  y log(x) - log(besselJ(y,x))
+
+f := y*besselJ(y,x)/x - besselJ(y+1,x)
+
+integrate(f,x)
+-- should be besselJ(y,x)
+
+)clear all
+-- Whittaker functions
+
+-- f:=WhittakerW(u+1,n,x)/(WhittakerW(u,n,x)*x)
+-- Axiom does not implement WhittakerW
+-- should be:
+--  Whittaker(u+1,n,x)
+--  ------------------
+--  Whittaker(u,n,x) x
+
+-- integrate(f,x)
+-- should be:
+--  x
+--  -  - u log(x) - log(WhattakerW(u,n,x))
+--  2
+
+)clear all
+-- The Lambert W function
+
+f := lambertW(x)
+
+g:=integrate(f,x)
+-- should be:
+--    2             2  2                2
+--   x + LambertW(x)  x  - LambertW(x) x
+--   ------------------------------------
+--          x LambertW(x)
+
+integrate(sin(lambertW(x)),x)
+--should be:
+-- +-                                                  -+
+-- |                                     2              |
+-- |                    +-             -+               |
+-- |  1                 | 1             |  2            |
+-- |  - LambertW(x) tan | - LambertW(x) | x   +         |
+-- |  2                 | 2             |               |
+-- |                    +-             -+               |
+-- |                                                    |
+-- |                  +-             -+                 |
+-- |                  | 1             |  2              |
+-- |  LambertW(x) tan | - LambertW(x) | x  +            |
+-- |                  | 2             |                 |
+-- |                  +-             -+                 |
+-- |                                                    |
+-- |      +-             -+                             |
+-- |      | 1             |  2      1              2    |
+-- |  tan | - LambertW(x) | x  -    - LambertW(x) x     |
+-- |      | 2             |         2                   |
+-- |      +-             -+                             |
+-- +-                                                  -+
+-- ------------------------------------------------------
+--                  +-                         2 -+
+--                  |         +-             -+   |
+--                  |         | 1             |   |
+--    x LambertW(x) | 1 + tan | - LambertW(x) |   |
+--                  |         | 2             |   |
+--                  |         +-             -+   |
+--                  +-                           -+
+
+f:=((x^2+2)*lambertW(x^2)^2+x^2*(2*lambertW(x^2)+1))/(x*(1+lambertW(x^2))^3)
+
+integrate(f,x)
+--should be:
+--                 2                    4
+--1  4           2     4          2    x              2   2    2           2
+--- x  LambertW(x ) + x LambertW(x ) + -- + LambertW(x ) x  + x  LambertW(x )
+--2                                    2
+-----------------------------------------------------------------------------
+--                                              2
+--              2          2                 2
+--             x LambertW(x ) (1 + LambertW(x ))
+--
+--  +
+--                     2
+--   log(1 + LambertW(x ))
+
+f:=(2*lambertW(x^2)*cos(lambertW(x^2))*(a*x+lambertW(x^2))+a*x*(1+lambertW(x^2)) + 2*lambertW(x^2))/((1+lambertW(x^2))*(a*x+lambertW(x^2))*x)
+--+-                                                       -+
+--|                                                         |
+--|             2                2                    2     |
+--| 2 LambertW(x ) cos(LambertW(x )) (a x + LambertW(x )) + |
+--|                                                         |
+--|                   2                 2                   |
+--| a x (1 + LambertW(x )) + 2 LambertW(x )                 |
+--|                                                         |
+--+-                                                       -+
+-------------------------------------------------------------
+--                2                 2
+-- (1 + LambertW(x ))(a x+LambertW(x )) x
+--
+
+integrate(f,x)
+--
+--        +-              -+
+--        | 1           2  |
+--  2 tan | - LambertW(x ) |
+--        | 2              |
+--        +-              -+                          2
+--  --------------------------- + log(a x + LambertW(x ))
+--                            2
+--          +-              -+
+--          | 1           2  |
+--  1 + tan | - LambertW(x ) |
+--          | 2              |
+--          +-              -+
+--
+--
+
+)clear all
+-- The Wright omega function
+
+omega(z) == lambertW(exp(z))
+
+integrate(omega(x),x)
+--
+--  1            x             x
+--  - LambertW(%e )(LambertW(%e )+2)
+--  2
+--
+-- f:=(1+lambertW(%e^x)*(2+cos(lambertW(%e^x))*(x+LambertW(%e^x))))/((1+LambertW(%e^x))*(x+LambertW(%e^x)))
+f := (1 + omega(x) * (2 + cos(omega(x)) * (x + omega(x)))) / (1 + omega(x)) / (x + omega(x))
+
+integrate(f,x)
+--
+--        +-               -+
+--        | 1            x  |
+--  2 tan | - LambertW(%e ) |
+--        | 2               |
+--        +-               -+                         x
+--  ---------------------------- + log(x + LambertW(%e ))
+--                             2
+--          +-               -+
+--          | 1            x  |
+--  1 + tan | - LambertW(%e ) |
+--          | 2               |
+--          +-               -+
+--
+

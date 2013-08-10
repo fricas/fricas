@@ -1,0 +1,208 @@
+
+-- This file contains bugs which we cannot currently test with the unittesting
+-- facility.
+
+unparse(meijerG([a,b],[c],[d],[],z)::InputForm)
+unparse(hypergeometricF([a,b],[c], z)::InputForm)
+unparse(ellipticE(z, m)::InputForm)
+unparse(Gamma(x, a)::InputForm)
+
+-- year 2007
+)set break resume
+
+-- issue 156
+)clear all
+)set function compile off
+u := operator `u;
+multidiff(expr, variable, count) == if count > 0 then D(multidiff(expr, variable, count-1), variable) else expr
+maketaylor(expr) == series( n +-> multidiff(expr, x, n), x=0)
+maketaylor(u(x))
+)set function compile on
+
+-- issue 371
+iprint("Release the hounds!")$IPRNTPK
+for i in 1..10 repeat (iprint$IPRNTPK)(i::String)
+
+-- tracing sanity check
+)trace Integer )math
+-1
+)trace Integer )off
+
+-- issue 187
+(INT, INT)
+Tuple Any
+
+-- year 2008
+)set break resume
+
+-- from open-axiom: Bug SF/1790563
+Insn == Enumeration(New, Move, Line, Close)
+Insn
+
+-- Issue #410
+-- should yield Integer
+)display abbrev INT
+
+
+-- Issue #311
+-- should show information only once
+-- fixed in OpenAxiom (24.01.2008)
+)show TYPE
+
+-- regression in printing Gamma
+Gamma(2,3)
+
+-- Strange case of linear printing
+K := Fraction Integer
+g := matrix [[1,0,0,0], [0,-1,0,0], [0,0,-1,0], [0,0,0,-1]]
+D := CliffordAlgebra(4, K, g)
+-- there was infinite recursion during conversion
+D::InputForm
+unparse %
+parse(%)@InputForm
+1::D
+
+-- Issue 16
+print(typeOf(1)::OutputForm)
+print(D::OutputForm)
+
+-- had infinite recursion
+Record
+
+-- Used to fail due to error in form2String
+)show SAE(INT, SUP INT, x^2+1)
+
+-- year 2009
+)set break resume
+
+-- bug in fixed output of FLOAT
+
+-- output of zero
+0.0
+outputFixed()
+0.0
+outputFixed(2)
+0.0
+outputFixed(0)
+0.0
+
+-- output of numbers with integer values
+outputGeneral()
+12.0
+outputFixed()
+12.0
+outputFixed(2)
+12.0
+outputFixed(0)
+12.0
+
+-- lost significant digits
+outputGeneral()
+3.1
+numeric(%pi)
+outputFixed()
+3.1
+numeric(%pi)
+outputFixed(0)
+1.1
+numeric(%pi)
+3111.1
+1234567890.1
+outputFixed(2)
+3.1
+1234567890.1
+
+-- tracing of functions returning Void
+)trace Kernel )math
+sin(1)
+)trace Kernel )off
+
+-- crashes with power series (issue 435)
+a := series(z, z = 0)
+b := series(1, x = 0)
+a + b
+b + a
+a*b
+b*a
+
+-- horizontal output of fractions
+)set output fraction horizontal
+(1/2)::TEX
+(1/(x+5))::TEX
+((x+3)/(y-5))::TEX
+
+-- issue 245
+radix(10^100,32)::TEX
+
+)set output mathml on
+1/2
+1/(x+5)
+(x+3)/(y-5)
+)set output mathml off
+
+draw(surface(x,y,0),x=0..1,y=0..1)
+draw(surface(x,y,0.0),x=0..1,y=0..1)
+draw(surface(x,y,3),x=0..1,y=0..1)
+
+)if false
+Foobar
+)endif
+)assert cond1
+)if cond1
+print "cond1 holds"
+)endif
+
+-- Used to crash
+unparse(parse("1 = 2")$InputForm)
+
+-- year 2010
+)set break resume
+-- Coercion to OrderedVariableList
+Ov := OrderedVariableList([SX, SY, SZ])
+S::Ov
+Smp := SparseMultivariatePolynomial(Integer, Ov)
+Dmp := DistributedMultivariatePolynomial([H, J, K, M, G], Smp)
+M := monomial(1, M, 1)$Dmp
+S - 3*M
+
+-- year 2011
+)set break resume
+)trace EXPR )math
+exp(x)
+)trace EXPR )off
+exp(x)
+
+-- year 2012
+
+ll := [[1, 2, 3], [-1, 1, 2], [3, 0, 1]]
+vv := vector [vector l for l in ll]
+-- vv::Matrix(?)
+-- vv::SquareMatrix(3, ?)
+-- vv::RectangularMatrix(3, 3, ?)
+vv::Matrix(Integer)
+vv::SquareMatrix(3, Integer)
+vv::RectangularMatrix(3, 3, Integer)
+
+ll := [[1, 2, 3], [-1, 1, 2]]
+vv := vector [vector l for l in ll]
+vv::Matrix(Integer)
+vv::RectangularMatrix(2, 3, Integer)
+
+ll := [[1, 2, 3], [-1, 1, 2], [3, 0, 1], [4, -1, 0]]
+vv := vector [vector l for l in ll]
+vv::Matrix(Integer)
+vv::RectangularMatrix(4, 3, Integer)
+
+-- year 2013
+
+)clear all
+a := 1
+)undo 1 )before
+a
+
+)set output fortran on
+x^exp(x^2/2)
+)set output fraction vertical
+x^exp(x^2/2)
+)set output fortran off
+
