@@ -267,35 +267,9 @@ AlgebraicallyClosedFunctionSpace(R : Join(Comparable, IntegralDomain)):
       zeroOf(p, y)$AlgebraicallyClosedField_&(%)
 
 @
+
 \section{package AF AlgebraicFunction}
-\subsection{hackroot(x, n)}
-This used to read:
-\begin{verbatim}
-      hackroot(x, n) ==
-        (n = 1) or (x = 1) => x
-        (x ~= -1) and (((num := numer x) = 1) or (num = -1)) =>
-           inv hackroot((num * denom x)::F, n)
-        (x = -1) and n = 4 =>
-          ((-1::F) ^ (1::Q / 2::Q) + 1) / ((2::F) ^ (1::Q / 2::Q))
-        kernel(oproot, [x, n::F])
 
-@
-\end{verbatim}
-but the condition is wrong. For example, if $x$ is negative then
-$x=-1/2$ would pass the
-test and give $$1/(-2)^(1/n) \ne (-1/2)^(1/n)$$
-<<hackroot(x, n)>>=
-      hackroot(x, n) ==
-        (n = 1) or (x = 1) => x
-        (((dx := denom x) ~= 1) and
-           ((rx := retractIfCan(dx)@Union(Integer,"failed")) case Integer) and
-               positive?(rx)) =>
-                   hackroot((numer x)::F, n)/hackroot(rx::Integer::F, n)
-        (x = -1) and n = 4 =>
-          ((-1::F) ^ (1::Q / 2::Q) + 1) / ((2::F) ^ (1::Q / 2::Q))
-        kernel(oproot, [x, n::F])
-
-@
 <<package AF AlgebraicFunction>>=
 )abbrev package AF AlgebraicFunction
 ++ Author: Manuel Bronstein
@@ -526,7 +500,15 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         qr := divide(numer q, denom q)
         x ^ qr.quotient * inroot([x, (denom q)::F]) ^ qr.remainder
 
-<<hackroot(x, n)>>
+      hackroot(x, n) ==
+        (n = 1) or (x = 1) => x
+        (((dx := denom x) ~= 1) and
+           ((rx := retractIfCan(dx)@Union(Integer,"failed")) case Integer) and
+               positive?(rx)) =>
+                   hackroot((numer x)::F, n)/hackroot(rx::Integer::F, n)
+        (x = -1) and n = 4 =>
+          ((-1::F) ^ (1::Q / 2::Q) + 1) / ((2::F) ^ (1::Q / 2::Q))
+        kernel(oproot, [x, n::F])
 
       inroot l ==
         zero?(n := retract(second l)@Z) => error "root: exponent = 0"

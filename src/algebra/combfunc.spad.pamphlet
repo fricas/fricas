@@ -83,53 +83,6 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     binomial   : (F, F) -> F
       ++ binomial(n, r) returns the number of subsets of r objects
       ++ taken among n objects, i.e. n!/(r! * (n-r)!);
-@
-
-We currently simplify binomial coefficients only for non-negative integral
-second argument, using the formula
-$$ \binom{n}{k}=\frac{1}{k!}\prod_{i=0..k-1} (n-i), $$
-except if the second argument is symbolic : in this case [[binomial(n, n)]] is
-simplified to one.
-
-Note that there are at least two different ways to define binomial coefficients
-for negative integral second argument. One way, particular suitable for
-combinatorics, is to set the binomial coefficient equal to zero for negative
-second argument. This is, partially, also the approach taken in
-[[combinat.spad]], where we find
-
-\begin{verbatim}
-   binomial(n, m) ==
-      n < 0 or m < 0 or m > n => 0
-      m = 0 => 1
-\end{verbatim}
-
-Of course, here [[n]] and [[m]] are integers. This definition agrees with the
-recurrence
-
-$$\binom{n}{k}+\binom{n}{k+1}=\binom{n+1}{k+1}.$$
-
-Alternatively, one can use the formula
-$$ \binom{n}{k}=\frac{\Gamma(n+1)}{\Gamma(k+1)\Gamma(n-k+1)}, $$
-and leave the case where $k\in\mathbb Z$, $n\in\mathbb Z$ and $k \leq n < 0$
-undefined, since the limit does not exist in this case:
-
-Since we then have that $n-k+1\geq 1$, $\Gamma(n-k+1)$ is finite. So it is
-sufficient to consider $\frac{\Gamma(n+1)}{\Gamma(k+1)}$. On the one hand, we
-have
-$$\lim_{n_0\to n} \lim_{k_0\to k}\frac{\Gamma(n_0+1)}{\Gamma(k_0+1)} = 0, $$
-since for any non-integral $n_0$, $\Gamma(n_0+1)$ is finite. On the other
-hand,
-$$\lim_{k_0\to k} \lim_{n_0\to n}\frac{\Gamma(n_0+1)}{\Gamma(k_0+1)}$$
-does not exist, since for non-integral $k_0$, $\Gamma(k_0+1)$ is finite while
-$\Gamma(n_0+1)$ is unbounded.
-
-However, since for $k\in\mathbb Z$, $n\in\mathbb Z$ and $0 < k < n$ both
-definitions agree, one could also combine them. This is what, for example,
-Mathematica does. It seems that MuPAD sets [[binomial(n, n)=1]] for all
-arguments [[n]], and returns [[binomial(-2, n)]] unevaluated. Provisos may help
-here.
-
-<<package COMBF CombinatorialFunction>>=
     permutation : (F, F) -> F
       ++ permutation(n, r) returns the number of permutations of
       ++ n objects taken r at a time, i.e. n!/(n-r)!;
@@ -198,25 +151,9 @@ here.
     K2fact    : (K, List SE) -> F
     smpfact   : (SMP, List SE) -> F
 
+    -- Must be a macro to produce fresh symbol for each use
     dummy ==> new()$SE :: F
-@
-This macro will be used in [[product]] and [[summation]], both the $5$ and $3$
-argument forms. It is used to introduce a dummy variable in place of the
-summation index within the summands. This in turn is necessary to keep the
-indexing variable local, circumventing problems, for example, with
-differentiation.
 
-This works if we don't accidently use such a symbol as a bound of summation or
-product.
-
-Note that up to [[patch--25]] this used to read
-\begin{verbatim}
-    dummy := new()$SE :: F
-\end{verbatim}
-thus introducing the same dummy variable for all products and summations, which
-caused nested products and summations to fail. (Issue~\#72)
-
-<<package COMBF CombinatorialFunction>>=
     opfact  := operator('factorial)$CommonOperators
     opperm  := operator('permutation)$CommonOperators
     opbinom := operator('binomial)$CommonOperators
@@ -263,13 +200,6 @@ caused nested products and summations to fail. (Issue~\#72)
     facts(x, l)          == smpfact(numer x, l) / smpfact(denom x, l)
     summand l            == eval(first l, retract(second l)@K, third l)
 
-@
-
-The following two operations return the product or the sum as unevaluated
-operators. A dummy variable is introduced to make the indexing variable \lq
-local\rq.
-
-<<package COMBF CombinatorialFunction>>=
     product(x : F, i : SE) ==
       dm := dummy
       opprod [eval(x, k := kernel(i)$K, dm), dm, k::F]
@@ -278,52 +208,6 @@ local\rq.
       dm := dummy
       opsum [eval(x, k := kernel(i)$K, dm), dm, k::F]
 
-@
-
-The two operations below implement differentiation of sums with and without
-bounds. Note that the function
-$$n\mapsto\sum_{k=1}^n f(k, n)$$
-is well defined only for integral values of $n$ greater than or equal to zero.
-There is not even consensus how to define this function for $n<0$. Thus, it is
-not differentiable. Therefore, we need to check whether we erroneously are
-differentiating with respect to the upper bound or the lower bound, where the
-same reasoning holds.
-
-Differentiating a sum with respect to its indexing variable correctly gives
-zero. This is due to the introduction of dummy variables in the internal
-representation of a sum : the operator [[%defsum]] takes 5 arguments, namely
-
-\begin{enumerate}
-\item the summands, where each occurrence of the indexing variable is replaced
-  by
-\item the dummy variable,
-\item the indexing variable,
-\item the lower bound, and
-\item the upper bound.
-\end{enumerate}
-
-Note that up to [[patch--40]] the following incorrect code was used, which
-tried to parallel the known rules for integration : (Issue~\#180)
-
-\begin{verbatim}
-    dvdsum(l, x) ==
-      x = retract(y := third l)@SE => 0
-      k := retract(d := second l)@K
-      differentiate(h := third rest rest l, x) * eval(f := first l, k, h)
-        - differentiate(g := third rest l, x) * eval(f, k, g)
-             + opdsum [differentiate(f, x), d, y, g, h]
-\end{verbatim}
-
-Up to [[patch--45]] a similar mistake could be found in the code for
-differentiation of formal sums, which read
-\begin{verbatim}
-    dvsum(l, x) ==
-      k  := retract(second l)@K
-      differentiate(third l, x) * summand l
-          + opsum [differentiate(first l, x), second l, third l]
-\end{verbatim}
-
-<<package COMBF CombinatorialFunction>>=
     dvsum(l, x) ==
       opsum [differentiate(first l, x), second l, third l]
 
@@ -335,44 +219,6 @@ differentiation of formal sums, which read
       else
         opdsum [differentiate(first l, x), second l, y, g, h]
 
-@
-
-The two operations below implement differentiation of products with and without
-bounds. Note again, that we cannot even properly define products with bounds
-that are not integral.
-
-To differentiate the product, we use Leibniz rule:
-$$\frac{d}{dx}\prod_{i=a}^b f(i, x) =
-\left(\sum_{i=a}^b \frac{\frac{d}{dx} f(i, x)}{f(i, x)}\right)
-\prod_{i=a}^b f(i, x)
-$$
-
-There is one situation where this definition might produce wrong results,
-namely when the product is zero, but axiom failed to recognize it : in this
-case,
-$$
-  \frac{d}{dx} f(i, x)/f(i, x)
-$$
-is undefined for some $i$. However, I was not able to come up with an
-example. The alternative definition
-$$
-  \frac{d}{dx}\prod_{i=a}^b f(i, x) =
-  \sum_{i=a}^b \left(\frac{d}{dx} f(i, x)\right)\prod_{j=a, j\neq i}^b f(j, x)
-$$
-has the slight (display) problem that we would have to come up with a new index
-variable, which looks very ugly. Furthermore, it seems to me that more
-simplifications will occur with the first definition.
-
-<<TEST COMBF>>=
-  f := operator 'f
-  D(product(f(i, x), i = 1..m), x)
-@
-
-Note that up to [[patch--45]] these functions did not exist and products were
-differentiated according to the usual chain rule, which gave incorrect
-results. (Issue~\#211)
-
-<<package COMBF CombinatorialFunction>>=
     dvprod(l, x) ==
       dm := retract(dummy)@SE
       f := eval(first l, retract(second l)@K, dm::F)
@@ -389,13 +235,6 @@ results. (Issue~\#211)
       else
         opdsum cons(differentiate(first l, x)/first l, rest l) * opdprod l
 
-@
-
-These four operations handle the conversion of sums and products to
-[[OutputForm]]. Note that up to [[patch--45]] the definitions for sums and
-products without bounds were missing and output was illegible.
-
-<<package COMBF CombinatorialFunction>>=
     dprod l ==
       prod(summand(l)::O, third(l)::O)
 
@@ -408,15 +247,6 @@ products without bounds were missing and output was illegible.
     ddsum l ==
       sum(summand(l)::O, third(l)::O = fourth(l)::O, fourth(rest l)::O)
 
-@
-
-The next two operations handle the testing for equality of sums and
-products. This functionality was missing up to [[patch--45]]. (Issue~\#213) The
-corresponding property [[%specialEqual]] set below is checked in
-[[Kernel]]. Note that we can assume that the operators are equal, since this is
-checked in [[Kernel]] itself.
-
-<<package COMBF CombinatorialFunction>>=
     equalsumprod(s1, s2) ==
       l1 := argument s1
       l2 := argument s2
@@ -431,12 +261,6 @@ checked in [[Kernel]] itself.
        (third rest rest l1 = third rest rest l2) and
        (eval(first l1, retract(second l1)@K, second l2) = first l2))
 
-@
-The next two operations return the product or the sum as unevaluated
-operators. A dummy variable is introduced to make the indexing variable \lq
-local\rq.
-
-<<package COMBF CombinatorialFunction>>=
     product(x : F, s : SegmentBinding F) ==
       k := kernel(variable s)$K
       dm := dummy
@@ -575,15 +399,11 @@ local\rq.
         permutation(r1::R, r2::R)::F
 
       if R has RetractableTo(Z) and F has Algebra(Fraction(Z)) then
-@
 
-[[iibinom]] checks those cases in which the binomial coefficient may be
-evaluated explicitly. Note that up to [[patch--51]], the case where the second
-argument is a positive integer was not checked.(Issue~\#336) Currently, the
-naive iterative algorithm is used to calculate the coefficient, there is room
-for improvement here.
-
-<<package COMBF CombinatorialFunction>>=
+         -- Try to explicitly evaluete binomial coefficient
+         -- We currently simplify binomial coefficients for non-negative
+         -- integral second argument, using the formula
+	 -- $$ \binom{n}{k}=\frac{1}{k!}\prod_{i=0..k-1} (n-i), $$
          iibinom l ==
            (s := retractIfCan(second l)@Union(R,"failed")) case R and
               (t := retractIfCan(s)@Union(Z,"failed")) case Z and t>0 =>
@@ -623,36 +443,12 @@ for improvement here.
       iipow l == ipow l
 
     if F has ElementaryFunctionCategory then
-@
-This operation implements the differentiation of the power operator [[%power]]
-with respect to its second argument, i.e., the exponent. It uses the formula
-$$\frac{d}{dx} g(y)^x = \frac{d}{dx} e^{x\log g(y)} = \log g(y) g(y)^x.$$
 
-If $g(y)$ equals zero, this formula is not valid, since the logarithm is not
-defined there. Although strictly speaking $0^x$ is not differentiable at zero,
-we return zero for convenience.
-
-Note that up to [[patch--25]] this used to read
-\begin{verbatim}
-    if F has ElementaryFunctionCategory then
-      dvpow2 l == log(first l) * first(l) ^ second(l)
-\end{verbatim}
-which caused differentiating $0^x$ to fail. (Issue~\#19)
-
-<<package COMBF CombinatorialFunction>>=
       dvpow2 l == if zero?(first l) then
                     0
                   else
                     log(first l) * first(l) ^ second(l)
 
-@
-
-The last four properties below define special differentiation rules for sums
-and products. Note that up to [[patch--45]] the rules for products were
-missing.  Thus products were differentiated according the usual chain-rule,
-which gave incorrect results.
-
-<<package COMBF CombinatorialFunction>>=
     evaluate(opfact, iifact)$BasicOperatorFunctions1(F)
     evaluate(oppow, iipow)
     evaluate(opperm, iiperm)
@@ -666,11 +462,7 @@ which gave incorrect results.
     setProperty(opdsum,  SPECIALDIFF, dvdsum@((List F, SE)->F) pretend None)
     setProperty(opprod,  SPECIALDIFF, dvprod@((List F, SE)->F) pretend None)
     setProperty(opdprod, SPECIALDIFF, dvdprod@((List F, SE)->F) pretend None)
-@
 
-Finally, we set the properties for displaying sums and products and testing for
-equality.
-<<package COMBF CombinatorialFunction>>=
     setProperty(opsum,   SPECIALDISP, dsum@(List F -> O) pretend None)
     setProperty(opdsum,  SPECIALDISP, ddsum@(List F -> O) pretend None)
     setProperty(opprod,  SPECIALDISP, dprod@(List F -> O) pretend None)
@@ -850,19 +642,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
           ++ function
         meijerG : (List F, List F, List F, List F, F) -> F
           ++ meijerG(la, lb, lc, ld, z) is the meijerG function
-
-@
-
-In case we want to have more special function operators here, do not forget to
-add them to the list [[specop]] in [[CommonOperators]].  Otherwise they will
-not have the \lq special\rq\ attribute and will not be recognised here.  One
-effect could be that
-\begin{verbatim}
-myNewSpecOp(1::Expression Integer)::Expression DoubleFloat
-\end{verbatim}
-might not re-evaluate the operator.
-
-<<package FSPECF FunctionalSpecialFunction>>=
+    -- Functions below should be local but conditional
     iiGamma : F -> F
       ++ iiGamma(x) should be local but conditional;
     iiabs     : F -> F
@@ -2051,33 +1831,6 @@ might not re-evaluate the operator.
     evaluate(opHypergeometricF, iiHypergeometricF)$BasicOperatorFunctions1(F)
     evaluate(opMeijerG, iiMeijerG)$BasicOperatorFunctions1(F)
 
-@
-
-\subsection{differentiation of special functions}
-
-In the following we define the symbolic derivatives of the special functions we
-provide.  The formulas we use for the Bessel functions can be found in Milton
-Abramowitz and Irene A. Stegun, eds.  (1965). Handbook of Mathematical
-Functions with Formulas, Graphs, and Mathematical Tables. New York : Dover. ISBN
-0-486-61272-4, Equations~9.1.27 and 9.6.26.  Up to [[patch--50]] the formula
-for $K$ missed the minus sign.  (Issue~\#355)
-
-We do not attempt to provide formulas for the derivative with respect to the
-first argument currently.  Instead, we leave such derivatives unevaluated.
-
-The differentiation operator [[opdiff]] takes three arguments corresponding to
-$$
-F_{, i}(a_1, a_2, \dots, a_n):
-$$
-\begin{enumerate}
-\item $F(a_1, ..., dm, ...a_n)$, where the $i$\textsuperscript{th} argument is a
-  dummy variable,
-\item $dm$, the dummy variable, and
-\item $a_i$, the point at which the differential is evaluated.
-\end{enumerate}
-
-<<package FSPECF FunctionalSpecialFunction>>=
-
     diff1(op : OP, n : F, x : F) : F ==
         dm := dummy
         kernel(opdiff, [op [dm, x], dm, n])
@@ -2106,12 +1859,7 @@ $$
         s := first l; x := second l
         differentiate(s, t)*diff1(opPolylog, s, x)
            + differentiate(x, t)*polylog(s-1, x)/x
-@
 
-For the moment we throw an error if we try to differentiate [[polygamma]] with
-respect to the first argument.
-
-<<package FSPECF FunctionalSpecialFunction>>=
     ipolygamma(l : List F, x : SE) : F ==
         import List(Symbol)
         member?(x, variables first l) =>
@@ -2132,16 +1880,6 @@ respect to the first argument.
           - differentiate(x, t)* x ^ (a - 1) * exp(-x)
       setProperty(opGamma2, SPECIALDIFF, iGamma2@((List F, SE)->F)
                                                  pretend None)
-@
-
-Finally, we tell Axiom to use these functions for differentiation.  Note that
-up to [[patch--50]], the properties for the Bessel functions were set using
-[[derivative(oppolygamma, [lzero, ipolygammaGrad])]], where [[lzero]] returned
-zero always.  Trying to replace [[lzero]] by a function that returns the first
-component of the gradient failed, it resulted in an infinite loop for
-[[integrate(D(besselJ(a, x), a), a)]].
-
-<<package FSPECF FunctionalSpecialFunction>>=
 
     inGamma2(li : List INP) : INP ==
         convert cons(convert('Gamma), li)
