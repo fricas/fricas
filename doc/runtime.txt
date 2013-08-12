@@ -1,0 +1,81 @@
+Spad types are first class object, so we need runtime representation
+of types.  Currently Spad constructor is represented by a function,
+which produces "domain vector" containing data describing
+specific domain.  Strictly speaking Spad categories are not
+first class, but they use similar representation to domains
+and packages.
+
+Below we explain how category constructor works using 
+'Algebra' and 'EuclideanDomain' as examples.
+
+To lower cost of repreated creation of types values of constructors
+are cached.  In fact, for categories there are two layers of cache.
+First, for given category constructor we cache values
+corresponding to different argument tuples
+We store the cache in variable
+with name of form 'CategoryName;AL', in case of 'EuclideanDomain'
+the name is ''EuclideanDomain;AL'.  If category has no parameters
+we may store category vector in in this variable.
+ we have skeleton which is
+indepenent of paramenters.  We store the skeleton in variable
+with name of form 'CategoryName;AL', in case of 'EuclideanDomain'
+the name is ''EuclideanDomain;AL'.  If category has no parameters
+we may store category vector in in this variable.  Category
+constuctor checks is the cache variable is valid (non nil).
+If cache variable is valid then constructor just returns the
+cached value.   Otherwise category constructor calls auxilary
+function with name of form 'CategoryName;' and stores
+produced values in cache variable.  For 'EuclideanDomain' this
+gives:
+
+(DEFPARAMETER |EuclideanDomain;AL| 'NIL) 
+
+(DEFUN |EuclideanDomain| ()
+  (LET (#:G636)
+    (COND (|EuclideanDomain;AL|)
+          (T (SETQ |EuclideanDomain;AL| (|EuclideanDomain;|))))))
+
+If category has parameters, in the cache variables we store list
+of pairs (argument tuple, category vector).  Category construtor
+first checks if given argument tuple is in the cache, if yes
+it just return cached value, otherwise it calls auxilary
+function with name of form 'CategoryName;' and adds
+produced value to the cache.  For 'Algebra' this gives:
+
+(DEFPARAMETER |Algebra;AL| 'NIL) 
+
+(DEFUN |Algebra| (#1=#:G618)
+  (LET (#2=#:G619)
+    (COND ((SETQ #2# (|assoc| #3=(|devaluate| #1#) |Algebra;AL|)) (CDR #2#))
+          (T
+           (SETQ |Algebra;AL|
+                   (|cons5| (CONS #3# (SETQ #2# (|Algebra;| #1#)))
+                            |Algebra;AL|))
+           #2#))))
+
+For categories with parameters there is second leyer of caching.
+Namely we produce a skeleton vector with name 'CategoryName;CAT'.
+The auxilary function 'CategoryName;' checks if skelenton is
+valid (not nil).  If yes it just substiutes values of parameters
+into skeleton (using 'sublisV'), otherwise it first fills the
+skeleton and preforms substitution.  For 'Algebra' this gives:
+
+(DEFUN |Algebra;| (|t#1|)
+  (SPROG ((#1=#:G617 NIL))
+         (PROG1
+             (LETT #1#
+                   (|sublisV| (PAIR '(|t#1|) (LIST (|devaluate| |t#1|)))
+                              (COND (|Algebra;CAT|)
+                                    ('T
+                                     (LETT |Algebra;CAT|
+                                           (|Join| (|Ring|) (|Module| '|t#1|)
+                                                   (|mkCategory|
+                                                    '(((|coerce| ($ |t#1|)) T))
+                                                    NIL 'NIL NIL))
+                                           . #2=(|Algebra|)))))
+                   . #2#)
+           (SETELT #1# 0 (LIST '|Algebra| (|devaluate| |t#1|))))))
+
+Actual skeleton is build either by 'mkCategory' function (which is the
+only way of creating categories from scratch) or by 'Join' (which
+creates more complex categories from simple one.
