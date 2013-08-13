@@ -484,7 +484,7 @@ After this function is called the image is clean and can be saved.
             (format t "Checking for foreign routines~%")
             (format t "AXIOM=~S~%" ax-dir)
             (format t "spad-lib=~S~%" spad-lib)
-            (if (fricas-probe-file spad-lib)
+            (if (|fricas_probe_file| spad-lib)
                 (progn
                     (setf *fricas-load-libspad* nil)
                     (format t "foreign routines found~%")

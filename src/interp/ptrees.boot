@@ -32,6 +32,49 @@
 
 )package "BOOT"
 
+--% Attributed Structures (astr)
+-- For objects which are pairs where the first field is either just a tag
+-- (an identifier) or a pair which is the tag and an association list.
+
+-- Pick off the tag
+ncTag x ==
+   not PAIRP x => ncBug('S2CB0031,[])
+   x := QCAR x
+   IDENTP x => x
+   not PAIRP x => ncBug('S2CB0031,[])
+   QCAR x
+
+-- Pick off the property list
+ncAlist x ==
+   not PAIRP x => ncBug('S2CB0031,[])
+   x := QCAR x
+   IDENTP x => NIL
+   not PAIRP x => ncBug('S2CB0031,[])
+   QCDR x
+
+ --- Get the entry for key k on x's association list
+ncEltQ(x,k) ==
+   r := ASSQ(k,ncAlist x)
+   NULL r => ncBug ('S2CB0007,[k])
+   rest r
+
+-- Put (k . v) on the association list of x and return v
+-- case1: ncPutQ(x,k,v) where k is a key (an identifier), v a value
+--        put the pair (k . v) on the association list of x and return v
+-- case2: ncPutQ(x,k,v) where k is a list of keys, v a list of values
+--        equivalent to [ncPutQ(x,key,val) for key in k for val in v]
+ncPutQ(x,k,v) ==
+   LISTP k =>
+      for key in k for val in v repeat ncPutQ(x,key,val)
+      v
+   r := ASSQ(k,ncAlist x)
+   if NULL r then
+      r := CONS( CONS(k,v), ncAlist x)
+      RPLACA(x,CONS(ncTag x,r))
+   else
+      RPLACD(r,v)
+   v
+
 )if false
 Abstract Syntax Trees
 
