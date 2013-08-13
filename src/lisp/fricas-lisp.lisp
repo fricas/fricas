@@ -943,7 +943,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (trim-directory-name directory)))
 
 
-(defun fricas-probe-file (file)
+(defun |fricas_probe_file| (file)
 #|
 #+:GCL (if (fboundp 'system::stat)
            ;;; gcl-2.6.8

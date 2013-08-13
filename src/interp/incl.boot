@@ -32,6 +32,40 @@
 
 )package "BOOT"
 
+--% Formatting functions for various compiler data objects.
+--  These are used as [%origin o, %id n] for %1f %2f... style arguments
+--  in a keyed message.
+--  SMW, SG June 88
+
+%id a     == [IDENTITY, a]
+
+-- Union(FileName,"strings","console")
+%origin x ==
+    [function porigin, x]
+porigin x ==
+    (STRINGP x => x; pfname x)
+
+%fname x ==
+    [function pfname, x]
+pfname x ==
+    PathnameString x
+
+
+ppos p ==
+    pfNoPosition? p => ['"no position"]
+    pfImmediate? p  => ['"console"]
+    cpos := pfCharPosn p
+    lpos := pfLinePosn p
+    org  := porigin pfFileName p
+    [org,'" ",'"line",'" ",lpos]
+
+--keyStuff ::= keynumber | [ one or more keySeqs ]
+--keySeq   ::= keynumber optargList optdbn
+--optARgL  ::= [ 0 or more arguments ] | nothing at all
+--optDbn   ::= ['dbN , databaseName ] | nothing at all
+
+-- Includer
+
 incStringStream s==
    incRenumber incLude(0,incRgen s,0,['"strings"] ,[Top])
 

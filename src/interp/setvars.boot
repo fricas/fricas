@@ -690,7 +690,7 @@ setOutputAlgebra arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
@@ -809,7 +809,7 @@ setOutputFortran arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename => sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := makeStream(append,filename)) =>
       SHUT $fortranOutputStream
@@ -881,7 +881,7 @@ setOutputMathml arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
@@ -954,7 +954,7 @@ setOutputTexmacs arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
@@ -1027,7 +1027,7 @@ setOutputHtml arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
@@ -1099,7 +1099,7 @@ setOutputOpenMath arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
@@ -1171,7 +1171,7 @@ setOutputFormula arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>
@@ -1243,7 +1243,7 @@ setOutputTex arg ==
     if (ptype := pathnameType fn) then
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
-    filename := $FILEP(fn, ft)
+    filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := MAKE_-OUTSTREAM(filename)) =>

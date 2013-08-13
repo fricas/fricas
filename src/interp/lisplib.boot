@@ -254,7 +254,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
       PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
             RSHUT $libFile))
   if ok then lisplibDoRename(libName)
-  filearg := $FILEP(libName, $spadLibFT)
+  filearg := make_full_namestring([libName, $spadLibFT])
   RPACKFILE filearg
   FRESH_-LINE $algebraOutputStream
   sayMSG fillerSpaces(72,'"-")
@@ -267,7 +267,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   res
 
 initializeLisplib libName ==
-  _$ERASE(libName,'ERRORLIB)
+  erase_lib([libName, 'ERRORLIB])
   SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib(libName,'ERRORLIB)
   $compiler_output_stream := make_compiler_output_stream($libFile, libName)
@@ -298,8 +298,7 @@ finalizeLisplib libName ==
     sayMSG ['"     not replacing ",$spadLibFT,'" for",:bright libName]
 
 lisplibDoRename(libName) ==
-  _$REPLACE([libName,$spadLibFT],
-    [libName,'ERRORLIB])
+    replace_lib([libName, 'ERRORLIB], [libName, $spadLibFT])
 
 lisplibError(cname,fname,type,cn,fn,typ,error) ==
   $bootStrapMode and error = "wrongType" => nil

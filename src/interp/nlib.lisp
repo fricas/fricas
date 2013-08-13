@@ -124,14 +124,14 @@
     (|write_indextable| indextable stream)))
 
 ;; (RREAD key rstream)
-(defun |rread0| (key rstream &optional (error-val nil error-val-p))
+(defun |rread0| (key rstream)
   (if (equal (libstream-mode rstream) 'output) (error "not input stream"))
   (let* ((entry
          (and (stringp key)
               (assoc key (libstream-indextable rstream) :test #'string=)))
          (file-or-pos (and entry (caddr entry))))
     (cond ((null entry)
-           (if error-val-p error-val (error (format nil "key ~a not found" key))))
+              (error (format nil "key ~a not found" key)))
           ((null (caddr entry)) (cdddr entry))  ;; for small items
           ((numberp file-or-pos)
            (file-position (libstream-indexstream rstream) file-or-pos)
@@ -142,9 +142,9 @@
             (read  stream))) )))
 
 ;; (RKEYIDS filearg) -- interned version of keys
-(defun RKEYIDS (&rest filearg)
+(defun RKEYIDS (filearg)
   (mapcar #'intern (mapcar #'car (getindextable
-                                  (|make_input_filename| filearg)))))
+                                  (|make_input_filename| (list filearg))))))
 
 ;; (RWRITE cvec item rstream)
 (defun |rwrite0| (key item rstream)
@@ -164,7 +164,7 @@
          (push (setq entry (cons key (cons 0 value-or-pos)))
                (libstream-indextable rstream))
        (progn
-         (if (stringp (caddr entry)) ($ERASE (caddr entry)))
+         (if (stringp (caddr entry)) (BREAK))
          (setf (cddr entry) value-or-pos)))
      entry))
 
@@ -182,18 +182,10 @@
   (setq filespec (|make_filename| filespec))
   (if (string= (pathname-type filespec) "NRLIB")
     (let ((base (pathname-name filespec)))
-         (|recompile_lib_file_if_necessary|
+         (|compile_lib_file|
              (concatenate 'string (namestring filespec) "/" base ".lsp")))
     (error "RPACKFILE only works on .NRLIB-s"))
   filespec)
-
-(defun |recompile_lib_file_if_necessary| (lfile)
-   (let* ((bfile (make-pathname :type *lisp-bin-filetype* :defaults lfile))
-          (bdate (and (probe-file bfile) (file-write-date bfile)))
-          (ldate (and (probe-file lfile) (file-write-date lfile))))
-     (if ldate
-         (if (and bdate (> bdate ldate)) nil
-           (progn (|compile_lib_file| lfile) (list bfile))))))
 
 #+:GCL
 (defun spad-fixed-arg (fname )
@@ -223,7 +215,7 @@
 
 
 ;; (RDROPITEMS filearg keys) don't delete, used in files.spad
-(defun rdropitems (filearg keys &aux (ctable (getindextable filearg)))
+(defun RDROPITEMS (filearg keys &aux (ctable (getindextable filearg)))
   (mapc #'(lambda(x)
            (setq ctable (delete x ctable :key #'car :test #'equal)) )
            (mapcar #'string keys))
@@ -274,7 +266,7 @@
               :test #'string=))))
 
 (defun |probe_name| (file)
-  (if (fricas-probe-file file) (namestring file) nil))
+  (if (|fricas_probe_file| file) (namestring file) nil))
 
 (defun |make_input_filename0|(filearg filetype)
    (let*
@@ -286,7 +278,7 @@
     (if (or (null dirname) (eqcar dirname :relative))
         (dolist (dir dirs (|probe_name| filename))
                 (when
-                 (fricas-probe-file
+                 (|fricas_probe_file|
                   (setq newfn (concatenate 'string dir "/" filename)))
                  (return newfn)))
         (|probe_name| filename))))
@@ -297,9 +289,7 @@
             (|make_input_filename0| (car filearg) (cadr filearg)))
         (t (|make_input_filename0| filearg nil))))
 
-(defun $FILEP (&rest filearg) (|make_full_namestring| filearg))
-
-(defun $FINDFILE(filespec filetypelist)
+(defun |find_file|(filespec filetypelist)
   (let ((file-name (if (consp filespec) (car filespec) filespec))
         (file-type (if (consp filespec) (cadr filespec) nil)))
     (if file-type (push file-type filetypelist))
@@ -307,9 +297,9 @@
           filetypelist)))
 
 ;; ($ERASE filearg) -> 0 if succeeds else 1
-(defun $ERASE(&rest filearg)
+(defun |erase_lib|(filearg)
   (setq filearg (|make_full_namestring| filearg))
-  (if (fricas-probe-file filearg)
+  (if (|fricas_probe_file| filearg)
       #+:fricas_has_remove_directory
           (|remove_directory| filearg)
       #-:fricas_has_remove_directory
@@ -354,8 +344,8 @@
 (defun delete-directory (dirname)
   (system:call-system (concatenate 'string "rm -r " dirname)))
 
-(defun $REPLACE (filespec1 filespec2)
-    ($ERASE (setq filespec1 (|make_full_namestring| filespec1)))
+(defun |replace_lib|(filespec2 filespec1)
+    (|erase_lib| (list (setq filespec1 (|make_full_namestring| filespec1))))
     #-(or :clisp :openmcl :ecl)
     (rename-file (|make_full_namestring| filespec2) filespec1)
     #+(or :clisp :openmcl :ecl)
@@ -363,7 +353,7 @@
  )
 
 
-(defun $FCOPY (filespec1 filespec2)
+(defun |copy_file|(filespec1 filespec2)
     (let ((name1 (|make_full_namestring| filespec1))
           (name2 (|make_full_namestring| filespec2)))
         (copy-lib-directory name1 name2)
@@ -469,7 +459,7 @@
     (if s s "") ))
 
 (defun |fnameExists?| (f)
-  (if (fricas-probe-file (namestring f)) 't nil))
+  (if (|fricas_probe_file| (namestring f)) 't nil))
 
 (defun |fnameReadable?| (f)
   (let ((s
@@ -490,5 +480,5 @@
     (do ((fn))
         (nil)
         (setq fn (|fnameMake| d (string (gensym n)) e))
-        (if (not (fricas-probe-file (namestring fn)))
+        (if (not (|fricas_probe_file| (namestring fn)))
            (return-from |fnameNew| fn)) )))

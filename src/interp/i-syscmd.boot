@@ -424,34 +424,34 @@ compiler args ==
     aft := pathnameType af
 
     haveNew or (aft = '"as")   =>
-        not (af1 := $FINDFILE (af, '(as))) =>
+        not (af1 := find_file(af, '(as))) =>
             throwKeyedMsg("S2IL0003",[NAMESTRING af])
         compileAsharpCmd [af1]
     haveOld or (aft = '"spad") =>
-        not (af1 := $FINDFILE (af, '(spad))) =>
+        not (af1 := find_file(af, '(spad))) =>
             throwKeyedMsg("S2IL0003",[NAMESTRING af])
         compileSpad2Cmd  [af1]
     aft = '"lsp"   =>
-        not (af1 := $FINDFILE (af, '(lsp))) =>
+        not (af1 := find_file(af, '(lsp))) =>
             throwKeyedMsg("S2IL0003",[NAMESTRING af])
         compileAsharpLispCmd [af1]
     aft = '"NRLIB"  =>
-        not (af1 := $FINDFILE (af, '(NRLIB))) =>
+        not (af1 := find_file(af, '(NRLIB))) =>
             throwKeyedMsg("S2IL0003",[NAMESTRING af])
         compileSpadLispCmd [af1]
     aft = '"ao"   =>
-        not (af1 := $FINDFILE (af, '(ao))) =>
+        not (af1 := find_file(af, '(ao))) =>
             throwKeyedMsg("S2IL0003",[NAMESTRING af])
         compileAsharpCmd [af1]
     aft = '"al"   =>    -- archive library of .ao files
-        not (af1 := $FINDFILE (af, '(al))) =>
+        not (af1 := find_file(af, '(al))) =>
             throwKeyedMsg("S2IL0003",[NAMESTRING af])
         compileAsharpArchiveCmd [af1]
 
     -- see if we something with the appropriate file extension
     -- lying around
 
-    af1 := $FINDFILE (af, '(as spad ao asy))
+    af1 := find_file(af, '(as spad ao asy))
 
     af1 and pathnameType(af1) = '"as"   => compileAsharpCmd [af1]
     af1 and pathnameType(af1) = '"ao"  => compileAsharpCmd [af1]
@@ -703,7 +703,7 @@ compileSpadLispCmd args ==
     if fnameReadable?(lsp) then
         if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
         --compileFileQuietly(lsp)
-        recompile_lib_file_if_necessary lsp
+        compile_lib_file lsp
     else
         sayKeyedMsg("S2IL0003", [namestring lsp])
 
@@ -1020,7 +1020,7 @@ editSpad2Cmd l ==
     $UserLevel = 'compiler    => '("input" "INPUT" "spad" "SPAD")
     '("input" "INPUT" "spad" "SPAD" "boot" "BOOT" "lisp" "LISP")
   ll :=
-       oldDir = '"" => pathname $FINDFILE (pathnameName l, fileTypes)
+       oldDir = '"" => pathname find_file(pathnameName l, fileTypes)
        l
   l := pathname ll
   $edit_file := l
@@ -1127,7 +1127,7 @@ addNewInterpreterFrame(name) ==
   $interpreterFrameRing := CONS(emptyInterpreterFrame(name),
     $interpreterFrameRing)
   updateFromCurrentInterpreterFrame()
-  _$ERASE histFileName()
+  erase_lib([histFileName()])
 
 emptyInterpreterFrame(name) ==
   LIST(name,                            -- frame name
@@ -1156,7 +1156,7 @@ closeInterpreterFrame(name) ==
       found or (name ~= frameName(f)) => ifr := CONS(f,ifr)
       found := true
     not found => throwKeyedMsg("S2IZ0022",[name])
-    _$ERASE makeHistFileName(name)
+    erase_lib([makeHistFileName(name)])
     $interpreterFrameRing := nreverse ifr
   updateFromCurrentInterpreterFrame()
 
@@ -1317,7 +1317,7 @@ initHist() ==
   newFile := histFileName()
   -- see if history directory is writable
   histFileErase oldFile
-  if make_input_filename(newFile) then $REPLACE(oldFile, newFile)
+  if make_input_filename(newFile) then replace_lib(newFile, oldFile)
   $HiFiAccess:= 'T
   initHistList()
 
@@ -1484,8 +1484,7 @@ putHist(x,prop,val,e) ==
   if $HiFiAccess then recordNewValue(x,prop,val)
   putIntSymTab(x,prop,val,e)
 
-histFileErase file ==
-  _$ERASE(file)
+histFileErase(file) == erase_lib([file])
 
 recordNewValue(x,prop,val) ==
   startTimingProcess 'history
@@ -1607,7 +1606,7 @@ restoreHistory2(oldInternal, restfile, fn) ==
   if not(oldInternal) then
      curfile := histFileName()
      histFileErase curfile
-     _$FCOPY(restfile,curfile)
+     copy_file(restfile, curfile)
      $curHistFileName := nil
      restfile := curfile
 
@@ -1754,7 +1753,7 @@ writeHistModesAndValues() ==
   NIL
 
 SPADRREAD(vec, stream) ==
-    dewritify rread(vec, stream, nil)
+    dewritify rread(vec, stream)
 
 --% Lisplib output transformations
 --  Some types of objects cannot be saved by LISP/VM in lisplibs.
@@ -2123,7 +2122,7 @@ readSpad2Cmd l ==
     $UserLevel = 'interpreter => '("input" "INPUT")
     $UserLevel = 'compiler    => '("input" "INPUT")
     devFTs
-  ll := $FINDFILE (l, fileTypes)
+  ll := find_file(l, fileTypes)
   if null ll then
     ifthere => return nil    -- be quiet about it
     throwKeyedMsg("S2IL0003",[namestring l])
@@ -2218,7 +2217,7 @@ reportOpsFromUnitDirectly0 D ==
 
 reportOpsFromUnitDirectly1 D ==
   showFile := pathname ['SHOW,'LISTING]
-  _$ERASE showFile
+  erase_lib([showFile])
   $sayBrightlyStream : fluid := MAKE_-OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromUnitDirectly D
@@ -2240,7 +2239,7 @@ reportOpsFromLisplib0(unitForm,u)  ==
 
 reportOpsFromLisplib1(unitForm,u)  ==
   showFile := pathname ['SHOW,'LISTING]
-  _$ERASE showFile
+  erase_lib([showFile])
   $sayBrightlyStream : fluid := MAKE_-OUTSTREAM (showFile)
   sayShowWarning()
   reportOpsFromLisplib(unitForm,u)

@@ -38,8 +38,9 @@
 (do-symbols (x "FRICAS-LISP") (export (list x)))
 
 (export '(quit chdir |getEnv| |getCLArgs| |load_quietly| get-current-directory
-          fricas-probe-file trim-directory-name pad-directory-name
+          trim-directory-name pad-directory-name
           file-kind makedir fricas_compile_file fricas_compile_fasl
+          |fricas_probe_file|
           DEFCONST exit-with-status MEMQ |quiet_load_alien|
           |handle_input_file| |handle_output_file| |maybe_delete_file|
           |remove_directory| |writeablep| |openServer| |sockGetInt|

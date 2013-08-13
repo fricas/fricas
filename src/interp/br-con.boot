@@ -1052,7 +1052,7 @@ bcUnixTable(u) ==
     ft :=
       isAsharpFileName? x => '("AS")
       '("SPAD")
-    filename := NAMESTRING $FINDFILE(STRINGIMAGE x, ft)
+    filename := NAMESTRING find_file(STRINGIMAGE x, ft)
     htMakePage [['text, '"\unixcommand{",PATHNAME_-NAME x, '"}{$AXIOM/lib/SPADEDIT ", filename, '"} "]]
     htSay '"}"
   htEndTable()

@@ -49,10 +49,9 @@ isSharpVarWithNum x ==
     ok := DIGITP d => c := 10*c + DIG2FIX d
   if ok then c else nil
 
--- RREAD which takes erroval to return if key is missing
-rread(key,rstream,errorval) ==
+rread(key, rstream) ==
   if IDENTP key then key := PNAME key
-  rread0(key,rstream,errorval)
+  rread0(key, rstream)
 
 rwrite(key,val,stream) ==
   if IDENTP key then key := PNAME key
