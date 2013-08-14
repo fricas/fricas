@@ -189,7 +189,14 @@ getFreeList(u, bound, free, e) ==
     op := first u
     MEMQ(op, '(QUOTE GO function)) => free
     EQ(op, 'LAMBDA) =>
-        bound := UNIONQ(bound, CADR u)
+        lvl := CADR u
+        avl := []
+        for evl in lvl repeat
+            el :=
+                ATOM(evl) => evl
+                first(evl)
+            avl := [el, :avl]
+        bound := UNIONQ(bound, avl)
         for v in CDDR u repeat
             free := getFreeList(v, bound, free, e)
         free
