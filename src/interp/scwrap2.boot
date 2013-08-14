@@ -128,7 +128,6 @@ DEFVAR($paren_level)
 DEFVAR($settab_level)
 DEFVAR($tab_states)
 DEFVAR($ignored_tab)
-DEFVAR($ignorable_backset)
 
 ntokreader(token) ==
     nonblank_flag := nil
@@ -174,12 +173,6 @@ ntokreader(token) ==
             nsym := ntok1.1
             if ntype1 = "key" and nsym in ["then", "else"] then
                 return ntokreader(token)
-        type1 = "key" and sym = "BACKSET" and $ignorable_backset =>
-            ntokreader(token)
-        if type1 = "key" and sym in ["[", "COMMA", "SEMICOLON"] then
-            $ignorable_backset := true
-        else
-            $ignorable_backset := false
         if type1 = "key" and sym = "SETTAB" and $toklst then
             ntok1 := first $toklst
             ntype1 := first(ntok1)
