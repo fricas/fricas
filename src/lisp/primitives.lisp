@@ -248,6 +248,9 @@
 (DEF_DF_BINOP |sub_DF| -)
 (DEF_DF_BINOP |div_DF| /)
 
+(defmacro |abs_DF| (x) `(FLOAT-SIGN (the (double-float 1.0d0 1.0d0) 1.0d0)
+                                    (the double-float ,x)))
+
 #-:openmcl
 (progn
 (defmacro |less_DF| (x y) `(< (the double-float ,x)
