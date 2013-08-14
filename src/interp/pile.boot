@@ -164,19 +164,22 @@ pileCtree(x,y)==dqAppend(x,pileCforest y)
 
 -- only enpiles forests with >=2 trees
 
+first_tok(t) == CAAR t
+last_tok(t) == CADR t
+
 pileCforest x==
    if null x
    then []
    else if null cdr x
         then
            f:= car x
-           if EQ(tokPart CAAR f,"if")
+           if EQ(tokPart first_tok(f),"if")
            then enPile f
            else f
         else enPile separatePiles x
 
-firstTokPosn t== tokPosn CAAR t
-lastTokPosn  t== tokPosn CADR t
+firstTokPosn t== tokPosn first_tok(t)
+lastTokPosn  t== tokPosn last_tok(t)
 
 separatePiles x==
   if null x
@@ -185,6 +188,13 @@ separatePiles x==
        then car x
        else
          a:=car x
+         lta := tokPart(last_tok(a))
+         ftb := tokPart(first_tok(car(cdr x)))
+         EQ(lta, "COLON") or EQ(lta, "SEMICOLON") or EQ(lta, "(") or
+           EQ(lta, "[") or EQ(lta, "{") or EQ(ftb, "in") or
+             EQ(ftb, "then") or EQ(ftb, "else") or EQ(ftb, ")") or
+               EQ(ftb, "]") or EQ(ftb, "}") =>
+                   dqConcat [a, separatePiles cdr x]
          semicolon:=dqUnit tokConstruct("key", "BACKSET",lastTokPosn a)
          dqConcat [a,semicolon,separatePiles cdr x]
 
