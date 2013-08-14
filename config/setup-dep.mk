@@ -76,11 +76,6 @@ maintainer-clean-recursive:
 .PRECIOUS: %.tex
 .PRECIOUS: %.dvi
 
-DVI_FILES = $(addprefix $(fricas_target_docdir)/$(subdir), \
-		$(pamphlets:.pamphlet=.dvi))
-
-pamphlets_SOURCES = $(addprefix $(srcdir)/, $(pamphlets))
-
 .PHONY: dvi dvi-ax
 dvi: dvi-recursive
 dvi-ax: $(fricas_build_texdir)/axiom.sty $(DVI_FILES)
@@ -95,14 +90,6 @@ $(fricas_target_docdir)/$(subdir)%.dvi: $(builddir)/%.dvi
 	BIBINPUTS=".:$(fricas_build_texdir):$${TEXINPUTS}"; \
 	export BIBINPUTS; \
 	$(axiom_build_document) --latex $<
-
-%.tex: $(srcdir)/%.pamphlet
-	$(axiom_build_document) --weave --output=$@ $<
-
-
-$(fricas_build_texdir)/axiom.sty: $(fricas_src_docdir)/axiom.sty.pamphlet
-	$(mkinstalldirs) $(fricas_build_texdir)/
-	$(axiom_build_document) --tangle=axiom.sty --output=$@ $<
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac \
 			 $(top_srcdir)/config/fricas.m4
