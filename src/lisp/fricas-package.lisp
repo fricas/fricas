@@ -56,7 +56,7 @@
 (progn
     (require 'cmp)
     (eval-when (:execute :compile-toplevel :load-toplevel)
-         (proclaim '(optimize (safety 1))))
+         (proclaim '(optimize (safety 0))))
 )
 #+:openmcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
