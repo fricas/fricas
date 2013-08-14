@@ -83,7 +83,7 @@ mkEvalable form ==
     [op,:[mkEvalable x for x in argl]]
   form=$EmptyMode => $Integer
   IDENTP form and constructor?(form) => [form]
-  FBPIP form => BPINAME form
+  FBPIP form => BREAK()
   form
 
 mkEvalableMapping form ==

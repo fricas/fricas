@@ -86,14 +86,6 @@ lnImmediate? lineObject  ==
 
 poGetLineObject posn ==
     first posn
-pfGetLineObject posn == poGetLineObject posn
-
-pfSourceToken form ==
-    if pfLeaf? form
-    then pfLeafToken form
-    else if null pfParts form
-         then 'NoToken
-         else pfSourceToken(pfFirst form)
 
 pfPosn pf == pfSourcePosition pf
 
@@ -139,23 +131,15 @@ poFileName posn       ==
     CAAR posn
 pfFileName posn == poFileName posn
 
-poFileName? posn       ==
-    posn = ['noposition] => NIL
-    posn => lnFileName? poGetLineObject posn
-    CAAR posn
-pfFileName? posn == poFileName? posn
-
 poPlaceOfOrigin posn ==
     lnPlaceOfOrigin poGetLineObject posn
-pfPlaceOfOrigin posn == poPlaceOfOrigin posn
 
 poNopos? posn ==
     posn = ['noposition]
-pfNopos? posn == poNopos? posn
+
 poPosImmediate? txp==
     poNopos? txp => NIL
     lnImmediate? poGetLineObject txp
-pfPosImmediate? txp == poPosImmediate? txp
 
 poImmediate? txp==
     lnImmediate? poGetLineObject txp

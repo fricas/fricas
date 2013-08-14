@@ -107,35 +107,13 @@ parseAtom x ==
 
 parseTranList l == [parseTran(y) for y in l]
 
-parseIs [a,b] == ["is",parseTran a,transIs parseTran b]
+parseIs [a, b] == ["is", parseTran a, parseTran b]
 
-parseIsnt [a,b] == ["isnt",parseTran a,transIs parseTran b]
-
-transIs u ==
-  isListConstructor u => ['construct,:transIs1 u]
-  u
-
-isListConstructor u == u is [op,:.] and op in '(construct append cons)
-
-transIs1 u ==
-  u is ['construct,:l] => [transIs x for x in l]
-  u is ['append,x,y] =>
-    h:= [":",transIs x]
-    (v:= transIs1 y) is [":",z] => [h,z]
-    v="nil" => first rest h
-    atom v => [h,[":",v]]
-    [h,:v]
-  u is ['cons,x,y] =>
-    h:= transIs x
-    (v:= transIs1 y) is [":",z] => [h,z]
-    v="nil" => [h]
-    atom v => [h,[":",v]]
-    [h,:v]
-  u
+parseIsnt [a,b] == BREAK()
 
 parseLET [x,y] ==
   p := ['LET,parseTran x,parseTranCheckForRecord(y,opOf x)]
-  opOf x = 'cons => ['LET,transIs p.1,p.2]
+  opOf x = 'cons => BREAK()
   p
 
 parseColon u ==
@@ -172,7 +150,7 @@ parseDEF [$lhs,tList,specialList,body] ==
 
 parseLhs x ==
   atom x => parseTran x
-  atom first x => [parseTran first x,:[transIs parseTran y for y in rest x]]
+  atom first x => [parseTran first x, :[parseTran y for y in rest x]]
   parseTran x
 
 parseMDEF [$lhs,tList,specialList,body] ==

@@ -322,8 +322,6 @@ tuple2List l ==
     ["cons",postTran a,tuple2List l']
   nil
 
-SEGMENT(a,b) == [i for i in a..b]
-
 postReduce ['Reduce,op,expr] ==
   expr is ['COLLECT, :.] =>
     ['REDUCE,op,0,postTran expr]
