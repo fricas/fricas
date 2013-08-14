@@ -712,7 +712,7 @@ NRTputInTail x ==
       k:= NRTassocIndex u =>
         atom u => RPLACA(y,[$elt,'_$,k])
         -- u atomic means that the slot will always contain a vector
-        RPLACA(y,['SPADCHECKELT,'_$,k])
+        BREAK()
       --this reference must check that slot is a vector
       nil
     NRTputInHead u
