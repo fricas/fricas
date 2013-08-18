@@ -81,9 +81,23 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
     x = y           == denom(x) = denom(y) and numer(x) = numer(y)
     agcd l  == reduce("gcd", [vgcd coordinates a for a in l]$List(R), 0)
 
-    norm i ==
-      ("gcd"/[retract(u)@R for u in coefficients determinant summat i])
+    oldnorm(i : %) : F ==
+        gcd([retract(u)@R for u in coefficients determinant summat i]@List(R))
               / denom(i) ^ rank()$A
+
+    norm i ==
+        v := numer i
+        n := (#v - 1)*rank()$A
+        chara := characteristic()$A
+        chara > 0 and n >= chara =>
+            oldnorm(i)
+        pp : UPA := 0
+        j0 := minIndex(v)
+        for j in 0..(#v - 1) repeat
+            pp := pp + monomial(qelt(v, j0+j), j)$UPA
+        dv := create()$SingletonAsOrderedSet
+        gcd([retract(norm(retract(eval(pp, dv, j::A))@A))@R
+               for j in 0..n]@List(R)) / denom(i) ^ rank()$A
 
     tryRange(range, nm, nrm, i) ==
       for j in 0..10 repeat
@@ -118,7 +132,7 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
         if (u := retractIfCan(x)@Union(F, "failed")) case F
           then lr := concat(retract(u::F)@R, lr)
           else nr := concat(x, nr)
-      r    := reduce("gcd", lr, 0)
+      r    := gcd(lr)
       g    := agcd nr
       a    := (r quo (b := gcd(gcd(d, r), g)))::F::A
       d    := d quo b
@@ -129,8 +143,7 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
       mkIdeal(concat(a, va), d)
 
     vgcd v ==
-      reduce("gcd",
-             [retract(v.i)@R for i in minIndex v .. maxIndex v]$List(R))
+        gcd([retract(v.i)@R for i in minIndex v .. maxIndex v]$List(R))
 
     poly i ==
       m := minIndex(v := numer i)
