@@ -1,0 +1,127 @@
+<<package UGAUSS UnitGaussianElimination>>=
+
+)abbrev package UGAUSS UnitGaussianElimination
+++ References:
+++   J-G. Dumas, F. Heckenbach, D. Sauders, V. Welker:
+++   Computing simplicial homology based on efficient Smith
+++   normal form algorithms.
+++ Descrition: Gaussion elimination using only 1 or -1 as pivots
+++
+
+UnitGaussianElimination : with
+    pre_gauss : Matrix(Integer) -> Matrix(Integer)
+      ++ pre_gauss(m) performs Gaussian eliminaton on rows of m
+      ++ using only 1 and -1 as pivots.
+      ++ Note:  m is modified in place
+    pre_smith : Matrix(Integer) -> Matrix(Integer)
+      ++ pre_smith(m) first performs pre_gauss(m) and then
+      ++ drops all rows and colums of m contaning pivots.
+  == add
+
+    M ==> Matrix(Integer)
+    V ==> Vector(Integer)
+    NNI ==> NonNegativeInteger
+
+    -- Gaussion elimination using only 1 or -1 as pivots
+    -- m is input matrix,
+    -- pivotsj is position of pivot within row, 0 if none
+    -- pivotsk is position of pivot within column, 0 if none
+    -- pivotsj and pivotsk are 0 on entry and filled with
+    -- approproate values on exit
+    pre_gauss0(m : M, pivotsj : V, pivotsk : V) : Void ==
+        j := nrows(m)
+        k := ncols(m)
+        for i in 1..j repeat
+            -- choose pivot in row i
+            for l in 1..k repeat
+                pivotsk(l) ~= 0 => "iterate"
+                pv := qelt(m, i, l)
+                if pv = 1 or pv = -1 then
+                     pivotsj(i) := l
+                     pivotsk(l) := i
+                     break
+            pivotsj(i) = 0 => "iterate"
+            l0 := pivotsj(i)
+            ml := qelt(m, i, l0)
+            -- zero out column l0, do not bother with rows containing pivots
+            for n in 1..j repeat
+                if qelt(pivotsj, n) = 0 and qelt(m, n, l0) ~= 0 then
+                    pp := -ml*qelt(m, n, l0)
+                    for l in 1..k repeat
+                        qsetelt!(m, n, l, qelt(m, n, l) + pp*qelt(m, i, l))
+
+    pre_gauss(m : M) : M ==
+        j := nrows(m)
+        k := ncols(m)
+        pivotsj := zero(j)$V
+        pivotsk := zero(k)$V
+        pre_gauss0(m, pivotsj, pivotsk)
+        m
+
+    pre_smith(m : M) : M ==
+        j := nrows(m)
+        k := ncols(m)
+        pivotsj := zero(j)$V
+        pivotsk := zero(k)$V
+        pre_gauss0(m, pivotsj, pivotsk)
+
+        -- count rows containing pivots
+        count := 0
+        for i in 1..j repeat
+            if pivotsj(i) ~= 0 then
+                count := count + 1
+        count = 0 => m
+        -- skip rows and columns containing pivots
+        ress := zero((j - count)::NNI, (k - count)::NNI)$M
+        i0 := 0
+        for i in 1..j repeat
+            if pivotsj(i) = 0 then
+                i0 := i0 + 1
+                l0 := 0
+                for l in 1..k repeat
+                    if qelt(pivotsk, l) = 0 then
+                        l0 := l0 + 1
+                        qsetelt!(ress, i0, l0, qelt(m, i, l))
+        ress
+
+@
+
+<<package ISMITH IntegerSmithNormalForm>>=
+
+)abbrev package ISMITH IntegerSmithNormalForm
+IntegerSmithNormalForm : with
+
+    smith : Matrix(Integer) -> Matrix(Integer)
+      ++ smith(m) computes Smith normal form of m
+    smith : (Matrix(Integer), Matrix(Integer) -> Matrix(Integer)
+            ) -> Matrix(Integer)
+      ++ smith(m, full) computes Smith normal form of m.  It
+      ++ first reduces m to smaller matrix and then usess full
+      ++ to finish.
+
+  == add
+
+    M ==> Matrix(Integer)
+    PS ==> UnitGaussianElimination
+    V ==> Vector(Integer)
+    SP ==> SmithNormalForm(Integer, V, V, M)
+
+    smith(m : M, full : M -> M) : M ==
+        m1 := copy(m)
+        m2 := pre_smith(m1)$PS
+        m3 := full(m2)
+        j := nrows(m)
+        k := ncols(m)
+        nn := min(j, k)
+        count := j - nrows(m2)
+        res := zero(j, k)$M
+        for i in 1..count repeat
+            qsetelt!(res, i, i, 1)
+        nn2 := nn - count
+        for i in 1..nn2 repeat
+            qsetelt!(res, i + count, i + count, qelt(m3, i, i))
+        res
+
+    smith(m : M) : M == smith(m, smith$SP)
+
+@
