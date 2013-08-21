@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2013-07-03],
+AC_INIT([FriCAS], [2013-08-21],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -323,9 +323,12 @@ else
         esac
         ;;
      openmcl)
-        if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
+        if echo $fricas_lisp_version | grep '^1\.1[[0-9]]' > /dev/null ; then
+            true
+        else if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^1\.[[01]]' > /dev/null ; then
              AC_MSG_ERROR([openmcl $fricas_lisp_version is too old])
+             fi
         fi
         ;;
      sbcl)
