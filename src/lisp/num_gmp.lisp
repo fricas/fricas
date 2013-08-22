@@ -3,7 +3,7 @@
 (locally
   (declare (optimize (speed 3) (safety 0)))
 
-#+:openmcl
+#+(and :openmcl :X8664-TARGET)
 (progn
 
 (CCL::defx86lapfunction gmp-bignum-copy-from-lisp
