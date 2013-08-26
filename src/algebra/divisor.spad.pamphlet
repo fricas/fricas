@@ -282,6 +282,8 @@ ModularHermitianRowReduction(R) : Exports == Implementation where
     determinantOfMinor : M -> R
     enumerateBinomial : (List Z, Z, Z) -> List Z
 
+    rowEchelon1 : (M, R) -> M
+
     nonzero? v == any?(s +-> s ~= 0, v)
 
 -- returns [a, i, rown] if v = [0, ..., 0, a, 0, ..., 0]
@@ -349,7 +351,7 @@ ModularHermitianRowReduction(R) : Exports == Implementation where
     rowEch x ==
       (u := diagSubMatrix x) case "failed" =>
         zero?(d := determinantOfMinor x) => rowEchelon x
-        rowEchelon(x, d)
+        rowEchelon1(x, d)
       rowEchelon(u.mat, u.val)
 
     vconc(y, m) ==
@@ -424,11 +426,23 @@ ModularHermitianRowReduction(R) : Exports == Implementation where
         x
 
     if R has Field then
-      rowEchelon(y, m) == rowEchelon vconc(y, m)
+
+      rowEchelon(y, m) == rowEchelon1(y, m)
+
+      rowEchelon1(y, m) == rowEchelon vconc(y, m)
 
     else
 
       rowEchelon(y, m) ==
+          nr := nrows(y)
+          nc := ncols(y)
+          nr = nc =>
+              d := determinant(y)
+              m1 := gcd(d, m)
+              rowEchelon1(y, m1)
+          rowEchelon1(y, m)
+
+      rowEchelon1(y, m) ==
         x     := vconc(y, m)
         nrows := maxRowIndex x
         ncols := maxColIndex x
