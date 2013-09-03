@@ -56,21 +56,21 @@ c2m2c := moment2cumulant cumulant2moment cc
 testEquals("firstn(cc, 5)", "firstn(c2m2c, 5)")
 m2c2m := cumulant2moment moment2cumulant mm
 testEquals("firstn(mm, 5)", "firstn(m2c2m, 5)")
-c2m2c := moment2freecumulant freecumulant2moment cc
+c2m2c := moment2freeCumulant freeCumulant2moment cc
 testEquals("firstn(cc, 5)", "firstn(c2m2c, 5)")
-m2c2m := freecumulant2moment moment2freecumulant mm
+m2c2m := freeCumulant2moment moment2freeCumulant mm
 testEquals("firstn(mm, 5)", "firstn(m2c2m, 5)")
-c2m2c := moment2booleancumulant booleancumulant2moment cc
+c2m2c := moment2booleanCumulant booleanCumulant2moment cc
 testEquals("firstn(cc, 5)", "firstn(c2m2c, 5)")
-m2c2m := booleancumulant2moment moment2booleancumulant mm
+m2c2m := booleanCumulant2moment moment2booleanCumulant mm
 testEquals("firstn(mm, 5)", "firstn(m2c2m, 5)")
 
 -- semicircle distribution
 sfc:Sequence Integer:= sequence concat([0,1], repeating [0])
 smm:= [(if odd? k then 0 else catalan(exquo(k, 2)::Integer)) for k in 1..10]
-testEquals("firstn(freecumulant2moment sfc, 10)", "smm")
+testEquals("firstn(freeCumulant2moment sfc, 10)", "smm")
 -- Hankel determinants
-shd:=[hankelDeterminant(freecumulant2moment sfc, k) for k in 1..10]
+shd:=[hankelDeterminant(freeCumulant2moment sfc, k) for k in 1..10]
 testEquals("removeDuplicates shd", "[1]")
 
 -- coercion
@@ -80,14 +80,14 @@ w2a:= w1::Distribution Expression Integer
 testEquals("firstn(moments w2, 10)","firstn(moments w2a, 10)")
 -- jacobi parameters of semicircle
 sfc1:Sequence Fraction Integer:= sequence concat([0,1], repeating [0])
-smm1:=freecumulant2moment sfc1
+smm1:=freeCumulant2moment sfc1
 sjc:=moment2jacobi smm1
 testEquals("removeDuplicates entries complete first(sjc an, 10)", "[0]")
 testEquals("removeDuplicates entries complete first(sjc bn, 10)", "[1]")
 
 -- free poisson has free cumulants all equal to one
 fpm:Sequence Integer := sequence [catalan k for k in 1..]
-testEquals("removeDuplicates firstn(moment2freecumulant fpm, 10)", "[1]")
+testEquals("removeDuplicates firstn(moment2freeCumulant fpm, 10)", "[1]")
 
 -- S transform of free Poisson
 fpm1:Sequence Fraction Integer := sequence [catalan k for k in 1..]
@@ -218,9 +218,29 @@ op:= orthogonalPolynomials mu;
 intp34:= integrate(op 2*op 3, mu)
 testTrue("zero? intp34")
 
+-- monotone cumulants 1
+mm1:Stream Fraction Polynomial Integer:= [m[k] for k in 1..];
+mu1:= distributionByMoments mm1;
+mc:= monotoneCumulants mu1;
+mm2:= distributionByMonotoneCumulants mc;
+m15:= mm1.5;
+m25:= moment(mm2, 5);
+testEquals("m15", "m25")
+
+-- monotone cumulants 2
+)clear prop mu1 mu2 mm1 mm2 hh
+hh:Stream Fraction Polynomial Integer:= [h[k] for k in 1..];
+mu1:= distributionByMonotoneCumulants hh;
+mm1:= moments mu1;
+mu2:= distributionByMoments mm1;
+h15:= hh.5;
+h25:= monotoneCumulants(mu2).5
+testEquals("h15", "h25")
+
+
 expected() ==
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
-    messagePrint("distro                      0     (5)               0    (35)")$OutputForm
+    messagePrint("distro                      0     (5)               0    (37)")$OutputForm
     
 statistics()
 expected()
