@@ -1150,12 +1150,6 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
     distributionByBooleanCumulants : Stream R -> %
       ++ \spad{distributionByBooleanCumulants(bb)} initiates a distribution with
       ++ given Boolean cumulants \spad{bb}.
-    distributionByMonotoneCumulants : Sequence R -> %
-      ++ \spad{distributionByMonotoneCumulants(hh)} initiates a distribution with
-      ++ given monotone cumulants \spad{hh}.
-    distributionByMonotoneCumulants : Stream R -> %
-      ++ \spad{distributionByMonotoneCumulants(hh)} initiates a distribution with
-      ++ given monotone cumulants \spad{hh}.
     distributionByJacobiParameters : (Sequence R, Sequence R) -> %
       ++ \spad{distributionByJacobiParameters(aa, bb)} initiates a distribution
       ++ with given Jacobi parameters \spad{[aa, bb]}.
@@ -1173,6 +1167,12 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
       ++ The user must make sure that these are consistent,
       ++ otherwise the results are unpredictable!
     if R has Algebra Fraction Integer then
+      distributionByMonotoneCumulants : Sequence R -> %
+        ++ \spad{distributionByMonotoneCumulants(hh)} initiates a distribution with
+        ++ given monotone cumulants \spad{hh}.
+      distributionByMonotoneCumulants : Stream R -> %
+        ++ \spad{distributionByMonotoneCumulants(hh)} initiates a distribution with
+        ++ given monotone cumulants \spad{hh}.
       distributionBySTransform : STRREC -> %
         ++ \spad{distributionBySTransform(series)} initiates a distribution with
         ++ given S-transform \spad{series}.
@@ -1233,14 +1233,6 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
     distributionByBooleanCumulants(mm : Stream R) : % ==
         distributionByBooleanCumulants(sequence(mm)$(Sequence R))
 
-    distributionByMonotoneCumulants(mc : Sequence R) : % ==
-        import MomentPackage R
-        mm := monotoneCumulant2moment mc
-        per ([mm, moment2cumulant mm, moment2freeCumulant mm, moment2booleanCumulant mm]$Rep)
-
-    distributionByMonotoneCumulants(mm : Stream R) : % ==
-        distributionByMonotoneCumulants(sequence(mm)$(Sequence R))
-        
     booleanCumulantFromJacobi(n : Integer, aa : Sequence R, bb : Sequence R) : R ==
         zero? n => 1
         one? n => aa 1
@@ -1262,6 +1254,14 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
       monotoneCumulants(x : %) : Sequence R ==
           moment2monotoneCumulant(moments x)$(MomentPackage R)
 
+      distributionByMonotoneCumulants(mc : Sequence R) : % ==
+          import MomentPackage R
+          mm := monotoneCumulant2moment mc
+          per ([mm, moment2cumulant mm, moment2freeCumulant mm, moment2booleanCumulant mm]$Rep)
+  
+      distributionByMonotoneCumulants(mm : Stream R) : % ==
+          distributionByMonotoneCumulants(sequence(mm)$(Sequence R))
+        
       distributionBySTransform(puiseux : Fraction Integer, _
         laurent : Fraction Integer, coef : Sequence R) : % ==
           psi : Stream R
