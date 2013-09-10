@@ -1,0 +1,75 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "limit"
+
+test_limit(expr : String, val : String) : Void ==
+    testcaseNoClear(expr)
+    lim_expr := concat(["limit(", expr, ", x = %plusInfinity)"])
+    testEquals(lim_expr, val)
+
+test_limit("1/x", "0")
+test_limit("1/log(x)", "0")
+test_limit("1/(x + log(x))", "0")
+test_limit("x/(x + log(x))", "1")
+test_limit("x/(x - log(x))", "1")
+test_limit("x/(x + sqrt(x))", "1")
+test_limit("x/(x - sqrt(x))", "1")
+
+test_limit("1/exp(x)", "0")
+test_limit("1/(exp(x) - log(x))", "0")
+test_limit("x/exp(x)", "0")
+test_limit("x^667/exp(x)", "0")
+test_limit("sin(x)/exp(x)", "0")
+test_limit("(x + sin(x))/exp(x)", "0")
+test_limit("log(x)/exp(x)", "0")
+test_limit("log(x)/exp(x-log(x))", "0")
+test_limit("log(x)/exp(x/log(x))", "0")
+test_limit("log(x)/exp(log(x+1)^2)", "0")
+test_limit("log(x)/exp(x*log(x))", "0")
+test_limit("log(x)/exp(exp(x))", "0")
+test_limit("log(x)/exp(exp(x)/log(x))", "0")
+test_limit("log(exp(x)+x)/log(exp(x + log(x)^2) + 1)", "1")
+test_limit("log(log(exp(x) + x))/log(exp(log(x)+1))", "1")
+test_limit("x*(exp(-exp(-x)) - 1)", "0")
+test_limit("x*(exp(-exp(-x)) - exp(-exp(-2*x)))", "0")
+test_limit("x*(exp(-exp(x)) - exp(-exp(2*x)))", "0")
+test_limit("x^log(1/x)", "0")
+
+test_limit("1/cosh(x)", "0")
+test_limit("1/(cosh(x) - log(x))", "0")
+test_limit("1/log(cosh(x))", "0")
+test_limit("log(x)/cosh(x)", "0")
+test_limit("log(x)/cosh(x*log(x))", "0")
+
+test_limit("log(x)*(1 - tanh(x))", "0")
+test_limit("log(x)*(1 - tanh(x*log(x)))", "0")
+test_limit("log(x)*(1 - tanh(x*log(log(x))))", "0")
+test_limit("log(log(x))*(1 - tanh(x))", "0")
+
+lg0 := (x - 1/2)*log(x) - x + log(2*%pi)/2
+test_limit("log(Gamma(x))/lg0", "1")
+test_limit("log(Gamma(x)) - lg0", "0")
+lg1 := log(Gamma(x)) - lg0
+test_limit("x*lg1", "1/12")
+test_limit("x^2*(x*lg1 - 1/12)", "-1/360")
+test_limit("x^2*(x^2*(x*lg1 - 1/12) + 1/360)", "1/1260")
+
+test_limit("(log(Gamma(x+1)) - log(Gamma(x)))/log(x)", "1")
+lg2 := log(Gamma(x + 1 + 1/x)) - log(Gamma(x)) - log(x)
+test_limit("lg2", "0")
+test_limit("x*lg2/log(x)", "1")
+
+test_limit("x*(digamma(x) - log(x))", "-1/2")
+
+test_limit("Gamma(1 + x - t)*Gamma(1 + x + t)/Gamma(1 + x)^2", "1")
+
+test_limit("log(x)*li(x)/x", "1")
+test_limit("log(x)*(log(x)*li(x)/x - 1)", "1")
+
+test_limit("exp(-x^2)*erfi(x)", "0")
+test_limit("x*exp(-x^2)*erfi(x)", "1/sqrt(%pi)")
+test_limit("x^2*(sqrt(%pi)*x*exp(-x^2)*erfi(x) - 1)", "1/2")
+
+)set output algebra on
+statistics()

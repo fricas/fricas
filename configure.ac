@@ -311,7 +311,7 @@ else
         ;;
      gcl)
         case $fricas_lisp_version in
-           2.6.7|2.6.8)
+           2.6.7|2.6.8|2.6.9)
              ;;
            2.7.0)
              AC_MSG_WARN([FriCAS needs porting to gcl $fricas_lisp_version

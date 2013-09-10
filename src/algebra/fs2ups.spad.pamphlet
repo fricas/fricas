@@ -542,7 +542,108 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         nres2 case %problem => return nres2
         [z_inv + nres2.%series]
 
+    make_taylor(f : Integer -> FE) : UTS ==
+        rn : Reference(Integer) := ref(1)
+        genc := (s : FE) : FE +->
+            n := deref(rn)
+            val := f(n)
+            setref(rn, n + 1)
+            val
+        sc : Stream(FE) := stream(genc, f(0))
+        series(sc)$UTS
+
+    lpi : FE := log(2::FE*pi()$FE)/2::FE
+
+    sqpi : FE := 1/sqrt(pi())
+
+    gen_erfs(i : Integer, rv : Reference(FE)) : FE ==
+        i = 1 => 1
+        even?(i) => 0
+        val := (2 - i)::FE/(2::FE)*deref(rv)
+        setref(rv, val)
+        val
+
+    do_erfs(iups : UPS) : Result ==
+        rv : Reference(FE) := ref(1)
+        lerfs := make_taylor((i : Integer) : FE +-> gen_erfs(i, rv))
+        [sqpi*apply_taylor(lerfs, iups)]
+
+    gen_erfis(i : Integer, rv : Reference(FE)) : FE ==
+        i = 1 => 1
+        even?(i) => 0
+        val := (i - 2)::FE/(2::FE)*deref(rv)
+        setref(rv, val)
+        val
+
+    do_erfis(iups : UPS) : Result ==
+        rv : Reference(FE) := ref(1)
+        lerfs := make_taylor((i : Integer) : FE +-> gen_erfis(i, rv))
+        [sqpi*apply_taylor(lerfs, iups)]
+
+    gen_eis(i : Integer, rv : Reference(FE)) : FE ==
+        i = 0 => 0
+        i = 1 => 1
+        val := (i - 1)::FE*deref(rv)
+        setref(rv, val)
+        val
+
+    do_eis(iups : UPS) : Result ==
+        rv : Reference(FE) := ref(1)
+        leis :=  make_taylor(i +-> gen_eis(i, rv))
+        [apply_taylor(leis, iups)]
+
+
+    gen_lg(i : Integer) : FE ==
+        i = 0 => lpi
+        even?(i) => 0
+        k := i + 1
+        bernoulli(k)$IntegerNumberTheoryFunctions::FE/(k*i)::FE
+
+    do_log_gamma(lc : FE, k : FE, lx : FE, ups : UPS, ups1 : UPS,
+              iups : UPS) : Result ==
+        lgs := make_taylor(gen_lg)
+        c1 := k*lx + log(lc)
+        l1 := log(ups1)
+        r1 := (ups - (1/2::FE)::UPS) *$UPS (l1 + c1::UPS) -$UPS ups
+        r2 : UPS := apply_taylor(lgs, iups)$TEXP
+        [r1 +$UPS r2]
+
+    do_digamma(lc : FE, k : FE, lx : FE, ups1 : UPS, iups : UPS
+              ) : Result ==
+        lgs := make_taylor(gen_lg)
+        ldig := monomial(-1, 2)$UTS*differentiate(lgs)$UTS
+        c1 := k*lx + log(lc)
+        r1  : UPS := log(ups1) + c1::UPS + (-1/2::FE)*iups
+        r2 : UPS := apply_taylor(ldig, iups)$TEXP
+        [r1 +$UPS r2]
+
     spec_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
+        nm := name(ker)
+        if nm = 'digamma or nm = '%logGamma or nm = '%eis or nm = '%erfs
+           or nm = '%erfis then
+            arg1 := args(1)
+            (nsu := i_expr_to_PS(arg1, opt_rec)) case %problem =>
+                return nsu
+            ups := nsu.%series
+            if (ord := order(ups, 0)) < 0 then return
+                not(opt_rec.log_x_replace) =>
+                    stateProblem(string(nm), "argument not Taylor")
+                lc := coefficient(ups, ord)
+                (signum := sign(lc)$SIGNEF) case "failed" =>
+                    stateProblem(string(nm), "branch problem")
+                signum = -1 =>
+                    stateProblem(string(nm), "expansion at - infinity")
+                iups := ups^(-1$Integer)
+                nm = '%eis => do_eis(iups)
+                nm = '%erfs => do_erfs(iups)
+                nm = '%erfis => do_erfis(iups)
+                ups1 := monomial(1/lc, -ord)*ups
+                nm = 'digamma =>
+                    do_digamma(lc, coerce_Ex(ord), opt_rec.log_x_val,
+                               ups1, iups)
+                nm = '%logGamma =>
+                    do_log_gamma(lc, coerce_Ex(ord), opt_rec.log_x_val,
+                                 ups, ups1, iups)
         (aresu := handle_args(args, opt_rec)) case Result =>
              aresu
         ares := aresu::ARES

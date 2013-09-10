@@ -32,6 +32,8 @@ TaylorSeriesExpansion(Coef : Algebra(Fraction(Integer)),
       ++ equation
     applyTaylor : ((UTS -> UTS), PS) -> PS
       ++ applyTaylor(g, f) applies g to f
+    apply_taylor : (UTS, PS) -> PS
+      ++ apply_taylor(g, f) applies g to f
   add
     taylor_via_deriv(f : Coef, lx : List PS,
                          ld : List (Coef -> Coef)) : PS ==
@@ -91,6 +93,8 @@ TaylorSeriesExpansionTaylor(Coef : Algebra(Fraction(Integer)),
 
         applyTaylor(g, f) == g(f)
 
+        apply_taylor(g, f) == elt(g, f)
+
 @
 
 <<package TSEREXPL TaylorSeriesExpansionLaurent>>=
@@ -117,6 +121,9 @@ TaylorSeriesExpansionLaurent(Coef : Algebra(Fraction(Integer)),
 
         applyTaylor(g, f) ==
             (applyTaylor(g, taylor(f))$TET) :: ULS
+
+        apply_taylor(g, f) ==
+            (apply_taylor(g, taylor(f))$TET)::ULS
 
 @
 
@@ -162,6 +169,11 @@ TaylorSeriesExpansionPuiseux(Coef : Algebra(Fraction(Integer)),
         applyTaylor(g, f) ==
             nrep := common_rep([f])
             lres := (applyTaylor(g, first(nrep.laus))$TEL)
+            puiseux(nrep.rpow, lres)
+
+        apply_taylor(g, f) ==
+            nrep := common_rep([f])
+            lres := (apply_taylor(g, first(nrep.laus))$TEL)
             puiseux(nrep.rpow, lres)
 
 @
@@ -211,7 +223,7 @@ TaylorSeriesExpansionGeneralized(
         f := taylor_via_deriv(f, rest lx, rest ld)
         d1 := first(ld)
         ss := stream_taylor(f, x1, 1$UPS, (y : UPS) : UPS +-> map(d1, y), 1)
-        print(ss::OutputForm)
+        -- print(ss::OutputForm)
         infsum(ss)
 
     taylor_via_lode(la : List UTS, z : UPS, lc : List Coef) : UPS ==
@@ -229,6 +241,8 @@ TaylorSeriesExpansionGeneralized(
         sg : UTS := g(c0::UTS + monomial(1, 1)$UTS)
         apply_taylor(coefficients(sg)$UTS, f - c0::UPS)
 
+    apply_taylor(g, f) ==
+        apply_taylor(coefficients(g)$UTS, f)
 
 @
 
