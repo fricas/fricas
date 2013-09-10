@@ -343,6 +343,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
   RF  ==> Fraction UP
   UPR ==> SparseUnivariatePolynomial RF
   IR  ==> IntegrationResult RF
+  IR0 ==> IntegrationResult F
   LOG ==> Record(scalar : Q, coeff : UPR, logand : UPR)
   LLG ==> List Record(coeff : RF, logand : RF)
   NE  ==> Record(integrand : RF, intvar : RF)
@@ -350,6 +351,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
   UPF ==> Record(answer : UP, a0 : F)
   RFF ==> Record(answer : RF, a0 : F)
   IRF ==> Record(answer : IR, a0 : F)
+  IRIR ==> Record(answer : IR, a0 : IR0)
   NLF ==> Record(answer : NL, a0 : F)
   GPF ==> Record(answer : GP, a0 : F)
   UPUP==> Record(elem : UP, notelem : UP)
@@ -378,6 +380,8 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       ++ tanintegrate(f, ', foo) returns \spad{[g, a]} such that
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in F;
       ++ Argument foo is a Risch differential system solver on F;
+    lambintegrate : (RF, F, F -> F, UP -> UP, F -> UF, F -> IR0) -> IRIR
+      ++ like tanintegrate
     primextendedint:(RF, UP -> UP, F->UF, RF) -> Union(RFF,FFR,"failed")
       ++ primextendedint(f, ', foo, g) returns either \spad{[v, c]} such that
       ++ \spad{f = v' + c g} and \spad{c' = 0}, or \spad{[v, a]} such that
@@ -716,6 +720,67 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
         [i1 + convert(u2.elem)@RF::IR + integral(convert(u2.notelem)@RF,
                                                  monomial(1, 1)$UP :: RF), 0]
       [i1 + convert(u2.answer)@RF::IR, u2.a0]
+
+    lamintegratepoly : (GP, F, Integer, F -> F, F -> UF, F -> IR0) -> IRIR
+
+    mkir(ans : GP, lcoeff: F, p : GP) : IR ==
+        logs : List(LOG) :=
+            lcoeff = 0 => empty()
+            [[1, UP2UPR(monomial(1,1) - lcoeff::UP),
+                     monomial(monomial(1,1)$UP::RF, 1)$UPR]$LOG]$List(LOG)
+        mkAnswer(convert(ans)@RF, logs, empty()$List(NE))
+                    + integral(convert(p)@RF, monomial(1,1)$UP :: RF)
+
+    lambintegrate(f, dx, fderiv, pderiv, extint, lfint) ==
+        rec := monomialIntegrate(f, pderiv)
+        not elem?(i1 := rec.ir) => [notelementary rec, 0]
+        sd := denom(rec.specpart)
+        n := -degree(sd)
+        reductum(sd) ~= 0 =>
+            print(sd::OutputForm)
+            error "lambintegrate: unexpected Darboux polynomial"
+        sp := rec.polypart::GP +
+                   (numer(rec.specpart)::GP exquo sd::GP)::GP
+        ri2 := lamintegratepoly(sp, dx, n, fderiv, extint, lfint)
+        [i1 + ri2.answer, ri2.a0]
+
+    -- FIXME: very incomplete
+    lamintegratepoly(p : GP, dx :F, n : Integer, fderiv : F -> F,
+                     extint : F -> UF, lfint : F -> IR0) : IRIR ==
+        answr := 0$GP
+        lcoeff : F := 0
+        i0 : IR0 := 0
+        while p ~= 0 repeat
+            d := degree p
+            -- XXX FIXME early abort
+            d < n - 2 => return [mkir(answr, lcoeff, p), i0]
+            p0 := leadingCoefficient p
+            b1 : F
+            db1 : F
+            clg0 : F
+            if d ~= 1 then
+                ans1 := extint (p0)
+                ans1 case "failed" =>
+                    return [mkir(answr, lcoeff, p), i0]
+                b1 := ans1.ratpart
+                db1 := fderiv(b1)
+                clg0 :=
+                    d ~= 0 => ans1.coeff/d::F
+                    lcoeff := ans1.coeff
+                    0
+            else
+                i0 := lfint(p0)
+                not(elem?(i0)) => return [mkir(answr, lcoeff, reductum p), i0]
+                b1 := 0
+                db1 := p0
+                clg0 := 0
+            answr := answr + monomial(b1, d - 1) + monomial(clg0, d)
+            p := reductum p - monomial(db1 + (d-1)*dx*b1, (d - 1))
+            p ~= 0 and degree(p) >= d =>
+                print(p::OutputForm)
+                error "impossible"
+        -- XXX FIXME handle part in F
+        [mkir(answr, lcoeff, 0), i0]
 
 -- returns
 --   (g in IR, a in F)  st f = g' + a, and a = 0 or a has no integral in F
