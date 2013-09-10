@@ -93,6 +93,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     algexpint   : (F, K, K, SE) -> IR
     primint     : (F, SE, K) -> IR
     expint      : (F, SE, K) -> IR
+    lambint     : (F, SE, K) -> IR
     tanint      : (F, SE, K) -> IR
     prim?       : (K, SE)  -> Boolean
     isx?        : (F, SE)  -> Boolean
@@ -107,6 +108,22 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     try_change_var2 : (F, K, SE, F) -> Union(Ext_Rec, "reject", "failed")
 
     prim?(k, x)      == is?(k, 'log) or has?(operator k, PRIM)
+
+    lambint(f, x, k) ==
+        eta' := differentiate(eta := first argument k, x)
+        dfac := (monomial(1, 1)$UP + 1$UP)
+        derivative : UP -> UP :=
+           (x1 : UP) : UP +-> dfac*differentiate(x1,
+              (x2 : F) : F +-> differentiate(x2, x), 0$UP) +
+                differentiate(x1, (x2 : F) : F +-> 0,
+                  monomial(eta'/eta, 1))
+        -- XXX FIXME need proper extended integration function
+        extint : F -> U2 := f +-> lfextendedint(f, x, eta'/eta)
+        r1 := lambintegrate((monomial(1, 1)$UP + 1$UP)*univariate(f, k),
+                      eta'/eta, (x1 : F) : F +-> differentiate(x1, x),
+                      derivative, extint, (x2 : F) : IR +-> lfintegrate(x2, x))
+        map((x1 : RF) : F +-> multivariate(x1, k), r1.answer) + r1.a0
+
 
     tanint(f, x, k) ==
       eta' := differentiate(eta := first argument k, x)
@@ -311,6 +328,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
         map((x1 : RF) : F+->multivariate(x1, k), integrate univariate(f, k))
       is?(k, 'tan)  => addx(tanint(f, x, k), xf)
       is?(k, 'exp)  => addx(expint(f, x, k), xf)
+      is?(k, 'lambertW) => addx(lambint(f, x, k), xf)
       prim?(k, x)        => addx(primint(f, x, k), xf)
       has?(operator k, ALGOP) => alglfint(f, k, l, x)
       is?(k, OPDIFF) => diffint(f, x, k)
