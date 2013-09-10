@@ -737,6 +737,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     opWeierstrassZeta := operator('weierstrassZeta)$CommonOperators
     opHypergeometricF := operator('hypergeometricF)$CommonOperators
     opMeijerG := operator('meijerG)$CommonOperators
+    op_log_gamma := operator('%logGamma)$CommonOperators
+    op_eis := operator('%eis)$CommonOperators
+    op_erfs := operator('%erfs)$CommonOperators
+    op_erfis := operator('%erfis)$CommonOperators
 
     abs x         == opabs x
     Gamma(x)      == opGamma(x)
@@ -1627,6 +1631,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       is?(op, 'jacobiTheta) => opJacobiTheta
       is?(op, 'lerchPhi) => opLerchPhi
       is?(op, 'riemannZeta) => opRiemannZeta
+      is?(op, '%logGamma) => op_log_gamma
+      is?(op, '%eis) => op_eis
+      is?(op, '%erfs) => op_erfs
+      is?(op, '%erfis) => op_erfis
 
       error "Not a special operator"
 
@@ -2237,11 +2245,24 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     iiMeijerG(l) == kernel(opMeijerG, l)
 
+    d_eis(x : F) : F == -kernel(op_eis, x) + 1/x
+
+    if F has TranscendentalFunctionCategory
+       and F has RadicalCategory then
+
+        d_erfs(x : F) : F == 2*x*kernel(op_erfs, x) - 2::F/sqrt(pi())
+
+        d_erfis(x : F) : F == -2*x*kernel(op_erfis, x) + 2::F/sqrt(pi())
+
+        derivative(op_erfs,     d_erfs)
+        derivative(op_erfis,    d_erfis)
 
     derivative(opabs,       (x : F) : F +-> abs(x)*inv(x))
     derivative(opGamma,     (x : F) : F +-> digamma(x)*Gamma(x))
+    derivative(op_log_gamma, (x : F) : F +-> digamma(x))
     derivative(opBeta,      [iBetaGrad1, iBetaGrad2])
     derivative(opdigamma,   (x : F) : F +-> polygamma(1, x))
+    derivative(op_eis,      d_eis)
     derivative(opAiryAi,    (x : F) : F +-> airyAiPrime(x))
     derivative(opAiryAiPrime,    (x : F) : F +-> x*airyAi(x))
     derivative(opAiryBi,    (x : F) : F +-> airyBiPrime(x))

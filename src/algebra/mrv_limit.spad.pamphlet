@@ -92,6 +92,16 @@ MrvLimitPackage : Exports == Implementation where
       -- Problem ==> Record(func: String, prob: String)
       -- UPS_Result  ==> Union(%series: ULS_X, %problem: Problem)
 
+      op_log_gamma : BasicOperator := operator(operator('%logGamma
+                                        )$CommonOperators)$FE
+      op_eis : BasicOperator := operator(operator('%eis
+                                        )$CommonOperators)$FE
+      op_erfs : BasicOperator := operator(operator('%erfs
+                                        )$CommonOperators)$FE
+
+      op_erfis : BasicOperator := operator(operator('%erfis
+                                        )$CommonOperators)$FE
+
       import PrintPackage
 
       var_kers(e : FE) : List(K) ==
@@ -122,9 +132,7 @@ MrvLimitPackage : Exports == Implementation where
               nm = 'exp => "iterate"
               nm = 'log => "iterate"
               #args = 1 =>
-                  lau := mrv_limit(arg1 := args(1), x, state)
-                  -- la := lau::OFE
-                  -- la := mrv_limit(arg1 := args(1), x)
+                  lau := mrv_limit(arg1 := nargs(1), x, state)
                   nm = 'atan =>
                           lau case "failed" =>
                               ns := new()$Symbol
@@ -151,6 +159,36 @@ MrvLimitPackage : Exports == Implementation where
                           l_tan := cons(kernels(nk).1, l_tan)
                           l_ts := cons(ns, l_ts)
                           ntf(1) := nk
+                  lau case "failed" => "iterate"
+                  la := lau::OFE
+                  ss : Integer := whatInfinity(la)
+                  nm = 'Gamma =>
+                      ss = 1 =>
+                          nk := exp(kernel(op_log_gamma, arg1))
+                          ntf(1) := nk
+                  nm = 'Ei =>
+                      ss = 1 =>
+                          nk := exp(arg1)*kernel(op_eis, arg1)
+                          ntf(1) := nk
+                  nm = 'li =>
+                      ss = 1 =>
+                          nk := arg1*kernel(op_eis, log(arg1))
+                          ntf(1) := nk
+                  nm = 'erf =>
+                      ss = 1 =>
+                          nk := 1 - exp(-arg1^2)*kernel(op_erfs, arg1)
+                          ntf(1) := nk
+                      ss = -1 =>
+                          nk := exp(-arg1^2)*kernel(op_erfs, -arg1) - 1
+                          ntf(1) := nk
+                  nm = 'erfi =>
+                      ss = 1 =>
+                          nk := exp(arg1^2)*kernel(op_erfis, arg1)
+                          ntf(1) := nk
+                      ss = -1 =>
+                          nk := -exp(arg1^2)*kernel(op_erfis, -arg1)
+                          ntf(1) := nk
+
           state.tan_syms := l_ts
           state.atan_syms := l_as
           state.tan_kers := l_tan
