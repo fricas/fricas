@@ -779,6 +779,19 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
             do_prim(ker, coef, opt_rec)
         stateProblem(string name ker,"unimplemented")
 
+    unknown_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
+        (aresu := handle_args(args, opt_rec)) case Result =>
+             aresu
+        ares := aresu::ARES
+        losers := ares.osers
+        lsers := ares.sers
+        lsere := ares.sere
+        lser0 := ares.sers0
+        cargs := convert_args(lsers, lsere, lser0)
+        nargs := cargs.nargs0
+        nker : FE := kernel(operator(ker), nargs)
+        do_taylor_via_deriv2(nker, cargs.syms, cargs.sers)
+
     kernelToUPS(ker, opt_rec) ==
       -- converts a kernel to a power series
       (sym := symbolIfCan(ker)) case Symbol =>
@@ -804,7 +817,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       is?(ker, 'nthRoot) =>
         n := retract(second args)@I
         nthRootToUPS(first args, n::NNI, opt_rec)
-      stateProblem(string name ker,"unknown kernel")
+      unknown_to_UPS(ker, args, opt_rec)
 
     nthRootToUPS(arg, n, opt_rec) ==
       -- converts an nth root to a power series
@@ -959,7 +972,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
           applyIfCan(asechIfCan, arg, "asech", opt_rec)
       is?(ker, 'acsch) =>
           applyIfCan(acschIfCan, arg, "acsch", opt_rec)
-      stateProblem(string name ker,"unknown kernel")
+      unknown_to_UPS(ker, [arg], opt_rec)
 
     powToUPS2(args : L FE, opt_rec : OPT_REC) : Result ==
       -- converts a power f(x) ^ g(x) to a power series
