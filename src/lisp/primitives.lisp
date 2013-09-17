@@ -232,13 +232,13 @@
 
 ;;; Floating point macros
 
-;; Closure CL has buggy floating point optimizer, so for it we need
-;; to omit type declarations to disable optimization
-#-:openmcl
+;; Before version 1.8 Closure CL had buggy floating point optimizer, so
+;; for it we need to omit type declarations to disable optimization
+#-(and :openmcl (not :CCL-1.8))
 (defmacro DEF_DF_BINOP (name op)
    `(defmacro ,name (x y) `(the double-float (,',op (the double-float ,x)
                                                     (the double-float ,y)))))
-#+:openmcl
+#+(and :openmcl (not :CCL-1.8))
 (defmacro DEF_DF_BINOP (name op) `(defmacro ,name (x y) `(,',op ,x ,y)))
 
 (DEF_DF_BINOP |add_DF| +)
