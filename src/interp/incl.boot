@@ -42,14 +42,8 @@
 -- Union(FileName,"strings","console")
 %origin x ==
     [function porigin, x]
-porigin x ==
-    (STRINGP x => x; pfname x)
 
-%fname x ==
-    [function pfname, x]
-pfname x ==
-    PathnameString x
-
+porigin x == x
 
 ppos p ==
     pfNoPosition? p => ['"no position"]
@@ -234,9 +228,9 @@ xlFileCycle(eb, str, lno, ufos, fn) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgFileCycle(ufos,fn),"error"])
 
-xlNoSuchFile(eb, str, lno, ufos, fn) ==
+xlNoFile(eb, str, lno, ufos) ==
           xlMsg(eb, str, lno,ufos.0,
-              [inclmsgNoSuchFile(fn), "error"])
+              [inclmsgNoFile(), "error"])
 
 xlCannotRead(eb, str, lno, ufos, fn) ==
           xlMsg(eb, str, lno,ufos.0,
@@ -321,7 +315,7 @@ incLude1 (:z) ==
                      cons(xlSkip(eb,str,lno,ufos.0), Rest s)
                 fn1 := inclFname(str, info)
                 not fn1 =>
-                    cons(xlNoSuchFile(eb, str, lno,ufos,fn),Rest s)
+                    cons(xlNoFile(eb, str, lno, ufos), Rest s)
                 not PROBE_-FILE fn1 =>
                     cons(xlCannotRead(eb, str, lno,ufos,fn1),Rest s)
                 incActive?(fn1,ufos) =>
@@ -444,10 +438,10 @@ inclmsgFinSkipped() ==
 inclmsgIfSyntax(ufo,found,context) ==
     found := CONCAT('")", found)
     ['S2CI0009, [%id found, %id context, %origin ufo]]
-inclmsgNoSuchFile fn ==
-    ['S2CI0010, [%fname fn]]
+inclmsgNoFile() ==
+    ['S2CI0010, []]
 inclmsgCannotRead fn ==
-    ['S2CI0011, [%fname fn]]
+    ['S2CI0011, [fn]]
 inclmsgIfBug() ==
     ['S2CB0002, []]
 inclmsgCmdBug() ==
