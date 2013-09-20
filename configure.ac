@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2013-08-21],
+AC_INIT([FriCAS], [2013-09-20],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -311,7 +311,7 @@ else
         ;;
      gcl)
         case $fricas_lisp_version in
-           2.6.7|2.6.8|2.6.9)
+           2.6.7|2.6.8|2.6.9|2.6.1[[0-9]])
              ;;
            2.7.0)
              AC_MSG_WARN([FriCAS needs porting to gcl $fricas_lisp_version
