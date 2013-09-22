@@ -38,6 +38,7 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
   RF  ==> Fraction UP
   UPUP ==> SparseUnivariatePolynomial RF
   IR  ==> IntegrationResult F
+  IR_LOG ==> Record(scalar : Q, coeff : UP, logand : UP)
   LOG ==> Record(coeff : F, logand : F)
   U1  ==> Union(F, "failed")
   U2  ==> Union(Record(ratpart:F, coeff:F),"failed")
@@ -106,6 +107,9 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
         ++ multivariate(u, k, f) \undocumented
     lift : (UP, K) -> UPUP
         ++ lift(u, k) \undocumented
+    rationalize_ir : (IR, K) -> IR
+        ++ rationalize_ir(irf, k1) eliminates square root k1 from the
+        ++ integration result.
     if L has LinearOrdinaryDifferentialOperatorCategory F then
       palgLODE0  : (L, F, K, K, F, UP) -> ODE
         ++ palgLODE0(op, g, x, y, d, p) returns the solution of \spad{op f = g}.
@@ -140,15 +144,56 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
     univariate(f, x, y, p) == lift(univariate(f, y, p), x)
     lift(p, k)             == map(x1+->univariate(x1, k), p)
 
+    rationalize_log(ll : IR_LOG, k1 : K) : List(IR_LOG) ==
+        opol : UP := ll.coeff
+        polu := map((c : F) : UP +-> univariate(c, k1, minPoly(k1)),
+                    opol)$SparseUnivariatePolynomialFunctions2(F, UP)
+        pol0 := map((c : UP) : F +-> coefficient(c, 0), polu
+                   )$SparseUnivariatePolynomialFunctions2(UP, F)
+        pol1 := map((c : UP) : F +-> coefficient(c, 1), polu
+                   )$SparseUnivariatePolynomialFunctions2(UP, F)
+        ppr : UP :=
+            pol1 = 0 => pol0
+            gcd(pol0, pol1)
+        ppc := (opol exquo ppr)::UP
+        fun := ll.logand
+        res : List(IR_LOG) := []
+        if degree(ppr) > 0 then
+            c1 := ll.scalar
+            fun1 := fun rem ppr
+            fun1c := map((c : F) : F +-> eval(c, k1, -k1::F), fun1)
+            if fun1c ~= fun1 then
+                fun1 := fun1c*fun1
+                c1 := c1/(2::Q)
+            res := cons([c1, ppr, fun1]$IR_LOG, res)
+        if degree(ppc) > 0 then
+            c2 := ll.scalar/(2::Q)
+            fun2 := fun rem ppc
+            ppcc := map((c : F) : F +-> eval(c, k1, -k1::F), ppc)
+            fun2c := map((c : F) : F +-> eval(c, k1, -k1::F), fun2)
+            fun2 := ppcc*fun2 + ppc*fun2c
+            res := cons([c2, ppc*ppcc, fun2]$IR_LOG, res)
+        res
+
+    rationalize_ir(irf : IR, k1 : K) : IR ==
+        rp := ratpart(irf)
+        rp1 := (rp + eval(rp, k1, -k1::F))/(2::F)
+        lp1 : List(IR_LOG) := []
+        for ll in logpart(irf) repeat
+            lp1 := concat(rationalize_log(ll, k1), lp1)
+        mkAnswer(rp1, lp1, notelem(irf))
+
     palgint0(f, x, y, den, radi) ==
       -- y is a square root so write f as f1 y + f0 and integrate separately
       ff := univariate(f, x, y, minPoly y)
       f0 := reductum ff
       pr := quadsubst(x, y, den, radi)
-      map(f1+->f1(x::F), integrate(retract(f0)@RF)) +
-        map(f1+->f1(pr.diff),
-            integrate
-              mkRat(multivariate(leadingMonomial ff, x, y::F), pr.subs, pr.newk))
+      rf :=  mkRat(multivariate(leadingMonomial ff, x, y::F), pr.subs, pr.newk)
+      irf := integrate(rf)
+      irf1 : IR := map(f1+->f1(pr.diff), irf)
+      if not(empty?(pr.newk)) then
+          irf1 := rationalize_ir(irf1, first(pr.newk))
+      map(f1+->f1(x::F), integrate(retract(f0)@RF)) + irf1
 
 -- the algebraic relation is (den * y)^2 = p  where p is a * x^2 + b * x + c
 -- if p is squarefree, then parametrize in the following form:
