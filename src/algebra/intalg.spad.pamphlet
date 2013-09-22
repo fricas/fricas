@@ -345,8 +345,27 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
     RR3 ==> Record(result1 : List(LOG), result2 : List(List(PC2)),
                    result3 : List(List(PC)))
 
+    get_coeffs0(lp : List(UP)) : List(F) ==
+        res : List(F) := []
+        for p in lp repeat
+            res := concat(coefficients(p), res)
+        res
+
+    get_coeffs1(pp : UPUP) : List(UP) ==
+        lp := coefficients(pp)
+        nlp := map(numer, lp)$ListFunctions2(Fraction UP, UP)
+        dlp := map(denom, lp)$ListFunctions2(Fraction UP, UP)
+        concat(nlp, dlp)
+
+    get_coeffs(rec : DIV) : List(F) ==
+        clp : List(UP) := [rec.den, rec.derivden, rec.gd]$List(UP)
+        nlp := get_coeffs1(lift(rec.num))
+        dlp := get_coeffs1(definingPolynomial()$R)
+        get_coeffs0(concat(clp, concat(nlp, dlp)))
+
     classify_divisors(rec : DIV, r : UP) : RR3 ==
-        u := ffactor primitivePart r
+        cl := get_coeffs(rec)
+        u := ffactor(primitivePart(r), cl)
         lf := factors(u)
         lf2 := rest(lf)
         lm : List(List(PC)) := []
