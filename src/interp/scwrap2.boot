@@ -62,7 +62,12 @@ output_lisp_defparameter(x, y) ==
 print_defun(name, body) ==
     print_full2(body, $compiler_output_stream)
 
-spadCompile(name) ==
+DEFVAR($nopiles, false)
+
+spadCompile(name) == spadCompile1(name, $nopiles)
+
+spadCompile1(name, pile_mode) ==
+    $nopiles : local := pile_mode
     $comp370_apply : local := FUNCTION print_defun
     $file_apply : local := FUNCTION print_defun
     _*EOF_* : local := false

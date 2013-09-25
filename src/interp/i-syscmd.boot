@@ -2102,6 +2102,8 @@ leaveScratchpad () == QUIT()
 
 --% )read
 
+DEFVAR($nopiles, false)
+
 read l == readSpad2Cmd l
 
 readSpad2Cmd l ==
@@ -2133,9 +2135,10 @@ readSpad2Cmd l ==
     fs := namestring l
     member(upft,devFTs) => throwKeyedMsg("S2IZ0033",[fs])
     throwKeyedMsg("S2IZ0034",[fs])
-  do_read(ll, quiet)
+  do_read(ll, quiet, $nopiles)
 
-do_read(ll, quiet) ==
+do_read(ll, quiet, pile_mode) ==
+    $nopiles : local := pile_mode
     $edit_file := ll
     read_or_compile(quiet, false)
     terminateSystemCommand()
