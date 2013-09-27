@@ -94,41 +94,49 @@ fi
 
 # copy help files
 if [ ! -z "${HELP_DIR}" ] ; then
-   cp -r "${HELP_DIR}" src/share/spadhelp
+   mkdir -p pre-generated/target/share/spadhelp
+   cp "${HELP_DIR}"/*.help pre-generated/target/share/spadhelp
+   cp ../src/doc/*.help pre-generated/target/share/spadhelp
 fi
 
 # copy graphic .pht pages
 if [ ! -z "${copy_gphts}" ]; then
+   mkdir -p pre-generated/target/share/hypertex/pages
    for A in SEGBIND explot2d coverex explot3d graphics ug01 ug07 \
            ug08 ug10 ug11
    do
-      cp ../src/paste/${A}.pht src/paste
+      cp ../src/doc/${A}.pht pre-generated/target/share/hypertex/pages
    done
 
 # copy generated images
-   (cd ../src/paste; \
+   mkdir -p pre-generated/target/share/viewports
+   (cd ../src/doc; \
       for A in *.VIEW; do \
-         cp -r $A ../../dist/src/paste ; \
+         cp -r $A ../../dist/pre-generated/target/share/viewports ; \
       done)
-  touch src/paste/copy_gphts
 fi
 
-# copy nornal .pht pages
+# copy normal .ht and .pht pages
 if [ ! -z "${copy_phts}" ]; then
-    cp ../src/paste/*.pht src/paste
-    touch src/paste/copy_nphts
+    mkdir -p pre-generated/target/share/hypertex/pages
+    cp ../src/doc/*.ht pre-generated/target/share/hypertex/pages
+    cp ../src/doc/*.pht pre-generated/target/share/hypertex/pages
+    cp ../src/doc/ht.db pre-generated/target/share/hypertex/pages
 fi
 
 # copy databases and algebra bootstrap files
 if [ ! -z "${copy_lisp}" ]; then
    (cd ../src/algebra; ls -d *.NRLIB | sed 's,\.NRLIB$,,' ) > ../nrlst
+   mkdir -p pre-generated/src/algebra
    for A in $(cat ../nrlst); do 
-      cp ../src/algebra/${A}.NRLIB/${A}.lsp src/algebra/${A}.lsp
+      cp ../src/algebra/${A}.NRLIB/${A}.lsp pre-generated/src/algebra/${A}.lsp
    done
-   cp ../src/algebra/*.daase src/share/algebra
-   cp ../src/algebra/libdb.text src/share/algebra
-   cp ../src/algebra/comdb.text src/share/algebra
-   cp -r ../src/algebra/USERS.DAASE src/share/algebra
-   cp -r ../src/algebra/DEPENDENTS.DAASE src/share/algebra
-   touch src/algebra/use_lisp
+   mkdir -p pre-generated/target/algebra
+   cp ../src/algebra/*.daase pre-generated/target/algebra
+   cp ../src/algebra/libdb.text pre-generated/target/algebra
+   cp ../src/algebra/comdb.text pre-generated/target/algebra
+   cp ../src/doc/glossdef.text pre-generated/target/algebra
+   cp ../src/doc/glosskey.text pre-generated/target/algebra
+   cp -r ../src/algebra/USERS.DAASE pre-generated/target/algebra
+   cp -r ../src/algebra/DEPENDENTS.DAASE pre-generated/target/algebra
 fi
