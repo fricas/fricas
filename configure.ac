@@ -790,7 +790,8 @@ FRICAS_MAKEFILE([src/etc/Makefile])
 ###################################################################
 ## The following section deals with the generation of the
 ## aldor interface.
-##
+## Note that this only works with the new installation layout
+## of the open sourced Aldor compiler.
 
 ## This handles the cases if one of the following options is given on the
 ## command line. If none is given, then we will skip aldor interface.
@@ -799,62 +800,36 @@ FRICAS_MAKEFILE([src/etc/Makefile])
 ##   any missing prerequisite counts as error (not just warning).
 ## --enable-aldor=no, --disable-aldor:
 ##   User asks to skip the build of the aldor interface.
-## --enable-aldor=SOMETHING DIFFERENT FROM yes/no
-##   The value is interpreted as a directory (ALDORSOURCE) of a local
-##   checkout of the aldor sources (revision 23).
-##   As a sanity check we test for the file
-##   "$(ALDORSOURCE)/aldor/lib/libax0/axiom.as".
-##   If the file is not there, then the user made a mistake (which is an error).
 BUILD_ALDOR_INTERFACE=no
-## Default is to fetch the sources at make time from the web.
-ALDORSOURCE=https://svn.origo.ethz.ch/algebraist/trunk
 AC_ARG_ENABLE(aldor,
   [AS_HELP_STRING([--enable-aldor],
-                  [build an interface to the Aldor compiler, (yes/no/directory of trunk checkout)])],
-  [case $enableval in
-    yes|no) BUILD_ALDOR_INTERFACE=$enableval ;;
-    *) AS_IF([test -r "$enableval/aldor/lib/libax0/axiom.as"],
-           [ALDORSOURCE=$enableval
-            BUILD_ALDOR_INTERFACE=yes],
-           [AC_MSG_ERROR([only yes/no or a directory allowed as value for --enable-aldor])]);;
-   esac])
-AC_SUBST(ALDORSOURCE)
+                  [build an interface to the Aldor compiler, (yes/no)])],
+  [AS_CASE([$enableval],
+    [yes|no], [BUILD_ALDOR_INTERFACE=$enableval],
+    [AC_MSG_ERROR([only yes/no allowed as value for --enable-aldor])]
+  )]
+)
 
 ###################################################################
 ## If one of the Aldor related tests fail we should warn and
 ## not build the Aldor interface.
-
-if test x"$BUILD_ALDOR_INTERFACE" = xyes ; then
+## The ALDORROOT environment variable is no longer necessary with the
+## open-source version of Aldor.
+AS_IF([test x"$BUILD_ALDOR_INTERFACE" = xyes], [
   ## check whether Aldor is available
   AC_CHECK_PROGS([ALDOR], [aldor])
-  if test -z $ALDOR; then
+  AS_IF([test -z $ALDOR], [
     AC_MSG_WARN([Aldor not found.])
     AC_MSG_ERROR([prerequisites for Aldor interface missing])
     BUILD_ALDOR_INTERFACE=no
-  fi
+  ])
+  AS_IF([ALDOR_datadir=`${ALDOR} --print-confvar datadir`],
+    [],
+    [AC_MSG_ERROR([You need a newer version of Aldor])]
+  )
+])
 
-  # The following is only necessary to get some files that do not yet
-  # have a free license.
-  # Not having svn, curl, or wget is not a show stopper, because the files
-  # can be obtained manually via a webbrowser.
-  AC_CHECK_PROGS([SVN], [svn])
-  AC_CHECK_PROGS([CURL], [curl])
-  AC_CHECK_PROGS([WGET], [wget])
-
-  ## check for $ALDORROOT/include/aldor.conf
-  if test -z "$ALDORROOT" || ! test -f "$ALDORROOT/include/aldor.conf"; then
-    AC_MSG_WARN([The environment variable ALDORROOT is not set.])
-    AC_MSG_ERROR([prerequisites for Aldor interface missing])
-    BUILD_ALDOR_INTERFACE=no
-  fi
-
-  ## check for $ALDORROOT/lib/libfoam.al (needed for aldor interface)
-  if ! test -f "$ALDORROOT/lib/libfoam.al"; then
-    AC_MSG_WARN([Couldn't find libfoam.al.])
-    AC_MSG_ERROR([prerequisites for Aldor interface missing])
-    BUILD_ALDOR_INTERFACE=no
-  fi
-fi
+AC_SUBST(ALDOR_datadir)
 
 ###################################################################
 # The installation is currently not done by recursively calling
