@@ -155,42 +155,11 @@ domaindepfiles: $(domain_dep_files)
 ###################################################################
 # 3. Dependencies of a few aldor files given by $(aldor_srcs).
 ###################################################################
-# The files in aldor_srcs are not yet under a license
-# that is appropriate for inclusion in an Axiom repository.
-# These files are available from aldor.org
-# ALDORSOURCE=https://aquarium.aldor.csd.uwo.ca/svn/trunk
-# or from a parallel development site.
-# If you have a local copy of the aldor sources (revision 23) in a
-# local directory, let ALDORSOURCE point to the trunk checkout.
-# Calling "make ALDORSOURCE=/point/to/trunk" with a value not starting
-# with https:// will automatically assume that the string denotes a
-# directory name and get the files from the local file system.
-ALDORSOURCE=@ALDORSOURCE@
-ALDORBASICS=$(ALDORSOURCE)/aldor/lib/libax0
-ALDORLANG=$(ALDORSOURCE)/aldor/lib/axllib/src
-SVN:=@SVN@
-CURL:=@CURL@
-WGET:=@WGET@
-ifneq "$(findstring https://,$(ALDORSOURCE))" "https://"
-  # Assume local directory if $(ALDORSOURCE) does not start with "https://".
-  XCAT:=cat
-else
-  # Try getting the files from the web.
-  # Choose one of the available access methods.
-ifdef SVN
-  XCAT:=$(SVN) cat
-else
-ifdef CURL
-  XCAT:=$(CURL)
-else
-ifdef WGET
-  XCAT:=$(WGET) -O -
-else
-  XCAT:=echo Get the file manually from
-endif
-endif
-endif
-endif
+# The .as files in aldor subirectory are taken from the Aldor source.
+ALDOR_top_srcdir=${fricas_top_srcdir}/src/aldor
+ALDORBASICS=$(ALDOR_top_srcdir)/aldor
+ALDORLANG=$(ALDOR_top_srcdir)/aldor
+XCAT=cat
 
 axiom.as axlit.as stub.as:
 	$(XCAT) $(ALDORBASICS)/$@ > $@
