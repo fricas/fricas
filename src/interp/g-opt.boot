@@ -110,17 +110,18 @@ optCatch (x is ["CATCH",g,a]) ==
         hasNoThrows(first a,g) and hasNoThrows(rest a,g)
      then (rplac(first x, first a); rplac(rest x, rest a))
    else
-    changeThrowToGo(a,g) where
-      changeThrowToGo(s,g) ==
-        atom s or first s='QUOTE => nil
-        s is ["THROW", =g,u] =>
-          changeThrowToGo(u,g)
-          rplac(first s,"PROGN")
-          rplac(rest s,[["LET",CADR g,u],["GO",CADR g]])
-        changeThrowToGo(first s,g)
-        changeThrowToGo(rest s,g)
+    val_sym := GENSYM()
+    changeThrowToGo(a, g, val_sym) where
+        changeThrowToGo(s, g, val_sym) ==
+            atom s or first s='QUOTE => nil
+            s is ["THROW", =g, u] =>
+                changeThrowToGo(u, g, val_sym)
+                rplac(first s, "PROGN")
+                rplac(rest s, [["LET", val_sym, u], ["GO", CADR g]])
+            changeThrowToGo(first s, g, val_sym)
+            changeThrowToGo(rest s, g, val_sym)
     rplac(first x,"SEQ")
-    rplac(rest x,[["EXIT",a],CADR g,["EXIT",CADR g]])
+    rplac(rest x, [["EXIT",a], CADR g, ["EXIT", val_sym]])
   x
 
 optSPADCALL(form is ['SPADCALL,:argl]) ==
