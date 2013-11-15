@@ -165,6 +165,9 @@ oldAxiomCategoryDefaultPackage(catform, dom) ==
 oldAxiomPreCategoryDevaluate([op,:args], env) ==
    SExprToDName([op,:devaluateList args], T)
 
+oldAxiomCategoryDevaluate([[op,:args],:.], env) ==
+  SExprToDName([op,:devaluateList args], T)
+
 $oldAxiomPreCategoryDispatch :=
    VECTOR('oldAxiomPreCategory,
           [function oldAxiomPreCategoryDevaluate],
@@ -174,17 +177,24 @@ $oldAxiomPreCategoryDispatch :=
           [function oldAxiomPreCategoryBuild],
           [nil])
 
-oldAxiomCategoryDevaluate([[op,:args],:.], env) ==
-   SExprToDName([op,:devaluateList args], T)
-
 oldAxiomPreCategoryParents(catform,dom) ==
   vars := ["$",:rest GETDATABASE(opOf catform, 'CONSTRUCTORFORM)]
   vals := [dom,:rest catform]
   -- parents :=  GETDATABASE(opOf catform, 'PARENTS)
   parents := parentsOf opOf catform
+  -- strip out forms listed both conditionally and unconditionally
+  unconditionalParents := []
+  filteredParents := []
+  for [cat, :pred] in parents repeat
+     if pred = true then
+        unconditionalParents := [cat,:unconditionalParents]
+        filteredParents := [[cat,:pred], :filteredParents]
+  for [cat, :pred] in parents repeat
+     if not pred = true and not member(cat, unconditionalParents) then
+        filteredParents=[[cat,:pred], :filteredParents]
   PROGV(vars, vals,
-    LIST2VEC
-      [EVAL quoteCatOp cat for [cat,:pred] in parents | EVAL pred])
+     LIST2VEC [EVAL quoteCatOp cat for [cat,:pred] in filteredParents | EVAL pred])
+ 
 
 quoteCatOp cat ==
    atom cat => MKQ cat
