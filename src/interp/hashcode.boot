@@ -96,7 +96,20 @@ hashString str ==
 
 -- Combine two hash codes to make a new one.  Must be the same as in
 -- the hashCombine function in aslib/runtime.as in asharp.
+
+-- 419AC241: 1100661313
+-- 5577F8E1: 1433925857
+-- 440BADFC05072367: 4903203917250634599
+
+
+$hashZ1 := 1100661313
+$hashZ2 := 1433925857
+$hashZZ := 4903203917250634599
+
+
 hashCombine(hash1, hash2) ==
-         MOD(ASH(LOGAND(hash2, 16777215), 6) + hash1, $hashModulus)
+         h1 := LOGAND(hash1, ASH(1, 32) - 1)
+         h2 := LOGAND(hash2, ASH(1, 32) - 1)
+         LOGAND(ASH((h1*$hashZ1 + h2*$hashZ2) * $hashZZ, -32), 1073741823)
 
 $VoidHash := hashString '"Void"
