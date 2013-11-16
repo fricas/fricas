@@ -80,33 +80,6 @@ echo "     [-emacs]             setup for emacs frontend"
 if [ "$*" = "-h" ] ; then
      showuse
 fi
-SPADDEFAULT=/axiom/mnt/linux
-
-if [ "$SPAD" = "" ] ; then
-  if [ "$AXIOM" = "" ] ; then
-    SPAD=$SPADDEFAULT
-    echo "AXIOM variable is not set"
-    echo "assuming AXIOM = $SPAD"
-    AXIOM=$SPAD
-    export AXIOM
-  else
-    SPAD=$AXIOM
-  fi
-  export SPAD
-else
-  if [ "$AXIOM" = "" ] ; then
-    echo "AXIOM variable is not set"
-    echo "but SPAD = $SPAD"
-    echo "Using AXIOM = $SPAD"
-    AXIOM=$SPAD
-    export AXIOM
-  else
-    if [ ! "$SPAD" = "$AXIOM" ] ; then
-       echo "ignoring SPAD variable"
-       SPAD=$AXIOM
-    fi
-  fi
-fi
 
 # The aldor compiler is usually expected to be in PATH at the time of
 # starting fricas, but, we allow for more flexibility.
@@ -124,13 +97,13 @@ if [ -z ${ALDOR_COMPILER} ]; then
 fi
 export ALDOR_COMPILER
 
-if [ ! -d "$SPAD" ] ; then
-  echo "The directory for Axiom, $SPAD, does not exist."
+if [ ! -d "$AXIOM" ] ; then
+  echo "The directory for FriCAS, $AXIOM, does not exist."
   ciao
 fi
 
 # Name the workspace directories.
-rootwsdir=$SPAD/bin
+rootwsdir=$AXIOM/bin
 
 # 2. Process command line arguments.
 algebra_off=')set output algebra off'
@@ -139,17 +112,17 @@ markers=")lisp (setf |\$ioHook| (lambda (x &optional args) (cond ((eq x '|startP
 
 
 if [ "$*" = "-texmacs" ] ; then
-    exec "$SPAD/bin/AXIOMsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
+    exec "$AXIOM/bin/AXIOMsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
 fi
 
 # Start FriCAS from inside emacs. Discard output to stderr.
 if [ "$*" = "-emacs" ] ; then
-    eval "exec $SPAD/bin/sman -noclef 2>/dev/null"
+    eval "exec $AXIOM/bin/sman -noclef 2>/dev/null"
 fi
 
 
 if [ "$*" = "-nosman" ] ; then
-    exec "$SPAD/bin/AXIOMsys"
+    exec "$AXIOM/bin/AXIOMsys"
     exit 1
 fi
 
@@ -161,7 +134,7 @@ wsname=AXIOMsys
 
 otheropts=""
 
-if [ ! -f $SPAD/lib/viewman ] ; then
+if [ ! -f $AXIOM/lib/viewman ] ; then
     echo "viewman not present, disabling graphics"
     otheropts="-nogr"
 fi
@@ -207,7 +180,7 @@ while [ "$*" != "" ] ; do
                 ;;
 
         *)      echo "Unknown option: $1"
-                echo "To use a specific workspace use, e.g.: spad -ws $1"
+                echo "To use a specific workspace use, e.g.: fricas -ws $1"
                 ciao
                 ;;
         esac
@@ -245,8 +218,8 @@ fi
 
 if [ $go = no ] ; then
         echo "Would now start the processes."
-        echo "exec $SPAD/bin/sman $otheropts -ws $serverws"
+        echo "exec $AXIOM/bin/sman $otheropts -ws $serverws"
         exit 0
 fi
 
-eval "exec $SPAD/bin/sman $otheropts -ws $serverws"
+eval "exec $AXIOM/bin/sman $otheropts -ws $serverws"
