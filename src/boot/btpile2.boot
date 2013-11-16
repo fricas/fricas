@@ -137,4 +137,3 @@ shoeEnPile x==
    dqConcat [dqUnit shoeTokConstruct("KEY","SETTAB",shoeFirstTokPosn x),
              x, _
              dqUnit shoeTokConstruct("KEY","BACKTAB",shoeLastTokPosn  x)]
-

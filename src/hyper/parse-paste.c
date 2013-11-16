@@ -381,5 +381,3 @@ load_patch(PatchStore *patch)
     patch->loaded = 1;
     restore_scanner_state();
 }
-
-

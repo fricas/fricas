@@ -234,4 +234,3 @@ delete_item(char *name)
     fprintf(stderr, "Can't delete input item %s\n", name);
     return 0;
 }
-

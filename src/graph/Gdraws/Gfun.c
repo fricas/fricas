@@ -1320,8 +1320,3 @@ XDeleteAssoc(Display * dsp,HashTable * table, Window w)
 {
   hash_delete(table,(char *) w);
 }
-
-
-
-
-

@@ -285,4 +285,3 @@ makeView3DFromFileData(int type)
   fclose(viewFile);
   doView3D.scaleDown = no ;
 }
-

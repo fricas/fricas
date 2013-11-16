@@ -63,4 +63,3 @@ extern int viewError;
 extern FILE *viewFile;
 extern char filename[256];
 extern char pathname[256];
-

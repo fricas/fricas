@@ -160,4 +160,3 @@ extern char             *PSfilename;  /* output file name in user directory */
 extern char             * env_fricas; /* used for ps file paths */
 
 extern Atom wm_delete_window;
-

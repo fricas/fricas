@@ -386,7 +386,7 @@ axFormatAugmentOp(op, axFormattedPred, pred, augargs) ==
                    ['ignore] -- want "categoryOf(%)" (will be ignored)
                  else
                    kv := ASSOC(arg, $modemapArgs)
-	           -- $modemapArgs stuff must be unformatted
+                   -- $modemapArgs stuff must be unformatted
                    if null kv then
                        nil
                      else

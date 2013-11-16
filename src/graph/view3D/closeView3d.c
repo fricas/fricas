@@ -86,4 +86,3 @@ closeViewport (void)
   XFlush(dsply);
 
 } /* closeViewport() */
-

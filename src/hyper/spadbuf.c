@@ -246,6 +246,3 @@ main(int argc,char **  argv)
     interp_io();
     return(1);
 }
-
-
-

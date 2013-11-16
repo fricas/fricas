@@ -105,9 +105,3 @@ goodbye(int sig)
   exit(0);
 
 }
-
-
-
-
-
-

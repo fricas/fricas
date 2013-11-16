@@ -648,4 +648,3 @@ makeView2D(view2DStruct *viewdata)
   return(vPoints);
 
 }    /* makeView2D */
-

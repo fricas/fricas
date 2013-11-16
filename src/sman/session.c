@@ -512,5 +512,3 @@ main(void)
   manage_sessions();
   return(0);
 }
-
-

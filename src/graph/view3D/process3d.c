@@ -1588,6 +1588,3 @@ processEvents(void)
     }
   }       /* for (until closed) */
 }         /* processEvents() */
-
-
-

@@ -27,7 +27,7 @@
 
 (defun init-forms (filename)
   (let ((ilist (cdr (with-open-file (str (pathname filename))
-		      (read str)))))
+                      (read str)))))
     (mapcan #'(lambda (x) (and (eq (car x) '|Export|) (list x))) ilist)))
 
 ; *initforms* lists all the export forms of "initlist.ap"
@@ -36,7 +36,7 @@
 (defun type-name (initform)
   (cadr (cadr initform)))
 
-; That is an Axiom function that sets the variable |$extendedDomains|. 
+; That is an Axiom function that sets the variable |$extendedDomains|.
 ; |$extendedDomains| have relevance during the call to
 ; |makeAxExportForm|.
 ; The execution of this function is necessary to make loading the code
@@ -69,18 +69,18 @@
 ; easy type then we do not need full information from T.
 (defun generate-easy (filename)
   (let ((fname (pathname filename))
-	(saved-extended-domains |$extendedDomains|))
+        (saved-extended-domains |$extendedDomains|))
     (with-open-file (str fname :direction :output)
       ; We don't have to bother with initforms here!!!
       (|setExtendedDomains| nil)
       (print (append (mapcan 'easy-type (all-constructors))
-		     '(|Tuple| |->|)) ; special "easy" constructors
-	     str))))
+                     '(|Tuple| |->|)) ; special "easy" constructors
+             str))))
 
 
 (defun not-package-name (x)
   (unless (|isDefaultPackageName| x) (list x)))
-(defun all-constructors () 
+(defun all-constructors ()
   (mapcan 'not-package-name (|allConstructors|)))
 (defun easy-type (constructor)
   (test-easy (|makeAxExportForm| "UnusedArgument" (list constructor))))
@@ -91,34 +91,34 @@
 (defun test-easy (apform)
   (if (atom apform) nil
     (cond ((eq (car apform) '|Sequence|) (mapcan 'test-easy (cdr apform)))
-	  ((eq (car apform) '|Extend|) (test-easy (cadr apform)))
-	  ((member (car apform) '(|Define| |Export| |Extend|))
-	     (test-easy1 (cadr apform)))
-	  (t nil))))
+          ((eq (car apform) '|Extend|) (test-easy (cadr apform)))
+          ((member (car apform) '(|Define| |Export| |Extend|))
+             (test-easy1 (cadr apform)))
+          (t nil))))
 
 ; Now we have to check whether the form looks like
 ; (|Declare| |SomeName| (|Apply| -> (|Declare| |#1| |Type|) ...))
 ; If it is of this form, then (list |SomeName|) is returned.
 (defun test-easy1 (apform)
   (cond ((atom apform) nil)
-	((not (eq (car apform) '|Declare|)) nil)
-	((test-easy2 (caddr apform)) (list (cadr apform)))
-	(t nil)))
+        ((not (eq (car apform) '|Declare|)) nil)
+        ((test-easy2 (caddr apform)) (list (cadr apform)))
+        (t nil)))
 
 ; Check whether the apform looks like
 ; (|Apply| -> (|Declare| |#1| |Type|) ..)
 (defun test-easy2 (apform)
   (cond ((atom apform) nil)
-	((not (and (eq (car apform) '|Apply|) (eq (cadr apform) '->))) nil)
-	(t (test-easy3 (caddr apform)))))
+        ((not (and (eq (car apform) '|Apply|) (eq (cadr apform) '->))) nil)
+        (t (test-easy3 (caddr apform)))))
 
 ; Check whether the apform looks like
 ; (|Declare| |#1| |Type|)
 (defun test-easy3 (apform)
   (cond ((atom apform) nil)
-	((not (eq (car apform) '|Declare|)) nil)
-	((not (eq (caddr apform) '|Type|)) nil)
-	(t t)))
+        ((not (eq (car apform) '|Declare|)) nil)
+        ((not (eq (caddr apform) '|Type|)) nil)
+        (t t)))
 
 
 
@@ -144,9 +144,9 @@
 (defun generate-init-ap ()
   (dolist (initform *initforms*)
     (let* ((abbrev (|abbreviate| (type-name initform)))
-	   (filename (pathname (format nil "init_ap/init_~a.ap" abbrev))))
+           (filename (pathname (format nil "init_ap/init_~a.ap" abbrev))))
       (with-open-file (apstream filename :direction :output)
-	(prin1 initform apstream)))))
+        (prin1 initform apstream)))))
 
 ;; Create init dependency files
 (defun generate-init-deps ()
@@ -162,8 +162,8 @@
 (defun generate-ax-file (name content inits)
   (let* ((*print-circle* nil)
          (filename (pathname (format nil "ap/~a.ap" name)))
-	 (constructors (mapcar '|abbreviation?| content))
-	 (apform (|makeAxExportForm| "UnusedArgument" constructors)))
+         (constructors (mapcar '|abbreviation?| content))
+         (apform (|makeAxExportForm| "UnusedArgument" constructors)))
   (with-open-file (str filename :direction :output)
     (pprint (append apform (mapcar 'load-init inits)) str))))
 
@@ -176,7 +176,7 @@
   (setq *extends-axiom-domains* nil)
   (dolist (name namelist)
     (let* ((constructor (|abbreviation?| name))
-	   (apform (|makeAxExportForm| "UnusedArgument" (list constructor))))
+           (apform (|makeAxExportForm| "UnusedArgument" (list constructor))))
       (debug-print "generate-deps" constructor)
       (print-dependencies apform name))))
 
@@ -198,7 +198,7 @@
   (dolist (name namelist)
     (with-open-file (instr (pathname (format nil "ap/~a.ap" name)))
       (let ((apform (read instr)))
-	(print-dependencies apform name)))))
+        (print-dependencies apform name)))))
 
 
 
@@ -208,13 +208,13 @@
     ; *easytypes* is the list of all univariate type constructors
     ; whose argument type is 'Type'.
     (setq *easytypes*
-	  (with-open-file (str (pathname "easylist.lsp")) (read str)))
+          (with-open-file (str (pathname "easylist.lsp")) (read str)))
     (with-open-file (str filename :direction :output)
       (debug-print "print-dependencies (name)" name)
       (debug-print "print-dependencies (apform)" apform)
       (dolist (dep (find-deps (make-null-env) apform))
-	(format str "~a~%" dep)))))
-	
+        (format str "~a~%" dep)))))
+
 
 
 
@@ -249,8 +249,8 @@
 (defun find-deps (env stmt)
   (if (atom stmt) (dep-type-or-nil env stmt)
     (let* ((tag (car stmt))
-	   (args (cdr stmt))
-	   (e (env-add-path env tag)))
+           (args (cdr stmt))
+           (e (env-add-path env tag)))
       (cond
         ((eq tag '|Add|)        (find-deps-add      e args))
         ((eq tag '|And|)        (find-deps-and      e args))
@@ -289,7 +289,7 @@
         ((eq tag '|While|)      (find-deps-while    e args))
         ((eq tag '|Yield|)      (find-deps-yield    e args))
         (t                      (format t "Unknown form ~a~%" stmt)
-				(throw '|UndefinedTag| stmt))))))
+                                (throw '|UndefinedTag| stmt))))))
 
 ; (Add A B)
 ;   syntax: A add B
@@ -318,7 +318,7 @@
 ; will contain its name.
 (defun find-deps-apply (env args)
   (let* ((fun (car args))
-	 (e (env-add-path-apply-fun env fun)))
+         (e (env-add-path-apply-fun env fun)))
     (find-deps-apply-list e args)))
 
 ; Now we check the arguments of |Apply|.
@@ -328,12 +328,12 @@
   (if (null args) nil
     (let ((deps (find-deps-apply-item env (car args))))
       (if (null (cdr args)) deps
-	   (let* ((vars (find-arg-names (car args)))
-		  (e (env-add-vars env vars)))
-	     (append deps (find-deps-apply-list e (cdr args))))))))
+           (let* ((vars (find-arg-names (car args)))
+                  (e (env-add-vars env vars)))
+             (append deps (find-deps-apply-list e (cdr args))))))))
 
 (defun find-deps-apply-item (env args)
-  (if (atom args) 
+  (if (atom args)
       (dep-type-or-nil env args)
     (find-deps env args)))
 
@@ -360,7 +360,7 @@
   (find-deps-apply-list env args))
 
 ; (CoerceTo A B)
-;   syntax: A :: B;   
+;   syntax: A :: B;
 ;   A == an element
 ;   B == a domain
 (defun find-deps-coerce (env args)
@@ -443,7 +443,7 @@
   (if (null (car args))
       (find-deps env (cadr args))
     (progn (format t "Unknown tag in |Generate| ~a~%" args)
-	   (throw '|UndefinedTagInGenerate| args))))
+           (throw '|UndefinedTagInGenerate| args))))
 
 ; (Has D C)
 ;   syntax: A has B
@@ -496,7 +496,7 @@
 ; (LitString "...")
 ;   syntax: "..."
 ; rhx: don't seem to need it for the dependency computation
-; In fact, src/interp/ax.boot additionally adds 
+; In fact, src/interp/ax.boot additionally adds
 ;   import {integer: Literal -> %} from PositiveInteger
 ; if it finds a integer-like literal in |makeAxExportForm|.
 ; So we will find a dependency on Literal anyway.
@@ -589,20 +589,20 @@
 ; Now we check the last bit. The argument 'item' is supposed to be an atom.
 (defun dep-type-or-nil (env item)
   (cond ((null item) nil)
-	((env-contains-variable env item) nil) ; remove variable names
+        ((env-contains-variable env item) nil) ; remove variable names
         ; Need special treatment for a SPAD builtin type.
-	((eq item '|SubsetCategory|)
-	 '(|subsetc|))
+        ((eq item '|SubsetCategory|)
+         '(|subsetc|))
         ; Since |isNameOfType| returns false for attributes, we must
         ; make attrib.as available for the compilation of every file.
-	((is-axiom-type-name item)
-	 (let ((type (full-or-init (env-path env) item)))
-	   (format t "Adding ~a ~a ~a~%" type item (env-path env))
-	   ; Note that every file depends on Boolean. We will have
-	   ; boolean0.as compiled into any library anyway, so we don't
-	   ; need to state an explicit dependency here and thus return NIL.
-	   (if (eq type '|init_BOOLEAN|) nil
-	     (list type))))
+        ((is-axiom-type-name item)
+         (let ((type (full-or-init (env-path env) item)))
+           (format t "Adding ~a ~a ~a~%" type item (env-path env))
+           ; Note that every file depends on Boolean. We will have
+           ; boolean0.as compiled into any library anyway, so we don't
+           ; need to state an explicit dependency here and thus return NIL.
+           (if (eq type '|init_BOOLEAN|) nil
+             (list type))))
         (t nil)))
 
 ; Since |isNameOfType| returns false for attributes, we must
@@ -617,8 +617,8 @@
   ;
 
   (cond ((member item '(|Exit| |Tuple| |Type|)) nil)
-	((|isNameOfType| item) item)
-	(t nil)))
+        ((|isNameOfType| item) item)
+        (t nil)))
 
 (defun full-or-init (path item)
   (full-or-init-internal path item item))
@@ -632,64 +632,64 @@
 ; whole expression appears in a |Declare| context.
 (defun full-or-init-internal (path item item-or-nil)
   (cond ((null path)
-	 (|abbreviate| item))
+         (|abbreviate| item))
 
-	; "import from Boolean" is generated into every exportform
-	; by |makeAxExportForm|, but for compilation of the API,
-	; an init is enough.
-	((and (eq item '|Boolean|) (eq (car path) '|Import|))
-	 (could-be-init item))
+        ; "import from Boolean" is generated into every exportform
+        ; by |makeAxExportForm|, but for compilation of the API,
+        ; an init is enough.
+        ((and (eq item '|Boolean|) (eq (car path) '|Import|))
+         (could-be-init item))
 
-	((member (car path) 
-		 '(|Add| |And| |Assign| |Comma| |CoerceTo| |Define|
-		   |For| |If| |Import| |Inline| |Label| |Lambda|
-		   |Not| |Or| |PretendTo| |Qualify| |Repeat|
-		   |RestrictTo| |Sequence| |Test| |While|))
-	 (full-or-init-internal (cdr path) item item-or-nil))
+        ((member (car path)
+                 '(|Add| |And| |Assign| |Comma| |CoerceTo| |Define|
+                   |For| |If| |Import| |Inline| |Label| |Lambda|
+                   |Not| |Or| |PretendTo| |Qualify| |Repeat|
+                   |RestrictTo| |Sequence| |Test| |While|))
+         (full-or-init-internal (cdr path) item item-or-nil))
 
-	; If a type appears in (|Apply| ->) context, then we only need
-	; initial information. Not that forms coming from .as files
-	; will have |->| instead of just ->.
-	; In fact, we only need initial information for any
-	; "easy" type (see easy *easytypes*).
-	; If the context is (|Apply| D) and item=D then we check the
-	; parent context, but for a different value of item in order
-	; to correctly find the need of full information for List in
-	; a situation like (|Apply| |List| (|Apply| |List X)).
-	; For example in XPBWPOLY appears
-	; (|Apply| |Module| (|Apply| |Fraction| |Integer|))
-	; In that case full information of |Fraction| is needed.
-	((not (atom (car path))); Then it is an (|Apply| fun) form.
-	 (let ((fun (cadr (car path))))
-	   (cond ((eq fun item-or-nil)
-		  (full-or-init-internal (cdr path) item nil))
-		 ((member fun *easytypes*)
-		  (could-be-init item))
-		 (t (|abbreviate| item)))))
+        ; If a type appears in (|Apply| ->) context, then we only need
+        ; initial information. Not that forms coming from .as files
+        ; will have |->| instead of just ->.
+        ; In fact, we only need initial information for any
+        ; "easy" type (see easy *easytypes*).
+        ; If the context is (|Apply| D) and item=D then we check the
+        ; parent context, but for a different value of item in order
+        ; to correctly find the need of full information for List in
+        ; a situation like (|Apply| |List| (|Apply| |List X)).
+        ; For example in XPBWPOLY appears
+        ; (|Apply| |Module| (|Apply| |Fraction| |Integer|))
+        ; In that case full information of |Fraction| is needed.
+        ((not (atom (car path))); Then it is an (|Apply| fun) form.
+         (let ((fun (cadr (car path))))
+           (cond ((eq fun item-or-nil)
+                  (full-or-init-internal (cdr path) item nil))
+                 ((member fun *easytypes*)
+                  (could-be-init item))
+                 (t (|abbreviate| item)))))
 
-	; We only need initial information.
-	((member (car path) '(|Declare|))
-	 (could-be-init item))
+        ; We only need initial information.
+        ((member (car path) '(|Declare|))
+         (could-be-init item))
 
-	; We need full information.
-	((member (car path) '(|Has| |With|))
-	 (|abbreviate| item))
+        ; We need full information.
+        ((member (car path) '(|Has| |With|))
+         (|abbreviate| item))
 
-	; We need initial or full information depending on whether or
-	; not we actually extend Axiom domains.
-	((member (car path) '(|Extend|))
-	 (if *extends-axiom-domains*
-	     (|abbreviate| item)
-	   (could-be-init item)))
+        ; We need initial or full information depending on whether or
+        ; not we actually extend Axiom domains.
+        ((member (car path) '(|Extend|))
+         (if *extends-axiom-domains*
+             (|abbreviate| item)
+           (could-be-init item)))
 
-	(t (format t "Unknown tag in path ~a~%" path)
-	   (throw '|UndefinedTagInPath| path))))
+        (t (format t "Unknown tag in path ~a~%" path)
+           (throw '|UndefinedTagInPath| path))))
 
 
 (defun could-be-init (item)
   (let ((abbrev (|abbreviate| item)))
     (if (member item |$extendedDomains|)
-	(intern (format nil "init_~a" abbrev))
+        (intern (format nil "init_~a" abbrev))
       abbrev)))
 
 ;------------------------------------------------------------------
@@ -734,6 +734,6 @@
 ; Other forms we just ignore.
 (defun find-arg-names (lst)
   (cond ((atom lst)                nil) ; covers sx=nil
-	((eq (car lst) '|Comma|)   (mapcan 'find-arg-names (cdr lst)))
+        ((eq (car lst) '|Comma|)   (mapcan 'find-arg-names (cdr lst)))
         ((eq (car lst) '|Declare|) (list (cadr lst)))
         (t (format t "Ignored in find-arg-names: ~a~%" lst) nil)))

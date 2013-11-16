@@ -81,5 +81,3 @@ getLinearPotValue(short eX,short eY,short xH,short yH)
   return(whereMouse);
 
 } /* getLinearPotValue() */
-
-

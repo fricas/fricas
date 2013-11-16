@@ -30,7 +30,7 @@
 #    --use=cmd
 #       Use cmd for translation or compilation.
 #
-#    --weave 
+#    --weave
 #       Run noweave on the input file assumed to be a pamphlet
 #       When combined with --output, also run latex.
 #    --
@@ -42,8 +42,8 @@
 ##   noticed that double-colon ('::' in boottran::boottocl) will be
 ##   translated to semi-colon (';') as if interpreted for path
 ##   separator.  I don't who is doing that, and I have no time to
-##   investigate it, and even if I do, it would not help much.  
-##   Therefore, I've changed the script not to use double-colon. 
+##   investigate it, and even if I do, it would not help much.
+##   Therefore, I've changed the script not to use double-colon.
 ##      -- Gaby
 
 
@@ -73,7 +73,7 @@ error() {
 # and its value ($2) is empty.
 maybe_missing_value_for() {
     if test -z $2; then
-	error "missing value for $1"
+        error "missing value for $1"
     fi
 }
 
@@ -81,12 +81,12 @@ maybe_missing_value_for() {
 # we support only "boot" and "lisp"
 check_tag_value() {
     case $1 in
-	boot|lisp) 
+        boot|lisp)
            tag=$1
            ;;
-	*)
-	   error "invalid tag $1"
-	   ;;
+        *)
+           error "invalid tag $1"
+           ;;
     esac
 }
 
@@ -96,12 +96,12 @@ check_tag_value() {
 #  - "save-image", for saving a $command after reading Lisp files.
 check_mode_value() {
     case $1 in
-	compile|translate|save-image|link)
+        compile|translate|save-image|link)
            mode=$1
-	   ;;
-	*)
-	   error "invalid mode $1"
-	   ;;
+           ;;
+        *)
+           error "invalid mode $1"
+           ;;
     esac
 }
 
@@ -110,21 +110,21 @@ check_mode_value() {
 # $2 is the output file name
 compile_lisp_file() {
     case $lisp_flavor in
-	gcl|sbcl|cmucl|clisp|openmcl|ecl|lispworks)
-	   if [ -z "$output" ] ; then 
-	       # $command $quiet $eval_flags \
-	       echo "(in-package \"FRICAS-LISP\")" \
-	            "(progn (fricas-compile-file \"$1\") (quit))" | $command
-	   else
-	       # $command $quiet $eval_flags 
-	       echo "(in-package \"FRICAS-LISP\")" \
-	            "(progn (fricas-compile-file \"$1\" :output-file" \
+        gcl|sbcl|cmucl|clisp|openmcl|ecl|lispworks)
+           if [ -z "$output" ] ; then
+               # $command $quiet $eval_flags \
+               echo "(in-package \"FRICAS-LISP\")" \
+                    "(progn (fricas-compile-file \"$1\") (quit))" | $command
+           else
+               # $command $quiet $eval_flags
+               echo "(in-package \"FRICAS-LISP\")" \
+                    "(progn (fricas-compile-file \"$1\" :output-file" \
                     "\"$output\") (quit))" | $command
-	   fi
-	   ;;
-	*)
-	   error "don't know how to compile with '$lisp_flavor' Lisp"
-	   ;;
+           fi
+           ;;
+        *)
+           error "don't know how to compile with '$lisp_flavor' Lisp"
+           ;;
     esac
     return $?
 }
@@ -132,37 +132,37 @@ compile_lisp_file() {
 # Build an executable out of (compiled) Lisp files.
 make_program() {
     case $lisp_flavor in
-	gcl|sbcl|cmucl|clisp|openmcl|ecl|lispworks)
+        gcl|sbcl|cmucl|clisp|openmcl|ecl|lispworks)
            ## $command $eval_flags \
-	   echo "(in-package \"FRICAS-LISP\") \
-	         (make-program \"$output\" (quote ($*)))" | $command
-	   ;;
-	*)
-	   error "don't know how to build program with '$lisp_flavor' Lisp"
-	   ;;
+           echo "(in-package \"FRICAS-LISP\") \
+                 (make-program \"$output\" (quote ($*)))" | $command
+           ;;
+        *)
+           error "don't know how to build program with '$lisp_flavor' Lisp"
+           ;;
     esac
 }
 
 # Translate a program written in Boot to Lisp
-# $1 designates the translator 
+# $1 designates the translator
 # $2 is the input file
 # $3 is a temporary file where we dump compiler diagnostics
 translate_boot_file() {
     case $lisp_flavor in
-	gcl|sbcl|cmucl|clisp|openmcl|ecl|lispworks)
-	   if [ -z "$output" ] ; then
-	      o_arg=nil
-	   else
-	      o_arg=\""$output"\"
-	   fi
-	   # $command $quiet $eval_flags "(in-package \"BOOTTRAN\")" \
-	   echo "(in-package \"BOOTTRAN\") (progn (boottoclc \"$1\" $o_arg))" \
-	         "(quit)" | $command
+        gcl|sbcl|cmucl|clisp|openmcl|ecl|lispworks)
+           if [ -z "$output" ] ; then
+              o_arg=nil
+           else
+              o_arg=\""$output"\"
+           fi
+           # $command $quiet $eval_flags "(in-package \"BOOTTRAN\")" \
+           echo "(in-package \"BOOTTRAN\") (progn (boottoclc \"$1\" $o_arg))" \
+                 "(quit)" | $command
 
-	   ;;
-	*)
-	   error "don't know how to translate with '$lisp_flavor' Lisp"
-	   ;;
+           ;;
+        *)
+           error "don't know how to translate with '$lisp_flavor' Lisp"
+           ;;
     esac
     return $?
 }
@@ -182,69 +182,69 @@ while test $# -gt 0 ; do
     optval=$1
 
     case $optval in
-	--)
-	   break
-	   ;;
-	--*=*)
-	   arg=`echo $optval | sed -e 's/^[-a-zA-Z]*=//'`
-	   opt=`echo $optval | sed -e 's/=.*$//'`
-	   shift;
-	   ;;
-	--*)
-	   opt=$optval
-	   arg=
-	   shift
-	   ;;
-	*)
-	   break
-	   ;;
+        --)
+           break
+           ;;
+        --*=*)
+           arg=`echo $optval | sed -e 's/^[-a-zA-Z]*=//'`
+           opt=`echo $optval | sed -e 's/=.*$//'`
+           shift;
+           ;;
+        --*)
+           opt=$optval
+           arg=
+           shift
+           ;;
+        *)
+           break
+           ;;
     esac
 
     case $opt in
-	--weave)
-	   do_weave=yes
-	   ;;
+        --weave)
+           do_weave=yes
+           ;;
 
         --latex)
-	   do_latex=yes
+           do_latex=yes
            ;;
 
         --index)
-	   do_index=yes
-	   # FIXME: --index may be used only with --latex.  Check.
+           do_index=yes
+           # FIXME: --index may be used only with --latex.  Check.
            ;;
 
-	--tangle)
-	   do_tangle=yes
-	   if test -n "$arg"; then
-	       chunk=$arg
-	   fi
-	   # --tangle may not be combined with any other
-	   # options.  FIXME:  Check that. 
-	   ;;
+        --tangle)
+           do_tangle=yes
+           if test -n "$arg"; then
+               chunk=$arg
+           fi
+           # --tangle may not be combined with any other
+           # options.  FIXME:  Check that.
+           ;;
 
-	--output)
-	   maybe_missing_value_for $opt $arg
-	   output=$arg
-	   ;;
+        --output)
+           maybe_missing_value_for $opt $arg
+           output=$arg
+           ;;
 
-	--tag)
-	   maybe_missing_value_for $opt $arg
-	   check_tag_value $arg
-	  ;;
-	
-	--mode)
- 	   maybe_missing_value_for $opt $arg
-	   check_mode_value $arg
-	   ;;
-	--use)
-	   command=$arg
-	   ;;
+        --tag)
+           maybe_missing_value_for $opt $arg
+           check_tag_value $arg
+          ;;
 
-	--*)
-	   echo unrecognized option $opt
-	   exit 1
-	   ;;
+        --mode)
+           maybe_missing_value_for $opt $arg
+           check_mode_value $arg
+           ;;
+        --use)
+           command=$arg
+           ;;
+
+        --*)
+           echo unrecognized option $opt
+           exit 1
+           ;;
     esac
 done
 
@@ -253,7 +253,7 @@ if test x$do_tangle = xyes; then
     # a pamphlet extension.
     file=$1
     if [ -z "$output" ]; then
-	output=`basename $file .pamphlet`;
+        output=`basename $file .pamphlet`;
     fi
 
     # FIXME: Ideally, we should just prepend -R to $chunk
@@ -261,9 +261,9 @@ if test x$do_tangle = xyes; then
     #        Alternatively, we could initialize chunk to '*' and
     #        unconditionally use -R"$chunk".
     if [ -z "$chunk" ]; then
-	$notangle $file > $output
+        $notangle $file > $output
     else
-	$notangle -R"$chunk" $file > $output
+        $notangle -R"$chunk" $file > $output
     fi
     # FIXME: Handle errors.
     exit $?;
@@ -274,17 +274,17 @@ if test x$do_weave = xyes; then
     file=`basename $1 .pamphlet`
     $noweave -delay $1 > $file.tex
     if test x$do_latex != xyes; then
-	exit 0;
+        exit 0;
     fi
 fi
 
 if test x$do_latex = xyes; then
     if [ -z $file ]; then
-	file=`basename $1 .tex`
+        file=`basename $1 .tex`
     fi
     $latex --interaction nonstopmode $file;
     if [ x$do_index = xyes ]; then
-	$makeindex $file.idx
+        $makeindex $file.idx
     fi
     $latex --interaction nonstopmode $file;
     exit $?
@@ -296,8 +296,8 @@ case $mode,$tag in
     translate,boot)
        # The bootsys image is currently unable to pass up an
        # exit status that we can hand to the shell.  When an error
-       # occurs, bootsys just prints a message and exits as if 
-       # everything went well.  To work around that, we have to 
+       # occurs, bootsys just prints a message and exits as if
+       # everything went well.  To work around that, we have to
        # capture its output, look for specific patterns, and then
        # return an appropriate exit status.
        # mktemp is used to create a temporary file; for systems that
@@ -333,4 +333,3 @@ esac
 echo "document [ -o redirect ] pamphlet"
 
 # set +x
-

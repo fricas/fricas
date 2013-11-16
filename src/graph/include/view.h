@@ -87,4 +87,3 @@ fprintf(stderr, \
 "   >>> Font error: Could not get the %s font.\n%s\n", xDefault, fontErrMess); \
 exitWithAck(RootWindow(dsply, scrn), Window, -1); \
 }
-

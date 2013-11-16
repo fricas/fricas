@@ -40,5 +40,3 @@ Machine: with {
 	Word:  Type == add;
 
 }
-
-

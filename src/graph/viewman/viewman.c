@@ -246,6 +246,3 @@ main (void)
     }   /* if (keepLooking) */
   }   /* while (1) */
 }
-
-
-

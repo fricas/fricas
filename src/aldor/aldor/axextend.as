@@ -79,7 +79,7 @@ extend SingleInteger : with {
 
 		BIntToSInt:	BInt -> SInt;
 		SIntToBInt:	SInt -> BInt;
-		BIntLE:		(BInt, BInt) -> Bool;		
+		BIntLE:		(BInt, BInt) -> Bool;
 	} from Builtin;
 
 	integer(l: Literal): % == per ArrToSInt(l pretend Arr);
@@ -97,7 +97,7 @@ extend SingleInteger : with {
 
 	one(): 	%   	== per SInt1();
 	zero():	%   	== per SInt0();
-	
+
 	1: % == per SInt1();
 	0: % == per SInt0();
 
@@ -109,11 +109,11 @@ extend SingleInteger : with {
 --			per(BIntToSInt(nn));
 --		else
 --			error "Integer too big to fit in a SingleInteger";
-		if (n > per(SIntMax())::Integer or n < per(SIntMin())::Integer)	then 
+		if (n > per(SIntMax())::Integer or n < per(SIntMin())::Integer)	then
 			error "Integer too big to fit in a SingleInteger";
 		else
 			per(BIntToSInt(n pretend BInt));
-	}		
+	}
 }
 
 extend Integer : with {
@@ -122,7 +122,7 @@ extend Integer : with {
 	-:		     % -> %;
 	+:		(%, %) -> %;
 	-:		(%, %) -> %;
-	*:		(%, %) -> %;	
+	*:		(%, %) -> %;
 
 	=:		(%, %) -> Bit;
 	<:		(%, %) -> Bit;
@@ -135,7 +135,7 @@ extend Integer : with {
 	coerce:		% -> Integer;
 	coerce:		% -> %;
 
-	one: 		() -> %;	
+	one: 		() -> %;
 	zero:		() -> %;
 	zero?:		%  -> Bit;
 
@@ -168,7 +168,7 @@ extend Integer : with {
 		BIntRem:	(BInt, BInt) -> BInt;
 
 		ArrToBInt:     (Arr) 	    -> BInt;
-	
+
 		BInt1:		() -> BInt;
 		BInt0:		() -> BInt;
 
@@ -200,7 +200,7 @@ extend Integer : with {
 
 	one():  % == per BInt1();
 	zero(): % == per BInt0();
-	
+
 	1: % == per BInt1();
 	0: % == per BInt0();
 
@@ -226,7 +226,7 @@ extend NonNegativeInteger : with {
 
 	+:		(%, %) -> %;
 	-:		(%, %) -> %;
-	*:		(%, %) -> %;	
+	*:		(%, %) -> %;
 
 	=:		(%, %) -> Bit;
 	<:		(%, %) -> Bit;
@@ -263,13 +263,13 @@ extend NonNegativeInteger : with {
 	zero():		% == per zero();
 	1: % == per 1;
 	0: % == per 0;
-	
+
 	zero?(n: %):  Bit == zero?(rep n);
 
 	(a: %) + (b: %): % == per(rep(a) + rep(b));
 	(a: %) * (b: %): % == per(rep(a) * rep(b));
-	(a: %) - (b: %): % == (rep(a) - rep(b))::%;	
-	
+	(a: %) - (b: %): % == (rep(a) - rep(b))::%;
+
 	(a: %) =  (b: %): Bit == rep(a) =$Integer  rep(b);
 
 	(a: %) <  (b: %): Bit == rep(a) <  rep(b);
@@ -299,7 +299,7 @@ extend PositiveInteger : with {
 
 	+:		(%, %) -> %;
 	-:		(%, %) -> %;
-	*:		(%, %) -> %;	
+	*:		(%, %) -> %;
 
 	=:		(%, %) -> Bit;
 	<:		(%, %) -> Bit;
@@ -333,14 +333,14 @@ extend PositiveInteger : with {
 
 	coerce (n: %) : NNI == n::I::NNI;
 	coerce (i: NNI) : % == i::I::%;
-	
+
 	one(): % == per one();
 	1: % == per 1;
 
 	(a: %) + (b: %): % == per(rep(a) + rep(b));
 	(a: %) * (b: %): % == per(rep(a) * rep(b));
-	(a: %) - (b: %): % == (rep(a) - rep(b))::%;	
-	
+	(a: %) - (b: %): % == (rep(a) - rep(b))::%;
+
 	(a: %) =  (b: %): Bit == rep(a) =$Integer  rep(b);
 
 	(a: %) <  (b: %): Bit == rep(a) <  rep(b);
@@ -468,7 +468,7 @@ extend List(S: Type): with {
 }
 
 extend Vector(S: Type): with {
-#if VectorConditionals 
+#if VectorConditionals
         if S has SetCategory then SetCategory;
         if S has OrderedSet then OrderedSet;
 #endif
@@ -486,7 +486,7 @@ extend Vector(S: Type): with {
 	Rep ==> BArr;
 	import from Rep, SI, S;
 
-#if VectorConditionals 
+#if VectorConditionals
         if S has SetCategory then {
 		(x: %) = (y: %) : Bit == {
 			(#x ~= #y)$SI => false;
@@ -573,21 +573,21 @@ extend Matrix(R: with {SemiRng;AbelianMonoid}): with {
 
 	local apply(m: %, i: SI): BArr == rep(m).i pretend BArr;
 	local dec2si(x: Integer): SingleInteger == (x-1) pretend SI;
-	apply(m: %, i: I, j: I): R == asR((m).(dec2si i).(dec2si j));	
-	set!(m: %, i: I, j: I, v: R): R == { 
+	apply(m: %, i: I, j: I): R == asR((m).(dec2si i).(dec2si j));
+	set!(m: %, i: I, j: I, v: R): R == {
 		(set!((m).(dec2si i),(dec2si j), v pretend BVal));
 		v
 	}
 
 	qelt(m: %, i: I, j: I): R == asR((m).(dec2si i).(dec2si j));
-	qsetelt!(m: %, i: I, j: I, v: R): R == { 
+	qsetelt!(m: %, i: I, j: I, v: R): R == {
 		(set!((m).(dec2si i),(dec2si j), v pretend BVal));
 		v
 	}
 }
 
 ShouldHaveSegmentGenerator(S) ==>
-	S has OrderedSet and S has AbelianSemiGroup 
+	S has OrderedSet and S has AbelianSemiGroup
 	and S has with { coerce: I -> S; }
 
 define GeneratorCategory(S: Type): Category == with {
@@ -597,7 +597,7 @@ define GeneratorCategory(S: Type): Category == with {
 
 
 extend Segment (S: Type) : with {
-	if ShouldHaveSegmentGenerator(S) then 
+	if ShouldHaveSegmentGenerator(S) then
 		GeneratorCategory S;
 }
 == add {
@@ -669,7 +669,7 @@ extend UniversalSegment (S: Type) : with {
 
 		(a: S) .. (b: S): % == per[[a,b,ONE]];
 		(a: S) .. :	  % == per[[a,ONE]];
-		
+
 		hasHi(x: %): Boolean == rep(x) case bdd;
 
 		low(x: %): S  == {
@@ -706,7 +706,7 @@ extend UniversalSegment (S: Type) : with {
 					yield l;
 					l := l + inc;
 				}
-			else if incr(x) < ZERO then 
+			else if incr(x) < ZERO then
 				while l >= h repeat {
 					yield l;
 					l := l + inc;
@@ -714,4 +714,3 @@ extend UniversalSegment (S: Type) : with {
 		}
 	}
 }
-

@@ -38,8 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fricas_c_macros.h"
 
 
-#define yes		1
-#define no		0
+#define yes             1
+#define no              0
 
 /*
  * Indices for PostScript draw procedures.
@@ -50,41 +50,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * the file is copied to the output file.
  */
 
-#define output		0		/* output file */
-#define headerps	1		/* postscript header file */
-#define drawps		2		/* draw procedure */
-#define drawarcps	3		/* draw arc procedure */
-#define drawfilledps	4		/* draw filled procedure */
-#define drawcolorps	5		/* draw color filled procedure */
-#define drawpointps	6		/* draw point procedure */
-#define fillpolyps	7		/* polygon filled procedure */
-#define fillwolps	8		/* polygon filled with outline proc */
-#define colorpolyps	9		/* polygon fill with color procedure */
-#define colorwolps	10		/* polygon fill with color procedure */
-#define drawlineps	11		/* draw line procedure */
-#define drawlinesps	12		/* draw lines procedure */
-#define drawIstrps	13		/* draw image string procedure */
-#define drawstrps	14		/* draw string procedure */
-#define drawrectps	15		/* draw rectangle procedure */
-#define fillarcps	16		/* filled arc procedure */
-#define setupps		17		/* setup, or pre-script */
-#define GCdictps	18		/* grahphics context definition file */
-#define scriptps	19		/* script file */
-#define endps		20		/* wrap up, close down, procedure */
+#define output          0               /* output file */
+#define headerps        1               /* postscript header file */
+#define drawps          2               /* draw procedure */
+#define drawarcps       3               /* draw arc procedure */
+#define drawfilledps    4               /* draw filled procedure */
+#define drawcolorps     5               /* draw color filled procedure */
+#define drawpointps     6               /* draw point procedure */
+#define fillpolyps      7               /* polygon filled procedure */
+#define fillwolps       8               /* polygon filled with outline proc */
+#define colorpolyps     9               /* polygon fill with color procedure */
+#define colorwolps      10              /* polygon fill with color procedure */
+#define drawlineps      11              /* draw line procedure */
+#define drawlinesps     12              /* draw lines procedure */
+#define drawIstrps      13              /* draw image string procedure */
+#define drawstrps       14              /* draw string procedure */
+#define drawrectps      15              /* draw rectangle procedure */
+#define fillarcps       16              /* filled arc procedure */
+#define setupps         17              /* setup, or pre-script */
+#define GCdictps        18              /* grahphics context definition file */
+#define scriptps        19              /* script file */
+#define endps           20              /* wrap up, close down, procedure */
 
-#define psDrawNo	21		/* for use in createPSfile() */
+#define psDrawNo        21              /* for use in createPSfile() */
 
 
 /*
  * PostScript structures
  */
 
-typedef struct _psStruct {	/* data structure for ps routines info */
-	int	flag;
-	char	filename[200];
+typedef struct _psStruct {      /* data structure for ps routines info */
+        int     flag;
+        char    filename[200];
 } psStruct;
 
-psStruct psData[psDrawNo];	/* need psDrawNo of them */
+psStruct psData[psDrawNo];      /* need psDrawNo of them */
 
 
 /*
@@ -92,12 +92,10 @@ psStruct psData[psDrawNo];	/* need psDrawNo of them */
  * main.c in view2D and view3D.
  */
 
-extern	int		scrn;	       /* screen */
-extern	Display		*dsply;	       /* display */
+extern  int             scrn;          /* screen */
+extern  Display         *dsply;        /* display */
 /* environment variable AXIOM or DEVE */
-extern	char		* env_fricas;
+extern  char            * env_fricas;
 
 
 #endif
-
-

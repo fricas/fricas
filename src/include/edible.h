@@ -220,6 +220,3 @@ extern int curr_pntr;        /** the current position in buff             **/
 
  /* Max of two expressions */
 #define max(x, y) ((x)>(y)?(x):(y))
-
-
-

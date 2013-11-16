@@ -42,10 +42,3 @@ typedef struct _HSV {
 typedef struct _HLS {
   float h, l, s;
 } HLS ;
-
-
-
-
-
-
-

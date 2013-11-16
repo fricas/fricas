@@ -404,4 +404,3 @@ back_over_current_char(void)
     fflush(stdout);
     return;
 }
-

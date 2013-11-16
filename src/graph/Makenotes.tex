@@ -18,27 +18,27 @@
 \section{General Comments}
 
 This directory contains the C source code for the Scratchpad's
-graphics. Comments given to the maintenance program refer to 
+graphics. Comments given to the maintenance program refer to
 version numbers. The versions are documented below, starting with
 version23.
 \begin{verbatim}
 version23: (first version after returning from Europe)
-   added a $DEVE environment variable - if it exists, the viewport manager 
-   tries those executable files first; if it was unsuccessful or, if the 
-   $DEVE variable was not defined, the $SPAD variable is used tube.c: 
+   added a $DEVE environment variable - if it exists, the viewport manager
+   tries those executable files first; if it was unsuccessful or, if the
+   $DEVE variable was not defined, the $SPAD variable is used tube.c:
    changed order of crossedLines(p,q... to crossedLines(q,p... in order to
-   use segNum info (which segment of the second polygon the first polygon 
+   use segNum info (which segment of the second polygon the first polygon
    crosses) and using splitPolygon() rather than splitAndMove()
-   tube.c: changed crossedLines() to generalPartialSplit() - an algorithms 
-   i hope would work. it is not taken from any literature as all the 
-   literature i have looked into and tried out had design flaws or lacked 
-   precise specifications (including Foley & van Dam volume I, Newman & 
-   Sprouill and others) 
-   viewport3D.c: xPts now malloced as a global variable in makeView3D and 
-   not freed up at the end. quadMesh is also not freed anymore (shouldn't 
+   tube.c: changed crossedLines() to generalPartialSplit() - an algorithms
+   i hope would work. it is not taken from any literature as all the
+   literature i have looked into and tried out had design flaws or lacked
+   precise specifications (including Foley & van Dam volume I, Newman &
+   Sprouill and others)
+   viewport3D.c: xPts now malloced as a global variable in makeView3D and
+   not freed up at the end. quadMesh is also not freed anymore (shouldn't
    be as it was changed to a global some time ago).
    made eyeDistance (3D stuff) into a float (from integer)
-   added outlineRender (outlineOnOff in actions.h) field. note that this 
+   added outlineRender (outlineOnOff in actions.h) field. note that this
    and the previous change both affected the following files:
       view3D/: main.c, process.c, viewport3D.c, spadAction.c, write.c
       viewman/: fun3D.c make3D.c
@@ -56,7 +56,7 @@ version24: view3D/tube.c: put in calculations for xmin,xmax,ymin,ymax
    >>> need same change in view2D (after testing)
    totalShades is now a global variable (to be decremented if color trouble)
    >>> need same change in view2D (after testing)
-   cleaning up: added exitWithAck(info,size,i) macro to send spad 
+   cleaning up: added exitWithAck(info,size,i) macro to send spad
    acknowledge right before exit of a troubled program. this
    should avoid some of the causes of entering spad break loops
    not enough colors could be allocated; now, only a message is given.
@@ -64,7 +64,7 @@ version24: view3D/tube.c: put in calculations for xmin,xmax,ymin,ymax
    people who use the "Cancel" command from the X server).
    deadBaby() and brokenPipe() in the works.
    view3D: hey! there was a bug in the projections: with perspective on,
-   it turns out the Z-axis was rotating opposite of the rest of 
+   it turns out the Z-axis was rotating opposite of the rest of
    the system...?...
    fixed perspective
    added box (with back face removal)
@@ -76,9 +76,9 @@ version24: view3D/tube.c: put in calculations for xmin,xmax,ymin,ymax
    seems like (in tube.c) the overlap list property is not preserved (see
    notes) so now, routine needs to check, for polygon i, polygons
    i+1 through N, always.
-   affects ALL: added deltaZ to all the stuff 
+   affects ALL: added deltaZ to all the stuff
    (spad, viewman, viewAlone, view3D) - though not used yet
-   error messages: if the .Xdefault not found (or .Xdefault wasn't defined) 
+   error messages: if the .Xdefault not found (or .Xdefault wasn't defined)
    then view2D and view3D will a predefined default set of fonts. it that
    still doesn't work, a (more or less useful) error message is displayed
    and an error signal is sent to Scratchpad to prevent a freeze-up situation.
@@ -86,18 +86,18 @@ version24: view3D/tube.c: put in calculations for xmin,xmax,ymin,ymax
    lists that contain illegal empty lists (i.e. point list contains nothing).
    warnings are issued for lists containing both legal point lists and empty
    point lists, errors are issued for lists containing nothing but empty lists.
-   made spadcolors30.c into an archived library by the name of libColors.a, 
-   source file changed to spadcolors.c; makeColors' arguments have changed 
-   and now returns the number of colors allocated - not a pointer to the 
+   made spadcolors30.c into an archived library by the name of libColors.a,
+   source file changed to spadcolors.c; makeColors' arguments have changed
+   and now returns the number of colors allocated - not a pointer to the
    pixel map
    saymem, check, etc. moved to util.c for library archive
    added a view.h file, with macros to be used by all view programs
-   monoColor(x) macro (in view.h) replaces spadColors[x] calls in case 
+   monoColor(x) macro (in view.h) replaces spadColors[x] calls in case
    display is monochromatic (in global variable mono)
-   tube.c: connecting of slices - polygon points changed to outline the 
-   rectangular regions without the diagonals (may be prettier when outlines 
+   tube.c: connecting of slices - polygon points changed to outline the
+   rectangular regions without the diagonals (may be prettier when outlines
    are sketched...slightly, if no split occurs).
-   clipping model: both against the hither plane as well as with a 
+   clipping model: both against the hither plane as well as with a
    clipping volume
    viewport3D.c: made polygon list for functions of two variables so
    that it could call the general hidden surface algorithm (in tube.c) as
@@ -105,8 +105,8 @@ version24: view3D/tube.c: put in calculations for xmin,xmax,ymin,ymax
    not preserved when viewed with perspective)
    added volume.c, volume.h for the frustrum (perspective), projected clipping
    and clip volume interface
- 
-version25: 
+
+version25:
   view3D: added long jump to address signals that arrive while in the
           XNextEvent call. spadSignalHandler() now calls spadAction()
           if a signal is received.
@@ -114,14 +114,14 @@ version25:
           (viewport2D.c, control.c, process.c)
   view3D: tube.c: improved speed of drawPolygon by creating overlapped
           list for unmoved polygon, and list for moved polygon that
-          may be smaller than the entire list. 
+          may be smaller than the entire list.
           see "Notes on the Depth Sort Algorithm" for strategy, etc.
           tube.c: moved the resetting of the variables relevant to recalc
-          from process.c to tube.c (rotated, switchedPerspective, 
+          from process.c to tube.c (rotated, switchedPerspective,
           changedEyeDistance)
   GraphImage now supports 2D primitives like point(), component(), addPoint()
   ViewportDefaultsPackage now exports viewXPos() and stuff; all references
-  to integers have been replaced by the more restrictive subdomains 
+  to integers have been replaced by the more restrictive subdomains
   (e.g. PositiveInteger, NonNegativeInteger)
   ViewportPackage has dwindled to just drawCurves() and graphCurves()
   view2D, view3D: put in more robust signal handling routines so that
@@ -137,41 +137,41 @@ version25:
   view2D: spadAction(): now only redraws viewport if the info was received for
   a graph image that is being shown
   view2D: fixed up pick/drop hangup problem. the "dodat" variable in process.c
-  needed to be reset earlier, and in each separate routine (pick, drop and 
-  query) that required sequential button clicks (e.g. 
+  needed to be reset earlier, and in each separate routine (pick, drop and
+  query) that required sequential button clicks (e.g.
   "Drop" + graph number "1").
   view2D: added global variable queriedGraph - so that the last queried graph
   will always be the one displayed.
   view2D.spad: default to points off
-  added inverse and monochrome fields in .Xdefaults 
+  added inverse and monochrome fields in .Xdefaults
   (e.g. view3D*monochrome : on)
   BUG FIXED: clipping of wire mesh for tubes
   view3D.spad: function of three variables for color specifications ==> changes
   in viewman, viewAlone, and view3D to accept additional information.
-  structure of fun2VarModel in view3D.h changes *** not backwards 
+  structure of fun2VarModel in view3D.h changes *** not backwards
   compatible with version24.
   BUG FOUND: viewport3D.c still drawing the function of 2 variables
   without perspective (painter's algorithm without processing) wrong!
-  BUG FIXED: this time, for shur. flipped quadrants II and IV to remedy bug 
+  BUG FIXED: this time, for shur. flipped quadrants II and IV to remedy bug
   found in painter's algorithm in viewport3D.c.
   tube.c (view3D): changed routine that redraws quickly from the saved up list
   of processed polygons from the hidden surface algorithm so that each polygon
 
-version 26: 
+version 26:
   view3D: switched over to a generalized subspace points definition.
   so far, wire meshes work for existing types. code in viewport3D.c and tube.c
-  are replaced by one more general in component.c; size reduced in half. 
+  are replaced by one more general in component.c; size reduced in half.
   include: modified=[view3D.h] new=[component.h]
   view3D: modified=[viewport3D.c, tube.c] new=[component.c]
   viewman: modified=[fun3D.c, make3D.c]
-  representation should also handle future 3D things - like space curves, 
+  representation should also handle future 3D things - like space curves,
   points and stuff without new data structures.
   NEED: take out unused code
-  component.spad there temporarily to handle the new representation on the 
-  algebra side point.spad deals with the new representation in more 
+  component.spad there temporarily to handle the new representation on the
+  algebra side point.spad deals with the new representation in more
   generality on the algebra side
   NEED: interface to rest of algebra world
-  view2D: draw dashed line if ticks are too close. view2D: 
+  view2D: draw dashed line if ticks are too close. view2D:
   modified=[viewport2D.c]
   coord.spad added for coordinate transformation
   XSpadFill.c in the src/ directory for shade dithering in color - affects:
@@ -183,40 +183,40 @@ version 26:
   viewman: for hue and shade fields in 2D, spad is one based and the viewport
   stuff is 0 based. modified=[makeGraph.c]
   --- backed up on tape ---
-  replaced sprintf of XGetDefault value with direct assignment since 
-  XGetDefault may  return a NULL value which causes sprintf to freak out 
+  replaced sprintf of XGetDefault value with direct assignment since
+  XGetDefault may  return a NULL value which causes sprintf to freak out
   (xDefault is now pointer to char rather than a character array)
-  view2D: modified=[globals.h, main.c]   
-  view3D: modified=[globals.h, main.c]   
+  view2D: modified=[globals.h, main.c]
+  view3D: modified=[globals.h, main.c]
   BUG FOUND: on the PS2, redraws of hidden surface with saved data (quickList)
   bombs.
   BUG FIXED: no more bombs of quick draws
   view3D: modified=[surface.c (previously, tube.c)]
-  put in SIGTERM handlers so that a kill signal to viewman would cause it 
+  put in SIGTERM handlers so that a kill signal to viewman would cause it
   exit cleanly (that is, kill all the child processes and then exit)
   viewman: modified=[viewman.h, viewman.c, cleanup.c]
   view3D: modified=[main.c]
   view2D: modified=[main.c]
   viewWoman: modified=[viewWoman.c]
 
-version27: 
-  3D primitives: added type flag to polygon structure (for 3D primitives) - 
+version27:
+  3D primitives: added type flag to polygon structure (for 3D primitives) -
   may or may not actually be used
   include: modified=[tube.c]
-  added "#define smwattDefaultToFast" which, when defined, defaults to the 
-  simple back-to-front draw rather than the full depth sort processes 
+  added "#define smwattDefaultToFast" which, when defined, defaults to the
+  simple back-to-front draw rather than the full depth sort processes
   (click middle button to switch)
-  BUG FIXED: title reading in viewAlone (to add \0 on top of the \newline 
+  BUG FIXED: title reading in viewAlone (to add \0 on top of the \newline
   fgets reads in)
   viewAlone: modified=[spoon2D.c, spoonComp.c]
   points in 3D stored as references (indices) into a pool of points
   include: modified=[tube.h, component.h]
   view3D: modified=[main.c, project.c, surface.c, component.c]
-  added (maybe last version...?) window manager override flag in override.h 
-  file which sets to true or false (e.g. Presentation Manager may need 
+  added (maybe last version...?) window manager override flag in override.h
+  file which sets to true or false (e.g. Presentation Manager may need
   override=false)
   BUG FIXED: after the 3D stuff saves the ordering of polygons, the quick draw
-  misses the last polygon...had to change doNotStopDraw flag to affect the 
+  misses the last polygon...had to change doNotStopDraw flag to affect the
   subsequent polygon.
   view3D: modified=[surface.c]
   added a development header file for temporary defines
@@ -225,7 +225,7 @@ version27:
   BUG FOUND: 3D color bar goes off the positive end
   BUG FIXED: the color bar error
   view3D: modified=[process.c]
-  put XMapWindow after the drawViewport in make3DComponents - fixes the 
+  put XMapWindow after the drawViewport in make3DComponents - fixes the
   problem of having an empty viewport window come up with no well defined data
   view3D: modified=[component.c]
   view3D: initialize the numOfPolygons and polygons field right before they're
@@ -253,7 +253,7 @@ all-viewman: all-Gdraws
 \subsection{The Gdraws directory}
 
 <<Gdrawsdir>>=
-all-Gdraws: 
+all-Gdraws:
 	@$(mkinstalldirs) $(axiom_target_libdir)/graph
 	cd Gdraws && ${MAKE}
 @

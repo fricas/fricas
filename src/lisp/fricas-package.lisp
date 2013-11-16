@@ -1,5 +1,5 @@
 ;;; We put this in separate file to avoid problems with compilation.
-(make-package "FRICAS-LISP" 
+(make-package "FRICAS-LISP"
      :use (list (or (find-package "COMMON-LISP")
                     "LISP")))
 #+:sbcl
@@ -29,7 +29,7 @@
 #-gcl
 (shadow "IN-PACKAGE" "FRICAS-LISP")
 #-gcl
-(defmacro IN-PACKAGE (package &rest options) 
+(defmacro IN-PACKAGE (package &rest options)
   `(COMMON-LISP:IN-PACKAGE ,package))
 
 #+gcl
@@ -52,7 +52,7 @@
     (import '(LISP::LAMBDA-CLOSURE))
     (export '(LISP::LAMBDA-CLOSURE))
 )
-#+:ecl 
+#+:ecl
 (progn
     (require 'cmp)
     (eval-when (:execute :compile-toplevel :load-toplevel)

@@ -1013,6 +1013,3 @@ putControlPanelSomewhere (int whereDoesPanelGo)
   XFlush(dsply);
 
 }
-
-
-

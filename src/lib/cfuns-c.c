@@ -292,8 +292,8 @@ remove_directory(char * name)
     }
     while ((entry = readdir(dir))) {
         char * fname = &(entry->d_name[0]);
-        if (!strcmp(fname, ".")) { 
-            continue; 
+        if (!strcmp(fname, ".")) {
+            continue;
         } else if (!strcmp(fname, "..")) {
             continue;
         } else {
@@ -324,7 +324,7 @@ remove_directory(char * name)
     while (flst) {
         struct file_list * npos = flst->next;
         if (unlink(flst->file)) {
-	    perror("Unlink failed");
+            perror("Unlink failed");
         }
         free(flst->file);
         free(flst);

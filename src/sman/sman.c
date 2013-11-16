@@ -649,7 +649,7 @@ fork_FriCAS(void)
       perror("setting the term buffer");
       exit(-1);
     }
-	augmented_ws_path = (char *)malloc(2 * strlen(ws_path) + strlen(eval_code) + strlen(" -- ") + 1);
+        augmented_ws_path = (char *)malloc(2 * strlen(ws_path) + strlen(eval_code) + strlen(" -- ") + 1);
     strcpy(augmented_ws_path,ws_path);          /* write the name    */
     /* Pass '--' to make sure that argument(s) passed to AXIOMsys
        do not cause trouble from host Lisp (Closure CL would
@@ -667,7 +667,7 @@ fork_FriCAS(void)
 
     /*    fprintf(stderr, "Cannot execute the %s system.\n", ws_path); */
 
-	free(augmented_ws_path);
+        free(augmented_ws_path);
     exit(0);
   }
 }
@@ -932,5 +932,3 @@ main(int argc, char *argv[],char *envp[])
   free(eval_code);
   return(0);
 }
-
-

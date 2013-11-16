@@ -158,6 +158,3 @@ msort(linkThing *p,int min,int max,int (*compare)(linkThing *, linkThing *))
   }
 
 } /* msort() */
-
-
-

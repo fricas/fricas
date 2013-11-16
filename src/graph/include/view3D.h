@@ -95,4 +95,3 @@ typedef struct _boxSideStruct {
   viewTriplePtr pointsPtr[4];   /* see notes for definition of box */
   int inside;
 } boxSideStruct;
-

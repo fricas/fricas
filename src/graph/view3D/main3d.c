@@ -632,4 +632,3 @@ mergeDatabases(void)
   homeDB = XrmGetFileDatabase(filename);
   XrmMergeDatabases(homeDB,&rDB);
 }
-

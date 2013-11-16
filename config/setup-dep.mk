@@ -10,7 +10,7 @@
 # to be made in depth-first postfix.  However, that order can
 # be changed to depth-first prefix by explicitly including "."
 # in SUBDIRS.  Rules ending with '-ax' are those specific to the
-# the current directory.  Notice that the '-ax' rules are similar 
+# the current directory.  Notice that the '-ax' rules are similar
 # to Automake generated '-am'.
 .PHONY: $(RECURSIVE_TARGETS)
 $(RECURSIVE_TARGETS):

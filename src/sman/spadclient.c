@@ -59,4 +59,3 @@ main(void)
   remote_stdio(sock);
   return(0);
 }
-

@@ -411,5 +411,3 @@ forkView3D(int typeOfViewport)
   }   /* switch */
 
 }    /* forkView3D() */
-
-

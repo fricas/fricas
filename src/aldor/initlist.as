@@ -5,7 +5,7 @@
 -- after the compilation of the types they depend on.
 
 -- Some initial stuff to get the compiler understand some identifiers.
--- These declarations are wrong, but all we need is to make the 
+-- These declarations are wrong, but all we need is to make the
 -- identifiers known for the export's that follow.
 -- Actually, the declarations for 'Category', 'Type', 'Tuple', and '->'
 -- are there to be able to compile from initlist.as to initlist.ap.

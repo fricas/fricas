@@ -67,5 +67,3 @@ bsdSignal(int sig, SignalHandlerFunc action, int restartSystemCall)
   return (SignalHandlerFunc) -1;
 #endif /* HAVE_DECL_SIGACTION */
 }
-
-

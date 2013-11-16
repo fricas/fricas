@@ -158,7 +158,7 @@
 ; 14.1 Creation
 
 ;;; needed for SPAD compiler output
-(define-function '|construct| #'list) 
+(define-function '|construct| #'list)
 
 (defun VEC2LIST (vec) (coerce vec 'list))
 
@@ -347,7 +347,7 @@
 (define-function '|isLowerCaseLetter| #'LOWER-CASE-P)
 
 #+(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
-(defun NUM2USTR (n) 
+(defun NUM2USTR (n)
     (make-string 1 :initial-element (NUM2CHAR n)))
 #-(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
 (defun NUM2USTR (n)

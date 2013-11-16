@@ -419,4 +419,3 @@ initButtons (buttonStruct *buttons)
   return(num);
 
 } /* initButtons() */
-

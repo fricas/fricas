@@ -92,12 +92,12 @@ DirectedGraph(T: NodeType): DirectedGraphCategory T with {
 		import from Edge T, Partial NodeInfo;
 		e := edge(start, end);
 		TRACE("Add Link: ", e);
-		if not node?(start, g) then { 
-			stderr << "Missing start node: " << e << newline; 
+		if not node?(start, g) then {
+			stderr << "Missing start node: " << e << newline;
 			never;
 		}
 		if not node?(end, g) then {
-			stderr << "Missing end node: " << e << newline; 
+			stderr << "Missing end node: " << e << newline;
 			never;
 		}
 		sInfo := (rep g).start;
@@ -117,8 +117,8 @@ DirectedGraph(T: NodeType): DirectedGraphCategory T with {
 	}
 	ancestors(g: %, n: T): Set T == ancVisit!(g, n, empty);
 
-	(o: TextWriter) << (g: %): TextWriter == { 
-		import from T, List T, Edge T, String; 
+	(o: TextWriter) << (g: %): TextWriter == {
+		import from T, List T, Edge T, String;
 		o << "[G: ";
 		for node in nodes g repeat o << node << ", ";
 		o << "]";
@@ -165,7 +165,7 @@ GraphAlgorithms(T: NodeType): with {
 		for node in nodes g | not member?(node, fwdTbl) repeat {
 			fwdVisit node;
 		}
-	  
+
 		-- /* And backwards */
 		for node in visitOrder | not member?(node, backTbl) repeat {
 			components := union!(components, backVisit node);
@@ -308,7 +308,7 @@ Cliques: OutputType with {
 		-- remember the index for later
 		import from MachineInteger;
 		for clq in cliques for i in 1.. repeat setIndex!(clq, i);
-		
+
 		-- reset dependencies to compilation order
 		for clq in cliques repeat {
 			sorteddeps := sort!(dependencies clq, smallerIndex?);
@@ -319,7 +319,7 @@ Cliques: OutputType with {
 	generator(x: %): Generator Clique == generator rep x;
 	(tw: TextWriter) << (x: %): TextWriter == {
 		import from List Clique;
-		tw << [generator x];		
+		tw << [generator x];
 	}
 }
 -------------------------------------------------------------------
@@ -334,7 +334,7 @@ Cliques: OutputType with {
 -- to genax.lsp, but life's too short sometimes.
 
 -- Mail of Peter Broadbery 27-May-2008
--------------------------------------- 
+--------------------------------------
 -- baselist.lsp is more about simplifying the earlier parts of the
 -- compile order. The definitions in baselist.lsp are chosen to
 -- a) simplify the dependency graph - eg. nothing cares about what
@@ -370,7 +370,7 @@ MakefileGeneration: with {
 		fileMap."aldorext"  := [];
 
 		allTypes: List S := []; -- does not contain duplicates
-		
+
 		-- Read libaxiom.lst.
 		for pair in extractPairs files repeat {
 			(class, ident) := pair;
@@ -402,7 +402,7 @@ MakefileGeneration: with {
 		for id in fileMap."initaxiom" repeat {
 			addDependency!(g, id, substring(id, 5));
 		}
-		
+
 		-- Now there are two kinds of types:
 		-- lower types and upper types.
 		-- A type is a lower type if it is a dependency of
@@ -412,7 +412,7 @@ MakefileGeneration: with {
 		-- In the terminology of this program, a type corresponds
 		-- to a filename. So also axlit and lang are considered
 		-- to be types.
-		
+
 		-- fileMap."aldorext" contains axlit and axextend.
 		depTypes: Set S := [generator fileMap."aldorext"];
 		lowerTypes: List S := sort! [
@@ -424,7 +424,7 @@ MakefileGeneration: with {
 		-- (recursively) depend on. So we make them depend
 		-- on axextend and axlit.
 		upperTypes: List S := [
-		    s for s in allTypes | 
+		    s for s in allTypes |
 		      not member?(s, lowerTypes) and
 		      not member?(s, fileMap."lang") and
 		      not member?(s, fileMap."base") and
@@ -603,6 +603,3 @@ main(): () == {
 }
 
 main();
-
-
-

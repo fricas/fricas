@@ -192,4 +192,3 @@ typedef struct _segment_list_struct {
 #define slicer_image_Y 253
 
 #define MAX_SLICES 100
-

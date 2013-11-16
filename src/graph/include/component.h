@@ -84,5 +84,3 @@ typedef struct _LLLPoint { /* meaning list of list of list of points */
   int numOfComponents;
   LLPoint *llp;
 } LLLPoint;
-
-

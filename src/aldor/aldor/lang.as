@@ -82,7 +82,7 @@ Tuple(T: Type): with == add;
 +++ Cross(T) is the n-ary type cross product former.
 +++ Cross products may be cartesian or dependent.
 +++ Cross product values are not mutable.
-+++ 
++++
 +++ Author: AXIOM-XL library
 +++ Date Created: 1992-94
 +++ Keywords: cross product
@@ -131,14 +131,14 @@ Union(T: Tuple Type): with == add;
 Enumeration(T: Tuple Type): with == add;
 
 
-+++ TrailingArray(I, A) is the type of array whose first elements are 
++++ TrailingArray(I, A) is the type of array whose first elements are
 +++ as Record(I) followed by a sequence of Record(A).
 +++
 +++ Author: AXIOM-XL library
 +++ Date Created: 1997-8
 +++ Keywords: TrailingArray.
 
-TrailingArray(I: Tuple Type, A: Tuple Type): with == add; 
+TrailingArray(I: Tuple Type, A: Tuple Type): with == add;
 
 +++ Join(T) forms a new category which has a union of all the exports
 +++ of the categories in T.

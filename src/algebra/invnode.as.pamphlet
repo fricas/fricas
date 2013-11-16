@@ -30,7 +30,7 @@ define IVNodeCategory: Category == SetCategory with {
 	children:      % 		-> List IVNodeObject;
 	addChild!:    (%, IVNodeObject) -> ();
 	fields:        %		-> List IVField;
-	className:     %		-> String;	
+	className:     %		-> String;
 	coerce:	       %		-> IVNodeObject;
 	default {
 		import from Symbol;
@@ -47,7 +47,7 @@ define IVNodeCategory: Category == SetCategory with {
 			}
 			writeLine!(out, "}");
 		}
-		coerce(x: %): IVNodeObject == 
+		coerce(x: %): IVNodeObject ==
 			make(% pretend IVNodeCategory, x);
 
 		coerce(x: %): OutputForm == {
@@ -60,12 +60,12 @@ define IVNodeCategory: Category == SetCategory with {
 @
 \section{IVLeafNodeCategory}
 <<IVLeafNodeCategory>>=
-+++ Category for leaves --- just adds a few defaults to make life 
++++ Category for leaves --- just adds a few defaults to make life
 +++ easy.
 define IVLeafNodeCategory: Category == IVNodeCategory with {
 	default {
 		children(v: %): List IVNodeObject == [];
-		addChild!(v: %, new: IVNodeObject): () == 
+		addChild!(v: %, new: IVNodeObject): () ==
 			error "can't add child to a leaf";
 	}
 }
@@ -102,29 +102,29 @@ IVNodeObject: IVNodeCategory with {
 		v pretend T;
 	}
 
-	-- The '0' functions are needed to turn non-constants 
+	-- The '0' functions are needed to turn non-constants
 	-- (eg. fn return values) -- into constants.
 	children(v: %): List IVNodeObject == {
-		children0(NodeType: IVNodeCategory, val: NodeType): 
-							List IVNodeObject == 
+		children0(NodeType: IVNodeCategory, val: NodeType):
+							List IVNodeObject ==
 			children val;
 		children0 explode v;
 	}
 
 	fields(v: %): List IVField == {
-		fields0(NodeType: IVNodeCategory, val: NodeType): List IVField == 
+		fields0(NodeType: IVNodeCategory, val: NodeType): List IVField ==
 			fields val;
 		fields0 explode v;
 	}
 
 	className(v: %): String == {
-		name0(NodeType: IVNodeCategory, val: NodeType): String == 
+		name0(NodeType: IVNodeCategory, val: NodeType): String ==
 			className(val)$NodeType;
 		name0 explode v;
 	}
 
-	addChild!(v: %, child: %): () == { 
-		addChild0!(NodeType: IVNodeCategory, val: NodeType): () == 
+	addChild!(v: %, child: %): () == {
+		addChild0!(NodeType: IVNodeCategory, val: NodeType): () ==
 			addChild!(val, child);
 		addChild0! explode v;
 	}
@@ -186,8 +186,8 @@ IVValue: BasicType with {
 			connect:   IVNodeConnection
 		     );
 	import from Rep;
-	
-	Accessor(T, fld, flg) ==> { 
+
+	Accessor(T, fld, flg) ==> {
 		coerce(x: %):  	 T == rep(x).fld;
 		flg(x: %): Boolean == rep(x) case fld;
 		fld(x: T): %       == per [x, fld];
@@ -213,7 +213,7 @@ IVValue: BasicType with {
 	invWrite(out: TextFile, val: %): () == {
 		import from Float, Integer;
 		float? val => {
-			writeLine!(out, 
+			writeLine!(out,
 				   convert(convert(val::DoubleFloat)$Float));
 		}
 		node? val or connect? val => {
@@ -221,11 +221,11 @@ IVValue: BasicType with {
 			--writeLine!(out, val::IVNodeObject);
 		}
 		bool? val => {
-			writeLine!(out, 
+			writeLine!(out,
 				   if val::Boolean then "true" else "false");
 		}
 		int? val => {
-			writeLine!(out, 
+			writeLine!(out,
 				 convert(convert(val::SingleInteger)@Integer));
 		}
 		string? val => {

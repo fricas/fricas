@@ -22,9 +22,9 @@
 \maketitle
 
 \begin{abstract}
-  This pamphlet details the configuration process of setting up 
-  \Tool{Axiom} for build from source codes. 
-  It also explains general dependencies on external tools.  
+  This pamphlet details the configuration process of setting up
+  \Tool{Axiom} for build from source codes.
+  It also explains general dependencies on external tools.
   The configuration process scrutinizes the build, host,  and target
   environments, and finally instantiates \File{Makefile}s for building
   \Tool{Axiom} interpreter, compiler, libraries, and auxiliary tools
@@ -40,24 +40,24 @@ strives for describing the build machinery at a sufficiently abstract
 level that
 enables interoperability with existing conventional frameworks, \eg{}
 the GNU build framework.
-The task is compounded by the fact that the existing \Tool{Axiom} system 
+The task is compounded by the fact that the existing \Tool{Axiom} system
 is complex and very poorly documented, with blatantly conflicting or
-questionable codes. 
+questionable codes.
 
-The \Tool{Axiom} system is written for the most part in Lisp, or 
-thereof.  That in itself is a great source of portability 
-problems\footnote{even after half a century of existence}, 
+The \Tool{Axiom} system is written for the most part in Lisp, or
+thereof.  That in itself is a great source of portability
+problems\footnote{even after half a century of existence},
 let alone issues related to insulation from mainstream
 development tools, dependence on particular Lisp implementation details, etc.
 A tiny part of it, mainly the interface with host operating system, is
-written in the C programming language.  That does not improve on the 
-portability problems.  Fortunately, there are well-supported, 
+written in the C programming language.  That does not improve on the
+portability problems.  Fortunately, there are well-supported,
 widely used, widely available, well tested tools supporting
-C-derived development environments across platforms.  The GNU 
+C-derived development environments across platforms.  The GNU
 \Tool{Autotools} being one of them.  For the moment, we only make use of
-the \Tool{Autoconf} component.  This build machinery does not 
+the \Tool{Autoconf} component.  This build machinery does not
 use \Tool{Automake} and \Tool{Libtool}.  People intending to modify
-this part of the build machinery are expected to be familiar with 
+this part of the build machinery are expected to be familiar with
 \Tool{Autotconf}.
 
 The \File{Makefile} pamphlets that compose the build machinery are
@@ -74,17 +74,17 @@ build machinery.  And that task must be accomplished portably.
 The instantiation of the abstract build machinery description requires
 that we gather information from two platforms:
 \begin{enumerate}
-\item the \emph{build platform}, and 
+\item the \emph{build platform}, and
 \item the \emph{host platform}.
 \end{enumerate}
 
 The build platform is where we build the system, \eg{} where
 the \File{configure} script is executed.  The host platform
-is where \Tool{Axiom} will run.  Note that in full generality, there is 
+is where \Tool{Axiom} will run.  Note that in full generality, there is
 a third platform: the \emph{target platform}.  It is the plaform for which
 we are building the system.
 
-For typical build instantiations, those  three  platforms are the same: we 
+For typical build instantiations, those  three  platforms are the same: we
 call that a \emph{native build instantiation} or just \emph{native build}.
 The Axiom system only support native build at the moment, due to its
 dependence on \Tool{GCL} which supports only native build.
@@ -92,7 +92,7 @@ dependence on \Tool{GCL} which supports only native build.
 To facilitate the porting of programs across platforms, the GNU build
 system has standardized on designation of platforms, called
 \emph{configuration names}.  A configuration name used to be
-made of three parts\footnote{hence the term \emph{canonical triplet} in 
+made of three parts\footnote{hence the term \emph{canonical triplet} in
     earlier versions of \Tool{Autoconf}}:
 \textsl{cpu--vendor--os}.  Examples are
 [[i686-pc-linux-gnu]], or [[sparc-sun-solaris2.8]].
@@ -129,7 +129,7 @@ are available in the shell variables [[build]], [[host]], and [[target]].
 
 \subsubsection{Cross build}
 
-As we said earlier, a native build instantiation is one where all 
+As we said earlier, a native build instantiation is one where all
 [[build]], [[host]], and [[target]] have the same value.  However,
 when porting programs to other platforms, it is not always possible
 to do a native build --- either because all the tools are not
@@ -137,11 +137,11 @@ available on that machine, or because it is much more convenient to
 build the software on a faster machine. Both situations are quite
 common.
 
-Those considerations bring us to the notion of cross build 
-instantiation (also called cross compilation).  
+Those considerations bring us to the notion of cross build
+instantiation (also called cross compilation).
 We say that the build instantiation is a \emph{cross build} when
 the build platform is different from the target platform; \eg{}, when
-[[build]] $\neq$ [[target]].  
+[[build]] $\neq$ [[target]].
 
 For the moment, the \Tool{Axiom} base source code is written
 in a way that does not support cross build.  However, we do
@@ -162,17 +162,17 @@ the C compiler used is a cross compiler.
 
 \subsubsection{Canadian cross}
 
-As we said previously, most software don't care about the target 
+As we said previously, most software don't care about the target
 platform.  But compilers do.  And \Tool{Axiom} does because, among
 other things, it uses Lisp and C compilers, and it provides a Spad compiler.
 Another type of build instantiation arises when the host platform
 is different from the target platform.  The resulting compiler
 is called a \emph{cross compiler}.  Please note the distinction here:
-a compiler that is cross compiled with [[host]] $=$ [[target]] is 
-not a cross compiler; it is a \emph{native compiler}. 
-A cross compiler is one with [[host]] $\neq$ [[target]].  
+a compiler that is cross compiled with [[host]] $=$ [[target]] is
+not a cross compiler; it is a \emph{native compiler}.
+A cross compiler is one with [[host]] $\neq$ [[target]].
 
-The type of the compiler should not be confused with the type of the 
+The type of the compiler should not be confused with the type of the
 build instantiation.  It perfectly makes sense to have a build
 instantiation that cross builds a cross-compiler, \ie{} all three
 platforms are different: This is called \emph{Canadian cross}.
@@ -184,7 +184,7 @@ at this point, we delay that check for when we look for a C compiler.
 
 Although \Tool{Axiom} does not support cross build yet, let
 alone Canadian cross, we want to make sure that we do not write
-the build machinery in a way that actively unsupports 
+the build machinery in a way that actively unsupports
 cross build.  Consequently, in the build tree, we sequester
 tools that we build and use on the build platform,
 in  sub-directories different from others.
@@ -208,7 +208,7 @@ can be decomposed in three components:
 
 \subsubsection{Signals}
 
-The host platform must be able to handle signals.  Although, this is 
+The host platform must be able to handle signals.  Although, this is
 not strictly necessary, that is the way \Tool{Axiom} source code
 is currently written.  We ask for a POSIX or ISO C semantics, though
 we have a strong preference for POSIX-conformant semantics.
@@ -217,7 +217,7 @@ we have a strong preference for POSIX-conformant semantics.
 AC_CHECK_HEADERS([signal.h],
                  [],
                  [AC_MSG_ERROR([Axiom needs signal support.])])
-AC_CHECK_DECLS([sigaction], [], [], 
+AC_CHECK_DECLS([sigaction], [], [],
                [#include <signal.h>])
 @
 
@@ -260,7 +260,7 @@ case $host in
 	axiom_c_runtime_extra="-lwsock32"
 	;;
     *)
-        AC_CHECK_HEADERS([sys/socket.h], 
+        AC_CHECK_HEADERS([sys/socket.h],
                          [axiom_host_has_socket=yes],
 		         [])
 	;;
@@ -323,7 +323,7 @@ AC_CHECK_HEADERS([util.h],
                    ]) # HAVE_UTIL_H or HAVE_PTY_H
 
 AC_CHECK_DECL([openpty],
-                 [AC_DEFINE([HAVE_OPENPTY_DECL], [1], 
+                 [AC_DEFINE([HAVE_OPENPTY_DECL], [1],
 		              [openpty is declared])], [],
                  [#if defined(HAVE_UTIL_H)
                   # include <util.h>
@@ -347,9 +347,9 @@ AC_SUBST(axiom_c_runtime_extra)
 AC_CHECK_HEADERS([sys/wait.h])
 
 if test x"$ac_cv_header_sys_wait_h" = xyes; then \
-    AC_CHECK_DECLS([wait], 
-                   [], 
-                   [], 
+    AC_CHECK_DECLS([wait],
+                   [],
+                   [],
                    [#include <sys/wait.h>])
 fi
 
@@ -382,7 +382,7 @@ is portability.  There exist many implementations of the X11
 specification, each with its own variations, extensions, and what
 not.  Designing hand-written makefiles for such programs can be a
 daunting task, fraut with all kinds of traps.  Fortunately, \Tool{Autoconf}
-provides us with some help, namely the macro [[AC_PATH_X]] and 
+provides us with some help, namely the macro [[AC_PATH_X]] and
 [[AC_PATH_XTRA]].  The former searches the directories where the
 X11 include files and the library files reside.  The latter is an
 enhanced version that
@@ -444,13 +444,13 @@ AC_SUBST(axiom_src_all)
 
 \subsubsection{HyperDoc}
 
-The HyperDoc component needs string pattern matching.  
-We require [[<regex.h>]], with POSIX-conformant definition.  
+The HyperDoc component needs string pattern matching.
+We require [[<regex.h>]], with POSIX-conformant definition.
 Note this test makes sense only if X11 is available, for otherwise
 we certainly are not going to build HyperDoc.
 <<C headers and libraries>>=
 if test x"$axiom_has_xpm" = xyes; then
-   AC_CHECK_HEADER([regex.h], 
+   AC_CHECK_HEADER([regex.h],
                    [axiom_src_all="$axiom_src_all all-hyper all-paste"
 		    axiom_src_subdirs="$axiom_src_subdirs hyper paste"
 		    AXIOM_MAKEFILE([src/paste/Makefile])],
@@ -462,8 +462,8 @@ AXIOM_MAKEFILE([src/hyper/Makefile])
 
 \subsection{Lisp runtime}
 
-\Tool{GCL} relies on the libirary \Tool{BFD}, the include 
-headers of which may not exist (quite common).  In order to avoid 
+\Tool{GCL} relies on the libirary \Tool{BFD}, the include
+headers of which may not exist (quite common).  In order to avoid
 \Tool{GCL} build failure, we test for the existence of [[<bfd.h>]]
 and the corresponding library.  We configure \Tool{GCL} to
 use its own copy of \Tool{BFD} accordingly.   FIXME: This must
@@ -482,8 +482,8 @@ else
 fi
 @
 
-\Tool{GCL} has an elaborate memory management system and 
-\Tool{Axiom} seems to 
+\Tool{GCL} has an elaborate memory management system and
+\Tool{Axiom} seems to
 put ``unusual'' pressure on it.  Here we specify some values that have
 been empirically known to work.
 <<gcl options>>=
@@ -504,7 +504,7 @@ of testing for
 platforms, when in fact it is interested in functionalities.
 The outcome is an ever-growing pile increasing disgusting hacks.
 For example, most the XXXplatform below really have nothing to
-do with platforms.  
+do with platforms.
 
 <<platform specific bits>>=
 <<gcl options>>
@@ -551,7 +551,7 @@ AC_SUBST(GCLOPTS)
 
 The C preprocessor symbols [[BSDplatform]], [[LINUXplatform]], etc. are being
 used as ``catch all'' for unstructured codes.  They should be
-removed from the source base.  Any source file using those should be 
+removed from the source base.  Any source file using those should be
 properly documented as its needs are, and a narrowed, specific configure
 test should be added.
 
@@ -593,10 +593,10 @@ The next paragraphs detail each of the cluster of build utilities
 \paragraph{The \Tool{Make} program.}
 
 Of course, no build can proceed with \File{Tool} inexisting from
-the build-environment.  We insist on GNU \Tool{Make} program as there 
-are way too many variations, way too many incompatible implementations 
+the build-environment.  We insist on GNU \Tool{Make} program as there
+are way too many variations, way too many incompatible implementations
 and extensions.  Please, note that this requirement just reflects
-\Tool{Axiom}'s dependencies on external toos:  \Tool{Axiom} relies on 
+\Tool{Axiom}'s dependencies on external toos:  \Tool{Axiom} relies on
 \Tool{GCL}, which in turn uses \Tool{GCC}.  Building \Tool{GCC} requires
 \Tool{GNU Make}, and \Tool{GCL} itself requires \Tool{GNU Make}.
 <<find make>>=
@@ -618,7 +618,7 @@ esac
 @
 
 \paragraph{C compiler}
-First of all, check for a C compiler.  As written, this test is OK 
+First of all, check for a C compiler.  As written, this test is OK
 because currently we support only native builds.  However,
  it needs to be more carefully written when we move to cross-compilation.
 Axiom, in its current form, cannot be compiled with a C compiler
@@ -653,21 +653,21 @@ The old build machinery needs 'awk'.  Currently, it checks for
 task.  It checks for 'gawk', 'mawk', 'nawk', and 'awk' in that order.
 That should be OK and match Axiom's need.
 
-The old build system claims that on solaris9, gawk, gtar 
+The old build system claims that on solaris9, gawk, gtar
 and gpatch are required (with no much explanation of why).  Notice
 that these programs are needed only to build Axiom; so we do
-check based on the value of [[build]]. 
+check based on the value of [[build]].
 <<awk and tar program>>=
 case $build in
      *-solaris9)
-        AC_CHECK_PROG([AWK], [gawk], 
+        AC_CHECK_PROG([AWK], [gawk],
                       [gawk], [AC_MSG_ERROR([Axiom needs gawk])])
 
         AC_CHECK_PROG([TAR], [gtar],
                       [gtar], [AC_MSG_ERROR([Axiom needs gtar])])
 
         AC_CHECK_PROG([PATCH], [gpatch],
-                      [gptach], [AC_MSG_ERROR([Axiom needs gpatch])]) 
+                      [gptach], [AC_MSG_ERROR([Axiom needs gpatch])])
         ;;
 
       *)
@@ -676,7 +676,7 @@ case $build in
         AC_CHECK_PROGS([TAR], [gtar tar],
                        [AC_MSG_ERROR([Axiom needs a tar program])])
 
-        AC_CHECK_PROGS([PATCH], [gpatch patch], 
+        AC_CHECK_PROGS([PATCH], [gpatch patch],
                        [AC_MSG_ERROR([Axiom needs a patch program])])
         ;;
 esac
@@ -770,7 +770,7 @@ AC_ARG_WITH([lisp], [ --with-lisp=L         use L as Lisp platform],
 The [[configure]] option \verb!--with-lisp=L! specifies which
 Lisp implementation flavor to use for building Axiom.  For all values
 of [[L]], except \Tool{GCL}, the assumption is that the Lisp
-image [[L]] is available in the build environment.  For \Tool{GCL}, 
+image [[L]] is available in the build environment.  For \Tool{GCL},
 we make an exception: if no GCL image is available, or if
 the option \verb!--enable-gcl! is specified then \Tool{Axiom}
 builds its own version from the source tree.
@@ -860,14 +860,14 @@ if test x$axiom_lisp_flavor = xunknown ; then
        AC_MSG_CHECKING([which flavor of Lisp])
        what=`echo '(quit)' | $axiom_lisp --help`
        case $what in
-	   *GCL*) 
+	   *GCL*)
 	       axiom_lisp_flavor=gcl
 	       ;;
-	   *ecl*) 
-	       axiom_lisp_flavor=ecl 
+	   *ecl*)
+	       axiom_lisp_flavor=ecl
 	       ;;
-	   *sbcl*) 
-	       axiom_lisp_flavor=sbcl 
+	   *sbcl*)
+	       axiom_lisp_flavor=sbcl
 	       ;;
 	   *CLISP*)
 	       axiom_lisp_flavor=clisp
@@ -885,7 +885,7 @@ case $axiom_lisp_flavor,$target in
     gcl,*mingw*)
         axiom_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(AXIOM_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
 	;;
-    *) 
+    *)
         axiom_gcl_rsym_hack=':'
 	;;
 esac
@@ -901,19 +901,19 @@ files to process in batch mode.
 ## How are we supposed to tell the Lisp system to eval an expression
 ## in batch mode?  What is the extension of a compiled Lisp file?
 case $axiom_lisp_flavor in
-    gcl) 
+    gcl)
        axiom_quiet_flags='-batch'
        axiom_eval_flags='-eval'
        ;;
-    ecl) 
+    ecl)
        axiom_quiet_flags=
        axiom_eval_flags='-eval'
        ;;
-    sbcl) 
+    sbcl)
        axiom_quiet_flags='--noinform --noprint'
        axiom_eval_flags='--eval'
        ;;
-    clisp) 
+    clisp)
        axiom_quiet_flags='--quiet'
        axiom_eval_flags='-x'
        ;;
@@ -963,10 +963,10 @@ interpreter) use the environment variable [[AXIOM]] in a very
 pervasive way.   That variable needs to be set before the
 build start --- or else, it will fail.
 
-BASE contains the operating system root of the build environment. 
+BASE contains the operating system root of the build environment.
 In the case of MSYS/MinGW build environment on Windows it is
-necessary that the AXIOM variable be a Windows absolute path. 
-Therefore BASE is set to the MSYS root or otherwise empty. 
+necessary that the AXIOM variable be a Windows absolute path.
+Therefore BASE is set to the MSYS root or otherwise empty.
 
 <<define AXIOM>>=
 case $host in
@@ -986,7 +986,7 @@ AC_SUBST(AXIOM)
 \section{Configuration options}
 \label{sec:config-options}
 
-We strive for making \Tool{Axiom}'s build system integrate as seamlessly as 
+We strive for making \Tool{Axiom}'s build system integrate as seamlessly as
 possibly into the standard GNU build framework.
 
 \subsection{Standard options}
@@ -995,8 +995,8 @@ possibly into the standard GNU build framework.
 At the moment, we honor the following options:
 \begin{description}
 \item \verb!--prefix!:
-  By default, \Tool{Axiom}'s build system will install files 
-  in ``\File{/usr/local}''.  However, you 
+  By default, \Tool{Axiom}'s build system will install files
+  in ``\File{/usr/local}''.  However, you
   can select a different location prefix using this option.
 
 \item \verb!--with-x!:
@@ -1034,10 +1034,10 @@ information:
 \begin{itemize}
 \item the \emph{name} of the system --- ``Axiom wh-sandbox branch''
 \item its \emph{version}.  I choose to use the date of last checkin.
-  It should probably include the revision number so as to 
+  It should probably include the revision number so as to
   unambiguously identify which Axiom flavour du jour is being
   built;
-\item and where to send feedback, \emph{e.g.} bug reports.  At the moment, 
+\item and where to send feedback, \emph{e.g.} bug reports.  At the moment,
   we use
   the \email{fricas-devel} list.  That could change in the future if
   we reach a high volume traffic.  For the moment, we don't seem to
@@ -1045,13 +1045,13 @@ information:
 \end{itemize}
 <<Autoconf init>>=
 sinclude(config/axiom.m4)
-AC_INIT([FriCAS], [2007-09-05], 
+AC_INIT([FriCAS], [2007-09-05],
         [fricas-devel@googlegroups.com])
 axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
 @
 
-\Tool{Autoconf} needs some auxilary files that are present in the 
+\Tool{Autoconf} needs some auxilary files that are present in the
 sub-directory \File{config}:
 <<Autoconf init>>=
 AC_CONFIG_AUX_DIR(config)
@@ -1059,8 +1059,8 @@ AC_CONFIG_MACRO_DIR(config)
 @
 
 Not all platforms present the same operating system API to applications.
-For the part of \Tool{Axiom} written in the C programming language, we 
-can collect, in a single file, variabilities in operating system 
+For the part of \Tool{Axiom} written in the C programming language, we
+can collect, in a single file, variabilities in operating system
 API in form of C preprocessor macros.  That file is for the most part
 automatically generated by \Tool{Autoheader}.
 <<Autoconf init>>=
@@ -1073,7 +1073,7 @@ appropriate for all C sub-parts of \Tool{Axiom} to include.
 
 
 Notice that since we don't use Automake (yet), we don't initialize
-the Automake subsystem.  
+the Automake subsystem.
 <<Autoconf init>>=
 # AM_INIT_AUTOMAKE([foreign])
 @
@@ -1091,7 +1091,7 @@ AC_PREREQ([2.59])
 \subsection{Source tree sanity check}
 \label{sec:basic-setup:sanity-check}
 
-The \Tool{Autoconf} system implements a very basic, simple-minded, 
+The \Tool{Autoconf} system implements a very basic, simple-minded,
 sanity check
 whereby it will refuse to run \File{configure} if the source tree does
 not contain a specified file, that serves a witness for a bona fide source
@@ -1127,7 +1127,7 @@ AXIOM_MAKEFILE([src/etc/Makefile])
 
 
 ## We now generate the "document" script and support files at configure time.
-## We put them in the build directory because they are intended to be 
+## We put them in the build directory because they are intended to be
 ## build support utils only.
 AC_CONFIG_FILES(build/scripts/document:$srcdir/src/scripts/document.in, \
                 [chmod +x build/scripts/document])
@@ -1177,7 +1177,7 @@ AC_SUBST(axiom_src_subdirs)
 
 <<build utils>>
 
-# FIXME: Move this out of here.  
+# FIXME: Move this out of here.
 # The core runtime is always built.
 axiom_c_runtime=core
 AC_SUBST(axiom_c_runtime)
@@ -1195,7 +1195,7 @@ echo "Type '${MAKE}' (without quotes) to build Axiom"
 \section{A note about comments}
 \label{sec:comment}
 
-This is a pamphlet file.  That means the source code embedded here 
+This is a pamphlet file.  That means the source code embedded here
 are first extracted into a form (\File{configure.ac}) digestible by
 \Tool{Autoconf}, which in turn produces the end-user \File{configure}
 script run for setting up the build.
@@ -1210,12 +1210,11 @@ Comments introduced with [[dnl]] are copied verbatim to the generated
 output file.  They are for \Tool{Autoconf} consumption only --- and that
 of the humans reading \File{configure.ac} (ideally, there should be none).
 Comments starting with [[#]] appear verbatim in both \File{configure.ac}
-and \File{configure} files.  Because this is a pamphlet file, there almost 
-never is a need to use the [[dnl]]-style comment.  
+and \File{configure} files.  Because this is a pamphlet file, there almost
+never is a need to use the [[dnl]]-style comment.
 Consequently, \Tool{Autoconf} comments in this file should be
 of [[#]]-style form.  Such comments can be of value to the occasional
 poor masochist who will be debugging the generated \File{configure}.
 
 
 \end{document}
-

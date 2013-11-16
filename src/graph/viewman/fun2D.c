@@ -385,4 +385,3 @@ sendGraphToView2D(int i,int there,viewManager *viewport,graphStateStruct *doGrap
   }   /* if graph is there */
 
 }
-
