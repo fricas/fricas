@@ -57,7 +57,9 @@ Stack(S : SetCategory) : StackAggregate S with
     insert!(e : S, s : %) : % == (push!(e, s);s)
     empty() == ref nil()$List(S)
     empty? s == null deref s
-    stack s == ref copy s
+    construct s == ref copy s
+    stack s == construct s
+    hashUpdate!(st, s) == hashUpdate!(st, deref s)
 
 @
 \section{domain ASTACK ArrayStack}
@@ -91,14 +93,17 @@ ArrayStack(S : SetCategory) : StackAggregate(S) with
     copy s == copy(s)$Rep
     coerce(d) : OutputForm ==
         empty? d => empty()$(List S) ::OutputForm
-        [(d.i::OutputForm) for i in 0..#d-1] ::OutputForm
+        n := #d
+        [(d.(n - i))::OutputForm for i in 1..n]::OutputForm
 
     -- stack operations
     depth s == # s
     empty? s == empty?(s)$Rep
     extract! s == pop! s
+    inspect(s) == top(s)
     insert!(e, s) == (push!(e, s);s)
-    push!(e, s) == (concat(e, s); e)
+    parts(s) == reverse(parts(s)$Rep)
+    push!(e, s) == (concat!(s, e); e)
     pop! s ==
         if empty? s then error "empty stack"
         m := maxIndex s
@@ -106,8 +111,12 @@ ArrayStack(S : SetCategory) : StackAggregate(S) with
         delete!(s, m)
         r
     top s == if empty? s then error "empty stack" else s.maxIndex(s)
-    arrayStack l == construct(l)$Rep
-    empty() == new(0, 0 pretend S)
+    construct(l) == construct(reverse(l))$Rep
+    arrayStack l == construct(l)
+    empty() == empty()$Rep
+    map(f, s) == map(f, s)$Rep
+    map!(f, s) == map!(f, s)$Rep
+    hashUpdate!(hs, s) == hashUpdate!(hs, s)$Rep
 
 @
 \section{domain QUEUE Queue}
@@ -151,7 +160,7 @@ Queue(S : SetCategory) : QueueAggregate S with
     front q == if empty? q then error "empty queue" else first deref q
     inspect q == front q
     back q == if empty? q then error "empty queue" else last deref q
-    queue q == ref copy q
+    queue q == construct(q)
 
 @
 \section{domain DEQUEUE Dequeue}
@@ -180,7 +189,7 @@ Dequeue(S : SetCategory) : DequeueAggregate S with
     Rep := Reference List S
     bottom! d ==
          if empty? d then error "empty dequeue" else last deref d
-    dequeue d == ref copy d
+    dequeue d == construct(d)
     extractBottom! d ==
         if empty? d then error "empty dequeue"
         p := deref d
@@ -235,12 +244,7 @@ Heap(S : OrderedSet) : Exports == Implementation where
   Implementation == IndexedFlexibleArray(S, 0) add
     Rep := IndexedFlexibleArray( S, 0)
     empty() == empty()$Rep
-    heap l ==
-      n := #l
-      h := empty()
-      n = 0 => h
-      for x in l repeat insert!(x, h)
-      h
+    heap l == construct(l)
     siftUp : (%, Integer, Integer) -> Void
     siftUp(r, i, n) ==
        -- assertion 0 <= i < n
@@ -280,7 +284,7 @@ Heap(S : OrderedSet) : Exports == Implementation where
        n := #r
        for k in n quo 2 -1 .. 0 by -1 repeat siftUp(r, k, n)
        r
-    bag l == makeHeap construct(l)$Rep
+    construct l == makeHeap construct(l)$Rep
     merge(a, b) == makeHeap concat(a, b)
     merge!(a, b) == makeHeap concat!(a, b)
 
