@@ -1019,4 +1019,3 @@ is_it_850(XFontStruct *fontarg)
   }
  return(0);
 }
-

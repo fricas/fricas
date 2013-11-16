@@ -179,9 +179,3 @@ hlsTOrgb(float h,float l,float s)
 
   return(rgb);
 }
-
-
-
-
-
-

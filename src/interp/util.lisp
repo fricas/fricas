@@ -228,7 +228,7 @@ This helper function is listed below.
 (defun boot-load (file)
   (let ((name (concat $SPADROOT "/autoload/" (pathname-name file))))
     (if |$printLoadMsgs|
-	(|sayKeyedMsg| 'S2IL0030 (list name)))
+        (|sayKeyedMsg| 'S2IL0030 (list name)))
     (load name)))
 
 ;;; This is a helper function to set up the autoload trigger. It sets
@@ -407,7 +407,7 @@ After this function is called the image is clean and can be saved.
                  (if (and sym (fboundp sym))
                      (funcall sym T T)))
      #+:ecl (let ((sym (find-symbol "*BREAK-ENABLE*" "SI")))
-                (if (and sym (boundp sym)) 
+                (if (and sym (boundp sym))
                     (setf (symbol-value sym) t)))
      (initroot spad)
      (setf spad $spadroot)
@@ -491,7 +491,7 @@ After this function is called the image is clean and can be saved.
                     #+(or :sbcl :openmcl :lispworks)
                     (|quiet_load_alien| spad-lib)
                     #+(or :sbcl :openmcl)
-                    (fricas-lisp::init-gmp 
+                    (fricas-lisp::init-gmp
                         (concatenate 'string ax-dir "/lib/gmp_wrap.so"))
                     #+(and :clisp :ffi)
                     (progn

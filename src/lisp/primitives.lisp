@@ -24,7 +24,7 @@
            (|sub_SI| ,j ,oj)))
 
 (defmacro QSETAREF2O (m i j r oi oj)
-    `(setf (aref (the (simple-array T (* *)) ,m) 
+    `(setf (aref (the (simple-array T (* *)) ,m)
                  (|sub_SI| ,i ,oi)
                  (|sub_SI| ,j ,oj))
            ,r))
@@ -71,7 +71,7 @@
 
 (defmacro STR_SETELT1(s i c)
     (if (integerp c)
-        `(progn 
+        `(progn
              (setf (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))
                    (code-char (the fixnum ,c)))
              ,c)
@@ -480,12 +480,12 @@
          (array-dimension (the (simple-array double-float (* *)) ,v) 1) 2))
 
 
-(defstruct (SPAD-KERNEL 
+(defstruct (SPAD-KERNEL
           (:print-function
                (lambda (p s k)
-                   (format s "#S~S" (list 
+                   (format s "#S~S" (list
                         'SPAD-KERNEL
-                         :OP (SPAD-KERNEL-OP p) 
+                         :OP (SPAD-KERNEL-OP p)
                          :ARG (SPAD-KERNEL-ARG p)
                          :NEST (SPAD-KERNEL-NEST p))))))
            OP ARG NEST (POSIT 0))
@@ -580,7 +580,7 @@
 
 ; macros needed for Spad:
 
-(defun TranslateTypeSymbol (ts typeOrValue) 
+(defun TranslateTypeSymbol (ts typeOrValue)
   (let ((typDecl (assoc (car (cdr ts))
           '(((|Void|) (null nil))
             ((|SingleInteger|) (fixnum 0))
@@ -659,18 +659,18 @@
 
 (defmacro SPADCALL (&rest L)
   (let ((args (butlast l))
-	(fn (car (last l)))
-	(gi (gensym)))
+        (fn (car (last l)))
+        (gi (gensym)))
      ;; (values t) indicates a single return value
     `(let ((,gi ,fn))
        (the (values t)
-	 (funcall
+         (funcall
           (the #-(or :GCL :genera :lispworks)
                    (function ,(make-list (length l) :initial-element t) t)
                #+(or :GCL :genera :lispworks)function
-	    (car ,gi))
-	  ,@args
-	  (cdr ,gi))))))
+            (car ,gi))
+          ,@args
+          (cdr ,gi))))))
 
 (defmacro SPADMAP(&rest args) `'(SPADMAP ,@args))
 

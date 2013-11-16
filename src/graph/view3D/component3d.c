@@ -853,4 +853,3 @@ draw3DComponents (int dFlag)
   } /* switch on style */
 
 } /* draw3DComponents() */
-

@@ -87,5 +87,3 @@ initSaveButtons (buttonStruct *saveButtons)
 
   return(num);
 }
-
-

@@ -135,8 +135,3 @@ Cursor_shape(int shape)
   return shape;
 }
 #endif
-
-
-
-
-

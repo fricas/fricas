@@ -41,4 +41,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    not allowing placement of windows on top of other windows while others
    do not allow windows to be resized unless they have window manager given
    title bars. */
-

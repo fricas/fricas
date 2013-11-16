@@ -899,12 +899,3 @@ clickedOnGraph (int i,int bKey)
   } /* switch doit */
 
 }
-
-
-
-
-
-
-
-
-

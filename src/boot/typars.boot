@@ -908,4 +908,3 @@ bpCaseItem()==
        (bpEqKey "EXIT" or bpTrap()) and
          (bpWhere() or bpTrap()) and
             bpPush bfCaseItem (bpPop2(),bpPop1())
-

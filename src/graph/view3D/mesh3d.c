@@ -114,4 +114,3 @@ dotProduct(float * a,float *b,int size)
   return(f);
 
 } /* dotProduct() */
-

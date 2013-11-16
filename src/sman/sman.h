@@ -15,4 +15,3 @@ typedef struct spad_proc {
   char  *command;       /* sh command line to restart the process */
   struct spad_proc *next;
 } SpadProcess;
-

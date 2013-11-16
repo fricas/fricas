@@ -53,5 +53,3 @@ again:
   if (errno==EINTR || errno==EAGAIN) goto again;
   return(-1);
 }
-
-

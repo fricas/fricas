@@ -332,6 +332,3 @@ write_pixmap_file(Display *dsp, int scr, char  *fn,
 
 
 #endif
-
-
-

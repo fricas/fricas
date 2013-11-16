@@ -627,9 +627,9 @@
 ;;  ((|e1| |Env|)))
 (defmacro declare-prog (name-result params)
   `(proclaim '(ftype (function
-		      ,(mapcar #'cadr params)
-		      (values ,@(cdr name-result)))
-		     ,(car name-result))))
+                      ,(mapcar #'cadr params)
+                      (values ,@(cdr name-result)))
+                     ,(car name-result))))
 
 (defmacro declare-type (name type)
   `(proclaim '(type ,name ,type)))

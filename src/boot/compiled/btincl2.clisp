@@ -1,12 +1,12 @@
- 
+
 ; )package "BOOTTRAN"
- 
+
 (IN-PACKAGE "BOOTTRAN")
- 
+
 ; bStreamNil:=["nullstream"]
- 
+
 (EVAL-WHEN (EVAL LOAD) (SETQ |bStreamNil| (LIST '|nullstream|)))
- 
+
 ; shoeFileMap(f, fn)==
 ;      a:=shoeInputFile fn
 ;      null a =>
@@ -14,7 +14,7 @@
 ;         bStreamNil
 ;      shoeConsole CONCAT('"READING ",fn)
 ;      shoeInclude  bAddLineNumber(bMap(f,bRgen a),bIgen 0)
- 
+
 (DEFUN |shoeFileMap| (|f| |fn|)
   (PROG (|a|)
     (RETURN
@@ -28,37 +28,37 @@
          (|shoeConsole| (CONCAT "READING " |fn|))
          (|shoeInclude|
           (|bAddLineNumber| (|bMap| |f| (|bRgen| |a|)) (|bIgen| 0))))))))))
- 
+
 ; shoeFileInput fn==shoeFileMap(function IDENTITY,fn)
- 
+
 (DEFUN |shoeFileInput| (|fn|)
   (PROG () (RETURN (|shoeFileMap| #'IDENTITY |fn|))))
- 
+
 ; shoePrefixLisp x== CONCAT('")lisp",x)
- 
+
 (DEFUN |shoePrefixLisp| (|x|) (PROG () (RETURN (CONCAT ")lisp" |x|))))
- 
+
 ; shoeLispFileInput fn== shoeFileMap(function shoePrefixLisp,fn)
- 
+
 (DEFUN |shoeLispFileInput| (|fn|)
   (PROG () (RETURN (|shoeFileMap| #'|shoePrefixLisp| |fn|))))
- 
+
 ; shoePrefixLine x== CONCAT('")line",x)
- 
+
 (DEFUN |shoePrefixLine| (|x|) (PROG () (RETURN (CONCAT ")line" |x|))))
- 
+
 ; shoeLineFileInput fn== shoeFileMap(function shoePrefixLine,fn)
- 
+
 (DEFUN |shoeLineFileInput| (|fn|)
   (PROG () (RETURN (|shoeFileMap| #'|shoePrefixLine| |fn|))))
- 
+
 ; shoePrefix?(prefix,whole) ==
 ;      #prefix > #whole => false
 ;      good:=true
 ;      for i in 0..#prefix-1 for j in 0.. while good repeat
 ;                 good:= prefix.i = whole.j
 ;      if good then SUBSTRING(whole,#prefix,nil) else good
- 
+
 (DEFUN |shoePrefix?| (|prefix| |whole|)
   (PROG (|good|)
     (RETURN
@@ -77,83 +77,83 @@
               (- (LENGTH |prefix|) 1) 0 0)
              (COND (|good| (SUBSTRING |whole| (LENGTH |prefix|) NIL))
                    (#1# |good|))))))))
- 
+
 ; shoePlainLine?(s) ==
 ;          #s = 0 =>  true
 ;          not(s.0 = char ")")
- 
+
 (DEFUN |shoePlainLine?| (|s|)
   (PROG ()
     (RETURN
      (COND ((EQL (LENGTH |s|) 0) T)
            ('T (NULL (EQUAL (ELT |s| 0) (|char| '|)|))))))))
- 
+
 ; shoeSay?          s  == shoePrefix?('")say",         s)
- 
+
 (DEFUN |shoeSay?| (|s|) (PROG () (RETURN (|shoePrefix?| ")say" |s|))))
- 
+
 ; shoeEval?         s  == shoePrefix?('")eval",        s)
- 
+
 (DEFUN |shoeEval?| (|s|) (PROG () (RETURN (|shoePrefix?| ")eval" |s|))))
- 
+
 ; shoeInclude?      s  == shoePrefix?('")include",     s)
- 
+
 (DEFUN |shoeInclude?| (|s|) (PROG () (RETURN (|shoePrefix?| ")include" |s|))))
- 
+
 ; shoeFin?          s  == shoePrefix?('")fin",         s)
- 
+
 (DEFUN |shoeFin?| (|s|) (PROG () (RETURN (|shoePrefix?| ")fin" |s|))))
- 
+
 ; shoeIf?           s  == shoePrefix?('")if",          s)
- 
+
 (DEFUN |shoeIf?| (|s|) (PROG () (RETURN (|shoePrefix?| ")if" |s|))))
- 
+
 ; shoeEndIf?        s  == shoePrefix?('")endif",       s)
- 
+
 (DEFUN |shoeEndIf?| (|s|) (PROG () (RETURN (|shoePrefix?| ")endif" |s|))))
- 
+
 ; shoeElse?         s  == shoePrefix?('")else",        s)
- 
+
 (DEFUN |shoeElse?| (|s|) (PROG () (RETURN (|shoePrefix?| ")else" |s|))))
- 
+
 ; shoeElseIf?       s  == shoePrefix?('")elseif",      s)
- 
+
 (DEFUN |shoeElseIf?| (|s|) (PROG () (RETURN (|shoePrefix?| ")elseif" |s|))))
- 
+
 ; shoePackage?      s  == shoePrefix?('")package",     s)
- 
+
 (DEFUN |shoePackage?| (|s|) (PROG () (RETURN (|shoePrefix?| ")package" |s|))))
- 
+
 ; shoeLisp?         s  == shoePrefix?('")lisp",        s)
- 
+
 (DEFUN |shoeLisp?| (|s|) (PROG () (RETURN (|shoePrefix?| ")lisp" |s|))))
- 
+
 ; shoeIncludeLisp?  s  == shoePrefix?('")includelisp" ,s)
- 
+
 (DEFUN |shoeIncludeLisp?| (|s|)
   (PROG () (RETURN (|shoePrefix?| ")includelisp" |s|))))
- 
+
 ; shoeLine?         s  == shoePrefix?('")line",        s)
- 
+
 (DEFUN |shoeLine?| (|s|) (PROG () (RETURN (|shoePrefix?| ")line" |s|))))
- 
+
 ; shoeIncludeLines? s  == shoePrefix?('")includelines",s)
- 
+
 (DEFUN |shoeIncludeLines?| (|s|)
   (PROG () (RETURN (|shoePrefix?| ")includelines" |s|))))
- 
+
 ; shoeIncludeFunction? s  == shoePrefix?('")includefunction",s)
- 
+
 (DEFUN |shoeIncludeFunction?| (|s|)
   (PROG () (RETURN (|shoePrefix?| ")includefunction" |s|))))
- 
+
 ; shoeBiteOff x==
 ;          n:=STRPOSL('" ",x,0,true)
 ;          null n =>  false
 ;          n1:=STRPOSL ('" ",x,n,nil)
 ;          null n1 =>  [SUBSTRING(x,n,nil),'""]
 ;          [SUBSTRING(x,n,n1-n),SUBSTRING(x,n1,nil)]
- 
+
 (DEFUN |shoeBiteOff| (|x|)
   (PROG (|n| |n1|)
     (RETURN
@@ -167,14 +167,14 @@
                     (#1#
                      (LIST (SUBSTRING |x| |n| (- |n1| |n|))
                            (SUBSTRING |x| |n1| NIL)))))))))))
- 
+
 ; shoeFileName x==
 ;          a:=shoeBiteOff x
 ;          null a =>  '""
 ;          c:=shoeBiteOff CADR a
 ;          null c =>  CAR a
 ;          CONCAT(CAR a,'".",CAR c)
- 
+
 (DEFUN |shoeFileName| (|x|)
   (PROG (|a| |c|)
     (RETURN
@@ -186,14 +186,14 @@
               (SETQ |c| (|shoeBiteOff| (CADR |a|)))
               (COND ((NULL |c|) (CAR |a|))
                     (#1# (CONCAT (CAR |a|) "." (CAR |c|)))))))))))
- 
+
 ; shoeFnFileName x==
 ;          a:=shoeBiteOff x
 ;          null a =>  ['"",'""]
 ;          c:=shoeFileName CADR a
 ;          null c =>  [CAR a,'""]
 ;          [CAR a, c]
- 
+
 (DEFUN |shoeFnFileName| (|x|)
   (PROG (|a| |c|)
     (RETURN
@@ -205,19 +205,19 @@
               (SETQ |c| (|shoeFileName| (CADR |a|)))
               (COND ((NULL |c|) (LIST (CAR |a|) ""))
                     (#1# (LIST (CAR |a|) |c|))))))))))
- 
+
 ; shoeFunctionFileInput1(a, fn, fun) ==
 ;     shoeInclude bAddLineNumber(shoeFindLines(fn, fun, a), bIgen 0)
- 
+
 (DEFUN |shoeFunctionFileInput1| (|a| |fn| |fun|)
   (PROG ()
     (RETURN
      (|shoeInclude|
       (|bAddLineNumber| (|shoeFindLines| |fn| |fun| |a|) (|bIgen| 0))))))
- 
+
 ; shoeFunctionFileInput [fun,fn]==
 ;     handle_input_file(fn, FUNCTION shoeFunctionFileInput1, [fn, fun])
- 
+
 (DEFUN |shoeFunctionFileInput| (|bfVar#2|)
   (PROG (|fun| |fn|)
     (RETURN
@@ -226,12 +226,12 @@
       (SETQ |fn| (CADR |bfVar#2|))
       (|handle_input_file| |fn| #'|shoeFunctionFileInput1|
                            (LIST |fn| |fun|))))))
- 
+
 ; shoeInclude s== bDelay(function shoeInclude1,[s])
- 
+
 (DEFUN |shoeInclude| (|s|)
   (PROG () (RETURN (|bDelay| #'|shoeInclude1| (LIST |s|)))))
- 
+
 ; shoeInclude1 s==
 ;       bStreamNull s=> s
 ;       [h,:t]  :=s
@@ -239,7 +239,7 @@
 ;       command :=shoeFin? string  => bStreamNil
 ;       command :=shoeIf? string   => shoeThen([true],[STTOMC command],t)
 ;       bAppend(shoeSimpleLine h,shoeInclude t)
- 
+
 (DEFUN |shoeInclude1| (|s|)
   (PROG (|h| |t| |string| |command|)
     (RETURN
@@ -255,7 +255,7 @@
                    (#1#
                     (|bAppend| (|shoeSimpleLine| |h|)
                                (|shoeInclude| |t|))))))))))
- 
+
 ; shoeSimpleLine(h) ==
 ;       string  :=CAR h
 ;       shoePlainLine? string=> [h]
@@ -277,7 +277,7 @@
 ;                 nil
 ;       shoeLineSyntaxError(h)
 ;       nil
- 
+
 (DEFUN |shoeSimpleLine| (|h|)
   (PROG (|string| |command|)
     (RETURN
@@ -300,12 +300,12 @@
             ((SETQ |command| (|shoeEval?| |string|))
              (PROGN (STTOMC |command|) NIL))
             ('T (PROGN (|shoeLineSyntaxError| |h|) NIL)))))))
- 
+
 ; shoeThen(keep,b,s)== bDelay(function shoeThen1,[keep,b,s])
- 
+
 (DEFUN |shoeThen| (|keep| |b| |s|)
   (PROG () (RETURN (|bDelay| #'|shoeThen1| (LIST |keep| |b| |s|)))))
- 
+
 ; shoeThen1(keep,b,s)==
 ;     bPremStreamNull s=> s
 ;     [h,:t]  :=s
@@ -328,7 +328,7 @@
 ;          shoeThen(rest keep,rest b,t)
 ;     keep1 and b1 => bAppend(shoeSimpleLine h,shoeThen(keep,b,t))
 ;     shoeThen(keep,b,t)
- 
+
 (DEFUN |shoeThen1| (|keep| |b| |s|)
   (PROG (|h| |t| |string| |command| |keep1| |b1|)
     (RETURN
@@ -373,12 +373,12 @@
                   (|bAppend| (|shoeSimpleLine| |h|)
                              (|shoeThen| |keep| |b| |t|)))
                  (#1# (|shoeThen| |keep| |b| |t|))))))))))))
- 
+
 ; shoeElse(keep,b,s)== bDelay(function shoeElse1,[keep,b,s])
- 
+
 (DEFUN |shoeElse| (|keep| |b| |s|)
   (PROG () (RETURN (|bDelay| #'|shoeElse1| (LIST |keep| |b| |s|)))))
- 
+
 ; shoeElse1(keep,b,s)==
 ;     bPremStreamNull s=> s
 ;     [h,:t]  :=s
@@ -394,7 +394,7 @@
 ;          shoeThen(rest keep,rest b,t)
 ;     keep1 and b1 => bAppend(shoeSimpleLine h,shoeElse(keep,b,t))
 ;     shoeElse(keep,b,t)
- 
+
 (DEFUN |shoeElse1| (|keep| |b| |s|)
   (PROG (|h| |t| |string| |command| |b1| |keep1|)
     (RETURN
@@ -424,13 +424,13 @@
                   (|bAppend| (|shoeSimpleLine| |h|)
                              (|shoeElse| |keep| |b| |t|)))
                  (#1# (|shoeElse| |keep| |b| |t|))))))))))))
- 
+
 ; shoeLineSyntaxError(h)==
 ;      shoeConsole CONCAT('"INCLUSION SYNTAX ERROR IN LINE ",
 ;                                 STRINGIMAGE CDR h)
 ;      shoeConsole car h
 ;      shoeConsole '"LINE IGNORED"
- 
+
 (DEFUN |shoeLineSyntaxError| (|h|)
   (PROG ()
     (RETURN
@@ -439,13 +439,13 @@
        (CONCAT "INCLUSION SYNTAX ERROR IN LINE " (STRINGIMAGE (CDR |h|))))
       (|shoeConsole| (CAR |h|))
       (|shoeConsole| "LINE IGNORED")))))
- 
+
 ; bPremStreamNil(h)==
 ;        shoeConsole CONCAT('"UNEXPECTED )fin IN LINE ",STRINGIMAGE CDR h)
 ;        shoeConsole car h
 ;        shoeConsole '"REST OF FILE IGNORED"
 ;        bStreamNil
- 
+
 (DEFUN |bPremStreamNil| (|h|)
   (PROG ()
     (RETURN
@@ -455,14 +455,14 @@
       (|shoeConsole| (CAR |h|))
       (|shoeConsole| "REST OF FILE IGNORED")
       |bStreamNil|))))
- 
+
 ; bPremStreamNull(s)==
 ;      if bStreamNull s
 ;      then
 ;         shoeConsole '"FILE TERMINATED BEFORE )endif"
 ;         true
 ;      else false
- 
+
 (DEFUN |bPremStreamNull| (|s|)
   (PROG ()
     (RETURN

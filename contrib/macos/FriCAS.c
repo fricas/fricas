@@ -7,7 +7,7 @@ int main(int argc, const char *argv[]) {
   CFStringRef prefix;
   CFStringRef resources;
   CFStringEncoding encoding;
- 
+
   bundle = CFBundleGetMainBundle();
   prefix = CFURLCopyFileSystemPath(
                CFBundleCopyBundleURL(bundle),

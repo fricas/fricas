@@ -13,7 +13,7 @@
 (progn
   (defvar *saved-terminal-io* *terminal-io*)
   (setf *terminal-io* (make-two-way-stream *standard-input* *standard-output*))
-  (setf sb-ext:*invoke-debugger-hook* 
+  (setf sb-ext:*invoke-debugger-hook*
         (lambda (sb-cond sb-hook)
           (setf *terminal-io* *saved-terminal-io*)))
   (setf sb-ext:*evaluator-mode* :interpret))
@@ -100,7 +100,7 @@ with this hack and will try to convince the GCL crowd to fix this.
    (sys::disksave core-image :restart-function restart)
    (sys::disksave core-image))
 #+:cmu
-  (let* ((restart-fun 
+  (let* ((restart-fun
                (if restart
                    restart
                    #'(lambda () nil)))
@@ -109,10 +109,10 @@ with this hack and will try to convince the GCL crowd to fix this.
                        (funcall restart-fun)
                        (lisp::%top-level))))
         (ext::save-lisp
-	 (unix::unix-maybe-prepend-current-directory core-image)
-	 :init-function top-fun :executable t :print-herald nil))
+         (unix::unix-maybe-prepend-current-directory core-image)
+         :init-function top-fun :executable t :print-herald nil))
 #+:sbcl
-  (let* ((restart-fun 
+  (let* ((restart-fun
                (if restart
                    restart
                    #'(lambda () nil)))
@@ -166,18 +166,18 @@ with this hack and will try to convince the GCL crowd to fix this.
 #|
   (let ((ccl-dir (|getEnv| "CCL_DEFAULT_DIRECTORY"))
         (core-fname (concatenate 'string core-image ".image"))
-        (eval-arg (if restart 
+        (eval-arg (if restart
                       (format nil " --eval '(~A)'" restart)
                       ""))
         core-path exe-path)
         ;;; truename works only on existing files, so we
         ;;; create one just to get absolute path
-        (with-open-file (ims core-fname 
+        (with-open-file (ims core-fname
                           :direction :output :if-exists :supersede)
             (declare (ignore ims))
             (setf core-path (namestring (truename core-fname))))
         (delete-file core-path)
-        (with-open-file (ims core-image 
+        (with-open-file (ims core-image
                         :direction :output :if-exists :supersede)
                 (setf exe-path (namestring (truename core-image)))
                 (format ims "#!/bin/sh~2%")
@@ -287,7 +287,7 @@ with this hack and will try to convince the GCL crowd to fix this.
  (let ((tdir (probe-file dir)))
   (cond
     (tdir
-       (unix::unix-chdir dir) 
+       (unix::unix-chdir dir)
        (setq *default-pathname-defaults* tdir))
      (t nil))))
 
@@ -299,7 +299,7 @@ with this hack and will try to convince the GCL crowd to fix this.
  (let ((tdir (probe-file dir)))
   (cond
     (tdir
-       #-:win32 (sb-posix::chdir tdir) 
+       #-:win32 (sb-posix::chdir tdir)
        (setq *default-pathname-defaults* tdir))
      (t nil))))
 
@@ -352,13 +352,13 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; Silent loading of files
 
 (defun |load_quietly| (f)
-    ;;; (format *error-output* "entred load_quietly ~&") 
+    ;;; (format *error-output* "entred load_quietly ~&")
     #-:GCL
     (handler-bind ((warning #'muffle-warning))
                   (load f))
     #+:GCL
     (load f)
-    ;;; (format *error-output* "finished load_quietly ~&") 
+    ;;; (format *error-output* "finished load_quietly ~&")
 )
 
 (defun |quiet_load_alien|(s)
@@ -391,7 +391,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (int LISP::int)
     (c-string LISP::string)
     (double LISP::double)
-))               
+))
 
 (defun c-args-to-gcl (arguments)
    (mapcar (lambda (x) (c-type-to-ffi (nth 1 x))) arguments))
@@ -424,7 +424,7 @@ with this hack and will try to convince the GCL crowd to fix this.
           (clisp-ret (c-type-to-ffi return-type)))
      `(eval (quote (ffi:def-call-out ,name
           ;;; (:library "./libspad.so")
-          (:name ,c-name) 
+          (:name ,c-name)
           (:arguments ,@clisp-args)
           (:return-type ,clisp-ret)
           (:language :stdc))))
@@ -446,7 +446,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun c-args-to-cmucl (arguments)
   (mapcar (lambda (x) (list (nth 0 x) (c-type-to-ffi (nth 1 x))))
-	  arguments))
+          arguments))
 
 (defun cmucl-foreign-call (name c-name return-type arguments)
     (let ((cmucl-args (c-args-to-cmucl arguments))
@@ -504,7 +504,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                                   (push (c-type-to-ffi (nth 1 x)) fargs)
                                   (push (nth 0 x) fargs))))
                      arguments)
-         (values (nreverse fargs) strs 
+         (values (nreverse fargs) strs
                  (mapcar #'car arguments))))
 
 (defun openmcl-foreign-call (name c-name return-type arguments)
@@ -517,7 +517,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                      `(ccl::with-cstrs ,strs ,call-body)
                       call-body)))
                `(defun ,name ,largs ,fun-body))))
-            
+
 (defmacro fricas-foreign-call (name c-name return-type &rest arguments)
      (openmcl-foreign-call name c-name return-type arguments))
 
@@ -814,7 +814,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (sock_get_string_buf_wrapper purpose buf 10000)
     (fli:convert-from-foreign-string buf)))
 )
-      
+
 ;;; -------------------------------------------------------
 ;;; File and directory support
 ;;; First version contributed by Juergen Weiss.
@@ -922,11 +922,11 @@ with this hack and will try to convince the GCL crowd to fix this.
            1
          (if (probe-file filename) 0 -1))
      -1))
- 
+
 #+:cmu
 (defun get-current-directory ()
   (multiple-value-bind (win dir) (unix::unix-current-directory)
-		       (declare (ignore win))  dir))
+                       (declare (ignore win))  dir))
 
 #+(or :ecl :GCL :sbcl :clisp :openmcl)
 (defun get-current-directory ()
@@ -1033,7 +1033,7 @@ with this hack and will try to convince the GCL crowd to fix this.
           (let ((orig short))
             (dolist (elt long)
               (unless (member
-		       (lisp::apply-key key elt) orig :key key :test test)
+                       (lisp::apply-key key elt) orig :key key :test test)
                 (push elt short)))
             short)
           (let ((table (make-hash-table :test test :size (+ n1 n2)))
@@ -1074,7 +1074,7 @@ with this hack and will try to convince the GCL crowd to fix this.
             (do ((elt (car long) (car long)))
                 ((endp long))
               (if (not (member
-			(lisp::apply-key key elt) orig :key key :test test))
+                        (lisp::apply-key key elt) orig :key key :test test))
                   (lisp::steve-splice long short)
                   (setf long (cdr long))))
             short)
@@ -1194,4 +1194,3 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defmacro |doInBoottranPackage| (expr)
     `(let ((*PACKAGE* (find-package "BOOTTRAN")))
          ,expr))
-

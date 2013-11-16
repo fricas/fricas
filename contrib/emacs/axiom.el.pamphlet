@@ -1,4 +1,4 @@
-\documentclass{article} 
+\documentclass{article}
 \usepackage{axiom}
 %
 %  Note in processing this document - to produce the elisp file, run
@@ -17,7 +17,7 @@
 %  will produce both the elisp file and the documentation as dvi.
 %
 \begin{document}
-\title{\$SPAD/src/emacs/axiommode.el\\Version 16-10-2007} 
+\title{\$SPAD/src/emacs/axiommode.el\\Version 16-10-2007}
 \author{Jay Belanger, Fran\c{c}ois Maltey, Martin Rubey and Cliff Yapp}
 \maketitle
 \begin{abstract}
@@ -40,7 +40,7 @@ Axiom.  The user interface is mostly the same, but [fricas.el] is much more
 robust.
 
 \section{Copyright and License}
- 
+
 Unlike the vast majority of Axiom, which is licensed under the Modified BSD
 license, this Emacs mode is licensed under the GPL.  This is primarily due to
 the very large collection of additional Emacs modes that are used to make this
@@ -56,18 +56,18 @@ environment as powerful as it is.
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 2 of
 ;; the License, or (at your option) any later version.
-;;          
+;;
 ;; This program is distributed in the hope that it will be
 ;; useful, but WITHOUT ANY WARRANTY; without even the implied
 ;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;; PURPOSE.  See the GNU General Public License for more details.
-;;          
+;;
 ;; You should have received a copy of the GNU General Public
 ;; License along with this program; if not, write to the Free
 ;; Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 ;; MA 02111-1307 USA
 
-@ 
+@
 
 \eject
 \section{Introduction and Installation}
@@ -169,7 +169,7 @@ There remain a few things to do:
 <<UtilityFunctions>>
 <<StartingAxiom>>
 <<TerminalMode>>
-@ 
+@
 
 \section{How can we know that Axiom has finished a computation?}
 
@@ -252,7 +252,7 @@ the arguments to be provided:
 @
 
 <<axiom-mode-map>>=
-(defvar axiom-mode-map (copy-keymap comint-mode-map) 
+(defvar axiom-mode-map (copy-keymap comint-mode-map)
   "local key map for Axiom terminal mode")
 (define-key axiom-mode-map [(meta k)] 'axiom-copy-to-clipboard)
 (define-key axiom-mode-map [(ctrl return)] 'axiom-yank)
@@ -288,7 +288,7 @@ These settings will be universal no matter which mode Axiom is in.  The first
 line define the name of the command to run Axiom, The second line provides the
 options to disable the graphical interface and clef intelligent command line
 utility. The third line supplies the REGEXP syntax to identify the Axiom
-prompts. 
+prompts.
 
 We also need to initialize some variables for later use:
 
@@ -310,16 +310,16 @@ and define convenience functions:
 
 <<UtilityFunctions>>=
 ;;due to William G. Dubuque 1994
-(defun looking-backward-at (regexp &optional bound) 
-  (let ((point (point))) 
-    (save-restriction 
-      (narrow-to-region (or bound (point-min)) point) 
-      ;; Recall that \' matches end of buffer in a regexp. 
-      ;; Todo: bug: regexp compiler does not appear to optimize this well 
-      ;; (seems like test (eobp) is done after each match instead of anchoring 
-      ;; at eob), so use a bound to improve efficiency. 
-      (prog1 (re-search-backward (concat regexp "\\'") bound t) 
-             (goto-char point))))) 
+(defun looking-backward-at (regexp &optional bound)
+  (let ((point (point)))
+    (save-restriction
+      (narrow-to-region (or bound (point-min)) point)
+      ;; Recall that \' matches end of buffer in a regexp.
+      ;; Todo: bug: regexp compiler does not appear to optimize this well
+      ;; (seems like test (eobp) is done after each match instead of anchoring
+      ;; at eob), so use a bound to improve efficiency.
+      (prog1 (re-search-backward (concat regexp "\\'") bound t)
+             (goto-char point)))))
 
 ; from emacs 22
 (defun make-temp-file (prefix &optional dir-flag suffix)
@@ -403,10 +403,10 @@ right face, and is made read-only"
 <<UtilityFunctions>>=
 (defun axiom-output-filter (str)
   "Look for a new input prompt."
-  (let ((comint-last-output-end 
+  (let ((comint-last-output-end
          (process-mark (get-buffer-process (current-buffer))))
-        (prompt-start 
-	 (string-match axiom-prompt str)))
+        (prompt-start
+         (string-match axiom-prompt str)))
     (axiom-make-output (1+ axiom-end-of-input)
                        (if prompt-start
                            (+ comint-last-output-start
@@ -455,10 +455,10 @@ I really would like to have a behaviour like that of shell mode, i.e.,
 [[M-x axiom]] should switch to the buffer [[*axiom*]], if it exists and if it
 is an "axiom buffer".  (I guess that should be a buffer in [[axiom-mode]], with
 a running axiom process.)
- 
+
 If there is no such buffer, it should create a new buffer and a new axiom
 process.
- 
+
 [[(add-hook 'axiom-mode-hook (lambda () (rename-uniquely)))]] should rename the
 buffer.  I do not know what else one could use [[shell-mode-hook]] (and
 therefore [[axiom-mode-hook]]) for.
@@ -518,11 +518,11 @@ I allow visiting saved history, this needs to change.
         (accept-process-output proc))
     (while (not (re-search-backward "(1) -> [^ ](1) ->" before-banner t))
       (accept-process-output proc)))
-        
+
 
   (if delete-banner
       (delete-region before-banner (point))
-    (progn 
+    (progn
       (remove-text-properties before-banner (point) '(face nil rear-nonsticky nil))
       (put-text-property before-banner (point) 'front-sticky t)
       (put-text-property before-banner (point) 'read-only t)))
@@ -530,7 +530,7 @@ I allow visiting saved history, this needs to change.
   (goto-char before-banner)
   (search-forward "(1) ->")
   (search-backward "(1) ->")
- 
+
   (let ((inhibit-read-only t)
         (point-after-last-message nil)
         (point-before-current-marker nil))
@@ -544,7 +544,7 @@ I allow visiting saved history, this needs to change.
     (goto-char (point-max))
   ;; We need to explicitly write protect the first prompt, since it
   ;; is outside the normal write protect mode used for subsequent
-  ;; output: 
+  ;; output:
     (axiom-make-prompt (- (point) 7) (point))))
 
 @
@@ -567,10 +567,10 @@ I allow visiting saved history, this needs to change.
         (goto-char before-banner)
         (insert "\n")
         ;; Run that command
-        (make-comint-in-buffer "axiom" 
-                               (current-buffer) 
+        (make-comint-in-buffer "axiom"
+                               (current-buffer)
                                axiom-command nil axiom-args)
-        (axiom-wait-start (get-buffer-process (current-buffer)) 
+        (axiom-wait-start (get-buffer-process (current-buffer))
                           (1+ before-banner) t)))
 
     (make-local-variable 'axiom-system-command)
@@ -589,12 +589,12 @@ I allow visiting saved history, this needs to change.
     (setq buffer-offer-save t)
     (add-hook 'after-save-hook 'axiom-save-history nil t)
     (add-hook 'kill-buffer-query-functions 'axiom-query-kill)
-    
+
     ;; Next, we turn on some key bindings for our new mode:
     (use-local-map axiom-mode-map)
-    (substitute-key-definition 'comint-previous-input 
+    (substitute-key-definition 'comint-previous-input
                                'axiom-scroll-previous-input axiom-mode-map)
-    (substitute-key-definition 'comint-next-input 
+    (substitute-key-definition 'comint-next-input
                                'axiom-scroll-next-input axiom-mode-map)
     ;; HyperDoc currently sends loading messages to the buffer.  Because of the
     ;; current setup, they are going to be read-only, and they are not followed
@@ -635,7 +635,7 @@ looks and behaves really the same.
     t))
 
 @
- 
+
 
 This is going to be called just before the buffer is saved into the filename
 supplied by the user.  Thus, the following files will be created:
@@ -657,7 +657,7 @@ does not store the %% facility correctly.  Then issues )history )save."
   (when (file-exists-p (concat (buffer-file-name) ".axh"))
     (delete-file (concat (buffer-file-name) ".axh/index.KAF"))
     (delete-directory (concat (buffer-file-name) ".axh")))
-                     
+
   (insert (concat ")history )save " (buffer-file-name)))
   (axiom-normal-eval-wait)
   (set-buffer-modified-p nil))
@@ -737,7 +737,7 @@ axiom-reset. ???It seems that this is not quite true???"
   (let ((found?))
     (while (and (setq found? (re-search-backward axiom-prompt nil t))
                 (not (axiom-prompt? (point)))))
-    (when found? 
+    (when found?
 ; originally I used (end-of-line) to move to the end of the prompt, relying on
 ; the field property of the prompt.  But it seems that this does not always
 ; work.
@@ -760,7 +760,7 @@ after the previous prompt. Otherwise, the behaviour is undefined."
       (end-of-line)
       (when found? (point)))))
 
-@ 
+@
 
 This function will move the cursor to the next identified input line.
 
@@ -841,7 +841,7 @@ skip ahead to the input location.
   "Move right depending on the region we are in."
   (interactive "p")
   (dotimes (i arg)
-    (cond ((eobp)) ; at the end of the buffer we signal an error 
+    (cond ((eobp)) ; at the end of the buffer we signal an error
           ((looking-at axiom-prompt)
            (re-search-forward axiom-prompt))
           ((and (not (axiom-output? (point)))
@@ -985,7 +985,7 @@ First, we will define our formatting for an altered input:
   "Face to use to highlight modified input."
   :group 'axiom)
 
-@ 
+@
 
 Next we create a convenience function to clear old overlays.  This is to avoid
 unanticipated conflicts between old overlays and new ones.
@@ -996,7 +996,7 @@ unanticipated conflicts between old overlays and new ones.
    (while (overlays-at pos)
      (delete-overlay (car (overlays-at pos)))))
 
-@ 
+@
 
 When a change actually occurs, we just change the face of the existing overlay
 to [[axiom-changed-input]], and remove the modification hooks call to this
@@ -1008,11 +1008,11 @@ function to prevent recursion.
 that point is between begin and end."
   (let ((new-input (buffer-substring begin end)))
     (if after-change
-	(unless (string= axiom-current-input new-input)
-	  ;; Change the look of the text
-	  (overlay-put overlay 'face 'axiom-changed-input)
-	  ;; And remove this function from the modification hooks list
-	  (overlay-put overlay 'modification-hooks '())
+        (unless (string= axiom-current-input new-input)
+          ;; Change the look of the text
+          (overlay-put overlay 'face 'axiom-changed-input)
+          ;; And remove this function from the modification hooks list
+          (overlay-put overlay 'modification-hooks '())
           ;; Mark all prompts below to indicate that they have to be taken with
           ;; care
           (let ((position end)
@@ -1030,7 +1030,7 @@ that point is between begin and end."
             (sit-for 0)))
       (setq axiom-current-input new-input))))
 
-@          
+@
 
 <<axiom-flag-prompt>>=
 (defun axiom-make-input (beg end)
@@ -1118,7 +1118,7 @@ font-lock-mode!)
     (insert-char 32 1 t)
     (backward-char 1))
   (backward-char 1)
-  
+
   (if (equal (get-text-property (point) 'face)
              axiom-paint-face)
       (if (axiom-output? (point))
@@ -1208,26 +1208,26 @@ complete.  Point is expected to be at the new prompt, after the last output.
 Afterwards, point is where it was before."
   (save-excursion
     (let* ((new-prompt-start (re-search-backward axiom-prompt nil t))
-	   (new-prompt-end (re-search-forward axiom-prompt nil t))
-	   (new-prompt (buffer-substring new-prompt-start new-prompt-end))
-	   (inhibit-read-only t))
+           (new-prompt-end (re-search-forward axiom-prompt nil t))
+           (new-prompt (buffer-substring new-prompt-start new-prompt-end))
+           (inhibit-read-only t))
       ;; Remove the new prompt and put it in the kill ring
       (delete-region new-prompt-start new-prompt-end)
       ;; Weed out the extra newline, if present.  For example, in case of an
       ;; error it is not present.  I guess it would be better to detect
       ;; errors by parsing the prompt, but I leave this for somebody else.
       (when (char-equal (char-after) 10)
-	(delete-char 1))
-      ;;  Finally we get rid of the old prompt at the end of the buffer and 
+        (delete-char 1))
+      ;;  Finally we get rid of the old prompt at the end of the buffer and
       ;;  insert the new one, which is currently somewhere in the middle of the
       ;;  buffer.
       (goto-char (point-max))
       (let ((old-prompt-start (re-search-backward axiom-prompt nil t)))
-	(delete-region old-prompt-start (line-end-position))
-	(insert new-prompt)
-	(axiom-make-prompt old-prompt-start (point))))))
+        (delete-region old-prompt-start (line-end-position))
+        (insert new-prompt)
+        (axiom-make-prompt old-prompt-start (point))))))
 
-@ 
+@
 
 This is the core of the new evaluation routine, which handles most of the
 prompt arrangements.  It makes use of the previous two functions.
@@ -1240,7 +1240,7 @@ expects point to be between the current and the next prompt."
          (old-prompt-end (axiom-previous-prompt))
          (old-prompt-start (re-search-backward axiom-prompt nil t))
          ;; the new prompt is at the very end of the buffer
-         (new-prompt (buffer-substring 
+         (new-prompt (buffer-substring
                       (progn (goto-char (point-max))
                              (re-search-backward axiom-prompt nil t))
                       (re-search-forward axiom-prompt nil t)))
@@ -1248,7 +1248,7 @@ expects point to be between the current and the next prompt."
     ;; Delete the old prompt
     (delete-region old-prompt-start old-prompt-end)
     ;; Clear out any pre-existing text overlays - needed for the case
-    ;; where the same input is being re-evaluated - if this isn't 
+    ;; where the same input is being re-evaluated - if this isn't
     ;; removed, the new prompt is bold.  If no overlay do nothing.
     (goto-char old-prompt-start)
     (axiom-clear-overlays (point))
@@ -1257,7 +1257,7 @@ expects point to be between the current and the next prompt."
     ;; Now we are done changing this prompt, and can prepare the input
     (comint-set-process-mark)
     (axiom-make-input (1- (point))
-                      (setq axiom-end-of-input 
+                      (setq axiom-end-of-input
                             (copy-marker (axiom-end-of-input))))
     ;; Delete the old output
     (delete-region (1+ axiom-end-of-input)
@@ -1268,7 +1268,7 @@ expects point to be between the current and the next prompt."
     (comint-send-input)
     (axiom-wait-for-output)))
 
-@ 
+@
 
 Normally, Return is simply bound to comint-send-input, so we will need this
 option for the ``normal'' case of evaluation at the last/most current input
@@ -1279,7 +1279,7 @@ prompt.
    "This function is used for evaluation at the 'front' Axiom prompt. It
 expects point anywhere after the last prompt."
    (axiom-make-input (1- (axiom-previous-prompt))
-                     (setq axiom-end-of-input 
+                     (setq axiom-end-of-input
                            (copy-marker (axiom-end-of-input))))
    (comint-send-input)
    (axiom-wait-for-output))
@@ -1288,7 +1288,7 @@ expects point anywhere after the last prompt."
    "This function is used for evaluation at the 'front' Axiom prompt. It
 expects point anywhere after the last prompt.  It waits until the prompt appears."
    (axiom-make-input (1- (axiom-previous-prompt))
-                     (setq axiom-end-of-input 
+                     (setq axiom-end-of-input
                            (copy-marker (axiom-end-of-input))))
    (let ((pos (point)))
      (comint-send-input)
@@ -1296,7 +1296,7 @@ expects point anywhere after the last prompt.  It waits until the prompt appears
        (accept-process-output (get-buffer-process (current-buffer))))
      (comint-goto-process-mark)))
 
-@ 
+@
 
 This is the function actually bound to the Return key - it decides which
 evaluation routine is needed based on the location of the input line.
@@ -1306,9 +1306,9 @@ evaluation routine is needed based on the location of the input line.
   "Evaluate the current input and insert output."
   (interactive)
   (let ((axiom-cd nil))
-    (if axiom-system-command 
+    (if axiom-system-command
         ;; we are responding to a system command.
-        (progn 
+        (progn
           (setq axiom-system-command nil
                 axiom-end-of-input (copy-marker (axiom-end-of-input)))
           (comint-send-input)
@@ -1328,7 +1328,7 @@ evaluation routine is needed based on the location of the input line.
         (if (looking-at ".*_ *$")
             (progn (end-of-line)
                    (newline))
-          
+
           ;; move to the the end of the preceding prompt
           (axiom-previous-prompt)
           (comint-set-process-mark)
@@ -1336,7 +1336,7 @@ evaluation routine is needed based on the location of the input line.
           (setq axiom-system-command (looking-at " *)"))
           (when axiom-system-command
             (setq axiom-cd (looking-at " *)cd *")))
-          
+
           ;; If there is a prompt further down, we are overwriting old stuff.
           (if (axiom-next-prompt)
               (progn (axiom-overwrite-output-eval)
@@ -1359,7 +1359,7 @@ evaluation routine is needed based on the location of the input line.
   "Evaluate the current input and append output."
   (interactive)
   (when (axiom-prompt? (1- (process-mark (get-buffer-process (current-buffer)))))
-    (let* ((input (buffer-substring (axiom-previous-prompt) 
+    (let* ((input (buffer-substring (axiom-previous-prompt)
                                     (axiom-end-of-input)))
            (end (progn (goto-char (point-max))
                        (point))))
@@ -1376,7 +1376,7 @@ evaluation routine is needed based on the location of the input line.
     (end-of-line)
     (insert "_\n")))
 
-@ 
+@
 
 \subsection{Command completion}
 
@@ -1388,8 +1388,8 @@ For the moment, I just enable filename completion.  I'd like to restrict to
 (defun axiom-file-name-all-completions (pathnondir directory)
   "Returns all filenames relevant to axiom"
   (save-match-data
-    (remove-if-not 
-     (function (lambda (f) 
+    (remove-if-not
+     (function (lambda (f)
                  (or (and (string-match "\\.[^.]*\\'" f)
                           (member (match-string 0 f)
                                   (list ".input" ".spad" ".as")))
@@ -1411,30 +1411,30 @@ the position of the first mismatch.
 DIRECTORY that start with FILE.  If there is only one and FILE matches it
 exactly, returns t.  Returns nil if DIR contains no name starting with FILE."
   (let* ((completions (axiom-file-name-all-completions file directory))
-	 (frst (first completions))
-	 (len  (length frst))
-	 (start      0)
-	 (not-done   t))
+         (frst (first completions))
+         (len  (length frst))
+         (start      0)
+         (not-done   t))
     (cond ((consp (rest completions))
-	   (while (and not-done
-		       (> len start))
-	     (let ((char (substring frst start (1+ start)))
-		   (rst  (rest completions)))
-	       (while (and not-done 
-			   (consp rst))
-		 (if (and (> (length (first rst)) start)
-			  (string= (substring (first rst) 
-					      start (1+ start))
-				   char))
-		     (setq rst (rest rst))
-		   (setq not-done nil))))
-	     (when not-done 
-	       (setq start (1+ start))))
-	   (substring frst 0 start))
-	  ((string= frst file)
-	   t)
-	  (t
-	   frst))))
+           (while (and not-done
+                       (> len start))
+             (let ((char (substring frst start (1+ start)))
+                   (rst  (rest completions)))
+               (while (and not-done
+                           (consp rst))
+                 (if (and (> (length (first rst)) start)
+                          (string= (substring (first rst)
+                                              start (1+ start))
+                                   char))
+                     (setq rst (rest rst))
+                   (setq not-done nil))))
+             (when not-done
+               (setq start (1+ start))))
+           (substring frst 0 start))
+          ((string= frst file)
+           t)
+          (t
+           frst))))
 
 @
 
@@ -1446,17 +1446,17 @@ to [[axiom-file-name-all-completions]].
   "List in help buffer possible completions of the filename at point."
   (interactive)
   (let* ((completion-ignore-case (memq system-type '(ms-dos windows-nt)))
-	 ;; If we bind this, it breaks remote directory tracking in rlogin.el.
-	 ;; I think it was originally bound to solve file completion problems,
-	 ;; but subsequent changes may have made this unnecessary.  sm.
-	 ;;(file-name-handler-alist nil)
-	 (filename (or (comint-match-partial-filename) ""))
-	 (pathdir (file-name-directory filename))
-	 (pathnondir (file-name-nondirectory filename))
-	 (directory (if pathdir (comint-directory pathdir) default-directory))
-	 (completions (axiom-file-name-all-completions pathnondir directory)))
+         ;; If we bind this, it breaks remote directory tracking in rlogin.el.
+         ;; I think it was originally bound to solve file completion problems,
+         ;; but subsequent changes may have made this unnecessary.  sm.
+         ;;(file-name-handler-alist nil)
+         (filename (or (comint-match-partial-filename) ""))
+         (pathdir (file-name-directory filename))
+         (pathnondir (file-name-nondirectory filename))
+         (directory (if pathdir (comint-directory pathdir) default-directory))
+         (completions (axiom-file-name-all-completions pathnondir directory)))
     (if (not completions)
-	(message "No completions of %s" filename)
+        (message "No completions of %s" filename)
       (comint-dynamic-list-completions
        (mapcar 'comint-quote-filename completions)))))
 
@@ -1470,8 +1470,8 @@ Furthermore, directory tracking does not work yet.
   "Dynamically perform completion at point."
   (interactive)
   (when (save-excursion
-	  (axiom-previous-prompt)
-	  (looking-at " *)"))
+          (axiom-previous-prompt)
+          (looking-at " *)"))
     (axiom-dynamic-complete-filename)))
 
 @
@@ -1485,63 +1485,63 @@ function, since it's used in eval, too.
 See `comint-dynamic-complete-filename'.  Returns t if successful."
   (interactive)
   (let* ((completion-ignore-case (memq system-type '(ms-dos windows-nt)))
-	 (completion-ignored-extensions comint-completion-fignore)
-	 ;; If we bind this, it breaks remote directory tracking in rlogin.el.
-	 ;; I think it was originally bound to solve file completion problems,
-	 ;; but subsequent changes may have made this unnecessary.  sm.
-	 ;;(file-name-handler-alist nil)
-	 (minibuffer-p (window-minibuffer-p (selected-window)))
-	 (success t)
-	 (dirsuffix (cond ((not comint-completion-addsuffix)
-			   "")
-			  ((not (consp comint-completion-addsuffix))
-			   (char-to-string directory-sep-char))
-			  (t
-			   (car comint-completion-addsuffix))))
-	 (filesuffix (cond ((not comint-completion-addsuffix)
-			    "")
-			   ((not (consp comint-completion-addsuffix))
-			    " ")
-			   (t
-			    (cdr comint-completion-addsuffix))))
-	 (filename (or (comint-match-partial-filename) ""))
-	 (pathdir (file-name-directory filename))
-	 (pathnondir (file-name-nondirectory filename))
-	 (directory (if pathdir (comint-directory pathdir) default-directory))
-	 (completion (axiom-file-name-completion pathnondir directory)))
+         (completion-ignored-extensions comint-completion-fignore)
+         ;; If we bind this, it breaks remote directory tracking in rlogin.el.
+         ;; I think it was originally bound to solve file completion problems,
+         ;; but subsequent changes may have made this unnecessary.  sm.
+         ;;(file-name-handler-alist nil)
+         (minibuffer-p (window-minibuffer-p (selected-window)))
+         (success t)
+         (dirsuffix (cond ((not comint-completion-addsuffix)
+                           "")
+                          ((not (consp comint-completion-addsuffix))
+                           (char-to-string directory-sep-char))
+                          (t
+                           (car comint-completion-addsuffix))))
+         (filesuffix (cond ((not comint-completion-addsuffix)
+                            "")
+                           ((not (consp comint-completion-addsuffix))
+                            " ")
+                           (t
+                            (cdr comint-completion-addsuffix))))
+         (filename (or (comint-match-partial-filename) ""))
+         (pathdir (file-name-directory filename))
+         (pathnondir (file-name-nondirectory filename))
+         (directory (if pathdir (comint-directory pathdir) default-directory))
+         (completion (axiom-file-name-completion pathnondir directory)))
     (cond ((null completion)
-	   (message "No completions of %s" filename)
-	   (setq success nil))
-	  ((eq completion t)            ; Means already completed "file".
-	   (insert filesuffix)
-	   (unless minibuffer-p
-	     (message "Sole completion")))
-	  ((string-equal completion "") ; Means completion on "directory/".
-	   (axiom-dynamic-list-filename-completions))
-	  (t                            ; Completion string returned.
-	   (let ((file (concat (file-name-as-directory directory) completion)))
-	     (insert (comint-quote-filename
-		      (substring (directory-file-name completion)
-				 (length pathnondir))))
-	     (cond ((symbolp (axiom-file-name-completion completion directory))
-		    ;; We inserted a unique completion.
-		    (insert (if (file-directory-p file) dirsuffix filesuffix))
-		    (unless minibuffer-p
-		      (message "Completed")))
-		   ((and comint-completion-recexact comint-completion-addsuffix
-			 (string-equal pathnondir completion)
-			 (file-exists-p file))
-		    ;; It's not unique, but user wants shortest match.
-		    (insert (if (file-directory-p file) dirsuffix filesuffix))
-		    (unless minibuffer-p
-		      (message "Completed shortest")))
-		   ((or comint-completion-autolist
-			(string-equal pathnondir completion))
-		    ;; It's not unique, list possible completions.
-		    (axiom-dynamic-list-filename-completions))
-		   (t
-		    (unless minibuffer-p
-		      (message "Partially completed")))))))
+           (message "No completions of %s" filename)
+           (setq success nil))
+          ((eq completion t)            ; Means already completed "file".
+           (insert filesuffix)
+           (unless minibuffer-p
+             (message "Sole completion")))
+          ((string-equal completion "") ; Means completion on "directory/".
+           (axiom-dynamic-list-filename-completions))
+          (t                            ; Completion string returned.
+           (let ((file (concat (file-name-as-directory directory) completion)))
+             (insert (comint-quote-filename
+                      (substring (directory-file-name completion)
+                                 (length pathnondir))))
+             (cond ((symbolp (axiom-file-name-completion completion directory))
+                    ;; We inserted a unique completion.
+                    (insert (if (file-directory-p file) dirsuffix filesuffix))
+                    (unless minibuffer-p
+                      (message "Completed")))
+                   ((and comint-completion-recexact comint-completion-addsuffix
+                         (string-equal pathnondir completion)
+                         (file-exists-p file))
+                    ;; It's not unique, but user wants shortest match.
+                    (insert (if (file-directory-p file) dirsuffix filesuffix))
+                    (unless minibuffer-p
+                      (message "Completed shortest")))
+                   ((or comint-completion-autolist
+                        (string-equal pathnondir completion))
+                    ;; It's not unique, list possible completions.
+                    (axiom-dynamic-list-filename-completions))
+                   (t
+                    (unless minibuffer-p
+                      (message "Partially completed")))))))
     success))
 
 @
@@ -1558,8 +1558,8 @@ file and then \verb{)read} it.
   "puts the front item of the kill ring into a temporary file and makes axiom )read it"
   (interactive "P")
   (let* ((tmp-file (make-temp-file "axiom" nil ".input"))
-	 (end (progn (goto-char (point-max))
-		     (point))))	 
+         (end (progn (goto-char (point-max))
+                     (point))))
     (write-region (car kill-ring-yank-pointer) nil tmp-file)
     (delete-region (axiom-previous-prompt) end)
     (comint-set-process-mark)

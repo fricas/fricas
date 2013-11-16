@@ -141,5 +141,3 @@ initLightButtons (buttonStruct *lightButtons)
 
   return(num);
 }
-
-

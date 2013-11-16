@@ -8,11 +8,11 @@
           (if pos (setf ver (subseq ver 0 pos)))
           ver))
 
-(with-open-file (out "config_cl.out" 
+(with-open-file (out "config_cl.out"
                      :direction :output
                      :if-does-not-exist :create
                      :if-exists :supersede)
-    (format out "fricas_fasl_type=~a~&" 
+    (format out "fricas_fasl_type=~a~&"
         (pathname-type (compile-file-pathname "foo.lisp")))
 
     (format out "fricas_lisp_flavor=~a~&"

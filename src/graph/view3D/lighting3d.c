@@ -582,8 +582,3 @@ drawLightingPanel(void)
   drawLightTransArrow();
 
 }  /* drawLightingPanel */
-
-
-
-
-

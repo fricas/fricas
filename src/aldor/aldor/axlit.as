@@ -258,7 +258,7 @@ extend List (S: Type) : with {
 	cons	 (x: S, y: %): % == AXL_-cons(x, y);
 	setfirst!(x: %, y: S): S == AXL_-rplaca(x, y);
 	setrest! (x: %, y: %): % == AXL_-rplacd(x, y);
-	
+
 	empty	 (): %		 == AXL_-nilfn();
 	empty?	 (x: %): Bit	 == AXL_-null? x;
 	test	 (x: %): Bit	 == not empty? x;

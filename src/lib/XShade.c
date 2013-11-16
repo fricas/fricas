@@ -206,4 +206,3 @@ XShadeArcs(Display *display, Drawable drawable, XArc *arcs, int narcs)
 }
 
 #endif /* MSYSplatform */
-

@@ -51,7 +51,7 @@ fixed number (and order) of fields.  For [[interp.daase]] the
 fields are:
 \begin{verbatim}
 constructor name (symbol)
-operation list 
+operation list
 constructor modemap
 modemaps (of added operations)
 object file (name of the file containing compiled code
@@ -89,7 +89,7 @@ For example, expanded form of S-expression describing Axiom [[Type]]
     T TYPE (NIL) |category| NIL NIL)
 \end{verbatim}
 After replacing composite values by file offsets we get something
-like: 
+like:
 \begin{verbatim}
  (|Type| 3013278 3013283 3013314 "TYPE" 3013319 T TYPE (NIL)
     |category| NIL NIL)
@@ -169,7 +169,7 @@ typedef struct int_item {
     long val;
 } int_item;
 
-/* 
+/*
    Counted strings with fill pointer.  Not necessarily null terminated.
 */
 
@@ -236,7 +236,7 @@ add_item(item_list * sl, item * s)
     if (sl->pos >= sl->size) {
         if (sl->size < INT_MAX/(2*sizeof(item *))) {
             sl->size *= 2;
-            sl->buff = realloc(sl->buff, 
+            sl->buff = realloc(sl->buff,
                          sizeof(item *)*sl->size);
             if (!sl->buff) {
                 fatal("Out of memory\n");
@@ -323,7 +323,7 @@ string_val(item * it)
    while when printing to the buffer printing routine prints just content,
    checking that it fits into the buffer.  To handle indentation in
    we just subtract indentation offset form the buffer size, passing
-   lower limit to printing routines.  Later upper routine prints 
+   lower limit to printing routines.  Later upper routine prints
    indentating spaces followed by buffer content.
 
    Unfortunately, this approach means that there is significant duplication
@@ -400,7 +400,7 @@ print_items1(item * it, int offset, char * buff, int lim)
                  if (pos >= lim - 1) {
                      return -1;
                  }
-                 l1 = print_items1(il->buff[i], offset+3, 
+                 l1 = print_items1(il->buff[i], offset+3,
                                          buff+pos, lim - pos - 1);
                  if (l1 < 0) {
                      return -1;
@@ -520,7 +520,7 @@ print_cars(item * it)
     }
 }
 
-/* 
+/*
    Utilities to read S-expression from files.  Support only things
    which appear in Axiom databases.
 */
@@ -877,7 +877,7 @@ main(int argc, char * * argv)
     char * propname = "all";
     long ct_n;
     AXIOM=(char *)getenv("AXIOM");
-    
+
     if (AXIOM == 0)
         fprintf(stderr, "AXIOM shell variable has no value. "
                            "using current directory\n");

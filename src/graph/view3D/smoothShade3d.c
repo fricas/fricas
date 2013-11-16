@@ -1022,13 +1022,3 @@ drawPhong(int dFlag)
     writeControlMessage();
 
 } /* drawPhong */
-
-
-
-
-
-
-
-
-
-

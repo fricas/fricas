@@ -69,5 +69,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /* Tests for NaN clipping should be added in here. */
-
-

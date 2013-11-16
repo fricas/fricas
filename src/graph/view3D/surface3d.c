@@ -767,4 +767,3 @@ equal (float x,float y)
   yI = y*precisionFactor;
   return(xI==yI);
 }
-

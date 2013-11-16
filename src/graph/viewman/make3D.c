@@ -154,4 +154,3 @@ makeView3DFromSpadData(view3DStruct *viewdata,int typeOfViewport)
   viewdata->scaleDown = yes;
 
 }
-

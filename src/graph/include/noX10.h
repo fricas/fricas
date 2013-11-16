@@ -84,4 +84,3 @@ typedef struct _XAssocTable {
 
 
 #endif /* _X10_H_ */
-

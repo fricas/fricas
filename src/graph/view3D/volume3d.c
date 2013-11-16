@@ -832,5 +832,3 @@ drawVolumePanel (void)
   drawClipZBut();
 
 } /* drawVolumePanel() */
-
-

@@ -110,4 +110,3 @@ typedef struct _pointInfo {
   int        onVertex, segmentNum;
   int        indexNum;
 } pointInfo;
-

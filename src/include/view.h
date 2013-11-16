@@ -48,4 +48,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
         /* error messages */
 #define fontErrMess "       Try getting the font or changing the .Xdefaults entry"
-

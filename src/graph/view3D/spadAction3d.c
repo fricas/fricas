@@ -468,5 +468,3 @@ spadAction (void)
   return(0);
 
 }
-
-

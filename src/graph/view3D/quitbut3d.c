@@ -77,5 +77,3 @@ initQuitButtons (buttonStruct *quitButtons)
 
   return(num);
 }
-
-

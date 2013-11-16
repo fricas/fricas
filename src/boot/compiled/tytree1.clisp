@@ -1,62 +1,62 @@
- 
+
 ; )package "BOOTTRAN"
- 
+
 (IN-PACKAGE "BOOTTRAN")
- 
+
 ; $inDefIS := false
- 
+
 (EVAL-WHEN (EVAL LOAD) (SETQ |$inDefIS| NIL))
- 
+
 ; bfGenSymbol()==
 ;     $GenVarCounter:=$GenVarCounter+1
 ;     INTERN(CONCAT ('"bfVar#",STRINGIMAGE $GenVarCounter))
- 
+
 (DEFUN |bfGenSymbol| #1=()
   (PROG #1#
     (RETURN
      (PROGN
       (SETQ |$GenVarCounter| (+ |$GenVarCounter| 1))
       (INTERN (CONCAT "bfVar#" (STRINGIMAGE |$GenVarCounter|)))))))
- 
+
 ; bfListOf x==x
- 
+
 (DEFUN |bfListOf| (|x|) (PROG () (RETURN |x|)))
- 
+
 ; bfColon x== ["COLON",x]
- 
+
 (DEFUN |bfColon| (|x|) (PROG () (RETURN (LIST 'COLON |x|))))
- 
+
 ; bfSymbol x==
 ;    STRINGP x=> x
 ;    ['QUOTE,x]
- 
+
 (DEFUN |bfSymbol| (|x|)
   (PROG () (RETURN (COND ((STRINGP |x|) |x|) ('T (LIST 'QUOTE |x|))))))
- 
+
 ; bfDot()== "DOT"
- 
+
 (DEFUN |bfDot| #1=() (PROG #1# (RETURN 'DOT)))
- 
+
 ; bfSuffixDot x==[x,"DOT"]
- 
+
 (DEFUN |bfSuffixDot| (|x|) (PROG () (RETURN (LIST |x| 'DOT))))
- 
+
 ; bfEqual(name)== ["EQUAL",name]
- 
+
 (DEFUN |bfEqual| (|name|) (PROG () (RETURN (LIST 'EQUAL |name|))))
- 
+
 ; bfBracket(part) == part
- 
+
 (DEFUN |bfBracket| (|part|) (PROG () (RETURN |part|)))
- 
+
 ; bfPile(part)    == part
- 
+
 (DEFUN |bfPile| (|part|) (PROG () (RETURN |part|)))
- 
+
 ; bfAppend x== APPLY(function APPEND,x)
- 
+
 (DEFUN |bfAppend| (|x|) (PROG () (RETURN (APPLY #'APPEND |x|))))
- 
+
 ; bfColonAppend (x,y) ==
 ;      if null x
 ;      then
@@ -64,7 +64,7 @@
 ;       then ["&REST",["QUOTE",:a]]
 ;       else ["&REST",y]
 ;      else cons(CAR x,bfColonAppend(CDR x,y))
- 
+
 (DEFUN |bfColonAppend| (|x| |y|)
   (PROG (|a|)
     (RETURN
@@ -76,27 +76,27 @@
          (LIST '&REST (CONS 'QUOTE |a|)))
         (#1# (LIST '&REST |y|))))
       (#1# (CONS (CAR |x|) (|bfColonAppend| (CDR |x|) |y|)))))))
- 
+
 ; bfDefinition1(bflhsitems, bfrhs) ==
 ;        ['DEF, bflhsitems,bfTuple nil, bfrhs]
- 
+
 (DEFUN |bfDefinition1| (|bflhsitems| |bfrhs|)
   (PROG () (RETURN (LIST 'DEF |bflhsitems| (|bfTuple| NIL) |bfrhs|))))
- 
+
 ; bfDefinition2(bflhsitems, bfrhs,body) ==
 ;        ['DEF,bflhsitems,bfrhs,body]
- 
+
 (DEFUN |bfDefinition2| (|bflhsitems| |bfrhs| |body|)
   (PROG () (RETURN (LIST 'DEF |bflhsitems| |bfrhs| |body|))))
- 
+
 ; bfMDefinition2(bflhsitems, bfrhs,body) ==
 ;        bfMDef('MDEF,bflhsitems,bfrhs,body)
- 
+
 (DEFUN |bfMDefinition2| (|bflhsitems| |bfrhs| |body|)
   (PROG () (RETURN (|bfMDef| 'MDEF |bflhsitems| |bfrhs| |body|))))
- 
+
 ; bfCompDef [def,op,args,body]== bfDef(def,op,args,body)
- 
+
 (DEFUN |bfCompDef| (|bfVar#1|)
   (PROG (|def| |op| |args| |body|)
     (RETURN
@@ -106,52 +106,52 @@
       (SETQ |args| (CADDR . #1#))
       (SETQ |body| (CADDDR . #1#))
       (|bfDef| |def| |op| |args| |body|)))))
- 
+
 ; bfBeginsDollar x==  EQL('"$".0,(PNAME x).0)
- 
+
 (DEFUN |bfBeginsDollar| (|x|)
   (PROG () (RETURN (EQL (ELT "$" 0) (ELT (PNAME |x|) 0)))))
- 
+
 ; compFluid id== ["FLUID",id]
- 
+
 (DEFUN |compFluid| (|id|) (PROG () (RETURN (LIST 'FLUID |id|))))
- 
+
 ; compFluidize x==
 ;   IDENTP x and bfBeginsDollar x=>compFluid x
 ;   ATOM x =>x
 ;   EQCAR(x,"QUOTE")=>x
 ;   cons(compFluidize(CAR x),compFluidize(CDR x))
- 
+
 (DEFUN |compFluidize| (|x|)
   (PROG ()
     (RETURN
      (COND ((AND (IDENTP |x|) (|bfBeginsDollar| |x|)) (|compFluid| |x|))
            ((ATOM |x|) |x|) ((EQCAR |x| 'QUOTE) |x|)
            ('T (CONS (|compFluidize| (CAR |x|)) (|compFluidize| (CDR |x|))))))))
- 
+
 ; bfTuple x== ["TUPLE",:x]
- 
+
 (DEFUN |bfTuple| (|x|) (PROG () (RETURN (CONS 'TUPLE |x|))))
- 
+
 ; bfTupleP x==EQCAR(x,"TUPLE")
- 
+
 (DEFUN |bfTupleP| (|x|) (PROG () (RETURN (EQCAR |x| 'TUPLE))))
- 
+
 ; bfTupleIf x==
 ;   if bfTupleP x
 ;   then x
 ;   else bfTuple x
- 
+
 (DEFUN |bfTupleIf| (|x|)
   (PROG () (RETURN (COND ((|bfTupleP| |x|) |x|) ('T (|bfTuple| |x|))))))
- 
+
 ; bfTupleConstruct b ==
 ;   a:= if bfTupleP b
 ;       then cdr b
 ;       else [b]
 ;   or/[x is ["COLON",.] for x in a] => bfMakeCons a
 ;   ["LIST",:a]
- 
+
 (DEFUN |bfTupleConstruct| (|b|)
   (PROG (|a| |ISTMP#1|)
     (RETURN
@@ -176,27 +176,27 @@
          NIL |a| NIL)
         (|bfMakeCons| |a|))
        (#1# (CONS 'LIST |a|)))))))
- 
+
 ; bfConstruct b ==
 ;   a:= if bfTupleP b
 ;       then cdr b
 ;       else [b]
 ;   bfMakeCons a
- 
+
 (DEFUN |bfConstruct| (|b|)
   (PROG (|a|)
     (RETURN
      (PROGN
       (SETQ |a| (COND ((|bfTupleP| |b|) (CDR |b|)) ('T (LIST |b|))))
       (|bfMakeCons| |a|)))))
- 
+
 ; bfMakeCons l ==
 ;   null l => NIL
 ;   l is [["COLON",a],:l1] =>
 ;     l1 => ['APPEND,a,bfMakeCons l1]
 ;     a
 ;   ['CONS,first l,bfMakeCons rest l]
- 
+
 (DEFUN |bfMakeCons| (|l|)
   (PROG (|ISTMP#1| |ISTMP#2| |a| |l1|)
     (RETURN
@@ -212,7 +212,7 @@
                  (PROGN (SETQ |l1| (CDR |l|)) #1#))
             (COND (|l1| (LIST 'APPEND |a| (|bfMakeCons| |l1|))) (#1# |a|)))
            (#1# (LIST 'CONS (CAR |l|) (|bfMakeCons| (CDR |l|))))))))
- 
+
 ; bfFor(bflhs,U,step) ==
 ;      if EQCAR (U,'tails)
 ;      then  bfForTree('ON, bflhs, CADR U)
@@ -220,14 +220,14 @@
 ;        if EQCAR(U,"SEGMENT")
 ;        then  bfSTEP(bflhs,CADR U,step,CADDR U)
 ;        else  bfForTree('IN, bflhs, U)
- 
+
 (DEFUN |bfFor| (|bflhs| U |step|)
   (PROG ()
     (RETURN
      (COND ((EQCAR U '|tails|) (|bfForTree| 'ON |bflhs| (CADR U)))
            ((EQCAR U 'SEGMENT) (|bfSTEP| |bflhs| (CADR U) |step| (CADDR U)))
            ('T (|bfForTree| 'IN |bflhs| U))))))
- 
+
 ; bfForTree(OP,lhs,whole)==
 ;          whole:=if bfTupleP whole then bfMakeCons cdr whole else whole
 ;          ATOM lhs =>bfINON [OP,lhs,whole]
@@ -237,7 +237,7 @@
 ;              [:bfINON [OP,G,whole],:bfSuchthat bfIS(G,CADDR lhs)]
 ;          G:=bfGenSymbol()
 ;          [:bfINON [OP,G,whole],:bfSuchthat bfIS(G,lhs)]
- 
+
 (DEFUN |bfForTree| (OP |lhs| |whole|)
   (PROG (G)
     (RETURN
@@ -260,7 +260,7 @@
                  (SETQ G (|bfGenSymbol|))
                  (APPEND (|bfINON| (LIST OP G |whole|))
                          (|bfSuchthat| (|bfIS| G |lhs|)))))))))))))
- 
+
 ; bfSTEP(id,fst,step,lst)==
 ;       initvar:=[id]
 ;       initval:=[fst]
@@ -287,7 +287,7 @@
 ;                 ["<",id,final]],['T,[">",id,final]]]]
 ;       suc:=[['SETQ,id,["+",id,inc]]]
 ;       [[initvar,initval,suc,[],ex,[]]]
- 
+
 (DEFUN |bfSTEP| (|id| |fst| |step| |lst|)
   (PROG (|initvar| |initval| |g1| |inc| |g2| |final| |pred| |ex| |suc|)
     (RETURN
@@ -317,13 +317,13 @@
                             (LIST 'T (LIST '> |id| |final|)))))))
       (SETQ |suc| (LIST (LIST 'SETQ |id| (LIST '+ |id| |inc|))))
       (LIST (LIST |initvar| |initval| |suc| NIL |ex| NIL))))))
- 
+
 ; bfINON x==
 ;     [op,id,whole]:=x
 ;     if EQ(op,"ON")
 ;     then bfON(id,whole)
 ;     else bfIN(id,whole)
- 
+
 (DEFUN |bfINON| (|x|)
   (PROG (|op| |id| |whole|)
     (RETURN
@@ -333,12 +333,12 @@
       (SETQ |whole| (CADDR . #1#))
       (COND ((EQ |op| 'ON) (|bfON| |id| |whole|))
             ('T (|bfIN| |id| |whole|)))))))
- 
+
 ; bfIN(x,E)==
 ;     g:=bfGenSymbol()
 ;     [[[g,x],[E,nil],[['SETQ,g,['CDR, g]]],[],
 ;         [['OR,['ATOM,g],['PROGN,['SETQ,x,['CAR,g]] ,'NIL]]],[]]]
- 
+
 (DEFUN |bfIN| (|x| E)
   (PROG (|g|)
     (RETURN
@@ -351,32 +351,32 @@
               (LIST 'OR (LIST 'ATOM |g|)
                     (LIST 'PROGN (LIST 'SETQ |x| (LIST 'CAR |g|)) 'NIL)))
              NIL))))))
- 
+
 ; bfON(x,E)==
 ;     [[[x],[E],[['SETQ,x,['CDR, x]]],[],
 ;         [['ATOM,x]],[]]]
- 
+
 (DEFUN |bfON| (|x| E)
   (PROG ()
     (RETURN
      (LIST
       (LIST (LIST |x|) (LIST E) (LIST (LIST 'SETQ |x| (LIST 'CDR |x|))) NIL
             (LIST (LIST 'ATOM |x|)) NIL)))))
- 
+
 ; bfSuchthat p== [[[],[],[],[p],[],[]]]
- 
+
 (DEFUN |bfSuchthat| (|p|)
   (PROG () (RETURN (LIST (LIST NIL NIL NIL (LIST |p|) NIL NIL)))))
- 
+
 ; bfWhile p== [[[],[],[],[],[bfNOT p],[]]]
- 
+
 (DEFUN |bfWhile| (|p|)
   (PROG () (RETURN (LIST (LIST NIL NIL NIL NIL (LIST (|bfNOT| |p|)) NIL)))))
- 
+
 ; bfUntil p==
 ;      g:=bfGenSymbol()
 ;      [[[g],[nil],[['SETQ,g,p]],[],[g],[]]]
- 
+
 (DEFUN |bfUntil| (|p|)
   (PROG (|g|)
     (RETURN
@@ -385,36 +385,36 @@
       (LIST
        (LIST (LIST |g|) (LIST NIL) (LIST (LIST 'SETQ |g| |p|)) NIL (LIST |g|)
              NIL))))))
- 
+
 ; bfIterators x==["ITERATORS",:x]
- 
+
 (DEFUN |bfIterators| (|x|) (PROG () (RETURN (CONS 'ITERATORS |x|))))
- 
+
 ; bfCross x== ["CROSS",:x]
- 
+
 (DEFUN |bfCross| (|x|) (PROG () (RETURN (CONS 'CROSS |x|))))
- 
+
 ; bfLp(iters,body)==
 ;      EQCAR (iters,"ITERATORS")=>bfLp1(CDR iters,body)
 ;      bfLpCross(CDR iters,body)
- 
+
 (DEFUN |bfLp| (|iters| |body|)
   (PROG ()
     (RETURN
      (COND ((EQCAR |iters| 'ITERATORS) (|bfLp1| (CDR |iters|) |body|))
            ('T (|bfLpCross| (CDR |iters|) |body|))))))
- 
+
 ; bfLpCross(iters,body)==
 ;      if null cdr iters
 ;      then bfLp(car iters,body)
 ;      else bfLp(car iters,bfLpCross(cdr iters,body))
- 
+
 (DEFUN |bfLpCross| (|iters| |body|)
   (PROG ()
     (RETURN
      (COND ((NULL (CDR |iters|)) (|bfLp| (CAR |iters|) |body|))
            ('T (|bfLp| (CAR |iters|) (|bfLpCross| (CDR |iters|) |body|)))))))
- 
+
 ; bfSep(iters)==
 ;      if null iters
 ;      then [[],[],[],[],[],[]]
@@ -422,7 +422,7 @@
 ;          f:=first iters
 ;          r:=bfSep rest iters
 ;          [append(i,j) for i in f for j in r]
- 
+
 (DEFUN |bfSep| (|iters|)
   (PROG (|f| |r|)
     (RETURN
@@ -438,7 +438,7 @@
                 (SETQ |bfVar#4| (CDR |bfVar#4|))
                 (SETQ |bfVar#5| (CDR |bfVar#5|))))
              NIL |f| NIL |r| NIL))))))
- 
+
 ; bfReduce(op,y)==
 ;      a:=if EQCAR(op,"QUOTE") then CADR op else op
 ;      op:=bfReName a
@@ -457,7 +457,7 @@
 ;         init:=car init
 ;         it:= ["ITERATORS",:[[[[g],[init],[],[],[],[g]]],bfIN(g1,y)]]
 ;         bfLp(it,body)
- 
+
 (DEFUN |bfReduce| (|op| |y|)
   (PROG (|a| |init| |g| |g1| |body| |g2| |ny| |it|)
     (RETURN
@@ -486,7 +486,7 @@
                         (LIST (LIST |g|) (LIST |init|) NIL NIL NIL (LIST |g|)))
                        (|bfIN| |g1| |y|))))
         (|bfLp| |it| |body|)))))))
- 
+
 ; bfReduceCollect(op,y)==
 ;    if EQCAR (y,"COLLECT")
 ;    then
@@ -499,7 +499,7 @@
 ;    else
 ;      a:=bfTupleConstruct (y.1)
 ;      bfReduce(op,a)
- 
+
 (DEFUN |bfReduceCollect| (|op| |y|)
   (PROG (|body| |itl| |a| |init|)
     (RETURN
@@ -510,22 +510,22 @@
        (|bfOpReduce| |op| |init| |body| |itl|))
       (#1# (SETQ |a| (|bfTupleConstruct| (ELT |y| 1)))
        (|bfReduce| |op| |a|))))))
- 
+
 ; bfDCollect(y,itl)== ["COLLECT",y,itl]
- 
+
 (DEFUN |bfDCollect| (|y| |itl|) (PROG () (RETURN (LIST 'COLLECT |y| |itl|))))
- 
+
 ; bfDTuple x== ["DTUPLE",x]
- 
+
 (DEFUN |bfDTuple| (|x|) (PROG () (RETURN (LIST 'DTUPLE |x|))))
- 
+
 ; bfCollect(y,itl) ==
 ;       y is ["COLON",a] => bf0APPEND(a,itl)
 ;       y is ["TUPLE",:.] =>
 ;         newBody:=bfConstruct y
 ;         bf0APPEND(newBody,itl)
 ;       bf0COLLECT(y,itl)
- 
+
 (DEFUN |bfCollect| (|y| |itl|)
   (PROG (|ISTMP#1| |a| |newBody|)
     (RETURN
@@ -541,18 +541,18 @@
         (SETQ |newBody| (|bfConstruct| |y|))
         (|bf0APPEND| |newBody| |itl|)))
       (#1# (|bf0COLLECT| |y| |itl|))))))
- 
+
 ; bf0COLLECT(y,itl)==bfListReduce('CONS,y,itl)
- 
+
 (DEFUN |bf0COLLECT| (|y| |itl|)
   (PROG () (RETURN (|bfListReduce| 'CONS |y| |itl|))))
- 
+
 ; bf0APPEND(y,itl)==
 ;      g:=bfGenSymbol()
 ;      body:=['SETQ,g,['APPEND,['REVERSE,y],g]]
 ;      extrait:= [[[g],[nil],[],[],[],[['NREVERSE,g]]]]
 ;      bfLp2(extrait,itl,body)
- 
+
 (DEFUN |bf0APPEND| (|y| |itl|)
   (PROG (|g| |body| |extrait|)
     (RETURN
@@ -564,13 +564,13 @@
                (LIST (LIST |g|) (LIST NIL) NIL NIL NIL
                      (LIST (LIST 'NREVERSE |g|)))))
       (|bfLp2| |extrait| |itl| |body|)))))
- 
+
 ; bfListReduce(op,y,itl)==
 ;      g:=bfGenSymbol()
 ;      body:=['SETQ,g,[op,y,g]]
 ;      extrait:= [[[g],[nil],[],[],[],[['NREVERSE,g]]]]
 ;      bfLp2(extrait,itl,body)
- 
+
 (DEFUN |bfListReduce| (|op| |y| |itl|)
   (PROG (|g| |body| |extrait|)
     (RETURN
@@ -582,7 +582,7 @@
                (LIST (LIST |g|) (LIST NIL) NIL NIL NIL
                      (LIST (LIST 'NREVERSE |g|)))))
       (|bfLp2| |extrait| |itl| |body|)))))
- 
+
 ; bfLp1(iters,body)==
 ;       [vars,inits,sucs,filters,exits,value]:=bfSep bfAppend iters
 ;       nbody:=if null filters then body else bfAND [:filters,body]
@@ -593,7 +593,7 @@
 ;            [["LAMBDA",vars,
 ;                ["LOOP",exits,:sucs]],:inits]
 ;       loop
- 
+
 (DEFUN |bfLp1| (|iters| |body|)
   (PROG (|LETTMP#1| |vars| |inits| |sucs| |filters| |exits| |value| |nbody|
          |loop|)
@@ -617,13 +617,13 @@
               (CONS (LIST 'LAMBDA |vars| (CONS 'LOOP (CONS |exits| |sucs|)))
                     |inits|))
       |loop|))))
- 
+
 ; bfLp2(extrait,itl,body)==
 ;      EQCAR (itl,"ITERATORS")=>bfLp1(cons(extrait,CDR itl),body)
 ;      iters:=cdr itl
 ;      bfLpCross
 ;           ([["ITERATORS",extrait,:CDAR iters],:CDR iters],body)
- 
+
 (DEFUN |bfLp2| (|extrait| |itl| |body|)
   (PROG (|iters|)
     (RETURN
@@ -635,7 +635,7 @@
         (|bfLpCross|
          (CONS (CONS 'ITERATORS (CONS |extrait| (CDAR |iters|))) (CDR |iters|))
          |body|)))))))
- 
+
 ; bfOpReduce(op,init,y,itl)==
 ;      g:=bfGenSymbol()
 ;      body:=
@@ -657,7 +657,7 @@
 ;         init:=car init
 ;         extrait:= [[[g],[init],[],[],[],[g]]]
 ;         bfLp2(extrait,itl,body)
- 
+
 (DEFUN |bfOpReduce| (|op| |init| |y| |itl|)
   (PROG (|g| |body| |g1| |extrait|)
     (RETURN
@@ -686,91 +686,91 @@
         (SETQ |extrait|
                 (LIST (LIST (LIST |g|) (LIST |init|) NIL NIL NIL (LIST |g|))))
         (|bfLp2| |extrait| |itl| |body|)))))))
- 
+
 ; bfLoop1 body == bfLp (bfIterators nil,body)
- 
+
 (DEFUN |bfLoop1| (|body|)
   (PROG () (RETURN (|bfLp| (|bfIterators| NIL) |body|))))
- 
+
 ; bfSegment1(lo)==     ["SEGMENT",lo,nil]
- 
+
 (DEFUN |bfSegment1| (|lo|) (PROG () (RETURN (LIST 'SEGMENT |lo| NIL))))
- 
+
 ; bfSegment2(lo,hi)==   ["SEGMENT",lo,hi]
- 
+
 (DEFUN |bfSegment2| (|lo| |hi|) (PROG () (RETURN (LIST 'SEGMENT |lo| |hi|))))
- 
+
 ; bfForInBy(variable,collection,step)==
 ;          bfFor(variable,collection,step)
- 
+
 (DEFUN |bfForInBy| (|variable| |collection| |step|)
   (PROG () (RETURN (|bfFor| |variable| |collection| |step|))))
- 
+
 ; bfForin(lhs,U)==bfFor(lhs,U,1)
- 
+
 (DEFUN |bfForin| (|lhs| U) (PROG () (RETURN (|bfFor| |lhs| U 1))))
- 
+
 ; bfLocal(a,b)==
 ;          EQ(b,"FLUID")=>  compFluid a
 ;          EQ(b,"fluid")=>  compFluid a
 ;          EQ(b,"local") =>  compFluid a
 ;     --   $typings:=cons(["TYPE",b,a],$typings)
 ;          a
- 
+
 (DEFUN |bfLocal| (|a| |b|)
   (PROG ()
     (RETURN
      (COND ((EQ |b| 'FLUID) (|compFluid| |a|))
            ((EQ |b| '|fluid|) (|compFluid| |a|))
            ((EQ |b| '|local|) (|compFluid| |a|)) ('T |a|)))))
- 
+
 ; bfTake(n,x)==
 ;      null x=>x
 ;      n=0 => nil
 ;      cons(car x,bfTake(n-1,cdr x))
- 
+
 (DEFUN |bfTake| (|n| |x|)
   (PROG ()
     (RETURN
      (COND ((NULL |x|) |x|) ((EQL |n| 0) NIL)
            ('T (CONS (CAR |x|) (|bfTake| (- |n| 1) (CDR |x|))))))))
- 
+
 ; bfDrop(n,x)==
 ;      null x or n=0 =>x
 ;      bfDrop(n-1,cdr x)
- 
+
 (DEFUN |bfDrop| (|n| |x|)
   (PROG ()
     (RETURN
      (COND ((OR (NULL |x|) (EQL |n| 0)) |x|)
            ('T (|bfDrop| (- |n| 1) (CDR |x|)))))))
- 
+
 ; bfDefSequence l ==  ['SEQ,: l]
- 
+
 (DEFUN |bfDefSequence| (|l|) (PROG () (RETURN (CONS 'SEQ |l|))))
- 
+
 ; bfReturnNoName a ==
 ;       ["RETURN",a]
- 
+
 (DEFUN |bfReturnNoName| (|a|) (PROG () (RETURN (LIST 'RETURN |a|))))
- 
+
 ; bfSUBLIS(p,e)==
 ;   ATOM e=>bfSUBLIS1(p,e)
 ;   EQCAR(e,"QUOTE")=>e
 ;   cons(bfSUBLIS(p,car e),bfSUBLIS(p,cdr e))
- 
+
 (DEFUN |bfSUBLIS| (|p| |e|)
   (PROG ()
     (RETURN
      (COND ((ATOM |e|) (|bfSUBLIS1| |p| |e|)) ((EQCAR |e| 'QUOTE) |e|)
            ('T (CONS (|bfSUBLIS| |p| (CAR |e|)) (|bfSUBLIS| |p| (CDR |e|))))))))
- 
+
 ; bfSUBLIS1(p,e)==
 ;    null p =>e
 ;    f:=CAR p
 ;    EQ(CAR f,e)=>CDR f
 ;    bfSUBLIS1(cdr p,e)
- 
+
 (DEFUN |bfSUBLIS1| (|p| |e|)
   (PROG (|f|)
     (RETURN
@@ -780,7 +780,7 @@
              (SETQ |f| (CAR |p|))
              (COND ((EQ (CAR |f|) |e|) (CDR |f|))
                    (#1# (|bfSUBLIS1| (CDR |p|) |e|)))))))))
- 
+
 ; defSheepAndGoats(x)==
 ;     EQCAR (x,"DEF") =>
 ;         [def,op,args,body]:=x
@@ -798,7 +798,7 @@
 ;           [opassoc,defstack,[]]
 ;     EQCAR (x,"SEQ") =>  defSheepAndGoatsList(cdr x)
 ;     [[],[],[x]]
- 
+
 (DEFUN |defSheepAndGoats| (|x|)
   (PROG (|def| |op| |args| |body| |argl| |opassoc| |op1| |defstack|)
     (RETURN
@@ -821,7 +821,7 @@
           (LIST |opassoc| |defstack| NIL)))))
       ((EQCAR |x| 'SEQ) (|defSheepAndGoatsList| (CDR |x|)))
       (#2# (LIST NIL NIL (LIST |x|)))))))
- 
+
 ; defSheepAndGoatsList(x)==
 ;      if null x
 ;      then [[],[],[]]
@@ -830,7 +830,7 @@
 ;        [opassoc1,defs1,nondefs1] := defSheepAndGoatsList cdr x
 ;        [append(opassoc,opassoc1),append(defs,defs1),
 ;             append(nondefs,nondefs1)]
- 
+
 (DEFUN |defSheepAndGoatsList| (|x|)
   (PROG (|LETTMP#1| |opassoc| |defs| |nondefs| |opassoc1| |defs1| |nondefs1|)
     (RETURN
@@ -845,11 +845,11 @@
             (SETQ |nondefs1| (CADDR . #2#))
             (LIST (APPEND |opassoc| |opassoc1|) (APPEND |defs| |defs1|)
                   (APPEND |nondefs| |nondefs1|)))))))
- 
+
 ; bfLetForm(lhs,rhs) ==   ['L%T,lhs,rhs]
- 
+
 (DEFUN |bfLetForm| (|lhs| |rhs|) (PROG () (RETURN (LIST 'L%T |lhs| |rhs|))))
- 
+
 ; bfLET1(lhs,rhs) ==
 ;   IDENTP lhs         => bfLetForm(lhs,rhs)
 ;   lhs is ['FLUID,.] => bfLetForm(lhs,rhs)
@@ -873,7 +873,7 @@
 ;   EQCAR(let1,'PROGN) => bfMKPROGN [rhs1,:CDR let1]
 ;   if IDENTP CAR let1 then let1 := CONS(let1,NIL)
 ;   bfMKPROGN [rhs1,:let1,g]
- 
+
 (DEFUN |bfLET1| (|lhs| |rhs|)
   (PROG (|ISTMP#1| |rhs1| |name| |l1| |l2| |g| |let1|)
     (RETURN
@@ -919,12 +919,12 @@
                 (COND ((IDENTP (CAR |let1|)) (SETQ |let1| (CONS |let1| NIL))))
                 (|bfMKPROGN|
                  (CONS |rhs1| (APPEND |let1| (CONS |g| NIL)))))))))))))
- 
+
 ; bfCONTAINED(x,y)==
 ;     EQ(x,y) => true
 ;     ATOM y=> false
 ;     bfCONTAINED(x,car y) or bfCONTAINED(x,cdr y)
- 
+
 (DEFUN |bfCONTAINED| (|x| |y|)
   (PROG ()
     (RETURN
@@ -932,7 +932,7 @@
            ('T
             (OR (|bfCONTAINED| |x| (CAR |y|))
                 (|bfCONTAINED| |x| (CDR |y|))))))))
- 
+
 ; bfLET2(lhs,rhs) ==
 ;   IDENTP lhs => bfLetForm(lhs,rhs)
 ;   NULL lhs   => NIL
@@ -968,7 +968,7 @@
 ;     [['L%T,g,rev],:l2,bfLetForm(var1,['NREVERSE,var1])]
 ;   lhs is ["EQUAL",var1] =>
 ;     ['COND,[["EQUAL",var1,rhs],var1]]
-;   -- The original expression may be one that involves literals as 
+;   -- The original expression may be one that involves literals as
 ;   -- sub-patterns, e.g.
 ;   --      ['SEQ, :l, ['exit, 1, x]] := item
 ;   -- We continue the processing as if that expression had been written
@@ -979,7 +979,7 @@
 ;     $inDefIS => bfIS1(rhs,lhs)
 ;     bfIS(rhs,lhs)
 ;   ['COND,[isPred,rhs]]
- 
+
 (DEFUN |bfLET2| (|lhs| |rhs|)
   (PROG (|ISTMP#1| |a| |ISTMP#2| |b| |var1| |var2| |l1| |l2| |patrev| |rev| |g|
          |ISTMP#3| |val1| |isPred|)
@@ -1098,17 +1098,17 @@
                      (COND (|$inDefIS| (|bfIS1| |rhs| |lhs|))
                            (#1# (|bfIS| |rhs| |lhs|))))
              (LIST 'COND (LIST |isPred| |rhs|))))))))
- 
+
 ; bfLET(lhs,rhs) ==
 ;   $letGenVarCounter : local := 1
 ; --  $inbfLet : local := true
 ;   bfLET1(lhs,rhs)
- 
+
 (DEFUN |bfLET| (|lhs| |rhs|)
   (PROG (|$letGenVarCounter|)
     (DECLARE (SPECIAL |$letGenVarCounter|))
     (RETURN (PROGN (SETQ |$letGenVarCounter| 1) (|bfLET1| |lhs| |rhs|)))))
- 
+
 ; addCARorCDR(acc,expr) ==
 ;   NULL CONSP expr => [acc,expr]
 ;   acc = 'CAR and EQCAR(expr,'REVERSE) =>
@@ -1124,7 +1124,7 @@
 ;              CDADDR CDDAAR CDDDAR CDDADR CDDDDR)
 ;   if acc = 'CAR then CONS(funsA.p,CDR expr)
 ;   else               CONS(funsR.p,CDR expr)
- 
+
 (DEFUN |addCARorCDR| (|acc| |expr|)
   (PROG (|funs| |p| |funsA| |funsR|)
     (RETURN
@@ -1149,39 +1149,39 @@
                      (COND
                       ((EQ |acc| 'CAR) (CONS (ELT |funsA| |p|) (CDR |expr|)))
                       (#1# (CONS (ELT |funsR| |p|) (CDR |expr|)))))))))))))
- 
+
 ; bfPosition(x,l) ==  bfPosn(x,l,0)
- 
+
 (DEFUN |bfPosition| (|x| |l|) (PROG () (RETURN (|bfPosn| |x| |l| 0))))
- 
+
 ; bfPosn(x,l,n) ==
 ;       null l => -1
 ;       x=first l => n
 ;       bfPosn(x,rest l,n+1)
- 
+
 (DEFUN |bfPosn| (|x| |l| |n|)
   (PROG ()
     (RETURN
      (COND ((NULL |l|) (- 1)) ((EQUAL |x| (CAR |l|)) |n|)
            ('T (|bfPosn| |x| (CDR |l|) (+ |n| 1)))))))
- 
+
 ; bfISApplication(op,left,right)==
 ;    EQ(op ,"IS")      => bfIS(left,right)
 ;    EQ(op ,"ISNT")    => bfNOT bfIS(left,right)
 ;    [op ,left,right]
- 
+
 (DEFUN |bfISApplication| (|op| |left| |right|)
   (PROG ()
     (RETURN
      (COND ((EQ |op| 'IS) (|bfIS| |left| |right|))
            ((EQ |op| 'ISNT) (|bfNOT| (|bfIS| |left| |right|)))
            ('T (LIST |op| |left| |right|))))))
- 
+
 ; bfIS(left,right)==
 ;     $isGenVarCounter:local :=1
 ;     $inDefIS :local :=true
 ;     bfIS1(left,right)
- 
+
 (DEFUN |bfIS| (|left| |right|)
   (PROG (|$inDefIS| |$isGenVarCounter|)
     (DECLARE (SPECIAL |$inDefIS| |$isGenVarCounter|))
@@ -1190,7 +1190,7 @@
       (SETQ |$isGenVarCounter| 1)
       (SETQ |$inDefIS| T)
       (|bfIS1| |left| |right|)))))
- 
+
 ; bfISReverse(x,a) ==
 ;   x is ['CONS,:.] =>
 ;     NULL CADDR x => ['CONS,CADR x, a]
@@ -1199,7 +1199,7 @@
 ;     y
 ;   bpSpecificErrorHere '"Error in bfISReverse"
 ;   bpTrap()
- 
+
 (DEFUN |bfISReverse| (|x| |a|)
   (PROG (|y|)
     (RETURN
@@ -1213,7 +1213,7 @@
                |y|))))
       (#1#
        (PROGN (|bpSpecificErrorHere| "Error in bfISReverse") (|bpTrap|)))))))
- 
+
 ; bfIS1(lhs,rhs) ==
 ;   NULL rhs =>
 ;     ['NULL,lhs]
@@ -1267,7 +1267,7 @@
 ;     bfAND [rev,:l2,['PROGN,bfLetForm(a,['NREVERSE,a]),''T]]
 ;   bpSpecificErrorHere '"bad IS code is generated"
 ;   bpTrap()
- 
+
 (DEFUN |bfIS1| (|lhs| |rhs|)
   (PROG (|ISTMP#1| |a| |c| |ISTMP#2| |d| |l| |g| |b| |a1| |b1| |cls| |patrev|
          |rev| |l2|)
@@ -1392,29 +1392,29 @@
             (PROGN
              (|bpSpecificErrorHere| "bad IS code is generated")
              (|bpTrap|)))))))
- 
+
 ; bfApplication(bfop, bfarg) ==
 ;          if bfTupleP bfarg
 ;          then cons(bfop,CDR bfarg)
 ;          else cons(bfop,[bfarg])
- 
+
 (DEFUN |bfApplication| (|bfop| |bfarg|)
   (PROG ()
     (RETURN
      (COND ((|bfTupleP| |bfarg|) (CONS |bfop| (CDR |bfarg|)))
            ('T (CONS |bfop| (LIST |bfarg|)))))))
- 
+
 ; bfReName x==
 ;    a:=GET(x,"SHOERENAME")
 ;    if a
 ;    then car a
 ;    else  x
- 
+
 (DEFUN |bfReName| (|x|)
   (PROG (|a|)
     (RETURN
      (PROGN (SETQ |a| (GET |x| 'SHOERENAME)) (COND (|a| (CAR |a|)) ('T |x|))))))
- 
+
 ; bfInfApplication(op,left,right)==
 ;    EQ(op,"EQUAL") => bfQ(left,right)
 ;    EQ(op,"/=")    => bfNOT bfQ(left,right)
@@ -1425,7 +1425,7 @@
 ;    EQ(op,"OR")    => bfOR [left,right]
 ;    EQ(op,"AND")   => bfAND [left,right]
 ;    [op,left,right]
- 
+
 (DEFUN |bfInfApplication| (|op| |left| |right|)
   (PROG ()
     (RETURN
@@ -1438,12 +1438,12 @@
            ((EQ |op| 'OR) (|bfOR| (LIST |left| |right|)))
            ((EQ |op| 'AND) (|bfAND| (LIST |left| |right|)))
            ('T (LIST |op| |left| |right|))))))
- 
+
 ; bfNOT x==
 ;    x is ["NOT",a]=> a
 ;    x is ["NULL",a]=> a
 ;    ["NOT",x]
- 
+
 (DEFUN |bfNOT| (|x|)
   (PROG (|ISTMP#1| |a|)
     (RETURN
@@ -1461,19 +1461,19 @@
                   (PROGN (SETQ |a| (CAR |ISTMP#1|)) #1#))))
        |a|)
       (#1# (LIST 'NOT |x|))))))
- 
+
 ; bfFlatten(op, x) ==
 ;       EQCAR(x,op) => CDR x
 ;       [x]
- 
+
 (DEFUN |bfFlatten| (|op| |x|)
   (PROG () (RETURN (COND ((EQCAR |x| |op|) (CDR |x|)) ('T (LIST |x|))))))
- 
+
 ; bfOR l  ==
 ;        null l => NIL
 ;        null cdr l => CAR l
 ;        ["OR",:[:bfFlatten("OR",c) for c in l]]
- 
+
 (DEFUN |bfOR| (|l|)
   (PROG ()
     (RETURN
@@ -1492,12 +1492,12 @@
                                         |bfVar#8|))))
                       (SETQ |bfVar#7| (CDR |bfVar#7|))))
                    NIL |l| NIL)))))))
- 
+
 ; bfAND l ==
 ;        null l=> 'T
 ;        null cdr l => CAR l
 ;        ["AND",:[:bfFlatten("AND",c) for c in l]]
- 
+
 (DEFUN |bfAND| (|l|)
   (PROG ()
     (RETURN
@@ -1516,21 +1516,21 @@
                                         |bfVar#10|))))
                       (SETQ |bfVar#9| (CDR |bfVar#9|))))
                    NIL |l| NIL)))))))
- 
+
 ; defQuoteId x==  EQCAR(x,"QUOTE") and IDENTP CADR x
- 
+
 (DEFUN |defQuoteId| (|x|)
   (PROG () (RETURN (AND (EQCAR |x| 'QUOTE) (IDENTP (CADR |x|))))))
- 
+
 ; bfSmintable x==
 ;   INTEGERP x or CONSP x and
 ;       MEMQ(CAR x, '(SIZE LENGTH))
- 
+
 (DEFUN |bfSmintable| (|x|)
   (PROG ()
     (RETURN
      (OR (INTEGERP |x|) (AND (CONSP |x|) (MEMQ (CAR |x|) '(SIZE LENGTH)))))))
- 
+
 ; bfQ(l,r)==
 ;        if bfSmintable l or bfSmintable r
 ;        then  ["EQL",l,r]
@@ -1542,7 +1542,7 @@
 ;               else if null r
 ;                    then ["NULL",l]
 ;                    else ["EQUAL",l,r]
- 
+
 (DEFUN |bfQ| (|l| |r|)
   (PROG ()
     (RETURN
@@ -1550,16 +1550,16 @@
            ((OR (|defQuoteId| |l|) (|defQuoteId| |r|)) (LIST 'EQ |l| |r|))
            ((NULL |l|) (LIST 'NULL |r|)) ((NULL |r|) (LIST 'NULL |l|))
            ('T (LIST 'EQUAL |l| |r|))))))
- 
+
 ; bfLessp(l,r)==
 ;       if r=0
 ;       then ["MINUSP", l]
 ;       else ["<",l,r]
- 
+
 (DEFUN |bfLessp| (|l| |r|)
   (PROG ()
     (RETURN (COND ((EQL |r| 0) (LIST 'MINUSP |l|)) ('T (LIST '< |l| |r|))))))
- 
+
 ; bfMDef (defOp,op,args,body) ==
 ;   argl:=if bfTupleP args then cdr args else [args]
 ;   [gargl,sgargl,nargl,largl]:=bfGargl argl
@@ -1571,7 +1571,7 @@
 ;   def:= [op,lamex]
 ;   bfTuple
 ;      cons(shoeComp def,[:shoeComps bfDef1 d for d in $wheredefs])
- 
+
 (DEFUN |bfMDef| (|defOp| |op| |args| |body|)
   (PROG (|argl| |LETTMP#1| |gargl| |sgargl| |nargl| |largl| |sb| |sb2| |lamex|
          |def|)
@@ -1631,7 +1631,7 @@
                                    |bfVar#18|))))
                  (SETQ |bfVar#17| (CDR |bfVar#17|))))
               NIL |$wheredefs| NIL)))))))
- 
+
 ; bfGargl argl==
 ;       if null argl
 ;       then [[],[],[],[]]
@@ -1643,7 +1643,7 @@
 ;         else
 ;             f:=bfGenSymbol()
 ;             [cons(f,a),cons(f,b),cons(car argl,c),cons(f,d)]
- 
+
 (DEFUN |bfGargl| (|argl|)
   (PROG (|LETTMP#1| |a| |b| |c| |d| |f|)
     (RETURN
@@ -1659,13 +1659,13 @@
              (#1# (SETQ |f| (|bfGenSymbol|))
               (LIST (CONS |f| |a|) (CONS |f| |b|) (CONS (CAR |argl|) |c|)
                     (CONS |f| |d|)))))))))
- 
+
 ; bfDef1 [defOp,op,args,body] ==
 ;   argl:=if bfTupleP args then cdr args else [args]
 ;   [quotes,control,arglp,body]:=bfInsertLet (argl,body)
 ;   quotes=>BREAK()
 ;   [[op,["LAMBDA",arglp,body]]]
- 
+
 (DEFUN |bfDef1| (|bfVar#19|)
   (PROG (|defOp| |op| |args| |body| |argl| |LETTMP#1| |quotes| |control|
          |arglp|)
@@ -1684,14 +1684,14 @@
       (SETQ |body| (CADDDR . #3#))
       (COND (|quotes| (BREAK))
             (#2# (LIST (LIST |op| (LIST 'LAMBDA |arglp| |body|)))))))))
- 
+
 ; bfDef(defOp,op,args,body) ==
 ;  $bfClamming =>
 ;           [.,op1,arg1,:body1]:=shoeComp first bfDef1 [defOp,op,args,body]
 ;           bfCompHash(op1,arg1,body1)
 ;  bfTuple
 ;   [:shoeComps bfDef1 d for d in  cons([defOp,op,args,body],$wheredefs)]
- 
+
 (DEFUN |bfDef| (|defOp| |op| |args| |body|)
   (PROG (|LETTMP#1| |op1| |arg1| |body1|)
     (RETURN
@@ -1718,9 +1718,9 @@
                               |bfVar#21|))))
             (SETQ |bfVar#20| (CDR |bfVar#20|))))
          NIL (CONS (LIST |defOp| |op| |args| |body|) |$wheredefs|) NIL)))))))
- 
+
 ; shoeComps  x==[shoeComp def for def in x]
- 
+
 (DEFUN |shoeComps| (|x|)
   (PROG ()
     (RETURN
@@ -1732,13 +1732,13 @@
           ('T (SETQ |bfVar#23| (CONS (|shoeComp| |def|) |bfVar#23|))))
          (SETQ |bfVar#22| (CDR |bfVar#22|))))
       NIL |x| NIL))))
- 
+
 ; shoeComp x==
 ;      a:=shoeCompTran CADR x
 ;      if EQCAR(a,"LAMBDA")
 ;      then ["DEFUN",CAR x,CADR a,:CDDR a]
 ;      else ["DEFMACRO",CAR x,CADR a,:CDDR a]
- 
+
 (DEFUN |shoeComp| (|x|)
   (PROG (|a|)
     (RETURN
@@ -1748,7 +1748,7 @@
        ((EQCAR |a| 'LAMBDA)
         (CONS 'DEFUN (CONS (CAR |x|) (CONS (CADR |a|) (CDDR |a|)))))
        ('T (CONS 'DEFMACRO (CONS (CAR |x|) (CONS (CADR |a|) (CDDR |a|))))))))))
- 
+
 ; bfInsertLet(x,body)==
 ;    if null x
 ;    then [false,nil,x,body]
@@ -1761,7 +1761,7 @@
 ;        [b,norq,name1,body1]:=  bfInsertLet1 (car x,body)
 ;        [b1,norq1,name2,body2]:=  bfInsertLet (cdr x,body1)
 ;        [b or b1,cons(norq,norq1),cons(name1,name2),body2]
- 
+
 (DEFUN |bfInsertLet| (|x| |body|)
   (PROG (|ISTMP#1| |a| |b| |LETTMP#1| |norq| |name1| |body1| |b1| |norq1|
          |name2| |body2|)
@@ -1789,7 +1789,7 @@
             (SETQ |name2| (CADDR . #3#)) (SETQ |body2| (CADDDR . #3#))
             (LIST (OR |b| |b1|) (CONS |norq| |norq1|) (CONS |name1| |name2|)
                   |body2|))))))
- 
+
 ; bfInsertLet1(y,body)==
 ;    if y is ["L%T",l,r]
 ;    then  [false,nil,l,bfMKPROGN [bfLET(r,l),body]]
@@ -1802,7 +1802,7 @@
 ;             g:=bfGenSymbol()
 ;             ATOM y => [false,nil,g,body]
 ;             [false,nil,g,bfMKPROGN [bfLET(compFluidize y,g),body]]
- 
+
 (DEFUN |bfInsertLet1| (|y| |body|)
   (PROG (|ISTMP#1| |l| |ISTMP#2| |r| |b| |g|)
     (RETURN
@@ -1830,7 +1830,7 @@
               (LIST NIL NIL |g|
                     (|bfMKPROGN|
                      (LIST (|bfLET| (|compFluidize| |y|) |g|) |body|))))))))))
- 
+
 ; shoeCompTran x==
 ;    lamtype:=CAR x
 ;    args   :=CADR x
@@ -1862,7 +1862,7 @@
 ;            cons(fvs,body)
 ;          else body
 ;    [lamtype,args, :body]
- 
+
 (DEFUN |shoeCompTran| (|x|)
   (PROG (|$dollarVars| |$locVars| |$fluidVars| |fvs| |fl| |fvars| |lvars|
          |body| |args| |lamtype|)
@@ -1908,12 +1908,12 @@
                 (CONS |fvs| |body|))
                (#1# |body|)))
       (CONS |lamtype| (CONS |args| |body|))))))
- 
+
 ; shoePROG(v,b)==
 ;     null b => [["PROG", v]]
 ;     [:blist,blast] := b
 ;     [["PROG",v,:blist,["RETURN", blast]]]
- 
+
 (DEFUN |shoePROG| (|v| |b|)
   (PROG (|LETTMP#1| |blast| |blist|)
     (RETURN
@@ -1928,7 +1928,7 @@
                     (CONS |v|
                           (APPEND |blist|
                                   (CONS (LIST 'RETURN |blast|) NIL)))))))))))
- 
+
 ; shoeFluids x==
 ;          if null x
 ;          then nil
@@ -1941,7 +1941,7 @@
 ;                   if ATOM x
 ;                   then nil
 ;                   else  append(shoeFluids car x,shoeFluids cdr x)
- 
+
 (DEFUN |shoeFluids| (|x|)
   (PROG ()
     (RETURN
@@ -1949,20 +1949,20 @@
            ((AND (IDENTP |x|) (|bfBeginsDollar| |x|)) (LIST |x|))
            ((EQCAR |x| 'QUOTE) NIL) ((ATOM |x|) NIL)
            ('T (APPEND (|shoeFluids| (CAR |x|)) (|shoeFluids| (CDR |x|))))))))
- 
+
 ; shoeATOMs x==
 ;          if null x
 ;          then nil
 ;          else if ATOM x
 ;               then [x]
 ;               else append(shoeATOMs car x,shoeATOMs cdr x)
- 
+
 (DEFUN |shoeATOMs| (|x|)
   (PROG ()
     (RETURN
      (COND ((NULL |x|) NIL) ((ATOM |x|) (LIST |x|))
            ('T (APPEND (|shoeATOMs| (CAR |x|)) (|shoeATOMs| (CDR |x|))))))))
- 
+
 ; shoeCompTran1 x==
 ;     ATOM x=>
 ;                 IDENTP x and bfBeginsDollar x=>
@@ -1998,7 +1998,7 @@
 ;          $locVars:=[y for y in $locVars | not MEMQ(y,newbindings)]
 ;     shoeCompTran1 car x
 ;     shoeCompTran1 cdr x
- 
+
 (DEFUN |shoeCompTran1| (|x|)
   (PROG (U |ISTMP#1| |l| |ISTMP#2| |r| |newbindings| |res|)
     (RETURN
@@ -2078,7 +2078,7 @@
                (PROGN
                 (|shoeCompTran1| (CAR |x|))
                 (|shoeCompTran1| (CDR |x|)))))))))))
- 
+
 ; bfTagged(a,b)==
 ;     IDENTP a =>
 ;          EQ(b,"FLUID") =>  bfLET(compFluid a,NIL)
@@ -2087,7 +2087,7 @@
 ;          $typings:=cons(["TYPE",b,a],$typings)
 ;          a
 ;     ["THE",b,a]
- 
+
 (DEFUN |bfTagged| (|a| |b|)
   (PROG ()
     (RETURN
@@ -2101,34 +2101,34 @@
                (SETQ |$typings| (CONS (LIST 'TYPE |b| |a|) |$typings|))
                |a|))))
       (#1# (LIST 'THE |b| |a|))))))
- 
+
 ; bfAssign(l,r)==
 ;    if bfTupleP l then bfSetelt(CADR l,CDDR l ,r) else bfLET(l,r)
- 
+
 (DEFUN |bfAssign| (|l| |r|)
   (PROG ()
     (RETURN
      (COND ((|bfTupleP| |l|) (|bfSetelt| (CADR |l|) (CDDR |l|) |r|))
            ('T (|bfLET| |l| |r|))))))
- 
+
 ; bfSetelt(e,l,r)==
 ;     if null cdr l
 ;     then defSETELT(e,car l,r)
 ;     else bfSetelt(bfElt(e,car l),cdr l,r)
- 
+
 (DEFUN |bfSetelt| (|e| |l| |r|)
   (PROG ()
     (RETURN
      (COND ((NULL (CDR |l|)) (|defSETELT| |e| (CAR |l|) |r|))
            ('T (|bfSetelt| (|bfElt| |e| (CAR |l|)) (CDR |l|) |r|))))))
- 
+
 ; bfElt(expr,sel)==
 ;       y:=SYMBOLP sel and GET(sel,"SHOESELFUNCTION")
 ;       y=>
 ;          INTEGERP y => ["ELT",expr,y]
 ;          [y,expr]
 ;       ["ELT",expr,sel]
- 
+
 (DEFUN |bfElt| (|expr| |sel|)
   (PROG (|y|)
     (RETURN
@@ -2139,14 +2139,14 @@
         (COND ((INTEGERP |y|) (LIST 'ELT |expr| |y|))
               (#1='T (LIST |y| |expr|))))
        (#1# (LIST 'ELT |expr| |sel|)))))))
- 
+
 ; defSETELT(var,sel,expr)==
 ;       y:=SYMBOLP sel and GET(sel,"SHOESELFUNCTION")
 ;       y=>
 ;          INTEGERP y => ["SETF",["ELT",var,y],expr]
 ;          ["SETF",[y,var],expr]
 ;       ["SETF",["ELT",var,sel],expr]
- 
+
 (DEFUN |defSETELT| (|var| |sel| |expr|)
   (PROG (|y|)
     (RETURN
@@ -2157,24 +2157,24 @@
         (COND ((INTEGERP |y|) (LIST 'SETF (LIST 'ELT |var| |y|) |expr|))
               (#1='T (LIST 'SETF (LIST |y| |var|) |expr|))))
        (#1# (LIST 'SETF (LIST 'ELT |var| |sel|) |expr|)))))))
- 
+
 ; bfIfThenOnly(a,b)==
 ;     b1:=if EQCAR (b,"PROGN") then CDR b else [b]
 ;     ["COND",[a,:b1]]
- 
+
 (DEFUN |bfIfThenOnly| (|a| |b|)
   (PROG (|b1|)
     (RETURN
      (PROGN
       (SETQ |b1| (COND ((EQCAR |b| 'PROGN) (CDR |b|)) ('T (LIST |b|))))
       (LIST 'COND (CONS |a| |b1|))))))
- 
+
 ; bfIf(a,b,c)==
 ;     b1:=if EQCAR (b,"PROGN") then CDR b else [b]
 ;     EQCAR (c,"COND") => ["COND",[a,:b1],:CDR c]
 ;     c1:=if EQCAR (c,"PROGN") then CDR c else [c]
 ;     ["COND",[a,:b1],['(QUOTE T),:c1]]
- 
+
 (DEFUN |bfIf| (|a| |b| |c|)
   (PROG (|b1| |c1|)
     (RETURN
@@ -2186,18 +2186,18 @@
               (SETQ |c1|
                       (COND ((EQCAR |c| 'PROGN) (CDR |c|)) (#1# (LIST |c|))))
               (LIST 'COND (CONS |a| |b1|) (CONS ''T |c1|)))))))))
- 
+
 ; bfExit(a,b)==  ["COND",[a,["IDENTITY",b]]]
- 
+
 (DEFUN |bfExit| (|a| |b|)
   (PROG () (RETURN (LIST 'COND (LIST |a| (LIST 'IDENTITY |b|))))))
- 
+
 ; bfMKPROGN l==
 ;     a:=[:bfFlattenSeq c for c in tails l]
 ;     null a=> nil
 ;     null CDR a=> CAR a
 ;     ["PROGN",:a]
- 
+
 (DEFUN |bfMKPROGN| (|l|)
   (PROG (|a|)
     (RETURN
@@ -2214,7 +2214,7 @@
                NIL |l|))
       (COND ((NULL |a|) NIL) ((NULL (CDR |a|)) (CAR |a|))
             (#1# (CONS 'PROGN |a|)))))))
- 
+
 ; bfFlattenSeq x ==
 ;       null x=>NIL
 ;       f:=CAR x
@@ -2223,7 +2223,7 @@
 ;               CDR x=>  [i for i in CDR f| not ATOM i]
 ;               CDR f
 ;       [f]
- 
+
 (DEFUN |bfFlattenSeq| (|x|)
   (PROG (|f|)
     (RETURN
@@ -2248,7 +2248,7 @@
                        NIL (CDR |f|) NIL))
                      (#1# (CDR |f|))))
                    (#1# (LIST |f|)))))))))
- 
+
 ; bfSequence l ==
 ;       null l=> NIL
 ;       transform:= [[a,b] for x in l while
@@ -2265,7 +2265,7 @@
 ;               bfMKPROGN [first l,bfSequence rest l]
 ;       null aft => ["COND",:transform]
 ;       ["COND",:transform,['(QUOTE T),bfSequence aft]]
- 
+
 (DEFUN |bfSequence| (|l|)
   (PROG (|ISTMP#1| |ISTMP#2| |a| |ISTMP#3| |ISTMP#4| |ISTMP#5| |b| |transform|
          |no| |before| |aft| |f|)
@@ -2340,7 +2340,7 @@
                      (APPEND |transform|
                              (CONS (LIST ''T (|bfSequence| |aft|))
                                    NIL)))))))))))
- 
+
 ; bfWhere (context,expr)==
 ;   [opassoc,defs,nondefs] := defSheepAndGoats context
 ;   opassoc := [[op, :bfSUBLIS(opassoc, repl)]
@@ -2349,7 +2349,7 @@
 ;                for d in defs  |d is [def,op,args,body]]
 ;   $wheredefs:=append(a,$wheredefs)
 ;   bfMKPROGN bfSUBLIS(opassoc,NCONC(nondefs,[expr]))
- 
+
 (DEFUN |bfWhere| (|context| |expr|)
   (PROG (|LETTMP#1| |opassoc| |defs| |nondefs| |op| |repl| |def| |ISTMP#1|
          |ISTMP#2| |args| |ISTMP#3| |body| |a|)
@@ -2412,17 +2412,17 @@
                NIL |defs| NIL))
       (SETQ |$wheredefs| (APPEND |a| |$wheredefs|))
       (|bfMKPROGN| (|bfSUBLIS| |opassoc| (NCONC |nondefs| (LIST |expr|))))))))
- 
+
 ; bfReadLisp string==bfTuple shoeReadLispString (string,0)
- 
+
 (DEFUN |bfReadLisp| (|string|)
   (PROG () (RETURN (|bfTuple| (|shoeReadLispString| |string| 0)))))
- 
+
 ; shoeReadLispString(s,n) ==
 ;     l:=# s
 ;     n >= l => nil
 ;     READ_-FROM_-STRING CONCAT ( "(", SUBSTRING(s,n,l-n) ,")")
- 
+
 (DEFUN |shoeReadLispString| (|s| |n|)
   (PROG (|l|)
     (RETURN
@@ -2432,12 +2432,12 @@
             ('T
              (READ-FROM-STRING
               (CONCAT '|(| (SUBSTRING |s| |n| (- |l| |n|)) '|)|))))))))
- 
+
 ; bfCompHash(op,argl,body) ==
 ;   auxfn:= INTERN CONCAT (PNAME op,'";")
 ;   computeFunction:= ["DEFUN",auxfn,argl,:body]
 ;   bfTuple [computeFunction,:bfMain(auxfn,op)]
- 
+
 (DEFUN |bfCompHash| (|op| |argl| |body|)
   (PROG (|auxfn| |computeFunction|)
     (RETURN
@@ -2446,7 +2446,7 @@
       (SETQ |computeFunction|
               (CONS 'DEFUN (CONS |auxfn| (CONS |argl| |body|))))
       (|bfTuple| (CONS |computeFunction| (|bfMain| |auxfn| |op|)))))))
- 
+
 ; bfMain(auxfn,op)==
 ;   g1:= bfGenSymbol()
 ;   arg:=["&REST",g1]
@@ -2461,7 +2461,7 @@
 ;   codeBody:= ['PROG,[g2],
 ;                ['RETURN,['COND,secondPredPair,thirdPredPair]]]
 ;   mainFunction:= ["DEFUN",op,arg,codeBody]
-;  
+;
 ;   cacheType:=     'hash_-table
 ;   cacheResetCode:=   ['SETQ,cacheName,['MAKE_-HASHTABLE,
 ;                         ["QUOTE","UEQUAL"]]]
@@ -2473,7 +2473,7 @@
 ;       ["SETF",["GET",
 ;            ["QUOTE", op],["QUOTE",'cacheInfo]],["QUOTE", cacheVector]],
 ;             shoeEVALANDFILEACTQ  cacheResetCode ]
- 
+
 (DEFUN |bfMain| (|auxfn| |op|)
   (PROG (|g1| |arg| |computeValue| |cacheName| |g2| |marker| |getCode|
          |secondPredPair| |putCode| |thirdPredPair| |codeBody| |mainFunction|
@@ -2511,29 +2511,29 @@
                    (LIST 'GET (LIST 'QUOTE |op|) (LIST 'QUOTE '|cacheInfo|))
                    (LIST 'QUOTE |cacheVector|)))
             (|shoeEVALANDFILEACTQ| |cacheResetCode|))))))
- 
+
 ; bfNameOnly x==
 ;       if x="t"
 ;       then ["T"]
 ;       else  [x]
- 
+
 (DEFUN |bfNameOnly| (|x|)
   (PROG () (RETURN (COND ((EQ |x| '|t|) (LIST 'T)) ('T (LIST |x|))))))
- 
+
 ; bfNameArgs (x,y)==
 ;     y:=if EQCAR(y,"TUPLE") then CDR y else [y]
 ;     cons(x,y)
- 
+
 (DEFUN |bfNameArgs| (|x| |y|)
   (PROG ()
     (RETURN
      (PROGN
       (SETQ |y| (COND ((EQCAR |y| 'TUPLE) (CDR |y|)) ('T (LIST |y|))))
       (CONS |x| |y|)))))
- 
+
 ; bfStruct(name,arglist)==
 ;   bfTuple [bfCreateDef i for i in arglist]
- 
+
 (DEFUN |bfStruct| (|name| |arglist|)
   (PROG ()
     (RETURN
@@ -2546,7 +2546,7 @@
            ('T (SETQ |bfVar#37| (CONS (|bfCreateDef| |i|) |bfVar#37|))))
           (SETQ |bfVar#36| (CDR |bfVar#36|))))
        NIL |arglist| NIL)))))
- 
+
 ; bfCreateDef x==
 ;      if null cdr x
 ;      then
@@ -2555,7 +2555,7 @@
 ;      else
 ;        a:=[bfGenSymbol() for i in cdr x]
 ;        ["DEFUN",car x,a,["CONS",["QUOTE",car x],["LIST",:a]]]
- 
+
 (DEFUN |bfCreateDef| (|x|)
   (PROG (|f| |a|)
     (RETURN
@@ -2575,11 +2575,11 @@
                 NIL (CDR |x|) NIL))
        (LIST 'DEFUN (CAR |x|) |a|
              (LIST 'CONS (LIST 'QUOTE (CAR |x|)) (CONS 'LIST |a|))))))))
- 
+
 ; bfCaseItem(x,y)==[x,y]
- 
+
 (DEFUN |bfCaseItem| (|x| |y|) (PROG () (RETURN (LIST |x| |y|))))
- 
+
 ; bfCase(x,y)==
 ;          g:=bfGenSymbol()
 ;          g1:=bfGenSymbol()
@@ -2587,7 +2587,7 @@
 ;          b:=bfLET(g1,["CDR",g])
 ;          c:=bfCaseItems (g1,y)
 ;          bfMKPROGN [a,b,["CASE",["CAR", g],:c]]
- 
+
 (DEFUN |bfCase| (|x| |y|)
   (PROG (|g| |g1| |a| |b| |c|)
     (RETURN
@@ -2598,9 +2598,9 @@
       (SETQ |b| (|bfLET| |g1| (LIST 'CDR |g|)))
       (SETQ |c| (|bfCaseItems| |g1| |y|))
       (|bfMKPROGN| (LIST |a| |b| (CONS 'CASE (CONS (LIST 'CAR |g|) |c|))))))))
- 
+
 ; bfCaseItems(g,x)==  [bfCI(g,i,j) for [i,j] in x]
- 
+
 (DEFUN |bfCaseItems| (|g| |x|)
   (PROG (|i| |ISTMP#1| |j|)
     (RETURN
@@ -2620,7 +2620,7 @@
                 (SETQ |bfVar#42| (CONS (|bfCI| |g| |i| |j|) |bfVar#42|)))))
          (SETQ |bfVar#41| (CDR |bfVar#41|))))
       NIL |x| NIL))))
- 
+
 ; bfCI(g,x,y)==
 ;     a:=cdr x
 ;     if null a
@@ -2628,7 +2628,7 @@
 ;     else
 ;        b:=[[i,bfCARCDR(j,g)] for i in a for j in 0..]
 ;        [car x,["LET",b,y]]
- 
+
 (DEFUN |bfCI| (|g| |x| |y|)
   (PROG (|a| |b|)
     (RETURN
@@ -2651,14 +2651,14 @@
                          (SETQ |j| (+ |j| 1))))
                       NIL |a| NIL 0))
              (LIST (CAR |x|) (LIST 'LET |b| |y|))))))))
- 
+
 ; bfCARCDR (n,g)==[INTERN CONCAT ('"CA",bfDs n,'"R"),g]
- 
+
 (DEFUN |bfCARCDR| (|n| |g|)
   (PROG () (RETURN (LIST (INTERN (CONCAT "CA" (|bfDs| |n|) "R")) |g|))))
- 
+
 ; bfDs n== if n=0 then '"" else CONCAT('"D",bfDs(n-1))
- 
+
 (DEFUN |bfDs| (|n|)
   (PROG ()
     (RETURN (COND ((EQL |n| 0) "") ('T (CONCAT "D" (|bfDs| (- |n| 1))))))))

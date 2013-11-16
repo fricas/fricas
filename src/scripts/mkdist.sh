@@ -128,7 +128,7 @@ fi
 if [ ! -z "${copy_lisp}" ]; then
    (cd ../src/algebra; ls -d *.NRLIB | sed 's,\.NRLIB$,,' ) > ../nrlst
    mkdir -p pre-generated/src/algebra
-   for A in $(cat ../nrlst); do 
+   for A in $(cat ../nrlst); do
       cp ../src/algebra/${A}.NRLIB/${A}.lsp pre-generated/src/algebra/${A}.lsp
    done
    mkdir -p pre-generated/target/algebra

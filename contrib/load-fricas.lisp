@@ -21,7 +21,7 @@ Using FriCAS command interpreter:
 Directly calling math functions:
 
  (defvar  *mult-i-sup*
-     (|getFunctionFromDomain| 
+     (|getFunctionFromDomain|
            '*
            '(|SparseUnivariatePolynomial| (|Integer|))
            '((|SparseUnivariatePolynomial| (|Integer|))
@@ -56,7 +56,7 @@ Currently FriCAS sets a few system (global) variables, for example
 FriCAS settings may interfere with other programs.
 
 |#
-(let ((*default-pathname-defaults* 
+(let ((*default-pathname-defaults*
        #P"/full_path_to_FriCAS_build_directory/src/interp/"))
      (load "../lisp/fricas-package.lisp")
      (load "../lisp/fricas-config.lisp")

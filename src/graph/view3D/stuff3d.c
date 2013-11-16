@@ -150,6 +150,3 @@ goodbye(int sig)
   XCloseDisplay(dsply);
   exit(0);
 }           /* goodbye */
-
-
-

@@ -1,21 +1,21 @@
- 
+
 ; )package "BOOTTRAN"
- 
+
 (IN-PACKAGE "BOOTTRAN")
- 
+
 ; shoeFirstTokPosn t== shoeTokPosn CAAR t
- 
+
 (DEFUN |shoeFirstTokPosn| (|t|) (PROG () (RETURN (|shoeTokPosn| (CAAR |t|)))))
- 
+
 ; shoeLastTokPosn  t== shoeTokPosn CADR t
- 
+
 (DEFUN |shoeLastTokPosn| (|t|) (PROG () (RETURN (|shoeTokPosn| (CADR |t|)))))
- 
+
 ; shoePileColumn t==CDR shoeTokPosn CAAR t
- 
+
 (DEFUN |shoePileColumn| (|t|)
   (PROG () (RETURN (CDR (|shoeTokPosn| (CAAR |t|))))))
- 
+
 ; shoePileInsert (s)==
 ;      if bStreamNull s
 ;      then cons([],s)
@@ -26,7 +26,7 @@
 ;          else
 ;             a:=shoePileTree(-1,s)
 ;             cons([a.2],a.3)
- 
+
 (DEFUN |shoePileInsert| (|s|)
   (PROG (|toktype| |a|)
     (RETURN
@@ -37,7 +37,7 @@
               (CONS (LIST (CAR |s|)) (CDR |s|)))
              (#1# (SETQ |a| (|shoePileTree| (- 1) |s|))
               (CONS (LIST (ELT |a| 2)) (ELT |a| 3)))))))))
- 
+
 ; shoePileTree(n,s)==
 ;     if bStreamNull s
 ;     then [false,n,[],s]
@@ -47,7 +47,7 @@
 ;         if hh > n
 ;         then shoePileForests(h,hh,t)
 ;         else [false,n,[],s]
- 
+
 (DEFUN |shoePileTree| (|n| |s|)
   (PROG (|LETTMP#1| |h| |t| |hh|)
     (RETURN
@@ -57,7 +57,7 @@
             (SETQ |hh| (|shoePileColumn| |h|))
             (COND ((< |n| |hh|) (|shoePileForests| |h| |hh| |t|))
                   (#1# (LIST NIL |n| NIL |s|))))))))
- 
+
 ; eqshoePileTree(n,s)==
 ;     if bStreamNull s
 ;     then [false,n,[],s]
@@ -67,7 +67,7 @@
 ;         if hh = n
 ;         then shoePileForests(h,hh,t)
 ;         else [false,n,[],s]
- 
+
 (DEFUN |eqshoePileTree| (|n| |s|)
   (PROG (|LETTMP#1| |h| |t| |hh|)
     (RETURN
@@ -77,7 +77,7 @@
             (SETQ |hh| (|shoePileColumn| |h|))
             (COND ((EQUAL |hh| |n|) (|shoePileForests| |h| |hh| |t|))
                   (#1# (LIST NIL |n| NIL |s|))))))))
- 
+
 ; shoePileForest(n,s)==
 ;      [b,hh,h,t]:= shoePileTree(n,s)
 ;      if b
@@ -85,7 +85,7 @@
 ;        [h1,t1]:=shoePileForest1(hh,t)
 ;        [cons(h,h1),t1]
 ;      else [[],s]
- 
+
 (DEFUN |shoePileForest| (|n| |s|)
   (PROG (|LETTMP#1| |b| |hh| |h| |t| |h1| |t1|)
     (RETURN
@@ -100,7 +100,7 @@
         (SETQ |h1| (CAR |LETTMP#1|)) (SETQ |t1| (CADR |LETTMP#1|))
         (LIST (CONS |h| |h1|) |t1|))
        ('T (LIST NIL |s|)))))))
- 
+
 ; shoePileForest1(n,s)==
 ;      [b,n1,h,t]:= eqshoePileTree(n,s)
 ;      if b
@@ -108,7 +108,7 @@
 ;        [h1,t1]:=shoePileForest1(n,t)
 ;        [cons(h,h1),t1]
 ;      else [[],s]
- 
+
 (DEFUN |shoePileForest1| (|n| |s|)
   (PROG (|LETTMP#1| |b| |n1| |h| |t| |h1| |t1|)
     (RETURN
@@ -123,13 +123,13 @@
         (SETQ |h1| (CAR |LETTMP#1|)) (SETQ |t1| (CADR |LETTMP#1|))
         (LIST (CONS |h| |h1|) |t1|))
        ('T (LIST NIL |s|)))))))
- 
+
 ; shoePileForests(h,n,s)==
 ;       [h1,t1]:=shoePileForest(n,s)
 ;       if bStreamNull h1
 ;       then [true,n,h,s]
 ;       else shoePileForests(shoePileCtree(h,h1),n,t1)
- 
+
 (DEFUN |shoePileForests| (|h| |n| |s|)
   (PROG (|LETTMP#1| |h1| |t1|)
     (RETURN
@@ -139,12 +139,12 @@
       (SETQ |t1| (CADR |LETTMP#1|))
       (COND ((|bStreamNull| |h1|) (LIST T |n| |h| |s|))
             ('T (|shoePileForests| (|shoePileCtree| |h| |h1|) |n| |t1|)))))))
- 
+
 ; shoePileCtree(x,y)==dqAppend(x,shoePileCforest y)
- 
+
 (DEFUN |shoePileCtree| (|x| |y|)
   (PROG () (RETURN (|dqAppend| |x| (|shoePileCforest| |y|)))))
- 
+
 ; shoePileCforest x==
 ;    if null x
 ;    then []
@@ -156,7 +156,7 @@
 ;            if null cdr b
 ;            then car b
 ;            else shoeEnPile shoeSeparatePiles b
- 
+
 (DEFUN |shoePileCforest| (|x|)
   (PROG (|a| |b|)
     (RETURN
@@ -165,7 +165,7 @@
             (SETQ |b| (|shoePileCoagulate| |a| (CDR |x|)))
             (COND ((NULL (CDR |b|)) (CAR |b|))
                   (#1# (|shoeEnPile| (|shoeSeparatePiles| |b|)))))))))
- 
+
 ; shoePileCoagulate(a,b)==
 ;     if null b
 ;     then [a]
@@ -180,7 +180,7 @@
 ;                (GET(e,"SHOEINF") or EQ(e,"COMMA") or EQ(e,"SEMICOLON"))
 ;          then shoePileCoagulate(dqAppend(a,c),cdr b)
 ;          else cons(a,shoePileCoagulate(c,rest b))
- 
+
 (DEFUN |shoePileCoagulate| (|a| |b|)
   (PROG (|c| |d| |e|)
     (RETURN
@@ -197,7 +197,7 @@
                          (EQ |e| 'SEMICOLON)))
                 (|shoePileCoagulate| (|dqAppend| |a| |c|) (CDR |b|)))
                (#1# (CONS |a| (|shoePileCoagulate| |c| (CDR |b|))))))))))))
- 
+
 ; shoeSeparatePiles x==
 ;   if null x
 ;   then []
@@ -208,7 +208,7 @@
 ;          semicolon:=dqUnit
 ;                 shoeTokConstruct("KEY", "BACKSET",shoeLastTokPosn a)
 ;          dqConcat [a,semicolon,shoeSeparatePiles cdr x]
- 
+
 (DEFUN |shoeSeparatePiles| (|x|)
   (PROG (|a| |semicolon|)
     (RETURN
@@ -220,12 +220,12 @@
                                          (|shoeLastTokPosn| |a|))))
             (|dqConcat|
              (LIST |a| |semicolon| (|shoeSeparatePiles| (CDR |x|)))))))))
- 
+
 ; shoeEnPile x==
 ;    dqConcat [dqUnit shoeTokConstruct("KEY","SETTAB",shoeFirstTokPosn x),
 ;              x, _
 ;              dqUnit shoeTokConstruct("KEY","BACKTAB",shoeLastTokPosn  x)]
- 
+
 (DEFUN |shoeEnPile| (|x|)
   (PROG ()
     (RETURN

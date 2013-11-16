@@ -522,7 +522,7 @@ MKPF1(l, op) ==
             EQL(y, 1) => x
             member(x, '(0 1 (ZERO) (ONE))) => x
             ["EXPT", :l]
-        FAIL() 
+        FAIL()
     op = "OR" =>
         MEMBER(true, l) => ["QUOTE", true]
         l := REMOVE(false, l)
@@ -567,4 +567,3 @@ MKPF1(l, op) ==
         rest(l) => ["CONS", :l]
         first(l)
     [op, :l]
-

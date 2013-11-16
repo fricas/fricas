@@ -383,4 +383,3 @@ typedef struct _controlXY {
 #define machine0 0.0002
 
 #include "globals.h"
-

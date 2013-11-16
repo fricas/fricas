@@ -347,7 +347,7 @@
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
 
 (MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
-      '((+ (|Zero|)) (|lcm| (|One|)) (|strconc| "") (* (|One|)) 
+      '((+ (|Zero|)) (|lcm| (|One|)) (|strconc| "") (* (|One|))
         (|append| NIL) (|gcd| (|Zero|))
         (|union| NIL) (|and| |true|) (|or| |false|) ))
 

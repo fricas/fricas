@@ -256,4 +256,3 @@ typedef struct _xPointStruct {
 #define isNaN(v) (v != v)
 
 #include "globals2.h"
-

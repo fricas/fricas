@@ -1365,5 +1365,3 @@ startTimer() ==
     get_run_time() - $delay
 
 stopTimer() == $oldTime := get_run_time()
-
-

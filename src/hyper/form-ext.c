@@ -160,6 +160,3 @@ form_scrolling_extent(HyperDocPage *page)
         page->scrolling->height = text_y;
     }
 }
-
-
-

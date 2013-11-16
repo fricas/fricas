@@ -295,4 +295,3 @@ XSpadFillArcs(Display *dsply, Drawable drawable,XArc *arcs, int narcs,
 
 
 #endif /* MSYSplatform */
-

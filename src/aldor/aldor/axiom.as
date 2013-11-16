@@ -16,4 +16,3 @@ import { true: %, false: % } from Boolean;
 import {
 	string:		Literal -> %;
 } from String;
-

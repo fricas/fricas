@@ -582,5 +582,3 @@ clearControlMessage(void)
   XClearArea(dsply,viewport->controlPanel->controlWindow,
              0,controlMessageY-2,controlWidth,controlMessageHeight,False);
 }
-
-
