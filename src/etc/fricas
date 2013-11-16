@@ -25,6 +25,9 @@
 #      [-emacs]             setup for emacs frontend
 #
 
+PATH=$AXIOM/bin:${PATH}:/usr/bin/X11
+export PATH
+
 MALLOCTYPE=3.1
 export MALLOCTYPE
 
@@ -105,14 +108,21 @@ else
   fi
 fi
 
-if [ "$AXIOMXLROOT" = "" ] ; then
-AXIOMXLROOT=${AXIOM}/compiler
+# The aldor compiler is usually expected to be in PATH at the time of
+# starting fricas, but, we allow for more flexibility.
+# 1) If ALDOR_COMPILER is set, it's assumed to be the absolute path
+#    to the aldor compiler executable.
+# 2) If there is a program ${exec_prefix}/bin/aldor, then this will
+#     be used.
+# 3) It's assumed that "aldor" is in PATH.
+if [ -z ${ALDOR_COMPILER} ]; then
+    if [ -x ${exec_prefix}/bin/aldor ]; then
+        ALDOR_COMPILER=${exec_prefix}/bin/aldor
+    else
+        ALDOR_COMPILER=aldor
+    fi
 fi
-export AXIOMXLROOT
-PATH=$AXIOM/bin:$AXIOMXLROOT/bin:${PATH}
-export PATH
-
-
+export ALDOR_COMPILER
 
 if [ ! -d "$SPAD" ] ; then
   echo "The directory for Axiom, $SPAD, does not exist."

@@ -543,8 +543,8 @@ compileAsharpCmd1 args ==
     if not beQuiet then sayKeyedMsg("S2IZ0038A",[namestring args, asharpArgs])
 
     command :=
-      STRCONC(STRCONC(getEnv('"ALDORROOT"),'"/bin/"),_
-                    "aldor ", asharpArgs, '" ", namestring args)
+       STRCONC(getEnv('"ALDOR_COMPILER"),_
+                     '" ", asharpArgs, '" ", namestring args)
     rc := OBEY command
 
     if (rc = 0) and doCompileLisp then
