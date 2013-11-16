@@ -297,10 +297,8 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
 ++ and where the order in which objects are inserted determines the order
 ++ of extraction.
 ++ Examples of bags are stacks, queues, and dequeues.
-BagAggregate(S : Type) : Category == Join(HomogeneousAggregate S, _
+BagAggregate(S : Type) : Category == Join(Collection S, _
      shallowlyMutable) with
-   bag : List S -> %
-     ++ bag([x, y, ..., z]) creates a bag with elements x, y, ..., z.
    extract! : % -> S
      ++ extract!(u) destructively removes a (random) item from bag u.
    insert! : (S, %) -> %
@@ -308,7 +306,7 @@ BagAggregate(S : Type) : Category == Join(HomogeneousAggregate S, _
    inspect : % -> S
      ++ inspect(u) returns an (random) element from a bag.
  add
-   bag(l) ==
+   construct(l) ==
        x := empty()
        for s in l repeat x := insert!(s, x)
        x
@@ -2156,6 +2154,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
     concat l ==
         empty? l => empty()
         n := _+/[#a for a in l]
+        n = 0 => empty()
         i := minIndex(r := new(n, stupidget l))
         for a in l repeat
             copyInto!(r, a, i)
