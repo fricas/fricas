@@ -251,7 +251,7 @@
 (defmacro |abs_DF| (x) `(FLOAT-SIGN (the (double-float 1.0d0 1.0d0) 1.0d0)
                                     (the double-float ,x)))
 
-#-:openmcl
+#-(and :openmcl (not :CCL-1.8))
 (progn
 (defmacro |less_DF| (x y) `(< (the double-float ,x)
                                              (the double-float ,y)))
@@ -278,7 +278,7 @@
     `(defmacro ,name (x) `(the double-float (,',op (the double-float ,x)))))
 )
 
-#+:openmcl
+#+(and :openmcl (not :CCL-1.8))
 (progn
 (defmacro |less_DF| (x y) `(<  ,x ,y))
 (defmacro |eql_DF| (x y) `(EQL ,x ,y))
@@ -507,6 +507,10 @@
 (defmacro HREM (table key) `(remhash ,key ,table))
 
 ; Misc operations
+
+(defmacro |qset_first|(l x) `(SETF (CAR ,l) ,x))
+
+(defmacro |qset_rest|(l x) `(SETF (CDR ,l) ,x))
 
 (defmacro setelt (vec ind val) `(setf (elt ,vec ,ind) ,val))
 
