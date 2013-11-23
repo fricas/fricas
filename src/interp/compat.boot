@@ -53,6 +53,10 @@ rread(key, rstream) ==
   if IDENTP key then key := PNAME key
   rread0(key, rstream)
 
+rread_list(key, rstream) ==
+    if IDENTP key then key := PNAME key
+    rread1(key, rstream, [])
+
 rwrite(key,val,stream) ==
   if IDENTP key then key := PNAME key
   rwrite0(key,val,stream)

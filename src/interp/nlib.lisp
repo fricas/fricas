@@ -123,15 +123,20 @@
     (file-position stream :end)
     (|write_indextable| indextable stream)))
 
+(defparameter |$error_mark| (GENSYM))
+
 ;; (RREAD key rstream)
-(defun |rread0| (key rstream)
+(defun |rread1| (key rstream sv)
   (if (equal (libstream-mode rstream) 'output) (error "not input stream"))
   (let* ((entry
          (and (stringp key)
               (assoc key (libstream-indextable rstream) :test #'string=)))
          (file-or-pos (and entry (caddr entry))))
     (cond ((null entry)
-              (error (format nil "key ~a not found" key)))
+              (cond
+                 ((eq sv |$error_mark|)
+                    (error (format nil "key ~a not found" key)))
+                 (t (return-from |rread1| sv))))
           ((null (caddr entry)) (cdddr entry))  ;; for small items
           ((numberp file-or-pos)
            (file-position (libstream-indexstream rstream) file-or-pos)
@@ -140,6 +145,10 @@
            (with-open-file
             (stream (concat (libstream-dirname rstream) "/" file-or-pos))
             (read  stream))) )))
+
+;; (RREAD key rstream)
+(defun |rread0| (key rstream)
+    (|rread1| key rstream |$error_mark|))
 
 ;; (RKEYIDS filearg) -- interned version of keys
 (defun RKEYIDS (filearg)
