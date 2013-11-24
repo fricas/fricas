@@ -797,8 +797,8 @@ Stream(S) : Exports == Implementation where
       n = MIN => setfrst!(x, s)
       seteltt(rst x, n - 1, s)
 
-    setelt(x, n : I, s : S) ==
-      n < MIN or empty? x => error "setelt: no such element"
+    setelt!(x, n : I, s : S) ==
+      n < MIN or empty? x => error "setelt!: no such element"
       x := expand!(x, n - MIN + 1)
       seteltt(x, n, s)
 
@@ -863,7 +863,7 @@ Stream(S) : Exports == Implementation where
         error "swap!: no such elements"
       x := expand!(x, max(m, n) - MIN + 1)
       xm := elt(x, m); xn := elt(x, n)
-      setelt(x, m, xn); setelt(x, n, xm)
+      setelt!(x, m, xn); setelt!(x, n, xm)
       x
 
 --% LNAGG functions
@@ -881,20 +881,20 @@ Stream(S) : Exports == Implementation where
       empty?(x := first l) => concat rest l
       concat(frst x, concat(rst x, concat rest l))
 
-    setelt(x, seg : U, s : S) ==
+    setelt!(x, seg : U, s : S) ==
       low := lo seg
       hasHi seg =>
         high := hi seg
         high < low => s
         (not index?(low, x)) or (not index?(high, x)) =>
-          error "setelt: index out of range"
+          error "setelt!: index out of range"
         x := expand!(x, high - MIN + 1)
         y := rest(x, (low - MIN) :: NNI)
         for i in 0..(high-low) repeat
           setfrst!(y, s)
           y := rst y
         s
-      not index?(low,x) => error "setelt: index out of range"
+      not index?(low, x) => error "setelt!: index out of range"
       x := rest(x, (low - MIN) :: NNI)
       setrst!(x, x)
       setfrst!(x, s)
@@ -990,17 +990,17 @@ Stream(S) : Exports == Implementation where
     concat!(x : %, s : S) ==
       concat!(x, concat(s, empty()))
 
-    setfirst!(x, s) == setelt(x, 0, s)
-    setelt(x,"first",s) == setfirst!(x,s)
+    setfirst!(x, s) == setelt!(x, 0, s)
+    setelt!(x, "first", s) == setfirst!(x, s)
     setrest!(x, y) ==
       empty? x => error "setrest!: empty stream"
       setrst!(x, y)
-    setelt(x,"rest",y) == setrest!(x,y)
+    setelt!(x, "rest", y) == setrest!(x, y)
 
     setlast!(x, s) ==
       empty? x => error "setlast!: empty stream"
       setfrst!(tail x, s)
-    setelt(x,"last",s) == setlast!(x,s)
+    setelt!(x, "last", s) == setlast!(x, s)
 
     split!(x, n) ==
       n < MIN => error "split!: index out of range"

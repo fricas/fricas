@@ -526,7 +526,7 @@ getFormModemaps(form is [op,:argl],e) ==
   if op="elt"
      then modemapList:= eltModemapFilter(last argl,modemapList,e) or return nil
      else
-      if op="setelt" then modemapList:=
+      if op="setelt!" then modemapList :=
         seteltModemapFilter(CADR argl,modemapList,e) or return nil
   nargs:= #argl
   finalModemapList:= [mm for (mm:= [[.,.,:sig],:.]) in modemapList | #sig=nargs]
@@ -601,7 +601,7 @@ compMakeDeclaration(x,m,e) ==
   compColon(x,m,e)
 
 setqSetelt([v,:s],val,m,E) ==
-  comp(["setelt",v,:s,val],m,E)
+    comp(["setelt!", v, :s, val], m, E)
 
 setqSingle(id,val,m,E) ==
   $insideSetqSingleIfTrue: local:= true

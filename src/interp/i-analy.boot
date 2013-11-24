@@ -658,7 +658,7 @@ bottomUpFormRetract(t,op,opName,argl,amsl) ==
   ms := NIL
   for x in argl for m in amsl for i in 1.. repeat
     -- do not retract first arg of a setelt
-    (i = 1) and (opName = "setelt") =>
+    (i = 1) and (opName = "setelt!") =>
         a := [x,:a]
         ms := [m,:ms]
     (i = 1) and (opName = "set!") =>

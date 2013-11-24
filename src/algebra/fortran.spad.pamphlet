@@ -990,7 +990,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
           error "ixk do not agree"
         else
           for i in 0..(iDim1-1) repeat
-            setelt(matRep1, i, (concat(elt(matRep1, i)$(PA PA PA R)_
+            setelt!(matRep1, i, (concat(elt(matRep1, i)$(PA PA PA R)_
              , elt(matRep2, i)$(PA PA PA R))$(PA PA R))@(PA PA R))$(PA PA PA R)
           retVal := (coerce(matRep1)$%)@%
 
@@ -1004,10 +1004,10 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
           for i in 0..(iDim1-1) repeat
             temp := copy(elt(matRep1, i)$(PA PA PA R))$(PA PA R)
             for j in 0..(jDim1-1) repeat
-              setelt(temp, j, concat(elt(elt(matRep1, i)$(PA PA PA R)_
+              setelt!(temp, j, concat(elt(elt(matRep1, i)$(PA PA PA R)_
               , j)$(PA PA R), elt(elt(matRep2, i)$(PA PA PA R), j)$(PA PA R)_
               )$(PA R))$(PA PA R)
-            setelt(matRep1, i, temp)$(PA PA PA R)
+            setelt!(matRep1, i, temp)$(PA PA PA R)
           retVal := (coerce(matRep1)$%)@%
 
       retVal
@@ -1051,9 +1051,9 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
       matrixRep : PA PA PA R := mat :: (PA PA PA R)
       row2 : PA PA R := copy(elt(matrixRep, i-1)$(PA PA PA R))$(PA PA R)
       row1 : PA R := copy(elt(row2, j-1)$(PA PA R))$(PA R)
-      setelt(row1, k-1, val)$(PA R)
-      setelt(row2, j-1, row1)$(PA PA R)
-      setelt(matrixRep, i-1, row2)$(PA PA PA R)
+      setelt!(row1, k - 1, val)$(PA R)
+      setelt!(row2, j - 1, row1)$(PA PA R)
+      setelt!(matrixRep, i - 1, row2)$(PA PA PA R)
       val
 
     if R has Ring then
@@ -1068,10 +1068,10 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
         row2empty : PA PA R := new(iLength, copy(row1empty)$(PA R))$(PA PA R)
         for count in 0..(iLength-1) repeat
           row1 := copy(row1empty)$(PA R)
-          setelt(row1, count, 1$R)$(PA R)
+          setelt!(row1, count, 1$R)$(PA R)
           row2 := copy(row2empty)$(PA PA R)
-          setelt(row2, count, copy(row1)$(PA R))$(PA PA R)
-          setelt(retValueRep, count, copy(row2)$(PA PA R))$(PA PA PA R)
+          setelt!(row2, count, copy(row1)$(PA R))$(PA PA R)
+          setelt!(retValueRep, count, copy(row2)$(PA PA R))$(PA PA PA R)
         retValueRep :: %
 
 
@@ -1100,9 +1100,9 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
           for j in 1..jLength1 repeat
             for k in 1..kLength1 repeat
               sum := (elt(mat1, i, j, k)::R +$R elt(mat2, i, j, k)::R)
-              setelt(row1, k-1, sum)$(PA R)
-            setelt(row2, j-1, copy(row1)$(PA R))$(PA PA R)
-          setelt(row3, i-1, copy(row2)$(PA PA R))$(PA PA PA R)
+              setelt!(row1, k - 1, sum)$(PA R)
+            setelt!(row2, j - 1, copy(row1)$(PA R))$(PA PA R)
+          setelt!(row3, i - 1, copy(row2)$(PA PA R))$(PA PA PA R)
 
         resultMatrix := (row3 pretend %)
 
@@ -1134,9 +1134,9 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
           for k in 1..kLength repeat
 
             element := elt(elt(elt(listRep, i)$(L L L R), j)$(L L R), k)$(L R)
-            setelt(row1, k-1, element)$(PA R)
-          setelt(row2, j-1, copy(row1)$(PA R))$(PA PA R)
-        setelt(row3, i-1, copy(row2)$(PA PA R))$(PA PA PA R)
+            setelt!(row1, k - 1, element)$(PA R)
+          setelt!(row2, j - 1, copy(row1)$(PA R))$(PA PA R)
+        setelt!(row3, i - 1, copy(row2)$(PA PA R))$(PA PA PA R)
 
       resultMatrix := (row3 pretend %)
 
@@ -1356,7 +1356,7 @@ FortranTemplate() : specification == implementation where
     getLine(fp : TextFile) : String ==
       line : String := stripCommentsAndBlanks readLine!(fp)
       while not empty?(line) and elt(line,maxIndex line) = char "__" repeat
-        setelt(line,maxIndex line,char " ")
+        setelt!(line, maxIndex line, char " ")
         line := concat(line, stripCommentsAndBlanks readLine!(fp))$String
       line
 
