@@ -636,7 +636,7 @@ seteltable(lhs is [f,:argl],rhs) ==
 
 altSeteltable args ==
     for x in args repeat bottomUp x
-    newOps := [mkAtreeNode "setelt", mkAtreeNode "set!"]
+    newOps := [mkAtreeNode "setelt!", mkAtreeNode "set!"]
     form := NIL
 
     -- first look for exact matches for any of the possibilities
@@ -676,7 +676,7 @@ upTableSetelt(op,lhs is [htOp,:args],rhs) ==
   -- function to give it an initial value.
   bottomUp [mkAtreeNode 'LET,htOp,[mkAtreeNode 'table]]
   tableCode := objVal getValue htOp
-  r := upSetelt(op, lhs, [mkAtreeNode 'setelt,:lhs,rhs])
+  r := upSetelt(op, lhs, [mkAtreeNode "setelt!", :lhs, rhs])
   $genValue => r
   -- construct code
   t := getValue op

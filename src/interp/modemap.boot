@@ -90,7 +90,7 @@ addModemap0(op,mc,sig,pred,fn,e) ==
     --don't put CD modemaps into environment
   --fn is ['Subsumed,:.] => e  -- don't skip subsumed modemaps
                                -- breaks -:($,$)->U($,failed) in DP
-  op='elt or op='setelt => addEltModemap(op,mc,sig,pred,fn,e)
+  op = 'elt or op = "setelt!" => addEltModemap(op, mc, sig, pred, fn, e)
   addModemap1(op,mc,sig,pred,fn,e)
 
 addEltModemap(op,mc,sig,pred,fn,e) ==
@@ -105,7 +105,7 @@ addEltModemap(op,mc,sig,pred,fn,e) ==
       addModemap1(op,mc,[:lt,id],pred,fn,e)
     -- atom sel => systemErrorHere '"addEltModemap"
     addModemap1(op,mc,sig,pred,fn,e)
-  op='setelt and sig is [:lt,sel,v] =>
+  op = "setelt!" and sig is [:lt, sel, v] =>
     STRINGP sel =>
       id:= INTERN sel
       if $insideCapsuleFunctionIfTrue=true

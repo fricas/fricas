@@ -223,8 +223,8 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
     coerce(r : Coef) == monomial(r, 0)
 
     iSeries(x, refer) ==
-      empty? x => (setelt(refer, plusInfinity()); empty())
-      setelt(refer, (getExpon frst x) :: COM)
+      empty? x => (setelt!(refer, plusInfinity()); empty())
+      setelt!(refer, (getExpon frst x) :: COM)
       concat(frst x, iSeries(rst x, refer))
 
     series(x : ST) ==
@@ -241,7 +241,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
 
     iExtend(st, n, refer) ==
       (elt refer) < n =>
-        explicitlyEmpty? st => (setelt(refer, plusInfinity()); st)
+        explicitlyEmpty? st => (setelt!(refer, plusInfinity()); st)
         explicitEntries? st => iExtend(rst st, n, refer)
         iExtend(lazyEvaluate st, n, refer)
       st
@@ -250,20 +250,20 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
     complete x  == (iExtend(getStream x, plusInfinity(), getRef x); x)
 
     iTruncate0(x, xRefer, refer, minExp, maxExp, n) == delay
-      explicitlyEmpty? x => (setelt(refer, plusInfinity()); empty())
+      explicitlyEmpty? x => (setelt!(refer, plusInfinity()); empty())
       nn := n :: COM
       while (elt xRefer) < nn repeat lazyEvaluate x
       explicitEntries? x =>
         (nx := getExpon(xTerm := frst x)) > maxExp =>
-          (setelt(refer, plusInfinity()); empty())
-        setelt(refer, nx :: COM)
+          (setelt!(refer, plusInfinity()); empty())
+        setelt!(refer, nx :: COM)
         (nx :: COM) >= minExp =>
           concat(makeTerm(nx, getCoef xTerm), _
                  iTruncate0(rst x, xRefer, refer, minExp, maxExp, nx + 1))
         iTruncate0(rst x, xRefer, refer, minExp, maxExp, nx + 1)
       -- can't have elt(xRefer) = infty unless all terms have been computed
       degr := retract(elt xRefer)@I
-      setelt(refer, degr :: COM)
+      setelt!(refer, degr :: COM)
       iTruncate0(x, xRefer, refer, minExp, maxExp, degr + 1)
 
     iTruncate(ups, minExp, maxExp) ==
@@ -328,18 +328,18 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
     iMap1(cFcn, eFcn, check?, x, xRefer, refer, n) == delay
       -- when this function is called, all terms in 'x' of order < n have been
       -- computed and we compute the eFcn(n)th order coefficient of the result
-      explicitlyEmpty? x => (setelt(refer, plusInfinity()); empty())
+      explicitlyEmpty? x => (setelt!(refer, plusInfinity()); empty())
       -- if terms in 'x' up to order n have not been computed,
       -- apply lazy evaluation
       nn := n :: COM
       while (elt xRefer) < nn repeat lazyEvaluate x
       -- 'x' may now be empty: retest
-      explicitlyEmpty? x => (setelt(refer, plusInfinity()); empty())
+      explicitlyEmpty? x => (setelt!(refer, plusInfinity()); empty())
       -- must have nx >= n
       explicitEntries? x =>
         xCoef := getCoef(xTerm := frst x); nx := getExpon xTerm
         newCoef := cFcn(xCoef, nx); m := eFcn nx
-        setelt(refer, m :: COM)
+        setelt!(refer, m :: COM)
         not check? =>
           concat(makeTerm(m, newCoef), _
                  iMap1(cFcn, eFcn, check?, rst x, xRefer, refer, nx + 1))
@@ -348,7 +348,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
                iMap1(cFcn, eFcn, check?, rst x, xRefer, refer, nx + 1))
       -- can't have elt(xRefer) = infty unless all terms have been computed
       degr := retract(elt xRefer)@I
-      setelt(refer, eFcn(degr) :: COM)
+      setelt!(refer, eFcn(degr) :: COM)
       iMap1(cFcn, eFcn, check?, x, xRefer, refer, degr + 1)
 
     iMap2(cFcn, eFcn, check?, ups) ==
@@ -394,16 +394,16 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         xCoef := getCoef(xTerm := frst x); nx := getExpon xTerm
         yCoef := getCoef(yTerm := frst y); ny := getExpon yTerm
         nx = ny =>
-          setelt(refer, nx :: COM)
+          setelt!(refer, nx :: COM)
           zero? (coef := op(xCoef, yCoef)) =>
             iPlus1(op, rst x, xRefer, rst y, yRefer, refer, nx + 1)
           concat(makeTerm(nx, coef), _
                  iPlus1(op, rst x, xRefer, rst y, yRefer, refer, nx + 1))
         nx < ny =>
-          setelt(refer, nx :: COM)
+          setelt!(refer, nx :: COM)
           concat(makeTerm(nx, op(xCoef, 0)), _
                  iPlus1(op, rst x, xRefer, y, yRefer, refer, nx + 1))
-        setelt(refer, ny :: COM)
+        setelt!(refer, ny :: COM)
         concat(makeTerm(ny, op(0, yCoef)), _
                iPlus1(op, x, xRefer, rst y, yRefer, refer, ny + 1))
       -- y has no term of degree n
@@ -411,9 +411,9 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         xCoef := getCoef(xTerm := frst x); nx := getExpon xTerm
         -- can't have elt(yRefer) = infty unless all terms have been computed
         (degr := retract(elt yRefer)@I) < nx =>
-          setelt(refer, elt yRefer)
+          setelt!(refer, elt yRefer)
           iPlus1(op, x, xRefer, y, yRefer, refer, degr + 1)
-        setelt(refer, nx :: COM)
+        setelt!(refer, nx :: COM)
         concat(makeTerm(nx, op(xCoef, 0)), _
                iPlus1(op, rst x, xRefer, y, yRefer, refer, nx + 1))
       -- x has no term of degree n
@@ -421,13 +421,13 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         yCoef := getCoef(yTerm := frst y); ny := getExpon yTerm
         -- can't have elt(xRefer) = infty unless all terms have been computed
         (degr := retract(elt xRefer)@I) < ny =>
-          setelt(refer, elt xRefer)
+          setelt!(refer, elt xRefer)
           iPlus1(op, x, xRefer, y, yRefer, refer, degr + 1)
-        setelt(refer, ny :: COM)
+        setelt!(refer, ny :: COM)
         concat(makeTerm(ny, op(0, yCoef)), _
                iPlus1(op, x, xRefer, rst y, yRefer, refer, ny + 1))
       -- neither x nor y has a term of degree n
-      setelt(refer, xyRef := min(elt xRefer, elt yRefer))
+      setelt!(refer, xyRef := min(elt xRefer, elt yRefer))
       -- can't have xyRef = infty unless all terms have been computed
       iPlus1(op, x, xRefer, y, yRefer, refer, retract(xyRef)@I + 1)
 
@@ -480,13 +480,13 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       -- coefficient of the product
       productLazyEval(x, xRefer, y, yRefer, n :: COM)
       explicitlyEmpty?(x) or explicitlyEmpty?(y) =>
-        (setelt(refer, plusInfinity()); empty())
+        (setelt!(refer, plusInfinity()); empty())
       -- must have nx + ny >= n
       explicitEntries?(x) and explicitEntries?(y) =>
         xCoef := getCoef(xTerm := frst x); xExpon := getExpon xTerm
         yCoef := getCoef(yTerm := frst y); yExpon := getExpon yTerm
         expon := xExpon + yExpon
-        setelt(refer, expon :: COM)
+        setelt!(refer, expon :: COM)
         scRefer := ref(expon :: COM)
         scMult := productByTerm(xCoef, xExpon, rst y, yRefer, scRefer, yExpon + 1)
         prRefer := ref(expon :: COM)
@@ -499,18 +499,18 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         xExpon := getExpon frst x
         -- can't have elt(yRefer) = infty unless all terms have been computed
         degr := retract(elt yRefer)@I
-        setelt(refer, (xExpon + degr) :: COM)
+        setelt!(refer, (xExpon + degr) :: COM)
         iTimes(x, xRefer, y, yRefer, refer, xExpon + degr + 1)
       explicitEntries? y =>
         yExpon := getExpon frst y
         -- can't have elt(xRefer) = infty unless all terms have been computed
         degr := retract(elt xRefer)@I
-        setelt(refer, (yExpon + degr) :: COM)
+        setelt!(refer, (yExpon + degr) :: COM)
         iTimes(x, xRefer, y, yRefer, refer, yExpon + degr + 1)
       -- can't have elt(xRefer) = infty unless all terms have been computed
       xDegr := retract(elt xRefer)@I
       yDegr := retract(elt yRefer)@I
-      setelt(refer, (xDegr + yDegr) :: COM)
+      setelt!(refer, (xDegr + yDegr) :: COM)
       iTimes(x, xRefer, y, yRefer, refer, xDegr + yDegr + 1)
 
     ups1 : % * ups2 : % ==
@@ -532,13 +532,13 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
     iDivide(x, xRefer, y, yRefer, rym, m, refer, n) == delay
       -- when this function is called, we are computing the nth order
       -- coefficient of the result
-      explicitlyEmpty? x => (setelt(refer, plusInfinity()); empty())
+      explicitlyEmpty? x => (setelt!(refer, plusInfinity()); empty())
       -- if terms up to order n - m have not been computed,
       -- apply lazy evaluation
       nm := (n + m) :: COM
       while (elt xRefer) < nm repeat lazyEvaluate x
       -- 'x' may now be empty: retest
-      explicitlyEmpty? x => (setelt(refer, plusInfinity()); empty())
+      explicitlyEmpty? x => (setelt!(refer, plusInfinity()); empty())
       -- must have nx >= n + m
       explicitEntries? x =>
         newCoef := getCoef(xTerm := frst x) * rym; nx := getExpon xTerm
@@ -547,11 +547,11 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         sumRefer := ref(nx :: COM)
         sum := iPlus1((xi, yi) +-> xi + yi, rst x, xRefer, prod,
                        prodRefer, sumRefer, nx + 1)
-        setelt(refer, (nx - m) :: COM); term := makeTerm(nx - m, newCoef)
+        setelt!(refer, (nx - m) :: COM); term := makeTerm(nx - m, newCoef)
         concat(term, iDivide(sum, sumRefer, y, yRefer, rym, m, refer, nx - m + 1))
       -- can't have elt(xRefer) = infty unless all terms have been computed
       degr := retract(elt xRefer)@I
-      setelt(refer, (degr - m) :: COM)
+      setelt!(refer, (degr - m) :: COM)
       iDivide(x, xRefer, y, yRefer, rym, m, refer, degr - m + 1)
 
     divide(ups1, deg1, ups2, deg2, r) ==
@@ -597,7 +597,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
     compose0(x, xRefer, y, yRefer, yOrd, y1, yn0, n0, refer, n) == delay
       -- when this function is called, we are computing the nth order
       -- coefficient of the composite
-      explicitlyEmpty? x => (setelt(refer, plusInfinity()); empty())
+      explicitlyEmpty? x => (setelt!(refer, plusInfinity()); empty())
       -- if terms in 'x' up to order n have not been computed,
       -- apply lazy evaluation
       nn := n :: COM; yyOrd := yOrd :: COM
@@ -605,7 +605,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       explicitEntries? x =>
         xCoef := getCoef(xTerm := frst x); n1 := getExpon xTerm
         zero? n1 =>
-          setelt(refer, n1 :: COM)
+          setelt!(refer, n1 :: COM)
           concat(makeTerm(n1, xCoef), _
                  compose0(rst x, xRefer, y, yRefer, yOrd, y1, yn0, n0, refer, n1 + 1))
         yn1 := yn0 * y1 ^ ((n1 - n0) :: NNI)
@@ -615,11 +615,11 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
                       prodRefer, degr)
         coRefer := ref((degr + yOrd - 1) :: COM)
         co := compose0(rst x, xRefer, y, yRefer, yOrd, y1, yn1, n1, coRefer, degr + yOrd)
-        setelt(refer, (degr - 1) :: COM)
+        setelt!(refer, (degr - 1) :: COM)
         iPlus1((xi, yi) +-> xi + yi, prod, prodRefer, co, coRefer, refer, degr)
       -- can't have elt(xRefer) = infty unless all terms have been computed
       degr := yOrd * (retract(elt xRefer)@I + 1)
-      setelt(refer, (degr - 1) :: COM)
+      setelt!(refer, (degr - 1) :: COM)
       compose0(x, xRefer, y, yRefer, yOrd, y1, yn0, n0, refer, degr)
 
     iCompose(ups1, ups2) ==
@@ -650,14 +650,14 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       integ0(x, intRef, ansRef, n) == delay
         nLess1 := (n - 1) :: COM
         while (elt intRef) < nLess1 repeat lazyEvaluate x
-        explicitlyEmpty? x => (setelt(ansRef, plusInfinity()); empty())
+        explicitlyEmpty? x => (setelt!(ansRef, plusInfinity()); empty())
         explicitEntries? x =>
           xCoef := getCoef(xTerm := frst x); nx := getExpon xTerm
-          setelt(ansRef, (n1 := (nx + 1)) :: COM)
+          setelt!(ansRef, (n1 := (nx + 1)) :: COM)
           concat(makeTerm(n1, inv(n1 :: RN) * xCoef), _
                  integ0(rst x, intRef, ansRef, n1))
         -- can't have elt(intRef) = infty unless all terms have been computed
-        degr := retract(elt intRef)@I; setelt(ansRef, (degr + 1) :: COM)
+        degr := retract(elt intRef)@I; setelt!(ansRef, (degr + 1) :: COM)
         integ0(x, intRef, ansRef, degr + 2)
 
       integ1 : (ST, REF, REF) -> ST

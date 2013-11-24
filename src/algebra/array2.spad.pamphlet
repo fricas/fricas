@@ -112,9 +112,8 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
 
 --% Part assignments
 
-    setelt : (%, Integer, Integer, R) -> R
-      -- will become setelt!
-      ++ setelt(m, i, j, r) sets the element in the ith row and jth
+    setelt! : (%, Integer, Integer, R) -> R
+      ++ setelt!(m, i, j, r) sets the element in the ith row and jth
       ++ column of m to r
       ++ error check to determine if indices are in proper ranges
     qsetelt! : (%, Integer, Integer, R) -> R
@@ -125,20 +124,20 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ setRow!(m, i, v) sets to ith row of m to v
     setColumn! : (%, Integer, Col) -> %
       ++ setColumn!(m, j, v) sets to jth column of m to v
-    setelt : (%, List Integer, List Integer, %) -> %
-       ++ \spad{setelt(x, rowList, colList, y)} destructively alters
+    setelt! : (%, List Integer, List Integer, %) -> %
+       ++ \spad{setelt!(x, rowList, colList, y)} destructively alters
        ++ the array x.  If y is \spad{m}-by-\spad{n},
        ++ \spad{rowList = [i<1>, i<2>, ..., i<m>]}
        ++ and \spad{colList = [j<1>, j<2>, ..., j<n>]}, then
        ++ \spad{x(i<k>, j<l>)}
        ++ is set to \spad{y(k, l)} for \spad{k = 1, ..., m} and
        ++ \spad{l = 1, ..., n}.
-    setelt : (%, SI, SI, %) -> %
-       ++ \spad{setelt(x, s1, s2)} is equivalent to
-       ++ \spad{setelt(x, expand(s1), expand(s2))} but should be more
-       ++ convenient and more  efficient.
-    setelt : (%, LSI, LSI, %) -> %
-       ++ \spad{setelt(x, ls1, ls1)} is equivalent to \spad{setelt(x, l1, l2)}
+    setelt! : (%, SI, SI, %) -> %
+       ++ \spad{setelt!(x, s1, s2)} is equivalent to
+       ++ \spad{setelt!(x, expand(s1), expand(s2))} but should be more
+       ++ convenient and more efficient.
+    setelt! : (%, LSI, LSI, %) -> %
+       ++ \spad{setelt!(x, ls1, ls1)} is equivalent to \spad{setelt!(x, l1, l2)}
        ++ where li is obtained appending expansions of elements of lsi,
        ++ but should be more convenient and more efficient.
     setsubMatrix! : (%, Integer, Integer, %) -> %
@@ -391,21 +390,21 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
 
     -- Setting parts
 
-    setelt(x : %, rowList : List Integer, colList : List Integer, y : %) ==
+    setelt!(x : %, rowList : List Integer, colList : List Integer, y : %) ==
         for ei in rowList repeat
             (ei < minr(x)) or (ei > maxr(x)) =>
-                error "setelt: index out of range"
+                error "setelt!: index out of range"
         for ej in colList repeat
             (ej < minc(x)) or (ej > maxc(x)) =>
-                error "setelt: index out of range"
+                error "setelt!: index out of range"
         ((# rowList) ~= (nrows y)) or ((# colList) ~= (ncols y)) =>
-            error "setelt: matrix has bad dimensions"
+            error "setelt!: matrix has bad dimensions"
         for ei in rowList for i in minr(y)..maxr(y) repeat
             for ej in colList for j in minc(y)..maxc(y) repeat
                 qsetelt!(x, ei, ej, qelt(y, i, j))
         y
 
-    setelt(x : %, sr : SI, sc : SI, y : %) ==
+    setelt!(x : %, sr : SI, sc : SI, y : %) ==
         lr := low(sr)
         ur := high(sr)
         lc := low(sc)
@@ -416,18 +415,18 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
         nr := check_seg(sr, minr(x), maxr(x))
         nc := check_seg(sc, minc(x), maxc(x))
         nrows(y) ~= nr or ncols(y) ~= nc =>
-            error "setelt: matrix has bad dimensions"
+            error "setelt!: matrix has bad dimensions"
         nr = 0 or nc = 0 => y
         for i in minr(y)..maxr(y) for k in lr..ur by ir repeat
             for j in minc(y)..maxc(y) for l in lc..uc by ic repeat
                 qsetelt!(x, k, l, qelt(y, i, j))
         y
 
-    setelt(x : %, lsr : LSI, lsc : LSI, y : %) ==
+    setelt!(x : %, lsr : LSI, lsc : LSI, y : %) ==
         nr := check_segs(lsr, minr(x), maxr(x))
         nc := check_segs(lsc, minc(x), maxc(x))
         nrows(y) ~= nr or ncols(y) ~= nc =>
-            error "setelt: matrix has bad dimensions"
+            error "setelt!: matrix has bad dimensions"
         nr = 0 or nc = 0 => y
         i := minr(y)
         for sr in lsr repeat
@@ -754,11 +753,11 @@ InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) : _
 
     qsetelt!(m, i, j, r) == Qsetelt2(m, i, j, r, mnRow, mnCol)
 
-    setelt(m : %, i : Integer, j : Integer, r : R) ==
+    setelt!(m : %, i : Integer, j : Integer, r : R) ==
       i < minRowIndex(m) or i > maxRowIndex(m) =>
-        error "setelt: index out of range"
+        error "setelt!: index out of range"
       j < minColIndex(m) or j > maxColIndex(m) =>
-        error "setelt: index out of range"
+        error "setelt!: index out of range"
       qsetelt!(m, i, j, r)
 
     if R has SetCategory then

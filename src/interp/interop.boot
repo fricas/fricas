@@ -284,7 +284,7 @@ oldAxiomDomainLookupExport _
          EQL(op, $hashOp1) => op := 'One
          EQL(op, $hashOp0) => op := 'Zero
          EQL(op, $hashOpApply) => op := 'elt
-         EQL(op, $hashOpSet) => op := 'setelt
+         EQL(op, $hashOpSet) => op := "setelt!"
          EQL(op, $hashSeg) => op := 'SEGMENT
      constant := nil
      if hashCode? sig and self and EQL(sig, getDomainHash self) then
@@ -361,7 +361,7 @@ basicLookup(op,sig,domain,dollar) ==
           op = 'Zero => op := $hashOp0
           op = 'One => op := $hashOp1
           op = 'elt => op := $hashOpApply
-          op = 'setelt => op := $hashOpSet
+          op = "setelt!" => op := $hashOpSet
           op := hashString SYMBOL_-NAME op
        val := first SPADCALL(rest domain, dollar, op, hashSig, box, false,
                                lookupFun) => val
@@ -378,7 +378,7 @@ basicLookup(op,sig,domain,dollar) ==
      EQL(op, $hashOp1) => op := 'One
      EQL(op, $hashOp0) => op := 'Zero
      EQL(op, $hashOpApply) => op := 'elt
-     EQL(op, $hashOpSet) => op := 'setelt
+     EQL(op, $hashOpSet) => op := "setelt!"
      EQL(op, $hashSeg) => op := 'SEGMENT
   hashCode? sig and EQL(sig, hashPercent) =>
       SPADCALL first SPADCALL(rest dollar, dollar, op, '($), box,

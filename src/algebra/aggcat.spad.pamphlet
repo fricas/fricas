@@ -907,11 +907,10 @@ EltableAggregate(Dom : SetCategory, Im : Type) : Category ==
        ++ on whether \axiom{x} is in the domain of \axiom{u} is required, use
        ++ the function \axiom{elt}.
     if % has shallowlyMutable then
-       setelt : (%, Dom, Im) -> Im
-           ++ setelt(u, x, y) sets the image of x to be y under u,
+       setelt! : (%, Dom, Im) -> Im
+           ++ setelt!(u, x, y) sets the image of x to be y under u,
            ++ assuming x is in the domain of u.
            ++ Error: if x is not in the domain of u.
-           -- this function will soon be renamed as setelt!.
        qsetelt! : (%, Dom, Im) -> Im
            ++ qsetelt!(u, x, y) sets the image of \axiom{x} to be \axiom{y} under
            ++ \axiom{u}, without checking that \axiom{x} is in the domain of
@@ -1029,8 +1028,8 @@ IndexedAggregate(Index : SetCategory, Entry : Type) : Category ==
 ++ mapping from keys to entries.
 TableAggregate(Key : SetCategory, Entry : Type) : Category ==
   Join(KeyedDictionary(Key, Entry), IndexedAggregate(Key, Entry)) with
-   setelt : (%, Key, Entry) -> Entry          -- setelt! later
-     ++ setelt(t, k, e) (also written \axiom{t.k := e}) is equivalent
+   setelt! : (%, Key, Entry) -> Entry
+     ++ setelt!(t, k, e) (also written \axiom{t.k := e}) is equivalent
      ++ to \axiom{(insert([k, e], t); e)}.
    table : () -> %
      ++ table()$T creates an empty table of type T.
@@ -1204,8 +1203,8 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
       setchildren! : (%, List %)->%
         ++ setchildren!(u, v) replaces the current children of node u
         ++ with the members of v in left-to-right order.
-      setelt : (%,"value",S) -> S
-        ++ setelt(a,"value",x) (also written \axiom{a . value := x})
+      setelt! : (%, "value", S) -> S
+        ++ setelt!(a, "value" ,x) (also written \axiom{a.value := x})
         ++ is equivalent to \axiom{setvalue!(a, x)}
       setvalue! : (%, S) -> S
         ++ setvalue!(u, x) sets the value of node u to x.
@@ -1215,7 +1214,7 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
 
    elt(x,"value") == value x
    if % has shallowlyMutable then
-       setelt(x,"value",y) == setvalue!(x,y)
+       setelt!(x, "value", y) == setvalue!(x,y)
    if S has SetCategory then
 
        -- Note that children(l) below yields a List %, that is, we call
@@ -1254,13 +1253,13 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
      ++ elt(a,"right") (also written: \axiom{a . right})
      ++ is equivalent to \axiom{right(a)}.
    if % has shallowlyMutable then
-      setelt : (%,"left",%) -> %
-        ++ setelt(a,"left",b) (also written \axiom{a . left := b}) is equivalent
-        ++ to \axiom{setleft!(a, b)}.
+      setelt! : (%, "left", %) -> %
+        ++ setelt!(a, "left", b) (also written \axiom{a.left := b})
+        ++ is equivalent to \axiom{setleft!(a, b)}.
       setleft! : (%, %) -> %
          ++ setleft!(a, b) sets the left child of \axiom{a} to be b.
-      setelt : (%,"right",%) -> %
-         ++ setelt(a,"right",b) (also written \axiom{b . right := b})
+      setelt! : (%, "right", %) -> %
+         ++ setelt!(a, "right", b) (also written \axiom{b.right := b})
          ++ is equivalent to \axiom{setright!(a, b)}.
       setright! : (%, %) -> %
          ++ setright!(a, x) sets the right child of t to be x.
@@ -1346,8 +1345,8 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
        for x in l repeat eq?(x, y) => return true
        false
    if % has shallowlyMutable then
-       setelt(x,"left",b)  == setleft!(x,b)
-       setelt(x,"right",b) == setright!(x,b)
+       setelt!(x, "left", b)  == setleft!(x, b)
+       setelt!(x, "right", b) == setright!(x, b)
 
 @
 \section{category DLAGG DoublyLinkedAggregate}
@@ -1491,8 +1490,8 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       qsetfirst! : (%, S) -> S
         ++ setfirst!(u, x) destructively changes the first element of u to x
         ++ without checking for errors.
-      setelt : (%,"first",S) -> S
-        ++ setelt(u,"first",x) (also written: \axiom{u.first := x}) is
+      setelt! : (%, "first", S) -> S
+        ++ setelt!(u, "first", x) (also written: \axiom{u.first := x}) is
         ++ equivalent to \axiom{setfirst!(u, x)}.
       setrest! : (%, %) -> %
         ++ setrest!(u, v) destructively changes the rest of u to v.
@@ -1500,13 +1499,13 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       qsetrest! : (%, %) -> %
         ++ setrest!(u, v) destructively changes the rest of u to v
         ++ without checking for errors.
-      setelt : (%,"rest",%) -> %
-        ++ setelt(u,"rest",v) (also written: \axiom{u.rest := v}) is equivalent to
-        ++ \axiom{setrest!(u, v)}.
+      setelt! : (%, "rest", %) -> %
+        ++ setelt!(u, "rest", v) (also written: \axiom{u.rest := v})
+        ++ is equivalent to \axiom{setrest!(u, v)}.
       setlast! : (%, S) -> S
         ++ setlast!(u, x) destructively changes the last element of u to x.
-      setelt : (%,"last",S) -> S
-        ++ setelt(u,"last",x) (also written: \axiom{u.last := b})
+      setelt! : (%, "last", S) -> S
+        ++ setelt!(u, "last", x) (also written: \axiom{u.last := b})
         ++ is equivalent to \axiom{setlast!(u, v)}.
       split! : (%, Integer) -> %
          ++ split!(u, n) splits u into two aggregates: \axiom{v = rest(u, n)}
@@ -1638,9 +1637,9 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
           u = v
 
   if % has shallowlyMutable then
-      setelt(x, "first", a) == setfirst!(x, a)
-      setelt(x,  "last", a) == setlast!(x, a)
-      setelt(x,  "rest", a) == setrest!(x, a)
+      setelt!(x, "first", a) == setfirst!(x, a)
+      setelt!(x,  "last", a) == setlast!(x, a)
+      setelt!(x,  "rest", a) == setrest!(x, a)
       concat(x : %, y : %)      == concat!(copy x, y)
 
       setlast!(x, s) ==
@@ -1748,13 +1747,13 @@ StreamAggregate(S : Type) : Category ==
            while not empty? y repeat (setfirst!(y, s); y := rest y)
            x
 
-       setelt(x : %, i : Integer, s : S) ==
+       setelt!(x : %, i : Integer, s : S) ==
            i := i - minIndex x
            (i < 0) or empty?(x := rest(x,i::NonNegativeInteger)) =>
                error "index out of range"
            setfirst!(x, s)
 
-       setelt(x : %, i : UniversalSegment(Integer), s : S) ==
+       setelt!(x : %, i : UniversalSegment(Integer), s : S) ==
            (l := lo(i) - minIndex x) < 0 => error "index out of range"
            h := if hasHi i then hi(i) - minIndex x else maxIndex x
            h < l => s
@@ -1836,8 +1835,8 @@ LinearAggregate(S : Type) : Category ==
       ++ insert(v, u, k) returns a copy of u having v inserted beginning at the
       ++ \axiom{i}th element.
       ++ Note: \axiom{insert(v, u, k) = concat( u(0..k-1), v, u(k..) )}.
-   if % has shallowlyMutable then setelt : (%, UniversalSegment(Integer), S) -> S
-      ++ setelt(u, i..j, x) (also written: \axiom{u(i..j) := x}) destructively
+   if % has shallowlyMutable then setelt! : (%, UniversalSegment(Integer), S) -> S
+      ++ setelt!(u, i..j, x) (also written: \axiom{u(i..j) := x}) destructively
       ++ replaces each element in the segment \axiom{u(i..j)} by x.
       ++ The value x is returned.
       ++ Note: u is destructively change so
@@ -2011,7 +2010,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
             qsetelt!(a, i, f qelt(a, i))
         a
 
-    setelt(a : %, s : UniversalSegment(Integer), x : S) ==
+    setelt!(a : %, s : UniversalSegment(Integer), x : S) ==
         l := lo s; h := if hasHi s then hi s else maxIndex a
         l < minIndex a or h > maxIndex a => error "index out of range"
         for k in l..h repeat qsetelt!(a, k, x)
