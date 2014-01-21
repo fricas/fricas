@@ -1,0 +1,19 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2014"
+
+testcase "bad exposure of dummy %A into result"
+-- https://groups.google.com/forum/#!topic/fricas-devel/eHZCyaXmJVY
+f:=operator 'f
+y:=operator 'y
+r1:=eval(D(f(x,z),[x,z]),z=y(x))
+f1:=D(f(x,y(x)),x)
+f2:=D(f1,x)
+f3:=D(f2,x)
+r2:=eval(D(f(x,z),[x,z]),z=y(x))
+-- wrongly resulted in
+--  f    (%A,y(x))
+--   ,1,2
+-- in revision r1674
+testEquals("r1", "r2")
