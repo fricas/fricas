@@ -588,7 +588,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
     bestKernel : List K -> K
     worse?    : (K, K) -> Boolean
     diffArg   : (List %, OP, N) -> List %
-    substArg  : (OP, List %, Z, %) -> %
     dispdiff  : List % -> Record(name : O, sub : O, arg : List O,
                                  orig_op : OP, level : N)
     ddiff     : List % -> O
@@ -596,7 +595,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
     dfeval    : (List %, K) -> %
     smprep    : (List SY, List N, List(List % -> %), MP) -> %
     diffdiff  : (List %, SY) -> %
-    diffdiff0 : (List %, SY, %, K, List %) -> %
     subs      : (% -> %, K) -> %
     symsub    : (SY, Z) -> SY
     kunq      : (K, List SY, Boolean) -> %
@@ -734,34 +732,76 @@ FunctionSpace(R : Comparable) : Category == Definition where
                (cons(opname, rec.arg))
         prefix(opname, rec.arg)
 
-      substArg(op, l, i, g) ==
-        z := copy l
-        z.i := g
-        kernel(op, z)
+      Dec_Rec ==> Record(orig_k : K, sub : List(Integer),
+                  oarg : List %, arg : List %, dummies : List(%))
 
+      decode_diff : (List %) -> Dec_Rec
+
+      encode_diff(ker : K, nsub : List(Integer), args : List(%),
+                  nd : List(%)) : % ==
+          li : List(Integer) := []
+          lk : List(Integer) := []
+          i := first(nsub)
+          k : Integer := 1
+          nsub := rest(nsub)
+          while not(empty?(nsub)) repeat
+              ii := first(nsub)
+              nsub := rest(nsub)
+              ii = i => k := k + 1
+              lk := cons(k, lk)
+              li := cons(i, li)
+              i := ii
+              k := 1
+          lk := cons(k, lk)
+          li := cons(i, li)
+          nargs := copy(args)
+          pts : List % := []
+          for i in reverse(li) for dm in nd repeat
+              pts := cons(nargs(i), pts)
+              nargs(i) := dm
+          res := kernel(operator(ker), nargs)
+          for i in li for k in lk for pt in pts for dm in reverse(nd) repeat
+              for kk in 2..k repeat
+                  res := kernel(opdiff, [res, dm, dm])
+              res := kernel(opdiff, [res, dm, pt])
+          res
+
+      insert_sub(lsub : List(Integer), j : Integer) : List(Integer) ==
+          nsub : List(Integer) := []
+          to_insert : Boolean := true
+          for i in lsub repeat
+              if to_insert and not(i > j) then
+                  nsub := cons(j, nsub)
+                  to_insert := false
+              nsub := cons(i, nsub)
+          if to_insert then
+              nsub := cons(j, nsub)
+          reverse!(nsub)
+
+      pos_diff(l : List %, r1 : Dec_Rec, i : Integer) : % ==
+          nsub := insert_sub(r1.sub, i)
+          nd := r1.dummies
+          if not(member?(i, r1.sub)$List(Integer)) then
+              k : NonNegativeInteger := 0
+              ii := first(nsub)
+              for j in nsub repeat
+                  i = j => break
+                  if not(ii = j) then
+                      k := k + 1
+              nd1 := first(nd, k)$List(%)
+              nd2 := rest(nd, k)
+              dm := (new()$Symbol)::%
+              nd := concat(nd1, cons(dm, nd2))
+          encode_diff(r1.orig_k, nsub, r1.arg, nd)
 
       diffdiff(l, x) ==
-        f := kernel(opdiff, l)
-        diffdiff0(l, x, f, retract(f)@K, empty())
-
-      diffdiff0(l, x, expr, kd, done) ==
-        op  := operator(k := retract(first l)@K)
-        gg  := second l
-        u   := third l
-        arg := argument k
-        ans : % := 0
-        if (not member?(u, done)) and (ans := differentiate(u, x)) ~= 0 then
-          ans := ans * kernel(opdiff,
-               [subst(expr, [kd], [kernel(opdiff, [first l, gg, gg])]),
-                             gg, u])
-        done := concat(gg, done)
-        is?(k, opdiff) => ans + diffdiff0(arg, x, expr, k, done)
-        for i in minIndex arg .. maxIndex arg for b in arg repeat
-          if (not member?(b, done)) and (bp := differentiate(b, x)) ~= 0 then
-            g   := symsub(gendiff, i)::%
-            ans := ans + bp * kernel(opdiff, [subst(expr, [kd],
-             [kernel(opdiff, [substArg(op, arg, i, g), gg, u])]), g, b])
-        ans
+          r1 := decode_diff(l)
+          args := r1.arg
+          res : % := 0
+          for i in minIndex args .. maxIndex args for b in args repeat
+              (db :=  differentiate(b, x)) = 0 => "iterate"
+              res := res + db*pos_diff(l, r1, i)
+          res
 
       dfeval(l, g) ==
         eval(differentiate(first l, symbolIfCan(g)::SY), g, third l)
@@ -921,8 +961,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
          -- output(hconcat [a1::OutputForm, a2::OutputForm, t::OutputForm])$OutputPackage
          t
 
-      decode_diff(l : List %) : Record(orig_k : K, sub : List(Integer),
-                  oarg : List %, arg : List %, dummies : List(%)) ==
+      decode_diff(l : List %) : Dec_Rec ==
           da := second(l)
           pt := third(l)
           a := argument(k := retract(first l)@K)
