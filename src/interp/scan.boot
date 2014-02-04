@@ -34,6 +34,8 @@
 
 
 SPACE       := STR_ELT('"    ", 0)
+-- Hardcode ASCII code to avoid editors messing up control code
+PAGE_CTL    := 12
 ESCAPE      := STR_ELT('"__  ", 0)
 STRING_CHAR := STR_ELT('"_"  ", 0)
 PLUSCOMMENT := STR_ELT('"+   ", 0)
@@ -234,6 +236,14 @@ for i in   [ _
 
 -- Scanner
 
+is_white?(c) == c = SPACE or c = PAGE_CTL
+
+skip_whitespace(ln, n) ==
+    l := #ln
+    while n < l and is_white?(STR_ELT(ln, n)) repeat
+        n := n + 1
+    n
+
 DEFVAR($f)
 DEFVAR($floatok)
 DEFVAR($linepos)
@@ -261,12 +271,12 @@ finish_comment() ==
 --  returning the token-dq and the rest of the line-stream
 
 scanIgnoreLine(ln,n)==
-    if null n
-    then n
+    if n = $sz then
+        false
     else
        fst := STR_ELT(ln, 0)
        if EQ(fst, CLOSEPAREN) and ($sz > 1) and
-           not(STR_ELT(ln, 1) = SPACE)
+           not(is_white?(STR_ELT(ln, 1)))
        then if incPrefix?('"command",1,ln)
             then true
             else nil
@@ -280,7 +290,7 @@ nextline(s)==
        $r:= rest s
        $ln := rest $f
        $linepos:=CAAR $f
-       $n:=STRPOSL('" ",$ln,0,true)-- spaces at beginning
+       $n := skip_whitespace($ln, 0) -- spaces at beginning
        $sz :=# $ln
        true
 
@@ -334,7 +344,7 @@ scanToken () ==
                                lfid '"?"
             punctuation? c            => scanPunct ()
             startsId? ch              => scanWord  (false)
-            c=SPACE                   =>
+            is_white?(c)              =>
                            scanSpace ()
                            $was_nonblank := false
                            []
@@ -460,8 +470,7 @@ scanCloser? w== MEMQ(keyword w,scanCloser)
 
 scanSpace()==
            n:=$n
-           $n:=STRPOSL('" ",$ln,$n,true)
-           if null $n then $n:=# $ln
+           $n := skip_whitespace($ln, $n)
            $floatok:=true
            lfspaces ($n-n)
 
