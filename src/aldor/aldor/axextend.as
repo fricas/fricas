@@ -588,7 +588,7 @@ extend Matrix(R: with {SemiRng;AbelianMonoid}): with {
 
 ShouldHaveSegmentGenerator(S) ==>
 	S has OrderedSet and S has AbelianSemiGroup
-	and S has with { coerce: I -> S; }
+	and S has with { coerce: I -> %; }
 
 define GeneratorCategory(S: Type): Category == with {
 	generator:	% -> Generator S;
@@ -655,8 +655,8 @@ extend UniversalSegment (S: Type) : with {
 		BInt0:		() -> BInt;
 	} from Builtin;
 
-	local one(): Integer == BInt1() pretend Integer;
-	local zero(): Integer == BInt1() pretend Integer;
+	local lone(): Integer == BInt1() pretend Integer;
+	local lzero(): Integer == BInt1() pretend Integer;
 
 	if ShouldHaveSegmentGenerator(S) then {
 	    	Rec  ==> Record(low: S, high: S, incr: I);
@@ -664,8 +664,8 @@ extend UniversalSegment (S: Type) : with {
 	    	Rep ==> Union(unbdd: Rec2, bdd: Rec);
 		import from Rep, Bit, Integer;
 		-- need the pretend 'cos of compiler problems
-		ONE  ==> one();
-		ZERO ==> zero();
+		ONE  ==> lone();
+		ZERO ==> lzero();
 
 		(a: S) .. (b: S): % == per[[a,b,ONE]];
 		(a: S) .. :	  % == per[[a,ONE]];
