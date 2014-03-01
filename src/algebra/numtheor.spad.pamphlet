@@ -121,23 +121,7 @@ Step 4 : &3  &=& 3(1) + 0
 Notice that $15(7) = 105 = 1 + 4(26) \equiv 1 ({\rm\ mod\ } 26)$.
 
 Using the half extended Euclidean algorithm we compute 1/a mod b.
-<<inverse(a, b)>>=
-  inverse(a, b) ==
-    borg : I := b
-    c1 : I := 1
-    d1 : I := 0
-    while b ~= 0 repeat
-      q : I := a quo b
-      r : I := a-q*b
-      (a, b) := (b, r)
-      (c1, d1) := (d1, c1-q*d1)
-    a ~= 1 => error("moduli are not relatively prime")
-    positiveRemainder(c1, borg)
-
-@
-<<inverse : (I, I) -> I>>=
-  inverse : (I, I) -> I
-@
+See \spad{inverse} below.
 
 \subsection{The Chinese Remainder Algorithm}
 \subsubsection{Chinese Remainder Theorem}
@@ -188,22 +172,10 @@ or
 \[4+5*2\]
 or
 \[14\]
-<<chineseRemainder(x1, m1, x2, m2)>>=
-  chineseRemainder(x1, m1, x2, m2) ==
-    m1 < 0 or m2 < 0 => error "moduli must be positive"
-    x1 := positiveRemainder(x1, m1)
-    x2 := positiveRemainder(x2, m2)
-    x1 + m1 * positiveRemainder(((x2-x1) * inverse(m1, m2)), m2)
 
-@
-This function has a restricted signature which only allows for
+See \spad{chineseRemainder} below.
+Implelemented function has a restricted signature which only allows for
 computing the chinese remainder of two numbers and two moduli.
-<<chineseRemainder : (I, I, I, I) -> I>>=
-  chineseRemainder : (I, I, I, I) -> I
-    ++ \spad{chineseRemainder(x1, m1, x2, m2)} returns w, where w is such that
-    ++ \spad{w = x1 mod m1} and \spad{w = x2 mod m2}. Note: \spad{m1} and
-    ++ \spad{m2} must be relatively prime.
-@
 
 <<package INTHEORY IntegerNumberTheoryFunctions>>=
 )abbrev package INTHEORY IntegerNumberTheoryFunctions
@@ -234,7 +206,10 @@ IntegerNumberTheoryFunctions() : Exports == Implementation where
     ++ \spad{carmichaelLambda(n)} returns exponent of the multiplicative
     ++ group of integers modulo n, that is smallest positive integer
     ++ k such that \spad{i^k rem n = 1} for all i relatively prime to n.
-<<chineseRemainder : (I, I, I, I) -> I>>
+  chineseRemainder : (I, I, I, I) -> I
+    ++ \spad{chineseRemainder(x1, m1, x2, m2)} returns w, where w is such that
+    ++ \spad{w = x1 mod m1} and \spad{w = x2 mod m2}. Note: \spad{m1} and
+    ++ \spad{m2} must be relatively prime.
   divisors : I -> List I
     ++ \spad{divisors(n)} returns a list of the divisors of n.
   euler : I -> I
@@ -356,9 +331,23 @@ IntegerNumberTheoryFunctions() : Exports == Implementation where
       B(i) := -b/((i+1)::RN)
     B(n)
 
-<<inverse : (I, I) -> I>>
-<<inverse(a, b)>>
-<<chineseRemainder(x1, m1, x2, m2)>>
+  inverse(a : I, b : I) : I ==
+      borg : I := b
+      c1 : I := 1
+      d1 : I := 0
+      while b ~= 0 repeat
+          q : I := a quo b
+          r : I := a-q*b
+          (a, b) := (b, r)
+          (c1, d1) := (d1, c1-q*d1)
+      a ~= 1 => error("moduli are not relatively prime")
+      positiveRemainder(c1, borg)
+
+  chineseRemainder(x1, m1, x2, m2) ==
+      m1 < 0 or m2 < 0 => error "moduli must be positive"
+      x1 := positiveRemainder(x1, m1)
+      x2 := positiveRemainder(x2, m2)
+      x1 + m1 * positiveRemainder(((x2-x1) * inverse(m1, m2)), m2)
 
   jacobi(a, b) ==
     -- Revised by Clifton Williamson January 1989.
