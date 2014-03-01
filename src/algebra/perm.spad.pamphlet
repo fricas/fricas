@@ -166,7 +166,8 @@ Permutation(S : SetCategory) : public == private where
     -- representation of the object:
 
     Rep  := V L S
-@
+
+)if false
 
 We represent a permutation as two lists of equal length representing preimages
 and images of moved points. I.e., fixed points do not occur in either of these
@@ -176,7 +177,8 @@ points easily.
 Note that this was not respected in versions before [[patch--50]] of this
 domain.
 
-<<domain PERM Permutation>>=
+)endif
+
     -- import of domains and packages
 
     import OutputForm
@@ -290,7 +292,8 @@ domain.
             image := cons(pi, image)
 
       [preImage, image]
-@
+
+)if false
 
 This operation transforms a pair of preimages and images into an element of the
 domain. Since we assume that fixed points do not occur in the representation,
@@ -307,18 +310,7 @@ causing bugs when computing [[movedPoints]], [[fixedPoints]], [[even?]],
 The other coercion facilities check for fixed points. It also seems that [[*]]
 removes fixed points from its result.
 
-<<TEST PERM>>=
-  p := coercePreimagesImages([[1, 2, 3], [1, 2, 3]])
-  movedPoints p    -- should return {}
-  even? p          -- should return true
-  p := coercePreimagesImages([[0, 1, 2, 3], [3, 0, 2, 1]])$PERM ZMOD 4
-  fixedPoints p    -- should return {2}
-  q := coercePreimagesImages([[0, 1, 2, 3], [1, 0]])$PERM ZMOD 4
-  fixedPoints(p*q) -- should return {2, 0}
-  even?(p*q)       -- should return false
-@
-
-<<domain PERM Permutation>>=
+)endif
 
     movedPoints p == construct p.1
 
@@ -466,21 +458,13 @@ removes fixed points from its result.
       coerceImages (image) ==
         preImage : L S := [i::S for i in 1..maxIndex image]
         coercePreimagesImages [preImage, image]
-@
 
-Up to [[patch--50]] we did not check for duplicates.
-
-<<domain PERM Permutation>>=
     if S has Finite then
 
       coerceImages (image) ==
         preImage : L S := [index(i::PI)::S for i in 1..maxIndex image]
         coercePreimagesImages [preImage, image]
-@
 
-Up to [[patch--50]] we did not check for duplicates.
-
-<<domain PERM Permutation>>=
       fixedPoints ( p ) == complement movedPoints p
 
       cyclePartition p ==
