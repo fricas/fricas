@@ -859,7 +859,7 @@ form2Fence1 x ==
 form2FenceQuote x ==
   NUMBERP x => [STRINGIMAGE x]
   SYMBOLP x => [FORMAT(NIL, '"|~a|", x)]
-  atom    x => '"??"
+  atom    x => ['"??"]
   ['"(",:form2FenceQuote first x,:form2FenceQuoteTail rest x]
 
 form2FenceQuoteTail x ==
