@@ -687,8 +687,18 @@ setqMultiple(nameList,val,m,e) ==
   [x,m',e]:= convert(T,m) or return nil
   -- 1.1 exit if result is a list
   m1 is ["List",D] =>
-    for y in nameList repeat e:= put(y,"value",[genSomeVariable(),D,$noEnv],e)
-    convert([["PROGN",x,["LET",nameList,g],g],m',e],m)
+    g2 := genVariable()
+    e := addBinding(g2, nil, e)
+    e := put(g2, "mode", m1, e)
+    T := compSetq1(g2, g, m1, e) or return nil
+    [x2, ., e] := convert(T, m1) or return nil
+    ass_list := []
+    for y in nameList repeat
+        e := put(y, "value", [genSomeVariable(), D, $noEnv], e)
+        ass_list := cons(["LET", y, ["SPADfirst", g2]], ass_list)
+        ass_list := cons(["LET", g2, ["CDR", g2]], ass_list)
+    ass_list := nreverse(rest(ass_list))
+    convert([["PROGN",x, x2, :ass_list, g], m', e], m)
   -- 2 verify that the #nameList = number of parts of right-hand-side
   selectorModePairs:=
                                                 --list of modes
