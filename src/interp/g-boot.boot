@@ -94,10 +94,12 @@ COMP_-2(args) ==
     junk => MOAN (FORMAT(nil, '"******pren error in (~S (~S ...) ...)",_
                          name, type))
     type is "SLAM" => BREAK()
-    type is "spad_CLAM" =>
+    type is 'domain_functor =>
         compClam(name, argl, bodyl, "$ConstructorCache",
                  'domainEqualList, ['count])
-    type is "SPADSLAM" => compSPADSLAM(name, argl, bodyl)
+    type is 'category_functor => compSPADSLAM(name, argl, bodyl)
+    if type = 'mutable_domain_functor then
+        type := 'LAMBDA
     bodyl := [name, [type, argl, :bodyl]]
     if $PrettyPrint then PPRINT(bodyl)
     if NULL($COMPILE) then
@@ -106,9 +108,7 @@ COMP_-2(args) ==
       COMP370(bodyl)
     name
 
-COMP(lfun) ==
-    #lfun ~= 1 => BREAK()
-    [COMP_-2 nf for nf in COMP_-1(first(lfun))]
+COMP(fun) == [COMP_-2 nf for nf in COMP_-1(fun)]
 
 compSPADSLAM(name, argl, bodyl) ==
     al := INTERNL(name, '";AL")
