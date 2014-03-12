@@ -199,7 +199,7 @@ intloopReadConsole(b, n)==
     a:= serverReadLine(_*STANDARD_-INPUT_*)
     ioHook("endOfReadLine")
     not STRINGP a => leaveScratchpad()
-    #a=0 =>
+    b = '"" and #a=0 =>
              princPrompt()
              intloopReadConsole('"", n)
     $DALYMODE and intloopPrefix?('"(",a) =>
