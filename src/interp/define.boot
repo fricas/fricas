@@ -273,7 +273,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
           [['devaluate,u] for u in sargl]]],body]
     body:=
       ['PROG1,['LET,g:= GENSYM(),body],['SETELT,g,0,mkConstructor $form]]
-    fun:= compile [op',['LAMBDA, sargl, body]]
+    fun := compile [op', ['category_functor, sargl, body]]
 
 --  5. give operator a 'modemap property
     pairlis:= [[a,:v] for a in argl for v in $FormalMapVariableList]
@@ -412,7 +412,9 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
        [nil, ['Mapping, :signature'], originale]
 
     body':= T.expr
-    lamOrSlam:= if $mutableDomain then 'LAMBDA else 'SPADSLAM
+    lamOrSlam :=
+        $mutableDomain => 'mutable_domain_functor
+        'domain_functor
     fun:= compile SUBLIS($pairlis, [op',[lamOrSlam,argl,body']])
     --The above statement stops substitutions gettting in one another's way
 --+
@@ -901,7 +903,7 @@ spadCompileOrSetq (form is [nam,[lam,vl,body]]) ==
            macform := ['XLAM,vl',body]
            output_lisp_form(['PUT,MKQ nam,MKQ 'SPADreplace,MKQ macform])
            sayBrightly ['"     ",:bright nam,'"is replaced by",:bright body]
-  $insideCapsuleFunctionIfTrue => first COMP LIST form
+  $insideCapsuleFunctionIfTrue => first COMP form
   compileConstructor form
 
 compileConstructor form ==
@@ -913,17 +915,11 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
 -- fn is the name of some category/domain/package constructor;
 -- we will cache all of its values on $ConstructorCache with reference
 -- counts
-  kind := GETDATABASE(fn,'CONSTRUCTORKIND)
-  lambdaOrSlam :=
-    kind = 'category => 'SPADSLAM
-    $mutableDomain => 'LAMBDA
-    'spad_CLAM
-  compForm:= LIST [fn,[lambdaOrSlam,vl,:bodyl]]
   auxfn := INTERNL(fn, '";")
   output_lisp_form(["DECLAIM", ["NOTINLINE", auxfn]])
-  if kind = 'category
-      then u:= compAndDefine compForm
-      else u:=COMP compForm
+  if key = 'category_functor
+      then u := compAndDefine form
+      else u := COMP form
   clearConstructorCache fn      --clear cache for constructor
   first u
 

@@ -300,8 +300,8 @@ compileInteractive fn ==
     sayBrightlyI bright '"Generated LISP code for function:"
     pp fn
   optfn :=
-     $InteractiveMode => [timedOptimization fn]
-     [fn]
+     $InteractiveMode => timedOptimization fn
+     fn
   result := compQuietly optfn
   if $InteractiveMode then stopTimingProcess 'compilation
   result
