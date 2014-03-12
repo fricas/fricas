@@ -363,7 +363,9 @@ S_process(x) ==
     null(nform) => nil
     x := parseTransform(postTransform(nform))
     $TranslateOnly => $Translation := x
-    $postStack => displayPreCompilationErrors()
+    $postStack =>
+        displayPreCompilationErrors()
+        userError "precompilation failed"
     $PrintOnly =>
         FORMAT(true, '"~S   =====>~%", $currentLine)
         PRETTYPRINT(x)
