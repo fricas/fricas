@@ -779,7 +779,6 @@ coerceInteractive(triple,t2) ==
   else startTimingProcess 'coercion
   -- next 2 lines handle cases like '"failed"
   result :=
-    expr2 and (t1 = val) => objNew(val,$OutputForm)
     expr2 and t1 is ['Variable,var] => objNewWrap(var,$OutputForm)
     coerceInt0(triple,t2)
   if expr2 then stopTimingProcess 'print
@@ -861,7 +860,7 @@ coerceInt1(triple,t2) ==
     t1 = PNAME(v) => objNewWrap(v,t2)
     NIL
   (STRINGP t1) and (t1 = unwrap val) =>
-    t2 = $OutputForm => objNew(t1,$OutputForm)
+    t2 = $OutputForm => objNew(STRCONC('"_"", t1, '"_""), $OutputForm)
     NIL
   atom t1 => NIL
 

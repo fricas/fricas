@@ -91,6 +91,8 @@ RecordUnEqual(x,y,dom) == not(RecordEqual(x,y,dom))
 RecordPrint(x,dom) == coerceRe2E(x,dom.3)
 
 coerceVal2E(x,m) ==
+   -- first catch "failed" etc.
+   STRINGP m and (x = m) => STRCONC('"_"", x, '"_"")
    objValUnwrap coerceByFunction(objNewWrap(x, m), $OutputForm)
 
 findEqualFun(dom) ==
@@ -172,7 +174,6 @@ coerceUn2E(x,source) ==
           FUNCALL(typeFun,x)
       if found then
           if p is ['EQCAR, :.] then x := rest x
-          STRINGP b => res := x  -- to catch "failed" etc.
           res := coerceVal2E(x,b)
   not(found) =>
     error '"Union bug: Cannot find appropriate branch for coerce to E"

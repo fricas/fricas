@@ -761,6 +761,7 @@ evalSlotDomain(u,dollar) ==
           lazyDomainSet(y,dollar,u)               --old style has [$,code,:lazyt]
       constructor? v or MEMQ(v,'(Record Union Mapping)) =>
         lazyDomainSet(y,dollar,u)                       --new style has lazyt
+      v = 'QUOTE => first(rest(y))
       y
     y
   u is ['NRTEVAL,y] =>

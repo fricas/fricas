@@ -221,8 +221,6 @@ sayMath u ==
 --% Output transformations
 
 outputTran x ==
-  x in '("failed" "nil" "prime" "sqfr" "irred") =>
-    STRCONC('"_"",x,'"_"")
   STRINGP x => x
   VECP x =>
     outputTran ['BRACKET,['AGGLST,:[x.i for i in 0..MAXINDEX x]]]
