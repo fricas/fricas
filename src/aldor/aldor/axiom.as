@@ -12,7 +12,7 @@ macro {
 --import from Integer, PositiveInteger, NonNegativeInteger, SingleInteger;
 --import from Float, DoubleFloat;
 
-import { true: %, false: % } from Boolean;
+import { true: %; false: % } from Boolean;
 import {
 	string:		Literal -> %;
 } from String;
