@@ -346,12 +346,12 @@ FortranCode() : public == private where
       [(l.1),:[:[",",u] for u in rest(l)]]
 
     getReturn(rec : RETURN) : SEX ==
-      returnToken : SEX := convert("RETURN"::Symbol::O)$SEX
+      returnToken : O := "RETURN"::Symbol::O
       elt(rec, empty?)$RETURN =>
         getStatement(returnToken, NIL$Lisp)$Lisp
       rt : EXPRESSION := elt(rec, value)$RETURN
       rv : O := elt(rt, expr)$EXPRESSION
-      getStatement([returnToken, convert(rv)$SEX]$Lisp,
+      getStatement([returnToken, rv]$Lisp,
                    elt(rt, ints2Floats?)$EXPRESSION )$Lisp
 
     getStop() : SEX ==
@@ -431,12 +431,10 @@ FortranCode() : public == private where
 
     getAssign(rec : ASS) : SEX ==
       indices : L PIN := elt(rec, arrayIndex)$ASS
-      if indices = []::(L PIN) then
-        lhs := elt(rec, var)$ASS::O
-      else
-        lhs := cons(elt(rec, var)$ASS::PIN, indices)::O
-        -- Must get the index brackets correct:
-        lhs := (cdr car cdr convert(lhs)$SEX::SEX)::O -- Yuck!
+      lhs := elt(rec, var)$ASS::O
+      if not(empty?(indices)) then
+          lhs := elt(lhs, map((ii : PIN) : O +-> ii::O, indices
+                             )$ListFunctions2(PIN, O))
       elt(elt(rec, rand)$ASS, ints2Floats?)$EXPRESSION =>
         assignment2Fortran1(lhs, elt(elt(rec, rand)$ASS, expr)$EXPRESSION)$Lisp
       integerAssignment2Fortran1(lhs, elt(elt(rec, rand)$ASS, expr)$EXPRESSION)$Lisp
@@ -767,7 +765,7 @@ FortranProgram(name, returnType, arguments, symbols) : Exports == Implement wher
       void()$Void
 
     mkString(l : List Symbol) : String ==
-      unparse(convert(l::OutputForm)@InputForm)$InputForm
+      unparse(convert(l)@InputForm)$InputForm
 
     checkVariables(user : List Symbol, target : List Symbol) : Void ==
       -- We don't worry about whether the user has subscripted the

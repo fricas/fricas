@@ -24,8 +24,8 @@
 --  them as type Expression can cause the formatter to die, since
 --  certain magic cookies are in unexpected places).
 --  SMW July 87
-SExpressionCategory(Str, Sym, Int, Flt, Expr) : Category == Decl where
-    Str, Sym, Int, Flt, Expr : SetCategory
+SExpressionCategory(Str, Sym, Int, Flt) : Category == Decl where
+    Str, Sym, Int, Flt : SetCategory
 
     Decl ==> SetCategory with
         eq :        (%, %) -> Boolean
@@ -60,9 +60,6 @@ SExpressionCategory(Str, Sym, Int, Flt, Expr) : Category == Decl where
         float :     % -> Flt
           ++ float(s) returns s as an element of Flt;
           ++ Error: if s is not an atom that also belongs to Flt.
-        expr :      % -> Expr
-          ++ expr(s) returns s as an element of Expr;
-          ++ Error: if s is not an atom that also belongs to Expr.
         convert :   List % -> %
           ++ convert([a1, ..., an]) returns the S-expression \spad{(a1, ..., an)}.
         convert :   Str    -> %
@@ -72,8 +69,6 @@ SExpressionCategory(Str, Sym, Int, Flt, Expr) : Category == Decl where
         convert :   Int    -> %
           ++ convert(x) returns the Lisp atom x.
         convert :   Flt    -> %
-          ++ convert(x) returns the Lisp atom x.
-        convert :   Expr   -> %
           ++ convert(x) returns the Lisp atom x.
         car :       % -> %
           ++ car((a1, ..., an)) returns a1.
@@ -100,10 +95,10 @@ SExpressionCategory(Str, Sym, Int, Flt, Expr) : Category == Decl where
 -- Allows the names of the atomic types to be chosen.
 -- ^* Warning ^* Although the parameters are declared only to be Sets,
 -- ^* Warning ^* they must have the appropriate representations.
-SExpressionOf(Str, Sym, Int, Flt, Expr) : Decl == Body where
-    Str, Sym, Int, Flt, Expr : SetCategory
+SExpressionOf(Str, Sym, Int, Flt) : Decl == Body where
+    Str, Sym, Int, Flt : SetCategory
 
-    Decl ==> SExpressionCategory(Str, Sym, Int, Flt, Expr)
+    Decl ==> SExpressionCategory(Str, Sym, Int, Flt)
 
     Body ==> add
 
@@ -139,14 +134,12 @@ SExpressionOf(Str, Sym, Int, Flt, Expr) : Decl == Body where
         symbol b == (IDENTP(b)$Lisp => b pretend Sym;error "Non-symbol")
         float   b == (FLOATP(b)$Lisp  => b pretend Flt;error "Non-float")
         integer b == (INTEGERP(b)$Lisp => b pretend Int;error "Non-integer")
-        expr    b == b pretend Expr
 
         convert(l :  List %) == l  pretend %
         convert(st : Str)    == st pretend %
         convert(sy : Sym)    == sy pretend %
         convert(n :  Int)    == n  pretend %
         convert(f :  Flt)    == f  pretend %
-        convert(e :  Expr)   == e  pretend %
 
         car b        == CAR(b)$Lisp
         cdr b        == CDR(b)$Lisp
@@ -167,7 +160,7 @@ SExpressionOf(Str, Sym, Int, Flt, Expr) : Decl == Body where
 ++ Description:
 ++  This domain allows the manipulation of the usual Lisp values;
 SExpression()
-       == SExpressionOf(String, Symbol, Integer, DoubleFloat, OutputForm)
+       == SExpressionOf(String, Symbol, Integer, DoubleFloat)
 
 @
 \section{License}
