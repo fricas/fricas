@@ -66,7 +66,7 @@ getModemap(x is [op,:.],e) ==
       ([.,.,sl]:= u; SUBLIS(sl,modemap))
 
 getModemapList(op,numOfArgs,e) ==
-  op is ['elt,D,op'] => getModemapListFromDomain(op',numOfArgs,D,e)
+  op is ['Sel, D, op'] => getModemapListFromDomain(op', numOfArgs, D, e)
   [mm for
     (mm:= [[.,.,:sigl],:.]) in get(op,'modemap,e) | numOfArgs=#sigl]
 

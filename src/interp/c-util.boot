@@ -368,7 +368,7 @@ isSimple x ==
 
 isSideEffectFree op ==
   constructor? op or member(op,$SideEffectFreeFunctionList) or
-    op is ["elt",.,op'] and isSideEffectFree op'
+    op is ["Sel", ., op'] and isSideEffectFree op'
 
 isAlmostSimple x ==
   --returns (<new predicate> . <list of assignments>) or nil
