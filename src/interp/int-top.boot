@@ -168,7 +168,7 @@ SpadInterpretStream(step_num, source, interactive?) ==
     interactive? =>
         if printFirstPrompt?() then
             princPrompt()
-        intloopReadConsole('"", step_num)
+        intloopReadConsole([], step_num)
         []
     intloopInclude (source,0)
     []
@@ -199,25 +199,25 @@ intloopReadConsole(b, n)==
     a:= serverReadLine(_*STANDARD_-INPUT_*)
     ioHook("endOfReadLine")
     not STRINGP a => leaveScratchpad()
-    b = '"" and #a=0 =>
+    b = [] and #a=0 =>
              princPrompt()
-             intloopReadConsole('"", n)
+             intloopReadConsole([], n)
     $DALYMODE and intloopPrefix?('"(",a) =>
             intnplisp(a)
             princPrompt()
-            intloopReadConsole('"",n)
+            intloopReadConsole([], n)
     pfx := stripSpaces intloopPrefix?('")fi",a)
     pfx and ((pfx = '")fi") or (pfx = '")fin")) => []
-    b = '"" and (d := intloopPrefix?('")", a)) =>
+    b = [] and (d := intloopPrefix?('")", a)) =>
              setCurrentLine d
              c := ncloopCommand(d,n)
              princPrompt()
-             intloopReadConsole('"", c)
-    a:=CONCAT(b,a)
-    ncloopEscaped a => intloopReadConsole(SUBSEQ(a, 0, (LENGTH a) - 1),n)
-    c := intloopProcessString(a, n)
+             intloopReadConsole([], c)
+    b := CONS(a, b)
+    ncloopEscaped a => intloopReadConsole(b, n)
+    c := intloopProcessStrings(nreverse b, n)
     princPrompt()
-    intloopReadConsole('"", c)
+    intloopReadConsole([], c)
 
 -- The 'intloopPrefix?' function tests if the string 'prefix' is
 -- is a prefix of the string 'whole', ignoring leading whitespace.
@@ -273,11 +273,24 @@ intloopInclude1(name,n) ==
           a => intloopInclude(a,n)
           n
 
-intloopProcessString(s,n) ==
+fakepile(s) ==
+    if npNull s then [false, 0, [], s]
+    else
+        [h, t] := [car s, cdr s]
+        ss := cdr(h)
+        ress := car h
+        while not npNull t repeat
+            h := car (car t)
+            t := cdr t
+            ress := dqAppend(ress, h)
+        cons([[ress, :ss]], t)
+
+intloopProcessStrings(s, n) ==
      setCurrentLine s
-     intloopProcess(n,true,
+     intloopProcess(n, true,
          next(function ncloopParse,
-           next(function lineoftoks,incString s)))
+             next(function fakepile,
+                 next(function lineoftoks, incStrings s))))
 
 $pfMacros := []
 
@@ -425,6 +438,8 @@ ncloopInclude1(name,n) ==
           n
 
 incString s== incRenumber incLude(0,[s],0,['"strings"] ,[Top])
+
+incStrings(s) == incRenumber incLude(0, s, 0, ['"strings"], [Top])
 
 ncError() ==
     THROW("SpadCompileItem",'ncError)
