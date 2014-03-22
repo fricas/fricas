@@ -602,7 +602,6 @@ dcSize(:options) ==
     suffix := (lookupFun = 'lookupIncomplete => '"incomplete"; '"complete")
     sayBrightly ['"template    = ",tSize]
     sayBrightly ['"operations  = ",oSize,'" (",suffix,'")"]
-    sayBrightly ['"attributes  = ",aSize]
     sayBrightly ['"categories  = ",cSize]
     sayBrightly ['"data vector = ",vSize]
   if null quiet then
@@ -660,8 +659,6 @@ infovec con ==
   ppTemplate u.0
   sayBrightly '"---------------slot 1 is op table-------------------"
   print_full1 u.1
-  sayBrightly '"---------------slot 2 is attribute list-------------"
-  print_full1 u.2
   sayBrightly '"---------------slot 3.0 is catpredvec---------------"
   print_full1 u.3.0
   sayBrightly '"---------------slot 3.1 is catinfovec---------------"

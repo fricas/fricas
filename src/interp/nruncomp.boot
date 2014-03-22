@@ -423,7 +423,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $GENNO: local:= 0     --bound in compDefineFunctor1, then as parameter here
   $catvecList: local    --list of vectors v1..vn for each view
   $hasCategoryAlist: local  --list of GENSYMs bound to (HasCategory ..) items
-  $catNames: local      --list of names n1..nn for each view
   $SetFunctions: local  --copy of p view with preds telling when fnct defined
   $MissingFunctionInfo: local --vector marking which functions are assigned
   $ConstantAssignments: local --code for creation of constants
@@ -450,18 +449,18 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   $catvecList:= [domainShell,:[emptyVector for u in CADR domainShell.4]]
   $SetFunctions:= GETREFV SIZE domainShell
   $MissingFunctionInfo:= GETREFV SIZE domainShell
-  $catNames:= ['$,:[GENVAR() for u in rest catvecListMaker]]
+  catNames := ['$, :[GENVAR() for u in rest catvecListMaker]]
   domname:='dv_$
 
   condCats := simplify_self_preds(catvecListMaker, condCats)
 -->  Do this now to create predicate vector; then DescendCode can refer
 -->  to predicate vector if it can
   [$uncondAlist,:$condAlist] :=    --bound in compDefineFunctor1
-      NRTsetVector4Part1($catNames,catvecListMaker,condCats)
+      NRTsetVector4Part1(catNames, catvecListMaker, condCats)
   [$NRTslot1PredicateList,predBitVectorCode1,:predBitVectorCode2] :=
       makePredicateBitVector [:ASSOCRIGHT $condAlist,:$NRTslot1PredicateList]
 
-  storeOperationCode:= DescendCode(code,true,nil,first $catNames)
+  storeOperationCode := DescendCode(code, true, nil, first catNames)
   outsideFunctionCode:= NRTaddDeltaCode()
   storeOperationCode:= NRTputInLocalReferences storeOperationCode
   NRTdescendCodeTran(storeOperationCode,nil) --side effects storeOperationCode

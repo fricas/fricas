@@ -962,8 +962,7 @@ maprinChk x ==
   -- above line added JHD 13/2/93 since otherwise x gets lost
 
 maprinRows matrixList ==
-  if not $collectOutput then TERPRI($algebraOutputStream)
-  while matrixList repeat
+    if not $collectOutput then TERPRI($algebraOutputStream)
     y:=NREVERSE matrixList
     --Makes the matrices come out in order, since CONSed on backwards
     matrixList:=nil
@@ -973,7 +972,6 @@ maprinRows matrixList ==
       andWhere := (name = firstName => '"where "; '"and ")
       line := STRCONC(andWhere, PNAME name)
       maprinChk ["=",line,m]
-      -- note that this could place a new element on $MatrixList, hence the loop
 
 deMatrix m ==
     ['BRACKET,['AGGLST,

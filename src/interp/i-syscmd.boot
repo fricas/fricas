@@ -2168,7 +2168,7 @@ show l == showSpad2Cmd l
 
 showSpad2Cmd l ==
   l = [NIL] => helpSpad2Cmd '(show)
-  $showOptions : local := '(attributes operations)
+  $showOptions : local := '(operations)
   if null $options then $options := '((operations))
   $e : local := $InteractiveFrame
   $env : local := $InteractiveFrame
@@ -2273,14 +2273,6 @@ reportOpsFromUnitDirectly unitForm ==
 
   for [opt] in $options repeat
     opt := selectOptionLC(opt,$showOptions,'optionError)
-    opt = 'attributes =>
-      centerAndHighlight('"Attributes",$LINELENGTH,specialChar 'hbar)
-      isRecordOrUnion =>
-        sayBrightly '"   Records and Unions have no attributes."
-      sayBrightly '""
-      attList:= REMDUP MSORT [x for [x,:.] in unit.2]
-      say2PerLine [formatAttribute x for x in attList]
-      NIL
     opt = 'operations =>
       $commentedOps: local := 0
       --new form is (<op> <signature> <slotNumber> <condition> <kind>)
