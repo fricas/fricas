@@ -63,7 +63,7 @@ postTran x ==
     postAtom x
   op := first x
   IDENTP(op) and (f := GET(op, 'postTran)) => FUNCALL(f, x)
-  op is ['elt,a,b] =>
+  op is ['Sel, a, b] =>
     u:= postTran [b,:rest x]
     [postTran op,:rest u]
   op~=(y:= postOp op) => [y,:postTranList rest x]
@@ -73,7 +73,7 @@ postTranList x == [postTran y for y in x]
 
 postBigFloat x ==
   [.,mant, expon] := x
-  postTran [["elt", '(Float), 'float], [",", [",", mant, expon], 10]]
+  postTran [["Sel", '(Float), 'float], [",", [",", mant, expon], 10]]
 
 postAdd ['add,a,:b] ==
   null b => postCapsule a
@@ -208,13 +208,6 @@ postMDef(t) ==
   typeList:= [targetType,:[(x is [":",.,t] => t; nil) for x in rest form]]
   ['MDEF,newLhs,typeList,[nil for x in form],postTran rhs]
 
-postElt (u is [.,a,b]) ==
-  a:= postTran a
-  b is ['Sequence,:.] =>
-      BREAK()
-      [['elt,a,'makeRecord],:postTranList rest b]
-  ['elt,a,postTran b]
-
 postExit ["=>",a,b] == ['IF,postTran a,['exit,postTran b],'noBranch]
 
 
@@ -269,8 +262,8 @@ postSEGMENT ['SEGMENT,a,b] ==
   postError ['"   Improper placement of segment",:bright key]
 
 postCollect [constructOp,:m,x] ==
-  x is [['elt,D,'construct],:y] =>
-    postCollect [['elt,D,'COLLECT],:m,['construct,:y]]
+  x is [['Sel, D, 'construct], :y] =>
+    postCollect [['Sel, D, 'COLLECT], :m, ['construct, :y]]
   itl:= postIteratorList m
   x:= (x is ['construct,r] => r; x)  --added 84/8/31
   y:= postTran x

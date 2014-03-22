@@ -93,7 +93,7 @@ becomes [[(if x b a)]], etc.
 parseTran x ==
   atom x => parseAtom x
   [op, :argl] := x
-  u := (op is ['elt, ., x] => x; op)
+  u := (op is ['Sel, ., x] => x; op)
   SYMBOLP(u) and (fn := GET(u, 'parseTran)) =>
       if op ~= u then SAY(["parseTran op ~= u", op, u])
       FUNCALL(fn, argl)

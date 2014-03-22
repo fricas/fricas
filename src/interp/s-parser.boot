@@ -199,8 +199,8 @@ push_form3(tag, arg1, arg2, arg3) ==
 
 dollarTran(dom, expr) ==
     expr is [fun, :args] and not(NULL(args)) =>
-        [["elt", dom, fun], :args]
-    ["elt", dom, expr]
+        [["Sel", dom, fun], :args]
+    ["Sel", dom, expr]
 
 parse_new_expr() ==
     $reduction_stack := nil

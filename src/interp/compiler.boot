@@ -419,7 +419,7 @@ compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
   -- used in case: f(g(x)) where f is in domain introduced by
   -- comping g, e.g. for (ELT (ELT x a) b), environment can have no
   -- modemap with selector b
-  form is ["elt",a,.] =>
+  form is ["Sel", a, .] =>
     ([.,.,e]:= comp(a,$EmptyMode,e) or return nil; compForm1(form,m,e))
   u:= for x in argl repeat [.,.,e]:= comp(x,$EmptyMode,e) or return "failed"
   u="failed" => nil
@@ -439,7 +439,7 @@ compForm1(form is [op,:argl],m,e) ==
   op="error" =>
     [[op,:[([.,.,e]:=outputComp(x,e)).expr
       for x in argl]],m,e]
-  op is ["elt",domain,op'] =>
+  op is ["Sel", domain, op'] =>
     domain="Lisp" =>
       --op'='QUOTE and null rest argl => [first argl,m,e]
       [[op',:[([.,.,e]:= compOrCroak(x,$EmptyMode,e)).expr for x in argl]],m,e]
@@ -517,7 +517,7 @@ compForm3(form is [op,:argl],m,e,modemapList) ==
   T
 
 getFormModemaps(form is [op,:argl],e) ==
-  op is ["elt",domain,op1] =>
+  op is ["Sel", domain, op1] =>
     [x for x in getFormModemaps([op1,:argl],e) | x is [[ =domain,:.],:.]]
   null atom op => nil
   modemapList:= get(op,"modemap",e)
@@ -906,8 +906,7 @@ compReturn(["return",level,x],m,e) ==
 
 --% ELT
 
-compElt(form,m,E) ==
-  form isnt ["elt",aDomain,anOp] => compForm(form,m,E)
+compSel(form is ["elt", aDomain, anOp], m, E) ==
   aDomain="Lisp" =>
     [anOp',m,E] where anOp'() == (anOp=$Zero => 0; anOp=$One => 1; anOp)
   isDomainForm(aDomain,E) =>
