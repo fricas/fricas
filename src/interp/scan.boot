@@ -399,6 +399,9 @@ scanEsc()==
      else
          true
 
+checkEsc()==
+    if STR_ELT($ln, $sz - 1) = ESCAPE then scanEsc()
+
 startsComment?()==
     if $n<$sz
     then
@@ -424,7 +427,9 @@ startsNegComment?()==
 scanNegComment()==
       n:=$n
       $n:=$sz
-      lfnegcomment SUBSTRING($ln,n,nil)
+      res := lfnegcomment SUBSTRING($ln,n,nil)
+      checkEsc()
+      res
 
 scanComment()==
       n:=$n
@@ -435,7 +440,9 @@ scanComment()==
               finish_comment()
           $comment_indent := n
           PUSH(CONCAT(make_full_CVEC(n, '" "), c_str), $current_comment_block)
-      lfcomment(n, $linepos, c_str)
+      res := lfcomment(n, $linepos, c_str)
+      checkEsc()
+      res
 
 
 scanPunct()==
