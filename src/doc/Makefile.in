@@ -203,10 +203,13 @@ util-ht: ${httargetdir}/util.ht
 ###################################################################
 # Find the long names for the abbreviations from XMPLIST from the
 # *.spad.pamphlet files.
+# This snippet relies on the fact that )abbrev lines lead to unique
+# short/long names for constructors in the ${EXAMPLES} list.
 examples.list: $(wildcard ${ALGEBRASOURCES}/*.spad.pamphlet)
-	(for a in ${EXAMPLES}; do echo $$a; done; \
+	(for a in ${EXAMPLES}; do echo "-- $$a"; done; \
 	 sed -n 's/^)abb[a-z]* [a-z][a-z]*  *\([A-Z0-9][A-Z0-9]*\) *\([^ ]*\)/\1 \2/p' ${ALGEBRASOURCES}/*.spad.pamphlet\
-	) | sort -k1,1 | ${AWK} '{if(a==$$1){print};a=$$a}' | sort -k2 > $@
+	) | ${AWK} '{if($$1=="--"){a[$$2]=1}else{if($$1 in a){print}}}'\
+	  | sort -k2 > $@
 
 xmpexp.ht: examples.list
 	echo '% !! DO NOT MODIFY BY HAND !! It is generated.' > $@
