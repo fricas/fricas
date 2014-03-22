@@ -254,24 +254,6 @@ formatOpSymbol(op,sig) ==
     op
   op
 
-formatAttribute x ==
-  atom x => ["  ",x]
-  x is [op,:argl] =>
-    for x in argl repeat
-      argPart:= NCONC(argPart,concat(",",formatAttributeArg x))
-    argPart => concat("  ",op,"_(",rest argPart,"_)")
-    ["  ",op]
-
-formatAttributeArg x ==
-  STRINGP x and x ='"*" => "_"*_""
-  atom x => formatOpSymbol (x,nil)
-  x is [":",op,["Mapping",:sig]] =>
-    concat('%b,formatOpSymbol(op,sig),": ",'%d,formatMapping sig)
-  prefix2String0 x
-
-formatMapping sig ==
-  "STRCONC"/concat("Mapping(",formatSignature sig,")")
-
 dollarPercentTran x ==
     -- Translate $ to %. We actually return %% so that the message
     -- printer will display a single %
@@ -807,7 +789,7 @@ pred2English x ==
     (_< . " < ") (_<_= . " <= ")
       (_> . " > ") (_>_= . " >= ") (_=  . " = ") (_^_= . " _^_= ")))) =>
         concat(pred2English a,translation,pred2English b)
-  x is ['ATTRIBUTE,form] =>
+  x is ['ATTRIBUTE, form] => BREAK()
     concat("attribute: ",form2String form)
   form2String x
 
