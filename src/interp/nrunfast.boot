@@ -139,9 +139,10 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   flag or someMatch => newLookupInAddChain(op,sig,domain,dollar)
   nil
 
+AND_char := ELT('"&", 0)
 
 isDefaultPackageForm? x == x is [op,:.]
-  and IDENTP op and (s := PNAME op).(MAXINDEX s) = "&"
+  and IDENTP op and (s := PNAME op).(MAXINDEX s) = AND_char
 
 
 --=======================================================
