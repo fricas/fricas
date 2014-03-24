@@ -603,6 +603,8 @@ setqSingle(id,val,m,E) ==
            (T:=comp(val,maxm'',E)) => T
         (T:= comp(val,$EmptyMode,E)) and getmode(T.mode,E) =>
           assignError(val,T.mode,id,m'')
+  m'' = $EmptyMode and T.mode = $EmptyMode and not(GENSYMP(id)) =>
+      stackMessage ["No mode in assignment to: ", id]
   finish_setq_single(T, m, id, val, currentProplist)
 
 finish_setq_single(T, m, id, val, currentProplist) ==
