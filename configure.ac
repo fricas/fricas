@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2013-09-27],
+AC_INIT([FriCAS], [2014-03-24],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -20,7 +20,7 @@ AC_DEFUN([FRICAS_CHECK_PROG],
    [AC_CHECK_PROG([$1], [$2], [$2])
    test -n "$$1" || AC_MSG_ERROR([$3])])
 
-fricas_src_subdirs="lib lisp boot interp share algebra input etc"
+fricas_src_subdirs="lib lisp boot interp algebra input etc"
 AC_SUBST(fricas_src_subdirs)
 
 AC_CANONICAL_SYSTEM
@@ -755,7 +755,7 @@ case $target in
         ;;
     windows)
         AC_DEFINE([MSYSplatform], [], [MS])
-        SRCDIRS=bootdir interpdir sharedir algebradir etcdir docdir inputdir
+        SRCDIRS=bootdir interpdir algebradir etcdir docdir inputdir
         ;;
     *linux*)
         AC_DEFINE([LINUXplatform], [], [Linux flavour])
@@ -781,7 +781,6 @@ FRICAS_MAKEFILE([src/lib/Makefile])
 FRICAS_MAKEFILE([src/lisp/Makefile])
 FRICAS_MAKEFILE([src/boot/Makefile])
 FRICAS_MAKEFILE([src/interp/Makefile])
-FRICAS_MAKEFILE([src/share/Makefile])
 FRICAS_MAKEFILE([src/algebra/Makefile])
 FRICAS_MAKEFILE([src/input/Makefile])
 FRICAS_MAKEFILE([src/etc/Makefile])
