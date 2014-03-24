@@ -12,16 +12,19 @@ all: all-ax
 # If the directory ${PREGENERATED}/target/algebra exists, there is nothing
 # to do since this directory will have been copied already.
 # Note that the value of ${PREGENERATED} must be an absolute directory.
-all-ax all-asq: stamp
-	test -d ${PREGENERATED}/target/algebra && $(STAMP) stamp-databases \
-          || ${MAKE} stamp-databases
+all-ax all-asq: stamp stamp-databases
 	@echo finished $(builddir)
+
+stamp-databases:
+	test -d ${PREGENERATED}/target/algebra && $(STAMP) stamp-databases \
+          || ${MAKE} do-stamp-databases
 
 stamp: $(fricas_target_bindir)/asq$(EXEEXT) \
 		$(fricas_target_libdir)/summary \
 		$(fricas_target_libdir)/copyright \
 		$(fricas_target_bindir)/fricas \
-                $(fricas_target_libdir)/SPADEDIT
+                $(fricas_target_libdir)/SPADEDIT \
+                $(fricas_target_libdir)/command.list
 	$(STAMP) stamp
 
 # The databases are built in this Makefile even though the prerequisits
@@ -31,7 +34,7 @@ stamp: $(fricas_target_bindir)/asq$(EXEEXT) \
 # order to build the databases. If any if any of these are changed,
 # the databases must be re-built.
 
-stamp-databases: ../algebra/*.NRLIB/*.$(FASLEXT)
+do-stamp-databases: ../algebra/*.NRLIB/*.$(FASLEXT)
 	@ echo 4 rebuilding databases...
 	(cd ../algebra ; \
            echo ')lisp (make-databases nil t)' | \
@@ -65,12 +68,23 @@ $(fricas_target_libdir)/SPADEDIT: $(srcdir)/SPADEDIT
 	cp $< $@
 	chmod +x $@
 
+$(fricas_target_libdir)/command.list: $(srcdir)/gen-cpl.lisp \
+   stamp-databases
+	echo ")read $(srcdir)/gen-cpl.lisp" > gen-cpl.in
+	echo ')lisp (do_command_list "'$@'")' >> gen-cpl.in
+	(DD=$(fricas_targetdir); \
+        if test -d ${PREGENERATED}/target/algebra ; then \
+            DD=${PREGENERATED}/target/ ; \
+        fi ; \
+	cat gen-cpl.in | \
+        DAASE=$$DD AXIOM=$(AXIOM) ${INTERPSYS} )
+
 $(fricas_target_bindir)/fricas: $(srcdir)/fricas
 	cp $< $@
 	chmod +x $@
 
 mostlyclean-local:
-	-rm -f stamp stamp-databases
+	-rm -f stamp stamp-databases stamp-do-databases
 
 clean-local: mostlyclean-local
 	-rm -f $(fricas_target_libdir)/summary
