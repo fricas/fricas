@@ -25,26 +25,21 @@ where the coefficients of the rational function are in any given field.
 
 \section{RationalInterpolation}
 
-<<RINTERP Header>>=
+<<package RINTERP RationalInterpolation>>=
 )abbrev package RINTERP RationalInterpolation
 ++ Description:
 ++ This package exports rational interpolation algorithms
 RationalInterpolation(xx, F) : Exports == Implementation  where
     xx : Symbol
     F : Field
-@
-
-<<RINTERP Exports>>=
     Exports == with
         interpolate : (List F, List F, NonNegativeInteger,
                                 NonNegativeInteger) -> Fraction Polynomial F
-@
-
-The implementation sets up a system of linear equations and solves it.
-<<RINTERP Implementation>>=
+    -- The implementation sets up a system of linear equations and solves it.
     Implementation == add
         interpolate(xlist, ylist, m, k) ==
-@
+
+)if false
 
 First we check whether we have the right number of points and values. Clearly
 the number of points and the number of values must be identical. Note that we
@@ -55,12 +50,15 @@ the denominator.
 
 In fact, we could also leave -- for example -- $k$ unspecified and determine it
 as $k=[[#xlist]]-m-1$: I don't know whether this would be better.
-<<RINTERP Implementation>>=
+
+)endif
+
             #xlist ~= #ylist =>
                 error "Different number of points and values."
             #xlist ~= m+k+1 =>
                 error "wrong number of points"
-@
+
+)if false
 
 The next step is to set up the matrix. Suppose that our numerator polynomial is
 $p(x)=a_0+a_1x+\dots+a_mx^m$ and that our denominator polynomial is
@@ -93,7 +91,9 @@ a_0\\a_1\\\vdots\\a_m\\b_0\\b_1\\\vdots\\b_k
 =\mathbf 0
 $$
 We generate this matrix columnwise:
-<<RINTERP Implementation>>=
+
+)endif
+
             tempvec : List F := [1 for i in 1..(m+k+1)]
 
             collist : List List F := cons(tempvec,
@@ -104,45 +104,36 @@ We generate this matrix columnwise:
             collist := append([collist.j for j in 1..(m+1)], _
                               [[- collist.j.i * ylist.i for i in 1..(m+k+1)] _
                                for j in 1..(k+1)])
-@
-Now we can solve the system:
-<<RINTERP Implementation>>=
+
+            -- Now we can solve the system:
             res : List Vector F := nullSpace((transpose matrix collist) _
                                             ::Matrix F)
-@
+
+)if false
 
 Note that it may happen that the system has several solutions. In this case,
 some of the data points may not be interpolated correctly. However, the
 solution is often still useful, thus we do not signal an error.
 
-<<RINTERP Implementation>>=
+)endif
+
             if #res ~= 1 then output("Warning: unattainable points!" _
                                    ::OutputForm)$OutputPackage
-@
+
+)if false
 
 In this situation, all the solutions will be equivalent, thus we can always
 simply take the first one:
 
-<<RINTERP Implementation>>=
+)endif
             reslist : List List Polynomial F := _
                       [[(res.1).(i+1)*(xx::Polynomial F)^i for i in 0..m], _
                       [(res.1).(i+m+2)*(xx::Polynomial F)^i for i in 0..k]]
-@
-Finally, we generate the rational function:
-<<RINTERP Implementation>>=
+
+            -- Finally, we generate the rational function:
             reduce((_+), reslist.1)/reduce((_+), reslist.2)
 @
-\section{Rational Interpolation Code}
-<<package RINTERP RationalInterpolation>>=
-<<RINTERP Header>>
-<<RINTERP Exports>>
-<<RINTERP Implementation>>
-@
-<<*>>=
-<<RINTERP Header>>
-<<RINTERP Exports>>
-<<RINTERP Implementation>>
-@
+
 \eject
 \begin{thebibliography}{99}
 \bibitem{1} nothing

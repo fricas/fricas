@@ -65,8 +65,8 @@ RecurrenceOperator(R, F) : Exports == Implementation where
       ++ likely) the sequence completely.
 
   Implementation == add
-<<implementation : RecurrenceOperator>>
-@
+
+)if false
 
 \subsection{Defining new operators}
 
@@ -75,13 +75,15 @@ equations. The operators for recurrences represents the $n$\textsuperscript{th}
 term of the corresponding sequence, the other the coefficient of $x^n$ in the
 Taylor series expansion.
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     oprecur := operator('rootOfRec)$BasicOperator
     opADE := operator('rootOfADE)$BasicOperator
 
     setProperty(oprecur, '%dummyVar, 1 pretend None)
     setProperty(opADE, '%dummyVar, 1 pretend None)
-@
+
+)if false
 
 Setting this property implies that the second argument of oprecur is a dummy
 variable and affects [[tower$ES]]: it will not appear in [[tower$ES]], if it
@@ -105,7 +107,8 @@ Only [[n]] and the elements in [[params]] can be substituted for.
 I decided not to include the name of the operator itself as a parameter for the
 moment, similar to the indexing variable in sum and product.
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     INFOREC ==> Record(eqn : F,
                        idx : Symbol,
                        fnc : BasicOperator,
@@ -136,7 +139,8 @@ moment, similar to the indexing variable in sum and product.
 
     setINFOSER(infoOp : BasicOperator, ser : INFOSER) : Void ==
         setProperty(infoOp, '%INFOSER, ser pretend None)
-@
+
+)if false
 
 \subsection{Recurrences}
 
@@ -145,7 +149,8 @@ moment, similar to the indexing variable in sum and product.
 We need to find out wether we can determine the next term of the sequence, and
 how many initial values are necessary.
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     getShiftRec(op : BasicOperator, f : Kernel F, n : Symbol)
                 : Union(Integer, "failed") ==
         a := argument f
@@ -207,11 +212,13 @@ how many initial values are necessary.
         if error? then error "evalRec: equation does not contain operator"
 
         [(maxShift - minShift)::NonNegativeInteger, maxShift, nextKernel]
-@
+
+)if false
 
 \subsubsection{Creating a recurrence}
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     makeRec(op, argsym, eq, params, values) ==
         shiftInfo := shiftInfoRec(op, argsym, eq)
 
@@ -283,13 +290,14 @@ how many initial values are necessary.
                 return kernel(oprecur, concat([argsym::F, kernel(info, [])],
                                               params))
 
-@
+)if false
 
 \subsubsection{Setting the evaluation property of [[oprecur]]}
 
 [[irecur]] handles evaluation of [[oprecur]].
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     irecur : List F -> F
     irecur l ==
         arg := first l
@@ -318,11 +326,12 @@ how many initial values are necessary.
 
     evaluate(oprecur, irecur)$BasicOperatorFunctions1(F)
 
-@
+)if false
 
 \subsubsection{Displaying a recurrence relation}
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     ddrec : List F -> OutputForm
     ddrec l ==
         info := getINFOREC operator(retract(second l)@(Kernel F))
@@ -363,7 +372,8 @@ how many initial values are necessary.
 
     setProperty(oprecur, '%specialDiff,
                 diffRec@((List F, Symbol) -> F) pretend None)
-@
+
+)if false
 
 \subsection{Functional Equations}
 
@@ -374,7 +384,7 @@ $Q=p(f, f', \dots, f^{(r)})$ we first need to differentiate $Q$ with respect to
 $f^{(i)}$ for $i\in\{0, 1, \dots, r\}$, plug in the given truncated power series
 solution and determine the valuation.
 
-<<NOTYET implementation : RecurrenceOperator>>=
+-- NOTYET implementation : RecurrenceOperator
     getValuation(op, argsym, eq, maxorder, values) : Integer ==
         max : Integer := -1;
         ker : Kernel F
@@ -383,11 +393,12 @@ solution and determine the valuation.
             pol := univariate(eq, ker)
             dif := D pol
             ground numer(dif.D(op(argsym), argsym, i))
-@
+----------------------------------------------------------
 
 \subsubsection{Extracting a coefficient given a functional equation}
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     makeFEq(op, v, argsym, eq, params, values) ==
         if not freeOf?(eq, argsym)
         then error "RECOP: The argument should not be used in the equation of the ADE"
@@ -484,11 +495,12 @@ solution and determine the valuation.
         error "eltable?: argument should be a single rootOfADE or rootOfRec object"
 
 
-@
-%$
+)if false
+
 \subsubsection{Displaying a functional equation}
 
-<<implementation : RecurrenceOperator>>=
+)endif
+
     vals : NonNegativeInteger := 4
 
     values() : NonNegativeInteger == vals
