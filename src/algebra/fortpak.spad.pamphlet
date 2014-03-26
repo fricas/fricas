@@ -169,11 +169,6 @@ FortranCodePackage1 : Exports  == Implementation where
 NAGLinkSupportPackage() : exports == implementation where
 
   exports ==> with
-    fortranCompilerName : () -> String
-      ++ fortranCompilerName() returns the name of the currently selected
-      ++  Fortran compiler
-    fortranLinkerArgs   : () -> String
-      ++ fortranLinkerArgs() returns the current linker arguments
     aspFilename         : String -> String
       ++ aspFilename("f") returns a String consisting of "f" suffixed with
       ++  an extension identifying the current FriCAS session.
@@ -181,10 +176,6 @@ NAGLinkSupportPackage() : exports == implementation where
         ++ dimensionsOf(s, m) \undocumented{}
     dimensionsOf        : (Symbol, Matrix Integer) -> SExpression
         ++ dimensionsOf(s, m) \undocumented{}
-    checkPrecision      : () -> Boolean
-        ++ checkPrecision() \undocumented{}
-    restorePrecision    : () -> Void
-        ++ restorePrecision() \undocumented{}
 
   implementation ==> add
     makeAs :                   (Symbol, Symbol) -> Symbol
@@ -194,19 +185,6 @@ NAGLinkSupportPackage() : exports == implementation where
     import String
     import Symbol
 
-    checkPrecision() : Boolean ==
-      (_$fortranPrecision$Lisp = 'single) and (_$nagEnforceDouble$Lisp)  =>
-        systemCommand("set fortran precision double")$MoreSystemCommands
-        if _$nagMessages$Lisp  then
-          print("*** Warning: Resetting fortran precision to double")$PrintPackage
-        true
-      false
-
-    restorePrecision() : Void ==
-      systemCommand("set fortran precision single")$MoreSystemCommands
-      if _$nagMessages$Lisp  then
-        print("*** Warning: Restoring fortran precision to single")$PrintPackage
-      void()$Void
 
     uniqueId : String := ""
     counter : Integer := 0
@@ -214,9 +192,6 @@ NAGLinkSupportPackage() : exports == implementation where
       if uniqueId = "" then
         uniqueId := concat(getEnv("HOST")$Lisp,getEnv("SPADNUM")$Lisp)
       concat(uniqueId, string (counter := counter+1))
-
-    fortranCompilerName() == string _$fortranCompilerName$Lisp
-    fortranLinkerArgs() == string _$fortranLibraries$Lisp
 
     aspFilename(f:String):String == concat ["/tmp/",f,getUniqueId(),".f"]
 
@@ -366,14 +341,7 @@ FortranOutputStackPackage() : specification == implementation where
     topFortranOutputStack() : String == string(_$fortranOutputFile$Lisp)
 
     pushFortranOutputStack(fn : FileName) : Void ==
-      if empty? fortranOutputStack then
-        push!(string(_$fortranOutputFile$Lisp), fortranOutputStack)
-      else if not(top(fortranOutputStack)=string(_$fortranOutputFile$Lisp)) then
-        pop! fortranOutputStack
-        push!(string(_$fortranOutputFile$Lisp), fortranOutputStack)
-      push!( fn::String, fortranOutputStack)
-      systemCommand concat(["set output fortran quiet ", fn::String])$String
-      void()
+        pushFortranOutputStack(fn::String)
 
     pushFortranOutputStack(fn : String) : Void ==
       if empty? fortranOutputStack then

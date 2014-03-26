@@ -78,6 +78,72 @@ Result() : Exports==Implementation where
 
 @
 \section{domain FC FortranCode}
+
+<<package FCTOOL FortranCodeTools>>=
+
+)abbrev package FCTOOL FortranCodeTools
+
+LS ==> List(String)
+O ==> OutputForm
+FortranCodeTools : with
+    fort_clean_lines : LS -> LS
+    do_with_error_env2 : (Boolean, () -> LS) -> LS
+      ++ do_with_error_env2(int_to_floats?, f)
+    do_with_error_env0 : (() -> LS) -> LS
+      ++ do_with_error_env0(f)
+    do_with_error_env1 : (() -> LS) -> LS
+      ++ do_with_error_env1(f)
+    expression2Fortran1 : (Symbol, Boolean, O, Boolean) -> LS
+      ++ expression2Fortran1(name, use_name?, of, int_to_floats?)
+    statement2Fortran :  O -> LS
+      ++ statement2Fortran(of)
+    expression2Fortran : O -> LS
+      ++ expression2Fortran(of)
+    getStatement : (O, Boolean) -> LS
+      ++ getStatement(of, int_to_floats?)
+    changeExprLength : Integer -> Void
+      ++ changeExprLength(i) changes limit on expression length by i.
+    displayLines1 : LS -> Void
+      ++ displayLines1(l)
+    dispStatement :  O -> Void
+      ++ dispStatement(of)
+
+  == add
+
+    fort_clean_lines(l : LS) : LS == fortran2Lines(l)$Lisp
+
+    do_with_error_env2(int_to_floats? : Boolean, f : () -> LS) : LS ==
+        do_with_error_env2(int_to_floats?, f)$Lisp
+
+    do_with_error_env0(f : () -> LS) : LS ==
+        do_with_error_env0(f)$Lisp
+
+    do_with_error_env1(f : () -> LS) : LS ==
+        do_with_error_env0(() +-> fort_clean_lines(f()))
+
+    expression2Fortran1(name : Symbol, use_name? : Boolean, of : O,
+                        int_to_floats? : Boolean) : LS ==
+        expression2Fortran1(name, use_name?, of, int_to_floats?)$Lisp
+
+    statement2Fortran(of : O) : LS ==
+        expression2Fortran1('DUMMY, true, of, false)
+
+    expression2Fortran(of : O) : LS ==
+        expression2Fortran1('DUMMY, false, of, false)
+
+    changeExprLength(i : Integer) : Void == changeExprLength(i)$Lisp
+
+    getStatement(of : O, int_to_floats? : Boolean) : LS ==
+        do_with_error_env2(int_to_floats?, () +-> statement2Fortran(of))
+
+    displayLines1(l : LS) : Void == displayLines1(l)$Lisp
+
+    dispStatement(of : O) : Void ==
+        l := getStatement(of, false)
+        displayLines1(l)
+
+@
+
 <<domain FC FortranCode>>=
 )abbrev domain FC FortranCode
 -- The FortranCode domain is used to represent operations which are to be
@@ -103,7 +169,7 @@ FortranCode() : public == private where
   L ==> List
   PI ==> PositiveInteger
   PIN ==> Polynomial Integer
-  SEX ==> SExpression
+  LS ==> List String
   O ==> OutputForm
   OP ==> Union(Null:"null",
                Assignment:"assignment",
@@ -316,8 +382,8 @@ FortranCode() : public == private where
       ++ by \spad{f}.
     printCode : % -> Void
       ++ printCode(f) prints out \spad{f} in FORTRAN notation.
-    getCode : % -> SEX
-      ++ getCode(f) returns a Lisp list of strings representing \spad{f}
+    getCode : % -> LS
+      ++ getCode(f) returns a list of strings representing \spad{f}
       ++ in Fortran notation.  This is used by the FortranProgram domain.
     setLabelValue : SingleInteger -> SingleInteger
       ++ setLabelValue(i) resets the counter which produces labels to i
@@ -329,9 +395,90 @@ FortranCode() : public == private where
     import RETURN
     import L PIN
     import O
-    import SEX
+    import LS
     import FortranType
     import TheSymbolTable
+    import FortranCodeTools
+
+    get_assignment(name : O,e : O, int_to_floats? : Boolean) : LS ==
+        getStatement(elt('=::O, [name, e]), int_to_floats?)
+
+    format_switch(switch1 : O, l : LS) : List(LS) ==
+        if LISTP(switch1)$Lisp then
+            l1 : List(O) := switch1 pretend List(O)
+            if EQ(first(l1), 'NULL)$Lisp then
+                switch1 := first rest l1
+        r := reverse!(statement2Fortran switch1)
+        while not(empty?(r)) and not(first(r) = "%l") repeat
+            l := cons(first(r), l)
+            r := rest(r)
+        [l, r]
+
+    fortFormatIf1(switch1 : O, i : Integer, kind : String) : LS ==
+        l : LS := [")THEN"]
+        changeExprLength(-i) -- Leave room for IF( ... )THEN
+        (l, r) := format_switch(switch1, l)
+        changeExprLength(i)
+        reverse! append(reverse!(l), cons(kind, r))
+
+    fortFormatIf(switch1 : O) : LS ==
+        do_with_error_env1(() +-> fortFormatIf1(switch1, 8, "IF("))
+
+    fortFormatElseIf(switch1 : O) : LS ==
+        do_with_error_env1(() +-> fortFormatIf1(switch1, 12, "ELSEIF("))
+
+    fortFormatIfGoto1(switch1 : O, lab : SingleInteger) : LS ==
+        l : LS := [")GOTO ", convert(lab)@String]
+        changeExprLength(-8) -- Leave room for IF( ... )THEN
+        (l, r) := format_switch(switch1, l)
+        changeExprLength(8)
+        reverse! append(reverse!(l), cons("IF(", r))
+
+    fortFormatIfGoto(switch1 : O, lab : SingleInteger) : LS ==
+        do_with_error_env1(() +-> fortFormatIfGoto1(switch1, lab))
+
+    fortFormatLabelledIfGoto1(switch1 : O, lab1 : SingleInteger,
+                             lab2 : SingleInteger) : LS ==
+        l := fortFormatIfGoto1(switch1, lab2)
+        labString := convert(lab1)@String
+        for i in #(labString)..5 repeat labString := concat(labString, " ")
+        l := fort_clean_lines(l)
+        cons(concat(labString, first(l)(7..)), rest(l))
+
+    fortFormatLabelledIfGoto(switch1 : O, lab1 : SingleInteger,
+                             lab2 : SingleInteger) : LS ==
+        do_with_error_env0(fortFormatLabelledIfGoto1(switch1, lab1, lab2))
+
+    getfortarrayexp1(name : Symbol, of : O, int_to_floats? : Boolean) : LS ==
+        l := expression2Fortran1(name, true, of, int_to_floats?)
+        first(l, (#l - 2)::NonNegativeInteger)
+
+    getfortarrayexp(name : Symbol, of : O, int_to_floats? : Boolean) : LS ==
+        do_with_error_env2(int_to_floats?,
+                           () +-> getfortarrayexp1(name, of, int_to_floats?))
+
+    fortFormatDo1(var1 : Symbol, lo : O, hi : O, incr : O,
+                 lab : SingleInteger) : LS ==
+        lol := statement2Fortran lo
+        hil := statement2Fortran hi
+        incl : LS :=
+            EQUAL(incr, 1@Integer)$Lisp => cons(",", statement2Fortran incr)
+            []
+        il := append(lol, cons(",", append(hil, incl)))
+        append(["DO ", convert(lab)@String, " ", string(var1), "="], il)
+
+    fortFormatDo(var1 : Symbol, lo : O, hi : O, inc : O,
+                 lab : SingleInteger) : LS ==
+        do_with_error_env2(false,
+                           () +-> fortFormatDo1(var1, lo, hi, inc, lab))
+
+    addCommas(l : List Symbol) : LS ==
+        empty?(l) => []
+        r := [string(first l)]
+        for e in rest l repeat r := cons(string(e), cons(",", r))
+        reverse!(r)
+
+    indentFortLevel(i : Integer) : Void == indentFortLevel(i)$Lisp
 
     Rep := Record(op : OP, data : OPREC)
 
@@ -345,129 +492,130 @@ FortranCode() : public == private where
     commaSep(l : List String) : List(String) ==
       [(l.1),:[:[",",u] for u in rest(l)]]
 
-    getReturn(rec : RETURN) : SEX ==
+    getReturn(rec : RETURN) : LS ==
       returnToken : O := "RETURN"::Symbol::O
       elt(rec, empty?)$RETURN =>
-        getStatement(returnToken, NIL$Lisp)$Lisp
+            getStatement(returnToken, false)
       rt : EXPRESSION := elt(rec, value)$RETURN
       rv : O := elt(rt, expr)$EXPRESSION
-      getStatement([returnToken, rv]$Lisp,
-                   elt(rt, ints2Floats?)$EXPRESSION )$Lisp
+      getStatement(elt(returnToken, [rv]),
+                   elt(rt, ints2Floats?)$EXPRESSION)
 
-    getStop() : SEX ==
-      fortran2Lines(LIST("STOP")$Lisp)$Lisp
+    getStop() : LS ==
+        fort_clean_lines(["STOP"]$LS)
 
-    getSave() : SEX ==
-      fortran2Lines(LIST("SAVE")$Lisp)$Lisp
+    getSave() : LS ==
+        fort_clean_lines(["SAVE"])
 
-    getCommon(u : COMMON) : SEX ==
-      fortran2Lines(APPEND(LIST("COMMON"," /",string (u.name),"/ ")$Lisp,_
-                    addCommas(u.contents)$Lisp)$Lisp)$Lisp
+    getCommon(u : COMMON) : LS ==
+        fort_clean_lines(append(["COMMON", " /", string (u.name), "/ "]$LS,
+                                addCommas(u.contents)))
 
-    getPrint(l : PRINTLIST) : SEX ==
-      ll : SEX := LIST("PRINT*")$Lisp
-      for i in l repeat
-        ll := APPEND(ll,CONS(",",expression2Fortran(i)$Lisp)$Lisp)$Lisp
-      fortran2Lines(ll)$Lisp
+    getPrint(l : PRINTLIST) : LS ==
+        ll : LS := ["PRINT*"]
+        for i in l repeat
+            ll := append(ll, cons(",", expression2Fortran(i)))
+        fort_clean_lines(ll)
 
-    getBlock(rec : BLOCK) : SEX ==
-      indentFortLevel(convert(1@Integer)$SEX)$Lisp
-      expr : SEX := LIST()$Lisp
-      for u in rec repeat
-        expr := APPEND(expr, getCode(u))$Lisp
-      indentFortLevel(convert(-1@Integer)$SEX)$Lisp
-      expr
+    getBlock(rec : BLOCK) : LS ==
+        indentFortLevel(1)
+        expr : LS := []
+        for u in rec repeat
+            expr := append(expr, getCode(u))
+        indentFortLevel(-1)
+        expr
 
-    getBody(f : %) : SEX ==
+    getBody(f : %) : LS ==
       operation(f) case Block => getCode f
-      indentFortLevel(convert(1@Integer)$SEX)$Lisp
+      indentFortLevel(1@Integer)
       expr := getCode f
-      indentFortLevel(convert(-1@Integer)$SEX)$Lisp
+      indentFortLevel(-1@Integer)
       expr
 
-    getElseIf(f : %) : SEX ==
+    getElseIf(f : %) : LS ==
       rec := code f
-      expr : SEX :=
-       fortFormatElseIf(elt(rec.conditionalBranch, switch)$COND::O)$Lisp
+      expr : LS :=
+          fortFormatElseIf(elt(rec.conditionalBranch, switch)$COND::O)
       expr :=
-       APPEND(expr, getBody elt(rec.conditionalBranch, thenClause)$COND)$Lisp
+          append(expr, getBody elt(rec.conditionalBranch, thenClause)$COND)
       elseBranch := elt(rec.conditionalBranch, elseClause)$COND
       not(operation(elseBranch) case Null) =>
-        operation(elseBranch) case Conditional =>
-          APPEND(expr, getElseIf elseBranch)$Lisp
-        expr := APPEND(expr, getStatement('ELSE::O, NIL$Lisp)$Lisp)$Lisp
-        expr := APPEND(expr, getBody elseBranch)$Lisp
+          operation(elseBranch) case Conditional =>
+              append(expr, getElseIf elseBranch)
+          expr := append(expr, getStatement('ELSE::O, false))
+          expr := append(expr, getBody elseBranch)
       expr
 
-    getContinue(label : SingleInteger) : SEX ==
-      lab : O := label::O
-      if (width(lab) > 6) then error "Label too big"
-      cnt : O := "CONTINUE"::O
-      --sp  : O := hspace(6-width lab)
-      sp  : O := hspace(_$fortIndent$Lisp -width lab)
-      LIST(STRCONC(STRINGIMAGE(lab)$Lisp, sp, cnt)$Lisp)$Lisp
+    getContinue(label : SingleInteger) : LS ==
+        lab := convert(label)@String
+        if #lab > 6 then error "Label too big"
+        cnt := "CONTINUE"
+        sp  : O := hspace(_$fortIndent$Lisp - #lab)
+        [STRCONC(lab, sp, cnt)$Lisp]$LS
 
-    getGoto(label : SingleInteger) : SEX ==
-     fortran2Lines(
-      LIST(STRCONC("GOTO ",STRINGIMAGE(label::O)$Lisp)$Lisp)$Lisp)$Lisp
+    getGoto(label : SingleInteger) : LS ==
+        fort_clean_lines([concat("GOTO ", convert(label)@String)])
 
-    getRepeat(repRec : LOOP) : SEX ==
+    getRepeat(repRec : LOOP) : LS ==
       sw : Switch := NOT elt(repRec, switch)$LOOP
       lab := newLabel()
       bod := elt(repRec, body)$LOOP
-      APPEND(getContinue lab, getBody bod,
-           fortFormatIfGoto(sw::O, lab)$Lisp)$Lisp
+      append(getContinue lab,
+             append(getBody bod, fortFormatIfGoto(sw::O, lab)))
 
-    getWhile(whileRec : LOOP) : SEX ==
+    getWhile(whileRec : LOOP) : LS ==
       sw := NOT elt(whileRec, switch)$LOOP
       lab1 := newLabel()
       lab2 := newLabel()
       bod := elt(whileRec, body)$LOOP
-      APPEND(fortFormatLabelledIfGoto(sw::O, lab1, lab2)$Lisp,
-           getBody bod, getBody gotoJump(lab1), getContinue lab2)$Lisp
+      ig : LS := fortFormatLabelledIfGoto(sw::O, lab1, lab2)
+      rl1 := [ig, getBody bod, getBody gotoJump(lab1),
+              getContinue lab2]$List(LS)
+      concat(rl1)$LS
 
-    getArrayAssign(rec : ARRAYASS) : SEX ==
-      getfortarrayexp((rec.var)::O, rec.rand, rec.ints2Floats?)$Lisp
+    getArrayAssign(rec : ARRAYASS) : LS ==
+        getfortarrayexp(rec.var, rec.rand, rec.ints2Floats?)
 
-    getAssign(rec : ASS) : SEX ==
-      indices : L PIN := elt(rec, arrayIndex)$ASS
-      lhs := elt(rec, var)$ASS::O
-      if not(empty?(indices)) then
-          lhs := elt(lhs, map((ii : PIN) : O +-> ii::O, indices
-                             )$ListFunctions2(PIN, O))
-      elt(elt(rec, rand)$ASS, ints2Floats?)$EXPRESSION =>
-        assignment2Fortran1(lhs, elt(elt(rec, rand)$ASS, expr)$EXPRESSION)$Lisp
-      integerAssignment2Fortran1(lhs, elt(elt(rec, rand)$ASS, expr)$EXPRESSION)$Lisp
+    getAssign(rec : ASS) : LS ==
+        indices : L PIN := elt(rec, arrayIndex)$ASS
+        lhs := elt(rec, var)$ASS::O
+        if not(empty?(indices))  then
+            lhs := elt(lhs, map((ii : PIN) : O +-> ii::O, indices
+                               )$ListFunctions2(PIN, O))
+        ass := elt(rec, rand)$ASS
+        ex := elt(ass, expr)$EXPRESSION
+        get_assignment(lhs, ex, elt(ass, ints2Floats?)$EXPRESSION)
 
-    getCond(rec : COND) : SEX ==
-      expr : SEX := APPEND(fortFormatIf(elt(rec, switch)$COND::O)$Lisp,
-                     getBody elt(rec, thenClause)$COND)$Lisp
+    getCond(rec : COND) : LS ==
+      expr := append(fortFormatIf(elt(rec, switch)$COND::O),
+                     getBody elt(rec, thenClause)$COND)
       elseBranch := elt(rec, elseClause)$COND
       if not(operation(elseBranch) case Null) then
         operation(elseBranch) case Conditional =>
-          expr := APPEND(expr, getElseIf elseBranch)$Lisp
-        expr := APPEND(expr, getStatement('ELSE::O, NIL$Lisp)$Lisp,
-                       getBody elseBranch)$Lisp
-      APPEND(expr, getStatement('ENDIF::O, NIL$Lisp)$Lisp)$Lisp
+            expr := append(expr, getElseIf elseBranch)
+        expr := append(expr,
+                       append(getStatement('ELSE::O, false),
+                              getBody elseBranch))
+      append(expr, getStatement('ENDIF::O, false))
 
-    getComment(rec : COMMENT) : SEX ==
-      convert([convert(concat("C     ",c)$String)@SEX for c in rec])@SEX
+    getComment(rec : COMMENT) : LS ==
+        [concat("C     ", c)$String for c in rec]
 
-    getCall(rec : CALL) : SEX ==
+    getCall(rec : CALL) : LS ==
       expr := concat("CALL ",rec)$String
       #expr > 1320 => error "Fortran CALL too large"
-      fortran2Lines(convert([convert(expr)@SEX ])@SEX)$Lisp
+      fort_clean_lines([expr])
 
-    getFor(rec : FOR) : SEX ==
+    getFor(rec : FOR) : LS ==
       rnge : SegmentBinding PIN := elt(rec, range)$FOR
       increment : PIN := elt(rec, span)$FOR
       lab : SingleInteger := newLabel()
       declare!(variable rnge, fortranInteger())
-      expr : SEX := fortFormatDo(variable rnge, (lo segment rnge)::O, _
-        (hi segment rnge)::O, increment::O, lab)$Lisp
-      APPEND(expr, getBody elt(rec, body)$FOR, getContinue(lab))$Lisp
+      expr : LS := fortFormatDo(variable rnge, (lo segment rnge)::O, _
+          (hi segment rnge)::O, increment::O, lab)
+      append(expr, append(getBody elt(rec, body)$FOR, getContinue(lab)))
 
-    getCode(f : %) : SEX ==
+    getCode(f : %) : LS ==
       opp : OP := operation f
       rec : OPREC := code f
       opp case Assignment => getAssign(rec.assignmentBranch)
@@ -487,7 +635,6 @@ FortranCode() : public == private where
       opp case Print => getPrint(rec.printBranch)
       opp case Common => getCommon(rec.commonBranch)
       error "Unsupported program construct."
-      convert(0)@SEX
 
     printCode(f : %) : Void ==
       displayLines1$Lisp getCode f
@@ -689,6 +836,7 @@ FortranProgram(name, returnType, arguments, symbols) : Exports == Implement wher
   arguments  : List Symbol
   symbols    : SymbolTable
 
+  O ==> OutputForm
   FC     ==> FortranCode
   EXPR   ==> Expression
   INT    ==> Integer
@@ -734,9 +882,11 @@ FortranProgram(name, returnType, arguments, symbols) : Exports == Implement wher
 
     Rep := REP
 
-    import SExpression
+    LS ==> List(String)
+
     import TheSymbolTable
     import FortranCode
+    import FortranCodeTools
 
     makeRep(b : List FortranCode) : % ==
       construct(empty()$SymbolTable, b)$REP
@@ -744,25 +894,40 @@ FortranProgram(name, returnType, arguments, symbols) : Exports == Implement wher
     codeFrom(u : %) : List FortranCode ==
       elt(u::Rep, code)$REP
 
+    fortFormatHead1(asp : LS) : LS ==
+        of := elt(name::O, [arg::O for arg in arguments])$O
+        append(asp, statement2Fortran(of))
+
+    fortFormatHead() : Void ==
+        -- $fortranSegment : fluid := nil
+        if returnType case void then
+            asp := ["SUBROUTINE "]
+            changeExprLength(l := -11)
+        else
+            s : String := checkType((returnType.fst)::String)$Lisp
+            asp := [s, " FUNCTION "]
+            changeExprLength(l := -10 - #s)
+        lines := do_with_error_env1(() +-> fortFormatHead1(asp))
+        displayLines1(lines)
+        changeExprLength(-l)
+
     outputAsFortran(p : %) : Void ==
       setLabelValue(25000::SingleInteger)$FC
       -- Do this first to catch any extra type declarations:
       tempName := 'FPTEMP
       newSubProgram(tempName)
       initialiseIntrinsicList()$Lisp
-      body : List SExpression := [getCode(l)$FortranCode for l in codeFrom(p)]
-      intrinsics : SExpression := getIntrinsicList()$Lisp
+      body : List LS := [getCode(l)$FortranCode for l in codeFrom(p)]
+      intrinsics : LS := getIntrinsicList()$Lisp
       endSubProgram()
-      fortFormatHead(returnType::OutputForm, name::OutputForm, _
-                     arguments::OutputForm)$Lisp
+      fortFormatHead()
       printTypes(symbols)$SymbolTable
       printTypes((p::Rep).localSymbols)$SymbolTable
       printTypes(tempName)$TheSymbolTable
       fortFormatIntrinsics(intrinsics)$Lisp
       clearTheSymbolTable(tempName)
-      for expr in body repeat displayLines1(expr)$Lisp
-      dispStatement('END::OutputForm)$Lisp
-      void()$Void
+      for expr in body repeat displayLines1(expr)
+      dispStatement('END::OutputForm)
 
     mkString(l : List Symbol) : String ==
       unparse(convert(l)@InputForm)$InputForm
