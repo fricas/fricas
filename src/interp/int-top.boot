@@ -375,17 +375,7 @@ ncloopCommand (line,n) ==
          InterpExecuteSpadSystemCommand(line)
          n
 
-ncloopEscaped x==
-     esc :=false
-     done:=false
-     for i in (# x) - 1 .. 0 by -1 while not done repeat
-         done:=
-              x.i='" ".0 =>false
-              x.i='"__".0=>
-                       esc:=true
-                       true
-              true
-     esc
+ncloopEscaped x == #x > 0 and x.(#x - 1) = '"__".0
 
 ncloopDQlines (dq,stream)==
         StreamNull stream
