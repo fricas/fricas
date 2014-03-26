@@ -433,12 +433,21 @@ outputComp(x,e) ==
            $OutputForm, e]
   (v:= get(x,"value",e)) and (v.mode is ['Union,:l]) =>
     [['coerceUn2E, x, v.mode], $OutputForm, e]
-  [x, $OutputForm, e]
+  SAY ["outputComp strange x ", x]
+  nil
 
 compForm1(form is [op,:argl],m,e) ==
   op="error" =>
-    [[op,:[([.,.,e]:=outputComp(x,e)).expr
-      for x in argl]],m,e]
+      #argl = 1 =>
+          arg := first(argl)
+          u := comp(arg, $String, e) =>
+              [[op, u.expr], m, e]
+          SAY ["compiling call to error ", argl]
+          u := outputComp(arg, e) =>
+              [[op, ['LIST, 'mathprint, u.expr]], m, e]
+          nil
+      SAY ["compiling call to error ", argl]
+      nil
   op is ["Sel", domain, op'] =>
     domain="Lisp" =>
       --op'='QUOTE and null rest argl => [first argl,m,e]
