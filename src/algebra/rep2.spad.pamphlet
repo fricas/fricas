@@ -391,8 +391,8 @@ RepresentationPackage2(R) : public == private where
             transitionMatrix : M R := _
               transpose completeEchelonBasis submodule
             messagePrint "  Transition matrix computed"
-            inverseTransitionMatrix : M R :=  _
-             autoCoerce(inverse transitionMatrix)$Union(M R,"failed")
+            inverseTransitionMatrix :=
+                (inverse transitionMatrix)::M(R)
             messagePrint "  The inverse of the transition matrix computed"
             messagePrint "  Now transform the matrices"
             for i in 1..maxIndex algebraGenerators repeat
@@ -447,7 +447,7 @@ RepresentationPackage2(R) : public == private where
               for j in 1..maxIndex (result.i) repeat
                 mat : M R := result.i.j
                 result.i.j := _
-                  transpose autoCoerce(inverse mat)$Union(M R,"failed")
+                  transpose((inverse mat)::M(R))
           else
             messagePrint "  Representation is not irreducible, use meatAxe to split"
         -- if "split?" then dual representation interchange factor
@@ -537,7 +537,7 @@ RepresentationPackage2(R) : public == private where
             -- can assume that dimensions of cyclic submodules are equal
             (ncols baseChange0) = n =>   -- full dimension
               transitionM := baseChange0 * _
-                autoCoerce(inverse baseChange1)$Union(M R,"failed")
+                  (inverse baseChange1)::M(R)
               foundResult := true
               result := true
               for j in 1..numberOfGenerators while result repeat
@@ -632,8 +632,8 @@ RepresentationPackage2(R) : public == private where
         transitionMatrix : M R := _
           transpose completeEchelonBasis submodule
         messagePrint "  Transition matrix computed"
-        inverseTransitionMatrix : M R :=
-          autoCoerce(inverse transitionMatrix)$Union(M R,"failed")
+        inverseTransitionMatrix :=
+            (inverse transitionMatrix)::M(R)
         messagePrint "  The inverse of the transition matrix computed"
         messagePrint "  Now transform the matrices"
         for i in 1..maxIndex algebraGenerators repeat
