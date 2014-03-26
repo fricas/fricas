@@ -32,44 +32,31 @@
 )package "BOOT"
 
 --% Translation of Expression to FORTRAN
-assignment2Fortran1(name,e) ==
-  $fortError : fluid := nil
-  checkLines fortran2Lines statement2Fortran ["=",name,e]
 
-integerAssignment2Fortran1(name,e) ==
-  $fortError : fluid := nil
-  $fortInts2Floats : fluid := nil
-  checkLines fortran2Lines statement2Fortran ["=",name,e]
+do_with_error_env0(f) ==
+    $fortError : fluid := nil
+    checkLines SPADCALL(f)
 
-statement2Fortran e ==
+do_with_error_env2(int_to_floats?, f) ==
+    $fortInts2Floats : fluid := int_to_floats?
+    $fortError : fluid := nil
+    checkLines fortran2Lines SPADCALL(f)
+
+expression2Fortran1(name, use_name, e, ints2floats?) ==
   -- takes an object of type Expression and returns a list of
   -- strings. Any part of the expression which is a list starting
   -- with 'FORTRAN is merely passed on in the list of strings. The
   -- list of strings may contain '"%l".
-  -- This is used when formatting e.g. a DO loop from Lisp
+  $fortInts2Floats : fluid := ints2floats?
   $exp2FortTempVarIndex : local := 0
-  $fortName : fluid := "DUMMY"
-  $fortInts2Floats : fluid := nil
+  $fortName : fluid := 
+      use_name => name
+      newFortranTempVar()
   fortranCleanUp exp2Fort1 segment fortPre exp2FortOptimize outputTran e
 
-expression2Fortran e ==
-  -- takes an object of type Expression and returns a list of
-  -- strings. Any part of the expression which is a list starting
-  -- with 'FORTRAN is merely passed on in the list of strings. The
-  -- list of strings may contain '"%l".
-  $exp2FortTempVarIndex : local := 0
-  $fortName : fluid := newFortranTempVar()
-  $fortInts2Floats : fluid := nil
-  fortranCleanUp exp2Fort1 segment fortPre exp2FortOptimize outputTran e
+expression2Fortran e == expression2Fortran1('dummy, false, e, false)
 
-expression2Fortran1(name,e) ==
-  -- takes an object of type Expression and returns a list of
-  -- strings. Any part of the expression which is a list starting
-  -- with 'FORTRAN is merely passed on in the list of strings. The
-  -- list of strings may contain '"%l".
-  $exp2FortTempVarIndex : local := 0
-  $fortName : fluid := name
-  fortranCleanUp exp2Fort1 segment fortPre exp2FortOptimize outputTran e
+statement2Fortran e == expression2Fortran1('DUMMY, true, e, false)
 
 newFortranTempVar() ==
   $exp2FortTempVarIndex := 1 + $exp2FortTempVarIndex
@@ -338,16 +325,6 @@ fortError(u,v) ==
 --% Top Level Things to Call
 -- The names are the same as those used in the old fortran code
 
-dispStatement x ==
-  $fortError : fluid := nil
-  displayLines fortran2Lines statement2Fortran x
-
-
-getStatement(x,ints2Floats?) ==
-  $fortInts2Floats : fluid := ints2Floats?
-  $fortError : fluid := nil
-  checkLines fortran2Lines statement2Fortran x
-
 fortexp0 x ==
   f := expression2Fortran x
   p := position('"%l",f)
@@ -365,25 +342,9 @@ dispfortexp x ==
       x := ['"=",var,x]
   dispfortexp1 x
 
-dispfortexpf (xf, fortranName) ==
-  $fortError : fluid := nil
-  linef := fortran2Lines BUTLAST(expression2Fortran1(fortranName,xf),2)
-  displayLines linef
-
-dispfortexpj (xj, fortranName) ==
-  $fortName : fluid := fortranName
-  $fortError : fluid := nil
-  linej := fortran2Lines BUTLAST(expression2Fortran1(fortranName,xj),2)
-  displayLines linej
-
-
 dispfortexp1 x ==
   $fortError : fluid := nil
   displayLines fortran2Lines expression2Fortran x
-
-getfortexp1 x ==
-  $fortError : fluid := nil
-  checkLines fortran2Lines expression2Fortran x
 
 displayLines1 lines ==
   for l in lines repeat
@@ -396,15 +357,6 @@ displayLines lines ==
 checkLines lines ==
   $fortError => []
   lines
-
-dispfortarrayexp (fortranName,m) ==
-  $fortError : fluid := nil
-  displayLines fortran2Lines BUTLAST(expression2Fortran1(fortranName,m),2)
-
-getfortarrayexp(fortranName,m,ints2floats?) ==
-  $fortInts2Floats : fluid := ints2floats?
-  $fortError : fluid := nil
-  checkLines fortran2Lines BUTLAST(expression2Fortran1(fortranName,m),2)
 
 
 -- Globals
@@ -569,83 +521,6 @@ indentFortLevel(i) ==
 
 changeExprLength(i) ==
   $maximumFortranExpressionLength := $maximumFortranExpressionLength + i
-
-fortFormatDo(var,lo,hi,incr,lab) ==
-  $fortError : fluid := nil
-  $fortInts2Floats : fluid := nil
-  incr=1 =>
-    checkLines fortran2Lines
-      ['"DO ",STRINGIMAGE lab,'" ",STRINGIMAGE var,'"=",:statement2Fortran lo,_
-       '",", :statement2Fortran hi]
-  checkLines fortran2Lines
-    ['"DO ",STRINGIMAGE lab,'" ",STRINGIMAGE var,'"=",:statement2Fortran lo,_
-     '",", :statement2Fortran hi,'",",:statement2Fortran incr]
-
-fortFormatIfGoto(switch,label) ==
-  changeExprLength(-8) -- Leave room for IF( ... )GOTO
-  $fortError : fluid := nil
-  if first(switch) = "NULL" then switch := first rest switch
-  r := nreverse statement2Fortran switch
-  changeExprLength(8)
-  l := ['")GOTO ",STRINGIMAGE label]
-  while r and not(first(r) = '"%l") repeat
-    l := [first(r),:l]
-    r := rest(r)
-  checkLines fortran2Lines nreverse [:nreverse l,'"IF(",:r]
-
-fortFormatLabelledIfGoto(switch,label1,label2) ==
-  changeExprLength(-8) -- Leave room for IF( ... )GOTO
-  $fortError : fluid := nil
-  if LISTP(switch) and first(switch) = "NULL" then switch := first rest switch
-  r := nreverse statement2Fortran switch
-  changeExprLength(8)
-  l := ['")GOTO ",STRINGIMAGE label2]
-  while r and not(first(r) = '"%l") repeat
-    l := [first(r),:l]
-    r := rest(r)
-  labString := STRINGIMAGE label1
-  for i in #(labString)..5 repeat labString := STRCONC(labString,'" ")
-  lines := fortran2Lines nreverse [:nreverse l,'"IF(",:r]
-  lines := [STRCONC(labString,SUBSEQ(first lines,6)),:rest lines]
-  checkLines lines
-
-fortFormatIf(switch) ==
-  changeExprLength(-8) -- Leave room for IF( ... )THEN
-  $fortError : fluid := nil
-  if LISTP(switch) and first(switch) = "NULL" then switch := first rest switch
-  r := nreverse statement2Fortran switch
-  changeExprLength(8)
-  l := ['")THEN"]
-  while r and not(first(r) = '"%l") repeat
-    l := [first(r),:l]
-    r := rest(r)
-  checkLines fortran2Lines nreverse [:nreverse l,'"IF(",:r]
-
-fortFormatElseIf(switch) ==
-  -- Leave room for IF( ... )THEN
-  changeExprLength(-12)
-  $fortError : fluid := nil
-  if LISTP(switch) and first(switch) = "NULL" then switch := first rest switch
-  r := nreverse statement2Fortran switch
-  changeExprLength(12)
-  l := ['")THEN"]
-  while r and not(first(r) = '"%l") repeat
-    l := [first(r),:l]
-    r := rest(r)
-  checkLines fortran2Lines nreverse [:nreverse l,'"ELSEIF(",:r]
-
-fortFormatHead(returnType,name,args) ==
-  $fortError : fluid := nil
-  $fortranSegment : fluid := nil
-  -- if returnType = '"_"_(_)_"" then
-  if returnType = '"void" then
-    asp := ['"SUBROUTINE "]
-    changeExprLength(l := -11)
-  else
-    asp := [s := checkType STRINGIMAGE returnType,'" FUNCTION "]
-    changeExprLength(l := -10-LENGTH(s))
-  displayLines fortran2Lines [:asp,:statement2Fortran [name,:CDADR args] ]
-  changeExprLength(-l)
 
 checkType ty ==
   ty := STRING_-UPCASE STRINGIMAGE ty
