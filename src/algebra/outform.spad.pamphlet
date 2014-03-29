@@ -234,24 +234,9 @@ OutputForm() : SetCategory with
           ++ outputForm(s) creates an form for symbol s.
         outputForm : String  -> %
           ++ outputForm(s) creates an form for string s.
-        outputForm : DoubleFloat  -> %
-          ++ outputForm(sf) creates an form for small float sf.
         empty   : () -> %
           ++ empty() creates an empty form.
 
-        --% Sizings
-        width : % -> Integer
-          ++ width(f) returns the width of form f (an integer).
-        height : % -> Integer
-          ++ height(f) returns the height of form f (an integer).
-        width : -> Integer
-          ++ width() returns the width of the display area (an integer).
-        height : -> Integer
-          ++ height() returns the height of the display area (an integer).
-        subHeight : % -> Integer
-          ++ subHeight(f) returns the height of form f below the base line.
-        superHeight : % -> Integer
-          ++ superHeight(f) returns the height of form f above the base line.
          --% Space manipulations
         hspace : Integer -> %  ++ hspace(n) creates white space of width n.
         vspace : Integer -> %  ++ vspace(n) creates white space of height n.
@@ -501,7 +486,6 @@ OutputForm() : SetCategory with
         coerce(a) : OutputForm  == a pretend OutputForm
         outputForm n          == n pretend %
         outputForm e          == e pretend %
-        outputForm(f : DoubleFloat) == f pretend %
         sform s               == s pretend %
         eform e               == e pretend %
         iform n               == n pretend %
@@ -509,19 +493,15 @@ OutputForm() : SetCategory with
         outputForm s ==
           sform concat(quote()$Character, concat(s, quote()$Character))
 
-        width(a) == outformWidth(a)$Lisp
-        height(a) == height(a)$Lisp
-        subHeight(a) == subspan(a)$Lisp
-        superHeight(a) == superspan(a)$Lisp
-        height() == 20
-        width() == 66
+        width(a : %) : Integer == outformWidth(a)$Lisp
+        width0() : Integer == 66
 
         center(a, w)   == hconcat(hspace((w - width(a)) quo 2), a)
         left(a, w)     == hconcat(a, hspace((w - width(a))))
         right(a, w)    == hconcat(hspace(w - width(a)), a)
-        center(a)     == center(a, width())
-        left(a)       == left(a, width())
-        right(a)      == right(a, width())
+        center(a)     == center(a, width0())
+        left(a)       == left(a, width0())
+        right(a)      == right(a, width0())
 
         vspace(n) ==
           n = 0 => empty()
