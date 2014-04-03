@@ -169,7 +169,7 @@ compLambda(x is ["+->", vl, body], m, e) ==
              args
         LISTP(args) =>
              [arg1, sig1] := argsToSig(args)
-             sig1 =>
+             sig1 or NULL(args) =>
                  ress := compAtSign(["@", ["+->", arg1, body],
                                   ["Mapping", target, :sig1]], m, e)
                  ress
