@@ -69,6 +69,9 @@ typedef struct sock_list {      /* linked list of Sock */
 Sock_List *plSock = (Sock_List *) 0;
 Sock *spad_socket = (Sock *) 0; /* to_server socket for SpadServer */
 
+char *p2sBuf = NULL;
+int p2sBufSize = 0;
+
 /* issue a FriCAS command to the buffer associated with a page */
 void
 issue_spadcommand(HyperDocPage *page, TextNode *command, int immediate,
@@ -94,8 +97,10 @@ issue_spadcommand(HyperDocPage *page, TextNode *command, int immediate,
     ret_val = send_int(page->sock, ReceiveInputLine);
     buf = print_to_string(command);
     if (immediate) {
-        buf[strlen(buf) + 1] = '\0';
-        buf[strlen(buf)] = '\n';
+        int len = strlen(buf);
+        buf = p2sBuf = resizeBuffer(len + 2, p2sBuf, &p2sBufSize);
+        buf[len + 1] = '\0';
+        buf[len] = '\n';
     }
     if (type == Spadsrc)
         send_pile(page->sock, buf);
@@ -362,9 +367,6 @@ accept_menu_server_connection(HyperDocPage *page)
  * This procedure takes a HyperDoc node, and expands it into string
  */
 
-char *p2sBuf = NULL;
-int p2sBufSize = 0;
-
 /*
  * This routine takes a text node and creates a string out of it. This is for
  * use with things such as spad commands. There are  a very limited set of
@@ -388,7 +390,8 @@ see the code in ht-util.boot
 */
 #define funnyEscape(c)  ((c) == '"' ? '\177' : ((c) == '\\' ? '\200' : c))
 #define funnyUnescape(c) ((c) == '\177' ? '"' : ((c) == '\200' ? '\\' : c))
-#define storeChar(ch) if (sizeBuf) (*sizeBuf)++; else  *c++ = (ch)
+#define storeChar(ch) \
+  do { if (sizeBuf) { (*sizeBuf)++;} else {*c++ = (ch);} } while(0)
 #define storeString(str) for (s=str;*s;s++) {storeChar(*s);}
 
 extern int include_bf;
