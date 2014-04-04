@@ -286,23 +286,23 @@ main(void)
   mergeDatabases();
 
   /*** Determine whether monochrome or color is used ***/
-  if (XrmGetResource(rDB,"Axiom.3D.monochrome","",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop, "off");
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.monochrome", "", str_type,
+                     &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, "off");
+  }
 
 
   mono = ((totalSolid == 2) || (strcmp(prop,"on") == 0));
   if (mono) maxGreyShade=XInitShades(dsply,scrn) ;
 
-  if (XrmGetResource(rDB,"Axiom.3D.inverse","",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop, "off");
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.inverse", "", str_type,
+                     &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, "off");
+  }
 
   if (mono) {
     if (strcmp(prop,"on") == 0) {  /* 0 if equal - inverse video */
@@ -323,12 +323,12 @@ main(void)
   }
 
   /* read default file name for postScript output */
-  if (XrmGetResource(rDB,"Axiom.3D.postscriptFile","",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop, "axiom3D.ps");
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.postscriptFile", "", str_type,
+                     &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, "fricas3D.ps");
+  }
   PSfilename = (char *)malloc(strlen(prop)+1);
   strcpy(PSfilename,prop);
 
@@ -337,67 +337,67 @@ main(void)
   /**** Open global fonts ****/
    serverFont = XQueryFont(dsply,XGContextFromGC(DefaultGC(dsply,scrn)));
 
-  if (XrmGetResource(rDB,"Axiom.3D.messageFont","Axiom.3D.Font",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop,messageFontDefault);
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.messageFont", "FriCAS.3D.Font",
+                     str_type, &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, messageFontDefault);
+  }
   if ((globalFont = XLoadQueryFont(dsply, prop)) == NULL) {
      fprintf(stderr, "Warning:  could not get the %s font for messageFont\n",prop);
      globalFont = serverFont;
   }
 
-  if (XrmGetResource(rDB,"Axiom.3D.buttonFont","Axiom.3D.Font",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop,buttonFontDefault);
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.buttonFont", "FriCAS.3D.Font",
+                     str_type, &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, buttonFontDefault);
+  }
   if ((buttonFont = XLoadQueryFont(dsply, prop)) == NULL) {
      fprintf(stderr, "Warning:  could not get the %s font for buttonFont\n",prop);
      buttonFont = serverFont;
   }
 
-  if (XrmGetResource(rDB,"Axiom.3D.headerFont","Axiom.3D.Font",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop,headerFontDefault);
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.headerFont", "FriCAS.3D.Font",
+                     str_type, &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, headerFontDefault);
+  }
   if ((headerFont = XLoadQueryFont(dsply, prop)) == NULL) {
      fprintf(stderr, "Warning:  could not get the %s font for headerFont\n",prop);
      headerFont = serverFont;
   }
 
-  if (XrmGetResource(rDB,"Axiom.3D.titleFont","Axiom.3D.Font",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop,titleFontDefault);
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.titleFont", "FriCAS.3D.Font",
+                     str_type, &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+     (void) strcpy(prop, titleFontDefault);
+  }
   if ((titleFont = XLoadQueryFont(dsply, prop)) == NULL) {
      fprintf(stderr, "Warning:  could not get the %s font for titleFont\n",prop);
      titleFont = serverFont;
   }
 
-  if (XrmGetResource(rDB,"Axiom.3D.lightingFont","Axiom.3D.Font",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop,lightingFontDefault);
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.lightingFont", "FriCAS.3D.Font",
+                     str_type, &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, lightingFontDefault);
+  }
   if ((lightingFont = XLoadQueryFont(dsply, prop)) == NULL) {
      fprintf(stderr, "Warning:  could not get the %s font for lightingFont\n",prop);
      lightingFont = serverFont;
   }
 
-  if (XrmGetResource(rDB,"Axiom.3D.volumeFont","Axiom.3D.Font",str_type,&value) == True){
-     (void) strncpy(prop,value.addr,(int)value.size);
-     }
-  else {
-     (void) strcpy(prop,volumeFontDefault);
-     }
+  if (XrmGetResource(rDB, "FriCAS.3D.volumeFont", "FriCAS.3D.Font",
+                     str_type, &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, volumeFontDefault);
+  }
   if ((volumeFont = XLoadQueryFont(dsply, prop)) == NULL) {
      fprintf(stderr, "Warning:  could not get the %s font for volumeFont\n",prop);
      volumeFont = serverFont;
@@ -599,7 +599,7 @@ mergeDatabases(void)
   XrmDatabase homeDB,serverDB,applicationDB;
   char filenamebuf[1024];
   char *filename = &filenamebuf[0];
-  char *classname = "Axiom";
+  char *classname = "FriCAS";
   char name[255];
 
   (void) XrmInitialize();

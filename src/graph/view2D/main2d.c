@@ -184,17 +184,21 @@ main(void)
 
 
   /*** Determine whether monochrome or color is used ***/
-  if (XrmGetResource(rDB,"Axiom.2D.monochrome","",str_type,&value) == True)
-    (void) strncpy(prop,value.addr,(int)value.size);
-  else
+  if (XrmGetResource(rDB, "FriCAS.2D.monochrome", "", str_type,
+                     &value) == True) {
+    (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
     (void) strcpy(prop, "off");
+  }
 
   mono = ((totalSolid == 2) || (strcmp(prop,"on") == 0));
 
-  if (XrmGetResource(rDB,"Axiom.2D.inverse","",str_type,&value) == True)
-    (void) strncpy(prop,value.addr,(int)value.size);
-  else
-    (void) strcpy(prop, "off");
+  if (XrmGetResource(rDB, "FriCAS.2D.inverse", "", str_type,
+                     &value) == True) {
+      (void) strncpy(prop, value.addr, (int)value.size);
+  } else {
+      (void) strcpy(prop, "off");
+  }
 
   if (mono)
     if (strcmp(prop,"on") == 0) {             /* 0 if equal (inverse video) */
@@ -216,12 +220,12 @@ main(void)
 
   /* read default file name for postScript output */
   if (XrmGetResource(rDB,
-                     "Axiom.2D.postscriptFile",
+                     "FriCAS.2D.postscriptFile",
                      "",
                      str_type, &value) == True)
     (void) strncpy(prop,value.addr,(int)value.size);
   else
-    (void) strcpy(prop, "axiom2D.ps");
+    (void) strcpy(prop, "fricas2D.ps");
 
   PSfilename = (char *)malloc(strlen(prop)+1);
   strcpy(PSfilename,prop);
@@ -232,8 +236,8 @@ main(void)
   serverFont = XQueryFont(dsply,XGContextFromGC(DefaultGC(dsply,scrn)));
 
   if (XrmGetResource(rDB,
-                     "Axiom.2D.messageFont",
-                     "Axiom.2D.Font",
+                     "FriCAS.2D.messageFont",
+                     "FriCAS.2D.Font",
                      str_type, &value) == True)
     (void) strncpy(prop,value.addr,(int)value.size);
   else
@@ -245,8 +249,8 @@ main(void)
   }
 
   if (XrmGetResource(rDB,
-                     "Axiom.2D.buttonFont",
-                     "Axiom.2D.Font",
+                     "FriCAS.2D.buttonFont",
+                     "FriCAS.2D.Font",
                      str_type, &value) == True)
     (void) strncpy(prop,value.addr,(int)value.size);
   else
@@ -258,8 +262,8 @@ main(void)
   }
 
   if (XrmGetResource(rDB,
-                     "Axiom.2D.headerFont",
-                     "Axiom.2D.Font",
+                     "FriCAS.2D.headerFont",
+                     "FriCAS.2D.Font",
                      str_type, &value) == True)
      (void) strncpy(prop,value.addr,(int)value.size);
   else
@@ -272,8 +276,8 @@ main(void)
   }
 
   if (XrmGetResource(rDB,
-                     "Axiom.2D.titleFont",
-                     "Axiom.2D.Font",
+                     "FriCAS.2D.titleFont",
+                     "FriCAS.2D.Font",
                      str_type,&value) == True)
     (void) strncpy(prop,value.addr,(int)value.size);
   else
@@ -286,8 +290,8 @@ main(void)
   }
 
   if (XrmGetResource(rDB,
-                     "Axiom.2D.graphFont",
-                     "Axiom.2D.Font",
+                     "FriCAS.2D.graphFont",
+                     "FriCAS.2D.Font",
                      str_type,&value) == True)
     (void) strncpy(prop,value.addr,(int)value.size);
   else
@@ -300,8 +304,8 @@ main(void)
   }
 
   if (XrmGetResource(rDB,
-                     "Axiom.2D.unitFont",
-                     "Axiom.2D.Font",
+                     "FriCAS.2D.unitFont",
+                     "FriCAS.2D.Font",
                      str_type,&value) == True)
     (void) strncpy(prop,value.addr,(int)value.size);
   else
@@ -460,7 +464,7 @@ mergeDatabases(void)
   XrmDatabase homeDB,serverDB,applicationDB;
   char filenamebuf[1024];
   char *filename = &filenamebuf[0];
-  char *classname = "Axiom";
+  char *classname = "FriCAS";
   char name[255];
 
   (void) XrmInitialize();

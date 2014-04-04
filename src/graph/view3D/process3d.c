@@ -737,14 +737,14 @@ buttonAction (int bKey)
 
 
   case pixmap:
-    strcpy(control->message,"   Creating axiom3D.xpm now ...   ");
+    strcpy(control->message, "   Creating fricas3D.xpm now ...   ");
     writeControlMessage();
       XGetWindowAttributes(dsply,viewport->viewWindow,&vwInfo);
-      write_pixmap_file(dsply,scrn,"axiom3D.xpm",
+      write_pixmap_file(dsply, scrn, "fricas3D.xpm",
                         viewport->titleWindow,0,0,vwInfo.width,
                         vwInfo.height+titleHeight);
     clearControlMessage();
-    strcpy(control->message,"   axiom3D.xpm in working dir     ");
+    strcpy(control->message, "   fricas3D.xpm in working dir     ");
     writeControlMessage();
     break;
 

@@ -187,14 +187,15 @@ writeViewport(int thingsToWrite)
           break;
 
         case Postscript:
-            /*** Create postscript output for viewport (in axiom2D.ps) ***/
-         fricas_sprintf_to_buf2(PSfilename, "%s%s", viewDirName, "/axiom2D.ps");
+            /*** Create postscript output for viewport (in fricas2D.ps) ***/
+         fricas_sprintf_to_buf2(PSfilename, "%s%s", viewDirName,
+                                "/fricas2D.ps");
          if (PSInit(viewport->viewWindow,viewport->titleWindow) == psError)
            return (-1);
          drawViewport(PSoption);  /* write new script file in /tmp */
          if (PSCreateFile(viewBorderWidth,viewport->viewWindow,
                           viewport->titleWindow, viewport->title) == psError)
-           return(-1);          /* concat script & proc into axiom2D.ps */
+           return(-1);          /* concat script & proc into fricas2D.ps */
           break;
 
         } /* switch on ii */
