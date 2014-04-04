@@ -333,7 +333,7 @@ or
 }
 \xtc{
 }{
-\spadcommand{fortranLogical()}
+\spadcommand{fortranLogical()$FortranType}
 }
 \xtc{
 }{
@@ -388,11 +388,13 @@ a subprogram.  The commands available are:
 }
 \xtc{
 }{
-\spadcommand{declare!(M,construct(real,[i,j],false)$FortranType,symbols)\free{symbols}}
+\spadcommand{declare!(M,construct(real,[i,j],false)$FortranType,symbols)
+\free{symbols}}
 }
 \xtc{
 }{
-\spadcommand{declare!([i,j],fortranInteger(),symbols)\free{symbols}}
+\spadcommand{declare!([i,j], fortranInteger()$FortranType, symbols)
+\free{symbols} \bound{i j} }
 }
 \xtc{
 }{
@@ -400,7 +402,7 @@ a subprogram.  The commands available are:
 }
 \xtc{
 }{
-\spadcommand{fortranTypeOf(i,symbols)\free{symbols}}
+\spadcommand{fortranTypeOf(i,symbols)\free{symbols i}}
 }
 \xtc{
 }{
@@ -434,13 +436,13 @@ segment.
 Issuing the following command indicates that from now on all information
 refers to the subprogram \axiom{F}.
 }{
-\spadcommand{newSubProgram F}
+\spadcommand{newSubProgram(F)$TheSymbolTable}
 }
 \xtc{
 It is possible to return to processing the main program segment by issuing
 the command:
 }{
-\spadcommand{endSubProgram()}
+\spadcommand{endSubProgram()$TheSymbolTable}
 }
 The following commands exist:
 \texht{
@@ -475,23 +477,23 @@ the name of a subprogram, and others parameterised by both the name of a
 subprogram and by an instance of \axiomType{TheSymbolTable}.
 \xtc{
 }{
-\spadcommand{newSubProgram F \bound{forPleasure}}
+\spadcommand{newSubProgram(F)$TheSymbolTable \bound{forPleasure}}
 }
 \xtc{
 }{
-\spadcommand{argumentList!(F,[X])\free{forPleasure}}
+\spadcommand{argumentList!(F, [X])$TheSymbolTable\free{forPleasure}}
 }
 \xtc{
 }{
-\spadcommand{returnType!(F,real)\free{forPleasure}}
+\spadcommand{returnType!(F,real)$TheSymbolTable \free{forPleasure}}
 }
 \xtc{
 }{
-\spadcommand{declare!(X,fortranReal(),F)\free{forPleasure}}
+\spadcommand{declare!(X,fortranReal(),F)$TheSymbolTable \free{forPleasure}}
 }
 \xtc{
 }{
-\spadcommand{printHeader F\free{forPleasure}}
+\spadcommand{printHeader(F)$TheSymbolTable\free{forPleasure}}
 }
 
 % ----------------------------------------------------------------------
@@ -507,13 +509,14 @@ building up complete subprograms from them.
 \texht{\exptypeindex{Switch}}{}
 
 This domain is used to represent statements like {\tt x < y}.  Although
-these can be represented directly in \Language{}, it is a little cumbersome,
-since currently \Language{} performs several transformations on
-conditional operators, for example {\tt x >= y } is transformed to
-{\tt not(x < y)}, which while logically equivalent may be different
-from desired result.
+these can be represented directly in \Language{}, it is a little cumbersome.
+% since currently \Language{} performs several transformations on
+% conditional operators, for example {\tt x >= y } is transformed to
+% {\tt not(x < y)}, which while logically equivalent may be different
+% from desired result.
 
-Instead we have a set of operations, such as \axiomFun{LT} to represent \axiom{<},
+Instead we have a set of operations, such as \axiomFun{LT} to represent
+\axiom{<},
 to let us build such statements.  The available constructors are:
 \texht{
 \begin{center}
@@ -543,7 +546,7 @@ to let us build such statements.  The available constructors are:
 \xtc{
 So for example:
 }{
-\spadcommand{LT(x,y)}
+\spadcommand{LT(x,y)$Switch}
 }
 
 % ----------------------------------------------------------------------
@@ -557,7 +560,8 @@ and return statements.
 For example we can create quite a complicated conditional statement using
 assignments, and then turn it into Fortran code:
 }{
-\spadcommand{c := cond(LT(X,Y),assign(F,X),cond(GT(Y,Z),assign(F,Y),assign(F,Z)))\bound{c}}
+\spadcommand{c := cond(LT(X,Y),assign(F,X),cond(GT(Y,Z),assign(F,Y),
+assign(F,Z))$FortranCode)$FortranCode \bound{c}}
 }
 \xtc{
 }{
@@ -589,13 +593,14 @@ First of all we create a symbol table:
 \xtc{
 Now put some type declarations into it:
 }{
-\spadcommand{declare!([X,Y],fortranReal(),symbols)\free{symbols}}
+\spadcommand{declare!([X,Y],fortranReal()$FortranType,symbols)\free{symbols}}
 }
 \xtc{
 Then (for convenience)
 we set up the particular instantiation of \axiomType{FortranProgram}
 }{
-\spadcommand{FP := FortranProgram(F,real,[X,Y],symbols)\free{symbols}\bound{FP}}
+\spadcommand{FP := FortranProgram(F,real,[X,Y],symbols)
+\free{symbols}\bound{FP}}
 }
 \xtc{
 Create an object of type \axiomType{Expression(Integer)}:
@@ -608,8 +613,8 @@ Now \axiomFun{coerce} it into \axiomType{FP}, and print its Fortran form:
 \spadcommand{outputAsFortran(asp::FP)\free{FP asp}}
 }
 
-We can generate a \axiomType{FortranProgram} using \axiom{FortranCode}.  For
-example:
+We can generate a \axiomType{FortranProgram} using \axiom{FortranCode}.
+For example:
 \xtc{
 Augment our symbol table:
 }{
