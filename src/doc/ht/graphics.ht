@@ -480,16 +480,19 @@ Using the code
 Example 1 - Two dimensional plots with scale.
 First we will create a couple of functions to plot:
 \newline
-\spadpaste{DF ==> DoubleFloat}
-\spadpaste{fnsin(x:DF):DF == sin(x/100::DF)*400::DF}
-\spadpaste{fntan(x:DF):DF == tan(x/100::DF)*400::DF}
+\spadpaste{DF ==> DoubleFloat
+\bound{DF} }
+\spadpaste{fnsin(x:DF):DF == sin(x/100::DF)*400::DF
+\bound{fnsin} }
+\spadpaste{fntan(x:DF):DF == tan(x/100::DF)*400::DF
+\bound{fntan} }
 \newline
 Then we create a bounding box, this is the box within which we do the drawing.
 This contains two points representing the maximum and minimum extent of the
 drawing area or volume. That is mins contains the minimum values of x,y...
 and maxs contains the maximum values of x,y...
 \newline
-\spadpaste{view := boxBoundary(sipnt(0,-500)$SCartesian(2),sipnt(1200,500)$SCartesian(2)) \bound{view} }
+\spadpaste{view := boxBoundary(sipnt(0,-500)$SCartesian(2),sipnt(1200,500)$SCartesian(2))$SBoundary(SCartesian(2)) \bound{view} }
 \spadpaste{sc := createSceneRoot(view)$Scene(SCartesian(2)) \bound{sc} \free{view}}
 \spadpaste{gd := addSceneGrid(sc,view)$Scene(SCartesian(2)) \bound{gd} \free{sc view}}
 \newline
@@ -501,13 +504,13 @@ the scene contains a grid
 Now lets add a plot to this. First we add a 'material' node to the root to
 define the colour and thickness of the plot.
 \newline
-\spadpaste{mt1 := addSceneMaterial(sc,3::DF,"blue","green")$Scene(SCartesian(2)) \bound{mt1} \free{sc gd}}
+\spadpaste{mt1 := addSceneMaterial(sc,3::DF,"blue","green")$Scene(SCartesian(2)) \bound{mt1} \free{sc gd DF}}
 \newline
 Then we add the plot to the material node using the sine function that we
 defined earlier.
 \newline
 \spadpaste{ln1 := addPlot1Din2D(mt1,fnsin,0..1000::DF,49)$Scene(SCartesian(2))
- \bound{ln1} \free{mt1}}
+ \bound{ln1} \free{mt1 fnsin DF}}
 \newline
 we can now export this to a SVG file again to see that
 the plot has been added to the grid
@@ -517,17 +520,23 @@ the plot has been added to the grid
 Lets now add second plot to the scene so that we can see how to modify
 it using material, transform and clip.
 \newline
-\spadpaste{mt2 := addSceneMaterial(sc,3::DF,"green","green")$Scene(SCartesian(2))}
-\spadpaste{tr2 := addSceneTransform(mt2,stransform([_
-             [1::DF,0::DF,0::DF],_
-             [0::DF,1::DF,0::DF],_
-             [0::DF,0::DF,1::DF]]))$Scene(SCartesian(2))}
-\spadpaste{bb := boxBoundary(sipnt(100,-400)$SCartesian(2),sipnt(1100,400)$SCartesian(2))}
-\spadpaste{bb2 := addSceneClip(tr2,bb)$Scene(SCartesian(2))}
-\spadpaste{ln2 := addPlot1Din2D(bb2,fntan,0..1000::DF,49)$Scene(SCartesian(2))}
-\spadpaste{tx := addSceneText(sc,"sin(theta)",32::NNI,_
-          sipnt(200,400)$SCartesian(2))$Scene(SCartesian(2))}
-\spadpaste{writeSvg(sc,"test3.svg")}
+\spadpaste{mt2 := addSceneMaterial(sc,3::DF,"green","green"
+                                  )$Scene(SCartesian(2))
+\free{sc DF} \bound{mt2} }
+\spadpaste{tr2 := addSceneTransform(mt2,stransform([
+             [1::DF,0::DF,0::DF],
+             [0::DF,1::DF,0::DF],
+             [0::DF,0::DF,1::DF]]))$Scene(SCartesian(2))
+\free{mt2} \bound{tr2} }
+\spadpaste{bb := boxBoundary(sipnt(100,-400)$SCartesian(2),sipnt(1100,400)$SCartesian(2))$SBoundary(SCartesian(2)) \bound{bb} }
+\spadpaste{bb2 := addSceneClip(tr2,bb)$Scene(SCartesian(2))
+\free {tr2 bb} \bound{bb2}}
+\spadpaste{ln2 := addPlot1Din2D(bb2,fntan,0..1000::DF,49)$Scene(SCartesian(2))
+\free{bb2 fntan DF} \bound{ln2} }
+\spadpaste{tx := addSceneText(sc,"sin(theta)",32::NNI,
+          sipnt(200,400)$SCartesian(2))$Scene(SCartesian(2))
+ \free{sc ln2} \bound{tx} }
+\spadpaste{writeSvg(sc,"test3.svg") \free{sc tx}}
 \endscroll
 \autobuttons \end{page}
 
