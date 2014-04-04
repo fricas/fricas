@@ -359,31 +359,7 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
              cse := (rec := matcherfei(f, x, true)).which
              cse = ERF  => [rec.coeff * erf(rec.exponent), 0]
              "failed"
-@
 
-In earlier versions we called [[pmIntegrate]] instead of [[pmComplexintegrate]]
-above.  As Waldek points out, this \emph{might} have been intentional, because
-[[pmIntegrate]] might handle more cases, see
-\url{http : //groups.google.at/group/fricas-devel/browse_thread/thread/e943cc47ddc06c01/9d9859fcfec9ea57?hl=de&lnk=st&q=%22Issue+198%22+waldek#9d9859fcfec9ea57}
-
-On the other hand, this modification allows us to handle
-\begin{verbatim}
-    complexIntegrate(%i/2*e^(-%i*x^2), x)
-\end{verbatim}
-and
-\begin{verbatim}
-    complexIntegrate(-%i/2*e^(%i*x^2), x)
-\end{verbatim}
-from Issue~\#198 correctly.  Also the integrals from the mail cited above work:
-\begin{verbatim}
-    complexIntegrate(log(x)/(x-1), x)
-\end{verbatim}
-and
-\begin{verbatim}
-    complexIntegrate(2*log(x)/(x-1), x)
-\end{verbatim}
-
-<<package INTPM PatternMatchIntegration>>=
          if F has SpecialFunctionCategory then
            match1    : (F, SY, F, F) -> List F
            formula1  : (F, SY, F, F) -> Union(F, "failed")

@@ -419,33 +419,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       ans + (_+/[fact.xpnt * deriv(fact.fctr) *
        ((u exquo nilFactor(fact.fctr, 1))::%) for fact in factorList u])
 
-@
-
-This operation provides an implementation of [[differentiate]] from the
-category [[DifferentialExtension]]. It uses the formula
-
-$$\frac{d}{dx} f(x) = \sum_{i=1}^n \frac{f(x)}{f_i(x)}\frac{d}{dx}f_i(x), $$
-
-where
-
-$$f(x)=\prod_{i=1}^n f_i(x).$$
-
-Note that up to [[patch--40]] the following wrong definition was used:
-
-\begin{verbatim}
-    differentiate(u : %, deriv : R -> R) ==
-      ans := deriv(unit u) * ((u exquo (fr := unit(u)::%))::%)
-      ans + fr * (_+/[fact.xpnt * deriv(fact.fctr) *
-       ((u exquo nilFactor(fact.fctr, 1))::%) for fact in factorList u])
-\end{verbatim}
-
-which causes wrong results as soon as units are involved, for example in
-
-  D(factor (-x), x)
-
-(Issue~\#176)
-
-<<domain FR Factored>>=
     map(fn, u) ==
      fn(unit u) * _*/[irreducibleFactor(fn(f.fctr), f.xpnt) for f in factorList u]
 

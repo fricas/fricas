@@ -550,83 +550,12 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
           return false
       true
 
-@
 
-\begin{verbatim}
-1) the patch correct problem in goodCoef, there are other bugs in
-   integrator, I will work on them separately.
-2) AFAICS goodCoef is an optimization, it should be safe to return
-   "failed" always (but since we take different path in the other
-   part we hit different bugs).  I tried to preserve optimization
-   done by goodCoef whenever it is safe.
-3) I would like to use higher level constructs, but I keept hitting
-   into problems with SPAD compiler, so finally I used a rather low
-   level way
-4) without the patch the AXIOM recurses infinitely handling the
-   few integrals below (first I previosly gave in the bug report).
-   With the patch the first two are correctly handled, the other
-   two quickly hit into unimplemented part of Risch algorithm:
-\end{verbatim}
+    -- If k1 is part of k2 we should not express k1 in terms of k2
+    -- (othewise we would get infinite recursion).
+    -- Below we impose a stronger condition : we require
+    -- height(k1) to be maximal
 
-\begin{verbatim}
-integrate(
- simplify(
-  D((log((x)+1)+a)
-       / (2*((((x*(exp(exp(x)/2)))-(a*(x+exp(-x/2))))*(2/x))-3)),
-    x)),
-   x)
-\end{verbatim}
-
-\begin{verbatim}
-integrate(
- simplify(
-  D(((((
-    (sqrt((sqrt((x)/(x)))/(a)))
-       / (sqrt(x)))
-        * ((((x)-(1))*(1))-(1)))
-         * (a))
-      * (((log((x)
-       * ((a)/(log(sqrt((x)/(((x)*(x))*(x))))))))
-        + (((x)/(sqrt(2)))*(exp(exp(x)))))
-         + ((x)-(exp(2)))))
-     + ((1)*(2)), x)),
-  x)
-\end{verbatim}
-
-This fails with ``Function not supported by Risch d.e.''
-\begin{verbatim}
-integrate(
- simplify(
-  D(((((((a)/(sqrt((sqrt(x))-(x))))+(x))*(x))+(1))
-     * ((((((1)-(log(x)))+(1))*(exp(exp(2))))*(2))
-      * (((1)*((log((a)*(1)))*(a)))
-       * (exp(((exp(x))*(x))
-        - (exp(x)))))))
-   * (a), x)),
-  x)
-\end{verbatim}
-This fails with ``intef : failed1 - cannot handle that integrand''
-\begin{verbatim}
-integrate(
- simplify(
-  D((((((((x)+(log(x)))*(((x)/(x))/(sqrt(x))))
-     / ((a)*(x)))
-      - (sqrt(sqrt(((exp(x))/((x)-(sqrt(x))))-(log(x))))))
-       - (x))
-    - (((exp((sqrt(log(1)))*((x)*((x)/(log(x))))))
-       / (exp((1)+((2)-((x)-(x))))))
-      * (((((x)/(1))-(log(x)))*(1))+(((2)+(a))/(exp(sqrt(x)))))))
-  / (2), x)),
- x)
-\end{verbatim}
-
-If k1 is part of k2 we should not express k1 in terms of k2
-(othewise we would get infinite recursion).
-Below we impose a stronger condition : we require
-height(k1) to be maximal
-
-@
-<<package EFSTRUC ElementaryFunctionStructurePackage>>=
     goodCoef(v, l, s) ==
       h : NonNegativeInteger := 0
       j : Integer := 0
