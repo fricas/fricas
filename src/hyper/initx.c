@@ -281,8 +281,8 @@ open_form_window(void)
     char userdefaults[50], progdefaults[50];
 
     strcpy(progdefaults, "=950x450+0+0");
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.FormGeometry",
-        "Axiom.hyperdoc.FormGeometry", str_type, &value) == True)
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.FormGeometry",
+        "FriCAS.hyperdoc.FormGeometry", str_type, &value) == True)
     {
         strncpy(userdefaults, value.addr, (int) value.size);
         userSpecified = 1;
@@ -415,7 +415,7 @@ get_border_properties(void)
     /*int ret_val;*/
 
 
-    bwidth = "2";  /* XGetDefault(gXDisplay, "Axiom.hyperdoc", "BorderWidth") */
+    bwidth = "2";  /* XGetDefault(gXDisplay, "FriCAS.hyperdoc", "BorderWidth") */
 
     if (bwidth == NULL)
         bw = 1;
@@ -423,7 +423,8 @@ get_border_properties(void)
         bw = atoi(bwidth);
         if (bw < 1) {
             fprintf(stderr,
-                    "%s: The line width value must be greater than zero\n", "Axiom.hyperdoc");
+                    "%s: The line width value must be greater than zero\n",
+                    "FriCAS.hyperdoc");
             bw = 1;
         }
     }
@@ -458,8 +459,8 @@ open_window(Window w)
     char userdefaults[50], progdefaults[50];
 
     strcpy(progdefaults, "=700x450+0+0");
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.Geometry",
-        "Axiom.hyperdoc.Geometry", str_type, &value) == True)
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.Geometry",
+        "FriCAS.hyperdoc.Geometry", str_type, &value) == True)
     {
         strncpy(userdefaults, value.addr, (int) value.size);
     }
@@ -552,14 +553,14 @@ set_size_hints(Window w)
     else {
         /* this is the first window, so lets try to find a nice spot for it */
 
-        if (XrmGetResource(rDB, "Axiom.hyperdoc.Geometry", "Axiom.hyperdoc.Geometry",
-            str_type, &value) == True)
-        {
+        if (XrmGetResource(rDB, "FriCAS.hyperdoc.Geometry",
+                           "FriCAS.hyperdoc.Geometry", str_type,
+                           &value) == True) {
             strncpy(userdefaults, value.addr, (int) value.size);
             geo = XParseGeometry(userdefaults, &x, &y, &width, &height);
-        }
-        else
+        } else {
             strcpy(userdefaults, progdefaults);
+        }
 
         size_hints.flags |= (geo & (WidthValue | HeightValue)) ? USSize : PSize;
         size_hints.flags |= (geo & (XValue | YValue)) ? USPosition : PPosition;
@@ -663,15 +664,15 @@ load_font(XFontStruct **font_info, char *fontname)
  * This routine initializes all the colors and fonts that the user wishes to
  * use. It checks for all the following properties in $HOME/.Xdefaults.
  *
- *  Axiom.hyperdoc.ActiveColor:
- *  Axiom.hyperdoc.Background:
- *  Axiom.hyperdoc.EmphasizeColor:
- *  Axiom.hyperdoc.EmphasizeFont:
- *  Axiom.hyperdoc.Foreground:
- *  Axiom.hyperdoc.InputBackground:
- *  Axiom.hyperdoc.InputForeground:
- *  Axiom.hyperdoc.SpadColor:
- *  Axiom.hyperdoc.SpadFont:
+ *  FriCAS.hyperdoc.ActiveColor:
+ *  FriCAS.hyperdoc.Background:
+ *  FriCAS.hyperdoc.EmphasizeColor:
+ *  FriCAS.hyperdoc.EmphasizeFont:
+ *  FriCAS.hyperdoc.Foreground:
+ *  FriCAS.hyperdoc.InputBackground:
+ *  FriCAS.hyperdoc.InputForeground:
+ *  FriCAS.hyperdoc.SpadColor:
+ *  FriCAS.hyperdoc.SpadFont:
  */
 
 static void
@@ -700,11 +701,12 @@ ingItColors_and_fonts(void)
     mergeDatabases();
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.RmFont",
-                            "Axiom.hyperdoc.Font", str_type, &value) == True)
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.RmFont",
+                       "FriCAS.hyperdoc.Font", str_type, &value) == True) {
         (void) strncpy(prop, value.addr, (int) value.size);
-    else
+    } else {
         (void) strcpy(prop, RmFontDefault);
+    }
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:load_font 1\n");*/
     load_font(&gRmFont, prop);
@@ -713,40 +715,38 @@ ingItColors_and_fonts(void)
 
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 2\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.TtFont",
-                            "Axiom.hyperdoc.Font", str_type, &value) == True)
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.TtFont",
+                       "FriCAS.hyperdoc.Font", str_type, &value) == True) {
         (void) strncpy(prop, value.addr, (int) value.size);
-    else
+    } else {
         (void) strcpy(prop, TtFontDefault);
-
+    }
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:load_font 3\n");*/
     load_font(&gTtFont, prop);
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:is_it_850\n");*/
     gTtFontIs850=is_it_850(gTtFont);
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 5\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.ActiveFont",
-                            "Axiom.hyperdoc.Font", str_type, &value) == True)
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.ActiveFont",
+                       "FriCAS.hyperdoc.Font", str_type, &value) == True) {
         (void) strncpy(prop, value.addr, (int) value.size);
-    else
+    } else {
         (void) strcpy(prop, ActiveFontDefault);
-
+    }
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:load_font 4\n");*/
     load_font(&gActiveFont, prop);
 
     /* maintain backwards compatibility */
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 6\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.AxiomFont",
-                            "Axiom.hyperdoc.Font", str_type, &value) == True)
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.FriCASFont",
+                       "FriCAS.hyperdoc.Font", str_type, &value) == True) {
         (void) strncpy(prop, value.addr, (int) value.size);
-    else {
-        if (XrmGetResource(rDB, "Axiom.hyperdoc.SpadFont",
-                           "Axiom.hyperdoc.Font", str_type, &value) == True)
-        {
+    } else {
+        if (XrmGetResource(rDB, "FriCAS.hyperdoc.SpadFont",
+                        "FriCAS.hyperdoc.Font", str_type, &value) == True) {
             (void) strncpy(prop, value.addr, (int) value.size);
-        }
-        else {
+        } else {
             (void) strcpy(prop, fricas_font_default);
         }
     }
@@ -755,24 +755,20 @@ ingItColors_and_fonts(void)
     load_font(&fricas_font, prop);
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 7\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.EmphasizeFont",
-                            "Axiom.hyperdoc.Font", str_type, &value) == True)
-    {
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.EmphasizeFont",
+                       "FriCAS.hyperdoc.Font", str_type, &value) == True) {
         (void) strncpy(prop, value.addr, (int) value.size);
-    }
-    else {
+    } else {
         (void) strcpy(prop, EmphasizeFontDefault);
     }
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:load_font 6\n");*/
     load_font(&gEmFont, prop);
 
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:XrmGetResource 8\n");*/
-    if (XrmGetResource(rDB, "Axiom.hyperdoc.BoldFont",
-                            "Axiom.hyperdoc.Font", str_type, &value) == True)
-    {
+    if (XrmGetResource(rDB, "FriCAS.hyperdoc.BoldFont",
+                       "FriCAS.hyperdoc.Font", str_type, &value) == True) {
         (void) strncpy(prop, value.addr, (int) value.size);
-    }
-    else {
+    } else {
         (void) strcpy(prop, BoldFontDefault);
     }
 /*    fprintf(stderr,"initx:ingItColors_and_fonts:load_font 7\n");*/
@@ -835,7 +831,7 @@ ingItColors_and_fonts(void)
         /* maintain backwards compatibility */
 
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 6\n");*/
-        fricas_color = get_color("AxiomColor", "Foreground", 0, &cmap);
+        fricas_color = get_color("FriCASColor", "Foreground", 0, &cmap);
 /*        fprintf(stderr,"initx:ingItColors_and_fonts:get_color 7\n");*/
         if (fricas_color == 0)
             fricas_color = get_color("SpadColor", "Foreground",
@@ -911,10 +907,10 @@ get_color(char *name, char *class, int def, Colormap *map)
     printf("get_color: %s %s %d -> ", name, class, def);
 #endif
 
-    strcpy(fullname, "Axiom.hyperdoc.");
+    strcpy(fullname, "FriCAS.hyperdoc.");
     strcat(fullname, name);
-    strcpy(fullclass,"Axiom.hyperdoc.");
-    strcat(fullclass,class);
+    strcpy(fullclass, "FriCAS.hyperdoc.");
+    strcat(fullclass, class);
 
     if (XrmGetResource(rDB, fullname, fullclass, str_type, &value) == True) {
         (void) strncpy(prop, value.addr, (int) value.size);
@@ -950,7 +946,7 @@ mergeDatabases(void)
     XrmDatabase homeDB, serverDB, applicationDB;
     char filenamebuf[1024];
     char *filename = &filenamebuf[0];
-    char *classname = "Axiom";
+    char *classname = "FriCAS";
     char name[255];
 
 /*    fprintf(stderr,"initx:mergeDatabases:entered\n");*/
