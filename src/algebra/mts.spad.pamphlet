@@ -72,13 +72,10 @@ SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
 
   Implementation ==> PS add
 
-@
-\subsection{Rep}
+    -- Below we will use the fact that the Rep of PS is
+    -- Stream SMP.  The total degree of the n-th element of
+    -- the stream should always be n-1.
 
-Below we will use the fact that the \verb|Rep| of \verb|PS| is
-\verb|Stream SMP|.  The total degree of the $n$\textsuperscript{th} element of
-the stream should always be $n-1$.
-<<domain SMTS SparseMultivariateTaylorSeries>>=
     Rep := StS
 
     extend(x, n) == extend(x, n + 1)$Rep
@@ -93,15 +90,10 @@ the stream should always be $n-1$.
       ints := integers(0)$STT pretend ST NNI
       map((n1 : NNI, c2 : Coef) : SMP +-> monomial(c2 :: SMP, v, n1)$SMP, ints, s pretend ST Coef)$ST3(NNI, Coef, SMP)
 
-@
 
-\subsection{coefficient}
+    -- The function \spadfun{coefficient} carries three different semantics.
 
-The function \spadfun{coefficient} carries three different semantics.  We can extract
-\begin{enumerate}
-\item a polynomial giving the terms of given total degree:
-<<domain SMTS SparseMultivariateTaylorSeries>>=
-
+    -- get a polynomial giving the terms of given total degree
     coefficient(x : %, n : NNI) : SMP ==
         -- Cannot use elt!  Should return 0 if stream doesn't have it.
         u := x::Rep
@@ -111,27 +103,20 @@ The function \spadfun{coefficient} carries three different semantics.  We can ex
         empty? u or n ~= 0 => 0
         frst u
 
-@
-\item a Taylor series with all coefficients of a monomial:
-  here we have to take into account that we reduce the degree of each term of
-  the stream by a constant.
-<<domain SMTS SparseMultivariateTaylorSeries>>=
+    -- get a Taylor series with all coefficients of a monomial:
+    -- here we have to take into account that we reduce the degree of
+    -- each term of the stream by a constant.
     coefficient(s : %, lv : List Var, ln : List NNI) : % ==
-        map((z1 : SMP) : SMP +-> coefficient(z1, lv, ln), rest(s, reduce(_+, ln)))
-@
-\item the coefficient of a particular monomial:
-<<domain SMTS SparseMultivariateTaylorSeries>>=
+        map((z1 : SMP) : SMP +-> coefficient(z1, lv, ln),
+            rest(s, reduce(_+, ln)))
+
+    -- get the coefficient of a particular monomial
     coefficient(s : %, m : IndexedExponents Var) : Coef ==
         n := leadingCoefficient(mon := m)
         while not zero?(mon := reductum mon) repeat
             n := n + leadingCoefficient mon
 
         coefficient(coefficient(s, n), m)
-@
-\end{enumerate}
-
-
-<<domain SMTS SparseMultivariateTaylorSeries>>=
 
 
 --% creation of series
