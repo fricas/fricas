@@ -249,26 +249,11 @@ ExpressionToOpenMath(R : Join(OpenMath, OrderedSet, Ring)) : with
   -- Exports
   ----------
 
-  OMwrite(ex : Expression R) : String ==
-    s : String := ""
-    sp : None := OM_-STRINGTOSTRINGPTR(s)$Lisp
-    dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML())
-    OMputObject(dev)
-    outputOMExpr(dev, ex)
-    OMputEndObject(dev)
-    OMclose(dev)
-    s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
-    s
-
   OMwrite(ex : Expression R, wholeObj : Boolean) : String ==
     s : String := ""
     sp : None := OM_-STRINGTOSTRINGPTR(s)$Lisp
     dev : OpenMathDevice := OMopenString(sp pretend String, OMencodingXML())
-    if wholeObj then
-      OMputObject(dev)
-    outputOMExpr(dev, ex)
-    if wholeObj then
-      OMputEndObject(dev)
+    OMwrite(dev, ex, wholeObj)
     OMclose(dev)
     s := OM_-STRINGPTRTOSTRING(sp)$Lisp pretend String
     s
@@ -284,6 +269,12 @@ ExpressionToOpenMath(R : Join(OpenMath, OrderedSet, Ring)) : with
     outputOMExpr(dev, ex)
     if wholeObj then
       OMputEndObject(dev)
+
+  OMwrite(dev : OpenMathDevice, ex : Expression R) : Void ==
+      OMwrite(dev, ex, true)
+
+  OMwrite(ex : Expression R) : String ==
+      OMwrite(ex, true)
 
 @
 \section{License}
