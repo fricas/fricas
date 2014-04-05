@@ -588,9 +588,9 @@ Stream(S) : Exports == Implementation where
       ++ and whose \spad{rest} is s.
       ++ Note: \spad{cons(a, s) = concat(a, s)}.
     if S has SetCategory then
-      output : (I, %) -> Void
-        ++ output(n, st) computes and displays the first n entries
-        ++ of st.
+      showElements : (NNI, %) -> OUT
+        ++ showElements(n, st) computes and creates and output form of
+        ++ the first n entries of st.
       showAllElements : % -> OUT
         ++ showAllElements(s) creates an output form which displays all
         ++ computed elements.
@@ -694,10 +694,7 @@ Stream(S) : Exports == Implementation where
         n > 0 => getm(rst x, concat(frst(x) :: OUT, le), n - 1)
         concat(message("..."),le)
 
-      streamCountCoerce x ==
-      -- this will not necessarily display all stream elements
-      -- which have been computed
-        count : NNI := _$streamCount$Lisp
+      showElements(count: NNI, x: %): OUT ==
         -- compute count elements
         y := x
         for i in 1..count while not empty? y repeat y := rst y
@@ -715,6 +712,12 @@ Stream(S) : Exports == Implementation where
             x  := rest x
           overbar commaSeparate reverse! pl
         bracket reverse! concat(pp, le)
+
+      streamCountCoerce x ==
+      -- this will not necessarily display all stream elements
+      -- which have been computed
+        count : NNI := _$streamCount$Lisp
+        showElements(count, x)
 
       listm(x, le, n) ==
         explicitlyEmpty? x => le
@@ -1065,13 +1068,6 @@ Stream(S) : Exports == Implementation where
     numberOfComputedEntries x ==
       explicitEntries? x => numberOfComputedEntries(rst x) + 1
       0
-
-    if S has SetCategory then
-
-      output(n, x) ==
-        (not(n>0))or empty? x => void()
-        mathPrint(frst(x)::OUT)$Lisp
-        output(n-1, rst x)
 
     setrestt!(x, n, y) ==
       n = 0 => setrst!(x, y)
