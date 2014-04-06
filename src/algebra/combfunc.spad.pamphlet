@@ -636,6 +636,16 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         ++ lerchPhi(z, s, a) is the Lerch Phi function
     riemannZeta : F -> F
         ++ riemannZeta(z) is the Riemann Zeta function
+    charlierC : (F, F, F) -> F
+        ++ charlierC(n, a, z) is the Charlier polynomial
+    hermiteH : (F, F) -> F
+        ++ hermiteH(n, z) is the Hermite polynomial
+    jacobiP : (F, F, F, F) -> F
+        ++ jacobiP(n, a, b, z) is the Jacobi polynomial
+    laguerreL: (F, F, F) -> F
+        ++ laguerreL(n, a, z) is the Laguerre polynomial
+    meixnerM : (F, F, F, F) -> F
+        ++ meixnerM(n, b, c, z) is the Meixner polynomial
     if F has RetractableTo(Integer) then
         hypergeometricF : (List F, List F, F) -> F
           ++ hypergeometricF(la, lb, z) is the generalized hypergeometric
@@ -737,6 +747,11 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     opWeierstrassZeta := operator('weierstrassZeta)$CommonOperators
     opHypergeometricF := operator('hypergeometricF)$CommonOperators
     opMeijerG := operator('meijerG)$CommonOperators
+    opCharlierC := operator('charlierC)$CommonOperators
+    opHermiteH := operator('hermiteH)$CommonOperators
+    opJacobiP := operator('jacobiP)$CommonOperators
+    opLaguerreL := operator('laguerreL)$CommonOperators
+    opMeixnerM := operator('meixnerM)$CommonOperators
     op_log_gamma := operator('%logGamma)$CommonOperators
     op_eis := operator('%eis)$CommonOperators
     op_erfs := operator('%erfs)$CommonOperators
@@ -808,6 +823,21 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         differentiate(x1, t)*kernel(opdiff, [op [dm1, x2, x3], dm1, x1])
            + differentiate(x2, t)*kernel(opdiff, [op [x1, dm2, x3], dm2, x2])
              + differentiate(x3, t)*d3(x1, x2, x3)
+
+    grad4(l : List F, t : SE, op : OP, d4 : (F, F, F, F) -> F ) : F ==
+        x1 := l(1)
+        x2 := l(2)
+        x3 := l(3)
+        x4 := l(4)
+        dm1 := dummy
+        dm2 := dummy
+        dm3 := dummy
+        kd1 := kernel(opdiff, [op [dm1, x2, x3, x4], dm1, x1])
+        kd2 := kernel(opdiff, [op [x1, dm2, x3, x4], dm2, x2])
+        kd3 := kernel(opdiff, [op [x1, x2, dm3, x4], dm3, x3])
+        differentiate(x1, t)*kd1 + differentiate(x2, t)*kd2 +
+          differentiate(x3, t)*kd3 +
+            differentiate(x4, t)*d4(x1, x2, x3, x4)
 
     -- handle WeierstrassPInverse
 
@@ -1575,6 +1605,100 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     elRiemannZeta(l : List F) : F == eRiemannZeta(l(1))
     evaluate(opRiemannZeta, elRiemannZeta)$BasicOperatorFunctions1(F)
+
+    -- orthogonal polynomials
+
+
+    charlierC(n : F, a : F, z : F) : F == opCharlierC(n, a, z)
+
+    eCharlierC(n : F, a : F, z : F) : F ==
+        n = 0 => 1
+        n = 1 => (z - a)/a
+        kernel(opCharlierC, [n, a, z])
+
+    elCharlierC(l : List F) : F == eCharlierC(l(1), l(2), l(3))
+
+    evaluate(opCharlierC, elCharlierC)$BasicOperatorFunctions1(F)
+
+
+    hermiteH(n : F, z: F) : F == opHermiteH(n, z)
+
+    eHermiteH(n : F, z: F) : F ==
+        n = -1 => 0
+        n = 0 => 1
+        n = 1 => (2::F)*z
+        kernel(opHermiteH, [n, z])
+
+    elHermiteH(l : List F) : F == eHermiteH(l(1), l(2))
+
+    evaluate(opHermiteH, elHermiteH)$BasicOperatorFunctions1(F)
+
+    eHermiteHGrad_z(n : F, z : F) : F == (2::F)*n*hermiteH(n - 1, z)
+
+    dHermiteH(l : List F, t : SE) : F ==
+        grad2(l, t, opHermiteH, eHermiteHGrad_z)
+
+    setProperty(opHermiteH, SPECIALDIFF, dHermiteH@((List F, SE)->F)
+                                                 pretend None)
+
+
+    jacobiP(n : F, a : F, b : F, z : F) : F == opJacobiP(n, a, b, z)
+
+    eJacobiP(n : F, a : F, b : F, z : F) : F ==
+        n = -1 => 0
+        n = 0 => 1
+        n = 1 => ahalf*(a - b) + (1 + ahalf*(a + b))*z
+        kernel(opJacobiP, [n, a, b, z])
+
+    elJacobiP(l : List F) : F == eJacobiP(l(1), l(2), l(3), l(4))
+
+    evaluate(opJacobiP, elJacobiP)$BasicOperatorFunctions1(F)
+
+    eJacobiPGrad_z(n : F, a : F, b : F, z : F) : F ==
+        ahalf*(a + b + n + 1)*jacobiP(n - 1, a + 1, b + 1, z)
+
+    dJacobiP(l : List F, t : SE) : F ==
+        grad4(l, t, opJacobiP, eJacobiPGrad_z)
+
+    setProperty(opJacobiP, SPECIALDIFF, dJacobiP@((List F, SE)->F)
+                                                 pretend None)
+
+
+    laguerreL(n : F, a : F, z : F) : F == opLaguerreL(n, a, z)
+
+    eLaguerreL(n : F, a : F, z : F) : F ==
+        n = -1 => 0
+        n = 0 => 1
+        n = 1 => (1 + a - z)
+        kernel(opLaguerreL, [n, a, z])
+
+    elLaguerreL(l : List F) : F == eLaguerreL(l(1), l(2), l(3))
+
+    evaluate(opLaguerreL, elLaguerreL)$BasicOperatorFunctions1(F)
+
+    eLaguerreLGrad_z(n : F, a : F, z : F) : F ==
+        laguerreL(n - 1, a + 1, z)
+
+    dLaguerreL(l : List F, t : SE) : F ==
+        grad3(l, t, opLaguerreL, eLaguerreLGrad_z)
+
+    setProperty(opLaguerreL, SPECIALDIFF, dLaguerreL@((List F, SE)->F)
+                                                 pretend None)
+
+
+    meixnerM(n : F, b : F, c : F, z : F) : F == opMeixnerM(n, b, c, z)
+
+    eMeixnerM(n : F, b : F, c : F, z : F) : F ==
+        n = 0 => 1
+        n = 1 => (c - 1)*z/(c*b) + 1
+        kernel(opMeixnerM, [n, b, c, z])
+
+    elMeixnerM(l : List F) : F == eMeixnerM(l(1), l(2), l(3), l(4))
+
+    evaluate(opMeixnerM, elMeixnerM)$BasicOperatorFunctions1(F)
+
+
+    --
     belong? op == has?(op, SPECIAL)
 
     operator op ==
@@ -1631,6 +1755,11 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       is?(op, 'jacobiTheta) => opJacobiTheta
       is?(op, 'lerchPhi) => opLerchPhi
       is?(op, 'riemannZeta) => opRiemannZeta
+      is?(op, 'charlierC) => opCharlierC
+      is?(op, 'hermiteH) => opHermiteH
+      is?(op, 'jacobiP) => opJacobiP
+      is?(op, 'laguerreL) => opLaguerreL
+      is?(op, 'meixnerM) => opMeixnerM
       is?(op, '%logGamma) => op_log_gamma
       is?(op, '%eis) => op_eis
       is?(op, '%erfs) => op_erfs
