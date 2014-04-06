@@ -380,6 +380,66 @@
        (make-array k :element-type 'character
                   :initial-contents (mapcar #'code-char l))))
 
+
+(defun UENTRIES(s)
+   (let* ((res (cons nil nil))
+         (res1 res)
+         (c 0)
+         (i 0)
+         (l (length s)))
+        (loop
+        (cond ((eql i l) (return-from UENTRIES (cdr res))))
+#+(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
+        (progn
+            (setf c (char-code (aref s i)))
+            (setf i (+ i 1)))
+#-(or :UNICODE :SB-UNICODE :OPENMCL-UNICODE-STRINGS)
+        (let ((c1 (char-code (aref s i))))
+            (cond ((< c1 128)
+                   (setf c c1)
+                   (setf i (+ i 1)))
+                  ((< c1 224)
+                      (cond ((> (+ i 2) l)
+                             (|error| "Invalid UTF-8 string"))
+                            (t
+                              (setf c (logior
+                                          (logand 63
+                                                 (char-code (aref s (+ i 1))))
+                                          (ash (logand 31 c1) 6)))
+                              (setf i (+ i 2)))))
+                  ((< c1 240)
+                      (cond ((> (+ i 3) l)
+                             (|error| "Invalid UTF-8 string"))
+                            (t
+                              (setf c (logior
+                                          (logand 63
+                                                 (char-code (aref s (+ i 2))))
+                                          (ash (logand 63
+                                                 (char-code (aref s (+ i 1))))
+                                               6)
+                                          (ash (logand 15 c1) 12)))
+                              (setf i (+ i 3)))))
+                  ((< c1 248)
+                      (cond ((> (+ i 4) l)
+                             (|error| "Invalid UTF-8 string"))
+                            (t
+                              (setf c (logior
+                                          (logand 63
+                                                 (char-code (aref s (+ i 3))))
+                                          (ash (logand 63
+                                                 (char-code (aref s (+ i 2))))
+                                               6)
+                                          (ash (logand 63
+                                                 (char-code (aref s (+ i 1))))
+                                               12)
+                                          (ash (logand 7 c1) 18)))
+                              (cond ((>= c 1114112)
+                                     (|error| "Invalid UTF-8 string")))
+                              (setf i (+ i 4)))))
+                  (t (|error| "Invalid UTF-8 string"))))
+        (setf (cdr res1) (cons c nil))
+        (setf res1 (cdr res1)))))
+
 ;;; Double negation to have boolean result
 (defun CGREATERP (s1 s2) (not (not (string> (string s1) (string s2)))))
 
