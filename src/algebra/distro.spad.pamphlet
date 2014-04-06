@@ -103,7 +103,7 @@ Sequence(R : CommutativeRing) : SequenceCategory(R) == Implementation where
 
     apply(mm : %, pi : Partition) : R ==
         pil : List Integer := convert pi
-        import List R
+        import from List R
         reduce(_*, [mm k for k in pil])
 
     cons(r : R, s : %) : % ==
@@ -211,7 +211,7 @@ HankelPackage(R : Ring) : Exports == Implementation where
         not odd? ((#l)::Integer) => error "n must be odd"
         n : Integer := ((#l + 1) exquo 2)::Integer
         lloc : List R := cons(0@R, l)
-        import List Matrix R, List List R
+        import from List Matrix R, List List R
         x : R
         i, j : Integer
         reduce(vertConcat$(Matrix R), [ (lloc := rest lloc;matrix [[x for x in lloc for i in 1..n]]) for j in 1..n ])
@@ -532,7 +532,7 @@ $$
 with function $g(z) = C(z)$.
 <<MomentPackage implementation>>=
 freeCumulant2moment(cum : Sequence R) : Sequence R ==
-    import STSOR
+    import from STSOR
     coerce(rest rest lagrange concat(1@R, stream cum))
 @
 In the other case, we can write
@@ -581,7 +581,7 @@ moment2booleanCumulant(x : Sequence R) : Sequence R ==
 <<MomentPackage implementation>>=
 hankelDeterminant(x : Sequence R, n : NonNegativeInteger) : R ==
 --    odd? n=> error "n must be even"
-    import HankelPackage R
+    import from HankelPackage R
     determinant HankelMatrix cons(1, firstn(x, 2*n))
 @ %
 The Jacobi parameters are only available in the case of a Field.
@@ -1191,7 +1191,7 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
     0 == distributionByMoments sequence repeating [0]
 
     distributionByMoments(mm : Sequence R) : % ==
-        import MomentPackage R
+        import from MomentPackage R
         per ([mm, moment2cumulant mm, moment2freeCumulant mm, moment2booleanCumulant mm]$Rep)
 
     distributionByMoments(mm : Stream R) : % ==
@@ -1210,7 +1210,7 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
         distributionByEvenMoments(sequence(mm)$(Sequence R))
 
     distributionByClassicalCumulants(cc : Sequence R) : % ==
-        import MomentPackage R
+        import from MomentPackage R
         mm := cumulant2moment cc
         per ([mm, cc, moment2freeCumulant mm, moment2booleanCumulant mm]$Rep)
 
@@ -1218,7 +1218,7 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
         distributionByClassicalCumulants(sequence(mm)$(Sequence R))
 
     distributionByFreeCumulants(fc : Sequence R) : % ==
-        import MomentPackage R
+        import from MomentPackage R
         mm := freeCumulant2moment fc
         per ([mm, moment2cumulant mm, fc, moment2booleanCumulant mm]$Rep)
 
@@ -1226,7 +1226,7 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
         distributionByFreeCumulants(sequence(mm)$(Sequence R))
 
     distributionByBooleanCumulants(bc : Sequence R) : % ==
-        import MomentPackage R
+        import from MomentPackage R
         mm := booleanCumulant2moment bc
         per ([mm, moment2cumulant mm, moment2freeCumulant mm, bc]$Rep)
 
@@ -1255,7 +1255,7 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
           moment2monotoneCumulant(moments x)$(MomentPackage R)
 
       distributionByMonotoneCumulants(mc : Sequence R) : % ==
-          import MomentPackage R
+          import from MomentPackage R
           mm := monotoneCumulant2moment mc
           per ([mm, moment2cumulant mm, moment2freeCumulant mm, moment2booleanCumulant mm]$Rep)
 
@@ -1292,7 +1292,7 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
           distributionBySTransform(S.puiseux, S.laurent, S.coef)
 
       freeMultiplicativeConvolution(x : %, y : %) : % ==
-          import Sequence R
+          import from Sequence R
           Sx : STRREC := moment2Stransform(moments(x))$MPR
           Sy : STRREC := moment2Stransform(moments(y))$MPR
           Sx.puiseux = 1/2 and Sy.puiseux = 1/2 => 0$%
@@ -1453,7 +1453,7 @@ DistributionPolynomialPackage(R : CommutativeRing, S : Join(CommutativeRing, Mod
     apply(p : UPS, x : DR) : DS ==
         -- evaluate x at powers of p
         IN : Stream Integer := expand([1..])$(UniversalSegment Integer)
---        import UPS
+--        import from UPS
         mompx : Stream S := map( (k : Integer) : S +-> eval(x, p^(k::PositiveInteger)), IN)$StreamFunctions2(Integer, S)
         distributionByMoments sequence mompx
 
@@ -1496,7 +1496,7 @@ DistributionContinuedFractionPackage(R : CommutativeRing, z : Symbol) : Exports 
     if R has Field then
         JContinuedFraction(x : DR, zz : UPz) : ContinuedFraction UPz ==
             jac : Record(an : Stream R, bn : Stream R) := jacobiParameters(x)$DR
-            import StreamFunctions2(R, UPz)
+            import from StreamFunctions2(R, UPz)
             an1 : Stream UPz := map((a : R) : UPz +-> zz-monomial(a, 0), jac an)
             bn1 : Stream UPz := map((b : R) : UPz +-> monomial(-b, 0), jac bn)
             continuedFraction(0, cons(1, bn1), cons(zz, an1))
@@ -1504,7 +1504,7 @@ DistributionContinuedFractionPackage(R : CommutativeRing, z : Symbol) : Exports 
       else if R has IntegralDomain then
         JContinuedFraction(x : DR, zz : UPFz) : ContinuedFraction UPFz ==
             jac : Record(an : Stream FR, bn : Stream FR) := jacobiParameters(x)$DR
-            import StreamFunctions2(FR, UPFz)
+            import from StreamFunctions2(FR, UPFz)
             an1 : Stream UPFz := map((a : FR) : UPFz +-> zz-monomial(a, 0), jac an)
             bn1 : Stream UPFz := map((b : FR) : UPFz +-> monomial(-b, 0), jac bn)
             continuedFraction(0, cons(1, bn1), cons(zz, an1))
