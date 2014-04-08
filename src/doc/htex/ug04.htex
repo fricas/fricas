@@ -669,3 +669,562 @@ Look at the code generated for the matrix again.
 }{
 \spadcommand{matrix [[2.3,9.7],[0.0,18.778]] \free{start1}}
 }
+
+% *********************************************************************
+\head{section}{General Fortran-generation utilities in \Language{}}{ugGeneralFortran}
+% *********************************************************************
+
+This section describes more advanced facilities which are available to users
+who wish to generate Fortran code from within \Language{}.  There are
+facilities to manipulate templates, store type information, and generate
+code fragments or complete programs.
+
+% ----------------------------------------------------------------------
+\subsubsection{Template Manipulation}
+% ----------------------------------------------------------------------
+
+A template is a skeletal program which is ``fleshed out'' with data when
+it is processed.  It is a sequence of {\em active} and {\em passive} parts:
+active parts are sequences of \Language{} commands which are processed as if they
+had been typed into the interpreter; passive parts are simply echoed
+verbatim on the Fortran output stream.
+
+Suppose, for example, that we have the following template, stored in
+the file ``test.tem'':
+\begin{verbatim}
+-- A simple template
+beginVerbatim
+      DOUBLE PRECISION FUNCTION F(X)
+      DOUBLE PRECISION X
+endVerbatim
+outputAsFortran("F",f)
+beginVerbatim
+      RETURN
+      END
+endVerbatim
+\end{verbatim}
+The passive parts lie between the two
+tokens {\tt beginVerbatim} and \texht{\linebreak}{} {\tt endVerbatim}.  There
+are two active statements: one which is simply an \Language{} (
+\texht{\verb+--+}{\-\-})
+comment, and one which produces an assignment to the current value
+of {\tt f}.  We could use it as follows:
+\begin{verbatim}
+(4) ->f := 4.0/(1+X^2)
+
+           4
+   (4)   ------
+          2
+         X  + 1
+
+(5) ->processTemplate "test.tem"
+      DOUBLE PRECISION FUNCTION F(X)
+      DOUBLE PRECISION X
+      F=4.0D0/(X*X+1.0D0)
+      RETURN
+      END
+
+   (5)  "CONSOLE"
+\end{verbatim}
+
+(A more reliable method of specifying the filename will be introduced
+below.)  Note that the Fortran assignment {\tt F=4.0D0/(X*X+1.0D0)}
+automatically converted 4.0 and 1 into DOUBLE PRECISION numbers; in
+general, the \Language{} Fortran generation facility will convert
+anything which should be a floating point object into either
+a Fortran REAL or DOUBLE PRECISION object.
+\xtc{
+Which alternative is used is determined by the command
+}{
+\spadcommand{)set fortran precision}
+}
+
+It is sometimes useful to end a template before the file itself ends (e.g. to
+allow the template to be tested incrementally or so that a piece of text
+describing how the template works can be included).  It is of course possible
+to ``comment-out'' the remainder of the file.  Alternatively, the single token
+{\tt endInput} as part of an active portion of the template will cause
+processing to be ended prematurely at that point.
+
+The \axiomFun{processTemplate} command comes in two flavours.  In the first case,
+illustrated above, it takes one argument of domain \axiomType{FileName},
+the name of the template to be processed, and writes its output on the
+current Fortran output stream.  In general, a filename can be generated
+from {\em directory}, {\em name} and {\em extension} components, using
+the operation \axiomFun{filename}, as in
+\begin{verbatim}
+processTemplate filename("","test","tem")
+\end{verbatim}
+There is an alternative version of \axiomFun{processTemplate}, which
+takes two arguments (both of domain \axiomType{FileName}).  In this case the
+first argument is the name of the template to be processed, and the
+second is the file in which to write the results.  Both versions return
+the location of the generated Fortran code as their result
+({\tt "CONSOLE"} in the above example).
+
+It is sometimes useful to be able to mix active and passive parts of a
+line or statement.  For example you might want to generate a Fortran
+Comment describing your data set.  For this kind of application we
+provide three functions as follows:
+\texht
+{
+\begin{tabular}{p{1.8in}p{2.6in}}
+\axiomFun{fortranLiteral} & writes a string on the Fortran output stream \\
+ & \\
+\axiomFun{fortranCarriageReturn} & writes a carriage return on the Fortran output stream \\
+& \\
+\axiomFun{fortranLiteralLine} & writes a string followed by a return
+on the Fortran output stream \\
+\end{tabular}
+}
+{
+\newline
+\axiomFun{fortranLiteral}\tab{25}writes a string on the Fortran output stream\newline
+\axiomFun{fortranCarriageReturn}\tab{25}writes a carriage return on the Fortran output stream\newline
+\axiomFun{fortranLiteralLine}\tab{25}writes a string followed by a return on the Fortran output stream\newline
+}
+\xtc{
+So we could create our comment as follows:
+}{
+\spadcommand{m := matrix [[1,2,3],[4,5,6]]\bound{m}}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteralLine(concat ["C\ \ \ \ \ \ The\ Matrix\ has\ ",
+nrows(m)::String, "\ rows\ and\ ", ncols(m)::String, "\ columns"]
+)$FortranTemplate \free{m}}
+}
+\xtc{
+or, alternatively:
+}{
+\spadcommand{fortranLiteral("C\ \ \ \ \ \ The\ Matrix\ has\ ")$FortranTemplate}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral(nrows(m)::String)$FortranTemplate}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral("\ rows\ and\ ")$FortranTemplate}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral(ncols(m)::String)$FortranTemplate\free{m}}
+}
+\xtc{
+}{
+\spadcommand{fortranLiteral("\ columns")$FortranTemplate}
+}
+\xtc{
+}{
+\spadcommand{fortranCarriageReturn()}
+}
+
+We should stress that these functions, together with the \axiomFun{outputAsFortran}
+function are the {\em only} sure ways
+of getting output to appear on the Fortran output stream.  Attempts to use
+\Language{} commands such as \axiomFun{output} or \axiomFunX{writeline} may appear to give
+the required result when displayed on the console, but will give the wrong
+result when Fortran and algebraic output are sent to differing locations.  On
+the other hand, these functions can be used to send helpful messages to the
+user, without interfering with the generated Fortran.
+
+% ----------------------------------------------------------------------
+\subsubsection{Manipulating the Fortran Output Stream}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranOutputStackPackage}}{}
+
+Sometimes it is useful to manipulate the Fortran output stream in a program,
+possibly without being aware of its current value.  The main use of this is
+for gathering type declarations (see ``Fortran Types'' below) but it can be useful
+in other contexts as well.  Thus we provide a set of commands to manipulate
+a stack of (open) output streams.  Only one stream can be written to at
+any given time.  The stack is never empty---its initial value is the
+console or the current value of the Fortran output stream, and can be
+determined using
+\xtc{
+}{
+\spadcommand{topFortranOutputStack()}
+}
+(see below).
+The commands available to manipulate the stack are:
+\texht{
+\begin{tabular}{ll}
+\axiomFun{clearFortranOutputStack} & resets the stack to the console \\
+ & \\
+\axiomFun{pushFortranOutputStack} & pushes a \axiomType{FileName} onto the stack \\
+ & \\
+\axiomFun{popFortranOutputStack} & pops the stack \\
+ & \\
+\axiomFun{showFortranOutputStack} & returns the current stack \\
+ & \\
+\axiomFun{topFortranOutputStack} & returns the top element of the stack \\
+\end{tabular}
+}
+{
+\newline
+\axiomFun{clearFortranOutputStack}\tab{25}resets the stack\newline
+\axiomFun{pushFortranOutputStack}\tab{25}pushes a \axiomType{FileName} onto the stack\newline
+\axiomFun{popFortranOutputStack}\tab{25}pops the stack\newline
+\axiomFun{showFortranOutputStack}\tab{25}returns the current stack\newline
+\axiomFun{topFortranOutputStack}\tab{25}returns the top element of the stack\newline
+}
+These commands are all part of \axiomType{FortranOutputStackPackage}.
+
+% ----------------------------------------------------------------------
+\subsubsection{Fortran Types}
+% ----------------------------------------------------------------------
+
+When generating code it is important to keep track of the Fortran types of
+the objects which we are generating.  This is useful for a number of reasons,
+not least to ensure that we are actually generating legal Fortran code.  The
+current type system is built up in several layers, and we shall describe each
+in turn.
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranScalarType}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranScalarType}}{}
+
+This domain represents the simple Fortran datatypes: REAL, DOUBLE PRECISION,
+COMPLEX, LOGICAL, INTEGER, and CHARACTER.
+It is possible to \axiomFun{coerce} a \axiomType{String} or \axiomType{Symbol}
+into the domain, test whether two objects are equal, and also apply
+the predicate functions \axiomFunFrom{real?}{FortranScalarType} etc.
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranType}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranType}}{}
+
+This domain represents ``full'' types: i.e., datatype plus array dimensions
+(where appropriate) plus whether or not the parameter is an external
+subprogram.  It is possible to \axiomFun{coerce} an object of
+\axiomType{FortranScalarType} into the domain or \axiomFun{construct} one
+from an element of \axiomType{FortranScalarType}, a list of
+\axiomType{Polynomial Integer}s (which can of course be simple integers or
+symbols) representing its dimensions, and
+a \axiomType{Boolean} declaring whether it is external or not.  The list
+of dimensions must be empty if the \axiomType{Boolean} is {\tt true}.
+The functions \axiomFun{scalarTypeOf}, \axiomFun{dimensionsOf} and
+\axiomFun{external?} return the appropriate
+parts, and it is possible to get the various basic Fortran Types via
+functions like \axiomFun{fortranReal}.
+\xtc{
+For example:
+}{
+\spadcommand{type:=construct(real,[i,10],false)$FortranType}
+}
+\xtc{
+or
+}{
+\spadcommand{type:=[real,[i,10],false]$FortranType\bound{type}}
+}
+\xtc{
+}{
+\spadcommand{scalarTypeOf type\free{type}}
+}
+\xtc{
+}{
+\spadcommand{dimensionsOf type\free{type}}
+}
+\xtc{
+}{
+\spadcommand{external?  type\free{type}}
+}
+\xtc{
+}{
+\spadcommand{fortranLogical()$FortranType}
+}
+\xtc{
+}{
+\spadcommand{construct(integer,[],true)$FortranType}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{SymbolTable}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{SymbolTable}}{}
+
+This domain creates and manipulates a symbol table for generated Fortran code.
+This is used by \axiomType{FortranProgram} to represent the types of objects in
+a subprogram.  The commands available are:
+\texht{
+\begin{tabular}{ll}
+\axiomFun{empty} & creates a new \axiomType{SymbolTable} \\
+ & \\
+\axiomFunX{declare} & creates a new entry in a table \\
+ & \\
+\axiomFun{fortranTypeOf} & returns the type of an object in a table \\
+ & \\
+\axiomFun{parametersOf} & returns a list of all the symbols in the table \\
+ & \\
+\axiomFun{typeList} & returns a list of all objects of a given type \\
+ & \\
+\axiomFun{typeLists} & returns a list of lists of all objects sorted by type \\
+ & \\
+\axiomFun{externalList} & returns a list of all {\tt EXTERNAL} objects \\
+ & \\
+\axiomFun{printTypes} & produces Fortran type declarations from a table\\
+\end{tabular}
+}
+{
+\newline
+\axiomFun{empty}\tab{25}creates a new \axiomType{SymbolTable}\newline
+\axiomFunX{declare}\tab{25}creates a new entry in a table \newline
+\axiomFun{fortranTypeOf}\tab{25}returns the type of an object in a table \newline
+\axiomFun{parametersOf}\tab{25}returns a list of all the symbols in the table \newline
+\axiomFun{typeList}\tab{25}returns a list of all objects of a given type \newline
+\axiomFun{typeLists}\tab{25}returns a list of lists of all objects sorted by type \newline
+\axiomFun{externalList}\tab{25}returns a list of all {\tt EXTERNAL} objects \newline
+\axiomFun{printTypes}\tab{25}produces Fortran type declarations from a table\newline
+}
+\xtc{
+}{
+\spadcommand{symbols := empty()$SymbolTable\bound{symbols}}
+}
+\xtc{
+}{
+\spadcommand{declare!(X, fortranReal()$FortranType, symbols)\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{declare!(M,construct(real,[i,j],false)$FortranType,symbols)
+\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{declare!([i,j], fortranInteger()$FortranType, symbols)
+\free{symbols} \bound{i j} }
+}
+\xtc{
+}{
+\spadcommand{symbols\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{fortranTypeOf(i,symbols)\free{symbols i}}
+}
+\xtc{
+}{
+\spadcommand{typeList(real,symbols)\free{symbols}}
+}
+\xtc{
+}{
+\spadcommand{printTypes symbols\free{symbols}}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{TheSymbolTable}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{TheSymbolTable}}{}
+
+This domain creates and manipulates one global symbol table to be used, for
+example, during template processing. It is
+also used when
+linking to external Fortran routines. The
+information stored for each subprogram (and the main program segment, where
+relevant) is:
+\begin{itemize}
+\item its name;
+\item its return type;
+\item its argument list;
+\item and its argument types.
+\end{itemize}
+Initially, any information provided is deemed to be for the main program
+segment.
+\xtc{
+Issuing the following command indicates that from now on all information
+refers to the subprogram \axiom{F}.
+}{
+\spadcommand{newSubProgram(F)$TheSymbolTable}
+}
+\xtc{
+It is possible to return to processing the main program segment by issuing
+the command:
+}{
+\spadcommand{endSubProgram()$TheSymbolTable}
+}
+The following commands exist:
+\texht{
+\begin{tabular}{p{1.6in}p{2.8in}}
+\axiomFunX{returnType} & declares the return type of the current subprogram \\
+ & \\
+\axiomFun{returnTypeOf} & returns the return type of a subprogram \\
+ & \\
+\axiomFunX{argumentList} &  declares the argument list of the current subprogram \\
+ & \\
+\axiomFun{argumentListOf} &  returns the argument list of a subprogram \\
+ & \\
+\axiomFunX{declare} & provides type declarations for parameters of the current subprogram \\
+ & \\
+\axiomFun{symbolTableOf} & returns the symbol table  of a subprogram \\
+ & \\
+\axiomFun{printHeader} & produces the Fortran header for the current subprogram \\
+\end{tabular}
+}
+{
+\newline
+\axiomFunX{returnType}\tab{25}declares the return type of the current subprogram \newline
+\axiomFun{returnTypeOf}\tab{25}returns the return type of a subprogram \newline
+\axiomFunX{argumentList}\tab{25}declares the argument list of the current subprogram \newline
+\axiomFun{argumentListOf}\tab{25}returns the argument list of a subprogram \newline
+\axiomFunX{declare}\tab{25}provides type declarations for parameters of the current subprogram \newline
+\axiomFun{symbolTableOf}\tab{25}returns the symbol table  of a subprogram \newline
+\axiomFun{printHeader}\tab{25}produce the Fortran header for the current subprogram \newline
+}
+In addition there are versions of these commands which are parameterised by
+the name of a subprogram, and others parameterised by both the name of a
+subprogram and by an instance of \axiomType{TheSymbolTable}.
+\xtc{
+}{
+\spadcommand{newSubProgram(F)$TheSymbolTable \bound{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{argumentList!(F, [X])$TheSymbolTable\free{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{returnType!(F,real)$TheSymbolTable \free{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{declare!(X,fortranReal(),F)$TheSymbolTable \free{forPleasure}}
+}
+\xtc{
+}{
+\spadcommand{printHeader(F)$TheSymbolTable\free{forPleasure}}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{Advanced Fortran Code Generation}
+% ----------------------------------------------------------------------
+
+This section describes facilities for representing Fortran statements, and
+building up complete subprograms from them.
+
+% ----------------------------------------------------------------------
+\subsubsection{Switch}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{Switch}}{}
+
+This domain is used to represent statements like {\tt x < y}.  Although
+these can be represented directly in \Language{}, it is a little cumbersome.
+% since currently \Language{} performs several transformations on
+% conditional operators, for example {\tt x >= y } is transformed to
+% {\tt not(x < y)}, which while logically equivalent may be different
+% from desired result.
+
+Instead we have a set of operations, such as \axiomFun{LT} to represent
+\axiom{<},
+to let us build such statements.  The available constructors are:
+\texht{
+\begin{center}
+\begin{tabular}{ll}
+\axiomFun{LT} & $<$ \\
+\axiomFun{GT} & $>$ \\
+\axiomFun{LE} & $\leq$ \\
+\axiomFun{GE} & $\geq$ \\
+\axiomFun{EQ} & $=$ \\
+\axiomFun{AND} & $and$\\
+\axiomFun{OR} & $or$ \\
+\axiomFun{NOT} & $not$ \\
+\end{tabular}
+\end{center}
+}
+{
+\newline
+\axiomFun{LT}\tab{25}\texht{$<$}{<} \newline
+\axiomFun{GT}\tab{25}\texht{$>$}{>} \newline
+\axiomFun{LE}\tab{25}\texht{$\leq$}{<=} \newline
+\axiomFun{GE}\tab{25}\texht{$\geq$}{>=} \newline
+\axiomFun{EQ}\tab{25}\texht{$=$}{=} \newline
+\axiomFun{AND}\tab{25}\texht{$and$}{{\tt and}}\newline
+\axiomFun{OR}\tab{25}\texht{$or$}{{\tt or}} \newline
+\axiomFun{NOT}\tab{25}\texht{$not$}{{\tt not}} \newline
+}
+\xtc{
+So for example:
+}{
+\spadcommand{LT(x,y)$Switch}
+}
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranCode}
+% ----------------------------------------------------------------------
+
+This domain represents code segments or operations: currently assignments,
+conditionals, blocks, comments, gotos, continues, various kinds of loops,
+and return statements.
+\xtc{
+For example we can create quite a complicated conditional statement using
+assignments, and then turn it into Fortran code:
+}{
+\spadcommand{c := cond(LT(X,Y),assign(F,X),cond(GT(Y,Z),assign(F,Y),
+assign(F,Z))$FortranCode)$FortranCode \bound{c}}
+}
+\xtc{
+}{
+\spadcommand{printCode c\free{c}}
+}
+
+The Fortran code is printed
+on the current Fortran output stream.
+
+% ----------------------------------------------------------------------
+\subsubsection{FortranProgram}
+% ----------------------------------------------------------------------
+\texht{\exptypeindex{FortranProgram}}{}
+
+This domain is used to construct complete Fortran subprograms out of
+elements of \axiomType{FortranCode}.  It is parameterised by the name of the
+target subprogram (a \axiomType{Symbol}), its return type (from
+\axiomType{Union}(\axiomType{FortranScalarType},``void'')),
+its arguments (from \axiomType{List Symbol}), and
+its symbol table (from \axiomType{SymbolTable}).  One can
+\axiomFun{coerce} elements of either \axiomType{FortranCode}
+or \axiomType{Expression} into it.
+
+\xtc{
+First of all we create a symbol table:
+}{
+\spadcommand{symbols := empty()$SymbolTable\bound{symbols}}
+}
+\xtc{
+Now put some type declarations into it:
+}{
+\spadcommand{declare!([X,Y],fortranReal()$FortranType,symbols)\free{symbols}}
+}
+\xtc{
+Then (for convenience)
+we set up the particular instantiation of \axiomType{FortranProgram}
+}{
+\spadcommand{FP := FortranProgram(F,real,[X,Y],symbols)
+\free{symbols}\bound{FP}}
+}
+\xtc{
+Create an object of type \axiomType{Expression(Integer)}:
+}{
+\spadcommand{asp := X*sin(Y)\bound{asp}}
+}
+\xtc{
+Now \axiomFun{coerce} it into \axiomType{FP}, and print its Fortran form:
+}{
+\spadcommand{outputAsFortran(asp::FP)\free{FP asp}}
+}
+
+We can generate a \axiomType{FortranProgram} using \axiom{FortranCode}.
+For example:
+\xtc{
+Augment our symbol table:
+}{
+\spadcommand{declare!(Z,fortranReal()$FortranType,symbols)
+\free{symbols}\bound{Z}}
+}
+\xtc{
+and transform the conditional expression we prepared earlier:
+}{
+\spadcommand{outputAsFortran([c,returns()$FortranCode]::FP) \free{FP c Z}}
+}
+
