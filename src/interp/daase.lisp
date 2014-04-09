@@ -231,7 +231,7 @@ database.
 ; there are only a small number of categories that have default domains.
 ; rather than keep this slot in every domain we maintain a list here.
 
-(defvar *defaultdomain-list* '(
+(defvar |$defaultdomain_list| '(
   (|MultisetAggregate| |Multiset|)
   (|FunctionSpace| |Expression|)
   (|AlgebraicallyClosedFunctionSpace| |Expression|)
@@ -253,12 +253,12 @@ database.
 ; have category y?". this is answered by constructing a pair of
 ; (x . y) and doing an equal hash into this table.
 
-(defvar *operation-hash* nil "given an operation name, what are its modemaps?")
+(defvar |$operation_hash| nil "given an operation name, what are its modemaps?")
 (defvar |$has_category_hash| nil "answers x has y category questions")
 
-(defvar *miss* nil "print out cache misses on getdatabase calls")
+(defvar |$miss| nil "print out cache misses on getdatabase calls")
 
-(defvar *do-not-compress-databases* t)
+(defvar |$do_not_compress_databases| t)
 
    ; note that constructorcategory information need only be kept for
    ; items of type category. this will be fixed in the next iteration
@@ -275,35 +275,35 @@ database.
 
 ; this are the streams for the databases. they are always open.
 ; there is an optimization for speeding up system startup. if the
-; database is opened and the ..-stream-stamp* variable matches the
+; database is opened and the ..-stream-stamp variable matches the
 ; position information in the database then the database is NOT
 ; read in and is assumed to match the in-core version
 
-(defvar *compressvector* nil "a vector of things to compress in the databases")
-(defvar *compressVectorLength* 0 "length of the compress vector")
-(defvar *compress-stream* nil "an stream containing the compress vector")
-(defvar *compress-stream-stamp* 0 "*compress-stream* (position . time)")
+(defvar |$compress_vector| nil "a vector of things to compress in the databases")
+(defvar |$compress_vector_length| 0 "length of the compress vector")
+(defvar |$compress_stream| nil "an stream containing the compress vector")
+(defvar |$compress_stream_stamp| 0 "|$compress_stream| (position . time)")
 
-(defvar *interp-stream* nil "an open stream to the interpreter database")
-(defvar *interp-stream-stamp* 0 "*interp-stream* (position . time)")
+(defvar |$interp_stream| nil "an open stream to the interpreter database")
+(defvar |$interp_stream_stamp| 0 "|$interp_stream| (position . time)")
 
 ; this is indexed by operation, not constructor
-(defvar *operation-stream* nil "the stream to operation.daase")
-(defvar *operation-stream-stamp* 0 "*operation-stream* (position . time)")
+(defvar |$operation_stream| nil "the stream to operation.daase")
+(defvar |$operation_stream_stamp| 0 "|$operation_stream| (position . time)")
 
-(defvar *browse-stream* nil "an open stream to the browser database")
-(defvar *browse-stream-stamp* 0 "*browse-stream* (position . time)")
+(defvar |$browse_stream| nil "an open stream to the browser database")
+(defvar |$browse_stream_stamp| 0 "|$browse_stream| (position . time)")
 
 ; this is indexed by (domain . category)
-(defvar *category-stream* nil "an open stream to the category table")
-(defvar *category-stream-stamp* 0 "*category-stream* (position . time)")
+(defvar |$category_stream| nil "an open stream to the category table")
+(defvar |$category_stream_stamp| 0 "|$category_stream| (position . time)")
 
-(defvar *allconstructors* nil "a list of all the constructors in the system")
-(defvar *allOperations* nil "a list of all the operations in the system")
+(defvar |$all_constructors| nil "a list of all the constructors in the system")
+(defvar |$all_operations| nil "a list of all the operations in the system")
 
-(defvar *asharpflags* "-O -laxiom -Fasy -Flsp" "library compiler flags")
+(defvar |$asharp_flags| "-O -laxiom -Fasy -Flsp" "library compiler flags")
 
-(defun asharp (file &optional (flags *asharpflags*))
+(defun asharp (file &optional (flags |$asharp_flags|))
  "call the asharp compiler"
  (#| system::system |#
    obey
@@ -311,26 +311,26 @@ database.
     flags " " file)))
 
 (defun resethashtables ()
- "set all -hash* to clean values. used to clean up core before saving system"
+ "set all *_hash to clean values. used to clean up core before saving system"
  (setq |$has_category_hash| (make-hash-table :test #'equal))
- (setq *operation-hash* (make-hash-table))
- (setq *allconstructors* nil)
- (setq *compressvector* nil)
- (setq *compress-stream-stamp* '(0 . 0))
+ (setq |$operation_hash| (make-hash-table))
+ (setq |$all_constructors| nil)
+ (setq |$compress_vector| nil)
+ (setq |$compress_stream_stamp| '(0 . 0))
  (|compressOpen|)
- (setq *interp-stream-stamp* '(0 . 0))
+ (setq |$interp_stream_stamp| '(0 . 0))
  (|interpOpen|)
- (setq *operation-stream-stamp* '(0 . 0))
+ (setq |$operation_stream_stamp| '(0 . 0))
  (|operationOpen|)
- (setq *browse-stream-stamp* '(0 . 0))
+ (setq |$browse_stream_stamp| '(0 . 0))
  (|browseOpen|)
- (setq *category-stream-stamp* '(0 . 0))
+ (setq |$category_stream_stamp| '(0 . 0))
  (|categoryOpen|) ;note: this depends on constructorform in browse.daase
  (initial-getdatabase)
- (close *interp-stream*)
- (close *operation-stream*)
- (close *category-stream*)
- (close *browse-stream*)
+ (close |$interp_stream|)
+ (close |$operation_stream|)
+ (close |$category_stream|)
+ (close |$browse_stream|)
 #+:GCL (LISP::gbc t)
 )
 
@@ -412,7 +412,7 @@ database.
  (dolist (con constr)
   (let ((c (concatenate 'string
              (|getEnv| "AXIOM") "/algebra/"
-             (string (getdatabase con 'abbreviation)) "." *lisp-bin-filetype*)))
+             (string (getdatabase con 'abbreviation)) "." |$lisp_bin_filetype|)))
     (format t "   preloading ~a.." c)
     (if (probe-file c)
      (progn
@@ -442,9 +442,9 @@ database.
  "open the interpreter database and hash the keys"
  (declare (special $spadroot))
  (let (constructors pos stamp dbstruct)
-  (setq *interp-stream* (open (DaaseName "interp.daase" nil)))
-  (setq stamp (read *interp-stream*))
-  (unless (equal stamp *interp-stream-stamp*)
+  (setq |$interp_stream| (open (DaaseName "interp.daase" nil)))
+  (setq stamp (read |$interp_stream|))
+  (unless (equal stamp |$interp_stream_stamp|)
    (format t "   Re-reading interp.daase")
 
    ; Clean old data
@@ -453,15 +453,15 @@ database.
          (setf (get symbol 'database) nil))
       (when (get symbol 'abbreviationfor)
          (setf (get symbol 'abbreviationfor) nil)))
-   (setq *allconstructors* nil)
+   (setq |$all_constructors| nil)
 
-   (setq *interp-stream-stamp* stamp)
+   (setq |$interp_stream_stamp| stamp)
    (setq pos (car stamp))
-   (file-position *interp-stream* pos)
-   (setq constructors (read *interp-stream*))
+   (file-position |$interp_stream| pos)
+   (setq constructors (read |$interp_stream|))
    (dolist (item constructors)
     (setq item (unsqueeze item))
-    (setq *allconstructors* (adjoin (first item) *allconstructors*))
+    (setq |$all_constructors| (adjoin (first item) |$all_constructors|))
     (setq dbstruct (make-database))
     (setf (get (car item) 'database) dbstruct)
     (setf (database-operationalist dbstruct) (second item))
@@ -506,14 +506,14 @@ database.
  "open the constructor database and hash the keys"
  (declare (special $spadroot))
  (let (constructors pos stamp dbstruct)
-  (setq *browse-stream* (open (DaaseName "browse.daase" nil)))
-  (setq stamp (read *browse-stream*))
-  (unless (equal stamp *browse-stream-stamp*)
+  (setq |$browse_stream| (open (DaaseName "browse.daase" nil)))
+  (setq stamp (read |$browse_stream|))
+  (unless (equal stamp |$browse_stream_stamp|)
    (format t "   Re-reading browse.daase")
-   (setq *browse-stream-stamp* stamp)
+   (setq |$browse_stream_stamp| stamp)
    (setq pos (car stamp))
-   (file-position *browse-stream* pos)
-   (setq constructors (read *browse-stream*))
+   (file-position |$browse_stream| pos)
+   (setq constructors (read |$browse_stream|))
    (dolist (item constructors)
     (setq item (unsqueeze item))
     (unless (setq dbstruct (get (car item) 'database))
@@ -523,7 +523,7 @@ database.
      (format t "get the database structure for this constructor and~%")
      (warn "will create a new one~%")
      (setf (get (car item) 'database) (setq dbstruct (make-database)))
-     (setq *allconstructors* (adjoin item *allconstructors*)))
+     (setq |$all_constructors| (adjoin item |$all_constructors|)))
     (setf (database-sourcefile dbstruct) (second item))
     (setf (database-constructorform dbstruct) (third item))
     (setf (database-documentation dbstruct) (fourth item))
@@ -535,14 +535,14 @@ database.
  "open category.daase and hash the keys"
  (declare (special $spadroot))
  (let (pos keys stamp)
-  (setq *category-stream* (open (DaaseName "category.daase" nil)))
-  (setq stamp (read *category-stream*))
-  (unless (equal stamp *category-stream-stamp*)
+  (setq |$category_stream| (open (DaaseName "category.daase" nil)))
+  (setq stamp (read |$category_stream|))
+  (unless (equal stamp |$category_stream_stamp|)
    (format t "   Re-reading category.daase")
-   (setq *category-stream-stamp* stamp)
+   (setq |$category_stream_stamp| stamp)
    (setq pos (car stamp))
-   (file-position *category-stream* pos)
-   (setq keys (read *category-stream*))
+   (file-position |$category_stream| pos)
+   (setq keys (read |$category_stream|))
    (setq |$has_category_hash| (make-hash-table :test #'equal))
    (dolist (item keys)
     (setq item (unsqueeze item))
@@ -553,38 +553,38 @@ database.
  "read operation database and hash the keys"
  (declare (special $spadroot))
  (let (operations pos stamp)
-  (setq *operation-stream* (open (DaaseName "operation.daase" nil)))
-  (setq stamp (read *operation-stream*))
-  (unless (equal stamp *operation-stream-stamp*)
+  (setq |$operation_stream| (open (DaaseName "operation.daase" nil)))
+  (setq stamp (read |$operation_stream|))
+  (unless (equal stamp |$operation_stream_stamp|)
    (format t "   Re-reading operation.daase")
-   (setq *operation-stream-stamp* stamp)
+   (setq |$operation_stream_stamp| stamp)
    (setq pos (car stamp))
-   (file-position *operation-stream* pos)
-   (setq operations (read *operation-stream*))
+   (file-position |$operation_stream| pos)
+   (setq operations (read |$operation_stream|))
 
    ; Clean old data
-   (setq *operation-hash* (make-hash-table))
-   (setq *allOperations* nil)
+   (setq |$operation_hash| (make-hash-table))
+   (setq |$all_operations| nil)
 
    (dolist (item operations)
     (setq item (unsqueeze item))
-    (setf (gethash (car item) *operation-hash*) (cdr item))))
+    (setf (gethash (car item) |$operation_hash|) (cdr item))))
   (format t "~&")))
 
 (defun addoperations (constructor oldmaps)
- "add ops from a )library domain to *operation-hash*"
- (declare (special *operation-hash*))
+ "add ops from a )library domain to |$operation_hash|"
+ (declare (special |$operation_hash|))
  (dolist (map oldmaps) ; out with the old
   (let (oldop op)
    (setq op (car map))
    (setq oldop (getdatabase op 'operation))
    (setq oldop (delete (cdr map) oldop :test #'equal))
-   (setf (gethash op *operation-hash*) oldop)))
+   (setf (gethash op |$operation_hash|) oldop)))
  (dolist (map (getdatabase constructor 'modemaps)) ; in with the new
   (let (op newmap)
    (setq op (car map))
    (setq newmap (getdatabase op 'operation))
-   (setf (gethash op *operation-hash*) (cons (cdr map) newmap)))))
+   (setf (gethash op |$operation_hash|) (cons (cdr map) newmap)))))
 
 (defun showdatabase (constructor)
  (format t "~&~a: ~a~%" 'constructorkind
@@ -659,8 +659,8 @@ database.
      (setf (get constructor 'abbreviationfor) nil)))))
 
 (defun getdatabase (constructor key)
- (declare (special $spadroot) (special *miss*))
- (when (eq *miss* t) (format t "getdatabase call: ~20a ~a~%" constructor key))
+ (declare (special $spadroot) (special |$miss|))
+ (when (eq |$miss| t) (format t "getdatabase call: ~20a ~a~%" constructor key))
  (let (data table stream ignore struct)
   (declare (ignore ignore))
   (when (or (symbolp constructor)
@@ -669,52 +669,52 @@ database.
 ; note that abbreviation, constructorkind and cosig are heavy hitters
 ; thus they occur first in the list of things to check
    (abbreviation
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
       (setq data (database-abbreviation struct))))
    (constructorkind
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-constructorkind struct))))
    (cosig
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-cosig struct))))
    (operation
-    (setq stream *operation-stream*)
-    (setq data (gethash constructor *operation-hash*)))
+    (setq stream |$operation_stream|)
+    (setq data (gethash constructor |$operation_hash|)))
    (constructormodemap
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-constructormodemap struct))))
    (constructorcategory
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-constructorcategory struct))
      (when (null data) ;domain or package then subfield of constructormodemap
       (setq data (cadar (getdatabase constructor 'constructormodemap))))))
    (operationalist
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-operationalist struct))))
    (modemaps
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-modemaps struct))))
    (hascategory
     (setq table  |$has_category_hash|)
-    (setq stream *category-stream*)
+    (setq stream |$category_stream|)
     (setq data (gethash constructor table)))
    (object
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-object struct))))
    (asharp?
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-object struct))))
    (niladic
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-niladic struct))))
    (constructor?
@@ -729,48 +729,48 @@ database.
    (constructor
     (when (setq data (get constructor 'abbreviationfor))))
    (defaultdomain
-    (setq data (cadr (assoc constructor *defaultdomain-list*))))
+    (setq data (cadr (assoc constructor |$defaultdomain_list|))))
    (ancestors
-    (setq stream *interp-stream*)
+    (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-ancestors struct))))
    (sourcefile
-    (setq stream *browse-stream*)
+    (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-sourcefile struct))))
    (constructorform
-    (setq stream *browse-stream*)
+    (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-constructorform struct))))
    (constructorargs
     (setq data (cdr (getdatabase constructor 'constructorform))))
    (predicates
-    (setq stream *browse-stream*)
+    (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-predicates struct))))
    (documentation
-    (setq stream *browse-stream*)
+    (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-documentation struct))))
    (parents
-    (setq stream *browse-stream*)
+    (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-parents struct))))
    (users
-    (setq stream *browse-stream*)
+    (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-users struct))))
    (dependents
-    (setq stream *browse-stream*)
+    (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-dependents struct))))
    (otherwise  (warn "~%(GETDATABASE ~a ~a) failed~%" constructor key)))
   (when (numberp data)                 ;fetch the real data
-   (when *miss* (format t "getdatabase miss: ~20a ~a~%" constructor key))
+   (when |$miss| (format t "getdatabase miss: ~20a ~a~%" constructor key))
    (file-position stream data)
    (setq data (unsqueeze (read stream)))
    (case key ; cache the result of the database read
-    (operation           (setf (gethash constructor *operation-hash*) data))
+    (operation           (setf (gethash constructor |$operation_hash|) data))
     (hascategory         (setf (gethash constructor |$has_category_hash|) data))
     (constructorkind     (setf (database-constructorkind struct) data))
     (cosig               (setf (database-cosig struct) data))
@@ -805,25 +805,12 @@ database.
        (setq data
              (if (string= (directory-namestring (car data)) "")
                  (concatenate 'string $spadroot "/algebra/" (car data)
-                                        "." *lisp-bin-filetype*)
+                                        "." |$lisp_bin_filetype|)
                (car data)))
       (when (and data (string= (directory-namestring data) ""))
        (setq data (concatenate 'string $spadroot "/algebra/" data
-                                          "." *lisp-bin-filetype*)))))))
+                                          "." |$lisp_bin_filetype|)))))))
   data))
-
-; )library top level command
-
-(defun |library| (args)
- (declare (special |$options|))
- (declare (special |$newConlist|))
- (setq original-directory (get-current-directory))
- (setq |$newConlist| nil)
- (localdatabase args |$options|)
-
- (|extendLocalLibdb| |$newConlist|)
- (chdir original-directory)
- (|terminateSystemCommand|))
 
 ; localdatabase tries to find files in the order of:
 ;  NRLIB/index.KAF
@@ -945,16 +932,16 @@ database.
          (let ((opname key)
                (modemap (car (LASSOC '|modemaps| alist))) )
            (setq oldmaps (getdatabase opname 'operation))
-           (setf (gethash opname *operation-hash*)
+           (setf (gethash opname |$operation_hash|)
                  (adjoin (subst asharp-name opname (cdr modemap))
                          oldmaps :test #'equal))
            (asharpMkAutoloadFunction object asharp-name))
        (when (if (null only) (not (eq key '%%)) (member key only))
-        (setq *allOperations* nil)        ; force this to recompute
+        (setq |$all_operations| nil)        ; force this to recompute
         (setq oldmaps (getdatabase key 'modemaps))
         (setq dbstruct (make-database))
         (setf (get key 'database) dbstruct)
-        (setq *allconstructors* (adjoin key *allconstructors*))
+        (setq |$all_constructors| (adjoin key |$all_constructors|))
         (setf (database-constructorform dbstruct)
          (fetchdata alist "constructorForm"))
         (setf (database-constructorkind dbstruct)
@@ -1026,10 +1013,10 @@ database.
    (setq key (car constructorform))
    (setq oldmaps (getdatabase key 'modemaps))
    (setq dbstruct (make-database))
-   (setq *allconstructors* (adjoin key *allconstructors*))
+   (setq |$all_constructors| (adjoin key |$all_constructors|))
    (setf (get key 'database) dbstruct) ; store the struct, side-effect it...
    (setf (database-constructorform dbstruct) constructorform)
-   (setq *allOperations* nil)   ; force this to recompute
+   (setq |$all_operations| nil)   ; force this to recompute
    (setf (database-object dbstruct) object)
    (setq abbrev
      (intern (pathname-name (first (last (pathname-directory object))))))
@@ -1080,14 +1067,14 @@ database.
 
 ; making new databases consists of:
 ;  1) reset all of the system hash tables
-;  *) set up Union, Record and Mapping
+;  1a) set up Union, Record and Mapping
 ;  2) map )library across all of the system files (fills the databases)
 ;  3) loading some normally autoloaded files
 ;  4) making some database entries that are computed (like ancestors)
 ;  5) writing out the databases
 ; note that this process should be done in a clean image
 ; followed by a rebuild of the system image to include
-; the new index pointers (e.g. *interp-stream-stamp*)
+; the new index pointers (e.g. $interp_stream_stamp)
 ; the system will work without a rebuild but it needs to
 ; re-read the databases on startup. rebuilding the system
 ; will cache the information into the image and the databases
@@ -1100,29 +1087,28 @@ database.
  (labels (
     ;; these are types which have no library object associated with them.
     ;; we store some constructed data to make them perform like library
-    ;; objects, the *operationalist-hash* key entry is used by allConstructors
+    ;; objects
   (withSpecialConstructors ()
-   ; note: if item is not in *operationalist-hash* it will not be written
    ; Category
    (setf (get '|Category| 'database)
      (make-database :operationalist nil :niladic t))
-   (push '|Category| *allconstructors*)
+   (push '|Category| |$all_constructors|)
    ; UNION
    (setf (get '|Union| 'database)
      (make-database :operationalist nil :constructorkind '|domain|))
-   (push '|Union| *allconstructors*)
+   (push '|Union| |$all_constructors|)
    ; RECORD
    (setf (get '|Record| 'database)
     (make-database :operationalist nil :constructorkind '|domain|))
-   (push '|Record| *allconstructors*)
+   (push '|Record| |$all_constructors|)
    ; MAPPING
    (setf (get '|Mapping| 'database)
     (make-database :operationalist nil :constructorkind '|domain|))
-   (push '|Mapping| *allconstructors*)
+   (push '|Mapping| |$all_constructors|)
    ; ENUMERATION
    (setf (get '|Enumeration| 'database)
     (make-database :operationalist nil :constructorkind '|domain|))
-   (push '|Enumeration| *allconstructors*)
+   (push '|Enumeration| |$all_constructors|)
    )
   (final-name (root)
     (format nil "~a.daase" root))
@@ -1132,10 +1118,10 @@ database.
    (when (get symbol 'database)
     (setf (get symbol 'database) nil)))
   (setq |$has_category_hash| (make-hash-table :test #'equal))
-  (setq *operation-hash* (make-hash-table))
-  (setq *allconstructors* nil)
-  (setq *compressvector* nil)
-  (setq *allOperations* nil)
+  (setq |$operation_hash| (make-hash-table))
+  (setq |$all_constructors| nil)
+  (setq |$compress_vector| nil)
+  (setq |$all_operations| nil)
   (withSpecialConstructors)
   (localdatabase nil
      (list (list '|dir| (namestring (truename "./")) ))
@@ -1234,22 +1220,22 @@ database.
 (defun |compressOpen| ()
  (let (lst stamp pos)
   (declare (special $spadroot))
-  (setq *compress-stream*
+  (setq |$compress_stream|
     (open (DaaseName "compress.daase"  nil) :direction :input))
-  (setq stamp (read *compress-stream*))
-  (unless (equal stamp *compress-stream-stamp*)
+  (setq stamp (read |$compress_stream|))
+  (unless (equal stamp |$compress_stream_stamp|)
    (format t "   Re-reading compress.daase")
-   (setq *compress-stream-stamp* stamp)
+   (setq |$compress_stream_stamp| stamp)
    (setq pos (car stamp))
-   (file-position *compress-stream* pos)
-   (setq lst (read *compress-stream*))
-   (setq *compressVectorLength* (car lst))
-   (setq *compressvector*
+   (file-position |$compress_stream| pos)
+   (setq lst (read |$compress_stream|))
+   (setq |$compress_vector_length| (car lst))
+   (setq |$compress_vector|
      (make-array (car lst) :initial-contents (cdr lst))))))
 
 (defun write-compress ()
  (let (compresslist masterpos out)
-  (close *compress-stream*)
+  (close |$compress_stream|)
   (setq out (open "compress.build" :direction :output :if-exists :supersede))
   (princ "                              " out)
   (finish-output out)
@@ -1276,9 +1262,9 @@ database.
   (push '|Enumeration| compresslist)
   ;;; dummy zero element
   (push 0 compresslist)
-  (setq *compressVectorLength* (length compresslist))
-  (setq *compressvector*
-    (make-array *compressVectorLength* :initial-contents compresslist))
+  (setq |$compress_vector_length| (length compresslist))
+  (setq |$compress_vector|
+    (make-array |$compress_vector_length| :initial-contents compresslist))
   (print (cons (length compresslist) compresslist) out)
   (finish-output out)
   (file-position out 0)
@@ -1411,16 +1397,16 @@ database.
 (defun unsqueeze (expr)
   (cond ((atom expr)
          (cond ((and (numberp expr) (< expr 0))
-                (svref *compressVector* (- expr)))
+                (svref |$compress_vector| (- expr)))
                (t expr)))
         (t (rplaca expr (unsqueeze (car expr)))
            (rplacd expr (unsqueeze (cdr expr)))
            expr)))
 
 (defun squeeze (expr)
-  (if *do-not-compress-databases*
+  (if |$do_not_compress_databases|
     expr
-    (let (leaves pos (bound (length *compressvector*)))
+    (let (leaves pos (bound (length |$compress_vector|)))
      (labels (
       (flat (expr)
        (when (and (numberp expr) (< expr 0))
@@ -1436,7 +1422,7 @@ database.
      (setq leaves nil)
      (flat expr)
      (dolist (leaf leaves)
-      (when (setq pos (position leaf *compressvector*))
+      (when (setq pos (position leaf |$compress_vector|))
         (nsubst (- pos) leaf expr)))
      expr))))
 
@@ -1450,7 +1436,7 @@ database.
    (setq pos (file-position out))
    (print (squeeze value) out)
    (push (cons key pos) master))
-   *operation-hash*)
+   |$operation_hash|)
   (finish-output out)
   (setq pos (file-position out))
   (print (mapcar #'squeeze master) out)
@@ -1460,15 +1446,15 @@ database.
   (close out)))
 
 (defun |allConstructors| ()
- (declare (special *allconstructors*))
- *allconstructors*)
+ (declare (special |$all_constructors|))
+ |$all_constructors|)
 
 (defun |allOperations| ()
- (declare (special *allOperations*))
- (unless *allOperations*
-  (maphash #'(lambda (k v) (declare (ignore v)) (push k *allOperations*))
-    *operation-hash*))
- *allOperations*)
+ (declare (special |$all_operations|))
+ (unless |$all_operations|
+  (maphash #'(lambda (k v) (declare (ignore v)) (push k |$all_operations|))
+    |$operation_hash|))
+ |$all_operations|)
 
 ; the variable NOPfuncall is a funcall-able object that is a dummy
 ; initializer for libaxiom asharp domains.
@@ -1518,7 +1504,7 @@ database.
 ;  domain. the FIRST time this is done for the domain the autoloader
 ;  invokes the file object. every other time the domain already
 ;  exists.
-;(defvar *this-file* "no-file")
+;(defvar |$this_file| "no-file")
 
 (defmacro |CCall| (fun &rest args)
   (let ((ccc (gensym)) (cfun (gensym)) (cenv (gensym)))
@@ -1657,6 +1643,6 @@ database.
 ;    (declare (ignore libname))
 ;    (when (numberp hcode)
 ;         (setf (get bootname 'asharp-name)
-;               (cons (cons *this-file* asharpname)
+;               (cons (cons |$this_file| asharpname)
 ;                     (get bootname 'asharp-name)))
 ;         )))
