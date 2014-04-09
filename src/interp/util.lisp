@@ -49,7 +49,7 @@ at load time.
 ;;; Various lisps use different ``extensions'' on the filename to indicate
 ;;; that a file has been compiled. We set this variable correctly depending
 ;;; on the system we are using.
-(defvar *lisp-bin-filetype*
+(defvar |$lisp_bin_filetype|
   #+:GCL "o"
   #+lucid "bbin"
   #+symbolics "bin"

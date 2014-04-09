@@ -702,7 +702,6 @@ compileSpadLispCmd args ==
     lsp := fnameMake(pathnameDirectory path, pathnameName path, pathnameType path)
     if fnameReadable?(lsp) then
         if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
-        --compileFileQuietly(lsp)
         compile_lib_file lsp
     else
         sayKeyedMsg("S2IL0003", [namestring lsp])
@@ -2008,8 +2007,15 @@ ScanOrPairVec(f, ob) ==
                 THROW('ScanOrPairVecAnswer, true)
             nil
 
+--% )library
 
-
+library(args) ==
+   $newConlist : local := []
+   original_directory := GET_-CURRENT_-DIRECTORY()
+   LOCALDATABASE(args, $options)
+   extendLocalLibdb($newConlist)
+   CHDIR(original_directory)
+   terminateSystemCommand()
 
 
 --% )load
@@ -2019,40 +2025,6 @@ load args == loadSpad2Cmd args
 loadSpad2Cmd args ==
     sayKeyedMsg("S2IU0003", nil)
     NIL
---  load1(args,$forceDatabaseUpdate)
-
---load1(args,$forceDatabaseUpdate) ==  -- $ var is now local
---  null args => helpSpad2Cmd '(load)
---  loadfun := 'loadLib
---  justWondering := nil
---  compiler := 'old
---  doExpose := true
---  $forceDatabaseUpdate := true  -- BMT request, 5/14/90
---  for [opt,:.] in $options repeat
---    fullopt := selectOptionLC(opt,
---      '(cond update query new noexpose noupdate),
---        'optionError)
---    fullopt = 'cond     => loadfun := 'loadLibIfNotLoaded
---    fullopt = 'query    => justWondering := true
---    fullopt = 'update   => $forceDatabaseUpdate := true
---    fullopt = 'noexpose => doExpose := false
---    fullopt = 'noupdate => $forceDatabaseUpdate := false
---  if $forceDatabaseUpdate then clearClams()
---  for lib in args repeat
---    lib := object2Identifier lib
---    justWondering =>
---      GETL(lib,'LOADED) => sayKeyedMsg("S2IZ0028",[lib])
---      sayKeyedMsg("S2IZ0029",[lib])
---    null GETDATABASE(lib,'OBJECT) and
---     null (lib := GETDATABASE(lib,'CONSTRUCTOR)) =>
---      sayKeyedMsg("S2IL0020", [namestring [lib,$spadLibFT,"*"]])
---    null FUNCALL(loadfun,lib) =>
---      sayKeyedMsg("S2IZ0029",[lib])
---    sayKeyedMsg("S2IZ0028",[lib])
---    if doExpose and
---       not isExposedConstructor(lib) then
---          setExposeAddConstr([lib])
---  'EndOfLoad
 
 reportCount () ==
   centerAndHighlight(" Current Count Settings ",$LINELENGTH,specialChar 'hbar)

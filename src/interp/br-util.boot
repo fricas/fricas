@@ -38,7 +38,6 @@
 -- Initial entry is from man0.ht page to one of these functions:
 --   kSearch (cSearch, dSearch, or pSearch), for constructors
 --   oSearch, for operations
---   aSearch, for attributes
 --   aokSearch, for general search
 --   docSearch, for documentation search
 --   genSearch, for complete search
@@ -67,7 +66,6 @@ $infovec  := nil             --bound in koOps
 $predvec  := nil             --bound in koOps
 $exposedOnlyIfTrue := nil    --see repeatSearch, dbShowOps, dbShowCon
 $bcMultipleNames := nil      --see bcNameConTable
-$bcConformBincount := nil    --see bcConform1
 $docTableHash := MAKE_-HASHTABLE 'EQUAL  --see dbExpandOpAlistIfNecessary
 $groupChoice := nil  --see dbShowOperationsFromConform
 
@@ -120,8 +118,6 @@ escapeString com ==   --this makes changes on single comment lines
   look := 0
   while look repeat
     look >= SIZE com => look := []
-
-
     look := STRPOSL ('"${}#%", com, look, [])
     if look then
       com := RPLACSTR (com,look,0,'"\")  --note RPLACSTR copies!!!
@@ -173,12 +169,6 @@ unMkEvalable u ==
  u is ['QUOTE,a] => a
  u is ['LIST,:r] => [unMkEvalable x for x in r]
  u
-
-lisp2HT u == ['"_'",:fn u] where fn u ==
-  IDENTP u => escapeSpecialIds PNAME u
-  STRINGP u => escapeString u
-  ATOM u => systemError()
-  ['"_(",:"append"/[fn x for x in u],'")"]
 
 args2HtString(x,:options) ==
   null x => '""
@@ -287,6 +277,72 @@ bcComments(comments,:options) ==
   htSay first comments
   for x in rest comments repeat htSay('" ",x)
   if italics? then htSay '"}"
+
+bcConform1 form == main where
+    main ==
+        form is ['ifp,form1,:pred] =>
+            hd form1
+            bcPred pred
+        hd form
+    hd form ==
+        atom form =>
+            not MEMQ(form,$Primitives) and null constructor? form =>
+                s := STRINGIMAGE form
+                (s.0 = char '_#) =>
+                     (n := POSN1(form, $FormalFunctionParameterList)) =>
+                          htSay form2HtString ($FormalMapVariableList . n)
+                     htSay '"\"
+                     htSay form
+                htSay escapeSpecialChars STRINGIMAGE form
+            s := STRINGIMAGE form
+            $italicHead? => htSayItalics s
+            $bcMultipleNames =>
+                satTypeDownLink(s, ['"(|conPageChoose| '|", s, '"|)"])
+            satTypeDownLink(s, ["(|conPage| '|", s, '"|)"])
+        (head := QCAR form) = 'QUOTE =>
+            htSay('"'")
+            hd CADR form
+        head = 'SIGNATURE =>
+            htSay(CADR form,'": ")
+            mapping CADDR form
+        head = 'Mapping and rest form => mapping rest form
+        head = ":" =>
+            hd CADR form
+            htSay '": "
+            hd CADDR form
+        QCDR form and dbEvalableConstructor? form =>
+            bcConstructor(form,head)
+        hd head
+        null (r := QCDR form) => nil
+        tl QCDR form
+    mapping [target,:source] ==
+        tuple source
+        bcHt
+            $saturn => '" {\ttrarrow} "
+            '" -> "
+        hd target
+    tuple u ==
+        null u => bcHt '"()"
+        null rest u => hd u
+        bcHt '"("
+        hd first u
+        for x in rest u repeat
+            bcHt '","
+            hd x
+        bcHt '")"
+    tl u ==
+        bcHt '"("
+        firstTime := true
+        for x in u repeat
+            if not firstTime then bcHt '","
+            firstTime := false
+            hd x
+        bcHt '")"
+    say x ==
+        if $italics? then bcHt '"{\em "
+        if x = 'etc then x := '"..."
+        bcHt escapeSpecialIds STRINGIMAGE x
+        if $italics? then bcHt '"}"
 
 bcConform(form,:options) ==
   $italics?    : local := IFCAR options
