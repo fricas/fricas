@@ -145,7 +145,7 @@ pmTransFilter s ==
 
 checkPmParse parse ==
   STRINGP parse => parse
-  fn parse => parse where fn(u) ==
+  (fn parse => parse) where fn(u) ==
     u is [op,:args] =>
       MEMQ(op,'(and or not)) and and/[checkPmParse x for x in args]
     STRINGP u => true
