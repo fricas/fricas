@@ -322,6 +322,8 @@ SymbolTable() : exports == implementation where
 
   implementation ==> add
 
+    import from FortranCodeTools
+
     Rep := Table(Symbol, FortranType)
 
     coerce(t : %) : OFORM ==
@@ -442,9 +444,9 @@ SymbolTable() : exports == implementation where
       for ty in ft repeat
         tl : TL := typeList(ty, tab)
         otl : L OFORM := outForm(tl)
-        fortFormatTypes(ty::OFORM, otl)$Lisp
+        fort_format_types(ty::String, otl)
       el : L OFORM := [u::OFORM for u in externalList(tab)]
-      fortFormatTypes("EXTERNAL"::OFORM,el)$Lisp
+      fort_format_types("EXTERNAL", el)
       void()$Void
 
 @
@@ -637,8 +639,8 @@ TheSymbolTable() : Exports == Implementation where
 
     printHeader(u : Symbol, symbols : %) : Void ==
       entry := elt(symbols, u)$Rep
-      fortFormatHead(elt(entry, returnType)$Entry::OutputForm, u::OutputForm, _
-                     elt(entry, argList)$Entry::OutputForm)$Lisp
+      fortFormatHead(u, elt(entry, returnType)$Entry,
+                     elt(entry, argList)$Entry)$FortranCodeTools
       printTypes(elt(entry, symtab)$Entry)$SymbolTable
 
     printHeader(u : Symbol) : Void ==
