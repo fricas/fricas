@@ -413,9 +413,9 @@ MathMLFormat() : public == private where
       ++ coerceS(o) changes o in the standard output format to MathML
       ++ format and displays result as one long string.
     exprex :    E -> S
-      ++ converts \spadtype{OutputForm} to \spadtype{String} with the
-      ++ structure preserved with braces.  Actually this is not quite
-      ++ accurate.  The function \spadfun{precondition} is first
+      ++ exprex(o) converts \spadtype{OutputForm} to \spadtype{String}
+      ++ with the structure preserved with braces.  Actually this is
+      ++ not quite accurate.  The function \spadfun{precondition} is first
       ++ applied to the
       ++ \spadtype{OutputForm} expression before \spadfun{exprex}.
       ++ The raw \spadtype{OutputForm} and
@@ -431,6 +431,7 @@ MathMLFormat() : public == private where
     import from Integer
     import from List OutputForm
     import from List String
+    import from OutputFormTools
 
     -- local variable declarations and definitions
 
@@ -487,7 +488,6 @@ MathMLFormat() : public == private where
 
     addBraces :      S -> S
     addBrackets :    S -> S
-    atomize :        E -> L E
     displayElt :     S -> Void
       ++ function for recursively displaying mathml nicely formatted
     eltLimit :       (S, I, S) -> I
@@ -536,11 +536,6 @@ MathMLFormat() : public == private where
       ++  finds closing ">" of start or end tag for mathML element
     ungroup :        S -> S
 
-    has_op?(expr : E, op : Sy) : Boolean ==
-        ATOM(expr)$Lisp => false
-        e1 := first(expr pretend L E)
-        EQ(e1, op)$Lisp
-
     -- public function definitions
 
     coerce(expr : E) : S ==
@@ -579,12 +574,11 @@ MathMLFormat() : public == private where
       a : E
       expr := precondition expr
 --      sayTeX$Lisp "0: "stringify expr
-      (ATOM(expr)$Lisp@Boolean) or (stringify expr = "NOTHING") =>
+      atom?(expr) or (stringify expr = "NOTHING") =>
         concat ["{",stringify expr,"}"]
-      le : L E := (expr pretend L E)
-      op := first le
+      op := operator(expr)
       sop : S := exprex op
-      args : L E := rest le
+      args : L E := arguments(expr)
       nargs : I := #args
 --      sayTeX$Lisp concat ["1: ",stringify first le," : ",string(nargs)$S]
       s : S := concat ["{",sop]
@@ -683,21 +677,6 @@ MathMLFormat() : public == private where
       u : US := segment(pos, pI)$US
       --sayTeX$Lisp "tagEnd: "mathML.u
       pI
-
-
-    atomize(expr : E) : L E ==
-      -- This breaks down an expression into a flat list of atomic expressions.
-      -- expr should be preconditioned.
-      le : L E := nil()
-      a : E
-      letmp : L E
-      (ATOM(expr)$Lisp@Boolean) or (stringify expr = "NOTHING") =>
-        le := append(le, list(expr))
-      letmp := expr pretend L E
-      for a in letmp repeat
-        le := append(le, atomize a)
-      le
-
 
     ungroup(str : S) : S ==
       len : I := #str
@@ -856,8 +835,8 @@ MathMLFormat() : public == private where
     -- this produces prime notation ordinary derivatives.
     formatPrime(args : L E, prec : I) : S ==
         arg2 := second(args)
-        if STRINGP(arg2)$Lisp then
-            commaS : S := arg2 pretend String
+        if string?(arg2) then
+            commaS : S := string(arg2)
             commaTest : S := ","
             if position(commaTest, commaS, 1) > 0 then
                s : S := "<mo>&#x02032;</mo>"
@@ -997,12 +976,12 @@ MathMLFormat() : public == private where
     formatExpr(expr : E, prec : I) : S ==
       i, len : Integer
       intSplitLen : Integer := 20
-      ATOM(expr)$Lisp@Boolean =>
+      atom?(expr) =>
         str := stringify expr
         len := #str
         -- this bit seems to deal with integers
-        FIXP$Lisp expr =>
-          i := expr pretend Integer
+        integer?(expr) =>
+          i := integer(expr)
           if (i < 0) or (i > 9)
             then
               group
@@ -1031,8 +1010,8 @@ MathMLFormat() : public == private where
         len > 0 and str.1 = char "_"" =>
           concat ["<mtext>", str, "</mtext>"]
         len = 1 and str.1 = char " " => " "
-        if SYMBOLP(expr)$Lisp then
-            op := expr pretend Symbol
+        if symbol?(expr) then
+            op := symbol(expr)
             (i := position(op, specialStrings)) > 0 =>
                 specialStringsInMML.i
         (i := position(char " ", str)) > 0 =>
@@ -1040,13 +1019,11 @@ MathMLFormat() : public == private where
           concat ["<mtext>", str, "</mtext>"]
         -- if we get to here does that mean it's a variable?
         concat ["<mi>", str, "</mi>"]
-      l : L E := (expr pretend L E)
-      null l => blank
-      opf : E := first l
-      args : L E := rest l
+      opf : E := operator(expr)
+      args : L E := arguments(expr)
       nargs : I := #args
 
-      SYMBOLP(opf)$Lisp =>
+      symbol?(opf) =>
           op := opf pretend Symbol
           -- special cases
           member?(op, specialOps) => formatSpecial(op, args, prec)
@@ -1066,8 +1043,8 @@ MathMLFormat() : public == private where
           -- nary case
           member?(op, naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
           member?(op, naryOps) => formatNary(op, "", 0, args, prec)
-          formatFunction(first l, args, prec)
-      formatFunction(first l, args, prec)
+          formatFunction(opf, args, prec)
+      formatFunction(opf, args, prec)
 
 @
 

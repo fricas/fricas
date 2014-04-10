@@ -217,6 +217,7 @@ HTMLFormat() : public == private where
     import from Integer
     import from List OutputForm
     import from List String
+    import from OutputFormTools
 
     sayHt ==> sayHtml$Lisp
 
@@ -228,32 +229,33 @@ HTMLFormat() : public == private where
     maxPrec       : I   := 1000000
     minPrec       : I   := 0
 
-    unaryOps      : L S := ["-"]$(L S)
-    unaryPrecs    : L I := [700]$(L I)
+    unaryOps      : L Symbol := ['-]
+    unaryPrecs    : L I := [700]
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L S := ["+->","|","^","/","<",">","=","OVER"]$(L S)
+    binaryOps     : L Symbol := ["+->"::Symbol, '|, '^, '/, '<, '>, _
+        '=, 'OVER]
     binaryPrecs   : L I := [0, 0, 900, 700, 400, 400, 400, 700]$(L I)
     naryOps       : L S := ["-","+","*",blank,",",";"," ","ROW","",
        " \cr ","&","/\","\/"]$(L S)
     naryPrecs     : L I := [700, 700, 800, 800, 110, 110, 0, 0, 0, 0, 0, 600, 600]$(L I)
-    naryNGOps     : L S := ["ROW","&"]$(L S)
-    plexOps       : L S := ["SIGMA","SIGMA2","PI","PI2","INTSIGN",_
-                            "INDEFINTEGRAL"]$(L S)
+    naryNGOps     : L Symbol := ['ROW, "&"::Symbol]
+    plexOps       : L Symbol := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN, _
+                            'INDEFINTEGRAL]
     plexPrecs     : L I := [700, 800, 700, 800, 700, 700]$(L I)
-    specialOps    : L S := ["MATRIX","BRACKET","BRACE","CONCATB","VCONCAT",_
-                            "AGGLST","CONCAT","OVERBAR","ROOT","SUB","TAG",_
-                            "SUPERSUB","ZAG","AGGSET","SC","PAREN",_
-                            "SEGMENT","QUOTE","theMap", "SLASH"]
+    specialOps    : L Symbol := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, _
+                     'VCONCAT, 'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, _
+                     'TAG, 'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN,_
+                     'SEGMENT, 'QUOTE, 'theMap, 'SLASH]
 
     -- the next two lists provide translations for some strings for
     -- which HTML has some special character codes.
-    specialStrings : L S :=
-      ["cos", "cot", "csc", "log", "sec", "sin", "tan", _
-       "cosh", "coth", "csch", "sech", "sinh", "tanh", _
-       "acos","asin","atan","erf","...","$","infinity","Gamma", _
-       "%pi","%e","%i"]
+    specialStrings : L Symbol :=
+      ['cos, 'cot, 'csc, 'log, 'sec, 'sin, 'tan, _
+       'cosh, 'coth, 'csch, 'sech, 'sinh, 'tanh, _
+       'acos, 'asin, 'atan, 'erf, "..."::Symbol, "$"::Symbol, _
+       'infinity,'Gamma, "%pi"::Symbol, "%e"::Symbol, "%i"::Symbol]
     specialStringsInHTML : L S :=
       ["cos","cot","csc","log","sec","sin","tan", _
        "cosh","coth","csch","sech","sinh","tanh", _
@@ -264,9 +266,9 @@ HTMLFormat() : public == private where
 
     atomize : E -> L E
 
-    formatBinary : (S, L E, I) -> Tree S
+    formatBinary : (Symbol, L E, I) -> Tree S
 
-    formatFunction : (Tree S, L E, I) -> Tree S
+    formatFunction : (E, L E, I) -> Tree S
 
     formatMatrix : L E -> Tree S
 
@@ -274,13 +276,13 @@ HTMLFormat() : public == private where
 
     formatNaryNoGroup : (S, L E, I) -> Tree S
 
-    formatNullary : S -> Tree S
+    formatNullary : Symbol -> Tree S
 
-    formatPlex : (S, L E, I) -> Tree S
+    formatPlex : (Symbol, L E, I) -> Tree S
 
-    formatSpecial : (S, L E, I) -> Tree S
+    formatSpecial : (Symbol, L E, I) -> Tree S
 
-    formatUnary : (S,  E, I) -> Tree S
+    formatUnary : (Symbol,  E, I) -> Tree S
 
     formatHtml : (E, I) -> Tree S
 
@@ -350,12 +352,11 @@ HTMLFormat() : public == private where
       -- the expressions.
       a : E
       expr := precondition expr
-      (ATOM(expr)$Lisp@Boolean) or (stringify expr = "NOTHING") =>
+      atom?(expr) or (stringify expr = "NOTHING") =>
         concat ["{",stringify expr,"}"]
-      le : L E := (expr pretend L E)
-      op := first le
+      op := operator(expr)
       sop : S := exprex op
-      args : L E := rest le
+      args : L E := arguments(expr)
       nargs : I := #args
       s : S := concat ["{",sop]
       if nargs > 0  then
@@ -368,12 +369,10 @@ HTMLFormat() : public == private where
       -- This breaks down an expression into a flat list of atomic
       -- expressions.
       -- expr should be preconditioned.
-      le : L E := nil()
-      a : E
-      letmp : L E
-      (ATOM(expr)$Lisp@Boolean) or (stringify expr = "NOTHING") =>
+      le : L E := []
+      atom?(expr) or (stringify expr = "NOTHING") =>
         le := append(le, list(expr))
-      letmp := expr pretend L E
+      letmp := cons(operator(expr), arguments(expr))
       for a in letmp repeat
         le := append(le, atomize a)
       le
@@ -484,57 +483,57 @@ HTMLFormat() : public == private where
     -- "VCONCAT", "CONCATB","CONCAT","QUOTE","BRACKET","BRACE","PAREN",
     -- "OVERBAR","ROOT", "SEGMENT","SC","MATRIX","ZAG"
     -- note "SUB" and "SUPERSUB" are handled directly by formatHtml
-    formatSpecial(op : S, args : L E, prec : I) : Tree S ==
+    formatSpecial(op : Symbol, args : L E, prec : I) : Tree S ==
       if debug then sayHt _
-        "formatSpecial: "concat["op=",op," args=",argsToString(args),_
-          " prec=",string(prec)$S]
+        concat["formatSpecial: ", "op=", string(op), " args=", _
+               argsToString(args), " prec=", string(prec)]
       arg : E
       prescript : Boolean := false
-      op = "theMap" => tree("theMap(...)")
-      op = "AGGLST" =>
+      op = 'theMap => tree("theMap(...)")
+      op = 'AGGLST =>
         formatNary(",",args,prec)
-      op = "AGGSET" =>
+      op = 'AGGSET =>
         formatNary(";",args,prec)
-      op = "TAG" =>
+      op = 'TAG =>
         newNodes("",[formatHtml(first args,prec),tree("&#x02192;"),_
           formatHtml(second args, prec)])
         --RightArrow
-      op = "SLASH" =>
+      op = 'SLASH =>
         newNodes("",[formatHtml(first args, prec),tree("/"),_
           formatHtml(second args, prec)])
-      op = "VCONCAT" =>
+      op = 'VCONCAT =>
         newNodes("table",[newNode("td",formatHtml(u, minPrec))_
            for u in args]::L Tree S)
-      op = "CONCATB" =>
-        formatNary(" ",args,prec)
-      op = "CONCAT" =>
-        formatNary("",args,minPrec)
-      op = "QUOTE" =>
+      op = 'CONCATB =>
+        formatNary(" ", args, prec)
+      op = 'CONCAT =>
+        formatNary("", args, minPrec)
+      op = 'QUOTE =>
         newNodes("",[tree("'"),formatHtml(first args, minPrec)])
-      op = "BRACKET" =>
+      op = 'BRACKET =>
         newNodes("",[tree("["),formatHtml(first args, minPrec),tree("]")])
-      op = "BRACE" =>
+      op = 'BRACE =>
         newNodes("",[tree("{"),formatHtml(first args, minPrec),tree("}")])
-      op = "PAREN" =>
+      op = 'PAREN =>
         newNodes("",[tree("("),formatHtml(first args, minPrec),tree(")")])
-      op = "OVERBAR" =>
+      op = 'OVERBAR =>
         null args => tree("")
         buildOverbar(formatHtml(first args, minPrec))
-      op = "ROOT" and #args < 1 => tree("")
-      op = "ROOT" and #args = 1 => _
+      op = 'ROOT and #args < 1 => tree("")
+      op = 'ROOT and #args = 1 => _
         buildRoot(formatHtml(first args, minPrec))
-      op = "ROOT" and #args > 1 => _
+      op = 'ROOT and #args > 1 => _
         buildNRoot(formatHtml(first args, minPrec), _
           formatHtml(second args, minPrec))
-      op = "SEGMENT" =>
+      op = 'SEGMENT =>
         -- '..' indicates a range in a list for example
         tmp : Tree S := newNodes("",[formatHtml(first args, minPrec),_
           tree("..")])
         null rest args =>  tmp
         newNodes("",[tmp,formatHtml(first rest args, minPrec)])
-      op = "SC" => formatSC(args,minPrec)
-      op = "MATRIX" => formatMatrix rest args
-      op = "ZAG" =>
+      op = 'SC => formatSC(args,minPrec)
+      op = 'MATRIX => formatMatrix rest args
+      op = 'ZAG =>
         -- {{+}{3}{{ZAG}{1}{7}}{{ZAG}{1}{15}}{{ZAG}{1}{1}}{{ZAG}{1}{25}}_
         --      {{ZAG}{1}{1}}{{ZAG}{1}{7}}{{ZAG}{1}{4}}}
         -- to format continued fraction traditionally need to intercept
@@ -542,7 +541,7 @@ HTMLFormat() : public == private where
         newNodes("",[tree(" \zag{"),formatHtml(first args, minPrec),
           tree("}{"),
           formatHtml(first rest args,minPrec),tree("}")])
-      tree("formatSpecial not implemented:"op)
+      tree("formatSpecial not implemented: " string(op))
 
     formatSuperSub(expr : E, args : L E, opPrec : I) : Tree S ==
       -- This one produces ordinary derivatives with differential notation,
@@ -620,39 +619,39 @@ HTMLFormat() : public == private where
 
     -- plex ops are "SIGMA","SIGMA2","PI","PI2","INTSIGN","INDEFINTEGRAL"
     -- expects 2 or 3 args
-    formatPlex(op : S, args : L E, prec : I) : Tree S ==
-      if debug then sayHt "formatPlex: "concat["op=",op," args=",_
+    formatPlex(op : Symbol, args : L E, prec : I) : Tree S ==
+      if debug then sayHt "formatPlex: "concat["op=", string(op), " args=",_
         argsToString(args)," prec=",string(prec)$S]
       checkarg : Boolean := false
       hold : S
       p : I := position(op, plexOps)
       p < 1 => error "unknown plex op"
-      op = "INTSIGN" => formatIntSign(args,minPrec)
+      op = 'INTSIGN => formatIntSign(args,minPrec)
       opPrec := plexPrecs.p
       n : I := #args
       (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
       s : Tree S :=
-        op = "SIGMA"   =>
+        op = 'SIGMA   =>
           checkarg := true
           tree("&#x02211;")
         -- Sum
-        op = "SIGMA2"   =>
+        op = 'SIGMA2   =>
           checkarg := true
           tree("&#x02211;")
         -- Sum
-        op = "PI"      =>
+        op = 'PI      =>
           checkarg := true
           tree("&#x0220F;")
         -- Product
-        op = "PI2"     =>
+        op = 'PI2     =>
           checkarg := true
           tree("&#x0220F;")
         -- Product
-        op = "INTSIGN" => tree("&#x0222B;")
+        op = 'INTSIGN => tree("&#x0222B;")
         -- Integral, int
-        op = "INDEFINTEGRAL" => tree("&#x0222B;")
+        op = 'INDEFINTEGRAL => tree("&#x0222B;")
         -- Integral, int
-        tree("formatPlex: unexpected op:"op)
+        tree("formatPlex: unexpected op:" string(op))
       -- if opPrec < prec then perhaps we should parenthesize?
       -- but we need to be careful we don't get loads of unnecessary
       -- brackets
@@ -665,11 +664,9 @@ HTMLFormat() : public == private where
     formatMatrixRow(op : S, arg : E, prec : I, y : I, h : I)  : L Tree S ==
       if debug then sayHt "formatMatrixRow: "concat["op=",op,_
         " args=",stringify arg," prec=",string(prec)$S]
-      ATOM(arg)$Lisp@Boolean => [_
+      atom?(arg) => [_
         tree("formatMatrixRow does not contain row")]
-      l : L E := (arg pretend L E)
-      op : S := stringify first l
-      args : L E := rest l
+      args : L E := arguments(arg)
       --sayHt "formatMatrixRow op="op" args="argsToString(args)
       w : I := #args
       cells : (List Tree S) := empty()
@@ -768,27 +765,29 @@ HTMLFormat() : public == private where
       buildSubscript(formatHtml(first args, opPrec), _
         formatHtml(args.2, opPrec))
 
-    formatFunction(op : Tree S, args : L E, prec : I) : Tree S ==
+    formatFunction(op : E, args : L E, prec : I) : Tree S ==
+      op1 := formatHtml(op, minPrec)
       if debug then sayHt "formatFunction: "concat["args=",_
         argsToString(args)," prec=",string(prec)$S]
-      newNodes("",[op,tree("("),formatNary(",",args,minPrec),tree(")")])
+      newNodes("", [op1, tree("("), formatNary(",", args, minPrec), tree(")")])
 
-    formatNullary(op : S) : Tree S ==
-      if debug then sayHt "formatNullary: "concat["op=",op]
-      op = "NOTHING" => empty()$Tree(S)
-      tree(op"()")
+    formatNullary(op : Symbol) : Tree S ==
+      res := string(op) "()"
+      if debug then sayHt concat("formatNullary: op=", res)
+      op = 'NOTHING => empty()$Tree(S)
+      tree(res)
 
     -- implement operation with single argument
     -- an example is minus '-'
     -- prec is precidence of operator, used to force brackets where
     -- more tightly bound operation is next to less tightly bound operation
-    formatUnary(op : S, arg : E, prec : I) : Tree S ==
-      if debug then sayHt "formatUnary: "concat["op=",op," arg=",_
+    formatUnary(op : Symbol, arg : E, prec : I) : Tree S ==
+      if debug then sayHt "formatUnary: "concat["op=", string(op), " arg=",_
         stringify arg," prec=",string(prec)$S]
       p : I := position(op, unaryOps)
       p < 1 => error "unknown unary op"
       opPrec := unaryPrecs.p
-      s : Tree S := newNodes("",[tree(op),formatHtml(arg,opPrec)])
+      s : Tree S := newNodes("",[tree(string(op)), formatHtml(arg, opPrec)])
       opPrec < prec => newNodes("",[tree("("),s,tree(")")])
       s
 
@@ -805,31 +804,40 @@ HTMLFormat() : public == private where
 
     -- op may be: "|","^","/","OVER","+->"
     -- note: "+" and "*" are n-ary ops
-    formatBinary(op : S, args : L E, prec : I) : Tree S ==
-      if debug then sayHt "formatBinary: "concat["op=",op,_
+    formatBinary(op : Symbol, args : L E, prec : I) : Tree S ==
+      if debug then sayHt "formatBinary: "concat["op=", string(op),_
         " args=",argsToString(args)," prec=",string(prec)$S]
       p : I := position(op, binaryOps)
       p < 1 => error "unknown binary op"
       opPrec := binaryPrecs.p
+)if false
+      -- This is wrong: formatHtml should add parenthesis
+      -- based on priority
       -- if base op is product or sum need to add parentheses
-      if ATOM(first args)$Lisp@Boolean then
+      if atom?(first args) then
         opa : S := stringify first args
       else
         la : L E := (first args pretend L E)
         opa : S := stringify first la
-      if (opa = "SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2")_
+      if (opa = 'SIGMA" or opa = "SIGMA2" or opa = "PI" or opa = "PI2")_
         and op = "^" then
           s1 : Tree S := newNodes("",[tree("("),formatHtml(first args,_
             opPrec),tree(")")])
       else
-        s1 : Tree S := formatHtml(first args, opPrec)
+)endif
+      s1 : Tree S := formatHtml(first args, opPrec)
       s2 : Tree S := formatHtml(first rest args, opPrec)
-      op = "|" => newNodes("",[s1,tree(op),s2])
-      op = "^" => buildSuperscript(s1,s2)
-      op = "/" => newNodes("",[s1,tree(op),s2])
-      op = "OVER" => buildOver(s1,s2)
-      op = "+->" => newNodes("",[s1,tree("|&mdash;&rsaquo;"),s2])
-      newNodes("",[s1,tree(op),s2])
+      aux : Tree S :=
+          op = '| => newNodes("", [s1, tree(string(op)), s2])
+          op = '^ => buildSuperscript(s1, s2)
+          op = '/ => newNodes("", [s1, tree(string(op)), s2])
+          op = 'OVER => buildOver(s1, s2)
+          op = "+->"::Symbol =>
+              newNodes("", [s1, tree("|&mdash;&rsaquo;"), s2])
+          newNodes("", [s1, tree(string(op)), s2])
+      op = 'OVER => aux
+      opPrec < prec => newNodes("",[tree("("), aux, tree(")")])
+      aux
 
     -- build a zag from a table with a right part and a
     -- upper and lower left part
@@ -884,7 +892,8 @@ HTMLFormat() : public == private where
       -- <span style='font-size: 9px'>lowest zag</span>
       if debug then sayHt "formatZag: "concat["args=",_
         argsToString(args)]
-      tmpZag : L E := first args pretend L E
+      is_symbol?(first args, "..."::Symbol) => tree("&#x2026;")
+      tmpZag : L E := arguments(first args)
       fontAttrib : S :=
         nestLevel < 2 => "span style='font-size:16px'"
         nestLevel = 2 => "span style='font-size:14px'"
@@ -893,26 +902,14 @@ HTMLFormat() : public == private where
         "span style='font-size:9px'"
       -- may want to test that tmpZag contains 'ZAG'
       #args > 1 =>
-        newNode(fontAttrib, buildZag(formatHtml(first rest tmpZag, minPrec), _
-          formatHtml(first rest rest tmpZag, minPrec), _
+        newNode(fontAttrib, buildZag(formatHtml(first tmpZag, minPrec), _
+          formatHtml(first rest tmpZag, minPrec), _
             formatZag(rest args, nestLevel+1)))
-      (first args = "...":: E)@Boolean => tree("&#x2026;")
-      op : S := stringify first args
-      position("ZAG",op,1) > 0 =>
-        newNode(fontAttrib, buildOver(formatHtml(first rest tmpZag, minPrec), _
-          formatHtml(first rest rest tmpZag, minPrec)))
-      tree("formatZag: Last argument in ZAG construct unknown operator: "op)
-
-    -- returns true if this term starts with a minus '-' sign
-    -- this is used so that we can suppress any plus '+' in front
-    -- of the - so we dont get terms like +-
-    neg?(arg : E) : Boolean ==
-      if debug then sayHt "neg?: "concat["arg=",argsToString([arg])]
-      ATOM(arg)$Lisp@Boolean => false
-      l : L E := (arg pretend L E)
-      op : S := stringify first l
-      op = "-" => true
-      false
+      has_op?(first args, 'ZAG) =>
+        newNode(fontAttrib, buildOver(formatHtml(first tmpZag, minPrec), _
+          formatHtml(first rest tmpZag, minPrec)))
+      tree("formatZag: Last argument in ZAG construct unknown operator: "
+           stringify first args)
 
     formatNary(op : S, args : L E, prec : I) : Tree S ==
       if debug then sayHt "formatNary: "concat["op=",op," args=",_
@@ -949,6 +946,7 @@ HTMLFormat() : public == private where
       -- summation(operator(f)(i)+1, i=1..n) having identical displays as of
       -- 2007-12-21
       l := empty()$Tree(S)
+      empty?(args) => l
       opPrec := naryPrecs.p
       -- if checkargs is true check each arg except last one to see if it's
       -- a sigma or pi and if so add parentheses. Other op's may have to be
@@ -958,7 +956,8 @@ HTMLFormat() : public == private where
       if opPrec < prec then tags := [tree("("),formatHtml(args.1,opPrec)]
       if opPrec >= prec then tags := [formatHtml(args.1, opPrec)]
       for a in rest args repeat
-        if op ~= "+" or not neg?(a) then tags := append(tags,[tree(op)])
+        if op ~= "+" or not has_op?(a, '-) then
+            tags := append(tags, [tree(op)])
         tags := append(tags, [formatHtml(a, opPrec)])
       if opPrec < prec then tags := append(tags,[tree(")")])
       newNodes("",tags)
@@ -967,55 +966,56 @@ HTMLFormat() : public == private where
     -- prec is the precision of integers
     -- formatHtml returns a string for this node in the tree structure
     -- and calls recursivly to evaluate sub expressions
-    formatHtml(arg : E, prec : I) : Tree S ==
+    formatHtml(expr : E, prec : I) : Tree S ==
       if debug then sayHt "formatHtml: "concat["arg=",_
-        argsToString([arg])," prec=",string(prec)$S]
+        argsToString([expr])," prec=",string(prec)$S]
       i, len : Integer
       intSplitLen : Integer := 20
-      ATOM(arg)$Lisp@Boolean =>
+      atom?(expr) =>
         if debug then sayHt "formatHtml atom: "concat["expr=",_
-          stringify arg," prec=",string(prec)$S]
-        str := stringify arg
-        (i := position(str, specialStrings)) > 0 =>
-          tree(specialStringsInHTML.i)
+          stringify expr," prec=",string(prec)$S]
+        if symbol?(expr) then
+            op := symbol(expr)
+            if (i := position(op, specialStrings)) > 0 then
+                return tree(specialStringsInHTML(i))
+        str := stringify expr
         tree(str)
-      l : L E := (arg pretend L E)
-      null l => tree(blank)
-      op : S := stringify first l
-      args : L E := rest l
+      opf := operator(expr)
+      args : L E := arguments(expr)
       nargs : I := #args
-      -- need to test here in case first l is SUPERSUB case and then
-      -- pass first l and args to formatSuperSub.
-      position("SUPERSUB",op,1) > 0 =>
-        formatSuperSub(first l, args, minPrec)
-      -- now test for SUB
-      position("SUB",op,1) > 0 =>
-        formatSub(first l, args, minPrec)
-      -- special cases
-      -- specialOps are:
-      -- MATRIX, BRACKET, BRACE, CONCATB, VCONCAT
-      -- AGGLST, CONCAT, OVERBAR, ROOT, SUB, TAG
-      -- SUPERSUB, ZAG, AGGSET, SC, PAREN
-      -- SEGMENT, QUOTE, theMap, SLASH
-      member?(op, specialOps) => formatSpecial(op, args, prec)
-      -- specialOps are:
-      -- SIGMA, SIGMA2, PI, PI2, INTSIGN, INDEFINTEGRAL
-      member?(op, plexOps)    => formatPlex(op, args, prec)
-      -- nullary case: function with no aguments
-      0 = nargs => formatNullary op
-      -- unary case: function with one agument such as '-'
-      (1 = nargs) and member?(op, unaryOps) =>
-        formatUnary(op, first args, prec)
-      -- binary case
-      -- binary ops include special processing for | ^ / OVER and +->
-      (2 = nargs) and member?(op, binaryOps) =>
-        formatBinary(op, args, prec)
-      -- nary case: including '+' and '*'
-      member?(op, naryNGOps) => formatNaryNoGroup(op, args, prec)
-      member?(op, naryOps) => formatNary(op, args, prec)
-
-      op1 := formatHtml(first l, minPrec)
-      formatFunction(op1, args, prec)
+      symbol?(opf) =>
+          op := symbol(opf)
+          -- need to test here in case first l is SUPERSUB case and then
+          -- pass first l and args to formatSuperSub.
+          op = 'SUPERSUB =>
+              formatSuperSub(opf, args, minPrec)
+          -- now test for SUB
+          op = 'SUB =>
+              formatSub(opf, args, minPrec)
+          -- special cases
+          -- specialOps are:
+          -- MATRIX, BRACKET, BRACE, CONCATB, VCONCAT
+          -- AGGLST, CONCAT, OVERBAR, ROOT, SUB, TAG
+          -- SUPERSUB, ZAG, AGGSET, SC, PAREN
+          -- SEGMENT, QUOTE, theMap, SLASH
+          member?(op, specialOps) => formatSpecial(op, args, prec)
+          -- specialOps are:
+          -- SIGMA, SIGMA2, PI, PI2, INTSIGN, INDEFINTEGRAL
+          member?(op, plexOps)    => formatPlex(op, args, prec)
+          -- nullary case: function with no aguments
+          0 = nargs => formatNullary op
+          -- unary case: function with one agument such as '-'
+          (1 = nargs) and member?(op, unaryOps) =>
+              formatUnary(op, first args, prec)
+          -- binary case
+          -- binary ops include special processing for | ^ / OVER and +->
+          (2 = nargs) and member?(op, binaryOps) =>
+              formatBinary(op, args, prec)
+          -- nary case: including '+' and '*'
+          member?(op, naryNGOps) => formatNaryNoGroup(string(op), args, prec)
+          member?(string(op), naryOps) => formatNary(string(op), args, prec)
+          formatFunction(opf, args, prec)
+      formatFunction(opf, args, prec)
 
 @
 \section{License}
