@@ -389,14 +389,6 @@ convertOrCroak(T,m) ==
 convert(T,m) ==
   coerce(T,resolve(T.mode,m) or return nil)
 
-mkUnion(a,b) ==
-  b="$" and $Rep is ["Union",:l] => b
-  a is ["Union",:l] =>
-    b is ["Union",:l'] => ["Union",:union(l,l')]
-    ["Union",:union([b],l)]
-  b is ["Union",:l] => ["Union",:union([a],l)]
-  ["Union",a,b]
-
 maxSuperType(m,e) ==
   typ:= get(m,"SuperDomain",e) => maxSuperType(typ,e)
   m
@@ -1294,10 +1286,7 @@ autoCoerceByModemap([x,source,e],target) ==
 resolve(din,dout) ==
   din=$NoValueMode or dout=$NoValueMode => $NoValueMode
   dout=$EmptyMode => din
-  din~=dout and (STRINGP din or STRINGP dout) =>
-    modeEqual(dout,$String) => dout
-    modeEqual(din,$String) => nil
-    mkUnion(din,dout)
+  din ~= dout and STRINGP dout and modeEqual(din, $String) => nil
   dout
 
 modeEqual(x,y) ==
