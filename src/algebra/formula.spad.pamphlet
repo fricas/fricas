@@ -87,6 +87,7 @@ ScriptFormulaFormat() : public == private where
     import from Integer
     import from List OutputForm
     import from List String
+    import from OutputFormTools
 
     Rep := Record(prolog : L S, formula : L S, epilog : L S)
 
@@ -405,18 +406,17 @@ ScriptFormulaFormat() : public == private where
 
     formatFormula(expr, prec) ==
       i : Integer
-      ATOM(expr)$Lisp pretend Boolean =>
+      atom?(expr) =>
         str := stringify expr
-        FIXP(expr)$Lisp =>
-          i := expr pretend Integer
+        integer?(expr) =>
+          i := integer(expr)
           if (i < 0) or (i > 9) then group str else str
         (i := position(str, specialStrings)) > 0 =>
           specialStringsInFormula.i
         str
-      l : L E := (expr pretend L E)
-      null l => blank
-      op : S := stringify first l
-      args : L E := rest l
+      opf := operator(expr)
+      op : S := stringify opf
+      args : L E := arguments(expr)
       nargs : I := #args
 
       -- special cases
@@ -437,7 +437,7 @@ ScriptFormulaFormat() : public == private where
       -- nary case
       member?(op, naryNGOps) => formatNaryNoGroup(op, args, prec)
       member?(op, naryOps) => formatNary(op, args, prec)
-      op := formatFormula(first l, minPrec)
+      op := formatFormula(opf, minPrec)
       formatFunction(op, args, prec)
 
 @

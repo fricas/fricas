@@ -100,6 +100,7 @@ TexFormat() : public == private where
     import from Integer
     import from List OutputForm
     import from List String
+    import from OutputFormTools
 
     Rep := Record(prolog : L S, TeX : L S, epilog : L S)
 
@@ -567,11 +568,11 @@ TexFormat() : public == private where
       i, len : Integer
       intSplitLen : Integer := 20
       str : S
-      ATOM(expr)$Lisp@Boolean =>
+      atom?(expr) =>
         str := stringify expr
         len := #str
-        FIXP$Lisp expr =>
-          i := expr pretend Integer
+        integer?(expr) =>
+          i := integer(expr)
           if (i < 0) or (i > 9)
             then
               group
@@ -598,8 +599,8 @@ TexFormat() : public == private where
         len > 0 and str.1 = char "_"" =>
           concat(concat(" \mbox{\tt ",str),"} ")
         len = 1 and str.1 = char " " => "{\ }"
-        if SYMBOLP(expr)$Lisp then
-            op := expr pretend Symbol
+        if symbol?(expr) then
+            op := symbol(expr)
             (i := position(op, specialStrings)) > 0 =>
                 str := specialStringsInTeX.i
         (i := position(char " ", str)) > 0 =>
@@ -607,13 +608,12 @@ TexFormat() : public == private where
           concat [" \mbox{\rm ", str, "} "]
         str
       l : L E := (expr pretend L E)
-      null l => blank
-      opf : E := first l
-      args : L E := rest l
+      opf : E := operator(expr)
+      args : L E := arguments(expr)
       nargs : I := #args
 
-      SYMBOLP(opf)$Lisp =>
-          op := opf pretend Symbol
+      symbol?(opf) =>
+          op := symbol(opf)
           -- special cases
           member?(op, specialOps) => formatSpecial(op, args, prec)
           member?(op, plexOps)    => formatPlex(op, args, prec)
@@ -632,8 +632,8 @@ TexFormat() : public == private where
           -- nary case
           member?(op, naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
           member?(op, naryOps) => formatNary(op, "", 0, args, prec)
-          formatFunction(first l, args, prec)
-      formatFunction(first l, args, prec)
+          formatFunction(opf, args, prec)
+      formatFunction(opf, args, prec)
 
 @
 \section{package TEX1 TexFormat1}

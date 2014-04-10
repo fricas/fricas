@@ -140,6 +140,7 @@ TexmacsFormat() : public == private where
     import from Integer
     import from List OutputForm
     import from List String
+    import from OutputFormTools
 
     -- local variable declarations and definitions
 
@@ -217,11 +218,6 @@ TexmacsFormat() : public == private where
     postcondition :  S -> S
     stringify :      E -> S
     ungroup :        S -> S
-
-    has_op?(expr : E, op : Sy) : Boolean ==
-        ATOM(expr)$Lisp => false
-        e1 := first(expr pretend L E)
-        EQ(e1, op)$Lisp
 
     -- public function definitions
 
@@ -463,12 +459,12 @@ TexmacsFormat() : public == private where
         -- the args list passed here consists of the rest of this list, i.e.
         -- starting at the NOTHING or ...
         if has_op?(body, "*"::Sy) then
-            bodyL := body pretend L E
-            if #bodyL = 3 and has_op?(bvar := bodyL(3), 'CONCAT) then
-                bvarL := bvar pretend L E
-                if #bvarL = 3 and EQ(bvarL(2), 'd)$Lisp then
-                    bvarS : S := stringify (bvarL(3))
-                    return concat ["(concat ", formatExpr(bodyL(2), opPrec),
+            bodyL := arguments(body)
+            if #bodyL = 2 and has_op?(bvar := bodyL(2), 'CONCAT) then
+                bvarL := arguments(bvar)
+                if #bvarL = 2 and is_symbol?(bvarL(1), 'd) then
+                    bvarS : S := stringify (bvarL(2))
+                    return concat ["(concat ", formatExpr(bodyL(1), opPrec),
                                    " _"*<mathd>", bvarS, "_")"]
         formatExpr(body, opPrec)
 
@@ -593,12 +589,12 @@ TexmacsFormat() : public == private where
     formatExpr(expr : E, prec : I) : S ==
       i, len : Integer
       intSplitLen : Integer := 20
-      ATOM(expr)$Lisp@Boolean =>
+      atom?(expr) =>
         str := stringify expr
         len := #str
         -- this bit seems to deal with integers
-        FIXP$Lisp expr =>
-          i := expr pretend Integer
+        integer?(expr) =>
+          i := integer(expr)
           if (i < 0) or (i > 9)
             then
               group
@@ -625,8 +621,8 @@ TexmacsFormat() : public == private where
         len > 0 and str.1 = char "_"" =>
           concat ["(concat ", str, ")"]
         len = 1 and str.1 = char " " => " "
-        if SYMBOLP(expr)$Lisp then
-            op := expr pretend Symbol
+        if symbol?(expr) then
+            op := symbol(expr)
             (i := position(op, specialStrings)) > 0 =>
                 specialStringsInMML.i
         (i := position(char " ", str)) > 0 =>
@@ -634,14 +630,12 @@ TexmacsFormat() : public == private where
           concat [" _"", str, "_" "]
         -- if we get to here does that mean it's a variable?
         group concat [" _"", str, "_" "]
-      l : L E := (expr pretend L E)
-      null l => blank
-      opf : E := first l
-      args : L E := rest l
+      opf : E := operator(expr)
+      args : L E := arguments(expr)
       nargs : I := #args
 
-      SYMBOLP(opf)$Lisp =>
-          op := opf pretend Symbol
+      symbol?(opf) =>
+          op := symbol(opf)
           -- special cases
           member?(op, specialOps) => formatSpecial(op, args, prec)
           member?(op, plexOps)    => formatPlex(op, args, prec)
@@ -660,8 +654,8 @@ TexmacsFormat() : public == private where
           -- nary case
           member?(op, naryNGOps) => formatNaryNoGroup(op, "", 0, args, prec)
           member?(op, naryOps) => formatNary(op, "", 0, args, prec)
-          formatFunction(first l, args, prec)
-      formatFunction(first l, args, prec)
+          formatFunction(opf, args, prec)
+      formatFunction(opf, args, prec)
 
 @
 

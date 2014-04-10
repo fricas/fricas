@@ -1,0 +1,76 @@
+
+<<package OFTOOL OutputFormTools>>=
+
+)abbrev package OFTOOL OutputFormTools
+OutputFormTools : with
+    atom? : OutputForm -> Boolean
+      ++ atom?(f) checks if form f is atomic, false means composite
+    integer? : OutputForm -> Boolean
+      ++ integer?(f) checks if f is an integer, this implies atom?(f)
+    integer : OutputForm -> Integer
+      ++ integer(f) gives integer corresponding to f.  Valid only
+      ++ when integer?(f) is true
+    symbol? : OutputForm -> Boolean
+      ++ symbol?(f) checks if f is a symbol, this implies atom?(f)
+    symbol : OutputForm -> Symbol
+      ++ symbol(f) gives symbol corresponding to f.  Valid only
+      ++ when symbol?(f) is true
+    string? : OutputForm -> Boolean
+      ++ string?(f) checks if f is a string, this implies atom?(f)
+    string : OutputForm -> String
+      ++ string(f) gives string corresponding to f.  Valid only
+      ++ when string?(f) is true
+    operator : OutputForm -> OutputForm
+      ++ operator(f) gives operator (head) of form f.  Valid only
+      ++ when atom?(f) is false
+    arguments : OutputForm -> List(OutputForm)
+      ++ arguments(f) gives arguments of form f.  Valid only
+      ++ when atom?(f) is false
+    has_op? : (OutputForm, Symbol) -> Boolean
+      ++ has_op?(f, s) returns true is f is a composite from
+      ++ with operator s, otherwise returns false
+    is_symbol? : (OutputForm, Symbol) -> Boolean
+      ++ is_symbol?(f, s) retruns true if form is symbol s,
+      ++ otherwise returns false
+  == add
+
+    atom?(x) == ATOM(x)$Lisp
+
+    integer?(x) == INTEGERP(x)$Lisp
+
+    integer(x) ==
+        integer?(x) => x pretend Integer
+        error "not an integer"
+
+    symbol?(x) == SYMBOLP(x)$Lisp
+
+    symbol(x) ==
+        symbol?(x) => x pretend Symbol
+        error "not a symbol"
+
+    string?(x) == STRINGP(x)$Lisp
+
+    string(x) ==
+        string?(x) => x pretend String
+        error "not a string"
+
+    operator(x) ==
+        atom?(x) => error "is an atom"
+        first(x pretend List(OutputForm))
+
+    arguments(x) ==
+        atom?(x) => error "is an atom"
+        rest(x pretend List(OutputForm))
+
+    has_op?(expr, op) ==
+        atom?(expr) => false
+        e1 := first(expr pretend List(OutputForm))
+        EQ(e1, op)$Lisp
+
+    is_symbol?(expr, op) ==
+        not(symbol?(expr)) => false
+        symbol(expr) = op
+
+
+@
+
