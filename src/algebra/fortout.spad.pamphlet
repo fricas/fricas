@@ -1,0 +1,799 @@
+
+<<package FCTOOL FortranCodeTools>>=
+
+)abbrev package FCTOOL FortranCodeTools
+
+LS ==> List(String)
+O ==> OutputForm
+FortranCodeTools : with
+    fort_clean_lines : LS -> LS
+    do_with_error_env3 : (() -> Void) -> Void
+      ++ do_with_error_env3(int_to_floats?, f)
+    do_with_error_env2 : (Boolean, () -> LS) -> LS
+      ++ do_with_error_env2(int_to_floats?, f)
+    do_with_error_env0 : (() -> LS) -> LS
+      ++ do_with_error_env0(f)
+    do_with_error_env1 : (() -> LS) -> LS
+      ++ do_with_error_env1(f)
+    expression2Fortran1 : (() -> Symbol, O, Boolean) -> LS
+      ++ expression2Fortran1(nf, of, int_to_floats?)
+    statement2Fortran :  O -> LS
+      ++ statement2Fortran(of)
+    expression2Fortran : O -> LS
+      ++ expression2Fortran(of)
+    getStatement : (O, Boolean) -> LS
+      ++ getStatement(of, int_to_floats?)
+    changeExprLength : Integer -> Void
+      ++ changeExprLength(i) changes limit on expression length by i.
+    displayLines : LS -> Void
+      ++ displayLines(l)
+    displayLines1 : LS -> Void
+      ++ displayLines1(l)
+    dispStatement :  O -> Void
+      ++ dispStatement(of)
+    fortFormatHead : (Symbol, Union(fst:FortranScalarType,void:"void"),
+                      List Symbol) ->  Void
+      ++ fortFormatHead(name, returnType, args)
+    fortFormatTypeLines : (String, LS) -> Void
+      ++ fortFormatTypeLines(typeName, l)
+    fort_format_types : (String, List O) -> Void
+      ++ fort_format_types(typeName, names)
+    indentFortLevel : Integer -> Void
+      ++ indentFortLevel(i)
+    checkType : String -> String
+      ++ checkType(t)
+    newFortranTempVar : () -> Symbol
+      ++ newFortranTempVar() creates new name for temporary variable
+      ++ and puts it in TheSymbolTable
+    clear_used_intrinsics : () -> Void
+      ++ clear_used_intrinsics() clear list of used intrinsics
+    get_used_intrinsics : () -> LS
+      ++ get_used_intrinsics() gets list of used intrinsics
+    get_fort_indent : () -> Integer
+      ++ get_fort_indent() gets current amount of Frotran indentation
+
+  == add
+
+
+    newFortranTempVar() : Symbol ==
+        nr : SingleInteger := 1 + _$exp2FortTempVarIndex$Lisp
+        SETF(_$exp2FortTempVarIndex$Lisp, nr)$Lisp
+        new_sym := concat("T", convert(nr)@String)::Symbol
+        def_type : Symbol := _$defaultFortranType$Lisp
+        declare!(new_sym, def_type::FortranScalarType::FortranType
+                )$TheSymbolTable()
+        new_sym
+
+    checkType(t : String) : String ==
+        _$fortranPrecision$Lisp =$Symbol 'double =>
+            t = "REAL" => "DOUBLE PRECISION"
+            t = "COMPLEX" => "DOUBLE COMPLEX"
+            t
+        t
+
+    fortranCleanUp(l : LS) : LS ==
+        -- takes reversed list and cleans up a bit, putting it in
+        -- correct order
+        oldTok : String := ""
+        m : LS := []
+        for e in l repeat
+            if not (oldTok = "-" and e = "+") then m := cons(e, m)
+            oldTok := e
+        m
+
+    unaryOps    := ["-", "~"]
+    unaryPrecs : List(Integer) := [700, 50]
+    binaryOps   := ["|", "**", "/", ".LT.", ".GT.", ".EQ.", ".LE.", _
+                    ".GE.", ".AND.", ".OR."]
+    binaryPrecs : List(Integer) :=
+         [0, 900, 800, 400, 400, 400, 400, 400, 800, 70, 90]
+    naryOps : LS := ["-", "+", "*", ",", " ", "ROW", ""]
+    naryPrecs  := [700,  700, 800,  110,   0,     0,  0]
+    nonUnaryOps := append(binaryOps, naryOps)
+
+    import from OutputFormTools
+
+    exp2Fort2 : (O, Integer, String) -> LS
+
+    exp2FortFn(op : String, args : List O, nargs : Integer) : LS ==
+        s : LS := ["(", op]
+        nargs = 0 => [")", :s]
+        for arg in args repeat
+            s := [",", :exp2Fort2(arg, 0, op), :s]
+        [")", :rest s]
+
+    exp2Fort2(e : O, prec : Integer, oldOp : String) : LS ==
+        s : LS
+        NULL(e)$Lisp  => []
+        atom?(e)  => [object2String(e)$Lisp]
+        op0 := operator(e)
+        args := arguments(e)
+        nargs := #args
+        op : String := object2String(op0)$Lisp
+        nargs = 2 and op = "=" =>
+            ["%l", :exp2Fort2(args(2), prec, " "), "=",
+                   :exp2Fort2(args(1), prec, " ")]
+        nargs = 0 => exp2FortFn(op, args, 0)
+        nargs = 1 =>
+            (p := position(op, unaryOps)) > 0 =>
+                nprec := unaryPrecs(p)
+                s := [:exp2Fort2(first args, nprec, op), op]
+                op = "-" and atom?(first(args)) => s
+                nprec <= prec => [")", :s, "("]
+                s
+            exp2FortFn(op, args, nargs)
+        op = "CMPLX" =>
+            nargs ~= 2 => error "Bad number of arguments to CMPLX"
+            [")", :exp2Fort2(second(args), prec, op), ",",
+                  :exp2Fort2(first args, prec, op), "("]
+        member?(op, nonUnaryOps) =>
+            p := position(op, binaryOps)
+            if p = 0 then
+                p := position(op, naryOps)
+                nprec := naryPrecs(p)
+            else nprec := binaryPrecs(p)
+            s := []
+            for arg in args repeat
+                op = "+" and not(atom?(arg)) and
+                  #(args1 := arguments(arg)) = 1 and _
+                     (op1 := object2String(operator(arg))$Lisp _
+                        pretend String) = "-" =>
+                    if empty?(s) then s := ["junk"]
+                    s := [op, :exp2Fort2(first(args1), nprec, op), "-",
+                          :rest s]
+                s := [op, :exp2Fort2(arg, nprec, op), :s]
+            s := rest s
+            op = oldOp and (op = "*" or op = "+") => s
+            nprec <= prec => [")", :s, "("]
+            s
+        exp2FortFn(op, args, nargs)
+
+    exp2Fort1(l : List O) : LS ==
+        res : LS := []
+        for e in l repeat
+            l1 : LS := exp2Fort2(e, 0$Integer, "")
+            res := append(l1, res)
+        res
+
+    tempLen() : Integer == 1 + #(convert(_$exp2FortTempVarIndex$Lisp)@String)
+
+    fortExpSize : O -> Integer
+
+    fortExpSize_f(op : O, args : List O) : Integer ==
+        -- count parenthesis + #args - 1 commas + size of
+        -- operator and arguments
+        1 + #args + +/[fortExpSize a for a in cons(op, args)]
+
+    same_subtree(op : String, e : O) : Boolean ==
+        atom?(e) => false
+        op2 : String := STRINGIMAGE(operator(e))$Lisp
+        op = op2
+
+    same_subtree2(op : Symbol, e : O) : Boolean ==
+        atom?(e) => false
+        not(symbol?(op2 := operator(e))) => false
+        op = symbol(op2)
+
+    fortExpSize(e : O) : Integer ==
+        atom?(e) =>
+            s : String := STRINGIMAGE(e)$Lisp
+            #s
+        op := operator(e)
+        args := arguments(e)
+        #args > 2 => fortExpSize_f(op, args)
+        #args < 2 => fortExpSize_f(op, args)
+        arg1 := args(1)
+        arg2 := args(2)
+        ops : String := STRINGIMAGE(op)$Lisp
+        -- FIXME: how many do we really need for CMPLX?
+        ops = "CMPLX" => 5 + fortExpSize arg1 + fortExpSize arg2
+        narys : LS := ["+", "*"] -- those nary ops we changed to binary
+        member?(ops, narys) =>
+            not(same_subtree(ops, arg1)) or not(same_subtree(ops, arg2)) =>
+                fortExpSize_f(op, args)
+            1 + fortExpSize arg1 + fortExpSize arg2
+        fortExpSize_f(op, args)
+
+    segment2 : (O, Integer) -> List O
+
+    ass_form : O := outputForm('=)
+
+    mk_assign2(name : O, val : O) : O ==
+        elt(ass_form, [name,  val])
+
+    mk_assign1(name : Symbol, val : O) : O ==
+        mk_assign2(outputForm(name), val)
+
+    segment2l(op : O, args : List O, topSize : Integer) : List O ==
+        maxSize := _$maximumFortranExpressionLength$Lisp - tempLen() - 1
+        exprs : List O := []
+        newE  := []
+        topSize := topSize - fortExpSize elt(op, [])
+        for e in args repeat
+            (subSize := fortExpSize e) > maxSize =>
+                subE := segment2(e, maxSize)
+                exprs := [:(rest subE), :exprs]
+                if (subSize := fortExpSize first subE) <= topSize then
+                      newE := [:newE, first subE]
+                      topSize := topSize - subSize
+                else
+                      new_var := newFortranTempVar()
+                      new_var_f := outputForm(new_var)
+                      newE := [:newE, new_var_f]
+                      exprs := [mk_assign1(new_var, first subE), :exprs]
+                      topSize := topSize - fortExpSize new_var_f
+            newE := [:newE, e]
+            topSize := topSize - subSize
+        new_e1 := elt(op, newE)
+        topSize > 0 => [new_e1, :exprs]
+        newVar := newFortranTempVar()
+        [outputForm(newVar), mk_assign1(newVar, new_e1), :exprs]
+
+    segment2(e : O, topSize : Integer) : List O ==
+        atom?(e) => [e]
+        segment2l(operator(e), arguments(e), topSize)
+
+    segment1l(op : O, args : List O, maxSize : Integer) : List O ==
+        expressions : List O := [];
+        new_args := []
+        -- Assume we have to replace each argument with a temporary
+        -- variable, and that the temporary variable may be larger than
+        -- we expect.
+        safeSize := maxSize -  (#args)*(tempLen() + 1)
+                    - fortExpSize elt(op, [])
+        for e in args repeat
+            subSize := fortExpSize e
+            -- We could have a check here for symbols which are simply
+            -- too big for Fortran (i.e. more than the maximum practical
+            -- expression length)
+            subSize <= safeSize =>
+                safeSize := safeSize - subSize
+                new_args := [:new_args, e]
+            -- this ones too big.
+            exprs := segment2(e, safeSize)
+            expressions := [:(rest exprs), :expressions]
+            new_args := [:new_args, first(exprs)]
+            safeSize := safeSize - fortExpSize first(exprs)
+        [elt(op, new_args), :expressions]
+
+    segment1(e :  O, maxSize : Integer) : List O ==
+        fortExpSize e < maxSize => [e]
+        atom?(e) => error "segment1 expecting composite form"
+        segment1l(operator(e), arguments(e), maxSize)
+
+    segment(l : List O) : List O ==
+        not(_$fortranSegment$Lisp) => l
+        s : List O := []
+        for e in l repeat
+            atom?(e) => s := [e, :s]
+            e1f := operator(e)
+            not(symbol?(e1f)) => s := [e, :s]
+            e1s := symbol(e1f)
+            args := arguments(e)
+            if e1s = '= then
+                var := args(1)
+                exprs := segment1(args(2),
+                        _$maximumFortranExpressionLength$Lisp - 1
+                          - fortExpSize var)
+                s := [elt(e1f, [var, first exprs]), : rest exprs, :s]
+            else if e1s = 'RETURN then
+                exprs := segment1(args(1),
+                        _$maximumFortranExpressionLength$Lisp - 2::Integer
+                          - fortExpSize args(1))
+                s := [elt(e1f, [first exprs]), :rest exprs, :s]
+            else s := [e, :s]
+        reverse!(s)
+
+    fortError1(e : O) : O == fortError1(e)$Lisp
+
+    fortError1l(op : Symbol, args : List O) : O ==
+        fortError1(elt(outputForm(op), args))
+
+    exprStack : List O := []
+
+    push_expr_stack(e : O) : Void ==
+        exprStack := [e, :exprStack]
+
+    pop_expr_stack() : O ==
+        res := first(exprStack)
+        exprStack := rest(exprStack)
+        res
+
+    fortPre1 : O -> O
+
+    used_intrinsics : List(Symbol) := []
+
+    clear_used_intrinsics() : Void ==
+        used_intrinsics := []
+
+    get_used_intrinsics() : LS ==
+        [string(sy) for sy in used_intrinsics]
+
+    record_intrinsic(sy : Symbol) : Void ==
+        if not(member?(sy, used_intrinsics)) then
+           used_intrinsics := cons(sy, used_intrinsics)
+
+    IREC1 ==> Record(math_op : Symbol, i_fort_op : Symbol, d_fort_op : Symbol)
+
+    fort_intrinsics : List(IREC1) := [['abs, 'ABS, 'DABS], _
+        ['acos, 'ACOS, 'DACOS], ['asin, 'ASIN, 'DASIN], _
+        ['atan, 'ATAN, 'DATAN], ['cos, 'COS, 'DCOS], _
+        ['cosh, 'COSH, 'DCOSH], ['cot, 'COTAN, 'DCOTAN], _
+        ['erf, 'ERF, 'DERF], ['exp, 'EXP, 'DEXP], _
+        ['log, 'LOG, 'DLOG], ['log10, 'LOG10, 'DLOG10], _
+        ['sin, 'SIN, 'DSIN], ['sinh, 'SINH, 'DSINH], _
+        ['sqrt, 'SQRT, 'DSQRT], ['tan, 'TAN, 'DTAN], _
+        ['tanh, 'TANH, 'DTANH]]
+
+    fortranifyIntrinsicFunctionName(sy : Symbol, nargs : Integer) : Symbol ==
+        use_double : Boolean := not(_$useIntrinsicFunctions$Lisp) and
+            _$fortranPrecision$Lisp pretend Symbol = 'double
+        sy = 'atan and nargs = 2 =>
+            _$useIntrinsicFunctions$Lisp =>
+                record_intrinsic('ATAN2)
+                'ATAN2
+            use_double => 'DATAN2
+            'ATAN2
+        for r1 in fort_intrinsics repeat
+            if r1.math_op = sy then
+                if _$useIntrinsicFunctions$Lisp then
+                    record_intrinsic(r1.i_fort_op)
+                    return r1.i_fort_op
+                else if use_double then return r1.d_fort_op
+                else return r1.i_fort_op
+        sy
+
+    fort_ops : List(Record(math_op : Symbol, fort_op : Symbol)) := [ _
+        ['<, ".LT."::Symbol], ['>, ".GT."::Symbol], _
+        ["<="::Symbol, ".LE."::Symbol], [">="::Symbol, ".GE."::Symbol], _
+        ['EQ, ".EQ."::Symbol], ['and, ".AND."::Symbol], _
+        ['or, ".OR."::Symbol], ['~, ".NOT."::Symbol]]
+
+    fortranifyFunctionName(sy : Symbol, nargs : Integer) : Symbol ==
+        for p1 in fort_ops repeat
+            if p1.math_op = sy then return p1.fort_op
+        fortranifyIntrinsicFunctionName(sy, nargs)
+
+    mkFortFn(name : O, args : List O, nargs : Integer) : O ==
+        nn :=
+            not(symbol?(name)) => name
+            outputForm(fortranifyFunctionName(symbol(name), nargs))
+        elt(nn, [fortPre1(arg) for arg in args])
+
+    mkMat(args : List O) : O ==
+        save_fortInts2Floats : Boolean := _$fortInts2Floats$Lisp
+        try
+            SETF(_$fortInts2Floats$Lisp, false)$Lisp
+            mkFortFn(first args, rest args,#(rest args))
+        finally
+            SETF(_$fortInts2Floats$Lisp, save_fortInts2Floats)$Lisp
+
+    fortPreRoot(e : O) : O ==
+        save_fortInts2Floats : Boolean := _$fortInts2Floats$Lisp
+        try
+            SETF(_$fortInts2Floats$Lisp, true)$Lisp
+            fortPre1(e)
+        finally
+            SETF(_$fortInts2Floats$Lisp, save_fortInts2Floats)$Lisp
+
+    exp2FortSpecial(op : Symbol, args : List O, nargs : Integer) : O ==
+        op = 'CONCAT and symbol?(args(1)) and
+               member?(symbol(args(1)), ['<, '>, "<="::Symbol,
+                 ">="::Symbol, '~, 'and, 'or]) =>
+            n_args := arguments(arguments(args(2))(1))
+            mkFortFn(first args, n_args, #n_args)
+        op = 'CONCAT and symbol?(args(2)) and symbol(args(2)) = 'EQ =>
+            mkFortFn(args(2), [first args, args(3)], 2)
+        --the next line is NEVER used by FORTRAN code but is needed when
+        --  called to get a linearized form for the browser
+        op = 'QUOTE =>
+            atom?(arg := first args) => STRINGIMAGE(arg)$Lisp
+            n_args := arguments(arg)
+            tailPart := [concat(",", string(x)) for x in n_args]
+            message(concat(["[", string(operator(arg)), :tailPart, "]"]))
+        op = 'PAREN =>
+            op1 := operator(args(1))
+            not(symbol?(op1) and symbol(op1) = 'CONCATB) => fortPre1(args(1))
+            -- Have a matrix element
+            mkMat(arguments(args(1)))
+        op = 'SUB =>
+            old_Ints2Floats : Boolean := _$fortInts2Floats$Lisp
+            try
+                SETF(_$fortInts2Floats$Lisp, false)$Lisp
+                mkFortFn(first args, rest args, #(rest args))
+            finally
+                SETF(_$fortInts2Floats$Lisp, old_Ints2Floats)$Lisp
+        op = 'BRACE or  op = 'BRACKET =>
+            #args = 2 and not(atom?(args(2))) and
+                  symbol?(op1 := operator(args(2))) and
+                     symbol(op1) = 'AGGLST =>
+                var := args(1)
+                elts := arguments(args(2))
+                si : Integer := _$fortranArrayStartingIndex$Lisp
+                if #elts = 1 and not(atom?(elts(1))) then
+                    sOp := operator(elts(1))
+                    sArgs := arguments(elts(1))
+                    if symbol?(sOp) and symbol(sOp) = 'SEGMENT then
+                        #sArgs=1 => fortError1 first elts
+                        not(integer?(sArgs(1)) and integer?(sArgs(2))) =>
+                            fortError("Cannot expand segment: ",
+                                      first elts)$Lisp
+                        i1 := integer(sArgs(1))
+                        i2 := integer(sArgs(2))
+                        i1 > i2 => fortError1 message(
+                             "Lower bound of segment exceeds upper bound.")
+                        for ii in i1..i2 for i in si.. repeat
+                            as1 := mk_assign2(elt(var, [outputForm(i)]),
+                                              fortPre1(outputForm(ii)))
+                            push_expr_stack(as1)
+                        -- skip following for loop
+                        elts := empty()
+                for e in elts for i in si.. repeat
+                    as1 := mk_assign2(elt(var, [outputForm(i)]), fortPre1(e))
+                    push_expr_stack(as1)
+                pop_expr_stack()
+            fortError1l(op, args)
+        op = 'CONCAT or op = 'CONCATB =>
+            nargs = 0 => NIL$Lisp pretend O
+            nargs = 1 => fortPre1 first args
+            nargs = 2 and symbol?(args(2))  and symbol(args(2)) = '! =>
+                mkFortFn('FACTORIAL, [first args], 1)
+            fortError1l(op, args)
+        op = 'MATRIX =>
+            -- 1 < nargs  and not(atom?(args(1))) and
+            var := args(1)
+            rows := rest(rest(args))
+            si : Integer := _$fortranArrayStartingIndex$Lisp
+            for r in rows for rx in si.. repeat
+                rx_f := outputForm(rx)
+                for c in arguments(r) for cx in si.. repeat
+                    as1 := mk_assign2(elt(var, [rx_f, outputForm(cx)]),
+                                      fortPre1(c))
+                    push_expr_stack(as1)
+            pop_expr_stack()
+        fortError1l(op, args)
+
+    is_imaginary(x : O) : Boolean ==
+        not(symbol?(x)) => false
+        symbol(x) = "%i"::Symbol
+
+    specialOps : List Symbol := ['BRACKET, 'BRACE, 'SUB, 'AGGLST, _
+         'SUPERSUB, 'MATRIX, 'SEGMENT, 'ALTSUPERSUB, 'PAREN, 'CONCAT, _
+         'CONCATB, 'QUOTE, 'STRING, 'SIGMA, 'STEP, 'IN, 'SIGMA2, _
+         'INTSIGN, 'PI, 'PI2, 'INDEFINTEGRAL]
+
+    pow_form : OutputForm := outputForm("**"::Symbol)
+
+    fix2FortranFloat(i : Integer) : O ==
+        -- Return a Fortran float for a given integer.
+        ss := convert(i)@String
+        ss := concat(ss, (_$fortranPrecision$Lisp = 'double => ".0D0"; ".0"))
+        message(ss)
+
+    checkPrecision1(s : String) : String ==
+        s(1) = char("_"") => s
+        s2 := remove(char(" "), remove(char("__"), s))
+        (p1 := position(char("."), s2)) < 1 => s
+        _$fortranPrecision$Lisp ~= 'double => s2
+        p2 := position(char("E"), s2)
+        p2 > 0 =>
+            s2(p2) := "D"(1)
+            s2
+        concat(s2, "D0")
+
+    checkPrecision(s : String) : O == message(checkPrecision1(s))
+
+    fortPre1(e : O) : O ==
+        atom?(e) =>
+            integer?(e) =>
+                _$fortInts2Floats$Lisp =>
+                    ii := integer(e)
+                    ii >= 0 => fix2FortranFloat(ii)
+                    elt('- ::OutputForm, [fix2FortranFloat(-ii)])
+                e
+            string?(e) => checkPrecision(string(e))
+            symbol?(e) =>
+                sy := symbol(e)
+                sy = '%e =>
+                    fortPre1 elt(outputForm('exp), [outputForm(1)])
+                sy = '%i =>
+                    elt(outputForm('CMPLX), [fortPre1(outputForm(0)),
+                                             fortPre1(outputForm(1))])
+                ss := string(sy)
+                ss(1) = char("%") => message(ss(2..))
+                e
+            e
+        op := operator(e)
+        args := arguments(e)
+        symbol?(op) =>
+            sy := symbol(op)
+            sy = '^ =>
+                rand := args(1)
+                exponent := args(2)
+                if symbol?(rand) then
+                    sr := symbol(rand)
+                    sr = "%e"::Symbol =>
+                        return fortPre1 elt(outputForm('exp), [exponent])
+                    integer?(exponent) and integer(exponent) = 2 =>
+                        return elt(outputForm('*), [rand, rand])
+                integer?(exponent) and abs(integer(exponent)) < 32768 =>
+                    elt(pow_form, [fortPre1 rand, exponent])
+                elt(pow_form, [fortPre1 rand, fortPre1 exponent])
+            sy = 'ROOT =>
+                #args = 1 => fortPreRoot(elt(outputForm('sqrt), [first args]))
+                elt(pow_form, [fortPreRoot first args,
+                         elt(outputForm('/), [outputForm(1),
+                                              fortPreRoot(args(2))])])
+            if sy = 'OVER or sy = 'SLASH then
+                sy := '/
+                op := outputForm(sy)
+            member?(sy, specialOps) => exp2FortSpecial(sy, args, #args)
+            member?(sy, ['*, '+, '-]) and (#args > 2) =>
+                binaryExpr := fortPre1(elt(op, [args(1), args(2)]))
+                for e1 in rest(rest(args)) repeat
+                    binaryExpr := elt(op, [binaryExpr, fortPre1 e1])
+                binaryExpr
+            -- Now look for any complex objects.  Assume that first
+            -- argument is not %i
+            #args = 2 =>
+                im_op := outputForm('CMPLX)
+                arg1 := args(1)
+                arg2 := args(2)
+                is_imaginary(arg2) =>
+                    sy = '* => elt(im_op, [fortPre1(outputForm(0)),
+                                           fortPre1(arg1)])
+                    sy = '+ => elt(im_op, [fortPre1(arg1),
+                                           fortPre1(outputForm(1))])
+                    mkFortFn(op, args, 2)
+                not(sy = '+) => mkFortFn(op, args, 2)
+                same_subtree2('*, arg2) =>
+                    n_args := arguments(arg2)
+                    is_imaginary(n_args(2)) =>
+                         elt(im_op, [fortPre1(arg1), fortPre1(n_args(1))])
+                    is_imaginary(n_args(1)) =>
+                         elt(im_op, [fortPre1(arg1), fortPre1(n_args(2))])
+                    mkFortFn(op, args, 2)
+                same_subtree2('*, arg1) =>
+                    n_args := arguments(arg1)
+                    is_imaginary(n_args(2)) =>
+                        elt(im_op, [fortPre1(arg2), fortPre1(n_args(1))])
+                    is_imaginary(n_args(1)) =>
+                        elt(im_op, [fortPre1(arg2), fortPre1(n_args(2))])
+                    mkFortFn(op, args, 2)
+                mkFortFn(op, args, 2)
+            mkFortFn(op, args, #args)
+        mkFortFn(op, args, #args)
+
+    fortPre(l : List O) : List O ==
+        exprStack := []
+        for e in l repeat
+            new := fortPre1 e
+            push_expr_stack(new)
+        res := reverse! exprStack
+        exprStack := []
+        res
+
+    fort_indent : Integer := 6
+
+    get_fort_indent() : Integer == fort_indent
+
+    indentFortLevel(i : Integer) : Void ==
+        SETF(_$maximumFortranExpressionLength$Lisp,
+            _$maximumFortranExpressionLength$Lisp - 2*i)$Lisp
+        fort_indent := fort_indent + 2*i
+
+    make_spaces(x: Integer) : String == new(x::NonNegativeInteger,
+                                            space()$Character)
+
+    -- f is a list of strings making up 1 FORTRAN statement
+    -- return: a reverse list of FORTRAN lines
+    fortran2Lines1(f : LS, res : LS) : LS ==
+        normPref := make_spaces(fort_indent)
+        contPref := concat("     &", make_spaces(fort_indent - 6))
+        ll : Integer := fort_indent
+        while not(empty?(f)) repeat
+            line := normPref
+            ff := first f
+            repeat
+                (ll + (sff := #ff)) <= _$fortLength$Lisp =>
+                    ll := ll + sff
+                    line := concat(line, ff)
+                    f := rest f
+                    empty?(f) => break
+                    ff := first f
+      -- fill the line out to exactly $fortLength spaces if possible by splitting
+      -- up symbols.  This is helpful when doing the segmentation
+      -- calculations, and also means that very long strings (e.g. numbers
+      -- with more than $fortLength-$fortIndent digits) are printed in a
+      -- legal format. MCD
+                spaceLeft := _$fortLength$Lisp - ll
+                spaceLeft < 0 => error "too deep indentation"
+                line := concat(line, ff(1..spaceLeft))
+                ff := ff((spaceLeft+1)..)
+                res := cons(line, res)
+                ll := fort_indent
+                line := contPref
+            if ll > fort_indent then res := cons(line, res)
+        res
+
+    fort_clean_lines(l : LS) : LS ==
+        nl : LS := []
+        res : LS := []
+        el : String
+        while not(empty?(l)) repeat
+            while not(empty?(l)) and (el := first(l)) ~= "%l" repeat
+                nl := cons(el, nl)
+                l := rest l
+            if not(empty?(l)) then l := rest l
+            res := fortran2Lines1(reverse! nl, res)
+            nl := []
+        reverse! res
+
+    do_with_error_env3(f : () -> Void) : Void ==
+        do_with_error_env3(f)$Lisp
+
+    do_with_error_env2(int_to_floats? : Boolean, f : () -> LS) : LS ==
+        do_with_error_env2(int_to_floats?,
+                           () : LS +-> fort_clean_lines(f()))$Lisp
+
+    do_with_error_env0(f : () -> LS) : LS ==
+        do_with_error_env0(f)$Lisp
+
+    do_with_error_env1(f : () -> LS) : LS ==
+        do_with_error_env0(() +-> fort_clean_lines(f()))
+
+    do_expression_to_fortran(of : O) : LS ==
+        ol : List O := exp2FortOptimize(outputTran(of)$Lisp)$Lisp
+        fortranCleanUp(exp2Fort1(segment(fortPre(ol))))
+
+    expression2Fortran1(nf : () -> Symbol, of : O, int_to_floats? : Boolean
+                       ) : LS ==
+        do_with_error_env4(nf, int_to_floats?,
+                           () : LS +-> do_expression_to_fortran(of))$Lisp
+
+    statement2Fortran(of : O) : LS ==
+        expression2Fortran1(() +-> 'DUMMY, of, false)
+
+    expression2Fortran(of : O) : LS ==
+        expression2Fortran1(newFortranTempVar, of, false)
+
+    changeExprLength(i : Integer) : Void == changeExprLength(i)$Lisp
+
+    getStatement(of : O, int_to_floats? : Boolean) : LS ==
+        do_with_error_env2(int_to_floats?, () +-> statement2Fortran(of))
+
+    displayLines(l : LS) : Void == displayLines(l)$Lisp
+
+    displayLines1(l : LS) : Void == displayLines1(l)$Lisp
+
+    dispStatement(of : O) : Void ==
+        l := getStatement(of, false)
+        displayLines1(l)
+
+    fortFormatHead1(name : Symbol, asp : LS, args : List(Symbol)) : LS ==
+        of := elt(name::O, [arg::O for arg in args])$O
+        append(asp, statement2Fortran(of))
+
+    fortFormatHead(name : Symbol,
+                   returnType : Union(fst : FortranScalarType, void : "void"),
+                   args : List(Symbol)) : Void ==
+        -- $fortranSegment : fluid := nil
+        asp : LS
+        if returnType case void then
+            asp := ["SUBROUTINE "]
+            changeExprLength(l := -11)
+        else
+            s : String := checkType((returnType.fst)::String)
+            asp := [s, " FUNCTION "]
+            changeExprLength(l := -10 - #s)
+        lines := do_with_error_env1(() +-> fortFormatHead1(name, asp, args))
+        displayLines1(lines)
+        changeExprLength(-l)
+
+    addCommas(l : LS) : LS ==
+        empty?(l) => l
+        r := [first(l)]
+        for e in rest l repeat
+            r := cons(e, cons(",", r))
+        reverse! r
+
+    nameLen(n : LS) : Integer ==
+        +/[1 + #u for u in n]
+
+    fortFormatTypeLines(typeName : String, l : LS) : Void ==
+        l1 := cons(typeName, cons(" ", addCommas(l)))
+        displayLines(fort_clean_lines(l1))
+
+    fortFormatTypes1(typeName : String, names : LS) : Void ==
+        l := (_$maximumFortranExpressionLength$Lisp pretend Integer)
+             - 1 - # typeName
+        while nameLen(names) > l repeat
+            n : LS := []
+            ln : Integer := 0
+            while (ln := ln + #(first names) + 1) < l repeat
+                n := cons(first names, n)
+                names := rest names
+            fortFormatTypeLines(typeName, n)
+        fortFormatTypeLines(typeName, names)
+
+    par2string2(u : List O) : String ==
+        ll : List(LS) := [cons(",", statement2Fortran(v)) for v in rest u]
+        l := concat(rest(concat(ll)), ")")
+        concat(append([STRINGIMAGE(first u)$Lisp, "("], l))
+
+    unravel_par(u : O) : O ==
+        atom?(u) => u
+        u := first(arguments(u))
+        rest(u pretend List(O)) pretend O
+
+    par2string(u : O) : String ==
+        atom?(u) => STRINGIMAGE(u)$Lisp
+        par2string2(unravel_par(u) pretend List O)
+
+    mkParameterList(l : List O) : LS == [par2string(u) for u in l]
+
+    mkParameterList2(l : List List O) : LS == [par2string2(u) for u in l]
+
+    mkCharName(v : Integer) : String ==
+        concat("CHARACTER*(", concat(convert(v)@String, ")"))
+
+    insertEntry(m : Integer, n : O, Tabl : AssociationList(Integer, List O)
+               ) : Void ==
+        (u := search(m, Tabl)) case "failed" => Tabl.m := [n]
+        Tabl.m := cons(n, u::List O)
+
+    fortFormatCharacterTypes(names : List O) : Void ==
+        sortedByLength : AssociationList(Integer, List O) := empty()
+        genuineArrays : List List O := []
+        for u in names repeat
+            atom?(u) => insertEntry(0, u, sortedByLength)
+            u1 := u pretend List(O)
+            #u1 = 2 => insertEntry(second(u1) pretend Integer,
+                                   first u1, sortedByLength)
+            genuineArrays := cons(u1, genuineArrays)
+        for u2 in entries(sortedByLength) repeat
+            fortFormatTypes1(mkCharName u2.key, mkParameterList(u2.entry))
+        if not(empty?(genuineArrays)) then
+            fortFormatTypes1("CHARACTER", mkParameterList2 genuineArrays)
+
+    fort_format_types1(typeName : String, names : List O) : Void ==
+        typeName = "CHARACTER" =>
+            fortFormatCharacterTypes([unravel_par(u) for u in names])
+        fortFormatTypes1(typeName, mkParameterList(names))
+
+    fort_format_types(typeName : String, names : List O) : Void ==
+        empty?(names) => void()
+        do_with_error_env3(() +-> fort_format_types1(checkType(typeName),
+                                                     names))
+
+
+@
+
+<<domain FORTFORM FortranFormat>>=
+
+)abbrev domain FORTFORM FortranFormat
+FortranFormat : OutputFormaterCategory == add
+    Rep := OutputForm
+
+    import OutputFormTools
+
+    assignable_form?(o : OutputForm) : Boolean ==
+        atom?(o) => true
+        op : OutputForm := operator(o)
+        symbol?(op) =>
+            sop := symbol(op)
+            sop = "="::Symbol or sop = 'MATRIX or sop = 'construct => false
+            true
+        true
+
+    convert(o : OutputForm, i : Integer) : % ==
+        not(assignable_form?(o)) => o
+        var := concat("R", convert(i)@String)::Symbol::OutputForm
+        elt(outputForm("="::Symbol), [var, o])
+
+    import FortranCodeTools
+
+    display(x : %) : Void ==
+        displayLines1(fort_clean_lines(expression2Fortran(x::Rep)))
+
+@

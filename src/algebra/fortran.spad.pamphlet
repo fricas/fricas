@@ -79,71 +79,6 @@ Result() : Exports==Implementation where
 @
 \section{domain FC FortranCode}
 
-<<package FCTOOL FortranCodeTools>>=
-
-)abbrev package FCTOOL FortranCodeTools
-
-LS ==> List(String)
-O ==> OutputForm
-FortranCodeTools : with
-    fort_clean_lines : LS -> LS
-    do_with_error_env2 : (Boolean, () -> LS) -> LS
-      ++ do_with_error_env2(int_to_floats?, f)
-    do_with_error_env0 : (() -> LS) -> LS
-      ++ do_with_error_env0(f)
-    do_with_error_env1 : (() -> LS) -> LS
-      ++ do_with_error_env1(f)
-    expression2Fortran1 : (Symbol, Boolean, O, Boolean) -> LS
-      ++ expression2Fortran1(name, use_name?, of, int_to_floats?)
-    statement2Fortran :  O -> LS
-      ++ statement2Fortran(of)
-    expression2Fortran : O -> LS
-      ++ expression2Fortran(of)
-    getStatement : (O, Boolean) -> LS
-      ++ getStatement(of, int_to_floats?)
-    changeExprLength : Integer -> Void
-      ++ changeExprLength(i) changes limit on expression length by i.
-    displayLines1 : LS -> Void
-      ++ displayLines1(l)
-    dispStatement :  O -> Void
-      ++ dispStatement(of)
-
-  == add
-
-    fort_clean_lines(l : LS) : LS == fortran2Lines(l)$Lisp
-
-    do_with_error_env2(int_to_floats? : Boolean, f : () -> LS) : LS ==
-        do_with_error_env2(int_to_floats?, f)$Lisp
-
-    do_with_error_env0(f : () -> LS) : LS ==
-        do_with_error_env0(f)$Lisp
-
-    do_with_error_env1(f : () -> LS) : LS ==
-        do_with_error_env0(() +-> fort_clean_lines(f()))
-
-    expression2Fortran1(name : Symbol, use_name? : Boolean, of : O,
-                        int_to_floats? : Boolean) : LS ==
-        expression2Fortran1(name, use_name?, of, int_to_floats?)$Lisp
-
-    statement2Fortran(of : O) : LS ==
-        expression2Fortran1('DUMMY, true, of, false)
-
-    expression2Fortran(of : O) : LS ==
-        expression2Fortran1('DUMMY, false, of, false)
-
-    changeExprLength(i : Integer) : Void == changeExprLength(i)$Lisp
-
-    getStatement(of : O, int_to_floats? : Boolean) : LS ==
-        do_with_error_env2(int_to_floats?, () +-> statement2Fortran(of))
-
-    displayLines1(l : LS) : Void == displayLines1(l)$Lisp
-
-    dispStatement(of : O) : Void ==
-        l := getStatement(of, false)
-        displayLines1(l)
-
-@
-
 <<domain FC FortranCode>>=
 )abbrev domain FC FortranCode
 -- The FortranCode domain is used to represent operations which are to be
@@ -450,7 +385,7 @@ FortranCode() : public == private where
         do_with_error_env0(fortFormatLabelledIfGoto1(switch1, lab1, lab2))
 
     getfortarrayexp1(name : Symbol, of : O, int_to_floats? : Boolean) : LS ==
-        l := expression2Fortran1(name, true, of, int_to_floats?)
+        l := expression2Fortran1(() +-> name, of, int_to_floats?)
         first(l, (#l - 2)::NonNegativeInteger)
 
     getfortarrayexp(name : Symbol, of : O, int_to_floats? : Boolean) : LS ==
@@ -477,8 +412,6 @@ FortranCode() : public == private where
         r := [string(first l)]
         for e in rest l repeat r := cons(string(e), cons(",", r))
         reverse!(r)
-
-    indentFortLevel(i : Integer) : Void == indentFortLevel(i)$Lisp
 
     Rep := Record(op : OP, data : OPREC)
 
@@ -550,7 +483,7 @@ FortranCode() : public == private where
         lab := convert(label)@String
         if #lab > 6 then error "Label too big"
         cnt := "CONTINUE"
-        sp  : O := hspace(_$fortIndent$Lisp - #lab)
+        sp  : O := hspace(get_fort_indent() - #lab)
         [STRCONC(lab, sp, cnt)$Lisp]$LS
 
     getGoto(label : SingleInteger) : LS ==
@@ -637,7 +570,7 @@ FortranCode() : public == private where
       error "Unsupported program construct."
 
     printCode(f : %) : Void ==
-      displayLines1$Lisp getCode f
+      displayLines1(getCode f)
       void()$Void
 
     code (f : %) : OPREC ==
@@ -894,37 +827,21 @@ FortranProgram(name, returnType, arguments, symbols) : Exports == Implement wher
     codeFrom(u : %) : List FortranCode ==
       elt(u::Rep, code)$REP
 
-    fortFormatHead1(asp : LS) : LS ==
-        of := elt(name::O, [arg::O for arg in arguments])$O
-        append(asp, statement2Fortran(of))
-
-    fortFormatHead() : Void ==
-        -- $fortranSegment : fluid := nil
-        if returnType case void then
-            asp := ["SUBROUTINE "]
-            changeExprLength(l := -11)
-        else
-            s : String := checkType((returnType.fst)::String)$Lisp
-            asp := [s, " FUNCTION "]
-            changeExprLength(l := -10 - #s)
-        lines := do_with_error_env1(() +-> fortFormatHead1(asp))
-        displayLines1(lines)
-        changeExprLength(-l)
-
     outputAsFortran(p : %) : Void ==
       setLabelValue(25000::SingleInteger)$FC
       -- Do this first to catch any extra type declarations:
       tempName := 'FPTEMP
       newSubProgram(tempName)
-      initialiseIntrinsicList()$Lisp
+      clear_used_intrinsics()
       body : List LS := [getCode(l)$FortranCode for l in codeFrom(p)]
-      intrinsics : LS := getIntrinsicList()$Lisp
+      intrinsics : LS := get_used_intrinsics()
       endSubProgram()
-      fortFormatHead()
+      fortFormatHead(name, returnType, arguments)
       printTypes(symbols)$SymbolTable
       printTypes((p::Rep).localSymbols)$SymbolTable
       printTypes(tempName)$TheSymbolTable
-      fortFormatIntrinsics(intrinsics)$Lisp
+      if not(empty?(intrinsics)) then
+          fortFormatTypeLines("INTRINSIC", intrinsics)
       clearTheSymbolTable(tempName)
       for expr in body repeat displayLines1(expr)
       dispStatement('END::OutputForm)
@@ -1340,6 +1257,8 @@ SimpleFortranProgram(R, FS) : Exports == Implementation where
 
     Rep := Record(name : Symbol, type : FST, body : FS )
 
+    import from FortranCodeTools
+
     fortran(fname, ftype, res) ==
       construct(fname, ftype, res)$Rep
 
@@ -1355,14 +1274,16 @@ SimpleFortranProgram(R, FS) : Exports == Implementation where
       coerce(nameOf u)$Symbol
 
     outputAsFortran(u : %) : Void ==
-      ftype := (checkType(typeOf(u)::OutputForm)$Lisp)::OutputForm
-      fname := nameOf(u)::OutputForm
+      ftype := u.type
+      ftype_s : String := checkType(ftype::String)
+      fname := nameOf(u)
       args := argumentsOf(u)
-      nargs := args::OutputForm
+      nargs := [arg::OutputForm for arg in args]$List(OutputForm)
       val  := bodyOf(u)::OutputForm
-      fortFormatHead(ftype, fname, nargs)$Lisp
-      fortFormatTypes(ftype, args)$Lisp
-      dispfortexp1$Lisp ["="::OutputForm, fname, val]@List(OutputForm)
+      fortFormatHead(fname, [ftype], args)
+      fort_format_types(ftype_s, nargs)
+      dispfortexp1$Lisp ["="::OutputForm, fname::OutputForm,
+                         val]@List(OutputForm)
       dispfortexp1$Lisp "RETURN"::OutputForm
       dispfortexp1$Lisp "END"::OutputForm
       void()$Void

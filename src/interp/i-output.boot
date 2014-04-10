@@ -1296,6 +1296,16 @@ formulaFormat expr ==
     FORCE_-OUTPUT $formulaOutputStream
   NIL
 
+fortranFormat expr ==
+    ff := '(FortranFormat)
+    formatFn :=
+        getFunctionFromDomain("convert", ff, [$OutputForm, $Integer])
+    displayFn := getFunctionFromDomain("display", ff, [ff])
+    SPADCALL(SPADCALL(expr, $IOindex, formatFn), displayFn)
+    if not $collectOutput then TERPRI $fortranOutputStream
+    FORCE_-OUTPUT $fortranOutputStream
+
+
 texFormat expr ==
   ioHook("startTeXOutput")
   tf := '(TexFormat)
@@ -1366,10 +1376,7 @@ output(expr,domain) ==
   T := coerceInteractive(objNewWrap(expr,domain),$OutputForm) =>
     x := objValUnwrap T
     if $formulaFormat then formulaFormat x
-    if $fortranFormat then
-      dispfortexp x
-      if not $collectOutput then TERPRI $fortranOutputStream
-      FORCE_-OUTPUT $fortranOutputStream
+    if $fortranFormat then fortranFormat x
     if $algebraFormat then
       mathprintWithNumber x
     if $texFormat     then texFormat x
