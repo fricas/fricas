@@ -761,6 +761,10 @@ formatPredParts s ==
     ['SIGNATURE,fun,[formatPredParts(r) for r in sig]]
   s
 
+form_to_abbrev(x) ==
+    $abbreviateTypes : local := true
+    form2String(x)
+
 pred2English x ==
   x is ['IF,cond,thenClause,elseClause] =>
     c := concat('"if ",pred2English cond)
@@ -776,15 +780,15 @@ pred2English x ==
   x is ['NOT,l] =>
     concat('"not ",pred2English l)
   x is [op,a,b] and op in '(has ofCategory) =>
-    concat(pred2English a,'%b,'"has",'%d,form2String abbreviate b)
+    concat(pred2English a, '%b, '"has",'%d, form_to_abbrev b)
   x is [op,a,b] and op in '(HasSignature HasCategory) =>
     concat(prefix2String0 formatPredParts a,'%b,'"has",'%d,
       prefix2String0 formatPredParts b)
   x is [op,a,b] and op in '(ofType getDomainView) =>
     if b is ['QUOTE,b'] then b := b'
-    concat(pred2English a,'": ",form2String abbreviate b)
+    concat(pred2English a, '": ", form_to_abbrev b)
   x is [op,a,b] and op in '(isDomain domainEqual) =>
-    concat(pred2English a,'" = ",form2String abbreviate b)
+    concat(pred2English a, '" = ", form_to_abbrev b)
   x is [op,:.] and (translation := LASSOC(op,'(
     (_< . " < ") (_<_= . " <= ")
       (_> . " > ") (_>_= . " >= ") (_=  . " = ") (_^_= . " _^_= ")))) =>
