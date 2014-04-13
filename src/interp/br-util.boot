@@ -311,7 +311,7 @@ bcConform1 form == main where
             htSay '": "
             hd CADDR form
         QCDR form and dbEvalableConstructor? form =>
-            bcConstructor(form,head)
+            bcConstructor(form)
         hd head
         null (r := QCDR form) => nil
         tl QCDR form
@@ -349,8 +349,7 @@ bcConform(form,:options) ==
   $italicHead? : local := IFCAR IFCDR options
   bcConform1 form
 
-bcConstructor(form is [op,:arglist],cname) ==  --called only when $conformsAreDomains
-  htSayList dbConformGen form
+bcConstructor(form) == htSayList dbConformGen form
 
 htSayList u ==
   for x in u repeat htSay x
@@ -359,15 +358,21 @@ conform2HtString form ==
   for u in form2String form repeat
     htSay u
 
+$from_show_implementations := false
+
 dbEvalableConstructor? form ==
---form is constructor form; either
---(a) all arguments are specified or (b) none are specified
-  form is [op,:argl] =>
-    null argl => true
-    op = 'QUOTE => 'T     --is a domain valued object
-    and/[dbEvalableConstructor? x for x in argl]
-  INTEGERP form => true
-  false
+    form is [op,:argl] =>
+        null(cosig := GETDATABASE(op, 'COSIG)) => false
+        cosig := rest cosig
+        #cosig ~= #argl => false
+        res := true
+        for x in argl for pred in cosig while res repeat
+            pred => res :=  dbEvalableConstructor? x
+            $from_show_implementations => "iterate"
+            x is ['QUOTE, y] and STRINGP(y) => "iterate"
+            res := false
+        res
+    false
 
 htSayItalics s == htSay('"{\em ",s,'"}")
 

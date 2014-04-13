@@ -205,13 +205,7 @@ fromHeading htPage ==
 pickitForm(form,uarg) ==
   conform2StringList(form,FUNCTION dbConform,FUNCTION conformString,uarg)
 
-conformString(form) ==
-  IFCDR form =>
-    conform2StringList(form,FUNCTION conname2StringList,FUNCTION conformString,nil)
-  form2StringList form
-
-conform2StringList(form,opFn,argFn,exception) ==
-  exception := exception or '"%%%nothing%%%"
+conform2StringList(form, opFn, argFn) ==
   [op1,:args] := form
   op := IFCAR HGET($lowerCaseConTb,op1) or op1
   null args => APPLY(opFn,[op])
@@ -224,12 +218,11 @@ conform2StringList(form,opFn,argFn,exception) ==
     rest CDAR GETDATABASE(op,'CONSTRUCTORMODEMAP)
   sargl := [fn for x in args for atype in atypes for pred in cosig] where fn ==
     keyword :=
-      x is [":",y,t] =>
+      special and x is [":",y,t] =>
         x := t
         y
       nil
     res :=
-      x = exception => dbOpsForm exception
       pred =>
         STRINGP x => [x]
         u := APPLY(argFn,[x])
@@ -277,13 +270,6 @@ dbOuttran form ==
     ['QUOTE,res]
   [op,:argl]
 
-dbOpsForm form ==
---one button for the operations of a type
---1st arg: like "Matrix(Integer)" or "UP('x,Integer)" <---all highlighted
---2nd arg: like (|Matrix| (|Integer|)) and (|U..P..| (QUOTE |x|) (|Integer|))
-  ["\ops{",:conform2StringList(form,FUNCTION conname2StringList,FUNCTION conformString,nil),'"}{",:$pn,:form2Fence form,'"}"]
-
-
 dbConformGen form == dbConformGen1(form,true)
 --many buttons: one for the type and one for each inner type
 --NOTE: must only be called on types KNOWN to be correct
@@ -301,7 +287,7 @@ dbConformGen1(form,opButton?) ==
   form :=
     originalOp=op => form
     [op, :args]
-  args => conform2StringList(form, opFunction,FUNCTION dbConformGen,nil)
+  args => conform2StringList(form, opFunction, FUNCTION dbConformGen)
   APPLY(opFunction,[form])
 
 unAbbreviateIfNecessary op == IFCAR HGET($lowerCaseConTb, op) or op
@@ -557,7 +543,9 @@ dbShowOpOrigins(htPage,opAlist,which,data) ==
   dbGatherThenShow(htPage,opAlist,which,data,true,'"from",function bcStarConform)
 
 dbShowOpImplementations(htPage,opAlist,which,data) ==
-  dbGatherThenShow(htPage,opAlist,which,data,true,'"by",function bcStarConform)
+    $from_show_implementations : local := true
+    dbGatherThenShow(htPage, opAlist, which, data, true, '"by",
+                     function bcStarConform)
 
 dbShowOpConditions(htPage,opAlist,which,data) ==
   dbGatherThenShow(htPage,opAlist,which,data,nil,nil,function bcPred)

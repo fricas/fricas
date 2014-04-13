@@ -838,7 +838,8 @@ form2Fence1 x ==
   x is [op,:argl] =>
     op = 'QUOTE => ['"(QUOTE ",:form2FenceQuote first argl,'")"]
     ['"(", FORMAT(NIL, '"|~a|", op),:"append"/[form2Fence1 y for y in argl],'")"]
-  IDENTP x => FORMAT(NIL, '"|~a|", x)
+  x = "$" => ["%"]
+  IDENTP x => [FORMAT(NIL, '"|~a|", x)]
 --  [x]
   ['"  ", x]
 
