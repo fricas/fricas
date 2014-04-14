@@ -554,7 +554,6 @@ TexmacsFormat() : public == private where
         -- just look for, e.g., {{ZAG}{1}{6}}
         (#args > 1) and has_op?(args(2), 'ZAG) =>
             op ~= "+"::Sy => error "ZAG in unexpected place"
-            tmpS : S := stringify first args
             has_op?(args(1), 'ZAG) => formatZag(args)
             concat [formatExpr(first args, minPrec), " _"+_" ",
                     formatZag(rest args)]
@@ -577,14 +576,17 @@ TexmacsFormat() : public == private where
       -- args will be a list of things like this {{ZAG}{1}{7}}, the ZAG
       -- must be there, the '1' and '7' could conceivably be more complex
       -- expressions
-      tmpZag : L E := first args pretend L E
-      -- may want to test that tmpZag contains 'ZAG'
-      #args > 1 => "(frac "formatExpr(first rest tmpZag,minPrec)"(concat "formatExpr(first rest rest tmpZag,minPrec)" _"+_" "formatZag(rest args)"))"
-      (first args = "..."::Sy::E)@Boolean => "<ldots>"
-      has_op?(args(1), 'ZAG) =>
-        "(frac "formatExpr(first rest tmpZag,minPrec)formatExpr(first rest rest tmpZag,minPrec)")"
-      op : S := stringify first args
-      error "formatZag: Last argument in ZAG construct has unknown operator: "op
+      is_symbol?(first args, "..."::Symbol) => "<ldots>"
+      not(has_op?(first args, 'ZAG)) =>
+          op : S := stringify first args
+           error "formatZag: Last argument in ZAG construct "
+                 "has unknown operator: " op
+      tmpZag : L E := arguments(first args)
+      #args > 1 => "(frac " formatExpr(first tmpZag, minPrec) "(concat "
+                    formatExpr(first rest tmpZag, minPrec) " _"+_" "
+                        formatZag(rest args) "))"
+      "(frac " formatExpr(first tmpZag, minPrec)
+          formatExpr(first rest tmpZag, minPrec) ")"
 
     formatExpr(expr : E, prec : I) : S ==
       i, len : Integer
