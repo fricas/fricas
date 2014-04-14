@@ -893,6 +893,9 @@ HTMLFormat() : public == private where
       if debug then sayHt "formatZag: "concat["args=",_
         argsToString(args)]
       is_symbol?(first args, "..."::Symbol) => tree("&#x2026;")
+      not(has_op?(first args, 'ZAG)) =>
+          tree("formatZag: Last argument in ZAG construct unknown operator: "
+              stringify first args)
       tmpZag : L E := arguments(first args)
       fontAttrib : S :=
         nestLevel < 2 => "span style='font-size:16px'"
@@ -900,16 +903,12 @@ HTMLFormat() : public == private where
         nestLevel = 3 => "span style='font-size:12px'"
         nestLevel = 4 => "span style='font-size:10px'"
         "span style='font-size:9px'"
-      -- may want to test that tmpZag contains 'ZAG'
       #args > 1 =>
         newNode(fontAttrib, buildZag(formatHtml(first tmpZag, minPrec), _
           formatHtml(first rest tmpZag, minPrec), _
             formatZag(rest args, nestLevel+1)))
-      has_op?(first args, 'ZAG) =>
-        newNode(fontAttrib, buildOver(formatHtml(first tmpZag, minPrec), _
+      newNode(fontAttrib, buildOver(formatHtml(first tmpZag, minPrec), _
           formatHtml(first rest tmpZag, minPrec)))
-      tree("formatZag: Last argument in ZAG construct unknown operator: "
-           stringify first args)
 
     formatNary(op : S, args : L E, prec : I) : Tree S ==
       if debug then sayHt "formatNary: "concat["op=",op," args=",_
