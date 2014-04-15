@@ -2116,15 +2116,19 @@ do_read(ll, quiet, pile_mode) ==
     terminateSystemCommand()
     spadPrompt()
 
+basename(x) == NAMESTRING(PATHNAME_-NAME(x))
+
 read_or_compile(quiet, lib) ==
     $LISPLIB : local := lib
     input_file := make_input_filename($edit_file)
     type := PATHNAME_-TYPE(input_file)
     type = '"boot" =>
-        lfile := CONCAT(shoeRemovebootIfNec(input_file), '".clisp")
+        lfile := CONCAT(basename(input_file), '".clisp")
         BOOTTOCLC(input_file, lfile)
         LOAD(COMPILE_-FILE(lfile))
-    type = '"lisp" => LOAD(COMPILE_-FILE(input_file))
+    type = '"lisp" =>
+        ffile := CONCAT(basename(input_file), ".", $lisp_bin_filetype)
+        LOAD(FRICAS_COMPILE_FASL(input_file, ffile))
     type = '"bbin" => LOAD(input_file)
     type = '"input" => ncINTERPFILE(input_file, not(quiet))
     spadCompile(input_file)
