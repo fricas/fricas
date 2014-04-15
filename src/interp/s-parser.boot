@@ -340,9 +340,9 @@ parse_Qualification() ==
 
 parse_SemiColon() ==
     not(match_symbol ";") => nil
-    OR(parse_Expr 82,
-       push_reduction("parse_SemiColon", "/throwAway"))
-    push_form2(";", pop_stack_2(), pop_stack_1())
+    parse_Expr 82 =>
+        push_form2(";", pop_stack_2(), pop_stack_1())
+    true
 
 parse_Return() ==
     not(match_symbol "return") => nil
