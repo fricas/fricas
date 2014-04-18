@@ -178,19 +178,9 @@ atom2String x ==
 appChar(string,x,y,d) ==
   if CHARP string then string := PNAME string
   line:= LASSOC(y,d) =>
-    if MAXINDEX string = 1 and char(string.0) = char "%" then
-      string.1="b" =>
-        bumpDeltaIfTrue:= true
-        string.0:= EBCDIC 29
-        string.1:= EBCDIC 200
-      string.1="d" =>
-        bumpDeltaIfTrue:= true
-        string.0:= EBCDIC 29
-        string.1:= EBCDIC 65
     shiftedX:= (y=0 => x+$highlightDelta; x)
       --shift x for brightening characters -- presently only if y=0
     RPLACSTR(line,shiftedX,n:=#string,string,0,n)
-    if bumpDeltaIfTrue=true then $highlightDelta:= $highlightDelta+1
     d
   appChar(string, x, y, nconc(d,
             [[y, :make_full_CVEC(10 + $LINELENGTH + $MARGIN, " ")]]))
@@ -787,18 +777,12 @@ aggregateApp(u,x,y,d,s) ==
 --% Function to compute Width
 
 outformWidth u ==  --WIDTH as called from OUTFORM to do a COPY
-  STRINGP u =>
-    u = $EmptyString => 0
-    u.0 = char "%" and ((u.1 = char 'b) or (u.1 = char 'd)) => 1
-    #u
+  STRINGP u => #u
   atom u => # atom2String u
   WIDTH COPY u
 
 WIDTH u ==
-  STRINGP u =>
-    u = $EmptyString => 0
-    u.0 = char "%" and ((u.1 = char 'b) or (u.1 = char 'd)) => 1
-    #u
+  STRINGP u => #u
   INTEGERP u =>
     if (u < 0) then
       negative := 1
