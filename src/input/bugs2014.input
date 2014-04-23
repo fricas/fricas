@@ -35,5 +35,20 @@ testEquals("wy^4", "0")
 testEquals("wz^5", "0")
 testEquals("(wy^3 + wy)*wx", "wy*wx")
 
+testcase "complex pattern matching"
+mR := PATRES(Integer, Complex(Integer))
+pati := convert(%i)@Pattern(Integer)
+testTrue("not(failed?(patternMatch(%i, pati, new()$mR)))")
+testTrue("not(failed?(patternMatch(3 + %i, 3 + pati, new()$mR)))")
+
+mR := PATRES(Integer, Complex(Expression(Integer)))
+testTrue("not(failed?(patternMatch(3 + %i, 3 + pati, new()$mR)))")
+ff : Complex(Expression(Integer)) := exp(x) + %i*x
+patf := convert(ff)@Pattern(Integer)
+testTrue("not(failed?(patternMatch(ff, patf, new()$mR)))")
+
+irule := rule %i == 42
+testEquals("irule(besselJ(v, %i))", "besselJ(v, 42)")
+
 )set output algebra on
 statistics()
