@@ -152,6 +152,50 @@ ConstantLinearDependence(R, ld) : Exports == Implementation where
 
 @
 
+<<package RDEAUX RDEaux>>=
+
+)abbrev package RDEAUX RDEaux
+RDEaux(R, F) : Exports == Implementation where
+  R : Join(EuclideanDomain, Comparable, CharacteristicZero,
+           RetractableTo Integer, LinearlyExplicitRingOver Integer)
+  F : Join(TranscendentalFunctionCategory, AlgebraicallyClosedField,
+           FunctionSpace R)
+  -- F ==> Expression(R)
+  Z ==> Integer
+  UP  ==> SparseUnivariatePolynomial F
+  RSOL ==> Record(ans : UP, remainder : UP)
+  Exports ==> with
+
+    multi_SPDE : (UP, UP, List(UP), Z, UP -> UP) -> List(RSOL)
+
+  Implementation ==> add
+
+    EE_Rec ==> Record(coef1 : UP, coef2 : UP)
+
+    multi_SPDE(a, b, lc, d, der) ==
+        d <$Z 0 => [[0, c]$RSOL for c in lc]
+        every?(zero?, lc) => [[0, 0]$RSOL for c in lc]
+        eeu := extendedEuclidean(a, b, 1$UP)
+        eeu case "failed" => error "extendedEuclidean failed"
+        ee := eeu::EE_Rec
+        lr : List(UP) := []
+        lnc : List(UP) := []
+        for c in lc repeat
+            c = 0 => "skip"
+            all_zero := false
+            cc1 := ee.coef1*c
+            cc2 := ee.coef2*c
+            qr := divide(cc2, a)
+            r := qr.remainder
+            nc := cc1 + b*qr.quotient - der(r)
+            lnc := cons(nc, lnc)
+            lr := cons(r, lr)
+        lr := reverse!(lr)
+        res1 := multi_SPDE(a, b + der(a), reverse!(lnc), d - degree(a)$UP, der)
+        [[a*s1.ans + r, s1.remainder]$RSOL for s1 in res1 for r in lr]
+
+@
+
 <<package RDEEFX2 ElementaryRischDEX2>>=
 )abbrev package RDEEFX2 ElementaryRischDEX2
 ++ Risch differential equation, wrapper for extended version.
@@ -270,7 +314,7 @@ ElementaryRischDEX(R) : Exports == Implementation where
             kf := k::F
             for ui in ulst for ki in coeffs repeat
                 ui = kf => ku := ki
-                u := u*ui
+                u := u*ui^ki
         else
             u := reduce(_*, [ui^ki for ui in ulst for ki in coeffs], 1)
         kc : Z := 0
@@ -644,6 +688,422 @@ ElementaryRischDEX(R) : Exports == Implementation where
 
     my_exp(p : UP, n : N) : UP == p^n
 
+    SREC ==> Record(degree : Z, factor : UP, coeff : F, ratpart : Z,
+                    v_part : F, alg_part : UP, new_f : RF, radicand : RF,
+                    u_part : F, exponent : Z, shift_part : F)
+
+    ei_candidate(nf : UP, denf : UP, vlst : List(F), ulst : List(F),
+                 k : K, x : SE, a : Z, tt : F, res : List SREC) : List SREC ==
+        tt := -tt
+        nf1 := nf + tt*denf
+        reductum(nf1) ~= 0 => res
+        degree(nf1) > 0 and not(is?(k, 'exp)) => res
+        uvu := get_uv(tt, vlst, ulst, k, x)
+        uvu case "failed" => res
+        uv := uvu::UV_REC
+        cons([1, nf1, 1, a, tt, 0, nf1/denf, 0, uv.u_part, uv.exponent,
+                                 uv.v_part]$SREC, res)
+
+    special_ei_candidates(nf : UP, denf : UP, vlst : LF,
+                       ulst : LF, k : K, x : SE) : List SREC ==
+        tt : F := 0
+        a : Z := 0
+        is?(k, 'exp) =>
+            res : List(SREC) := []
+            n1 := degree(nf)
+            n2 := degree(denf)
+            rnf := reductum(nf)
+            rdf := reductum(denf)
+            n1 = n2 =>
+                tt := leadingCoefficient(nf)
+                res := ei_candidate(nf, denf, vlst, ulst, k, x, a, tt, res)
+                rdf ~= 0 and degree(rdf) = degree(rnf) =>
+                    tt := leadingCoefficient(rnf)/leadingCoefficient(rdf)
+                    ei_candidate(nf, denf, vlst, ulst, k, x, a, tt, res)
+                res
+            res := ei_candidate(nf, denf, vlst, ulst, k, x, a, 0, res)
+            n1 < n2 and rdf ~= 0 and degree(rdf) = n1 =>
+                tt := leadingCoefficient(nf)/leadingCoefficient(rdf)
+                ei_candidate(nf, denf, vlst, ulst, k, x, a, tt, res)
+            n1 > n2 and rnf ~= 0 and degree(rnf) = n2 =>
+                tt := leadingCoefficient(rnf)
+                ei_candidate(nf, denf, vlst, ulst, k, x, a, tt, res)
+            res
+        degree(nf) >$Z degree(denf) + 1 => []
+        if is?(k, 'log) and degree(nf) = degree(denf) + 1 then
+            lc := leadingCoefficient(nf)
+            (rcu := retractIfCan(lc)@Union(Z, "failed")) case "failed" =>
+                return []
+            a := -(rcu::Z)
+            nf := nf + monomial(a::F,1)$UP*denf
+        if degree(nf) = degree(denf) then
+            tt := leadingCoefficient(nf)
+        ei_candidate(nf, denf, vlst, ulst, k, x, a, tt, [])
+
+    gamma_candidate(fnf : Factored(UP), nf1 : UP, denf : UP,
+                    gden1 : UP, gexp : Z, a : Z,
+                    tt : F, f2 : UP, vlst : LF, ulst : LF, k : K, x : SE,
+                    res : List SREC) : List SREC ==
+        nffacs := factors(fnf)
+        lexp := [fac1.exponent for fac1 in nffacs]
+        l1 := gcd(gexp, gcd(lexp))
+        l1 = 1 => res
+        lexp1 : List(N) := [(e1 quo l1)::N for e1 in lexp]
+        nf2 := reduce(_*, [my_exp(fac1.factor, e1) for e1 in lexp1
+                           for fac1 in nffacs], 1)$List(UP)
+        gden1 : UP :=
+            gexp = 1 => 1
+            my_exp(gden1, (gexp quo l1)::N)
+        uvu := get_uv(tt, vlst, ulst, k, x)
+        uvu case "failed" => res
+        uv := uvu::UV_REC
+        unf := retract(unit(fnf))@F
+        D(unf, x) ~= 0 => res
+        cons([l1, nf2, unf, a, tt, f2, nf1/denf, nf2/gden1,
+              uv.u_part, uv.exponent, uv.v_part]$SREC, res)
+
+    gammas1(nf : UP, a : Z, denf : UP, denf1 : UP, gexp : Z, n2 : Z,
+            vlst : LF, ulst : LF,
+            k : K, x : SE, res : List SREC) : List SREC ==
+        t := kernel(new()$Symbol)
+        nfp1 := differentiate(nf)*denf1 - (gexp::F)*nf*differentiate(denf1)
+        r : F := resultant(nf + (t::F)::UP*denf, nfp1)
+        f_res := factor(numer(r))$DenominatorIntegration(R)
+        rfacs := factors(f_res)
+        e_tt : List(F) :=
+            degree(nf) = 0 => [0]
+            degree(nf) = degree(denf) =>
+                tt := -leadingCoefficient(nf)/leadingCoefficient(denf)
+                nf1 :=  nf + tt::UP*denf
+                degree(nf1) = 0 => [tt]
+                []
+            []
+        if not(empty?(e_tt)) then
+            tt := first(e_tt)
+            nf1 :=  nf + tt::UP*denf
+            fnf := makeFR(nf1, [])$Factored(UP)
+            res := gamma_candidate(fnf, nf1, denf, denf1, gexp, a, tt,
+                                   0, vlst, ulst, k, x, res)
+        for fac in rfacs repeat
+            f1 := P_to_UP(fac.factor, t)
+            deg1 := degree(f1)
+            deg1 = 1 =>
+                tt := -coefficient(f1, 0)/coefficient(f1, 1)
+                nf1 := nf + tt::UP*denf
+                2*fac.exponent < degree(nf1) => "iterate"
+                fnf := squareFree(nf1)
+                res := gamma_candidate(fnf, nf1, denf, denf1, gexp, a, tt,
+                                       0, vlst, ulst, k, x, res)
+            fac.exponent < n2 => "iterate"
+            -- In the future will handle algebraic shifts...
+            "iterate"
+        res
+
+    special_candidates(nf : UP, denf : UP, denf1 : UP, gexp : Z,
+                       vlst : List(F), ulst : List(F), k : K, x : SE
+                      ) : List SREC ==
+        res1 : List SREC := special_ei_candidates(nf, denf, vlst, ulst, k, x)
+        a : Z := 0
+        n1 := degree(nf)
+        n2 := degree(denf)
+        n1 = 1 => res1
+        if n1 = n2 + 1 then
+            not(is?(k, 'log)) => return res1
+            lc := leadingCoefficient(nf)
+            (rcu := retractIfCan(lc)@Union(Z, "failed")) case "failed" =>
+                return res1
+            a := rcu::Z
+            nf := nf - monomial(a::F,1)$UP*denf
+            n1 := n2
+        n3 := max(n1, n2)
+        l : Z := gcd(gexp, n3)
+        l = 1 => res1
+        n4 := n3 - n3 quo 2
+        ts := new()$Symbol
+        t := kernel(ts)$K
+        nfp1 := differentiate(nf)
+        denfp1 := differentiate(denf1)
+        n1 > n2 and is?(k, 'log) =>
+            nnp := nfp1*denf1 - (gexp::F)*denfp1*nf + t::F::UP*denf*denf1
+            odd?(l) =>
+                nfp2 := differentiate(nfp1)
+                denfp2 := differentiate(denfp1)
+                denf2 := denf1*denf1
+)if false
+                -- as single expression takes too long to compile
+                nnp2 := nfp2*denf2 - (2*gexp)::F*denfp1*nfp1*denf1 +
+                        ((gexp+1)*gexp)::F*denfp1*denfp1*nf -
+                          (gexp::F)*denfp2*nf*denf1
+)endif
+                t1 := (2*gexp)::F*denfp1
+                t1 := t1*nfp1*denf1
+                ct1 := ((gexp+1)*gexp)::F
+                t2 := ct1*denfp1
+                t2 := t2*denfp1*nf
+                t3 := (gexp::F)*denfp2
+                t3 := t3*nf*denf1
+                nnp2 := nfp2*denf2 - t1 + t2 - t3
+                f_res1 := resultant(nnp, nnp2)
+                ratl := get_rational_solutions2(f_res1, t)
+                for r0 in ratl repeat
+                    ru := retractIfCan(r0)@Union(Z, "failed")
+                    ru case "failed" => "iterate"
+                    ri := ru::Z
+                    nn := nf + monomial(ri::F, 1)$UP * denf
+                    res1 := gammas1(nn, ri, denf, denf1, gexp, n2,
+                                    vlst, ulst, k, x, res1)
+                res1
+            bs := new()$SE
+            bk := kernel(bs)
+            tx_plus_b := monomial(t::F, 1)$UP + bk::F::UP
+            f_res1 := resultant(nnp, nf + tx_plus_b*denf)$UP
+            lsol := solve_poly_eqs([f_res1, D(f_res1, bs)], ts, bs)
+            for sol in lsol repeat
+               ru := retractIfCan(sol.ratpart)@Union(Z, "failed")
+               ru case "failed" => "iterate"
+               ri := ru::Z
+               nn := nf + monomial(ri::F, 1)$UP * denf
+               res1 := gammas1(nn, ri, denf, denf1, gexp, n2,
+                               vlst, ulst, k, x, res1)
+            res1
+        gammas1(nf, a, denf, denf1, gexp, n2, vlst, ulst, k, x, res1)
+
+    get_prims : (SREC, UP, UP, Z, K) -> List(F)
+
+    finish_special_integrate(rr1f : F, a1p : F, vs : Vector(F),
+                             as : Vector(F), scands : List(SREC),
+                             denf : UP, gexp : Z,
+                             k : K, x : Symbol) : PSOL2 ==
+        c_lindep := ConstantLinearDependence(R, [(c : F) : F +-> D(c, x)])
+        csolu := particularSolutionOverConstants(vs, rr1f)$c_lindep
+        csolu case "failed" => [0, 0, 0, false]
+        csol := csolu::Vector(F)
+        scands1 := scands
+        cand_prims : List(F) := []
+        ansp : F := 0
+        for i in 1..#vs repeat
+            if empty?(cand_prims) then
+                cand_prims := get_prims(first(scands1), denf, denf, gexp, k)
+                scands1 := rest(scands1)
+            a1p := a1p - csol(i)*as(i)
+            ansp := ansp + csol(i)*first(cand_prims)
+            cand_prims := rest(cand_prims)
+        [a1p, rr1f, ansp, true]
+
+
+    SHER ==> Record(answer : RF, specpart : RF)
+
+    special_Hermite : (RF, UP, UP, UP, UP -> UP) -> SHER
+
+    exp_lower_bound(nfp : UP, denfp : UP, rr1 : RF, scoeffs : List(RF),
+                    f : F, g : F, k : K, x : Symbol, lim : (F, LF) -> U
+                   ) : Z ==
+        c_degs := [degree(denom(scoeff)) for scoeff in scoeffs]
+        c_degs := cons(degree(denom(rr1)), c_degs)
+        max_deg : Z := reduce(max, c_degs)
+        min_deg : Z := minimumDegree(nfp)
+        ftwr : List(K) := union(tower f, tower g)
+        twr : List(K) := [kk for kk in ftwr | is?(kk, 'log)]
+        order_a := minimumDegree(denfp)
+        c0 := - coefficient(nfp, order_a)/coefficient(denfp, order_a)
+        max_deg1 := boundAt0(twr, ftwr, c0, min_deg - order_a,
+                      -max_deg - order_a, x, k, lim)$ElementaryRischDE(R, F)
+        max(0, -(max_deg1 + order_a))
+
+    exp_upper_bound(nfp : UP, denfp : UP, scoeffs : List(UP),
+                    f : F, g : F, k : K, x : Symbol, lim : (F, LF) -> U
+                   ) : Z ==
+        c_degs := [degree(scoeff) for scoeff in scoeffs]
+        c_deg : Z := reduce(max, c_degs)
+        ftwr : List(K) := union(tower f, tower g)
+        twr : List(K) := [kk for kk in ftwr | is?(kk, 'log)]
+        c0 := -leadingCoefficient(nfp)/(leadingCoefficient denfp)
+        boundInf(twr, ftwr, c0, degree(denfp), degree(nfp), c_deg, x,
+                 k, lim)$ElementaryRischDE(R, F)
+
+    special_integrate2(nfp : UP, denfp : UP, denf: UP, ndenf : UP, f : F,
+                       k : K, x : Symbol, rr1 : RF, a1 : F,
+                       r1 : F, g : F, scoeffs : List(RF),
+                       scands : List(SREC), gexp : Z, deriv : UP -> UP,
+                       lim : (F, LF) -> U) : PSOL2 ==
+        nscoeffs : List(RF) := []
+        c_ans : List(RF) := []
+        for scoeff in scoeffs repeat
+            her := special_Hermite(scoeff, nfp, ndenf, denfp, deriv)
+            nscoeffs := cons(denfp*her.specpart, nscoeffs)
+            c_ans := cons(her.answer, c_ans)
+        rr1 := denfp*rr1
+        nscoeffs := reverse!(nscoeffs)
+        c_ans := reverse!(c_ans)
+        neg_deg : Z :=
+            is?(k, 'exp) =>
+                exp_lower_bound(nfp, denfp, rr1, nscoeffs, f, g, k, x, lim)
+            0
+        nfp1 : UP := nfp
+        inv_den1 : F := 1
+        inv_den : RF := 1
+        pscoeffs : List(UP) := []
+        if neg_deg > 0 then
+            mm := monomial(1, neg_deg::N)$UP
+            nscoeffs := [mm*nscoeff for nscoeff in nscoeffs]
+            rr1 := mm*rr1
+            ak := argument(k)(1)
+            nfp1 := nfp - ((neg_deg::F)*D(ak, x))::UP*denfp
+            inv_den := 1/mm::RF
+            inv_den1 := multivariate(inv_den, k)
+        pscoeffs : List(UP) := [retract(nscoeff)@UP for nscoeff in nscoeffs]
+        specp1 := retract(rr1)@UP
+        lc := cons(specp1, pscoeffs)
+        max_deg := exp_upper_bound(nfp1, denfp, lc, f, g, k, x, lim)
+        rsols := multi_SPDE(denfp, nfp1, lc, max_deg, deriv)$RDEaux(R, F)
+        vs := new(#scoeffs, 0)$Vector(F)
+        as := new(#scoeffs, 0)$Vector(F)
+        for rsol in rest(rsols) for c_an in c_ans for i in 1..#vs repeat
+            ac1 := c_an + inv_den*rsol.ans::RF
+            as(i) := multivariate(ac1, k)
+            vs(i) := multivariate(rsol.remainder::RF, k)
+        rr1f := multivariate(first(rsols).remainder::RF, k)
+        a1p := inv_den1*multivariate(first(rsols).ans::RF, k)
+        finish_special_integrate(rr1f, a1p, vs, as, scands, denf, gexp, k, x)
+
+    PSOL3 ==> Record(ans : F, defect : F, sol? : Boolean)
+
+    do_spde1(rr1 : RF, nfp : UP, k : K, der : UP -> UP) : PSOL3 ==
+        spec1u := retractIfCan(rr1)@Union(UP, "failed")
+        spec1u case "failed" => error "impossible 7"
+        spec1p := spec1u::UP
+        maxd := degree(spec1p) -$Z degree(nfp)
+        res1 := SPDEnocancel1(nfp, spec1p, maxd, der)
+        a1 := res1.ans
+        r2 := der(a1) + nfp*a1
+        af := multivariate(a1::RF, k)
+        def_f := multivariate(rr1 - r2::RF, k)
+        [af, def_f, not(res1.nosol)]
+
+    -- Case when denf = 1 and nf is not linear in a primitive
+    special_integrate1(nfp : UP, f : F, k : K, x : Symbol, rr1 : RF, a1 : F,
+                       r1 : F, g : F, ansp : F, scoeffs : List(RF),
+                       scands : List(SREC), gexp : Z, derivation : UP -> UP,
+                       lim : (F, LF) -> U) : PSOL2 ==
+        neg_deg : Z :=
+            is?(k, 'exp) =>
+                exp_lower_bound(nfp, 1, rr1, scoeffs, f, g, k, x, lim)
+            0
+        nfp1 : UP := nfp
+        inv_den1 : F := 1
+        if neg_deg > 0 then
+            mm := monomial(1, neg_deg::N)$UP
+            scoeffs := [mm*scoeff for scoeff in scoeffs]
+            rr1 := mm*rr1
+            ak := argument(k)(1)
+            nfp1 := nfp - ((neg_deg::F)*D(ak, x))::UP
+            inv_den1 := multivariate(1/mm::RF, k)
+        res2 := do_spde1(rr1, nfp1, k, derivation)
+        a1p := inv_den1*res2.ans
+        res2.sol? => [a1 + a1p, g, ansp, true]
+        rr1f := res2.defect
+        vs := new(#scoeffs, 0)$Vector(F)
+        as := new(#scoeffs, 0)$Vector(F)
+        for scoeff in scoeffs for i in 1..#scoeffs repeat
+            res2 := do_spde1(scoeff, nfp1, k, derivation)
+            as(i) := inv_den1*res2.ans
+            vs(i) := res2.defect
+        res3 := finish_special_integrate(rr1f, a1p, vs, as, scands, 1,
+                                         gexp, k, x)
+        not(res3.sol?) =>
+            neg_deg > 0 => [a1, r1, ansp, false]
+            [a1 + a1p, g - rr1f, ansp, false]
+        [a1 + res3.ans, g, ansp + res3.primpart, true]
+
+    get_scoeffs : (List(SREC), UP, K, RF -> RF) -> List(RF)
+
+    quadratic_log_erf_integrate(nf : UP, nfp : UP, rr1 : RF,
+          a1 : F, g : F, ansp : F, derivation : UP -> UP,
+          vlst : LF, ulst : LF, k : K, x : SE, lim : (F, LF) -> U) : PSOL2 ==
+        spec1u := retractIfCan(rr1)@Union(UP, "failed")
+        spec1u case "failed" => error "impossible 10"
+        spec1p := spec1u::UP
+        maxd := degree(spec1p) -$Z degree(nfp)
+        res2 := SPDEnocancel1(nfp, spec1p, maxd, derivation)
+        a1 := a1 + multivariate(res2.ans::RF, k)
+        not(res2.nosol) => return [a1, g, ansp, true]
+        spec1p := spec1p - derivation(res2.ans) -nfp*res2.ans
+        degree(spec1p) >= degree(nfp) => error "impossible 8"
+        r1 := g - multivariate(spec1p::RF, k)
+        r := leadingCoefficient(nf)
+        s := coefficient(nf, 1)
+        t := coefficient(nf, 0)
+        f_denr := factor(denom(r))$DenominatorIntegration(R)
+        f_numr := factor(numer(r))$DenominatorIntegration(R)
+        fl1 := [fac.factor for fac in factors(f_denr) |
+                odd?(fac.exponent)]
+        fl2 := [fac.factor for fac in factors(f_numr) |
+                odd?(fac.exponent)]
+        pip := reduce(_*, fl1, 1) *$P reduce(_*, fl2, 1)
+        pif := pip::F
+        l_pifp := D(pif, x)/pif
+        uvu0 := get_uv(l_pifp, vlst, ulst, k, x)
+        uvu0 case "failed" => [a1, r1, ansp, false]
+        uv0 := uvu0::UV_REC
+        fl1 := [(fac.factor)^(((fac.exponent - 1) quo 2)::N)
+                for fac in factors(f_denr)]
+        fl2 := [(fac.factor)^(((fac.exponent + 1) quo 2)::N)
+                for fac in factors(f_numr)]
+        G_den := reduce(_*, fl1, 1)
+        G_num := reduce(_*, fl2, 1)
+        G := G_den::F / G_num::F
+        -- u_r : P := unit(f_numr)
+        unG := retract(unit(f_numr))@R
+        kf := k::F
+        phi : F :=
+            D(r, x) ~= 0 =>
+                piv := D(G, x) - G*l_pifp/(2::F)
+                coefficient(spec1p, 1)/piv
+            piv := G*D(kf, x) + unG*D(s, x)/(2::F*G)
+            coefficient(spec1p, 0)/piv
+        vlst1 : LF := []
+        ulst1 : LF := []
+        for v in vlst for u in ulst repeat
+            if v ~= kf then
+                vlst1 := cons(v, vlst1)
+                ulst1 := cons(u, ulst1)
+        r4 : F := 4::F*r
+        c0 := t - s^2/r4
+        c1 := s/r4
+        c2 : F := 1/r4
+        lv : LF :=
+            D(r, x) ~= 0 => concat([c1, c2]$LF, vlst1)
+            cons(c1, vlst1)
+        vecf := vector([D(v, x) for v in lv])$Vector(F)
+        sol_rec := solveLinearlyOverQ(vecf, D(c0, x)
+                                     )$IntegerLinearDependence(F)
+        sol_rec.particular case "failed" => [a1, r1, ansp, false]
+        sol0 := sol_rec.particular::Vector(Q)
+        empty?(sol_rec.basis)$List(Vector(Q)) =>
+            if D(r, x) ~= 0 then
+                if sol0(1)^2 ~= sol0(2) then return [a1, r1, ansp, false]
+            rcu := (retractIfCan(sol0(1)/(2::Q))$Q)@Union(Z, "failed")
+            rcu case "failed" => [a1, r1, ansp, false]
+            -- now we have a single candidate
+            ri := rcu::Z
+            nn := nf + monomial(ri::F, 1)
+            cands := gammas1(nn, rcu::Z, 1, 1, 0, 1, vlst, ulst, k, x, [])
+            derivation3 : RF -> RF := z1 +->
+               (derivation(numer(z1))*denom(z1) -
+                   numer(z1)*derivation(denom(z1)))/(denom(z1)*denom(z1))
+            scoeffs := get_scoeffs(cands, 1, k, derivation3)
+            rr1 := spec1p::RF
+            f := multivariate(nf::RF, k)
+            special_integrate1(nfp, f, k, x, rr1, a1, r1, g,
+                       ansp, scoeffs, cands, 0, derivation, lim)
+        D(r, x) = 0 =>
+            #(sol_rec.basis) > 1 => error "impossible 11"
+            -- single line of solutions
+            [a1, r1, ansp, false]
+        #(sol_rec.basis) = 1 =>
+            [a1, r1, ansp, false]
+        [a1, r1, ansp, false]
+
     decompose1(num : UP, den : UP, eidens : List(UP)) : List(UP) ==
         f1 := (den exquo reduce(_*, eidens))::UP
         if f1 ~= 1 then
@@ -975,6 +1435,49 @@ ElementaryRischDEX(R) : Exports == Implementation where
             poly_cor := poly_cor + ar1.polypart
         [ansp, lp_cor, poly_cor, sp_cor]
 
+    gamma_denominator(denf : UP, k : K
+                     ) : Record(radicand : UP, exponent : Z)  ==
+        s_deg : Z := 0
+        denf1 := denf
+        if is?(k, 'exp) then
+            s_deg := minimumDegree(denf)
+            denf1 := (denf exquo monomial(1, s_deg::N)$UP)::UP
+        denf1 = 1 =>
+            s_deg = 0 => [1, 0]
+            [monomial(1, 1)$UP, s_deg]
+        fnf := squareFree(denf1)
+        nffacs := factors(fnf)
+        lexp := [fac1.exponent for fac1 in nffacs]
+        l1 := gcd(cons(s_deg, lexp))
+        l1 = 1 => [denf, 1]
+        gden1 := reduce(_*, [my_exp(fac1.factor, (fac1.exponent quo l1)::N)
+                              for fac1 in nffacs]$List(UP))
+        if s_deg > 0 then
+            gden1 := monomial(1, (s_deg quo l1)::N)$UP*gden1
+        [gden1, l1]
+
+    -- Remove normal part of denomianator of r via integration
+    -- by parts, leaving only special denominator
+    -- normal prime factors of denom(r) must divide ndenf
+    special_Hermite(r : RF, nfp : UP, ndenf : UP, denfp : UP,
+                   deriv : UP -> UP) : SHER ==
+        ad := denr := denom(r)
+        numr := numer(r)
+        an : UP := 0
+        mult : UP := 1
+        repeat
+            hh1 := gcd(denr, ndenf)
+            degree(hh1) = 0 => return [denfp*an/ad, numr/denr]
+            ee := extendedEuclidean(nfp, hh1, numr
+                                   )::Record(coef1 : UP, coef2 : UP)
+            nn := ee.coef1 rem hh1
+            an := an + mult*nn
+            nfp1 := nfp - ((denfp*deriv(denr)) exquo denr)::UP
+            numr := numr - nfp1*nn - deriv(denfp*nn)
+            numr := (numr exquo hh1)::UP
+            denr := (denr exquo hh1)::UP
+            mult := mult*hh1
+
     ei_int_log(f : F, ng : UP, x : SE, k : K,
                lim : (F, LF) -> U, ext : (F, F) -> UEX) : PSOL2 ==
         ngu := multivariate(ng::RF, k)
@@ -1028,6 +1531,71 @@ ElementaryRischDEX(R) : Exports == Implementation where
             rh := rh + kfm*res1.right
             is_sol := is_sol and res1.sol?
         [r1, rh, ansp, is_sol]
+
+    get_scoeff(scand : SREC, denf : UP, k : K,
+               der : RF -> RF, res : List(RF)) : List(RF) ==
+        nn := scand.factor
+        r0 := scand.ratpart
+        v0 := scand.v_part
+        cfac := scand.alg_part
+        u0 := scand.u_part
+        nf1 := scand.new_f
+        if r0 ~= 0 then
+            ak := argument(k)(1)
+            u0 := u0*ak^r0
+        u_exp := scand.exponent
+        vshift := scand.shift_part
+        (d := scand.degree) = 1 =>
+            nfp := der(nf1)
+            scand.coeff ~= 1 or cfac ~= 0 => error "impossible coeff"
+            coeff1 := u0::UP*nfp/nf1
+            coeff1_r := (monomial(1,1)$UP::RF)^u_exp*coeff1
+            cons(coeff1_r, res)
+        d > 1 =>
+            cfac ~= 0 => error "unimplemented"
+            l1 := (d - 1)::N
+            nf2 := scand.radicand
+            gt : RF := der(nf2)*u0::UP*(monomial(1,1)$UP::RF)^u_exp
+            for i in 1..l1 repeat
+                res := cons(gt, res)
+                gt := gt*nf2
+            res
+        error "unimplemented"
+
+    get_scoeffs(scands : List(SREC), denf : UP,
+                k : K, der : RF -> RF) : List(RF) ==
+        res : List(RF) := []
+        for scand in scands repeat
+            res := get_scoeff(scand, denf, k, der, res)
+        reverse!(res)
+
+    get_prims(scand : SREC, denf : UP, denf1 : UP, gexp : Z,
+              k : K) : List(F) ==
+        nn := scand.factor
+        cfac := scand.alg_part
+        vshift := scand.shift_part
+        uc := scand.coeff
+        nf : RF := scand.new_f
+        f := multivariate(nf, k)
+        (d := scand.degree) = 1 => [exp(-vshift)*Ei(f)]
+        d > 1 =>
+            cfac ~= 0 => error "unimplemented"
+            gpow := (gexp exquo d)::Z
+            l1 := (d - 1)::N
+            lf := d::F
+            res : List F := []
+            nf2 := scand.radicand
+            for j in 1..l1 repeat
+                j1 := j::F/lf
+                c1 := (-uc)^(-j1)*exp(-vshift)/lf
+                f1 :=
+                    2*j = d =>
+                        ff := multivariate(nf2::RF, k)
+                        c1*sqrt(pi()$F)*erf(sqrt(-uc)*ff)
+                    -c1*Gamma(j1, -f)
+                res := cons(f1, res)
+            reverse!(res)
+        error "unimplemented"
 
     ei_int(n : Z, f : F, g : F, x : SE,
            lim : (F, LF) -> U, ext : (F, F) -> UEX) : PSOL2 ==
@@ -1096,7 +1664,31 @@ ElementaryRischDEX(R) : Exports == Implementation where
             [a1, r1, ansp + res5.primpart, res5.sol?]
         rr1 := her.polypart::RF + her.specpart
         rr1 := rr1/(denfp::RF)
+        (gden1, gexp) := gamma_denominator(denf, k)
+        derivation2 : UP -> UP := z1 +-> differentiate(z1,
+               (z2 : F) : F +-> differentiate(z2, x), dk)
+        denf_split := split(denf, derivation2)$MonomialExtensionTools(F, UP)
+        ndenf := denf_split.normal
+        her2 := special_Hermite(rr1, nfp, ndenf, denfp, derivation2)
+        a1 := a1 + multivariate(her2.answer, k)
+        rr1 := her2.specpart
         rr1 = 0 => [a1, g, ansp, true]
+        denf = 1 and degree(nf) = 2 and is?(k, 'log) =>
+            quadratic_log_erf_integrate(nf, nfp, rr1, a1, g, ansp,
+                                        derivation, vlst, ulst, k, x, lim)
+        scands := special_candidates(nf, denf, gden1, gexp, vlst, ulst, k, x)
+        derivation3 : RF -> RF := z1 +->
+            (derivation2(numer(z1))*denom(z1) -
+                numer(z1)*derivation2(denom(z1)))/(denom(z1)*denom(z1))
+        scoeffs := get_scoeffs(scands, denf, k, derivation3)
+        base_case := symbolIfCan(k) case SE
+        denf = 1 and degree(nfp) > 0 =>
+            special_integrate1(nfp, f, k, x, rr1, a1, r1, g, ansp, scoeffs,
+                               scands, gexp, derivation, lim)
+        degree(denf) > 0 =>
+            res3 := special_integrate2(nfp, denfp, denf, ndenf, f, k, x,
+                      rr1, a1, r1, g, scoeffs, scands, gexp, derivation2, lim)
+            [a1 + res3.ans, r1 + res3.right, ansp + res3.primpart, res3.sol?]
         if denf = 1 and is?(k, 'log) and degree(nf) = 1 then
             spec1u := retractIfCan(rr1)@Union(UP, "failed")
             spec1u case "failed" => error "impossible 9"
