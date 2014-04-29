@@ -421,8 +421,8 @@ compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
 outputComp(x,e) ==
   u:=comp(['_:_:, x, $OutputForm], $OutputForm, e) => u
   x is ['construct,:argl] =>
-    [['LIST, :[([.,.,e] := outputComp(x, e)).expr for x in argl]],_
-           $OutputForm, e]
+    [['LIST, ['QUOTE, 'CONCAT], :[([.,.,e] := outputComp(x, e)).expr
+        for x in argl]], $OutputForm, e]
   (v:= get(x,"value",e)) and (v.mode is ['Union,:l]) =>
     [['coerceUn2E, x, v.mode], $OutputForm, e]
   SAY ["outputComp strange x ", x]
@@ -436,7 +436,7 @@ compForm1(form is [op,:argl],m,e) ==
               [[op, u.expr], m, e]
           SAY ["compiling call to error ", argl]
           u := outputComp(arg, e) =>
-              [[op, ['LIST, 'mathprint, u.expr]], m, e]
+              [[op, ['LIST, ['QUOTE, 'mathprint], u.expr]], m, e]
           nil
       SAY ["compiling call to error ", argl]
       nil
