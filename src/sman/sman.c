@@ -491,7 +491,7 @@ exec_command_env(char *command,char ** env)
 {
   char new_command[512];
   sprintf(new_command, "exec %s", command);
-  execle("/bin/sh","/bin/sh", "-c", new_command, 0, env);
+  execle("/bin/sh","/bin/sh", "-c", new_command, NULL, env);
 }
 
 static SpadProcess *

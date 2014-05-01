@@ -224,7 +224,7 @@ main(int argc, char *argv[])
         program = strdup("/bin/sh");
       else
         program = strdup (program);
-      execlp( program,program, 0);
+      execlp( program,program, NULL);
       perror("clef trying to execlp the default child");
       fprintf(stderr, "Process --> %s\n", program);
     }
