@@ -202,8 +202,8 @@ fromHeading htPage ==
   IFCDR domname => ['" {\em from} ", :dbConformGen domname]
   htpProperty(htPage,'fromHeading)
 
-pickitForm(form,uarg) ==
-  conform2StringList(form,FUNCTION dbConform,FUNCTION conformString,uarg)
+-- pickitForm(form,uarg) ==
+--   conform2StringList(form,FUNCTION dbConform,FUNCTION conformString,uarg)
 
 conform2StringList(form, opFn, argFn) ==
   [op1,:args] := form
