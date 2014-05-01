@@ -4769,3 +4769,130 @@ Verify the result.
 }{
 \spadcommand{e*e-e \free{e}}
 }
+
+% *********************************************************************
+\head{section}{Matrix Manipulation}{ugMatrixManipulation}
+% *********************************************************************
+
+This section shows some examples on selecting various (rectangular) submatrices
+of matrices. In the numerics literature, these operations are usually referred
+to as slicing. Apart from indexing matrices by two integers for retrieving single
+elements, it is possible to use lists of integers (\spadtype{List(Integer)}),
+segments (\spadtype{Segment(Integer)}) and list of segments (\spadtype{List(Segment(Integer))})
+to select slices like whole rows, columns or submatrices.
+
+\xtc{
+First, we build a simple test matrix to show the above-mentioned manipulations:
+}{
+\spadcommand{m := matrix([[11, 12, 13, 14], [21, 22,23, 24], [31, 32, 33, 34]]) \bound{m}}
+}
+
+\xtc{
+Select the top right two by two submatrix by slicing using segments:
+}{
+\spadcommand{m(1..2, 3..4) \free{m}}
+}
+
+\xtc{
+Having a nonzero step size in the segment is also supported:
+}{
+\spadcommand{m(1..2, 1..3 by 2) \free{m}}
+}
+
+\xtc{
+Indexing by lists works as expected, returning all elements having index pairs
+from the outer product of both lists:
+}{
+\spadcommand{m([1,3], [2,4]) \free{m}}
+}
+
+\xtc{
+Selecting single elements by any index type other than \spadtype{Integer}
+for both, the row and column index, will not give the respective element but
+a 1 times 1 matrix containing it:
+}{
+\spadcommand{m(1, 2) \free{m}}
+\spadcommand{m([1], [2]) \free{m}}
+\spadcommand{m(1, [2]) \free{m}}
+\spadcommand{m(1, 2..2) \free{m}}
+\spadcommand{m(1, [2..2]) \free{m}}
+}
+
+\xtc{
+It is possible to use lists of segments to select multiple
+submatrices which get stacked together forming the result returned:
+}{
+\spadcommand{m([1..2], [1, 3..4]) \free{m}}
+}
+
+\xtc{
+Use overlapping segments to repeat elements:
+}{
+\spadcommand{m([1..2], [3..4, 3..4]) \free{m}}
+}
+
+\xtc{
+It is even possible to mix any of the valid index constructs in the selection
+of rows and columns:
+}{
+\spadcommand{m(2, [1,4]) \free{m}}
+\spadcommand{m([1,2,3], 2..3) \free{m}}
+\spadcommand{m([1,2], [1..3, 4]) \free{m}}
+}
+
+\xtc{
+Assignment to a submatrix using slicing syntax is supported, too:
+}{
+\spadcommand{m([1..2], [3..3]) := m([1,2], [2]) \bound{m}}
+\spadcommand{m \free{m}}
+}
+
+Note that assignment currently does not check for overlapping segments,
+and the last assignments wins. However, overlapping case should be
+considered undefined anyway.
+
+Another caveat shows up when assigning single elements.
+
+\xtc{
+Selecting the entry by any index type other than two times an \spadtype{Integer}
+requires assignment of a matrix type:
+}{
+\spadcommand{m([2], [2]) := matrix([[4]]) \bound{m}}
+\spadcommand{m \free{m}}
+}
+
+By using the functions \spadfun{rowSlice} and \spadfun{colSlice} it is
+possible to obtain for a given matrix two special slicing objects that
+when used will select all elements along a colum or row respectively
+(\spadfun{rowSlice} varies row index giving a column).
+The advantage of using these is that no information about the actual
+matrix size in necessary.
+
+\xtc{
+It is easily possible to select the second and fourth columns
+of a given matrix:
+}{
+\spadcommand{r := rowSlice(m) \bound{r}}
+\spadcommand{m(r, 2) \free{m}}
+\spadcommand{m(r, 4) \free{m}}
+}
+
+\xtc{
+Assignment of course works the same way. The following snippet shows
+simple row operations as used in Gaussian elimination:
+}{
+\spadcommand{c := colSlice(m) \bound{c}}
+\spadcommand{m := m :: Matrix(Fraction(Integer))}
+\spadcommand{m(2, c) := m(2, c) - m(2,1)/m(1,1) * m(1, c) \free{m}}
+\spadcommand{m(3, c) := m(3, c) - m(3,1)/m(1,1) * m(1, c) \free{m}}
+\spadcommand{m(3, c) := m(3, c) - m(3,2)/m(2,2) * m(2, c) \free{m}}
+\spadcommand{m \free{m}}
+}
+
+\xtc{
+Selecting the whole matrix:
+}{
+\spadcommand{r := rowSlice(m) \bound{r}}
+\spadcommand{c := colSlice(m) \bound{c}}
+\spadcommand{m(r,c) \free{m}}
+}
