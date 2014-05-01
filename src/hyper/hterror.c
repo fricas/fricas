@@ -49,7 +49,7 @@ jmp_buf jmpbuf;
 /*
  * This file is the error handling routine in FriCAS. The main routine is
  * called htperror(): arguments: msg - like perror it accepts an error
- * message to be printed errno - the errno which occurred. This is so an
+ * message to be printed err_no - the errno which occurred. This is so an
  * appropriate error message can be printed.
  *
  * The prints out the page name, and then the filename in which the error
@@ -204,18 +204,18 @@ token_name(int type)
     }
 }
 void
-htperror(char *msg, int errno)
+htperror(char *msg, int err_no)
 {
     char obuff[4096];
 
     /* The first thing I do is create the error message */
 
-    if (errno <= Numerrors) {
-        fricas_sprintf_to_buf2(obuff, "%s:%s\n", msg, errmess[errno]);
+    if (err_no <= Numerrors) {
+        fricas_sprintf_to_buf2(obuff, "%s:%s\n", msg, errmess[err_no]);
     }
     else {
         fricas_sprintf_to_buf1(obuff, "%s:\n", msg);
-        fprintf(stderr, "Unknown error type %d\n", errno);
+        fprintf(stderr, "Unknown error type %d\n", err_no);
     }
     fprintf(stderr, "%s", obuff);
 

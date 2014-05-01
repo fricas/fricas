@@ -123,6 +123,7 @@ norm_dist(void)
   rad = -2.0*log(ss)/ss;
   pert.x = v1 * sqrt(rad);
   pert.y = v2 * sqrt(rad);
+  pert.z = 0.0;
 
   return(pert);
 }
