@@ -794,7 +794,6 @@ pred2English x ==
       (_> . " > ") (_>_= . " >= ") (_=  . " = ") (_^_= . " _^_= ")))) =>
         concat(pred2English a,translation,pred2English b)
   x is ['ATTRIBUTE, form] => BREAK()
-    concat("attribute: ",form2String form)
   form2String x
 
 mathObject2String x ==
