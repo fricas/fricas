@@ -176,6 +176,30 @@ userError x == errorSupervisor($UserError,x)
 
 error(x) == errorSupervisor($AlgebraError,x)
 
+nice_failure_msg(val, branch, umode) ==
+    uname := devaluate(umode)
+    of1 := coerceUn2E(val, uname);
+    str1 := prefix2String(of1);
+    STRCONC(str1,
+            '" of mode ", outputDomainConstructor(umode),
+              '" cannot be coerced to mode ",
+                outputDomainConstructor(branch))
+
+check_union_failure_msg(val, branch, umode) ==
+    got_str1 := false
+    CATCH('top_level, CATCH('SPAD_READER, (
+           str1 := nice_failure_msg(val, branch, umode);
+           got_str1 := true)))
+    got_str1 => str1
+    str1 := MAKE_-REASONABLE(STRINGIMAGE val)
+    STRCONC(str1,
+            '" of mode ", STRINGIMAGE(devaliate(umode)),
+              '" cannot be coerced to mode ",
+                STRINGIMAGE(devaliate(branch)))
+
+coerce_failure_msg(val, submode, mode) ==
+    check_union_failure_msg(val, submode, mode)
+
 IdentityError(op) ==
     error(["No identity element for reduce of empty list using operation",op])
 
