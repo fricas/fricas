@@ -89,13 +89,13 @@ Parts of the datatabase which was not pre-loaded is still
 \subsection{Database Files}
 
 Database files are very similar to KAF files except that there
-is an optimization (currently broken) which makes the first
+is an optimization which makes the first
 item a pair of two numbers. The first number in the pair is
 the offset of the key-value table, the second is a time stamp.
 If the time stamp in the database matches the time stamp in
 the image the database is not needed (since the internal hash
 tables already contain all of the information). When the database
-is built the time stamp is saved in both the gcl image and the
+is built the time stamp is saved in both the Lisp image and the
 database.
 |#
 
