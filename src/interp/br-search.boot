@@ -716,11 +716,6 @@ string2Constructor x ==
   not STRINGP x => x
   IFCAR HGET($lowerCaseConTb, INTERN DOWNCASE x) or x
 
-conLowerCaseConTranTryHarder x ==
-  IDENTP x => IFCAR HGET($lowerCaseConTb,DOWNCASE x) or x
-  atom x   => x
-  [conLowerCaseConTranTryHarder y for y in x]
-
 constructorSearchGrep(filter,key,kind) ==
   dbSearch(grepConstruct(filter,key),kind,filter)
 

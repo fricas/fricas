@@ -175,7 +175,7 @@ addNewDomain(domain,e) ==
 augModemapsFromDomain(name,functorForm,e) ==
   member(IFCAR name or name, $DummyFunctorNames) => e
   name=$Category or isCategoryForm(name,e) => e
-  member(name,curDomainsInScope:= getDomainsInScope e) => e
+  member(name, getDomainsInScope e) => e
   if u:= GETDATABASE(opOf functorForm,'SUPERDOMAIN) then
     e:= addNewDomain(first u,e)
     --need code to handle parameterized SuperDomains
