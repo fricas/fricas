@@ -1249,7 +1249,8 @@ compCoerce1(x,m',e) ==
   pred:=isSubset(m',T.mode,e) =>
     gg:=GENSYM()
     pred:= substitute(gg,"*",pred)
-    code := ['PROG1, ['LET, gg, T.expr], ['check_subtype, pred, MKQ m', gg]]
+    code := ['PROG1, ['LET, gg, T.expr],
+                     ['check_subtype2, pred, MKQ m', MKQ T.mode, gg]]
     [code,m',T.env]
 
 coerceByModemap([x,m,e],m') ==

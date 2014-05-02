@@ -719,9 +719,14 @@
 (defmacro |check_subtype| (pred submode val)
    `(|assert| ,pred (coerce-failure-msg ,val ,submode)))
 
+(defmacro |check_subtype2| (pred submode mode val)
+   `(|assert| ,pred (|coerce_failure_msg| ,val ,submode ,mode)))
+
 (defmacro |check_union| (pred branch val)
    `(|assert| ,pred (coerce-failure-msg ,val ,branch )))
 
+(defmacro |check_union2| (pred branch umode val)
+   `(|assert| ,pred (|check_union_failure_msg| ,val ,branch ,umode)))
 
 ;;; Needed by interpreter
 (defmacro REPEAT (&rest L) (|expandREPEAT| L))
