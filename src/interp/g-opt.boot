@@ -323,11 +323,7 @@ optRECORDCOPY ["RECORDCOPY",name,len] ==
 
 optSuchthat [.,:u] == ["SUCHTHAT",:u]
 
-optMINUS u ==
-  u is ['MINUS,v] =>
-    NUMBERP v => -v
-    u
-  u
+optMINUS u == BREAK()
 
 opt_minus_SI u ==
   u is ['minus_SI, v] =>

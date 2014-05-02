@@ -1161,9 +1161,9 @@ coerce(T,m) ==
   T':= coerceSubset(T,m) => T'
   T':= coerceHard(T,m) => T'
   T.expr = "$fromCoerceable$" or isSomeDomainVariable m => nil
-  stackMessage fn(T.expr,T.mode,m) where
-      -- if from from coerceable, this coerce was just a trial coercion
+      -- if from coerceable, this coerce was just a trial coercion
       -- from compFormWithModemap to filter through the modemaps
+  stackMessage fn(T.expr,T.mode,m) where
     fn(x,m1,m2) ==
       ["Cannot coerce","%b",x,"%d","%l","      of mode","%b",m1,"%d","%l",
         "      to mode","%b",m2,"%d"]
@@ -1233,9 +1233,6 @@ compAtSign(["@",x,m'],m,e) ==
 compCoerce(["::",x,m'],m,e) ==
   e:= addDomain(m',e)
   T:= compCoerce1(x,m',e) => coerce(T,m)
-  getmode(m',e) is ["Mapping",["UnionCategory",:l]] =>
-    T:= (or/[compCoerce1(x,m1,e) for m1 in l]) or return nil
-    coerce([T.expr,m',T.env],m)
 
 compCoerce1(x,m',e) ==
   T:= comp(x,m',e) or comp(x,$EmptyMode,e) or return nil

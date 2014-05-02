@@ -448,7 +448,6 @@
         ((MEMBER (CAR X) Y :test #'equal) (S+ (CDR X) Y))
         ((S+ (CDR X) (CONS (CAR X) Y)))))
 
-(defun S* (l1 l2) (INTERSECTION l1 l2 :test #'equal))
 (defun S- (l1 l2) (set-difference l1 l2 :test #'equal))
 
 (DEFUN PREDECESSOR (TL L)
@@ -864,25 +863,6 @@
 ;  by having no transform for the 3rd argument, it is simply not printed
 
 (MAKEPROP '|compFormWithModemap| '/TRANSFORM '(& * * & *))
-
-(defun UNVEC (X)
-  (COND ((REFVECP X) (CONS '$ (VEC_TO_TREE X)))
-        ((ATOM X) X)
-        ((CONS (UNVEC (CAR X)) (UNVEC (CDR X))))))
-
-(defun DROPENV (X) (AND X (LIST (CAR X) (CADR X))))
-
-(defun SHOWBIND (E)
-  (do ((v e (cdr v))
-       (llev 1 (1+ llev)))
-      ((not v))
-    (PRINT (LIST "LAMBDA LEVEL" LLEV))
-    (do ((w (car v) (cdr w))
-         (clev 1 (1+ clev)))
-        ((not w))
-      (PRINT (LIST "CONTOUR LEVEL" CLEV))
-      (PRINT (mapcar #'car (car W))))))
-
 
 ;;; A "resumable" break loop for use in trace etc. Unfortunately this
 ;;; only worked for CCL. We need to define a Common Lisp version. For

@@ -491,30 +491,10 @@ MKPFFLATTEN1(l, op, r) ==
     MKPFFLATTEN1(rest l, op, APPEND(r, (x is [=op, :r1] => r1; [x])))
 
 MKPF1(l, op) ==
-    op = "PLUS" =>
-        l := S_-(l, '(0 (ZERO)))
-        NULL(l) => 0
-        rest(l) => ["PLUS", :l]
-        first(l)
-    op = "TIMES" =>
-        not(NULL(S_*(l, '(0 (ZERO))))) => 0
-        l := S_-(l, '(1 (ONE)))
-        NULL(l) => 1
-        rest(l) => ["TIMES", :l]
-        first(l)
-    op = "QUOTIENT" =>
-        BREAK()
-        l is [x, y] =>
-            EQL(x, 0) => 0
-            EQL(y, 1) => x
-            ["QUOTIENT", :l]
-        FAIL()
-    op = "MINUS" =>
-        rest(l) => FAIL()
-        x := first(l)
-        NUMBERP(x) => -x
-        EQCAR(x, "MINUS") => first(rest(x))
-        ["MINUS", :l]
+    op = "PLUS" => BREAK()
+    op = "TIMES" => BREAK()
+    op = "QUOTIENT" => BREAK()
+    op = "MINUS" => BREAK()
     op = "DIFFERENCE" => BREAK()
     op = "EXPT" =>
         l is [x, y] =>

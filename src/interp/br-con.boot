@@ -127,10 +127,7 @@ reportCategory(conform,typeForm,arg) ==
        htSay('"categories:")
        bcConPredTable(conlist,opOf conform)
        htSay '"\newline "
-  if attrlist then
-    if conlist then htSay '" and "
-    reportAO('"attribute",attrlist)
-    htSay '"\newline "
+  if attrlist then BREAK()
   if oplist then
     if conlist or attrlist then htSay '" and "
     reportAO('"operation",oplist)
