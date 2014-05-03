@@ -84,8 +84,7 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
       ++ guarantee that all given points are interpolated correctly:
       ++ unattainable points may make this impossible.
 
-@
-
+)if false
 \begin{ToDo}
   The following function could be moved to [[FFFGF]], parallel to
   [[generalInterpolation]].  However, the reason for moving
@@ -98,8 +97,8 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
 
   Thus, maybe it would be better to move [[fffg]] to a separate package?
 \end{ToDo}
+)endif
 
-<<package FFFG FractionFreeFastGaussian>>=
     interpolate : (List Fraction D, List Fraction D, NonNegativeInteger)
                 -> Fraction SUP D
       ++ \spad{interpolate(xlist, ylist, deg)} returns the rational
@@ -249,12 +248,10 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
 -- general - suitable for functions f - trying all possible degree combinations
 -------------------------------------------------------------------------------
 
-@
 
-The following function returns the lexicographically next vector with
-non-negative components smaller than [[p]] with the same sum as [[v]].
+    -- The following function returns the lexicographically next vector with
+    -- non-negative components smaller than [[p]] with the same sum as [[v]].
 
-<<package FFFG FractionFreeFastGaussian>>=
     nextVector!(p : NonNegativeInteger, v : List NonNegativeInteger)
                 : Union("failed", List NonNegativeInteger) ==
       n := #v
@@ -281,7 +278,8 @@ non-negative components smaller than [[p]] with the same sum as [[v]].
         v.(pos-1) := (v.(pos-1) - 1)::NonNegativeInteger
 
       v
-@
+
+)if false
 
 The following function returns the stream of all possible degree vectors,
 beginning with [[v]], where the degree vectors are sorted in reverse
@@ -289,17 +287,16 @@ lexicographic order. Furthermore, the entries are all less or equal to [[p]]
 and their sum equals the sum of the entries of [[v]]. We assume that the
 entries of [[v]] are also all less or equal to [[p]].
 
-<<package FFFG FractionFreeFastGaussian>>=
+)endif
+
     vectorStream(p : NonNegativeInteger, v : List NonNegativeInteger)
                  : Stream List NonNegativeInteger == delay
       next := nextVector!(p, copy v)
       (next case "failed") => empty()$Stream(List NonNegativeInteger)
       cons(next, vectorStream(p, next))
-@
 
-[[vectorStream2]] skips every second entry of [[vectorStream]].
+    -- [[vectorStream2]] skips every second entry of [[vectorStream]].
 
-<<package FFFG FractionFreeFastGaussian>>=
     vectorStream2(p : NonNegativeInteger, v : List NonNegativeInteger)
                   : Stream List NonNegativeInteger == delay
       next := nextVector!(p, copy v)
@@ -307,7 +304,8 @@ entries of [[v]] are also all less or equal to [[p]].
       next2 := nextVector!(p, copy next)
       (next2 case "failed") => cons(next, empty())
       cons(next2, vectorStream2(p, next2))
-@
+
+)if false
 
 If [[f]] consists of two elements only, we can skip every second degree vector:
 note that [[fffg]], and thus also [[generalInterpolation]], returns a matrix
@@ -327,7 +325,7 @@ reverse lexicographic order, i.e., $m, m, \dots, m, k, 0, 0, \dots$, where $m$
 is [[maxEta]] and $k$ is the remainder of [[sumEta]] divided by
 [[maxEta]]. This is done by the following code:
 
-<<package FFFG FractionFreeFastGaussian>>=
+)endif
 
     initialVector(sum : NonNegativeInteger, maxEta : NonNegativeInteger,
                  n : NonNegativeInteger)_
@@ -377,7 +375,8 @@ is [[maxEta]] and $k$ is the remainder of [[sumEta]] divided by
       if zero?(M.(2, 1)) then M.(1, 2)/M.(2, 2)
                         else M.(1, 1)/M.(2, 1)
 
-@
+)if false
+
 Because of Lemma~5.3, [[M.1.(2, 1)]] and [[M.1.(2, 2)]] cannot both vanish,
 since [[eta_sigma]] is always $\sigma$-normal by Theorem~7.2 and therefore also
 para-normal, see Definition~4.2.
@@ -385,11 +384,9 @@ para-normal, see Definition~4.2.
 Because of Lemma~5.1 we have that [[M.1.(*, 2)]] is a solution of the
 interpolation problem, if [[M.1.(2, 1)]] vanishes.
 
-<<package FFFG FractionFreeFastGaussian>>=
 -------------------------------------------------------------------------------
 -- fffg
 -------------------------------------------------------------------------------
-@
 
 [[recurrence]] computes the new matrix $M$, according to the following formulas
 (cf. Table~2 in Beckermann and Labahn):
@@ -413,7 +410,8 @@ Since we do not need the matrix $\mathbf M_{\sigma}$ anymore, we drop the index
 and update the matrix destructively.  In the following, we write [[Ck]] for
 $c_{\sigma, \sigma}$.
 
-<<package FFFG FractionFreeFastGaussian>>=
+)endif
+
 -- a major part of the time is spent here
     recurrence(M : Matrix SUP D, pi : NonNegativeInteger, m : NonNegativeInteger,
                r : Vector D, d : D, z : SUP D, Ck : D, p : Vector D) : Matrix SUP D ==

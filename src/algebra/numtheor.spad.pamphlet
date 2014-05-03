@@ -399,9 +399,8 @@ IntegerNumberTheoryFunctions() : Exports == Implementation where
     for entry in factors factor n repeat
       r := ((entry.factor - 1) /$RN entry.factor) * r
     numer(n * r)
-@
 
-<<package INTHEORY IntegerNumberTheoryFunctions>>=
+
   divisors n ==
     oldList : List Integer := [1]
     for f in factors factor n repeat
@@ -413,7 +412,8 @@ IntegerNumberTheoryFunctions() : Exports == Implementation where
       oldList := newList
 
     sort((i1 : Integer, i2 : Integer) : Boolean +-> i1 < i2, oldList)
-@
+
+)if false
 
 [[divisors]] generates the list of positive divisors of an integer. We proceed
 in an inductive manner : [[oldList]] contains the list of all possible divisors
@@ -421,28 +421,8 @@ containing only the first few factors of [[n]]. We then prepend all possible
 divisors containing the new factor [[f]] by multiplying the [[oldList]] with
 all possible positive powers of [[f]].
 
-Up to [[patch--50]] the last line read
-\begin{verbatim}
-    sort(#1 < #2, newList)
-\end{verbatim}
-which fails when [[n]] equals $1$ or $-1$, since in this case %
-[[factors factor n]] returns the empty list, and thus the loop in which
-[[newlist]] is initialised is never entered. (issue 340)
+)endif
 
-Furthermore, we took the opportunity to make the function slightly more
-efficient. Up to [[patch--50]], we had
-\begin{verbatim}
-    ...
-      newList : List Integer := []
-      for k in 0..f.exponent repeat
-        ...
-\end{verbatim}
-
-Thus, the [[oldList]] was copied element by element every time a new factor was
-added.  Since we \emph{prepend} the new elements of [[newList]], the two list
-can safely share memory.
-
-<<package INTHEORY IntegerNumberTheoryFunctions>>=
   numberOfDivisors n ==
     n = 0 => 0
     */[1+entry.exponent for entry in factors factor n]

@@ -117,12 +117,11 @@ StreamExponentialSeriesOperations(Coef) : Exports == Implementation
       integrate(a : Coef, x : Stream Coef) == concat(a, x)
 
       lazyIntegrate(s, xf) == concat(s, delay xf)
-@ %
-For the exponential we use the following integral equation:
-$y(x) = \exp z(x)$ $\iff$ $y'(x)=z'(x)y(x)$,
-thus $y(x)  = 1 + \int z'(x)y(x)\, dx$.
-<<package STEXPS StreamExponentialSeriesOperations>>=
--- copied from sttf.spad
+
+      -- For the exponential we use the following integral equation:
+      -- $y(x) = \exp z(x)$ $\iff$ $y'(x)=z'(x)y(x)$,
+      -- thus $y(x)  = 1 + \int z'(x)y(x)\, dx$.
+      -- copied from sttf.spad
       exp00 : Stream Coef->Stream Coef
 
       exp00 z ==
@@ -130,7 +129,9 @@ thus $y(x)  = 1 + \int z'(x)y(x)\, dx$.
           YS(y +-> lazyIntegrate(1, y*deriv z))
 
       exp0 z == exp00 cons(0, z)
-@ %
+
+)if false
+
 For the logarithm we use the following integral equation:
 $z(x)=\log y(x)$ $\iff$ $\exp z(x) = y(x)$, thus
 $$
@@ -140,7 +141,8 @@ and
 $$
 z(x) = z(0) + \int y'(x)e^{-z(x)}\, dx
 $$
-<<package STEXPS StreamExponentialSeriesOperations>>=
+)endif
+
       log1 z ==
           empty? z => zro()
           YS(y +-> lazyIntegrate(0, exp00((- y)$STSO)*  z))
@@ -180,7 +182,9 @@ StreamExponentialSeriesTranscendentalFunctions(Coef) : Exports == Implementation
         empty? z => cons(1, empty())
         (coef := frst z) = 0 => YS(y +-> expre(1, y, (deriv z)$STE))
         YS(y +-> expre(exp coef, y, deriv z))
-@ %
+
+)if false
+
 For the logarithm we use the following integral equation:
 $z(x)=\log y(x)$ $\iff$ $\exp z(x) = y(x)$, thus
 $$
@@ -190,7 +194,8 @@ and
 $$
 z(x) = z(0) + \int y'(x)e^{-z(x)}\, dx
 $$
-<<package STEXPST StreamExponentialSeriesTranscendentalFunctions>>=
+
+)endif
       log z ==
           empty? z => error "log: constant coefficient should not be 0"
           (c := frst z) = 0 => error "log: constant coefficient should not be 0"
