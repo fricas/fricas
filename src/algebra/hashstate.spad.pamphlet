@@ -42,29 +42,28 @@ like the included example of PrimitiveArray and Integer.
 \end{verbatim}
 
 \section{Implementation}
-These two macros are necessary to distinguish between Rep and \%.
-<<common>>=
-rep x ==> (x@%) pretend Rep
-per x ==> (x@Rep) pretend %
-I ==> SingleInteger
-@
 
 The domain HashState is simply calling the respective lisp macros.
 
 <<domain HASHSTAT HashState>>=
-<<common>>
 )abbrev domain HASHSTAT HashState
 ++ Description: This domain supports incremental computation of hash
 ++ values.
 HashState() : with
     new : () -> %
       ++ new() return a new HashState.
-    update! : (%, I) -> %
+    update! : (%, SingleInteger) -> %
       ++ update!(hs, x) computes new values of HashState from hs
       ++ and x and might destructively operate on its first argument.
-    value : % -> I
+    value : % -> SingleInteger
       ++ value(x) returns a SingleInteger value corresponding to x.
   == add
+    -- These two macros are necessary to distinguish between Rep and \%.
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    I ==> SingleInteger
+
     Rep ==> Integer
     new() : % == per HASHSTATEBASIS$Lisp
     value(hs : %) : I == (HASHSTATEMAKEFIXNUM(hs)$Lisp) pretend I
