@@ -83,6 +83,23 @@ DEFPARAMETER($testingErrorPrefix, '"Daly Bug")
 
 DEFPARAMETER($texFormatting, false)
 
+escape_strings(l) ==
+    ATOM(l) => l
+    res := []
+    for s in l repeat
+        if IDENTP s then s := PNAME s
+        res := cons(s, res)
+        not(STRINGP(s)) => "iterate"
+        #s < 1 => "iterate"
+        s.0 = char "%" =>
+            s1 := STRCONC('"\", s)
+            res := cons(s1, rest(res))
+        #s > 1 and s.0 = char "\" and s.1 = char "%" =>
+            res := cons('"\", rest(res))
+            res := cons(s, res)
+        "iterate"
+    NREVERSE(res)
+        
 --% Accessing the Database
 
 string2Words l ==
@@ -203,7 +220,7 @@ substituteSegmentedMsg(msg,args) ==
       if MEMQ(char 's,q) then arg := [['"%s",:arg]]
       if MEMQ(char 'p,q) then
           $texFormatting => arg := prefix2StringAsTeX arg
-          arg := prefix2String arg
+          arg := escape_strings(prefix2String arg)
       if MEMQ(char 'P,q) then
           $texFormatting => arg := [prefix2StringAsTeX x for x in arg]
           arg := [prefix2String x for x in arg]
