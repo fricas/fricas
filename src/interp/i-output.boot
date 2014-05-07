@@ -609,7 +609,8 @@ exptApp([.,a,b],x,y,d) ==
 exptNeedsPren a ==
   atom a and null (INTEGERP a and a < 0)  => false
   key:= keyp a
-  key = "OVER" => true  -- added JHD 2/Aug/90
+  key = "OVER" or key = "SIGMA" or key = "SIGMA2" or key = "PI"
+    or key = "PI2" => true
   (key="SUB") or (null GETL(key,"Nud") and null GETL(key,"Led")) => false
   true
 
