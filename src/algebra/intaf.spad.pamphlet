@@ -409,7 +409,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
     UPUP2F1        : (UPUP, RF, RF, K, K) -> F
     UPUP2F0        : (UPUP, K, K) -> F
     RF2UPUP        : (RF, UPUP) -> UPUP
-    algaddx        : (IR, F) -> IR
+    algaddx        : (IR, F, F) -> IR
     chvarIfCan     : (UPUP, RF, UP, RF) -> Union(UPUP, "failed")
     changeVarIfCan : (UPUP, RF, N) -> Union(CHV, "failed")
     rationalInt    : (UPUP, N, UP) -> IntegrationResult RF
@@ -473,8 +473,9 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
          map(x1+->UPUP2F1(RF2UPUP(x1, m), cv.c1, cv.c2, x, y),
             rationalInt(u::UPUP, r.deg, monomial(1, 1)))
       curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
+      dcv := multivariate(differentiate(cv.c1)::RF, x)
       algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, y),
-        palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, x::F)
+        palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, dcv, x::F)
 
 -- Do the rationalizing change of variable
 -- Int(f(x, y) dx) --> Int(n u^(n-1) f((u^n - b)/a, u) / a du) where
@@ -533,10 +534,10 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
         p   := reductum p
       ans
 
-    algaddx(i, xx) ==
+    algaddx(i, dxx, xx) ==
       elem? i => i
       mkAnswer(ratpart i, logpart i,
-                [[- ne.integrand / (xx^2), xx] for ne in notelem i])
+                [[ ne.integrand*dxx, xx] for ne in notelem i])
 
     prootRDE(nfp, f, g, x, k, rde) ==
       modulus := lift(p := minPoly k, x)
@@ -635,9 +636,10 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       modulus := lift(p := minPoly k, x)
       cv     := chvar(univariate(f, x, k, p), modulus)
       curve  := AlgebraicFunctionField(F, UP, UPUP, cv.poly)
+      dcv := multivariate(differentiate(cv.c1)::RF, x)
       knownInfBasis(cv.deg)
       algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, k),
-        palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, x::F)
+        palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, dcv, x::F)
 
     palglim(f, x, k, lu) ==
       modulus := lift(p := minPoly k, x)
