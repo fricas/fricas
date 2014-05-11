@@ -50,5 +50,19 @@ testTrue("not(failed?(patternMatch(ff, patf, new()$mR)))")
 irule := rule %i == 42
 testEquals("irule(besselJ(v, %i))", "besselJ(v, 42)")
 
+testcase "map with ::Boolean"
+
+gl := [x + y = 1, x - y = 1]
+sol := solve(gl, [x, y])
+testEquals("[map(g +-> eval(g,s)::Boolean,gl) for s in sol]",
+           "[[true, true]]")
+
+testEquals("[eval(x=1,[x=1]::List EQ FRAC POLY INT)::Boolean for i in 1..1]",
+            "[true]")
+testEquals("[eval(x=1,[x=1])::Boolean for i in 1..1]", "[true]")
+
+q:EQ POLY INT:=(1=1)
+testEquals("[q for i in 1..1]", "[true]")
+
 )set output algebra on
 statistics()
