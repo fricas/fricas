@@ -1349,18 +1349,16 @@ coerceByFunction(T,m2) ==
   m2 is ['Union,:.] => NIL
   m1 := objMode T
   m2 is ['Boolean,:.] and m1 is ['Equation,ud] =>
-    dcVector := evalDomain ud
-    fun :=
       isWrapped x =>
-        NRTcompiledLookup("=", [$Boolean, '$, '$], dcVector)
-      NRTcompileEvalForm("=", [$Boolean, '$, '$], dcVector)
-    [fn,:d]:= fun
-    isWrapped x =>
-      x:= unwrap x
-      mkObjWrap(SPADCALL(first x, rest x, fun), m2)
-    x isnt ['SPADCALL,a,b,:.] => keyedSystemError("S2IC0015",NIL)
-    code := ['SPADCALL, a, b, fun]
-    objNew(code,$Boolean)
+          dcVector := evalDomain ud
+          fun := NRTcompiledLookup("=", [$Boolean, '$, '$], dcVector)
+          [fn, :d]:= fun
+          x := unwrap x
+          mkObjWrap(SPADCALL(first x, rest x, fun), m2)
+      dcVector := evalDomain m1
+      fun := NRTcompileEvalForm("coerce", [$Boolean, '$], dcVector)
+      code := ['SPADCALL, x, fun]
+      objNew(code, $Boolean)
   -- If more than one function is found, any should suffice, I think -scm
   if not (mm := coerceConvertMmSelection(funName := 'coerce,m1,m2)) then
     mm := coerceConvertMmSelection(funName := 'convert,m1,m2)
