@@ -64,5 +64,33 @@ testEquals("[eval(x=1,[x=1])::Boolean for i in 1..1]", "[true]")
 q:EQ POLY INT:=(1=1)
 testEquals("[q for i in 1..1]", "[true]")
 
+testcase "assignment to aggregates"
+
+ll := [[1, 2, 3], [4, 5, 6]]
+testTrue("(ll.1.1 := 7; true)")
+testEquals("ll.1.1", "7")
+testTrue("((elt(ll, 2)).1 := 9; true)")
+testEquals("ll.2.1", "9")
+testTrue("(elt(ll.1, 2) := 8; true)")
+testEquals("ll.1.2", "8")
+
+mkr(i) == [i, string(i)]$Record(k : Integer, s : String)
+lr := [mkr(i) for i in 1..3]
+vr := vector(lr)
+
+testTrue("(lr.1.k := 5; true)")
+testEquals("lr.1.k", "5")
+testTrue("((elt(lr, 2)).k := 11; true)")
+testEquals("lr.2.k", "11")
+testTrue("(elt(lr.3, k) := 13; true)")
+testEquals("lr.3.k", "13")
+
+testTrue("(vr.1.k := 15; true)")
+testEquals("vr.1.k", "15")
+testTrue("((elt(vr, 2)).k := 4; true)")
+testEquals("vr.2.k", "4")
+testTrue("(elt(vr.3, k) := 17; true)")
+testEquals("vr.3.k", "17")
+
 )set output algebra on
 statistics()

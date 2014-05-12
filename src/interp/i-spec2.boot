@@ -623,16 +623,15 @@ upLETWithFormOnLhs(op,lhs,rhs) ==
   throwKeyedMsg("S2IS0060", NIL)
 --  upTableSetelt(op,lhs,rhs)
 
+get_opname_if_can(f) ==
+    VECP(f) => f.0
+    nil
+
 seteltable(lhs is [f,:argl],rhs) ==
   -- produces the setelt form for trees such as "l.2:= 3"
-  null (g := getUnnameIfCan f) => NIL
+  g := get_opname_if_can f
   EQ(g,'elt) => altSeteltable [:argl, rhs]
-  get(g,'value,$e) is [expr,:.] and isMapExpr expr => NIL
-  transferPropsToNode(g,f)
-  getValue(lhs) or getMode(lhs) =>
-    f is [f',:argl'] => altSeteltable [f',:argl',:argl,rhs]
-    altSeteltable [:lhs,rhs]
-  NIL
+  altSeteltable [:lhs,rhs]
 
 altSeteltable args ==
     for x in args repeat bottomUp x
