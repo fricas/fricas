@@ -133,14 +133,6 @@ patternCheck pattern == main where
 match?(pattern,subject) ==  --returns index of first character that matches
   basicMatch?(pattern,DOWNCASE subject)
 
-stringMatch(pattern,subject,wildcard) ==
-  not CHARP wildcard =>
-    systemError '"Wildcard must be a character"
-  $wildCard : local := wildcard
-  subject := DOWNCASE subject
-  k := basicMatch?(pattern,DOWNCASE subject) => k + 1
-  0
-
 basicMatch?(pattern,target) ==
   n := #pattern
   p := charPosition($wildCard,pattern,0)
