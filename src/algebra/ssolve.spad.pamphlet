@@ -18,10 +18,12 @@ long as they are just constants. I don't see another way to do this,
 unfortunately.
 
 <<domain SMPEXPR SparseMultivariatePolynomialExpressions>>=
-)abb domain SMPEXPR SparseMultivariatePolynomialExpressions
-SparseMultivariatePolynomialExpressions(R : Ring) : Exports == Implementation where
+)abbrev domain SMPEXPR SparseMultivariatePolynomialExpressions
+SparseMultivariatePolynomialExpressions(R : Ring
+                                       ) : Exports == Implementation where
 
-    Exports ==> PolynomialCategory(R, IndexedExponents NonNegativeInteger, NonNegativeInteger) with
+    Exports ==> PolynomialCategory(R, IndexedExponents NonNegativeInteger,
+                                   NonNegativeInteger) with
 
         if R has TranscendentalFunctionCategory
         then TranscendentalFunctionCategory
@@ -87,7 +89,7 @@ It uses the method of undetermined coefficients.
 \end{ToDo}
 
 <<package UTSSOL TaylorSolve>>=
-)abb package UTSSOL TaylorSolve
+)abbrev package UTSSOL TaylorSolve
 TaylorSolve(F, UTSF, UTSSMPF) : Exports == Implementation where
     F : Field
     SMPF  ==> SparseMultivariatePolynomialExpressions F
@@ -171,34 +173,44 @@ $y^{\prime\prime}$.
 
                     vars := variables eq
                     if not member?(retract(coeff)@NNI, vars) then
-                        output(hconcat("The variable is: ", coeff::OutputForm))
-                              $OutputPackage
-                        output(hconcat("The next equations are: ", (st.2)::OutputForm))
-                              $OutputPackage
+                        output(hconcat("The variable is: ",
+                                       coeff::OutputForm))$OutputPackage
+                        output(hconcat("The next equations are: ",
+                                       (st.2)::OutputForm))$OutputPackage
 
                         if empty? vars then
-                            error "seriesSolve: there is no solution with the given initial values"
+                            error "seriesSolve: there is no solution with"
+                                  " the given initial values"
                         else
-                            error "seriesSolve: coefficient does not appear in equation"
+                            error "seriesSolve: coefficient does not appear"
+                                  " in equation"
 
                     if not one?(# vars) or degree(eq, first vars) > 1 then
                         if monomial? eq then
                             for var in vars repeat
                                 i : Integer := 1
-                                while ground?(nr.i) or (retract(nr.i)@NNI ~= var) repeat
+                                while ground?(nr.i) or
+                                      (retract(nr.i)@NNI ~= var) repeat
                                     i := i+1
                                 nr.i := 0
                             st.1 := rest nr
                             res := 0
                         else
-                            output(hconcat("The variable is: ", coeff::OutputForm))
-                                  $OutputPackage
-                            output(hconcat("The equation is: ", eq::OutputForm))
-                                  $OutputPackage
-                            error "seriesSolve: coefficient not uniquely determined"
+                            output(hconcat("The variable is: ",
+                                           coeff::OutputForm))$OutputPackage
+                            output(hconcat("The equation is: ",
+                                           eq::OutputForm))$OutputPackage
+                            error "seriesSolve: coefficient not uniquely"
+                                  " determined"
                     else
-                        res := (-coefficient(eq, monomial(0$NNI, first vars)$IndexedExponents(NNI))$(SMPF)
-                                 /coefficient(eq, monomial(1$NNI, first vars)$IndexedExponents(NNI))$(SMPF))
+                        res := (-coefficient(eq,
+                                             monomial(0$NNI, first vars
+                                                     )$IndexedExponents(NNI)
+                                            )$(SMPF)
+                                 /coefficient(eq,
+                                              monomial(1$NNI, first vars
+                                                      )$IndexedExponents(NNI)
+                                             )$(SMPF))
 
                         nr.1 := res::SMPF
                         st.1 := rest nr
@@ -221,7 +233,7 @@ $y^{\prime\prime}$.
 \end{ToDo}
 
 <<package EXPRSOL ExpressionSolve>>=
-)abb package EXPRSOL ExpressionSolve
+)abbrev package EXPRSOL ExpressionSolve
 ExpressionSolve(R, F, UTSF, UTSSMPF) : Exports == Implementation where
     R : Join(Comparable, IntegralDomain, ConvertibleTo InputForm)
     F : FunctionSpace R
@@ -286,7 +298,8 @@ coefficient ring, since it will complain otherwise.
 
                 if is?(k, '%diff) then
                     args := argument k
-                    differentiand := replaceDiffs(subst(args.1, args.2 = args.3), op, sy)
+                    differentiand :=
+                        replaceDiffs(subst(args.1, args.2 = args.3), op, sy)
                     expr := subst(expr, [k], [opdiff differentiand])
 --                    => "iterate"
             expr
