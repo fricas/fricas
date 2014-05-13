@@ -66,93 +66,6 @@ and its coercions from/to the respective domains will be implemented
 via macros.
 
 \section{Implementation}
-\subsection{Global Macros}
-
-Let us start with a few common macros.
-
-<<global macros>>=
-<<representation macros>>
-<<integer domain macros>>
-@
-
-These two technical macros are necessary to distinguish between Rep
-and \%.
-
-<<representation macros>>=
-rep x ==> (x@%) pretend Rep
-per x ==> (x@Rep) pretend %
-@
-
-The following macros are just global abbreviations.
-<<integer domain macros>>=
-N ==> NonNegativeInteger
-Z ==> Integer
-I ==> SingleInteger
-@
-
-
-\subsection{Markers, MKey, UMKE, Buckets, and coercions}
-
-We need a new type for markers and corresponding coercions.
-In the following we assume that $mk$ is a value of type \texttt{MKey}.
-<<markers>>=
-Marker ==> None
-toMarker mk ==> mk@Marker -- note that MKey==Marker==UMKE
-VACANT : Marker := (HASHTABLEVACANT$Lisp)  pretend Marker -- pos never used
-DELETED : Marker := (HASHTABLEDELETED$Lisp) pretend Marker -- pos is deleted
-vacant?(mk)  ==> EQ(toMarker mk, VACANT)$Lisp
-deleted?(mk) ==> EQ(toMarker mk, DELETED)$Lisp
-key?(mk) ==> not (vacant? mk or deleted? mk)
-@
-
-Whereas \texttt{vacant?} is true if the bucket is vacant, i.e., has
-never been filled with a key, \texttt{deleted?} returns true if the
-bucket is marked as being deleted.
-
-We represent buckets as a flat array, thus we use the (virtual) type
-\texttt{UMKE} to represent \texttt{Union(Marker, Key, Entry)}.
-%
-Since markers can only appear in the first half of this array (like
-keys), it is advantageous to introduce another type \texttt{MKey}
-which stands for \texttt{Union(Marker, Key)}.
-
-<<MKey, UMKE, and Buckets>>=
-MKey ==> None
-UMKE ==> None
-Buckets ==> PrimitiveArray UMKE
-@
-
-Since keys and markers are stored in the first half of the buckets
-array, we need a way to get the number of key/entry pairs that we can
-store in the array. By construction, this number will be a prime
-number.
-
-Below, we reserve the identifier \texttt{a} to be of type \texttt{Buckets}.
-<<number of buckets>>=
-numOfBuckets(a) ==> shift(#a, -1)
-@ %
-
-The value $n$ represent \texttt{numOfBuckets a} and $i$ is the
-index into the buckets array, $0 \le i < n$.
-<<access and coercion>>=
-toUMKE x ==> x pretend UMKE
-toKey k ==> (k@UMKE) pretend Key
-getMKey(a, i)    ==> ((a.i)@UMKE) pretend MKey
-setKey!(a, i, k) ==> (a.i := toUMKE k) pretend Key
-getEntry(a, n, i)     ==> a(n+i) pretend Entry
-setEntry!(a, n, i, e)  ==> (a(n+i) := toUMKE e) pretend Entry
-setKeyEntry!(a, n, i, k, e) ==> (setKey!(a, i, k); setEntry!(a, n, i, e))
--- deleteKeyEntry!(a, n, i) ==> setKeyEntry!(a, n, i, DELETED, VACANT)
-deleteKeyEntry!(a, n, i) ==> (a.i := toUMKE DELETED; a(n+i) := toUMKE VACANT)
-@ %
-
-Putting everything together.
-<<auxiliary functionality>>=
-<<markers>>
-<<MKey, UMKE, and Buckets>>
-<<number of buckets>>
-<<access and coercion>>
-@ %
 
 \subsection{Representation}
 
@@ -176,11 +89,6 @@ search algorithm to work correctly there must be at least one
 \texttt{VACANT} position) the table is rehashed so that the virtual
 load equals the actual load again.
 
-<<load factor>>=
-maxLoad n ==> n*7 quo 10 -- load factor
-maxVirtualLoad n ==> n*9 quo 10  -- virtual load factor
-@
-
 Together with these maximal loads, we also store the number of
 \texttt{DELETED} entries in the representation.
 
@@ -200,15 +108,6 @@ is computed via $h_2 = h \bmod (n-2)$ under the assumption that $n-2$
 is also a prime. In fact, we precompute the possible sizes of the
 buckets array by looking for twin primes with appropriate size.
 
-<<possible values for the number of buckets>>=
-arrayLengths : PrimitiveArray N := [[_
-    7, 13, 31, 61, 109, 241, 463, 1021, 2029, 4093, 8089, 16363, _
-    32719, 65521, 131011, 262111, 524221, 1048573, 2097133, _
-    4193803, 8388451, 16777141, 33554011, 67108669, 134217439, _
-    268435009, 536870839, 1073741719, 2147482951, 4294965841, _
-    8589934291, 17179868809, 34359737299, 68719476391, _
-    137438953273, 274877906629, 549755813359, 1099511626399]]
-@ %
 The above numbers have been computed by the following code chunk.
 <<compute possible values for the number of buckets>>=
 prevTwinPrime(x) ==
@@ -224,17 +123,6 @@ To be even more flexible and also allow to use hash functions that are
 given by the user, we also store such the hashing function in the
 representation.
 
-Putting everything together yields the following.
-<<representation>>=
-Rep ==> Record(_
-    numOfEntries : Z, _
-    maxNumOfEntries : Z, _
-    numOfDeletedEntries : Z, _
-    maxNumOfVirtualEntries : Z, _
-    idx : Z, _
-    arr : Buckets, _
-    hashFunction : Key -> I)
-@ %
 Note that for a value $r$ of type \texttt{Rep} it always holds:
 \begin{verbatim}
  2*arrayLengths(r.idx) = #(r.arr)
@@ -251,8 +139,17 @@ the keys at creation time of the table, the \texttt{Key} parameter
 would not necessarily have to provide a hashing function of its own.
 
 <<domain XHASHTBL XHashTable>>=
-<<global macros>>
 )abbrev domain XHASHTBL XHashTable
+
+-- These two technical macros are necessary to distinguish
+-- between Rep and \%.
+rep x ==> (x@%) pretend Rep
+per x ==> (x@Rep) pretend %
+
+N ==> NonNegativeInteger
+Z ==> Integer
+I ==> SingleInteger
+
 ++ Author: Ralf Hemmecke
 ++ Keywords: hash table
 ++ Description:
@@ -267,14 +164,76 @@ XHashTable(Key : SetCategory, Entry : Type):
       ++ the case, k1 and k2 will internally be considered as being
       ++ different keys.
  == add
-    <<auxiliary functionality>>
+
+    --
+    -- Markers, MKey, UMKE, Buckets, and coercions}
+    --
+
+    -- We need a new type for markers and corresponding coercions.
+    -- In the following we assume that $mk$ is a value of type \texttt{MKey}.
+    Marker ==> None
+    toMarker mk ==> mk@Marker -- note that MKey==Marker==UMKE
+    -- pos never used
+    VACANT : Marker := (HASHTABLEVACANT$Lisp)  pretend Marker
+    -- pos is deleted
+    DELETED : Marker := (HASHTABLEDELETED$Lisp) pretend Marker
+    vacant?(mk)  ==> EQ(toMarker mk, VACANT)$Lisp
+    deleted?(mk) ==> EQ(toMarker mk, DELETED)$Lisp
+    key?(mk) ==> not (vacant? mk or deleted? mk)
+
+    -- Whereas \texttt{vacant?} is true if the bucket is vacant, i.e., has
+    -- never been filled with a key, \texttt{deleted?} returns true if the
+    -- bucket is marked as being deleted.
+
+    -- We represent buckets as a flat array, thus we use the (virtual) type
+    -- \texttt{UMKE} to represent \texttt{Union(Marker, Key, Entry)}.
+
+    -- Since markers can only appear in the first half of this array (like
+    -- keys), it is advantageous to introduce another type \texttt{MKey}
+    -- which stands for \texttt{Union(Marker, Key)}.
+
+    MKey ==> None
+    UMKE ==> None
+    Buckets ==> PrimitiveArray UMKE
+
+    -- Since keys and markers are stored in the first half of the buckets
+    -- array, we need a way to get the number of key/entry pairs that we can
+    -- store in the array. By construction, this number will be a prime
+    -- number.
+
+    -- Below, we reserve the identifier \texttt{a} to be of type
+    -- \texttt{Buckets}.
+    -- number of buckets
+    numOfBuckets(a) ==> shift(#a, -1)
+    -- The value $n$ represent \texttt{numOfBuckets a} and $i$ is the
+    -- index into the buckets array, $0 \le i < n$.
+
+    -- access and coercion
+    toUMKE x ==> x pretend UMKE
+    toKey k ==> (k@UMKE) pretend Key
+    getMKey(a, i)    ==> ((a.i)@UMKE) pretend MKey
+    setKey!(a, i, k) ==> (a.i := toUMKE k) pretend Key
+    getEntry(a, n, i)     ==> a(n+i) pretend Entry
+    setEntry!(a, n, i, e)  ==> (a(n+i) := toUMKE e) pretend Entry
+    setKeyEntry!(a, n, i, k, e) ==> (setKey!(a, i, k); setEntry!(a, n, i, e))
+    -- deleteKeyEntry!(a, n, i) ==> setKeyEntry!(a, n, i, DELETED, VACANT)
+    deleteKeyEntry!(a, n, i) ==>
+        (a.i := toUMKE DELETED; a(n+i) := toUMKE VACANT)
+
     KE ==> Record(key : Key, entry : Entry)
     UE ==> Union(Entry, "failed")
-    <<load factor>>
-    <<representation>>
-    <<local functions>>
-    <<exported functions>>
-@ %
+    maxLoad n ==> n*7 quo 10 -- load factor
+    maxVirtualLoad n ==> n*9 quo 10  -- virtual load factor
+    Rep ==> Record(_
+        numOfEntries : Z, _
+        maxNumOfEntries : Z, _
+        numOfDeletedEntries : Z, _
+        maxNumOfVirtualEntries : Z, _
+        idx : Z, _
+        arr : Buckets, _
+        hashFunction : Key -> I)
+
+)if false
 
 \subsection{Auxiliary local functions}
 
@@ -341,44 +300,47 @@ Note that because the maximal number of virtual entries (i.e.
 buckets) there is at least one position where \texttt{VACANT} is
 stored and thus the loops eventually terminate.
 
-<<local functions>>=
-localSearch(a : Buckets, k : Key, h : Key -> I) : Z ==
-    n : Z := numOfBuckets a
-    h1 : Z := (h k)::Z
-    p : Z := positiveRemainder(h1, n) -- position in array
-    h2 : Z := 1 + positiveRemainder(h1, n-2)
-    mk : MKey := getMKey(a, p)
-    deletedPosition? : Boolean := false
-    while not vacant? mk repeat
-        deleted? mk => (deletedPosition? := true; break)
-        k = toKey mk => return p -- key found
-        <<update p and mk>>
-    q := p -- first position of a free entry
-    -- We ignore DELETED entries when looking for the key.
-    while not vacant? mk repeat
-        not deleted? mk and k = toKey mk =>
-            setKeyEntry!(a, n, q, k, getEntry(a, n, p))
-            deleteKeyEntry!(a, n, p)
-            return q -- entry has been copied to previous DELETED position
-        <<update p and mk>>
-    if deletedPosition? then q := q-n
-    q-n -- KEY not found.
-@ %
+)endif
 
-<<update p and mk>>=
-p := p + h2
-if p>=n then p := p-n
-mk := getMKey(a, p)
-@ %
+    localSearch(a : Buckets, k : Key, h : Key -> I) : Z ==
+        n : Z := numOfBuckets a
+        h1 : Z := (h k)::Z
+        p : Z := positiveRemainder(h1, n) -- position in array
+        h2 : Z := 1 + positiveRemainder(h1, n-2)
+        mk : MKey := getMKey(a, p)
+        deletedPosition? : Boolean := false
+        while not vacant? mk repeat
+            deleted? mk => (deletedPosition? := true; break)
+            k = toKey mk => return p -- key found
+            p := p + h2
+            if p>=n then p := p-n
+            mk := getMKey(a, p)
+        q := p -- first position of a free entry
+        -- We ignore DELETED entries when looking for the key.
+        while not vacant? mk repeat
+            not deleted? mk and k = toKey mk =>
+                setKeyEntry!(a, n, q, k, getEntry(a, n, p))
+                deleteKeyEntry!(a, n, p)
+                return q -- entry has been copied to previous DELETED position
+            p := p + h2
+            if p>=n then p := p-n
+            mk := getMKey(a, p)
+        if deletedPosition? then q := q-n
+        q-n -- KEY not found.
+
+)if false
 
 \subsubsection{Creating a new array of buckets}
 To create a new array for the buckets, we reserve memory for twice as
 many objects, because we want to store keys in the first half and the
 corresponding entries in the second half of this array. All entries
 are initialized to being \texttt{VACANT}.
-<<local functions>>=
-newArr(n : N) : Buckets == new(2*n, toUMKE VACANT)
-@ %
+
+)endif
+
+    newArr(n : N) : Buckets == new(2*n, toUMKE VACANT)
+
+)if false
 
 \subsubsection{Growing and rehashing}
 When the load factor reaches a certain threshold, the array of buckets
@@ -388,39 +350,47 @@ is reserved and all entries are inserted into the new array.
 We start with the main function that inserts the entries from one
 bucket array into another. The size of the target array is given by
 the index into the \texttt{arrayLengths} array.
-<<local functions>>=
-<<possible values for the number of buckets>>
-rehashAux!(x : %, ix : Z) : % ==
-    m : N := arrayLengths ix
-    r : Rep := rep x
-    h : Key -> I := r.hashFunction
-    a : Buckets := r.arr
-    n : Z := numOfBuckets a
-    c : Buckets := newArr m
-    for i in 0..n-1 | key?(mk : MKey := getMKey(a, i)) repeat
-        k : Key := toKey mk
-        -- Note that k is not in c, and there are no DELETED positions.
-        -- Thus, -m<=p<0.
-        p := m + localSearch(c, k, h)
-        setKeyEntry!(c, m, p, k, getEntry(a, n, i))
-    r.arr := c  --destructively set new array
-    r.idx := ix
-    r.maxNumOfEntries := maxLoad m
-    r.numOfDeletedEntries := 0
-    r.maxNumOfVirtualEntries := maxVirtualLoad m
-    x
-@ %
 
-With this function, the grow! function is simple.
-<<local functions>>=
-grow!(x : %) : % == rehashAux!(x, rep(x).idx + 1)
-@ %
+)endif
 
-Rehashing a table is, in fact, creating a new table and inserting all
-entries from the original table into the new table.
-<<local functions>>=
-rehash!(x : %) : % == rehashAux!(x, rep(x).idx)
-@ %
+    arrayLengths : PrimitiveArray N := [[_
+        7, 13, 31, 61, 109, 241, 463, 1021, 2029, 4093, 8089, 16363, _
+        32719, 65521, 131011, 262111, 524221, 1048573, 2097133, _
+        4193803, 8388451, 16777141, 33554011, 67108669, 134217439, _
+        268435009, 536870839, 1073741719, 2147482951, 4294965841, _
+        8589934291, 17179868809, 34359737299, 68719476391, _
+        137438953273, 274877906629, 549755813359, 1099511626399]]
+
+    rehashAux!(x : %, ix : Z) : % ==
+        m : N := arrayLengths ix
+        r : Rep := rep x
+        h : Key -> I := r.hashFunction
+        a : Buckets := r.arr
+        n : Z := numOfBuckets a
+        c : Buckets := newArr m
+        for i in 0..n-1 | key?(mk : MKey := getMKey(a, i)) repeat
+            k : Key := toKey mk
+            -- Note that k is not in c, and there are no DELETED positions.
+            -- Thus, -m<=p<0.
+            p := m + localSearch(c, k, h)
+            setKeyEntry!(c, m, p, k, getEntry(a, n, i))
+        r.arr := c  --destructively set new array
+        r.idx := ix
+        r.maxNumOfEntries := maxLoad m
+        r.numOfDeletedEntries := 0
+        r.maxNumOfVirtualEntries := maxVirtualLoad m
+        x
+
+    -- With this function, the grow! function is simple.
+    grow!(x : %) : % == rehashAux!(x, rep(x).idx + 1)
+
+
+    -- Rehashing a table is, in fact, creating a new table and inserting all
+    -- entries from the original table into the new table.
+
+    rehash!(x : %) : % == rehashAux!(x, rep(x).idx)
+
+)if false
 
 \subsection{Exported functions}
 \subsubsection{Creation of a new table}
@@ -438,52 +408,48 @@ function itself. That is, of course, inefficient, so we basically
 force the filling of the domain slot, and thus storing the true hash
 function into the representation.
 
-<<exported functions>>=
-table(hashfunction : Key -> SingleInteger) : % ==
-    n : N := arrayLengths 0
-    maxEntries : Z := maxLoad n
-    maxVirtualEntries : Z := maxVirtualLoad n
-    per [0, maxEntries, 0, maxVirtualEntries, 0, newArr n, hashfunction]
-empty() : % ==
-    table(forceLazySlot((hash$Key)@(Key -> I))$Lisp pretend (Key->I))
-@ %
+)endif
 
-\subsubsection{Getting a random element}
-<<exported functions>>=
-inspect(x : %) : KE ==
-    a := rep(x).arr
-    n : Z := numOfBuckets a
-    for i in 0..n - 1 | key?(mk : MKey := getMKey(a, i)) repeat
-        return [toKey mk, getEntry(a, n, i)]
-    error "table must be non-empty"
-@ %
+    table(hashfunction : Key -> SingleInteger) : % ==
+        n : N := arrayLengths 0
+        maxEntries : Z := maxLoad n
+        maxVirtualEntries : Z := maxVirtualLoad n
+        per [0, maxEntries, 0, maxVirtualEntries, 0, newArr n, hashfunction]
+    empty() : % ==
+        table(forceLazySlot((hash$Key)@(Key -> I))$Lisp pretend (Key->I))
 
-\subsubsection{How many entries are stored?}
-<<exported functions>>=
-#(x : %) : N == rep(x).numOfEntries :: N
-@ %
+    -- \subsubsection{Getting a random element}
+    inspect(x : %) : KE ==
+        a := rep(x).arr
+        n : Z := numOfBuckets a
+        for i in 0..n - 1 | key?(mk : MKey := getMKey(a, i)) repeat
+            return [toKey mk, getEntry(a, n, i)]
+        error "table must be non-empty"
 
-\subsubsection{Searching and accessing the table}
-<<exported functions>>=
-search(k : Key, x : %) : Union(Entry, "failed") ==
-    a : Buckets := rep(x).arr
-    h : Key -> I := rep(x).hashFunction
-    p : Z := localSearch(a, k, h)
-    p<0 => "failed"
-    getEntry(a, numOfBuckets a, p)::UE
-elt(x : %, k : Key) : Entry ==
-    a : Buckets := rep(x).arr
-    h : Key -> I := rep(x).hashFunction
-    p := localSearch(a, k, h)
-    p<0 => error "key not in table"
-    getEntry(a, numOfBuckets a, p)
-elt(x : %, k : Key, e : Entry) : Entry ==
-    a : Buckets := rep(x).arr
-    h : Key -> I := rep(x).hashFunction
-    p := localSearch(a, k, h)
-    p<0 => e
-    getEntry(a, numOfBuckets a, p)
-@ %
+    -- \subsubsection{How many entries are stored?}
+    #(x : %) : N == rep(x).numOfEntries :: N
+
+    -- \subsubsection{Searching and accessing the table}
+    search(k : Key, x : %) : Union(Entry, "failed") ==
+        a : Buckets := rep(x).arr
+        h : Key -> I := rep(x).hashFunction
+        p : Z := localSearch(a, k, h)
+        p<0 => "failed"
+        getEntry(a, numOfBuckets a, p)::UE
+    elt(x : %, k : Key) : Entry ==
+        a : Buckets := rep(x).arr
+        h : Key -> I := rep(x).hashFunction
+        p := localSearch(a, k, h)
+        p<0 => error "key not in table"
+        getEntry(a, numOfBuckets a, p)
+    elt(x : %, k : Key, e : Entry) : Entry ==
+        a : Buckets := rep(x).arr
+        h : Key -> I := rep(x).hashFunction
+        p := localSearch(a, k, h)
+        p<0 => e
+        getEntry(a, numOfBuckets a, p)
+
+)if false
 
 \subsubsection{Inserting a new entry}
 
@@ -498,25 +464,28 @@ i.e., the number of actual entries plus the number of deleted entries,
 we will rehash the table (and in that process eventually get rid of the
 \texttt{DELETED} entries), if a certain threshold is reached.
 
-<<exported functions>>=
-setelt!(x : %, k : Key, e : Entry) : Entry ==
-    if rep(x).numOfEntries >= rep(x).maxNumOfEntries then grow! x
-    a : Buckets := rep(x).arr
-    h : Key -> I := rep(x).hashFunction
-    p := localSearch(a, k, h)
-    n : Z := numOfBuckets a
-    p>=0 => setEntry!(a, n, p, e)
-    r : Rep := rep x
-    r.numOfEntries := inc(r.numOfEntries)
-    p := n+p
-    p<0 => -- fill DELETED position
-        r.numOfDeletedEntries := dec(r.numOfDeletedEntries)
-        setKeyEntry!(a, n, n+p, k, e)
-    setKeyEntry!(a, n, p, k, e) -- fill VACANT position
-    if r.numOfEntries + r.numOfDeletedEntries > r.maxNumOfVirtualEntries then
-        rehash! x
-    e
-@ %
+)endif
+
+    setelt!(x : %, k : Key, e : Entry) : Entry ==
+        if rep(x).numOfEntries >= rep(x).maxNumOfEntries then grow! x
+        a : Buckets := rep(x).arr
+        h : Key -> I := rep(x).hashFunction
+        p := localSearch(a, k, h)
+        n : Z := numOfBuckets a
+        p>=0 => setEntry!(a, n, p, e)
+        r : Rep := rep x
+        r.numOfEntries := inc(r.numOfEntries)
+        p := n+p
+        p<0 => -- fill DELETED position
+            r.numOfDeletedEntries := dec(r.numOfDeletedEntries)
+            setKeyEntry!(a, n, n+p, k, e)
+        setKeyEntry!(a, n, p, k, e) -- fill VACANT position
+        if r.numOfEntries + r.numOfDeletedEntries
+                          > r.maxNumOfVirtualEntries then
+            rehash! x
+        e
+
+)if false
 
 \subsubsection{Removing an entry}
 
@@ -525,84 +494,85 @@ might break the chain of entries with the same hash value. One
 solution to the problem is to simply mark the entry as
 \texttt{DELETED} and adapt the search routine in such a way that a
 deleted entry does not stop a probing sequence.
-<<exported functions>>=
-remove!(k : Key, x : %) : Union(Entry, "failed") ==
-    a : Buckets := rep(x).arr
-    h : Key -> I := rep(x).hashFunction
-    p := localSearch(a, k, h)
-    p<0 => "failed" -- key has not been found
-    n : Z := numOfBuckets a
-    e : Entry := getEntry(a, n, p) -- to be returned
-    deleteKeyEntry!(a, n, p)
-    rep(x).numOfEntries := dec(rep(x).numOfEntries)
-    rep(x).numOfDeletedEntries := inc(rep(x).numOfDeletedEntries)
-    e::UE
-@ %
+)endif
+
+    remove!(k : Key, x : %) : Union(Entry, "failed") ==
+        a : Buckets := rep(x).arr
+        h : Key -> I := rep(x).hashFunction
+        p := localSearch(a, k, h)
+        p<0 => "failed" -- key has not been found
+        n : Z := numOfBuckets a
+        e : Entry := getEntry(a, n, p) -- to be returned
+        deleteKeyEntry!(a, n, p)
+        rep(x).numOfEntries := dec(rep(x).numOfEntries)
+        rep(x).numOfDeletedEntries := inc(rep(x).numOfDeletedEntries)
+        e::UE
+
+)if false
 
 \subsubsection{Copying a table}
 After copying, no exported operation from this domain performed on the
 copy should have any destructive effect on the original.
-<<exported functions>>=
-copy(x : %) : % ==
-    r : Rep := rep x
-    per [r.numOfEntries, r.maxNumOfEntries, _
-         r.numOfDeletedEntries, r.maxNumOfVirtualEntries, _
-         r.idx, copy(r.arr), r.hashFunction]
-@ %
 
-\subsubsection{Setting common values}
-<<exported functions>>=
-fill!(x : %, e : Entry) : % ==
-    a := rep(x).arr
-    n : N := numOfBuckets a
-    for i in 0..n-1 | key? getMKey(a, i) repeat setEntry!(a, n, i, e)
-    x
+)endif
 
-@ %
+    copy(x : %) : % ==
+        r : Rep := rep x
+        per [r.numOfEntries, r.maxNumOfEntries, _
+             r.numOfDeletedEntries, r.maxNumOfVirtualEntries, _
+             r.idx, copy(r.arr), r.hashFunction]
 
-\subsubsection{Applying a function to all entries}
-<<exported functions>>=
-map!(f : Entry -> Entry, x : %) : % ==
-    a := rep(x).arr
-    n : N := numOfBuckets a
-    for i in 0..n-1 | key? getMKey(a, i) repeat
-        setEntry!(a, n, i, f getEntry(a, n, i))
-    x
-@ %
 
-\subsubsection{Extracting keys and entries}
-<<exported functions>>=
-keys(x : %) : List Key ==
-    a := rep(x).arr
-    l : List Key := empty()
-    for i in 0..numOfBuckets a - 1 | key?(mk : MKey := getMKey(a, i)) repeat
-        l := cons(toKey mk, l)
-    l
-parts(x : %) : List Entry ==
-    a := rep(x).arr
-    n : N := numOfBuckets a
-    l : List Entry := empty()
-    for i in 0..n-1 | key? getMKey(a, i) repeat
-        l := cons(getEntry(a, n, i), l)
-    l
-parts(x : %) : List KE ==
-    a := rep(x).arr
-    n : N := numOfBuckets a
-    l : List KE := empty()
-    for i in 0..n-1 | key?(mk : MKey := getMKey(a, i)) repeat
-        l := cons([toKey mk, getEntry(a, n, i)], l)
-    l
-@ %
+    -- \subsubsection{Setting common values}
+    fill!(x : %, e : Entry) : % ==
+        a := rep(x).arr
+        n : N := numOfBuckets a
+        for i in 0..n-1 | key? getMKey(a, i) repeat setEntry!(a, n, i, e)
+        x
+
+    -- \subsubsection{Applying a function to all entries}
+    map!(f : Entry -> Entry, x : %) : % ==
+        a := rep(x).arr
+        n : N := numOfBuckets a
+        for i in 0..n-1 | key? getMKey(a, i) repeat
+            setEntry!(a, n, i, f getEntry(a, n, i))
+        x
+
+    -- \subsubsection{Extracting keys and entries}
+    keys(x : %) : List Key ==
+        a := rep(x).arr
+        l : List Key := empty()
+        for i in 0..numOfBuckets a - 1
+                | key?(mk : MKey := getMKey(a, i)) repeat
+            l := cons(toKey mk, l)
+        l
+    parts(x : %) : List Entry ==
+        a := rep(x).arr
+        n : N := numOfBuckets a
+        l : List Entry := empty()
+        for i in 0..n-1 | key? getMKey(a, i) repeat
+            l := cons(getEntry(a, n, i), l)
+        l
+    parts(x : %) : List KE ==
+        a := rep(x).arr
+        n : N := numOfBuckets a
+        l : List KE := empty()
+        for i in 0..n-1 | key?(mk : MKey := getMKey(a, i)) repeat
+            l := cons([toKey mk, getEntry(a, n, i)], l)
+        l
+
+)if false
 
 \subsubsection{Removing duplicates}
 We provide a more efficient function. If the hash function $h$ is a
 mathematical function, i.e., if $k_1 = k_2$ then $h(k_1)=h(k_2)$, then
 there can be no duplicates in the table.
 
-<<exported functions>>=
-removeDuplicates(x : %) : % == x
-@
+)endif
 
+    removeDuplicates(x : %) : % == x
+
+)if false
 \subsubsection{More efficient equality testing}
 
 Equality is by default implemented via \texttt{DictionaryOperations}
@@ -611,21 +581,20 @@ be allocated. For that reason we implement equality testing here
 without such allocation.
 
 Equality is only exported if the \texttt{Entry} type is a \texttt{BasicType}.
-<<exported functions>>=
-if Entry has BasicType then
-    <<BasicType exported functions>>
-@
 
-<<BasicType exported functions>>=
-((x : %) = (y : %)) : Boolean ==
-    #x ~= #y => false
-    xa := rep(x).arr; xn := numOfBuckets xa
-    ya := rep(y).arr; yn := numOfBuckets ya
-    h := rep(y).hashFunction
-    for i in 0..xn - 1 | key?(mk : MKey := getMKey(xa, i)) repeat
-        p := localSearch(ya, toKey mk, h)
-        p < 0 => return false
-        getEntry(xa, xn, i) ~= getEntry(ya, yn, p) => return false
-    true
+)endif
+
+    if Entry has BasicType then
+
+        ((x : %) = (y : %)) : Boolean ==
+            #x ~= #y => false
+            xa := rep(x).arr; xn := numOfBuckets xa
+            ya := rep(y).arr; yn := numOfBuckets ya
+            h := rep(y).hashFunction
+            for i in 0..xn - 1 | key?(mk : MKey := getMKey(xa, i)) repeat
+                p := localSearch(ya, toKey mk, h)
+                p < 0 => return false
+                getEntry(xa, xn, i) ~= getEntry(ya, yn, p) => return false
+            true
 @
 \end{document}

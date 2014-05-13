@@ -66,12 +66,13 @@ SequenceCategory(R : CommutativeRing) : Category == Exports where
     firstn : (%, NonNegativeInteger) -> List R
       ++ \spad{firstn(x, n)} returns a list of the first n entries
     dilate : (R, %) -> %
-      ++ \spad{dilate(a, x)} returns the sequence $a^n x_n$ (starting at $n=1$)
+      ++ \spad{dilate(a, x)} returns the sequence $a^n x_n$
+      ++ (starting at $n=1$)
     sequence : (R -> R, R) -> %
       ++ sequence(f, s0) generates a stream recursively
       ++ by applying the function f: S -> S to the last
       ++ computed value.
-@ %
+@
 
 \section{domain SEQU Sequence}
 <<domain SEQU Sequence>>=
@@ -136,7 +137,9 @@ Sequence(R : CommutativeRing) : SequenceCategory(R) == Implementation where
 
     first(x : %, n : NonNegativeInteger) : % == per(first(rep x, n)$Rep)
 
-    firstn(x : %, n : NonNegativeInteger) : List R == entries complete first(rep x, n)$Rep
+    firstn(x : %, n : NonNegativeInteger) : List R ==
+        entries complete first(rep x, n)$Rep
+
     -- generator
     sequence(f : R -> R, r : R) : % ==
              per (stream(f, r)$Rep )
@@ -148,7 +151,7 @@ Sequence(R : CommutativeRing) : SequenceCategory(R) == Implementation where
     dilate(a : R, mm : %) : % ==
             apow : % := sequence( (x : R) : R +-> x*a, a)
             multiply(apow, mm)
-@ %
+@
 
 \section{package SEQU2 SequenceFunctions2}
 <<package SEQU2 SequenceFunctions2>>=
@@ -165,13 +168,14 @@ Sequence(R : CommutativeRing) : SequenceCategory(R) == Implementation where
 ++ References:
 ++ Description:
 ++   A domain for mappings between sequences.
-SequenceFunctions2(R1 : CommutativeRing, R2 : CommutativeRing) : Exports == Implementation where
+SequenceFunctions2(R1 : CommutativeRing, R2 : CommutativeRing) : Exports
+     == Implementation where
   Exports ==> with
     map : (R1 -> R2, Sequence R1) -> Sequence R2
       ++ \spad{map(f, x)} maps the function f on the entries of x
   Implementation ==> add
     map(f, x) == sequence map(f, stream x)$StreamFunctions2(R1, R2)
-@ %
+@
 
 \section{package HANKP HankelPackage}
 The Hankel matrix of a sequence $[a_0, a_1, \dots, a_{2n}]$
@@ -201,7 +205,8 @@ $$
 HankelPackage(R : Ring) : Exports == Implementation where
   Exports ==> with
     HankelMatrix : List R -> Matrix(R)
-      ++ \spad{HankelMatrix([a_0, a_1, a_2, ..., a_{2n}])} builds the Hankel matrix
+      ++ \spad{HankelMatrix([a_0, a_1, a_2, ..., a_{2n}])} builds
+      ++ the Hankel matrix
       ++ [ a0, a1, ..., an ]
       ++ [ a1, a2, ...     ]
       ++ [ ...             ]
@@ -214,7 +219,9 @@ HankelPackage(R : Ring) : Exports == Implementation where
         import from List Matrix R, List List R
         x : R
         i, j : Integer
-        reduce(vertConcat$(Matrix R), [ (lloc := rest lloc;matrix [[x for x in lloc for i in 1..n]]) for j in 1..n ])
+        reduce(vertConcat$(Matrix R),
+               [ (lloc := rest lloc;
+                 matrix [[x for x in lloc for i in 1..n]]) for j in 1..n ])
 @
 
 \section{package PARRPKG PathArrayPackage}
@@ -323,7 +330,8 @@ PathArrayPackage(R : Ring) : Exports == Implementation where
   Implementation ==> add
 
     -- function to compute next row
-    nextMotzkinRow(vv : S, aa : Stream R, bb : Stream R, cc : Stream R) : S ==
+    nextMotzkinRow(vv : S, aa : Stream R, bb : Stream R, cc : Stream R
+                  ) : S ==
         -- build a new list
         vvnew : S := empty()
         vva := cons(0, vv)
@@ -331,7 +339,8 @@ PathArrayPackage(R : Ring) : Exports == Implementation where
         vvb := vv
         vvc := rest vv
         while not empty? vvc repeat
-            vi : R := first vva*first aa + first vvb*first bb +first vvc*first cc
+            vi : R := first vva*first aa + first vvb*first bb +
+                      first vvc*first cc
             vvnew := cons(vi, vvnew)
             vva := rest vva
             vvb := rest vvb
@@ -366,7 +375,8 @@ PathArrayPackage(R : Ring) : Exports == Implementation where
         vvnew := cons(first vva, vvnew)
         vvnew := reverse! vvnew
 
-    motzkinPathArray(aa : Stream R, bb : Stream R, cc : Stream R) : Stream S ==
+    motzkinPathArray(aa : Stream R, bb : Stream R, cc : Stream R
+                    ) : Stream S ==
         start : S := [1]
         stream( (vv : S) : S +-> nextMotzkinRow(vv, aa, bb, cc), start)
 
@@ -376,7 +386,7 @@ PathArrayPackage(R : Ring) : Exports == Implementation where
 
     bottom(x : Stream S) : Stream R ==
         map(first$S, x)$StreamFunctions2(S, R)
-@ %
+@
 
 \section{package MOMPKG MomentPackage}
 This package contains the core transformations between moments
@@ -408,75 +418,75 @@ MomentPackage(R : CommutativeRing) : Exports == Implementation where
   JACLIST ==> Record(an : List R, bn : List R)
   STSOR ==> StreamTaylorSeriesOperations R
   STESOR ==> StreamExponentialSeriesOperations R
-  STRREC ==> Record(puiseux : Fraction Integer, laurent : Fraction Integer, coef : Sequence R)
+  STRREC ==> Record(puiseux : Fraction Integer, laurent : Fraction Integer,
+                    coef : Sequence R)
   SUPR ==> SparseUnivariatePolynomial R
   SUPRpq ==> Record(first : SUPR, second : SUPR)
   RECSRM ==> Record(momt : List SUPR, cum : List R, mom : Stream R)
 
   Exports ==> with
-    <<MomentPackage declarations>>
+
+    cumulant2moment : Sequence R -> Sequence R
+      ++ \spad{cumulant2moment(cc)} computes the sequence of moments
+      ++ from the sequence of classical cumulants cc
+    moment2cumulant : Sequence R -> Sequence R
+      ++ \spad{moment2cumulant(mm)} computes the sequence of classical
+      ++ cumulants from the sequence of moments mm
+    if R has Field then
+      moment2nthJacobi : List R -> JACLIST
+        ++ \spad{moment2nthJacobi(mm)} computes the list of Jacobi parameters
+        ++ from the list of moments mm as far as possible.
+      moment2jacobi : Sequence R -> JACSEQ2
+        ++ \spad{moment2jacobi(mm)} computes the Jacobi parameters
+        ++ as pair of streams.
+      moment2jacobi2 : Sequence R -> JAC2SEQ
+        ++ \spad{moment2jacobi2(mm)} computes the Jacobi parameters
+        ++ as stream of pairs $(an, bn)$.
+    freeCumulant2moment : Sequence R -> Sequence R
+      ++ \spad{freeCumulant2moment(cc)} computes the sequence of moments
+      ++ from the sequence of free cumulants cc
+    moment2freeCumulant : Sequence R -> Sequence R
+      ++ \spad{moment2freeCumulant(mm)} computes the sequence of free
+      ++ cumulants from the sequence of moments mm
+    booleanCumulant2moment : Sequence R -> Sequence R
+      ++ \spad{booleanCumulant2moment(cc)} computes the sequence of moments
+      ++ from the sequence of boolean cumulants cc
+    moment2booleanCumulant : Sequence R -> Sequence R
+      ++ \spad{moment2booleanCumulant(mm)} computes the sequence of boolean
+      ++ cumulants from the sequence of moments mm
+    monotoneCumulant2moment : Sequence R -> Sequence R
+      ++ \spad{monotoneCumulant2moment(hh)} computes the sequence of moments
+      ++ from the sequence of monotone cumulants hh
+    monotoneCumulant2momentPoly : Sequence R -> Sequence SUPR
+      ++ \spad{monotoneCumulant2momentPoly(hh)} computes the sequence
+      ++ of moment polynomials $m_n(t)$ from the sequence of monotone
+      ++ cumulants hh
+    moment2monotoneCumulant : Sequence R -> Sequence R
+      ++ \spad{moment2monotoneCumulant(mm)} computes the sequence of
+      ++ monotone cumulants from the sequence of moments mm
+    qcumulant2nthmoment : (R, Sequence R, NonNegativeInteger) -> R
+      ++ \spad{qcumulant2nthmoment(q, cc, n)} computes the nth moment
+      ++ from the sequence of reduced q-cumulants cc
+    hankelDeterminant : (Sequence R, NonNegativeInteger) -> R
+      ++ \spad{hankelDeterminant(x, n)} returns the nth Hankel determinant
+      ++ of the sequence \spad{x}.
+    jacobi2poly : (Stream R, Stream R) -> Stream SUPR
+      ++ \spad{jacobi2poly(aa, bb)} returns the stream
+      ++ of orthogonal polynomials corresponding to the
+      ++ Jacobi parameters \spad{a_n} and \spad{b_n}.
+
+    if R has Algebra Fraction Integer then
+
+      moment2Stransform : Sequence R -> STRREC
+        ++ \spad{moment2Stransform(x)} returns the Puiseux and Laurent order
+        ++ and coefficients of the S transform of x
+      moment2monotoneCumulant : Sequence R -> Sequence R
+        ++ \spad{moment2monotoneCumulant(x)} returns the sequence
+        ++ of monotone cumulants of the moment sequence x
   Implementation ==> add
-    <<MomentPackage implementation>>
-@
 
-<<MomentPackage declarations>>=
-cumulant2moment : Sequence R -> Sequence R
-  ++ \spad{cumulant2moment(cc)} computes the sequence of moments
-  ++ from the sequence of classical cumulants cc
-moment2cumulant : Sequence R -> Sequence R
-  ++ \spad{moment2cumulant(mm)} computes the sequence of classical cumulants
-  ++ from the sequence of moments mm
-if R has Field then
-  moment2nthJacobi : List R -> JACLIST
-    ++ \spad{moment2nthJacobi(mm)} computes the list of Jacobi parameters
-    ++ from the list of moments mm as far as possible.
-  moment2jacobi : Sequence R -> JACSEQ2
-    ++ \spad{moment2jacobi(mm)} computes the Jacobi parameters
-    ++ as pair of streams.
-  moment2jacobi2 : Sequence R -> JAC2SEQ
-    ++ \spad{moment2jacobi2(mm)} computes the Jacobi parameters
-    ++ as stream of pairs $(an, bn)$.
-freeCumulant2moment : Sequence R -> Sequence R
-  ++ \spad{freeCumulant2moment(cc)} computes the sequence of moments
-  ++ from the sequence of free cumulants cc
-moment2freeCumulant : Sequence R -> Sequence R
-  ++ \spad{moment2freeCumulant(mm)} computes the sequence of free cumulants
-  ++ from the sequence of moments mm
-booleanCumulant2moment : Sequence R -> Sequence R
-  ++ \spad{booleanCumulant2moment(cc)} computes the sequence of moments
-  ++ from the sequence of boolean cumulants cc
-moment2booleanCumulant : Sequence R -> Sequence R
-  ++ \spad{moment2booleanCumulant(mm)} computes the sequence of boolean cumulants
-  ++ from the sequence of moments mm
-monotoneCumulant2moment : Sequence R -> Sequence R
-  ++ \spad{monotoneCumulant2moment(hh)} computes the sequence of moments
-  ++ from the sequence of monotone cumulants hh
-monotoneCumulant2momentPoly : Sequence R -> Sequence SUPR
-  ++ \spad{monotoneCumulant2momentPoly(hh)} computes the sequence of moment
-  ++ polynomials $m_n(t)$ from the sequence of monotone cumulants hh
-moment2monotoneCumulant : Sequence R -> Sequence R
-  ++ \spad{moment2monotoneCumulant(mm)} computes the sequence of monotone cumulants
-  ++ from the sequence of moments mm
-qcumulant2nthmoment : (R, Sequence R, NonNegativeInteger) -> R
-  ++ \spad{qcumulant2nthmoment(q, cc, n)} computes the nth moment
-  ++ from the sequence of reduced q-cumulants cc
-hankelDeterminant : (Sequence R, NonNegativeInteger) -> R
-  ++ \spad{hankelDeterminant(x, n)} returns the nth Hankel determinant
-  ++ of the sequence \spad{x}.
-jacobi2poly : (Stream R, Stream R) -> Stream SUPR
-  ++ \spad{jacobi2poly(aa, bb)} returns the stream
-  ++ of orthogonal polynomials corresponding to the
-  ++ Jacobi parameters \spad{a_n} and \spad{b_n}.
+)if false
 
-if R has Algebra Fraction Integer then
-
-  moment2Stransform : Sequence R -> STRREC
-    ++ \spad{moment2Stransform(x)} returns the Puiseux and Laurent order
-    ++ and coefficients of the S transform of x
-  moment2monotoneCumulant : Sequence R -> Sequence R
-    ++ \spad{moment2monotoneCumulant(x)} returns the sequence
-    ++ of monotone cumulants of the moment sequence x
-@
 \subsection{MomentPackage Classical cumulants}
 Moments and cumulants are related via their exponential generating functions
 $$
@@ -489,201 +499,222 @@ $$
 \kappa_n = \mu_n - \sum_{k=1}^{n-1} \binom{n-1}{k-1} \kappa_k \mu_{n-k}
 .
 $$
-<<MomentPackage implementation>>=
-cumulant2moment(cum : Sequence R) : Sequence R == sequence rest exp0$STESOR stream cum
-@ %
-The equivalent form of the recursion is
-$$
-\mu_n = \kappa_n + \sum_{k=1}^{n-1} \binom{n-1}{k} \mu_k \kappa_{n-k}
-$$
-but we rather use the logarithm of exponential power series.
-<<MomentPackage implementation>>=
-moment2cumulant(mom : Sequence R) : Sequence R == sequence rest log1$STESOR stream mom
-@ %
+)endif
 
-\subsection{MomentPackage Free Cumulants}
-Free cumulants can be defined via their generating function.
-Given the ordinary moment generating function
-$$
-M(z) = 1 + \sum_{n=1}^\infty m_n z^n
-$$
-the free cumulant series
-$$
-C(z) = 1 + \sum_{n=1}^\infty c_n z^n
-.
-$$
-satisfies the equations
-$$
-C(zM(z))= M(z)
-\qquad
-M(z/C(z))=C(z)
-.
-$$
-In the first case the function $f(z) = zM(z)$ satisfies
-$$
-C(f(z))=1/z f(z)
-$$
-and can be directly translated into a call to [[lagrange]]
-from [[StreamTaylorSeriesOperations]],
-which can solve solve the general equation
-$$
-f(z) =z\, g(f(z))
-$$
-with function $g(z) = C(z)$.
-<<MomentPackage implementation>>=
-freeCumulant2moment(cum : Sequence R) : Sequence R ==
-    import from STSOR
-    coerce(rest rest lagrange concat(1@R, stream cum))
-@
-In the other case, we can write
-$$
-\frac{z}{M(z/C(z))} = \frac{z}{C(z)}
-$$
-and take $f(z) = \frac{z}{C(z)}$ and $g(z)=\frac{1}{M(z)}$.
+    cumulant2moment(cum : Sequence R) : Sequence R ==
+        sequence rest exp0$STESOR stream cum
 
+)if false
+    The equivalent form of the recursion is
+    $$
+    \mu_n = \kappa_n + \sum_{k=1}^{n-1} \binom{n-1}{k} \mu_k \kappa_{n-k}
+    $$
+    but we rather use the logarithm of exponential power series.
+)endif
 
-<<MomentPackage implementation>>=
-moment2freeCumulant(mom : Sequence R) : Sequence R ==
-    -- first divide
-    g : Stream R := cons(1$R, stream mom)
-    g1:Union(Stream R, "failed") := recip(g)$STSOR -- value1 --$
-    -- g1 case "failed" => "failed"
-    f : Stream R := lagrange(g1::Stream R)
-    -- now we have f=z/C(z)
-    f1:Union(Stream R, "failed") := recip rest f
-    -- f1 case "failed" => "failed"
-    coerce rest (f1::Stream R)
-@ %
+    moment2cumulant(mom : Sequence R) : Sequence R ==
+        sequence rest log1$STESOR stream mom
 
+)if false
 
-\subsection{MomentPackage Boolean cumulants}
-The boolean cumulant generating function $B(z)$ and the
-moment generating function $M(z)$ are related by
-$$
-B(z) = 1-\frac{1}{M(z)}
-$$
-<<MomentPackage implementation>>=
-booleanCumulant2moment(x : Sequence R) : Sequence R ==
-    rec : Stream R := cons(1$R, stream(-x))
-    boo:Union(Stream R, "failed") := recip(rec)$(StreamTaylorSeriesOperations R)
-    rest sequence (boo::Stream R)
-@ %
+    \subsection{MomentPackage Free Cumulants}
+    Free cumulants can be defined via their generating function.
+    Given the ordinary moment generating function
+    $$
+    M(z) = 1 + \sum_{n=1}^\infty m_n z^n
+    $$
+    the free cumulant series
+    $$
+    C(z) = 1 + \sum_{n=1}^\infty c_n z^n
+    .
+    $$
+    satisfies the equations
+    $$
+    C(zM(z))= M(z)
+    \qquad
+    M(z/C(z))=C(z)
+    .
+    $$
+    In the first case the function $f(z) = zM(z)$ satisfies
+    $$
+    C(f(z))=1/z f(z)
+    $$
+    and can be directly translated into a call to [[lagrange]]
+    from [[StreamTaylorSeriesOperations]],
+    which can solve solve the general equation
+    $$
+    f(z) =z\, g(f(z))
+    $$
+    with function $g(z) = C(z)$.
 
-<<MomentPackage implementation>>=
-moment2booleanCumulant(x : Sequence R) : Sequence R ==
-    boo : Stream R := cons(1$R, stream x)
-    mom : Union(Stream R, "failed") := recip(boo)$(StreamTaylorSeriesOperations R)
-    rest (- sequence (mom::Stream R))
-@ %
+)endif
 
-\subsection{MomentPackage Jacobi Parameters and Orthogonal Polynomials}
+    freeCumulant2moment(cum : Sequence R) : Sequence R ==
+        import from STSOR
+        coerce(rest rest lagrange concat(1@R, stream cum))
 
-<<MomentPackage implementation>>=
-hankelDeterminant(x : Sequence R, n : NonNegativeInteger) : R ==
---    odd? n=> error "n must be even"
-    import from HankelPackage R
-    determinant HankelMatrix cons(1, firstn(x, 2*n))
-@ %
-The Jacobi parameters are only available in the case of a Field.
-<<MomentPackage implementation>>=
-if R has Field then
-  <<MomentPackage moment2jacobi>>
-@ %
+)if false
 
-The Jacobi parameters are defined by
-$$
-x P_n(x) = P_{n+1}(x) + a_n P_n(x) + b_n P_{n-1}(x)
-$$
-they are computed via the recursion...
+    In the other case, we can write
+    $$
+    \frac{z}{M(z/C(z))} = \frac{z}{C(z)}
+    $$
+    and take $f(z) = \frac{z}{C(z)}$ and $g(z)=\frac{1}{M(z)}$.
 
-%JACOBI3
-First a finite version using lists.
-<<MomentPackage moment2jacobi>>=
-moment2nthJacobi(mom : List R) : JACLIST ==
-    N : Integer := (#mom)::Integer
-    G : List R := mom -- add 1 to the moments
-    aa : List R := empty()
-    bb : List R := empty()
-    while N>1 repeat
-        -- assign the new coefficients
-        ak : R := first G
-        bk : R := second G - ak*ak
-        aa := concat(aa, ak)
-        bb := concat(bb, bk)
-        -- invert G and store it in H.
-        -- the first three entries are clear
-        H : List R := [-ak, -bk]
-        k, l : Integer
-        for k in 3..N repeat
-            Hk : R := -G k
-            for l in 1..k-1 repeat
-                Hk := Hk - (G l) * H(k-l)
-            H := concat(H, Hk)
-        if R has Field then
-            h : R
-            G := [-h/bk for h in  H ]
-            G := rest rest G
-        N := N-2
-    [aa, bb]
-@ %
+)endif
 
-Here is a recursive version.
-The algorithm is very simple:
-if
-$$
-F(z) = 1 + \sum_{n=1}^\infty c_n z^n
-= \cfrac{1}{1-a_1z-\cfrac{b_1z^2}{1-a_2z-\dots}}
-$$
-then
-$$
-\frac{1}{F(z)} = 1 - a_1z-b_1z^2G_2(z)
-$$
-and this can be recursively applied to $G_2(z)$.
-<<MomentPackage moment2jacobi>>=
-moment2jacobi2(mom : Sequence R) : JAC2SEQ == delay
-    gseries : Stream R := cons(1, (stream$(Sequence R)) mom)
-    -- first divide
-    gseries1 := recip(gseries)$(StreamTaylorSeriesOperations R)::Stream R
-    gseries1 := rest gseries1
-    a : R := - first gseries1
-    gseries1 := rest gseries1
-    b : R := - first gseries1
-    b1 : R := - inv b
-    cons([a, b]$JAC2, moment2jacobi2( - inv b* sequence rst gseries1))$JAC2SEQ
+    moment2freeCumulant(mom : Sequence R) : Sequence R ==
+        -- first divide
+        g : Stream R := cons(1$R, stream mom)
+        g1:Union(Stream R, "failed") := recip(g)$STSOR -- value1 --$
+        -- g1 case "failed" => "failed"
+        f : Stream R := lagrange(g1::Stream R)
+        -- now we have f=z/C(z)
+        f1:Union(Stream R, "failed") := recip rest f
+        -- f1 case "failed" => "failed"
+        coerce rest (f1::Stream R)
 
-moment2jacobi(mom : Sequence R) : JACSEQ2 ==
-    res : JAC2SEQ := moment2jacobi2 mom
-    [map(y+->y an, res)$(StreamFunctions2(JAC2, R)), map(y+->y bn, res)$(StreamFunctions2(JAC2, R))]$JACSEQ2
+)if false
 
-@ % --$
-The orthogonal polynomials satisfy the recursion
-$$
-xP_k(x) = P_{k+1}(x) + a_{k} P_k(x) + b_{k-1} P_{k-1}(x)
-$$
-where per definitionem we set $b_{-1}=0$ and we
-assume that the sequences of Jacobi coefficients both start
-with index $0$.
-In an auxiliary function we carry pairs of subsequent polynomials
-$P_n$, $P_{n-1}$ from which we obtain the pair $P_{n+1}$
-$$
-P_{n+1} = (x-a_n)P_n - b_{n-1}P_{n-1}
-$$
-<<MomentPackage implementation>>=
-xsup := monomial(1, 1)$SUPR
+    \subsection{MomentPackage Boolean cumulants}
+    The boolean cumulant generating function $B(z)$ and the
+    moment generating function $M(z)$ are related by
+    $$
+    B(z) = 1-\frac{1}{M(z)}
+    $$
 
-jacobi2polypq(aa : Stream R, bb : Stream R, p : SUPR, q : SUPR) : Stream SUPRpq == delay
-    q1 : SUPR := (xsup - (first aa)*1$SUPR)*q - first bb*p
-    pq1 : SUPRpq := [q, q1]
-    cons(pq1, jacobi2polypq(rest aa, rest bb, q, q1))
-@ %
-From the stream of pairs we extract the first elements.
-<<MomentPackage implementation>>=
-jacobi2poly(aa : Stream R, bb : Stream R) : Stream SUPR ==
-    p0 : SUPR := 1
-    p1 : SUPR := xsup - (first aa)*p0
-    res : Stream SUPRpq := jacobi2polypq(rest aa, bb, p0, p1)
-    map( (pp : SUPRpq) : SUPR +-> pp.first, res)$StreamFunctions2(SUPRpq, SUPR)
-@ %
+)endif
+
+    booleanCumulant2moment(x : Sequence R) : Sequence R ==
+        rec : Stream R := cons(1$R, stream(-x))
+        boo:Union(Stream R, "failed") :=
+            recip(rec)$(StreamTaylorSeriesOperations R)
+        rest sequence (boo::Stream R)
+
+    moment2booleanCumulant(x : Sequence R) : Sequence R ==
+        boo : Stream R := cons(1$R, stream x)
+        mom : Union(Stream R, "failed") :=
+            recip(boo)$(StreamTaylorSeriesOperations R)
+        rest (- sequence (mom::Stream R))
+
+    -- \subsection{MomentPackage Jacobi Parameters and Orthogonal Polynomials}
+
+    hankelDeterminant(x : Sequence R, n : NonNegativeInteger) : R ==
+    --    odd? n=> error "n must be even"
+        import from HankelPackage R
+        determinant HankelMatrix cons(1, firstn(x, 2*n))
+
+    -- The Jacobi parameters are only available in the case of a Field.
+    if R has Field then
+
+)if false
+
+    The Jacobi parameters are defined by
+    $$
+    x P_n(x) = P_{n+1}(x) + a_n P_n(x) + b_n P_{n-1}(x)
+    $$
+    they are computed via the recursion...
+
+    %JACOBI3
+    First a finite version using lists.
+
+)endif
+
+        moment2nthJacobi(mom : List R) : JACLIST ==
+            N : Integer := (#mom)::Integer
+            G : List R := mom -- add 1 to the moments
+            aa : List R := empty()
+            bb : List R := empty()
+            while N>1 repeat
+                -- assign the new coefficients
+                ak : R := first G
+                bk : R := second G - ak*ak
+                aa := concat(aa, ak)
+                bb := concat(bb, bk)
+                -- invert G and store it in H.
+                -- the first three entries are clear
+                H : List R := [-ak, -bk]
+                k, l : Integer
+                for k in 3..N repeat
+                    Hk : R := -G k
+                    for l in 1..k-1 repeat
+                        Hk := Hk - (G l) * H(k-l)
+                    H := concat(H, Hk)
+                if R has Field then
+                    h : R
+                    G := [-h/bk for h in  H ]
+                    G := rest rest G
+                N := N-2
+            [aa, bb]
+
+)if false
+
+    Here is a recursive version.
+    The algorithm is very simple:
+    if
+    $$
+    F(z) = 1 + \sum_{n=1}^\infty c_n z^n
+    = \cfrac{1}{1-a_1z-\cfrac{b_1z^2}{1-a_2z-\dots}}
+    $$
+    then
+    $$
+    \frac{1}{F(z)} = 1 - a_1z-b_1z^2G_2(z)
+    $$
+    and this can be recursively applied to $G_2(z)$.
+
+)endif
+
+        moment2jacobi2(mom : Sequence R) : JAC2SEQ == delay
+            gseries : Stream R := cons(1, (stream$(Sequence R)) mom)
+            -- first divide
+            gseries1 := recip(gseries)$(StreamTaylorSeriesOperations R
+                                       )::Stream R
+            gseries1 := rest gseries1
+            a : R := - first gseries1
+            gseries1 := rest gseries1
+            b : R := - first gseries1
+            b1 : R := - inv b
+            cons([a, b]$JAC2, moment2jacobi2( - inv b* sequence rst gseries1)
+                )$JAC2SEQ
+
+        moment2jacobi(mom : Sequence R) : JACSEQ2 ==
+            res : JAC2SEQ := moment2jacobi2 mom
+            [map(y+->y an, res)$(StreamFunctions2(JAC2, R)),
+                map(y+->y bn, res)$(StreamFunctions2(JAC2, R))]$JACSEQ2
+
+)if false
+
+    The orthogonal polynomials satisfy the recursion
+    $$
+    xP_k(x) = P_{k+1}(x) + a_{k} P_k(x) + b_{k-1} P_{k-1}(x)
+    $$
+    where per definitionem we set $b_{-1}=0$ and we
+    assume that the sequences of Jacobi coefficients both start
+    with index $0$.
+    In an auxiliary function we carry pairs of subsequent polynomials
+    $P_n$, $P_{n-1}$ from which we obtain the pair $P_{n+1}$
+    $$
+    P_{n+1} = (x-a_n)P_n - b_{n-1}P_{n-1}
+    $$
+)endif
+
+    xsup := monomial(1, 1)$SUPR
+
+    jacobi2polypq(aa : Stream R, bb : Stream R, p : SUPR, q : SUPR
+                 ) : Stream SUPRpq == delay
+        q1 : SUPR := (xsup - (first aa)*1$SUPR)*q - first bb*p
+        pq1 : SUPRpq := [q, q1]
+        cons(pq1, jacobi2polypq(rest aa, rest bb, q, q1))
+    -- From the stream of pairs we extract the first elements.
+
+    jacobi2poly(aa : Stream R, bb : Stream R) : Stream SUPR ==
+        p0 : SUPR := 1
+        p1 : SUPR := xsup - (first aa)*p0
+        res : Stream SUPRpq := jacobi2polypq(rest aa, bb, p0, p1)
+        map( (pp : SUPRpq) : SUPR +-> pp.first, res
+           )$StreamFunctions2(SUPRpq, SUPR)
+)if false
+
 \subsection{MomentPackage S-transform}
 \label{ssec:mompackStrans}
 Let $\psi(z) = \sum_{n=1}^\infty m_nz^n$ be the moment generating
@@ -712,29 +743,31 @@ A record containing the Puiseux exponent, the Laurent exponent
 suitable for Puiseux series operations in the S-transform package
 in section~\ref{sec:STRANS}.
 
-<<MomentPackage implementation>>=
-if R has Algebra Fraction Integer then
+)endif
 
-  moment2Stransform(x : Sequence R) : STRREC ==
-      mom := stream x
-      if zero? first mom then
-          -- case of zero mean: take square root
-          mom2 : Stream R := cons(0, powern(1/2, rest mom)$STSOR)
-          -- invert
-          chi2 : Stream R := revert(mom2)$STSOR
-          chi2s : Sequence R := sequence chi2
-          -- S2 = chi2+chi2/z^2
-          S2 : Sequence R := cons(0, chi2s) + rest chi2s
-          [1/2, -1, S2]$STRREC
-        else
-          -- case of nonzero mean
-          mom := cons(0, mom)
-          chi : Stream R := revert(mom)$STSOR
-          -- S = chi + chi/z
-          S : Sequence R := sequence chi + sequence rest chi
-          [1, 0, S]$STRREC
+    if R has Algebra Fraction Integer then
 
-@
+      moment2Stransform(x : Sequence R) : STRREC ==
+          mom := stream x
+          if zero? first mom then
+              -- case of zero mean: take square root
+              mom2 : Stream R := cons(0, powern(1/2, rest mom)$STSOR)
+              -- invert
+              chi2 : Stream R := revert(mom2)$STSOR
+              chi2s : Sequence R := sequence chi2
+              -- S2 = chi2+chi2/z^2
+              S2 : Sequence R := cons(0, chi2s) + rest chi2s
+              [1/2, -1, S2]$STRREC
+            else
+              -- case of nonzero mean
+              mom := cons(0, mom)
+              chi : Stream R := revert(mom)$STSOR
+              -- S = chi + chi/z
+              S : Sequence R := sequence chi + sequence rest chi
+              [1, 0, S]$STRREC
+
+)if false
+
 \subsection{Monotone cumulants}
 The monotone cumulants were defined by Hasebe
 and are determined by the infinite system of differential equations
@@ -772,72 +805,77 @@ We keep the information in a record
 The function \spad{moment2monotoneCumulantGenerator}
 then implements the two steps above.
 
-<<MomentPackage implementation>>=
--- monotone cumulants
-  t := monomial(1, 1)$SUPR
-  moment2monotoneCumulantGenerator(srm : RECSRM) : RECSRM ==
-      mt : List SUPR := srm.momt
-      rr : List R := srm.cum
-      mm : Stream R := srm.mom
-      n : Integer := #rr + 1
-      tmp : SUPR := 0
-      for k in 2..n for r in rr for m in reverse mt repeat
-          tmp := tmp + k*m*r
-      mnt : SUPR := integrate tmp
-      rn : R := first mm - mnt 1
-      mnt := mnt + t*rn
-      rrnew : List R := cons(rn, rr)
-      mtnew : List SUPR := cons(mnt, mt)
-      return [mtnew, rrnew, rest mm]
+)endif
 
-  moment2monotoneCumulant(mm : Sequence R) : Sequence R ==
-      m1t : SUPR := monomial(first mm, 1)$SUPR
-      r1 := first mm
-      mtr1 : RECSRM := [[m1t], [r1], rest stream mm]$RECSRM
-      res : Stream RECSRM := stream(moment2monotoneCumulantGenerator, mtr1)
-      res1 : Stream R := map( (s : RECSRM) : R +-> first (s.cum), res)$StreamFunctions2(RECSRM, R)
-      sequence res1
-@ %
+    -- monotone cumulants
+      t := monomial(1, 1)$SUPR
+      moment2monotoneCumulantGenerator(srm : RECSRM) : RECSRM ==
+          mt : List SUPR := srm.momt
+          rr : List R := srm.cum
+          mm : Stream R := srm.mom
+          n : Integer := #rr + 1
+          tmp : SUPR := 0
+          for k in 2..n for r in rr for m in reverse mt repeat
+              tmp := tmp + k*m*r
+          mnt : SUPR := integrate tmp
+          rn : R := first mm - mnt 1
+          mnt := mnt + t*rn
+          rrnew : List R := cons(rn, rr)
+          mtnew : List SUPR := cons(mnt, mt)
+          return [mtnew, rrnew, rest mm]
 
+      moment2monotoneCumulant(mm : Sequence R) : Sequence R ==
+          m1t : SUPR := monomial(first mm, 1)$SUPR
+          r1 := first mm
+          mtr1 : RECSRM := [[m1t], [r1], rest stream mm]$RECSRM
+          res : Stream RECSRM :=
+              stream(moment2monotoneCumulantGenerator, mtr1)
+          res1 : Stream R := map( (s : RECSRM) : R +-> first (s.cum), res
+                                )$StreamFunctions2(RECSRM, R)
+          sequence res1
 
-\subsubsection{From monotone cumulants to moments}
-For the converse direction we simply iterate the integral formula
-\eqref{mnt=trn}.
-We compute the stream of $m_n(t)$ and
-finally evaluate it at $t=1$.
+)if false
 
+    \subsubsection{From monotone cumulants to moments}
+    For the converse direction we simply iterate the integral formula
+    \eqref{mnt=trn}.
+    We compute the stream of $m_n(t)$ and
+    finally evaluate it at $t=1$.
 
-<<MomentPackage implementation>>=
--- monotone cumulants
-  RECMM ==> Record(cum : Stream R, momt : List SUPR)
-  t := monomial(1, 1)$SUPR
-  monotoneCumulant2momentGenerator(srm : RECMM) : RECMM ==
-      mt : List SUPR := srm.momt
-      rr : Stream R := srm.cum
-      n : Integer := #mt + 1
-      NNI==> NonNegativeInteger
-      tmp : SUPR := 0
-      for k in 1..n-1 for m in mt repeat
-          tmp := tmp + (n+1-k)*m*first rr
-          rr := rest rr
-      mnt : SUPR := t*first rr + integrate tmp
-      mtnew : List SUPR := cons(mnt, mt)
-      return [srm.cum, mtnew]
+)endif
 
-  monotoneCumulant2moment(rr : Sequence R) : Sequence R ==
-      m1t : SUPR := monomial(first rr, 1)$SUPR
-      mtr1: RECMM := [stream rr, [m1t]]$RECMM
-      res : Stream RECMM := stream(monotoneCumulant2momentGenerator, mtr1)
-      res1 : Stream R := map( (s : RECMM) : R +-> (first (s.momt)).(1), res)$StreamFunctions2(RECMM, R)
-      sequence res1
+    -- monotone cumulants
+      RECMM ==> Record(cum : Stream R, momt : List SUPR)
+      t := monomial(1, 1)$SUPR
+      monotoneCumulant2momentGenerator(srm : RECMM) : RECMM ==
+          mt : List SUPR := srm.momt
+          rr : Stream R := srm.cum
+          n : Integer := #mt + 1
+          NNI==> NonNegativeInteger
+          tmp : SUPR := 0
+          for k in 1..n-1 for m in mt repeat
+              tmp := tmp + (n+1-k)*m*first rr
+              rr := rest rr
+          mnt : SUPR := t*first rr + integrate tmp
+          mtnew : List SUPR := cons(mnt, mt)
+          return [srm.cum, mtnew]
 
-  monotoneCumulant2momentPoly(rr : Sequence R) : Sequence SUPR ==
-      m1t : SUPR := monomial(first rr, 1)$SUPR
-      mtr1 : RECMM := [stream rr, [m1t]]$RECMM
-      res : Stream RECMM := stream(monotoneCumulant2momentGenerator, mtr1)
-      res1 : Stream SUPR := map( (s : RECMM) : SUPR +-> (first (s.momt)), res)$StreamFunctions2(RECMM, SUPR)
-      sequence res1
-@ %
+      monotoneCumulant2moment(rr : Sequence R) : Sequence R ==
+          m1t : SUPR := monomial(first rr, 1)$SUPR
+          mtr1: RECMM := [stream rr, [m1t]]$RECMM
+          res : Stream RECMM := stream(monotoneCumulant2momentGenerator, mtr1)
+          res1 : Stream R := map( (s : RECMM) : R +-> (first (s.momt)).(1),
+                                  res)$StreamFunctions2(RECMM, R)
+          sequence res1
+
+      monotoneCumulant2momentPoly(rr : Sequence R) : Sequence SUPR ==
+          m1t : SUPR := monomial(first rr, 1)$SUPR
+          mtr1 : RECMM := [stream rr, [m1t]]$RECMM
+          res : Stream RECMM := stream(monotoneCumulant2momentGenerator, mtr1)
+          res1 : Stream SUPR := map( (s : RECMM) : SUPR +-> (first (s.momt)),
+                                     res)$StreamFunctions2(RECMM, SUPR)
+          sequence res1
+@
 
 
 \section{package STRANS STransformPackage}
@@ -927,7 +965,9 @@ STransformPackage(R, UTSR, ULSR, UPSR) : Exports == Implementation where
             res := sequence chi + sequence rest chi
             S : UTSR := series stream res
             puiseux(1, laurent(0, S))$UPSR --$
-@ %
+
+)if false
+
 Getting back from the $S$-transform $S(z)$ to the distribution,
 the procedure is
 $$
@@ -978,7 +1018,8 @@ invert and evaluate at $\sqrt{z}$,
 i.e., call
 \axiom{puiseux(1/2, f)\$UPXS(EXPR INT, z,  0)}.
 
-<<package STRANS STransformPackage>>=
+)endif
+
     distributionBySTransform(S : UPSR) : DISTR ==
         if order(S) = 0 then
           -- Taylor case
@@ -1001,7 +1042,7 @@ i.e., call
         psi2 := revert(coefficients chi2)$STTAYLORR
         psi := powern(2::Fraction Integer, psi2)
         distributionByMoments sequence rest psi
-@ %
+@
 
 \section{category DISTCAT DistributionCategory}
 <<category DISTCAT DistributionCategory>>=
@@ -1021,7 +1062,8 @@ i.e., call
 DistributionCategory(R : CommutativeRing) : Category == Exports where
   NNI ==> NonNegativeInteger
   PI ==> PositiveInteger
-  STRREC ==> Record(puiseux : Fraction Integer, laurent : Fraction Integer, coef : Sequence R)
+  STRREC ==> Record(puiseux : Fraction Integer, laurent : Fraction Integer,
+                    coef : Sequence R)
   SUPR ==> SparseUnivariatePolynomial R
   SUPFR ==> SparseUnivariatePolynomial Fraction R
   Exports ==> SetCategory with
@@ -1052,15 +1094,15 @@ DistributionCategory(R : CommutativeRing) : Category == Exports where
       ++ \spad{booleanCumulants(x)} returns the sequence of boolean cumulants
       ++ of the distribution \spad{x}.
     hankelDeterminants : % -> Stream R
-      ++ \spad{hankelDeterminants(x)} returns the stream of hankel determinants
-      ++ of the distribution \spad{x}.
+      ++ \spad{hankelDeterminants(x)} returns the stream of hankel
+      ++ determinants of the distribution \spad{x}.
     if R has Algebra Fraction Integer then
---        monotoneCumulant : (%, PI) -> R
---          ++ \spad{monotoneCumulant(x, n)} returns the n-th monotone cumulant
---          ++ of the distribution \spad{x}
+--      monotoneCumulant : (%, PI) -> R
+--        ++ \spad{monotoneCumulant(x, n)} returns the n-th monotone cumulant
+--        ++ of the distribution \spad{x}
         monotoneCumulants : % -> Sequence R
-          ++ \spad{monotoneCumulants(x)} returns the sequence of monotone cumulants
-          ++ of the distribution \spad{x}.
+          ++ \spad{monotoneCumulants(x)} returns the sequence of monotone
+          ++ cumulants of the distribution \spad{x}.
     if R has Field then
         jacobiParameters : % -> Record(an : Stream R, bn : Stream R)
           ++ \spad{jacobiParameters(x)} returns the pair of streams
@@ -1069,7 +1111,8 @@ DistributionCategory(R : CommutativeRing) : Category == Exports where
           ++ \spad{orthogonalPolynomials(x)} returns the stream of
           ++ orthogonal polynomials.
       else if R has IntegralDomain then
-        jacobiParameters : % -> Record(an : Stream Fraction R, bn : Stream Fraction R)
+        jacobiParameters : % -> Record(an : Stream Fraction R,
+                                       bn : Stream Fraction R)
           ++ \spad{jacobiParameters(x)} returns the pair of streams
           ++ of Jacobi parameters of the distribution \spad{x}.
         orthogonalPolynomials : % -> Stream SUPFR
@@ -1092,7 +1135,7 @@ DistributionCategory(R : CommutativeRing) : Category == Exports where
       ++ \spad{x^k} constructs the distribution of the \spad{k}th power
       ++ of the random variable with distribution \spad{X}
       ++ by picking every k-th moment.
-@ %
+@
 
 \section{domain DISTRO Distribution}
 <<domain DISTRO Distribution>>=
@@ -1116,7 +1159,8 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
   NNI ==> NonNegativeInteger
   PI ==> PositiveInteger
   STSOR ==> StreamTaylorSeriesOperations R
-  STRREC ==> Record(puiseux : Fraction Integer, laurent : Fraction Integer, coef : Sequence R)
+  STRREC ==> Record(puiseux : Fraction Integer, laurent : Fraction Integer,
+                    coef : Sequence R)
   SUPR ==> SparseUnivariatePolynomial R
   SUPFR ==> SparseUnivariatePolynomial Fraction R
   Exports ==> DistributionCategory(R) with
@@ -1145,17 +1189,17 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
       ++ \spad{distributionByFreeCumulants(cc)} initiates a distribution with
       ++ given free cumulants \spad{cc}.
     distributionByBooleanCumulants : Sequence R -> %
-      ++ \spad{distributionByBooleanCumulants(bb)} initiates a distribution with
-      ++ given Boolean cumulants \spad{bb}.
+      ++ \spad{distributionByBooleanCumulants(bb)} initiates a distribution
+      ++ with given Boolean cumulants \spad{bb}.
     distributionByBooleanCumulants : Stream R -> %
-      ++ \spad{distributionByBooleanCumulants(bb)} initiates a distribution with
-      ++ given Boolean cumulants \spad{bb}.
+      ++ \spad{distributionByBooleanCumulants(bb)} initiates a distribution
+      ++ with given Boolean cumulants \spad{bb}.
     distributionByJacobiParameters : (Sequence R, Sequence R) -> %
-      ++ \spad{distributionByJacobiParameters(aa, bb)} initiates a distribution
-      ++ with given Jacobi parameters \spad{[aa, bb]}.
+      ++ \spad{distributionByJacobiParameters(aa, bb)} initiates a
+      ++ distribution with given Jacobi parameters \spad{[aa, bb]}.
     distributionByJacobiParameters : (Stream R, Stream R) -> %
-      ++ \spad{distributionByJacobiParameters(aa, bb)} initiates a distribution
-      ++ with given Jacobi parameters \spad{[aa, bb]}.
+      ++ \spad{distributionByJacobiParameters(aa, bb)} initiates a
+      ++ distribution with given Jacobi parameters \spad{[aa, bb]}.
     booleanCumulantFromJacobi : (Integer, Sequence R, Sequence R) -> R
       ++ \spad{booleanCumulantFromJacobi(n, aa, bb)}
       ++ computes the \spad{n}th Boolean cumulant from
@@ -1168,23 +1212,25 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
       ++ otherwise the results are unpredictable!
     if R has Algebra Fraction Integer then
       distributionByMonotoneCumulants : Sequence R -> %
-        ++ \spad{distributionByMonotoneCumulants(hh)} initiates a distribution with
-        ++ given monotone cumulants \spad{hh}.
+        ++ \spad{distributionByMonotoneCumulants(hh)} initiates a
+        ++ distribution with given monotone cumulants \spad{hh}.
       distributionByMonotoneCumulants : Stream R -> %
-        ++ \spad{distributionByMonotoneCumulants(hh)} initiates a distribution with
-        ++ given monotone cumulants \spad{hh}.
+        ++ \spad{distributionByMonotoneCumulants(hh)} initiates a
+        ++ distribution with given monotone cumulants \spad{hh}.
       distributionBySTransform : STRREC -> %
-        ++ \spad{distributionBySTransform(series)} initiates a distribution with
-        ++ given S-transform \spad{series}.
-      distributionBySTransform : (Fraction Integer, Fraction Integer, Sequence R) -> %
-        ++ \spad{distributionBySTransform(series)} initiates a distribution with
-        ++ given S-transform \spad{series}.
+        ++ \spad{distributionBySTransform(series)} initiates a
+        ++ distribution with given S-transform \spad{series}.
+      distributionBySTransform : (Fraction Integer, Fraction Integer,
+                                  Sequence R) -> %
+        ++ \spad{distributionBySTransform(series)} initiates a distribution
+        ++ with given S-transform \spad{series}.
       freeMultiplicativeConvolution : (%, %) -> %
         ++ \spad{freeMultiplicativeConvolution(mu, nu)} computes
         ++ the free multiplicative convolution of the distributions
         ++ \spad{mu} and \spad{nu}.
   Implementation ==> add
-    Rep := Record(moments : Sequence R, ccumulants : Sequence R, fcumulants : Sequence R, bcumulants : Sequence R)
+    Rep := Record(moments : Sequence R, ccumulants : Sequence R,
+                  fcumulants : Sequence R, bcumulants : Sequence R)
     rep(x : %) : Rep == x :: Rep
     per(r : Rep) : % == r :: %
 
@@ -1192,7 +1238,8 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
 
     distributionByMoments(mm : Sequence R) : % ==
         import from MomentPackage R
-        per ([mm, moment2cumulant mm, moment2freeCumulant mm, moment2booleanCumulant mm]$Rep)
+        per ([mm, moment2cumulant mm, moment2freeCumulant mm,
+              moment2booleanCumulant mm]$Rep)
 
     distributionByMoments(mm : Stream R) : % ==
         distributionByMoments(sequence(mm)$(Sequence R))
@@ -1233,13 +1280,15 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
     distributionByBooleanCumulants(mm : Stream R) : % ==
         distributionByBooleanCumulants(sequence(mm)$(Sequence R))
 
-    booleanCumulantFromJacobi(n : Integer, aa : Sequence R, bb : Sequence R) : R ==
+    booleanCumulantFromJacobi(n : Integer, aa : Sequence R,
+                              bb : Sequence R) : R ==
         zero? n => 1
         one? n => aa 1
         bb 1*booleanCumulantFromJacobi(n-2, rest aa, rest bb)
 
     distributionByJacobiParameters(aa : Sequence R, bb : Sequence R) : % ==
-        rior : Stream List R := jacobiPathArray(stream aa, stream bb)$(PathArrayPackage R)
+        rior : Stream List R := jacobiPathArray(stream aa, stream bb
+                                               )$(PathArrayPackage R)
         mom : Stream R := rest bottom rior
         distributionByMoments(sequence mom)
 
@@ -1247,7 +1296,8 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
         distributionByJacobiParameters(sequence(aa)$(Sequence R), _
             sequence(bb)$(Sequence R))
 
-    construct(mom : Sequence R, ccum : Sequence R, fcum : Sequence R, bcum : Sequence R) : % ==
+    construct(mom : Sequence R, ccum : Sequence R, fcum : Sequence R,
+              bcum : Sequence R) : % ==
         per([mom, ccum, fcum, bcum]$Rep)
 
     if R has Algebra Fraction Integer then
@@ -1257,7 +1307,8 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
       distributionByMonotoneCumulants(mc : Sequence R) : % ==
           import from MomentPackage R
           mm := monotoneCumulant2moment mc
-          per ([mm, moment2cumulant mm, moment2freeCumulant mm, moment2booleanCumulant mm]$Rep)
+          per ([mm, moment2cumulant mm, moment2freeCumulant mm,
+                moment2booleanCumulant mm]$Rep)
 
       distributionByMonotoneCumulants(mm : Stream R) : % ==
           distributionByMonotoneCumulants(sequence(mm)$(Sequence R))
@@ -1339,7 +1390,8 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
     booleanCumulants(x : %) : Sequence R == (rep x) bcumulants
 
     hankelDeterminants1(x : %, n : NonNegativeInteger) : Stream R == delay
-        cons(hankelDeterminant(moments x, n)$(MomentPackage R), hankelDeterminants1(x, n+1))
+        cons(hankelDeterminant(moments x, n)$(MomentPackage R),
+             hankelDeterminants1(x, n+1))
 
     hankelDeterminants(x : %) : Stream R == hankelDeterminants1(x, 1)
 
@@ -1352,24 +1404,32 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
             jacobi2poly(jac.an, jac.bn)$(MomentPackage R)
 
       else if R has IntegralDomain then
-        jacobiParameters(x : %) : Record(an : Stream Fraction R, bn : Stream Fraction R) ==
+        jacobiParameters(x : %) : Record(an : Stream Fraction R,
+                                         bn : Stream Fraction R) ==
             mm1 : Stream R := stream moments x
-            mm : Stream Fraction R := map( (t : R) : Fraction R +-> (coerce(t)@(Fraction R)), mm1)$StreamFunctions2(R, Fraction R)
+            mm : Stream Fraction R :=
+                map( (t : R) : Fraction R +-> (coerce(t)@(Fraction R)),
+                      mm1)$StreamFunctions2(R, Fraction R)
             moment2jacobi(sequence mm)$(MomentPackage Fraction R)
 
         orthogonalPolynomials(x : %) : Stream SUPFR ==
-            jac : Record(an : Stream Fraction R, bn : Stream Fraction R) := jacobiParameters x
+            jac : Record(an : Stream Fraction R, bn : Stream Fraction R) :=
+                jacobiParameters x
             jacobi2poly(jac.an, jac.bn)$(MomentPackage Fraction R)
 
     classicalConvolution(x : %, y : %) : % ==
-        distributionByClassicalCumulants(classicalCumulants x + classicalCumulants y)
+        distributionByClassicalCumulants(classicalCumulants x +
+                                         classicalCumulants y)
 
     freeConvolution(x : %, y : %) : % ==
         distributionByFreeCumulants(freeCumulants x + freeCumulants y)
 
     booleanConvolution(x : %, y : %) : % ==
-        distributionByBooleanCumulants(booleanCumulants x + booleanCumulants y)
-@ %
+        distributionByBooleanCumulants(booleanCumulants x +
+                                       booleanCumulants y)
+
+)if false
+
 Monotone convolution is done by composing the reciprocal Cauchy transforms:
 Let $H_\mu(z) = \frac{1}{G_\mu(z)}$,
 then $H_{\mu\rhd\nu}(z) = H_\mu(H_\nu(z))$.
@@ -1382,9 +1442,12 @@ $
 So we have to add the constant term $1$ and multiply by $z$ first
 and invert this operation at the end to obtain the
 moment sequence.
-<<domain DISTRO Distribution>>=
+
+)endif
+
     monotoneConvolution(x : %, y : %) : % ==
-        distributionByMoments(sequence rest rest compose(cons(0, cons(1, stream moments x)),
+        distributionByMoments(
+            sequence rest rest compose(cons(0, cons(1, stream moments x)),
                 cons(0, cons(1, stream moments y)))$STSOR ) --$
 
     x : %
@@ -1400,7 +1463,7 @@ moment sequence.
     _^(x, n) ==
         momn : Stream R := nth (stream  moments x, n)
         distributionByMoments sequence momn
-@ %
+@
 
 
 \section{package DISTPOL DistributionPolynomialPackage}
@@ -1419,7 +1482,10 @@ moment sequence.
 ++ Description:
 ++   A package to apply polynomial transformations to distributions
 ++   and integrate polynomials with respect to distributions.
-DistributionPolynomialPackage(R : CommutativeRing, S : Join(CommutativeRing, Module R), UPS : UnivariatePolynomialCategory S) : Exports == Implementation   where
+DistributionPolynomialPackage(R : CommutativeRing,
+                              S : Join(CommutativeRing, Module R),
+                              UPS : UnivariatePolynomialCategory S
+                             ) : Exports == Implementation   where
   DR ==> Distribution R
   DS ==> Distribution S
   FR==> Fraction R
@@ -1454,10 +1520,12 @@ DistributionPolynomialPackage(R : CommutativeRing, S : Join(CommutativeRing, Mod
         -- evaluate x at powers of p
         IN : Stream Integer := expand([1..])$(UniversalSegment Integer)
 --        import from UPS
-        mompx : Stream S := map( (k : Integer) : S +-> eval(x, p^(k::PositiveInteger)), IN)$StreamFunctions2(Integer, S)
+        mompx : Stream S :=
+             map( (k : Integer) : S +-> eval(x, p^(k::PositiveInteger)),
+                  IN)$StreamFunctions2(Integer, S)
         distributionByMoments sequence mompx
 
-@ %
+@
 
 \section{package DSTCFPG DistributionContinuedFractionPackage}
 It is not possible to work with \axiom{UnivariatePolynomialCategory}
@@ -1477,7 +1545,9 @@ because for the continued fraction we need access to
 ++ References:
 ++ Description:
 ++   A package to compute Jacobi continued fractions of Cauchy transforms.
-DistributionContinuedFractionPackage(R : CommutativeRing, z : Symbol) : Exports == Implementation   where
+DistributionContinuedFractionPackage(R : CommutativeRing,
+                                     z : Symbol
+                                    ) : Exports == Implementation   where
   DR ==> Distribution R
   UPz ==> UnivariatePolynomial(z, R)
   FR==> Fraction R
@@ -1495,20 +1565,25 @@ DistributionContinuedFractionPackage(R : CommutativeRing, z : Symbol) : Exports 
   Implementation ==> add
     if R has Field then
         JContinuedFraction(x : DR, zz : UPz) : ContinuedFraction UPz ==
-            jac : Record(an : Stream R, bn : Stream R) := jacobiParameters(x)$DR
+            jac : Record(an : Stream R, bn : Stream R) :=
+                jacobiParameters(x)$DR
             import from StreamFunctions2(R, UPz)
-            an1 : Stream UPz := map((a : R) : UPz +-> zz-monomial(a, 0), jac an)
+            an1 : Stream UPz :=
+                map((a : R) : UPz +-> zz-monomial(a, 0), jac an)
             bn1 : Stream UPz := map((b : R) : UPz +-> monomial(-b, 0), jac bn)
             continuedFraction(0, cons(1, bn1), cons(zz, an1))
 
       else if R has IntegralDomain then
         JContinuedFraction(x : DR, zz : UPFz) : ContinuedFraction UPFz ==
-            jac : Record(an : Stream FR, bn : Stream FR) := jacobiParameters(x)$DR
+            jac : Record(an : Stream FR, bn : Stream FR) :=
+                jacobiParameters(x)$DR
             import from StreamFunctions2(FR, UPFz)
-            an1 : Stream UPFz := map((a : FR) : UPFz +-> zz-monomial(a, 0), jac an)
-            bn1 : Stream UPFz := map((b : FR) : UPFz +-> monomial(-b, 0), jac bn)
+            an1 : Stream UPFz :=
+                map((a : FR) : UPFz +-> zz-monomial(a, 0), jac an)
+            bn1 : Stream UPFz :=
+                map((b : FR) : UPFz +-> monomial(-b, 0), jac bn)
             continuedFraction(0, cons(1, bn1), cons(zz, an1))
-@ %
+@
 
 \section{package DISTRO2 DistributionFunctions2}
 <<package DISTRO2 DistributionFunctions2>>=
@@ -1525,7 +1600,8 @@ DistributionContinuedFractionPackage(R : CommutativeRing, z : Symbol) : Exports 
 ++ References:
 ++ Description:
 ++   A package to map distributions between different rings.
-DistributionFunctions2(R1 : CommutativeRing, R2 : CommutativeRing) : Exports == Implementation where
+DistributionFunctions2(R1 : CommutativeRing, R2 : CommutativeRing
+                      ) : Exports == Implementation where
   DR1 ==> Distribution R1
   DR2 ==> Distribution R2
   SR1 ==> Sequence R1
@@ -1557,7 +1633,7 @@ DistributionFunctions2(R1 : CommutativeRing, R2 : CommutativeRing) : Exports == 
 
     coerce(x : Distribution R1) : Distribution R2 ==
         mapall(R1_to_R2_coercion, x)
-@ %
+@
 
 \section{package DISTEX DistributionPackage}
 <<package DISTEX DistributionPackage>>=
@@ -1630,7 +1706,7 @@ DistributionPackage(R : CommutativeRing) : Exports == Implementation where
           mgf := powern(half, cons(1, mgf))$STTR
           mgf := (recip(mgf)$STTR)::Stream R
           distributionByMoments sequence rest mgf
-@ %
+@
 
 
 <<*>>=
