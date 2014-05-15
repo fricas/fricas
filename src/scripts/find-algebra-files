@@ -3,12 +3,12 @@ if echo ab | grep -E '(a|b)b' > /dev/null 2>&1 ; then
 else
     EGREP=egrep
 fi
-$EGREP '<<(domain|package|category) .*>>=' *.spad.pamphlet | sort | uniq | \
+$EGREP '^\)abbrev (domain|package|category)' *.spad.pamphlet | sort | uniq | \
 awk -F: '{
-  chunk=substr($2,3,length($2)-5);
+  chunk=$2;
   split(chunk,part," ");
-  spadfile=part[2]".spad";
-  print spadfile": $(srcdir)/"$1;
-  print "\t$(axiom_build_document) --output=$@ --tangle=\""chunk"\" $<";
+  spadname=part[3];
+  print spadname".spad: $(srcdir)/"$1;
+  print "\t$(unpack_file) \""chunk"\" < $< > $@" ;
   print "";
 }'

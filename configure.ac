@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2014-03-24],
+AC_INIT([FriCAS], [2014-05-15],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -202,25 +202,6 @@ AC_ARG_WITH([noweb-tarball],
     # Action if --with-noweb-tarball is not given.
     [noweb_tarball=; fricas_build_noweb=]
 )
-
-## Check for notangle and noweb if we are not explicitly told
-## to build noweb from FriCAS sources.
-if test x$fricas_build_noweb != xyes ; then
-    AC_CHECK_PROGS([NOTANGLE], [notangle])
-    AC_CHECK_PROGS([NOWEAVE], [noweave])
-
-    ## In case noweb is missing we need to build our own.
-    if test -z $NOTANGLE ; then
-        if test x$fricas_build_noweb = xno ; then
-           AC_MSG_ERROR([noweb utils are missing but --without-noweb is specified])
-        elif test -f "$internal_noweb" ; then
-           fricas_build_noweb=yes
-           noweb_tarball="$internal_noweb"
-        else
-           AC_MSG_ERROR([noweb utils and noweb sources missing])
-        fi
-    fi
-fi
 
 if test x$fricas_build_noweb = xyes ; then
     fricas_all_prerequisites="$fricas_all_prerequisites all-noweb"
