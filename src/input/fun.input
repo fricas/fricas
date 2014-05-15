@@ -1,0 +1,45 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "functional values"
+
+testcase "add1"
+testTrue("(add1 := (x : INT) : INT -> INT -> INT +-> y +-> z +-> x + y + z"
+          "; true)")
+testTrue("(f1 := add1(5); true)")
+testTrue("(f2 := f1(7); true)")
+testEquals("f2(8)", "20")
+testEquals("add1(3)(9)(4)", "16")
+
+testcase "add2"
+add2 == (x : INT) : INT -> INT -> INT +-> y +-> z +-> x + y + z
+testTrue("(f1 := add2(15); true)")
+testEquals("f1(7)(8)", "30")
+testEquals("add2(2)(7)(4)", "13")
+
+testcase "add3"
+add3(x : INT) : INT -> INT -> INT == y +-> z +-> x + y + z
+testTrue("(f1 := add3(25); true)")
+testEquals("f1(7)(8)", "40")
+testEquals("add3(6)(11)(4)", "21")
+
+testcase "add4"
+testTrue("(add4 := x +-> (y : INT) : INT -> INT +-> z +-> x + y + z"
+         "; true)")
+testTrue("(g1 := add4(7); true)")
+testEquals("g1(3)(19)", "29")
+testEquals("add4(11)(-1)(5)", "15")
+
+testcase "list of closures"
+l1 := [1, 7, 17]
+l2 := [((x : INT) : INT +-> x + y) for y in l1]
+testEquals("l2(1)(3)", "4")
+testEquals("l2(2)(2)", "9")
+testEquals("l2(3)(-7)", "10")
+
+testcase "shadowing"
+h := (a : INT) : INT->INT +-> x +-> (a := 3 ; x+a)
+testEquals("h(1)(5)", "8")
+testEquals("h(5)(3)", "6")
+
+statistics()
