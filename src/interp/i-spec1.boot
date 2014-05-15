@@ -126,6 +126,7 @@ upADEF t ==
 
 evalUntargetedADEF(t,vars,types,body) ==
   -- recreate a parse form
+  $freeVariables := []
   if vars is [var]
     then vars := var
     else vars := ['Tuple,:vars]
@@ -206,15 +207,14 @@ compileADEFBody(t,vars,types,body,computedResultType) ==
   --  Dx: LODO(EXPR INT, f +-> D(f, x)) := D()
   --
   -- MCD 13/3/96
-  if not $definingMap and ($genValue or $compilingMap) then
+  $freeVariables := []
+  $boundVariables := [minivectorName,:vars]
+  body1 := checkForFreeVariables1(body, "ALL", $boundVariables)
+  if not($definingMap or $freeVariables) then
     fun := compileInteractive [$mapName,['LAMBDA,[:vars,'envArg],body]]
     code := wrap RPLACA(fun, SYMBOL_-FUNCTION first fun)
   else
-    $freeVariables := []
-    $boundVariables := [minivectorName,:vars]
-    -- CCL does not support upwards funargs, so we check for any free variables
-    -- and pass them into the lambda as part of envArg.
-    body := checkForFreeVariables(body,"ALL")
+    body := body1
     fun := ['function,['LAMBDA,[:vars,'envArg],body]]
     code := ['CONS, fun, ["VECTOR", :reverse $freeVariables]]
 
@@ -830,6 +830,9 @@ checkIterationForFreeVariables(op, itl, locals) ==
         $boundVariables := delete(var, $boundVariables)
     r
 
+checkForFreeVariables1(v, locals, $boundVariables) ==
+    checkForFreeVariables(v, locals)
+
 checkForFreeVariables(v,locals) ==
   -- v is the body of a lambda expression.  The list $boundVariables is all the
   -- bound variables, the parameter locals contains local variables which might
@@ -867,8 +870,9 @@ checkForFreeVariables(v,locals) ==
         newvar :=
           p := POSITION(var,$freeVariables) =>
             ["ELT","envArg",positionInVec(p,#($freeVariables))]
-          $freeVariables := [var,:$freeVariables]
-          ["ELT","envArg",positionInVec(0,#($freeVariables))]
+          if not(MEMQ(var, $boundVariables)) then
+              $boundVariables := cons(var, $boundVariables)
+          var
         ["SETF",newvar,checkForFreeVariables(form,locals)]
       error "Non-simple variable bindings are not currently supported"
     op = "PROG" =>
@@ -876,6 +880,18 @@ checkForFreeVariables(v,locals) ==
     op = "LAMBDA" => v
     op = "QUOTE" => v
     op = "getValueFromEnvironment" => v
+    op = "local" =>
+        nargs := []
+        for a in args repeat
+            a is [":", var, dom] =>
+                dom := checkForFreeVariables(dom, locals)
+                if not(MEMQ(var, $boundVariables)) then
+                    $boundVariables := cons(var, $boundVariables)
+                nargs := cons([":", var, dom], nargs)
+            if not(MEMQ(a, $boundVariables)) then
+                $boundVariables := cons(a, $boundVariables)
+            nargs := cons(a, nargs)
+        ["local", :NREVERSE(nargs)]
     [op,:[checkForFreeVariables(a,locals) for a in args]]
   v
 
