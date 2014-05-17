@@ -567,7 +567,7 @@ TexFormat() : public == private where
     formatExpr(expr : E, prec : I) : S ==
       i, len : Integer
       intSplitLen : Integer := 20
-      str : S
+      str, s : S
       atom?(expr) =>
         str := stringify expr
         len := #str
@@ -595,10 +595,21 @@ TexFormat() : public == private where
           u : US := segment(3, len)$US
           concat(" \%\%", str.u)
         len > 0 and str.1 = char "%" => concat(" \", str)
-        len > 1 and digit? str.1 => group str -- should handle floats
         len > 0 and str.1 = char "_"" =>
-          concat(concat(" \mbox{\tt ",str),"} ")
+          s := "\verb#"
+          for i in 1..len repeat
+            if str.i = char "#" then
+              s := concat(s, "#\verb-#-\verb#")
+            else
+              s := concat(s, (str.i)::S)
+          concat(s, "#")
         len = 1 and str.1 = char " " => "{\ }"
+        -- escape the underscore character
+        s := ""
+        for i in 1..len repeat
+            s := concat(s, (if str.i = char "__" then "\__" else (str.i)::S))
+        str := s
+        len > 1 and digit? str.1 => group str -- should handle floats
         if symbol?(expr) then
             op := symbol(expr)
             (i := position(op, specialStrings)) > 0 =>
