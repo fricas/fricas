@@ -397,7 +397,7 @@ get_spad_output(FILE *pfile,char *command,int com_type)
  * THEMOS says: There is a problem here in that we issue the (|close|) and
  * then go on. If this is the last command, we will soon send a SIGTERM and
  * the whole thing will collapse maybe BEFORE the writing out has finished.
- * Fix: Call a Lisp function that checks (with \axiomOp{key} ps and grep) the
+ * Fix: Call a Lisp function that checks (with \spadop{key} ps and grep) the
  * health of the viewport. We do this after the (|close|).
  */
 void
