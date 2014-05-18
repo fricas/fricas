@@ -38,11 +38,11 @@ Aggregate : Category == Type with
      ++ eq?(u, v) tests if u and v are same objects.
    copy : % -> %
      ++ copy(u) returns a top-level (non-recursive) copy of u.
-     ++ Note: for collections, \axiom{copy(u) == [x for x in u]}.
+     ++ Note: for collections, \spad{copy(u) == [x for x in u]}.
    empty : () -> %
      ++ empty()$D creates an aggregate of type D with 0 elements.
      ++ Note: The {\em $D} can be dropped if understood by context,
-     ++ e.g. \axiom{u: D := empty()}.
+     ++ e.g. \spad{u: D := empty()}.
    empty? : % -> Boolean
      ++ empty?(u) tests if u has 0 elements.
    less? : (%, NonNegativeInteger) -> Boolean
@@ -107,43 +107,43 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
       if S has Evalable S then Evalable S
    map     : (S->S, %) -> %
      ++ map(f, u) returns a copy of u with each element x replaced by f(x).
-     ++ For collections, \axiom{map(f, u) = [f(x) for x in u]}.
+     ++ For collections, \spad{map(f, u) = [f(x) for x in u]}.
    if % has shallowlyMutable then
      map! : (S->S, %) -> %
-        ++ map!(f, u) destructively replaces each element x of u by \axiom{f(x)}.
+        ++ map!(f, u) destructively replaces each element x of u by \spad{f(x)}.
    if % has finiteAggregate then
       if S has BasicType then BasicType
       any? : (S->Boolean, %) -> Boolean
-        ++ any?(p, u) tests if \axiom{p(x)} is true for any element x of u.
+        ++ any?(p, u) tests if \spad{p(x)} is true for any element x of u.
         ++ Note: for collections,
-        ++ \axiom{any?(p, u) = reduce(or, map(f, u), false, true)}.
-        ++ However, \axiom{any?(p, u)} returns as soon as it finds an element
-        ++ for which \axiom{p} gives true.
+        ++ \spad{any?(p, u) = reduce(or, map(f, u), false, true)}.
+        ++ However, \spad{any?(p, u)} returns as soon as it finds an element
+        ++ for which \spad{p} gives true.
       every? : (S->Boolean, %) -> Boolean
         ++ every?(f, u) tests if p(x) is true for all elements x of u.
         ++ Note: for collections,
-        ++ \axiom{every?(p, u) = reduce(and, map(f, u), true, false)}.
-        ++ However, \axiom{every?(p, u)} returns as soon as it finds an element
-        ++ for which \axiom{p} gives false.
+        ++ \spad{every?(p, u) = reduce(and, map(f, u), true, false)}.
+        ++ However, \spad{every?(p, u)} returns as soon as it finds an element
+        ++ for which \spad{p} gives false.
       count : (S->Boolean, %) -> NonNegativeInteger
         ++ count(p, u) returns the number of elements x in u
-        ++ such that \axiom{p(x)} is true. For collections,
-        ++ \axiom{count(p, u) = reduce(+, [1 for x in u | p(x)], 0)}.
+        ++ such that \spad{p(x)} is true. For collections,
+        ++ \spad{count(p, u) = reduce(+, [1 for x in u | p(x)], 0)}.
       parts : % -> List S
         ++ parts(u) returns a list of the consecutive elements of u.
-        ++ For collections, \axiom{parts([x, y, ..., z]) = (x, y, ..., z)}.
+        ++ For collections, \spad{parts([x, y, ..., z]) = (x, y, ..., z)}.
       members : % -> List S
         ++ members(u) returns a list of the consecutive elements of u.
-        ++ For collections, \axiom{parts([x, y, ..., z]) = (x, y, ..., z)}.
+        ++ For collections, \spad{parts([x, y, ..., z]) = (x, y, ..., z)}.
       if S has BasicType then
         count : (S, %) -> NonNegativeInteger
           ++ count(x, u) returns the number of occurrences of x in u.
-          ++ For collections, \axiom{count(x, u) = reduce(+, [x=y for y in u], 0)}.
+          ++ For collections, \spad{count(x, u) = reduce(+, [x=y for y in u], 0)}.
         member? : (S, %) -> Boolean
           ++ member?(x, u) tests if x is a member of u.
           ++ For collections,
-          ++ \axiom{member?(x, u) = reduce(or, [x=y for y in u], false)}.
-          ++ However, \axiom{member?(x, u)} returns as soon as it finds a
+          ++ \spad{member?(x, u) = reduce(or, [x=y for y in u], false)}.
+          ++ However, \spad{member?(x, u)} returns as soon as it finds a
           ++ member.
 
   add
@@ -198,45 +198,45 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
 ++ \spadfun{flexibleArray} for \spadtype{FlexibleArray}, and so on.
 Collection(S : Type) : Category == HomogeneousAggregate(S) with
    construct : List S -> %
-     ++ \axiom{construct(x, y, ..., z)} returns the collection of elements \axiom{x, y, ..., z}
-     ++ ordered as given. Equivalently written as \axiom{[x, y, ..., z]$D}, where
+     ++ \spad{construct(x, y, ..., z)} returns the collection of elements \spad{x, y, ..., z}
+     ++ ordered as given. Equivalently written as \spad{[x, y, ..., z]$D}, where
      ++ D is the domain. D may be omitted for those of type List.
    find : (S->Boolean, %) -> Union(S, "failed")
-     ++ find(p, u) returns the first x in u such that \axiom{p(x)} is true, and
+     ++ find(p, u) returns the first x in u such that \spad{p(x)} is true, and
      ++ "failed" otherwise.
    if % has finiteAggregate then
       reduce : ((S, S)->S, %) -> S
         ++ reduce(f, u) reduces the binary operation f across u. For example,
-        ++ if u is \axiom{[x, y, ..., z]} then \axiom{reduce(f, u)} returns \axiom{f(..f(f(x, y), ...), z)}.
-        ++ Note: if u has one element x, \axiom{reduce(f, u)} returns x.
+        ++ if u is \spad{[x, y, ..., z]} then \spad{reduce(f, u)} returns \spad{f(..f(f(x, y), ...), z)}.
+        ++ Note: if u has one element x, \spad{reduce(f, u)} returns x.
         ++ Error: if u is empty.
       reduce : ((S, S)->S, %, S) -> S
         ++ reduce(f, u, x) reduces the binary operation f across u, where x is
         ++ the identity operation of f.
-        ++ Same as \axiom{reduce(f, u)} if u has 2 or more elements.
-        ++ Returns \axiom{f(x, y)} if u has one element y,
+        ++ Same as \spad{reduce(f, u)} if u has 2 or more elements.
+        ++ Returns \spad{f(x, y)} if u has one element y,
         ++ x if u is empty.
-        ++ For example, \axiom{reduce(+, u, 0)} returns the
+        ++ For example, \spad{reduce(+, u, 0)} returns the
         ++ sum of the elements of u.
       remove : (S->Boolean, %) -> %
         ++ remove(p, u) returns a copy of u removing all elements x such that
-        ++ \axiom{p(x)} is true.
-        ++ Note: \axiom{remove(p, u) == [x for x in u | not p(x)]}.
+        ++ \spad{p(x)} is true.
+        ++ Note: \spad{remove(p, u) == [x for x in u | not p(x)]}.
       select : (S->Boolean, %) -> %
         ++ select(p, u) returns a copy of u containing only those elements such
-        ++ \axiom{p(x)} is true.
-        ++ Note: \axiom{select(p, u) == [x for x in u | p(x)]}.
+        ++ \spad{p(x)} is true.
+        ++ Note: \spad{select(p, u) == [x for x in u | p(x)]}.
       if S has BasicType then
         reduce : ((S, S)->S, %, S, S) -> S
           ++ reduce(f, u, x, z) reduces the binary operation f across u, stopping
           ++ when an "absorbing element" z is encountered.
-          ++ As for \axiom{reduce(f, u, x)}, x is the identity operation of f.
-          ++ Same as \axiom{reduce(f, u, x)} when u contains no element z.
+          ++ As for \spad{reduce(f, u, x)}, x is the identity operation of f.
+          ++ Same as \spad{reduce(f, u, x)} when u contains no element z.
           ++ Thus the third argument x is returned when u is empty.
         remove : (S, %) -> %
           ++ remove(x, u) returns a copy of u with all
-          ++ elements \axiom{y = x} removed.
-          ++ Note: \axiom{remove(y, c) == [x for x in c | x ~= y]}.
+          ++ elements \spad{y = x} removed.
+          ++ Note: \spad{remove(y, c) == [x for x in c | x ~= y]}.
         removeDuplicates : % -> %
           ++ removeDuplicates(u) returns a copy of u with all duplicates removed.
    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
@@ -323,14 +323,14 @@ StackAggregate(S : Type) : Category == Join(BagAggregate S, finiteAggregate) wit
      ++ Afterwards, pop!(s) produces x and pop!(s) produces the original s.
    pop! : % -> S
      ++ pop!(s) returns the top element x, destructively removing x from s.
-     ++ Note: Use \axiom{top(s)} to obtain x without removing it from s.
+     ++ Note: Use \spad{top(s)} to obtain x without removing it from s.
      ++ Error: if s is empty.
    top : % -> S
      ++ top(s) returns the top element x from s; s remains unchanged.
-     ++ Note: Use \axiom{pop!(s)} to obtain x and remove it from s.
+     ++ Note: Use \spad{pop!(s)} to obtain x and remove it from s.
    depth : % -> NonNegativeInteger
      ++ depth(s) returns the number of elements of stack s.
-     ++ Note: \axiom{depth(s) = #s}.
+     ++ Note: \spad{depth(s) = #s}.
 
 
 @
@@ -361,7 +361,7 @@ QueueAggregate(S : Type) : Category == Join(BagAggregate S, finiteAggregate) wit
      ++ Note: rotate! q is equivalent to enqueue!(dequeue!(q)).
    length : % -> NonNegativeInteger
      ++ length(q) returns the number of elements in the queue.
-     ++ Note: \axiom{length(q) = #q}.
+     ++ Note: \spad{length(q) = #q}.
    front : % -> S
      ++ front(q) returns the element at the front of the queue.
      ++ The queue q is unchanged by this operation.
@@ -392,7 +392,7 @@ DequeueAggregate(S : Type):
  Category == Join(StackAggregate S, QueueAggregate S) with
    height : % -> NonNegativeInteger
      ++ height(d) returns the number of elements in dequeue d.
-     ++ Note: \axiom{height(d) = # d}.
+     ++ Note: \spad{height(d) = # d}.
    bottom : % -> S
      ++ bottom(d) returns the element at the bottom (back) of the dequeue.
    insertTop! : (S, %) -> S
@@ -464,27 +464,27 @@ DictionaryOperations(S : Type) : Category ==
      ++ dictionary()$D creates an empty dictionary of type D.
    dictionary : List S -> %
      ++ dictionary([x, y, ..., z]) creates a dictionary consisting of
-     ++ entries \axiom{x, y, ..., z}.
+     ++ entries \spad{x, y, ..., z}.
 -- insert: (S, %) -> S                 ++ insert an entry
 -- member?: (S, %) -> Boolean                  ++ search for an entry
 -- remove!: (S, %, NonNegativeInteger) -> %
 --   ++ remove!(x, d, n) destructively changes dictionary d by removing
---   ++ up to n entries y such that \axiom{y = x}.
+--   ++ up to n entries y such that \spad{y = x}.
 -- remove!: (S->Boolean, %, NonNegativeInteger) -> %
 --   ++ remove!(p, d, n) destructively changes dictionary d by removing
---   ++ up to n entries x such that \axiom{p(x)} is true.
+--   ++ up to n entries x such that \spad{p(x)} is true.
    if % has finiteAggregate then
      if S has CoercibleTo(OutputForm) then CoercibleTo(OutputForm)
      if S has BasicType then
        remove! : (S, %) -> %
          ++ remove!(x, d) destructively changes dictionary d by removing
-         ++ all entries y such that \axiom{y = x}.
+         ++ all entries y such that \spad{y = x}.
      remove! : (S->Boolean, %) -> %
        ++ remove!(p, d) destructively changes dictionary d by removeing
-       ++ all entries x such that \axiom{p(x)} is true.
+       ++ all entries x such that \spad{p(x)} is true.
      select! : (S->Boolean, %) -> %
        ++ select!(p, d) destructively changes dictionary d by removing
-       ++ all entries x such that \axiom{p(x)} is not true.
+       ++ all entries x such that \spad{p(x)} is not true.
  add
    construct l == dictionary l
    dictionary() == empty()
@@ -602,11 +602,11 @@ SetAggregate(S : SetCategory):
    brace       : () -> %
      ++ brace()$D (otherwise written {}$D)
      ++ creates an empty set aggregate of type D.
-     ++ This form is considered obsolete. Use \axiomFun{set} instead.
+     ++ This form is considered obsolete. Use \spadfun{set} instead.
    brace       : List S -> %
      ++ brace([x, y, ..., z])
      ++ creates a set aggregate containing items x, y, ..., z.
-     ++ This form is considered obsolete. Use \axiomFun{set} instead.
+     ++ This form is considered obsolete. Use \spadfun{set} instead.
    set         : () -> %
      ++ set()$D creates an empty set aggregate of type D.
    set         : List S -> %
@@ -619,33 +619,33 @@ SetAggregate(S : SetCategory):
    difference  : (%, %) -> %
      ++ difference(u, v) returns the set aggregate w consisting of
      ++ elements in set aggregate u but not in set aggregate v.
-     ++ If u and v have no elements in common, \axiom{difference(u, v)}
+     ++ If u and v have no elements in common, \spad{difference(u, v)}
      ++ returns a copy of u.
      ++ Note: equivalent to the notation (not currently supported)
-     ++ \axiom{{x for x in u | not member?(x, v)}}.
+     ++ \spad{{x for x in u | not member?(x, v)}}.
    difference  : (%, S) -> %
      ++ difference(u, x) returns the set aggregate u with element x removed.
      ++ If u does not contain x, a copy of u is returned.
-     ++ Note: \axiom{difference(s, x) = difference(s, {x})}.
+     ++ Note: \spad{difference(s, x) = difference(s, {x})}.
    symmetricDifference : (%, %) -> %
      ++ symmetricDifference(u, v) returns the set aggregate of elements x which
      ++ are members of set aggregate u or set aggregate v but not both.
-     ++ If u and v have no elements in common, \axiom{symmetricDifference(u, v)}
+     ++ If u and v have no elements in common, \spad{symmetricDifference(u, v)}
      ++ returns a copy of u.
-     ++ Note: \axiom{symmetricDifference(u, v) = union(difference(u, v), difference(v, u))}
+     ++ Note: \spad{symmetricDifference(u, v) = union(difference(u, v), difference(v, u))}
    subset?     : (%, %) -> Boolean
      ++ subset?(u, v) tests if u is a subset of v.
      ++ Note: equivalent to
-     ++ \axiom{reduce(and, {member?(x, v) for x in u}, true, false)}.
+     ++ \spad{reduce(and, {member?(x, v) for x in u}, true, false)}.
    union       : (%, %) -> %
      ++ union(u, v) returns the set aggregate of elements which are members
      ++ of either set aggregate u or v.
    union       : (%, S) -> %
      ++ union(u, x) returns the set aggregate u with the element x added.
-     ++ If u already contains x, \axiom{union(u, x)} returns a copy of u.
+     ++ If u already contains x, \spad{union(u, x)} returns a copy of u.
    union       : (S, %) -> %
      ++ union(x, u) returns the set aggregate u with the element x added.
-     ++ If u already contains x, \axiom{union(x, u)} returns a copy of u.
+     ++ If u already contains x, \spad{union(x, u)} returns a copy of u.
  add
   symmetricDifference(x, y)    == union(difference(x, y), difference(y, x))
   union(s : %, x : S) == union(s, set([x]))
@@ -675,7 +675,7 @@ FiniteSetAggregate(S : SetCategory) : Category ==
   Join(Dictionary S, SetAggregate S, finiteAggregate) with
     cardinality : % -> NonNegativeInteger
       ++ cardinality(u) returns the number of elements of u.
-      ++ Note: \axiom{cardinality(u) = #u}.
+      ++ Note: \spad{cardinality(u) = #u}.
     if S has Finite then
       Finite
       complement : % -> %
@@ -823,11 +823,11 @@ KeyedDictionary(Key : SetCategory, Entry : Type) : Category ==
    remove! : (Key, %) -> Union(Entry,"failed")
      ++ remove!(k, t) searches the table t for the key k removing
      ++ (and return) the entry if there.
-     ++ If t has no such key, \axiom{remove!(k,t)} returns "failed".
+     ++ If t has no such key, \spad{remove!(k,t)} returns "failed".
    search : (Key, %) -> Union(Entry,"failed")
      ++ search(k, t) searches the table t for the key k,
      ++ returning the entry stored in t for key k.
-     ++ If t has no such key, \axiom{search(k,t)} returns "failed".
+     ++ If t has no such key, \spad{search(k,t)} returns "failed".
  add
    key?(k, t) == search(k, t) case Entry
 
@@ -876,7 +876,7 @@ Eltable(S : SetCategory, Index : Type) : Category == with
 ++ References:
 ++ Description:
 ++ An eltable aggregate is one which can be viewed as a function.
-++ For example, the list \axiom{[1, 7, 4]} can applied to 0, 1, and 2 respectively
+++ For example, the list \spad{[1, 7, 4]} can applied to 0, 1, and 2 respectively
 ++ will return the integers 1, 7, and 4; thus this list may be viewed
 ++ as mapping 0 to 1, 1 to 7 and 2 to 4. In general, an aggregate
 ++ can map members of a domain {\em Dom} to an image domain {\em Im}.
@@ -887,25 +887,25 @@ EltableAggregate(Dom : SetCategory, Im : Type) : Category ==
     elt : (%, Dom, Im) -> Im
        ++ elt(u, x, y) applies u to x if x is in the domain of u,
        ++ and returns y otherwise.
-       ++ For example, if u is a polynomial in \axiom{x} over the rationals,
-       ++ \axiom{elt(u, n, 0)} may define the coefficient of \axiom{x}
+       ++ For example, if u is a polynomial in \spad{x} over the rationals,
+       ++ \spad{elt(u, n, 0)} may define the coefficient of \spad{x}
        ++ to the power n, returning 0 when n is out of range.
     qelt : (%, Dom) -> Im
-       ++ qelt(u, x) applies \axiom{u} to \axiom{x} without checking whether
-       ++ \axiom{x} is in the domain of \axiom{u}.  If \axiom{x} is not in the
-       ++ domain of \axiom{u} a memory-access violation may occur.  If a check
-       ++ on whether \axiom{x} is in the domain of \axiom{u} is required, use
-       ++ the function \axiom{elt}.
+       ++ qelt(u, x) applies \spad{u} to \spad{x} without checking whether
+       ++ \spad{x} is in the domain of \spad{u}.  If \spad{x} is not in the
+       ++ domain of \spad{u} a memory-access violation may occur.  If a check
+       ++ on whether \spad{x} is in the domain of \spad{u} is required, use
+       ++ the function \spad{elt}.
     if % has shallowlyMutable then
        setelt! : (%, Dom, Im) -> Im
            ++ setelt!(u, x, y) sets the image of x to be y under u,
            ++ assuming x is in the domain of u.
            ++ Error: if x is not in the domain of u.
        qsetelt! : (%, Dom, Im) -> Im
-           ++ qsetelt!(u, x, y) sets the image of \axiom{x} to be \axiom{y} under
-           ++ \axiom{u}, without checking that \axiom{x} is in the domain of
-           ++ \axiom{u}.
-           ++ If such a check is required use the function \axiom{setelt}.
+           ++ qsetelt!(u, x, y) sets the image of \spad{x} to be \spad{y} under
+           ++ \spad{u}, without checking that \spad{x} is in the domain of
+           ++ \spad{u}.
+           ++ If such a check is required use the function \spad{setelt}.
  add
   qelt(a, x) == elt(a, x)
   if % has shallowlyMutable then
@@ -946,21 +946,21 @@ IndexedAggregate(Index : SetCategory, Entry : Type) : Category ==
 --    ++    c.i = f(a(i, x), b(i, x)) | index?(i, a) or index?(i, b)
    if Entry has SetCategory and % has finiteAggregate then
       entry? : (Entry, %) -> Boolean
-        ++ entry?(x, u) tests if x equals \axiom{u . i} for some index i.
+        ++ entry?(x, u) tests if x equals \spad{u . i} for some index i.
    if Index has OrderedSet then
       maxIndex : % -> Index
         ++ maxIndex(u) returns the maximum index i of aggregate u.
         ++ Note: in general,
-        ++ \axiom{maxIndex(u) = reduce(max, [i for i in indices u])};
-        ++ if u is a list, \axiom{maxIndex(u) = #u}.
+        ++ \spad{maxIndex(u) = reduce(max, [i for i in indices u])};
+        ++ if u is a list, \spad{maxIndex(u) = #u}.
       minIndex : % -> Index
         ++ minIndex(u) returns the minimum index i of aggregate u.
         ++ Note: in general,
-        ++ \axiom{minIndex(a) = reduce(min, [i for i in indices a])};
-        ++ for lists, \axiom{minIndex(a) = 1}.
+        ++ \spad{minIndex(a) = reduce(min, [i for i in indices a])};
+        ++ for lists, \spad{minIndex(a) = 1}.
       first   : % -> Entry
         ++ first(u) returns the first element x of u.
-        ++ Note: for collections, \axiom{first([x, y, ..., z]) = x}.
+        ++ Note: for collections, \spad{first([x, y, ..., z]) = x}.
         ++ Error: if u is empty.
 
    if % has shallowlyMutable then
@@ -1019,13 +1019,13 @@ IndexedAggregate(Index : SetCategory, Entry : Type) : Category ==
 TableAggregate(Key : SetCategory, Entry : Type) : Category ==
   Join(KeyedDictionary(Key, Entry), IndexedAggregate(Key, Entry)) with
    setelt! : (%, Key, Entry) -> Entry
-     ++ setelt!(t, k, e) (also written \axiom{t.k := e}) is equivalent
-     ++ to \axiom{(insert([k, e], t); e)}.
+     ++ setelt!(t, k, e) (also written \spad{t.k := e}) is equivalent
+     ++ to \spad{(insert([k, e], t); e)}.
    table : () -> %
      ++ table()$T creates an empty table of type T.
    table : List Record(key : Key, entry : Entry) -> %
      ++ table([x, y, ..., z]) creates a table consisting of entries
-     ++ \axiom{x, y, ..., z}.
+     ++ \spad{x, y, ..., z}.
    -- to become table: Record(key: Key, entry: Entry)* -> %
    map : ((Entry, Entry) -> Entry, %, %) -> %
      ++ map(fn, t1, t2) creates a new table t from given tables t1 and t2 with
@@ -1174,13 +1174,13 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
    value : % -> S
      ++ value(u) returns the value of the node u.
    elt : (%,"value") -> S
-     ++ elt(u,"value") (also written: \axiom{a. value}) is
-     ++ equivalent to \axiom{value(a)}.
+     ++ elt(u,"value") (also written: \spad{a. value}) is
+     ++ equivalent to \spad{value(a)}.
    cyclic? : % -> Boolean
      ++ cyclic?(u) tests if u has a cycle.
    leaves : % -> List S
      ++ leaves(t) returns the list of values in obtained by visiting the
-     ++ nodes of tree \axiom{t} in left-to-right order.
+     ++ nodes of tree \spad{t} in left-to-right order.
    distance : (%, %) -> Integer
      ++ distance(u, v) returns the path length (an integer) from node u to v.
    if S has SetCategory then
@@ -1194,8 +1194,8 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
         ++ setchildren!(u, v) replaces the current children of node u
         ++ with the members of v in left-to-right order.
       setelt! : (%, "value", S) -> S
-        ++ setelt!(a, "value" ,x) (also written \axiom{a.value := x})
-        ++ is equivalent to \axiom{setvalue!(a, x)}
+        ++ setelt!(a, "value" ,x) (also written \spad{a.value := x})
+        ++ is equivalent to \spad{setvalue!(a, x)}
       setvalue! : (%, S) -> S
         ++ setvalue!(u, x) sets the value of node u to x.
  add
@@ -1235,22 +1235,22 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    left : % -> %
      ++ left(u) returns the left child.
    elt : (%,"left") -> %
-     ++ elt(u,"left") (also written: \axiom{a . left}) is
-     ++ equivalent to \axiom{left(a)}.
+     ++ elt(u,"left") (also written: \spad{a . left}) is
+     ++ equivalent to \spad{left(a)}.
    right : % -> %
      ++ right(a) returns the right child.
    elt : (%,"right") -> %
-     ++ elt(a,"right") (also written: \axiom{a . right})
-     ++ is equivalent to \axiom{right(a)}.
+     ++ elt(a,"right") (also written: \spad{a . right})
+     ++ is equivalent to \spad{right(a)}.
    if % has shallowlyMutable then
       setelt! : (%, "left", %) -> %
-        ++ setelt!(a, "left", b) (also written \axiom{a.left := b})
-        ++ is equivalent to \axiom{setleft!(a, b)}.
+        ++ setelt!(a, "left", b) (also written \spad{a.left := b})
+        ++ is equivalent to \spad{setleft!(a, b)}.
       setleft! : (%, %) -> %
-         ++ setleft!(a, b) sets the left child of \axiom{a} to be b.
+         ++ setleft!(a, b) sets the left child of \spad{a} to be b.
       setelt! : (%, "right", %) -> %
-         ++ setelt!(a, "right", b) (also written \axiom{b.right := b})
-         ++ is equivalent to \axiom{setright!(a, b)}.
+         ++ setelt!(a, "right", b) (also written \spad{b.right := b})
+         ++ is equivalent to \spad{setright!(a, b)}.
       setright! : (%, %) -> %
          ++ setright!(a, x) sets the right child of t to be x.
  add
@@ -1370,12 +1370,12 @@ DoublyLinkedAggregate(S : Type) : Category == RecursiveAggregate S with
      ++ previous(l) returns the doubly-link list beginning with its previous
      ++ element.
      ++ Error: if l has no previous element.
-     ++ Note: \axiom{next(previous(l)) = l}.
+     ++ Note: \spad{next(previous(l)) = l}.
    next : % -> %
      ++ next(l) returns the doubly-linked aggregate beginning with its next
      ++ element.
      ++ Error: if l has no next element.
-     ++ Note: \axiom{next(l) = rest(l)} and \axiom{previous(next(l)) = l}.
+     ++ Note: \spad{next(l) = rest(l)} and \spad{previous(next(l)) = l}.
    if % has shallowlyMutable then
       concat! : (%, %) -> %
         ++ concat!(u, v) destructively concatenates doubly-linked aggregate v to the end of doubly-linked aggregate u.
@@ -1411,50 +1411,50 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate w consisting of the elements of u
       ++ followed by the elements of v.
-      ++ Note: \axiom{v = rest(w, #a)}.
+      ++ Note: \spad{v = rest(w, #a)}.
    concat : (S, %) -> %
       ++ concat(x, u) returns aggregate consisting of x followed by
       ++ the elements of u.
-      ++ Note: if \axiom{v = concat(x, u)} then \axiom{x = first v}
-      ++ and \axiom{u = rest v}.
+      ++ Note: if \spad{v = concat(x, u)} then \spad{x = first v}
+      ++ and \spad{u = rest v}.
    first : % -> S
       ++ first(u) returns the first element of u
       ++ (equivalently, the value at the current node).
    elt : (%,"first") -> S
-      ++ elt(u,"first") (also written: \axiom{u . first}) is equivalent to first u.
+      ++ elt(u,"first") (also written: \spad{u . first}) is equivalent to first u.
    first : (%, NonNegativeInteger) -> %
-      ++ first(u, n) returns a copy of the first n (\axiom{n >= 0}) elements of u.
+      ++ first(u, n) returns a copy of the first n (\spad{n >= 0}) elements of u.
    rest : % -> %
       ++ rest(u) returns an aggregate consisting of all but the first
       ++ element of u
       ++ (equivalently, the next node of u).
    elt : (%,"rest") -> %
-      ++ elt(%,"rest") (also written: \axiom{u.rest}) is
-      ++ equivalent to \axiom{rest u}.
+      ++ elt(%,"rest") (also written: \spad{u.rest}) is
+      ++ equivalent to \spad{rest u}.
    rest : (%, NonNegativeInteger) -> %
-      ++ rest(u, n) returns the \axiom{n}th (n >= 0) node of u.
-      ++ Note: \axiom{rest(u, 0) = u}.
+      ++ rest(u, n) returns the \spad{n}th (n >= 0) node of u.
+      ++ Note: \spad{rest(u, 0) = u}.
    last : % -> S
       ++ last(u) resturn the last element of u.
-      ++ Note: for lists, \axiom{last(u) = u . (maxIndex u) = u . (# u - 1)}.
+      ++ Note: for lists, \spad{last(u) = u . (maxIndex u) = u . (# u - 1)}.
    elt : (%,"last") -> S
-      ++ elt(u,"last") (also written: \axiom{u . last}) is equivalent to last u.
+      ++ elt(u,"last") (also written: \spad{u . last}) is equivalent to last u.
    last : (%, NonNegativeInteger) -> %
-      ++ last(u, n) returns a copy of the last n (\axiom{n >= 0}) nodes of u.
-      ++ Note: \axiom{last(u, n)} is a list of n elements.
+      ++ last(u, n) returns a copy of the last n (\spad{n >= 0}) nodes of u.
+      ++ Note: \spad{last(u, n)} is a list of n elements.
    tail : % -> %
       ++ tail(u) returns the last node of u.
-      ++ Note: if u is \axiom{shallowlyMutable},
-      ++ \axiom{setrest(tail(u), v) = concat(u, v)}.
+      ++ Note: if u is \spad{shallowlyMutable},
+      ++ \spad{setrest(tail(u), v) = concat(u, v)}.
    second : % -> S
       ++ second(u) returns the second element of u.
-      ++ Note: \axiom{second(u) = first(rest(u))}.
+      ++ Note: \spad{second(u) = first(rest(u))}.
    third : % -> S
       ++ third(u) returns the third element of u.
-      ++ Note: \axiom{third(u) = first(rest(rest(u)))}.
+      ++ Note: \spad{third(u) = first(rest(rest(u)))}.
    cycleEntry : % -> %
       ++ cycleEntry(u) returns the head of a top-level cycle contained in
-      ++ aggregate u, or \axiom{empty()} if none exists.
+      ++ aggregate u, or \spad{empty()} if none exists.
    cycleLength : % -> NonNegativeInteger
       ++ cycleLength(u) returns the length of a top-level cycle
       ++ contained  in aggregate u, or 0 is u has no such cycle.
@@ -1464,15 +1464,15 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    if % has shallowlyMutable then
       concat! : (%, %) -> %
         ++ concat!(u, v) destructively concatenates v to the end of u.
-        ++ Note: \axiom{concat!(u, v) = setlast!(u, v)}.
+        ++ Note: \spad{concat!(u, v) = setlast!(u, v)}.
       concat! : (%, S) -> %
         ++ concat!(u, x) destructively adds element x to the end of u.
-        ++ Note: \axiom{concat!(a, x) = setlast!(a, [x])}.
+        ++ Note: \spad{concat!(a, x) = setlast!(a, [x])}.
       cycleSplit! : % -> %
         ++ cycleSplit!(u) splits the aggregate by dropping off the cycle.
         ++ The value returned is the cycle entry, or nil if none exists.
-        ++ For example, if \axiom{w = concat(u, v)} is the cyclic list where v is
-        ++ the head of the cycle, \axiom{cycleSplit!(w)} will drop v off w thus
+        ++ For example, if \spad{w = concat(u, v)} is the cyclic list where v is
+        ++ the head of the cycle, \spad{cycleSplit!(w)} will drop v off w thus
         ++ destructively changing w to u, and returning v.
       setfirst! : (%, S) -> S
         ++ setfirst!(u, x) destructively changes the first element of u to x.
@@ -1481,8 +1481,8 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
         ++ setfirst!(u, x) destructively changes the first element of u to x
         ++ without checking for errors.
       setelt! : (%, "first", S) -> S
-        ++ setelt!(u, "first", x) (also written: \axiom{u.first := x}) is
-        ++ equivalent to \axiom{setfirst!(u, x)}.
+        ++ setelt!(u, "first", x) (also written: \spad{u.first := x}) is
+        ++ equivalent to \spad{setfirst!(u, x)}.
       setrest! : (%, %) -> %
         ++ setrest!(u, v) destructively changes the rest of u to v.
         ++ Error if u is empty.
@@ -1490,17 +1490,17 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
         ++ setrest!(u, v) destructively changes the rest of u to v
         ++ without checking for errors.
       setelt! : (%, "rest", %) -> %
-        ++ setelt!(u, "rest", v) (also written: \axiom{u.rest := v})
-        ++ is equivalent to \axiom{setrest!(u, v)}.
+        ++ setelt!(u, "rest", v) (also written: \spad{u.rest := v})
+        ++ is equivalent to \spad{setrest!(u, v)}.
       setlast! : (%, S) -> S
         ++ setlast!(u, x) destructively changes the last element of u to x.
       setelt! : (%, "last", S) -> S
-        ++ setelt!(u, "last", x) (also written: \axiom{u.last := b})
-        ++ is equivalent to \axiom{setlast!(u, v)}.
+        ++ setelt!(u, "last", x) (also written: \spad{u.last := b})
+        ++ is equivalent to \spad{setlast!(u, v)}.
       split! : (%, Integer) -> %
-         ++ split!(u, n) splits u into two aggregates: \axiom{v = rest(u, n)}
-         ++ and \axiom{w = first(u, n)}, returning \axiom{v}.
-         ++ Note: afterwards \axiom{rest(u, n)} returns \axiom{empty()}.
+         ++ split!(u, n) splits u into two aggregates: \spad{v = rest(u, n)}
+         ++ and \spad{w = first(u, n)}, returning \spad{v}.
+         ++ Note: afterwards \spad{rest(u, n)} returns \spad{empty()}.
  add
 
   import from Integer
@@ -1681,11 +1681,11 @@ StreamAggregate(S : Type) : Category ==
       explicitlyFinite? : % -> Boolean
         ++ explicitlyFinite?(s) tests if the stream has a finite
         ++ number of elements, and false otherwise.
-        ++ Note: for many datatypes, \axiom{explicitlyFinite?(s) = not possiblyInfinite?(s)}.
+        ++ Note: for many datatypes, \spad{explicitlyFinite?(s) = not possiblyInfinite?(s)}.
       possiblyInfinite? : % -> Boolean
         ++ possiblyInfinite?(s) tests if the stream s could possibly
         ++ have an infinite number of elements.
-        ++ Note: for many datatypes, \axiom{possiblyInfinite?(s) = not explictlyFinite?(s)}.
+        ++ Note: for many datatypes, \spad{possiblyInfinite?(s) = not explictlyFinite?(s)}.
  add
 
    import from Integer
@@ -1785,52 +1785,52 @@ StreamAggregate(S : Type) : Category ==
 LinearAggregate(S : Type) : Category ==
   Join(IndexedAggregate(Integer, S), Collection(S)) with
    new   : (NonNegativeInteger, S) -> %
-     ++ new(n, x) returns \axiom{fill!(new n, x)}.
+     ++ new(n, x) returns \spad{fill!(new n, x)}.
    concat : (%, S) -> %
      ++ concat(u, x) returns aggregate u with additional element x at the end.
-     ++ Note: for lists, \axiom{concat(u, x) == concat(u, [x])}
+     ++ Note: for lists, \spad{concat(u, x) == concat(u, [x])}
    concat : (S, %) -> %
      ++ concat(x, u) returns aggregate u with additional element at the front.
-     ++ Note: for lists: \axiom{concat(x, u) == concat([x], u)}.
+     ++ Note: for lists: \spad{concat(x, u) == concat([x], u)}.
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate consisting of the elements of u
       ++ followed by the elements of v.
-      ++ Note: if \axiom{w = concat(u, v)} then \axiom{w.i = u.i for i in indices u}
-      ++ and \axiom{w.(j + maxIndex u) = v.j for j in indices v}.
+      ++ Note: if \spad{w = concat(u, v)} then \spad{w.i = u.i for i in indices u}
+      ++ and \spad{w.(j + maxIndex u) = v.j for j in indices v}.
    concat : List % -> %
-      ++ concat(u), where u is a lists of aggregates \axiom{[a, b, ..., c]}, returns
-      ++ a single aggregate consisting of the elements of \axiom{a}
+      ++ concat(u), where u is a lists of aggregates \spad{[a, b, ..., c]}, returns
+      ++ a single aggregate consisting of the elements of \spad{a}
       ++ followed by those
       ++ of b followed ... by the elements of c.
-      ++ Note: \axiom{concat(a, b, ..., c) = concat(a, concat(b, ..., c))}.
+      ++ Note: \spad{concat(a, b, ..., c) = concat(a, concat(b, ..., c))}.
    map : ((S, S)->S, %, %) -> %
-     ++ map(f, u, v) returns a new collection w with elements \axiom{z = f(x, y)}
+     ++ map(f, u, v) returns a new collection w with elements \spad{z = f(x, y)}
      ++ for corresponding elements x and y from u and v.
-     ++ Note: for linear aggregates, \axiom{w.i = f(u.i, v.i)}.
+     ++ Note: for linear aggregates, \spad{w.i = f(u.i, v.i)}.
    elt : (%, UniversalSegment(Integer)) -> %
-      ++ elt(u, i..j) (also written: \axiom{a(i..j)}) returns the aggregate of
-      ++ elements \axiom{u} for k from i to j in that order.
-      ++ Note: in general, \axiom{a.s = [a.k for i in s]}.
+      ++ elt(u, i..j) (also written: \spad{a(i..j)}) returns the aggregate of
+      ++ elements \spad{u} for k from i to j in that order.
+      ++ Note: in general, \spad{a.s = [a.k for i in s]}.
    delete : (%, Integer) -> %
-      ++ delete(u, i) returns a copy of u with the \axiom{i}th element deleted.
-      ++ Note: for lists, \axiom{delete(a, i) == concat(a(0..i - 1), a(i + 1, ..))}.
+      ++ delete(u, i) returns a copy of u with the \spad{i}th element deleted.
+      ++ Note: for lists, \spad{delete(a, i) == concat(a(0..i - 1), a(i + 1, ..))}.
    delete : (%, UniversalSegment(Integer)) -> %
-      ++ delete(u, i..j) returns a copy of u with the \axiom{i}th through
-      ++ \axiom{j}th element deleted.
-      ++ Note: \axiom{delete(a, i..j) = concat(a(0..i-1), a(j+1..))}.
+      ++ delete(u, i..j) returns a copy of u with the \spad{i}th through
+      ++ \spad{j}th element deleted.
+      ++ Note: \spad{delete(a, i..j) = concat(a(0..i-1), a(j+1..))}.
    insert : (S, %, Integer) -> %
-      ++ insert(x, u, i) returns a copy of u having x as its \axiom{i}th element.
-      ++ Note: \axiom{insert(x, a, k) = concat(concat(a(0..k-1), x), a(k..))}.
+      ++ insert(x, u, i) returns a copy of u having x as its \spad{i}th element.
+      ++ Note: \spad{insert(x, a, k) = concat(concat(a(0..k-1), x), a(k..))}.
    insert : (%, %, Integer) -> %
       ++ insert(v, u, k) returns a copy of u having v inserted beginning at the
-      ++ \axiom{i}th element.
-      ++ Note: \axiom{insert(v, u, k) = concat( u(0..k-1), v, u(k..) )}.
+      ++ \spad{i}th element.
+      ++ Note: \spad{insert(v, u, k) = concat( u(0..k-1), v, u(k..) )}.
    if % has shallowlyMutable then setelt! : (%, UniversalSegment(Integer), S) -> S
-      ++ setelt!(u, i..j, x) (also written: \axiom{u(i..j) := x}) destructively
-      ++ replaces each element in the segment \axiom{u(i..j)} by x.
+      ++ setelt!(u, i..j, x) (also written: \spad{u(i..j) := x}) destructively
+      ++ replaces each element in the segment \spad{u(i..j)} by x.
       ++ The value x is returned.
       ++ Note: u is destructively change so
-      ++ that \axiom{u.k := x for k in i..j};
+      ++ that \spad{u.k := x for k in i..j};
       ++ its length remains unchanged.
  add
   indices a      == [i for i in minIndex a .. maxIndex a]
@@ -1865,38 +1865,38 @@ LinearAggregate(S : Type) : Category ==
 FiniteLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
      finiteAggregate) with
    merge : ((S, S)->Boolean, %, %) -> %
-      ++ merge(p, a, b) returns an aggregate c which merges \axiom{a} and b.
-      ++ The result is produced by examining each element x of \axiom{a} and y
-      ++ of b successively. If \axiom{p(x, y)} is true, then x is inserted into
+      ++ merge(p, a, b) returns an aggregate c which merges \spad{a} and b.
+      ++ The result is produced by examining each element x of \spad{a} and y
+      ++ of b successively. If \spad{p(x, y)} is true, then x is inserted into
       ++ the result; otherwise y is inserted. If x is chosen, the next element
-      ++ of \axiom{a} is examined, and so on. When all the elements of one
+      ++ of \spad{a} is examined, and so on. When all the elements of one
       ++ aggregate are examined, the remaining elements of the other
       ++ are appended.
-      ++ For example, \axiom{merge(<, [1, 3], [2, 7, 5])} returns \axiom{[1, 2, 3, 7, 5]}.
+      ++ For example, \spad{merge(<, [1, 3], [2, 7, 5])} returns \spad{[1, 2, 3, 7, 5]}.
    reverse : % -> %
-      ++ reverse(a) returns a copy of \axiom{a} with elements in reverse order.
+      ++ reverse(a) returns a copy of \spad{a} with elements in reverse order.
    sort : ((S, S)->Boolean, %) -> %
-      ++ sort(p, a) returns a copy of \axiom{a} sorted using total ordering predicate p.
+      ++ sort(p, a) returns a copy of \spad{a} sorted using total ordering predicate p.
    sorted? : ((S, S)->Boolean, %) -> Boolean
-      ++ sorted?(p, a) tests if \axiom{a} is sorted according to predicate p.
+      ++ sorted?(p, a) tests if \spad{a} is sorted according to predicate p.
    position : (S->Boolean, %) -> Integer
-      ++ position(p, a) returns the index i of the first x in \axiom{a} such that
-      ++ \axiom{p(x)} is true, and \axiom{minIndex(a) - 1} if there is no such x.
+      ++ position(p, a) returns the index i of the first x in \spad{a} such that
+      ++ \spad{p(x)} is true, and \spad{minIndex(a) - 1} if there is no such x.
    if S has BasicType then
       position : (S, %)  -> Integer
         ++ position(x, a) returns the index i of the first occurrence of x in a,
-        ++ and \axiom{minIndex(a) - 1} if there is no such x.
+        ++ and \spad{minIndex(a) - 1} if there is no such x.
       position : (S, %, Integer) -> Integer
         ++ position(x, a, n) returns the index i of the first occurrence of x in
-        ++ \axiom{a} where \axiom{i >= n}, and \axiom{minIndex(a) - 1} if no such x is found.
+        ++ \spad{a} where \spad{i >= n}, and \spad{minIndex(a) - 1} if no such x is found.
    if S has OrderedSet then
       OrderedSet
       merge : (%, %) -> %
         ++ merge(u, v) merges u and v in ascending order.
-        ++ Note: \axiom{merge(u, v) = merge(<=, u, v)}.
+        ++ Note: \spad{merge(u, v) = merge(<=, u, v)}.
       sort : % -> %
         ++ sort(u) returns an u with elements in ascending order.
-        ++ Note: \axiom{sort(u) = sort(<=, u)}.
+        ++ Note: \spad{sort(u) = sort(<=, u)}.
       sorted? : % -> Boolean
         ++ sorted?(u) tests if the elements of u are in ascending order.
    if % has shallowlyMutable then
@@ -2219,12 +2219,12 @@ ExtensibleLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
      ++ concat!(u, v) destructively appends v to the end of u.
      ++ v is unchanged
    delete! : (%, Integer) -> %
-     ++ delete!(u, i) destructively deletes the \axiom{i}th element of u.
+     ++ delete!(u, i) destructively deletes the \spad{i}th element of u.
    delete! : (%, UniversalSegment(Integer)) -> %
      ++ delete!(u, i..j) destructively deletes elements u.i through u.j.
    remove! : (S->Boolean, %) -> %
      ++ remove!(p, u) destructively removes all elements x of
-     ++ u such that \axiom{p(x)} is true.
+     ++ u such that \spad{p(x)} is true.
    insert! : (S, %, Integer) -> %
      ++ insert!(x, u, i) destructively inserts x into u at position i.
    insert! : (%, %, Integer) -> %
@@ -2233,7 +2233,7 @@ ExtensibleLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
      ++ merge!(p, u, v) destructively merges u and v using predicate p.
    select! : (S->Boolean, %) -> %
      ++ select!(p, u) destructively changes u by keeping only values x such that
-     ++ \axiom{p(x)}.
+     ++ \spad{p(x)}.
    if S has SetCategory then
      remove! : (S, %) -> %
        ++ remove!(x, u) destructively removes all values x from u.
@@ -2536,26 +2536,26 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
       ++ in s by upper case characters.
     prefix?         : (%, %) -> Boolean
       ++ prefix?(s, t) tests if the string s is the initial substring of t.
-      ++ Note: \axiom{prefix?(s, t) == reduce(and, [s.i = t.i for i in 0..maxIndex s])}.
+      ++ Note: \spad{prefix?(s, t) == reduce(and, [s.i = t.i for i in 0..maxIndex s])}.
     suffix?         : (%, %) -> Boolean
       ++ suffix?(s, t) tests if the string s is the final substring of t.
-      ++ Note: \axiom{suffix?(s, t) == reduce(and, [s.i = t.(n - m + i) for i in 0..maxIndex s])}
+      ++ Note: \spad{suffix?(s, t) == reduce(and, [s.i = t.(n - m + i) for i in 0..maxIndex s])}
       ++ where m and n denote the maxIndex of s and t respectively.
     substring? : (%, %, Integer) -> Boolean
       ++ substring?(s, t, i) tests if s is a substring of t beginning at
       ++ index i.
-      ++ Note: \axiom{substring?(s, t, 0) = prefix?(s, t)}.
+      ++ Note: \spad{substring?(s, t, 0) = prefix?(s, t)}.
     match? : (%, %, Character) -> Boolean
       ++ match?(s, t, c) tests if s matches t except perhaps for
       ++ multiple and consecutive occurrences of character c.
       ++ Typically c is the blank character.
     replace         : (%, UniversalSegment(Integer), %) -> %
-      ++ replace(s, i..j, t) replaces the substring \axiom{s(i..j)} of s by string t.
+      ++ replace(s, i..j, t) replaces the substring \spad{s(i..j)} of s by string t.
     position        : (%, %, Integer) -> Integer
       ++ position(s, t, i) returns the position j of the substring s in string t,
-      ++ where \axiom{j >= i} is required.
+      ++ where \spad{j >= i} is required.
     position        : (CharacterClass, %, Integer) -> Integer
-      ++ position(cc, t, i) returns the position \axiom{j >= i} in t of
+      ++ position(cc, t, i) returns the position \spad{j >= i} in t of
       ++ the first character belonging to cc.
     coerce          : Character -> %
       ++ coerce(c) returns c as a string s with the character c.
@@ -2568,28 +2568,28 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
     trim : (%, Character) -> %
       ++ trim(s, c) returns s with all characters c deleted from right
       ++ and left ends.
-      ++ For example, \axiom{trim(" abc ", char " ")} returns \axiom{"abc"}.
+      ++ For example, \spad{trim(" abc ", char " ")} returns \spad{"abc"}.
     trim : (%, CharacterClass) -> %
       ++ trim(s, cc) returns s with all characters in cc deleted from right
       ++ and left ends.
-      ++ For example, \axiom{trim("(abc)", charClass "()")} returns \axiom{"abc"}.
+      ++ For example, \spad{trim("(abc)", charClass "()")} returns \spad{"abc"}.
     leftTrim : (%, Character) -> %
       ++ leftTrim(s, c) returns s with all leading characters c deleted.
-      ++ For example, \axiom{leftTrim("  abc  ", char " ")} returns \axiom{"abc  "}.
+      ++ For example, \spad{leftTrim("  abc  ", char " ")} returns \spad{"abc  "}.
     leftTrim : (%, CharacterClass) -> %
       ++ leftTrim(s, cc) returns s with all leading characters in cc deleted.
-      ++ For example, \axiom{leftTrim("(abc)", charClass "()")} returns \axiom{"abc)"}.
+      ++ For example, \spad{leftTrim("(abc)", charClass "()")} returns \spad{"abc)"}.
     rightTrim : (%, Character) -> %
       ++ rightTrim(s, c) returns s with all trailing occurrences of c deleted.
-      ++ For example, \axiom{rightTrim("  abc  ", char " ")} returns \axiom{"  abc"}.
+      ++ For example, \spad{rightTrim("  abc  ", char " ")} returns \spad{"  abc"}.
     rightTrim : (%, CharacterClass) -> %
       ++ rightTrim(s, cc) returns s with all trailing occurences of
       ++ characters in cc deleted.
-      ++ For example, \axiom{rightTrim("(abc)", charClass "()")} returns \axiom{"(abc"}.
+      ++ For example, \spad{rightTrim("(abc)", charClass "()")} returns \spad{"(abc"}.
     elt : (%, %) -> %
       ++ elt(s, t) returns the concatenation of s and t. It is provided to
       ++ allow juxtaposition of strings to work as concatenation.
-      ++ For example, \axiom{"smoo" "shed"} returns \axiom{"smooshed"}.
+      ++ For example, \spad{"smoo" "shed"} returns \spad{"smooshed"}.
  add
    trim(s : %, c :  Character)      == leftTrim(rightTrim(s, c),  c)
    trim(s : %, cc : CharacterClass) == leftTrim(rightTrim(s, cc), cc)
@@ -2620,22 +2620,22 @@ BitAggregate() : Category ==
   Join(OrderedSet, Logic, OneDimensionalArrayAggregate Boolean) with
     "not": % -> %
       ++ not(b) returns the logical {\em not} of bit aggregate
-      ++ \axiom{b}.
+      ++ \spad{b}.
     nand : (%, %) -> %
-      ++ nand(a, b) returns the logical {\em nand} of bit aggregates \axiom{a}
-      ++ and \axiom{b}.
+      ++ nand(a, b) returns the logical {\em nand} of bit aggregates \spad{a}
+      ++ and \spad{b}.
     nor  : (%, %) -> %
-      ++ nor(a, b) returns the logical {\em nor} of bit aggregates \axiom{a} and
-      ++ \axiom{b}.
+      ++ nor(a, b) returns the logical {\em nor} of bit aggregates \spad{a} and
+      ++ \spad{b}.
     _and : (%, %) -> %
-      ++ a and b returns the logical {\em and} of bit aggregates \axiom{a} and
-      ++ \axiom{b}.
+      ++ a and b returns the logical {\em and} of bit aggregates \spad{a} and
+      ++ \spad{b}.
     _or  : (%, %) -> %
-      ++ a or b returns the logical {\em or} of bit aggregates \axiom{a} and
-      ++ \axiom{b}.
+      ++ a or b returns the logical {\em or} of bit aggregates \spad{a} and
+      ++ \spad{b}.
     xor  : (%, %) -> %
       ++ xor(a, b) returns the logical {\em exclusive-or} of bit aggregates
-      ++ \axiom{a} and \axiom{b}.
+      ++ \spad{a} and \spad{b}.
 
  add
    not v      == map(_not, v)

@@ -52,9 +52,9 @@ A few subtle differences between packages and
 domains turn up some interesting issues.
 We first discuss these differences then
 describe the resulting issues by illustrating a program
-for the \axiomType{QuadraticForm} constructor.
+for the \spadtype{QuadraticForm} constructor.
 After a short example of an algebraic constructor,
-\axiomType{CliffordAlgebra}, we show how you use domain constructors to build
+\spadtype{CliffordAlgebra}, we show how you use domain constructors to build
 a database query facility.
 
 % *********************************************************************
@@ -66,15 +66,15 @@ What is the difference between a package and a domain that is not a
 package?  Internally, \Language{} makes no distinction.  However,
 humans think differently about them, so we make the
 following definition: a domain that is not a package
-has the symbol \axiomSyntax{\%} appearing
+has the symbol \spadSyntax{\%} appearing
 somewhere among the types of its exported operations.
-The \axiomSyntax{\%} denotes ``this domain.'' If the \axiomSyntax{\%}
-appears before the \axiomSyntax{->} in the type of a signature, it means
+The \spadSyntax{\%} denotes ``this domain.'' If the \spadSyntax{\%}
+appears before the \spadSyntax{->} in the type of a signature, it means
 the operation takes an element from the domain as an argument.
-If it appears after the \axiomSyntax{->}, then the operation returns an
+If it appears after the \spadSyntax{->}, then the operation returns an
 element of the domain.
 
-If no exported operations mention \axiomSyntax{\%}, then
+If no exported operations mention \spadSyntax{\%}, then
 evidently there is nothing of interest to do with the objects of the
 domain.
 You might then say that a package is a ``boring'' domain!
@@ -85,7 +85,7 @@ to the package constructor and other explicit domains.
 
 To summarize, domain constructors are versatile structures that serve two
 distinct practical purposes:
-Those like \axiomType{Polynomial} and \axiomType{List}
+Those like \spadtype{Polynomial} and \spadtype{List}
 describe classes of computational objects;
 others, like \pspadtype{SortPackage}, describe packages of useful
 operations.
@@ -102,7 +102,7 @@ function in \Language{}:
 \frenchspacing{\tt {\it DomainForm} : {\it Exports} == {\it Implementation}}
 \end{center}
 As this definition usually extends over many lines, a
-\axiom{where} expression is generally used instead.
+\spad{where} expression is generally used instead.
 \spadkey{where}
 
 % ----------------------------------------------------------------------
@@ -124,7 +124,7 @@ Note: The brackets {\tt [ ]} here denote optionality.
 % ----------------------------------------------------------------------
 
 A complete domain constructor definition for
-\axiomType{QuadraticForm} is shown in Figure \ref{fig-quadform}.
+\spadtype{QuadraticForm} is shown in Figure \ref{fig-quadform}.
 Interestingly, this little domain illustrates all the new
 concepts you need to learn.
 
@@ -139,47 +139,47 @@ concepts you need to learn.
 \xmpLine{    K: Field}{}
 \xmpLine{}{}
 \xmpLine{    Exports == AbelianGroup with}{The exports.}
-\xmpLine{      quadraticForm: SquareMatrix(n,K) -> \%}{The export \axiomFun{quadraticForm}.}
-\xmpLine{        ++ \bs{}axiom\{quadraticForm(m)\} creates a quadratic}{}
+\xmpLine{      quadraticForm: SquareMatrix(n,K) -> \%}{The export \spadfun{quadraticForm}.}
+\xmpLine{        ++ \bs{}spad\{quadraticForm(m)\} creates a quadratic}{}
 \xmpLine{        ++ quadratic form from a symmetric,}{}
-\xmpLine{        ++ square matrix \bs{}axiom\{m\}.}{}
-\xmpLine{      matrix: \% -> SquareMatrix(n,K)}{The export \axiomFun{matrix}.}
-\xmpLine{        ++ \bs{}axiom\{matrix(qf)\} creates a square matrix}{}
-\xmpLine{        ++ from the quadratic form \bs{}axiom\{qf\}.}{}
-\xmpLine{      elt: (\%, DirectProduct(n,K)) -> K}{The export \axiomFun{elt}.}
-\xmpLine{        ++ \bs{}axiom\{qf(v)\} evaluates the quadratic form}{}
-\xmpLine{        ++ \bs{}axiom\{qf\} on the vector \bs{}axiom\{v\},}{}
+\xmpLine{        ++ square matrix \bs{}spad\{m\}.}{}
+\xmpLine{      matrix: \% -> SquareMatrix(n,K)}{The export \spadfun{matrix}.}
+\xmpLine{        ++ \bs{}spad\{matrix(qf)\} creates a square matrix}{}
+\xmpLine{        ++ from the quadratic form \bs{}spad\{qf\}.}{}
+\xmpLine{      elt: (\%, DirectProduct(n,K)) -> K}{The export \spadfun{elt}.}
+\xmpLine{        ++ \bs{}spad\{qf(v)\} evaluates the quadratic form}{}
+\xmpLine{        ++ \bs{}spad\{qf\} on the vector \bs{}spad\{v\},}{}
 \xmpLine{        ++ producing a scalar.}{}
 \xmpLine{}{}
 \xmpLine{    Implementation == SquareMatrix(n,K) add}{The definitions of the exports}
 \xmpLine{      Rep := SquareMatrix(n,K)}{The ``representation.''}
 \xmpLine{      quadraticForm m ==}{The definition of}
-\xmpLine{        not symmetric? m => error}{\axiomFun{quadraticForm}.}
+\xmpLine{        not symmetric? m => error}{\spadfun{quadraticForm}.}
 \xmpLine{          "quadraticForm requires a symmetric matrix"}{}
 \xmpLine{        m :: \%}{}
-\xmpLine{      matrix q == q :: Rep}{The definition of \axiomFun{matrix}.}
-\xmpLine{      elt(q,v) == dot(v, (matrix q * v))}{The definition of \axiomFun{elt}.}
+\xmpLine{      matrix q == q :: Rep}{The definition of \spadfun{matrix}.}
+\xmpLine{      elt(q,v) == dot(v, (matrix q * v))}{The definition of \spadfun{elt}.}
 %
-\caption{The \protect\axiomType{QuadraticForm} domain.}\label{fig-quadform}
+\caption{The \protect\spadtype{QuadraticForm} domain.}\label{fig-quadform}
 \end{figXmpLines}
 
 A domain constructor can take any number and type of parameters.
-\axiomType{QuadraticForm} takes a positive integer \axiom{n} and a field
-\axiom{K} as arguments.
+\spadtype{QuadraticForm} takes a positive integer \spad{n} and a field
+\spad{K} as arguments.
 Like a package, a domain has a set of explicit exports and an
 implementation described by a capsule.
 Domain constructors are documented in the same way as package constructors.
 
-Domain \axiomType{QuadraticForm(n, K)}, for a given positive integer
-\axiom{n} and domain \axiom{K}, explicitly exports three operations:
+Domain \spadtype{QuadraticForm(n, K)}, for a given positive integer
+\spad{n} and domain \spad{K}, explicitly exports three operations:
 %
 \begin{itemize}
-\item\axiom{quadraticForm(A)} creates a quadratic form from a matrix
-\axiom{A}.
-\item\axiom{matrix(q)} returns the matrix \axiom{A} used to create
-the quadratic form \axiom{q}.
-\item\axiom{q.v} computes the scalar \texht{$v^TAv$}{transpose(v)*A*v}
-for a given vector \axiom{v}.
+\item\spad{quadraticForm(A)} creates a quadratic form from a matrix
+\spad{A}.
+\item\spad{matrix(q)} returns the matrix \spad{A} used to create
+the quadratic form \spad{q}.
+\item\spad{q.v} computes the scalar \texht{$v^TAv$}{transpose(v)*A*v}
+for a given vector \spad{v}.
 \end{itemize}
 
 Compared with the corresponding syntax given for the definition of a
@@ -204,43 +204,43 @@ As described in \spadref{ugCategoriesCorrectness}, it is this link
 that makes it possible for you to pass objects of the domains as
 arguments to other operations in \Language{}.
 
-Every \axiomType{QuadraticForm} domain is declared
-to be unconditionally a member of category \axiomType{AbelianGroup}.
+Every \spadtype{QuadraticForm} domain is declared
+to be unconditionally a member of category \spadtype{AbelianGroup}.
 An abelian group is a collection of elements closed under
 addition.
 Every object {\it x} of an abelian group has an additive inverse
-{\it y} such that \texht{$x + y = 0$}{\axiom{{\it x} + {\it y} = 0}}.
-The exports of an abelian group include \axiom{0},
-\axiomOp{+}, \axiomOp{-}, and scalar multiplication by an integer.
-After asserting that \axiomType{QuadraticForm} domains are abelian
+{\it y} such that \texht{$x + y = 0$}{\spad{{\it x} + {\it y} = 0}}.
+The exports of an abelian group include \spad{0},
+\spadop{+}, \spadop{-}, and scalar multiplication by an integer.
+After asserting that \spadtype{QuadraticForm} domains are abelian
 groups, it is possible to pass quadratic forms to algorithms that
 only assume arguments to have these abelian group
 properties.
 
 In \spadref{ugCategoriesConditionals}, you saw that
-\axiomType{Fraction(R)}, a member of
-\axiomType{QuotientFieldCategory(R)},
-is a member of \axiomType{OrderedSet} if \axiom{R}
-is a member of \axiomType{OrderedSet}.
+\spadtype{Fraction(R)}, a member of
+\spadtype{QuotientFieldCategory(R)},
+is a member of \spadtype{OrderedSet} if \spad{R}
+is a member of \spadtype{OrderedSet}.
 Likewise, from the {\tt Exports} part of the definition of
-\axiomType{ModMonic(R, S)},
+\spadtype{ModMonic(R, S)},
 \begin{verbatim}
 UnivariatePolynomialCategory(R) with
   if R has Finite then Finite
      ...
 \end{verbatim}
-you see that \axiomType{ModMonic(R, S)} is a member of
-\axiomType{Finite} is \axiom{R} is.
+you see that \spadtype{ModMonic(R, S)} is a member of
+\spadtype{Finite} is \spad{R} is.
 
 The {\tt Exports} part of a domain definition is
 the same kind of
 expression that can appear to the right of an
-\axiomSyntax{==} in a category definition.
+\spadSyntax{==} in a category definition.
 If a domain constructor is unconditionally a member of two or more
-categories, a \axiom{Join} form is used.
+categories, a \spad{Join} form is used.
 \spadkey{Join}
 The {\tt Exports} part of the definition of
-\axiomType{FlexibleArray(S)} reads, for example:
+\spadtype{FlexibleArray(S)} reads, for example:
 \begin{verbatim}
 Join(ExtensibleLinearAggregate(S),
      OneDimensionalArrayAggregate(S)) with...
@@ -250,12 +250,12 @@ Join(ExtensibleLinearAggregate(S),
 \head{section}{A Demo}{ugDomainsDemo}
 % *********************************************************************
 %
-Before looking at the {\it Implementation} part of \axiomType{QuadraticForm},
+Before looking at the {\it Implementation} part of \spadtype{QuadraticForm},
 let's try some examples.
 
 \texht{\vskip 2pc}{}
 \xtc{
-Build a domain \axiom{QF}.
+Build a domain \spad{QF}.
 }{
 \spadcommand{QF := QuadraticForm(2,Fraction Integer)\bound{x2}\free{x1}}
 }
@@ -268,7 +268,7 @@ a quadratic form.
 \xtc{
 Construct the quadratic form.
 A package call {\tt \$QF} is necessary since there
-are other \axiomType{QuadraticForm} domains.
+are other \spadtype{QuadraticForm} domains.
 }{
 \spadcommand{q : QF := quadraticForm(A)\bound{x4}\free{x3}}
 }
@@ -280,7 +280,7 @@ the number of rows.
 \spadcommand{nrows q\free{x3}}
 }
 \xtc{
-Create a direct product element \axiom{v}.
+Create a direct product element \spad{v}.
 A package call is again necessary, but \Language{}
 understands your list as denoting a vector.
 }{
@@ -292,7 +292,7 @@ Compute the product \texht{$v^TAv$}{transpose(v)*A*v}.
 \spadcommand{q.v\free{x5}}
 }
 \xtc{
-What is 3 times \axiom{q} minus \axiom{q} plus \axiom{q}?
+What is 3 times \spad{q} minus \spad{q} plus \spad{q}?
 }{
 \spadcommand{3*q-q+q\free{x4}}
 }
@@ -311,15 +311,15 @@ Now, with your mouse pointer somewhere in this window, enter the
 string ``quadraticform'' into the input area (all lower case
 letters will do).
 Move your mouse to {\bf Constructors} and click.
-Up comes a page describing \axiomType{QuadraticForm}
+Up comes a page describing \spadtype{QuadraticForm}
 that includes a part labeled by ``{\it
 Description:}''.
-You also see the types for arguments \axiom{n} and \axiom{K}
-displayed as well as the fact that \axiomType{QuadraticForm}
-returns an \axiomType{AbelianGroup}.
+You also see the types for arguments \spad{n} and \spad{K}
+displayed as well as the fact that \spadtype{QuadraticForm}
+returns an \spadtype{AbelianGroup}.
 
 Select {\bf Operations} to get a list of operations for
-\axiomType{QuadraticForm}.
+\spadtype{QuadraticForm}.
 You can select an operation by clicking on it
 to get an individual page with information about that operation.
 Or you can select the buttons along the bottom to see alternative
@@ -327,19 +327,19 @@ views or get additional information on the operations.
 Eventually, use
 \UpButton{}
 to return to the first page on
-\axiomType{QuadraticForm}.
+\spadtype{QuadraticForm}.
 
 You can go and experiment a bit by selecting {\bf Field} and {\bf n}
 with your mouse.  Going back to {\bf Operations} you will see
 that {\bf Implementations} view now works (it is disabled if
 some domain parameter is unspecified).
-Then return to the page on \axiomType{QuadraticForm}.
+Then return to the page on \spadtype{QuadraticForm}.
 
-At the bottom the \axiomType{QuadraticForm} page has buttons
+At the bottom the \spadtype{QuadraticForm} page has buttons
 for {\bf Parents}, {\bf Ancestors}, and others.
-Clicking on {\bf Parents}, you see that \axiomType{QuadraticForm}
-has \axiomType{AbelianGroup} and \axiomType{ConvertibleTo} as
-parents (note that \axiomType{QuadraticForm} distributed
+Clicking on {\bf Parents}, you see that \spadtype{QuadraticForm}
+has \spadtype{AbelianGroup} and \spadtype{ConvertibleTo} as
+parents (note that \spadtype{QuadraticForm} distributed
 with \Language() is richer then the demo version presented
 before).
 
@@ -348,25 +348,25 @@ before).
 % *********************************************************************
 %
 The {\tt Implementation} part of an \Language{} capsule for a
-domain constructor uses the special variable \axiom{Rep} to
+domain constructor uses the special variable \spad{Rep} to
 \index{Rep @ {\tt Rep}}
 identify the lower level data type used to represent the objects
 \index{representation!of a domain}
 of the domain.
 \index{domain!representation}
-The \axiom{Rep} for quadratic forms is \axiomType{SquareMatrix(n, K)}.
+The \spad{Rep} for quadratic forms is \spadtype{SquareMatrix(n, K)}.
 This means that all objects of the domain are required to be
-\axiom{n} by \axiom{n} matrices with elements from \axiomType{K}.
+\spad{n} by \spad{n} matrices with elements from \spadtype{K}.
 
-The code for \axiomFun{quadraticForm} in Figure \ref{fig-quadform}
+The code for \spadfun{quadraticForm} in Figure \ref{fig-quadform}
 on page \pageref{fig-quadform}
 checks that the matrix is symmetric and then converts it to
-\axiomSyntax{\%}, which means, as usual, ``this domain.'' Such explicit
+\spadSyntax{\%}, which means, as usual, ``this domain.'' Such explicit
 conversions \index{conversion} are generally required by the
 compiler.
 Aside from checking that the matrix is symmetric, the code for
 this function essentially does nothing.
-The {\frenchspacing\tt m :: \%} on line 28 coerces \axiom{m} to a
+The {\frenchspacing\tt m :: \%} on line 28 coerces \spad{m} to a
 quadratic form.
 In fact, the quadratic form you created in step (3) of
 \spadref{ugDomainsDemo} is just the matrix you passed it in
@@ -374,7 +374,7 @@ disguise!
 Without seeing this definition, you would not know that.
 Nor can you take advantage of this fact now that you do know!
 When we try in the next step of \spadref{ugDomainsDemo} to regard
-\axiom{q} as a matrix by asking for \axiomFun{nrows}, the number of
+\spad{q} as a matrix by asking for \spadfun{nrows}, the number of
 its rows, \Language{} gives you an error message saying, in
 effect, ``Good try, but this won't work!''
 
@@ -384,16 +384,16 @@ it just returns its argument after explicitly
 \spadglossSee{coercing}{coerce} its argument to a matrix.
 Since the argument is already a matrix, this coercion does no computation.
 
-Within the context of a capsule, an object of \axiomSyntax{\%} is
+Within the context of a capsule, an object of \spadSyntax{\%} is
 regarded both as a quadratic form {\it and} as a
-matrix.\footnote{In case each of \axiomSyntax{\%} and \axiom{Rep}
+matrix.\footnote{In case each of \spadSyntax{\%} and \spad{Rep}
 have the same named operation available,
-the one from \axiom{\%} takes precedence.
-Thus, if you want the one from \axiomSyntax{Rep}, you must
-package call it using a \axiomSyntax{\$Rep} suffix.}
-This makes the definition of \axiom{q.v} easy---it
+the one from \spad{\%} takes precedence.
+Thus, if you want the one from \spadSyntax{Rep}, you must
+package call it using a \spadSyntax{\$Rep} suffix.}
+This makes the definition of \spad{q.v} easy---it
 just calls the \spadfunFrom{dot}{DirectProduct} product from
-\axiomType{DirectProduct} to perform the indicated operation.
+\spadtype{DirectProduct} to perform the indicated operation.
 
 % *********************************************************************
 \head{section}{Multiple Representations}{ugDomainsMultipleReps}
@@ -406,7 +406,7 @@ data structure to represent the elements of your domain.
 
 A classic problem in computer algebra is the optimal choice for an
 internal representation of polynomials.
-If you create a polynomial, say \texht{$3x^2+ 5$}{\axiom{3*x^2 + 5}}, how
+If you create a polynomial, say \texht{$3x^2+ 5$}{\spad{3*x^2 + 5}}, how
 does \Language{} hold this value internally?
 There are many ways.
 \Language{} has nearly a dozen different representations of
@@ -420,15 +420,15 @@ of decreasing exponents.
 For example, the polynomial \texht{$3x^2+5$}{3*x^2+5} is
 %>> I changed the k's in next line to e's as I thought that was
 %>> clearer.
-represented by the list \axiom{[[e:2, c:3], [e:0, c:5]]}.
+represented by the list \spad{[[e:2, c:3], [e:0, c:5]]}.
 
 What is the optimal data structure for a matrix?
 It depends on the application.
 For large sparse matrices, a linked-list structure of records
 holding only the non-zero elements may be optimal.
 If the elements can be defined by a simple formula
-\texht{$f(i,j)$}{\axiom{f(i,j)}}, then a compiled function for
-\axiom{f} may be optimal.
+\texht{$f(i,j)$}{\spad{f(i,j)}}, then a compiled function for
+\spad{f} may be optimal.
 Some programmers prefer to represent ordinary matrices as vectors
 of vectors.
 Others prefer to represent matrices by one big linear array where
@@ -437,12 +437,12 @@ elements are accessed with linearly computable indexes.
 While all these simultaneous structures tend to be confusing,
 \Language{} provides a helpful organizational tool for such a purpose:
 categories.
-\axiomType{PolynomialCategory}, for example, provides a uniform user
+\spadtype{PolynomialCategory}, for example, provides a uniform user
 interface across all polynomial types.
 Each kind of polynomial implements functions for
 all these operations, each in its own way.
 If you use only the top-level operations in
-\axiomType{PolynomialCategory} you usually do not care what kind
+\spadtype{PolynomialCategory} you usually do not care what kind
 of polynomial implementation is used.
 
 %>> I've often thought, though, that it would be nice to be
@@ -465,24 +465,24 @@ The capsule part of {\tt Implementation} defines functions that
 implement the operations exported by the domain---usually only
 some of the operations.
 In our demo in \spadref{ugDomainsDemo}, we asked for the value of
-\axiom{3*q-q+q}.
-Where do the operations \axiomOp{*}, \axiomOp{+}, and
-\axiomOp{-} come from?
+\spad{3*q-q+q}.
+Where do the operations \spadop{*}, \spadop{+}, and
+\spadop{-} come from?
 There is no definition for them in the capsule!
 
 The {\tt Implementation} part of a definition can
 \index{domain!add}
 optionally specify an ``add-domain'' to the left of an {\tt add}
 \spadkey{add}
-(for \axiomType{QuadraticForm}, defines
-\axiomType{SquareMatrix(n,K)} is the add-domain).
+(for \spadtype{QuadraticForm}, defines
+\spadtype{SquareMatrix(n,K)} is the add-domain).
 The meaning of an add-domain is simply this: if the capsule part
 of the {\tt Implementation} does not supply a function for an
 operation, \Language{} goes to the add-domain to find the
 function.
-So do \axiomOpFrom{*}{QuadraticForm}, \axiomOpFrom{+}{QuadraticForm}
-and \axiomOpFrom{-}{QuadraticForm} come from
-\axiomType{SquareMatrix(n,K)}?
+So do \spadopFrom{*}{QuadraticForm}, \spadopFrom{+}{QuadraticForm}
+and \spadopFrom{-}{QuadraticForm} come from
+\spadtype{SquareMatrix(n,K)}?
 %Read on!
 
 %*********************************************************************
@@ -492,11 +492,11 @@ and \axiomOpFrom{-}{QuadraticForm} come from
 In \chapref{ugPackages}, we saw that categories can provide
 default implementations for their operations.
 How and when are they used?
-When \Language{} finds that \axiomType{QuadraticForm(2, Fraction
-Integer)} does not implement the operations \axiomOp{*},
-\axiomOp{+}, and \axiomOp{-}, it goes to
-\axiomType{SquareMatrix(2,Fraction Integer)} to find it.
-As it turns out, \axiomType{SquareMatrix(2, Fraction Integer)} does
+When \Language{} finds that \spadtype{QuadraticForm(2, Fraction
+Integer)} does not implement the operations \spadop{*},
+\spadop{+}, and \spadop{-}, it goes to
+\spadtype{SquareMatrix(2,Fraction Integer)} to find it.
+As it turns out, \spadtype{SquareMatrix(2, Fraction Integer)} does
 not implement {\it any} of these operations!
 
 What does \Language{} do then?
@@ -508,51 +508,51 @@ If that fails, \Language{} searches the add-domain of the add-domain,
 and so on.
 If all those fail, it then searches the default packages for the
 categories of which the domain is a member.
-In the case of \axiomType{QuadraticForm}, it searches
-\axiomType{AbelianGroup}, then its parents, grandparents, and
+In the case of \spadtype{QuadraticForm}, it searches
+\spadtype{AbelianGroup}, then its parents, grandparents, and
 so on.
 If this fails, it then searches the default packages of the
 add-domain.
 Whenever a function is found, the search stops immediately and the
 function is returned.
-When all fails, the system calls \axiomFun{error} to report this
+When all fails, the system calls \spadfun{error} to report this
 unfortunate news to you.
 To find out the actual order of constructors searched for
-\axiomType{QuadraticForm}, consult \Browse{}: from the
-\axiomType{QuadraticForm}, and click on {\bf Search Path}.
+\spadtype{QuadraticForm}, consult \Browse{}: from the
+\spadtype{QuadraticForm}, and click on {\bf Search Path}.
 
-Let's apply this search strategy for our example \axiom{3*q-q+q}.
+Let's apply this search strategy for our example \spad{3*q-q+q}.
 The scalar multiplication comes first.
 \Language{} finds a default implementation in
-\axiomType{AbelianGroup\&}.
+\spadtype{AbelianGroup\&}.
 Remember from \spadref{ugCategoriesDefaults} that
-\axiomType{SemiGroup} provides a default definition for
+\spadtype{SemiGroup} provides a default definition for
 \texht{$x^n$}{x^n} by repeated squaring?
-\axiomType{AbelianGroup} similarly provides a definition for
+\spadtype{AbelianGroup} similarly provides a definition for
 \texht{$n x$}{n*x} by repeated doubling.
 
-But the search of the defaults for \axiomType{QuadraticForm} fails
-to find any \axiomOp{+} or \axiomOp{*} in the default packages for
-the ancestors of \axiomType{QuadraticForm}.
-So it now searches among those for \axiomType{SquareMatrix}.
-Category \axiomType{MatrixCategory}, which provides a uniform interface
+But the search of the defaults for \spadtype{QuadraticForm} fails
+to find any \spadop{+} or \spadop{*} in the default packages for
+the ancestors of \spadtype{QuadraticForm}.
+So it now searches among those for \spadtype{SquareMatrix}.
+Category \spadtype{MatrixCategory}, which provides a uniform interface
 for all matrix domains,
-is a grandparent of \axiomType{SquareMatrix} and
+is a grandparent of \spadtype{SquareMatrix} and
 has a capsule defining many functions for matrices, including
 matrix addition, subtraction, and scalar multiplication.
-The default package \axiomType{MatrixCategory\&} is where the
-functions for \axiomOpFrom{+}{QuadraticForm} and
+The default package \spadtype{MatrixCategory\&} is where the
+functions for \spadopFrom{+}{QuadraticForm} and
 \spadfunFrom{-}{QuadraticForm} come from.
 
 You can use \Browse{} to discover where the operations for
-\axiomType{QuadraticForm} are implemented.
-First, get the page describing \axiomType{QuadraticForm}.
+\spadtype{QuadraticForm} are implemented.
+First, get the page describing \spadtype{QuadraticForm}.
 With your mouse somewhere in this window, type a ``2'', press the
 \texht{\fbox{\bf Tab}}{{\bf Tab}} key, and then enter ``Fraction
 Integer'' to indicate that you want the domain
-\axiomType{QuadraticForm(2, Fraction Integer)}.
+\spadtype{QuadraticForm(2, Fraction Integer)}.
 Now click on {\bf Operations} to get a table of operations and on
-\axiomOp{*} to get a page describing the \axiomOp{*} operation.
+\spadop{*} to get a page describing the \spadop{*} operation.
 Finally, click on {\bf implementation} at the bottom.
 
 % *********************************************************************
@@ -565,19 +565,19 @@ Aside from the notion of where an operation is implemented,
 a useful notion is  the {\it origin} or ``home'' of an operation.
 When an operation (such as
 \spadfunFrom{quadraticForm}{QuadraticForm}) is explicitly exported by
-a domain (such as \axiomType{QuadraticForm}), you can say that the
+a domain (such as \spadtype{QuadraticForm}), you can say that the
 origin of that operation is that domain.
 If an operation is not explicitly exported from a domain, it is inherited
 from, and has as origin, the (closest) category that explicitly exports it.
-The operations \axiomOpFrom{+}{AbelianMonoid} and
-\axiomOpFrom{-}{AbelianMonoid} of \axiomType{QuadraticForm},
-for example, are inherited from \axiomType{AbelianMonoid}.
-As it turns out, \axiomType{AbelianMonoid} is the origin of virtually every
-\axiomOp{+} operation in \Language{}!
+The operations \spadopFrom{+}{AbelianMonoid} and
+\spadopFrom{-}{AbelianMonoid} of \spadtype{QuadraticForm},
+for example, are inherited from \spadtype{AbelianMonoid}.
+As it turns out, \spadtype{AbelianMonoid} is the origin of virtually every
+\spadop{+} operation in \Language{}!
 
 Again, you can use \Browse{} to discover the origins of
 operations.
-From the \Browse{} page on \axiomType{QuadraticForm}, click on {\bf
+From the \Browse{} page on \spadtype{QuadraticForm}, click on {\bf
 Operations}, then on {\bf origins} at the bottom of the page.
 
 The origin of the operation is the {\it only} place where on-line
@@ -588,13 +588,13 @@ Suppose you have just invented the world's fastest algorithm for
 inverting matrices using a particular internal representation for
 matrices.
 If your matrix domain just declares that it exports
-\axiomType{MatrixCategory}, it exports the \axiomFun{inverse}
+\spadtype{MatrixCategory}, it exports the \spadfun{inverse}
 operation, but the documentation the user gets from \Browse{} is
-the standard one from \axiomType{MatrixCategory}.
-To give your version of \axiomFun{inverse} the attention it
+the standard one from \spadtype{MatrixCategory}.
+To give your version of \spadfun{inverse} the attention it
 deserves, simply export the operation explicitly with new
 documentation.
-This redundancy gives \axiomFun{inverse} a new origin and tells
+This redundancy gives \spadfun{inverse} a new origin and tells
 \Browse{} to present your new documentation.
 
 % *********************************************************************
@@ -613,18 +613,18 @@ To create such a type, you could compile the following
 \end{xmpLines}
 
 The {\tt Exports} part of this definition is missing and is taken
-to be equivalent to that of \axiomType{Fraction(Integer)}.
+to be equivalent to that of \spadtype{Fraction(Integer)}.
 Because of the add-domain philosophy, you get precisely
 what you want.
 The effect is to create a little stub of a domain.
 When a user asks to add two rational numbers, \Language{} would
 ask \pspadtype{RationalNumber} for a function implementing this
-\axiomOp{+}.
+\spadop{+}.
 Since the domain has no capsule, the domain then immediately
-sends its request to \axiomType{Fraction (Integer)}.
+sends its request to \spadtype{Fraction (Integer)}.
 
 The short form definition for domains is used to
-define such domains as \axiomType{MultivariatePolynomial}:
+define such domains as \spadtype{MultivariatePolynomial}:
 \exptypeindex{MultivariatePolynomial}
 
 \begin{xmpLines}
@@ -638,24 +638,24 @@ define such domains as \axiomType{MultivariatePolynomial}:
 % *********************************************************************
 %
 
-Now that we have \axiomType{QuadraticForm} available,
+Now that we have \spadtype{QuadraticForm} available,
 let's put it to use.
 Given some quadratic form \smath{Q} described by an
 \smath{n} by \smath{n} matrix over a field \smath{K}, the domain
-\axiomType{CliffordAlgebra(n, K, Q)} defines a vector space of
+\spadtype{CliffordAlgebra(n, K, Q)} defines a vector space of
 dimension \texht{$2^n$}{2^n} over \smath{K}.
 This is an interesting domain since complex numbers, quaternions,
 exterior algebras and spin algebras are all examples of Clifford
 algebras.
 
 The basic idea is this:
-the quadratic form \axiom{Q} defines a basis
+the quadratic form \spad{Q} defines a basis
 \texht{$e_1,e_2\ldots,e_n$}{e1,e2,...,en} for the
-vector space \texht{$K^n$}{K^n}---the direct product of \axiom{K}
-with itself \axiom{n} times.
+vector space \texht{$K^n$}{K^n}---the direct product of \spad{K}
+with itself \spad{n} times.
 From this, the Clifford algebra generates a basis of
 \texht{$2^n$}{2^n} elements given by all the possible products
-of the \texht{$e_i$}{\axiom{ei}} in order without duplicates, that is,
+of the \texht{$e_i$}{\spad{ei}} in order without duplicates, that is,
 \texht{
 1,
 $e_1$,
@@ -686,10 +686,10 @@ ei*ej = -ej*ei,  i ^= j
 Now look at the snapshot of its definition given in Figure
 \ref{fig-clifalg}.
 Lines 9-10 show part of the definitions of the {\tt Exports}.
-A Clifford algebra over a field \axiom{K} is asserted to be a ring,
-an algebra over \axiom{K}, and a vector space over \axiom{K}.
+A Clifford algebra over a field \spad{K} is asserted to be a ring,
+an algebra over \spad{K}, and a vector space over \spad{K}.
 Its explicit exports include
-\axiom{e(n),} which returns the \eth{\axiom{n}} unit element.
+\spad{e(n),} which returns the \eth{\spad{n}} unit element.
 
 \begin{figXmpLines}
 \xmpLine{NNI ==> NonNegativeInteger}{}
@@ -724,33 +724,33 @@ Its explicit exports include
 \xmpLine{            then addMonomProd(x.ix,ix,y.iy,iy,z)}{}
 \xmpLine{          z}{}
 \xmpLine{           ...}{}
-\caption{Part of the \protect\axiomType{CliffordAlgebra} domain.}\label{fig-clifalg}
+\caption{Part of the \protect\spadtype{CliffordAlgebra} domain.}\label{fig-clifalg}
 \end{figXmpLines}
 
 The {\tt Implementation} part begins by defining a local variable
-\axiom{Qeelist} to hold the list of all \axiom{q.v} where \axiom{v}
-runs over the unit vectors from 1 to the dimension \axiom{n}.
-Another local variable \axiom{dim} is set to \texht{$2^n$}{2^n},
+\spad{Qeelist} to hold the list of all \spad{q.v} where \spad{v}
+runs over the unit vectors from 1 to the dimension \spad{n}.
+Another local variable \spad{dim} is set to \texht{$2^n$}{2^n},
 computed once and for all.
 The representation for the domain is
-\axiomType{PrimitiveArray(K)},
-which is a basic array of elements from domain \axiom{K}.
-Line 18 defines \axiom{New} as shorthand for the more lengthy
-expression \axiom{new(dim, 0\$K)\$Rep}, which computes a primitive
-array of length \texht{$2^n$}{2^n} filled with \axiom{0}'s from
-domain \axiom{K}.
+\spadtype{PrimitiveArray(K)},
+which is a basic array of elements from domain \spad{K}.
+Line 18 defines \spad{New} as shorthand for the more lengthy
+expression \spad{new(dim, 0\$K)\$Rep}, which computes a primitive
+array of length \texht{$2^n$}{2^n} filled with \spad{0}'s from
+domain \spad{K}.
 
-Lines 19-22 define the sum of two elements \axiom{x} and \axiom{y}
+Lines 19-22 define the sum of two elements \spad{x} and \spad{y}
 straightforwardly.
-First, a new array of all \axiom{0}'s is created, then filled with
+First, a new array of all \spad{0}'s is created, then filled with
 the sum of the corresponding elements.
 Indexing for primitive arrays starts at 0.
-The definition of the product of \axiom{x} and \axiom{y} first requires
+The definition of the product of \spad{x} and \spad{y} first requires
 the definition of a local function \userfun{addMonomProd}.
 \Language{} knows it is local since it is not an exported function.
 The types of all local functions must be declared.
 
-For a demonstration of \axiomType{CliffordAlgebra}, see
+For a demonstration of \spadtype{CliffordAlgebra}, see
 \xmpref{CliffordAlgebra}.
 
 % *********************************************************************
@@ -776,8 +776,8 @@ o`determinant`$->R`1`x`d`Matrix(R)`has(R,commutative("*"))
 In English, the entry means:
 \texht{\begin{quotation}}{\newline}
 \texht{\raggedright}{}
-The operation \axiomFun{determinant}: \spadsig{\%}{R} with {\it 1} argument, is
-{\it exposed} and is exported by {\it domain} \axiomType{Matrix(R)}
+The operation \spadfun{determinant}: \spadsig{\%}{R} with {\it 1} argument, is
+{\it exposed} and is exported by {\it domain} \spadtype{Matrix(R)}
 if {\tt R has commutative("*")}.
 \texht{\end{quotation}}{\newline}
 
@@ -820,39 +820,39 @@ Extract the database of all \Language{} operations.
 \spadcommand{ops := getDatabase("o")\bound{o1}}
 }
 \xtc{
-How many exposed three-argument \axiomFun{map} operations involving streams?
+How many exposed three-argument \spadfun{map} operations involving streams?
 }{
 \spadcommand{ops.(name="map").(nargs="3").(type="*Stream*")\bound{o2}\free{o1}}
 }
 
-As usual, the arguments of \axiomFun{elt} (\axiomSyntax{.})
+As usual, the arguments of \spadfun{elt} (\spadSyntax{.})
 associate to the left.
-The first \axiomFun{elt} produces the set of all operations with
+The first \spadfun{elt} produces the set of all operations with
 name {\tt map}.
-The second \axiomFun{elt} produces the set of all map operations
+The second \spadfun{elt} produces the set of all map operations
 with three arguments.
-The third \axiomFun{elt} produces the set of all three-argument map
-operations having a type mentioning \axiomType{Stream}.
+The third \spadfun{elt} produces the set of all three-argument map
+operations having a type mentioning \spadtype{Stream}.
 
 Another thing we'd like to do is to extract one field from each of
 the index cards in the box and look at the result.
 Here is an example of that kind of request.
 
 \xtc{
-What constructors explicitly export a \axiomFun{determinant} operation?
+What constructors explicitly export a \spadfun{determinant} operation?
 }{
 \spadcommand{elt(elt(elt(elt(ops,name="determinant"),origin),sort),unique)\free{o1}}
 }
 
-The first \axiomFun{elt} produces the set of all index cards with
+The first \spadfun{elt} produces the set of all index cards with
 name {\tt determinant}.
-The second \axiomFun{elt} extracts the {\tt origin} component from
+The second \spadfun{elt} extracts the {\tt origin} component from
 each index card. Each origin component
 is the name of a constructor which directly
 exports the operation represented by the index card.
 Extracting a component from each index card produces what we call
 a {\it datalist}.
-The third \axiomFun{elt}, {\tt sort}, causes the datalist of
+The third \spadfun{elt}, {\tt sort}, causes the datalist of
 origins to be sorted in alphabetic
 order.
 The fourth, {\tt unique}, causes duplicates to be removed.
@@ -868,8 +868,8 @@ we now build the necessary domains and packages to implement it.
 We work from the top down. First, we define a database,
 our box of index cards, as an abstract datatype.
 For sake of illustration and generality,
-we assume that an index card is some type \axiom{S}, and
-that a database is a box of objects of type \axiom{S}.
+we assume that an index card is some type \spad{S}, and
+that a database is a box of objects of type \spad{S}.
 Here is the \Language{} program defining the \pspadtype{Database}
 domain.
 
@@ -894,7 +894,7 @@ domain.
 \xmpLine{      ...}{}
 \end{xmpLines}
 
-The domain constructor takes a parameter \axiom{S}, which
+The domain constructor takes a parameter \spad{S}, which
 stands for the class of index cards.
 We describe an index card later.
 Here think of an index card as a string which has
@@ -902,17 +902,17 @@ the eight fields mentioned above.
 
 First, we tell \Language{} what operations we are going to require
 from index cards.
-We need an \axiomFun{elt} to extract the contents of a field
+We need an \spadfun{elt} to extract the contents of a field
 (such as {\tt name} and {\tt type}) as a string.
 For example,
-\axiom{c.name} returns a string that is the content of the
-\axiom{name} field on the index card \axiom{c}.
+\spad{c.name} returns a string that is the content of the
+\spad{name} field on the index card \spad{c}.
 We need to display an index card in two ways:
 \pspadfun{display} shows only the name and type of an
 operation;
 \pspadfun{fullDisplay} displays all fields.
 The display operations return no useful information and thus have
-return type \axiomType{Void}.
+return type \spadtype{Void}.
 
 Next, we tell \Language{} what operations the user can apply
 to the database.
@@ -920,24 +920,24 @@ This part defines our little query language.
 The most important operation is
 {\frenchspacing\tt db . field = pattern} which
 returns a new database, consisting of all index
-cards of {\tt db} such that the \axiom{field} part of the index
-card is matched by the string pattern called \axiom{pattern}.
+cards of {\tt db} such that the \spad{field} part of the index
+card is matched by the string pattern called \spad{pattern}.
 The expression {\tt field = pattern} is an object of type
-\axiomType{QueryEquation} (defined in the next section).
+\spadtype{QueryEquation} (defined in the next section).
 
-Another \axiomFun{elt} is needed to produce a \pspadtype{DataList}
+Another \spadfun{elt} is needed to produce a \pspadtype{DataList}
 object.
-Operation \axiomOp{+} is to merge two databases together;
-\axiomOp{-} is used to subtract away common entries in a second
+Operation \spadop{+} is to merge two databases together;
+\spadop{-} is used to subtract away common entries in a second
 database from an initial database.
 There are three display functions.
 The \pspadfun{fullDisplay} function has two versions: one
 that prints all the records, the other that prints only a fixed
 number of records.
-A \axiomFun{coerce} to \axiomType{OutputForm} creates a display
+A \spadfun{coerce} to \spadtype{OutputForm} creates a display
 object.
 
-The {\tt Implementation} part of \axiomType{Database} is straightforward.
+The {\tt Implementation} part of \spadtype{Database} is straightforward.
 \begin{xmpLines}
 \xmpLine{  Implementation == add}{}
 \xmpLine{    s: Symbol}{}
@@ -955,24 +955,24 @@ The {\tt Implementation} part of \axiomType{Database} is straightforward.
 \xmpLine{    coerce(db): OutputForm == (\#db):: OutputForm}{}
 \end{xmpLines}
 
-The database is represented by a list of elements of \axiom{S} (index cards).
-We leave the definition of the first \axiomFun{elt} operation
+The database is represented by a list of elements of \spad{S} (index cards).
+We leave the definition of the first \spadfun{elt} operation
 (on line 4) until the next section.
-The second \axiomFun{elt} collects all the strings with field name
+The second \spadfun{elt} collects all the strings with field name
 {\it key} into a list.
-The \axiomFun{display} function and first \axiomFun{fullDisplay} function
-simply call the corresponding functions from \axiom{S}.
-The second \axiomFun{fullDisplay} function provides an efficient way of
+The \spadfun{display} function and first \spadfun{fullDisplay} function
+simply call the corresponding functions from \spad{S}.
+The second \spadfun{fullDisplay} function provides an efficient way of
 printing out a portion of a large list.
-The \axiomOp{+} is defined by using the existing
+The \spadop{+} is defined by using the existing
 \spadfunFrom{merge}{List} operation defined on lists, then
 removing duplicates from the result.
-The \axiomOp{-} operation requires writing a corresponding
+The \spadop{-} operation requires writing a corresponding
 subtraction operation.
-A package \axiomType{MergeThing} (not shown) provides this.
+A package \spadtype{MergeThing} (not shown) provides this.
 
-The \axiomFun{coerce} function converts the database to an
-\axiomType{OutputForm} by computing the number of index cards.
+The \spadfun{coerce} function converts the database to an
+\spadtype{OutputForm} by computing the number of index cards.
 This is a good example of the independence of
 the representation of an \Language{} object from how it presents
 itself to the user. We usually do not want to look at a database---but
@@ -1003,17 +1003,17 @@ have to invent it.
 \end{xmpLines}
 
 \Language{} converts an input expression of the form
-\axiom{{\it a} = {\it b}} to \axiom{equation({\it a, b})}.
+\spad{{\it a} = {\it b}} to \spad{equation({\it a, b})}.
 Our equations always have a symbol on the left and a string
 on the right.
 The {\tt Exports} part thus specifies an operation
-\axiomFun{equation} to create a query equation, and
+\spadfun{equation} to create a query equation, and
 \pspadfun{variable} and \pspadfun{value} to select the left- and
 right-hand sides.
 The {\tt Implementation} part uses \pspadtype{Record} for a
 space-efficient representation of an equation.
 
-Here is the missing definition for the \axiomFun{elt} function of
+Here is the missing definition for the \spadfun{elt} function of
 \pspadtype{Database} in the last section:
 
 \begin{xmpLines}
@@ -1025,7 +1025,7 @@ Here is the missing definition for the \axiomFun{elt} function of
 
 Recall that a database is represented by a list.
 Line 4 simply runs over that list collecting all elements
-such that the pattern (that is, \axiom{value})
+such that the pattern (that is, \spad{value})
 matches the selected field of the element.
 
 % *********************************************************************
@@ -1035,7 +1035,7 @@ matches the selected field of the element.
 Type \pspadtype{DataList} is a new type invented to hold the result
 of selecting one field from each of the index cards in the box.
 It is useful to make datalists extensions of lists---lists that
-have special \axiomFun{elt} operations defined on them for
+have special \spadfun{elt} operations defined on them for
 sorting and removing duplicates.
 
 \begin{xmpLines}
@@ -1055,16 +1055,16 @@ sorting and removing duplicates.
 \end{xmpLines}
 
 The {\tt Exports} part asserts that datalists belong to the
-category \axiomType{ListAggregate}.
+category \spadtype{ListAggregate}.
 Therefore, you can use all the usual list operations on datalists,
 such as \spadfunFrom{first}{List}, \spadfunFrom{rest}{List}, and
 \spadfunFrom{concat}{List}.
 In addition, datalists have four explicit operations.
-Besides the three \axiomFun{elt} operations, there is a
-\axiomFun{coerce} operation that creates datalists from lists.
+Besides the three \spadfun{elt} operations, there is a
+\spadfun{coerce} operation that creates datalists from lists.
 
 The {\tt Implementation} part needs only to define four functions.
-All the rest are obtained from \axiomType{List(S)}.
+All the rest are obtained from \spadtype{List(S)}.
 
 % *********************************************************************
 \head{subsection}{Index Cards}{ugDomainsDatabase}
@@ -1074,7 +1074,7 @@ An index card comes from a file as one long string.
 We define functions that extract substrings from the long
 string.
 Each field has a name that
-is passed as a second argument to \axiomFun{elt}.
+is passed as a second argument to \spadfun{elt}.
 
 \begin{xmpLines}
 \xmpLine{IndexCard() == Implementation where}{}
@@ -1097,12 +1097,12 @@ We must not forget one important operation: one that builds the database in the
 first place!
 We'll name it \pspadfun{getDatabase} and put it in a package.
 This function is implemented by calling the \Lisp{} function
-\axiom{getBrowseDatabase(s)} to get appropriate information from
+\spad{getBrowseDatabase(s)} to get appropriate information from
 \Browse{}.
 This operation takes a string indicating which lines you
-want from the database: \axiom{"o"} gives you all operation
-lines, and \axiom{"k"}, all constructor lines.
-Similarly, \axiom{"c"}, \axiom{"d"}, and \axiom{"p"} give
+want from the database: \spad{"o"} gives you all operation
+lines, and \spad{"k"}, all constructor lines.
+Similarly, \spad{"c"}, \spad{"d"}, and \spad{"p"} give
 you all category, domain and package lines respectively.
 %
 \begin{xmpLines}
@@ -1218,14 +1218,14 @@ Where do they come from?
 \spadcommand{elt(elt(elt(eigens,origin),sort),unique) \free{eigens}}
 }
 
-The operations \axiomOp{+} and \axiomOp{-} are useful for
+The operations \spadop{+} and \spadop{-} are useful for
 constructing small databases and combining them.
 However, remember that the only matching you can do is string
 matching.
 Thus a pattern such as {\tt "*Matrix*"} on the type field
 matches
-any type containing \axiomType{Matrix}, \axiomType{MatrixCategory},
-\axiomType{SquareMatrix}, and so on.
+any type containing \spadtype{Matrix}, \spadtype{MatrixCategory},
+\spadtype{SquareMatrix}, and so on.
 
 \xtc{
 How many operations mention ``Matrix'' in their type?
@@ -1239,7 +1239,7 @@ their name?
 \spadcommand{fm := o.(origin="*Matrix*")\bound{x11}\free{o1}}
 }
 \xtc{
-How many operations are in \axiom{fm} but not in \axiom{tm}?
+How many operations are in \spad{fm} but not in \spad{tm}?
 }{
 \spadcommand{fm-tm \bound{x12}\free{x10 x11}}
 }

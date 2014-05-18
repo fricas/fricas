@@ -34,30 +34,30 @@ define IntervalCategory(R:FUNCAT): Category ==
  with {
   approximate;
   interval : (R,R) -> %;
-    ++ interval(inf,sup) creates a new interval, either \axiom{[inf,sup]} if
-    ++ \axiom{inf <= sup} or \axiom{[sup,in]} otherwise.
+    ++ interval(inf,sup) creates a new interval, either \spad{[inf,sup]} if
+    ++ \spad{inf <= sup} or \spad{[sup,in]} otherwise.
   qinterval : (R,R) -> %;
-    ++ qinterval(inf,sup) creates a new interval \axiom{[inf,sup]}, without
+    ++ qinterval(inf,sup) creates a new interval \spad{[inf,sup]}, without
     ++ checking the ordering on the elements.
   interval : R -> %;
     ++ interval(f) creates a new interval around f.
   interval : Fraction Integer -> %;
     ++ interval(f) creates a new interval around f.
   inf : % -> R;
-    ++ inf(u) returns the infinum of \axiom{u}.
+    ++ inf(u) returns the infinum of \spad{u}.
   sup : % -> R;
-    ++ sup(u) returns the supremum of \axiom{u}.
+    ++ sup(u) returns the supremum of \spad{u}.
   width : % -> R;
-    ++ width(u) returns \axiom{sup(u) - inf(u)}.
+    ++ width(u) returns \spad{sup(u) - inf(u)}.
   positive? : % -> Boolean;
-    ++ positive?(u) returns \axiom{true} if every element of u is positive,
-    ++ \axiom{false} otherwise.
+    ++ positive?(u) returns \spad{true} if every element of u is positive,
+    ++ \spad{false} otherwise.
   negative? : % -> Boolean;
-    ++ negative?(u) returns \axiom{true} if every element of u is negative,
-    ++ \axiom{false} otherwise.
+    ++ negative?(u) returns \spad{true} if every element of u is negative,
+    ++ \spad{false} otherwise.
   contains? : (%,R) -> Boolean;
-    ++ contains?(i,f) returns true if \axiom{f} is contained within the interval
-    ++ \axiom{i}, false otherwise.
+    ++ contains?(i,f) returns true if \spad{f} is contained within the interval
+    ++ \spad{i}, false otherwise.
 }
 
 @
