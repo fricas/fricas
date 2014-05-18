@@ -201,7 +201,10 @@ getSystemCommandLine() ==
 
 --% )abbreviations
 
-abbreviations l == abbreviationsSpad2Cmd l
+abbreviations l ==
+  ioHook("startSysCmd", "abbrev")
+  abbreviationsSpad2Cmd l
+  ioHook("endSysCmd", "abbrev")
 
 abbreviationsSpad2Cmd l ==
   null l => helpSpad2Cmd '(abbreviations)
@@ -735,7 +738,9 @@ credits() ==
 
 --% )display
 
-display l == displaySpad2Cmd l
+display l ==
+  ioHook("startSysCmd", "display")
+  UNWIND_-PROTECT(displaySpad2Cmd l, ioHook("endSysCmd", "display"))
 
 displaySpad2Cmd l ==
   $e: local := $EmptyEnvironment
@@ -2140,7 +2145,10 @@ savesystem l ==
 
 --% )show
 
-show l == showSpad2Cmd l
+show l ==
+  ioHook("startSysCmd", "show")
+  showSpad2Cmd l
+  ioHook("endSysCmd", "show")
 
 showSpad2Cmd l ==
   l = [NIL] => helpSpad2Cmd '(show)
@@ -2575,7 +2583,10 @@ removeUndoLines u == --called by writeInputLines
 --% )what
 
 
-what l == whatSpad2Cmd l
+what l ==
+  ioHook("startSysCmd", "what")
+  whatSpad2Cmd l
+  ioHook("endSysCmd", "what")
 
 whatSpad2Cmd l ==
   $e:local := $EmptyEnvironment
