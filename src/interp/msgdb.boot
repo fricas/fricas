@@ -563,7 +563,11 @@ keyedMsgCompFailureSP(key,args,atree) ==
   THROW('mapCompiler,'tryInterpOnly)
 
 throwKeyedMsgCannotCoerceWithValue(val,t1,t2) ==
-  null (val' := coerceInteractive(mkObj(val,t1),$OutputForm)) =>
+  val' :=
+     not($genValue) => nil
+     coerceInteractive(mkObj(val,t1),$OutputForm)
+  if not(isWrapped(val')) then val' := nil
+  null (val') =>
     throwKeyedMsg("S2IC0002",[t1,t2])
   val' := objValUnwrap(val')
   throwKeyedMsg("S2IC0003",[t1,t2,val'])
