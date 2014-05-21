@@ -1,5 +1,45 @@
 )abbrev package PLEQN ParametricLinearEquations
-++  Author: William Sit, spring 89
+++ Author: William Sit, spring 89
+++ Description:
+++  This package completely solves a parametric linear system of equations
+++  by decomposing the set of all parametric values for which the linear
+++  system is consistent into a union of quasi-algebraic  sets (which need
+++  not be irredundant, but most of the time is). Each quasi-algebraic
+++  set is described by a list of polynomials that vanish on the set, and
+++  a list of polynomials that vanish at no point of the set.
+++  For each quasi-algebraic set, the solution of the linear system
+++  is given, as a particular solution and  a basis of the homogeneous
+++  system.
+++  The parametric linear system should be given in matrix form, with
+++  a coefficient matrix and a right hand side vector. The entries
+++  of the coefficient matrix and right hand side vector should be
+++  polynomials in the parametric variables, over a Euclidean domain
+++  of characteristic zero.
+++
+++  If the system is homogeneous, the right hand side need not be given.
+++  The right hand side can also be  replaced by an indeterminate vector,
+++  in which case, the conditions required for consistency will also be
+++  given.
+-- MB: In order to allow the rhs to be indeterminate, while working
+-- mainly with the parametric variables on the lhs (less number of
+-- variables), certain conversions of internal representation from
+-- GR to Polynomial R and Fraction Polynomial R are done.  At the time
+-- of implementation, I thought that this may be more efficient.  I
+-- have not done any comparison since that requires rewriting the
+-- package.  My own application needs to call this package quite often,
+-- and most computations involves only polynomials in the parametric
+-- variables.
+
+-- The 12 modes of psolve are probably not all necessary.  Again, I
+-- was thinking that if there are many regimes and many ranks, then
+-- the output is quite big, and it may be nice to be able to save it
+-- and read the results in later to continue computing rather than
+-- recomputing.  Because of the combinatorial nature of the algorithm
+-- (computing all subdeterminants!), it does not take a very big matrix
+-- to get into many regimes.  But I now have second thoughts of this
+-- design, since most of the time, the results are just intermediate,
+-- passed to be further processed.  On the other hand, there is probably
+-- no penalty in leaving the options as is.
 ParametricLinearEquations(R, Var, Expon, GR):
             Declaration == Definition where
 
@@ -580,4 +620,3 @@ ParametricLinearEquations(R, Var, Expon, GR):
       newmat
 
 -- See LICENSE.AXIOM for Copyright information
-
