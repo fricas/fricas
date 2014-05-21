@@ -371,7 +371,7 @@ TESTLIST= TESTCNT TESTAUX TESTUNIT
 all: all-ax
 
 # Note that the value of ${PREGENERATED} must be an absolute directory.
-all-ax all-algebra:
+all-ax all-algebra: abbrev.list
 	if test -d "${PREGENERATED}/src/algebra"; then \
           ${MAKE} BUILD_WAY=use_lisp stamp-alg ; \
 	else \
@@ -569,6 +569,10 @@ stamp-spadsrc: ${SPADFILES}
 #	     echo ')co $*.spad' | DAASE=./rf ${INTERPSYS} \
 #	   )
 
+abbrev.list: $(patsubst %, $(srcdir)/%.spad, $(SPAD_SRCS))
+	(cd $(srcdir); \
+	 sed -n 's/^)abbrev [a-z]*  *\([A-Z0-9]*\) *\([^ ]*\)/\1 \2/p' \
+	 $(patsubst %, %.spad, $(SPAD_SRCS))) > $@
 
 $(OUTSRC)/%.spad: $(srcdir)/%.spad
 	cp $< $@
