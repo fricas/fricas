@@ -1,3 +1,4 @@
+)if false
 % -*- mode : Noweb; noweb-code-mode : aldor-mode -*-
 \documentclass{article}
 \usepackage{axiom,amsthm,amsmath,amssymb,url}
@@ -30,8 +31,8 @@
 Sequences form an infinite dimensional vector space
 (implemented as streams below) over a commutative ring
 with appropriate vector space arithmetic.
+)endif
 
-<<category SEQUCAT SequenceCategory>>=
 )abbrev category SEQUCAT SequenceCategory
 ++ Author: Franz Lehner lehner@math.tugraz.at
 ++ Date Created: 2008
@@ -72,10 +73,7 @@ SequenceCategory(R : CommutativeRing) : Category == Exports where
       ++ sequence(f, s0) generates a stream recursively
       ++ by applying the function f: S -> S to the last
       ++ computed value.
-@
 
-\section{domain SEQU Sequence}
-<<domain SEQU Sequence>>=
 )abbrev domain SEQU Sequence
 ++ Author: Franz Lehner lehner@math.tugraz.at
 ++ Date Created: 2008
@@ -151,10 +149,8 @@ Sequence(R : CommutativeRing) : SequenceCategory(R) == Implementation where
     dilate(a : R, mm : %) : % ==
             apow : % := sequence( (x : R) : R +-> x*a, a)
             multiply(apow, mm)
-@
 
-\section{package SEQU2 SequenceFunctions2}
-<<package SEQU2 SequenceFunctions2>>=
+
 )abbrev package SEQU2 SequenceFunctions2
 ++ Author: Franz Lehner lehner@math.tugraz.at
 ++ Date Created: 16.09.2011
@@ -175,8 +171,8 @@ SequenceFunctions2(R1 : CommutativeRing, R2 : CommutativeRing) : Exports
       ++ \spad{map(f, x)} maps the function f on the entries of x
   Implementation ==> add
     map(f, x) == sequence map(f, stream x)$StreamFunctions2(R1, R2)
-@
 
+)if false
 \section{package HANKP HankelPackage}
 The Hankel matrix of a sequence $[a_0, a_1, \dots, a_{2n}]$
 of odd length is the matrix
@@ -189,7 +185,8 @@ A =
   a_n & a_2 &\dots &a_{2n}\\
 \end{bmatrix}
 $$
-<<package HANKP HankelPackage>>=
+)endif
+
 )abbrev package HANKP HankelPackage
 ++ Author: Franz Lehner lehner@math.tugraz.at
 ++ Date Created: 2008
@@ -222,8 +219,9 @@ HankelPackage(R : Ring) : Exports == Implementation where
         reduce(vertConcat$(Matrix R),
                [ (lloc := rest lloc;
                  matrix [[x for x in lloc for i in 1..n]]) for j in 1..n ])
-@
 
+
+)if false
 \section{package PARRPKG PathArrayPackage}
 
 This package counts weighted Motzkin paths.
@@ -300,7 +298,8 @@ $$
   v_1 c_1
 \end{bmatrix}
 $$
-<<package PARRPKG PathArrayPackage>>=
+)endif
+
 )abbrev package PARRPKG PathArrayPackage
 ++ Author: Franz Lehner lehner@math.tugraz.at
 ++ Date Created: 15 April 2011
@@ -386,8 +385,9 @@ PathArrayPackage(R : Ring) : Exports == Implementation where
 
     bottom(x : Stream S) : Stream R ==
         map(first$S, x)$StreamFunctions2(S, R)
-@
 
+
+)if false
 \section{package MOMPKG MomentPackage}
 This package contains the core transformations between moments
 and various cumulants.
@@ -395,8 +395,8 @@ When possible, the power series stream operations
 from the packages  \spad{StreamTaylorSeriesOperations}
 and \spad{StreamExponentialSeriesOperations}
 (e.g., for $\log$, $\exp$ and Lagrange inversion) are used.
+)endif
 
-<<package MOMPKG MomentPackage>>=
 )abbrev package MOMPKG MomentPackage
 ++ Author: Franz Lehner lehner@math.tugraz.at
 ++ Date Created: 2008
@@ -875,16 +875,16 @@ then implements the two steps above.
           res1 : Stream SUPR := map( (s : RECMM) : SUPR +-> (first (s.momt)),
                                      res)$StreamFunctions2(RECMM, SUPR)
           sequence res1
-@
 
 
+)if false
 \section{package STRANS STransformPackage}
 \label{sec:STRANS}
 In the case of a field we can also do the $S$-transform.
 As discussed above (Section~\ref{ssec:mompackStrans},
 there are cases where the $S$-transform is a Puiseux series.
+)endif
 
-<<package STRANS STransformPackage>>=
 )abbrev package STRANS STransformPackage
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2010
@@ -1042,10 +1042,8 @@ i.e., call
         psi2 := revert(coefficients chi2)$STTAYLORR
         psi := powern(2::Fraction Integer, psi2)
         distributionByMoments sequence rest psi
-@
 
-\section{category DISTCAT DistributionCategory}
-<<category DISTCAT DistributionCategory>>=
+
 )abbrev category DISTCAT DistributionCategory
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -1135,10 +1133,8 @@ DistributionCategory(R : CommutativeRing) : Category == Exports where
       ++ \spad{x^k} constructs the distribution of the \spad{k}th power
       ++ of the random variable with distribution \spad{X}
       ++ by picking every k-th moment.
-@
 
-\section{domain DISTRO Distribution}
-<<domain DISTRO Distribution>>=
+
 )abbrev domain DISTRO Distribution
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -1463,11 +1459,8 @@ moment sequence.
     _^(x, n) ==
         momn : Stream R := nth (stream  moments x, n)
         distributionByMoments sequence momn
-@
 
 
-\section{package DISTPOL DistributionPolynomialPackage}
-<<package DISTPOL DistributionPolynomialPackage>>=
 )abbrev package DISTPOL DistributionPolynomialPackage
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2010
@@ -1525,13 +1518,14 @@ DistributionPolynomialPackage(R : CommutativeRing,
                   IN)$StreamFunctions2(Integer, S)
         distributionByMoments sequence mompx
 
-@
 
+)if false
 \section{package DSTCFPG DistributionContinuedFractionPackage}
 It is not possible to work with \spad{UnivariatePolynomialCategory}
 because for the continued fraction we need access to
 \spad{UnivariatePolynomial(Fraction R)}.
-<<package DSTCFPG DistributionContinuedFractionPackage>>=
+)endif
+
 )abbrev package DSTCFPG DistributionContinuedFractionPackage
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2010
@@ -1583,10 +1577,8 @@ DistributionContinuedFractionPackage(R : CommutativeRing,
             bn1 : Stream UPFz :=
                 map((b : FR) : UPFz +-> monomial(-b, 0), jac bn)
             continuedFraction(0, cons(1, bn1), cons(zz, an1))
-@
 
-\section{package DISTRO2 DistributionFunctions2}
-<<package DISTRO2 DistributionFunctions2>>=
+
 )abbrev package DISTRO2 DistributionFunctions2
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
 ++ Date Created: 16.09.2011
@@ -1633,10 +1625,8 @@ DistributionFunctions2(R1 : CommutativeRing, R2 : CommutativeRing
 
     coerce(x : Distribution R1) : Distribution R2 ==
         mapall(R1_to_R2_coercion, x)
-@
 
-\section{package DISTEX DistributionPackage}
-<<package DISTEX DistributionPackage>>=
+
 )abbrev package DISTEX DistributionPackage
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -1706,26 +1696,9 @@ DistributionPackage(R : CommutativeRing) : Exports == Implementation where
           mgf := powern(half, cons(1, mgf))$STTR
           mgf := (recip(mgf)$STTR)::Stream R
           distributionByMoments sequence rest mgf
-@
 
 
-<<*>>=
-<<category SEQUCAT SequenceCategory>>
-<<domain SEQU Sequence>>
-<<package SEQU2 SequenceFunctions2>>
-<<package HANKP HankelPackage>>
-<<package PARRPKG PathArrayPackage>>
-<<package MOMPKG MomentPackage>>
-<<package STRANS STransformPackage>>
-<<category DISTCAT DistributionCategory>>
-<<domain DISTRO Distribution>>
-<<package DISTPOL DistributionPolynomialPackage>>
-<<package DSTCFPG DistributionContinuedFractionPackage>>
-<<package DISTRO2 DistributionFunctions2>>
-<<package DISTEX DistributionPackage>>
-@ %
-
-
+)if false
 \bibliographystyle{plain}
 %\bibliography{distro.bib}
 \begin{thebibliography}{1}
@@ -1744,3 +1717,4 @@ N.~Raj Rao and Roland Speicher.
 \end{thebibliography}
 
 \end{document}
+)endif

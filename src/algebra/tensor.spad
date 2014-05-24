@@ -1,3 +1,4 @@
+)if false
 % -*- mode : Noweb; noweb-code-mode : aldor-mode -*-
 
 \documentclass{article}
@@ -14,7 +15,8 @@
 
 \tableofcontents
 \section{category TENSCAT TensorProductCategory}
-<<category TENSCAT TensorProductCategory>>=
+)endif
+
 )abbrev category TENSCAT TensorProductCategory
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -33,9 +35,8 @@ TensorProductCategory(R : CommutativeRing, M : Module(R), N : Module(R)
     tensor : (M, N) -> %
       ++ \spad{tensor(x, y)} constructs the tensor product
       ++ of the elements \spad{x} and \spad{y}.
-@
-\section{category TENSPRP TensorProductProperty}
-<<category TENSPRP TensorProductProperty>>=
+
+
 )abbrev category TENSPRP TensorProductProperty
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -54,7 +55,8 @@ TensorProductProperty(R : CommutativeRing, M : Module(R), N : Module(R), _
     eval : (MxN, (M, N) -> S) -> S
       ++ \spad{eval(x, f)} evaluates the bivariate function \spad{f}
       ++ linearly on the tensor product.
-@
+
+)if false
 \section{domain TENSOR TensorProduct}
 Tensor products are universal objects and can only be
 treated in restricted situations.
@@ -74,8 +76,8 @@ to provide a function [[listOfTerms]]
 to create the list of terms with respect to the basis on the fly.
 This list is assumed to be in reverse order with respect to the
 order on the monomials.
+)endif
 
-<<domain TENSOR TensorProduct>>=
 )abbrev domain TENSOR TensorProduct
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -152,10 +154,11 @@ TensorProduct(R : CommutativeRing, B1 : OrderedSet, B2 : OrderedSet, _
               le := cons(rec.c :: OutputForm * ko, le)
             reduce("+", le)
 
-@
+
+)if false
 \subsection{Creating tensors}
 
-@
+
 There are several ways to finish the product,
 a fast one just using concatenation of lists and [[constructOrdered]].
 It relies on the assumption that the terms of the two factors are
@@ -265,7 +268,8 @@ See comment in DivisionRing() (catdef.spad):
 Same here : we want TensorPowerCategory(2, R, M)
 to be TenworProductCategory(R, M, M),
 but apparently knownInfo cannot handle conditionals in categories.
-<<category TENSPC TensorPowerCategory>>=
+)endif
+
 )abbrev category TENSPC TensorPowerCategory
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -295,14 +299,14 @@ TensorPowerCategory(n : NonNegativeInteger, R : CommutativeRing,
             --workaround knownInfo bug
             not n = 2 => error "not of order 2!"
             tensor [a, b]
-@
 
+)if false
 \section{domain TENSPOW TensorPower}
 We rely on the fact that Vector OrderedSet is an OrderedSet
 with deglex order;
 [[DirectProduct(n, B)]] does \emph{not} have OrderedSet.
+)endif
 
-<<domain TENSPOW TensorPower>>=
 )abbrev domain TENSPOW TensorPower
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at
 ++ Date Created: 2009
@@ -409,10 +413,8 @@ and also no sorting is required.
                         for t in listOfTerms t1t2 repeat
                             res := cons(t, res)
                 construct res
-@
 
-\section{domain TENSPO2 TensorPowerFunctions2}
-<<domain TENSPO2 TensorPowerFunctions2>>=
+
 )abbrev package TENSPO2 TensorPowerFunctions2
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at
 ++ Date Created: 2009
@@ -448,11 +450,6 @@ TensorPowerFunctions2(n : NonNegativeInteger, R : CommutativeRing,
             res
 
 
-@
-
-\section{category COALG Coalgebra}
-
-<<category COALG Coalgebra>>=
 )abbrev category COALG Coalgebra
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -478,12 +475,7 @@ Coalgebra(R : CommutativeRing, MxM : Module R) : Category == _
 --Coalgebra(R : CommutativeRing, MxM : TensorPowerCategory(2, R, %)
 --         ) : Category == _
 
-@
 
-
-\section{category BIALG Bialgebra}
-
-<<category BIALG Bialgebra>>=
 )abbrev category BIALG Bialgebra
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -505,12 +497,7 @@ Coalgebra(R : CommutativeRing, MxM : Module R) : Category == _
 Bialgebra(R : CommutativeRing, MxM : Module R) : Category == _
      Join(Algebra(R), Coalgebra(R, MxM))
 
-@
 
-
-\section{category HOPFALG HopfAlgebra}
-
-<<category HOPFALG HopfAlgebra>>=
 )abbrev category HOPFALG HopfAlgebra
 ++ Author: Franz Lehner lehner@finanz.math.tugraz.at, Waldek Hebisch
 ++ Date Created: 2009
@@ -528,11 +515,8 @@ HopfAlgebra(R : CommutativeRing, MxM : Module(R)) : Category _
      == Bialgebra(R, MxM) with
     antipode : % -> %
        ++ \spad{antipode(x)} computes the antipode of an element \spad{x}.
-@
 
 
-\section{License}
-<<license>>=
 --Copyright (c) 2009, Franz Lehner <lehner@finanz.math.tu-graz.ac.at>
 --
 --Redistribution and use in source and binary forms, with or without
@@ -558,17 +542,3 @@ HopfAlgebra(R : CommutativeRing, MxM : Module(R)) : Category _
 --LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 --NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 --SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-@
-<<*>>=
-<<category TENSCAT TensorProductCategory>>
-<<category TENSPRP TensorProductProperty>>
-<<domain TENSOR TensorProduct>>
-<<category TENSPC TensorPowerCategory>>
-<<domain TENSPOW TensorPower>>
-<<domain TENSPO2 TensorPowerFunctions2>>
-<<category COALG Coalgebra>>
-<<category BIALG Bialgebra>>
-<<category HOPFALG HopfAlgebra>>
-<<license>>
-@
-\end{document}
