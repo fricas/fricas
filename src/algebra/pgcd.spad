@@ -286,19 +286,20 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
     --If there is a pol s.t. pol/gcd and gcd are coprime I can lift
       lift?(p1 : SUPP, p2 : SUPP, uterm : UTerm, ldeg : List NNI,
                      lvar:List OV) : Union(s:SUPP,failed:"failed",notCoprime:"notCoprime") ==
-        leadpol : Boolean := false
-        (listpol, lval) := (uterm.lpol, uterm.lint.first)
-        d := listpol.first
-        listpol := listpol.rest
-        nolift : Boolean := true
-        for uf in listpol repeat
-              --note uf and d not necessarily primitive
-          degree gcd(uf, d) =0 => nolift := false
-        nolift => ["notCoprime"]
-        f : SUPP := ([p1, p2]$List(SUPP)).(position(uf, listpol))
-        lgcd := gcd(leadingCoefficient p1, leadingCoefficient p2)
-        (l := lift(f,d,uf,lgcd,lvar,ldeg,lval)) case "failed" => ["failed"]
-        [l :: SUPP]
+          (listpol, lval) := (uterm.lpol, first(uterm.lint))
+          d := first(listpol)
+          listpol := rest(listpol)
+          uf := listpol(1)
+          f := p1
+          --note uf and d not necessarily primitive
+          if degree gcd(uf, d) ~= 0 then
+            uf := listpol(2)
+            f := p2
+            if degree gcd(uf, d) ~= 0 then return ["notCoprime"]
+          lgcd := gcd(leadingCoefficient p1, leadingCoefficient p2)
+          l := lift(f, d, uf, lgcd, lvar, ldeg, lval)
+          l case "failed" => ["failed"]
+          [l :: SUPP]
 
    -- interface with the general "lifting" function
       lift(f : SUPP, d : SUP, uf : SUP, lgcd : P, lvar : List OV,
@@ -314,8 +315,12 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
           f := lgcd*f
           ldeg := [n0+n1 for n0 in ldeg for n1 in degree(lgcd, lvar)]
           lcd : R := leadingCoefficient d
-          if degree(lgcd)=0 then d := ((retract lgcd) *d exquo lcd)::SUP
-          else d := (retract(eval(lgcd, lvar, lval)) * d exquo lcd)::SUP
+          lgcd1 :=
+              degree(lgcd) = 0 => retract lgcd
+              retract(eval(lgcd, lvar, lval))
+          du := (lgcd1*d) exquo lcd
+          du case "failed" => "failed"
+          d := du::SUP
           uf := lcd*uf
         leadlist := [lgcd, lcf]
         lgu := imposelc([d, uf], lvar, lval, leadlist)
