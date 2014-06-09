@@ -38,7 +38,7 @@ expandMacros(tree) ==
             null(margs) =>
                 [expandMacros(repval), :[expandMacros(x) for x in args]]
             args :=
-                args is [",", :args1] => postFlatten(args, ",")
+                args is [[",", :args1]] => postFlatten(first(args), ",")
                 args
             #args = #margs =>
                 expandMacros(SUBLISLIS(args, margs, repval))
@@ -85,7 +85,7 @@ define_macro(name, def) ==
         def := [def]
     else if name is [op, :args] and SYMBOLP(op) then
         args :=
-            args is [",", args1] => rest(postFlatten(args, ","))
+            args is [[",", :args1]] => postFlatten(first(args), ",")
             args
         name := op
         def := [def, :args]
