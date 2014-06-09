@@ -98,6 +98,7 @@ $trans_key := [ _
                 ["ARROW", "->"], _
                 ["AT", "@"], _
                 ["BAR", "|"], _
+                ["BACKSLASHSLASH", "\/"], _
                 ["BECOMES", ":="], _
                 ["CARAT", "^"], _
                 ["COERCE", "::"], _
@@ -121,6 +122,7 @@ $trans_key := [ _
                 ["SEG", ".."], _
                 ["SEMICOLON", ";"], _
                 ["SLASH", "/"], _
+                ["SLASHBACKSLASH", "/\"], _
                 ["TIMES", "*"], _
                 ["BACKSET", ";"]]
 
