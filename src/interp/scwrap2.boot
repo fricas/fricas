@@ -129,8 +129,7 @@ $trans_key := [ _
 $trans_key_id := [ _
                 ["break", "break"], _
                 ["DEFAULT", "default"], _
-                ["RULE", "rule"], _
-                ["fooo", "baaar"] _
+                ["RULE", "rule"] _
                 ]
 
 DEFVAR($paren_level)
