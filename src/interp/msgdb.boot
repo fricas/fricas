@@ -99,7 +99,7 @@ escape_strings(l) ==
             res := cons(s, res)
         "iterate"
     NREVERSE(res)
-        
+
 --% Accessing the Database
 
 string2Words l ==

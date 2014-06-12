@@ -220,8 +220,7 @@ transformAndRecheckComments(name,lines) ==
   $recheckingFlag := false
   u
 
-checkRewrite(name,lines) == main where   --similar to checkComments from c-doc
-  main ==
+checkRewrite(name, lines) ==    --similar to checkComments from c-doc
     $checkErrorFlag: local := true
     margin := 0
     lines := checkRemoveComments lines
