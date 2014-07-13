@@ -433,6 +433,8 @@ MathMLFormat() : public == private where
     import from List String
     import from OutputFormTools
 
+    sayMsg ==> sayBrightly$Lisp
+
     -- local variable declarations and definitions
 
     expr : E
@@ -570,18 +572,18 @@ MathMLFormat() : public == private where
       -- the expressions.
       a : E
       expr := precondition expr
---      sayTeX$Lisp "0: "stringify expr
+--      sayMsg "0: "stringify expr
       atom?(expr) or (stringify expr = "NOTHING") =>
         concat ["{",stringify expr,"}"]
       op := operator(expr)
       sop : S := exprex op
       args : L E := arguments(expr)
       nargs : I := #args
---      sayTeX$Lisp concat ["1: ",stringify first le," : ",string(nargs)$S]
+--      sayMsg concat ["1: ",stringify first le," : ",string(nargs)$S]
       s : S := concat ["{",sop]
       if nargs > 0  then
         for a in args repeat
---        sayTeX$Lisp concat ["2: ",stringify a]
+--        sayMsg concat ["2: ",stringify a]
           s1 : S := exprex a
           s := concat [s, s1]
       s := concat [s,"}"]
@@ -590,35 +592,35 @@ MathMLFormat() : public == private where
     displayElt(mathML : S) : Void ==
       -- Takes a string of syntactically complete mathML
       -- and formats it for display.
---      sayTeX$Lisp "****displayElt1****"
---      sayTeX$Lisp mathML
+--      sayMsg "****displayElt1****"
+--      sayMsg mathML
       enT:I -- marks end of tag, e.g. "<name>"
       enE:I -- marks end of element, e.g. "<name> ... </name>"
       end : I -- marks end of mathML string
       u : US
       end := #mathML
       length : I := 60
---      sayTeX$Lisp "****displayElt1.1****"
+--      sayMsg "****displayElt1.1****"
       name : S := eltName(1, mathML)
---      sayTeX$Lisp name
---      sayTeX$Lisp concat("****displayElt1.2****",name)
+--      sayMsg name
+--      sayMsg concat("****displayElt1.2****",name)
       enE := eltLimit(name, 2+#name, mathML)
---      sayTeX$Lisp "****displayElt2****"
+--      sayMsg "****displayElt2****"
       if enE < length then
---        sayTeX$Lisp "****displayElt3****"
+--        sayMsg "****displayElt3****"
         u := segment(1, enE)$US
-        sayTeX$Lisp mathML.u
+        sayMsg mathML.u
       else
---        sayTeX$Lisp "****displayElt4****"
+--        sayMsg "****displayElt4****"
         enT := tagEnd(name, 1, mathML)
         u := segment(1, enT)$US
-        sayTeX$Lisp mathML.u
+        sayMsg mathML.u
         u := segment(enT+1, enE-#name-3)$US
         displayElt(mathML.u)
         u := segment(enE-#name-2, enE)$US
-        sayTeX$Lisp mathML.u
+        sayMsg mathML.u
       if end > enE then
---        sayTeX$Lisp "****displayElt5****"
+--        sayMsg "****displayElt5****"
         u := segment(enE+1, end)$US
         displayElt(mathML.u)
 
@@ -628,7 +630,7 @@ MathMLFormat() : public == private where
       -- Assuming pos is the position of "<" for a start tag of a mathML
       -- element finds and returns the element's name.
       i : I := pos+1
-      --sayTeX$Lisp "eltName:mathmML string: "mathML
+      --sayMsg "eltName:mathmML string: "mathML
       while member?(mathML.i, lowerCase()$CharacterClass)$CharacterClass repeat
          i := i+1
       u : US := segment(pos+1, i-1)
@@ -645,7 +647,7 @@ MathMLFormat() : public == private where
       startS:S := concat ["<",name]
       endS:S := concat ["</",name,">"]
       level : I := 1
-      --sayTeX$Lisp "eltLimit: element name: "name
+      --sayMsg "eltLimit: element name: "name
       while (level > 0) repeat
         startI := position(startS, mathML, pI)$String
 
@@ -653,7 +655,7 @@ MathMLFormat() : public == private where
 
         if (startI = 0) then
           level := level-1
-          --sayTeX$Lisp "****eltLimit 1******"
+          --sayMsg "****eltLimit 1******"
           pI := tagEnd(name, endI, mathML)
         else
           if (startI < endI) then
@@ -672,7 +674,7 @@ MathMLFormat() : public == private where
       while  (mathML.pI ~= char ">") repeat
         pI := pI+1
       u : US := segment(pos, pI)$US
-      --sayTeX$Lisp "tagEnd: "mathML.u
+      --sayMsg "tagEnd: "mathML.u
       pI
 
     ungroup(str : S) : S ==
