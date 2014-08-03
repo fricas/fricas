@@ -64,18 +64,18 @@ $(FRICAS_SRC_TARGETS): pre-gen
 	cd $(build_srcdir) && $(MAKE) BUILD_DATE="${BUILD_DATE}" $@
 
 stamp-rootdirs: $(axiom_build_document)
-	mkdir -p $(fricas_build_bindir)
-	mkdir -p $(fricas_build_libdir)
-	mkdir -p $(fricas_target_bindir)
-	mkdir -p $(fricas_target_libdir)
-	mkdir -p $(fricas_target_datadir)/spadhelp
-	mkdir -p $(fricas_target_datadir)/msgs
-	mkdir -p $(fricas_target_texdir)
-	mkdir -p $(fricas_targetdir)/algebra/
-	mkdir -p $(fricas_targetdir)/autoload
-	mkdir -p $(fricas_targetdir)/input
-	mkdir -p $(fricas_target_srcdir)/algebra
-	mkdir -p ${TMP}
+	${MKDIR_P} $(fricas_build_bindir)
+	${MKDIR_P} $(fricas_build_libdir)
+	${MKDIR_P} $(fricas_target_bindir)
+	${MKDIR_P} $(fricas_target_libdir)
+	${MKDIR_P} $(fricas_target_datadir)/spadhelp
+	${MKDIR_P} $(fricas_target_datadir)/msgs
+	${MKDIR_P} $(fricas_target_texdir)
+	${MKDIR_P} $(fricas_targetdir)/algebra/
+	${MKDIR_P} $(fricas_targetdir)/autoload
+	${MKDIR_P} $(fricas_targetdir)/input
+	${MKDIR_P} $(fricas_target_srcdir)/algebra
+	${MKDIR_P} ${TMP}
 	$(STAMP) stamp-rootdirs
 
 
@@ -106,8 +106,8 @@ stamp-noweb:
 
 book:
 	@ echo 79 building the book as $(fricas_target_docdir)/book.dvi
-	mkdir -p ${TMP}
-	mkdir -p $(fricas_target_docdir)/ps
+	${MKDIR_P} ${TMP}
+	${MKDIR_P} $(fricas_target_docdir)/ps
 	$(INSTALL) $(fricas_src_srcdir)/doc/book.pamphlet $(fricas_target_docdir)
 	cp $(fricas_src_srcdir)/doc/ps/* $(fricas_target_docdir)/ps
 	(cd $(fricas_target_docdir) ; \
@@ -253,7 +253,7 @@ dist-noweb:
 	    echo "use 'make dist NOWEB=/path/to/noweb.tar.bz2'"; \
 	    exit 1; \
 	else \
-	    mkdir -p ${distdir}/zips; \
+	    ${MKDIR_P} ${distdir}/zips; \
 	    cp "$$NOWEB" ${distdir}/zips; \
 	fi;
 
@@ -263,12 +263,12 @@ dbs=browse.daase category.daase compress.daase interp.daase operation.daase\
 
 generated_dbs=${addprefix ${disttargetdir}/algebra/, ${dbs}}
 ${generated_dbs}: ${disttargetdir}/%: ${fricas_targetdir}/%
-	test -d ${disttargetdir}/algebra || mkdir -p ${disttargetdir}/algebra
+	test -d ${disttargetdir}/algebra || ${MKDIR_P} ${disttargetdir}/algebra
 	cp -r $< $@
 
 dist-lisp: ${generated_dbs}
 	(cd src/algebra; ls -d *.NRLIB | sed 's,\.NRLIB$$,,') > nrlibs
-	mkdir -p ${distsrcdir}/algebra
+	${MKDIR_P} ${distsrcdir}/algebra
 	for A in $$(cat nrlibs); do \
 	  cp src/algebra/$${A}.NRLIB/$${A}.lsp ${distsrcdir}/algebra/$${A}.lsp;\
 	done
@@ -284,7 +284,7 @@ help-sanity-check:
 # .help files that are generated during the documentation build under
 # src/doc will be taken care of by the dist-doc target.
 dist-help: help-sanity-check
-	mkdir -p ${disttargetdir}/share/spadhelp
+	${MKDIR_P} ${disttargetdir}/share/spadhelp
 	cp ${helpsrcdir}/* ${disttargetdir}/share/spadhelp
 
 # Copy generated .ht and .pht and *.VIEW/* files to distribution directory.

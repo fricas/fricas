@@ -1,7 +1,7 @@
 #------------------------------------------------------------------
 #---
 #--- FriCAS
-#--- Copyright (C) 2013,  Ralf Hemmecke <ralf@hemmecke.org>
+#--- Copyright (C) 2013, 2014,  Ralf Hemmecke <ralf@hemmecke.org>
 #---
 #------------------------------------------------------------------
 
@@ -228,12 +228,12 @@ xmpexp.ht: examples.list
 
 ${HD_CHAPTERS_MENU_FILES}: tmp/ug%.menu: ${htexsrcdir}/ug%.htex
 # Provide chapter and section number as 2nd and 3rd arguments.
-	mkdir -p tmp
+	${MKDIR_P} tmp
 #       ${HTEX2SECMENU} SRC CHAPTERNUMBER SECTIONNUMBER MENUDIR
 	${HTEX2SECMENU} $< $* 0 tmp > $@
 
 ${HD_EXAMPLES_MENU_FILES}: tmp/%.menu: ${htexsrcdir}/%.htex examples.list
-	mkdir -p tmp
+	${MKDIR_P} tmp
 #       ${HTEX2SECMENU} SRC CHAPTERNUMBER SECTIONNUMBER MENUDIR
 	${HTEX2SECMENU} $< ${EXAMPLES_CHAPTER_NO_LEADING_ZERO} `sed -n '/^$* /=' examples.list` tmp > $@
 
@@ -335,7 +335,7 @@ mobius.VIEW: ${inputsrcdir}/mobius.input
 # The copy command should actually appear during the "copy-to-target"
 # below, but it would needlessly complicated this Makefile.
 viewports: ${HD_GPHT_FILES} mobius.VIEW
-	mkdir -p ${viewportstargetdir}
+	${MKDIR_P} ${viewportstargetdir}
 	cp -r *.VIEW ${viewportstargetdir}
 
 ###################################################################
@@ -355,21 +355,21 @@ ht.db: ${HD_NPHT_FILES} ${HD_GPHT_FILES}
 ###################################################################
 
 copy-helpfiles: stamp-ug16helpfiles
-	mkdir -p ${helptargetdir}
+	${MKDIR_P} ${helptargetdir}
 	cp *.help ${helptargetdir}
 
 ###################################################################
 # The bitmap files must be copied to the right place.
 ###################################################################
 stamp-bitmaps:
-	mkdir -p ${bitmapstargetdir}
+	${MKDIR_P} ${bitmapstargetdir}
 	cp -r ${bitmapssrcdir}/* ${bitmapstargetdir}
 
 ###################################################################
 # Copy .pht files to target dir.
 ###################################################################
 copy-phts: ${HD_NPHT_FILES} ${MAYBE_VIEWPORTS}
-	mkdir -p ${httargetdir}
+	${MKDIR_P} ${httargetdir}
 	cp *.pht ${httargetdir}
 
 ###################################################################
@@ -378,7 +378,7 @@ copy-phts: ${HD_NPHT_FILES} ${MAYBE_VIEWPORTS}
 copy-hts: ${addprefix ${httargetdir}/, ${HD_HT_FILES}}
 
 ${addprefix ${httargetdir}/, ${HD_HT_FILES} coverex xmpexp}: ${httargetdir}/%: %
-	mkdir -p ${httargetdir}
+	${MKDIR_P} ${httargetdir}
 	cp $< $@
 
 ###################################################################
@@ -387,14 +387,14 @@ ${addprefix ${httargetdir}/, ${HD_HT_FILES} coverex xmpexp}: ${httargetdir}/%: %
 ###################################################################
 glossdef.text glosskey.text: gloss.ht
 copy-gloss: glossdef.text glosskey.text
-	mkdir -p ${algebratargetdir}
+	${MKDIR_P} ${algebratargetdir}
 	cp $^ ${algebratargetdir}
 
 ###################################################################
 # We created ht.db here and then copy it to the target dir.
 ###################################################################
 ${httargetdir}/ht.db: ht.db
-	mkdir -p ${httargetdir}
+	${MKDIR_P} ${httargetdir}
 	cp $< $@
 
 ###################################################################
