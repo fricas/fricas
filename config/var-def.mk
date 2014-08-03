@@ -93,7 +93,7 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 
 ## Normally, Automake will substitute the value for this variable.
 ## But, we don't have Automake yet.  So we punt on it.
-mkdir_p = mkdir -p
+MKDIR_P = mkdir -p
 
 STAMP = echo timestamp >
 
