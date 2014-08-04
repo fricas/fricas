@@ -219,11 +219,12 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
   VI ==> Vector Integer
   PA ==> U32Vector
   PAI ==> PrimitiveArray Integer
+  PSS1 ==> Record(prime : Integer, eval1coeffbuf : PA,
+                 eval1expbuf : SortedExponentVector)
   PSS ==> Record(degx : Integer, degy : Integer, degg : Integer, _
                  sizem : Integer, sldeg : List(Integer), _
                  expdata : SortedExponentVector, coeffdata : PA, _
-                 eval1coeffbuf : PA, eval1expbuf : SortedExponentVector, _
-                 svx : SY, svz : List(SY), offsetdata : VI, prime : Integer)
+                 svx : SY, svz : List(SY), offsetdata : VI, pss1 : PSS1)
   PDR ==> Record(nvars : Integer, offsetdata : VI, _
                expdata : SortedExponentVector, _
                coeffdata : PA)
@@ -251,79 +252,14 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             xu := yu
             yu := w1
 
-    SmpTerm ==> Record(k : NonNegativeInteger, c : MP)
-    VPoly ==>  Record(v : Symbol, ts : List SmpTerm)
-    SmpRep ==>  Union(Integer, VPoly)
-
     Qmul ==> QSMULMOD32$Lisp
     Qmuladd ==> QSMULADDMOD64_-32$Lisp
 
     import from U32VectorPolynomialOperations
 
-    eval1a(pol : MP, pt : Integer, pss : PSS) : Integer ==
-        p := pss.prime
-        polr := pol pretend SmpRep
-        polr case Integer =>
-            return polr
-        polu : List SmpTerm := polr.ts
-        i : SingleInteger := 0
-        coeffs := pss.eval1coeffbuf
-        exps := pss.eval1expbuf
-        n := #coeffs
-        ns := qconvert(n)@SingleInteger
-        for t0 in polu repeat
-            if not(i < ns) then
-                nn := 2*n
-                ncoeffs := new(nn, 0)$PA
-                copy_first(ncoeffs, coeffs, n)
-                coeffs := ncoeffs
-                pss.eval1coeffbuf := coeffs
-                nexps := new(nn, 0)$SortedExponentVector
-                copy_first(nexps pretend PA, exps pretend PA, n)
-                exps := nexps
-                pss.eval1expbuf := exps
-                n := nn
-                ns := qconvert(n)@SingleInteger
-            t1 := t0.c pretend SmpRep
-            exps(i) := t0.k
-            if t1 case Integer then
-                coeffs(i) := t1
-            else
-                error "More than one variable in eval1a"
-            i := i + 1
-        res : Integer := 0
-        ptk : Integer := 1
-        pk : SingleInteger := 0
-        for j in (i - 1)..0 by -1 repeat
-            ki := qconvert(exps(j))@SingleInteger
-            while pk < ki repeat
-                ptk := Qmul(ptk, pt, p)
-                pk := pk + 1
-            res := Qmuladd(ptk, coeffs(j), res, p)
-        res
-
-    eval1(pol : MP, vv : Symbol, pt : Integer, pss : PSS) : MP ==
-        polr := pol pretend SmpRep
-        polr case Integer => return pol
-        vx : Symbol := polr.v
-        vx = vv => return eval1a(pol, pt, pss)::MP
-        xu : List SmpTerm := polr.ts
-        yu : List SmpTerm := []
-        c1 : MP
-        for t0 in xu repeat
-            t1 := t0.c pretend SmpRep
-            t1 case Integer => yu := cons([t0.k, t0.c], yu)
-            c1 := eval1(t0.c, vv, pt, pss)
-            c1 = 0 => 0
-            yu := cons([t0.k, c1], yu)
-        xr : SmpRep :=
-            yu = [] => 0
-            [vx, reverse! yu]
-        (SETF$Lisp)(xr, xr) pretend MP
-
-
     VMR ==> VectorModularReconstructor
     IMODHP ==> InnerModularHermitePade
+    PEVALUT ==> PolynomialEvaluationUtilities
 
     compare_coeff1(nv : Integer, exps : SortedExponentVector, _
                    nexps : SortedExponentVector) : Integer ==
@@ -336,7 +272,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
 
     algebraicGcd1(x : MP, y : MP, lm : List(MP), pss : PSS
                  ) : Union(PDR, "failed") ==
-        p := pss.prime
+        p := pss.pss1.prime
         vx := pss.svx
         lvz := pss.svz
         mdp := pack_modulus(lm, lvz, p)
@@ -361,7 +297,8 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
                  ) : Union(PDR, "failed") ==
         nv := #lv
         nv = 0 => algebraicGcd1(x, y, lm, pss)
-        p := pss.prime
+        pss1 := pss.pss1
+        p := pss1.prime
         vx := pss.svx
         offsets := pss.offsetdata
         lt : List Integer := []
@@ -380,9 +317,9 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             t : Integer := random(p)
             member?(t, lt) => "iterate"
             lt := cons(t, lt)
-            xt := eval1(x, vt, t, pss)
-            yt := eval1(y, vt, t, pss)
-            lmt := [eval1(m, vt, t, pss) for m in lm]
+            xt := eval1(x, vt, t, pss1)$PEVALUT
+            yt := eval1(y, vt, t, pss1)$PEVALUT
+            lmt := [eval1(m, vt, t, pss1)$PEVALUT for m in lm]
             lcbad : Boolean := false
             for m in lmt for deg in pss.sldeg for z in pss.svz repeat
                 if degree(m, z) < deg then lcbad := true
@@ -398,7 +335,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             coeffs := gtf.coeffdata
             if pss.degg < dg or empty?(exps) then
                 exps := nexps
-                rstate := empty(#coeffs, pss.prime)$VMR
+                rstate := empty(#coeffs, pss1.prime)$VMR
                 bad_cnt := 0
                 good_cnt := 0
             if pss.degg < dg then dg := pss.degg
@@ -483,6 +420,7 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         dy := pss.degy
         dg := pss.degg
         vx := pss.svx
+        pss1 := pss.pss1
         lvz := pss.svz
         nbv := #lvz + 1
         nv := #lv
@@ -493,11 +431,11 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
                     +500000)
             member?(p, lp) => 0
             lp := cons(p, lp)
-            pss.prime := p
-            xp := modpreduction(x, p)$IMODHP
-            yp := modpreduction(y, p)$IMODHP
+            pss1.prime := p
+            xp := modpreduction(x, p)$PEVALUT
+            yp := modpreduction(y, p)$PEVALUT
             (degree(xp, vx) < dx) and (degree(yp, vx) < dy) => "iterate"
-            lmp := [modpreduction(m, p)$IMODHP for m in lm]
+            lmp := [modpreduction(m, p)$PEVALUT for m in lm]
             lcbad : Boolean := false
             for m in lm for deg in pss.sldeg for z in lvz repeat
                 if degree(m, z) < deg then lcbad := true
@@ -568,9 +506,10 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         nlm := [eval(m, sv, tval) for m in lm]
         ldeg : List(Integer) := [degree(m, vz) for m in lm for vz in lvz]
         msize := reduce(_*, ldeg, 1)
+        -- pss1 : PSS1 := [new(10, 0)$PA, new(10, 0)$SortedExponentVector, 0]$PSS1
         pss : PSS := [degree(nx, tvx), degree(ny, tvx), 0, msize, ldeg, _
-                    empty(), empty(), new(10, 0)$PA, _
-                    new(10, 0)$SortedExponentVector, tvx, tvz, [0]$VI, 0]
+                    empty(), empty(), tvx, tvz, [0]$VI, _
+                    [0, new(10, 0)$PA, new(10, 0)$SortedExponentVector]$PSS1]
         -- Overestimate
         pss.degg := min(pss.degx, pss.degy) + 1
         ress := algebraicGcd3a(nx, ny, nlm, tv0, pss)
