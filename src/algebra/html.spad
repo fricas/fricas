@@ -241,9 +241,8 @@ HTMLFormat() : public == private where
        " \cr ","&","/\","\/"]$(L S)
     naryPrecs     : L I := [700, 700, 800, 800, 110, 110, 0, 0, 0, 0, 0, 600, 600]$(L I)
     naryNGOps     : L Symbol := ['ROW, "&"::Symbol]
-    plexOps       : L Symbol := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN, _
-                            'INDEFINTEGRAL]
-    plexPrecs     : L I := [700, 800, 700, 800, 700, 700]$(L I)
+    plexOps       : L Symbol := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
+    plexPrecs     : L I := [700, 800, 700, 800, 700]$(L I)
     specialOps    : L Symbol := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, _
                      'VCONCAT, 'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, _
                      'TAG, 'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN,_
@@ -617,7 +616,7 @@ HTMLFormat() : public == private where
       buildPlex3(formatHtml(first args, opPrec), formatHtml(args.3, opPrec), _
         tree("&int;"),formatHtml(args.2,opPrec))
 
-    -- plex ops are "SIGMA","SIGMA2","PI","PI2","INTSIGN","INDEFINTEGRAL"
+    -- plex ops are "SIGMA","SIGMA2","PI","PI2","INTSIGN"
     -- expects 2 or 3 args
     formatPlex(op : Symbol, args : L E, prec : I) : Tree S ==
       if debug then sayHt "formatPlex: "concat["op=", string(op), " args=",_
@@ -648,8 +647,6 @@ HTMLFormat() : public == private where
           tree("&#x0220F;")
         -- Product
         op = 'INTSIGN => tree("&#x0222B;")
-        -- Integral, int
-        op = 'INDEFINTEGRAL => tree("&#x0222B;")
         -- Integral, int
         tree("formatPlex: unexpected op:" string(op))
       -- if opPrec < prec then perhaps we should parenthesize?
@@ -999,7 +996,7 @@ HTMLFormat() : public == private where
           -- SEGMENT, QUOTE, theMap, SLASH
           member?(op, specialOps) => formatSpecial(op, args, prec)
           -- specialOps are:
-          -- SIGMA, SIGMA2, PI, PI2, INTSIGN, INDEFINTEGRAL
+          -- SIGMA, SIGMA2, PI, PI2, INTSIGN
           member?(op, plexOps)    => formatPlex(op, args, prec)
           -- nullary case: function with no aguments
           0 = nargs => formatNullary op

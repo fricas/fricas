@@ -1179,30 +1179,6 @@ overbarApp(u,x,y,d) ==
   underApp:= APP(u.1,x,y,d)
   apphor(x,x+WIDTH u.1-1,y+superspan u.1+1,d,UNDERBAR)
 
-indefIntegralSub u ==
-   -- form is INDEFINTEGRAL(expr,dx)
-   MAX(1,subspan u.1,subspan u.2)
-
-indefIntegralSup u ==
-   -- form is INDEFINTEGRAL(expr,dx)
-   MAX(1,superspan u.1,superspan u.2)
-
-indefIntegralApp(u,x,y,d) ==
-   -- form is INDEFINTEGRAL(expr,dx)
-  [.,expr,dx]:=u
-  d := APP(expr,x+4,y,d)
-  d := APP(dx,x+5+WIDTH expr,y,d)
-  xLate( [['(0 . -1),:specialChar('llc) ],_
-          ['(1 . -1),:specialChar('lrc) ],_
-          ['(1 .  0),:specialChar('vbar)],_
-          ['(1 .  1),:specialChar('ulc) ],_
-          ['(2 .  1),:specialChar('urc) ]], x,y,d)
-
-indefIntegralWidth u ==
-  -- form is INDEFINTEGRAL(expr,dx)
-  # u ~= 3 => THROW('outputFailure,'outputFailure)
-  5 + WIDTH u.1 + WIDTH u.2
-
 intSub u ==
    MAX(1 + height u.1, subspan u.3)
 

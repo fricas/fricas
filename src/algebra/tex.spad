@@ -119,9 +119,8 @@ TexFormat() : public == private where
                             0, 0, 850]$(L I)
     naryNGOps     : L Sy := ['ROW]
 
-    plexOps       : L Sy := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN, _
-                             'INDEFINTEGRAL]
-    plexPrecs     : L I := [ 750, 750, 750, 750, 700,   700]$(L I)
+    plexOps       : L Sy := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
+    plexPrecs     : L I := [ 750, 750, 750, 750, 700]$(L I)
 
     specialOps    : L Sy := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
                              'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
@@ -449,23 +448,18 @@ TexFormat() : public == private where
             op = 'PI      => "\prod"
             op = 'PI2     => "\prod"
             op = 'INTSIGN => "\int"
-            op = 'INDEFINTEGRAL => "\int"
             "????"
         hold := formatExpr(first args, minPrec)
         args := rest args
-        if op ~= 'INDEFINTEGRAL then
+        if hold ~= "" then
+            s := concat [s, " \sb", group concat ["\displaystyle ", hold]]
+        if not null rest args then
+            hold := formatExpr(first args, minPrec)
             if hold ~= "" then
-                s := concat [s, " \sb", group concat ["\displaystyle ", hold]]
-            if not null rest args then
-                hold := formatExpr(first args, minPrec)
-                if hold ~= "" then
-                    s := concat [s, " \sp",
-                                 group concat ["\displaystyle ", hold]]
-                args := rest args
-            s := concat [s, " ", formatExpr(first args, opPrec)]
-        else
-            hold := group concat [hold, " ", formatExpr(first args, minPrec)]
-            s := concat [s, " ", hold]
+                s := concat [s, " \sp",
+                             group concat ["\displaystyle ", hold]]
+            args := rest args
+        s := concat [s, " ", formatExpr(first args, opPrec)]
         if opPrec < prec then s := parenthesize s
         group s
 
