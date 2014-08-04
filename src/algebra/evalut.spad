@@ -1,0 +1,176 @@
+)abbrev package PEVALUT PolynomialEvaluationUtilities
+++ Description: This package implements evaluation functions
+++  useful for modular algoritms.  Computations work
+++  on integer polynomials, but most is done modulo a prime
+++  which is a provided via parameters, either explicitely or
+++  trough a state parameter (state also caches needed  buffers).
+++  Some functions work on fractions.  To avoid useless GCD
+++  computations during evaluation fractions may be represented
+++  as a record.
+PolynomialEvaluationUtilities : Exports == Implementation where
+  MP ==> Polynomial Integer
+  FrP ==> Record(numer : MP, denom : MP)
+  PA ==> U32Vector
+  PSS ==> Record(prime : Integer, eval1coeffbuf : PA,
+                 eval1expbuf : SortedExponentVector)
+  Exports ==> with
+    eval1a : (MP, Integer, PSS) -> Integer
+      ++ eval1a(pol, pt, pss) evaluates polynomial pol at
+      ++ point pt using global state form pss.  Computations are
+      ++ done modulo a prime contained in pss.  Note: pol must
+      ++ have at most one variable.
+    eval1 : (MP, Symbol, Integer, PSS) -> MP
+      ++ eval1(pol, v, pt, pss) evaluates pol in variable v at pt,
+      ++ using global state form pss.  Computations are
+      ++ done modulo a prime contained in pss.
+    eval1 : (FrP, Symbol, Integer, PSS) -> Union(FrP, "failed")
+      ++ eval1(pq, v, pt, pss) evaluates fraction of polynomial pq
+      ++ in variable v at pt, using global state form pss.  Computations
+      ++ are done modulo a prime contained in pss.
+    modpreduction : (MP, Integer) -> MP
+      ++ modpreduction(pol, p) reduces polynomial pol modulo
+      ++ prime p.
+    modpreduction : (Fraction(MP), Integer) -> Union(FrP, "failed")
+      ++ modpreduction(r, p) reduces a rational function r modulo
+      ++ prime p.
+    modpeval : (MP, List Symbol, List Integer, Integer) -> Integer
+      ++ modpeval(pol, lv, lpt, p) evaluates polynomial pol in
+      ++ variables form lv at point from lpt modulo a prime p
+  Implementation ==> add
+
+    import from U32VectorPolynomialOperations
+
+    SmpTerm ==> Record(k : NonNegativeInteger, c : MP)
+    VPoly ==>  Record(v : Symbol, ts : List SmpTerm)
+    SmpRep ==>  Union(Integer, VPoly)
+
+    Qmul ==> QSMULMOD32$Lisp
+    Qmuladd ==> QSMULADDMOD64_-32$Lisp
+
+    eval1a(pol : MP, pt : Integer, pss : PSS) : Integer ==
+        p := pss.prime
+        polr := pol pretend SmpRep
+        polr case Integer =>
+            return polr
+        polu : List SmpTerm := polr.ts
+        i : SingleInteger := 0
+        coeffs := pss.eval1coeffbuf
+        exps := pss.eval1expbuf
+        n := #coeffs
+        ns := qconvert(n)@SingleInteger
+        for t0 in polu repeat
+            if not(i < ns) then
+                nn := 2*n
+                ncoeffs := new(nn, 0)$PA
+                copy_first(ncoeffs, coeffs, n)
+                coeffs := ncoeffs
+                pss.eval1coeffbuf := coeffs
+                nexps := new(nn, 0)$SortedExponentVector
+                copy_first(nexps pretend PA, exps pretend PA, n)
+                exps := nexps
+                pss.eval1expbuf := exps
+                n := nn
+                ns := qconvert(n)@SingleInteger
+            t1 := t0.c pretend SmpRep
+            exps(i) := t0.k
+            if t1 case Integer then
+                coeffs(i) := t1
+            else
+                error "More than one variable in eval1a"
+            i := i + 1
+        res : Integer := 0
+        ptk : Integer := 1
+        pk : SingleInteger := 0
+        for j in (i - 1)..0 by -1 repeat
+            ki := qconvert(exps(j))@SingleInteger
+            while pk < ki repeat
+                ptk := Qmul(ptk, pt, p)
+                pk := pk + 1
+            res := Qmuladd(ptk, coeffs(j), res, p)
+        res
+
+    eval1(pol : MP, vv : Symbol, pt : Integer, pss : PSS) : MP ==
+        polr := pol pretend SmpRep
+        polr case Integer => return pol
+        vx : Symbol := polr.v
+        vx = vv => return eval1a(pol, pt, pss)::MP
+        xu : List SmpTerm := polr.ts
+        yu : List SmpTerm := []
+        c1 : MP
+        for t0 in xu repeat
+            t1 := t0.c pretend SmpRep
+            t1 case Integer => yu := cons([t0.k, t0.c], yu)
+            c1 := eval1(t0.c, vv, pt, pss)
+            c1 = 0 => 0
+            yu := cons([t0.k, c1], yu)
+        xr : SmpRep :=
+            yu = [] => 0
+            [vx, reverse! yu]
+        (SETF$Lisp)(xr, xr) pretend MP
+
+    eval1(pol : FrP, vv : Symbol, pt : Integer, pss : PSS
+         ) : Union(FrP, "failed") ==
+        d := eval1(pol.denom, vv, pt, pss)
+        d = 0 => "failed"
+        [eval1(pol.numer, vv, pt, pss), d]
+
+    modpreduction(x : MP, p : Integer) : MP ==
+      xr : SmpRep := x pretend SmpRep
+      c0 : Integer
+      xr case Integer =>
+         c0 := positiveRemainder(xr, p)
+         xr := c0
+         (SETF$Lisp)(xr, xr) pretend MP
+      vx : Symbol := xr.v
+      xu : List SmpTerm := xr.ts
+      yu : List SmpTerm := []
+      c1 : MP
+      for t0 in xu repeat
+        t1 := t0.c pretend SmpRep
+        t1 case Integer =>
+          c0 := positiveRemainder(t1, p)
+          c0 = 0 => 0
+          xr := c0
+          yu := cons([t0.k, (SETF$Lisp)(xr, xr) pretend MP], yu)
+        c1 := modpreduction(t0.c, p)
+        c1 = 0 => 0
+        yu := cons([t0.k, c1], yu)
+      xr :=
+         yu = [] => 0
+         [vx, reverse! yu]
+      (SETF$Lisp)(xr, xr) pretend MP
+
+    modpreduction(x : Fraction(MP), p : Integer
+                 ) : Union(FrP, "failed") ==
+        d := modpreduction(denom(x), p)
+        d = 0 => "failed"
+        [modpreduction(numer(x), p), d]
+
+    modpeval(x : MP, vars : List Symbol, pts : List Integer, _
+             p : Integer) : Integer ==
+        xr : SmpRep := x pretend SmpRep
+        xr case Integer =>
+            return positiveRemainder(xr, p)
+        vx : Symbol := xr.v
+        vx ~= first(vars) =>
+            return modpeval(x, rest vars, rest pts, p)
+        vxval := first pts
+        vars := rest vars
+        pts := rest pts
+        xu : List SmpTerm := xr.ts
+        yu : List SmpTerm := []
+        ptk : Integer := 1
+        kk : Integer := 0
+        res : Integer := 0
+        xu := reverse(xu)
+        for t0 in xu repeat
+            t1 := t0.c pretend SmpRep
+            kk1 := t0.k
+            while kk < kk1 repeat
+                  ptk := Qmul(vxval, ptk, p)
+                  kk := kk + 1
+            c0 :=
+                  t1 case Integer => positiveRemainder(t1, p)
+                  modpeval(t0.c, vars, pts, p)
+            res := Qmuladd(ptk, c0, res, p)
+        res

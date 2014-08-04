@@ -370,6 +370,8 @@ PA ==> U32Vector
 PPA ==> PrimitiveArray PA
 VPA ==> Vector PA
 MP ==> Polynomial Integer
+FrP ==> Record(numer : MP, denom : MP)
+PMP1 ==> PrimitiveArray FrP
 PMP ==> PrimitiveArray Fraction MP
 PAI ==> PrimitiveArray Integer
 MPA ==> TwoDimensionalArray PA
@@ -390,21 +392,18 @@ PDR ==> Record(nvars : Integer, offsetdata : VI, _
                coeffdata : PA)
 
 -- part of solver state shared between recursion levels
+PSS1 ==> Record(prime : Integer, eval1coeffbuf : PA,
+                 eval1expbuf : SortedExponentVector)
 PSS ==> Record(degree_bounds : VI, pss_sigma : NonNegativeInteger, _
                points : PA, pss_qvar : Symbol, pss_qval : Integer, _
-               prime : Integer, pss_kind : Symbol, _
-               oldva : VI, oldciv : VI, pss_m : Integer, sol_cnt : Integer,
-               eval1coeffbuf : PA, _
-               eval1expbuf : SortedExponentVector)
+               pss_kind : Symbol,  oldva : VI, oldciv : VI,
+               pss_m : Integer, sol_cnt : Integer, pss1 : PSS1)
 
 GEN ==> (List(U32Vector), Integer, Integer) -> Vector(U32Vector)
 
 InnerModularHermitePade : with
     do_modular_solve : (VPA, Vector Integer, NonNegativeInteger, _
                           PA, Integer, Symbol) -> Union(NBR, "no_solution")
-
-    do_poly_modular : (List(Symbol), List(PMP), PSS, GEN) _
-                 -> Union(PBR, "failed", "no_solution")
 
     do_poly_integer : (List(Symbol), List(PMP), Vector(Integer), _
                          NonNegativeInteger, PA, Symbol, Symbol, GEN) _
@@ -417,72 +416,20 @@ InnerModularHermitePade : with
               SortedExponentVector, VI, SortedExponentVector) _
               -> Record(offsetdata : VI, expdata : SortedExponentVector)
 
-    eval_and_solve : (Integer,  List(Symbol), List(PMP), _
-                     PSS, GEN) -> Union(PBR, "failed", "no_solution")
-
-    modpeval : (MP, List Symbol, List Integer, Integer) -> Integer
-
-    modpreduction : (MP, Integer) -> MP
-
  == add
 
     MS ==> NaiveBeckermannLabahnModular
     VMR ==> VectorModularReconstructor
     VIR ==> VectorIntegerReconstructor
+    PEVALUT ==> PolynomialEvaluationUtilities
 
     Qmul ==> QSMULMOD32$Lisp
     Qmuladd ==> QSMULADDMOD64_-32$Lisp
 
     import from U32VectorPolynomialOperations
 
-    SmpTerm ==> Record(k : NonNegativeInteger, c : MP)
-    VPoly ==>  Record(v : Symbol, ts : List SmpTerm)
-    SmpRep ==>  Union(Integer, VPoly)
-
-
-    eval1a(pol : MP, pt : Integer, pss : PSS) : Integer ==
-        p := pss.prime
-        polr := pol pretend SmpRep
-        polr case Integer =>
-            return polr
-        polu : List SmpTerm := polr.ts
-        i : SingleInteger := 0
-        coeffs := pss.eval1coeffbuf
-        exps := pss.eval1expbuf
-        n := #coeffs
-        ns := qconvert(n)@SingleInteger
-        for t0 in polu repeat
-            if i >= n then
-                nn := 2*n
-                ncoeffs := new(nn, 0)$PA
-                copy_first(ncoeffs, coeffs, n)
-                coeffs := ncoeffs
-                pss.eval1coeffbuf := coeffs
-                nexps := new(nn, 0)$SortedExponentVector
-                copy_first(nexps pretend PA, exps pretend PA, n)
-                exps := nexps
-                pss.eval1expbuf := exps
-                n := nn
-            t1 := t0.c pretend SmpRep
-            exps(i) := t0.k
-            if t1 case Integer then
-                coeffs(i) := t1
-            else
-                error "More than one variable in eval1a"
-            i := i + 1
-        res : Integer := 0
-        ptk : Integer := 1
-        pk : Integer := 0
-        for j in (i - 1)..0 by -1 repeat
-            ki := exps(j)
-            while pk < ki repeat
-                ptk := Qmul(ptk, pt, p)
-                pk := pk + 1
-            res := Qmuladd(ptk, coeffs(j), res, p)
-        res
-
-    eval1s(gvl : List(PMP), pt : Integer, var : Symbol, _
-           pss : PSS) : Union(List(PA), "failed") ==
+    eval1s(gvl : List(PMP1), pt : Integer, var : Symbol, _
+           pss : PSS1) : Union(List(PA), "failed") ==
         p := pss.prime
         resl := empty()$List(PA)
         for gv0 in gvl repeat
@@ -490,8 +437,8 @@ InnerModularHermitePade : with
             ress := new(n , 0)$PA
             for j in 0..(n - 1) repeat
                 nlcq := gv0(j)
-                nm := eval1a(numer(nlcq), pt, pss)
-                dm := eval1a(denom(nlcq), pt, pss)
+                nm := eval1a(nlcq.numer, pt, pss)$PEVALUT
+                dm := eval1a(nlcq.denom, pt, pss)$PEVALUT
                 dm = 0 => return "failed"
                 dms := qconvert(dm)@SingleInteger
                 nlc : Integer :=
@@ -500,93 +447,30 @@ InnerModularHermitePade : with
             resl := cons(ress, resl)
         reverse!(resl)
 
-    modpreduction(x : MP, p : Integer) : MP ==
-      xr : SmpRep := x pretend SmpRep
-      c0 : Integer
-      xr case Integer =>
-         c0 := positiveRemainder(xr, p)
-         xr := c0
-         (SETF$Lisp)(xr, xr) pretend MP
-      vx : Symbol := xr.v
-      xu : List SmpTerm := xr.ts
-      yu : List SmpTerm := []
-      c1 : MP
-      for t0 in xu repeat
-        t1 := t0.c pretend SmpRep
-        t1 case Integer =>
-          c0 := positiveRemainder(t1, p)
-          c0 = 0 => 0
-          xr := c0
-          yu := cons([t0.k, (SETF$Lisp)(xr, xr) pretend MP], yu)
-        c1 := modpreduction(t0.c, p)
-        c1 = 0 => 0
-        yu := cons([t0.k, c1], yu)
-      xr :=
-         yu = [] => 0
-         [vx, reverse! yu]
-      (SETF$Lisp)(xr, xr) pretend MP
-
-    modpeval(x : MP, vars : List Symbol, pts : List Integer, _
-             p : Integer) : Integer ==
-        xr : SmpRep := x pretend SmpRep
-        xr case Integer =>
-            return positiveRemainder(xr, p)
-        vx : Symbol := xr.v
-        vx ~= first(vars) =>
-            return modpeval(x, rest vars, rest pts, p)
-        vxval := first pts
-        vars := rest vars
-        pts := rest pts
-        xu : List SmpTerm := xr.ts
-        yu : List SmpTerm := []
-        ptk : Integer := 1
-        kk : Integer := 0
-        res : Integer := 0
-        xu := reverse(xu)
-        for t0 in xu repeat
-            t1 := t0.c pretend SmpRep
-            kk1 := t0.k
-            while kk < kk1 repeat
-                  ptk := Qmul(vxval, ptk, p)
-                  kk := kk + 1
-            c0 :=
-                  t1 case Integer => positiveRemainder(t1, p)
-                  modpeval(t0.c, vars, pts, p)
-            res := Qmuladd(ptk, c0, res, p)
-        res
-
-    eval2s(gvl : List(PMP), pt : Integer, var : Symbol, _
-           p : Integer) : Union(List(PMP), "failed") ==
-        resl := empty()$List(PMP)
+    eval2s(gvl : List(PMP1), pt : Integer, var : Symbol, _
+           pss : PSS1) : Union(List(PMP1), "failed") ==
+        resl := empty()$List(PMP1)
         for gv0 in gvl repeat
             n := #gv0
-            ress := new(n , 0)$PMP
-            vars := [var]@List(Symbol)
-            pts := [pt]@List(Integer)
+            ress := new(n , [0, 1]$FrP)$PMP1
             for j in 0..(n - 1) repeat
                 nlcq := gv0(j)
-                nmp := eval(numer(nlcq), vars, pts)
-                dmp := eval(denom(nlcq), vars, pts)
-                nm := modpreduction(nmp, p)
-                dm := modpreduction(dmp, p)
-                dm = 0 => return "failed"
-                ress(j) := nm/dm
+                res1 := eval1(nlcq, var, pt, pss)$PEVALUT
+                res1 case "failed" => return "failed"
+                ress(j) := res1::FrP
             resl := cons(ress, resl)
         reverse!(resl)
 
-    eval3s(gvl : List(PMP), p : Integer) : Union(List(PMP), "failed") ==
-        resl := empty()$List(PMP)
+    eval3s(gvl : List(PMP), p : Integer) : Union(List(PMP1), "failed") ==
+        resl := empty()$List(PMP1)
         for gv0 in gvl repeat
             n := #gv0
-            ress := new(n , 0)$PMP
+            ress := new(n, [0, 1]$FrP)$PMP1
             for j in 0..(n - 1) repeat
                 nlcq := gv0(j)
-                nmp := numer(nlcq)
-                dmp := denom(nlcq)
-                nm := modpreduction(nmp, p)
-                dm := modpreduction(dmp, p)
-                dm = 0 => return "failed"
-                ress(j) := nm/dm
+                res1 := modpreduction(nlcq, p)$PEVALUT
+                res1 case "failed" => return "failed"
+                ress(j) := res1::FrP
             resl := cons(ress, resl)
         reverse!(resl)
 
@@ -606,14 +490,14 @@ InnerModularHermitePade : with
                        prime : Integer, kind : Symbol) _
                        : Union(NBR, "no_solution") ==
         m0 := #ve
-        m1 := 0
+        m1 : NonNegativeInteger := 0
         for i in 1..m0 repeat
             if ve(i) >= 0 then
                 m1 := m1 + 1
         if m1 < m0 then
             ngv := new(m1, empty()$PA)$VPA
             nve := new(m1, 0)$VI
-            j := 1
+            j : Integer := 1
             for i in 1..m0 repeat
                 if ve(i) >= 0 then
                     ngv(j) := gv(i)
@@ -814,13 +698,17 @@ InnerModularHermitePade : with
         all_bad => return "all_bad"
         return "OK"
 
-    eval_and_solve(pt : Integer, vars : List(Symbol), gvl : List(PMP),
+    do_poly_modular : (List(Symbol), List(PMP1), PSS, GEN) _
+                 -> Union(PBR, "failed", "no_solution")
+
+    eval_and_solve(pt : Integer, vars : List(Symbol), gvl : List(PMP1),
                      pss : PSS, gen : GEN) _
                   : Union(PBR, "failed", "no_solution") ==
-        p := pss.prime
+        pss1 := pss.pss1
+        p := pss1.prime
         nvars := #vars
         nvars = 1 =>
-            ngv10p := eval1s(gvl, pt, first vars, pss)
+            ngv10p := eval1s(gvl, pt, first vars, pss1)
             ngv10p case "failed" => return "failed"
             ngv10 := ngv10p::List(PA)
             ngv2 := gen(ngv10, p, pss.pss_qval)
@@ -860,12 +748,12 @@ InnerModularHermitePade : with
                 ncv(i) := cv(i)
                 nev(i) := ev(i)
             return [va, civ, m, ov, nev, ncv]
-        ngv0p := eval2s(gvl, pt, first vars, p)
+        ngv0p := eval2s(gvl, pt, first vars, pss1)
         ngv0p case "failed" => return "failed"
-        ngvl := ngv0p::List(PMP)
+        ngvl := ngv0p::List(PMP1)
         return do_poly_modular(rest vars, ngvl, pss, gen)
 
-    do_poly_modular(vars : List(Symbol), gvl : List(PMP), pss : PSS,
+    do_poly_modular(vars : List(Symbol), gvl : List(PMP1), pss : PSS,
                       gen : GEN) : Union(PBR, "failed", "no_solution") ==
         lpt : List Integer := []
         bad_cnt : Integer := 0
@@ -879,7 +767,7 @@ InnerModularHermitePade : with
         update_qval :=
              (pss.pss_kind = 'qshiftHP or pss.pss_kind = 'qdiffHP or _
               pss.pss_kind = 'qmixed) and pss.pss_qvar = first vars
-        p := pss.prime
+        p := pss.pss1.prime
         m := pss.pss_m
         nvars := #vars
         nsols : Integer := m + 1
@@ -1017,6 +905,7 @@ InnerModularHermitePade : with
         exps := empty()$SortedExponentVector
         offsets := empty()$VI
         all_bad := true
+        pss1 := pss.pss1
         p : Integer := 16
         m := pss.pss_m
         nvars := #vars
@@ -1033,12 +922,12 @@ InnerModularHermitePade : with
             not(ok) => error "Run out of primes"
             -- print("Using prime"::OutputForm)
             -- print(p::OutputForm)
-            pss.prime := p
+            pss1.prime := p
 
             -- eval and solve reduced system
             ngv0p := eval3s(gvl, p)
             ngv0p case "failed" => "iterate"
-            ngvl := ngv0p::List(PMP)
+            ngvl := ngv0p::List(PMP1)
             pprp := do_poly_modular(vars, ngvl, pss, gen)
 
             pprp case "no_solution" => return "no_solution"
@@ -1139,10 +1028,9 @@ InnerModularHermitePade : with
                       ve : Vector Integer,
                       sigma : NonNegativeInteger, pts : PA, kind : Symbol,
                       qvar : Symbol, gen : GEN) : Union(PBRI, "no_solution") ==
-        pss := [ve, sigma, pts, qvar, 0, 0, kind, empty()$VI, _
-                empty()$VI, #ve, #ve + 1, _
-                new(10, 0)$PA,
-                new(10, 0)$SortedExponentVector]@PSS
+        pss1 := [0, new(10, 0)$PA, new(10, 0)$SortedExponentVector]$PSS1
+        pss := [ve, sigma, pts, qvar, 0, kind, empty()$VI, _
+                empty()$VI, #ve, #ve + 1, pss1]$PSS
         return do_poly_integer0(vars, gvl, pss, gen)
 
 
@@ -1246,6 +1134,7 @@ ModularHermitePade() : with
    import from PrintPackage
    import from OutputForm
    Qmul ==> QSMULMOD32$Lisp
+   PEVALUT ==> PolynomialEvaluationUtilities
 
    SUPI_to_PA(poli : SparseUnivariatePolynomial(Integer), _
                 p : Integer) : PA ==
@@ -1272,8 +1161,7 @@ ModularHermitePade() : with
        pa := new(n + 1, 0)$PA
        while not(zero? poli) repeat
            m := degree poli
-           nlc := modpeval(leadingCoefficient(poli), vars, pts,
-                           p)$InnerModularHermitePade
+           nlc := modpeval(leadingCoefficient(poli), vars, pts, p)$PEVALUT
            pa(m) := nlc
            poli := reductum poli
        pa
@@ -1312,10 +1200,8 @@ ModularHermitePade() : with
        for lfi in llfi repeat
            pa := new(qcoerce(n)@NonNegativeInteger, 0)$PA
            for j in 0..(n - 1) for el in lfi repeat
-               nm := modpeval(numer(el), vars, pts, prime
-                             )$InnerModularHermitePade
-               dm := modpeval(denom(el), vars, pts, prime
-                             )$InnerModularHermitePade
+               nm := modpeval(numer(el), vars, pts, prime)$PEVALUT
+               dm := modpeval(denom(el), vars, pts, prime)$PEVALUT
                dm = 0 => return "failed"
                dms := qconvert(dm)@K1
                nlc : Integer :=
