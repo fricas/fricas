@@ -105,8 +105,8 @@ ScriptFormulaFormat() : public == private where
 --  naryNGOps     : L S := ["ROW"," here "]$(L S)
     naryNGOps     : L S := nil$(L S)
 
-    plexOps       : L S := ["SIGMA","PI","INTSIGN","INDEFINTEGRAL"]$(L S)
-    plexPrecs     : L I := [    700, 800,      700,            700]$(L I)
+    plexOps       : L S := ["SIGMA","PI","INTSIGN"]$(L S)
+    plexPrecs     : L I := [    700, 800,      700]$(L I)
 
     specialOps    : L S := ["MATRIX","BRACKET","BRACE","CONCATB",     _
                             "AGGLST","CONCAT","OVERBAR","ROOT","SUB", _
@@ -314,22 +314,17 @@ ScriptFormulaFormat() : public == private where
         op = "SIGMA"   => "sum"
         op = "PI"      => "product"
         op = "INTSIGN" => "integral"
-        op = "INDEFINTEGRAL" => "integral"
         "????"
       hold := formatFormula(first args, minPrec)
       args := rest args
-      if op ~= "INDEFINTEGRAL" then
-        if hold ~= "" then
+      if hold ~= "" then
           s := concat [s," from",group concat ["\displaystyle ",hold]]
-        if not null rest args then
+      if not null rest args then
           hold := formatFormula(first args, minPrec)
           if hold ~= "" then
-            s := concat [s," to",group concat ["\displaystyle ",hold]]
+              s := concat [s," to",group concat ["\displaystyle ",hold]]
           args := rest args
-        s := concat [s," ",formatFormula(first args,minPrec)]
-      else
-        hold := group concat [hold," ",formatFormula(first args,minPrec)]
-        s := concat [s," ",hold]
+      s := concat [s," ",formatFormula(first args,minPrec)]
       if opPrec < prec then s := parenthesize s
       group s
 
