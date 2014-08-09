@@ -1053,10 +1053,9 @@ PiCoercions(R : Join(Comparable, IntegralDomain)) : with
 ++ Description: Solver for linear systems represented as list
 ++  of expressions.  More efficient than using solve because
 ++  it does not check that system really is linear.
-ExpressionLinearSolve(R : Join(IntegralDomain, Comparable)
-                     ) : Exports == Implementation
+ExpressionLinearSolve(R : Join(IntegralDomain, Comparable),
+                      F : FunctionSpace(R)) : Exports == Implementation
   where
-    F ==> Expression(R)
     K ==> Kernel(F)
     MP ==> SparseMultivariatePolynomial(R, K)
     Exports ==> with
@@ -1081,17 +1080,13 @@ ExpressionLinearSolve(R : Join(IntegralDomain, Comparable)
             nx1 := reduce(_+, ml, 0)
             nx0 := nx - nx1
             reduce(max, [degree(nx0, v) for v in vl]@List(Integer)) > 0 =>
-                print("x, vl"::OutputForm)
-                print(x::OutputForm)
-                print(vl::OutputForm)
-                print(res0::OutputForm)
                 error "x is nonlinear in vl"
             cons(nx0::F, res0)
 
         lin_sol(eql : List(F), vl : List Symbol) : Union(List(F), "failed") ==
             coefk := [retract(c::F)@K for c in vl]
             eqll := [F_to_LF(p, coefk) for p in eql]
-            rh := -vector([first(ll) for ll in eqll])$Vector(F)
+            rh : Vector(F) := -vector([first(ll) for ll in eqll])$Vector(F)
             eqm := matrix([rest(ll) for ll in eqll])$Matrix(F)
             ss := solve(eqm, rh)$LinearSystemMatrixPackage1(F)
             ss.particular case "failed" => "failed"
