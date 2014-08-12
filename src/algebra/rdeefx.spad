@@ -97,9 +97,13 @@ ConstantLinearDependence(R, F, ld) : Exports == Implementation where
 
     Lift ==> PolynomialCategoryLifting(IE, K1, R, MP, EF)
 
-    F_to_EF : F -> EF
+    F_to_EF1 : (F, K1 -> EF) -> EF
 
-    kmap(k : K1) : EF ==
+    DUMMYVAR := '%dummyVar
+
+    kmap(k : K1, ldmvar : List K1, ldmval : List EF) : EF ==
+        for dmvar in ldmvar for dmval in ldmval repeat
+            if k = dmvar then return dmval
         is_const := true
         kf := k::F
         for d in ld repeat
@@ -108,11 +112,27 @@ ConstantLinearDependence(R, F, ld) : Exports == Implementation where
                 break
         is_const => kf::EF
         op := operator(k)
-        kernel(op, [F_to_EF(a) for a in argument(k)])$EF
+        args := argument(k)
+        nargs : List(EF)
+        if (u := property(op, DUMMYVAR)) case None then
+            n := u::None pretend NonNegativeInteger
+            da := retract(second(args))@K1
+            if not(member?(da, ldmvar)) then
+                ldmvar := cons(da, ldmvar)
+                ldmval := cons(new()$Symbol::EF, ldmval)
+            if n = 2 then
+                da2 := retract(args(3))@K1
+                if not(member?(da2, ldmvar)) then
+                    ldmvar := cons(da2, ldmvar)
+                    ldmval := cons(new()$Symbol::EF, ldmval)
+        kmap1 := (kk : K1) : EF +-> kmap(kk, ldmvar, ldmval)
+        kernel(op, [F_to_EF1(a, kmap1) for a in argument(k)])$EF
 
-    F_to_EF(f : F) : EF ==
-        map(kmap, (c : R) : EF +-> c::F::EF, numer(f))$Lift
-          /map(kmap, (c : R) : EF +-> c::F::EF, denom(f))$Lift
+    F_to_EF1(f : F, kmap1 : K1 -> EF) : EF ==
+        map(kmap1, (c : R) : EF +-> c::F::EF, numer(f))$Lift
+          /map(kmap1, (c : R) : EF +-> c::F::EF, denom(f))$Lift
+
+    F_to_EF(f : F) : EF == F_to_EF1(f, (k : K1) : EF +-> kmap(k, [], []))
 
     VF_to_VEF(v : Vector(F)) : Vector(EF) ==
         map(F_to_EF, v)$VectorFunctions2(F, EF)
