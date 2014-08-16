@@ -147,14 +147,19 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     dummy := create()$SingletonAsOrderedSet
 
     diffint1(f : F, x : SE, k : K) : Union(IR, "failed") ==
-        nfu := univariate(numer(f), k)
+        fu := univariate(f, k)
+        denom(fu) ~= 1 => "failed"
+        nfu := numer(fu)
         degree(nfu) ~= 1 => "failed"
-        f1 := leadingCoefficient(nfu)::F/(denom(f)::F)
+        f1 := leadingCoefficient(nfu)
         args := argument(k)
         #args ~= 3 => error "internal error, k is not a diff"
-        k1 := eval(args(1), retract(args(2))@K, args(3))
+        arg3 := args(3)
+        da3 := differentiate(arg3, x)
+        da3 = 0 => "failed"
+        k1 := eval(args(1), retract(args(2))@K, arg3)
         dv := new()$Symbol
-        f2 := eval(f1, k1, dv::F)
+        f2 := eval(f1/da3, k1, dv::F)
         nres := lfintegrate(f2, dv)
         not(empty?(notelem(nres))) => "failed"
         logs := logpart(nres)
@@ -173,8 +178,9 @@ ElementaryIntegration(R, F) : Exports == Implementation where
         nres2 := mkAnswer(ratpart(nres) + nrat, reverse!(nlogs), [])
         nres3 := map((x1 : F) : F+->eval(x1, kernel(dv), k1::F), nres2)
         f3 := f - differentiate(nres3, x)
-        member?(k, kernels(f3)) =>
-            error "internal error, f still contains k"
+        -- should not happen in differential transcendental
+        -- case, but in principle possible
+        member?(k, kernels(f3)) => "failed"
         nres3 + lfintegrate(f3, x)
 
     diffint(f, x, k) ==
