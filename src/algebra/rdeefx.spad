@@ -173,18 +173,18 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
 
 
 )abbrev package RDEAUX RDEaux
-RDEaux(R, F) : Exports == Implementation where
-  R : Join(EuclideanDomain, Comparable, CharacteristicZero,
-           RetractableTo Integer, LinearlyExplicitRingOver Integer)
-  F : Join(TranscendentalFunctionCategory, AlgebraicallyClosedField,
-           FunctionSpace R)
-  -- F ==> Expression(R)
+RDEaux(F) : Exports == Implementation where
+  F : Field
   Z ==> Integer
   UP  ==> SparseUnivariatePolynomial F
   RSOL ==> Record(ans : UP, remainder : UP)
+  DSOL ==> Record(ans : List(UP), acoeff : UP, eegen : UP, bpar : UP,
+                  lcpar : List UP, dpar : Z)
+  USOL ==> Union(List(RSOL), DSOL)
   Exports ==> with
 
-    multi_SPDE : (UP, UP, List(UP), Z, UP -> UP) -> List(RSOL)
+    multi_SPDE : (UP, UP, List(UP), Z, UP -> UP) -> USOL
+      ++ multi_SPDE(a, b, lc, d, der)
 
   Implementation ==> add
 
@@ -193,9 +193,9 @@ RDEaux(R, F) : Exports == Implementation where
     multi_SPDE(a, b, lc, d, der) ==
         d <$Z 0 => [[0, c]$RSOL for c in lc]
         every?(zero?, lc) => [[0, 0]$RSOL for c in lc]
-        eeu := extendedEuclidean(a, b, 1$UP)
-        eeu case "failed" => error "extendedEuclidean failed"
-        ee := eeu::EE_Rec
+        ee := extendedEuclidean(a, b)
+        ee.generator ~= 1 =>
+            [[0 for c in lc], 1, ee.generator, b, lc, d]$DSOL
         lr : List(UP) := []
         lnc : List(UP) := []
         for c in lc repeat
@@ -210,7 +210,56 @@ RDEaux(R, F) : Exports == Implementation where
             lr := cons(r, lr)
         lr := reverse!(lr)
         res1 := multi_SPDE(a, b + der(a), reverse!(lnc), d - degree(a)$UP, der)
-        [[a*s1.ans + r, s1.remainder]$RSOL for s1 in res1 for r in lr]
+        res1 case DSOL =>
+            dres := res1::DSOL
+            [[a*s2 + r for s2 in dres.ans for r in lr], a*dres.acoeff,
+             dres.eegen, dres.bpar, dres.lcpar, dres.dpar]$DSOL
+        [[a*s1.ans + r, s1.remainder]$RSOL for s1 in res1::List(RSOL)
+                                           for r in lr]
+
+)abbrev package FSRROOT FunctionSpaceRationalRoots
+FunctionSpaceRationalRoots(R, F)  : Exports == Implementation where
+  R : Join(IntegralDomain, Comparable, CharacteristicZero,
+           RetractableTo Integer, LinearlyExplicitRingOver Integer)
+  F : FunctionSpace R
+  K   ==> Kernel F
+  Z   ==> Integer
+  Q   ==> Fraction Z
+
+  Exports ==> with
+
+    get_rational_roots : (F, K) -> List(Q)
+      ++ get_rational_roots(f, k) finds rational root of
+      ++ f treated as univariate polynomial in k.
+
+  Implementation ==> add
+
+    N   ==> NonNegativeInteger
+    UP  ==> SparseUnivariatePolynomial F
+    UPZ ==> SparseUnivariatePolynomial Z
+    RF  ==> Fraction UP
+    LF  ==> List F
+
+    get_rational_roots(eq1f : F, k1 : K) : List(Q) ==
+        eq2p := numer(univariate(eq1f, k1))$RF
+        nn := degree(eq2p) +$N 1
+        vv := vectorise(eq2p, nn)
+        vm := matrix([parts(vv)$Vector(F)]$List(LF))$Matrix(F)
+        vvr : Matrix(Z) := reducedSystem(vm)
+        i : N
+        pl2 : List(UPZ) := [unvectorise(row(vvr, i)$Matrix(Z))$UPZ
+                  for i in 1..nrows(vvr)]
+        eq2z := gcd(pl2)
+        ff := factor(eq2z)$MultivariateFactorize(
+                       SingletonAsOrderedSet, N, Z, UPZ)
+        facl := factors(ff)$Factored(UPZ)
+        res : List(Q) := []
+        for facr in facl repeat
+            fac := facr.factor
+            degree(fac) ~= 1 => "iterate"
+            val1r : Q := -coefficient(fac, 0) /$Q leadingCoefficient(fac)
+            res := cons(val1r, res)
+        res
 
 
 )abbrev package RDEEFX2 ElementaryRischDEX2
@@ -522,29 +571,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                           r2, -tt, u2, v2]$EI_REC2, res)
         res
 
-    UPZ ==> SparseUnivariatePolynomial(Z)
     SOL_REC ==> Record(ratpart : Q, alg_part : UP)
-
-    get_rational_solutions2(eq1f : F, k1 : K) : List(Q) ==
-        eq2p := numer(univariate(eq1f, k1))$RF
-        nn := degree(eq2p) +$N 1
-        vv := vectorise(eq2p, nn)
-        vm := matrix([parts(vv)$Vector(F)]$List(LF))$Matrix(F)
-        vvr : Matrix(Z) := reducedSystem(vm)
-        i : N
-        pl2 : List(UPZ) := [unvectorise(row(vvr, i)$Matrix(Z))$UPZ
-                  for i in 1..nrows(vvr)]
-        eq2z := gcd(pl2)
-        ff := factor(eq2z)$MultivariateFactorize(
-                       SingletonAsOrderedSet, N, Z, UPZ)
-        facl := factors(ff)$Factored(UPZ)
-        res : List(Q) := []
-        for facr in facl repeat
-            fac := facr.factor
-            degree(fac) ~= 1 => "iterate"
-            val1r : Q := -coefficient(fac, 0) /$Q leadingCoefficient(fac)
-            res := cons(val1r, res)
-        res
 
     FP ==> Polynomial(F)
     FRF ==> Fraction(FP)
@@ -565,7 +592,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 error "wrong format of solution 2"
         k1 := kernel(s1)$K
         eq1f := retract(eval(eq1p, s1, k1::F))@F
-        get_rational_solutions2(eq1f, k1)
+        get_rational_roots(eq1f, k1)$FunctionSpaceRationalRoots(R, F)
 
     F_to_FP(p : F, ls : List(SE), lk : List(K)) : FP ==
         empty?(lk) => p::FP
@@ -639,7 +666,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             res := cons(res1::EI_REC, res)
         nnp := differentiate(nf)*denf - differentiate(denf)*nf + a::F::UP
         eq1 := resultant(nnp, gd)
-        ratl := get_rational_solutions2(eq1, a)
+        ratl := get_rational_roots(eq1, a)$FunctionSpaceRationalRoots(R, F)
         if has_r_bad and not(member?(r_bad::Q, ratl)) then
             ratl := cons(r_bad::Q, ratl)
         degd := degree(denf)
@@ -861,7 +888,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 t3 := t3*nf*denf1
                 nnp2 := nfp2*denf2 - t1 + t2 - t3
                 f_res1 := resultant(nnp, nnp2)
-                ratl := get_rational_solutions2(f_res1, t)
+                ratl := get_rational_roots(f_res1, t
+                                          )$FunctionSpaceRationalRoots(R, F)
                 for r0 in ratl repeat
                     ru := retractIfCan(r0)@Union(Z, "failed")
                     ru case "failed" => "iterate"
@@ -938,6 +966,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         boundInf(twr, ftwr, c0, degree(denfp), degree(nfp), c_deg, x,
                  k, lim)$ElementaryRischDE(R, F)
 
+    RSOL ==> Record(ans : UP, remainder : UP)
+
     special_integrate2(nfp : UP, denfp : UP, denf: UP, ndenf : UP, f : F,
                        k : K, x : Symbol, rr1 : RF, a1 : F,
                        r1 : F, g : F, scoeffs : List(RF),
@@ -972,7 +1002,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         specp1 := retract(rr1)@UP
         lc := cons(specp1, pscoeffs)
         max_deg := exp_upper_bound(nfp1, denfp, lc, f, g, k, x, lim)
-        rsols := multi_SPDE(denfp, nfp1, lc, max_deg, deriv)$RDEaux(R, F)
+        rsols := multi_SPDE(denfp, nfp1, lc, max_deg, deriv)$RDEaux(F)
+                   ::List(RSOL)
         vs := new(#scoeffs, 0)$Vector(F)
         as := new(#scoeffs, 0)$Vector(F)
         for rsol in rest(rsols) for c_an in c_ans for i in 1..#vs repeat
