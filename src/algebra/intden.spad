@@ -1,3 +1,38 @@
+)abbrev package PFUTIL PartialFractionUtilities
+PartialFractionUtilities(F, UP) : Exports == Implementation where
+  F : Field
+  UP : UnivariatePolynomialCategory F
+  Exports ==> with
+
+      decompose : (UP, List(UP)) -> List(UP)
+        ++ decompse(n, [p1, ..., pn]) returns numerators of partial
+        ++ fraction decomposition of n divided by product of pi-s
+        ++ Note: decomposition is assumed to have no whole part.
+
+  Implementation ==> add
+
+    FUP ==> Factored(UP)
+    PFUP ==> PartialFraction(UP)
+
+    decompose(nn : UP, dens : List(UP)) : List(UP) ==
+        fdens := [nilFactor(nden, 1)$FUP for nden in dens]
+        nd := reduce(_*, fdens, 1)
+        pfr := partialFraction(nn, nd)$PFUP
+        wholePart(pfr) ~= 0 =>
+            error "decompose: wholePart(pfr) ~= 0"
+        nfacs := numberOfFractionalTerms(pfr)
+        res : List(UP) := []
+        for fden in fdens repeat
+            for i in 1..nfacs repeat
+                ct := nthFractionalTerm(pfr, i)
+                cnum := firstNumer(ct)
+                cden := firstDenom(ct)
+                if cden = fden then
+                    res := cons(cnum, res)
+        reverse!(res)
+
+
+
 )abbrev package INTDEN DenominatorIntegration
 ++ Description:
 ++  This package generates logarithmic integrals and polylogs
@@ -26,9 +61,6 @@ DenominatorIntegration(R, F) : Exports == Implementation where
         ++ li_int(f, k, x) generates logarithmic integrals.
       poly_int : (RF, K, SY) -> DREC
         ++ poly_int(f, k, x) generates polylogarithms.
-      decompose : (UP, List(UP)) -> List(UP)
-        ++ decompse(n, [p1, ..., pn]) returns numerators of partial
-        ++ fraction decomposition of n divided by product of pi-s
       solve_u : (F, F, Symbol) -> Union(List(List(F)), "failed")
         ++ solve_u(f1, u, x) returns [[c1, k1], ..., [cn, kn]] such
         ++ that f1 = c1*u^k1 + ... + cn^kn and D(ci, x) = 0 or "failed".
@@ -162,31 +194,13 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             res := cons([f1, f2, u1, v0 + k2, 1], res)
         res
 
-    FUP ==> Factored(UP)
-    PFUP ==> PartialFraction(UP)
-
-    decompose(nn : UP, dens : List(UP)) : List(UP) ==
-        fdens := [nilFactor(nden, 1)$FUP for nden in dens]
-        nd := reduce(_*, fdens)
-        pfr := partialFraction(nn, nd)$PFUP
-        wholePart(pfr) ~= 0 =>
-            error "decompose: wholePart(pfr) ~= 0"
-        nfacs := numberOfFractionalTerms(pfr)
-        res : List(UP) := []
-        for fden in fdens repeat
-            for i in 1..nfacs repeat
-                ct := nthFractionalTerm(pfr, i)
-                cnum := firstNumer(ct)
-                cden := firstDenom(ct)
-                if cden = fden then
-                    res := cons(cnum, res)
-        reverse!(res)
+    PFUTIL ==> PartialFractionUtilities(F, UP)
 
     decompose1(nn : UP, elden : UP, lidens : List(UP)) : List(UP) ==
         if degree(elden) > 0 then
             lidens := cons(elden, lidens)
         else if elden ~= 1 then error "Impossible 5"
-        res := decompose(nn, lidens)
+        res := decompose(nn, lidens)$PFUTIL
         degree(elden) > 0 => res
         cons(0, res)
 
