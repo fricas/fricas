@@ -528,25 +528,40 @@ PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
        -- a univariate polynomial category - have to remember to
        -- over-ride these in UnivariatePolynomialCategory
        PFBR ==>PolynomialFactorizationByRecursion(R, E, VarSet, %)
-       gcdPolynomial(pp, qq) ==
-          gcdPolynomial(pp, qq)$GeneralPolynomialGcdPackage(E, VarSet, R, %)
        solveLinearPolynomialEquation(lpp, pp) ==
-         solveLinearPolynomialEquationByRecursion(lpp, pp)$PFBR
-       factorPolynomial(pp) ==
-         factorByRecursion(pp)$PFBR
-       factorSquareFreePolynomial(pp) ==
-         factorSquareFreeByRecursion(pp)$PFBR
-       factor p ==
-         v : Union(VarSet, "failed") := mainVariable p
-         v case "failed" =>
-           ansR := factor leadingCoefficient p
-           makeFR(unit(ansR)::%,
-                  [[w.flg, w.fctr::%, w.xpnt] for w in factorList ansR])
-         up : SparseUnivariatePolynomial % := univariate(p, v)
-         ansSUP := factorByRecursion(up)$PFBR
-         makeFR(multivariate(unit(ansSUP), v),
-                [[ww.flg, multivariate(ww.fctr, v), ww.xpnt]
-                 for ww in factorList ansSUP])
+           solveLinearPolynomialEquationByRecursion(lpp, pp)$PFBR
+       if R has FiniteFieldCategory then
+           MFFACT ==> MultFiniteFactorize(VarSet, E, R, %)
+           factorPolynomial(pp) == factor(pp)$MFFACT
+           factorSquareFreePolynomial(pp) == factor(pp)$MFFACT
+           factor(p) == factor(p)$MFFACT
+       else
+           if R has CharacteristicZero and R has EuclideanDomain then
+               MF ==> InnerMultFact(VarSet, E, R, %)
+               factorPolynomial(pp) ==
+                   factor(pp, factorPolynomial$R)$MF
+               factor(p) == factor(p, factorPolynomial$R)$MF
+               factorSquareFreePolynomial(pp) ==
+                   factor(pp, factorPolynomial$R)$MF
+           else
+               gcdPolynomial(pp, qq) ==
+                   gcdPolynomial(pp, qq
+                                )$GeneralPolynomialGcdPackage(E, VarSet, R, %)
+               factorPolynomial(pp) == factorByRecursion(pp)$PFBR
+               factorSquareFreePolynomial(pp) ==
+                   factorSquareFreeByRecursion(pp)$PFBR
+               factor p ==
+                   v : Union(VarSet, "failed") := mainVariable p
+                   v case "failed" =>
+                       ansR := factor leadingCoefficient p
+                       makeFR(unit(ansR)::%,
+                         [[w.flg, w.fctr::%, w.xpnt] for w in factorList ansR])
+                   up : SparseUnivariatePolynomial % := univariate(p, v)
+                   ansSUP := factorByRecursion(up)$PFBR
+                   makeFR(multivariate(unit(ansSUP), v),
+                     [[ww.flg, multivariate(ww.fctr, v), ww.xpnt]
+                       for ww in factorList ansSUP])
+
        if R has CharacteristicNonZero then
           mat : Matrix %
           conditionP mat ==
