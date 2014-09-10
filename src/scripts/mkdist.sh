@@ -18,7 +18,6 @@ fi
 copy_lisp=""
 copy_gphts=""
 copy_phts=""
-NOWEB_TARBALL=""
 GCL_DIST=""
 
 while test $# -gt 0 ; do
@@ -33,13 +32,6 @@ while test $# -gt 0 ; do
       --copy_phts)
         copy_phts=y
         copy_gphts=y
-        ;;
-      --copy_noweb=*)
-        NOWEB_TARBALL=`echo ${opt} | sed 's,--copy_noweb=,,'`
-        if [ ! -f "${NOWEB_TARBALL}" ] ; then
-           echo The file "${NOWEB_TARBALL}" does not exist
-           exit 1
-        fi
         ;;
       --copy_gcl=*)
         GCL_DIST=`echo ${opt} | sed 's,--copy_gcl=,,'`
@@ -66,7 +58,6 @@ done
 echo copy_lisp=\"${copy_lisp}\"
 echo copy_gphts=\"${copy_gphts}\"
 echo copy_phts=\"${copy_phts}\"
-echo NOWEB_TARBALL=\"${NOWEB_TARBALL}\"
 echo GCL_DIST=\"${GCL_DIST}\"
 echo HELP_DIR=\"${HELP_DIR}\"
 
@@ -78,13 +69,6 @@ clean_svn () {
 cp -r $SRCDIR dist
 cd dist || exit 1
 clean_svn .
-
-
-# copy noweb tarball
-if [ ! -z "${NOWEB_TARBALL}" ] ; then
-   mkdir zips
-   cp "${NOWEB_TARBALL}" zips
-fi
 
 # copy gcl
 if [ ! -z "${GCL_DIST}" ] ; then
