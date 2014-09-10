@@ -14,20 +14,6 @@ some versions of Windows.  Release 1.1.2 is reported to build
 but with not working ')compile' command.  This is under
 investigation.
 
-Note2: FriCAS needs 'noweb' for build.  Unfortunately, recent
-cygwin ships broken 'stdio.h' (the standard C header file),
-which causes failure during noweb build.  The workaround is
-to edit 'usr/include/sys/stdio.h' and delete (or comment out)
-the line:
-
-ssize_t _EXFUN(getline, (char **, size_t *, FILE *));
-
-(after building 'noweb' the line can be restored). For more
-details see:
-
-http://www.mad-computer-scientist.com/blog/2011/07/31/a-quick-note-on-building-noweb-on-cygwin
-
-
 To compile FriCAS on MS Windows, we proceed as follows:
 
 I) If you do not have Cygwin installed, go to
@@ -96,24 +82,12 @@ IV) follow the instructions in INSTALL (but note that we are going to build
     alternatively, download a release version of the source.  In this
     case step 2) and 6) below should also be omitted.
 
-    2) Fetch nonstandard prerequisites
+    2) create the build directory (again: without spaces!)
 
-  cd fricas
-  mkdir zips
-  cd zips
-  wget https://axiom.svn.sourceforge.net/svnroot/axiom/trunk/axiom/zips/noweb-2.10a.tgz
-
-    or, if the last command fails:
-
-  wget --no-check-certificate https://axiom.svn.sourceforge.net/svnroot/axiom/trunk/axiom/zips/noweb-2.10a.tgz
-
-    3) create the build directory (again: without spaces!)
-
-  cd ../..
   mkdir fri-build
   cd fri-build
 
-    4) configure.  Possibly, you will have to restrict the PATH to
+    3) configure.  Possibly, you will have to restrict the PATH to
     Cygwin programs, because otherwise configure may pick, for
     example, Borland grep which causes failure later.  You can do
     this by typing
@@ -122,27 +96,11 @@ IV) follow the instructions in INSTALL (but note that we are going to build
 
   ../fricas/configure --prefix=/usr --with-lisp=clisp
 
-    5) build and install:
+    4) build and install:
 
   make
 
-    make will very likely fail with an error like
-
-      mkdir /dev/null 2>/dev/null
-      make[1]: [install-elisp] Error 1 (ignored)
-      cp elisp/noweb-mode.el /dev/null
-      cp: cannot create regular file `/dev/null': Invalid request code
-      make[1]: *** [install-elisp] Error 1
-      make[1]: Leaving directory `/cygdrive/c/scratch/fri-build/noweb/src'
-      make: *** [stamp-noweb] Error 2
-
-    we ignore this error (which occurs because the ELISP environment variable
-    is set to /dev/null)
-
-  touch stamp-noweb
-  make
-
-    6) make the graphics examples:
+    5) make the graphics examples:
 
     IMPORTANT NOTE: this step failed when I tried.  After the first
     drawing appeared and disappeared, it did not continue.  The

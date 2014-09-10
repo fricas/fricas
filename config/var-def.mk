@@ -166,9 +166,6 @@ DOCUMENT=${axiom_build_document}
 axiom_build_document = @abs_top_builddir@/build/scripts/document
 unpack_file = $(fricas_src_srcdir)/scripts/unpack_file
 
-TANGLE = @NOTANGLE@
-WEAVE = @NOWEAVE@
-
 FRICAS_LISP = @FRICAS_LISP@
 # Extension of the output file name returned by compile-file
 LISPOBJEXT = @fricas_fasl_type@

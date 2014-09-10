@@ -21,8 +21,6 @@ SBCLVER="1.1.6"
 SBCLTBZ="sbcl-${SBCLVER}-x86-64-darwin-binary.tar.bz2"
 SBCLDIR="sbcl-${SBCLVER}-x86-64-darwin"
 
-NOWEBTGZ="noweb-2.10a.tgz"
-
 [ -f "${SRCDIR}/contrib/macos/mk_app" ] || \
   fail "Please start the command in 'contrib/macos' directory."
 
@@ -44,11 +42,6 @@ if [ "${action}" == "build" ]; then
     ${CURL} "http://downloads.sf.net/sourceforge/sbcl/${SBCLVER}/${SBCLTBZ}"
   fi
 
-  if [ ! -f ${NOWEBTGZ} ]; then
-    echo "Downloading ${NOWEBTGZ}:"
-    ${CURL} "http://axiom.svn.sf.net/svnroot/axiom/trunk/axiom/zips/${NOWEBTGZ}"
-  fi
-
   [ -d ${SBCLDIR} ] || tar xvjf ${SBCLTBZ}
 
   rm -rf FriCAS.app
@@ -58,7 +51,6 @@ if [ "${action}" == "build" ]; then
   pushd build
   ${SRCDIR}/configure \
     --prefix="" \
-    --with-noweb-tarball="${ROOT}/${NOWEBTGZ}" \
     --with-lisp="${ROOT}/${SBCLDIR}/run-sbcl.sh"
   make
   make DESTDIR=${ROOT}/FriCAS.app/Contents/Resources install

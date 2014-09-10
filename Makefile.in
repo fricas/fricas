@@ -79,31 +79,6 @@ stamp-rootdirs: $(axiom_build_document)
 	$(STAMP) stamp-rootdirs
 
 
-.PHONY: all-noweb
-all-noweb: stamp-noweb
-
-stamp-noweb:
-	@echo Making in noweb
-	([ -d noweb ] || \
-	  ( mkdir noweb && cd noweb && \
-           $(TAR) -zx -f "@noweb_tarball@" ) ) && \
-	( cd noweb/src && \
-	  cat Makefile \
-	      | sed -e "s|^BIN=.*|BIN=$(fricas_build_bindir)|" \
-                    -e "s|^LIB=.*|LIB=$(fricas_build_libdir)|" \
-		    -e "s|^MAN=.*|MAN=$(fricas_build_mandir)|" \
-                    -e "s|^TEXINPUTS=.*|TEXINPUTS=$(fricas_target_texdir)|" \
-		    -e 's/ make / $$\(MAKE\) /' \
-		    -e "s,c/nt,c/nt$(EXEEXT)," \
-		    -e "s,c/markup,c/markup$(EXEEXT)," \
-		    -e "s,c/mnt,c/mnt$(EXEEXT)," \
-		    -e "s,c/finduses,c/finduses$(EXEEXT)," \
-		    -e "s,^CFLAGS=.*,CFLAGS=-U_POSIX_C_SOURCE -D_POSIX_C_SOURCE=1," \
-	      > Makefile.tmp && mv Makefile.tmp Makefile && \
-	  ./awkname $(AWK) && $(MAKE) -j 1 all install )
-	$(STAMP) stamp-noweb
-
-
 book:
 	@ echo 79 building the book as $(fricas_target_docdir)/book.dvi
 	${MKDIR_P} ${TMP}
@@ -229,14 +204,6 @@ $(RECURSIVE_TARGETS): stamp-rootdirs @fricas_all_prerequisites@
 # currently not possible to restart the build from an interrupted
 # build process.
 #
-# Finding the noweb tarball. If --with-noweb-tarball=... was given at
-# configure time, the variable @noweb_tarball@ will be substituted and
-# we can safely include this tarball. Otherwise, we check for
-# existence of zips/noweb-2.10a.tgz. If this is not there, then we
-# require the variable NOWEB to be set and pointing to the noweb
-# tarball.
-
-NOWEB="@noweb_tarball@"
 distdir=${PACKAGE_TARNAME}-${PACKAGE_VERSION}
 disttargetdir=${distdir}/pre-generated/target
 distsrcdir=${distdir}/pre-generated/src
@@ -244,18 +211,6 @@ DIST_TARBALL=${distdir}.tar.bz2
 
 out-of-source-check:
 	test "${abs_builddir}" != ${abs_top_srcdir}
-
-dist-noweb:
-	NOWEB="${NOWEB}"; \
-	test -n "$$NOWEB" || NOWEB="${srcdir}/zips/noweb-2.10a.tgz"; \
-	if ! test -r "$$NOWEB"; then \
-	    echo "missing NOWEB tarball"; \
-	    echo "use 'make dist NOWEB=/path/to/noweb.tar.bz2'"; \
-	    exit 1; \
-	else \
-	    ${MKDIR_P} ${distdir}/zips; \
-	    cp "$$NOWEB" ${distdir}/zips; \
-	fi;
 
 # copy databases and algebra bootstrap files
 dbs=browse.daase category.daase compress.daase interp.daase operation.daase\
@@ -291,7 +246,7 @@ dist-help: help-sanity-check
 dist-doc:
 	cd src/doc; ${MAKE} disttargetdir="../../${disttargetdir}" dist
 
-${DIST_TARBALL}: out-of-source-check lastBuildDate dist-noweb dist-help dist-lisp dist-doc
+${DIST_TARBALL}: out-of-source-check lastBuildDate dist-help dist-lisp dist-doc
 	cp -r ${abs_top_srcdir}/* ${distdir}
 	find ${distdir} -type d -name .svn -exec rm -rf {} \+
 	tar cjf $@ ${distdir}

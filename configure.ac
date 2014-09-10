@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2014-05-15],
+AC_INIT([FriCAS], [2014-09-10],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -64,7 +64,6 @@ if test $build != $target; then
 fi
 
 ## Accumulate list of utils needed for the build platform
-## It is vital that noweb is present in the build environement.
 fricas_all_prerequisites=
 
 case $build in
@@ -155,63 +154,6 @@ AC_ARG_WITH([pre-generated],
            [PREGENERATED=$fricas_top_srcdir/pre-generated])]
 )
 AC_MSG_RESULT(["$PREGENERATED"])
-
-
-## -------------------------
-## -- Which noweb to use? --
-## -------------------------
-##
-
-## The logic is as follows.
-## No "--with-noweb-tarball" option:
-##    Check for "notangle" and "noweave" in the PATH.
-##    If not present, but $fricas_top_srcdir/zips/noweb-2.10a.tgz is
-##    configure to build the noweb binaries.
-##    Error, if neither noweb binaries or .tgz could not be found.
-## "--without-noweb-tarball" or "--with-noweb-tarball=no":
-##    notangle and noweave must be found in the PATH
-##    Error if missing.
-## "--with-noweb-tarball" or "--with-noweb-tarball=yes":
-##    Look for $fricas_top_srcdir/zips/noweb-2.10a.tgz and extract
-##    and compile noweb.
-##    Error, if .tgz cannot be found.
-## "--with-noweb-tarball=/path/to/noweb-2.10a.tgz":
-##    Like above, but with an explicit path to the noweb tarball.
-##    Error, if the .tgz is not present.
-
-internal_noweb="$fricas_top_srcdir/zips/noweb-2.10a.tgz"
-AC_ARG_WITH([noweb-tarball],
-    [AS_HELP_STRING([--with-noweb-tarball],
-                    [specify place of the noweb-2.10a.tgz tarball])],
-    # Action if --with-noweb-tarball is given.
-    [case $withval in
-        yes) if test -f "$internal_noweb" ; then
-                 fricas_build_noweb=yes
-                 noweb_tarball="$internal_noweb"
-             else
-                 AC_MSG_ERROR([--with-noweb-tarball specified, but noweb tarball is not present])
-             fi  ;;
-        no)  fricas_build_noweb=no ;;
-        *)   if test -f "$withval"; then
-                 fricas_build_noweb=yes
-                 noweb_tarball="$withval"
-             else
-                 AC_MSG_ERROR([Could not find the file "$withval".])
-             fi ;;
-    esac],
-    # Action if --with-noweb-tarball is not given.
-    [noweb_tarball=; fricas_build_noweb=]
-)
-
-if test x$fricas_build_noweb = xyes ; then
-    fricas_all_prerequisites="$fricas_all_prerequisites all-noweb"
-    echo "fricas_build_bindir = $fricas_build_bindir"
-    NOTANGLE=$fricas_build_bindir/notangle
-    NOWEAVE=$fricas_build_bindir/noweave
-fi
-AC_SUBST(NOTANGLE)
-AC_SUBST(NOWEAVE)
-AC_SUBST(noweb_tarball)
 
 
 ## ------------------------
