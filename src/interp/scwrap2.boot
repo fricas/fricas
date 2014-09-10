@@ -132,10 +132,20 @@ $trans_key_id := [ _
                 ["RULE", "rule"] _
                 ]
 
+$expression_nostarters := [ "ARROW", "BACKSET", "BECOMES", "COLON", _
+    "COMMA", "DEF", "ELSE", "EXIT", "GIVES", "MDEF", "SEMICOLON",
+    "has", "is", "pretend", "where", ")"]
+
+starts_expression?(sym, type) ==
+    type ~= "key" => true
+    MEMBER(sym, $expression_nostarters) => false
+    true
+
 DEFVAR($paren_level)
 DEFVAR($settab_level)
 DEFVAR($tab_states)
 DEFVAR($ignored_tab)
+DEFVAR($maybe_insert_semi)
 
 ntokreader(token) ==
     nonblank_flag := nil
@@ -148,6 +158,11 @@ ntokreader(token) ==
         line_info := first(rest(pos))
         line_no := first(rest(rest(line_info)))
         char_no := rest(rest(pos))
+        $maybe_insert_semi and starts_expression?(sym, type) =>
+            $toklst := cons(tok1, $toklst)
+            $maybe_insert_semi := false
+            token_install(";", "KEYWORD", false, line_no, char_no, token)
+        $maybe_insert_semi := false
         if not($curent_line_number = line_no) then
             $prev_line := $curent_line
             $prev_line_number := $curent_line_number
@@ -210,6 +225,7 @@ ntokreader(token) ==
             sym = ")" =>
                 $paren_level := dec_SI($paren_level)
             sym = "#1" => type := "ARGUMENT-DESIGNATOR"
+            $maybe_insert_semi := sym = "}"
             sym1 := ASSQ(sym, $trans_key)
             sym2 := ASSQ(sym, $trans_key_id)
             if sym2 then
@@ -236,6 +252,7 @@ fakeloopProcess1(tok_list) ==
     $tab_states := nil
     $ignored_tab := false
     $ignorable_backset := false
+    $maybe_insert_semi := false
     finish_comment()
     TOKEN_-STACK_-CLEAR()
     parse_new_expr()
