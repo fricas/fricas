@@ -1,0 +1,60 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "cylindrical decomposition"
+
+testcase "positivity of quagratic trinomial"
+
+Ran := RECLOS(FRAC INT)
+Cad := CAD(Ran)
+
+-- We prove below that p1(x) >= 0 for all x <=> p2 >= 0
+-- using CAD for quantifier elimination
+
+p1 : POLY(Ran) := x^2 + a*x + b
+p2 : POLY(Ran) := a^2 - 4*b
+
+lvars := [x, a, b]
+cad := cylindricalDecomposition([p1, p2], lvars)$Cad
+
+Ct := Cell(Ran)
+
+good_cell(c : Ct) : Boolean ==
+    sp1 := samplePoint(c)
+    pf := eval(p2, lvars, sp1)
+    rval := retract(pf)@Ran
+    rval > 0 => true
+    pf := eval(p1, lvars, sp1)
+    rval := retract(pf)@Ran
+    rval >= 0
+
+-- first check implication p2 >= 0 => p1 >= 0
+testTrue("every?(good_cell, cad)")
+
+good_cell2a(c1 : Ct) : Boolean ==
+    sp1 := samplePoint(c1)
+    for c2 in cad repeat
+        cp := projection(c2)
+        samplePoint(cp) ~= sp1 => iterate
+        pf := eval(p1, lvars, samplePoint(c2))
+        rval := retract(pf)@Ran
+        rval < 0 => return false
+    return true
+
+lvars1 := rest(lvars)
+
+good_cell2b(c1 : Ct) : Boolean ==
+    pf := eval(p2, lvars1, samplePoint(c1))
+    rval := retract(pf)@Ran
+    rval <= 0
+
+good_cell2(c1 : Ct) : Boolean ==
+    r1 := good_cell2a(c1)
+    r2 := good_cell2b(c1)
+    r1 = r2
+
+pcl := [projection(c)::Ct for c in cad]
+testTrue("every?(good_cell2, pcl)")
+
+)set output algebra on
+statistics()
