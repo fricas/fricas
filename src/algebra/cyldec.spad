@@ -1,0 +1,389 @@
+-- CAD package by Renaud Rioboo
+-- http://lists.gnu.org/archive/html/axiom-developer/2005-10/msg00125.html
+-- http://lists.nongnu.org/archive/html/axiom-developer/2014-09/msg00028.html
+-- http://rioboo.free.fr/CadPub/
+
+)abbrev package CADU CylindricalAlgebraicDecompositionUtilities
+
+CylindricalAlgebraicDecompositionUtilities(R, P) : PUB == PRIV where
+
+-- Tese are some standard tools which are needed to compute with univariate
+-- polynomials.
+--
+-- A gcd basis for a set of polynomials S is a set of pairwise relatively
+-- prime polynomials B such that
+-- i) each polynomial p in S is a product of q^{\alpha_q} for q in B
+--    where \alpha is a multiindex
+-- ii) length of each multiindex \alpha in i) is minimal among all
+--    B satisfying i)
+--
+
+  R : GcdDomain
+  P : UnivariatePolynomialCategory(R)
+
+  PUB == with
+      squareFreeBasis : List(P) -> List(P)
+        ++ squareFreeBasis(lp) computes gcd basis of square-free
+        ++ parts of elements of lp
+      gcdBasis : List(P) -> List(P)
+        ++ gcdBasis(lp) computes gcd basis of lp
+
+  PRIV == add
+
+     gcdBasisAdd : (P, List(P)) -> List(P)
+       -- add one polynomial to list of pairwise relatively prime polynomials
+
+     squareFreeBasis(lpols) ==
+         lpols = [] => []
+         pol := first(lpols)
+         sqpol := unitCanonical(squareFreePart(pol))
+         gcdBasis(cons(sqpol, squareFreeBasis(rest(lpols))))
+
+     gcdBasisAdd(p, lpols) ==
+         (degree(p) = 0) => lpols
+         null lpols => [unitCanonical p]
+         p1 := first(lpols)
+         g := gcd(p, p1)
+         (degree(g) = 0) => cons(p1, gcdBasisAdd(p, rest lpols))
+         p := (p exquo g)::P
+         p1 := (p1 exquo g)::P
+         basis := gcdBasisAdd(p, rest(lpols))
+         if degree(p1) > 0 then basis := cons(p1, basis)
+         gcdBasisAdd(g, basis)
+
+     gcdBasis(lpols) ==
+         (#lpols <= 1) => lpols
+         basis := gcdBasis(rest lpols)
+         gcdBasisAdd(first(lpols), basis)
+
+
+)abbrev domain SCELL SimpleCell
+
+-- This domain is made to work with one-dimensional semi-algebraic cells
+-- ie either an algebraic point, or an interval. The point is specified as
+-- specification of an algebraic value.
+
+SimpleCell(TheField, ThePols) : PUB == PRIV where
+  TheField : RealClosedField
+  ThePols : UnivariatePolynomialCategory(TheField)
+  O           ==> OutputForm
+  B           ==> Boolean
+  Z           ==> Integer
+  N           ==> NonNegativeInteger
+
+  VARS ==> RealPolynomialUtilitiesPackage(TheField, ThePols)
+  LF ==> List(TheField)
+
+  PUB == CoercibleTo(O) with
+
+     allSimpleCells : (ThePols, Symbol) -> List %
+       ++ allSimpleCells(p, sym) is allSimpleCells([p], sym)
+     allSimpleCells : (List(ThePols), Symbol) -> List %
+       ++ allSimpleCells(lp, sym) returns decomposition into
+       ++ cells such that each p in lp has constant sign on
+       ++ each member of decomposition
+     hasDimension? : % -> B
+       ++ hasDimension?(c) returns true if c is of positive dimension
+       ++ (that is one-dimensional), otherwise hasDimension?(c)
+       ++ returns false
+     samplePoint : % -> TheField
+       ++ samplePoint(c) returns the sample point of c
+     variableOf : % -> Symbol
+       ++ variableOf(c) returns variable of c
+
+  PRIV == add
+
+     separate : (LF,TheField, TheField) -> LF
+     pointToCell  : (TheField, B, Symbol) -> %
+
+     Rep := Record(samplePoint : TheField,
+                   hasDim : B,
+                   varOf : Symbol)
+
+     samplePoint(c) == c.samplePoint
+
+     hasDimension?(c) == c.hasDim
+
+     variableOf(c) == c.varOf
+
+     coerce(c:%):O ==
+       o : O := ((c.varOf)::O) = ((c.samplePoint)::O)
+       brace [o, (c.hasDim)::O]
+
+     separate(liste, left, right) ==
+         middle : TheField := (left + right) / (2::TheField)
+         liste = [] => [middle]
+         #liste = 1 => [left, first(liste), right]
+         nbe := first(liste)
+         ll : List(TheField) := []
+         lr : List(TheField) := rest(liste)
+         sg := sign(middle - nbe)
+         while sg > 0 repeat
+             ll := cons(nbe, ll)
+             lr = [] => return(separate(reverse(ll), left, middle))
+             nbe := first(lr)
+             sg := sign(middle - nbe)
+             lr := rest(lr)
+         sg < 0 =>
+             append(separate(reverse(ll), left, middle),
+                    rest(separate(cons(nbe, lr), middle, right)))
+         new_right := (left + middle)/(2::TheField)
+         null ll =>
+             new_left := (middle + right)/(2::TheField)
+             while new_left >= first(lr) repeat
+                 new_left := (middle + new_left)/(2::TheField)
+             append([left, middle], separate(lr, new_left, right))
+         while new_right <= first(ll) repeat
+             new_right := (new_right + middle)/(2::TheField)
+         new_left := (middle + right)/(2::TheField)
+         null lr => append(separate(reverse(ll), left, new_right),
+                           [middle, right])
+         while new_left >= first(lr) repeat
+             new_left := (middle + new_left)/(2::TheField)
+         append(separate(reverse(ll), left, new_right),
+                cons(middle, separate(lr, new_left, right)))
+
+
+     pointToCell(sp, hasDim?, varName) ==
+         [sp, hasDim?, varName]$Rep
+
+     allSimpleCells(p : ThePols, var : Symbol) ==
+         allSimpleCells([p], var)
+
+     PACK ==> CylindricalAlgebraicDecompositionUtilities(TheField, ThePols)
+     allSimpleCells(lp : List(ThePols), var : Symbol) ==
+         lp1 := gcdBasis(lp)$PACK
+         null(lp1) => [pointToCell(0, true, var)]
+         b := ("max" / [ boundOfCauchy(p)$VARS for p in lp1])::TheField
+         l := "append" / [allRootsOf(makeSUP(unitCanonical(p))) for p in lp1]
+         l := sort(l)
+         l1 := separate(l, -b, b)
+         res : List(%) := [pointToCell(first(l1), true, var)]
+         l1 := rest(l1)
+         while not(null(l1)) repeat
+             res := cons(pointToCell(first(l1), false, var), res)
+             l1 := rest(l1)
+             l1 = [] => error "Impossible, empty list"
+             res := cons(pointToCell(first(l1), true, var), res)
+             l1 := rest(l1)
+         reverse! res
+
+
+)abbrev domain CELL Cell
+
+Cell(TheField) : PUB == PRIV where
+  TheField : RealClosedField
+
+  ThePols ==> Polynomial(TheField)
+
+  O           ==> OutputForm
+  B           ==> Boolean
+  Z           ==> Integer
+  N           ==> NonNegativeInteger
+  BUP         ==> SparseUnivariatePolynomial(TheField)
+  SCELL       ==> SimpleCell(TheField, BUP)
+
+  PUB == CoercibleTo(O) with
+
+     samplePoint : % -> List(TheField)
+       ++ samplePoint(c) returns the sample point of c
+     dimension : % -> N
+       ++ dimension(c) returns dimension of c
+     hasDimension? :  (%, Symbol) -> B
+       ++ hasDimension?(c) returns true if c is of positive dimension.
+       ++ Otherwise hasDimension?(c) returns false.
+     makeCell : List(SCELL) -> %
+       ++ makeCell(lc) creates a cell from list of simple cells lc
+     makeCell : (SCELL, %) -> %
+       ++ makeCell(c, sc) creates a cell which consists of sc in
+       ++ main variable and which has projection c
+     mainVariableOf : % -> Symbol
+       ++ mainVariableOf(c) returns main variable of c
+     variablesOf : % -> List Symbol
+       ++ variablesOf(c) returns list of variables of c
+     projection : % -> Union(%, "failed")
+       ++ projection(c) projects c with respect to main variable
+     simpleCells : % -> List(SCELL)
+       ++ simpleCells(c) returns lists of simple cells determining
+       ++ c.  That is c = makeCell(simpleCells(c))
+
+
+  PRIV == add
+
+    RepT ==> List(SCELL)
+
+    simpleCells(c) == c pretend RepT
+
+    Rep := RepT
+
+    coerce(c:%):O ==
+        paren [sc::O for sc in c]
+
+    projection(cell) ==
+        null cell => error "projection: should not appear"
+        r := rest(cell)
+        null r => "failed"
+        r
+
+    makeCell(l : List(SCELL)) == l
+
+    makeCell(scell, toAdd) == cons(scell, toAdd)
+
+    mainVariableOf(cell) ==
+        null(cell) =>
+            error "Should not appear"
+        variableOf(first(cell))
+
+    variablesOf(cell) ==
+        null(cell) => []
+        cons(mainVariableOf(cell), variablesOf(rest(cell)::%))
+
+    dimension(cell) ==
+        null(cell) => 0
+        hasDimension?(first(cell)) => 1 + dimension(rest(cell))
+        dimension(rest(cell))
+
+    hasDimension?(cell, var) ==
+        null(cell) =>
+            error "Should not appear"
+        sc : SCELL := first(cell)
+        v := variableOf(sc)
+        v = var => hasDimension?(sc)
+        v < var => false
+        v > var => true
+        error "impossible"
+
+    samplePoint(cell) ==
+        null(cell) => []
+        cons(samplePoint(first(cell)), samplePoint(rest(cell)))
+
+)abbrev package CAD CylindricalAlgebraicDecompositionPackage
+
+CylindricalAlgebraicDecompositionPackage(TheField) : PUB == PRIV where
+
+  TheField : RealClosedField
+
+  ThePols ==> Polynomial(TheField)
+  P ==> ThePols
+  BUP ==> SparseUnivariatePolynomial(TheField)
+  RUP ==> SparseUnivariatePolynomial(ThePols)
+
+  Z           ==> Integer
+  N           ==> NonNegativeInteger
+
+  CELL ==> Cell(TheField)
+  SCELL ==> SimpleCell(TheField, BUP)
+
+  PUB == with
+
+      cylindricalDecomposition: List P -> List CELL
+        ++ cylindricalDecomposition(lp) is cylindricalDecomposition(lp, lv)
+        ++ where lv is list of variables in lp.
+      cylindricalDecomposition: (List(P), List(Symbol)) -> List CELL
+        ++ cylindricalDecomposition(lp, lv) computes cylindrical
+        ++ decompositon of lp in using variable order given by lv
+      projectionSet: (List RUP) -> List P
+        ++ projectionSet(lup) performs one projection step
+      coefficientSet: RUP -> List P
+      discriminantSet : List RUP -> List(P)
+      resultantSet :  List RUP -> List P
+      principalSubResultantSet : (RUP, RUP) -> List P
+      specialise : (List(ThePols), CELL) -> List(BUP)
+        ++ specialise(lp, c) specializes all p in lp to the
+        ++ sample point of c.
+
+  PRIV == add
+
+     cylindricalDecomposition(lpols) ==
+         lv : List(Symbol) := []
+         for pol in lpols repeat
+             ground?(pol) => "next pol"
+             lv := removeDuplicates(append(variables(pol), lv))
+         lv := reverse(sort(lv))
+         cylindricalDecomposition(lpols, lv)
+
+     cylindricalDecomposition(lpols, lvars) ==
+         lvars = [] => error("cylindricalDecomposition: empty list of vars")
+         mv := first(lvars)
+         lv := rest(lvars)
+         lv = [] =>
+             lp1 := [ univariate(pol) for pol in lpols ]
+             scells := allSimpleCells(lp1, mv)$SCELL
+             [makeCell([scell]) for scell in scells]
+         lpols1 := projectionSet [univariate(pol, mv) for pol in lpols]
+         previousCad := cylindricalDecomposition(lpols1, lv)
+         res : List(CELL) := []
+         for cell in previousCad repeat
+             lspec := specialise(lpols, cell)
+             scells := allSimpleCells(lspec, mv)
+             res := append(res, [makeCell(scell, cell) for scell in scells])
+         res
+
+     PACK1 ==> CylindricalAlgebraicDecompositionUtilities(ThePols, RUP)
+     PACK2 ==> CylindricalAlgebraicDecompositionUtilities(TheField, BUP)
+
+     specialise(lpols, cell) ==
+         lpols = [] => error("specialise: empty list of pols")
+         sp := samplePoint(cell)
+         vl := variablesOf(cell)
+         res : List(BUP) := []
+         for pol in lpols repeat
+             p1 := univariate(eval(pol,vl,sp))
+             degree(p1) = 0 => "next pol"
+             res := cons(p1,res)
+         res
+
+     coefficientSet(pol) ==
+         res : List(ThePols) := []
+         for c in coefficients(pol) repeat
+             ground?(c) => return(res)
+             res := cons(c, res)
+         res
+
+     SUBRES ==> SubResultantPackage(ThePols, RUP)
+     discriminantSet(lpols) ==
+         res : List(ThePols) := []
+         for p in lpols repeat
+             v := subresultantVector(p, differentiate(p))$SUBRES
+             not(zero?(degree(v.0))) => return(error "Bad discriminant")
+             d : ThePols :=  leadingCoefficient(v.0)
+--           d := discriminant p
+             zero?(d) => return(error "Non Square Free polynomial")
+             if not(ground? d) then res := cons(d, res)
+         res
+
+     principalSubResultantSet(p, q) ==
+         if degree(p) < degree(q) then
+             (p, q) := (q, p)
+         if degree(p) = degree(q) then
+             (p, q) := (q, pseudoRemainder(p, q))
+         v := subresultantVector(p, q)$SUBRES
+         [coefficient(v.i, i) for i in 0..(((#v) - 2)::N)]
+
+     resultantSet(lpols) ==
+         res : List(ThePols) := []
+         laux := lpols
+         for p in lpols repeat
+             laux := rest(laux)
+             for q in laux repeat
+                 r : ThePols :=  first(principalSubResultantSet(p, q))
+--               r := resultant(p, q)
+                 zero?(r) => return(error "Non relatively prime polynomials")
+                 if not(ground? r) then res := cons(r, res)
+         res
+
+     projectionSet(lpols) ==
+         res : List(ThePols) := []
+         for p in lpols repeat
+             c := content(p)
+             ground?(c) => "next p"
+             res := cons(c, res)
+         lp1 := [primitivePart p for p in lpols]
+         f := (x1 : RUP, x2 : RUP) : Boolean +-> (degree(x1) <= degree(x2))
+         lp1 := sort(f, lp1)
+         lsqfrb := squareFreeBasis(lp1)$PACK1
+         lsqfrb := sort(f, lsqfrb)
+         for p in lp1 repeat
+             res := append(res, coefficientSet(p))
+         res := append(res, discriminantSet(lsqfrb))
+         append(res, resultantSet(lsqfrb))
