@@ -81,6 +81,7 @@ and then tail-recursively call [[intloopReadConsole]].
 -- )lisp (setf |$ioHook| (lambda (x arg) (format t "<~S>~%" x)))
 
 DEFPARAMETER($ioHook, nil)
+DEFPARAMETER($erMsgToss, false)
 
 ioHook(x, :args) ==
    if $ioHook then FUNCALL($ioHook, x, args)
