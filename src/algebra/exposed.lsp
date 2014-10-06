@@ -61,6 +61,7 @@
   (|DoubleFloat| . DFLOAT)
   (|DoubleFloatEllipticIntegrals| . ELIPIDF)
   (|DoubleFloatSpecialFunctions| . DFSFUN)
+  (|DoubleFloatSpecialFunctions2| . DFSFUN2)
   (|DrawComplex| . DRAWCX)
   (|DrawNumericHack| . DRAWHACK)
   (|DrawOption| . DROPT)
