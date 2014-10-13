@@ -18,25 +18,28 @@ FiniteLinearAggregateFunctions2(S, A, R, B):
   B   : FiniteLinearAggregate R
 
   Exports ==> with
-    map    : (S -> R, A) -> B          ++ map(f, a) applies function f to each member of aggregate
-                                       ++ \spad{a} resulting in a new aggregate over a
-                                       ++ possibly different underlying domain.
+    map    : (S -> R, A) -> B
+      ++ map(f, a) applies function f to each member of aggregate
+      ++ \spad{a} resulting in a new aggregate over a
+      ++ possibly different underlying domain.
 
-    reduce : ((S, R) -> R, A, R) -> R  ++ reduce(f, a, r) applies function f to each
-                                       ++ successive element of the
-                                       ++ aggregate \spad{a} and an accumulant initialized to r.
-                                       ++ For example,
-                                       ++ \spad{reduce(_+$Integer, [1, 2, 3], 0)}
-                                       ++ does \spad{3+(2+(1+0))}. Note: third argument r
-                                       ++ may be regarded as the
-                                       ++ identity element for the function f.
+    reduce : ((S, R) -> R, A, R) -> R
+      ++ reduce(f, a, r) applies function f to each
+      ++ successive element of the
+      ++ aggregate \spad{a} and an accumulant initialized to r.
+      ++ For example,
+      ++ \spad{reduce(_+$Integer, [1, 2, 3], 0)}
+      ++ does \spad{3+(2+(1+0))}. Note: third argument r
+      ++ may be regarded as the
+      ++ identity element for the function f.
 
-    scan   : ((S, R) -> R, A, R) -> B  ++ scan(f, a, r) successively applies
-                                       ++ \spad{reduce(f, x, r)} to more and more leading sub-aggregates
-                                       ++ x of aggregrate \spad{a}.
-                                       ++ More precisely, if \spad{a} is \spad{[a1, a2, ...]}, then
-                                       ++ \spad{scan(f, a, r)} returns
-                                       ++ \spad{[reduce(f, [a1], r), reduce(f, [a1, a2], r), ...]}.
+    scan   : ((S, R) -> R, A, R) -> B
+      ++ scan(f, a, r) successively applies
+      ++ \spad{reduce(f, x, r)} to more and more leading sub-aggregates
+      ++ x of aggregrate \spad{a}.
+      ++ More precisely, if \spad{a} is \spad{[a1, a2, ...]}, then
+      ++ \spad{scan(f, a, r)} returns
+      ++ \spad{[reduce(f, [a1], r), reduce(f, [a1, a2], r), ...]}.
 
   Implementation ==> add
     if A has ListAggregate(S) then         -- A is a list-oid
@@ -55,14 +58,18 @@ FiniteLinearAggregateFunctions2(S, A, R, B):
 
       else                      -- A is a list-oid, B a mutable array-oid
         map(f, l) ==
-          i := minIndex(w := new(#l, NIL$Lisp)$B)
-          for a in entries l repeat (qsetelt!(w, i, f a); i := inc i)
+          empty?(l) => empty()
+          l1 := entries(l)
+          i := minIndex(w := new(#l1, f(first(l1)))$B) + 1
+          for a in rest entries l repeat (qsetelt!(w, i, f a); i := inc i)
           w
 
         scan(fn, l, ident) ==
-          i := minIndex(w := new(#l, NIL$Lisp)$B)
-          vl := ident
-          for a in entries l repeat
+          empty?(l) => empty()
+          l1 := entries(l)
+          vl := fn(first(l1), ident)
+          i := minIndex(w := new(#l1, vl)$B) + 1
+          for a in rest entries l repeat
             vl := qsetelt!(w, i, fn(a, vl))
             i := inc i
           w
@@ -88,15 +95,21 @@ FiniteLinearAggregateFunctions2(S, A, R, B):
       else                             -- A and B are array-oid's
         if B has shallowlyMutable then -- B is also mutable
           map(f, v) ==
-            w := new(#v, NIL$Lisp)$B
-            for i in minIndex w .. maxIndex w repeat
+            n := #v
+            n = 0 => empty()
+            i0 := minIndex v
+            w := new(#v, f qelt(v, i0))$B
+            for i in i0 + 1 .. maxIndex w repeat
               qsetelt!(w, i, f qelt(v, i))
             w
 
           scan(fn, v, ident) ==
-            w   := new(#v, NIL$Lisp)$B
-            vl := ident
-            for i in minIndex v .. maxIndex v repeat
+            n := #v
+            n = 0 => empty()
+            i0 := minIndex v
+            vl := fn(qelt(v, i0), ident)
+            w   := new(#v, vl)$B
+            for i in i0 + 1 .. maxIndex v repeat
               vl := qsetelt!(w, i, fn(qelt(v, i), vl))
             w
 
