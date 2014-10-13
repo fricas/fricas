@@ -111,5 +111,24 @@ Dr := DeRhamComplex(Integer, [x, y, z])
 dx := generator(1)$Dr
 testEquals("degree(dx)", "1")
 
+testcase "general map for aggregates"
+fAf := FiniteLinearAggregateFunctions2(Integer, List(Integer),
+          Integer, U32Vector)
+testTrue("(uv := map(x +-> x, [1, 2])$fAf; true)")
+testEquals("uv(0)", "1")
+testEquals("uv(1)", "2")
+
+fAf2 := FiniteLinearAggregateFunctions2(Integer, U32Vector, Integer, U32Vector)
+testTrue("(uv2 := map(x +-> x + 7, uv)$fAf2; true)")
+testEquals("uv2(0)", "8")
+testEquals("uv2(1)", "9")
+
+testTrue("(uv := scan((x, y) +-> x*y, [3, 4], 2)$fAf; true)")
+testEquals("uv(0)", "6")
+testEquals("uv(1)", "24")
+testTrue("(uv2 := scan((x, y) +-> x + y, uv, 1)$fAf2; true)")
+testEquals("uv2(0)", "7")
+testEquals("uv2(1)", "31")
+
 )set output algebra on
 statistics()
