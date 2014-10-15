@@ -42,6 +42,11 @@ TopLevelDrawFunctionsForCompiledFunctions():
     draw : (SF -> SF, SEG) -> VIEW2
       ++ draw(f, a..b) draws the graph of \spad{y = f(x)} as x
       ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}.
+    makeObject : (SF -> SF, SEG, L DROP) -> GraphImage
+      ++ makeObject(f, a..b, l) creates the graph of \spad{y = f(x)} as x
+      ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}.
+      ++ The options contained in the list l of
+      ++ the domain \spad{DrawOption} are applied.
 
 --% Parametric Plane Curves
 
@@ -55,6 +60,12 @@ TopLevelDrawFunctionsForCompiledFunctions():
       ++ draw(curve(f, g), a..b) draws the graph of the parametric
       ++ curve \spad{x = f(t), y = g(t)} as t ranges from \spad{min(a, b)} to
       ++ \spad{max(a, b)}.
+    makeObject : (PPC, SEG, L DROP) -> GraphImage
+      ++ makeObject(curve(f, g), a..b, l) creates the graph of the parametric
+      ++ curve \spad{x = f(t), y = g(t)} as t ranges from \spad{min(a, b)} to
+      ++ \spad{max(a, b)}.
+      ++ The options contained in the list l of the domain \spad{DrawOption}
+      ++ are applied.
 
 --% Parametric Space Curves
 
@@ -242,8 +253,8 @@ TopLevelDrawFunctionsForCompiledFunctions():
         [segment(xLo - pad, xHi + pad), map(x +-> convert(x)@Float, yVals)]
       [map(x +-> convert(x)@Float, xVals), segment(yLo - pad, yHi + pad)]
 
-    drawPlot : (PLOT, L DROP) -> VIEW2
-    drawPlot(plot, l) ==
+    make_plot : (PLOT, L DROP) -> GraphImage
+    make_plot(plot, l) ==
       branches := listBranches plot
       xRange := xRange plot; yRange := yRange plot
       -- process clipping information
@@ -289,7 +300,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       ptCol := pointColorPalette(l, pointColorDefault())
       crCol := curveColorPalette(l, lineColorDefault())
       -- draw
-      drawCurves(branches, ptCol, crCol, pointSizeDefault(), l)
+      graphCurves(branches, ptCol, crCol, pointSizeDefault(), l)
 
     normalize : SEG -> Segment SF
     normalize seg ==
@@ -316,7 +327,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
 
 --% Two Dimensional Function Plots
 
-    draw(f : SF -> SF, seg : SEG, l : L DROP) ==
+    makeObject(f : SF -> SF, seg : SEG, l : L DROP) ==
       -- set adaptive plotting off or on
       oldAdaptive := adaptive?()$PLOT
       setAdaptive(adaptive(l, oldAdaptive))$PLOT
@@ -334,13 +345,17 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- reset adaptive plotting
       setAdaptive(oldAdaptive)$PLOT
       -- draw
-      drawPlot(pl, l)
+      make_plot(pl, l)
+
+    draw(f : SF -> SF, seg : SEG, l : L DROP) ==
+        g := makeObject(f, seg, l)
+        makeViewport2D(g, l)
 
     draw(f : SF -> SF, seg : SEG) == draw(f, seg, nil())
 
 --% Parametric Plane Curves
 
-    draw(ppc : PPC, seg : SEG, l : L DROP) ==
+    makeObject(ppc : PPC, seg : SEG, l : L DROP) ==
       -- set adaptive plotting off or on
       oldAdaptive := adaptive?()$PLOT
       setAdaptive(adaptive(l, oldAdaptive))$PLOT
@@ -356,7 +371,11 @@ TopLevelDrawFunctionsForCompiledFunctions():
       -- reset adaptive plotting
       setAdaptive(oldAdaptive)$PLOT
       -- draw
-      drawPlot(pl, l)
+      make_plot(pl, l)
+
+    draw(ppc : PPC, seg : SEG, l : L DROP) ==
+        g := makeObject(ppc, seg, l)
+        makeViewport2D(g, l)
 
     draw(ppc : PPC, seg : SEG) == draw(ppc, seg, nil())
 
@@ -652,6 +671,10 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
       ++ draw(f(x), x = a..b) draws the graph of \spad{y = f(x)} as x
       ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}; \spad{f(x)} appears
       ++ in the title bar.
+    makeObject : (Ex, BIND, L DROP) -> GraphImage
+      ++ makeObjectf(x), x = a..b, l) creates the graph of \spad{y = f(x)} as x
+      ++ ranges from \spad{min(a, b)} to \spad{max(a, b)}; the options
+      ++ contained in the list l of the domain \spad{DrawOption} are applied.
 
 --% Parametric Plane Curves
 
@@ -665,6 +688,12 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
       ++ draw(curve(f(t), g(t)), t = a..b) draws the graph of the parametric
       ++ curve \spad{x = f(t), y = g(t)} as t ranges from \spad{min(a, b)} to
       ++ \spad{max(a, b)}; \spad{(f(t), g(t))} appears in the title bar.
+    makeObject : (PPC, BIND, L DROP) -> GraphImage
+      ++ makeObject(curve(f(t), g(t)), t = a..b, l) creates the graph of
+      ++ the parametric curve \spad{x = f(t), y = g(t)} as t ranges
+      ++ from \spad{min(a, b)} to \spad{max(a, b)}; the options
+      ++ contained in the list l of the domain \spad{DrawOption}
+      ++ are applied.
 
 --% Parametric Space Curves
 
@@ -764,33 +793,42 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
 
 --% Two Dimensional Function Plots
 
+    makeObject(f : Ex, bind : BIND, l : L DROP) ==
+        -- use DRAWCFUN
+        makeObject(makeFloatFunction(f, variable bind), segment bind, l)
+
     draw(f : Ex, bind : BIND, l : L DROP) ==
-      -- create title if necessary
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS2D",l)
-        else l := concat(title s, l)
-      -- call 'draw'
-      draw(makeFloatFunction(f, variable bind), segment bind, l)
+        -- create title if necessary
+        if not option?(l, 'title) then
+            s : String := unparse(convert(f)@InputForm)
+            if sayLength(s)$DisplayPackage > 50 then
+                l := concat(title "FriCAS2D", l)
+            else l := concat(title s, l)
+        g := makeObject(f, bind, l)
+        makeViewport2D(g, l)
 
     draw(f : Ex, bind : BIND) == draw(f, bind, nil())
 
 --% Parametric Plane Curves
 
-    draw(ppc : PPC, bind : BIND, l : L DROP) ==
-      f := coordinate(ppc, 1); g := coordinate(ppc, 2)
-      -- create title if necessary
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS2D",l)
-        else l := concat(title s, l)
-      -- create curve with functions as coordinates
-      curve : PPCF := curve(makeFloatFunction(f, variable bind), _
+    makeObject(ppc : PPC, bind : BIND, l : L DROP) ==
+        f := coordinate(ppc, 1); g := coordinate(ppc, 2)
+        -- create curve with functions as coordinates
+        curve : PPCF := curve(makeFloatFunction(f, variable bind), _
                             makeFloatFunction(g, variable bind))$PPCF
-      -- call 'draw'
-      draw(curve, segment bind, l)
+        -- use DRAWCFUN
+        makeObject(curve, segment bind, l)
+
+    draw(ppc : PPC, bind : BIND, l : L DROP) ==
+        f := coordinate(ppc, 1)
+        -- create title if necessary
+        if not option?(l, 'title) then
+            s : String := unparse(convert(f)@InputForm)
+            if sayLength(s)$DisplayPackage > 50 then
+                l := concat(title "FriCAS2D", l)
+            else l := concat(title s, l)
+        g := makeObject(ppc, bind, l)
+        makeViewport2D(g, l)
 
     draw(ppc : PPC, bind : BIND) == draw(ppc, bind, nil())
 
@@ -969,6 +1007,10 @@ TopLevelDrawFunctionsForAlgebraicCurves(R, Ex) : Exports == Implementation where
       ++ draw(f(x, y) = g(x, y), x, y, l) draws the graph of a polynomial
       ++ equation.  The list l of draw options must specify a region
       ++ in the plane in which the curve is to sketched.
+    makeObject : (EQ Ex, SY, SY, L DROP) -> GraphImage
+      ++ makeObject(f(x, y) = g(x, y), x, y, l) creates the graph of
+      ++ a polynomial equation. The list l of draw options must specify
+      ++ a region in the plane in which the curve is to sketched.
 
   Implementation ==> add
     import from ViewportPackage
@@ -1007,7 +1049,7 @@ TopLevelDrawFunctionsForAlgebraicCurves(R, Ex) : Exports == Implementation where
         error "draw: non-constant denominator"
       map(intConvert, numer rat)$PolynomialFunctions2(R, I)
 
-    draw(eq, x, y, l) ==
+    makeObject(eq, x, y, l) ==
       -- obtain polynomial equation
       p := polyEquation eq
       -- extract ranges from option list
@@ -1051,7 +1093,11 @@ TopLevelDrawFunctionsForAlgebraicCurves(R, Ex) : Exports == Implementation where
       ptCol := pointColorPalette(l, pointColorDefault())
       crCol := curveColorPalette(l, lineColorDefault())
       -- draw
-      drawCurves(listBranches acplot, ptCol, crCol, pointSizeDefault(), l)
+      graphCurves(listBranches acplot, ptCol, crCol, pointSizeDefault(), l)
+
+    draw(eq, x, y, l) ==
+        g := makeObject(eq, x, y, l)
+        makeViewport2D(g, l)
 
 )abbrev package DRAWPT TopLevelDrawFunctionsForPoints
 ++ Author: Mike Dewar
