@@ -1169,14 +1169,10 @@ in adding points to an empty \spadtype{GraphImage}.
 }{
 \spadcommand{appendPoint(g,p5)\$GRIMAGE\free{gp4 Sp5}\bound{gp5}}
 }
-\xtc{
-}{
-\spadcommand{g1 := makeGraphImage(g)\$GRIMAGE \bound{Sg1} \free{gp5}}
-}
 \psXtc{
 Here is the graph.
 }{
-\spadgraph{makeViewport2D(g1,[title("Graph Points")])\$VIEW2D \free{Sg1}}
+\spadgraph{makeViewport2D(g,[title("Graph Points")])\$VIEW2D \free{Sg gp5}}
 }{
 %
 }
@@ -1234,15 +1230,13 @@ stream of \spad{x}- and \spad{y}-values. For example,
 \xmpLine{  for p in lp repeat}
 \xmpLine{    component(g,p,pointColorDefault(),lineColorDefault(),}
 \xmpLine{      pointSizeDefault())}
-\xmpLine{  gi := makeGraphImage(g)\$GRIMAGE}
-\xmpLine{  makeViewport2D(gi,[title("Points")])\$VIEW2D}
+\xmpLine{  makeViewport2D(g,[title("Points")])\$VIEW2D}
 \xmpLine{}
 \xmpLine{drawLines(lp:List Point DoubleFloat):VIEW2D ==}
 \xmpLine{  g := graphImage()\$GRIMAGE}
 \xmpLine{  component(g, lp, pointColorDefault(), lineColorDefault(),}
 \xmpLine{    pointSizeDefault())\$GRIMAGE}
-\xmpLine{  gi := makeGraphImage(g)\$GRIMAGE}
-\xmpLine{  makeViewport2D(gi,[title("Points")])\$VIEW2D}
+\xmpLine{  makeViewport2D(g,[title("Points")])\$VIEW2D}
 \xmpLine{}
 \xmpLine{plotData2D(name, title) ==}
 \xmpLine{  f:File(DFLOAT) := open(name,"input")}
@@ -1301,13 +1295,39 @@ Display the new \spadtype{TwoDimensionalViewport} containing both graphs.
 }{
 %
 }
+Instead of using \spadfun{draw} to draw a graph and then extract
+graph data we can use \spadfun{makeObject}.
+\xtc{
+First graph.
+}{
+\spadcommand{g3 := makeObject(sin(x),x=-1..\%pi,[]) \bound{g3}}
+}
+\xtc{
+This graph is in the first slot in its viewport.
+}{
+\spadcommand{v3 := draw(cos(x),x=-1..\%pi, curveColor==light red()) \bound{v3}}
+}
+\xtc{
+Now \spadfunFrom{putGraph}{TwoDimensionalViewport}
+places \spad{g3} into the the second slot position of \spad{v3}.
+}{
+\spadcommand{putGraph(v3,g3,2) \bound{v33}\free{g3 v3}}
+}
+\psXtc{
+Display the new \spadtype{TwoDimensionalViewport} containing both graphs.
+}{
+\spadgraph{makeViewport2D(v3) \free{v33}}
+}{
+%
+}
 % XXX: Without close we have trouble during documentation build
 \xtc{
-The viewports \spad{v1} and \spad{v2} are no longer needed so
+The viewports \spad{v1}, \spad{v2} and \spad{v3} are no longer needed so
 we close them.
 }{
-\spadpaste{close(v1); close(v2)\free{v1 v2}}
+\spadpaste{close(v1); close(v2); close(v3) \free{v1 v2 v3}}
 }
+
 % XXX: We should wait for close to finish, but since there is
 % other content on the page this should happen automatically
 %

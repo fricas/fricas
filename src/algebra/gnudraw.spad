@@ -1,0 +1,85 @@
+)abbrev package GDRAW GnuDraw
+++ Author: Bill Page and David Cyganski
+++ Date: June 25, 2008
+++ Description:
+++ This package provides support for gnuplot. These routines
+++ generate output files contain gnuplot scripts that may be
+++ processed directly by gnuplot. This is especially convenient
+++ in the axiom-wiki environment where gnuplot is called from
+++ LaTeX via gnuplottex.
+
+EF ==> Expression Float
+SBF ==> SegmentBinding Float
+DROP ==> DrawOption
+DROP0 ==> DrawOptionFunctions0
+STR ==> String
+LDF ==> List DoubleFloat
+GnuDraw(): with
+  gnuDraw:(EF, SBF, STR, List DROP)->Void
+  ++ \spad{gnuDraw} provides 2d plotting with options
+  gnuDraw:(LDF,LDF, STR, List DROP)->Void
+  ++ \spad{gnuDraw} provides 2d plotting from list of values with options
+  gnuDraw:(EF, SBF, STR)->Void
+  ++ \spad{gnuDraw} provides 2d plotting, default options
+  gnuDraw:(LDF,LDF, STR)->Void
+  ++ \spad{gnuDraw} provides 2d plotting from list of values, default options
+  gnuDraw:(EF, SBF, SBF, STR, List DROP)->Void
+  ++ \spad{gnuDraw} provides 3d surface plotting with options
+  gnuDraw:(EF, SBF, SBF, STR)->Void
+  ++ \spad{gnuDraw} provides 3d surface plotting, default options
+ == add
+  -- 2-d plotting
+  gnuDraw(f:EF,segbind:SBF,filename:STR,opts:List DROP):Void ==
+    import TwoDimensionalViewport, GraphImage, TopLevelDrawFunctions EF
+    f1:TextFile:=open(filename::FileName,"output")
+    -- handle optional parameters
+    writeLine!(f1,concat(["set title _"",title(opts,"")$DROP0,"_""]))
+    writeLine!(f1,"plot '-' title '' lw 3 with lines")
+    -- extract data as List List Point DoubleFloat
+    p2:=pointLists(makeObject(f, segbind, opts));
+    for p1 in p2 repeat
+      for p in p1 repeat
+        writeLine!(f1,concat([unparse(convert(p.1)@InputForm)," ",
+                              unparse(convert(p.2)@InputForm)]))
+      writeLine!(f1); -- blank line need to mark a "branch"
+    close! f1
+  gnuDraw(l1:LDF,l2:LDF,filename:STR,opts:List DROP):Void ==
+    import TwoDimensionalViewport, GraphImage, TopLevelDrawFunctionsForPoints
+    f1:TextFile:=open(filename::FileName,"output")
+    -- handle optional parameters
+    writeLine!(f1,concat(["set title _"",title(opts,"")$DROP0,"_""]))
+    writeLine!(f1,"plot '-' title '' lw 3 with lines")
+    -- extract data as List List Point DoubleFloat
+    lp := [point([x, y])$Point(DoubleFloat) for x in l1 for y in l2]
+    p2 := pointLists(makeGraphImage([lp]))
+    for p1 in p2 repeat
+      for p in p1 repeat
+        writeLine!(f1,concat([unparse(convert(p.1)@InputForm)," ",
+                              unparse(convert(p.2)@InputForm)]))
+      writeLine!(f1); -- blank line need to mark a "branch"
+    close! f1
+  -- default title is ""
+  gnuDraw(f:EF,segbind:SBF,filename:STR):Void ==
+    gnuDraw(f,segbind,filename,[title("")$DROP])
+  gnuDraw(l1:LDF,l2:LDF,filename:STR):Void ==
+    gnuDraw(l1,l2,filename,[title("")$DROP])
+
+  -- 3-d plotting
+  gnuDraw(f:EF,segbind1:SBF, segbind2:SBF, filename:STR, opts:List DROP):Void ==
+    import SubSpace, ThreeSpace DoubleFloat, TopLevelDrawFunctions EF
+    f1:TextFile:=open(filename::FileName,"output")
+    -- process optional parameters
+    writeLine!(f1,concat(["set title _"",title(opts,"")$DROP0,"_""]))
+    writeLine!(f1,"splot '-' title '' with pm3d")
+    -- extract data as List List Point DoubleFloat
+    p2 := mesh(makeObject(f, segbind1, segbind2))
+    for p1 in p2 repeat
+      for p in p1 repeat
+        writeLine!(f1,concat([unparse(convert(p.1)@InputForm)," ",
+                              unparse(convert(p.2)@InputForm)," ",
+                              unparse(convert(p.3)@InputForm)]))
+      writeLine!(f1); -- blank line need to mark a "branch"
+    close! f1
+  -- default title is ""
+  gnuDraw(f:EF,segbind1:SBF, segbind2:SBF, filename:STR):Void ==
+    gnuDraw(f,segbind1,segbind2,filename,[title("")$DROP])
