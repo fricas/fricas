@@ -1118,86 +1118,6 @@ An important subtlety is that files in the boot translator depend on the
 file npextras. there are 3 macros in npextras that must be in the lisp
 workspace (\verb$|shoeOpenInputFile| |shoeOpenOutputFile| memq$).
 
-\subsection{Environment}
-\label{sec:Makefile:env}
-
-\subsubsection{Lisp Images}
-\label{sec:Makefile:env:lisp-images}
-
-We will use create and use several lisp images during the build
-process. We name them here for convenience.
-
-\paragraph{[[AXIOM_LOCAL_LISP]].}  First we create a Lisp image
-that contains at least three macros  for translating
-Boot source files.  We do this by loading \File{initial-env.lisp}
-in [[AXIOM_LISP]], and saving the resulting image.  That image is then
-used to build the bootstrapping Boot translator.
-<<environment>>=
-AXIOM_LOCAL_LISP_sources = initial-env.lisp
-AXIOM_LOCAL_LISP = $(builddir)/local-lisp$(EXEEXT)
-@
-
-\paragraph{[[BOOTSYS_FOR_TARGET]].}
-The [[$(BOOTSYS_FOR_TARGET)]] image is the final Boot translator image,
-produced after several bootstrap stages.  That is the result of
-running the \Tool{Make} target [[all-boot]].
-<<environment>>=
-BOOTSYS_FOR_TARGET = $(axiom_target_bindir)/bootsys$(EXEEXT)
-@
-
-
-\section{Proclaim optimization}
-\label{sec:proclaim}
-
-GCL, and possibly other common lisps, can generate much better
-code if the function argument types and return values are proclaimed.
-
-In theory what we should do is scan all of the functions in the system
-and create a file of proclaim definitions. These proclaim definitions
-should be loaded into the image before we do any compiles so they can
-allow the compiler to optimize function calling.
-
-GCL has an approximation to this scanning which we use here.
-
-The first step is to build a version of GCL that includes gcl\_collectfn.
-This file contains code that enhances the lisp compiler and creates a
-hash table of structs. Each struct in the hash table describes information
-that about the types of the function being compiled and the types of its
-arguments. At the end of the compile-file this hash table is written out
-to a ".fn" file.
-
-The second step is to build axiom images (depsys, interpsys, AXIOMsys)
-which contain the gcl\_collectfn code.
-
-The third step is to build the system. This generates a .fn file for
-each lisp file that gets compiled.
-
-The fourth step is to build the proclaims.lisp files. There is one
-proclaims.lisp file for
-boot (boot-proclaims.lisp),
-interp (interp-proclaims.lisp), and
-algebra (algebra-proclaims.lisp).
-
-To build the proclaims file (e.g. for interp) we:
-\begin{verbatim}
-(a) cd to obj/linux/interp
-(b) (yourpath)/axiom/obj/linux/bin/lisp
-(c) (load "sys-pkg.lsp")
-(d) (mapcar #'load (directory "*.fn"))
-(e) (with-open-file (out "interp-proclaims.lisp" :direction :output)
-      (compiler::make-proclaims out))
-\end{verbatim}
-Note that step (c) is only used for interp, not for boot.
-
-The fifth step is to copy the newly constructed proclaims file back
-into the src/interp diretory (or boot, algebra).
-
-In order for this information to be used during compiles we define
-<<environment>>=
-PROCLAIMS=(load "$(srcdir)/boot-proclaims.lisp")
-
-@
-
 \section{Special Commands}
 \label{sec:special-commands}
 
@@ -1249,19 +1169,6 @@ boot_fn = $(boot_sources:.boot=.fn)
 @
 These source files use macros defined in the first set, and they be compiled
 in an environment where those macros are present.
-
-
-
-The Boot source file for [[bootsys]] are automatically extracted ---
-only during bootstrap --- from the pamphlets into the current build
-directory.  When bootstrapping, they are the inputs to the stage0, stage1
- [[bootsys]] compilers.
-
-<<boot from pamphlet>>=
-.PRECIOUS: %.boot
-%.boot: $(srcdir)/%.boot.pamphlet
-	$(axiom_build_document) --tangle $<
-@
 
 Since the Boot language is defined as a syntactic sugar over Lisp
 (a reasonably tasty sugar), the
@@ -1326,26 +1233,6 @@ $(boot_objects): %.$(FASLEXT): %.clisp
 <<boot from pamphlet>>
 @
 
-\subsection{Building [[bootsys]]}
-\label{sec:bootstrapping:build-bootsys}
-
-The Boot compiler [[bootsys]] image is constructed as the
-result of loading the needed object files in [[AXIOM_LOCAL_LISP]].
-and saving the resulting image back on disk.
-<<build bootsys>>=
-$(AXIOM_LOCAL_LISP): $(AXIOM_LOCAL_LISP_sources)
-	$(axiom_build_document) --tag=lisp --mode=save-image --output=$@ \
-		--use=$(LISPSYS) $(AXIOM_LOCAL_LISP_sources)
-
-bootsys$(EXEEXT): $(OBJECTS)
-	$(axiom_build_document) --tag=lisp --mode=link --output=$@ \
-		--use=$(AXIOM_LOCAL_LISP) '$(patsubst %, "%", $(OBJECTS))'
-@
-
-The make rule [[bootsys]] is executed through a recursive call to [[$(MAKE)]]
-from the various bootstrapping stage.  The recursive call supplies
-values for [[OBJECTS]].
-
 \subsection{The various bootstrapping stages}
 \label{sec:bootstrapping:stages}
 
@@ -1376,8 +1263,6 @@ $(stage0_boot_objects): $(AXIOM_LOCAL_LISP)
 stage0/%.$(FASLEXT): stage0/%.clisp
 	$(COMPILE_LISP)  --use=$(AXIOM_LOCAL_LISP) $<
 
-stage0/%.clisp: $(srcdir)/%.boot.pamphlet
-	$(axiom_build_document) --tangle=$*.clisp --output=$@ $<
 @
 
 \subsubsection{Stage 1}
@@ -1422,58 +1307,6 @@ stage2/bootsys$(EXEEXT): stage1/bootsys$(EXEEXT)
 
 <<stage 2 boot compiler>>
 @
-
-
-\section{Making the documentation}
-\label{sec:doc}
-
-\subsection{Compiling Lisp files without deps from pamphlets}
-<<initial-env.lisp>>=
-.PRECIOUS: %.lisp
-
-initial-env.lisp: $(srcdir)/initial-env.lisp.pamphlet
-	$(axiom_build_document) --tangle $<
-@
-
-\subsection{boot from pamphlet}
-<<boot from pamphlet>>=
-.PRECIOUS: %.boot
-
-%.boot: $(srcdir)/%.boot.pamphlet
-	$(axiom_build_document) --tangle $<
-@
-
-
-\section{Making the documentation}
-<<environment>>=
-
-LISPSYS= $(axiom_build_bindir)/lisp
-
-COMPILE_LISP = \
-	$(axiom_build_document) --tag=lisp --mode=compile --output=$@
-
-BOOT_TO_LISP = \
-	$(axiom_build_document) --tag=boot --mode=translate \
-	--use=./prev-stage/bootsys $<
-@
-
-\section{Cleanup}
-<<cleanup>>=
-mostlyclean-local:
-	@rm -f $(AXIOM_LOCAL_LISP)
-	@rm -f $(BOOTSYS_FOR_TARGET)
-	@rm -rf prev-stage
-	@rm -rf stage0 stage1 stage2
-	@rm -f *.data *.fn
-	@rm -f stamp
-
-clean-local: mostlyclean-local
-	@rm -f $(boot_sources)
-	@rm -f *.lisp
-
-distclean-local: clean-local
-@
-
 
 \section{Global variables}
 

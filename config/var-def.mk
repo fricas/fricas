@@ -158,12 +158,9 @@ VERSION = @PACKAGE_STRING@
 CCF=@CCF@
 LDF=-g
 
-DOCUMENT=${axiom_build_document}
-
 ## -------------------------------------------
 ## -- Files generated for the build machine --
 ## -------------------------------------------
-axiom_build_document = @abs_top_builddir@/build/scripts/document
 unpack_file = $(fricas_src_srcdir)/scripts/unpack_file
 
 FRICAS_LISP = @FRICAS_LISP@

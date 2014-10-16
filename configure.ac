@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2014-09-10],
+AC_INIT([FriCAS], [2014-10-16],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -786,14 +786,6 @@ AC_SUBST(emacsdatadir)
 FRICAS_MAKEFILE([contrib/emacs/Makefile])
 ###################################################################
 
-
-
-
-## We now generate the "document" script and support files at configure time.
-## We put them in the build directory because they are intended to be
-## build support utils only.
-AC_CONFIG_FILES(build/scripts/document:$srcdir/src/scripts/document.in, \
-                [chmod +x build/scripts/document])
 
 AC_OUTPUT
 

@@ -76,20 +76,8 @@ maintainer-clean-recursive:
 .PRECIOUS: %.tex
 .PRECIOUS: %.dvi
 
-.PHONY: dvi dvi-ax
+.PHONY: dvi
 dvi: dvi-recursive
-dvi-ax: $(fricas_build_texdir)/axiom.sty $(DVI_FILES)
-
-$(fricas_target_docdir)/$(subdir)%.dvi: $(builddir)/%.dvi
-	$(mkinstalldirs) $(fricas_target_docdir)/$(subdir)
-	$(INSTALL_DATA) $< $@
-
-%.dvi: %.tex $(fricas_build_texdir)/axiom.sty
-	TEXINPUTS=".:$(fricas_build_texdir):$${TEXINPUTS}"; \
-	export TEXINPUTS; \
-	BIBINPUTS=".:$(fricas_build_texdir):$${TEXINPUTS}"; \
-	export BIBINPUTS; \
-	$(axiom_build_document) --latex $<
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac \
 			 $(top_srcdir)/config/fricas.m4
@@ -101,10 +89,6 @@ Makefile: $(srcdir)/Makefile.in $(top_srcdir)/config/var-def.mk \
 	  $(top_srcdir)/config/setup-dep.mk \
 	  $(abs_top_builddir)/config.status
 	cd $(abs_top_builddir) && $(SHELL) ./config.status $(subdir)$@
-
-$(axiom_build_document): $(fricas_src_srcdir)/scripts/document.in
-	cd $(abs_top_builddir) && \
-	$(SHELL) ./config.status build/scripts/document
 
 ## Cleanup.
 ##   Each Makefile is responsible of defining targets named
