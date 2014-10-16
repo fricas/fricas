@@ -344,13 +344,13 @@ expandREPEAT(l) ==
             vl := [[var, init_form], :vl]
         op = "STEP" =>
             [var, start, inc, :op_limit] := U
-            -- If not atom compute only once
-            if not(ATOM(inc)) then
+            -- If not constant compute only once
+            if not(INTEGERP(inc)) then
                 vl := [[(tmp := GENSYM()), inc], :vl]
                 inc := tmp
             if op_limit then
-                -- If not atom compute only once
-                if not(ATOM(final := first(op_limit))) then
+                -- If not constant compute only once
+                if not(INTEGERP(final := first(op_limit))) then
                     vl := [[(tmp := GENSYM()), final], :vl]
                     final := tmp
                 tests :=
@@ -363,13 +363,13 @@ expandREPEAT(l) ==
             vl := [[var, start, ["+", var, inc]], :vl]
         op = "ISTEP" =>
             [var, start, inc, :op_limit] := U
-            -- If not atom compute only once
-            if not(ATOM(inc)) then
+            -- If not constant compute only once
+            if not(INTEGERP(inc)) then
                 vl := [[(tmp := GENSYM()), inc], :vl]
                 inc := tmp
             if op_limit then
-                if not(ATOM(final := first(op_limit))) then
-                    -- If not atom compute only once
+                if not(INTEGERP(final := first(op_limit))) then
+                    -- If not constant compute only once
                     vl := [[(tmp := GENSYM()), final], :vl]
                     final := tmp
                 tests :=
