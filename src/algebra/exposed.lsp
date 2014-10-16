@@ -120,6 +120,7 @@
   (|GaussianFactorizationPackage| . GAUSSFAC)
   (|GeneralUnivariatePowerSeries| . GSERIES)
   (|GenerateUnivariatePowerSeries| . GENUPS)
+  (|GnuDraw| . GDRAW)
   (|GraphicsDefaults| . GRDEF)
   (|GroebnerPackage| . GB)
   (|GroebnerFactorizationPackage| . GBF)
