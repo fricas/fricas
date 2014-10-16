@@ -461,18 +461,6 @@ phMacro carrier ==
     ncPutQ(carrier, 'ptree, ptree)
     'OK
 
---% phReportMsgs: carrier[lines,messages,..]-> carrier[lines,messages,..]
-phReportMsgs(carrier, interactive?) ==
-    $erMsgToss => 'OK
-    lines := ncEltQ(carrier, 'lines)
-    msgs  := ncEltQ(carrier, 'messages)
-    nerr  := #msgs
-    ncPutQ(carrier, 'ok?, nerr = 0)
-    interactive? and nerr = 0 => 'OK
-    processMsgList(msgs, lines)
-    intSayKeyedMsg ('S2CTP010,[nerr])
-    'OK
-
 ncConversationPhase(fn, args) ==
     carrier := first args
 
