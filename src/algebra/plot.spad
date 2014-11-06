@@ -292,25 +292,14 @@ Plot() : Exports == Implementation where
 --        t := rest t; p := rest p
 --      t := headert; p := headerp
 
-      st := t; sp := p
-      todot : L L F := nil()
-      todop : L L P := nil()
-      while not null rest rest st repeat
-        todot := concat!(todot, st)
-        todop := concat!(todop, sp)
-        st := rest st; sp := rest sp
       st := headert; sp := headerp
-      todo1 := todot; todo2 := todop
       n : I := 0
-      while not null todo1 repeat
-        st := first(todo1)
+      while not null rest rest st repeat
         t0 := first(st); t1 := second(st); t2 := third(st)
         if t2 > h then break
         t2 - t0 < tLimit =>
-            todo1 := rest todo1
-            todo2 := rest todo2
-            if not null todo1 then (t := first(todo1); p := first(todo2))
-        sp := first(todo2)
+            st := rest st
+            sp := rest sp
         x0 := xCoord first(sp); y0 := yCoord first(sp)
         x1 := xCoord second(sp); y1 := yCoord second(sp)
         x2 := xCoord third(sp); y2 := yCoord third(sp)
@@ -323,57 +312,20 @@ Plot() : Exports == Implementation where
           (s1 = 0::F or s2 = 0::F or
              s1 < minLength and s2 < minLength or _
              dp/s1/s2 > ANGLEBOUND) =>
-                todo1 := rest todo1
-                todo2 := rest todo2
-                if not null todo1 then (t := first(todo1); p := first(todo2))
+                st := rest st
+                sp := rest sp
         if n > MAXPOINTS then break else n := n + 1
-        st := rest t
-        if not null rest rest st then
-          tm := (t0+t1)/2::F
-          tj := tm
-          t.rest := concat(tj, rest t)
-          p.rest := concat(f tj, rest p)
-          todo1 := concat!(todo1, t)
-          todo2 := concat!(todo2, p)
-          t := rest t; p := rest p
-          todo1 := concat!(todo1, t)
-          todo2 := concat!(todo2, p)
-          t := rest t; p := rest p
-          todo1 := rest todo1; todo2 := rest todo2
+        t := st
+        p := sp
+        tj := (t0+t1)/2::F
+        qsetrest!(t, cons(tj, rest t))
+        qsetrest!(p, cons(f tj, rest p))
+        t := rest t; p := rest p
+        t := rest t; p := rest p
 
-          tm := (t1+t2)/2::F
-          tj := tm
-          t.rest := concat(tj, rest t)
-          p.rest := concat(f tj, rest p)
-          todo1 := concat!(todo1, t)
-          todo2 := concat!(todo2, p)
-          t := rest t; p := rest p
-          todo1 := concat!(todo1, t)
-          todo2 := concat!(todo2, p)
-          todo1 := rest todo1
-          todo2 := rest todo2
-          if not null todo1 then (t := first(todo1); p := first(todo2))
-        else
-          tm := (t0+t1)/2::F
-          tj := tm
-          t.rest := concat(tj, rest t)
-          p.rest := concat(f tj, rest p)
-          todo1 := concat!(todo1, t)
-          todo2 := concat!(todo2, p)
-          t := rest t; p := rest p
-          todo1 := concat!(todo1, t)
-          todo2 := concat!(todo2, p)
-          t := rest t; p := rest p
-
-          tm := (t1+t2)/2::F
-          tj := tm
-          t.rest := concat(tj, rest t)
-          p.rest := concat(f tj, rest p)
-          todo1 := concat!(todo1, t)
-          todo2 := concat!(todo2, p)
-          todo1 := rest todo1
-          todo2 := rest todo2
-          if not null todo1 then (t := first(todo1); p := first(todo2))
+        tj := (t1+t2)/2::F
+        qsetrest!(t, cons(tj, rest t))
+        qsetrest!(p, cons(f tj, rest p))
       n > 0 =>
         NUMFUNEVALS := NUMFUNEVALS + n
         t := curve.knots; p := curve.points
