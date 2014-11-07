@@ -755,15 +755,15 @@
 (defun OBEY (S)
    #-:win32 (sb-ext::process-exit-code
              (sb-ext::run-program "/bin/sh"
-                    (list "-c" S) :input t :output t))
+                    (list "-c" S) :input t :output t :error t))
    #+:win32 (sb-ext::process-exit-code
              (sb-ext::run-program (make-absolute-filename "/lib/obey.bat")
-                    (list S) :input t :output t))
+                    (list S) :input t :output t :error t))
 )
 
 #+:openmcl
 (defun OBEY (S)
-  (ccl::run-program "sh" (list "-c" S)))
+  (ccl::run-program "sh" (list "-c" S) :input t :output t :error t))
 
 #+(and :clisp (or :win32 :unix))
 (defun OBEY (S)
