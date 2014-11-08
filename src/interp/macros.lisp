@@ -687,8 +687,7 @@
 (defun |print_full2| (expr stream)
    (let ((*print-circle* t) (*print-array* t) *print-level* *print-length*)
      (print expr stream)
-     (terpri stream)
-     (finish-output stream)))
+     (terpri stream)))
 
 (defun |print_full1| (expr) (|print_full2| expr *standard-output*))
 
