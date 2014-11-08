@@ -117,7 +117,7 @@ serverReadLine(stream) ==
         parseAndInterpret stringBuf)))
 --  MRX I'm not sure whether I should call ioHook("startPrompt")/ioHook("endOfPrompt") here
       princPrompt()
-      FINISH_-OUTPUT()
+      FORCE_-OUTPUT()
     action = $NonSmanSession =>
       $SpadServer := nil
     action = $KillLispSystem =>

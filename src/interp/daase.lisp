@@ -1238,7 +1238,7 @@ database.
   (close |$compress_stream|)
   (setq out (open "compress.build" :direction :output :if-exists :supersede))
   (princ "                              " out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (setq masterpos (file-position out))
   (setq compresslist
         (append (|allConstructors|) (|allOperations|)))
@@ -1266,10 +1266,10 @@ database.
   (setq |$compress_vector|
     (make-array |$compress_vector_length| :initial-contents compresslist))
   (print (cons (length compresslist) compresslist) out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (file-position out 0)
   (print (cons masterpos (get-universal-time)) out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (close out)))
 
 (defun write-interpdb ()
@@ -1284,7 +1284,7 @@ database.
   ;;  We reserve some space at the top of the file for the key-time pair
   ;;  We will overwrite these spaces just before we close the file.
   (princ "                              " out)
-  (finish-output out)
+  #+:GCL (force-output out)
 
   ;;  We loop across the list of constructors dumping the data and
   ;;  remembering the byte positions in a key-value pair table.
@@ -1328,15 +1328,15 @@ database.
     (push (list constructor opalistpos cmodemappos modemapspos
       obj categorypos niladic abbrev cosig kind defaultdomain
       ancestorspos) master)))
-  (finish-output out)
+  #+:GCL (force-output out)
   (setq masterpos (file-position out))
   (print (mapcar #'squeeze master) out)
-  (finish-output out)
+  #+:GCL (force-output out)
 
   ;; Write the timestamp
   (file-position out 0)
   (print (cons masterpos (get-universal-time)) out)
-  (finish-output out)
+  #+:GCL (force-output out)
 
   (close out)))
 
@@ -1347,7 +1347,7 @@ database.
   (print "building browse.daase")
   (setq out (open "browse.build" :direction :output :if-exists :supersede))
   (princ "                              " out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (dolist (constructor (|allConstructors|))
    (let (struct)
     (setq struct (get constructor 'database))
@@ -1360,13 +1360,13 @@ database.
     (setq predpos (file-position out))
     (print (squeeze (database-predicates struct)) out)
     (push (list constructor src formpos docpos predpos) master)))
-  (finish-output out)
+  #+:GCL (force-output out)
   (setq masterpos (file-position out))
   (print (mapcar #'squeeze master) out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (file-position out 0)
   (print (cons masterpos (get-universal-time)) out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (close out)))
 
 (defun write-categorydb ()
@@ -1376,7 +1376,7 @@ database.
   (|genCategoryTable|)
   (setq out (open "category.build" :direction :output :if-exists :supersede))
   (princ "                              " out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (maphash #'(lambda (key value)
     (if (or (null value) (eq value t))
      (setq pos value)
@@ -1385,13 +1385,13 @@ database.
       (print (squeeze value) out)))
      (push (list key pos) master))
      |$has_category_hash|)
-  (finish-output out)
+  #+:GCL (force-output out)
   (setq pos (file-position out))
   (print (mapcar #'squeeze master) out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (file-position out 0)
   (print (cons pos (get-universal-time)) out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (close out)))
 
 (defun unsqueeze (expr)
@@ -1431,18 +1431,18 @@ database.
   (print "building operation.daase")
   (setq out (open "operation.build" :direction :output :if-exists :supersede))
   (princ "                              " out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (maphash #'(lambda (key value)
    (setq pos (file-position out))
    (print (squeeze value) out)
    (push (cons key pos) master))
    |$operation_hash|)
-  (finish-output out)
+  #+:GCL (force-output out)
   (setq pos (file-position out))
   (print (mapcar #'squeeze master) out)
   (file-position out 0)
   (print (cons pos (get-universal-time)) out)
-  (finish-output out)
+  #+:GCL (force-output out)
   (close out)))
 
 (defun |allConstructors| ()

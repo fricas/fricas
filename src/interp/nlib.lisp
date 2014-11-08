@@ -110,10 +110,10 @@
 (defun |write_indextable| (indextable stream)
   (let ((pos (file-position stream)))
     (write indextable :stream stream :level nil :length nil :escape t)
-    (finish-output stream)
+    #+:GCL (force-output stream)
     (file-position stream 0)
     (princ pos stream)
-    (finish-output stream)))
+    #+:GCL (force-output stream)))
 
 (defun putindextable (indextable dirname)
   (with-open-file
