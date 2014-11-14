@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2014-10-16],
+AC_INIT([FriCAS], [2014-11-14],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -424,16 +424,23 @@ AC_SUBST(fricas_algebra_optimization)
 AC_SUBST(fricas_all_prerequisites)
 
 fricas_has_directory_operations=no
+fricas_has_dirfd_fchdir=no
 
 AC_CHECK_HEADERS([dirent.h],[
   fricas_has_directory_operations=yes
-  AC_CHECK_DECLS([closedir, dirfd, opendir, readdir], [],
+  AC_CHECK_DECLS([closedir, opendir, readdir], [],
   [fricas_has_directory_operations=no],
   [#define _GNU_SOURCE
    #include <dirent.h>]
   )
+  fricas_has_dirfd_fchdir=yes
+  AC_CHECK_DECLS([dirfd], [],
+  [fricas_has_dirfd_fchdir=no],
+  [#define _GNU_SOURCE
+   #include <dirent.h>]
+  )
   AC_CHECK_DECLS([fchdir], [],
-  [fricas_has_directory_operations=no],
+  [fricas_has_dirfd_fchdir=no],
   [#define _GNU_SOURCE
    #include <unistd.h>]
   )
@@ -442,6 +449,10 @@ AC_CHECK_HEADERS([dirent.h],[
 if test x$fricas_has_directory_operations = xyes ; then
     AC_DEFINE([HOST_HAS_DIRECTORY_OPERATIONS], [1],
               [Host has POSIX directory operations])
+    if test x$fricas_has_dirfd_fchdir  = xyes ; then
+        AC_DEFINE([HOST_HAS_DIRFD_FCHDIR], [1],
+              [Host has dirfd and fchdir])
+    fi
 else
   AC_MSG_WARN([Can not find directory operations])
 fi
