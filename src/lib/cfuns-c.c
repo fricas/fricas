@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include "fricas_c_macros.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -265,33 +266,49 @@ char * fricas_copy_string(char *str)
 int
 remove_directory(char * name)
 {
+#ifdef HOST_HAS_DIRFD_FCHDIR
     DIR * cur_dir = opendir(".");
-    DIR * dir;
     int cur_dir_fd;
     int dir_fd;
+#else
+    size_t name_len = strlen(name);
+#endif
+    DIR * dir;
     struct dirent * entry;
     struct file_list {
         struct file_list * next;
         char * file;
     };
     struct file_list * flst = 0;
+#ifdef HOST_HAS_DIRFD_FCHDIR
     if (!cur_dir) {
         fprintf(stderr, "Unable to open current directory\n");
         return -1;
     }
+#else
+    if (name_len > INT_MAX/5) {
+        fprintf(stderr, "directory name too long\n");
+        return -1;
+    }
+#endif
     dir = opendir(name);
     if (!dir) {
         fprintf(stderr, "Unable to open directory to be removed\n");
         goto err1;
     }
+#ifdef HOST_HAS_DIRFD_FCHDIR
     cur_dir_fd = dirfd(cur_dir);
     dir_fd = dirfd(dir);
     if (cur_dir_fd == -1 || dir_fd == -1) {
         fprintf(stderr, "dirfd failed\n");
         goto err2;
     }
+#endif
     while ((entry = readdir(dir))) {
         char * fname = &(entry->d_name[0]);
+        if (strlen(fname) > INT_MAX/5) {
+            break;
+        }
         if (!strcmp(fname, ".")) {
             continue;
         } else if (!strcmp(fname, "..")) {
@@ -311,6 +328,7 @@ remove_directory(char * name)
             flst = npos;
         }
     }
+#ifdef HOST_HAS_DIRFD_FCHDIR
     if (fchdir(dir_fd)) {
         perror("Failed to change directory to directory to be removed");
         while (flst) {
@@ -321,24 +339,43 @@ remove_directory(char * name)
         }
         goto err2;
     }
+#endif
     while (flst) {
         struct file_list * npos = flst->next;
-        if (unlink(flst->file)) {
+#ifdef HOST_HAS_DIRFD_FCHDIR
+       if (unlink(flst->file)) {
             perror("Unlink failed");
         }
+#else
+        char pathbuf[PATH_MAX];
+        if (strlen(flst->file) + name_len + 1 < PATH_MAX) {
+            strcpy(pathbuf, name);
+            strcat(pathbuf, "/");
+            strcat(pathbuf, flst->file);
+            if (unlink(pathbuf)) {
+                perror("Unlink failed");
+            }
+        } else {
+            fprintf(stderr, "panthname too long\n");
+        }
+#endif
         free(flst->file);
         free(flst);
         flst = npos;
     }
+#ifdef HOST_HAS_DIRFD_FCHDIR
     if (fchdir(cur_dir_fd)) {
         closedir(dir);
         closedir(cur_dir);
         return -1;
     }
   err2:
+#endif
     closedir(dir);
   err1:
+#ifdef HOST_HAS_DIRFD_FCHDIR
     closedir(cur_dir);
+#endif
     {
         int res = rmdir(name);
         if (res) {
