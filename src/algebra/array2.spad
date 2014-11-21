@@ -21,7 +21,8 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
   Col : FiniteLinearAggregate R
 
   PI ==> PositiveInteger
-  LPI ==> List(PI)
+  NNI ==> NonNegativeInteger
+  LNNI ==> List(NNI)
   LI ==> List(Integer)
   SI ==> Segment(Integer)
   LSI ==> List(SI)
@@ -250,7 +251,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ \spad{vertSplit(a, n)} splits a into n arrays
       ++ of equal size row wise.
       ++ Error: if number of rows of a is not divisible by n.
-    vertSplit : (%, LPI) -> List %
+    vertSplit : (%, LNNI) -> List %
       ++ \spad{vertSplit(a, [n1, ..., ni])} splits a into
       ++ arrays having n1, ..., ni rows.
       ++ Error: if number of rows of a is different than
@@ -259,7 +260,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ \spad{horizSplit(a, n)} splits a into n arrays
       ++ of equal size column wise.
       ++ Error: if number of columns of a is not divisible by n.
-    horizSplit : (%, LPI) -> List %
+    horizSplit : (%, LNNI) -> List %
       ++ \spad{horizSplit(a, [n1, n2, ..., ni])} splits a into
       ++ arrays having n1, ..., ni columns.
       ++ Error: if number of columns of a is different than
@@ -270,7 +271,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ a into blocks.
       ++ Error: if number of rows of a is not divisible by n
       ++ or number of columns of a is not divisible by m.
-    blockSplit : (%, LPI, LPI) -> List List %
+    blockSplit : (%, LNNI, LNNI) -> List List %
       ++ \spad{blockSplit(a, [n1,...,ni], [m1,...,mi])} splits a
       ++ into multiple subarraus row and column wise, such that
       ++ element at position k, l has nk rows and ml columns.
@@ -840,10 +841,10 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       mac := maxc A
       [ subMatrix(A, mir+i*dr, mir+(i+1)*dr-1, mic, mac) for i in 0..(r-1) ]
 
-    vertSplit(A : %, lr : LPI) : List % ==
+    vertSplit(A : %, lr : LNNI) : List % ==
         reduce("+", lr) ~= nrows(A) =>
             error "split does not result in proper partition"
-        l : List PI := cons(1, scan(_+, lr, 1$PI)$ListFunctions2(PI,PI))
+        l : List NNI := cons(1, scan(_+, lr, 1$NNI)$ListFunctions2(NNI, NNI))
         mir := minr(A) -1   -- additional shift because l starts at 1
         mic := minc A
         mac := maxc A
@@ -858,10 +859,10 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       [ subMatrix(A, mir, mar, mic+i*dc, mic+(i+1)*dc-1) for i in 0..(c-1) ]
 
 
-    horizSplit(A : %, lc : LPI) : List % ==
+    horizSplit(A : %, lc : LNNI) : List % ==
         reduce("+", lc) ~= ncols(A) =>
             error "split does not result in proper partition"
-        l : List PI := cons(1, scan(_+, lc, 1$PI)$ListFunctions2(PI,PI))
+        l : List NNI := cons(1, scan(_+, lc, 1$NNI)$ListFunctions2(NNI, NNI))
         mir := minr A
         mar := maxr A
         mic := minc(A) -1   -- additional shift because l starts at 1
@@ -872,7 +873,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       --map( (X:M):(List M) +-> horizSplit(X, nc), vertSplit(A, nr) )$ListFunctions2(M, List M)
       [ horizSplit(X, nc) for X in vertSplit(A, nr) ]
 
-    blockSplit(A : %, lr : LPI, lc : LPI) : List List % ==
+    blockSplit(A : %, lr : LNNI, lc : LNNI) : List List % ==
       --map( (X:M):(List M) +-> horizSplit(X, lc), vertSplit(A, lr) )$ListFunctions2(M, List M)
       [horizSplit(X, lc) for X in vertSplit(A, lr)]
 
