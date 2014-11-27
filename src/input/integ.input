@@ -3,10 +3,14 @@
 
 testsuite "integ"
 
+is_evaluated_integral(res, f) ==
+    k1 := first kernels res
+    not is?(operator k1, 'integral) or member?(k1, kernels(f))
+
 testIntegrate(f: String, x: String, issue: String): Void ==
     testcaseNoClear("integrate(" f ", " x ") (" issue ")")
     testTrue("(res := integrate(" f ", " x "); true)")
-    testTrue("not is?(operator first kernels res, 'integral)")
+    testTrue("is_evaluated_integral(res, " f ")")
     testEquals("normalize(D(res, " x ") - (" f "))", "0")
 
 xf1testIntegrate(f: String, x: String, issue: String): Void ==
@@ -46,6 +50,9 @@ testIntegrate("1/x*(exp(log(x)/2+x))^2", "x", "rde")
 testIntegrate("exp(x)*exp(exp(x) + 1 + log(exp(x) + 3)/2)^2/(exp(x) + 3)",
                "x", "rde")
 
+fun := D(x*exp(x*log(x)/(log(x)+1))*log(exp(x*log(x)/(log(x)+1))+1), x)
+testIntegrate("fun", "x", "rde")
+
 -- just a few easy examples
 testIntegrate("(x^3-x^2-3*x+1)*exp(1/(x^2-1))/(x^3-x^2-x+1)", "x", "rde")
 testIntegrate("((x + 1)*log(x)^2 - 1)*exp(x + 1/log(x))/log(x)^2", "x", "rde")
@@ -55,6 +62,39 @@ testIntegrate("((3*x+1)*log(x)+3*x^2-2*x-3)*exp(x+log(x)/3)/(x*log(x)^2+2*x^2*lo
 testIntegrate("(2*log(x)^2+3*x*log(x)+x^2-x-1)*exp(log(x)^2+x)/(x*log(x)^2+2*x^2*log(x)+x^3)", "x", "rde")
 testIntegrate("(2*log(x)^2+3*x*log(x)+x^2+x+1)*exp(log(x)^2+x)/x", "x", "rde")
 testIntegrate("((x-3)*log(x)+4*x^2)*exp(1/x+log(x)/3)/x^2", "x", "rde")
+
+-- extended integration
+fun := D(log(exp(log(x+1)+x)*x)^2, x)
+testIntegrate("fun", "x", "extint")
+-- D((log(x*(1+x)) - log(x*(x+2)))*log(x+exp(x)), x)
+testIntegrate("log(x+exp(x))/(x^2 + 3*x + 2) + "
+    "(log(x*(1+x)) - log(x*(x+2)))*(exp(x) + 1)/(exp(x) + x)", "x", "extint")
+fun := D((log(x*(1+x)) - log(x*(x+2)))*log(x+exp(x))^2, x)
+testIntegrate("fun", "x", "extint")
+fun := D((log(x*(1+x)) - log(x*(x+2)))^2*log(x+exp(x))^2, x)
+testIntegrate("fun", "x", "extint")
+-- D(Ei(x)*log(x+exp(x))^2, x)
+testIntegrate("exp(x)*log(x+exp(x))^2/x + "
+              "2*Ei(x)*(exp(x) + 1)/(exp(x) + x)*log(x+exp(x))", "x", "extint")
+-- D(li(x)*log(x+exp(x))^2, x)
+testIntegrate("log(x+exp(x))^2/log(x) + 2*li(x)*"
+              "(exp(x) + 1)/(exp(x) + x)*log(x+exp(x))", "x", "extint")
+fun := D((x*exp((exp(x) + 1)/exp(x)))*log(exp((exp(x) + 1)/exp(x))+1), x)
+testIntegrate("fun", "x", "extint")
+fun := D((exp((exp(x) + 1)/exp(x))/exp(x))*log(exp((exp(x) + 1)/exp(x))+1), x)
+testIntegrate("fun", "x", "extint")
+fun := D((x*exp((exp(x)^2 + 1)/exp(x)))*log(exp((exp(x) + 1)/exp(x))+1), x)
+testIntegrate("fun", "x", "extint")
+fun := D((exp((exp(x)^2 + 1)/exp(x))/exp(x))*log(exp((exp(x) + 1)/exp(x))+1), x)
+testIntegrate("fun", "x", "extint")
+fun := D(x*exp(exp(x)^2 + exp(x))*log(exp(exp(x)^2 + exp(x)) + 1), x)
+testIntegrate("fun", "x", "extint")
+fun := D((exp(exp(x)^2 + exp(x))/exp(x))*log(exp(exp(x)^2 + exp(x)) + 1), x)
+testIntegrate("fun", "x", "extint")
+fun := D((x/(exp(x) + x))*erf(x*exp(x) + 1) + erf(x*exp(x) + 1)^2, x)
+testIntegrate("fun", "x", "extint")
+testIntegrate("asin(x)*log(x)", "x", "extint")
+testIntegrate("log(x + sqrt(1 + x^2))/(1 - x^2)^(3/2)", "x", "extint")
 
 -- elliptic
 
@@ -67,6 +107,8 @@ xf2testIntegrate("(x^2-2)/((-3*x^4-11*x^2-12)*(-x^4-3*x^2-4))^(1/2)",
 -- D(ellipticF(x^3+2*x+1, 3), x)
 xf2testIntegrate("(3*x^2+2)/((-3*x^6-12*x^4-6*x^3-12*x^2-12*x-2)^(1/2)*(-x^6-4*x^4-2*x^3-4*x^2-4*x)^(1/2))", "x", "ellip")
 xf2testIntegrate("(3*x^2+2)/((-3*x^6-12*x^4-6*x^3-12*x^2-12*x-2)*(-x^6-4*x^4-2*x^3-4*x^2-4*x))^(1/2)", "x", "ellip")
+
+-- li
 
 testIntegrate("1/log(x)", "x", "li")
 testIntegrate("1/(log(x) + 1)", "x", "li")
@@ -359,6 +401,9 @@ testIntegrate("exp(-x^2)*erf(x)/(erf(x)^3 - erf(x)^2 - erf(x) + 1)",
                "x", "liou")
 testIntegrate("exp(-x)*Ei(x)", "x", "liou")
 testIntegrate("polylog(3, x)*polylog(5, x)/(x*polylog(4, x)^2)", "x", "liou")
+testIntegrate("(polylog(3, x) - x*polylog(2, x))/(1 - x)^2", "x", "liou")
+ib := integral(x^(a - 1)*(1 - x)^(b - 1), x)
+testIntegrate("((a + b)*x - a)/(x^(a + 1)*(1 - x)^(b + 1))*ib", "x", "liou")
 
 -- Lambert W
 testIntegrate("lambertW(x)", "x", "lambertW")
@@ -401,7 +446,7 @@ testIntegrate("D(ff(x)/(x + ff(x)), x)", "x", "deriv")
 testIntegrate("D(ff(x)^2/(ff(x)*df^3 +x*ff(x)*df + 1), x)", "x", "deriv")
 testIntegrate("D(log(ff(x) + fg(x))*log(ff(x) + x*fg(x)), x)", "x", "deriv")
 testIntegrate("D(log(exp(x) + x)*log(ff(x)+1), x)", "x", "deriv")
-testIntegrate("D(log(exp(x) + x)*log(log(ff(x)+1)), x)", "x", "deriv")
+-- testIntegrate("D(log(exp(x) + x)*log(log(ff(x)+1)), x)", "x", "deriv")
 testIntegrate("D(sqrt(ff(x)), x)", "x", "deriv")
 testIntegrate("D(sqrt(ff(x)^2 + 1), x)", "x", "deriv")
 testIntegrate("D(1/(x + sqrt(x*ff(x)^2 + 1)), x)", "x", "deriv")
@@ -422,7 +467,20 @@ l1 := log(sqrt(exp(x) + 1) + exp(x))
 testIntegrate("exp(x)*(2*s1 + 1)*l1/(exp(x)*(s1 + 1) + 1)", "x", "algext")
 testIntegrate("exp(x)*(l1^2 + exp(x)*(2*s1 + 1)*l1/(exp(x)*(s1 + 1) + 1))",
               "x", "algext")
+-- testIntegrate("log(sin(x))*sqrt(1 + sin(x))", "x", "algext")
 testIntegrate("sin(x)*atan(sqrt(sec(x) - 1))", "x", "algext")
+fun1 := D(log(sqrt(x + sqrt(x)) + 1)*log(sqrt(x + sqrt(x)) + x), x);
+testIntegrate("fun1", "x", "algext")
+fun2 := D((x + sqrt(x))*log(sqrt(x + sqrt(x)) + 1)*log(sqrt(x + sqrt(x)) + x),
+          x);
+testIntegrate("fun2", "x", "algext")
+fun3 := D(exp(sqrt(x^3+1))*log(x*exp(sqrt(x^3+1)) + 1), x)
+testIntegrate("fun3", "x", "algext")
+fun4 := D(exp(sqrt(x^3+1))*erf(x*exp(sqrt(x^3+1)) + 1), x)
+testIntegrate("fun4", "x", "algext")
+fun7 := D(exp(sqrt(x^3+1))*erf(x*exp(sqrt(x^3+1)) + 1) +
+          erf(x*exp(sqrt(x^3+1)))^2, x)
+testIntegrate("fun7", "x", "algext")
 
 -- used to produce error: "Denominator not equal to 1"
 testIntegrate("sec(x)*tan(x)/sqrt(sec(x) - 1)", "x", "alg")
@@ -434,5 +492,9 @@ testIntegrate("(sec(x)^2  - sec(x))*tan(x)/sqrt(sec(x) - 1)", "x", "alg")
 testIntegrate("cos(x)^2/sqrt(cos(x)^4 + cos(x)^2 + 1)", "x", "alg")
 testIntegrate("sqrt(tan(x)^2 + 2*tan(x) + 2)", "x", "alg")
 
+t1 := exp(x)
+t2 := exp(1/(1 + t1))
+t3 := log(x*t2)
+testIntegrate("D(t3^2 -2*(1/(1+t1))*t3, x)", "x", "")
 )set output algebra on
 statistics()

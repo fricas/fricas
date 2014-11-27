@@ -44,32 +44,6 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
       ++ where y is an algebraic function of x satisfying
       ++ \spad{f(x, y)dx = c f(t, y) dy}; c and t are rational functions of y.
       ++ Argument z is a dummy variable not appearing in \spad{f(x, y)}.
-    palgextint0 : (F, K, K, F, F, UP) -> U2
-      ++ palgextint0(f, x, y, g, d, p) returns functions \spad{[h, c]} such
-      ++ that \spad{dh/dx = f(x, y) - c g}, where y is an algebraic function
-      ++ of x satisfying \spad{d(x)\^2 y(x)\^2 = P(x)},
-      ++ or "failed" if no such functions exist.
-    palgextint0 : (F, K, K, F, K, F, RF) -> U2
-      ++ palgextint0(f, x, y, g, z, t, c) returns functions \spad{[h, d]} such
-      ++ that \spad{dh/dx = f(x, y) - d g}, where y is an algebraic function
-      ++ of x satisfying \spad{f(x, y)dx = c f(t, y) dy}, and c and t are rational
-      ++ functions of y.
-      ++ Argument z is a dummy variable not appearing in \spad{f(x, y)}.
-      ++ The operation returns "failed" if no such functions exist.
-    palglimint0 : (F, K, K, List F, F, UP) -> U3
-      ++ palglimint0(f, x, y, [u1, ..., un], d, p) returns functions
-      ++ \spad{[h, [[ci, ui]]]} such that the ui's are among \spad{[u1, ..., un]}
-      ++ and \spad{d(h + sum(ci log(ui)))/dx = f(x, y)} if such functions exist,
-      ++ and "failed" otherwise.
-      ++ Argument y is an algebraic function of x satisfying
-      ++ \spad{d(x)\^2y(x)\^2 = P(x)}.
-    palglimint0 : (F, K, K, List F, K, F, RF) -> U3
-      ++ palglimint0(f, x, y, [u1, ..., un], z, t, c) returns functions
-      ++ \spad{[h, [[ci, ui]]]} such that the ui's are among \spad{[u1, ..., un]}
-      ++ and \spad{d(h + sum(ci log(ui)))/dx = f(x, y)} if such functions exist,
-      ++ and "failed" otherwise.
-      ++ Argument y is an algebraic function of x satisfying
-      ++ \spad{f(x, y)dx = c f(t, y) dy}; c and t are rational functions of y.
     palgRDE0   : (F, F, K, K, (F, F, SY) -> U1, F, UP) -> U1
       ++ palgRDE0(f, g, x, y, foo, d, p) returns a function \spad{z(x, y)}
       ++ such that \spad{dz/dx + n * df/dx z(x, y) = g(x, y)} if such a z exists,
@@ -231,14 +205,6 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
     palgint0(f, x, y, z, xx, dx) ==
       map(x1+->multivariate(x1, y), integrate mkRatlx(f, x, y, xx, z, dx))
 
-    palgextint0(f, x, y, g, z, xx, dx) ==
-      map(x1+->multivariate(x1, y),
-            extendedint(mkRatlx(f, x, y, xx, z, dx), mkRatlx(g, x, y, xx, z, dx)))
-
-    palglimint0(f, x, y, lu, z, xx, dx) ==
-      map(x1+->multivariate(x1, y), limitedint(mkRatlx(f, x, y, xx, z, dx),
-                             [mkRatlx(u, x, y, xx, z, dx) for u in lu]))
-
     palgRDE0(f, g, x, y, rischde, z, xx, dx) ==
       (u := rischde(eval(f, [x, y], [xx, z::F]),
                       multivariate(dx, z) * eval(g, [x, y], [xx, z::F]),
@@ -250,17 +216,6 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
       (map((x1 : RF) : F+->multivariate(x1, x),
            p)$SparseUnivariatePolynomialFunctions2(RF, F))
               (y)
-
-    palgextint0(f, x, y, g, den, radi) ==
-      pr := quadsubst(x, y, den, radi)
-      map(f1+->f1(pr.diff),
-          extendedint(mkRat(f, pr.subs, pr.newk), mkRat(g, pr.subs, pr.newk)))
-
-    palglimint0(f, x, y, lu, den, radi) ==
-      pr := quadsubst(x, y, den, radi)
-      map(f1+->f1(pr.diff),
-         limitedint(mkRat(f, pr.subs, pr.newk),
-                    [mkRat(u, pr.subs, pr.newk) for u in lu]))
 
     palgRDE0(f, g, x, y, rischde, den, radi) ==
       pr := quadsubst(x, y, den, radi)
@@ -336,22 +291,15 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
   U1  ==> Union(F, "failed")
   U2  ==> Union(Record(ratpart:F, coeff:F),"failed")
   U3  ==> Union(Record(mainpart:F, limitedlogs:List LOG), "failed")
+  Param_Rec_F ==> Record(ratpart : F, coeffs : Vector F)
+  L_Param_F ==> List Param_Rec_F
+  LREC ==> Record(particular : L_Param_F, basis : List F)
   FAIL==> error "failed - cannot handle that integrand"
 
   Exports ==> with
     palgint   : (F, K, K)    -> IR
       ++ palgint(f, x, y) returns the integral of \spad{f(x, y)dx}
       ++ where y is an algebraic function of x.
-    palgextint : (F, K, K, F) -> U2
-      ++ palgextint(f, x, y, g) returns functions \spad{[h, c]} such that
-      ++ \spad{dh/dx = f(x, y) - c g}, where y is an algebraic function of x;
-      ++ returns "failed" if no such functions exist.
-    palglimint : (F, K, K, List F) -> U3
-      ++ palglimint(f, x, y, [u1, ..., un]) returns functions
-      ++ \spad{[h, [[ci, ui]]]} such that the ui's are among \spad{[u1, ..., un]}
-      ++ and \spad{d(h + sum(ci log(ui)))/dx = f(x, y)} if such functions exist,
-      ++ "failed" otherwise;
-      ++ y is an algebraic function of x.
     palgRDE   : (F, F, F, K, K, (F, F, SY) -> U1) -> U1
       ++ palgRDE(nfp, f, g, x, y, foo) returns a function \spad{z(x, y)}
       ++ such that \spad{dz/dx + n * df/dx z(x, y) = g(x, y)} if such a z exists,
@@ -361,6 +309,10 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       ++ \spad{du/dx + n * da/dx u(x) = u(x)}
       ++ for an unknown \spad{u(x)} not involving y.
       ++ \spad{nfp} is \spad{n * df/dx}.
+    param_RDE : (F, List F, K, K) -> LREC
+      ++ param_RDE(fp, lg, x, y)
+    param_LODE : (List F, List F, K, K) -> LREC
+      ++ param_LODE(eq, lg, x, y)
     if L has LinearOrdinaryDifferentialOperatorCategory F then
       palgLODE : (L, F, K, K, SY) -> REC
         ++ palgLODE(op, g, kx, y, x) returns the solution of \spad{op f = g}.
@@ -382,8 +334,6 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
     linearInXIfCan : (K, K) -> Union(Record(xsub:F, dxsub:RF), "failed")
     prootintegrate : (F, K, K) -> IR
     prootintegrate1 : (UPUP, K, K, UPUP) -> IR
-    prootextint    : (F, K, K, F) -> U2
-    prootlimint    : (F, K, K, List F) -> U3
     prootRDE       : (F, F, F, K, K, (F, F, SY) -> U1) -> U1
     palgRDE1       : (F, F, K, K) -> U1
     palgLODE1      : (List F, F, K, K, SY) -> REC
@@ -552,55 +502,23 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
         fu2 := eval(fu, sdummy, monomial(cc, 1)$UPUP)
         UPUP2F0(fu2, x, k)
 
-    prootlimint(f, x, k, lu) ==
-      modulus := lift(p := minPoly k, x)
-      r       := radPoly(modulus)::Record(radicand : RF, deg : N)
-      rec     := rootPoly(r.radicand, r.deg)
-      dqdx    := inv(differentiate(q := rec.radicand)::RF)
-      (uf := chvarIfCan(ff := univariate(f, x, k, p), rec.coef, q, dqdx)) case UPUP =>
-        l := empty()$List(RF)
-        n := rec.exponent * monomial(1, (rec.exponent - 1)::N)$UP
-        for u in lu repeat
-          if ((v := chvarIfCan(uu := univariate(u, x, k, p), rec.coef, q, dqdx))case UPUP)
-            then l := concat(n * chv(v::UPUP, rec.exponent, 1, 0), l) else FAIL
-        m := monomial(1, rec.exponent)$UPUP - q::RF::UPUP
-        map(x1 +-> change_back(x1, x, k, rec.coef, m),
-            limitedint(n * chv(uf::UPUP, rec.exponent, 1, 0), reverse! l))
-      cv     := chvar(ff, modulus)
-      r      := radPoly(cv.poly)::Record(radicand : RF, deg : N)
-      dqdx   := inv(differentiate(q := retract(r.radicand)@UP)::RF)
-      curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
-      (ui := palginfieldint(reduce(cv.func), differentiate$UP)$ALG)
-        case "failed" =>
-            empty?(lu) => "failed"
-            FAIL
-      [UPUP2F1(lift(ui::curve), cv.c1, cv.c2, x, k), empty()]
-
-    prootextint(f, x, k, g) ==
-      modulus := lift(p := minPoly k, x)
-      r       := radPoly(modulus)::Record(radicand : RF, deg : N)
-      rec     := rootPoly(r.radicand, r.deg)
-      dqdx    := inv(differentiate(q := rec.radicand)::RF)
-      ((uf := chvarIfCan(ff := univariate(f, x, k, p), rec.coef, q, dqdx)) case UPUP) and
-        ((ug := chvarIfCan(gg := univariate(g, x, k, p), rec.coef, q, dqdx)) case UPUP) =>
-          m := monomial(1, rec.exponent)$UPUP - q::RF::UPUP
-          n := rec.exponent * monomial(1, (rec.exponent - 1)::N)$UP
-          res1 := extendedint(n * chv(uf::UPUP, rec.exponent, 1, 0),
-                              n * chv(ug::UPUP, rec.exponent, 1, 0))
-          map(x1 +-> change_back(x1, x, k, rec.coef, m), res1)
-      cv     := chvar(ff, modulus)
-      g1 := univariate(g, x, k, p)
-      r      := radPoly(cv.poly)::Record(radicand : RF, deg : N)
-      curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
-      (u := palgextintegrate(reduce(cv.func), differentiate$UP, g1,
-                             cv.c1, cv.c2)$ALG) case "failed" => "failed"
-      ur := u.ratpart
-      uc := u.coeff
-      [UPUP2F1(lift(ur::curve), cv.c1, cv.c2, x, k), uc]
-
-
     palgRDE1(nfp, g, x, y) ==
       palgLODE1([nfp, 1], g, x, y, symbolIfCan(x)::SY).particular
+
+    param_RDE(fp, lg, x, y) == param_LODE([fp, 1], lg, x, y)
+
+    param_LODE(eq, lg, kx, y) ==
+        modulus := lift(p := minPoly y, kx)
+        curve  := AlgebraicFunctionField(F, UP, UPUP, modulus)
+        neq : LDALG := 0
+        for f in eq for i in 0.. repeat
+            neq := neq + monomial(reduce univariate(f, kx, y, p), i)
+        rec := algDsolve(neq, [reduce univariate(g, kx, y, p) for g in lg]
+                        )$RDALG
+        bas1 : List(F) := [UPUP2F0(lift h, kx, y) for h in rec.basis]
+        part1 : L_Param_F := [[UPUP2F0(lift(be.ratpart), kx, y), be.coeffs]
+                               for be in rec.particular]
+        [part1, bas1]
 
     palgLODE1(eq, g, kx, y, x) ==
       modulus := lift(p := minPoly y, kx)
@@ -625,27 +543,6 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, k),
         palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, dcv, x::F)
 
-    palglim(f, x, k, lu) ==
-      modulus := lift(p := minPoly k, x)
-      cv     := chvar(univariate(f, x, k, p), modulus)
-      curve  := AlgebraicFunctionField(F, UP, UPUP, cv.poly)
-      knownInfBasis(cv.deg)
-      (u := palginfieldint(reduce(cv.func), differentiate$UP)$ALG)
-        case "failed" => FAIL
-      [UPUP2F1(lift(u::curve), cv.c1, cv.c2, x, k), empty()]
-
-    palgext(f, x, k, g) ==
-      modulus := lift(p := minPoly k, x)
-      cv     := chvar(univariate(f, x, k, p), modulus)
-      g1 := univariate(g, x, k, p)
-      curve  := AlgebraicFunctionField(F, UP, UPUP, cv.poly)
-      knownInfBasis(cv.deg)
-      (u := palgextintegrate(reduce(cv.func), differentiate$UP, g1,
-                             cv.c1, cv.c2)$ALG) case "failed" => "failed"
-      ur := u.ratpart
-      uc := u.coeff
-      [UPUP2F1(lift(ur::curve), cv.c1, cv.c2, x, k), uc]
-
     palgint(f, x, y) ==
       (v := linearInXIfCan(x, y)) case "failed" =>
         (u := quadIfCan(x, y)) case "failed" =>
@@ -654,24 +551,6 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
           FAIL
         palgint0(f, x, y, u.coef, u.poly)
       palgint0(f, x, y, dumk, v.xsub, v.dxsub)
-
-    palgextint(f, x, y, g) ==
-      (v := linearInXIfCan(x, y)) case "failed" =>
-        (u := quadIfCan(x, y)) case "failed" =>
-          is?(y, 'nthRoot) => prootextint(f, x, y, g)
-          is?(y,  'rootOf) => palgext(f, x, y, g)
-          FAIL
-        palgextint0(f, x, y, g, u.coef, u.poly)
-      palgextint0(f, x, y, g, dumk, v.xsub, v.dxsub)
-
-    palglimint(f, x, y, lu) ==
-      (v := linearInXIfCan(x, y)) case "failed" =>
-        (u := quadIfCan(x, y)) case "failed" =>
-          is?(y, 'nthRoot) => prootlimint(f, x, y, lu)
-          is?(y,  'rootOf) => palglim(f, x, y, lu)
-          FAIL
-        palglimint0(f, x, y, lu, u.coef, u.poly)
-      palglimint0(f, x, y, lu, dumk, v.xsub, v.dxsub)
 
     palgRDE(nfp, f, g, x, y, rde) ==
       (v := linearInXIfCan(x, y)) case "failed" =>
@@ -720,6 +599,10 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
   UPUP==> SparseUnivariatePolynomial RF
   IR  ==> IntegrationResult F
   IR2 ==> IntegrationResultFunctions2(curve, F)
+  Param_Rec_F ==> Record(ratpart : F, coeffs : Vector F)
+  L_Param_F ==> List Param_Rec_F
+  Param_Rec_Q ==> Record(ratpart : RF, coeffs : Vector(F))
+  L_Param_Q ==> List Param_Rec_Q
   ALG ==> AlgebraicIntegrate(R, F, UP, UPUP, curve)
   FAIL==> error "failed - cannot handle that integrand"
 
@@ -728,6 +611,17 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
       ++ algint(f, x, y, d) returns the integral of \spad{f(x, y)dx}
       ++ where y is an algebraic function of x;
       ++ d is the derivation to use on \spad{k[x]}.
+    algextint : (K, K, UP -> UP, List(RF) -> L_Param_Q,
+                   (RF,  List(RF)) -> L_Param_Q,
+                   Matrix F -> List Vector F, List(F)) -> L_Param_F
+      ++ algextint(x, y, d, ext, rde, csolve, [g1, ..., gn]) returns
+      ++ \spad{[h, [c1, ..., cn]]} such that \spad{f = dh/dx + sum(ci gi)}
+      ++ and dci/dx = 0, if such \spad{[h, [c1, ..., cn]]} exist,
+      ++ "failed" otherwise.
+    algextint_base : (K, K, UP -> UP,
+                      Matrix F -> List Vector F, List(F)) -> L_Param_F
+      ++ algextint_base(x, y, d, csolve, [g1, ..., gn]) is like
+      ++ algextint but assumes that y and gi-s are purely algebraic
 
   Implementation ==> add
     import from ChangeOfVariable(F, UP, UPUP)
@@ -739,6 +633,14 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
     UPUP2F       : (UPUP, RF, K, K) -> F
     F2UPUP       : (F, K, K, UP) -> UPUP
     UP2UPUP      : (UP, K) -> UPUP
+    UPUP2F1      : (UPUP, RF, RF, K, K) -> F
+    UPUP2F0      : (UPUP, K, K) -> F
+
+    UPUP2F1(p, t, cf, kx, k) == UPUP2F0(eval(p, t, cf), kx, k)
+    UPUP2F0(p, kx, k)        ==
+        (map((x1 : RF) : F+->multivariate(x1, kx),
+           p)$SparseUnivariatePolynomialFunctions2(RF, F))
+              (k::F)
 
     F2UPUP(f, kx, k, p) == UP2UPUP(univariate(f, k, p), kx)
 
@@ -758,6 +660,56 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
       curve  := AlgebraicFunctionField(F, UP, UPUP, r1.poly)
       map(x1+->UPUP2F(lift x1, r1.coef, t, k),
                             algintegrate(reduce f1, derivation)$ALG)$IR2
+
+    Curv_Rec ==> Record(funs : List(UPUP),
+                   irec : Record(coef : Fraction(UP), poly : UPUP),
+                   curve_dom : FunctionFieldCategory(F, UP, UPUP))
+
+    rootcurve(lf : List(F), t : K, k : K, derivation : UP -> UP
+             ) : Curv_Rec ==
+        r1 := mkIntegral(modulus := UP2UPUP(p := minPoly k, t))
+        mon1 := monomial(inv(r1.coef), 1)$UPUP
+        lf1 := [F2UPUP(f, t, k, p) mon1 for f in lf]$List(UPUP)
+        r      := radPoly(r1.poly)::Record(radicand : RF, deg : N)
+        q      := retract(r.radicand)
+        curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
+        [lf1, r1, curve]$Curv_Rec
+
+    algcurve(lf : List(F), t : K, k : K, derivation : UP -> UP
+             ) : Curv_Rec ==
+        r1 := mkIntegral(modulus := UP2UPUP(p := minPoly k, t))
+        mon1 := monomial(inv(r1.coef), 1)$UPUP
+        lf1 := [F2UPUP(f, t, k, p) mon1 for f in lf]$List(UPUP)
+        curve  := AlgebraicFunctionField(F, UP, UPUP, r1.poly)
+        [lf1, r1, curve]$Curv_Rec
+
+    algextint(t, y, der, ext, rde, csolve, lg) ==
+        c_rec :=
+            is?(y, 'nthRoot) => rootcurve(lg, t, y, der)
+            is?(y, 'rootOf)  => algcurve(lg, t, y, der)
+            FAIL
+        curve := c_rec.curve_dom
+        red : UPUP -> curve:= reduce$curve
+        cc := c_rec.irec.coef
+        res1 := algextint(der, ext, rde, csolve, [red(f) for f in c_rec.funs]
+                         )$AlgebraicIntegrate2(R, F, curve)
+        [[UPUP2F(lift(be.ratpart), cc, t, y), be.coeffs] for be in res1]
+
+    algextint_base(x, y, der, csolve, lg) ==
+        p := minPoly y
+        lg1 := [F2UPUP(g, x, y, p) for g in lg]
+        cv     := chvar(lg1, UP2UPUP(p, x))
+        curve : FunctionFieldCategory(F, UP, UPUP) :=
+            is?(y, 'rootOf)  => AlgebraicFunctionField(F, UP, UPUP, cv.poly)
+            is?(y, 'nthRoot) =>
+                r := radPoly(cv.poly)::Record(radicand : RF, deg : N)
+                RadicalFunctionField(F, UP, UPUP, r.radicand, r.deg)
+            FAIL
+        red : UPUP -> curve:= reduce$curve
+        res1 := algextint_base(der, csolve, [red(f) for f in cv.func]
+                         )$AlgebraicIntegrate2(R, F, curve)
+        [[UPUP2F1(lift(be.ratpart), cv.c1, cv.c2, x, y), be.coeffs]
+            for be in res1]
 
     UP2UPUP(p, k) ==
       map(x1+->univariate(x1, k), p)$SparseUnivariatePolynomialFunctions2(F, RF)

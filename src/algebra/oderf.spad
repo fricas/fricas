@@ -63,64 +63,14 @@ BoundIntegerRoots(F, UP) : Exports == Implementation where
 
   Implementation ==> add
 
-    import from RationalFactorize(UPQ)
-    import from UnivariatePolynomialCategoryFunctions2(F, UP, Q, UPQ)
-    import from Factored(UPQ)
+      if F has LinearlyExplicitRingOver Integer then
 
-    qbound : (UP, UPQ) -> Z
-    zroot1 : UP -> Z
-    qzroot1 : UPQ -> Z
-    negint : Q -> Z
+          integerBound(p) ==
+              integerBound(p)$PolynomialRationalRoots(F, UP)
 
--- returns 0 if p has no integer root < 0, its negative integer root otherwise
-    qzroot1 p == negint(- leadingCoefficient(reductum p) / leadingCoefficient p)
+      else
 
--- returns 0 if p has no integer root < 0, its negative integer root otherwise
-    zroot1 p ==
-      z := - leadingCoefficient(reductum p) / leadingCoefficient p
-      (r := retractIfCan(z)@Union(Q, "failed")) case Q => negint(r::Q)
-      0
-
--- returns 0 if r is not a negative integer, r otherwise
-    negint r ==
-      ((u := retractIfCan(r)@Union(Z, "failed")) case Z) and (u::Z < 0) => u::Z
-      0
-
-    if F has ExpressionSpace then
-      bringDown : F -> Q
-
--- the random substitution used by bringDown is NOT always a ring-homorphism
--- (because of potential algebraic kernels), but is ALWAYS a Z-linear map.
--- this guarantees that bringing down the coefficients of (x + n) q(x) for an
--- integer n yields a polynomial h(x) which is divisible by x + n
--- the only problem is that evaluating with random numbers can cause a
--- division by 0. We should really be able to trap this error later and
--- reevaluate with a new set of random numbers    MB 11/91
-      bringDown f ==
-        t := tower f
-        retract eval(f, t, [random()$Q :: F for k in t])
-
-      integerBound p ==
---        one? degree p => zroot1 p
-        (degree p) = 1 => zroot1 p
-        q1 := map(bringDown, p)
-        q2 := map(bringDown, p)
-        qbound(p, gcd(q1, q2))
-
-    else
-      integerBound p ==
---        one? degree p => zroot1 p
-        (degree p) = 1 => zroot1 p
-        qbound(p, map((z1 : F) : Q +-> retract(z1)@Q, p))
-
--- we can probably do better here (i.e. without factoring)
-    qbound(p, q) ==
-      bound : Z := 0
-      for rec in factors factor q repeat
---        if one?(degree(rec.factor)) and ((r := qzroot1(rec.factor)) < bound)
-        if ((degree(rec.factor)) = 1) and ((r := qzroot1(rec.factor)) < bound)
-           and zero? p(r::Q::F) then bound := r
-      bound
+          integerBound(p) == error "integerBound: unimplemented"
 
 )abbrev package ODEPRIM PrimitiveRatDE
 ++ Author: Manuel Bronstein
@@ -384,8 +334,8 @@ RationalLODE(F, UP) : Exports == Implementation where
     ratDsolve : (LODO, List RF) -> Record(basis : List RF, mat : Matrix F)
       ++ ratDsolve(op, [g1, ..., gm]) returns \spad{[[h1, ..., hq], M]} such
       ++ that any rational solution of \spad{op y = c1 g1 + ... + cm gm}
-      ++ is of the form \spad{d1 h1 + ... + dq hq} where
-      ++ \spad{M [d1, ..., dq, c1, ..., cm] = 0}.
+      ++ is of the form \spad{c1 h1 + ... + cq hq} where
+      ++ \spad{M [c1, ..., cq] = 0} and \spad{q >= m}.
     ratDsolve : (LODO2, RF) -> Record(particular : U, basis : List RF)
       ++ ratDsolve(op, g) returns \spad{["failed", []]} if the equation
       ++ \spad{op y = g} has no rational solution. Otherwise, it returns
@@ -395,8 +345,8 @@ RationalLODE(F, UP) : Exports == Implementation where
     ratDsolve : (LODO2, List RF) -> Record(basis : List RF, mat : Matrix F)
       ++ ratDsolve(op, [g1, ..., gm]) returns \spad{[[h1, ..., hq], M]} such
       ++ that any rational solution of \spad{op y = c1 g1 + ... + cm gm}
-      ++ is of the form \spad{d1 h1 + ... + dq hq} where
-      ++ \spad{M [d1, ..., dq, c1, ..., cm] = 0}.
+      ++ is of the form \spad{c1 h1 + ... + cq hq} where
+      ++ \spad{M [c1, ..., cq] = 0} and \spad{q >= m}.
     indicialEquationAtInfinity : LODO -> UP
       ++ indicialEquationAtInfinity op returns the indicial equation of
       ++ \spad{op} at infinity.
@@ -434,10 +384,10 @@ RationalLODE(F, UP) : Exports == Implementation where
     ratDsolve1(op, lg) ==
       d := denomLODE(op, lg)
       rec := candidates(op, lg, d)
-      l := concat([op q for q in rec.basis],
-                  [op(rec.particular.i) - lg.i for i in 1..#(rec.particular)])
+      l := concat([op(rec.particular.i) - lg.i for i in 1..#(rec.particular)],
+                  [op q for q in rec.basis])
       sys1 := reducedSystem(matrix [l])@Matrix(UP)
-      [rec.basis, reducedSystem sys1]
+      [concat(rec.particular, rec.basis), reducedSystem sys1]
 
     ratDsolve0(op, g) ==
       zero? degree op => [inv(leadingCoefficient(op)::RF) * g, empty()]

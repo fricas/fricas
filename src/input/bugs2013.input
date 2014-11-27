@@ -74,14 +74,12 @@ testTrue("(ii := palgint(fa, kw, ky)$pA; true)")
 testEquals("fa - differentiate(ii, w)", "0")
 
 cI := Complex(Integer)
-pA := PureAlgebraicIntegration(cI, EXPR(cI), EXPR(cI))
+pI := ParametricIntegration(cI, EXPR(cI))
 fb := ((-1 - %i)*w + 1 - %i)*sqrt(4*w/(w^2 + 2*w + 1))/(w*(w + 1)*(4*w/(w^2 + 2*w + 1)))
-ky := kernels(fb).1
-kw := kernels(fb).2
-testTrue("(ii := palgextint(fb, kw, ky, 0)$pA; true)")
-testEquals("D(ii.ratpart, w) - fb", "0")
-testTrue("(ii := palglimint(fb, kw, ky, [])$pA; true)")
-testEquals("D(ii.mainpart, w) - fb", "0")
+testTrue("(ii := extendedint(fb, w, [])$pI; true)")
+part := ii.particular
+testTrue("not(part case _"failed_")")
+testEquals("D(part.ratpart, w) - fb", "0")
 
 )set output algebra on
 statistics()
