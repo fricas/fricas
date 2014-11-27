@@ -8,6 +8,7 @@
 ++   form for pseudo-linear operators.
 PseudoLinearNormalForm(K : Field) : Exports == Implementation where
   ER  ==> Record(C : Matrix K, g : Vector K)
+  ER2  ==> Record(C : Matrix K, lg : List Vector K)
   REC ==> Record(R : Matrix K, A : Matrix K, Ainv : Matrix K)
 
   Exports ==> with
@@ -19,8 +20,8 @@ PseudoLinearNormalForm(K : Field) : Exports == Implementation where
     changeBase : (Matrix K, Matrix K, Automorphism K, K -> K) -> Matrix K
       ++ changeBase(M, A, sig, der): computes the new matrix of a pseudo-linear
       ++ transform given by the matrix M under the change of base A
-    companionBlocks : (Matrix K, Vector K) -> List ER
-      ++ companionBlocks(m, v) returns \spad{[[C_1, g_1], ..., [C_k, g_k]]}
+    companionBlocks : (Matrix K, List Vector K) -> List ER2
+      ++ companionBlocks(m, lv) returns \spad{[[C_1, lg_1], ..., [C_k, lg_k]]}
       ++ such that each \spad{C_i} is a companion block and
       ++ \spad{m = diagonal(C_1, ..., C_k)}.
 
@@ -51,19 +52,23 @@ PseudoLinearNormalForm(K : Field) : Exports == Implementation where
     changeBase(M, A, sig, der) == inv(A) * (M * map((k1 : K) : K +-> sig k1, A) + map(der, A))
     normalForm(M, sig, der)    == normalForm0(M, sig, inv sig, der)
 
-    companionBlocks(R, w) ==
+    companionBlocks(R, lw) ==
       -- decomposes the rational matrix R into single companion blocks
       -- and the inhomogenity w as well
       i : Integer := 1
       n := nrows R
-      l : List(ER) := empty()
+      l : List(ER2) := []
       while i <= n repeat
         j := i
         while j+1 <= n and R(j, j+1) = 1 repeat j := j+1
+        lv : List Vector K := []
         --split block now
-        v : Vector K := new((j-i+1)::NonNegativeInteger, 0)
-        for k in i..j repeat v(k-i+1) := w k
-        l := concat([subMatrix(R, i, j, i, j), v], l)
+        for w in lw repeat
+            v : Vector K := new((j - i + 1)::NonNegativeInteger, 0)
+            for k in i..j repeat v(k - i + 1) := w(k)
+            lv := cons(v, lv)
+        lv := reverse!(lv)
+        l := concat([subMatrix(R, i, j, i, j), lv], l)
         i := j+1
       l
 

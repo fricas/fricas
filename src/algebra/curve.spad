@@ -441,9 +441,10 @@ ChangeOfVariable(F, UP, UPUP) : Exports == Implementation where
           ++ \spad{c * g ^ (1/n) = P ^ (1/m)}
           ++ thus if \spad{y^n = g}, then \spad{z^m = P}
           ++ where \spad{z = c * y}.
-    goodPoint : (UPUP, UPUP) -> F
-          ++ goodPoint(p, q) returns an integer a such that a is neither
-          ++ a pole of \spad{p(x, y)} nor a branch point of \spad{q(x, y) = 0}.
+    goodPoint : (List UPUP, UPUP) -> F
+          ++ goodPoint([p1, ..., pn], q) returns an integer a such that
+          ++ a is neither  a pole of \spad{pi(x, y)} for some i nor a
+          ++ branch point of \spad{q(x, y) = 0}.
     eval      : (UPUP, RF, RF) -> UPUP
           ++ eval(p(x, y), f(x), g(x)) returns \spad{p(f(x), y * g(x))}.
     chvar : (UPUP, UPUP) -> Record(func : UPUP, poly : UPUP, c1 : RF, c2 : RF, deg : N)
@@ -454,6 +455,10 @@ ChangeOfVariable(F, UP, UPUP) : Exports == Implementation where
           ++ one gets \spad{f(x, y) = c1'(x)g(c1(x), c2(x)y)}
           ++ The algebraic relation between x and y is \spad{p(x, y) = 0}.
           ++ The algebraic relation between z and t is \spad{q(z, t) = 0}.
+    chvar : (List UPUP, UPUP) -> Record(func : List UPUP, poly : UPUP,
+                                        c1 : RF, c2 : RF, deg : N)
+       ++ chvar(lf, p) is like chvar(f, p) but handles list of
+       ++ functions
 
   Implementation ==> add
 
@@ -463,11 +468,14 @@ ChangeOfVariable(F, UP, UPUP) : Exports == Implementation where
 
     algPoly     : UPUP           -> Record(coef : RF, poly : UPUP)
     RPrim       : (UP, UP, UPUP) -> Record(coef : RF, poly : UPUP)
-    good?       : (F, UP, UP)    -> Boolean
+    good?       : (F, UP, List UP)    -> Boolean
     infIntegral? : (UPUP, UPUP)   -> Boolean
 
     eval(p, x, y)  == map(s +-> s(x), p)  monomial(y, 1)
-    good?(a, p, q) == p(a) ~= 0 and q(a) ~= 0
+    good?(a, p, lq) ==
+        p(a) = 0 => false
+        for q in lq repeat if q(a) = 0 then return false
+        true
 
     algPoly p ==
       ground?(a := retract(leadingCoefficient(q := clearDenominator p))@UP)
@@ -486,17 +494,26 @@ ChangeOfVariable(F, UP, UPUP) : Exports == Implementation where
 
 -- always makes the algebraic integral, but does not send a point to infinity
 -- if the integrand does not have a pole there (in the case of an nth-root)
-    chvar(f, modulus) ==
-      r1 := mkIntegral modulus
-      f1 := f monomial(r1inv := inv(r1.coef), 1)
-      denom(r1.coef) = 1 and infIntegral?(f1, r1.poly) =>
-          inf_deg := degree(numer(r1.coef))
-          [f1, r1.poly, monomial(1, 1)$UP :: RF, r1.coef, inf_deg]
-      x  := (a := goodPoint(f1, r1.poly))::UP::RF + inv(monomial(1, 1)::RF)
-      r2c := retract((r2 := mkIntegral map(s +-> s(x), r1.poly)).coef)@UP
-      t  := inv((monomial(1, 1)$UP - a::UP)::RF)
-      [- inv(monomial(1, 2)$UP :: RF) * eval(f1, x, inv(r2.coef)),
-                                r2.poly, t, r1.coef * r2c t, degree r2c]
+    chvar(lf : List UPUP, modulus : UPUP) ==
+        r1 := mkIntegral modulus
+        r1inv := inv(r1.coef)
+        m1 := monomial(r1inv, 1)
+        lf1 := [f m1 for f in lf]
+        denom(r1.coef) = 1 and
+          every?((f : UPUP) : Boolean +-> infIntegral?(f, r1.poly), lf1) =>
+            inf_deg := degree(numer(r1.coef))
+            [lf1, r1.poly, monomial(1, 1)$UP :: RF, r1.coef, inf_deg]
+        x := (a := goodPoint(lf1, r1.poly))::UP::RF + inv(monomial(1, 1)::RF)
+        r2c := retract((r2 := mkIntegral map(s +-> s(x), r1.poly)).coef)@UP
+        t := inv((monomial(1, 1)$UP - a::UP)::RF)
+        im2 := - inv(monomial(1, 2)$UP :: RF)
+        ir2 := inv(r2.coef)
+        [[im2*eval(f, x, ir2) for f in lf1],
+          r2.poly, t, r1.coef * r2c t, degree r2c]
+
+    chvar(f : UPUP, p : UPUP) ==
+        res1 := chvar([f], p)
+        [first(res1.func), res1.poly, res1.c1, res1.c2, res1.deg]
 
 -- returns true if y is an n-th root, and it can be guaranteed that p(x, y)dx
 -- is integral at infinity
@@ -518,15 +535,15 @@ ChangeOfVariable(F, UP, UPUP) : Exports == Implementation where
       rp := rootPoly(r.radicand, r.deg)
       [rp.coef, monomial(1, rp.exponent)$UPUP - rp.radicand::RF::UPUP]
 
-    goodPoint(p, modulus) ==
+    goodPoint(lp, modulus) ==
       q :=
         (r := radPoly modulus) case "failed" =>
                    retract(resultant(modulus, differentiate modulus))@UP
         retract(r.radicand)@UP
-      d := commonDenominator p
+      ld := [commonDenominator p for p in lp]
       for i in 0.. repeat
-        good?(a := i::F, q, d) => return a
-        good?(-a, q, d)        => return -a
+        good?(a := i::F, q, ld) => return a
+        good?(-a, q, ld)        => return -a
 
     radPoly p ==
       (r := retractIfCan(reductum p)@Union(RF, "failed")) case "failed"

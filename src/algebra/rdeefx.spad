@@ -215,33 +215,32 @@ RDEaux(F) : Exports == Implementation where
         [[a*s1.ans + r, s1.remainder]$RSOL for s1 in res1::List(RSOL)
                                            for r in lr]
 
-)abbrev package FSRROOT FunctionSpaceRationalRoots
-FunctionSpaceRationalRoots(R, F)  : Exports == Implementation where
-  R : Join(IntegralDomain, Comparable, CharacteristicZero,
-           RetractableTo Integer, LinearlyExplicitRingOver Integer)
-  F : FunctionSpace R
-  K   ==> Kernel F
+)abbrev package PRROOT PolynomialRationalRoots
+PolynomialRationalRoots(F, UP) : Exports == Implementation where
+  F  : Join(IntegralDomain, LinearlyExplicitRingOver Integer)
+  UP : UnivariatePolynomialCategory F
+
   Z   ==> Integer
   Q   ==> Fraction Z
+  K   ==> Kernel F
+  UPQ ==> SparseUnivariatePolynomial Q
 
   Exports ==> with
-
-    get_rational_roots : (F, K) -> List(Q)
-      ++ get_rational_roots(f, k) finds rational root of
-      ++ f treated as univariate polynomial in k.
+    get_rational_roots : UP -> List(Q)
+      ++ get_rational_roots(p) finds rational root of p.
+    integerBound : UP -> Z
+      ++ integerBound(p) returns a lower bound on the negative integer
+      ++ roots of p, and 0 if p has no negative integer roots.
 
   Implementation ==> add
 
     N   ==> NonNegativeInteger
-    UP  ==> SparseUnivariatePolynomial F
     UPZ ==> SparseUnivariatePolynomial Z
-    RF  ==> Fraction UP
     LF  ==> List F
 
-    get_rational_roots(eq1f : F, k1 : K) : List(Q) ==
-        eq2p := numer(univariate(eq1f, k1))$RF
-        nn := degree(eq2p) +$N 1
-        vv := vectorise(eq2p, nn)
+    get_rational_roots(p : UP) : List(Q) ==
+        nn := degree(p) +$N 1
+        vv := vectorise(p, nn)
         vm := matrix([parts(vv)$Vector(F)]$List(LF))$Matrix(F)
         vvr : Matrix(Z) := reducedSystem(vm)
         i : N
@@ -259,6 +258,39 @@ FunctionSpaceRationalRoots(R, F)  : Exports == Implementation where
             res := cons(val1r, res)
         res
 
+    integerBound(p) ==
+        lr := get_rational_roots(p)
+        res : Integer := 0
+        for r in lr repeat
+            qu := retractIfCan(r)@Union(Integer, "failed")
+            qu case "failed" => "iterate"
+            q := qu::Integer
+            if q < res then res := q
+        res
+
+)abbrev package FSRROOT FunctionSpaceRationalRoots
+FunctionSpaceRationalRoots(R, F)  : Exports == Implementation where
+  R : Join(IntegralDomain, Comparable, CharacteristicZero,
+           RetractableTo Integer, LinearlyExplicitRingOver Integer)
+  F : FunctionSpace R
+  K   ==> Kernel F
+  Z   ==> Integer
+  Q   ==> Fraction Z
+
+  Exports ==> with
+
+    get_rational_roots : (F, K) -> List(Q)
+      ++ get_rational_roots(f, k) finds rational root of
+      ++ f treated as univariate polynomial in k.
+
+  Implementation ==> add
+
+    UP  ==> SparseUnivariatePolynomial F
+    RF  ==> Fraction UP
+
+    get_rational_roots(eq1f : F, k1 : K) : List(Q) ==
+        eq2p := numer(univariate(eq1f, k1))$RF
+        get_rational_roots(eq2p)$PolynomialRationalRoots(F, UP)
 
 )abbrev package RDEEFX2 ElementaryRischDEX2
 ++ Risch differential equation, wrapper for extended version.

@@ -22,6 +22,11 @@ SystemODESolver(F, LO) : Exports == Implementation where
   SOL ==> Record(particular : F, basis : List F)
   USL ==> Union(SOL, "failed")
   ER  ==> Record(C : MF, g : V, eq : LO, rh : F)
+  ER2 ==> Record(C : MF, lg : List V, eq : LO, lrh : List F)
+  Param_Rec_F ==> Record(ratpart : F, coeffs : Vector F)
+  Param_Rec_V ==> Record(ratpart : V, coeffs : Vector F)
+  FPL ==> Record(particular : List Param_Rec_F, basis : List F)
+  VPL ==> Record(particular : List Param_Rec_V, basis : List V)
 
   Exports ==> with
     triangulate : (MF, V) -> Record(A : MF, eqs : List ER)
@@ -31,10 +36,17 @@ SystemODESolver(F, LO) : Exports == Implementation where
       ++ order linear system \spad{D y = M y + v} is uncoupled as
       ++ \spad{D z_i = C_i z_i + g_i} and each \spad{C_i} is a companion
       ++ matrix corresponding to the scalar equation \spad{L_i z_j = h_i}.
+    triangulate : (MF, List V) ->  Record(A : MF, eqs : List ER2)
+      ++ triangulate(A, lv) is a parametric version of triangulate(A, v).
     triangulate : (M, V) -> REC
       ++ triangulate(m, v) returns \spad{[m_0, v_0]} such that \spad{m_0}
       ++ is upper triangular and the system \spad{m_0 x = v_0} is equivalent
       ++ to \spad{m x = v}.
+    triangulate : (M, List V) -> Record(mat : M, vecs : List V)
+      ++ triangulate(m, [v1, ..., vn]) returns  \spad{[m_0, [w1, ..., wn]]}
+      ++ such that for any constant \spad{c1, ..., cn} the system
+      ++ \spad{m_0 x = c1*w1 + ... + cn*wn} is equivalent to
+      ++ to \spad{m x = c1*v1 + ... + cn*vn}
     solve : (MF,V,(LO,F)->USL) -> Union(Record(particular:V, basis:MF), "failed")
       ++ solve(m, v, solve) returns \spad{[[v_1, ..., v_m], v_p]} such that
       ++ the solutions in \spad{F} of the system \spad{D x = m x + v} are
@@ -43,6 +55,9 @@ SystemODESolver(F, LO) : Exports == Implementation where
       ++ \spad{D x = m x}.
       ++ Argument \spad{solve} is a function for solving a single linear
       ++ ordinary differential equation in \spad{F}.
+    solve : (MF, List V, (LO, List F) -> FPL) -> VPL
+      ++ solve(m, lv, solve) is a parametric version of
+      ++ solve(m, v, solve)
     solveInField : (M, V, (LO, F) -> FSL) -> VSL
       ++ solveInField(m, v, solve) returns \spad{[[v_1, ..., v_m], v_p]} such that
       ++ the solutions in \spad{F} of the system \spad{m x = v} are
@@ -51,73 +66,111 @@ SystemODESolver(F, LO) : Exports == Implementation where
       ++ \spad{m x = 0}.
       ++ Argument \spad{solve} is a function for solving a single linear
       ++ ordinary differential equation in \spad{F}.
+    solveInField : (M, List V, (LO, List F) -> FPL) -> VPL
+      ++ solveInField(m, lv, solve) is a parametric version of
+      ++ solveInField(m, v, solve)
 
   Implementation ==> add
     import from PseudoLinearNormalForm F
+    import from LinearCombinationUtilities(F, SparseUnivariatePolynomial(F))
 
     applyLodo   : (M, Z, V, N) -> F
     applyLodo0  : (M, Z, Matrix F, Z, N) -> F
-    backsolve   : (M, V, (LO, F) -> FSL) -> VSL
+    backsolve   : (M, List V, (LO, List F) -> FPL) -> VPL
     firstnonzero : (M, Z) -> Z
     FSL2USL     : FSL -> USL
     M2F         : M -> Union(MF, "failed")
 
     diff := D()$LO
 
-    solve(mm, v, solve) ==
-      rec  := triangulate(mm, v)
-      sols : List(SOL) := empty()
-      for e in rec.eqs repeat
-          (u := solve(e.eq, e.rh)) case "failed" => return "failed"
-          sols := concat(u::SOL, sols)
-      n := nrows(rec.A)    -- dimension of original vectorspace
-      k : N := 0             -- sum of sizes of visited companionblocks
-      i : N := 0             -- number of companionblocks
-      m : N := 0             -- number of Solutions
-      part : V := new(n, 0)
-      -- count first the different solutions
-      for sol in sols repeat m := m + count((f1 : F) : Boolean +-> f1 ~= 0, sol.basis)$List(F)
-      SolMatrix : MF := new(n, m, 0)
-      m := 0
-      for sol in reverse! sols repeat
-          i := i+1
-          er := rec.eqs.i
-          nn := #(er.g)           -- size of active companionblock
-          for s in sol.basis repeat
-              solVec : V := new(n, 0)
-              -- compute corresponding solution base with recursion (24)
-              solVec(k+1) := s
-              for l in 2..nn repeat solVec(k+l) := diff solVec(k+l-1)
-              m := m+1
-              setColumn!(SolMatrix, m, solVec)
-          -- compute with (24) the corresponding components of the part. sol.
-          part(k+1) := sol.particular
-          for l in 2..nn repeat part(k+l) := diff part(k+l-1) - (er.g)(l-1)
-          k := k+nn
-      -- transform these values back to the original system
-      [rec.A * part, rec.A * SolMatrix]
+    solve(mm : MF, lv : List V, solf : (LO, List F) -> FPL) ==
+        rec  := triangulate(mm, lv)
+        nv := #lv
+        mA := rec.A
+        n := ncols(mA)
+        k : N := 0             -- sum of sizes of visited companionblocks
+        i : N := 0             -- number of companionblocks
+        cb : List V := [new(nv, 0)$V for v in lv]
+        pl : List V := [new(n, 0)$V for v in lv]
+        base_vecs : List V := []
+        l : Integer
+        for i in 1..nv for bv in cb repeat
+            bv(i) := 1
+        for e in rec.eqs repeat
+            crh := [lin_comb(bv, e.lrh) for bv in cb]
+            u := solf(e.eq, crh)
+            np1 := u.particular
+            ncb := [lin_comb(be.coeffs, cb) for be in np1]
+            nn := nrows(e.C) -- size of active companionblock
+            for s in u.basis repeat
+                base_vec : V := new(n, 0)
+                base_vec(k + 1) := s
+                for l in 2..nn repeat
+                    base_vec(k + l) := diff base_vec(k + l - 1)
+                base_vecs := cons(base_vec, base_vecs)
+            npl := [lin_comb(be.coeffs, pl) for be in np1]
+            for be in np1 for np in npl for bv in ncb repeat
+                g1 := lin_comb(bv, e.lg)
+                np(k + 1) := be.ratpart
+                for l in 2..nn repeat
+                    np(k + l) := diff np(k + l - 1) - g1(l - 1)
+            k := k + nn
+            pl := npl
+            cb := ncb
+        base_vecs := reverse!(base_vecs)
+        [[[mA*np, bv] for np in pl for bv in cb],
+         [mA*bvec for bvec in base_vecs]]
 
-    triangulate(m : MF, v : V) ==
+    USL_to_FPL(u : USL) : FPL ==
+        u case "failed" => [[], []]
+        us := u::SOL
+        [[[us.particular, new(1, 1)]], us.basis]
+
+    solve(mm : MF, v : V, solf : (LO,F)->USL) ==
+        res1 := solve(mm, [v], (lo, lf) +-> USL_to_FPL(solf(lo, first(lf))))
+        part := res1.particular
+        empty?(part) => "failed"
+        part1 := first(part)
+        c1inv := inv((part1.coeffs)(1))
+        s1 := c1inv*part1.ratpart
+        bm := matrix([entries(bv) for bv in res1.basis])
+        [s1, transpose(bm)]
+
+    triangulate(m : MF, lv : List V) ==
       k : N := 0       -- sum of companion-dimensions
       rat := normalForm(m, 1, (f1 : F) : F +-> - diff f1)
-      l   := companionBlocks(rat.R, rat.Ainv * v)
-      ler : List(ER) := empty()
+      l   := companionBlocks(rat.R, [rat.Ainv * v for v in lv])
+      ler : List(ER2) := []
       for er in l repeat
         n := nrows(er.C)         -- dimension of this companion vectorspace
         op : LO := 0               -- compute homogeneous equation
         for j in 0..n-1 repeat op := op + monomial((er.C)(n, j + 1), j)
         op := monomial(1, n) - op
-        sum : V := new(n::N, 0)    -- compute inhomogen Vector (25)
-        for j in 1..n-1 repeat sum(j+1) := diff(sum j) + (er.g) j
-        h0 : F := 0                 -- compute inhomogenity (26)
-        for j in 1..n repeat h0 := h0 - (er.C)(n, j) * sum j
-        h0 := h0 + diff(sum n) + (er.g) n
-        ler := concat([er.C, er.g, op, h0], ler)
+        lh : List F := []
+        for g in er.lg repeat
+            sum : V := new(n::N, 0)    -- compute inhomogen Vector (25)
+            for j in 1..n-1 repeat sum(j+1) := diff(sum(j)) + g(j)
+            h0 : F := 0                 -- compute inhomogenity (26)
+            for j in 1..n repeat h0 := h0 - (er.C)(n, j) * sum j
+            h0 := h0 + diff(sum(n)) + g(n)
+            lh := cons(h0, lh)
+        lh := reverse!(lh)
+        ler := concat([er.C, er.lg, op, lh], ler)
         k := k + n
       [rat.A, ler]
 
+    triangulate(m : MF, v : V) ==
+        res1 := triangulate(m, [v])
+        ler : List(ER) := []
+        for er2 in res1.eqs repeat
+            ler := cons([er2.C, first(er2.lg), er2.eq, first(er2.lrh)], ler)
+        ler := reverse!(ler)
+        [res1.A, ler]
+
 -- like solveInField, but expects a system already triangularized
-    backsolve(m, v, solve) ==
+    backsolve(m, lv, solve) ==
+      error "backsolve: unimplemented"
+)if false
       part : V
       r := maxRowIndex m
       offset := minIndex v - (mr := minRowIndex m)
@@ -149,16 +202,14 @@ SystemODESolver(F, LO) : Exports == Implementation where
       bas : List(V) := [column(hom, i) for i in minColIndex hom..maxColIndex hom]
       part? => [part, bas]
       ["failed", bas]
+)endif
 
-    solveInField(m, v, solve) ==
+    solveInField(m : M, lv : List V, solf : (LO, List F) -> FPL) ==
       ((n := nrows m) = ncols m) and
          ((u := M2F(diagonalMatrix [diff for i in 1..n] - m)) case MF) =>
-             (uu := solve(u::MF, v, (l1: LO, f2: F): USL +-> FSL2USL solve(l1, f2))) case "failed" =>
-                  ["failed", empty()]
-             rc := uu::Record(particular : V, basis : MF)
-             [rc.particular, [column(rc.basis, i) for i in 1..ncols(rc.basis)]]
-      rec := triangulate(m, v)
-      backsolve(rec.mat, rec.vec, solve)
+             solve(u::MF, lv, solf)
+      rec := triangulate(m, lv)
+      backsolve(rec.mat, rec.vecs, solf)
 
     M2F m ==
         mf : MF := new(nrows m, ncols m, 0)
@@ -201,22 +252,28 @@ SystemODESolver(F, LO) : Exports == Implementation where
         rr := rr - 1
       ans
 
-    triangulate(m : M, v : V) ==
+    triangulate(m : M, lv : List V) ==
+      empty?(lv) => error "triangulate: empty lv"
       x := copy m
-      w := copy v
+      lw := [copy v for v in lv]
       nrows := maxRowIndex x
       ncols := maxColIndex x
       minr  := i := minRowIndex x
-      offset := minIndex w - minr
+      minw := minIndex(first(lw))
+      for w in lw repeat
+          if minIndex(w) ~= minw then
+              error "triangulate: elements of lv must have the same minIndex"
+      offset := minw - minr
       for j in minColIndex x .. ncols repeat
         if i > nrows then break
         rown := minr - 1
         for k in i .. nrows repeat
           if (x(k, j) ~= 0) and ((rown = minr - 1) or
-                              degree x(k, j) < degree x(rown, j)) then rown := k
+             degree x(k, j) < degree x(rown, j)) then rown := k
           rown = minr - 1 => "enuf"
           x := swapRows!(x, i, rown)
-          swap!(w, i + offset, rown + offset)
+          for w in lw repeat
+              swap!(w, i + offset, rown + offset)
         for k in i+1 .. nrows | x(k, j) ~= 0 repeat
           l := rightLcm(x(i, j), x(k, j))
           a := rightQuotient(l, x(i, j))
@@ -225,9 +282,14 @@ SystemODESolver(F, LO) : Exports == Implementation where
           for k1 in j+1 .. ncols repeat
             x(k, k1) :=  a * x(i, k1) - b * x(k, k1)
           x(k, j) := 0
-          w(k + offset) := a(w(i + offset)) - b(w(k + offset))
+          for w in lw repeat
+              w(k + offset) := a(w(i + offset)) - b(w(k + offset))
         i := i+1
-      [x, w]
+      [x, lw]
+
+    triangulate(m : M, v : V) ==
+        res1 := triangulate(m, [v])
+        [res1.mat, first(res1.vecs)]
 
 )abbrev package ODERED ReduceLODE
 ++ Author: Manuel Bronstein
@@ -253,6 +315,11 @@ ReduceLODE(F, L, UP, A, LO) : Exports == Implementation where
       ++ the \spad{b_i's} are the basis of \spad{A} over \spad{F} returned
       ++ by \spadfun{basis}() from \spad{A}, and the \spad{z_i's} satisfy the
       ++ differential system \spad{M.z = v}.
+    reduceLODE : (LO, List A) -> Record(mat : M, vecs : List V)
+      ++ reduceLODE(op, [g1, ..., gn]) returns \spad{[m, [v1, ..., vn]]}
+      ++ such that any solution in \spad{A} of
+      ++ \spad{op z = c1*g1 + ... + cn*gn} where ci are constants
+      ++ satisfy the differential system \spad{M.z = c1*v1 + ... + cn*vn}
 
   Implementation ==> add
     matF2L : Matrix F -> M
@@ -267,7 +334,7 @@ ReduceLODE(F, L, UP, A, LO) : Exports == Implementation where
 -- This follows the algorithm and notation of
 --  "The Risch Differential Equation on an Algebraic Curve", M. Bronstein,
 -- in 'Proceedings of ISSAC '91', Bonn, BRD, ACM Press, pp.241-246, July 1991.
-    reduceLODE(l, g) ==
+    get_sys(l : LO) : M ==
       n := rank()$A
 -- md is the basic differential matrix (D x I + Dy)
       md := matF2L transpose derivationCoordinates(basis(), (f1 : F) : F +-> diff f1)
@@ -281,7 +348,13 @@ ReduceLODE(F, L, UP, A, LO) : Exports == Implementation where
         sys := sys +
                 matF2L(regularRepresentation coefficient(l, i)) * mdi
         mdi := md * mdi
-      [sys, coordinates g]
+      sys
+
+    reduceLODE(l : LO, g : A) ==
+        [get_sys(l), coordinates g]
+
+    reduceLODE(l : LO, lg : List(A)) ==
+        [get_sys(l), [coordinates g for g in lg]]
 
 )abbrev package ODEPAL PureAlgebraicLODE
 ++ Author: Manuel Bronstein
@@ -302,6 +375,8 @@ PureAlgebraicLODE(F, UP, UPUP, R) : Exports == Implementation where
   REC ==> Record(particular: Union(RF, "failed"), basis: List RF)
   L   ==> LinearOrdinaryDifferentialOperator1 R
   LQ  ==> LinearOrdinaryDifferentialOperator1 RF
+  Param_Rec_R ==> Record(ratpart : R, coeffs : Vector(F))
+  L_Param_R ==> List Param_Rec_R
 
   Exports ==> with
     algDsolve : (L, R) -> Record(particular : U, basis : List R)
@@ -310,18 +385,78 @@ PureAlgebraicLODE(F, UP, UPUP, R) : Exports == Implementation where
       ++ \spad{[f, [y1, ..., ym]]} where \spad{f} is a particular rational
       ++ solution and the \spad{y_i's} form a basis for the solutions in
       ++ \spad{R} of the homogeneous equation.
+    algDsolve : (L, List R) -> Record(particular : L_Param_R, basis : List R)
+      ++ algDsolve(op, lg) is a parametric version of
+      ++ algDsolve(op, g)
 
   Implementation ==> add
     import from RationalLODE(F, UP)
     import from SystemODESolver(RF, LQ)
     import from ReduceLODE(RF, LQ, UPUP, R, L)
 
-    algDsolve(l, g) ==
-      rec := reduceLODE(l, g)
-      sol := solveInField(rec.mat, rec.vec, ratDsolve)
-      bas : List(R) := [represents v for v in sol.basis]
-      (u := sol.particular) case V => [represents(u::V), bas]
-      ["failed", bas]
+    Param_Rec_F ==> Record(ratpart : RF, coeffs : Vector RF)
+    FPL ==> Record(particular : List Param_Rec_F, basis : List RF)
+
+    rat_solve(l : LQ, lf : List RF) : FPL ==
+        sol := ratDsolve(l, lf)
+        bas := sol.basis
+        ker := nullSpace(sol.mat)
+        empty?(ker) => [[], []]
+        nn := #lf
+        nb := #bas
+        if nb ~= ncols(sol.mat) then
+            error "rat_solve: nb ~= ncols(sol.mat)"
+        m1 := matrix([entries(kv) for kv in ker]$List(List(F)))
+        nn := #lf
+        nc := ncols(m1)
+        nn1 := (nc - nn)::NonNegativeInteger
+        m3 := rowEchelon(m1)
+        nr := nrows(m3)
+        j : Integer := 1
+        i0 : Integer := nr + 1
+        sl : List Param_Rec_F := []
+        for i in 1..nr repeat
+            while j <= nn and m3(i, j) = 0 repeat j := j + 1
+            if j > nn then
+                i0 := i
+                break
+            cv := new(nn, 0)$V
+            for k in 1..nn repeat
+                cv(k) := m3(i, k)::UP::RF
+            s : RF := 0
+            for k in 1..nc for bf in bas repeat
+                s := s + m3(i, k)::UP*bf
+            sl := cons([s, cv], sl)
+        bl : List RF := []
+        for i in i0..nr repeat
+            s : RF := 0
+            for k in 1..nc for bf in bas repeat
+                s := s + m3(i, k)::UP*bf
+            bl := cons(s, bl)
+        [sl, bl]
+
+    RF_to_F(rf : RF) : F == ground(retract(rf)@UP)
+
+    V_to_VF(v : V) : Vector(F) ==
+        map(RF_to_F, v)$VectorFunctions2(RF, F)
+
+    algDsolve(l : L, lg : List R) ==
+        rec := reduceLODE(l, lg)
+        sol := solveInField(rec.mat, rec.vecs, rat_solve)
+        bas : List(R) := [represents v for v in sol.basis]
+        part : L_Param_R := [[represents(be.ratpart), V_to_VF(be.coeffs)]
+                              for be in sol.particular]
+        [part, bas]
+
+    algDsolve(l : L, g : R) ==
+        rec1 := algDsolve(l, [g])
+        bas := rec1.basis
+        empty?(rec1.particular) => ["failed", bas]
+        part1 : Param_Rec_R := first(rec1.particular)
+        c1inv := inv((part1.coeffs)(1))
+        s0 : R := part1.ratpart
+        s1 := c1inv::UP::RF*s0
+        [s1, bas]
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
