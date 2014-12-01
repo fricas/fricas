@@ -37,6 +37,12 @@ SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
   Exports ==> MultivariateTaylorSeriesCategory(Coef, Var) with
     coefficient : (%, NNI) -> SMP
       ++ \spad{coefficient(s, n)} gives the terms of total degree n.
+    coefficients : % -> StS
+      ++ \spad{coefficients(s)} gives stream of coefficients of s,
+      ++ i.e., [coefficient(s,0), coefficient(s,1), ...]
+    series : StS -> %
+      ++ \spad{series(st)} creates a series from a stream of
+      ++ coefficients.
     coerce : Var -> %
       ++ \spad{coerce(var)} converts a variable to a Taylor series
     coerce : SMP -> %
@@ -63,6 +69,10 @@ SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
     -- the stream should always be n-1.
 
     Rep := StS
+
+    coefficients(s : %) : StS == s::Rep
+
+    series(st : StS) : % == st
 
     extend(x, n) == extend(x, n + 1)$Rep
     complete x == complete(x)$Rep
