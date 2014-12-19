@@ -1,13 +1,14 @@
 #include <gmp.h>
 
-#if defined(__x86_64__)
-  #define BIGNUM_TAG 7
-  #define BIT_CNT 64
-#else
-  #define BIGNUM_TAG 3
-  #define BIT_CNT 32
-#endif
-#define WORD_PTR_TYPE unsigned long *
+/* Assume 32-bit or 64-bit machine */
+
+#define BIT_CNT (8*sizeof(char *))
+#define BIGNUM_TAG (sizeof(char *) - 1)
+
+/* verify assumption about size */
+static char bit_cnt_assert[2*(BIT_CNT == 32 || BIT_CNT == 64) - 1];
+
+#define WORD_PTR_TYPE mp_limb_t *
 #define TO_WORD_PTR(x) ((WORD_PTR_TYPE)((x) - BIGNUM_TAG))
 #define BIGNUM_LENGTH(x) ((x)[-1] >> 8)
 
@@ -64,12 +65,12 @@ static int
 count_zeros(mp_limb_t x)
 {
     int res = 0;
-#if BIT_CNT == 64
-    if (!(x & ((1l<<32) - 1))) {
-        res = 32;
-        x >>= 32;
+    if (BIT_CNT == 64) {
+        if (!(x & ((1ll<<32) - 1))) {
+            res = 32;
+            x >>= 32;
+        }
     }
-#endif
     if (!(x & ((1l<<16) - 1))) {
         res += 16;
         x >>= 16;
