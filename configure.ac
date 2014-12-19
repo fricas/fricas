@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2014-11-14],
+AC_INIT([FriCAS], [2014-12-18],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -291,31 +291,25 @@ esac
 AC_SUBST(LIBSPAD_SO_TARGET)
 AC_SUBST(SOLIB_FLAGS)
 
-## In case our underlying lisp is SBCL, we provide a wrapper to enable
-## GMP bignums in SBCL.
+## In case our underlying lisp is SBCL or Closure CL, we provide a
+## wrapper to enable GMP bignums in lisp
 GMP_WRAP_SO_TARGET=""
 AC_ARG_ENABLE([gmp],
             [AS_HELP_STRING([--enable-gmp], [use gmp for sbcl bignums])],
             [case $enableval in
                yes)
                  if test $fricas_lisp_flavor = sbcl ; then
+                    GMP_WRAP_SO_TARGET=gmp_wrap_so
+                 elif test $fricas_lisp_flavor = openmcl ; then
                     case $(uname -m) in
-                      i386|i486|i586|i686|x86_64)
+                      arm*|i386|i486|i586|i686|x86_64)
                        GMP_WRAP_SO_TARGET=gmp_wrap_so
                          ;;
                       *)
-                       AC_MSG_ERROR([--enable-gmp is valid only when using sbcl on AMD/Intel processors])
-                         ;;
-                    esac
-                 elif test $fricas_lisp_flavor = openmcl ; then
-                    case $(uname -m) in x86_64)
-                      GMP_WRAP_SO_TARGET=gmp_wrap_so
-                        ;;
-                      *)
-                       AC_MSG_ERROR([--enable-gmp is valid only when using Closure CL in 64-bit AMD/Intel processors])
+                       AC_MSG_ERROR([--enable-gmp is valid only when using Closure CL on AMD/Intel or ARM processors])
                     esac
                  else
-                    AC_MSG_ERROR([--enable-gmp is valid only when using sbcl on AMD/Intel processors])
+                    AC_MSG_ERROR([--enable-gmp is valid only when using sbcl or Closure CL])
 
                  fi ;;
                no) ;;

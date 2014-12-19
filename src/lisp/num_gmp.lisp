@@ -3,9 +3,141 @@
 (locally
   (declare (optimize (speed 3) (safety 0)))
 
-#+(and :openmcl :X8664-TARGET)
-(progn
+#+(and :openmcl (or :X8632-TARGET :X8664-TARGET :ARM-TARGET))
+(macrolet (
+    (bignum_subtag()
+        #+:ARM-TARGET 'ARM::SUBTAG-BIGNUM
+        #+:PPC32-TARGET 'PPC32::SUBTAG-BIGNUM
+        #+:PPC64-TARGET 'PPC64::SUBTAG-BIGNUM
+        #+:X8632-TARGET 'X8632::SUBTAG-BIGNUM
+        #+:X8664-TARGET 'X8664::SUBTAG-BIGNUM
+    )
+    (digits_to_words(dl)
+       #+:32-BIT-TARGET dl
+       #+:64-BIT-TARGET `(ceiling ,dl 2))
+    (words_to_digits(wl)
+       #+:32-BIT-TARGET wl
+       #+:64-BIT-TARGET `(ash ,wl 1))
+    (words_to_bytes(wl)
+       #+:32-BIT-TARGET `(ash ,wl 2)
+       #+:64-BIT-TARGET `(ash ,wl 3))
+    (is_plus(n nl)
+       #-:X8664-TARGET `(eql (the fixnum (ccl::%bignum-sign ,n)) 0)
+       #+:X8664-TARGET `(ccl::%bignum-0-or-plusp ,n ,nl))
+    )
 
+#+:X8632-TARGET
+(progn
+(CCL::defx8632lapfunction gmp-bignum-copy-from-lisp
+    ((x 4) #|(ra 0)|# (y arg_y) (l arg_z))
+    (mark-as-imm temp1)
+    (movl (@ x8632::misc-data-offset (% y)) (% imm0))
+    (movl (@ x (% esp)) (% y))
+    (movl ($ 0) (% temp0))
+   @loop
+    (movl (@ x8632::misc-data-offset (% y) (% temp0)) (% temp1))
+    (movl (% temp1) (@ (% imm0) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jnz @loop)
+    (mark-as-node temp1)
+    (single-value-return 3))
+
+(CCL::defx8632lapfunction gmp-bignum-copy-negate-from-lisp
+    ((x 4) #|(ra 0)|# (y arg_y) (l arg_z))
+    (mark-as-imm temp1)
+    (movl (@ x8632::misc-data-offset (% y)) (% imm0))
+    (movl (@ x (% esp)) (% y))
+    (movl ($ 0) (% temp0))
+   @loop1
+    (movl (@ x8632::misc-data-offset (% y) (% temp0)) (% temp1))
+    (cmpl ($ 0) (% temp1))
+    (jnz @negate)
+    (movl ($ 0) (@ (% imm0) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jnz @loop1)
+    (jmp @return)
+   @negate
+    (neg (% temp1))
+    (movl (% temp1) (@ (% imm0) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jz @return)
+   @loop2
+    (movl (@ x8632::misc-data-offset (% y) (% temp0)) (% temp1))
+    (notl (% temp1))
+    (movl (% temp1) (@ (% imm0) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jnz @loop2)
+   @return
+    (mark-as-node temp1)
+    (single-value-return 3))
+
+(CCL::defx8632lapfunction gmp-bignum-copy-to-lisp
+    ((x 4) #|(ra 0)|# (y arg_y) (l arg_z))
+    (mark-as-imm temp1)
+    (movl (@ x (% esp)) (% temp0))
+    (movl (@ x8632::misc-data-offset (% temp0)) (% imm0))
+    (movl ($ 0) (% temp0))
+   @loop
+    (movl (@ (% imm0) (% temp0)) (% temp1))
+    (movl (% temp1) (@ x8632::misc-data-offset (% y) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jnz @loop)
+    (mark-as-node temp1)
+    (single-value-return 3))
+
+(CCL::defx8632lapfunction gmp-bignum-copy-negate-to-lisp
+    ((x 4) #|(ra 0)|# (y arg_y) (l arg_z))
+    (mark-as-imm temp1)
+    (movl (@ x (% esp)) (% temp0))
+    (movl (@ x8632::misc-data-offset (% temp0)) (% imm0))
+    (movl ($ 0) (% temp0))
+   @loop1
+    (movl (@ (% imm0) (% temp0)) (% temp1))
+    (cmpl ($ 0) (% temp1))
+    (jnz @negate)
+    (movl ($ 0) (@ x8632::misc-data-offset (% y) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jnz @loop1)
+    (jmp @return)
+   @negate
+    (neg (% temp1))
+    (movl (% temp1) (@ x8632::misc-data-offset (% y) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jz @return)
+   @loop2
+    (movl (@ (% imm0) (% temp0)) (% temp1))
+    (notl (% temp1))
+    (movl (% temp1) (@ x8632::misc-data-offset (% y) (% temp0)))
+    (addl ($ 4) (% temp0))
+    (cmpl (% temp0) (% l))
+    (jnz @loop2)
+   @return
+    (mark-as-node temp1)
+    (single-value-return 3))
+
+(CCL::defx8632lapfunction gmp-bignum-copy
+    ((x 4) #|(ra 0)|# (y arg_y) (l arg_z))
+    (movl (@ x (% esp)) (% temp0))
+    (movl ($ 0) (% temp1))
+   @loop
+    (movl (@ x8632::misc-data-offset (% temp0) (% temp1)) (% imm0))
+    (movl (% imm0) (@ x8632::misc-data-offset (% y) (% temp1)))
+    (addl ($ 4) (% temp1))
+    (cmpl (% temp1) (% l))
+    (jnz @loop)
+    (single-value-return 3))
+
+)
+
+#+:X8664-TARGET
+(progn
 (CCL::defx86lapfunction gmp-bignum-copy-from-lisp
     ((x arg_x) (y arg_y) (l arg_z))
     (movq ($ 0) (% imm1))
@@ -112,14 +244,119 @@
     (cmpq (% imm1) (% l))
     (jnz @loop)
     (single-value-return))
+)
+
+#+:ARM-TARGET
+(progn
+
+(CCL::defarmlapfunction gmp-bignum-copy-from-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (mov imm1 (:$ 0))
+    (ldr imm2 (:@ y (:$ arm::misc-data-offset)))
+   @loop
+    (add imm0 imm1 (:$ arm::misc-data-offset))
+    (ldr imm0 (:@ x imm0))
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 4))
+    (cmp imm1 l)
+    (bne @loop)
+    (bx lr))
+
+(CCL::defarmlapfunction gmp-bignum-copy-negate-from-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (mov imm1 (:$ 0))
+    (ldr imm2 (:@ y (:$ arm::misc-data-offset)))
+   @loop1
+    (add imm0 imm1 (:$ arm::misc-data-offset))
+    (ldr imm0 (:@ x imm0))
+    (cmp imm0 (:$ 0))
+    (bne @negate)
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 4))
+    (cmp imm1 l)
+    (bne @loop1)
+    (bx lr)
+   @negate
+    (rsb imm0 imm0 (:$ 0))
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 4))
+    (cmp imm1 l)
+    (bne @loop2)
+    (bx lr)
+   @loop2
+    (add imm0 imm1 (:$ arm::misc-data-offset))
+    (ldr imm0 (:@ x imm0))
+    (mvn imm0 imm0)
+    (str imm0 (:@ imm2 imm1))
+    (add imm1 imm1 (:$ 4))
+    (cmp imm1 l)
+    (bne @loop2)
+    (bx lr))
+
+(CCL::defarmlapfunction gmp-bignum-copy-to-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (ldr imm2 (:@ x (:$ arm::misc-data-offset)))
+   @loop
+    (add l l (:$ -4))
+    (ldr imm0 (:@ imm2 l))
+    (add imm1 l (:$ arm::misc-data-offset))
+    (str imm0 (:@ y imm1))
+    (cmp l (:$ 0))
+    (bne @loop)
+    (bx lr))
+
+(CCL::defarmlapfunction gmp-bignum-copy-negate-to-lisp
+    ((x arg_x) (y arg_y) (l arg_z))
+    (mov temp0 (:$ 0))
+    (ldr imm2 (:@ x (:$ arm::misc-data-offset)))
+   @loop1
+    (ldr imm0 (:@ imm2 temp0))
+    (cmp imm0 (:$ 0))
+    (bne @negate)
+    (add imm1 temp0 (:$ arm::misc-data-offset))
+    (str imm0 (:@ y imm1))
+    (add temp0 temp0 (:$ 4))
+    (cmp temp0 l)
+    (bne @loop1)
+    (bx lr)
+   @negate
+    (rsb imm0 imm0 (:$ 0))
+    (add imm1 temp0 (:$ arm::misc-data-offset))
+    (str imm0 (:@ y imm1))
+    (add temp0 temp0 (:$ 4))
+    (cmp temp0 l)
+    (bne @loop2)
+    (bx lr)
+   @loop2
+    (ldr imm0 (:@ imm2 temp0))
+    (mvn imm0 imm0)
+    (add imm1 temp0 (:$ arm::misc-data-offset))
+    (str imm0 (:@ y imm1))
+    (add temp0 temp0 (:$ 4))
+    (cmp temp0 l)
+    (bne @loop2)
+    (bx lr))
+
+(CCL::defarmlapfunction gmp-bignum-copy
+    ((x arg_x) (y arg_y) (l arg_z))
+    (mov imm1 (:$ arm::misc-data-offset))
+    (add imm2 l (:$ arm::misc-data-offset))
+   @loop
+    (ldr imm0 (:@ x imm1))
+    (str imm0 (:@ y imm1))
+    (add imm1 imm1 (:$ 4))
+    (cmp imm1 imm2)
+    (bne @loop)
+    (bx lr))
+)
 
 (defun gmp-bignum-isqrt (x)
-  (let* ((xl (ceiling (ccl::%bignum-length x) 2))
+  (let* ((xl (digits_to_words (ccl::%bignum-length x)))
          (rl (ceiling xl 2))
-         (xlb (ash xl 3))
-         (rlb (ash rl 3))
-         (rl2 (+ rl rl))
-         (res (ccl::%alloc-misc rl2 X8664::SUBTAG-BIGNUM)))
+         (xlb (words_to_bytes xl))
+         (rlb (words_to_bytes rl))
+         (rl2 (words_to_digits rl))
+         (res (ccl::%alloc-misc rl2 (bignum_subtag))))
         (declare (type fixnum xl rl xlb rlb rl2))
       (ccl::%stack-block ((tx xlb)
                           (tr rlb))
@@ -156,18 +393,18 @@
       (return-from gmp-multiply-bignums (orig-multiply-bignums y x)))
   (if (< (+ xl0 yl0) 120)
       (return-from gmp-multiply-bignums (orig-multiply-bignums x y)))
-  (let* ((xl (ceiling xl0 2))
-         (yl (ceiling yl0 2))
+  (let* ((xl (digits_to_words xl0))
+         (yl (digits_to_words yl0))
          (x-plusp nil)
          (y-plusp nil)
          (rl (+ xl yl))
-         (rl2 (+ rl rl))
+         (rl2 (words_to_digits rl))
          (xlb 0)
          (ylb 0)
          (itmp 0)
          (tmp nil)
          (rlb 0)
-         (res (ccl::%alloc-misc rl2 X8664::SUBTAG-BIGNUM)))
+         (res (ccl::%alloc-misc rl2 (bignum_subtag))))
         (declare (type fixnum xl yl rl rl2 xlb ylb rlb itmp))
         ;;; XXX Does not work
         ;;; (declare (dynamic-extent res))
@@ -182,11 +419,11 @@
               (setf tmp x)
               (setf x y)
               (setf y tmp)))
-      (setf xlb (ash xl 3))
-      (setf ylb (ash yl 3))
+      (setf xlb (words_to_bytes xl))
+      (setf ylb (words_to_bytes yl))
       (setf rlb (+ xlb ylb))
-      (setf x-plusp (ccl::%bignum-0-or-plusp x xl0))
-      (setf y-plusp (ccl::%bignum-0-or-plusp y yl0))
+      (setf x-plusp (is_plus x xl0))
+      (setf y-plusp (is_plus y yl0))
       (ccl::%stack-block ((tx xlb)
                           (ty ylb)
                           (tr rlb))
@@ -207,11 +444,11 @@
 
 
 (defun gmp-positive-bignum-gcd(x y)
-  (let* ((xl (ceiling (ccl::%bignum-length x) 2))
-         (yl (ceiling (ccl::%bignum-length y) 2))
+  (let* ((xl (digits_to_words (ccl::%bignum-length x)))
+         (yl (digits_to_words (ccl::%bignum-length y)))
          (rl (if (< xl yl) xl yl))
-         (xlb (ash xl 3))
-         (ylb (ash yl 3))
+         (xlb (words_to_bytes xl))
+         (ylb (words_to_bytes yl))
          (rlb (+ xlb ylb))
          (res nil))
         (declare (type fixnum xl yl rl xlb ylb rlb))
@@ -227,7 +464,7 @@
                      :address tx :long xl
                      :address ty :long yl
                      :long))
-         (setf res (ccl::%alloc-misc (+ rl rl) X8664::SUBTAG-BIGNUM))
+         (setf res (ccl::%alloc-misc (words_to_digits rl) (bignum_subtag)))
          (gmp-bignum-copy-to-lisp tr res rl)
          (ccl::%normalize-bignum-2 t res))))
 ;;; Tests
@@ -240,26 +477,26 @@
         (error (make-condition 'division-by-zero
                                :operation 'gmp-bignum-truncate
                                :operands (list x 0))))
-    (let* ((x-plusp (ccl::%bignum-0-or-plusp x (ccl::%bignum-length x)))
-           (y-plusp (ccl::%bignum-0-or-plusp y (ccl::%bignum-length y)))
+    (let* ((x-plusp (is_plus x (ccl::%bignum-length x)))
+           (y-plusp (is_plus y (ccl::%bignum-length y)))
            (x (if x-plusp x (ccl::negate-bignum x nil)))
            (y (if y-plusp y (ccl::negate-bignum y nil)))
            (yl0 (ccl::%bignum-length y))
-           (xl (ceiling (ccl::%bignum-length x) 2))
-           (yl1 (ceiling yl0 2))
-           (yl (if (eq 0 (ccl::%typed-miscref :bignum y (- yl0 1)))
-                   (ash yl0 -1)
-                   yl1))
-           (ql (max (+ 1 (- xl yl)) 1))
+           (xl (digits_to_words (ccl::%bignum-length x)))
+           (yl2 (if (eq 0 (ccl::%typed-miscref :bignum y (- yl0 1)))
+                   (- yl0 1)
+                   yl0))
+           (yl (digits_to_words yl2))
+           (ql (+ 1 (- xl yl)))
            (q nil)
            (r nil)
-           (xlb (ash xl 3))
-           (ylb (ash yl 3))
-           (qlb (ash ql 3)))
-      (declare (type fixnum xl yl yl0 yl1 ql xlb ylb qlb))
+           (xlb (words_to_bytes xl))
+           (ylb (words_to_bytes yl))
+           (qlb (words_to_bytes ql)))
+      (declare (type fixnum xl yl yl0 yl2 ql xlb ylb qlb))
       (if (plusp (ccl::bignum-compare y x))
         (progn
-               (setf r (ccl::%alloc-misc (+ xl xl) X8664::SUBTAG-BIGNUM))
+               (setf r (ccl::%alloc-misc (words_to_digits xl) (bignum_subtag)))
                (gmp-bignum-copy x r xl)
                (setf q 0))
         (ccl::%stack-block ((tx xlb)
@@ -272,11 +509,11 @@
                      :address tq :address tr :long 0
                      :address tx :long xl
                      :address ty :long yl)
-         (setf q (ccl::%alloc-misc (+ ql ql) X8664::SUBTAG-BIGNUM))
-         (setf r (ccl::%alloc-misc (+ yl1 yl) X8664::SUBTAG-BIGNUM))
+         (setf q (ccl::%alloc-misc (words_to_digits ql) (bignum_subtag)))
+         (setf r (ccl::%alloc-misc yl0 (bignum_subtag)))
          (gmp-bignum-copy-to-lisp tq q ql)
          (gmp-bignum-copy-to-lisp tr r yl)
-         (if (> yl1 yl)
+         (if (> yl0 yl2)
              (setf (ccl::%typed-miscref :bignum r (- yl0 1)) 0))
          (setf q (ccl::%normalize-bignum-2 t q))
          (setf r (ccl::%normalize-bignum-2 t r))))
