@@ -95,6 +95,11 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       ++ addiag(x) performs diagonal addition of a stream of streams. if x =
       ++ \spad{[[a<0, 0>, a<0, 1>, ..], [a<1, 0>, a<1, 1>, ..], [a<2, 0>, a<2, 1>, ..], ..]}
       ++ and \spad{addiag(x) = [b<0, b<1>, ...], then b<k> = sum(i+j=k, a<i, j>)}.
+    prodiag : ST ST A -> ST A
+      ++ prodiag(x) performs "diagonal" infinite product of a stream
+      ++ of streams.  When \spad{x(i)} is interpreted as stream of
+      ++ coefficients of series \spad{f_i(z), i=1,...}, then
+      ++ \spad{prodiag(x) = (1 + z*f_1(z))*(1 + z^2*f_2(x))*...}
     lambert      : ST A -> ST A
       ++ lambert(st) computes \spad{f(x) + f(x^2) + f(x^3) + ...}
       ++ if st is a stream representing \spad{f(x)}.
@@ -335,6 +340,18 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
             lagrange(recip(rst x) :: (ST A))
         error "revert: should start 0, x, ... with invertible x"
       error "revert: should start 0, x, ..."
+
+    -- prodiag1([f_n, ...], n) computes
+    -- ((1 + z^n*f_n)*(1 + z^{n+1}*f_{n+1})... - 1)/z^n
+    prodiag1(ststa : ST ST A, n : Integer) : ST(A) == delay
+        empty? ststa => zro()
+        f1 := frst ststa
+        r1 := rst ststa
+        p1 := prodiag1(r1, n + 1)
+        empty? f1 => concat(0, p1)
+        concat(frst(f1), rst(f1) + p1 + concat(rpSt(n, 0), f1*p1))
+
+    prodiag(ststa : ST ST A) == concat(1, prodiag1(ststa, 1))
 
 --% lambert functions
 
