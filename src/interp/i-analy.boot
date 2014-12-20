@@ -129,6 +129,7 @@ pushDownTargetInfo(op,target,arglist) ==
   -- put target info on args for certain operations
   target = $OutputForm => NIL
   target = $Any        => NIL
+  target is ['Union, dom, tag] and tag = '"failed" => NIL
   n := LENGTH arglist
   pushDownOnArithmeticVariables(op,target,arglist)
   (pdArgs := pushDownOp?(op,n)) =>
