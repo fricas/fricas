@@ -2138,11 +2138,6 @@ read_or_compile(quiet, lib) ==
     type = '"input" => ncINTERPFILE(input_file, not(quiet))
     spadCompile(input_file)
 
---% )savesystem
-savesystem l ==
-  #l ~= 1 or not(SYMBOLP first l) => helpSpad2Cmd '(savesystem)
-  SPAD_-SAVE SYMBOL_-NAME first l
-
 --% )show
 
 show l ==
