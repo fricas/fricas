@@ -1,34 +1,31 @@
 )abbrev domain VSBASIS VectorSpaceBasis
 ++ Author: Francois Maltey, Martin Rubey
-++ Basic Operations: solve
+++ Date Last Updated: 26 Dec 2014 by Franz Lehner and Waldek Hebisch
+++ Basic Operations:
 ++ Keywords:
 ++ Description:
-++  The domain \spad{VectorSpaceBasis} implements subspaces of vector
-++  spaces.  A subspace is represented by a basis which is a list of
-++  vectors.  Elements of basis are linearly independent so the empty list
-++  list describes the space with only the null vector.
-++  The scalar ring must be a field in order to avoid lattice (diofantine)
-++  questions.
+++  The domain \spad{VectorSpaceBasis F} implements subspaces of 
+++  finite dimensional vector spaces over a field F.
+++  A subspace is represented by a list of linearly independent 
+++  coordinate vectors which constitute a basis. 
+++  The empty list represents the space of dimension 0.
 VectorSpaceBasis(R : Field) : Exports == Implementation where
-    Exports ==> with
+    Exports ==> Join(BasicType, CoercibleTo OutputForm) with
 
         basis : List Vector R -> %
           ++ \spad{basis LV} extracts a basis of the subspace spanned by
-          ++ the \spad{LV} list of vectors.
+          ++ the list of vectors \spad{LV}.
         coerce : % -> List Vector R
-          ++ \spad{coerce b} retracts a basis to this list of vectors.
-        coerce : % -> OutputForm
-          ++ \spad{coerce b} prepares the display of a basis.
-
+          ++ \spad{coerce b} returns the basis as a list of vectors.
         nullSpace : Matrix R -> %
           ++ \spad{nullSpace M} builds a basis of the kernel of
           ++ the linear transformation defined by the matrix \spad{M}.
-          ++ This function calls the \spad{nullSpace} in the \spad{Matrix}
-          ++ domain. Only the signature changes.
+          ++ This function calls the function \spad{nullSpace} 
+          ++ from the \spad{Matrix} domain. Only the signature changes.
         columnSpace : Matrix R -> %
-          ++ \spad{columnSpace M} builds a basis of the kernel of
+          ++ \spad{columnSpace M} builds a basis of the image space of
           ++ the linear transformation defined by the matrix \spad{M}.
-          ++ This function calls the \spad{columnSpace} in the \spad{Matrix}
+          ++ This function calls the \spad{columnSpace} from the \spad{Matrix}
           ++ domain. Only the signature changes.
 
         sumBasis : (%, %) -> %
@@ -37,96 +34,91 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
         sumBasis : (List Vector R, List Vector R) -> %
           ++ \spad{sumBasis(Lv1, Lv2)} computes a basis of the sum
           ++ of the two subspaces spanned by the vectors of \spad{Lv1}
-          ++ and \spad{Lv2}
+          ++ and \spad{Lv2}.
         sumBasis : List % -> %
           ++ \spad{sumBasis Lb} computes a basis of the sum of list of
           ++ subspaces.
           ++ This function is slightly more efficient than
-          ++ \spad{reduce(sumBasis, Lb)}
+          ++ \spad{reduce(sumBasis, Lb)}.
         sumBasis : (List List Vector R) -> %
-          ++ \spad{sumBasis LLv} computes a basis of the sum of list of
-          ++ subspace.
+          ++ \spad{sumBasis LLv} computes a basis of the sum of the list of
+          ++ subspaces represented by LLv.
           ++ This function is slightly more efficient than
-          ++ \spad{reduce(sumBasis, LLv)}
+          ++ \spad{reduce(sumBasis, LLv)}.
         "+" : (%,%) -> %
           ++ \spad{B1+B2} computes a basis of the sum of two subspaces.
 
-        intBasis : (%, %) -> %
-          ++ \spad{intBasis(B1, B2)} computes a basis of the intersection
-          ++ of the two subspaces.
         intBasis : (List Vector R, List Vector R) -> %
           ++ \spad{intBasis(Lv1, Lv2)} computes a basis of the intersection
           ++ of the two subspaces spanned by the vectors of \spad{Lv1}
-          ++ and \spad{Lv2}
+          ++ and \spad{Lv2}.
+        intBasis : (%, %) -> %
+          ++ \spad{intBasis(B1, B2)} computes a basis of the intersection
+          ++ of the two subspaces.
         intBasis : List % -> %
           ++ \spad{intBasis Lb} computes a basis of the intersection
-          ++ of list of subspaces.
+          ++ of the list of subspaces represented by LLv.
         intBasis : List List Vector R -> %
           ++ \spad{intBasis LLv} computes a basis of the intersection
-          ++ of list of subspaces.
+          ++ of the list of subspaces represented by LLv.
         "*" : (%, %) -> %
           ++ \spad{b1*b2} computes a basis of the intersection
-          ++ of two of subspaces.
+          ++ of two subspaces.
 
         rank : List Vector R -> NonNegativeInteger
           ++ \spad{rank Lv} computes the rank of a list of vectors.
         rank : % -> NonNegativeInteger
-          ++ \spad{rank b} computes the rank of a basis, it's the number of
+          ++ \spad{rank b} computes the rank of a basis, i.e., the number of
           ++ vectors in the basis.
         isBasis? : List Vector R -> Boolean
-          ++ \spad{isBasis? Lv} tests if a list of vector is a basis, without
-          ++ linear relations between the vectors.
+          ++ \spad{isBasis? Lv} tests for linear independence 
+          ++ of a list of vectors.
         subspace? : (%, %) -> Boolean
-          ++ \spad{subspace?(b1, b2)} tests if the first space is include in
+          ++ \spad{subspace?(B1, B2)} tests if the first space is included in
           ++ the second.
         0 : constant -> %
-          ++ \spad{0} creates the void basis describing the space with the zero
-          ++ vector. Axiom ignores the length of this zero vector.
+          ++ \spad{0} creates the empty basis describing the space with the zero
+          ++ vector. The length of this zero vector is undefined.
         canonicalBasis : NonNegativeInteger -> %
-          ++ \spad{canonicalBasis n} build the canononical basis of the
-          ++ vector space with \spad{n} coordinates.
+          ++ \spad{canonicalBasis n} builds the canonical basis of the
+          ++ vector space of dimension \spad{n}.
 
         complementSpace : % -> %
-          ++ \spad{complementSpace B} build a complement space of the basis
-          ++ \spad{B} with some vectors of the canonical basis.
+          ++ \spad{complementSpace B} builds a complement space of the basis
+          ++ \spad{B} from some vectors of the canonical basis.
           ++ This function fails with the empty basis.
         complementSpace : (%, NonNegativeInteger) -> %
-          ++ \spad{complementSpace(B, n)} build a complement space of the basis
-          ++ \spad{B} with some vectors of the canonical basis \spad{B}.
-          ++ The integer \spad{n} gives the length of the vectors if
-          ++ the basis is empty.
+          ++ \spad{complementSpace(B, n)} builds a complement space of the basis
+          ++ \spad{B} from some vectors of the canonical basis \spad{B}.
+          ++ The integer \spad{n} provides the length of the vectors in
+          ++ the case of the empty basis.
         complementSpace : List Vector R -> %
-          ++ \spad{complementSpace Lv} build a complement space of the subspace
-          ++ spaned by the list of vectors \spad{LV}.
+          ++ \spad{complementSpace Lv} builds a complement space of the subspace
+          ++ spanned by the list of vectors \spad{LV}.
           ++ This function fails with the empty basis.
         complementSpace : (List Vector R, NonNegativeInteger) -> %
-          ++ \spad{complementSpace(Lv, n)} build a complement space
-          ++ of the subspace spaned by the list of vectors \spad{LV}.
-          ++ The integer \spad{n} gives the length of the vectors
-          ++ if the basis is empty.
-
-        "=" : (%, %) -> Boolean
-          ++ \spad{B1=B2} tests if the two subspaces are equals.
+          ++ \spad{complementSpace(Lv, n)} builds a complement space
+          ++ of the subspace spanned by the list of vectors \spad{LV}.
+          ++ The integer \spad{n} provides the length of the vectors in
+          ++ the case of the empty basis.
 
         member? : (Vector R, %) -> Boolean
           ++ \spad{member?(v, B)} tests if the vector \spad{v}
-          ++ is in the subspace spaned by \spad{B}.
+          ++ is in the subspace spanned by \spad{B}.
         coordinatesIfCan : (Vector R, %) -> Union (Vector R, "failed")
-          ++ \spad{coordinatesIfCan(v, B)} either computes the coordinates of
-          ++ the vector \spad{v} in the basis \spad{B} either returns
-          ++ \spad{"failed"} if vector \spad{v} isn't in the subspace described
-          ++ by \spad{B}.
+          ++ \spad{coordinatesIfCan(v, B)} computes the coordinates of
+          ++ the vector \spad{v} in the basis \spad{B} if possible
+          ++ and returns \spad{"failed"} otherwise.
         coordinates : (Vector R, %) -> Vector R
           ++ \spad{coordinates(v, B)} computes the coordinates of
-          ++ the vector \spad{v} in the basis \spad{B} either returns
-          ++ \spad{"failed"}, and produces an error if vector \spad{v}
-          ++ isn't in the subspace described
+          ++ the vector \spad{v} in the basis \spad{B} if possible
+          ++ and produces an error otherwise.
 
     Implementation ==> List Vector R add
 
         LSMP1 ==> LinearSystemMatrixPackage1 R
 
-        -- a basis is a list of vectors
+        -- a basis is represented as a list of vectors
         -- the length of each vector must be the same
         -- this test is done by the call of column2matrix
 
@@ -137,8 +129,8 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
 
         0 : % == (empty()$(List Vector R))
 
-        -- retract a basis to a list of vectors is obvious.
-        -- build a basis from a list of vectors may change this list,
+        -- retracting a basis to a list of vectors is obvious.
+        -- building a basis from a list of vectors may change this list,
         -- so there is no coerce from List Vector R to VectorSpaceBasis R.
 
         coerce (B : %) : List Vector R == B::Rep
@@ -196,7 +188,7 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
 
         -- subvector creates the vector [v.a, v.(a+1), ..., v.b]
 
-        subVector (v : Vector R, a : Integer, b : Integer) : Vector R ==
+        subVector(v : Vector R, a : Integer, b : Integer) : Vector R ==
             vv : Vector R := new((b-a+1)::NonNegativeInteger, 0)
             for k in 1..b-a+1 repeat qsetelt!(vv, k, qelt(v, k+a-1))
             vv
@@ -210,16 +202,9 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
                 for j in 1..#vv repeat vv.j := vv.j + t2*v2.j
             vv
 
-        -- intBasis operates over two basis.
-        -- The first step extracts two basis from two lists of vectors.
-
-
-        intBasis(Lv : List Vector R, Lw : List Vector R) : % ==
-            intBasis(basis Lv, basis Lw)
-
-        -- The column of M are vectors.
+        -- The columns of M are vectors.
         -- The kernel of M describes linear relationships between vectors.
-        -- Theses relations in the nullSpace of the matrix obtained
+        -- These relations in the nullSpace of the matrix obtained
         -- by the union of B1 and B2 supply null-vectors.
         -- Divide this sum between vectors of B1 and vectors of B2
         -- produce a vector in the intersectionSpace.
@@ -227,14 +212,12 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
         -- vectors of B1 are at the end of the matrix,
         -- so the nullSpace function advantges the vectors of B1.
 
-        intBasis(B1 : %, B2 : %) : % ==
-            Lv := B1::Rep
-            Lw := B2::Rep
+        intBasis(Lv : List Vector R, Lw : List Vector R) : % ==
             null Lv or null Lw => 0
             d1 := #Lv
             d2 := #Lw
             #(first Lv) ~= #(first Lw)
-               => error "vectors have not the same length in intBasis"
+               => error "vectors have different lengths in intBasis"
             M := new(#(first Lv), d1+d2, 0)
             for k in 1..d2 for w in Lw repeat setColumn! (M, k, w)
             for k in 1..d1 for v in Lv repeat setColumn! (M, d2+k, v)
@@ -243,25 +226,28 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
               [subVector (kv, d2+1, d2+d1) for kv in lker]
             [linearSum (cc, Lv) for cc in LcoeffB1]
 
-        -- the empty empty intersect of subspace is not defined.
+        intBasis(B1 : %, B2 : %) : % ==
+            Lv : Rep := B1::Rep
+            Lw : Rep := B2::Rep
+            intBasis(Lv, Lw)
+
+        -- the empty intersection of subspaces is not defined.
 
         intBasis (LLB : List List Vector R) : % ==
           #LLB = 0 => error "intersect no subspace is impossible"
-          #LLB = 1 => basis LLB.1
-          res := LLB.1
+          res := basis LLB.1
           for LB in rest LLB repeat res := intBasis (res, basis LB)
           res
 
         intBasis (LLB : List %) : % ==
           #LLB = 0 => error "intersect no subspace is impossible"
-          #LLB = 1 => LLB.1
           res := LLB.1
           for LB in rest LLB repeat res := intBasis (res, LB)
           res
 
         B1 * B2 == intBasis (B1, B2)
 
-        -- rank and dimensions are synonym.
+        -- rank and dimension are synonym.
 
         rank (B : %) : NonNegativeInteger == #(B::Rep)
         rank (Lv : List Vector R) : NonNegativeInteger == rank basis Lv
@@ -271,16 +257,17 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
 
         isBasis? Lv == (rank Lv = # Lv)
 
-        -- dimension theory justifies theses tests for included
-        -- and equal spaces.
+        -- dimension theory justifies these tests for inclusion
+        -- and equality of spaces.
 
         subspace? (B1, B2) == (rank B2 = rank sumBasis (B1, B2))
 
         B1 = B2 ==
-           rk := rank sumBasis (B1, B2)
-           (rk = rank B1) and (rk = rank B2)
+           (rk1 := rank B1) ~= (rk2 := rank B2) => return false
+           rks := rank sumBasis (B1, B2)
+           (rks = rk1) and (rks = rk2)
 
-        -- This function build the canonical basis of the vector space
+        -- This function builds the canonical basis of a vector space
         -- of length n
 
         canonicalBasis n ==
@@ -292,7 +279,7 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
           L
 
         -- This function concats all the vectors of the canonical basis
-        -- and looks for vectors for complete a basis of the vector space.
+        -- and looks for vectors to complete a basis of the vector space.
         -- The last reverse call makes order the result in the order of bc.
 
         complementSpace (Lv : List Vector R) : % ==
@@ -306,7 +293,7 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
           n := #Lv
           ind : NonNegativeInteger := 1
           for k in 1..n for v in Lw repeat
-            if ind <= dim and M.(ind, k)~=0 then ind := ind+1
+            if ind <= dim and M.(ind, k) ~= 0 then ind := ind+1
           RES := []
           for k in n+1..n+dim for v in bc repeat
             if ind <= dim and M.(ind, k)~=0
