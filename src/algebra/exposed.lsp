@@ -618,7 +618,6 @@
   (|ElementaryFunctionsUnivariateLaurentSeries| . EFULS)
   (|ElementaryFunctionsUnivariatePuiseuxSeries| . EFUPXS)
   (|ElementaryIntegration| . INTEF)
-  (|ElementaryRischDE| . RDEEF)
   (|ElementaryRischDESystem| . RDEEFS)
   (|EllipticFunctionsUnivariateTaylorSeries| . ELFUTS)
   (|EqTable| . EQTBL)

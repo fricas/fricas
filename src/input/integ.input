@@ -50,8 +50,28 @@ testIntegrate("1/x*(exp(log(x)/2+x))^2", "x", "rde")
 testIntegrate("exp(x)*exp(exp(x) + 1 + log(exp(x) + 3)/2)^2/(exp(x) + 3)",
                "x", "rde")
 
-fun := D(x*exp(x*log(x)/(log(x)+1))*log(exp(x*log(x)/(log(x)+1))+1), x)
-testIntegrate("fun", "x", "rde")
+-- bug in RDE
+testIntegrate("((a*x+1)*exp(x)+(a+1)*x)*exp(a*log(exp(x)+x))/(exp(x)+x)",
+              "x", "rde")
+testIntegrate(
+ "((x*2^(1/2)+1)*exp(x)+(x*2^(1/2)+x))*exp(2^(1/2)*log(exp(x)+x))/(exp(x)+x)",
+   "x", "rde")
+fun1 := D(x*exp(a*log(log(x)/(x+1)+1)), x)
+testIntegrate("fun1", "x", "rde")
+fun2 := D(x*exp(sqrt(2)*log(log(x)/(x+1)+1)), x)
+testIntegrate("fun2", "x", "rde")
+fun3 := D(x*exp(x*log(x)/(log(x)+1))*log(exp(x*log(x)/(log(x)+1))+1), x)
+testIntegrate("fun3", "x", "rde")
+
+-- Rotstein & Bronstein, third case
+-- Integrate[(2581284441*Exp[x] + 1757211400)*Exp[1/(Exp[x]+1) - 10*x]/
+--  (39916800*Exp[3*x] + 119750400*Exp[2*x] + 119750400*Exp[x] + 39916800), x]
+testIntegrate("(2581284541*exp(x) + 1757211400)*exp(1/(exp(x)+1) - 10*x)/"
+              "(39916800*exp(3*x) + 119750400*exp(2*x) + 119750400*exp(x)"
+               " + 39916800)", "x", "rde")
+
+-- Needs logarithmic derivative in algebraic extension
+testIntegrate("sqrt(z)^I^2", "x", "rde")
 
 -- just a few easy examples
 testIntegrate("(x^3-x^2-3*x+1)*exp(1/(x^2-1))/(x^3-x^2-x+1)", "x", "rde")
@@ -132,6 +152,11 @@ xf2testIntegrate("(4*x^6-14*x^5-8*x^4-16*x^3-12*x^2-2*x)/((x^4-8*x^3+24*x^2-32*x
 -- the same, but written in a different way
 testIntegrate("(4*x^6-14*x^5-8*x^4-16*x^3-12*x^2-2*x)/((x^4-8*x^3+24*x^2-32*x+16)*2*log((x^2+1)/(x-2)))", "x", "li")
 testIntegrate("(-2*x^8+8*x^7-4*x^6+23*x^5+10*x^4-11*x^3+54*x^2-12*x-6)/((x^7-6*x^6+14*x^5-20*x^4+25*x^3-22*x^2+12*x-8)*log((x-2)/(x^2+1)))", "x", "li")
+
+-- normalize is too weak to prove equality
+-- testIntegrate("8*x/((x^4 + 2*x^2 + 1)*atan(x))", "x", "li")
+-- testIntegrate("(x^2 + 8*x + 1)/((x^4 + 2*x^2 + 1)*atan(x))", "x", "li")
+
 -- polylog
 testIntegrate("x/(exp(x) - 1)", "x", "poly")
 testIntegrate("x^2/(exp(x) - 1)", "x", "poly")
@@ -188,7 +213,7 @@ xf2testIntegrate("cos(a*x^2+b*x)", "x", "erf")
 -- Knowles
 testIntegrate("exp(-x^2 - erf(x)^2)", "x", "erf")
 -- D(-sqrt(%pi)*erf(1/sqrt(log(x))), x)
-xf1testIntegrate("exp(-1/log(x))/(x*log(x)*sqrt(log(x)))", "x", "erf")
+xf2testIntegrate("exp(-1/log(x))/(x*log(x)*sqrt(log(x)))", "x", "erf")
 -- the same, but written in a different way
 xf2testIntegrate("exp(-(1/2)*log(log(x)) -1/log(x))/(x*log(x))", "x", "erf")
 
@@ -227,6 +252,13 @@ testIntegrate("(2*x+2)*exp(-log(x)^2-2*x*log(x)-x^2-2*x)/x^3", "x", "erf")
 testIntegrate("(exp(x)+1)*exp(-exp(x)^2-2*x*exp(x)-x^2)", "x", "erf")
 testIntegrate("(1 + 1/exp(x))*exp(-exp(x)^2-2*x*exp(x)-x^2+x)", "x", "erf")
 testIntegrate("(exp(x)^2+exp(x))*exp(-exp(x)^2-2*x*exp(x)-x^2-x)", "x", "erf")
+-- -sqrt(%pi)*D(erfi((exp(x) + x)/exp(x)), x)/2
+testIntegrate("(x-1)*exp((exp(2*x)+2*x*exp(x)+x^2)/exp(x)^2)/exp(x)",
+              "x", "erf")
+testIntegrate("(x-1)*exp(((1-x)*exp(2*x)+2*x*exp(x)+x^2)/exp(x)^2)",
+              "x", "erf")
+-- need algebraic shifts
+testIntegrate("exp(b/x^2+a*x^2)", "x", "erf")
 
 testIntegrate("exp(-x^3)", "x", "gamma")
 testIntegrate("exp(x^3)", "x", "gamma")
@@ -284,6 +316,7 @@ testIntegrate("(exp(-x)-1)*exp(exp(-x)+x)/(exp(-x)+x)", "x", "Ei")
 testIntegrate("(((x+1)*exp(-x)+1)*exp(x/(exp(-x)+1)))/(x*exp(-x)+x)", "x", "Ei")
 testIntegrate("((-exp(-x)^4+(-x-1)*exp(-x)^3+(-x-1)*exp(-x)^2+(x+1)*exp(-x)-x)*exp(exp(-x)+x))/(exp(-x)^2-x^2)", "x", "Ei")
 testIntegrate("(exp(x)^3+(2*x+2)*exp(x)^2+(x^2+3*x+2)*exp(x)+x^2+x+1)*exp(exp(x)+x)/(exp(x)+x)", "x", "Ei")
+testIntegrate("(4*x^3+4*x)*exp(x^2+1)/(x^4+2*x^2-1)", "x", "Ei")
 testIntegrate("((-x^2-x)*exp(-x)-x)*exp(x/(exp(-x)+1))/((2*exp(-x)^3+6*exp(-x)^2+(-x^2+6)*exp(-x)+(-x^2+2)))", "x", "Ei")
 testIntegrate("(2*exp(x)+1)*exp(exp(x)^2+exp(x))/(exp(x)+1)", "x", "Ei")
 -- the same written in different way
@@ -478,6 +511,8 @@ fun3 := D(exp(sqrt(x^3+1))*log(x*exp(sqrt(x^3+1)) + 1), x)
 testIntegrate("fun3", "x", "algext")
 fun4 := D(exp(sqrt(x^3+1))*erf(x*exp(sqrt(x^3+1)) + 1), x)
 testIntegrate("fun4", "x", "algext")
+fun5 := D(exp(sqrt(x^3+1))*erf(x*exp(sqrt(x^3+1)) + 1) +
+          erf(x*exp(sqrt(x^3+1))), x)
 fun7 := D(exp(sqrt(x^3+1))*erf(x*exp(sqrt(x^3+1)) + 1) +
           erf(x*exp(sqrt(x^3+1)))^2, x)
 testIntegrate("fun7", "x", "algext")
