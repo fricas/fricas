@@ -174,3 +174,245 @@ PolynomialEvaluationUtilities : Exports == Implementation where
                   modpeval(t0.c, vars, pts, p)
             res := Qmuladd(ptk, c0, res, p)
         res
+
+)abbrev category MEVCAT ModularEvaluationCategory
+++ Description: ModularEvaluationCategory(PT, MP) defines interface
+++  to evaluation functions for ModularAlgebraicGcd2.
+ModularEvaluationCategory(PT : Type, MP : Type) : Category == Exports where
+
+  PA ==> U32Vector
+  PSS ==> Record(prime : Integer, eval1coeffbuf : PA,
+                 eval1expbuf : SortedExponentVector)
+  Exports ==> with
+    degree : (MP, Symbol) -> NonNegativeInteger
+      ++ degree(p, v) computes degree of p with respect to v.
+    ldegree : (PT, Symbol) -> NonNegativeInteger
+      ++ ldegree(p, v) computes degree of p with respect to v.  v must
+      ++ be one of auxilary variables and must be lexicographically
+      ++ first variables which appears in p.  Morover, p must be
+      ++ a polynomial in v (not a rational function).
+    eval1a : (MP, Integer, PSS) -> Integer
+      ++ eval1a(p, r, pss) evaluates p at r.  p must be polynomial
+      ++ in single variable.  pss is global state.
+    eval1 : (MP, Symbol, Integer, PSS) -> MP
+      ++ eval1(p, v, r, pss) evaluates p with respect to single
+      ++ variable v at r.  pss is global state.
+    modpreduction : (MP, Integer) -> MP
+      ++ modpreduction(p, q) reduces all coeffiecients of p modulo q.
+    subst_vars : (PT, List Symbol, List Symbol) -> MP
+      ++ subst_vars(p, lv1, lv2) substitutes variables from list lv2
+      ++ for corresponding variables from lv1.
+    trial_division : (MP, Polynomial(Integer), List(MP),
+                      Symbol, List(Symbol)) -> Boolean
+      ++ trial_division(p, q, lm, v, lz) checks if p is divisible
+      ++ by q.  lm is a list of defining equations for algebraic
+      ++ parameters, v is main variable, lz is the list of algebraic
+      ++ parameters.
+
+
+)abbrev package MEVAL1 ModularEvaluation1
+ModularEvaluation1() : Exports == Implementation where
+  MP ==> Polynomial(Integer)
+  Exports ==> ModularEvaluationCategory(MP, MP)
+  Implementation ==> add
+
+    PE ==> PolynomialEvaluationUtilities
+
+    degree(p, s) == degree(p, s)$MP
+    ldegree(p, s) == degree(p, s)$MP
+    eval1a(p, pt, s) == eval1a(p, pt, s)$PE
+    eval1(p, v, pt, s) == eval1(p, v, pt, s)$PE
+    modpreduction(p, q) == modpreduction(p, q)$PE
+
+    subst_vars(p, ls1, ls2) ==
+        lm := [monomial(1, v, 1) for v in ls2]
+        eval(p, ls1, lm)
+
+    SMPI ==> SparseMultivariatePolynomial(Integer, Symbol)
+
+    trial_division(p, g, lm, v, ls) ==
+        alg_trial_division(p pretend SMPI, g pretend SMPI,
+                  [m pretend SMPI for m in lm], [v], ls
+                 )$PrimGCD
+
+
+)abbrev domain FAKEPOL FakePolynomial
+++ Description: FakePolynomial is a domain of univariate polynomials
+++  with coefficients beeing fractions of multivariate integer
+++  polynomials.  Coefficients are kept in unsimplified form.
+++  This domain exists to avoid cost of recursive GCD calls
+++  during polynomial evaluation.
+FakePolynomial : Exports == Implementation where
+  MP ==> Polynomial(Integer)
+  MPU ==> SparseUnivariatePolynomial(MP)
+  RF ==> Fraction(MP)
+  UP ==> SparseUnivariatePolynomial(RF)
+  PT ==> Record(var : Symbol, coef : UP)
+  FrP ==> Record(numer : MP, denom : MP)
+
+  Exports ==> with
+      degree : (%, Symbol) -> NonNegativeInteger
+      ground : % -> FrP
+      map : (MP -> MP, %) -> %
+      map : (MP -> MP, PT) -> %
+      map : (FrP -> Union(MP, "failed"), %) -> Union(MPU, "failed")
+      subst_var : (%, List(Symbol), List(Symbol)) -> %
+      to_UP : % -> UP
+
+  Implementation ==> add
+
+      Node ==> Record(deg : NonNegativeInteger, coef : FrP)
+      Rep := Record(var : Symbol, coef : List Node)
+
+      ground(p : %) : FrP ==
+          pr1 := p::Rep
+          pr := pr1.coef
+          empty?(pr) => [0, 1]
+          r1 := first(pr)
+          not(r1.deg = 0) => error "ground: not(r1.deg = 0)"
+          r1.coef
+
+      map(f : MP -> MP, p : %) : % ==
+          pr1 := p::Rep
+          pr := pr1.coef
+          res0 : List Node := [[0, [0, 0]]]
+          res1 := res0
+          repeat
+              empty?(pr) =>
+                  return [pr1.var, rest(res0)]
+              r1 := first(pr)
+              pr := rest(pr)
+              c1 := r1.coef
+              n1 := f(c1.numer)
+              n1 = 0 => "iterate"
+              res1 := qsetrest!(res1, [[r1.deg, [n1, f(c1.denom)]]])
+
+      map(f : MP -> MP, p : PT) : % ==
+          pr := p.coef
+          res0 : List Node := [[0, [0, 0]]]
+          res1 := res0
+          repeat
+              pr = 0 => return [p.var, rest(res0)]
+              d := degree(pr)
+              c1 := leadingCoefficient(pr)
+              pr := reductum(pr)
+              n1 := f(numer(c1))
+              n1 = 0 => "iterate"
+              res1 := qsetrest!(res1, [[d, [n1, f(denom(c1))]]])
+
+      map(f : FrP -> Union(MP, "failed"), p : %) : Union(MPU, "failed") ==
+          pr1 := p::Rep
+          pr := pr1.coef
+          res0 : MPU := 0
+          while not(empty?(pr)) repeat
+              r1 := first(pr)
+              pr := rest(pr)
+              c1u := f(r1.coef)
+              c1u case "failed" => "failed"
+              res0 := res0 + monomial(c1u::MP, r1.deg)$MPU
+          res0
+
+      degree(p, s) ==
+          pr1 := p::Rep
+          pr := pr1.coef
+          empty?(pr) => 0
+          pr1.var = s => first(pr).deg
+          res := 0
+          for r1 in pr repeat
+              c1 := r1.coef
+              degree(c1.denom, s) > 0 =>
+                  error "degree: not a polynomial in given variable"
+              res := max(res, degree(c1.numer, s))
+          res
+
+      to_UP(p) ==
+          pr1 := p::Rep
+          pr := pr1.coef
+          res0 : UP := 0
+          while not(empty?(pr)) repeat
+              r1 := first(pr)
+              pr := rest(pr)
+              c1 := r1.coef
+              n1 := c1.numer
+              n1 = 0 => "iterate"
+              cr : RF := n1/c1.denom
+              res0 := res0 + monomial(cr, r1.deg)$UP
+          res0
+
+      subst_var(p, ls1, ls2) ==
+          pr1 := p::Rep
+          v1 := pr1.var
+          for s1 in ls1 for s2 in ls2 repeat
+              if v1 = s1 then return [s2, pr1.coef]
+          p
+
+
+)abbrev package MEVAL2 ModularEvaluation2
+ModularEvaluation2() : Exports == Implementation where
+  MP ==> Polynomial(Integer)
+  RF ==> Fraction(MP)
+  UP ==> SparseUnivariatePolynomial(RF)
+  PT ==> Record(var : Symbol, coef : UP)
+  FP ==> FakePolynomial
+  Exports ==> ModularEvaluationCategory(PT, FP)
+  Implementation ==> add
+
+    PE ==> PolynomialEvaluationUtilities
+
+    degree(p : FP, s : Symbol) == degree(p, s)$FP
+    ldegree(p : PT, s : Symbol) ==
+        s = p.var => error "ldegree: s = p.var"
+        p1 := p.coef
+        degree(p1) > 0 => error "ldegree: degree(p1) > 0"
+        p2 : RF := ground(p1)
+        np2 : MP := numer(p2)$RF
+        dp2 : MP := denom(p2)$RF
+        degree(dp2, s) > 0 =>
+            error "ldegree: degree(dp2, s) > 0"
+        degree(np2, s)$MP
+
+    eval1(p, v, pt, s) ==
+        map((c : MP) : MP +-> eval1(c, v, pt, s)$PE, p)$FP
+
+    modpreduction(p, q) ==
+        map((c : MP) : MP +-> modpreduction(c, q)$PE, p)$FP
+
+    subst_vars(p, ls1, ls2) ==
+        lm := [monomial(1$MP, v, 1) for v in ls2]
+        res1 := map((c : MP) : MP +-> eval(c, ls1, lm), p)
+        subst_var(res1, ls1, ls2)
+
+    Qfun ==> PolynomialCategoryQuotientFunctions(IndexedExponents Symbol,
+               Symbol, Integer, MP, RF)
+
+    sas := create()$SingletonAsOrderedSet
+
+    m_inverse(x1 : RF, lmu : List(UP), ls : List(Symbol)) : RF ==
+        for s in ls for m in lmu repeat
+            q := univariate(x1, s, m)$Qfun
+            x1 := retract(eval(q, sas, s::MP::RF::UP))@RF
+        x1
+
+    trial_division(p, g, lm, v, ls) ==
+        gu1 := univariate(g, v)
+        gu := map((c : MP) : RF +-> c::RF, gu1
+                 )$SparseUnivariatePolynomialFunctions2(MP, RF)
+        pu := to_UP(p)
+        lcg := leadingCoefficient(gu)
+        dg := degree(gu)
+        gu := reductum(gu)
+        lmu := [numer(univariate(ground(to_UP(m)$FP), s)$Qfun)
+                 for m in lm for s in ls]
+        while not((dp := degree(pu)) < dg or pu = 0) repeat
+            lcp := leadingCoefficient(pu)
+            c1 := m_inverse(lcp/lcg, lmu, ls)
+            pu := reductum(pu) -
+                    monomial(c1, (dp - dg)::NonNegativeInteger)*gu
+        while not(pu = 0) repeat
+            lcp := leadingCoefficient(pu)
+            c1 := m_inverse(lcp, lmu, ls)
+            not(c1 = 0) =>
+                print(pu::OutputForm)
+                error "trial_division: not(pu = 0)"
+            pu := reductum(pu)
+        pu = 0
