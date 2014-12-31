@@ -939,7 +939,6 @@
   (|Unittest| . TESTUNIT)
   (|UnittestAux| . TESTAUX)
   (|UnittestCount| . TESTCNT)
-  (|UnivariateFactorize| . UNIFACT)
   (|UnivariateLaurentSeries| . ULS)
   (|UnivariateLaurentSeriesConstructor| . ULSCONS)
   (|UnivariatePolynomialDecompositionPackage| . UPDECOMP)
