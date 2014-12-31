@@ -357,14 +357,6 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       ++ Argument foo is a Risch differential system solver on F;
     lambintegrate : (RF, F, F -> F, UP -> UP, F -> UF, F -> IR0) -> IRIR
       ++ like tanintegrate
-    primintfldpoly    : (UP, F -> UF, F)    -> Union(UP, "failed")
-      ++ primintfldpoly(p, ', t') returns q such that \spad{p' = q} or
-      ++ "failed" if no such q exists. Argument \spad{t'} is the derivative of
-      ++ the primitive generating the extension.
-    expintfldpoly     : (GP, (Z, F) -> PSOL) -> Union(GP, "failed")
-      ++ expintfldpoly(p, foo) returns q such that \spad{p' = q} or
-      ++ "failed" if no such q exists.
-      ++ Argument foo is a Risch differential equation function on F.
     monomialIntegrate : (RF, UP -> UP) -> REC
       ++ monomialIntegrate(f, ') returns \spad{[ir, s, p]} such that
       ++ \spad{f = ir' + s + p} and all the squarefree factors of the
@@ -381,7 +373,6 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
     import from CommuteUnivariatePolynomialCategory(F, UP, UP2)
 
     primintegratepoly  : (UP, F -> UF, F) -> Union(UPF, UPUP)
-    expintegratepoly   : (GP, (Z, F) -> PSOL) -> Union(GPF, GPGP)
     expintegratepoly2   : (GP, (Z, F) -> PSOL2) -> Union(GPF, GPGP)
     expextintfrac      : (RF, UP -> UP, RF) -> Union(FFR, "failed")
     logprmderiv        : (RF, UP -> UP)    -> RF
@@ -458,22 +449,6 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
         p   := p - derivation term      -- degree(p) must drop here
       [ans, p]
 
--- returns either
---   (q in GP, a in F)  st p = q' + a, and a=0 or a has no integral in F
--- or (q in GP, r in GP) st p = q' + r, and r has no integral elem/UP
-    expintegratepoly(p, FRDE) ==
-      coef0 : F := 0
-      notelm := answr := 0$GP
-      while p ~= 0 repeat
-        ans1 := FRDE(n := degree p, a := leadingCoefficient p)
-        answr := answr + monomial(ans1.ans, n)
-        if ~ans1.sol? then         -- Risch d.e. has no complete solution
-               missing := a - ans1.right
-               if zero? n then coef0 := missing
-                          else notelm := notelm + monomial(missing, n)
-        p   := reductum p
-      zero? notelm => [answr, coef0]
-      [answr, notelm + monomial(coef0, 0)]
 
     expintegratepoly2(p, FRDE) ==
       coef0 : F := 0
@@ -509,18 +484,6 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       zero?(c0 := retract(retract(f)@UP)@F) or
         (u := FRDE(0, c0, 0)) case "failed" => [ans, c0]
       [ans + first(u::List(F))::UP::RF, 0::F]
-
--- returns q in UP s.t. p = q', or "failed"
-    primintfldpoly(p, extendedint, t') ==
-      (u := primintegratepoly(p, extendedint, t')) case UPUP => "failed"
-      u.a0 ~= 0 => "failed"
-      u.answer
-
--- returns q in GP st p = q', or "failed"
-    expintfldpoly(p, FRDE) ==
-      (u := expintegratepoly(p, FRDE)) case GPGP => "failed"
-      u.a0 ~= 0 => "failed"
-      u.answer
 
     notelementary rec ==
       rec.ir + integral(rec.polypart::RF + rec.specpart, monomial(1, 1)$UP :: RF)
@@ -674,10 +637,18 @@ RationalIntegration(F, UP) : Exports == Implementation where
   Implementation ==> add
     import from TranscendentalIntegration(F, UP)
 
+    Param_Rec_F ==> Record(ratpart : F, coeffs : Vector F)
+    L_Param_F ==> List Param_Rec_F
+
     infieldint f ==
-      rec := baseRDE(0, f)$TranscendentalRischDE(F, UP)
-      rec.nosol => "failed"
-      rec.ans
+        ext : List F ->  L_Param_F := lg +->
+            r1 := nullSpace(matrix([lg]))$Matrix(F)
+            [[0, bv] for bv in r1]
+        rec := primextint(differentiate$UP, ext, nullSpace$Matrix(F), [f]
+                         )$ParametricTranscendentalIntegration(F, UP)
+        empty?(rec) => "failed"
+        s1 := first(rec)
+        -s1.ratpart/((s1.coeffs)(1)::UP::RF)
 
     integrate f ==
       rec := monomialIntegrate(f, differentiate)
