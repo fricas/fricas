@@ -34,9 +34,8 @@ References: Mark van Hoeij, Michael Monagan, Algorithms for Polynomial
 ++  array and exponents (in main variable and in auxilary
 ++  variables representing generators of algebrac extension)
 ++  stored in parallel array.
-ModularAlgebraicGcdOperations(MPT : Type, MD : Type) : Category ==
+ModularAlgebraicGcdOperations(MP : Type, MPT : Type, MD : Type) : Category ==
   Exports where
-    MP ==> Polynomial Integer
     PA ==> U32Vector
     Exports ==> with
         pseudoRem : (MPT, MPT, MD) -> MPT
@@ -49,8 +48,8 @@ ModularAlgebraicGcdOperations(MPT : Type, MD : Type) : Category ==
           ++ pack_modulus(lp, ls, p) converts lp, ls and prime p which
           ++ together describe algebraic extension to packed
           ++ representation.
-        MPtoMPT : (MP, Symbol, List(Symbol), MD) -> MPT
-          ++ MPtoMPT(p, s, ls, m) coverts p to packed represntation.
+        MPtoMPT : (MP, Symbol, List(Symbol), MD) -> Union(MPT, "failed")
+          ++ MPtoMPT(p, s, ls, m) converts p to packed represntation.
         zero? : MPT -> Boolean
           ++ zero?(x) checks if x is zero.
         degree : MPT -> Integer
@@ -204,16 +203,20 @@ PrimGCD() : Exports == Implementation where
                 s := (blc exquo g) :: MP
                 a := alg_reduce(s*a - alc*mquo*b, lm, xvars, zvars)
 
-)abbrev package MAGCD ModularAlgebraicGcd
+)abbrev package MAGCD2 ModularAlgebraicGcd2
 ++ Description: This package computes gcd over field of algebraic
 ++  functions over Q using modular method based on M. Monagan and
 ++  van Hoej paper.
 ++  Core modular operations are passed as parameter (MO) to this
-++  package.
-ModularAlgebraicGcd(MPT : Type, MD : Type, MO
-    : ModularAlgebraicGcdOperations(MPT, MD)) : Exports == Implementation where
+++  package.  Simpiarly, evaluation functions are passed as
+++  paramteter ME.
+ModularAlgebraicGcd2(PT : Type, MP : Type,
+     MPT : Type, MD : Type,
+     ME : ModularEvaluationCategory(PT, MP),
+     MO : ModularAlgebraicGcdOperations(MP, MPT, MD)
+     ) : Exports == Implementation where
   SY ==> Symbol
-  MP ==> Polynomial Integer
+  RP ==> Polynomial Integer
   UPI ==> SparseUnivariatePolynomial Integer
   MPU ==> Polynomial UPI
   VI ==> Vector Integer
@@ -230,21 +233,25 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
                coeffdata : PA)
 
   Exports ==> with
-    algebraicGcd : (MP, MP, List(MP), List SY, SY, List(SY)) -> MP
+    algebraicGcd : (PT, PT, List(PT), List SY, SY, List(SY)) -> RP
       ++ algebraicGcd(x, y, lm, lp, v, la) computes gcd of x and y
       ++ modulo polynomials in lm.  la is list of algebraic parameters,
       ++ lp is a list of transcendental parameters, v is main variable.
 
   Implementation ==> add
 
-    algebraicGcd3a : (MP, MP, List(MP), List SY, PSS) -> MP
+    algebraicGcd3a : (MP, MP, List(MP), List SY, PSS) -> RP
     algebraicGcd2 : (MP, MP, List(MP), List SY, PSS) -> Union(PDR, "failed")
     algebraicGcd1a : (MP, MP, MD, SY, List(SY)) -> Union(MPT, "failed")
     algebraicGcd1 : (MP, MP, List(MP), PSS) -> Union(PDR, "failed")
 
     algebraicGcd1a(x, y, mu, vx, lvz) ==
-        xu := MPtoMPT(x, vx, lvz, mu)
-        yu := MPtoMPT(y, vx, lvz, mu)
+        xuu := MPtoMPT(x, vx, lvz, mu)
+        xuu case "failed" => "failed"
+        xu := xuu::MPT
+        yuu := MPtoMPT(y, vx, lvz, mu)
+        yuu case "failed" => "failed"
+        yu := yuu::MPT
         repeat
             w1 := pseudoRem(xu, yu, mu)
             zero?(w1) =>
@@ -304,7 +311,6 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         lt : List Integer := []
         rstate : VMR
         exps := empty()$SortedExponentVector
-        prev_coeff1 : MP := 0
         dx := pss.degx
         dy := pss.degy
         dg := pss.degg
@@ -317,9 +323,9 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             t : Integer := random(p)
             member?(t, lt) => "iterate"
             lt := cons(t, lt)
-            xt := eval1(x, vt, t, pss1)$PEVALUT
-            yt := eval1(y, vt, t, pss1)$PEVALUT
-            lmt := [eval1(m, vt, t, pss1)$PEVALUT for m in lm]
+            xt := eval1(x, vt, t, pss1)$ME
+            yt := eval1(y, vt, t, pss1)$ME
+            lmt := [eval1(m, vt, t, pss1)$ME for m in lm]
             lcbad : Boolean := false
             for m in lmt for deg in pss.sldeg for z in pss.svz repeat
                 if degree(m, z) < deg then lcbad := true
@@ -383,7 +389,6 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             -- if succesful return
             return pp::PDR
 
-
     base_vars : List Symbol := ['u0, 'u1, 'u2, 'u3, 'u4, 'u5, 'u6, _
               'u7, 'u8, 'u9, 'v0, 'v1, 'v2, 'v3, 'v4, 'v5, 'v6, 'v7, _
               'v8, 'v9, 'w0, 'w1, 'w2, 'w3, 'w4, 'w5, 'w6, 'w7, 'w8, 'w9]
@@ -396,24 +401,16 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
               'a7, 'a8, 'a9, 'b0, 'b1, 'b2, 'b3, 'b4, 'b5, 'b6, 'b7, _
               'b8, 'b9, 'c0, 'c1, 'c2, 'c3, 'c4, 'c5, 'c6, 'c7, 'c8, 'c9]
 
-    import from PrimGCD
-    SMPI ==> SparseMultivariatePolynomial(Integer, Symbol)
-
-    trialDivision2(x : MP, g : MP, lm : List(MP), vx : SY,
-                   lvz : List(SY)) : Boolean ==
-        alg_trial_division(x pretend SMPI, g pretend SMPI,
-                  [m pretend SMPI for m in lm], [vx], lvz)
-
     VIR ==> VectorIntegerReconstructor
 
     reconstruct3(lv : List SY, vx : SY, lvz : List(SY),
-                 exps : SortedExponentVector, pp : PAI) : MP ==
+                 exps : SortedExponentVector, pp : PAI) : RP ==
         nlv := concat(lv, reverse(lvz))
         pres := unpack_poly(nlv, exps, pp, 0, #pp - 1)$ModularHermitePade()
-        multivariate(pres, vx) pretend MP
+        multivariate(pres, vx) pretend RP
 
     algebraicGcd3a(x : MP, y : MP, lm : List(MP), lv : List SY, pss : PSS
-                  ) : MP ==
+                  ) : RP ==
         lp : List Integer := []
         rstate : VIR
         dx := pss.degx
@@ -432,12 +429,12 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             member?(p, lp) => 0
             lp := cons(p, lp)
             pss1.prime := p
-            xp := modpreduction(x, p)$PEVALUT
-            yp := modpreduction(y, p)$PEVALUT
+            xp := modpreduction(x, p)$ME
+            yp := modpreduction(y, p)$ME
             (degree(xp, vx) < dx) and (degree(yp, vx) < dy) => "iterate"
-            lmp := [modpreduction(m, p)$PEVALUT for m in lm]
+            lmp := [modpreduction(m, p)$ME for m in lm]
             lcbad : Boolean := false
-            for m in lm for deg in pss.sldeg for z in lvz repeat
+            for m in lmp for deg in pss.sldeg for z in lvz repeat
                 if degree(m, z) < deg then lcbad := true
             lcbad => "iterate"
             gtpp := algebraicGcd2(xp, yp, lmp, lv, pss)
@@ -486,8 +483,8 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
             pp := reconstruct(rstate, offsets)$VIR
             pp case "failed" => "iterate"
             res := reconstruct3(lv, vx, lvz, exps, pp::PAI)
-            if trialDivision2(x, res, lm, vx, lvz) and
-               trialDivision2(y, res, lm, vx, lvz) then
+            if trial_division(x, res, lm, vx, lvz)$ME and
+               trial_division(y, res, lm, vx, lvz)$ME then
                 return res
 
     algebraicGcd(x, y, lm, lv, vx, lvz) ==
@@ -500,22 +497,27 @@ ModularAlgebraicGcd(MPT : Type, MD : Type, MO
         tv := concat(tvz, tv0)
         tv := cons(tvx, tv)
         sv := cons(vx, concat(lvz, lv))
-        tval := [monomial(1, v, 1) for v in tv]@List(MP)
-        nx := eval(x, sv, tval)
-        ny := eval(y, sv, tval)
-        nlm := [eval(m, sv, tval) for m in lm]
-        ldeg : List(Integer) := [degree(m, vz) for m in lm for vz in lvz]
+        nx := subst_vars(x, sv, tv)
+        ny := subst_vars(y, sv, tv)
+        nlm := [subst_vars(m, sv, tv) for m in lm]
+        ldeg : List(Integer) := [ldegree(m, vz) for m in lm for vz in lvz]
         msize := reduce(_*, ldeg, 1)
-        -- pss1 : PSS1 := [new(10, 0)$PA, new(10, 0)$SortedExponentVector, 0]$PSS1
         pss : PSS := [degree(nx, tvx), degree(ny, tvx), 0, msize, ldeg, _
                     empty(), empty(), tvx, tvz, [0]$VI, _
                     [0, new(10, 0)$PA, new(10, 0)$SortedExponentVector]$PSS1]
         -- Overestimate
         pss.degg := min(pss.degx, pss.degy) + 1
         ress := algebraicGcd3a(nx, ny, nlm, tv0, pss)
-        sval := [monomial(1, v, 1) for v in sv]@List(MP)
+        sval := [monomial(1, v, 1) for v in sv]@List(RP)
         eval(ress, tv, sval)
 
+)abbrev package MAGCD ModularAlgebraicGcd
+++ Decritption: ModularAlgebraicGcd(MPT, MD, MO) is a compatibility
+++  wrapper around ModularAlgebraicGcd2.
+ModularAlgebraicGcd(MPT : Type, MD : Type, MO
+    : ModularAlgebraicGcdOperations(Polynomial Integer, MPT, MD)) ==
+  ModularAlgebraicGcd2(Polynomial Integer, Polynomial Integer, MPT, MD,
+    ModularEvaluation1(), MO)
 
 )abbrev package MAGCDT2 ModularAlgebraicGcdTools2
 -- Support for modular algebraic GCD, case of single extension
@@ -525,7 +527,7 @@ ModularAlgebraicGcdTools2 : Exports == Implementation where
   PA ==> U32Vector
   MD ==> Record(svz : Symbol, sm : PA, sp : Integer)
   PPA ==> PrimitiveArray(PA)
-  Exports ==> ModularAlgebraicGcdOperations(PPA, MD)
+  Exports ==> ModularAlgebraicGcdOperations(MP, PPA, MD)
   Implementation ==> add
 
     import from U32VectorPolynomialOperations
@@ -562,7 +564,8 @@ ModularAlgebraicGcdTools2 : Exports == Implementation where
                 j <= di => coeffs(ii) := ci(j)
                 coeffs(ii) := 0
 
-    MPtoMPT(x : MP, ivx : Symbol, ivz : List(Symbol), mu : MD) : PPA ==
+    MPtoMPT(x : MP, ivx : Symbol, ivz : List(Symbol), mu : MD
+           ) : Union(PPA, "failed") ==
         vz : Symbol := mu.svz
         p := mu.sp
         xu : SparseUnivariatePolynomial(MP) := univariate(x, ivx)$MP
@@ -668,7 +671,7 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
                 sp : Integer)
   MPU ==> SparseUnivariatePolynomial(MP)
   PA ==> U32Vector
-  Exports ==> ModularAlgebraicGcdOperations(MPU, MD) with
+  Exports ==> ModularAlgebraicGcdOperations(MP, MPU, MD) with
       m_inverse : (MP, List(MP), List(Symbol), Integer) -> Union(MP, "failed")
         ++ m_inverse(x, lm, lv, p) computes inverse of x in algeraic
         ++ extension defined by lm.
@@ -775,7 +778,8 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
             coeffs(i) := 0
         repack0(res00, coeffs, 0, lv, sizes)
 
-    MPtoMPT(x : MP, ivx : Symbol, ivz : List(Symbol), mu : MD) : MPU ==
+    MPtoMPT(x : MP, ivx : Symbol, ivz : List(Symbol), mu : MD
+           ) : Union(MPU, "failed") ==
         univariate(x, ivx)
 
     zero?(x : MPU) : Boolean == x = 0
@@ -882,3 +886,45 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
             cy := mreduction1(cy*cy, mu.sm, mu.svz, mu.sp)
         x := cy*x - cm*y
         mreduction(x, mu)
+
+
+)abbrev package MAGCDT4 ModularAlgebraicGcdTools4
+-- Support for modular algebraic GCD, case of multiple extensions
+-- and fractional coefficients.
+ModularAlgebraicGcdTools4 : Exports == Implementation where
+  FP ==> FakePolynomial
+  MP ==> Polynomial Integer
+  MD ==> Record(svz : List(Symbol), sm : List(MP), msizes : List(Integer),
+                sp : Integer)
+  MPU ==> SparseUnivariatePolynomial(MP)
+  PA ==> U32Vector
+
+  MOP3 ==> ModularAlgebraicGcdTools3
+
+  Exports ==> ModularAlgebraicGcdOperations(FP, MPU, MD)
+
+  Implementation ==> MOP3 add
+
+    RF ==> Fraction(MP)
+
+    FrP ==> Record(numer : MP, denom : MP)
+
+    FP_to_MP(p : FP) : MP ==
+        p2 := ground(p)
+        not(p2.denom = 1) => error "FP_to_MP: denom(p2) = 1"
+        p2.numer
+
+    pack_modulus(lm : List(FP), lvz : List(Symbol), p : Integer
+                ) : Union(MD, "failed") ==
+        lm2 : List(MP) := [FP_to_MP(m) for m in lm]
+        pack_modulus(lm2, lvz, p)$MOP3
+
+    FrP_to_MP(c : FrP, mu : MD) : Union(MP, "failed") ==
+        p1 := monomial(c.denom, 1)$MPU + c.numer::MPU
+        res1 := canonicalIfCan(p1, mu)$MOP3
+        res1 case "failed" => "failed"
+        coefficient(res1, 0)
+
+    MPtoMPT(p : FP, ivx : Symbol, ivz : List(Symbol), mu : MD
+           ) : Union(MPU, "failed") ==
+        map((c : FrP) : Union(MP, "failed") +-> FrP_to_MP(c, mu), p)
