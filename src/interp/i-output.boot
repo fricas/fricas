@@ -229,7 +229,6 @@ outputTran x ==
         vars is [x] => x
         ['Tuple,:vars]
     outputTran ["+->", vars, body]
-  x is ['MATRIX,:m] => outputTranMatrix m
   x is ['matrix,['construct,c]] and
     c is ['COLLECT,:m,d] and d is ['construct,e] and e is ['COLLECT,:.] =>
       outputTran ['COLLECT,:m,e]
@@ -441,19 +440,6 @@ outputConstructTran x ==
     [op,a,b]
   atom x => x
   [outputTran first x,:outputConstructTran rest x]
-
-outputTranMatrix x ==
-  not VECP x =>
-    -- assume that the only reason is that we've been done before
-    ["MATRIX",:x]
-    --keyedSystemError("S2GE0016",['"outputTranMatrix",
-    -- '"improper internal form for matrix found in output routines"])
-  ["MATRIX",nil,:[outtranRow x.i for i in 0..MAXINDEX x]] where
-    outtranRow x ==
-      not VECP x =>
-        keyedSystemError("S2GE0016",['"outputTranMatrix",
-          '"improper internal form for matrix found in output routines"])
-      ["ROW",:[outputTran x.i for i in 0..MAXINDEX x]]
 
 mkSuperSub(op,argl) ==
   $linearFormatScripts => linearFormatForm(op,argl)

@@ -404,7 +404,7 @@ form2String1 u ==
   op = "ATTRIBUTE" => form2String1 first argl
   op='Zero => 0
   op='One => 1
-  op = 'AGGLST => tuple2String argl
+  op = 'AGGLST => tuple2String [form2String1 x for x in argl]
   op = 'BRACKET =>
     argl' := form2String1 first argl
     ["[",:(atom argl' => [argl']; argl'),"]"]
@@ -437,10 +437,10 @@ form2String1 u ==
 
 matrix2String x ==
   concat(lbrkSch(),
-    tuple2String [outtranRow x.i for i in 0..MAXINDEX x],rbrkSch()) where
+    tuple2String [outtranRow ri for ri in rest(x)],rbrkSch()) where
       outtranRow x ==
         concat(lbrkSch(),
-          tuple2String [form2String1 x.i for i in 0..MAXINDEX x], rbrkSch())
+          tuple2String [form2String1 ei for ei in rest(x)], rbrkSch())
 
 binop2String x ==
     $curExpr : local := x
