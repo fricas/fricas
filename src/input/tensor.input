@@ -1,6 +1,34 @@
 )set break resume
 )expose UnittestCount UnittestAux Unittest
-testsuite "TENSOR"
+
+testsuite "FreeModule"
+
+testcase "FreeModuleCoefficientFunctions2"
+
+Z2:= IntegerMod 2
+A:= FreeModule(Integer, Symbol)
+B:= FreeModule(Z2, Symbol)
+a:A := reduce(+, [monomial(k, t[k])$A for k in 1..10])
+b:B := reduce(+, [monomial(1$Z2, t[k])$B for k in 1..10 by 2])
+b1:= map( (c:Integer):Z2 +-> c::Z2, a)$FreeModuleCoefficientFunctions2(Integer, Z2, Symbol, A, B)
+
+testTrue("zero?(b-b1)")
+
+
+testcase "MonoidRing"
+
+F ==> FreeGroup Symbol
+C:= MonoidRing(Integer, F)
+x0:= x::F
+y0:= y::F
+
+T:= monomial(1, x0)$C + monomial(1, inv x0)$C + monomial(1, y0)$C + monomial(1, inv y0)$C
+T4:= T^4;
+testEquals("coefficient(T4, 1::F)", "28")
+
+
+testsuite "Tensor"
+
 testcase "TensorProduct addition"
 
 M:=FreeModule(Integer,Symbol);
@@ -233,9 +261,11 @@ testEquals("linearExtend(trace,tt)","s0*t0*u0");
 testEquals("linearExtend(traceB,tt)","s0*t0*u0");
 expected() ==
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
-    messagePrint("TENSOR                      0     (5)               0     (11)")$OutputForm
-
-
-
+    messagePrint("FreeModule                  0     (2)               0     (2)")$OutputForm
+    messagePrint("Tensor                      0     (5)               0    (11)")$OutputForm
+    
+   
+   
+    
 statistics()
 expected()
