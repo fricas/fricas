@@ -23,10 +23,9 @@
 ++   Author: Michel Petitot (petitot@lifl.fr)
 ++
 ++   Note (Franz Lehner, June 2009):
-++   Since \spad{leadingTerm} makes no sense
-++   for unordered base sets,
+++   Since \spad{leadingTerm} makes no sense for unordered base sets,
 ++   and at the time of this writing this domain was never used for such,
-++   it was changed to \spad{OrderedSet}.
+++   the base set is required to be \spad{Comparable}.
 ++   \spad{FreeModule} originally was not of FreeModuleCategory.
 ++   Some functions (like \spad{support}, \spad{coefficients},
 ++   \spad{monomials}, ...) from here could be moved to
@@ -267,6 +266,36 @@ FreeModuleFunctions2(R : CommutativeRing, S : Comparable, M1 : FreeModuleCategor
             res
 
 
+)abbrev package FMCF2 FreeModuleCoefficientFunctions2
+++ Author: Franz Lehner
+++ Date Created: 31.12.2014
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   A package for mappings between coefficients of free modules over the same
+++   base set.
+FreeModuleCoefficientFunctions2(R1, R2, S, M1, M2) : Exports == Implementation where
+  R1 : Join(SemiRng, AbelianMonoid)
+  R2 : Join(SemiRng, AbelianMonoid)
+  S : Comparable
+  M1 : FreeModuleCategory(R1, S)
+  M2 : FreeModuleCategory(R2, S)
+
+  Term1 ==> Record(k:S, c:R1)
+  Term2 ==> Record(k:S, c:R2)
+  Exports ==> with
+    map : (R1 -> R2, M1) -> M2
+    ++ \spad{map(f, x)} applies the function f to every coefficient of x
+  Implementation ==> add
+    map(f, x) ==
+        rx: List Term1 := listOfTerms x
+        ry: List Term2 := map((t:Term1):Term2 +-> [t.k, f(t.c)], rx)$ListFunctions2(Term1, Term2)
+        constructOrdered select((t:Term2):Boolean +-> not zero?(t.c), ry)
 
 )abbrev domain PR PolynomialRing
 ++ Author: Dave Barton, James Davenport, Barry Trager

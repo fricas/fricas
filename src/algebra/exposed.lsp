@@ -106,6 +106,7 @@
   (|Fraction| . FRAC)
   (|FractionalIdealFunctions2| . FRIDEAL2)
   (|FractionFunctions2| . FRAC2)
+  (|FreeModuleCoefficientFunctions2| . FMCF2)
   (|FreeModuleFunctions2| . FM2)
   (|FreeNilpotentLie| . FNLA)
   (|FullPartialFractionExpansion| . FPARFRAC)
