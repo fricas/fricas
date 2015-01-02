@@ -55,9 +55,12 @@ FreeModuleCategory(R, S) : Category == Exports where
         monomial? : % -> Boolean
           ++ \spad{monomial?(x)} returns true if \spad{x} contains a single
           ++ monomial.
-        leadingMonomial    : % -> S
-          ++ \spad{leadingMonomial(x)} returns the first element from \spad{S}
+        leadingSupport    : % -> S
+          ++ \spad{leadingSupport(x)} returns the first element from \spad{S}
           ++ which appears in \spad{listOfTerms(x)}.
+        leadingMonomial    : % -> %
+          ++ \spad{leadingMonomial(x)} returns the monomial supported by the
+          ++ first element from \spad{S} which appears in \spad{listOfTerms(x)}.
         leadingCoefficient : % -> R
           ++ \spad{leadingCoefficient(x)} returns the first coefficient
           ++ which appears in \spad{listOfTerms(x)}.
@@ -78,7 +81,7 @@ FreeModuleCategory(R, S) : Category == Exports where
               repeat
                   zero?(q) => return false
                   zero?(p) => return true
-                  if leadingMonomial(p) = leadingMonomial(q) then
+                  if leadingSupport(p) = leadingSupport(q) then
                       if leadingCoefficient(p) = leadingCoefficient(q) then
                           p := reductum p
                           q := reductum q
@@ -86,7 +89,7 @@ FreeModuleCategory(R, S) : Category == Exports where
                           return smaller?(leadingCoefficient(p),
                                           leadingCoefficient(q))
                   else
-                      return smaller?(leadingMonomial(p), leadingMonomial(q))
+                      return smaller?(leadingSupport(p), leadingSupport(q))
 
 )abbrev domain FM FreeModule
 ++ Author: Dave Barton, James Davenport, Barry Trager
@@ -123,6 +126,10 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : Comparable) :
     --representations
        Term ==>  Record(k : S, c : R)
        Rep :=  List Term
+
+       rep(x:%):Rep == x :: Rep
+       per(r:Rep):% == r :: %
+
     --declarations
        x, y : %
        r : R
@@ -181,7 +188,7 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : Comparable) :
                reduce("+", [rec.c :: OutputForm *  rec.k :: OutputForm
                              for rec in x])
 
-       leadingMonomial x == x.first.k
+       leadingMonomial x == monomial((first rep x).c, (first x).k)
 
        support x == [t.k for t in x]
 

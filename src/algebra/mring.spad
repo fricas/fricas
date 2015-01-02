@@ -14,7 +14,7 @@
 ++  of all maps from the monoid M to the commutative ring R with
 ++  finite support.
 MonoidRingCategory(R : Ring, M : Monoid) : Category == MRCdefinition where
-    Term ==> Record(coef : R, monom : M)
+    Term ==> Record(k : M, c : R)
 
     MRCdefinition == Join(Ring, RetractableTo M, RetractableTo R) with
         monomial         : (R, M) -> %
@@ -45,21 +45,13 @@ MonoidRingCategory(R : Ring, M : Monoid) : Category == MRCdefinition where
         if R has CharacteristicNonZero then CharacteristicNonZero
         if R has CommutativeRing then Algebra(R)
         if (R has Finite and M has Finite) then Finite
-        if M has OrderedSet then
-          leadingMonomial   : % -> M
-            ++ leadingMonomial(f) gives the monomial of f whose
-            ++ corresponding monoid element is the greatest
-            ++ among all those with non-zero coefficients.
-          leadingCoefficient : % -> R
-            ++ leadingCoefficient(f) gives the coefficient of f, whose
-            ++ corresponding monoid element is the greatest
-            ++ among all those with non-zero coefficients.
-          reductum          : % -> %
-            ++ reductum(f) is f minus its leading monomial.
+        if M has Comparable then
+          FreeModuleCategory(R, M)
+
 )abbrev domain MRING MonoidRing
 ++ Authors: Stephan M. Watt; revised by Johannes Grabmeier
 ++ Date Created: January 1986
-++ Date Last Updated: 14 December 1995, Mike Dewar
+++ Date Last Updated: 14 December 1995, Mike Dewar; 31.12.2014, Franz Lehner
 ++ Basic Operations: *, +, monomials, coefficients
 ++ Related Constructors: Polynomial
 ++ Also See:
@@ -84,28 +76,31 @@ MonoidRingCategory(R : Ring, M : Monoid) : Category == MRCdefinition where
 ++  area is representation theory of finite groups G, where modules
 ++  over \spadtype{MonoidRing}(R, G) are studied.
 MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition where
-    Term ==> Record(coef : R, monom : M)
+    Term ==> Record(k : M, c : R)
 
     MRdefinition ==> add
         Ex ==> OutputForm
-        Cf ==> coef
-        Mn ==> monom
+        Cf ==> c
+        Mn ==> k
 
-        Rep  := List Term
+        Rep := List Term
+        
+        rep(x:%):Rep == x :: Rep
+        per(r:Rep):% == r :: %
 
-        coerce(x : List Term) : % == x :: %
+        coerce(x : List Term) : % == per x
 
         monomial(r : R, m : M)  ==
           r = 0 => empty()
-          [[r, m]]
+          [[m, r]]
 
         if (R has Finite and M has Finite) then
           size() == size()$R ^ size()$M
 
-          index k ==
+          index i0 ==
             -- use p-adic decomposition of k
             -- coefficient of p^j determines coefficient of index(i+p)$M
-            i : Integer := k rem size()
+            i : Integer := i0 rem size()
             p : Integer := size()$R
             n : Integer := size()$M
             ans : % := 0
@@ -113,10 +108,10 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
               h := i rem p
               -- we use index(p) = 0$R
               if h ~= 0 then
-                c : R := index(h :: PositiveInteger)$R
+                cf : R := index(h :: PositiveInteger)$R
                 m : M := index((j+n) :: PositiveInteger)$M
                 --ans := ans + c *$% m
-                ans := ans + monomial(c, m)$%
+                ans := ans + monomial(cf, m)$%
               i := i quo p
             ans
 
@@ -140,47 +135,46 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
 
         0                   == empty()
         1                   == [[1, 1]]
-        terms a             == (copy a) pretend List(Term)
+--        terms a             == (copy a) pretend List(Term)
+        terms a             == copy rep a
         monomials a         == [[t] for t in a]
         coefficients a      == [t.Cf for t in a]
-        coerce(m : M) : %       == [[1, m]]
+        coerce(m : M) : %       == [[m, 1]]
         coerce(r : R) : % ==
         -- coerce of ring
           r = 0 => 0
-          [[r,    1]]
+          [[1, r]]
         coerce(n : Integer) : % ==
         -- coerce of integers
           n = 0 => 0
-          [[n::R, 1]]
-        - a                 == [[ -t.Cf, t.Mn] for t in a]
+          [[1, n::R]]
+        - a                 == [[t.Mn, -t.Cf] for t in a]
         if R has noZeroDivisors
            then
             (r : R) * (a : %) ==
               r = 0 => 0
-              [[r*t.Cf, t.Mn] for t in a]
+              [[t.Mn, r*t.Cf] for t in a]
            else
             (r : R) * (a : %) ==
               r = 0 => 0
-              [[rt, t.Mn] for t in a | (rt := r*t.Cf) ~= 0]
+              [[t.Mn, rt] for t in a | (rt := r*t.Cf) ~= 0]
         if R has noZeroDivisors
            then
             (n : Integer) * (a : %) ==
               n = 0 => 0
-              [[n*t.Cf, t.Mn] for t in a]
+              [[t.Mn, n*t.Cf] for t in a]
            else
             (n : Integer) * (a : %) ==
               n = 0 => 0
-              [[nt, t.Mn] for t in a | (nt := n*t.Cf) ~= 0]
-        map(f, a)           == [[ft, t.Mn] for t in a | (ft := f(t.Cf)) ~= 0]
+              [[t.Mn, nt] for t in a | (nt := n*t.Cf) ~= 0]
+        map(f, a)           == [[t.Mn, ft] for t in a | (ft := f(t.Cf)) ~= 0]
         numberOfMonomials a == #a
 
         retractIfCan(a:%):Union(M, "failed") ==
---          one?(#a) and one?(a.first.Cf) => a.first.Mn
           ((#a) = 1) and ((a.first.Cf) = 1) => a.first.Mn
           "failed"
 
         retractIfCan(a:%):Union(R, "failed") ==
---          one?(#a) and one?(a.first.Mn) => a.first.Cf
           ((#a) = 1) and ((a.first.Mn) = 1) => a.first.Cf
           "failed"
 
@@ -208,36 +202,80 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
             empty? rest a => mkTerm(a.first.Cf, a.first.Mn)
             reduce(_+, [mkTerm(t.Cf, t.Mn) for t in a])$List(Ex)
 
-        if M has OrderedSet then -- we mean totally ordered
-            -- Terms are stored in decending order.
+        if M has Comparable then
+            -- Terms are stored in descending order.
             leadingCoefficient a == (empty? a => 0; a.first.Cf)
-            leadingMonomial a    == (empty? a => 1; a.first.Mn)
+            leadingSupport a    == (empty? a => 1; a.first.Mn)
+            leadingMonomial a    ==
+                empty? rep a => error "empty support"
+                monomial((first rep a).Cf, (first rep a).Mn)
+
+            leadingTerm a    == 
+                empty? a => error "empty support"
+                a.first
+
             reductum a           == (empty? a => a; rest a)
 
+            listOfTerms a == rep a
+            
+            support a == [t.k for t in rep a]
+
+            constructOrdered(x : List Term) : % == per x
+            
+            termless(t1:Term, t2:Term):Boolean == smaller?(t1.k, t2.k)
+            
+            construct(x : List Term) : % ==
+                xs : List Term := sort(termless, x)
+                res : List Term := empty()
+                -- find duplicates
+                while not empty? xs repeat
+                    t1:= first xs
+                    while not empty? xs repeat
+                        t2:= first xs
+                        if t1.k = t2.k then
+                           t1.c:= t1.c+t2.c
+                           xs:= rest xs
+                    if not zero? t1.c then
+                        res := cons (t1, res)
+                per reverse res
+
+            if R has CommutativeRing then
+                f : M -> R
+                x : %
+                t : Term
+                linearExtend(f, x) ==
+                    zero? x => 0
+                    res : R := 0
+                    for t in rep x repeat
+                        res := res + (t.Cf)*f(t.Mn)
+                    res
+                
             a = b ==
-                #a ~= #b => false
-                for ta in a for tb in b repeat
+                #rep a ~= #rep b => false
+                for ta in rep a for tb in rep b repeat
                     ta.Cf ~= tb.Cf or ta.Mn ~= tb.Mn => return false
                 true
 
             a + b ==
-                c : % := empty()
-                while not empty? a and not empty? b repeat
-                  ta := first a; tb := first b
-                  ra := rest a;  rb := rest b
-                  c :=
-                    ta.Mn > tb.Mn => (a := ra; concat!(c, ta))
-                    ta.Mn < tb.Mn => (b := rb; concat!(c, tb))
-                    a := ra; b := rb
-                    not zero?(r := ta.Cf+tb.Cf) =>
-                                        concat!(c, [r, ta.Mn])
-                    c
-                concat!(c, concat(a, b))
+                repa:Rep := rep a
+                repb:Rep := rep b
+                res : Rep := empty()
+                while not empty? repa and not empty? repb repeat
+                  ta:Term := first repa; tb:Term := first repb
+                  ra:Rep := rest repa;  rb:Rep := rest repb
+                  res :=
+                    smaller?(tb.Mn, ta.Mn)  => (repa := ra; concat!(res, ta))
+                    smaller?(ta.Mn, tb.Mn) => (repb := rb; concat!(res, tb))
+                    repa := ra; repb := rb
+                    not zero?(r := ta.Cf + tb.Cf) =>
+                                        concat!(res, [ta.Mn, r])
+                    res
+                per concat!(res, concat(repa, repb))
 
             coefficient(a, m) ==
                 for t in a repeat
                     if t.Mn = m then return t.Cf
-                    if t.Mn < m then return 0
+                    if smaller?(t.Mn, m) then return 0
                 0
 
 
@@ -248,11 +286,11 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
 
               if R has noZeroDivisors then
                 a : % * b : % ==
-                  +/[[[ta.Cf*tb.Cf, ta.Mn*tb.Mn]$Term
+                  +/[[[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
                     for tb in b ] for ta in reverse a]
               else
                 a : % * b : % ==
-                  +/[[[r, ta.Mn*tb.Mn]$Term
+                  +/[[[ta.Mn*tb.Mn, r]$Term
                     for tb in b | not zero?(r := ta.Cf*tb.Cf)]
                       for ta in reverse a]
             else -- M hasn't OrderedMonoid
@@ -261,7 +299,7 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
             -- monoid elements by a single element respects the ordering:
             -- we have to order and to collect equal terms
               ge : (Term, Term) -> Boolean
-              ge(s, t) == t.Mn <= s.Mn
+              ge(s, t) == not smaller? (s.Mn, t.Mn)
 
               sortAndAdd : List Term -> List Term
               sortAndAdd(liTe) ==  -- assume liTe not empty
@@ -273,10 +311,10 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                   if m = te.Mn then
                     cf := cf + te.Cf
                   else
-                    if not zero? cf then res := cons([cf, m]$Term, res)
+                    if not zero? cf then res := cons([m, cf]$Term, res)
                     m := te.Mn
                     cf := te.Cf
-                if not zero? cf then res := cons([cf, m]$Term, res)
+                if not zero? cf then res := cons([m, cf]$Term, res)
                 reverse res
 
 
@@ -284,13 +322,13 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                 a : % * b : % ==
                   zero? a => a
                   zero? b => b  -- avoid calling sortAndAdd with []
-                  +/[sortAndAdd [[ta.Cf*tb.Cf, ta.Mn*tb.Mn]$Term
+                  +/[sortAndAdd [[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
                     for tb in b ] for ta in reverse a]
               else
                 a : % * b : % ==
                   zero? a => a
                   zero? b => b  -- avoid calling sortAndAdd with []
-                  +/[sortAndAdd [[r, ta.Mn*tb.Mn]$Term
+                  +/[sortAndAdd [[ta.Mn*tb.Mn, r]$Term
                     for tb in b | not zero?(r := ta.Cf*tb.Cf)]
                       for ta in reverse a]
 
@@ -313,18 +351,18 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
 
           a + b ==
               Tabl := table()$AssociationList(M, R)
-              for t in a repeat
+              for t in rep a repeat
                   Tabl t.Mn := t.Cf
-              for t in b repeat
+              for t in rep b repeat
                   addterm(Tabl, t.Cf, t.Mn)
-              [[Tabl m, m]$Term for m in keys Tabl]
+              [[m, Tabl m]$Term for m in keys Tabl]
 
           a : % * b : % ==
               Tabl := table()$AssociationList(M, R)
               for ta in a repeat
                   for tb in (b pretend List(Term)) repeat
                       addterm(Tabl, ta.Cf*tb.Cf, ta.Mn*tb.Mn)
-              [[Tabl.m, m]$Term for m in keys Tabl]
+              [[m, Tabl.m]$Term for m in keys Tabl]
 
 )abbrev package MRF2 MonoidRingFunctions2
 ++ Author: Johannes Grabmeier
@@ -352,7 +390,7 @@ MonoidRingFunctions2(R, S, M) : Exports == Implementation where
       map(fn, u) ==
         res : MonoidRing(S, M) := 0
         for te in terms u repeat
-          res := res + monomial(fn(te.coef), te.monom)
+          res := res + monomial(fn(te.c), te.k)
         res
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
