@@ -205,6 +205,7 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
           ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
         mapGen       : (S -> S, %) -> %
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
+        if S has Comparable then Comparable
         if S has OrderedSet then OrderedSet
 
     FMdefinition ==> ListMonoidOps(S, NonNegativeInteger, 1) add
@@ -303,32 +304,59 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
         rquo(qa, a) ==
             (u := lquo(reverse qa, reverse a)) case "failed" => "failed"
             reverse!(u::%)
+        
+        if S has Comparable then        
+          if S has OrderedSet then
+            a < b ==
+              la := listOfMonoms a
+              lb := listOfMonoms b
+              na : Integer := #la
+              nb : Integer := #lb
+              while na > 0 and nb > 0 repeat
+                  la.first.gen > lb.first.gen => return false
+                  la.first.gen < lb.first.gen => return true
+                  if la.first.exp = lb.first.exp then
+                      la := rest la
+                      lb := rest lb
+                      na := na - 1
+                      nb := nb - 1
+                  else if la.first.exp > lb.first.exp then
+                      la := concat([la.first.gen,
+                             (la.first.exp - lb.first.exp)::NNI], rest lb)
+                      lb := rest lb
+                      nb := nb - 1
+                  else
+                      lb := concat([lb.first.gen,
+                               (lb.first.exp-la.first.exp)::NNI], rest la)
+                      la := rest la
+                      na := na-1
+              empty? la and not empty? lb
 
-        if S has OrderedSet then
-          a < b ==
-            la := listOfMonoms a
-            lb := listOfMonoms b
-            na : Integer := #la
-            nb : Integer := #lb
-            while na > 0 and nb > 0 repeat
-                la.first.gen > lb.first.gen => return false
-                la.first.gen < lb.first.gen => return true
-                if la.first.exp = lb.first.exp then
-                    la := rest la
-                    lb := rest lb
-                    na := na - 1
-                    nb := nb - 1
-                else if la.first.exp > lb.first.exp then
-                    la := concat([la.first.gen,
-                           (la.first.exp - lb.first.exp)::NNI], rest lb)
-                    lb := rest lb
-                    nb := nb - 1
-                else
-                    lb := concat([lb.first.gen,
-                             (lb.first.exp-la.first.exp)::NNI], rest la)
-                    la := rest la
-                    na := na-1
-            empty? la and not empty? lb
+          else
+            smaller?(a, b) ==
+              la := listOfMonoms a
+              lb := listOfMonoms b
+              na : Integer := #la
+              nb : Integer := #lb
+              while na > 0 and nb > 0 repeat
+                  smaller?(lb.first.gen, la.first.gen) => return false
+                  smaller?(la.first.gen, lb.first.gen) => return true
+                  if la.first.exp = lb.first.exp then
+                      la := rest la
+                      lb := rest lb
+                      na := na - 1
+                      nb := nb - 1
+                  else if la.first.exp > lb.first.exp then
+                      la := concat([la.first.gen,
+                             (la.first.exp - lb.first.exp)::NNI], rest lb)
+                      lb := rest lb
+                      nb := nb - 1
+                  else
+                      lb := concat([lb.first.gen,
+                               (lb.first.exp-la.first.exp)::NNI], rest la)
+                      la := rest la
+                      na := na-1
+              empty? la and not empty? lb
 
 )abbrev domain FGROUP FreeGroup
 ++ Free group on any set of generators
@@ -358,6 +386,8 @@ FreeGroup(S : SetCategory) : Join(Group, RetractableTo S) with
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
         factors      : % -> List Record(gen : S, exp : Integer)
           ++ factors(a1\^e1, ..., an\^en) returns \spad{[[a1, e1], ..., [an, en]]}.
+        if S has Comparable then Comparable
+
     == ListMonoidOps(S, Integer, 1) add
         Rep := ListMonoidOps(S, Integer, 1)
 
@@ -388,6 +418,25 @@ FreeGroup(S : SetCategory) : Join(Group, RetractableTo S) with
                                 [q.first.gen, q.first.exp + r.first.exp])
               makeMulti concat!(h, rest q)
             makeMulti concat!(reverse! r, q)
+
+        -- deglex order (with respect to block length)
+        if S has Comparable then
+          smaller?(a, b) ==
+            la := listOfMonoms a
+            lb := listOfMonoms b
+            na : Integer := #la
+            nb : Integer := #lb
+            na < nb => return true
+            nb < na => return false
+            -- case of equal length
+            while not empty? la repeat
+                smaller?(la.first.gen, lb.first.gen) => return true
+                smaller?(lb.first.gen, la.first.gen) => return false
+                la.first.exp < lb.first.exp => return true
+                lb.first.exp < la.first.exp => return false
+                la:= rest la
+                lb:= rest lb
+            false
 
 )abbrev category FAMONC FreeAbelianMonoidCategory
 ++ Category for free abelian monoid on any set of generators
