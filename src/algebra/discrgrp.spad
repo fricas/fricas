@@ -1,0 +1,299 @@
+)abbrev category FINGRP FiniteGroup
+++ Author: Franz Lehner
+++ Date Created: 30.04.2008
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ The category of finite groups.
+FiniteGroup : Category == Join(Group, Finite) with
+    order : % -> Integer
+    ++ \spad{order(x)} computes the order of the element $x$.
+  add -- default
+    order x ==
+        k:Integer := 1
+        y:% := x
+        while not one? y repeat
+            k := k+1
+            y := y*x
+        k
+
+)abbrev package FINGPKG FiniteGroupPackage
+++ Author: Franz Lehner
+++ Date Created: 02.01.2015
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ A package for permutation representations of finite groups.
+FiniteGroupPackage(G:Join(Group, Finite)) : with
+    permutationRepresentation : G -> Permutation Integer
+    ++ \spad{permutationRepresentation(x)} returns the permutation induced by x on \spad{enumerate()$G}
+    regularRepresentation : G -> Matrix Integer
+    ++ \spad{regularRepresentation(x)} returns the matrix representation of the
+    ++ permutation \spad{permutationRep(x)}
+  == add
+    permutationRepresentation(x:G) : Permutation Integer ==
+            all : List G := enumerate()$G
+            n : Integer := (#all)::Integer
+            xall := [x*a for a in all]
+            k : Integer
+            preimag : List Integer := [k for k in 1..n]
+            imag : List Integer := [position(a, xall) for a in all]
+            p : Permutation Integer := coercePreimagesImages([preimag, imag])
+
+    regularRepresentation(x:G) : Matrix Integer ==
+            n : Integer := size()$G
+            permutationRepresentation(permutationRepresentation x, n)$(RepresentationPackage1 Integer)
+
+)abbrev category FINGEN FinitelyGenerated
+++ Author: Franz Lehner
+++ Date Created: 30.04.2008
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ A category for finitely generated structures.
+++ Exports a list of generators.
+FinitelyGenerated:Category == with
+  generators : () -> List %
+  ++ \spad{generators()} returns the list of generators.
+
+)abbrev domain CYCGRP CyclicGroup
+++ Author: Franz Lehner
+++ Date Created: 30.12.2014
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ A domain for finite cyclic groups.
+CyclicGroup(n: PositiveInteger, g: Symbol) : Exports == Implementation where
+  Exports ==> Join(FiniteGroup, FinitelyGenerated, Comparable, ConvertibleTo SExpression) with
+    generator : () -> %
+    ++ \spad{generator()} returns the generator.
+    exponent : % -> Integer
+    ++ \spad{exponent(g^k)} returns the representative integer $k$.
+  Implementation ==> add
+    Rep := Integer
+
+    rep(x:%) : Rep == x :: Rep
+    per(r:Rep) : % == r :: %
+
+    -- SetCategory
+    coerce(x: %) : OutputForm ==
+        one? x => return coerce(1@Integer)$Integer
+        one?(rep x)$Rep => return g::OutputForm
+        (g::OutputForm)^coerce(rep x)
+
+    hashUpdate!(hs, s) == update!(hs, rep s pretend SingleInteger)$HashState
+
+    convert(x:%) : SExpression ==
+        convert(rep x)$SExpression
+
+    -- Group operations
+    1: % ==
+        per(0$Rep)
+
+    one?(x: %) : Boolean == zero? (rep x)
+
+    order(x: %) == n quo gcd(exponent x,n)
+
+    _*(x:%, y:%) : % == per(addmod(rep x, rep y, n)$Rep)
+
+    inv(x: %) : % ==
+        one? x => 1
+        per((n - rep x)$Rep)
+
+    -- SetCategory
+    _=(x:%, y:%) : Boolean == (rep x = rep y)
+
+    smaller?(x, y) == rep x < rep y
+    -- Finite
+    size() : NonNegativeInteger == n::NonNegativeInteger
+
+    index(i: PositiveInteger) : % ==
+        i > n => error "out of range"
+        imodn := submod(i, 1, n)
+        zero? imodn => return 1
+        per imodn
+
+    lookup(x) == ((rep x) rem n + 1) pretend PositiveInteger
+
+    random() == per random(n)
+
+    enumerate() : List % == [per k for k in 0..n-1]
+
+    -- FinitelyGenerated
+    generator() : % ==  per 1
+
+    exponent(x:%) : Integer ==  rep x
+
+    generators() : List % == [generator()]
+
+)abbrev domain INFCG InfiniteCyclicGroup
+++ Author: Franz Lehner
+++ Date Created: 30.12.2014
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ Infinite cyclic groups.
+InfiniteCyclicGroup(g: Symbol) : Exports == Implementation where
+  Exports ==> Join(SetCategory, Group, FinitelyGenerated, OrderedSet, OrderedMonoid, ConvertibleTo SExpression) with
+    ConvertibleTo SExpression
+    generator : () -> %
+    ++ \spad{generator()} returns the generator.
+    exponent : % -> Integer
+    ++ \spad{exponent(g^k)} returns the representative integer $k$.
+
+  Implementation ==> add
+    Rep := Integer
+
+    rep(x:%) : Rep == x :: Rep
+    per(r:Rep) : % == r :: %
+
+    coerce(x: %) : OutputForm ==
+        one?(x) => coerce(1$Integer)$Integer
+        one?(rep x)$Integer => coerce(g)$Symbol
+        coerce(g)^(coerce(rep x)$Rep)
+
+    hashUpdate!(hs, s) == update!(hs, rep s pretend SingleInteger)$HashState
+
+    convert(x:%) : SExpression ==
+        convert(rep x)$SExpression
+
+    -- FinitelyGenerated
+    generator() : % == per (1$Rep)
+
+    generators() : List % == [generator()]
+
+    exponent x == rep x
+
+    -- Group operations
+    1 : % ==  per(0$Rep)
+
+    one?(x: %) : Boolean == zero?(rep x)$Rep
+
+    _*(x:%, y:%) : % == per(rep(x) +  rep(y))
+
+    inv(x: %) : % == per( - rep x)
+
+    -- OrderedSet
+    _=(x:%, y:%) : Boolean == ( rep x =$Rep rep y)
+    _<(x:%, y:%) : Boolean == ( rep x <$Rep rep y)
+
+)abbrev domain DIHGRP DihedralGroup
+++ Author: Franz Lehner
+++ Date Created: 30.12.2014
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ \spad{DihedralGroup(n, a, b)} is the dihedral group generated by
+++ a rotation a of order n and a reflection b.
+DihedralGroup(n: PositiveInteger, a: Symbol, b: Symbol):Exports == Implementation where
+  EXPA ==> IntegerMod n
+  EXPB ==> IntegerMod 2
+  Exports ==> Join(FiniteGroup, FinitelyGenerated, Comparable) with
+    expa : % -> EXPA
+    ++ \spad{expa(x)} returns the exponent of the rotation a in the normal form
+    ++ of x
+    expb : % -> EXPB
+    ++ \spad{expa(x)} returns the exponent of the reflection b in the normal
+    ++ form of x
+    exponenta : % -> Integer
+    ++ \spad{exponenta(x)} returns the exponent of the rotation a in the normal
+    ++ form of x as integer
+    exponentb : % -> Integer
+    ++ \spad{exponentb(x)} returns the exponent of the reflection b in the normal
+    ++ form of x as integer
+  Implementation ==> add
+    Rep := Record (expa : EXPA, expb : EXPB)
+    rep(x:%) : Rep == x :: Rep
+    per(r:Rep) : % == r :: %
+
+    expa(x:%) : EXPA == (rep x).expa
+    expb(x:%) : EXPB == (rep x).expb
+
+    exponenta(x:%) : Integer == convert expa(x)
+    exponentb(x:%) : Integer == convert expb(x)
+
+    1 : % == per([0,0]$Rep)
+
+    one?(x:%) : Boolean == zero? expa x and zero? expb x
+
+    coerce(y:%) : OutputForm ==
+        one? y => (1$Integer)::OutputForm
+        zero? expa y => b::OutputForm
+        if one? expa y then
+            aout:= a::OutputForm
+        else
+            aout : OutputForm := a::OutputForm^((expa y)::OutputForm)
+        zero? expb y => aout
+        aout * (b::OutputForm)
+
+    generators() : List % == [per([1,0]$Rep), per([0,1]$Rep)]
+
+    -- Group operations
+    _*(x:%, y:%): % ==
+        zero? expb x => per ([expa x + expa y, expb y]$Rep)
+        -- otherwise the second a exponent is twisted
+        per ([expa x - expa y, expb x + expb y]$Rep)
+
+    inv(x: %) : % ==
+        zero? expb x => per [-expa x, 0]
+        x
+
+    order(x:%) : Integer ==
+        one? x => 0
+        one? expb x => 2
+        n quo gcd(convert expa x, n)
+
+    -- Comparable
+    _=(x:%, y:%) : Boolean == expa x = expa y and expb x = expb y
+
+    -- reverse lexicographic order on the exponents,
+    -- so Zn comes before its coset
+    smaller?(x:%, y:%) : Boolean ==
+        convert expb x < convert expb y => true
+        convert expb x > convert expb y => false
+        convert expa x < convert expa y => true
+        false
+
+    -- FiniteGroup
+    size() : NonNegativeInteger == (2*n)::NonNegativeInteger
+
+    index(i: PositiveInteger) : % ==
+        i > 2*n => error "out of range"
+        imodn := coerce(i-1)@EXPA
+        i > n => per ([imodn, 1]$Rep)
+        per ([imodn, 0]$Rep)
+
+    lookup(x) ==
+        xa : PositiveInteger := qcoerce(convert(expa x)@Integer + 1) + qcoerce(n*convert(expb x)@Integer)
+
+    enumerate() : List % ==
+        concat([per [k::EXPA, 0] for k in 0@Integer..n::Integer-1], [per [k::EXPA, 1] for k in 0@Integer..n::Integer-1])

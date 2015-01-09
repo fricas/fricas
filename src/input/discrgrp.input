@@ -1,0 +1,83 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "Groups"
+
+testcase "CyclicGroup"
+C42 := CyclicGroup(42, 'a)
+e := 1$C42
+testTrue("one? e")
+a := generator()$C42
+testTrue("one? exponent a")
+testTrue("one? (a^42)")
+a17 := a^17
+a4 := a^4
+testEquals("a17*a4", "a^21")
+testEquals("inv a17", "a^25")
+testTrue("smaller?(a4,a17)")
+testEquals("size()$C42", "42")
+testEquals("lookup (index(1)$C42)", "1")
+testEquals("lookup (index(20)$C42)", "20")
+testEquals("index(20)$C42", "(enumerate()$C42).20")
+testEquals("#enumerate()$C42","42")
+locorder x ==
+        k:Integer := 1
+        y := x
+        while not one? y repeat
+            k := k+1
+            y := y*x
+        k
+
+testEquals("order a4", "locorder a4")
+testcase "InfiniteCycligGroup"
+
+M := InfiniteCyclicGroup 'a
+a := generator()$M
+e := 1$M
+
+testTrue("one? e")
+
+a := generator()$M
+testTrue("one? exponent a")
+
+a17 := a^17
+a4 := a^4
+testEquals("a17*a4", "a^21")
+testEquals("inv a17", "inv(a)^17")
+testEquals("exponent a17", "17")
+testTrue("a4 < a17")
+testcase "DihedralGroup"
+D7 := DihedralGroup(7,'a,'b);
+D7gen := generators()$D7;
+a := first D7gen;
+b := second D7gen;
+
+testTrue("one?(a^7)")
+testTrue("one?(a*b*a*b)")
+
+testEquals("expa (b*a^5)", "2")
+testTrue("smaller?(a^4, a^6)")
+
+locorder x ==
+        k:Integer := 1
+        y := x
+        while not one? y repeat
+            k := k+1
+            y := y*x
+        k
+
+a2 := a^2
+testEquals("order a2", "locorder a2")
+
+
+
+D7enum := enumerate()$D7;
+testEquals("#D7enum", "14")
+testEquals("removeDuplicates [smaller?(x, y) for x in D7enum for y in rest D7enum]","[true]")
+
+expected() ==
+    messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
+    messagePrint("Groups                      0     (3)               0    (25)")$OutputForm
+
+statistics()
+expected()
+
