@@ -157,13 +157,8 @@ htPred2English(x,:options) ==
         bcConform(first l,$emList)
         htSay('" has ")
         [a,b] := l
-        b is ['ATTRIBUTE,c] and not constructor? c => fnAttr c
         bcConform(b, $emList)
       bcConform(x,$emList)
-    fnAttr c ==
-      s := form2HtString c
-      member(s,$emList) => htSay('"{\em ",s,'"}")
-      satDownLink(s, ['"(|aPage| '|",s,'"|)"])
 
 unMkEvalable u ==
  u is ['QUOTE,a] => a

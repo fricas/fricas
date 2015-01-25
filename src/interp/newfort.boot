@@ -64,8 +64,7 @@ newFortranTempVar() ==
 exp2FortOptimize e ==
   -- $fortranOptimizationLevel means:
   --   0         just extract arrays
-  --   1         extract common subexpressions
-  --   2         try to optimize computing of powers
+  --   >         extract common subexpressions
   $exprStack : local := NIL
   atom e => [e]
   $fortranOptimizationLevel = 0 =>
