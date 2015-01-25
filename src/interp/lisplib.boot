@@ -243,17 +243,15 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   sayMSG ['"   initializing ",$spadLibFT,:bright libName,
     '"for",:bright op]
   -- following guarantee's compiler output files get closed.
-  ok := false;
   UNWIND_-PROTECT(
       PROGN(initializeLisplib libName,
             sayMSG ['"   compiling into ", $spadLibFT, :bright libName],
             res := FUNCALL(fn, df, m, e, prefix, fal),
             sayMSG ['"   finalizing ",$spadLibFT,:bright libName],
-            finalizeLisplib libName,
-            ok := true),
+            finalizeLisplib libName),
       PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
             RSHUT $libFile))
-  if ok then lisplibDoRename(libName)
+  lisplibDoRename(libName)
   filearg := make_full_namestring([libName, $spadLibFT])
   RPACKFILE filearg
   FRESH_-LINE $algebraOutputStream
@@ -268,7 +266,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
 
 initializeLisplib libName ==
   erase_lib([libName, 'ERRORLIB])
-  SETQ(ERRORS,0) -- ERRORS is a fluid variable for the compiler
   $libFile:= writeLib(libName,'ERRORLIB)
   $compiler_output_stream := make_compiler_output_stream($libFile, libName)
 
@@ -293,9 +290,6 @@ finalizeLisplib libName ==
   if $profileCompiler then profileWrite()
   if $lisplibForm and null rest $lisplibForm then
     MAKEPROP(first $lisplibForm, 'NILADIC, 'T)
-  ERRORS ~=0 =>    -- ERRORS is a fluid variable for the compiler
-    sayMSG ['"   Errors in processing ",kind,'" ",:bright libName,'":"]
-    sayMSG ['"     not replacing ",$spadLibFT,'" for",:bright libName]
 
 lisplibDoRename(libName) ==
     replace_lib([libName, 'ERRORLIB], [libName, $spadLibFT])

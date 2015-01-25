@@ -892,8 +892,6 @@ evalableConstructor2HtString domform ==
       mathform2HtString algCoerceInteractive(arg,typ,'(OutputForm))
 
 mathform2HtString form == escapeString
-  $fortInts2Floats: local := false
-  form := niladicHack form
   form is ['QUOTE,a] => STRCONC('"'","STRCONC"/fortexp0 a)
   form is ['BRACKET,['AGGLST,:arg]] =>
     if arg is ['construct,:r] then arg := r
@@ -908,11 +906,6 @@ mathform2HtString form == escapeString
     STRCONC('"[",first arg,tailPart,'"]")
   atom form => form
   "STRCONC"/fortexp0 form
-
-niladicHack form ==
-  atom form => form
-  form is [x] and GETL(x,'NILADIC) => x
-  [niladicHack x for x in form]
 
 --============================================================================
 --                Getting Operations from Domain
