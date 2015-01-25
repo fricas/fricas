@@ -164,22 +164,22 @@ MultivariateLifting(E, OV, R, P) : C == T
     -- The factors of m (multivariate) are determined, when the
     --  univariate true factors are known and some coefficient determined
       nplist : List SUP := [map(coerce, pp)$SUPF2(R, P) for pp in plist]
-      empty? tlist =>
-        table := tablePow(degree um, pmod, plist)
-        table case "failed" => error "Table construction failed in MLIFT"
-        lifting1(um, lvar, nplist, vlist, tlist, empty(), listdeg, table, pmod)
-      ldcoef : DetCoef := npcoef(um, plist, tlist)
-      if not empty?(listdet := ldcoef.deter) then
-        if #listdet = #plist  then return listdet
-        plist := ldcoef.nfacts
-        nplist := [map(coerce, pp)$SUPF2(R, P) for pp in plist]
-        um := (um exquo */[pol for pol in listdet])::SUP
-        tlist := ldcoef.nlead
-        tab := tablePow(degree um, pmod, plist.rest)
-      else tab := tablePow(degree um, pmod, plist)
+      listdet : L SUP := []
+      coeflist: L VTerm := []
+      if not(empty? tlist) then
+          ldcoef : DetCoef := npcoef(um, plist, tlist)
+          if not empty?(listdet := ldcoef.deter) then
+              if #listdet = #plist  then return listdet
+              plist := ldcoef.nfacts
+              nplist := [map(coerce, pp)$SUPF2(R, P) for pp in plist]
+              um := (um exquo */[pol for pol in listdet])::SUP
+              tlist := ldcoef.nlead
+              coeflist := ldcoef.dterm
+      tab := tablePow(degree um, pmod, plist)
       tab case "failed" => error "Table construction failed in MLIFT"
       table : Table := tab
-      ffl := lifting1(um, lvar, nplist, vlist, tlist, ldcoef.dterm, listdeg, table, pmod)
+      ffl := lifting1(um, lvar, nplist, vlist, tlist, coeflist, listdeg,
+                      tab, pmod)
       if ffl case "failed" then return "failed"
       append(listdet, ffl:: L SUP)
 
