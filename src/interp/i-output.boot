@@ -193,14 +193,14 @@ print(x,domain) ==
 
 mathprintWithNumber x ==
   ioHook("startAlgebraOutput")
-  x:= outputTran x
+  x:= outputTran2 x
   maprin
     $IOindex => ['EQUATNUM,$IOindex,x]
     x
   ioHook("endOfAlgebraOutput")
 
 mathprint x ==
-   x := outputTran x
+   x := outputTran2 x
    $saturn => texFormat1 x
    maprin x
 
@@ -210,16 +210,66 @@ sayMath u ==
 
 --% Output transformations
 
+outputTran2 x ==
+    STRINGP x => x
+    NUMBERP x =>
+        MINUSP x => ["-", MINUS x]
+        x
+    atom x =>
+        x = $EmptyMode => specialChar 'quad
+        x
+    x is ['construct, :l] =>
+        ['BRACKET, ['AGGLST, :[outputTran2 y for y in l]]]
+    [op, :l] := flattenOps x
+    x is ['SEGMENT, a] =>
+        a' := outputTran2 a
+        if LISTP a' then a' := ['PAREN, a']
+        ['SEGMENT, a']
+    x is ['SEGMENT, a, b] =>
+        a' := outputTran2 a
+        b' := outputTran2 b
+        if LISTP a' then a' := ['PAREN, a']
+        if LISTP b' then b' := ['PAREN, b']
+        ['SEGMENT, a', b']
+    x is ["-", a, b] =>
+        a := outputTran2 a
+        b := outputTran2 b
+        INTEGERP b =>
+            b < 0 => ["+", a, -b]
+            ["+", a, ["-", b]]
+        b is ["-", c] => ["+", a, c]
+        ["+", a, ["-", b]]
+    l := [outputTran2 y for y in l]
+    op = "*" =>
+        l is [a] => outputTran2 a
+        l is [["-", a], :b] =>
+            a = 1 => outputTran2 ["-", [op, :b]]
+            outputTran2 ["-", [op, a, :b]]
+        [op, :"append"/[(ss is ["*", :ll] => ll; [ss]) for ss in l]]
+    op = "+" =>
+        l is [a] => outputTran2 a
+        [op, :"append"/[(ss is ["+", :ll] => ll; [ss]) for ss in l]]
+    op = "/" =>
+        $fractionDisplayType = 'horizontal =>
+            op := 'SLASH
+            l is [a, b] =>
+                a :=
+                     ATOM(a) => a
+                     ['PAREN, a]
+                b :=
+                     ATOM(b) => b
+                     ['PAREN, b]
+                [outputTran2 op, a, b]
+            BREAK()
+        op := 'OVER
+        l is [["-", a], :b] => outputTran2 ["-", [op, a, :b]]
+        [outputTran2 op, :l]
+    IDENTP op and not (op in '(_* _*_*) ) and char("*") = (PNAME op).0 =>
+        mkSuperSub(op,l)
+    [outputTran2 op, :l]
+
 outputTran x ==
-  STRINGP x => x
-  VECP x =>
-    outputTran ['BRACKET,['AGGLST,:[x.i for i in 0..MAXINDEX x]]]
-  NUMBERP x =>
-    MINUSP x => ["-",MINUS x]
-    x
-  atom x =>
-    x=$EmptyMode => specialChar 'quad
-    x
+  atom x => x
   x is [c,var,mode] and c in '(_pretend _: _:_: _@) =>
     var := outputTran var
     if PAIRP var then var := ['PAREN,var]
@@ -233,13 +283,11 @@ outputTran x ==
     c is ['COLLECT,:m,d] and d is ['construct,e] and e is ['COLLECT,:.] =>
       outputTran ['COLLECT,:m,e]
   x is ['LIST,:l] => outputTran ['BRACKET,['AGGLST,:l]]
-  x is ['SPADMAP, :l] => outputMapTran l
+  x is ['SPADMAP, :l] => BREAK()
   x is ['brace, :l]    =>
     ['BRACE,  ['AGGLST,:[outputTran y for y in l]]]
   x is ["return", l] => ["return", outputTran l]
   x is ["return", ., :l] => ["return", :outputTran l]
-  x is ['construct,:l] =>
-    ['BRACKET,['AGGLST,:[outputTran y for y in l]]]
 
   x is [["$elt",domain,"float"], x, y, z] and (domain = $DoubleFloat or
     domain is ['Float]) and INTEGERP x and INTEGERP y and INTEGERP z and
@@ -247,22 +295,9 @@ outputTran x ==
             f := SPADCALL(x,y,z,float)
             o := coerceInteractive(mkObjWrap(f, domain), '(OutputForm))
             objValUnwrap o
-
-  [op,:l]:= flattenOps x
-  --needed since "op" is string in some spad code
-  if STRINGP op then (op := INTERN op; x:= [op,:l])
+  [op, :l] := x
   op = 'LAMBDA_-CLOSURE => 'Closure
   x is ['break,:.] => 'break
-  x is ['SEGMENT,a] =>
-    a' := outputTran a
-    if LISTP a' then a' := ['PAREN,a']
-    ['SEGMENT,a']
-  x is ['SEGMENT,a,b] =>
-    a' := outputTran a
-    b' := outputTran b
-    if LISTP a' then a' := ['PAREN,a']
-    if LISTP b' then b' := ['PAREN,b']
-    ['SEGMENT,a',b']
 
   op is ["$elt",targ,fun] or not $InteractiveMode and op is ["elt",targ,fun] =>
     -- l has the args
@@ -273,14 +308,6 @@ outputTran x ==
     targ' := obj2String prefix2String targ
     if 2 = #targ then targ' := ['PAREN,targ']
     ['CONCAT,outputTran c,'"$",targ']
-  x is ["-",a,b] =>
-    a := outputTran a
-    b := outputTran b
-    INTEGERP b =>
-      b < 0 => ["+",a,-b]
-      ["+",a,["-",b]]
-    b is ["-",c] => ["+",a,c]
-    ["+",a,["-",b]]
 
   op = 'IF       => outputTranIf x
   op = 'COLLECT  => outputTranCollect x
@@ -289,40 +316,10 @@ outputTran x ==
   op = 'SEQ      => outputTranSEQ x
   op in '(cons nconc) => outputConstructTran x
   l:= [outputTran y for y in l]
-  op = "*" =>
-     l is [a] => outputTran a
-     l is [["-",a],:b] =>
-       -- now this is tricky because we've already outputTran the list
-       -- expect trouble when outputTran hits b again
-       -- some things object to being outputTran twice ,e.g.matrices
-       -- same thing a bit lower down for "/"
-       a=1 => outputTran ["-",[op,:b]]
-       outputTran ["-",[op,a,:b]]
-     [op,:"append"/[(ss is ["*",:ll] => ll; [ss]) for ss in l]]
-  op = "+" =>
-     l is [a] => outputTran a
-     [op,:"append"/[(ss is ["+",:ll] => ll; [ss]) for ss in l]]
-  op = "/" =>
-    $fractionDisplayType = 'horizontal =>
-        op := 'SLASH
-        l is [a, b] =>
-            a :=
-                 ATOM(a) => a
-                 ['PAREN, a]
-            b :=
-                 ATOM(b) => b
-                 ['PAREN, b]
-            [outputTran op, a, b]
-        BREAK()
-    op := 'OVER
-    l is [["-",a],:b] => outputTran ["-",[op,a,:b]]
-    [outputTran op,:l]
   op="|" and l is [["Tuple",:u],pred] =>
     ['PAREN,["|",['AGGLST,:l],pred]]
   op='Tuple  => ['PAREN,['AGGLST,:l]]
   op='LISTOF => ['AGGLST,:l]
-  IDENTP op and not (op in '(_* _*_*) ) and char("*") = (PNAME op).0 =>
-    mkSuperSub(op,l)
   [outputTran op,:l]
 
 -- The next two functions are designed to replace successive instances of
@@ -369,26 +366,31 @@ outputTranIf ['IF,x,y,z] ==
   ['CONCATB, "if", outputTran x,
     ['SC,['CONCATB, "then", y'], ['CONCATB, "else", z']]]
 
-outputMapTran l ==
+outputTranAnon(x) ==
+    not(x is ["+->", vars, body]) => BREAK()
+    outputTran(x)
+
+outputMapTran(op, x) ==
+  not(x is ['SPADMAP, :l]) => BREAK()
   null l => NIL         -- should not happen
 
   -- display subscripts linearly
   $linearFormatScripts : local := true
 
   -- get the real names of the parameters
-  alias := get($op,'alias,$InteractiveFrame)
+  alias := get(op, 'alias, $InteractiveFrame)
 
   rest l =>             -- if multiple forms, call repeatedly
-    ['SC,:[outputMapTran0(ll,alias) for ll in l]]
-  outputMapTran0(first l,alias)
+      ['SC, :[outputMapTran0(op, ll, alias) for ll in l]]
+  outputMapTran0(op, first l, alias)
 
-outputMapTran0(argDef,alias) ==
+outputMapTran0(op, argDef, alias) ==
   arg := first argDef
   def := rest  argDef
   [arg',:def'] := simplifyMapPattern(argDef,alias)
   arg' := outputTran arg'
   if null arg' then arg' := '"()"
-  ['CONCATB,$op,outputTran arg',"==",outputTran def']
+  ['CONCATB, op, outputTran arg', "==", outputTran def']
 
 outputTranReduce ['REDUCE,op,.,body] ==
   ['CONCAT,op,"/",outputTran body]
@@ -1308,13 +1310,7 @@ htmlFormat expr ==
 
 output(expr,domain) ==
   if isWrapped expr then expr := unwrap expr
-  isMapExpr expr =>
-    if $formulaFormat then formulaFormat expr
-    if $texFormat     then texFormat expr
-    if $algebraFormat then mathprintWithNumber expr
-    if $mathmlFormat  then mathmlFormat expr
-    if $texmacsFormat then texmacsFormat expr
-    if $htmlFormat    then htmlFormat expr
+  isMapExpr expr and not(domain is ["FunctionCalled", .]) => BREAK()
   categoryForm? domain or domain = ["Mode"] =>
     if $algebraFormat then
       mathprintWithNumber outputDomainConstructor expr
@@ -1394,34 +1390,6 @@ outputOp x ==
     newop:= INTERN STRCONC("*",STRINGIMAGE n,PNAME op)
     [newop,:[outputOp y for y in args]]
   x
-
---% MAP PRINTER (FROM EV BOOT)
-
-printMap u ==
-  printBasic specialChar 'lbrk
-  initialFlag:= isInitialMap u
-  if u is [x,:l] then
-    printMap1(x,initialFlag and x is [[n],:.] and n=1)
-    for y in l repeat (printBasic " , "; printMap1(y,initialFlag))
-  printBasic specialChar 'rbrk
-  if not $collectOutput then TERPRI $algebraOutputStream
-
-isInitialMap u ==
-  u is [[[n],.],:l] and INTEGERP n and
-    (and/[x is [[ =i],.] for x in l for i in n+1..])
-
-printMap1(x,initialFlag) ==
-  initialFlag => printBasic CADR x
-  if CDAR x then printBasic first x else printBasic CAAR x
-  printBasic " E "
-  printBasic CADR x
-
-printBasic x ==
-  x='(One) => PRIN1(1,$algebraOutputStream)
-  x='(Zero) => PRIN1(0,$algebraOutputStream)
-  IDENTP x => PRINTEXP(PNAME x,$algebraOutputStream)
-  atom x => PRIN1(x,$algebraOutputStream)
-  PRIN0(x,$algebraOutputStream)
 
 charybdis(u,start,linelength) ==
   EQ(keyp u,'EQUATNUM) and not (CDDR u) =>
