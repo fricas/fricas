@@ -373,7 +373,7 @@ clearDep1(x,toDoList,doneList,depList) ==
 
 displayRule(op,rule) ==
   null rule => nil
-  mathprint ["CONCAT","Definition:   ", rule]
+  mathprint ["CONCAT", "Definition:   ", outputMapTran(op, rule)]
   nil
 
 outputFormat(x,m) ==
@@ -389,13 +389,8 @@ outputFormat(x,m) ==
     $OutputForm) or return x
   objValUnwrap T
 
-displaySingleRule($op,pattern,replacement) ==
-  mathprint ['SPADMAP, [pattern, :replacement]]
-
-displayMap(headingIfTrue,$op,map) ==
-  mathprint
-    headingIfTrue => ['CONCAT,PNAME "value:  ",map]
-    map
+displaySingleRule(op, pattern, replacement) ==
+  mathprint outputMapTran(op, ['SPADMAP, [pattern, :replacement]])
 
 simplifyMapPattern (x,alias) ==
   for a in alias

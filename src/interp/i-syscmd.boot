@@ -824,14 +824,13 @@ displayMacro name ==
   m := isInterpMacro name
   null m =>
     sayBrightly ['"  ",:bright name,'"is not an interpreter macro."]
-  -- $op is needed in the output routines.
-  $op : local := STRCONC('"macro ",object2String name)
+  op := STRCONC('"macro ", object2String name)
   [args,:body] := m
   args :=
     null args => nil
     null rest args => first args
     ['Tuple,:args]
-  mathprint ['SPADMAP, [args, :body]]
+  mathprint outputMapTran(op, ['SPADMAP, [args, :body]])
 
 displayWorkspaceNames() ==
   imacs := getInterpMacroNames()
@@ -980,26 +979,29 @@ getAndSay(v,prop) ==
   val:= getI(v,prop) => sayMSG ["    ",val,'%l]
   sayMSG ["    none",'%l]
 
-displayType($op,u,omitVariableNameIfTrue) ==
+displayType(op, u, omitVariableNameIfTrue) ==
   null u =>
     sayMSG ['"   Type of value of ",
-        fixObjectForPrinting PNAME $op,'":  (none)"]
+        fixObjectForPrinting PNAME op, '":  (none)"]
   type := prefix2String objMode(u)
   if ATOM type then type := [type]
-  sayMSG concat ['"   Type of value of ",fixObjectForPrinting PNAME $op,'": ",:type]
+  sayMSG concat ['"   Type of value of ", fixObjectForPrinting PNAME op,
+                 '": ", :type]
   NIL
 
-displayValue($op,u,omitVariableNameIfTrue) ==
-  null u => sayMSG ["   Value of ",fixObjectForPrinting PNAME $op,'":  (none)"]
+displayValue(op, u, omitVariableNameIfTrue) ==
+  null u => sayMSG ["   Value of ", fixObjectForPrinting PNAME op,
+                    '":  (none)"]
   expr := objValUnwrap(u)
-  expr is [op, :.] and (op = 'SPADMAP) or objMode(u) = $EmptyMode =>
-    displayRule($op,expr)
+  expr is [op1, :.] and (op1 = 'SPADMAP) =>
+      displayRule(op, expr)
+  objMode(u) = $EmptyMode => BREAK()
   label:=
     omitVariableNameIfTrue =>
         rhs := '"):  "
         '"Value (has type "
     rhs := '":  "
-    STRCONC('"Value of ", PNAME $op,'": ")
+    STRCONC('"Value of ", PNAME op, '": ")
   labmode := prefix2String objMode(u)
   if ATOM labmode then labmode := [labmode]
   GETDATABASE(expr,'CONSTRUCTORKIND) = 'domain =>

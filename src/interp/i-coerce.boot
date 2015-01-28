@@ -908,6 +908,7 @@ coerceInt1(triple,t2) ==
     null intName => NIL
     objNewWrap(intName,t2)
   (t1 is ['FunctionCalled,sym]) =>
+    t2 = $OutputForm => coerceByFunction(objNewWrap(val, t1), t2)
     (t3 := get(sym,'mode,$e)) and t3 is ['Mapping,:.] =>
       (triple' := coerceInt(triple,t3)) => coerceInt(triple',t2)
       NIL

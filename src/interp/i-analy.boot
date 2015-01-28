@@ -561,7 +561,7 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
   opName1 :=
     opName0 = $immediateDataSymbol =>
         (o := coerceInteractive(getValue op0,$OutputForm)) =>
-            outputTran objValUnwrap o
+            outputTran2 objValUnwrap o
         NIL
     opName0
 
