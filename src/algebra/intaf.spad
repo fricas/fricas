@@ -105,6 +105,23 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
     univariate(f, x, y, p) == lift(univariate(f, y, p), x)
     lift(p, k)             == map(x1+->univariate(x1, k), p)
 
+    proot(p : UP) : Record(coef : UP, radicand : UP) ==
+        ff := squareFree(p)
+        c1 : UP := 1
+        r1 : UP := 1
+        for fac in factors(ff) repeat
+            f1 := fac.factor
+            e1 := fac.exponent
+            e2:= (e1 quo 2)::NonNegativeInteger
+            c1 := fac.factor^e2*c1
+            if e1 ~= 2*e2 then
+                r1 := fac.factor*r1
+        u1 := ground(unit(ff))
+        rr1 := froot(u1, 2)$PolynomialRoots(IndexedExponents K, K, R, P, F)
+        c1 := rr1.coef*c1
+        r1 := rr1.radicand*r1
+        [c1, r1]
+
     rationalize_log(ll : IR_LOG, k1 : K) : List(IR_LOG) ==
         opol : UP := ll.coeff
         polu := map((c : F) : UP +-> univariate(c, k1, minPoly(k1)),
@@ -125,15 +142,27 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
             fun1c := map((c : F) : F +-> eval(c, k1, -k1::F), fun1)
             if fun1c ~= fun1 then
                 fun1 := fun1c*fun1
-                c1 := c1/(2::Q)
-            res := cons([c1, ppr, fun1]$IR_LOG, res)
+                c2 := c1/(2::Q)
+                rr1 := proot(fun1)
+                if rr1.radicand = 1 then
+                    res := cons([c1, ppr, rr1.coef]$IR_LOG, res)
+                else
+                    res := cons([c2, ppr, fun1]$IR_LOG, res)
+            else
+                res := cons([c1, ppr, fun1]$IR_LOG, res)
         if degree(ppc) > 0 then
-            c2 := ll.scalar/(2::Q)
+            c1 := ll.scalar
+            c2 := c1/(2::Q)
             fun2 := fun rem ppc
             ppcc := map((c : F) : F +-> eval(c, k1, -k1::F), ppc)
             fun2c := map((c : F) : F +-> eval(c, k1, -k1::F), fun2)
             fun2 := ppcc*fun2 + ppc*fun2c
-            res := cons([c2, ppc*ppcc, fun2]$IR_LOG, res)
+            rr1 := proot(fun2)
+            ppn := ppc*ppcc
+            if rr1.radicand = 1 then
+                res := cons([c1, ppn, rr1.coef]$IR_LOG, res)
+            else
+                res := cons([c2, ppn, fun2]$IR_LOG, res)
         res
 
     rationalize_ir(irf : IR, k1 : K) : IR ==
