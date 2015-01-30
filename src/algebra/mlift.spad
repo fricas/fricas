@@ -10,7 +10,7 @@ MultivariateLifting(E, OV, R, P) : C == T
  where
   OV        :   OrderedSet
   E         :   OrderedAbelianMonoidSup
-  R         :   EuclideanDomain  -- with property "F"
+  R         :   IntegralDomain  -- with property "F"
   Z         ==> Integer
   BP        ==> SparseUnivariatePolynomial R
   P         :   PolynomialCategory(R, E, OV)
@@ -20,18 +20,39 @@ MultivariateLifting(E, OV, R, P) : C == T
   VTerm     ==> List Term
   Table     ==> Vector List BP
   L         ==> List
+  SF        ==> BP -> Union(L BP, "failed")
+  SFF       ==> L BP -> SF
 
   C == with
-    corrPoly :      (SUP,L OV,L R,L NNI,L SUP,Table,R) -> Union(L SUP,"failed")
-        ++ corrPoly(u, lv, lr, ln, lu, t, r) \undocumented
-    lifting :       (SUP,L OV,L BP,L R,L P,L NNI,R) -> Union(L SUP,"failed")
-        ++ lifting(u, lv, lu, lr, lp, ln, r) \undocumented
-    lifting1 :      (SUP, L OV, L SUP, L R, L P, L VTerm, L NNI, Table, R) ->
-                                                Union(L SUP,"failed")
-        ++ lifting1(u, lv, lu, lr, lp, lt, ln, t, r) \undocumented
+    corrPoly : (SUP, L OV, L R, L NNI, L SUP, SF) -> Union(L SUP, "failed")
+        ++ corrPoly(u, lv, lr, ln, lu, bsolv) solves polynomial equation
+        ++ system u/f = sum(ai/lu(i)) where f is product of lu(i) and
+        ++ deg(ai) < deg(lu(i)) using modular method.  corrPoly returns
+        ++ "failed" if there are no solution.  lv is list of variables,
+        ++ lr is list of corresponding evaluation points, bsolv is
+        ++ solver over R specialized for modular images of lu.
+    lifting : (SUP, L OV, L BP, L R, L P, L NNI, SFF) -> Union(L SUP, "failed")
+        ++ lifting(u, lv, lu, lr, lp, ln, gen_solv) lifts univariate
+        ++ factorization, returning recovered factors or "failed" in
+        ++ case of bad reduction.
+        ++ u is multivariate polynomial to factor, lu is list
+        ++ of univariate factors, lv is list of variables, ln
+        ++ is list of degrees corresponding to variables,
+        ++ lr is list of evaluation points,
+        ++ lp is list of leading coefficients of factors if known,
+        ++ empty otherwise,  gen_solv delivers solver for
+        ++ polynomial equations
+    if R has EuclideanDomain then
+        lifting : (SUP, L OV, L BP, L R, L P, L NNI, R) ->
+                   Union(L SUP, "failed")
+           ++ lifting(u, lv, lu, lr, lp, ln, r) is
+           ++ lifting(u, lv, lu, lr, lp, ln, solv(r)) where
+           ++ solv(r) is solver using reduction modulo r
+           ++ and lifting.  Memberes of lu must be relatively
+           ++ prime modulo r
 
   T == add
-    import from GenExEuclid(R, BP)
+
     import from NPCoef(BP, E, OV, R, P)
     import from IntegerCombinatoricFunctions(Z)
 
@@ -49,16 +70,15 @@ MultivariateLifting(E, OV, R, P) : C == T
 
 
     corrPoly(m : SUP, lvar : L OV, fval : L R, ld : L NNI, flist : L SUP,
-             table:Table,pmod:R):Union(L SUP,"failed") ==
+             bsolv : SF):Union(L SUP,"failed") ==
       --  The correction coefficients are evaluated recursively.
       --   Extended Euclidean algorithm for the multivariate case.
 
       -- the polynomial is univariate  --
       #lvar = 0 =>
-        lp := solveid(map(ground, m)$SUPF2(P, R), pmod, table)
+        lp := bsolv(map(ground, m)$SUPF2(P, R))
         if lp case "failed" then return "failed"
         lcoef := [map(coerce, mp)$SUPF2(R, P) for mp in lp::L BP]
-
 
       diff, ddiff, pol, polc : SUP
       listpolv, listcong : L SUP
@@ -67,9 +87,10 @@ MultivariateLifting(E, OV, R, P) : C == T
       a : P := fval.first ::P
       y : OV := lvar.first
       lvar := lvar.rest
-      listpolv : L SUP := [map((p1 : P) : P +-> eval(p1, y, a), f1) for f1 in flist]
+      listpolv : L SUP := [map((p1 : P) : P +-> eval(p1, y, a), f1)
+                             for f1 in flist]
       um := map((p1 : P) : P +-> eval(p1, y, a), m)
-      flcoef := corrPoly(um, lvar, fval.rest, ld.rest, listpolv, table, pmod)
+      flcoef := corrPoly(um, lvar, fval.rest, ld.rest, listpolv, bsolv)
       if flcoef case "failed" then return "failed"
       else lcoef := flcoef :: L SUP
       listcong := [*/[flist.i for i in 1..np | i ~= l] for l in 1..np]
@@ -79,8 +100,9 @@ MultivariateLifting(E, OV, R, P) : C == T
       for l in 1..deg1 repeat
         if diff = 0 then return lcoef
         pol := pol*polc
-        (ddiff := map((p1: P): P +-> eval(normalDerivM(p1,l,y),y,a),diff)) = 0 => "next l"
-        fbeta := corrPoly(ddiff, lvar, fval.rest, ld.rest, listpolv, table, pmod)
+        ddiff := map((p1: P): P +-> eval(normalDerivM(p1,l,y),y,a),diff)
+        ddiff = 0 => "next l"
+        fbeta := corrPoly(ddiff, lvar, fval.rest, ld.rest, listpolv, bsolv)
         if fbeta case "failed" then return "failed"
         else beta := fbeta :: L SUP
         lcoef := [lcoef.i+beta.i*pol  for i in 1..np]
@@ -88,9 +110,9 @@ MultivariateLifting(E, OV, R, P) : C == T
       lcoef
 
 
-
     lifting1(m : SUP, lvar : L OV, plist : L SUP, vlist : L R, tlist : L P, _
-      coeflist:L VTerm,listdeg:L NNI,table:Table,pmod:R) :Union(L SUP,"failed") ==
+             coeflist : L VTerm, listdeg : L NNI, bsolv : SF
+            ) : Union(L SUP,"failed") ==
     -- The factors of m (multivariate) are determined ,
     -- We suppose to know the true univariate factors
     -- some coefficients are determined
@@ -129,7 +151,8 @@ MultivariateLifting(E, OV, R, P) : C == T
           if not(empty? coeflist) then
             plist := [subscoef(tpol, clist)
                    for tpol in plist for clist in clv]
-        mj := map((p1 : P) : P +-> eval(p1, li, vlist), m)  --m(x1, .., xj, aj+1, .., an
+        -- m(x1, .., xj, aj+1, .., an
+        mj := map((p1 : P) : P +-> eval(p1, li, vlist), m)
         polc := x::P - v::P  --(xj-aj)
         pol := 1$P
       --Construction of Rik, k in 1..right degree for xj+1
@@ -141,7 +164,7 @@ MultivariateLifting(E, OV, R, P) : C == T
          mc := map((p1 : P) : P +-> normalDerivM(p1, k, x), mc)
          (mc := map((p1: P): P +-> eval(p1,[x],[v]),mc))=0 => "next k"
          flalpha := corrPoly(mc, subsvar.rest, subsval.rest,
-                          ldeg.rest, conglist, table, pmod)
+                          ldeg.rest, conglist, bsolv)
          if flalpha case "failed" then return "failed"
          else lalpha := flalpha :: L SUP
          plist := [term-alpha*pol for term in plist for alpha in lalpha]
@@ -159,8 +182,8 @@ MultivariateLifting(E, OV, R, P) : C == T
           um := reductum um
        ans
 
-    lifting(um : SUP, lvar : L OV, plist : L BP, vlist : L R,
-            tlist:L P,listdeg:L NNI,pmod:R):Union(L SUP,"failed") ==
+    lifting(um : SUP, lvar : L OV, plist : L BP, vlist : L R, tlist : L P,
+            listdeg : L NNI, gen_solv : SFF) : Union(L SUP,"failed") ==
     -- The factors of m (multivariate) are determined, when the
     --  univariate true factors are known and some coefficient determined
       nplist : List SUP := [map(coerce, pp)$SUPF2(R, P) for pp in plist]
@@ -175,12 +198,27 @@ MultivariateLifting(E, OV, R, P) : C == T
               um := (um exquo */[pol for pol in listdet])::SUP
               tlist := ldcoef.nlead
               coeflist := ldcoef.dterm
-      tab := tablePow(degree um, pmod, plist)
-      tab case "failed" => error "Table construction failed in MLIFT"
       ffl := lifting1(um, lvar, nplist, vlist, tlist, coeflist, listdeg,
-                      tab, pmod)
+                      gen_solv(plist))
       if ffl case "failed" then return "failed"
       append(listdet, ffl:: L SUP)
+
+    if R has EuclideanDomain then
+
+       import from GenExEuclid(R, BP)
+
+       gen_solv(plist : L BP, pmod : R) : SF ==
+           ldeg : L NNI := [degree(p)$BP for p in plist]
+           du := reduce(_+, ldeg)
+           tab := tablePow(du, pmod, plist)
+           tab case "failed" => error "Table construction failed in MLIFT"
+           table : Table := tab
+           (b : BP) : Union(L BP, "failed") +-> solveid(b, pmod, table)
+
+       lifting(um : SUP, lvar : L OV, plist : L BP, vlist : L R, tlist : L P,
+               listdeg : L NNI, pmod : R):Union(L SUP, "failed") ==
+           lifting(um, lvar, plist, vlist, tlist, listdeg,
+                   (lb : L BP) : SF +-> gen_solv(lb, pmod))
 
     -- normalDerivM(f, m, x) = the normalized (divided by m!) m-th
     -- derivative with respect to x of the multivariate polynomial f

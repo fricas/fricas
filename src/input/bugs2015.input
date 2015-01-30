@@ -5,10 +5,23 @@ testsuite "bugs2015"
 
 testcase "bug in lifting"
 
-testTrue("(res := factor((4*x^3+2*y^2+1)*(12*x^5-x^3*y+12)*(y^2+3)); true)")
+r := (4*x^3+2*y^2+1)*(12*x^5-x^3*y+12)*(y^2+3);
+testTrue("(res := factor(r); true)")
 fl := factors(res);
 testEquals("#fl", "3")
 testEquals("fl(1).factor", "x^3*y - 12*x^5 - 12")
+testEquals("unit(res)*fl(1).factor*fl(2).factor*fl(3).factor", "r")
+
+testcase "bug in PFBRU"
+
+P := UnivariatePolynomial('x, Integer)
+R := UnivariatePolynomial('y, P)
+r: R := (4*x^3+2*y^2+1)*(12*x^5-x^3*y+12)*(y^2+3);
+testTrue("(res := factorPolynomial r; true)")
+fl := factors(res);
+testEquals("#fl", "3")
+testEquals("fl(1).factor", "x^3*y - 12*x^5 - 12")
+testEquals("unit(res)*fl(1).factor*fl(2).factor*fl(3).factor", "r")
 
 )set output algebra on
 statistics()

@@ -836,7 +836,6 @@
   (|PolynomialCategoryLifting| . POLYLIFT)
   (|PolynomialCategoryQuotientFunctions| . POLYCATQ)
   (|PolynomialFactorizationByRecursion| . PFBR)
-  (|PolynomialFactorizationByRecursionUnivariate| . PFBRU)
   (|PolynomialGcdPackage| . PGCD)
   (|PolynomialInterpolation| . PINTERP)
   (|PolynomialInterpolationAlgorithms| . PINTERPA)
