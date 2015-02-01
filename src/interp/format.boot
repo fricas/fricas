@@ -408,6 +408,8 @@ form2String1 u ==
   op = 'BRACKET =>
     argl' := form2String1 first argl
     ["[",:(atom argl' => [argl']; argl'),"]"]
+  op = 'SUB => sub_to_string(argl)
+  op = 'SUPERSUB => sub_to_string(argl)
   op = "SIGNATURE" =>
      [operation,sig] := argl
      concat(operation,": ",formatSignature sig)
@@ -584,6 +586,20 @@ formJoin2String (u:=[:argl,last]) ==
     #argl=1 => concat(first argl,'" with ",postString)
     concat(application2String('Join,argl, NIL)," with ",postString)
   application2String('Join,u, NIL)
+
+sub_to_string(u) ==
+    [op, :argl] := u
+    fo := form2String1(op)
+    if atom(fo) then fo := [fo];
+    rargl := REVERSE(argl)
+    resl := []
+    for arg in rargl repeat
+        resl = [] and arg = [] => "iterate"
+        if resl then resl := cons(";", resl)
+        fa := form2String1(arg)
+        if atom(fa) then fa := [fa]
+        resl := [:fa, :resl]
+    [:fo, "[", :resl, "]"]
 
 formCollect2String [:itl,body] ==
   ["_(",body,:"append"/[formIterator2String x for x in itl],"_)"]
