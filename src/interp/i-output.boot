@@ -264,8 +264,6 @@ outputTran2 x ==
         op := 'OVER
         l is [["-", a], :b] => outputTran2 ["-", [op, a, :b]]
         [outputTran2 op, :l]
-    IDENTP op and not (op in '(_* _*_*) ) and char("*") = (PNAME op).0 =>
-        mkSuperSub(op,l)
     [outputTran2 op, :l]
 
 outputTran x ==
@@ -442,34 +440,6 @@ outputConstructTran x ==
     [op,a,b]
   atom x => x
   [outputTran first x,:outputConstructTran rest x]
-
-mkSuperSub(op,argl) ==
-  $linearFormatScripts => linearFormatForm(op,argl)
---  l := [(STRINGP f => f; STRINGIMAGE f)
---    for f in linearFormatForm(op,argl)]
---  "STRCONC"/l
-  s:= PNAME op
-  indexList:= [PARSE_-INTEGER PNAME d for i in 1.. while
-    (DIGITP (d:= s.(maxIndex:= i)))]
-  cleanOp:= INTERN ("STRCONC"/[PNAME s.i for i in maxIndex..MAXINDEX s])
-  -- if there is just a subscript use the SUB special form
-  #indexList=2 =>
-    subPart:= ['SUB,cleanOp,:take(indexList.1,argl)]
-    l:= DROP(indexList.1,argl) => [subPart,:l]
-    subPart
-  -- otherwise use the SUPERSUB form
-  superSubPart := NIL
-  for i in rest indexList repeat
-    scripts :=
-      this:= take(i,argl)
-      argl:= DROP(i,argl)
-      i=0 => ['AGGLST]
-      i=1 => first this
-      ['AGGLST,:this]
-    superSubPart := cons(scripts,superSubPart)
-  superSub := ['SUPERSUB,cleanOp,:reverse superSubPart]
-  argl => [superSub,:argl]
-  superSub
 
 tensorApp(u,x,y,d) ==
   rightPrec:= getOpBindingPower("*","Led","right")

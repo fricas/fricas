@@ -192,25 +192,11 @@ substituteCategoryArguments(argl,catform) ==
 
 augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
   [fnAlist,e]:= evalAndSub(domainName,domainView,functorForm,categoryForm,e)
-  --if not $InteractiveMode then
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)
   condlist:=[]
   for [[op,sig,:.],cond,fnsel] in fnAlist repeat
---  e:= addModemap(op,domainName,sig,cond,fnsel,e)
----------next 5 lines commented out to avoid wasting time checking knownInfo on
----------conditions attached to each modemap being added, takes a very long time
----------instead conditions will be checked when maps are actually used
-  --v:= assoc(cond,condlist) =>
-  --  e:= addModemapKnown(op, domainName, sig, rest v, fnsel, e)
-  --$e:local := e  -- $e is used by knownInfo
-  --if knownInfo cond then cond1:=true else cond1:=cond
-  --condlist:=[[cond,:cond1],:condlist]
-    e:= addModemapKnown(op,domainName,sig,cond,fnsel,e) -- cond was cond1
---  for u in sig | (not member(u,$DomainsInScope)) and
---                   (not atom u) and
---                     (not isCategoryForm(u,e)) do
---     e:= addNewDomain(u,e)
+      e:= addModemapKnown(op,domainName,sig,cond,fnsel,e)
   e
 
 evalAndSub(domainName,viewName,functorForm,form,$e) ==
