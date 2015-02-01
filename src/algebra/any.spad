@@ -113,14 +113,13 @@ Any() : SetCategory with
       "Type of object will not be displayed in output of a member of Any"
 
      coerce(x) : OutputForm ==
-       obj1 : OutputForm := objectOf x
-       not deref printTypeInOutputP => obj1
-       dom1 :=
-         p : Symbol := prefix2String(devaluate(x.dm)$Lisp)$Lisp
-         atom?(p pretend SExpression) => list(p)$List(Symbol)
-         list(p)$Symbol
-       hconcat cons(obj1,
-         cons(":"::OutputForm, [a::OutputForm for a in dom1]))
+         obj1 : OutputForm := objectOf x
+         not deref printTypeInOutputP => obj1
+         dom1 :=
+             p : SExpression := prefix2String(devaluate(x.dm)$Lisp)$Lisp
+             atom?(p) => list(p pretend OutputForm)$List(OutputForm)
+             p pretend List(OutputForm)
+         hconcat cons(obj1, cons(":"::OutputForm, dom1))
 
      any(domain, object) ==
        (isValidType(domain)$Lisp)@Boolean => [domain, object]

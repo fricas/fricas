@@ -52,9 +52,6 @@ Symbol() : Exports == Implementation where
      string : % -> String
        ++ string(s) converts the symbol s to a string.
        ++ Error: if the symbol is subscripted.
-     list : % -> List %
-       ++ list(sy) takes a scripted symbol and produces a list
-       ++ of the name followed by the scripts.
      sample : constant -> %
        ++ sample() returns a sample of %
 
@@ -88,6 +85,7 @@ Symbol() : Exports == Implementation where
     hd:String    := "*"
     lhd          := #hd
     ord0         := ord char("0")$Character
+    pcnt         ==> 4
 
     istring  : Integer -> String
     syprefix : Scripts -> String
@@ -99,7 +97,26 @@ Symbol() : Exports == Implementation where
     x = y                  == EQUAL(x, y)$Lisp
     hashUpdate!(hs, s)     == update!(hs, SXHASH(s)$Lisp)$HashState
     x < y                  == GGREATERP(y, x)$Lisp
-    coerce(x : %) : OutputForm == outputForm(x pretend Symbol)
+
+    coerce(x : %) : OutputForm ==
+        not(scripted? x) => outputForm(x pretend Symbol)
+        ss : Scripts := scripts x
+        rsl : List(L) := [ss.presub, ss.presup, ss.sup, ss.sub]
+        sl : L := []
+        for si in rsl repeat
+            empty?(sl) and empty?(si) => "iterate"
+            se :=
+                #si = 1 => first(si)
+                commaSeparate(si)
+            sl := cons(se, sl)
+        x0 := outputForm(name(x) pretend Symbol)
+        x1 :=
+            #sl = 1 => sub(x0, first(sl))
+            scripts(x0, sl)
+        a := ss.args
+        empty?(a) => x1
+        prefix(x1, a)
+
     subscript(sy, lx)      == script(sy, [lx, nil, nil(), nil(), nil()])
     elt(sy, lx)             == subscript(sy, lx)
     superscript(sy, lx)    == script(sy, [nil(), lx, nil(), nil(), nil()])
@@ -123,7 +140,6 @@ Symbol() : Exports == Implementation where
 
     syprefix sc ==
       ns : List Integer := [#sc.presub, #sc.presup, #sc.sup, #sc.sub]
-      while #ns >= 2 and zero? first ns repeat ns := rest ns
       concat concat(concat(hd, istring(#sc.args)),
                                  [istring n for n in reverse! ns])
 
@@ -244,29 +260,30 @@ Symbol() : Exports == Implementation where
     scripted? sy ==
       not ATOM(sy)$Lisp
 
+    of_list(x : %) : L == x pretend L
+
     name sy ==
-      not scripted? sy => sy
-      str := string first list sy
-      for i in lhd+1..#str repeat
-        not digit?(str.i) => return((str.(i..#str))::%)
-      error "Improper scripted symbol"
+        not scripted? sy => sy
+        str := string(first(of_list(sy)) pretend %)
+        si := lhd + pcnt + 2
+        str(si..#str)::%
 
     scripts sy ==
       not scripted? sy => [nil(), nil(), nil(), nil(), nil()]
       nscripts : List NonNegativeInteger := [0, 0, 0, 0, 0]
       lscripts : List L := [nil(), nil(), nil(), nil(), nil()]
-      str  := string first list sy
+      str := string(first(of_list(sy)) pretend %)
       nstr := #str
       m := minIndex nscripts
-      for i in m.. for j in lhd+1..nstr while digit?(str.j) repeat
+      for i in m.. for j in (lhd + 1)..(lhd + pcnt + 1) repeat
           nscripts.i := (ord(str.j) - ord0)::NonNegativeInteger
       -- Put the number of function scripts at the end.
       nscripts := concat(rest nscripts, first nscripts)
-      allscripts := rest list sy
+      allscripts := rest(of_list(sy))
       m := minIndex lscripts
       for i in m.. for n in nscripts repeat
         #allscripts < n => error "Improper script count in symbol"
-        lscripts.i := [a::OutputForm for a in first(allscripts, n)]
+        lscripts.i := first(allscripts, n)
         allscripts := rest(allscripts, n)
       [lscripts.m, lscripts.(m+1), lscripts.(m+2),
                                          lscripts.(m+3), lscripts.(m+4)]
@@ -274,11 +291,6 @@ Symbol() : Exports == Implementation where
     istring n ==
       n > 9 => error "Can have at most 9 scripts of each kind"
       istrings.(n + minIndex istrings)
-
-    list sy ==
-      not scripted? sy =>
-         error "Cannot convert a symbol to a list if it is not subscripted"
-      sy pretend List(%)
 
     sample() == "aSymbol"::%
 
