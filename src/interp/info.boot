@@ -265,11 +265,7 @@ actOnInfo(u,$e) ==
       if ATOM(name)
         then $e:= augModemapsFromCategory(name,name,name,cat,$e)
         else
-          -- xxxx do we really need this?
-          viewName := name
-          genDomainView(viewName, cat, "HasCategory")
-          if not MEMQ(viewName,$functorLocalParameters) then
-             $functorLocalParameters:=[:$functorLocalParameters,viewName]
+            $e := augModemapsFromCategory(name, name, nil, cat, $e)
       SAY("augmenting ",name,": ",cat)
       $e:= put(name,"value",[vval,mkJoin(cat,vmode),venv],$e)
     SAY("extension of ",vval," to ",cat," ignored")

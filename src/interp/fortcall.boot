@@ -313,8 +313,8 @@ makeSpadFun(name,userArgs,args,dummies,decls,results,returnType,asps,aspInfo,
              ["pretend",call,fType] ]
   else
     body := ["pretend",call,fType]
-  interpret ["DEF",[name,:argNames],["Result",:aType],nilLst,_
-             [["$elt","Result","construct"],body]]
+  interpret(["DEF",[name,:argNames],["Result",:aType],nilLst,_
+             [["$elt","Result","construct"],body]], nil)
 
 stripNil u ==
   [first(u), ["construct", :CADR(u)], if CADDR(u) then "true" else "false"]
@@ -730,7 +730,7 @@ multiToUnivariate f ==
     body := NSUBST(["elt",newVariable,index+1],vars.(index),body)
   -- We want a Vector DoubleFloat -> DoubleFloat
   target := [["DoubleFloat"],["Vector",["DoubleFloat"]]]
-  rest interpret ["ADEF",[newVariable],target,[[],[]],body]
+  rest interpret(["ADEF",[newVariable],target,[[],[]],body], nil)
 
 functionAndJacobian f ==
   -- Take a mapping into n functions of n variables, produce code which will
@@ -746,18 +746,19 @@ functionAndJacobian f ==
   jacBodies := [:[DF(f,v) for v in vars] for f in funBodies] where
     DF(fn,var) ==
       ["@",["convert",["differentiate",fn,var]],"InputForm"]
-  jacBodies := CDDR interpret [["$elt",["List",["InputForm"]],"construct"],:jacBodies]
+  jacBodies := CDDR interpret(
+        [["$elt",["List",["InputForm"]],"construct"],:jacBodies], nil)
   newVariable := GENSYM()
   for index in 0..#vars-1 repeat
     -- Remember that AXIOM lists, vectors etc are indexed from 1
     funBodies := NSUBST(["elt",newVariable,index+1],vars.(index),funBodies)
     jacBodies := NSUBST(["elt",newVariable,index+1],vars.(index),jacBodies)
   target := [["Vector",["DoubleFloat"]],["Vector",["DoubleFloat"]],["Integer"]]
-  rest interpret
+  rest interpret(
     ["ADEF",[newVariable,"flag"],target,[[],[],[]],_
             ["IF", ["=","flag",1],_
                    ["vector",["construct",:funBodies]],_
-                   ["vector",["construct",:jacBodies]]]]
+                   ["vector",["construct",:jacBodies]]]], nil)
 
 
 vectorOfFunctions f ==
@@ -774,4 +775,6 @@ vectorOfFunctions f ==
     -- Remember that AXIOM lists, vectors etc are indexed from 1
     funBodies := NSUBST(["elt",newVariable,index+1],vars.(index),funBodies)
   target := [["Vector",["DoubleFloat"]],["Vector",["DoubleFloat"]]]
-  rest interpret ["ADEF",[newVariable],target,[[],[]],["vector",["construct",:funBodies]]]
+  rest interpret(
+     ["ADEF",[newVariable],target,[[],[]],["vector",["construct",:funBodies]]],
+     nil)

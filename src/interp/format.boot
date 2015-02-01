@@ -635,11 +635,6 @@ tuple2String argl ==
       -- [fn2 first x, :f rest x]
       [fn2 y for y in x]
 
-script2String s ==
-  null s => '""   -- just to be safe
-  if not PAIRP s then s := [s]
-  linearFormatForm(first s, rest s)
-
 linearFormatName x ==
   atom x => x
   linearFormat x
@@ -652,34 +647,6 @@ linearFormat x ==
       nil
     [op,"(",:argPart,")"]
   [linearFormat y for y in x]
-
-numOfSpadArguments id ==
-  char("*") = (s:= PNAME id).0 =>
-      +/[n for i in 1.. while INTEGERP (n:=PARSE_-INTEGER PNAME s.i)]
-  keyedSystemError("S2IF0012",[id])
-
-linearFormatForm(op,argl) ==
-  s:= PNAME op
-  indexList:= [PARSE_-INTEGER PNAME d for i in 1.. while
-    (DIGITP (d:= s.(maxIndex:= i)))]
-  cleanOp:= INTERN ("STRCONC"/[PNAME s.i for i in maxIndex..MAXINDEX s])
-  fnArgs:=
-    indexList.0 > 0 =>
-      concat('"(",formatArgList take(-indexList.0,argl),'")")
-    nil
-  if #indexList > 1 then
-    scriptArgs:= formatArgList take(indexList.1,argl)
-    argl := DROP(indexList.1,argl)
-    for i in rest rest indexList repeat
-      subArglist:= take(i,argl)
-      argl:= DROP(i,argl)
-      scriptArgs:= concat(scriptArgs,";",formatArgList subArglist)
-  scriptArgs:=
-    scriptArgs => concat(specialChar 'lbrk,scriptArgs, specialChar 'rbrk)
-    nil
-  l := [(STRINGP f => f; STRINGIMAGE f) for f in
-       concat(cleanOp,scriptArgs,fnArgs)]
-  "STRCONC"/l
 
 formatArgList l ==
   null l => nil

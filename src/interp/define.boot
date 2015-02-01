@@ -251,7 +251,6 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
 --Begin lines for category default definitions
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
-    $getDomainCode: local := nil
     $addForm: local:= nil
     for x in sargl for t in rest signature' repeat
       [.,.,e]:= compMakeDeclaration([":",x,t],m,e)
@@ -337,7 +336,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $functorLocalParameters: local := nil
     $CheckVectorList: local := nil
                   --prevents CheckVector from printing out same message twice
-    $getDomainCode: local := nil -- code for getting views
     $insideFunctorIfTrue: local:= true
     $setelt: local :=
       $QuickCode = true => 'QSETREFV
@@ -397,11 +395,9 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 --  in this case, D is replaced by D1,..,Dn (gensyms) which are set
 --  to the A1,..,An view of D
 --+
-    $functorLocalParameters:=
-      argPars :=
-        makeFunctorArgumentParameters(argl,rest signature',first signature')
+    $functorLocalParameters := argl
+    makeFunctorArgumentParameters(argl, rest signature', first signature')
  -- must do above to bring categories into scope --see line 5 of genDomainView
-      argl
 --  4. compile body in environment of %type declarations for arguments
     op':= $op
     rettype:= signature'.target
@@ -509,8 +505,8 @@ displayMissingFunctions() ==
 makeFunctorArgumentParameters(argl,sigl,target) ==
   $forceAdd: local:= true
   $ConditionalOperators: local := nil
-  ("append"/[fn(a,augmentSig(s,findExtras(a,target)))
-              for a in argl for s in sigl]) where
+  for a in argl for s in sigl repeat fn(a,augmentSig(s,findExtras(a,target)))
+          where
     findExtras(a,target) ==
       --  see if conditional information implies anything else
       --  in the signature of a
@@ -534,42 +530,33 @@ makeFunctorArgumentParameters(argl,sigl,target) ==
       for u in ss repeat
         $ConditionalOperators:=[CDR u,:$ConditionalOperators]
       s is ['Join,:sl] =>
-        u:=ASSQ('CATEGORY,ss) =>
-          substitute([:u, :ss], u, s)
+        u := ASSQ('CATEGORY, ss) => BREAK()
         ['Join,:sl,['CATEGORY,'package,:ss]]
       ['Join,s,['CATEGORY,'package,:ss]]
     fn(a,s) ==
-      isCategoryForm(s,$CategoryFrame) =>
+      not(ATOM(a)) => BREAK()
+      if isCategoryForm(s,$CategoryFrame) then
         s is ["Join", :catlist] => genDomainViewList(a, rest s)
-        [genDomainView(a, s, "getDomainView")]
-      [a]
+        genDomainView(a, s, "getDomainView")
 
 genDomainViewList(id, catlist) ==
   null catlist => nil
   catlist is [y] and not isCategoryForm(y,$EmptyEnvironment) => nil
-  [genDomainView(id, first catlist, "getDomainView"),_
-     :genDomainViewList(id, rest catlist)]
+  for c in catlist repeat
+      genDomainView(id, c, "getDomainView")
 
 genDomainView(viewName, c, viewSelector) ==
   c is ['CATEGORY, ., :l] => genDomainOps(viewName, viewName, c)
-  code:= c
   $e := augModemapsFromCategory(viewName, viewName, nil, c, $e)
-  cd := ['LET, viewName]
-  if null member(cd,$getDomainCode) then
-          $getDomainCode:= [cd,:$getDomainCode]
-  viewName
 
 genDomainOps(viewName,dom,cat) ==
   oplist:= getOperationAlist(dom,dom,cat)
   siglist:= [sig for [sig,:.] in oplist]
   oplist:= substNames(dom,viewName,dom,oplist)
-  cd := ['LET, viewName]
-  $getDomainCode:= [cd,:$getDomainCode]
   for [opsig,cond,:.] in oplist for i in 0.. repeat
     if opsig in $ConditionalOperators then cond:=nil
     [op,sig]:=opsig
     $e:= addModemap(op,dom,sig,cond,['ELT,viewName,i],$e)
-  viewName
 
 compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
 -- form is lhs (f a1 ... an) of definition; body is rhs;
@@ -1018,9 +1005,6 @@ compCapsuleInner(itemList,m,e) ==
   code:=
     $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => BREAK()
     processFunctor($form,$signature,data,localParList,e)
-  if $getDomainCode then
-      SAY(["$getDomainCode =", $getDomainCode])
-      BREAK()
   [MKPF([code],"PROGN"),m,e]
 
 --% PROCESS FUNCTOR CODE
@@ -1109,43 +1093,15 @@ isMacro(x,e) ==
     null get(op,'modemap,e) and null args and null get(op,'mode,e)
       and signature is [nil] => body
 
-localExtras(oldFLP) ==
-    EQ(oldFLP,$functorLocalParameters) => NIL
-    flp1 := $functorLocalParameters
-    oldFLP' := oldFLP
-    n := 0
-    while oldFLP' repeat
-        oldFLP' := rest oldFLP'
-        flp1 := rest flp1
-        n := n + 1
-    -- Now we have to add code to compile all the elements
-    -- of functorLocalParameters that were added during the
-    -- conditional compilation
-    nils := ans := []
-    for u in flp1 repeat
-        if ATOM u or (or/[v is [., =u, :.] for v in $getDomainCode]) then
-            nils := [u, :nils]
-        else
-            gv := GENSYM()
-            ans := [['LET, gv, u], :ans]
-            nils := [gv, :nils]
-        n := n + 1
-    $functorLocalParameters := [:oldFLP, :NREVERSE nils]
-    NREVERSE ans
-
 doItIf(item is [., p, x, y], $predl, $e) ==
     olde := $e
     [p', ., $e] := comp(p, $Boolean, $e) or userError ['"not a Boolean:", p]
-    oldFLP := $functorLocalParameters
     if x ~= "noBranch" then
         compSingleCapsuleItem(x, $predl, getSuccessEnvironment(p, $e))
-        x' := localExtras(oldFLP)
-    oldFLP := $functorLocalParameters
     if y ~= "noBranch" then
         compSingleCapsuleItem(y, $predl, getInverseEnvironment(p, olde))
-        y' := localExtras(oldFLP)
     RPLACA(item, "COND")
-    RPLACD(item, [[p', x, :x'], ['(QUOTE T), y, :y']])
+    RPLACD(item, [[p', x], ['(QUOTE T), y]])
 
 doItWhere(item is [.,form,:exprList], $predl, eInit) ==
   $insideExpressionIfTrue: local:= false

@@ -237,7 +237,6 @@ timedAlgebraEvaluation(code) ==
 
 timedOptimization(code) ==
   startTimingProcess 'optimization
-  $getDomainCode : local := NIL
   r := lispize code
   if $reportOptimization then
     sayBrightlyI bright '"Optimized LISP code:"

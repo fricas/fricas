@@ -61,25 +61,16 @@ NumberFormats() : NFexports == NFimplementation where
 --        )lis (defun scanstr(x) (spadcomp::|parseFromString| x))
         sexfloat:SExpression := convert(coerce("Float")@Symbol)$SExpression
         ScanFloatIgnoreSpaces s ==
-          s := contract s
-          not check s => error "Non-numeric value"
-          sex : SExpression :=
-              interpret(packageTran(ncParseFromString(s)$Lisp)$Lisp)$Lisp
-          sCheck := car(car(sex))
-          if (sCheck = sexfloat) = true then
-             f := (cdr cdr sex) pretend Float
-          else
-             if integer?(cdr sex) = true then
-                f := (cdr sex) pretend Integer
-                f::F
-             else
-                error "Non-numeric value"
+            res := ScanFloatIgnoreSpacesIfCan s
+            res case "failed" => error "Non-numeric value"
+            res
 
         ScanFloatIgnoreSpacesIfCan s ==
           s := contract s
           not check s => "failed"
           sex : SExpression :=
-              interpret(packageTran(ncParseFromString(s)$Lisp)$Lisp)$Lisp
+              interpret(packageTran(ncParseFromString(s)$Lisp)$Lisp,
+                        NIL$Lisp)$Lisp
           sCheck := car(car(sex))
           if (sCheck = sexfloat) = true then
              f := (cdr cdr sex) pretend Float

@@ -154,7 +154,6 @@ processInteractive(form, posnForm) ==
   $domPvar: local := NIL
   $inRetract: local := NIL
   object := processInteractive1(form, posnForm)
-  --object := ERRORSET(LIST('processInteractive1,LIST('QUOTE,form),LIST('QUOTE,posnForm)),'t,'t)
   if not($ProcessInteractiveValue) then
     if $reportInstantiations = true then
       reportInstantiations()
@@ -197,7 +196,6 @@ recordAndPrint(x,md) ==
   else
     x' := x
     md' := md
-  $outputMode: local := md   --used by DEMO BOOT
   mode:= (md=$EmptyMode => quadSch(); md)
   if (md ~= $Void) or $printVoidIfTrue then
     if null $collectOutput then TERPRI $algebraOutputStream
@@ -227,17 +225,20 @@ printTypeAndTimeNormal(x,m) ==
   if $printTimeIfTrue then
     timeString := makeLongTimeString($interpreterTimedNames,
       $interpreterTimedClasses)
+  if $printTypeIfTrue then
+      type_string := outputDomainConstructor(m)
   $printTimeIfTrue and $printTypeIfTrue =>
     $collectOutput =>
-      $outputLines := [msgText("S2GL0012", [m]), :$outputLines]
-    sayKeyedMsg("S2GL0014",[m,timeString])
+      $outputLines := [msgText("S2GL0012", [type_string]), :$outputLines]
+    sayKeyedMsg("S2GL0014", [type_string, timeString])
   $printTimeIfTrue =>
     $collectOutput => nil
     sayKeyedMsg("S2GL0013",[timeString])
   $printTypeIfTrue =>
     $collectOutput =>
-      $outputLines := [justifyMyType msgText("S2GL0012", [m]), :$outputLines]
-    sayKeyedMsg("S2GL0012",[m])
+        $outputLines :=
+            [justifyMyType msgText("S2GL0012", [type_string]), :$outputLines]
+    sayKeyedMsg("S2GL0012", [type_string])
 
 printTypeAndTimeSaturn(x, m) ==
   -- header
@@ -306,8 +307,7 @@ interpretTopLevel(x, posnForm) ==
   c = 'tryAgain => interpretTopLevel(x, posnForm)
   c
 
-interpret(x, :restargs) ==
-  posnForm := if PAIRP restargs then first restargs else restargs
+interpret(x, posnForm) ==
   --type analyzes and evaluates expression x, returns object
   $env:local := [[NIL]]
   $genValue:local := true       --evaluate all generated code

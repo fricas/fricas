@@ -496,8 +496,6 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   codePart3:= [:$ConstantAssignments,:$epilogue]
   ans :=
     ['PROGN,:optFunctorPROGN [:codePart1,:codePart2,:codePart3], '$]
-  $getDomainCode:= nil
-    --if we didn't kill this, DEFINE would insert it in the wrong place
   ans:= minimalise ans
   SAY ['"time taken in buildFunctor: ", get_run_time() - oldtime]
   --sayBrightly '"------------------functor code: -------------------"
