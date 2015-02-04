@@ -123,6 +123,11 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       ++ \spad{f(x^a) + f(x^(a + d)) + f(x^(a + 2 d)) + ...}.
       ++ \spad{f(x)} should have zero constant
       ++ coefficient and \spad{a} and d should be positive.
+    general_Lambert_product : (ST A, I, I) -> ST A
+      ++ general_Lambert_product(f(x), a, d) returns
+      ++ \spad{f(x^a)*f(x^(a + d))*f(x^(a + 2 d))* ...}.
+      ++ \spad{f(x)} should have constant coefficient equal to one
+      ++ and \spad{a} and d should be positive.
     multisect    : (I, I, ST A) -> ST A
       ++ multisect(a, b, st)
       ++ selects the coefficients of \spad{x^((a+b)*n+a)},
@@ -406,6 +411,19 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
         concat(0, addiag(map((x, y) +-> rptg3(a, d, x, y), _
                  integers 1, rst st)$SP3(I, A, ST A)))
       error "generalLambert: constant coefficient should be zero"
+
+    rptg4(a : I, d : I, st : ST A) : ST A == delay
+        empty? st => zro()
+        concat(rpSt(a, 0),  concat(frst(st), rptg4(d, d, rst(st))))
+
+    general_Lambert_product(st, a, d) == delay
+        a < 1 or d < 1 => error
+          "general_Lambert_product: both integer arguments must be positive"
+        empty? st or (frst st ~= 1) => error
+          "general_Lambert_product: constant coefficient should be one"
+        st1 := rst st
+        prodiag(map(n +-> rptg4(a + n*d - n - 1, a + n*d - 1, st1),
+                 integers 0)$SP2(I, ST A))
 
 --% misc. functions
 
