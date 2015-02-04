@@ -187,12 +187,12 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
 
 -- the algebraic relation is (den * y)^2 = p  where p is a * x^2 + b * x + c
 -- if p is squarefree, then parametrize in the following form:
---     u  = y - x \sqrt{a}
+--     u  = den y - x \sqrt{a}
 --     x  = (u^2 - c) / (b - 2 u \sqrt{a}) = h(u)
 --     dx = h'(u) du
---     y  = (u + a h(u)) / den = g(u)
+--     y  = (u + \sqrt(a) h(u)) / den = g(u)
 -- if a is a perfect square,
---     u  = (y - \sqrt{c}) / x
+--     u  = (den y - \sqrt{c}) / x
 --     x  = (b - 2 u \sqrt{c}) / (u^2 - a) = h(u)
 --     dx = h'(u) du
 --     y  = (u h(u) + \sqrt{c}) / den = g(u)
@@ -216,12 +216,13 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
         bm2u := b - 2 * u * sa
         q    := eval(den, x, xx := (u^2 - c) / bm2u)
         yy   := (ua := u + xx * sa) / q
-        [y::F - x::F * sa, [2 * ua / bm2u, [x, y], [xx, yy]], empty()]
+        [den*y::F - x::F * sa, [2 * ua / bm2u, [x, y], [xx, yy]], empty()]
       u2ma := u^2 - a
       sc  := rootSimp sqrt c
       q   := eval(den, x, xx := (b - 2 * u * sc) / u2ma)
       yy  := (ux := xx * u + sc) / q
-      [(y::F - sc) / x::F, [- 2 * ux / u2ma, [x , y], [xx, yy]], kerdiff(sc, c)]
+      [(den*y::F - sc) / x::F, [- 2 * ux / u2ma, [x , y], [xx, yy]],
+        kerdiff(sc, c)]
 
     mkRatlx(f, x, y, t, z, dx) ==
       rat := univariate(eval(f, [x, y], [t, z::F]), z) * dx
