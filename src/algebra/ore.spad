@@ -560,6 +560,42 @@ UnivariateSkewPolynomial(x : Symbol, R : Ring, sigma : Automorphism R, delta : R
      coerce(v : Variable(x)) : % == monomial(1, 1)
      coerce(p : %) : OutputForm  == outputForm(p, outputForm x)$Rep
 
+)abbrev package INTDSOL IntegrateSolutions
+++ Description: \spadtype{IntegrateSolutions} implements a method
+++  to compute integral of solution of differential operator.
+++ References:
+++  S. A. Abramov, M. van Hoej, Integration of Solutions of
+++  Linear Functional Equations,
+++  http://www.math.fsu.edu/~hoeij/papers/itsf99/ab_final.pdf
+IntegrateSolutions(F, L) : Exports == Implementation where
+    F : Join(Field, CharacteristicZero, RetractableTo Integer,
+             RetractableTo Fraction Integer)
+    L : UnivariateSkewPolynomialCategory F with
+        adjoint : % -> %
+            ++ adjoint(a) returns the adjoint operator of a.
+
+    U ==> Union(F, "failed")
+    SF ==> (L, F) -> Record(particular : U, basis : List F)
+
+    Exports == with
+        integrate_sols : (L, SF) -> Record(ltilde : L, r : Union(L, "failed"))
+            ++ integrate_sols(l, rat_solve) integrates the solutions of an
+            ++ operator l given rat_solve(op, g) that returns
+            ++ \spad{["failed", []]} if the equation \spad{op y = g} has no
+            ++ rational solution. Otherwise, the rat_solve function should
+            ++ return \spad{[f, [y1, ..., ym]]} where f is a particular rational
+            ++ solution and the yi's form a basis for the rational solutions of
+            ++ the homogeneous equation.
+
+    Implementation == add
+        integrate_sols(l, rat_solve) ==
+            a := adjoint(l)
+            rec := rat_solve(a, 1)
+            rec.particular case "failed" =>
+                [l * monomial(1, 1), "failed"]
+            rt := leftQuotient(1 - rec.particular::F * l, monomial(1, 1))
+            [1 - rt * monomial(1, 1), rt]
+
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
