@@ -39,26 +39,28 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
       ++ palgint0(f, x, y, d, p) returns the integral of \spad{f(x, y)dx}
       ++ where y is an algebraic function of x satisfying
       ++ \spad{d(x)\^2 y(x)\^2 = P(x)}.
-    palgint0   : (F, K, K, K, F, RF) -> IR
+    palgint0   : (F, K, K, K, F, RF, F) -> IR
       ++ palgint0(f, x, y, z, t, c) returns the integral of \spad{f(x, y)dx}
       ++ where y is an algebraic function of x satisfying
-      ++ \spad{f(x, y)dx = c f(t, y) dy}; c and t are rational functions of y.
+      ++ \spad{x = eval(t, z, ry)} and \spad{c = d/dz t};
+      ++ r is rational function of x, c and t are rational functions of z.
       ++ Argument z is a dummy variable not appearing in \spad{f(x, y)}.
     palgRDE0   : (F, F, K, K, (F, F, SY) -> U1, F, UP) -> U1
       ++ palgRDE0(f, g, x, y, foo, d, p) returns a function \spad{z(x, y)}
-      ++ such that \spad{dz/dx + n * df/dx z(x, y) = g(x, y)} if such a z exists,
-      ++ and "failed" otherwise.
+      ++ such that \spad{dz/dx + n * df/dx z(x, y) = g(x, y)} if such
+      ++ a z exists, and "failed" otherwise.
       ++ Argument y is an algebraic function of x satisfying
       ++ \spad{d(x)\^2y(x)\^2 = P(x)}.
       ++ Argument foo, called by \spad{foo(a, b, x)}, is a function that solves
       ++ \spad{du/dx + n * da/dx u(x) = u(x)}
       ++ for an unknown \spad{u(x)} not involving y.
-    palgRDE0   : (F, F, K, K, (F, F, SY) -> U1, K, F, RF) -> U1
+    palgRDE0   : (F, F, K, K, (F, F, SY) -> U1, K, F, RF, F) -> U1
       ++ palgRDE0(f, g, x, y, foo, t, c) returns a function \spad{z(x, y)}
-      ++ such that \spad{dz/dx + n * df/dx z(x, y) = g(x, y)} if such a z exists,
-      ++ and "failed" otherwise.
+      ++ such that \spad{dz/dx + n * df/dx z(x, y) = g(x, y)} if such
+      ++ a z exists, and "failed" otherwise.
       ++ Argument y is an algebraic function of x satisfying
-      ++ \spad{f(x, y)dx = c f(t, y) dy}; c and t are rational functions of y.
+      ++ \spad{x = eval(t, z, ry)} and \spad{c = d/dz t};
+      ++ r is rational function of x, c and t are rational functions of z.
       ++ Argument \spad{foo}, called by \spad{foo(a, b, x)}, is a function that
       ++ solves \spad{du/dx + n * da/dx u(x) = u(x)}
       ++ for an unknown \spad{u(x)} not involving y.
@@ -76,10 +78,12 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
         ++ palgLODE0(op, g, x, y, d, p) returns the solution of \spad{op f = g}.
         ++ Argument y is an algebraic function of x satisfying
         ++ \spad{d(x)\^2y(x)\^2 = P(x)}.
-      palgLODE0  : (L, F, K, K, K, F, RF) -> ODE
-        ++ palgLODE0(op, g, x, y, z, t, c) returns the solution of \spad{op f = g}
+      palgLODE0  : (L, F, K, K, K, F, RF, F) -> ODE
+        ++ palgLODE0(op, g, x, y, z, t, c) returns the solution of
+        ++ \spad{op f = g}.
         ++ Argument y is an algebraic function of x satisfying
-        ++ \spad{f(x, y)dx = c f(t, y) dy}; c and t are rational functions of y.
+        ++ \spad{x = eval(t, z, ry)} and \spad{c = d/dz t};
+        ++ r is rational function of x, c and t are rational functions of z.
 
   Implementation ==> add
     import from RationalIntegration(F, UP)
@@ -91,7 +95,7 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
                                                         K, R, P, F)
 
     mkRat    : (F, REC, List K) -> RF
-    mkRatlx  : (F, K, K, F, K, RF) -> RF
+    mkRatlx  : (F, K, K, F, K, RF, F) -> RF
     quadsubst : (K, K, F, UP) -> Record(diff : F, subs : REC, newk : List K)
     kerdiff  : (F, F) -> List K
     checkroot : (F, List K) -> F
@@ -224,22 +228,28 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
       [(den*y::F - sc) / x::F, [- 2 * ux / u2ma, [x , y], [xx, yy]],
         kerdiff(sc, c)]
 
-    mkRatlx(f, x, y, t, z, dx) ==
-      rat := univariate(eval(f, [x, y], [t, z::F]), z) * dx
-      numer(rat) / denom(rat)
+    mkRatlx(f, x, y, t, z, dx, r) ==
+        f1 := eval(f, y, r*z::F)
+        univariate(eval(f1, x, t), z) * dx
 
     mkRat(f, rec, l) ==
       rat := univariate(checkroot(rec.coeff * eval(f, rec.var, rec.val), l), dummy)
       numer(rat) / denom(rat)
 
-    palgint0(f, x, y, z, xx, dx) ==
-      map(x1+->multivariate(x1, y), integrate mkRatlx(f, x, y, xx, z, dx))
+    ev(x1 : RF, y1 : RF) : F ==
+        retract(retract(x1(y1))@UP)@F
 
-    palgRDE0(f, g, x, y, rischde, z, xx, dx) ==
-      (u := rischde(eval(f, [x, y], [xx, z::F]),
-                      multivariate(dx, z) * eval(g, [x, y], [xx, z::F]),
-                          symbolIfCan(z)::SY)) case "failed" => "failed"
-      eval(u::F, z, y::F)
+    palgint0(f, x, y, z, xx, dx, r) ==
+        res1 := integrate mkRatlx(f, x, y, xx, z, dx, r)
+        y1 := (y::F/r)::UP::RF
+        pp := map((x1 : RF) : F +-> ev(x1, y1), res1)
+
+    palgRDE0(f, g, x, y, rischde, z, xx, dx, r) ==
+        f1 := eval(f, y, r*z::F)
+        g1 := eval(g, y, r*z::F)
+        (u := rischde(eval(f1, x, xx), multivariate(dx, z)*eval(g1, x, xx),
+                      symbolIfCan(z)::SY)) case "failed" => "failed"
+        eval(u::F, z, y::F/r)
 
 -- given p = sum_i a_i(X) Y^i, returns  sum_i a_i(x) y^i
     multivariate(p, x, y) ==
@@ -272,19 +282,21 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
         rec.particular case "failed" => ["failed", bas]
         [((rec.particular)::RF) (pr.diff), bas]
 
-      palgLODE0(eq, g, x, y, kz, xx, dx) ==
-        d := monomial(univariate(inv multivariate(dx, kz), kz), 1)$LODO
-        di : LODO := 1                  -- will accumulate the powers of d
-        op : LODO := 0                  -- will accumulate the new LODO
-        lk : List(K) := [x, y]
-        lv : List(F) := [xx, kz::F]
-        for i in 0..degree eq repeat
-          op := op + univariate(eval(coefficient(eq, i), lk, lv), kz) * di
-          di := d * di
-        rec := ratDsolve(op, univariate(eval(g, lk, lv), kz))
-        bas : List(F) := [multivariate(b, y) for b in rec.basis]
-        rec.particular case "failed" => ["failed", bas]
-        [multivariate((rec.particular)::RF, y), bas]
+      palgLODE0(eq, g, x, y, kz, xx, dx, r) ==
+          d := monomial(univariate(inv multivariate(dx, kz), kz), 1)$LODO
+          di : LODO := 1              -- will accumulate the powers of d
+          op : LODO := 0              -- will accumulate the new LODO
+          y1 := r*kz::F
+          for i in 0..degree eq repeat
+              c1 := eval(coefficient(eq, i), y, y1)
+              op := op + univariate(eval(c1, x, xx), kz) * di
+              di := d * di
+          g1 := eval(g, y, y1)
+          rec := ratDsolve(op, univariate(eval(g1, x, xx), kz))
+          yinv := (y::F/r)::UP::RF
+          bas : List(F) := [ev(b, yinv) for b in rec.basis]
+          rec.particular case "failed" => ["failed", bas]
+          [ev((rec.particular)::RF, yinv), bas]
 
 )abbrev package INTPAF PureAlgebraicIntegration
 ++ Integration of pure algebraic functions;
@@ -361,7 +373,8 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
                                                         K, R, P, F)
 
     quadIfCan      : (K, K) -> Union(Record(coef:F, poly:UP), "failed")
-    linearInXIfCan : (K, K) -> Union(Record(xsub:F, dxsub:RF), "failed")
+    linearInXIfCan : (K, K) -> Union(Record(xsub : F, dxsub : RF,
+                                            ycoeff : F), "failed")
     prootintegrate : (F, K, K) -> IR
     prootintegrate1 : (UPUP, K, K, UPUP) -> IR
     prootRDE       : (F, F, F, K, K, (F, F, SY) -> U1) -> U1
@@ -383,6 +396,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
 
     dummy := new()$SY
     dumk  := kernel(dummy)@K
+    dumk2 := kernel(new()$SY)@K
 
     UPUP2F1(p, t, cf, kx, k) == UPUP2F0(eval(p, t, cf), kx, k)
     UPUP2F0(p, kx, k)        == multivariate(p, kx, k::F)
@@ -393,18 +407,75 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
                                       1)::Record(coef1 : UPUP, coef2 : UPUP)
       (map((x1 : F) : RF+->x1::UP::RF, numer f) * bc.coef1) rem modulus
 
--- returns "failed", or (xx, c) such that f(x, y)dx = f(xx, y) c dy
--- if p(x, y) = 0 is linear in x
+    split_power(p1 : UP, deg_p : N) : Record(pfac : UP, cofactor : UP) ==
+        fc0 := squareFree(p1)
+        facl := factors(fc0)
+        p_fac : UP := 1
+        cofac : UP := 1
+        for fac in facl repeat
+            e1 := fac.exponent
+            f1 := fac.factor
+            (e2, e3) := divide(e1, deg_p)
+            if e3 = deg_p - 1 then
+                 cofac := f1*cofac
+                 e3 := 0
+                 e2 := e2 + 1
+            p_fac := f1^(e2::N)*p_fac
+        [p_fac, cofac]
+
+    -- returns "failed", or (xx, c, r) such that
+    -- xx = h(dumk2::F), x = h(ry), c == h' and r is rational in x,
+    -- where h is a rational function.  Will not fail if
+    -- there exist r rational in x such that p(x, y/r) is linear
+    -- in x, where p(x, y) is minimal polynomial of y
     linearInXIfCan(x, y) ==
-      a := b := 0$UP
-      p := clearDenominator lift(minPoly y, x)
-      while p ~= 0 repeat
-        degree(q := numer leadingCoefficient p) > 1 => return "failed"
-        a := a + monomial(coefficient(q, 1), d := degree p)
-        b := b - monomial(coefficient(q, 0), d)
-        p := reductum p
-      xx : RF := b / a
-      [xx(dumk::F), differentiate(xx, differentiate)]
+        p := clearDenominator lift(minPoly y, x)
+        lc := numer(leadingCoefficient(p))
+        deg_p := degree(p)
+        y_coeff : RF := 1
+        if degree(lc) > 1 then
+            (p_fac, cofac) := split_power(lc, deg_p)
+            degree(cofac) > 1 => return "failed"
+            p := cofac::RF*p
+            np1 : UPUP := 0
+            ppow : UP := 1
+            for i in 0..deg_p repeat
+                ci := numer(coefficient(p, i))
+                ui := ci exquo ppow
+                ui case "failed" => return "failed"
+                np1 := monomial(ui::UP::RF, i)$UPUP + np1
+                ppow := p_fac*ppow
+            p := np1
+            y_coeff := y_coeff/(p_fac::RF)
+            degree(numer(leadingCoefficient(p))) > 1 => return "failed"
+        c0 := numer(coefficient(p, 0))
+        if degree(c0) > 1 then
+            (p_fac, cofac) := split_power(c0, deg_p)
+            degree(cofac) > 1 => return "failed"
+            p := cofac::RF*p
+            degree(numer(leadingCoefficient(p))) > 1 => return "failed"
+            np1 : UPUP := 0
+            ppow : UP := 1
+            for i in deg_p..0 by -1 repeat
+                if i = degree(p) then
+                    ci := numer(leadingCoefficient(p))
+                    ui := ci exquo ppow
+                    ui case "failed" => return "failed"
+                    np1 := monomial(ui::UP::RF, i)$UPUP + np1
+                    p := reductum(p)
+                ppow := p_fac*ppow
+            p := np1
+            degree(numer(coefficient(p, 0))) > 1 => return "failed"
+            y_coeff := p_fac*y_coeff
+        a := b := 0$UP
+        while p ~= 0 repeat
+            degree(q := numer leadingCoefficient p) > 1 => return "failed"
+            a := a + monomial(coefficient(q, 1), d := degree p)
+            b := b - monomial(coefficient(q, 0), d)
+            p := reductum p
+        a = 0 => "failed"
+        xx : RF := b / a
+        [xx(dumk2::F), differentiate(xx, differentiate), y_coeff(x::F)]
 
 -- return Int(f(x, y)dx) where y is an n^th root of a rational function in x
     prootintegrate(f, x, y) ==
@@ -580,7 +651,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
           is?(y,  'rootOf) => palgintegrate(f, x, y)
           FAIL
         palgint0(f, x, y, u.coef, u.poly)
-      palgint0(f, x, y, dumk, v.xsub, v.dxsub)
+      palgint0(f, x, y, dumk2, v.xsub, v.dxsub, v.ycoeff)
 
     palgRDE(nfp, f, g, x, y, rde) ==
       (v := linearInXIfCan(x, y)) case "failed" =>
@@ -588,7 +659,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
           is?(y, 'nthRoot) => prootRDE(nfp, f, g, x, y, rde)
           palgRDE1(nfp, g, x, y)
         palgRDE0(f, g, x, y, rde, u.coef, u.poly)
-      palgRDE0(f, g, x, y, rde, dumk, v.xsub, v.dxsub)
+      palgRDE0(f, g, x, y, rde, dumk2, v.xsub, v.dxsub, v.ycoeff)
 
     -- returns "failed", or (d, P) such that (dy)^2 = P(x)
     -- and degree(P) = 2
@@ -606,7 +677,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
           (u := quadIfCan(kx, y)) case "failed" =>
             palgLODE1([coefficient(eq, i) for i in 0..degree eq], g, kx, y, x)
           palgLODE0(eq, g, kx, y, u.coef, u.poly)
-        palgLODE0(eq, g, kx, y, dumk, v.xsub, v.dxsub)
+        palgLODE0(eq, g, kx, y, dumk2, v.xsub, v.dxsub, v.ycoeff)
 
 )abbrev package INTAF AlgebraicIntegration
 ++ Mixed algebraic integration;
