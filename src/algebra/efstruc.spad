@@ -778,6 +778,10 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
       ++ do_liou(op, lf) should be local but conditional.
 
   Implementation ==> add
+
+    KF  ==> Kernel F
+    PF  ==> SparseMultivariatePolynomial(R, KF)
+
     ker2explogs : (KG, List KG) -> FG
     smp2explogs : (PG, List KG) -> FG
     supexp     : (UP, GF, GF, Z) -> GF
@@ -785,6 +789,8 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
     GR2F       : GR -> F
     KG2F       : KG -> F
     PG2F       : PG -> F
+    KF2FG      : KF -> FG
+    PF2FG      : PF -> FG
     ker2trigs  : (OP, List GF) -> GF
     smp2trigs  : PG -> GF
     sup2trigs  : (UP, GF) -> GF
@@ -792,13 +798,21 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
     nth := R has RetractableTo(Integer) and F has RadicalCategory
 
     GR2F g        == real(g)::F + sqrt(-(1::F)) * imag(g)::F
-    KG2F k        == map(FG2F, k)$ExpressionSpaceFunctions2(FG, F)
     FG2F f        == (PG2F numer f) / (PG2F denom f)
-    F2FG f        == map(x +-> x::GR, f)$FunctionSpaceFunctions2(R, F, GR, FG)
+    F2FG f        == (PF2FG numer f) / (PF2FG denom f)
     GF2FG f       == (F2FG real f) + complex(0, 1)$GR ::FG * F2FG imag f
     GR2GF gr      == complex(real(gr)::F, imag(gr)::F)
 
     im := complex(0, 1)$GR :: FG
+
+    KG2F k ==
+        kernel(operator(operator(k))$F, [FG2F a for a in argument(k)])
+
+    KF2FG k ==
+        akl := argument(k)
+        op := operator(k)
+        is?(op, 'nthRoot) and akl(1) = -1 and akl(2) = 2::F => im
+        kernel(operator(op)$FG, [F2FG a for a in akl])
 
 -- This expects the argument to have only tan and atans left.
 -- Does a half-angle correction if k is not in the initial kernel list.
@@ -917,6 +931,9 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
     PG2F p ==
       map(KG2F, GR2F, p)$PolynomialCategoryLifting(IndexedExponents KG,
                                                           KG, GR, PG, F)
+    PF2FG p ==
+        map(KF2FG, x +-> x::GR::FG, p)$PolynomialCategoryLifting(
+              IndexedExponents KF, KF, R, PF, FG)
 
     smp2explogs(p, l) ==
       map(x +-> ker2explogs(x, l), y +-> y::FG,
