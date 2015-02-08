@@ -250,8 +250,8 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         [reverse! resk, reverse! rese]
 
     to_real(fg : FG, rtg : RTG_Rec, ralg : RALG_Rec) : F ==
-        f := FG2F eval(fg, rtg.ker, rtg.val)
-        eval(f, ralg.ker, ralg.val)
+        f := FG2F subst(fg, rtg.ker, rtg.val)
+        subst(f, ralg.ker, ralg.val)
 
 -- can handle a single unnested tangent directly, otherwise go complex for now
 -- l is the list of all the kernels containing x
@@ -283,7 +283,33 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       f1 := eval(f, tf, etf)
       tf1 := tower(f1)
       rec := rischNormalize(f1, x)
-      g   := rootSimp(rec.func)
+      tf2 := tower(rec.func)
+      r_lst : List(K) := []
+      rv_lst : List(F) := []
+      nr_lst : List(K) := []
+      ir_lst : List(F) := []
+      for k in tf2 repeat
+          not(is?(k, 'nthRoot)) => "iterate"
+          akl := argument(k)
+          ak1 := eval(first(akl), r_lst, rv_lst)
+          ak2 := (retract(akl(2))@Integer)::NonNegativeInteger
+          pr := froot(ak1, ak2)$PolynomialRoots(IndexedExponents K, K, R, P, F)
+          nak := pr.radicand
+          rnumu := retractIfCan(numer(nak))@Union(R, "failed")
+          pr.exponent = ak2 and pr.coef = 1 and 
+              rnumu case "failed" => "iterate"
+          r_lst := cons(k, r_lst)
+          nk : F
+          ec := eval(pr.coef, nr_lst, ir_lst)
+          if rnumu case R then
+              nk := kernel(operator(k), [1/nak, (pr.exponent)::F])
+              rv_lst := cons(pr.coef/nk, rv_lst)
+              ir_lst := cons(ec/k::F, ir_lst)
+          else
+              rv_lst := cons(pr.coef*nk, rv_lst)
+              ir_lst := cons(k::F/eval(pr.coef, nr_lst, ir_lst), ir_lst)
+          nr_lst := cons(retract(nk)@K, nr_lst)
+      g := subst(rec.func, r_lst, rv_lst)
       tg0 := tower g
       tg  := [k for k in tg0 | member?(x, variables(k::F))]$List(K)
       ltg := select(x1+->is?(operator x1, 'tan), tg)
@@ -306,6 +332,8 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
           i := rationalize_ir(i, retract(sqrt(-1))@Kernel(F)
                              )$GenusZeroIntegration(R, F, F)
       else i := lfintegrate(g, x)
+      i := map((ii :F) : F +-> eval(ii, nr_lst, ir_lst),
+               i)$IntegrationResultFunctions2(F, F)
       ltg := setDifference(ltg, ltf)   -- tan's added by normalization
       okers := concat(rec.kers, ekers)
       ovals := concat(rec.vals, evals)
