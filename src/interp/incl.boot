@@ -178,6 +178,7 @@ ElseifKeepPart := 21
 ElseifSkipPart := 22
 ElseSkipToEnd  := 30
 ElseKeepPart   := 31
+Continuation   := 41
 
 Top?     (st) == QUOTIENT(st,10) = 0
 If?      (st) == QUOTIENT(st,10) = 1
@@ -293,11 +294,26 @@ incLude1 (:z) ==
                 StreamNil
 
             str  :=  EXPAND_-TABS first ss
+            has_cont :=
+                (nn := #str) < 1 => false
+                str.(nn - 1) = char('"__")
+
+            state = Continuation =>
+                rs :=
+                    has_cont => Rest(s)
+                    incLude(eb, rest ss, lno, ufos, rest(states))
+                Skipping?(states.1) => cons(xlSkip(eb,str,lno,ufos.0), rs)
+                cons(xlOK(eb, str, lno, ufos.0), rs)
+
             info :=  incClassify str
 
             not info.0 =>
-                Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), Rest s)
-                cons(xlOK(eb, str, lno, ufos.0),Rest s)
+                rs :=
+                    has_cont => incLude(eb, rest ss, lno, ufos,
+                                        cons(Continuation, states))
+                    Rest(s)
+                Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), rs)
+                cons(xlOK(eb, str, lno, ufos.0), rs)
 
             info.2 = '"other" =>
                 Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), Rest s)
