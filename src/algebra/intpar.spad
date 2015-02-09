@@ -675,7 +675,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
     do_spde1 : (UP, List(UP), Z, UP -> UP, Matrix(F) -> Matrix(F))
                  -> L_Param_UP
 
-    do_param_rde : (F, LF, SE, K, LK, (LK, LF) -> L_Param_F,
+    do_param_rde : (F, Boolean, LF, SE, K, LK, (LK, LF) -> L_Param_F,
                     (LK, LF) -> Param_Rec_QF) -> L_Param_F
 
     do_alg_rde : (F, List F, SE, K, LK, (LK, LF) -> L_Param_F,
@@ -728,17 +728,18 @@ ParametricRischDE(R, F) : Exports == Implementation where
 
     param_SPDE(a : UP, b : UP, lc : List(UP), d : Z, der : UP -> UP,
                get_rs : Matrix(F) -> Matrix(F),
+               do_degrad : (RF, List(RF)) -> L_Param_Q,
                x : SE) : L_Param_UP ==
         dt := der monomial(1, 1)
         degree(a) = 0 =>
             a ~= 1 => error "param_SPDE: degree(a) = 0 but a ~= 1"
             degt := degree(dt) - 1
             base_case := dt = 1
-            b = 0 =>
-                error "param_SPDE: b = 0"
-            base_case or degree(b) > max(0, degt) =>
+            (b ~= 0) and (base_case or degree(b) > max(0, degt)) =>
                 do_spde1(b, lc, d, der, get_rs)
-            error "param_SPDE: degree(a) = 0 unimplemented"
+            lcr := [c::RF for c in lc]
+            res1 := do_degrad(b::RF, lcr)
+            [[retract(re.ratpart)@UP, re.coeffs] for re in res1]
         n1 := #lc
         s1 := multi_SPDE(a, b, lc, d, der)$RDEaux(F)
         s1 case List(RSOL) =>
@@ -767,7 +768,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
             nlc := cons(lin_comb(kv, lc), nlc)
         nlc := reverse!(nlc)
         n2 := #lkv
-        s2 := param_SPDE(a, b, nlc, dres.dpar, der, get_rs, x)
+        s2 := param_SPDE(a, b, nlc, dres.dpar, der, get_rs, do_degrad, x)
         nres : L_Param_UP := []
         for be in s2 repeat
             bv := lin_comb(be.coeffs, lkv)
@@ -827,7 +828,8 @@ ParametricRischDE(R, F) : Exports == Implementation where
         [[univariate(be.ratpart, k), be.coeffs] for be in res1]
 
 
-    do_SPDE_prim(a : UP, bbr : RF, lcr : List RF, k: K, lk : LK,
+    do_SPDE_prim(a : UP, bbr : RF, is_der : Boolean,
+                lcr : List RF, k: K, lk : LK,
                 ext : (LK, LF) -> L_Param_F,
                 logi : (LK, LF) -> Param_Rec_QF, der : UP -> UP,
                 get_rs : Matrix(F) -> Matrix(F), x : SE
@@ -842,12 +844,13 @@ ParametricRischDE(R, F) : Exports == Implementation where
         not(base_case) and da = 0 and db = 0 =>
             b1 := retract(b)@F/retract(a)@F
             b1 = 0 => do_ext(ext, lcr, k, lk)
-            (ll, bl) := logi(lk, [b1])
-            if not(empty?(bl)) then
-                bv := first(bl)
-                bvu := integer_vector(bv)
-                if bvu case Vector(Integer) then
-                   error "need transform and call ext"
+            if not(is_der) then
+                (ll, bl) := logi(lk, [b1])
+                if not(empty?(bl)) then
+                    bv := first(bl)
+                    bvu := integer_vector(bv)
+                    if bvu case Vector(Integer) then
+                             error "need transform and call ext"
             do_SPDE_prim0(b1, lc, lk, ext, logi, der, get_rs, x)
         n :=
             db > da => max(0, dc - db)
@@ -872,7 +875,9 @@ ParametricRischDE(R, F) : Exports == Implementation where
                     mf : F := ((r0::Param_Rec_F).coeffs)(1)
                     if (mu := retractIfCan(mf)@Union(Z, "failed")) case Z then
                         n := max(n, mu::Z)
-        res1 := param_SPDE(a, b, lc, n, der, get_rs, x)
+        do_degrad := (bb : RF, lc1 : List(RF)) : L_Param_Q +->
+            do_SPDE_prim(1, bb, is_der, lc1, k, lk, ext, logi, der, get_rs, x)
+        res1 := param_SPDE(a, b, lc, n, der, get_rs, do_degrad, x)
         [[re.ratpart::RF, re.coeffs] for re in res1]
 
     do_SPDE_exp0(a : F, b : F, lcr : List(GP), lk : LK, eta : F,
@@ -971,7 +976,10 @@ ParametricRischDE(R, F) : Exports == Implementation where
         lcu := [retract(c)@UP for c in lc]
         nc1 := reduce(max, [degree(cu) for cu in lcu])
         n1 := exp_upper_bound(a, bu, nc1, lk, eta, logi)
-        res1 := param_SPDE(a, bu, lcu, n1, der, get_rs, x)
+        do_degrad := (bb : RF, lc1 : List(RF)) : L_Param_Q +->
+            do_SPDE_exp0(1, retract(numer(bb)), [RF_to_GP(c1) for c1 in lc1],
+                         lk, eta, ext, logi, x)
+        res1 := param_SPDE(a, bu, lcu, n1, der, get_rs, do_degrad, x)
         tt : RF :=
             n0 < 0 => (monomial(1, (-n0)::N)$UP)::RF
             1
@@ -998,13 +1006,14 @@ ParametricRischDE(R, F) : Exports == Implementation where
         rl := normalize(fpu, der1)
         p : UP := 1
         for re in rl repeat
-            (pi, ni) := re
-            fpu := fpu - ni::F*der1(pi)/pi
-            p := pi^ni*p
+            (pii, ni) := re
+            fpu := fpu - ni::F*der1(pii)/pii
+            p := pii^(ni::NonNegativeInteger)*p
         fp := multivariate(fpu, k)
         pf := multivariate(p::RF, k)
         lg1 := [pf*g for g in lg]
-        do_param_rde(fp, lg, x, k, lk, ext, logi)
+        res1 := do_param_rde(fp, false, lg1, x, k, lk, ext, logi)
+        [[rs.ratpart/pf, rs.coeffs] for rs in res1]
 
     do_alg_rde0(fp : F, lg : List F, x : SE, k : K, lk : LK,
                 ext : (LK, LF) -> L_Param_F,
@@ -1058,10 +1067,10 @@ ParametricRischDE(R, F) : Exports == Implementation where
         (fp := D(m*f, x)) = 0 => ext(lk, lg)
         k := kmax(lk)
         lk := [k1 for k1 in lk | k1 ~= k]
-        do_param_rde(fp, lg, x, k, lk, ext, logi)
+        do_param_rde(fp, true, lg, x, k, lk, ext, logi)
 
     -- assumes fp is weakly normalized
-    do_param_rde(fp, lg, x, k, lk, ext, logi) ==
+    do_param_rde(fp, is_der, lg, x, k, lk, ext, logi) ==
         has?(operator k, ALGOP)$BasicOperator =>
             do_alg_rde(fp, lg, x, k, lk, ext, logi)
         -- below we assume that main kernel k
@@ -1100,7 +1109,8 @@ ParametricRischDE(R, F) : Exports == Implementation where
         res1 :=
             symbolIfCan(k) case SE or is?(k, 'log)
               or has?(operator k, PRIM)$BasicOperator =>
-                do_SPDE_prim(aa, bbr, lgu1, k, lk, ext, logi, der1, get_rs, x)
+                do_SPDE_prim(aa, bbr, is_der, lgu1, k, lk, ext,
+                             logi, der1, get_rs, x)
             is?(k, 'exp) =>
                 do_SPDE_exp(aa, bbr, lgu1, lk, ext, logi, der1, get_rs, x)
             error "param_rde: unimplemented kernel"
