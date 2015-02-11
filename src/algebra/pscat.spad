@@ -272,7 +272,7 @@ UnivariateTaylorSeriesCategory(Coef) : Category == Definition where
 
     showAll? : () -> Boolean
     -- check a global Lisp variable
-    showAll?() == true
+    showAll?() == _$streamsShowAll$Lisp
 
     coerce(p : %) : OUT ==
       empty? (uu := coefficients p) => (0$Coef) :: OUT
@@ -287,10 +287,12 @@ UnivariateTaylorSeriesCategory(Coef) : Category == Definition where
           l := concat(termOutput(n :: I, frst uu, vv), l)
         uu := rst uu
       if showAll?() then
+        uu1 := uu
         for n in (count + 1).. while explicitEntries? uu and _
-               not eq?(uu, rst uu) repeat
+               not eq?(uu1, rst uu) repeat
           if frst(uu) ~= 0 then
             l := concat(termOutput(n :: I, frst uu, vv), l)
+          if odd?(n) then uu1 := rst(uu1)
           uu := rst uu
       l :=
         explicitlyEmpty? uu => l
