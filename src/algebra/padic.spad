@@ -270,7 +270,7 @@ InnerPAdicInteger(p, unBalanced?) : Exports == Implementation where
 
     showAll? : () -> Boolean
     -- check a global Lisp variable
-    showAll?() == true
+    showAll?() == _$streamsShowAll$Lisp
 
     coerce(x : %) : OUT ==
       empty?(st := stream x) => 0 :: OUT
@@ -281,10 +281,12 @@ InnerPAdicInteger(p, unBalanced?) : Exports == Implementation where
           l := concat(termOutput(n :: I, frst st), l)
         st := rst st
       if showAll?() then
+        st1 := st
         for n in (count + 1).. while explicitEntries? st and _
-               not eq?(st, rst st) repeat
+               not eq?(st1, rst st) repeat
           if frst(st) ~= 0 then
             l := concat(termOutput(n pretend I, frst st), l)
+          if odd?(n) then st1 := rst(st1)
           st := rst st
       l :=
         explicitlyEmpty? st => l
@@ -480,7 +482,7 @@ PAdicRationalConstructor(p, PADIC) : Exports == Implementation where
 
     showAll? : () -> Boolean
     -- check a global Lisp variable
-    showAll?() == true
+    showAll?() == _$streamsShowAll$Lisp
 
     coerce(x : %) : OUT ==
       x := removeZeroes(_$streamCount$Lisp, x)
@@ -494,10 +496,12 @@ PAdicRationalConstructor(p, PADIC) : Exports == Implementation where
           l := concat(termOutput((n :: I) + m, frst(uu)), l)
         uu := rst uu
       if showAll?() then
+        uu1 := uu
         for n in (count + 1).. while explicitEntries? uu and _
-               not eq?(uu, rst uu) repeat
+               not eq?(uu1, rst uu) repeat
           if frst(uu) ~= 0 then
             l := concat(termOutput((n::I) + m, frst(uu)), l)
+          if odd?(n) then uu1 := rst(uu1)
           uu := rst uu
       l :=
         explicitlyEmpty? uu => l

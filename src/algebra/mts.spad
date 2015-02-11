@@ -271,7 +271,7 @@ SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
 
     showAll? : () -> Boolean
     -- check a global Lisp variable
-    showAll?() == true
+    showAll?() == _$streamsShowAll$Lisp
 
     coerce(s : %) : OUT ==
       uu := s pretend Stream(SMP)
@@ -282,9 +282,11 @@ SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
         if frst(uu) ~= 0 then l := concat(tout frst uu, l)
         uu := rst uu
       if showAll?() then
+        uu1 := uu
         for n in n.. while explicitEntries? uu and _
-               not eq?(uu, rst uu) repeat
+               not eq?(uu1, rst uu) repeat
           if frst(uu) ~= 0 then l := concat(tout frst uu, l)
+          if odd?(n) then uu1 := rst(uu1)
           uu := rst uu
       l :=
         explicitlyEmpty? uu => l

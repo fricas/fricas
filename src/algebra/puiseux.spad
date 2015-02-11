@@ -521,7 +521,7 @@ UnivariatePuiseuxSeries(Coef, var, cen) : Exports == Implementation where
 
     showAll? : () -> Boolean
     -- check a global Lisp variable
-    showAll?() == true
+    showAll?() == _$streamsShowAll$Lisp
 
     termsToOutputForm : (RN, RN, ST, OUT) -> OUT
     termsToOutputForm(m, rat, uu, xxx) ==
@@ -533,10 +533,12 @@ UnivariatePuiseuxSeries(Coef, var, cen) : Exports == Implementation where
           l := concat(termOutput((n :: I) * rat + m, frst uu, xxx), l)
         uu := rst uu
       if showAll?() then
+        uu1 := uu
         for n in (count + 1).. while explicitEntries? uu and _
-               not eq?(uu, rst uu) repeat
+               not eq?(uu1, rst uu) repeat
           if frst(uu) ~= 0 then
             l := concat(termOutput((n :: I) * rat + m, frst uu, xxx), l)
+          if odd?(n) then uu1 := rst(uu1)
           uu := rst uu
       l :=
         explicitlyEmpty? uu => l
