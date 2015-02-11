@@ -414,6 +414,10 @@ UnivariateLaurentSeriesCategory(Coef) : Category == Definition where
       ++ \spad{series(st)} creates a series from a stream of non-zero terms,
       ++ where a term is an exponent-coefficient pair.  The terms in the
       ++ stream should be ordered by increasing order of exponents.
+    laurent : (I, Stream Coef) -> %
+      ++ \spad{laurent(n, st)} returns \spad{xn * series st)} where
+      ++ \spad{xn = monomial(1, n)} and \spad{series st} stands for
+      ++ the power series with coefficients given by the stream st.
     multiplyCoefficients : (I -> Coef, %) -> %
       ++ \spad{multiplyCoefficients(f, sum(n = n0..infinity, a[n] * x^n)) =
       ++ sum(n = 0..infinity, f(n) * a[n] * x^n)}.
@@ -455,7 +459,13 @@ UnivariateLaurentSeriesCategory(Coef) : Category == Definition where
     if Coef has Field then Field
         --++ Univariate Laurent series over a field form a field.
         --++ In fact, K((x)) is the quotient field of K[[x]].
-
+   add
+    laurentTerms(n: I, st: Stream Coef): Stream Term == delay
+        empty? st => empty()$Stream(Term)
+        c: Coef := frst st
+        zero? c => laurentTerms(n+1, rst st)
+        concat([n, c], laurentTerms(n+1, rst st))
+    laurent(n: I, st: Stream Coef): % == series laurentTerms(n, st)
 
 )abbrev category UPXSCAT UnivariatePuiseuxSeriesCategory
 ++ Author: Clifton J. Williamson
