@@ -472,7 +472,7 @@ queryUserKeyedMsg(key,args) ==
   conStream := MAKE_-INSTREAM 0
   sayKeyedMsg(key,args)
   ioHook("startQueryUser")
-  ans := read_-line conStream
+  ans := read_line conStream
   ioHook("endOfQueryUser")
   SHUT conStream
   ans

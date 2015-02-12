@@ -74,7 +74,7 @@ serverReadLine(stream) ==
 -- used in place of read_-line in a scratchpad server system.
   FORCE_-OUTPUT()
   not $SpadServer =>
-    read_-line(stream)
+      read_line(stream)
   _*EOF_*: fluid := NIL
   line :=
    while not $EndServerSession and not _*EOF_* repeat
@@ -83,7 +83,7 @@ serverReadLine(stream) ==
     $NeedToSignalSessionManager := false
     action := serverSwitch()
     action = $CallInterp =>
-      l := read_-line(stream)
+      l := read_line(stream)
       $NeedToSignalSessionManager := true
       return l
     action = $CreateFrame =>
