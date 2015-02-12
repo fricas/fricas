@@ -227,10 +227,10 @@ dbReadComments(n) ==
   n = 0 => '""
   instream := MAKE_-INSTREAM STRCONC(getEnv('"AXIOM"),'"/algebra/comdb.text")
   FILE_-POSITION(instream,n)
-  line := READLINE instream
+  line := read_line instream
   k := dbTickIndex(line,1,1)
   line := SUBSTRING(line,k + 1,nil)
-  while not EOFP instream and (x := READLINE instream) and
+  while not EOFP instream and (x := read_line instream) and
     (k := MAXINDEX x) and (j := dbTickIndex(x,1,1)) and (j < k) and
       x.(j := j + 1) = char '_- and x.(j := j + 1) = char '_- repeat
         xtralines := [SUBSTRING(x,j + 1,nil),:xtralines]
@@ -246,7 +246,7 @@ dbSplitLibdb() ==
   PRINTEXP('"",  comstream)
   TERPRI(comstream)
   while not EOFP instream repeat
-    line := READLINE instream
+    line := read_line instream
     outP := FILE_-POSITION outstream
     comP := FILE_-POSITION comstream
     [prefix,:comments] := dbSplit(line,6,1)
@@ -361,7 +361,7 @@ getGlossLines instream ==
   text := nil
   lastLineHadTick := false
   while not EOFP instream repeat
-    line := READLINE instream
+    line := read_line instream
     #line = 0 => 'skip
     n := charPosition($tick,line,0)
     last := IFCAR text

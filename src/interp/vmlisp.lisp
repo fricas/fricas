@@ -662,7 +662,7 @@
 (defun get_read_placeholder() *read-place-holder*)
 (defun VMREAD (st &optional (eofval *read-place-holder*))
   (read st nil eofval))
-(defun |read-line| (st &optional (eofval *read-place-holder*))
+(defun |read_line| (st &optional (eofval *read-place-holder*))
   (read-line st nil eofval))
 
 #+(OR IBCL KCL)

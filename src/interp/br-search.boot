@@ -209,7 +209,7 @@ grepSplit(lines,doc?) ==
         N:=PARSE_-INTEGER dbPart(line,1,-1)
         if NUMBERP N then
            FILE_-POSITION(instream2,N)
-           line := READLINE instream2
+           line := read_line instream2
     kind := dbKind line
     not $includeUnexposed? and not dbExposed?(line,kind) => 'skip
     (kind = char 'a or kind = char 'o) and isDefaultOpAtt line => 'skip
@@ -924,7 +924,7 @@ dbWriteLines(s, :options) ==
 
 dbReadLines target == --AIX only--called by grepFile
   instream := OPEN target
-  lines := [READLINE instream while not EOFP instream]
+  lines := [read_line instream while not EOFP instream]
   CLOSE instream
   lines
 
@@ -937,7 +937,7 @@ dbGetCommentOrigin line ==
   address := SUBSTRING(firstPart, 1, nil)   --address in libdb
   instream := OPEN grepSource key           --this always returns libdb now
   FILE_-POSITION(instream,PARSE_-INTEGER address)
-  line := READLINE instream
+  line := read_line instream
   CLOSE instream
   line
 

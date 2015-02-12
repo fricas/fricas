@@ -41,7 +41,7 @@ asList() ==
   OBEY '"rm -f temp.text"
   OBEY '"ls as/*.asy > temp.text"
   instream := OPEN '"temp.text"
-  lines := [READLINE instream while not EOFP instream]
+  lines := [read_line instream while not EOFP instream]
   CLOSE instream
   lines
 

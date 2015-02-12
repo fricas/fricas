@@ -61,7 +61,7 @@ argumentDataError(argnum, condit, funname) ==
 queryUser msg ==
   -- display message and return reply
   sayBrightly msg
-  read_-line _*TERMINAL_-IO_*
+  read_line _*TERMINAL_-IO_*
 
 -- errorSupervisor is the old style error message trapper
 
