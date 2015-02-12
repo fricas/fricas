@@ -215,6 +215,43 @@ LinearOrdinaryDifferentialOperator2(A, M) : Exports == Implementation where
       elt(p : %, m : M) : M ==
         apply(p, differentiate, m)$ApplyUnivariateSkewPolynomial(A, M, %)
 
+)abbrev domain ODR OrdinaryDifferentialRing
+++ Author: Stephen M. Watt
+++ Date Created: 1986
+++ Date Last Updated: June 3, 1991
+++ Basic Operations:
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords: differential ring
+++ Examples:
+++ References:
+++ Description:
+++   This constructor produces an ordinary differential ring from
+++   a partial differential ring by specifying a variable.
+
+OrdinaryDifferentialRing(Kernels, R, var) : DRcategory == DRcapsule where
+    Kernels : SetCategory
+    R : PartialDifferentialRing(Kernels)
+    var : Kernels
+    DRcategory == Join(BiModule(%, %), DifferentialRing) with
+        if R has Field then Field
+        coerce : R -> %
+            ++ coerce(r) views r as a value in the ordinary differential ring.
+        coerce : % -> R
+            ++ coerce(p) views p as a valie in the partial differential ring.
+    DRcapsule == R add
+        n : Integer
+        Rep := R
+        coerce(u : R) : % == u::Rep::%
+        coerce(p : %) : R == p::Rep::R
+        differentiate p       == differentiate(p, var)
+
+        if R has Field then
+            p / q     == ((p::R) /$R (q::R))::%
+            p ^ n    == ((p::R) ^$R n)::%
+            inv(p)    == (inv(p::R)$R)::%
+
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
 --
