@@ -541,9 +541,63 @@ DirectProductFunctions2(dim, A, B) : Exports == Implementation where
     scan(f, v, b)   == directProduct scan(f, v::VA, b)
     reduce(f, v, b) == reduce(f, v::VA, b)
 
-@
-\section{License}
-<<license>>=
+)abbrev domain DPMO DirectProductModule
+++ Author:  Stephen M. Watt
+++ Date Created: 1986
+++ Date Last Updated: June 4, 1991
+++ Basic Operations:
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords: equation
+++ Examples:
+++ References:
+++ Description:
+++   This constructor provides a direct product of R-modules
+++   with an R-module view.
+-- Currently unused.
+DirectProductModule(n, R, S) : DPcategory == DPcapsule where
+    n : NonNegativeInteger
+    R : Ring
+    S : LeftModule(R)
+
+    DPcategory == Join(DirectProductCategory(n, S), LeftModule(R))
+    --  with if S has Algebra(R) then Algebra(R)
+    --  <above line leads to matchMmCond: unknown form of condition>
+
+    DPcapsule == DirectProduct(n, S) add
+        Rep := Vector(S)
+        r : R * x : % == [r * x.i for i in 1..n]
+
+)abbrev domain DPMM DirectProductMatrixModule
+++ Author:  Stephen M. Watt
+++ Date Created: 1986
+++ Date Last Updated: June 4, 1991
+++ Basic Operations:
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords: equation
+++ Examples:
+++ References:
+++ Description:
+++   This constructor provides a direct product type with a
+++   left matrix-module view.
+-- Currently unused.
+DirectProductMatrixModule(n, R, M, S) : DPcategory == DPcapsule where
+    n : PositiveInteger
+    R : Ring
+    RowCol ==> DirectProduct(n, R)
+    M : SquareMatrixCategory(n, R, RowCol, RowCol)
+    S : LeftModule(R)
+
+    DPcategory == Join(DirectProductCategory(n, S), LeftModule(R), LeftModule(M))
+
+    DPcapsule == DirectProduct(n, S) add
+        Rep := Vector(S)
+        r : R * x : % == [r*x.i for i in 1..n]
+        m : M * x : % == [ +/[m(i, j)*x.j for j in 1..n] for i in 1..n]
+
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
 --
@@ -574,21 +628,3 @@ DirectProductFunctions2(dim, A, B) : Exports == Implementation where
 --LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 --NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 --SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-@
-<<*>>=
-<<license>>
-
-<<category VECTCAT VectorCategory>>
-<<domain IVECTOR IndexedVector>>
-<<domain VECTOR Vector>>
-<<package VECTOR2 VectorFunctions2>>
-<<category DIRPCAT DirectProductCategory>>
-<<domain DIRPROD DirectProduct>>
-<<package DIRPROD2 DirectProductFunctions2>>
-
-@
-\eject
-\begin{thebibliography}{99}
-\bibitem{1} nothing
-\end{thebibliography}
-\end{document}
