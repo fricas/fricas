@@ -39,6 +39,11 @@ OutputFormTools : with
     is_symbol? : (OutputForm, Symbol) -> Boolean
       ++ is_symbol?(f, s) retruns true if form is symbol s,
       ++ otherwise returns false
+    construct : (OutputForm, List(OutputForm)) -> OutputForm
+      ++ construct(op, la) creates OutputForm with operator op
+      ++ and arguments la
+    precondition : OutputForm -> OutputForm
+      ++ precondition(f) prepares form for formatting.
   == add
 
     atom?(x) == ATOM(x)$Lisp
@@ -77,3 +82,99 @@ OutputFormTools : with
     is_symbol?(expr, op) ==
         not(symbol?(expr)) => false
         symbol(expr) = op
+
+    flaten_op(s : Symbol, l : List(OutputForm)) : List(OutputForm) ==
+        ll : List(List(OutputForm)) := [l]
+        res : List(OutputForm) := []
+        while not(empty?(ll)) repeat
+            l := first(ll)
+            ll := rest(ll)
+            while not(empty?(l)) repeat
+                t := first(l)
+                l := rest(l)
+                atom?(t) => res := cons(t, res)
+                t1 := operator(t)
+                is_symbol?(t1, s) =>
+                    ll := cons(l, ll)
+                    l := arguments(t)
+                res := cons(t, res)
+        reverse!(res)
+
+    construct(op, args) == cons(op, args) pretend OutputForm
+
+    import from OutputForm
+
+    precondition(x) ==
+        string?(x) => x
+        integer?(x) =>
+            xi := integer(x)
+            xi < 0 => construct(outputForm("-"::Symbol), [outputForm(-xi)])
+            x
+        atom?(x) => x
+        op := operator(x)
+        args := arguments(x)
+        if is_symbol?(op, '+) then
+            args := flaten_op('+, args)
+        if is_symbol?(op, '*) then
+            args := flaten_op('*, args)
+        args := [precondition(arg) for arg in args]
+        is_symbol?(op, 'construct) => bracket(commaSeparate(args))
+        n := #args
+        is_symbol?(op, 'SEGMENT) and n > 0 and n <= 2 =>
+            a1 := first(args)
+            a1 :=
+                atom?(a1) => a1
+                paren(a1)
+            n = 2 =>
+                a2 := args(2)
+                a2 :=
+                    atom?(a2) => a2
+                    paren(a2)
+                SEGMENT(a1, a2)
+            SEGMENT(a1)
+        is_symbol?(op, '-) and n = 2 =>
+            a1 := first(args)
+            a2 := args(2)
+            not(atom?(a2)) and is_symbol?(operator(a2), '-)
+              and (#(args2 := arguments(a2)) = 1) =>
+                construct(outputForm('+), [a1, first(args2)])
+            a2 := construct(outputForm('-), [a2])
+            construct(outputForm('+), [a1, a2])
+        is_symbol?(op, '-) and n = 1 =>
+            a1 := first(args)
+            not(atom?(a1)) and is_symbol?(op1 := operator(a1), '-)
+              and (#(args1 := arguments(a1)) = 1) => first(args1)
+            construct(op, args)
+        is_symbol?(op, '+) =>
+            n = 1 => first(args)
+            construct(op, flaten_op('+, args))
+        is_symbol?(op, '*) =>
+            a1 := first(args)
+            n = 1 => a1
+            not(atom?(a1)) and is_symbol?(op1 := operator(a1), '-)
+              and (#(args1 := arguments(a1)) = 1) =>
+                a11 := first(args1)
+                nargs :=
+                    integer?(a11) and integer(a11) = 1 => rest(args)
+                    cons(a11, rest(args))
+                precondition(construct(op1, [construct(op, nargs)]))
+            construct(op, flaten_op('*, args))
+        is_symbol?(op, '/) =>
+            n ~= 2 => error "precodition: division must have two arguments"
+            a1 := first(args)
+            a2 := args(2)
+            _$fractionDisplayType $Lisp = 'horizontal =>
+                a1 :=
+                    atom?(a1) => a1
+                    paren(a1)
+                a2 := 
+                    atom?(a2) => a2
+                    paren(a2)
+                construct(outputForm('SLASH), [a1, a2])
+            op := outputForm('OVER)
+            not(atom?(a1)) and is_symbol?(op1 := operator(a1), '-)
+              and (#(args1 := arguments(a1)) = 1) =>
+                a11 := first(args1)
+                construct(op1, [construct(op, [a11, a2])])
+            construct(op, args)
+        construct(precondition(op), args)

@@ -211,60 +211,9 @@ sayMath u ==
 --% Output transformations
 
 outputTran2 x ==
-    STRINGP x => x
-    NUMBERP x =>
-        MINUSP x => ["-", MINUS x]
-        x
-    atom x =>
-        x = $EmptyMode => specialChar 'quad
-        x
-    x is ['construct, :l] =>
-        ['BRACKET, ['AGGLST, :[outputTran2 y for y in l]]]
-    [op, :l] := flattenOps x
-    x is ['SEGMENT, a] =>
-        a' := outputTran2 a
-        if LISTP a' then a' := ['PAREN, a']
-        ['SEGMENT, a']
-    x is ['SEGMENT, a, b] =>
-        a' := outputTran2 a
-        b' := outputTran2 b
-        if LISTP a' then a' := ['PAREN, a']
-        if LISTP b' then b' := ['PAREN, b']
-        ['SEGMENT, a', b']
-    x is ["-", a, b] =>
-        a := outputTran2 a
-        b := outputTran2 b
-        INTEGERP b =>
-            b < 0 => ["+", a, -b]
-            ["+", a, ["-", b]]
-        b is ["-", c] => ["+", a, c]
-        ["+", a, ["-", b]]
-    l := [outputTran2 y for y in l]
-    op = "*" =>
-        l is [a] => outputTran2 a
-        l is [["-", a], :b] =>
-            a = 1 => outputTran2 ["-", [op, :b]]
-            outputTran2 ["-", [op, a, :b]]
-        [op, :"append"/[(ss is ["*", :ll] => ll; [ss]) for ss in l]]
-    op = "+" =>
-        l is [a] => outputTran2 a
-        [op, :"append"/[(ss is ["+", :ll] => ll; [ss]) for ss in l]]
-    op = "/" =>
-        $fractionDisplayType = 'horizontal =>
-            op := 'SLASH
-            l is [a, b] =>
-                a :=
-                     ATOM(a) => a
-                     ['PAREN, a]
-                b :=
-                     ATOM(b) => b
-                     ['PAREN, b]
-                [outputTran2 op, a, b]
-            BREAK()
-        op := 'OVER
-        l is [["-", a], :b] => outputTran2 ["-", [op, a, :b]]
-        [outputTran2 op, :l]
-    [outputTran2 op, :l]
+    ot2_fun := getFunctionFromDomain1("precondition", '(OutputFormTools),
+                                      $OutputForm, [$OutputForm])
+    SPADCALL(x, ot2_fun)
 
 outputTran x ==
   atom x => x
@@ -319,32 +268,6 @@ outputTran x ==
   op='Tuple  => ['PAREN,['AGGLST,:l]]
   op='LISTOF => ['AGGLST,:l]
   [outputTran op,:l]
-
--- The next two functions are designed to replace successive instances of
--- binary functions with the n-ary equivalent, cutting down on recursion
--- in outputTran and in particular allowing big polynomials to be printed
--- without stack overflow.  MCD.
-flattenOps l ==
-  [op, :args ] := l
-  op in ['"+",'"*","+","*"] =>
-    [op,:checkArgs(op,args)]
-  l
-
-checkArgs(op,tail) ==
-  head := []
-  while tail repeat
-    term := first tail
-    atom term =>
-      head := [term,:head]
-      tail := rest tail
-    not LISTP term => -- never happens?
-      head := [term,:head]
-      tail := rest tail
-    op=first term =>
-      tail := [:rest term,:rest tail]
-    head := [term,:head]
-    tail := rest tail
-  REVERSE head
 
 outputTranSEQ ['SEQ,:l,exitform] ==
   if exitform is ['exit,.,a] then exitform := a
