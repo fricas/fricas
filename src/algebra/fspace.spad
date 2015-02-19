@@ -429,6 +429,9 @@ FunctionSpace(R : Comparable) : Category == Definition where
          ++ An error occurs if f is not an element of R.
        variables : %  -> List SY
          ++ variables(f) returns the list of all the variables of f.
+       variables : List(%) -> List SY
+         ++ variables([f1, ..., fn]) returns the list of all the
+         ++ variables of f1, ..., fn.
        applyQuote : (SY, %) -> %
          ++ applyQuote(foo, x) returns \spad{'foo(x)}.
        applyQuote : (SY, %, %) -> %
@@ -622,11 +625,13 @@ FunctionSpace(R : Comparable) : Category == Definition where
 
       setProperty(opdiff, SPECIALINPUT, indiff@(List % -> InputForm) pretend None)
 
-    variables x ==
+    variables(lx : List(%)) ==
       l := empty()$List(SY)
-      for k in tower x repeat
+      for k in tower lx repeat
         if ((s := symbolIfCan k) case SY) then l := concat(s::SY, l)
       reverse! l
+
+    variables(x : %) == variables([x])
 
     retractIfCan(x:%):Union(SY, "failed") ==
       (k := retractIfCan(x)@Union(K,"failed")) case "failed" => "failed"

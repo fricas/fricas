@@ -107,6 +107,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
   UP  ==> SparseUnivariatePolynomial F
   SMP ==> SparseMultivariatePolynomial(R, K)
   REC ==> Record(func : F, kers : List K, vals : List F)
+  REC2 ==> Record(funcs : List F, kers : List K, vals : List F)
   U   ==> Union(vec : Vector Q, func : F, fail : Boolean)
   POWER ==> '%power
   NTHR  ==> 'nthRoot
@@ -115,17 +116,28 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     normalize : F -> F
       ++ normalize(f) rewrites \spad{f} using the least possible number of
       ++ real algebraically independent kernels.
+    normalize : List F -> List F
+      ++ normalize(lf) is normalize(lf, [])
     normalize : (F, SY) -> F
-      ++ normalize(f, x) rewrites \spad{f} using the least possible number of
-      ++ real algebraically independent kernels involving \spad{x}.
+      ++ normalize(f, x) is normalize([f], [x])
+    normalize : (List F, List SY) -> List F
+      ++ normalize([f1, ..., fn], lx) rewrites \spad{f1, ..., fn} using the
+      ++ least possible number of real algebraically independent kernels.
+      ++ Additionally, it tries to ensure that any expression in
+      ++ resulting kernels which syntactially depends on a variable \spad{x}
+      ++ from \spad{lx} has nonzero derivative with respect to \spad{x}.
     rischNormalize : (F, SY) -> REC
+      ++ rischNormalize(f, x) is rischNormalize([f], [x])
       ++ rischNormalize(f, x) returns \spad{[g, [k1, ..., kn], [h1, ..., hn]]}
       ++ such that \spad{g = normalize(f, x)} and each \spad{ki} was
       ++ rewritten as \spad{hi} during the normalization.
     rischNormalize : (F, List SY) -> REC
-      ++ rischNormalize(f, lx) returns \spad{[g, [k1, ..., kn], [h1, ..., hn]]}
-      ++ such that \spad{g = normalize(f, lx)} and each \spad{ki} was
-      ++ rewritten as \spad{hi} during the normalization.
+      ++ rischNormalize(f, lx) is rischNormalize([f], lx)
+    rischNormalize : (List F, List SY) -> REC2
+      ++ rischNormalize(lf, lx) returns
+      ++ \spad{[lg, [k1, ..., kn], [h1, ..., hn]]} such that
+      ++ \spad{lg = normalize(lf, lx)} and each \spad{ki} was rewritten
+      ++ as \spad{hi} during the normalization.
     realElementary : F -> F
       ++ realElementary(f) rewrites \spad{f} in terms of the 4 fundamental real
       ++ transcendental elementary functions: \spad{log, exp, tan, atan}.
@@ -187,18 +199,15 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     goodCoef           : (Vector Q, List K, SY) ->
                                  Union(Record(index:Z, ker:K), "failed")
     tanRN              : (Q, K) -> F
-    localnorm          : F -> F
-    rooteval           : (F, List K, K, Q) -> REC
-    logeval            : (F, List K, K, Vector Q) -> REC
-    expeval            : (F, List K, K, Vector Q) -> REC
-    taneval            : (F, List K, K, Vector Q) -> REC
-    ataneval           : (F, List K, K, Vector Q) -> REC
-    depeval            : (F, List K, K, Vector Q) -> REC
-    expnosimp          : (F, List K, K, Vector Q, List F, F) -> REC
-    tannosimp          : (F, List K, K, Vector Q, List F, F) -> REC
-    rtNormalize        : F -> F
-    rootNormalize0     : F -> REC
-    rootKernelNormalize : (F, List K, K) -> Union(REC, "failed")
+    rooteval           : (List F, List K, K, Q) -> REC2
+    logeval            : (List F, List K, K, Vector Q) -> REC2
+    expeval            : (List F, List K, K, Vector Q) -> REC2
+    taneval            : (List F, List K, K, Vector Q) -> REC2
+    ataneval           : (List F, List K, K, Vector Q) -> REC2
+    depeval            : (List F, List K, K, Vector Q) -> REC2
+    expnosimp          : (List F, List K, K, Vector Q, List F, F) -> REC2
+    tannosimp          : (List F, List K, K, Vector Q, List F, F) -> REC2
+    rootKernelNormalize : (List F, List K, K) -> Union(REC2, "failed")
     tanSum             : (F, List F) -> F
 
     comb?     := F has CombinatorialOpsCategory
@@ -215,7 +224,6 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     toZ ker              == [func for k in ker | (func := ktoZ k) ~= 0]
     toU ker              == [func for k in ker | (func := ktoU k) ~= 0]
     toV ker              == [func for k in ker | (func := ktoV k) ~= 0]
-    rtNormalize f        == rootNormalize0(f).func
     toR(ker, x) == select(s +-> is?(s, NTHR) and first argument(s) = x, ker)
 
     if R has GcdDomain then
@@ -234,18 +242,6 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
       (r := retractIfCan(k)@Union(Z, "failed")) case Z and odd?(r::Z) =>
            - inv tanSum l
       tanSum concat(tan c, l)
-
-    rootNormalize0 f ==
-      ker := select!(x +-> is?(x, NTHR) and empty? variables first argument x,
-                      tower f)$List(K)
-      empty? ker => [f, empty(), empty()]
-      (n := (#ker)::Z - 1) < 1 => [f, empty(), empty()]
-      for i in 1..n for kk in rest ker repeat
-        (u := rootKernelNormalize(f, first(ker, i), kk)) case REC =>
-          rec := u::REC
-          rn  := rootNormalize0(rec.func)
-          return [rn.func, concat(rec.kers, rn.kers), concat(rec.vals, rn.vals)]
-      [f, empty(), empty()]
 
     findQRelation(lv : List Symbol, lpar : List Symbol, lk : List F, _
              ker : F) : U ==
@@ -499,22 +495,23 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
         k2Elem0(k, op, args)
 
 --The next 5 functions are used by normalize, once a relation is found
-    depeval(f, lk, k, v) ==
-      is?(k, 'log)  => logeval(f, lk, k, v)
-      is?(k, 'exp)  => expeval(f, lk, k, v)
-      is?(k, 'tan)  => taneval(f, lk, k, v)
-      is?(k, 'atan) => ataneval(f, lk, k, v)
-      is?(k, NTHR) => rooteval(f, lk, k, v(minIndex v))
-      [f, empty(), empty()]
+    depeval(lf, lk, k, v) ==
+        is?(k, 'log)  => logeval(lf, lk, k, v)
+        is?(k, 'exp)  => expeval(lf, lk, k, v)
+        is?(k, 'tan)  => taneval(lf, lk, k, v)
+        is?(k, 'atan) => ataneval(lf, lk, k, v)
+        is?(k, NTHR) => rooteval(lf, lk, k, v(minIndex v))
+        [lf, empty(), empty()]
 
-    rooteval(f, lk, k, n) ==
+    rooteval(lf, lk, k, n) ==
       nv := nthRoot(x := first argument k, m := retract(n)@Z)
       l  := [r for r in concat(k, toR(lk, x)) |
              retract(second argument r)@Z ~= m]
       lv := [nv ^ (n / (retract(second argument r)@Z::Q)) for r in l]
-      [eval(f, l, lv), l, lv]
+      nlf := [eval(f, l, lv) for f in lf]
+      [nlf, l, lv]
 
-    ataneval(f, lk, k, v) ==
+    ataneval(lf, lk, k, v) ==
       w := first argument k
       s := tanSum [tanQ(qelt(v, i), x)
                    for i in minIndex v .. maxIndex v for x in toV lk]
@@ -523,7 +520,8 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
         zero?(d := 1 + s * w) => mpiover2
         atan((w - s) / d)
       g := g + h
-      [eval(f, [k], [g]), [k], [g]]
+      nlf := [eval(f, [k], [g]) for f in lf]
+      [nlf, [k], [g]]
 
     gdCoef?(c, v) ==
       for i in minIndex v .. maxIndex v repeat
@@ -561,21 +559,22 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
               and gdCoef?(qelt(v, i), v) => return([i, k])
       "failed"
 
-    taneval(f, lk, k, v) ==
+    taneval(lf, lk, k, v) ==
       u := first argument k
       fns := toU lk
       c := u - +/[qelt(v, i) * x for i in minIndex v .. maxIndex v for x in fns]
       (rec := goodCoef(v, lk, 'tan)) case "failed" =>
-          tannosimp(f, lk, k, v, fns, c)
+          tannosimp(lf, lk, k, v, fns, c)
       v0 := retract(inv qelt(v, rec.index))@Z
       lv := [qelt(v, i) for i in minIndex v .. maxIndex v |
                                                  i ~= rec.index]$List(Q)
       l  := [kk for kk in lk | kk ~= rec.ker]
       g := tanSum(-v0 * c, concat(tanNa(k::F, v0),
            [tanNa(x, - retract(a * v0)@Z) for a in lv for x in toV l]))
-      [eval(f, [rec.ker], [g]), [rec.ker], [g]]
+      nlf := [eval(f, [rec.ker], [g]) for f in lf]
+      [nlf, [rec.ker], [g]]
 
-    tannosimp(f, lk, k, v, fns, c) ==
+    tannosimp(lf, lk, k, v, fns, c) ==
       n := maxIndex v
       lk := [x for x in lk | is?(x, 'tan) or is?(x, 'atan)]
       lk1 := [x for x in lk for i in 1..n | not(qelt(v, i) = 0)]
@@ -589,12 +588,14 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
                         for i in li for t in newt])
         newtan := concat(h, newtan)
         lk1 := concat(k, lk1)
-        [eval(f, lk1, newtan), lk1, newtan]
+        nlf := [eval(f, lk1, newtan) for f in lf]
+        [nlf, lk1, newtan]
       h := tanSum(c, [tanQ(qelt(v, i), x)
                       for i in 1..n for x in toV lk])
-      [eval(f, [k], [h]), [k], [h]]
+      nlf := [eval(f, [k], [h]) for f in lf]
+      [nlf, [k], [h]]
 
-    expnosimp(f, lk, k, v, fns, g) ==
+    expnosimp(lf, lk, k, v, fns, g) ==
       n := maxIndex v
       lk := [x for x in lk | is?(x, 'exp) or is?(x, 'log)]
       lk1 := [x for x in lk for i in 1..n | not(qelt(v, i) = 0)]
@@ -608,12 +609,14 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
                 for i in li for e in newe] * g
         lk1 := concat(k, lk1)
         newexp := concat(h, newexp)
-        [eval(f, lk1, newexp), lk1, newexp]
+        nlf := [eval(f, lk1, newexp) for f in lf]
+        [nlf, lk1, newexp]
       h := */[exp(y) ^ qelt(v, i)
                 for i in minIndex v .. maxIndex v for y in fns] * g
-      [eval(f, [k], [h]), [k], [h]]
+      nlf := [eval(f, [k], [h]) for f in lf]
+      [nlf, [k], [h]]
 
-    logeval(f, lk, k, v) ==
+    logeval(lf, lk, k, v) ==
       z := first argument k
       dd := lcm([denom(qelt(v, i))$Q for i in minIndex v .. maxIndex v
                 ]$List(Z))
@@ -623,44 +626,47 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
       g := +/[qelt(v, i) * x
               for i in minIndex v .. maxIndex v for x in toY lk]
                 + log(c)/(dd::R::F)
-      [eval(f, [k], [g]), [k], [g]]
+      nlf := [eval(f, [k], [g]) for f in lf]
+      [nlf, [k], [g]]
+
+    rischNormalize(lf : List F, vars : List SY) : REC2 ==
+        funs : List K := tower lf
+        pars := variables(lf)
+        pars := setDifference(pars, vars)
+        empty?(funs) => [lf, empty(), empty()]
+        n := #funs
+
+        for i in 1..n for kk in rest funs repeat
+            klist := first(funs, i)
+            -- NO EVALUATION ON AN EMPTY VECTOR, WILL CAUSE INFINITE LOOP
+            (c := findRelation(vars, pars, klist, kk)) case vec
+              and not empty?(c.vec) =>
+                rec := depeval(lf, klist, kk, c.vec)
+                rn  := rischNormalize(rec.funcs, vars)
+                return [rn.funcs,
+                        concat(rec.kers, rn.kers), concat(rec.vals, rn.vals)]
+            c case func =>
+                nlf := [eval(f, [kk], [c.func]) for f in lf]
+                rn := rischNormalize(nlf, vars)
+                return [rn.funcs, concat(kk, rn.kers), concat(c.func, rn.vals)]
+        [lf, empty(), empty()]
 
     rischNormalize(f : F, vars : List SY) : REC ==
-      lk : List K := tower f
-      funs := lk -- [k for k in lk | height k > 1]@(List K)
-      pars := variables(f) -- [name(operator(k)) for k in lk | height k = 1]
-      pars := setDifference(pars, vars)
-      --  funs := [k for k in kers | height k > 1]
-      empty?(funs) => [f, empty(), empty()]
-      n := #funs
-
-      for i in 1..n for kk in rest funs repeat
-        klist := first(funs, i)
-        -- NO EVALUATION ON AN EMPTY VECTOR, WILL CAUSE INFINITE LOOP
-        (c := findRelation(vars, pars, klist, kk)) case vec and not empty?(c.vec) =>
-
-          rec := depeval(f, klist, kk, c.vec)
-          rn  := rischNormalize(rec.func, vars)
-          return [rn.func,
-                   concat(rec.kers, rn.kers), concat(rec.vals, rn.vals)]
-        c case func =>
-          rn := rischNormalize(eval(f, [kk], [c.func]), vars)
-          return [rn.func, concat(kk, rn.kers), concat(c.func, rn.vals)]
-      [f, empty(), empty()]
+        rn := rischNormalize([f], vars)
+        [first(rn.funcs), rn.kers, rn.vals]
 
     rischNormalize(f : F, v : SY) : REC == rischNormalize(f, [v])
 
     rootNormalize(f, k) ==
-      (u := rootKernelNormalize(f, toR(tower f, first argument k), k))
-         case "failed" => f
-      (u::REC).func
+        (u := rootKernelNormalize([f], toR(tower f, first argument k), k))
+             case "failed" => f
+        first((u::REC2).funcs)
 
-    rootKernelNormalize(f, l, k) ==
+
+    rootKernelNormalize(lf, l, k) ==
       (c := rootDep(l, k)) case vec =>
-        rooteval(f, l, k, (c.vec)(minIndex(c.vec)))
+          rooteval(lf, l, k, (c.vec)(minIndex(c.vec)))
       "failed"
-
-    localnorm f == rischNormalize(f, []).func
 
     validExponential(twr, eta, x) ==
       (c := particularSolutionOverQ(construct([differentiate(g, x)
@@ -693,25 +699,32 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
       [new(1, lcm(retract(second argument k)@Z,
        "lcm"/[retract(second argument r)@Z for r in ker])::Q)$Vector(Q)]
 
-    expeval(f, lk, k, v) ==
+    expeval(lf, lk, k, v) ==
       y   := first argument k
       fns := toY lk
       g := y - +/[qelt(v, i) * z for i in minIndex v .. maxIndex v for z in fns]
       (rec := goodCoef(v, lk, 'exp)) case "failed" =>
-        expnosimp(f, lk, k, v, fns, exp g)
+          expnosimp(lf, lk, k, v, fns, exp g)
       v0 := retract(inv qelt(v, rec.index))@Z
       lv := [qelt(v, i) for i in minIndex v .. maxIndex v |
                                                  i ~= rec.index]$List(Q)
       l  := [kk for kk in lk | kk ~= rec.ker]
       h : F := */[exp(z) ^ (- retract(a * v0)@Z) for a in lv for z in toY l]
       h := h * exp(-v0 * g) * (k::F) ^ v0
-      [eval(f, [rec.ker], [h]), [rec.ker], [h]]
+      nlf := [eval(f, [rec.ker], [h]) for f in lf]
+      [nlf, [rec.ker], [h]]
+
+    normalize(f : F) : F == first(normalize([f], []))
+
+    normalize(lf : List F) : List F == normalize(lf, [])
+
+    normalize(f : F, x : SY) : F == first(normalize([f], [x]))
 
     if F has CombinatorialOpsCategory then
-      normalize f == rtNormalize localnorm factorials realElementary f
 
-      normalize(f, x) ==
-        rtNormalize(rischNormalize(factorials(realElementary(f, x), x), x).func)
+      normalize(lf : List F, lx : List SY) : List F ==
+          lf2 := [factorials realElementary f for f in lf]
+          rischNormalize(lf2, lx).funcs
 
       factdeprel(l, k) ==
         ((r := retractIfCan(n := first argument k)@Union(Z, "failed"))
@@ -724,8 +737,9 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
         [true]
 
     else
-      normalize f     == rtNormalize localnorm realElementary f
-      normalize(f, x) == rtNormalize(rischNormalize(realElementary(f, x), x).func)
+        normalize(lf : List F, lx : List SY) : List F ==
+            lf2 := [realElementary f for f in lf]
+            rischNormalize(lf2, lx).funcs
 
 )abbrev package ITRIGMNP InnerTrigonometricManipulations
 )boot $tryRecompileArguments := nil
