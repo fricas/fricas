@@ -74,11 +74,6 @@ SystemODESolver(F, LO) : Exports == Implementation where
     import from PseudoLinearNormalForm F
     import from LinearCombinationUtilities(F, SparseUnivariatePolynomial(F))
 
-    applyLodo   : (M, Z, V, N) -> F
-    applyLodo0  : (M, Z, Matrix F, Z, N) -> F
-    backsolve   : (M, List V, (LO, List F) -> FPL) -> VPL
-    firstnonzero : (M, Z) -> Z
-    FSL2USL     : FSL -> USL
     M2F         : M -> Union(MF, "failed")
 
     diff := D()$LO
@@ -167,49 +162,15 @@ SystemODESolver(F, LO) : Exports == Implementation where
         ler := reverse!(ler)
         [res1.A, ler]
 
--- like solveInField, but expects a system already triangularized
-    backsolve(m, lv, solve) ==
-      error "backsolve: unimplemented"
-)if false
-      part : V
-      r := maxRowIndex m
-      offset := minIndex v - (mr := minRowIndex m)
-      while r >= mr and every?(zero?, row(m, r))$Vector(LO) repeat r := r - 1
-      r < mr => error "backsolve: system has a 0 matrix"
-      (c := firstnonzero(m, r)) ~= maxColIndex m =>
-        error "backsolve: undetermined system"
-      rec := solve(m(r, c), v(r + offset))
-      dim := (r - mr + 1)::N
-      if (part? := ((u := rec.particular) case F)) then
-        part := new(dim, 0)                           -- particular solution
-        part(r + offset) :=  u::F
--- hom is the basis for the homogeneous solutions, each column is a solution
-      hom : Matrix(F) := new(dim, #(rec.basis), 0)
-      for i in minColIndex hom .. maxColIndex hom for b in rec.basis repeat
-        hom(r, i) := b
-      n : N := 1                 -- number of equations already solved
-      while r > mr repeat
-        r := r - 1
-        c := c - 1
-        firstnonzero(m, r) ~= c => error "backsolve: undetermined system"
-        degree(eq := m(r, c)) > 0 => error "backsolve: pivot of order > 0"
-        a := leadingCoefficient(eq)::F
-        if part? then
-           part(r + offset) := (v(r + offset) - applyLodo(m, r, part, n)) / a
-        for i in minColIndex hom .. maxColIndex hom repeat
-          hom(r, i) := - applyLodo0(m, r, hom, i, n)
-        n := n + 1
-      bas : List(V) := [column(hom, i) for i in minColIndex hom..maxColIndex hom]
-      part? => [part, bas]
-      ["failed", bas]
-)endif
+    import from OrePolynomialMatrixOperations(F, LO)
 
     solveInField(m : M, lv : List V, solf : (LO, List F) -> FPL) ==
       ((n := nrows m) = ncols m) and
          ((u := M2F(diagonalMatrix [diff for i in 1..n] - m)) case MF) =>
              solve(u::MF, lv, solf)
-      rec := triangulate(m, lv)
-      backsolve(rec.mat, rec.vecs, solf)
+      rec := solve(m, 0, lv, solf)
+      rec case "failed" => error "solveInField: system is underdeterminded"
+      rec::VPL
 
     M2F m ==
         mf : MF := new(nrows m, ncols m, 0)
@@ -220,72 +181,7 @@ SystemODESolver(F, LO) : Exports == Implementation where
                 mf(i, j) := u::F
         mf
 
-    FSL2USL rec ==
-        rec.particular case "failed" => "failed"
-        [rec.particular::F, rec.basis]
-
--- returns the index of the first nonzero entry in row r of m
-    firstnonzero(m, r) ==
-      for c in minColIndex m .. maxColIndex m repeat
-        m(r, c) ~= 0 => return c
-      error "firstnonzero: zero row"
-
--- computes +/[m(r, i) v(i) for i ranging over the last n columns of m]
-    applyLodo(m, r, v, n) ==
-      ans : F := 0
-      c := maxColIndex m
-      cv := maxIndex v
-      for i in 1..n repeat
-        ans := ans + m(r, c) (v cv)
-        c := c - 1
-        cv := cv - 1
-      ans
-
--- computes +/[m(r, i) mm(i, c) for i ranging over the last n columns of m]
-    applyLodo0(m, r, mm, c, n) ==
-      ans := 0
-      rr := maxRowIndex mm
-      cc := maxColIndex m
-      for i in 1..n repeat
-        ans := ans + m(r, cc) mm(rr, c)
-        cc := cc - 1
-        rr := rr - 1
-      ans
-
-    triangulate(m : M, lv : List V) ==
-      empty?(lv) => error "triangulate: empty lv"
-      x := copy m
-      lw := [copy v for v in lv]
-      nrows := maxRowIndex x
-      ncols := maxColIndex x
-      minr  := i := minRowIndex x
-      minw := minIndex(first(lw))
-      for w in lw repeat
-          if minIndex(w) ~= minw then
-              error "triangulate: elements of lv must have the same minIndex"
-      offset := minw - minr
-      for j in minColIndex x .. ncols repeat
-        if i > nrows then break
-        rown := minr - 1
-        for k in i .. nrows repeat
-          if (x(k, j) ~= 0) and ((rown = minr - 1) or
-             degree x(k, j) < degree x(rown, j)) then rown := k
-          rown = minr - 1 => "enuf"
-          x := swapRows!(x, i, rown)
-          for w in lw repeat
-              swap!(w, i + offset, rown + offset)
-        for k in i+1 .. nrows | x(k, j) ~= 0 repeat
-          l := rightLcm(x(i, j), x(k, j))
-          a := rightQuotient(l, x(i, j))
-          b := rightQuotient(l, x(k, j))
-          -- l = a x(i, j) = b x(k, j)
-          for k1 in j+1 .. ncols repeat
-            x(k, k1) :=  a * x(i, k1) - b * x(k, k1)
-          x(k, j) := 0
-          for w in lw repeat
-              w(k + offset) := a(w(i + offset)) - b(w(k + offset))
-        i := i+1
-      [x, lw]
+    triangulate(m : M, lv : List V) == rowEchelon(m, 0, lv)
 
     triangulate(m : M, v : V) ==
         res1 := triangulate(m, [v])

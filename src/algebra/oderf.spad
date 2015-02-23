@@ -384,6 +384,9 @@ RationalLODE(F, UP) : Exports == Implementation where
     evenodd n  == (even? n => 1; -1)
 
     ratDsolve1(op, lg) ==
+      zero? degree op => 
+          [[inv(leadingCoefficient(op)::RF)*g for g in lg],
+            new(0, #lg, 0)]
       d := denomLODE(op, lg)
       rec := candidates(op, lg, d)
       l := concat([op(rec.particular.i) - lg.i for i in 1..#(rec.particular)],
@@ -462,8 +465,9 @@ RationalLODE(F, UP) : Exports == Implementation where
       hom := [UTS2UP(dd * ode(f, unitlist(i, q))$solver, n)$tools /$RF d
                    for i in 1..q]$List(RF)
       a1 := inv(leadingCoefficient(op)::RF)
-      part := [UTS2UP(dd * ode((l1 : List(uts)) : uts +-> RF2UTS(a1 * g)$tools + f l1, e)$solver, n)$tools
-                /$RF d for g in lg | g ~= 0]$List(RF)
+      part := [UTS2UP(dd * ode((l1 : List(uts)) : uts +->
+                RF2UTS(a1 * g)$tools + f l1, e)$solver, n)$tools
+                  /$RF d for g in lg]$List(RF)
       [hom, part]
 
     nzero? v ==
