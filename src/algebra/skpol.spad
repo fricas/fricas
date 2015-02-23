@@ -388,3 +388,168 @@ PartialDifferentialOperator(R : PartialDifferentialRing(Var),
             res := res + sign*monomial(1, v, d)*leadingCoefficient(xu)
             xu := reductum(xu)
         res
+
+)abbrev package OREMAT OrePolynomialMatrixOperations
+OrePolynomialMatrixOperations(F, LO) : Exports == Implementation where
+  F : Field
+  LO :  UnivariateSkewPolynomialCategory(F)
+  M   ==> Matrix LO
+  V   ==> Vector F
+  Param_Rec_F ==> Record(ratpart : F, coeffs : Vector F)
+  Param_Rec_V ==> Record(ratpart : V, coeffs : Vector F)
+  FPL ==> Record(particular : List Param_Rec_F, basis : List F)
+  VPL ==> Record(particular : List Param_Rec_V, basis : List V)
+  
+  Exports ==> with
+
+    rowEchelon : M -> M
+      ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
+    rowEchelon : (M, F, List V) -> Record(mat : M, vecs : List V)
+      ++ \spad{rowEchelon(m, c, lv)} returns [m2, lv2] such that
+      ++ m2 is the row echelon form of the matrix m. lv2
+      ++ is transformed lv using c as paramenter to \spad{apply}.
+    solve : (M, F, List V, (LO, List F) -> FPL) -> Union(VPL, "failed")
+      ++ solve(m, c, lv, solf) returns "failed" of
+      ++ [[vp1, ..., vp_m], [b1, ..., bl]]
+      ++ such that bi-s are basis of solutions of homogeneous system
+      ++ m bi = 0.  Each vpi = [r, [c1, ..., cn]] is a particuar solution
+      ++ of a parametic matrix equation m r = \sum ci vi where
+      ++ lv = [v1, ..., vn].  solf is scalar solver, c is a
+      ++ paramenter to \spad{apply} (needed for astion of LO on F).
+      ++ "failed" means that system is underdetermined.
+
+  Implementation ==> add
+
+    import from LinearCombinationUtilities(F, SparseUnivariatePolynomial F)
+
+    rowEchelon(m : M) == rowEchelon(m, 0, []).mat
+
+    rowEchelon(m, cc, lv) ==
+        mm := copy m
+        lw := [copy(vv) for vv in lv]
+        nc := ncols(mm)
+        nr := nrows(mm)
+        for w in lw repeat
+            if #w ~= nc then
+                error "rowEchelon: elements of lv must have size = ncols(m)"
+        i : Integer := 1
+        for j in 1..nc repeat
+            if i > nr then break
+            pivk : Integer := -1
+            dpiv : Integer := -1
+            mij : LO
+            for k in i..nr repeat
+                if not zero?(mkj := mm(k, j)) and (dp1 := degree(mkj);
+                     (dpiv = -1 or dp1 < dpiv)) then
+                    mij := mkj
+                    pivk := k
+                    dpiv := dp1
+            dpiv = - 1 => "iterate"
+            mm := swapRows!(mm, i, pivk)
+            for w in lw repeat
+                swap!(w, i, pivk)
+            for k in (i + 1)..nr | not zero?(mkj := mm(k, j)) repeat
+                (mij, c, d, u, v) := right_ext_ext_GCD(mij, mkj)
+                for k1 in (j + 1)..nc repeat
+                    el1 := qelt(mm, i, k1)
+                    el2 := qelt(mm, k, k1)
+                    qsetelt!(mm, i, k1, c*el1 + d*el2)
+                    qsetelt!(mm, k, k1, u*el1 + v*el2)
+                for w in lw repeat
+                    elf1 := qelt(w, i)
+                    elf2 := qelt(w, k)
+                    qsetelt!(w, i, apply(c, cc, elf1) + apply(d, cc, elf2))
+                    qsetelt!(w, k, apply(u, cc, elf1) + apply(v, cc, elf2))
+                qsetelt!(mm, i, j, mij)
+                qsetelt!(mm, k, j, 0)
+            for k in 1..(i - 1) repeat
+                zero?(mkj := mm(k, j)) => "iterate"
+                (q, r) := rightDivide(mkj, mij)
+                qsetelt!(mm, k, j, r)
+                for k1 in (j + 1)..nc repeat
+                    qsetelt!(mm, k, k1, qelt(mm, k, k1) - q*qelt(mm, i, k1))
+                for w in lw repeat
+                    qsetelt!(w, k, qelt(w, k) - apply(q, cc, qelt(w, i)))
+            i := i + 1
+        [mm, lw]
+
+    triangular_solve(m : M, cc : F, lv : List V,
+                     solf : (LO, List F) -> FPL) : Union(VPL, "failed") ==
+        nc := ncols(m)
+        nr := nrows(m)
+        nc > nr => "failed"
+        n := #lv
+        bvl : List V := []
+        cb := [new(n, 0)$Vector(F) for i in 1..n]
+        cba := [new(nc, 0)$Vector(F) for bv in cb]
+        for i in 1..n for bv in cb repeat
+            bv(i) := 1
+        for i in nc..1 by -1 repeat
+            m(i, i) = 0 => return "failed"
+            lvi0 := [v(i) for v in lv]
+            lvi1 := [lin_comb(bv, lvi0) for bv in cb]
+            nlvi := #lvi1
+            nbas := #bvl
+            lvi1 := concat(lvi1, [0 for bv in bvl])
+            lvi2 : List(F) := []
+            for bv in concat(cba, bvl) for vvi in lvi1 repeat
+                for j in i+1..nc repeat
+                    vvi := vvi - apply(m(i, j), cc, bv(j))
+                lvi2 := cons(vvi, lvi2)
+            lvi := reverse!(lvi2)
+            resi := solf(m(i, i), lvi)
+            nbvl : List V := []
+            for be in resi.basis repeat
+                bv := new(nc, 0)
+                bv(i) := be
+                nbvl := cons(bv, nbvl)
+            prl := resi.particular
+            nrl := #prl
+            ncvl := [pr.coeffs for pr in prl]
+            nsl1 := [pr.ratpart for pr in prl]
+            cm1 := matrix([parts(ncv) for ncv in ncvl])$Matrix(F)
+            cm2 := rowEchelon(horizConcat(cm1, scalarMatrix(nrl, 1)))
+            nsl2 : List(F) := []
+            noff := nlvi + nbas + 1
+            for j in 1..nrl repeat
+                ss : F := 0
+                for k in noff.. for slk in nsl1 repeat
+                    ss := ss + cm2(j, k)*slk
+                nsl2 := cons(ss, nsl2)
+            nrl1 : NonNegativeInteger := 0
+            for j in nrl..1 by -1 for slj in nsl2 repeat
+                for k in 1..nlvi repeat
+                    if cm2(j, k) ~= 0 then
+                        nrl1 := j
+                        break
+                nrl1 ~= 0 => break
+                nbcv := new(nbas, 0)$Vector(F)
+                for k in 1..nbas repeat
+                    nbcv(k) := cm2(j, k + nlvi)
+                bv := lin_comb(nbcv, bvl)
+                bv(i) := slj
+                nbvl := cons(bv, nbvl)
+            nsl2 := reverse!(nsl2)
+            ncb : List(Vector(F)) := []
+            ncba : List(Vector(F)) := []
+            for j in 1..nrl1 for slj in nsl2 repeat
+                nbcv1 := new(nbas, 0)$Vector(F)
+                for k in 1..nbas repeat
+                    nbcv1(k) := cm2(j, k + nlvi)
+                nbcv2 := new(nlvi, 0)$Vector(F)
+                for k in 1..nlvi repeat
+                    nbcv2(k) := cm2(j, k)
+                bv := lin_comb(nbcv2, cb)
+                ncb := cons(bv, ncb)
+                na := lin_comb(nbcv2, cba)
+                na := lin_comb!(nbcv1, na, bvl)
+                na(i) := slj
+                ncba := cons(na, ncba)
+            cb := reverse!(ncb)
+            cba := reverse!(ncba)
+            bvl := nbvl
+        [[[ba, bv] for ba in cba for bv in cb], bvl]
+
+    solve(m, cc, lv, solf) ==
+        rec := rowEchelon(m, cc, lv)
+        triangular_solve(rec.mat, cc, rec.vecs, solf)
