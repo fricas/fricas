@@ -422,6 +422,16 @@ testIntegrate("D(fresnelC(x^2+x), x)", "x", "fresnel")
 -- mixed cases
 testIntegrate("(x-2)*exp(-x^2)/x", "x", "spec")
 testIntegrate("(2*x+4)*exp(-x^2-2*x-1)/(x+1)", "x", "spec")
+-- D(Ei(x+li(x)) + li(x)*exp(x+li(x)), x)
+testIntegrate("(((li(x)^2+x*li(x)+1)*log(x)+li(x)^2+(x+1)*li(x)+x+1)*"
+              "exp(li(x)+x))/((li(x)+x)*log(x))", "x", "spec")
+-- D(Ei(x+li(x)+1)/exp(1), x)
+testIntegrate("(log(x)+1)*exp(li(x)+x)/((li(x)+x+1)*log(x))", "x", "spec")
+-- D(Ei((li(x) + x)*(li(x) - x)) + exp((li(x) + x)*(li(x) - x))/(li(x) + x), x)
+testIntegrate("(((-2*x*li(x)^2-(2*x+1)*li(x)+2*x^3-2*x^2+x)*log(x)+"
+              "2*li(x)^3+2*li(x)^2+(-2*x^2+2*x-1)*li(x)+x)*"
+               "exp(li(x)^2-x^2))/((li(x)^3+x*li(x)^2-x^2*li(x)-x^3)*log(x))",
+             "x", "spec")
 xf2testIntegrate("(x+2)*sin(x^2)/x", "x", "spec")
 xf2testIntegrate("(x+3)*sin(x^2+2*x+1)/(x+1)", "x", "spec")
 xf2testIntegrate("(x+2)*cos(x^2)/x", "x", "spec")
@@ -444,7 +454,6 @@ testIntegrate("polylog(3, x)*polylog(5, x)/(x*polylog(4, x)^2)", "x", "liou")
 testIntegrate("(polylog(3, x) - x*polylog(2, x))/(1 - x)^2", "x", "liou")
 ib := integral(x^(a - 1)*(1 - x)^(b - 1), x)
 testIntegrate("((a + b)*x - a)/(x^(a + 1)*(1 - x)^(b + 1))*ib", "x", "liou")
-testIntegrate("exp(-x^2)*erf(x)/(erf(x)^3-erf(x)^2-erf(x)+1)", "x", "liou")
 
 -- Lambert W
 testIntegrate("lambertW(x)", "x", "lambertW")
@@ -497,6 +506,16 @@ testIntegrate("D(ff(x^2, exp(x))^2, x)", "x", "deriv")
 testIntegrate("D(log(x + ff(x + log(x))) + log(x^2 + 1), x)", "x", "deriv")
 testIntegrate("D(sqrt(x + ff(x^2)), x)", "x", "deriv")
 testIntegrate("D(log(sqrt(x + ff(x^2)) + 1), x)", "x", "deriv")
+testIntegrate("D(Ei((log(ff(x))+x)^2), x)", "x", "deriv")
+testIntegrate("D(Ei(exp(ff(x))+x^2), x)", "x", "deriv")
+testIntegrate("D(Ei((exp(ff(x))+x)^2), x)", "x", "deriv")
+testIntegrate("D(Ei(1/(exp(ff(x))+x)), x)", "x", "deriv")
+fun1 := D(Ei(1/(exp(ff(x))+x)) + ff(x)*exp(1/(exp(ff(x))+x)), x)
+testIntegrate("fun1", "x", "deriv")
+fun2 := D(D(ff(x),x)*exp(exp(log(ff(x))+x)), x)
+testIntegrate("fun2", "x", "deriv")
+fun3 := D((D(ff(x),x) + ff(x))*exp(exp(log(ff(x))+x)), x)
+testIntegrate("fun3", "x", "deriv")
 
 -- bug in li part
 testIntegrate("1/(x*(log(x/a)+1))", "x", "li")
@@ -508,7 +527,7 @@ l1 := log(sqrt(exp(x) + 1) + exp(x))
 testIntegrate("exp(x)*(2*s1 + 1)*l1/(exp(x)*(s1 + 1) + 1)", "x", "algext")
 testIntegrate("exp(x)*(l1^2 + exp(x)*(2*s1 + 1)*l1/(exp(x)*(s1 + 1) + 1))",
               "x", "algext")
--- testIntegrate("log(sin(x))*sqrt(1 + sin(x))", "x", "algext")
+testIntegrate("log(sin(x))*sqrt(1 + sin(x))", "x", "algext")
 testIntegrate("sin(x)*atan(sqrt(sec(x) - 1))", "x", "algext")
 fun1 := D(log(sqrt(x + sqrt(x)) + 1)*log(sqrt(x + sqrt(x)) + x), x);
 testIntegrate("fun1", "x", "algext")
