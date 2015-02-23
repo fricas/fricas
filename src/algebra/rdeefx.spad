@@ -1749,8 +1749,42 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             reverse!(res)
         error "unimplemented"
 
+    ei_int_diff(f : F, g : F, gu : RF, x : SE, k : K, lk : LK) : PSOL2 ==
+        fu := univariate(f, k)
+        ngu := numer(gu)
+        denom(gu) ~= 1 or degree(ngu) ~= 1 or fu ~= f::UP::RF =>
+            [0, 0, 0, false]
+        g1 := leadingCoefficient(ngu)
+        args := argument(k)
+        #args ~= 3 => error "internal error, k is not a diff"
+        k1 := eval(args(1), retract(args(2))@K, args(3))
+        dv := new()$Symbol
+        dvf := dv::F
+        f2 := eval(f, k1, dvf)
+        g2 := eval(g1, k1, dvf)
+        nres := ei_int(1, f2, g2, dv)
+        not(nres.sol?) => [0, 0, 0, false]
+        kdv := kernel(dv)
+        k1f := k1::F
+        a1 := eval(nres.ans, kdv, k1f)
+        p1 := eval(nres.primpart, kdv, k1f)
+        dp1 : F :=
+            p1 = 0 => 0
+            differentiate(p1, x)/exp(f)
+        r1 := differentiate(a1, x) + a1*differentiate(f, x) + dp1
+        g3 := g - r1
+        g3 = 0 => [a1, g, p1, true]
+        g3u := univariate(g3, k)
+        g3u ~= g3::UP::RF =>
+            print("Failed to differentiate nres in ei_int_diff"::OutputForm)
+            [0, 0, 0, false]
+        nres2 := ei_int(1, f, g3, x)
+        [nres2.ans + a1, nres2.right + r1, nres2.primpart + p1, nres2.sol?]
+
+    OPDIFF ==> '%diff
+
     ei_int(n : Z, f : F, g : F, x : SE) : PSOL2 ==
-        lk := varselect(union(tower(f), tower(g)), x)
+        lk := union(varselect(union(tower(f), tower(g)), x), [kernel(x)])
         f := n*f
         (fp := D(f, x)) = 0 =>
             do_risch_DE(f, g, x, lk)$ElementaryRischDEX2(R, F)
@@ -1760,6 +1794,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             ei_int_alg(1, f, g, x, k, lk)
         fpu := univariate(fp, k)
         gu := univariate(g, k)
+        is?(k, OPDIFF) => ei_int_diff(f, g, gu, x, k, lk)
         dku := univariate(differentiate(k::F, x), k)
         denom(dku) ~= 1 => [0, 0, 0, false]
         dk := numer(dku)
