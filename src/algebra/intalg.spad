@@ -144,11 +144,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
   GP  ==> LaurentPolynomial(F, UP)
   K   ==> Kernel F
   IR  ==> IntegrationResult R
-  UPQ ==> SparseUnivariatePolynomial Q
   UPR ==> SparseUnivariatePolynomial R
-  FRQ ==> Factored UPQ
   FD  ==> FiniteDivisor(F, UP, UPUP, R)
-  FAC ==> Record(factor : UPQ, exponent : Z)
   LOG ==> Record(scalar : Q, coeff : UPR, logand : UPR)
   DIV ==> Record(num : R, den : UP, derivden : UP, gd : UP)
   U2  ==> Union(Record(ratpart:R, coeff:F),"failed")
@@ -179,10 +176,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
     F2UPR      : F  -> UPR
     UP2SUP     : UP -> SUP
     SUP2UP     : SUP -> UP
-    UPQ2F      : UPQ -> UP
     univ       : (F, K) -> QF
     pLogDeriv  : (LOG, R -> R) -> R
-    nonLinear  : List FAC -> Union(FAC, "failed")
     mkLog      : (UP, Q, R, F) -> List LOG
     R2UP       : (R, K) -> UPR
     alglogint  : (R, UP -> UP) -> Union(List LOG, "failed")
@@ -442,9 +437,6 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         tr1u case "failed" => "failed"
         concat(ppr.result1, tr1u::List(LOG))
 
-    UPQ2F p ==
-      map((x : Q) : F+->x::F, p)$UnivariatePolynomialCategoryFunctions2(Q, UPQ, F, UP)
-
     UP2SUP p ==
        map((x : F) : F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, UP, F, SUP)
 
@@ -530,18 +522,6 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
       [[scalr,
          map(F2R, q)$UnivariatePolynomialCategoryFunctions2(F, UP, R, UPR),
                                            R2UP(lgd, retract(alpha)@K)]]
-
--- return the non-linear factor, if unique
--- or any linear factor if they are all linear
-    nonLinear l ==
-      found : Boolean := false
-      ans := first l
-      for q in l repeat
-        if degree(q.factor)$UPQ >$Integer 1 then
-          found => return "failed"
-          found := true
-          ans   := q
-      ans
 
 -- f dx must be locally integral at infinity
     palgintegrate(f, derivation) ==

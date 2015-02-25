@@ -156,7 +156,6 @@ at load time.
         |htSystemCommands|
         |htSystemVariables|
         |htTextSearch|
-        |htTutorialSearch|
         |htUserVariables|
         |htsv|
         |oPage|
