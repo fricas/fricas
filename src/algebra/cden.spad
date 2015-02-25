@@ -84,44 +84,54 @@ CommonDenominator(R, Q, A) : Exports == Implementation where
     else
       commonDenominator l == numer reduce("*", map(x +-> denom(x)::Q, l), 1)
 
-)abbrev package UPCDEN UnivariatePolynomialCommonDenominator
---% UnivariatePolynomialCommonDenominator
+
+)abbrev package PCDEN PolynomialCommonDenominator
 ++ Author: Manuel Bronstein
-++ Date Created: 2 May 1988
-++ Date Last Updated: 22 Feb 1990
-++ Description: UnivariatePolynomialCommonDenominator provides
-++ functions to compute the common denominator of the coefficients of
-++ univariate polynomials over the quotient field of a gcd domain.
+++ Description: PolynomialCommonDenominator provides
+++  functions to compute and clear the common denominator of the
+++  coefficients of polynomials over the quotient field.
 ++ Keywords: gcd, quotient, common, denominator, polynomial.
 
-UnivariatePolynomialCommonDenominator(R, Q, UP) : Exports == Impl where
+PolynomialCommonDenominator(R, Q, E, VarSet, P
+                           ) : Exports == Implementation where
   R : IntegralDomain
   Q : QuotientFieldCategory R
-  UP : UnivariatePolynomialCategory Q
+  E : OrderedAbelianMonoidSup
+  VarSet : OrderedSet
+  P : PolynomialCategory(Q, E, VarSet)
 
   Exports ==> with
-    commonDenominator : UP -> R
+    commonDenominator : P -> R
       ++ commonDenominator(q) returns a common denominator d for
       ++ the coefficients of q.
-    clearDenominator : UP -> UP
+    clearDenominator : P -> P
       ++ clearDenominator(q) returns p such that \spad{q = p/d} where d is
       ++ a common denominator for the coefficients of q.
-    splitDenominator : UP -> Record(num : UP, den : R)
-      ++ splitDenominator(q) returns \spad{[p, d]} such that \spad{q = p/d} and d
-      ++ is a common denominator for the coefficients of q.
+    splitDenominator : P -> Record(num : P, den : R)
+      ++ splitDenominator(q) returns \spad{[p, d]} such that \spad{q = p/d}
+      ++ and d is a common denominator for the coefficients of q.
 
-  Impl ==> add
+  Implementation ==> add
+
     import from CommonDenominator(R, Q, List Q)
 
     commonDenominator p == commonDenominator coefficients p
 
     clearDenominator p ==
-      d := commonDenominator p
-      map(x +-> numer(d*x)::Q, p)
+        d := commonDenominator p
+        map(x +-> numer(d*x)::Q, p)
 
     splitDenominator p ==
-      d := commonDenominator p
-      [map(x +-> numer(d*x)::Q, p), d]
+        d := commonDenominator p
+        [map(x +-> numer(d*x)::Q, p), d]
+
+
+)abbrev package UPCDEN UnivariatePolynomialCommonDenominator
+UnivariatePolynomialCommonDenominator(R : IntegralDomain, 
+  Q : QuotientFieldCategory R, UP : UnivariatePolynomialCategory Q) ==
+    PolynomialCommonDenominator(R, Q, NonNegativeInteger,
+                                SingletonAsOrderedSet, UP)
+
 
 )abbrev package MCDEN MatrixCommonDenominator
 --% MatrixCommonDenominator
