@@ -70,9 +70,6 @@ htSayCold x ==
   htSay x
   htSay '"}"
 
-htSayIfStandard(x, :options) ==  --do only for $standard
-  $standard => htSayBind(x,options)
-
 htSayStandard(x, :options) ==  --do AT MOST for $standard
   $saturn: local := nil
   htSayBind(x, options)

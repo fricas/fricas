@@ -461,11 +461,6 @@ cPsi(n,z) ==
 PsiXotic(n,result) ==
         r_gamma(float(n+1))*(-1)^MOD(n+1,2)*result
 
-cpsireflect(n,z) ==
-        m := MOD(n,2)
-        sign := (-1)^m
-        sign*dfPi^(n+1)*cotdiffeval(n,dfPi*z,0) + cPsi(n,1.0-z)
-
 --- c parameter to 0F1, possibly complex
 --- z argument to 0F1
 --- Depends on files floaterror, floatutils
@@ -527,47 +522,6 @@ chebf01 (c,z) ==
         temp
 
 
-brutef01(c,z) ==
---  Use series definition.  Won't work well if cancellation occurs
-        term := 1.0
-        sum := term
-        n := 0.0
-        oldsum := 0.0
-        maxnterms := 10000
-        for i in 0..maxnterms until oldsum=sum repeat
-                oldsum := sum
-                term := term*z/(c+n)/(n+1.0)
-                sum := sum + term
-                n := n+1.0
-        sum
-
-f01(c,z)==
-        if negintp(c)
-        then
-                FloatError('"0F1 not defined for negative integer parameter value ~S",c)
--- conditions when we'll permit the computation
-        else if ABS(c)<1000.0 and ABS(z)<1000.0
-        then
-                brutef01(c,z)
-        else if ZEROP IMAGPART(z) and ZEROP IMAGPART(c) and z>=0.0 and c>=0.0
-        then
-                brutef01(c,z)
----     else
----             t := SQRT(-z)
----             c1 := c-1.0
----             p := PHASE(c)
----             if ABS(c)>10.0*ABS(t) and p>=0.0 and PHASE(c)<.90*dfPi
----             then BesselJAsymptOrder(c1,2*t)*cgamma(c/(t^(c1)))
----             else if ABS(t)>10.0*ABS(c) and ABS(t)>50.0
----             then BesselJAsympt(c1,2*t)*cgamma(c/(t^(c1)))
----             else
----                     FloatError('"0F1 not implemented for ~S",[c,z])
-        else if (10.0*ABS(c)>ABS(z)) and ABS(c)<1.0E4 and ABS(z)<1.0E4
-        then
-                brutef01(c,z)
-        else
-                FloatError('"0F1 not implemented for ~S",[c,z])
-
 --- c parameter to 0F1
 --- w scale factor so that 0<z/w<1
 --- n    n+2 coefficients will be produced stored in an array
@@ -627,29 +581,6 @@ chebf01coefmake (c,w,n) ==
 
 --- B. Char, March 1990
 
-chebeval (coeflist,x) ==
-        b := 0;
-        temp := 0;
-        y := 2*x;
-
-        for el in coeflist repeat
-                c := b;
-                b := temp
-                temp := y*b -c + el
-        (temp -c)/2
-
-
-chebevalarr(coefarr,x,n) ==
-        b := 0;
-        temp := 0;
-        y := 2*x;
-
-        for i in 1..n repeat
-                c := b;
-                b := temp
-                temp := y*b -c + coefarr.i
-        (temp -c)/2
-
 --- If plist is a list of coefficients for the Chebychev approximation
 --- of a function f(x), then chebderiveval computes the Chebychev approximation
 --- of f'(x).  See Luke, "Special Functions and their approximations, vol. 1
@@ -661,18 +592,6 @@ chebevalarr(coefarr,x,n) ==
 --- coefficient list, using shifted Chebychev polynomials of the first kind
 --- The defining relation is that T*(n,x) = T(n,2*x-1).  Thus the interval
 --- [0,1] of T*n is the interval [-1,1] of Tn.
-
-chebstareval(coeflist,x) ==          -- evaluation of T*(n,x)
-        b := 0
-        temp := 0
-        y := 2*(2*x-1)
-
-        for el in coeflist repeat
-                c := b;
-                b := temp
-                temp := y*b -c + el
-        temp - y*b/2
-
 
 chebstarevalarr(coefarr,x,n) ==          -- evaluation of sum(C(n)*T*(n,x))
 

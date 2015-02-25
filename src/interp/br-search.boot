@@ -63,7 +63,6 @@ grepConstruct1(s,key) ==
   grepConstructDo(pattern, key)  --do the "grep"---see b-saturn.boot
 
 grepConstructDo(x, key) ==
-  $orCount := 0
 --atom x => grepFile(x, key,'i)
   $localLibdb =>
     oldLines := purgeNewConstructorLines(grepf(x,key,false),$newConstructorList)
@@ -99,7 +98,7 @@ grepForAbbrev(s,key) ==
          a := GETDATABASE(x,'ABBREVIATION)
          match?(pattern,PNAME a) and not HGET($defaultPackageNamesHT,x)
 
-applyGrep(x,filename) ==   --OBSELETE with $saturn--> see applyGrepSaturn
+applyGrep(x,filename) ==
   atom x => grepFile(x,filename,'i)
   $localLibdb =>
     a := purgeNewConstructorLines(grepf(x,filename,false),$newConstructorList)
@@ -305,19 +304,6 @@ mkGrepPattern1(x,:options) == --called by mkGrepPattern (and grepConstructName?)
         STRINGIMAGE one
       s = $wild1 => STRCONC('"^",prefix)
       STRCONC('"^",prefix,s)
-
-conform2OutputForm(form) ==
-  [op,:args] := form
-  null args => form
-  cosig := rest GETDATABASE(op,'COSIG)
-  atypes := rest CDAR GETDATABASE(op,'CONSTRUCTORMODEMAP)
-  sargl := [fn for x in args for atype in atypes for pred in cosig] where fn ==
-    pp [x,atype,pred]
-    pred => conform2OutputForm x
-    typ := sublisFormal(args,atype)
-    if x is ['QUOTE,a] then x := a
-    algCoerceInteractive(x,typ,'(OutputForm))
-  [op,:sargl]
 
 oPage(a,:b) == --called by \spadfun{opname}
   oSearch (IFCAR b or a) --always take slow path
@@ -899,21 +885,10 @@ underscoreDollars(s) == fn(s,0,MAXINDEX s) where
     STRCONC(SUBSTRING(s,i,m - i),'"___$",fn(s,m + 1,n))
 
 --=======================================================================
---                     Code dependent on $saturn
---=======================================================================
-
-obey x ==
-  $saturn and not $aixTestSaturn => nil
-  OBEY x
-
---=======================================================================
 --                         I/O Code
 --=======================================================================
 
-getTempPath kind ==
-  pathname := mkGrepFile kind
-  obey STRCONC('"rm -f ", pathname)
-  pathname
+getTempPath kind == mkGrepFile kind
 
 dbWriteLines(s, :options) ==
   pathname := IFCAR options or getTempPath 'source
@@ -974,7 +949,7 @@ grepFile(pattern, key, option) ==
         MEMQ('iv,options)=> '"-vi"
         '"-i"
       command := STRCONC('"grep ", casepart, '" '", pattern, '"' ", source)
-      obey STRCONC(command, '" > ",target)
+      OBEY STRCONC(command, '" > ",target)
       dbReadLines target
     ----Windows Version------
     invert? := MEMQ('iv, options)

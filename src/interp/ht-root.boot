@@ -260,22 +260,6 @@ htTextSearch(filter) ==
     htSay('"}}")
   htShowPage()
 
-htTutorialSearch pattern ==
-  s := dbNonEmptyPattern pattern or return
-    errorPage(nil,['"Empty search key",nil,'"\vspace{3}\centerline{You must enter some search string"])
-  s := mkUnixPattern s
-  source := '"$AXIOM/share/hypertex/pages/ht.db"
-  target :='"/tmp/temp.text.$SPADNUM"
-  OBEY STRCONC('"$AXIOM/lib/hthits",'" _"",s,'"_" ",source,'" > ",target)
-  lines := dbReadLines 'temp
-  htInitPageNoScroll(nil,['"Tutorial Pages mentioning {\em ",pattern,'"}"])
-  htSay('"\beginscroll\table{")
-  for line in lines repeat
-    [name,title,.] := dbParts(line,3,0)
-    htSay ['"{\downlink{",title,'"}{",name,'"}}"]
-  htSay '"}"
-  htShowPage()
-
 mkUnixPattern s ==
   u := mkUpDownPattern s
   starPositions := REVERSE [i for i in 1..(-1 + MAXINDEX u) | u.i = $wild]
