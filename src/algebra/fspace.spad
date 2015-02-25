@@ -519,6 +519,13 @@ FunctionSpace(R : Comparable) : Category == Definition where
        if R has IntegralDomain then
          Field
          RetractableTo Fraction PR
+         algtower : % -> List K
+           ++ algtower(f) is algtower([f])
+         algtower : List % -> List K
+           ++ algtower([f1, ..., fn]) returns list of kernels
+           ++ \spad{[ak1, ..., akl]} such that each toplevel
+           ++ algebraic kernel in one of f1, ..., fn or in arguments
+           ++ of ak1, ..., akl is one of ak1, ..., akl.
          convert   : Factored % -> %
            ++ convert(f1\^e1 ... fm\^em) returns \spad{(f1)\^e1 ... (fm)\^em}
            ++ as an element of %, using formal kernels
@@ -1069,6 +1076,35 @@ FunctionSpace(R : Comparable) : Category == Definition where
       retract(x : %) : PR                == retract(retract(x)@Fraction(PR))
       retract(x : %) : Fraction(PR) == smpret(numer x)::PR / smpret(denom x)::PR
       retract(x : %) : R == (retract(numer x)@R exquo retract(denom x)@R)::R
+
+      alg_ker_set(lx : List %) : List(K) ==
+          resl : List(K) := []
+          ak1 : List(K) := []
+          for x in lx repeat
+              for k in kernels x repeat
+                  not(is?(k, 'nthRoot) or is?(k, 'rootOf)) => "iterate"
+                  ak1 := cons(k, ak1)
+          while not(empty?(ak1)) repeat
+              ak := ak1
+              ak1 := []
+              for k in ak repeat
+                  needed := true
+                  for k1 in resl while needed repeat
+                      if EQ(k1, k)$Lisp then needed := false
+                  for k1 in resl while needed repeat
+                      if k1 = k then needed := false
+                  not(needed) => "iterate"
+                  resl := cons(k, resl)
+                  ak1 := cons(k, ak1)
+                  arg := argument(k)
+                  for k1 in kernels(arg.1) repeat
+                      if (is?(k1, 'nthRoot) or is?(k1, 'rootOf)) then
+                          ak1 := cons(k1, ak1)
+          resl
+
+      algtower(lx : List %) : List K == reverse!(sort! alg_ker_set(lx))
+
+      algtower(x : %) : List K == algtower([x])
 
       coerce(x : %) : OutputForm ==
 --        one?(denom x) => smp2O numer x

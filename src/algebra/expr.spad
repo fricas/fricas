@@ -93,7 +93,6 @@ Expression(R : Comparable) : Exports == Implementation where
             commonk0  : (List K, List K) -> List K
             toprat    : % -> %
             algkernels : List K -> List K
-            algtower  : % -> List K
             evl       : (MP, K, SparseUnivariatePolynomial %) -> Fraction MP
             evl0      : (MP, K) -> SparseUnivariatePolynomial Fraction MP
 
@@ -170,32 +169,6 @@ Expression(R : Comparable) : Exports == Implementation where
             algkernels l     == select!(x +-> has?(operator x, ALGOP), l)
             toprat f == ratDenom(f, algtower f
                                 )$AlgebraicManipulations(R, %)
-
-            alg_ker_set(x : %) : List(K) ==
-                resl : List(K) := []
-                ak1 : List(K) := []
-                for k in kernels x repeat
-                    not(is?(k, 'nthRoot) or is?(k, 'rootOf)) => "iterate"
-                    ak1 := cons(k, ak1)
-                while not(empty?(ak1)) repeat
-                    ak := ak1
-                    ak1 := []
-                    for k in ak repeat
-                        needed := true
-                        for k1 in resl while needed repeat
-                            if EQ(k1, k)$Lisp then needed := false
-                        for k1 in resl while needed repeat
-                            if k1 = k then needed := false
-                        not(needed) => "iterate"
-                        resl := cons(k, resl)
-                        ak1 := cons(k, ak1)
-                        arg := argument(k)
-                        for k1 in kernels(arg.1) repeat
-                            if (is?(k1, 'nthRoot) or is?(k1, 'rootOf)) then
-                                ak1 := cons(k1, ak1)
-                resl
-
-            algtower(x : %) : List K == reverse!(sort! alg_ker_set(x))
 
             simple_root(r : K) : Boolean ==
                 is?(r, 'nthRoot) =>
