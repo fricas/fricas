@@ -1,41 +1,243 @@
+)abbrev package IEP InnerEigenPackage
+++ Author: P. Gianni
+++ Description:
+++  This is a package for the exact computation of eigenvalues and
+++  eigenvectors.  This package works for matrices with coefficients from
+++  a field over which we can factor polynomials.  Eigenvalues in base
+++  field are always explicitly computed while the other are expressed
+++  in terms of their minimal polynomial.
+InnerEigenPackage(F : Field) : Exports == Implementation
+ where
+   UP   ==> SparseUnivariatePolynomial(F)
+   M     ==> Matrix(F)
+   NNI   ==> NonNegativeInteger
+   AV    ==> Vector(UP)
+
+   Eigenvalue  ==> Union(F, UP)
+   EigenForm ==> Record(eigval : Eigenvalue, eigmult : NNI, eigvec : List AV)
+   GenEigen  ==> Record(eigval : Eigenvalue, geneigvec : List AV)
+
+   Exports == with
+
+     characteristicPolynomial :  M ->  UP
+       ++ characteristicPolynomial(m) returns the characteristic
+       ++ polynomial of the matrix m
+
+     eigenvalues : (M, UP -> Factored(UP)) ->  List Eigenvalue
+       ++ eigenvalues(m, fac) returns the eigenvalues of the
+       ++ matrix m.  Eigenvalues in base field are given
+       ++ explicitely, other are represented by mininal polynomial.
+       ++ fac is a factorizer for polynomials over F.
+
+     eigenvector : (Eigenvalue, M)  ->  List AV
+       ++ eigenvector(eigval, m) returns the
+       ++ eigenvectors belonging to the eigenvalue eigval
+       ++ for the matrix m.
+
+     generalizedEigenvector : (Eigenvalue, M, NNI, NNI) -> List AV
+       ++ generalizedEigenvector(alpha, m, k, g)
+       ++ returns the generalized eigenvectors
+       ++ of the matrix relative to the eigenvalue alpha.
+       ++ The integers k and g are respectively the algebraic and the
+       ++ geometric multiplicity of the eigenvalue alpha.
+
+     generalizedEigenvector  : (EigenForm, M) -> List AV
+       ++ generalizedEigenvector(eigen, m)
+       ++ returns the generalized eigenvectors
+       ++ of the matrix relative to the eigenvalue eigen, as
+       ++ returned by the function eigenvectors.
+
+     generalizedEigenvectors : (M, UP -> Factored(UP)) -> List GenEigen
+       ++ generalizedEigenvectors(m, fac) returns the generalized
+       ++ eigenvectors of the matrix m.
+       ++ fac is a factorizer for polynomials over F.
+
+     eigenvectors : (M, UP -> Factored(UP)) ->  List(EigenForm)
+       ++ eigenvectors(m, fac) returns the eigenvalues and eigenvectors
+       ++ for the matrix m.
+       ++ The eigenvalues in base field and corresponding eigenvectors
+       ++ are explicitely computed, while the other eigenvalues
+       ++ are given via their minimal polynomial and the corresponding
+       ++ eigenvectors are expressed in terms of a "generic" root of
+       ++ such a polynomial.
+       ++ fac is a factorizer for polynomials over F.
+
+     if F has PolynomialFactorizationExplicit then
+
+       eigenvalues : M -> List Eigenvalue
+         ++ eigenvalues(m) returns the eigenvalues of the matrix m.
+       eigenvectors : M ->  List(EigenForm)
+         ++ eigenvectors(m) returns the eigenvalues and eigenvectors
+         ++ for the matrix m.
+         ++ The eigenvalues in base field and corresponding eigenvectors
+         ++ are explicitely computed, while the non rational ones
+         ++ are given via their minimal polynomial and the corresponding
+         ++ eigenvectors are expressed in terms of a "generic" root of
+         ++ such a polynomial.
+       generalizedEigenvectors  : M -> List GenEigen
+         ++ generalizedEigenvectors(m) returns the generalized
+         ++ eigenvectors of the matrix m.
+
+   Implementation == add
+
+     if F has PolynomialFactorizationExplicit then
+
+         eigenvalues(m) == eigenvalues(m, factorPolynomial$F)
+
+         eigenvectors(m) == eigenvectors(m, factorPolynomial$F)
+
+         generalizedEigenvectors(m) ==
+             generalizedEigenvectors(m, factorPolynomial$F)
+
+     -- local functions
+     intRatEig : (F, M, NNI) -> List AV
+     intAlgEig : (UP, M, NNI) -> List AV
+     genEigForm : (EigenForm, M) -> GenEigen
+
+     ---- next functions needed for defining  ModularField ----
+     reduction(u : UP, p : UP) : UP == u rem p
+
+     merge(p : UP, q : UP) : Union(UP, "failed") ==
+         p = q => p
+         p = 0 => q
+         q = 0 => p
+         "failed"
+
+     exactquo(u : UP, v : UP, p : UP) : Union(UP, "failed") ==
+         val := extendedEuclidean(v, p, u)
+         val case "failed" => "failed"
+         val.coef1
+
+     -- generalized eigenvectors associated to a given eigenvalue
+     genEigForm(eigen : EigenForm, A : M) : GenEigen ==
+         alpha := eigen.eigval
+         k := eigen.eigmult
+         g := #(eigen.eigvec)
+         k = g  => [alpha, eigen.eigvec]
+         [alpha, generalizedEigenvector(alpha, A, k, g)]
+
+     characteristicPolynomial(A : M) : UP ==
+         dimA := nrows A
+         dimA ~= ncols A => error " The matrix is not square"
+         dimA = 0 => 1$UP
+         B : Matrix(UP) := zero(dimA, dimA)
+         for i in 1..dimA repeat
+             for j in 1..dimA repeat  B(i, j) := A(i, j)::UP
+             B(i, i) := B(i, i) - monomial(1, 1)$UP
+         determinant B
+
+     eigenvalues(A : M, fac : UP -> Factored(UP)) : List Eigenvalue ==
+         pol := characteristicPolynomial(A)
+         lrat : List F := empty()
+         lsym : List UP := empty()
+         fp := fac(pol)
+         for fr in factors(fp) repeat
+             f1 := fr.factor
+             degree(f1) = 1 =>
+                 rv := -coefficient(f1, 0)/leadingCoefficient(f1)
+                 lrat := cons(rv, lrat)
+             lsym := cons(f1, lsym)
+         append([lr::Eigenvalue for lr in lrat],
+                [ls::Eigenvalue for ls in lsym])
+
+     eigenvector(alpha : Eigenvalue, A : M) : List AV  ==
+         alpha case F => intRatEig(alpha::F, A, 1$NNI)
+         intAlgEig(alpha::UP, A, 1$NNI)
+
+     -- Eigenvectors belonging to a given eigenvalue from base field.
+     intRatEig(alpha : F, A : M, m : NNI) : List AV  ==
+         n := nrows A
+         B : M := zero(n, n)$M
+         for i in 1..n repeat
+             for j in 1..n repeat B(i, j) := A(i, j)
+             B(i, i) := B(i, i) - alpha
+         sol : List(AV) := []
+         for v in nullSpace(B^m) repeat
+             w : AV := new(n, 0)
+             for i in 1..n repeat w(i) := v(i)::UP
+             sol := cons(w, sol)
+         sol
+
+     --  Eigenvectors belonging to a given algebraic eigenvalue.
+     intAlgEig(alpha : UP, A : M, m : NNI) : List AV  ==
+         n := nrows A
+         MM := ModularField(UP, UP, reduction, merge, exactquo)
+         AM := Matrix MM
+         pol : UP := unitCanonical alpha
+         alg : MM := reduce(monomial(1, 1), pol)
+         B : AM := zero(n, n)
+         for i in 1..n repeat
+             for j in 1..n repeat B(i, j) := reduce(A(i, j)::UP, pol)
+             B(i, i) := B(i, i) - alg
+         sol : List AV := empty()
+         for vec in nullSpace(B^m) repeat
+             w : AV := new(n, 0)
+             for i in 1..n repeat w(i) := vec(i)::UP
+             sol := cons(w, sol)
+         sol
+
+     generalizedEigenvector(alpha : Eigenvalue, A : M, k : NNI, g : NNI
+                           ) : List AV ==
+         alpha case F => intRatEig(alpha::F, A, (1+k-g)::NNI)
+         intAlgEig(alpha::UP, A, (1+k-g)::NNI)
+
+     generalizedEigenvector(ei : EigenForm, A : M) : List AV  ==
+         generalizedEigenvector(ei.eigval, A, ei.eigmult, # ei.eigvec)
+
+     generalizedEigenvectors(A : M, fac : UP -> Factored(UP)
+                            ) : List GenEigen  ==
+         n := nrows A
+         leig := eigenvectors(A, fac)
+         [genEigForm(leg, A) for leg in leig]
+
+     eigenvectors(A : M, fac : UP -> Factored(UP)) : List(EigenForm) ==
+         n := nrows A
+         p := characteristicPolynomial(A)
+         ratSol : List EigenForm := empty()
+         algSol : List EigenForm := empty()
+         lff := factors fac p
+         for fact in lff repeat
+             pol := fact.factor
+             degree(pol) = 1 =>
+                 vec : F := -coefficient(pol, 0)/leadingCoefficient(pol)
+                 ratSol := cons([vec, fact.exponent :: NNI,
+                                 intRatEig(vec, A, 1$NNI)]$EigenForm, ratSol)
+             alpha : UP := pol
+             algSol := cons([alpha, fact.exponent :: NNI,
+                             intAlgEig(alpha, A, 1$NNI)]$EigenForm, algSol)
+         append(ratSol, algSol)
+
+
 )abbrev package EP EigenPackage
 ++ Author: P. Gianni
-++ Date Created: summer 1986
-++ Date Last Updated: October 1992
-++ Basic Functions:
 ++ Related Constructors: NumericRealEigenPackage,  NumericComplexEigenPackage,
-++ RadicalEigenPackage
+++  RadicalEigenPackage, InnerEigenPackage
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords:
 ++ References:
 ++ Description:
-++ This is a package for the exact computation of eigenvalues and eigenvectors.
-++ This package can be made to work for matrices with coefficients which are
-++ rational functions over a ring where we can factor polynomials.
-++ Rational eigenvalues are always explicitly computed while the
-++ non-rational ones are expressed in terms of their minimal
-++ polynomial.
--- Functions for the numeric computation of eigenvalues and eigenvectors
--- are in numeigen spad.
-EigenPackage(R) : C == T
+++  This is a package for the exact computation of eigenvalues and
+++  eigenvectors.  This package works for matrices with coefficients which
+++  are rational functions over a ring where we can factor polynomials.
+++  Eigenvalues not in base field are represented by their minimal
+++  polynomial.
+EigenPackage(R) : Exports == Implementation
  where
    R     : GcdDomain
    P     ==> Polynomial R
    F     ==> Fraction P
-   SE    ==> Symbol()
-   SUP   ==> SparseUnivariatePolynomial(P)
-   SUF   ==> SparseUnivariatePolynomial(F)
+   SY    ==> Symbol()
    M     ==> Matrix(F)
    NNI   ==> NonNegativeInteger
-   ST    ==> SuchThat(SE, P)
+   ST    ==> SuchThat(SY, P)
 
    Eigenvalue  ==> Union(F, ST)
    EigenForm   ==> Record(eigval : Eigenvalue, eigmult : NNI, eigvec : List M)
    GenEigen    ==> Record(eigval : Eigenvalue, geneigvec : List M)
 
-   C == with
-     characteristicPolynomial :  (M, Symbol)  ->  P
+   Exports == with
+     characteristicPolynomial :  (M, SY)  ->  P
        ++ characteristicPolynomial(m, var) returns the
        ++ characteristicPolynomial of the matrix m using
        ++ the symbol var as the main variable.
@@ -46,14 +248,11 @@ EigenPackage(R) : C == T
        ++ a new generated symbol symbol as the main variable.
 
      eigenvalues       :    M        ->  List Eigenvalue
-       ++ eigenvalues(m) returns the
-       ++ eigenvalues of the matrix m which are expressible
-       ++ as rational functions over the rational numbers.
+       ++ eigenvalues(m) returns the eigenvalues of the matrix m.
 
      eigenvector       :   (Eigenvalue, M)  ->  List M
-       ++ eigenvector(eigval, m) returns the
-       ++ eigenvectors belonging to the eigenvalue eigval
-       ++ for the matrix m.
+       ++ eigenvector(eigval, m) returns the eigenvectors
+       ++ belonging to the eigenvalue eigval for the matrix m.
 
      generalizedEigenvector  : (Eigenvalue, M, NNI, NNI) -> List M
        ++ generalizedEigenvector(alpha, m, k, g)
@@ -61,184 +260,96 @@ EigenPackage(R) : C == T
        ++ of the matrix relative to the eigenvalue alpha.
        ++ The integers k and g are respectively the algebraic and the
        ++ geometric multiplicity of tye eigenvalue alpha.
-       ++ alpha can be either rational or not.
-       ++ In the seconda case apha is the minimal polynomial of the
-       ++ eigenvalue.
 
      generalizedEigenvector  : (EigenForm, M) -> List M
-       ++ generalizedEigenvector(eigen, m)
-       ++ returns the generalized eigenvectors
-       ++ of the matrix relative to the eigenvalue eigen, as
-       ++ returned by the function eigenvectors.
+       ++ generalizedEigenvector(eigen, m) returns the generalized
+       ++ eigenvectors of the matrix relative to the eigenvalue
+       ++ eigen, as returned by the function eigenvectors.
 
      generalizedEigenvectors  : M -> List GenEigen
-       ++ generalizedEigenvectors(m)
-       ++ returns the generalized eigenvectors
-       ++ of the matrix m.
+       ++ generalizedEigenvectors(m) returns the generalized
+       ++ returns the generalized eigenvectors of the matrix m.
 
      eigenvectors      :    M        ->  List(EigenForm)
        ++ eigenvectors(m) returns the eigenvalues and eigenvectors
        ++ for the matrix m.
-       ++ The rational eigenvalues and the correspondent eigenvectors
-       ++ are explicitely computed, while the non rational ones
-       ++ are given via their minimal polynomial and the corresponding
+       ++ The eigenvalues in base field and the corresponding eigenvectors
+       ++ are explicitely computed, while the other ones are given
+       ++ via their minimal polynomial and the corresponding
        ++ eigenvectors are expressed in terms of a "generic" root of
        ++ such a polynomial.
 
-   T == add
-     PI       ==> PositiveInteger
+   Implementation == add
 
+      IEP ==> InnerEigenPackage(F)
 
-     MF  := GeneralizedMultivariateFactorize(SE, IndexedExponents SE, R, R, P)
-     UPCF2 := UnivariatePolynomialCategoryFunctions2(P, SUP, F, SUF)
+      UP ==> SparseUnivariatePolynomial(F)
 
+      AV ==> Vector(UP)
 
-                 ----  Local  Functions  ----
-     tff              :  (SUF, SE)      ->  F
-     fft              :  (SUF, SE)      ->  F
-     charpol          :   (M, SE)       ->   F
-     intRatEig        :  (F, M, NNI)    ->   List M
-     intAlgEig        :  (ST, M, NNI)    ->   List M
-     genEigForm       : (EigenForm, M)  ->   GenEigen
+      SUP ==> SparseUnivariatePolynomial(P)
 
-    ---- next functions needed for defining  ModularField ----
-     reduction(u : SUF, p : SUF) : SUF == u rem p
+      Ei_to_EiF(a : Eigenvalue) : Union(F, UP) ==
+          a case F => a
+          map(coerce, univariate(rhs a, lhs a)
+             )$UnivariatePolynomialCategoryFunctions2(P, SUP, F, UP)
 
-     merge(p:SUF,q:SUF):Union(SUF,"failed") ==
-         p = q => p
-         p = 0 => q
-         q = 0 => p
-         "failed"
+      dummy : SY := new()$SY
 
-     exactquo(u:SUF,v:SUF,p:SUF):Union(SUF,"failed") ==
-        val := extendedEuclidean(v, p, u)
-        val case "failed" => "failed"
-        val.coef1
+      get_x(a : Eigenvalue) : SY ==
+          a case F => dummy
+          lhs a
 
-               ----  functions for conversions  ----
-     fft(t : SUF, x : SE) : F ==
-       n := degree(t)
-       cf := monomial(1, x, n)$P :: F
-       cf * leadingCoefficient t
+      UP_to_F(p : UP, x : SY) : F == p(x::P::F)
 
-     tff(p : SUF, x : SE) : F ==
-       degree p = 0 => leadingCoefficient p
-       r : F := 0$F
-       while p ~= 0 repeat
-         r := r+fft(p, x)
-         p := reductum p
-       r
+      AV_to_M(v : AV, x : SY) : M ==
+          matrix([[UP_to_F(v(i), x)] for i in 1..#v])
 
-      ---- generalized eigenvectors associated to a given eigenvalue ---
-     genEigForm(eigen : EigenForm, A : M) : GenEigen ==
-       alpha := eigen.eigval
-       k := eigen.eigmult
-       g := #(eigen.eigvec)
-       k = g  => [alpha, eigen.eigvec]
-       [alpha, generalizedEigenvector(alpha, A, k, g)]
+      characteristicPolynomial(m : M, x : SY) ==
+          numer((characteristicPolynomial(m)$IEP)(x::P::F))
 
-           ---- characteristic polynomial  ----
-     charpol(A : M, x : SE) : F ==
-       dimA : PI := (nrows A)::PI
-       dimA ~= ncols A => error " The matrix is not square"
-       B : M := zero(dimA, dimA)
-       for i in 1..dimA repeat
-         for j in 1..dimA repeat  B(i, j) := A(i, j)
-         B(i, i) := B(i, i) - monomial(1$P, x, 1)::F
-       determinant B
+      characteristicPolynomial(m : M) : P ==
+          characteristicPolynomial(m, new()$SY)
 
-          --------  EXPORTED  FUNCTIONS  --------
+      eigenvector(a, m) ==
+          x := get_x(a)
+          res1 := eigenvector(Ei_to_EiF(a), m)$IEP
+          [AV_to_M(v, x) for v in res1]
 
-            ----  characteristic polynomial of a matrix A ----
-     characteristicPolynomial(A : M) : P ==
-       x : SE := new()$SE
-       numer charpol(A, x)
+      generalizedEigenvector(a, m, k, g) ==
+          x := get_x(a)
+          res1 := generalizedEigenvector(Ei_to_EiF(a), m, k, g)$IEP
+          [AV_to_M(v, x) for v in res1]
 
-            ----  characteristic polynomial of a matrix A ----
-     characteristicPolynomial(A : M, x : SE) : P == numer charpol(A, x)
+      generalizedEigenvector(eif, m) ==
+          k := eif.eigmult
+          g := #(eif.eigvec)
+          k = g => eif.eigvec
+          generalizedEigenvector(eif.eigval, m, k, g)
 
-                ----  Eigenvalues of the matrix A  ----
-     eigenvalues(A : M) : List Eigenvalue  ==
-       x := new()$SE
-       pol := charpol(A, x)
-       lrat : List F := empty()
-       lsym : List ST := empty()
-       for eq in solve(pol, x)$SystemSolvePackage(R) repeat
-         alg := numer lhs eq
-         degree(alg, x)=1 => lrat := cons(rhs eq, lrat)
-         lsym := cons([x, alg], lsym)
-       append([lr::Eigenvalue for lr in lrat],
-              [ls::Eigenvalue for ls in lsym])
+      if F has PolynomialFactorizationExplicit then
 
-          ----  Eigenvectors belonging to a given eigenvalue  ----
-                ----  the eigenvalue must be exact  ----
-     eigenvector(alpha : Eigenvalue, A : M) : List M  ==
-       alpha case F => intRatEig(alpha::F, A, 1$NNI)
-       intAlgEig(alpha::ST, A, 1$NNI)
+          EiF_to_Ei(a : Union(F, UP), x : SY) : Eigenvalue ==
+              a case F => a
+              [x, numer((a::UP)(x::F))]
 
-   ----  Eigenvectors belonging to a given rational eigenvalue  ----
-                ---- Internal function -----
-     intRatEig(alpha : F, A : M, m : NNI) : List M  ==
-       n := nrows A
-       B : M := zero(n, n)$M
-       for i in 1..n repeat
-         for j in 1..n repeat B(i, j) := A(i, j)
-         B(i, i) := B(i, i) - alpha
-       [v::M for v in nullSpace(B^m)]
+          eigenvalues(m) ==
+              x := new()$SY
+              res1 := eigenvalues(m)$IEP
+              [EiF_to_Ei(a, x) for a in res1]
 
-   ----  Eigenvectors belonging to a given algebraic eigenvalue  ----
-         ------   Internal  Function  -----
-     intAlgEig(alpha : ST, A : M, m : NNI) : List M  ==
-       n := nrows A
-       MM := ModularField(SUF, SUF, reduction, merge, exactquo)
-       AM := Matrix MM
-       x : SE := lhs alpha
-       pol : SUF := unitCanonical map(coerce, univariate(rhs alpha, x))$UPCF2
-       alg : MM := reduce(monomial(1, 1), pol)
-       B : AM := zero(n, n)
-       for i in 1..n repeat
-         for j in 1..n repeat B(i, j) := reduce(A(i, j)::SUF, pol)
-         B(i, i) := B(i, i) - alg
-       sol : List M := empty()
-       for vec in nullSpace(B^m) repeat
-         w : M := zero(n, 1)
-         for i in 1..n repeat w(i, 1) := tff((vec.i)::SUF, x)
-         sol := cons(w, sol)
-       sol
+          eigenvectors(m) ==
+              x := new()$SY
+              res1 := eigenvectors(m)$IEP
+              [[EiF_to_Ei(ri.eigval, x), ri.eigmult,
+                [AV_to_M(v, x) for v in ri.eigvec]] for ri in res1]
 
-     ----  Generalized Eigenvectors belonging to a given eigenvalue  ----
-     generalizedEigenvector(alpha : Eigenvalue, A : M, k : NNI, g : NNI) : List M  ==
-       alpha case F => intRatEig(alpha::F, A, (1+k-g)::NNI)
-       intAlgEig(alpha::ST, A, (1+k-g)::NNI)
+          generalizedEigenvectors(m) ==
+              x := new()$SY
+              res1 := generalizedEigenvectors(m)$IEP
+              [[EiF_to_Ei(ri.eigval, x),
+                [AV_to_M(v, x) for v in ri.geneigvec]] for ri in res1]
 
-     ----  Generalized Eigenvectors belonging to a given eigenvalue  ----
-     generalizedEigenvector(eigen : EigenForm, A : M) : List M  ==
-       generalizedEigenvector(eigen.eigval, A, eigen.eigmult, # eigen.eigvec)
-
-          ----  Generalized Eigenvectors -----
-     generalizedEigenvectors(A : M) : List GenEigen  ==
-       n := nrows A
-       leig := eigenvectors A
-       [genEigForm(leg, A) for leg in leig]
-
-                 ----  eigenvectors and eigenvalues  ----
-     eigenvectors(A : M) : List(EigenForm) ==
-       n := nrows A
-       x := new()$SE
-       p := numer charpol(A, x)
-       ratSol : List EigenForm := empty()
-       algSol : List EigenForm := empty()
-       lff := factors factor  p
-       for fact in lff repeat
-         pol := fact.factor
-         degree(pol, x)=1 =>
-           vec : F := -coefficient(pol, x, 0)/coefficient(pol, x, degree(pol, x))
-           ratSol := cons([vec, fact.exponent :: NNI,
-                         intRatEig(vec, A, 1$NNI)]$EigenForm, ratSol)
-         alpha : ST := [x, pol]
-         algSol := cons([alpha, fact.exponent :: NNI,
-                       intAlgEig(alpha, A, 1$NNI)]$EigenForm, algSol)
-       append(ratSol, algSol)
 
 )abbrev package CHARPOL CharacteristicPolynomialPackage
 ++ Author: Barry Trager
@@ -255,7 +366,6 @@ EigenPackage(R) : C == T
 ++ for any matrix over a commutative ring.
 
 CharacteristicPolynomialPackage(R : CommutativeRing) : C == T where
-   PI ==> PositiveInteger
    M ==> Matrix R
    C == with
       characteristicPolynomial : (M, R) -> R
@@ -267,8 +377,9 @@ CharacteristicPolynomialPackage(R : CommutativeRing) : C == T where
 
            ---- characteristic polynomial  ----
      characteristicPolynomial(A : M, v : R) : R ==
-       dimA : PI := (nrows A)::PI
+       dimA := nrows A
        dimA ~= ncols A => error " The matrix is not square"
+       dimA = 0 => 1$R
        B : M := zero(dimA, dimA)
        for i in 1..dimA repeat
          for j in 1..dimA repeat  B(i, j) := A(i, j)
