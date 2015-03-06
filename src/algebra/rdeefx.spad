@@ -247,8 +247,7 @@ PolynomialRationalRoots(F, UP) : Exports == Implementation where
         pl2 : List(UPZ) := [unvectorise(row(vvr, i)$Matrix(Z))$UPZ
                   for i in 1..nrows(vvr)]
         eq2z := gcd(pl2)
-        ff := factor(eq2z)$MultivariateFactorize(
-                       SingletonAsOrderedSet, N, Z, UPZ)
+        ff := factorPolynomial(eq2z)$Z
         facl := factors(ff)$Factored(UPZ)
         res : List(Q) := []
         for facr in facl repeat
@@ -454,11 +453,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         ansp := eval(res1.primpart, nxk, kf)
         [a1, r1, ansp, res1.sol?]
 
-    P_to_UP(p : P, k : K) : UP ==
-        up1 := univariate(p, k)$P
-        map((c : P) : F +-> c::F, up1
-           )$SparseUnivariatePolynomialFunctions2(P, F)
-
     UP_to_UPUP(p : UP) : UPUP ==
         map((c : F) : UP +-> c::UP, p
            )$SparseUnivariatePolynomialFunctions2(F, UP)
@@ -581,8 +575,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     lin_args(gd : UP, nf : UP, k : K, vlst : List(F),
              ulst : List(F), x : SE) : List(EI_REC2) ==
-        gd1 := numer(multivariate(gd::RF, k))
-        fgd := factor(gd1)$DenominatorIntegration(R, F)
+        fgd := factorPolynomial(gd)$ExpressionFactorPolynomial(R, F)
         degree(nf) >$Z 1 =>
             error "lin_args only works for linear nf"
         a1 : F :=
@@ -601,7 +594,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         dummy := create()$SingletonAsOrderedSet
         res : List(EI_REC2) := []
         for fac in factors(fgd) repeat
-            f1 := P_to_UP(fac.factor, k)
+            f1 := fac.factor
             deg1 : N := degree(f1)
             deg1 = 0 => "iterate"
             f1 := f1/leadingCoefficient(f1)
@@ -784,21 +777,21 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                              0, res1.shift_part]$EI_REC, res)
         res
 
-    ei_args1(gd : UP, nf : UP, denf : UP, t : K) : Factored(P) ==
+    ei_args1(gd : UP, nf : UP, denf : UP, t : K) : Factored(UP) ==
         r : F := resultant(nf + (t::F)*denf, gd)
-        factor(numer(r))$DenominatorIntegration(R, F)
+        factorPolynomial(numer(univariate(r, t))$RF
+                        )$ExpressionFactorPolynomial(R, F)
 
-    ei_args2(gd : UP, nf : UP, denf : UP, f_res : Factored(P),
-             t : K, k : K, vlst : List(F), ulst : List(F), x : SE
+    ei_args2(gd : UP, nf : UP, denf : UP, f_res : Factored(UP),
+             k : K, vlst : List(F), ulst : List(F), x : SE
             ) : List(EI_REC)  ==
         log_case := is?(k, 'log)
         n1 : Z := 0
-        rfac := factors(f_res)$Factored(P)
-        dummy := create()$SingletonAsOrderedSet
+        rfac := factors(f_res)$Factored(UP)
         res : List EI_REC := []
         degg := degree(gd)
         for fac in rfac repeat
-            f1 := P_to_UP(fac.factor, t)
+            f1 := fac.factor
             deg1 := degree(f1)
             deg1 = 0 => "iterate"
             resu := handle_factor(gd, nf, denf, f1, 0, 1, vlst, ulst,
@@ -811,7 +804,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
           ulst : List(F), x : SE) : List(EI_REC) ==
         t := kernel(new()$Symbol)$K
         f_res := ei_args1(gd, nf, denf, t)
-        ei_args2(gd, nf, denf, f_res, t, k, vlst, ulst, x)
+        ei_args2(gd, nf, denf, f_res, k, vlst, ulst, x)
 
     dummy := create()$SingletonAsOrderedSet
 
@@ -914,7 +907,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         t := kernel(new()$Symbol)
         nfp1 := differentiate(nf)*denf1 - (gexp::F)*nf*differentiate(denf1)
         r : F := resultant(nf + (t::F)::UP*denf, nfp1)
-        f_res := factor(numer(r))$DenominatorIntegration(R, F)
+        f_res := factorPolynomial(numer(univariate(r, t))$RF
+                                 )$ExpressionFactorPolynomial(R, F)
         rfacs := factors(f_res)
         e_tt : List(F) :=
             degree(nf) = 0 => [0]
@@ -931,7 +925,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             res := gamma_candidate(fnf, nf1, denf, denf1, gexp, a, tt,
                                    0, vlst, ulst, k, x, res)
         for fac in rfacs repeat
-            f1 := P_to_UP(fac.factor, t)
+            f1 := fac.factor
             deg1 := degree(f1)
             deg1 = 1 =>
                 tt := -coefficient(f1, 0)/coefficient(f1, 1)

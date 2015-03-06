@@ -35,11 +35,8 @@ Expression(R : Comparable) : Exports == Implementation where
         ++ number?(f) tests if f is rational
       simplifyPower : (%, Integer) -> %
         ++ simplifyPower(f, n) \undocumented{}
-      if R has GcdDomain then
-        factorPolynomial : SUP  % -> Factored SUP %
-           ++ factorPolynomial(p) \undocumented{}
-        squareFreePolynomial : SUP % -> Factored SUP %
-           ++ squareFreePolynomial(p) \undocumented{}
+      if R has PolynomialFactorizationExplicit then
+          PolynomialFactorizationExplicit
       if R has RetractableTo Integer then RetractableTo AN
       setSimplifyDenomsFlag : Boolean -> Boolean
         ++ setSimplifyDenomsFlag(x) sets flag affecting simplification
@@ -405,15 +402,10 @@ Expression(R : Comparable) : Exports == Implementation where
                     noalg? p and noalg? q => gcdPolynomial(p, q)$Rep
                     gcdPolynomial(p, q)$GcdDomain_&(%)
 
-                factorPolynomial(x : SUP %) : Factored SUP % ==
-                    uf := factor(x pretend SUP(Rep))$SupFractionFactorizer(
-                                              IndexedExponents K, K, R, MP)
-                    uf pretend Factored SUP %
+                if R has PolynomialFactorizationExplicit then
 
-                squareFreePolynomial(x : SUP %) : Factored SUP % ==
-                    uf := squareFree(x pretend SUP(Rep))$SupFractionFactorizer(
-                                                IndexedExponents K, K, R, MP)
-                    uf pretend Factored SUP %
+                    factorPolynomial(x : SUP %) : Factored SUP % ==
+                        factorPolynomial(x)$ExpressionFactorPolynomial(R, %)
 
             if R is AN then
                 -- this is to force the coercion R -> EXPR R to be used

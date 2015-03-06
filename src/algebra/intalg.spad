@@ -130,7 +130,7 @@ AlgebraicHermiteIntegration(F, UP, UPUP, R) : Exports == Implementation where
 ++ This package provides functions for integrating a function
 ++ on an algebraic curve.
 AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
-  R0   : Join(Comparable, IntegralDomain, RetractableTo Integer)
+  R0   : Join(GcdDomain, Comparable, RetractableTo Integer)
   F    : Join(AlgebraicallyClosedField, FunctionSpace R0)
   UP   : UnivariatePolynomialCategory F
   UPUP : UnivariatePolynomialCategory Fraction UP
@@ -168,7 +168,6 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
     import from PointsOfFiniteOrder(R0, F, UP, UPUP, R)
     import from AlgebraicHermiteIntegration(F, UP, UPUP, R)
     import from InnerCommonDenominator(Z, Q, List Z, List Q)
-    import from FunctionSpaceUnivariatePolynomialFactor(R0, F, UP)
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                          K, R0, SparseMultivariatePolynomial(R0, K), F)
 
@@ -331,7 +330,9 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
 
     classify_divisors(rec : DIV, r : UP) : RR3 ==
         cl := get_coeffs(rec)
-        u := ffactor(primitivePart(r), cl)
+        u0 := factor(makeSUP(primitivePart(r)), cl
+                    )$ExpressionFactorPolynomial(R0, F)
+        u := map(SUP2UP, u0)$FactoredFunctions2(SUP, UP)
         lf := factors(u)
         lf2 := rest(lf)
         lm : List(List(PC)) := []
