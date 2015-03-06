@@ -16,7 +16,11 @@
 ++ Example: )r SAE INPUT
 
 SimpleAlgebraicExtension(R : CommutativeRing,
- UP : UnivariatePolynomialCategory R, M : UP) : MonogenicAlgebra(R, UP) == add
+        UP : UnivariatePolynomialCategory R, M : UP
+      ) : MonogenicAlgebra(R, UP) with
+         if R has Field and R has PolynomialFactorizationExplicit then
+            PolynomialFactorizationExplicit
+  == add
     --sqFr(pb): FactorS(Poly) from UnivPolySquareFree(Poly)
 
     --degree(M) > 0 and M must be monic if R is not a field.
@@ -126,6 +130,17 @@ SimpleAlgebraicExtension(R : CommutativeRing,
       for n in 1..d1 repeat
         (xn := generator() * xn;  ans := coefficient(lift xn, n) + ans)
       ans
+
+    if R has Field and R has PolynomialFactorizationExplicit then
+
+        SUP ==> SparseUnivariatePolynomial
+
+        fac1(up : UP) : Factored(UP) ==
+            f1 := factorPolynomial(makeSUP(up)$UP)$R
+            map(unmakeSUP, f1)$FactoredFunctions2(SUP(R), UP)
+
+        factorPolynomial(up : SUP(%)) : Factored(SUP(%)) ==
+            factor(up, fac1)$InnerAlgFactor(R, UP, %, SUP(%))
 
     if R has Finite then
        index k ==
