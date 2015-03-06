@@ -131,9 +131,10 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
     start := add_SI(start, add_SI(numTableArgs, 4))
   success ~= 'failed and success =>
     if $monitorNewWorld then
-      sayLooking1('"<----",uu) where uu ==
-        PAIRP success => [first success,:devaluate rest success]
-        success
+        if PAIRP success then
+            sayLooking1(concat('"<----", form2String(first success)),
+                        rest success)
+        else sayLooking1('"<----XXX---", success)
     success
   subsumptionSig and (u:= basicLookup(op,subsumptionSig,domain,dollar)) => u
   flag or someMatch => newLookupInAddChain(op,sig,domain,dollar)

@@ -453,7 +453,7 @@ dcOpTable con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
   template := $infovec.0
-  $predvec: local := GETDATABASE(con,'PREDICATES)
+  $predvec: local := GETDATABASE(name, 'PREDICATES)
   opTable := $infovec.1
   for i in 0..MAXINDEX opTable repeat
     op := opTable.i
@@ -494,7 +494,7 @@ dcSig(numvec,index,numOfArgs) ==
 dcPreds con ==
   name := abbreviation? con or con
   $infovec: local := getInfovec name
-  $predvec:= GETDATABASE(con,'PREDICATES)
+  $predvec:= GETDATABASE(name, 'PREDICATES)
   for i in 0..MAXINDEX $predvec repeat
     sayBrightlyNT bright (i + 1)
     sayBrightly pred2English $predvec.i
@@ -504,7 +504,7 @@ dcCats con ==
   $infovec: local := getInfovec name
   u := $infovec.3
   VECP CDDR u => BREAK()
-  $predvec:= GETDATABASE(con,'PREDICATES)
+  $predvec:= GETDATABASE(name, 'PREDICATES)
   catpredvec := first u
   catinfo := CADR u
   catvec := CADDR u
@@ -512,23 +512,6 @@ dcCats con ==
     sayBrightlyNT bright i
     form := catvec.i
     predNumber := catpredvec.i
-    suffix :=
-      predNumber = 0 => nil
-      [:bright '"if",:pred2English $predvec.(predNumber - 1)]
-    extra :=
-      null (info := catinfo.i) => nil
-      IDENTP info => bright '"package"
-      bright '"instantiated"
-    sayBrightly concat(form2String formatSlotDomain form,suffix,extra)
-
-dcCats1 con ==
-  $predvec:= GETDATABASE(con,'PREDICATES)
-  u := $infovec.3
-  catvec := CADR u
-  catinfo := first u
-  for i in 0..MAXINDEX catvec repeat
-    sayBrightlyNT bright i
-    [form,:predNumber] := catvec.i
     suffix :=
       predNumber = 0 => nil
       [:bright '"if",:pred2English $predvec.(predNumber - 1)]
