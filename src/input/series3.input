@@ -51,4 +51,74 @@ p:=(1/2+n)::UTS(FRAC INT, 'n, 0)
 testEquals("[coefficient((p^(-1))$UTS(FRAC INT, 'n, 0), i) for i in 0..5]",
            "[2, -4, 8, -16, 32, -64]")
 
+testcase "odes"
+
+-- We will solve  y''' = sin(y'') * exp(y) + cos(x)
+-- subject to y(0) = 1, y'(0) = 0, y''(0) = 0
+
+y := operator 'y
+
+eq := differentiate(y x, x, 3) - sin differentiate(y x, x, 2) * exp y x
+           = cos x
+
+res := seriesSolve(eq, y, x = 0, [1, 0, 0]);
+es1 := [1, 0, 0, 1/6, %e/24, (%e^2 - 1)/120, (%e^3 - 2*%e)/720,
+        (%e^4 - 8*%e^2 + 4*%e + 1)/5040]
+testEquals("[coefficient(res, i) for i in 0..7]", "es1")
+
+eq2 := D(y x,x) - x*cos(y x) - exp(x)
+res := seriesSolve(eq2, y, x=0, y(0) = 0);
+p1 := univariate(polynomial(res, 15));
+p2 := univariate(polynomial(cos(res), 15));
+p3 := univariate(polynomial(taylor(exp(x), x = 0), 15));
+testEquals("minimumDegree(D(p1, x) - monomial(1, 1)$SUP(EXPR(INT))*p2 - p3)",
+           "15")
+
+R := EXPR INT
+uts := UTS(R,'x,0)
+foo: uts -> uts
+foo y ==
+  xx := monomial(1,1)$uts
+  xx * cos(y) + exp(xx)
+res2 := ode1(foo,0)$UTSODE(R,uts);
+xs : uts := x
+cc := differentiate(res2, x) - (xs*cos(res2) + exp(xs));
+testEquals("polynomial(cc, 20)", "0")
+testEquals("polynomial(res2 - res, 20)", "0")
+
+--
+airy := differentiate(y x, x, 2) - x * y x
+
+res := seriesSolve(airy, y, x = 0, [a0, a1]);
+es2 := [a0, a1, 0, a0/6, a1/12, 0, a0/180, a1/504]
+testEquals("[coefficient(res, i) for i in 0..7]", "es2")
+
+-- We can solve around other points than x = 0
+res := seriesSolve(airy, y, x = 1, [a0, a1]);
+es3 := [a0,a1,a0/2,(a1+a0)/6,(2*a1+a0)/24,(a1+4*a0)/120,
+          (6*a1+5*a0)/720,(11*a1+9*a0)/5040];
+testEquals("[coefficient(res, i) for i in 0..7]", "es3")
+
+-- System of equations for tan(t) and sec(t)
+z := operator 'z
+eq1 := differentiate(z t, t) = 1 + z(t)^2
+eq2 := differentiate(y t, t) = z(t) * y(t)
+res := seriesSolve([eq2, eq1], [z, y], t = 0, [y 0 = 1, z 0 = 0]);
+ts := taylor(tan(t), t = 0);
+ss := taylor(sec(t), t = 0);
+
+testEquals("polynomial(res(1), 15)", "polynomial(ts, 15)")
+testEquals("polynomial(res(2), 15)", "polynomial(ss, 15)")
+
+-- System of equations for a damped pendulum of mass and length 1:
+eq1 := differentiate(z t, t) = y t
+eq2 := differentiate(y t, t) = - g * sin(z t) - c * y t
+res := seriesSolve([eq1, eq2], [z, y], t = 0, [y 0 = a, z 0 = b]);
+p1 := polynomial(res(1), 15);
+p2 := polynomial(res(2), 15);
+p3 := polynomial(sin(res(1)), 15);
+t15 := minimumDegree(t^15)
+testEquals("minimumDegree(D(p1, t) - p2)", "t15")
+testEquals("minimumDegree(D(p2, t) + g*p3 + c * p2)", "t15")
+
 statistics()
