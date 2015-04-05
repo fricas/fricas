@@ -312,7 +312,7 @@ bottomUpUseSubdomain t ==
 bottomUpPredicate(pred, name) ==
   putTarget(pred,$Boolean)
   ms := bottomUp pred
-  $Boolean ~= first ms => throwKeyedMsg('"S2IB0001",[name])
+  $Boolean ~= first ms => throwKeyedMsg("S2IB0001", [name])
   ms
 
 bottomUpCompilePredicate(pred, name) ==
@@ -321,7 +321,7 @@ bottomUpCompilePredicate(pred, name) ==
 
 bottomUpIdentifier(t,id) ==
   m := isType t => bottomUpType(t, m)
-  EQ(id,'noMapVal) => throwKeyedMsg('"S2IB0002",NIL)
+  EQ(id,'noMapVal) => throwKeyedMsg("S2IB0002", NIL)
   EQ(id,'noBranch) =>
     keyedSystemError("S2GE0016",
       ['"bottomUpIdentifier",'"trying to evaluate noBranch"])
@@ -359,7 +359,7 @@ bottomUpDefaultEval(t,id,defaultMode,target,isSub) ==
 
   -- 1. declared mode but no value case
   (m := getMode t) =>
-    m is ['Mapping,:.] => throwKeyedMsg('"S2IB0003",[getUnname t])
+    m is ['Mapping,:.] => throwKeyedMsg("S2IB0003",[getUnname t])
 
     -- hmm, try to treat it like target mode or declared mode
     if isPartialMode(m) then m := resolveTM(['Variable,id],m)
@@ -378,7 +378,7 @@ bottomUpDefaultEval(t,id,defaultMode,target,isSub) ==
         putValue(t,val)
         [m]
     -- give up
-    throwKeyedMsg('"S2IB0004",[id,m])
+    throwKeyedMsg("S2IB0004", [id, m])
 
   -- 2. no value and no mode case
   val := objNewWrap(id,defaultMode)
@@ -639,8 +639,8 @@ bottomUpPercent(tree is [op,:argl]) ==
       val:= fetchOutput i
       putValue(op,val)
       putModeSet(op,[objMode(val)])
-    throwKeyedMsgSP('"S2IB0006",NIL,t)
-  throwKeyedMsgSP('"S2IB0006",NIL,op)
+    throwKeyedMsgSP("S2IB0006", NIL, t)
+  throwKeyedMsgSP("S2IB0006", NIL, op)
 
 bottomUpFormRetract(t,op,opName,argl,amsl) ==
   -- tries to find one argument, which can be pulled back, and calls

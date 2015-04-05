@@ -108,7 +108,6 @@ evaluateType form ==
   form = "?"        => $EmptyMode
   STRINGP form => form
   form = "$" => form
-  $expandSegments : local := nil
   form is ['typeOf,.] =>
     form' := mkAtree form
     bottomUp form'
