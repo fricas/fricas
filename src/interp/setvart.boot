@@ -395,13 +395,6 @@ DEFPARAMETER($setOptions, '(
       $reportInterpOnly
       (on off)
       on)
-     (number
-      "display message number with message"
-      interpreter
-      LITERALS
-      $displayMsgNumber
-      (on off)
-      off)
      (prompt
       "set type of input prompt to display"
       interpreter

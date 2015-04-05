@@ -352,7 +352,6 @@ sayKeyedMsg(key,args) ==
 sayKeyedMsgLocal(key, args) ==
   msg := segmentKeyedMsg getKeyedMsg key
   msg := substituteSegmentedMsg(msg,args)
-  if $displayMsgNumber then msg := ['"%b",key,":",'"%d",:msg]
   msg' := flowSegmentedMsg(msg,$LINELENGTH,$MARGIN)
   if $printMsgsToFile then sayMSG2File msg'
   sayMSG msg'

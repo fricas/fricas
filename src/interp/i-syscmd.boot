@@ -374,7 +374,7 @@ queryClients () ==
 close args ==
   quiet:local:= false
   null $SpadServer =>
-    throwKeyedMsg('"S2IZ0071", [])
+    throwKeyedMsg("S2IZ0071", [])
   numClients := queryClients()
   numClients > 1 =>
     sockSendInt($SessionManager, $CloseClient)
