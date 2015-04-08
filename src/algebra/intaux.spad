@@ -232,6 +232,143 @@ IntegrationResultFunctions2(E, F) : Exports == Implementation where
     LGE2F(func, lg) ==
       [lg.scalar, map(func, lg.coeff), map(func, lg.logand)]
 
+)abbrev package INTTOOLS IntegrationTools
+++ Tools for the integrator
+++ Author: Manuel Bronstein
+++ Date Created: 25 April 1990
+++ Date Last Updated: 9 June 1993
+++ Keywords: elementary, function, integration.
+IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
+  K   ==> Kernel F
+  SE  ==> Symbol
+  P   ==> SparseMultivariatePolynomial(R, K)
+  UP  ==> SparseUnivariatePolynomial F
+  IR  ==> IntegrationResult F
+  ANS ==> Record(special : F, integrand : F)
+  U   ==> Union(ANS, "failed")
+
+  Exp ==> with
+    varselect : (List K, SE) -> List K
+      ++ varselect([k1, ..., kn], x) returns the ki which involve x.
+    kmax     : List K -> K
+      ++ kmax([k1, ..., kn]) returns the top-level ki for integration.
+    ksec     : (K, List K, SE) -> K
+      ++ ksec(k, [k1, ..., kn], x) returns the second top-level ki
+      ++ after k involving x.
+    union    : (List K, List K) -> List K
+      ++ union(l1, l2) returns set-theoretic union of l1 and l2.
+    vark     : (List F, SE) -> List K
+      ++ vark([f1, ..., fn], x) returns the set-theoretic union of
+      ++ \spad{(varselect(f1, x), ..., varselect(fn, x))}.
+    if R has IntegralDomain then
+      removeConstantTerm : (F, SE) -> F
+        ++ removeConstantTerm(f, x) returns f minus any additive constant
+        ++ with respect to x.
+    if R has GcdDomain and F has ElementaryFunctionCategory then
+      mkPrim : (F, SE) -> F
+        ++ mkPrim(f, x) makes the logs in f which are linear in x
+        ++ primitive with respect to x.
+      if R has ConvertibleTo Pattern Integer and R has PatternMatchable Integer
+        and F has LiouvillianFunctionCategory and F has RetractableTo SE then
+          intPatternMatch : (F, SE, (F, SE) -> IR, (F, SE) -> U) -> IR
+            ++ intPatternMatch(f, x, int, pmint) tries to integrate \spad{f}
+            ++ first by using the integration function \spad{int}, and then
+            ++ by using the pattern match intetgration function \spad{pmint}
+            ++ on any remaining unintegrable part.
+
+  Impl ==> add
+
+    ALGOP := '%alg
+
+    better? : (K, K) -> Boolean
+
+    union(l1, l2)   == setUnion(l1, l2)
+    varselect(l, x) == [k for k in l | member?(x, variables(k::F))]
+    ksec(k, l, x)   == kmax setUnion(remove(k, l), vark(argument k, x))
+
+    vark(l, x) ==
+      varselect(reduce("setUnion",[kernels f for f in l],empty()$List(K)), x)
+
+    kmax l ==
+      ans := first l
+      for k in rest l repeat
+        if better?(k, ans) then ans := k
+      ans
+
+-- true if x should be considered before y in the tower
+    better?(x, y) ==
+      height(y) ~= height(x) => height(y) < height(x)
+      has?(operator y, ALGOP) or
+              (is?(y, 'exp) and not is?(x, 'exp)
+                                 and not has?(operator x, ALGOP))
+
+    if R has IntegralDomain then
+      removeConstantTerm(f, x) ==
+        not freeOf?((den := denom f)::F, x) => f
+        (u := isPlus(num := numer f)) case "failed" =>
+          freeOf?(num::F, x) => 0
+          f
+        ans : P := 0
+        for term in u::List(P) repeat
+          if not freeOf?(term::F, x) then ans := ans + term
+        ans / den
+
+    if R has GcdDomain and F has ElementaryFunctionCategory then
+      psimp     : (P, SE) -> Record(coef : Integer, logand : F)
+      cont      : (P, List K) -> P
+      logsimp   : (F, SE) -> F
+      linearLog? : (K, F, SE)  -> Boolean
+
+      logsimp(f, x) ==
+        r1 := psimp(numer f, x)
+        r2 := psimp(denom f, x)
+        g := gcd(r1.coef, r2.coef)
+        g * log(r1.logand ^ (r1.coef quo g) / r2.logand ^ (r2.coef quo g))
+
+      cont(p, l) ==
+        empty? l => p
+        q := univariate(p, first l)
+        cont(unitNormal(leadingCoefficient q).unit * content q, rest l)
+
+      linearLog?(k, f, x) ==
+        is?(k, 'log) and
+         ((u := retractIfCan(univariate(f,k))@Union(UP,"failed")) case UP)
+--             and one?(degree(u::UP))
+             and (degree(pol := u::UP) = 1)
+                and not member?(x, variables leadingCoefficient(pol))
+                   and ((p0 := reductum(pol)) = 0 or
+                         not member?(k, tower leadingCoefficient(p0)))
+
+      mkPrim(f, x) ==
+        lg := [k for k in kernels f | linearLog?(k, f, x)]
+        eval(f, lg, [logsimp(first argument k, x) for k in lg])
+
+      psimp(p, x) ==
+        (u := isExpt(p := ((p exquo cont(p, varselect(variables p, x)))::P)))
+          case "failed" => [1, p::F]
+        [u.exponent, u.var::F]
+
+      if R has Join(ConvertibleTo Pattern Integer, PatternMatchable Integer)
+        and F has Join(LiouvillianFunctionCategory, RetractableTo SE) then
+          intPatternMatch(f, x, int, pmint) ==
+            ir := int(f, x)
+            empty?(l := notelem ir) => ir
+            ans := ratpart ir
+            nl : List(Record(integrand : F, intvar : F)) := empty()
+            lg := logpart ir
+            for rec in l repeat
+              u := pmint(rec.integrand, retract(rec.intvar))
+              if u case ANS then
+                 rc := u::ANS
+                 ans := ans + rc.special
+                 if rc.integrand ~= 0 then
+                   ir0 := intPatternMatch(rc.integrand, x, int, pmint)
+                   ans := ans + ratpart ir0
+                   lg  := concat(logpart ir0, lg)
+                   nl  := concat(notelem ir0, nl)
+              else nl := concat(rec, nl)
+            mkAnswer(ans, lg, nl)
+
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
 --
