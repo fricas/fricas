@@ -1,3 +1,370 @@
+)abbrev package GALUTIL GaloisGroupUtilities
+++ Author: Frederic Lehobey
+++ Date Created: 29 June 1994
+++ Date Last Updated: 30 June 1994
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ \spadtype{GaloisGroupUtilities} provides several useful functions.
+
+GaloisGroupUtilities(R) : Exports == Implementation where
+  N ==> NonNegativeInteger
+  Z ==> Integer
+  R : Ring
+
+  Exports ==> with
+    pascalTriangle : (N, Z) -> R
+      ++ pascalTriangle(n, r) returns the binomial coefficient
+      ++ \spad{C(n, r)=n!/(r! (n-r)!)}
+      ++ and stores it in a table to prevent recomputation.
+    rangePascalTriangle : N -> N
+      ++ rangePascalTriangle(n) sets the maximal number of lines which
+      ++ are stored and returns the previous value.
+    rangePascalTriangle : () -> N
+      ++ rangePascalTriangle() returns the maximal number of lines stored.
+    sizePascalTriangle : () -> N
+      ++ sizePascalTriangle() returns the number of entries currently stored
+      ++ in the table.
+    fillPascalTriangle : () -> Void
+      ++ fillPascalTriangle() fills the stored table.
+
+    if R has FloatingPointSystem then
+      safeCeiling : R -> Z
+        ++ safeCeiling(x) returns the integer which is greater than any integer
+        ++ with the same floating point number representation.
+      safeFloor : R -> Z
+        ++ safeFloor(x) returns the integer which is lower or equal to the
+        ++ largest integer which has the same floating point number
+        ++ representation.
+      safetyMargin : N -> N
+        ++ safetyMargin(n) sets to n the number of low weight digits we do not
+        ++ trust in the floating point representation and returns the previous
+        ++ value (for use by \spadfun{safeCeiling}).
+      safetyMargin : () -> N
+        ++ safetyMargin() returns the number of low weight digits we do not
+        ++ trust in the floating point representation (used by
+        ++ \spadfun{safeCeiling}).
+
+  Implementation ==> add
+
+    if R has FloatingPointSystem then
+      safetymargin : N := 6
+
+      safeFloor(x : R) : Z ==
+        if (shift := order(x)-precision()$R+safetymargin) >= 0 then
+          x := x+float(1, shift)
+        retract(floor(x))@Z
+
+      safeCeiling(x : R) : Z ==
+        if (shift := order(x)-precision()$R+safetymargin) >= 0 then
+          x := x+float(1, shift)
+        retract(ceiling(x))@Z
+
+      safetyMargin(n : N) : N ==
+        (safetymargin, n) := (n, safetymargin)
+        n
+
+      safetyMargin() : N == safetymargin
+
+    pascaltriangle : FlexibleArray(R) := empty()
+    ncomputed : N := 3
+    rangepascaltriangle : N := 216
+
+    pascalTriangle(n : N, r : Z) : R ==
+      negative? r => 0
+      (d := n-r) < r => pascalTriangle(n, d)
+      zero? r => 1$R
+--      one? r => n :: R
+      (r = 1) => n :: R
+      n > rangepascaltriangle =>
+       binomial(n, r)$IntegerCombinatoricFunctions(Z) :: R
+      n <= ncomputed =>
+        m := divide(n-4, 2)
+        mq := m.quotient
+        pascaltriangle((mq+1)*(mq+m.remainder)+r-1)
+      -- compute the missing lines
+      for i in (ncomputed+1)..n repeat
+        for j in 2..(i quo 2) repeat
+          pascaltriangle := concat!(pascaltriangle, pascalTriangle((i-1)
+           :: N, j-1)+pascalTriangle((i-1) :: N, j))
+        ncomputed := i
+      pascalTriangle(n, r)
+
+    rangePascalTriangle(n : N) : N ==
+      if n<ncomputed then
+        if n<3 then
+          pascaltriangle := delete!(pascaltriangle, 1..#pascaltriangle)
+          ncomputed := 3
+        else
+          d := divide(n-3, 2)
+          dq := d.quotient
+          pascaltriangle := delete!(pascaltriangle, ((dq+1)*(dq+d.remainder)
+           +1)..#pascaltriangle)
+          ncomputed := n
+      (rangepascaltriangle, n) := (n, rangepascaltriangle)
+      n
+
+    rangePascalTriangle() : N == rangepascaltriangle
+
+    sizePascalTriangle() : N == #pascaltriangle
+
+    fillPascalTriangle() : Void == pascalTriangle(rangepascaltriangle, 2)
+
+
+)abbrev package GALPOLYU GaloisGroupPolynomialUtilities
+++ Author: Frederic Lehobey
+++ Date Created: 30 June 1994
+++ Date Last Updated: 15 July 1994
+++ Basic Operations:
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ Examples:
+++ References:
+++ Description: \spadtype{GaloisGroupPolynomialUtilities} provides useful
+++ functions for univariate polynomials which should be added to
+++ \spadtype{UnivariatePolynomialCategory} or to \spadtype{Factored}
+++ (July 1994).
+
+GaloisGroupPolynomialUtilities(R, UP) : Exports == Implementation where
+  R : Ring
+  UP : UnivariatePolynomialCategory R
+  N ==> NonNegativeInteger
+  P ==> PositiveInteger
+
+  Exports ==> with
+    monic? : UP -> Boolean
+      ++ monic?(p) tests if p is monic (i.e. leading coefficient equal to 1).
+    reverse : UP -> UP
+      ++ reverse(p) returns the reverse polynomial of p.
+    scaleRoots : (UP, R) -> UP
+      ++ scaleRoots(p, c) returns the polynomial which has c times the roots
+      ++ of p.
+    shiftRoots : (UP, R) -> UP
+      ++ shiftRoots(p, c) returns the polynomial which has for roots c added
+      ++ to the roots of p.
+    degreePartition : Factored UP -> Multiset N
+      ++ degreePartition(f) returns the degree partition (i.e. the multiset
+      ++ of the degrees of the irreducible factors) of
+      ++ the polynomial f.
+    factorOfDegree : (P, Factored UP) -> UP
+      ++ factorOfDegree(d, f) returns a factor of degree d of the factored
+      ++ polynomial f. Such a factor shall exist.
+    factorsOfDegree : (P, Factored UP) -> List UP
+      ++ factorsOfDegree(d, f) returns the factors of degree d of the factored
+      ++ polynomial f.
+
+  Implementation ==> add
+
+    import from Factored UP
+
+    factorsOfDegree(d : P, r : Factored UP) : List UP ==
+      lfact : List UP := empty()
+      for fr in factors r | degree(fr.factor)=(d::N) repeat
+        for i in 1..fr.exponent repeat
+          lfact := cons(fr.factor, lfact)
+      lfact
+
+    factorOfDegree(d : P, r : Factored UP) : UP ==
+      factor : UP := 0
+      for i in 1..numberOfFactors r repeat
+        factor := nthFactor(r, i)
+        if degree(factor)=(d::N) then return factor
+      error "factorOfDegree: Bad arguments"
+
+    degreePartition(r : Factored UP) : Multiset N ==
+      multiset([ degree(nthFactor(r, i)) for i in 1..numberOfFactors r ])
+
+--    monic?(p: UP): Boolean == one? leadingCoefficient p
+    monic?(p : UP) : Boolean == (leadingCoefficient p) = 1
+
+    reverse(p : UP) : UP ==
+      r : UP := 0
+      n := degree(p)
+      for i in 0..n repeat r := r + monomial(coefficient(p, (n-i)::N), i)
+      r
+
+    scaleRoots(p : UP, c : R) : UP ==
+--      one? c => p
+      (c = 1) => p
+      n := degree p
+      zero? c => monomial(leadingCoefficient p, n)
+      r : UP := 0
+      mc : R := 1
+      for i in n..0 by -1 repeat
+        r := r + monomial(mc*coefficient(p, i), i)
+        mc := mc*c
+      r
+
+    import from UnivariatePolynomialCategoryFunctions2(R, UP, UP,
+     SparseUnivariatePolynomial UP)
+
+    shiftRoots(p : UP, c : R) : UP == elt(map(coerce, p), monomial(1, 1)$UP-c::UP)::UP
+
+
+)abbrev package GALFACTU GaloisGroupFactorizationUtilities
+++ Author: Frederic Lehobey
+++ Date Created: 30 June 1994
+++ Date Last Updated: 19 October 1995
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ [1] Bernard Beauzamy, Products of polynomials and a priori estimates for
+++ coefficients in polynomial decompositions: a sharp result,
+++ J. Symbolic Computation (1992) 13, 463-472
+++ [2] David W. Boyd, Bounds for the Height of a Factor of a Polynomial in
+++ Terms of Bombieri's Norms: I. The Largest Factor,
+++ J. Symbolic Computation (1993) 16, 115-130
+++ [3] David W. Boyd, Bounds for the Height of a Factor of a Polynomial in
+++ Terms of Bombieri's Norms: II. The Smallest Factor,
+++ J. Symbolic Computation (1993) 16, 131-145
+++ [4] Maurice Mignotte, Some Useful Bounds,
+++ Computing, Suppl. 4, 259-263 (1982), Springer-Verlag
+++ [5] Donald E. Knuth, The Art of Computer Programming, Vol. 2, (Seminumerical
+++ Algorithms) 1st edition, 2nd printing, Addison-Wesley 1971, p. 397-398
+++ [6] Bernard Beauzamy, Vilmar Trevisan and Paul S. Wang, Polynomial
+++ Factorization: Sharp Bounds, Efficient Algorithms,
+++ J. Symbolic Computation (1993) 15, 393-413
+++ [7] Augustin-Lux Cauchy, Exercices de Math\'ematiques Quatri\`eme Ann\'ee.
+++ De Bure Fr\`eres, Paris 1829 (reprinted Oeuvres, II S\'erie, Tome IX,
+++ Gauthier-Villars, Paris, 1891).
+++ Description:
+++ \spadtype{GaloisGroupFactorizationUtilities} provides functions
+++ that will be used by the factorizer.
+
+GaloisGroupFactorizationUtilities(R, UP, F) : Exports == Implementation where
+  R : Ring
+  UP : UnivariatePolynomialCategory R
+  F : Join(FloatingPointSystem, RetractableTo(R), Field,
+   TranscendentalFunctionCategory, ElementaryFunctionCategory)
+  N ==> NonNegativeInteger
+  P ==> PositiveInteger
+  Z ==> Integer
+
+  Exports ==> with
+    beauzamyBound : UP -> Z -- See [1]
+      ++ beauzamyBound(p) returns a bound on the larger coefficient of any
+      ++ factor of p.
+    bombieriNorm : UP -> F -- See [1]
+      ++ bombieriNorm(p) returns quadratic Bombieri's norm of p.
+    bombieriNorm : (UP, P) -> F -- See [2] and [3]
+      ++ bombieriNorm(p, n) returns the nth Bombieri's norm of p.
+    rootBound : UP -> Z -- See [4] and [5]
+      ++ rootBound(p) returns a bound on the largest norm of the complex roots
+      ++ of p.
+    singleFactorBound : (UP, N) -> Z -- See [6]
+      ++ singleFactorBound(p, r) returns a bound on the infinite norm of
+      ++ the factor of p with smallest Bombieri's norm. r is a lower bound
+      ++ for the number of factors of p. p shall be of degree higher or equal
+      ++ to 2.
+    singleFactorBound : UP -> Z -- See [6]
+      ++ singleFactorBound(p, r) returns a bound on the infinite norm of
+      ++ the factor of p with smallest Bombieri's norm. p shall be of degree
+      ++ higher or equal to 2.
+    norm : (UP, P) -> F
+      ++ norm(f, p) returns the lp norm of the polynomial f.
+    quadraticNorm : UP -> F
+      ++ quadraticNorm(f) returns the l2 norm of the polynomial f.
+    infinityNorm : UP -> F
+      ++ infinityNorm(f) returns the maximal absolute value of the coefficients
+      ++ of the polynomial f.
+    height : UP -> F
+      ++ height(p) returns the maximal absolute value of the coefficients of
+      ++ the polynomial p.
+    length : UP -> F
+      ++ length(p) returns the sum of the absolute values of the coefficients
+      ++ of the polynomial p.
+
+  Implementation ==> add
+
+    import from GaloisGroupUtilities(F)
+
+    height(p : UP) : F == infinityNorm(p)
+
+    length(p : UP) : F == norm(p, 1)
+
+    norm(f : UP, p : P) : F ==
+      n : F := 0
+      for c in coefficients f repeat
+        n := n+abs(c::F)^p
+      nthRoot(n, p::N)
+
+    quadraticNorm(f : UP) : F == norm(f, 2)
+
+    infinityNorm(f : UP) : F ==
+      n : F := 0
+      for c in coefficients f repeat
+        n := max(n, c::F)
+      n
+
+    singleFactorBound(p : UP, r : N) : Z == -- See [6]
+      n : N := degree p
+      r := max(2, r)
+      n < r => error "singleFactorBound: Bad arguments."
+      nf : F := n :: F
+      num : F := nthRoot(bombieriNorm(p), r)
+      if F has Gamma : F -> F then
+        num := num*nthRoot(Gamma(nf+1$F), 2*r)
+        den : F := Gamma(nf/((2*r)::F)+1$F)
+      else
+        num := num*(2::F)^(5/8+n/2)*exp(1$F/(4*nf))
+        den : F := (pi()$F*nf)^(3/8)
+      safeFloor( num/den )
+
+    singleFactorBound(p : UP) : Z == singleFactorBound(p, 2) -- See [6]
+
+    rootBound(p : UP) : Z == -- See [4] and [5]
+      n := degree p
+      zero? n => 0
+      lc := abs(leadingCoefficient(p)::F)
+      b1 : F := 0 -- Mignotte
+      b2 : F := 0 -- Knuth
+      b3 : F := 0 -- Zassenhaus in [5]
+      b4 : F := 0 -- Cauchy in [7]
+      c : F := 0
+      cl : F := 0
+      for i in 1..n repeat
+        c := abs(coefficient(p, (n-i)::N)::F)
+        b1 := max(b1, c)
+        cl := c/lc
+        b2 := max(b2, nthRoot(cl, i))
+        b3 := max(b3, nthRoot(cl/pascalTriangle(n, i), i))
+        b4 := max(b4, nthRoot(n*cl, i))
+      min(1+safeCeiling(b1/lc), min(safeCeiling(2*b2), min(safeCeiling(b3/
+       (nthRoot(2::F, n)-1)), safeCeiling(b4))))
+
+    beauzamyBound(f : UP) : Z == -- See [1]
+      d := degree f
+      zero? d => safeFloor bombieriNorm f
+      safeFloor( (bombieriNorm(f)*(3::F)^(3/4+d/2))/
+       (2*sqrt(pi()$F*(d::F))) )
+
+    bombieriNorm(f : UP, p : P) : F == -- See [2] and [3]
+      d := degree f
+      b := abs(coefficient(f, 0)::F)
+      if zero? d then return b
+       else b := b^p
+      b := b+abs(leadingCoefficient(f)::F)^p
+      dd := (d-1) quo 2
+      for i in 1..dd repeat
+        b := b+(abs(coefficient(f, i)::F)^p+abs(coefficient(f, (d-i)::N)::F)^p)
+         /pascalTriangle(d, i)
+      if even? d then
+        dd := dd+1
+        b := b+abs(coefficient(f, dd::N)::F)^p/pascalTriangle(d, dd)
+      nthRoot(b, p::N)
+
+    bombieriNorm(f : UP) : F == bombieriNorm(f, 2) -- See [1]
+
+
 )abbrev package GALFACT GaloisGroupFactorizer
 ++ Author: Frederic Lehobey
 ++ Date Created: 28 June 1994

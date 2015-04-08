@@ -1,3 +1,67 @@
+)abbrev package CMPLXRT ComplexRootPackage
+++ Author: P. Gianni
+++ Date Created:
+++ Date Last Updated:
+++ Basic Functions:
+++ Related Constructors: Complex, Float, Fraction, UnivariatePolynomial
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   This package provides functions complexZeros
+++ for finding the complex zeros
+++ of univariate polynomials with complex rational number coefficients.
+++ The results are to any user specified precision and are returned
+++ as either complex rational number or complex floating point numbers
+++ depending on the type of the second argument which specifies the
+++ precision.
+
+-- Packages for the computation of complex roots of
+-- univariate polynomials with rational or gaussian coefficients.
+
+-- Simplified version, the old original based on Gebauer's solver is
+-- in ocmplxrt spad
+RN     ==> Fraction Integer
+I      ==> Integer
+NF     ==> Float
+
+ComplexRootPackage(UP, Par) : T == C where
+   UP   :   UnivariatePolynomialCategory Complex Integer
+   Par  :   Join(Field, OrderedRing) -- will be Float or RN
+   CP   ==> Complex Par
+   PCI  ==> Polynomial Complex Integer
+
+   T == with
+        complexZeros : (UP, Par)  -> List CP
+          ++ complexZeros(poly, eps) finds the complex zeros of the
+          ++ univariate polynomial poly to precision eps with
+          ++ solutions returned as complex floats or rationals
+          ++ depending on the type of eps.
+
+   C == add
+
+    import from Factored(UP)
+
+    complexZeros(p : UP, eps : Par) : List CP ==
+      x1 : Symbol() := new()
+      x2 : Symbol() := new()
+      vv : Symbol() := new()
+      np := makeSUP(p)$UP
+      lpf := factors factor(np)
+      ris : List CP := empty()
+      for pf in lpf repeat
+          pp := pf.factor
+          q : PCI := multivariate(pp, vv)
+          q := eval(q, vv, x1::PCI+complex(0, 1)*(x2::PCI))
+          p1 := map(real, q)$PolynomialFunctions2(Complex I, I)
+          p2 := map(imag, q)$PolynomialFunctions2(Complex I, I)
+          lz := innerSolve([p1, p2], [], [x1, x2],
+                          eps)$InnerNumericFloatSolvePackage(I, Par, Par)
+          ris := append([complex(first z, second z) for z in lz], ris)
+      ris
+
+
 )abbrev package INFSP InnerNumericFloatSolvePackage
 ++ Author: P. Gianni
 ++ Date Created: January 1990
