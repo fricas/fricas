@@ -388,7 +388,7 @@ close args ==
     sockSendInt($SessionManager, $CloseClient)
     sockSendInt($SessionManager, $currentFrameNum)
     closeInterpreterFrame(NIL)
-  x := UPCASE queryUserKeyedMsg('"S2IZ0072", nil)
+  x := UPCASE queryUserKeyedMsg("S2IZ0072", nil)
   MEMQ(STRING2ID_-N(x,1), '(YES Y)) =>
     QUIT()
   nil
@@ -2860,12 +2860,12 @@ intnplisp s ==
 npsystem(unab, str) ==
   spaceIndex := SEARCH('" ", str)
   null spaceIndex =>
-    sayKeyedMsg('"S2IZ0080", [str])
+    sayKeyedMsg("S2IZ0080", [str])
   sysPart := SUBSEQ(str, 0, spaceIndex)
   -- The following is a hack required by the fact that unAbbreviateKeyword
   -- returns the word "system" for unknown words
   null SEARCH(sysPart, STRING unab) =>
-    sayKeyedMsg('"S2IZ0080", [sysPart])
+    sayKeyedMsg("S2IZ0080", [sysPart])
   command := SUBSEQ(str, spaceIndex+1)
   OBEY command
 
