@@ -254,10 +254,13 @@ mergeSort(f,g,p,n) ==
 
 --% Throwing with glorious highlighting (maybe)
 
+throw_to_reader() == THROW('SPAD_READER, nil)
+
 spadThrow() ==
   if $interpOnly and $mapName then
     putHist($mapName,'localModemap, nil, $e)
-  THROW("SPAD_READER", nil)
+  $BreakMode = 'throw_reader => throw_to_reader()
+  handleLispBreakLoop($BreakMode)
 
 spadThrowBrightly x ==
   sayBrightly x

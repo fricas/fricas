@@ -152,8 +152,7 @@ selectOption(x,l,errorFunction) ==
 terminateSystemCommand() ==
     FRESH_-LINE()
     TOK := 'END_UNIT
-    spadThrow()
-
+    throw_to_reader()
 
 commandUserLevelError(x,u) == userLevelErrorMessage("command",x,u)
 
@@ -2994,4 +2993,5 @@ parseFromString(s) ==
    pf2Sex macroExpanded first rest first s
 
 ncParseFromString(s) ==
+   $BreakMode : local := 'throw_reader
    zeroOneTran(packageTran(CATCH('SPAD_READER, parseFromString(s))))
