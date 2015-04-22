@@ -754,7 +754,7 @@ OrderedMultisetAggregate(S : OrderedSet) : Category ==
 ++ Description:
 ++ A keyed dictionary is a dictionary of key-entry pairs for which there is
 ++ a unique entry for each key.
-KeyedDictionary(Key : SetCategory, Entry : Type) : Category ==
+KeyedDictionary(Key : Type, Entry : Type) : Category ==
   Dictionary Record(key : Key, entry : Entry) with
    key? : (Key, %) -> Boolean
      ++ key?(k, t) tests if k is a key in table t.
@@ -794,8 +794,8 @@ KeyedDictionary(Key : SetCategory, Entry : Type) : Category ==
 ++ as a function from D to I.
 ++ Examples of eltable structures range from data structures, e.g. those
 ++ of type \spadtype{List}, to algebraic structures, e.g. \spadtype{Polynomial}.
-Eltable(S : SetCategory, Index : Type) : Category == with
-  elt : (%, S) -> Index
+Eltable(S : Type, Im : Type) : Category == with
+  elt : (%, S) -> Im
      ++ elt(u, i) (also written: u . i) returns the element of u indexed by i.
      ++ Error: if i is not an index of u.
 
@@ -815,7 +815,7 @@ Eltable(S : SetCategory, Index : Type) : Category == with
 ++ will return the integers 1, 7, and 4; thus this list may be viewed
 ++ as mapping 0 to 1, 1 to 7 and 2 to 4. In general, an aggregate
 ++ can map members of a domain {\em Dom} to an image domain {\em Im}.
-EltableAggregate(Dom : SetCategory, Im : Type) : Category ==
+EltableAggregate(Dom : Type, Im : Type) : Category ==
 -- This is separated from Eltable
 -- and series won't have to support qelt's and setelt's.
   Eltable(Dom, Im) with
@@ -861,7 +861,7 @@ EltableAggregate(Dom : SetCategory, Im : Type) : Category ==
 ++ For example, a one-dimensional-array is an indexed aggregate where
 ++ the index is an integer.  Also, a table is an indexed aggregate
 ++ where the indices and entries may have any type.
-IndexedAggregate(Index : SetCategory, Entry : Type) : Category ==
+IndexedAggregate(Index : Type, Entry : Type) : Category ==
   Join(HomogeneousAggregate(Entry), EltableAggregate(Index, Entry)) with
    entries : % -> List Entry
       ++ entries(u) returns a list of all the entries of aggregate u
@@ -945,7 +945,7 @@ IndexedAggregate(Index : SetCategory, Entry : Type) : Category ==
 ++ Description:
 ++ A table aggregate is a model of a table, i.e. a discrete many-to-one
 ++ mapping from keys to entries.
-TableAggregate(Key : SetCategory, Entry : Type) : Category ==
+TableAggregate(Key : Type, Entry : Type) : Category ==
   Join(KeyedDictionary(Key, Entry), IndexedAggregate(Key, Entry)) with
    setelt! : (%, Key, Entry) -> Entry
      ++ setelt!(t, k, e) (also written \spad{t.k := e}) is equivalent
@@ -971,7 +971,8 @@ TableAggregate(Key : SetCategory, Entry : Type) : Category ==
    insert!(p, t)      == (t(p.key) := p.entry; t)
    indices t           == keys t
 
-   if Entry has CoercibleTo(OutputForm) then
+   if Key has CoercibleTo(OutputForm) and Entry has CoercibleTo(OutputForm)
+   then
        coerce(t : %) : OutputForm ==
            prefix("table"::OutputForm,
                     [k::OutputForm = (t.k)::OutputForm for k in keys t])
