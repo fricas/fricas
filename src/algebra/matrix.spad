@@ -96,9 +96,9 @@ Matrix(R) : Exports == Implementation where
 
     if R has ConvertibleTo InputForm then ConvertibleTo InputForm
 
-    if R has Field then
-      inverse : % -> Union(%,"failed")
-        ++ \spad{inverse(m)} returns the inverse of the matrix m.
+    if R has IntegralDomain then
+      invertIfCan : % -> Union(%,"failed")
+        ++ \spad{invertIfCan(m)} returns the inverse of the matrix m.
         ++ If the matrix is not invertible, "failed" is returned.
         ++ Error: if the matrix is not square.
 --     matrix: Vector Vector R -> %
@@ -172,6 +172,10 @@ Matrix(R) : Exports == Implementation where
     if R has Field then
 
         inverse     x == inverse(x)$MATLIN
+
+    if R has IntegralDomain then
+
+        invertIfCan(x) == invertIfCan(x)$MATLIN
 
 --     matrix(v: Vector Vector R) ==
 --       (rows := # v) = 0 => new(0, 0, 0)
@@ -430,6 +434,9 @@ SquareMatrix(ndim, R) : Exports == Implementation where
       nullity x == nullity(x pretend Matrix(R))
       nullSpace x ==
         [directProduct c for c in nullSpace(x pretend Matrix(R))]
+      recip(x) ==
+          (u := invertIfCan(x pretend Matrix(R))) case "failed" => "failed"
+          (u :: Matrix(R)) pretend %
 
     if R has Field then
 
