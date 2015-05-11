@@ -34,11 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fricas_c_macros.h"
 #include "bsdsignal.h"
 
-#if defined(MACOSXplatform)
-#include "/usr/include/signal.h"
-#else
 #include <signal.h>
-#endif
 
 #include "bsdsignal.H1"
 

@@ -1,0 +1,43 @@
+#!/bin/sh -e
+
+function fail() {
+  echo $@
+  exit 1
+}
+
+export PATH="/usr/local/bin:/usr/bin:/bin"
+unalias -a
+
+ROOT=`pwd`
+SRCDIR=`cd ${ROOT}/../..; pwd`
+
+[ -f "${SRCDIR}/contrib/win32/mk_app" ] || \
+  fail "Please start the command in 'contrib/win32' directory."
+
+FRICASVER=`sed -n 's#.*\[FriCAS\], \[\(.*\)\],#\1#p' "${SRCDIR}/configure.ac"`
+
+[ -n "${FRICASVER}" ] || \
+  fail "Cannot extract FriCAS version number from sources."
+
+action=${1:-build}
+
+if [ "${action}" == "build" ]; then
+  mkdir -p build
+  pushd build
+  ${SRCDIR}/configure \
+    --prefix="/opt/fricas" \
+    --with-lisp="$(which clisp)"
+  make
+  make DESTDIR=${ROOT} install
+  popd
+fi
+
+if [ "${action}" == "dist" ]; then
+  tar cvJf FriCAS-${FRICASVER}-i686-cygwin.tar.xz opt/fricas
+fi
+
+if [ "${action}" == "clean" ]; then
+  rm -vrf build
+  rm -vrf opt
+  rm -vf *~
+fi
