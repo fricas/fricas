@@ -72,7 +72,8 @@ spoonView2D(void)
     /************
      *   Child  *
      ************/
-    printf("(spoon2D child) mapping of pipes to standard I/O for view2D\n");
+    /* printf("(spoon2D child) mapping of pipes to standard I/O for view2D\n");
+      */
     fricas_sprintf_to_buf1(errorStr, "%s",
         "(viewAlone) mapping of pipes to standard I/O for view2D");
     check(dup2(pipe0[0],0));
@@ -115,7 +116,7 @@ spoonView2D(void)
     close(pipe1[1]);
     viewP.viewIn  = pipe1[0];
     viewP.viewOut = pipe0[1];
-    printf("(spoon2D parent) pipes created\n");
+    /* printf("(spoon2D parent) pipes created\n"); */
     if (viewP.viewIn <0) {
       fprintf(stderr,"  Could not connect from Viewport manager to viewport process. Try again.\n");
       return;
@@ -126,7 +127,7 @@ spoonView2D(void)
         return;
       }
     }
-    printf("(spoon2D parent) making View2D data\n");
+    /* printf("(spoon2D parent) making View2D data\n"); */
     makeView2DFromFileData(&doView2D);
 
     /* tell child it is to be a stand alone program */
@@ -166,11 +167,11 @@ sendGraphToView2D(int i,int there,viewManager *viewP)
   pointListStruct  *llPtr;
   pointStruct      *p;
   int j,k;
-  printf("(spoon2D sendGraphToView2D) i=%d there=%d\n",i,there);
+  /* printf("(spoon2D sendGraphToView2D) i=%d there=%d\n",i,there); */
   if (there) {
 
     gPtr = &(graphArray[i]);
-    printf("(spoon2D sendGraphToView2D) graph %d is there\n",i);
+    /* printf("(spoon2D sendGraphToView2D) graph %d is there\n",i); */
     write(viewP->viewOut,&(gPtr->xmin),floatSize);
     write(viewP->viewOut,&(gPtr->xmax),floatSize);
     write(viewP->viewOut,&(gPtr->ymin),floatSize);
@@ -232,9 +233,9 @@ makeView2DFromFileData(view2DStruct *doView2D)
   char graphFilename[256];
   pointListStruct *aList;
   pointStruct     *aPoint;
-  printf("(spoon2D makeView2DFromFileData)\n");
+  /* printf("(spoon2D makeView2DFromFileData)\n"); */
   fgets(title,256,viewFile);
-  printf("(spoon2D) title=%s\n",title);
+  /* printf("(spoon2D) title=%s\n",title); */
   title_size = strlen(title);
   assert(title_size > 0);
   if (!(doView2D->title = (char *)malloc(title_size))) {
@@ -250,28 +251,28 @@ makeView2DFromFileData(view2DStruct *doView2D)
          &(doView2D->vY),
          &(doView2D->vW),
          &(doView2D->vH));
-  printf("(spoon2D) X=%d Y=%d W=%d H=%d \n",
-           doView2D->vX,doView2D->vY,doView2D->vW,doView2D->vH);
+  /* printf("(spoon2D) X=%d Y=%d W=%d H=%d \n",
+           doView2D->vX,doView2D->vY,doView2D->vW,doView2D->vH); */
   for (i=0; i<maxGraphs; i++) {
     fscanf(viewFile,"%d\n",
            &(graphArray[i].key));
-    printf("(spoon2D) i=%d key=%d\n",
-           i,graphArray[i].key);
+    /* printf("(spoon2D) i=%d key=%d\n",
+           i,graphArray[i].key); */
     fscanf(viewFile,"%g %g\n",
            &(graphStateArray[i].scaleX),
            &(graphStateArray[i].scaleY));
-    printf("(spoon2D) scaleX=%g scaleY=%g\n",
-             graphStateArray[i].scaleX,graphStateArray[i].scaleY);
+    /* printf("(spoon2D) scaleX=%g scaleY=%g\n",
+             graphStateArray[i].scaleX,graphStateArray[i].scaleY); */
     fscanf(viewFile,"%g %g\n",
            &(graphStateArray[i].deltaX),
            &(graphStateArray[i].deltaY));
-    printf("(spoon2D) deltaX=%g deltaY=%g\n",
-             graphStateArray[i].deltaX,graphStateArray[i].deltaY);
+    /* printf("(spoon2D) deltaX=%g deltaY=%g\n",
+             graphStateArray[i].deltaX,graphStateArray[i].deltaY); */
     fscanf(viewFile,"%g %g\n",
            &(graphStateArray[i].centerX),
            &(graphStateArray[i].centerY));
-    printf("(spoon2D) centerX=%g centerY=%g\n",
-             graphStateArray[i].centerX,graphStateArray[i].centerY);
+    /* printf("(spoon2D) centerX=%g centerY=%g\n",
+             graphStateArray[i].centerX,graphStateArray[i].centerY); */
     fscanf(viewFile,"%d %d %d %d %d %d %d\n",
            &(graphStateArray[i].pointsOn),
            &(graphStateArray[i].connectOn),
@@ -280,16 +281,20 @@ makeView2DFromFileData(view2DStruct *doView2D)
            &(graphStateArray[i].axesColor),
            &(graphStateArray[i].unitsOn),
            &(graphStateArray[i].unitsColor));
+/*
     printf("(spoon2D) pointsOn=%d connectOn=%d splineOn=%d axesOn=%d axesColor=%d unitsOn=%d unitsColor=%d\n",
            graphStateArray[i].pointsOn,graphStateArray[i].connectOn,
            graphStateArray[i].splineOn,graphStateArray[i].axesOn,
            graphStateArray[i].axesColor,graphStateArray[i].unitsOn,
            graphStateArray[i].unitsColor);
+*/
     fscanf(viewFile,"%d %d\n",
            &(graphStateArray[i].showing),
            &(graphStateArray[i].selected));
+/*
     printf("(spoon2D) showing=%d selected=%d\n",
             graphStateArray[i].showing,graphStateArray[i].selected);
+*/
   }
   fclose(viewFile);
   for (i=0; i<maxGraphs; i++) {
@@ -301,39 +306,39 @@ makeView2DFromFileData(view2DStruct *doView2D)
         perror("fopen");
         return;
       } else {
-        printf("(spoon2d) \n\nGRAPH%i\n",i);
+        /* printf("(spoon2d) \n\nGRAPH%i\n",i); */
         fscanf(graphFile,"%g %g %g %g\n",
                &(graphArray[i].xmin),
                &(graphArray[i].ymin),
                &(graphArray[i].xmax),
                &(graphArray[i].ymax));
-        printf("(spoon2d) xmin=%g ymin=%g xmax=%g ymax=%g\n",
+        /* printf("(spoon2d) xmin=%g ymin=%g xmax=%g ymax=%g\n",
                 graphArray[i].xmin,graphArray[i].ymin,
-                graphArray[i].xmax,graphArray[i].ymax);
+                graphArray[i].xmax,graphArray[i].ymax); */
         fscanf(graphFile,"%g %g\n",
                &(graphArray[i].xNorm),
                &(graphArray[i].yNorm));
-        printf("(spoon2d) xNorm=%g yNorm=%g\n",
-               graphArray[i].xNorm,graphArray[i].yNorm);
+        /* printf("(spoon2d) xNorm=%g yNorm=%g\n",
+               graphArray[i].xNorm,graphArray[i].yNorm); */
         fscanf(graphFile,"%g %g\n",
                &(graphArray[i].originX),
                &(graphArray[i].originY));
-        printf("(spoon2d) originX=%g originY=%g\n",
-               graphArray[i].originX,graphArray[i].originY);
+        /* printf("(spoon2d) originX=%g originY=%g\n",
+               graphArray[i].originX,graphArray[i].originY); */
         fscanf(graphFile,"%g %g\n",
                &(graphArray[i].spadUnitX),
                &(graphArray[i].spadUnitY));
-        printf("(spoon2d) spadUnitX=%g spadUnitY=%g\n",
-               graphArray[i].spadUnitX,graphArray[i].spadUnitY);
+        /* printf("(spoon2d) spadUnitX=%g spadUnitY=%g\n",
+               graphArray[i].spadUnitX,graphArray[i].spadUnitY); */
         fscanf(graphFile,"%g %g\n",
                &(graphArray[i].unitX),
                &(graphArray[i].unitY));
-        printf("(spoon2d) unitX=%g unitY=%g\n",
-               graphArray[i].unitX,graphArray[i].unitY);
+        /* printf("(spoon2d) unitX=%g unitY=%g\n",
+               graphArray[i].unitX,graphArray[i].unitY); */
         fscanf(graphFile,"%d\n",
                &(graphArray[i].numberOfLists));
-        printf("(spoon2d) numberOfLists=%d\n",
-                graphArray[i].numberOfLists);
+        /* printf("(spoon2d) numberOfLists=%d\n",
+                graphArray[i].numberOfLists); */
         if (!(aList =
               (pointListStruct *)malloc(graphArray[i].numberOfLists *
                                         sizeof(pointListStruct)))) {
@@ -344,16 +349,16 @@ makeView2DFromFileData(view2DStruct *doView2D)
         for (j=0;
              j<graphArray[i].numberOfLists;
              j++, aList++) {
-          printf("(spoon2d) list number %d\n",j);
+          /* printf("(spoon2d) list number %d\n",j); */
           fscanf(graphFile,"%d\n",&(aList->numberOfPoints));
-          printf("(spoon2d) number of points %d\n",
-                  aList->numberOfPoints);
+          /* printf("(spoon2d) number of points %d\n",
+                  aList->numberOfPoints); */
           fscanf(graphFile,"%d %d %d\n",
                  &(aList->pointColor),
                  &(aList->lineColor),
                  &(aList->pointSize));
-          printf("(spoon2d) pointColor=%d lineColor=%d pointSize=%d\n",
-                 aList->pointColor,aList->lineColor,aList->pointSize);
+          /* printf("(spoon2d) pointColor=%d lineColor=%d pointSize=%d\n",
+                 aList->pointColor,aList->lineColor,aList->pointSize); */
           if (!(aPoint = (pointStruct *)malloc(aList->numberOfPoints *
                                                sizeof(pointStruct)))) {
             fprintf(stderr,"viewAlone: Fatal Error>> Out of memory trying to receive a graph.\n");
@@ -368,8 +373,8 @@ makeView2DFromFileData(view2DStruct *doView2D)
                    &(aPoint->y),
                    &(aPoint->hue),
                    &(aPoint->shade));
-            printf("(spoon2d)k=%d x=%g y=%g hue=%g shade=%g\n",
-                   k,aPoint->x,aPoint->y,aPoint->hue,aPoint->shade);
+            /* printf("(spoon2d)k=%d x=%g y=%g hue=%g shade=%g\n",
+                   k,aPoint->x,aPoint->y,aPoint->hue,aPoint->shade); */
           }
         } /* for j, aList */
         fclose(graphFile);

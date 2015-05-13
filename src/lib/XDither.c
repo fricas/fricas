@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "fricas_c_macros.h"
-#ifndef MSYSplatform
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -224,4 +223,3 @@ XDitherArcs(Display *display,Drawable  drawable, GC gc, XArc *arcs,int narcs)
     }
     XFillArcs(display, drawable, gc, arcs, narcs);
 }
-#endif /* MSYSplatform */

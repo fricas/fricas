@@ -85,13 +85,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    and one for each of screen width and height may be needed, or
    it can be changed dynamically if desired. */
 
-#ifdef RIOSplatform
-#define ARRAY_WIDTH      1280 + 1  /* DisplayWidth(dsply,scrn) */
-#define ARRAY_HEIGHT     1024 + 1  /* DisplayHeight(dsply,scrn) */
-#else
 #define ARRAY_WIDTH      1300  /* DisplayWidth(dsply,scrn) */
 #define ARRAY_HEIGHT     1100  /* DisplayHeight(dsply,scrn) */
-#endif
 
 #define viewBorderWidth 0 /* make sure ps.h (postscript header) is the same */
 

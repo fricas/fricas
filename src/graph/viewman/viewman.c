@@ -40,9 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
-#ifdef SGIplatform
-#include <bstring.h>
-#endif
 
 #include "viewman.h"
 #include "mode.h"
@@ -96,11 +93,7 @@ main (void)
   int keepLooking,code;
 
   bsdSignal(SIGPIPE,brokenPipe,DontRestartSystemCalls);
-#if defined(BSDplatform) || defined (MACOSXplatform)
   bsdSignal(SIGCHLD,endChild,RestartSystemCalls);
-#else
-  bsdSignal(SIGCLD,endChild,RestartSystemCalls);
-#endif
   bsdSignal(SIGTERM,goodbye,DontRestartSystemCalls);
 
   /* Connect up to FriCAS server */

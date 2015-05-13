@@ -47,10 +47,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "fricas_c_macros.h"
 
-#if defined(SUN4OS5platform) || defined(HP10platform)
-#include <sys/stropts.h>
-#endif
-
 #include "com.h"
 #include "bsdsignal.h"
 #include "sman.h"
@@ -59,13 +55,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "sockio-c.H1"
 #include "openpty.H1"
 
-char *ws_path;                  /* location of the FriCAS executable */
-int start_clef;                 /* start clef under spad */
-int start_graphics;             /* start the viewman */
-int start_nagman;               /* start the nagman */
-int start_ht;                   /* start hypertex */
-int start_spadclient;           /* Start the client spad buffer */
-int start_local_spadclient;     /* Start the client spad buffer */
+char *ws_path = "$AXIOM/bin/AXIOMsys";
+int start_clef = 1;                 /* start clef under spad */
+int start_graphics = 1;             /* start the viewman */
+int start_ht = 1;                   /* start hypertex */
+int start_spadclient = 0;           /* Start the client spad buffer */
+int start_local_spadclient = 1;     /* Start the client spad buffer */
 int use_X;                      /* Use the X windows environment */
 int server_num;                 /* FriCAS server number */
 int tpd=0;                      /* to-print-debug information */
@@ -75,7 +70,6 @@ int tpd=0;                      /* to-print-debug information */
 /************************************************/
 
 char    *GraphicsProgram        = "$AXIOM/lib/viewman";
-char    *NagManagerProgram      = "$AXIOM/lib/nagman";
 char    *HypertexProgram        = "$AXIOM/bin/hypertex -s";
 char    *ClefProgram            =
            "$AXIOM/bin/clef -f $AXIOM/lib/command.list -e ";
@@ -121,7 +115,6 @@ struct termios oldbuf;           /* the original settings */
 struct termios childbuf;         /* terminal structure for user i/o */
 
 
-int nagman_signal=0;
 int death_signal = 0;
 
 /* Concatenate str to buff escaping all potentially unsafe characters */
@@ -159,10 +152,6 @@ process_arguments(int argc,char ** argv)
       start_graphics = 1;
     else if (strcmp(argv[arg], "-nogr")        == 0)
       start_graphics = 0;
-    else if (strcmp(argv[arg], "-nag")          == 0)
-      start_nagman = 1;
-    else if (strcmp(argv[arg], "-nonag")        == 0)
-      start_nagman = 0;
     else if (strcmp(argv[arg], "-ht")          == 0)
       start_ht = 1;
     else if (strcmp(argv[arg], "-noht")        == 0)
@@ -189,8 +178,6 @@ process_arguments(int argc,char ** argv)
       }
     else if (strcmp(argv[arg], "-grprog")      == 0)
       GraphicsProgram = argv[++arg];
-    else if (strcmp(argv[arg], "-nagprog")      == 0)
-      NagManagerProgram = argv[++arg];
     else if (strcmp(argv[arg], "-htprog")      == 0)
       HypertexProgram = argv[++arg];
     else if (strcmp(argv[arg], "-clefprog")    == 0) {
@@ -230,8 +217,8 @@ process_arguments(int argc,char ** argv)
     }
     else {
       fprintf(stderr, "Usage: sman <-clef|-noclef> \
-<-gr|-nogr> <-ht|-noht> <-iw|-noiw> <-nag|-nonag> <-nox> <-comp> <-ws spad_workspace> \
-<-grprog path> <-htprog path> <-clefprog path> <-sessionprog path> <-nagprog path> \
+<-gr|-nogr> <-ht|-noht> <-iw|-noiw> <-nox> <-comp> <-ws spad_workspace> \
+<-grprog path> <-htprog path> <-clefprog path> <-sessionprog path> \
 <-clientprog path>\n");
       exit(-1);
     }
@@ -246,10 +233,6 @@ process_arguments(int argc,char ** argv)
       fprintf(stderr,"-nogr ");
     else
       fprintf(stderr,"-gr ");
-    if (start_nagman == 0)
-      fprintf(stderr,"-nonag ");
-    else
-      fprintf(stderr,"-nag ");
     if (start_ht == 0)
       fprintf(stderr,"-noht ");
     else
@@ -272,8 +255,6 @@ process_arguments(int argc,char ** argv)
     fprintf(stderr,"'%s' ",ws_path);
     fprintf(stderr,"-grprog ");
     fprintf(stderr,"'%s' ",GraphicsProgram);
-    fprintf(stderr,"-nagprog ");
-    fprintf(stderr,"'%s' ",NagManagerProgram);
     fprintf(stderr,"-htprog ");
     fprintf(stderr,"'%s' ",HypertexProgram);
     fprintf(stderr,"-clefprog ");
@@ -294,52 +275,25 @@ process_arguments(int argc,char ** argv)
 }
 
 static int
-should_I_clef(void)
-{
-  return(1);
-}
-
-static int
 in_X(void)
 {
   if (getenv("DISPLAY")) return 1;
   return 0;
 }
 
-static  void
-set_up_defaults(void)
-{
-  if (tpd == 1) fprintf(stderr,"sman:set_up_defaults entered\n");
-  start_clef = should_I_clef();
-  start_graphics = 1;
-  start_nagman = 0;
-  start_ht = 1;
-  start_spadclient = 0;
-  start_local_spadclient = 1;
-  use_X = isatty(0) && in_X();
-  ws_path = "$AXIOM/bin/AXIOMsys";
-  if (tpd == 1) fprintf(stderr,"sman:set_up_defaults exit\n");
-}
-
 static void
 process_options(int argc, char **argv)
 {
-  if (tpd == 1) fprintf(stderr,"sman:process_options entered\n");
-  set_up_defaults();
-  process_arguments(argc, argv);
-  if (tpd == 1) fprintf(stderr,"sman:process_options exit\n");
+    if (tpd == 1) fprintf(stderr,"sman:process_options entered\n");
+    use_X = isatty(0) && in_X();
+    process_arguments(argc, argv);
+    if (tpd == 1) fprintf(stderr,"sman:process_options exit\n");
 }
 
 static void
 death_handler(int sig)
 {
   death_signal = 1;
-}
-
-static void
-nagman_handler(int sig)
-{
-  nagman_signal=1;
 }
 
 static void
@@ -363,19 +317,6 @@ sman_catch_signals(void)
   bsdSignal(SIGBUS,  death_handler,RestartSystemCalls);
   bsdSignal(SIGSEGV, death_handler,RestartSystemCalls);
   /* don't restart wait call on SIGUSR1  */
-  bsdSignal(SIGUSR1, nagman_handler,DontRestartSystemCalls);
-  /* ONLY nagman should send this.
-     If an error (such as C-c) interrupts a NAGLINK call, nagman
-     gets a signal to clean up. We need to start another nagman
-     almost immediately to process the next NAGLINK request.
-     Since nagman takes a while to clean up, we treat it specially.
-     nagman should send a signal (USR1) to sman.
-     sman should respond by spawning a new nagman.
-
-     so nagman is NOT a DoItAgain but a NadaDelShitsky.
-
-     The USR1 mechanism does not work for HPUX 9 - use DoItAgain
-     */
 
 }
 
@@ -511,25 +452,13 @@ start_the_spadclient(void)
 {
   char command[256];
   if (start_clef)
-#ifdef RIOSplatform
     sprintf(command,
-            "aixterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
-            ClefProgram, SpadClientProgram);
-#else
-  sprintf(command,
           "xterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
           ClefProgram, SpadClientProgram);
-#endif
   else
-#ifdef RIOSplatform
     sprintf(command,
-            "aixterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
-            SpadClientProgram);
-#else
-  sprintf(command,
           "xterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
           SpadClientProgram);
-#endif
   if (tpd == 1)
     fprintf(stderr,"sman:start_the_spadclient: %s\n",command);
   spawn_of_hell(command, NadaDelShitsky);
@@ -546,16 +475,6 @@ start_the_local_spadclient(void)
   if (tpd == 1)
     fprintf(stderr,"sman:start_the_local_spadclient: %s\n",command);
   spawn_of_hell(command, NadaDelShitsky);
-}
-
-static void
-start_the_nagman(void)
-{
-#if defined(HP9platform)
-  spawn_of_hell(NagManagerProgram,DoItAgain);
-#else
-  spawn_of_hell(NagManagerProgram,NadaDelShitsky );
-#endif
 }
 
 static void
@@ -623,10 +542,6 @@ fork_FriCAS(void)
       fprintf(stderr, "ptsPath=%s\n", ptsPath);
       exit(-1);
     }
-#if defined(SUN4OS5platform) || defined(HP10platform)
-    ioctl(ptsNum,I_PUSH,"ptem");
-    ioctl(ptsNum,I_PUSH,"ldterm");
-#endif
 
     /* since I am the child, I can close ptc, and dup pts for all its */
     /* standard descriptors                                           */
@@ -804,17 +719,6 @@ init_spad_process_list(void)
   spad_process_list = NULL;
 }
 
-#if 0
-static void
-print_spad_process_list()
-{
-  SpadProcess *proc;
-  for(proc = spad_process_list; proc != NULL; proc = proc->next)
-    fprintf(stderr, "proc_id = %d, death_action = %d\n", proc->proc_id,
-            proc->death_action);
-}
-#endif
-
 static SpadProcess *
 find_child(int proc_id)
 {
@@ -860,13 +764,6 @@ monitor_children(void)
       clean_up_sockets();
       fricas_sleep(200);
       exit(0);
-    }
-    /* Check the value of dead_baby, since wait may have returned
-       a pid but subsequently we have received a signal.  Yeuch! */
-    if(dead_baby == -1 && nagman_signal) {
-      nagman_signal=0;
-      spawn_of_hell(NagManagerProgram,NadaDelShitsky);
-      continue;
     }
 
     if (dead_baby == -1) {
@@ -917,7 +814,6 @@ main(int argc, char *argv[],char *envp[])
   start_the_session_manager();
   if (start_spadclient)       start_the_spadclient();
   if (start_local_spadclient) start_the_local_spadclient();
-  if (start_nagman)           start_the_nagman();
   if (start_ht)               start_the_hypertex();
   if (start_graphics)         start_the_graphics();
   fricas_sleep(100);
