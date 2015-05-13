@@ -308,11 +308,7 @@ handle_function_key(int key,int  chann)
                 close(fd);
             }
         }
-#if defined(MACOSXplatform) || defined(BSDplatform)
         bsdSignal(SIGCHLD, null_fnct,RestartSystemCalls);
-#else
-        bsdSignal(SIGCLD, null_fnct,RestartSystemCalls);
-#endif
         switch (id = fork()) {
           case -1:
             perror("Special key");

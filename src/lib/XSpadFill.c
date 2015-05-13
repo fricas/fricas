@@ -48,7 +48,6 @@ into place.
 */
 
 #include "fricas_c_macros.h"
-#ifndef MSYSplatform
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -294,4 +293,3 @@ XSpadFillArcs(Display *dsply, Drawable drawable,XArc *arcs, int narcs,
 }
 
 
-#endif /* MSYSplatform */

@@ -37,10 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fricas_c_macros.h"
 #include "hterror.h"
 
-#ifdef SUNplatform
-#include <sys/types.h>
-#endif
-
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/errno.h>

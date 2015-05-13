@@ -850,9 +850,7 @@ void
 close_socket(fricas_socket socket_num, char *name)
 {
   fricas_close_socket(socket_num);
-#ifndef RTplatform
   unlink(name);
-#endif
 }
 
 int

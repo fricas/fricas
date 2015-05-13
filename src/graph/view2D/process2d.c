@@ -40,9 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#ifdef RIOSplatform
-#include <sys/select.h>
-#endif
 
 #include "header2.h"
 

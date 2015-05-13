@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "fricas_c_macros.h"
-#ifndef MSYSplatform
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,4 +204,3 @@ XShadeArcs(Display *display, Drawable drawable, XArc *arcs, int narcs)
     XFillArcs(display, drawable, TileGC, arcs, narcs);
 }
 
-#endif /* MSYSplatform */
