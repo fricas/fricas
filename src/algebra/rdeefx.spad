@@ -1860,6 +1860,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         denf = 1 and degree(nfp) > 0 =>
             special_integrate1(nfp, f, k, lk, x, rr1, a1, r1, g, ansp,
                                scoeffs, scands, gexp, derivation)
+        rr1f := multivariate(rr1, k)
+        r1 := g - rr1f
         degree(denf) > 0 =>
             res3 := special_integrate2(nfp, denfp, denf, ndenf, f, k, lk, x,
                       rr1, a1, r1, g, scoeffs, scands, gexp, derivation2)
@@ -1868,22 +1870,41 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             spec1u := retractIfCan(rr1)@Union(UP, "failed")
             spec1u case "failed" => error "impossible 9"
             spec1p := spec1u::UP
-            if degree(spec1p) = 0 then
-                lc := leadingCoefficient(nf)
-                (rcu := retractIfCan(lc)@Union(Z, "failed")) case "failed" =>
-                    "skip"
-                rc := rcu::Z
-                u := (argument(k)(1))^rc
-                g1 := coefficient(spec1p, 0)
-                f1 := coefficient(nf, 0)
-                res4 := ei_int(1, f1, g1*u, x)
-                a1 := a1 + res4.ans/u
-                ansp := ansp + res4.primpart
-                rr1 := (spec1p - (res4.right/u)::UP)::RF
-                r1 := g - multivariate(rr1, k)
-                return [a1, r1, ansp, res4.sol?]
-        rr1 = 0 => [a1, g, ansp, true]
-        rr1f := multivariate(rr1, k)
-        r1 := g - rr1f
+            d := degree(spec1p)
+            aa : F := 0
+            kf := k::F
+            dkf := retract(dk)@F
+            ff : F
+            for j in d..0 by -1 repeat
+                gj : F := 0
+                if j = degree(spec1p) then
+                    gj := leadingCoefficient(spec1p)
+                    spec1p := reductum(spec1p)
+                ff := gj - (j + 1)::F*dkf*aa
+                j = 0 => break
+                res7 := do_risch_DE(f, ff, x, cons(k, lk)
+                                   )$ElementaryRischDEX2(R, F)
+                aa := res7.ans
+                a1 := a1 + aa*kf^j
+                r1 := r1 + res7.right*kf^j
+                not(res7.sol?) =>
+                    return [a1, r1, ansp, res7.sol?]
+            ff = 0 => return [a1, r1, ansp, true]
+            rr1f := ff
+            lc := leadingCoefficient(nf)
+            (rcu1 := retractIfCan(lc)@Union(Q, "failed")) case "failed" =>
+                "skip"
+            rcq := rcu1::Q
+            (rcu2 := retractIfCan(rcq)@Union(Z, "failed")) case "failed" =>
+                "skip"
+            rc := rcu2::Z
+            u := (argument(k)(1))^rc
+            f1 := coefficient(nf, 0)
+            res4 := ei_int(1, f1, rr1f*u, x)
+            a1 := a1 + res4.ans/u
+            ansp := ansp + res4.primpart
+            r1 := r1 + res4.right/u
+            return [a1, r1, ansp, res4.sol?]
+        r1 = g => [a1, g, ansp, true]
         res6 := do_risch_DE(f, rr1f, x, cons(k, lk))$ElementaryRischDEX2(R, F)
         [a1 + res6.ans, r1 + res6.right, ansp, res6.sol?]
