@@ -114,20 +114,24 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
                 is_const := false
                 break
         is_const => kf::EF
-        op := operator(k)
+        op := operator(operator(k))$EF
         args := argument(k)
         nargs : List(EF)
         if (u := property(op, DUMMYVAR)) case None then
             n := u::None pretend NonNegativeInteger
-            da := retract(second(args))@K1
+            da := retract(a1 := second(args))@K1
             if not(member?(da, ldmvar)) then
                 ldmvar := cons(da, ldmvar)
                 ldmval := cons(new()$Symbol::EF, ldmval)
+                sa1 := retract(a1)@Symbol
+                ld := cons((ff : F) : F +-> differentiate(ff, sa1), ld)
             if n = 2 then
-                da2 := retract(args(3))@K1
+                da2 := retract(a2 := args(3))@K1
                 if not(member?(da2, ldmvar)) then
                     ldmvar := cons(da2, ldmvar)
                     ldmval := cons(new()$Symbol::EF, ldmval)
+                    sa2 := retract(a2)@Symbol
+                    ld := cons((ff : F) : F +-> differentiate(ff, sa2), ld)
         kmap1 := (kk : K1) : EF +-> kmap(kk, ldmvar, ldmval, ld)
         kernel(op, [F_to_EF1(a, kmap1) for a in argument(k)])$EF
 
