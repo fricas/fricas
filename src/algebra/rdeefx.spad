@@ -83,6 +83,17 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
       ++ reducedSystem(A, ld) returns a matrix of constants B such
       ++ that \spad{A x = 0} and \spad{B x = 0}
       ++ have the same solutions over constants.
+    nullSpaceOverConstants : (Matrix F, LFF) -> List Vector F
+      ++ nullSpaceOverConstants(A, ld) returns basis of the
+      ++ homogeneous system \spad{A*vc = 0} where vc is a
+      ++ vector of constants.
+    constant_subspace : (List Vector(F),  LFF) ->
+                    Record(transform : Matrix(F), basis : List Vector(F))
+      ++ constant_subspace(b, ld) returns [M, nb] such that
+      ++ nb is basis of subspace spanned by b over F consistng
+      ++ of vectors with constant coordinates.  M is the transformation
+      ++ matrix, i.e. mnb = M mb where mb (mnb respectively) is matrix
+      ++ having b (nb respectively) as rows.
 
   Implementation ==> add
 
@@ -174,7 +185,53 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
     reducedSystem(m : Matrix F, v : Vector F, ld : LFF) ==
         reducedSystem(MF_to_MEF(m, ld), VF_to_VEF(v, ld))$EF
 
+    nullSpaceOverConstants(m : Matrix F, ld : LFF) ==
+        solveLinearOverConstants(m, new(nrows(m), 0)$Vector(F), ld).basis
 
+    UP  ==> SparseUnivariatePolynomial F
+
+    constant_subspace(b : List Vector(F), ld : LFF
+          ) : Record(transform : Matrix(F), basis : List Vector(F)) ==
+        empty?(b) => [new(0, 0, 1), []]
+        nc := #first(b)
+        nr := #b
+        m0b := matrix([entries(bv) for bv in b])$Matrix(F)
+        m0 := horizConcat(m0b, scalarMatrix(nr, 1))
+        m1 := rowEchelon(m0)
+        k : Integer := 1
+        lpiv : List Integer := []
+        lri :  List Integer := []
+        for i in 1..nrows(m1) repeat
+            k1 := k
+            while m1(i, k1) = 0 and k1 <= nc repeat k1 := k1 + 1
+            nc < k1 => "iterate"
+            k := k1
+            m1(i, k) ~= 1 => error "impossible"
+            lri := cons(i, lri)
+            lpiv := cons(k, lpiv)
+        lpiv := cons(nc + 1, lpiv)
+        lpiv := reverse!(lpiv)
+        lr : List Vector F := []
+        ll : List List F := []
+        for i in lri repeat
+            lpiv1 := lpiv
+            kk := first(lpiv1)
+            lpiv1 := rest(lpiv1)
+            ll1 : List F := []
+            for j in 1..nc repeat
+                j = kk =>
+                    kk := first(lpiv1)
+                    lpiv1 := rest(lpiv1)
+                for d1 in ld repeat
+                    ll1 := cons(d1(m1(i, j)), ll1)
+            ll := cons(ll1, ll)
+            lr := cons(row(m1, i), lr)
+        m := transpose(matrix(ll))
+        s1 := nullSpaceOverConstants(m, ld)
+        l3 := [lin_comb(bv, lr)$LinearCombinationUtilities(F, UP) for bv in s1]
+        m2 := matrix([[bv(i) for i in nc+1..ncols(m0)] for bv in l3]
+                    )$Matrix(F)
+        [m2, [bv(1..nc) for bv in l3]]
 
 )abbrev package RDEAUX RDEaux
 RDEaux(F) : Exports == Implementation where
