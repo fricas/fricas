@@ -700,8 +700,9 @@ ParametricRischDE(R, F) : Exports == Implementation where
                                                              K, R, P, F)
     import from LinearCombinationUtilities(F, UP)
 
-    ALGOP := '%alg
-    PRIM := 'prim
+    ALGOP ==> '%alg
+    PRIM ==> 'prim
+    OPDIFF ==> '%diff
 
     do_spde1 : (UP, List(UP), Z, UP -> UP, Matrix(F) -> Matrix(F))
                  -> L_Param_UP
@@ -710,6 +711,9 @@ ParametricRischDE(R, F) : Exports == Implementation where
                     (LK, LF) -> Param_Rec_QF) -> L_Param_F
 
     do_alg_rde : (F, List F, SE, K, LK, (LK, LF) -> L_Param_F,
+                  (LK, LF) -> Param_Rec_QF) -> L_Param_F
+
+    do_diff_rde : (F, List F, SE, K, LK, (LK, LF) -> L_Param_F,
                   (LK, LF) -> Param_Rec_QF) -> L_Param_F
 
     get_denom(f : RF, lg : List RF, der : UP -> UP) : List(UP) ==
@@ -1026,6 +1030,8 @@ ParametricRischDE(R, F) : Exports == Implementation where
         lk := [k1 for k1 in lk | k1 ~= k]
         has?(operator k, ALGOP)$BasicOperator =>
             do_alg_rde(fp, lg, x, k, lk, ext, logi)
+        is?(k, OPDIFF) =>
+            do_diff_rde(fp, lg, x, k, lk, ext, logi)
         dku := univariate(differentiate(k::F, x), k)
         denom(dku) ~= 1 =>
             []
@@ -1045,6 +1051,89 @@ ParametricRischDE(R, F) : Exports == Implementation where
         lg1 := [pf*g for g in lg]
         res1 := do_param_rde(fp, false, lg1, x, k, lk, ext, logi)
         [[rs.ratpart/pf, rs.coeffs] for rs in res1]
+
+    csolve1(m : Matrix F, d1 : F -> F) : List Vector(F) ==
+        nullSpaceOverConstants(m, [d1])$ConstantLinearDependence(R, F)
+
+    do_diff_rde1(lg : List UP, fp0 : F, fp1 : F, x : SE, k : K, lk : LK,
+                ext : (LK, LF) -> L_Param_F,
+                logi : (LK, LF) -> Param_Rec_QF) : L_Param_F ==
+        args := argument(k)
+        #args ~= 3 => error "internal error, k is not a diff"
+        arg3 := args(3)
+        (da3 := differentiate(arg3, x)) = 0 => []
+        lg0 := [coefficient(up, 0) for up in lg]
+        lg1 := [coefficient(up, 1) for up in lg]
+        k1 := eval(args(1), retract(args(2))@K, arg3)
+        dv := new()$Symbol
+        dvf := dv::F
+        lg2 := [eval(g/da3, k1, dvf) for g in lg1]
+        fp2 := eval(fp1/da3, k1, dvf)
+        lek := [eval(ki::F, k1, dvf) for ki in lk]
+        lk1 := varselect(tower(cons(dvf, append(lg2, lek))), dv)
+        ext1 := (x4 : List K, x3 : List F) : L_Param_F +->
+                 extendedint(dv, x4, x3
+                            )$ParametricIntegration(R, F)
+        logi1 := (x2 : List K, x3 : List F) : Param_Rec_QF +->
+                  logextint(dv, x2, x3
+                           )$ParametricIntegration(R, F)
+        kk1 := kmax(lk1)
+        lk2 := [ki for ki in lk1 | ki ~= kk1]
+        res1 : L_Param_F :=
+            fp2 = 0 => ext1(lk1, lg2)
+            do_param_rde(fp2, true, lg2, dv, kk1, lk2,  ext1, logi1)
+        empty?(res1) => []
+        cb0 := [be.coeffs for be in res1]
+        d1 := (x1 : F) : F +-> differentiate(x1, x)
+        (m2, cb) := constant_subspace(cb0, [d1]
+                                      )$ConstantLinearDependence(R, F)
+        empty?(cb) => []
+        v2 := vector([be.ratpart for be in res1])$Vector(F)
+        v3 := m2*v2
+        lca := entries(v3)
+        lg3 := [lin_comb(bv, lg1) for bv in cb]
+        nlg0 := [lin_comb(bv, lg0) for bv in cb]
+        lca := map((x1 : F) : F+->eval(x1, kernel(dv), k1::F), lca)
+        nlg : List(F) := []
+        for ca in lca for g1 in lg3 for g0 in nlg0 repeat
+            du := univariate(differentiate(ca, x), k)
+            nu := numer(du)
+            denom(du) ~= 1 or degree(nu) > 1 => return []
+            g1 + fp1*ca + coefficient(nu, 1) ~= 0 => return []
+            ng := g0 + fp0*ca + coefficient(nu, 0)
+            nlg := cons(ng, nlg)
+        nlg := reverse!(nlg)
+        cb1 : List(Vector(F))
+        elca : List(F)
+        if fp1 ~= 0 then
+            m3 := matrix([nlg])$Matrix(F)
+            cb1 := csolve1(m3, d1)
+            elca := [0 for bv in cb1]
+        else
+            kk3 := kmax(lk)
+            lk3 := [ki for ki in lk | ki ~= kk3]
+            res2 := do_param_rde(fp0, true, nlg, x, kk3, lk1, ext, logi)
+            cb1 := [be.coeffs for be in res2]
+            elca := [be.ratpart for be in res2]
+        ncb := [lin_comb(bv, cb) for bv in cb1]
+        nlca := [ca + lin_comb(bv, lca) for bv in cb1 for ca in elca]
+        [[ba, bv] for ba in nlca for bv in ncb]
+
+    do_diff_rde(fp : F, lg : List F, x : SE, k : K, lk : LK,
+                ext : (LK, LF) -> L_Param_F,
+                logi : (LK, LF) -> Param_Rec_QF) : L_Param_F ==
+        -- FIXME check that fp contains no extra kernels
+        fpu := univariate(fp, k)
+        denom(fpu) ~= 1 or degree(nfpu := numer(fpu)) > 1 => []
+        fp1 := coefficient(nfpu, 1)
+        fp0 := coefficient(nfpu, 0)
+        d1 := (x1 : F) : F +-> differentiate(x1, x)
+        cs1 := (x4 : Matrix F) : List Vector F +->
+                      csolve1(x4, d1)
+        diff_rde1 := (x1 : List UP) : L_Param_F +->
+                 do_diff_rde1(x1, fp0, fp1, x, k, lk, ext, logi)
+        diffextint(diff_rde1, cs1, [univariate(u, k) for u in lg]
+                  )$ParametricTranscendentalIntegration(F, UP)
 
     do_alg_rde0(fp : F, lg : List F, x : SE, k : K, lk : LK,
                 ext : (LK, LF) -> L_Param_F,
@@ -1104,6 +1193,8 @@ ParametricRischDE(R, F) : Exports == Implementation where
     do_param_rde(fp, is_der, lg, x, k, lk, ext, logi) ==
         has?(operator k, ALGOP)$BasicOperator =>
             do_alg_rde(fp, lg, x, k, lk, ext, logi)
+        is?(k, OPDIFF) =>
+            do_diff_rde(fp, lg, x, k, lk, ext, logi)
         -- below we assume that main kernel k
         -- is a monomial
         dku := univariate(differentiate(k::F, x), k)
@@ -1144,7 +1235,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
                              logi, der1, get_rs, x)
             is?(k, 'exp) =>
                 do_SPDE_exp(aa, bbr, lgu1, lk, ext, logi, der1, get_rs, x)
-            error "param_rde: unimplemented kernel"
+            return []
         res2 : L_Param_F := []
         for re in res1 repeat
             bv := lin_comb(re.coeffs, lker)
@@ -1530,8 +1621,7 @@ ParametricIntegration(R, F) : Exports == Implementation where
                     )$LinearCombinationUtilities(F, UP)
 
     csolve1(m : Matrix F, d1 : F -> F) : List Vector(F) ==
-        (solveLinearOverConstants(m, new(nrows(m), 0)$Vector(F), [d1]
-                                 )$ConstantLinearDependence(R, F)).basis
+        nullSpaceOverConstants(m, [d1])$ConstantLinearDependence(R, F)
 
     wrapfn(fn : List F -> L_Param_F, k : K) : List RF -> L_Param_Q ==
         (lrf : List RF) : L_Param_Q +->
@@ -1642,49 +1732,6 @@ ParametricIntegration(R, F) : Exports == Implementation where
         [[multivariate(si.ratpart, k), si.coeffs]
            for si in res1]
 
-    constant_subspace(b : List Vector(F), d1 : (F -> F)
-          ) : Record(transform : Matrix(F), basis : List Vector(F)) ==
-        empty?(b) => [new(0, 0, 1), []]
-        nc := #first(b)
-        nr := #b
-        m0b := matrix([entries(bv) for bv in b])$Matrix(F)
-        m0 := horizConcat(m0b, scalarMatrix(nr, 1))
-        m1 := rowEchelon(m0)
-        k : Integer := 1
-        lpiv : List Integer := []
-        lri :  List Integer := []
-        for i in 1..nrows(m1) repeat
-            k1 := k
-            while m1(i, k1) = 0 and k1 <= nc repeat k1 := k1 + 1
-            nc < k1 => "iterate"
-            k := k1
-            m1(i, k) ~= 1 => error "impossible"
-            lri := cons(i, lri)
-            lpiv := cons(k, lpiv)
-        lpiv := cons(nc + 1, lpiv)
-        lpiv := reverse!(lpiv)
-        lr : List Vector F := []
-        ll : List List F := []
-        for i in lri repeat
-            lpiv1 := lpiv
-            kk := first(lpiv1)
-            lpiv1 := rest(lpiv1)
-            ll1 : List F := []
-            for j in 1..nc repeat
-                j = kk =>
-                    kk := first(lpiv1)
-                    lpiv1 := rest(lpiv1)
-                ll1 := cons(d1(m1(i, j)), ll1)
-            ll := cons(ll1, ll)
-            lr := cons(row(m1, i), lr)
-        m := transpose(matrix(ll))
-        v0 := new(ncols(m), 0)$Vector(F)
-        s1 := (solveLinearOverConstants(m, v0, [d1]
-                              )$ConstantLinearDependence(R, F)).basis
-        l3 := [lin_comb(bv, lr)$LinearCombinationUtilities(F, UP) for bv in s1]
-        m2 := matrix([[bv(i) for i in nc+1..ncols(m0)] for bv in l3])
-        [m2, [bv(1..nc) for bv in l3]] -- [[bv(nc + 1), bv(1..nc)] for bv in l3]
-
     diffextint1(lup : List UP, x : SE, k : K, lk : List K,
                   csolve : Matrix(F) -> List Vector(F)) : L_Param_F ==
         import from LinearCombinationUtilities(F, UP)
@@ -1706,8 +1753,14 @@ ParametricIntegration(R, F) : Exports == Implementation where
         lk1 := varselect(tower(cons(dvf, append(lg2, lek))), dv)
         res1 := extendedint(dv, lk1, lg2)
         empty?(res1) => []
-        lca := [be.ratpart for be in res1]
-        cb := [be.coeffs for be in res1]
+        cb0 := [be.coeffs for be in res1]
+        d1 := (x1 : F) : F +-> differentiate(x1, x)
+        (m2, cb) := constant_subspace(cb0, [d1]
+                                     )$ConstantLinearDependence(R, F)
+        empty?(cb) => []
+        v2 := vector([be.ratpart for be in res1])$Vector(F)
+        v3 := m2*v2
+        lca := entries(v3)
         lg3 := [lin_comb(bv, lg1) for bv in cb]
         nlg0 := [lin_comb(bv, lg0) for bv in cb]
         lca := map((x1 : F) : F+->eval(x1, kernel(dv), k1::F), lca)
@@ -1716,20 +1769,17 @@ ParametricIntegration(R, F) : Exports == Implementation where
             du := univariate(differentiate(ca, x), k)
             nu := numer(du)
             denom(du) ~= 1 or degree(nu) > 1 => return []
-            g + coefficient(nu, 1) ~= 0 => return []
+            g1 + coefficient(nu, 1) ~= 0 => return []
             ng := g0 + coefficient(nu, 0)
             nlg := cons(ng, nlg)
         nlg := reverse!(nlg)
         res2 := extendedint(x, lk, nlg)
-        cb0 := [be.coeffs for be in res2]
-        d1 := (x1 : F) : F +-> differentiate(x1, x)
-        (m2, cb1) := constant_subspace(cb0, d1)
-        empty?(cb1) => []
-        v2 := vector([be.ratpart for be in res2])$Vector(F)
-        v3 := m2*v2
+        empty?(res2) => []
+        cb1 := [be.coeffs for be in res2]
+        nlca := [be.ratpart for be in res2]
         ncb := [lin_comb(bv, cb) for bv in cb1]
-        nlca := [lin_comb(bv, lca) for bv in cb1]
-        [[v3(i) + ba, bv] for i in 1..#v3 for ba in nlca for bv in ncb]
+        nlca := [be.ratpart + lin_comb(bv, lca) for bv in cb1 for be in res2]
+        [[ba, bv] for ba in nlca for bv in ncb]
 
     diffextint(x, k, l, lg) ==
         d1 := (x1 : F) : F +-> differentiate(x1, x)
