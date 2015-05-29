@@ -1,0 +1,39 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "LODO"
+
+testcase "basic"
+
+F := Fraction(Integer)
+uP := UnivariatePolynomial('x, F)
+rF := Fraction(uP)
+L1 := LinearOrdinaryDifferentialOperator1(rF)
+L3 := LinearOrdinaryDifferentialOperator3(F, uP, rF)
+lC := LODOConvertions(F, uP, rF)
+
+d := D()$L1
+
+testEquals("d*x - x*d", "1")
+testEquals("D()$L3*x - x*D()$L3", "x")
+op1 := d*(x*d + x)
+testEquals("x*d^2 + (x+1)*d + 1", "op1")
+
+testcaseNoClear "apply"
+
+testEquals("apply(D()$L3, 0, x)", "x")
+testEquals("apply(d, 0, x)", "1")
+
+testEquals("apply(op1, 0, x^3+x)", "4*x^3+9*x^2+2*x+1")
+
+testcaseNoClear "convert"
+
+testEquals("apply(convert(d)$lC, 0, x)", "1")
+testEquals("convert(D()$L3)$lC", "x*d")
+testEquals("apply(convert(d)$lC, 0, x)", "1")
+testEquals("convert(op1)$lC",
+           "convert(d)$lC*convert(x*d + x)$lC")
+op2 := x^3*d^2 + d + x
+testEquals("convert(convert(op2)$lC)$lC", "op2")
+
+statistics()
