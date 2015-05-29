@@ -215,6 +215,77 @@ LinearOrdinaryDifferentialOperator2(A, M) : Exports == Implementation where
       elt(p : %, m : M) : M ==
         apply(p, differentiate, m)$ApplyUnivariateSkewPolynomial(A, M, %)
 
+)abbrev domain LODO3AUX LinearOrdinaryDifferentialOperator3Aux
+++ Description: \spad{LinearOrdinaryDifferentialOperator3Aux} is
+++  a helper for \spad{LinearOrdinaryDifferentialOperator3}
+++  defining appropriate derivative.
+LinearOrdinaryDifferentialOperator3Aux(Coeff : Ring,
+      A : AbelianMonoidRing(Coeff, NonNegativeInteger),
+      R : Join(DifferentialRing, LeftModule(A))) : with
+    delta_deriv : R -> R
+      ++ delta_deriv(f) is x*f' where x is variable in A
+  == add
+    delta_deriv(x) ==
+        monomial(1$Coeff, 1$NonNegativeInteger)$A*differentiate(x)$R
+
+)abbrev domain LODO3 LinearOrdinaryDifferentialOperator3
+++ Description: \spad{LinearOrdinaryDifferentialOperator3} is a ring
+++  differential operators with coefficients in a differential ring R.
+++  Basic derivative is derivative in R times variable (monomial
+++  of degree 1).
+LinearOrdinaryDifferentialOperator3(Coeff : Ring,
+      A : AbelianMonoidRing(Coeff, NonNegativeInteger),
+      R : Join(DifferentialRing, LeftModule(A))
+    ) ==
+  LinearOrdinaryDifferentialOperator(R,
+        delta_deriv$LinearOrdinaryDifferentialOperator3Aux(Coeff, A, R))
+
+
+)abbrev package LODOCONV LODOConvertions
+++ Description: \spadtype{LODOConvertions} implements convertion between
+++  \spadtype{LinearOrdinaryDifferentialOperator1} and
+++  \spadtype{LinearOrdinaryDifferentialOperator3} and back.
+LODOConvertions(Coeff, Ab, R) : Exports == Implementation where
+    Coeff : Ring
+    Ab : AbelianMonoidRing(Coeff, NonNegativeInteger)
+    R : Join(DifferentialRing, LeftModule(Ab))
+
+    L1 ==> LinearOrdinaryDifferentialOperator1 R
+    L3 ==> LinearOrdinaryDifferentialOperator3(Coeff, Ab, R)
+
+    Exports == with
+        convert : L1 -> L3
+            ++ convert(l1) converts an operator l1 from
+            ++ \spadtype{LinearOrdinaryDifferentialOperator1} to
+            ++ \spadtype{LinearOrdinaryDifferentialOperator3} such that the
+            ++ resultant operator gives the same result as the original one
+            ++ on application to an element of domain R.
+        convert : L3 -> L1
+            ++ convert(l3) converts an operator l3 from
+            ++ \spadtype{LinearOrdinaryDifferentialOperator3} to
+            ++ \spadtype{LinearOrdinaryDifferentialOperator1} such that the
+            ++ resultant operator gives the same result as the original one
+            ++ on application to an element of domain R.
+
+    Implementation == add
+
+        convert(l1 : L1) ==
+            l3 : L3 := 0
+            while l1 ~= 0 repeat
+                l3 := (l3 +
+                      leadingCoefficient(l1) *
+                      (((recip(monomial(1, 1) * 1$R)) :: R) * D())^degree(l1))
+                l1 := reductum l1
+            l3
+        convert(l3 : L3) ==
+            l1 : L1 := 0
+            while l3 ~= 0 repeat
+                l1 := (l1 + leadingCoefficient(l3) *
+                            ((monomial(1, 1) * 1) * D())^degree(l3))
+                l3 := reductum l3
+            l1
+
+
 )abbrev domain ODR OrdinaryDifferentialRing
 ++ Author: Stephen M. Watt
 ++ Date Created: 1986
