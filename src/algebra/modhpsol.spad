@@ -1474,7 +1474,7 @@ ModularHermitePade() : with
            vars :=
                member?(qvar, vars) => vars
                cons(qvar, vars)
-       reverse sort(vars)
+       sort(vars)
 
    HP_solve_P(list, degs, kind, qvar, sigma, gen, check) ==
        lp := []@List(Integer)
@@ -1489,12 +1489,7 @@ ModularHermitePade() : with
                    pts0(i) := i
                pts0
            kind = 'qshiftHP =>  new(sigma, 0)$PA
-       vars := get_variables2(list)
-       -- print(vars::OutputForm)
-       if kind = 'qdiffHP or kind = 'qshiftHP or kind = 'qmixed then
-           vars :=
-               member?(qvar, vars) => vars
-               cons(qvar, vars)
+       vars := get_variables(list, kind, qvar)
        empty?(vars) =>
            trivial_poly_solve(list, degs, kind, sigma, gen, check)
        gv0 := [construct(li)$PrimitiveArray(Fraction(MP)) for li in list]
@@ -1672,7 +1667,7 @@ ModularHermitePadeSolver(F : CommutativeRing, S : CommutativeRing)_
             gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen) ==
                 not(kind = 'diffHP or kind = 'qdiffHP or kind = 'qmixed) =>
                     check
-                vars :=  get_variables(l, kind, qvar)
+                vars :=  reverse(get_variables(l, kind, qvar))
                 x +-> check_sol_mod_diff(vector x, l, sigma, gen, _
                            qvar, vars)
         else if F is AlgebraicNumber and S is AlgebraicNumber then
