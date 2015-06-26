@@ -596,25 +596,26 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
       [nlf, [k], [h]]
 
     expnosimp(lf, lk, k, v, fns, g) ==
-      n := maxIndex v
-      lk := [x for x in lk | is?(x, 'exp) or is?(x, 'log)]
-      lk1 := [x for x in lk for i in 1..n | not(qelt(v, i) = 0)]
-      every?(x +-> is?(x, 'exp), lk1) =>
-        dd := (d := (cd := splitDenominator v).den)::F
-        newe := [exp(y / dd) for y in fns
-                    for i in 1..n | not(qelt(v, i) = 0)]$List(F)
-        newexp := [e ^ d for e in newe]$List(F)
-        li := [i for i in 1..n | not(qelt(v, i) = 0)]
-        h := */[e ^ qelt(cd.num, i)
-                for i in li for e in newe] * g
-        lk1 := concat(k, lk1)
-        newexp := concat(h, newexp)
-        nlf := [eval(f, lk1, newexp) for f in lf]
-        [nlf, lk1, newexp]
-      h := */[exp(y) ^ qelt(v, i)
-                for i in minIndex v .. maxIndex v for y in fns] * g
-      nlf := [eval(f, [k], [h]) for f in lf]
-      [nlf, [k], [h]]
+        n := maxIndex v
+        lk := [x for x in lk | is?(x, 'exp) or is?(x, 'log)]
+        d := (cd := splitDenominator v).den
+        vnum := cd.num
+        h : F := g
+        lke : List(K) := []
+        lexp : List(F) := []
+        for i in 1..n for k1 in lk for y in fns repeat
+            (vi := qelt(v, i)) = 0 => "iterate"
+            di := denom(vi)
+            is?(k1, 'log) or di = 1 =>
+                h := h*exp(y)^vi
+            lke := cons(k1, lke)
+            nui := exp(y/di::F)
+            lexp := cons(nui^di, lexp)
+            h := h*nui^numer(vi)
+        lke := cons(k, lke)
+        lexp := cons(h, lexp)
+        nlf := [eval(f, lke, lexp) for f in lf]
+        [nlf, lke, lexp]
 
     logeval(lf, lk, k, v) ==
       z := first argument k
