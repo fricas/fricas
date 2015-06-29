@@ -398,9 +398,178 @@ Expression(R : Comparable) : Exports == Implementation where
                         p := reductum p
                     true
 
-                gcdPolynomial(p : SUP %, q : SUP %) ==
-                    noalg? p and noalg? q => gcdPolynomial(p, q)$Rep
-                    gcdPolynomial(p, q)$GcdDomain_&(%)
+                algkers(p : SUP %) : List(Kernel(%)) ==
+                    res := empty()$List(Kernel(%))
+                    while p ~= 0 repeat
+                        lc := leadingCoefficient p
+                        res := concat(algtower(lc), res)
+                        p := reductum p
+                    removeDuplicates(res)
+
+                algpars(lk : List(K)) : List(K) ==
+                    res := empty()$List(K)
+                    for k in lk repeat
+                        not(is?(k, 'nthRoot) or is?(k, 'rootOf)) =>
+                            error "apars: unknown kernel"
+                        arg := argument(k)
+                        res := concat(kernels(arg.1), res)
+                    removeDuplicates(res)
+
+                trivial_denoms(p : SUP(%)) : Boolean ==
+                    every?((c : %) : Boolean +-> denom(c) = 1,
+                           coefficients(p))
+
+                SUPP ==> SUP(MP)
+
+                SUP_to_SUPP(p : SUP(%)) : SUPP ==
+                    map((c : %) : MP +-> numer(c), p
+                       )$UnivariatePolynomialCategoryFunctions2(
+                          %, SUP(%), MP, SUPP)
+
+                if R is Integer then
+
+                    -- makes sure denominators of coefficients are 1
+                    def_poly(k : K) : SUPP ==
+                        args := argument(k)
+                        arg1 :=  first args
+                        arg2 := args(2)
+                        is?(k, 'rootOf) =>
+                            p1 : MP := numer(arg1)
+                            univariate(p1, retract(arg2)@K)
+                        is?(k, 'nthRoot) =>
+                            n := retract(arg2)@Integer :: NonNegativeInteger
+                            monomial(denom(arg1), n)$SUPP -
+                                numer(arg1)::SUPP
+                        error "def_poly : unknown kernel"
+
+                    PI ==> Polynomial(Integer)
+
+                    varmap1(k0 : K, lk : List(K), ls : List(Symbol)
+                           ) : Symbol ==
+                        for k in lk for s in ls repeat
+                            if k = k0 then return s
+                        error "varmap1: kernel not on the list"
+
+                    LIFT1 ==> PolynomialCategoryLifting(
+                        IndexedExponents K, K, Integer, MP, PI)
+
+                    varmap2(s0 : Symbol, lk : List(K), ls : List(Symbol)
+                           ) : K ==
+                        for k in lk for s in ls repeat
+                            if s = s0 then return k
+                        error "varmap2: symbol not on the list"
+
+                    LIFT2 ==> PolynomialCategoryLifting(
+                        IndexedExponents Symbol, Symbol, Integer, PI, MP)
+
+                    MP_to_PI(p : MP, lk : List(K), ls : List(Symbol)
+                            ) : PI ==
+                        map((k : K) : PI +->
+                                  monomial(1, varmap1(k, lk, ls), 1)$PI,
+                            (c : Integer) : PI +-> c::PI, p)$LIFT1
+
+                    SUPP_to_PI(p : SUPP, lk : List(K), ls : List(Symbol),
+                              xk : K) : PI ==
+                        p2 := multivariate(p, xk)$MP
+                        MP_to_PI(p2, lk, ls)
+
+                    SUP_to_PI(p : SUP(%), lk : List(K), ls : List(Symbol),
+                              xk : K) : PI ==
+                        p1 := SUP_to_SUPP(p)
+                        SUPP_to_PI(p1, lk, ls, xk)
+
+                    MPU ==> SUP(PI)
+                    MD := Record(svz : List(Symbol), sm : List(PI),
+                                 msizes : List(Integer), sp : Integer)
+                    MOP1 := ModularAlgebraicGcdTools3
+                    MGCD1 := ModularAlgebraicGcd(MPU, MD, MOP1)
+
+                    PI_to_SUP(p : PI, lk : List(K), ls : List(Symbol),
+                              xk : K) : SUP(%) ==
+                        p1 := map((s : Symbol) : MP +->
+                            monomial(1, varmap2(s, lk, ls), 1)$MP,
+                            (c : Integer) : MP +-> c::MP, p)$LIFT2
+                        p2 := univariate(p1, xk)
+                        p3 := map((c : MP) : % +-> c::%, p2
+                                 )$UnivariatePolynomialCategoryFunctions2(
+                          MP, SUPP, %, SUP(%))
+
+                    RF ==> Fraction(PI)
+                    UPRF ==> SparseUnivariatePolynomial(RF)
+                    PT ==> Record(var : Symbol, coef : UPRF)
+                    FP ==> FakePolynomial
+                    MEV2 := ModularEvaluation2
+                    MOP2 := ModularAlgebraicGcdTools4
+                    MGCD2 := ModularAlgebraicGcd2(PT, FP, MPU, MD, MEV2, MOP2)
+
+                    to_RF(c : %, lk : List(K), ls : List(Symbol)) : RF ==
+                        MP_to_PI(numer(c), lk, ls)/$RF
+                          MP_to_PI(denom(c), lk, ls)
+
+                    SUPP_to_PT(p : SUPP, lk : List(K), ls : List(Symbol),
+                               k : K, s : Symbol) : PT ==
+                        -- print("SUPP_to_PT"::OutputForm)
+                        -- print(p::OutputForm)
+                        -- print(lk::OutputForm)
+                        -- print(k::OutputForm)
+                        p2 := multivariate(p, k)$MP
+                        up := MP_to_PI(p2, lk, ls)::RF::UPRF
+                        [s, up]
+
+                    SUP_to_PT(p : SUP %, lk : List(K), ls : List(Symbol),
+                              s : Symbol) : PT ==
+                        -- print("SUP_to_PT"::OutputForm)
+                        -- print(p::OutputForm)
+                        -- print(lk::OutputForm)
+                        up := map((c : %) : RF +-> to_RF(c, lk, ls), p
+                                 )$UnivariatePolynomialCategoryFunctions2(
+                                   %, SUP(%), RF, UPRF)
+                        [s, up]
+
+                    gcdPolynomial(p : SUP %, q : SUP %) ==
+                        p = 0 => q
+                        degree(p) = 0 => 1
+                        q = 0 => p
+                        degree(q) = 0 => 1
+                        noalg? p and noalg? q => gcdPolynomial(p, q)$Rep
+                        cl := concat(coefficients(p), coefficients(q))
+                        akers := algtower(cl)
+                        apars := algpars(akers)
+                        all_kers0 := setUnion(kernels(cl), apars)
+                        akers := reverse(sort(akers))
+                        all_syms0 := [new()$Symbol for k in all_kers0]
+                        x := new()$Symbol
+                        xk := kernel(x)
+                        all_kers := cons(xk, all_kers0)
+                        all_syms := cons(x, all_syms0)
+                        lm := [def_poly(k) for k in akers]
+                        a_syms := [varmap1(k, all_kers, all_syms)
+                                        for k in akers]
+                        p_syms := setDifference(all_syms0, a_syms)
+                        trivial_denoms(p) and trivial_denoms(q) =>
+                            p1 := SUP_to_PI(p, all_kers, all_syms, xk)
+                            q1 := SUP_to_PI(q, all_kers, all_syms, xk)
+                            lm1 := [SUPP_to_PI(m, all_kers, all_syms, k)
+                                       for m in lm for k in akers]
+                            a_syms := [varmap1(k, all_kers, all_syms)
+                                        for k in akers]
+                            p_syms := setDifference(all_syms0, a_syms)
+                            g1 := algebraicGcd(p1, q1, lm1, p_syms, x,
+                                              a_syms)$MGCD1
+                            PI_to_SUP(g1, all_kers, all_syms, xk)
+                        p2 := SUP_to_PT(p, all_kers0, all_syms0, x)
+                        q2 := SUP_to_PT(q, all_kers0, all_syms0, x)
+                        lm2 := [SUPP_to_PT(m, all_kers0, all_syms0, k, x)
+                                       for m in lm for k in akers]
+                        g2 := algebraicGcd(p2, q2, lm2, p_syms, x,
+                                           a_syms)$MGCD2
+                        PI_to_SUP(g2, all_kers, all_syms, xk)
+
+                else
+
+                    gcdPolynomial(p : SUP %, q : SUP %) ==
+                        noalg? p and noalg? q => gcdPolynomial(p, q)$Rep
+                        gcdPolynomial(p, q)$GcdDomain_&(%)
 
                 if R has PolynomialFactorizationExplicit then
 
