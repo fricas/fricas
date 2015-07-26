@@ -1204,6 +1204,10 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     get_scoeffs : (List(SREC), UP, K, RF -> RF) -> List(RF)
 
+    MP ==> SparseMultivariatePolynomial(R, K)
+    MULTFACT ==> MultivariateFactorize(K, Exp, R, MP)
+    Exp ==> IndexedExponents(K)
+
     quadratic_log_erf_integrate(nf : UP, nfp : UP, rr1 : RF,
           a1 : F, g : F, ansp : F, derivation : UP -> UP,
           vlst : LF, ulst : LF, k : K, lk : List(K), x : SE) : PSOL2 ==
@@ -1220,8 +1224,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         r := leadingCoefficient(nf)
         s := coefficient(nf, 1)
         t := coefficient(nf, 0)
-        f_denr := factor(denom(r))$DenominatorIntegration(R, F)
-        f_numr := factor(numer(r))$DenominatorIntegration(R, F)
+        f_denr := factor(denom(r))$MULTFACT
+        f_numr := factor(numer(r))$MULTFACT
         fl1 := [fac.factor for fac in factors(f_denr) |
                 odd?(fac.exponent)]
         fl2 := [fac.factor for fac in factors(f_numr) |
