@@ -653,7 +653,6 @@
   (|FunctionSpaceReduce| . FSRED)
   (|FunctionSpaceToUnivariatePowerSeries| . FS2UPS)
   (|FunctionSpaceToExponentialExpansion| . FS2EXPXP)
-  (|FunctionSpaceUnivariatePolynomialFactor| . FSUPFACT)
   (|GaloisGroupFactorizationUtilities| . GALFACTU)
   (|GaloisGroupFactorizer| . GALFACT)
   (|GaloisGroupPolynomialUtilities| . GALPOLYU)
