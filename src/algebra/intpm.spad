@@ -125,8 +125,6 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
            insqrt     : F -> F
            matchei    : (F, SY) -> REC
            matcherfei : (F, SY, Boolean) -> REC
-           matchsici  : (F, SY) -> REC
-           matchfresnel : (F, SY) -> REC2
            matchli    : (F, SY) -> List F
            matchli0   : (F, K, SY) -> List F
            matchdilog : (F, SY) -> List F
@@ -222,91 +220,6 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
            opt_d := optional(pmd::F)
            opt_e := optional(pme::F)
 
--- matches the integral to a result of the form d * Si(u) or d * Ci(u)
--- returns [case, u, d]
-           matchsici(f, x) ==
-             res0 := new()$RES
-             b := pmb::F
-             t := tan(a := pma::F)
-             patsi := (c*t + opt_d) / (patden := b + opt_e*t^2)
-             patci := (c - (pmf::F)*t^2) / patden
-             patci0 := c / patden
-             ci0? : Boolean
-             (ci? := failed?(res := patternMatch(f, convert(patsi)@PAT, res0)))
-               and (ci0? := failed?(res := patternMatch(f, convert(patci)@PAT, res0)))
-                 and failed?(res := patternMatch(f, convert(patci0)@PAT, res0)) =>
-                   [NONE, 0, 0]
-             l := mkalist res
-             a_val := l.pma
-             na := (2::F)*a_val
-             (dna := differentiate(na, x)) = 0 => [NONE, 0, 0]
-             ta := tan(a_val)
-             nden := (na*(ta^2 + 1))
-             d :=
-                 ci? =>
-                     ci0? =>
-                         f*nden/dna
-                     f*nden/((1 - ta^2)*dna)
-                 f*nden/(ta*dna)
-             zero? differentiate(d, x) =>
-                 ci? =>
-                     ci0? =>
-                         [CI0, na, d/(2::F)]
-                     [CI, na, d]
-                 [SI, na, d/(2::F)]
-             [NONE, 0, 0]
-
--- matches the integral of the form sin(pi/2*f(u)^2)*f'(u) or cos(pi/2*f(u)^2)*f'(u)
--- to a result of the form p(f(u))*fresnel(f(u))+l(f(u))
--- returns [case, f, d, l]
-           matchfresnel(f, x) ==
-             b := pmb::F
-             t := tan(a := pma::F)
-             patden := (t^2 + b)
-             pats := c*t / patden
-             --patc := (c - c * t^2) / patden
-             patc := c / patden
-
-             -- can we match the pattern?
-             ress := new()$RES
-             resc := new()$RES
-             sx? : Boolean := failed?(ress := patternMatch(f, convert(pats)@PAT, ress))
-             cx? : Boolean := failed?(resc := patternMatch(f, convert(patc)@PAT, resc))
-
-             -- Could not match
-             sx? and cx? => [NONE, 0, 0, 0]
-
-             -- post-process the match result
-             not sx? =>
-               l := mkalist ress
-               al := insqrt(4::F/pi()$F * (l.pma)::F)
-               ald := l.pmc
-               gamma := ald / D(al, x)
-
-               zero? D(gamma, x) =>
-                 newarg := al
-                 prefactor := gamma / 2::F
-                 [FS, newarg, prefactor, 0]
-
-               [NONE, 0, 0, 0]
-
-             not cx? =>
-               l := mkalist resc
-               al := insqrt(4::F/pi()$F * (l.pma)::F)
-               ald := l.pmc
-               gamma := ald / D(al, x)
-
-               zero? D(gamma, x) =>
-                 newarg := al
-                 prefactor := gamma / 2::F
-                 linpart := al*prefactor
-                 [FC, newarg, prefactor, linpart]
-
-               [NONE, 0, 0, 0]
-
-             -- Nothing fits
-             [NONE, 0, 0, 0]
-
 -- returns a simplified sqrt(y)
            insqrt y ==
              rec := froot(y, 2)$PolynomialRoots(IndexedExponents K, K, R, P, F)
@@ -326,15 +239,6 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
              cse := (rec := matcherfei(f, x, false)).which
              cse = EI   => [rec.coeff * Ei(rec.exponent), 0]
              cse = ERF  => [rec.coeff * erf(rec.exponent), 0]
-             cse := (rec := matchsici(f, x)).which
-             cse = SI => [rec.coeff * Si(rec.exponent), 0]
-             cse = CI => [rec.coeff * Ci(rec.exponent), 0]
-             cse = CI0 => [rec.coeff * Ci(rec.exponent)
-                           + rec.coeff * log(rec.exponent), 0]
-
-             cse := (rec2 : REC2 := matchfresnel(f, x)).which
-             cse = FS => [rec2.coeff * fresnelS(rec2.exponent) + rec2.addpart, 0]
-             cse = FC => [rec2.coeff * fresnelC(rec2.exponent) + rec2.addpart, 0]
 
              "failed"
 

@@ -453,6 +453,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
   Exports ==> with
 
     ei_int : (Z, F, F, SE) -> PSOL2
+    mk_erf : (F, F) -> F
 
   Implementation ==> add
     import from IntegrationTools(R, F)
@@ -1764,6 +1765,37 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             res := get_scoeff(scand, denf, k, der, res)
         reverse!(res)
 
+    mk_erf1(uc : F, ff : F) : F ==
+        uc1 := sqrt(uc)
+        sqrt(pi()$F)*erf(uc1*ff)/uc1
+
+    CI ==> Complex(Integer)
+
+    if R is CI then
+
+        is_imaginary?(c : F) : Boolean ==
+            nc := numer(c)
+            dc := denom(c)
+            nl := coefficients(nc) pretend List(CI)
+            dl := coefficients(dc) pretend List(CI)
+            every?((c1 : CI) : Boolean +-> imag(c1) = 0, dl)
+              and every?((c1 : CI) : Boolean +-> real(c1) = 0, nl)
+
+        mk_erf(uc : F, ff : F) : F ==
+            not(is_imaginary?(uc)) => mk_erf1(uc, ff)
+            im := (complex(0, 1)$CI pretend R)::F
+            uc1 := -(2::F)*im*uc/pi()$F
+            s : F := 1
+            if smaller?(uc1, -uc1) then
+                s := -1
+                uc1 := -uc1
+            uc2 := sqrt(uc1)
+            (2::F)*(fresnelC(uc2*ff)-im*s*fresnelS(uc2*ff))/uc2
+
+    else
+
+        mk_erf(uc : F, ff : F) : F == mk_erf1(uc, ff)
+
     get_prims(scand : SREC, denf : UP, denf1 : UP, gexp : Z,
               k : K) : List(F) ==
         nn := scand.factor
@@ -1789,12 +1821,12 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             nf2 := scand.radicand
             for j in 1..l1 repeat
                 j1 := j::F/lf
-                c1 := (-uc)^(-j1)*exp(-vshift)/lf
+                c1s := exp(-vshift)/lf
                 f1 :=
                     2*j = d =>
                         ff := multivariate(nf2::RF, k)
-                        c1*sqrt(pi()$F)*erf(sqrt(-uc)*ff)
-                    -c1*Gamma(j1, -f)
+                        c1s*mk_erf(-uc, ff^j)
+                    -c1s*(-uc)^(-j1)*Gamma(j1, -f)
                 if cfac ~= 0 then
                     f11 := f1
                     f1 := 0
