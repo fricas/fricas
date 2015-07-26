@@ -53,7 +53,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     import from RationalIntegration(F, UP)
     import from AlgebraicIntegration(R, F)
     import from AlgebraicManipulations(R, F)
-    import from ElementaryRischDESystem(R, F)
     import from TranscendentalIntegration(F, UP)
     import from PureAlgebraicIntegration(R, F, F)
     import from IntegrationResultFunctions2(F, F)
@@ -72,7 +71,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     primint     : (F, SE, K) -> IR
     expint      : (F, SE, K) -> IR
     lambint     : (F, SE, K) -> IR
-    tanint      : (F, SE, K) -> IR
     prim?       : (K, SE)  -> Boolean
     isx?        : (F, SE)  -> Boolean
     addx        : (IR, F) -> IR
@@ -97,20 +95,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
                       eta'/eta, (x1 : F) : F +-> differentiate(x1, x),
                       derivative, extint, (x2 : F) : IR +-> lfintegrate(x2, x))
         map((x1 : RF) : F +-> multivariate(x1, k), r1.answer) + r1.a0
-
-
-    tanint(f, x, k) ==
-      eta' := differentiate(eta := first argument k, x)
-      r1  := tanintegrate(univariate(f, k),
-               (x1 : UP) : UP +-> differentiate(x1,
-                  (x2 : F) : F +-> differentiate(x2, x),
-                  monomial(eta', 2) + eta'::UP),
-               (x6 : Integer, x2 : F, x3 : F) : Union(List F, "failed") +->
-                  rischDEsys(x6, 2 * eta, x2, x3, x,
-                    (x4 : F, x5 : List F) : U3 +-> lflogint(x4, x, x5),
-                    (x4 : F, x5 : F) : U2 +-> lfextendedint(x4, x, x5)))
-      map((x1 : RF) : F +-> multivariate(x1, k), r1.answer) + _
-            lfintegrate(r1.a0, x)
 
 -- tries various tricks since the integrand contains something not elementary
     unknownint(f, x) ==
@@ -209,7 +193,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
       empty?(l := varselect(kernels f, x)) => (xf * f)::IR
       symbolIfCan(k := kmax l) case SE =>
         map((x1 : RF) : F+->multivariate(x1, k), integrate univariate(f, k))
-      is?(k, 'tan)  => addx(tanint(f, x, k), xf)
       is?(k, 'exp)  => addx(expint(f, x, k), xf)
       is?(k, 'lambertW) => addx(lambint(f, x, k), xf)
       prim?(k, x)        => addx(primint(f, x, k), xf)

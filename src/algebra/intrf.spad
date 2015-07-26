@@ -351,12 +351,12 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       ++ expintegrate(f, ', foo) returns \spad{[g, a]} such that
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in F;
       ++ Argument foo is a Risch differential equation solver on F;
-    tanintegrate   : (RF, UP -> UP, (Z, F, F) -> UF2) -> IRF
-      ++ tanintegrate(f, ', foo) returns \spad{[g, a]} such that
-      ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in F;
-      ++ Argument foo is a Risch differential system solver on F;
     lambintegrate : (RF, F, F -> F, UP -> UP, F -> UF, F -> IR0) -> IRIR
-      ++ like tanintegrate
+      ++ lambintegrate(f, dx, D1, D2, extint, int) integrates f in
+      ++ extension by LambertW function.  dx is derivative
+      ++ of the argument of LambertW, D1 is dervative on F,
+      ++ D2 is derivative on UP, extint is extended integration
+      ++ function on F, int is integration function on F.
     monomialIntegrate : (RF, UP -> UP) -> REC
       ++ monomialIntegrate(f, ') returns \spad{[ir, s, p]} such that
       ++ \spad{f = ir' + s + p} and all the squarefree factors of the
@@ -376,7 +376,6 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
     expintegratepoly2   : (GP, (Z, F) -> PSOL2) -> Union(GPF, GPGP)
     expextintfrac      : (RF, UP -> UP, RF) -> Union(FFR, "failed")
     logprmderiv        : (RF, UP -> UP)    -> RF
-    tanintegratespecial : (RF, RF -> RF, (Z, F, F) -> UF2) -> Union(RFF, RFRF)
     UP2UP2             : UP -> UP2
     UP2UPR             : UP -> UPR
     UP22UPR            : UP2 -> UPR
@@ -463,27 +462,6 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
         p   := reductum p
       zero? notelm => [answr, coef0]
       [answr, notelm + monomial(coef0, 0)]
-
-
--- f is either 0 or of the form p(t)/(1 + t^2)^n
--- returns either
---   (q in RF, a in F)  st f = q' + a, and a=0 or a has no integral in F
--- or (q in RF, r in RF) st f = q' + r, and r has no integral elem/UP
-    tanintegratespecial(f, derivation, FRDE) ==
-      ans : RF := 0
-      p := monomial(1, 2)$UP + 1
-      while (n := degree(denom f) quo 2) ~= 0 repeat
-        r := numer(f) rem p
-        a := coefficient(r, 1)
-        b := coefficient(r, 0)
-        (u := FRDE(n, a, b)) case "failed" => return [ans, f]
-        l := u::List(F)
-        term : RF := (monomial(first l, 1)$UP + second(l)::UP) / denom f
-        ans := ans + term
-        f   := f - derivation term    -- the order of the pole at 1+t^2 drops
-      zero?(c0 := retract(retract(f)@UP)@F) or
-        (u := FRDE(0, c0, 0)) case "failed" => [ans, c0]
-      [ans + first(u::List(F))::UP::RF, 0::F]
 
     notelementary rec ==
       rec.ir + integral(rec.polypart::RF + rec.specpart, monomial(1, 1)$UP :: RF)
@@ -572,26 +550,6 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
                 error "impossible"
         -- XXX FIXME handle part in F
         [mkir(answr, lcoeff, 0), i0]
-
--- returns
---   (g in IR, a in F)  st f = g' + a, and a = 0 or a has no integral in F
-    tanintegrate(f, derivation, FRDE) ==
-      rec := monomialIntegrate(f, derivation)
-      not elem?(i1 := rec.ir) => [notelementary rec, 0]
-      r := monomialIntPoly(rec.polypart, derivation)
-      t := monomial(1, 1)$UP
-      c := coefficient(r.polypart, 1) / leadingCoefficient(derivation t)
-      derivation(c::UP) ~= 0 =>
-        [i1 + mkAnswer(r.answer::RF, empty(),
-                       [[r.polypart::RF + rec.specpart, dummy]$NE]), 0]
-      logs : List(LOG) :=
-         zero? c => empty()
-         [[1, monomial(1, 1)$UPR - (c/(2::F))::UP::RF::UPR, (1 + t^2)::RF::UPR]]
-      c0 := coefficient(r.polypart, 0)
-      (u := tanintegratespecial(rec.specpart, x1+->differentiate(x1, derivation),
-       FRDE)) case RFRF =>
-        [i1 + mkAnswer(r.answer::RF + u.elem, logs, [[u.notelem, dummy]$NE]), c0]
-      [i1 + mkAnswer(r.answer::RF + u.answer, logs, empty()), u.a0 + c0]
 
 -- returns either
 --   (q in UP, a in F)  st p = q'+ a, and a=0 or a has no integral in UP
