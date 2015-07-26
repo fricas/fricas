@@ -64,35 +64,14 @@ DenominatorIntegration(R, F) : Exports == Implementation where
       solve_u : (F, F, Symbol) -> Union(List(List(F)), "failed")
         ++ solve_u(f1, u, x) returns [[c1, k1], ..., [cn, kn]] such
         ++ that f1 = c1*u^k1 + ... + cn^kn and D(ci, x) = 0 or "failed".
-      factor : MP -> Factored(MP)
-        ++ factor(p) should be local but conditional.
   Implementation == add
 
     Q ==> Fraction(Integer)
 
-    MP_to_UP(p : MP, k : K) : UP ==
-        up1 := univariate(p, k)
-        map((c : MP) : F +-> c::F, up1
-           )$SparseUnivariatePolynomialFunctions2(MP, F)
-
-    MULTFACT ==> MultivariateFactorize(K, Exp, R, MP)
-
-    if R has Join(EuclideanDomain, CharacteristicZero) then
-
-        factor(p) == factor(p)$MULTFACT
-
-    else
-
-        factor(p) == error "No factor for polynomials over R"
-
-
-
-    -- 1. Find li-capable factors.  In principle we should
-    -- factor in UP, but that may be expensive due to
-    -- algebraic extensions, so we factor in MP (which may
-    -- miss some of good factors).
-    li_factors(df : MP, k : K, lk : List(K), x : SY) : List(FREC) ==
-        lfac := factors(factor(df))
+    -- 1. Find li-capable factors.  FIXME: In principle when
+    -- factoring df we should consider all kernels.
+    li_factors(df : UP, k : K, lk : List(K), x : SY) : List(FREC) ==
+        lfac := factors(factorPolynomial(df)$ExpressionFactorPolynomial(R, F))
         res : List FREC := []
         dummy := create()$SingletonAsOrderedSet
         vlst := empty()$List(F)
@@ -101,7 +80,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
         nk := #lk
         u0 := argument(k).1
         for fac in lfac repeat
-            f1 := MP_to_UP(fac.factor, k)
+            f1 := fac.factor
             f1 := inv(leadingCoefficient(f1))*f1
             deg1 := degree(f1)
             deg1 = 0 => "iterate"
@@ -144,8 +123,8 @@ DenominatorIntegration(R, F) : Exports == Implementation where
         res
 
     -- Find poly-capable factors.
-    poly_factors(df : MP, k : K, lk : List(K), x : SY) : List(FREC) ==
-        lfac := factors(factor(df))
+    poly_factors(df : UP, k : K, lk : List(K), x : SY) : List(FREC) ==
+        lfac := factors(factorPolynomial(df)$ExpressionFactorPolynomial(R, F))
         res : List(FREC) := []
         dummy := create()$SingletonAsOrderedSet
         vlst := empty()$List(F)
@@ -154,7 +133,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
         nk := #lk
         v0 := argument(k).1
         for fac in lfac repeat
-            f1 := f1 := MP_to_UP(fac.factor, k)
+            f1 := fac.factor
             deg1 := degree(f1)
             deg1 = 0 => "iterate"
             tc := coefficient(f1, 0)
@@ -336,7 +315,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
 
     li_int3(f : F, rf : RF, k : K, lk : List(K), x : SY
            ) : Union(DREC, "failed") ==
-        ldrs := li_factors(denom(f), k, lk, x)
+        ldrs := li_factors(denom(rf), k, lk, x)
         lidens := [ldr.factor for ldr in ldrs]
         -- print(ldrs::OutputForm)
         empty?(lidens) => "failed"
@@ -410,7 +389,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
 
     poly_int3(f : F, rf : RF, k : K, lk : List(K), x : SY
            ) : Union(DREC, "failed") ==
-        ldrs := poly_factors(denom(f), k, lk, x)
+        ldrs := poly_factors(denom(rf), k, lk, x)
         polydens := [ldr.factor for ldr in ldrs]
         empty?(polydens) => "failed"
         polydens1 := [inv(leadingCoefficient(p))*p for p in polydens]
