@@ -406,7 +406,11 @@ AlgebraicFunction(R, F) : Exports == Implementation where
 
     root_sum1(expr : F, p : UP, x : F) : F ==
         expr = 0 => 0
-        nexpr := univariate(expr, (k := retract(x)@K), p)$POLYCATQ
+        k := retract(x)@K
+        degree(p) = 1 =>
+            a := -coefficient(p, 0)/coefficient(p, 1)
+            eval(expr, k, a)
+        nexpr := univariate(expr, k, p)$POLYCATQ
         xs := retract(x)@SE
         every?((c : F) : Boolean +-> D(c, xs) = 0, coefficients(nexpr)) =>
             res : F := 0
