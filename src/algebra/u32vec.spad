@@ -257,6 +257,9 @@ U32VectorPolynomialOperations() : Export == Implementation where
         to_mod_pa : (SparseUnivariatePolynomial Integer, Integer) -> PA
           ++ to_mod_pa(s, p) reduces coefficients of polynomial
           ++ s modulo prime p and converts the result to vector
+        pa_to_sup : PA -> SparseUnivariatePolynomial Integer
+          ++ pa_to_sup(v) converts vector of coefficients to
+          ++ a polynomial
         gcd : (PA, PA, Integer) -> PA
           ++ gcd(v1, v2, p) computes monic gcd of v1 and v2 modulo p.
         gcd : (PrimitiveArray PA, Integer, Integer, Integer) -> PA
@@ -315,6 +318,14 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 ncoeffs(n) := positiveRemainder(leadingCoefficient(s), p)
                 s := reductum(s)
             ncoeffs
+
+        pa_to_sup(v : PA) : SparseUnivariatePolynomial Integer ==
+            n := #v
+            res : SparseUnivariatePolynomial(Integer) := 0
+            for i in 0..(n - 1) repeat
+                res := monomial(v(i), i)$SparseUnivariatePolynomial(Integer)
+                       + res
+            res
 
         vector_add_mul(v1 : PA, v2 : PA, m : Integer, n : Integer, _
                          c : Integer, p : Integer) : Void ==
