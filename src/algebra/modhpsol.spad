@@ -1136,23 +1136,12 @@ ModularHermitePade() : with
    Qmul ==> QSMULMOD32$Lisp
    PEVALUT ==> PolynomialEvaluationUtilities
 
-   SUPI_to_PA(poli : SparseUnivariatePolynomial(Integer), _
-                p : Integer) : PA ==
-       n := degree(poli)
-       pa := new(n + 1, 0)$PA
-       while not(zero? poli) repeat
-           m := degree poli
-           nlc := positiveRemainder(leadingCoefficient(poli), p)
-           pa(m) := nlc
-           poli := reductum poli
-       pa
-
    VSUPI_to_VPA(vps : Vector SparseUnivariatePolynomial(Integer), _
                   p : Integer) : VPA ==
        m := #vps
        vpa := new(m, empty()$PA)$VPA
        for i in 1..m repeat
-           vpa(i) := SUPI_to_PA(vps(i), p)
+           vpa(i) := to_mod_pa(vps(i), p)$U32VectorPolynomialOperations
        vpa
 
    SUPPI_to_PA(poli : SUP(MP), vars : List Symbol, _
