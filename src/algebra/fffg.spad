@@ -61,11 +61,10 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
 
   Exports == with
 
-    fffg : (List D, cFunction, List NonNegativeInteger) -> Matrix SUP D
-      ++ \spad{fffg} is the general algorithm as proposed by Beckermann and
-      ++ Labahn.
+    fffg : (List D, cFunction, Vector Integer, NonNegativeInteger) -> Matrix SUP D
+      ++ \spad{fffg(C, c, vd, K)} is the general algorithm as proposed
+      ++ by Beckermann and Labahn.
       ++
-
       ++ The first argument is the list of c_{i, i}.  These are the only values
       ++ of C explicitely needed in \spad{fffg}.
       ++
@@ -74,9 +73,15 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
       ++ rule as descibed in Equation (2).  Note that the information about f
       ++ is therefore encoded in c.
       ++
-      ++ The third argument is the vector of degree bounds n, as introduced in
-      ++ Definition 2.1.  In particular, the sum of the entries is the order of
-      ++ the Mahler system computed.
+      ++ vd is modified by the routine, on input it is the vector of degree
+      ++ bounds n, as introduced in Definition 2.1.  On output it is
+      ++ vector of defects (degree bound minus degree of solution).
+      ++
+      ++ K is requested order of solution.
+
+    fffg  : (List D, cFunction, List NonNegativeInteger) -> Matrix SUP D
+      ++ \spad{fffg(C, c, eta)} is version of fffg which uses sum
+      ++ of eta as order
 
     interpolate : (List D, List D, NonNegativeInteger) -> Fraction SUP D
       ++ \spad{interpolate(xlist, ylist, deg)} returns the rational
@@ -123,6 +128,12 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
       ++
       ++ The second argument, CA(k, l, f), should return the coefficient of x^k
       ++ in z^l f(x).
+
+    generalInterpolation : (List D, CoeffAction,  Vector V,
+               Vector Integer, NonNegativeInteger) -> Matrix SUP D
+      ++ \spad{generalInterpolation(C, CA, f, vd, K)} is like
+      ++ \spad{generalInterpolation(C, CA, f, eta)} but solves up to
+      ++ order K and modifies vd to return defects of solutions
 
     generalCoefficient : (CoeffAction, Vector V,
                          NonNegativeInteger, Vector SUP D) -> D
@@ -244,6 +255,14 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
       c : cFunction := (x, y) +-> generalCoefficient(coeffAction, f,
                                          (x - 1)::NonNegativeInteger, y)
       fffg(C, c, eta)
+
+    generalInterpolation(C : List D, coeffAction : CoeffAction,
+                         f : Vector V, vd : Vector Integer,
+                         K : NonNegativeInteger) : Matrix SUP D ==
+
+      c : cFunction := (x, y) +-> generalCoefficient(coeffAction, f,
+                                         (x - 1)::NonNegativeInteger, y)
+      fffg(C, c, vd, K)
 
 
 
@@ -416,8 +435,9 @@ $c_{\sigma, \sigma}$.
 )endif
 
 -- a major part of the time is spent here
-    recurrence(M : Matrix SUP D, pi : NonNegativeInteger, m : NonNegativeInteger,
-               r : Vector D, d : D, z : SUP D, Ck : D, p : Vector D) : Matrix SUP D ==
+    recurrence(M : Matrix SUP D, pi : NonNegativeInteger,
+               m : NonNegativeInteger, r : Vector D, d : D, z : SUP D,
+               Ck : D, p : Vector D, vd : Vector Integer) : Matrix SUP D ==
 
         rPi : D := qelt(r, pi)
         polyf : SUP D := rPi * (z - Ck::SUP D)
@@ -427,7 +447,7 @@ $c_{\sigma, \sigma}$.
             newMiPi : SUP D := polyf * MiPi
 
 -- update columns ~= pi and calculate their sum
-            for l in 1..m | l ~= pi repeat
+            for l in 1..m | l ~= pi and vd(l) >= 0 repeat
                 rl : D  := qelt(r, l)
 -- I need the coercion to SUP D, since exquo returns an element of
 -- Union("failed", SUP D)...
@@ -443,54 +463,59 @@ $c_{\sigma, \sigma}$.
         M
 
 
-    fffg(C : List D, c : cFunction, eta : List NonNegativeInteger) : Matrix SUP D ==
--- eta is the vector of degrees. We compute M with degrees eta+e_i-1, i=1..m
+    fffg(C : List D, c : cFunction, vd : Vector Integer,
+         K : NonNegativeInteger) : Matrix SUP D ==
         z : SUP D := monomial(1, 1)
-        m : NonNegativeInteger := #eta
+        m : NonNegativeInteger := #vd
         M : Matrix SUP D := scalarMatrix(m, 1)
         d : D := 1
-        K : NonNegativeInteger := reduce(_+, eta)
         etak : Vector NonNegativeInteger := zero(m)
         r : Vector D := zero(m)
         p : Vector D := zero(m)
-        Lambda : List Integer
         lambdaMax : Integer
         lambda : NonNegativeInteger
 
         for k in 1..K repeat
 -- k = sigma+1
 
-            for l in 1..m repeat r.l := c(k, column(M, l))
-
-            Lambda := [eta.l-etak.l for l in 1..m | r.l ~= 0]
+            lambda := 0
+            lambdaMax := -1
+            for l in 1..m repeat
+                (vdl := vd(l)) < 0 => "iterate"
+                r(l) := c(k, column(M, l))
+                r(l) = 0 => "iterate"
+                if vdl > lambdaMax then
+                    lambdaMax := vdl
+                    lambda := l
 
 -- if Lambda is empty, then M, d and etak remain unchanged. Otherwise, we look
 -- for the next closest para-normal point.
 
-            (empty? Lambda) => "iterate"
-
-            lambdaMax := reduce(max, Lambda)
-            lambda := 1
-            while eta.lambda-etak.lambda < lambdaMax or r.lambda = 0 repeat
-                lambda := lambda + 1
+            lambda = 0 => "iterate"
 
 -- Calculate leading coefficients
 
             for l in 1..m | l ~= lambda repeat
-                if etak.l > 0 then
-                    p.l := coefficient(M.(l, lambda),
-                                       (etak.l-1)::NonNegativeInteger)
+                if etak(l) > 0 and vd(l) >= 0 then
+                    p(l) := coefficient(M(l, lambda),
+                                       (etak(l) - 1)::NonNegativeInteger)
                 else
-                    p.l := 0
+                    p(l) := 0
 
 -- increase order and adjust degree constraints
 
-            M := recurrence(M, lambda, m, r, d, z, C.k, p)
+            M := recurrence(M, lambda, m, r, d, z, C.k, p, vd)
 
             d := r.lambda
-            etak.lambda := etak.lambda + 1
+            etak(lambda) := etak(lambda) + 1
+            vd(lambda) := vd(lambda) - 1
 
         M
+
+    fffg(C : List D, c : cFunction, eta : List NonNegativeInteger
+        ) : Matrix SUP D ==
+       vd : Vector Integer := vector([ei::Integer for ei in eta])
+       fffg(C, c, vd, reduce(_+, eta))
 
 )if false
 \section{package FFFGF FractionFreeFastGaussianFractions}
