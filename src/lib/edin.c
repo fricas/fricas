@@ -165,7 +165,7 @@ do_reading(void)
           if (ttt_read > 0)
             num_read = num_read + ttt_read;
         }
-        if ((in_buff[num_proc + 1] == _LBRACK)) {
+        if (in_buff[num_proc + 1] == _LBRACK) {
 
           /* ESC [  */
 
