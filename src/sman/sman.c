@@ -744,12 +744,6 @@ kill_all_children(void)
 }
 
 static void
-clean_up_terminal(void)
-{
-  tcsetattr(0, TCSAFLUSH, &oldbuf);
-}
-
-static void
 monitor_children(void)
 {
   int dead_baby, stat;
