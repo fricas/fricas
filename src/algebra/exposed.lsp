@@ -782,7 +782,6 @@
   (|ODETools| . ODETOOLS)
   (|Operator| . OP)
   (|OrderedDirectProduct| . ODP)
-  (|OrderedFreeMonoid| . OFMONOID)
   (|OrderedVariableList| . OVAR)
   (|OrderingFunctions| . ORDFUNS)
   (|OrderlyDifferentialPolynomial| . ODPOL)
