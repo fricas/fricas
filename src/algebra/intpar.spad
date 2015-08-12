@@ -627,6 +627,67 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
         diffextint1((x : RF) : UP +-> coeff0(x), ext1, csolve, lg)
 
 
+)abbrev package RDEAUX RDEaux
+RDEaux(F) : Exports == Implementation where
+  F : Field
+  Z ==> Integer
+  UP  ==> SparseUnivariatePolynomial F
+  RSOL ==> Record(ans : UP, remainder : UP)
+  DSOL ==> Record(ans : List(UP), acoeff : UP, eegen : UP, bpar : UP,
+                  lcpar : List UP, dpar : Z)
+  USOL ==> Union(List(RSOL), DSOL)
+  Exports ==> with
+
+    multi_SPDE : (UP, UP, List(UP), Z, UP -> UP) -> USOL
+      ++ multi_SPDE(a, b, lc, d, der)
+    SPDE1 : (UP, UP, UP -> UP) -> RSOL
+      ++ SPDE1(b, c, D) solves Q' + b Q = c and returns [Q, r] where
+      ++ r = c - ( Q' + b Q).  That is when r is zero then Q is
+      ++ true solution, otherwise r represets unsolved part of c.
+      ++ Moreover def(r) < deg(bQ).  Note: SPDE1 assumes that
+      ++ deg(Q') < deg(bQ) for all Q.
+
+  Implementation ==> add
+
+    EE_Rec ==> Record(coef1 : UP, coef2 : UP)
+
+    multi_SPDE(a, b, lc, d, der) ==
+        d <$Z 0 => [[0, c]$RSOL for c in lc]
+        every?(zero?, lc) => [[0, 0]$RSOL for c in lc]
+        ee := extendedEuclidean(a, b)
+        ee.generator ~= 1 =>
+            [[0 for c in lc], 1, ee.generator, b, lc, d]$DSOL
+        lr : List(UP) := []
+        lnc : List(UP) := []
+        for c in lc repeat
+            cc1 := ee.coef1*c
+            cc2 := ee.coef2*c
+            qr := divide(cc2, a)
+            r := qr.remainder
+            nc := cc1 + b*qr.quotient - der(r)
+            lnc := cons(nc, lnc)
+            lr := cons(r, lr)
+        lr := reverse!(lr)
+        res1 := multi_SPDE(a, b + der(a), reverse!(lnc), d - degree(a)$UP, der)
+        res1 case DSOL =>
+            dres := res1::DSOL
+            [[a*s2 + r for s2 in dres.ans for r in lr], a*dres.acoeff,
+             dres.eegen, dres.bpar, dres.lcpar, dres.dpar]$DSOL
+        [[a*s1.ans + r, s1.remainder]$RSOL for s1 in res1::List(RSOL)
+                                           for r in lr]
+
+    SPDE1(b, c, der) ==
+      q : UP := 0
+      db := (degree b)::Z
+      lb := leadingCoefficient b
+      while c ~= 0 repeat
+          (n := (degree c)::Z - db) < 0 => return [q, c]
+          qq := monomial((leadingCoefficient c) / lb, n::NonNegativeInteger)
+          c := c - b*qq - der(qq)
+          q := q + qq
+      [q, 0]
+
+
 )abbrev package RDEPAR ParametricRischDE
 ParametricRischDE(R, F) : Exports == Implementation where
   R : Join(GcdDomain, Comparable, CharacteristicZero,
@@ -751,11 +812,11 @@ ParametricRischDE(R, F) : Exports == Implementation where
 
     RF_to_GP(f : RF) : GP == (numer(f)::GP exquo denom(f)::GP)::GP
 
-    do_spde1(b : UP, lc : List(UP), d : Z, der : UP -> UP,
+    do_spde1(b : UP, lc : List(UP), der : UP -> UP,
              get_rs : Matrix(F) -> Matrix(F)) : L_Param_UP ==
-        import TranscendentalRischDE(F, UP)
-        la := [SPDEnocancel1(b, c, d, der).ans for c in lc]
-        lrem := [der(a1) + b*a1 - c for a1 in la for c in lc]
+        lar := [SPDE1(b, c, der)$RDEaux(F) for c in lc]
+        la := [ar.ans for ar in lar]
+        lrem := [ar.remainder for ar in lar]
         rs1 : Matrix(F) := reducedSystem(matrix([lrem]))
         rs2 := get_rs(rs1)
         lkv := nullSpace(rs2)
@@ -771,7 +832,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
             degt := degree(dt) - 1
             base_case := dt = 1
             (b ~= 0) and (base_case or degree(b) > max(0, degt)) =>
-                do_spde1(b, lc, d, der, get_rs)
+                do_spde1(b, lc, der, get_rs)
             lcr := [c::RF for c in lc]
             res1 := do_degrad(b::RF, lcr)
             [[retract(re.ratpart)@UP, re.coeffs] for re in res1]

@@ -912,7 +912,6 @@
   (|ToolsForSign| . TOOLSIGN)
   (|TranscendentalHermiteIntegration| . INTHERTR)
   (|TranscendentalIntegration| . INTTR)
-  (|TranscendentalRischDE| . RDETR)
   (|TranscendentalRischDESystem| . RDETRS)
   (|TransSolvePackageService| . SOLVESER)
   (|TriangularMatrixOperations| . TRIMAT)
