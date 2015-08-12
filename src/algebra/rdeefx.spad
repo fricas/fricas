@@ -233,48 +233,6 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
                     )$Matrix(F)
         [m2, [bv(1..nc) for bv in l3]]
 
-)abbrev package RDEAUX RDEaux
-RDEaux(F) : Exports == Implementation where
-  F : Field
-  Z ==> Integer
-  UP  ==> SparseUnivariatePolynomial F
-  RSOL ==> Record(ans : UP, remainder : UP)
-  DSOL ==> Record(ans : List(UP), acoeff : UP, eegen : UP, bpar : UP,
-                  lcpar : List UP, dpar : Z)
-  USOL ==> Union(List(RSOL), DSOL)
-  Exports ==> with
-
-    multi_SPDE : (UP, UP, List(UP), Z, UP -> UP) -> USOL
-      ++ multi_SPDE(a, b, lc, d, der)
-
-  Implementation ==> add
-
-    EE_Rec ==> Record(coef1 : UP, coef2 : UP)
-
-    multi_SPDE(a, b, lc, d, der) ==
-        d <$Z 0 => [[0, c]$RSOL for c in lc]
-        every?(zero?, lc) => [[0, 0]$RSOL for c in lc]
-        ee := extendedEuclidean(a, b)
-        ee.generator ~= 1 =>
-            [[0 for c in lc], 1, ee.generator, b, lc, d]$DSOL
-        lr : List(UP) := []
-        lnc : List(UP) := []
-        for c in lc repeat
-            cc1 := ee.coef1*c
-            cc2 := ee.coef2*c
-            qr := divide(cc2, a)
-            r := qr.remainder
-            nc := cc1 + b*qr.quotient - der(r)
-            lnc := cons(nc, lnc)
-            lr := cons(r, lr)
-        lr := reverse!(lr)
-        res1 := multi_SPDE(a, b + der(a), reverse!(lnc), d - degree(a)$UP, der)
-        res1 case DSOL =>
-            dres := res1::DSOL
-            [[a*s2 + r for s2 in dres.ans for r in lr], a*dres.acoeff,
-             dres.eegen, dres.bpar, dres.lcpar, dres.dpar]$DSOL
-        [[a*s1.ans + r, s1.remainder]$RSOL for s1 in res1::List(RSOL)
-                                           for r in lr]
 
 )abbrev package PRROOT PolynomialRationalRoots
 PolynomialRationalRoots(F, UP) : Exports == Implementation where
@@ -462,7 +420,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
   Implementation ==> add
     import from IntegrationTools(R, F)
-    import from TranscendentalRischDE(F, UP)
     import from TranscendentalIntegration(F, UP)
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
@@ -1201,13 +1158,12 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         spec1u := retractIfCan(rr1)@Union(UP, "failed")
         spec1u case "failed" => error "impossible 7"
         spec1p := spec1u::UP
-        maxd := degree(spec1p) -$Z degree(nfp)
-        res1 := SPDEnocancel1(nfp, spec1p, maxd, der)
+        res1 := SPDE1(nfp, spec1p, der)$RDEaux(F)
         a1 := res1.ans
         r2 := der(a1) + nfp*a1
         af := multivariate(a1::RF, k)
         def_f := multivariate(rr1 - r2::RF, k)
-        [af, def_f, not(res1.nosol)]
+        [af, def_f, res1.remainder = 0]
 
     -- Case when denf = 1 and nf is not linear in a primitive
     special_integrate1(nfp : UP, f : F, k : K, lk : List(K), x : Symbol,
@@ -1259,11 +1215,9 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         spec1u := retractIfCan(rr1)@Union(UP, "failed")
         spec1u case "failed" => error "impossible 10"
         spec1p := spec1u::UP
-        maxd := degree(spec1p) -$Z degree(nfp)
-        res2 := SPDEnocancel1(nfp, spec1p, maxd, derivation)
+        res2 := SPDE1(nfp, spec1p, derivation)$RDEaux(F)
         a1 := a1 + multivariate(res2.ans::RF, k)
-        not(res2.nosol) => return [a1, g, ansp, true]
-        spec1p := spec1p - derivation(res2.ans) -nfp*res2.ans
+        (spec1p := res2.remainder) = 0 => return [a1, g, ansp, true]
         degree(spec1p) >= degree(nfp) => error "impossible 8"
         r1 := g - multivariate(spec1p::RF, k)
         r := leadingCoefficient(nf)
