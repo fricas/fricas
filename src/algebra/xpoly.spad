@@ -1,153 +1,3 @@
-)abbrev domain OFMONOID OrderedFreeMonoid
-++ Author: Michel Petitot petitot@lifl.fr
-++ Date Created: 91
-++ Date Last Updated: 7 Juillet 92
-++ Fix History: compilation v 2.1 le 13 dec 98
-++ Basic Functions:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++    The free monoid on a set \spad{S} is the monoid of finite products of
-++ the form \spad{reduce(*, [si ^ ni])} where the si's are in S, and the ni's
-++ are non-negative integers. The multiplication is not commutative.
-++ For two elements \spad{x} and \spad{y} the relation \spad{x < y}
-++ holds if either \spad{length(x) < length(y)} holds or if these lengths
-++ are equal and if \spad{x} is smaller than \spad{y} w.r.t. the lexicographical
-++ ordering induced by \spad{S}.
-++ This domain inherits implementation from \spadtype{FreeMonoid}.
-++ Author: Michel Petitot (petitot@lifl.fr)
-
-OrderedFreeMonoid(S : OrderedSet) : OFMcategory == OFMdefinition where
-    NNI ==> NonNegativeInteger
-    REC ==> Record(gen : S, exp : NNI)
-
-    OFMcategory == Join(OrderedMonoid, RetractableTo S) with
-        "*":    (S, %) -> %
-          ++ \spad{s * x} returns the product of \spad{x} by \spad{s} on the left.
-        "*":    (%, S) -> %
-          ++ \spad{x * s} returns the product of \spad{x} by \spad{s} on the right.
-        "^":   (S, NNI) -> %
-          ++ \spad{s ^ n} returns the product of \spad{s} by itself \spad{n} times.
-        first : % -> S
-          ++ \spad{first(x)} returns the first letter of \spad{x}.
-        rest :  % -> %
-          ++ \spad{rest(x)} returns \spad{x} except the first letter.
-        mirror : % -> %
-          ++ \spad{mirror(x)} returns the reversed word of \spad{x}.
-        lexico : (%, %) -> Boolean
-          ++ \spad{lexico(x, y)} returns \spad{true} iff \spad{x} is smaller than \spad{y}
-          ++ w.r.t. the pure lexicographical ordering induced by \spad{S}.
-        hclf :   (%, %) -> %
-          ++ \spad{hclf(x, y)} returns the highest common left factor
-          ++ of \spad{x} and \spad{y},
-          ++ that is the largest \spad{d} such that \spad{x = d a} and \spad{y = d b}.
-        hcrf :   (%, %) -> %
-          ++ \spad{hcrf(x, y)} returns the highest common right
-          ++ factor of \spad{x} and \spad{y},
-          ++ that is the largest \spad{d} such that \spad{x = a d} and \spad{y = b d}.
-        lquo :   (%, %) -> Union(%, "failed")
-          ++ \spad{lquo(x, y)} returns the exact left quotient of \spad{x}
-          ++  by \spad{y} that is \spad{q} such that \spad{x = y * q},
-          ++ "failed" if \spad{x} is not of the form \spad{y * q}.
-        rquo :   (%, %) -> Union(%, "failed")
-          ++ \spad{rquo(x, y)} returns the exact right quotient of \spad{x}
-          ++ by \spad{y} that is \spad{q} such that \spad{x = q * y},
-          ++ "failed" if \spad{x} is not of the form \spad{q * y}.
-        lquo :   (%, S) -> Union(%, "failed")
-          ++ \spad{lquo(x, s)} returns the exact left quotient of \spad{x}
-          ++ by \spad{s}.
-        rquo :   (%, S) -> Union(%, "failed")
-          ++ \spad{rquo(x, s)} returns the exact right quotient
-          ++ of \spad{x} by \spad{s}.
-        divide :   (%, %) -> Union(Record(lm: %, rm: %), "failed")
-          ++ \spad{divide(x, y)} returns the left and right exact quotients of
-          ++ \spad{x} by \spad{y}, that is \spad{[l, r]} such that \spad{x = l * y * r}.
-          ++ "failed" is returned iff \spad{x} is not of the form \spad{l * y * r}.
-        overlap : (%, %) -> Record(lm : %, mm : %, rm : %)
-          ++ \spad{overlap(x, y)} returns \spad{[l, m, r]} such that
-          ++ \spad{x = l * m} and \spad{y = m * r} hold and such that
-          ++ \spad{l} and \spad{r} have no overlap,
-          ++ that is \spad{overlap(l, r) = [l, 1, r]}.
-        size :   % -> NNI
-          ++ \spad{size(x)} returns the number of monomials in \spad{x}.
-        nthExpon :  (%, Integer) -> NNI
-          ++ \spad{nthExpon(x, n)} returns the exponent of the
-          ++ \spad{n-th} monomial of \spad{x}.
-        nthFactor : (%, Integer) -> S
-          ++ \spad{nthFactor(x, n)} returns the factor of the \spad{n-th}
-          ++ monomial of \spad{x}.
-        factors : % -> List REC
-          ++ \spad{factors(a1\^e1, ..., an\^en)} returns \spad{[[a1, e1], ..., [an, en]]}.
-        length : % -> NNI
-          ++ \spad{length(x)} returns the length of \spad{x}.
-        varList : % -> List S
-          ++ \spad{varList(x)} returns the list of variables of \spad{x}.
-
-    OFMdefinition == FreeMonoid(S) add
-        Rep := ListMonoidOps(S, NNI, 1)
-
-      -- definitions
-        lquo(w : %, l : S) ==
-          x : List REC := listOfMonoms(w)$Rep
-          null x        => "failed"
-          fx : REC := first x
-          fx.gen ~= l  => "failed"
-          fx.exp = 1   => makeMulti rest(x)
-          makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
-
-        rquo(w : %, l : S) ==
-          u : % := reverse w
-          (r := lquo (u,l)) case "failed" => "failed"
-          reverse! (r::%)
-
-        length x == reduce("+",[f.exp for f in listOfMonoms x], 0)
-
-        varList x ==
-          le : List S := [t.gen for t in listOfMonoms x]
-          sort! removeDuplicates(le)
-
-        first w ==
-          x : List REC := listOfMonoms w
-          null x => error "empty word !!!"
-          x.first.gen
-
-        rest w ==
-          x : List REC := listOfMonoms w
-          null x => error "empty word !!!"
-          fx : REC := first x
-          fx.exp = 1 => makeMulti rest x
-          makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
-
-        lexico(a, b) ==         --  lexicographic order
-            la := listOfMonoms a
-            lb := listOfMonoms b
-            while (not null la) and (not null lb) repeat
-                la.first.gen > lb.first.gen => return false
-                la.first.gen < lb.first.gen => return true
-                if la.first.exp = lb.first.exp then
-                    la := rest la
-                    lb := rest lb
-                else if la.first.exp > lb.first.exp then
-                    la := concat([la.first.gen,
-                           (la.first.exp - lb.first.exp)::NNI], rest lb)
-                    lb := rest lb
-                else
-                    lb := concat([lb.first.gen,
-                             (lb.first.exp-la.first.exp)::NNI], rest la)
-                    la := rest la
-            empty? la and not empty? lb
-
-
-        a < b ==               --  length, then lexicographic
-            la : NNI := length a; lb : NNI := length b
-            la = lb =>  lexico(a, b)
-            la < lb
-
-        mirror x == reverse(x)$Rep
-
 )abbrev category XALG XAlgebra
 ++ Author: Michel Petitot petitot@lifl.fr
 ++ Date Created: 91
@@ -180,8 +30,6 @@ XAlgebra(R : Ring) : Category ==
 )abbrev category XFALG XFreeAlgebra
 ++ Author: Michel Petitot petitot@lifl.fr
 ++ Date Created: 91
-++ Date Last Updated: 7 Juillet 92
-++ Fix History: compilation v 2.1 le 13 dec 98
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -194,7 +42,7 @@ XAlgebra(R : Ring) : Category ==
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
 XFreeAlgebra(vl : OrderedSet, R : Ring) : Category == Catdef where
-   WORD   ==> OrderedFreeMonoid(vl)          -- monoide libre
+   WORD   ==> FreeMonoid(vl)          -- monoide libre
    NNI    ==> NonNegativeInteger
    I      ==> Integer
    TERM   ==> Record(k : WORD, c : R)
@@ -276,7 +124,7 @@ XFreeAlgebra(vl : OrderedSet, R : Ring) : Category == Catdef where
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
 XPolynomialsCat(vl : OrderedSet, R : Ring) : Category == Export where
-  WORD ==> OrderedFreeMonoid(vl)
+  WORD ==> FreeMonoid(vl)
 
   Export == XFreeAlgebra(vl, R) with
     maxdeg : % -> WORD
@@ -447,8 +295,6 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
 )abbrev domain XDPOLY XDistributedPolynomial
 ++ Author: Michel Petitot petitot@lifl.fr
 ++ Date Created: 91
-++ Date Last Updated: 7 Juillet 92
-++ Fix History: compilation v 2.1 le 13 dec 98
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -464,7 +310,7 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
 
 XDistributedPolynomial(vl : OrderedSet, R : Ring) : XDPcat == XDPdef where
 
-  WORD ==> OrderedFreeMonoid(vl)
+  WORD ==> FreeMonoid(vl)
   I    ==> Integer
   NNI  ==> NonNegativeInteger
   TERM ==> Record(k : WORD, c : R)
@@ -553,9 +399,6 @@ XDistributedPolynomial(vl : OrderedSet, R : Ring) : XDPcat == XDPdef where
 )abbrev domain XRPOLY XRecursivePolynomial
 ++ Author: Michel Petitot petitot@lifl.fr
 ++ Date Created: 91
-++ Date Last Updated: 7 Juillet 92
-++ Fix History: compilation v 2.1 le 13 dec 98
-++   extend renomme en expand
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -575,7 +418,7 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
   NNI    ==> NonNegativeInteger
   XDPOLY ==> XDistributedPolynomial(VarSet, R)
   EX     ==> OutputForm
-  WORD   ==> OrderedFreeMonoid(VarSet)
+  WORD   ==> FreeMonoid(VarSet)
   TERM   ==> Record(k : VarSet, c : %)
   LTERMS ==> List(TERM)
   REGPOLY==> FreeModule(%, VarSet)

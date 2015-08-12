@@ -152,13 +152,16 @@ ListMonoidOps(S, E, un) : Exports == Implementation where
 
 )abbrev domain FMONOID FreeMonoid
 ++ Free monoid on any set of generators
-++ Author: Stephen M. Watt
-++ Date Created: ???
-++ Date Last Updated: 6 June 1991
+++ Author: Stephen M. Watt, Michel Petitot
 ++ Description:
-++ The free monoid on a set S is the monoid of finite products of
-++ the form \spad{reduce(*, [si ^ ni])} where the si's are in S, and the ni's
-++ are nonnegative integers. The multiplication is not commutative.
+++  The free monoid on a set S is the monoid of finite products of
+++  the form \spad{reduce(*, [si ^ ni])} where the si's are in S, and the ni's
+++  are nonnegative integers. The multiplication is not commutative.
+++  When S is an OrderedSet, then FreeMonoid(S) has order: for two
+++  elements \spad{x} and \spad{y} the relation \spad{x < y}
+++  holds if either \spad{length(x) < length(y)} holds or if these lengths
+++  are equal and if \spad{x} is smaller than \spad{y} w.r.t. the
+++  lexicographical ordering induced by \spad{S}.
 FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
     NNI ==> NonNegativeInteger
     REC ==> Record(gen : S, exp : NonNegativeInteger)
@@ -171,6 +174,12 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
           ++ x * s returns the product of x by s on the right.
         "^":   (S, NonNegativeInteger) -> %
           ++ s ^ n returns the product of s by itself n times.
+        first : % -> S
+          ++ \spad{first(x)} returns the first letter of \spad{x}.
+        rest :  % -> %
+          ++ \spad{rest(x)} returns \spad{x} except the first letter.
+        mirror : % -> %
+          ++ \spad{mirror(x)} returns the reversed word of \spad{x}.
         hclf :   (%, %) -> %
           ++ hclf(x, y) returns the highest common left factor of x and y,
           ++ i.e. the largest d such that \spad{x = d a} and \spad{y = d b}.
@@ -185,6 +194,12 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
           ++ rquo(x, y) returns the exact right quotient of x by y i.e.
           ++ q such that \spad{x = q * y},
           ++ "failed" if x is not of the form \spad{q * y}.
+        lquo :   (%, S) -> Union(%, "failed")
+          ++ \spad{lquo(x, s)} returns the exact left quotient of \spad{x}
+          ++ by \spad{s}.
+        rquo :   (%, S) -> Union(%, "failed")
+          ++ \spad{rquo(x, s)} returns the exact right quotient
+          ++ of \spad{x} by \spad{s}.
         divide :   (%, %) -> Union(Record(lm: %, rm: %), "failed")
           ++ divide(x, y) returns the left and right exact quotients of
           ++ x by y, i.e. \spad{[l, r]} such that \spad{x = l * y * r},
@@ -195,6 +210,8 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
           ++ i.e. \spad{overlap(l, r) = [l, 1, r]}.
         size         :   % -> NNI
           ++ size(x) returns the number of monomials in x.
+        length : % -> NNI
+          ++ \spad{length(x)} returns the length of \spad{x}.
         factors      : % -> List Record(gen : S, exp : NonNegativeInteger)
           ++ factors(a1\^e1, ..., an\^en) returns \spad{[[a1, e1], ..., [an, en]]}.
         nthExpon     : (%, Integer) -> NonNegativeInteger
@@ -205,8 +222,16 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
           ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
         mapGen       : (S -> S, %) -> %
           ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
+        if S has BasicType then
+            varList : % -> List S
+              ++ \spad{varList(x)} returns the list of variables of \spad{x}.
         if S has Comparable then Comparable
-        if S has OrderedSet then OrderedSet
+        if S has OrderedSet then
+            OrderedMonoid
+            lexico : (%, %) -> Boolean
+              ++ \spad{lexico(x, y)} returns \spad{true} iff \spad{x} is
+              ++ smaller than \spad{y} w.r.t. the pure lexicographical
+              ++ ordering induced by \spad{S}.
 
     FMdefinition ==> ListMonoidOps(S, NonNegativeInteger, 1) add
         Rep := ListMonoidOps(S, NonNegativeInteger, 1)
@@ -291,7 +316,7 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
                 f0.exp ~= g0.exp => return makeMulti h
             makeMulti h
 
-        lquo(aq, a) ==
+        lquo(aq : %, a : %) ==
             size a > #(laq := copy listOfMonoms aq) => "failed"
             for a0 in listOfMonoms a repeat
                 a0.gen ~= laq.first.gen or a0.exp > laq.first.exp =>
@@ -301,38 +326,82 @@ FreeMonoid(S : SetCategory) : FMcategory == FMdefinition where
                                          (laq.first.exp - a0.exp)::NNI])
             makeMulti laq
 
-        rquo(qa, a) ==
+        rquo(qa : %, a : %) ==
             (u := lquo(reverse qa, reverse a)) case "failed" => "failed"
             reverse!(u::%)
 
+        lquo(w : %, l : S) ==
+            x : List REC := listOfMonoms(w)$Rep
+            null x        => "failed"
+            fx : REC := first x
+            fx.gen ~= l  => "failed"
+            fx.exp = 1   => makeMulti rest(x)
+            makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
+
+        rquo(w : %, l : S) ==
+            u : % := reverse w
+            (r := lquo (u,l)) case "failed" => "failed"
+            reverse! (r::%)
+
+        length x == reduce("+",[f.exp for f in listOfMonoms x], 0)
+
+        if S has BasicType then
+
+            varList1(x : %) : List(S) ==
+                le : List S := [t.gen for t in listOfMonoms x]
+                removeDuplicates(le)
+
+            if S has OrderedSet then
+
+                varList(x) == sort! varList1(x)
+
+            else
+
+                varList(x) == varList1(x)
+
+        first w ==
+            x : List REC := listOfMonoms w
+            null x => error "empty word !!!"
+            x.first.gen
+
+        rest w ==
+            x : List REC := listOfMonoms w
+            null x => error "empty word !!!"
+            fx : REC := first x
+            fx.exp = 1 => makeMulti rest x
+            makeMulti [[fx.gen, (fx.exp - 1)::NNI ]$REC, : rest x]
+
+        mirror x == reverse(x)$Rep
+
         if S has Comparable then
           if S has OrderedSet then
-            a < b ==
+
+            lexico(a, b) ==
               la := listOfMonoms a
               lb := listOfMonoms b
-              na : Integer := #la
-              nb : Integer := #lb
-              while na > 0 and nb > 0 repeat
+              while not(empty?(la)) and not(empty?(lb)) repeat
                   la.first.gen > lb.first.gen => return false
                   la.first.gen < lb.first.gen => return true
                   if la.first.exp = lb.first.exp then
                       la := rest la
                       lb := rest lb
-                      na := na - 1
-                      nb := nb - 1
                   else if la.first.exp > lb.first.exp then
                       la := concat([la.first.gen,
                              (la.first.exp - lb.first.exp)::NNI], rest lb)
                       lb := rest lb
-                      nb := nb - 1
                   else
                       lb := concat([lb.first.gen,
                                (lb.first.exp-la.first.exp)::NNI], rest la)
                       la := rest la
-                      na := na-1
               empty? la and not empty? lb
 
+            a < b ==               --  length, then lexicographic
+                la : NNI := length a; lb : NNI := length b
+                la = lb =>  lexico(a, b)
+                la < lb
+
           else
+
             smaller?(a, b) ==
               la := listOfMonoms a
               lb := listOfMonoms b
