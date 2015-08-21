@@ -194,10 +194,12 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
 ++  over a ring R, in variables from VarSet, with exponents from the
 ++  \spadtype{OrderedAbelianMonoidSup}.
 
-MaybeSkewPolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup,
+MaybeSkewPolynomialCategory(R : Join(SemiRng, AbelianMonoid),
+                            E : OrderedAbelianMonoidSup,
                             VarSet : OrderedSet) : Category ==
-  Join(FiniteAbelianMonoidRing(R, E),
-       FullyLinearlyExplicitRingOver R) with
+  FiniteAbelianMonoidRing(R, E) with
+    if R has Ring then
+        FullyLinearlyExplicitRingOver R
     -- operations
     degree : (%, VarSet) -> NonNegativeInteger
       ++ degree(p, v) gives the degree of polynomial p with respect
@@ -239,10 +241,12 @@ MaybeSkewPolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup,
     variables : % -> List(VarSet)
       ++ variables(p) returns the list of those variables actually
       ++ appearing in the polynomial p.
-    primitiveMonomials : % -> List %
-      ++ primitiveMonomials(p) gives the list of monomials of the
-      ++ polynomial p with their coefficients removed.
-      ++ Note: \spad{primitiveMonomials(sum(a_(i) X^(i))) = [X^(1), ..., X^(n)]}.
+    if R has SemiRing then
+      primitiveMonomials : % -> List %
+        ++ primitiveMonomials(p) gives the list of monomials of the
+        ++ polynomial p with their coefficients removed.
+        ++ Note: \spad{primitiveMonomials(sum(a_(i) X^(i))) =
+        ++ [X^(1), ..., X^(n)]}.
     if R has Comparable then Comparable
 
     -- assertions
@@ -271,14 +275,16 @@ MaybeSkewPolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup,
         empty? ln  => error "mismatched lists in monomial"
         monomial(monomial(p, first lv, first ln), rest lv, rest ln)
 
-    mkPrim(p : %) : % == monomial(1, degree p)
+    if R has SemiRing then
 
-    primitiveMonomials p ==
-        ml := empty$List(%)
-        while p ~= 0 repeat
-            ml := concat(mkPrim(leadingMonomial p), ml)
-            p := reductum p
-        reverse! ml
+        mkPrim(p : %) : % == monomial(1, degree p)
+
+        primitiveMonomials p ==
+            ml := empty$List(%)
+            while p ~= 0 repeat
+                ml := concat(mkPrim(leadingMonomial p), ml)
+                p := reductum p
+            reverse! ml
 
 
 )abbrev category POLYCAT PolynomialCategory
@@ -297,13 +303,17 @@ MaybeSkewPolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup,
 ++  \spadtype{OrderedAbelianMonoidSup}.  Here variables commute
 ++  with the coefficients.
 
-PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
+PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
+                   E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
         Category ==
-  Join(PartialDifferentialRing VarSet,
-       MaybeSkewPolynomialCategory(R, E, VarSet),
-       Evalable %, InnerEvalable(VarSet, R),
-       InnerEvalable(VarSet, %), RetractableTo VarSet,
+  Join(MaybeSkewPolynomialCategory(R, E, VarSet),
+       InnerEvalable(VarSet, R), InnerEvalable(VarSet, %),
        VariablesCommuteWithCoefficients) with
+    if R has SemiRing then
+        RetractableTo VarSet
+        Evalable %
+    if R has Ring then
+        PartialDifferentialRing VarSet
     -- operations
     univariate   : (%, VarSet) -> SparseUnivariatePolynomial(%)
       ++ univariate(p, v) converts the multivariate polynomial p
@@ -321,7 +331,8 @@ PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
     minimumDegree : (%, List(VarSet)) -> List(NonNegativeInteger)
       ++ minimumDegree(p, lv) gives the list of minimum degrees of the
       ++ polynomial p with respect to each of the variables in the list lv
-    monicDivide : (%, %, VarSet) -> Record(quotient : %, remainder : %)
+    if R has Ring then
+      monicDivide : (%, %, VarSet) -> Record(quotient : %, remainder : %)
        ++ monicDivide(a, b, v) divides the polynomial a by the polynomial b,
        ++ with each viewed as a univariate polynomial in v returning
        ++ both the quotient and remainder.
@@ -335,28 +346,33 @@ PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
     isPlus : % -> Union(List %, "failed")
         ++ isPlus(p) returns \spad{[m1, ..., mn]} if polynomial \spad{p = m1 + ... + mn} and
         ++ \spad{n >= 2} and each mi is a nonzero monomial.
-    isTimes : % -> Union(List %, "failed")
-        ++ isTimes(p) returns \spad{[a1, ..., an]} if polynomial \spad{p = a1 ... an}
-        ++ and \spad{n >= 2}, and, for each i, ai is either a nontrivial constant in R or else of the
-        ++ form \spad{x^e}, where \spad{e > 0} is an integer and x in a member of VarSet.
-    isExpt : % -> Union(Record(var : VarSet, exponent : NonNegativeInteger), _
+    if R has SemiRing then
+      isTimes : % -> Union(List %, "failed")
+        ++ isTimes(p) returns \spad{[a1, ..., an]} if polynomial
+        ++ \spad{p = a1 ... an} and \spad{n >= 2}, and, for each i,
+        ++ ai is either a nontrivial constant in R or else of the
+        ++ form \spad{x^e}, where \spad{e > 0} is an integer and
+        ++ x is a member of VarSet.
+      isExpt : % -> Union(Record(var : VarSet, exponent : NonNegativeInteger),
                        "failed")
-        ++ isExpt(p) returns \spad{[x, n]} if polynomial p has the form \spad{x^n} and \spad{n > 0}.
+        ++ isExpt(p) returns \spad{[x, n]} if polynomial p has the form
+        ++ \spad{x^n} and \spad{n > 0}.
     -- OrderedRing view removed to allow EXPR to define abs
     --if R has OrderedRing then OrderedRing
     if (R has ConvertibleTo InputForm) and
        (VarSet has ConvertibleTo InputForm) then
          ConvertibleTo InputForm
-    if (R has ConvertibleTo Pattern Integer) and
+    if R has Ring then
+      if (R has ConvertibleTo Pattern Integer) and
        (VarSet has ConvertibleTo Pattern Integer) then
          ConvertibleTo Pattern Integer
-    if (R has ConvertibleTo Pattern Float) and
+      if (R has ConvertibleTo Pattern Float) and
        (VarSet has ConvertibleTo Pattern Float) then
          ConvertibleTo Pattern Float
-    if (R has PatternMatchable Integer) and
+      if (R has PatternMatchable Integer) and
        (VarSet has PatternMatchable Integer) then
          PatternMatchable Integer
-    if (R has PatternMatchable Float) and
+      if (R has PatternMatchable Float) and
        (VarSet has PatternMatchable Float) then
          PatternMatchable Float
     if R has CommutativeRing then
@@ -401,30 +417,31 @@ PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
     lv : List VarSet
     n : NonNegativeInteger
     pp, qq : SparseUnivariatePolynomial %
-    eval(p : %, l : List Equation %) ==
-      empty? l => p
-      for e in l repeat
-        retractIfCan(lhs e)@Union(VarSet,"failed") case "failed" =>
-             error "cannot find a variable to evaluate"
-      lvar := [retract(lhs e)@VarSet for e in l]
-      eval(p, lvar, [rhs e for e in l]$List(%))
+    if R has SemiRing then
+        eval(p : %, l : List Equation %) ==
+            empty? l => p
+            for e in l repeat
+                retractIfCan(lhs e)@Union(VarSet,"failed") case "failed" =>
+                    error "cannot find a variable to evaluate"
+            lvar := [retract(lhs e)@VarSet for e in l]
+            eval(p, lvar, [rhs e for e in l]$List(%))
 
     isPlus p ==
       empty? rest(l := monomials p) => "failed"
       l
-    isTimes p ==
-      empty?(lv := variables p) or not monomial? p => "failed"
-      l := [monomial(1, v, degree(p, v)) for v in lv]
---      one?(r := leadingCoefficient p) =>
-      ((r := leadingCoefficient p) = 1) =>
-        empty? rest lv => "failed"
-        l
-      concat(r::%, l)
-    isExpt p ==
-      (u := mainVariable p) case "failed" => "failed"
-      p = monomial(1, u::VarSet, d := degree(p, u::VarSet)) =>
-        [u::VarSet, d]
-      "failed"
+    if R has SemiRing then
+        isTimes p ==
+            empty?(lv := variables p) or not monomial? p => "failed"
+            l := [monomial(1, v, degree(p, v)) for v in lv]
+            ((r := leadingCoefficient p) = 1) =>
+                empty? rest lv => "failed"
+                l
+            concat(r::%, l)
+        isExpt p ==
+            (u := mainVariable p) case "failed" => "failed"
+            p = monomial(1, u::VarSet, d := degree(p, u::VarSet)) =>
+                [u::VarSet, d]
+            "failed"
     coefficient(p, v, n) == coefficient(univariate(p, v), n)
     coefficient(p, lv, ln) ==
        empty? lv =>
@@ -625,10 +642,11 @@ PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
             ansx case "failed" => return "failed"
             return ans+ansx
 
-    monicDivide(p1, p2, mvar) ==
-       result := monicDivide(univariate(p1, mvar), univariate(p2, mvar))
-       [multivariate(result.quotient, mvar),
-        multivariate(result.remainder, mvar)]
+    if R has Ring then
+        monicDivide(p1, p2, mvar) ==
+            result := monicDivide(univariate(p1, mvar), univariate(p2, mvar))
+            [multivariate(result.quotient, mvar),
+              multivariate(result.remainder, mvar)]
 
 
     if R has GcdDomain then
@@ -646,34 +664,44 @@ PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
         zero? p => p
         unitNormal((p exquo content(p, v)) ::%).canonical
     if R has Comparable then
-      smaller?(p : %, q : %) ==
-        (dp := degree p) < (dq := degree q) =>
-             smaller?(0, leadingCoefficient q)
-        dq < dp => smaller?(leadingCoefficient p, 0)
-        smaller?(leadingCoefficient(p - q), 0)
-      if (R has PatternMatchable Integer) and
-         (VarSet has PatternMatchable Integer) then
-           patternMatch(p : %, pat : Pattern Integer,
-            l : PatternMatchResult(Integer, %)) ==
-              patternMatch(p, pat,
-                l)$PatternMatchPolynomialCategory(Integer, E, VarSet, R, %)
-      if (R has PatternMatchable Float) and
-         (VarSet has PatternMatchable Float) then
-           patternMatch(p : %, pat : Pattern Float,
-            l : PatternMatchResult(Float, %)) ==
-              patternMatch(p, pat,
-                l)$PatternMatchPolynomialCategory(Float, E, VarSet, R, %)
+        smaller?(p : %, q : %) ==
+            while p ~= 0 and q ~= 0 repeat
+                (dp := degree p) < (dq := degree q) =>
+                    return smaller?(0, leadingCoefficient q)
+                dq < dp => return smaller?(leadingCoefficient p, 0)
+                lp := leadingCoefficient(p)
+                lq := leadingCoefficient(q)
+                lp ~= lq => return smaller?(lp, lq)
+                p := reductum p
+                q := reductum q
+            p = 0 => smaller?(0, leadingCoefficient q)
+            smaller?(leadingCoefficient p, 0)
 
-    if (R has ConvertibleTo Pattern Integer) and
-       (VarSet has ConvertibleTo Pattern Integer) then
-         convert(x : %) : Pattern(Integer) ==
-           map(convert, convert,
-              x)$PolynomialCategoryLifting(E, VarSet, R, %, Pattern Integer)
-    if (R has ConvertibleTo Pattern Float) and
-       (VarSet has ConvertibleTo Pattern Float) then
-         convert(x : %) : Pattern(Float) ==
-           map(convert, convert,
-            x)$PolynomialCategoryLifting(E, VarSet, R, %, Pattern Float)
+        if R has Ring then
+          if (R has PatternMatchable Integer) and
+                (VarSet has PatternMatchable Integer) then
+              patternMatch(p : %, pat : Pattern Integer,
+                           l : PatternMatchResult(Integer, %)) ==
+                  patternMatch(p, pat, l
+                    )$PatternMatchPolynomialCategory(Integer, E, VarSet, R, %)
+          if (R has PatternMatchable Float) and
+                (VarSet has PatternMatchable Float) then
+              patternMatch(p : %, pat : Pattern Float,
+                           l : PatternMatchResult(Float, %)) ==
+                  patternMatch(p, pat, l
+                    )$PatternMatchPolynomialCategory(Float, E, VarSet, R, %)
+
+    if R has Ring then
+      if (R has ConvertibleTo Pattern Integer) and
+            (VarSet has ConvertibleTo Pattern Integer) then
+          convert(x : %) : Pattern(Integer) ==
+              map(convert, convert, x
+                )$PolynomialCategoryLifting(E, VarSet, R, %, Pattern Integer)
+      if (R has ConvertibleTo Pattern Float) and
+            (VarSet has ConvertibleTo Pattern Float) then
+          convert(x : %) : Pattern(Float) ==
+              map(convert, convert, x
+                )$PolynomialCategoryLifting(E, VarSet, R, %, Pattern Float)
     if (R has ConvertibleTo InputForm) and
        (VarSet has ConvertibleTo InputForm) then
          convert(p : %) : InputForm ==
@@ -701,7 +729,7 @@ PolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, VarSet : OrderedSet):
 PolynomialCategoryLifting(E, Vars, R, P, S) : Exports == Implementation where
   E   : OrderedAbelianMonoidSup
   Vars : OrderedSet
-  R   : Ring
+  R   : Join(SemiRng, AbelianMonoid)
   P   : PolynomialCategory(R, E, Vars)
   S   : SetCategory with
            "+" : (%, %) -> %
@@ -744,10 +772,12 @@ PolynomialCategoryLifting(E, Vars, R, P, S) : Exports == Implementation where
 ++ No particular model is assumed - implementations can be either
 ++ sparse or dense.
 
-UnivariatePolynomialCategory(R : Ring) : Category ==
+UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
  Join(PolynomialCategory(R, NonNegativeInteger, SingletonAsOrderedSet),
-      Eltable(R, R), Eltable(%, %), DifferentialRing,
-      DifferentialExtension R) with
+      Eltable(R, R), Eltable(%, %)) with
+    if R has Ring then
+        DifferentialRing
+        DifferentialExtension R
     vectorise        : (%, NonNegativeInteger) -> Vector R
       ++ vectorise(p, n) returns \spad{[a0, ..., a(n-1)]} where
       ++ \spad{p = a0 + a1*x + ... + a(n-1)*x^(n-1)} + higher order terms.
@@ -771,24 +801,28 @@ UnivariatePolynomialCategory(R : Ring) : Category ==
       ++ dividing all exponents of the polynomial p by the non negative
       ++ integer n, or "failed" if some exponent is not exactly divisible
       ++ by n.
-    monicDivide : (%, %) -> Record(quotient : %, remainder : %)
-      ++ monicDivide(p, q) divide the polynomial p by the monic polynomial q,
-      ++ returning the pair \spad{[quotient, remainder]}.
-      ++ Error: if q isn't monic.
--- These three are for Karatsuba
-    karatsubaDivide : (%, NonNegativeInteger) -> Record(quotient : %, remainder : %)
-      ++ \spad{karatsubaDivide(p, n)} returns the same as \spad{monicDivide(p, monomial(1, n))}
-    shiftRight : (%, NonNegativeInteger) -> %
-      ++ \spad{shiftRight(p, n)} returns \spad{monicDivide(p, monomial(1, n)).quotient}
     shiftLeft : (%, NonNegativeInteger) -> %
       ++ \spad{shiftLeft(p, n)} returns \spad{p * monomial(1, n)}
-    pseudoRemainder : (%, %) -> %
-       ++ pseudoRemainder(p, q) = r, for polynomials p and q, returns the remainder when
-       ++ \spad{p' := p*lc(q)^(deg p - deg q + 1)}
-       ++ is pseudo right-divided by q, i.e. \spad{p' = s q + r}.
-    differentiate : (%, R -> R, %) -> %
-       ++ differentiate(p, d, x') extends the R-derivation d to an
-       ++ extension D in \spad{R[x]} where Dx is given by x', and returns \spad{Dp}.
+    if R has Ring then
+      monicDivide : (%, %) -> Record(quotient : %, remainder : %)
+        ++ monicDivide(p, q) divide the polynomial p by the monic polynomial q,
+        ++ returning the pair \spad{[quotient, remainder]}.
+        ++ Error: if q isn't monic.
+      -- These two are for Karatsuba
+      karatsubaDivide : (%, NonNegativeInteger) -> Record(quotient : %, remainder : %)
+        ++ \spad{karatsubaDivide(p, n)} returns the same as
+        ++ \spad{monicDivide(p, monomial(1, n))}
+      shiftRight : (%, NonNegativeInteger) -> %
+        ++ \spad{shiftRight(p, n)} returns
+        ++ \spad{monicDivide(p, monomial(1, n)).quotient}
+      pseudoRemainder : (%, %) -> %
+        ++ pseudoRemainder(p, q) = r, for polynomials p and q, returns
+        ++ the remainder r when \spad{p' := p*lc(q)^(deg p - deg q + 1)}
+        ++ is pseudo right-divided by q, i.e. \spad{p' = s q + r}.
+      differentiate : (%, R -> R, %) -> %
+        ++ differentiate(p, d, x') extends the R-derivation d to an
+        ++ extension D in \spad{R[x]} where Dx is given by x', and
+        ++ returns \spad{Dp}.
     if R has StepThrough then StepThrough
     if R has CommutativeRing then
       discriminant : % -> R
@@ -873,16 +907,15 @@ UnivariatePolynomialCategory(R : Ring) : Category ==
        [minimumDegree p]
     monomial(p : %, v : SingletonAsOrderedSet, n : NonNegativeInteger) ==
        mapExponents(x1+->x1+n, p)
-    coerce(v : SingletonAsOrderedSet) : % == monomial(1, 1)
+    if R has SemiRing then
+        coerce(v : SingletonAsOrderedSet) : % == monomial(1, 1)
     makeSUP p ==
       zero? p => 0
       monomial(leadingCoefficient p, degree p) + makeSUP reductum p
     unmakeSUP sp ==
       zero? sp => 0
       monomial(leadingCoefficient sp, degree sp) + unmakeSUP reductum sp
-    karatsubaDivide(p : %, n : NonNegativeInteger) == monicDivide(p, monomial(1, n))
-    shiftRight(p : %, n : NonNegativeInteger) == monicDivide(p, monomial(1, n)).quotient
-    shiftLeft(p : %, n : NonNegativeInteger) == p * monomial(1, n)
+
     if R has PolynomialFactorizationExplicit then
        PFBR ==> PolynomialFactorizationByRecursion(R, NonNegativeInteger,
                                                    SingletonAsOrderedSet, %)
@@ -972,7 +1005,7 @@ UnivariatePolynomialCategory(R : Ring) : Category ==
                  + monomial(deriv lc, dg)
           x := reductum x
         d + deriv(leadingCoefficient x)::%
-    else
+    else if R has Ring then
       ncdiff : (NonNegativeInteger, %) -> %
       -- computes d(x^n) given dx = x', non-commutative case
       ncdiff(n, x') ==
@@ -987,14 +1020,16 @@ UnivariatePolynomialCategory(R : Ring) : Category ==
           d := d + monomial(deriv lc, dg) + lc * ncdiff(dg, x')
           x := reductum x
         d + deriv(leadingCoefficient x)::%
-    differentiate(x : %, deriv : R -> R) == differentiate(x, deriv, 1$%)$%
-    differentiate(x : %) ==
-        d : % := 0
-        while (dg := degree x) > 0 repeat
-          d := d + monomial(dg * leadingCoefficient x, (dg - 1)::NonNegativeInteger)
-          x := reductum x
-        d
-    differentiate(x : %, v : SingletonAsOrderedSet) == differentiate x
+    if R has Ring then
+        differentiate(x : %, deriv : R -> R) == differentiate(x, deriv, 1$%)$%
+        differentiate(x : %) : % ==
+            d : % := 0
+            while (dg := degree x) > 0 repeat
+                d := d + monomial(dg*leadingCoefficient x,
+                                 (dg - 1)::NonNegativeInteger)
+                x := reductum x
+            d
+        differentiate(x : %, v : SingletonAsOrderedSet) : % == differentiate x
     if R has IntegralDomain then
       elt(g : Fraction %, f : Fraction %) == ((numer g) f) / ((denom g) f)
 
@@ -1106,7 +1141,7 @@ UnivariatePolynomialCategory(R : Ring) : Category ==
 ++ given a map from R to S assumed to send zero to zero.
 
 UnivariatePolynomialCategoryFunctions2(R, PR, S, PS) : Exports == Impl where
-  R, S : Ring
+  R, S : Join(SemiRng, AbelianMonoid)
   PR  : UnivariatePolynomialCategory R
   PS  : UnivariatePolynomialCategory S
 

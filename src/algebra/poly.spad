@@ -356,7 +356,7 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
        commutative := R has CommutativeRing
 
     --local operations
-       if R has AbelianMonoid then
+       if R has Monoid then
            1  == [[0$E, 1$R]]
        if R has Ring then
            characteristic  == characteristic$R
@@ -706,13 +706,15 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
 ++ in the sense that only non-zero terms are represented.
 ++ Note: if the coefficient ring is a field, this domain forms a euclidean domain.
 
-SparseUnivariatePolynomial(R : Ring) : UnivariatePolynomialCategory(R) with
+SparseUnivariatePolynomial(R : Join(SemiRng, AbelianMonoid)
+                          ) : UnivariatePolynomialCategory(R) with
      outputForm : (%, OutputForm) -> OutputForm
         ++ outputForm(p, var) converts the SparseUnivariatePolynomial p to
         ++ an output form (see \spadtype{OutputForm}) printed as a polynomial in the
         ++ output form variable.
-     fmecg : (%, NonNegativeInteger, R, %) -> %
-        ++ fmecg(p1, e, r, p2) finds X : p1 - r * X^e * p2
+     if R has Ring then
+       fmecg : (%, NonNegativeInteger, R, %) -> %
+         ++ fmecg(p1, e, r, p2) finds X : p1 - r * X^e * p2
     == PolynomialRing(R, NonNegativeInteger)
   add
    --representations
@@ -770,8 +772,11 @@ SparseUnivariatePolynomial(R : Ring) : UnivariatePolynomialCategory(R) with
 
 
    zero?(p) : Boolean == empty?(p)
---   one?(p): Boolean == not empty? p and (empty? rest p and zero? first(p).k and one? first(p).c)
-   one?(p) : Boolean == not empty? p and (empty? rest p and zero? first(p).k and (first(p).c = 1))
+   if R has SemiRing then
+       one?(p):Boolean ==
+           not empty? p and (empty? rest p and zero? first(p).k and
+             (first(p).c = 1))
+
    ground?(p) : Boolean == empty? p or (empty? rest p and zero? first(p).k)
    multiplyExponents(p, n) == [ [u.k*n, u.c] for u in p]
    divideExponents(p, n) ==
@@ -885,7 +890,8 @@ SparseUnivariatePolynomial(R : Ring) : UnivariatePolynomialCategory(R) with
            rout := cons([ee, a], rout)
         null p1 => reverse(rout)::%    -- nreverse?
         "failed"
-   fmecg(p1, e, r, p2) ==       -- p1 - r * X^e * p2
+   if R has Ring then
+       fmecg(p1, e, r, p2) ==       -- p1 - r * X^e * p2
           rout : % := []
           r := - r
           for tm in p2 repeat
@@ -898,26 +904,45 @@ SparseUnivariatePolynomial(R : Ring) : UnivariatePolynomialCategory(R) with
              if (u := p1.first.c + c2) ~= 0 then rout := cons([e2, u], rout)
              p1 := p1.rest
           NRECONC(rout, p1)$Lisp
-   pseudoRemainder(p1, p2) ==
-     null p2 => error "PseudoDivision by Zero"
-     null p1 => 0
-     co := p2.first.c
-     e := p2.first.k
-     p2 := p2.rest
-     e1 := max((p1.first.k)::Integer-e+1, 0)::NonNegativeInteger
-     while not null p1 repeat
-       if (u := subtractIfCan(p1.first.k, e)) case "failed" then break
-       p1 := fmecg(co * p1.rest, u, p1.first.c, p2)
-       e1 := (e1 - 1)::NonNegativeInteger
-     e1 = 0 => p1
-     co ^ e1 * p1
+       pseudoRemainder(p1, p2) ==
+           null p2 => error "PseudoDivision by Zero"
+           null p1 => 0
+           co := p2.first.c
+           e := p2.first.k
+           p2 := p2.rest
+           e1 := max((p1.first.k)::Integer-e+1, 0)::NonNegativeInteger
+           while not null p1 repeat
+               if (u := subtractIfCan(p1.first.k, e)) case "failed" then break
+               p1 := fmecg(co * p1.rest, u, p1.first.c, p2)
+               e1 := (e1 - 1)::NonNegativeInteger
+           e1 = 0 => p1
+           co ^ e1 * p1
+
+   -- Ugly, but we want to avoid conditonal exports or testing
+   -- in inner loops
+   mm_one : R := 0$R
+   m_one : R :=  0$R
+   one_inited : Boolean := false
+
+   init_one() : Void ==
+       one_inited => "done"
+       mm_one -- treat as free variable
+       if R has Ring then
+           mm_one := -1$R
+       m_one -- treat as free variable
+       if R has Monoid then
+           m_one := 1$R
+       one_inited := true
+
    toutput(t1 : Term, v : OutputForm) : OutputForm ==
+     if not(one_inited) then init_one()
      t1.k = 0 => t1.c :: OutputForm
      if t1.k = 1
        then mon := v
        else mon := v ^ t1.k::OutputForm
-     t1.c = 1 => mon
-     t1.c = -1 and
+     t1.c = 0 => empty()
+     t1.c = m_one => mon
+     t1.c = mm_one and
           ((t1.c :: OutputForm) = (-1$Integer)::OutputForm)@Boolean => - mon
      t1.c::OutputForm * mon
    outputForm(p : %, v : OutputForm) ==
@@ -932,31 +957,32 @@ SparseUnivariatePolynomial(R : Ring) : UnivariatePolynomialCategory(R) with
       co := p.first.c
       n := p.first.k
       for tm in p.rest repeat
-       co := co * val ^ (n - (n := tm.k))::NonNegativeInteger + tm.c
+          co := co * val ^ (n - (n := tm.k))::PositiveInteger + tm.c
       n = 0 => co
-      co * val ^ n
+      co*val^(n::PositiveInteger)
    elt(p : %, val : %) ==
       null p => 0$%
       coef : % := p.first.c :: %
       n := p.first.k
       for tm in p.rest repeat
-       coef := coef * val ^ (n-(n := tm.k))::NonNegativeInteger+(tm.c::%)
+          coef := coef * val ^ (n-(n := tm.k))::PositiveInteger+(tm.c::%)
       n = 0 => coef
-      coef * val ^ n
+      coef*val^(n::PositiveInteger)
 
-   monicDivide(p1 : %, p2 : %) ==
-      null p2 => error "monicDivide: division by 0"
-      leadingCoefficient p2 ~= 1 => error "Divisor Not Monic"
-      p2 = 1 => [p1, 0]
-      null p1 => [0, 0]
-      degree p1 < (n := degree p2) => [0, p1]
-      rout : Rep := []
-      p2 := p2.rest
-      while not null p1 repeat
-         (u := subtractIfCan(p1.first.k, n)) case "failed" => break
-         rout := cons([u, p1.first.c], rout)
-         p1 := fmecg(p1.rest, rout.first.k, rout.first.c, p2)
-      [reverse!(rout), p1]
+   if R has Ring then
+       monicDivide(p1 : %, p2 : %) ==
+           null p2 => error "monicDivide: division by 0"
+           leadingCoefficient p2 ~= 1 => error "Divisor Not Monic"
+           p2 = 1 => [p1, 0]
+           null p1 => [0, 0]
+           degree p1 < (n := degree p2) => [0, p1]
+           rout : Rep := []
+           p2 := p2.rest
+           while not null p1 repeat
+               (u := subtractIfCan(p1.first.k, n)) case "failed" => break
+               rout := cons([u, p1.first.c], rout)
+               p1 := fmecg(p1.rest, rout.first.k, rout.first.c, p2)
+           [reverse!(rout), p1]
 
    if R has IntegralDomain then
        discriminant(p) == discriminant(p)$PseudoRemainderSequence(R, %)
