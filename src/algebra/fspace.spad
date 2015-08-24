@@ -571,7 +571,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
     smpderiv  : (MP, SY) -> %
     smpunq    : (MP, List SY, Boolean) -> %
     kerderiv  : (K, SY)  -> %
-    kderiv    : K -> List %
+    kgrad     : K -> List(List % -> %)
     opderiv   : (OP, N) -> List(List % -> %)
     smp2O     : MP -> O
     bestKernel : List K -> K
@@ -830,14 +830,14 @@ FunctionSpace(R : Comparable) : Category == Definition where
           [x +-> kernel(opdiff, [kernel(op, g), g, first x])]
         [x +-> kernel(opdiff, diffArg(x, op, i)) for i in 1..n]
 
-      kderiv k ==
+      kgrad k ==
         zero?(n := #(args := argument k)) => empty()
         op := operator k
         grad :=
           (u := derivative op) case "failed" => opderiv(op, n)
           u::List(List % -> %)
-        if #grad ~= n then grad := opderiv(op, n)
-        [g args for g in grad]
+        #grad ~= n => opderiv(op, n)
+        grad
 
     -- SPECIALDIFF contains a map (List %, Symbol) -> %
     -- it is used when the usual chain rule does not apply,
@@ -846,9 +846,11 @@ FunctionSpace(R : Comparable) : Category == Definition where
         (v := symbolIfCan(k)) case SY =>
           v::SY = x => 1
           0
+        ak := argument k
         (fn := property(operator k, SPECIALDIFF)) case None =>
-           ((fn::None) pretend ((List %, SY) -> %)) (argument k, x)
-        +/[g * differentiate(y, x) for g in kderiv k for y in argument k]
+           ((fn::None) pretend ((List %, SY) -> %)) (ak, x)
+        +/[g(ak)*dyx for g in kgrad k for y in ak
+            | (dyx := differentiate(y, x)) ~= 0]
 
       smpderiv(p, x) ==
         map((s : R) : R +-> retract differentiate(s::PR, x), p)::% +
