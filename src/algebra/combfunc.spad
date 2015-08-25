@@ -523,10 +523,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       ++ weierstrassSigma(g2, g3, x)
     weierstrassZeta : (F, F, F) -> F
       ++ weierstrassZeta(g2, g3, x)
-    -- weierstrassPInverse : (F, F, F) -> F
-    --    ++ weierstrassPInverse(g2, g3, z) is the inverse of Weierstrass
-    --    ++ P function, defined by the formula
-    --    ++ \spad{weierstrassP(g2, g3, weierstrassPInverse(g2, g3, z)) = z}
+    weierstrassPInverse : (F, F, F) -> F
+      ++ weierstrassPInverse(g2, g3, z) is the inverse of Weierstrass
+      ++ P function, defined by the formula
+      ++ \spad{weierstrassP(g2, g3, weierstrassPInverse(g2, g3, z)) = z}
     whittakerM : (F, F, F) -> F
         ++ whittakerM(k, m, z) is the Whittaker M function
     whittakerW : (F, F, F) -> F
@@ -823,8 +823,6 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     -- handle WeierstrassPInverse
 
-)if false
-
     opWeierstrassPInverse := operator('weierstrassPInverse)$CommonOperators
 
     weierstrassPInverse(g2, g3, z) == opWeierstrassPInverse(g2, g3, z)
@@ -841,13 +839,21 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
             g2 := l(1)
             g3 := l(2)
             z := l(3)
-            error "unimplemented"
+            wpi := weierstrassPInverse(g2, g3, z)
+            delta := g2^3 - 27*g3^2
+            s1 := 18*g3*weierstrassZeta(g2, g3, wpi) - g2^2*wpi
+            s2 := 36*g3*z^2 - 2*g2^2*z - 6*g2*g3
+            (s1 + s2/weierstrassPPrime(g2, g3, wpi))/(4*delta)
 
         eWeierstrassPInverseGrad_g3(l : List F) : F ==
             g2 := l(1)
             g3 := l(2)
             z := l(3)
-            error "unimplemented"
+            wpi := weierstrassPInverse(g2, g3, z)
+            delta := g2^3 - 27*g3^2
+            s1 := 9*g3*wpi - 6*g2*weierstrassZeta(g2, g3, wpi)
+            s2 := -12*g2*z^2 + 18*g3*z + 2*g2^2
+            (s1 + s2/weierstrassPPrime(g2, g3, wpi))/(2*delta)
 
         eWeierstrassPInverseGrad_z(l : List F) : F ==
             g2 := l(1)
@@ -857,8 +863,6 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
         derivative(opWeierstrassPInverse, [eWeierstrassPInverseGrad_g2,
                eWeierstrassPInverseGrad_g3, eWeierstrassPInverseGrad_z])
-
-)endif
 
     -- handle WhittakerM
 
@@ -1706,7 +1710,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       is?(op, 'weierstrassZeta)   => opWeierstrassZeta
       is?(op, 'hypergeometricF)  => opHypergeometricF
       is?(op, 'meijerG)  => opMeijerG
-      -- is?(op, 'weierstrassPInverse) => opWeierstrassPInverse
+      is?(op, 'weierstrassPInverse) => opWeierstrassPInverse
       is?(op, 'whittakerM) => opWhittakerM
       is?(op, 'whittakerW) => opWhittakerW
       is?(op, 'angerJ) => opAngerJ
@@ -1816,7 +1820,13 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     iPolylog(l) == iiPolylog(first l, second l)
 
-    iWeierstrassP(g2, g3, x) == kernel(opWeierstrassP, [g2, g3, x])
+    iWeierstrassP(g2, g3, x) ==
+        if is?(x, opWeierstrassPInverse) then
+            args := argument(retract(x)@K)
+            if g2 = args(1) and g3 = args(2) then
+                return(args(3))
+        kernel(opWeierstrassP, [g2, g3, x])
+
     iWeierstrassPPrime(g2, g3, x) == kernel(opWeierstrassPPrime, [g2, g3, x])
 
     iWeierstrassSigma(g2, g3, x) ==
