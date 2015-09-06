@@ -386,7 +386,7 @@ defaultTarget(opNode,op,nargs,args) ==
             putTarget(opNode, target := '(AlgebraicNumber))
             target
       ((a2 = $RationalNumber) and (isAVariableType(a1)
-          or a1 is ['Polynomial,.] or a1 is ['RationalFunction,.])) =>
+          or a1 is ['Polynomial, .])) =>
             putTarget(opNode, target := defaultTargetFE a1)
             target
       isAVariableType(a1) and (a2 = $PositiveInteger or a2 = $NonNegativeInteger) =>
@@ -397,14 +397,7 @@ defaultTarget(opNode,op,nargs,args) ==
         target
       a2 is ['Polynomial, D] =>
         (a1 = a2) or isAVariableType(a1)
-         or ((a1 is ['RationalFunction, D1]) and (D1 = D)) or (a1 = D)
-          or ((a1 is [=$QuotientField, D1]) and (D1 = a1)) =>
-            putTarget(opNode, target := defaultTargetFE a2)
-            target
-        target
-      a2 is ['RationalFunction, D] =>
-        (a1 = a2) or isAVariableType(a1)
-         or ((a1 is ['RationalFunction, D1]) and (D1 = D)) or (a1 = D)
+         or (a1 = D)
           or ((a1 is [=$QuotientField, D1]) and (D1 = a1)) =>
             putTarget(opNode, target := defaultTargetFE a2)
             target
@@ -465,7 +458,7 @@ defaultTargetFE(a,:options) ==
           IFCAR options => [$FunctionalExpression, ['Complex, $Integer]]
           [$FunctionalExpression, $Integer]
   a is ['Complex,uD] => defaultTargetFE(uD, true)
-  a is [D,uD] and MEMQ(D, '(Polynomial RationalFunction Fraction)) =>
+  a is [D, uD] and MEMQ(D, '(Polynomial Fraction)) =>
      defaultTargetFE(uD, IFCAR options)
   a is [=$FunctionalExpression,.] => a
   IFCAR options => [$FunctionalExpression, ['Complex, a]]
@@ -695,7 +688,6 @@ hitListOfTarget(t) ==
   EQ(first t, 'List) => 400
   EQ(first t, 'Matrix) => 910
   EQ(first t, 'UniversalSegment) => 501
-  EQ(first t, 'RationalFunction) => 900
   EQ(first t, 'Union) => 999
   EQ(first t, 'Expression) => 1600
   500

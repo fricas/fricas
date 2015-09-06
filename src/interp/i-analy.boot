@@ -73,7 +73,6 @@ getMinimalVariableTower(var,t) ==
     (u = var) => t
     NIL
   t is ['Polynomial,.] => t
-  t is ['RationalFunction,D] => ['Polynomial,D]
   t is [up,t',u,.] and MEMQ(up,$univariateDomains) =>
     -- power series have one more arg and different ordering
     u = var => t
@@ -114,7 +113,7 @@ polyVarlist m ==
         [., ., a, :.] := m
         a := removeQuote a
         [a]
-    op in '(Polynomial RationalFunction Expression) =>
+    op in '(Polynomial Expression) =>
       '(all)
     a := removeQuote a
     op in '(UnivariatePolynomial) =>

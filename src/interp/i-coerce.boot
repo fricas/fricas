@@ -694,7 +694,7 @@ absolutelyCannotCoerce(t1,t2) ==
   n2   := first t2
   QFI  := [$QuotientField, $Integer]
   int2 := isEqualOrSubDomain(t2,$Integer)
-  scalars := '(Float DoubleFloat RationalNumber)
+  scalars := '(Float DoubleFloat)
 
   MEMQ(n1,scalars) and int2 => true
   (t1 = QFI) and int2       => true
@@ -705,7 +705,7 @@ absolutelyCannotCoerce(t1,t2) ==
   num2 and isVar1 => true
   num2 and MEMQ(n1,$univariateDomains) => true
   num2 and MEMQ(n1,$multivariateDomains) => true
-  miscpols :=  '(Polynomial ElementaryFunction SimpleAlgebraicExtension)
+  miscpols :=  '(Polynomial SimpleAlgebraicExtension)
   num2 and MEMQ(n1,miscpols) => true
 
   aggs :=  '(
@@ -917,7 +917,7 @@ coerceInt1(triple,t2) ==
   EQ(first(t1), 'Variable) and PAIRP(t2) and
     (isEqualOrSubDomain(t2,$Integer) or
       (t2 = [$QuotientField, $Integer]) or MEMQ(first(t2),
-        '(RationalNumber Float DoubleFloat))) => NIL
+        '(Float DoubleFloat))) => NIL
 
   ans := coerceRetract(triple,t2) or coerceIntTower(triple,t2) or
     [.,:arg]:= deconstructT t2
