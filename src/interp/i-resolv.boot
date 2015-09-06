@@ -51,7 +51,7 @@ this means, a term variable can be:
     T a type containing this variable
   a function LAMBDA X.X ("control-L can be disregarded")
 examples:
-  P(control-L) can stand for (Polynomial (RationalFunction (Integer)))
+  P(control-L) can stand for (Polynomial (Fraction (Integer)))
   G(control-L(I)) can stand for (Gaussian (Polynomial (Integer))), but also
     for (Gaussian (Integer))
 
@@ -153,7 +153,6 @@ acceptableTypesToResolve1(t1,t2) ==
     true
   t1 = $DoubleFloat or t1 = $Float =>
     t2 = $String => NIL
-    t2 = '(RationalNumber) => NIL
     t2 = [$QuotientField, $Integer] => NIL
     true
   true
@@ -199,7 +198,7 @@ resolveTTSpecial(t1,t2) ==
 
   -- following is just an efficiency hack
   (t1 = '(Symbol) or t1 is ['OrderedVariableList,.]) and PAIRP(t2) and
-    first(t2) in '(Polynomial RationalFunction) => t2
+      first(t2) = 'Polynomial => t2
 
   (t1 = '(Symbol)) and ofCategory(t2, '(IntegerNumberSystem)) =>
     resolveTT1(['Polynomial, t2], t2)
@@ -408,7 +407,7 @@ interpOp?(op) ==
 resolveTCat(t,c) ==
   -- this function attempts to find a type tc of category c such that
   -- t can be coerced to tc. NIL returned for failure.
-  -- Example:  t = Integer, c = Field ==> tc = RationalNumber
+  -- Example:  t = Integer, c = Field ==> tc = Fraction(Integer)
 
   -- first check whether t already belongs to c
   ofCategory(t,c) => t
@@ -423,7 +422,8 @@ resolveTCat(t,c) ==
   c in '((Field) (EuclideanDomain)) and ofCategory(t,'(IntegralDomain))=>
       [$QuotientField, t]
 
-  c = '(Field) and t = $Symbol => ['RationalFunction,$Integer]
+  c = '(Field) and t = $Symbol =>
+      [$QuotientField, ['Fraction, $Integer]]
 
   c = '(Ring) and t is ['FactoredForm,t0] => ['FactoredRing,t0]
 
