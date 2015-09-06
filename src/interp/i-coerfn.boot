@@ -1329,7 +1329,7 @@ Sm2PolyType(u,source is [sm,n,S], target is [pol,vl,T]) ==
     novars := true
     for i in 0..(n-1) while novars repeat
       for j in 0..(n-1) while novars repeat
-        varsUsed := varsInPoly u.i.j
+        varsUsed := varsInPoly(AREF(u, i, j))
         or/[member(x,varsUsed) for x in vl'] => novars := nil
     novars => coercionFailure()
     source' := [sm,n,[pol,vl,S]]
