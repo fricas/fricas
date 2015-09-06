@@ -1262,12 +1262,10 @@ isPolynomialMode m ==
   --  variables, and nil otherwise
   m is [op,a,:rargs] =>
     a := removeQuote a
-    MEMQ(op,'(Polynomial RationalFunction AlgebraicFunction Expression
-      ElementaryFunction LiouvillianFunction FunctionalExpression
-        CombinatorialFunction ))=> 'all
+    MEMQ(op, '(Polynomial Expression))=> 'all
     op = 'UnivariatePolynomial => LIST a
     op = 'Variable       => LIST a
-    MEMQ(op,'(MultivariatePolynomial DistributedMultivariatePolynomial
+    MEMQ(op, '(MultivariatePolynomial DistributedMultivariatePolynomial
       HomogeneousDistributedMultivariatePolynomial)) => a
     NIL
   NIL
@@ -1276,7 +1274,7 @@ containsPolynomial m ==
   not PAIRP(m) => NIL
   [d,:.] := m
   d in $univariateDomains or d in $multivariateDomains or
-    d in '(Polynomial RationalFunction) => true
+      d = 'Polynomial => true
   (m' := underDomainOf m) and containsPolynomial m'
 
 containsVariables m ==
