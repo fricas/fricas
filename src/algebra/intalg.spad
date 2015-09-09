@@ -67,16 +67,23 @@ AlgebraicHermiteIntegration(F, UP, UPUP, R) : Exports == Implementation where
     HermiteIntegrate : (R, UP -> UP) -> Record(answer : R, logpart : R)
       ++ HermiteIntegrate(f, ') returns \spad{[g, h]} such that
       ++ \spad{f = g' + h} and h has a only simple finite normal poles.
+    HermiteIntegrate : (R, UP -> UP, R) -> Record(answer : R, logpart : R)
+      ++ HermiteIntegrate(f, ', d0) returns \spad{[g, h]} such that
+      ++ \spad{f = g' + d0*g + h} and h has a only simple finite normal poles.
+      ++ Note: d0 must be integral.
 
   Implementation ==> add
     localsolve : (Matrix UP, Vector UP, UP) -> Vector UP
 
 -- the denominator of f should have no prime factor P s.t. P | P'
 -- (which happens only for P = t in the exponential case)
-    HermiteIntegrate(f, derivation) ==
+    HermiteIntegrate(f, derivation) == HermiteIntegrate(f, derivation, 0)
+
+    HermiteIntegrate(f, derivation, d0) ==
       ratform : R := 0
       n    := rank()
       m    := transpose((mat := integralDerivationMatrix derivation).num)
+      integralCoordinates(d0).den ~= 1 => error "nonintegral d0"
       inum := (cform := integralCoordinates f).num
       if ((iden := cform.den) exquo (e := mat.den)) case "failed" then
         iden := (coef := (e exquo gcd(e, iden))::UP) * iden
@@ -89,10 +96,15 @@ AlgebraicHermiteIntegration(F, UP, UPUP, R) : Exports == Implementation where
           j := j - 1
           p := - j * u'
           sol := localsolve(sys + scalarMatrix(n, p), inum, v)
+          s0 := integralRepresents(sol, 1)
+          corr := integralCoordinates(d0*s0)
+          corr.den ~= 1 => error "impossible"
+          cnum := corr.num
           ratform := ratform + integralRepresents(sol, v ^ (j::N))
           inum    := [((qelt(inum, i) - p * qelt(sol, i) -
                         dot(row(sys, i - nn), sol))
-                          exquo v)::UP - u * derivation qelt(sol, i)
+                          exquo v)::UP - u*(derivation qelt(sol, i) +
+                                            qelt(cnum, i))
                              for i in minIndex inum .. maxIndex inum]
         iden := u * v
       [ratform, integralRepresents(inum, iden)]
