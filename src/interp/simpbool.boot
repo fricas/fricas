@@ -31,7 +31,7 @@
 
 )package "BOOT"
 
-simpBool x == dnf2pf reduceDnf be x
+simpBool x == dnf2pf reduceDnf b2dnf x
 
 reduceDnf u ==
 -- (OR (AND ..b..) b) ==> (OR  b  )
@@ -53,7 +53,7 @@ dnf2pf(x) ==
   atom x => x
   MKPF(
     [MKPF([:[k for k in b],:[['not,k] for k in a]],'AND) for [a,b] in x],'OR)
-be x == b2dnf x
+
 b2dnf x ==
   x = 'T => 'true
   x = NIL => 'false
@@ -110,7 +110,7 @@ coafOrDnf(a,l) ==               -- or:  (coaf, dnf) -> dnf
   member(a,l) => l
   y := notCoaf a
   x := ordIntersection(y,l)
-  null x => orDel(a,l)
+  null x => ordUnion([a], l)
   x = l => 'true
   x = y => ordSetDiff(l,x)
   ordUnion(notDnf ordSetDiff(y,x),l)
@@ -119,8 +119,8 @@ coafAndDnf(a,b) ==              --and: (coaf, dnf) -> dnf
   a = 'true => b
   a = 'false => 'false
   [c,:r] := b
-  null r => coafAndCoaf(a,c)
-  x := coafAndCoaf(a,c)      --dnf
+  x := coafAndCoaf(a, c)      --dnf
+  null r => x
   y := coafAndDnf(a,r)       --dnf
   x = 'false => y
   y = 'false => x
@@ -132,30 +132,11 @@ coafAndCoaf([a,b],[p,q]) ==                  --and: (coaf,coaf) -> dnf
 
 notCoaf [a,b] == [:[[nil,[x]] for x in a],:[[[x],nil] for x in b]]
 
-list1 l ==
-  l isnt [h,:t] => nil
-  null h => list1 t
-  [[h,nil,nil],:list1 t]
-list2 l ==
-  l isnt [h,:t] => nil
-  null h => list2 t
-  [[nil,h,nil],:list2 t]
-list3 l ==
-  l isnt [h,:t] => nil
-  null h => list3 t
-  [[nil,nil,h],:list3 t]
-orDel(a,l) ==
-  l is [h,:t] =>
-    a = h => t
-    ?ORDER(a,h) => [a,:l]
-    [h,:orDel(a,t)]
-  [a]
-
 ordUnion(a,b) ==
   a isnt [c,:r] => b
   b isnt [d,:s] => a
   c=d => [c,:ordUnion(r,s)]
-  ?ORDER(a,b) => [c,:ordUnion(r,b)]
+  ?ORDER(c, d) => [c, :ordUnion(r, b)]
   [d,:ordUnion(s,a)]
 ordIntersection(a,b) ==
   a isnt [h,:t] => nil
