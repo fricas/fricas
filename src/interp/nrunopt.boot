@@ -187,21 +187,11 @@ stuffSlot(dollar,i,item) ==
 --=======================================================================
 
 predicateBitIndex x ==
-  pn(x,nil) where
-    pn(x,flag) ==
       u := simpBool transHasCode x
       u = 'T  =>  0
       u = nil => -1
       p := POSN1(u,$NRTslot1PredicateList) => p + 1
-      null flag => pn(predicateBitIndexRemop x,true)
       systemError nil
-
-predicateBitIndexRemop p==
---transform attribute predicates taken out by removeAttributePredicates
-  p is [op,:argl] and op in '(AND and OR or NOT not) =>
-    simpBool makePrefixForm([predicateBitIndexRemop x for x in argl],op)
-  p is ['has,'$,['ATTRIBUTE,a]] => BREAK()
-  p
 
 predicateBitRef x ==
   x = 'T => 'T

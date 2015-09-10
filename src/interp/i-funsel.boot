@@ -1029,15 +1029,14 @@ matchMms(mmaps, op, tar, args1, args2) ==
     mmS := NIL
     for [sig, mmC] in mmaps repeat
         -- sig is [dc, result, :args]
+        [c, t, :a] := sig
         $Subst :=
             tar and not isPartialMode tar =>
                 -- throw in the target if it is not the same as one
                 -- of the arguments
-                res := CADR sig
-                member(res, CDDR sig) => NIL
-                [[res, :tar]]
+                member(t, a) => NIL
+                [[t, :tar]]
             NIL
-        [c, t, :a] := sig
         if a then matchTypes(a, args1, args2)
         not EQ($Subst, 'failed) =>
             mmS := nconc(evalMm(op, tar, sig, mmC), mmS)
