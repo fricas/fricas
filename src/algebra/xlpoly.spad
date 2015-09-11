@@ -1,4 +1,4 @@
-)abbrev domain MAGMA Magma
+)abbrev domain FMAGMA FreeMagma
 ++ Author: Michel Petitot (petitot@lifl.fr).
 ++ Date Created: 91
 ++ Basic Functions:
@@ -12,7 +12,7 @@
 ++ parenthesized words (binary trees over arbitrary symbols)
 ++ useful in \spadtype{LiePolynomial}. \newline Author: Michel Petitot (petitot@lifl.fr).
 
-Magma(VarSet : OrderedSet) : Public == Private where
+FreeMagma(VarSet : OrderedSet) : Public == Private where
    WORD ==> FreeMonoid(VarSet)
    EX   ==> OutputForm
 
@@ -26,7 +26,7 @@ Magma(VarSet : OrderedSet) : Public == Private where
         ++ \spad{first(x)} returns the first entry of the tree \spad{x}.
       left          : % -> %
         ++ \spad{left(x)} returns left subtree of \spad{x} or
-        ++ error if \spadopFrom{retractable?}{Magma}(\spad{x}) is true.
+        ++ error if \spadopFrom{retractable?}{FreeMagma}(\spad{x}) is true.
       length        : % -> PositiveInteger
         ++ \spad{length(x)} returns the number of entries in \spad{x}.
       lexico        : (%, %) -> Boolean
@@ -36,16 +36,17 @@ Magma(VarSet : OrderedSet) : Public == Private where
         ++ its arguments. Thus this is not a total ordering.
       mirror        : % -> %
         ++ \spad{mirror(x)} returns the reversed word of \spad{x}.
-        ++ That is \spad{x} itself if \spadopFrom{retractable?}{Magma}(\spad{x}) is true and
+        ++ That is \spad{x} itself if
+        ++ \spadopFrom{retractable?}{FreeMagma}(\spad{x}) is true and
         ++ \spad{mirror(z) * mirror(y)} if \spad{x} is \spad{y*z}.
       rest          : % -> %
         ++ \spad{rest(x)} return \spad{x} without the first entry or
-        ++ error if \spadopFrom{retractable?}{Magma}(\spad{x}) is true.
+        ++ error if \spadopFrom{retractable?}{FreeMagma}(\spad{x}) is true.
       retractable?  : % -> Boolean
         ++ \spad{retractable?(x)} tests if \spad{x} is a tree with only one entry.
       right         : % -> %
         ++ \spad{right(x)} returns right subtree of \spad{x} or
-        ++ error if \spadopFrom{retractable?}{Magma}(\spad{x}) is true.
+        ++ error if \spadopFrom{retractable?}{FreeMagma}(\spad{x}) is true.
       varList       : % -> List VarSet
         ++ \spad{varList(x)} returns the list of distinct entries of \spad{x}.
 
@@ -104,7 +105,7 @@ Magma(VarSet : OrderedSet) : Public == Private where
          first x.left
 
       rest x ==
-         x case VarSet => error "rest$Magma: inexistant rest"
+         x case VarSet => error "rest$FreeMagma: inexistant rest"
          lx : % := x.left
          lx case VarSet => x.right
          [rest lx, x.right]$VWORD
@@ -156,7 +157,7 @@ Magma(VarSet : OrderedSet) : Public == Private where
 ++ Parenthesized Lyndon words can be generated from symbols by using the following
 ++ rule: \spad{[[a, b], c]} is a Lyndon word iff \spad{a*b < c <= b} holds.
 ++ Lyndon words are internally represented by binary trees using the
-++ \spadtype{Magma} domain constructor.
+++ \spadtype{FreeMagma} domain constructor.
 ++ Two ordering are provided: lexicographic and
 ++ length-lexicographic. \newline
 ++ Author : Michel Petitot (petitot@lifl.fr).
@@ -186,8 +187,8 @@ LyndonWord(VarSet : OrderedSet) : Public == Private where
       coerce :  % -> OFMON
         ++ \spad{coerce(x)} returns the element of \spadtype{FreeMonoid}(VarSet)
         ++ corresponding to \spad{x}.
-      coerce :  % -> Magma VarSet
-        ++ \spad{coerce(x)} returns the element of \spadtype{Magma}(VarSet)
+      coerce :  % -> FreeMagma VarSet
+        ++ \spad{coerce(x)} returns the element of \spadtype{FreeMagma}(VarSet)
         ++ corresponding to \spad{x}.
       factor :  OFMON -> List %
         ++ \spad{factor(x)} returns the decreasing factorization into Lyndon words.
@@ -207,9 +208,9 @@ LyndonWord(VarSet : OrderedSet) : Public == Private where
         ++ \spad{LyndonWordsList(vl, n)} returns the list of Lyndon
         ++ words over the alphabet \spad{vl}, up to order \spad{n}.
 
-   Private == Magma(VarSet) add
+   Private == FreeMagma(VarSet) add
      -- Representation
-       Rep := Magma(VarSet)
+       Rep := FreeMagma(VarSet)
 
      -- Fonctions locales
        LetterList : OFMON -> List VarSet
@@ -264,7 +265,7 @@ LyndonWord(VarSet : OrderedSet) : Public == Private where
          lx < ly
 
        coerce(x : %) : OF == bracket(x::OFMON::OF)
-       coerce(x : %) : Magma VarSet == x::Rep
+       coerce(x : %) : FreeMagma VarSet == x::Rep
 
        LyndonWordsList1 (vl, n) ==    -- a ameliorer !!!!!!!!!!!
             null vl => error "empty list"
@@ -466,7 +467,7 @@ XExponentialPackage(R, VarSet, XPOLY) : Public == Private where
 ++ (Oxford science publications). \newline Author: Michel Petitot (petitot@lifl.fr).
 
 LiePolynomial(VarSet : OrderedSet, R : CommutativeRing) : Public == Private where
-   MAGMA   ==> Magma(VarSet)
+   MAGMA   ==> FreeMagma(VarSet)
    LWORD   ==> LyndonWord(VarSet)
    WORD    ==> FreeMonoid(VarSet)
    XDPOLY  ==> XDistributedPolynomial(VarSet, R)
