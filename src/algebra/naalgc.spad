@@ -115,10 +115,27 @@ MagmaWithUnit() : Category == Magma with
           (x = 1) => x
           "failed"
 
+)abbrev category NASRNG NonAssociativeSemiRng
+++ Author: Waldek Hebisch
+++ Description:
+++  The category of semirings, not necessarily associative,
+++  not necessarily commutative, and not necessarily with a 1.
+NonAssociativeSemiRng() : Category == Join(AbelianSemiGroup, Magma) with
+    antiCommutator : (%, %) -> %
+      ++ antiCommutator(a, b) returns \spad{a*b+b*a}.
+  add
+    antiCommutator(x, y) == x*y + y*x
+
+)abbrev category NASRING NonAssociativeSemiRing
+++ Author: Waldek Hebisch
+++ Description:
+++  The category of semirings, not necessarily associative,
+++  not necessarily commutative, with 0 and 1.
+NonAssociativeSemiRing() : Category == Join(NonAssociativeSemiRng,
+    AbelianMonoid, MagmaWithUnit)
+
 )abbrev category NARNG NonAssociativeRng
 ++ Author: J. Grabmeier, R. Wisbauer
-++ Date Created: 01 March 1991
-++ Date Last Updated: 03 July 1991
 ++ Basic Operations: +, *, -, ^
 ++ Related Constructors: Rng, Ring, NonAssociativeRing
 ++ Also See:
@@ -135,22 +152,18 @@ MagmaWithUnit() : Category == Magma with
 ++    (x+y)*z = x*z + y*z
 ++  Common Additional Axioms
 ++    noZeroDivisors  ab = 0 => a=0 or b=0
-NonAssociativeRng() : Category == Join(AbelianGroup, Magma)  with
+NonAssociativeRng() : Category == Join(NonAssociativeSemiRng,
+                                       AbelianGroup)  with
     associator : (%, %, %) -> %
       ++ associator(a, b, c) returns \spad{(a*b)*c-a*(b*c)}.
     commutator : (%, %) -> %
       ++ commutator(a, b) returns \spad{a*b-b*a}.
-    antiCommutator : (%, %) -> %
-      ++ antiCommutator(a, b) returns \spad{a*b+b*a}.
   add
     associator(x, y, z) == (x*y)*z - x*(y*z)
     commutator(x, y) == x*y - y*x
-    antiCommutator(x, y) == x*y + y*x
 
-)abbrev category NASRING NonAssociativeRing
+)abbrev category NARING NonAssociativeRing
 ++ Author: J. Grabmeier, R. Wisbauer
-++ Date Created: 01 March 1991
-++ Date Last Updated: 11 June 1991
 ++ Basic Operations: +, *, -, ^
 ++ Related Constructors: NonAssociativeRng, Rng, Ring
 ++ Also See:
@@ -162,7 +175,8 @@ NonAssociativeRng() : Category == Join(AbelianGroup, Magma)  with
 ++ Description:
 ++  A NonAssociativeRing is a non associative rng which has a unit,
 ++  the multiplication is not necessarily commutative or associative.
-NonAssociativeRing() : Category == Join(NonAssociativeRng, MagmaWithUnit) with
+NonAssociativeRing() : Category == Join(NonAssociativeRng,
+                                        NonAssociativeSemiRing) with
     --operations
       characteristic : -> NonNegativeInteger
         ++ characteristic() returns the characteristic of the ring.
