@@ -1,19 +1,17 @@
-)abbrev category MONAD Monad
+)abbrev category MAGMA Magma
 ++ Authors: J. Grabmeier, R. Wisbauer
-++ Date Created: 01 March 1991
-++ Date Last Updated: 11 June 1991
 ++ Basic Operations: *, ^
-++ Related Constructors: SemiGroup, Monoid, MonadWithUnit
+++ Related Constructors: SemiGroup, Monoid, MagmaWithUnit
 ++ Also See:
 ++ AMS Classifications:
-++ Keywords: Monad,  binary operation
+++ Keywords: Magma,  binary operation
 ++ Reference:
 ++  N. Jacobson: Structure and Representations of Jordan Algebras
 ++  AMS, Providence, 1968
 ++ Description:
-++  Monad is the class of all multiplicative monads, i.e. sets
+++  Magma is the class of all multiplicative magmas, i.e. sets
 ++  with a binary operation.
-Monad() : Category == SetCategory with
+Magma() : Category == SetCategory with
     --operations
       "*": (%,%) -> %
         ++ a*b is the product of \spad{a} and b in a set with
@@ -45,31 +43,30 @@ Monad() : Category == SetCategory with
         for i in 1..(n-1) repeat res := a * res
         res
 
-)abbrev category MONADWU MonadWithUnit
+)abbrev category MAGMAWU MagmaWithUnit
 ++ Authors: J. Grabmeier, R. Wisbauer
-++ Date Created: 01 March 1991
-++ Date Last Updated: 11 June 1991
 ++ Basic Operations: *, ^, 1
-++ Related Constructors: SemiGroup, Monoid, Monad
+++ Related Constructors: SemiGroup, Monoid, Magma
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords:
-++ Keywords: Monad with unit, binary operation
+++ Keywords: Magma with unit, binary operation
 ++ Reference:
 ++  N. Jacobson: Structure and Representations of Jordan Algebras
 ++  AMS, Providence, 1968
 ++ Description:
-++  MonadWithUnit is the class of multiplicative monads with unit,
+++  MagmaWithUnit is the class of multiplicative monads with unit,
 ++  i.e. sets with a binary operation and a unit element.
 ++ Axioms
 ++    leftIdentity("*":(%,%)->%,1)   \tab{30} 1*x=x
 ++    rightIdentity("*":(%,%)->%,1)  \tab{30} x*1=x
 ++ Common Additional Axioms
 ++    unitsKnown---if "recip" says "failed", that PROVES input wasn't a unit
-MonadWithUnit() : Category == Monad with
+MagmaWithUnit() : Category == Magma with
     --constants
       1 : constant ->  %
         ++ 1 returns the unit element, denoted by 1.
+      sample : constant -> %               ++ sample yields a value of type %
     --operations
       one? : % -> Boolean
         ++ one?(a) tests whether \spad{a} is the unit 1.
@@ -100,6 +97,7 @@ MonadWithUnit() : Category == Monad with
     add
       import from RepeatedSquaring(%)
       one? x == x = 1
+      sample() == 1
       x : % ^ n : NonNegativeInteger ==
          zero? n => 1
          expt(x, qcoerce(n)@PositiveInteger)
@@ -113,6 +111,9 @@ MonadWithUnit() : Category == Monad with
         res := 1
         for i in 1..n repeat res := a * res
         res
+      recip x ==
+          (x = 1) => x
+          "failed"
 
 )abbrev category NARNG NonAssociativeRng
 ++ Author: J. Grabmeier, R. Wisbauer
@@ -134,7 +135,7 @@ MonadWithUnit() : Category == Monad with
 ++    (x+y)*z = x*z + y*z
 ++  Common Additional Axioms
 ++    noZeroDivisors  ab = 0 => a=0 or b=0
-NonAssociativeRng() : Category == Join(AbelianGroup, Monad)  with
+NonAssociativeRng() : Category == Join(AbelianGroup, Magma)  with
     associator : (%, %, %) -> %
       ++ associator(a, b, c) returns \spad{(a*b)*c-a*(b*c)}.
     commutator : (%, %) -> %
@@ -161,7 +162,7 @@ NonAssociativeRng() : Category == Join(AbelianGroup, Monad)  with
 ++ Description:
 ++  A NonAssociativeRing is a non associative rng which has a unit,
 ++  the multiplication is not necessarily commutative or associative.
-NonAssociativeRing() : Category == Join(NonAssociativeRng, MonadWithUnit) with
+NonAssociativeRing() : Category == Join(NonAssociativeRng, MagmaWithUnit) with
     --operations
       characteristic : -> NonNegativeInteger
         ++ characteristic() returns the characteristic of the ring.
@@ -378,7 +379,7 @@ FiniteRankNonAssociativeAlgebra(R : CommutativeRing):
 
     if R has IntegralDomain then
       -- we not neccessarily have a unit, hence we don't inherit
-      -- the next 3 functions anc hence copy them from MonadWithUnit:
+      -- the next 3 functions and hence copy them from MagmaWithUnit:
       recip : % -> Union(%,"failed")
         ++ recip(a) returns an element, which is both a left and a right
         ++ inverse of \spad{a},
