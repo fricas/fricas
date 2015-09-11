@@ -44,6 +44,8 @@ MonoidRingCategory(R : Ring, M : Monoid) : Category == MRCdefinition where
         if R has CharacteristicZero then CharacteristicZero
         if R has CharacteristicNonZero then CharacteristicNonZero
         if R has CommutativeRing then Algebra(R)
+        if R has CommutativeRing and M has CommutativeStar then
+            CommutativeRing
         if (R has Finite and M has Finite) then Finite
         if M has Comparable then
           FreeModuleCategory(R, M)
@@ -88,11 +90,16 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
         rep(x:%):Rep == x :: Rep
         per(r:Rep):% == r :: %
 
+        characteristic() == characteristic()$R
+
         coerce(x : List Term) : % == per x
 
         monomial(r : R, m : M)  ==
           r = 0 => empty()
           [[m, r]]
+
+        monomial?(x) ==
+            #(rep(x)) <= 1
 
         if (R has Finite and M has Finite) then
           size() == size()$R ^ size()$M
