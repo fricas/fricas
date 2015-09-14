@@ -78,7 +78,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
   RS ==> List Union(LL, LA)
   FRI ==> Union(SP, RS)
   SG ==> Record(point : Union(F, "infinity"), lpf : LL, dxt : PositiveInteger)
-  CB ==> Set SG
+  CB ==> List SG
   FG ==> List Record(sing : SG, arf : RS)
   TF ==> Union(List L, "failed")
   T2 ==> Union(List SUP, "failed")
@@ -86,7 +86,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
   GE ==> List Record(ecs : List US, ecr : UP, ect : RF)
   POLYCATQ ==> PolynomialCategoryQuotientFunctions(IndexedExponents(K),
                                                    K, Integer, P, F)
-  GEM ==> Set Record(singularity : SG, fos : SP, mge : List US)
+  GEM ==> List Record(singularity : SG, fos : SP, mge : List US)
 
   Exports ==> with
     testnp : L3 -> List(Record(point : PO, slope : FZ, npoly : UP))
@@ -269,7 +269,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             return [f]
         np := newtonpolygon(f)
         res : List LL := []
-        unsafe : Set FA
+        unsafe : List FA
         for k in np repeat
             npol := k.npoly
             v := factors(factorUP(npol, factorizer))
@@ -277,15 +277,14 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 v := [[il.factor ^ qcoerce(il.exponent), 0] for il in v]
             else
                 -- regular singular case, we compute the unsafe factors
-                unsafe := set []
-                semi : Table(FA, UP) := table()
-                for i in v repeat
-                    semi(i) := i.factor ^ qcoerce(i.exponent)
-                for i in v for ii in 1..(#v)-1 repeat
-                    restl := rest(v, ii)
+                unsafe := []
+                semi : OneDimensionalArray(UP) := new(#v, 0)
+                for i in v for ii in 1..#v repeat
+                    semi(ii) := i.factor ^ qcoerce(i.exponent)
+                for i in v for ii in 1..#v for restl in tails(rest(v)) repeat
                     vif : UP := i.factor
                     dvif := degree(vif)
-                    for j in restl repeat
+                    for j in restl for jj in (ii+1)..#v repeat
                         vjf : UP := j.factor
                         if dvif = degree(vjf) then
                             d := qcoerce(dvif - 1)
@@ -295,18 +294,19 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                                 ie := integer(e)
                                 newx : UP := monomial(1,1) + ie :: UP
                                 sbt := eval(vjf, monomial(1,1), newx)
-                                (vif - sbt) ~= 0 => "iterate"
-                                if ie > 0 then
-                                    unsafe := union(unsafe, i)
-                                    semi(j) := (semi(j) * vif ^
-                                                qcoerce(i.exponent))
-                                else
-                                    unsafe := union(unsafe, j)
-                                    semi(i) := (semi(i) * vjf ^
-                                                qcoerce(j.exponent))
-                v := members(difference(set(v), unsafe))
+                                if (vif - sbt) = 0 then
+                                    if ie > 0 then
+                                        unsafe := cons(i, unsafe)
+                                        semi(jj) := (semi(jj) * vif ^
+                                                     qcoerce(i.exponent))
+                                    else
+                                        unsafe := cons(j, unsafe)
+                                        semi(ii) := (semi(ii) * vjf ^
+                                                     qcoerce(j.exponent))
+                v_old := v
+                v := setDifference(v, unsafe)
                 if option = "semireg" then
-                    v := [[semi(i), 1] for i in v]
+                    v := [[semi(position(i, v_old)), 1] for i in v]
             -- now v contains the safe right factors of slope number k
             slo := k.slope
             if degree(v(1).factor) * denom(slo) = degree(f) then
@@ -1119,7 +1119,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
         gem := ge_minimal(f, factorizer, "")
         bound : List FZ := [0 for i in 1..degree(f)-1]
         eb : Integer := -1
-        for s in members(gem) repeat
+        for s in gem repeat
             np : List Record(point : PO, slope : FZ, npoly : UP)
             np := newtonpolygon(s.singularity.lpf)
             np := append(np, [[[degree(s.singularity.lpf), 0], 0, 0]])
@@ -1143,11 +1143,11 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
         -- the singularities we have considered
         done_s : FG := []
         while not empty?(gem) repeat
-            dl : List PositiveInteger := [s.singularity.dxt for s in members(gem)]
+            dl : List PositiveInteger := [s.singularity.dxt for s in gem]
             min_deg := reduce(min, dl)
-            for ge in members(gem) repeat
+            for ge in gem repeat
                 if ge.singularity.dxt = min_deg then
-                    gem := difference(gem, ge)
+                    gem := remove(ge, gem)
                     vrs := factor_op(ge.singularity.lpf, factorizer,
                                      "all right factors") :: RS
                     done_s := append(done_s, [[ge.singularity, vrs]])
@@ -1307,7 +1307,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
 
     compute_bound(gem, rlc) ==
         res : FZ := 0
-        for ge in members(gem) repeat
+        for ge in gem repeat
             ma : Union(FZ, "-infinity") := "-infinity"
             for f in ge.mge for fps in ge.fos for ji in 1..#ge.mge repeat
                 r := degree(fps.ram)
@@ -1369,18 +1369,18 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             dnf := append(dnf, factors(factorUP(p, factorizer)))
         singularities : CB
         if inf_singularity?(f) then
-            singularities := set [["infinity", l_p(f, "infinity"), 1]]
+            singularities := [["infinity", l_p(f, "infinity"), 1]]
         else
-            singularities := set []
+            singularities := []
         for g in dnf repeat
             root := rootOf(makeSUP(g.factor))
-            singularities := union(singularities, [root, l_p(f, root),
-                                                   qcoerce(degree(g.factor))])
+            singularities := cons([root, l_p(f, root),
+                                   qcoerce(degree(g.factor))], singularities)
         if option = "use adjoint" then
-            singularities := set [[sg.point, adjoint(sg.lpf), sg.dxt]
-                                  for sg in members(singularities)]
-        res : GEM := set []
-        for sg in members(singularities) repeat
+            singularities := [[sg.point, adjoint(sg.lpf), sg.dxt]
+                              for sg in singularities]
+        res : GEM := []
+        for sg in singularities repeat
             v := factor_op(sg.lpf, factorizer, "semireg") :: SP
             mg : List US := []
             for e in v repeat
@@ -1391,7 +1391,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 ms := reduce(min, es) :: F
                 ss := (ms :: US + e.expart) / (r :: F)
                 mg := append(mg, [ss])
-            res := union(res, [sg, v, mg])
+            res := cons([sg, v, mg], res)
         res
 
 --Copyright (c) 2015, Abhinav Baid.
