@@ -148,6 +148,8 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     opdprod := operator('%defprod)$CommonOperators
     oppow   := operator(POWER::Symbol)$CommonOperators
 
+    opdiff  := operator(operator('%diff)$CommonOperators)$F
+
     factorial x          == opfact x
     binomial(x, y)       == opbinom [x, y]
     permutation(x, y)    == opperm [x, y]
@@ -197,12 +199,18 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       opsum [differentiate(first l, x), second l, third l]
 
     dvdsum(l, x) ==
-      x = retract(y := third l)@SE => 0
-      if member?(x, variables(h := third rest rest l)) or
-         member?(x, variables(g := third rest l)) then
-        error "a sum cannot be differentiated with respect to a bound"
-      else
-        opdsum [differentiate(first l, x), second l, y, g, h]
+        x = retract(y := third l)@SE => 0
+        f := first l
+        v := second l
+        g := l(4)
+        h := l(5)
+        r1 := opdsum [differentiate(f, x), v, y, g, h]
+        member?(x, variables(h)) or member?(x, variables(g)) =>
+            dm := new()$SE :: F
+            dg := kernel(opdiff, [opdsum [f, v, y, dm, h], dm, g])
+            dh := kernel(opdiff, [opdsum [f, v, y, g, dm], dm, h])
+            r1 + differentiate(g, x)*dg + differentiate(h, x)*dh
+        r1
 
     dvprod(l, x) ==
       dm := retract(dummy)@SE
