@@ -1,3 +1,45 @@
+)abbrev package UPDIVP UnivariatePolynomialDivisionPackage
+++ Author: Frederic Lehobey
+++ Date Created: 3 June 1997
+++ Date Last Updated: 3 June 1997
+++ Basic Operations:
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keyword:
+++ Exemples:
+++ References:
+++ Description: UnivariatePolynomialDivisionPackage provides a
+++ division for non monic univarite polynomials with coefficients in
+++ an \spad{IntegralDomain}.
+UnivariatePolynomialDivisionPackage(R, UP) : Exports == Implementation where
+  R : IntegralDomain
+  UP : UnivariatePolynomialCategory(R)
+  N ==> NonNegativeInteger
+  QR ==> Record(quotient : UP, remainder : UP)
+
+  Exports ==> with
+
+    divideIfCan : (UP,UP) -> Union(QR,"failed")
+      ++ divideIfCan(f, g) returns quotient and remainder of the
+      ++ division of f by g or "failed" if it has not succeeded.
+
+  Implementation ==> add
+
+    divideIfCan(p1:UP,p2:UP):Union(QR,"failed") ==
+      zero? p2 => error "divideIfCan: division by zero"
+--      one? (lc := leadingCoefficient p2) => monicDivide(p1, p2)
+      ((lc := leadingCoefficient p2) = 1) => monicDivide(p1, p2)
+      q : UP := 0
+      while not ((e := subtractIfCan(degree(p1),degree(p2))) case "failed")
+       repeat
+        c := leadingCoefficient(p1) exquo lc
+        c case "failed" => return "failed"
+        ee := e::N
+        q := q+monomial(c::R, ee)
+        p1 := p1 - c*mapExponents(x +-> x + ee, p2)
+      [q, p1]
+
 )abbrev package UPDECOMP UnivariatePolynomialDecompositionPackage
 ++ Author: Frederic Lehobey
 ++ Date Created: 17 June 1996
