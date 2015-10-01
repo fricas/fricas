@@ -123,8 +123,8 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
     ALGOP := '%alg
 
     K2KG      : K -> Kernel FG
-    postSubst : (F, List K, List F, List K, List K, SE) -> F
-    rinteg    : (IR, F, SE, B) -> Union(F, List F)
+    postSubst : (F, List K, List F, List K, List K, List K, List F, SE) -> F
+    rinteg    : (IR, F, SE, B) -> List F
     mkPrimh   : (F, SE, B) -> F
     trans?    : F -> B
     goComplex? : (B, List K, List K) -> B
@@ -147,9 +147,8 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       g
 
     rinteg(i, f, x, h) ==
-      not elem? i => integral(f, x)$F
-      empty? rest(l := [mkPrimh(f, x, h) for f in expand i]) => first l
-      l
+        not elem? i => [integral(f, x)$F]
+        [mkPrimh(f, x, h) for f in expand i]
 
 -- replace tan(a/2)^2 by (1-cos a)/(1+cos a) if tan(a/2) is in ltan
     halfangle a ==
@@ -177,15 +176,12 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         f
 
 -- ltan = list of tangents in the integrand after real normalization
-    postSubst(f, otf, lv, lk, ltan, x) ==
+    postSubst(f, otf, lv, lk, ltan, ekers, evals, x) ==
       for v in lv for k in lk repeat
         ((u := retractIfCan(v)@Union(K, "failed")) case K) =>
            uk := u::K
            if has?(operator(uk), ALGOP) then
              f := univariate(f, uk, minPoly uk) (uk::F)
-           if is?(operator(uk), '%iint) and
-              not(member?(uk, (tf := tower f))) then
-               uk := find_int(uk, tf)
            f := eval(f, [uk], [k::F])
         if is?(k, 'nthRoot) then
            vkl := [kk for kk in kernels(v) | is?(kk, 'nthRoot)]
@@ -198,6 +194,11 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
                vkv := (k::F)/vc
                f := univariate(f, vk, minPoly vk) (vkf)
                f := eval(f, [vk], [vkv])
+      for k in ekers for v in evals repeat
+          if is?(operator(k), '%iint) and
+              not(member?(k, (tf := tower f))) then
+               k := find_int(k, tf)
+          f := eval(f, [k], [v])
       if not(empty? ltan) then
         ltemp := [tan2temp k for k in ltan]
         f := eval(f, ltan, [k::F for k in ltemp])
@@ -271,12 +272,19 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       ekers : List K := []
       evals : List F := []
       for k in tf for v in etf repeat
+          s : F := 0
+          vk : K
           if ((vu := retractIfCan(v)@Union(K, "failed")) case K) then
               vk := vu::K
+              s := 1
+          else if ((vu := retractIfCan(-v)@Union(K, "failed")) case K) then
+              vk := vu::K
+              s := -1
+          if s ~= 0 then
               kn := name(operator(vk))
               if kn = '%iint or kn = 'atan then
-                  ekers := cons(k, ekers)
-                  evals := cons(v, evals)
+                  ekers := cons(vk, ekers)
+                  evals := cons(s*k::F, evals)
       f1 := eval(f, tf, etf)
       tf1 := tower(f1)
       rec := rischNormalize(f1, x)
@@ -332,11 +340,10 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       i := map((ii :F) : F +-> eval(ii, nr_lst, ir_lst),
                i)$IntegrationResultFunctions2(F, F)
       ltg := setDifference(ltg, ltf)   -- tan's added by normalization
-      okers := concat(rec.kers, ekers)
-      ovals := concat(rec.vals, evals)
-      (u := rinteg(i, f, x, el and ht)) case F =>
-          postSubst(u::F, tf1, ovals, okers, ltg, x)
-      [postSubst(h, tf1, ovals, okers, ltg, x) for h in u::List(F)]
+      rl := [postSubst(h, tf1, rec.vals, rec.kers, ltg, ekers, evals,
+                 x) for h in rinteg(i, f, x, el and ht)]
+      empty? rest(rl) => first(rl)
+      rl
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
