@@ -222,13 +222,22 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
             if is?(k, 'atan) then
                 ik := retract(-2*im*e)@Kernel(FG)
                 ie := -2*im*(k::FG)
+                resk := cons(ik, resk)
+                rese := cons(ie, rese)
             if is?(k, 'tan) then
                 e1 := im*e
                 k1 := im*(k::FG)
-                ik := retract(-(e1 + 1)/(e1 - 1))@Kernel(FG)
+                -- hack alert: transcendental operatar applied
+                -- to constant argument may give algebraic
+                -- constant, in such case we are unable to
+                -- invert the transform
+                iku := retractIfCan(-(e1 + 1)/(e1 - 1)
+                                   )@Union(Kernel(FG), "failed")
+                iku case "failed" => "iterate"
+                ik := iku::Kernel(FG)
                 ie := -(k1 + 1)/(k1 - 1)
-            resk := cons(ik, resk)
-            rese := cons(ie, rese)
+                resk := cons(ik, resk)
+                rese := cons(ie, rese)
         [reverse(resk), reverse(rese)]
 
     inv_alg_lst(lt : List Kernel(F)) : RALG_Rec ==
