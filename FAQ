@@ -16,6 +16,8 @@ Online resources:
 3.2: How one can use FriCAS in batch mode?
 3.3: How to find where an exported functions is implemented?
 
+4.1: Clef does not work.  Is there alternative?
+
 1.1: What is FriCAS
 
 FriCAS is an advanced computer algebra system.  Its capabilities range
@@ -35,7 +37,7 @@ mathematical functionality about 25% of code was added after fork.
 The prefix Fri is a deliberate misspeling of Free -- FriCAS sounds
 like Free CAS.  There is also a second meaning: Polish word
 "frykas" (which sounds similar to FriCAS) denotes generally
-tasty food,  French word "fricasse" and German "Frikasse" name
+tasty food,  French word "fricassee" and German "Frikassee" name
 a particluar food.
 
 
@@ -49,7 +51,7 @@ There is mailing list (please sign up before posting a message):
 
 http://groups.google.com/group/fricas-devel?hl=en
 
-This list intended both for users and developers.
+This list is intended both for users and developers.
 
 
 2.2: Where should I report bugs?
@@ -64,8 +66,7 @@ Axiom derivatives:
 
 http://axiom-wiki.newsynthesis.org/IssueTracker
 
-Currently the wiki contains much more reports than SourceForge
-bug tracker, but many (most of them) do not apply to FriCAS.
+This page is obsolete and should not be used for new reports.
 
 2.3: Where I can find documentation?
 
@@ -105,6 +106,25 @@ all parameters.  Than click on 'Operatations' and then on
 after clicking on 'Operatations' click on operation name and
 than on 'Implementations'.
 
+4.1: Clef does not work.  Is there alternative?
+
+It is possible to use 'rlwrap' program (which is readline-based).
+The main FriCAS executable is designed to be run via line-editing
+wrapper pragram.  Normally for commad line editing FriCAS uses
+clef.  However, it is possible to use different wrapper.
+To use 'rlwrap' do the following:
+
+1) Make a shell script to change calling convention, like:
+
+#!/bin/sh
+CFILE=$2
+shift 3
+exec /full/path/to/rlwrap -f $CFILE "$@"
+
+2) Type
+
+fricas -clefprog /path/to/wrapper/script
+
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
@@ -116,10 +136,8 @@ FAQ 15: How can I see what the interpreter is trying to do?
 FAQ 16: How can I record console output?
 FAQ 17: Graphics don't work or sman fails to start ?
 FAQ 19: How can I get equations written on one line?
-FAQ 20: Axiom hangs when graphics should be displayed.
 FAQ 24: What is the purpose of the domain HACKPI?
 FAQ 25: Can I create or edit hypertex pages?
-FAQ 28: Graphics does not work inside TeXmacs?
 FAQ 32: How can I input an equation as a string?
 FAQ 33: How can I run hypertex standalone?
 FAQ 35: Why do .axiom.input defined functions fail in axiom?
@@ -217,24 +235,6 @@ First try running sman as :
 sman -debug -noclef -nonag -noht
 If graphics still don't work or sman fails to start then
 look at the error messages.
-
-===================================================================
-FAQ 18: How can the user use the batch mode?
-===================================================================
-
-1) create an input file:
-
-echo '2+2' >tst.input
-echo '3+3' >>tst.input
-
-2) make sure the AXIOM variable is set
-
-export AXIOM=/path/axiom/mnt/linux
-export PATH=$AXIOM/bin:$PATH
-
-3) pipe a )read command to AXIOMsys and capture the output
-
-echo ')read tst.input' | AXIOMsys >tst.output
 
 ===================================================================
 FAQ 19: How can I get equations written on one line?
@@ -374,13 +374,6 @@ there is nothing at the user level that needs this information.
 
 
 ===================================================================
-FAQ 20: Axiom hangs when graphics should be displayed.
-===================================================================
-
-Be sure that your X server will allow you to display windows. try:
-'xhost +'
-
-===================================================================
 FAQ 24: What is the purpose of the domain HACKPI?
 ===================================================================
 
@@ -432,41 +425,6 @@ hit a bad byte index and then it will fail.
 
 Hypertex can also be directed elsewhere by using the HTPATH
 shell variable.
-
-===================================================================
-FAQ 28: Graphics does not work inside TeXmacs?
-===================================================================
-
-> No, I am not able to get graphics to appear in an X-window
-> from inside TeXmacs.  That's what I *want* to be able to do.
->
-> I have TeXmacs 1.0.4.4 (latest being 1.0.4.5).   I know the
-> plugin calls AXIOMsys, and I tried to make it call "axiom"
-> or "sman" with no immediate success.
-
-Ok great. You are obviously on the right track. If you compiled
-TeXmacs from source then to make tm_axiom call "axiom", the
-simplest thing to do is to modify the souce file tm_axiom.c by
-replacing "AXIOMsys" with "axiom" and then recompile it. It is
-a simple C program with no dependencies and can be compiled
-separately. Move the tm_axiom.exe file to the appropriate place
-in the TeXmacs installation directory.
-
-If you didn't compile TeXmacs from source you can get just the
-tm_axiom.c file from the CVS, modify it and compile as above.
-
-The Axiom graphics process has the ability to create a
-postscript format output file containing the graphic.
-This can be initiated from the user interface of the
-graphics window or also from an Axiom command. Check "Chapter
-7 Graphics" of the Axiom book, specifically section "7.1.8
-Operations for Two-Dimensional Graphics", `write' operation.
-It works something like this:
-
-     viewPort := draw(sin x, x=-%pi..%pi)
-     write(viewPort, "output.ps","postscript")
-
-These commands can be included directly in the TeXmacs document.
 
 ===================================================================
 FAQ 32: How can I input an equation as a string?
