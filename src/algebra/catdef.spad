@@ -655,7 +655,8 @@ Field() : Category == Join(EuclideanDomain, UniqueFactorizationDomain,
 ++ Axioms:
 ++   \spad{lookup(index(n)) = n}
 ++   \spad{index(lookup(s)) = s}
-Finite() : Category == Join(SetCategory, ConvertibleTo InputForm) with
+Finite() : Category == Join(SetCategory, ConvertibleTo InputForm,
+                            Comparable) with
     --operations
       size : () ->  NonNegativeInteger
         ++ size() returns the number of elements in the set.
@@ -679,6 +680,11 @@ Finite() : Category == Join(SetCategory, ConvertibleTo InputForm) with
       convert(x : %) : InputForm ==
           packageCall('index, [convert(lookup(x))@InputForm]
                      )$InputFormFunctions1(%)
+
+      if not(% has OrderedSet) then
+
+          smaller?(x : %, y : %) : Boolean ==
+              lookup(x) <$PositiveInteger lookup(y)
 
 )abbrev category FLINEXP FullyLinearlyExplicitRingOver
 ++ Author:
