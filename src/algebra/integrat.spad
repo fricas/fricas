@@ -326,6 +326,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       g := subst(rec.func, r_lst, rv_lst)
       tg0 := tower g
       tg  := [k for k in tg0 | member?(x, variables(k::F))]$List(K)
+      ltg0 := select(x1+->is?(operator x1, 'tan), tg0)
       ltg := select(x1+->is?(operator x1, 'tan), tg)
       rtg := any?(x1+->has?(operator x1, RTRIG), tg)
       el  := any?(x1+->has?(operator x1, ELEM), tg)
@@ -348,8 +349,8 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       else i := lfintegrate(g, x)
       i := map((ii :F) : F +-> eval(ii, nr_lst, ir_lst),
                i)$IntegrationResultFunctions2(F, F)
-      ltg := setDifference(ltg, ltf)   -- tan's added by normalization
-      rl := [postSubst(h, tf1, rec.vals, rec.kers, ltg, ekers, evals,
+      ltg0 := setDifference(ltg0, ltf)   -- tan's added by normalization
+      rl := [postSubst(h, tf1, rec.vals, rec.kers, ltg0, ekers, evals,
                  x) for h in rinteg(i, f, x, el and ht)]
       empty? rest(rl) => first(rl)
       rl
