@@ -391,12 +391,14 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
         ans : F := 0
         q := univariate(p, k)
         while (d := degree q) > 0 repeat
-          term :=
---            one?(g := gcd(d, n)) => monomial(1, k, d)
-            ((g := gcd(d, n)) = 1) => monomial(1, k, d)
-            monomial(1, kernel(operator k, [a, (n quo g)::F], height k), d quo g)
-          ans := ans + leadingCoefficient(q)::F * term::F
-          q := reductum q
+            term :F :=
+                g := gcd(d, n)
+                (g = n) => a^(d quo g)
+                (g = 1) => monomial(1, k, d)::F
+                monomial(1, kernel(operator k, [a, (n quo g)::F], height k),
+                         d quo g)::F
+            ans := ans + leadingCoefficient(q)::F * term
+            q := reductum q
         leadingCoefficient(q)::F + ans
 
       inroot(op, x, n) ==
