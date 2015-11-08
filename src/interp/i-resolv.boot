@@ -425,8 +425,6 @@ resolveTCat(t,c) ==
   c = '(Field) and t = $Symbol =>
       [$QuotientField, ['Fraction, $Integer]]
 
-  c = '(Ring) and t is ['FactoredForm,t0] => ['FactoredRing,t0]
-
   (t is [t0]) and (sd := getImmediateSuperDomain(t0)) and sd ~= t0 =>
     resolveTCat(sd,c)
 
