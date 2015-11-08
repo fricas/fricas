@@ -318,22 +318,30 @@ NRTmakeCategoryAlist() ==
   sixEtc := [5 + i for i in 1..#$pairlis]
   formals := ASSOCRIGHT $pairlis
   for x in slot1 repeat
-       RPLACA(x, EQSUBSTLIST(CONS("$$", sixEtc), CONS('$,formals), first x))
+      RPLACA(x, EQSUBSTLIST(["$$"], ["$"], first x))
   -----------code to make a new style slot4 -----------------
   predList := ASSOCRIGHT slot1  --is list of predicate indices
   maxPredList := "MAX"/predList
-  catformvec := ASSOCLEFT slot1
+  catformvec := [encodeCatform(x, sixEtc, formals)
+                   for x in ASSOCLEFT slot1]
   maxElement := "MAX"/$byteVec
   ['CONS, ['makeByteWordVec2,MAX(maxPredList,1),MKQ predList],
     ['CONS, MKQ LIST2VEC slot0,
-      ['CONS, MKQ LIST2VEC [encodeCatform x for x in catformvec],
+      ['CONS, MKQ LIST2VEC catformvec,
         ['makeByteWordVec2,maxElement,MKQ $byteVec]]]]
   --NOTE: this is new form: old form satisfies VECP CDDR form
 
-encodeCatform x ==
-  k := NRTassocIndex x => k
-  atom x or atom rest x => x
-  [first x,:[encodeCatform y for y in rest x]]
+encodeCatform(x, inds, formals) ==
+    k := NRTassocIndex x => k
+    atom x =>
+        res := nil
+        for ind in inds for formal in formals while not(res) repeat
+            if EQ(x, formal) then res := ind
+        res => res
+        SYMBOLP(x) => x
+        ["QUOTE", x]
+    atom rest x => x
+    [first(x), :[encodeCatform(y, inds, formals) for y in rest x]]
 
 NRTcatCompare [catform,:pred] == LASSOC(first catform,$levelAlist)
 
