@@ -523,6 +523,9 @@ formArguments2String(argl,ml) == [fn(x,m) for x in argl for m in ml] where
     x=$EmptyMode or x=$quadSymbol => specialChar 'quad
     STRINGP(x) or IDENTP(x) => x
     x is [ ='_:,:.] => form2String1 x
+    x is ["QUOTE", y] =>
+        m = $Symbol and SYMBOLP(y) => y
+        form2String1 x
     isValidType(m) and PAIRP(m) and
       (GETDATABASE(first(m),'CONSTRUCTORKIND) = 'domain) =>
         (x' := coerceInteractive(objNewWrap(x,m),$OutputForm)) =>
