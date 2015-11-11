@@ -68,15 +68,16 @@ VectorCategory(R : Type) : Category == OneDimensionalArrayAggregate R with
         ++ Error: if x and y are not of the same length.
       _* : (Integer, %) -> %
         ++ n * y multiplies each component of the vector y by the integer n.
-    if R has Monoid then
+    if R has SemiGroup then
       _* : (R, %) -> %
         ++ r * y multiplies the element r times each component of the vector y.
       _* : (%, R) -> %
         ++ y * r multiplies each component of the vector y by the element r.
-    if R has Ring then
+    if R has AbelianMonoid and R has SemiRng then
       dot : (%, %) -> R
         ++ dot(x, y) computes the inner product of the two vectors x and y.
         ++ Error: if x and y are not of the same length.
+    if R has Ring then
       outerProduct : (%, %) -> Matrix R
         ++ outerProduct(u, v) constructs the matrix whose (i, j)'th element is
         ++ u(i)*v(j).
@@ -111,14 +112,18 @@ VectorCategory(R : Type) : Category == OneDimensionalArrayAggregate R with
       n : Integer * u : % == map(x +-> n*x, u)
       u - v           == u + (-v)
 
-    if R has Monoid then
+    if R has SemiGroup then
+
       u : % * r : R       == map(x +-> x*r, u)
       r : R * u : %       == map(x +-> r*x, u)
 
-    if R has Ring then
+    if R has AbelianMonoid and R has SemiRng then
+
       dot(u, v) ==
         #u ~= #v => error "Vectors must be of the same length"
         _+/[qelt(u, i) * qelt(v, i) for i in minIndex u .. maxIndex u]
+
+    if R has Ring then
       outerProduct(u, v) ==
         matrix [[qelt(u, i) * qelt(v, j) for i in minIndex u .. maxIndex u] _
                 for j in minIndex v .. maxIndex v]
@@ -274,18 +279,23 @@ DirectProductCategory(dim : NonNegativeInteger, R : Type) : Category ==
            ++ different from dim.
          if R has SetCategory then FullyRetractableTo R
          if R has Ring then
-           BiModule(R, R)
            DifferentialExtension R
            FullyLinearlyExplicitRingOver R
+         if R has AbelianMonoid and R has Monoid then
            unitVector : PositiveInteger -> %
              ++ unitVector(n) produces a vector with 1 in position n and
              ++ zero elsewhere.
-           dot : (%, %) -> R
-             ++ dot(x, y) computes the inner product of the vectors x and y.
-         if R has AbelianSemiGroup then AbelianSemiGroup
+         if R has SemiRng then
+           SemiRng
+           BiModule(R, R)
+           if R has AbelianMonoid then
+             dot : (%, %) -> R
+               ++ dot(x, y) computes the inner product of the vectors x and y.
+         if R has AbelianMonoid then AbelianMonoid
          if R has CancellationAbelianMonoid then CancellationAbelianMonoid
-         if R has Monoid then
-           Monoid
+         if R has Monoid then Monoid
+         if R has SemiGroup then
+           SemiGroup
            _* : (R, %) -> %
              ++ r * y multiplies the element r times each component of the
              ++ vector y.
@@ -437,18 +447,13 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
               L := L*N+lookup(x.i)-1
             (L+1)::PositiveInteger
 
-      if R has AbelianSemiGroup then
-        u : % + v : % == map(_+ , u, v)$Rep
-
       if R has AbelianMonoid then
+
         0 == zero(dim)$Vector(R) pretend %
 
-      if R has Monoid then
-        1 == new(dim, 1)$Vector(R) pretend %
-        u : % * r : R       == map(x +-> x*r, u)
-        r : R * u : %       == map(x +-> r*x, u)
-        x : % * y : %       == [x.i * y.i for i in 1..dim]$Vector(R) pretend %
+      if R has SemiGroup then
 
+        u : % * v : % == map(_*, u, v)$Rep
 
       if R has CancellationAbelianMonoid then
         subtractIfCan(u:%, v:%):Union(%,"failed") ==
@@ -459,16 +464,18 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
             qsetelt!(w, i, c::R)$Rep
           w pretend %
 
-      if R has Ring then
+      if R has Monoid then
 
-        u : % * v : %                    == map(_* , u, v)$Rep
+        1 == new(dim, 1)$Vector(R) pretend %
 
         recip z ==
-          w := new(dim, 0)$Vector(R)
+          w := new(dim, 1)$Vector(R)
           for i in minIndex w .. maxIndex w repeat
             (u := recip qelt(z, i)) case "failed" => return "failed"
             qsetelt!(w, i, u::R)
           w pretend %
+
+      if R has AbelianMonoid and R has Monoid then
 
         unitVector i ==
           v := new(dim, 0)$Vector(R)
