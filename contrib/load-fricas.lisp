@@ -3,7 +3,7 @@ To use FriCAS as a Lisp library build FriCAS as usual and
 keep the build tree.  Change path below to point to build
 tree.  After that doing:
 
- (load "load-frical.lisp")
+ (load "load-fricas.lisp")
 
 will load and initialize FriCAS.
 
@@ -61,6 +61,7 @@ FriCAS settings may interfere with other programs.
      (load "../lisp/fricas-package.lisp")
      (load "../lisp/fricas-config.lisp")
      (load "../lisp/fricas-lisp")
+     (load "../lisp/primitives.lisp")
      (load "makeint.lisp"))
 (in-package "BOOT")
 (fricas-init)
