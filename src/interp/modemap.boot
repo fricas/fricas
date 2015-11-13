@@ -60,11 +60,6 @@ domainMember(dom,domList) == or/[modeEqual(dom,d) for d in domList]
 
 --% MODEMAP FUNCTIONS
 
-getModemap(x is [op,:.],e) ==
-  for modemap in get(op,'modemap,e) repeat
-    if u:= compApplyModemap(x,modemap,e,nil) then return
-      ([.,.,sl]:= u; SUBLIS(sl,modemap))
-
 getModemapList(op,numOfArgs,e) ==
   op is ['Sel, D, op'] => getModemapListFromDomain(op', numOfArgs, D, e)
   [mm for

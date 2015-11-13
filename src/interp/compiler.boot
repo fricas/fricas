@@ -338,10 +338,11 @@ compExpression(x,m,e) ==
     FUNCALL(fn,x,m,e)
   compForm(x,m,e)
 
-compAtom(x,m,e) ==
-  T:= compAtomWithModemap(x,m,e,get(x,"modemap",e)) => T
-  x="nil" =>
-    BREAK()
+compAtom(x, m, e) ==
+    res := compAtom1(x, m, e) => res
+    compAtomWithModemap(x, m, e, get(x, "modemap", e))
+
+compAtom1(x, m, e) ==
   t:=
     isSymbol x =>
       compSymbol(x,m,e) or return nil
@@ -407,12 +408,11 @@ compForm(form,m,e) ==
   T
 
 compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
-  not($tryRecompileArguments) => nil
+  not($tryRecompileArguments) or null(argl) => nil
   -- used in case: f(g(x)) where f is in domain introduced by
   -- comping g, e.g. for (ELT (ELT x a) b), environment can have no
   -- modemap with selector b
-  form is ["Sel", a, .] =>
-    ([.,.,e]:= comp(a,$EmptyMode,e) or return nil; compForm1(form,m,e))
+  form is ["Sel", a, .] => nil
   u:= for x in argl repeat [.,.,e]:= comp(x,$EmptyMode,e) or return "failed"
   u="failed" => nil
   compForm1(form,m,e)
@@ -428,6 +428,25 @@ outputComp(x,e) ==
   SAY ["outputComp strange x ", x]
   nil
 
+compSel1(domain, op, argl, m, e) ==
+    domain="Lisp" =>
+        [[op, :[([., ., e] := compOrCroak(x, $EmptyMode, e)).expr
+           for x in argl]], m, e]
+    (op = "COLLECT") and coerceable(domain, m, e) =>
+      (T := comp([op, :argl], domain, e) or return nil; coerce(T, m))
+    -- Next clause added JHD 8/Feb/94: the clause after doesn't work
+    -- since addDomain refuses to add modemaps from Mapping
+    e :=
+        domain is ['Mapping, :.] =>
+            augModemapsFromDomain1(domain, domain, e)
+        addDomain(domain, e)
+    mml := [x for x in getFormModemaps([op, :argl], e)
+              | x is [[ =domain, :.], :.]]
+    (ans := compForm2([op, :argl], m, e, mml)) => ans
+    op = "construct" and coerceable(domain, m, e) =>
+        (T := comp([op, :argl], domain, e) or return nil; coerce(T, m))
+    nil
+
 compForm1(form is [op,:argl],m,e) ==
   op="error" =>
       #argl = 1 =>
@@ -440,23 +459,7 @@ compForm1(form is [op,:argl],m,e) ==
           nil
       SAY ["compiling call to error ", argl]
       nil
-  op is ["Sel", domain, op'] =>
-    domain="Lisp" =>
-      --op'='QUOTE and null rest argl => [first argl,m,e]
-      [[op',:[([.,.,e]:= compOrCroak(x,$EmptyMode,e)).expr for x in argl]],m,e]
-    (op'="COLLECT") and coerceable(domain,m,e) =>
-      (T:= comp([op',:argl],domain,e) or return nil; coerce(T,m))
-    -- Next clause added JHD 8/Feb/94: the clause after doesn't work
-    -- since addDomain refuses to add modemaps from Mapping
-    (domain is ['Mapping,:.]) and
-      (ans := compForm2([op',:argl],m,e:= augModemapsFromDomain1(domain,domain,e),
-        [x for x in getFormModemaps([op',:argl],e) | x is [[ =domain,:.],:.]]))             => ans
-
-    ans := compForm2([op',:argl],m,e:= addDomain(domain,e),
-      [x for x in getFormModemaps([op',:argl],e) | x is [[ =domain,:.],:.]])             => ans
-    (op'="construct") and coerceable(domain,m,e) =>
-      (T:= comp([op',:argl],domain,e) or return nil; coerce(T,m))
-    nil
+  op is ["Sel", domain, op'] => compSel1(domain, op', argl, m, e)
 
   e:= addDomain(m,e) --???unneccessary because of comp2's call???
   (mmList:= getFormModemaps(form,e)) and (T:= compForm2(form,m,e,mmList)) => T
@@ -523,11 +526,8 @@ getFormModemaps(form is [op,:argl],e) ==
   modemapList:= get(op,"modemap",e)
   if $insideCategoryPackageIfTrue then
     modemapList := [x for x in modemapList | x is [[dom,:.],:.] and dom ~= '$]
-  if op="elt"
-     then modemapList:= eltModemapFilter(last argl,modemapList,e) or return nil
-     else
-      if op="setelt!" then modemapList :=
-        seteltModemapFilter(CADR argl,modemapList,e) or return nil
+  if op = "elt" and #argl = 2 or op = "setelt!" and #argl = 3 then
+      modemapList := eltModemapFilter(argl.1, modemapList, e) or return nil
   nargs:= #argl
   finalModemapList:= [mm for (mm:= [[.,.,:sig],:.]) in modemapList | #sig=nargs]
   modemapList and null finalModemapList =>
@@ -537,15 +537,7 @@ getFormModemaps(form is [op,:argl],e) ==
 eltModemapFilter(name,mmList,e) ==
   isConstantId(name,e) =>
     l:= [mm for mm in mmList | mm is [[.,.,.,sel,:.],:.] and sel=name] => l
-            --there are elts with extra parameters
-    stackMessage ["selector variable: ",name," is undeclared and unbound"]
-    nil
-  mmList
-
-seteltModemapFilter(name,mmList,e) ==
-  isConstantId(name,e) =>
-    l:= [mm for (mm:= [[.,.,.,sel,:.],:.]) in mmList | sel=name] => l
-            --there are setelts with extra parameters
+            -- setelt! has extra parameter
     stackMessage ["selector variable: ",name," is undeclared and unbound"]
     nil
   mmList
@@ -891,29 +883,11 @@ compReturn(["return",level,x],m,e) ==
 
 --% ELT
 
-compSel(form is ["elt", aDomain, anOp], m, E) ==
+compSel(form is ["Sel", aDomain, anOp], m, E) ==
   aDomain="Lisp" =>
     [anOp',m,E] where anOp'() == (anOp=$Zero => 0; anOp=$One => 1; anOp)
-  isDomainForm(aDomain,E) =>
-    E:= addDomain(aDomain,E)
-    mmList:= getModemapListFromDomain(anOp,0,aDomain,E)
-    modemap:=
-      n:=#mmList
-      1=n => mmList.(0)
-      0=n =>
-        return
-          stackMessage ['"Operation ","%b",anOp,"%d",
-                         '"missing from domain: ", aDomain]
-      stackWarning ['"more than 1 modemap for: ",anOp,
-                  '" with dc=",aDomain,'" ===>"
-        ,mmList]
-      mmList.(0)
-    [sig,[pred,val]]:= modemap
-    #sig~=2 and not val is ["elt",:.] => nil --what does the second clause do ????
---+
-    val := genDeltaEntry [opOf anOp,:modemap]
-    convert([["call",val],first rest sig,E], m) --implies fn calls used to access constants
-  compForm(form,m,E)
+  anOp := (anOp = $Zero => "Zero"; anOp = $One => "One"; anOp)
+  compSel1(aDomain, anOp, [], m, E)
 
 --% HAS
 
