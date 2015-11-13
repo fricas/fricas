@@ -33,21 +33,35 @@
 
 oldCompilerAutoloadOnceTrigger() == nil
 
-compAtomWithModemap(x,m,e,v) ==
-  Tl :=
-    [[transImplementation(x, map), target, e]
-      for map in v | map is [[.,target],[.,fn]]] =>
-                                         --accept only monadic operators
-        T:= or/[t for (t:= [.,target,.]) in Tl | modeEqual(m,target)] => T
-        1=#(Tl:= [y for t in Tl | (y:= convert(t,m))]) => first Tl
-        0<#Tl and m=$NoValueMode => first Tl
-        nil
+compAtomWithModemap(x, m, e, v) ==
+    res := nil
+    v1 := nil
+    while not res for map in v | map is [[.,target],[.,fn]] repeat
+        ATOM(fn) => "iterate"
+        not(modeEqual(m, target)) => v1 := cons(map, v1)
+        -- try exact match
+        [[md, mr], :fnsel] := map
+        compMapCond(x, md, [], fnsel) =>
+            res := trans_delta(genDeltaEntry [x, :map], target, e)
+        v1 := cons(map, v1)
+    res => res
+    v1 := NREVERSE(v1)
+    -- now try inexact
+    while not res for map in v1 repeat
+        mr := resolve(target, m)
+        not(mr) => "iterate"
+        not coerceable(mr, m, e) => "iterate"
+        [[md, mr], :fnsel] := map
+        if compMapCond(x, md, [], fnsel) then
+            res := trans_delta(genDeltaEntry [x, :map], target, e)
+            res := convert(res, m)
+    res
 
-transImplementation(op, map) ==
---+
-  fn := genDeltaEntry [op,:map]
-  fn is ["XLAM",:.] => [fn]
-  ["call",fn]
+trans_delta(fn, target, e) ==
+    fn1 :=
+        fn is ["XLAM", :.] => [fn]
+        ["call", fn]
+    [fn1, target, e]
 
 compToApply(op,argl,m,e) ==
   T:= compNoStacking(op,$EmptyMode,e) or return nil
@@ -92,7 +106,6 @@ compFormWithModemap(form is [op,:argl],m,e,modemap) ==
         [map:= [.,target,:.],:cexpr]:= modemap :=SUBST(x,ss,modemap)
         -- SAY ["new map is",map]
   not (target':= coerceable(target,m,e)) => nil
-  map:= [target',:rest map]
   [f,Tl,sl]:= compApplyModemap(form,modemap,e,nil) or return nil
 
   --generate code; return

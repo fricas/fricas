@@ -384,7 +384,9 @@ getSlot1FromCategoryForm ([op, :argl]) ==
 
 mkEvalableCategoryForm c ==       --from DEFINE
   c is [op,:argl] =>
-    op="Join" => ["Join",:[mkEvalableCategoryForm x for x in argl]]
+    op="Join" =>
+        nargs := [mkEvalableCategoryForm x or return nil for x in argl]
+        nargs => ["Join", :nargs]
     op is "DomainSubstitutionMacro" =>
         --$extraParms :local
         --catobj := EVAL c -- DomainSubstitutionFunction makes $extraParms
