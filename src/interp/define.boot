@@ -359,7 +359,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     [ds,.,$e]:= compMakeCategoryObject(target,$e) or
       sayBrightly '"   cannot produce category object:"
       pp target
-      return nil
+      userError '"cannot produce category object"
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
     $domainShell:= COPY_-SEQ ds
 --+ 7 lines for $NRT follow

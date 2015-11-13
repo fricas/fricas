@@ -74,7 +74,7 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
 getIdentity(x,e) ==
   GETL(x,"THETA") is [y] =>
     y => y
-    "nil"
+    nil
 
 numberize x ==
   x=$Zero => 0

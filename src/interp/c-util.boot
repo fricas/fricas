@@ -541,6 +541,7 @@ extendsCategoryForm(domain,form,form') ==
   --satisfies (Algebra X)
   form=form' => true
   form=$Category => nil
+  form' = $Category => nil
   form' is ["Join",:l] => and/[extendsCategoryForm(domain,form,x) for x in l]
   form' is ["CATEGORY",.,:l] =>
     and/[extendsCategoryForm(domain,form,x) for x in l]
