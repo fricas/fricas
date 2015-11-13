@@ -198,7 +198,7 @@ push_form3(tag, arg1, arg2, arg3) ==
     push_reduction("dummy", [tag, arg1, arg2, arg3])
 
 dollarTran(dom, expr) ==
-    expr is [fun, :args] and not(NULL(args)) =>
+    expr is [fun, :args] =>
         [["Sel", dom, fun], :args]
     ["Sel", dom, expr]
 
