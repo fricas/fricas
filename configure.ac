@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2014-12-18],
+AC_INIT([FriCAS], [2016-01-24],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -605,7 +605,7 @@ fi
 fricas_src_all="all-axiomsys $fricas_src_all"
 AC_PATH_XTRA
 ## Output directives for the C compiler
-AC_SUBST(X_CLFAGS)
+AC_SUBST(X_CFLAGS)
 ## Output directives for the linker
 AC_SUBST(X_LIBS)
 ## Output any extra libraries required by X11
