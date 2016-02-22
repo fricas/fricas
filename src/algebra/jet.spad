@@ -162,7 +162,7 @@ JetBundleCategory() : Category == Def where
         ++ \spad{Pr(i, ind)} is like \spad{P(i, ind)} but \spad{ind} is
         ++ always a repeated index.
 
-      1 : () -> %
+      1 : constant -> %
         ++ \spad{1} generates the special "jet variable" 1, which is
         ++ needed for the representation of linear functions.
 
@@ -1981,10 +1981,10 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     -- Multiplication --
     -- -------------- --
 
-    L : MD * AA : % ==
-        ncols(L) ~= AA.NRows => error "improper matrix dimensions"
+    LM : MD * AA : % ==
+        ncols(LM) ~= AA.NRows => error "improper matrix dimensions"
         A := copy AA
-        rlen := nrows L
+        rlen := nrows LM
         res : % := new(A.AllInds, rlen)
 
         for c in A.AllInds repeat
@@ -1993,8 +1993,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                 r := qelt(A.Rows, i)
                 inds := r.Indices
                 if not(empty? inds) and first(inds) = c then
-                    for k in 1..rlen | not zero? qelt(L, k, i) repeat
-                        qsetelt!(tmp, k, qelt(tmp, k) + qelt(L, k, i)* _
+                    for k in 1..rlen | not zero? qelt(LM, k, i) repeat
+                        qsetelt!(tmp, k, qelt(tmp, k) + qelt(LM, k, i)* _
                                  first(r.Entries))
                     r.Entries := rest r.Entries
                     r.Indices := rest inds
@@ -2020,10 +2020,10 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             tmp case "failed" => error "cannot divide in mult"
             tmp::D
 
-        L : MFD * AA : % ==
-            ncols(L) ~= AA.NRows => error "improper matrix dimensions"
+        LM : MFD * AA : % ==
+            ncols(LM) ~= AA.NRows => error "improper matrix dimensions"
             A := copy AA
-            rlen := nrows L
+            rlen := nrows LM
             res : % := new(A.AllInds, rlen)
 
             for c in A.AllInds repeat
@@ -2032,8 +2032,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                     r := qelt(A.Rows, i)
                     inds := r.Indices
                     if not(empty? inds) and first(inds) = c then
-                        for k in 1..rlen | not zero? qelt(L, k, i) repeat
-                            qsetelt!(tmp, k, qelt(tmp, k) + qelt(L, k, i)* _
+                        for k in 1..rlen | not zero? qelt(LM, k, i) repeat
+                            qsetelt!(tmp, k, qelt(tmp, k) + qelt(LM, k, i)* _
                                      first(r.Entries))
                         r.Entries := rest r.Entries
                         r.Indices := rest inds

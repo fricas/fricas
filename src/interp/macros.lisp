@@ -346,11 +346,6 @@
 
 ; 14.2 Concatenating, Mapping, and Reducing Sequences
 
-(MAPC #'(LAMBDA (X) (MAKEPROP (CAR X) 'THETA (CDR X)))
-      '((+ (|Zero|)) (|lcm| (|One|)) (|strconc| "") (* (|One|))
-        (|append| (|nil|)) (|gcd| (|Zero|))
-        (|union| (|nil|)) (|and| |true|) (|or| |false|) ))
-
 (defun |delete| (item sequence)
    (cond ((symbolp item) (remove item sequence :test #'eq))
          ((and (atom item) (not (arrayp item))) (remove item sequence))
