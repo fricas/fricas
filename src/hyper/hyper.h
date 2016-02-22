@@ -571,4 +571,25 @@ typedef struct parameter_list_type {
     struct parameter_list_type *next;
 }              *ParameterList;
 
+extern char *gDatabasePath;
+
+extern int gBorderColor;
+
+extern GroupItem   *gTopOfGroupStack;
+
+extern short int    gDisplayRegion;
+extern int          gRegionOffset;
+
+extern Window gActiveWindow;
+extern int    gNeedIconName;
+
+extern int  gScrollbarWidth;
+
+/* the width and height for all windows in the title bar */
+extern int  twwidth, twheight;
+
+extern short int gInPaste;
+
+#define ucharp_to_charp(x) ((char *)x)
+
 #endif

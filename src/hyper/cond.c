@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fricas_c_macros.h"
 #include "debug.h"
 
-#include "cond.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 #include "sockio-c.H1"

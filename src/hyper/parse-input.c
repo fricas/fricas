@@ -43,9 +43,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "debug.h"
 
 #include "parse.h"
-#include "parse-aux.h"
 #include "lex.h"
-#include "mem.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 

@@ -39,8 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <setjmp.h>
 
 #include "hyper.h"
-#include "mem.h"
-#include "group.h"
 #include "parse.h"
 #include "bsdsignal.h"
 

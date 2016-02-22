@@ -42,11 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fricas_c_macros.h"
 #include "debug.h"
 
-#include "dialog.h"
 #include "keyin.h"
-#include "mem.h"
-#include "display.h"
-#include "group.h"
+#include "hyper.h"
 
 #include <X11/keysym.h>
 
