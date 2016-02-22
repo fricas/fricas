@@ -43,10 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "debug.h"
 
 #include "extent.h"
-#include "display.h"
-#include "group.h"
-#include "initx.h"
-#include "scrollbar.h"
+#include "hyper.h"
 #include "parse.h"
 
 #include "all_hyper_proto.H1"
@@ -175,34 +172,32 @@ makeScrollBarWindows(void)
     }
 
     if (sup == 0)
-        sup = XCreatePixmapFromBitmapData(
-                                          gXDisplay,
-                                    RootWindow(gXDisplay, gXScreenNumber),
-                                          sup_bits, supwidth, supheight,
-                                          FORECOLOR, BACKCOLOR,
-                                 DefaultDepth(gXDisplay, gXScreenNumber));
+        sup = XCreatePixmapFromBitmapData(gXDisplay,
+                       RootWindow(gXDisplay, gXScreenNumber),
+                       ucharp_to_charp(sup_bits), supwidth, supheight,
+                       FORECOLOR, BACKCOLOR,
+                       DefaultDepth(gXDisplay, gXScreenNumber));
 
     if (sdown == 0)
-        sdown = XCreatePixmapFromBitmapData(
-                                            gXDisplay,
-                                    RootWindow(gXDisplay, gXScreenNumber),
-                                      sdown_bits, sdown_width, sdown_height,
-                                            FORECOLOR, BACKCOLOR,
-                                 DefaultDepth(gXDisplay, gXScreenNumber));
+        sdown = XCreatePixmapFromBitmapData(gXDisplay,
+                       RootWindow(gXDisplay, gXScreenNumber),
+                       ucharp_to_charp(sdown_bits), sdown_width, sdown_height,
+                       FORECOLOR, BACKCOLOR,
+                       DefaultDepth(gXDisplay, gXScreenNumber));
 
     if (CONTROLS_3D) {
-        sup_pressed = XCreatePixmapFromBitmapData(
-                                                  gXDisplay,
-                                    RootWindow(gXDisplay, gXScreenNumber),
-                                sup3dpr_bits, sup3dpr_width, sup3dpr_height,
-                                                  FORECOLOR, BACKCOLOR,
-                                 DefaultDepth(gXDisplay, gXScreenNumber));
-        sdown_pressed = XCreatePixmapFromBitmapData(
-                                                    gXDisplay,
-                                    RootWindow(gXDisplay, gXScreenNumber),
-                          sdown3dpr_bits, sdown3dpr_width, sdown3dpr_height,
-                                                    FORECOLOR, BACKCOLOR,
-                                 DefaultDepth(gXDisplay, gXScreenNumber));
+        sup_pressed = XCreatePixmapFromBitmapData(gXDisplay,
+                        RootWindow(gXDisplay, gXScreenNumber),
+                        ucharp_to_charp(sup3dpr_bits),
+                        sup3dpr_width, sup3dpr_height,
+                        FORECOLOR, BACKCOLOR,
+                        DefaultDepth(gXDisplay, gXScreenNumber));
+        sdown_pressed = XCreatePixmapFromBitmapData(gXDisplay,
+                          RootWindow(gXDisplay, gXScreenNumber),
+                          ucharp_to_charp(sdown3dpr_bits),
+                          sdown3dpr_width, sdown3dpr_height,
+                          FORECOLOR, BACKCOLOR,
+                          DefaultDepth(gXDisplay, gXScreenNumber));
     }
 
     gWindow->fScrollUpWindow = XCreateSimpleWindow(gXDisplay, gWindow->fMainWindow,

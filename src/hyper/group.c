@@ -41,9 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _GROUP_C
 #include "debug.h"
 
-
-#include "group.h"
-#include "initx.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 

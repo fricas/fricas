@@ -41,8 +41,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>
 
 #include "hyper.h"
-#include "cond.h"
-#include "mem.h"
 #include "parse.h"
 #include "bsdsignal.h"
 

@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /****************************************************************
  *
- * initx.h:  HyperDoc X Window window initialization code
+ * initx.c:  HyperDoc X Window window initialization code
  *
  * Copyright The Numerical Algorithms Group Limited 1991, 1992, 1993.
  *
@@ -43,8 +43,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "fricas_c_macros.h"
 #include "debug.h"
-
-#include "initx.h"
 
 #include <unistd.h>
 #include <sys/signal.h>
@@ -59,10 +57,7 @@ extern int gethostname(char *, int );
 
 #include "ht_icon"
 #include "extent.h"
-#include "group.h"
-#include "mem.h"
-#include "scrollbar.h"
-#include "titlebar.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 #include "util.H1"
@@ -173,11 +168,12 @@ initializeWindowSystem(void)
 /*  fprintf(stderr,"initx:initializeWindowSystem:XCreateBitmapFromData 1\n");*/
     mousebits = XCreateBitmapFromData(gXDisplay,
         RootWindow(gXDisplay, gXScreenNumber),
-        mouseBitmap_bits, mouseBitmap_width,mouseBitmap_height);
+        ucharp_to_charp(mouseBitmap_bits),
+        mouseBitmap_width,mouseBitmap_height);
 /* fprintf(stderr,"initx:initializeWindowSystem:XCreateBitmapFromData 2\n");*/
     mousemask = XCreateBitmapFromData(gXDisplay,
         RootWindow(gXDisplay, gXScreenNumber),
-        mouseMask_bits, mouseMask_width,mouseMask_height);
+        ucharp_to_charp(mouseMask_bits), mouseMask_width,mouseMask_height);
 /* fprintf(stderr,"initx:initializeWindowSystem:XCreateBitmapFromData 2\n");*/
     gActiveCursor = XCreatePixmapCursor(gXDisplay,
         mousebits, mousemask, &fg, &bg,
@@ -393,7 +389,8 @@ set_name_and_icon(void)
     XStoreName(gXDisplay, gWindow->fMainWindow, "HyperDoc");
 
     /* define and assign the pixmap for the icon */
-    icon_pixmap = XCreateBitmapFromData(gXDisplay, gWindow->fMainWindow, ht_icon_bits,
+    icon_pixmap = XCreateBitmapFromData(gXDisplay, gWindow->fMainWindow,
+                                        ucharp_to_charp(ht_icon_bits),
                                         ht_icon_width, ht_icon_height);
     wmhints.icon_pixmap = icon_pixmap;
     wmhints.flags = IconPixmapHint;

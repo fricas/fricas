@@ -44,10 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "parse.h"
-#include "parse-aux.h"
-#include "mem.h"
-#include "display.h"
-#include "group.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 

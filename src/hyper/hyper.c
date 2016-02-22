@@ -53,9 +53,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <X11/cursorfont.h>
 
 #include "keyin.h"
-#include "initx.h"
-#include "event.h"
-#include "parse-aux.h"
 #include "bsdsignal.h"
 
 #include "all_hyper_proto.H1"

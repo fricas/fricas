@@ -48,15 +48,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <bstring.h>
 #endif
 
-#include "event.h"
 #include "keyin.h"
-#include "mem.h"
-#include "display.h"
 #include "parse.h"
-#include "parse-paste.h"
-#include "initx.h"
-#include "scrollbar.h"
-#include "group.h"
 
 #include "all_hyper_proto.H1"
 #include "sockio-c.H1"

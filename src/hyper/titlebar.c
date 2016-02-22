@@ -44,11 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdlib.h>
 
-#include "titlebar.h"
-#include "display.h"
-#include "group.h"
-#include "initx.h"
-#include "show-types.h"
+#include "hyper.h"
 #include "parse.h"
 
 #include "all_hyper_proto.H1"

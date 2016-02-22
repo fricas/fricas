@@ -43,12 +43,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "debug.h"
 
 
-#include "show-types.h"
-#include "dialog.h"
-#include "display.h"
 #include "extent.h"
-#include "group.h"
-#include "mem.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 

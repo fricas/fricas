@@ -43,11 +43,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "debug.h"
 
 #include "parse.h"
-#include "parse-aux.h"
 #include "parse-types.h"
-#include "cond.h"
+#include "hyper.h"
 #include "lex.h"
-#include "mem.h"
 #include "extent.h"
 #include "hterror.h"
 

@@ -44,10 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "extent.h"
-#include "cond.h"
-#include "group.h"
-#include "titlebar.h"
-#include "scrollbar.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 
