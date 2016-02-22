@@ -253,6 +253,7 @@ fakeloopProcess1(tok_list) ==
     $ignored_tab := false
     $ignorable_backset := false
     $maybe_insert_semi := false
+    $docList := nil
     finish_comment()
     TOKEN_-STACK_-CLEAR()
     parse_new_expr()
