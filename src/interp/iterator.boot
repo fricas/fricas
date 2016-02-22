@@ -71,16 +71,21 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
     finalCode:= substitute(["UNTIL",untilCode],'$until,finalCode)
   [finalCode,m,e]
 
-getIdentity(x,e) ==
-  GETL(x,"THETA") is [y] =>
-    y => y
-    nil
+$identity_list := [ _
+   ["+", ["Zero"]], _
+   ["*", ["One"]], _
+   ['gcd, ["Zero"]], _
+   ['lcm, ["One"]], _
+   ['append, ['nil]], _
+   ['union, ['nil]], _
+   ['strconc, '""], _
+   ['and, 'true], _
+   ['or, 'false]]
 
-numberize x ==
-  x=$Zero => 0
-  x=$One => 1
-  atom x => x
-  [numberize first x,:numberize rest x]
+getIdentity(x,e) ==
+    av := ASSQ(x, $identity_list)
+    av => av.1
+    nil
 
 compRepeatOrCollect(form,m,e) ==
   fn(form,[m,:$exitModeStack],[#$exitModeStack,:$leaveLevelStack],$formalArgList
