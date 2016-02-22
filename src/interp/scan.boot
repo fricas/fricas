@@ -255,14 +255,14 @@ DEFPARAMETER($was_nonblank, false)
 
 DEFVAR($comment_indent, 0)
 DEFVAR($current_comment_block, nil)
+DEFVAR($comment_line)
 DEFVAR($last_nonempty_linepos, nil)
 DEFVAR($spad_scanner, false)
 
 finish_comment() ==
     NULL($current_comment_block) => nil
     pos :=
-        $comment_indent = 0 =>
-            first(rest(rest($linepos))) - 1
+        $comment_indent = 0 => $comment_line
         first(rest(rest($last_nonempty_linepos)))
     PUSH([pos, :NREVERSE($current_comment_block)], $COMBLOCKLIST)
     $current_comment_block := nil
@@ -438,6 +438,7 @@ scanComment()==
       if $spad_scanner then
           if not(n = $comment_indent) then
               finish_comment()
+          $comment_line := first(rest(rest($linepos)))
           $comment_indent := n
           PUSH(CONCAT(make_full_CVEC(n, '" "), c_str), $current_comment_block)
       res := lfcomment(n, $linepos, c_str)
