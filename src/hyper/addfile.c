@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "debug.h"
 
 #include "hyper.h"
-#include "addfile.h"
 
 #include <sys/stat.h>
 #include <errno.h>

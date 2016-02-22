@@ -35,8 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "debug.h"
 
 #include "hyper.h"
-#include "dialog.h"
-#include "mem.h"
 
 #include "all_hyper_proto.H1"
 

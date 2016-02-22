@@ -44,8 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "extent.h"
-#include "group.h"
-#include "titlebar.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 #include "pixmap.H1"

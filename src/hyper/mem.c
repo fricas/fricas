@@ -41,11 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "debug.h"
 
-
-#include "mem.h"
-#include "group.h"
-#include "event.h"
-#include "parse-aux.h"
+#include "hyper.h"
 
 #include "all_hyper_proto.H1"
 

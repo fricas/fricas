@@ -67,10 +67,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define dash_y     4
 
 
-/* next two from display.h. Reorg! */
-
-extern short int gDisplayRegion;
-extern int gRegionOffset;
 
 #define not_in_scroll (!(gDisplayRegion == Scrolling))
 

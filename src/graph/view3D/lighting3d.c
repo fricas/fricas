@@ -51,6 +51,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "XSpadFill.H1"
 #include "all_3d.H1"
 
+#define ucharp_to_charp(x) ((char *)x)
+
 #define lightMASK ExposureMask
 #define lightCursorForeground lightingTitleColor
 #define lightCursorBackground foregroundColor
@@ -92,9 +94,11 @@ makeLightingPanel(void)
   Pixmap lightbits,lightmask;
   XColor foreColor, backColor;
 
-  lightbits = XCreateBitmapFromData(dsply,rtWindow, lightBitmap_bits,
+  lightbits = XCreateBitmapFromData(dsply,rtWindow,
+                                    ucharp_to_charp(lightBitmap_bits),
                                     lightBitmap_width,lightBitmap_height);
-  lightmask = XCreateBitmapFromData(dsply,rtWindow, lightMask_bits,
+  lightmask = XCreateBitmapFromData(dsply,rtWindow,
+                                    ucharp_to_charp(lightMask_bits),
                                     lightMask_width,lightMask_height);
   cwAttrib.background_pixel = backgroundColor;
   cwAttrib.border_pixel = foregroundColor;

@@ -45,11 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "hyper.h"
 #include "keyin.h"
-#include "event.h"
-#include "dialog.h"
 #include "parse.h"
-#include "parse-aux.h"
-#include "scrollbar.h"
 
 #include "all_hyper_proto.H1"
 #include <X11/keysym.h>
