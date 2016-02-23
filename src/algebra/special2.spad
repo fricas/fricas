@@ -1354,6 +1354,8 @@ FloatEllipticFunctions() : with
       ++ jacobiDn(z, m) is the Jacobi dn function
     jacobiDn : (Complex Float, Complex Float) -> Complex Float
       ++ jacobiDn(z, m) is the Jacobi dn function
+    jacobiZeta : (Float, Float) -> Float
+      ++ jacobiZeta(z, m) is the Jacobi zeta function
     weierstrassP : (Float, Float, Float) -> Float
       ++ weierstrassP(g2, g3, x) is the Weierstrass P function
     weierstrassP : (Complex Float, Complex Float, Complex Float) ->
@@ -1780,6 +1782,42 @@ FloatEllipticFunctions() : with
             res := dn1(z, m, prec)
         bits(obits)
         res
+
+    zeta2(z : Float, k0 : Float, ll : List Float) : Float ==
+        res : Float := 0
+        pii := pi()$Float
+        nn := retract(round(z/pii)$Float)@Integer
+        z1 := z - nn*pii
+        snz := sin(z1)
+        for k in ll repeat
+            k1 := 1 + k
+            k1inv := 1/k1
+            p := (1 - k)*k1inv
+            snz2 := snz*snz
+            k_snz2 := k*snz2
+            snf_inv := 1/(1 + k_snz2)
+            r := sqrt((1 - snz2)*(1 - k*k_snz2))
+            r := (1 - p)*snz*r*snf_inv
+            res := 2*k1inv*res + r
+            snz := k1*snz*snf_inv
+        res
+
+    jacobiZeta(z : Float, m : Float) : Float ==
+        m = 0 => 0
+        m = 1 => tanh(z)
+        obits := bits()
+        try
+            prec := obits + 20
+            bits(prec)
+            m > 1 =>
+                error "jacobiZeta: m > 1"
+            eps := two_to_minus_n(prec quo 2)
+            ll := landen(m, eps)
+            kk := kprod(ll)
+            z1 := z/kk
+            res := zeta2(z1, sqrt(1 - m), ll)
+        finally
+            bits(obits)
 
     -- This routine expects argument which is reduced to the
     -- fundamental region,
