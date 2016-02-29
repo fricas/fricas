@@ -34,7 +34,7 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
         ++ the recursion step for factorSquareFreePolynomial,
         ++ as defined in \spadfun{PolynomialFactorizationExplicit} category
         ++ (see \spadfun{factorSquareFreePolynomial}).
-     randomR : -> R  -- has to be global, since has alternative definitions
+     randomR : Integer -> R  -- has to be global, since has alternative definitions
         ++ randomR produces a random element of R
      bivariateSLPEBR : (List SupS, SupS,  VarSet)  -> Union(List SupS,"failed")
         ++ bivariateSLPEBR(lp, p, v) implements
@@ -81,10 +81,11 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
    gen_solv(fl : List(SupR)) : (SupR -> Union(List(SupR), "failed")) ==
        pr +-> solveLinearPolynomialEquation(fl, pr)$R
 
-   if R has random : -> R then
-      randomR() == random()
--- FIXME: strange random distribution used (#227).
-   else randomR() == (random()$Integer)::R
+   if R has Finite then
+      randomR(n) == random()$R
+   else
+      randomR(n) == (random(2*n+1)$Integer - n)::R
+
    if R has FiniteFieldCategory then
      bivariateSLPEBR(lpolys, pp, v) ==
        lpolysR : List SupSupR := [map(univariate, u) for u in lpolys]
@@ -98,8 +99,10 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
    chooseFSQViableSubstitutions(lvpp, pp) ==
      substns : List R
      ppR : SupR
+     n : Integer := 1
      while true repeat
-        substns := [randomR() for v in lvpp]
+        n := 2*n + 1
+        substns := [randomR(n) for v in lvpp]
         zero? eval(leadingCoefficient pp,lvpp,substns ) => "next"
         ppR := map(z1 +-> (retract eval(z1, lvpp, substns))::R, pp)
         degree gcd(ppR,differentiate ppR)>0 => "next"
@@ -110,8 +113,10 @@ PolynomialFactorizationByRecursion(R, E, VarSet : OrderedSet, S) : public ==
      substns : List R
      lpolysR : List SupR
      ppR : SupR
+     n : Integer := 1
      while true repeat
-        substns := [randomR() for v in lvpolys]
+        n := 2*n + 1
+        substns := [randomR(n) for v in lvpolys]
         zero? eval(leadingCoefficient pp,lvpolys,substns ) => "next"
         "or"/[zero? eval(leadingCoefficient u,lvpolys,substns)
                     for u in lpolys] => "next"

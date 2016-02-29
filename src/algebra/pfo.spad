@@ -206,7 +206,7 @@ PointsOfFiniteOrderRational(UP, UPUP, R) : Exports == Implementation where
 ++ Description:
 ++ This package provides function which replaces transcendental kernels
 ++ in a function space by random integers. The correspondence between
-++ the kernels and the integers is fixed between calls to new().
+++ the kernels and the integers is fixed between calls to newReduc().
 ++ Keywords: function, space, redcution.
 FunctionSpaceReduce(R, F) : Exports == Implementation where
   R : Join(Comparable, IntegralDomain, RetractableTo Integer)
@@ -219,11 +219,16 @@ FunctionSpaceReduce(R, F) : Exports == Implementation where
 
   Exports ==> with
     bringDown : F -> Q
-        ++ bringDown(f) \undocumented
+        ++ bringDown(f) replaces transcendental kernels in f
+        ++ by random integers.  Error if f contains algebraic
+        ++ kernel.
     bringDown : (F, K) -> UP
-        ++ bringDown(f, k) \undocumented
-    newReduc : () -> Void
-        ++ newReduc() \undocumented
+        ++ bringDown(f, k) is like bringDown(f) but k is
+        ++ algebraic kernel and the result is reduced modulo
+        ++ minimal polynomial of k.
+    newReduc : Integer -> Void
+        ++ newReduc(n) empties reduction state.  n is size
+        ++ of random integers to use during next reduction.
 
   Implementation ==> add
     import from SparseUnivariatePolynomialFunctions2(F, Q)
@@ -235,8 +240,10 @@ FunctionSpaceReduce(R, F) : Exports == Implementation where
     K2Z : K -> F
 
     redmap := table()$AssociationList(K, Z)
+    nn : Integer := 1
 
-    newReduc() ==
+    newReduc(n) ==
+      nn := n
       for k in keys redmap repeat remove!(k, redmap)
       void
 
@@ -252,9 +259,8 @@ FunctionSpaceReduce(R, F) : Exports == Implementation where
 
     K2Z k ==
       has?(operator k, ALGOP) => error "Cannot reduce constant field"
--- FIXME: strange random distribution used (#227).
       (u := search(k, redmap)) case "failed" =>
-                                      setelt!(redmap, k, random()$Z)::F
+                                      setelt!(redmap, k, random(nn)$Z)::F
       u::Z::F
 
 )abbrev package PFO PointsOfFiniteOrder
@@ -510,14 +516,16 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
 
     selIntegers() : RC0 ==
       f := definingPolynomial()$R
-      while zero?(d := doubleDisc(r := polyred pmod f)) repeat newReduc()$q
+      n : Integer := 10^6
+      while zero?(d := doubleDisc(r := polyred pmod f)) repeat newReduc(n)$q
       [r, d]
 
     selectIntegers(k : K) : REC ==
       g := polyred(f := definingPolynomial()$R)
       p := minPoly k
+      n : Integer := 10^6
       while zero?(d := doubleDisc(r := kpmod(g, k))) or (notIrr? fmod p)
-          repeat newReduc()$q
+          repeat newReduc(n)$q
       [r, d, splitDenominator(fmod p).num]
 
     toQ1(p, d) ==

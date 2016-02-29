@@ -71,8 +71,6 @@
 (defun |makeSF| (mantissa exponent)
   (FLOAT (/ mantissa (expt 2 (- exponent))) 0.0d0))
 
-(defun |random| () (random (expt 2 26)))
-
 ;; This is used in the domain Boolean (BOOLEAN.NRLIB/code.lsp)
 (defun |BooleanEquality| (x y) (if x y (null y)))
 

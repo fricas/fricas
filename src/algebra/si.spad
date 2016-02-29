@@ -41,9 +41,6 @@ IntegerNumberSystem() : Category ==
       ++ rational(n) creates a rational number (see \spadtype{Fraction Integer})..
    rationalIfCan : % -> Union(Fraction Integer, "failed")
       ++ rationalIfCan(n) creates a rational number, or returns "failed" if this is not possible.
--- FIXME: strange random distribution used (#227).
-   random   : () -> %
-      ++ random() creates a random element. This function is deprecated.
    random   : % -> %
       ++ random(a) creates a random element from 0 to \spad{n-1}.
    copy     : % -> %
@@ -158,8 +155,7 @@ IntegerNumberSystem() : Category ==
 ++ Description: SingleInteger is intended to support machine integer
 ++ arithmetic.
 
--- MAXINT, BASE (machine integer constants)
--- MODULUS, MULTIPLIER (random number generator constants)
+-- MAXINT  (machine integer constants)
 
 
 -- Lisp dependencies
@@ -205,12 +201,8 @@ SingleInteger() : Join(IntegerNumberSystem, ConvertibleTo String,
 
  == add
 
-   seed : % := 1$Lisp               -- for random()
    MAXINT ==> MOST_-POSITIVE_-FIXNUM$Lisp
    MININT ==> MOST_-NEGATIVE_-FIXNUM$Lisp
-   BASE ==> 67108864$Lisp           -- 2^26
-   MULTIPLIER ==> 314159269$Lisp    -- from Knuth's table
-   MODULUS ==> 2147483647$Lisp      -- 2^31-1
 
    writeOMSingleInt(dev : OpenMathDevice, x : %) : Void ==
     if x < 0 then
@@ -291,11 +283,6 @@ SingleInteger() : Join(IntegerNumberSystem, ConvertibleTo String,
       (x <= max pretend Integer) and (x >= min pretend Integer) =>
         x pretend %
       error "integer too large to represent in a machine word"
-
--- FIXME: strange random distribution used (#227).
-   random() ==
-      seed := REMAINDER((MULTIPLIER*seed)$Lisp, MODULUS)$Lisp
-      REMAINDER(seed, BASE)$Lisp
 
    random(n) == RANDOM(n)$Lisp
 
