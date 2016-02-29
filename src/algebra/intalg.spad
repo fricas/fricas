@@ -165,6 +165,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
   FAIL1==> error "integrate: implementation incomplete (irrational residues)"
   FAIL2 ==> error "integrate: implementation incomplete (residue poly has multiple non-linear factors)"
   FAIL3 ==> error "integrate: implementation incomplete (has polynomial part)"
+  FAIL4 ==> error "integrate: implementation incomplete (trace 0)"
   NOTI  ==> error "Not integrable (provided residues have no relations)"
 
   Exports ==> with
@@ -346,7 +347,6 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
                     )$ExpressionFactorPolynomial(R0, F)
         u := map(SUP2UP, u0)$FactoredFunctions2(SUP, UP)
         lf := factors(u)
-        lf2 := rest(lf)
         lm : List(List(PC)) := []
         while not(empty?(lf)) repeat
             rp := find_multiples(first(lf), rest(lf))
@@ -440,7 +440,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
             lins2 := [rest(nfl2)]
         fcf := fc2.factor
         zero?(bb := coefficient(fcf,
-            (degree(fcf) - 1)::NonNegativeInteger)) => error "impossible"
+            (degree(fcf) - 1)::NonNegativeInteger)) => error FAIL4
         la := get_la(lins1, lins2)
         ld := get_ld(rec, lins1, lins2)
         alpha := rootOf UP2SUP fcf
@@ -559,9 +559,9 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
       error "should not happen"
 
     alglogint(f, derivation) ==
-      varRoot?(doubleResultant(f, derivation),
-                         x1+->retract(derivation(x1::UP))@F) => "failed"
-      FAIL0
+        r := primitivePart(doubleResultant(f, derivation))
+        varRoot?(r, x1+->retract(derivation(x1::UP))@F) => "failed"
+        FAIL0
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
