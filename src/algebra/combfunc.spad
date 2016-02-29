@@ -621,7 +621,8 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         ++ jacobiDn(z, m)^2 - ellipticE(m)/ellipticK(m)} and
         ++ \spad{jacobiZeta(0, m) = 0}.
     jacobiTheta : (F, F) -> F
-        ++ jacobiTheta(q, z) is the third Jacobi Theta function
+        ++ jacobiTheta(z, m) is the Jacobi Theta function in Jacobi
+        ++ notation.
     lerchPhi : (F, F, F) -> F
         ++ lerchPhi(z, s, a) is the Lerch Phi function
     riemannZeta : F -> F
@@ -1552,13 +1553,26 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     opJacobiTheta := operator('jacobiTheta)$CommonOperators
 
-    jacobiTheta(q, z) == opJacobiTheta(q, z)
+    jacobiTheta(z, m) == opJacobiTheta(z, m)
 
-    eJacobiTheta(q : F, z : F) : F ==
-        kernel(opJacobiTheta, [q, z])
+    eJacobiTheta(z : F, m : F) : F ==
+        kernel(opJacobiTheta, [z, m])
 
     elJacobiTheta(l : List F) : F == eJacobiTheta(l(1), l(2))
     evaluate(opJacobiTheta, elJacobiTheta)$BasicOperatorFunctions1(F)
+
+    eJacobiThetaGrad_z(l : List F) : F ==
+        z := l(1)
+        m := l(2)
+        jacobiZeta(z, m)*jacobiTheta(z, m)
+
+    eJacobiThetaGrad_m(l : List F) : F ==
+        z := l(1)
+        m := l(2)
+        dm := dummy
+        kernel(opdiff, [opJacobiTheta [z, dm], dm, m])
+
+    derivative(opJacobiTheta, [eJacobiThetaGrad_z, eJacobiThetaGrad_m])
 
     -- handle LerchPhi
 
