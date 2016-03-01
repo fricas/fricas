@@ -38,6 +38,13 @@ IndexedDirectProductCategory(A : SetCategory, S : Comparable
       monomial :         (A, S) -> %
          ++ monomial(a, s) constructs a direct product element with the s
          ++ component set to \spad{a}
+      monomial? : % -> Boolean
+         ++ \spad{monomial?(x)} returns true if \spad{x} is a single
+         ++ monomial, that is support of \spad{x} consists of a
+         ++ single element.
+      leadingMonomial    : % -> %
+         ++ \spad{leadingMonomial(x)} returns the monomial supported by the
+         ++ first element from \spad{S}.  Error: if x has no support.
       leadingCoefficient :   % -> A
          ++ leadingCoefficient(z) returns the coefficient of the leading
          ++ (with respect to the ordering on the indexing set)
@@ -66,9 +73,12 @@ IndexedDirectProductCategory(A : SetCategory, S : Comparable
          ++ (with respect to the ordering on the indexing set) term of z.
          ++ Error: if z has no support.
       listOfTerms : % -> List Term
-          ++ \spad{listOfTerms(x)} returns a list \spad{lt} of terms with type
-          ++ \spad{Record(k: S, c: R)} such that \spad{x} equals
-          ++ \spad{constructOrdered lt}.
+         ++ \spad{listOfTerms(x)} returns a list \spad{lt} of terms with type
+         ++ \spad{Record(k: S, c: R)} such that \spad{x} equals
+         ++ \spad{constructOrdered lt}.
+      numberOfMonomials  : % -> NonNegativeInteger
+         ++ \spad{numberOfMonomials(x)} returns the number
+         ++ of monomials of \spad{x}.
 
 )if false
 This basic domain implements
@@ -164,6 +174,13 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
        leadingSupport x  ==
           null x => error "Can't take leadingCoefficient of empty product element"
           x.first.k
+
+       monomial? x ==
+           numberOfMonomials x = 1
+
+       numberOfMonomials x == #listOfTerms(x)
+
+       leadingMonomial x == monomial(first(x).c, first(x).k)
 
        -- ordering of terms
        compareterm : (Term, Term) -> Boolean
