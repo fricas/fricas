@@ -567,11 +567,11 @@ LiePolynomial(VarSet : OrderedSet, R : CommutativeRing) : Public == Private wher
           - lyndon (v, u)
 
         lyndon(u, v) ==            -- u et v sont des mots de Lyndon tq u < v
-          retractable? u => monom(makeLyndon(u, v), 1)
+          retractable? u => monomial(1, makeLyndon(u, v))
           u1 : LWORD := left u
           u2 : LWORD := right u
           lexico(u2, v) => cr1(u1, lyndon(u2, v)) + cr2(lyndon(u1, v), u2)
-          monom(makeLyndon(u, v), 1)
+          monomial(1, makeLyndon(u, v))
 
         cr1 (l, p) ==
             +/[t.c * crw(l, t.k) for t in p]
@@ -593,7 +593,7 @@ LiePolynomial(VarSet : OrderedSet, R : CommutativeRing) : Public == Private wher
 
       -- definitions
 
-        coerce(v : VarSet) == monom(v::LWORD, 1)
+        coerce(v : VarSet) == monomial(1, v::LWORD)
 
         construct(x : %, y : %) : % ==
             +/[t.c * cr1(t.k, y) for t in x]
@@ -608,7 +608,7 @@ LiePolynomial(VarSet : OrderedSet, R : CommutativeRing) : Public == Private wher
         coerce(p : %) : XRPOLY ==
             +/ [t.c * RPoly(t.k) for t in p]
 
-        LiePoly(l) == monom(l, 1)
+        LiePoly(l) == monomial(1, l)
 
         varList p ==
           le : List VarSet := "setUnion"/[varList(t.k)$LWORD for t in p]
@@ -847,8 +847,8 @@ XPBWPolynomial(VarSet : OrderedSet, R : CommutativeRing) : XDPcat == XDPdef wher
            +/ [t.c * prod(t.k, b) for t in p| length(t.k) :: I <= limit]
 
        prod(g, d) ==
-         d = 1 => monom(g, 1)
-         g = 1 => monom(d, 1)
+         d = 1 => monomial(1, g)
+         g = 1 => monomial(1, d)
          process(reverse listOfTerms g, first d, rest listOfTerms d)
 
        Dexpand b ==
@@ -866,10 +866,11 @@ XPBWPolynomial(VarSet : OrderedSet, R : CommutativeRing) : XDPcat == XDPdef wher
          mirror1(rest b) * lp :: %
 
        process(gauche, x, droite) ==    -- algo du "collect process"
-         null gauche => monom( cons(x, droite) pretend BASIS, 1$R)
+         null gauche => monomial(1$R, cons(x, droite) pretend BASIS)
          r1, r2 : %
          not lexico(first gauche, x) =>     -- cas facile !!!
-           monom(append(reverse gauche, cons(x, droite)) pretend BASIS, 1$R)
+           monomial(1$R,
+                    append(reverse gauche, cons(x, droite)) pretend BASIS)
 
          p : LPOLY := [first gauche, x]      -- on crochete !!!
          null droite =>
@@ -887,7 +888,7 @@ XPBWPolynomial(VarSet : OrderedSet, R : CommutativeRing) : XDPcat == XDPdef wher
          r1 + r2
 
     -- definitions
-       1 == monom(1$BASIS, 1$R)
+       1 == monomial(1$R, 1$BASIS)
 
        coerce(r : R) : % == [[1$BASIS, r]$TERM ]
 
@@ -897,7 +898,7 @@ XPBWPolynomial(VarSet : OrderedSet, R : CommutativeRing) : XDPcat == XDPdef wher
          for rec in p repeat le := cons(outForm rec, le)
          reduce(_+, le)$List(EX)
 
-       coerce(v : VarSet) : % == monom(v::BASIS, 1$R)
+       coerce(v : VarSet) : % == monomial(1$R, v::BASIS)
        coerce(p : LPOLY) : % ==
           [[t.k :: BASIS, t.c ]$TERM for t in listOfTerms p]
 
