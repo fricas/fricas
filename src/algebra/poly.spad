@@ -63,22 +63,6 @@ FreeModuleCategory(R, S) : Category == Exports where
         monomials          : % -> List %
           ++ \spad{monomials(x)} returns the list of \spad{r_i*b_i}
           ++ whose sum is \spad{x}.
-        numberOfMonomials  : % -> NonNegativeInteger
-          ++ \spad{numberOfMonomials(x)} returns the number of monomials of \spad{x}.
-        monomial? : % -> Boolean
-          ++ \spad{monomial?(x)} returns true if \spad{x} contains a single
-          ++ monomial.
-        leadingSupport    : % -> S
-          ++ \spad{leadingSupport(x)} returns the first element from \spad{S}
-          ++ which appears in \spad{listOfTerms(x)}.
-        leadingMonomial    : % -> %
-          ++ \spad{leadingMonomial(x)} returns the monomial supported by the
-          ++ first element from \spad{S} which appears in \spad{listOfTerms(x)}.
-        leadingCoefficient : % -> R
-          ++ \spad{leadingCoefficient(x)} returns the first coefficient
-          ++ which appears in \spad{listOfTerms(x)}.
-        monom : (S, R) -> %
-          ++ \spad{monom(s, r)} returns the product of the basis element \spad{s} by the coefficient \spad{r}.
         coefficient : (%, S) -> R
           ++ \spad{coefficient(x, s)} returns the coefficient of the basis element s
         -- attributs
@@ -199,13 +183,13 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : Comparable) :
                reduce("+", [rec.c :: OutputForm *  rec.k :: OutputForm
                              for rec in x])
 
-       leadingMonomial x == monomial((first rep x).c, (first x).k)
-
        support x == [t.k for t in x]
 
        coefficients x == [t.c for t in x]
 
-       monomials x == [ monom (t.k, t.c) for t in x]
+       monom(b : S, r : R) : % == [[b, r]$Term]
+
+       monomials x == [ monom(t.k, t.c) for t in x]
 
        if R has SemiRing then
            retractIfCan x ==
@@ -220,24 +204,11 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : Comparable) :
 
            coerce(s : S) : % == [[s, 1$R]]
 
--- the following is to be replaced by monomial(r, b) everywhere
-       monom(b, r) : % == [[b, r]$Term]
-
        coefficient(x, s) ==
          null x => 0$R
          smaller?(s, x.first.k) => coefficient(rest x, s)
          x.first.k = s => x.first.c
          0$R
-
-       monomial? x ==
-         numberOfMonomials x = 1
-
-       listOfTerms(x) ==
---          (x::Rep)
---          coerce(x)@Rep
-         x pretend Rep
-
-       numberOfMonomials x == # (listOfTerms x)
 
        if R has CommutativeRing then
            f : S->R
@@ -366,7 +337,6 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
            1  == [[0$E, 1$R]]
        if R has Ring then
            characteristic  == characteristic$R
-       numberOfMonomials x  == (# x)$Rep
        degree p == if null p then 0 else p.first.k
        minimumDegree p == if null p then 0 else (last p).k
        leadingCoefficient p == if null p then 0$R else p.first.c
