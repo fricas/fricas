@@ -550,26 +550,6 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
                 for tx in xx repeat res := addm!(res, tx.c, tx.k, yy)
                 res
 
---     if R has noZeroDivisors then
---         p1 * p2  ==
---            null p1 => 0
---            null p2 => 0
---            zero?(p1.first.k) => p1.first.c * p2
---            one? p2 => p1
---            +/[[[t1.k+t2.k, t1.c*t2.c]$Term for t2 in p2]
---                   for t1 in reverse(p1)]
---                   -- This 'reverse' is an efficiency improvement:
---                   -- reduces both time and space [Abbott/Bradford/Davenport]
---        else
---         p1 * p2  ==
---            null p1 => 0
---            null p2 => 0
---            zero?(p1.first.k) => p1.first.c * p2
---            one? p2 => p1
---            +/[[[t1.k+t2.k, r]$Term for t2 in p2 | (r := t1.c*t2.c) ~= 0]
---                 for t1 in reverse(p1)]
---                  -- This 'reverse' is an efficiency improvement:
---                  -- reduces both time and space [Abbott/Bradford/Davenport]
        if % has CommutativeRing  then
 
          p ^ np == p^(np::NonNegativeInteger)
@@ -960,45 +940,11 @@ SparseUnivariatePolynomial(R : Join(SemiRng, AbelianMonoid)
 
    if R has IntegralDomain then
        discriminant(p) == discriminant(p)$PseudoRemainderSequence(R, %)
---     discriminant(p) ==
---       null p or zero?(p.first.k) => error "cannot take discriminant of constants"
---       dp := differentiate p
---       corr :=  p.first.c ^ ((degree p - 1 - degree dp)::NonNegativeInteger)
---       (-1)^((p.first.k*(p.first.k-1)) quo 2): NonNegativeInteger
---         * (corr * resultant(p, dp) exquo p.first.c)::R
 
        subResultantGcd(p1, p2) == subResultantGcd(p1, p2)$PseudoRemainderSequence(R, %)
---     subResultantGcd(p1, p2) ==    --args # 0, non-coef, prim, ans not prim
---       --see algorithm 1 (p. 4) of Brown's latest (unpublished) paper
---       if p1.first.k < p2.first.k then (p1, p2) := (p2, p1)
---       p := pseudoRemainder(p1, p2)
---       co := 1$R;
---       e := (p1.first.k - p2.first.k): NonNegativeInteger
---       while not null p and p.first.k ~= 0 repeat
---         p1 := p2; p2 := p; p := pseudoRemainder(p1, p2)
---         null p or p.first.k = 0 => "enuf"
---         co := (p1.first.c ^ e exquo co ^ max(0, (e-1))::NonNegativeInteger)::R
---         e := (p1.first.k - p2.first.k): NonNegativeInteger;  c1 := co^e
---         p := [[tm.k, ((tm.c exquo p1.first.c)::R exquo c1)::R] for tm in p]
---       if null p then p2 else 1$%
 
        resultant(p1, p2) == resultant(p1, p2)$PseudoRemainderSequence(R, %)
---     resultant(p1, p2) ==      --SubResultant PRS Algorithm
---        null p1 or null p2 => 0$R
---        0 = degree(p1) => ((first p1).c)^degree(p2)
---        0 = degree(p2) => ((first p2).c)^degree(p1)
---        if p1.first.k < p2.first.k then
---          (if odd?(p1.first.k) then p1 := -p1;  (p1, p2) := (p2, p1))
---        p := pseudoRemainder(p1, p2)
---        co := 1$R;  e := (p1.first.k-p2.first.k): NonNegativeInteger
---        while not null p repeat
---           if not odd?(e) then p := -p
---           p1 := p2;  p2 := p;  p := pseudoRemainder(p1, p2)
---           co := (p1.first.c ^ e exquo co ^ max(e: Integer-1, 0): NonNegativeInteger)::R
---           e := (p1.first.k - p2.first.k): NonNegativeInteger;  c1 := co^e
---           p := (p exquo ((leadingCoefficient p1) * c1))::%
---        degree p2 > 0 => 0$R
---        (p2.first.c^e exquo co^((e-1)::NonNegativeInteger))::R
+
    if R has GcdDomain then
      content(p) == if null p then 0$R else "gcd"/[tm.c for tm in p]
         --make CONTENT more efficient?
