@@ -1666,7 +1666,9 @@ StreamAggregate(S : Type) : Category ==
 ++ argument, whereas \spadfun{concat} of two arrays needs to copy both arguments.
 ++ Most of the operations exported here apply to infinite objects (e.g. streams)
 ++ as well to finite ones.
-++ For finite linear aggregates, see \spadtype{FiniteLinearAggregate}.
+++ If the aggreagate is a finite aggregate then it has several additional
+++ exports exports such as
+++ \spadfun{reverse}, \spadfun{sort}, and so on.
 LinearAggregate(S : Type) : Category ==
   Join(IndexedAggregate(Integer, S), Collection(S)) with
    new   : (NonNegativeInteger, S) -> %
@@ -1681,17 +1683,18 @@ LinearAggregate(S : Type) : Category ==
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate consisting of the elements of u
       ++ followed by the elements of v.
-      ++ Note: if \spad{w = concat(u, v)} then \spad{w.i = u.i for i in indices u}
+      ++ Note: if \spad{w = concat(u, v)} then
+      ++ \spad{w.i = u.i for i in indices u}
       ++ and \spad{w.(j + maxIndex u) = v.j for j in indices v}.
    concat : List % -> %
-      ++ concat(u), where u is a lists of aggregates \spad{[a, b, ..., c]}, returns
-      ++ a single aggregate consisting of the elements of \spad{a}
+      ++ concat(u), where u is a lists of aggregates \spad{[a, b, ..., c]},
+      ++ returns a single aggregate consisting of the elements of \spad{a}
       ++ followed by those
       ++ of b followed ... by the elements of c.
       ++ Note: \spad{concat(a, b, ..., c) = concat(a, concat(b, ..., c))}.
    map : ((S, S)->S, %, %) -> %
-     ++ map(f, u, v) returns a new collection w with elements \spad{z = f(x, y)}
-     ++ for corresponding elements x and y from u and v.
+     ++ map(f, u, v) returns a new collection w with elements
+     ++ \spad{z = f(x, y)} for corresponding elements x and y from u and v.
      ++ Note: for linear aggregates, \spad{w.i = f(u.i, v.i)}.
    elt : (%, UniversalSegment(Integer)) -> %
       ++ elt(u, i..j) (also written: \spad{a(i..j)}) returns the aggregate of
@@ -1699,99 +1702,90 @@ LinearAggregate(S : Type) : Category ==
       ++ Note: in general, \spad{a.s = [a.k for i in s]}.
    delete : (%, Integer) -> %
       ++ delete(u, i) returns a copy of u with the \spad{i}th element deleted.
-      ++ Note: for lists, \spad{delete(a, i) == concat(a(0..i - 1), a(i + 1, ..))}.
+      ++ Note: for lists,
+      ++ \spad{delete(a, i) == concat(a(0..i - 1), a(i + 1, ..))}.
    delete : (%, UniversalSegment(Integer)) -> %
       ++ delete(u, i..j) returns a copy of u with the \spad{i}th through
       ++ \spad{j}th element deleted.
       ++ Note: \spad{delete(a, i..j) = concat(a(0..i-1), a(j+1..))}.
    insert : (S, %, Integer) -> %
-      ++ insert(x, u, i) returns a copy of u having x as its \spad{i}th element.
+      ++ insert(x, u, i) returns a copy of u having x as its \spad{i}th
+      ++ element.
       ++ Note: \spad{insert(x, a, k) = concat(concat(a(0..k-1), x), a(k..))}.
    insert : (%, %, Integer) -> %
       ++ insert(v, u, k) returns a copy of u having v inserted beginning at the
       ++ \spad{i}th element.
       ++ Note: \spad{insert(v, u, k) = concat( u(0..k-1), v, u(k..) )}.
-   if % has shallowlyMutable then setelt! : (%, UniversalSegment(Integer), S) -> S
-      ++ setelt!(u, i..j, x) (also written: \spad{u(i..j) := x}) destructively
-      ++ replaces each element in the segment \spad{u(i..j)} by x.
-      ++ The value x is returned.
-      ++ Note: u is destructively change so
-      ++ that \spad{u.k := x for k in i..j};
-      ++ its length remains unchanged.
+   if % has shallowlyMutable then
+      setelt! : (%, UniversalSegment(Integer), S) -> S
+       ++ setelt!(u, i..j, x) (also written: \spad{u(i..j) := x}) destructively
+       ++ replaces each element in the segment \spad{u(i..j)} by x.
+       ++ The value x is returned.
+       ++ Note: u is destructively change so
+       ++ that \spad{u.k := x for k in i..j};
+       ++ its length remains unchanged.
+   if % has finiteAggregate then
+      merge : ((S, S)->Boolean, %, %) -> %
+       ++ merge(p, a, b) returns an aggregate c which merges \spad{a} and b.
+       ++ The result is produced by examining each element x of \spad{a} and y
+       ++ of b successively. If \spad{p(x, y)} is true, then x is inserted into
+       ++ the result; otherwise y is inserted. If x is chosen, the next element
+       ++ of \spad{a} is examined, and so on. When all the elements of one
+       ++ aggregate are examined, the remaining elements of the other
+       ++ are appended.
+       ++ For example, \spad{merge(<, [1, 3], [2, 7, 5])} returns
+       ++ \spad{[1, 2, 3, 7, 5]}.
+      reverse : % -> %
+       ++ reverse(a) returns a copy of \spad{a} with elements in reverse order.
+      sort : ((S, S)->Boolean, %) -> %
+       ++ sort(p, a) returns a copy of \spad{a} sorted using total ordering
+       ++ predicate p.
+      sorted? : ((S, S)->Boolean, %) -> Boolean
+       ++ sorted?(p, a) tests if \spad{a} is sorted according to predicate p.
+      position : (S->Boolean, %) -> Integer
+       ++ position(p, a) returns the index i of the first x in \spad{a}
+       ++ such that \spad{p(x)} is true, and \spad{minIndex(a) - 1} if
+       ++ there is no such x.
+      if S has BasicType then
+         position : (S, %)  -> Integer
+          ++ position(x, a) returns the index i of the first occurrence
+          ++ of x in a, and \spad{minIndex(a) - 1} if there is no such x.
+         position : (S, %, Integer) -> Integer
+          ++ position(x, a, n) returns the index i of the first occurrence
+          ++ of x in \spad{a} where \spad{i >= n}, and \spad{minIndex(a) - 1}
+          ++ if no such x is found.
+      if S has Comparable then Comparable
+      if S has OrderedSet then
+         OrderedSet
+         merge : (%, %) -> %
+          ++ merge(u, v) merges u and v in ascending order.
+          ++ Note: \spad{merge(u, v) = merge(<=, u, v)}.
+         sort : % -> %
+          ++ sort(u) returns an u with elements in ascending order.
+          ++ Note: \spad{sort(u) = sort(<=, u)}.
+         sorted? : % -> Boolean
+          ++ sorted?(u) tests if the elements of u are in ascending order.
+      if % has shallowlyMutable then
+         copyInto! : (%, %, Integer) -> %
+          ++ copyInto!(u, v, i) returns aggregate u containing a copy of
+          ++ v inserted at element i.
+         reverse! : % -> %
+          ++ reverse!(u) returns u with its elements in reverse order.
+         sort! : ((S, S)->Boolean, %) -> %
+          ++ sort!(p, u) returns u with its elements ordered by p.
+         if S has OrderedSet then sort! : % -> %
+          ++ sort!(u) returns u with its elements in ascending order.
  add
   indices a      == [i for i in minIndex a .. maxIndex a]
   index?(i, a)   == i >= minIndex a and i <= maxIndex a
   concat(a : %, x : S)      == concat(a, new(1, x))
   concat(x : S, y : %)      == concat(new(1, x), y)
   insert(x : S, a : %, i : Integer) == insert(new(1, x), a, i)
+
   if % has finiteAggregate then
-      maxIndex l == #l - 1 + minIndex l
 
---if % has shallowlyMutable then new(n, s)  == fill!(new n, s)
+    maxIndex l == #l - 1 + minIndex l
 
-
-)abbrev category FLAGG FiniteLinearAggregate
-++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
-++ Date Created: August 87 through August 88
-++ Basic Operations:
-++ Related Constructors:
-++ Also See:
-++ AMS Classifications:
-++ Keywords:
-++ References:
-++ Description:
-++ A finite linear aggregate is a linear aggregate of finite length.
-++ The finite property of the aggregate adds several exports to the
-++ list of exports from \spadtype{LinearAggregate} such as
-++ \spadfun{reverse}, \spadfun{sort}, and so on.
-FiniteLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
-     finiteAggregate) with
-   merge : ((S, S)->Boolean, %, %) -> %
-      ++ merge(p, a, b) returns an aggregate c which merges \spad{a} and b.
-      ++ The result is produced by examining each element x of \spad{a} and y
-      ++ of b successively. If \spad{p(x, y)} is true, then x is inserted into
-      ++ the result; otherwise y is inserted. If x is chosen, the next element
-      ++ of \spad{a} is examined, and so on. When all the elements of one
-      ++ aggregate are examined, the remaining elements of the other
-      ++ are appended.
-      ++ For example, \spad{merge(<, [1, 3], [2, 7, 5])} returns \spad{[1, 2, 3, 7, 5]}.
-   reverse : % -> %
-      ++ reverse(a) returns a copy of \spad{a} with elements in reverse order.
-   sort : ((S, S)->Boolean, %) -> %
-      ++ sort(p, a) returns a copy of \spad{a} sorted using total ordering predicate p.
-   sorted? : ((S, S)->Boolean, %) -> Boolean
-      ++ sorted?(p, a) tests if \spad{a} is sorted according to predicate p.
-   position : (S->Boolean, %) -> Integer
-      ++ position(p, a) returns the index i of the first x in \spad{a} such that
-      ++ \spad{p(x)} is true, and \spad{minIndex(a) - 1} if there is no such x.
-   if S has BasicType then
-      position : (S, %)  -> Integer
-        ++ position(x, a) returns the index i of the first occurrence of x in a,
-        ++ and \spad{minIndex(a) - 1} if there is no such x.
-      position : (S, %, Integer) -> Integer
-        ++ position(x, a, n) returns the index i of the first occurrence of x in
-        ++ \spad{a} where \spad{i >= n}, and \spad{minIndex(a) - 1} if no such x is found.
-   if S has OrderedSet then
-      OrderedSet
-      merge : (%, %) -> %
-        ++ merge(u, v) merges u and v in ascending order.
-        ++ Note: \spad{merge(u, v) = merge(<=, u, v)}.
-      sort : % -> %
-        ++ sort(u) returns an u with elements in ascending order.
-        ++ Note: \spad{sort(u) = sort(<=, u)}.
-      sorted? : % -> Boolean
-        ++ sorted?(u) tests if the elements of u are in ascending order.
-   if % has shallowlyMutable then
-      copyInto! : (%, %, Integer) -> %
-        ++ copyInto!(u, v, i) returns aggregate u containing a copy of
-        ++ v inserted at element i.
-      reverse! : % -> %
-        ++ reverse!(u) returns u with its elements in reverse order.
-      sort! : ((S, S)->Boolean, %) -> %
-        ++ sort!(p, u) returns u with its elements ordered by p.
-      if S has OrderedSet then sort! : % -> %
-        ++ sort!(u) returns u with its elements in ascending order.
- add
     if S has BasicType then
         position(x : S, t : %) == position(x, t, minIndex t)
 
@@ -1814,6 +1808,20 @@ FiniteLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
 
         if S has OrderedSet then
             sort! l == sort!(_<$S, l)
+
+)abbrev category FLAGG FiniteLinearAggregate
+++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
+++ Date Created: August 87 through August 88
+++ Basic Operations:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ A finite linear aggregate is a linear aggregate of finite length.
+FiniteLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
+     finiteAggregate)
 
 )abbrev category A1AGG OneDimensionalArrayAggregate
 ++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
@@ -2351,6 +2359,15 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
                 y := rest y
             empty? x => not empty? y
             false
+
+   if S has Comparable then
+       smaller?(x, y) ==
+           while not empty? x and not empty? y repeat
+               first x ~= first y => return smaller?(first x, first y)
+               x := rest x
+               y := rest y
+           empty? x => not empty? y
+           false
 
 
 )abbrev category ALAGG AssociationListAggregate
