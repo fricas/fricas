@@ -29,6 +29,8 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
   Definition == Join(HomogeneousAggregate(R), _
       shallowlyMutable, finiteAggregate) with
 
+    if R has Comparable then Comparable
+
 --% Array creation
 
     new : (NonNegativeInteger, NonNegativeInteger, R) -> %
@@ -324,6 +326,37 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
     size?(m, n) == nrows(m) * ncols(m) = n
     less?(m, n) == nrows(m) * ncols(m) < n
     more?(m, n) == nrows(m) * ncols(m) > n
+
+    if R has Comparable then
+
+      smaller?(m1, m2) ==
+          mri1 := minRowIndex(m1)
+          mri2 := minRowIndex(m2)
+          mri1 < mri2 => true
+          mri2 < mri1 => false
+          minr := mri1
+          mri1 := maxRowIndex(m1)
+          mri2 := maxRowIndex(m2)
+          mri1 < mri2 => true
+          mri2 < mri1 => false
+          maxr := mri1
+          mci1 := minColIndex(m1)
+          mci2 := minColIndex(m2)
+          mci1 < mci2 => true
+          mci2 < mci1 => false
+          minc := mci1
+          mci1 := maxColIndex(m1)
+          mci2 := maxColIndex(m2)
+          mci1 < mci2 => true
+          mci2 < mci1 => false
+          maxc := mci1
+          for i in minr..maxr repeat
+              for j in minc..maxc repeat
+                  el1 := m1(i, j)
+                  el2 := m2(i, j)
+                  smaller?(el1, el2) => return true
+                  if not(el1 = el2) then return false
+          false
 
 --% Size inquiries
 
