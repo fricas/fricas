@@ -206,8 +206,6 @@ optcomma [op,:args] ==
 
 axFormatDecl(sym, type) ==
    if sym = '$ then sym := '%
-   opOf type in '(StreamAggregate FiniteLinearAggregate) =>
-        ['Declare, sym, 'Type]
    ['Declare, sym, axFormatType type]
 
 makeTypeSequence l ==
