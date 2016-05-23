@@ -363,22 +363,18 @@ simplify_self_preds1(catvecListMaker, condCats) ==
     self_preds := get_self_preds(condCats)
     self_preds := [cat for p in self_preds | p is ["QUOTE", cat]]
     self_preds = [] => [condCats, false]
-    hairy_preds := []
-    found_preds := []
     false_preds := []
     for c1 in self_preds repeat
         op1 := opOf(c1)
         hl := []
         found := false
-        for c2 in catvecListMaker for cond in condCats while(not(found)) repeat
+        for c2 in catvecListMaker for cond in condCats repeat
             c1 = c2 =>
                 found_preds := CONS([c1, cond], found_preds)
                 found := true
             if op1 = opOf(c2) then
                 hl := CONS([c2, cond], hl)
-        if hl and not(found) then
-            hairy_preds := CONS([c1, hl], hairy_preds)
-        if not(found) then
+        if not(found) and not(hl) then
             false_preds := CONS(c1, false_preds)
     good_preds := [cc for cc in found_preds |
                      cc is [cat, cond] and not(isHasDollarPred(cond))]
@@ -452,6 +448,7 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   catNames := ['$, :[GENVAR() for u in rest catvecListMaker]]
   domname:='dv_$
 
+  condCats := [simpBool(cc) for cc in condCats]
   condCats := simplify_self_preds(catvecListMaker, condCats)
 -->  Do this now to create predicate vector; then DescendCode can refer
 -->  to predicate vector if it can

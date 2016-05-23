@@ -31,7 +31,7 @@
 
 )package "BOOT"
 
-simpBool x == dnf2pf reduceDnf b2dnf x
+simpBool x == dnf_to_pf reduceDnf b_to_dnf x
 
 reduceDnf u ==
 -- (OR (AND ..b..) b) ==> (OR  b  )
@@ -47,14 +47,14 @@ reduceDnf u ==
 dnfContains([a,b],[c,d]) == fn(a,c) and fn(b,d) where
   fn(x,y) == and/[member(u,x) for u in y]
 
-dnf2pf(x) ==
+dnf_to_pf(x) ==
   x = 'true => 'T
   x = 'false => nil
   atom x => x
   MKPF(
     [MKPF([:[k for k in b],:[['not,k] for k in a]],'AND) for [a,b] in x],'OR)
 
-b2dnf x ==
+b_to_dnf x ==
   x = 'T => 'true
   x = NIL => 'false
   atom x => bassert x
@@ -64,18 +64,22 @@ b2dnf x ==
   MEMQ(op,'(NOT not)) => bnot first argl
   bassert x
 band x ==
-  x is [h,:t] => andDnf(b2dnf h,band t)
+  x is [h, :t] => andDnf(b_to_dnf h, band t)
   'true
 bor x ==
-  x is [a,:b] => orDnf(b2dnf a,bor b)
+  x is [a, :b] => orDnf(b_to_dnf a, bor b)
   'false
-bnot x == notDnf b2dnf x
+bnot x == notDnf b_to_dnf x
 bassert x == [[nil,[x]]]
 bassertNot x == [[[x],nil]]
 ------------------------Disjunctive Normal Form Code-----------------------
+--
 --        dnf is  true | false | [coaf ... ]
---        coaf is true | false | [item ... ]
---        item is anything
+--           the last case means disjunction of coaf-s on the list
+--        coaf is true | false | [neg pos]
+--           in the last case neg and pos are lists of items
+--           this case means conjuntion of items in pos and
+--           negations of items in neg
 
 orDnf(a,b) ==                   -- or:  (dnf, dnf) -> dnf
   a = 'false => b
@@ -111,8 +115,7 @@ coafOrDnf(a,l) ==               -- or:  (coaf, dnf) -> dnf
   y := notCoaf a
   x := ordIntersection(y,l)
   null x => ordUnion([a], l)
-  x = l => 'true
-  x = y => ordSetDiff(l,x)
+  x = y => 'true
   ordUnion(notDnf ordSetDiff(y,x),l)
 
 coafAndDnf(a,b) ==              --and: (coaf, dnf) -> dnf
@@ -130,7 +133,8 @@ coafAndCoaf([a,b],[p,q]) ==                  --and: (coaf,coaf) -> dnf
   ordIntersection(a,q) or ordIntersection(b,p) => 'false
   [[ordUnion(a,p),ordUnion(b,q)]]
 
-notCoaf [a,b] == [:[[nil,[x]] for x in a],:[[[x],nil] for x in b]]
+notCoaf [a,b] ==
+    orderList([:[[nil, [x]] for x in a], :[[[x], nil] for x in b]])
 
 ordUnion(a,b) ==
   a isnt [c,:r] => b

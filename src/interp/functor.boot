@@ -244,8 +244,9 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
             TruthP flag =>
                flag := ['NOT,u2]
                u2
+            f1 := ['AND, flag, u2]
             flag := ['AND,flag,['NOT,u2]];
-            ['AND,flag,u2]
+            f1
           [DescendCode(v, f,
             if first u is ['HasCategory,dom,cat]
               then [[dom,:cat],:viewAssoc]
