@@ -669,10 +669,7 @@
     `(let ((,gi ,fn))
        (the (values t)
          (funcall
-          (the #-(or :GCL :genera :lispworks)
-                   (function ,(make-list (length l) :initial-element t) t)
-               #+(or :GCL :genera :lispworks)function
-            (car ,gi))
+          (the function (car ,gi))
           ,@args
           (cdr ,gi))))))
 
