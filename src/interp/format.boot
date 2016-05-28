@@ -489,7 +489,9 @@ coerceOrParen(x) ==
 
 appOrParen(x) ==
    SYMBOLP(x) => formWrapId x
-   INTEGERP(x) => WRITE_-TO_-STRING x
+   INTEGERP(x) =>
+       x >=0 => WRITE_-TO_-STRING x
+       concat('"(",WRITE_-TO_-STRING x,'")")
    -- Kludge to avoid extra parentheses printing a SparseUnivariatePolynomial
    x = '"?" => formWrapId x
    ATOM(x) => concat('"(", form2String1(x), '")")
