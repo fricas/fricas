@@ -371,7 +371,6 @@ After this function is called the image is clean and can be saved.
            #+:GCL(compiler::emit-fn nil)
            (setq *load-verbose* nil)
            #+:clisp(setf custom:*suppress-check-redefinition* t)
-           (setf |$createLocalLibDb| t)
        )
   )
   #+:ecl
