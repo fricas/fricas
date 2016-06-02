@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2016-01-24],
+AC_INIT([FriCAS], [2016-06-02],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -55,7 +55,7 @@ AC_SUBST(fricas_builddir)
 fricas_build_bindir=$fricas_builddir/bin
 AC_SUBST(fricas_build_bindir)
 
-## Prefix for the staging target inistallation directory
+## Prefix for the staging target installation directory
 fricas_targetdir=$fricas_pwd/target/$target
 AC_SUBST(fricas_targetdir)
 if test $build != $target; then
@@ -167,7 +167,7 @@ AC_ARG_WITH([lisp],
             [AS_HELP_STRING([--with-lisp=L], [use L as Lisp platform])],
             [fricas_lisp=$withval])
 ## Default to SBCL if no lisp given
-if test -z $fricas_lisp ; then
+if test -z "$fricas_lisp" ; then
     AC_PATH_PROG([FRICAS_LISP], [sbcl])
     if test -z $FRICAS_LISP ; then
         AC_MSG_ERROR([sbcl not found and no Lisp specified.
@@ -502,7 +502,7 @@ int code = EPIPE;
 
 
 if test x$fricas_host_has_socket != xyes; then \
-    AC_MSG_ERROR([FriCAS needs suport for sockets.])
+    AC_MSG_ERROR([FriCAS needs support for sockets.])
 fi
 
 ## solaris-based systems tend to hide the socket library.
@@ -761,7 +761,7 @@ AC_SUBST(ALDOR_datadir)
 ###################################################################
 # The installation is currently not done by recursively calling
 # install in the src subdirectories, so we have to hardcode the
-# intallation of the aldor interface in Makefile.in and let a
+# installation of the aldor interface in Makefile.in and let a
 # variable decide whether or not the interface stuff should be
 # installed.
 AC_SUBST(BUILD_ALDOR_INTERFACE)
@@ -794,7 +794,7 @@ FRICAS_MAKEFILE([contrib/emacs/Makefile])
 
 AC_OUTPUT
 
-## Generate rules to extrad SPAD type definitions from pamphlets.
+## Generate rules to extract SPAD type definitions from pamphlets.
 echo "extracting list of SPAD type definitions"
 (cd $srcdir/src/algebra;
    . ../scripts/find-algebra-files) > src/algebra/tmp-extract-spad.mk
