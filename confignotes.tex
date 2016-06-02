@@ -61,11 +61,11 @@ this part of the build machinery are expected to be familiar with
 \Tool{Autotconf}.
 
 The \File{Makefile} pamphlets that compose the build machinery are
-written in a way that abstracts platform idiosyncracies into
+written in a way that abstracts platform idiosyncrasies into
 parameters.  The purpose of the \File{configure.ac} script is to
 find values for those parameters, on a given platform, necessary to
 instantiate the \File{Makefile}s, and therefore to set up a concrete
-build machinery.  And that task must be accomplished portably.
+build machinery.  And that task must be accomplished portability.
 
 \section{Generalities on build instantiations}
 
@@ -81,7 +81,7 @@ that we gather information from two platforms:
 The build platform is where we build the system, \eg{} where
 the \File{configure} script is executed.  The host platform
 is where \Tool{Axiom} will run.  Note that in full generality, there is
-a third platform: the \emph{target platform}.  It is the plaform for which
+a third platform: the \emph{target platform}.  It is the platform for which
 we are building the system.
 
 For typical build instantiations, those  three  platforms are the same: we
@@ -110,7 +110,7 @@ The \textsl{os} part can be either \textsl{system} (such as [[solaris2.8]])
 or \textsl{kernel--system} (such as [[linux-gnu]]).
 
 Here is how we get the canonical names for the above three platforms:
-<<host build target platfoms>>=
+<<host build target platforms>>=
 AC_CANONICAL_SYSTEM
 
 ## Where tools for the build machine are built
@@ -119,7 +119,7 @@ AC_SUBST(axiom_builddir)
 axiom_build_bindir=$axiom_builddir/bin
 AC_SUBST(axiom_build_bindir)
 
-## Prefix for the staging target inistallation directory
+## Prefix for the staging target installation directory
 axiom_targetdir=`pwd`/target/$target
 AC_SUBST(axiom_targetdir)
 @
@@ -147,7 +147,7 @@ For the moment, the \Tool{Axiom} base source code is written
 in a way that does not support cross build.  However, we do
 want to make cross build possible; consequently we issue
 a warning when we detect attempt at cross build:
-<<host build target platfoms>>=
+<<host build target platforms>>=
 if test $build != $target; then
    AC_MSG_WARN([Cross build is not supported.])
    AC_MSG_WARN([Please notify fricas-devel@googlegroups.com if you succeed.])
@@ -188,7 +188,7 @@ the build machinery in a way that actively unsupports
 cross build.  Consequently, in the build tree, we sequester
 tools that we build and use on the build platform,
 in  sub-directories different from others.
-<<host build target platfoms>>=
+<<host build target platforms>>=
 ## Where tools for the build platform are sequestered
 axiom_build_sharedir=$axiom_builddir/share
 @
@@ -222,7 +222,7 @@ AC_CHECK_DECLS([sigaction], [], [],
 @
 
 
-\subsubsection{Files and directtories}
+\subsubsection{Files and directories}
 
 Some parts of \Tool{Axiom} manipulate files and directories.  They
 more or less directly reflect the underlying platform semantics.
@@ -266,7 +266,7 @@ case $host in
 	;;
 esac
 if test x$axiom_host_has_socket != xyes; then \
-    AC_MSG_ERROR([Axiom needs suport for sockets.])
+    AC_MSG_ERROR([Axiom needs support for sockets.])
 fi
 
 ## solaris-based systems tend to hide the socket library.
@@ -437,7 +437,7 @@ if test x"$axiom_has_xpm" = xyes; then
     AXIOM_MAKEFILE([src/graph/viewAlone/Makefile])
     AXIOM_MAKEFILE([src/graph/viewman/Makefile])
 else
-    AC_MSG_NOTICE([The Gaphics and HyperDoc components are disabled.])
+    AC_MSG_NOTICE([The Graphics and HyperDoc components are disabled.])
 fi
 AC_SUBST(axiom_src_all)
 @
@@ -462,7 +462,7 @@ AXIOM_MAKEFILE([src/hyper/Makefile])
 
 \subsection{Lisp runtime}
 
-\Tool{GCL} relies on the libirary \Tool{BFD}, the include
+\Tool{GCL} relies on the library \Tool{BFD}, the include
 headers of which may not exist (quite common).  In order to avoid
 \Tool{GCL} build failure, we test for the existence of [[<bfd.h>]]
 and the corresponding library.  We configure \Tool{GCL} to
@@ -565,7 +565,7 @@ build at the moment, the tests are also for the host and target
 platforms.
 <<build utils>>=
 ## Accumulate list of utils needed for the build platform
-## It is vital that noweb is present in the build environement.
+## It is vital that noweb is present in the build environment.
 axiom_all_prerequisites=
 
 <<find make>>
@@ -596,7 +596,7 @@ Of course, no build can proceed with \File{Tool} inexisting from
 the build-environment.  We insist on GNU \Tool{Make} program as there
 are way too many variations, way too many incompatible implementations
 and extensions.  Please, note that this requirement just reflects
-\Tool{Axiom}'s dependencies on external toos:  \Tool{Axiom} relies on
+\Tool{Axiom}'s dependencies on external tools:  \Tool{Axiom} relies on
 \Tool{GCL}, which in turn uses \Tool{GCC}.  Building \Tool{GCC} requires
 \Tool{GNU Make}, and \Tool{GCL} itself requires \Tool{GNU Make}.
 <<find make>>=
@@ -775,7 +775,7 @@ we make an exception: if no GCL image is available, or if
 the option \verb!--enable-gcl! is specified then \Tool{Axiom}
 builds its own version from the source tree.
 <<find lisp>>=
-## If --enable-gcl is specified, we need to check for coonsistency
+## If --enable-gcl is specified, we need to check for consistency
 axiom_include_gcl=
 if test -z $axiom_lisp; then
     AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from Axiom source],
@@ -793,7 +793,7 @@ Do we need to build our own version of \Tool{GCL}?  The answer is yes, if
 \end{itemize}
 Consequently, we need to check for \Tool{GCL}:
 <<find lisp>>=
-## We need to build our own GCL is none is avalaible
+## We need to build our own GCL is none is available
 if test -z $axiom_lisp; then
     AC_PATH_PROG([AXIOM_LISP], [gcl])
     axiom_lisp=$AXIOM_LISP
@@ -852,7 +852,7 @@ AC_ARG_WITH([lisp-flavor],
 
 if test x$axiom_lisp_flavor = xunknown ; then
 
-       ## As of this writting, the Lisp systems ECL, GCL, and SBCL all
+       ## As of this writing, the Lisp systems ECL, GCL, and SBCL all
        ## understands the command line option --help, though they do
        ## behave very differently.  Some of them just print out the
        ## help information and exits.  Others, such as GCL, think they
@@ -895,7 +895,7 @@ AC_SUBST(axiom_gcl_rsym_hack)
 \paragraph{Lisp system options.}  Lisp implementations greatly vary in
 the command line options they support.  Here we attempt to abstract
 over those variations of Lisp systems we plan to support.  In particular,
-we need to know how to iinvoke a Lisp compiler with a set of
+we need to know how to invoke a Lisp compiler with a set of
 files to process in batch mode.
 <<lisp options>>=
 ## How are we supposed to tell the Lisp system to eval an expression
@@ -1051,7 +1051,7 @@ axiom_top_srcdir=`cd $srcdir && pwd`
 AC_SUBST(axiom_top_srcdir)
 @
 
-\Tool{Autoconf} needs some auxilary files that are present in the
+\Tool{Autoconf} needs some auxiliary files that are present in the
 sub-directory \File{config}:
 <<Autoconf init>>=
 AC_CONFIG_AUX_DIR(config)
@@ -1128,7 +1128,7 @@ AXIOM_MAKEFILE([src/etc/Makefile])
 
 AC_OUTPUT
 
-## Generate rules to extrad SPAD type definitions from pamphlets.
+## Generate rules to extract SPAD type definitions from pamphlets.
 echo "extracting list of SPAD type definitions"
 (cd $srcdir/src/algebra;
    . ../scripts/find-algebra-files) > src/algebra/tmp-extract-spad.mk
@@ -1167,7 +1167,7 @@ fi
 axiom_src_subdirs="lib lisp boot interp share algebra input etc doc"
 AC_SUBST(axiom_src_subdirs)
 
-<<host build target platfoms>>
+<<host build target platforms>>
 
 <<build utils>>
 
