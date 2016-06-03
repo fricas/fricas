@@ -16,18 +16,14 @@ SymmetricFunctions(R : Ring) : Exports == Implementation where
       ++ symmetric functions in \spad{[r, r, ..., r]} \spad{n} times.
 
   Implementation ==> add
-    signFix : (UP, NonNegativeInteger) -> Vector R
 
-    symFunc(x, n) == signFix((monomial(1, 1)$UP - x::UP) ^ n, 1 + n)
+    coef_vect(p : UP, n : NonNegativeInteger) : Vector R ==
+        reverse! vectorise(p, n)
+
+    symFunc(x, n) == coef_vect((monomial(1, 1)$UP + x::UP) ^ n, n)
 
     symFunc l ==
-      signFix(*/[monomial(1, 1)$UP - a::UP for a in l], 1 + #l)
-
-    signFix(p, n) ==
-      m := minIndex(v := vectorise(p, n)) + 1
-      for i in 0..((#v quo 2) - 1)::NonNegativeInteger repeat
-        qsetelt!(v, 2*i + m, - qelt(v, 2*i + m))
-      reverse! v
+        coef_vect(*/[monomial(1, 1)$UP + a::UP for a in l], #l)
 
 )abbrev package TANEXP TangentExpansions
 ++ Expansions of tangents of sums and quotients
@@ -67,16 +63,17 @@ TangentExpansions(R : Field) : Exports == Implementation where
       (numer(t := tanPIa(n::PI)) a) / ((denom t) a)
 
     tanSum l ==
-      m := minIndex(v := symFunc l)
-      +/[m1toN(i+1) * v(2*i - 1 + m) for i in 1..(#v quo 2)]
-        / +/[m1toN(i) * v(2*i + m) for i in 0..((#v - 1) quo 2)]
+        empty?(l) => 0
+        m := minIndex(v := symFunc l)
+        +/[m1toN(i) * v(2*i + m) for i in 0..((#v - 1) quo 2)]
+          /(1 + +/[m1toN(i) * v(2*i - 1 + m) for i in 1..(#v quo 2)])
 
--- tanPIa(n) returns P(a)/Q(a) such that
--- if a = tan(u) then P(a)/Q(a) = tan(n * u);
+    -- tanPIa(n) returns P(a)/Q(a) such that
+    -- if a = tan(u) then P(a)/Q(a) = tan(n * u);
     tanPIa n ==
-      m := minIndex(v := symFunc(monomial(1, 1)$UP, n))
-      +/[m1toN(i+1) * v(2*i - 1 + m) for i in 1..(#v quo 2)]
-        / +/[m1toN(i) * v(2*i + m) for i in 0..((#v - 1) quo 2)]
+        m := minIndex(v := symFunc(monomial(1, 1)$UP, n))
+        +/[m1toN(i) * v(2*i + m) for i in 0..((#v - 1) quo 2)]
+          /(1 + +/[m1toN(i) * v(2*i - 1 + m) for i in 1..(#v quo 2)])
 
 )abbrev package EFSTRUC ElementaryFunctionStructurePackage
 ++ Risch structure theorem
