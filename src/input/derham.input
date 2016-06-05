@@ -1,0 +1,196 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "DeRhamComplex"
+
+testcase "derham"
+
+-----------
+-- Setup --
+-----------
+
+)clear all
+
+n:=3   -- dim of base space (n>=3 !!!)
+
+R ==> EXPR INT
+der:=DERHAM(INT,[x[j] for j in 1..n]) 
+dq:=[generator(j)$der for j in 1..n]
+q:=[x[j] for j in 1..n]::List R
+d ==> exteriorDifferential
+
+a:=map(operator,[a[j] for j in 1..n])
+b:=map(operator,[b[j] for j in 1..n])
+s:=operator 's
+
+one : der := 1                                               -- 0-form, unity 
+alpha := reduce(_+,[(a.j)(q)*dq.j for j in 1..n])    -- general 1-form
+beta  := d reduce(_+,[(b.j)(q)*dq.j for j in 1..n])  -- a 2-form
+gamma := s(q)*reduce(_*,dq)                                  -- general n-form
+  
+----------
+-- Degrees
+----------
+
+testEquals("degree one", "0")
+testEquals("degree alpha", "1")
+testEquals("degree beta", "2")
+testEquals("degree gamma", "n")
+
+
+--------------
+-- Homogeneity
+--------------
+
+testTrue("reduce(_and, map(homogeneous?,[one,alpha,beta,gamma]))")
+testTrue("~homogeneous?(alpha+beta)")
+testTrue("~homogeneous?(one+gamma)")
+
+
+-------
+-- One?
+-------
+
+testTrue("one? one")
+testTrue("~one? gamma")
+
+
+--------------
+-- Annihilate?, i.e. a*b=0
+--------------
+
+testTrue("~annihilate?(alpha,beta)")
+testTrue("annihilate?(alpha,alpha)")
+testTrue("annihilate?(beta,gamma)")
+
+
+---------------
+-- Retractable?
+---------------
+
+testTrue("retractable? one")
+testTrue("~retractable? beta")
+
+
+--------
+-- Zero?
+--------
+
+testTrue("zero?(0*one)")
+testTrue("zero?(alpha*gamma)")
+testTrue("zero?(d gamma)")
+
+
+--------------
+-- Coefficient
+--------------
+
+testEquals("coefficient(alpha,dq.1)", "(a.1)(q)")
+testEquals("coefficient(beta,dq.1*dq.2)",
+           "(D((b.2)(q),q.1::Symbol)-D((b.1)(q),q.2::Symbol))")
+testEquals("coefficient(gamma,reduce(_*,dq))", "s(q)")
+testEquals("coefficient((a.1)(q)*one,one)", "(a.1)(q)")
+
+
+---------------------
+-- LeadingCoefficient 
+---------------------
+
+testEquals("leadingCoefficient alpha", "(a.n)(q)")  -- notice order!
+testEquals("leadingCoefficient beta",
+           "(D((b.n)(q),q.(n-1)::Symbol)-D((b.(n-1))(q),q.n::Symbol))")
+testEquals("leadingCoefficient one", "1::R")
+
+
+------
+-- Map
+------
+
+testEquals("map((x:R):R+->x^2,alpha)",
+           "reduce(_+,[(a.j)(q::List R)^2*dq.j for j in 1..n])")
+testEquals("map((f:R):R+->D(f,x),gamma)", "D(s(q),x)*dx*dy*dz")
+
+
+--------------------
+-- TotalDifferential
+--------------------
+td ==> totalDifferential
+
+testEquals("td(s(q))$der",
+           "reduce(_+,[D(s(q),q.j::Symbol)*dq.j for j in 1..n])")
+testEquals("degree td(s(q))$der", "1")
+
+
+--------------------------
+-- Mult by PositiveInteger
+-- Negative
+--------------------------
+
+testEquals("2*beta", "beta + beta")
+testEquals("5*alpha", "3*alpha + 2*alpha")
+testEquals("7*gamma", "8*gamma+(-gamma)")
+
+
+-------------------
+-- LeadingBasisTerm
+-------------------
+
+testEquals("leadingBasisTerm alpha", "dq.n")
+testEquals("leadingBasisTerm beta", "dq.(n-1)*dq.n")
+testEquals("leadingBasisTerm gamma", "reduce(_*,dq)")
+testEquals("leadingBasisTerm (reductum alpha)", "dq.(n-1)")
+
+
+-----------
+-- Reductum (like rest in lists)
+-----------
+
+testEquals("reductum alpha",
+           "reduce(_+,[(a.j)(q::List R)*dq.j for j in 1..n-1])")
+testEquals("reductum beta",
+           "beta- leadingCoefficient(beta)*leadingBasisTerm(beta)")
+testEquals("reductum reductum(beta)",
+           "reductum(beta)-leadingCoefficient(reductum(beta))"
+             "*leadingBasisTerm((reductum(beta)))")
+testEquals("reductum(alpha+beta+gamma)",
+           "alpha+beta+gamma - (a.n)(q)*dq.n")
+
+
+-------------
+-- Arithmetic
+-------------
+
+testEquals("(alpha+beta)^2", "alpha^2 + alpha*beta + beta*alpha + beta^2")
+testEquals("dq.1+dq.2", "dq.2+dq.1")
+testEquals("dq.1*dq.2+dq.2*dq.1", "0")
+testEquals("dq.n*dq.n", "0")
+testEquals("dq.1*(dq.2*dq.3)", "(dq.1*dq.2)*dq.3")
+
+
+---------------------------
+-- Exterior differentiation
+---------------------------
+
+testEquals("d (d alpha)", "0")
+testEquals("coefficient(d alpha,dq.1*dq.2)",
+           "D((a.2)(q),q.1::Symbol)-D((a.1)(q),q.2::Symbol)")
+testEquals("d beta", "0")
+testEquals("td(s(q))$der", "d(s(q)*one)")
+testEquals("d(alpha+beta)", "d(alpha)+d(beta)")
+testEquals("d(s(q)*1$der)*alpha+s(q)*d(alpha)", "d(s(q)*alpha)")
+
+)set output algebra on
+statistics()
+
+-- Timing
+-- n = 3..8 for test(d(alpha+beta)=d(alpha)+d(beta))
+--  
+--      
+--    n   3     4   5   6   7   8 
+--       --------------------------
+--    s  0.13 0.66 2.5  7   18  40
+--       
+--
+--    Quite slow for n>=5 ??
+--
+
