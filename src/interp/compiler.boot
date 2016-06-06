@@ -1125,7 +1125,9 @@ compIs(["is",a,b],m,e) ==
 --  The function coerceInteractive is used by the interpreter.
 --  One should always call the correct function, since the represent-
 --  ation of basic objects may not be the same.
-
+--
+-- Type in returned triple is m when m is not $EmptyMode,
+-- otherwise it is type from T
 coerce(T,m) ==
   $InteractiveMode =>
     keyedSystemError("S2GE0016",['"coerce",
