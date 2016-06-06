@@ -191,6 +191,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
     R2UP       : (R, K) -> UPR
     alglogint  : (R, UP -> UP) -> Union(List LOG, "failed")
     palglogint : (R, UP -> UP) -> Union(List LOG, "failed")
+    do_root    : (UP, DIV) -> Union(List LOG, "failed")
     trace1     : (UP, List F, List FD, FD, F, F) -> Union(List LOG, "failed")
     nonQ       : (DIV, UP)           -> Union(List LOG, "failed")
     rlift      : (F, K, K) -> R
@@ -391,12 +392,25 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         -- We have to look at Q-linear relations between residues.
         -- Below we handle a few easy cases.
         nlins1 := [nfl for nfl in nfacs1 | degree(first(nfl).factor) >$Z 1]
-        nlins2 := [nfl for nfl in nfacs2 | degree(first(nfl).factor) > 1]
+        nlins2 : List(List(PC)) := []
+        fcf : UP
+        root_fails : Integer := 0
+        for nfl in nfacs2  | degree(first(nfl).factor) >$Z 1 repeat
+            fcf := first(nfl).factor
+            degree(fcf) = 3 and degree(reductum(fcf)) = 0 =>
+                pp := do_root(fcf, rec)
+                pp case "failed" =>
+                    nlins2 := cons(nfl, nlins2)
+                    root_fails := root_fails + 1
+                ppr.result1 := concat(pp::List(LOG), ppr.result1)
+            nlins2 := cons(nfl, nlins2)
+        nlins2 := reverse!(nlins2)
+        root_fails = 1 and #nlins2 = 1 and #nlins1 = 0 => "failed"
         #nlins1 + #nlins2 > 1 => FAIL2
         lins1 := [nfl for nfl in nfacs1 | degree(first(nfl).factor) = 1]
         lins2 := [nfl for nfl in nfacs2 | degree(first(nfl).factor) = 1]
+        empty?(nlins2) and empty?(lins2) and empty?(nfacs1) => ppr.result1
         empty?(nfacs2) and empty?(nlins1) and #lins1 = 1 => "failed"
-        fcf : UP
         #nfacs1 > 0 and #nlins2 = 0 =>
             fc1 : PC2
             if #nlins1 = 1 then
@@ -447,6 +461,19 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         tr1u case "failed" => "failed"
         concat(ppr.result1, tr1u::List(LOG))
 
+    do_root(q : UP, rec : DIV) : Union(List LOG, "failed") ==
+        alpha := rootOf UP2SUP q
+        beta := sqrt(-(3::F))
+        w1 := (beta - 1)/(2::F)
+        v1 := divisor(rec.num, rec.den, rec.derivden, rec.gd, alpha)
+        v2 := divisor(rec.num, rec.den, rec.derivden, rec.gd, w1*alpha)
+        v3 := divisor(rec.num, rec.den, rec.derivden, rec.gd, w1^2*alpha)
+        vp1 := 2*v1
+        vp2 := v2 + v3
+        vp := vp1 - vp2
+        (rc := torsionIfCan vp) case "failed" => "failed"
+        mkLog(q, inv((rc.order * 3)::Q), rc.function, alpha)
+
     UP2SUP p ==
        map((x : F) : F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, UP, F, SUP)
 
@@ -454,7 +481,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
        map((x : F) : F+->x, p)$UnivariatePolynomialCategoryFunctions2(F, SUP, F, UP)
 
     varRoot?(p, derivation) ==
-      for c in coefficients primitivePart p repeat
+      for c in coefficients p repeat
         derivation(c) ~= 0 => return true
       false
 
