@@ -1952,6 +1952,20 @@ FloatEllipticFunctions() : with
         bits(obits)
         res
 
+    half_z(z : CF, m : CF) : CF ==
+        z0 := z
+        z2 := z*z
+        z2 := (1 - sqrt(1 - z2))/(1 + sqrt(1 - m*z2))
+        nz := norm(z2)
+        cnz := sqrt(1 - z2)
+        dnz := sqrt(1 - m*z2)
+        snf := cnz*dnz/(1 - m*z2*z2)
+        z := sqrt(z2)
+        zz := z*snf
+        if real(conjugate(z0)*zz) < 0 then
+                z := -z
+        z
+
     ellipticF_aux(z : CF, m : CF) : CF ==
         m = 1 => atanh(z)
         obits := bits()
@@ -1972,18 +1986,8 @@ FloatEllipticFunctions() : with
         sf : Float := 1
         nz := norm(z)
         if 1$Float < nz then
-            z0 := z
-            z2 := z*z
-            z2 := (1 - sqrt(1 - z2))/(1 + sqrt(1 - m*z2))
-            nz := norm(z2)
+            z := half_z(z, m)
             sf := 2::Float
-            cnz := sqrt(1 - z2)
-            dnz := sqrt(1 - m*z2)
-            snf := cnz*dnz/(1 - m*z2*z2)
-            z := sqrt(z2)
-            zz := z*snf
-            if real(conjugate(z0)*zz) < 0 then
-                z := -z
         for k in ll repeat
             delta := (1 + k)^2 - 4*k*z^2
             z := 2*z/(1 + k + sqrt(delta))
@@ -2098,19 +2102,10 @@ FloatEllipticFunctions() : with
         nz := norm(z)
         res0 : CF := 0
         if 1$Float < nz then
-            z2 := z*z
-            z2 := (1 - sqrt(1 - z2))/(1 + sqrt(1 - m*z2))
-            res0 := z2*z
-            nz := norm(z2)
             sf := 2::Float
             z0 := z
-            z := sqrt(z2)
-            cnz := sqrt(1 - z2)
-            dnz := sqrt(1 - m*z2)
-            snf := cnz*dnz/(1 - m*z2*z2)
-            zz := z*snf
-            if real(conjugate(z0)*zz) < 0 then
-                z := -z
+            z := half_z(z, m)
+            res0 := z0*z^2
         for k in llr repeat
             delta := (1 + k)^2 - 4*k*z^2
             z := 2*z/(1 + k + sqrt(delta))
