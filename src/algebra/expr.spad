@@ -769,14 +769,14 @@ Expression(R : Comparable) : Exports == Implementation where
           kereval        : (K, List K, List %) -> %
           subeval        : (K, List K, List %) -> %
 
-          Rep := FreeAbelianGroup K
+          Rep := FreeModule(Integer, K)
 
           0              == 0$Rep
           x : % + y : %      == x +$Rep y
           x : % = y : %      == x =$Rep y
           smaller?(x : %, y : %)      == smaller?(x, y)$Rep
           coerce(k : K) : %  == coerce(k)$Rep
-          kernels(x : %) : List(K) == [f.gen for f in terms x]
+          kernels(x : %) : List(K) == [f.k for f in listOfTerms x]
           coerce(x : R) : %  == (zero? x => 0; constantKernel(x)::%)
           retract(x : %) : R == (zero? x => 0; retNotUnit x)
           coerce(x : %) : OutputForm == coerce(x)$Rep
@@ -790,19 +790,19 @@ Expression(R : Comparable) : Exports == Implementation where
                 kernel(operator x, [subst(a, lk, lv) for a in argument x]))
 
           isPlus x ==
-            empty?(l := terms x) or empty? rest l => "failed"
-            [t.exp *$Rep t.gen for t in l]$List(%)
+            empty?(l := listOfTerms x) or empty? rest l => "failed"
+            [t.c *$Rep t.k for t in l]$List(%)
 
           isMult x ==
-            empty?(l := terms x) or not empty? rest l => "failed"
+            empty?(l := listOfTerms x) or not empty? rest l => "failed"
             t := first l
-            [t.exp, t.gen]
+            [t.c, t.k]
 
           eval(x : %, lk : List K, lv : List %) ==
-            _+/[t.exp * kereval(t.gen, lk, lv) for t in terms x]
+            _+/[t.c * kereval(t.k, lk, lv) for t in listOfTerms x]
 
           subst(x : %, lk : List K, lv : List %) ==
-            _+/[t.exp * subeval(t.gen, lk, lv) for t in terms x]
+            _+/[t.c * subeval(t.k, lk, lv) for t in listOfTerms x]
 
           retractIfCan(x:%):Union(R, "failed") ==
             zero? x => 0
