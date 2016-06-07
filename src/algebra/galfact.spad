@@ -551,7 +551,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
 
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
     FFE ==> Record(flg : fUnion, fctr : UP, xpnt : Z) -- Flag-Factor-Exponent
-    DDFact ==> Record(prime : Z, ddfactors : DDList) -- Distinct Degree Factors
     HLR ==> Record(plist : List UP, modulo : Z) -- HenselLift Record
 
     mussertrials : P := 5
@@ -596,8 +595,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
 
     import from IntegerPrimesPackage(Z)
     import from IntegerFactorizationPackage(Z)
-
-    import from ModularDistinctDegreeFactorizer(UP)
 
     eisensteinIrreducible?(f : UP) : Boolean ==
       rf := reductum f
@@ -646,6 +643,54 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
     -- local function, return the set of N, 0..n
     fullSet(n : N) : Set N == set [ i for i in 0..n ]
 
+    POLYVEC ==> U32VectorPolynomialOperations
+
+    is_mod_coprime?(pol1 : UP, pol2 : UP, p : Integer, small : Boolean
+                   ) : Boolean ==
+        small =>
+            v1 := to_mod_pa(makeSUP pol1, p)$POLYVEC
+            v2 := to_mod_pa(makeSUP pol2, p)$POLYVEC
+            vg := gcd(v1, v2, p)$POLYVEC
+            degree(vg)$POLYVEC <= 0
+        zero?(degree gcd(pol1, pol2, p)$ModularDistinctDegreeFactorizer(UP))
+
+    DDres ==> Record(dd_list : List N, separate_factors : () -> List(UP))
+
+    add_degs(deg1 : N, deg2 : N, res : List N) : List N ==
+        deg2 = 0 => res
+        for i in 1..(deg1 quo deg2) repeat
+            res := cons(deg2, res)
+        res
+
+    do_separate(sfl : List(() -> List(U32Vector)), c : Integer) : List UP ==
+        res : List UP := []
+        for sf in sfl repeat
+            vl := sf()
+            for v in vl repeat
+                res := cons(unmakeSUP(pa_to_sup(v)$POLYVEC)$UP, res)
+        cons(c::UP, res)
+
+    do_ddfact(pol : UP, p : Integer, small : Boolean) : DDres ==
+        degs : List N := []
+        small =>
+            v := to_mod_pa(makeSUP pol, p)$POLYVEC
+            dpol := degree(v)$POLYVEC
+            c := v(dpol)
+            if c ~= 1 then
+                ci := invmod(c, p)
+                mul_by_scalar(v, dpol, ci, p)
+            ul1 := ddfact(v, p)$ModularFactorization
+            sfl : List(() -> List(U32Vector)) := []
+            for fr in ul1 repeat
+                degs := add_degs(degree(fr.poly)::N, fr.degree::N, degs)
+                sfl := cons(fr.separate_factors, sfl)
+            [degs, () +-> do_separate(sfl, c)]
+        res1 := ddFact(pol, p)$ModularDistinctDegreeFactorizer(UP)
+        for rl in res1 repeat
+            degs := add_degs(degree(rl.factor), rl.degree::N, degs)
+        [degs, () +-> separateFactors(res1, p
+                        )$ModularDistinctDegreeFactorizer(UP)]
+
     modularFactor(p : UP) : MFact ==
 --      not one? abs(content(p)) =>
       not (abs(content(p)) = 1) =>
@@ -654,48 +699,44 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
 
       -- declarations --
       cprime : Z := 2
-      trials : List DDFact := empty()
       d : Set N := fullSet(n)
       dirred : Set N := set [0, n]
       s : Set N := empty()
-      ddlist : DDList := empty()
+      ddlist : List N := []
       degfact : N := 0
-      nf : N := stopmussertrials+1
+      degp : N := degree(p)
+      nf : N := degp + stopmussertrials + 1
       i : Z
+      dd_res : DDres
+      res_prime : Z
 
       -- Musser, see [3] --
       diffp := differentiate p
+      small : Boolean := true
       for i in 1..mussertrials | nf>stopmussertrials repeat
+        if small and not(degp*cprime*cprime < 18446744073709551616) then
+            small := false
         -- test 1: cprime divides leading coefficient
         -- test 2: "bad" primes: (in future: use Dedekind's Criterion)
         while (zero? ((leadingCoefficient p) rem cprime)) or
-         (not zero? degree gcd(p, diffp, cprime)) repeat
-          cprime := nextPrime(cprime)
-        ddlist := ddFact(p, cprime)
+          (not is_mod_coprime?(p, diffp, cprime, small)) repeat
+            cprime := nextPrime(cprime)
+        dd_res1 := do_ddfact(p, cprime, small)
+        ddlist := dd_res1.dd_list
         -- degree compatibility: See [3] --
         s := set [0]
-        for f in ddlist repeat
-          degfact := f.degree::N
-          if not zero? degfact then
-            for j in 1..(degree(f.factor) quo degfact) repeat
-              s := union(s, shiftSet(s, degfact))
-        trials := cons([cprime, ddlist]$DDFact, trials)
+        for degfact in ddlist repeat
+            s := union(s, shiftSet(s, degfact))
         d := intersect(d, s)
         d = dirred => return [0, [p]] -- p is irreducible
+        nf1 := #ddlist
+        if nf1 < nf or (nf1 = nf) and (cprime > res_prime) then
+            nf := nf1
+            dd_res := dd_res1
+            res_prime := cprime
         cprime := nextPrime(cprime)
-        nf := numberOfFactors ddlist
-
-      -- choose the one with the smallest number of factors
-      choice := first trials
-      nfc := numberOfFactors(choice.ddfactors)
-      for t in rest trials repeat
-        nf := numberOfFactors(t.ddfactors)
-        if nf<nfc or ((nf = nfc) and (t.prime>choice.prime)) then
-          nfc := nf
-          choice := t
-      cprime := choice.prime
-      -- HenselLift$GHENSEL expects the degree 0 factor first
-      [cprime, separateFactors(choice.ddfactors, cprime)]
+      fl : List(UP) := (dd_res.separate_factors)()
+      [res_prime, fl]
 
     degreePartition(ddlist : DDList) : Multiset N ==
       dp : Multiset N := empty()

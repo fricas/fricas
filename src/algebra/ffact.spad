@@ -1,0 +1,317 @@
+)abbrev package MODFACT ModularFactorization
+++ Description:
+++  This package implements factorization of polynomials over Z_p
+++  using a variant of Kaltofen-Shoup method.
+ModularFactorization : Exports == Implementation where
+  NNI ==> NonNegativeInteger
+  IPr ==> Record(ind : NNI, poly : U32Vector)
+  LIPr ==> List IPr
+  DDRec ==> Record(poly : U32Vector, degree : NNI,
+                   separate_factors : () -> List(U32Vector))
+  LDD ==> List DDRec
+  Exports ==> with
+    mfactor : (U32Vector, Integer) -> List(U32Vector)
+    ddfact : (U32Vector, Integer) -> LDD
+    mmul : (U32Matrix, U32Matrix, Integer) -> U32Matrix
+    mod_exp : (U32Vector, Integer, LIPr) -> U32Vector
+    power_matrix : (U32Vector, NNI, List(IPr)
+                   ) -> Record(matr : U32Matrix, poly : U32Vector)
+    modular_compose : (U32Vector, U32Matrix, U32Vector,
+                       NNI, NNI, List(IPr)) -> U32Vector
+    ini_rdata : ( U32Vector, Integer) -> LIPr
+    red_pol : (U32Vector, List(IPr)) -> Void
+  Implementation ==> add
+
+    import from U32VectorPolynomialOperations
+
+    Qmuladd  ==> QSMULADD64_-32$Lisp
+    Qrem ==> QSMOD64_-32$Lisp
+
+    mvmul(m : U32Matrix, v : U32Vector, p : Integer) : U32Vector ==
+        nr := nrows(m)
+        nc := ncols(m)
+        nc ~= #v => error "mvmul: nc ~= #v"
+        res := new(nr, 0)$U32Vector
+        for i in 0..(nr - 1) repeat
+            ss : Integer := 0
+            for j in 0..(nc-1) repeat
+                ss := Qmuladd(m(i, j), v(j), ss)
+            res(i) := Qrem(ss, p)
+        res
+
+    -- multiply m1 by transpose of m2
+    mmul(m1 : U32Matrix, m2 : U32Matrix, p : Integer) : U32Matrix ==
+        nr1 := nrows(m1)
+        nc1 := ncols(m1)
+        nc1 ~= ncols(m2) => error "mmul: dimensions do not match"
+        nr2 := nrows(m2)
+        res := new(nr1, nr2, 0)$U32Matrix
+        for i in 0..(nr1 - 1) repeat
+            for j in 0..(nr2 - 1) repeat
+                ss : Integer := 0
+                for k in 0..(nc1 - 1) repeat
+                    ss := Qmuladd(m1(i, k), m2(j, k), ss)
+                res(i, j) := Qrem(ss, p)
+        res
+
+    copy_slice2(np : U32Vector, op : U32Vector, n : Integer,
+                m : Integer) : Void ==
+        for i in 0..(m - 1) repeat
+            np(i) := op(n + i)
+
+    red_pol(pol : U32Vector, rdata : List(IPr)) : Void ==
+        r0 := first(rdata)
+        p := r0.ind
+        f := r0.poly
+        n0 := degree(f)
+        rdata := rest(rdata)
+        for ri in rdata repeat
+            ii := ri.ind
+            if (ni := degree(pol)) >= ii then
+                mi := qcoerce(ni - ii + 1)@NNI
+                tmp := new(mi, 0)$U32Vector
+                -- print("copy_slice2"::OutputForm)
+                copy_slice2(tmp, pol, ii, mi)
+                -- print("truncated_mul_add"::OutputForm)
+                truncated_mul_add(tmp, ri.poly, pol, n0 + mi - 2, p)
+                -- print("zeroing top"::OutputForm)
+                for i in ii..ni repeat
+                    pol(i) := 0
+        remainder!(pol, f, p)
+
+    mod_exp(pol : U32Vector, n : Integer, rdata : List(IPr)) : U32Vector ==
+        n <= 0 => error "mod_exp: n must be positive"
+        r0 := first(rdata)
+        p := r0.ind
+        f := r0.poly
+        m := qcoerce(degree(f))@NNI
+        pow := new(m, 0)$U32Vector
+        copy_first(pow, pol, min(m, #pol))
+        res : U32Vector := new(m, 0)
+        has_res : Boolean := false
+        while n > 0 repeat
+            if odd?(n) then
+                if has_res then
+                    res1 := mul(pow, res, p)
+                    red_pol(res1, rdata)
+                    copy_first(res, res1, min(m, #res1))
+                else
+                    copy_first(res, pow, m)
+                    has_res := true
+            n := n quo 2
+            n = 0 => break
+            pow1 := mul(pow, pow, p)
+            red_pol(pow1, rdata)
+            copy_first(pow, pow1, min(m, #pow1))
+        res
+
+    power_matrix(xp : U32Vector, l : NNI, rdata : List(IPr)
+                ) : Record(matr : U32Matrix, poly : U32Vector) ==
+        r0 := first(rdata)
+        p := r0.ind
+        f := r0.poly
+        n := qcoerce(degree(f))@NNI
+        pm := new(n, l, 0)$U32Matrix
+        pm(0, 0) := 1
+        pow := new(n, 0)$U32Vector
+        copy_first(pow, xp, min(n, #xp))
+        l1 := l - 1
+        n1 := qconvert(n - 1)@SingleInteger
+        for j in 1..l1 repeat
+            for k in 0..(n - 1) repeat
+                pm(k, j) := pow(k)
+            pow1 := mul(xp, pow, p)
+            red_pol(pow1, rdata)
+            nn1 := min(n, degree(pow1)+1)
+            copy_first(pow, pow1, nn1)
+            for k in nn1..(n - 1) repeat
+                pow(k) := 0
+        [pm, pow]
+
+    modular_compose(pol : U32Vector, pm : U32Matrix, xp1 : U32Vector,
+                    l1 : NNI, l2 : NNI, rdata : List(IPr)) : U32Vector ==
+        r0 := first(rdata)
+        p := r0.ind
+        f := r0.poly
+        n := qcoerce(degree(f))@NNI
+        ns := qconvert(n)@SingleInteger
+        m1 := new(l2, l1, 0)$U32Matrix
+        i : SingleInteger := 0
+        k : SingleInteger
+        j : SingleInteger
+        l1s := qconvert(l1 - 1)@SingleInteger
+        k1 := qconvert(l2 - 1)@SingleInteger
+        for j in 0..k1 repeat
+            for k in 0..l1s while i < ns repeat
+                m1(j, k) := pol(i)
+                i := i + 1
+        m2 := mmul(m1, pm, p)
+        p1 := new(n, 0)$U32Vector
+        res := new(n, 0)$U32Vector
+        ns1 := ns - 1
+        for k in k1..0 by -1 repeat
+            for i in 0..ns1 repeat
+                p1(i) := m2(k, i)
+            if k < k1 then
+                res1 := mul(xp1, res, p)
+                red_pol(res1, rdata)
+                copy_first(res, res1, n)
+            vector_add_mul(res, p1, 0, ns1, 1, p)
+        res
+
+    ini_rdata(pol : U32Vector, p : Integer) : LIPr ==
+        n := qcoerce(degree(pol))@NNI
+        res : LIPr := [[qcoerce(p), pol]]
+        ni := (n1 := n - 1)
+        tmp := new(qcoerce(2*n1)@NNI, 0)$U32Vector
+        while ni > 10 repeat
+            nn := (ni - 1) quo 2
+            ii := n1 + ni - nn
+            ni := ii - n1 - 1
+            for i in 0..n1 repeat
+                tmp(i) := 0
+            tmp(ii) := 1
+            -- print(tmp::OutputForm)
+            remainder!(tmp, pol, p)
+            tmp1 := new(n, 0)$U32Vector
+            copy_first(tmp1, tmp, n)
+            res := cons([qcoerce(ii)@NNI, tmp1], res)
+        reverse!(res)
+
+    x1 := new(2, 0)$U32Vector
+    x1(1) := 1
+
+    floor_sqrt(n : Integer) : Integer ==
+        res := approxSqrt(n)$IntegerRoots(Integer)
+        n <= res*res => res
+        res + 1
+
+    eqfact(pol : U32Vector, l : Integer, pmat1 : U32Matrix, xp1 : U32Vector,
+           pmat2 : U32Matrix, xp2 : U32Vector, l1 : NNI, l2 : NNI,
+           k1 : Integer, k2 : Integer, rdata : List(IPr),
+           res : List(U32Vector)) : List(U32Vector) ==
+        l = 1 => cons(pol, res)
+        r0 := first(rdata)
+        p := r0.ind
+        f := r0.poly
+        n := qcoerce(degree(f))@NNI
+        rpol := new(n, 0)$U32Vector
+        dp := qcoerce(degree(pol))@NNI
+        tmp := new(dp + 1, 0)$U32Vector
+        copy_first(tmp, pol, dp + 1)
+        pol := tmp
+        n0 := dp quo l
+        while l > 1 repeat
+            for i in 0..(n - 1) repeat
+                rpol(i) := random(p)
+            tr := rpol
+            kk := min(n0 - 1, k1)
+            for i in 1..kk repeat
+                tr1 := tr
+                tr := modular_compose(tr, pmat1, xp1, l1, l2, rdata)
+                vector_add_mul(tr, rpol, 0, n - 1, 1, p)
+            for i in 2..((n0 - 1) quo k1) repeat
+                tr := modular_compose(tr, pmat2, xp2, l1, l2, rdata)
+                vector_add_mul(tr, tr1, 0, n - 1, 1, p)
+            if n0 > k1 then
+                for i in 1..((n0 - 1) rem k1) repeat
+                    tr := modular_compose(tr, pmat1, xp1, l1, l2, rdata)
+                    vector_add_mul(tr, rpol, 0, n - 1, 1, p)
+            tr1 :=
+                p = 2 => tr
+                mod_exp(tr, (p - 1) quo 2, rdata)
+            tmp := new(n, 0)$U32Vector
+            divide!(tr1, pol, tmp, p)
+            tmp := new(dp, 0)$U32Vector
+            copy_first(tmp, tr1, dp)
+            if tmp(0) = 0 then
+                tmp(0) := p - 1
+            else
+                tmp(0) := tmp(0) - 1
+            g := gcd(tmp, pol, p)
+            dg := qcoerce(degree(g))@NNI
+            dg = 0 or dg = dp => "iterate"
+            fill!(tmp, 0)
+            divide!(pol, g, tmp, p)
+            dp := qcoerce(dp - dg)@NNI
+            pol := new(dp + 1, 0)$U32Vector
+            copy_first(pol, tmp, dp + 1)
+            if dp < dg then
+                (g, pol) := (pol, g)
+                (dp, dg) := (dg, dp)
+            res := eqfact(g, dg quo n0, pmat1, xp1, pmat2, xp2, l1, l2,
+                          k1, k2, rdata, res)
+            l := dp quo n0
+        cons(pol, res)
+
+    do_ddfact(pol : U32Vector, p : Integer, do_eqfact? : Boolean
+             ) : LDD ==
+        rdata : List(IPr) := ini_rdata(pol, p)
+        xp := mod_exp(x1, p, rdata)
+        n := qcoerce(degree(pol))@NNI
+        n0 := n
+        l2 :=
+            n < 120 => 1@NNI
+            n < 360 => 3
+            qcoerce(approxNthRoot(n, 4)$IntegerRoots(Integer))@NNI
+        l1 := qcoerce((n + l2 - 1) quo l2)@NNI
+        (pmat1, xp1) := power_matrix(xp, l1, rdata)
+        tmp := new(n, 0)$U32Vector
+        tmp(1) := 1
+        lpj := [tmp]
+        n2 := n quo 2
+        k1 :=
+            l2 = 1 => l2
+            qcoerce(floor_sqrt(n2))@NNI
+        k2 := qcoerce((n2 + k1 - 1) quo k1)@NNI
+        pj := xp
+        for i in 1..(k1 - 1) repeat
+            lpj := cons(pj, lpj)
+            pj := modular_compose(pj, pmat1, xp1, l1, l2, rdata)
+        pk := pj
+        tmp := new(n + 1, 0)$U32Vector
+        copy_first(tmp, pol, n + 1)
+        pol := tmp
+        res : LDD := []
+        pk1 := new(n0, 0)$U32Vector
+        pmat2 : U32Matrix
+        xp2 : U32Vector
+        if k1 > 1 then
+            (pmat2, xp2) := power_matrix(pj, l1, rdata)
+        else
+            (pmat2, xp2) := (pmat1, xp1)
+        i : NNI := 0
+        for i1 in 1..k2 repeat
+            for pj in lpj repeat
+                i := i + 1
+                copy_first(pk1, pk, n0)
+                vector_add_mul(pk1, pj, 0, n0 - 1, p - 1, p)
+                g := gcd(pk1, pol, p)
+                if (dg := degree(g)) > 0 then
+                    if dg = i then
+                        res := cons([g, i, () +-> [g]]$DDRec, res)
+                    else if not(do_eqfact?) then
+                        res := cons([g, i, () +->
+                          eqfact(g, dg quo i, pmat1, xp1, pmat2, xp2,
+                                 l1, l2, k1, k2, rdata, [])], res)
+                    else
+                        res1 := eqfact(g, dg quo i, pmat1, xp1, pmat2, xp2,
+                                     l1, l2, k1, k2, rdata, [])
+                        for g1 in res1 repeat
+                            res := cons([g1, i, () +-> [g1]]$DDRec, res)
+                    tmp := new(qcoerce(n - degree(g) + 1)@NNI, 0)$U32Vector
+                    divide!(pol, g, tmp, p)
+                    pol := tmp
+                    n := qcoerce(degree(pol))@NNI
+                i >= n quo 2 => break
+            i >= n quo 2 => break
+            pk := modular_compose(pk, pmat2, xp2, l1, l2, rdata)
+        if (dg := degree(pol)) > 0 then
+            res := cons([pol, dg::NNI, () +-> [pol]]$DDRec, res)
+        res
+
+    ddfact(pol, prime) == do_ddfact(pol, prime, false)
+
+    mfactor(pol, prime) ==
+        rl1 := do_ddfact(pol, prime, true)
+        [el.poly for el in rl1]
