@@ -8,83 +8,81 @@
 ++ operations often used in numerical linear algebra
 ++ algorithms.
 MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
-  R : Join(SemiRng, AbelianMonoid)
+  R : Type
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
-  M : MatrixCategory(R, Row, Col)
+  M : TwoDimensionalArrayCategory(R, Row, Col)
 
   I ==> Integer
   PI ==> PositiveInteger
   NNI ==> NonNegativeInteger
   LI ==> List I
   SI ==> Segment I
-  LPI ==> List PI
   LNNI ==> List NNI
-  SPI ==> Segment PI
 
 
   Exports ==> with
 
     -- Slicing matrices
 
-    element : (M, PI, PI) -> M
+    element : (M, I, I) -> M
       ++ \spad{element} returns a single element out of a matrix.
       ++ The element is put into a one by one matrix.
 
-    rowMatrix : (M, PI) -> M
+    rowMatrix : (M, I) -> M
       ++ \spad{rowMatrix} returns a single row out of a matrix.
       ++ The row is put into a one by N matrix.
 
-    rows : (M, LPI) -> M
+    rows : (M, LI) -> M
       ++ \spad{rows} returns several rows out of a matrix.
       ++ The rows are stacked into a matrix.
 
-    rows : (M, SPI) -> M
+    rows : (M, SI) -> M
       ++ \spad{rows} returns several rows out of a matrix.
       ++ The rows are stacked into a matrix.
 
-    columnMatrix : (M, PI) -> M
+    columnMatrix : (M, I) -> M
       ++ \spad{columnMatrix} returns a single column out of a matrix.
       ++ The column is put into a one by N matrix.
 
-    columns : (M, LPI) -> M
+    columns : (M, LI) -> M
       ++ \spad{columns} returns several columns out of a matrix.
       ++ The columns are stacked into a matrix.
 
-    columns : (M, SPI) -> M
+    columns : (M, SI) -> M
       ++ \spad{columns} returns several columns out of a matrix.
       ++ The columns are stacked into a matrix.
 
-    subMatrix : (M, LPI, LPI) -> M
+    subMatrix : (M, LI, LI) -> M
       ++ \spad{subMatrix} returns several elements out of a matrix.
       ++ The elements are stacked into a submatrix.
 
-    subMatrix : (M, SPI, SPI) -> M
+    subMatrix : (M, SI, SI) -> M
       ++ \spad{subMatrix} returns several elements out of a matrix.
       ++ The elements are stacked into a submatrix.
 
-    diagonalMatrix : (M, I) -> M
-      ++ \spad{diagonalMatrix} returns a diagonal out of a matrix.
-      ++ The diagonal is put into a matrix of same shape as the
-      ++ original one. Positive integer arguments select upper
-      ++ off-diagonals, negative ones lower off-diagonals.
+    if R has AbelianMonoid then
+      diagonalMatrix : (M, I) -> M
+        ++ \spad{diagonalMatrix} returns a diagonal out of a matrix.
+        ++ The diagonal is put into a matrix of same shape as the
+        ++ original one. Positive integer arguments select upper
+        ++ off-diagonals, negative ones lower off-diagonals.
+      diagonalMatrix : M -> M
+        ++ \spad{diagonalMatrix} returns the main diagonal out of
+        ++ a matrix. The diagonal is put into a matrix of same shape
+        ++ as the original one.
 
-    diagonalMatrix : M -> M
-      ++ \spad{diagonalMatrix} returns the main diagonal out of
-      ++ a matrix. The diagonal is put into a matrix of same shape
-      ++ as the original one.
+      bandMatrix : (M, LI) -> M
+        ++ \spad{bandMatrix} returns multiple diagonals out of a matrix.
+        ++ The diagonals are put into a matrix of same shape as the
+        ++ original one. Positive integer arguments select upper
+        ++ off-diagonals, negative ones lower off-diagonals.
 
-    bandMatrix : (M, LI) -> M
-      ++ \spad{bandMatrix} returns multiple diagonals out of a matrix.
-      ++ The diagonals are put into a matrix of same shape as the
-      ++ original one. Positive integer arguments select upper
-      ++ off-diagonals, negative ones lower off-diagonals.
-
-    bandMatrix : (M, SI) -> M
-      ++ \spad{bandMatrix} returns multiple diagonals out of a matrix.
-      ++ The diagonals are put into a matrix of same shape as the
-      ++ original one. Positive integer arguments select upper
-      ++ off-diagonals, negative ones lower off-diagonals.
+      bandMatrix : (M, SI) -> M
+        ++ \spad{bandMatrix} returns multiple diagonals out of a matrix.
+        ++ The diagonals are put into a matrix of same shape as the
+        ++ original one. Positive integer arguments select upper
+        ++ off-diagonals, negative ones lower off-diagonals.
 
     -- Splitting matrices
 
@@ -105,59 +103,38 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
     minc ==> minColIndex
     maxc ==> maxColIndex
 
-    -- Custom function to expand Segment(PositiveInteger) into List(PositiveInteger).
-    -- This operation is not supported by the overly restrictive library implementation.
-    expand(spi : SPI) : LPI ==
-        lr := empty()$LPI
-        l : PI := lo spi
-        h : PI := hi spi
-        inc : I := incr spi
-        zero? inc => error "Cannot expand a segment with an increment of zero"
-        if inc > 0 then
-          while l <= h repeat
-            lr := concat(l, lr)
-            l := qcoerce(l + inc)@PI
-        else
-          while l >= h repeat
-            lr := concat(l, lr)
-            l := qcoerce(l + inc)@PI
-        reverse! lr
-
-
     element(A, r, c) ==
-      matrix([[A(r,c)]])
+        subMatrix(A, r, r, c, c)
 
 
-    rowMatrix(A:M, r:PI) : M ==
-      subMatrix(A, r, r, minc A, maxc A)
+    rowMatrix(A : M, r : I) : M ==
+        subMatrix(A, r, r, minc A, maxc A)
 
 
-    rows(A:M, lst:LPI) : M ==
-      nc := ncols(A)
-      nc = 0 => zero(#lst, nc)$M
-      ncp := qcoerce(nc)@PI
-      ls := expand(1..ncp)
-      subMatrix(A, lst, ls)
+    rows(A : M, lst : LI) : M ==
+        nc := ncols(A)
+        nc = 0 => qnew(#lst, nc)$M
+        ls := expand((1..nc)@SI)
+        subMatrix(A, lst, ls)
 
 
-    rows(A:M, si:SPI) : M ==
-      rows(A, expand(si))
+    rows(A : M, si : SI) : M ==
+        rows(A, expand(si))
 
 
-    columnMatrix(A:M, c:PI) : M ==
-      subMatrix(A, minr A, maxr A, c, c)
+    columnMatrix(A : M, c : I) : M ==
+        subMatrix(A, minr A, maxr A, c, c)
 
 
-    columns(A:M, lst:LPI) : M ==
-      nr := nrows(A)
-      nr = 0 => zero(nr, #lst)$M
-      nrp := qcoerce(nr)@PI
-      ls := expand(1..nrp)
-      subMatrix(A, ls, lst)
+    columns(A:M, lst : LI) : M ==
+        nr := nrows(A)
+        nr = 0 => qnew(nr, #lst)$M
+        ls := expand((1..nr)@SI)
+        subMatrix(A, ls, lst)
 
 
-    columns(A:M, si:SPI) : M ==
-      columns(A, expand(si))
+    columns(A : M, si : SI) : M ==
+        columns(A, expand(si))
 
 
     fill_diagonal(B : M, A : M, nr : NNI, nc : NNI, n : I) : Void ==
@@ -177,42 +154,43 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
         qsetelt!(B, sr+i, sc+i, A(sr+i, sc+i))
 
 
-    diagonalMatrix(A, n) ==
+    if R has AbelianMonoid then
+      diagonalMatrix(A, n) ==
         nr := nrows(A)
         nc := ncols(A)
-        B := zero(nr,nc)
+        B := new(nr, nc, 0$R)
         fill_diagonal(B, A, nr, nc, n)
         B
 
 
-    diagonalMatrix(A) ==
-      diagonalMatrix(A, 0)
+      diagonalMatrix(A) ==
+          diagonalMatrix(A, 0)
 
 
-    bandMatrix(A:M, ln:LI) : M ==
+      bandMatrix(A:M, ln:LI) : M ==
         nr := nrows(A)
         nc := ncols(A)
-        B := zero(nr,nc)
+        B := new(nr, nc, 0$R)
         for n in ln repeat
             fill_diagonal(B, A, nr, nc, n)
         B
 
 
-    bandMatrix(A:M, si:SI) : M ==
-      bandMatrix(A, expand(si))
+      bandMatrix(A:M, si:SI) : M ==
+        bandMatrix(A, expand(si))
 
 
-    subMatrix(A:M, lr:LPI, lc:LPI) : M ==
+    subMatrix(A:M, lr:LI, lc:LI) : M ==
         n := #lr
         m := #lc
-        res := zero(n, m)$M
+        res := qnew(n, m)$M
         for i in 1..n for ii in lr repeat
             for j in 1..m for jj in lc repeat
                 qsetelt!(res, i, j, qelt(A, ii, jj))
         res
 
 
-    subMatrix(A:M, sr:SPI, sc:SPI) : M ==
+    subMatrix(A:M, sr:SI, sc:SI) : M ==
       subMatrix(A, low sr, high sr, low sc, high sc)
 
 
