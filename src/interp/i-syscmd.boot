@@ -2288,7 +2288,7 @@ reportOpsFromLisplib(op,u) ==
   argml:= EQSUBSTLIST(argList,$FormalMapVariableList,argml)
   functorFormWithDecl:= [op,:[[":",a,m] for a in argList for m in argml]]
   sayBrightly concat(bright form2StringWithWhere functorFormWithDecl,
-                     '" is a",bright typ,'"constructor")
+                     '"is a",bright typ,'"constructor")
   sayBrightly ['" Abbreviation for",:bright op,'"is",:bright fn]
   verb :=
     isExposedConstructor op => '"is"
@@ -2315,7 +2315,7 @@ displayOperationsFromLisplib form ==
   kind := GETDATABASE(name,'CONSTRUCTORKIND)
   centerAndHighlight('"Operations",$LINELENGTH,specialChar 'hbar)
   opList:= GETDATABASE(name,'OPERATIONALIST)
-  null opList => reportOpsFromUnitDirectly form
+  null opList => nil
   opl:=REMDUP MSORT EQSUBSTLIST(argl,$FormalMapVariableList,opList)
   ops:= nil
   for x in opl repeat
