@@ -444,7 +444,7 @@ function extractTitleAndLabel(type,line,  et,pagePrefix) {
 }
 
 function startPage(preflen) {
-        printf "%\n"
+        printf "%%\n"
         if (match(substr($0,1,preflen),/chapter/))
                 type = 1
         else if (match(substr($0,1,preflen),/subsection/))
@@ -457,7 +457,7 @@ function startPage(preflen) {
 }
 
 function endPage() {
-        printf "\\endscroll\n\\autobuttons\n\\end{page}\n%\n"
+        printf "\\endscroll\n\\autobuttons\n\\end{page}\n%%\n"
 }
 
 function printSectionMenu() {
