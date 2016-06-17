@@ -10,7 +10,7 @@
 ++ Description:
 ++ The notion of aggregate serves to model any data structure aggregate,
 ++ designating any collection of objects,
-++ with heterogenous or homogeneous members,
+++ with heterogeneous or homogeneous members,
 ++ with a finite or infinite number
 ++ of members, explicitly or implicitly represented.
 ++ An aggregate can in principle
@@ -97,13 +97,13 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
       any? : (S->Boolean, %) -> Boolean
         ++ any?(p, u) tests if \spad{p(x)} is true for any element x of u.
         ++ Note: for collections,
-        ++ \spad{any?(p, u) = reduce(or, map(f, u), false, true)}.
+        ++ \spad{any?(p, u) = reduce(or, map(p, u), false, true)}.
         ++ However, \spad{any?(p, u)} returns as soon as it finds an element
         ++ for which \spad{p} gives true.
-      every? : (S->Boolean, %) -> Boolean
-        ++ every?(f, u) tests if p(x) is true for all elements x of u.
+      every? : (S -> Boolean, %) -> Boolean
+        ++ every?(p, u) tests if p(x) is true for all elements x of u.
         ++ Note: for collections,
-        ++ \spad{every?(p, u) = reduce(and, map(f, u), true, false)}.
+        ++ \spad{every?(p, u) = reduce(and, map(p, u), true, false)}.
         ++ However, \spad{every?(p, u)} returns as soon as it finds an element
         ++ for which \spad{p} gives false.
       count : (S->Boolean, %) -> NonNegativeInteger
@@ -115,11 +115,11 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
         ++ For collections, \spad{parts([x, y, ..., z]) = (x, y, ..., z)}.
       members : % -> List S
         ++ members(u) returns a list of the consecutive elements of u.
-        ++ For collections, \spad{parts([x, y, ..., z]) = (x, y, ..., z)}.
+        ++ For collections, \spad{members([x, y, ..., z]) = (x, y, ..., z)}.
       if S has BasicType then
         count : (S, %) -> NonNegativeInteger
           ++ count(x, u) returns the number of occurrences of x in u.
-          ++ For collections, \spad{count(x, u) = reduce(+, [x=y for y in u], 0)}.
+          ++ For collections, \spad{count(x, u) = reduce(+, [1 for y in u | x = y], 0)}.
         member? : (S, %) -> Boolean
           ++ member?(x, u) tests if x is a member of u.
           ++ For collections,
@@ -166,7 +166,7 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
 ++ Keywords:
 ++ References:
 ++ Description:
-++ A collection is a homogeneous aggregate which can built from
+++ A collection is a homogeneous aggregate which can be built from a
 ++ list of members. The operation used to build the aggregate is
 ++ generically named \spadfun{construct}. However, each collection
 ++ provides its own special function with the same name as the
@@ -191,8 +191,8 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
         ++ reduce(f, u, x) reduces the binary operation f across u, where x is
         ++ the identity operation of f.
         ++ Same as \spad{reduce(f, u)} if u has 2 or more elements.
-        ++ Returns \spad{f(x, y)} if u has one element y,
-        ++ x if u is empty.
+        ++ Returns \spad{f(y, x)} if u has one element y.
+        ++ Returns x if u is empty.
         ++ For example, \spad{reduce(+, u, 0)} returns the
         ++ sum of the elements of u.
       remove : (S->Boolean, %) -> %
@@ -207,13 +207,13 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
         reduce : ((S, S)->S, %, S, S) -> S
           ++ reduce(f, u, x, z) reduces the binary operation f across u, stopping
           ++ when an "absorbing element" z is encountered.
-          ++ As for \spad{reduce(f, u, x)}, x is the identity operation of f.
+          ++ As for \spad{reduce(f, u, x)}, x is the identity element of f.
           ++ Same as \spad{reduce(f, u, x)} when u contains no element z.
           ++ Thus the third argument x is returned when u is empty.
         remove : (S, %) -> %
           ++ remove(x, u) returns a copy of u with all
-          ++ elements \spad{y = x} removed.
-          ++ Note: \spad{remove(y, c) == [x for x in c | x ~= y]}.
+          ++ elements equal to x removed.
+          ++ Note: \spad{remove(x, c) == [y for y in c | y ~= x]}.
         removeDuplicates : % -> %
           ++ removeDuplicates(u) returns a copy of u with all duplicates removed.
    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
@@ -531,9 +531,8 @@ MultiDictionary(S : SetCategory) : Category == DictionaryOperations S with
 ++ be described by inclusion or inheritance.
 SetAggregate(S : SetCategory):
   Category == Join(SetCategory, Collection(S), PartialOrder) with
-   brace       : () -> %
-     ++ brace()$D (otherwise written {}$D)
-     ++ creates an empty set aggregate of type D.
+   brace : () -> %
+     ++ brace()$D creates an empty set aggregate of type D.
      ++ This form is considered obsolete. Use \spadfun{set} instead.
    brace       : List S -> %
      ++ brace([x, y, ..., z])
@@ -558,7 +557,7 @@ SetAggregate(S : SetCategory):
    difference  : (%, S) -> %
      ++ difference(u, x) returns the set aggregate u with element x removed.
      ++ If u does not contain x, a copy of u is returned.
-     ++ Note: \spad{difference(s, x) = difference(s, {x})}.
+     ++ Note: \spad{difference(s, x) = difference(s, set [x])}.
    symmetricDifference : (%, %) -> %
      ++ symmetricDifference(u, v) returns the set aggregate of elements x which
      ++ are members of set aggregate u or set aggregate v but not both.
@@ -568,8 +567,8 @@ SetAggregate(S : SetCategory):
    subset?     : (%, %) -> Boolean
      ++ subset?(u, v) tests if u is a subset of v.
      ++ Note: equivalent to
-     ++ \spad{reduce(and, {member?(x, v) for x in u}, true, false)}.
-   union       : (%, %) -> %
+     ++ \spad{reduce(and, [member?(x, v) for x in members(u)], true, false)}.
+   union : (%, %) -> %
      ++ union(u, v) returns the set aggregate of elements which are members
      ++ of either set aggregate u or v.
    union       : (%, S) -> %
@@ -1290,7 +1289,7 @@ DoublyLinkedAggregate(S : Type) : Category == RecursiveAggregate S with
 ++ Keywords:
 ++ References:
 ++ Description:
-++ A unary-recursive aggregate is a one where nodes may have either
+++ A unary-recursive aggregate is an aggregate where nodes may have either
 ++ 0 or 1 children.
 ++ This aggregate models, though not precisely, a linked
 ++ list possibly with a single cycle.
