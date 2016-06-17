@@ -114,7 +114,7 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
     rows(A : M, lst : LI) : M ==
         nc := ncols(A)
         nc = 0 => qnew(#lst, nc)$M
-        ls := expand((1..nc)@SI)
+        ls := expand((minc A .. maxc A)@SI)
         subMatrix(A, lst, ls)
 
 
@@ -129,7 +129,7 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
     columns(A:M, lst : LI) : M ==
         nr := nrows(A)
         nr = 0 => qnew(nr, #lst)$M
-        ls := expand((1..nr)@SI)
+        ls := expand((minr A .. maxr A)@SI)
         subMatrix(A, ls, lst)
 
 
@@ -183,10 +183,12 @@ MatrixManipulation(R, Row, Col, M) : Exports == Implementation where
     subMatrix(A:M, lr:LI, lc:LI) : M ==
         n := #lr
         m := #lc
+        minR := minr A
+        minC := minc A
         res := qnew(n, m)$M
         for i in 1..n for ii in lr repeat
             for j in 1..m for jj in lc repeat
-                qsetelt!(res, i, j, qelt(A, ii, jj))
+                qsetelt!(res, minR-1+i, minC-1+j, qelt(A, ii, jj))
         res
 
 
