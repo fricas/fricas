@@ -36,9 +36,11 @@ Aggregate : Category == Type with
      ++ more?(u, n) tests if u has greater than n elements.
    size? : (%, NonNegativeInteger) -> Boolean
      ++ size?(u, n) tests if u has exactly n elements.
-   sample : constant -> %    ++ sample yields a value of type %
+   sample : constant -> %
+     ++ sample yields a value of type %
    if % has finiteAggregate then
-     "#": % -> NonNegativeInteger     ++ # u returns the number of items in u.
+     "#": % -> NonNegativeInteger
+       ++ # u returns the number of items in u.
  add
   eq?(a, b) == EQ(a, b)$Lisp
   sample() == empty()
@@ -46,7 +48,7 @@ Aggregate : Category == Type with
 
       import from Integer
 
-      empty? a   == #a = 0
+      empty? a == #a = 0
       less?(a, n) == #a < n
       more?(a, n) == #a > n
       size?(a, n) == #a = n
@@ -90,11 +92,11 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
      ++ map(f, u) returns a copy of u with each element x replaced by f(x).
      ++ For collections, \spad{map(f, u) = [f(x) for x in u]}.
    if % has shallowlyMutable then
-     map! : (S->S, %) -> %
+      map! : (S -> S, %) -> %
         ++ map!(f, u) destructively replaces each element x of u by \spad{f(x)}.
    if % has finiteAggregate then
       if S has BasicType then BasicType
-      any? : (S->Boolean, %) -> Boolean
+      any? : (S -> Boolean, %) -> Boolean
         ++ any?(p, u) tests if \spad{p(x)} is true for any element x of u.
         ++ Note: for collections,
         ++ \spad{any?(p, u) = reduce(or, map(p, u), false, true)}.
@@ -106,7 +108,7 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
         ++ \spad{every?(p, u) = reduce(and, map(p, u), true, false)}.
         ++ However, \spad{every?(p, u)} returns as soon as it finds an element
         ++ for which \spad{p} gives false.
-      count : (S->Boolean, %) -> NonNegativeInteger
+      count : (S -> Boolean, %) -> NonNegativeInteger
         ++ count(p, u) returns the number of elements x in u
         ++ such that \spad{p(x)} is true. For collections,
         ++ \spad{count(p, u) = reduce(+, [1 for x in u | p(x)], 0)}.
@@ -134,7 +136,7 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
 
        import from List(S)
 
-       #c                   == # parts c
+       #c == # parts c
        any?(f, c) ==
            for x in parts c | f x repeat return true
            false
@@ -142,10 +144,10 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
            for x in parts c | not f x repeat return false
            true
        count(f : S -> Boolean, c : %) == _+/[1 for x in parts c | f x]
-       members x            == parts x
+       members x == parts x
        if S has BasicType then
-           count(s : S, x : %) == count(y +-> s = y, x)
-           member?(e, c)   == any?(x +-> e = x, c)
+           count(e : S, c : %) == count(x +-> e = x, c)
+           member?(e, c) == any?(x +-> e = x, c)
            x = y ==
                not size?(x, #y) => false
                for a in parts x for b in parts y | a ~= b repeat return false
@@ -178,16 +180,16 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
      ++ \spad{construct(x, y, ..., z)} returns the collection of elements \spad{x, y, ..., z}
      ++ ordered as given. Equivalently written as \spad{[x, y, ..., z]$D}, where
      ++ D is the domain. D may be omitted for those of type List.
-   find : (S->Boolean, %) -> Union(S, "failed")
+   find : (S -> Boolean, %) -> Union(S, "failed")
      ++ find(p, u) returns the first x in u such that \spad{p(x)} is true, and
      ++ "failed" otherwise.
    if % has finiteAggregate then
-      reduce : ((S, S)->S, %) -> S
+      reduce : ((S, S) -> S, %) -> S
         ++ reduce(f, u) reduces the binary operation f across u. For example,
         ++ if u is \spad{[x, y, ..., z]} then \spad{reduce(f, u)} returns \spad{f(..f(f(x, y), ...), z)}.
         ++ Note: if u has one element x, \spad{reduce(f, u)} returns x.
         ++ Error: if u is empty.
-      reduce : ((S, S)->S, %, S) -> S
+      reduce : ((S, S) -> S, %, S) -> S
         ++ reduce(f, u, x) reduces the binary operation f across u, where x is
         ++ the identity operation of f.
         ++ Same as \spad{reduce(f, u)} if u has 2 or more elements.
@@ -195,16 +197,16 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
         ++ Returns x if u is empty.
         ++ For example, \spad{reduce(+, u, 0)} returns the
         ++ sum of the elements of u.
-      remove : (S->Boolean, %) -> %
+      remove : (S -> Boolean, %) -> %
         ++ remove(p, u) returns a copy of u removing all elements x such that
         ++ \spad{p(x)} is true.
         ++ Note: \spad{remove(p, u) == [x for x in u | not p(x)]}.
-      select : (S->Boolean, %) -> %
+      select : (S -> Boolean, %) -> %
         ++ select(p, u) returns a copy of u containing only those elements such
         ++ \spad{p(x)} is true.
         ++ Note: \spad{select(p, u) == [x for x in u | p(x)]}.
       if S has BasicType then
-        reduce : ((S, S)->S, %, S, S) -> S
+        reduce : ((S, S) -> S, %, S, S) -> S
           ++ reduce(f, u, x, z) reduces the binary operation f across u, stopping
           ++ when an "absorbing element" z is encountered.
           ++ As for \spad{reduce(f, u, x)}, x is the identity element of f.
@@ -223,16 +225,16 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
        import from List(S)
 
        find(f : S -> Boolean, c : %) == find(f, parts c)
-       reduce(f : (S, S)->S, x : %) == reduce(f, parts x)
-       reduce(f : (S, S)->S, x : %, s : S) == reduce(f, parts x, s)
-       remove(f : S->Boolean, x : %) ==
+       reduce(f : (S, S) -> S, x : %) == reduce(f, parts x)
+       reduce(f : (S, S) -> S, x : %, s : S) == reduce(f, parts x, s)
+       remove(f : S -> Boolean, x : %) ==
            construct remove(f, parts x)
-       select(f : S->Boolean, x : %) ==
+       select(f : S -> Boolean, x : %) ==
            construct select(f, parts x)
 
        if S has BasicType then
            remove(s : S, x : %) == remove(y +-> y = s, x)
-           reduce(f : (S, S)->S, x : %, s1 : S, s2 : S) ==
+           reduce(f : (S, S) -> S, x : %, s1 : S, s2 : S) ==
                reduce(f, parts x, s1, s2)
            removeDuplicates(x) == construct removeDuplicates parts x
 
@@ -260,8 +262,7 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
 ++ and where the order in which objects are inserted determines the order
 ++ of extraction.
 ++ Examples of bags are stacks, queues, and dequeues.
-BagAggregate(S : Type) : Category == Join(Collection S, _
-     shallowlyMutable) with
+BagAggregate(S : Type) : Category == Join(Collection S, shallowlyMutable) with
    extract! : % -> S
      ++ extract!(u) destructively removes a (random) item from bag u.
    insert! : (S, %) -> %
@@ -379,7 +380,7 @@ DequeueAggregate(S : Type):
 ++ Description:
 ++ A priority queue is a bag of items from an ordered set where the item
 ++ extracted is always the maximum element.
-PriorityQueueAggregate(S : OrderedSet) : Category == Join(BagAggregate S, _
+PriorityQueueAggregate(S : OrderedSet) : Category == Join(BagAggregate S,
      finiteAggregate) with
    max : % -> S
      ++ max(q) returns the maximum element of priority queue q.
@@ -423,10 +424,10 @@ DictionaryOperations(S : Type) : Category ==
        remove! : (S, %) -> %
          ++ remove!(x, d) destructively changes dictionary d by removing
          ++ all entries y such that \spad{y = x}.
-     remove! : (S->Boolean, %) -> %
+     remove! : (S -> Boolean, %) -> %
        ++ remove!(p, d) destructively changes dictionary d by removing
        ++ all entries x such that \spad{p(x)} is true.
-     select! : (S->Boolean, %) -> %
+     select! : (S -> Boolean, %) -> %
        ++ select!(p, d) destructively changes dictionary d by removing
        ++ all entries x such that \spad{p(x)} is not true.
  add
@@ -534,27 +535,27 @@ SetAggregate(S : SetCategory):
    brace : () -> %
      ++ brace()$D creates an empty set aggregate of type D.
      ++ This form is considered obsolete. Use \spadfun{set} instead.
-   brace       : List S -> %
+   brace : List S -> %
      ++ brace([x, y, ..., z])
      ++ creates a set aggregate containing items x, y, ..., z.
      ++ This form is considered obsolete. Use \spadfun{set} instead.
-   set         : () -> %
+   set : () -> %
      ++ set()$D creates an empty set aggregate of type D.
-   set         : List S -> %
+   set : List S -> %
      ++ set([x, y, ..., z]) creates a set aggregate containing items x, y, ..., z.
    intersect : (%, %) -> %
      ++ intersect(u, v) returns the set aggregate w consisting of
      ++ elements common to both set aggregates u and v.
      ++ Note: equivalent to the notation (not currently supported)
      ++ {x for x in u | member?(x, v)}.
-   difference  : (%, %) -> %
+   difference : (%, %) -> %
      ++ difference(u, v) returns the set aggregate w consisting of
      ++ elements in set aggregate u but not in set aggregate v.
      ++ If u and v have no elements in common, \spad{difference(u, v)}
      ++ returns a copy of u.
      ++ Note: equivalent to the notation (not currently supported)
      ++ \spad{{x for x in u | not member?(x, v)}}.
-   difference  : (%, S) -> %
+   difference : (%, S) -> %
      ++ difference(u, x) returns the set aggregate u with element x removed.
      ++ If u does not contain x, a copy of u is returned.
      ++ Note: \spad{difference(s, x) = difference(s, set [x])}.
@@ -564,21 +565,21 @@ SetAggregate(S : SetCategory):
      ++ If u and v have no elements in common, \spad{symmetricDifference(u, v)}
      ++ returns a copy of u.
      ++ Note: \spad{symmetricDifference(u, v) = union(difference(u, v), difference(v, u))}
-   subset?     : (%, %) -> Boolean
+   subset? : (%, %) -> Boolean
      ++ subset?(u, v) tests if u is a subset of v.
      ++ Note: equivalent to
      ++ \spad{reduce(and, [member?(x, v) for x in members(u)], true, false)}.
    union : (%, %) -> %
      ++ union(u, v) returns the set aggregate of elements which are members
      ++ of either set aggregate u or v.
-   union       : (%, S) -> %
+   union : (%, S) -> %
      ++ union(u, x) returns the set aggregate u with the element x added.
      ++ If u already contains x, \spad{union(u, x)} returns a copy of u.
-   union       : (S, %) -> %
+   union : (S, %) -> %
      ++ union(x, u) returns the set aggregate u with the element x added.
      ++ If u already contains x, \spad{union(x, u)} returns a copy of u.
  add
-  symmetricDifference(x, y)    == union(difference(x, y), difference(y, x))
+  symmetricDifference(x, y) == union(difference(x, y), difference(y, x))
   union(s : %, x : S) == union(s, set([x]))
   union(x : S, s : %) == union(s, set([x]))
   difference(s : %, x : S) == difference(s, set([x]))
@@ -1233,6 +1234,7 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    eqMember?(y, l) ==
        for x in l repeat eq?(x, y) => return true
        false
+
    if % has shallowlyMutable then
        setelt!(x, "left", b)  == setleft!(x, b)
        setelt!(x, "right", b) == setright!(x, b)
@@ -1818,7 +1820,7 @@ LinearAggregate(S : Type) : Category ==
 ++ References:
 ++ Description:
 ++ A finite linear aggregate is a linear aggregate of finite length.
-FiniteLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
+FiniteLinearAggregate(S : Type) : Category == Join(LinearAggregate S,
      finiteAggregate)
 
 )abbrev category A1AGG OneDimensionalArrayAggregate
@@ -1850,7 +1852,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
 
     import from Integer
 
-    parts x         == [qelt(x, i) for i in minIndex x .. maxIndex x]
+    parts x == [qelt(x, i) for i in minIndex x .. maxIndex x]
     sort!(f, a) == quickSort(f, a)$FiniteLinearAggregateSort(S, %)
 
     any?(f, a) ==
@@ -1873,7 +1875,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
             f qelt(a, i) => return qelt(a, i)
         "failed"
 
-    count(f : S->Boolean, a : %) ==
+    count(f : S -> Boolean, a : %) ==
         n : NonNegativeInteger := 0
         for i in minIndex a .. maxIndex a repeat
             if f(qelt(a, i)) then n := n+1
@@ -1987,7 +1989,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
 
     copyInto!(y, x, s) ==
         s < minIndex y or s + #x > maxIndex y + 1 =>
-                                              error "index out of range"
+            error "index out of range"
         for i in minIndex x .. maxIndex x for j in s.. repeat
             qsetelt!(y, j, qelt(x, i))
         y
@@ -2122,19 +2124,19 @@ ExtensibleLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
    if S has OrderedSet then merge! : (%, %) -> %
        ++ merge!(u, v) destructively merges u and v in ascending order.
  add
-   delete(x : %, i : Integer)          == delete!(copy x, i)
-   delete(x : %, i : UniversalSegment(Integer))        == delete!(copy x, i)
-   remove(f : S -> Boolean, x : %)   == remove!(f, copy x)
-   insert(s : S, x : %, i : Integer)   == insert!(s, copy x, i)
-   insert(w : %, x : %, i : Integer)   == insert!(copy w, copy x, i)
-   select(f, x)            == select!(f, copy x)
-   concat(x : %, y : %)        == concat!(copy x, y)
-   concat(x : %, y : S)        == concat!(copy x, new(1, y))
-   concat!(x : %, y : S)      == concat!(x, new(1, y))
+   delete(x : %, i : Integer) == delete!(copy x, i)
+   delete(x : %, i : UniversalSegment(Integer)) == delete!(copy x, i)
+   remove(f : S -> Boolean, x : %) == remove!(f, copy x)
+   insert(s : S, x : %, i : Integer) == insert!(s, copy x, i)
+   insert(w : %, x : %, i : Integer) == insert!(copy w, copy x, i)
+   select(f, x) == select!(f, copy x)
+   concat(x : %, y : %) == concat!(copy x, y)
+   concat(x : %, y : S) == concat!(copy x, new(1, y))
+   concat!(x : %, y : S) == concat!(x, new(1, y))
    if S has SetCategory then
-       remove(s : S, x : %)        == remove!(s, copy x)
+       remove(s : S, x : %) == remove!(s, copy x)
        remove!(s : S, x : %)  == remove!(y +-> y = s, x)
-       removeDuplicates(x : %)   == removeDuplicates!(copy x)
+       removeDuplicates(x : %) == removeDuplicates!(copy x)
 
    if S has OrderedSet then
        merge!(x, y) == merge!(_<$S, x, y)
@@ -2162,13 +2164,13 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
 
    mergeSort : ((S, S) -> Boolean, %, Integer) -> %
 
-   sort!(f, l)       == mergeSort(f, l, #l)
-   list x                  == concat(x, empty())
-   reduce(f, x)            ==
+   sort!(f, l) == mergeSort(f, l, #l)
+   list x == concat(x, empty())
+   reduce(f, x) ==
        empty? x =>
            error "reducing over an empty list needs the 3 argument form"
        reduce(f, rest x, first x)
-   merge(f, p, q)          == merge!(f, copy p, copy q)
+   merge(f, p, q) == merge!(f, copy p, copy q)
 
    select!(f, x) ==
        while not empty? x and not f first x repeat x := rest x
@@ -2401,20 +2403,20 @@ AssociationListAggregate(Key : SetCategory, Entry : Type) : Category ==
 ++ A string aggregate is a category for strings, that is,
 ++ one dimensional arrays of characters.
 StringAggregate : Category == OneDimensionalArrayAggregate Character with
-    lowerCase       : % -> %
+    lowerCase : % -> %
       ++ lowerCase(s) returns the string with all characters in lower case.
     lowerCase! : % -> %
       ++ lowerCase!(s) destructively replaces the alphabetic characters
       ++ in s by lower case.
-    upperCase       : % -> %
+    upperCase : % -> %
       ++ upperCase(s) returns the string with all characters in upper case.
     upperCase! : % -> %
       ++ upperCase!(s) destructively replaces the alphabetic characters
       ++ in s by upper case characters.
-    prefix?         : (%, %) -> Boolean
+    prefix? : (%, %) -> Boolean
       ++ prefix?(s, t) tests if the string s is the initial substring of t.
       ++ Note: \spad{prefix?(s, t) == reduce(and, [s.i = t.i for i in 0..maxIndex s])}.
-    suffix?         : (%, %) -> Boolean
+    suffix? : (%, %) -> Boolean
       ++ suffix?(s, t) tests if the string s is the final substring of t.
       ++ Note: \spad{suffix?(s, t) == reduce(and, [s.i = t.(n - m + i) for i in 0..maxIndex s])}
       ++ where m and n denote the maxIndex of s and t respectively.
@@ -2426,15 +2428,15 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
       ++ match?(s, t, c) tests if s matches t except perhaps for
       ++ multiple and consecutive occurrences of character c.
       ++ Typically c is the blank character.
-    replace         : (%, UniversalSegment(Integer), %) -> %
+    replace : (%, UniversalSegment(Integer), %) -> %
       ++ replace(s, i..j, t) replaces the substring \spad{s(i..j)} of s by string t.
-    position        : (%, %, Integer) -> Integer
+    position : (%, %, Integer) -> Integer
       ++ position(s, t, i) returns the position j of the substring s in string t,
       ++ where \spad{j >= i} is required.
-    position        : (CharacterClass, %, Integer) -> Integer
+    position : (CharacterClass, %, Integer) -> Integer
       ++ position(cc, t, i) returns the position \spad{j >= i} in t of
       ++ the first character belonging to cc.
-    coerce          : Character -> %
+    coerce : Character -> %
       ++ coerce(c) returns c as a string s with the character c.
 
     split : (%, Character) -> List %
@@ -2471,11 +2473,11 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
    trim(s : %, c :  Character)      == leftTrim(rightTrim(s, c),  c)
    trim(s : %, cc : CharacterClass) == leftTrim(rightTrim(s, cc), cc)
 
-   lowerCase s           == lowerCase! copy s
-   upperCase s           == upperCase! copy s
-   prefix?(s, t)         == substring?(s, t, minIndex t)
+   lowerCase s == lowerCase! copy s
+   upperCase s == upperCase! copy s
+   prefix?(s, t) == substring?(s, t, minIndex t)
    coerce(c : Character) : % == new(1, c)
-   elt(s : %, t : %) : %      == concat(s, t)$%
+   elt(s : %, t : %) : % == concat(s, t)$%
 
 )abbrev category BTAGG BitAggregate
 ++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks

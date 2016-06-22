@@ -2,7 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; MODULE      : fricas-input.scm
-;; DESCRIPTION : Fricas input converters
+;; DESCRIPTION : FriCAS input converters
 ;; COPYRIGHT   : (C) 1999, 2012  Joris van der Hoeven and Andrey Grozin
 ;;
 ;; This software falls under the GNU general public license version 3 or later.

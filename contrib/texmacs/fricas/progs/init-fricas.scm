@@ -15,8 +15,8 @@
 (plugin-configure fricas
   (:require (url-exists-in-path? "fricas"))
   (:launch "fricas -texmacs")
-  (:session "Fricas")
-  (:scripts "Fricas"))
+  (:session "FriCAS")
+  (:scripts "FriCAS"))
 
 (when (supports-fricas?)
   (import-from (fricas-kbd))
