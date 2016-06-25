@@ -130,6 +130,12 @@ Tree(S : SetCategory) : T==C where
       u := [parts c for c in children t]
       u = empty() => [value t]
       cons(value t,"append"/u)
+    hashUpdate!(s : HashState, t : %) : HashState ==
+      t case empty => s
+      s := hashUpdate!(s, value t)
+      for subt in children t repeat
+          s := hashUpdate!(s, subt)
+      s
 
     ---Functions that guard against cycles: =, #, copy-------------
 
@@ -335,6 +341,9 @@ BinaryTreeCategory(S : SetCategory) : Category ==
      copy t ==
        empty? t => empty()
        node(copy left t, value t, copy right t)
+     map(f ,t) ==
+       empty? t => empty()
+       node(map(f, left t), f value t, map(f, right t))
      map!(f, t) ==
          empty? t => t
          t.value := f(t.value)
@@ -349,6 +358,21 @@ BinaryTreeCategory(S : SetCategory) : Category ==
          k = cycleTreeMax and cyclic? t => error "cyclic binary tree"
          k := treeCount(left t, k)
          treeCount(right t, k)
+     distance1(t1 : %, t2 : %) : Integer ==
+       t1 = t2 => 0
+       empty? t2 => -1
+       u := [n for t in children t2 | (n := distance1(t1, t)) >= 0]
+       #u > 0 => 1 + "min"/u
+       -1
+     distance(t1, t2) ==
+       n := distance1(t1, t2)
+       n >= 0 => n
+       distance1(t2, t1)
+     hashUpdate!(s : HashState, t : %) : HashState ==
+       empty? t => s
+       s := hashUpdate!(s, value t)
+       s := hashUpdate!(s, left t)
+       hashUpdate!(s, right t)
 
 )abbrev domain BTREE BinaryTree
 ++ Description: \spadtype{BinaryTree(S)} is the domain of all
