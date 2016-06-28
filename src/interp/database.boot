@@ -484,7 +484,7 @@ getOplistWithUniqueSignatures(op,pairlis,signatureAlist) ==
   alist:= nil
   for [sig,:[slotNumber,pred,kind]] in signatureAlist | kind ~= 'Subsumed repeat
     alist:= insertAlist(SUBLIS(pairlis,[op,sig]),
-                SUBLIS(pairlis,[pred,[kind,nil,slotNumber]]),
+                [pred,[kind,nil,slotNumber]],
                 alist)
   alist
 
