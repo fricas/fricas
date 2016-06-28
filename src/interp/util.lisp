@@ -116,6 +116,7 @@ at load time.
         |getParentsFor|       ;old compiler
         |folks|               ;for astran
         |extendLocalLibdb|    ;)lib needs this
+        |evalDomainOpPred|    ;)show
         |oSearch|
         |aokSearch|
         |kSearch|

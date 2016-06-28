@@ -2254,10 +2254,6 @@ reportOpsFromUnitDirectly unitForm ==
   for [opt] in $options repeat
     opt := selectOptionLC(opt,$showOptions,'optionError)
     opt = 'operations =>
-      $commentedOps: local := 0
-      --new form is (<op> <signature> <slotNumber> <condition> <kind>)
-      centerAndHighlight('"Operations",$LINELENGTH,specialChar 'hbar)
-      sayBrightly '""
       if isRecordOrUnion
         then
           constructorFunction:= GETL(top,"makeFunctionList") or
@@ -2268,7 +2264,21 @@ reportOpsFromUnitDirectly unitForm ==
             [a,b,c] in funlist]
         else
           sigList:= REMDUP MSORT getOplistForConstructorForm unitForm
-      say2PerLine [formatOperation(x,unit) for x in sigList]
+
+      $predicateList: local := GETDATABASE(top, 'PREDICATES)
+      -- x.1 is the type predicate of operation x
+      sigList := [x for x in sigList | evalDomainOpPred(unit, x.1)]
+      -- first(first(x)) is the name of operation x
+      numOfNames := # REMDUP [first(first(x)) for x in sigList]
+      sayBrightly ['" ", numOfNames, '" Names for ", #sigList,
+                   '" Operations in this Domain."]
+
+      $commentedOps: local := 0
+      --new form is (<op> <signature> <slotNumber> <condition> <kind>)
+      centerAndHighlight('"Operations", $LINELENGTH, specialChar 'hbar)
+      sayBrightly '""
+      say2PerLine [formatOperation(x, unit) for x in sigList]
+
       if $commentedOps ~= 0 then
         sayBrightly
           ['"Functions that are not yet implemented are preceded by",
