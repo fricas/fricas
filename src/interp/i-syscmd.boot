@@ -1042,11 +1042,11 @@ helpSpad2Cmd args ==
 
   sayBrightly "Available help topics for system commands are:"
   sayBrightly ""
-  sayBrightly " boot    cd    clear    close    compile    display"
-  sayBrightly " edit    fin    frame    help    history    library"
-  sayBrightly " lisp    load    ltrace    pquit    quit    read"
-  sayBrightly " set    show    spool    synonym    system    trace"
-  sayBrightly " undo    what"
+  sayBrightly " boot   cd     clear    close     compile   display"
+  sayBrightly " edit   fin    frame    help      history   library"
+  sayBrightly " lisp   load   ltrace   pquit     quit      read"
+  sayBrightly " set    show   spool    synonym   system    trace"
+  sayBrightly " undo   what"
   sayBrightly ""
   sayBrightly "Issue _")help help_" for more information about the help command."
 
