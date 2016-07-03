@@ -267,7 +267,7 @@ gloss.ht: gloss.text ${GLOSSARY_SCRIPTS}
 	( echo ')boot browserAutoloadOnceTrigger()'; \
 	  echo ')boot oldCompilerAutoloadOnceTrigger()'; \
 	  echo ')boot buildGloss()') \
-	| ${INTERPSYS}
+	| FRICAS_INITFILE='' ${INTERPSYS}
 
 $(HD_CHAPTERS_HT_FILES): ug%.ht: ${htexsrcdir}/ug%.htex tmp/ug%.menu
 #	${HTEX2HT} SRC MENUDIR
@@ -322,14 +322,15 @@ ${UG_EXTRA_INPUT_FILES}: %: ${inputsrcdir}/%
 
 ${HD_NPHT_FILES}: %.pht: %.ht ${UG_EXTRA_INPUT_FILES} ${SMAN} $(fricas_target_bindir)/hypertex$(EXEEXT) stamp-ht-db
 	echo $<
-	unset DAASE; HTPATH=. ${SMAN} -noihere -paste $<
+	unset DAASE; HTPATH=. FRICAS_INITFILE='' ${SMAN} -noihere -paste $<
 
 ${HD_GPHT_FILES}: %.pht: %.ht ${UG_EXTRA_INPUT_FILES} ${SMAN} $(fricas_target_bindir)/hypertex$(EXEEXT) stamp-ht-db
 	echo $<
-	unset DAASE; HTPATH=.; export HTPATH; ${XVFB} ${SMAN} -noihere -paste $<
+	unset DAASE; HTPATH=.; export HTPATH; ${XVFB} FRICAS_INITFILE='' ${SMAN} -noihere -paste $<
 
 mobius.VIEW: ${inputsrcdir}/mobius.input
-	(unset DAASE; AXIOM=${AXIOM}; export AXIOM; ${XVFB} ${AXIOM}/bin/fricas -noht -noclef -eval ')read $<')
+	(unset DAASE; AXIOM=${AXIOM}; export AXIOM; ${XVFB} FRICAS_INITFILE='' \
+	    ${AXIOM}/bin/fricas -noht -noclef -eval ')read $<')
 
 # This target will only be taken if
 # MAYBE_VIEWPORTS=viewports

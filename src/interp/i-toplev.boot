@@ -105,13 +105,17 @@ interpsys_restart() ==
 
 readSpadProfileIfThere() ==
   -- reads SPADPROF INPUT if it exists
-  file := ['_.fricas, 'input]
-  make_input_filename(file) =>
-    $edit_file := file
-    read_or_compile(true, false)
-  file := ['_.axiom,'input]
-  make_input_filename(file) =>
-    $edit_file := file
+  file := getEnv('"FRICAS_INITFILE")
+  file = '"" => nil
+  efile :=
+    make_input_filename(file) => file
+    file := ['_.fricas, 'input]
+    make_input_filename(file) => file
+    file := ['_.axiom, 'input]
+    make_input_filename(file) => file
+    NIL
+  efile =>
+    $edit_file := efile
     read_or_compile(true, false)
   NIL
 
