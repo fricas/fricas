@@ -1086,7 +1086,7 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
      ++ nodes of tree \spad{t} in left-to-right order.
    distance : (%, %) -> Integer
      ++ distance(u, v) returns the path length (an integer) from node u to v.
-   if S has SetCategory then
+   if S has BasicType then
       child? : (%, %) -> Boolean
         ++ child?(u, v) tests if node u is a child of node v.
       node? : (%, %) -> Boolean
@@ -1176,39 +1176,6 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
        empty? right x => [left x]
        [left x, right x]
 
-   if % has SetAggregate(S) and S has SetCategory then
-
-       node?(u, v) ==
-           empty? v => false
-           u = v => true
-           for y in children v repeat node?(u, y) => return true
-           false
-
-       x = y ==
-           empty?(x) => empty?(y)
-           empty?(y) => false
-           value x = value y and left x = left y and right x = right y
-
-       if % has finiteAggregate then
-           member?(x, u) ==
-               empty? u => false
-               x = value u => true
-               member?(x, left u) or member?(x, right u)
-
-   if S has SetCategory then
-       coerce(t : %) : OutputForm ==
-           empty? t =>  "[]"::OutputForm
-           v := value(t):: OutputForm
-           empty? left t =>
-               empty? right t => v
-               r := coerce(right t)@OutputForm
-               bracket ["."::OutputForm, v, r]
-           l := coerce(left t)@OutputForm
-           r :=
-               empty? right t => "."::OutputForm
-               coerce(right t)@OutputForm
-           bracket [l, v, r]
-
    if % has finiteAggregate then
        aggCount : (%, NonNegativeInteger) -> NonNegativeInteger
        #x == aggCount(x, 0)
@@ -1218,6 +1185,37 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
            k = cycleMax and cyclic? x => error "cyclic tree"
            for y in children x repeat k := aggCount(y, k)
            k
+
+       if S has BasicType then
+           node?(u, v) ==
+               empty? v => false
+               u = v => true
+               node?(u, left v) or node?(u, right v) => return true
+               false
+
+           x = y ==
+               empty?(x) => empty?(y)
+               empty?(y) => false
+               value x = value y and left x = left y and right x = right y
+
+           member?(x, u) ==
+               empty? u => false
+               x = value u => true
+               member?(x, left u) or member?(x, right u)
+
+       if S has CoercibleTo OutputForm then
+           coerce(t : %) : OutputForm ==
+               empty? t =>  "[]"::OutputForm
+               v := value(t):: OutputForm
+               empty? left t =>
+                   empty? right t => v
+                   r := coerce(right t)@OutputForm
+                   bracket ["."::OutputForm, v, r]
+               l := coerce(left t)@OutputForm
+               r :=
+                   empty? right t => "."::OutputForm
+                   coerce(right t)@OutputForm
+               bracket [l, v, r]
 
    isCycle? :  (%, List %) -> Boolean
    eqMember? : (%, List %) -> Boolean
