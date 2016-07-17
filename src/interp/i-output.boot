@@ -1849,11 +1849,9 @@ appmat(u, x, y, d) ==
    subl := rest CADR w
    superl := rest CADR rest w
    repeat
-      null rows => return(matrixBorder(x + WIDTH u - 2,
-                                       y - q,
-                                       y + p,
-                                       d,
-                                       'right))
+      null rows =>
+          wu := MAX(0, WIDTH u - 2)
+          return(matrixBorder(x + wu, y - q, y + p, d, 'right))
       xc := x
       yc := yc - 1 - first superl
       w := wl
@@ -1899,6 +1897,7 @@ matLSum(x) ==
   CONS(sumoverlist x + LENGTH x, x)
 
 matLSum2(x) ==
+  null x => [2]
   CONS(sumoverlist x + 2*(LENGTH x), x)
 
 matWList(x, y) ==
