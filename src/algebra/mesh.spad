@@ -45,18 +45,6 @@ MeshCreationRoutinesForThreeDimensions() : Exports == Implementation where
     import from SPACE3
     --import from TUBE()
 
-    -- local functions
-    numberCheck(nums : Point SF) : Void ==
-      -- this function checks to see that the small floats are
-      -- actually just that - rather than complex numbers or
-      -- whatever (the whatever includes nothing presently
-      -- since NaN, Not a Number, is not necessarily supported
-      -- by common lisp). note that this function is dependent
-      -- upon the fact that Common Lisp supports complex numbers.
-      for i in minIndex(nums)..maxIndex(nums) repeat
-        COMPLEXP(nums.(i::PositiveInteger))$Lisp =>
-          error "An unexpected complex number was encountered in the calculations."
-
     makePt : (SF, SF, SF, SF) -> POINT
     makePt(x, y, z, c) == point(l : List SF := [x, y, z, c])
     ptFunc(f, g, h, c) ==
@@ -84,7 +72,6 @@ MeshCreationRoutinesForThreeDimensions() : Exports == Implementation where
           if zero? iu then someU := lo uSeg
           -- hack: get last number in segment within segment
           pt := ptFun(someU, someV)
-          numberCheck pt
           lp := concat(pt, lp)
           someU := someU + ustep
         llp := concat(lp, llp)
