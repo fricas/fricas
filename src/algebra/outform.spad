@@ -437,9 +437,7 @@ OutputForm() : SetCategory with
         --   bug in product, paren blankSeparate []
         --   uniformize integrals, products, etc as plexes.
 
-        cons ==> CONS$Lisp
-        car  ==> CAR$Lisp
-        cdr  ==> CDR$Lisp
+        cons_form(x : %, l : List(%)) : % == cons(x, l)$List(%) pretend %
 
         Rep := SExpression
 
@@ -493,20 +491,23 @@ OutputForm() : SetCategory with
 
         matrix ll ==
             empty?(ll) => bracket([]$List(%))
-            lv : List % := [cons(eform 'ROW, l) for l in ll]
-            cons(eform 'MATRIX, cons(eform 'NIL, lv))
+            lv : List % := [cons_form(eform 'ROW, l) for l in ll]
+            cons_form(eform 'MATRIX, cons(eform 'NIL, lv))
 
-        pile l              == cons(eform 'SC, l)
-        commaSeparate l     == cons(eform 'AGGLST,  l)
-        semicolonSeparate l == cons(eform 'AGGSET,  l)
+        pile l              == cons_form(eform 'SC, l)
+        commaSeparate l     == cons_form(eform 'AGGLST,  l)
+        semicolonSeparate l == cons_form(eform 'AGGSET,  l)
         blankSeparate l     ==
            c := eform 'CONCATB
            l1 : List % := []
            for u in reverse l repeat
-               if EQCAR(u, c)$Lisp
-                  then l1 := [:cdr u, :l1]
-                  else l1 := cons(u, l1)
-           cons(c, l1)
+               uo := u pretend OutputForm
+               if has_op?(uo, 'CONCATB)$OutputFormTools then
+                   l2 := arguments(uo)$OutputFormTools pretend List(%)
+                   l1 := concat(l2, l1)
+               else
+                   l1 := cons(u, l1)
+           cons_form(c, l1)
 
         brace a        == convert [eform 'BRACE, a]
         brace l        == brace commaSeparate l
@@ -523,15 +524,15 @@ OutputForm() : SetCategory with
         scripts(a, l) ==
             null l => a
             null rest l => sub(a, first l)
-            cons(eform 'SUPERSUB, cons(a, l))
+            cons_form(eform 'SUPERSUB, cons(a, l))
         supersub(a, l) ==
             if odd?(#l) then l := append(l, [empty()])
-            cons(eform 'ALTSUPERSUB, cons(a, l))
+            cons_form(eform 'ALTSUPERSUB, cons(a, l))
 
         hconcat(a, b)  == convert [eform 'CONCAT, a, b]
-        hconcat l     == cons(eform 'CONCAT, l)
+        hconcat l     == cons_form(eform 'CONCAT, l)
         vconcat(a, b)  == convert [eform 'VCONCAT, a, b]
-        vconcat l     == cons(eform 'VCONCAT, l)
+        vconcat l     == cons_form(eform 'VCONCAT, l)
 
         a ~= b      == convert [eform '_~_=,    a, b]
         a < b       == convert [eform '_<,     a, b]
@@ -565,14 +566,14 @@ OutputForm() : SetCategory with
             if GET(e, QUOTE(INFIXOP$Lisp)$Lisp)$Lisp then true else false
 
         elt(a, l) ==
-            cons(a, l)
+            cons_form(a, l)
         prefix(a, l)   ==
-            not infix? a => cons(a, l)
+            not infix? a => cons_form(a, l)
             hconcat(a, paren commaSeparate l)
         infix(a, l) ==
             null l => empty()
             null rest l => first l
-            infix? a => cons(a, l)
+            infix? a => cons_form(a, l)
             hconcat [first l, a, infix(a, rest l)]
         infix(a, b, c)  ==
             infix? a => convert [a, b, c]
