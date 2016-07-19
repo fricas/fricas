@@ -305,9 +305,6 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
   T == Join(FiniteAbelianMonoidRing(R, E),
             VariablesCommuteWithCoefficients) with
     --assertions
-       if R has IntegralDomain and E has CancellationAbelianMonoid then
-            fmecg : (%, E, R, %) -> %
-            ++ fmecg(p1, e, r, p2) finds X : p1 - r * X^e * p2
        if R has canonicalUnitNormal then canonicalUnitNormal
           ++ canonicalUnitNormal guarantees that the function
           ++ unitCanonical returns the same representative for all
@@ -582,6 +579,21 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
             null p or p.first.c = 1 => p
             (u, cf, a) := unitNormal(p.first.c)
             cons([p.first.k, cf], (a * p.rest))
+       if R has Ring then
+         fmecg(p1 : %, e : E, r : R, p2 : %) : % ==       -- p1 - r * X^e * p2
+            rout : % := []
+            r := - r
+            for tm in p2 repeat
+               c2 := r * tm.c
+               c2 = 0 => "next term"
+               e2 := e + tm.k
+               while not null p1 and p1.first.k > e2 repeat
+                 (rout := cons(p1.first, rout); p1 := p1.rest)  --use PUSH and POP?
+               null p1 or p1.first.k < e2 => rout := cons([e2, c2], rout)
+               if (u := p1.first.c + c2) ~= 0 then
+                   rout := cons([e2, u], rout)
+               p1 := p1.rest
+            concat!(reverse! rout, p1)
        if R has IntegralDomain then
          associates?(p1, p2) ==
             null p1 => null p2
@@ -594,20 +606,6 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
                then return "failed" else [tm.k,a])
                   for tm in p] :: Union(%,"failed")
          if E has CancellationAbelianMonoid then
-           fmecg(p1 : %, e : E, r : R, p2 : %) : % ==       -- p1 - r * X^e * p2
-              rout : % := []
-              r := - r
-              for tm in p2 repeat
-                 e2 := e + tm.k
-                 c2 := r * tm.c
-                 c2 = 0 => "next term"
-                 while not null p1 and p1.first.k > e2 repeat
-                   (rout := cons(p1.first, rout); p1 := p1.rest)  --use PUSH and POP?
-                 null p1 or p1.first.k < e2 => rout := cons([e2, c2], rout)
-                 if (u := p1.first.c + c2) ~= 0 then
-                     rout := cons([e2, u], rout)
-                 p1 := p1.rest
-              NRECONC(rout, p1)$Lisp
            if R has Approximate then
              p1 exquo p2  ==
                null p2 => error "Division by 0"
@@ -666,9 +664,6 @@ SparseUnivariatePolynomial(R : Join(SemiRng, AbelianMonoid)
         ++ outputForm(p, var) converts the SparseUnivariatePolynomial p to
         ++ an output form (see \spadtype{OutputForm}) printed as a polynomial in the
         ++ output form variable.
-     if R has Ring then
-       fmecg : (%, NonNegativeInteger, R, %) -> %
-         ++ fmecg(p1, e, r, p2) finds X : p1 - r * X^e * p2
     == PolynomialRing(R, NonNegativeInteger)
   add
    --representations
@@ -755,18 +750,6 @@ SparseUnivariatePolynomial(R : Join(SemiRng, AbelianMonoid)
       [[subtractIfCan(t.k, n)::NonNegativeInteger, t.c]$Term for t in p]
    shiftLeft(p, n)  ==
       [[t.k + n, t.c]$Term for t in p]
-   pomopo!(p1, r, e, p2) ==
-          rout : % := []
-          for tm in p2 repeat
-             e2 := e + tm.k
-             c2 := r * tm.c
-             c2 = 0 => "next term"
-             while not null p1 and p1.first.k > e2 repeat
-                 (rout := cons(p1.first, rout); p1 := p1.rest)
-             null p1 or p1.first.k < e2 => rout := cons([e2, c2], rout)
-             if (u := p1.first.c + c2) ~= 0 then rout := cons([e2, u], rout)
-             p1 := p1.rest
-          NRECONC(rout, p1)$Lisp
 
 -- implementation using karatsuba algorithm conditionally
 --
@@ -845,19 +828,6 @@ SparseUnivariatePolynomial(R : Join(SemiRng, AbelianMonoid)
         null p1 => reverse(rout)::%    -- nreverse?
         "failed"
    if R has Ring then
-       fmecg(p1, e, r, p2) ==       -- p1 - r * X^e * p2
-          rout : % := []
-          r := - r
-          for tm in p2 repeat
-             e2 := e + tm.k
-             c2 := r * tm.c
-             c2 = 0 => "next term"
-             while not null p1 and p1.first.k > e2 repeat
-               (rout := cons(p1.first, rout); p1 := p1.rest)
-             null p1 or p1.first.k < e2 => rout := cons([e2, c2], rout)
-             if (u := p1.first.c + c2) ~= 0 then rout := cons([e2, u], rout)
-             p1 := p1.rest
-          NRECONC(rout, p1)$Lisp
        pseudoRemainder(p1, p2) ==
            null p2 => error "PseudoDivision by Zero"
            null p1 => 0
@@ -1020,8 +990,6 @@ UnivariatePolynomial(x : Symbol, R : Ring):
   UnivariatePolynomialCategory(R) with
     coerce : Variable(x) -> %
       ++ coerce(x) converts the variable x to a univariate polynomial.
-    fmecg : (%, NonNegativeInteger, R, %) -> %
-        ++ fmecg(p1, e, r, p2) finds X : p1 - r * X^e * p2
    == SparseUnivariatePolynomial(R)   add
     Rep := SparseUnivariatePolynomial(R)
     coerce(p : %) : OutputForm  == outputForm(p, outputForm x)
