@@ -1992,10 +1992,11 @@ sumWidth u ==
   WIDTH u.1 + sumWidthA CDDR u
 
 sumWidthA u ==
-  not u => 0
-  ( member(keyp absym first u,'(_+ _-)) => 5; true => 3) +
-    WIDTH absym first u +
-      sumWidthA rest u
+  sum := 0
+  for item in u repeat
+    sum := sum + (if member(keyp absym item, '(_+ _-)) then 5 else 3)
+    sum := sum + WIDTH absym item
+  sum
 
 superSubApp(u, x, y, di) ==
   a := first (u := rest u)
