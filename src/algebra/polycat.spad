@@ -1023,6 +1023,20 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
                 x := reductum x
             d
         differentiate(x : %, v : SingletonAsOrderedSet) : % == differentiate x
+        pseudoRemainder(p, q) ==
+           zero? q => error "PseudoDivision by Zero"
+           zero? p => 0
+           c2 := leadingCoefficient q
+           e2 := degree q
+           q := reductum q
+           n := max((degree p)-e2+1, 0)::NonNegativeInteger
+           while not zero? p repeat
+               if (u := subtractIfCan(degree p, e2)) case "failed" then break
+               p := fmecg(c2 * reductum p, u, leadingCoefficient p, q)
+               n := (n - 1)::NonNegativeInteger
+           n = 0 => p
+           c2 ^ n * p
+
     if R has IntegralDomain then
       elt(g : Fraction %, f : Fraction %) == ((numer g) f) / ((denom g) f)
 
@@ -1032,10 +1046,22 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
           - pseudoRemainder(p, q)) exquo q)::%
 
       pseudoDivide(p, q) ==
-        (n := degree(p)::Integer - degree q + 1) < 1 => [1, 0, p]
-        prem := pseudoRemainder(p, q)
-        lc   := leadingCoefficient(q)^(n::NonNegativeInteger)
-        [lc, ((lc*p - prem) exquo q)::%, prem]
+        zero? q => error "PseudoDivision by Zero"
+        zero? p => [1, 0, p]
+        (degP, degQ) := (degree p, degree q)
+        degP < degQ => [1, 0, p]
+        lcQ := leadingCoefficient q
+        q := reductum q
+        i := (degP - degQ + 1)::NonNegativeInteger
+        co := lcQ^i
+        quot := 0$%
+        while (delta : Integer := degree(p) - degQ) >= 0 repeat
+          i := (i - 1)::NonNegativeInteger
+          mon := monomial(leadingCoefficient p, delta::NonNegativeInteger)
+          quot := quot + lcQ^i * mon
+          p := lcQ * reductum(p) - mon * q
+        p := lcQ^i * p
+        [co, quot, p]
 
       composite(f : Fraction %, q : %) ==
         (n := composite(numer f, q)) case "failed" => "failed"
