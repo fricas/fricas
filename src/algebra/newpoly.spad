@@ -207,28 +207,6 @@ NewSparseUnivariatePolynomial(R) : Exports == Implementation where
           re : Record(coef2 : %, gcd : %) := semiSubResultantGcdEuclidean2(p1, p2)$pack
           [re.gcd, re.coef2]
 
-       pseudoDivide(x, y) ==
-                zero? y =>
-                   error "in pseudoDivide$NSUP: division by 0"
-                ground? y =>
-                   error "in pseudoDivide$NSUP: ground? #2"
-                yy := rep y; e := yy.first.k
-                xx : Rep := rep x; co := yy.first.c
-                (empty? xx) or (xx.first.k < e) => [co, 0, x]
-                pow : NNI := subtractIfCan(xx.first.k, e)::NNI + 1
-                qq : Rep := []; y := per(yy.rest)
-                repeat
-                  if (u := subtractIfCan(xx.first.k,e)) case "failed" then break
-                  qq := cons([u::NNI, xx.first.c]$Term, rep (co * per qq))
-                  xx := rep fmecg(co * per rest(xx), u, xx.first.c, y)
-                  pow := subtractIfCan(pow, 1)::NNI
-                  if empty? xx then break
-                zero? pow => [co, per reverse qq, per xx]
-                default : R := co ^ pow
-                q := default * (per reverse qq)
-                x := default * (per xx)
-                [co, q, x]
-
        pseudoQuotient(x, y) ==
                 zero? y =>
                    error "in pseudoDivide$NSUP: division by 0"

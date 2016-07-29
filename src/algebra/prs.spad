@@ -179,11 +179,6 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
          ++ \spad{v exquo r} computes
          ++ the exact quotient of \spad{v} by \spad{r}
 
-       pseudoDivide : (polR, polR) ->
-                                Record(coef : R, quotient : polR, remainder : polR)
-         ++ \spad{pseudoDivide(P, Q)} computes the pseudoDivide
-         ++ of \spad{P} by \spad{Q}.
-
        divide : (polR, polR) -> Record(quotient : polR, remainder : polR)
          ++ \spad{divide(F, G)} computes quotient and rest
          ++ of the exact euclidean division of \spad{F} by \spad{G}.
@@ -224,26 +219,6 @@ PseudoRemainderSequence(R, polR) : Specification == Implementation where
               -- the instruction  map(r * #1, v) is slower !?
 
     v : Vector(polR) exquo r : R == map((p1 : polR) : polR +-> (p1 exquo r)::polR, v)
-
-    pseudoDivide(P : polR, Q : polR) :
-                                 Record(coef : R, quotient : polR, remainder : polR) ==
-    -- computes the pseudoDivide of P by Q
-       zero?(Q) => error("PseudoDivide$PRS : division by 0")
-       zero?(P) => construct(1, 0, P)
-       lcQ : R := LC(Q)
-       (degP, degQ) := (degree(P), degree(Q))
-       degP < degQ => construct(1, 0, P)
-       Q := reductum(Q)
-       i : NNI := (degP - degQ + 1)::NNI
-       co : R := lcQ^i
-       quot : polR := 0$polR
-       while (delta : Integer := degree(P) - degQ) >= 0 repeat
-         i := (i - 1)::NNI
-         mon := monomial(LC(P), delta::NNI)$polR
-         quot := quot + lcQ^i * mon
-         P := lcQ * reductum(P) - mon * Q
-       P := lcQ^i * P
-       return construct(co, quot, P)
 
     divide(F : polR, G : polR) : Record(quotient : polR, remainder : polR)==
     -- computes quotient and rest of the exact euclidean division of F by G
