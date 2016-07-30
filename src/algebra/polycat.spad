@@ -1041,9 +1041,20 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
       elt(g : Fraction %, f : Fraction %) == ((numer g) f) / ((denom g) f)
 
       pseudoQuotient(p, q) ==
-        (n := degree(p)::Integer - degree q + 1) < 1 => 0
-        ((leadingCoefficient(q)^(n::NonNegativeInteger) * p
-          - pseudoRemainder(p, q)) exquo q)::%
+        zero? q => error "PseudoDivision by Zero"
+        zero? p => 0
+        (degP, degQ) := (degree p, degree q)
+        degP < degQ => 0
+        lcQ := leadingCoefficient q
+        q := reductum q
+        i := (degP - degQ + 1)::NonNegativeInteger
+        quot := 0$%
+        while (delta : Integer := degree(p) - degQ) >= 0 repeat
+          i := (i - 1)::NonNegativeInteger
+          mon := monomial(leadingCoefficient p, delta::NonNegativeInteger)
+          quot := quot + lcQ^i * mon
+          p := lcQ * reductum(p) - mon * q
+        quot
 
       pseudoDivide(p, q) ==
         zero? q => error "PseudoDivision by Zero"
