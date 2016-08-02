@@ -3,6 +3,13 @@
 
 testsuite "series"
 
+testcase "bernoulli numbers"
+
+s1 := series(n +-> bernoulli(n)/factorial(n), t=0)
+s2 := series(t/(exp(t) - 1), t=0)
+testEquals("entries(complete(first(terms(s1), 20)))",
+           "entries(complete(first(terms(s2), 20)))")
+
 testcase "formal derivatives"
 
 f := operator 'f
@@ -50,6 +57,32 @@ testcase "inverse"
 p:=(1/2+n)::UTS(FRAC INT, 'n, 0)
 testEquals("[coefficient((p^(-1))$UTS(FRAC INT, 'n, 0), i) for i in 0..5]",
            "[2, -4, 8, -16, 32, -64]")
+
+testcase "crashes coercing power series (#122, #136)"
+a := series(sin(x))
+-- testTrue("(a + 1.0; true)")
+-- testTrue("(1.0 + a; true)")
+testTrue("(a*1.0; true)")
+testTrue("(1.0*a; true)")
+
+b := 1.0::UnivariatePuiseuxSeries(Expression Float,x,0.0)
+testTrue("(b + 1.0; true)")
+testTrue("(1.0 + b; true)")
+testTrue("(a + b; true)")
+testTrue("(b + a; true)")
+testTrue("(a*b; true)")
+testTrue("(b*a; true)")
+
+b:= a::UnivariatePuiseuxSeries(Expression Float,x,0.0)
+testTrue("(a + b; true)")
+testTrue("(b + a; true)")
+testTrue("(a*b; true)")
+testTrue("(b*a; true)")
+
+testcase "crash in seriesSolve"
+f := operator f
+de := x^2*f(x)^3*D(f(x), x, 4) - 16*f(x)^2*D(f(x), x)^2
+testLibraryError("seriesSolve(de, f, x = 0, [1, 0, 0, 0])")
 
 testcase "odes"
 
