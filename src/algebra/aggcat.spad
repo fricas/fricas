@@ -1751,6 +1751,18 @@ LinearAggregate(S : Type) : Category ==
           ++ position(x, a, n) returns the index i of the first occurrence
           ++ of x in \spad{a} where \spad{i >= n}, and \spad{minIndex(a) - 1}
           ++ if no such x is found.
+         leftTrim : (%, S) -> %
+          ++ leftTrim(u, x) returns a copy of u with all leading x deleted.
+          ++ For example, \spad{leftTrim("  abc  ", char " ")} returns
+          ++ \spad{"abc  "}.
+         rightTrim : (%, S) -> %
+          ++ rightTrim(u, x) returns a copy of u with all trailing occurrences
+          ++ of x deleted.  For example, \spad{rightTrim("  abc  ", char " ")}
+          ++ returns \spad{"abc  "}.
+         trim : (%, S) -> %
+          ++ trim(u, x) returns a copy of u with all occurrences of x deleted
+          ++ from right and left ends.
+          ++ For example, \spad{trim(" abc ", char " ")} returns \spad{"abc"}.
       if S has Comparable then Comparable
       if S has OrderedSet then
          OrderedSet
@@ -1785,6 +1797,23 @@ LinearAggregate(S : Type) : Category ==
 
     if S has BasicType then
         position(x : S, t : %) == position(x, t, minIndex t)
+
+        leftTrim(u, x) ==
+            n := maxIndex u
+            for i in minIndex u .. n while u.i = x repeat 0
+            u(i..n)
+
+        rightTrim(u, x) ==
+            mn := minIndex u
+            for j in maxIndex u .. mn by -1 while u.j = x repeat 0
+            u(mn..j)
+
+        trim(u, x) ==
+            n := maxIndex u
+            mn := minIndex u
+            for i in mn .. n while u.i = x repeat 0
+            for j in n .. i by -1 while u.j = x repeat 0
+            u(i..j)
 
     if S has SetCategory then
         hashUpdate!(s : HashState, x : %) : HashState ==
@@ -2440,23 +2469,13 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
     split : (%, CharacterClass) -> List %
       ++ split(s, cc) returns a list of substrings delimited by characters in cc.
 
-    trim : (%, Character) -> %
-      ++ trim(s, c) returns s with all characters c deleted from right
-      ++ and left ends.
-      ++ For example, \spad{trim(" abc ", char " ")} returns \spad{"abc"}.
     trim : (%, CharacterClass) -> %
       ++ trim(s, cc) returns s with all characters in cc deleted from right
       ++ and left ends.
       ++ For example, \spad{trim("(abc)", charClass "()")} returns \spad{"abc"}.
-    leftTrim : (%, Character) -> %
-      ++ leftTrim(s, c) returns s with all leading characters c deleted.
-      ++ For example, \spad{leftTrim("  abc  ", char " ")} returns \spad{"abc  "}.
     leftTrim : (%, CharacterClass) -> %
       ++ leftTrim(s, cc) returns s with all leading characters in cc deleted.
       ++ For example, \spad{leftTrim("(abc)", charClass "()")} returns \spad{"abc)"}.
-    rightTrim : (%, Character) -> %
-      ++ rightTrim(s, c) returns s with all trailing occurrences of c deleted.
-      ++ For example, \spad{rightTrim("  abc  ", char " ")} returns \spad{"  abc"}.
     rightTrim : (%, CharacterClass) -> %
       ++ rightTrim(s, cc) returns s with all trailing occurrences of
       ++ characters in cc deleted.
@@ -2466,7 +2485,6 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
       ++ allow juxtaposition of strings to work as concatenation.
       ++ For example, \spad{"smoo" "shed"} returns \spad{"smooshed"}.
  add
-   trim(s : %, c :  Character)      == leftTrim(rightTrim(s, c),  c)
    trim(s : %, cc : CharacterClass) == leftTrim(rightTrim(s, cc), cc)
 
    lowerCase s == lowerCase! copy s
