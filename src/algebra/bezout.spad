@@ -9,9 +9,12 @@
 ++ Examples:
 ++ Reference: Knuth, The Art of Computer Programming, 2nd edition,
 ++            Vol. 2, p. 619, problem 12.
+++            Manuel Bronstein, Symbolic Integration 1: Transcendental Functions,
+++            2nd edition, p. 18, section 1.4
 ++ Description:
 ++   \spadtype{BezoutMatrix} contains functions for computing resultants and
-++   discriminants using Bezout matrices.
+++   discriminants using Bezout matrices, and functions related with
+++   Sylvester matrix and subresultant.
 -- Currently unused.
 
 BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
@@ -21,17 +24,37 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
   Col  : FiniteLinearAggregate R
   M    : MatrixCategory(R, Row, Col)
   I  ==> Integer
+  NNI ==> NonNegativeInteger
+  LI ==> List Integer
+  SI ==> Segment Integer
   lc ==> leadingCoefficient
 
   Exports ==> with
     sylvesterMatrix : (UP, UP) -> M
       ++ sylvesterMatrix(p, q) returns the Sylvester matrix for the two
       ++ polynomials p and q.
+
+    subSylvesterMatrix : (M, NNI) -> M
+        ++ subSylvesterMatrix(S, j) returns the jth sub-Sylvester matrix
+        ++ jS.
+
+    subSylvesterMatrix : (M, NNI, NNI) -> M
+        ++ subSylvesterMatrix(S, j, i) returns sub-Sylvester matrix jSi.
+
     bezoutMatrix : (UP, UP) -> M
       ++ bezoutMatrix(p, q) returns the Bezout matrix for the two
       ++ polynomials p and q.
 
     if R has CommutativeRing then
+      subResultant : (UP, UP, NNI) -> UP
+          ++ subResultant(p, q, j) returns the jth subresultant Sj, computed
+          ++ by its definition method (using determinant of subSylvesterMatrix).
+          ++ subResultant(p, q, 0) = resultant(p, q).
+
+      subResultantList : (UP, UP) -> List UP
+          ++ subResultantList(p, q) returns the subresultants of p and q,
+          ++ in descending order, the last element is resultant(p, q).
+
       bezoutResultant : (UP, UP) -> R
        ++ bezoutResultant(p, q) computes the resultant of the two
        ++ polynomials p and q by computing the determinant of a Bezout matrix.
@@ -46,7 +69,6 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
       n1 := degree p; n2 := degree q; n := n1 + n2
       sylmat : M := new(n, n, 0)
       minR := minRowIndex sylmat; minC := minColIndex sylmat
-      maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
       p0 := p
       -- fill in coefficients of 'p'
       while not zero? p0 repeat
@@ -61,6 +83,33 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
         for i in 0..n1-1 repeat
           qsetelt!(sylmat, minR + n2 + i, minC + n2 - deg + i, coef)
       sylmat
+
+    import from MatrixManipulation(R, Row, Col, M)
+
+    subSylvesterMatrix(sylmat, j) ==
+        j = 0 => sylmat
+        diagonal? sylmat =>
+            error "one of the polynomials that form this SylvesterMatrix has degree 0"
+        minR := minRowIndex sylmat; minC := minColIndex sylmat
+        maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
+        firstcol := column(sylmat, minC)
+        m := position((x:R):Boolean+->x~=0, delete(firstcol, minC))+1 - minC
+        n := maxC - minC + 1 - m
+        j >= min(n, m) => error "index is too big for this SylvesterMatrix"
+        rowRange : LI := concat(expand(minR..(minR+m-1-j))$SI,
+                                expand((minR+m)..(maxR-j))$SI)
+        colRange : LI := expand(minC..maxC)$SI
+        subMatrix(sylmat, rowRange, colRange)
+
+    subSylvesterMatrix(sylmat, j, i) ==
+        i > j => error "subSylvesterMatrix: i can't be larger than j"
+        sylmat := subSylvesterMatrix(sylmat, j)
+        minR := minRowIndex sylmat; minC := minColIndex sylmat
+        maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
+        rowRange : LI := expand(minR..maxR)$SI
+        colRange : LI := concat(expand(minC..(maxC-minC-2*j))$SI,
+                                maxC-minC+1-i-j)
+        subMatrix(sylmat, rowRange, colRange)
 
     bezoutMatrix(p, q) ==
     -- This function computes the Bezout matrix for 'p' and 'q'.
@@ -128,6 +177,18 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
     if R has CommutativeRing then
 
       import from Integer
+
+      subResultant(p, q, j) ==
+          sylmat := sylvesterMatrix(p, q)
+          j = 0 => determinant(sylmat)::UP
+          x := monomial(1, 1)$UP
+          _+/[x^k * determinant subSylvesterMatrix(sylmat, j, k) for k in 0..j]
+
+      subResultantList(p, q) ==
+          mindeg : NNI := min(degree p, degree q)
+          mindeg <= 1 => [subResultant(p, q, 0)]
+          j := (mindeg - 1)::PositiveInteger
+          [subResultant(p, q, i) for i in j..0 by -1]
 
       bezoutResultant(f, g) == determinant bezoutMatrix(f, g)
 
