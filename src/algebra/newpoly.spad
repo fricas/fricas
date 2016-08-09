@@ -40,8 +40,7 @@ NewSparseUnivariatePolynomial(R) : Exports == Implementation where
      lazyPseudoQuotient : (%, %) -> %
         ++ \spad{lazyPseudoQuotient(a, b)} returns \spad{q} if \spad{lazyPseudoDivide(a, b)}
         ++ returns \spad{[c, g, q, r]}
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
        subResultantsChain : (%, %) -> List %
          ++ \spad{subResultantsChain(a, b)} returns the list of the non-zero
          ++ sub-resultants of \spad{a} and \spad{b} sorted by increasing
@@ -171,8 +170,8 @@ NewSparseUnivariatePolynomial(R) : Exports == Implementation where
                   if empty? xx then break
                 per reverse qq
 
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
+
        pack ==> PseudoRemainderSequence(R, %)
 
        subResultantGcd(p1, p2) == subResultantGcd(p1, p2)$pack
@@ -474,8 +473,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
        then
          ConvertibleTo(String)
 
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
        primPartElseUnitCanonical : % -> %
            ++ \spad{primPartElseUnitCanonical(p)} returns \spad{primitivePart(p)}
            ++ if \spad{R} is a gcd-domain, otherwise \spad{unitCanonical(p)}.
@@ -971,11 +969,10 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
          lq := rest lq
        empty? lq
 
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
 
-       if R has EuclideanDomain
-         then
+       if R has EuclideanDomain then
+
            iexactQuo(r : R, s : R) : R ==
              r quo$R s
          else
@@ -1620,8 +1617,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
          test := degree(a, b.v)::Z - db
        [a, lcb, pow]
 
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
 
        packD := PseudoRemainderSequence(%, D)
 
@@ -1631,24 +1627,11 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
          error "in exactQuotient$NSMP: bad args"
 
        LazardQuotient(x : %, y : %, n : N) : % ==
-         zero?(n) => error("LazardQuotient$NSMP : n = 0")
---         one?(n) => x
-         (n = 1) => x
-         a : N := 1
-         while n >= (b := 2*a) repeat a := b
-         c : % := x
-         n := (n - a)::N
-         repeat
---           one?(a) => return c
-           (a = 1) => return c
-           a := a quo 2
-           c := exactQuo(c*c, y)
-           if n >= a then ( c := exactQuo(c*x, y) ; n := (n - a)::N )
+           LazardQuotient(x, y, n)$packD
 
        LazardQuotient2(p : %, a : %, b : %, n : N) ==
          zero?(n) => error " in LazardQuotient2$NSMP: bad #4"
---         one?(n) => p
-         (n = 1) => p
+         n = 1 => p
          c : %  := LazardQuotient(a, b, (n-1)::N)
          exactQuo(c*p, b)
 
