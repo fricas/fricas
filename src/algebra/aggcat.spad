@@ -39,7 +39,7 @@ Aggregate : Category == Type with
    sample : constant -> %
      ++ sample yields a value of type %
    if % has finiteAggregate then
-     "#": % -> NonNegativeInteger
+     "#" : % -> NonNegativeInteger
        ++ # u returns the number of items in u.
  add
   eq?(a, b) == EQ(a, b)$Lisp
@@ -88,7 +88,7 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
    if S has SetCategory then SetCategory
    if S has SetCategory then
       if S has Evalable S then Evalable S
-   map     : (S->S, %) -> %
+   map : (S -> S, %) -> %
      ++ map(f, u) returns a copy of u with each element x replaced by f(x).
      ++ For collections, \spad{map(f, u) = [f(x) for x in u]}.
    if % has shallowlyMutable then
@@ -869,7 +869,7 @@ IndexedAggregate(Index : Type, Entry : Type) : Category ==
         ++ Note: in general,
         ++ \spad{minIndex(a) = reduce(min, [i for i in indices a])};
         ++ for lists, \spad{minIndex(a) = 1}.
-      first   : % -> Entry
+      first : % -> Entry
         ++ first(u) returns the first element x of u.
         ++ Note: for collections, \spad{first([x, y, ..., z]) = x}.
         ++ Error: if u is empty.
@@ -1036,13 +1036,13 @@ TableAggregate(Key : Type, Entry : Type) : Category ==
            remove!(k.key, t)
            k
 
-       any?(f : Entry->Boolean, t : %) : Boolean ==
+       any?(f : Entry -> Boolean, t : %) : Boolean ==
            for k in keys t | f t k repeat return true
            false
-       every?(f : Entry->Boolean, t : %) : Boolean ==
+       every?(f : Entry -> Boolean, t : %) : Boolean ==
            for k in keys t | not f t k repeat return false
            true
-       count(f : Entry->Boolean, t : %) : NonNegativeInteger ==
+       count(f : Entry -> Boolean, t : %) : NonNegativeInteger ==
            tally : NonNegativeInteger := 0
            for k in keys t | f t k repeat tally := tally + 1
            tally
@@ -1093,7 +1093,7 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
         ++ node?(u, v) tests if node u is contained in node v
         ++ (either as a child, a child of a child, etc.).
    if % has shallowlyMutable then
-      setchildren! : (%, List %)->%
+      setchildren! : (%, List %) -> %
         ++ setchildren!(u, v) replaces the current children of node u
         ++ with the members of v in left-to-right order.
       setelt! : (%, "value", S) -> S
@@ -1247,7 +1247,7 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
 ++ References:
 ++ Description:
 ++ A doubly-linked aggregate serves as a model for a doubly-linked
-++ list, that is, a list which can has links to both next and previous
+++ list, that is, a list which has links to both next and previous
 ++ nodes and thus can be efficiently traversed in both directions.
 DoublyLinkedAggregate(S : Type) : Category == RecursiveAggregate S with
    last : % -> S
@@ -1390,7 +1390,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       split! : (%, NonNegativeInteger) -> %
          ++ split!(u, n) splits u into two aggregates: \spad{v = rest(u, n)}
          ++ and \spad{w = first(u, n)}, returning \spad{v} and
-         ++ seting \spad{u} to \spad{w}.
+         ++ setting \spad{u} to \spad{w}.
          ++ If n is 0, split! currently only works for Stream and
          ++ gives error for List.
          ++ Note: afterwards \spad{rest(u, n)} returns \spad{empty()}.
@@ -1671,7 +1671,7 @@ StreamAggregate(S : Type) : Category ==
 ++ \spadfun{reverse}, \spadfun{sort}, and so on.
 LinearAggregate(S : Type) : Category ==
   Join(IndexedAggregate(Integer, S), Collection(S)) with
-   new   : (NonNegativeInteger, S) -> %
+   new : (NonNegativeInteger, S) -> %
      ++ new(n, x) returns a new aggregate of size n all of whose
      ++ entries are x.
    concat : (%, S) -> %
@@ -1692,7 +1692,7 @@ LinearAggregate(S : Type) : Category ==
       ++ followed by those
       ++ of b followed ... by the elements of c.
       ++ Note: \spad{concat(a, b, ..., c) = concat(a, concat(b, ..., c))}.
-   map : ((S, S)->S, %, %) -> %
+   map : ((S, S) -> S, %, %) -> %
      ++ map(f, u, v) returns a new collection w with elements
      ++ \spad{z = f(x, y)} for corresponding elements x and y from u and v.
      ++ Note: for linear aggregates, \spad{w.i = f(u.i, v.i)}.
@@ -1725,7 +1725,7 @@ LinearAggregate(S : Type) : Category ==
        ++ that \spad{u.k := x for k in i..j};
        ++ its length remains unchanged.
    if % has finiteAggregate then
-      merge : ((S, S)->Boolean, %, %) -> %
+      merge : ((S, S) -> Boolean, %, %) -> %
        ++ merge(p, a, b) returns an aggregate c which merges \spad{a} and b.
        ++ The result is produced by examining each element x of \spad{a} and y
        ++ of b successively. If \spad{p(x, y)} is true, then x is inserted into
@@ -1737,17 +1737,17 @@ LinearAggregate(S : Type) : Category ==
        ++ \spad{[1, 2, 3, 7, 5]}.
       reverse : % -> %
        ++ reverse(a) returns a copy of \spad{a} with elements in reverse order.
-      sort : ((S, S)->Boolean, %) -> %
+      sort : ((S, S) -> Boolean, %) -> %
        ++ sort(p, a) returns a copy of \spad{a} sorted using total ordering
        ++ predicate p.
-      sorted? : ((S, S)->Boolean, %) -> Boolean
+      sorted? : ((S, S) -> Boolean, %) -> Boolean
        ++ sorted?(p, a) tests if \spad{a} is sorted according to predicate p.
       position : (S->Boolean, %) -> Integer
        ++ position(p, a) returns the index i of the first x in \spad{a}
        ++ such that \spad{p(x)} is true, and \spad{minIndex(a) - 1} if
        ++ there is no such x.
       if S has BasicType then
-         position : (S, %)  -> Integer
+         position : (S, %) -> Integer
           ++ position(x, a) returns the index i of the first occurrence
           ++ of x in a, and \spad{minIndex(a) - 1} if there is no such x.
          position : (S, %, Integer) -> Integer
@@ -1783,7 +1783,7 @@ LinearAggregate(S : Type) : Category ==
           ++ v inserted at element i.
          reverse! : % -> %
           ++ reverse!(u) returns u with its elements in reverse order.
-         sort! : ((S, S)->Boolean, %) -> %
+         sort! : ((S, S) -> Boolean, %) -> %
           ++ sort!(p, u) returns u with its elements ordered by p.
          if S has OrderedSet then sort! : % -> %
           ++ sort!(u) returns u with its elements in ascending order.
@@ -2139,7 +2139,7 @@ ExtensibleLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
      ++ insert!(x, u, i) destructively inserts x into u at position i.
    insert! : (%, %, Integer) -> %
      ++ insert!(v, u, i) destructively inserts aggregate v into u at position i.
-   merge! : ((S, S)->Boolean, %, %) -> %
+   merge! : ((S, S) -> Boolean, %, %) -> %
      ++ merge!(p, u, v) destructively merges u and v using predicate p.
    select! : (S->Boolean, %) -> %
      ++ select!(p, u) destructively changes u by keeping only values x such that
