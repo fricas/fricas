@@ -37,13 +37,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     lfextendedint : (F, SE, F) -> U2
        ++ lfextendedint(f, x, g) returns functions \spad{[h, c]} such that
        ++ \spad{dh/dx = f - cg}, if (h, c) exist, "failed" otherwise.
-    lflogint : (F, SE, List F) -> U3
-       ++ lflimitedint(f, x, [g1, ..., gn]) returns functions \spad{[h, [[ci, gi]]]}
-       ++ such that the gi's are among \spad{[g1, ..., gn]}, and
-       ++ \spad{d(h+sum(ci log(gi)))/dx = f}, if possible, "failed" otherwise.
-    lfinfieldint : (F, SE) -> Union(F, "failed")
-       ++ lfinfieldint(f, x) returns a function g such that \spad{dg/dx = f}
-       ++ if g exists, "failed" otherwise.
     lfintegrate  : (F, SE) -> IR
        ++ lfintegrate(f, x) = g such that \spad{dg/dx = f}.
 
@@ -230,23 +223,6 @@ ElementaryIntegration(R, F) : Exports == Implementation where
       res1 := extendedint(f, x, [g]).particular
       res1 case "failed" => "failed"
       [res1.ratpart, (res1.coeffs)(1)]
-
-
-    lflogint(f, x, lu) ==
-        lg := [differentiate(u, x)/u for u in lu]
-        res1 := extendedint(f, x, lg).particular
-        res1 case "failed" => "failed"
-        s1 := res1::Param_Rec_F
-        llg : LLG := []
-        for c in entries(s1.coeffs) for u in lu repeat
-            if c ~= 0 then
-                llg := cons([c, u], llg)
-        [s1.ratpart, llg]
-
-
-    lfinfieldint(f, x) ==
-      (u := lfextendedint(f, x, 0)) case "failed" => "failed"
-      u.ratpart
 
 
     DREC ==> Record(answer : RF, logpart : RF, ir : IRRF)
