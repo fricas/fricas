@@ -375,11 +375,13 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     ktoY k ==
       is?(k, 'log) => k::F
       is?(k, 'exp) => first argument k
+      is?(k, 'lambertW) => k::F
       0
 
     ktoZ k ==
       is?(k, 'log) => first argument k
       is?(k, 'exp) => k::F
+      is?(k, 'lambertW) => (first argument k)/k::F
       0
 
     ktoU k ==
@@ -590,7 +592,8 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
 
     expnosimp(lf, lk, k, v, fns, g) ==
         n := maxIndex v
-        lk := [x for x in lk | is?(x, 'exp) or is?(x, 'log)]
+        lk := [x for x in lk | is?(x, 'exp) or is?(x, 'log)
+                               or is?(x, 'lambertW)]
         d := (cd := splitDenominator v).den
         vnum := cd.num
         h : F := g
