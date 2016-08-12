@@ -44,6 +44,7 @@ VectorHermitePadeSolver : Exports == Implementation where
         res
 
 )abbrev package LODOF2 LinearOrdinaryDifferentialOperatorFactorizer2
+)boot $tryRecompileArguments := nil
 ++ Description:
 ++ \spadtype{LinearOrdinaryDifferentialOperatorFactorizer2} provides a
 ++ factorizer for linear ordinary differential operators whose coefficients
@@ -141,6 +142,13 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
     import from StreamFunctions2(LW, F2)
     import from StreamFunctions2(F2, LL)
     import from StreamFunctions3(LL, Integer, TERM)
+    import from US
+    import from Integer
+    import from Fraction(Integer)
+    import from Factored(UP)
+    import from UP
+    import from RS
+    import from RF
 
     convertUPtoUTS : UP -> UTS
     convertUTStoUP : (UTS, Integer) -> UP
@@ -199,7 +207,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
 -- newtonpolygonPoints takes a LinearOrdinaryDifferentialOperator3 having
 -- Laurent series coefficients as input and returns the coordinates of the
 -- extreme points of the Newton polygon.
-    newtonpolygonPoints(f) ==
+    newtonpolygonPoints(f: LL) : List PO ==
         ftmp := f
         points : List PO := []
         yzero := order(leadingCoefficient(ftmp))
@@ -514,8 +522,8 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
         for i in 1..5 repeat
             lnr := lift_newton(slop, convertL3toLL(f), l_low, r_low, shift,
                                dgr, v, ei, qcoerce(i))
-            print(lnr.main.Qt :: OutputForm)
-            print(lnr.main.Rt :: OutputForm)
+            print(lnr.main.Qt :: OutputForm)$OutputForm
+            print(lnr.main.Rt :: OutputForm)$OutputForm
             v := lnr.nf
             ei := lnr.error
         lnr
@@ -990,7 +998,8 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 fls := [[monomial(1, -n) * fc for fc in ff] for ff in fls]
             flst := [[retract(fc) for fc in ff] for ff in fls]
             n := #flst
-            if ((tf2 := try_factorization2(flst, n, bound, eb)) ~= "failed") then
+            tf2 := try_factorization2(flst, n, bound, eb)
+            if tf2 ~= "failed" then
                 flm := tf2 :: List SUP
                 sr : L3 := +/[unmakeSUP(flm(j+1))$UP :: RF * monomial(1, j)
                               for j in 0..#flm-1]
@@ -998,7 +1007,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 if option = "use adjoint" then
                     sr := adjoint(sr)
                 srl := convert(sr)$LODOConvertions(F, UP, RF)
-                if sng.point ~= 0 then
+                if not(sng.point case F and sng.point::F = 0) then
                     ftmp := srl
                     srl := 0
                     while ftmp ~= 0 repeat
@@ -1115,7 +1124,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
         if degree(f) = 2 then
             -- may be faster
             -- return factor(f)$LinearOrdinaryDifferentialOperatorFactorizer(F, UP)
-            print("Better to use old factorizer" :: OutputForm)
+            print("Better to use old factorizer" :: OutputForm)$OutputForm
         gem := ge_minimal(f, factorizer, "")
         bound : List FZ := [0 for i in 1..degree(f)-1]
         eb : Integer := -1
@@ -1322,8 +1331,8 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 -- the degree of this number over Q
                 ks := kernels(c)
                 for ke in ks repeat
-                    if (retractIfCan(ke :: F)@Union(AlgebraicNumber, "failed") ~=
-                         "failed") then
+                    if not(retractIfCan(ke :: F)@Union(
+                             AlgebraicNumber, "failed") case "failed") then
                         c := get_trace(c, ke) / (degree(minPoly(ke)) :: F)
                     else
                         if eval(denominator(c), ke, rlc) = 0 then
@@ -1393,6 +1402,8 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 mg := append(mg, [ss])
             res := cons([sg, v, mg], res)
         res
+
+)boot $tryRecompileArguments := true
 
 --Copyright (c) 2015, Abhinav Baid.
 --All rights reserved.
