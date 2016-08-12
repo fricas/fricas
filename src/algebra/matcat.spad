@@ -82,7 +82,7 @@ of \spadfun{determinant} are a good example to look at.
 ++   the first element of a Row is the same as the index of the
 ++   first column in a matrix and vice versa.
 MatrixCategory(R, Row, Col) : Category == Definition where
-  R   : Join(SemiRng, AbelianMonoid)
+  R : AbelianMonoid
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
 
@@ -142,14 +142,16 @@ MatrixCategory(R, Row, Col) : Category == Definition where
        ++ \spad{(r1+..+r(l-1)) < i <= r1+..+rl} and
        ++ \spad{(c1+..+c(l-1)) < i <= c1+..+cl},
        ++ \spad{m.i.j} = 0  otherwise.
-     kroneckerProduct : (%, %) -> %
-       ++ kroneckerProduct(a, b) calculates the Kronecker product
-       ++ of the matrices a and b.
-       ++ This corresponds to tensor product of corresponding operators.
-     kroneckerProduct : List(%) -> %
-       ++ kroneckerProduct([a1, a2, ..., an]) calculates the
-       ++ Kronecker product of the matrices a1, a2, ..., an.
-       ++ This corresponds to tensor product of corresponding operators.
+     if R has SemiRng then
+       kroneckerProduct : (%, %) -> %
+         ++ kroneckerProduct(a, b) calculates the Kronecker product
+         ++ of the matrices a and b.
+         ++ This corresponds to tensor product of corresponding operators.
+       kroneckerProduct : List(%) -> %
+         ++ kroneckerProduct([a1, a2, ..., an]) calculates the
+         ++ Kronecker product of the matrices a1, a2, ..., an.
+         ++ This corresponds to tensor product of corresponding operators.
+
      kroneckerSum : (%, %) -> %
        ++ kroneckerSum(a, b) calculates the Kronecker sum
        ++ of the matrices a and b.
@@ -174,26 +176,27 @@ MatrixCategory(R, Row, Col) : Category == Definition where
            ++ \spad{-x} returns the negative of the matrix x.
          "*" : (Integer, %) -> %
            ++ \spad{n * x} is an integer multiple.
-     "*": (%,%) -> %
-       ++ \spad{x * y} is the product of the matrices x and y.
-       ++ Error: if the dimensions are incompatible.
-     "*": (R,%) -> %
-       ++ \spad{r*x} is the left scalar multiple of the scalar r and the
-       ++ matrix x.
-     "*": (%,R) -> %
-       ++ \spad{x * r} is the right scalar multiple of the scalar r and the
-       ++ matrix x.
-     "*": (%,Col) -> Col
-       ++ \spad{x * c} is the product of the matrix x and the column vector c.
-       ++ Error: if the dimensions are incompatible.
-     "*": (Row,%) -> Row
-       ++ \spad{r * x} is the product of the row vector r and the matrix x.
-       ++ Error: if the dimensions are incompatible.
-     -- "^" : (%, PositveInteger) -> %
-     positivePower : (%, Integer) -> %
-       ++ \spad{positivePower(x, n)} computes a positive integral power of the
-       ++ matrix x.  Error: if the matrix is not square.
-     if R has Monoid then
+     if R has SemiRng then
+       "*": (%,%) -> %
+         ++ \spad{x * y} is the product of the matrices x and y.
+         ++ Error: if the dimensions are incompatible.
+       "*": (R,%) -> %
+         ++ \spad{r*x} is the left scalar multiple of the scalar r and the
+         ++ matrix x.
+       "*": (%,R) -> %
+         ++ \spad{x * r} is the right scalar multiple of the scalar r and the
+         ++ matrix x.
+       "*": (%,Col) -> Col
+         ++ \spad{x * c} is the product of the matrix x and the column
+         ++ vector c.  Error: if the dimensions are incompatible.
+       "*": (Row,%) -> Row
+         ++ \spad{r * x} is the product of the row vector r and the matrix x.
+         ++ Error: if the dimensions are incompatible.
+       -- "^" : (%, PositveInteger) -> %
+       positivePower : (%, Integer) -> %
+         ++ \spad{positivePower(x, n)} computes a positive integral power of
+         ++ the matrix x.  Error: if the matrix is not square.
+       if R has Monoid then
          "^": (%, NonNegativeInteger) -> %
            ++ \spad{x ^ n} computes a non-negative integral power of the
            ++ matrix x.  Error: if the matrix is not square.
@@ -335,53 +338,54 @@ MatrixCategory(R, Row, Col) : Category == Definition where
 
      Ops ==>
 
-         kronecker_prod1(res : %, k : Integer, dl : List(List(NNI)),
-                  l : List(%), r_off : NNI, c_off : NNI, mu : UR) : Void ==
-             dp := first(dl)
-             nr := dp(1)
-             nc := dp(2)
-             a := first(l)
-             mu case "one" and k = 1 => a
-             k = 1 =>
-                 mu case "one" =>
-                    error "kronecker_prod1: impossible"
-                 m := mu::R
+         if R has SemiRng then
+             kronecker_prod1(res : %, k : Integer, dl : List(List(NNI)),
+               l : List(%), r_off : NNI, c_off : NNI, mu : UR) : Void ==
+                 dp := first(dl)
+                 nr := dp(1)
+                 nc := dp(2)
+                 a := first(l)
+                 mu case "one" and k = 1 => a
+                 k = 1 =>
+                     mu case "one" =>
+                         error "kronecker_prod1: impossible"
+                     m := mu::R
+                     for i in 1..nr repeat
+                         r_off := r_off + 1
+                         c_ind := c_off + 1
+                         for j in 1..nc repeat
+                             qsetelt!(res, r_off, c_ind,  m*qelt(a, i, j))
+                             c_ind := c_ind + 1
+                 dl := rest(dl)
+                 l := rest(l)
+                 r_step := reduce(_*$NNI, [rc(1) for rc in dl])
+                 c_step := reduce(_*$NNI, [rc(2) for rc in dl])
                  for i in 1..nr repeat
-                     r_off := r_off + 1
-                     c_ind := c_off + 1
+                     c_off1 := c_off
                      for j in 1..nc repeat
-                         qsetelt!(res, r_off, c_ind,  m*qelt(a, i, j))
-                         c_ind := c_ind + 1
-             dl := rest(dl)
-             l := rest(l)
-             r_step := reduce(_*$NNI, [rc(1) for rc in dl])
-             c_step := reduce(_*$NNI, [rc(2) for rc in dl])
-             for i in 1..nr repeat
-                 c_off1 := c_off
-                 for j in 1..nc repeat
-                     aij := qelt(a, i, j)
-                     mm :=
-                         mu case "one" => aij
-                         mu::R * aij
-                     kronecker_prod1(res, k - 1, dl, l, r_off, c_off1, mm)
-                     c_off1 := c_off1 + c_step
-                 r_off := r_off + r_step
+                         aij := qelt(a, i, j)
+                         mm :=
+                             mu case "one" => aij
+                             mu::R * aij
+                         kronecker_prod1(res, k - 1, dl, l, r_off, c_off1, mm)
+                         c_off1 := c_off1 + c_step
+                     r_off := r_off + r_step
 
-         kroneckerProduct(l : List(%)) : % ==
-             k := #l
-             k = 0 =>
-                 maybe_1 case R => new(1, 1, maybe_1::R)
-                 error "need 1"
-             k = 1 => copy(first(l))
-             dl := get_dims(l)
-             nr := reduce(_*$NNI, [rc(1) for rc in dl])
-             nc := reduce(_*$NNI, [rc(2) for rc in dl])
-             res := zero(nr, nc)$%
-             for a in l repeat
-                 kronecker_prod1(res, k, dl, l, 0, 0, "one")
-             res
+             kroneckerProduct(l : List(%)) : % ==
+                 k := #l
+                 k = 0 =>
+                     maybe_1 case R => new(1, 1, maybe_1::R)
+                     error "need 1"
+                 k = 1 => copy(first(l))
+                 dl := get_dims(l)
+                 nr := reduce(_*$NNI, [rc(1) for rc in dl])
+                 nc := reduce(_*$NNI, [rc(2) for rc in dl])
+                 res := zero(nr, nc)$%
+                 for a in l repeat
+                     kronecker_prod1(res, k, dl, l, 0, 0, "one")
+                 res
 
-         kroneckerProduct(a : %, b : %) == kroneckerProduct([a, b])
+             kroneckerProduct(a : %, b : %) == kroneckerProduct([a, b])
 
          kroneckerSum(l : List(%)) : % ==
              k := #l
@@ -480,30 +484,30 @@ MatrixCategory(R, Row, Col) : Category == Definition where
          - x == map((r1 : R) : R +-> - r1, x)
          m : Integer * x : % == map((r1 : R) : R +-> m * r1, x)
 
-     a : R * x : % == map((r1 : R) : R +-> a * r1, x)
-     x : % * a : R == map((r1 : R) : R +-> r1 * a, x)
+     if R has SemiRng then
+         a : R * x : % == map((r1 : R) : R +-> a * r1, x)
+         x : % * a : R == map((r1 : R) : R +-> r1 * a, x)
 
-     x : % * y : % ==
-       (ncols x ~= nrows y) =>
-         error "can't multiply matrices of incompatible dimensions"
-       ans := new(nrows x, ncols y, 0)
-       for i in minr(x)..maxr(x) repeat
-         for j in minc(y)..maxc(y) repeat
-           entry :=
-             sum : R := 0
-             for k in minr(y)..maxr(y) for l in minc(x)..maxc(x) repeat
-               sum := sum + qelt(x, i, l) * qelt(y, k, j)
-             sum
-           qsetelt!(ans, i, j, entry)
-       ans
+         x : % * y : % ==
+             (ncols x ~= nrows y) =>
+                 error "can't multiply matrices of incompatible dimensions"
+             ans := new(nrows x, ncols y, 0)
+             for i in minr(x)..maxr(x) repeat
+                 for j in minc(y)..maxc(y) repeat
+                     entry :=
+                         sum : R := 0
+                         for k in minr(y)..maxr(y)
+                                         for l in minc(x)..maxc(x) repeat
+                             sum := sum + qelt(x, i, l) * qelt(y, k, j)
+                         sum
+                     qsetelt!(ans, i, j, entry)
+             ans
 
-     -- positivePower: (%, Integer) -> %
-     positivePower(x, n) ==
---       one? n => x
-       (n = 1) => x
-       odd? n => x * positivePower(x, n - 1)
-       y := positivePower(x, n quo 2)
-       y * y
+         positivePower(x : %, n : Integer) : % ==
+             n = 1 => x
+             odd? n => x * positivePower(x, n - 1)
+             y := positivePower(x, n quo 2)
+             y * y
 
      if R has Monoid then
          x : % ^ n : NonNegativeInteger ==
