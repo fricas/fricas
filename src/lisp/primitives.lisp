@@ -508,9 +508,9 @@
 
 ; Misc operations
 
-(defmacro |qset_first|(l x) `(SETF (CAR ,l) ,x))
+(defmacro |qset_first|(l x) `(SETF (CAR (the cons ,l)) ,x))
 
-(defmacro |qset_rest|(l x) `(SETF (CDR ,l) ,x))
+(defmacro |qset_rest|(l x) `(SETF (CDR (the cons ,l)) ,x))
 
 (defmacro setelt (vec ind val) `(setf (elt ,vec ,ind) ,val))
 

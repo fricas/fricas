@@ -33,102 +33,104 @@ IndexedList(S : Type, mn : Integer) : Exports == Implementation where
 
  Qfirst  ==> QCAR$Lisp
  Qrest   ==> QCDR$Lisp
- Qnull   ==> NULL$Lisp
+ Qempty?   ==> NULL$Lisp
+ Qempty  ==> NIL$Lisp
  Qeq     ==> EQ$Lisp
  Qcons   ==> CONS$Lisp
  Qset_first ==> qset_first$Lisp
  Qset_rest ==> qset_rest$Lisp
+ Qreverse! ==> NREVERSE$Lisp
 
  Exports ==> ListAggregate S
  Implementation ==>
   add
    #x                  == LENGTH(x)$Lisp
-   concat(s : S, x : %)     == CONS(s, x)$Lisp
+   concat(s : S, x : %)     == Qcons(s, x)
    eq?(x, y)            == EQ(x, y)$Lisp
    first x             == SPADfirst(x)$Lisp
    elt(x,"first")      == SPADfirst(x)$Lisp
-   empty()             == NIL$Lisp
-   empty? x            == NULL(x)$Lisp
+   empty()             == Qempty
+   empty? x            == Qempty?(x)
    rest x              == CDR(x)$Lisp
    elt(x,"rest")       == CDR(x)$Lisp
    setfirst!(x, s)     ==
-      empty? x => error "Cannot update an empty list"
-      Qfirst RPLACA(x, s)$Lisp
+      Qempty?(x) => error "Cannot update an empty list"
+      Qset_first(x, s)
    qsetfirst!(x, s)    == Qset_first(x, s)
    setelt!(x, "first", s) ==
-      empty? x => error "Cannot update an empty list"
-      Qfirst RPLACA(x, s)$Lisp
+      Qempty?(x) => error "Cannot update an empty list"
+      Qset_first(x, s)
    setrest!(x, y)      ==
-      empty? x => error "Cannot update an empty list"
-      Qrest RPLACD(x, y)$Lisp
+      Qempty?(x) => error "Cannot update an empty list"
+      Qset_rest(x, y)
    qsetrest!(x, y)     == Qset_rest(x, y)
    setelt!(x, "rest", y)  ==
-      empty? x => error "Cannot update an empty list"
-      Qrest RPLACD(x, y)$Lisp
+      Qempty?(x) => error "Cannot update an empty list"
+      Qset_rest(x, y)
    construct l         == l pretend %
    parts s             == s pretend List S
-   reverse! x         == NREVERSE(x)$Lisp
+   reverse! x         == Qreverse!(x)
    reverse x           == REVERSE(x)$Lisp
    minIndex x          == mn
 
    rest(x, n) ==
       for i in 1..n repeat
-         if Qnull x then error "index out of range"
+         if Qempty?(x) then error "index out of range"
          x := Qrest x
       x
 
    copy x ==
-      y := empty()
-      for i in 0.. while not Qnull x repeat
+      y : % := Qempty
+      for i in 0.. while not Qempty?(x) repeat
          if Qeq(i,cycleMax) and cyclic? x then error "cyclic list"
          y := Qcons(Qfirst x, y)
          x := Qrest x
-      (NREVERSE(y)$Lisp)@%
+      Qreverse!(y)
 
    if S has CoercibleTo(OutputForm) then
 
      coerce(x) : OutputForm ==
         -- displays cycle with overbar over the cycle
-        y := empty()$List(OutputForm)
+        y := (Qempty)@List(OutputForm)
         s := cycleEntry x
         while not(Qeq(x, s)) repeat
           y := concat((first x)::OutputForm, y)
           x := rest x
-        y := reverse! y
-        empty? s => bracket y
+        y := Qreverse! y
+        Qempty?(s) => bracket y
         -- cyclic case: z is cyclic part
         z := list((first x)::OutputForm)
         while not(Qeq(s, rest x)) repeat
            x := rest x
            z := concat((first x)::OutputForm, z)
-        bracket concat!(y, overbar commaSeparate reverse! z)
+        bracket concat!(y, overbar commaSeparate Qreverse! z)
 
    if S has BasicType then
 
      x = y ==
        Qeq(x, y) => true
-       while not Qnull x and not Qnull y repeat
+       while not Qempty?(x) and not Qempty?(y) repeat
           Qfirst x ~=$S Qfirst y => return false
           x := Qrest x
           y := Qrest y
-       Qnull x and Qnull y
+       Qempty?(x) and Qempty?(y)
 
      member?(s, x) ==
-        while not Qnull x repeat
+        while not Qempty?(x) repeat
            if s = Qfirst x then return true else x := Qrest x
         false
 
    if S has SetCategory then
      latex(x : %) : String ==
        s : String := "\left["
-       while not Qnull x repeat
+       while not Qempty?(x) repeat
          s := concat(s, latex(Qfirst x)$S)$String
          x := Qrest x
-         if not Qnull x then s := concat(s, ", ")$String
+         if not Qempty?(x) then s := concat(s, ", ")$String
        concat(s, " \right]")$String
 
      hashUpdate!(s : HashState, x : %) : HashState ==
-         while not Qnull x repeat
+         while not Qempty?(x) repeat
              s := hashUpdate!(s, Qfirst x)
              x := Qrest x
          s
@@ -136,26 +138,26 @@ IndexedList(S : Type, mn : Integer) : Exports == Implementation where
    -- Lots of code from parts of AGGCAT, repeated here to
    -- get faster compilation
    concat!(x : %, y : %) ==
-      Qnull x => y
+      Qempty?(x) => y
       z := x
-      while not Qnull Qrest z repeat
+      while not Qempty?(Qrest(z)) repeat
         z := Qrest z
-      QRPLACD(z, y)$Lisp
+      Qset_rest(z, y)
       x
 
    -- Then a quicky:
    if S has BasicType then
      removeDuplicates! l ==
        p := l
-       while not Qnull p repeat
+       while not Qempty?(p) repeat
 --       p := setrest!(p, remove!(#1 = Qfirst p, Qrest p))
 -- far too expensive - builds closures etc.
          pp := p
          f : S := Qfirst p
          p := Qrest p
          pr : %
-         while not Qnull (pr := Qrest pp) repeat
-           if (Qfirst pr)@S = f then QRPLACD(pp, Qrest pr)$Lisp
+         while not Qempty?(pr := Qrest(pp)) repeat
+           if (Qfirst pr)@S = f then Qset_rest(pp, Qrest pr)
            else pp := pr
        l
 
@@ -165,28 +167,28 @@ IndexedList(S : Type, mn : Integer) : Exports == Implementation where
    sort!(f, l)       == mergeSort(f, l, #l)
 
    merge!(f, p, q) ==
-     Qnull p => q
-     Qnull q => p
+     Qempty?(p) => q
+     Qempty?(q) => p
      Qeq(p, q) => error "cannot merge a list into itself"
      if f(Qfirst p, Qfirst q)
        then (r := t := p; p := Qrest p)
        else (r := t := q; q := Qrest q)
-     while not Qnull p and not Qnull q repeat
+     while not Qempty?(p) and not Qempty?(q) repeat
        if f(Qfirst p, Qfirst q)
-         then (QRPLACD(t, p)$Lisp; t := p; p := Qrest p)
-         else (QRPLACD(t, q)$Lisp; t := q; q := Qrest q)
-     QRPLACD(t, if Qnull p then q else p)$Lisp
+         then (Qset_rest(t, p); t := p; p := Qrest p)
+         else (Qset_rest(t, q); t := q; q := Qrest q)
+     Qset_rest(t, if Qempty?(p) then q else p)
      r
 
    split!(p, n) ==
       n < 1 => error "index out of range"
       p := rest(p, (n - 1)::NonNegativeInteger)
       q : % := Qrest p
-      QRPLACD(p, NIL$Lisp)$Lisp
+      Qset_rest(p, Qempty)
       q
 
    mergeSort(f, p, n) ==
-     if n = 2 and f(first rest p, first p) then p := reverse! p
+     if n = 2 and f(first rest p, first p) then p := Qreverse! p
      n < 3 => p
      l := (n quo 2)::NonNegativeInteger
      q := split!(p, l)
@@ -248,10 +250,10 @@ List(S : Type) : Exports == Implementation where
 
  Implementation ==>
    IndexedList(S, LISTMININDEX) add
-      nil()                    == NIL$Lisp
-      null l                   == NULL(l)$Lisp
-      cons(s, l)               == CONS(s, l)$Lisp
-      append(l : %, t : %)         == APPEND(l, t)$Lisp
+      nil()                    == empty()
+      null l                   == empty?(l)
+      cons(s, l)               == concat(s, l)
+      append(l : %, t : %)         == concat(l, t)
 
       if S has OpenMath then
         writeOMList(dev : OpenMathDevice, x : %) : Void ==
@@ -261,7 +263,7 @@ List(S : Type) : Exports == Implementation where
           -- convinced that `xval' is a S.  Duhhh! MCD.
           --for xval in x repeat
           --  OMwrite(dev, xval, false)
-          while not null x repeat
+          while not empty?(x) repeat
             OMwrite(dev, first x, false)
             x := rest x
           OMputEndApp(dev)
