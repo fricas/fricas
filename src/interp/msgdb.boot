@@ -276,7 +276,7 @@ addBlanks msg ==
 
 
 DEFPARAMETER($msgdbPrims, '( %b %d %l %i %u %U %n %x %ce %rj "%U" "%b" "%d" "%l" "%i" "%u" "%U" "%n" "%x" "%ce" "%rj"))
-DEFPARAMETER($msgdbPunct, '(_. _, _! _: _; _? _] _)  "." "," "!" ":" ";" "?" "]" ")"  ))
+DEFPARAMETER($msgdbPunct, '(_. _, _! _: _; _] _)  "." "," "!" ":" ";" "]" ")"  ))
 DEFPARAMETER($msgdbNoBlanksBeforeGroup, ['" ", " ", '"%", "%",_
                             :$msgdbPrims, :$msgdbPunct])
 DEFPARAMETER($msgdbListPrims, '(%m %s %ce %rj "%m" "%s" "%ce" "%rj"))
