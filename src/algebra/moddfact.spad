@@ -29,14 +29,6 @@ ModularDistinctDegreeFactorizer(U) : C == T where
     gcd : (U, U, I) -> U
       ++ gcd(f1, f2, p) computes the gcd of the univariate polynomials
       ++ f1 and f2 modulo the integer prime p.
-    linears : (U, I) -> U
-      ++ linears(f, p) returns the product of all the linear factors
-      ++ of f modulo p. Potentially incorrect result if f is not
-      ++ square-free modulo p.
-    factor : (U, I) -> L U
-      ++ factor(f1, p) returns the list of factors of the univariate
-      ++ polynomial f1 modulo the integer prime p.
-      ++ Error: if f1 is not square-free modulo p.
     ddFact : (U, I) -> UDDList
       ++ ddFact(f, p) computes a distinct degree factorization of the
       ++ polynomial f modulo the prime p, i.e. such that each factor
@@ -46,9 +38,6 @@ ModularDistinctDegreeFactorizer(U) : C == T where
       ++ separateFactors(ddl, p) refines the distinct degree factorization
       ++ produced by \spadfunFrom{ddFact}{ModularDistinctDegreeFactorizer}
       ++ to give a complete list of factors.
-    exptMod : (U, I, U, I) -> U
-      ++ exptMod(f, n, g, p) raises the univariate polynomial f to the nth
-      ++ power modulo the polynomial g and the prime p.
 
   T == add
     reduction(u : U, p : I) : U ==
@@ -94,24 +83,12 @@ ModularDistinctDegreeFactorizer(U) : C == T where
         u1 := (u1 * u1) rem u2
       ans
 
-    exptMod(a, i, b, q) ==
-      ans := exptmod(reduce(a, q), i, reduce(b, q))
-      ans::U
-
     ddfactor(u) ==
       if (c := lc(u)) ~= 1$I then u := makeMonic(u)
       ans := sepfact(ddfact(u))
       cons(c::EMR, [makeMonic(f) for f in ans | degree(f) > 0])
 
     gcd(u, v, q) == gcd(reduce(u, q), reduce(v, q))::U
-
-    factor(u, q) ==
-      v := reduce(u, q)
-      dv := reduce(differentiate(u), q)
-      degree gcd(v, dv) > 0 =>
-        error("Modular factor: polynomial must be squarefree")
-      ans := ddfactor v
-      [f::U for f in ans]
 
     ddfact(u) ==
       p := modulus u
@@ -135,11 +112,6 @@ ModularDistinctDegreeFactorizer(U) : C == T where
     ddFact(u, q) ==
       ans := ddfact(reduce(u, q))
       [[(dd.factor)::U, dd.degree]$UDDRecord for dd in ans]$UDDList
-
-    linears(u, q) ==
-       uu := reduce(u, q)
-       m := reduce(monomial(1, 1)$U, q)
-       gcd(exptmod(m, q, uu)-m, uu)::U
 
     sepfact(factList) ==
       "append"/[sepFact1(f) for f in factList]
