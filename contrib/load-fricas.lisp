@@ -7,6 +7,9 @@ tree.  After that doing:
 
 will load and initialize FriCAS.
 
+Note: this does not work with ECL.  Using ECL you need to
+create shared library, see 'mk_shlib.lisp'.
+
 Examples:
 Using FriCAS command interpreter:
 

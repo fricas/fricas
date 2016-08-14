@@ -392,6 +392,7 @@ After this function is called the image is clean and can be saved.
                   (push (list 'defparameter el (symbol-value el))
                         initforms)))
           (push `(interpsys-ecl-image-init ,spad) initforms)
+          (push `(fricas-restart) initforms)
           (setf initforms (reverse initforms))
           (push `progn initforms)
           (setf FRICAS-LISP::*fricas-initial-lisp-forms* initforms)
@@ -421,7 +422,7 @@ After this function is called the image is clean and can be saved.
            spad)
       (format *standard-output* "before fricas-restart~%")
       (force-output  *standard-output*)
-      (fricas-restart))
+)
 
 (defun interpsys-image-init (parse-files comp-files browse-files
              asauto-files spad)
