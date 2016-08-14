@@ -304,7 +304,7 @@ clearCmdAll() ==
   if $useInternalHistoryTable
     then $internalHistoryTable := NIL
     else deleteFile histFileName()
-  $IOindex := 1
+  if not null $IOindex then $IOindex := 1
   updateCurrentInterpreterFrame()
   $currentLine := '")clear all"    --restored 3/94; needed for undo (RDJ)
   clearMacroTable()
