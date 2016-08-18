@@ -51,5 +51,49 @@ testEquals("normalize(exp(-lambertW(x)))", "lambertW(x)/x")
 testEquals("normalize(log(x/lambertW(x)))", "lambertW(x)")
 testEquals("normalize(log(lambertW(x)/x))", "-lambertW(x)")
 
+testcase "Smith form of empty matrices"
+
+mI := Matrix(Integer)
+vI := Vector(Integer)
+sP := SmithNormalForm(Integer, vI, vI, mI)
+
+m0 := zero(0, 0)$mI
+m1 := zero(0, 1)$mI
+m3 := zero(0, 3)$mI
+vv := vector([])$vI
+
+hr3 := completeHermite(m3)$sP
+testEquals("hr3.Hermite", "m3")
+testEquals("hr3.eqMat", "m0")
+
+sr0 := completeSmith(m0)$sP
+sr1 := completeSmith(m1)$sP
+sr3 := completeSmith(m3)$sP
+
+testEquals("sr0.Smith", "m0")
+testEquals("sr0.leftEqMat", "m0")
+testEquals("sr0.rightEqMat", "m0")
+
+testEquals("sr1.Smith", "m1")
+testEquals("sr1.leftEqMat", "m0")
+testEquals("sr1.rightEqMat", "matrix([[1]])$mI")
+
+testEquals("sr3.Smith", "m3")
+testEquals("sr3.leftEqMat", "m0")
+testEquals("sr3.rightEqMat", "scalarMatrix(3, 1)$mI")
+
+res0 := diophantineSystem(m0, vv)$sP
+res1 := diophantineSystem(m1, vv)$sP
+res3 := diophantineSystem(m3, vv)$sP
+
+testEquals("res0.particular", "vv")
+testTrue("empty?(res0.basis)")
+testEquals("res1.particular", "new(1, 0)$vI")
+testEquals("#(res1.basis)", "1")
+testEquals("first(res1.basis)", "vector([1])$vI")
+testEquals("res3.particular", "new(3, 0)$vI")
+testEquals("#(res3.basis)", "3")
+testEquals("determinant(matrix([parts(w) for w in res3.basis])$mI)", "1")
+
 )set output algebra on
 statistics()
