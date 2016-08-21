@@ -46,5 +46,5 @@ export Vector:                     (T: Type)           -> with;
 
 export Factored:                   (T: IntegralDomain) -> IntegralDomain;
 export Fraction:                   (T: IntegralDomain) -> Field;
-export Matrix:                     (T: with {SemiRng;AbelianMonoid}) -> with;
+export Matrix:                     (T: AbelianMonoid) -> with;
 export SparseUnivariatePolynomial: (T: with {SemiRng;AbelianMonoid}) -> IntegralDomain;

@@ -561,7 +561,7 @@ extend Vector(S: Type): with {
 		(rep x).(dec n) := v pretend BVal;
 }
 
-extend Matrix(R: with {SemiRng;AbelianMonoid}): with {
+extend Matrix(R: Ring): with {
 	apply:		(%, Integer, Integer)    -> R;
 	set!: 		(%, Integer, Integer, R) -> R;
 	qelt:		(%, Integer, Integer)    -> R;
