@@ -161,19 +161,19 @@ ALDORBASICS=$(ALDOR_top_srcdir)/aldor
 ALDORLANG=$(ALDOR_top_srcdir)/aldor
 XCAT=cat
 
-axiom.as axlit.as stub.as:
-	$(XCAT) $(ALDORBASICS)/$@ > $@
+axiom.as axlit.as stub.as: %.as: $(ALDORBASICS)/%.as
+	$(XCAT) $< > $@
 
-axextend.as:
-	$(XCAT) $(ALDORBASICS)/$@ | \
+axextend.as: $(ALDORBASICS)/axextend.as
+	$(XCAT) $< | \
 	sed -e '/^extend Matrix/ s/Ring/AbelianMonoid/' > $@
 
-minimach.as:
-	$(XCAT) $(ALDORBASICS)/$@ | \
+minimach.as: $(ALDORBASICS)/minimach.as
+	$(XCAT) $< | \
 	sed -e 's/^#.*//;s/Language;/AxiomLib;inline from AxiomLib;/' > $@
 
-lang.as:
-	$(XCAT) $(ALDORLANG)/$@ > $@
+lang.as: $(ALDORLANG)/lang.as
+	$(XCAT) $< > $@
 
 subsetc.as: stub.as
 	grep AxiomLib $< > $@
