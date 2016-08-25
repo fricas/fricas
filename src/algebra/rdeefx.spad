@@ -492,11 +492,15 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         n := retract(args(2))@Integer::N
         r1 := args(1)
         r1rf := univariate(r1, kx)
-        degree(numer(r1rf))$UP ~=$Z 1 or denom(r1rf) ~=$UP 1 => "failed"
-        a := leadingCoefficient(numer(r1rf))
-        b := coefficient(numer(r1rf), 0)
-        a_inv := 1/a
-        c1 := (monomial(a_inv, n)$UP - (a_inv*b)::UP)::RF
+        nrf := numer(r1rf)
+        drf := denom(r1rf)
+        degree(nrf)$UP >$Z 1 or degree(drf) >$Z 1 => "failed"
+        a := coefficient(nrf, 1)
+        b := coefficient(nrf, 0)
+        c := coefficient(drf, 1)
+        d := coefficient(drf, 0)
+        c1 := (monomial(d, n)$UP - b::UP)::RF/
+              (monomial(-c, n)$UP + a::UP)::RF
         [c1, r1rf, n]
 
     INTEF ==> ElementaryIntegration(R, F)
@@ -1207,6 +1211,15 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     MULTFACT ==> MultivariateFactorize(K, Exp, R, MP)
     Exp ==> IndexedExponents(K)
 
+    mk_pow1(u : F, i : Z) : F ==
+        u^i
+
+    mk_pow(uu : F, ulst : LF, v : Vector(Z)) : F ==
+        res := mk_pow1(uu, v(1))
+        lp := [mk_pow1(ui, v(i)) for ui in ulst for i in 2..]
+        res2 := reduce(_*$F, lp, 1)
+        res*res2
+
     quadratic_log_erf_integrate(nf : UP, nfp : UP, rr1 : RF,
           a1 : F, g : F, ansp : F, derivation : UP -> UP,
           vlst : LF, ulst : LF, k : K, lk : List(K), x : SE) : PSOL2 ==
@@ -1256,21 +1269,23 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 vlst1 := cons(v, vlst1)
                 ulst1 := cons(u, ulst1)
         r4 : F := 4::F*r
-        c0 := t - s^2/r4
+        c0 := s^2/r4 - t
         c1 := s/r4
         c2 : F := 1/r4
         lv : LF :=
-            D(r, x) ~= 0 => concat([c1, c2]$LF, vlst1)
-            cons(c1, vlst1)
-        vecf := vector([D(v, x) for v in lv])$Vector(F)
-        sol_rec := solveLinearlyOverQ(vecf, D(c0, x)
-                                     )$IntegerLinearDependence(F)
+            D(r, x) ~= 0 => concat([-c1, -c2]$LF, vlst1)
+            cons(-c1, vlst1)
+        m1 := matrix([[D(v, x) for v in lv]])$Matrix(F)
+        v1 := vector([D(c0, x)])$Vector(F)
+        (m2 : Matrix(Z), v2 : Vector(Z)) := reducedSystem(m1, v1)
+        sol_rec := diophantineSystem(m2, v2)$SmithNormalForm(Z,
+                      Vector(Z), Vector(Z), Matrix(Z))
         sol_rec.particular case "failed" => [a1, r1, ansp, false]
-        sol0 := sol_rec.particular::Vector(Q)
-        empty?(sol_rec.basis)$List(Vector(Q)) =>
+        sol0 := sol_rec.particular::Vector(Z)
+        empty?(sol_rec.basis)$List(Vector(Z)) =>
             if D(r, x) ~= 0 then
                 if sol0(1)^2 ~= sol0(2) then return [a1, r1, ansp, false]
-            rcu := (retractIfCan(sol0(1)/(2::Q))$Q)@Union(Z, "failed")
+            rcu := (retractIfCan(sol0(1)::Q/(2::Q))$Q)@Union(Z, "failed")
             rcu case "failed" => [a1, r1, ansp, false]
             -- now we have a single candidate
             ri := rcu::Z
@@ -1284,12 +1299,31 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             f := multivariate(nf::RF, k)
             special_integrate1(nfp, f, k, lk, x, rr1, a1, r1, g,
                        ansp, scoeffs, cands, 0, derivation)
+        solb1 := first(sol_rec.basis)
         D(r, x) = 0 =>
-            #(sol_rec.basis) > 1 => error "impossible 11"
             -- single line of solutions
-            [a1, r1, ansp, false]
+            #(sol_rec.basis) > 1 => error "impossible 11"
+            uu := first(argument(k))
+            u0 := mk_pow(uu, ulst1, sol0)
+            u1 := mk_pow(uu, ulst1, solb1)
+            cis := solve_u(phi/u0, u1, x)$DenominatorIntegration(R, F)
+            cis case "failed" => [a1, r1, ansp, false]
+            cil := cis::List(List(F))
+            cndl := []$List(SREC)
+            for ci in cil repeat
+                ii := retract(second(ci))@Z
+                rr := sol0(1) + ii*solb1(1)
+                cndl := gammas1(nf + monomial(rr::F, 1)$UP, rr, 1, 1, 0,
+                                0, vlst, ulst, k, x, cndl)
+            cndl := reverse!(cndl)
+            vc := vector([first(ci) for ci in cil])$Vector(F)
+            as := new(#cil, 0)$Vector(F)
+            finish_special_integrate2(r1, vc, a1, as, cndl, 1, 0, k)
         #(sol_rec.basis) = 1 =>
+            -- FIXME: Unimplmented, at most two solutions
             [a1, r1, ansp, false]
+        #(sol_rec.basis) > 2 => error "impossible 12"
+        -- FIXME: Need to call quadratic solver
         [a1, r1, ansp, false]
 
     decompose1(num : UP, den : UP, eidens : List(UP)) : List(UP) ==
@@ -1949,9 +1983,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             (derivation2(numer(z1))*denom(z1) -
                 numer(z1)*derivation2(denom(z1)))/(denom(z1)*denom(z1))
         scoeffs := get_scoeffs(scands, denf, k, derivation3)
-        denf = 1 and degree(nfp) > 0 =>
-            special_integrate1(nfp, f, k, lk, x, rr1, a1, r1, g, ansp,
-                               scoeffs, scands, gexp, derivation)
         rr1f := multivariate(rr1, k)
         r1 := g - rr1f
         log_recursion := false
