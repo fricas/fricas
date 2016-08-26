@@ -95,22 +95,13 @@ I searched through files for "tex" to see what was done for the
 \spadtype{TexFormat} domain, and used grep to find which files had mention of
 \spadtype{TexFormat}.
 
-\subsection{File src/interp/setvars.boot.pamphlet}
+\subsection{File src/interp/setvars.boot}
 
 
   Create an output mathml section by analogy to the tex section.
 Remember to add the code chunk "outputmathmlCode" at the end.
 
-setvars.boot is a bootstrap file which means that it has to be
-precompiled into lisp code and then that code has to be inserted
-back into setvars.boot. To do this extract the boot code by running
-"notangle" on it.  I did this from the "tmp" directory.
-From inside axiom run ")lisp (bbottran::boottocl "tmp/setvars.boot")
-which put "setvars.clisp" into "int/interp/setvars.clisp".  Then
-replace the lisp in "setvars.boot.pamphlet" with that in the newly
-generated "setvars.clisp".
-
-The relevant code chunks appearing in "setvars.boot.pamphlet" are:
+The relevant code chunks appearing in "setvars.boot" are:
 \begin{verbatim}
     outputmathmlCode
     setOutputMathml
@@ -125,10 +116,10 @@ and the relevant variables are:
     describeSetOutputMathml
 \end{verbatim}
 
-\subsection{File setvart.boot.pamphlet}
+\subsection{File setvart.boot}
 
 
-Create an output mathml section in "setvart.boot.pamphlet" again
+Create an output mathml section in "setvart.boot" again
 patterned after the tex section.  I changed the default file
 extension from ".stex" to ".smml".
 
@@ -153,10 +144,10 @@ Relevant variables:
 Note when copying the tex stuff I changed occurrences of "tex"
 to "mathml", "Tex" to "Mathml" and "TeX" to "MathML".
 
-\subsection{File src/algebra/Makefile.pamphlet}
+\subsection{File src/algebra/Makefile.in}
 
 
-The file "src/algebra/tex.spad.pamphlet" contains
+The file "src/algebra/tex.spad" contains
 the domain \spadtype{TexFormat} (TEX) and the package
 \spadtype{TexFormat1} (TEX1).
 However the sole function of \spadtype{TexFormat1} is to \spadfun{coerce}
@@ -168,39 +159,16 @@ not appear to be used for the main purpose of delivering
 Axiom output in TeX format.  In order to keep the mathml
 package as simple as possible, and because I didn't see much
 use for this, I didn't copy the \spadtype{TexFormat1} package.  So
-no analog of the TEX1 entries in "Makefile.pamphlet" were
-needed.  One curiosity I don't understand is why TEX1
-appears in layer 4 when it seems to depend on TEX which
-appears in layer 14.
+no analog of the TEX1 entries in "Makefile.in" were
+needed.
 
-Initially I added "\${OUT}/MMLFORM.o" to layer 14 and
-"mathml.spad.pamphlet" to completed spad files in layer 14.
-When trying to compile the build failed at MMLFORM.  It left
-"MMLFORM.erlib" in "int/algebra" instead of "MMLFORM.NRLIB"
-which confused me at first because mathml.spad compiled
-under a running axiom.  By examining the file "obj/tmp/trace"
-I saw that a new dependency had been introduced, compared
-to TexFormat, with the function eltName depending on the
-domain FSAGG in layer 16.  So the lines had to be moved
-from layer 14 to layer 17.
+Added appropriate lines to "SPADFILES".
 
-Added appropriate lines to "SPADFILES" and "DOCFILES".
-
-\subsection{File src/algebra/exposed.lsp.pamphlet}
+\subsection{File src/algebra/exposed.lsp}
 
 Add the line "(|MathMLFormat| . MMLFORM)"
 
-\subsection{File src/algebra/Lattice.pamphlet}
-
-I don't see that this file is used anywhere but I made
-the appropriate changes anyway by searching for "TEX" and
-mimicing everything for MMLFORM.
-
-\subsection{File src/doc/axiom.bib.pamphlet}
-
-Added mathml.spad subsection to "src/doc/axiom.bib.pamphlet".
-
-\subsection{File interp/i-output.boot.pamphlet}
+\subsection{File interp/i-output.boot}
 
 
 This is where the \spadfun{coerce} and \spadfun{display} functions
@@ -229,7 +197,7 @@ namely "\$OutputForm".
 Also for the function "output(expr,domain)" add lines for mathml,
 e.g. "if \$mathmlFormat then mathmlFormat expr".
 
-After these changes Axiom compiled with mathml enabled under
+After these changes FriCAS compiled with mathml enabled under
 )set output.
 
 \section{package MMLFORM MathMLFormat}
