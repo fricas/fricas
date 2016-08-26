@@ -39,8 +39,16 @@ SegmentCategory(S : Type) : Category == Type with
     convert : S -> %
         ++ convert(i) creates the segment \spad{i..i}.
 
+    if S has SetCategory then SetCategory
     if S has ConvertibleTo InputForm then ConvertibleTo InputForm
-
+    if S has AbelianSemiGroup then
+        "+" : (S, %) -> %
+            ++ \spad{i+(l..h)} returns segment \spad{i+l .. i+h}.
+        "+" : (%, S) -> %
+            ++ \spad{(l..h}+i} returns segment \spad{l+i .. h+i}.
+    if S has AbelianGroup then
+        "-" : (%, S) -> %
+            ++ \spad{(l..h)-i} returns segment \spad{l-i .. h-i}.
 
 )abbrev category SEGXCAT SegmentExpansionCategory
 ++ Author:  Stephen M. Watt
@@ -85,7 +93,6 @@ SegmentExpansionCategory(S : OrderedRing, L : StreamAggregate(S)) : Category ==
 ++   This type is used to specify a range of values from type \spad{S}.
 
 Segment(S : Type) : SegmentCategory(S) with
-    if S has SetCategory then SetCategory
     if S has OrderedRing then SegmentExpansionCategory(S, List S)
   == add
 
@@ -123,6 +130,16 @@ Segment(S : Type) : SegmentCategory(S) with
             then seg
             else packageCall('BY,
                              [seg, convert(incr s)@InputForm])$INFORM1
+
+    if S has AbelianSemiGroup then
+        (i : S + s : %) ==
+            [i + lo(s), i + hi(s), incr(s)]
+        (s : % + i : S) ==
+            [lo(s) + i, hi(s) + i, incr(s)]
+
+    if S has AbelianGroup then
+        (s : % - i : S) ==
+            [lo(s) - i, hi(s) - i, incr(s)]
 
     if S has OrderedRing then
       expand(ls : List %) : List S ==
@@ -295,17 +312,12 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
     hasHi : % -> Boolean
         ++ hasHi(s) tests whether the segment s has an upper bound.
 
-    if S has SetCategory then SetCategory
-
     if S has OrderedRing then
       SegmentExpansionCategory(S, Stream S)
---    expand : (List %, S) -> Stream S
---    expand : (%, S) -> Stream S
 
   == add
-    Rec  ==> Record(low : S, high : S, incr : Integer)
+    Rec  ==> Segment S
     Rec2 ==> Record(low : S, incr : Integer)
-    SEG ==> Segment S
 
     Rep := Union(Rec2, Rec)
     a, b : S
@@ -314,39 +326,39 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
     ls : List %
 
     segment a == [a, 1]$Rec2 :: Rep
-    segment(a, b) == [a, b, 1]$Rec :: Rep
+    segment(a, b) == segment(a, b)$Rec :: Rep
     BY(s, i) ==
-      s case Rec => [lo s, hi s, i]$Rec ::Rep
+      s case Rec => BY(s, i)$Rec :: Rep
       [lo s, i]$Rec2 :: Rep
 
     lo s ==
       s case Rec2 => (s :: Rec2).low
-      (s :: Rec).low
+      low(s)$Rec
 
     low s ==
       s case Rec2 => (s :: Rec2).low
-      (s :: Rec).low
+      low(s)$Rec
 
     hasHi s == s case Rec
 
     hi s ==
       not hasHi(s) => error "hi: segment has no upper bound"
-      (s :: Rec).high
+      high(s)$Rec
 
     high s ==
       not hasHi(s) => error "high: segment has no upper bound"
-      (s :: Rec).high
+      high(s)$Rec
 
     incr s ==
       s case Rec2 => (s :: Rec2).incr
-      (s :: Rec).incr
+      incr(s)$Rec
 
     SEGMENT(a) == segment a
     SEGMENT(a, b) == segment(a, b)
 
-    coerce(sg : SEG) : % == segment(lo sg, hi sg)
+    coerce(sg : Segment S) : % == segment(lo sg, hi sg)
 
-    convert a == [a, a, 1]
+    convert a == convert(a)$Rec
 
     if S has SetCategory then
 
@@ -357,7 +369,7 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
              false
           s1 case Rec =>
              s2 case Rec =>
-                 s2.low = s2.low and s1.high = s2.high and s1.incr = s2.incr
+                 (s1 = s2)$Rec
              false
           false
 
@@ -374,24 +386,30 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
         INFORM1 ==> InputFormFunctions1(%)
 
         convert(s : %) : InputForm ==
-            if hasHi s then
-                seg := packageCall('SEGMENT,
-                                   [convert(low s)@InputForm,
-                                    convert(hi s)@InputForm])$INFORM1
-            else
-                seg := packageCall('SEGMENT,
-                                   [convert(low s)@InputForm])$INFORM1
+            s case Rec => convert(s)$Rec
+            seg := packageCall('SEGMENT,
+                               [convert(low s)@InputForm])$INFORM1
             if one?(incr s)
             then seg
             else packageCall('BY,
                              [seg, convert(incr s)@InputForm])$INFORM1
 
+    if S has AbelianSemiGroup then
+        (i : S + s : %) ==
+            s case Rec => (i+s)$Rec
+            [i + lo(s), incr(s)]
+        (s : % + i : S) ==
+            s case Rec => (s+i)$Rec
+            [lo(s) + i, incr(s)]
+
+    if S has AbelianGroup then
+        (s : % - i : S) ==
+            s case Rec => (s-i)$Rec
+            [lo(s) - i, incr(s)]
 
     if S has OrderedRing then
       expand(s : %)       == expand([s])
       map(f : S->S, s : %)  == map(f, expand s)
-
-      plusInc(t : S, a : S) : S == t + a
 
       expand(ls : List %) : Stream S ==
         st : Stream S := empty()
