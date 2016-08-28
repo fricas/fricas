@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2016-07-04],
+AC_INIT([FriCAS], [2016-08-28],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -143,10 +143,7 @@ AC_ARG_WITH([pre-generated],
     [AS_HELP_STRING([--with-pre-generated],
                     [Specify an absolute path to pre-generated fricas code.])],
     # Action if --with-pre-generated is given.
-    [AS_IF([echo "$withval"|grep ^/ >/dev/null],
-           [],
-           [AC_MSG_ERROR([--with-pre-generated must be given an absolute path.])])
-     AS_IF([test -d "$withval"],
+    [AS_IF([test -d "$withval"],
            [PREGENERATED=$withval],
            [AC_MSG_ERROR([--with-pre-generated directory does not exist.])])],
     # Action if --with-pre-generated is not given.
