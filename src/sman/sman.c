@@ -702,7 +702,7 @@ manage_spad_io(int ptcNum)
           printf("\n");
           break;
         default:
-          printf("sman: Unkown connection request type: %d\n", p);
+          printf("sman: Unknown connection request type: %d\n", p);
           break;
         }
       }
