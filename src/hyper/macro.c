@@ -267,7 +267,7 @@ parse_macro(void)
             return 1;
         else {
             fprintf(stderr,
-                    "parse_macro: Tried to pop an empty paramter stack\n");
+                    "parse_macro: Tried to pop an empty parameter stack\n");
             longjmp(jmpbuf, 1);
         }
     }
@@ -321,7 +321,7 @@ get_parameter_strings(int number,char * macro_name)
                 *buffer_pntr++ = c;
                 break;
               case '#':
-                /* uh oh, I have a paramter reference inside a paramter */
+                /* uh oh, I have a parameter reference inside a paramter */
                 /* get the number */
                 if (parameters == NULL) {
                     *buffer_pntr++ = c;
@@ -357,7 +357,7 @@ get_parameter_strings(int number,char * macro_name)
                             pnum);
                         jump();
                     }
-                    /* Now copy the paramter */
+                    /* Now copy the parameter */
                     while ((parameters->list)[pnum - 1][pc] != '\0')
                         *buffer_pntr++ = (parameters->list)[pnum - 1][pc++];
                 }
