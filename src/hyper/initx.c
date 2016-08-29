@@ -494,7 +494,7 @@ open_window(Window w)
 }
 
 /***
-  This routine gets and sets the size for a new window. If the w paramter
+  This routine gets and sets the size for a new window. If the w parameter
   is null, it means that this is the initial window. Thus the user
   preferences are checked. If this is not the first window, then the
   window w is used as a guidline, and the new window is placed on top of
