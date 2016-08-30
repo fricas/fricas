@@ -14,6 +14,11 @@ UnitGaussianElimination : with
     pre_smith : Matrix(Integer) -> Matrix(Integer)
       ++ pre_smith(m) first performs pre_gauss(m) and then
       ++ drops all rows and colums of m contaning pivots.
+    pre_lr : (Matrix(Integer), Vector(Integer), Vector(Integer)
+             ) -> Matrix(Integer)
+      ++ pre_lr(m, pi, pj) is like pre_gauss, but records positions
+      ++ of pivots in pi and pj and returns transformation matrix.
+      ++ m, pi, pj are modified in place
   == add
 
     M ==> Matrix(Integer)
@@ -26,7 +31,7 @@ UnitGaussianElimination : with
     -- pivotsk is position of pivot within column, 0 if none
     -- pivotsj and pivotsk are 0 on entry and filled with
     -- approproate values on exit
-    pre_gauss0(m : M, pivotsj : V, pivotsk : V) : Void ==
+    pre_lr0(m, pivotsj, pivotsk, adjust) ==>
         j := nrows(m)
         k := ncols(m)
         for i in 1..j repeat
@@ -47,6 +52,18 @@ UnitGaussianElimination : with
                     pp := -ml*qelt(m, n, l0)
                     for l in 1..k repeat
                         qsetelt!(m, n, l, qelt(m, n, l) + pp*qelt(m, i, l))
+                    adjust
+
+    pre_gauss0(m : M, pivotsj : V, pivotsk : V) : Void ==
+        pre_lr0(m, pivotsj, pivotsk, 0)
+
+    pre_lr(m : M, pivotsj : V, pivotsk : V) : M ==
+        m2 := scalarMatrix(nrows(m), 1)$M
+        adjust ==>
+            for l in 1..j repeat
+                qsetelt!(m2, n, l, qelt(m2, n, l) + pp*qelt(m2, i, l))
+        pre_lr0(m, pivotsj, pivotsk, adjust)
+        m2
 
     pre_gauss(m : M) : M ==
         j := nrows(m)
@@ -83,21 +100,26 @@ UnitGaussianElimination : with
         ress
 
 
-
 )abbrev package ISMITH IntegerSmithNormalForm
+
+M ==> Matrix(Integer)
+SmithForm ==> Record(Smith : M, leftEqMat : M, rightEqMat : M)
 IntegerSmithNormalForm : with
 
-    smith : Matrix(Integer) -> Matrix(Integer)
+    smith : M -> M
       ++ smith(m) computes Smith normal form of m
-    smith : (Matrix(Integer), Matrix(Integer) -> Matrix(Integer)
-            ) -> Matrix(Integer)
+    smith : (M, M -> M) -> M
       ++ smith(m, full) computes Smith normal form of m.  It
       ++ first reduces m to smaller matrix and then usess full
+      ++ to finish.
+    completeSmith : (M, M -> SmithForm) -> SmithForm
+      ++ completeSmith(m, full) computes record containing Smith normal
+      ++ form of m and the left and right equivalence matrices.
+      ++ It first reduces m to smaller matrix and then usess full
       ++ to finish.
 
   == add
 
-    M ==> Matrix(Integer)
     PS ==> UnitGaussianElimination
     V ==> Vector(Integer)
     SP ==> SmithNormalForm(Integer, V, V, M)
@@ -119,3 +141,58 @@ IntegerSmithNormalForm : with
         res
 
     smith(m : M) : M == smith(m, smith$SP)
+
+    completeSmith(m : M, full : M -> SmithForm) : SmithForm ==
+        j := nrows(m)
+        k := ncols(m)
+        j > k =>
+            res0 := completeSmith(transpose(m), full)
+            [transpose(res0.Smith), transpose(res0.rightEqMat),
+              transpose(res0.leftEqMat)]
+        pivotsj := zero(j)$V
+        pivotsk := zero(k)$V
+        m1 := copy(m)
+        m2 := pre_lr(m1, pivotsj, pivotsk)$PS
+        lj0 : List(Integer) := [i for i in 1..j | pivotsj(i) = 0]
+        lj1 : List(Integer) := [s for i in 1..j | (s := pivotsj(i)) ~= 0]
+        lj2 : List(Integer) := [i for i in 1..j | pivotsj(i) ~= 0]
+        lk0 : List(Integer) := [i for i in 1..k | pivotsk(i) = 0]
+        lk : List(Integer) := [s for i in 1..k | (s := pivotsk(i)) ~= 0]
+        ljs := concat(lj2, lj0)
+        lks := concat(lj1, lk0)
+        m3 := m1(ljs, lks)
+        m4 := m2(ljs, 1..j)
+        count := #lj2
+        m5 := m3((count + 1)..j, (count + 1)..k)
+        res1 := full(m5)
+        m6 := m4((count + 1)..j, 1..j)
+        m7 := res1.leftEqMat*m6
+        m8 := vertConcat(m4(1..count, 1..j), m7)
+        m9 := m3((count + 1)..j, 1..k)
+        m10 := res1.leftEqMat*m9
+        m11 := vertConcat(m3(1..count, 1..k), m10)
+        m12 := zero(k, k)$M
+        for i in 1..k for l in lks repeat
+            m12(l, i) := 1
+        m13 := m12(1..k, (count + 1)..k)*res1.rightEqMat
+        m14 := horizConcat(m12(1..k, 1..count), m13)
+        m15 := m11(1..j, (count + 1)..k)*res1.rightEqMat
+        m16 := horizConcat(m11(1..j, 1..count), m15)
+        for i in count..1 by -1 repeat
+            if qelt(m16, i, i) = -1 then
+                for l in 1..i repeat
+                    qsetelt!(m16, l, i, -qelt(m16, l, i))
+                for l in 1..k repeat
+                    qsetelt!(m14, l, i, -qelt(m14, l, i))
+            qelt(m16, i, i) ~= 1 =>
+                error "completeSmith: wrong diagonal"
+            for l in 1..(i - 1) repeat
+                pp := qelt(m16, l, i)
+                for n in (i + 1)..k repeat
+                    qsetelt!(m16, l, n, qelt(m16, l, n) - pp*qelt(m16, i, n))
+            for l in 1..k repeat
+                pp := qelt(m14, l, i)
+                for n in (i + 1)..k repeat
+                    qsetelt!(m14, l, n, qelt(m14, l, n) - pp*qelt(m16, i, n))
+            for n in (i + 1)..k repeat qsetelt!(m16, i, n,  0)
+        [m16, m8, m14]
