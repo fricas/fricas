@@ -855,7 +855,7 @@ IndexedAggregate(Index : Type, Entry : Type) : Category ==
 -- map: ((Entry, Entry)->Entry, %, %, Entry) -> %
 --    ++ exists c = map(f, a, b, x), i: Index where
 --    ++    c.i = f(a(i, x), b(i, x)) | index?(i, a) or index?(i, b)
-   if Entry has SetCategory and % has finiteAggregate then
+   if Entry has BasicType and % has finiteAggregate then
       entry? : (Entry, %) -> Boolean
         ++ entry?(x, u) tests if x equals \spad{u . i} for some index i.
    if Index has OrderedSet then
@@ -886,7 +886,7 @@ IndexedAggregate(Index : Type, Entry : Type) : Category ==
 
   if % has finiteAggregate then
       entries x == parts x
-      if Entry has SetCategory then
+      if Entry has BasicType then
           entry?(x, a) == member?(x, a)
 
   if Index has OrderedSet then
@@ -1108,10 +1108,7 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
    elt(x,"value") == value x
    if % has shallowlyMutable then
        setelt!(x, "value", y) == setvalue!(x,y)
-   if S has SetCategory then
-
-       -- Note that children(l) below yields a List %, that is, we call
-       -- member? from List %
+   if % has BasicType and S has BasicType then
        child?(x, l) == member?(x, children(l))
 
    if % has finiteAggregate then
@@ -1550,6 +1547,13 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
           setrest!(x, empty())
           y
 
+      map!(f, l) ==
+          y := l
+          while not empty? l repeat
+              setfirst!(l, f first l)
+              l := rest l
+          y
+
 
 )abbrev category STAGG StreamAggregate
 ++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
@@ -1614,13 +1618,6 @@ StreamAggregate(S : Type) : Category ==
                res := concat!(copy x, res)
            res
 
-       map!(f, l) ==
-           y := l
-           while not empty? l repeat
-               setfirst!(l, f first l)
-               l := rest l
-           y
-
        fill!(x, s) ==
            y := x
            while not empty? y repeat (setfirst!(y, s); y := rest y)
@@ -1670,7 +1667,8 @@ StreamAggregate(S : Type) : Category ==
 ++ exports such as
 ++ \spadfun{reverse}, \spadfun{sort}, and so on.
 LinearAggregate(S : Type) : Category ==
-  Join(IndexedAggregate(Integer, S), Collection(S)) with
+  Join(IndexedAggregate(Integer, S), Collection(S),
+       Eltable(UniversalSegment Integer, %)) with
    new : (NonNegativeInteger, S) -> %
      ++ new(n, x) returns a new aggregate of size n all of whose
      ++ entries are x.
@@ -1696,10 +1694,6 @@ LinearAggregate(S : Type) : Category ==
      ++ map(f, u, v) returns a new collection w with elements
      ++ \spad{z = f(x, y)} for corresponding elements x and y from u and v.
      ++ Note: for linear aggregates, \spad{w.i = f(u.i, v.i)}.
-   elt : (%, UniversalSegment(Integer)) -> %
-      ++ elt(u, i..j) (also written: \spad{a(i..j)}) returns the aggregate of
-      ++ elements \spad{u} for k from i to j in that order.
-      ++ Note: in general, \spad{a.s = [a.k for i in s]}.
    delete : (%, Integer) -> %
       ++ delete(u, i) returns a copy of u with the \spad{i}th element deleted.
       ++ Note: for lists,
@@ -1833,7 +1827,6 @@ LinearAggregate(S : Type) : Category ==
     if % has shallowlyMutable then
         reverse x  == reverse! copy x
         sort(f, l) == sort!(f, copy l)
-        reverse x  == reverse! copy x
 
         if S has OrderedSet then
             sort! l == sort!(_<$S, l)
@@ -1932,7 +1925,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
             identity := f(identity, qelt(a, k))
         identity
 
-    if S has SetCategory then
+    if S has BasicType then
 
         reduce(f, a, identity, absorber) ==
             for k in minIndex a .. maxIndex a while identity ~= absorber
@@ -2081,7 +2074,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
         coerce(r : %) : OutputForm ==
             bracket [qelt(r, k)::OutputForm for k in minIndex r .. maxIndex r]
 
-    if S has SetCategory then
+    if S has BasicType then
 
         x = y ==
             #x ~= #y => false
@@ -2144,7 +2137,7 @@ ExtensibleLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
    select! : (S->Boolean, %) -> %
      ++ select!(p, u) destructively changes u by keeping only values x such that
      ++ \spad{p(x)}.
-   if S has SetCategory then
+   if S has BasicType then
      remove! : (S, %) -> %
        ++ remove!(x, u) destructively removes all values x from u.
      removeDuplicates! : % -> %
@@ -2161,7 +2154,7 @@ ExtensibleLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
    concat(x : %, y : %) == concat!(copy x, y)
    concat(x : %, y : S) == concat!(copy x, new(1, y))
    concat!(x : %, y : S) == concat!(x, new(1, y))
-   if S has SetCategory then
+   if S has BasicType then
        remove(s : S, x : %) == remove!(s, copy x)
        remove!(s : S, x : %)  == remove!(y +-> y = s, x)
        removeDuplicates(x : %) == removeDuplicates!(copy x)
