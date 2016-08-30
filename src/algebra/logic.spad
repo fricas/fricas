@@ -1,0 +1,4375 @@
+)if false
+\documentclass{article}
+\usepackage{axiom}
+\usepackage{url}
+\begin{document}
+\title{lattice related mathematical structures}
+\author{Martin J Baker}
+\maketitle
+\begin{abstract}
+In this pamphlet are partial order, lattice structures and logic
+operations based on them. Logic operations based on lattice structures
+Finite lattices may be based on a poset (partial order)
+
+I have put a fuller explanation of this code here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm}
+\end{abstract}
+\section{Related Code}
+See Package 'UserDefinedPartialOrdering' in setorder.spad
+See Domain: 'PartialOrder' in catdef.spad
+\section{Introduction}
+I am using Steven Vickers book [ref 1] as a reference.
+
+There are a common set of lattice-like structures that occur in various
+branches of mathematics such as orders, logic and sets. I would like
+to represent these structures in FriCAS.
+
+\begin{table}[]
+\label{Poset and Lattice Structures}
+\begin{tabular}{lll}
+Order & Logic & Set\\
+T (top) & true & universe\\
+_|_ (bottom) & false & empty\\
+greatest lower bound & meet & intersection \\
+least upper bound & join & union
+\end{tabular}
+\end{table}
+\section{Poset Code}
+
+What I have done so far seems to be applicable to finite lattices but
+a lot of my interest in this subject would be infinite structures.
+Especially structures from Topology such as a 'frame' which is a
+complete lattice with infinite meets.  I am also interested in
+structures from computer science such as domain theory.
+
+\section{Posets and Lattices}
+
+A Partially Ordered Set (POSET) is a structure with an operator '<='
+with a binary output:
+
+<=(a : %, b : %) -> Boolean
+
+This structure has the following axioms:
+\begin{itemize}
+\item reflexivity \forall(x): x<=x
+\item antisymmetry \forall(x, y): x<=y and y<=x iff x=y
+\item transitivity \forall(x, y, z): x<=y and y<=z implies x<=z
+\end{itemize}
+
+A lattice is the same structure (every lattice is a poset, not every poset
+is a lattice) but it is an algebra (in the universal algebra sense) which
+has binary operations:
+\begin{itemize}
+\item x \vee y
+\item x \wedge y
+\end{itemize}
+Which obey the following axioms:
+
+\begin{table}[]
+\label{Lattice Axioms}
+\begin{tabular}{lll}
+commutativity \forall(x, y): & x \vee y=y \vee x & x \wedge y=y \wedge x\\
+associativity \forall(x, y, z): & (x \vee y) \vee z=y \vee (x \vee z) &
+(x \wedge y) \wedge z=y \wedge (x \wedge z)\\
+idempotence \forall x: & x \vee x=x & x \wedge x=x\\
+\end{tabular}
+\end{table}
+
+Both of these forms could probably be crunched together in the same FriCAS
+category/domain. The approved Axiom/FriCAS style seems to be to include as
+many functions as possible in categories/domains rather than separating them
+out.
+
+However we need to use these structures differently so my strategy so far is
+to have two sorts of domains:
+\begin{itemize}
+\item posets - here the representation is the whole structure.
+\item lattices - here the representation is an element of the structure.
+\end{itemize}
+
+So for the poset, the representation would be the whole structure, like this:
+\begin{verbatim}
+Rep := Record(set : List S, struct : List List Boolean)
+\end{verbatim}
+
+The lattice is an algebraicizing of this. The lattice constructor would take
+the poset as a parameter. So corresponding poset and lattice categories
+are shown in the following table:
+
+\begin{table}[]
+\label{Poset and Lattice Structures}
+\begin{tabular}{ll}
+Poset Categories & Lattice Categories\\
+Poset &                \\
+Dcpo & JoinSemilattice\\
+CoDcpo & MeetSemilattice\\
+BiCPO & Lattice
+\end{tabular}
+\end{table}
+
+\section{Utilities}
+Before the code for posets here are some utilities that they use.
+
+ListPackage code is written by Franz Lehner but these notes are written by
+me (Martin Baker) so apologies if if have misinterpreted anything.
+
+ListPackage does topological sort/splitting of lists. Should this code
+belong with other list code or should it be defined in terms of graphs?
+
+For an explanation of 'topological sorting' see this wikipedia page:
+\url{https://en.wikipedia.org/wiki/Topological_sorting}
+Topological sorting applies, in the most general case, to DAGs
+(Directed Acyclic Graph). We can define a poset from a DAG,
+alternative methods are transitive closure and transitive reduction.
+
+In the context of partial orders they are also closely related to the
+concept of a linear extension of a partial order.
+
+)endif
+)abbrev package LISTPKG ListPackage
+++ Author: Franz Lehner
+++ Date Created: 24.04.2008
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ splitting lists
+ListPackage(T : BasicType): Exports == Implementation where
+  NNI ==> NonNegativeInteger
+  Exports ==> with
+    splitList : (T -> Boolean, List T) -> Record(yes : List T, no : List T)
+      ++ \spad{splitList(f, x)} splits the list x into a
+      ++ yes part and a no part according to the boolean function f
+    topologicalSort! : ((T, T) -> Boolean, List T) -> List T
+      ++ \spad{topologicalSort(xx)} returns a rearrangement of the elements
+      ++ which is compatible with the partial order.
+      ++ The argument list xx is destroyed.
+    topologicalSort : ((T, T) -> Boolean, List T) -> List T
+      ++ \spad{topologicalSort(xx)} returns a rearrangement of the elements
+      ++ which is compatible with the partial order.
+    topologicalSort : (List(List(Boolean)), List T) -> List T
+      ++ \spad{topologicalSort(xx)} returns a rearrangement of the elements
+      ++ which is compatible with the partial order.
+      ++ (Martin Baker) I added this version because predicate function can
+      ++ be difficult to work with so use table instead.
+    shiftLeft : List T -> List T
+      ++ \spad{leftShift(l)} rotates the list l to the left and inserts the
+      ++ first element at the end
+    cartesian : List List T -> List List T
+      ++ \spad{cartesian([S1, S2, ...])} returns the set of lists
+      ++ [s1, s2, ...] with si in Si
+    cartesianPower : (List T, NonNegativeInteger) -> List List T
+      ++ \spad{cartesianPower(S, n)} returns the n-th cartesian power of
+      ++ the list S
+    if T has OrderedSet then
+      minShift : List T -> List T
+        ++ \spad{minShift(l)} returns the lexicographically minimal cyclic
+        ++ rotation of the list l
+
+  Implementation ==> add
+
+    splitList(f : T -> Boolean, l : List T
+             ) : Record(yes : List T, no : List T) ==
+        empty? l => [empty(), empty()]
+        -- fill the lists to make concat! work
+        resyes : List T := empty()
+        resno : List T := empty()
+        for t in l repeat
+            if test f(t) then
+              resyes := cons(t, resyes)
+            else
+              resno := cons(t, resno)
+        [reverse! resyes, reverse! resno]
+
+    topologicalSort!(f, xx) ==
+        bucket : List T := empty()
+        res : List List T := empty()
+        while not empty? xx repeat
+            x0 := first xx
+            xx := rest xx
+            bucket := [x0]
+            xx1 : List T := empty()
+            for x in xx repeat
+                if f(x0, x) then
+                    bucket := cons(x, bucket)
+                else
+                    xx1 := cons(x, xx1)
+            res := cons(reverse bucket, res)
+            xx := reverse xx1
+        concat res
+
+    topologicalSort(f, xx) ==
+        xx1 := copy xx
+        topologicalSort!(f, xx1)
+
+    -- \spad{topologicalSort(xx)} returns a rearrangement of the elements
+    -- which is compatible with the partial order.
+    -- (Martin Baker) I added this version because predicate function can
+    -- be difficult to work with so use table instead.
+    topologicalSort(adjacency : List(List(Boolean)), xx : List(T)) ==
+        -- concert to with indexes to work with
+        xi : List(NNI) := [n for n in 1..(#xx)]
+        bucket : List NNI := empty()
+        res : List(List(NNI)) := empty()
+        while not empty? xi repeat
+            x0 := first xi
+            xi := rest xi
+            bucket := [x0]
+            xx1 : List NNI := empty()
+            for x in xi repeat
+                if adjacency.x0.x then
+                    bucket := cons(x, bucket)
+                else
+                    xx1 := cons(x, xx1)
+            res := cons(reverse bucket, res)
+            xi := reverse xx1
+        r : List(NNI) := concat res
+        -- convert back to values from indexes
+        [xx.p for p in r]
+
+    shiftLeft(xx) ==
+        empty? xx => return xx
+        concat (rest xx, first xx)
+
+    if T has OrderedSet then
+
+        minShift(xx) ==
+            empty? xx => return xx
+            empty? rest xx => return xx
+            res := xx
+            xx1 := xx
+            for k in 2..#xx repeat
+                xx1 := shiftLeft xx1
+                if xx1 < res then
+                    res := xx1
+            res
+
+    cartesian(SS : List List T) : List List T ==
+        one? (# SS) => return [[s] for s in first SS]
+        res : List List T := empty()
+        for x in cartesian rest SS repeat
+            for s in first SS repeat
+                res := cons(cons(s, x), res)
+        res
+
+    cartesianPower(S : List T, n : NonNegativeInteger) : List List T ==
+        empty? S or zero? n  => return empty()
+        one? n => return [[s] for s in S]
+        res : List List T := empty()
+        for x in cartesianPower(S, qcoerce(n-1)) repeat
+            for s in S repeat
+                res := cons(cons(s, x), res)
+        res
+
+)if false
+\section{domain INCALG IncidenceAlgebra}
+At the moment my (Martin Baker) poset code uses an adjacency matrix for
+the Rep of a poset (with entries being boolean values - so an adjacency
+array).  See FinitePoset below.
+
+The code here implements the incidence algebra of posets.
+
+Franz Lehner originally used the name IncidenceMatrix for this. I changed
+this because it tends to be used for matrix where: rows are vertices and
+columns are edges as described here:
+\url{https://en.wikipedia.org/wiki/Incidence_matrix}
+So I changed the name IncidenceMatrix to IncidenceAlgebra.
+
+From \url{http://wiki.axiom-developer.org/SandBoxCategoryOfGraphs2}.
+Notes: \axiom{S : Type} does not work because
+\verb|position(i, V)$OneDimensionalArray S|
+requires \axiom{SetCategory}.
+
+)endif
+)abbrev domain INCALG IncidenceAlgebra
+++ Author: Franz Lehner lehner@math.tugraz.at
+++ Date Created: 30 April 2013
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++   A domain for incidence matrices of finite posets.
+IncidenceAlgebra(R : Ring, S : SetCategory): Decl == Impl where
+    IND ==> OneDimensionalArray S
+    Decl ==> SetCategory with
+      -- IncidenceAlgebra declarations
+      --constructor
+      incidenceAlgebra : (Matrix R, List S) -> %
+        ++ \spad{incidenceAlgebra(A, ss)}
+        ++ constructs an adjacency matrix with with indices ss and Matrix A
+      incidenceAlgebra : (Matrix R, OneDimensionalArray S) -> %
+        ++ \spad{incidenceAlgebra(A, ss)}
+        ++ constructs an adjacency matrix with with indices ss and Matrix A
+      --access
+      indices : % -> OneDimensionalArray S
+        ++ \spad{indices(A)} returns the indices of the incidence matrix A
+      matrix : % -> Matrix R
+        ++ \spad{matrix(A)} returns the underlying matrix
+        ++ of the incidence matrix A
+      apply : (%, Integer, Integer) -> R
+        ++ \spad{A(i, j)} returns $A_{i, j}$
+      apply : (%, S, S) -> R
+        ++ \spad{A(s, t)} returns $A_{i, j}$, where $i$, $j$ are the positions
+        ++ of $s$ and $t$ in the index list.
+      -- output
+      coerce : % -> OutputForm
+      -- manipulations
+      _* : (Permutation Integer, %) -> %
+        ++ \spad{\pi * A} permutes the indices and the matrix according to the
+        ++ permutation \spad{\pi}.
+      -- _* : (Permutation S, %) -> %
+      -- arithmetics
+      "+" : (%, %) -> %
+        ++ \spad{x + y} is the sum of the matrices x and y.
+        ++ Error: if the dimensions are incompatible.
+      "*" : (%, %) -> %
+        ++ \spad{x * y} is the product of the matrices x and y.
+        ++ Error: if the dimensions are incompatible.
+      "*" : (R, %) -> %
+        ++ \spad{r*x} is the left scalar multiple of the scalar r and the
+        ++ matrix x.
+      "*" : (%, R) -> %
+        ++ \spad{r*x} is the left scalar multiple of the scalar r and the
+        ++ matrix x.
+      "^" : (%, NonNegativeInteger) -> %
+        ++ \spad{x ^ n} computes a non-negative integral power of the
+        ++ matrix x.  Error: if the matrix is not square.
+    Impl ==> add
+
+      Rep := Record(matrix : Matrix R, indices : IND)
+      Ai, Bi, Ci : Matrix R
+      r : R
+      A, B : %
+      ss : List S
+      i, j : Integer
+      u, v : S
+
+-- IncidenceAlgebra implementation
+
+      incidenceAlgebra(Ai : Matrix R, ssa : OneDimensionalArray S) : % ==
+          if (nrows Ai ~= #ssa) or (ncols Ai ~= #ssa) then
+              error "Sizes not compatible"
+          [Ai, ssa]
+
+      incidenceAlgebra(Ai, ss) == incidenceAlgebra(Ai, oneDimensionalArray ss)
+
+      indices A == A.indices
+
+      matrix A == A.matrix
+
+      apply(A, i, j) == (A.matrix)(i, j)
+
+      apply(A, u, v) ==
+          i := position(u, indices A)
+          zero? i => error "First index is not a vertex"
+          j := position(v, indices A)
+          zero? j => error "Second index is not a vertex"
+          (A.matrix)(i, j)
+
+      (p : Permutation Integer) * (A) ==
+          mp : Set Integer := movedPoints p
+          n : Integer := # indices A
+          if (min mp) < 1 or (max mp) > n then
+                  error "Permutation out of range"
+          -- permute the indices
+          newindices : OneDimensionalArray S :=
+              oneDimensionalArray [(indices A)(eval(p, i)) for i in 1..n]
+          -- permutation matrix
+          indic : List Integer := [eval(p, i) for i in 1..n]
+          newA : Matrix R := (matrix A)(indic, indic)
+          [newA, newindices]
+
+      coerce(A) : OutputForm ==
+          bracket commaSeparate [(matrix A)::OutputForm,
+                                 (indices A)::OutputForm]
+
+      _=(A1 : %, A2 : %) : Boolean ==
+          (indices A1 = indices A2) and (matrix A1 = matrix A2)
+
+      -- Arithmetics
+
+      A + B ==
+          Aind := indices A
+          Bind := indices B
+          if Aind ~= Bind then
+              error "incompatible indices"
+          Ci := matrix A + matrix B
+          incidenceAlgebra(Ci, Aind)
+
+      A * B ==
+          Aind := indices A
+          Bind := indices B
+          if Aind ~= Bind then
+              error "incompatible indices"
+          Ci := matrix A * matrix B
+          incidenceAlgebra(Ci, Aind)
+
+      r * A ==
+          Aind := indices A
+          Ci := r*matrix A
+          incidenceAlgebra(Ci, Aind)
+
+      A * r ==
+          Aind := indices A
+          Ci := (matrix A) * r
+          incidenceAlgebra(Ci, Aind)
+
+      A^n ==
+          Aind := indices A
+          Ci := (matrix A)^n
+          incidenceAlgebra(Ci, Aind)
+
+)if false
+\section{domain FMOEBF FiniteMoebiusFunction}
+Code for FiniteMoebiusFunction by Franz Lehner. Notes by Martin Baker are here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/moebius/}
+
+This domain computes Moebius functions of finite subposets
+of infinite posets given by lists of elements.
+It computes the zeta matrix and stores its inverse.
+
+)endif
+)abbrev domain FMOEBF FiniteMoebiusFunction
+++ Author: Franz Lehner
+++ Date Created: 06.03.2011
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ A domain for Moebius functions of explicit subposets
+++ of infinite posets.
+FiniteMoebiusFunction(P : Join(PartialOrder, SetCategory)
+                     ) : Exports == Implementation where
+  R ==> Integer
+  NNI ==> NonNegativeInteger
+  MATL ==> Record(matrix : Matrix R, indices : List P)
+  TRIMATI ==> TriangularMatrixOperations(R, Vector R, Vector R, Matrix R)
+
+  Exports ==> SetCategory with
+    moebiusFunction : List P -> %
+      ++ \spad{moebiusFunction(pp)} creates the canonical
+      ++ zeta matrix and inverts it.
+    moebiusMu : (mf : %, pi : P, si : P) -> R
+      ++ \spad{moebiusMu(mf, pi, si)} evaluates the Moebius function
+    apply : (mf : %, pi : P, si : P) -> R
+      ++ \spad{mf(pi, si)} evaluates the Moebius function mf at pi and si
+    members : % -> List P
+      ++ \spad{members(mf)} returns the elements of the subposet
+    moebiusMatrix : % -> Matrix R
+      ++ \spad{moebiusMatrix(P)} returns the Moebius matrix
+
+  Implementation ==> add
+    Rep :=  MATL
+    rep(x : %) : Rep == x::Rep
+    per(r : Rep) : % == r::%
+
+    members(mf : %) : List P == rep(mf).indices
+
+    moebiusFunction(xx : List P) : % ==
+        xxo : List P := removeDuplicates topologicalSort("<=", xx
+                                                        )$(ListPackage P)
+        zf : Matrix R := matrix [[(if x <= y then 1 else 0) for y in xxo]
+                                    for x in xxo]
+        mf : Matrix R := UpTriBddDenomInv(zf, 1)$TRIMATI
+        per ([mf, xxo]$Rep)
+
+    canonicalZeta : (P, P) -> R
+    canonicalZeta(pi, si) ==
+        if pi <= si then
+            return 1
+        0
+
+    moebiusMu(mf : %, x : P, y : P) ==
+        mfn : Matrix R := (rep mf) matrix
+        kx := position(x, members mf)
+        ky := position(y, members mf)
+        zero? kx or zero? ky =>
+            error "not members"
+        return (mfn)(kx, ky)
+
+    apply(mf : %, x : P, y : P) ==
+        mfn : Matrix R := (rep mf) matrix
+        kx := position(x, members mf)
+        ky := position(y, members mf)
+        zero? kx or zero? ky =>
+            error "not members"
+        return (mfn)(kx, ky)
+
+    moebiusMatrix(mf : %) : Matrix R == rep(mf) matrix
+
+    coerce(mf : %) : OutputForm ==
+        hconcat("Moebius Function"::OutputForm, coerce(members(mf)))
+
+)if false
+\section{domain GENMOEBF GeneralizedFiniteMoebiusFunction}
+Code for GeneralizedFiniteMoebiusFunction by Franz Lehner. Notes by
+Martin Baker are here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/moebius/}
+
+A \emph{generalized Moebius function} is the inverse
+of an upper triangular matrix on a poset
+which is not necessarily the zeta matrix.
+It works similar to the domain \axiom{FiniteMoebiusFunction}.
+)endif
+)abbrev domain GENMOEBF GeneralizedFiniteMoebiusFunction
+++ Author: Franz Lehner
+++ Date Created: 06.03.2011
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ A domain for generalized Moebius functions of explicit subposets.
+GeneralizedFiniteMoebiusFunction(P : Join(PartialOrder, SetCategory), R: Field) : Exports == Implementation where
+  NNI ==> NonNegativeInteger
+  MATL ==> Record(zmatrix : Matrix R, mmatrix : Matrix R, indices : List P)
+  TRIMATI ==> TriangularMatrixOperations(R, Vector R, Vector R, Matrix R)
+
+  Exports ==> with
+    generalizedMoebiusFunction : (List P, (P, P) -> R) -> %
+      ++ \spad{generalizedMoebiusFunction(pp, zeta)} inverts the given
+      ++ zeta function
+    canonicalMoebiusFunction : (List P) -> %
+      ++ \spad{canonicalMoebiusFunction(pp)} inverts the canonical zeta
+      ++ function
+    apply : (mf : %, pi : P, si : P) -> R
+      ++ \spad{mf(pi, si)} evaluates the Moebius function mf at pi and si
+    members : % -> List P
+      ++ \spad{members(mf)} returns the elements of the subposet
+    moebiusMatrix : % -> Matrix R
+      ++ \spad{moebiusMatrix()} returns the Moebius matrix
+
+  Implementation ==> add
+
+    Rep :=  MATL
+    rep(x : %) : Rep == x::Rep
+    per(r : Rep) : % == r::%
+
+    members(mf : %) : List P == rep(mf).indices
+
+    generalizedMoebiusFunction(xx : List P, z : (P, P) -> R) : % ==
+        xxo : List P := removeDuplicates topologicalSort("<=", xx
+                                                        )$(ListPackage P)
+        zf : Matrix R := matrix [[(if y <= x then z(x, y) else 0)
+                                    for x in xxo] for y in xxo]
+        mf : Union(Matrix R, "failed") := inverse zf
+        mf case "failed" => error "zeta not invertible"
+        return per ([zf, mf, xxo]$Rep)
+
+    canonicalZeta : (P, P) -> R
+    canonicalZeta(pi, si) ==
+        if pi <= si then
+            return 1
+        0
+
+    apply(mf : %, x : P, y : P) ==
+        mfn : Matrix R := (rep mf) mmatrix
+        kx := position(x, members mf)
+        ky := position(y, members mf)
+        zero? kx or zero? ky =>
+            error "not members"
+        return (mfn)(ky, kx)
+
+    moebiusMatrix(mf : %) : Matrix R == rep(mf) mmatrix
+
+    zetaMatrix(mf : %) : Matrix R == rep(mf) zmatrix
+
+    coerce(mf : %) : OutputForm == "m"::OutputForm
+
+)if false
+\section{Poset Code}
+As already described, the representation in the following categories contains
+the whole order and not just one element (unlike PartialOrder in catdef.spad).
+)endif
+
+)abbrev category PREORD Preorder
+++ Author: Martin Baker
+++ Description: implies operation with reflexivity and transitivity
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Related Domains: PartialOrder in catdef.spad
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+++ Date Created: Aug 2015
+Preorder(S) : Category == Definition where
+ S : SetCategory
+ NNI ==> NonNegativeInteger
+ Definition ==> FiniteGraph(S) with
+    le : (s : %, NNI, NNI) -> Boolean
+      ++ less than or equal
+      ++ I would have liked to have used: "<=" instead of "le"
+      ++ "<=" compiles but when called gives:
+      ++ Internal Error: The function <= with signature hashcode is
+      ++ missing from domain
+
+)abbrev category POSET Poset
+++ Author: Martin Baker
+++ Description: holds a complete set together with a structure to codify
+++   the partial order.
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Date Created: Aug 2015
+++ Basic Operations:
+++ Related packages: UserDefinedPartialOrdering in setorder.spad
+++ Related categories: PartialOrder in catdef.spad
+++ Related Domains: DirectedGraph in graph.spad
+++ Also See:
+++ AMS Classifications:
+++ Keywords: poset partial order
+++ Examples: power set structure
+++ References:
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: antisymmetry forall(x, y): x<=y and y<=x iff x=y
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+Poset(S) : Category == Definition where
+ S : SetCategory
+ PI ==> PositiveInteger
+ NNI ==> NonNegativeInteger
+ SINT ==> SingleInteger
+ OBJT ==> Record(value : S, posX : NNI, posY : NNI)
+ ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI,
+           toOb : NNI, xOffset : Integer, yOffset : Integer, map : List NNI)
+ x<<y ==> hconcat(x::OutputForm, y::OutputForm)
+
+ Definition ==> Preorder(S) with
+
+     finitePoset : (carrier : List S, struct1 : List List Boolean) -> %
+       ++ constructor where the set and structure is supplied.
+
+     finitePoset : (carrier : List S, pred : ((S, S) -> Boolean)) -> %
+       ++ constructor where the set and structure is supplied.
+       ++ The structure is supplied as a predicate function.
+
+     getVert : (s : %) -> List S
+       ++ getVert(s) returns a list of all the vertices (or objects)
+       ++ of the graph s.
+       ++ Note: different from getVertices(s) which is inherited
+       ++ from FiniteGraph(S)
+     getArr : (s : %) -> List List Boolean
+       ++ getArr(s) returns a list of all the arrows (or edges)
+       ++ Note: different from getArrows(s) which is inherited from
+       ++ FiniteGraph(S)
+
+     setVert : (s : %, v : List S) -> Void
+       ++ sets the list of all vertices (or objects)
+
+     setArr : (s : %, v : List List Boolean) -> Void
+       ++ sets the list of all arrows (or edges)
+
+     addObject : (s : %, n : S) -> %
+       ++ addObject!(s, n) adds object with coordinates n to the
+       ++ graph s.
+       ++ This is done in a non-mutable way, that is, the original
+       ++ poset is not changed instead a new one is constructed.
+     addArrow : (s : %, n1 : NNI, n2 : NNI) -> %
+       ++ addArrow!(s, nm, n1, n2) adds an arrow to the graph s, where:
+       ++ n1 is the index of the start object
+       ++ n2 is the index of the end object
+       ++ This is done in a non-mutable way, that is, the original
+       ++ poset is not changed instead a new one is constructed.
+
+     opposite : (s : %) -> %
+       ++ constructs the opposite in the category theory sense of reversing
+       ++ all the arrows
+
+     powerSetStructure : (objs : S) -> %
+       ++ powerSetStructure(set) is a constructor for a Poset
+       ++ where each element is a set (implemented as a list)
+       ++ and with a subset structure.
+       ++ requires S to be a list.
+
+     implies : (s : %, NNI, NNI) -> Boolean
+
+     meetIfCan : (s : %, a : NNI, b : NNI) -> Union(NNI, "failed")
+       ++ returns the meet of 'a' and 'b'
+       ++ In this version of meet nodes are represented as index values.
+       ++ In the general case, not every poset will have a meet in which case
+       ++ "failed" will be returned as an error indication.
+
+     joinIfCan : (s : %, a : NNI, b : NNI) -> Union(NNI, "failed")
+       ++ returns the join of 'a' and 'b'
+       ++ In this version of join nodes are represented as index values.
+       ++ In the general case, not every poset will have a join in which case
+       ++ "failed" will be returned as an error indication.
+
+     meetIfCan : (s : %, elements : List(NNI)) -> Union(NNI, "failed")
+       ++ returns the meet of a subset of lattice given by list of elements
+
+     joinIfCan : (s : %, elements : List(NNI)) -> Union(NNI, "failed")
+       ++ returns the join of a subset of lattice given by list of elements
+
+     glb : (s : %, a : List NNI) -> Union(NNI, "failed")
+       ++ 'greatest lower bound' or 'infimum'
+       ++ In this version of glb nodes are represented as index values.
+       ++ Not every subset of a poset will have a glb in which case
+       ++ "failed" will be returned as an error indication.
+
+     lub : (s : %, a : List NNI) -> Union(NNI, "failed")
+       ++ 'least upper bound' or 'supremum'
+       ++ In this version of lub nodes are represented as index values.
+       ++ Not every subset of a poset will have a lub in which case
+       ++ "failed" will be returned as an error indication.
+
+     upperSet : (s : %) -> %
+       ++ a subset U with the property that, if x is in U and x <= y,
+       ++ then y is in U
+
+     lowerSet : (s : %) -> %
+       ++ a subset U with the property that, if x is in U and x >= y,
+       ++ then y is in U
+
+     indexToObject : (s : %, index : NNI) -> S
+       ++ returns the object at a given index
+
+     objectToIndex : (s : %, obj : S) -> NNI
+       ++ returns the index of a given object
+
+     completeReflexivity : (s : %) -> %
+       ++ Reflexivity requires forall(x): x<=x
+       ++ This function enforces this by making sure that every element has
+       ++ arrow to itself. That is, the leading diagonal is true.
+
+     completeTransitivity : (s : %) -> %
+       ++ Transitivity requires forall(x, y, z): x<=y and y<=z implies x<=z
+       ++ This function enforces this by making sure that the composition
+       ++ of any two arrows is also an arrow.
+
+     isAntisymmetric? : (s : %) -> Boolean
+       ++ Antisymmetric requires forall(x, y): x<=y and y<=x iff x=y
+       ++ Returns true if this is the case for every element.
+
+     isChain? : (s : %) -> Boolean
+       ++ is a subset of a partially ordered set such that any two elements
+       ++ in the subset are comparable
+
+     isAntiChain? : (s : %) -> Boolean
+       ++ is a subset of a partially ordered set such that any two elements
+       ++ in the subset are incomparable
+
+     moebius : (s : %) -> IncidenceAlgebra(Integer, S)
+       ++ moebius incidence matrix for this poset
+       ++ This function is based on code by Franz Lehner.
+       ++ Notes by Martin Baker on the webpage here:
+       ++ \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/moebius/}
+
+     zetaMatrix : (s : %) -> IncidenceAlgebra(Integer, S)
+       ++ \spad{zetaMatrix(P)} returns the matrix of the zeta function
+       ++ This function is based on code by Franz Lehner.
+       ++ Notes by Martin Baker on the webpage here:
+       ++ \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/moebius/}
+
+     coverMatrix : (s : %) -> IncidenceAlgebra(Integer, S)
+       ++ the covering matrix of a list of elements from a comparison function
+       ++ the list is assumed to be topologically sorted (i.e., w.r. to
+       ++ a linear extension of the comparison function f
+       ++ This function is based on code by Franz Lehner.
+       ++ Notes by Martin Baker on the webpage here:
+       ++ \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/moebius/}
+
+  add
+
+      -- adds an object to this poset
+      addObject(s : %, n : S) : % ==
+          dim : NNI := #(getVert(s)) + 1
+          obs : List S := concat(getVert(s), n)
+          arrows := []$List(List(Boolean))
+          for a in getArr(s) repeat
+              width : NNI := #a
+              padding : Union(NNI, "failed") := subtractIfCan(dim, width)
+              if padding ~= "failed" then
+                  diff : NNI := padding::NNI
+                  --print(("addObject diff=", string(diff))$String)])
+                  for x in 1..diff repeat
+                      a := concat(a, false)
+              if empty?(arrows)
+                  then arrows := [a]
+                  else arrows := concat(arrows, a)
+          emptyRow : List Boolean := [false for x in 1..dim]
+          arrows := concat(arrows, emptyRow)
+          finitePoset(obs, arrows)
+
+      -- TODO - make this non-mutable
+      -- adds an arrow to this graph, where:
+      -- s is the graph where the arrow is to be added
+      -- n1 is the index of the start object
+      -- n2 is the index of the end object
+      addArrow(s : %, n1 : NNI, n2 : NNI) : % ==
+          a : List Boolean := qelt(getArr(s), n1)
+          setelt!(a, n2, true)
+          setelt!(getArr(s), n1, a)
+          finitePoset(getVert(s), getArr(s))
+
+      -- local function to test a single value in the arrow matrix
+      isArrow?(arr : List(List(Boolean)), a : NNI, b : NNI) : Boolean ==
+          row : NNI := 1
+          for x in arr repeat
+              if row = a then
+                  val : Boolean := qelt(x, b)
+                  return val
+              row = row + 1
+          false
+
+      le(s : %, a : NNI, b : NNI) : Boolean == isArrow?(getArr(s), a, b)
+
+      -- local function to set a single value in the arrow matrix
+      setArrow!(arr : List(List(Boolean)), a : NNI, b : NNI, c : Boolean
+               ) : Void ==
+          row : NNI := 1
+          for x in arr repeat
+              if row = a then
+                  setelt!(x, b, c)
+                  return void
+              row = row + 1
+          void
+
+      -- start of FiniteGraph implementation
+
+      -- addObject!(s, n) adds object n to the graph s.
+      -- mutable version of addObject.
+      addObject!(s : %, n : S) : % ==
+          dim : NNI := #(getVert(s)) + 1
+          obs : List S := concat(getVert(s), n)
+          arrows := []$List(List(Boolean))
+          for a in getArr(s) repeat
+              width : NNI := #a
+              padding : Union(NNI, "failed") := subtractIfCan(dim, width)
+              if padding ~= "failed" then
+                  diff : NNI := padding::NNI
+                  --print("addObject! diff="::Symbol << string(diff))
+                  for x in 1..diff repeat
+                      a := concat(a, false)
+              if empty?(arrows)
+                  then arrows := [a]
+                  else arrows := concat(arrows, a)
+          emptyRow : List Boolean := [false for x in 1..dim]
+          arrows := concat(arrows, emptyRow)
+          setVert(s, obs)
+          setArr(s, arrows)
+          s
+
+      -- addObject!(s, n) adds object with coordinates n to the
+      -- graph s.
+      addObject!(s : %, n : OBJT) : % ==
+          ob : S := n.value
+          addObject!(s, ob)
+
+      -- addArrow!(s, nm, n1, n2) adds an arrow to the graph s, where:
+      -- nm is the name of the arrow
+      -- n1 is the index of the start object
+      -- n2 is the index of the end object
+      addArrow!(s : %, name : String, n1 : NNI, n2 : NNI) : % ==
+          a : List Boolean := qelt(getArr(s), n1)
+          setelt!(a, n2, true)
+          setelt!(getArr(s), n1, a)
+          finitePoset(getVert(s), getArr(s))
+
+      -- addArrow!(s, nm, n1, n2, mp) adds an arrow to the graph s, where:
+      -- nm is the name of the arrow
+      -- n1 is the index of the start object
+      -- n2 is the index of the end object
+      -- mp is a map represented by this arrow
+      addArrow!(s : %, name : String, n1 : NNI, n2 : NNI, mp : List NNI) : % ==
+          addArrow!(s, name, n1, n2)
+
+      -- getVertices(s) returns a list of all the vertices (or objects)
+      -- of the graph s.
+      getVertices(s : %) : List(OBJT) ==
+          [[x, 0::NNI, 0::NNI] for x in getVert(s)]
+
+      -- getArrows(s) returns a list of all the arrows (or edges)
+      getArrows(s : %) : List(ARROW) ==
+          res : List(ARROW) := []
+          dim : NNI := #getArr(s)
+          for x in 1..dim for row in getArr(s) repeat
+              for y in 1..dim for val in row repeat
+                  if val then
+                      arr : ARROW := ["x", 0::NNI, x pretend NNI,
+                                       y pretend NNI, 0::Integer, 0::Integer,
+                                         []$List(NNI)]
+                      res := concat(res, arr)
+          res
+
+      -- flatten(n) takes a second order graph, we don't really need
+      -- this here so return an empty poset.
+      flatten(n : DirectedGraph(%)) : % ==
+          finitePoset([], [[]$List(Boolean)])
+
+      -- initial constructs a graph without vertices or edges
+      initial() : % ==
+          finitePoset([], []$List(List(Boolean)))
+
+      -- terminal(a) constructs a graph over a with a single vertex
+      -- and a single loop
+      terminal(a : S) : % ==
+          finitePoset([a], [[true]])
+
+      -- cycleOpen(objs, arrowName) constructs a graph with vertices
+      -- (from objs) connected in a cycle but with one gap. The last
+      -- vertex in the sequence loops back to itself so all vertices
+      -- have one outgoing arrow.
+      -- arrowName is a prefix for all arrow names, this will be
+      -- followed by a number starting at 1 and incremented for each
+      -- arrow
+      cycleOpen(objs : List S, arrowName : String) : % ==
+          finitePoset([], [[]$List(Boolean)])
+
+      -- cycleClosed : (objs : List S, arrowName : String) constructs a graph
+      -- with vertices (from objs) connected in a cycle.
+      -- arrowName is a prefix for all arrow names, this will be
+      -- followed by a number starting at 1 and incremented for each
+      -- arrow
+      cycleClosed(objs : List S, arrowName : String) : % ==
+          finitePoset([], [[]$List(Boolean)])
+
+      -- unit(objs, arrowName) constructs a graph with vertices
+      -- (from objs) and arrows from each object to itself.
+      -- arrowName is a prefix for all arrow names, this will be
+      -- followed by a number starting at 1 and incremented for each
+      -- arrow
+      unit(objs : List(S), arrowName : String) : % ==
+          dim : NNI := #objs
+          arrs : List(List(Boolean)) := [[]$List(Boolean)]
+          for x in 1..dim repeat
+              row : List Boolean := []
+              for y in 1..dim repeat
+                  val : Boolean := (x = y)
+                  row := concat(row, val)
+              arrs := concat(arrs, row)
+          finitePoset(objs, arrs)
+
+      -- kgraph(objs, arrowName)
+      -- constructs a graph with vertices (from objs) and fully
+      -- connected arrows, that is, each object has an arrow to
+      -- every other object except itself.
+      -- arrowName is a prefix for all arrow names, this will be
+      -- followed by a number starting at 1 and incremented for each
+      -- arrow
+      kgraph(objs : List S, arrowName : String) : % ==
+          finitePoset([], [[false]])
+
+      -- isDirectSuccessor?(s, a, b) is
+      -- true if 'b' is a direct successor of 'a'
+      -- that is, if there is a direct arrow from 'a' to 'b'
+      isDirectSuccessor?(s : %, a : NNI, b : NNI) : Boolean ==
+          row : List Boolean := qelt(getArr(s), a)
+          qelt(row, b)
+
+      -- isGreaterThan?((s, a, b) is
+      -- true if we can get from vertex 'a' to 'b' through a
+      -- sequence of arrows but we can't go in the opposite
+      -- direction from 'b' to 'a'
+      isGreaterThan?(s : %, a : NNI, b : NNI) : Boolean ==
+          row : List Boolean := qelt(getArr(s), a)
+          qelt(row, b)
+
+      -- max(s) returns index of the vertex which can be reached
+      -- from all other vertices. Gives 0 if no such node exists
+      -- or if it is not unique, if there is a loop for instance.
+      max(s : %) : NNI ==
+          arr : List(NNI) := []
+          index : NNI := 1::NNI
+          for x in getArr(s) repeat
+              arr := concat(arr, index)
+              index := index + 1
+          res : Union(NNI, "failed") := meetIfCan(s, arr)
+          if res = "failed" then return 0::NNI
+          res::NNI
+
+      -- max(s, sub) returns index of the vertex which
+      -- can be reached from a given subset of the vertices. Gives
+      -- 0 if no such node exists or if it is not unique, if there
+      -- is a loop for instance.
+      max(s : %, sub : List NNI) : NNI ==
+          res : Union(NNI, "failed") := meetIfCan(s, sub)
+          if res = "failed" then return 0::NNI
+          res::NNI
+
+      -- min(s) returns index of the vertex which can reach to all
+      -- other vertices. Gives 0 if no such node exists or if it is
+      -- not unique, if there is a loop for instance.
+      min(s : %) : NNI ==
+          arr : List(NNI) := []
+          index : NNI := 1::NNI
+          for x in getArr(s) repeat
+              arr := concat(arr, index)
+              index := index + 1
+          res : Union(NNI, "failed") := joinIfCan(s, arr)
+          if res = "failed" then return 0::NNI
+          res::NNI
+
+      -- min(s, sub) returns index of the vertex which can reach
+      -- to a given subset of the vertices. Gives 0 if no such node
+      -- exists or if it is not unique, if there is a loop for instance.
+      min(s : %, sub : List NNI) : NNI ==
+          res : Union(NNI, "failed") := joinIfCan(s, sub)
+          if res = "failed" then return 0::NNI
+          res::NNI
+
+      -- isFixPoint?(s, a) is
+      -- true if 'a' has an arrow to itself
+      -- should always be true due to reflexivity law
+      isFixPoint?(s : %, a : NNI) : Boolean ==
+          true
+
+      -- arrowName(s, a, b) retrieves
+      -- the name of arrow a->b
+      -- if it does not exist then return "?"
+      arrowName(s : %, a : NNI, b : NNI) : String ==
+          "?"
+
+      -- getArrowIndex(s, a, b) retrieves
+      -- arrow index of the arrow form a to b
+      getArrowIndex(s : %, a : NNI, b : NNI) : NNI ==
+          0::NNI
+
+      -- inDegree(s, a) gives the number of arrows leading in to node
+      -- 'a' in graph 's'
+      inDegree(s : %, a : NNI) : NNI ==
+          0::NNI
+
+      -- outDegree(s, a) gives
+      -- the number of arrows leading out of node 'a' in graph 's'
+      outDegree(s : %, a : NNI) : NNI ==
+          0::NNI
+
+      -- nodeFromNode(s, a) gives list
+      -- of all nodes with a direct arrow leading
+      -- in to node 'a' in graph 's'
+      nodeFromNode(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- nodeToNode(s, a) gives list of all nodes with a direct arrow leading
+      -- out of node 'a' in graph 's'
+      nodeToNode(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- arrowsFromNode(s, a) gives list of all arrows leading to a given node
+      arrowsFromNode(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- arrowsToNode(s, a) gives list of all arrows leading from a given node
+      arrowsToNode(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- nodeFromArrow(s, a) returns index of all nodes with a direct
+      -- arrow leading in to arrow 'a' in graph 's'
+      nodeFromArrow(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- nodeToArrow(s, a) returns index of all nodes with a direct
+      -- arrow leading out of arrow 'a' in graph 's'
+      nodeToArrow(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- index of all arrows leading to a given arrow
+      arrowsFromArrow(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- arrowsToArrow : (s : %, a : NNI) returns index of all arrows
+      -- leading from a given arrow
+      arrowsToArrow(s : %, a : NNI) : List NNI ==
+          [0::NNI]
+
+      -- routeNodes(s, a, b) gives the shortest route between
+      -- nodes 'a' and 'b' as a sequence of node indexes.
+      -- [a] if  'a' = 'b'
+      -- [] if it is not possible to go from 'a' to 'b'
+      routeNodes(s : %, a : NNI, b : NNI) : List NNI ==
+          [0::NNI]
+
+      -- routeArrows(s, a, b) gives
+      -- the shortest route between nodes 'a' and 'b' as a
+      -- sequence of arrow indexes.
+      -- [] if  'a' = 'b'
+      -- [0] if it is not possible to go from 'a' to 'b'
+      routeArrows(s : %, a : NNI, b : NNI) : List NNI ==
+          [0::NNI]
+
+      -- distance(s, a, b) gives the shortest distance between
+      -- nodes 'a' and 'b' as a
+      -- number of hops.
+      -- 0 if  'a' = 'b',
+      -- -1 if it is not possible to go from 'a' to 'b'
+      distance(s : %, a : NNI, b : NNI) : Integer ==
+          0::Integer
+
+      -- sum : disjoint union of nodes with arrows from appropriate
+      -- input
+      "+"(a : %, b : %) : % ==
+          a
+
+      -- merge(a, b) returns sum : union (not necessarily disjoint) of
+      -- nodes with arrows merged in from appropriate input, if arrow
+      -- exists from both inputs then it will be duplicated.
+      merge(a : %, b : %) : % ==
+          a
+
+      -- isDirected? is true iff % is domain consisting of directed
+      -- graphs, false for undirected graphs.
+      isDirected?() : Boolean ==
+          true
+
+      -- createWidth(x) can be used by domains which extend graph
+      -- to help in creating coordinates for objects in a graph
+      createWidth(x : NNI) : NNI ==
+          0::NNI
+
+      -- createX(x, n) can be used by domains which extend graph to
+      -- help in creating the x coordinate for objects in a graph
+      createX(x : NNI, n : NNI) : NNI ==
+          0::NNI
+
+      -- createY(x, n) can be used by domains which extend graph to
+      -- help in creating the y coordinate for objects in a graph
+      createY(x : NNI, n : NNI) : NNI ==
+          0::NNI
+
+      -- looseEquals(x, y) is true if x 'equals' y
+      -- this is a looser version of equality test but is not as
+      -- general as isomorphism.
+      -- it only requires the same number of vertices but does not
+      -- require the objects themselves being equal.
+      -- the arrows must be the same, that is it may return false
+      -- if the order of vertices is changed so this is not
+      -- isomorphism test.
+      -- I would like to enhance this code into a true isomorphism test
+      looseEquals(x : %, y : %) : Boolean ==
+          false
+
+      -- map(s, m, newOb, offsetX, offsetY) creates a new graph by
+      -- mapping from this one
+      -- newOb should contain the new list of vertices.
+      -- m should contain a NNI value for each vertex, this is the
+      -- new index into newOb. It is allowed that newOb may contain
+      -- less objects than s (for surjective mapping) or
+      -- more objects than s (for injective mapping)
+      map(s : %, m : List NNI, newOb : List S, offsetX : Integer,
+            offsetY : Integer) : % ==
+          s
+
+      -- mapContra(s, m, newOb, offsetX, offsetY) is similar to map
+      -- function but reverses the directions of the arrows
+      mapContra(s : %, m : List NNI, newOb : List S, offsetX : Integer,
+                offsetY : Integer) : % ==
+          s
+
+      -- end of FiniteGraph implementation
+
+      -- constucts the opposite in the category theory sense of reversing
+      -- all the arrows
+      opposite(s : %) : % ==
+          arr2 : List List Boolean := [[]]
+          for x in getArr(s) repeat
+              row : List Boolean := []
+              for y in x repeat
+                  row := concat(row, false)
+              arr2 := concat(arr2, row)
+          for a in 1..#(getArr(s)) repeat
+              for b in 1..#(getArr(s)) repeat
+                  if isArrow?(getArr(s), a, b) then setArrow!(arr2, b, a, true)
+          finitePoset(getVert(s), arr2)
+
+      implies(s : %, left : NNI, right : NNI) : Boolean ==
+          a : List Boolean := qelt(getArr(s), left)
+          b : Boolean := qelt(a, right)
+          b
+
+      -- returns the join of 'a' and 'b'
+      -- In this version of join nodes are represented as index values.
+      -- In the general case, not every poset will have a join in which case
+      -- 0 will be returned as an error indication.
+      joinIfCan(s : %, a : NNI, b : NNI) : Union(NNI, "failed") ==
+          res : List NNI := []
+          -- flag for each element is true if >= from 'a'
+          flaga : List Boolean := qelt(getArr(s), a)
+          -- list of all element indexes which are >= from 'a'
+          candidatesa : List NNI := []
+          index : NNI := 1
+          for x in flaga repeat
+              if x then candidatesa := concat(candidatesa, index)
+              index := index + 1
+          -- flag for each element is true if >= from 'b'
+          flagb : List Boolean := qelt(getArr(s), b)
+          -- list of all element indexes which are >= from 'a'
+          candidatesb : List NNI := []
+          index := 1
+          for x in flagb repeat
+              if x then candidatesb := concat(candidatesb, index)
+              index := index + 1
+          res := setIntersection(candidatesa, candidatesb)
+          glb(s, res)
+
+      -- returns the meet of 'a' and 'b'
+      -- In this version of meet nodes are represented as index values.
+      -- In the general case, not every poset will have a meet in which case
+      -- 0 will be returned as an error indication.
+      meetIfCan(s : %, a : NNI, b : NNI) : Union(NNI, "failed") ==
+          res : List NNI := []
+          -- flag for each element is true if >= to 'a'
+          flaga : List Boolean := []
+          -- flag for each element is true if >= to 'b'
+          flagb : List Boolean := []
+          for x in getArr(s) repeat
+              flaga := concat(flaga, qelt(x, a)$List(Boolean))$List(Boolean)
+          -- list of all element indexes which are >= than 'a'
+          candidatesa : List NNI := []
+          index : NNI := 1
+          for x in flaga repeat
+              if x then candidatesa := concat(candidatesa, index)
+              index := index + 1
+          for x in getArr(s) repeat
+              flagb := concat(flagb, qelt(x, b)$List(Boolean))$List(Boolean)
+          -- list of all element indexes which are >= than 'b'
+          candidatesb : List NNI := []
+          index := 1
+          for x in flagb repeat
+              if x then candidatesb := concat(candidatesb, index)
+              index := index + 1
+          res := setIntersection(candidatesa, candidatesb)
+          --print("join candidatesa="::Symbol <<
+          --      listToString(candidatesa)$String <<_
+          --"join candidatesb="::Symbol << listToString(candidatesb)$String <<_
+          --"join res="::Symbol << listToString(res)$String))
+          lub(s, res)
+
+      -- returns the meet of a subset of lattice given by list of elements
+      meetIfCan(s : %, elements : List(NNI)) : Union(NNI, "failed") ==
+          res : List NNI := []
+          for e in elements repeat
+              -- flag for each element is true if >= to 'e'
+              flage : List Boolean := []
+              for x in getArr(s) repeat
+                  flage := concat(flage, qelt(x, e)$List(Boolean))$List(Boolean)
+              -- list of all element indexes which are >= than 'e'
+              candidates : List NNI := []
+              index : NNI := 1
+              for x in flage repeat
+                  if x then candidates := concat(candidates, index)
+                  index := index + 1
+          res := setIntersection(res, candidates)
+          --print("join candidates="::Symbol <<
+          --      listToString(candidates)$String <<
+          --"join res="::Symbol <<listToString(res)$String))
+          lub(s, res)
+
+      -- returns the join of a subset of lattice given by list of elements
+      joinIfCan(s : %, elements : List(NNI)) : Union(NNI, "failed") ==
+          res : List NNI := []
+          for e in elements repeat
+              -- flag for each element is true if >= from 'e'
+              flage : List Boolean := qelt(getArr(s), e)
+              -- list of all element indexes which are >= from 'e'
+              candidates : List NNI := []
+              index : NNI := 1
+              for x in flage repeat
+                  if x then candidates := concat(candidates, index)
+                  index := index + 1
+              res := setIntersection(res, candidates)
+          glb(s, res)
+
+      -- 'greatest lower bound' or 'infimum'
+      -- In this version of glb nodes are represented as index values.
+      -- Not every subset of a poset will have a glb in which case
+      -- "failed" will be returned as an error indication.
+      glb(s : %, a : List NNI) : Union(NNI, "failed") ==
+          if empty?(a) then return 0::NNI
+          if #a = 1 then return first(a)
+          resultList : List(NNI) := copy(a)
+          --print("lub res="::Symbol << listToString(resultList)$String)
+          for x in a repeat
+              --print("glb x="::Symbol << string(x)$String)
+              for y in a repeat
+                  --print("glb y="::Symbol << string(y)$String)
+                  if implies(s, x, y) then
+                      if x ~= y then
+                          if entry?(x, resultList) then
+                              --print("glb removing:"::Symbol <<
+                              --      string(y)$String)
+                              resultList := remove(y, resultList)
+                              --print("glb res=::Symbol <<
+                              --      listToString(resultList)$String)
+          if #resultList ~= 1 then return 0::NNI
+          first(resultList)
+
+      -- 'least upper bound' or 'supremum'
+      -- In this version of lub nodes are represented as index values.
+      -- Not every subset of a poset will have a lub in which case
+      -- "failed" will be returned as an error indication.
+      lub(s : %, a : List NNI) : Union(NNI, "failed") ==
+          if empty?(a) then return 0::NNI
+          if #a = 1 then return first(a)
+          resultList : List(NNI) := copy(a)
+          for x in a repeat
+              --print("lub x="::Symbol << string(x))
+              for y in a repeat
+                  --print("lub y="::Symbol << string(y))
+                  if implies(s, x, y) then
+                      if x ~= y then
+                          if entry?(y, resultList) then
+                              --print("lub removing:"::Symbol << string(x))
+                              resultList := remove(x, resultList)
+                              --print("lub res="::Symbol <<
+                              --      listToString(resultList))
+          if #resultList ~= 1 then return 0::NNI
+          first(resultList)
+
+      -- returns the object at a given index
+      indexToObject(s : %, index : NNI) : S ==
+          --print("indexToObject"::Symbol << string(index))
+          qelt(getVert(s), index)
+
+      -- returns the index of a given object
+      objectToIndex(s : %, obj : S) : NNI ==
+          position(obj, getVert(s))$List(S) pretend NNI
+
+      -- Reflexivity requires forall(x): x<=x
+      -- This function enforces this by making sure that every element has
+      -- arrow to itself. That is, the leading diagonal is true.
+      completeReflexivity(s : %) : % ==
+          set2 : List S := getVert(s)
+          struct2 : List(List(Boolean)) := copy(getArr(s))
+          for a in 1..(#set2) repeat
+              setArrow!(struct2, a, a, true)
+          finitePoset(set2, struct2)
+
+      -- Transitivity requires forall(x, y, z): x<=y and y<=z implies x<=z
+      -- This function enforces this by making sure that the composition
+      -- of any two arrows is also an arrow.
+      completeTransitivity(s : %) : % ==
+          set2 : List S := getVert(s)
+          dim : NNI := #set2
+          struct2 : List(List(Boolean)) := copy(getArr(s))
+          for a in 1..dim repeat
+              for b in 1..dim repeat
+                  for c in 1..dim repeat
+                      if isArrow?(struct2, a, b) and isArrow?(struct2, b, c)
+                           and not(isArrow?(struct2, a, c)) then
+                          setArrow!(struct2, a, c, true)
+          finitePoset(set2, struct2)
+
+      -- Antisymmetric requires forall(x, y): x<=y and y<=x iff x=y
+      -- Returns true if this is the case for every element.
+      isAntisymmetric?(s : %) : Boolean ==
+          dim : NNI := #(getVert(s))
+          struct2 : List(List(Boolean)) := copy(getArr(s))
+          for a in 1..dim repeat
+              for b in 1..dim repeat
+                  if isArrow?(struct2, a, b) and isArrow?(struct2, b, a) then
+                      if a ~= b then return false
+          true
+
+      -- \spad{zetaMatrix(P)} returns the matrix of the zeta function
+      -- This function is based on code by Franz Lehner.
+      zetaMatrix(s : %) : IncidenceAlgebra(Integer, S) ==
+          xx : List(S) := getVert(s)
+          arr : List(List(Boolean)) := getArr(s)
+          xxo : List(S) := removeDuplicates topologicalSort(arr, xx
+                                                           )$(ListPackage S)
+          -- convert xxo to indexes
+          xxi : List(NNI) :=
+               [(position(xxoi, xx)$List(S))::NNI for xxoi in xxo]
+          zf : Matrix Integer :=
+              matrix [[(if qelt(qelt(arr, x)$List(List(Boolean)), y
+                               )$List(Boolean) then 1 else 0)
+                         for y in xxi] for x in xxi]
+          incidenceAlgebra(zf, xxo)
+
+      -- moebius incidence matrix for this poset
+      -- This function is based on code by Franz Lehner.
+      -- Notes by Martin Baker on the webpage here:
+      -- \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/moebius/}
+      moebius(s : %) : IncidenceAlgebra(Integer, S) ==
+          TRIMATI ==> TriangularMatrixOperations(Integer, Vector Integer,
+                                           Vector Integer, Matrix Integer)
+          z : IncidenceAlgebra(Integer, S) := zetaMatrix(s)
+          mf : Matrix(Integer) := UpTriBddDenomInv(matrix(z), 1)$TRIMATI
+          incidenceAlgebra(mf, indices(z))
+
+      -- the covering matrix of a list of elements from a comparison function
+      -- the list is assumed to be topologically sorted (i.e., w.r. to
+      -- a linear extension of the comparison function f
+      -- This function is based on code by Franz Lehner.
+      -- Notes by Martin Baker on the webpage here:
+      -- \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/moebius/}
+      coverMatrix(s : %) : IncidenceAlgebra(Integer, S) ==
+          z := zetaMatrix(s)
+          zf : Matrix(Integer) := matrix(z)
+          n := nrows zf
+          res : Matrix Integer := zero(n, n)
+          -- we assume that the matrix is upper triangular
+          ni : Integer  := n::Integer
+          for i in 1..ni-1 repeat
+              -- list of elements larger than x_i found so far
+              tabx : List Integer := empty()
+              for j in i+1..ni repeat
+                  if one? zf(i, j) and not(
+                    any?((u : Integer) : Boolean +-> one? zf(u, j), tabx)) then
+                      tabx := cons(j, tabx)
+                      res(i, j) := 1
+          incidenceAlgebra(res, indices(z))
+
+      -- start of SetCategory definitions --
+
+      hash(s : %) : SingleInteger == 0$SingleInteger
+
+      -- return string representation
+      -- I'm not sure how latex(s: %) is intended to be used but
+      -- there is nothing specifically latex here, it just returns a
+      -- string description of the graph.
+      latex(n : %) : String ==
+          -- s holds result that we are constructing
+          s : String := ""
+          s
+
+      -- returns true if x equals y
+      -- this is equality and not isomorphism
+      -- that is it returns true only if exact index values and names are used
+      -- in addition to the structure(arrows) being the same.
+      _=(x : %, y : %) : Boolean ==
+          if getVert(x) ~= getVert(y) then return false
+          if getArr(x) ~= getArr(y) then return false
+          true
+
+      -- returns true if x is not equal to y
+      _~_=(x : %, y : %) : Boolean == not(x = y)
+
+      -- output
+      coerce(s : %) : OutputForm ==
+          dim : NNI := #(getVert(s))
+          if empty?(getArr(s)) then return bracket(empty()$OutputForm)
+          mat : List List OutputForm := empty()$List(List(OutputForm))
+          for a in getArr(s) repeat
+              row : List OutputForm := empty()$List(OutputForm)
+              if empty?(a)$List(Boolean) then
+                  row := concat(row, bracket(empty()$OutputForm)
+                               )$List(OutputForm)
+              else
+                  for b in a repeat
+                      c : Symbol := if b then 'true else 'false
+                      row := concat(row, outputForm(c)$OutputForm
+                                   )$List(OutputForm)
+              if #row ~= dim then return outputForm("wrong number of cols")
+              mat := concat(mat, row)
+          if #mat ~= dim then return outputForm("wrong number of rows")
+          matrix(mat)
+
+)abbrev domain FPOSET FinitePoset
+++ Author: Martin Baker
+++ Description: holds a complete set together with a structure to codify
+++   the partial order.
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Date Created: Aug 2015
+++ Basic Operations:
+++ Related packages: UserDefinedPartialOrdering in setorder.spad
+++ Related categories: PartialOrder in catdef.spad
+++ Related Domains: DirectedGraph in graph.spad
+++ Also See:
+++ AMS Classifications:
+++ Keywords: poset partial order
+++ Examples: power set structure
+++ References:
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: antisymmetry forall(x, y): x<=y and y<=x iff x=y
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+
+FinitePoset(S) : Exports == Impl where
+    S : SetCategory
+    PI ==> PositiveInteger
+    NNI ==> NonNegativeInteger
+    SINT ==> SingleInteger
+    OBJT ==> Record(value : S, posX : NNI, posY : NNI)
+    ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI, toOb : NNI,
+                     xOffset : Integer, yOffset : Integer, map : List NNI)
+
+    Exports ==> Poset(S)
+
+    Impl ==> add
+
+      -- This holds a complete set together with a structure to codify
+      -- the partial order. The elements are put in a list so they
+      -- can be enumerated and linked to the structure.
+      -- The structure is a two dimensional array to determine
+      -- is each element is connected to each other element.
+      Rep := Record(set1 : List S, struct1 : List List Boolean)
+
+      -- constructor where the set and structure is supplied
+      finitePoset(carrier : List S, struct1 : List List Boolean) : % ==
+          [carrier, struct1]
+
+      -- constructor where the set and structure is supplied.
+      -- The structure is supplied as a predicate function.
+      finitePoset(carrier : List S, pred : ((S, S) -> Boolean)) : % ==
+          struct1 : List(List(Boolean)) := _
+              [[pred(x, y) for x in carrier] for y in carrier]
+          [carrier, struct1]
+
+      -- returns a list of all the vertices (or objects)
+      getVert(s : %) : List S ==
+          s.set1
+
+      -- returns a list of all the arrows (or edges)
+      getArr(s : %) : List List Boolean ==
+          s.struct1
+
+      -- sets the list of all vertices (or objects)
+      setVert(s : %, v : List S) : Void ==
+          s.set1 := v
+          void
+
+      -- sets the list of all arrows (or edges)
+      setArr(s : %, v : List List Boolean) : Void ==
+          s.struct1 := v
+          void
+
+)if false
+\section{Complete Partial Order}
+Complete partial orders are partial orders which are guaranteed to have meets
+and/or joins depending on type of CPO. The terminology around this is not
+always consistent so I will use the following terminology.
+
+A DCPO, or directed-complete partial order, is a poset where joins (or
+supremum or least upper bound) are defined. That is join is a complete
+or closed function, not a partial function.
+Often a DCPO is required to have a bottom element; then it is called a
+pointed DCPO or a CPO.
+
+Finite DCPOs are pointed DCPOs, we can get the bottom element just by
+taking the join of all the elements, this is not true of infinite DCPOs.
+
+As an example consider the integers, any finite set of integers has a
+minimum element but the set of all integers does not (minus infinity is
+not an integer).
+
+Another example, more applicable to topology, is subsets of line segments.
+
+The examples below only model finite DCPOs. TODO: I want to model infinite
+DCPOs, we obvously cant do this by using a list of all the elements
+(as below). We need to define the elements, and their order, recursively.
+)endif
+
+)abbrev category DCPO Dcpo
+++ Author: Martin Baker
+++ Description:
+++ Directed-complete partial order, partial order that is guaranteed to
+++ have a join of any two elements.  For more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+++ Date Created: Oct 2015
+Dcpo(S) : Category == Definition where
+ S : SetCategory
+ NNI ==> NonNegativeInteger
+ Definition ==> Poset(S) with
+     join : (s : %, a : NNI, b : NNI) -> NNI
+       ++ returns the join of 'a' and 'b'
+       ++ In this version of join nodes are represented as index values.
+       ++ Not every poset will have a join but DCPO will.
+
+)abbrev domain FDCPO FiniteDcpo
+++ Author: Martin Baker
+++ Description: holds a complete set together with a structure to codify
+++   the partial order.
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Date Created: Aug 2015
+++ Basic Operations:
+++ Related packages: UserDefinedPartialOrdering in setorder.spad
+++ Related categories: PartialOrder in catdef.spad
+++ Related Domains: DirectedGraph in graph.spad
+++ Also See:
+++ AMS Classifications:
+++ Keywords: poset partial order
+++ Examples: power set structure
+++ References:
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: antisymmetry forall(x, y): x<=y and y<=x iff x=y
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+
+FiniteDcpo(S) : Exports == Impl where
+    S : SetCategory
+    PI ==> PositiveInteger
+    NNI ==> NonNegativeInteger
+    SINT ==> SingleInteger
+    OBJT ==> Record(value : S, posX : NNI, posY : NNI)
+    ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI, toOb : NNI,
+                     xOffset : Integer, yOffset : Integer, map : List NNI)
+
+    Exports ==> Dcpo(S) with
+      finitePoset : (set1 : List S, struct1 : List List Boolean) -> %
+        ++ constructor where the set and structure is supplied
+
+    Impl ==> add
+
+      -- This holds a complete set together with a structure to codify
+      -- the partial order. The elements are put in a list so they
+      -- can be enumerated and linked to the structure.
+      -- The structure is a two dimensional array to determine
+      -- is each element is connected to each other element.
+      Rep := Record(set1 : List S, struct1 : List List Boolean)
+
+      -- constructor where the set and structure is supplied
+      finitePoset(set1 : List S, struct1 : List List Boolean) : % ==
+          [set1, struct1]
+
+      -- returns a list of all the vertices (or objects)
+      getVert(s : %) : List S ==
+          s.set1
+
+      -- returns a list of all the arrows (or edges)
+      getArr(s : %) : List List Boolean ==
+          s.struct1
+
+      -- sets the list of all vertices (or objects)
+      setVert(s : %, v : List S) : Void ==
+          s.set1 := v
+          void
+
+      -- sets the list of all arrows (or edges)
+      setArr(s : %, v : List List Boolean) : Void ==
+          s.struct1 := v
+          void
+
+      -- local function to display a list
+      listToString(a : List NNI) : String ==
+          res : String := "["
+          for x in a repeat
+              res := concat(res, string(x))
+              res := concat(res, ", ")
+          concat(res, "]")
+
+      -- returns the join of 'a' and 'b'
+      -- In this version of join nodes are represented as index values.
+      join(s : %, a : NNI, b : NNI) : NNI ==
+          res : Union(NNI, "failed") := joinIfCan(s, a, b)
+          if res = "failed" then error "This POSET does not have join"
+          res::NNI
+
+)if false
+Here we will call the dual notion of a directed complete poset a Co-DCPO
+alternatively it is sometimes called a filtered complete partial order.
+)endif
+
+)abbrev category CODCPO CoDcpo
+++ Author: Martin Baker
+++ Description:
+++ Directed-complete Order, partial order that is guaranteed to have
+++ a meet of any two elements.  For more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+++ Date Created: Oct 2015
+CoDcpo(S) : Category == Definition where
+ S : SetCategory
+ NNI ==> NonNegativeInteger
+ Definition ==> Poset(S) with
+     meet : (s : %, a : NNI, b : NNI) -> NNI
+       ++ returns the meet of 'a' and 'b'
+       ++ In this version of meet nodes are represented as index values.
+       ++ Not every poset will have a meet but CoDCPO will.
+
+)abbrev domain FCDCPO FiniteCoDcpo
+++ Author: Martin Baker
+++ Description: holds a complete set together with a structure to codify
+++   the partial order.
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Date Created: Aug 2015
+++ Basic Operations:
+++ Related packages: UserDefinedPartialOrdering in setorder.spad
+++ Related categories: PartialOrder in catdef.spad
+++ Related Domains: DirectedGraph in graph.spad
+++ Also See:
+++ AMS Classifications:
+++ Keywords: poset partial order
+++ Examples: power set structure
+++ References:
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: antisymmetry forall(x, y): x<=y and y<=x iff x=y
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+
+FiniteCoDcpo(S) : Exports == Impl where
+    S : SetCategory
+    PI ==> PositiveInteger
+    NNI ==> NonNegativeInteger
+    SINT ==> SingleInteger
+    OBJT ==> Record(value : S, posX : NNI, posY : NNI)
+    ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI, toOb : NNI,
+                     xOffset : Integer, yOffset : Integer, map : List NNI)
+
+    Exports ==> CoDcpo(S) with
+      finitePoset : (set1 : List S, struct1 : List List Boolean) -> %
+        ++ constructor where the set and structure is supplied
+
+    Impl ==> add
+
+      -- This holds a complete set together with a structure to codify
+      -- the partial order. The elements are put in a list so they
+      -- can be enumerated and linked to the structure.
+      -- The structure is a two dimensional array to determine
+      -- is each element is connected to each other element.
+      Rep := Record(set1 : List S, struct1 : List List Boolean)
+
+      -- constructor where the set and structure is supplied
+      finitePoset(set1 : List S, struct1 : List List Boolean) : % ==
+          [set1, struct1]
+
+      -- returns a list of all the vertices (or objects)
+      getVert(s : %) : List S ==
+          s.set1
+
+      -- returns a list of all the arrows (or edges)
+      getArr(s : %) : List List Boolean ==
+          s.struct1
+
+      -- sets the list of all vertices (or objects)
+      setVert(s : %, v : List S) : Void ==
+          s.set1 := v
+          void
+
+      -- sets the list of all arrows (or edges)
+      setArr(s : %, v : List List Boolean) : Void ==
+          s.struct1 := v
+          void
+
+      -- local function to display a list
+      listToString(a : List NNI) : String ==
+          res : String := "["
+          for x in a repeat
+              res := concat(res, string(x))
+              res := concat(res, ", ")
+          concat(res, "]")
+
+      -- returns the meet of 'a' and 'b'
+      -- In this version of meet nodes are represented as index values.
+      meet(s : %, a : NNI, b : NNI) : NNI ==
+          res : Union(NNI, "failed") := meetIfCan(s, a, b)
+          if res = "failed" then error "This POSET does not have meet"
+          res::NNI
+
+)if false
+BiCPO is Join of Dcpo and CoDcpo, that is, it is both joins and meets
+are guaranteed to exist.
+)endif
+
+)abbrev category BICPO BiCPO
+++ Author: Martin Baker
+++ Description:
+++ Complete partial Order, partial order that is guaranteed to have both
+++ a join and a meet of any two elements.  For more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+++ Date Created: Oct 2015
+BiCPO(S: SetCategory): Category == Join(Dcpo(S), CoDcpo(S))
+
+)abbrev domain FBICPO FiniteBiCPO
+++ Author: Martin Baker
+++ Description:
+++ Holds a complete set together with a structure to codify the partial order.
+++ For more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Date Created: Aug 2015
+++ Basic Operations:
+++ Related packages: UserDefinedPartialOrdering in setorder.spad
+++ Related categories: PartialOrder in catdef.spad
+++ Related Domains: DirectedGraph in graph.spad
+++ Also See:
+++ AMS Classifications:
+++ Keywords: poset partial order
+++ Examples: power set structure
+++ References:
+++ Axiom: reflexivity forall(x): x<=x
+++ Axiom: antisymmetry forall(x, y): x<=y and y<=x iff x=y
+++ Axiom: transitivity forall(x, y, z): x<=y and y<=z implies x<=z
+
+FiniteBiCPO(S) : Exports == Impl where
+    S : SetCategory
+    PI ==> PositiveInteger
+    NNI ==> NonNegativeInteger
+    SINT ==> SingleInteger
+    OBJT ==> Record(value : S, posX : NNI, posY : NNI)
+    ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI, toOb : NNI,
+                     xOffset : Integer, yOffset : Integer, map : List NNI)
+
+    Exports ==> BiCPO(S) with
+      finitePoset : (set1 : List S, struct1 : List List Boolean) -> %
+        ++ constructor where the set and structure is supplied
+
+    Impl ==> add
+
+      -- This holds a complete set together with a structure to codify
+      -- the partial order. The elements are put in a list so they
+      -- can be enumerated and linked to the structure.
+      -- The structure is a two dimensional array to determine
+      -- is each element is connected to each other element.
+      Rep := Record(set1 : List S, struct1 : List List Boolean)
+
+      -- constructor where the set and structure is supplied
+      finitePoset(set1 : List S, struct1 : List List Boolean) : % ==
+          [set1, struct1]
+
+      -- returns a list of all the vertices (or objects)
+      getVert(s : %) : List S ==
+          s.set1
+
+      -- returns a list of all the arrows (or edges)
+      getArr(s : %) : List List Boolean ==
+          s.struct1
+
+      -- sets the list of all vertices (or objects)
+      setVert(s : %, v : List S) : Void ==
+          s.set1 := v
+          void
+
+      -- sets the list of all arrows (or edges)
+      setArr(s : %, v : List List Boolean) : Void ==
+          s.struct1 := v
+          void
+
+      -- local function to display a list
+      listToString(a : List NNI) : String ==
+          res : String := "["
+          for x in a repeat
+              res := concat(res, string(x))
+              res := concat(res, ", ")
+          concat(res, "]")
+
+      -- returns the join of 'a' and 'b'
+      -- In this version of join nodes are represented as index values.
+      join(s : %, a : NNI, b : NNI) : NNI ==
+          res : Union(NNI, "failed") := joinIfCan(s, a, b)
+          if res = "failed" then error "This POSET does not have join"
+          res::NNI
+
+      -- returns the meet of 'a' and 'b'
+      -- In this version of meet nodes are represented as index values.
+      meet(s : %, a : NNI, b : NNI) : NNI ==
+          res : Union(NNI, "failed") := meetIfCan(s, a, b)
+          if res = "failed" then error "This POSET does not have meet"
+          res::NNI
+
+)if false
+\section{Lattice Structures}
+End of POSET structures and start of lattice structures
+)endif
+
+)abbrev category MEETLAT MeetSemilattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Meet
+++ Related Constructors: BoundedMeetSemilattice
+++  use BoundedMeetSemilattice if the semilattice has a 'top' which will be
+++  the case for all finite meet semilattices since we can do a meet of
+++  all values
+++ Keywords: Meet
+++ Description: meet semilattice
+++   Implementations in set, logic and orders
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: commutativity forall(x, y): x/\y=y/\x
+++ Axiom: associativity forall(x, y, z): (x/\y)/\z=y/\(x/\z)
+++ Axiom: idempotence forall x: x/\x=x
+MeetSemilattice : Category == SetCategory with
+      _/_\ : (%, %) -> %
+        ++ returns the logical 'meet', e.g. 'and'.
+
+)abbrev category BMEET BoundedMeetSemilattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Meet
+++ Related Constructors: MeetSemilattice
+++  use BoundedMeetSemilattice if the semilattice has a 'top' which will be
+++  the case for all finite meet semilattice since we can do a meet of
+++  all values
+++ Keywords: Meet Top
+++ Description: meet semilattice with top
+++   Implementations in set, logic and orders
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: unit forall x: x/\ T=x
+BoundedMeetSemilattice : Category == MeetSemilattice with
+      T : constant -> %
+        ++ Top (true in logic).
+
+)abbrev category JOINLAT JoinSemilattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Join
+++ Related Constructors: BoundedJoinSemilattice
+++  use BoundedJoinSemilattice if the semilattice has a 'bottom' which will be
+++  the case for all finite join semilattices since we can do a join of all values
+++ Keywords: Join
+++ Description: join semilattice
+++   Different from exterior Grassmann product operator as
+++   that anticommutes.
+++   need to check precedence when used as an infix operator
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: commutativity forall(x, y): x\/y=y\/x
+++ Axiom: associativity forall(x, y, z): (x\/y)\/z=y\/(x\/z)
+++ Axiom: idempotence forall x: x\/x=x
+JoinSemilattice: Category == SetCategory with
+      _\_/ : (%, %) -> %
+        ++ returns the logical 'join', e.g. 'or'.
+
+)abbrev category BJOIN BoundedJoinSemilattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Join
+++ Related Constructors: JoinSemilattice
+++  use BoundedJoinSemilattice if the semilattice has a 'bottom' which will be
+++  the case for all finite join semilattices since we can do a join of all
+++  values
+++ Keywords: Join Bottom
+++ Description: join semilattice with bottom
+++   Different from exterior Grassmann product operator as
+++   that anticommutes.
+++   need to check precedence when used as an infix operator
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: unit forall x: x \/ _|_=x
+BoundedJoinSemilattice: Category == JoinSemilattice with
+      "__|__" : constant -> %
+        ++ bottom (false in logic).
+
+)abbrev category LAT Lattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Meet Join
+++ Related Constructors: BoundedLattice
+++  use BoundedLattice if the lattice has a top and 'bottom' which will be
+++  the case for all finite lattices since we can do a meet and join of all
+++  values
+++ Keywords: Meet Top Join Bottom
+++ Description: lattice
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: absorptionMeetOverJoin forall(x, y): x/\(x\/y)=x
+++ Axiom: absorptionJoinOverMeet forall(x, y): x\/(x/\y)=x
+Lattice: Category == Join(MeetSemilattice, JoinSemilattice)
+
+)abbrev category BLAT BoundedLattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Meet Join
+++ Related Constructors: Lattice
+++  use BoundedLattice if the lattice has a top and 'bottom' which will be
+++  the case for all finite lattices since we can do a meet and join of all
+++  values
+++ Keywords: Meet Top Join Bottom
+++ Description: lattice with top and bottom
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: absorptionMeetOverJoin forall(x, y): x/\(x\/y)=x
+++ Axiom: absorptionJoinOverMeet forall(x, y): x\/(x/\y)=x
+BoundedLattice: Category == Join(BoundedMeetSemilattice,
+                                 BoundedJoinSemilattice)
+
+)abbrev category DISTLAT DistributiveLattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Meet Join
+++ Related Constructors: BoundedDistributiveLattice
+++  use BoundedDistributiveLattice if the lattice has a top and 'bottom'
+++  which will be the case for all finite lattices since we can do a
+++  meet and join of all values
+++ Keywords: Meet Top Join Bottom
+++ Description: not every lattice is distributive so treat this
+++              as a seperate case
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: distribution1 forall(x, y, z): x/\(y\/z)=(x/\y)\/(x/\z)
+++ Axiom: distribution2 forall(x, y, z): x\/(y/\z)=(x\/y)/\(x\/z)
+DistributiveLattice: Category == Lattice
+
+)abbrev category BDISTL BoundedDistributiveLattice
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Basic Operations: Meet Join
+++ Related Constructors: DistributiveLattice
+++  use BoundedDistributiveLattice if the lattice has a top and 'bottom'
+++  which will be the case for all finite lattices since we can do a
+++  meet and join of all values
+++ Keywords: Meet Top Join Bottom
+++ Description: not every lattice is distributive so treat this
+++              as a separate case
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+++ Axiom: distribution1 forall(x, y, z): x/\(y\/z)=(x/\y)\/(x/\z)
+++ Axiom: distribution2 forall(x, y, z): x\/(y/\z)=(x\/y)/\(x\/z)
+BoundedDistributiveLattice: Category == Join(BoundedLattice,
+                                             DistributiveLattice)
+
+)if false
+
+Category for Boolean algebra since it adds 'not' to the lattice.
+
+)endif
+
+)abbrev category LOGIC Logic
+++ Note: transferred from boolean.spad
+++ Author:
+++ Date Created:
+++ Change History:
+++ Basic Operations: ~, /\, \/
+++ Related Constructors:
+++ Keywords: boolean
+++ Description:
+++ 'Logic' adds 'not' operation to lattices,
+++ Implements De Morgan's laws.
+++ Axiom: DeMorgan1 forall(x, y): ~(x/\y)=~x\/~y
+++ Axiom: DeMorgan2 forall(x, y): ~(x\/y)=~x/\~y
+Logic : Category == BoundedDistributiveLattice with
+       _~ : % -> %
+         ++ ~(x) returns the logical complement of x.
+
+)if false
+This is the algebration of poset. A big difference between
+this lattice domain and the poset domain is that, in this domain, the
+REP holds a single node whereas in poset REP holds the whole poset.
+
+The REP is NNI since this is used as an index into the poset nodes
+(S : SetCategory).
+)endif
+
+)abbrev domain FINLAT FiniteLattice
+++ Author: Martin Baker
+++ Description: This is the algebration of poset. A big difference between
+++    this lattice domain and the poset domain is that, in this domain, the
+++    REP holds a single node whereas in poset REP holds the whole poset.
+++ Date Created: Aug 2015
+FiniteLattice(S : SetCategory, p : FiniteBiCPO(S)) : Exports == Impl where
+    NNI ==> NonNegativeInteger
+    Exports ==> Join(Lattice, CoercibleTo(OutputForm), SetCategory) with
+      finiteLattice : (index : NNI) -> %
+        ++ construct finite lattice element from index
+      finiteLattice : (obj : S) -> %
+        ++ construct finite lattice element from object
+
+    Impl ==> add
+
+      -- representation of element of lattice
+      Rep := NNI
+
+      -- construct finite lattice element from index
+      finiteLattice(index : NNI) : % ==
+          index
+
+      -- construct finite lattice element from object
+      finiteLattice(obj : S) : % ==
+          objectToIndex(p, obj)$FiniteBiCPO(S)
+
+      -- returns the logical 'meet', e.g. 'and'.
+      _/_\(a : %, b : %) : % ==
+          meet(p, a pretend NNI, b pretend NNI)$FiniteBiCPO(S)
+
+      -- returns the logical 'join', e.g. 'or'.
+      _\_/(a : %, b : %) : % ==
+          join(p, a pretend NNI, b pretend NNI)$FiniteBiCPO(S)
+
+      -- start of SetCategory definitions --
+
+      hash(s : %) : SingleInteger == 0$SingleInteger
+
+      -- return string representation
+      -- I'm not sure how latex(s: %) is intended to be used but
+      -- there is nothing specifically latex here, it just returns a
+      -- string description of the graph.
+      latex(n : %) : String ==
+          -- s holds result that we are constructing
+          s : String := ""
+          s
+
+      -- returns true if x equals y
+      -- this is equality and not isomorphism
+      -- that is it returns true only if exact index values and names are used
+      -- in addition to the structure(arrows) being the same.
+      _=(x : %, y : %) : Boolean ==
+          (x pretend NNI) = (y pretend NNI)
+
+      -- returns true if x is not equal to y
+      _~_=(x : %, y : %) : Boolean == not(x = y)
+
+      -- output
+      coerce(s : %) : OutputForm ==
+          index : NNI := s pretend NNI
+          --if index=0 then return outputForm("error")
+          obj : S := indexToObject(p, index)
+          (obj::OutputForm)$S
+
+)if false
+\section{Subset Lattice}
+This lattice domain implements a subset structure (powerset).
+The poset equivalent would be a 'containment order'.
+
+One reason for implementing this domain is to investigate the
+(pseudo)complement.
+
+Here is an test session to show how it works:
+\begin{verbatim}
+-- first setup some variables
+SL := SubsetLattice(NNI, [1, 2, 3])
+
+   (1)  SubsetLattice(NonNegativeInteger, [1, 2, 3])
+                                                             Type: Type
+a := subsetLattice([1])$SL
+
+   (2)  [1]
+                         Type: SubsetLattice(NonNegativeInteger, [1, 2, 3])
+b := subsetLattice([2])$SL
+
+   (3)  [2]
+                         Type: SubsetLattice(NonNegativeInteger, [1, 2, 3])
+-- test meet and join
+a/\b
+
+   (4)  [1, 2]
+                         Type: SubsetLattice(NonNegativeInteger, [1, 2, 3])
+a\/b
+
+   (5)  []
+                         Type: SubsetLattice(NonNegativeInteger, [1, 2, 3])
+-- test complement
+complement(a)
+
+   (6)  [2, 3]
+                         Type: SubsetLattice(NonNegativeInteger, [1, 2, 3])
+complement(a)\/complement(b)
+
+   (7)  [3]
+                         Type: SubsetLattice(NonNegativeInteger, [1, 2, 3])
+\end{verbatim}
+)endif
+
+)abbrev domain SETLAT SubsetLattice
+++ Author: Martin Baker
+++ Description: Implementation of subset logic.
+++    implements pseudo complement
+++    subset of powerset
+++    related to 'containment order'
+++    REP holds a single node and complete set (representing 'top')
+++ Date Created: Oct 2015
+SubsetLattice(S : SetCategory, top : List(S)) : Exports == Impl where
+    NNI ==> NonNegativeInteger
+    Exports ==> Join(Lattice, CoercibleTo(OutputForm), SetCategory) with
+      subsetLattice : (obj : List(S)) -> %
+        ++ construct subset lattice element
+      complement : (a : %) -> %
+        ++ pseudo complement
+      complement : (a : %, pseudoTop : List(S)) -> %
+        ++ pseudo complement
+
+    Impl ==> add
+
+      -- representation of element of lattice
+      -- This list represents some subset of: top : list(S)
+      Rep := List(S)
+
+      -- construct subset lattice element
+      subsetLattice(obj : List(S)) : % ==
+          obj
+
+      -- returns the logical 'meet', e.g. 'and'.
+      _/_\(a : %, b : %) : % ==
+          setUnion(a pretend List(S), b pretend List(S))$List(S)
+
+      -- returns the logical 'join', e.g. 'or'.
+      _\_/(a : %, b : %) : % ==
+          setIntersection(a pretend List(S), b pretend List(S))$List(S)
+
+      complement(a : %) : % ==
+          r : List(S) := []
+          for b in top repeat
+              contains : Boolean := false
+              for c in (a pretend List(S)) repeat
+                  if b = c then contains := true
+              if not contains then r := concat(r, b)
+          r
+
+      complement(a : %, pseudoTop : List(S)) : % ==
+          r : List(S) := []
+          for b in pseudoTop repeat
+              contains : Boolean := false
+              for c in (a pretend List(S)) repeat
+                  if b = c then contains := true
+              if not contains then r := concat(r, b)
+          r
+
+      -- start of SetCategory definitions --
+
+      hash(s : %) : SingleInteger == 0$SingleInteger
+
+      -- return string representation
+      -- I'm not sure how latex(s: %) is intended to be used but
+      -- there is nothing specifically latex here, it just returns a
+      -- string description of the graph.
+      latex(n : %) : String ==
+          -- s holds result that we are constructing
+          s : String := ""
+          s
+
+      -- returns true if x equals y
+      -- this is equality and not isomorphism
+      -- that is it returns true only if exact index values and names are used
+      -- in addition to the structure(arrows) being the same.
+      _=(x : %, y : %) : Boolean ==
+          (x pretend NNI) = (y pretend NNI)
+
+      -- returns true if x is not equal to y
+      _~_=(x : %, y : %) : Boolean == not(x = y)
+
+      -- output
+      coerce(s : %) : OutputForm ==
+          inp := s pretend List(S)
+          oup : List(OutputForm) := []
+          for x in inp repeat
+              oup := concat(oup, x::OutputForm)
+          bracket(oup)
+
+)if false
+\section{Poset Factory}
+Provides functions to construct various small posets
+including powerset.
+
+Perhaps it should be called a 'powerlist' but since we do
+not expect duplicates or require specific ordering it is
+essentially the same.
+)endif
+
+)abbrev package POSETF PosetFactory
+++ Author: Martin Baker
+++ Date Created: Aug 2015
+++ Description:
+++  Provides functions to construct various small posets
+++  including powerset.
+++  Perhaps it should be called a 'powerlist' but since we do
+++  not expect duplicates or reqire specific ordering it is
+++  essentially the same.
+PI ==> PositiveInteger
+NNI ==> NonNegativeInteger
+
+PosetFactory(S : SetCategory) : with
+  powerset : (List S) -> FiniteBiCPO(List(S))
+    ++ generate a poset representing all possible subsets of a
+    ++ given set with their subset relationships.
+  completelyOrderedSet : (objs : List(S)) -> FiniteBiCPO(S)
+    ++ generates a completely ordered set
+  posetN5 : (objs : List(S)) -> FiniteBiCPO(S)
+    ++ generates a poset corresponding to an N5 lattice
+  posetM5 : (objs : List(S)) -> FiniteBiCPO(S)
+    ++ generates a poset corresponding to an M5 lattice
+  posetO6 : (objs : List(S)) -> FiniteBiCPO(S)
+    ++ generates a poset corresponding to an O6 lattice
+  posetP6 : (objs : List(S)) -> FiniteBiCPO(S)
+    ++ generates a poset corresponding to an P6 lattice
+  posetL7 : (objs : List(S)) -> FiniteBiCPO(S)
+    ++ generates a poset corresponding to an L7 lattice
+
+ == add
+
+  -- local function used by powerset
+  addDimensionToObjects(a : List(List(S)), newObj : S) : List(List(S)) ==
+      b : List(List(S)) := []
+      for x in a repeat
+          x1 : List(S) := concat(x, newObj)
+          b := concat(b, x1)
+      concat(a, b)
+
+  -- local function used by powerset
+  addDimensionToArrows(a : List(List(Boolean))) : List(List(Boolean)) ==
+      res : List(List(Boolean)) := [empty()$List(Boolean)]
+      fst : Boolean := true
+      for xrepeat in 1..2 repeat
+          for x in a repeat
+              thisRow : List(Boolean) := empty()$List(Boolean)
+              for yrepeat in 1..2 repeat
+                  for y in x repeat
+                      topRight : Boolean := (xrepeat = 1) and (yrepeat = 2)
+                      thisRow := concat(thisRow, if topRight then false else y)
+              if fst then
+                  res := [copy(thisRow)]
+                  fst := false
+              else
+                  res := concat(res, copy(thisRow))$List(List(Boolean))
+      res
+
+  -- generate a poset representing all possible subsets of a
+  -- given set with their subset relationships.
+  powerset(objs : List S) : FiniteBiCPO(List(S)) ==
+      eles : List(List(S)) := [[]]
+      arrows : List(List(Boolean)) := [[true]]
+      for x in objs repeat
+          eles := addDimensionToObjects(eles, x)
+          arrows := addDimensionToArrows(arrows)
+      finitePoset(eles, arrows)$FiniteBiCPO(List(S))
+
+  -- generates a completely ordered set
+  completelyOrderedSet(objs : List(S)) : FiniteBiCPO(S) ==
+      dim : NNI := #objs
+      arrows : List(List(Boolean)) := [[]]
+      for x in 1..dim repeat
+          row : List Boolean := []
+          for y in 1..dim repeat
+              g : Boolean := if x >= y then true else false
+              row := concat(row, g)
+          arrows := concat(arrows, row)
+      finitePoset(objs, arrows)$FiniteBiCPO(S)
+
+  -- generates a poset corresponding to an N5 lattice
+  posetN5(objs : List(S)) : FiniteBiCPO(S) ==
+      finitePoset(objs, [[true, true, true, true, true],
+      [false, true, false, false, true],
+      [false, false, true, true, true],
+      [false, false, false, true, true],
+      [false, false, false, false, true]
+      ])$FiniteBiCPO(S)
+
+  -- generates a poset corresponding to an M5 lattice
+  posetM5(objs : List(S)) : FiniteBiCPO(S) ==
+      finitePoset(objs, [[true, true, true, true, true],
+      [false, true, false, false, true],
+      [false, false, true, false, true],
+      [false, false, false, true, true],
+      [false, false, false, false, true]
+      ])$FiniteBiCPO(S)
+
+  -- generates a poset corresponding to an O6 lattice
+  posetO6(objs : List(S)) : FiniteBiCPO(S) ==
+      finitePoset(objs, [[true, true, true, true, true, true],
+      [false, true, true, false, false, true],
+      [false, false, true, false, false, true],
+      [false, false, false, true, true, true],
+      [false, false, false, false, true, true],
+      [false, false, false, false, false, true]
+      ])$FiniteBiCPO(S)
+
+  -- generates a poset corresponding to an P6 lattice
+  posetP6(objs : List(S)) : FiniteBiCPO(S) ==
+      finitePoset(objs, [[true, true, true, true, true, true],
+      [false, true, true, false, true, true],
+      [false, false, true, false, false, true],
+      [false, false, true, true, true, true],
+      [false, false, false, false, true, true],
+      [false, false, false, false, false, true]
+      ])$FiniteBiCPO(S)
+
+  -- generates a poset corresponding to an L7 lattice
+  posetL7(objs : List(S)) : FiniteBiCPO(S) ==
+      finitePoset(objs, [[true, true, true, true, true, true, true],
+      [false, true, false, true, true, false, true],
+      [false, false, true, false, true, true, true],
+      [false, false, false, true, false, false, true],
+      [false, false, false, false, true, false, true],
+      [false, false, false, false, false, true, true],
+      [false, false, false, false, false, false, true]
+      ])$FiniteBiCPO(S)
+
+)if false
+\section{Infinite (unbounded) Littices}
+\subsection{Intuitionistic Logic}
+The intuitionisticLogic domain implements a Heyting algebra implied
+by intuitionistic logic similar to boolean algebra.
+
+Intuitionistic or constructive logic is similar to classical logic
+but where the law of excluded middle is not used.
+
+The implementation starts with a 'free logic algebra' that is an
+algebra where each combination of inputs to /\ , \/ and - generates
+a new element. So an expression like T /\ T is just T /\ T and does
+not simplify.
+
+Then by adding "simplification rules" (should I have called them
+relators?) then other logic algebras can be implemented (intuitional,
+ternary, many-valued, boolean) just by adding the "rules".
+
+These "rules" are hardcoded into the /\ , \/ and - implementations
+(rather than implementing a true rule based system).
+
+Simplification rules :
+
+      ~T -> _|_
+      ~(~T) -> T
+      ~x /\ x -> _|_
+      x /\ ~x -> _|_
+      x /\ x -> x
+      _|_ /\ x -> _|_
+      x /\ _|_ -> _|_
+      T \/ x -> T
+      x \/ T -> T
+      x \/ x -> x
+      x /\ T -> x
+      T /\ x -> x
+      x \/ _|_ -> x
+      _|_ \/ x -> x
+
+where:
+
+      T = true
+      _|_ = false
+      x = arbitrary proposition
+
+An option to generalise this code might be to implement the 'free
+logic algebra' as a category, then intuitional, ternary, many-valued,
+boolean could be domains which overload /\ , \/ and - with their own
+sets of rules.
+
+Note : Please be aware that changes may be made in the future to improve
+          and correct intuitionistic logic domain, such as:
+\begin{itemize}
+\item investigate change of meaning of $=$ for intuitionistic logic to
+       represent equivalence rather than equality.
+\item implement more complete algorithm to decide if two (quantifier-free)
+       intuitionistic formulas are equivalent.
+\end{itemize}
+\section{Intuitionistic Logic Tutorial}
+Intuitionistic logic has many possible values : true $T$, false $_|_$ and
+infinitely many other values generated by constructs such as inverse.
+These can be constructed as follows:
+
+\begin{verbatim}
+(1) -> logicF()
+
+   (1)  _|_
+                                                                Type : ILogic
+(2) -> logicT()
+
+   (2)  T
+                                                                Type : ILogic
+(3) -> ~logicT()
+
+   (3)  _|_
+                                                                Type : ILogic
+\end{verbatim}
+
+This logic has different rules from boolean algebra and all constructions
+do not reduce to true or false. To test out our constructs we will use
+the following list:
+
+\begin{verbatim}
+(4) -> l : List ILogic := [logicF(), logicT(), proposition("a"), ~proposition("a"), proposition("b"), ~proposition("b")]
+
+   (4)  [_|_, T, a, ~(a), b, ~(b)]
+                                                          Type : List(ILogic)
+\end{verbatim}
+
+First we will try 'not':
+\begin{verbatim}
+(5) -> [(~j)::OutputForm for j in l]
+
+   (5)  [~(_|_), _|_, ~(a), ~(~(a)), ~(b), ~(~(b))]
+                                                      Type : List(OutputForm)
+\end{verbatim}
+
+We can print a truth table for 'and' and 'or'. This is the same as
+boolean logic for true/false values and extended for the unproven case.
+\begin{verbatim}
+(6) -> matrix[ [(k /\ j)::OutputForm for j in l] for k in l]
+
+     (6)
+      SUB
+          matrix,
+          [_|_, _|_, _|_, _|_, _|_, _|_],
+          [_|_, T, a, ~(a), b, ~(b)],
+          [_|_, a, a, _|_, (a/\b), (a/\~(b))],
+          [_|_, ~(a), _|_, ~(a), (~(a)/\b), (~(a)/\~(b))],
+          [_|_, b, (b/\a), (b/\~(a)), b, _|_],
+          [_|_, ~(b), (~(b)/\a), (~(b)/\~(a)), _|_, ~(b)]
+                                                                Type : Symbol
+
+Note : Its hard to read this table in text, it displays better as
+html on this page:
+http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/intuitionistic/index.htm
+
+(7) -> matrix[ [(k \/ j)::OutputForm for j in l] for k in l]
+
+     (7)
+    SUB
+        matrix,
+        [_|_, T, a, ~(a), b, ~(b)], [T, T, T, T, T, T],
+        [a, T, a, (a\/~(a)), (a\/b), (a\/~(b))],
+        [~(a), T, (~(a)\/a), ~(a), (~(a)\/b), (~(a)\/~(b))],
+        [b, T, (b\/a), (b\/~(a)), b, (b\/~(b))],
+        [~(b), T, (~(b)\/a), (~(b)\/~(a)), (~(b)\/b), ~(b)]
+                                                                Type : Symbol
+\end{verbatim}
+
+'implies' produces the following truth table.
+\begin{verbatim}
+(8) -> matrix[ [implies(k, j)::OutputForm for j in l] for k in l]
+
+   (8)
+    SUB
+        matrix,
+        [T, T, (_|_->a), (_|_->~(a)), (_|_->b), (_|_->~(b))],
+        [_|_, T, (T->a), (T->~(a)), (T->b), (T->~(b))],
+        [(a->_|_), (a->T), (a->a), (a->~(a)), (a->b), (a->~(b))],
+        [(~(a)->_|_), (~(a)->T), (~(a)->a), (~(a)->~(a)), (~(a)->b), (~(a)->~(b))],
+        [(b->_|_), (b->T), (b->a), (b->~(a)), (b->b), (b->~(b))],
+        [(~(b)->_|_), (~(b)->T), (~(b)->a), (~(b)->~(a)), (~(b)->b), (~(b)->~(b))]
+                                                                Type : Symbol
+\end{verbatim}
+
+Now that we can do intuitionistic logic with constant values we can
+go on to represent theories. We can enter a symbolic value as follows:
+\begin{verbatim}
+(9) -> proposition("p1")
+
+   (9)  p1
+                                                                Type : ILogic
+\end{verbatim}
+
+When applying a symbolic value, then it may not possible to compress
+as a single node, so the result remains as a tree. So (13) can be
+reduced to a single value $_|_$, because the result does not depend
+on \verb'a', however in (12) we cannot reduce to a single value.
+\begin{verbatim}
+(10) -> proposition("a") /\ proposition("b")
+
+   (10)  (a/\b)
+                                                                Type : ILogic
+(11) -> implies(proposition("a"), proposition("b"))
+
+   (11)  (a->b)
+                                                                Type : ILogic
+(12) -> proposition("a") /\ logicT()
+
+   (12)  a
+                                                                Type : ILogic
+(13) -> proposition("a") /\ logicF()
+
+   (13)  _|_
+                                                                Type : ILogic
+\end{verbatim}
+\section{applying modus ponens}
+modus ponens tells us that given : 'a' and 'a->b' then we can imply 'b'.
+So we first assert 'a' and 'a->b' as follows:
+\begin{verbatim}
+(14) -> givens := proposition("a") /\ implies(proposition("a"), proposition("b"))
+
+   (14)  (a/\(a->b))
+                                                                Type : ILogic
+\end{verbatim}
+We then factor into separate terms:
+\begin{verbatim}
+(15) -> fgivens := factor(givens)
+
+   (15)  [a, (a->b)]
+                                                          Type : List(ILogic)
+\end{verbatim}
+note : List ILOGIC to OutputForm is fixed in latest FriCAS so it will
+now display : [a, a->b]
+
+We now apply the deductions function to this list.
+\begin{verbatim}
+(16) -> deduct := deductions(fgivens)
+
+   (16)  [b]
+                                                          Type : List(ILogic)
+\end{verbatim}
+so we get the required deduction 'b'
+
+\section{domain ILOGIC ILogic}
+)endif
+
+)abbrev domain ILOGIC ILogic
+++ Author: Martin Baker
+++ Date Created: March 2011
+++ Basic Operations:
+++ Related Constructors:
+++ Keywords: intuitionisticLogic
+++ Description: ILogic is an algebra with
+++ true, false and other 'unproven' values
+++ References:
+++ http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/intuitionistic/index.htm
+
+ILogic() : Exports == Implementation where
+
+ NNI ==> NonNegativeInteger
+ PR ==> Record(rft : %, pout : NNI)
+   ++ parse result includes term returned and new index
+
+ Exports == Join(BoundedLattice, CoercibleTo(OutputForm)) with
+  logicT : () -> %
+    ++ true is a logical constant.
+  logicF : () -> %
+    ++ false (contradiction) is a logical constant.
+  proposition : (s : String) -> %
+    ++ Constructs a proposition
+  implies : (%, %) -> %
+    ++ implies(a, b) returns the logical implication
+    ++ of ILogic a and b.
+    ++ a is premise, b is conclusion, result is false (contradiction)
+    ++ if premise=true and conclusion=false
+    ++ does not mean there is a causal connection
+  redux : (n : %) -> %
+    ++ attempt to simplify theory
+    ++ apply recursively to subnodes
+    ++ normally this should not be necessary since logic values are
+    ++ interpreted when constructed
+  factor : (n : %) -> List %
+    ++ splits n into a list of factors which must be true for the
+    ++ whole to be true.
+    ++ This assumes that the top level is already a set of factors
+    ++ separated by /\ otherwise the result will just be a list with
+    ++ one entry: 'n'.
+    ++ This is used when converting ILogic to types by using the
+    ++ Curry-Howard isomorphism.
+  deductions : (ln : List %) -> List %
+    ++ assumes ln contains a list of factors which must be true for
+    ++ the whole to be true (such as the list produced by factor).
+    ++ From this deductions attempts to produce a list of other
+    ++ proposition that must also be true by using modus ponens.
+    ++ This is used to determine the returned type when converting
+    ++ ILogic to types by using the Curry-Howard isomorphism.
+  "=" : (a : %, b : %) -> Boolean
+    ++ returns true (boolean true) if intuitionisticLogic values
+    ++ are the same.
+    ++ Translates from Intuitionistic Logic to Boolean Logic
+  _~ : % -> %
+    ++ ~(x) returns the logical complement of x.
+    ++ TODO not sure if complement should be included here?
+    ++ intuitionistic logic can have complement but has different axioms
+    ++ to complement in Boolean algebra.
+    ++ Equivalent capability can be provided by implication.
+  opType : (n : %) -> Symbol
+    ++ if this is a compound op then opType returns the type of
+    ++ that op:
+    ++ "IMPLY"::Symbol =implies
+    ++ "AND"::Symbol=/\
+    ++ "OR"::Symbol=\/
+    ++ "NOT"::Symbol=~
+    ++ "OTHER"::Symbol=not compound op
+  getChildren : (n : %) -> List %
+    ++ returns child nodes if this is a compound term
+    ++ otherwise returns []
+  atom? : (n : %) -> Boolean
+    ++ returns true if this is an atom, that is a leaf node
+    ++ otherwise return false if this is a compound term
+  value : (n : %) -> Symbol
+    ++ returns:
+    ++   "T"::Symbol = T
+    ++   "F"::Symbol = _|_
+    ++   "E"::Symbol = error
+    ++   "P"::Symbol = proposition
+    ++   "C"::Symbol = compound
+    ++ Constructs lambda term and bind any variables with the name provided
+  parseIL : (t1 : String) -> %
+    ++ Constructs intuitionistic logic terms from a string
+    ++ notation assumes format like this:
+    ++ <term> : := var | <term>/\<term> | <term>\/<term> |
+    ++            <term>-><term> | "("<term>")"
+  parseIL2 : (t1 : String, pin : NNI) -> PR
+    ++ Constructs intuitionistic logic terms from a string
+    ++ notation assumes format like this:
+    ++ <term2> : := var | "("<term>")"
+    ++ <term> : := var | <term>/\<term> | <term>\/<term> |
+    ++            <term>-><term> | "("<term>")"
+  parseILTerm : (t1 : String, pin : NNI) -> PR
+    ++ parseTerm is used by parseIL. It would rarely be called
+    ++ externally but it is here to allow it to call parseIL
+    ++ that is to allow circular calls
+  toString : (n : %) -> String
+    ++ creates a string representation of this term and its sub-terms
+  toStringUnwrapped : (n : %) -> String
+    ++ similar to 'toString' but does not put outer compound terms
+    ++ in brackets
+  coerce : (n : %) -> OutputForm
+    ++ output
+
+ Implementation == add
+
+  Rep := Union(_
+               const : Record(val : Symbol), _
+               var : Record(str : String), _
+               binaryOp : Record(typ : Symbol, c1 : %, c2 : %), _
+               unaryOp : Record(typ : Symbol, c1 : %)_
+               )
+    ++ this allows us to represent an intuitionistic
+    ++ expression as a tree structure where the nodes are
+    ++ one of:
+    ++ 1) const: Record(val: Symbol)
+    ++   holds the true and false values:
+    ++   "T"::Symbol = T
+    ++   "F"::Symbol = _|_
+    ++
+    ++ 2) var: Record(str: String)
+    ++   holds a proposition name
+    ++
+    ++ 3) binaryOp: Record(typ: Symbol, c1: %, c2: %)
+    ++   holds binary operations:
+    ++   "IMPLY"::Symbol =implies
+    ++   "AND"::Symbol=/\
+    ++   "OR"::Symbol=\/
+    ++ 4) unaryOp: Record(typ: Symbol, c1: %)
+    ++   holds unary operations the only one is
+    ++   "NOT"::Symbol = ~
+
+  -- Constructs a proposition
+  proposition(s : String) : % == [[s]]
+
+  -- literal constructors
+  logicT() == [["T"::Symbol]]
+  logicF() == [["F"::Symbol]]
+
+  -- not operator: returns the logical complement
+  -- in general case 'x' this will generate a new element '~x'
+  -- but for specific cases we can apply the simplification rules:
+  -- ~T -> F
+  -- ~(~T) -> T
+  ~ b ==
+      -- apply rule: ~T -> F
+      if (b case const) then
+          if (b.const.val = "T"::Symbol) then return [["F"::Symbol]]
+      -- apply rule: ~(~T) -> T
+      if (b case unaryOp) then
+          c : % := b.unaryOp.c1
+          if (c case unaryOp) then
+              d : % := c.unaryOp.c1
+              if (d case const) then
+                  if (d.const.val = "T"::Symbol) then return [["F"::Symbol]]
+      [["NOT"::Symbol, b]]
+
+  -- /\ returns the logical 'meet', e.g. 'and'.
+  --
+  -- simplification rules:
+  -- ~x /\ x -> F
+  -- x /\ ~x -> F
+  -- x /\ x -> x
+  -- F /\ x -> F
+  -- x /\ F -> F
+  -- x /\ T -> x
+  -- T /\ x -> x
+  --
+  _/_\(a : %, b : %) ==
+      -- apply rule: F /\ x -> F
+      if (a case const) then
+          if (a.const.val = "F"::Symbol) then return [["F"::Symbol]]
+      -- apply rule: x /\ F -> F
+      if (b case const) then
+          if (b.const.val = "F"::Symbol) then return [["F"::Symbol]]
+      -- apply rule: x /\ x -> x
+      if a = b then
+          return a
+      -- apply rule: x /\ ~x -> F
+      if a = (~b) then
+          return [["F"::Symbol]]
+      -- apply rule: ~x /\ x -> F
+      if (~a) = b then
+          return [["F"::Symbol]]
+      -- apply rule: x /\ T -> x
+      if (b case const) then
+          if (b.const.val = "T"::Symbol) then return a
+      -- apply rule: T /\ x -> x
+      if (a case const) then
+          if (a.const.val = "T"::Symbol) then return b
+      [["AND"::Symbol, a, b]]
+
+  -- \/ returns the logical 'join', e.g. 'or'.
+  --
+  -- simplification rules:
+  -- T \/ x -> T
+  -- x \/ T -> T
+  -- x \/ x -> x
+  -- x \/ _|_ -> x
+  -- _|_ \/ x -> x
+  --
+  _\_/(a : %, b : %) ==
+      -- apply rule: T \/ x -> T
+      if (a case const) then
+          if (a.const.val = "T"::Symbol) then return [["T"::Symbol]]
+      -- apply rule: x \/ T -> T
+      if (b case const) then
+          if (b.const.val = "T"::Symbol) then return [["T"::Symbol]]
+      -- apply rule: x \/ x -> x
+      if a = b then
+          return a
+      -- apply rule: x \/ _|_ -> x
+      if (b case const) then
+          if (b.const.val = "F"::Symbol) then return a
+      -- apply rule: _|_ \/ x -> x
+      if (a case const) then
+          if (a.const.val = "F"::Symbol) then return b
+      [["OR"::Symbol, a, b]]
+
+  -- implies(a, b) returns the logical implication
+  -- of ILogic a and b.
+  -- a is premise, b is conclusion, result is false (contradiction)
+  -- if premise=true and conclusion=false
+  -- does not mean there is a causal connection
+  implies(a : %, b : %) ==
+      if (a case const) and (b case const) then
+          if (a.const.val ~= "F"::Symbol) and (b.const.val = "F"::Symbol) then return [["F"::Symbol]]
+          return [["T"::Symbol]]
+      [["IMPLY"::Symbol, a, b]]
+
+  -- attempt to simplify theory
+  -- apply recursively to subnodes
+  -- normally this should not be necessary since logic values are
+  -- interpreted when constructed
+  --
+  -- simplification rules:
+  -- ~T -> F
+  -- ~(~T) -> T
+  -- ~x /\ x -> F
+  -- x /\ ~x -> F
+  -- x /\ x -> x
+  -- F /\ x -> F
+  -- x /\ F -> F
+  -- x /\ T -> x
+  -- T /\ x -> x
+  -- T \/ x -> T
+  -- x \/ T -> T
+  -- x \/ x -> x
+  -- x \/ _|_ -> x
+  -- _|_ \/ x -> x
+  --
+  redux(n : %) : % ==
+      if n case const then
+          return n
+      if n case var then
+          return n
+      if n case binaryOp then
+          if n.binaryOp.typ = "IMPLY"::Symbol then
+              return implies(redux(n.binaryOp.c1), redux(n.binaryOp.c2))
+          if n.binaryOp.typ = "AND"::Symbol then
+              return _/_\(redux(n.binaryOp.c1), redux(n.binaryOp.c2))
+          if n.binaryOp.typ = "OR"::Symbol then
+              return _\_/(redux(n.binaryOp.c1), redux(n.binaryOp.c2))
+      if n case unaryOp then
+          return ~(redux(n.unaryOp.c1))
+      n
+
+  -- splits n into a list of factors which must be true for the
+  -- whole to be true.
+  -- This assumes that the top level is already a set of factors
+  -- seperated by /\ otherwise the result will just be a list with
+  -- one entry: 'n'.
+  -- This is used when converting ILogic to types by using the
+  -- Curry-Howard isomorphism.
+  factor(n : %) : List % ==
+      if ~(n case binaryOp) then return [n]
+      if ~(n.binaryOp.typ = "AND"::Symbol) then return [n]
+      ch : List % := getChildren(n)
+      concat(factor(first ch), factor(second ch))
+
+  -- remove duplicates. Return elements of 'b' except those that are
+  -- in 'a'
+  -- I would use duplicate removal built into List but that only
+  -- works when the list is defined over SETCAT
+  removeDup(a : List %, b : List %) : List % ==
+      res : List % := []
+      for b1 in b repeat
+          fnd : Boolean := false()
+          for a1 in a repeat
+              if a1 = b1 then fnd := true()
+          if not fnd then res := concat(res, b1)
+      res
+
+  -- a single iteration for deductions below.
+  deductions1(ln : List %) : List % ==
+      res : List % := []
+      for n in ln repeat
+          if n case binaryOp then
+              if n.binaryOp.typ = "IMPLY"::Symbol then
+                  ch : List % := getChildren(n)
+                  for n2 in ln repeat
+                      if (first ch) = n2 then res := concat(res, second ch)
+      res
+
+  -- assumes ln contains a list of factors which must be true for
+  -- the whole to be true (such as the list produced by factor).
+  -- From this deductions attempts to produce a list of other
+  -- proposition that must also be true by using modus ponens.
+  -- This is used to determine the returned type when converting
+  -- ILogic to types by using the Curry-Howard isomorphism.
+  deductions(ln : List %) : List % ==
+      res : List % := []
+      thisres : List % := deductions1(ln)
+      res := concat(res, thisres)$(List %)
+      -- these deductions may lead to further deductions so we
+      -- need to apply again until there are no more deductions
+      emptyres : Boolean := empty?(thisres)$(List %)
+      loopbreaker := 1::NNI
+      while not emptyres and (loopbreaker<20)repeat
+          allres : List % := concat(ln, res)
+          thisres := deductions1(allres)
+          thisres := removeDup(res, thisres)
+          thisres := removeDup(allres, thisres)
+          res := concat(res, thisres)$(List %)
+          emptyres := empty?(thisres)$(List %)
+          loopbreaker := loopbreaker + 1
+      res
+
+  -- if this is a compound op then opType returns the type of that op:
+  -- "IMPLY"::Symbol =implies
+  -- "AND"::Symbol=/\
+  -- "OR"::Symbol=\/
+  -- "NOT"::Symbol=~
+  -- "OTHER"::Symbol=not compound op
+  opType(n : %) : Symbol ==
+      if n case binaryOp then return n.binaryOp.typ
+      if n case unaryOp then return "NOT"::Symbol
+      "OTHER"::Symbol
+
+  -- returns true if this is an atom, that is a leaf node
+  -- otherwise return false if this is a compound term
+  atom?(n : %) : Boolean == (n case var) or (n case const)
+
+  -- returns:
+  --   "F"::Symbol = _|_
+  --   "T"::Symbol = T
+  --   "E"::Symbol = error
+  --   "P"::Symbol = proposition
+  --   "C"::Symbol = compound
+  value(n : %) : Symbol ==
+      if n case const then
+          if (n.const.val = "F"::Symbol) then return "F"::Symbol
+          if (n.const.val = "T"::Symbol) then return "T"::Symbol
+          return "E"::Symbol
+      if n case var then
+          return "P"::Symbol
+      "C"::Symbol
+
+  -- returns child nodes if this is a compound term
+  -- otherwise returns []
+  getChildren(n : %) : List % ==
+      if atom?(n) then return []
+      if n case binaryOp then
+          return [n.binaryOp.c1, n.binaryOp.c2]
+      if n case unaryOp then
+          return [n.unaryOp.c1]
+
+  -- returns true (boolean true) if intuitionisticLogic values
+  -- are the same. The terms must match exactly not just be
+  -- equivalent, that is x /\ 1 is not equal to x
+  -- Translates from Intuitionistic Logic to Boolean Logic
+  a = b ==
+      (a case const) and (b case const) =>
+          a.const.val = 'F and b.const.val = 'F => true
+          a.const.val = 'T and b.const.val = 'T => true
+          false
+      (a case var) and (b case var) =>
+          -- variable node so compare names
+          a.var.str = b.var.str => true
+          false
+      (a case binaryOp) and (b case binaryOp) =>
+          -- binary node which has two subnodes c1 and c2
+          a.binaryOp.typ ~= b.binaryOp.typ => false
+          (a.binaryOp.c1 = b.binaryOp.c1) and
+             (a.binaryOp.c2 = b.binaryOp.c2) => true
+          false
+      (a case unaryOp) and (b case unaryOp) =>
+          -- unary node which has a subnode c1
+          a.unaryOp.typ ~= b.unaryOp.typ => false
+          a.unaryOp.c1 = b.unaryOp.c1 => true
+          false
+      false
+
+  parseBracketTerm(t1 : String, pin : NNI) : PR ==
+      p1 := pin
+      trm : % := logicT()
+      ch := qelt(t1, p1)
+      if not (ch = char("(")) then
+          error "bracket term must start with ("
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      if p1 > maxIndex(t1) then
+          error "opening but no closing bracket"
+          return [trm, p1]
+      r2 := parseILTerm(t1, p1)
+      trm := r2.rft
+      p1 := r2.pout
+      ch := qelt(t1, p1)
+      if not (ch = char(")")) then
+          error "can't find closing bracket"
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      [trm, p1]
+
+  -- parse /\ term
+  -- expects first term to be read already
+  -- should now be pointing to /\ characters
+  parseILand(t1 : String, pin : NNI, firstTerm : %) : PR ==
+      p1 := pin
+      pt : NNI := pin
+      trm : % := logicT()
+      ch := qelt(t1, p1)
+      if not (ch = char("/")) then
+          error "expecting /\"
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      ch := qelt(t1, p1)
+      if not (ch = char("\")) then
+          error "expecting /\"
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      --print("st ch="::Symbol << ch)
+      r : PR := parseILTerm(t1, p1)
+      secondTerm := r.rft
+      p1 := r.pout
+      [_/_\(firstTerm, secondTerm), p1]
+
+  -- parse \/ term
+  -- expects first term to be read already
+  -- should now be pointing to \/ characters
+  parseILor(t1 : String, pin : NNI, firstTerm : %) : PR ==
+      p1 := pin
+      pt : NNI := pin
+      trm : % := logicT()
+      ch := qelt(t1, p1)
+      if not (ch = char("\")) then
+          error "expecting \/"
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      ch := qelt(t1, p1)
+      if not (ch = char("/")) then
+          error "expecting \/"
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      --print("st ch="::Symbol << ch)
+      r : PR := parseILTerm(t1, p1)
+      secondTerm := r.rft
+      p1 := r.pout
+      [_\_/(firstTerm, secondTerm), p1]
+
+  -- parse -> term
+  -- expects first term to be read already
+  -- should now be pointing to -> characters
+  parseILfn(t1 : String, pin : NNI, firstTerm : %) : PR ==
+      p1 := pin
+      pt : NNI := pin
+      trm : % := logicT()
+      ch := qelt(t1, p1)
+      if not (ch = char("-")) then
+          error "expecting ->"
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      ch := qelt(t1, p1)
+      if not (ch = char(">")) then
+          error "expecting ->"
+          return [trm, p1]
+      p1 := p1 + (1::NNI)
+      --print("st ch="::Symbol << ch)
+      r : PR := parseILTerm(t1, p1)
+      secondTerm := r.rft
+      p1 := r.pout
+      [implies(firstTerm, secondTerm), p1]
+
+  -- construct a type by parsing a string t1
+  -- pin is index to string at start of parse
+  parseILName(t1 : String, pin : NNI) : PR ==
+      vnm : String := ""
+      pt : NNI := pin
+      ch := qelt(t1, pt)
+      --print("st ch="::Symbol << ch::String)
+      while alphanumeric?(ch) repeat
+          vnm := concat(vnm, ch)
+          pt := pt + (1::NNI)
+          if pt > maxIndex(t1) then
+              return [proposition(vnm), pt]
+          ch := qelt(t1, pt)
+      [proposition(vnm), pt]
+
+  parseILTerm(t1 : String, pin : NNI) : PR ==
+      p1 := pin
+      res : % := logicT()
+      ch := qelt(t1, p1)
+      --print("parseTerm ch=" << ch << " p1=" << string(p1))
+      -- first remove leading spaces
+      while ch = char(" ") repeat
+          p1 := p1 + (1::NNI)
+          if p1 > maxIndex(t1) then
+              --print("parseTerm(" << t1 << ") 1 giving:" << toString(res))
+              return [res, p1]
+          ch := qelt(t1, p1)
+      r : PR := [res, p1]
+      if alphabetic?(ch) then r := parseILName(t1, p1)
+      if ch = char("(") then r := parseBracketTerm(t1, p1)
+      res := r.rft
+      p1 := r.pout
+      -- now check for compound term
+      if p1 > maxIndex(t1) then
+          --print("parseTerm(", t1, ") 2 giving:" << toString(res))
+          return [res, p1]
+      ch := qelt(t1, p1)
+      if ch = char(" ") then
+          p1 := p1 + (1::NNI)
+          if p1 > maxIndex(t1) then
+              --print("parseTerm(" << t1 << ") 3 giving:" << toString(res))
+              return [res, p1]
+      ch := qelt(t1, p1)
+      if ch = char("/") then
+          r := parseILand(t1, p1, res)
+          res := r.rft
+          p1 := r.pout
+      if ch = char("\") then
+          r := parseILor(t1, p1, res)
+          res := r.rft
+          p1 := r.pout
+      if ch = char("-") then
+          r := parseILfn(t1, p1, res)
+          res := r.rft
+          p1 := r.pout
+      [res, p1]
+
+  -- Constructs intuitionistic logic terms from a string
+  -- notation assumes format like this:
+  -- <term> : := var | <term>/\<term> | <term>\/<term> |
+  --            <term>-><term> | "("<term>")"
+  parseIL2(t1 : String, pin : NNI) : PR ==
+      p1 := pin
+      res : % := logicT()
+      ch := qelt(t1, p1)
+      --print("parseIL ch=" << ch << " p1=" << string(p1))
+      -- first remove leading spaces
+      while ch = char(" ") repeat
+          p1 := p1 + (1::NNI)
+          if p1 > maxIndex(t1) then
+              --print("parseTerm(", t1, ") 1 giving:"::Symbol << toString(res))
+              return [res, p1]
+          ch := qelt(t1, p1)
+      r : PR := [res, p1]
+      if alphabetic?(ch) then r := parseILName(t1, p1)
+      if ch = char("(") then r := parseBracketTerm(t1, p1)
+      res := r.rft
+      p1 := r.pout
+      [res, p1]
+
+  -- Constructs intuitionistic logic terms from a string
+  -- notation assumes format like this:
+  -- <term> : := var | <term>/\<term> | <term>\/<term> |
+  --            <term>-><term> | "("<term>")"
+  parseIL(t1 : String) : % ==
+      r := parseILTerm(t1, minIndex(t1)::NNI)
+      --print("parseIL(", t1, ") giving:"::Symbol << r)
+      r.rft
+
+  -- return string representation
+  toString(n : %) : String ==
+      if n case const then
+          if (n.const.val = "F"::Symbol) then return "__|__"
+          if (n.const.val = "T"::Symbol) then return "T"
+          return "?"
+      if n case var then
+          return n.var.str
+          --print("toString case i1="::Symbol << s << n)
+      if n case binaryOp then
+          -- binary node which has two subnodes c1 and c2
+          s1 : String := "->"
+          if n.binaryOp.typ = "AND"::Symbol then s1 := "/\"
+          if n.binaryOp.typ = "OR"::Symbol then s1 := "\/"
+          return concat(["(", toString(n.binaryOp.c1), s1,
+                         toString(n.binaryOp.c2), ")"])
+      if n case unaryOp then
+          -- unary node which has a subnode c1
+          return concat(["~(", toString(n.unaryOp.c1), ")"])
+      "error"
+
+  -- similar to 'toString' but does not put outer compound terms
+  -- in brackets
+  toStringUnwrapped(n : %) : String ==
+      if n case const then
+          if (n.const.val = "F"::Symbol) then return "__|__"
+          if (n.const.val = "T"::Symbol) then return "T"
+          return "?"
+      if n case var then
+          return n.var.str
+          --print("toString case i1="::Symbol << s << n)
+      if n case binaryOp then
+          -- binary node which has two subnodes c1 and c2
+          s1 : String := "->"
+          if n.binaryOp.typ = "AND"::Symbol then s1 := "/\"
+          if n.binaryOp.typ = "OR"::Symbol then s1 := "\/"
+          return concat([toString(n.binaryOp.c1), s1, toString(n.binaryOp.c2)])
+      if n case unaryOp then
+          -- unary node which has a subnode c1
+          return concat(["~(", toString(n.unaryOp.c1), ")"])
+      "error"
+
+  -- output
+  coerce(n : %) : OutputForm ==
+      if n case const then
+          if (n.const.val = "F"::Symbol) then return "__|__"::OutputForm
+          if (n.const.val = "T"::Symbol) then return "T"::OutputForm
+          return "?"::OutputForm
+      if n case var then
+          return ((n.var.str)::Symbol)::OutputForm
+          -- convert to 'Symbol' first to avoid displaying quotes
+          --print("toString case i1="::Symbol << s << n)
+      if n case binaryOp then
+          -- binary node which has two subnodes c1 and c2
+          s1 : OutputForm := "->"::OutputForm
+          if n.binaryOp.typ = "AND"::Symbol then s1 := "/\"::OutputForm
+          if n.binaryOp.typ = "OR"::Symbol then s1 := "\/"::OutputForm
+          return hconcat(["("::OutputForm, (n.binaryOp.c1)::OutputForm_
+               , s1, (n.binaryOp.c2)::OutputForm, ")"::OutputForm])$OutputForm
+      if n case unaryOp then
+          -- unary node which has a subnode c1
+          return hconcat(["~("::OutputForm, (n.unaryOp.c1)::OutputForm,
+                          ")"::OutputForm])$OutputForm
+      "error"::OutputForm
+
+)if false
+\section{Infinite (unbounded) Lattices}
+\subsection{Distributive Lattices}
+Not every lattice is distributive but those that are have some interesting
+properties which can be investigated by using these domains.
+
+If the lattice is distributive then we can take advantage of this and make
+the representation more efficient by representing it as either:
+
+meet-of-joins
+\begin{verbatim}
+(a\/b\/...) /\ (c\/d\/...) /\ ...
+\end{verbatim}
+
+join-of-meets
+\begin{verbatim}
+(a/\b/\...) \/ (c/\d/\...) \/ ...
+\end{verbatim}
+
+So the representation is a list of lists like this:
+\begin{verbatim}
+Rep := List List Union(_
+               const : Record(val : Symbol), _
+               var : Record(str : String) _
+               )
+\end{verbatim}
+
+For a finite lattice then:
+if meet is distributive over join,
+then join is also distributive over meet.
+and
+if join is also distributive over meet,
+then meet is distributive over join.
+
+We can therefore always convert between join-of-meets and meet-of-joins
+by 'multiplying' out the terms and applying the idempotence + absorption
+axioms.
+
+We therefore only need one of these domains to represent a distributive
+lattice structure. However I have provided both to allow conversions
+between the two types to be provided.
+
+I look at this like a polynomial for lattices and these conversions are
+like solving a polynomial.
+
+Here is an test session to show how it works:
+\begin{verbatim}
+-- first setup some variables
+MOJ := LatticeMeetOfJoins
+
+   (1)  LatticeMeetOfJoins
+                                                              Type: Type
+a := variable("a")$MOJ
+
+   (2)  ("a")
+                                                Type: LatticeMeetOfJoins
+b := variable("b")$MOJ
+
+   (3)  ("b")
+                                                Type: LatticeMeetOfJoins
+c := variable("c")$MOJ
+
+   (4)  ("c")
+                                                Type: LatticeMeetOfJoins
+d := variable("d")$MOJ
+
+   (5)  ("d")
+                                                Type: LatticeMeetOfJoins
+-- test 'and'
+land := a /\ b
+
+   (6)  ("a")/\("b")
+                                                Type: LatticeMeetOfJoins
+-- opposite
+landOp := land::LatticeJoinOfMeets
+
+   (7)  ("a"/\"b")
+                                                Type: LatticeJoinOfMeets
+-- test or
+lor := a \/ b
+
+   (8)  ("a"\/"b")
+                                                Type: LatticeMeetOfJoins
+-- opposite
+lorOp := lor::LatticeJoinOfMeets
+
+   (9)  ("a")\/("b")
+                                                Type: LatticeJoinOfMeets
+-- test idempotence (should return 'a')
+a /\ a
+
+   (10)  ("a")
+                                                Type: LatticeMeetOfJoins
+a \/ a
+
+   (11)  ("a")
+                                                Type: LatticeMeetOfJoins
+-- test absorption (should return 'a')
+a/\(a\/b)
+
+   (12)  ("a")
+                                                Type: LatticeMeetOfJoins
+a\/(a/\b)
+
+   (13)  ("a")
+                                                Type: LatticeMeetOfJoins
+-- test composite constructions
+landor := land \/ c
+
+   (14)  ("a"\/"c")/\("b"\/"c")
+                                                Type: LatticeMeetOfJoins
+landorOp := landor::LatticeJoinOfMeets
+
+   (15)  ("a"/\"b")\/("c")
+                                                Type: LatticeJoinOfMeets
+landorOpOp := landorOp::LatticeMeetOfJoins
+
+   (16)  ("a"\/"c")/\("b"\/"c")
+                                                Type: LatticeMeetOfJoins
+landorand := landor /\ d
+
+   (17)  ("a"\/"c")/\("b"\/"c")/\("d")
+                                                Type: LatticeMeetOfJoins
+landorandOp := landorand::LatticeJoinOfMeets
+
+   (18)  ("a"/\"b"/\"d")\/("c"/\"d")
+                                                Type: LatticeJoinOfMeets
+landorandOpOp := landorandOp::LatticeMeetOfJoins
+
+   (19)  ("a"\/"c")/\("b"\/"c")/\("d")
+                                                Type: LatticeMeetOfJoins
+(20) -> \end{verbatim}
+)endif
+
+)abbrev domain LATMOFJ LatticeMeetOfJoins
+++ Author: Martin Baker
+++ Date Created: Sept 2015
+++ Basic Operations:
+++ Related Constructors: LatticeJoinOfMeets is complementry domain
+++ Keywords: Logic Lattice Meet Join
+++ Description: Infinite Lattice which is distributive.
+++   Representation held as meet of joins.
+++ References:
+++ http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm
+
+LatticeMeetOfJoins() : Exports == Implementation where
+
+ NNI ==> NonNegativeInteger
+ PR ==> Record(rft : %, pout : NNI)
+   ++ parse result includes term returned and new index
+ ELEMENT ==> Union(_
+               const : Record(val : Symbol), _
+               var : Record(str : String) _
+               )
+
+ Exports == Join(BoundedDistributiveLattice, CoercibleTo(OutputForm)) with
+   logicT : () -> %
+     ++ construct true: a logical constant.
+   logicF : () -> %
+     ++ construct false (contradiction): a logical constant.
+   variable : (v : String) -> %
+     ++ construct a variable
+   latticeMeetOfJoins : (e : ELEMENT) -> %
+     ++ construct a lattice with one element
+   emptyLattice : () -> %
+     ++ construct an empty lattice
+   empty? : (n : %) -> Boolean
+     ++ true if empty
+   meet : (ln : List %) -> %
+     ++ meet of set of elements
+   join : (ln : List %) -> %
+     ++ join of set of elements
+   redux : (n : %) -> %
+     ++ attempt to simplify terms
+   factor : (n : %) -> List %
+     ++ splits n into a list of factors which must be true for the
+     ++ whole to be true.
+     ++ This assumes that the top level is already a set of factors
+     ++ separated by /\ otherwise the result will just be a list with
+     ++ one entry: 'n'.
+     ++ This is used when converting ILogic to types by using the
+     ++ Curry-Howard isomorphism.
+   deductions : (ln : List %) -> List %
+     ++ assumes ln contains a list of factors which must be true for
+     ++ the whole to be true (such as the list produced by factor).
+     ++ From this deductions attempts to produce a list of other
+     ++ proposition that must also be true by using modus ponens.
+     ++ This is used to determine the returned type when converting
+     ++ ILogic to types by using the Curry-Howard isomorphism.
+   "=" : (a : %, b : %) -> Boolean
+     ++ returns true (boolean true) if intuitionisticLogic values
+     ++ are the same.
+     ++ Translates from Intuitionistic Logic to Boolean Logic
+   opType : (n : %) -> Symbol
+     ++ if this is a compound op then opType returns the type of
+     ++ that op:
+     ++ "IMPLY"::Symbol =implies
+     ++ "AND"::Symbol=/\
+     ++ "OR"::Symbol=\/
+     ++ "NOT"::Symbol=~
+     ++ "OTHER"::Symbol=not compound op
+   getChildren : (n : %) -> List %
+     ++ returns child nodes if this is a compound term
+     ++ otherwise returns []
+   atom? : (n : %) -> Boolean
+     ++ returns true if this is an atom, that is a leaf node
+     ++ otherwise return false if this is a compound term
+   value : (n : %) -> Symbol
+     ++ returns:
+     ++   "T"::Symbol = T
+     ++   "F"::Symbol = _|_
+     ++   "E"::Symbol = error
+     ++   "P"::Symbol = proposition
+     ++   "C"::Symbol = compound
+     ++ Constructs lambda term and bind any variables with the name provided
+   toString : (n : %) -> String
+     ++ creates a string representation of this term and its sub-terms
+   toStringUnwrapped : (n : %) -> String
+     ++ similar to 'toString' but does not put outer compound terms
+     ++ in brackets
+   coerce : (n : %) -> OutputForm
+     ++ output
+
+ Implementation == add
+
+   Rep := List(List(ELEMENT))
+      ++ This domain is a distributive lattice, this allows us to
+      ++ represent the lattice as a meet of joins.
+      ++ So the inner list is a list of elements which are joined,
+      ++ the outer list represents a meet of these joins.
+      ++ The elements of this structure are constants or variables:
+      ++ 1) const: Record(val: Symbol)
+      ++   holds the true and false values:
+      ++   "T"::Symbol = T
+      ++   "F"::Symbol = _|_
+      ++
+      ++ 2) var: Record(str: String)
+      ++   holds a proposition name
+
+   -- Constructs a proposition
+   proposition(s : String) : % == [[[[s]]]]
+
+   -- literal constructors
+   logicT() == [[[["T"::Symbol]]]]
+   logicF() == [[[["F"::Symbol]]]]
+
+   -- construct a variable
+   variable(v : String) : % == [[[[v]]]]
+
+   -- construct a lattice with one element
+   latticeMeetOfJoins(e : ELEMENT) : % ==
+       [[e]]
+
+   emptyLattice() == []$List(List(ELEMENT))
+
+   -- true if empty
+   empty?(n : %) : Boolean ==
+       empty?(n)$Rep
+
+   -- /\ returns the logical 'meet', e.g. 'and'.
+   --
+   -- simplification rules:
+   -- idempotenceMeet for all x: x /\ x -> x ()
+   -- idempotenceJoin for all x: x \/ x -> x
+   -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
+   -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
+   --
+   _/_\(a : %, b : %) ==
+       if empty?(a) then return b
+       if empty?(b) then return a
+       redux(concat(a pretend Rep, b pretend Rep)$List(List(ELEMENT)))
+
+   -- \/ returns the logical 'join', e.g. 'or'.
+   --
+   -- simplification rules:
+   -- idempotenceMeet for all x: x /\ x -> x ()
+   -- idempotenceJoin for all x: x \/ x -> x
+   -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
+   -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
+   --
+   _\_/(a : %, b : %) ==
+       if empty?(a) then return b
+       if empty?(b) then return a
+       r : List(List(ELEMENT)) := []
+       for innera in a repeat
+           for innerb in b repeat
+               termLeft : List(ELEMENT) := innera
+               termRight : List(ELEMENT) := innerb
+               term := concat(termLeft, termRight)$List(ELEMENT)
+               r := concat(r, term)$List(List(ELEMENT))
+       redux(r)
+
+   meet(ln : List %) : % ==
+       r : % := emptyLattice()
+       for ele in ln repeat
+           r := _/_\(r, ele)
+       r
+
+   join(ln : List %) : % ==
+      r : % := emptyLattice()
+      for ele in ln repeat
+          r := _\_/(r, ele)
+      r
+
+   -- local function used by removeDuplicatesInTerm which is used by
+   -- redux to remove duplicates.
+   -- Returns true if elements are equal.
+   equalElements(a : ELEMENT, b : ELEMENT) : Boolean ==
+       if (a case var) and (a case var) then
+           return (a.var.str) = (b.var.str)
+       if (a case const)  and (b case const) then
+           return (a.const.val) = (b.const.val)
+       false
+
+   -- local function used by redux to remove duplicates, that is
+   -- apply idempotence. We cannot use the removeDuplicates in List
+   -- because ELEMENT does not have ATFINAG or BASTYPE.
+   removeDuplicatesInTerm(n : List(ELEMENT)) : List(ELEMENT) ==
+       r : List(ELEMENT) := []$List(ELEMENT)
+       for e1 in n for ne1 in 1..#n repeat
+           match : Boolean := false
+           for e2 in n for ne2 in 1..#n repeat
+               if e1 = e2 and ne1 < ne2 then match := true
+           if not match then r := concat(r, e1)
+       r
+
+   -- local function used by redux to remove duplicate lists.
+   -- Returns true if lists are equal, that is contain the same elements
+   -- (independant of order).
+   equalTerms(a : List(ELEMENT), b : List(ELEMENT)) : Boolean ==
+       if #a ~= #b then return false
+       for a1 in a repeat
+           found : Boolean := false
+           for b1 in b repeat
+               if equalElements(a1, b1) then found := true
+           if not found then return false
+       true
+
+   -- local function used by redux to apply absorption.
+   -- Returns true if a is a sub-term of b.
+   subTerm(a : List(ELEMENT), b : List(ELEMENT)) : Boolean ==
+       if #a >= #b then return false
+       for a1 in a repeat
+           found : Boolean := false
+           for b1 in b repeat
+               if equalElements(a1, b1) then found := true
+           if not found then return false
+       true
+
+   -- Attempt to simplify terms
+   --
+   -- simplification rules:
+   -- idempotenceMeet for all x: x /\ x -> x ()
+   -- idempotenceJoin for all x: x \/ x -> x
+   -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
+   -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
+   --
+   -- TODO add rules for top and bottom
+   --
+   redux(n : %) : % ==
+       r : List(List(ELEMENT)) := []$List(List(ELEMENT))
+       -- 'modified' set to true if this call of redux has made a reduction
+       modified : Boolean := false
+       for outer in n for outern in 1..#n repeat
+           -- check for idempotence
+           newinnerList : List(ELEMENT) := removeDuplicatesInTerm(outer)
+           if not equalTerms(newinnerList, outer) then modified := true
+           match : Boolean := false
+           for inner in n for innern in 1..#n repeat
+               if equalTerms(inner, outer) and innern < outern then
+                   match := true
+           -- check for absorption
+           isSubTerm : Boolean := false
+           for inner in n repeat
+               if subTerm(inner, outer) then isSubTerm := true
+           if (not match) and (not isSubTerm)
+               then r := concat(r, newinnerList)$List(List(ELEMENT))
+               else modified := true
+       -- print("LatticeMeetOfJoins.redux"::Symbol << n << _
+       --       ", "::Symbol << (r pretend %) << " mod="::Symbol << modified)
+       -- apply until no more changes
+       if modified then redux(r) else r
+
+   -- splits n into a list of factors which must be true for the
+   -- whole to be true.
+   -- This assumes that the top level is already a set of factors
+   -- separated by /\ otherwise the result will just be a list with
+   -- one entry: 'n'.
+   -- This is used when converting ILogic to types by using the
+   -- Curry-Howard isomorphism.
+   factor(n : %) : List % ==
+       [n]
+
+   -- remove duplicates. Return elements of 'b' except those that are
+   -- in 'a'
+   -- I would use duplicate removal built into List but that only
+   -- works when the list is defined over SETCAT
+   removeDup(a : List %, b : List %) : List % ==
+       a
+
+   -- assumes ln contains a list of factors which must be true for
+   -- the whole to be true (such as the list produced by factor).
+   -- From this deductions attempts to produce a list of other
+   -- proposition that must also be true by using modus ponens.
+   -- This is used to determine the returned type when converting
+   -- ILogic to types by using the Curry-Howard isomorphism.
+   deductions(ln : List %) : List % ==
+       ln
+
+   -- if this is a compound op then opType returns the type of that op:
+   -- "IMPLY"::Symbol =implies
+   -- "AND"::Symbol=/\
+   -- "OR"::Symbol=\/
+   -- "NOT"::Symbol=~
+   -- "OTHER"::Symbol=not compound op
+   opType(n : %) : Symbol ==
+       "OTHER"::Symbol
+
+   -- returns true if this is an atom, that is a leaf node
+   -- otherwise return false if this is a compound term
+   atom?(n : %) : Boolean == false
+
+   -- returns:
+   --   "F"::Symbol = _|_
+   --   "T"::Symbol = T
+   --   "E"::Symbol = error
+   --   "P"::Symbol = proposition
+   --   "C"::Symbol = compound
+   value(n : %) : Symbol ==
+       "C"::Symbol
+
+   -- returns child nodes if this is a compound term
+   -- otherwise returns []
+   getChildren(n : %) : List % ==
+       [n]
+
+   -- returns true (boolean true) if values
+   -- are the same. The terms must match exactly not just be
+   -- equivalent, that is x /\ 1 is not equal to x
+   -- Translates from Intuitionistic Logic to Boolean Logic
+   a = b ==
+       false
+
+   -- return string representation
+   toString(n : %) : String ==
+       a : String := concat("(", toStringUnwrapped(n))
+       a : String := concat(a, ")")
+       a
+
+   -- local function used by coerce to String
+   -- convert variable or literal to String
+   stringVarOrLit(a : Union(const : Record(val : Symbol),
+                  var : Record(str : String))) : String ==
+        if (a case var) then return (a.var.str)::String
+        if (a case const) then
+            if (a.const.val) = "T"::Symbol then return "T"
+            return "F"
+        "error"
+
+   -- similar to 'toString' but does not put outer compound terms
+   -- in brackets
+   toStringUnwrapped(n : %) : String ==
+       outerList : List String := []
+       r : String := ""
+       for outer in n for outern in 1..#n repeat
+           innerList : List String := []
+           for inner in outer for innern in (1..#outer) repeat
+               r := concat(r::String, stringVarOrLit(inner))
+               if innern ~= #outer then r := concat(r::String, "_\_/"::String)
+           if outern ~= #n then r := concat(r::String, ")_/_\("::String)
+       r
+
+   -- local function used by coerce to OutputForm
+   -- convert variable or literal to OutputForm
+   outputVarOrLit(a : Union(const : Record(val : Symbol),
+                  var : Record(str : String))) : OutputForm ==
+        if (a case var) then return (a.var.str)::OutputForm
+        if (a case const) then return (a.const.val)::OutputForm
+        "error"::OutputForm
+
+   -- output
+   coerce(n : %) : OutputForm ==
+       outerList : List OutputForm := []
+       r : OutputForm := "("::OutputForm
+       for outer in n for outern in 1..#n repeat
+           innerList : List OutputForm := []
+           for inner in outer for innern in (1..#outer) repeat
+               r := hconcat(r::OutputForm, outputVarOrLit(inner))
+               if innern ~= #outer then
+                   r := hconcat(r::OutputForm, "_\_/"::OutputForm)
+           if outern ~= #n then
+               r := hconcat(r::OutputForm, ")_/_\("::OutputForm)
+       hconcat(r, ")"::OutputForm)::OutputForm
+
+)abbrev domain LATJOFM LatticeJoinOfMeets
+++ Author: Martin Baker
+++ Date Created: Sept 2015
+++ Basic Operations:
+++ Related Constructors: LatticeMeetOfJoins is complementary domain
+++ Keywords: Logic Lattice Meet Join
+++ Description: Infinite Lattice which is distributive.
+++   Representation held as join of meets.
+++ References:
+++ http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/
+
+LatticeJoinOfMeets() : Exports == Implementation where
+
+ NNI ==> NonNegativeInteger
+ PR ==> Record(rft : %, pout : NNI)
+   ++ parse result includes term returned and new index
+ ELEMENT ==> Union(_
+               const : Record(val : Symbol), _
+               var : Record(str : String) _
+               )
+
+ Exports == Join(BoundedDistributiveLattice, CoercibleTo(OutputForm)) with
+   logicT : () -> %
+     ++ construct true: a logical constant.
+   logicF : () -> %
+     ++ construct false (contradiction): a logical constant.
+   variable : (v : String) -> %
+     ++ construct a variable
+   latticeJoinOfMeets : (e : ELEMENT) -> %
+     ++ construct a lattice with one element
+   emptyLattice : () -> %
+     ++ construct an empty lattice
+   empty? : (n : %) -> Boolean
+     ++ true if empty
+   meet : (ln : List %) -> %
+     ++ meet of set of elements
+   join : (ln : List %) -> %
+     ++ join of set of elements
+   redux : (n : %) -> %
+     ++ attempt to simplify terms
+   factor : (n : %) -> List %
+     ++ splits n into a list of factors which must be true for the
+     ++ whole to be true.
+     ++ This assumes that the top level is already a set of factors
+     ++ separated by /\ otherwise the result will just be a list with
+     ++ one entry: 'n'.
+     ++ This is used when converting ILogic to types by using the
+     ++ Curry-Howard isomorphism.
+   deductions : (ln : List %) -> List %
+     ++ assumes ln contains a list of factors which must be true for
+     ++ the whole to be true (such as the list produced by factor).
+     ++ From this deductions attempts to produce a list of other
+     ++ proposition that must also be true by using modus ponens.
+     ++ This is used to determine the returned type when converting
+     ++ ILogic to types by using the Curry-Howard isomorphism.
+   "=" : (a : %, b : %) -> Boolean
+     ++ returns true (boolean true) if intuitionisticLogic values
+     ++ are the same.
+     ++ Translates from Intuitionistic Logic to Boolean Logic
+   opType : (n : %) -> Symbol
+     ++ if this is a compound op then opType returns the type of
+     ++ that op:
+     ++ "IMPLY"::Symbol =implies
+     ++ "AND"::Symbol=/\
+     ++ "OR"::Symbol=\/
+     ++ "NOT"::Symbol=~
+     ++ "OTHER"::Symbol=not compound op
+   getChildren : (n : %) -> List %
+     ++ returns child nodes if this is a compound term
+     ++ otherwise returns []
+   atom? : (n : %) -> Boolean
+     ++ returns true if this is an atom, that is a leaf node
+     ++ otherwise return false if this is a compound term
+   value : (n : %) -> Symbol
+     ++ returns:
+     ++   "T"::Symbol = T
+     ++   "F"::Symbol = _|_
+     ++   "E"::Symbol = error
+     ++   "P"::Symbol = proposition
+     ++   "C"::Symbol = compound
+     ++ Constructs lambda term and bind any variables with the name provided
+   toString : (n : %) -> String
+     ++ creates a string representation of this term and its sub-terms
+   toStringUnwrapped : (n : %) -> String
+     ++ similar to 'toString' but does not put outer compound terms
+     ++ in brackets
+   coerce : (n : %) -> OutputForm
+     ++ output
+   coerce : (n : %) -> LatticeMeetOfJoins
+     ++ convert lattice from join-of-meets to meet-of-joins
+   coerce : (n : LatticeMeetOfJoins) -> %
+     ++ convert lattice from meet-of-joins to join-of-meets
+
+ Implementation == add
+
+   Rep := List(List(ELEMENT))
+       ++ This domain is a distributive lattice, this allows us to
+       ++ represent the lattice as a meet of joins.
+       ++ So the inner list is a list of elements which are joined,
+       ++ the outer list represents a meet of these joins.
+       ++ The elements of this structure are constants or variables:
+       ++ 1) const: Record(val: Symbol)
+       ++   holds the true and false values:
+       ++   "T"::Symbol = T
+       ++   "F"::Symbol = _|_
+       ++
+       ++ 2) var: Record(str: String)
+       ++   holds a proposition name
+
+   -- Constructs a proposition
+   proposition(s : String) : % == [[[[s]]]]
+
+   -- literal constructors
+   logicT() == [[[["T"::Symbol]]]]
+   logicF() == [[[["F"::Symbol]]]]
+
+   emptyLattice() == []$List(List(ELEMENT))
+
+   -- construct a variable
+   variable(v : String) : % == [[[[v]]]]
+
+   -- construct a lattice with one element
+   latticeJoinOfMeets(e : ELEMENT) : % ==
+       [[e]]
+
+   -- true if empty
+   empty?(n : %) : Boolean ==
+       empty?(n)$Rep
+
+   -- /\ returns the logical 'meet', e.g. 'and'.
+   --
+   -- simplification rules:
+   -- idempotenceMeet for all x: x /\ x -> x ()
+   -- idempotenceJoin for all x: x \/ x -> x
+   -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
+   -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
+   --
+   _/_\(a : %, b : %) ==
+       if empty?(a) then return b
+       if empty?(b) then return a
+       r : List(List(ELEMENT)) := []
+       for innera in a repeat
+           for innerb in b repeat
+               termLeft : List(ELEMENT) := innera
+               termRight : List(ELEMENT) := innerb
+               term := concat(termLeft, termRight)$List(ELEMENT)
+               r := concat(r, term)$List(List(ELEMENT))
+       redux(r)
+
+   -- \/ returns the logical 'join', e.g. 'or'.
+   --
+   -- simplification rules:
+   -- idempotenceMeet for all x: x /\ x -> x ()
+   -- idempotenceJoin for all x: x \/ x -> x
+   -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
+   -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
+   --
+   _\_/(a : %, b : %) ==
+       if empty?(a) then return b
+       if empty?(b) then return a
+       redux(concat(a pretend Rep, b pretend Rep)$List(List(ELEMENT)))
+
+   meet(ln : List %) : % ==
+       r : % := emptyLattice()
+       for ele in ln repeat
+           r := _/_\(r, ele)
+       r
+
+   join(ln : List %) : % ==
+       r : % := emptyLattice()
+       for ele in ln repeat
+           r := _\_/(r, ele)
+       r
+
+   -- local function used by removeDuplicatesInTerm which is used by
+   -- redux to remove duplicates.
+   -- Returns true if elements are equal.
+   equalElements(a : ELEMENT, b : ELEMENT) : Boolean ==
+       if (a case var) and (a case var) then
+           return (a.var.str) = (b.var.str)
+       if (a case const)  and (b case const) then
+           return (a.const.val) = (b.const.val)
+       false
+
+   -- local function used by redux to remove duplicates, that is
+   -- apply idempotence. We cannot use the removeDuplicates in List
+   -- because ELEMENT does not have ATFINAG or BASTYPE.
+   removeDuplicatesInTerm(n : List(ELEMENT)) : List(ELEMENT) ==
+       r : List(ELEMENT) := []$List(ELEMENT)
+       for e1 in n for ne1 in 1..#n repeat
+           match : Boolean := false
+           for e2 in n for ne2 in 1..#n repeat
+               if e1 = e2 and ne1 < ne2 then match := true
+           if not match then r := concat(r, e1)
+       r
+
+   -- local function used by redux to remove duplicate lists.
+   -- Returns true if lists are equal, that is contain the same elements
+   -- (independant of order).
+   equalTerms(a : List(ELEMENT), b : List(ELEMENT)) : Boolean ==
+       if #a ~= #b then return false
+       for a1 in a repeat
+           found : Boolean := false
+           for b1 in b repeat
+               if equalElements(a1, b1) then found := true
+           if not found then return false
+       true
+
+   -- local function used by redux to apply absorption.
+   -- Returns true if a is a sub-term of b.
+   subTerm(a : List(ELEMENT), b : List(ELEMENT)) : Boolean ==
+       if #a >= #b then return false
+       for a1 in a repeat
+           found : Boolean := false
+           for b1 in b repeat
+               if equalElements(a1, b1) then found := true
+           if not found then return false
+       true
+
+   -- Attempt to simplify terms
+   --
+   -- simplification rules:
+   -- idempotenceMeet for all x: x /\ x -> x ()
+   -- idempotenceJoin for all x: x \/ x -> x
+   -- absorptionMeetOverJoin for all(x, y): x/\(x\/y)=x
+   -- absorptionJoinOverMeet for all(x, y): x\/(x/\y)=x
+   --
+   -- TODO add rules for top and bottom
+   --
+   redux(n : %) : % ==
+       r : List(List(ELEMENT)) := []$List(List(ELEMENT))
+       -- 'modified' set to true if this call of redux has made a reduction
+       modified : Boolean := false
+       for outer in n for outern in 1..#n repeat
+           -- check for idempotence
+           newinnerList : List(ELEMENT) := removeDuplicatesInTerm(outer)
+           if not equalTerms(newinnerList, outer) then modified := true
+           match : Boolean := false
+           for inner in n for innern in 1..#n repeat
+               if equalTerms(inner, outer) and innern<outern then match := true
+           -- check for absorption
+           isSubTerm : Boolean := false
+           for inner in n repeat
+               if subTerm(inner, outer) then isSubTerm := true
+           if (not match) and (not isSubTerm)
+               then r := concat(r, newinnerList)$List(List(ELEMENT))
+               else modified := true
+       -- print("LatticeJoinOfMeets.redux"::Symbol << n << _
+       --       ", "::Symbol << (r pretend %) << _
+       --       " mod="::Symbol << modified)
+       -- apply until no more changes
+       if modified then redux(r) else r
+
+   -- splits n into a list of factors which must be true for the
+   -- whole to be true.
+   -- This assumes that the top level is already a set of factors
+   -- separated by /\ otherwise the result will just be a list with
+   -- one entry: 'n'.
+   -- This is used when converting ILogic to types by using the
+   -- Curry-Howard isomorphism.
+   factor(n : %) : List % ==
+       [n]
+
+   -- remove duplicates. Return elements of 'b' except those that are
+   -- in 'a'
+   -- I would use duplicate removal built into List but that only
+   -- works when the list is defined over SETCAT
+   removeDup(a : List %, b : List %) : List % ==
+       a
+
+   -- assumes ln contains a list of factors which must be true for
+   -- the whole to be true (such as the list produced by factor).
+   -- From this deductions attempts to produce a list of other
+   -- proposition that must also be true by using modus ponens.
+   -- This is used to determine the returned type when converting
+   -- ILogic to types by using the Curry-Howard isomorphism.
+   deductions(ln : List %) : List % ==
+       ln
+
+   -- if this is a compound op then opType returns the type of that op:
+   -- "IMPLY"::Symbol =implies
+   -- "AND"::Symbol=/\
+   -- "OR"::Symbol=\/
+   -- "NOT"::Symbol=~
+   -- "OTHER"::Symbol=not compound op
+   opType(n : %) : Symbol ==
+       "OTHER"::Symbol
+
+   -- returns true if this is an atom, that is a leaf node
+   -- otherwise return false if this is a compound term
+   atom?(n : %) : Boolean == false
+
+   -- returns:
+   --   "F"::Symbol = _|_
+   --   "T"::Symbol = T
+   --   "E"::Symbol = error
+   --   "P"::Symbol = proposition
+   --   "C"::Symbol = compound
+   value(n : %) : Symbol ==
+       "C"::Symbol
+
+   -- returns child nodes if this is a compound term
+   -- otherwise returns []
+   getChildren(n : %) : List % ==
+       [n]
+
+   -- returns true (boolean true) if values
+   -- are the same. The terms must match exactly not just be
+   -- equivalent, that is x /\ 1 is not equal to x
+   -- Translates from Intuitionistic Logic to Boolean Logic
+   a = b ==
+       false
+
+   -- return string representation
+   toString(n : %) : String ==
+       a : String := concat("(", toStringUnwrapped(n))
+       a : String := concat(a, ")")
+       a
+
+   -- local function used by coerce to String
+   -- convert variable or literal to String
+   stringVarOrLit(a : Union(const : Record(val : Symbol),
+                  var : Record(str : String))) : String ==
+        if (a case var) then return (a.var.str)::String
+        if (a case const) then
+            if (a.const.val) = "T"::Symbol then return "T"
+            return "F"
+        "error"
+
+   -- similar to 'toString' but does not put outer compound terms
+   -- in brackets
+   toStringUnwrapped(n : %) : String ==
+       outerList : List String := []
+       r : String := ""
+       for outer in n for outern in 1..#n repeat
+           innerList : List String := []
+           for inner in outer for innern in (1..#outer) repeat
+               r := concat(r::String, stringVarOrLit(inner))
+               if innern ~= #outer then r := concat(r::String, "_/_\"::String)
+           if outern ~= #n then r := concat(r::String, ")_\_/("::String)
+       r
+
+   -- local function used by coerce to OutputForm
+   -- convert variable or literal to OutputForm
+   outputVarOrLit(a : Union(const : Record(val : Symbol),
+                  var : Record(str : String))) : OutputForm ==
+        if (a case var) then return (a.var.str)::OutputForm
+        if (a case const) then return (a.const.val)::OutputForm
+        "error"::OutputForm
+
+   -- output
+   coerce(n : %) : OutputForm ==
+       outerList : List OutputForm := []
+       r : OutputForm := "("::OutputForm
+       for outer in n for outern in 1..#n repeat
+           innerList : List OutputForm := []
+           for inner in outer for innern in (1..#outer) repeat
+               r := hconcat(r::OutputForm, outputVarOrLit(inner))
+               if innern ~= #outer then
+                   r := hconcat(r::OutputForm, "_/_\"::OutputForm)
+           if outern ~= #n then
+               r := hconcat(r::OutputForm, ")_\_/("::OutputForm)
+       hconcat(r, ")"::OutputForm)::OutputForm
+
+   -- convert lattice from join-of-meets to meet-of-joins
+   coerce(n : %) : LatticeMeetOfJoins ==
+       r : LatticeMeetOfJoins := emptyLattice()
+       for outer in n for outern in 1..#n repeat
+           term : LatticeMeetOfJoins := emptyLattice()
+           for inner in outer for innern in 1..#outer repeat
+               ele : LatticeMeetOfJoins := latticeMeetOfJoins(inner)
+               term := _/_\(term, ele)
+               --print("coerce:"::Symbol << ele << term)
+           r := _\_/(r, term)
+       r
+
+   -- convert lattice from meet-of-joins to join-of-meets
+   coerce(n1 : LatticeMeetOfJoins) : % ==
+       r : % := emptyLattice()
+       n : List(List(ELEMENT)) := n1 pretend List(List(ELEMENT))
+       for outer in n for outern in 1..#n repeat
+           term : % := emptyLattice()
+           for inner in outer for innern in 1..#outer repeat
+               ele : % := latticeJoinOfMeets(inner)
+               term := _\_/(term, ele)
+               --print("coerce:"::Symbol << ele << term)
+           r := _/_\(r, term)
+       r
+
+)if false
+\section{Frames}
+Logic for semi-decidable propositions
+
+Some properties may possibly be provable but not disprovable (or visa versa)
+such properties are known as semi-decidable.
+
+We can interpret semi-decidable properties in topology as open sets. See [1]
+and [5].
+
+So, for example, imagine that we can measure the value of 'x' to any
+arbitrary level of accuracy but there will always be some error.  If x
+is not equal to 2 then we can prove it, but if x is exactly 2 then we
+can never prove it.
+
+"This allows us to ignore points and do pointless or localic topology"[1]
+
+According to [1], terminology around concepts like 'frame' is not fixed
+amongst different authors. Steven Vickers [1] definition (which follows
+Johnstone) is:
+\begin{itemize}
+\item 1) every subset has a join
+\item 2) every finite subset has a meet
+\item 3) binary meets distribute over joins
+\end{itemize}
+
+\subsection{Arbitrary vs. Finite Conjunction and Disjunctions}
+
+This structure makes a distinction between arbitrary and finite
+conjunction/disjunctions.  This is related to the convergence of
+a sequence (Hausdorff Umgebungsaxiome).
+
+For example: a sequence of ever-smaller open intervals around
+zero: (-1, 1), (-1/2, 1/2), (-1/3, 1/3), ...
+
+For unions:
+If we take any union of any of these open sets we will get an open set (any
+point in that union will have a little neighbourhood around it).
+
+For intersections:
+\begin{itemize}
+\item If we take a finite number of the sets and take their intersection,
+      then we'll still get an open set.
+\item If we take the infinite intersection we don't necessarily get an
+      open set, in the example above the only point that is in all the
+      intervals is 0.  0 on its own isn't an open set, because 0 doesn't
+      have a little neighbourhood around it.
+\end{itemize}
+
+We cannot determine if arbitrary (infinite) frames are equal because,
+however many terms of two frames that start with the same values
+we have, they might be still be extended with different values. We
+can never check the complete frame because we cannot hold an
+infinite structure in a finite computer.
+
+\subsection{Algebra of Frames}
+Translating this into lattice algebra:
+If A and B are semi-decidable then:
+\begin{itemize}
+\item Conjunction A/\B: if A and B are semi-decidable, then A/\B is
+      semi-decidable (you can test A/\B by testing A and B separately and
+      stopping if and when both the tests for A and B stop).
+\item Conjunction arbitrary arity /\(Ai): infinite conjunction are not
+      semi-decidable. Note: that even given that we can arbitrarily many
+      tests at the same time, it still doesn't follow that
+      arbitrary conjunctions of semi-decidable propositions are
+      semi-decidable: if the first one terminates after 1 minute, the
+      second after 2, etc., e'll never be able to stop the test of the
+      conjunction even though all tests terminate eventually.
+\item Disjunction A\/B: if A and B are semi-decidable, then A\/B is
+      semi-decidable
+\item Disjunction arbitrary arity \/(Ai): is semi-decidable.  Given Ai,
+      we can test \/(Ai) by running all the tests in parallel and
+      stopping when any of them stop.
+\item Implication: A->B isn't necessarily semi-decidable for the same
+      reason that ~A isx't, but we still want to reason about the case
+      where A implies B. Therefore, we allow A->B with the meaning that
+      A implies B, but only at the 'top level' (you can't nest
+      this connective).
+\item Top is semi-decidable.
+\item Bottom  is semi-decidable.
+\item Not: this algebra does not have 'not'/'complement' because if A
+      is semi-decidable, it's not necessarily the case that ~A is.
+\end{itemize}
+See [5]
+\subsection{Examples}
+For example consider the integers implemented by:
+\begin{itemize}
+\item zero() -> %
+\item increment(%) -> %
+\item decrement(%) -> %
+\end{itemize}
+This constructs a partial order. In this order both meet and join are
+guaranteed to exist (glb and lub) for any finite set of elements. However
+top and bottom don't exist (\infinity and -\infinity are not integers).
+In other words we can't take a meet or a join of an infinite set of elements.
+
+Another example might be a 'tree', this has a bottom element (root) and joins
+(including infinite) exist, but meets do not exist and the top element does
+not exist.
+
+The general case of these examples are recursively defined types.
+
+I cannot work out how to represent infinite conjunctions, we could supply
+a list of arguments like this:
+\begin{verbatim}
+join(elements : List(%)) : % ==
+\end{verbatim}
+but to encode the important structure we need to take the limit as the
+number of arguments approaches infinity.  So I suspect we need to use
+some sort of infinite series. I don't know how to go about this so, for
+now, I have removed my attempts to encode a frame structure.
+)endif
+
+)if false
+\section{Example Structures}
+\subsection{BitStreamFrame}
+BitStreams are potentially infinite in length. The elements of this
+domain are finite sequences that have not yet been completed. So we
+can think of these elements as approximations to the actual bitstream.
+
+These BitStream representations are semidecidable, we can determine
+if two representations of streams are not equal but we cannot determine
+if they are equal. So if two streams are not unequal it does not follow
+that they are equal.
+
+We cannot determine if they are equal because, however many terms of two
+streams that start with the same values, they might be still be extended
+with different values. We can never check the complete bitstream because
+we cannot hold an infinite structure in a finite computer.
+)endif
+
+)abbrev domain BITST BitStreamFrame
+++ Author: Martin Baker
+++ Description: An example of a frame taken from Vickers section 3.7
+++ Date Created: Aug 2015
+BitStreamFrame() : Exports == Impl where
+    NNI ==> NonNegativeInteger
+    Exports ==> Join(Lattice, CoercibleTo(OutputForm), SetCategory) with
+      starts : (index : List(Boolean)) -> %
+        ++ construct bit stream
+      starts : (str : String) -> %
+        ++ construct bit stream by parsing string containing 0, 1 and *
+
+    Impl == add
+
+     -- A single bitstream is coded as 'List Boolean', this is the
+     -- bit sequence starting from the first bit.
+     -- This representation holds all allowable bitstreams
+     -- or'd together as a list of bitstreams.
+     Rep := List(List(Boolean))
+
+     -- construct bit stream
+     starts(index : List(Boolean)) : % ==
+         [index]
+
+     -- construct bit stream by parsing string containing 0, 1 and *
+     starts(str : String) : % ==
+         res : List(Boolean) := []
+         cs : List Character := entries(str)
+         for c in cs repeat
+             if c = char("0") then res := concat(res, false)
+             if c = char("1") then res := concat(res, true)
+         [res]
+
+     -- returns the logical 'meet', e.g. 'and'.
+     _/_\(a : %, b : %) : % ==
+         res : List(List(Boolean)) := concat(a pretend List(List(Boolean)),
+                    b pretend List(List(Boolean)))$List(List(Boolean))
+         res
+
+     -- returns the logical 'join', e.g. 'or'.
+     _\_/(a : %, b : %) : % ==
+         res : List(List(Boolean)) := concat(a pretend List(List(Boolean)),
+                    b pretend List(List(Boolean)))$List(List(Boolean))
+         res
+
+     -- start of SetCategory definitions --
+
+     hash(s : %) : SingleInteger == 0$SingleInteger
+
+     -- return string representation
+     -- I'm not sure how latex(s: %) is intended to be used but
+     -- there is nothing specifically latex here, it just returns a
+     -- string description of the graph.
+     latex(n : %) : String ==
+         -- s holds result that we are constructing
+         s : String := ""
+         s
+
+     -- returns true if x equals y
+     -- this is equality and not isomorphism
+     -- that is it returns true only if exact index values and names are used
+     -- in addition to the structure(arrows) being the same.
+     _=(x : %, y : %) : Boolean ==
+         if #x ~= #y then return false
+         len : NNI := #x
+         for i in 1..len repeat
+             if x.i ~= y.i then return false
+         true
+
+     -- returns true if x is not equal to y
+     _~_=(x : %, y : %) : Boolean == not(x = y)
+
+     -- output
+     coerce(s : %) : OutputForm ==
+         cs : List OutputForm := []
+         for row in s repeat
+             r : List OutputForm := ["starts:"::OutputForm]
+             for x in row repeat
+                 ro : OutputForm := "0"::OutputForm
+                 if x then ro := "1"::OutputForm
+                 r := concat(r, ro)
+                 --r := concat(r, " "::OutputForm)
+             c : OutputForm := hconcat(r)
+             cs := concat(cs, c)
+         vconcat(cs)
+
+--Copyright (c) 2016, Martin J Baker.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of Martin J Baker. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+)if false
+\eject
+\begin{thebibliography}{99}
+For more details see:
+[1] Topology Via Logic - Steven Vickers ISBN 0 521 57651 2
+[2] J. Lambek, P. J. Scott 1988
+     Introduction to Higher-Order Categorical Logic ISBN : 0521356539
+     This book shows the relationship between mathematical logic and category
+     theory. Although this is not used in the current code, it suggests
+     a promising generalisation.
+[3] I have put a fuller explanation of this code here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/logic/index.htm}
+[4] Waldeks initial comments
+https://groups.google.com/forum/?hl=en#!topic/fricas-devel/Cy-RHn_g6RY
+[5] Blog about semi-decidable logic
+\url{http://xorshammer.com/2011/07/09/a-logical-interpretation-of-some-bits-of-topology/}
+\end{thebibliography}
+\end{document}
+)endif
+
