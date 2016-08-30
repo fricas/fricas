@@ -189,17 +189,24 @@ SmithNormalForm(R, Row, Col, M) : Exports == Implementation where
     completeHermite(m : M) : Record(Hermite : M, eqMat : M) ==
       findEqMat(m, rowEchelon m)
 
-    smith0(m : M) : M == completeSmith(m).Smith
+    completeSmith0 : M -> SmithForm
+
+    smith0(m : M) : M == completeSmith0(m).Smith
 
     if M is Matrix(Integer) then
 
         smith(m : M) : M == smith(m, smith0)$IntegerSmithNormalForm
 
+        completeSmith(m : M) : SmithForm ==
+            completeSmith(m, completeSmith0)$IntegerSmithNormalForm
+
     else
 
         smith(m : M) : M == smith0(m)
 
-    completeSmith(m : M) : Record(Smith : M, leftEqMat : M, rightEqMat : M) ==
+        completeSmith(m : M) : SmithForm == completeSmith0(m)
+
+    completeSmith0(m : M) : SmithForm ==
       cm1 := completeHermite m
       leftm := cm1.eqMat
       m1 := cm1.Hermite

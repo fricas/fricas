@@ -114,5 +114,29 @@ b := 2.0
 testEquals("hash(a)", "hash(a)")
 testTrue("not(hash(a) = hash(b))")
 
+testcase "smith form"
+sP := SMITH(INT, Vector(INT), Vector(INT), Matrix(INT))
+-- captures global mm
+test_smith() : Void ==
+    testTrue("(res := completeSmith(mm)$sP; true)")
+    testEquals("res.leftEqMat*mm*res.rightEqMat", "res.Smith")
+    testEquals("abs(determinant(res.leftEqMat))", "1")
+    testEquals("abs(determinant(res.rightEqMat))", "1")
+
+mm := matrix([[0, -1, 0, 0], [1, 2, 3, 4], [2, 3, 2, 0]])
+test_smith()
+
+mm := matrix([[0, -1, 0, 1, 0], [2, 1, 3, 4, 5], [1, 2, 1, 2, 1],
+              [1, 2, 4, 8, 16]])
+test_smith()
+
+mm := matrix([[0,1,0,0,0,0,0,1],[0,0,0,0,0,0,0,0],[1,0,0,1,0,0,0,0],
+              [0,0,0,0,0,0,0,0],[1,1,0,0,0,0,0,0]])$Matrix(Integer)
+test_smith()
+
+mm := matrix([[1,1,0,0,0,0,1,0],[0,1,0,0,1,1,0,0],[1,0,0,-2,0,0,1,0],
+              [0,1,0,5,1,0,0,0],[0,0,0,0,1,0,0,0]])
+test_smith()
+
 )set output algebra on
 statistics()
