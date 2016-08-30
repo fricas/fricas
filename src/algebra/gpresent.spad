@@ -1,0 +1,834 @@
+)if false
+\documentclass{article}
+\usepackage{axiom}
+\usepackage{url}
+\begin{document}
+\title{Group Presentations}
+\author{Martin J Baker}
+\maketitle
+\begin{abstract}
+This file implements group structures related to algebraic topology, specifically
+its homotopy and homology.
+
+There are two such structures in this file:
+\begin{itemize}
+\item GroupPresentation - Defines a group by its generators and relations.
+Used to hold fundamental group (homotopy)
+\item Homology - Intended to hold homology which is calculated using IntegerSmithNormalForm.
+This is an abelian group.
+\end{itemize}
+I have put a fuller explanation of this code here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/presentation/}
+\end{abstract}
+
+\section{Introduction}
+Group represented by its generators and relations.
+Here we use it to hold homotopy group such as fundamental group.
+for more documentation see:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/}
+
+Representation holds the group as a set of generators and a set of
+relations
+Each generator is a NNI
+Each relation is a list of indexes to generators. Negative values indicate
+the inverse of the generator. So if '1' represents the generator 'A' then
+'-1' represents its inverse 'A^-1'.
+
+Note that the use of negative indices to represent the inverse does
+not imply an abelian group. This is just a convenient way to code
+the representation and, in general, the group is not necessarily
+abelian.
+
+\section{Homotopy Group}
+The homotopy group is finitely presented by generators and relations.
+This representation of a group is not, in general, algorithmically
+computable into other representations of a group.
+
+We can therefore compute 'a' (not 'the') homotopy group for a given
+simplicial complex. We may also be able to apply some simplifications
+to this group. However, in the general case, we cannot determine if
+this is the simplest representation or determine if two such groups
+are isomophic (their corresponding simplicial complexes are
+homeomorphic).
+
+Despite these fundamental limits on what is theoretically possible
+I still believe it is worthwhile to have the capability to generate
+'a' homotopy group for a given structure.
+
+\section{Simplify}
+
+There may not be a simplest form but it is possible to do some
+simplifications.
+
+In order to try to simplify a finitely generated presentation
+to produce simpler but isomorphic groups we can apply certain
+transformations or automorphisms (isomorphisms of the group
+back to itself).
+
+For example:
+\begin{itemize}
+\item remove all zero terms in rules
+\item if a rule consists of a single generator then remove
+  that generator
+\item if a rule consists of a pair of generators then make
+  the second generator the inverse of the first
+\item if a generator is adjacent to its inverse then cancel
+  them out.
+\item remove duplicate rules.
+\end{itemize}
+
+These automorphisms were studied and categorised by Tietze
+and Nielsen.
+
+\subsection{Tietze Transformations}
+
+\begin{table}[]
+\label{Tietze transformations are of 4 kinds}
+\begin{tabular}{lll}
+ \ Kind \ Examples \\
+T1 \ Add a relation \ < A | A^3 > -> < A | A^3 , A^6 > \\
+T2 \ Remove a relation \ for example we can reverse the above
+< A | A^3 , A^6> -> < A | A^3> \\
+T3 \ Add a generator \ < A | A^3 > -> <A , B | A^3, B = A^2 > \\
+T4 \ Remove a generator \ for example we can reverse the above
+<A , B | A^3, B = A^2 > -> < A | A^3 > \\
+\end{tabular}
+\end{table}
+We are interested in simplifying so we are mostly interested
+in T2 and T4.
+\subsection{T2}
+
+T2 allows us to remove a relation but not generators. This
+happens when a rule is redundant, that is it contains no
+additional information than is already contained in the
+other rules.
+
+This happens, for example, where:
+
+One rule is a multiple of another - In this case we can
+remove the highest multiple but not the lowest.
+
+One rule is the inverse of another - In this case we can
+remove any one, but not both of these rules.
+
+We can also simplify rules, for example, where an element
+and its inverse are next to each other they can be
+cancelled out and removed.
+\subsection{T4}
+
+T4 allows us to remove a generator and corresponding rules.
+\subsection{Nielsen Transformations}
+
+The following transformations on a finitely generated free group
+produce isomorphic groups.
+
+\begin{itemize}
+\item Switch A and B
+\item Cyclically permute A, B, ... to B, ..., A.
+\item Replace A with A^(-1)
+\item Replace A with A*B
+\end{itemize}
+
+\section{Testing and Validating this Code}
+
+Some functions are very difficult to test, for example in
+the SimplicialComplex code here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/simplex/}
+and here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/delta/}
+there are functions such as fundamentalGroup which output a
+GroupPresentation. The reason for the difficulty is that they
+do not have a canonical form, that is, there may
+be more than one correct result and none of them are better
+than the others and there is no general algorithm for testing
+if they are equal.
+
+So some change to the code may change the result but the result
+may be just as correct as the other result. So testing that
+fundamentalGroup generates a given output for a given input
+is not a useful test for correctness.
+
+I think that all we can do in this situation is to test
+fundamentalGroup with very simple inputs such as a
+topological sphere. This should always produce an empty
+presentation.
+
+This test is contained in the domain: SimplicialComplexTests
+which is in the algebraictopology.spad file here:
+\url{https://github.com/martinbaker/multivector/blob/master/algebraictopology.spad}
+)endif
+
+)abbrev domain GROUPP GroupPresentation
+++ Author: Martin Baker
+++ Description:
+++   Group represented by its generators and relations.
+++   Here we use it to hold homotopy group such as fundamental group.
+++   for more documentation see:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/presentation/
+++ Date Created: Jan 2016
+++ Basic Operations:
+++ Related packages:
+++ Related categories:
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ Examples:
+++ References:
+
+GroupPresentation() : Exports == Impl where
+  NNI ==> NonNegativeInteger
+  x<<y ==> hconcat(x::OutputForm, y::OutputForm)
+  GENMAP ==> List(Record(OldGen : NNI, NewGen : NNI))
+  Exports ==> SetCategory() with
+    groupPresentation : (v : List(NNI), rels1 : List(List(Integer))) -> %
+      ++ construct from generators and relations
+    groupPresentation : (v : List(NNI)) -> %
+      ++ construct free group with generators but no relations
+    groupPresentation : () -> %
+      ++ construct trivial group with no generators or relations
+    simplify : (s : %) -> %
+      ++ There may not be a simplest form but it is possible to
+      ++ do some simplifications as follows:
+      ++ 1) remove all zero terms in rules
+      ++ 2) if a rule consists of a single generator then remove that generator
+      ++ 3) if a rule consists of a pair of generators then make the
+      ++    second generator the inverse of the first
+      ++ 4) if a generator is adjacent to its inverse then cancel them out.
+      ++ 5) remove duplicate rules
+    simplify : (s : %, trace : Boolean) -> %
+      ++ simplify with option to trace
+    refactor : (a : %) -> %
+      ++ actual value of generators is not important, it is only important that
+      ++ they correspond to the appropriate entries in the relations.
+      ++ Therefore we can refactor the generators without changing the
+      ++ group represented.
+    --genName : (i2 : Integer) -> OutputForm
+    -- ++ display generators as alphabetic digits
+    -- ++ used by output form
+
+  Impl ==> add
+
+   -- Representation holds the group as a set of generators and a set of
+   -- relations
+   -- Each generator is a NNI
+   -- Each relation is a list of indexes to generators. Negative values
+   -- indicate inverse.
+   Rep := Record(gens : PrimitiveArray(NNI), rels : List(List(Integer)))
+
+   -- construct from generators and relations
+   groupPresentation(gens1 : List(NNI), rels1 : List(List(Integer))) : % ==
+       -- print("  groupPresentation construct (" << gens1 << ", "
+       --       << rels1<< ")")
+       g := construct(gens1)$PrimitiveArray(NNI)
+       -- remove empty rules since this simplifies equality function
+       --print("groupPresentation constuct : " << rels1)
+       rels2 := []$List(List(Integer))
+       for r in rels1 repeat
+           --print("  groupPresentation r=" << r)
+           if not empty?(r) then
+               rels2 := concat(rels2, r)
+       -- print("  groupPresentation rep (" << g << ", " << rels2<< ")")
+       [g, rels2]
+
+   -- construct free group with generators but no relations
+   groupPresentation(gens1 : List(NNI)) : % ==
+       -- print("  groupPresentation construct (" << gens1 << ", "
+       --       << rels1<< ")")
+       g := construct(gens1)$PrimitiveArray(NNI)
+       rels2 := []$List(List(Integer))
+       [g, rels2]
+
+   -- construct trivial group with no generators or relations
+   groupPresentation() : % ==
+       gens1 := []$List(NNI)
+       rels1 := []$List(List(Integer))
+       groupPresentation(gens1, rels1)
+
+   -- local function used by refactor to map a given generator in a rule
+   mapGen(a : Integer, ms : GENMAP) : Integer ==
+       for m  in ms repeat
+           if abs(a) = m.OldGen then return m.NewGen
+           if abs(a) = -m.OldGen then return -m.NewGen
+       error concat(["cant map ", string(a), " in refactor"])
+       a
+
+   -- Actual value of generators is not important, it is only important that
+   -- they correspond to the appropriate entries in the relations.
+   -- Therefore we can refactor the generators (to be ascending integers
+   -- starting as 1) without changing the group represented.
+   refactor(a : %) : % ==
+       -- first generate a map from existing generators to new generators
+       gms : GENMAP := empty()$GENMAP
+       for g in entries(a.gens) for gn in 1..(#(a.gens)) repeat
+           gm : Record(OldGen : NNI, NewGen : NNI) := [g, gn]
+           gms := concat(gms, gm)
+       -- now use this map to change elements of rules
+       rels1 := []$List(List(Integer))
+       for rule in a.rels repeat
+           newRule : List(Integer) := empty()$List(Integer)
+           for ele in rule repeat
+               newEle : Integer := mapGen(ele, gms)
+               newRule := concat(newRule, newEle)
+           rels1 := concat(rels1, newRule)
+       gens1 : List(NNI) := [gn for gn in 1..(#(a.gens))]
+       groupPresentation(gens1, rels1)
+
+   -- Isomorphism is the most useful level of 'equality' for
+   -- groups but unfortunately this is not computable in
+   -- the general case for presentations.
+   -- Although exact equality is less useful it is still useful to
+   -- compare very simple presentations in the validation code which
+   -- is useful to give some level of confidence that the
+   -- correct presentation was generated.
+   -- TODO result can be dependant on initial generator order, for
+   -- example <a, b | a*a, b*b*b> = <b, a | a*a, b*b*b> would be false
+   -- should really check all permutations of generators and return
+   -- true if any of them gives equality.
+   _=(a : %, b : %) : Boolean ==
+       ar : % := refactor(a)
+       br : % := refactor(b)
+       ags : List(NNI) := entries(ar.gens)
+       bgs : List(NNI) := entries(br.gens)
+       if set(ags)$Set(NNI) ~= set(bgs)$Set(NNI) then return false
+       ars : List(List(Integer)) := entries(ar.rels)
+       brs : List(List(Integer)) := entries(br.rels)
+       set(ars)$Set(List(Integer)) = set(brs)$Set(List(Integer))
+
+   -- display generators as alphabetic digits
+   -- used by coerce to OutputForm
+   genName(i2 : Integer) : OutputForm ==
+       (suffix, i) := divide(abs(i2), 25)
+       letters : String := "abcdfghijklmnopqrstuvwxyz"
+       n : OutputForm := (letters(i + 1))::OutputForm
+       -- print("  groupPresentation genName(" << i2 <<
+       --       ") gives " << n)
+       if suffix > 0 then return hconcat(n, outputForm(suffix + 1))
+       n
+
+   -- display a rule as alphabetic digits
+   genName2(i2 : List(List(Integer))) : OutputForm ==
+       rels1 : List(OutputForm) := empty()$List(OutputForm)
+       for r in i2 repeat
+           eleout : OutputForm := outputForm(" ")
+           seperator : OutputForm := outputForm(" ")
+           for ele in r repeat
+               newterm : OutputForm := genName(ele)
+               eleout := hconcat([eleout, seperator, newterm])$OutputForm
+               seperator := outputForm("*")
+           rels1 := concat(rels1, eleout)
+       blankSeparate(rels1)
+
+   -- local function to remove generator 'val' from generators
+   removeGen(gens1 : PrimitiveArray(NNI), val : NNI) : PrimitiveArray(NNI) ==
+       remove(val, gens1)
+
+   -- local function to remove generator 'val' from relations
+   removeGen2(rels1 : List(List(Integer)), val : NNI) : List(List(Integer)) ==
+       [remove(-val, remove(val::Integer, rule)) for rule in rels1]
+
+   -- local function to replace generator 'val1' with 'val2'
+   -- in relations
+   replaceGen(rels1 : List(List(Integer)), val1 : NNI, val2 : Integer
+             ) : List(List(Integer)) ==
+       --print("  groupPresentation replaceGen=" << rels1 << _
+       --      " val1=" << val1 << " val2=" << val2)
+       rels2 := []$List(List(Integer))
+       for rule in rels1 repeat
+           rule2 := []$List(Integer)
+           for ele in rule repeat
+               e : Integer := abs(ele)
+               if e = val1 then e := val2
+               if ele < 0 then e := -e
+               rule2 := concat(rule2, e)
+           rels2 := concat(rels2, rule2)
+       rels2
+
+   -- Tietze Transformation to remove a generator that is equal to
+   -- the identity element. That is there is a rule containing only one
+   -- generator.
+   -- This procedure searches for a single element rule, if found, it
+   -- removes the corresponding generator and also removes it from
+   -- any rules containing it.
+   -- This procedure only removes one generator, if there are several
+   -- such rules then this procedure needs to be called several times.
+   -- This is a local function used by simplify.
+   TTRemoveGeneratorIfIdentity(s : %, trace : Boolean) : % ==
+       gens1 : PrimitiveArray(NNI) := s.gens
+       rels1 : List(List(Integer)) := s.rels
+       toBeRemoved : NNI := 0
+       for rule in rels1 repeat
+           if #rule = 1 and toBeRemoved = 0 then
+               toBeRemoved := abs(first(rule)) pretend NNI
+       if toBeRemoved = 0 then return s
+       if trace then
+           print hconcat(["simplify: generator '"::OutputForm, _
+               genName(toBeRemoved), _
+               "' is identity so remove it"::OutputForm])
+       gens1 := removeGen(gens1, toBeRemoved)
+       rels1 := removeGen2(rels1, toBeRemoved)
+       if trace then print genName2(rels1)
+       [gens1, rels1]
+
+   -- Tietze Transformation to rename a generator.
+   -- If a rule consists of a pair of generators then make the
+   -- second generator the inverse of the first.
+   -- This procedure searches for a two element rule, if found, it
+   -- replaces the second element with the inverse of the first.
+   -- This procedure only replaces one generator, if there are several
+   -- such rules then this procedure needs to be called several times.
+   -- This is a local function used by simplify.
+   TTRenameGenerator(s : %, trace : Boolean) : % ==
+       gens1 : PrimitiveArray(NNI) := s.gens
+       rels1 : List(List(Integer)) := s.rels
+       replaceFrom : NNI := 0
+       replaceTo : Integer := 0
+       for rule in rels1 repeat
+           if #rule = 2 and replaceFrom=0 then
+               replaceTo := second(rule)
+               replaceFrom := abs(first(rule)) pretend NNI
+               if first(rule) >0 then replaceTo := -replaceTo
+               -- don't replace an element with itself or its inverse
+               if replaceFrom = abs(replaceTo) then replaceFrom := 0
+       if replaceFrom=0 then return s
+       if trace then
+           print hconcat(["simplify: generator '"::OutputForm, _
+               genName(replaceFrom), _
+               "' is replaced by '"::OutputForm, _
+               genName(replaceTo), _
+               "'"::OutputForm])
+       gens1 := removeGen(gens1, replaceFrom)
+       rels1 := replaceGen(rels1, replaceFrom, replaceTo)
+       if trace then print genName2(rels1)
+       [gens1, rels1]
+
+   -- This is a local function used by simplify.
+   TTRemoveEmpty(s : %, trace : Boolean) : % ==
+       gens1 : PrimitiveArray(NNI) := s.gens
+       rels1 : List(List(Integer)) := s.rels
+       rels2 : List(List(Integer)) := empty()$List(List(Integer))
+       for rule in rels1 repeat
+           --print("  groupPresentation simplify rule=" << rule)
+           if not empty?(rule) then
+               rels2 := concat(rels2, rule)
+       [gens1, rels2]
+
+   -- This is a local function used by simplify.
+   TTRemoveZero(s : %, trace : Boolean) : % ==
+       gens1 : PrimitiveArray(NNI) := s.gens
+       rels1 : List(List(Integer)) := s.rels
+       gens1 := removeGen(gens1, 0)
+       rels1 := removeGen2(rels1, 0)
+       [gens1, rels1]
+
+   -- This is a local function used by simplify.
+   TTRemoveEleTimesInverse(s : %, trace : Boolean) : % ==
+       gens1 : PrimitiveArray(NNI) := s.gens
+       rels1 : List(List(Integer)) := s.rels
+       --print("TTRemoveEleTimesInverse rules in =" << rels1)
+       rels2 : List(List(Integer)) := empty()$List(List(Integer))
+       changed : Boolean := false
+       for rule in rels1 repeat
+           --print("TTRemoveEleTimesInverse rule=" << rule)
+           rule2 : List(Integer) := empty()$List(Integer)
+           lastele : Integer := 0
+           for ele in rule repeat
+               if abs(ele) = abs(lastele) and sign(ele) ~= sign(lastele) then
+                   if trace then print hconcat([_
+                       "simplify: generator '"::OutputForm, _
+                       genName(ele), _
+                       "' is adjacent to its inverse"::OutputForm])
+                   changed := true
+                   lastele := 0
+               else
+                   if lastele ~= 0 then rule2 := concat(rule2, lastele)
+                   lastele := ele
+           if lastele ~= 0 then rule2 := concat(rule2, lastele)
+           if not empty?(rule2) then rels2 := concat(rels2, rule2)
+       if trace and changed then print genName2(rels2)
+       [gens1, rels2]
+
+   -- This is a local function used by simplify.
+   -- If a rule contains more inverted elements that non-inverted
+   -- elements then it is easier to read if we invert all the terms
+   -- we must then reverse the order.
+   -- A bit like De Morgan's laws
+   TTMinimiseInverses(s : %, trace : Boolean) : % ==
+       gens1 : PrimitiveArray(NNI) := s.gens
+       rels1 : List(List(Integer)) := s.rels
+       rels2 := []$List(List(Integer))
+       for rule in rels1 repeat
+           numInverts : NNI := 0
+           numNonInverts : NNI := 0
+           for ele in rule repeat
+               if ele < 0 then
+                   numInverts := numInverts + 1
+               else
+                   numNonInverts := numNonInverts + 1
+           if numInverts > numNonInverts then
+               rule2 := []$List(Integer)
+               for ele in rule repeat
+                   rule2 := concat(-ele, rule2)
+               rels2 := concat(rels2, rule2)
+           else
+               rels2 := concat(rels2, rule)
+       [gens1, rels2]
+
+   -- true if 'a' is simpler than 'b'.
+   -- There may not be an absolute measure of whether one presentation
+   -- is simpler than another but this procedure is used only in specific
+   -- circumstances, that is where we have attempted to simplify the
+   -- presentation and we want to test if it is actually simpler.
+   -- We do this by testing if the number of generators or rules has
+   -- reduced or if the complexity of the rules has reduced.
+   -- This is a local function used by simplify.
+   isSimpler?(a : %, b : %) : Boolean ==
+       gensa : PrimitiveArray(NNI) := a.gens
+       relsa : List(List(Integer)) := a.rels
+       gensb : PrimitiveArray(NNI) := b.gens
+       relsb : List(List(Integer)) := b.rels
+       if #gensa < #gensb then return true
+       if #relsa < #relsb then return true
+       ruleCompleityA : NNI := 0
+       for rule in relsa repeat
+           ruleCompleityA := ruleCompleityA + #rule
+       ruleCompleityB : NNI := 0
+       for rule in relsb repeat
+           ruleCompleityB := ruleCompleityB + #rule
+       if ruleCompleityA < ruleCompleityB then return true
+       false
+
+   simplify(s : %) : % ==
+       simplify(s, false)
+
+   -- There may not be a simplest form but it is possible to
+   -- do some simplifications as follows:
+   -- 1) remove all zero terms in rules
+   -- 2) if a rule consists of a single generator then remove that generator
+   -- 3) if a rule consists of a pair of generators then make the
+   --    second generator the inverse of the first
+   -- 4) if a generator is adjacent to its inverse then cancel them out.
+   -- 5) remove duplicate rules
+   simplify(s : %, trace : Boolean) : % ==
+       if trace then
+           print("before simplification :=" << s)
+       res : % := s
+       lastpass : % := s
+       rep : Boolean := true
+       while rep repeat
+           res := TTRemoveEmpty(res, trace)
+           res := TTRemoveZero(res, trace)
+           lastpassInner : % := res
+           repInner : Boolean := true
+           while repInner repeat
+               res := TTRemoveGeneratorIfIdentity(res, trace)
+               repInner := isSimpler?(res, lastpassInner)
+               lastpassInner := res
+           res := TTRenameGenerator(res, trace)
+           lastpassInner := res
+           repInner := true
+           while repInner repeat
+               res := TTRemoveEleTimesInverse(res, trace)
+               repInner := isSimpler?(res, lastpassInner)
+               lastpassInner := res
+           res := TTMinimiseInverses(res, trace)
+           rep := isSimpler?(res, lastpass)
+           lastpass := res
+       res
+
+   -- output
+   coerce(s : %) : OutputForm ==
+       ps : List(NNI) := parts((s.gens) pretend PrimitiveArray(NNI))
+       gens1 : List(OutputForm) := empty()$List(OutputForm)
+       for p in ps repeat
+           gens1 := concat(gens1, genName(p::Integer))
+       --print("output gens : " << gens1)
+       rs : List(List(Integer)) := s.rels
+       rels1 : List(OutputForm) := empty()$List(OutputForm)
+       for r in rs repeat
+           eleout : OutputForm := outputForm(" ")
+           seperator : OutputForm := outputForm(" ")
+           for ele in r repeat
+               newterm : OutputForm := genName(ele)
+               eleout := hconcat([eleout, seperator, newterm])$OutputForm
+               seperator := outputForm("*")
+           rels1 := concat(rels1, eleout)
+       --print("output rules : " << rels1)
+       g : OutputForm := outputForm(" ")
+       if #gens1 > 0 then g := blankSeparate(gens1)
+       r : OutputForm := outputForm(" ")
+       if #rels1 > 0 then r := commaSeparate(rels1)
+       hconcat([outputForm("<"), g, outputForm(" | "), r, outputForm(">")])
+
+)if false
+\section{Homology}
+
+Intended to hold homology which is calculated using IntegerSmithNormalForm.
+This is an abelian group.
+
+It would be good if this could be modified to be based on FreeAbelianMonoid
+by Manuel Bronstein.
+)endif
+
+)abbrev domain HOMOL Homology
+++ Author: Martin Baker
+++ Description:
+++   Intended to hold homology which is calculated using SmithNormalForm:
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/topology/homology/
+++ Date Created: June 2016
+++ Basic Operations:
+++ Related packages:
+++ Related categories:
+++ Related Domains: FreeAbelianMonoid, FiniteSimplicialComplex
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ Examples:
+++ References:
+
+Homology() : Exports == Impl where
+  NNI ==> NonNegativeInteger
+  GENI ==> Record(vec : Vector(Integer), ord : Integer)
+  SMNI ==> SmithNormalForm(Integer, _
+                       Vector(Integer), _
+                       Vector(Integer), _
+                       Matrix(Integer))
+  SRESI ==> Record(Smith : Matrix(Integer), _
+                       leftEqMat : Matrix(Integer), _
+                       rightEqMat : Matrix(Integer))
+  x<<y ==> hconcat(x::OutputForm, y::OutputForm)
+
+  Exports ==> SetCategory() with
+    homologyGroup : (AInt : Matrix(Integer), BInt : Matrix(Integer)) -> %
+      ++ construct from differential over integers
+      ++ uses method described by Waldek Hebisch here:
+      ++ https://groups.google.com/forum/?hl=en#!topic/fricas-devel/mLOdQ-fwbO0
+    homology : (torsionVec : List(List(Integer)), torsionOrd : List(Integer),
+                free1 : List(List(Integer))) -> %
+      ++ construct from lists
+    homology0 : () -> %
+      ++ construct empty homology, useful in validation code
+    homologyz : () -> %
+      ++ construct Z homology, useful in validation code
+    homologyzz : () -> %
+      ++ construct Z*Z homology, useful in validation code
+    homologyc2 : () -> %
+      ++ construct C2 homology, useful in validation code
+    homologyzc2 : () -> %
+      ++ construct Z+C2 homology, useful in validation code
+    dispGenerators : (s : %) -> OutputForm
+      ++ more detailed output with generators
+
+  Impl ==> add
+   -- Representation holds torsion as vector+order
+   Rep := Record(torsionPart : List(GENI), freePart : List(Vector(Integer)))
+
+   -- construct from differential over integers
+   -- AInt is input delta as matrix
+   -- BInt is output delta as matrix
+   -- where BInt*AInt = 0
+   homologyGroup(AInt : Matrix(Integer), BInt : Matrix(Integer)) : % ==
+       --
+       -- validate input
+       --
+       --if not empty?(BInt) then
+       if nrows(AInt) ~= ncols(BInt) then
+           print("homologyGroup validation error - A rows : " <<_
+                        nrows(AInt) << "~= B cols : " << ncols(BInt))
+       else
+           zero : Matrix(Integer) := zero(nrows(BInt), ncols(AInt))
+           if BInt*AInt ~= zero then
+               print("homologyGroup validation error - B*A ~= 0 : "
+                     << BInt*AInt << "  ~= 0 : " << zero)
+       --
+       -- calculate torsion part
+       --
+       res : List(GENI) := empty()$List(GENI)
+       smit : SRESI := completeSmith(AInt)$SMNI
+       left : Matrix(Integer) := smit.leftEqMat
+       m : Matrix(Integer) := smit.Smith
+       leftNRows : NNI := nrows(left)
+       mNRows : NNI := nrows(m)
+       mNCols : NNI := ncols(m)
+       for nr in 1..leftNRows repeat
+           r : Vector(Integer) := row(left, nr)
+           order : Integer := 1::Integer
+           if nr <= mNRows and nr <= mNCols then
+               order := elt(m, nr, nr)
+           order <= 1 => "iterate"
+           g : GENI := [r, order]
+           res := concat(res, g)
+       --
+       -- calculate free part
+       --
+       augmented : Matrix(Integer) := vertConcat(transpose(AInt), BInt)
+       --print("homologyGroup free: augmented=" << augmented)
+       smitFree : SRESI := completeSmith(augmented)$SMNI
+       leftFree : Matrix(Integer) := smitFree.leftEqMat
+       mFree : Matrix(Integer) := smitFree.Smith
+       n_rows := nrows(mFree)
+       n_cols := ncols(mFree)
+       kernelFree := []$List(Vector(Integer))
+       for i in 1..n_cols repeat
+           if i > n_rows or mFree(i, i) = 0 then
+               v := new(n_cols, 0)$Vector(Integer)
+               v(i) := 1
+               kernelFree := cons(smitFree.rightEqMat*v, kernelFree)
+       [res, reverse!(kernelFree)]
+
+   -- construct from lists
+   homology(torsionVec : List(List(Integer)), torsionOrd : List(Integer),
+            free1 : List(List(Integer))) : % ==
+       if #torsionVec ~= #torsionOrd then
+           error "attempt to construct homology with #torsionVec ~= #torsionOrd"
+       res : List(GENI) := empty()$List(GENI)
+       for r1 in torsionVec for r2 in torsionOrd repeat
+           r3 : GENI := [vector(r1), r2]
+           res := concat(res, r3)
+       kernelFree : List(Vector(Integer)) := [vector(v) for v in free1]
+       [res, kernelFree]
+
+   -- construct empty homology
+   homology0() : % ==
+       homology([], [], [])
+
+   -- construct Z homology
+   homologyz() : % ==
+       homology([], [], [[1]])
+
+   -- construct ZZ homology
+   homologyzz() : % ==
+       homology([], [], [[1, 0], [0, 1]])
+
+   -- construct C2 homology
+   homologyc2() : % ==
+       homology([[1]], [2], [])
+
+   -- construct Z+C2 homology
+   homologyzc2() : % ==
+       homology([[1, 0]], [2], [[0, 1]])
+
+   -- more detailed output with generators
+   dispGenerators(s : %) : OutputForm ==
+       res : OutputForm := empty()$OutputForm
+       s1 := s pretend Record(torsionPart : List(GENI),
+                              freePart : List(Vector(Integer)))
+       for g in s1.torsionPart repeat
+           ln := hconcat(["gen="::OutputForm, (g.vec)::OutputForm, _
+               " ord="::OutputForm, (g.ord)::OutputForm])$OutputForm
+           res := vconcat(res, ln)
+       ln2 := hconcat([" free part="::OutputForm,
+                       (s1.freePart)::OutputForm])$OutputForm
+       res := vconcat(res, ln2)
+       res
+
+   -- equal if same Betti numbers and torsion coefficient
+   -- This form of equality is useful for validating code. We want to check
+   -- that generated homology is essentially the same as we are expecting.
+   _=(a : %, b : %) : Boolean ==
+       --print("homologyGroup torsionPart a : " << a.torsionPart <<_
+       --      " torsionPart b : " << b.torsionPart << _
+       --      " freePart a : " << a.freePart << _
+       --      " numfree a : " << #(a.freePart) << _
+       --      " freePart b : " << b.freePart<< _
+       --      " numfree b : " << #(b.freePart))
+       tora : List(GENI) := a.torsionPart
+       torb : List(GENI) := b.torsionPart
+       noTorsionA : Boolean := true
+       noTorsionB : Boolean := true
+       for ta in tora repeat
+           if (ta.ord ~= 0) and (ta.ord ~= 1) then noTorsionA := false
+       for tb in torb repeat
+           if (tb.ord ~= 0) and (tb.ord ~= 1) then noTorsionB := false
+       if noTorsionA ~= noTorsionA then return false
+       #(a.freePart) = #(b.freePart)
+
+   -- output in terms of Z (free) and C (cycles)
+   -- TODO perhaps this should check if vectors are independant
+   coerce(s : %) : OutputForm ==
+       res : OutputForm := empty()$OutputForm
+       firstTermRead : Boolean := false
+       s1 := s pretend Record(torsionPart : List(GENI),
+                              freePart : List(Vector(Integer)))
+       --print("homologyGroup torsionPart : " << s1.torsionPart <<_
+       --      " freePart : " << s1.freePart)
+       nFree := #(s1.freePart)
+       if nFree > 0 then
+           -- TODO should check for empty list here
+           res := hconcat(res, "Z"::OutputForm)
+           if nFree > 1 then
+               res := hconcat([res, "*"::OutputForm,
+                               nFree::OutputForm])$OutputForm
+           firstTermRead := true
+       for t in s1.torsionPart repeat
+           if not (t.ord = 0 or t.ord = 1) then
+               if firstTermRead then
+                   res := hconcat(res, "+"::OutputForm)
+               ln2 := hconcat(["C"::OutputForm,
+                               (t.ord)::OutputForm])$OutputForm
+               res := hconcat(res, ln2)
+               firstTermRead := true
+       if not firstTermRead then
+           res := hconcat(res, "0"::OutputForm)
+       res
+
+--Copyright (c) 2016, Martin J Baker.
+--All rights reserved.
+--
+--Redistribution and use in source and binary forms, with or without
+--modification, are permitted provided that the following conditions are
+--met:
+--
+--    - Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    - Redistributions in binary form must reproduce the above copyright
+--      notice, this list of conditions and the following disclaimer in
+--      the documentation and/or other materials provided with the
+--      distribution.
+--
+--    - Neither the name of Martin J Baker. nor the
+--      names of its contributors may be used to endorse or promote products
+--      derived from this software without specific prior written permission.
+--
+--THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+--IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+--TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+--PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+--OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+--EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+--PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+--PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+--LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+--NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+--SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+)if false
+\eject
+\begin{thebibliography}{99}
+For more details see:
+[1] I have put a fuller explanation of this code here:
+\url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/presentation/}
+
+[2] Wikipedia
+\url{http://https://en.wikipedia.org/wiki/Simplicial_complex/}
+
+[3] Finite simplicial complexes in Sage
+\url{http://doc.sagemath.org/html/en/reference/homology/sage/homology/simplicial_complex.html}
+
+[4] Finite simplicial complexes in NPM
+\url{https://www.npmjs.com/package/simplicial-complex}
+
+[5] Simpcomp - a GAP package for working with simplicial complexes
+\url{https://code.google.com/p/simpcomp/}
+
+[6] A Macaulay2 package for working with simplicial complexes
+\url{http://www.math.uiuc.edu/Macaulay2/doc/Macaulay2-1.8.2/share/doc/Macaulay2/SimplicialComplexes/html}
+
+[7] Homology group method described by Waldek Hebisch here:
+\url{https://groups.google.com/forum/?hl=en#!topic/fricas-devel/mLOdQ-fwbO0}
+
+\end{thebibliography}
+\end{document}
+)endif
+
