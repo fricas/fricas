@@ -280,23 +280,30 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
     coerce(d : S) : % == [d, 1]
     zero?(x : %) == zero? x.num
 
-
     if S has GcdDomain and S has canonicalUnitNormal then
-      retract(x : %) : S ==
---        one?(x.den) => x.num
-        ((x.den) = 1) => x.num
-        error "Denominator not equal to 1"
+        x = y == (x.num = y.num) and (x.den = y.den)
 
-      retractIfCan(x:%):Union(S, "failed") ==
---        one?(x.den) => x.num
-        ((x.den) = 1) => x.num
-        "failed"
+        hashUpdate!(s : HashState, x : %) ==
+            s := hashUpdate!(s, x.num)
+            hashUpdate!(s, x.den)
+
+        one? x == ((x.num) = 1) and ((x.den) = 1)
+        -- again assuming canonical nature of representation
+
+        retract(x : %) : S ==
+            ((x.den) = 1) => x.num
+            error "Denominator not equal to 1"
+
+        retractIfCan(x : %) : Union(S, "failed") ==
+            ((x.den) = 1) => x.num
+            "failed"
     else
-      retract(x : %) : S ==
-        (a := x.num exquo x.den) case "failed" =>
-           error "Denominator not equal to 1"
-        a
-      retractIfCan(x:%):Union(S,"failed") == x.num exquo x.den
+        retract(x : %) : S ==
+            (a := x.num exquo x.den) case "failed" =>
+                error "Denominator not equal to 1"
+            a
+
+        retractIfCan(x : %) : Union(S, "failed") == x.num exquo x.den
 
     if S has EuclideanDomain then
       wholePart x ==
@@ -429,14 +436,6 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
         cancelGcd y
         y.den := y.den * d * d
         normalize y
-
-      if S has canonicalUnitNormal then
-        x = y == (x.num = y.num) and (x.den = y.den)
-    --x / dd == (cancelGcd (z := [x.num, dd*x.den]); normalize z)
-
---        one? x == one? (x.num) and one? (x.den)
-        one? x == ((x.num) = 1) and ((x.den) = 1)
-                  -- again assuming canonical nature of representation
 
     else
       nn:S/dd:S == if zero? dd then error "division by zero" else [nn,dd]
