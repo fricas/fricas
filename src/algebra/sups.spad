@@ -582,14 +582,19 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       iMap2((y, n) +-> y, z +-> z - 1, false,
             ups - monomial(coefficient(ups, 0), 0))
 
-    compose0(x, xRefer, y, yRefer, yOrd, y1, yn0, n0, refer, n) == delay
+    compose0(x : ST, xRefer : REF, y : ST, yRefer : REF, yOrd : I,
+             y1 : %, yn0 : %, n0 : I, refer : REF, n : I) : ST == delay
       -- when this function is called, we are computing the nth order
       -- coefficient of the composite
       explicitlyEmpty? x => (setelt!(refer, plusInfinity()); empty())
       -- if terms in 'x' up to order n have not been computed,
       -- apply lazy evaluation
       nn := n :: COM; yyOrd := yOrd :: COM
-      while (yyOrd * elt(xRefer)) < nn repeat lazyEvaluate x
+      repeat
+          x_ord := elt(xRefer)
+          whatInfinity(x_ord) ~= 0 => break
+          yOrd*retract(x_ord)@I < n => lazyEvaluate x
+          break
       explicitEntries? x =>
         xCoef := getCoef(xTerm := frst x); n1 := getExpon xTerm
         zero? n1 =>
@@ -622,7 +627,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       yOrd : I :=
         explicitEntries? y => getExpon frst y
         retract(elt yRefer)@I
-      compRefer := ref((-1) :: COM)
+      compRefer := ref((-1)@I :: COM)
       makeSeries(compRefer, _
                  compose0(x, xRefer, y, yRefer, yOrd, ups2, 1, 0, compRefer, 0))
 
@@ -661,7 +666,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         fp := differentiate f
         fInv := iExquo(1, f, false) :: %; y := r * fp * fInv
         yRef := getRef y; yStr := getStream y
-        intRef := ref((-1) :: COM); ansRef := ref(0 :: COM)
+        intRef := ref((-1)@I :: COM); ansRef := ref(0$I :: COM)
         ansStr := Ys(s +-> lazyInteg(1,
                                iTimes(s, ansRef, yStr, yRef, intRef, 0),
                                intRef, ansRef))
@@ -672,7 +677,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         -- computes exp(f).  cc = exp coefficient(f, 0)
         fp := differentiate f
         fpRef := getRef fp; fpStr := getStream fp
-        intRef := ref((-1) :: COM); ansRef := ref(0 :: COM)
+        intRef := ref((-1)@I :: COM); ansRef := ref(0$I :: COM)
         ansStr := Ys(s +-> lazyInteg(cc,
                               iTimes(s, ansRef, fpStr, fpRef, intRef, 0),
                               intRef, ansRef))
@@ -681,7 +686,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       sincos0 : (Coef, Coef, L ST, REF, REF, ST, REF, ST, REF) -> L ST
       sincos0(sinc, cosc, list, sinRef, cosRef, fpStr, fpRef, fpStr2, fpRef2) ==
         sinStr := first list; cosStr := second list
-        prodRef1 := ref((-1) :: COM); prodRef2 := ref((-1) :: COM)
+        prodRef1 := ref((-1)@I :: COM); prodRef2 := ref((-1)@I :: COM)
         prodStr1 := iTimes(cosStr, cosRef, fpStr, fpRef, prodRef1, 0)
         prodStr2 := iTimes(sinStr, sinRef, fpStr2, fpRef2, prodRef2, 0)
         [lazyInteg(sinc, prodStr1, prodRef1, sinRef), _
@@ -694,7 +699,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
 --        fp2 := (one? sign => fp; -fp)
         fp2 := ((sign = 1) => fp; -fp)
         fpRef2 := getRef fp2; fpStr2 := getStream fp2
-        sinRef := ref(0 :: COM); cosRef := ref(0 :: COM)
+        sinRef := ref(0$I :: COM); cosRef := ref(0$I :: COM)
         sincos :=
           Ys(s +-> sincos0(sinc, cosc, s, sinRef, cosRef,
                            fpStr, fpRef, fpStr2, fpRef2),
@@ -705,23 +710,23 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
 
       tan0 : (Coef, ST, REF, ST, REF, I) -> ST
       tan0(cc, ansStr, ansRef, fpStr, fpRef, sign) ==
-        sqRef := ref((-1) :: COM)
+        sqRef := ref((-1)@I :: COM)
         sqStr := iTimes(ansStr, ansRef, ansStr, ansRef, sqRef, 0)
         one : % := 1; oneStr := getStream one; oneRef := getRef one
-        yRef := ref((-1) :: COM)
+        yRef := ref((-1)@I :: COM)
         yStr : ST :=
 --          one? sign => iPlus1((xi, yi) +-> xi + yi, oneStr, oneRef, sqStr, sqRef, yRef, 0)
           (sign = 1) => iPlus1((xi, yi) +-> xi + yi, oneStr, oneRef,
                                sqStr, sqRef, yRef, 0)
           iPlus1((xi, yi) +-> xi - yi, oneStr, oneRef, sqStr, sqRef, yRef, 0)
-        intRef := ref((-1) :: COM)
+        intRef := ref((-1)@I :: COM)
         lazyInteg(cc, iTimes(yStr, yRef, fpStr, fpRef, intRef, 0), intRef, ansRef)
 
       iTan : (%, %, Coef, I) -> %
       iTan(f, fp, cc, sign) ==
         -- computes the tangent (and related functions) of f.
         fpRef := getRef fp; fpStr := getStream fp
-        ansRef := ref(0 :: COM)
+        ansRef := ref(0$I :: COM)
         ansStr := Ys(s +-> tan0(cc, s, ansRef, fpStr, fpRef, sign))
         zero? cc => makeSeries(ansRef, rst ansStr)
         makeSeries(ansRef, ansStr)
@@ -1229,7 +1234,7 @@ SparseUnivariateTaylorSeries(Coef, var, cen) : Exports == Implementation where
       concat(makeTerm(n, coef), iSeries(rst st, n + 1, refer))
 
     series(st : Stream Coef) ==
-      refer := ref(-1)
+      refer := ref((-1)@I::COM)
       makeSeries(refer, iSeries(st, 0, refer))
 
     nniToI : Stream Record(k : NNI, c : Coef) -> ST
