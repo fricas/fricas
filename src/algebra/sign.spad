@@ -268,15 +268,18 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
 
     fLimit(n, d, a, dir) ==
       (s := signAround(d, a, dir, sign$RFSGN)) case "failed" => "failed"
-      n * (s::Z) * plusInfinity()
+      si := n * (s::Z)
+      si = 0 => error "fLimit: sign is 0"
+      si > 0 => plusInfinity()
+      minusInfinity()
 
     finiteComplexLimit(f, a) ==
-      zero?(n := (numer f) a) => 0
+      zero?(n := (numer f) a) => 0$RF::OPF
       zero?(d := (denom f) a) => infinity()
       (n / d)::OPF
 
     finiteLimit(f, a) ==
-      zero?(n := (numer f) a) => 0
+      zero?(n := (numer f) a) => 0$RF::ORF
       zero?(d := (denom f) a) =>
         (s := sign(n)$RFSGN) case "failed" => "failed"
         rhsl := fLimit(s::Z, denom f, a, 1)
@@ -295,15 +298,18 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
       (dn := degree numer g) > (dd := degree denom g) =>
         (sn := signAround(numer g, n, sign$RFSGN)) case "failed" => "failed"
         (sd := signAround(denom g, n, sign$RFSGN)) case "failed" => "failed"
-        (sn::Z) * (sd::Z) * plusInfinity()
-      dn < dd => 0
+        si := (sn::Z) * (sd::Z)
+        si = 0 => error "locallimit: sign is 0"
+        si > 0 => plusInfinity()
+        minusInfinity()
+      dn < dd => 0$RF::ORF
       ((leadingCoefficient numer g) / (leadingCoefficient denom g))::ORF
 
     limit(f, eq, st) ==
       (xx := retractIfCan(lhs eq)@Union(SE,"failed")) case "failed" =>
         error "limit: left hand side must be a variable"
       x := xx :: SE; a := rhs eq
-      zero?(n := (numer(g := univariate(f, x))) a) => 0
+      zero?(n := (numer(g := univariate(f, x))) a) => 0$RF::ORF
       zero?(d := (denom g) a) =>
         (s := sign(n)$RFSGN) case "failed" => "failed"
         fLimit(s::Z, denom g, a, direction st)
@@ -314,7 +320,7 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
       (r := retractIfCan(a)@Union(RF, "failed")) case RF =>
         finiteComplexLimit(g, r::RF)
       (dn := degree numer g) > (dd := degree denom g) => infinity()
-      dn < dd => 0
+      dn < dd => 0$RF::OPF
       ((leadingCoefficient numer g) / (leadingCoefficient denom g))::OPF
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
