@@ -319,14 +319,14 @@ UnivariatePuiseuxSeriesWithExponentialSingularity(R, FE, var, cen) : _
 
     limitPlus f ==
       -- list the terms occurring in 'f'; if there are none, then f = 0
-      empty?(termList := terms f) => 0
+      empty?(termList := terms f) => 0$FE::OFE
       -- compute dominant term
       (tInfo := iDominantTerm termList) case "failed" => "failed"
       termInfo := tInfo :: Record(%term : Term, %type : String)
       domTerm := termInfo.%term
       (type := termInfo.%type) = "series" =>
         -- find limit of series term
-        (ord := order(pSeries := coeff domTerm, 1)) > 0 => 0
+        (ord := order(pSeries := coeff domTerm, 1)) > 0 => 0$FE::OFE
         coef := coefficient(pSeries, ord)
         member?(var,variables coef) => "failed"
         ord = 0 => coef :: OFE
@@ -335,7 +335,7 @@ UnivariatePuiseuxSeriesWithExponentialSingularity(R, FE, var, cen) : _
         (signum := sign(coef)$SIGNEF) case "failed" => "failed"
         (signum :: Integer) = 1 => plusInfinity()
         minusInfinity()
-      type = "zero" => 0
+      type = "zero" => 0$FE::OFE
       -- examine lowest order coefficient in series part of 'domTerm'
       ord := order(pSeries := coeff domTerm)
       coef := coefficient(pSeries, ord)
@@ -428,7 +428,7 @@ ExponentialExpansion(R, FE, var, cen) : Exports == Implementation where
     seriesQuotientLimit(num, den) ==
       -- limit of the quotient of two series
       series := num / den
-      (ord := order(series, 1)) > 0 => 0
+      (ord := order(series, 1)) > 0 => 0$FE::OFE
       coef := coefficient(series, ord)
       member?(var,variables coef) => "failed"
       ord = 0 => coef :: OFE
@@ -448,7 +448,7 @@ ExponentialExpansion(R, FE, var, cen) : Exports == Implementation where
       minusInfinity()
 
     limitPlus f ==
-      zero? f => 0
+      zero? f => 0$FE::OFE
       (den := denom f) = 1 => limitPlus numer f
       (numerTerm := dominantTerm(num := numer f)) case "failed" => "failed"
       numType := (numTerm := numerTerm :: TypedTerm).%type
@@ -464,9 +464,9 @@ ExponentialExpansion(R, FE, var, cen) : Exports == Implementation where
             seriesQuotientLimit(numCoef, denCoef)
           expCoef := coefficient(exponDiff, order exponDiff)
           (sig := sign(expCoef)$SIGNEF) case "failed" => return "failed"
-          (sig :: Integer) = -1 => 0
+          (sig :: Integer) = -1 => 0$FE::OFE
           seriesQuotientInfinity(numCoef, denCoef)
-        0 -- otherwise limit is zero
+        0$FE::OFE -- otherwise limit is zero
       -- numerator is a Puiseux series
       (numType = "series") =>
         -- denominator tends to zero exponentially
@@ -474,7 +474,7 @@ ExponentialExpansion(R, FE, var, cen) : Exports == Implementation where
           seriesQuotientInfinity(numCoef, denCoef)
         -- denominator is a series
         (denType = "series") => seriesQuotientLimit(numCoef,denCoef)
-        0
+        0$FE::OFE
       -- remaining case: numerator tends to infinity exponentially
       -- denominator tends to infinity exponentially
       (denType = "infinity") =>
@@ -482,7 +482,7 @@ ExponentialExpansion(R, FE, var, cen) : Exports == Implementation where
           seriesQuotientLimit(numCoef, denCoef)
         expCoef := coefficient(exponDiff, order exponDiff)
         (sig := sign(expCoef)$SIGNEF) case "failed" => return "failed"
-        (sig :: Integer) = -1 => 0
+        (sig :: Integer) = -1 => 0$FE::OFE
         seriesQuotientInfinity(numCoef, denCoef)
       -- denominator tends to zero exponentially or is a series
       seriesQuotientInfinity(numCoef, denCoef)

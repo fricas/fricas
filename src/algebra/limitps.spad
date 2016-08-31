@@ -448,7 +448,11 @@ PowerSeriesLimitPackage(R, FE) : Exports == Implementation where
       -- compute limit for function with pole
       not member?(x, variables coef) =>
         (s := sign(coef)$SIGNEF) case Integer =>
-          rtLim := (s :: Integer) * plusInfinity()
+          si := s::Integer
+          si = 0 => error "poleLimit: coef = 0"
+          rtLim :=
+              si > 0 => plusInfinity()
+              minusInfinity()
           even? numer order => rtLim
           even? denom order => ["failed",rtLim]$TwoSide
           [-rtLim, rtLim]$TwoSide
@@ -460,25 +464,34 @@ PowerSeriesLimitPackage(R, FE) : Exports == Implementation where
       -- compute right hand limit for function with pole
       not member?(x, variables coef) =>
         (s := sign(coef)$SIGNEF) case Integer =>
-          (s :: Integer) * plusInfinity()
+             si := s::Integer
+             si = 0 => error "poleLimitPlus: coef = 0"
+             si > 0 => plusInfinity()
+             minusInfinity()
         -- infinite limit, but cannot determine sign
         "failed"
       (clim := specialLimit(coef,x)) case "failed" => "failed"
-      zero? (lim := clim :: OFE) =>
+      lim := clim :: OFE
+      whatInfinity(lim) = 0 and zero?(retract(lim)@FE) =>
         -- in this event, we need to determine if the limit of
         -- the coef is 0+ or 0-
         (cclim := specialLimit(inv coef,x)) case "failed" => "failed"
         ss := whatInfinity(cclim :: OFE) :: Z
         zero? ss =>
           error "limit: internal error"
-        ss * plusInfinity()
+        ss > 0 => plusInfinity()
+        minusInfinity()
       t := whatInfinity(lim :: OFE) :: Z
       zero? t =>
         (tt := sign(coef)$SIGNEF) case Integer =>
-          (tt :: Integer) * plusInfinity()
+            tti := tt::Z
+            tti = 0 => error "poleLimitPlus: coef = 0"
+            tti > 0 => plusInfinity()
+            minusInfinity()
         -- infinite limit, but cannot determine sign
         "failed"
-      t * plusInfinity()
+      t > 0 => plusInfinity()
+      minusInfinity()
 
     realLimit(fcn, x) ==
       -- computes lim(x -> 0, fcn) using a Puiseux expansion of fcn,
@@ -724,7 +737,8 @@ ElementaryFunctionSign(R, F) : Exports == Implementation where
         (u := retractIfCan(retract(a)@F)@Union(RF,"failed")) _
                case "failed" => "failed"
         u::RF::ORF
-      n * plusInfinity()$ORF
+      n > 0 => plusInfinity()$ORF
+      minusInfinity()$ORF
 
     ofesign a ==
       (n := whatInfinity a) ~= 0 => convert(n)@Z
@@ -791,12 +805,12 @@ ElementaryFunctionSign(R, F) : Exports == Implementation where
             x0 : F := 0
             if s0 case Z then
                 if s0 = 1 then
-                    a := 0
+                    a := 0$F::OFE
                 if s0 = -1 then
-                    b := 0
+                    b := 0$F::OFE
             if is?(k, 'atan) then
-                a := (a = 0 => a; (-(1$F))::OFE)
-                b := (b = 0 => b; (1$F)::OFE)
+                a := (a = 0$F::OFE => a; (-(1$F))::OFE)
+                b := (b = 0$F::OFE => b; (1$F)::OFE)
             up := map(coerce@(R -> F), univariate(p)
                      )$SparseUnivariatePolynomialFunctions2(R, F)
             zu := checkForZero(up, a, b, true)$DFINTTLS
