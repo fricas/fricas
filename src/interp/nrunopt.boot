@@ -747,7 +747,13 @@ extendsCategoryBasic(dom,u,v) ==
   uVec := (compMakeCategoryObject(u, $EmptyEnvironment)).expr
   isCategoryForm(v,nil) => catExtendsCat?(u,v,uVec)
   v is ['SIGNATURE,op,sig] =>
-    or/[uVec.i is [[=op,=sig],:.] for i in 6..MAXINDEX uVec]
+      res := false
+      for csig in uVec.1 repeat
+          not(csig is [[=op, sig], pred, :.]) => "iterate"
+          pred = true =>
+              res := true
+              return true
+      res
   u is ['CATEGORY,.,:l] =>
     v is ['IF,:.] => member(v,l)
     nil
