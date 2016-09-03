@@ -95,8 +95,8 @@ sigParams(sigList) ==
 --   attList              - list of all conditional ancestors
 --   PrincipalAncestor    - principal ancestor (if any)
 mkCategory(sigList, attList, domList, PrincipalAncestor) ==
-  NSigList:= nil
-  if PrincipalAncestor=nil then count:= 6 else count:= SIZE PrincipalAncestor
+  NSigList := nil
+  count := 6
   sigList:=
     [if s is [sig,pred]
        then
@@ -113,18 +113,15 @@ mkCategory(sigList, attList, domList, PrincipalAncestor) ==
      repeat NewLocals:= delete(first u,NewLocals)
   for u in NewLocals repeat
     (OldLocals:= [[u,:count],:OldLocals]; count:= count+1)
-  v:= GETREFV count
+  v:= GETREFV 6
   v.(0):= nil
   v.(1):= sigList
   v.2:= attList
   v.3:= ["Category"]
-  if not PrincipalAncestor=nil
-     then
-      for x in 6..SIZE PrincipalAncestor-1 repeat v.x:= PrincipalAncestor.x
-      v.4:= [first PrincipalAncestor.4,CADR PrincipalAncestor.4,OldLocals]
-   else v.4:= [nil,nil,OldLocals] --associated categories and domains
+  if not(PrincipalAncestor = nil) then
+      v.4 := [first PrincipalAncestor.4, CADR PrincipalAncestor.4, OldLocals]
+   else v.4 := [nil,nil,OldLocals] --associated categories and domains
   v.5:= domList
-  for [nsig,:sequence] in NSigList repeat v.sequence:= nsig
   v
 
 isCategory a == REFVECP a and #a>5 and a.3=["Category"]
@@ -151,19 +148,11 @@ SigListUnion(extra,original) ==
         xpred=opred => extra:= delete(x,extra)
              --same signature and same predicate
         opred = true => extra:= delete(x,extra)
-   -- PRETTYPRINT ("we ought to subsume",x,o)
-      not MachineLevelSubsume(QCAR o,QCAR x) =>
-         '"Source level subsumption not implemented"
-      extra:= delete(x,extra)
   for e in extra repeat
     [esig,epred,:.]:= e
     eimplem:=[]
     for x in SigListOpSubsume(e,original) repeat
         --PRETTYPRINT(LIST("SigListOpSubsume",e,x))
-      not MachineLevelSubsume(QCAR e,QCAR x) =>
-        --systemError '"Source level subsumption not implemented"
-        original:= [e,:original]
-        return nil -- this exits from the innermost for loop
       original:= delete(x,original)
       [xsig,xpred,:ximplem]:= x
 --      if xsig ~= esig then   -- not quite strong enough
@@ -184,8 +173,6 @@ SigListUnion(extra,original) ==
 -- present under certain conditions
         -- We must pick up the previous implementation, if any
 --+
-      if ximplem is [[q,.,index]] and INTEGERP index and (q="ELT" or q="CONST")
-        then $NewCatVec. index:= e
     original:= [e,:original]
   original
 
@@ -301,26 +288,6 @@ SourceLevelSubset(a,b) ==
   a=b => true
   false
 
-MachineLevelSubsume([name1,[out1,:in1],:flag1],[name2,[out2,:in2],:flag2]) ==
-  -- Checks for machine-level subsumption in the sense of SYSTEM SCRIPT
-  --  true if the first signature subsumes the second
-  --  flag1 = flag2 and: this really should be checked, but
-  name1=name2 and MachineLevelSubset(out1,out2) and
-    (and/[MachineLevelSubset(inarg2,inarg1) for inarg1 in in1 for inarg2 in in2]
-      )
-
-MachineLevelSubset(a,b) ==
-  --true if a is a machine-level subset of b
-  a=b => true
-  b is ["Union",:blist] and member(a,blist) and
-    (and/[STRINGP x for x in blist | x~=a]) => true
-           --all other branches must be distinct objects
-  SYMBOLP(b) and assoc(a, GET(b, "Subsets")) => true
-  a is [a1] and b is [b1] and SYMBOLP(b1) and
-    assoc(a1, GET(b1, "Subsets")) => true
-             --we assume all subsets are true at the machine level
-  nil
-
 --% Ancestor chasing code
 
 get_cond(x) ==
@@ -427,7 +394,7 @@ join_fundamental_ancestors(vec0, l) ==
   FundamentalAncestors
 
 JoinInner(l,$e) ==
-  $NewCatVec: local := nil
+  NewCatVec := nil
   CondList := nil
   CondList2 := nil
   for u in l repeat
@@ -442,14 +409,14 @@ JoinInner(l,$e) ==
           --It's true, so we add this as unconditional
       -- not (pred is ["and",:.]) => CondList:= [[CatEval at2,pred],:CondList]
       CondList:= [[CatEval at2,pred],:CondList]
-  [$NewCatVec,:l]:= l
+  [NewCatVec, :l] := l
   l':= [:CondList,:[[u,true] for u in l]]
     -- This is a list of all the categories that this extends
     -- conditionally or unconditionally
-  sigl:= $NewCatVec.(1)
-  globalDomains:= $NewCatVec.5
-  $NewCatVec:= COPY_-SEQ $NewCatVec
-  FundamentalAncestors := join_fundamental_ancestors($NewCatVec, l')
+  sigl := NewCatVec.(1)
+  globalDomains := NewCatVec.5
+  NewCatVec := COPY_-SEQ NewCatVec
+  FundamentalAncestors := join_fundamental_ancestors(NewCatVec, l')
 
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
@@ -463,15 +430,15 @@ JoinInner(l,$e) ==
             newpred=true => op
             oldpred=true => [sig,newpred,:implem]
             [sig,MKPF([oldpred,newpred],"and"),:implem]
-  c:= first $NewCatVec.4
-  pName:= $NewCatVec.(0)
+  c := first NewCatVec.4
+  pName := NewCatVec.(0)
   if pName and not member(pName,c) then c:= [pName,:c]
   -- strip out the pointer to Principal Ancestor
   if pName then
       FundamentalAncestors :=
           [x for x in FundamentalAncestors | first(x) ~= pName]
-  $NewCatVec.4:= [c,FundamentalAncestors,CADDR $NewCatVec.4]
-  mkCategory(sigl, nil, globalDomains, $NewCatVec)
+  NewCatVec.4 := [c,FundamentalAncestors, CADDR NewCatVec.4]
+  mkCategory(sigl, nil, globalDomains, NewCatVec)
 
 Join(:L) ==
   env :=
