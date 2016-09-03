@@ -319,7 +319,10 @@ boolean_subst_and(l, good_preds) ==
     for cond in l repeat
         nc := boolean_subst1(cond, good_preds)
         nc = true => "iterate"
-        not(nc) => nc
+        not(nc) =>
+            res := [nc]
+            return first(res)
+        res := cons(nc, res)
         res := cons(nc, res)
     res = [] => true
     #res = 1 => first(res)
@@ -329,7 +332,9 @@ boolean_subst_or(l, good_preds) ==
     res := []
     for cond in l repeat
         nc := boolean_subst1(cond, good_preds)
-        nc = true => nc
+        nc = true =>
+            res := [nc]
+            return first(res)
         not(nc) => "iterate"
         res := cons(nc, res)
     res = [] => false
