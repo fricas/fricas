@@ -323,7 +323,6 @@ boolean_subst_and(l, good_preds) ==
             res := [nc]
             return first(res)
         res := cons(nc, res)
-        res := cons(nc, res)
     res = [] => true
     #res = 1 => first(res)
     ["AND", :nreverse(res)]
