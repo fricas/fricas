@@ -98,7 +98,7 @@ pf2Sex1 pf ==
     ["WHILE", pf2Sex1 pfWhileCond pf]
   pfSuchthat? pf =>
     $insideRule = 'left =>
-      keyedSystemError('"S2GE0017", ['"pf2Sex1: pfSuchThat"])
+      keyedSystemError("S2GE0017", ['"pf2Sex1: pfSuchThat"])
     ["|", pf2Sex1 pfSuchthatCond pf]
   pfDo? pf =>
     pf2Sex1 pfDoBody pf
@@ -155,7 +155,7 @@ pf2Sex1 pf ==
   -- the user to figure out what happened.
   pfAbSynOp(pf) = "command" => tokPart(pf)
 
-  keyedSystemError('"S2GE0017", ['"pf2Sex1"])
+  keyedSystemError("S2GE0017", ['"pf2Sex1"])
 
 pfLiteral2Sex pf ==
   type := pfLiteralClass pf
@@ -172,7 +172,7 @@ pfLiteral2Sex pf ==
     pfSymbolSymbol pf
   type = 'expression =>
       ["QUOTE", pfLeafToken pf]
-  keyedSystemError('"S2GE0017", ['"pfLiteral2Sex: unexpected form"])
+  keyedSystemError("S2GE0017", ['"pfLiteral2Sex: unexpected form"])
 
 symEqual(sym, sym2) == EQ(sym, sym2)
 
