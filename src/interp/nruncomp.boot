@@ -522,18 +522,29 @@ NRTcheckVector domainShell ==
       [[first v,:$SetFunctions.i],:alist]
   alist
 
-NRTsetVector4Part1(siglist,formlist,condlist) ==
-  $uncondList: local := nil
-  $condList: local := nil
-  for sig in reverse siglist for form in reverse formlist
-         for cond in reverse condlist repeat
-                  NRTsetVector4a(sig,form,cond)
-  reducedUncondlist := REMDUP $uncondList
-  reducedConlist :=
-    [[x,:y] for [x,z] in $condList| y := SETDIFFERENCE(z,reducedUncondlist)]
-  revCondlist := reverseCondlist reducedConlist
-  orCondlist := [[x,:MKPF(y,'OR)] for [x,:y] in revCondlist]
-  [reducedUncondlist,:orCondlist]
+NRTsetVector4Part1(sigs, forms, conds) ==
+    uncond_list := nil
+    cond_list := nil
+    for sig in reverse sigs for form in reverse forms
+           for cond in reverse conds repeat
+        sig = '$ =>
+            domainList :=
+                [optimize COPY IFCAR comp(d, $EmptyMode, $e) or
+                   d for d in $domainShell.4.0]
+            uncond_list := APPEND(domainList, uncond_list)
+            if isCategoryForm(form, $e) then
+                uncond_list := [form, :uncond_list]
+        evalform := eval mkEvalableCategoryForm form
+        cond = true =>
+            uncond_list := [form, :APPEND(evalform.4.0, uncond_list)]
+        cond_list := [[cond,[form, :evalform.4.0]], :cond_list]
+
+    reducedUncondlist := REMDUP uncond_list
+    reducedConlist := [[x, :y] for [x,z] in cond_list |
+                         y := SETDIFFERENCE(z, reducedUncondlist)]
+    revCondlist := reverseCondlist reducedConlist
+    orCondlist := [[x, :MKPF(y, 'OR)] for [x, :y] in revCondlist]
+    [reducedUncondlist, :orCondlist]
 
 reverseCondlist cl ==
   alist := nil
@@ -544,18 +555,6 @@ reverseCondlist cl ==
       member(x, rest u) => nil
       RPLACD(u, [x, :rest u])
   alist
-
-NRTsetVector4a(sig,form,cond) ==
-  sig = '$ =>
-     domainList :=
-         [optimize COPY IFCAR comp(d, $EmptyMode, $e) or
-             d for d in $domainShell.4.0]
-     $uncondList := APPEND(domainList,$uncondList)
-     if isCategoryForm(form,$e) then $uncondList := [form,:$uncondList]
-     $uncondList
-  evalform := eval mkEvalableCategoryForm form
-  cond = true => $uncondList := [form,:APPEND(evalform.4.0,$uncondList)]
-  $condList := [[cond,[form,:evalform.4.0]],:$condList]
 
 NRTmakeSlot1Info() ==
 -- 4 cases:
