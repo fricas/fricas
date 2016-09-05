@@ -314,10 +314,10 @@ get_self_preds1(pl, acc) ==
 
 get_self_preds(pl) == REMDUP get_self_preds1(pl, nil)
 
-boolean_subst_and(l, good_preds) ==
+boolean_subst_and(l, sub_data) ==
     res := []
     for cond in l repeat
-        nc := boolean_subst1(cond, good_preds)
+        nc := boolean_subst1(cond, sub_data)
         nc = true => "iterate"
         not(nc) =>
             res := [nc]
@@ -327,10 +327,10 @@ boolean_subst_and(l, good_preds) ==
     #res = 1 => first(res)
     ["AND", :nreverse(res)]
 
-boolean_subst_or(l, good_preds) ==
+boolean_subst_or(l, sub_data) ==
     res := []
     for cond in l repeat
-        nc := boolean_subst1(cond, good_preds)
+        nc := boolean_subst1(cond, sub_data)
         nc = true =>
             res := [nc]
             return first(res)
@@ -340,28 +340,48 @@ boolean_subst_or(l, good_preds) ==
     #res = 1 => first(res)
     ["OR", :nreverse(res)]
 
-boolean_subst_not(cond, good_preds) ==
-   nc := boolean_subst1(cond, good_preds)
+boolean_subst_not(cond, sub_data) ==
+   sub_data1 := rest(rest(sub_data))
+   nc := boolean_subst1(cond, [FUNCTION boolean_substitute1, nil, :sub_data1])
    nc = true => false
    not(nc) => true
    ["NOT", nc]
 
-boolean_subst1(cond, good_preds) ==
+boolean_do_subst1(cond, sub_data) ==
+    fun := first(sub_data)
+    FUNCALL(fun, cond, rest(sub_data))
+
+boolean_subst1(cond, sub_data) ==
     cond = true => cond
     cond is [op, :l] =>
-        MEMQ(op, '(AND and)) => boolean_subst_and(l, good_preds)
-        MEMQ(op, '(OR or)) => boolean_subst_or(l, good_preds)
-        MEMQ(op, '(NOT not)) => boolean_subst_not(first(l), good_preds)
-        nc := LASSOC(cond, good_preds)
-        nc => first(nc)
-        cond
+        MEMQ(op, '(AND and)) => boolean_subst_and(l, sub_data)
+        MEMQ(op, '(OR or)) => boolean_subst_or(l, sub_data)
+        MEMQ(op, '(NOT not)) => boolean_subst_not(first(l), sub_data)
+        boolean_do_subst1(cond, sub_data)
     cond
 
-boolean_subst(condCats, good_preds) ==
-    [boolean_subst1(cond, good_preds) for cond in condCats]
+boolean_substitute1(cond, sub_data) ==
+    sub_data := rest(sub_data)
+    good_preds := first(rest(sub_data))
+    nc := LASSOC(cond, good_preds)
+    nc =>
+        RPLACA(sub_data, true)
+        first(nc)
+    cond
+
+boolean_substitute_cond(cond, sub_data) ==
+    cond = first(sub_data) =>
+        RPLACA(rest(sub_data), true)
+        false
+    boolean_substitute1(cond, sub_data)
 
 mk_has_dollar_quote(cat) ==
     ["HasCategory", "$", ["QUOTE", cat]]
+    
+boolean_subst(condCats, cats, sub_data1) ==
+    [boolean_subst1(cond, [FUNCTION boolean_substitute_cond,
+                           mk_has_dollar_quote(cat), :sub_data1])
+          for cond in condCats for cat in cats]
 
 simplify_self_preds1(catvecListMaker, condCats) ==
     self_preds := get_self_preds(condCats)
@@ -385,9 +405,11 @@ simplify_self_preds1(catvecListMaker, condCats) ==
     good_preds := [:[[mk_has_dollar_quote(cat), false] for cat in false_preds],
                    :[[mk_has_dollar_quote(cat), cond] for cc in good_preds
                       | cc is [cat, cond]]]
-    good_preds = [] => [condCats, false]
-    condCats := boolean_subst(condCats, good_preds)
-    [condCats, true]
+    sub_data1 := [false, good_preds]
+    condCats := boolean_subst(condCats, catvecListMaker, sub_data1)
+    if not(first(sub_data1)) then
+        userError(["simplify_self_preds1: cannot simplify", $op, self_preds])
+    [condCats, first(sub_data1)]
 
 simplify_self_preds(catvecListMaker, condCats) ==
     progress := true
