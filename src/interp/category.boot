@@ -357,13 +357,46 @@ DescendantP(a,b) ==
   AncestorP(b,[first u for u in CADR a.4]) => true
   nil
 
+
+simplify_cond1(catname, cond) ==
+    -- FIXME: this is ugly hack to get around compiler bug.
+    -- Namely, sometimes '$' is not what it shold be...
+    $compForModeIfTrue => cond
+    cond is ["has", "$", =catname] => nil
+    cond is ["OR", :l] =>
+        rl := []
+        for c1 in l repeat
+            nc := simplify_cond1(catname, c1)
+            not(nc) => "iterate"
+            rl := cons(nc, rl)
+        rl = [] => nil
+        #rl = 1 => first(rl)
+        ["OR", :rl]
+    cond is ["AND", :l] =>
+        rl := []
+        for c1 in l repeat
+            nc := simplify_cond1(catname, c1)
+            not(nc) =>
+                rl := [nil]
+                return nil
+            rl := cons(nc, rl)
+        rl = [] => true
+        #rl = 1 => first(rl)
+        ["AND", :rl]
+    cond
+ 
+simplify_cond2(vec, cond) ==
+    vec.(0) = nil => cond
+    simplify_cond1(vec.(0), cond)
+
 --% The implementation of Join
 
 -- given uncoditinal category vec0 and list of categories
 -- with associated conditions l produce fundamental ancestors
 -- of the join of vec0 and l
 join_fundamental_ancestors(vec0, l) ==
-  FundamentalAncestors := [[first x, get_cond(x)] for x in CADR vec0.4]
+  FundamentalAncestors := [[v, c] for x in CADR vec0.4 | (v := first x;
+                              c := simplify_cond2(v, get_cond(x)))]
   if vec0.(0) then FundamentalAncestors:=
     [[vec0.(0)],:FundamentalAncestors]
                     --principal ancestor . all those already included
@@ -375,6 +408,8 @@ join_fundamental_ancestors(vec0, l) ==
     if not (b.(0)=nil) then
                    --It's a named category
       bname:= b.(0)
+      condition := simplify_cond1(bname, condition)
+      not(condition) => "iterate"
       CondAncestorP(bname,FundamentalAncestors,condition) => nil
       if (uu := ASSQ(bname, FundamentalAncestors)) then
           FundamentalAncestors := delete(uu, FundamentalAncestors)
