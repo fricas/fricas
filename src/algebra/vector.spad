@@ -293,6 +293,7 @@ DirectProductCategory(dim : NonNegativeInteger, R : Type) : Category ==
            Algebra R
            CommutativeRing
          if R has unitsKnown then unitsKnown
+         if R has OrderedSet then OrderedSet
          if R has OrderedRing then OrderedRing
          if R has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
          if R has Field then VectorSpace R
@@ -391,7 +392,7 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
         same? : % -> Boolean
         same? z == every?(x +-> x = z(minIndex z), z)
 
-        if R is NonNegativeInteger or R is Integer then
+        if R is NonNegativeInteger or R is Integer or R is PositiveInteger then
           -- This is a hack to gain speed.  Direct product is used
           -- by DistributedPolynomial and calling directly Lisp
           -- operation gives significant speedup.  Once compiler
@@ -468,21 +469,23 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
           v pretend %
 
       if R has OrderedSet then
-       if R is NonNegativeInteger or R is Integer then
-          -- This is a hack to gain speed, like for '='.
-          x < y ==
-            for i in 0..(dim - 1) repeat
-                a : R := QREFELT(x, i)$Lisp
-                b : R := QREFELT(y, i)$Lisp
-                QLESSP(a, b)$Lisp => return true
-                QLESSP(b, a)$Lisp => return false
-            false
-       else
-        x < y ==
-          for i in 1..dim repeat
-             qelt(x, i) < qelt(y, i) => return true
-             qelt(x, i) > qelt(y, i) => return false
-          false
+          if R is NonNegativeInteger or R is Integer or R is PositiveInteger then
+              -- This is a hack to gain speed, like for '='.
+              x < y ==
+                  for i in 0..(dim - 1) repeat
+                      a : R := QREFELT(x, i)$Lisp
+                      b : R := QREFELT(y, i)$Lisp
+                      a < b => return true
+                      b < a => return false
+                  false
+          else
+              x < y ==
+                  for i in 1..dim repeat
+                      a : R := qelt(x, i)
+                      b : R := qelt(y, i)
+                      a < b => return true
+                      b < a => return false
+                  false
 
       if R has OrderedAbelianMonoidSup then sup(x, y) == map(sup, x, y)
 
