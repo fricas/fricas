@@ -367,7 +367,7 @@ DivisionRing() : Category ==
 ++   canonicalUnitNormal\tab{20}the canonical field is the same for
 ++     all associates
 ++   canonicalsClosed\tab{20}the product of two canonicals is itself canonical
-EntireRing() : Category == Join(Ring, BiModule(%, %), noZeroDivisors) with
+EntireRing() : Category == Join(Ring, noZeroDivisors) with
     --operations
       "exquo": (%,%) -> Union(%,"failed")
             ++ exquo(a, b) either returns an element c such that
@@ -900,28 +900,7 @@ Module(R : CommutativeRing) : Category == BiModule(R, R)
 ++
 ++ Conditional attributes:
 ++    unitsKnown\tab{15}\spadfun{recip} only returns "failed" on non-units
-Monoid() : Category == SemiGroup with
-    --operations
-      1 : constant ->  %                   ++ 1 is the multiplicative identity.
-      sample : constant -> %               ++ sample yields a value of type %
-      one? : % -> Boolean                  ++ one?(x) tests if x is equal to 1.
-      "^": (%,NonNegativeInteger) -> %
-          ++ x^n returns the repeated product
-          ++ of x n times, i.e. exponentiation.
-      recip : % -> Union(%,"failed")
-          ++ recip(x) tries to compute the multiplicative inverse for x
-          ++ or "failed" if it cannot find the inverse (see unitsKnown).
-    add
-      import from RepeatedSquaring(%)
-      one? x == x = 1
-      sample() == 1
-      recip x ==
---          one? x => x
-          (x = 1) => x
-          "failed"
-      x : % ^ n : NonNegativeInteger ==
-          zero? n => 1
-          expt(x, qcoerce(n)@PositiveInteger)
+Monoid() : Category == Join(SemiGroup, MagmaWithUnit)
 
 
 )abbrev category OAGROUP OrderedAbelianGroup
@@ -1373,20 +1352,8 @@ RightModule(R : SemiRng) : Category == AbelianSemiGroup with
 ++ not necessarily commutative.
 
 --Ring(): Category == Join(Rng, Monoid, LeftModule(%: Rng)) with
-Ring() : Category == Join(Rng, SemiRing, LeftModule(%), unitsKnown) with
-    --operations
-      characteristic : () -> NonNegativeInteger
-        ++ characteristic() returns the characteristic of the ring
-        ++ this is the smallest positive integer n such that
-        ++ \spad{n*x=0} for all x in the ring, or zero if no such n
-        ++ exists.
-        --We can not make this a constant, since some domains are mutable
-      coerce : Integer -> %
-        ++ coerce(i) converts the integer i to a member of the given domain.
---    recip: % -> Union(%,"failed") -- inherited from Monoid
-   add
-      n : Integer
-      coerce(n) == n * 1$%
+Ring() : Category == Join(Rng, SemiRing, NonAssociativeRing,
+                          unitsKnown)
 
 )abbrev category SRNG SemiRng
 ++ Author: Waldek Hebisch
@@ -1394,7 +1361,7 @@ Ring() : Category == Join(Rng, SemiRing, LeftModule(%), unitsKnown) with
 ++ The category of associative semirings, not necessarily commutative, and not
 ++ necessarily with a 1.
 
-SemiRng() : Category == Join(AbelianSemiGroup, SemiGroup)
+SemiRng() : Category == Join(NonAssociativeSemiRng, BiModule(%, %), SemiGroup)
 
 
 )abbrev category SRING SemiRing
@@ -1403,7 +1370,7 @@ SemiRng() : Category == Join(AbelianSemiGroup, SemiGroup)
 ++ The category of associative semirings, not necessarily commutative,
 ++ with 0 and 1.
 
-SemiRing() : Category == Join(SemiRng, AbelianMonoid, Monoid)
+SemiRing() : Category == Join(NonAssociativeSemiRing, SemiRng, Monoid)
 
 
 )abbrev category RNG Rng
@@ -1425,7 +1392,7 @@ SemiRing() : Category == Join(SemiRng, AbelianMonoid, Monoid)
 ++
 ++ Conditional attributes:
 ++   \spadnoZeroDivisors\tab{25}\spad{  ab = 0 => a=0 or b=0}
-Rng() : Category == Join(AbelianGroup, SemiRng) with
+Rng() : Category == Join(NonAssociativeRng, SemiRng) with
       annihilate? : (%,%) -> Boolean
              ++ \spad{annihilate?(x,y)} holds when the product
              ++ of \spad{x} and \spad{y} is \spad{0}.
@@ -1450,15 +1417,7 @@ Rng() : Category == Join(AbelianGroup, SemiRng) with
 ++
 ++ Conditional attributes:
 ++    \spad{CommutativeStar}\tab{30}\spad{ x*y = y*x }
-SemiGroup() : Category == SetCategory with
-    --operations
-      "*": (%,%) -> %                  ++ x*y returns the product of x and y.
-      "^": (%,PositiveInteger) -> %
-          ++ x^n returns the repeated product
-          ++ of x n times, i.e. exponentiation.
-    add
-      import from RepeatedSquaring(%)
-      x : % ^ n : PositiveInteger == expt(x, n)
+SemiGroup : Category == Magma
 
 )abbrev category SETCAT SetCategory
 ++ Author:
