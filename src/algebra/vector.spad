@@ -469,8 +469,10 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
           v pretend %
 
       if R has OrderedSet then
-          if R is NonNegativeInteger or R is Integer or R is PositiveInteger then
-              -- This is a hack to gain speed, like for '='.
+
+          -- Duplicated to gain speed via inlining of '<' in integer case.
+          if R is NonNegativeInteger or R is Integer or
+                                        R is PositiveInteger then
               x < y ==
                   for i in 0..(dim - 1) repeat
                       a : R := QREFELT(x, i)$Lisp
@@ -480,9 +482,9 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
                   false
           else
               x < y ==
-                  for i in 1..dim repeat
-                      a : R := qelt(x, i)
-                      b : R := qelt(y, i)
+                  for i in 0..(dim - 1) repeat
+                      a : R := QREFELT(x, i)$Lisp
+                      b : R := QREFELT(y, i)$Lisp
                       a < b => return true
                       b < a => return false
                   false
