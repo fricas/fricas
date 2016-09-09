@@ -38,10 +38,6 @@ Tree(S : SetCategory) : T==C where
 
     import from Record(value: S, args: List %)
 
-    t : %
-    br : %
-    s : S
-    ls : List S
     empty? t == t case empty
     empty()  == ["empty"]
 
@@ -54,7 +50,7 @@ Tree(S : SetCategory) : T==C where
     setvalue!(t, s) ==
       t case empty => error "cannot set value of an empty tree"
       (t.node.value := s;s)
-    count(n, t) ==
+    count(n : S, t : %) ==
       t case empty => 0
       i := +/[count(n, c) for c in children t]
       value t = n => i + 1
@@ -71,9 +67,10 @@ Tree(S : SetCategory) : T==C where
       t case empty => t
       setvalue!(t, fn value t)
       for c in children t repeat map!(fn, c)
-    tree(s, lt) == [[s, lt]]
-    tree(s) == [[s, []]]
-    tree(ls) ==
+      t
+    tree(s : S, lt : List %) == [[s, lt]]
+    tree(s : S) == [[s, []]]
+    tree(ls : List S) ==
       empty? ls => empty()
       tree(first ls, [tree s for s in rest ls])
     value t ==
@@ -183,24 +180,23 @@ Tree(S : SetCategory) : T==C where
     insert : (%, List %) -> List %
 
     -----> coerce to OutputForm
-    if S has SetCategory then
-      multipleOverbar : (OutputForm, Integer, List %) -> OutputForm
-      coerce1 : (%, List %, List %) -> OutputForm
+    multipleOverbar : (OutputForm, Integer, List %) -> OutputForm
+    coerce1 : (%, List %, List %) -> OutputForm
 
-      coerce(t : %) : OutputForm == coerce1(t, empty()$(List %), cyclicParents t)
+    coerce(t : %) : OutputForm == coerce1(t, empty()$(List %), cyclicParents t)
 
-      coerce1(t, parents, pl) ==
+    coerce1(t, parents, pl) ==
         t case empty => empty()@List(S)::OutputForm
         eqMember?(t, parents) =>
-          multipleOverbar((".")::OutputForm,eqMemberIndex(t, pl,0),pl)
+            multipleOverbar((".")::OutputForm,eqMemberIndex(t, pl,0),pl)
         empty? children t => value t::OutputForm
         nodeForm := (value t)::OutputForm
         if (k := eqMemberIndex(t, pl, 0)) > 0 then
-           nodeForm := multipleOverbar(nodeForm, k, pl)
+            nodeForm := multipleOverbar(nodeForm, k, pl)
         prefix(nodeForm,
-          [coerce1(br, cons(t, parents), pl) for br in children t])
+            [coerce1(br, cons(t, parents), pl) for br in children t])
 
-      multipleOverbar(x, k, pl) ==
+    multipleOverbar(x, k, pl) ==
         k < 1 => x
         #pl = 1 => overbar x
         s : String := "abcdefghijklmnopqrstuvwxyz"
@@ -227,7 +223,7 @@ Tree(S : SetCategory) : T==C where
     cyclicCopy(t) == cyclicCopy2(t, cyclicEntries t)
 
     cyclicCopy2(t, cycles) ==
-      eqMember?(t, cycles) => return copyCycle2(t, cycles)
+      eqMember?(t, cycles) => copyCycle2(t, cycles)
       tree(value t, [cyclicCopy2(c, cycles) for c in children t])
 
     copyCycle2(cycle, cycleList) ==
