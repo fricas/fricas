@@ -849,26 +849,20 @@ findFunctionInDomain1(omm,op,tar,args1,args2,SL) ==
   mm:= subCopy(omm, SL)
   -- tests whether modemap mm is appropriate for the function
   -- defined by op, target type tar and argument types args
-  $RTC:local:= NIL
-  -- $RTC is a list of run-time checks to be performed
 
   [sig,slot,cond,y] := mm
   [osig,:.]  := omm
   osig := subCopy(osig, SUBSTQ(CONS('$,'$), dollarPair, SL))
   if CONTAINED('_#, sig) or CONTAINED('construct, sig) then
     sig := [replaceSharpCalls t for t in sig]
-  matchMmCond cond and matchMmSig(mm,tar,args1,args2) and
-    EQ(y,'Subsumed) and
-      -- hmmmm: do Union check in following because (as in DP)
-      -- Unions are subsumed by total modemaps which are in the
-      -- mm list in findFunctionInDomain.
-      y := 'ELT      -- if subsumed fails try it again
-      not $SubDom and first sig isnt ['Union, :.] and slot is [tar, :args] and
-        (f := findFunctionInDomain(op,dc,tar,args,args,NIL,NIL)) => f
-    EQ(y,'ELT) => [[CONS(dc,sig),osig,nreverse $RTC]]
-    EQ(y,'CONST) => [[CONS(dc,sig),osig,nreverse $RTC]]
-    EQ(y,'ASCONST) => [[CONS(dc,sig),osig,nreverse $RTC]]
-    y is ['XLAM,:.] => [[CONS(dc,sig),y,nreverse $RTC]]
+  rtcp := [[]]
+  matchMmCond cond and matchMmSig(mm,tar,args1,args2, rtcp) and
+    -- RTC is a list of run-time checks to be performed
+    RTC := nreverse CAR(rtcp)
+    EQ(y, 'ELT) => [[CONS(dc, sig), osig, RTC]]
+    EQ(y, 'CONST) => [[CONS(dc,sig),osig, RTC]]
+    EQ(y, 'ASCONST) => [[CONS(dc, sig), osig, RTC]]
+    y is ['XLAM, :.] => [[CONS(dc,sig), y, RTC]]
     sayKeyedMsg("S2IF0006",[y])
     NIL
 
@@ -924,7 +918,7 @@ matchMmCond(cond) ==
     keyedSystemError("S2GE0016",
       ['"matchMmCond",'"unknown form of condition"])
 
-matchMmSig(mm,tar,args1,args2) ==
+matchMmSig(mm, tar, args1, args2, rtcp) ==
   -- matches the modemap signature against  args1 -> tar
   -- if necessary, runtime checks are created for subdomains
   -- then the modemap condition is evaluated
@@ -948,7 +942,7 @@ matchMmSig(mm,tar,args1,args2) ==
         $SubDom and isSubDomain(x,x1) => rtc:= 'T
         $Coerce => x2=x or canCoerceFrom(x1,x)
         x1 is ['Variable,:.] and x = '(Symbol)
-    $RTC:= CONS(rtc,$RTC)
+    RPLACA(rtcp, CONS(rtc, CAR(rtcp)))
   null args1 and null a and b and matchMmSigTar(tar, first sig)
 
 matchMmSigTar(t1,t2) ==

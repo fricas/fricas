@@ -150,7 +150,6 @@ genDeltaEntry opMmPair ==
   [op,[dc,:sig],[.,cform:=[eltOrConst,.,nsig]]] := opMmPair
   if $profileCompiler = true then profileRecord(dc,op,sig)
   eltOrConst = 'XLAM => cform
-  if eltOrConst = 'Subsumed then eltOrConst := 'ELT
   if atom dc then
     dc = "$" => nsig := sig
     if NUMBERP nsig then nsig := substitute('$,dc,substitute("$$","$",sig))
@@ -646,11 +645,7 @@ changeDirectoryInSlot1() ==  --called by buildFunctor
        if $lastPred ~= pred then
             $newEnv := deepChaseInferences(pred,$e)
             $lastPred := pred
-       newfnsel :=
-         fnsel is ['Subsumed,op1,sig1] =>
-           ['Subsumed, op1, genSlotSig(sig1, $newEnv)]
-         fnsel
-       [[op, genSlotSig(sig, $newEnv)], pred, newfnsel]
+       [[op, genSlotSig(sig, $newEnv)], pred, fnsel]
 
 genSlotSig(sig, $e) ==
    [genDeltaSig t for t in sig]
