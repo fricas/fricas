@@ -92,8 +92,6 @@ compApplication(op,argl,m,e,T) ==
 
 compFormWithModemap(form is [op,:argl],m,e,modemap) ==
   [map:= [.,target,:.],[pred,impl]]:= modemap
-  -- this fails if the subsuming modemap is conditional
-  --impl is ['Subsumed,:.] => nil
   if isCategoryForm(target,e) and isFunctor op then
     [modemap,e]:= substituteIntoFunctorModemap(argl,modemap,e) or return nil
     [map:= [.,target,:.],:cexpr]:= modemap
@@ -198,7 +196,7 @@ compApplyModemap(form,modemap,$e,sl) ==
 --+ store the signature instead.
 
 --$NRTflag=true and f is [op1,d,.] and NE(d,'$) and member(op1,'(ELT CONST)) =>
-  f is [op1,d,.] and member(op1,'(ELT CONST Subsumed)) =>
+  f is [op1,d,.] and member(op1,'(ELT CONST)) =>
     [genDeltaEntry [op,:modemap],lt',$bindings]
   [f,lt',$bindings]
 

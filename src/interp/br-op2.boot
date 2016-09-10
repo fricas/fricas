@@ -400,8 +400,9 @@ koOps(conform,domname,:options) == main where
     for [op,:u] in getOperationAlistFromLisplib conname repeat
       op1 := zeroOneConvert op
       acc :=
-       [[op1,:[[sig,npred,:exposureTail] for [sig,slot,pred,key,:.] in sublisFormal(subargs,u) |
-         (key ~= 'Subsumed) and (npred := simpHasPred pred)]],:acc]
+          [[op1, :[[sig, npred, :exposureTail]
+                    for [sig, slot, pred, key, :.] in sublisFormal(subargs,u)
+                   | npred := simpHasPred(pred)]], :acc]
     acc
   merge(alist,alist1) == --alist1 takes precedence
     for [op,:al] in alist1 repeat

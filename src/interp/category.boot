@@ -137,10 +137,8 @@ DropImplementations (a is [sig,pred,:implem]) ==
 SigListUnion(extra,original) ==
   --augments original with everything in extra that is not in original
   for (o:=[[ofn,osig,:.],opred,:.]) in original repeat
-    -- The purpose of this loop is to detect cases when the
-    -- original list contains, e.g. ** with NonNegativeIntegers, and
-    -- the extra list would like to add ** with PositiveIntegers.
-    -- The PI map is therefore given an implementation of "Subsumed"
+    -- The purpose of this loop is to detect cases when
+    -- original list already contains given operation
     for x in SigListOpSubsume(o,extra) repeat
       [[xfn,xsig,:.],xpred,:.]:=x
       xfn=ofn and xsig=osig =>
@@ -155,24 +153,10 @@ SigListUnion(extra,original) ==
         --PRETTYPRINT(LIST("SigListOpSubsume",e,x))
       original:= delete(x,original)
       [xsig,xpred,:ximplem]:= x
---      if xsig ~= esig then   -- not quite strong enough
-      if first xsig ~= first esig or CADR xsig ~= CADR esig then
--- the new version won't get confused by "constant"markers
-         if ximplem is [["Subsumed",:.],:.] then
-            original := [x,:original]
-          else
-            original:= [[xsig,xpred,["Subsumed",:esig]],:original]
-       else epred:=mkOr(epred,xpred)
--- this used always to be done, as noted below, but that's not safe
-      if not(ximplem is [["Subsumed",:.],:.]) then eimplem:= ximplem
+      eimplem := ximplem
       if eimplem then esig := [first esig, CADR esig]
            -- in case there's a constant marker
-      e:= [esig,epred,:eimplem]
---    e:= [esig,mkOr(xpred,epred),:ximplem]
--- Original version -gets it wrong if the new operator is only
--- present under certain conditions
-        -- We must pick up the previous implementation, if any
---+
+      e:= [esig, mkOr(epred, xpred), :eimplem]
     original:= [e,:original]
   original
 

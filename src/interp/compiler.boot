@@ -474,20 +474,6 @@ compForm2(form is [op,:argl],m,e,modemapList) ==
   sargl:= TAKE(# argl, $TriangleVariableList)
   aList:= [[sa,:a] for a in argl for sa in sargl]
   modemapList:= SUBLIS(aList,modemapList)
-  deleteList:=[]
-  newList := []
-  -- now delete any modemaps that are subsumed by something else, provided the conditions
-  -- are right (i.e. subsumer true whenever subsumee true)
-  for u in modemapList repeat
-    if u is [[dc,:.],[cond,["Subsumed",.,nsig]]] and
-       (v:=assoc([dc,:nsig],modemapList)) and v is [.,[ncond,:.]] then
-           deleteList:=[u,:deleteList]
-           if not PredImplies(ncond,cond) then
-               newList := [[first u, [cond, ['ELT, dc, nil]]], :newList]
-  if deleteList then modemapList:=[u for u in modemapList | not MEMQ(u,deleteList)]
-  -- We can use MEMQ since deleteList was built out of members of modemapList
-  -- its important that subsumed ops (newList) be considered last
-  if newList then modemapList := append(modemapList,newList)
   Tl:=
     [[.,.,e]:= T
       for x in argl while (isSimple x and (T:= compUniquely(x,$EmptyMode,e)))]
