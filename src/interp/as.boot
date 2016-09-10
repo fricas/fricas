@@ -289,7 +289,6 @@ trimComments str ==
 asyExportAlist con ==
 --format of 'operationAlist property of LISPLIBS (as returned from koOps):
 --    <sig slotNumberOrNil optPred optELT>
---    <sig sig'            predOrT "Subsumed">
 --!!! asyFile NEED: need to know if function is implemented by domain!!!
   docHash := HGET($docHash,con)
   [[op,:[fn(x,op) for x in rec]] for op in HKEYS docHash | rec := HGET(docHash,op)]
@@ -366,7 +365,7 @@ asyAncestorList x == [asyAncestors y for y in x]
 --    <sig pred origin         exposed?>
 
 --abb,kind,file,sourcefile,coSig,dbLineNumber,constructorArgs,libfile
---((sig  where(NIL or #)  condition(T or pred)  ELTorSubsumed) ...
+--((sig  where(NIL or #)  condition(T or pred)  ELT) ...
 --expanded lists are: sig, predicate, origin, exposeFlag, comments
 
 --============================================================================
