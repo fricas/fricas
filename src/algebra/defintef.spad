@@ -129,12 +129,15 @@ ElementaryFunctionDefiniteIntegration(R, F) : Exports == Implementation where
       kk := z.var
       -- nullary operators have no poles
       nullary? operator kk => false
-      f := first argument kk
+      ak := argument kk
+      f := first ak
       -- functions which are defined over all the reals:
       is?(kk, 'exp) or is?(kk, 'sin) or is?(kk, 'cos)
         or is?(kk, 'sinh) or is?(kk, 'cosh) or is?(kk, 'tanh)
           or is?(kk, 'sech) or is?(kk, 'atan) or is?(kk, 'acot)
-            or is?(kk, 'asinh) => checkForPole(f, x, k, a, b)
+            or is?(kk, 'asinh) or is?(kk, 'erf)  or is?(kk, 'erfi)
+              or is?(kk, 'fresnelC)  or is?(kk, 'fresnelS)
+                or is?(kk, 'Si) or is?(kk, 'Shi) => checkForPole(f, x, k, a, b)
       -- functions which are defined on (-1, +1):
       is?(kk, 'asin) or is?(kk, 'acos) or is?(kk, 'atanh) =>
         ((w := checkForPole(f, x, k, a, b)) case "failed") or (w::B) => w
@@ -145,9 +148,19 @@ ElementaryFunctionDefiniteIntegration(R, F) : Exports == Implementation where
         ((w := checkForPole(f, x, k, a, b)) case "failed") or (w::B) => w
         negat(f - 1, x, k, a, b)
       -- functions which are defined on (0, +infty):
-      is?(kk, 'log) or is?(kk, 'nthRoot) =>
-        ((w := checkForPole(f, x, k, a, b)) case "failed") or (w::B) => w
-        negat(f, x, k, a, b)
+      is?(kk, 'log) or is?(kk, 'nthRoot) or is?(kk, 'Ei) or is?(kk, 'Ci)
+        or is?(kk, 'Chi) or is?(kk, 'dilog) =>
+          ((w := checkForPole(f, x, k, a, b)) case "failed") or (w::B) => w
+          negat(f, x, k, a, b)
+      is?(kk, 'Gamma) and #ak = 2 and D(f, x) = 0 =>
+          f2 := ak(2)
+          ((w := checkForPole(f2, x, k, a, b)) case "failed") or (w::B) => w
+          negat(f2, x, k, a, b)
+      -- defined on (-infty, 1)
+      is?(kk, 'polylog) and D(f, x) = 0 =>
+          f2 := ak(2)
+          ((w := checkForPole(f2, x, k, a, b)) case "failed") or (w::B) => w
+          posit(f - 1, x, k, a, b)
       "failed"
 
 -- returns true if it is certain that f takes at least one strictly positive
