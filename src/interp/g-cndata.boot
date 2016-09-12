@@ -146,7 +146,6 @@ unabbrev u == unabbrev1(u,nil)
 unabbrevAndLoad u == unabbrev1(u,true)
 
 isNameOfType x ==
-  $doNotAddEmptyModeIfTrue:local:= true
   (val := get(x,'value,$InteractiveFrame)) and
     (domain := objMode val) and
       domain in '((Mode) (Type) (Category)) => true

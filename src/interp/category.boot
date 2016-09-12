@@ -147,17 +147,15 @@ SigListUnion(extra,original) ==
              --same signature and same predicate
         opred = true => extra:= delete(x,extra)
   for e in extra repeat
-    [esig,epred,:.]:= e
-    eimplem:=[]
-    for x in SigListOpSubsume(e,original) repeat
+      [esig, epred, :.] := e
+      for x in SigListOpSubsume(e, original) repeat
         --PRETTYPRINT(LIST("SigListOpSubsume",e,x))
-      original:= delete(x,original)
-      [xsig,xpred,:ximplem]:= x
-      eimplem := ximplem
-      if eimplem then esig := [first esig, CADR esig]
-           -- in case there's a constant marker
-      e:= [esig, mkOr(epred, xpred), :eimplem]
-    original:= [e,:original]
+          original := delete(x,original)
+          [xsig, xpred, :ximplem] := x
+          if ximplem then esig := [first esig, CADR esig]
+             -- in case there's a constant marker
+          e := [esig, mkOr(epred, xpred), :ximplem]
+      original := [e, :original]
   original
 
 mkOr(a,b) ==

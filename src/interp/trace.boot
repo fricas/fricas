@@ -546,7 +546,6 @@ removeOption(op,options) ==
   [optEntry for (optEntry:=[opt,:.]) in options | opt ~= op]
 
 domainToGenvar x ==
-  $doNotAddEmptyModeIfTrue: local:= true
   (y:= unabbrevAndLoad x) and GETDATABASE(opOf y,'CONSTRUCTORKIND) = 'domain =>
     g:= genDomainTraceName y
     SET(g,evalDomain y)
@@ -569,7 +568,6 @@ untrace l ==
   removeTracedMapSigs untraceList
 
 transTraceItem x ==
-  $doNotAddEmptyModeIfTrue: local:=true
   atom x =>
     (value:=get(x,"value",$InteractiveFrame)) and
       (objMode value in '((Mode) (Type) (Category))) =>

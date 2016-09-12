@@ -31,16 +31,7 @@
 
 )package "BOOT"
 
--- This file implements the Common Lisp pathname functions for
--- Lisp/VM.  On VM, a filename is 3-list consisting of the filename,
--- filetype and filemode. We also UPCASE everything.
-
--- This file also contains some other VM specific functions for
--- dealing with files.
-
 --% Common Lisp Pathname Functions
-
-pathname? p == p=[] or PATHNAMEP p
 
 pathname p ==
   if SYMBOLP(p) then p := SYMBOL_-NAME(p)
@@ -64,7 +55,6 @@ pathnameDirectory p ==
 deleteFile f == DELETE_-FILE f
 
 isExistingFile f ==
---  p := pathname f
   if make_input_filename(f)
     then
       true

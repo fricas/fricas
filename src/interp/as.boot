@@ -584,9 +584,7 @@ asytranCategoryItem(x,levels,predlist,local?) ==
 --      (Ring))
 --    (T Matrix))   )
 extendConstructorDataTable() ==
---  tb := $constructorDataTable
   for x in listSort(function GLESSEQP,HKEYS $conHash) repeat
---     if LASSOC(x,tb) then tb := DELLASOS(x,tb)
      record := HGET($conHash,x)
      [form,sig,predlist,origin,exposure,comments,typeCode,:filename] := first record
      abb := asyAbbreviation(x,#(rest sig))
