@@ -110,15 +110,6 @@ finalizeDocumentation() ==
             sayMSG
               atom s => ['%x9,s]
               ['%x9,:s]
-        if attributes then
-          sayKeyedMsg("S2CD0005",
-            [STRCONC('"(",STRINGIMAGE litcnt,'")")])
-          litcnt := litcnt + 1
-          for x in attributes repeat
-            a := form2String x
-            sayMSG
-              atom a => ['%x9,a]
-              ['%x9,:a]
       if unusedCommentLineNumbers then
         sayKeyedMsg("S2CD0006",[STRCONC(STRINGIMAGE bigcnt,'"."),name])
         for [n,r] in unusedCommentLineNumbers repeat

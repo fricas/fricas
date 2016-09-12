@@ -382,12 +382,6 @@ saturnThrowKeyedMsg(key,args) ==
   spadThrow()
 
 throwKeyedMsg1(key,args) ==
-  -- greg, following statement do nothing
-  -- (see sayMsg in macros.lisp where the message is printed
-  -- on the Algebra output stream)
-  -- Furthermore we MUSTN'T "play" with these type of variables
-  -- at this level
-  -- _*STANDARD_-OUTPUT_* : fluid := $texOutputStream
   sayMSG '" "
   if $testingSystem then sayMSG $testingErrorPrefix
   sayKeyedMsg(key,args)
