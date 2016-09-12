@@ -2180,7 +2180,6 @@ reportOperations(oldArg,u) ==
   $eval:local := true           --generate code-- don't just type analyze
   $genValue:local := true       --evaluate all generated code
   null u => nil
-  $doNotAddEmptyModeIfTrue: local:= true
   u = $quadSymbol =>
      sayBrightly ['"   mode denotes", :bright '"any", "type"]
   u = "%" =>

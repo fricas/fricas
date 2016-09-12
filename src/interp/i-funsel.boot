@@ -51,8 +51,6 @@ the following flags are used:
  if $SubDom is true, then runtime checks have to be compiled
 )endif
 
-DEFPARAMETER($constructorExposureList, '(Boolean Integer String))
-
 sayFunctionSelection(op,args,target,dc,func) ==
   $abbreviateTypes : local := true
   startTimingProcess 'debug
