@@ -1376,7 +1376,7 @@ coerceByFunction(T,m2) ==
       (val = $coerceFailure) => NIL
       objNewWrap(val,m2)
     env := fun
-    code := ['failCheck, ['SPADCALL, x, env]]
+    code := ['SPADCALL, x, env]
 --  tar is ['Union,:.] => objNew(['failCheck,code],m2)
     objNew(code,m2)
   NIL
