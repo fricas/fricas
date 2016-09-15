@@ -125,9 +125,28 @@ compareSigEqual(s,t,dollar,domain) ==
   match
 
 -----------------------Compiler for Interpreter---------------------------------
+
+NRT_opt_call(u, opName, sigTail,dcVector) ==
+    dc := devaluate(dcVector)
+    -- sayBrightly(["NRT_opt_call ", u, opName, sigTail, dc])
+    not MEMQ(IFCAR dc, $optimizableConstructorNames) => nil
+    NULL(name := BPINAME(first u))  => nil
+    fn := GETL(name, 'SPADreplace) =>
+        n := #dcVector
+        flag := true
+        k := -1
+        for i in 0..(n - 1) while flag repeat
+            if dcVector.i = u then
+                k := i
+                flag := false
+        k >= 0 => ["ELT", dc, k]
+        nil
+    nil
+
 NRTcompileEvalForm(opName,sigTail,dcVector) ==
   u := NRTcompiledLookup(opName,sigTail,dcVector)
   not ($insideCompileBodyIfTrue = true) => MKQ u
+  res1 := NRT_opt_call(u, opName, sigTail, dcVector) => res1
   k := NRTgetMinivectorIndex(u,opName,sigTail,dcVector)
   ['ELT,"$$$",k]  --$$$ denotes minivector
 
@@ -147,6 +166,12 @@ NRTgetMinivectorIndex(u,op,sig,domVector) ==
 --  pp $minivectorCode
   s
 
+is_op_slot(slot, dom, k, minivector_name, int_vec, bool_vec) ==
+    dom = minivector_name => EQ(slot, $minivector.k)
+    dom = ["Integer"] => EQ(slot, int_vec.k)
+    dom = ["Boolean"] => EQ(slot, bool_vec.k)
+    nil
+
 NRTisRecurrenceRelation(op,body,minivectorName) ==
   -- returns [body p1 p2 ... pk] for a k-term recurrence relation
   -- where the n-th term is computed using the (n-1)st,...,(n-k)th
@@ -164,16 +189,17 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
     (CONTAINED('throwMessage,mess) or
       CONTAINED('throwKeyedMsg,mess)))]
   integer := EVAL $Integer
-  iequalSlot:=compiledLookupCheck("=",'((Boolean) $ $),integer)
-  lt_slot:=compiledLookupCheck("<",'((Boolean) $ $),integer)
+  iequalSlot := compiledLookupCheck("=", '((Boolean) $ $), integer)
+  lt_slot := compiledLookupCheck("<", '((Boolean) $ $), integer)
   le_slot := compiledLookupCheck("<=", '((Boolean) $ $), integer)
   gt_slot := compiledLookupCheck(">", '((Boolean) $ $), integer)
   ge_slot := compiledLookupCheck(">=", '((Boolean) $ $), integer)
   bf := '(Boolean)
-  notpSlot := compiledLookupCheck("not", '((Boolean)(Boolean)), EVAL bf)
+  bf_vec := EVAL bf
+  notpSlot := compiledLookupCheck("not", '((Boolean)(Boolean)), bf_vec)
   for [p,c] in pcl repeat
-    p is ['SPADCALL,sharpVar,n1,['ELT,=minivectorName,slot]]
-      and EQ(iequalSlot,$minivector.slot) =>
+    p is ['SPADCALL, sharpVar, n1, ['ELT, dom, slot]] and
+      is_op_slot(iequalSlot, dom, slot, minivectorName, integer, bf_vec) =>
         initList:= [[n1,:c],:initList]
         sharpList := insert(sharpVar,sharpList)
         n:=n1
@@ -198,29 +224,34 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
   --Check general predicate
   predOk :=
     generalPred is '(QUOTE T) => true
-    generalPred is ['SPADCALL, m1, m2,['ELT, =minivectorName, slot]] =>
-        m2 = sharpArg and EQ(lt_slot, $minivector.slot) => m1 + 1
-        m2 = sharpArg and EQ(le_slot, $minivector.slot) => m1
-        m1 = sharpArg and EQ(gt_slot, $minivector.slot) => m2 + 1
-        m1 = sharpArg and EQ(ge_slot, $minivector.slot) => m2
+    generalPred is ['SPADCALL, m1, m2, ['ELT, dom, slot]] =>
+        m2 = sharpArg and is_op_slot(lt_slot, dom, slot,
+                            minivectorName, integer, bf_vec) => m1 + 1
+        m2 = sharpArg and is_op_slot(le_slot, dom, slot,
+                            minivectorName, integer, bf_vec) => m1
+        m1 = sharpArg and is_op_slot(gt_slot, dom, slot,
+                            minivectorName, integer, bf_vec) => m2 + 1
+        m1 = sharpArg and is_op_slot(ge_slot, dom, slot,
+                            minivectorName, integer, bf_vec) => m2
     generalPred is ['SPADCALL, ['SPADCALL, =sharpArg, m,
-      ['ELT, =minivectorName, slot]], ['ELT, =minivectorName, notSlot]]
-        and EQ(lt_slot, $minivector.slot)
-          and EQ(notpSlot,$minivector.notSlot) => m
+      ['ELT, dom1, slot1]], ['ELT, dom2, slot2]] and
+        is_op_slot(notSlot, dom2, slot2, minivectorName, integer, bf_vec)
+          and is_op_slot(lt_slot, dom1 slot1,
+                         minivectorName, integer, bf_vec) => m
     generalPred is ['NOT, ['SPADCALL, =sharpArg, m,
-       ['ELT, =minivectorName, slot]]] and EQ(lt_slot, $minivector.slot) => m
+       ['ELT, dom, slot]]] and
+          is_op_slot(lt_slot, dom, slot, minivectorName, integer, bf_vec) => m
     return nil
   INTEGERP predOk and predOk ~= n =>
     sayKeyedMsg("S2IX0006",[n,m])
     return nil
 
   --Check general term for references to just the k previous values
-  diffCell:=compiledLookupCheck("-",'($ $ $),integer)
-  diffSlot := or/[i for i in 0.. for x in $minivector | EQ(x,diffCell)]
-                or return nil
+  diffCell := compiledLookupCheck("-", '($ $ $), integer)
   --Check general term for references to just the k previous values
   sharpPosition := PARSE_-INTEGER SUBSTRING(sharpArg,1,nil)
-  al:= mkDiffAssoc(op,generalTerm,k,sharpPosition,sharpArg,diffSlot,minivectorName)
+  al:= mkDiffAssoc(op, generalTerm, k, sharpPosition, sharpArg,
+                   diffCell, minivectorName, integer, bf_vec)
   null al => false
   '$failed in al => false
   body:= generalTerm
@@ -230,19 +261,23 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
       systemErrorHere('"NRTisRecurrenceRelation")
         for i in minIndex..(n-1)]]
 
-mkDiffAssoc(op,body,k,sharpPosition,sharpArg,diffSlot,vecname) ==
+mkDiffAssoc(op, body, k, sharpPosition, sharpArg, diffCell,
+            vecname, int_vec, bool_vec) ==
   -- returns alist which should not have any entries = $failed
   -- form substitution list of the form:
   -- ( ((f (,DIFFERENCE #1 1)) . #2) ((f (,DIFFERENCE #1 2)) . #3) ...)
   --   but also checking that all difference values lie in 1..k
   atom body => nil
   body is ['COND,:pl] =>
-    "union"/[mkDiffAssoc(op,c,k,sharpPosition,sharpArg,diffSlot,vecname) for [p,c] in pl]
+    "union"/[mkDiffAssoc(op, c, k, sharpPosition, sharpArg, diffCell,
+                         vecname, int_vec, bool_vec) for [p, c] in pl]
   body is [fn,:argl] =>
     (fn = op) and argl.(sharpPosition-1) is
-      ['SPADCALL,=sharpArg,n,['ELT,=vecname,=diffSlot]] =>
+      ['SPADCALL, =sharpArg, n, ['ELT, dom, slot]] and
+        is_op_slot(diffCell, dom, slot, vecname, int_vec, bool_vec) =>
           NUMBERP n and n > 0 and n <= k =>
-            [[body,:$TriangleVariableList.n]]
+              [[body, :$TriangleVariableList.n]]
           ['$failed]
-    "union"/[mkDiffAssoc(op,x,k,sharpPosition,sharpArg,diffSlot,vecname) for x in argl]
+    "union"/[mkDiffAssoc(op, x, k, sharpPosition, sharpArg, diffCell,
+                         vecname, int_vec, bool_vec) for x in argl]
   systemErrorHere '"mkDiffAssoc"
