@@ -641,7 +641,7 @@ First a common category for the various variable types:
 ++ a variable has a name represented by a String. If the Lambda or Ski
 ++ calculus is typed then the variable will also have a type.
 
-VarCat() : Category == Type with
+VarCat() : Category == Join(Type, CoercibleTo(OutputForm)) with
   var : (n : String) -> %
     ++ constructs variable with a name but no type.
   var : (n : String, t : ILogic) -> %
@@ -737,23 +737,23 @@ Untyped() : Exports == Implementation where
     -- pin is index to string at start of parse
     -- pout is index to string at end of parse
     parseVarTerm(t1 : String, pin : NNI) : PR ==
-      vnm:String := ""
-      pt : NNI := pin
-      ch := qelt(t1, pt)
-      --sayMsg concat("st ch=",ch::String)
-      while alphanumeric?(ch) repeat
-        vnm := concat(vnm, ch)
-        pt := pt + (1::NNI)
-        if pt > maxIndex(t1) then
-          return [var(vnm), pt]
+        vnm:String := ""
+        pt : NNI := pin
         ch := qelt(t1, pt)
-      if ch = char(":") then
-        -- read type
-        --sayMsg concat("st ch=",ch::String)
-        r : Record(rft : ILogic, pout : NNI) := parseIL2(t1, pt)$ILogic
-        pt := r.pout
-        -- since this instance is untyped we ignore result
-      [var(vnm), pt]
+        --print(message "st ch=" << ch)
+        while alphanumeric?(ch) repeat
+            vnm := concat(vnm, ch)
+            pt := pt + (1::NNI)
+            if pt > maxIndex(t1) then
+                return [var(vnm), pt]
+            ch := qelt(t1, pt)
+        if ch = char(":") then
+            -- read type
+            --print(message "st ch=" << ch)
+            r : Record(rft : ILogic, pout : NNI) := parseIL2(t1, pt)$ILogic
+            pt := r.pout
+          -- since this instance is untyped we ignore result
+        [var(vnm), pt]
 
     -- construct a variable by parsing a string
     parseVar(t1 : String) : % ==
@@ -766,10 +766,9 @@ Untyped() : Exports == Implementation where
     x = y ==
       x.nme = y.nme
 
-    -- output
+    -- output - display without quotes
     coerce(n : %) : OutputForm ==
-      toString(n)::OutputForm
-
+        message(n.nme)
 
 )if false
 
@@ -838,7 +837,7 @@ Typed() : Exports == Implementation where
       vnm:String := ""
       pt : NNI := pin
       ch := qelt(t1, pt)
-      --sayMsg concat("st ch=",ch::String)
+      --print(message "st ch=" << ch)
       while alphanumeric?(ch) repeat
         vnm := concat(vnm, ch)
         pt := pt + (1::NNI)
@@ -847,7 +846,7 @@ Typed() : Exports == Implementation where
         ch := qelt(t1, pt)
       if ch = char(":") then
         -- read type
-        --sayMsg concat("st ch=",ch::String)
+        --print(message "st ch=" << ch)
         pt := pt + (1::NNI)
         if pt > maxIndex(t1) then
           return [var(vnm), pt]
@@ -867,10 +866,9 @@ Typed() : Exports == Implementation where
     x = y ==
       (x.nme = y.nme) and (x.typ = y.typ)
 
-    -- output
+    -- output -
     coerce(n : %) : OutputForm ==
-      toString(n)::OutputForm
-
+      hconcat([message (n.nme),message ":",(n.typ)::OutputForm])$OutputForm
 
 )if false
 
@@ -1106,6 +1104,8 @@ Lambda(UT) : Exports == Implementation where
  NNI==> NonNegativeInteger
  PR ==> Record(rft : %, pout : NNI)
    ++ parse result includes term returned and new index
+ x<<y ==> hconcat(x::OutputForm,y::OutputForm)
+   ++ macro to simplify output
 
  Exports == CoercibleTo(OutputForm) with
   lambda : (deBruijn : NNI) -> %
@@ -1191,8 +1191,6 @@ Lambda(UT) : Exports == Implementation where
 
  Implementation == add
 
-  sayMsg ==> sayBrightly$Lisp
-
   Rep := Union(_
          boundTerm : Record(varBound : NNI), _
          freeTerm : UT, _
@@ -1237,8 +1235,9 @@ Lambda(UT) : Exports == Implementation where
   -- Constructs lambda term and bind any variables with the name provided
   lambda(x : %, t1 : UT) : % ==
     lt : % := [[x, t1]]
-    --sayMsg concat(["creating lambda(",toString(x),",",t1") giving:",toString(lt)])
-    --sayMsg concat(["bound ver=",toString(bind(lt))])
+    --print(message "creating lambda(" << toString(x) << _
+    --  message "," << t1 << message ") giving:" << toString(lt))
+    --print(message "bound ver=" << toString(bind(lt)))
     bind(lt)
 
   -- returns 2 child nodes if this is a compound term
@@ -1313,11 +1312,11 @@ Lambda(UT) : Exports == Implementation where
     if n case lambdaTerm then
       --s1: String := name(n.lambdaTerm.nm)$UT
       return freeVariable?(n.lambdaTerm.c3, 0::NNI)
-    sayMsg concat("warning free called on non-lambda term",toString(n))
+    print(message "warning free called on non-lambda term" << n)
     false
 
   parseLambdaTerm(t1 : String, pin : NNI) : PR ==
-    --sayMsg concat(["parseLambdaTerm(",t1,",",string(pin),")"])$String
+    --print(message "parseLambdaTerm(" << t1 << " << ",string(pin) << ")")
     p1 := pin
     ch := qelt(t1, p1)
     if not (ch = char("\")) then
@@ -1330,16 +1329,16 @@ Lambda(UT) : Exports == Implementation where
     r := parseVarTerm(t1, p1)$UT
     p1 := r.pout
     ch := qelt(t1, p1)
-    --sayMsg concat(["parseLambdaTerm'(",t1,",",string(p1),")"])$String
+    --print(message "parseLambdaTerm'(" << t1 << "," << string(p1) << ")")
     if not (ch = char(".")) then
       error "lambda term must have ."
       return [[[0::NNI]], p1]
     p1 := p1 + (1::NNI)
-    --sayMsg concat(["parseLambdaTerm''(",t1,",",string(p1),")"])$String
+    --print(message "parseLambdaTerm''(" << t1 << "," << string(p1) << ")")
     if p1 > maxIndex(t1) then
       error "lambda term must contain something"
       return [[[0::NNI]], p1]
-    --sayMsg concat(["parseLambdaTerm'''(",t1,",",string(p1),")"])$String
+    --print(message "parseLambdaTerm'''(" << t1 << "," << string(p1) << ")")
     r2 := parseTerm(t1, p1)
     ex : % := r2.rft
     p1 := r2.pout
@@ -1369,7 +1368,7 @@ Lambda(UT) : Exports == Implementation where
     p1 := pin
     inx : NNI := 0 -- holds De Bruijn index while its being read
     ch := qelt(t1, p1)
-    --sayMsg concat("pv ch=",ch::String)
+    --print(message "pv ch=" << ch)
     while digit?(ch) repeat
       if ch = char("0") then inx := inx*10
       if ch = char("1") then inx := inx*10 + 1
@@ -1390,12 +1389,13 @@ Lambda(UT) : Exports == Implementation where
     p1 := pin
     res : % := [[0::NNI]]
     ch := qelt(t1, p1)
-    --sayMsg concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
+    --print(message "parseTerm ch=" << ch << " p1=" << string(p1))
     -- first remove leading spaces
     while ch = char(" ") repeat
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayMsg concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        --print(message "parseTerm(" << t1 << ") 1 giving:" << _
+        --  toString(res))
         return [res, p1]
       ch := qelt(t1, p1)
     r : PR := [res, p1]
@@ -1410,18 +1410,21 @@ Lambda(UT) : Exports == Implementation where
       p1 := r2.pout
     -- now check for compound term
     if p1 > maxIndex(t1) then
-      --sayMsg concat(["parseTerm(",t1,") 2 giving:",toString(res)])
+      --print(message "parseTerm(" << t1 << ") 2 giving:" << _
+      --  toString(res))
       return [res, p1]
     ch := qelt(t1, p1)
     if ch = char(" ") then
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayMsg concat(["parseTerm(",t1,") 3 giving:",toString(res)])
+        --print(message "parseTerm(" << t1 << ") 3 giving:" << _
+        --  toString(res))
         return [res, p1]
       r := parseTerm(t1, p1)
       p1 := r.pout
       res := lambda(res, r.rft)
-    --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+    --print(message "parseTerm(" << t1 << ") 4 giving:" << _
+    --  toString(res))
     [res, p1]
 
   -- Constructs nested lambda terms from a string
@@ -1437,7 +1440,8 @@ Lambda(UT) : Exports == Implementation where
   -- brackets can be used around whole terms.
   parseLambda(t1 : String) : % ==
     r := parseTerm(t1, minIndex(t1)::NNI)
-    --sayMsg concat(["parseLambda(",t1,") giving:",toString(tm)])
+    --print(message "parseLambda(" << t1 << ") giving:" << _
+    --  toString(tm))
     r.rft
 
   -- return string representation using conventional notation, that is
@@ -1447,10 +1451,11 @@ Lambda(UT) : Exports == Implementation where
   -- one on the right.
   toStringConven(n : %, boundL : List String) : String ==
     s:String := ""
-    --sayMsg concat(["toStringConven(",toString(n),")"])
+    --print(message "toStringConven(" << toString(n) << message ")")
     if n case boundTerm then
       i : NNI := n.boundTerm.varBound + 1
-      --sayMsg concat(["toStringConven(",toString(n),") i=",string(i)," #boundL=",string(#boundL)])
+      --print(message "toStringConven(" << toString(n) << ") i=" << _
+      --  string(i) << " #boundL=" << string(#boundL))
       if i > 0 and i <= #boundL then return boundL.i
       s := string(n.boundTerm.varBound)
     if n case freeTerm then
@@ -1496,16 +1501,20 @@ Lambda(UT) : Exports == Implementation where
   -- used by bind to replace a given string name in sub-nodes
   -- with De Bruijn index
   bindTerm(n : %, i : NNI, s : UT) : % ==
-    --sayMsg concat(["bindTerm(",toString(n)," map:",string(i)," to ",name(s)$UT,")"])
+    --print(message "bindTerm(" << toString(n) << " map:" << _
+    --  string(i) << " to " << (name(s)$UT) << ")")
     if n case boundTerm then
       return lambda(n.boundTerm.varBound)
     if n case freeTerm then
       if n.freeTerm = s then
-        --sayMsg concat(["convert:",name(s)$UT," to ",string(i)])
+        --print(message "convert:" << (name(s)$UT) << _
+        --  " to " << string(i))
         return lambda(i)
       return lambda(n.freeTerm)
     if n case lambdaTerm then
-      --sayMsg concat(["bindTerm generating lambda(",toString(bindTerm(n.lambdaTerm.c3,i+1,s)),",",name(n.lambdaTerm.nm)$UT,")"])
+      --print(message "bindTerm generating lambda(" << _
+      --  toString(bindTerm(n.lambdaTerm.c3,i+1,s)) << "," << _
+      --  (name(n.lambdaTerm.nm)$UT) << ")")
       return [[bindTerm(n.lambdaTerm.c3, i+1, s), n.lambdaTerm.nm]]
     if n case compoundTerm then
       return lambda(bindTerm(n.compoundTerm.c1, i, s), _
@@ -1515,7 +1524,7 @@ Lambda(UT) : Exports == Implementation where
   -- if this is a lambda term then replace string name in sub-nodes
   -- with De Bruijn index
   bind(n : %) : % ==
-    --sayMsg concat(["bind(",toString(n),")"])
+    --print(message "bind(" << toString(n) << ")")
     if (n case lambdaTerm) then
       return [[bindTerm(n.lambdaTerm.c3, 0, n.lambdaTerm.nm), n.lambdaTerm.nm]]
     n
@@ -1523,16 +1532,20 @@ Lambda(UT) : Exports == Implementation where
   -- used by unbind to replace a given De Bruijn index in sub-nodes
   -- with string name
   unbindTerm(n : %, i : NNI, s : UT) : % ==
-    --sayMsg concat(["unbindTerm(",toString(n)," map:",string(i)," to ",name(s)$UT,")"])
+    --print(message "unbindTerm(" << toString(n) << " map:" << _
+    --   string(i) << " to " << (name(s)$UT) << ")")
     if n case boundTerm then
       if n.boundTerm.varBound = i then
-        --sayMsg concat(["convert:",string(i)," to ",name(s)$UT])
+        --print(message "convert:" << string(i) << _
+        -- message " to " << (name(s)$UT))
         return lambda(s)
       return lambda(n.boundTerm.varBound)
     if n case freeTerm then
       return lambda(n.freeTerm)
     if n case lambdaTerm then
-      --sayMsg concat(["unbindTerm generating lambda(",toString(unbindTerm(n.lambdaTerm.c3,i+1,s)),",",name(n.lambdaTerm.nm),")"])
+      --print(message "unbindTerm generating lambda(" << _
+      --  toString(unbindTerm(n.lambdaTerm.c3,i+1,s)) << "," << _
+      --  name(n.lambdaTerm.nm) << message ")")
       return [[unbindTerm(n.lambdaTerm.c3, i+1, s), n.lambdaTerm.nm]]
     if n case compoundTerm then
       return lambda(unbindTerm(n.compoundTerm.c1, i, s), _
@@ -1542,7 +1555,7 @@ Lambda(UT) : Exports == Implementation where
   -- if this is a lambda term then replace De Bruijn index in sub-nodes
   -- with string name
   unbind(n : %) : % ==
-    --sayMsg concat(["unbind(",toString(n),")"])
+    --print(message "unbind(" << toString(n) << message ")")
     if (n case lambdaTerm) then
       return [[unbindTerm(n.lambdaTerm.c3, 0, n.lambdaTerm.nm), n.lambdaTerm.nm]]
     n
@@ -1588,10 +1601,47 @@ Lambda(UT) : Exports == Implementation where
       return false
     false
 
-  -- output
-  coerce(n : %) : OutputForm ==
-    toStringConven(n, [])::OutputForm
 
+  -- return OutputForm using conventional notation, that is
+  -- deBruijn index is replaced by name using String value for bound variables.
+  -- notation assumes association to the left, in the absence of
+  -- brackets, the term to the left binds more tightly than the
+  -- one on the right.
+  toOutputFormConven(n : %, boundL:List(String)) : OutputForm ==
+      s:OutputForm := empty()$OutputForm
+      --print(message "toOutputFormConven(" << toString(n) << ")")
+      if n case boundTerm then
+          i : NNI := n.boundTerm.varBound + 1
+          --print(message "toOutputFormConven(" << toString(n) << _
+          --   ") i=" << string(i) << " #boundL=" << string(#boundL))
+          -- if index is within range use it to lookup String value
+          -- convert it to Symbol first to avoid displaying quotes.
+          if i > 0 and i <= #boundL then return message(boundL.i)
+          -- otherwise display bound term as NNI (deBruijn index)
+          s := (n.boundTerm.varBound)::OutputForm
+      if n case freeTerm then
+          s := (n.freeTerm)::OutputForm
+      if n case compoundTerm then
+          s := hconcat([message("("),
+                        toOutputFormConven(n.compoundTerm.c1, boundL),
+                        message(" "),
+                        toOutputFormConven(n.compoundTerm.c2, boundL),
+                        message(")")])$OutputForm
+      if n case lambdaTerm then
+          -- variable node so print name
+          varName : String := getName(n.lambdaTerm.nm)$UT
+          while member?(varName, boundL) repeat
+              varName := concat(varName,"'")
+          boundL2 : List String := concat(boundL, varName)
+          s := hconcat([message("(\"),
+                        message(varName),
+                        message("."),
+                        toOutputFormConven(n.lambdaTerm.c3, boundL2),
+                        message(")")])$OutputForm
+      s
+
+  -- output
+  coerce(n : %) : OutputForm == toOutputFormConven(n,[])
 
 )if false
 
@@ -1841,7 +1891,7 @@ SKICombinators(UT) : Exports == Implementation where
  PR ==> Record(rft : %, pout : NNI)
    ++ parse result includes term returned and new index
 
- Exports == CoercibleTo(OutputForm) with
+ Exports == SetCategory with
   ski : (x : %, y : %) -> %
     ++ Constructs a node combinator over combinators
   ski : (t1 : UT) -> %
@@ -1893,8 +1943,6 @@ SKICombinators(UT) : Exports == Implementation where
     ++ output
 
  Implementation == add
-
-  sayMsg ==> sayBrightly$Lisp
 
   Rep := Union(_
          lf : Symbol, _
@@ -1977,12 +2025,14 @@ SKICombinators(UT) : Exports == Implementation where
     p1 := pin
     res:% := ["I"::Symbol]
     ch := qelt(t1, p1)
-    --sayMsg concat(["parseTerm ch=",ch::String," p1=",string(p1)])$String
+    --print(message "parseTerm ch=" << ch << _
+    --  message " p1=" << string(p1))
     -- first remove leading spaces
     while ch = char(" ") repeat
       p1 := p1 + (1::NNI)
       if p1 > maxIndex(t1) then
-        --sayMsg concat(["parseTerm(",t1,") 1 giving:",toString(res)])
+        --print(message "parseTerm(" << t1 << _
+        --  message ") 1 giving:" << toString(res))
         return [res, p1]
       ch := qelt(t1, p1)
     if alphabetic?(ch) then
@@ -1990,9 +2040,11 @@ SKICombinators(UT) : Exports == Implementation where
         r := parseCombinatorTerm(t1, p1)
         res := r.rft
         p1 := r.pout
-        --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+        --print(message "parseTerm(" << t1 << _
+        --  ") 4 giving:" << toString(res))
       if lowerCase?(ch) then
-        --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+        --print(message "parseTerm(" << t1 << _
+        --  message ") 4 giving:" << toString(res))
         r2 := parseVarTerm(t1, p1)$UT
         res := ski(r2.rft)
         p1 := r2.pout
@@ -2009,7 +2061,8 @@ SKICombinators(UT) : Exports == Implementation where
     p1 := r.pout
     -- now check for compound term
     if p1 > maxIndex(t1) then
-      --sayMsg concat(["parseTerm(",t1,") 2 giving:",toString(res)])
+      --print(message "parseTerm(" << t1 << _
+      --  message ") 2 giving:" << toString(res))
       return [res, p1]
     ch := qelt(t1, p1)
     stck : List % := []
@@ -2019,7 +2072,8 @@ SKICombinators(UT) : Exports == Implementation where
       r := parseOneTerm(t1, p1)
       p1 := r.pout
       stck := concat(stck, r.rft)
-      --sayMsg concat(["parseTerm(",t1,") 4 giving:",toString(res)])
+      --print(message "parseTerm(" << t1 << _
+      --  message ") 4 giving:" << toString(res))
       if p1 > maxIndex(t1)
         then ch := char("*")
         else ch := qelt(t1, p1)
@@ -2034,7 +2088,8 @@ SKICombinators(UT) : Exports == Implementation where
   -- one on the right.
   parseSki(t1 : String) : % ==
     r := parseTerm(t1, minIndex(t1)::NNI)
-    --sayMsg concat(["parseSki(",t1,") giving:",toString(tm)])
+    --print(message "parseSki(" << t1 << _
+    --  message ") giving:" << toString(tm))
     r.rft
 
   -- returns child nodes if this is a compound term
@@ -2118,20 +2173,20 @@ SKICombinators(UT) : Exports == Implementation where
       -- binary node which has two subnodes c1 and c2
       left := redux1(n.nd.c1)
       right := redux1(n.nd.c2)
-      --sayMsg concat(["left=",toString(left),_
-      --                    " right=",toString(right)])$String
+      --print(message "left=" << toString(left) << _
+      --      message " right=" << toString(right))
       if isI?(left) then return right
       if not (left case nd) then return ski(left, right)
       leftleft := left.nd.c1
       leftright := left.nd.c2
-      --sayMsg concat(["leftleft=",toString(leftleft),_
-      --                    " leftright=",toString(leftright)])$String
+      --print(message "leftleft=" << toString(leftleft) << _
+      --                    " leftright=" << toString(leftright))
       if isK?(leftleft) then return leftright
       if not (leftleft case nd) then return ski(left, right)
       leftleftleft := leftleft.nd.c1
       leftleftright := leftleft.nd.c2
-      --sayMsg concat(["leftleftleft=",toString(leftleftleft),_
-      --                    " leftleftright=",toString(leftleftright)])$String
+      --print(message "leftleftleft=" << toString(leftleftleft) << _
+      --                    " leftleftright=" << toString(leftleftright))
       if isS?(leftleftleft) then
         return ski(ski(leftleftright, right), ski(leftright, right))
       return ski(left, right)
@@ -2147,7 +2202,7 @@ SKICombinators(UT) : Exports == Implementation where
       lastResult := thisResult
       thisResult := redux1(lastResult)
       triesLeft := (triesLeft - 1)::NNI
-      sayMsg toString(lastResult)
+      print(lastResult::OutputForm)
     thisResult
 
   -- return true if equal (deep search) that is: all terms
@@ -2172,7 +2227,28 @@ SKICombinators(UT) : Exports == Implementation where
 
   -- output
   coerce(n : %) : OutputForm ==
-    toString(n)::OutputForm
+      s : OutputForm := empty()$OutputForm
+      if n case lf then
+          -- leaf node so print I, K or S
+          string(n.lf)::OutputForm
+      if n case nd then
+          -- binary node which has two subnodes c1 and c2
+          if atom?(n.nd.c2) then
+              if variable?(n.nd.c2) then
+                  s := hconcat([s,_
+                                (n.nd.c1)::OutputForm,_
+                                message(" "),_
+                                (n.nd.c2)::OutputForm])$OutputForm
+              else
+                  s := hconcat([s, (n.nd.c1)::OutputForm,
+                                (n.nd.c2)::OutputForm])$OutputForm
+          else
+              s := hconcat([s,(n.nd.c1)::OutputForm,message("("),_
+             (n.nd.c2)::OutputForm,message(")")])$OutputForm
+      if n case vr then
+          -- variable node so print name
+          s := (n.vr)::OutputForm
+      s
 
 
 )if false
@@ -2470,6 +2546,8 @@ compUtil(UT) : Exports == Implementation where
  LU ==> Lambda UT
  SU ==> SKICombinators UT
  NNI==> NonNegativeInteger
+ x<<y ==> hconcat(x::OutputForm,y::OutputForm)
+   ++ macro to simplify output
 
  Exports ==> with
     coerce : (s : SU) -> LU
@@ -2501,7 +2579,7 @@ compUtil(UT) : Exports == Implementation where
 
  Implementation ==> add
 
-  sayMsg ==> sayBrightly$Lisp
+  import OutputForm
 
   -- Keeps count of index number of variables created in Ski2Lambda.
   -- I am wary of defining a variable outside of a function but
@@ -2515,67 +2593,83 @@ compUtil(UT) : Exports == Implementation where
     -- parameters for this combinator. If there had been
     -- they would have been found when this was called on
     -- the nodes above it.
-    -- sayMsg concat(["util coerce called for:",toString(s)$SU])$String
+    -- print(message "util coerce called for:" << s))
     if atom?(s)$SU then
-      --sayMsg concat(["util coerce atom:",toString(s)$SU])$String
+      --print(message "util coerce atom:" << s)
       if isI?(s)$SU then
         strVar:String := concat("v",string(varNum))
-        sayMsg concat["util coerce rule SL1: Ski[I] = \",strVar,".0"]
+        print(message "util coerce rule SL1: Ski[I] = \" << message strVar
+              << message ".0")
         varNum := varNum +1
         return parseLambda(concat["\",strVar,".0"])$LU
       if isK?(s)$SU then
         strVar1:String := concat("v",string(varNum))
         strVar2:String := concat("v",string(varNum+1))
-        sayMsg concat["util coerce rule SL2: Ski[K] = \",strVar1,".\",strVar2,".1"]
+        print(message "util coerce rule SL2: Ski[K] = \" << message strVar1
+              << message ".\" << message strVar2 << message ".1")
         varNum := varNum +2
         return parseLambda(concat["\",strVar1,".\",strVar2,".1"])$LU
       if isS?(s)$SU then
         strVar1:String := concat("v",string(varNum))
         strVar2:String := concat("v",string(varNum+1))
         strVar3:String := concat("v",string(varNum+2))
-        sayMsg concat["util coerce rule SL3: Ski[S] = \",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"]
+        print(message "util coerce rule SL3: Ski[S] = \" << message strVar1
+              << message ".\" << message strVar2 << message ".\" <<
+              message strVar3 << message ".(2 0 (1 0))")
         varNum := varNum +3
         return parseLambda(concat["\",strVar1,".\",strVar2,".\",strVar3,".(2 0 (1 0))"])$LU
-      sayMsg concat(["util coerce pass unbound variable ",getName(getVariable(s)$SU)$UT," unchanged"])$String
+      print(message "util coerce pass unbound variable " << _
+        (message getName(getVariable(s)$SU)$UT) << message " unchanged")
       return lambda(getVariable(s)$SU)$LU
     subnodes : List SU := getChildren(s)$SU
     c1 : SU := first subnodes
     c2 : SU := second subnodes
     s1 : String := toString(c1)$SU
     s2 : String := toString(c2)$SU
-    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)])$String
+    -- print(message "util coerce c1=" << (toString(c1)$SU) << " c2=" <<
+    --       toString(c2))
     -- look for I x, if found translate x
     if isI?(c1)$SU then
-      sayMsg concat(["util coerce apply rule SL1 in:",toString(s)$SU])$String
+      print(message "util coerce apply rule SL1 in:" << s)
       return Ski2Lambda(c2)
     if atom?(c1)$SU then
-      sayMsg concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
+      print(message "util coerce rule SL4: Ski[(" << message s1 << message" "
+            << message s2 << message ")] = (Ski[" << message s1 <<
+            message "] Ski[" << message s2 << message "])")
       return lambda(Ski2Lambda(c1), Ski2Lambda(c2))$LU
     -- look for K x y, if found translate x
     subsubnodes : List SU := getChildren(c1)$SU
     c11 : SU := first subsubnodes
     c12 : SU := second subsubnodes
-    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)$SU," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
+    --print(message "util coerce c1=" << (toString(c1)$SU) << _
+    --  message " c2=" << (toString(c2)$SU) << " c11=" << _
+    --  (toString(c11)$SU) << " c12=" << (toString(c12)$SU))
     if isK?(c11)$SU then
       s12 : String := getName(getVariable(c12)$SU)$UT
-      sayMsg concat(["util coerce apply rule SL2 in:",toString(s)$SU])$String
+      print(message "util coerce apply rule SL2 in:" << s)
       return Ski2Lambda(c12)
     if atom?(c11)$SU then
-      sayMsg concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
+      print(message "util coerce rule SL4: Ski[(" << message s1 << _
+        message " " << message s2 << message ")] = (Ski[" << message s1 << _
+        message "] Ski[" << message s2 << message "])")
       return lambda(Ski2Lambda(c1), Ski2Lambda(c2))$LU
     -- look for S x y z, if found translate (x z)(y z)
     subsubnodes2 : List SU := getChildren(c11)$SU
     c111 : SU := first subsubnodes2
     c112 : SU := second subsubnodes2
-    --sayMsg concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
+    --print(message "util coerce c11=" << (toString(c11)$SU) << _
+    --  message " c12=" << (toString(c12)$SU) << " c111=" << _
+    --  (toString(c111)$SU) << " c112=" << (toString(c112)$SU))
     -- look for K x y, if found translate x
     if isS?(c111)$SU then
       s2 : String := getName(getVariable(c2)$SU)$UT
       s12 : String := getName(getVariable(c12)$SU)$UT
       s112 : String := getName(getVariable(c112)$SU)$UT
-      sayMsg concat(["util coerce apply rule SL3 in:",toString(s)$SU])$String
+      print(message "util coerce apply rule SL3 in:" << s)
       return lambda(lambda(Ski2Lambda(c112), Ski2Lambda(c2))$LU, lambda(Ski2Lambda(c12), Ski2Lambda(c2))$LU)$LU
-    sayMsg concat(["util coerce rule SL4: Ski[(",s1," ",s2,")] = (Ski[",s1,"] Ski[",s2,"])"])
+    print(message "util coerce rule SL4: Ski[(" << message s1 << message " "
+          << message s2 << message ")] = (Ski[" << message s1 <<
+          message "] Ski[" << message s2 << message "])")
     lambda(Ski2Lambda(c1), Ski2Lambda(c2))$LU
 
   -- coerce SKI combinators to Lambda term.
@@ -2592,23 +2686,34 @@ compUtil(UT) : Exports == Implementation where
   -- when we are coercing Lambda to Ski and we apply rule LS5
   -- we call this
   lambdaOverSki(var : UT, sk : SU) : SU ==
-    --sayMsg concat(["gives \",toString(var)$UT,".",toString(sk)])$String
+    --print(message "gives \" << (toString(var)$UT) << _
+    --  message "." << toString(sk))
     if atom?(sk) then
       if freeVariable?(sk, var)$SU then
-        sayMsg concat(["util coerce rule LS3' applied to: \",toString(var)$UT,".",toString(sk)," giving K ",toString(sk)])$String
+        print(message "util coerce rule LS3' applied to: \" << _
+          var << message "." << sk << _
+          message " giving K " << sk)
         return ski(K(), sk)
-      sayMsg concat(["util coerce rule LS4' applied to: \",toString(var)$UT,".",toString(sk)," giving I"])$String
+      print(message "util coerce rule LS4' applied to: \" << _
+        var << message "." << sk << message " giving I")
       return I()$SU
     ch : List SU := getChildren(sk)$SU
     left : SU := first ch
     right : SU := second ch
-    --sayMsg concat(["left=",toString(left),_
-    --                    " right=",toString(right)])$String
+    --print(message "left=" << toString(left) << _
+    --      message " right=" << toString(right))
     if freeVariable?(sk, var)$SU then
-      sayMsg concat(["util coerce rule LS3' applied to: \",toString(var)$UT,".",toString(sk)," giving K \",toString(var)$UT,".",toString(left)," \",toString(var)$UT,".",toString(right)])$String
-      --return ski(ski(K(), left), right)
+      print(message "util coerce rule LS3' applied to: \" << _
+        var << message "." << sk << _
+        message " giving K \" << var << message "." << _
+        left << message " \" << var << _
+        message "." << right)
       return ski(K(), ski(left, right))
-    sayMsg concat(["util coerce rule LS5' applied to: \",toString(var)$UT,".",toString(sk)," giving S \",toString(var)$UT,".",toString(left)," \",toString(var)$UT,".",toString(right)])$String
+    print(message "util coerce rule LS5' applied to: \" << _
+      var << message "." << sk << _
+      message " giving S \" << var << _
+      message "." << left << message " \" << _
+      var << message "." << right)
     return ski(ski(S()$SU, lambdaOverSki(var, left)), lambdaOverSki(var, right))
 
   -- coerce Lambda term to SKI combinators.
@@ -2624,13 +2729,16 @@ compUtil(UT) : Exports == Implementation where
   coerce(lam : LU) : SU ==
     -- test for rule 1
     if atom?(lam)$LU then
-      sayMsg concat(["util coerce rule LS1 applied to:",toString(lam)$LU," giving ",toString(lam)$LU])$String
+      print(message "util coerce rule LS1 applied to:" << _
+        lam << message " giving " << lam)
       return ski(var(toString(lam)$LU)$UT)$SU
     if isCompound?(lam)$LU then
       ch : List LU := getChildren(lam)$LU
       c1 : LU := first ch
       c2 : LU := second ch
-      sayMsg concat(["util coerce rule LS2 applied to:",toString(lam)$LU," giving (",toString(c1)$LU," ",toString(c2)$LU,")"])$String
+      print(message "util coerce rule LS2 applied to:" << _
+        lam << message " giving (" << c1 << _
+        message " " << c2 << message ")")
       return ski(c1::SU, c2::SU)$SU
     if isLambda?(lam)$LU then
       lamUn : LU := unbind(lam)$LU
@@ -2638,23 +2746,30 @@ compUtil(UT) : Exports == Implementation where
       s3 : UT := getVariable(lam)$LU
       if atom?(c3)$LU then
         if toString(c3)$LU="0" then
-          sayMsg concat(["util coerce rule LS4 applied to:",toString(lam)$LU," giving I"])$String
+          print(message "util coerce rule LS4 applied to:" << _
+            lam << message " giving I")
           return I()$SU
       if free?(lam)$LU then
-        sayMsg concat(["util coerce rule LS3 applied to:",toString(lam)$LU," giving K ",toString(c3)])$String
+        print(message "util coerce rule LS3 applied to:" << _
+          lam << message " giving K " << c3)
         return ski(K(), c3::SU)$SU
       if isLambda?(c3)$LU then
         c33 : LU := first getChildren(c3)$LU
         cxx : LU := lambda(c33, getVariable(c3)$LU)$LU
-        sayMsg concat(["util coerce rule LS5 applied to:",toString(lam)$LU," giving \",toString(s3)$UT,".",toString(cxx)])$String
+        print(message "util coerce rule LS5 applied to:" << _
+          lam << message " giving \" << s3 << message "." << cxx)
         return lambdaOverSki(s3, cxx::SU)
       if isCompound?(c3) then
         ch3 : List LU := getChildren(c3)$LU
         c31 : LU := first ch3
         c32 : LU := second ch3
-        sayMsg concat(["util coerce rule LS6 applied to:",toString(lam)$LU," giving S \",toString(s3)$UT,".",toString(c31)$LU," \",toString(s3)$UT,".",toString(c32)$LU])$String
+        print(message "util coerce rule LS6 applied to:" << _
+          lam << message " giving S \" << _
+          s3 << message "." << _
+          c31 << message " \" << _
+          s3 << message "." << c32)
         return ski(ski(S()$SU, lambdaOverSki(s3, c31::SU)), lambdaOverSki(s3, c32::SU))$SU
-    sayMsg concat(["util coerce warning could not match any rule to:",toString(lam)$LU])$String
+    print(message "util coerce warning could not match any rule to:" << lam)
     I()$SU
 
   -- coerce combinators to intuitionistic logic
@@ -2673,23 +2788,23 @@ compUtil(UT) : Exports == Implementation where
     -- I don't know the best way to handle this, really we
     -- need to add the required number of parameters, do
     -- the conversion then remove the parameters just added.
-    -- sayMsg concat(["util coerce called for:",toString(s)$SU])$String
+    -- print(message "util coerce called for:" << (toString(s)$SU))
     if atom?(s) then
-      --sayMsg concat(["util coerce atom:",toString(s)$SU])$String
+      --print(message "util coerce atom:" << toString(s)$SU)
       if isI?(s) then
-        sayMsg "warning I does not have a parameter to act on"
-        sayMsg "creating x"
+        print(message "warning I does not have a parameter to act on")
+        print(message "creating x")
         a :ILogic  := proposition("x")
         return implies(a, a)
       if isK?(s) then
-        sayMsg "warning K does not enough parameters to act on"
-        sayMsg "creating x and y"
+        print(message "warning K does not enough parameters to act on")
+        print(message "creating x and y")
         a :ILogic  := proposition("x")
         b :ILogic  := proposition("y")
         return implies(a, implies(b, a))
       if isS?(s) then
-        sayMsg "warning S does not enough parameters to act on"
-        sayMsg "creating x,y an z"
+        print(message "warning S does not enough parameters to act on")
+        print(message "creating x,y and z")
         a :ILogic  := proposition("x")
         b :ILogic  := proposition("y")
         c :ILogic  := proposition("z")
@@ -2701,10 +2816,10 @@ compUtil(UT) : Exports == Implementation where
     subnodes : List SU := getChildren(s)$SU
     c1 : SU := first subnodes
     c2 : SU := second subnodes
-    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)])$String
+    --print(message "util coerce c1=" << c1 << message " c2=" << c2)
     -- look for I x, if found translate x
     if isI?(c1) then
-      sayMsg concat(["util coerce apply rule SI1 in:",toString(s)$SU])$String
+      print(message "util coerce apply rule SI1 in:" << s)
       a : ILogic  := c1::ILogic
       return implies(a, a)
     if atom?(c1) then return _\_/(c1::ILogic, c2::ILogic)
@@ -2712,9 +2827,11 @@ compUtil(UT) : Exports == Implementation where
     subsubnodes : List SU := getChildren(c1)
     c11 : SU := first subsubnodes
     c12 : SU := second subsubnodes
-    --sayMsg concat(["util coerce c1=",toString(c1)$SU," c2=",toString(c2)," c11=",toString(c11)$SU," c12=",toString(c12)$SU])$String
+    --print(message "util coerce c1=" << c1 << _
+    --  message " c2=" << c2 << message " c11=" << _
+    --  c11 << message " c12=" << c12)
     if isK?(c11) then
-      sayMsg concat(["util coerce apply rule SI2 in:",toString(s)$SU])$String
+      print(message "util coerce apply rule SI2 in:" << s)
       a : ILogic  := c2::ILogic
       b : ILogic  := c12::ILogic
       return implies(a, implies(b, a))
@@ -2723,10 +2840,11 @@ compUtil(UT) : Exports == Implementation where
     subsubnodes2 : List SU := getChildren(c11)
     c111 : SU := first subsubnodes2
     c112 : SU := second subsubnodes2
-    --sayMsg concat(["util coerce c11=",toString(c11)$SU," c12=",toString(c12)$SU," c111=",toString(c111)$SU," c112=",toString(c112)$SU])$String
+    --print(message "util coerce c11=" << c11 << message " c12=" << _
+    --       c12 << message " c111=" << c111 << message " c112=" << c112)
     -- look for K x y, if found translate x
     if isS?(c111) then
-      sayMsg concat(["util coerce apply rule SI3 in:",toString(s)$SU])$String
+      print(message "util coerce apply rule SI3 in:" << s)
       a : ILogic  := c2::ILogic
       b : ILogic  := c12::ILogic
       c : ILogic  := c112::ILogic
@@ -3036,7 +3154,7 @@ compCode() : Exports == Implementation where
   -- one on the right.
   genLambdaTerm(n : LC, boundL : List String) : String ==
     s:String := ""
-    --sayMsg concat(["genLambdaTerm(",toString(n),")"])
+    --print(message "genLambdaTerm(" << toString(n) << ")")
     if isBoundNode?(n) then
       -- convert deBruijn index
       i : NNI := getBoundValue(n) + 1
@@ -3106,7 +3224,7 @@ compCode() : Exports == Implementation where
     -- fnNum is integer used to generate a unique function name
     fnNum : NNI := 1::NNI
     for thisEq in content repeat
-      --sayMsg concat(["writePackage(",toString(thisEq),")"])
+      --print(message "writePackage(" << toString(thisEq) << ")")
       lines := concat(lines, genFuncDefn(thisEq, fnNum))
       fnNum := fnNum + 1
     lines := concat(lines, genPackageFooter())
