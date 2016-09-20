@@ -4,12 +4,10 @@ LS ==> List(String)
 O ==> OutputForm
 FortranCodeTools : with
     fort_clean_lines : LS -> LS
-    do_with_error_env3 : (() -> Void) -> Void
+    do_with_error_env3 : (Boolean, () -> LS) -> LS
       ++ do_with_error_env3(int_to_floats?, f)
     do_with_error_env2 : (Boolean, () -> LS) -> LS
       ++ do_with_error_env2(int_to_floats?, f)
-    do_with_error_env0 : (() -> LS) -> LS
-      ++ do_with_error_env0(f)
     do_with_error_env1 : (() -> LS) -> LS
       ++ do_with_error_env1(f)
     expression2Fortran1 : (() -> Symbol, O, Boolean) -> LS
@@ -24,8 +22,6 @@ FortranCodeTools : with
       ++ changeExprLength(i) changes limit on expression length by i.
     displayLines : LS -> Void
       ++ displayLines(l)
-    displayLines1 : LS -> Void
-      ++ displayLines1(l)
     dispStatement :  O -> Void
       ++ dispStatement(of)
     fortFormatHead : (Symbol, Union(fst:FortranScalarType,void:"void"),
@@ -51,11 +47,12 @@ FortranCodeTools : with
 
   == add
 
+    tmp_var_index : SingleInteger := 0
+
 
     newFortranTempVar() : Symbol ==
-        nr : SingleInteger := 1 + _$exp2FortTempVarIndex$Lisp
-        SETF(_$exp2FortTempVarIndex$Lisp, nr)$Lisp
-        new_sym := concat("T", convert(nr)@String)::Symbol
+        tmp_var_index := 1 + tmp_var_index
+        new_sym := concat("T", convert(tmp_var_index)@String)::Symbol
         def_type : Symbol := _$defaultFortranType$Lisp
         declare!(new_sym, def_type::FortranScalarType::FortranType
                 )$TheSymbolTable()
@@ -152,7 +149,7 @@ FortranCodeTools : with
             res := append(l1, res)
         res
 
-    tempLen() : Integer == 1 + #(convert(_$exp2FortTempVarIndex$Lisp)@String)
+    tempLen() : Integer == 1 + #(convert(tmp_var_index)@String)
 
     fortExpSize : O -> Integer
 
@@ -281,9 +278,15 @@ FortranCodeTools : with
             else s := [e, :s]
         reverse!(s)
 
-    fortError1(e : O) : O == fortError1(e)$Lisp
+    fortError2(msg : String, e : O) : Exit ==
+        sayErrorly("Fortran translation error", msg)$Lisp
+        mathPrint(e)$Lisp
+        error ""
 
-    fortError1l(op : Symbol, args : List O) : O ==
+    fortError1(e : O) : Exit ==
+        fortError2("   No corresponding Fortran structure for:", e)
+
+    fortError1l(op : Symbol, args : List O) : Exit ==
         fortError1(elt(outputForm(op), args))
 
     exprStack : List O := []
@@ -413,8 +416,8 @@ FortranCodeTools : with
                     if symbol?(sOp) and symbol(sOp) = 'SEGMENT then
                         #sArgs=1 => fortError1 first elts
                         not(integer?(sArgs(1)) and integer?(sArgs(2))) =>
-                            fortError("Cannot expand segment: ",
-                                      first elts)$Lisp
+                            fortError2("   Cannot expand segment: ",
+                                      first elts)
                         i1 := integer(sArgs(1))
                         i2 := integer(sArgs(2))
                         i1 > i2 => fortError1 message(
@@ -626,27 +629,128 @@ FortranCodeTools : with
             nl := []
         reverse! res
 
-    do_with_error_env3(f : () -> Void) : Void ==
-        do_with_error_env3(f)$Lisp
-
     do_with_error_env2(int_to_floats? : Boolean, f : () -> LS) : LS ==
-        do_with_error_env2(int_to_floats?,
-                           () : LS +-> fort_clean_lines(f()))$Lisp
+        do_with_error_env3(int_to_floats?,
+                           () : LS +-> fort_clean_lines(f()))
 
-    do_with_error_env0(f : () -> LS) : LS ==
-        do_with_error_env0(f)$Lisp
+    do_with_error_env3(int_to_floats? : Boolean, f : () -> LS) : LS ==
+        save_fortInts2Floats : Boolean := _$fortInts2Floats$Lisp
+        try
+            SETF(_$fortInts2Floats$Lisp, int_to_floats?)$Lisp
+            f()
+        finally
+            SETF(_$fortInts2Floats$Lisp, save_fortInts2Floats)$Lisp
 
     do_with_error_env1(f : () -> LS) : LS ==
-        do_with_error_env0(() +-> fort_clean_lines(f()))
+        fort_clean_lines(f())
 
-    do_expression_to_fortran(of : O) : LS ==
-        ol : List O := exp2FortOptimize(precondition(of))$Lisp
-        fortranCleanUp(exp2Fort1(segment(fortPre(ol))))
+    CS_REC ==> Record(count : SingleInteger, name : Symbol,
+                      location : List O)
+
+    beenHere(e : O, n : CS_REC, fortCsList : List O) : O ==
+        n.count := (nn := n.count + 1)
+        nn = 2 =>
+            n.name := newFortranTempVar()
+            var := n.name::O
+            loc := n.location
+            if not(empty?(loc)) then
+                csl1 := cons(["="::Symbol::O, [var, e]], rest(fortCsList)
+                            )$List(O)
+                setrest!(fortCsList, COPY_-TREE(csl1)$Lisp)
+                setfirst!(loc, var)
+            var
+        n.name::O
+
+    exp2FortOptimizeCS1(e : O, fortCsHash : None, fortCsList : List O,
+                        e0 : List O) : O ==
+        atom?(e) => e
+        op := operator(e)
+        args := arguments(e)
+        atom?(op) and empty?(args) => e
+        is_symbol?(op, "-"::Symbol) and #args = 1 and
+          atom?(first(args)) => e
+        n : None
+        symbol?(op) and not(member?(sy := symbol(op), ['ROW, 'AGGLST]))
+          and (n := HGET(fortCsHash, e)$Lisp; NOT(NULL(n)$Lisp)$Lisp) =>
+            beenHere(e, n pretend CS_REC, fortCsList)
+        f := e pretend List O
+        while not(empty?(f)) repeat
+            setfirst!(f, exp2FortOptimizeCS1(first(f), fortCsHash,
+                                             fortCsList, f))
+            f := rest(f)
+            if ATOM(f)$Lisp then f := []
+        symbol?(op) and member?(sy := symbol(op), ['ROW, 'AGGLST]) => e
+        n := HGET(fortCsHash, e)$Lisp
+        NULL(n)$Lisp =>
+            n1 := [1, 'dummy, e0]$CS_REC
+            HPUT(fortCsHash, e, n1)$Lisp
+            e
+        beenHere(e, n pretend CS_REC, fortCsList)
+
+    exp2FortOptimizeCS(e : O) : List O ==
+        fortCsList : List O := [empty()]
+        fortCsHash : None := MAKE_-HASHTABLE('EQ)$Lisp
+        f := exp2FortOptimizeCS1(e, fortCsHash, fortCsList, [])
+        reverse!(cons(e, rest(fortCsList)))
+
+    exp2FortOptimizeArray(e : O, exprStack : List O,
+                          fort_name : Symbol) : O ==
+        atom?(e) => e
+        op := operator(e)
+        args := arguments(e)
+        rop := exp2FortOptimizeArray(op, exprStack, fort_name)
+        rargs := [exp2FortOptimizeArray(arg, exprStack, fort_name)
+                 for arg in args]
+        symbol?(op) =>
+            sy := symbol(op)
+            member?(sy, ['BRACE, 'BRACKET]) =>
+                arg1 : O
+                op1 : O
+                #args ~= 1 or atom?(arg1 := first(args)) => empty()
+                not(is_symbol?(op1 := operator(arg1), 'AGGLST)) => empty()
+                args1 := arguments(arg1)
+                #args1 > 0 and not(atom?(arg11 := first(args1))) and
+                  symbol?(op2 := operator(arg11)) and
+                      member?(symbol(op2), ['BRACE, 'BRACKET]) =>
+                    fortError1(e)
+                var := fort_name::O
+                res1 : O := [op, cons(var, rargs)]
+                setrest!(exprStack, cons(res1, rest(exprStack)))
+                var
+            sy = 'MATRIX =>
+                var := fort_name::O
+                res1 : O := [op, cons(var, rargs)]
+                setrest!(exprStack, cons(res1, rest(exprStack)))
+                var
+            [rop, rargs]
+        [rop, rargs]
+
+    exp2FortOptimize(e : O, fort_name : Symbol) : List O ==
+        -- exp2FortOptimize1(e, fort_name)$Lisp
+        exprStack : List O := [empty()]
+        atom?(e) => [e]
+        _$fortranOptimizationLevel$Lisp = 0$Integer =>
+            e1 : O := exp2FortOptimizeArray(e, exprStack, fort_name)
+            reverse!(cons(e1, rest(exprStack)))
+        e := minimalise(e)$Lisp
+        for e1 in exp2FortOptimizeCS(e) repeat
+            e2 : O := exp2FortOptimizeArray(e1, exprStack, fort_name)
+            setrest!(exprStack, cons(e2, rest(exprStack)))
+        reverse!(rest(exprStack))
 
     expression2Fortran1(nf : () -> Symbol, of : O, int_to_floats? : Boolean
                        ) : LS ==
-        do_with_error_env4(nf, int_to_floats?,
-                           () : LS +-> do_expression_to_fortran(of))$Lisp
+        save_fortInts2Floats : Boolean := _$fortInts2Floats$Lisp
+        save_tmp_var_index : SingleInteger := tmp_var_index
+        try
+            SETF(_$fortInts2Floats$Lisp, false)$Lisp
+            tmp_var_index := 0
+            ol : List O := exp2FortOptimize(precondition(of),
+                                             nf())
+            fortranCleanUp(exp2Fort1(segment(fortPre(ol))))
+        finally
+            SETF(_$fortInts2Floats$Lisp, save_fortInts2Floats)$Lisp
+            tmp_var_index := save_tmp_var_index
 
     statement2Fortran(of : O) : LS ==
         expression2Fortran1(() +-> 'DUMMY, of, false)
@@ -654,18 +758,21 @@ FortranCodeTools : with
     expression2Fortran(of : O) : LS ==
         expression2Fortran1(newFortranTempVar, of, false)
 
-    changeExprLength(i : Integer) : Void == changeExprLength(i)$Lisp
+    changeExprLength(i : Integer) : Void ==
+        nl := (_$maximumFortranExpressionLength$Lisp pretend Integer) + 1
+        SETF(_$maximumFortranExpressionLength$Lisp, nl)$Lisp
 
     getStatement(of : O, int_to_floats? : Boolean) : LS ==
         do_with_error_env2(int_to_floats?, () +-> statement2Fortran(of))
 
-    displayLines(l : LS) : Void == displayLines(l)$Lisp
-
-    displayLines1(l : LS) : Void == displayLines1(l)$Lisp
+    displayLines(ls : LS) : Void ==
+        for l in ls repeat
+            PRINTEXP(l, _$fortranOutputStream$Lisp)$Lisp
+            TERPRI(_$fortranOutputStream$Lisp)$Lisp
 
     dispStatement(of : O) : Void ==
         l := getStatement(of, false)
-        displayLines1(l)
+        displayLines(l)
 
     fortFormatHead1(name : Symbol, asp : LS, args : List(Symbol)) : LS ==
         of := elt(name::O, [arg::O for arg in args])$O
@@ -684,7 +791,7 @@ FortranCodeTools : with
             asp := [s, " FUNCTION "]
             changeExprLength(l := -10 - #s)
         lines := do_with_error_env1(() +-> fortFormatHead1(name, asp, args))
-        displayLines1(lines)
+        displayLines(lines)
         changeExprLength(-l)
 
     addCommas(l : LS) : LS ==
@@ -760,8 +867,14 @@ FortranCodeTools : with
 
     fort_format_types(typeName : String, names : List O) : Void ==
         empty?(names) => void()
-        do_with_error_env3(() +-> fort_format_types1(checkType(typeName),
-                                                     names))
+        save_fortranSegment : Boolean := _$fortranSegment$Lisp
+        try
+            SETF(_$fortranSegment$Lisp, false)$Lisp
+            do_with_error_env3(false,
+                               () +-> (fort_format_types1(checkType(typeName),
+                                                 names); [""]))
+        finally
+            SETF(_$fortranSegment$Lisp, save_fortranSegment)$Lisp
 
 
 
@@ -789,4 +902,4 @@ FortranFormat : OutputFormatterCategory == add
     import FortranCodeTools
 
     display(x : %) : Void ==
-        displayLines1(fort_clean_lines(expression2Fortran(x::Rep)))
+        displayLines(fort_clean_lines(expression2Fortran(x::Rep)))

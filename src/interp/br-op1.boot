@@ -891,6 +891,18 @@ evalableConstructor2HtString domform ==
       typ := sublisFormal(arglist,ftype)
       mathform2HtString algCoerceInteractive(arg,typ,'(OutputForm))
 
+fortexp0 x ==
+  e_to_f := getFunctionFromDomain("expression2Fortran", ['FortranCodeTools],
+                                 [$OutputForm])
+  f := SPADCALL(x, e_to_f)
+  p := position('"%l",f)
+  p < 0 => f
+  l := NIL
+  while p < 0 repeat
+    [t,:f] := f
+    l := [t,:l]
+  NREVERSE ['"...",:l]
+
 mathform2HtString form == escapeString
   form is ['QUOTE,a] => STRCONC('"'","STRCONC"/fortexp0 a)
   form is ['BRACKET,['AGGLST,:arg]] =>
