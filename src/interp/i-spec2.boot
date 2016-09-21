@@ -241,9 +241,7 @@ evalIF(op,[cond,a,b],m) ==
     b='noMapVal =>
       [[MKQ true, ['throwKeyedMsg,MKQ "S2IM0018",
         ['CONS,MKQ object2Identifier $mapName,NIL]]]]
-    b='noBranch =>
-      $lastLineInSEQ => [[MKQ true,['voidValue]]]
-      NIL
+    b = 'noBranch => [[MKQ true, ['voidValue]]]
     [[MKQ true,genIFvalCode(b,m)]]
   code:=['COND,[getArgValue(cond,$Boolean),
     genIFvalCode(a,m)],:elseCode]

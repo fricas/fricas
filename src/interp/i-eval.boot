@@ -328,14 +328,6 @@ evalFormMkValue(op,form,tm) ==
   putValue(op,val)
   [tm]
 
-failCheck x ==
-  x = '"failed" =>
-    stopTimingProcess peekTimedName()
-    THROW('interpreter,objNewWrap('"failed",$String))
-  x = $coerceFailure =>
-    NIL
-  x
-
 --% Some Antique Comments About the Interpreter
 
 --EVAL BOOT contains the top level interface to the Scratchhpad-II
@@ -431,8 +423,6 @@ failCheck x ==
 --                 alternate forms of COLLECT and REPEAT.
 --    $inCOLLECT: true when compiling a COLLECT, used only for hacked
 --                stream compiler.
---    $StreamFrame: used in printing streams, it is the environment
---                  where local stream variables are stored
 --    $declaredMode: Weak type propagation for symbols, set in upCOERCE
 --                   and upLET.  This variable is used to determine
 --                   the alternate polynomial types of Symbols.
