@@ -869,8 +869,6 @@ dbShowCons1(htPage,cAlist,key) ==
       item := first x
       $exposedOnlyIfTrue => isExposedConstructor opOf item
       item
---$searchFirstTime and (conlist is [.]) => conPage first conlist
---$searchFirstTime := false
   conlist is [.] => conPage
     htPage and htpProperty(htPage,'domname) => first conlist
     opOf first conlist

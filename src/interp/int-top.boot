@@ -164,8 +164,6 @@ SpadInterpretStream(step_num, source, interactive?) ==
     $erMsgToss             : local := false --------------->!!!
     $ncMsgList             : local := nil
 
-    $promptMsg             : local := 'S2CTP023
-
     interactive? =>
         if printFirstPrompt?() then
             princPrompt()
