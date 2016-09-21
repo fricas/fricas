@@ -140,18 +140,13 @@ processInteractive(form, posnForm) ==
   $interpOnly: local := NIL        --true when in interpret only mode
   $whereCacheList: local := NIL    --maps compiled because of where
   $timeGlobalName: local := '$compTimeSum  --see incrementTimeSum
-  $StreamFrame: local := nil       --used in printing streams
   $declaredMode: local := NIL      --Weak type propagation for symbols
   $localVars:local := NIL          --list of local variables in function
   $analyzingMapList:local := NIL   --names of maps currently being
                                    --analyzed
-  $lastLineInSEQ: local := true    --see evalIF and friends
   $instantCoerceCount: local := 0
   $instantCanCoerceCount: local := 0
   $instantMmCondCount: local := 0
-  $defaultFortVar:= 'X             --default FORTRAN variable name
-  $fortVar : local :=              --variable name for FORTRAN output
-     $defaultFortVar
   $minivector: local := NIL
   $minivectorCode: local := NIL
   $minivectorNames: local := NIL

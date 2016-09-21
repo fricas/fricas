@@ -135,11 +135,4 @@ wrapMapBodyWithCatch body ==
   -- note that we will someday have to fix up the catch identifier
   -- to use the generated internal map name
   $mapThrowCount = 0 => body
-  if body is ['failCheck,['coerceOrFail,trip,targ,mapn]]
-    then
-      trip is ['LIST,v,m,e] =>
-        ['failCheck,['coerceOrFail,
-          ['LIST,['CATCH,MKQ mapCatchName $mapName, v],m,e],targ,mapn]]
-      keyedSystemError("S2GE0016",['"wrapMapBodyWithCatch",
-        '"bad CATCH for in function form"])
-    else ['CATCH,MKQ mapCatchName $mapName,body]
+  ['CATCH, MKQ mapCatchName $mapName, body]
