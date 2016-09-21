@@ -1832,7 +1832,7 @@ FiniteSimplicialComplex(VS : VertexSet) : Exports == Impl where
        reslt := concat(reslt, orderedPermutation(rst, len))
        reslt
 
-   -- local function used in listUnion in addImpliedFaces
+   -- local function used in unorientedUnion in addImpliedFaces
    isNewFace?(lst : List(OrientedFacet), b : OrientedFacet) : Boolean ==
        --print("isNewFace?(" << a << ", " << b << ")")
        for a in lst repeat
@@ -1841,16 +1841,16 @@ FiniteSimplicialComplex(VS : VertexSet) : Exports == Impl where
        true
 
    -- local function used in addImpliedFaces
-   listUnion(a : List(OrientedFacet), b : List(OrientedFacet)
+   unorientedUnion(a : List(OrientedFacet), b : List(OrientedFacet)
             ) : List(OrientedFacet) ==
-       res := []$List(OrientedFacet)
-       for a1 in a repeat
-           res := concat(res, a1)
+       res := a
        for b1 in b repeat
            if isNewFace?(a, b1) then
-               res := concat(res, b1)
-       --print("listUnion(" << a << ", " << b << ") = " << res)
+               res := cons(b1, res)
+       -- print("unorientedUnion(" << a << ", " << b << ") = " << res)
        res
+
+   import from OutputForm
 
    -- A function to take a set of faces and add those that are implied
    -- by the simplicial complex conventions (if they don't already exist).
@@ -1865,27 +1865,29 @@ FiniteSimplicialComplex(VS : VertexSet) : Exports == Impl where
            --print("addImpliedFaces return because maxGrade=" << maxGrade)
            return res
        -- create an empty list for each grade
-       for a in 1..(maxGrade) repeat
-           res := concat(res, []$List(OrientedFacet))
+       res := []$List(List(OrientedFacet))
        newFaces := []$List(OrientedFacet)
-       for gr in inputList for grn in 1..(maxGrade) repeat
+       for gr in inputList repeat
            --print("addImpliedFaces grade number grn=" << grn)
            -- add old faces
-           for face in gr repeat
-               res.grn := concat(res.grn, face)
-           -- add new faces
-           for face in newFaces repeat
-               res.grn := concat(res.grn, face)
+           all_faces := unorientedUnion(newFaces, gr)
+           -- print(message("all_faces = "))
+           -- print(all_faces::OutputForm)
+           res := cons(all_faces, res)
            --print("addImpliedFaces empty newFaces. res.grn=" << res.grn)
-           newFaces := []$List(OrientedFacet)
+           newFaces := []
            --print("addImpliedFaces res.grn=" << res.grn)
-           for face in res.grn repeat
+           for face in all_faces repeat
+               -- FIXME: handle order 1 too
                len : NNI := (order(face) -1) pretend NNI
                if len > 0 then
-                   newFaces := listUnion(newFaces, allSubsets(face, len, len))
+                   newFaces := unorientedUnion(newFaces,
+                                               allSubsets(face, len, len))
+           -- print(message("newFaces = "))
+           -- print(newFaces::OutputForm)
            --print("addImpliedFaces get next grade res=" << res)
        --print("addImpliedFaces result=" << reverse(res))
-       reverse(res)
+       res
 
    -- Step down to the next lower dimension, this is like hollowing out the complex.
    -- It takes the highest dimension entries and replaces them with their boundaries,
