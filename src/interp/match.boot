@@ -163,6 +163,10 @@ basicMatch?(pattern,target) ==
      if null ans then ans := 1  --pattern is a word preceded by a *
   ans
 
+stringMatches?(pattern, subject) ==
+    FIXP basicMatch?(pattern,subject) => true
+    false
+
 matchSegment?(pattern,subject,k) ==
   matchAnySegment?(pattern,DOWNCASE subject,k,nil)
 
