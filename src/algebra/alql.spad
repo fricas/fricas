@@ -43,43 +43,74 @@ IndexCard() : Exports == Implementation where
       ++ \spad{s} is not of the right format then an error will occur when using
       ++ it.
   Implementation == add
-    x<y==(x pretend String) < (y pretend String)
-    x = y==(x pretend String) = (y pretend String)
+
+    import from OutputForm
+
+    x < y == (x pretend String) < (y pretend String)
+    x = y == (x pretend String) = (y pretend String)
+
+    db_name ==> dbName$Lisp
+
+    db_part(x : %, n : Integer, k : Integer) : String ==
+        dbPart(x, n, k)$Lisp
+
+    alql_get_kind(x : %) : String ==
+        xs := x pretend String
+        xs(1) = char("a") or xs(1) = char("o") =>
+            db_part(x, 5, 1)(1..1)
+        xs(1..1)
+
+    alql_get_origin(x : %) : String ==
+        field := db_part(x, 5, 1)
+        k := position(char("("), field, 3)
+        k < 1 => field(2..)
+        field(2..(k - 1))
+
+    alql_get_params(x : %) : String ==
+        field := db_part(x, 5, 1)
+        k := position(char("("), field)
+        k < 1 => ""
+        field(k..)
+
     display(x) ==
-      name : OutputForm := dbName(x)$Lisp
-      type : OutputForm := dbPart(x, 4, 1$Lisp)$Lisp
-      output(hconcat(name,hconcat(" : ",type)))$OutputPackage
+        name : OutputForm := db_name(x)
+        type : OutputForm := message(db_part(x, 4, 1))
+        output(hconcat(name, hconcat(message(" : "), type)))$OutputPackage
+
     fullDisplay(x) ==
-      name : OutputForm := dbName(x)$Lisp
-      type : OutputForm := dbPart(x, 4, 1$Lisp)$Lisp
-      origin : OutputForm := hconcat(alqlGetOrigin(x$Lisp)$Lisp, alqlGetParams(x$Lisp)$Lisp)
-      fromPart : OutputForm := hconcat(" from ",origin)
-      condition : String := dbPart(x, 6, 1$Lisp)$Lisp
-      ifPart : OutputForm :=
-        condition = "" => empty()
-        hconcat(" if ",condition::OutputForm)
-      exposed? : String := SUBSTRING(dbPart(x, 3, 1)$Lisp, 0, 1)$Lisp
-      exposedPart : OutputForm :=
-        exposed? = "n" => " (unexposed)"
-        empty()
-      firstPart := hconcat(name,hconcat(" : ",type))
-      secondPart := hconcat(fromPart, hconcat(ifPart, exposedPart))
-      output(hconcat(firstPart, secondPart))$OutputPackage
+        name : OutputForm := db_name(x)
+        type : OutputForm := message(db_part(x, 4, 1))
+        origin : OutputForm := hconcat(message(alql_get_origin(x)),
+                                       message(alql_get_params(x)))
+        fromPart : OutputForm := hconcat(message(" from "), origin)
+        condition : String := db_part(x, 6, 1)
+        ifPart : OutputForm :=
+            condition = "" => empty()
+            hconcat(message(" if "), message(condition))
+        exposed? : String := db_part(x, 3, 1)(1..1)
+        exposedPart : OutputForm :=
+            exposed? = "n" => " (unexposed)"
+            empty()
+        firstPart := hconcat(name, hconcat(message(" : "), type))
+        secondPart := hconcat(fromPart, hconcat(ifPart, exposedPart))
+        output(hconcat(firstPart, secondPart))$OutputPackage
+
     coerce(s : String) : % == (s pretend %)
+
     coerce(x) : OutputForm == (x pretend String)::OutputForm
-    elt(x, sel) ==
-      s := PNAME(sel)$Lisp pretend String
-      s = "name" => dbName(x)$Lisp
-      s = "nargs" => dbPart(x,2,1$Lisp)$Lisp
-      s = "exposed" => SUBSTRING(dbPart(x,3,1)$Lisp,0,1)$Lisp
-      s = "type" => dbPart(x,4,1$Lisp)$Lisp
-      s = "abbreviation" => dbPart(x,5,1$Lisp)$Lisp
-      s = "kind" => alqlGetKindString(x)$Lisp
-      s = "origin" => alqlGetOrigin(x)$Lisp
-      s = "params" => alqlGetParams(x)$Lisp
-      s = "condition" => dbPart(x,6,1$Lisp)$Lisp
-      s = "doc" => dbComments(x)$Lisp
-      error "unknown selector"
+
+    elt(x, s) ==
+        s = 'name => db_name(x)
+        s = 'nargs => db_part(x, 2, 1)
+        s = 'exposed => db_part(x, 3, 1)(1..1)
+        s = 'type => db_part(x, 4, 1)
+        s = 'abbreviation => db_part(x, 5, 1)
+        s = 'kind => alql_get_kind(x)
+        s = 'origin => alql_get_origin(x)
+        s = 'params => alql_get_params(x)
+        s = 'condition => db_part(x, 6, 1)
+        s = 'doc => dbComments(x)$Lisp
+        error "unknown selector"
 
 )abbrev domain DBASE Database
 ++ This domain implements a simple view of a database whose fields are

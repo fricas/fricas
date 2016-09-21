@@ -31,7 +31,11 @@
 
 )package "BOOT"
 
---====================> WAS b-search.boot <================================
+-- from alql.boot
+getBrowseDatabase(kind) ==
+    $includeUnexposed? : local := true
+    not member(kind,'("o" "k" "c" "d" "p")) => nil
+    grepConstruct('"*", INTERN kind)
 
 --=======================================================================
 --              Grepping Database libdb.text
