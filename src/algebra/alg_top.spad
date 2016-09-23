@@ -583,14 +583,14 @@ OrientedFacet() : Exports == Impl where
        -- is a boundary for the facet that has been generated
        for e in expected repeat
            if (mm := position(e, boundary)) <= 0 then
-               print("orientedFacet:" << e <<
-                     (mm = 0 => "not in provided boundary";
+               print(message("orientedFacet:") << e <<
+                     message(mm = 0 => "not in provided boundary";
                       "has opposite orientation"))
                error "Not a boundary of a cell"
        for e in boundary repeat
            if (mm := position(e, expected)) <= 0 then
-               print("orientedFacet:" << e <<
-                     (mm = 0 => "not in constructed boundary";
+               print(message("orientedFacet:") << e <<
+                     message(mm = 0 => "not in constructed boundary";
                       "has opposite orientation"))
                error "Not a boundary of a cell"
        res
@@ -895,11 +895,11 @@ OrientedFacet() : Exports == Impl where
 
    -- output
    coerce(s : %) : OutputForm ==
-       prefix : OutputForm := ""::OutputForm
+       prefix := message("")
        m : Integer := s.mul
        if abs(m) ~= 1 then
-           prefix := hconcat(m::OutputForm, "*"::OutputForm)
-       if m = -1 then prefix := "-"::OutputForm
+           prefix := hconcat(m::OutputForm, message("*"))
+       if m = -1 then prefix := message("-")
        elements : List(OutputForm) := [x::OutputForm for x in s.fac]
        --print("orientedFacet coerce elements=" << _
        --   elements << " m=" << m)
@@ -1032,11 +1032,11 @@ ProductFacet() : Exports == Impl where
 
    -- output
    coerce(s : %) : OutputForm ==
-       prefix : OutputForm := ""::OutputForm
+       prefix := message("")
        m : Integer := s.mul
        if abs(m) ~= 1 then
-           prefix := hconcat(m::OutputForm, "*"::OutputForm)
-       if m = -1 then prefix := "-"::OutputForm
+           prefix := hconcat(m::OutputForm, message("*"))
+       if m = -1 then prefix := message("-")
        elements := []$List(OutputForm)
        for x in s.ind repeat
            l : NNI := x.left
@@ -1381,11 +1381,11 @@ CubicalFacet() : Exports == Impl where
 
    -- output
    coerce(s : %) : OutputForm ==
-       prefix : OutputForm := ""::OutputForm
+       prefix := message("")
        m : Integer := s.mul
        if abs(m) ~= 1 then
-           prefix := hconcat(m::OutputForm, "*"::OutputForm)
-       if m = -1 then prefix := "-"::OutputForm
+           prefix := hconcat(m::OutputForm, message("*"))
+       if m = -1 then prefix := message("-")
        elements : List(OutputForm) := [x::OutputForm for x in s.fac]
        --print("orientedFacet coerce elements=" << _
        --   elements << " m=" << m)
@@ -1529,13 +1529,14 @@ ChainComplex() : Exports == Impl where
        for x in 2..len repeat
            m : Matrix(Integer) := a.x
            if maxRowIndex(m) ~= maxColIndex(last) then
-               print("validate failed nRows=" << maxRowIndex(m) <<
-                   " not equal to nCols " << maxColIndex(last))
+               print(message("validate failed nRows=") << maxRowIndex(m) <<
+                   message(" not equal to nCols ") << maxColIndex(last))
                return false
            prod : Matrix(Integer) := last*m
            if not zero?(prod) then
-               print("validate failed: product of adjacent maps should be zero"
-                   << last << " * " << m << " = " << prod)
+               print(message(
+                  "validate failed: product of adjacent maps should be zero")
+                   << last << message(" * ") << m << message(" = ") << prod)
                return false
            last := m
        true
@@ -2115,13 +2116,13 @@ FiniteSimplicialComplex(VS : VertexSet) : Exports == Impl where
            --print("flags." << x << "=true " << flags)
        --print("final flags " << flags)
        for f in flags repeat
-           if f=false then return false
+           if f = false then return false
        true
 
    -- output
    coerce(s : %) : OutputForm ==
        res := empty()$OutputForm
-       if empty?(s.SIMP) then return bracket("empty"::OutputForm)
+       if empty?(s.SIMP) then return bracket(message("empty"))
        for a in s.SIMP repeat
            -- a is OrientedFacet
            res := vconcat(res, a::OutputForm)
@@ -2322,8 +2323,8 @@ FiniteCubicalComplex(VS : VertexSet) : Exports == Impl where
            if gr > 0
                then
                    res.gr := concat(res.gr, face)
-               else
-                   print("grade face:" << face << " gr=" << res << "<1")
+               -- else
+               --    print("grade face:" << face << " gr=" << res << "<1")
        --print("grade(" << s << ") res=" << res)
        res
 
@@ -2467,7 +2468,7 @@ FiniteCubicalComplex(VS : VertexSet) : Exports == Impl where
    -- output
    coerce(s : %) : OutputForm ==
        res := empty()$OutputForm
-       if empty?(s.CUBE) then return bracket("empty"::OutputForm)
+       if empty?(s.CUBE) then return bracket(message("empty"))
        for a in s.CUBE repeat
            -- a is OrientedFacet
            res := vconcat(res, a::OutputForm)
@@ -2605,8 +2606,9 @@ DeltaComplex(VS : VertexSet) : Exports == Impl where
                        i := position(oldFaceLow, previousFaceList
                                     )$OrientedFacet
                        if i = 0 then
-                           print("  deltaComplex oldFaceLow=" << oldFaceLow <<
-                                 " not found in previousFaceList="
+                           print(message("  deltaComplex oldFaceLow=")
+                                 << oldFaceLow <<
+                                 message(" not found in previousFaceList=")
                                  << previousFaceList )
                            error concat("cant find index:", string(i))
                        newIndexes := cons(i, newIndexes)
@@ -2656,8 +2658,9 @@ DeltaComplex(VS : VertexSet) : Exports == Impl where
                    --      " allFacetsGraded.1=" << allFacetsGraded.1)
                    i := position(oldFaceLow, previousFaceList)$CubicalFacet
                    if i = 0 then
-                       print("  deltaComplex oldFaceLow=" << oldFaceLow <<
-                             " not found in previousFaceList="
+                       print(message("  deltaComplex oldFaceLow=")
+                             << oldFaceLow <<
+                             message(" not found in previousFaceList=")
                              << previousFaceList )
                        error concat("deltaComplex: cant find index:",
                                     string(i))
@@ -2791,7 +2794,7 @@ DeltaComplex(VS : VertexSet) : Exports == Impl where
    fundamentalGroup(s : %, simplify : Boolean, trace : Boolean
                    ) : GroupPresentation ==
        -- Generates fundamental group from this delta complex.
-       if trace then print("fundamentalGroup(" << s << ")")
+       if trace then print(message("fundamentalGroup(") << s << message(")"))
        -- fundamental group is about triangles (or squares for cubical
        -- complex) so get face map for triangles (2 dimensional)
        -- compute edge-path group
@@ -2800,31 +2803,32 @@ DeltaComplex(VS : VertexSet) : Exports == Impl where
        -- choose a spanning tree for the 1-skeleton
        span : Tree(Integer) := spanningTreeNode(graph, 1::NNI
                                                )$UndirectedGraph(NNI)
-       if trace then print("fundamentalGroup span=" << span)
+       if trace then print(message("fundamentalGroup span=") << span)
        edges : List(List(Integer)) := faceMap(s, 1::NNI)
        res := []$List(List(Integer))
        res := linksInTree(res, span)
        edgesInTree : List(Boolean) := [false for y in edges]
        if trace then
-           print("fundamentalGroup edges=" << edges << " res=" << res)
+           print(message("fundamentalGroup edges=") << edges <<
+                 message(" res=") << res)
        for edge in edges for edgen in 1..(#edges) repeat
            --if member?(unsignedEdge(edge), res) then edgesInTree.edgen := true
            if containsEdge?(edge, res) then edgesInTree.edgen := true
        if trace then
-           print("fundamentalGroup linksInTree=" << res <<
-                 " edgesInTree=" << edgesInTree)
+           print(message("fundamentalGroup linksInTree=") << res <<
+                 message(" edgesInTree=") << edgesInTree)
        polygons : List(List(Integer)) := faceMap(s, 2::NNI)
        -- generate rules, these come from 2 dimensional triangles in the
        -- case of simplectical or squares in the case of cubical
        rules := []$List(List(Integer))
-       if trace then print("fundamentalGroup polygons=" << polygons )
+       if trace then print(message("fundamentalGroup polygons=") << polygons )
        for t in polygons repeat
            rule := []$List(Integer)
            for vertn in 1..(#t) repeat
                if not edgesInTree.(abs(t.vertn)) then
                    rule := concat(rule, t.vertn)
            if not empty?(rule) then rules := concat(rules, rule)
-       if trace then print("fundamentalGroup rules=" << rules )
+       if trace then print(message("fundamentalGroup rules=") << rules)
        -- groups generators: edges in 1-skeleton
        -- groups relations: for every 2-simplex
        --                   e0 e1^-1 e2
@@ -3237,9 +3241,9 @@ SimplicialComplexTests() : with
       d := delta(f)
       f2 := orientedFacet(d)
       if f ~= f2 then
-          print("testOrientedFacet error: random:" << f)
-          print("testOrientedFacet: delta=" << d)
-          print("testOrientedFacet: f2=" << f2)
+          print(message("testOrientedFacet error: random:") << f)
+          print(message("testOrientedFacet: delta=") << d)
+          print(message("testOrientedFacet: f2=") << f2)
           error "test OrientedFacet failed : delta should be inverse "
                 "of construct from boundary"
       true
@@ -3255,9 +3259,9 @@ SimplicialComplexTests() : with
       d := sc::DeltaComplex(VertexSetAbstract)
       sc2 := d::FiniteSimplicialComplex(VertexSetAbstract)
       if sc ~= sc2 then
-          print("testSimplicialComplex1 error: random:" << sc)
-          print("testSimplicialComplex1 error: deltaComplex=" << d)
-          print("testSimplicialComplex1 error: f2=" << sc2)
+          print(message("testSimplicialComplex1 error: random:") << sc)
+          print(message("testSimplicialComplex1 error: deltaComplex=") << d)
+          print(message("testSimplicialComplex1 error: f2=") << sc2)
           error "test SimplicialComplex1 failed : coerce to delta should "
                 "be inverse of FiniteSimplicialComplex"
       delta1 := delta(sc)
@@ -3267,9 +3271,9 @@ SimplicialComplexTests() : with
       vs1 : VertexSetAbstract := vertexSeta(0::NNI)
       zero := simplicialComplex(vs1, v1)$ASIMP
       if delta2 ~= zero then
-          print("testSimplicialComplex2 error: random:" << sc)
-          print("testSimplicialComplex2 error: delta1=" << delta1)
-          print("testSimplicialComplex2 error: delta2=" << delta2)
+          print(message("testSimplicialComplex2 error: random:") << sc)
+          print(message("testSimplicialComplex2 error: delta1=") << delta1)
+          print(message("testSimplicialComplex2 error: delta2=") << delta2)
           error "test SimplicialComplex2 failed : delta function "
                 "composed with itself should give zero"
       delta1 := delta(sc)
@@ -3287,38 +3291,38 @@ SimplicialComplexTests() : with
       rule2 := groupPresentation([1], [[1, 1]])$GroupPresentation
       g1 := fundamentalGroup(sphereSolid(2)$SimplicialComplexFactory)
       if g1 ~= triv then
-          print("testSimplicialComplex2 fundamentalGroup:" << g1 << _
-                    " should be empty:" << triv)
+          print(message("testSimplicialComplex2 fundamentalGroup:") << g1 << _
+                    message(" should be empty:") << triv)
           error "fundamentalGroup of sphereSolid(2) should be empty"
       g2 := fundamentalGroup(sphereSolid(3)$SimplicialComplexFactory)
       if g2 ~= triv then
-          print("testSimplicialComplex2 fundamentalGroup:" << g2 << _
-                    " should be empty:" << triv)
+          print(message("testSimplicialComplex2 fundamentalGroup:") << g2 << _
+                    message(" should be empty:") << triv)
           error "fundamentalGroup of sphereSolid(3) should be empty"
       g3 := fundamentalGroup(sphereSurface(2)$SimplicialComplexFactory)
       if g3 ~= free1 then
-          print("testSimplicialComplex2 fundamentalGroup:" << g3 << _
-                    " should be free in 1 dim:" << free1)
+          print(message("testSimplicialComplex2 fundamentalGroup:") << g3 << _
+                    message(" should be free in 1 dim:") << free1)
           error "fundamentalGroup of sphereSurface(2) should be free in 1 gen"
       g4 := fundamentalGroup(sphereSurface(3)$SimplicialComplexFactory)
       if g4 ~= triv then
-          print("testSimplicialComplex2 fundamentalGroup:" << g4 << _
-                    " should be empty:" << triv)
+          print(message("testSimplicialComplex2 fundamentalGroup:") << g4 << _
+                    message(" should be empty:") << triv)
           error "fundamentalGroup of sphereSurface(3) should be empty"
       g5 := fundamentalGroup(band()$SimplicialComplexFactory)
       if g5 ~= free1 then
-          print("testSimplicialComplex2 fundamentalGroup:" << g5 << _
-                    " should be free in 1 dim:" << free1)
+          print(message("testSimplicialComplex2 fundamentalGroup:") << g5 << _
+                    message(" should be free in 1 dim:") << free1)
           error "fundamentalGroup of band() should be free in 1 gen"
       g6 := fundamentalGroup(moebiusBand()$SimplicialComplexFactory)
       if g6 ~= free1 then
-          print("testSimplicialComplex2 fundamentalGroup:" << g6 << _
-                    " should be free in 1 dim:" << free1)
+          print(message("testSimplicialComplex2 fundamentalGroup:") << g6 << _
+                    message(" should be free in 1 dim:") << free1)
           error "fundamentalGroup of moebiusBand() should be free in 1 gen"
       g7 := fundamentalGroup(projectivePlane()$SimplicialComplexFactory)
       if g7 ~= rule2 then
-          print("testSimplicialComplex2 fundamentalGroup:" << g7 << _
-                    " should have 1 rule:" << rule2)
+          print(message("testSimplicialComplex2 fundamentalGroup:") << g7 << _
+                    message(" should have 1 rule:") << rule2)
           error "fundamentalGroup of projectivePlane() should have 1 rule"
       true
 
@@ -3327,81 +3331,81 @@ SimplicialComplexTests() : with
       b1 := sphereSolid(2)$SimplicialComplexFactory
       h1 := homology(b1)
       if h1 ~= [homologyz(), homology0(), homology0()] then
-          print("testHomology sphereSolid 2D is:" << h1 << _
-            " should be:" << [homologyz(), homology0(), homology0()])
+          print(message("testHomology sphereSolid 2D is:") << h1 << _
+            message(" should be:") << [homologyz(), homology0(), homology0()])
           error "error in testHomology for sphereSolid 2D"
       b2 := sphereSolid(3)$SimplicialComplexFactory
       h2 := homology(b2)
       if h2 ~= [homologyz(), homology0(), homology0(), homology0()] then
-          print("testHomology sphereSolid 3D is:" << h2 << _
-            " should be:" << [homologyz(), homology0(), homology0()])
+          print(message("testHomology sphereSolid 3D is:") << h2 << _
+            message(" should be:") << [homologyz(), homology0(), homology0()])
           error "error in testHomology for sphereSolid 3D"
       b3 := sphereSurface(2)$SimplicialComplexFactory
       h3 := homology(b3)
       if h3 ~= [homologyz(), homologyz()] then
-          print("testHomology sphereSurface 2D is:" << h3 << _
-                " should be:" << [homologyz(), homologyz()])
+          print(message("testHomology sphereSurface 2D is:") << h3 << _
+                message(" should be:") << [homologyz(), homologyz()])
           error "error in testHomology for sphereSurface 2D"
       b4 := sphereSurface(3)$SimplicialComplexFactory
       h4 := homology(b4)
       if h4 ~= [homologyz(), homology0(), homologyz()] then
-          print("testHomology sphereSurface 3D is:" << h4 << _
-            " should be:" << [homologyz(), homology0(), homologyz()])
+          print(message("testHomology sphereSurface 3D is:") << h4 << _
+            message(" should be:") << [homologyz(), homology0(), homologyz()])
           error "error in testHomology for sphereSurface 3D"
       b5 := torusSurface()$SimplicialComplexFactory
       h5 := homology(b5)
       if h5 ~= [homologyz(), homologyzz(), homologyz()] then
-          print("testHomology torusSurface is:" << h5 << _
-            " should be:" << [homologyz(), homologyzz(), homologyz()])
+          print(message("testHomology torusSurface is:") << h5 << _
+            message(" should be:") << [homologyz(), homologyzz(), homologyz()])
           error "error in testHomology for torusSurface"
       b6 := projectivePlane()$SimplicialComplexFactory
       h6 := homology(b6)
       if h6 ~= [homologyz(), homologyc2(), homology0()] then
-          print("testHomology projectivePlane is:" << h6 << _
-            " should be:" << [homologyz(), homologyc2(), homology0()])
+          print(message("testHomology projectivePlane is:") << h6 << _
+            message(" should be:") << [homologyz(), homologyc2(), homology0()])
           error "error in testHomology for projectivePlane"
       b7 := kleinBottle()$SimplicialComplexFactory
       h7 := homology(b7)
       if h7 ~= [homologyz(), homologyzc2(), homology0()] then
-          print("testHomology kleinBottle is:" << h7 << _
-            " should be:" << [homologyz(), homologyzc2(), homology0()])
+          print(message("testHomology kleinBottle is:") << h7 << _
+            message(" should be:") << [homologyz(), homologyzc2(), homology0()])
           error "error in testHomology for kleinBottle"
       -- now test cubical complexes
       bc1 := sphereSolid(2)$CubicalComplexFactory
       hc1 := homology(b1)
       if hc1 ~= [homologyz(), homology0(), homology0()] then
-          print("testHomology sphereSolid 2D is:" << hc1 << _
-            " should be:" << [homologyz(), homology0(), homology0()])
+          print(message("testHomology sphereSolid 2D is:") << hc1 << _
+            message(" should be:") << [homologyz(), homology0(), homology0()])
           error "error in testHomology for sphereSolid 2D"
       bc2 := sphereSolid(3)$CubicalComplexFactory
       hc2 := homology(bc2)
       if hc2 ~= [homologyz(), homology0(), homology0(), homology0()] then
-          print("testHomology sphereSolid 3D is:" << hc2 << _
-            " should be:" << [homologyz(), homology0(), homology0()])
+          print(message("testHomology sphereSolid 3D is:") << hc2 << _
+            message(" should be:") << [homologyz(), homology0(), homology0()])
           error "error in testHomology for sphereSolid 3D"
       bc3 := sphereSurface(2)$CubicalComplexFactory
       hc3 := homology(bc3)
       if hc3 ~= [homologyz(), homologyz()] then
-          print("testHomology sphereSurface 2D is:" << hc3 << _
-                    " should be:" << [homologyz(), homologyz()])
+          print(message("testHomology sphereSurface 2D is:") << hc3 << _
+                    message(" should be:") << [homologyz(), homologyz()])
           error "error in testHomology for sphereSurface 2D"
       bc4 := sphereSurface(3)$CubicalComplexFactory
       hc4 := homology(bc4)
       if hc4 ~= [homologyz(), homology0(), homologyz()] then
-          print("testHomology sphereSurface 3D is:" << hc4 << _
-            " should be:" << [homologyz(), homology0(), homologyz()])
+          print(message("testHomology sphereSurface 3D is:") << hc4 << _
+            message(" should be:") << [homologyz(), homology0(), homologyz()])
           error "error in testHomology for sphereSurface 3D"
       bc5 := torusSurface()$CubicalComplexFactory
       hc5 := homology(bc5)
       if hc5 ~= [homologyz(), homologyzz(), homologyz()] then
-          print("testHomology torusSurface is:" << hc5 << _
-            " should be:" << [homologyz(), homologyzz(), homologyz()])
+          print(message("testHomology torusSurface is:") << hc5 << _
+            message(" should be:") << [homologyz(), homologyzz(), homologyz()])
           error "error in testHomology for torusSurface"
       bc6 := projectivePlane()$CubicalComplexFactory
       hc6 := homology(bc6)
       if hc6 ~= [homologyz(), homologyc2(), homology0()] then
-          print("testHomology projectivePlane is:" << hc6 << _
-            " should be:" << [homologyz(), homologyc2(), homology0()])
+          print(message("testHomology projectivePlane is:") << hc6 << _
+            message(" should be:") << [homologyz(), homologyc2(), homology0()])
           error "error in testHomology for projectivePlane"
       true
 

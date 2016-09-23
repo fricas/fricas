@@ -507,7 +507,7 @@ FiniteMoebiusFunction(P : Join(PartialOrder, SetCategory)
     moebiusMatrix(mf : %) : Matrix R == rep(mf) matrix
 
     coerce(mf : %) : OutputForm ==
-        hconcat("Moebius Function"::OutputForm, coerce(members(mf)))
+        hconcat(message("Moebius Function"), coerce(members(mf)))
 
 )if false
 \section{domain GENMOEBF GeneralizedFiniteMoebiusFunction}
@@ -585,7 +585,7 @@ GeneralizedFiniteMoebiusFunction(P : Join(PartialOrder, SetCategory), R: Field) 
 
     zetaMatrix(mf : %) : Matrix R == rep(mf) zmatrix
 
-    coerce(mf : %) : OutputForm == "m"::OutputForm
+    coerce(mf : %) : OutputForm == message("m")
 
 )if false
 \section{Poset Code}
@@ -3175,7 +3175,7 @@ ILogic() : Exports == Implementation where
       if n case unaryOp then
           -- unary node which has a subnode c1
           return concat(["~(", toString(n.unaryOp.c1), ")"])
-      "error"
+      error "toString: unexpected representation"
 
   -- similar to 'toString' but does not put outer compound terms
   -- in brackets
@@ -3196,30 +3196,28 @@ ILogic() : Exports == Implementation where
       if n case unaryOp then
           -- unary node which has a subnode c1
           return concat(["~(", toString(n.unaryOp.c1), ")"])
-      "error"
+      error "toStringUnwrapped: unexpected representation"
 
   -- output
   coerce(n : %) : OutputForm ==
-      if n case const then
-          if (n.const.val = "F"::Symbol) then return "__|__"::OutputForm
-          if (n.const.val = "T"::Symbol) then return "T"::OutputForm
-          return "?"::OutputForm
-      if n case var then
-          return ((n.var.str)::Symbol)::OutputForm
-          -- convert to 'Symbol' first to avoid displaying quotes
+      n case const =>
+          (n.const.val = "F"::Symbol) => message("__|__")
+          n.const.val = "T"::Symbol => message("T")
+          message("?")
+      n case var => message(n.var.str)
           --print("toString case i1="::Symbol << s << n)
-      if n case binaryOp then
+      n case binaryOp =>
           -- binary node which has two subnodes c1 and c2
-          s1 : OutputForm := "->"::OutputForm
-          if n.binaryOp.typ = "AND"::Symbol then s1 := "/\"::OutputForm
-          if n.binaryOp.typ = "OR"::Symbol then s1 := "\/"::OutputForm
-          return hconcat(["("::OutputForm, (n.binaryOp.c1)::OutputForm_
-               , s1, (n.binaryOp.c2)::OutputForm, ")"::OutputForm])$OutputForm
-      if n case unaryOp then
+          s1 : OutputForm := message("->")
+          if n.binaryOp.typ = "AND"::Symbol then s1 := message("/\")
+          if n.binaryOp.typ = "OR"::Symbol then s1 := message("\/")
+          paren(infix(s1, (n.binaryOp.c1)::OutputForm,
+                         (n.binaryOp.c2)::OutputForm))
+      n case unaryOp =>
           -- unary node which has a subnode c1
-          return hconcat(["~("::OutputForm, (n.unaryOp.c1)::OutputForm,
-                          ")"::OutputForm])$OutputForm
-      "error"::OutputForm
+          hconcat([message("~("), (n.unaryOp.c1)::OutputForm,
+                          message(")")])$OutputForm
+      error "coerce: unexpected representation"
 
 )if false
 \section{Infinite (unbounded) Lattices}
@@ -3699,21 +3697,21 @@ LatticeMeetOfJoins() : Exports == Implementation where
                   var : Record(str : String))) : OutputForm ==
         if (a case var) then return (a.var.str)::OutputForm
         if (a case const) then return (a.const.val)::OutputForm
-        "error"::OutputForm
+        error "outputVarOrLit"
 
    -- output
    coerce(n : %) : OutputForm ==
        outerList : List OutputForm := []
-       r : OutputForm := "("::OutputForm
+       r : OutputForm := message("(")
        for outer in n for outern in 1..#n repeat
            innerList : List OutputForm := []
            for inner in outer for innern in (1..#outer) repeat
                r := hconcat(r::OutputForm, outputVarOrLit(inner))
                if innern ~= #outer then
-                   r := hconcat(r::OutputForm, "_\_/"::OutputForm)
+                   r := hconcat(r::OutputForm, message("_\_/"))
            if outern ~= #n then
-               r := hconcat(r::OutputForm, ")_/_\("::OutputForm)
-       hconcat(r, ")"::OutputForm)::OutputForm
+               r := hconcat(r::OutputForm, message(")_/_\("))
+       hconcat(r, message(")"))::OutputForm
 
 )abbrev domain LATJOFM LatticeJoinOfMeets
 ++ Author: Martin Baker
@@ -4063,21 +4061,21 @@ LatticeJoinOfMeets() : Exports == Implementation where
                   var : Record(str : String))) : OutputForm ==
         if (a case var) then return (a.var.str)::OutputForm
         if (a case const) then return (a.const.val)::OutputForm
-        "error"::OutputForm
+        error "outputVarOrLit"
 
    -- output
    coerce(n : %) : OutputForm ==
        outerList : List OutputForm := []
-       r : OutputForm := "("::OutputForm
+       r : OutputForm := message("(")
        for outer in n for outern in 1..#n repeat
            innerList : List OutputForm := []
            for inner in outer for innern in (1..#outer) repeat
                r := hconcat(r::OutputForm, outputVarOrLit(inner))
                if innern ~= #outer then
-                   r := hconcat(r::OutputForm, "_/_\"::OutputForm)
+                   r := hconcat(r::OutputForm, message("_/_\"))
            if outern ~= #n then
-               r := hconcat(r::OutputForm, ")_\_/("::OutputForm)
-       hconcat(r, ")"::OutputForm)::OutputForm
+               r := hconcat(r::OutputForm, message(")_\_/("))
+       hconcat(r, message(")"))::OutputForm
 
    -- convert lattice from join-of-meets to meet-of-joins
    coerce(n : %) : LatticeMeetOfJoins ==
@@ -4312,10 +4310,10 @@ BitStreamFrame() : Exports == Impl where
      coerce(s : %) : OutputForm ==
          cs : List OutputForm := []
          for row in s repeat
-             r : List OutputForm := ["starts:"::OutputForm]
+             r : List OutputForm := [message("starts:")]
              for x in row repeat
-                 ro : OutputForm := "0"::OutputForm
-                 if x then ro := "1"::OutputForm
+                 ro : OutputForm := message("0")
+                 if x then ro := message("1")
                  r := concat(r, ro)
                  --r := concat(r, " "::OutputForm)
              c : OutputForm := hconcat(r)

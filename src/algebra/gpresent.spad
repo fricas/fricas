@@ -362,9 +362,9 @@ GroupPresentation() : Exports == Impl where
                toBeRemoved := abs(first(rule)) pretend NNI
        if toBeRemoved = 0 then return s
        if trace then
-           print hconcat(["simplify: generator '"::OutputForm, _
+           print hconcat([message("simplify: generator '"), _
                genName(toBeRemoved), _
-               "' is identity so remove it"::OutputForm])
+               message("' is identity so remove it")])
        gens1 := removeGen(gens1, toBeRemoved)
        rels1 := removeGen2(rels1, toBeRemoved)
        if trace then print genName2(rels1)
@@ -392,11 +392,11 @@ GroupPresentation() : Exports == Impl where
                if replaceFrom = abs(replaceTo) then replaceFrom := 0
        if replaceFrom=0 then return s
        if trace then
-           print hconcat(["simplify: generator '"::OutputForm, _
+           print hconcat([message("simplify: generator '"), _
                genName(replaceFrom), _
-               "' is replaced by '"::OutputForm, _
+               message("' is replaced by '"), _
                genName(replaceTo), _
-               "'"::OutputForm])
+               message("'")])
        gens1 := removeGen(gens1, replaceFrom)
        rels1 := replaceGen(rels1, replaceFrom, replaceTo)
        if trace then print genName2(rels1)
@@ -435,9 +435,9 @@ GroupPresentation() : Exports == Impl where
            for ele in rule repeat
                if abs(ele) = abs(lastele) and sign(ele) ~= sign(lastele) then
                    if trace then print hconcat([_
-                       "simplify: generator '"::OutputForm, _
+                       message("simplify: generator '"), _
                        genName(ele), _
-                       "' is adjacent to its inverse"::OutputForm])
+                       message("' is adjacent to its inverse")])
                    changed := true
                    lastele := 0
                else
@@ -511,7 +511,7 @@ GroupPresentation() : Exports == Impl where
    -- 5) remove duplicate rules
    simplify(s : %, trace : Boolean) : % ==
        if trace then
-           print("before simplification :=" << s)
+           print(message("before simplification :=") << s)
        res : % := s
        lastpass : % := s
        rep : Boolean := true
@@ -633,13 +633,13 @@ Homology() : Exports == Impl where
        --
        --if not empty?(BInt) then
        if nrows(AInt) ~= ncols(BInt) then
-           print("homologyGroup validation error - A rows : " <<_
-                        nrows(AInt) << "~= B cols : " << ncols(BInt))
+           print(message("homologyGroup validation error - A rows : ") <<_
+                        nrows(AInt) << message("~= B cols : ") << ncols(BInt))
        else
            zero : Matrix(Integer) := zero(nrows(BInt), ncols(AInt))
            if BInt*AInt ~= zero then
-               print("homologyGroup validation error - B*A ~= 0 : "
-                     << BInt*AInt << "  ~= 0 : " << zero)
+               print(message("homologyGroup validation error - B*A ~= 0 : ")
+                     << BInt*AInt << message("  ~= 0 : ") << zero)
        --
        -- calculate torsion part
        --
@@ -714,10 +714,10 @@ Homology() : Exports == Impl where
        s1 := s pretend Record(torsionPart : List(GENI),
                               freePart : List(Vector(Integer)))
        for g in s1.torsionPart repeat
-           ln := hconcat(["gen="::OutputForm, (g.vec)::OutputForm, _
-               " ord="::OutputForm, (g.ord)::OutputForm])$OutputForm
+           ln := hconcat([message("gen="), (g.vec)::OutputForm, _
+               message(" ord="), (g.ord)::OutputForm])$OutputForm
            res := vconcat(res, ln)
-       ln2 := hconcat([" free part="::OutputForm,
+       ln2 := hconcat([message(" free part="),
                        (s1.freePart)::OutputForm])$OutputForm
        res := vconcat(res, ln2)
        res
@@ -755,21 +755,21 @@ Homology() : Exports == Impl where
        nFree := #(s1.freePart)
        if nFree > 0 then
            -- TODO should check for empty list here
-           res := hconcat(res, "Z"::OutputForm)
+           res := hconcat(res, message("Z"))
            if nFree > 1 then
-               res := hconcat([res, "*"::OutputForm,
+               res := hconcat([res, message("*"),
                                nFree::OutputForm])$OutputForm
            firstTermRead := true
        for t in s1.torsionPart repeat
            if not (t.ord = 0 or t.ord = 1) then
                if firstTermRead then
-                   res := hconcat(res, "+"::OutputForm)
-               ln2 := hconcat(["C"::OutputForm,
+                   res := hconcat(res, message("+"))
+               ln2 := hconcat([message("C"),
                                (t.ord)::OutputForm])$OutputForm
                res := hconcat(res, ln2)
                firstTermRead := true
        if not firstTermRead then
-           res := hconcat(res, "0"::OutputForm)
+           res := hconcat(res, message("0"))
        res
 
 --Copyright (c) 2016, Martin J Baker.

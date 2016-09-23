@@ -157,9 +157,11 @@ ComplexRootFindingPackage(R, UP) : public == private where
        --a : R := (1000000000000000000000 :: I) :: R
        a : R := (1000 :: I) :: R
        1/a
-     emptyLine : OF := "  "
-     dashes : OF := center "---------------------------------------------------"
-     dots : OF :=   center "..................................................."
+     emptyLine : OF := message("  ")
+     dashes : OF := center
+          message("---------------------------------------------------")
+     dots : OF := center
+          message("...................................................")
      one : R := 1$R
      two : R := 2 * one
      ten : R := 10 * one
@@ -213,8 +215,8 @@ ComplexRootFindingPackage(R, UP) : public == private where
        if R has QuotientFieldCategory Integer then
          rd : Integer := ceiling(1/r)
          globalDigits := rd * rd * 10
-         lof : List OF := _
-           ["setErrorBound: internal digits set to", globalDigits::OF]
+         lof : List OF := [message("setErrorBound: internal digits set to"),
+                           globalDigits::OF]
          print hconcat lof
        messagePrint  "setErrorBound: internal error bound set to"
        globalEps
@@ -251,7 +253,7 @@ ComplexRootFindingPackage(R, UP) : public == private where
          -- tp is the first approximation of a divisor of poly:
          tp : UP  := lift psR
          zero? degree tp  =>
-           if info then print "we leave as we got constant factor"
+           if info then messagePrint("we leave as we got constant factor")
            nilFactor(poly, 1)$(FR UP)
          -- this was the case where we don't find a non-trivial factorization
          -- we refine tp by repeated polynomial division and hope that
@@ -440,11 +442,11 @@ ComplexRootFindingPackage(R, UP) : public == private where
            --lof : L OF :=  [i :: OF,"-th division:"::OF]
            --print center box hconcat lof
            print emptyLine
-           lof : L OF :=  ["error polynomial has degree " ::OF,_
-             (degree tp)::OF, " and norm " :: OF, nm :: OF]
+           lof : L OF :=  [message("error polynomial has degree "),
+               (degree tp)::OF, message(" and norm "), nm :: OF]
            print center hconcat lof
-           lof : L OF := ["degrees of factors:" ::OF,_
-             (degree factor1)::OF,"  ", (degree factor2)::OF]
+           lof : L OF := [message("degrees of factors:"),
+                 (degree factor1)::OF, message("  "), (degree factor2)::OF]
            print center hconcat lof
        if info then print emptyLine
        reverse lfae
@@ -467,8 +469,9 @@ ComplexRootFindingPackage(R, UP) : public == private where
        listOfFactors : L Record(factor : UP, exponent : I) := _
          list [makeMonic poly, 1]
        if info then
-         lof : L OF := [dashes,dots,"list of Factors:",dots,listOfFactors::OF, _
-           dashes, "list of Linear Factors:", dots, result::OF, _
+         lof : L OF := [dashes, dots, message("list of Factors:"), dots,
+              listOfFactors::OF, _
+           dashes, message("list of Linear Factors:"), dots, result::OF, _
            dots, dashes]
          print vconcat lof
        while not null listOfFactors  repeat
@@ -476,15 +479,16 @@ ComplexRootFindingPackage(R, UP) : public == private where
          exponentOfp : I := (first listOfFactors).exponent
          listOfFactors := rest listOfFactors
          if info then
-           lof : L OF := ["just now we try to split the polynomial:",p::OF]
-           print vconcat lof
+             lof : L OF := [message(
+                 "just now we try to split the polynomial:"), p::OF]
+             print vconcat lof
          split : FR UP  := pleskenSplit(p, eps0, info)
 --         one? numberOfFactors split =>
          (numberOfFactors split = 1) =>
            -- in a later version we will change error bound and
            -- accuracy here to deal this case as well
-           lof : L OF := ["factor: couldn't split factor",_
-             center(p :: OF), "with required error bound"]
+           lof : L OF := [message("factor: couldn't split factor"),_
+             center(p :: OF), message("with required error bound")]
            print vconcat lof
            result := result * nilFactor(p, exponentOfp)
          -- now we got 2 good factors of p, we drop p and continue

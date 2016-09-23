@@ -346,7 +346,6 @@ compAtom1(x, m, e) ==
   t:=
     isSymbol x =>
       compSymbol(x,m,e) or return nil
-    m = $OutputForm and primitiveType x => [x,m,e]
     STRINGP x => [x,x,e]
     [x,primitiveType x or return nil,e]
   convert(t,m)
