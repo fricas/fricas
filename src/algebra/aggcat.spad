@@ -951,7 +951,7 @@ TableAggregate(Key : Type, Entry : Type) : Category ==
    if Key has CoercibleTo(OutputForm) and Entry has CoercibleTo(OutputForm)
    then
        coerce(t : %) : OutputForm ==
-           prefix("table"::OutputForm,
+           prefix(message("table")$OutputForm,
                     [k::OutputForm = (t.k)::OutputForm for k in keys t])
 
    elt(t, k) ==
@@ -1202,15 +1202,15 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
 
        if S has CoercibleTo OutputForm then
            coerce(t : %) : OutputForm ==
-               empty? t =>  "[]"::OutputForm
-               v := value(t):: OutputForm
+               empty? t =>  message("[]")$OutputForm
+               v := value(t)::OutputForm
                empty? left t =>
                    empty? right t => v
                    r := coerce(right t)@OutputForm
-                   bracket ["."::OutputForm, v, r]
+                   bracket [message(".")$OutputForm, v, r]
                l := coerce(left t)@OutputForm
                r :=
-                   empty? right t => "."::OutputForm
+                   empty? right t => message(".")$OutputForm
                    coerce(right t)@OutputForm
                bracket [l, v, r]
 
