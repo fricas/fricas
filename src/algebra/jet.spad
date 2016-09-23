@@ -2107,7 +2107,7 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
       -- multi-index.
 
     setNotation(s : Sy) : Sy ==
-        print("only repeated index notation possible")$OUT
+        print(message("only repeated index notation possible"))$OUT
         'Repeated
 
     getNotation() : Sy == 'Repeated
@@ -2569,7 +2569,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
     groebner(sys : L %) : L % ==
          polys : L SMP := map(numer, sys)$FLAF1
          --print("groebner")$OUT
-         print(assign("polys", polys::OUT))$OUT
+         print(assign(message("polys"), polys::OUT))$OUT
          gbase := groebner(polys)$GB
          --print("END groebner")$OUT
          map(coerce, gbase)$FLAF2
@@ -2577,12 +2577,12 @@ JetBundleExpression(JB : JBC) : Cat == Def where
     groebnerSimp(sysL : L LDREC, ind : L JB) : L LDREC ==
         -- Simplification using Groebner bases for truly non-linear
         -- equations. Looses all information about dependencies.
-        print(assign("groebnerSimp: #", (#sysL)::OUT))$OUT
+        print(assign(message("groebnerSimp: #"), (#sysL)::OUT))$OUT
         tmp : L L NNI := [rec.Depend  for rec in sysL]
         resDep : L NNI := reduce(setUnion, tmp, empty)
         resSys := groebner([rec.Fun  for rec in sysL])
         resJM := jacobiMatrix(resSys, [ind  for eq in resSys])
-        print("END groebnerSimp")$OUT
+        print(message("END groebnerSimp"))$OUT
         [[fun, row(resJM, i), resDep]  for fun in resSys  for i in 1..]
 
     linearSimp(sysL : L LDREC, ind : L JB) : L LDREC ==
@@ -3962,25 +3962,25 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         leq : L EQ D := [eq = 0  for eq in sys]
         tmp : L OUT := empty
         for eq in leq repeat
-            tmp := cons(eq::OUT, cons(" ", tmp))
+            tmp := cons(eq::OUT, cons(message(" "), tmp))
         vconcat reverse tmp
 
     coerce(De : %) : OUT == printSys retract De
 
     display(De : %) : Void ==
         for sys in De.Sys  for ord in De.Order repeat
-            print(hconcat("Order: ", ord::OUT))$OUT
-            print("  System:")$OUT
-            print(hconcat("    ", printSys(sys.Eqs)))$OUT
+            print(hconcat(message("Order: "), ord::OUT))$OUT
+            print(message("  System:"))$OUT
+            print(hconcat(message("    "), printSys(sys.Eqs)))$OUT
             if sys.Simp? then
-                print("    (system simplified)")$OUT
+                print(message("    (system simplified)"))$OUT
             if sys.Dim? then
-                print(hconcat("  Dimension: ", sys.Dim::OUT))$OUT
-            print("  Jacobi matrix:")$OUT
-            print(hconcat("    ", sys.JM::OUT))$OUT
-            print(hconcat("    ", allIndices(sys.JM)::OUT))$OUT
-            print("  Last derivations:")$OUT
-            print(hconcat("    ", sys.Deriv::OUT))$OUT
+                print(hconcat(message("  Dimension: "), sys.Dim::OUT))$OUT
+            print(message("  Jacobi matrix:"))$OUT
+            print(hconcat(message("    "), sys.JM::OUT))$OUT
+            print(hconcat(message("    "), allIndices(sys.JM)::OUT))$OUT
+            print(message("  Last derivations:"))$OUT
+            print(hconcat(message("    "), sys.Deriv::OUT))$OUT
         void
 
     -- --------------------------- --
@@ -4113,7 +4113,8 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
             resSys := cons(sys, resSys)
 
         if not simp? then
-            print("***** Warning: system not simplified in dimension")$OUT
+            print(message(
+              "***** Warning: system not simplified in dimension"))$OUT
         if qq >= 0 then
             res := res + dimJ(qq::NNI)$JB
         De.Sys := reverse! resSys
@@ -4245,7 +4246,8 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
             resOrd := rest resOrd
 
         if not check then
-            print("***** Warning: projection of not simplified system")$OUT
+            print(message(
+              "***** Warning: projection of not simplified system"))$OUT
         [resSys, resOrd]
 
     prolong(De : %) : SREC ==
@@ -4737,63 +4739,70 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
       info(flag : NNI, q : NNI, s : NNI, dim : NNI) : Void ==
           -- Displays some trace information.
           Out < 4 => void
-          write " "
+          write message(" ")
           if flag = 1 then
-              write(hconcat ["Symbol ", outM(q, s), " involutive! ", _
-                             "Dimension: ", dim::OUT])
+              write(hconcat [message("Symbol "), outM(q, s),
+                             message(" involutive! "),
+                             message("Dimension: "), dim::OUT])
           else if flag = 2 then
-              write(hconcat ["Symbol ", outM(q, s), " not involutive! ", _
-                             "Dimension: ", dim::OUT])
+              write(hconcat [message("Symbol "), outM(q, s),
+                             message(" not involutive! "),
+                             message("Dimension: "), dim::OUT])
           else
-              write(hconcat ["Equation ", outR(q, s), " not involutive! ", _
-                             "Dimension: ", dim::OUT])
+              write(hconcat [message("Equation "), outR(q, s),
+                             message(" not involutive! "),
+                             message("Dimension: "), dim::OUT])
           void
 
       display(q : NNI, s : NNI, Sys : L D, Symb : SEM, DimRq : NNI,
               DimMq : NNI) : Void ==
           -- Displays intermediate systems and symbols.
           Out < 5 => void
-          write " "
-          write "****************************************"
-          write " "
-          write hconcat("Order: ", q::OUT)
-          write hconcat("Projections: ", s::OUT)
-          write hconcat("System without prolonged equations. Dimension: ", _
+          write message(" ")
+          write message("****************************************")
+          write message(" ")
+          write hconcat(message("Order: "), q::OUT)
+          write hconcat(message("Projections: "), s::OUT)
+          write hconcat(message(
+             "System without prolonged equations. Dimension: "),
                           DimRq::OUT)
           write printSys Sys
           if Out > 5 then
-              write " "
-              write hconcat("Symbol. Dimension: ", DimMq::OUT)
+              write message(" ")
+              write hconcat(message("Symbol. Dimension: "), DimMq::OUT)
               write(Symb::OUT)
           void
 
       displayIntCond(s : NNI, Cond : L D) : Void ==
           -- Displays integrability conditions.
           Out < 3 => void
-          write " "
-          write hconcat ["======= ", s::OUT, ". Projection ======="]
-          write "Integrability condition(s)"
+          write message(" ")
+          write hconcat [message("======= "), s::OUT,
+                         message(". Projection =======")]
+          write message("Integrability condition(s)")
           write printSys Cond
-          write "============================="
+          write message("=============================")
           void
 
       displayCartan(Sys : L D, dim : NNI, q : NNI, s : NNI,
                     CarChar : L NNI) : Void ==
           -- Displays final result.
           Out = 0 => void
-          write " "
-          write "*************** Final Result ***************"
-          write " "
-          write hconcat ["Equation ", outR(q, s), " involutive!"]
-          write hconcat("System without prolonged equations. Dimension: ", _
+          write message(" ")
+          write message("*************** Final Result ***************")
+          write message(" ")
+          write hconcat [message("Equation "), outR(q, s),
+                         message(" involutive!")]
+          write hconcat(
+             message("System without prolonged equations. Dimension: "),
                         dim::OUT)
           write printSys Sys
           if Out > 1 then
-              write " "
+              write message(" ")
               if zero? reduce("+", CarChar, 0) then
-                  write "System of finite type."
+                  write message("System of finite type.")
               else
-                  write hconcat("Cartan characters: ", _
+                  write hconcat(message("Cartan characters: "), _
                           commaSeparate [cc::OUT for cc in CarChar])
           void
 
@@ -5111,7 +5120,7 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
     Rep := JetBundle(indVars, depVars)
 
     setNotation(s : Sy) : Sy ==
-        print("only repeated index notation possible")$OUT
+        print(message("only repeated index notation possible"))$OUT
         'Repeated
 
     getNotation() : Sy == 'Repeated
@@ -5529,8 +5538,10 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
       -- global variables for statistics
 
     statistics() : Void ==
-        print(assign("Number of lazy differentiations", LazyDiff::OUT))$OUT
-        print(assign("Number of subsequent evaluations", LazyEval::OUT))$OUT
+        print(assign(message("Number of lazy differentiations"),
+                     LazyDiff::OUT))$OUT
+        print(assign(message("Number of subsequent evaluations"),
+                     LazyEval::OUT))$OUT
         void
 
 
@@ -6512,10 +6523,10 @@ JetBundlePolynomial(R : Ring, JB : JBC) : Cat == Def where
 
     if R has GcdDomain then
         groebner(lp : L %) : L % ==
-            print("groebner")$OUT
+            print(message("groebner"))$OUT
             lj : L L JB := [jetVariables p  for p in lp]
             LJV : L JB := reduce(setUnion, lj, empty)
-            print(assign("LJV", LJV::OUT))$OUT
+            print(assign(message("LJV"), LJV::OUT))$OUT
             groebner(lp)$JGB
 
 
@@ -6795,7 +6806,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
                 multivariate(gcd(univariate(p1, pv1), univariate(p2, pv2)), pv1)
 
         groebner(lp : L %) : L % ==
-            print("groebner$DJBP")$OUT
+            print(message("groebner$DJBP"))$OUT
             groebner(lp)$GBP
 
 
@@ -6874,7 +6885,7 @@ JetGroebner(R, JB, LJV, P, E) : Cat == Def where
 
 )if false
 -- Does not compile
-)abbrev domain JBQLF JetBundleQuasiLinearFunction
+-- )abbrev domain JBQLF JetBundleQuasiLinearFunction
 ++ Description:
 ++  \spadtype{JetBundleQuasiLinearFunction} implements non-linear functions
 ++  over a jet bundle. It tries to represent them as quasi-linear functions,
@@ -7317,9 +7328,9 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
             js := js + 1
             JV := rest JV
         mat1 : M % := subMatrix(sjm, i1, i2, j1, js + j1 - 1)
-        print("Symbol")$OUT
+        print(message("Symbol"))$OUT
         print(mat1::OUT)$OUT
-        print(assign("JV", JV::OUT))$OUT
+        print(assign(message("JV"), JV::OUT))$OUT
         if j1 + js <= j2 then
             mat2 : M % := subMatrix(sjm, i1, i2, js + j1, j2)
 

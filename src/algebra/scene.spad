@@ -1573,6 +1573,8 @@ SConformal(n) : Exports == Implementation where
 
   Implementation ==> add
 
+    import from OutputForm
+
     dim := 2^(n+2)
       ++ the total dimension of all the grades from scalar up to
       ++ pseudoscalar
@@ -1769,7 +1771,7 @@ SConformal(n) : Exports == Implementation where
     normalisePoint(pt : %) : % ==
       scaleFactor : DF := pt.1
       if scaleFactor < 0.01::DF and scaleFactor > -0.01::DF then
-        print "can't apply normalisePoint to a vector"::OutputForm
+        print message("can't apply normalisePoint to a vector")
         return pt
       if scaleFactor < -0.99::DF and scaleFactor > -1.01::DF then
         return pt
@@ -2106,13 +2108,13 @@ SceneIFS(PT) : Exports == Implementation where
     r : OutputForm := empty()
     for p in me.pts repeat
       r := hconcat(r, p::OutputForm)
-      r := hconcat(r," "::OutputForm)
+      r := hconcat(r, message(" "))
     res : List OutputForm := [r] -- string to hold result
     for faceIx in me.inx repeat
       r := empty()
       for pIx in faceIx repeat
         r := hconcat(r, pIx::OutputForm)
-        r := hconcat(r," "::OutputForm)
+        r := hconcat(r, message(" "))
       res := concat(res, r)
     vconcat(res)
 
@@ -2430,37 +2432,39 @@ SceneNamedPoints(PT) : Exports == Implementation where
 
   -- output (duplicate of toString but to OutputForm instead of String)
   coerce(n : %) : OutputForm ==
-    s:OutputForm := ""
+    s : OutputForm := message("")
     if n case pt then
-      s := "pt:"::OutputForm
+      s := message("pt:")
       lenNM : NNI := #(n.pt.listNM)
       lenPT : NNI := #(n.pt.listPT)
       if lenNM ~= lenPT then
-        return hconcat(["string number:"::OutputForm,lenNM::OutputForm,_
-                       " ~= point number:"::OutputForm,lenPT::OutputForm])
+        return hconcat([message("string number:"), lenNM::OutputForm,_
+                       message(" ~= point number:"), lenPT::OutputForm])
       for lst in n.pt.listNM for ptr in 1..#(n.pt.listNM) repeat
         s := if ptr = 1
-          then hconcat([s,lst::OutputForm,":"::OutputForm,_
+          then hconcat([s,lst::OutputForm, message(":"), _
                  (n.pt.listPT.ptr)::OutputForm])
-          else hconcat([s,","::OutputForm,lst::OutputForm,":"::OutputForm,_
+          else hconcat([s, message(","), lst::OutputForm, message(":"), _
                  (n.pt.listPT.ptr)::OutputForm])
     if n case nd then
-      s := "nd:"::OutputForm
+      s := message("nd:")
       lenNM : NNI := #(n.nd.listNM)
       lenPT : NNI := #(n.nd.listND)
       if lenNM ~= lenPT then
-        return hconcat(["string number:"::OutputForm,lenNM::OutputForm,_
-                       " ~= point number:"::OutputForm,lenPT::OutputForm])
+        return hconcat([message("string number:"), lenNM::OutputForm,_
+                        message(" ~= point number:"), lenPT::OutputForm])
       for lst in n.nd.listNM for ptr in 1..#(n.nd.listNM) repeat
         s := if ptr = 1
           then hconcat([s, lst::OutputForm])
-          else hconcat([s,","::OutputForm,lst::OutputForm])
+          else hconcat([s, message(","), lst::OutputForm])
     if n case br then
-      s := "br:"::OutputForm
+      s := message("br:")
       for l1 in n.br.listHNM for ptr in 1..#(n.br.listHNM) repeat
         s := if ptr = 1
-          then hconcat([s,l1::OutputForm,"("::OutputForm,(n.br.ch.ptr)::OutputForm,")"])
-          else hconcat([s,",",l1::OutputForm,"("::OutputForm,(n.br.ch.ptr)::OutputForm,")"::OutputForm])
+          then hconcat([s, l1::OutputForm, message("("),
+                        (n.br.ch.ptr)::OutputForm, message(")")])
+          else hconcat([s, message(","), l1::OutputForm, message("("),
+                       (n.br.ch.ptr)::OutputForm, message(")")])
     s
 
 )if false
@@ -3011,6 +3015,8 @@ STransform(PT) : Exports == Implementation where
 
   Implementation == add
 
+    import from OutputForm
+
     Rep := PARAMS
 
     -- qelt(m, i, j) returns the element in the ith row and jth
@@ -3094,7 +3100,7 @@ STransform(PT) : Exports == Implementation where
     applyTransPt2(tr : %, inpt : SCartesian(2)) : SCartesian(2) ==
       if tr case iden then return inpt
       if tr case general then
-        print "can't transform Euclidean point using general function"::OutputForm
+        print message("can't transform Euclidean point using general function")
         return inpt
       vin : List DF := extendedCoords(inpt)$SCartesian(2)
       a : DF := tr.mtx.0.0 * vin.1 + tr.mtx.0.1 * vin.2 + tr.mtx.0.2 * vin.3
@@ -3105,7 +3111,7 @@ STransform(PT) : Exports == Implementation where
     applyTransPt3(tr : %, inpt : SCartesian(3)) : SCartesian(3) ==
       if tr case iden then return inpt
       if tr case general then
-        print "can't transform Euclidean point using general function"::OutputForm
+        print message("can't transform Euclidean point using general function")
         return inpt
       vin : List DF := extendedCoords(inpt)$SCartesian(3)
       a : DF := tr.mtx.0.0 * vin.1 + tr.mtx.0.1 * vin.2_
@@ -3120,7 +3126,7 @@ STransform(PT) : Exports == Implementation where
     applyTransCx(tr : %, inpt : SArgand) : SArgand ==
       if tr case iden then return inpt
       if tr case mtx then
-        print "can't transform complex using matrix"::OutputForm
+        print(message("can't transform complex using matrix"))
         print coerce(tr)
         return inpt
       f := tr.general
@@ -3131,7 +3137,7 @@ STransform(PT) : Exports == Implementation where
     applyTransConf2(tr : %, inpt : SConformal(2)) : SConformal(2) ==
       if tr case iden then return inpt
       if not (tr case multiv) then
-        print "this transform not compatible with conformal"::OutputForm
+        print(message("this transform not compatible with conformal"))
         print coerce(tr)
         return inpt
       m := matrix([[0::DF, 1::DF, 0::DF, 0::DF], _
@@ -3225,14 +3231,14 @@ STransform(PT) : Exports == Implementation where
     -- output
     coerce(tr : %) : OutputForm ==
       -- iden means identity transform
-      if tr case iden then return "iden"::OutputForm
+      if tr case iden then return message("iden")
       -- can't display function as OutputForm
-      if tr case general then return "function as transform"::OutputForm
+      if tr case general then return message("function as transform")
       -- if matrix output matrix
       if tr case mtx then
-        return hconcat("mtx"::OutputForm,outputMatrix(tr.mtx))
+        return hconcat(message("mtx"), outputMatrix(tr.mtx))
       -- if above tests are false then tr must be multiv
-      hconcat("multiv"::OutputForm,outputArray(tr.multiv))
+      hconcat(message("multiv"), outputArray(tr.multiv))
 
 )if false
 
@@ -3698,7 +3704,7 @@ SBoundary(PT) : Exports == Implementation where
       s:OutputForm := hconcat(outputForm("bound "::Symbol),ty)
       if n case nul then return s
       if n case simple then return _
-        hconcat([s,":"::OutputForm,n.simple.control1::OutputForm,_
+        hconcat([s, message(":"), n.simple.control1::OutputForm,_
                outputForm("->"::Symbol),n.simple.control2::OutputForm])
       sub : OutputForm := bracket([x::OutputForm for x in n.compound.parts])
       hconcat([s,outputForm(":"::Symbol),sub])
@@ -5782,7 +5788,7 @@ Scene(PT) : Exports == Implementation where
             nodeEles := concat(nodeEles, xch)
         return xmlElement("g",nodeEles,nodeAtts)
       param2 : PT := xform(tran, n.parameters.text.pos)$TR
-      --print("scene toSvg font-size=" << n.parameters.text.siz << 
+      --print("scene toSvg font-size=" << n.parameters.text.siz <<
       --      " scale2=" << math_to_string(scale2)@String)
       -- scale text but if screen is very small then limit text epansion
       -- so text does not fill too large a proportion of the screen
@@ -6631,7 +6637,7 @@ Scene(PT) : Exports == Implementation where
   outputLPoints(ps : List PT) : OutputForm ==
     if #ps < 4 then return ps::OutputForm
     bracket([(first ps)::OutputForm, (second ps)::OutputForm, _
-             "...."::OutputForm])
+             message("....")])
 
   -- outputLLPoints(ps) is a local function used by coerce(n): OutputForm
   -- the reason for this function is to avoid displaying a long list of
@@ -6642,7 +6648,7 @@ Scene(PT) : Exports == Implementation where
     if #ps < 4 then
       return bracket([outputLPoints(x) for x in ps])
     bracket([outputLPoints(first ps), outputLPoints(second ps), _
-             "...."::OutputForm])
+             message("....")])
 
   -- outputLIndexes(ps) is a local function used by coerce(n): OutputForm
   -- the reason for this function is to avoid displaying a long list of
@@ -6652,7 +6658,7 @@ Scene(PT) : Exports == Implementation where
   outputLIndexes(ps : List NNI) : OutputForm ==
     if #ps < 4 then return ps::OutputForm
     bracket([(first ps)::OutputForm, (second ps)::OutputForm, _
-             "...."::OutputForm])
+             message("....")])
 
   -- outputLLIndexes(ps) is a local function used by coerce(n): OutputForm
   -- the reason for this function is to avoid displaying a long list of
@@ -6663,7 +6669,7 @@ Scene(PT) : Exports == Implementation where
     if #ps < 4 then
       return bracket([outputLIndexes(x) for x in ps])
     bracket([outputLIndexes(first ps), outputLIndexes(second ps), _
-             "...."::OutputForm])
+             message("....")])
 
   -- output
   -- a full scenegraph could contain a lot of data and so we have
@@ -6671,89 +6677,89 @@ Scene(PT) : Exports == Implementation where
   -- the command line. Therefore we do not display all subnodes or
   -- the full information from nodes such as IFS.
   coerce(n : %) : OutputForm ==
-    s:OutputForm := "scene "::OutputForm
+    s:OutputForm := message("scene ")
     if n.type = "ROOT"::Symbol then
-      s := hconcat([s,"root "::OutputForm,_
+      s := hconcat([s, message("root "),_
              (n.parameters.boundbox)::OutputForm])
     if n.type = "GROUP"::Symbol then
-      s := hconcat(s,"group"::OutputForm)
+      s := hconcat(s, message("group"))
     if n.type = "LINE"::Symbol then
-      s := hconcat([s,"line "::OutputForm,_
+      s := hconcat([s, message("line "),_
         outputLLPoints(n.parameters.points)])
     if n.type = "SHAPE"::Symbol then
       tp := n.parameters.shpe.shptype
       pt1 : PT := n.parameters.shpe.centre
       pt2 : PT := n.parameters.shpe.size
-      s := hconcat([s,"shape"::OutputForm,_
-             " type="::OutputForm,tp::OutputForm,_
-             " pt1="::OutputForm,pt1::OutputForm,_
-             " pt2="::OutputForm,pt2::OutputForm])
+      s := hconcat([s, message("shape"), _
+             message(" type="), tp::OutputForm,_
+             message(" pt1="), pt1::OutputForm,_
+             message(" pt2="), pt2::OutputForm])
     if n.type = "MATERIAL"::Symbol then
       lw : DF := n.parameters.material.lineWidth
       lc : String := n.parameters.material.lineCol
       fc : String := n.parameters.material.fillCol
       mo : DF := n.parameters.material.matOpacity
-      s := hconcat([s,"material"::OutputForm,_
-             " lw="::OutputForm,lw::OutputForm,_
-             " lc="::OutputForm,lc::OutputForm,_
-             " fc="::OutputForm,fc::OutputForm,_
-             " mo="::OutputForm,mo::OutputForm])
+      s := hconcat([s, message("material"), _
+             message(" lw="), lw::OutputForm,_
+             message(" lc="), lc::OutputForm,_
+             message(" fc="), fc::OutputForm,_
+             message(" mo="), mo::OutputForm])
     if n.type = "TEXT"::Symbol then
       t : String := n.parameters.text.txt
       sz1 : NNI := n.parameters.text.siz
       p : PT := n.parameters.text.pos
       npt : List String := n.parameters.text.np
-      s := hconcat([s,"text="::OutputForm,_
+      s := hconcat([s, message("text="), _
         t::OutputForm, _
-        " sz="::OutputForm, sz1::OutputForm,_
-        " p="::OutputForm,p::OutputForm,_
-        " npt="::OutputForm,npt::OutputForm])
+        message(" sz="), sz1::OutputForm,_
+        message(" p="), p::OutputForm,_
+        message(" npt="), npt::OutputForm])
     if n.type = "TRANSFORM"::Symbol then
       tr := n.parameters.trans
-      s := hconcat([s,"transform"::OutputForm,_
-           " tr="::OutputForm,tr::OutputForm])
+      s := hconcat([s,message("transform"),_
+           message(" tr="), tr::OutputForm])
     if n.type = "CLIP"::Symbol then
-      s := hconcat([s,"clip "::OutputForm,_
+      s := hconcat([s, message("clip "), _
              (n.parameters.boundbox)::OutputForm])
     if n.type = "IFS"::Symbol then
       ix : List List NNI := n.parameters.ifs.inx
       pt : List PT := n.parameters.ifs.pts
-      s := hconcat([s,"ifs"::OutputForm,_
-             " ix="::OutputForm,outputLLIndexes(ix),_
-             " pt="::OutputForm,outputLPoints(pt)])
+      s := hconcat([s, message("ifs"),_
+             message(" ix="), outputLLIndexes(ix),_
+             message(" pt="), outputLPoints(pt)])
     if n.type = "ARROWS"::Symbol then
       pts : List List PT := n.parameters.arrws.ln
       m : Symbol := n.parameters.arrws.mode
       sz : DF := n.parameters.arrws.size
-      s := hconcat([s,"arrows"::OutputForm,_
-        " pts="::OutputForm,outputLLPoints(pts),_
-        " m="::OutputForm,m::OutputForm,_
-        " sz="::OutputForm,sz::OutputForm])
+      s := hconcat([s, message("arrows"), _
+          message(" pts="), outputLLPoints(pts),_
+          message(" m="), m::OutputForm,_
+          message(" sz="), sz::OutputForm])
     if n.type = "ARROW"::Symbol then
       str : String := n.parameters.arrw.st
       ena : String := n.parameters.arrw.en
       ofs : PT := n.parameters.arrw.offset
       md : Symbol := n.parameters.arrw.mode
       sz : DF := n.parameters.arrw.size
-      s := hconcat([s,"arrows"::OutputForm,_
-        " str="::OutputForm,str::OutputForm,_
-        " ena="::OutputForm,ena::OutputForm,_
-        " ofs="::OutputForm,ofs::OutputForm,_
-        " md="::OutputForm,md::OutputForm,_
-        " sz="::OutputForm,sz::OutputForm])
+      s := hconcat([s, message("arrows"), _
+          message(" str="), str::OutputForm,_
+          message(" ena="), ena::OutputForm,_
+          message(" ofs="), ofs::OutputForm,_
+          message(" md="), md::OutputForm,_
+          message(" sz="), sz::OutputForm])
     if n.type = "DEF"::Symbol then
       nn : String := n.parameters.nodename.nme
-      s := hconcat([s,"def"::OutputForm,_
-        " nn="::OutputForm,nn::OutputForm])
+      s := hconcat([s, message("def"), _
+          message(" nn="), nn::OutputForm])
     if n.type = "USE"::Symbol then
       nn : String := n.parameters.nodename.nme
-      s := hconcat([s,"use"::OutputForm,_
-        " nn="::OutputForm,nn::OutputForm])
+      s := hconcat([s, message("use"), _
+          message(" nn="), nn::OutputForm])
     if n.type = "NAMEDPOINTS"::Symbol then
       nam : SceneNamedPoints PT := n.parameters.np
-      s := hconcat([s,"namedpoints"::OutputForm,_
-        " n="::OutputForm,nam::OutputForm])
-    s := hconcat([s," #ch=",(#(n.children))::OutputForm])
+      s := hconcat([s, message("namedpoints"), _
+          message(" n="), nam::OutputForm])
+    s := hconcat([s, message(" #ch="), (#(n.children))::OutputForm])
     s
 
 
