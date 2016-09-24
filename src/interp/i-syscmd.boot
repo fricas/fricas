@@ -297,7 +297,6 @@ clearCmdAll() ==
   ------undo special variables------
   $frameRecord := nil
   $previousBindings := nil
-  $variableNumberAlist := nil
   untraceMapSubNames $trace_names
   $InteractiveFrame := LIST LIST NIL
   resetInCoreHist()

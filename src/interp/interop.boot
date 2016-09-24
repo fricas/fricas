@@ -270,6 +270,8 @@ devaluate(d) ==
     d
   d
 
+devaluateList l == [devaluate d for d in l]
+
 $hashOp1 := hashString '"1"
 $hashOp0 := hashString '"0"
 $hashOpApply := hashString '"apply"
@@ -336,6 +338,9 @@ NRTcompiledLookup(op,sig,dom) ==
 compiledLookup(op, sig, dollar) ==
   if not isDomain dollar then dollar := NRTevalDomain dollar
   basicLookup(op, sig, dollar, dollar)
+
+HasSignature(domain,[op,sig]) ==
+  compiledLookup(op,sig,domain)
 
 --------------------> NEW DEFINITION (override in nrungo.boot.pamphlet)
 basicLookup(op,sig,domain,dollar) ==

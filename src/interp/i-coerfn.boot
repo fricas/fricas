@@ -100,6 +100,18 @@ position1(x,y) ==
   -- this is used where we want to assume a 1-based index
   1 + position(x,y)
 
+Zeros n ==
+    BOUNDP '$ZeroVecCache and #$ZeroVecCache = n => $ZeroVecCache
+    $ZeroVecCache := MAKE_-VEC n
+    for i in 0..n-1 repeat $ZeroVecCache.i := 0
+    $ZeroVecCache
+
+LZeros n ==
+    n < 1 => nil
+    l := [0]
+    for i in 2..n repeat l := [0, :l]
+    l
+
 --% Direct Product, New and Old
 
 DP2DP(u,source is [.,n,S],target is [.,m,T]) ==

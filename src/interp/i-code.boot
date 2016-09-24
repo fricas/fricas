@@ -48,18 +48,6 @@ intCodeGenCOERCE(triple,t2) ==
   t1 = t2 => triple
   val := objVal triple
 
-)if false
-  -- if request is for a coerce to t2 from a coerce from
-  -- to to t1, and t1 = Void or canCoerce(t0,t2), then optimize
-
-  (val is ['coerceOrCroak,trip,t1', .]) and
-    (t0 := objCodeMode trip) and ([.,val0] := objCodeVal trip) and
-      ( (t1 = $Void) or canCoerceFrom(removeQuote t0,t2) ) =>
-         -- just generate code for coercion, don't coerce constants
-         -- might be too big
-         intCodeGenCOERCE(objNew(val0, removeQuote t0), t2)
-)endif
-
   val is ['THROW,label,code] =>
     if label is ['QUOTE, l] then label := l
     null($compilingMap) or (label ~= mapCatchName($mapName)) =>
