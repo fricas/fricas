@@ -2939,14 +2939,17 @@ SimplicialComplexFactory() : with
     ++ (A punctured projective plane is equivalent to a Moebius band)
   kleinBottle : () -> FiniteSimplicialComplex(VertexSetAbstract)
     ++ generate a minimal triangulation of the surface of a Klein bottle.
+  dunceHat : () -> FiniteSimplicialComplex(VertexSetAbstract)
+    ++ Generate a minimal triangulation of dunce hat.
 
  == add
+
+  ASIMP ==> FiniteSimplicialComplex(VertexSetAbstract)
 
   -- generate a simplicial complex equivalent to a solid hyper-sphere. That
   -- is, a solid volume with no holes in it, so we use a single n-dimensional
   -- simplex.
   sphereSolid(dim : NNI) : FiniteSimplicialComplex(VertexSetAbstract) ==
-      ASIMP := FiniteSimplicialComplex(VertexSetAbstract)
       v1 : List(List(NNI)) := [[n for n in 1..(dim + 1)]]
       vs1 : VertexSetAbstract := vertexSeta(dim + 1)
       r := simplicialComplex(vs1, v1)$ASIMP
@@ -2964,7 +2967,6 @@ SimplicialComplexFactory() : with
 
   -- generate a minimal triangulation of the surface of an 3-dimensional torus.
   torusSurface() : FiniteSimplicialComplex(VertexSetAbstract) ==
-      ASIMP := FiniteSimplicialComplex(VertexSetAbstract)
       v1 : List(List(NNI)) := ([[1, 2, 3], [2, 3, 5], [2, 4, 5], [2, 4, 7],
          [1, 2, 6], [2, 6, 7], [3, 4, 6], [3, 5, 6], [3, 4, 7], [1, 3, 7],
          [1, 4, 5], [1, 4, 6], [5, 6, 7], [1, 5, 7]])
@@ -2975,7 +2977,6 @@ SimplicialComplexFactory() : with
 
   -- generate a minimal triangulation of the surface of a cylinder without ends
   band() : FiniteSimplicialComplex(VertexSetAbstract) ==
-      ASIMP := FiniteSimplicialComplex(VertexSetAbstract)
       v1 : List(List(NNI)) := ([[1, 2, 3], [1, 2, 6], [1, 5, 6],
                                [2, 3, 4], [3, 4, 5], [4, 5, 6]])
       vs1 : VertexSetAbstract := vertexSeta(6::NNI)
@@ -2984,7 +2985,6 @@ SimplicialComplexFactory() : with
 
   -- generate a minimal triangulation of the surface of a Moebius band.
   moebiusBand() : FiniteSimplicialComplex(VertexSetAbstract) ==
-      ASIMP := FiniteSimplicialComplex(VertexSetAbstract)
       v1 : List(List(NNI)) := ([[1, 2, 3], [2, 3, 4], [3, 4, 5],
                                [1, 4, 5], [1, 2, 5]])
       vs1 : VertexSetAbstract := vertexSeta(5::NNI)
@@ -2994,7 +2994,6 @@ SimplicialComplexFactory() : with
   -- generate a minimal triangulation of the surface of a projective plane.
   -- (A punctured projective plane is equivalent to a Moebius band)
   projectivePlane() : FiniteSimplicialComplex(VertexSetAbstract) ==
-      ASIMP := FiniteSimplicialComplex(VertexSetAbstract)
       v1 : List(List(NNI)) := ([[1, 2, 3], [1, 3, 4], [1, 2, 6], [1, 5, 6],
          [1, 4, 5], [2, 3, 5], [2, 4, 5], [2, 4, 6], [3, 4, 6], [3, 5, 6]])
       vs1 : VertexSetAbstract := vertexSeta(6::NNI)
@@ -3003,13 +3002,82 @@ SimplicialComplexFactory() : with
 
   -- generate a minimal triangulation of the surface of a Klein bottle.
   kleinBottle() : FiniteSimplicialComplex(VertexSetAbstract) ==
-      ASIMP := FiniteSimplicialComplex(VertexSetAbstract)
       v1 : List(List(NNI)) := ([[3, 4, 8], [2, 3, 4], [2, 4, 6], [2, 6, 8],
          [2, 5, 8], [3, 5, 7], [2, 3, 7], [2, 7, 1], [2, 5, 1], [3, 5, 1],
          [4, 5, 8], [4, 5, 7], [4, 6, 7], [6, 7, 1], [3, 6, 1], [3, 6, 8]])
       vs1 : VertexSetAbstract := vertexSeta(8::NNI)
       r := simplicialComplex(vs1, v1)$ASIMP
       r
+
+  dunceHat() : FiniteSimplicialComplex(VertexSetAbstract) ==
+      v1 : List(List(NNI)) := ([[1, 2, 8], [2, 3, 8], [3, 7, 8], [1 ,3, 7],
+         [1, 2, 7], [1, 6, 8], [1, 2, 6], [6, 7, 8], [2, 4, 6], [5, 6, 7],
+         [2, 5, 7], [4, 5, 6], [2, 3, 4], [2, 3, 5], [1, 3, 4], [1, 4, 5],
+         [1, 3, 5]])
+      vs1 : VertexSetAbstract := vertexSeta(8::NNI)
+      r := simplicialComplex(vs1, v1)$ASIMP
+      r
+
+)if false
+\section{DeltaComplex Factory}
+
+DeltaComplexFactory constructs example delta complexes for us.
+
+Theses can be smaller than DeltaComplexes constructed from SimplicialComplexes.
+)endif
+
+)abbrev package DELTCF DeltaComplexFactory
+++ Author: Martin Baker, Waldek Hebisch
+++ Date Created: Sept 2016
+++ Description:
+++  Provides functions to construct various minimal delta complexes which
+++  can be smaller than if constructed from SimplicialComplexes.
+PI ==> PositiveInteger
+NNI==> NonNegativeInteger
+x<<y ==> hconcat(x::OutputForm, y::OutputForm)
+
+DeltaComplexFactory() : with
+  circle : () -> DeltaComplex(VertexSetAbstract)
+    ++ Generate a minimal circle from an edge from vertex A to A.
+  dunceHat : () -> DeltaComplex(VertexSetAbstract)
+    ++ generate a minimal dunceHat from 3 edges.
+  torusSurface : () -> DeltaComplex(VertexSetAbstract)
+    ++ generate a minimal 3-dimensional torus surface.
+  projectiveSpace : Integer -> DeltaComplex(VertexSetAbstract)
+    ++ Generate a minimal projective space.
+  kleinBottle : () -> DeltaComplex(VertexSetAbstract)
+    ++ generate a minimal Klein bottle.
+
+ == add
+
+  DC ==> DeltaComplex(VertexSetAbstract)
+
+  -- Generate a minimal circle from an edge from vertex A to A.
+  circle() : DeltaComplex(VertexSetAbstract) ==
+      vs1 := vertexSeta(1)$VertexSetAbstract
+      deltaComplex(vs1, [[[1, -1]]])$DC
+
+  -- generate a minimal dunceHat from 3 edges.
+  dunceHat() : DeltaComplex(VertexSetAbstract) ==
+      vs1 := vertexSeta(1)$VertexSetAbstract
+      deltaComplex(vs1, [[[1, -1]], [[1, 1, -1]]])$DC
+
+  -- generate a minimal torus.
+  torusSurface() : DeltaComplex(VertexSetAbstract) ==
+      vs1 := vertexSeta(1)$VertexSetAbstract
+      deltaComplex(vs1, [[[1, -1], [1, -1]], [[1, 2, -1, -2]]])$DC
+
+  projectiveSpace(n : Integer) : DeltaComplex(VertexSetAbstract) ==
+      vs1 := vertexSeta(1)$VertexSetAbstract
+      cl : List(List(List(Integer))) := []
+      for i in 1..n repeat
+          cl := cons([[1, (odd?(i) => -1; 1)]], cl)
+      deltaComplex(vs1, reverse!(cl))$DC
+
+  -- generate a minimal surface of a Klein bottle.
+  kleinBottle() : DeltaComplex(VertexSetAbstract) ==
+      vs1 := vertexSeta(1)$VertexSetAbstract
+      deltaComplex(vs1, [[[1, -1], [1, -1]], [[1, 2, 1, -2]]])$DC
 
 )if false
 \section{Cubical Complex Factory}
