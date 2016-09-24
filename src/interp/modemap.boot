@@ -234,6 +234,15 @@ compCat(form is [functorName,:argl],m,e) ==
   --sure if it uses any of the other signatures(see extendsCategoryForm)
   [form,catForm,e]
 
+addModemap(op, mc, sig, pred, fn, $e) ==
+    $InteractiveMode => $e
+    if knownInfo pred then pred := true
+    $insideCapsuleFunctionIfTrue = true =>
+        $CapsuleModemapFrame :=
+          addModemap0(op, mc, sig, pred, fn, $CapsuleModemapFrame)
+        $e
+    addModemap0(op, mc, sig, pred, fn, $e)
+
 addConstructorModemaps(name,form is [functorName,:.],e) ==
   $InteractiveMode: local:= nil
   e:= putDomainsInScope(name,e) --frame

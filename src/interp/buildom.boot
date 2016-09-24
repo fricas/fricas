@@ -179,6 +179,9 @@ coerceUn2E(x,source) ==
     error '"Union bug: Cannot find appropriate branch for coerce to E"
   res
 
+mkPredList listOfEntries ==
+     [['EQCAR,"#1",i] for arg in listOfEntries for i in 0..]
+
 --% Mapping
 --  Want to eventually have elt: ($, args) -> target
 

@@ -687,3 +687,71 @@ dbTickIndex(line,n,k) == --returns index of nth tick in line starting at k
   dbTickIndex(line,n - 1,1 + charPosition($tick,line,k))
 
 mySort u == listSort(function GLESSEQP,u)
+
+-- from bc-util
+
+bcFinish(name,arg,:args) == bcGen bcMkFunction(name,arg,args)
+
+bcMkFunction(name,arg,args) ==
+  args := [x for x in args | x]
+  STRCONC(name,'"(",arg,"STRCONC"/[STRCONC('",", x) for x in args],'")")
+
+bcFindString(s,i,n,char) ==  or/[j for j in i..n | s.j = char]
+
+bcGen command ==
+  htInitPage('"Basic Command",nil)
+  string :=
+    #command < 50 => STRCONC('"{\centerline{\tt ",command,'" }}")
+    STRCONC('"{\tt ",command,'" }")
+  htMakePage [
+     '(text
+        "{Here is the FriCAS command you could have issued to compute this result:}"
+            "\vspace{2}\newline "),
+      ['text,:string]]
+  htMakeDoitButton('"Do It", command)
+  htShowPage()
+
+bcOptional s ==
+  s = '"" => '"2"
+  s
+
+bcvspace() == bcHt '"\vspace{1}\newline "
+
+bcString2WordList s == fn(s,0,MAXINDEX s) where
+  fn(s,i,n) ==
+    i > n => nil
+    k := or/[j for j in i..n | s.j ~= char '_  ]
+    null INTEGERP k => nil
+    l := bcFindString(s,k + 1,n,char '_  )
+    null INTEGERP l => [SUBSTRING(s,k,nil)]
+    [SUBSTRING(s,k,l-k),:fn(s,l + 1,n)]
+
+
+bcwords2liststring u ==
+  null u => nil
+  STRCONC('"[",first u,fn rest u) where
+    fn(u) ==
+      null u => '"]"
+      STRCONC('", ",first u,fn rest u)
+
+bcVectorGen vec == bcwords2liststring vec
+
+bcError string ==
+  sayBrightlyNT '"NOTE: "
+  sayBrightly string
+
+bcDrawIt(ind,a,b) == STRCONC(ind,'"=",a,'"..",b)
+
+bcNotReady htPage ==
+  htInitPage('"Basic Command",nil)
+  htMakePage '(
+     (text .
+        "{\centerline{\em This facility will soon be available}}"))
+  htShowPage()
+
+htStringPad(n,w) ==
+  s := STRINGIMAGE n
+  ws := #s
+  STRCONC('"\space{",STRINGIMAGE (w - ws + 1),'"}",s)
+
+htMkName(s,n) == STRCONC(s,STRINGIMAGE n)

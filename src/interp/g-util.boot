@@ -510,8 +510,93 @@ isDefaultPackageName x == (s := PNAME x).(MAXINDEX s) = char '_&
 
 packageTran sex == sex
 
-zeroOneTran sex ==
--- destructively translate the symbols |0| and |1| to their
--- integer counterparts
-  NSUBST("$EmptyMode", "?", sex)
-  sex
+zeroOneTran sex == sex
+
+-- from i-util
+
+--% Utility Functions Used Only by the Intepreter
+
+-- A wrapped value represents something that need not be evaluated
+-- when code is generated.  This includes objects from domains or things
+-- that just happed to evaluate to themselves.  Typically generated
+-- lisp code is unwrapped.
+
+wrap x ==
+  isWrapped x => x
+  ['WRAPPED,:x]
+
+isWrapped x == x is ['WRAPPED,:.] or NUMBERP x or FLOATP x or STRINGP x
+
+unwrap x ==
+  NUMBERP x or FLOATP x or STRINGP x => x
+  x is ["WRAPPED",:y] => y
+  x
+
+wrapped2Quote x ==
+  x is ["WRAPPED",:y] => MKQ y
+  x
+
+quote2Wrapped x ==
+  x is ['QUOTE,y] => wrap y
+  x
+
+removeQuote x ==
+  x is ["QUOTE",y] => y
+  x
+
+--% The function for making prompts
+
+spadPrompt() ==
+  SAY '"   FriCAS"
+  sayNewLine()
+
+princPrompt() ==
+  ioHook("startPrompt")
+  PRINC MKPROMPT()
+  ioHook("endOfPrompt")
+
+MKPROMPT() ==
+  $inputPromptType = 'none    => '""
+  $inputPromptType = 'plain   => '"-> "
+  $inputPromptType = 'step    =>
+    STRCONC('"(",STRINGIMAGE $IOindex,'") -> ")
+  $inputPromptType = 'frame   =>
+    STRCONC(STRINGIMAGE $interpreterFrameName,
+      '" (",STRINGIMAGE $IOindex,'") -> ")
+  STRCONC(STRINGIMAGE $interpreterFrameName,
+   '" [", SUBSTRING(CURRENTTIME(),8,NIL),'"] [",
+    STRINGIMAGE $IOindex, '"] -> ")
+
+--% Miscellaneous
+
+-- formerly in clammed.boot
+
+isSubDomain(d1,d2) ==
+  -- d1 and d2 are different domains
+  subDomainList := '(Integer NonNegativeInteger PositiveInteger)
+  ATOM d1 or ATOM d2 => nil
+  l := MEMQ(first d2, subDomainList) =>
+    MEMQ(first d1, rest l)
+  nil
+
+-- functions used at run-time which were formerly in the compiler files
+
+Undef(:u) ==
+  u':= last u
+  [[domain,slot],op,sig]:= u'
+  domain':=eval mkEvalable domain
+  not EQ(first ELT(domain', slot), Undef) =>
+-- OK - thefunction is now defined
+    [:u'',.]:=u
+    if $reportBottomUpFlag then
+      sayMessage concat ['"   Retrospective determination of slot",'%b,
+        slot,'%d,'"of",'%b,:prefix2String domain,'%d]
+    APPLY(first ELT(domain', slot), [:u'', rest ELT(domain', slot)])
+  throwKeyedMsg("S2IF0008",[formatOpSignature(op,sig),domain])
+
+TruthP x ==
+    --True if x is a predicate that's always true
+  x is nil => nil
+  x=true => true
+  x is ['QUOTE,:.] => true
+  nil

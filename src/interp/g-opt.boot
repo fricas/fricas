@@ -64,6 +64,8 @@ optimizeFunctionDef(def) ==
         replaceThrowByReturn(rest x,g)
   [name,[slamOrLam,args,body']]
 
+lispize x == first optimize [x]
+
 optimize x ==
   (opt x; x) where
     opt x ==
