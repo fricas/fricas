@@ -907,19 +907,9 @@ FiniteRankNonAssociativeAlgebra(R : CommutativeRing):
 ++   \spadtype{FiniteRankNonAssociativeAlgebra} (i.e. a non associative
 ++   algebra over R which is a free \spad{R}-module of finite rank)
 ++   over a commutative ring R together with a fixed \spad{R}-module basis.
-FramedNonAssociativeAlgebra(R : CommutativeRing):
-        Category == FiniteRankNonAssociativeAlgebra(R) with
+FramedNonAssociativeAlgebra(R : CommutativeRing): Category ==
+      Join(FiniteRankNonAssociativeAlgebra(R), FramedModule(R)) with
   --operations
-    basis : () -> Vector %
-      ++ basis() returns the fixed \spad{R}-module basis.
-    coordinates : % -> Vector R
-      ++ coordinates(a) returns the coordinates of \spad{a}
-      ++ with respect to the
-      ++ fixed \spad{R}-module basis.
-    coordinates : Vector % -> Matrix R
-      ++ coordinates([a1, ..., am]) returns a matrix whose i-th row
-      ++ is formed by the coordinates of \spad{ai} with respect to the
-      ++ fixed \spad{R}-module basis.
     elt : (%, Integer) -> R
       ++ elt(a, i) returns the i-th coefficient of \spad{a} with respect to the
       ++ fixed \spad{R}-module basis.
@@ -932,17 +922,6 @@ FramedNonAssociativeAlgebra(R : CommutativeRing):
       ++ conditionsForIdempotents() determines a complete list
       ++ of polynomial equations for the coefficients of idempotents
       ++ with respect to the fixed \spad{R}-module basis.
-    represents : Vector R -> %
-      ++ represents([a1, ..., an]) returns \spad{a1*v1 + ... + an*vn},
-      ++ where \spad{v1}, ..., \spad{vn} are the elements of the
-      ++ fixed \spad{R}-module basis.
-    convert : % -> Vector R
-      ++ convert(a) returns the coordinates of \spad{a} with respect to the
-      ++ fixed \spad{R}-module basis.
-    convert : Vector R -> %
-      ++ convert([a1, ..., an]) returns \spad{a1*v1 + ... + an*vn},
-      ++ where \spad{v1}, ..., \spad{vn} are the elements of the
-      ++ fixed \spad{R}-module basis.
     leftDiscriminant : () -> R
       ++ leftDiscriminant() returns the
       ++ determinant of the \spad{n}-by-\spad{n}
@@ -1163,8 +1142,6 @@ FramedNonAssociativeAlgebra(R : CommutativeRing):
 
     structuralConstants()   == structuralConstants basis()
     conditionsForIdempotents() == conditionsForIdempotents basis()
-    convert(x : %) : Vector(R)  == coordinates(x, basis())
-    convert(v : Vector R) : %   == represents(v, basis())
     leftTraceMatrix()       == leftTraceMatrix basis()
     rightTraceMatrix()      == rightTraceMatrix basis()
     leftDiscriminant()      == leftDiscriminant basis()
@@ -1172,13 +1149,7 @@ FramedNonAssociativeAlgebra(R : CommutativeRing):
     leftRegularRepresentation x == leftRegularRepresentation(x, basis())
     rightRegularRepresentation x == rightRegularRepresentation(x, basis())
     coordinates x           == coordinates(x, basis())
-    represents(v : Vector R) : %== represents(v, basis())
-
-    coordinates(v : Vector %) ==
-      m := new(#v, rank(), 0)$Matrix(R)
-      for i in minIndex v .. maxIndex v for j in minRowIndex m .. repeat
-        setRow!(m, j, coordinates qelt(v, i))
-      m
+    represents(v : Vector R) : % == represents(v, basis())
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

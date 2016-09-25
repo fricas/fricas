@@ -1,3 +1,66 @@
+)abbrev category FRMOD FramedModule
+++ Author: Waldek Hebisch
+++ Description:
+++  A \spadtype{FramedModule} is a finite rank free module
+++  with fixed R-module basis.
+FramedModule(R : Join(SemiRng, AbelianMonoid)) : Category ==
+    LeftModule(R) with
+      basis : () -> Vector %
+        ++ basis() returns the fixed R-module basis.
+      rank : () -> PositiveInteger
+        ++ rank() returns the rank of the module
+      coordinates : % -> Vector R
+        ++ coordinates(a) returns the coordinates of \spad{a} with
+        ++ respect to the fixed R-module basis.
+      coordinates : Vector % -> Matrix R
+        ++ coordinates([v1, ..., vm]) returns the coordinates of the
+        ++ vi's with to the fixed basis.  The coordinates of vi are
+        ++ contained in the ith row of the matrix returned by this
+        ++ function.
+      represents : Vector R -> %
+        ++ represents([a1, .., an]) returns \spad{a1*v1 + ... + an*vn}, where
+        ++ v1, ..., vn are the elements of the fixed basis.
+      convert : % -> Vector R
+        ++ convert(a) returns the coordinates of \spad{a} with respect to the
+        ++ fixed R-module basis.
+      convert : Vector R -> %
+        ++ convert([a1, .., an]) returns \spad{a1*v1 + ... + an*vn}, where
+        ++ v1, ..., vn are the elements of the fixed basis.
+      if R has Finite then Finite
+  add
+
+      convert(x : %) : Vector(R)  == coordinates(x)
+      convert(v : Vector R) : %   == represents(v)
+
+      coordinates(v : Vector %) ==
+          m := new(#v, rank(), 0)$Matrix(R)
+          for i in minIndex v .. maxIndex v for j in minRowIndex m .. repeat
+              setRow!(m, j, coordinates qelt(v, i))
+          m
+
+      if R has Finite then
+
+          index(i : PositiveInteger) : % ==
+              m := size()$R
+              l := []$List(R)
+              ii : Integer := i - 1
+              for j in 1..rank() repeat
+                  (ii, i1) := divide(ii, m)
+                  l := cons(index(qcoerce(i1 + 1))$R, l)
+              represents(vector(l)$Vector(R))
+
+          lookup(x : %) : PositiveInteger ==
+              v := coordinates(x)
+              res := 0$Integer
+              m := size()$R
+              for i in 1..rank() repeat
+                  res := m*res + lookup(v(i)) - 1
+              qcoerce(res + 1)
+
+          size()   == size()$R ^ rank()
+
+          random() == represents [random()$R for i in 1..rank()]$Vector(R)
+
 )abbrev category FINRALG FiniteRankAlgebra
 ++ Author: Barry Trager
 ++ Basic Functions:
@@ -90,27 +153,8 @@ FiniteRankAlgebra(R : CommutativeRing, UP : UnivariatePolynomialCategory R):
 ++ with a fixed R-module basis.
 
 FramedAlgebra(R : CommutativeRing, UP : UnivariatePolynomialCategory R):
- Category == FiniteRankAlgebra(R, UP) with
+ Category == Join(FiniteRankAlgebra(R, UP), FramedModule(R)) with
     --operations
-      basis                 : () -> Vector %
-        ++ basis() returns the fixed R-module basis.
-      coordinates           : % -> Vector R
-        ++ coordinates(a) returns the coordinates of \spad{a} with respect to the
-        ++ fixed R-module basis.
-      coordinates           : Vector % -> Matrix R
-        ++ coordinates([v1, ..., vm]) returns the coordinates of the
-        ++ vi's with to the fixed basis.  The coordinates of vi are
-        ++ contained in the ith row of the matrix returned by this
-        ++ function.
-      represents            : Vector R -> %
-        ++ represents([a1, .., an]) returns \spad{a1*v1 + ... + an*vn}, where
-        ++ v1, ..., vn are the elements of the fixed basis.
-      convert               : % -> Vector R
-        ++ convert(a) returns the coordinates of \spad{a} with respect to the
-        ++ fixed R-module basis.
-      convert               : Vector R -> %
-        ++ convert([a1, .., an]) returns \spad{a1*v1 + ... + an*vn}, where
-        ++ v1, ..., vn are the elements of the fixed basis.
       traceMatrix           : () -> Matrix R
         ++ traceMatrix() is the n-by-n matrix ( \spad{Tr(vi * vj)} ), where
         ++ v1, ..., vn are the elements of the fixed basis.
@@ -125,19 +169,11 @@ FramedAlgebra(R : CommutativeRing, UP : UnivariatePolynomialCategory R):
     --attributes
       --separable <=> discriminant() ~= 0
   add
-   convert(x : %) : Vector(R)  == coordinates(x)
-   convert(v : Vector R) : %   == represents(v)
    traceMatrix()           == traceMatrix basis()
    discriminant()          == discriminant basis()
    regularRepresentation x == regularRepresentation(x, basis())
    coordinates x           == coordinates(x, basis())
    represents x            == represents(x, basis())
-
-   coordinates(v : Vector %) ==
-     m := new(#v, rank(), 0)$Matrix(R)
-     for i in minIndex v .. maxIndex v for j in minRowIndex m .. repeat
-       setRow!(m, j, coordinates qelt(v, i))
-     m
 
    regularRepresentation x ==
      m := new(n := rank(), n, 0)$Matrix(R)
@@ -202,7 +238,6 @@ MonogenicAlgebra(R : CommutativeRing, UP : UnivariatePolynomialCategory R):
       lift              : % -> UP
         ++ lift(z) returns a minimal degree univariate polynomial up such that
         ++ \spad{z=reduce up}.
-      if R has Finite then Finite
       if R has Field then
         Field
         DifferentialExtension R
@@ -224,10 +259,6 @@ MonogenicAlgebra(R : CommutativeRing, UP : UnivariatePolynomialCategory R):
 
    characteristicPolynomial(x : %) : UP ==
      characteristicPolynomial(x)$CharacteristicPolynomialInMonogenicalAlgebra(R, UP, %)
-
-   if R has Finite then
-     size()   == size()$R ^ rank()
-     random() == represents [random()$R for i in 1..rank()]$Vector(R)
 
    if R has Field then
      reduce(x : Fraction UP) == reduce(numer x) exquo reduce(denom x)
