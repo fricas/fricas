@@ -641,7 +641,6 @@
   (|FormalFraction| . FORMAL)
   (|FourierComponent| . FCOMP)
   (|FractionalIdeal| . FRIDEAL)
-  (|FramedModule| . FRMOD)
   (|FreeAbelianGroup| . FAGROUP)
   (|FreeAbelianMonoid| . FAMONOID)
   (|FreeGroup| . FGROUP)
