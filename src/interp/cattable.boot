@@ -109,7 +109,6 @@ simpHasPred(pred,:options) == main where
       null r and opOf op = 'has => simp first pred
       pred is '(QUOTE T) => true
       op1 := LASSOC(op,'((and . AND)(or . OR)(not . NOT))) => simp [op1,:r]
-      simp first pred   --REMOVE THIS HACK !!!!
     pred in '(T etc) => pred
     null pred => nil
     pred
