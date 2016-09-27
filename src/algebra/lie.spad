@@ -129,8 +129,10 @@ LieSquareMatrix(n, R) : Exports == Implementation where
   Row ==> DirectProduct(n, R)
   Col ==> DirectProduct(n, R)
 
-  Exports ==> Join(SquareMatrixCategory(n, R, Row, Col), CoercibleTo Matrix R, _
-      FramedNonAssociativeAlgebra R) --with
+  Exports ==> Join(CoercibleTo SquareMatrix(n, R),
+                   FramedNonAssociativeAlgebra R) with
+    convert : SquareMatrix(n, R) -> %
+      ++ converts a SquareMatrix to a LieSquareMatrix
 
   Implementation ==> AssociatedLieAlgebra (R, SquareMatrix(n, R)) add
 
@@ -138,8 +140,8 @@ LieSquareMatrix(n, R) : Exports == Implementation where
       -- local functions
     n2 : PositiveInteger := n*n
 
-    elt(x : %, k : Integer, l : Integer) ==
-        elt(x::SquareMatrix(n, R), k, l)
+    convert(x : SquareMatrix(n, R)) : % ==
+        x::Rep
 
     convDM : DirectProduct(n2, R) -> %
     conv : DirectProduct(n2, R) ->  SquareMatrix(n, R)
@@ -157,10 +159,11 @@ LieSquareMatrix(n, R) : Exports == Implementation where
     canonical_coordinates(a : %) : Vector(R) ==
       res : Vector R := new(n2, 0$R)
       z : Integer := 0
+      as := a pretend SquareMatrix(n, R)
       for i in 1..n repeat
         for j in 1..n repeat
           z := z+1
-          res.z := elt(a, i, j)$%
+          res(z) := qelt(as, i, j)
       res
 
     coordinates(a : %, b : Vector(%)) : Vector(R) ==
@@ -186,7 +189,7 @@ LieSquareMatrix(n, R) : Exports == Implementation where
         ldp)$ListFunctions2(DirectProduct(n2, R), %)
 
     someBasis() == basis()
-    rank() == n*n
+    rank() == n2
 
 
 --    transpose: % -> %
