@@ -80,9 +80,12 @@ at load time.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
-;;; This is the {\bf Spad parser} subsystem. It is only needed by
-;;; algebra developers.  Currently included in base system.
 #|
+Old autoload machinery.  Currently the functions below are
+included in base system.
+
+;;; This is the {\bf Spad parser} subsystem. It is only needed by
+;;; algebra developers.
 (setq parse-functions
       '(
 ;;      loadparser
@@ -90,7 +93,6 @@ at load time.
         |parse_Expression|
         |spadCompile|
         ))
-|#
 
 ;;; This is the {\bf spad compiler} subsystem. It is only needed by
 ;;; developers who write or modify algebra code.
@@ -194,7 +196,7 @@ at load time.
         |showFrom|
         |showImp|))
 
-#|
+
 There are several subsystems within {\bf AXIOM} that are not normally
 loaded into a running system. They will be loaded only if you invoke
 one of the functions listed here. Each of these listed functions will
@@ -205,9 +207,9 @@ overwritten, the function call is retried and now succeeds. Files
 containing functions listed here are assumed to exist in the
 {\bf autoload} subdirectory. The list of files to load is defined
 in the src/interp/Makefile.
-|#
 
-#|
+
+
 This function is called by {\bf build-interpsys}. It takes two lists.
 The first is a list of functions that need to be used as
 ``autoload triggers''. The second is a list of files to load if one
@@ -217,7 +219,7 @@ list. In this way we will automatically load a whole subsystem if we
 touch any function in that subsystem. We call a helper function
 called {\bf setBootAutoLoadProperty} to set up the autoload trigger.
 This helper function is listed below.
-|#
+
 (defun |setBootAutloadProperties| (fun-list file-list)
   (mapc #'(lambda (fun) (|setBootAutoLoadProperty| fun file-list)) fun-list)
 )
@@ -237,7 +239,6 @@ This helper function is listed below.
 (defun |setBootAutoLoadProperty| (func file-list)
   (setf (symbol-function func) (|mkBootAutoLoad| func file-list)) )
 
-#|
 This is how the autoload magic happens. Every function named in the
 autoload lists is actually just another name for this function. When
 the named function is called we call {\bf boot-load} on all of the
@@ -245,7 +246,7 @@ files in the subsystem. This overwrites all of the autoload triggers.
 We then look up the new (real) function definition and call it again
 with the real arguments. Thus the subsystem loads and the original
 call succeeds.
-|#
+
 (defun |mkBootAutoLoad| (fn file-list)
    (function (lambda (&rest args)
                  #+:sbcl
@@ -255,7 +256,7 @@ call succeeds.
                  (mapc #'boot-load file-list)
                  (unless (string= (subseq (string fn) 0 4) "LOAD")
                   (apply (symbol-function fn) args)))))
-
+|#
 ;;; Prefix a filename with the {\bf AXIOM} shell variable.
 (defun make-absolute-filename (name)
  (concatenate 'string $spadroot name))
@@ -380,12 +381,14 @@ After this function is called the image is clean and can be saved.
            (append FRICAS-LISP::*fricas-initial-lisp-objects*
                    '("util.o")
                    load-files))
+#|
       (dolist (el `(
                     ("comp-files" ,comp-files)
                     ("browse-files" ,browse-files)
                     ("asauto-files" ,asauto-files)))
           (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
                         :lisp-files (nth 1 el)))
+|#
       (let ((initforms nil))
           (dolist (el '(|$build_date| |$build_version| |$createLocalLibDb|))
               (if (boundp el)
@@ -414,12 +417,15 @@ After this function is called the image is clean and can be saved.
      (format *standard-output* "spad = ~s~%" spad)
      (force-output  *standard-output*)
      ;;; (load (concatenate 'string spad "/autoload/"  "parini.lsp"))
+#|
      (interpsys-image-init
            (list (concatenate 'string spad "/autoload/" "parse-files"))
            (list (concatenate 'string spad "/autoload/" "comp-files"))
            (list (concatenate 'string spad "/autoload/" "browse-files"))
            (list (concatenate 'string spad "/autoload/" "asauto-files"))
            spad)
+|#
+      (interpsys-image-init ()' ()' ()' ()' spad)
       (format *standard-output* "before fricas-restart~%")
       (force-output  *standard-output*)
 )
@@ -436,9 +442,11 @@ After this function is called the image is clean and can be saved.
   (setq compiler::*suppress-compiler-notes* t)
   (|interpsysInitialization|)
   (setq *load-verbose* nil)
+#|
   (|setBootAutloadProperties| comp-functions comp-files)
   (|setBootAutloadProperties| browse-functions browse-files)
   (|setBootAutloadProperties| asauto-functions asauto-files)
+|#
   (resethashtables) ; the databases into core, then close the streams
  )
 
