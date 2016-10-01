@@ -236,7 +236,7 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
     generalPred is ['SPADCALL, ['SPADCALL, =sharpArg, m,
       ['ELT, dom1, slot1]], ['ELT, dom2, slot2]] and
         is_op_slot(notSlot, dom2, slot2, minivectorName, integer, bf_vec)
-          and is_op_slot(lt_slot, dom1 slot1,
+          and is_op_slot(lt_slot, dom1, slot1,
                          minivectorName, integer, bf_vec) => m
     generalPred is ['NOT, ['SPADCALL, =sharpArg, m,
        ['ELT, dom, slot]]] and
