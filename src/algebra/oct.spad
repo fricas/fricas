@@ -18,14 +18,8 @@
 -- Examples: octonion.input
 
 OctonionCategory(R : CommutativeRing) : Category ==
-  -- we are cheating a little bit, algebras in \Language{}
-  -- are mainly considered to be associative, but that's not
-  -- an attribute and we can't guarantee that there is no piece
-  -- of code which implicitly
-  -- uses this. In a later version we shall properly combine
-  -- all this code in the context of general, non-associative
-  -- algebras, which are meanwhile implemented in \Language{}
-  Join(Algebra R, FullyRetractableTo R, FullyEvalableOver R) with
+  Join(FramedNonAssociativeAlgebra(R), FullyRetractableTo R,
+       FullyEvalableOver R) with
      conjugate : % -> %
        ++ conjugate(o) negates the imaginary parts i, j, k, E, I, J, K of octonian o.
      real :    % -> R
@@ -51,7 +45,6 @@ OctonionCategory(R : CommutativeRing) : Category ==
      octon : (R, R, R, R, R, R, R, R) -> %
        ++ octon(re, ri, rj, rk, rE, rI, rJ, rK) constructs an octonion
        ++ from scalars.
-     if R has Finite then Finite
      if R has OrderedSet then OrderedSet
      if R has ConvertibleTo InputForm then ConvertibleTo InputForm
      if R has CharacteristicZero then CharacteristicZero
@@ -77,6 +70,25 @@ OctonionCategory(R : CommutativeRing) : Category ==
  add
      characteristic() ==
        characteristic()$R
+
+     rank() == 8
+
+     coordinates(x : %) : Vector(R) ==
+         vector([real x, imagi x, imagj x, imagk x,
+                 imagE x, imagI x, imagJ x, imagK x])
+
+     represents(v : Vector(R)) ==
+         octon(v(1), v(2), v(3), v(4), v(5), v(6), v(7), v(8))
+
+     basis() : Vector(%) ==
+         res := zero(8)$Vector(%)
+         vv := zero(8)$Vector(R)
+         for i in 1..8 repeat
+             vv(i) := 1
+             res(i) := represents(vv)
+             vv(i) := 0
+         res
+
      conjugate x ==
        octon(real x, - imagi x, - imagj x, - imagk x, - imagE x, _
        - imagI x, - imagJ x, - imagK x)
