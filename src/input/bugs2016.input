@@ -275,5 +275,23 @@ b := matrix([[0, 0], [1$Integer, 0]])::lSM
 testEquals("(a*b)::sM", "matrix([[1, 0], [0, -1]])")
 testLibraryError("a^0")
 
+testcase "polynomial decomposition"
+
+testEquals("completeDecompose((x^2+x+1)(x^3 + 2*x))",
+           "[x^2+x+1, x^3 + 2*x]")
+
+pI := UP('x, INT)
+pF := UP('x, PF(11))
+p := (x^15 + 2*x^14 + x^11 + x^4 + 3*x^2 + x + 7)::pI
+q := (x^13 + x^12 + 3*x^11 + 2*x^10 + 6*x^9 + 8*x^8 + x^7 + 8*x^4 + x)::pI
+
+testEquals("completeDecompose(p(q))", "[p, q]")
+testEquals("monicCompleteDecompose(p(q))", "[p, q]")
+testEquals("completeDecompose((p::pF)(q::pF))", "[p::pF, q::pF]")
+
+rF := UP('x, UP('y, PF(11)))
+q := q::rF + (x^13*y)::rF
+testEquals("rightFactorIfCan((p::rF)(q), 13, (y+1))", "q")
+
 )set output algebra on
 statistics()
