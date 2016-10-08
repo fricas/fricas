@@ -1,0 +1,73 @@
+-- regression tests for code in gpresent.spad
+
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+)expose GroupPresentation
+
+testsuite "gpresent"
+
+-- first we try each simplification rule in its simplest
+-- form then we try combinations.
+
+testcase "simplification - remove one generator"
+triv := groupPresentation([],[])
+t1 := simplify(groupPresentation([1],[[1]]))
+testEquals("triv", "t1")
+
+testcase "simplification - repeated remove one generator"
+triv := groupPresentation([],[])
+t2 := simplify(groupPresentation([1,2],[[1],[2]]))
+testEquals("triv", "t2")
+
+testcase "simplification - cancel empty"
+triv := groupPresentation([],[])
+t3 := simplify(groupPresentation([0],[[0]]))
+testEquals("triv", "t3")
+
+testcase "simplification - cancel inverse"
+triv := groupPresentation([],[])
+t4 := simplify(groupPresentation([1],[[1],[-1]]))
+testEquals("triv", "t4")
+
+testcase "simplification - 2 element rule"
+free1 := groupPresentation([1],[])
+t5 := simplify(groupPresentation([1,2],[[1,2]]))
+testEquals("free1", "t5")
+
+testcase "simplification - minimise inverses"
+free3 := groupPresentation([1,2,3],[[1,2,3]])
+t6 := simplify(groupPresentation([1,2,3],[[-3,-2,-1]]))
+testEquals("free3", "t6")
+
+testcase "simplification - substitution"
+square := groupPresentation([1,2,3,4,5],[[1,3,5],[2,3,4]])
+t6 := simplify(square)
+expected := groupPresentation([1,2,4,5],[[2,-1,-5,4]])
+testEquals("expected", "t6")
+
+-- more complicated simplifications
+
+testcase "complicated simplification"
+c1 := groupPresentation([1,2,3,4,5,6,7],[[1],[0],_
+     [2,4,5],[2,4,7],[2,6],[2,6,7],[3,4,6],[3,5,6],[3,4,7],_
+     [3,7],[4,5],[4,6],[5,6,7],[5,7]])
+t7 := simplify(c1)
+expected := groupPresentation([],[])
+testEquals("expected", "t7")
+
+-- direct product and subgroup
+
+testcase "direct product"
+a := groupPresentation([1],[])
+t8 := directProduct(a,a)
+expected := groupPresentation([1,2],[[1,2,1,2]])
+testEquals("expected", "t8")
+expected2 := groupPresentation([2],[[2,2]])
+t9 := subgroup(t8,[1])
+testEquals("expected2", "t9")
+t10 := subgroup(t8,[[1]])
+testEquals("expected2", "t10")
+
+statistics()
+
