@@ -115,7 +115,7 @@ AlgebraicallyClosedField() : Category == Join(Field, RadicalCategory) with
       beta := assign(x := new(y)$Symbol, fn(cyclo, x))
       [alpha*beta^i for i in 0..(n-1)::NonNegativeInteger]
 
-    import from PolynomialDecomposition(SUP, %)
+    import from UnivariatePolynomialDecompositionPackage(%, SUP)
 
     allroots(p, y, fn) ==
       zero? p => error "allroots: polynomial must be nonzero"
@@ -123,10 +123,10 @@ AlgebraicallyClosedField() : Category == Join(Field, RadicalCategory) with
          concat(0, allroots(p quo monomial(1, 1), y, fn))
       zero?(p1 := reductum p) => empty()
       zero? reductum p1 => binomialRoots(p, y, fn)
-      decompList := decompose(p)
+      decompList := completeDecompose(p)
       # decompList > 1 =>
           h := last decompList
-          g := leftFactor(p, h) :: SUP
+          g := leftFactorIfCan(p, h) :: SUP
           groots := allroots(g, y, fn)
           "append"/[allroots(h-r::SUP, y, fn) for r in groots]
       ans := nil()$List(%)
