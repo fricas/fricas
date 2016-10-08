@@ -69,7 +69,7 @@ UnivariatePolynomialDivisionPackage(R, UP) : Exports == Implementation where
 ++ functional decomposition of univariate polynomial with coefficients
 ++ in an \spad{IntegralDomain} of \spad{CharacteristicZero}.
 UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation where
-  R : Join(IntegralDomain, CharacteristicZero)
+  R : IntegralDomain
   UP : UnivariatePolynomialCategory(R)
   N ==> NonNegativeInteger
   LR ==> Record(left : UP, right : UP)
@@ -94,22 +94,23 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
       ++ given h or \spad{"failed"} if g does not exist.
     monicDecomposeIfCan : UP -> Union(LR,"failed")
       ++ monicDecomposeIfCan(f) returns a functional decomposition
-      ++ of the monic polynomial f of "failed" if it has not found any.
+      ++ of the monic polynomial f or "failed" if it has not found any.
     monicCompleteDecompose : UP -> List UP
       ++ monicCompleteDecompose(f) returns a list of factors of f for
-      ++ the functional decomposition ([ f1, ..., fn ] means
-      ++ f = f1 o ... o fn).
-
+      ++ the functional decomposition of monic polynomial f.
+      ++ [f1, ..., fn] means f = f1 o ... o fn.
+    if R has Field then
+       decomposeIfCan : UP -> Union(LR,"failed")
+         ++ decomposeIfCan(f) returns a functional decomposition
+         ++ of the polynomial f or "failed" if it has not found any.
+       completeDecompose : UP -> List UP
+         ++ completeDecompose(f) returns a list of factors of f for
+         ++ the functional decomposition of f. [f1, ..., fn] means
+         ++ f = f1 o ... o fn.
   Implementation ==> add
 
-    rightFactorIfCan(p, dq, lcq) ==
+    rightFactorIfCan0(p : UP, dq : N, n : N, lcq : R) : Union(UP,"failed") ==
       dp := degree p
-      zero? lcq =>
-       error "rightFactorIfCan: leading coefficient may not be zero"
-      (zero? dp) or (zero? dq) => "failed"
-      nc := dp exquo dq
-      nc case "failed" => "failed"
-      n := nc::N
       s := subtractIfCan(dq, 1)::N
       lcp := leadingCoefficient p
       q : UP := monomial(lcq, dq)
@@ -117,6 +118,8 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
       for k in 1..s repeat
         c : R := 0
         i : N
+        -- solves equation n*q1'*p1 - q1*p1' = 0 mod x^(k+1)
+        -- where q1 and p1 are p and q in reverse order
         for i in 0..subtractIfCan(k, 1)::N repeat
          c := c+(k::R-(n::R+1)*(i::R))*
           coefficient(q, subtractIfCan(dq, i)::N)*
@@ -125,6 +128,52 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
         cquo case "failed" => return "failed"
         q := q+monomial(cquo::R, subtractIfCan(dq, k)::N)
       q
+
+    char_R : N := characteristic()$R
+
+    import from Integer
+
+    rightFactorIfCan(p, dq, lcq) ==
+        dp := degree p
+        zero? lcq =>
+            error "rightFactorIfCan: leading coefficient may not be zero"
+        (zero? dp) or (zero? dq) => "failed"
+        nc := dp exquo dq
+        nc case "failed" => "failed"
+        n := nc::N
+        char_R = 0 or n < char_R => rightFactorIfCan0(p, dq, n, lcq)
+        -- fail in wild case
+        (nr := n::R) = 0 => "failed"
+        q : UP := monomial(lcq, dq)
+        n1 := (n - 1)::N
+        qn1 := q^n1
+        qn := q*qn1
+        lcn := leadingCoefficient(qn)
+        lcn1 := nr*leadingCoefficient(qn1)
+        cc0u := leadingCoefficient(p) exquo lcn
+        cc0u case "failed" => "failed"
+        cc0 := cc0u::R
+        cc1 := cc0*nr
+        cc2 := cc0*lcn1
+        p1 := p - cc0*qn
+        k1 : N := 1
+        k : N := 2
+        qn1 : UP := 0
+        for i in 1..(dq - 1) repeat
+            if i = k then
+                qn1 := q^n1
+                qn := q*qn1
+                p1 := p - cc0*qn
+                k1 := k
+                k := 2*k
+            c := coefficient(p1, qcoerce(dp - i)@N)
+            for j in k1..(i - 1) repeat
+                c := c - cc1*coefficient(q, qcoerce(dq - j)@N)*
+                              coefficient(qn1, qcoerce(dp - dq - i + j)@N)
+            cu := c exquo cc2
+            cu case "failed" => return "failed"
+            q := q + monomial(cu::R, qcoerce(dq - i)@N)
+        q
 
     monicRightFactorIfCan(p, dq) == rightFactorIfCan(p, dq, 1$R)
 
@@ -158,6 +207,22 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
       cf case "failed" => [ f ]
       lr := cf :: LR
       append(monicCompleteDecompose lr.left, [lr.right])
+
+    if R has Field then
+
+        decomposeIfCan f ==
+            lc := leadingCoefficient f
+            f  := f/lc
+            res1 := monicDecomposeIfCan(f)
+            res1 case "failed" => "failed"
+            lr := res1::LR
+            [lc*lr.left, lr.right]
+
+        completeDecompose(f) ==
+            lc := leadingCoefficient f
+            f  := f/lc
+            res1 := monicCompleteDecompose(f)
+            cons(lc*first(res1), rest(res1))
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
