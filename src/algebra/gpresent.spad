@@ -38,6 +38,18 @@ Note that the use of negative indices to represent the inverse does
 not imply an abelian group. This is just a convenient way to code
 the representation and, in general, the group is not necessarily
 abelian.
+The notation uses the following conventions.
+\begin{itemize}
+\item If index is positive it represents a generator shown as an alphabetic
+digit followed by number if required.
+\item If index is zero it represents identity shown as 'e'.
+\item If index is negative it represents an inverse generator.
+The notation uses '-' to indicate an inverse generator (I know this is
+an abuse of notation, because the group is not necessarily Abelian).
+\end{itemize}
+This convention is not ambiguous and I don't like the alternatives,
+'-1' exponent uses too much space and upper case alpha for inverses
+may not be clear to people who don't read documentation.
 
 \section{Homotopy Group}
 The homotopy group is finitely presented by generators and relations.
@@ -55,7 +67,54 @@ Despite these fundamental limits on what is theoretically possible
 I still believe it is worthwhile to have the capability to generate
 'a' homotopy group for a given structure.
 
-\section{Simplify}
+\section{Conversion between Finitely Presented and Permutation Groups}
+
+In FriCAS the main group functionality is in PermutationGroup so it
+would be useful to be able to convert to and from it.
+
+A finitely presented group may, or may not be, convertible to a permutation
+group. There is a well known method for this called the Todd-Coxeter
+algorithm, this uses coset enumeration.
+
+Since this algorithm is quite complicated I will start by implementing
+some more fundamental functions related to products, quotients, subgroups
+and cosets.
+
+What about the other direction? How do we attempt to convert a permutation
+group to a finitely presented group? The existing PermutationGroup has
+functions like wordInGenerators and wordsForStrongGenerators, does this help?
+Are there other existing functions that would help?
+I can find very little documentation about this.
+
+\section{Direct Product of Groups}
+
+If G = < Sg | Rg > and H = < Sh | Rh >
+Then G*H = < Sg,Sh | Rg,Rh,Rp >
+
+where:
+G*H is the direct product of G and H.
+Rp is a set of relations specifying that each element of Sg anti-commutes
+with each element of Sh.
+See:
+\url{https://en.wikipedia.org/wiki/Direct_product_of_groups}
+
+This assumes that Sg and Sh are disjoint. In order to assure this the
+generators will be renumbered before doing the product.
+
+\section{Quotients}
+
+We can generate a quotient by removing a generator (more precisely
+adding relation equating this generator to neutral element) or
+more generaly by adding a relation. We have functions
+to create new groups in either of these ways, but
+confusingly they are called \spad{subgroup}.
+
+A quitent is an example of a surjective mapping
+(epimorphism) on the group. It is easy to work with functions
+between finitely presented groups, all we have to do is map
+the generators and check that the relations still equal 1.
+
+\section{Simplify Finitely Presented Groups}
 
 There may not be a simplest form but it is possible to do some
 simplifications.
@@ -67,14 +126,15 @@ back to itself).
 
 For example:
 \begin{itemize}
-\item remove all zero terms in rules
-\item if a rule consists of a single generator then remove
-  that generator
-\item if a rule consists of a pair of generators then make
-  the second generator the inverse of the first
-\item if a generator is adjacent to its inverse then cancel
+\item Remove all zero terms in relations.
+\item If a relation consists of a single generator then remove
+  that generator.
+\item If a relation consists of a pair of generators then make
+  the second generator the inverse of the first.
+\item If a generator is adjacent to its inverse then cancel
   them out.
-\item remove duplicate rules.
+\item Remove duplicate relations.
+\item Substitute one relation in another.
 \end{itemize}
 
 These automorphisms were studied and categorised by Tietze
@@ -99,24 +159,24 @@ in T2 and T4.
 \subsection{T2}
 
 T2 allows us to remove a relation but not generators. This
-happens when a rule is redundant, that is it contains no
+happens when a relation is redundant, that is it contains no
 additional information than is already contained in the
-other rules.
+other relations.
 
 This happens, for example, where:
 
-One rule is a multiple of another - In this case we can
+One relation is a multiple of another - In this case we can
 remove the highest multiple but not the lowest.
 
-One rule is the inverse of another - In this case we can
-remove any one, but not both of these rules.
+One relation is the inverse of another - In this case we can
+remove any one, but not both.
 
-We can also simplify rules, for example, where an element
+We can also simplify relations, for example, where an element
 and its inverse are next to each other they can be
 cancelled out and removed.
 \subsection{T4}
 
-T4 allows us to remove a generator and corresponding rules.
+T4 allows us to remove a generator and corresponding relations.
 \subsection{Nielsen Transformations}
 
 The following transformations on a finitely generated free group
@@ -127,7 +187,66 @@ produce isomorphic groups.
 \item Cyclically permute A, B, ... to B, ..., A.
 \item Replace A with A^(-1)
 \item Replace A with A*B
+\item Substitute one relation in another
 \end{itemize}
+
+Most of these rules are self explanatory except substitute which
+does the following:
+
+If a generator is contained in exactly 2 relations then we may be
+able to substitute one relation in another and remove that generator.
+If, in at least one of these relations, the generator is contained
+only once then we can move it to one side of the equation and
+substitute it in the other relation.
+
+This is done by a local function TTSubstitute.
+
+Here is an example of its use from SimplicialComplex without
+substitution:
+\begin{verbatim}
+(1) -> tS := torusSurface()$SimplicialComplexFactory
+
+     (1)
+           (1,2,3)
+           (2,3,5)
+           (2,4,5)
+           (2,4,7)
+           (1,2,6)
+           (2,6,7)
+           (3,4,6)
+           (3,5,6)
+           (3,4,7)
+           (1,3,7)
+           (1,4,5)
+           (1,4,6)
+           (5,6,7)
+           (1,5,7)
+               Type: FiniteSimplicialComplex(VertexSetAbstract)
+
+(2) -> fundamentalGroup(tS)
+
+     (2)  <o t w |   o*w*t,  o*t*w>
+                                        Type: GroupPresentation
+\end{verbatim}
+This needs to be further simplified,
+
+<o t w |   -o = w*t,  -o = t*w>
+
+Substituting for -o we have:
+
+w*t = t*w
+
+That is, two edges that commute.
+
+Moving everything to one side of the equation we have:
+t * w * -t * -w
+\begin{verbatim}
+(2) -> fundamentalGroup(tS)
+
+   (2)  <s v |  -s*v*s*-v>
+                                        Type: GroupPresentation
+\end{verbatim}
+This is the same as above with v=w and s= -t.
 
 \section{Testing and Validating this Code}
 
