@@ -85,6 +85,7 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
       sylmat
 
     import from MatrixManipulation(R, Row, Col, M)
+    import from SI
 
     subSylvesterMatrix(sylmat, j) ==
         j = 0 => sylmat
@@ -92,12 +93,12 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
             error "one of the polynomials that form this SylvesterMatrix has degree 0"
         minR := minRowIndex sylmat; minC := minColIndex sylmat
         maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
+        len := ncols sylmat
         firstcol := column(sylmat, minC)
-        m := position((x:R):Boolean+->x~=0, delete(firstcol, minC))+1 - minC
-        n := maxC - minC + 1 - m
+        m := position((x:R):Boolean+->x~=0, delete(firstcol, minR))+1 - minR
+        n := len - m
         j >= min(n, m) => error "index is too big for this SylvesterMatrix"
-        rowRange : LI := concat(expand(minR..(minR+m-1-j))$SI,
-                                expand((minR+m)..(maxR-j))$SI)
+        rowRange : LI := expand [minR-1 + (1..(m-j)), (minR+m)..(maxR-j)]
         colRange : LI := expand(minC..maxC)$SI
         subMatrix(sylmat, rowRange, colRange)
 
@@ -107,8 +108,8 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
         minR := minRowIndex sylmat; minC := minColIndex sylmat
         maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
         rowRange : LI := expand(minR..maxR)$SI
-        colRange : LI := concat(expand(minC..(maxC-minC-2*j))$SI,
-                                maxC-minC+1-i-j)
+        colRange : LI := concat(expand(minC..(maxC-2*j-1))$SI,
+                                maxC-i-j)
         subMatrix(sylmat, rowRange, colRange)
 
     bezoutMatrix(p, q) ==
