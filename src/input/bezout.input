@@ -4,7 +4,7 @@ testsuite "bezout.spad"
 
 testcase "subSylvesterMatrix related functions"
 
-T ==> BezoutMatrix(INT, UP(x, INT), Matrix INT, Vector INT, Vector INT)
+T ==> BezoutMatrixWrapper(INT, UP(x, INT))
 
 p := x^2+1
 q := x^2-1
@@ -22,11 +22,17 @@ testEquals("subResultantList(p, q)$T", "[-2, 4]")
 
 testcase "subResultantList"
 
-T2 ==> BezoutMatrix(POLY INT, UP(x, POLY INT), Matrix POLY INT, Vector POLY INT, Vector POLY INT)
+T1 ==> UP(x, POLY INT)
+iM := IndexedMatrix(POLY INT, 7, -3)
+vR := IndexedVector(POLY INT, -3)
+vC := IndexedVector(POLY INT, 7)
+T2 := BezoutMatrix(POLY INT, T1, iM, vR, vC)
 
-A := 3*t*x^2 - t^3-4
-B := x^2 + t^3*x - 9
+A : T1 := 3*t*x^2 - t^3-4
+B : T1 := x^2 + t^3*x - 9
+res : T1 := -3*t^10-12*t^7+t^6-54*t^4+8*t^3+729*t^2-216*t+16
 
-testEquals("subResultantList(A,B)$T2", "[3*t^4*x+t^3-27*t+4,-3*t^10-12*t^7+t^6-54*t^4+8*t^3+729*t^2-216*t+16]")
+testEquals("resultant(A, B)", "res")
+testEquals("subResultantList(A,B)$T2", "[3*t^4*x+t^3-27*t+4, res]")
 
 statistics()
