@@ -125,9 +125,9 @@ Plot3D() : Exports == Implementation where
 
     fourth list == first rest rest rest list
 
-    checkRange r == (lo r > hi r => error "ranges cannot be negative"; r)
-    intersect(s, t) == checkRange (max(lo s, lo t) .. min(hi s, hi t))
-    union(s : R, t : R) == min(lo s, lo t) .. max(hi s, hi t)
+    checkRange r == (low(r) > high(r) => error "ranges cannot be negative"; r)
+    intersect(s, t) == checkRange(max(low(s), low(t))..min(high(s), high(t)))
+    union(s : R, t : R) == min(low(s), low(t))..max(high(s), high(t))
     join(l, i) ==
       rr := first l
       u : R :=
@@ -190,7 +190,7 @@ Plot3D() : Exports == Implementation where
 --       p.colNum := (p.colNum - lo)/diff
 
     rangeRefine(curve, nRange) ==
-      checkRange nRange; l := lo nRange; h := hi nRange
+      checkRange nRange; l := low(nRange); h := high(nRange)
       t := curve.knots; p := curve.points; f := curve.source
       while not null t and first t < l repeat
         (t := rest t; p := rest p)
@@ -228,14 +228,14 @@ Plot3D() : Exports == Implementation where
 
 
     adaptivePlot(curve, tRg, xRg, yRg, zRg, pixelfraction, resolution) ==
-      xDiff := hi xRg - lo xRg
-      yDiff := hi yRg - lo yRg
-      zDiff := hi zRg - lo zRg
+      xDiff := high(xRg) - low(xRg)
+      yDiff := high(yRg) - low(yRg)
+      zDiff := high(zRg) - low(zRg)
 --      xDiff = 0 or yDiff = 0 or zDiff = 0 => curve--!! delete this?
       if xDiff = 0::F then xDiff := 1::F
       if yDiff = 0::F then yDiff := 1::F
       if zDiff = 0::F then zDiff := 1::F
-      l := lo tRg; h := hi tRg
+      l := low(tRg); h := high(tRg)
       (tDiff := h-l) = 0 => curve
       t := curve.knots
       #t < 3 => curve
@@ -293,7 +293,7 @@ Plot3D() : Exports == Implementation where
       else curve
 
     basicPlot(f, tRange) ==
-      checkRange tRange; l := lo tRange; h := hi tRange
+      checkRange tRange; l := low(tRange); h := high(tRange)
       t : L F := list l; p : L P := list f l
       s := (h-l)/(MINPOINTS-1)::F
       for i in 2..MINPOINTS-1 repeat
@@ -316,7 +316,7 @@ Plot3D() : Exports == Implementation where
       curve : C := [curve.source, curve.ranges, curve.knots, curve.points]
       t := curve.knots := copy curve.knots
       p := curve.points := copy curve.points
-      l := lo nRange; h := hi nRange
+      l := low(nRange); h := high(nRange)
       f := curve.source
       while not null rest t and first(t) < h repeat
         second(t) < l => (t := rest t; p := rest p)

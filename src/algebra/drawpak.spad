@@ -83,22 +83,22 @@ DrawComplex() : Exports == Implementation where
       min(max(x, -clipValue), clipValue)
 
     drawComplex(f, realRange, imagRange, arrows?) ==
-      delReal := (hi(realRange) - lo(realRange))/realSteps::SF
-      delImag := (hi(imagRange) - lo(imagRange))/imagSteps::SF
+      delReal := (high(realRange) - low(realRange))/realSteps::SF
+      delImag := (high(imagRange) - low(imagRange))/imagSteps::SF
       funTable : ARRAY2(PC) :=
          new((realSteps::NNI)+1, (imagSteps::NNI)+1, [0, 0]$PC)
-      real := lo(realRange)
+      real := low(realRange)
       for i in 1..realSteps+1 repeat
-        imag := lo(imagRange)
+        imag := low(imagRange)
         for j in 1..imagSteps+1 repeat
           z := f complex(real, imag)
           funTable(i, j) := [clipFun(sqrt norm z), argument(z)]$PC
           imag := imag + delImag
         real := real + delReal
       llp := empty()$(List List Point SF)
-      real := lo(realRange)
+      real := low(realRange)
       for i in 1..realSteps+1 repeat
-        imag := lo(imagRange)
+        imag := low(imagRange)
         lp := empty()$(List Point SF)
         for j in 1..imagSteps+1 repeat
           p := point [real, imag, funTable(i, j).rr, funTable(i, j).th]
@@ -108,9 +108,9 @@ DrawComplex() : Exports == Implementation where
         llp := cons(lp, llp)
       space := mesh(llp)$(ThreeSpace SF)
       if arrows? then
-        real := lo(realRange)
+        real := low(realRange)
         for i in 1..realSteps+1 repeat
-          imag := lo(imagRange)
+          imag := low(imagRange)
           for j in 1..imagSteps+1 repeat
             arg := funTable(i, j).th
             p1 := point [real, imag, funTable(i, j).rr, arg]
@@ -125,13 +125,13 @@ DrawComplex() : Exports == Implementation where
 
     drawComplexVectorField(f, realRange, imagRange) : VIEW3D ==
       -- compute the steps size of the grid
-      delReal := (hi(realRange) - lo(realRange))/realSteps::SF
-      delImag := (hi(imagRange) - lo(imagRange))/imagSteps::SF
+      delReal := (high(realRange) - low(realRange))/realSteps::SF
+      delImag := (high(imagRange) - low(imagRange))/imagSteps::SF
       -- create the space to hold the arrows
       space := create3Space()$(ThreeSpace SF)
-      real := lo(realRange)
+      real := low(realRange)
       for i in 1..realSteps+1 repeat
-        imag := lo(imagRange)
+        imag := low(imagRange)
         for j in 1..imagSteps+1 repeat
           -- compute the function
           z := f complex(real, imag)

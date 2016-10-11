@@ -5362,16 +5362,16 @@ Scene(PT) : Exports == Implementation where
   -- field with the arrows showing the direction of the field
   createArrows2Din2D(ptFun : PT -> PT, uSeg : SEG, vSeg : SEG, numPts : NNI) : % ==
     arrows : List List PT := nil()
-    ustep := (lo uSeg - hi uSeg)/numPts
-    vstep := (lo vSeg - hi vSeg)/numPts
-    someV := hi vSeg
+    ustep := (low(uSeg) - high(uSeg))/numPts
+    vstep := (low(vSeg) - high(vSeg))/numPts
+    someV := high(vSeg)
     for iv in numPts..0 by -1 repeat
-      if zero? iv then someV := lo vSeg
+      if zero? iv then someV := low(vSeg)
       -- hack: get last number in segment within segment
       lp : List PT := nil()
-      someU := hi uSeg
+      someU := high(uSeg)
       for iu in numPts..0 by -1 repeat
-        if zero? iu then someU := lo uSeg
+        if zero? iu then someU := low(uSeg)
         -- hack: get last number in segment within segment
         inPt := spnt(someU, someV)$PT
         outpt := ptFun(inPt)
@@ -6407,14 +6407,14 @@ Scene(PT) : Exports == Implementation where
   normalize(seg : SEG) : Segment DF ==
     -- normalize [a, b]:
     -- error if a = b, returns [a, b] if a < b, returns [b, a] if b > a
-    a := convert(lo seg)@DF; b := convert(hi seg)@DF
+    a := convert(low(seg))@DF; b := convert(high(seg))@DF
     a = b => error "The range specified is too small"
     a < b => segment(a, b)
     segment(b, a)
 
   -- checks that left-hand endpoint is less than right-hand endpoint
   checkRange(r : SEG) : SEG ==
-    (lo r > hi r => error "ranges cannot be negative"; r)
+    (low(r) > high(r) => error "ranges cannot be negative"; r)
 
   -- generates a plot from a mapping 'f' of
   -- scalar values to points
@@ -6425,8 +6425,8 @@ Scene(PT) : Exports == Implementation where
   -- The input is a Plot defined in plot.spad
   createPlot1Din2D(f : DF -> PT, tRange : SEG, numPts : NNI) : % ==
     checkRange tRange
-    l := lo tRange
-    h := hi tRange
+    l := low(tRange)
+    h := high(tRange)
     t : List DF := list l
     p0 : List PT := list f l
     s := (h-l)/(numPts-1)::DF
@@ -6520,7 +6520,7 @@ Scene(PT) : Exports == Implementation where
   createPlot1Din3Dparametric(psc : PCFUN, seg : SEG, numPts : NNI) : % ==
     f := psc
     tRange := normalize seg
-    checkRange tRange; l := lo tRange; h := hi tRange
+    checkRange tRange; l := low(tRange); h := high(tRange)
     t : List DF := list l; p : List PT := list f l
     s := (h-l)/(numPts-1)::DF
     for i in 2..numPts-1 repeat
@@ -6542,16 +6542,16 @@ Scene(PT) : Exports == Implementation where
   -- PSFUN is (DF, DF) -> PT
   createPlot2Din3D(ptFun : PSFUN, uSeg : SEG, vSeg : SEG, numPts : NNI) : % ==
     llp : List List PT := nil()
-    ustep := (lo uSeg - hi uSeg)/numPts
-    vstep := (lo vSeg - hi vSeg)/numPts
-    someV := hi vSeg
+    ustep := (low(uSeg) - high(uSeg))/numPts
+    vstep := (low(vSeg) - high(vSeg))/numPts
+    someV := high(vSeg)
     for iv in numPts..0 by -1 repeat
-      if zero? iv then someV := lo vSeg
+      if zero? iv then someV := low(vSeg)
       -- hack: get last number in segment within segment
       lp : List PT := nil()
-      someU := hi uSeg
+      someU := high(uSeg)
       for iu in numPts..0 by -1 repeat
-        if zero? iu then someU := lo uSeg
+        if zero? iu then someU := low(uSeg)
         -- hack: get last number in segment within segment
         pt := ptFun(someU, someV)
         --here we need to check for NaN (not a number)

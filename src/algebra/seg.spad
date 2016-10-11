@@ -105,7 +105,7 @@ Segment(S : Type) : SegmentCategory(S) with
     high s == s.high
     incr s == s.incr
     segment(a, b) == [a, b, 1]
-    BY(s, r) == [lo s, hi s, r]
+    BY(s, r) == [low(s), high(s), r]
 
     if S has SetCategory then
       (s1 : %) = (s2 : %) ==
@@ -124,8 +124,8 @@ Segment(S : Type) : SegmentCategory(S) with
         convert(s : %) : InputForm ==
 
             seg := packageCall('SEGMENT,
-                               [convert(low s)@InputForm,
-                                convert(hi s)@InputForm])$INFORM1
+                               [convert(low(s))@InputForm,
+                                convert(high(s))@InputForm])$INFORM1
             if one?(incr s)
             then seg
             else packageCall('BY,
@@ -133,20 +133,20 @@ Segment(S : Type) : SegmentCategory(S) with
 
     if S has AbelianSemiGroup then
         (i : S + s : %) ==
-            [i + lo(s), i + hi(s), incr(s)]
+            [i + low(s), i + high(s), incr(s)]
         (s : % + i : S) ==
-            [lo(s) + i, hi(s) + i, incr(s)]
+            [low(s) + i, high(s) + i, incr(s)]
 
     if S has AbelianGroup then
         (s : % - i : S) ==
-            [lo(s) - i, hi(s) - i, incr(s)]
+            [low(s) - i, high(s) - i, incr(s)]
 
     if S has OrderedRing then
       expand(ls : List %) : List S ==
         lr := nil()$List(S)
         for s in ls repeat
-          l := lo s
-          h := hi s
+          l := low(s)
+          h := high(s)
           inc := (incr s)::S
           zero? inc => error "Cannot expand a segment with an increment of zero"
           if inc > 0 then
@@ -162,8 +162,8 @@ Segment(S : Type) : SegmentCategory(S) with
       expand(s : %) == expand([s]$List(%))$%
       map(f : S->S, s : %) : List S ==
         lr := nil()$List(S)
-        l := lo s
-        h := hi s
+        l := low(s)
+        h := high(s)
         inc := (incr s)::S
         if inc > 0 then
           while l <= h repeat
@@ -202,13 +202,13 @@ SegmentFunctions2(R : Type, S : Type) : public == private where
 
   private ==> add
     map(f : R->S, r : Segment R) : Segment S ==
-      SEGMENT(f lo r, f hi r)$Segment(S)
+      SEGMENT(f(low(r)), f(high(r)))$Segment(S)
 
     if R has OrderedRing then
      map(f : R->S, r : Segment R) : List S ==
        lr := nil()$List(S)
-       l := lo r
-       h := hi r
+       l := low(r)
+       h := high(r)
        inc := (incr r)::R
        if inc > 0 then
          while l <= h repeat
@@ -329,11 +329,13 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
     segment(a, b) == segment(a, b)$Rec :: Rep
     BY(s, i) ==
       s case Rec => BY(s, i)$Rec :: Rep
-      [lo s, i]$Rec2 :: Rep
+      [low(s), i]$Rec2 :: Rep
 
+--)if false
     lo s ==
       s case Rec2 => (s :: Rec2).low
       low(s)$Rec
+--)endif
 
     low s ==
       s case Rec2 => (s :: Rec2).low
@@ -356,7 +358,7 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
     SEGMENT(a) == segment a
     SEGMENT(a, b) == segment(a, b)
 
-    coerce(sg : Segment S) : % == segment(lo sg, hi sg)
+    coerce(sg : Segment S) : % == segment(low(sg), high(sg))
 
     convert a == convert(a)$Rec
 
@@ -375,8 +377,8 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
 
        coerce(s : %) : OutputForm ==
          seg :=
-           e := (lo s)::OutputForm
-           hasHi s => SEGMENT(e, (hi s)::OutputForm)
+           e := (low(s))::OutputForm
+           hasHi s => SEGMENT(e, (high(s))::OutputForm)
            SEGMENT e
          inc := incr s
          inc = 1 => seg
@@ -397,15 +399,15 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
     if S has AbelianSemiGroup then
         (i : S + s : %) ==
             s case Rec => (i+s)$Rec
-            [i + lo(s), incr(s)]
+            [i + low(s), incr(s)]
         (s : % + i : S) ==
             s case Rec => (s+i)$Rec
-            [lo(s) + i, incr(s)]
+            [low(s) + i, incr(s)]
 
     if S has AbelianGroup then
         (s : % - i : S) ==
             s case Rec => (s-i)$Rec
-            [lo(s) - i, incr(s)]
+            [low(s) - i, incr(s)]
 
     if S has OrderedRing then
       expand(s : %)       == expand([s])
@@ -419,11 +421,11 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
         while not null ls and hasHi first ls repeat
             s  := first ls
             ls := rest ls
-            ns := BY(SEGMENT(lo s, hi s), incr s)$Segment(S)
+            ns := BY(SEGMENT(low(s), high(s)), incr s)$Segment(S)
             lb := concat!(lb, ns)
         if not null ls then
             s := first ls
-            st : Stream S := stream(x +-> x + incr(s)::S, lo s)
+            st : Stream S := stream(x +-> x + incr(s)::S, low(s))
         else
             st : Stream S := empty()
         concat(construct expand(lb),  st)
@@ -452,8 +454,8 @@ UniversalSegmentFunctions2(R : Type, S : Type) : with
 
   == add
     map(f : R -> S, u : UniversalSegment R) : UniversalSegment S ==
-      s := f lo u
-      hasHi u => segment(s, f hi u)
+      s := f(low(u))
+      hasHi u => segment(s, f(high(u)))
       segment s
 
     if R has OrderedRing then
