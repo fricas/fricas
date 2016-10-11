@@ -537,10 +537,10 @@ upLoopIterIN(iter,index,s) ==
 
   -- transform segment variable into STEP
   iterMs is [['Segment,.]] or iterMs is [['UniversalSegment,.]] =>
-    lower := [mkAtreeNode 'lo,s]
+    lower := [mkAtreeNode('low), s]
     step := [mkAtreeNode 'incr, s]
     upperList :=
-      CAAR(iterMs) = 'Segment => [[mkAtreeNode 'hi,s]]
+      CAAR(iterMs) = 'Segment => [[mkAtreeNode('high), s]]
       NIL
     upLoopIterSTEP(index,lower,step,upperList)
     newIter := ['STEP,index,lower,step,:upperList]
@@ -710,10 +710,10 @@ upStreamIterIN(iter,index,s) ==
 
   -- transform segment variable into STEP
   iterMs is [['Segment,.]] or iterMs is [['UniversalSegment,.]] =>
-    lower := [mkAtreeNode 'lo, s]
+    lower := [mkAtreeNode('low), s]
     step := [mkAtreeNode 'incr, s]
     upperList :=
-      CAAR(iterMs) = 'Segment => [[mkAtreeNode 'hi,s]]
+      CAAR(iterMs) = 'Segment => [[mkAtreeNoder('high), s]]
       NIL
     upStreamIterSTEP(index,lower,step,upperList)
     newIter := ['STEP,index,lower,step,:upperList]

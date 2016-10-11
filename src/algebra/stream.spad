@@ -276,9 +276,9 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     concat(first(x, (n - MIN) :: NNI), rest(x, (n - MIN + 1) :: NNI))
 
   delete(x : %, seg : U) ==
-    low := lo seg
+    low := low(seg)
     hasHi seg =>
-      high := hi seg
+      high := high(seg)
       high < low => copy x
       (not index?(low, x)) or (not index?(high, x)) =>
         error "delete: index out of range"
@@ -287,9 +287,9 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     first(x, (low - MIN) :: NNI)
 
   elt(x : %, seg : U) ==
-    low := lo seg
+    low := low(seg)
     hasHi seg =>
-      high := hi seg
+      high := high(seg)
       high < low => empty()
       (not index?(low, x)) or (not index?(high, x)) =>
         error "elt: index out of range"
@@ -860,20 +860,20 @@ Stream(S : Type) : Exports == Implementation where
       concat(frst x, concat(rst x, concat rest l))
 
     setelt!(x, seg : U, s : S) ==
-      low := lo seg
+      l := low(seg)
       hasHi seg =>
-        high := hi seg
-        high < low => s
-        (not index?(low, x)) or (not index?(high, x)) =>
+        h := high(seg)
+        h < l => s
+        (not index?(l, x)) or (not index?(h, x)) =>
           error "setelt!: index out of range"
-        x := expand!(x, high - MIN + 1)
-        y := rest(x, (low - MIN) :: NNI)
-        for i in 0..(high-low) repeat
+        x := expand!(x, h - MIN + 1)
+        y := rest(x, (l - MIN) :: NNI)
+        for i in 0..(h - l) repeat
           setfrst!(y, s)
           y := rst y
         s
-      not index?(low, x) => error "setelt!: index out of range"
-      x := rest(x, (low - MIN) :: NNI)
+      not index?(l, x) => error "setelt!: index out of range"
+      x := rest(x, (l - MIN) :: NNI)
       setrst!(x, x)
       setfrst!(x, s)
 

@@ -244,8 +244,8 @@ TopLevelDrawFunctionsForCompiledFunctions():
     drawToScaleRanges : (Segment SF, Segment SF) -> L SEG
     drawToScaleRanges(xVals, yVals) ==
       -- warning: assumes window is square
-      xHi := convert(hi xVals)@Float; xLo := convert(lo xVals)@Float
-      yHi := convert(hi yVals)@Float; yLo := convert(lo yVals)@Float
+      xHi := convert(high(xVals))@Float; xLo := convert(low(xVals))@Float
+      yHi := convert(high(yVals))@Float; yLo := convert(low(yVals))@Float
       xDiff := xHi - xLo; yDiff := yHi - yLo
       pad := abs(yDiff - xDiff)/2
       yDiff > xDiff =>
@@ -274,14 +274,14 @@ TopLevelDrawFunctionsForCompiledFunctions():
           error "draw: you may specify at most 2 segments for 2D clipping"
         xLo : SF := 0; xHi : SF := 0; yLo : SF := 0; yHi : SF := 0
         if empty? rest segList then
-          xLo := lo xRange; xHi := hi xRange
+          xLo := low(xRange); xHi := high(xRange)
           yRangeF := first segList
-          yLo := convert(lo yRangeF)@SF; yHi := convert(hi yRangeF)@SF
+          yLo := convert(low(yRangeF))@SF; yHi := convert(high(yRangeF))@SF
         else
           xRangeF := first segList
-          xLo := convert(lo xRangeF)@SF; xHi := convert(hi xRangeF)@SF
+          xLo := convert(low(xRangeF))@SF; xHi := convert(high(xRangeF))@SF
           yRangeF := second segList
-          yLo := convert(lo yRangeF)@SF; yHi := convert(hi yRangeF)@SF
+          yLo := convert(low(yRangeF))@SF; yHi := convert(high(yRangeF))@SF
         clipInfo := clipWithRanges(branches, xLo, xHi, yLo, yHi)
         branches := clipInfo.brans
         xRange := clipInfo.xValues; yRange := clipInfo.yValues
@@ -305,7 +305,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
     normalize seg ==
       -- normalize [a, b]:
       -- error if a = b, returns [a, b] if a < b, returns [b, a] if b > a
-      a := convert(lo seg)@SF; b := convert(hi seg)@SF
+      a := convert(low(seg))@SF; b := convert(high(seg))@SF
       a = b => error SMALLRANGEERROR
       a < b => segment(a, b)
       segment(b, a)
@@ -1022,8 +1022,8 @@ TopLevelDrawFunctionsForAlgebraicCurves(R, Ex) : Exports == Implementation where
     drawToScaleRanges : (SEG F, SEG F) -> L SEG F
     drawToScaleRanges(xVals, yVals) ==
       -- warning: assumes window is square
-      xHi := hi xVals; xLo := lo xVals
-      yHi := hi yVals; yLo := lo yVals
+      xHi := high(xVals); xLo := low(xVals)
+      yHi := high(yVals); yLo := low(yVals)
       xDiff := xHi - xLo; yDiff := yHi - yLo
       pad := abs(yDiff - xDiff)/2
       yDiff > xDiff =>

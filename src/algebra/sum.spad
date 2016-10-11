@@ -33,7 +33,7 @@ InnerPolySum(E, V, R, P) : Exports == Impl where
 
         sum(p, v, s) ==
           indef := sum(p, v)
-          [eval(indef.num, v, 1 + hi s) - eval(indef.num, v, lo s),
+          [eval(indef.num, v, 1 + high(s)) - eval(indef.num, v, low(s)),
            indef.den]
 
         sum(p, v) ==
@@ -296,8 +296,8 @@ RationalFunctionSum(R) : Exports == Impl where
         (indef := innersum(f, v := variable s)) case "failed" =>
           summation(f::FE, map((z : RF) : FE +-> z::FE,
                                s)$SegmentBindingFunctions2(RF, FE))
-        eval(indef::RF, v, 1 + hi segment s)
-          - eval(indef::RF, v, lo segment s)
+        eval(indef::RF, v, 1 + high(segment(s)))
+          - eval(indef::RF, v, low(segment(s)))
 
       sum(an : RF, n : SE) ==
         (u := innersum(an, n)) case "failed" => summation(an::FE, n)
@@ -305,7 +305,8 @@ RationalFunctionSum(R) : Exports == Impl where
 
       sum(p : P, s : SegmentBinding P) ==
         f := sum(p, v := variable s)
-        eval(f, v, (1 + hi segment s)::RF) - eval(f, v, lo(segment s)::RF)
+        eval(f, v, (1 + high(segment(s)))::RF) -
+            eval(f, v, low(segment(s))::RF)
 
       innersum(an, n) ==
         (r := retractIfCan(an)@Union(P, "failed")) case "failed" =>
