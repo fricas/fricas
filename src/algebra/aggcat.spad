@@ -1600,10 +1600,10 @@ StreamAggregate(S : Type) : Category ==
        first x
 
    elt(x : %, i : UniversalSegment(Integer)) ==
-       l := lo(i) - minIndex x
+       l := low(i) - minIndex x
        l < 0 => error "index out of range"
        not hasHi i => copy(rest(x, l::NonNegativeInteger))
-       (h := hi(i) - minIndex x) < l => empty()
+       (h := high(i) - minIndex x) < l => empty()
        first(rest(x, l::NonNegativeInteger), (h - l + 1)::NonNegativeInteger)
 
    if % has shallowlyMutable then
@@ -1630,8 +1630,8 @@ StreamAggregate(S : Type) : Category ==
            setfirst!(x, s)
 
        setelt!(x : %, i : UniversalSegment(Integer), s : S) ==
-           (l := lo(i) - minIndex x) < 0 => error "index out of range"
-           h := if hasHi i then hi(i) - minIndex x else maxIndex x
+           (l := low(i) - minIndex x) < 0 => error "index out of range"
+           h := if hasHi i then high(i) - minIndex x else maxIndex x
            h < l => s
            y := rest(x, l::NonNegativeInteger)
            z := rest(y, (h - l + 1)::NonNegativeInteger)
@@ -1909,7 +1909,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
         a
 
     setelt!(a : %, s : UniversalSegment(Integer), x : S) ==
-        l := lo s; h := if hasHi s then hi s else maxIndex a
+        l := low(s); h := if hasHi s then high(s) else maxIndex a
         l < minIndex a or h > maxIndex a => error "index out of range"
         for k in l..h repeat qsetelt!(a, k, x)
         x
@@ -1983,8 +1983,8 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
         r
 
     elt(a : %, s : UniversalSegment(Integer)) ==
-        l := lo s
-        h := if hasHi s then hi s else maxIndex a
+        l := low(s)
+        h := if hasHi s then high(s) else maxIndex a
         l < minIndex a or h > maxIndex a => error "index out of range"
         r := stupidnew(max(0, h - l + 1)::NonNegativeInteger, a, a)
         for k in minIndex r.. for i in l..h repeat
@@ -2024,7 +2024,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
         a
 
     delete(a : %, s : UniversalSegment(Integer)) ==
-        l := lo s; h := if hasHi s then hi s else maxIndex a
+        l := low(s); h := if hasHi s then high(s) else maxIndex a
         l < minIndex a or h > maxIndex a => error "index out of range"
         h < l => copy a
         r := stupidnew((#a - h + l - 1)::NonNegativeInteger, a, a)
@@ -2252,8 +2252,8 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
        x
 
    delete!(x : %, i : UniversalSegment(Integer)) ==
-       (l := lo i) < (m := minIndex x) => error "index out of range"
-       h := if hasHi i then hi i else maxIndex x
+       (l := low(i)) < (m := minIndex x) => error "index out of range"
+       h := if hasHi i then high(i) else maxIndex x
        h < l => x
        l = m => rest(x, (h + 1 - m)::NonNegativeInteger)
        t := rest(x, (l - 1 - m)::NonNegativeInteger)

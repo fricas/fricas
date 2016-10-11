@@ -176,8 +176,10 @@ GraphImage () : Exports == Implementation where
     doOptions(g : Rep) : Void ==
       lr : RANGEF := ranges(g.optionsField, ranges g)
       if (#lr > 1$I) then
-        g.rangesField := [segment(convert(lo(lr.1))@SF, convert(hi(lr.1))@SF)$(Segment(SF)),
-                           segment(convert(lo(lr.2))@SF, convert(hi(lr.2))@SF)$(Segment(SF))]
+        g.rangesField := [segment(convert(low(lr.1))@SF,
+                                  convert(high(lr.1))@SF)$(Segment(SF)),
+                          segment(convert(low(lr.2))@SF,
+                                  convert(high(lr.2))@SF)$(Segment(SF))]
       else
         g.rangesField := []
       lu : UNITF := units(g.optionsField, units g)
@@ -207,12 +209,14 @@ GraphImage () : Exports == Implementation where
     graph demRanges ==
       null demRanges =>  [ 0, [], [], [], [], [], [], [] ]
       demRangesSF : RANGESF := _
-        [ segment(convert(lo demRanges.1)@SF, convert(hi demRanges.1)@SF)$(Segment(SF)), _
-          segment(convert(lo demRanges.1)@SF, convert(hi demRanges.1)@SF)$(Segment(SF)) ]
+        [segment(convert(low(demRanges.1))@SF,
+                 convert(high(demRanges.1))@SF)$(Segment(SF)),
+         segment(convert(low(demRanges.1))@SF,
+                 convert(high(demRanges.1))@SF)$(Segment(SF))]
       [ 0, demRangesSF, [], [], [], [], [], [] ]
 
     scaleStep(range_seg) ==                        -- MGR
-      range := hi(range_seg) - lo(range_seg)
+      range := high(range_seg) - low(range_seg)
 
       adjust : NNI
       tryStep : SF
@@ -232,12 +236,12 @@ GraphImage () : Exports == Implementation where
 
     roundRange(range : SEG SF) : SEG SF ==
         single_eps := (2.0::SF)^(-19)
-        low := lo(range)
+        low := low(range)
         low :=
             abs(low) < 1 => low - single_eps
             low < 0 => (1.0::SF + single_eps)*low
             (1.0::SF - single_eps)*low
-        high := hi(range)
+        high := high(range)
         high :=
             abs(high) < 1 =>  high + single_eps
             high < 0 => (1.0::SF - single_eps)*high
@@ -293,10 +297,10 @@ GraphImage () : Exports == Implementation where
       sendI(VIEW, typeGRAPH)
       sendI(VIEW, makeGRAPH)
       tonto := (graf.rangesField)::RANGESF
-      sendSF(VIEW, lo(first tonto))
-      sendSF(VIEW, hi(first tonto))
-      sendSF(VIEW, lo(second tonto))
-      sendSF(VIEW, hi(second tonto))
+      sendSF(VIEW, low(first(tonto)))
+      sendSF(VIEW, high(first(tonto)))
+      sendSF(VIEW, low(second(tonto)))
+      sendSF(VIEW, high(second(tonto)))
       sendSF(VIEW, first (graf.unitsField))
       sendSF(VIEW, second (graf.unitsField))
       sendI(VIEW, s)    -- how many lists of points are being sent
@@ -321,12 +325,16 @@ GraphImage () : Exports == Implementation where
     pointLists graf           == graf.llPoints
     ranges graf                ==
       null graf.rangesField => []
-      [segment(convert(lo graf.rangesField.1)@F, convert(hi graf.rangesField.1)@F), _
-       segment(convert(lo graf.rangesField.2)@F, convert(hi graf.rangesField.2)@F)]
+      [segment(convert(low(graf.rangesField.1))@F,
+               convert(high(graf.rangesField.1))@F),
+       segment(convert(low(graf.rangesField.2))@F,
+               convert(high(graf.rangesField.2))@F)]
     ranges(graf, rangesList)     ==
       graf.rangesField :=
-        [segment(convert(lo rangesList.1)@SF, convert(hi rangesList.1)@SF), _
-         segment(convert(lo rangesList.2)@SF, convert(hi rangesList.2)@SF)]
+        [segment(convert(low(rangesList.1))@SF,
+                 convert(high(rangesList.1))@SF),
+         segment(convert(low(rangesList.2))@SF,
+                 convert(high(rangesList.2))@SF)]
       rangesList
     units graf                ==
       null(graf.unitsField) => []
