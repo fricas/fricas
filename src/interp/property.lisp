@@ -279,7 +279,7 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|NegativeInteger| . (|<| * 0))
   ))
 
-(FLAG '(TENSOR * + AND OR PROGN) 'NARY)
+(DOLIST (X '(TENSOR * + AND OR PROGN)) (MAKEPROP X 'NARY T))
 
 (DOLIST (X '(
   (|Record| |mkRecordFunList|)
