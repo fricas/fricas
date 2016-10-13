@@ -9,8 +9,8 @@
 ++ Examples:
 ++ Reference: Knuth, The Art of Computer Programming, 2nd edition,
 ++            Vol. 2, p. 619, problem 12.
-++            Manuel Bronstein, Symbolic Integration 1: Transcendental Functions,
-++            2nd edition, p. 18, section 1.4
+++            Manuel Bronstein, Symbolic Integration 1: Transcendental
+++            Functions, 1st edition, p. 18, section 1.4
 ++ Description:
 ++   \spadtype{BezoutMatrix} contains functions for computing resultants and
 ++   discriminants using Bezout matrices, and functions related with
@@ -87,6 +87,9 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
     import from MatrixManipulation(R, Row, Col, M)
     import from SI
 
+    -- The following subSylvesterMatrix functions are based on: Manuel
+    -- Bronstein, Symbolic Integration 1: Transcendental Functions,
+    -- 1st edition, p. 19, definition 1.4.2
     subSylvesterMatrix(sylmat, j) ==
         j = 0 => sylmat
         diagonal? sylmat =>
@@ -95,7 +98,11 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
         maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
         len := ncols sylmat
         firstcol := column(sylmat, minC)
-        m := position((x:R):Boolean+->x~=0, delete(firstcol, minR))+1 - minR
+        colIndex := minIndex firstcol
+        -- the distance between the two non zero elements in first column
+        -- is the degree of second polynomial, m
+        m := position((x : R) : Boolean +->x ~= 0, delete(firstcol, colIndex))
+                 + 1 - colIndex
         n := len - m
         j >= min(n, m) => error "index is too big for this SylvesterMatrix"
         rowRange : LI := expand [minR-1 + (1..(m-j)), (minR+m)..(maxR-j)]
