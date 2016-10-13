@@ -369,11 +369,21 @@ PowerSeriesLimitPackage(R, FE) : Exports == Implementation where
         complLimit(localsubst(fcn, xK, 1, g::FE), x)
       complLimit(eval(fcn, xK, inv(xK::FE)), x)
 
+    subst_in_result(r : RESULT, k : Kernel(FE), f : FE) : RESULT ==
+        r case "failed" => r
+        ru := retractIfCan(r)@Union(FE,"failed")
+        ru case "failed" => r
+        subst(ru::FE, [k], [f])::OFE
+
     limit2(fcn : FE, eq : EQ FE, str : String,
            do_lim : (FE, SY, FE, String) -> RESULT) : RESULT ==
       (xx := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
         error "limit:left hand side must be a variable"
       x := xx :: SY; a := rhs eq
+      member?(x, variables(a)) =>
+          knx := kernel(new()$Symbol)$Kernel(FE)
+          a1 := subst(a, [kernel(x)$Kernel(FE)], [knx::FE])
+          subst_in_result(do_lim(fcn, x, a1, str), knx, lhs(eq))
       do_lim(fcn, x, a, str)
 
     limit3(fcn : FE, x : SY, a : FE, str : String) : RESULT ==
@@ -385,7 +395,7 @@ PowerSeriesLimitPackage(R, FE) : Exports == Implementation where
         limit(fcn : FE, eq : EQ FE, str : String) ==
             limit2(fcn, eq, str,
                 (f : FE, x : SY, a : FE, s : String) : RESULT +->
-                (is_exp_log(f, x) => mrv_limit(fcn, eq, str)$MrvLimitPackage;
+                (is_exp_log(f, x) => mrv_limit(f, x, a, s)$MrvLimitPackage;
                  limit3(f, x, a, s)))
 
     else
@@ -619,13 +629,23 @@ PowerSeriesLimitPackage(R, FE) : Exports == Implementation where
       (xx := retractIfCan(f)@Union(SY,"failed")) case "failed" =>
         error "limit:left hand side must be a variable"
       x := xx :: SY; a := rhs eq
+      (ae := retractIfCan(a)@Union(FE,"failed")) case FE and
+           member?(x, variables(ae::FE)) =>
+          knx := kernel(new()$Symbol)$Kernel(FE)
+          a1 := subst(ae::FE, [kernel(x)$Kernel(FE)], [knx::FE])
+          res1 := do_lim(fcn, x, a1::OFE)
+          res1 case "failed" => res1
+          res1 case TwoSide => error "impossible"
+          res2 := subst_in_result(res1::RESULT, knx, f)
+          res2 case "failed" => error "impossible"
+          res2::OFE
       do_lim(fcn, x, a)
 
     if R is Integer and FE is Expression(Integer) then
 
         limit(fcn : FE, eq : EQ OFE) ==
             limit1(fcn, eq, (f : FE, x : SY, a : OFE) : U +->
-                (is_exp_log(f, x) => mrv_limit(fcn, eq)$MrvLimitPackage;
+                (is_exp_log(f, x) => mrv_limit(f, x, a)$MrvLimitPackage;
                  locallimit(f, x, a)))
 
     else
@@ -638,6 +658,16 @@ PowerSeriesLimitPackage(R, FE) : Exports == Implementation where
       (xx := retractIfCan(f)@Union(SY,"failed")) case "failed" =>
         error "limit:left hand side must be a variable"
       x := xx :: SY; a := rhs eq
+      (ae := retractIfCan(a)@Union(FE,"failed")) case FE and
+           member?(x, variables(ae::FE)) =>
+          knx := kernel(new()$Symbol)$Kernel(FE)
+          a1 := subst(ae::FE, [kernel(x)$Kernel(FE)], [knx::FE])
+          res1 := locallimitcomplex(fcn, x, a1::OPF)
+          res1 case "failed" => res1
+          (res2 := retractIfCan(res1)@Union(FE,"failed")) case "failed" =>
+              res1
+          res2 case FE => subst(res2::FE, [knx], [f])::OPF
+          res1
       locallimitcomplex(fcn, x, a)
 
 )abbrev package SIGNEF ElementaryFunctionSign
