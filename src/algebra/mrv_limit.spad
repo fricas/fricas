@@ -51,11 +51,13 @@ MrvLimitPackage : Exports == Implementation where
    Exports ==> with
       mrv_limit : (FE, EQ OFE) -> U
         ++ Compute limit(f(x), x=a) for a finite or infinite limit point a
-
+      mrv_limit : (FE, SY, OFE) -> U
+        ++ mrv_limit(f, x, a) is like mrv_limit(f, x = a)
       mrv_limit : (FE, EQ FE, String) -> RESULT
         ++ Compute limit(f(x), x=a) for a strictly finite limit point a
         ++ This function computes one-sided limits from the left or right
-
+      mrv_limit : (FE, SY, FE, String) -> RESULT
+        ++ mrv_limit(f, x, a, str) is like mrv_limit(f, x = a, str)
       mrv_normalize : (FE, Symbol, STATE_REC) -> FE
         ++ mrv_normalize(f, x) transform f to the form acceptable
         ++ by core variant of mrv_limit.
@@ -469,9 +471,9 @@ MrvLimitPackage : Exports == Implementation where
 
           (var := retractIfCan(f)@Union(SY,"failed")) case "failed" =>
               error "limit:left hand side must be a variable"
+          mrv_limit(e, var::SY, rhs eq)
 
-          v := var::SY
-          a := rhs eq
+      mrv_limit2(e : FE, v : SY, a : OFE) : U ==
           ii := whatInfinity a
 
           -- Case positive infinity
@@ -507,21 +509,47 @@ MrvLimitPackage : Exports == Implementation where
                   lr::OFE
               [ll, lr]$TwoSide
 
+      subst_in_result(r : RESULT, k : Kernel(FE), f : FE) : RESULT ==
+          r case "failed" => r
+          ru := retractIfCan(r)@Union(FE, "failed")
+          ru case "failed" => r
+          subst(ru::FE, [k], [f])::OFE
+
+      mrv_limit(e : FE,  v : SY, a : OFE) : U ==
+          (ae := retractIfCan(a)@Union(FE,"failed")) case FE and
+             member?(v, variables(ae::FE)) =>
+              knv := kernel(new()$Symbol)$Kernel(FE)
+              kv := kernel(v)$Kernel(FE)
+              a1 := subst(ae::FE, [kv], [knv::FE])
+              res1 := mrv_limit2(e, v, a1::OFE)
+              res1 case "failed" => res1
+              res1 case TwoSide => error "impossible"
+              res2 := subst_in_result(res1, knv, kv::FE)
+              res2 case "failed" => error "impossible"
+              res2::OFE
+          mrv_limit2(e, v, a)
+
       mrv_limit(e : FE, eq : EQ FE, s : String) : RESULT ==
           (f := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
               error "limit:left hand side must be a variable"
+          mrv_limit(e, f::SY, rhs eq, s)
 
-          v := f::SY
-          a := rhs eq
-
+      mrv_limit3(e : FE, v : SY, a : FE, s : String) : RESULT ==
+          vK := kernel(v)@Kernel(FE)
           -- From the right: replace x by a + 1/z
-          direction(s) = 1 =>
-              vK := retract(v::FE)@Kernel(FE)
-              et : FE := eval(e, vK, a + inv(vK::FE))
-              mrv_limit1(et, v)
-
           -- From the left: replace x by a - 1/z
-          direction(s) = -1 =>
-              vK := retract(v::FE)@Kernel(FE)
-              et : FE := eval(e, vK, a - inv(vK::FE))
-              mrv_limit1(et, v)
+          delta :=
+              direction(s) = 1 => inv(vK::FE)
+              - inv(vK::FE)
+          et : FE := eval(e, vK, a + delta)
+          mrv_limit1(et, v)
+
+      mrv_limit(e : FE, v : SY, a : FE, s : String) : RESULT ==
+          member?(v, variables(a)) =>
+              knv := kernel(new()$Symbol)$Kernel(FE)
+              kv := kernel(v)$Kernel(FE)
+              a1 := subst(a, [kv], [knv::FE])
+              res1 := mrv_limit3(e, v, a1, s)
+              subst_in_result(res1, knv, kv::FE)
+          mrv_limit3(e, v, a, s)
+
