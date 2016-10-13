@@ -476,7 +476,7 @@ COMP370(fn) ==
         FUNCALL($comp370_apply, fname, nbody)
 
 MKPF(l, op) ==
-    if FLAGP(op, "NARY") then
+    if GET(op, "NARY") then
         l := MKPFFLATTEN1(l, op, nil)
     MKPF1(l, op)
 

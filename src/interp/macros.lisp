@@ -316,18 +316,6 @@
 
 (defvar $TRACELETFLAG NIL "Also referred to in Comp.Lisp")
 
-; 10.1 The Property List
-
-(DEFUN FLAG (L KEY)
-  "Set the KEY property of every item in list L to T."
-  (mapc #'(lambda (item) (makeprop item KEY T)) L))
-
-(FLAG '(* + AND OR PROGN) 'NARY)                ; flag for MKPF
-
-(DEFUN FLAGP (X KEY)
-  "If X has a KEY property, then FLAGP is true."
-  (GET X KEY))
-
 ; 10.3 Creating Symbols
 
 (defun INTERNL(a &rest b)
