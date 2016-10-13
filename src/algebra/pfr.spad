@@ -33,7 +33,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       ++ coerce(p) sums up the components of the partial fraction and
       ++ returns a single fraction.
 
-    coerce :  Fraction FRR -> %
+    coerce : Fraction FRR -> %
       ++ coerce(f) takes a fraction with numerator and denominator in
       ++ factored form and creates a partial fraction.  It is
       ++ necessary for the parts to be factored because it is not
@@ -51,12 +51,12 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       ++ term. This returns 1 if there is no fractional part (use
       ++ \spadfunFrom{wholePart}{PartialFraction} to get the whole part).
 
-    firstNumer :  % -> R
+    firstNumer : % -> R
       ++ firstNumer(p) extracts the numerator of the first fractional
       ++ term. This returns 0 if there is no fractional part (use
       ++ \spadfunFrom{wholePart}{PartialFraction} to get the whole part).
 
-    nthFractionalTerm :  (%, Integer) -> %
+    nthFractionalTerm : (%, Integer) -> %
       ++ nthFractionalTerm(p, n) extracts the nth fractional term from
       ++ the partial fraction \spad{p}.  This returns 0 if the index
       ++ \spad{n} is out of range.
@@ -86,15 +86,20 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       ++ wholePart(p) extracts the whole part of the partial fraction
       ++ \spad{p}.
 
+    if R has UniqueFactorizationDomain then
+        partialFraction : Fraction R -> %
+          ++ partialFraction(f) is a user friendly interface for partial
+          ++ fractions when f is a fraction of UniqueFactorizationDomain.
+
   Capsule == add
 
     -- some constructor assignments and macros
 
     Ex     ==> OutputForm
-    fTerm  ==> Record(num : R, den : FRR)           -- den should have
+    fTerm  ==> Record(num : R, den : FRR)         -- den should have
                                                   -- unit = 1 and only
                                                   -- 1 factor
-    LfTerm ==> List Record(num : R, den : FRR)
+    LfTerm ==> List fTerm
     QR     ==> Record(quotient : R, remainder : R)
 
     Rep    := Record(whole : R, fract : LfTerm)
@@ -106,12 +111,6 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     multiplyFracTerms : (fTerm, fTerm) -> %
     normalizeFracTerm : fTerm -> %
     partialFractionNormalized : (R, FRR) -> %
-
-    -- declarations
-
-    a, b : %
-    n : Integer
-    r : R
 
     -- private function definitions
 
@@ -218,9 +217,9 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     1 == [1$R, nil()$LfTerm]
     characteristic() == characteristic()$R
 
-    coerce(r) : % == [r, nil()$LfTerm]
-    coerce(n) : % == [(n :: R), nil()$LfTerm]
-    coerce(a) : Fraction R ==
+    coerce(r : R) : % == [r, nil()$LfTerm]
+    coerce(n : Integer) : % == [(n :: R), nil()$LfTerm]
+    coerce(a : %) : Fraction R ==
       q : Fraction R := (a.whole :: Fraction R)
       s : fTerm
       for s in a.fract repeat
@@ -231,7 +230,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       r1 : R := u * expand numer q
       partialFractionNormalized(r1, u * denom q)
 
-    a exquo b ==
+    a : % exquo b : % ==
       b = 0$% => "failed"
       b = 1$% => a
       br : Fraction R := inv (b :: Fraction R)
@@ -281,7 +280,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       for s in reverse a.fract repeat l := cons([- s.num, s.den]$fTerm, l)
       [- a.whole, l]
 
-    r * a ==
+    r : R * a : % ==
       r = 0$R => 0$%
       r = 1$R => a
       b : % := (r * a.whole) :: %
@@ -293,14 +292,14 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         not (null c.fract) => b.fract := append(c.fract, b.fract)
       b
 
-    n * a == (n :: R) * a
+    n : Integer * a : % == (n :: R) * a
 
     a + b ==
       compactFraction
         [a.whole + b.whole,
           sort(LessThan, append(a.fract, copy b.fract))]$%
 
-    a * b ==
+    a : % * b : % ==
       null a.fract => a.whole * b
       null b.fract => b.whole * a
       af : % := [0$R, a.fract]$%   --     a - a.whole
@@ -311,7 +310,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
           c := c + multiplyFracTerms(s, t)
       c
 
-    coerce(a) : Ex ==
+    coerce(a : %) : Ex ==
       null a.fract => a.whole :: Ex
       s : fTerm
       l : List Ex
@@ -321,6 +320,9 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         l := cons(s.num :: Ex /  s.den :: Ex, l)
       # l = 1 => first l
       reduce("+", reverse l)
+
+    if R has UniqueFactorizationDomain then
+        partialFraction f == partialFraction(numer f, factor denom f)
 
 )abbrev package PFRPAC PartialFractionPackage
 ++ Author: Barry M. Trager
@@ -333,17 +335,16 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
 ++ References:
 ++ Description:
 ++   The package \spadtype{PartialFractionPackage} gives an easier
-++   to use interfact the domain \spadtype{PartialFraction}.
+++   to use interface to \spadtype{PartialFraction}.
 ++   The user gives a fraction of polynomials, and a variable and
 ++   the package converts it to the proper datatype for the
 ++   \spadtype{PartialFraction} domain.
 
 PartialFractionPackage(R) : Cat == Capsule where
---  R : UniqueFactorizationDomain -- not yet supported
    R : Join(EuclideanDomain, CharacteristicZero)
-   FPR ==> Fraction Polynomial R
    INDE ==> IndexedExponents Symbol
    PR ==> Polynomial R
+   FPR ==> Fraction PR
    SUP ==> SparseUnivariatePolynomial
    Cat == with
       partialFraction : (FPR, Symbol) -> Any
@@ -358,19 +359,21 @@ PartialFractionPackage(R) : Cat == Capsule where
          df := factor(denom rf)$MultivariateFactorize(Symbol, INDE, R, PR)
          partialFraction(numer rf, df, v)
 
-      makeSup(p : Polynomial R, v : Symbol) : SparseUnivariatePolynomial FPR ==
+      makeSup(p : PR, v : Symbol) : SparseUnivariatePolynomial FPR ==
          up := univariate(p, v)
-         map((z1 : PR) : FPR +-> z1::FPR, up)$UnivariatePolynomialCategoryFunctions2(PR, SUP PR, FPR, SUP FPR)
+         map((z1 : PR) : FPR +-> z1::FPR, up
+            )$UnivariatePolynomialCategoryFunctions2(PR, SUP PR, FPR, SUP FPR)
 
       partialFraction(p, facq, v) ==
-         up := UnivariatePolynomial(v, Fraction Polynomial R)
+         up := UnivariatePolynomial(v, FPR)
          fup := Factored up
          ffact : List(Record(irr : up, pow : Integer))
          ffact := [[makeSup(u.factor, v) pretend up, u.exponent]
                       for u in factors facq]
          fcont := makeSup(unit facq, v) pretend up
          nflist : fup := fcont*(*/[primeFactor(ff.irr, ff.pow) for ff in ffact])
-         pfup := partialFraction(makeSup(p, v) pretend up, nflist)$PartialFraction(up)
+         pfup := partialFraction(makeSup(p, v) pretend up, nflist
+                                )$PartialFraction(up)
          coerce(pfup)$AnyFunctions1(PartialFraction up)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
