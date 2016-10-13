@@ -84,9 +84,6 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
           qsetelt!(sylmat, minR + n2 + i, minC + n2 - deg + i, coef)
       sylmat
 
-    import from MatrixManipulation(R, Row, Col, M)
-    import from SI
-
     -- The following subSylvesterMatrix functions are based on: Manuel
     -- Bronstein, Symbolic Integration 1: Transcendental Functions,
     -- 1st edition, p. 19, definition 1.4.2
@@ -105,19 +102,19 @@ BezoutMatrix(R, UP, M, Row, Col) : Exports == Implementation where
                  + 1 - colIndex
         n := len - m
         j >= min(n, m) => error "index is too big for this SylvesterMatrix"
-        rowRange : LI := expand [minR-1 + (1..(m-j)), (minR+m)..(maxR-j)]
-        colRange : LI := expand(minC..maxC)$SI
-        subMatrix(sylmat, rowRange, colRange)
+        rowRange : List(SI) := [minR - 1 + (1..(m - j)),
+                                (minR + m)..(maxR - j)]
+        colRange : SI := minC..maxC
+        sylmat(rowRange, colRange)
 
     subSylvesterMatrix(sylmat, j, i) ==
         i > j => error "subSylvesterMatrix: i can't be larger than j"
         sylmat := subSylvesterMatrix(sylmat, j)
         minR := minRowIndex sylmat; minC := minColIndex sylmat
         maxR := maxRowIndex sylmat; maxC := maxColIndex sylmat
-        rowRange : LI := expand(minR..maxR)$SI
-        colRange : LI := concat(expand(minC..(maxC-2*j-1))$SI,
-                                maxC-i-j)
-        subMatrix(sylmat, rowRange, colRange)
+        rowRange : SI := minR..maxR
+        colRange : List(SI) := [minC..(maxC - 2*j - 1), convert(maxC - i - j)]
+        sylmat(rowRange, colRange)
 
     bezoutMatrix(p, q) ==
     -- This function computes the Bezout matrix for 'p' and 'q'.
