@@ -308,11 +308,8 @@ postTranSegment(p,q) == ['SEGMENT,postTran p,(q => postTran q; nil)]
 tuple2List l ==
   l is [a,:l'] =>
     u:= tuple2List l'
-    a is ['SEGMENT,p,q] =>
-      null u => ['construct,postTranSegment(p,q)]
-      ["nconc",['construct,postTranSegment(p,q)],tuple2List l']
     null u => ['construct,postTran a]
-    ["cons",postTran a,tuple2List l']
+    ["cons", postTran a, u]
   nil
 
 postReduce ['Reduce,op,expr] ==
