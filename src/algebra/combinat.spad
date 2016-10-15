@@ -31,6 +31,13 @@ IntegerCombinatoricFunctions(I : IntegerNumberSystem) : with
       ++ \spad{partition(n)} returns the number of partitions of the integer n.
       ++ This is the number of distinct ways that n can be written as
       ++ a sum of positive integers.
+   distinct_partition : I -> I
+      ++ \spad{distinct_partition(n)} returns the number of partitions
+      ++ of the integer n with distinct members.  This is the number of
+      ++ ways that n can be written as a sum of distinct positive
+      ++ integers.  For \spad{n > 0} this is the same as number of
+      ++ ways that n can be written as a sum of odd positive
+      ++ integers.
    permutation : (I, I) -> I
       ++ \spad{permutation(n)} returns \spad{!P(n, r) = n!/(n-r)!}. This is
       ++ the number of permutations of n objects taken r at a time.
@@ -53,7 +60,8 @@ IntegerCombinatoricFunctions(I : IntegerNumberSystem) : with
       -- integers, without regard to order.  For example partition 5 = 7
       -- since 5 = 1+1+1+1+1 = 1+1+1+2 = 1+2+2 = 1+1+3 = 1+4 = 2+3 = 5 .
       -- Uses O(sqrt n) term recurrence from Abramowitz & Stegun pp. 825
-      -- p(n) = sum (-1)^k p(n-j) where 0 < j := (3*k^2+-k) quo 2 <= n
+      -- p(n) = sum (-1)^(k + 1) p(n - j) where
+      -- 0 < j := (3*k^2 +- k) quo 2 <= n
       minIndex(P) ~= 0 => error "Partition: must have minIndex of 0"
       m := #P
       n < 0 => error "partition is not defined for negative integers"
@@ -72,6 +80,33 @@ IntegerCombinatoricFunctions(I : IntegerNumberSystem) : with
             s := -s
          P.i := t
       P(convert(n)@Z)
+
+   distinct_partition(n : I) : I ==
+       -- Uses O(sqrt n) term recurrence from Abramowitz & Stegun pp. 826
+       -- q(n) = u + sum (-1)^(k + 1) q(n - j) where
+       -- 0 < j := (3*k^2 +- k) quo 2 <= n, u = (-1)^r if n = 3*r^2 +- k
+       -- and u = 0 otherwise
+       nz := convert(n)@Z
+       nz < 0 =>
+           error "distinct_partition is not defined for negative integers"
+       Q := new((nz + 1)::N, 0)$IndexedOneDimensionalArray(I, 0)
+       Q(0) := Q(1) := 1
+       for i in 2..nz repeat
+           s : I := 1
+           t : I := 0
+           for k in 1$Z.. repeat
+               l1 := (3*k*k - k)
+               if l1 = i or l1 + 2*k = i then
+                   t := t - s
+               l := l1 quo 2
+               l > i => break
+               u := l + k
+               t := t + s*Q(i - l)
+               u > i => break
+               t := t + s*Q(i - u)
+               s := -s
+           Q(i) := t
+       Q(nz)
 
    factorial n ==
       s, f, t : I
