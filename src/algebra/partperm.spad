@@ -31,6 +31,20 @@ PartitionsAndPermutations : Exports == Implementation where
       ++\spad{partitions(p, l)} is the stream of all
       ++ partitions whose number of
       ++ parts and largest part are no greater than p and l.
+    odd_partitions : (I, I, I) -> ST L I
+      ++\spad{odd_partitions(p, l, n)} is the stream of partitions
+      ++ of n into odd numbers whose number of parts is no greater than p
+      ++ and whose largest part is no greater than l.
+    odd_partitions : I -> ST L I
+      ++\spad{odd_partitions(n)} is the stream of all partitions
+      ++ of n into odd numbers.
+    distinct_partitions : (I, I, I) -> ST L I
+      ++\spad{distinct_partitions(p, l, n)} is the stream of partitions
+      ++ of n into distinct numbers whose number of parts is no greater than p
+      ++ and whose largest part is no greater than l.
+    distinct_partitions : I -> ST L I
+      ++\spad{distinct_partitions(n)} is the stream of all partitions
+      ++ of n into distinct numbers.
     conjugate : L I -> L I
       ++\spad{conjugate(pt)} is the conjugate of the partition pt.
     conjugates : ST L I -> ST L I
@@ -70,6 +84,25 @@ PartitionsAndPermutations : Exports == Implementation where
     partitions(M, N)==
       aaa : L ST L I := [partitions(M, N, i) for i in 0..M*N]
       concat(aaa :: ST ST L I)$ST1(L I)
+
+    odd_partitions(M, N, n) ==
+        zero?(n) => concat(empty()$L(I), empty()$(ST L I))
+        zero?(M) or N <= 0 or n < 0 => empty()
+        if even?(N) then N := N - 1
+        c := map((l1 : List(I)) : List(I) +-> concat(N, l1),
+                 odd_partitions(M - 1, N, n - N))
+        concat(c, odd_partitions(M, N - 2, n))
+
+    odd_partitions(n) == odd_partitions(n, n, n)
+
+    distinct_partitions(M, N, n) ==
+        zero?(n) => concat(empty()$L(I), empty()$(ST L I))
+        zero?(M) or zero?(N) or n < 0 => empty()
+        c := map((l1 : List(I)) : List(I) +-> concat(N, l1),
+                  distinct_partitions(M - 1, N - 1, n - N))
+        concat(c, distinct_partitions(M, N - 1, n))
+
+    distinct_partitions(n) == distinct_partitions(n, n, n)
 
     -- nogreq(n, l) is the number of elements of l that are greater or
     -- equal to n
