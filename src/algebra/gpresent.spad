@@ -325,10 +325,10 @@ GroupPresentation() : Exports == Impl where
       ++ they correspond to the appropriate entries in the relations.
       ++ Therefore we can refactor the generators without changing the
       ++ group represented.
-    subgroup : (a : %, remgen : List(NNI)) -> %
-      ++ take subgroup by removing generators specified by remgen
-    subgroup : (a : %, addrel : List(List(Integer))) -> %
-      ++ take subgroup by adding relations specified by addrel
+    quotient : (a : %, remgen : List(NNI)) -> %
+      ++ take quotient by removing generators specified by remgen
+    quotient : (a : %, addrel : List(List(Integer))) -> %
+      ++ take quotient by adding relations specified by addrel
     directProduct : (a : %, b : %) -> %
       ++ directProduct of two groups
     cyclicGroup : (n : PI) -> %
@@ -590,6 +590,7 @@ GroupPresentation() : Exports == Impl where
        rels1 := removeGen2(rels1, 0)
        [gens1, rels1]
 
+
    -- This is a local function used by simplify.
    TTRemoveEleTimesInverse(s : %, trace : Boolean) : % ==
        gens1 : PrimitiveArray(NNI) := s.gens
@@ -617,8 +618,8 @@ GroupPresentation() : Exports == Impl where
        if trace and changed then print outputRelList(rels2)
        [gens1, rels2]
 
-   -- local function to invert relation. Used by TTSubstitute and
-   -- TTMinimiseInverses.
+   -- local function to invert relation. Used by TTSubstitute,
+   -- TTMinimiseInverses and relationEquivalent.
    -- We invert each element and then reverse the order.
    -- A bit like De Morgan's laws
    invertRelation(relationIn : List(Integer)) : List(Integer) ==
@@ -626,6 +627,57 @@ GroupPresentation() : Exports == Impl where
        for ele in relationIn repeat
            relationOut := concat(-ele, relationOut)
        relationOut
+
+   -- local function to cycle relation. Used by relationEquivalent.
+   -- The effect of a relation is not changed by cycling
+   cycleRelation(relationIn : List(Integer)) : List(Integer) ==
+       relationOut : List(Integer) := concat(relationIn.rest,relationIn.first)
+       --print(message "cycleRelation " << relationIn << message " to " << relationOut)
+       relationOut
+
+   -- Local function to test equivalence of two relations.
+   -- Used by TTRemoveDuplicateRelation.
+   -- Relations are considered equivalent if they are identical or
+   -- if they are the same after being cycled or if they are the
+   -- same after being inverted.
+   relationEquivalent(relA : List(Integer),relB : List(Integer)) : Boolean ==
+       -- first filter out cases where relations are different lengths
+       if #relA ~= #relB then return false
+       -- test for equality
+       if relA = relB then return true
+       -- test for equality with inverted.
+       if relA = invertRelation(relB) then return true
+       -- test for equality with cycle
+       relBCycle : List(Integer) := copy relB
+       for n in 1..(#relA) repeat
+           relBCycle := cycleRelation(relBCycle)
+           if relA = relBCycle then return true
+           if relA = invertRelation(relBCycle) then return true
+       false
+
+   -- This is a local function used by simplify.
+   -- It looks for and removes any duplicated relations.
+   -- Relations are considered duplicates if they are identical or
+   -- if they are the same after being cycled or if they are the
+   -- same after being inverted.
+   TTRemoveDuplicateRelation(s : %, trace : Boolean) : % ==
+       gens1 : PrimitiveArray(NNI) := s.gens
+       rels1 : List(List(Integer)) := s.rels
+       rels2 := []$List(List(Integer))
+       --print(message "TTRemoveDuplicateRelation =" << rels1)
+       for rela in rels1 for nrela in 1..(#rels1) repeat
+           -- include relation
+           include : Boolean := true
+           for relb in rels1 for nrelb in 1..(#rels1) repeat
+               if nrela > nrelb then
+                   if relationEquivalent(rela,relb) then
+                       include : Boolean := false
+                       if trace then
+                           m ==> "TTRemoveDuplicateRelation duplicate found "
+                           print(message m << rela << message "=" << relb)
+           if include then
+               rels2 := concat(rels2, rela)
+       [gens1, rels2]
 
    -- This is a local function used by simplify.
    -- If a relation contains more inverted elements that non-inverted
@@ -799,8 +851,9 @@ GroupPresentation() : Exports == Impl where
            if level=2 then res := TTRemoveGeneratorIfIdentity(res, trace)
            if level=3 then res := TTRenameGenerator(res, trace)
            if level=4 then res := TTRemoveEleTimesInverse(res, trace)
-           if level=5 then res := TTSubstitute(res, trace)
-           if level=6 then return TTMinimiseInverses(res, trace)
+           if level=5 then res := TTRemoveDuplicateRelation(res, trace)
+           if level=6 then res := TTSubstitute(res, trace)
+           if level=7 then return TTMinimiseInverses(res, trace)
            if isSimpler?(res, lastpass)
                then level := 0
                else level := level + 1
@@ -821,8 +874,8 @@ GroupPresentation() : Exports == Impl where
                   for z in ra]
        groupPresentation(gb, rb)
 
-   -- take subgroup by removing generators specified by remgen
-   subgroup(a : %, remgen : List(NNI)) : % ==
+   -- take quotient by removing generators specified by remgen
+   quotient(a : %, remgen : List(NNI)) : % ==
        gens1 : PrimitiveArray(NNI) := a.gens
        rels1 : List(List(Integer)) := a.rels
        for toBeRemoved in remgen repeat
@@ -830,8 +883,8 @@ GroupPresentation() : Exports == Impl where
            rels1 := removeGen2(rels1, toBeRemoved)
        simplify(groupPresentation(entries(gens1), rels1))
 
-   -- take subgroup by adding relations specified by addrel
-   subgroup(a : %, addrel : List(List(Integer))) : % ==
+   -- take quotient by adding relations specified by addrel
+   quotient(a : %, addrel : List(List(Integer))) : % ==
        gens1 : List(NNI) := entries(a.gens)
        rels1 : List(List(Integer)) := a.rels
        simplify(groupPresentation(entries(gens1), concat(rels1,addrel)))
