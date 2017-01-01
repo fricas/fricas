@@ -221,7 +221,7 @@ parseJoin l ==
       [first l,:fn rest l]
 
 parseInBy [i,n,inc] ==
-  (u:= parseIn [i,n]) isnt ['STEP,i,a,j,:r] =>
+  (u:= parseIn [i,n]) isnt ['STEP,i,a,1,:r] =>
     postError ["   You cannot use",:bright '"by",
       '"except for an explicitly indexed sequence."]
   inc:= parseTran inc
@@ -237,13 +237,7 @@ parseIn [i,n] ==
   i:= parseTran i
   n:= parseTran n
   n is ['SEGMENT,a] => ['STEP,i,a,1]
-  n is ['reverse,['SEGMENT,a]] =>
-    postError ['"  You cannot reverse an infinite sequence."]
   n is ['SEGMENT,a,b] => (b => ['STEP,i,a,1,b]; ['STEP,i,a,1])
-  n is ['reverse,['SEGMENT,a,b]] =>
-    b => ['STEP,i,b,-1,a]
-    postError ['"  You cannot reverse an infinite sequence."]
-  n is ['tails,s] => ['ON,i,s]
   ['IN,i,n]
 
 parseIf t ==
