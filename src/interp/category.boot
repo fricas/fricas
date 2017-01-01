@@ -366,7 +366,7 @@ simplify_cond1(catname, cond) ==
         #rl = 1 => first(rl)
         ["AND", :rl]
     cond
- 
+
 simplify_cond2(vec, cond) ==
     vec.(0) = nil => cond
     simplify_cond1(vec.(0), cond)
