@@ -973,12 +973,6 @@ filterModemapsFromPackages(mms, names, op) ==
   -- rest of the modemaps in the second element.
   good := NIL
   bad  := NIL
-  -- hack to speed up factorization choices for mpolys and to overcome
-  -- some poor naming of packages
-  mpolys := '("Polynomial" "MultivariatePolynomial"
-   "DistributedMultivariatePolynomial"
-      "HomogeneousDistributedMultivariatePolynomial")
-  mpacks := '("MFactorize" "MRationalFactorize")
   for mm in mms repeat
     isFreeFunctionFromMm(mm) => bad := cons(mm, bad)
     type := getDomainFromMm mm
@@ -989,9 +983,6 @@ filterModemapsFromPackages(mms, names, op) ==
     found := nil
     for n in names while not found repeat
       STRPOS(n,name,0,NIL) => found := true
-      -- hack, hack
-      (op = 'factor) and member(n,mpolys) and member(name,mpacks) =>
-        found := true
     if found
       then good := cons(mm, good)
       else bad := cons(mm,bad)
