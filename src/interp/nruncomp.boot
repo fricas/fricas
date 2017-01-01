@@ -376,7 +376,7 @@ boolean_substitute_cond(cond, sub_data) ==
 
 mk_has_dollar_quote(cat) ==
     ["HasCategory", "$", ["QUOTE", cat]]
-    
+
 boolean_subst(condCats, cats, sub_data1) ==
     [boolean_subst1(cond, [FUNCTION boolean_substitute_cond,
                            mk_has_dollar_quote(cat), :sub_data1])
