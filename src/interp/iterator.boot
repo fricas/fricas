@@ -159,7 +159,7 @@ compInitGstep(y, ef, sf, mOver, e) ==
     res => res
     nil
 
-compIterator(it,e) ==
+compIterator1(it, e) ==
   it is ["IN",x,y] =>
     --these two lines must be in this order, to get "for f in list f"
     --to give  an error message if f is undefined
@@ -244,6 +244,22 @@ compIterator(it,e) ==
         stackMessage ["SUCHTHAT operand: ",x," is not Boolean value"]
     [["|",u.expr],u.env]
   nil
+
+match_segment(i, n) ==
+    n is ['SEGMENT,a] => ['STEP,i,a,1]
+    n is ['SEGMENT, a, b] => (b => ['STEP, i, a, 1, b]; ['STEP, i, a, 1])
+    ['IN, i, n]
+
+compIterator(it, e) ==
+    it is ["INBY", i, n, inc] =>
+        u := match_segment(i, n)
+        u isnt ['STEP, i, a, 1, :r] =>
+            stackAndThrow ["   You cannot use", "%b", "by", "%d",
+                      "except for an explicitly indexed sequence."]
+        compIterator1(['STEP, i, a, inc, :r], e)
+    it is ["IN", i, n] =>
+        compIterator1(match_segment(i, n), e)
+    compIterator1(it, e)
 
 modeIsAggregateOf(ListOrVector,m,e) ==
   m is [ =ListOrVector,R] => [m,R]

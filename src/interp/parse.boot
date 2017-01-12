@@ -107,28 +107,6 @@ parseAtom x ==
 
 parseTranList l == [parseTran(y) for y in l]
 
-parseIs [a, b] == ["is", parseTran a, parseTran b]
-
-parseIsnt [a,b] == BREAK()
-
-parseLET [x,y] ==
-  p := ['LET,parseTran x,parseTranCheckForRecord(y,opOf x)]
-  opOf x = 'cons => BREAK()
-  p
-
-parseColon u ==
-  u is [x] => [":",parseTran x]
-  u is [x, typ] => [":", parseTran x, parseTran typ]
-
-parseCoerce [x,typ] ==
-  ["::",parseTran x,parseTran typ]
-
-parseAtSign [x,typ] ==
-  ["@",parseTran x,parseTran typ]
-
-parsePretend [x,typ] ==
-  ['pretend,parseTran x,parseTran typ]
-
 parseHas [x,y] ==
   mkand [['has,x,u] for u in fn y] where
     mkand x ==
@@ -143,26 +121,19 @@ parseHas [x,y] ==
       y is ['SIGNATURE,:.] => [y]
       [makeNonAtomic y]
 
-parseDEF [$lhs,tList,specialList,body] ==
-  setDefOp $lhs
-  ['DEF,parseLhs $lhs,parseTranList tList,parseTranList specialList,
-    parseTranCheckForRecord(body,opOf $lhs)]
+parseDEF [lhs,tList,specialList,body] ==
+  setDefOp lhs
+  ['DEF, parseLhs lhs, parseTranList tList, parseTranList specialList,
+    parseTran(body)]
 
 parseLhs x ==
   atom x => parseTran x
   atom first x => [parseTran first x, :[parseTran y for y in rest x]]
   parseTran x
 
-parseMDEF [$lhs,tList,specialList,body] ==
-  ['MDEF,parseTran $lhs,parseTranList tList,parseTranList specialList,
-    parseTranCheckForRecord(body,opOf $lhs)]
-
-parseTranCheckForRecord(x,op) ==
-  (x:= parseTran x) is ['Record,:l] =>
-    or/[y for y in l | y isnt [":",.,.]] =>
-      postError ['"   Constructor",:bright x,'"has missing label"]
-    x
-  x
+parseMDEF [lhs,tList,specialList,body] ==
+  ['MDEF, parseTran lhs, parseTranList tList, parseTranList specialList,
+    parseTran(body)]
 
 parseCategory x ==
   l:= parseTranList x
@@ -206,13 +177,6 @@ parseLeave [a,:b] ==
     ['leave,a,:b]
   ['leave,1,a]
 
-parseReturn [a,:b] ==
-  a:= parseTran a
-  b:= parseTran b
-  b =>
-    (if a~=1 then MOAN '"multiple-level 'return' not allowed"; ["return",1,:b])
-  ["return",1,a]
-
 parseJoin l ==
   ['Join,:fn parseTranList l] where
     fn l ==
@@ -220,25 +184,11 @@ parseJoin l ==
       l is [['Join,:x],:y] => [:x,:fn y]
       [first l,:fn rest l]
 
-parseInBy [i,n,inc] ==
-  (u:= parseIn [i,n]) isnt ['STEP,i,a,1,:r] =>
-    postError ["   You cannot use",:bright '"by",
-      '"except for an explicitly indexed sequence."]
-  inc:= parseTran inc
-  ['STEP,i,a,parseTran inc,:r]
-
 parseSegment p ==
   p is [a,b] =>
     b => ['SEGMENT,parseTran a, parseTran b]
     ['SEGMENT,parseTran a]
   ['SEGMENT,:p]
-
-parseIn [i,n] ==
-  i:= parseTran i
-  n:= parseTran n
-  n is ['SEGMENT,a] => ['STEP,i,a,1]
-  n is ['SEGMENT,a,b] => (b => ['STEP,i,a,1,b]; ['STEP,i,a,1])
-  ['IN,i,n]
 
 parseIf t ==
   t isnt [p,a,b] => t
@@ -261,8 +211,6 @@ makeSimplePredicateOrNil p ==
   isSimple p => nil
   u:= isAlmostSimple p => u
   true => wrapSEQExit [['LET, [":", g := GENSYM(), ["Boolean"]], p], g]
-
-parseWhere l == ["where", :parseTranList(l)]
 
 parseSeq l ==
   not (l is [:.,['exit,:.]]) =>
