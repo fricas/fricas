@@ -737,9 +737,7 @@ HasCategory(domain,catform') ==
     or/[compareSigEqual(catform,cat,domain0,domain) for cat in catlist]
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
-lazyDomainSet(lazyForm,thisDomain,slot) ==
-  form :=
-    lazyForm                                        --new style
+lazyDomainSet(form, thisDomain, slot) ==
   slotDomain := evalSlotDomain(form,thisDomain)
   if $monitorNewWorld then
     sayLooking1(concat(form2String devaluate thisDomain,

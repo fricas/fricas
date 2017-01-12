@@ -413,7 +413,6 @@ join_fundamental_ancestors(vec0, l) ==
 JoinInner(l,$e) ==
   NewCatVec := nil
   CondList := nil
-  CondList2 := nil
   for u in l repeat
     for at in u.2 repeat
       at2:= first at
