@@ -289,9 +289,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 )) (MAKEPROP (CAR X) '|makeFunctionList| (CADR X)))
 
 (DOLIST (X '(
-  (\: |parseColon|)
-  (|::| |parseCoerce|)
-  (@ |parseAtSign|)
 
   (|and| |parseAnd|)
   (CATEGORY |parseCategory|)
@@ -299,21 +296,13 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
   (|exit| |parseExit|)
   (|has| |parseHas|)
   (IF |parseIf|)
-  (IN |parseIn|)
-  (INBY |parseInBy|)
-  (|is| |parseIs|)
-  (|isnt| |parseIsnt|)
   (|Join| |parseJoin|)
   (|leave| |parseLeave|)
-  (LET |parseLET|)
   (MDEF |parseMDEF|)
   (|not| |parseNot|)
   (|or| |parseOr|)
-  (|pretend| |parsePretend|)
-  (|return| |parseReturn|)
   (SEGMENT |parseSegment|)
   (SEQ |parseSeq|)
-  (|where| |parseWhere|)
 )) (MAKEPROP (CAR X) '|parseTran| (CADR X)))
 
 (DOLIST (X '(
