@@ -853,12 +853,11 @@ compLeave(["leave",level,x],m,e) ==
 
 --% return
 
-compReturn(["return",level,x],m,e) ==
+compReturn(["return", x], m, e) ==
   ns := #$exitModeStack
   ns = $currentFunctionLevel =>
     stackSemanticError(["the return before","%b",x,"%d","is unneccessary"],nil)
     nil
-  level~=1 => userError '"multi-level returns not supported"
   index := MAX(0, ns - $currentFunctionLevel - 1)
   $returnMode:= resolve($exitModeStack.index,$returnMode)
   [x',m',e']:= u:= comp(x,$returnMode,e) or return nil

@@ -234,7 +234,6 @@ outputTran x ==
   x is ['brace, :l]    =>
     ['BRACE,  ['AGGLST,:[outputTran y for y in l]]]
   x is ["return", l] => ["return", outputTran l]
-  x is ["return", ., :l] => ["return", :outputTran l]
 
   x is [["$elt",domain,"float"], x, y, z] and (domain = $DoubleFloat or
     domain is ['Float]) and INTEGERP x and INTEGERP y and INTEGERP z and
