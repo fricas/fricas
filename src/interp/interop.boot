@@ -502,8 +502,9 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
          sig := hashType('(Mapping $), hashPercent)
   dollar = nil => systemError()
   $lookupDefaults = true =>
-    hashNewLookupInCategories(op,sig,domain,dollar)      --lookup first in my cats
-      or newLookupInAddChain(op,sig,domain,dollar)
+      -- lookup first in my cats
+      newLookupInCategories(op, sig, domain, dollar, false)
+        or newLookupInAddChain(op, sig, domain, dollar)
   --fast path when called from newGoGet
   success := false
   if $monitorNewWorld then
@@ -573,83 +574,6 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   subsumptionSig and (u:= basicLookup(op,subsumptionSig,domain,dollar)) => u
   flag or someMatch => newLookupInAddChain(op,sig,domain,dollar)
   nil
-
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
-newExpandLocalType(lazyt,dollar,domain) ==
-  VECP lazyt => lazyt.0
-  isDomain lazyt => devaluate lazyt
-  ATOM lazyt => lazyt
-  lazyt is [vec,.,:lazyForm] and VECP vec =>              --old style
-    BREAK()
-    newExpandLocalTypeForm(lazyForm,dollar,domain)
-  newExpandLocalTypeForm(lazyt,dollar,domain)             --new style
-
-hashNewLookupInCategories(op,sig,dom,dollar) ==
-  slot4 := dom.4
-  catVec := CADR slot4
-  SIZE catVec = 0 => nil                      --early exit if no categories
-  INTEGERP IFCDR catVec.0 =>
-    newLookupInCategories1(op,sig,dom,dollar) --old style
-  $lookupDefaults : local := nil
-  if $monitorNewWorld = true then sayBrightly concat('"----->",
-    form2String devaluate dom,'"-----> searching default packages for ",op)
-  predvec := dom.3
-  packageVec := QCAR slot4
---the next three lines can go away with new category world
-  varList := ['$,:$FormalMapVariableList]
-  valueList := [dom,:[dom.(5+i) for i in 1..(# rest dom.0)]]
-  valueList := [MKQ val for val in valueList]
-  nsig := substitute(dom.0, dollar.0, sig)
-  for i in 0..MAXINDEX packageVec |
-       (entry := packageVec.i) and entry ~= 'T repeat
-    package :=
-      VECP entry =>
-         if $monitorNewWorld then
-           sayLooking1('"already instantiated cat package",entry)
-         entry
-      IDENTP entry =>
-        cat := catVec.i
-        packageForm := nil
-        if not GET(entry, 'LOADED) then loadLib entry
-        infovec := GET(entry, 'infovec)
-        success :=
-          --VECP infovec =>  ----new world
-          true =>  ----new world
-            opvec := infovec.1
-            max := MAXINDEX opvec
-            code := getOpCode(op,opvec,max)
-            null code => nil
-            byteVector := CDDDR infovec.3
-            endPos :=
-              code+2 > max => SIZE byteVector
-              opvec.(code+2)
-            --not nrunNumArgCheck(#(QCDR sig),byteVector,opvec.code,endPos) => nil
-            --numOfArgs := byteVector.(opvec.code)
-            --numOfArgs ~= #(QCDR sig) => nil
-            packageForm := [entry, '$, :rest cat]
-            package := evalSlotDomain(packageForm,dom)
-            packageVec.i := package
-            package
-
-        null success =>
-          if $monitorNewWorld = true then
-            sayBrightlyNT '"  not in: "
-            pp (packageForm and devaluate package or entry)
-          nil
-        if $monitorNewWorld then
-          sayLooking1('"candidate default package instantiated: ",success)
-        success
-      entry
-    null package => nil
-    if $monitorNewWorld then
-      sayLooking1('"Looking at instantiated package ",package)
-    res := basicLookup(op,sig,package,dollar) =>
-      if $monitorNewWorld = true then
-        sayBrightly '"candidate default package succeeds"
-      return res
-    if $monitorNewWorld = true then
-      sayBrightly '"candidate fails -- continuing to search categories"
-    nil
 
 --------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
 replaceGoGetSlot env ==
@@ -760,17 +684,13 @@ evalSlotDomain(u,dollar) ==
     isDomain y => y
     y is ['SETELT,:.] => eval y--lazy domains need to marked; this is dangerous?
     y is [v,:.] =>
-      VECP v =>
-          BREAK()
-          lazyDomainSet(y,dollar,u)               --old style has [$,code,:lazyt]
+      VECP v => BREAK()
       constructor? v or MEMQ(v,'(Record Union Mapping)) =>
         lazyDomainSet(y,dollar,u)                       --new style has lazyt
       v = 'QUOTE => first(rest(y))
       y
     y
-  u is ['NRTEVAL,y] =>
-    y is ['ELT,:.] => evalSlotDomain(y,dollar)
-    eval  y
+  u is ['NRTEVAL, y] => eval  y
   u is ['QUOTE,y] => y
   u is ['Record,:argl] =>
      FUNCALL('Record0,[[tag,:evalSlotDomain(dom,dollar)]

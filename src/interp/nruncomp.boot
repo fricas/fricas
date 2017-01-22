@@ -78,25 +78,35 @@ NRTreplaceAllLocalReferences(form) ==
   $devaluateList :local := []
   NRTputInLocalReferences form
 
-NRTencode(x,y) == encode(x,y,true) where encode(x,compForm,firstTime) ==
-  --converts a domain form to a lazy domain form; everything other than
-  --the operation name should be assigned a slot
-  null firstTime and (k:= NRTassocIndex x) => k
-  VECP x => systemErrorHere '"NRTencode"
-  PAIRP x =>
-    QCAR x='Record or x is ['Union,['_:,a,b],:.] =>
-      [QCAR x,:[['_:,a,encode(b,c,false)]
-        for [., a, b] in QCDR x for [., =a, c] in rest compForm]]
-    constructor? QCAR x or MEMQ(QCAR x,'(Union Mapping)) =>
-      [QCAR x, :[encode(y, z, false) for y in QCDR x for z in rest compForm]]
-    ['NRTEVAL,NRTreplaceAllLocalReferences COPY_-TREE lispize compForm]
-  MEMQ(x,$formalArgList) =>
-    v := $FormalMapVariableList.(POSN1(x,$formalArgList))
-    firstTime => ['local,v]
-    v
-  x = '$ => x
-  x = "$$" => x
-  ['QUOTE,x]
+NRTencode(x,y) == encode(x,y,true, true) where
+  encode(x, compForm, firstTime, domain) ==
+      -- converts a domain form to a lazy domain form; everything other than
+      -- the operation name should be assigned a slot
+      not(firstTime) and (k := NRTassocIndex x) =>
+          not(domain) and INTEGERP(k) =>
+              ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "$", k]]
+          k
+      VECP(x) => systemErrorHere '"NRTencode"
+      PAIRP(x) =>
+          QCAR(x) = 'Record or x is ['Union, ['_:, a, b], :.] =>
+              [QCAR(x), :[['_:, a, encode(b, c, false, true)]
+               for [., a, b] in QCDR(x) for [., =a, c] in rest compForm]]
+          constructor?(QCAR(x)) or MEMQ(QCAR x, '(Union Mapping)) =>
+              cosig := rest GETDATABASE(QCAR(x), 'COSIG)
+              if NULL(cosig) then
+                  cosig := [true for y in QCDR(x)]
+              [QCAR x, :[encode(y, z, false, cdom) for y in QCDR(x)
+                          for z in rest compForm for cdom in cosig]]
+          ['NRTEVAL, NRTreplaceAllLocalReferences(
+                             COPY_-TREE(lispize(compForm)))]
+      MEMQ(x, $formalArgList) =>
+          v := $FormalMapVariableList.(POSN1(x, $formalArgList))
+          firstTime => ['local, v]
+          domain => v
+          ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "$", v]]
+      x = '$ => x
+      x = "$$" => x
+      ['QUOTE, x]
 
 --------------FUNCTIONS CALLED DURING CAPSULE FUNCTION COMPILATION-------------
 listOfBoundVars form ==
@@ -147,6 +157,7 @@ optDeltaEntry(op,sig,dc,eltOrConst) ==
 genDeltaEntry opMmPair ==
 --called from compApplyModemap
 --$NRTdeltaLength=0.. always equals length of $NRTdeltaList
+  $compUniquelyIfTrue: local:= false
   [op,[dc,:sig],[.,cform:=[eltOrConst,.,nsig]]] := opMmPair
   if $profileCompiler = true then profileRecord(dc,op,sig)
   eltOrConst = 'XLAM => cform
