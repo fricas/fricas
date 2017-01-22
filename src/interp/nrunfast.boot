@@ -71,8 +71,9 @@ forceLazySlot(f) ==
 newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   dollar = nil => systemError()
   $lookupDefaults = true =>
-    newLookupInCategories(op,sig,domain,dollar)      --lookup first in my cats
-      or newLookupInAddChain(op,sig,domain,dollar)
+      -- lookup first in my cats
+      newLookupInCategories(op, sig, domain, dollar, true)
+        or newLookupInAddChain(op, sig, domain, dollar)
   --fast path when called from newGoGet
   success := false
   if $monitorNewWorld then
@@ -173,13 +174,11 @@ newLookupInDomain(op,sig,addFormDomain,dollar,index) ==
 --=======================================================
 --       Category Default Lookup (from goGet or lookupInAddChain)
 --=======================================================
-newLookupInCategories(op,sig,dom,dollar) ==
+newLookupInCategories(op, sig, dom, dollar, check_num) ==
   slot4 := dom.4
   catVec := CADR slot4
   SIZE catVec = 0 => nil                      --early exit if no categories
-  INTEGERP IFCDR catVec.0 =>
-    BREAK()
-    newLookupInCategories1(op,sig,dom,dollar) --old style
+  INTEGERP IFCDR catVec.0 => BREAK()
   $lookupDefaults : local := nil
   if $monitorNewWorld = true then sayBrightly concat('"----->",
     form2String devaluate dom,'"-----> searching default packages for ",op)
@@ -207,7 +206,8 @@ newLookupInCategories(op,sig,dom,dollar) ==
             endPos :=
               code+2 > max => SIZE byteVector
               opvec.(code+2)
-            not nrunNumArgCheck(#(QCDR sig),byteVector,opvec.code,endPos) => nil
+            check_num and not(nrunNumArgCheck(#(QCDR sig), byteVector,
+                                              opvec.code, endPos)) => nil
             --numOfArgs := byteVector.(opvec.code)
             --numOfArgs ~= #(QCDR sig) => nil
             packageForm := [entry, '$, :rest cat]
@@ -239,91 +239,6 @@ nrunNumArgCheck(num,bytevec,start,finish) ==
    num = args => true
    (start := start + args + 4) = finish => nil
    nrunNumArgCheck(num,bytevec,start,finish)
-
-newLookupInCategories1(op,sig,dom,dollar) ==
-  $lookupDefaults : local := nil
-  if $monitorNewWorld = true then sayBrightly concat('"----->",
-    form2String devaluate dom,'"-----> searching default packages for ",op)
-  predvec := dom.3
-  slot4 := dom.4
-  packageVec := first slot4
-  catVec := first QCDR slot4
-  nsig := substitute(dom.0, dollar.0, sig)
-  for i in 0..MAXINDEX packageVec | (entry := ELT(packageVec,i))
-      and (VECP entry or (predIndex := rest(node := ELT(catVec, i))) and
-          (EQ(predIndex,0) or testBitVector(predvec,predIndex))) repeat
-    package :=
-      VECP entry =>
-         if $monitorNewWorld then
-           sayLooking1('"already instantiated cat package",entry)
-         entry
-      IDENTP entry =>
-        cat := QCAR node
-        packageForm := nil
-        if not GET(entry, 'LOADED) then loadLib entry
-        infovec := GET(entry, 'infovec)
-        success :=
-          VECP infovec =>
-            opvec := infovec.1
-            max := MAXINDEX opvec
-            code := getOpCode(op,opvec,max)
-            null code => nil
-            byteVector := CDDR infovec.3
-            numOfArgs := byteVector.(opvec.code)
-            numOfArgs ~= #(QCDR sig) => nil
-            packageForm := [entry, '$, :rest cat]
-            package := evalSlotDomain(packageForm,dom)
-            packageVec.i := package
-            package
-          systemError 'infovec
-
-        null success =>
-          if $monitorNewWorld = true then
-            sayBrightlyNT '"  not in: "
-            pp (packageForm and devaluate package or entry)
-          nil
-        if $monitorNewWorld then
-          sayLooking1('"candidate default package instantiated: ",success)
-        success
-      entry
-    null package => nil
-    if $monitorNewWorld then
-      sayLooking1('"Looking at instantiated package ",package)
-    res := lookupInDomainVector(op,sig,package,dollar) =>
-      if $monitorNewWorld = true then
-        sayBrightly '"candidate default package succeeds"
-      return res
-    if $monitorNewWorld = true then
-      sayBrightly '"candidate fails -- continuing to search categories"
-    nil
-
---=======================================================
---     Instantiate Default Package if Signature Matches
---=======================================================
-
-getNewDefaultPackage(op,sig,infovec,dom,dollar) ==
-  hohohoho()
-  opvec := infovec . 1
-  numvec := CDDR infovec . 3
-  max := MAXINDEX opvec
-  k := getOpCode(op,opvec,max) or return nil
-  maxIndex := MAXINDEX numvec
-  start := ELT(opvec,k)
-  finish :=
-    greater_SI(max, k) => opvec.(add_SI(k, 2))
-    maxIndex
-  if greater_SI(finish, maxIndex) then systemError '"limit too large"
-  numArgs := sub_SI(#sig, 1)
-  success := nil
-  while finish > start repeat
-    PROGN
-      i := start
-      numArgs ~= (numTableArgs :=numvec.i) => nil
-      newCompareSigCheaply(sig, numvec, (i := add_SI(i, 2))) =>
-        return (success := true)
-    start := add_SI(start, add_SI(numTableArgs, 4))
-  null success => nil
-  defaultPackage := cacheCategoryPackage(packageVec,catVec,i)
 
 --=======================================================
 --         Compare Signature to One Derived from Table
@@ -411,13 +326,16 @@ lookupInDomainByName(op,domain,arg) ==
 --=======================================================
 --        Expand Signature from Encoded Slot Form
 --=======================================================
-newExpandGoGetTypeSlot(slot,dollar,domain) ==
-  newExpandTypeSlot(slot,domain,domain)
 
 newExpandTypeSlot(slot, dollar, domain) ==
 --> returns domain form for dollar.slot
    newExpandLocalType(sigDomainVal(dollar, domain, slot), dollar,domain)
 
+newExpandLocalType(lazyt, dollar, domain) ==
+    VECP lazyt => lazyt.0
+    isDomain lazyt => devaluate lazyt
+    ATOM lazyt => lazyt
+    newExpandLocalTypeForm(lazyt, dollar, domain)
 
 newExpandLocalTypeForm([functorName,:argl],dollar,domain) ==
   MEMQ(functorName, '(Record Union)) and first argl is [":",:.] =>
