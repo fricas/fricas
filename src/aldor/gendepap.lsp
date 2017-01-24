@@ -58,9 +58,9 @@
 (debug-print "|$extendedDomains|" |$extendedDomains|)
 
 
-; Let us call a type constructor 'easy' if it takes an argument and
-; this argument is only required to be 'Type'. Examples are,
-; (approximately) those types that are listed via
+; Let us call a type constructor 'easy' if all its arguments are only
+; required to be 'Type'. Univariate examples are, (approximately)
+; those types that are listed via
 ;; grep '^[A-Z][A-Za-z]*([^:]*: *Type)' ${abs_top_builddir}/src/algebra/*.spad
 ;;
 ; Among them are List, VectorCategory, and CoercibleTo.
@@ -78,10 +78,10 @@
              str))))
 
 
-(defun not-package-name (x)
+(defun not-defaultpackage-name (x)
   (unless (|isDefaultPackageName| x) (list x)))
 (defun all-constructors ()
-  (mapcan 'not-package-name (|allConstructors|)))
+  (mapcan 'not-defaultpackage-name (|allConstructors|)))
 (defun easy-type (constructor)
   (test-easy (|makeAxExportForm| "UnusedArgument" (list constructor))))
 
@@ -92,7 +92,7 @@
   (if (atom apform) nil
     (cond ((eq (car apform) '|Sequence|) (mapcan 'test-easy (cdr apform)))
           ((eq (car apform) '|Extend|) (test-easy (cadr apform)))
-          ((member (car apform) '(|Define| |Export| |Extend|))
+          ((member (car apform) '(|Define| |Export|))
              (test-easy1 (cadr apform)))
           (t nil))))
 
@@ -107,18 +107,38 @@
 
 ; Check whether the apform looks like
 ; (|Apply| -> (|Declare| |#1| |Type|) ..)
+; or
+; (|Apply| -> (|Comma| (|Declare| |#1| |Type|) ..) ..)
+; where all elements in the (|Comma| ..) look like (|Declare| |#1| |Type|).
 (defun test-easy2 (apform)
-  (cond ((atom apform) nil)
-        ((not (and (eq (car apform) '|Apply|) (eq (cadr apform) '->))) nil)
-        (t (test-easy3 (caddr apform)))))
+  (cond ((not (match apform '(|Apply| -> . ?))) nil)
+    ((match (caddr apform) '(|Comma| . ?))
+     (all (mapcar 'test-easy3 (cdr (caddr apform)))))
+    (t (test-easy3 (car (cddr apform))))))
 
 ; Check whether the apform looks like
 ; (|Declare| |#1| |Type|)
 (defun test-easy3 (apform)
-  (cond ((atom apform) nil)
-        ((not (eq (car apform) '|Declare|)) nil)
-        ((not (eq (caddr apform) '|Type|)) nil)
-        (t t)))
+  (match apform '(|Declare| ? |Type|)))
+
+; Check whether form e1 matches form e2. e2 can contain '? which counts
+; as a wildcard, i.e., matches everything.
+(defun match (e1 e2)
+  (cond ((wild-card? e2) t)
+    ((atom e1) (equal e1 e2))
+    ((listp e1) (and (listp e2)
+             (match (car e1) (car e2))
+             (match (cdr e1) (cdr e2))))
+    (t nil)))
+
+; A question mark counts as a wildcard in a "match" call.
+(defun wild-card? (x) (eq x '?))
+
+; return true if all elements in list l are true
+(defun all (l)
+  (cond ((null l) t)
+    ((not (car l)) nil)
+    (t (all (cdr l)))))
 
 
 
@@ -205,8 +225,8 @@
 ; Find and print dependencies for 'apform' to a file with name 'name'.
 (defun print-dependencies (apform name)
   (let ((filename (pathname (format nil "gendeps/~a.dep" name))))
-    ; *easytypes* is the list of all univariate type constructors
-    ; whose argument type is 'Type'.
+    ; *easytypes* is the list of all type constructors whose argument
+    ; types are all of type 'Type'.
     (setq *easytypes*
           (with-open-file (str (pathname "easylist.lsp")) (read str)))
     (with-open-file (str filename :direction :output)
@@ -222,15 +242,15 @@
 
 
 
-; The following code walks through the .ap form of aldor code and returns
-; a list of dependencies. It basically looks for any Axiom type and tries
-; to decide according the list of nodes to it (its path) whether some
-; full information is needed or whether some initial information in the
-; form of "D: with == add" would be sufficient.
-; If a type T is tagged with "init" then (later in the build process of
+; The following code walks through the .ap form of aldor code and
+; returns a list of dependencies. It basically looks for any Axiom
+; type and tries to decide according the list of nodes to it (its
+; path) whether full information is needed or whether initial
+; information in the form of "D: with == add" would be sufficient. If
+; a type T is tagged with "init" then (later in the build process of
 ; libaxiom.al) initial information will be taken only if a file
-; init_T.ap is actually available. If no such file is available, "init"
-; will be ignored and "full" information is taken.
+; init_T.ap is actually available. If no such file is available,
+; "init" will be ignored and "full" information is taken.
 
 ; http://groups.google.com/group/fricas-devel/browse_thread/thread/fcdc842baaab7e5c/ab36c1403e87c226?lnk=st&q=#ab36c1403e87c226
 
@@ -242,7 +262,7 @@
 ; signals that D is only "used in an export" and thus initial information
 ; for it would be sufficient.
 
-; Note: find-deps might also output signal an |init| for categories.
+; Note: find-deps might also signal an |init| for categories.
 ; Although that makes no sense, it also does not hurt, since we will
 ; not have categories in initlist.as and thus always full information
 ; is replaced later anyway.
@@ -648,14 +668,14 @@
          (full-or-init-internal (cdr path) item item-or-nil))
 
         ; If a type appears in (|Apply| ->) context, then we only need
-        ; initial information. Not that forms coming from .as files
+        ; initial information. Note that forms coming from .as files
         ; will have |->| instead of just ->.
-        ; In fact, we only need initial information for any
-        ; "easy" type (see easy *easytypes*).
+        ; In fact, we only need initial information for any argument of
+        ; an "easy" type (see easy *easytypes*).
         ; If the context is (|Apply| D) and item=D then we check the
         ; parent context, but for a different value of item in order
         ; to correctly find the need of full information for List in
-        ; a situation like (|Apply| |List| (|Apply| |List X)).
+        ; a situation like (|Apply| |List| (|Apply| |List| X)).
         ; For example in XPBWPOLY appears
         ; (|Apply| |Module| (|Apply| |Fraction| |Integer|))
         ; In that case full information of |Fraction| is needed.
