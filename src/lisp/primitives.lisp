@@ -98,12 +98,25 @@
 (defmacro suffixed_name(name s)
     `(intern (concatenate 'string (symbol-name ',name)
                                   (format nil "~A" ,s))))
+
 #+:sbcl
 (defmacro sbcl_make_sized_vector(nb n)
-    (multiple-value-bind (typetag n-bits)
-        (SB-IMPL::%VECTOR-WIDETAG-AND-N-BITS `(unsigned-byte ,nb))
-        `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n
-                       (ceiling (* ,n ,n-bits) sb-vm:n-word-bits))))
+    (let ((get-tag (find-symbol "%VECTOR-WIDETAG-AND-N-BITS" "SB-IMPL"))
+          (length-sym nil))
+        (if (null get-tag)
+            (progn
+                (setf get-tag
+                    (find-symbol "%VECTOR-WIDETAG-AND-N-BITS-SHIFT"
+                                 "SB-IMPL"))
+                (setf length-sym (find-symbol "VECTOR-LENGTH-IN-WORDS"
+                                              "SB-IMPL"))))
+        (multiple-value-bind (typetag n-bits)
+            (FUNCALL get-tag `(unsigned-byte ,nb))
+            (let ((length-form
+                   (if length-sym
+                       `(,length-sym ,n ,n-bits)
+                       `(ceiling (* ,n ,n-bits) sb-vm:n-word-bits))))
+                `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n ,length-form)))))
 
 (defmacro DEF_SIZED_UOPS(nb)
 

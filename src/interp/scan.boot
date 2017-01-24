@@ -33,7 +33,7 @@
 )package "BOOT"
 
 
-SPACE       := STR_ELT('"    ", 0)
+SPACE_CHAR       := STR_ELT('"    ", 0)
 -- Hardcode ASCII code to avoid editors messing up control code
 PAGE_CTL    := 12
 ESCAPE      := STR_ELT('"__  ", 0)
@@ -236,7 +236,7 @@ for i in   [ _
 
 -- Scanner
 
-is_white?(c) == c = SPACE or c = PAGE_CTL
+is_white?(c) == c = SPACE_CHAR or c = PAGE_CTL
 
 skip_whitespace(ln, n) ==
     l := #ln
