@@ -147,8 +147,7 @@ test_smith()
 
 testcase "homology"
 
-vs1 := vertexSeta(1)$VertexSetAbstract
-dC := DeltaComplex(VertexSetAbstract)
+dC := DeltaComplex(Integer)
 
 hz0 := homology0()$Homology()
 hz1 := homologyz()$Homology()
@@ -159,30 +158,30 @@ hc2 := homology([[1]], [2], [])$Homology()
 hc3 := homology([[1]], [3], [])$Homology()
 
 -- circle
-sd1 := deltaComplex(vs1, [[[1, -1]]])$dC
+sd1 := deltaComplex([],1, [[[1, -1]]])$dC
 hsd1 := homology(sd1)
 testEquals("hsd1(1)", "hz1")
 testEquals("hsd1(2)", "hz1")
 
 -- point + 2-cell with empty boundary
 -- not clear if we consider this to be valid complex...
-sd2 := deltaComplex(vs1, [[], [[]]])$dC
+sd2 := deltaComplex([],1, [[[]],[]])$dC
 hsd2 := homology(sd2)
 testEquals("hsd2(1)", "hz1")
 testEquals("hsd2(2)", "hz0")
 testEquals("hsd2(3)", "hz1")
 
 -- 2 and 3-dimensional torus
-td2 := deltaComplex(vs1, [[[1, -1], [1, -1]], [[1, 2, -1, -2]]])$dC
+td2 := deltaComplex([],1, [[[1, 2, -1, -2]], [[1, -1], [1, -1]]])$dC
 htd2 := homology(td2)
 
 testEquals("htd2(1)", "hz1")
 testEquals("htd2(2)", "hz2")
 testEquals("htd2(3)", "hz1")
 
-td3 := deltaComplex(vs1, [[[1, -1], [1, -1], [1, -1]],
-        [[1, 2, -1, -2], [1, 3, -1, -3], [2, 3, -2, -3]],
-         [[1, -2, -1, 2, 3, -3]]])$dC
+td3 := deltaComplex([],1, [[[1, -2, -1, 2, 3, -3]],_
+       [[1, 2, -1, -2], [1, 3, -1, -3], [2, 3, -2, -3]],_
+       [[1, -1], [1, -1], [1, -1]]])$dC
 htd3 := homology(td3)
 testEquals("htd3(1)", "hz1")
 testEquals("htd3(2)", "hz3")
@@ -190,20 +189,23 @@ testEquals("htd3(3)", "hz3")
 testEquals("htd3(4)", "hz1")
 
 -- disc with boundary which winds around circle 3 times
-rd3 := deltaComplex(vs1, [[[1, -1]], [[1, 1, 1]]])$dC
+rd3 := deltaComplex([],1, [[[1, 1, 1]], [[1, -1]]])$dC
 hrd3 := homology(rd3)
 testEquals("hrd3(1)", "hz1")
 testEquals("hrd3(2)", "hc3")
 testEquals("hrd3(3)", "hz0")
 
-ps3 := projectiveSpace(3)$DeltaComplexFactory
+DELTAFACTORY := DeltaComplexFactory(Integer)
+SIMPFACTORY := SimplicialComplexFactory(Integer)
+
+ps3 := projectiveSpace(3)$DELTAFACTORY
 hps3 := homology(ps3)
 testEquals("hps3(1)", "hz1")
 testEquals("hps3(2)", "hc2")
 testEquals("hps3(3)", "hz0")
 testEquals("hps3(4)", "hz1")
 
-ps4 := projectiveSpace(4)$DeltaComplexFactory
+ps4 := projectiveSpace(4)$DELTAFACTORY
 hps4 := homology(ps4)
 testEquals("hps4(1)", "hz1")
 testEquals("hps4(2)", "hc2")
@@ -211,28 +213,28 @@ testEquals("hps4(3)", "hz0")
 testEquals("hps4(4)", "hc2")
 testEquals("hps4(5)", "hz0")
 
-s3 := sphereSurface(4)$SimplicialComplexFactory
+s3 := sphereSurface(4)$SIMPFACTORY
 hs3 := homology(s3)
 testEquals("hs3(1)", "hz1")
 testEquals("hs3(2)", "hz0")
 testEquals("hs3(3)", "hz0")
 testEquals("hs3(4)", "hz1")
 
-p2 := projectivePlane()$SimplicialComplexFactory
+p2 := projectiveSpace(2)$SIMPFACTORY
 hp2 := homology(p2)
 
 testEquals("hp2(1)", "hz1")
 testEquals("hp2(2)", "hc2")
 testEquals("hp2(3)", "hz0")
 
-s1 := sphereSurface(2)$SimplicialComplexFactory
+s1 := sphereSurface(2)$SIMPFACTORY
 t2 := product(s1, s1)
 ht2 := homology(t2)
 testEquals("ht2", "htd2")
 
-aS := FiniteSimplicialComplex(VertexSetAbstract)
+aS := FiniteSimplicialComplex(Integer)
 v2 := [[1,2],[3,1],[2,3],[1,2,3]]::List(List(NNI))
-si2 := simplicialComplex(vertexSeta(3::NNI),v2)$aS
+si2 := simplicialComplex([],3,v2)$aS
 hsi2 := homology(si2)
 
 testEquals("hsi2(1)", "hz1")
