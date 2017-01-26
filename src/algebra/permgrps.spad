@@ -132,6 +132,12 @@ PermutationGroup(S : SetCategory) : public == private where
       ++ information about your group (but will recompute it again).
       ++ (3) users need not call this function normally for the soultion of
       ++ the word problem.
+    relationsInStrongGenerators : % -> L(L(I))
+      ++ relationsInStrongGenerators(gp) computes relations between
+      ++ strong generators.
+    relationsInGenerators : % -> L(L(I))
+      ++ relationsInGenerators(gp) computes relations between
+      ++ generators.
     pointList : % -> L S
       ++ pointList(gp) should be local but conditional
     perm_to_vec : (L S, PERM S, NNI) -> V NNI
@@ -699,7 +705,158 @@ PermutationGroup(S : SetCategory) : public == private where
         str := strip(pp, #base_lst, do_words, orbv, grpv, wordv)
         [testIdentity str.elt, str.lst]
 
+    orbit_words1(p0 : NNI, p : NNI, grp : L V NNI, acc : L NNI, res : V L NNI
+                ) : Void ==
+        for g in grp for i in 1.. repeat
+            q := qelt(g, p)
+            p0 = q => "skip"
+            not(empty?(qelt(res, q))) => "skip"
+            acc1 := cons(qcoerce(i)@NNI, acc)
+            res(q) := acc1
+            orbit_words1(p0, q, grp, acc1, res)
+
+    orbit_words(p : NNI, grp : L V NNI) : V L NNI ==
+        n := #first(grp)
+        res := new(n, [])$(V L NNI)
+        orbit_words1(p, p, grp, [], res)
+        res
+
+    relations_for_orbit(p : NNI, m : NNI, orbd : V REC,
+                        grpv : V V NNI) : L L I ==
+        -- print("relations_for_orbit"::OutputForm)
+        -- print(p::OutputForm)
+        res : L L I := []
+        grpl := first(members(grpv), m)
+        ww := orbit_words(p, grpl)
+        -- print(ww::OutputForm)
+        n0 := #(orbd(1).svc)
+        wv := new(n0, empty()$Vector(NNI))$(V V NNI)
+        wvi := new(n0, empty()$Vector(NNI))$(V V NNI)
+        wordv := new(n0, empty())$(V L NNI)
+        for i in 1..n0 repeat
+            wordv(i) := [i]
+            wi_l := qelt(ww, i)
+            empty?(wi_l) => "skip"
+            wi := new(n0, 0)$Vector(NNI)
+            for j in 1..n0 repeat
+                qsetelt!(wi, j, j)
+            for j in reverse(wi_l) repeat
+                times!(wi, qelt(grpv, j), wi)
+            qsetelt!(wv, i, wi)
+            qsetelt!(wvi, i, inv(wi))
+        for i in 1..n0 repeat
+            wi_l := qelt(ww, i)
+            empty?(wi_l) => "skip"
+            -- print("wi_l = "::OutputForm)
+            -- print(wi_l::OutputForm)
+            wi := qelt(wv, i)
+            for j in 1..m repeat
+                -- print("doing"::OutputForm)
+                -- print(j::OutputForm)
+                nw := times(grpv(j), wi)
+                p1 := qelt(nw, p)
+                iw : L NNI := []
+                if p1 ~= p then
+                    nw := times(wvi(p1), nw)
+                    iw := ww(p1)
+                cons(j, wi_l) = iw => "skip"
+                nw := inv(nw)
+                rhr := strip(nw, #orbd, true, orbd, grpv, wordv)
+                rh := concat(iw, rhr.lst)
+                -- print(rh::OutputForm)
+                rl : L I := []
+                for k in rh repeat
+                    rl := cons(-k, rl)
+                ll : L I := []
+                for k in qelt(ww, i) repeat
+                    ll := cons(k, ll)
+                ll := reverse!(ll)
+                rl := concat(ll, rl)
+                rl := cons(j, rl)
+                -- print(rl::OutputForm)
+                res := cons(rl, res)
+        res
+
+    relations_in_strong_generators(orbd : V REC, grpv : V V NNI
+                                  ) : L L I ==
+        k := #orbd
+        m := #grpv
+        res : L L I := []
+        bl : L NNI := []
+        for i in 1..k repeat
+            orbi := qelt(orbd, i)
+            bl := cons(first(orbi.orb), bl)
+        gri_l : L NNI := [m]
+        blp := bl
+        -- print(blp::OutputForm)
+        p1 := first(blp)
+        blp := rest(blp)
+        for j in m..1 by -1 repeat
+            gv := qelt(grpv, j)
+            p2 := qelt(gv, p1)
+            -- print(p2::OutputForm)
+            if p1 = p2 then
+                gri_l := cons(j, gri_l)
+                empty?(blp) => break
+                p1 := first(blp)
+                blp := rest(blp)
+        -- print(gri_l :: OutputForm)
+        for p0 in reverse(bl) for m1 in gri_l repeat
+            res := concat(relations_for_orbit(p0, m1, orbd, grpv), res)
+        res
+
   --now the exported functions
+
+    relationsInStrongGenerators(gp : %) : L(L(I)) ==
+        knownGroup?(gp)
+        gi := gp.information
+        grpv := vector(gi.sgset)$V(V(NNI))
+        relations_in_strong_generators(gi.orbs, grpv)
+
+    relationsInGenerators(gp : %) : L(L(I)) ==
+        gi := gp.information
+        if #(gi.wd) = 0 then
+            initializeGroupForWordProblem(gp)
+            gi := gp.information
+        grpv := vector(gi.sgset)$V(V(NNI))
+        orbd := gi.orbs
+        srels := relations_in_strong_generators(orbd, grpv)
+        words := new(#(gi.wd), empty())$V(L(I))
+        iwords := new(#words, empty())$V(L(I))
+        for i in 1..#words for wli in gi.wd repeat
+           words(i) := [j for j in wli]
+           iwd := []$L(I)
+           for j in wli repeat
+               iwd := cons(-j, iwd)
+           iwords(i) := iwd
+        res : L(L(I)) := []
+        for srel in srels repeat
+            nrel : L(I) := []
+            for i in srel repeat
+                cw :=
+                    i > 0 => qelt(words, i)
+                    qelt(iwords, -i)
+                for j in cw repeat
+                    nrel := cons(j, nrel)
+            res := cons(reverse!(nrel), res)
+        supp := pointList(gp)
+        nn := #supp
+        n0 := #grpv
+        wordv := new(n0, empty())$(V L NNI)
+        for i in 1..n0 repeat
+            wordv(i) := [i]
+        for i in 1..#words for ggp in gp.gens repeat
+            q := perm_to_vec(supp, ggp, nn)
+            rhr := strip(q, #orbd, true, orbd, grpv, wordv)
+            nrel : L(I) := []
+            for j in rhr.lst repeat
+                cw := words(j)
+                for k in cw repeat
+                    nrel := cons(k, nrel)
+            nrel := reverse!(nrel)
+            nrel := cons(i, nrel)
+            res := cons(nrel, res)
+        res
 
     coerce(gp : %) : L PERM S == gp.gens
     generators(gp : %) : L PERM S == gp.gens
@@ -752,8 +909,11 @@ PermutationGroup(S : SetCategory) : public == private where
         reverse groupBase
 
     wordsForStrongGenerators(group) ==
-        knownGroup? group
-        group.information.wd
+        gi := group.information
+        if #(gi.wd) = 0 then
+            initializeGroupForWordProblem(group)
+            gi := group.information
+        gi.wd
 
     coerce (gp : L PERM S) : % ==
         result : REC2 := [0, [], [], [], [], []]
@@ -802,6 +962,7 @@ PermutationGroup(S : SetCategory) : public == private where
         gp_info := gp.information
         if #(gp_info.wd) = 0 then
             initializeGroupForWordProblem gp
+            gp_info := gp.information
         lll : L NNI := wordInStrongGenerators(p, gp)
         outlist := nil()$(L NNI)
         words := gp.information.wd
