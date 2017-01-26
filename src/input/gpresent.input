@@ -101,26 +101,48 @@ testcase "PermutationGroup conversions cyclic group"
 c5a := cyclicGroup(5)$PermutationGroupExamples
 c5b := cyclicGroup(5)$GroupPresentation
 c5c := toPermutationIfCan(c5b) :: PermutationGroup(Integer)
+c5r := relationsInGenerators(c5a)
+c5d := groupPresentation([1], c5r)$GroupPresentation
+c5e := toPermutationIfCan(c5d)::PermutationGroup(Integer)
 
 testEquals("c5a", "c5c")
+testEquals("c5c", "c5e")
 
 testcase "PermutationGroup conversions dihedral group"
 
 d3a := dihedralGroup(3)$PermutationGroupExamples
 d3b := dihedralGroup(3)$GroupPresentation
 d3c := toPermutationIfCan(d3b) :: PermutationGroup(Integer)
+d3r := relationsInGenerators(d3a)
+d3d := groupPresentation([1, 2], d3r)$GroupPresentation
+d3d := simplify(d3d)
+d3e := toPermutationIfCan(d3d)::PermutationGroup(Integer)
 
 testEquals("order(d3a)", "order(d3c)")
+testEquals("order(d3c)", "order(d3e)")
 
 testcase "symmetric group"
 
 le4 := [1, 2, 3]
 lr4 := [[1, 1], [2, 2], [3, 3], [1, 2, 1, 2, 1, 2], [2, 3, 2, 3, 2, 3],
         [1, 3, 1, 3]]
+s4a := symmetricGroup(4)$PermutationGroupExamples
 s4b := groupPresentation(le4, lr4)
 s4c := toPermutationIfCan(s4b) :: PermutationGroup(Integer)
+s4r := relationsInStrongGenerators(s4a)
+s4d := groupPresentation([1, 2, 3], s4r)$GroupPresentation
+s4e := toPermutationIfCan(s4d)::PermutationGroup(Integer)
 
 testEquals("order(s4c)", "24")
+testEquals("order(s4e)", "24")
+
+s4r2 := relationsInGenerators(s4a)
+s4gen := generators(s4a)
+ielt(a, i) == (i > 0 => elt(a, i); inv(elt(a, -i)))
+-- test that all relations are valid
+for rel in s4r2 repeat
+    prod := reduce(_*, [ielt(s4gen, i) for i in rel], 1$PERM(INT))
+    testEquals("prod", "1$PERM(INT)")
 
 statistics()
 
