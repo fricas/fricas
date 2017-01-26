@@ -7,15 +7,15 @@
 \author{Martin J Baker}
 \maketitle
 \begin{abstract}
-This file implements group structures related to algebraic topology, specifically
-its homotopy and homology.
+This file implements group structures related to algebraic topology,
+specifically its homotopy and homology.
 
 There are two such structures in this file:
 \begin{itemize}
-\item GroupPresentation - Defines a group by its generators and relations.
-Used to hold fundamental group (homotopy)
-\item Homology - Intended to hold homology which is calculated using IntegerSmithNormalForm.
-This is an abelian group.
+\item GroupPresentation - Defines a group by its generators and
+relations. Used to hold fundamental group (homotopy).
+\item Homology - Intended to hold homology which is calculated using
+integer Smith normal form. This is an abelian group.
 \end{itemize}
 I have put a fuller explanation of this code here:
 \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/presentation/}
@@ -30,9 +30,9 @@ for more documentation see:
 Representation holds the group as a set of generators and a set of
 relations
 Each generator is a NNI
-Each relation is a list of indexes to generators. Negative values indicate
-the inverse of the generator. So if '1' represents the generator 'A' then
-'-1' represents its inverse 'A^-1'.
+Each relation is a list of indexes to generators. Negative values
+indicate the inverse of the generator. So if '1' represents the
+generator 'A' then '-1' represents its inverse 'A^-1'.
 
 Note that the use of negative indices to represent the inverse does
 not imply an abelian group. This is just a convenient way to code
@@ -40,8 +40,8 @@ the representation and, in general, the group is not necessarily
 abelian.
 The notation uses the following conventions.
 \begin{itemize}
-\item If index is positive it represents a generator shown as an alphabetic
-digit followed by number if required.
+\item If index is positive it represents a generator shown as an
+alphabetic digit followed by number if required.
 \item If index is zero it represents identity shown as 'e'.
 \item If index is negative it represents an inverse generator.
 The notation uses '-' to indicate an inverse generator (I know this is
@@ -70,21 +70,197 @@ I still believe it is worthwhile to have the capability to generate
 \section{Conversion between Finitely Presented and Permutation Groups}
 
 In FriCAS the main group functionality is in PermutationGroup so it
-would be useful to be able to convert to and from it.
+is useful to be able to convert to and from it. For conversions to
+PermutationGroup we use a well known algorithm called the
+Todd-Coxeter algorithm.
 
-A finitely presented group may, or may not be, convertible to a permutation
-group. There is a well known method for this called the Todd-Coxeter
-algorithm, this uses coset enumeration.
+If you wish to see how the algorithm works (or does not work) try
+calling the function, with trace set to 'true', like this:
 
-Since this algorithm is quite complicated I will start by implementing
-some more fundamental functions related to products, quotients, subgroups
-and cosets.
+\begin{verbatim}
+(7) -> d3 := dihedralGroup(3)$GroupPresentation
 
-What about the other direction? How do we attempt to convert a permutation
-group to a finitely presented group? The existing PermutationGroup has
-functions like wordInGenerators and wordsForStrongGenerators, does this help?
-Are there other existing functions that would help?
-I can find very little documentation about this.
+   (7)  <a b |  a*a*a, b*b, a*b*a*b>
+                            Type: GroupPresentation
+(8) -> toPermutationIfCan(d3,true)
+
+   addPoint: cannot deduce more so adding a point
+   adding:1 at row:1
+                  +2  2  2+ +0  0+ +2  0  2  0+
+   relatorTables=[|       |,|    |,|          |]
+                  +0  0  0+ +0  0+ +0  0  0  0+
+   addPoint: cannot deduce more so adding a point
+   adding:2 at row:1
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+   relatorTables=[|0  0  0|,|0  0|,|0  0  0  0|]
+                  |       | |    | |          |
+                  +0  0  0+ +0  0+ +0  0  0  0+
+   inferFromRelations found a gap of 1 so deduction made
+   gap is in relator table:[2,2]
+   distance from start:1 from end:0
+   row at start:1
+   row to change:3 new value:1
+   generator index=2 invm=false
+   forwardSequence:[1,3] backwardSequence:[1,0]
+   inferFromRelations genIn=2 gb=1
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+   relatorTables=[|0  0  0|,|0  0|,|0  0  0  0|]
+                  |       | |    | |          |
+                  +0  0  0+ +1  1+ +0  1  0  1+
+   addPoint: cannot deduce more so adding a point
+   adding:1 at row:2
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |0  0| |4  0  4  0|
+   relatorTables=[|       |,|    |,|          |]
+                  |0  0  0| |1  1| |0  1  0  1|
+                  |       | |    | |          |
+                  +0  0  0+ +0  0+ +0  0  0  0+
+   inferFromRelations found a gap of 1 so deduction made
+   gap is in relator table:[1,1,1]
+   distance from start:2 from end:0
+   row at start:1
+   row to change:4 new value:1
+   generator index=1 invm=false
+   forwardSequence:[1,2,4] backwardSequence:[1,0,0]
+   inferFromRelations genIn=1 gb=2
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |0  0| |4  0  4  0|
+   relatorTables=[|       |,|    |,|          |]
+                  |0  0  0| |1  1| |0  1  0  1|
+                  |       | |    | |          |
+                  +1  1  1+ +0  0+ +1  0  1  0+
+   addPoint: cannot deduce more so adding a point
+   adding:2 at row:2
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |5  5| |4  5  4  5|
+                  |       | |    | |          |
+   relatorTables=[|0  0  0|,|1  1|,|0  1  0  1|]
+                  |       | |    | |          |
+                  |1  1  1| |0  0| |1  0  1  0|
+                  |       | |    | |          |
+                  +0  0  0+ +0  0+ +0  0  0  0+
+   inferFromRelations found a gap of 1 so deduction made
+   gap is in relator table:[2,2]
+   distance from start:1 from end:0
+   row at start:2
+   row to change:5 new value:2
+   generator index=2 invm=false
+   forwardSequence:[2,5] backwardSequence:[2,0]
+   inferFromRelations genIn=2 gb=1
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |5  5| |4  5  4  5|
+                  |       | |    | |          |
+   relatorTables=[|0  0  0|,|1  1|,|0  1  0  1|]
+                  |       | |    | |          |
+                  |1  1  1| |0  0| |1  0  1  0|
+                  |       | |    | |          |
+                  +0  0  0+ +2  2+ +0  2  0  2+
+   inferFromRelations found a gap of 1 so deduction made
+   gap is in relator table:[1,2,1,2]
+   distance from start:2 from end:1
+   row at start:1
+   row to change:5 new value:3
+   generator index=1 invm=false
+   forwardSequence:[1,2,5,0] backwardSequence:[1,3,0,0]
+   inferFromRelations genIn=1 gb=2
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |5  5| |4  5  4  5|
+                  |       | |    | |          |
+   relatorTables=[|0  0  0|,|1  1|,|0  1  0  1|]
+                  |       | |    | |          |
+                  |1  1  1| |0  0| |1  0  1  0|
+                  |       | |    | |          |
+                  +3  3  3+ +2  2+ +3  2  3  2+
+   addPoint: cannot deduce more so adding a point
+   adding:1 at row:3
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |5  5| |4  5  4  5|
+                  |       | |    | |          |
+                  |6  6  6| |1  1| |6  1  6  1|
+   relatorTables=[|       |,|    |,|          |]
+                  |1  1  1| |0  0| |1  0  1  0|
+                  |       | |    | |          |
+                  |3  3  3| |2  2| |3  2  3  2|
+                  |       | |    | |          |
+                  +0  0  0+ +0  0+ +0  0  0  0+
+   inferFromRelations found a gap of 1 so deduction made
+   gap is in relator table:[1,1,1]
+   distance from start:1 from end:1
+   row at start:3
+   row to change:6 new value:5
+   generator index=1 invm=false
+   forwardSequence:[3,6,0] backwardSequence:[3,5,0]
+   inferFromRelations genIn=1 gb=1
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |5  5| |4  5  4  5|
+                  |       | |    | |          |
+                  |6  6  6| |1  1| |6  1  6  1|
+   relatorTables=[|       |,|    |,|          |]
+                  |1  1  1| |0  0| |1  0  1  0|
+                  |       | |    | |          |
+                  |3  3  3| |2  2| |3  2  3  2|
+                  |       | |    | |          |
+                  +5  5  5+ +0  0+ +5  0  5  0+
+   inferFromRelations found a gap of 1 so deduction made
+   gap is in relator table:[1,2,1,2]
+   distance from start:1 from end:2
+   row at start:2
+   row to change:4 new value:6
+   generator index=2 invm=false
+   forwardSequence:[2,4,0,0] backwardSequence:[2,5,6,0]
+   inferFromRelations genIn=2 gb=1
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |5  5| |4  5  4  5|
+                  |       | |    | |          |
+                  |6  6  6| |1  1| |6  1  6  1|
+   relatorTables=[|       |,|    |,|          |]
+                  |1  1  1| |6  6| |1  6  1  6|
+                  |       | |    | |          |
+                  |3  3  3| |2  2| |3  2  3  2|
+                  |       | |    | |          |
+                  +5  5  5+ +0  0+ +5  0  5  0+
+   inferFromRelations found a gap of 1 so deduction made
+   gap is in relator table:[2,2]
+   distance from start:1 from end:0
+   row at start:4
+   row to change:6 new value:4
+   generator index=2 invm=false
+   forwardSequence:[4,6] backwardSequence:[4,0]
+   inferFromRelations genIn=2 gb=1
+                  +2  2  2+ +3  3+ +2  3  2  3+
+                  |       | |    | |          |
+                  |4  4  4| |5  5| |4  5  4  5|
+                  |       | |    | |          |
+                  |6  6  6| |1  1| |6  1  6  1|
+   relatorTables=[|       |,|    |,|          |]
+                  |1  1  1| |6  6| |1  6  1  6|
+                  |       | |    | |          |
+                  |3  3  3| |2  2| |3  2  3  2|
+                  |       | |    | |          |
+                  +5  5  5+ +4  4+ +5  4  5  4+
+
+   (8)  <(1 2 4)(3 6 5),(1 3)(2 5)(4 6)>
+                    Type: Union(PermutationGroup(Integer),...)
+\end{verbatim}
+
+This will display the relatorTables at each stage and the deductions
+being made from the tables.
+
+The conversions in both directions can be improved by implementing
+better simplifications but since there is no canonical form the
+simplifications can never be perfect. The Todd-Coxeter does not yet
+detect and remove 'coincidences', that is, duplicated points. So
+this in the next improvement that needs to be made.
 
 \section{Direct Product of Groups}
 
@@ -93,8 +269,8 @@ Then G*H = < Sg,Sh | Rg,Rh,Rp >
 
 where:
 G*H is the direct product of G and H.
-Rp is a set of relations specifying that each element of Sg anti-commutes
-with each element of Sh.
+Rp is a set of relations specifying that each element of Sg
+anti-commutes with each element of Sh.
 See:
 \url{https://en.wikipedia.org/wiki/Direct_product_of_groups}
 
@@ -105,11 +281,9 @@ generators will be renumbered before doing the product.
 
 We can generate a quotient by removing a generator (more precisely
 adding relation equating this generator to neutral element) or
-more generaly by adding a relation. We have functions
-to create new groups in either of these ways, but
-confusingly they are called \spad{subgroup}.
+more generaly by adding a relation.
 
-A quitent is an example of a surjective mapping
+A quotient is an example of a surjective mapping
 (epimorphism) on the group. It is easy to work with functions
 between finitely presented groups, all we have to do is map
 the generators and check that the relations still equal 1.
@@ -173,7 +347,7 @@ remove any one, but not both.
 
 We can also simplify relations, for example, where an element
 and its inverse are next to each other they can be
-cancelled out and removed.
+canceled out and removed.
 \subsection{T4}
 
 T4 allows us to remove a generator and corresponding relations.
@@ -271,10 +445,6 @@ I think that all we can do in this situation is to test
 fundamentalGroup with very simple inputs such as a
 topological sphere. This should always produce an empty
 presentation.
-
-This test is contained in the domain: SimplicialComplexTests
-which is in the algebraictopology.spad file here:
-\url{https://github.com/martinbaker/multivector/blob/master/algebraictopology.spad}
 )endif
 
 )abbrev domain GROUPP GroupPresentation
@@ -339,9 +509,13 @@ GroupPresentation() : Exports == Impl where
       ++ acting on integers 1, ..., N.
     toPermutationIfCan : (a : %) -> Union(PermutationGroup Integer, "failed")
       ++ convert to permutation group return "failed" for infinite groups.
+      ++ For more information about the algorithm see:
+      ++ \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/pres2perm/}
     toPermutationIfCan : (a : %, trace : Boolean)
                           -> Union(PermutationGroup Integer, "failed")
       ++ convert to permutation group return "failed" for infinite groups.
+      ++ For more information about the algorithm see:
+      ++ \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/pres2perm/}
 
   Impl ==> add
 
@@ -421,7 +595,7 @@ GroupPresentation() : Exports == Impl where
    -- compare very simple presentations in the validation code which
    -- is useful to give some level of confidence that the
    -- correct presentation was generated.
-   -- TODO result can be dependant on initial generator order, for
+   -- TODO result can be dependent on initial generator order, for
    -- example <a, b | a*a, b*b*b> = <b, a | a*a, b*b*b> would be false
    -- should really check all permutations of generators and return
    -- true if any of them gives equality.
@@ -1121,13 +1295,16 @@ GroupPresentation() : Exports == Impl where
            pl : Permutation Integer := coerceImages(gl)
            p := concat(p,pl)
        permutationGroup(p)
-       
+
    -- Convert to permutation group. Return "failed" for infinite groups.
    toPermutationIfCan(a : %) : Union(PermutationGroup Integer, "failed") ==
        toPermutationIfCan(a,false)
 
    -- Convert to permutation group. Return "failed" for infinite groups.
    -- This function implements the Todd-Coxeter algorithm.
+   -- For more information about the algorithm see:
+   -- \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/pres2perm/}
+
    toPermutationIfCan(a : %,trace : Boolean
                      ) : Union(PermutationGroup Integer, "failed") ==
        numberPoints : NNI := 1
@@ -1173,11 +1350,11 @@ GroupPresentation() : Exports == Impl where
 )if false
 \section{Homology}
 
-Intended to hold homology which is calculated using IntegerSmithNormalForm.
-This is an abelian group.
+Intended to hold homology which is calculated using integer
+Smith normal form. This is an abelian group.
 
-It would be good if this could be modified to be based on FreeAbelianMonoid
-by Manuel Bronstein.
+It would be good if this could be modified to be based on
+FreeAbelianMonoid by Manuel Bronstein.
 )endif
 
 )abbrev domain HOMOL Homology
