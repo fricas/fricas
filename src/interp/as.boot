@@ -384,7 +384,7 @@ asytran fn ==
     name = "%%" => 'skip       --skip over top-level properties
     $docHashLocal: local := MAKE_-HASH_-TABLE()
     asytranDeclaration(d,'(top),nil,false)
-    if null name then hohohoho()
+    if null name then BREAK()
     HPUT($docHash,name,$docHashLocal)
   CLOSE inStream
   'done
