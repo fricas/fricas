@@ -11,13 +11,10 @@
 ++ represented in that form, by keeping both parts separately. The logs
 ++ are not explicitly computed.
 ++ Keywords: integration.
-++ Examples: )r RATINT INPUT
 IntegrationResult(F : Field) : Exports == Implementation where
   O   ==> OutputForm
-  B   ==> Boolean
   Z   ==> Integer
   Q   ==> Fraction Integer
-  SE  ==> Symbol
   UP  ==> SparseUnivariatePolynomial F
   LOG ==> Record(scalar : Q, coeff : UP, logand : UP)
   NE  ==> Record(integrand : F, intvar : F)
@@ -32,13 +29,13 @@ IntegrationResult(F : Field) : Exports == Implementation where
       ++ logpart(ir) returns the logarithmic part of an integration result
     notelem : % -> List NE
       ++ notelem(ir) returns the non-elementary part of an integration result
-    elem?   : % -> B
+    elem?   : % -> Boolean
       ++ elem?(ir) tests if an integration result is elementary over F?
     integral : (F, F) -> %
       ++ integral(f, x) returns the formal integral of f with respect to x
     differentiate : (%, F -> F) -> F
       ++ differentiate(ir, D) differentiates ir with respect to the derivation D.
-    if F has PartialDifferentialRing(SE) then
+    if F has PartialDifferentialRing(Symbol) then
       differentiate : (%, Symbol) -> F
         ++ differentiate(ir, x) differentiates ir with respect to x
     if F has RetractableTo Symbol then
@@ -63,7 +60,7 @@ IntegrationResult(F : Field) : Exports == Implementation where
 
     - u               == (-1$Z) * u
     0                 == mkAnswer(0, empty(), empty())
-    coerce(x : F) : %     == mkAnswer(x, empty(), empty())
+    coerce(x : F) : % == mkAnswer(x, empty(), empty())
     ratpart u         == u.ratp
     logpart u         == u.logp
     notelem u         == u.nelem
