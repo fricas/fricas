@@ -8,51 +8,54 @@
 \maketitle
 \begin{abstract}
 
-I would like to code topological spaces in a finite way, simplicial
-complexes and delta complexes allow us to do this systemically.
+This code allows us to compute with topological spaces in a finite
+way.
 
-This is implemented as a number of related domains. As usual I guess we
-have to clarify definitions. Hatcher[9] (p102) gives delta complexes as
-a "mild generalization of the more classical notion of a simplical complex".
-This "mild generalization" is allowing multiple copies of facets. For
-instance, instead of the minimal triangulation of a projective
-plane having 10 triangles it can be represented as a square (2 triangles)
-where the opposite edges are the same (but with opposite orientation).
+This is implemented as a number of related domains. As usual I guess
+we have to clarify definitions. Hatcher[9] (p102) gives delta
+complexes as a "mild generalization of the more classical notion of
+a simplical complex". This "mild generalization" is allowing multiple
+copies of facets. For instance, instead of the minimal triangulation
+of a projective plane having 10 triangles it can be represented as a
+square (2 triangles) where the opposite edges are the same (but with
+opposite orientation).
 
-This generalization is not yet supported, more work and testing is needed.
-
-So we have 4 domains:
+Some of the domains we will define are:
 \begin{itemize}
-\item FiniteSimplicialComplex - n-dimensional triangles indexed by their
-      vertices.
-\item FiniteCubicalComplex - n-dimensional squares indexed by their vertices.
-\item DeltaComplex - graded structure indexed is in terms of next lower
-      dimension (differential form?)
-\item ChainComplex - Holds same information as DeltaComplex but in an
-      algebraic form rather than a geometric form, that is as a sequence
-      of matrices.
+\item FiniteSimplicialComplex - n-dimensional triangles indexed by
+their vertices.
+\item FiniteCubicalComplex - n-dimensional squares indexed by their
+vertices.
+\item DeltaComplex - graded structure indexed is in terms of next
+lower dimension.
+\item (co)ChainComplex - Holds same information as DeltaComplex but in an
+algebraic form rather than a geometric form, that is as a sequence
+of matrices.
 \end{itemize}
 
 There are also a lot of other domains here used to construct these.
 
-To generate homology from FiniteSimplicialComplex or FiniteCubicalComplex we:
+To generate (co)homology from FiniteSimplicialComplex or
+FiniteCubicalComplex we:
 \begin{itemize}
 \item generate DeltaComplex from FiniteSimplicialComplex or
       FiniteCubicalComplex
-\item generate ChainComplex from DeltaComplex
-\item generate homology from ChainComplex
+\item generate (co)ChainComplex from DeltaComplex
+\item generate (co)homology from (co)ChainComplex
 \end{itemize}
 
 So I have added homology functions to DeltaComplex, FiniteSimplicialComplex
-and FiniteCubicalComplex just so end users can avoid having to explicitly
-do these steps.
+and FiniteCubicalComplex just so end users can avoid having to
+explicitly do these steps.
 
 I have put a fuller explanation of this code here:
 \url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/}
 \end{abstract}
+
 \section{Related Code}
 
-Simplicial Complexes are a generalisation of graph theory as implemented here:
+Simplicial Complexes are a generalisation of graph theory as
+implemented here:
 \url{https://github.com/fricas/fricas/blob/master/src/algebra/graph.spad}
 There are coercions from graphs to simplicial complexes.
 
@@ -73,8 +76,11 @@ closed sets are the algebraic subsets of the variety.
 \url{https://github.com/fricas/fricas/blob/master/src/algebra/zerodim.spad}
 \url{https://github.com/fricas/fricas/blob/master/src/algebra/regset.spad}
 
-I have not yet implemented cohomology but it seems to be related to
-anti-symmetric differential forms:
+The cohomology/cochain implemented here is discrete as opposed to the
+DeRhamComplex which uses differential forms. So if we were computing
+say, electrical circuits, then cochain might work with Kirchhoff's
+circuit laws whereas DeRhamComplex might work with the Maxwell equations.
+Other cohomology domains:
 DeRhamComplex:
 \url{https://github.com/fricas/fricas/blob/master/src/algebra/derham.spad}
 DifferentialGeometry
@@ -82,13 +88,42 @@ DifferentialGeometry
 
 \section{Introduction}
 
+A 'simplex' is a set of vertices such that every subset is included
+in the simplex. For example a tetrahedron contains all its faces,
+lines and points.
+
+A 'simplicial complex' is a set of these simplexes which may have
+vertices in common.
+
+Because each simplex contains its subsets, this is a combinatorial
+structure. When used in this way the structure is known as an
+'abstract simplicial complex' optionally we can also associate a
+point in a space with each vertex, in this case the structure is
+known as an 'geometric simplicial complex' and it has
+geometric/topological/homotopy properties.
+
+It is intended that this code is able to be able to support both
+abstract and geometric simplicial complexes.
+
+Three types of cell complex are implemented:
+\begin{itemize}
+\item SimpectialComplex
+\item DeltaComplex
+\item CubicalComplex
+\end{itemize}
+
 \section{Simplicial Complexes}
 
-The representation holds whole Simplicial Complex. This consists of
-a vertex set, represented as a vertex list so that we can index it.
-Also a list of simplices (that is n-dimensional faces). each simplice
-is an array of vertex indexes. So each simplice is a subset of the
-vertex set.
+I have put some examples of Simplicial Complexes on this webpage:
+http://www.euclideanspace.com/prog/scratchpad/mycode/topology/simplex/
+
+Defines a set of n-dimensional facets.
+
+This representation defines faces, of any dimension, by indexing their
+vertices. This can be an efficient way to define them.
+
+As an example consider the representation for a single tetrahedron:
+The representation would be: (1, 2, 3, 4)
 
 If the dimension given for the simplicial complex is 'k' then:
 \begin{itemize}
@@ -130,28 +165,13 @@ need coordinates for the vertices and they can be denoted by symbols.
 \item Join - We will call it a SimplicialJoin since it is not related
   to joins in lattices.
 \end{itemize}
-
-\section{Simplicial Maps}
-Allow edges to be collapsed into vertices.
-
-\section{Oriented Simplexes Maps}
-
-\section{Vertex Set Code}
-We want an indexed set of points, the simplest way to do the
-indexing is to use 'List' instead of 'Set'.
-
-The vertices themselves may be either:
-\begin{itemize}
-\item literal coordinates.
-\item symbolic vertex names.
-\item numeric indexes.
-\end{itemize}
-So we cave a category that can represent any of these types
-and then a domain for each type.
+More information about these constructs on this page:
+http://www.euclideanspace.com/prog/scratchpad/mycode/topology/simplex/join/
 
 \section{Oriented Facets Category}
 
-The aim of this category is to represent different types of facet, such as,
+The aim of this category is to represent different types of facet,
+such as,
 \begin{itemize}
 \item A single simplex.
 \item A single cubical facet.
@@ -160,25 +180,26 @@ The aim of this category is to represent different types of facet, such as,
 These all have similar functions but different representations.
 
 The first of these is OrientedFacet which is the usual triangle and
-higher-order-triangle based facet, it holds the facet as a set of indexes (fac)
-together with an orientation (mul) like this:
+higher-order-triangle based facet, it holds the facet as a set of
+indexes (fac) together with an orientation (mul) like this:
 Rep := Record(mul : Integer, fac : List(NNI))
 
-The second is a cubical facet, this is held as a set of indexed line intervals
-which may, or may not, be degenerate.
+The second is a cubical facet, this is held as a set of indexed
+line intervals which may, or may not, be degenerate.
 Rep := Record(mul : Integer, fac : List(Segment(Integer)))
 
 The third is a product facet, this is intended to hold the product of
-two facets. The product has two indexes to represent each vertex, that is
-the Cartesian product of the vertices of the operands. Usually this double
-vertex will be normalised back to a single set of indexes but this can only
-be done after the whole simplicial complex has been multiplied so the
-corresponding facets can be matched up and sorted.
+two facets. The product has two indexes to represent each vertex, that
+is the Cartesian product of the vertices of the operands. Usually this
+double vertex will be normalised back to a single set of indexes but
+this can only be done after the whole simplicial complex has been
+multiplied so the corresponding facets can be matched up and sorted.
 So the representation is:
 Rep := Record(mul : Integer, ind : List(Record(left : NNI, right : NNI)))
 
 OrderedSet category is implemented so we can sort lists of facets. This
-requires that implentations support 'less than' and 'equal' (<,<= and =) functions.
+requires that implementations support 'less than' and 'equal'
+(<,<= and =) functions.
 )endif
 
 )abbrev category FACTCAT FacetCategory
@@ -217,21 +238,22 @@ FacetCategory() : Category == Definition where
 )if false
 \section{Oriented Facet}
 
-This domain holds a single facet, that is a single vertex, edge, triangle...
+This domain holds a single facet, that is a single vertex, edge,
+triangle...
 The FiniteSimplicialComplex will then contain multiple oriented Facets.
 See FiniteSimplicialComplex section for more information about that.
 
-I have found it worthwhile and efficient to gather here all the operations
-on a single facet rather than trying to do everything inside
-FiniteSimplicialComplex.
+I have found it worthwhile and efficient to gather here all the
+operations on a single facet rather than trying to do everything
+inside FiniteSimplicialComplex.
 
-OrientedFacet holds an (ordered) set of vertices not the geometric vertices
-themselves, but indexes which can be used to reference them.
+OrientedFacet holds an (ordered) set of vertices not the geometric
+vertices themselves, but indexes which can be used to reference them.
 
-It also holds an orientation, which is held in 'mul'. When we are interpreting
-this as a geometric object it is usually 1 or -1 (to reverse direction).
-When we are interpreting this as a linear algebra object then we treat it
-as an integer.
+It also holds an orientation, which is held in 'mul'. When we are
+interpreting this as a geometric object it is usually 1 or -1 (to
+reverse direction). When we are interpreting this as a linear algebra
+object then we treat it as an integer.
 
 To allow facets to be checked for equality indexes are stored in order
 )endif
@@ -261,8 +283,8 @@ OrientedFacet() : Exports == Impl where
     orientedFacet : (mul : Integer, fac : List(NNI)) -> %
       ++ Constructor for oriented facet
       ++ oriented facet is always stored in vertex order
-      ++ orientation is calculated by the number of edges that have to be
-      ++ flipped to put it in order.
+      ++ orientation is calculated by the number of edges that have
+      ++ to be flipped to put it in order.
     orientedFacetUnsigned : (fac : List(Integer)) -> %
       ++ Constructor for oriented face which removes duplicates
       ++ and ignores orientation
@@ -343,10 +365,10 @@ OrientedFacet() : Exports == Impl where
   Impl ==> add
 
    -- A facet is a list of indexes (ordered)
-   -- 'mul' encodes the orientation. When we are interpreting this as a
-   -- geometric object it is usually 1 or -1 (to reverse direction).
-   -- When we are interpreting this as a linear algebra object then we treat
-   -- it as an integer.
+   -- 'mul' encodes the orientation. When we are interpreting this
+   -- as a geometric object it is usually 1 or -1 (to reverse direction).
+   -- When we are interpreting this as a linear algebra object then
+   -- we treat it as an integer.
    Rep := Record(mul : Integer, fac : List(NNI))
 
    -- Constructor for oriented facet
@@ -769,10 +791,10 @@ For more information see:
 \url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/cubical/}
 
 The product has two indexes to represent each vertex, that is
-the Cartesian product of the vertices of the operands. Usually this double
-vertex will be normalised back to a single set of indexes but this can only
-be done after the whole simplicial complex has been multiplied so the
-corresponding facets can be matched up and sorted.
+the Cartesian product of the vertices of the operands. Usually
+this double vertex will be normalised back to a single set of indexes
+but this can only be done after the whole simplicial complex has been
+multiplied so the corresponding facets can be matched up and sorted.
 So the representation is:
 Rep := Record(mul : Integer, left : List(NNI), right : List(NNI))
 
@@ -905,15 +927,16 @@ ProductFacet() : Exports == Impl where
 
 )if false
 \section{Cubical Facet}
-As an alternative to simplicial complexes we can base our topology on squares
-rather than triangles.
+As an alternative to simplicial complexes we can base our topology on
+squares rather than triangles.
 
 For more information see:
 \url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/cubical/}
 
-However we need to implement this in a different way, if we specified a square
-by its vertices then we could not be sure that the vertices were all in the
-same plane and we could not be sure that the squares aligned.
+However we need to implement this in a different way, if we specified
+a square by its vertices then we could not be sure that the vertices
+were all in the same plane and we could not be sure that the squares
+aligned.
 
 We therefore have separate indexes for each dimension and we specify
 these as an interval.
@@ -986,8 +1009,8 @@ CubicalFacet() : Exports == Impl where
 
    -- Constructor for cubical facet
    -- intervals are always stored in low..high order
-   -- orientation is calculated by the number of intervals that have to be
-   -- flipped to put it in order.
+   -- orientation is calculated by the number of intervals that have
+   -- to be flipped to put it in order.
    cubicalFacet(mul1 : Integer, fac1 : List(Segment(Integer))) : % ==
        --print("cubicalFacet(" << mul1 << ", " << fac1)
        mul2 : Integer := mul1
@@ -1250,10 +1273,9 @@ CubicalFacet() : Exports == Impl where
 )if false
 \section{Chain Complex}
 
-Below we discuss simplicial complexes and delta complexes.
-
-I now want to add chain complexes and co-chain complexes which are an
-algebriation of these complexes.
+Following from simplicial complexes and delta complexes I now want to
+add chain complexes and co-chain complexes which are an algebriation
+of these complexes.
 
 The ChainComplex domain would be contain a sequence free abelian groups:
 C0, C1, C2 ... 0
@@ -1271,48 +1293,79 @@ These don't necessarily need to be a cycle or even connected.
 C2 = two dimensional chain
 = free abelian group on directed triangles (2-cells).
 
-It seems to me that, at this stage we are mostly interested in the linear
-algebra structure so it would seem to be an unnecessary overhead to carry
-around the vertex representation, perhaps we can just think of vertexes as
-indexes and implement each chain like this:
-Rep := List(Integer)
+At this stage we are mostly interested in the linear
+algebra structure. This comes from the mappings between these free
+abelian groups. So we also need (non-free) abelian groups as quotients
+of free abelian group. So the chain complex holds a set of free abelian
+groups (chains) and a set of group homomorphisms.
 
-However, what gives it its structure is the mappings between these free abelian
-groups. So we also need (non-free) abelian groups as quotients of free abelian
-group. So the chain complex holds a set of free abelian groups (chains) and a
-set of group homomorphisms.
+\subsection{Creating Chain Complexes}
+Here are two ways to construct a chain complex:
+\begin{itemize}
+\item Usually it is easier to construct a simplicial or delta complex
+first and then call chain function.
+\item We could alternatively construct from a list of matrices.
+\end{itemize}
+Here we construct a simplicial complex then call chain function:
+\begin{verbatim}
+(1) -> b1 := sphereSolid(2)$SimplicialComplexFactory(Integer)
 
-Rep of ChainComplex needs to be represented by:
+   (1)  points 1..3
+          (1,2,3)
+                         Type: FiniteSimplicialComplex(Integer)
+(2) -> chain(b1)
+
+                  + 1    1    0 + + 1 +
+                  |             | |   |
+   (2)  [0  0  0],|- 1   0    1 |,|- 1|,[]
+                  |             | |   |
+                  + 0   - 1  - 1+ + 1 +
+                                        Type: ChainComplex
+\end{verbatim}
+Or we could use constructor from a list of matrices.
+\begin{verbatim}
+chainComplex : (v : List(Matrix(Integer))) -> %
+\end{verbatim}
+
+\subsection{Representation of Chain Complexes}
+This is a list of matrices although they represent (abelian) group
+homomorphisms.
+
+An alternative representation might be to use functions:
+\begin{verbatim}
 C0, C1, C2 ... 0
 delta1:(C1) -> C0 , delta2:(C2) -> C1 ...
+\end{verbatim}
 
 where delta is a group homomorphism which respects the group structure:
 
+\begin{verbatim}
 delta(u+v) = delta u + delta v
 delta(u^-1) =(delta u)^-1
+\end{verbatim}
 
+\subsection{Homology of Chain Complexes}
 These group homomorphisms are represented by: Matrix(Integer)
 so that we can solve using IntegerSmithNormalForm.
 
-So the types of function that I would like to implement on ChainComplex are:
+So the types of function that I would like to implement on
+ChainComplex are:
+\begin{verbatim}
 image: (ChainComplex, delta) -> chain
 kernel: (ChainComplex, delta) -> chain
+\end{verbatim}
 
 and we need to find cycles by finding null space of augmented matrix.
 
-Beyond this I would like to implement the (co)homology.
-
-Also for a potential CoChainComplex domain, how would this relate to
-DeRhamComplex?
 )endif
 
 )abbrev domain CHAINC ChainComplex
 ++ Author: Martin Baker
 ++ Description:
-++   Delta Complexes are defined by a sequence of 'face maps', These can
-++   be represented by a list of matrices.
+++   Delta Complexes are defined by a sequence of 'face maps', These
+++   can be represented by a list of matrices.
 ++   for more documentation see:
-++   http://www.euclideanspace.com/prog/scratchpad/mycode/topology/chain/index.htm
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/topology/chain/
 ++ Date Created: March 2016
 ++ Basic Operations:
 ++ Related packages:
@@ -1404,13 +1457,63 @@ ChainComplex() : Exports == Impl where
        lst : List(OutputForm) := [x::OutputForm for x in s]
        commaSeparate(lst)
 
+)if false
+\section{Cochain Complex}
+
+For cochain we reverse the arrows. As with the chain we represent each
+one of these mappings with a matrix. For a cochain this matrix is
+transposed compared to the chain.
+
+For examples see:
+http://www.euclideanspace.com/prog/scratchpad/mycode/topology/chain/cochain/
+
+In the example, on that page, we create a shape (triangle) with 3
+points. We then associate a value (in this case an integer) to each
+of these points:
+\begin{tabular}{ll}
+Point \ Value \\
+1 \ 3 \\
+2 \ 4 \\
+3 \ 5 \\
+\end{tabular}
+\end{table}
+
+The coboundary function then calculates the differences: [1,2,1]. That
+is the difference between 3 and 4 is 1, the difference between 3 and 5
+is 2, and the difference between 4 and 5 is 1.
+
+When we apply the coboundary function again we get the difference
+around the loop, that is, 0.
+
+The values used here were Integers but we could use any type that
+implements AbelianGroup.
+
+For example we could have real (Float) values associated with each
+point representing say voltage or height or some other quantity for
+each point.
+
+Perhaps the most obvious quantity we could associate with each point
+is position, given by a vector relative to some origin and coordinate
+system. However the type (domain) needs to implement AbelianGroup.
+Unfortunately Vectors in FriCAS don't implement AbelianGroup because
+it needs to implement 0:% which it can't because the nearest function
+in Vector is zero: NonNegativeInteger -> % but this needs to know the
+number of dimensions.
+
+We therefore use DirectProduct which implements AbelianGroup.
+There is also an example of this on the above web page.
+
+For examples of cohomology see:
+http://www.euclideanspace.com/prog/scratchpad/mycode/topology/homology/cohomol/
+)endif
+
 )abbrev domain COCHNC CoChainComplex
 ++ Author: Martin Baker
 ++ Description:
 ++   Delta Complexes are defined by a sequence of 'face maps', These can
 ++   be represented by a list of matrices.
 ++   for more documentation see:
-++   http://www.euclideanspace.com/prog/scratchpad/mycode/topology/chain/cochain/index.htm
+++   http://www.euclideanspace.com/prog/scratchpad/mycode/topology/chain/cochain/
 ++ Date Created: Jan 2016
 ++ Basic Operations:
 ++ Related packages:
@@ -1535,22 +1638,84 @@ CoChainComplex(VS : AbelianGroup) : Exports == Impl where
        commaSeparate(lst)
 
 )if false
+
 \section{FiniteSimplicialComplex}
+\subsection{Creating Simplicial Complexes}
 
-Defines a set of n-dimensional facets.
-
-This representation defines faces, of any dimension, by their
-vertices. This can be an efficient way to define them.
-The representation is in two parts:
+Here are 3 ways to construct a simplicial complex:
 \begin{itemize}
-\item The verities themselves which may either geometric (actual
-  coordinates) or abstract.
-\item A set of facets, each one represented by a set of indices
-  into the verities.
+\item Using SimplicialComplexFactory - This allows common complexes to
+be easily created.
+\item Using functions like product, star, link and join to construct
+complexes from simpler cases.
+\item Build from lists of indexes.
+\end{itemize}
+Here is an example of building from factory:
+
+\begin{verbatim}
+FACTORY:=SimplicialComplexFactory(Integer)
+
+   (1)  SimplicialComplexFactory(Integer)
+                           Type: Type
+
+(2) -> band()$FACTORY
+
+   (2)  points 1..6
+          (1,2,3)
+          (1,2,6)
+          (1,5,6)
+          (2,3,4)
+          (3,4,5)
+          (4,5,6)
+          Type: FiniteSimplicialComplex(Integer)
+\end{verbatim}
+We can join two complexes like this:
+\begin{verbatim}
+(1) -> line := line()$SimplicialComplexFactory(Integer)
+
+   (1)  points 1..2
+           (1,2)
+                   Type: FiniteSimplicialComplex(Integer)
+(2) -> simplicialJoin(line,line,true)
+
+   (2)  points 1..4
+         (1,2,3,4)
+                   Type: FiniteSimplicialComplex(Integer)
+\end{verbatim}
+Here is an example of building from lists of indexes.
+\begin{verbatim}
+(3) -> v1:List(List(NNI)) := [[1::NNI,2::NNI],[4::NNI]]
+
+   (3)  [[1,2],[4]]
+                     Type: List(List(NonNegativeInteger))
+(4) -> sc1 := simplicialComplex([],4,v1)$ASIMP
+
+   (4)  points 1..4
+           (1,2)
+            (4)
+                   Type: FiniteSimplicialComplex(Integer)
+\end{verbatim}
+This example has 4 points:
+\begin{itemize}
+\item point 1 and 2 are endpoins of a line.
+\item point 3 does not exist but we want to reserve the index.
+\item point 4 exist but is not connected to anything.
 \end{itemize}
 
-As an example consider the representation for a single tetrahedron:
-The representation would be: (1, 2, 3, 4)
+\subsection{Representation of Simplicial Complexes}
+
+The FiniteSimplicialComplex representation holds whole Simplicial
+Complex. This consists of:
+\begin{itemize}
+\item A vertex set, which can be a list of points, or a list of any
+AbelianGroup defined by the type parameter. This allows us to
+define a 'geometric simplicial complex' or alternatively to hold
+information used for cochain.
+\item A NNI holding the total number of points. This allows us to
+reserve unused points.
+\item A list (representing set - no duplication, order unimportant) of
+OrientedFacet. Each OrientedFacet defined in terms of points.
+\end{itemize}
 
 There is an alternative to FiniteSimplicialComplex which is
 DeltaComplex and is discussed later.
@@ -2621,10 +2786,10 @@ FiniteCubicalComplex(VS : AbelianGroup) : Exports == Impl where
        cc
 
    -- Returns true if x equals y.
-   -- That is, they contain the same simplexes, although not necessarily in the
-   -- same order.
-   -- TODO - Assumes point set is exactly the same, for more generality we should allow
-   -- the points to be defined in a different order.
+   -- That is, they contain the same simplexes, although not
+   -- necessarily in the same order.
+   -- TODO - Assumes point set is exactly the same, for more generality
+   -- we should allow the points to be defined in a different order.
    _=(a : %, b : %) : Boolean ==
        as : List(CubicalFacet) := a.CUBE
        bs : List(CubicalFacet) := b.CUBE
@@ -2663,30 +2828,114 @@ FiniteCubicalComplex(VS : AbelianGroup) : Exports == Impl where
 )if false
 \section{Delta Complex}
 
-The FiniteSimplicialComplex representation defines faces, of any dimension, by
-their vertices. This is an efficient way to define them, a disadvantage
-is that intermediate parts, such as edges, are not indexed. It is
-sometimes useful to be able to do this, for example, when generating
-homotopy groups such as the fundamental group.
+The FiniteSimplicialComplex representation defines faces, of any
+dimension, by their vertices. This is an efficient way to define
+them, a disadvantage is that intermediate parts, such as edges, are
+not indexed. It is sometimes useful to be able to do this, for
+example, when generating homotopy groups such as the fundamental group.
 
-Therefore the following alternative representation can be used instead.
+Advantages of Simpectial Complexes:
+\begin{itemize}
+\item Easier to construct and to understand
+\item Some operations are easier on simplectial complexes.
+\end{itemize}
+Advantages of Delta Complexes
+\begin{itemize}
+\item Can sometimes be more compact, for example, use less points.
+\item Easier to construct chains, homology and homotopy from delta
+complexes so they are a good intermediate step.
+\end{itemize}
+
+So it is worthwhile implementing both types in code with conversions
+between them.
+
+It is possible to convert from and to simplectial complexes like this:
+\begin{verbatim}
+simplectial complexes ->  delta complexes -> simplectial complexes
+\end{verbatim}
+and get back to where we started. However it is not always possible
+to start with delta complexes and get back to where we started.
+\begin{verbatim}
+delta complexes -> simplectial complexes ->  delta complexes
+\end{verbatim}
+This is because the more compact coding of delta complexes is hard to
+translate because it can only be done by adding extra points. Also the
+two types are not exactly isomorphic as there are special cases which
+can only be coded in one type.
+
+There are also other codings of cell complexes such as cubical
+complexes, implemented below.
+
+\subsection{Creating Delta Complexes}
+Here are 3 ways to construct a delta complex:
+\begin{itemize}
+\item From DeltaComplexFactory - Some simple complexes are provided
+by factory functions.
+\item From FiniteSimplicialComplex - Sometimes it is easier to
+construct a simplicial complex first and then convert.
+\item Directly from index lists.
+\end{itemize}
+We cab easily construct from factory functions like this:
+\begin{verbatim}
+(5) -> cD := circle()$DeltaComplexFactory(Integer)
+
+   (5)
+         1D:[[1,- 1]]
+           0D:[[0]]
+                               Type: DeltaComplex(Integer)
+\end{verbatim}
+Constructing from  a simplicial complex first and then converting:
+\begin{verbatim}
+(6) -> cS := sphereSurface(2)$SCF
+
+   (6)  points 1..3
+           (1,2)
+          -(1,3)
+           (2,3)
+                   Type: FiniteSimplicialComplex(Integer)
+(7) -> deltaComplex(cS)
+
+   (7)
+         1D:[[1,- 2],[- 1,3],[2,- 3]]
+               0D:[[0],[0],[0]]
+                               Type: DeltaComplex(Integer)
+\end{verbatim}
+Here we construct directly from index lists:
+\begin{verbatim}
+(8) -> deltaComplex([],1, [[[1, -1]]])$DeltaComplex(Integer)
+
+   (8)
+          1D:[[1,- 1]]
+            0D:[[0]]
+                               Type: DeltaComplex(Integer)
+\end{verbatim}
+
+\subsection{Representation of Delta Complexes}
+The representation consists of:
+\begin{itemize}
+\item vertexset - As for simpectial complex.
+\item maps - Highest dimension first down to dimension zero (points)
+\end{itemize}
+The array for each point is either [0] for a used point or [] for an
+unused point. By 'unused point' I mean a point that is not part of
+this delta complex but its position is held for future use.
 )endif
 
 )abbrev domain DELTAC DeltaComplex
 ++ Author: Martin Baker
 ++ Description:
-++   Similar to Simplicial Complex but faces (edges, triangles, etc.) are
-++   indexed by 'face maps' into the next lower face map until we get
-++   down to the vertices.
+++   Similar to Simplicial Complex but faces (edges, triangles, etc.)
+++   are indexed by 'face maps' into the next lower face map until
+++   we get down to the vertices.
 ++   for more documentation see:
 ++   http://www.euclideanspace.com/prog/scratchpad/mycode/topology/delta/
 ++ Date Created: Feb 2016
 ++ Basic Operations:
 ++ Related packages:
 ++ Related categories:
-++ Related Domains: FiniteSimplicialComplex is a simpler and more compact
-++    representation which can be used if edges, triangles, etc. don't need
-++    to be indexed.
+++ Related Domains: FiniteSimplicialComplex is a simpler and more
+++    compact representation which can be used if edges, triangles,
+++    etc. don't need to be indexed.
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords: topology, finite, simplicial, complex, edge, triangle
@@ -3191,10 +3440,11 @@ DeltaComplex(VS : AbelianGroup) : Exports == Impl where
        true
 
    -- Returns true if x equals y.
-   -- That is, they contain the same simplexes, although not necessarily
-   -- in the same order.
-   -- TODO - Assumes point set is exactly the same, for more generality
-   -- we should allow the points to be defined in a different order.
+   -- That is, they contain the same simplexes, although not
+   -- necessarily in the same order.
+   -- TODO - Assumes point set is exactly the same, for more
+   -- generality we should allow the points to be defined in a
+   -- different order.
    _=(a : %, b : %) : Boolean ==
        as := a.MAPS
        bs := b.MAPS
@@ -3246,19 +3496,22 @@ x<<y ==> hconcat(x::OutputForm, y::OutputForm)
 
 SimplicialComplexFactory(VS : AbelianGroup) : with
   sphereSolid : (dim : NNI) -> FiniteSimplicialComplex(VS)
-    ++ Generate a simplicial complex equivalent to a solid hyper-sphere. That
-    ++ is, a solid volume with no holes in it, so we use a single n-dimensional
-    ++ simplex.
+    ++ Generate a simplicial complex equivalent to a solid hyper-sphere.
+    ++ That is, a solid volume with no holes in it, so we use a single
+    ++ n-dimensional simplex.
   sphereSurface : (dim : NNI) -> FiniteSimplicialComplex(VS)
-    ++ Generate a simplicial complex equivalent to the surface of a hyper-sphere.
-    ++ That is, the surface of a volume with no holes in it, so we use a minimal
-    ++ triangulation of the faces of a single simplex.
+    ++ Generate a simplicial complex equivalent to the surface of a
+    ++ hyper-sphere. That is, the surface of a volume with no holes
+    ++ in it, so we use a minimal triangulation of the faces of a
+    ++ single simplex.
   line : () -> FiniteSimplicialComplex(VS)
     ++ create a simplicial complex containing a line.
   torusSurface : () -> FiniteSimplicialComplex(VS)
-    ++ generate a minimal triangulation of the surface of an 3-dimensional torus.
+    ++ generate a minimal triangulation of the surface of a
+    ++ 3-dimensional torus.
   band : () -> FiniteSimplicialComplex(VS)
-    ++ Generate a minimal triangulation of the surface of a cylinder without ends
+    ++ Generate a minimal triangulation of the surface of a cylinder
+    ++ without ends
   moebiusBand : () -> FiniteSimplicialComplex(VS)
     ++ Generate a minimal triangulation of the surface of a Moebius band.
     ++ A one sided surface with a single external boundary line.
@@ -3277,17 +3530,18 @@ SimplicialComplexFactory(VS : AbelianGroup) : with
 
   ASIMP ==> FiniteSimplicialComplex(VS)
 
-  -- generate a simplicial complex equivalent to a solid hyper-sphere. That
-  -- is, a solid volume with no holes in it, so we use a single n-dimensional
-  -- simplex.
+  -- generate a simplicial complex equivalent to a solid hyper-sphere.
+  -- That is, a solid volume with no holes in it, so we use a single
+  -- n-dimensional simplex.
   sphereSolid(dim : NNI) : ASIMP ==
       v1 : List(List(NNI)) := [[n for n in 1..(dim + 1)]]
       vs1 : List(VS) := []
       simplicialComplex(vs1, v1)$ASIMP
 
-  -- generate a simplicial complex equivalent to the surface of a hyper-sphere.
-  -- That is, the surface of a volume with no holes in it, so we use a minimal
-  -- triangulation of the faces of a single simplex.
+  -- generate a simplicial complex equivalent to the surface of a
+  -- hyper-sphere. That is, the surface of a volume with no holes in
+  -- it, so we use a minimal triangulation of the faces of a single
+  -- simplex.
   sphereSurface(dim : NNI) : ASIMP ==
       s := sphereSolid(dim)
       boundary(s)
@@ -3298,7 +3552,8 @@ SimplicialComplexFactory(VS : AbelianGroup) : with
       vs1 : List(VS) := []
       simplicialComplex(vs1, v1)$ASIMP
 
-  -- generate a minimal triangulation of the surface of an 3-dimensional torus.
+  -- generate a minimal triangulation of the surface of a
+  -- 3-dimensional torus.
   torusSurface() : ASIMP ==
       v1 : List(List(NNI)) := ([[1, 2, 3], [2, 3, 5], [2, 4, 5], [2, 4, 7],
          [1, 2, 6], [2, 6, 7], [3, 4, 6], [3, 5, 6], [3, 4, 7], [1, 3, 7],
@@ -3306,7 +3561,8 @@ SimplicialComplexFactory(VS : AbelianGroup) : with
       vs1 : List(VS) := [] --  7
       simplicialComplex(vs1, v1)$ASIMP
 
-  -- generate a minimal triangulation of the surface of a cylinder without ends
+  -- generate a minimal triangulation of the surface of a cylinder
+  -- without ends
   band() : ASIMP ==
       v1 : List(List(NNI)) := ([[1, 2, 3], [1, 2, 6], [1, 5, 6],
                                [2, 3, 4], [3, 4, 5], [4, 5, 6]])
@@ -3349,7 +3605,7 @@ SimplicialComplexFactory(VS : AbelianGroup) : with
 
 DeltaComplexFactory constructs example delta complexes for us.
 
-Theses can be smaller than DeltaComplexes constructed from SimplicialComplexes.
+These can be smaller than DeltaComplexes constructed from SimplicialComplexes.
 )endif
 
 )abbrev package DELTCF DeltaComplexFactory
@@ -3419,9 +3675,12 @@ volume with no holes in it, so we use a single n-dimensional cube.
 A cubical complex equivalent to the surface of a hyper-sphere.
 That is, the surface of a volume with no holes in it, so we use the faces
 of a single cube.
-\item torusSurface - A cubical complex of the surface of an 3-dimensional torus.
-\item band - A cubical complex of the surface of a cylinder without ends
-\item projectivePlane - A cubical complex of the surface of a projective plane.
+\item torusSurface - A cubical complex of the surface of a
+3-dimensional torus.
+\item band - A cubical complex of the surface of a cylinder without
+ends
+\item projectivePlane - A cubical complex of the surface of a
+projective plane.
 A one sided surface which cannot be embedded in 3D space without
 intersecting itself. There are no external boundaries, every edge
 connects two faces.
@@ -3455,9 +3714,9 @@ CubicalComplexFactory() : with
     ++ is, a solid volume with no holes in it, so we use a single n-dimensional
     ++ cube.
   sphereSurface : (dim : NNI) -> FiniteCubicalComplex(Integer)
-    ++ Generate a cubical complex equivalent to the surface of a hyper-sphere.
-    ++ That is, the surface of a volume with no holes in it, so we use the
-    ++ faces of a single cube.
+    ++ Generate a cubical complex equivalent to the surface of a
+    ++ hyper-sphere. That is, the surface of a volume with no holes
+    ++ in it, so we use the faces of a single cube.
   torusSurface : () -> FiniteCubicalComplex(Integer)
     ++ generate a cubical complex of the surface of an 3-dimensional torus.
   band : () -> FiniteCubicalComplex(Integer)
@@ -3477,8 +3736,8 @@ CubicalComplexFactory() : with
  == add
 
   -- generate a cubical complex equivalent to a solid hyper-sphere. That
-  -- is, a solid volume with no holes in it, so we use a single n-dimensional
-  -- cube.
+  -- is, a solid volume with no holes in it, so we use a single
+  -- n-dimensional cube.
   sphereSolid(dim : NNI) : FiniteCubicalComplex(Integer) ==
       ASIMP := FiniteCubicalComplex(Integer)
       v1 : List(List(List(Integer))) := [[[1, 2] for n in 1..dim]]
@@ -3486,9 +3745,9 @@ CubicalComplexFactory() : with
       r := cubicalComplex(vs1, v1)$ASIMP
       r
 
-  -- generate a cubical complex equivalent to the surface of a hyper-sphere.
-  -- That is, the surface of a volume with no holes in it, so we use the
-  -- faces of a single cube.
+  -- generate a cubical complex equivalent to the surface of a
+  -- hyper-sphere. That is, the surface of a volume with no holes in
+  -- it, so we use the faces of a single cube.
   sphereSurface(dim : NNI) : FiniteCubicalComplex(Integer) ==
       s := sphereSolid(dim)
       r := boundary(s)
@@ -3578,7 +3837,8 @@ CubicalComplexFactory() : with
 \begin{thebibliography}{99}
 For more details see:
 [1] Mathematics++ Kantor, Matousek, Samal 2015  ISBN 978-1-4704-2261-5
-        Chapter 6 - Topology. Contains a relatively gentle introduction to homology.
+        Chapter 6 - Topology. Contains a relatively gentle introduction
+        to homology.
 
 [2] Graphs, Surfaces and Homology, Peter Giblin 2010 ISBN 987-0-521-15405-5
         Builds up to homology groups via graphs and simplicial complexes.
