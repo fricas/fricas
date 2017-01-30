@@ -1099,23 +1099,46 @@ GroupPresentation() : Exports == Impl where
        c2 : % := cyclicGroup(2)
        directProduct(c1, c2)
 
-   -- Lookup next generator index
-   next(gensR : Reference TwoDimensionalArray NNI,_
-        point : NNI,genIndex : Integer, rev : Boolean) : NNI ==
-       generators : TwoDimensionalArray NNI := deref(gensR)
-       --print(message "next generators" << generators << _
-       --      message " genIndex=" << genIndex << _
-       --      message " point=" << point << _
-       --      message " rev=" << rev)
-       if genIndex = 0 then return 0
-       if xor(genIndex > 0,rev) then
-           -- genIndex is positive or reverse but not both
-           return elt(generators,point,abs(genIndex))
-       -- If we reach this point then we need to do reverse lookup.
-       numberPoints : NNI := maxRowIndex(generators) :: NNI
-       for x in 1..numberPoints repeat
-          if point=elt(generators,x,abs(genIndex)) then return x
-       0
+   A2D ==> TwoDimensionalArray NNI
+   A1D ==> OneDimensionalArray NNI
+
+   TC_state ==> Record(coset_table : A2D, equiv_table : A1D,
+                       inverse_table : A1D,
+                       number_of_generators : NNI,
+                       number_of_indices : NNI, number_of_points : NNI)
+
+   find(et : A1D, ind : NNI) : NNI ==
+       ind = 0 => ind
+       qelt(et, ind) = ind => ind
+       j := ind
+       pj := 0
+       while not(j = pj) repeat
+           pj := j
+           j := qelt(et, j)
+       j := ind
+       -- track compression
+       while not(j = pj) repeat
+           nj := qelt(et, j)
+           qsetelt!(et, j, pj)
+           j := nj
+       pj
+
+   infer_coincidencies(ct : A2D, et : A1D, pb : NNI, pe : NNI) : Void ==
+       if pe < pb then
+           (pb, pe) := (pe, pb)
+       qsetelt!(et, pe, pb)
+       for i in 1..maxColIndex(ct) repeat
+           i1 := qelt(ct, pb, i)
+           i2 := qelt(ct, pe, i)
+           i1 = i2 => "skip"
+           i1 := find(et, i1)
+           i2 := find(et, i2)
+           i1 = i2 => "skip"
+           i1 = 0 =>
+               qsetelt!(ct, pb, i, i2)
+           i2 = 0 =>
+               qsetelt!(ct, pe, i, i1)
+           infer_coincidencies(ct, et, i1, i2)
 
    -- Local function used by toPermutationIfCan.
    -- If we still have gaps (zeroes) in permutations then we may
@@ -1127,106 +1150,107 @@ GroupPresentation() : Exports == Impl where
    -- If so permutations is mutated.
    -- gensR is called as a Reference in case we need to
    -- eliminate duplicate points.
-   inferFromRelations(gensR : Reference TwoDimensionalArray NNI,_
+   inferFromRelations(state : TC_state,
                       rels : List(List(Integer)),trace : Boolean) : Boolean ==
-       generators : TwoDimensionalArray NNI := deref(gensR)
-       numberPoints : NNI := maxRowIndex(generators) :: NNI
+       ct := state.coset_table
+       et := state.equiv_table
+       n_ind : NNI := state.number_of_indices
+       -- print(message("inferFromRelations"))
        --print(message "inferFromRelations enter generators=" <<
        --   generators <<  message " rels=" << rels <<
        --     message " numberPoints=" << numberPoints)
-       for r in rels repeat
-           -- in r look for gap of 1 step
-           relWidth : NNI := #r
-           for pn in 1..numberPoints repeat
-               -- forwardSequence and backwardSequence are not used in the
-               -- actual algorithm but they are shown in the trace to show
-               -- what is happening.
-               forwardSequence : List(NNI) := []
-               backwardSequence : List(NNI) := []
+       inv_offset := maxColIndex(ct) quo 2
+       res : Boolean := false
+       add_to : NNI := 0
+       add_gen : Integer := 0
+       add_gap : Integer := 0
+       for rel in rels repeat
+           rrel := reverse(rel)
+           relWidth := #rel
+           for pn in 1..n_ind repeat
+           -- in rel look for gap of length 1
                gb : NNI := 0 -- generator index in forward sequence
                pb : NNI := pn -- point index in forward sequence
                -- how far can we get from beginning
                i : NNI := pn
-               for genIndex in r repeat
-                   forwardSequence := concat(forwardSequence,i)
-                   if i ~= 0 then i := next(gensR,i,genIndex,false)
-                   if i ~= 0 then
-                       gb := gb+1
-                       pb := i
+               genIn : Integer := 0
+               for genIndex in rrel repeat
+                   genIn := ii :=
+                       0 < genIndex => genIndex
+                       -genIndex + inv_offset
+                   i := qelt(ct, i, ii)
+                   i = 0 => break
+                   i := find(et, i)
+                   gb := gb + 1
+                   pb := i
+               gap := relWidth - gb
                ge : NNI := 0 -- generator index in backward sequence
                pe : NNI := pn -- point index in backward sequence
                -- how far can we get from end
-               rr : List(Integer) := reverse(r)
                i : NNI := pn
-               for genIndex in rr repeat
-                   backwardSequence := concat(backwardSequence,i)
-                   if i ~= 0 then i := next(gensR,i,genIndex,true)
-                   if i ~= 0 then
-                       ge := ge+1
-                       pe := i
-               if relWidth-gb-ge = 1 then
-                   -- because gap = 1 then we can infer something
-                   genIn : NNI := abs(r.(gb+1)) :: NNI
-                   invm : Boolean := (r.(gb+1)) < 0
-                   if invm then
-                       x:=pb
-                       pb:=pe
-                       pe:=x
-                   if trace then
-                       print(message("inferFromRelations found a gap "
-                                     "of 1 so deduction made"))
-                       print(message "gap is in relator table:" << r)
-                       print(message "distance from start:" << gb << _
-                             message " from end:" << ge)
-                       print(message "row at start:" << pn)
-                       print(message "row to change:" << pb << _
-                             message " new value:" << pe)
-                       print(message "generator index=" << genIn << _
-                             message " invm=" << invm)
-                       print(message "forwardSequence:" << forwardSequence <<
-                             message " backwardSequence:" << backwardSequence)
-                   if elt(generators,pb,genIn) ~= 0 then
-                       print(message "setelt!(" << generators << _
-                             message "," << pb << _
-                             message "," << genIn << _
-                             message "," << pe << _
-                             message ")")
-                       error "inferFromRelations: coding error attempt"
-                             " to set non-zero value"
+               for genIndex in rel while ge < gap repeat
+                   genIndex := - genIndex
+                   genInv := ii :=
+                       0 < genIndex => genIndex
+                       -genIndex + inv_offset
+                   i := qelt(ct, i, ii)
+                   i = 0 => break
+                   i := find(et, i)
+                   ge := ge+1
+                   pe := i
+               gap := gap - ge
+               -- print(message("gap = ") << gap)
+               gap = 1 =>
+                   res := true
+                   qelt(ct, pb, genIn) ~= 0 => error "impossible 1"
                    if trace then
                        print(message "inferFromRelations genIn=" << genIn << _
                              message " gb=" << gb)
-                   setelt!(generators,pb,genIn,pe)
-                   return true
-       false
-
-   -- Local function used by toPermutationIfCan
-   -- If we still have gaps (zeroes) in generators and we cannot deduce
-   -- any futher then add a point.
-   addPoint(gensR : Reference TwoDimensionalArray NNI,_
-                      rels : List(List(Integer)),trace : Boolean) : Boolean ==
-       generators : TwoDimensionalArray NNI := deref(gensR)
-       numberPoints : NNI := maxRowIndex(generators) :: NNI
-       --print(message "addPoint: generators=" << generators)
-       for gn in 1..nrows(generators) repeat
-           --print(message "addPoint: gn=" << gn)
-           for gp in 1..ncols(generators) repeat
-               --print(message "addPoint: gp=" << gp)
-               --genIn : NNI := abs(r.n) :: NNI
-               if elt(generators,gn,gp) = 0 then
-                   --print(message "addPoint: gp=" << gp)
+                   qsetelt!(ct, pb, genIn, pe)
+                   qelt(ct, pe, genInv) ~= 0 => error "impossible 2"
+                   qsetelt!(ct, pe, genInv, pb)
+               gap = 0 =>
+                   pb = pe => "skip"
+                   -- coincidence
                    if trace then
-                       print(message("addPoint: cannot deduce more so adding"
-                                     " a point"))
-                       print(message "adding:" << gp << _
-                              message " at row:" << gn)
-                   setelt!(generators,gn,gp,numberPoints+1)
-                   numGens : NNI := maxColIndex(generators) :: NNI
-                   newRow : TwoDimensionalArray NNI := new(1,numGens,0)
-                   generators := vertConcat(generators,newRow)
-                   setref(gensR,generators)
-                   return true
-       false
+                      print(message("coincidence: ") << pb << message(" ") <<
+                          pe << message(" rel = ") << rel << message(" pn = ")
+                          << pn)
+                      -- print(ct::OutputForm)
+                   infer_coincidencies(ct, et, pb, pe)
+               if add_to = 0 or pb < add_to or
+                  (pb = add_to and gap < add_gap) then
+                   add_to := pb
+                   add_gen := genIn
+                   add_gap := gap
+       if not(res) and 0 < add_gap then
+           if n_ind >= (o_size := maxRowIndex(ct)) then
+               n_size : NNI := qcoerce(2*o_size)
+               nct := new(n_size, qcoerce(maxColIndex(ct)), 0)$A2D
+               net := new(n_size, 0)$A1D
+               for i in 1..o_size repeat
+                   qsetelt!(net, i, qelt(et, i))
+                   for j in 1..maxColIndex(ct) repeat
+                       qsetelt!(nct, i, j, qelt(ct, i, j))
+               for i in (o_size + 1)..n_size repeat
+                   qsetelt!(net, i, qcoerce(i))
+               ct := nct
+               et := net
+               state.coset_table := ct
+               state.equiv_table := et
+           if trace then
+               print(message("adding action of ") << add_gen <<
+                     message(" on ") << add_to << message(" to be ")
+                     << (n_ind + 1))
+           qsetelt!(ct, add_to, add_gen, n_ind + 1)
+           add_gen :=
+               inv_offset < add_gen => add_gen - inv_offset
+               add_gen + inv_offset
+           qsetelt!(ct, n_ind + 1, add_gen, add_to)
+           -- print(ct::OutputForm)
+           state.number_of_indices := n_ind + 1
+           res := true
+       res
 
    -- Local function used by relatorTables.
    -- Invert a map that is implemented as a 1D table
@@ -1270,7 +1294,7 @@ GroupPresentation() : Exports == Impl where
        relators
 
    -- if generators contain any zeroes return false.
-   -- There should not be any zeroes ate the end of the conversion.
+   -- There should not be any zeroes at the end of the conversion.
    validateGenerators(gensR : Reference TwoDimensionalArray NNI) : Boolean ==
        generators : TwoDimensionalArray NNI := deref(gensR)
        lol : List(List(NNI)):= listOfLists(generators)
@@ -1280,21 +1304,34 @@ GroupPresentation() : Exports == Impl where
        true
 
    -- convert list of generators to PermutationGroup
-   generators2Permutation(gensR : Reference TwoDimensionalArray NNI) : _
-                          PermutationGroup Integer ==
-       p : List Permutation Integer := []$List(Permutation(Integer))
-       generators : TwoDimensionalArray NNI := deref(gensR)
-       --print(message "generators2Permutation generators=" << generators)
-       genLists : List TwoDimensionalArray NNI := _
-                  horizSplit(generators,ncols(generators) :: PositiveInteger)
-       for g in genLists repeat
-           lol : List(List(NNI)):= listOfLists(transpose(g))
-           -- explicitly convert each element to Integer
-           -- to avoid calling 'pretend List Integer'
-           gl : List(Integer) := [x::Integer for x in first(lol)]
-           pl : Permutation Integer := coerceImages(gl)
-           p := concat(p,pl)
-       permutationGroup(p)
+   generators2Permutation(state : TC_state) : PermutationGroup Integer ==
+       ct := state.coset_table
+       -- print(message "generators2Permutation")
+       n_gens := state.number_of_generators
+       n_inds := state.number_of_indices
+       et := state.equiv_table
+       net := new(n_inds, 0)$A1D
+       j := 0
+       for i in 1..n_inds repeat
+           et(i) ~= i => "skip"
+           j := j + 1
+           qsetelt!(net, i, j)
+       perm_lists := new(n_gens, empty())$Vector(List(Integer))
+       for i in 1..n_inds repeat
+           et(i) ~= i => "skip"
+           for j in 1..n_gens repeat
+               kk := qelt(ct, i, j)
+               kk = 0 => error "incomplete coset table"
+               kk := qelt(net, find(et, kk))
+               qsetelt!(perm_lists, j, cons(kk, qelt(perm_lists, j)))
+       pl : List(Permutation(Integer)) := []
+       -- print(perm_lists::OutputForm)
+       for j in 1..n_gens repeat
+           gl := reverse!(perm_lists(j))
+           p := coerceImages(gl)$Permutation(Integer)
+           pl := cons(p, pl)
+       pl := reverse!(pl)
+       permutationGroup(pl)
 
    -- Convert to permutation group. Return "failed" for infinite groups.
    toPermutationIfCan(a : %) : Union(PermutationGroup Integer, "failed") ==
@@ -1312,7 +1349,7 @@ GroupPresentation() : Exports == Impl where
        -- at 1 and increases when required to fill in a gap in relator tables.
        gs : List(NNI) := entries(a.gens)
        rs : List(List(Integer)) := a.rels
-       if #gs=0 and #rs=0 then
+       if #gs = 0 and #rs = 0 then
            -- if no generators return trivial group
            unit : Permutation(Integer) := 1
            return permutationGroup([unit])
@@ -1320,23 +1357,26 @@ GroupPresentation() : Exports == Impl where
            -- if more generators than relations then must be infinite.
            return "failed"
        numGens : NNI := #gs
-       generators : TwoDimensionalArray NNI := new(numberPoints,numGens,0)
-       gensR : Reference TwoDimensionalArray NNI := ref(generators)
+       ct := new(10, 2*numGens, 0)$A2D
+       et := new(10, 0)$A1D
+       for i in 1..10 repeat
+           qsetelt!(et, i, i)
+       inv_tab := new(2*numGens, 0)$A1D
+       state := [ct, et, inv_tab, numGens, 1, 1]$TC_state
        -- Permutations will hold a permutation for each generator. This will
        -- be built up as we get more information.
        loopBreaker : NNI := 0
-       while loopBreaker < 10000 repeat
+       while loopBreaker < 100000 repeat
            loopBreaker := loopBreaker + 1
-           changedByDeduction : Boolean := inferFromRelations(gensR,rs,trace)
-           changedByAdding : Boolean := false
-           if not changedByDeduction then
-               changedByAdding := addPoint(gensR,rs,trace)
-           if nor(changedByDeduction,changedByAdding) then
-               if not validateGenerators(gensR) then
-                   error "toPermutationIfCan: zeroes in generators"
-               return generators2Permutation(gensR)
+           changedByDeduction : Boolean := inferFromRelations(state, rs, trace)
+           if not(changedByDeduction) then
+               -- print(message("finished"))
+               -- print(state::OutputForm)
+               return generators2Permutation(state)
+)if false
            if trace then print(message "relatorTables=" <<
                                relatorTables(gensR,rs))
+)endif
        "failed"
 
    -- output
