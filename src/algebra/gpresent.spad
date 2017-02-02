@@ -1150,9 +1150,10 @@ GroupPresentation() : Exports == Impl where
    --                        coset table.
    -- number_of_points     : size of set being permuted.
    TC_state ==> Record(coset_table : A2D, equiv_table : A1D,
-                       inverse_table : A1D,
+                       inverse_table : A1D, closed_point : NNI,
                        number_of_generators : NNI,
-                       number_of_indices : NNI, number_of_points : NNI)
+                       number_of_indices : NNI, number_of_points : NNI,
+                       max_number_of_indices : NNI)
 
    -- Local function to print CosetTable
    -- Using this avoids displaying empty rows that are not used yet.
@@ -1207,18 +1208,53 @@ GroupPresentation() : Exports == Impl where
        if pe < pb then
            (pb, pe) := (pe, pb)
        qsetelt!(et, pe, pb)
-       for i in 1..maxColIndex(ct) repeat
+       nn := maxColIndex(ct)
+       for i in 1..nn repeat
            i1 := qelt(ct, pb, i)
            i2 := qelt(ct, pe, i)
-           i1 = i2 => "skip"
+           i2 = 0 => "skip"
+           if i1 = 0 then
+               qsetelt!(ct, pb, i, i2)
+       for i in 1..nn repeat
+           i1 := qelt(ct, pb, i)
+           i1 = 0 => "skip"
+           i2 := qelt(ct, pe, i)
+           i2 = 0 => "skip"
            i1 := find(et, i1)
            i2 := find(et, i2)
            i1 = i2 => "skip"
-           i1 = 0 =>
-               qsetelt!(ct, pb, i, i2)
-           i2 = 0 =>
-               qsetelt!(ct, pe, i, i1)
            infer_coincidencies(ct, et, i1, i2, trace)
+
+   add_point ==>
+        if n_ind >= o_size then
+            n_ind = state.max_number_of_indices => return true
+            n_size : NNI :=
+                qcoerce(min(2*o_size, state.max_number_of_indices))
+            n_ct_cols := maxColIndex(ct)
+            nct := new(n_size, qcoerce(n_ct_cols), 0)$A2D
+            net := new(n_size, 0)$A1D
+            for i in 1..o_size repeat
+                qsetelt!(net, i, qelt(et, i))
+                for j in 1..n_ct_cols repeat
+                    qsetelt!(nct, i, j, qelt(ct, i, j))
+            for i in (o_size + 1)..n_size repeat
+                qsetelt!(net, i, qcoerce(i))
+            ct := nct
+            et := net
+            o_size := n_size
+            state.coset_table := ct
+            state.equiv_table := et
+        n_ind := n_ind + 1
+        if trace then
+            print(message("adding action of ") << add_gen <<
+                  message(" on ") << add_to << message(" to be ")
+                  << n_ind)
+        qsetelt!(ct, add_to, add_gen, n_ind)
+        add_gen := inv_tab(add_gen)
+        qsetelt!(ct, n_ind, add_gen, add_to)
+        if trace then print outStatus(state)
+        state.number_of_indices := n_ind
+
 
    -- Local function used by toPermutationIfCan.
    -- If we still have gaps (zeroes) in permutations then we may
@@ -1230,62 +1266,94 @@ GroupPresentation() : Exports == Impl where
    -- If so permutations is mutated.
    -- gensR is called as a Reference in case we need to
    -- eliminate duplicate points.
-   inferFromRelations(state : TC_state,
-                      rels : List(List(Integer)),
+   inferFromRelations(state : TC_state, rels : List(List(NNI)),
+                      rrels : List(List(NNI)), rel_lens : List(NNI),
                       trace : Boolean) : Boolean ==
        ct := state.coset_table
        et := state.equiv_table
        n_ind : NNI := state.number_of_indices
+       inv_tab := state.inverse_table
        if trace then print(message "inferFromRelations rels=" << rels)
-       inv_offset := maxColIndex(ct) quo 2
-       res : Boolean := false
        add_to : NNI := 0
        add_gen : Integer := 0
        add_gap : Integer := 0
-       for rel in rels repeat
-           rrel := reverse(rel)
-           relWidth := #rel
-           for pn in 1..n_ind repeat
-           -- in rel look for gap of length 1
+       pn := state.closed_point + 1
+       pn > n_ind => false
+       state.closed_point := pn
+       not(qelt(et, pn) = pn) => true
+       o_size := maxRowIndex(ct)
+       closed := false
+       while not(closed) repeat
+           closed := true
+           not(qelt(et, pn) = pn) => break
+           for rel in rels for rrel in rrels for r_len in rel_lens repeat
+               -- in rel look for gap of length 1
                gb : NNI := 0 -- generator index in forward sequence
                pb : NNI := pn -- point index in forward sequence
                -- how far can we get from beginning
                i : NNI := pn
                genIn : Integer := 0
-               for genIndex in rrel repeat
-                   genIn := ii :=
-                       0 < genIndex => genIndex
-                       -genIndex + inv_offset
-                   i := qelt(ct, i, ii)
+               for genIndex in rel repeat
+                   genIn := genIndex
+                   i := qelt(ct, i, genIndex)
                    i = 0 => break
                    i := find(et, i)
                    gb := gb + 1
                    pb := i
-               gap := relWidth - gb
+               gap := r_len - gb
                ge : NNI := 0 -- generator index in backward sequence
                pe : NNI := pn -- point index in backward sequence
                -- how far can we get from end
                i : NNI := pn
-               for genIndex in rel while ge < gap repeat
-                   genIndex := - genIndex
-                   genInv := ii :=
-                       0 < genIndex => genIndex
-                       -genIndex + inv_offset
-                   i := qelt(ct, i, ii)
+               genInv : Integer := 0
+               for genIndex in rrel while ge < gap repeat
+                   genInv := genIndex
+                   i := qelt(ct, i, genIndex)
                    i = 0 => break
                    i := find(et, i)
-                   ge := ge+1
+                   ge := ge + 1
                    pe := i
                gap := gap - ge
-               -- print(message("gap = ") << gap)
+               if gap > 1 then
+                   add_to := pb
+                   add_gen := genIn
+                   add_point
+                   gap := gap - 1
+                   prel := rel
+                   for i in 0..gb repeat
+                       prel := rest(prel)
+                   gb := gb + 1
+                   while gap > 1 repeat
+                       add_to := n_ind
+                       add_gen := first(prel)
+                       prel := rest(prel)
+                       add_point
+                       gap := gap - 1
+                       gb := gb + 1
+                   pb := n_ind
+                   genIn := first(prel)
                gap = 1 =>
-                   res := true
-                   qelt(ct, pb, genIn) ~= 0 => error "impossible 1"
+                   not((npe := qelt(ct, pb, genIn)) = 0) =>
+                       npe = pe => "skip"
+                       if trace then
+                           print(message("coincidence: ") << pe <<
+                                message(" ") << npe <<
+                                message(" rel = ") << rel <<
+                                message(" pn = ") << pn)
+                       infer_coincidencies(ct, et, pe, npe, trace)
                    if trace then
                        print(message "inferFromRelations genIn=" << genIn << _
                              message " gb=" << gb)
+                   not(qelt(inv_tab, genIn) = genInv) => error "impossible 3"
                    qsetelt!(ct, pb, genIn, pe)
-                   qelt(ct, pe, genInv) ~= 0 => error "impossible 2"
+                   not((npb := qelt(ct, pe, genInv)) = 0) =>
+                       npb = pb => "skip"
+                       if trace then
+                          print(message("coincidence: ") << npb <<
+                                message(" ") << pb <<
+                                message(" rel = ") << rel <<
+                                message(" pn = ") << pn)
+                       infer_coincidencies(ct, et, pb, npb, trace)
                    qsetelt!(ct, pe, genInv, pb)
                gap = 0 =>
                    pb = pe => "skip"
@@ -1296,39 +1364,11 @@ GroupPresentation() : Exports == Impl where
                           << pn)
                       -- print(ct::OutputForm)
                    infer_coincidencies(ct, et, pb, pe, trace)
-               if add_to = 0 or pb < add_to or
-                  (pb = add_to and gap < add_gap) then
-                   add_to := pb
-                   add_gen := genIn
-                   add_gap := gap
-       if not(res) and 0 < add_gap then
-           if n_ind >= (o_size := maxRowIndex(ct)) then
-               n_size : NNI := qcoerce(2*o_size)
-               nct := new(n_size, qcoerce(maxColIndex(ct)), 0)$A2D
-               net := new(n_size, 0)$A1D
-               for i in 1..o_size repeat
-                   qsetelt!(net, i, qelt(et, i))
-                   for j in 1..maxColIndex(ct) repeat
-                       qsetelt!(nct, i, j, qelt(ct, i, j))
-               for i in (o_size + 1)..n_size repeat
-                   qsetelt!(net, i, qcoerce(i))
-               ct := nct
-               et := net
-               state.coset_table := ct
-               state.equiv_table := et
-           if trace then
-               print(message("adding action of ") << add_gen <<
-                     message(" on ") << add_to << message(" to be ")
-                     << (n_ind + 1))
-           qsetelt!(ct, add_to, add_gen, n_ind + 1)
-           add_gen :=
-               inv_offset < add_gen => add_gen - inv_offset
-               add_gen + inv_offset
-           qsetelt!(ct, n_ind + 1, add_gen, add_to)
-           if trace then print outStatus(state)
-           state.number_of_indices := n_ind + 1
-           res := true
-       res
+               error "impossible 4"
+
+           if not(closed) then
+               error "impossible 5"
+       true
 
    -- Local function used by relatorTables.
    -- Invert a map that is implemented as a 1D table
@@ -1380,38 +1420,29 @@ GroupPresentation() : Exports == Impl where
            relators := concat(relators,relatorTrim)
        relators
 
-   -- if generators contain any zeroes return false.
-   -- There should not be any zeroes at the end of the conversion.
-   validateGenerators(gensR : Reference TwoDimensionalArray NNI) : Boolean ==
-       generators : TwoDimensionalArray NNI := deref(gensR)
-       lol : List(List(NNI)):= listOfLists(generators)
-       for x in lol repeat
-           for y in x repeat
-               if y=0 then return false
-       true
-
    -- convert list of generators to PermutationGroup
-   generators2Permutation(state : TC_state, _
-                       trace : Boolean) : PermutationGroup Integer ==
+   generators2Permutation(state : TC_state,
+                          trace : Boolean) : PermutationGroup Integer ==
        ct := state.coset_table
        if trace then print(message "generators2Permutation generators=")
-       -- genLists : List TwoDimensionalArray NNI := _
-       --           horizSplit(generators,ncols(generators) :: PositiveInteger)
        n_gens := state.number_of_generators
        n_inds := state.number_of_indices
        et := state.equiv_table
        net := new(n_inds, 0)$A1D
-       j := 0
+       j : SingleInteger := 0
        for i in 1..n_inds repeat
-           et(i) ~= i => "skip"
+           not(qelt(et, i) = i) => "skip"
            j := j + 1
-           qsetelt!(net, i, j)
+           qsetelt!(net, i, qcoerce(convert(j)))
        perm_lists := new(n_gens, empty())$Vector(List(Integer))
        for i in 1..n_inds repeat
-           et(i) ~= i => "skip"
+           not(qelt(et, i) = i) => "skip"
            for j in 1..n_gens repeat
                kk := qelt(ct, i, j)
-               kk = 0 => error "incomplete coset table"
+               kk = 0 =>
+                   print(message("i = ") << i << message(" j = ") <<
+                         j << message(" ct(i) = ") << row(ct, i))
+                   error "incomplete coset table"
                kk := qelt(net, find(et, kk))
                qsetelt!(perm_lists, j, cons(kk, qelt(perm_lists, j)))
        pl : List(Permutation(Integer)) := []
@@ -1452,19 +1483,37 @@ GroupPresentation() : Exports == Impl where
        for i in 1..10 repeat
            qsetelt!(et, i, i)
        inv_tab := new(2*numGens, 0)$A1D
-       state := [ct, et, inv_tab, numGens, 1, 1]$TC_state
+       for i in 1..numGens repeat
+           qsetelt!(inv_tab, i, i + numGens)
+           qsetelt!(inv_tab, i + numGens, i)
+       nrels : List(List(NNI)) := []
+       nrrels : List(List(NNI)) := []
+       for rel in rs repeat
+           nrel : List(NNI) := []
+           for i in rel repeat
+               gen :=
+                   i > 0 => i
+                   inv_tab(-i)
+               nrel := cons(qcoerce(gen)@NNI, nrel)
+           nrels := cons(nrel, nrels)
+           nrrels := cons(reverse!([inv_tab(i) for i in nrel]), nrrels)
+       nrels := reverse!(nrels)
+       nrrels := reverse!(nrrels)
+       rel_lens : List(NNI) := [#rel for rel in nrels]
+       loopLimit : NNI := 5000000 quo numGens
+       state := [ct, et, inv_tab, 0, numGens, 1, 1, loopLimit]$TC_state
        -- Permutations will hold a permutation for each generator. This will
        -- be built up as we get more information.
-       loopBreaker : NNI := 0
-       while loopBreaker < 100000 repeat
-           loopBreaker := loopBreaker + 1
-           changedByDeduction : Boolean := inferFromRelations(state, rs, trace)
+       while true repeat
+           changedByDeduction : Boolean :=
+               inferFromRelations(state, nrels, nrrels, rel_lens, trace)
            if not(changedByDeduction) then
-               -- print(message("finished"))
-               -- print(state::OutputForm)
+               if trace then
+                   print(message("finished using ") << state.number_of_indices)
                return generators2Permutation(state, trace)
            if trace then print(message "relatorTables=" <<
                                relatorTables(state,rs))
+           state.number_of_indices >= loopLimit => break
        "failed"
 
    -- output
