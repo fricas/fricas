@@ -518,13 +518,15 @@ timesWidth u ==
   w:= 0
   for arg in rest u repeat
     op:= keyp arg
-    if not firstTime and needStar(wasSimple,wasQuotient,wasNumber,arg,op) then
+    if not firstTime and (needBlankForRoot(lastOp,op,arg) or
+       needStar(wasSimple,wasQuotient,wasNumber,arg,op)) then
       w:= w+1
     if infixArgNeedsParens(arg, rightPrec, "left") then w:= w+2
     w:= w+WIDTH arg
     wasSimple:= atom arg and not NUMBERP arg --or isRationalNumber arg
     wasQuotient:= isQuotient op
     wasNumber:= NUMBERP arg
+    lastOp := op
     firstTime:= nil
   w
 
