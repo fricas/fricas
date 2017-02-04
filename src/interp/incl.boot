@@ -37,7 +37,7 @@
 --  in a keyed message.
 --  SMW, SG June 88
 
-%id a     == [IDENTITY, a]
+%id a     == [FUNCTION IDENTITY, a]
 
 -- Union(FileName,"strings","console")
 %origin x ==
