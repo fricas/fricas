@@ -586,7 +586,7 @@ Undef(:u) ==
   [[domain,slot],op,sig]:= u'
   domain':=eval mkEvalable domain
   not EQ(first ELT(domain', slot), Undef) =>
--- OK - thefunction is now defined
+  -- OK - the function is now defined
     [:u'',.]:=u
     if $reportBottomUpFlag then
       sayMessage concat ['"   Retrospective determination of slot",'%b,
