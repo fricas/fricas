@@ -420,7 +420,7 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
 
 
     mkLisp s ==
-      atom? s => s
+      atom? s => (integer?(s) => convert((integer s)::SF)@INF; s)
       op := first(l := destruct s)
       (u := mkLispList rest l) case "failed" => "failed"
       ll := u::List(INF)
@@ -430,7 +430,8 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
          "log", "sinh","cosh","tanh","asinh","acosh","atanh","sqrt"]) =>
             gencode(upperCase string symbol op, ll)
       streq?(op, "nthRoot") =>
-        second ll = convert(2::Integer)@INF =>gencode("SQRT",[first ll])
+        second(rest(l)) = convert(2::Integer)@INF =>
+           gencode("SQRT",[first ll])
         gencode("EXPT", concat(first ll, [1$INF / second ll]))
       streq?(op, "float") =>
         a := ll.1
