@@ -519,7 +519,8 @@ timesWidth u ==
   for arg in rest u repeat
     op:= keyp arg
     if not firstTime and (needBlankForRoot(lastOp,op,arg) or
-       needStar(wasSimple,wasQuotient,wasNumber,arg,op)) then
+       needStar(wasSimple,wasQuotient,wasNumber,arg,op) or
+        (wasNumber and op = 'ROOT and subspan arg = 1)) then
       w:= w+1
     if infixArgNeedsParens(arg, rightPrec, "left") then w:= w+2
     w:= w+WIDTH arg
