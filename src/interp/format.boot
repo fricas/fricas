@@ -216,11 +216,7 @@ formatOperationAlistEntry (entry:= [op,:modemaps]) ==
   ans
 
 formatOperation([[op,sig],.,[fn,.,n]],domain) ==
-  opSigString := formatOpSignature(op,sig)
-  INTEGERP n and function Undef = IFCAR(domain.n) =>
-    if INTEGERP $commentedOps then $commentedOps := $commentedOps + 1
-    concat(" --",opSigString)
-  opSigString
+    formatOpSignature(op,sig)
 
 formatOpSignature(op,sig) ==
   concat('%b,formatOpSymbol(op,sig),'%d,": ",formatSignature sig)
