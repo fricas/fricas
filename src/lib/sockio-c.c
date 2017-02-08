@@ -163,7 +163,7 @@ is_valid_socket(const Sock* s)
 
 /* Because a socket on Windows platform is a not just a simple file
    descriptor as it is in the Unix world, it is invalid to use
-   a socket identifier as argument for read(), or close, and
+   a socket identifier as argument for read(), or close(), or
    any other file descriptor function.  Furthermore, Windows
    requires cleanup.  */
 
