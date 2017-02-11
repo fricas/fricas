@@ -735,7 +735,11 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
 
     reduce d ==
       d.reduced? => d
-      degree(a := d.center) <= gen => (d.reduced? := true; d)
+      degree(a := d.center) <= gen =>
+          ground?(a) and not(a = 1) =>
+              reduce makeDivisor(1, (d.polyPart exquo a)::UP,
+                                 d.principalPart/(a::RF::R))
+          (d.reduced? := true; d)
       b  := d.polyPart
       a0 := ((hyper - b^2) exquo a)::UP
       b0 := (-b) rem a0
@@ -749,7 +753,9 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
 
     - d ==
       a := d.center
-      makeDivisor(a, - d.polyPart, inv(a::RF * d.principalPart))
+      di := makeDivisor(a, - d.polyPart, inv(a::RF * d.principalPart))
+      di.reduced? := d.reduced?
+      di
 
     d1 = d2 ==
       d1 := reduce d1
