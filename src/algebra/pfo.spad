@@ -348,7 +348,7 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
     fmod p     == map(qmod, p)$SparseUnivariatePolynomialFunctions2(F, Q)
     pmod p     == map(qmod, p)$MultipleMap(F, UP, UPUP, Q, UPQ, UPUPQ)
     Q2UPUP p   == map(Q2F, p)$MultipleMap(Q, UPQ, UPUPQ, F, UP, UPUP)
-    klist d    == "setUnion"/[kernels c for c in coefficients d]
+    klist d    == algtower(coefficients(d))
     notIrr? d  == #(factors factor(d)$RationalFactorize(UPQ)) > 1
     kbadBadNum(d, m) == mix [badNum(c rem m) for c in coefficients d]
     kbad3Num(h, m)   == lcm [kbadBadNum(c, m) for c in coefficients h]
@@ -413,13 +413,24 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
       map(z1 +-> raise(z1, k),
           p)$UnivariatePolynomialCategoryFunctions2(UPQ, UP2, F, UP)
 
+    UPQ_to_UPF(p : UPQ) : UPF ==
+        map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)
+
     algcurve(d, rc, k) ==
+      k1 : K :=
+          mp := minPoly k
+          every?((x : F) : Boolean +->
+                   retractIfCan(x)@Union(Q, "failed") case Q,
+                 coefficients(mp)) => k
+          F has AlgebraicallyClosedField =>
+              first(kernels(rootOf(UPQ_to_UPF(rc.dfpoly))$F))
+          error "cannot reduce root"
       mn := minIndex(n := numer(i := minimize ideal d))
       h  := kpmod(lift(hh := n(mn + 1)), k)
       b2 := primitivePart
-                 raise2(b := krmod(retract(retract(n.mn)@QF)@UP, k), k)
+                 raise2(b := krmod(retract(retract(n.mn)@QF)@UP, k), k1)
       s  := kqmod(resultant(primitivePart separate(raise2(krmod(
-                    retract(norm hh)@UP, k), k), b2).primePart, b2), k)
+                    retract(norm hh)@UP, k), k1), b2).primePart, b2), k1)
       pr := kgetGoodPrime(rc, s, h, b, dd := krmod(denom i, k))
       p  := pr.prime
       pp := UP32UPUP(rc.ncurve, k)
