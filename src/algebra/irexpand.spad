@@ -28,9 +28,9 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
        ++ split(u(x) + sum_{P(a)=0} Q(a, x)) returns
        ++ \spad{u(x) + sum_{P1(a)=0} Q(a, x) + ... + sum_{Pn(a)=0} Q(a, x)}
        ++ where P1, ..., Pn are the factors of P.
-    expand       : IR -> List F
-       ++ expand(i) returns the list of possible real functions
-       ++ corresponding to i.
+    expand       : (IR, Symbol) -> List F
+       ++ expand(i, x) returns the list of possible real functions
+       ++ of x corresponding to i.
     complexExpand : IR -> F
        ++ complexExpand(i) returns the expanded complex function
        ++ corresponding to i.
@@ -46,12 +46,12 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
     quadeval   : (UP, F, F, F) -> REC
     linear     : (UP, UP) -> F
     tantrick   : (F, F) -> F
-    ilog       : (F, F, List K) -> F
+    ilog       : (F, F, Symbol) -> F
     ilog0      : (F, F, UP, UP, F) -> F
     nlogs      : LOG -> List LOG
-    lg2func    : LOG -> List F
-    quadratic  : (UP, UP) -> List F
-    mkRealFunc : List LOG -> List F
+    lg2func    : (LOG, Symbol) -> List F
+    quadratic  : (UP, UP, Symbol) -> List F
+    mkRealFunc : (List LOG, Symbol) -> List F
     lg2cfunc   : LOG -> F
     loglist    : (Q, UP, UP) -> List LOG
     cmplex     : (F, UP) -> F
@@ -67,9 +67,9 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
        is?(k, 'nthRoot) and even?(retract(second argument k)@Z)
          and (not empty? variables first argument k)]
 
-    expand i ==
+    expand(i, x) ==
       j := split i
-      pairsum([IR2F j], mkRealFunc logpart j)
+      pairsum([IR2F j], mkRealFunc(logpart(j), x))
 
     split i ==
       mkAnswer(ratpart i, concat [nlogs l for l in logpart i], notelem i)
@@ -80,7 +80,7 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
 
 -- p = a t^2 + b t + p0
 -- Expands sum_{p(t) = 0} t log(lg(t))
-    quadratic(p, lg) ==
+    quadratic(p, lg, x) ==
       zero?(delta := (b := coefficient(p, 1))^2 - 4 *
        (a := coefficient(p, 2)) * (p0 := coefficient(p, 0))) =>
          [linear(monomial(1, 1) + (b / a)::UP, lg)]
@@ -94,8 +94,7 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
                                           + (e^2 + delta * f^2) / nrm)
       if sqr.sgn <= 0 then
         sqrn := s.ans1 * rootSimp sqrt(-s.ans2)
-        nn := lgp + d * sqrn * ilog(e, f * sqrn,
-                   setUnion(setUnion(kernels a, kernels b), kernels p0))
+        nn := lgp + d * sqrn * ilog(e, f * sqrn, x)
       sqr.sgn > 0 => [pp]
       sqr.sgn < 0 => [nn]
       [pp, nn]
@@ -111,14 +110,20 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
       -- print("potentially noncontinuous"::OutputForm)
       2 * atan(a/b)
 
--- transforms i log((a + i b) / (a - i b)) into a sum of real
--- arc-tangents using Rioboo's algorithm
--- lk is a list of kernels which are parameters for the integral
-    ilog(a, b, lk) ==
-      l := setDifference(setUnion(variables numer a, variables numer b),
-           setUnion(lk, setUnion(variables denom a, variables denom b)))
-      empty? l => tantrick(a, b)
-      k := "max"/l
+    var_kers(p : P, x : Symbol) : List(K) ==
+        [k for k in variables(p) | D(k::F, x) ~= 0]
+
+    -- transforms i log((a + i b) / (a - i b)) into a sum of real
+    -- arc-tangents using Rioboo's algorithm
+    -- We only apply transform if we hope for improvement
+    ilog(a, b, x) ==
+      not(empty?(var_kers(denom a, x))) or
+        not(empty?(var_kers(denom b, x))) => tantrick(a, b)
+      l := setUnion(var_kers(numer a, x), var_kers(numer b, x))
+      #l ~= 1 => tantrick(a, b)
+      k := first(l)
+      opk := operator(k)
+      is?(opk, 'tan) or has?(opk, '%alg) => tantrick(a, b)
       ilog0(a, b, numer univariate(a, k), numer univariate(b, k), k::F)
 
 -- transforms i log((a + i b) / (a - i b)) into a sum of real
@@ -141,26 +146,26 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
       bb := -(r.coef1) k
       tantrick(aa * a + bb * b, g::F) + ilog0(aa, bb, r.coef2, -r.coef1, k)
 
-    lg2func lg ==
+    lg2func(lg, x) ==
       zero?(d := degree(p := lg.coeff)) => error "poly has degree 0"
 --      one? d => [linear(p, lg.logand)]
       (d = 1) => [linear(p, lg.logand)]
-      d = 2  => quadratic(p, lg.logand)
+      d = 2  => quadratic(p, lg.logand, x)
       odd? d and
         ((r := retractIfCan(reductum p)@Union(F, "failed")) case F) =>
             pairsum([cmplex(alpha := rootSimp zeroOf p, lg.logand)],
-                    lg2func [lg.scalar,
+                    lg2func([lg.scalar,
                      (p exquo (monomial(1, 1)$UP - alpha::UP))::UP,
-                      lg.logand])
+                      lg.logand], x))
       [lg2cfunc lg]
 
     lg2cfunc lg ==
       +/[cmplex(alpha, lg.logand) for alpha in zerosOf(lg.coeff)]
 
-    mkRealFunc l ==
+    mkRealFunc(l, x) ==
       ans := empty()$List(F)
       for lg in l repeat
-        ans := pairsum(ans, pairprod(lg.scalar::F, lg2func lg))
+        ans := pairsum(ans, pairprod(lg.scalar::F, lg2func(lg, x)))
       ans
 
 -- returns a log(b)
@@ -196,7 +201,7 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
       for x in lx repeat
         ls := evenRoots x
         if not empty?(ln :=
-          [x + y for y in ly | compatible?(ls, evenRoots y)]) then
+          [x + y for y in ly | compatible?(ls, evenRoots y)])$List(F) then
             l := removeDuplicates concat(l, ln)
       l
 
@@ -236,9 +241,9 @@ IntegrationResultRFToFunction(R) : Exports == Implementation where
        ++ split(u(x) + sum_{P(a)=0} Q(a, x)) returns
        ++ \spad{u(x) + sum_{P1(a)=0} Q(a, x) + ... + sum_{Pn(a)=0} Q(a, x)}
        ++ where P1, ..., Pn are the factors of P.
-    expand          : IR -> List F
-       ++ expand(i) returns the list of possible real functions
-       ++ corresponding to i.
+    expand          : (IR, Symbol) -> List F
+       ++ expand(i, x) returns the list of possible real functions
+       ++ of x corresponding to i.
     complexExpand   : IR -> F
        ++ complexExpand(i) returns the expanded complex function
        ++ corresponding to i.
@@ -258,7 +263,7 @@ IntegrationResultRFToFunction(R) : Exports == Implementation where
     toEF : IR -> IntegrationResult F
 
     toEF i          == map(z1 +-> z1::F, i)$IntegrationResultFunctions2(RF, F)
-    expand i        == expand toEF i
+    expand(i, x)    == expand(toEF(i), x)
     complexExpand i == complexExpand toEF i
 
     split i ==
@@ -273,7 +278,7 @@ IntegrationResultRFToFunction(R) : Exports == Implementation where
       if R has imaginary : () -> R then integrate(f, x) == complexIntegrate(f, x)
       else
         integrate(f, x) ==
-          l := [mkPrim(real g, x) for g in expand internalIntegrate(f, x)]
+          l := [mkPrim(real g, x) for g in expand(internalIntegrate(f, x), x)]
           empty? rest l => first l
           l
 
