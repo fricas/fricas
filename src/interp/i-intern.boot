@@ -243,7 +243,6 @@ mkAtree3(x,op,argl) ==
     -- new macros look like  macro f ==  or macro f(x) ===
     -- so transform into that format
     mkAtree1 ['DEF,['macro,sym],junk1,junk2,val]
-  x is ["~=",a,b] => mkAtree1 ['not,["=",a,b]]
   x is ["+->",funargs,funbody] =>
     if funbody is [":",body,type] then
       types := [type]
