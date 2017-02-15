@@ -425,7 +425,10 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
       (u := mkLispList rest l) case "failed" => "failed"
       ll := u::List(INF)
       streqlist?(op, ["+","*","/","-"]) => convert(concat(op, ll))@INF
-      streq?(op, "^") => gencode("EXPT", ll)
+      streq?(op, "^") =>
+          integer?(ii := l(3)) =>
+              gencode("EXPT", [ll(1), ii])
+          gencode("EXPT", ll)
       streqlist?(op, ["exp","sin","cos","tan","atan","asin","acos",
          "log", "sinh","cosh","tanh","asinh","acosh","atanh","sqrt"]) =>
             gencode(upperCase string symbol op, ll)
