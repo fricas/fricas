@@ -292,7 +292,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
      and F has FunctionSpace(R) then
       import from PolynomialRoots(IndexedExponents K, K, R, P, F)
 
-      sroot  : K -> F
+      sroot  : (K, List K, List F) -> F
       inroot : (OP, F, N) -> F
       radeval : (P, K) -> F
       breakup : List K -> List REC
@@ -412,13 +412,20 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
         x  := first argument(pr.var)
         x ^ qr.quotient * rootKerSimp(op, x, denom(q)::N) ^ qr.remainder
 
-      sroot k ==
-        pr := froot(first(arg := argument k), (retract(second arg)@Z)::N)
+      sroot(k, lk, nlk) ==
+        narg1 := eval(first(arg := argument(k)), lk, nlk)
+        pr := froot(narg1, (retract(second arg)@Z)::N)
         pr.coef * rootKerSimp(operator k, pr.radicand, pr.exponent)
 
       rootSimp x ==
-        lk := rootkernels tower x
-        eval(x, lk, [sroot k for k in lk])
+        tk := rootkernels tower x
+        lk : List K := []
+        nlk : List F := []
+        for k in tk repeat
+            nk := sroot(k, lk, nlk)
+            lk := cons(k, lk)
+            nlk := cons(nk, nlk)
+        eval(x, lk, nlk)
 
 )abbrev package SIMPAN SimplifyAlgebraicNumberConvertPackage
 ++ Package to allow simplify to be called on AlgebraicNumbers
