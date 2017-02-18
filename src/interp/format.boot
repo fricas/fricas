@@ -283,7 +283,7 @@ formatSignatureArgs0(sml) ==
   null rest sml => prefix2String0 first sml
   argList:= prefix2String0 first sml
   for m in rest sml repeat
-    argList:= concat(argList,concat(",",prefix2String0 m))
+    argList:= concat(argList,concat(", ",prefix2String0 m))
   concat("_(",concat(argList,"_)"))
 
 --% Conversions to string form
@@ -778,6 +778,7 @@ pred2English x ==
       (_> . " > ") (_>_= . " >= ") (_=  . " = ") (_^_= . " _^_= ")))) =>
         concat(pred2English a,translation,pred2English b)
   x is ['ATTRIBUTE, form] => BREAK()
+  x is '$ => '"%%"
   form2String x
 
 mathObject2String x ==
