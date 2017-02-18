@@ -375,10 +375,24 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
             x  := radeval(eval(nx, l, lv), k) / radeval(eval(dx, l, lv), k)
         x
 
+      rootPower1(x : F, lk : List(K), nlk : List(F)) : F ==
+          x := eval(x, lk, nlk)
+          for k in kernels(x) repeat
+              if is?(operator k, 'nthRoot) then
+                  x := radeval(numer x, k) / radeval(denom x, k)
+          x
+
       rootPower x ==
-        for k in rootkernels tower x repeat
-          x := radeval(numer x, k) / radeval(denom x, k)
-        x
+          lk : List(K):= []
+          nlk : List(F) := []
+          for k in tower x repeat
+              -- Here we assume that 'rootPower1' will not mess
+              -- dummy arguments
+              nargs := map(k1 +-> rootPower1(k1, lk, nlk), argument k)
+              nk := (operator k)(nargs)
+              lk := cons(k, lk)
+              nlk := cons(nk, nlk)
+          rootPower1(x, lk, nlk)
 
 -- replaces (a^(1/n))^m in p by a power of a simpler radical of a if
 -- n and m have a common factor
