@@ -366,14 +366,12 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
       rootProduct x ==
         for rec in breakup rootkernels tower x repeat
           k0 := first(l := rec.ker)
-          nx := numer x; dx := denom x
-          if empty? rest l then x := radeval(nx, k0) / radeval(dx, k0)
-          else
+          if not empty? rest l then
             n  := lcm(rec.exponent)
             k  := kernel(operator k0, [first argument k0, n::F], height k0)$K
-            lv := [monomial(1, k, (n quo m)::N) for m in rec.exponent]$List(P)
-            x  := radeval(eval(nx, l, lv), k) / radeval(eval(dx, l, lv), k)
-        x
+            lv := [k::F^(n quo m)::N for m in rec.exponent]
+            x := eval(x, l, lv)
+        rootPower x
 
       rootPower1(x : F, lk : List(K), nlk : List(F)) : F ==
           x := eval(x, lk, nlk)
