@@ -316,15 +316,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
 
     ALGOP  := '%alg
 
-    raise         : (UPQ, K) -> F
-    raise2        : (UP2, K) -> UP
-    qmod          : F     -> Q
-    fmod          : UPF   -> UPQ
-    rmod          : UP    -> UPQ
-    pmod          : UPUP  -> UPUPQ
-    kqmod         : (F,    K) -> UPQ
-    krmod         : (UP,   K) -> UP2
-    kpmod         : (UPUP, K) -> UP3
     selectIntegers : K   -> REC
     selIntegers :    ()  -> RC0
     ratcurve      : (FD, RC0)    -> N
@@ -339,20 +330,41 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
     alglist       : FD -> List K
     notIrr?       : UPQ -> Boolean
     rat           : (UPUP, FD, PI) -> N
-    toQ1          : (UP2, UPQ) -> UP
-    toQ2          : (UP3, UPQ) -> R
-    Q2F           : Q -> F
-    Q2UPUP        : UPUPQ -> UPUP
 
     q := FunctionSpaceReduce(R0, F)
 
     torsion? d == order(d) case N
-    Q2F x      == numer(x)::F / denom(x)::F
-    qmod x     == bringDown(x)$q
-    kqmod(x, k) == bringDown(x, k)$q
-    fmod p     == map(qmod, p)$SparseUnivariatePolynomialFunctions2(F, Q)
-    pmod p     == map(qmod, p)$MultipleMap(F, UP, UPUP, Q, UPQ, UPUPQ)
-    Q2UPUP p   == map(Q2F, p)$MultipleMap(Q, UPQ, UPUPQ, F, UP, UPUP)
+
+    Q2F(x : Q) : F     == numer(x)::F / denom(x)::F
+
+    Q2UPUP(p : UPUPQ) : UPUP ==
+        map(Q2F, p)$MultipleMap(Q, UPQ, UPUPQ, F, UP, UPUP)
+
+    raise(p : UPQ, k : K) : F ==
+        (map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)) (k::F)
+
+    raise2(p : UP2, k : K) : UP ==
+        map(z1 +-> raise(z1, k),
+            p)$UnivariatePolynomialCategoryFunctions2(UPQ, UP2, F, UP)
+
+    -- reduction functions
+    qmod(x : F) : Q == bringDown(x)$q
+    fmod(p : UPF) : UPQ ==
+        map(qmod, p)$UnivariatePolynomialCategoryFunctions2(F, UPF, Q, UPQ)
+    pmod(p : UPUP) : UPUPQ ==
+        map(qmod, p)$MultipleMap(F, UP, UPUP, Q, UPQ, UPUPQ)
+    rmod(p : UP) : UPQ ==
+        map(qmod, p)$UnivariatePolynomialCategoryFunctions2(F, UP, Q, UPQ)
+
+    kqmod(x : F, k : K) : UPQ == bringDown(x, k)$q
+    krmod(p : UP, k : K) : UP2 ==
+        map(z1 +-> kqmod(z1, k),
+            p)$UnivariatePolynomialCategoryFunctions2(F, UP, UPQ, UP2)
+    kpmod(p : UPUP, k : K) : UP3 ==
+        map((p1 : QF) : UP2 +-> krmod(retract(p1)@UP, k),
+            p)$UnivariatePolynomialCategoryFunctions2(QF, UPUP, UP2, UP3)
+
+
     klist d    == algtower(coefficients(d))
     notIrr? d  == #(factors factor(d)$RationalFactorize(UPQ)) > 1
     kbadBadNum(d, m) == mix [badNum(c rem m) for c in coefficients d]
@@ -404,19 +416,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
                setUnion(klist denom i,
                  "setUnion"/[aklist qelt(n,i) for i in minIndex n..maxIndex n]))
 
-    krmod(p, k) ==
-       map(z1 +-> kqmod(z1, k),
-           p)$UnivariatePolynomialCategoryFunctions2(F, UP, UPQ, UP2)
-
-    rmod p ==
-       map(qmod, p)$UnivariatePolynomialCategoryFunctions2(F, UP, Q, UPQ)
-
-    raise(p, k) ==
-      (map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)) (k::F)
-
-    raise2(p, k) ==
-      map(z1 +-> raise(z1, k),
-          p)$UnivariatePolynomialCategoryFunctions2(UPQ, UP2, F, UP)
 
     UPQ_to_UPF(p : UPQ) : UPF ==
         map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)
@@ -489,9 +488,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
             map((b : UP) : UP +->
                 map((c : F) : F +-> eval(c, la, lrhs), b), a), upup)
 
-    evala(f : R, la : List K, lrhs : List F) : R ==
-        reduce(evalup(lift f, la, lrhs))
-
     if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
       simplifyCoeffs(d : FD, la : List K) : N ==
         rec := primitiveElement([k::F for k in la]
@@ -526,30 +522,20 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
     selIntegers() : RC0 ==
       f := definingPolynomial()$R
       n : Integer := 10^6
-      newReduc(n)$q
-      while zero?(d := doubleDisc(r := polyred pmod f)) repeat newReduc(n)$q
-      [r, d]
+      repeat
+          newReduc(n)$q
+          d := doubleDisc(r := polyred pmod f)
+          if not(zero?(d)) then return [r, d]
 
     selectIntegers(k : K) : REC ==
       g := polyred(f := definingPolynomial()$R)
       p := minPoly k
       n : Integer := 10^6
-      newReduc(n)$q
-      while zero?(d := doubleDisc(r := kpmod(g, k))) or (notIrr? fmod p)
-          repeat newReduc(n)$q
-      [r, d, splitDenominator(fmod p).num]
-
-    toQ1(p, d) ==
-      map((p1 : UPQ) : F +-> Q2F(retract(p1 rem d)@Q),
-          p)$UnivariatePolynomialCategoryFunctions2(UPQ, UP2, F, UP)
-
-    toQ2(p, d) ==
-      reduce map((p1 : UP2) : QF +-> toQ1(p1, d)::QF,
-        p)$UnivariatePolynomialCategoryFunctions2(UP2, UP3, QF, UPUP)
-
-    kpmod(p, k) ==
-      map((p1 : QF) : UP2 +-> krmod(retract(p1)@UP, k),
-        p)$UnivariatePolynomialCategoryFunctions2(QF, UPUP, UP2, UP3)
+      repeat
+          newReduc(n)$q
+          d := doubleDisc(r := kpmod(g, k))
+          zero?(d) or (notIrr? fmod p) => "iterate"
+          return [r, d, splitDenominator(fmod p).num]
 
     order d ==
       zero?(n := possibleOrder(d := reduce d)) => "failed"
