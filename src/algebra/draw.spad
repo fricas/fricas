@@ -229,6 +229,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
     import from AnyFunctions1((SF, SF, SF) -> SF)
     import from DrawOptionFunctions0
     import from SPACE3
+    import from Float
 
     EXTOVARERROR : String := _
       "draw: when specifying function, left hand side must be a variable"
@@ -784,6 +785,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
     import from ParametricSpaceCurve(SF -> SF)
     import from ParametricSurface((SF, SF) -> SF)
     import from ThreeSpace(SF)
+    import from Integer
 
 ------------------------------------------------------------------------
 --                     2D - draw's  (given by formula)
@@ -795,13 +797,20 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
         -- use DRAWCFUN
         makeObject(makeFloatFunction(f, variable bind), segment bind, l)
 
+    maybe_add_title(f : Ex, l : L DROP) : L DROP ==
+        option?(l, 'title) => l
+        s : String := unparse(convert(f))$InputForm
+        sayLength(s)$DisplayPackage > 50 => concat(title "FriCAS2D", l)
+        concat(title s, l)
+
+    maybe_add_title_and_style(f : Ex, l : L DROP) : L DROP ==
+        l := maybe_add_title(f, l)
+        option?(l, 'style) => l
+        concat(style unparse(convert(f))$InputForm, l)
+
     draw(f : Ex, bind : BIND, l : L DROP) ==
         -- create title if necessary
-        if not option?(l, 'title) then
-            s : String := unparse(convert(f)@InputForm)
-            if sayLength(s)$DisplayPackage > 50 then
-                l := concat(title "FriCAS2D", l)
-            else l := concat(title s, l)
+        l := maybe_add_title(f, l)
         g := makeObject(f, bind, l)
         makeViewport2D(g, l)
 
@@ -819,12 +828,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
 
     draw(ppc : PPC, bind : BIND, l : L DROP) ==
         f := coordinate(ppc, 1)
-        -- create title if necessary
-        if not option?(l, 'title) then
-            s : String := unparse(convert(f)@InputForm)
-            if sayLength(s)$DisplayPackage > 50 then
-                l := concat(title "FriCAS2D", l)
-            else l := concat(title s, l)
+        l := maybe_add_title(f, l)
         g := makeObject(ppc, bind, l)
         makeViewport2D(g, l)
 
@@ -838,15 +842,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
       -- obtain dependent variable and coordinate functions
       t := variable tBind; tSeg := segment tBind
       f := coordinate(psc, 1); g := coordinate(psc, 2); h := coordinate(psc, 3)
-      -- create title if necessary
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS3D",l)
-        else l := concat(title s, l)
-      -- indicate draw style if necessary
-      if not option?(l, 'style) then
-        l := concat(style unparse(convert(f)@InputForm), l)
+      l := maybe_add_title_and_style(f, l)
       -- create curve with functions as coordinates
       curve : PSCF := curve(makeFloatFunction(f, t), _
                             makeFloatFunction(g, t), _
@@ -861,15 +857,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
       -- obtain dependent variable and coordinate functions
       t := variable tBind; tSeg := segment tBind
       f := coordinate(psc, 1); g := coordinate(psc, 2); h := coordinate(psc, 3)
-      -- create title if necessary
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS3D",l)
-        else l := concat(title s, l)
-      -- indicate draw style if necessary
-      if not option?(l, 'style) then
-        l := concat(style unparse(convert(f)@InputForm), l)
+      l := maybe_add_title_and_style(f, l)
       -- create curve with functions as coordinates
       curve : PSCF := curve(makeFloatFunction(f, t), _
                             makeFloatFunction(g, t), _
@@ -887,15 +875,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
 --% Three Dimensional Function Plots
 
     makeObject(f : Ex, xBind : BIND, yBind : BIND, l : L DROP) ==
-      -- create title if necessary
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS3D",l)
-        else l := concat(title s, l)
-      -- indicate draw style if necessary
-      if not option?(l, 'style) then
-        l := concat(style unparse(convert(f)@InputForm), l)
+      l := maybe_add_title_and_style(f, l)
       -- obtain dependent variables and their ranges
       x := variable xBind; xSeg := segment xBind
       y := variable yBind; ySeg := segment yBind
@@ -906,15 +886,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
       makeObject(f, xBind, yBind, nil())
 
     draw(f : Ex, xBind : BIND, yBind : BIND, l : L DROP) ==
-      -- create title if necessary
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS3D",l)
-        else l := concat(title s, l)
-      -- indicate draw style if necessary
-      if not option?(l, 'style) then
-        l := concat(style unparse(convert(f)@InputForm), l)
+      l := maybe_add_title_and_style(f, l)
       -- obtain dependent variables and their ranges
       x := variable xBind; xSeg := segment xBind
       y := variable yBind; ySeg := segment yBind
@@ -928,13 +900,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
 
     makeObject(s : PSF, uBind : BIND, vBind : BIND, l : L DROP) ==
       f := coordinate(s, 1); g := coordinate(s, 2); h := coordinate(s, 3)
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS3D",l)
-        else l := concat(title s, l)
-      if not option?(l, 'style) then
-        l := concat(style unparse(convert(f)@InputForm), l)
+      l := maybe_add_title_and_style(f, l)
       u := variable uBind; uSeg := segment uBind
       v := variable vBind; vSeg := segment vBind
       surf : PSFF := surface(makeFloatFunction(f, u, v), _
@@ -947,15 +913,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
 
     draw(s : PSF, uBind : BIND, vBind : BIND, l : L DROP) ==
       f := coordinate(s, 1); g := coordinate(s, 2); h := coordinate(s, 3)
-      -- create title if necessary
-      if not option?(l, 'title) then
-        s : String := unparse(convert(f)@InputForm)
-        if sayLength(s)$DisplayPackage > 50 then
-          l := concat(title "FriCAS3D",l)
-        else l := concat(title s, l)
-      -- indicate draw style if necessary
-      if not option?(l, 'style) then
-        l := concat(style unparse(convert(f)@InputForm), l)
+      l := maybe_add_title_and_style(f, l)
       -- obtain dependent variables and their ranges
       u := variable uBind; uSeg := segment uBind
       v := variable vBind; vSeg := segment vBind
@@ -1042,7 +1000,7 @@ TopLevelDrawFunctionsForAlgebraicCurves(R, Ex) : Exports == Implementation where
       (r := retractIfCan(ff)@Union(FRAC P R,"failed")) case "failed" =>
         error "draw: not a polynomial equation"
       rat := r :: FRAC P R
-      retractIfCan(denom rat)@Union(R,"failed") case "failed" =>
+      (retractIfCan(denom rat)$P(R))@Union(R,"failed") case "failed" =>
         error "draw: non-constant denominator"
       map(intConvert, numer rat)$PolynomialFunctions2(R, I)
 
