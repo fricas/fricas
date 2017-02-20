@@ -538,15 +538,9 @@ GroupPresentation() : Exports == Impl where
        -- print("  groupPresentation construct (" << gens1 << ", "
        --       << rels1<< ")")
        g := construct(gens1)$PrimitiveArray(NNI)
-       -- remove empty relations since this simplifies equality function
        --print("groupPresentation constuct : " << rels1)
-       rels2 := []$List(List(Integer))
-       for r in rels1 repeat
-           --print("  groupPresentation r=" << r)
-           if not empty?(r) then
-               rels2 := concat(rels2, r)
-       -- print("  groupPresentation rep (" << g << ", " << rels2<< ")")
-       [g, rels2]
+       -- remove empty relations since this simplifies equality function
+       [g, [r for r in rels1 | not(empty?(r))]]
 
    -- construct free group with generators but no relations
    groupPresentation(gens1 : List(NNI)) : % ==
@@ -1113,16 +1107,16 @@ GroupPresentation() : Exports == Impl where
                if a = b then
                    -- all generators square to 1
                    y : List(Integer) := [a,a]
-                   r := concat(r,y)
-               if a < b then
-                   -- non squares anticommute
+                   r := cons(y, r)
+               if a + 1 < b then
+                   -- non squares commute
                    y : List(Integer) := [a,b,-a,-b]
-                   r := concat(r,y)
+                   r := cons(y, r)
                if a+1 = b then
                    -- swapping the ith and (i + 1)th position cubed
                    y : List(Integer) := [a,b,a,b,a,b]
-                   r := concat(r,y)
-       simplify(groupPresentation(ga, r),false)
+                   r := cons(y, r)
+       groupPresentation(ga, reverse!(r))
 
    A2D ==> TwoDimensionalArray NNI
    A1D ==> OneDimensionalArray NNI
