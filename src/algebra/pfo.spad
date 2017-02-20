@@ -289,6 +289,8 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
   RC0 ==> Record(ncurve : UPUPQ, disc : Z)
   ID  ==> FractionalIdeal(UP, QF, UPUP, R)
   SMP ==> SparseMultivariatePolynomial(R0, K)
+  IREC ==> Record(ncurve : UPUP, n_div_numer : Vector(UPUP),
+                  n_div_denom : UPUP, need_change : Boolean)
 
   Exports ==> with
     order        : FD -> Union(N, "failed")
@@ -305,9 +307,13 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
     cmult        : List SMP -> SMP
         ++ cmult(x) should be local but conditional
     possibleOrder : FD -> N
+        ++ possibleOrder(d) returns n such that d is of order n,
+        ++ or of infinite order.
+    handle_imaginary : FD -> IREC
+        ++ handle_imaginary(d) should be local but conditional.
     if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
-        simplifyCoeffs : (FD, List K) -> N
-          ++ simplifyCoeffs(d, la) should be local but conditional
+        simplifyCoeffs : (IREC, List K) -> N
+          ++ simplifyCoeffs(d, la) should be local but conditional.
 
   Implementation ==> add
     import from IntegerPrimesPackage(Z)
@@ -410,12 +416,59 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
         "setUnion"/[klist(retract(c)@UP) for c in coefficients lift f]
       klist(retract(r::QF)@UP)
 
-    alglist d ==
+    alglist0(d : FD) : List K ==
       n := numer(i := ideal d)
       select!((k1 : K) : Boolean +-> has?(operator k1, ALGOP),
                setUnion(klist denom i,
                  "setUnion"/[aklist qelt(n,i) for i in minIndex n..maxIndex n]))
 
+    alglist(d : FD) : List K ==
+        f := definingPolynomial()$R
+        l1 : List K := "setUnion"/[klist(retract(c)@UP) for c in
+                                   coefficients f]
+        setUnion(l1, alglist0(d))
+
+    alglist2(f : UPUP) : List K ==
+        "setUnion"/[klist(retract(c)@UP) for c in coefficients f]
+
+    alglist1(nc : UPUP, nva : Vector(UPUP), nd : UPUP) : List K ==
+        l1 : List(UPUP) := entries(nva)
+        l2 := cons(nc, cons(nd, l1))
+        "setUnion"/[alglist2(f) for f in l2]
+
+    if R0 is Complex(Integer) and F is Expression(R0) then
+
+        subst_mp_ni(p : SMP, ni : F) : F ==
+            map((c : R0) : R0 +-> real(c)::R0, p)::F +
+              ni*map((c : R0) : R0 +-> imag(c)::R0, p)::F
+
+        subst_upup_ni(upup : UPUP, ni : F) : UPUP ==
+            map((a : QF) : QF +->
+              map((b : UP) : UP +->
+                map((c : F) : F +-> subst_mp_ni(numer(c), ni)/
+                                    subst_mp_ni(denom(c), ni), b), a), upup)
+
+        handle_imaginary(fd) ==
+            -- p0 : F := (new()$Symbol::F)^2 + 1
+            p0 := monomial(1, 2)$UPF + 1$UPF
+            ni := rootOf(p0)
+            f := definingPolynomial()$R
+            nf := subst_upup_ni(f, ni)
+            id := ideal(fd)$FD
+            n := numer(id)
+            nva := vector([subst_upup_ni(lift(vi), ni)
+                           for vi in entries(n)])$Vector(UPUP)
+            nd := subst_upup_ni(denom(id)::QF::UPUP, ni)
+            [nf, nva, nd, f ~= nf]
+
+    else
+
+        handle_imaginary(fd) ==
+            id := ideal(fd)$FD
+            n := numer(id)
+            d := denom(id)
+            nva := vector([lift(vi) for vi in entries(n)])$Vector(UPUP)
+            [definingPolynomial()$R, nva, d::QF::UPUP, false]
 
     UPQ_to_UPF(p : UPQ) : UPF ==
         map(Q2F, p)$SparseUnivariatePolynomialFunctions2(Q, F)
@@ -489,34 +542,37 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
                 map((c : F) : F +-> eval(c, la, lrhs), b), a), upup)
 
     if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
-      simplifyCoeffs(d : FD, la : List K) : N ==
-        rec := primitiveElement([k::F for k in la]
+        simplifyCoeffs(irec : IREC, la : List K) : N ==
+            lp := [minPoly(k) for k in la]
+            rec := primitiveElement([k::F for k in la]
                                )$FunctionSpacePrimitiveElement(R0, F)
-        y := rootOf(rec.prim)
-        lrhs := [pol(y) for pol in rec.poly]$List(F)
-        nf := evalup(definingPolynomial()$R, la, lrhs)
-        nR := AlgebraicFunctionField(F, UP, UPUP, nf)
-        nFD := FiniteDivisor(F, UP, UPUP, nR)
-        nFR := FractionalIdeal(UP, Fraction(UP), UPUP, nR)
-        nPFO := PointsOfFiniteOrder(R0, F, UP, UPUP, nR)
-
-        id := ideal(d)$FD
-        nd := reduce(evalup(lift(denom(id)::QF::R)$R, la, lrhs))$nR
-        v := numer(id)
-        va := [reduce(evalup(lift(v.i)$R, la, lrhs))$nR/nd
-                  for i in minIndex v..maxIndex v]$Vector(nR)
-        ndiv := divisor(ideal(va)$nFR)$nFD
-        possibleOrder(ndiv)$nPFO
+            y := rootOf(rec.prim)
+            lrhs := [pol(y) for pol in rec.poly]$List(F)
+            nf := evalup(irec.ncurve, la, lrhs)
+            nR := AlgebraicFunctionField(F, UP, UPUP, nf)
+            nFD := FiniteDivisor(F, UP, UPUP, nR)
+            nFR := FractionalIdeal(UP, Fraction(UP), UPUP, nR)
+            nPFO := PointsOfFiniteOrder(R0, F, UP, UPUP, nR)
+            nd := reduce(evalup(irec.n_div_denom, la, lrhs))$nR
+            va := [reduce(evalup(ni, la, lrhs))$nR/nd
+                    for ni in entries(irec.n_div_numer)]$Vector(nR)
+            ndiv := divisor(ideal(va)$nFR)$nFD
+            possibleOrder(ndiv)$nPFO
 
 -- returns the potential order of d, 0 if d is of infinite order
     possibleOrder d ==
 --      zero?(genus()) or one?(#(numer ideal d)) => 1
       zero?(genus()) or (#(numer ideal d) = 1) => 1
-      empty?(la := alglist d) => ratcurve(d, selIntegers())
-      not(empty? rest la) =>
+      irec := handle_imaginary(d)
+      la := alglist1(irec.ncurve, irec.n_div_numer, irec.n_div_denom)
+      empty?(la) => ratcurve(d, selIntegers())
+      not(empty? rest la) or irec.need_change =>
           if R0 has CharacteristicZero and F has AlgebraicallyClosedField then
-               return simplifyCoeffs(d, la)
+               return simplifyCoeffs(irec, la)
           error "PFO::possibleOrder: more than 1 algebraic constant"
+      nden := reduce(irec.n_div_denom)$R
+      va := [reduce(ni)$R/nden for ni in entries(irec.n_div_numer)]$Vector(R)
+      d := divisor(ideal(va)$FractionalIdeal(UP, Fraction(UP), UPUP, R))$FD
       algcurve(d, selectIntegers first la, first la)
 
     selIntegers() : RC0 ==
