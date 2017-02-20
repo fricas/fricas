@@ -519,6 +519,12 @@ GroupPresentation() : Exports == Impl where
       ++ convert to permutation group return "failed" for infinite groups.
       ++ For more information about the algorithm see:
       ++ \url{http://www.euclideanspace.com/prog/scratchpad/mycode/discrete/finiteGroup/pres2perm/}
+    toPermutationIfCan : (a : %, sg : List(List(Integer)), trace : Boolean)
+                          -> Union(PermutationGroup Integer, "failed")
+      ++ toPermutationIfCan(a, sg, trace) returns permutation
+      ++ representation of a on cosets of subgroup generate by sg
+      ++ or "failed" if computation exceed resource limit.
+      ++ trace activates debugging printouts.
 
   Impl ==> add
 
@@ -1459,6 +1465,27 @@ GroupPresentation() : Exports == Impl where
 
    toPermutationIfCan(a : %,trace : Boolean
                      ) : Union(PermutationGroup Integer, "failed") ==
+       toPermutationIfCan(a, [], trace)
+
+   convert_words(words : List(List(Integer)), inv_tab : A1D
+                ) : List(List(List(NNI))) ==
+       nwords : List(List(NNI)) := []
+       nrwords : List(List(NNI)) := []
+       for word in words repeat
+           nword : List(NNI) := []
+           for i in word repeat
+               gen :=
+                   i > 0 => i
+                   inv_tab(-i)
+               nword := cons(qcoerce(gen)@NNI, nword)
+           nwords := cons(nword, nwords)
+           nrwords := cons(reverse!([inv_tab(i) for i in nword]), nrwords)
+       nwords := reverse!(nwords)
+       nrwords := reverse!(nrwords)
+       [nwords, nrwords]
+
+   toPermutationIfCan(a : %, sg : List(List(Integer)), trace : Boolean
+                     ) : Union(PermutationGroup Integer, "failed") ==
        numberPoints : NNI := 1
        -- numberPoints is the number of points being permuted. This starts
        -- at 1 and increases when required to fill in a gap in relator tables.
@@ -1480,22 +1507,16 @@ GroupPresentation() : Exports == Impl where
        for i in 1..numGens repeat
            qsetelt!(inv_tab, i, i + numGens)
            qsetelt!(inv_tab, i + numGens, i)
-       nrels : List(List(NNI)) := []
-       nrrels : List(List(NNI)) := []
-       for rel in rs repeat
-           nrel : List(NNI) := []
-           for i in rel repeat
-               gen :=
-                   i > 0 => i
-                   inv_tab(-i)
-               nrel := cons(qcoerce(gen)@NNI, nrel)
-           nrels := cons(nrel, nrels)
-           nrrels := cons(reverse!([inv_tab(i) for i in nrel]), nrrels)
-       nrels := reverse!(nrels)
-       nrrels := reverse!(nrrels)
+       (nrels, nrrels) := convert_words(rs, inv_tab)
        rel_lens : List(NNI) := [#rel for rel in nrels]
        loopLimit : NNI := 5000000 quo numGens
        state := [ct, et, inv_tab, 0, numGens, 1, 1, loopLimit]$TC_state
+       (nsgens, nrsgens) := convert_words(sg, inv_tab)
+       sgens_lens := [#word for word in nsgens]
+       dummy := inferFromRelations(state, concat(nsgens, nrels),
+                                   concat(nrsgens, nrrels),
+                                   concat(sgens_lens, rel_lens),
+                                   trace)
        -- Permutations will hold a permutation for each generator. This will
        -- be built up as we get more information.
        while true repeat
