@@ -2239,7 +2239,7 @@ reportOpsFromLisplib1(unitForm,u)  ==
 reportOpsFromUnitDirectly unitForm ==
   isRecordOrUnion := unitForm is [a,:.] and a in '(Record Union)
   unit:= evalDomain unitForm
-  top := first unitForm
+  [top, :argl] := unitForm
   kind:= GETDATABASE(top,'CONSTRUCTORKIND)
 
   sayBrightly concat('%b,formatOpType unitForm,
@@ -2272,25 +2272,33 @@ reportOpsFromUnitDirectly unitForm ==
         else
           sigList:= REMDUP MSORT getOplistForConstructorForm unitForm
 
-      $predicateList: local := GETDATABASE(top, 'PREDICATES)
-      -- x.1 is the type predicate of operation x
-      sigList := [x for x in sigList | evalDomainOpPred(unit, x.1)]
-      -- first(first(x)) is the name of operation x
-      numOfNames := # REMDUP [first(first(x)) for x in sigList]
-      sayBrightly ['" ", numOfNames, '" Names for ", #sigList,
-                   '" Operations in this Domain."]
-
       $commentedOps: local := 0
-      --new form is (<op> <signature> <slotNumber> <condition> <kind>)
+      ops := nil
+
+      if kind = 'category then
+        sigList := EQSUBSTLIST(argl,$FormalMapVariableList, sigList)
+        ops := [formatOperationWithPred(x) for x in sigList]
+      else
+        $predicateList: local := GETDATABASE(top, 'PREDICATES)
+        -- x.1 is the type predicate of operation x
+        sigList := [x for x in sigList | evalDomainOpPred(unit, x.1)]
+        -- first(first(x)) is the name of operation x
+        numOfNames := # REMDUP [first(first(x)) for x in sigList]
+        sayBrightly ['" ", numOfNames, '" Names for ", #sigList,
+                     '" Operations in this Domain."]
+
+        --new form is (<op> <signature> <slotNumber> <condition> <kind>)
+        ops := [formatOperation(x, unit) for x in sigList]
+
       centerAndHighlight('"Operations", $LINELENGTH, specialChar 'hbar)
       sayBrightly '""
-      say2PerLine [formatOperation(x, unit) for x in sigList]
+      say2PerLine ops
 
       if $commentedOps ~= 0 then
         sayBrightly
           ['"Functions that are not yet implemented are preceded by",
             :bright '"--"]
-      sayBrightly '""
+        sayBrightly '""
   NIL
 
 reportOpsFromLisplib(op,u) ==
@@ -2300,6 +2308,8 @@ reportOpsFromLisplib(op,u) ==
     NIL
   typ:= GETDATABASE(op,'CONSTRUCTORKIND)
   nArgs:= #argml
+  nArgs = 0 and typ = 'domain =>
+      reportOpsFromUnitDirectly0 isType mkAtree evaluateType [op]
   argList := IFCDR GETDATABASE(op, 'CONSTRUCTORFORM)
   functorForm:= [op,:argList]
   argml:= EQSUBSTLIST(argList,$FormalMapVariableList,argml)
@@ -2331,6 +2341,7 @@ displayOperationsFromLisplib form ==
   [name,:argl] := form
   kind := GETDATABASE(name,'CONSTRUCTORKIND)
   centerAndHighlight('"Operations",$LINELENGTH,specialChar 'hbar)
+  sayBrightly '""
   opList:= GETDATABASE(name,'OPERATIONALIST)
   null opList => nil
   opl:=REMDUP MSORT EQSUBSTLIST(argl,$FormalMapVariableList,opList)

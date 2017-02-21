@@ -218,6 +218,9 @@ formatOperationAlistEntry (entry:= [op,:modemaps]) ==
 formatOperation([[op,sig],.,[fn,.,n]],domain) ==
     formatOpSignature(op,sig)
 
+formatOperationWithPred([[op,sig],pred,.]) ==
+    concat(formatOpSignature(op, sig), formatIf pred)
+
 formatOpSignature(op,sig) ==
   concat('%b,formatOpSymbol(op,sig),'%d,": ",formatSignature sig)
 
@@ -761,7 +764,7 @@ pred2English x ==
   x is ['OR,:l] =>
     tail:= "append"/[concat(bright '"or",pred2English x) for x in rest l]
     concat(pred2English first l,tail)
-  x is ['NOT,l] =>
+  x is ['not, l] =>
     concat('"not ",pred2English l)
   x is [op,a,b] and op in '(has ofCategory) =>
     concat(pred2English a, '%b, '"has",'%d, form_to_abbrev b)
