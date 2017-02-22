@@ -72,16 +72,15 @@
 ++ \par Notes:
 ++ \newline Closed family level i uses \spad{1 + 2^i} points.
 ++ \newline Open family level i uses \spad{1 + 3^i} points.
-NumericalQuadrature() : Exports == Implementation where
+NumericalQuadrature(F : FloatingPointSystem) : Exports == Implementation where
   L        ==> List
   V        ==> Vector
   I        ==> Integer
   B        ==> Boolean
   E        ==> OutputForm
-  F       ==> Float
   PI       ==> PositiveInteger
   OFORM    ==> OutputForm
-  TrapAns  ==> Record(value : F, error : F, totalpts : I, success : B )
+  TrapAns  ==> Record(value : F, error : F, totalpts : I, success : B)
 
   Exports ==> with
    aromberg     : (F -> F, F, F, F, F, I, I, I) -> TrapAns
@@ -203,16 +202,14 @@ NumericalQuadrature() : Exports == Implementation where
 ---------------------------------------------------
 
    aromberg(func, a, b, epsrel, epsabs, nmin, nmax, nint) ==
-      ans  : TrapAns
-      sum  : F := 0.0
-      err  : F := 0.0
-      pts  : I  := 1
-      done : B  := true
+      sum  : F := 0
+      err  : F := 0
+      pts  : I := 1
+      done : B := true
       hh   : F := (b-a) / nint
       x1   : F := a
       x2   : F := a + hh
       io   : L OFORM := [x1::E, x2::E]
-      i    : I
       for i in 1..nint repeat
          ans := romberg(func, x1, x2, epsrel, epsabs, nmin, nmax)
          if (not ans.success) then
@@ -226,21 +223,19 @@ NumericalQuadrature() : Exports == Implementation where
          done := (done and ans.success)
          x1   := x2
          x2   := x2 + hh
-      return( [sum , err , pts , done] )
+      [sum, err, pts, done]
 
 ---------------------------------------------------
 
    asimpson(func, a, b, epsrel, epsabs, nmin, nmax, nint) ==
-      ans  : TrapAns
-      sum  : F := 0.0
-      err  : F := 0.0
-      pts  : I  := 1
-      done : B  := true
+      sum  : F := 0
+      err  : F := 0
+      pts  : I := 1
+      done : B := true
       hh   : F := (b-a) / nint
       x1   : F := a
       x2   : F := a + hh
       io   : L OFORM := [x1::E, x2::E]
-      i    : I
       for i in 1..nint repeat
          ans := simpson(func, x1, x2, epsrel, epsabs, nmin, nmax)
          if (not ans.success) then
@@ -254,16 +249,14 @@ NumericalQuadrature() : Exports == Implementation where
          done := (done and ans.success)
          x1   := x2
          x2   := x2 + hh
-      return( [sum , err , pts , done] )
+      [sum, err, pts, done]
 
 ---------------------------------------------------
 
    atrapezoidal(func, a, b, epsrel, epsabs, nmin, nmax, nint) ==
-      ans  : TrapAns
-      sum  : F := 0.0
-      err  : F := 0.0
-      pts  : I  := 1
-      i    : I
+      sum  : F := 0
+      err  : F := 0
+      pts  : I := 1
       done : B := true
       hh   : F := (b-a) / nint
       x1   : F := a
@@ -282,45 +275,41 @@ NumericalQuadrature() : Exports == Implementation where
          done := (done and ans.success)
          x1   := x2
          x2   := x2 + hh
-      return( [sum , err , pts , done] )
+      [sum, err, pts, done]
 
 ---------------------------------------------------
 
    romberg(func, a, b, epsrel, epsabs, nmin, nmax) ==
-      length : F := (b-a)
+      length : F := b-a
       delta  : F := length
-      newsum : F := 0.5 * length * (func(a)+func(b))
-      newest : F := 0.0
-      oldsum : F := 0.0
-      oldest : F := 0.0
-      change : F := 0.0
+      newsum : F := length * (func(a)+func(b))/2
+      newest : F := 0
+      oldsum : F := 0
+      oldest : F := 0
+      change : F := 0
       qx1    : F := newsum
-      table  : V F := new((nmax+1)::PI, 0.0)
-      n      : I  := 1
+      table  : V F := new((nmax+1)::PI, 0)
       pts    : I  := 1
-      four   : I
-      j      : I
-      i      : I
       if (nmin < 2) then
          output("romberg: nmin to small (nmin > 1) nmin = ",nmin::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       if (nmax < nmin) then
          output("romberg: nmax < nmin : nmax = ",nmax::E)
          output("                       nmin = ",nmin::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       if (a = b) then
          output("romberg: integration limits are equal  = ",a::E)
-         return([0.0, 0.0, 1, true])
-      if (epsrel < 0.0) then
+         return([0, 0, 1, true])
+      if (epsrel < 0) then
          output("romberg: eps_r < 0.0            eps_r  = ",epsrel::E)
-         return([0.0, 0.0, 0, false])
-      if (epsabs < 0.0) then
+         return([0, 0, 0, false])
+      if (epsabs < 0) then
          output("romberg: eps_a < 0.0            eps_a  = ",epsabs::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       for n in 1..nmax repeat
          oldsum := newsum
          newsum := trapclosed(func, a, delta, oldsum, pts)
-         newest := (4.0 * newsum - oldsum) / 3.0
+         newest := (4 * newsum - oldsum) / 3
          four   := 4
          table(n) := newest
          for j in 2..n repeat
@@ -329,121 +318,108 @@ NumericalQuadrature() : Exports == Implementation where
             table(i) := table(i+1) + (table(i+1)-table(i)) / (four-1)
          if n > nmin then
             change := abs(table(1) - qx1)
-            if change < abs(epsrel*qx1) then
-               return( [table(1) , change , 2*pts+1 , true] )
-            if change < epsabs then
-               return( [table(1) , change , 2*pts+1 , true] )
+            if change < abs(epsrel*qx1) or change < epsabs then
+               return( [table(1), change, 2*pts+1, true] )
          oldsum := newsum
          oldest := newest
-         delta  := 0.5*delta
+         delta  := delta/2
          pts    := 2*pts
          qx1    := table(1)
-      return( [table(1) , 1.25*change , pts+1 , false] )
+      [table(1), 5/4*change, pts+1, false]
 
 ---------------------------------------------------
 
    simpson(func, a, b, epsrel, epsabs, nmin, nmax) ==
-      length : F := (b-a)
+      length : F := b-a
       delta  : F := length
-      newsum : F := 0.5*(b-a)*(func(a)+func(b))
-      newest : F := 0.0
-      oldsum : F := 0.0
-      oldest : F := 0.0
-      change : F := 0.0
-      n      : I  := 1
-      pts    : I  := 1
+      newsum : F := length*(func(a)+func(b))/2
+      newest : F := 0
+      oldsum : F := 0
+      oldest : F := 0
+      change : F := 0
+      pts    : I := 1
       if (nmin < 2) then
          output("simpson: nmin to small (nmin > 1) nmin = ",nmin::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       if (nmax < nmin) then
          output("simpson: nmax < nmin : nmax = ",nmax::E)
          output("                       nmin = ",nmin::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       if (a = b) then
          output("simpson: integration limits are equal  = ",a::E)
-         return([0.0, 0.0, 1, true])
-      if (epsrel < 0.0) then
+         return([0, 0, 1, true])
+      if (epsrel < 0) then
          output("simpson: eps_r < 0.0 : eps_r = ",epsrel::E)
-         return([0.0, 0.0, 0, false])
-      if (epsabs < 0.0) then
+         return([0, 0, 0, false])
+      if (epsabs < 0) then
          output("simpson: eps_a < 0.0 : eps_a = ",epsabs::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       for n in 1..nmax repeat
          oldsum := newsum
          newsum := trapclosed(func, a, delta, oldsum, pts)
-         newest := (4.0 * newsum - oldsum) / 3.0
+         newest := (4 * newsum - oldsum) / 3
          if n > nmin then
             change := abs(newest-oldest)
-            if change < abs(epsrel*oldest) then
-               return( [newest , 1.25*change , 2*pts+1 , true] )
-            if change < epsabs then
-               return( [newest , 1.25*change , 2*pts+1 , true] )
+            if change < abs(epsrel*oldest) or change < epsabs then
+               return( [newest, 5/4*change, 2*pts+1, true] )
          oldsum := newsum
          oldest := newest
-         delta  := 0.5*delta
+         delta  := delta/2
          pts    := 2*pts
-      return( [newest , 1.25*change , pts+1 , false] )
+      [newest, 5/4*change, pts+1, false]
 
 ---------------------------------------------------
 
    trapezoidal(func, a, b, epsrel, epsabs, nmin, nmax) ==
-      length : F := (b-a)
+      length : F := b-a
       delta  : F := length
-      newsum : F := 0.5*(b-a)*(func(a)+func(b))
-      change : F := 0.0
-      oldsum : F
-      n      : I  := 1
-      pts    : I  := 1
+      newsum : F := length*(func(a)+func(b))/2
+      change : F := 0
+      pts    : I := 1
       if (nmin < 2) then
          output("trapezoidal: nmin to small (nmin > 1) nmin = ",nmin::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       if (nmax < nmin) then
          output("trapezoidal: nmax < nmin : nmax = ",nmax::E)
          output("                           nmin = ",nmin::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       if (a = b) then
          output("trapezoidal: integration limits are equal  = ",a::E)
-         return([0.0, 0.0, 1, true])
-      if (epsrel < 0.0) then
+         return([0, 0, 1, true])
+      if (epsrel < 0) then
          output("trapezoidal: eps_r < 0.0 : eps_r = ",epsrel::E)
-         return([0.0, 0.0, 0, false])
-      if (epsabs < 0.0) then
+         return([0, 0, 0, false])
+      if (epsabs < 0) then
          output("trapezoidal: eps_a < 0.0 : eps_a = ",epsabs::E)
-         return([0.0, 0.0, 0, false])
+         return([0, 0, 0, false])
       for n in 1..nmax repeat
          oldsum := newsum
          newsum := trapclosed(func, a, delta, oldsum, pts)
          if n > nmin then
             change := abs(newsum-oldsum)
-            if change < abs(epsrel*oldsum) then
-               return( [newsum , 1.25*change , 2*pts+1 , true] )
-            if change < epsabs then
-               return( [newsum , 1.25*change , 2*pts+1 , true] )
-         delta := 0.5*delta
+            if change < abs(epsrel*oldsum) or change < epsabs then
+               return( [newsum, 5/4*change, 2*pts+1, true] )
+         delta := delta/2
          pts   := 2*pts
-      return( [newsum , 1.25*change , pts+1 , false] )
+      [newsum, 5/4*change, pts+1, false]
 
 ---------------------------------------------------
 
    rombergo(func, a, b, epsrel, epsabs, nmin, nmax) ==
-      length : F := (b-a)
-      delta  : F := length / 3.0
-      newsum : F := length * func( 0.5*(a+b) )
-      newest : F := 0.0
-      oldsum : F := 0.0
-      oldest : F := 0.0
-      change : F := 0.0
+      length : F := b-a
+      delta  : F := length/3
+      newsum : F := length * func((a+b)/2)
+      newest : F := 0
+      oldsum : F := 0
+      oldest : F := 0
+      change : F := 0
       qx1    : F := newsum
-      table  : V F := new((nmax+1)::PI, 0.0)
-      four   : I
-      j      : I
-      i      : I
-      n      : I  := 1
+      table  : V F := new((nmax+1)::PI, 0)
       pts    : I  := 1
       for n in 1..nmax repeat
          oldsum   := newsum
          newsum   := trapopen(func, a, delta, oldsum, pts)
-         newest   := (9.0 * newsum - oldsum) / 8.0
+         newest   := (9 * newsum - oldsum) / 8
          table(n) := newest
          nine     := 9
          output(newest::E)
@@ -453,95 +429,84 @@ NumericalQuadrature() : Exports == Implementation where
             table(i) := table(i+1) + (table(i+1)-table(i)) / (nine-1)
          if n > nmin then
             change := abs(table(1) - qx1)
-            if change < abs(epsrel*qx1) then
-               return( [table(1) , 1.5*change , 3*pts , true] )
-            if change < epsabs then
-               return( [table(1) , 1.5*change , 3*pts , true] )
+            if change < abs(epsrel*qx1) or change < epsabs then
+               return( [table(1), 3/2*change, 3*pts, true] )
          output(table::E)
          oldsum := newsum
          oldest := newest
-         delta  := delta / 3.0
+         delta  := delta/3
          pts    := 3*pts
          qx1    := table(1)
-      return( [table(1) , 1.5*change , pts , false] )
+      [table(1), 3/2*change, pts, false]
 
 ---------------------------------------------------
 
    simpsono(func, a, b, epsrel, epsabs, nmin, nmax) ==
-      length : F := (b-a)
-      delta  : F := length / 3.0
-      newsum : F := length * func( 0.5*(a+b) )
-      newest : F := 0.0
-      oldsum : F := 0.0
-      oldest : F := 0.0
-      change : F := 0.0
-      n      : I  := 1
-      pts    : I  := 1
+      length : F := b-a
+      delta  : F := length/3
+      newsum : F := length * func((a+b)/2)
+      newest : F := 0
+      oldsum : F := 0
+      oldest : F := 0
+      change : F := 0
+      pts    : I := 1
       for n in 1..nmax repeat
          oldsum := newsum
          newsum := trapopen(func, a, delta, oldsum, pts)
-         newest := (9.0 * newsum - oldsum) / 8.0
+         newest := (9 * newsum - oldsum) / 8
          output(newest::E)
          if n > nmin then
             change := abs(newest - oldest)
-            if change < abs(epsrel*oldest) then
-               return( [newest , 1.5*change , 3*pts , true] )
-            if change < epsabs then
-               return( [newest , 1.5*change , 3*pts , true] )
+            if change < abs(epsrel*oldest) or change < epsabs then
+               return( [newest , 3/2*change , 3*pts , true] )
          oldsum := newsum
          oldest := newest
-         delta  := delta / 3.0
+         delta  := delta / 3
          pts    := 3*pts
-      return( [newest , 1.5*change , pts , false] )
+      [newest, 3/2*change, pts, false]
 
 ---------------------------------------------------
 
    trapezoidalo(func, a, b, epsrel, epsabs, nmin, nmax) ==
-      length : F := (b-a)
-      delta  : F := length/3.0
-      newsum : F := length*func( 0.5*(a+b) )
-      change : F := 0.0
-      pts    : I  := 1
-      oldsum : F
-      n      : I
+      length : F := b-a
+      delta  : F := length/3
+      newsum : F := length*func((a+b)/2)
+      change : F := 0
+      pts    : I := 1
       for n in 1..nmax repeat
          oldsum := newsum
          newsum := trapopen(func, a, delta, oldsum, pts)
          output(newsum::E)
          if n > nmin then
             change := abs(newsum-oldsum)
-            if change < abs(epsrel*oldsum) then
-               return([newsum , 1.5*change , 3*pts , true] )
-            if change < epsabs then
-               return([newsum , 1.5*change , 3*pts , true] )
-         delta := delta / 3.0
+            if change < abs(epsrel*oldsum) or change < epsabs then
+               return([newsum, 3/2*change, 3*pts, true] )
+         delta := delta / 3
          pts   := 3*pts
-      return([newsum , 1.5*change , pts , false] )
+      [newsum, 3/2*change, pts, false]
 
 ---------------------------------------------------
 
    trapclosed(func, start, h, oldsum, numpoints) ==
-      x   : F := start + 0.5*h
-      sum : F := 0.0
-      i   : I
+      x   : F := start + h/2
+      sum : F := 0
       for i in 1..numpoints repeat
           sum := sum + func(x)
           x   := x + h
-      return( 0.5*(oldsum + sum*h) )
+      (oldsum + sum*h)/2
 
 ---------------------------------------------------
 
    trapopen(func, start, del, oldsum, numpoints) ==
-      ddel : F := 2.0*del
-      x   : F := start + 0.5*del
-      sum : F := 0.0
-      i   : I
+      ddel : F := 2*del
+      x   : F := start + del/2
+      sum : F := 0
       for i in 1..numpoints repeat
           sum := sum + func(x)
           x   := x + ddel
           sum := sum + func(x)
           x   := x + del
-      return( (oldsum/3.0 + sum*del) )
+      oldsum/3 + sum*del
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
