@@ -36,21 +36,21 @@ Directly calling math functions:
 
 
 Notes:
-- all intersting functionality is in package called "BOOT".
+- all interesting functionality is in package called "BOOT".
 - at mathematical level FriCAS is case-sensitive, so at Lisp level one
   has to use bars.
 - the simplest interface is |parseAndInterpret| which takes a string
-  as input and produces a Lisp form repesenting printed output.  As
+  as input and produces a Lisp form representing printed output.  As
   side effect |parseAndInterpret| prints the result.
 - at deeper lever FriCAS functions are overloaded, so to call correct
   function one has to first use |getFunctionFromDomain| to get
   function which matches to given argument types.  Above I want to
-  multiply two sparse univarate polynomials with integer coefficients.
-  Since lookup may be expensive the caller is adviced to cache result
+  multiply two sparse univariate polynomials with integer coefficients.
+  Since lookup may be expensive the caller is advised to cache result
   of the lookup.
 - FriCAS functions use special calling convention, so one has to use
   SPADCALL macro to call them.  Actually, |getFunctionFromDomain|
-  returns a pair consistion of a function and an extra argument.
+  returns a pair of a function and an extra argument.
   SPADCALL takes care of decomposing the pair and appending the
   extra argument to the argument list.
 
