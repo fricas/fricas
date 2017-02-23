@@ -693,7 +693,7 @@ dbShowOperationsFromConform(htPage,which,opAlist) ==  --branch in with lists
       HPUT($topicHash,x,c)
   if domform := htpProperty(htPage,'domname) then
     $conformsAreDomains : local := true
-    reduceOpAlistForDomain(opAlist,domform,conform)
+    opAlist := reduceOpAlistForDomain(opAlist, domform, conform)
   conform := domform or conform
   kind := capitalize htpProperty(htPage,'kind)
   exposePart :=
@@ -726,15 +726,19 @@ reduceOpAlistForDomain(opAlist,domform,conform) ==
 --destructively simplify all predicates; filter out any that fail
   form1 := [domform,:rest domform]
   form2 := ['$,:rest conform]
+  new_opAlist := []
   for pair in opAlist repeat
-    RPLACD(pair,[test for item in rest pair | test]) where test ==
+    n_items := [test for item in rest pair | test] where test ==
       [head,:tail] := item
       first tail = true => item
       pred := simpHasPred SUBLISLIS(form1,form2,QCAR tail)
       null pred => false
       RPLACD(item,[pred])
       item
-  opAlist
+    if not(null(n_items)) then
+        n_pair := cons(first(pair), n_items)
+        new_opAlist := cons(n_pair, new_opAlist)
+  NREVERSE(new_opAlist)
 
 dbShowOperationLines(which,linelist) ==  --branch in with lines
   htPage := htInitPage(nil,nil)  --create empty page
