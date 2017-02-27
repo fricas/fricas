@@ -141,6 +141,7 @@ Float():
    UCA ==> Record( unit : %, coef : %, associate : % )
    inc ==> increasePrecision
    dec ==> decreasePrecision
+   error1(msg, f) ==> error concat [msg, ": ", toString f]
 
    -- local utility operations
    shift2 : (I, I) -> I           -- WSP : fix bug in shift
@@ -187,7 +188,7 @@ Float():
       negative? x => -asin(-x)
 --      one? x => pi()/2
       (x = 1) => pi()/2
-      x > 1 => error "asin: argument > 1 in magnitude"
+      x > 1 => error1("asin: argument > 1 in magnitude", x)
       inc 5; r := atan(x/sqrt(sub(1, times(x, x)))); dec 5
       normalize r
 
@@ -196,7 +197,7 @@ Float():
       negative? x => (inc 3; r := pi()-acos(-x); dec 3; normalize r)
 --      one? x => 0
       (x = 1) => 0
-      x > 1 => error "acos: argument > 1 in magnitude"
+      x > 1 => error1("acos: argument > 1 in magnitude", x)
       inc 5; r := atan(sqrt(sub(1, times(x, x)))/x); dec 5
       normalize r
 
@@ -378,19 +379,19 @@ Float():
       normalize r
 
    acosh x ==
-      if x < 1 then error "invalid argument to acosh"
+      if x < 1 then error1("acosh: invalid argument", x)
       inc 5; r := log(x+sqrt(sub(times(x, x), 1))); dec 5
       normalize r
 
    atanh x ==
-      if x > 1 or x < -1 then error "invalid argument to atanh"
+      if x > 1 or x < -1 then error1("atanh: invalid argument", x)
       p := min(0, order x)
       if zero? x or 2*p < -bits() then return x
       inc(5-p); r := log((x+1)/(1-x))/2; dec(5-p)
       normalize r
 
    log x ==
-      negative? x => error "negative log"
+      negative? x => error1("log: negative argument", x)
       zero? x => error "log 0 generated"
       p := bits(); inc 5
       -- apply  log(x) = n log 2 + log(x/2^n)  so that  1/2 < x < 2
@@ -528,7 +529,7 @@ Float():
       normalize E.value
 
    sqrt x ==
-      negative? x => error "negative sqrt"
+      negative? x => error1("sqrt: negative argument", x)
       m := x.mantissa; e := x.exponent
       l : Integer := LENGTH m
       p := 2 * bits() - l + 2
