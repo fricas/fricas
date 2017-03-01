@@ -483,9 +483,21 @@ getOplistForConstructorForm (form := [op,:argl]) ==
 getOplistWithUniqueSignatures(op,pairlis,signatureAlist) ==
   alist:= nil
   for [sig, :[slotNumber, pred, kind]] in signatureAlist repeat
-    alist:= insertAlist(SUBLIS(pairlis,[op,sig]),
-                [pred,[kind,nil,slotNumber]],
-                alist)
+      key := SUBLIS(pairlis, [op, sig])
+      term := assoc(key, alist)
+      if null term then
+          alist := cons([key, pred, [kind, nil, slotNumber]], alist)
+      else
+          value := rest term
+          oldpred := first value
+          newpred :=
+              oldpred = true or pred = true => true
+              oldpred = pred => oldpred
+              oldpred is ['OR, :predl] =>
+                  member(pred, predl) => oldpred
+                  ['OR, pred, :predl]
+              ['OR, pred, oldpred]
+          RPLACA(value, newpred)
   alist
 
 --% Code For Modemap Insertion
