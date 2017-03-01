@@ -174,6 +174,7 @@ InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
             (ndim := nrows y) ~= (ncols y) =>
                 error "determinant: matrix must be square"
             -- Gaussian Elimination
+            ndim = 0 => 1
             ndim = 1 => qelt(y, minRowIndex y, minColIndex y)
             x := copy y
             minR := minRowIndex x; maxR := maxRowIndex x
@@ -238,6 +239,7 @@ InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
     inverse x ==
       (ndim := nrows x) ~= (ncols x) =>
         error "inverse: matrix must be square"
+      ndim = 0 => x
       ndim = 2 =>
          ans2 : M := zero(ndim, ndim)
          zero?(det :=  x(1,1)*x(2,2)-x(1,2)*x(2,1)) => "failed"
@@ -552,6 +554,7 @@ MatrixLinearAlgebraFunctions(R, Row, Col, M) : Exports == Implementation where
       (ndim := nrows x) ~= (ncols x) =>
         error "determinant: matrix must be square"
       -- minor expansion with (s---loads of) memory
+      ndim = 0 => 1
       n1 : I := ndim - 1
       v : PrimitiveArray(Union(R,"uncomputed")) :=
            new((2^ndim - 1) :: NonNegativeInteger,"uncomputed")
@@ -640,12 +643,14 @@ MatrixLinearAlgebraFunctions(R, Row, Col, M) : Exports == Implementation where
       invertIfCan(y) ==
         (nr := nrows y) ~= (ncols y) =>
             error "invertIfCan: matrix must be square"
+        nr = 0 => y
         adjRec := adjoint y
         (den := recip(adjRec.detMat)) case "failed" => "failed"
         den::R * adjRec.adjMat
 
       adjoint(y) ==
         (nr := nrows y) ~= (ncols y) => error "adjoint: matrix must be square"
+        nr = 0 => [y, 1]
         maxR := maxRowIndex y
         maxC := maxColIndex y
         x := horizConcat(copy y, scalarMatrix(nr, 1$R))
@@ -684,7 +689,9 @@ MatrixLinearAlgebraFunctions(R, Row, Col, M) : Exports == Implementation where
       nullSpace m == nullSpace(m)$IMATQF
 
       determinant y ==
-        (nrows y) ~= (ncols y) => error "determinant: matrix must be square"
+        (ndim := nrows y) ~= (ncols y) =>
+            error "determinant: matrix must be square"
+        ndim = 0 => 1
         fm := fractionFreeGauss!(copy y)
         fm(maxRowIndex fm, maxColIndex fm)
 
