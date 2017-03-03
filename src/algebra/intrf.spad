@@ -38,20 +38,10 @@ SubResultantPackage(R, UP) : Exports == Implementation where
          unitCanonical primitivePart map(x1+->(rec.coef1 * x1) rem q, p)
 
     subresultantVector(p1, p2) ==
-       F : UP -- auxiliary stuff !
        res : PrimitiveArray(UP) := new(2+max(degree(p1), degree(p2)), 0)
-       --
-       -- kind of stupid interface to Lionel's  Package !!!!!!!!!!!!
-       -- might have been wiser to rewrite the loop ...
-       -- But I'm too lazy. [rr]
-       --
        l := chainSubResultants(p1, p2)$Lionel
-       --
        -- this returns the chain of non null subresultants !
-       -- we must rebuild subresultants from this.
-       -- we really hope Lionel Ducos minded what he wrote
-       -- since we are fully blind !
-       --
+       -- we rebuild subresultants from this, using Fundamental PRS Theorem.
        null l =>
          -- Hum it seems that Lionel returns [] when min(|p1|, |p2|) = 0
          zero?(degree(p1)) =>
@@ -74,17 +64,14 @@ SubResultantPackage(R, UP) : Exports == Implementation where
              res.0 := 1
            res
          error "SUBRESP: strange Subresultant chain from PRS"
-       Sn := first(l)
        --
        -- as of Loos definitions last subresultant should not be defective
        --
-       l := rest(l)
-       n := degree(Sn)
-       F := Sn
-       null l => error "SUBRESP: strange Subresultant chain from PRS"
-       zero? Sn => error "SUBRESP: strange Subresultant chain from PRS"
+       F := first l
+       l := rest l
+       n := degree F
+       res.n := F
        while (l ~= []) repeat
-         res.(n) := Sn
          F := first(l)
          l := rest(l)
          -- F is potentially defective
@@ -94,24 +81,22 @@ SubResultantPackage(R, UP) : Exports == Implementation where
            -- F is defective
            --
            null l => error "SUBRESP: strange Subresultant chain from PRS"
-           Sn := first(l)
-           l := rest(l)
-           n := degree(Sn)
-           res.((n-1)::NonNegativeInteger) := F
+           nextn := degree first l
+           n := degree F
+           res.((nextn-1)::NonNegativeInteger) := F
          else
            --
            -- F is non defective
            --
            degree(F) < n => error "strange result !"
-           Sn := F
-           n := degree(Sn)
+           n := degree F
+           res.n := F
        --
        -- Lionel forgets about p1 if |p1| > |p2|
        -- forgets about p2 if |p2| > |p1|
        -- but he reminds p2 if |p1| = |p2|
        -- a glance at Loos should correct this !
        --
-       res.n := Sn
        --
        -- Loos definition
        --
