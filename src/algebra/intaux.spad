@@ -77,7 +77,6 @@ IntegrationResult(F : Field) : Exports == Implementation where
       integral(f : F, x : Symbol) : % == integral(f, x::F)
 
     LOG2O rec ==
---      one? degree rec.coeff =>
       (degree rec.coeff) = 1 =>
         -- deg 1 minimal poly doesn't get sigma
         lastc := - coefficient(rec.coeff, 0) / coefficient(rec.coeff, 1)
@@ -130,7 +129,6 @@ IntegrationResult(F : Field) : Exports == Implementation where
                + _+/[pNeDeriv(ne, derivation) for ne in notelem u]
 
     pNeDeriv(ne, derivation) ==
---      one? derivation(ne.intvar) => ne.integrand
       (derivation(ne.intvar) = 1) => ne.integrand
       zero? derivation(ne.integrand) => 0
       error "pNeDeriv: cannot differentiate not elementary part into F"
@@ -138,7 +136,6 @@ IntegrationResult(F : Field) : Exports == Implementation where
     pLogDeriv(log, derivation) ==
       map(derivation, log.coeff) ~= 0 =>
         error "pLogDeriv: can only handle logs with constant coefficients"
---      one?(n := degree(log.coeff)) =>
       ((n := degree(log.coeff)) = 1) =>
         c   := - (leadingCoefficient reductum log.coeff)
                                         / (leadingCoefficient log.coeff)
@@ -327,7 +324,6 @@ IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
       linearLog?(k, f, x) ==
         is?(k, 'log) and
          ((u := retractIfCan(univariate(f,k))@Union(UP,"failed")) case UP)
---             and one?(degree(u::UP))
              and (degree(pol := u::UP) = 1)
                 and not member?(x, variables leadingCoefficient(pol))
                    and ((p0 := reductum(pol)) = 0 or

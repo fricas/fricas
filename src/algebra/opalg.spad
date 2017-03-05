@@ -100,7 +100,6 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       reduce(_+, [trm2O(t.exp, t.gen) for t in terms x])$List(O)
 
     trm2O(c, t) ==
---      one? c => term2O t
       (c = 1) => term2O t
       c = -1 => - term2O t
       c::O * term2O t
@@ -109,9 +108,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       reduce(_*, [rm2O(rm.coef, rm.monom) for rm in t])$List(O)
 
     rm2O(c, m) ==
---      one? c => m::O
       (c = 1) => m::O
---      one? m => c::O
       (m = 1) => c::O
       c::O * m::O
 
@@ -127,11 +124,9 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       lc := first(xx := termcopy x)
       lc.coef := n * lc.coef
       rm := last xx
---      one?(first(y).coef) =>
       ((first(y).coef) = 1) =>
         rm.monom := rm.monom * first(y).monom
         concat!(xx, termcopy rest y)
---      one?(rm.monom) =>
       ((rm.monom) = 1) =>
         rm.coef := rm.coef * first(y).coef
         rm.monom := first(y).monom
@@ -178,7 +173,6 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       empty?(t := r::TERM) => 0$R
       empty? rest t =>
         rm := first t
---        one?(rm.monom) => rm.coef
         (rm.monom = 1) => rm.coef
         "failed"
       "failed"
@@ -188,7 +182,6 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       empty?(t := r::TERM) => "failed"
       empty? rest t =>
         rm := first t
---        one?(rm.coef) => retractIfCan(rm.monom)
         (rm.coef = 1) => retractIfCan(rm.monom)
         "failed"
       "failed"

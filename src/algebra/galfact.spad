@@ -77,7 +77,6 @@ GaloisGroupUtilities(R) : Exports == Implementation where
       negative? r => 0
       (d := n-r) < r => pascalTriangle(n, d)
       zero? r => 1$R
---      one? r => n :: R
       (r = 1) => n :: R
       n > rangepascaltriangle =>
        binomial(n, r)$IntegerCombinatoricFunctions(Z) :: R
@@ -178,7 +177,6 @@ GaloisGroupPolynomialUtilities(R, UP) : Exports == Implementation where
     degreePartition(r : Factored UP) : Multiset N ==
       multiset([ degree(nthFactor(r, i)) for i in 1..numberOfFactors r ])
 
---    monic?(p: UP): Boolean == one? leadingCoefficient p
     monic?(p : UP) : Boolean == (leadingCoefficient p) = 1
 
     reverse(p : UP) : UP ==
@@ -188,7 +186,6 @@ GaloisGroupPolynomialUtilities(R, UP) : Exports == Implementation where
       r
 
     scaleRoots(p : UP, c : R) : UP ==
---      one? c => p
       (c = 1) => p
       n := degree p
       zero? c => monomial(leadingCoefficient p, n)
@@ -607,7 +604,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         tc := leadingCoefficient rf
         rf := reductum rf
       for p in factors(factor c)$Factored(Z) repeat
---        if (one? p.exponent) and (not zero? (lc rem p.factor)) and
         if (p.exponent = 1) and (not zero? (lc rem p.factor)) and
          (not zero? (tc rem ((p.factor)^2))) then return true
       false
@@ -692,7 +688,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
                         )$ModularDistinctDegreeFactorizer(UP)]
 
     modularFactor(p : UP) : MFact ==
---      not one? abs(content(p)) =>
       not (abs(content(p)) = 1) =>
        error "modularFactor: the polynomial is not primitive."
       zero? (n := degree p) => [0, [p]]
@@ -852,7 +847,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
               degf := degree f
               d := select(x+->x<=degf, d)
               if degf<=1 then -- lf exhausted
---                if one? degf then
                 if (degf = 1) then
                   ltrue := cons(f, ltrue)
                 return ltrue -- 1st exit, all factors found
@@ -966,7 +960,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       b := b+(r::Z)
       a := 2*a
       d := gcd(a, b)
---      if not one? d then
       if not (d = 1) then
         a := a quo d
         b := b quo d
@@ -1006,7 +999,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       zero? d => [c, factorlist]$FinalFact
 
       -- is f linear?
---      one? d => [c, cons([f, 1]$ParFact, factorlist)]$FinalFact
       (d = 1) => [c, cons([f, 1]$ParFact, factorlist)]$FinalFact
 
       lcPol : UP := leadingCoefficient(f) :: UP
@@ -1044,7 +1036,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         mult := sqfr.exponent
         sqff := sqfr.factor
         d := degree sqff
---        one? d => factorlist := cons([sqff, mult]$ParFact, factorlist)
         (d = 1) => factorlist := cons([sqff, mult]$ParFact, factorlist)
         d = 2 =>
           factorlist := append([[pf, mult]$ParFact for pf in quadratic(sqff)],
@@ -1079,7 +1070,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       zero? d => [c, factorlist]$FinalFact
 
       -- is f linear?
---      one? d => [c, cons([f, 1]$ParFact, factorlist)]$FinalFact
       (d = 1) => [c, cons([f, 1]$ParFact, factorlist)]$FinalFact
 
       lcPol : UP := leadingCoefficient(f) :: UP
@@ -1113,7 +1103,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
 
       -- f is not square-free :
       sqfflist := factors squareFree(f)
---      if one?(#(sqfflist)) then -- indeed f was a power of a square-free
       if ((#(sqfflist)) = 1) then -- indeed f was a power of a square-free
         r := max(r quo ((first sqfflist).exponent), 2)::N
       else
@@ -1122,7 +1111,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         mult := sqfr.exponent
         sqff := sqfr.factor
         d := degree sqff
---        one? d =>
         (d = 1) =>
           factorlist := cons([sqff, mult]$ParFact, factorlist)
           maxd := (max(fd)-mult)::N
@@ -1188,7 +1176,6 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
     factorOfDegree(d:P,p:UP,ld:List N,r:N,sqf:Boolean):Union(UP,"failed") ==
       dp := degree p
       errorsum?(dp,ld) => error "factorOfDegree: Bad arguments"
---      (one? (d::N)) and noLinearFactor?(p) => "failed"
       ((d::N) = 1) and noLinearFactor?(p) => "failed"
       lf := btwFact(p, sqf, makeSet(ld), r).factors
       for f in lf repeat
