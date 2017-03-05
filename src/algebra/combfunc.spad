@@ -287,7 +287,6 @@ CombinatorialFunction(R, F) : Exports == Implementation where
 
     iprod l ==
       zero? first l => 0
---      one? first l => 1
       (first l = 1) => 1
       kernel(opprod, l)
 
@@ -306,14 +305,12 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       first(l) * (fourth rest l - fourth l + 1)
 
     ifact x ==
---      zero? x or one? x => 1
       zero? x or (x = 1) => 1
       kernel(opfact, x)
 
     ibinom l ==
       n := first l
       ((p := second l) = 0) or (p = n) => 1
---      one? p or (p = n - 1) => n
       (p = 1) or (p = n - 1) => n
       kernel(opbinom, l)
 
@@ -364,13 +361,10 @@ CombinatorialFunction(R, F) : Exports == Implementation where
         zero?(x := first l) =>
           zero? second l => error "0 ^ 0"
           0
---        one? x or zero?(n := second l) => 1
         (x = 1) or zero?(n : F := second l) => 1
---        one? n => x
         (n = 1) => x
         (u := isExpt(x, OPEXP)) case "failed" => kernel(oppow, l)
         rec := u::Record(var : K, exponent : Z)
---        one?(y := first argument(rec.var)) or y = -1 =>
         ((y := first argument(rec.var))=1) or y = -1 =>
             (operator(rec.var)) (rec.exponent * y * n)
         kernel(oppow, l)
@@ -1771,7 +1765,6 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     -- Could put more unconditional special rules for other functions here
     iGamma x ==
---      one? x => x
       (x = 1) => x
       kernel(opGamma, x)
 

@@ -696,7 +696,6 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       iSincos(f, sinc, cosc, sign) ==
         fp := differentiate f
         fpRef := getRef fp; fpStr := getStream fp
---        fp2 := (one? sign => fp; -fp)
         fp2 := ((sign = 1) => fp; -fp)
         fpRef2 := getRef fp2; fpStr2 := getStream fp2
         sinRef := ref(0$I :: COM); cosRef := ref(0$I :: COM)
@@ -715,7 +714,6 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         one : % := 1; oneStr := getStream one; oneRef := getRef one
         yRef := ref((-1)@I :: COM)
         yStr : ST :=
---          one? sign => iPlus1((xi, yi) +-> xi + yi, oneStr, oneRef, sqStr, sqRef, yRef, 0)
           (sign = 1) => iPlus1((xi, yi) +-> xi + yi, oneStr, oneRef,
                                sqStr, sqRef, yRef, 0)
           iPlus1((xi, yi) +-> xi - yi, oneStr, oneRef, sqStr, sqRef, yRef, 0)
@@ -767,9 +765,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         cc := coefficient(uts, order)
         (ccInv := recip cc) case "failed" => error concat("^: ",NOTINV)
         ccPow :=
---          one? cc => cc
           (cc = 1) => cc
---          one? denom r =>
           (denom r) = 1 =>
             not negative?(num := numer r) => cc ^ (num :: NNI)
             (ccInv :: Coef) ^ ((-num) :: NNI)
@@ -787,7 +783,6 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       cLog uts ==
         zero?(cc := coefficient(uts, 0)) =>
           error "log: constant coefficient should not be 0"
---        one? cc => integrate(differentiate(uts) * (iExquo(1, uts, true) :: %))
         (cc = 1) => integrate(differentiate(uts) * (iExquo(1, uts, true) :: %))
         TRANSFCN =>
           y := iExquo(1, uts, true) :: %
@@ -1318,7 +1313,6 @@ SparseUnivariateTaylorSeries(Coef, var, cen) : Exports == Implementation where
         NPOWERS : SG := "series expansion has terms of negative degree"
 
         (uts : %) ^ (r : RN) ==
---          not one? coefficient(uts, 0) =>
           not (coefficient(uts, 0) = 1) =>
             error "^: constant coefficient must be one"
           onePlusX : % := monomial(1, 0) + monomial(1, 1)
@@ -1332,7 +1326,6 @@ SparseUnivariateTaylorSeries(Coef, var, cen) : Exports == Implementation where
           error concat("exp: ",ZERO)
 
         log uts ==
---          one? coefficient(uts, 0) =>
           (coefficient(uts, 0) = 1) =>
             log1PlusX := cLog(monomial(1, 0) + monomial(1, 1))
             iCompose(log1PlusX, uts - 1)
@@ -1444,7 +1437,6 @@ SparseUnivariateTaylorSeries(Coef, var, cen) : Exports == Implementation where
       if Coef has Algebra Fraction Integer then
 
         (uts : %) ^ (r : Coef) ==
---          not one? coefficient(uts, 1) =>
           not (coefficient(uts, 1) = 1) =>
             error "^: constant coefficient should be 1"
           cPower(uts, r)

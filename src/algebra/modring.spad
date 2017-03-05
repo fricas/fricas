@@ -51,7 +51,6 @@ ModularRing(R, Mod, reduction : (R, Mod) -> R,
       0 == [0$R, 0$Mod]$Rep
       1 == [1$R, 0$Mod]$Rep
       zero? x == zero? x.val
---      one? x == one? x.val
       one? x == (x.val = 1)
 
       newmodulo(m1 : Mod, m2 : Mod) : Mod ==
@@ -128,7 +127,6 @@ EuclideanModularRing(S, R, Mod, reduction : (R, Mod) -> R,
         xm := t::Mod
         yv := y.val
         invlcy : R
---        if one? leadingCoefficient yv then invlcy := 1
         if (leadingCoefficient yv = 1) then invlcy := 1
         else
           invlcy := (inv reduce((leadingCoefficient yv)::R, xm)).val
@@ -143,7 +141,6 @@ EuclideanModularRing(S, R, Mod, reduction : (R, Mod) -> R,
            xm := t::Mod
            yv := y.val
            invlcy : R
---           if not one? leadingCoefficient yv then
            if not (leadingCoefficient yv = 1) then
              invlcy := (inv reduce((leadingCoefficient yv)::R, xm)).val
              yv := reduction(invlcy*yv, xm)
@@ -163,7 +160,6 @@ EuclideanModularRing(S, R, Mod, reduction : (R, Mod) -> R,
            xm := t::Mod
            yv := y.val
            invlcy : R
---           if not one? leadingCoefficient yv then
            if not (leadingCoefficient yv = 1) then
              invlcy := (inv reduce((leadingCoefficient yv)::R, xm)).val
              yv := reduction(invlcy*yv, xm)
@@ -175,13 +171,11 @@ EuclideanModularRing(S, R, Mod, reduction : (R, Mod) -> R,
       unitCanonical x ==
         zero? x => x
         degree(x.val) = 0 => 1
---        one? leadingCoefficient(x.val) => x
         (leadingCoefficient(x.val) = 1) => x
         invlcx : % := inv reduce((leadingCoefficient(x.val))::R, x.modulo)
         invlcx * x
 
       unitNormal x ==
---        zero?(x) or one?(leadingCoefficient(x.val)) => [1, x, 1]
         zero?(x) or ((leadingCoefficient(x.val)) = 1) => [1, x, 1]
         lcx := reduce((leadingCoefficient(x.val))::R, x.modulo)
         invlcx := inv lcx

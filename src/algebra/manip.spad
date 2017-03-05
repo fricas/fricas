@@ -19,7 +19,6 @@ FactoredFunctions(M : IntegralDomain) : Exports == Implementation where
   Implementation ==> add
     nthRoot(ff, n) ==
       coeff : M       := 1
---      radi: List(M)  := (one? unit ff => empty(); [unit ff])
       radi : List(M)  := (((unit ff) = 1) => empty(); [unit ff])
       lf            := factors ff
       d : N :=
@@ -83,7 +82,6 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
     zroot : (Z, N) -> Record(exponent : N, coef : Z, radicand : Z)
 
     zroot(x, n) ==
---      zero? x or one? x => [1, x, 1]
       zero? x or (x = 1) => [1, x, 1]
       s := nthRoot(squareFree x, n)
       [s.exponent, s.coef, */s.radicand]
@@ -147,7 +145,6 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
       else nthr(x, n) == nthRoot(squareFree x, n)
 
       froot(x, n) ==
---        zero? x or one? x => [1, x, 1]
         zero? x or (x = 1) => [1, x, 1]
         sn := nthr(numer x, n)
         sd := nthr(denom x, n)
@@ -411,9 +408,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
         leadingCoefficient(q)::F + ans
 
       inroot(op, x, n) ==
---        one? x => x
         (x = 1) => x
---        (x ~= -1) and (one?(num := numer x) or (num = -1)) =>
         (x ~= -1) and (((num := numer x) = 1) or (num = -1)) =>
           inv inroot(op, (num * denom x)::F, n)
         (u := isExpt(x, op)) case "failed" => kernel(op, [x, n::F])
@@ -692,12 +687,10 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       not (terms case "failed") => logArgs(terms)
 
       expt : Union(POW, "failed") := isPower(e)
---      (expt case POW) and not one? expt.exponent =>
       (expt case POW) and not (expt.exponent = 1) =>
         simplifyLog(expt.val)^(expt.exponent)
 
       kers : List K := kernels e
---      not(one?(#kers)) => e -- Have a constant
       not(((#kers) = 1)) => e -- Have a constant
       kernel(operator first kers, [simplifyLog(u) for u in argument first kers])
 
@@ -710,9 +703,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     expandpow k ==
       a := expandPower first(arg := argument k)
       b := expandPower second arg
---      ne: F := (one? numer a => 1; numer(a)::F ^ b)
       ne : F := (((numer a) = 1) => 1; numer(a)::F ^ b)
---      de: F := (one? denom a => 1; denom(a)::F ^ (-b))
       de : F := (((denom a) = 1) => 1; denom(a)::F ^ (-b))
       ne * de
 

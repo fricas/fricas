@@ -229,7 +229,6 @@ ComplexRootFindingPackage(R, UP) : public == private where
          p := p quo monomial(1, md)$UP
        sP : Record(start : UP, factors : FR UP) := startPolynomial p
        fp : FR UP := sP.factors
---       if not one? fp then
        if not (fp = 1) then
          qr : Record(quotient : UP, remainder : UP) := divide(p, makeMonic expand fp)
          p := qr.quotient
@@ -264,7 +263,6 @@ ComplexRootFindingPackage(R, UP) : public == private where
 
        for fac in split.factors repeat
          fp :=
---           one? degree fac => fp * nilFactor(fac, 1)$(FR UP)
            (degree fac = 1) => fp * nilFactor(fac, 1)$(FR UP)
            fp * irreducibleFactor(fac, 1)$(FR UP)
        fp
@@ -272,7 +270,6 @@ ComplexRootFindingPackage(R, UP) : public == private where
      startPolynomial p == -- assume minimumDegree is 0
        --print (p :: OF)
        fp : FR UP := 1
---       one? degree p =>
        (degree p = 1) =>
          p := makeMonic p
          [p, irreducibleFactor(p, 1)]
@@ -464,7 +461,6 @@ ComplexRootFindingPackage(R, UP) : public == private where
        --eps0 : R := eps / den
        -- for now only
        eps0 : R := eps / (ten*ten)
---       one? d  => irreducibleFactor(poly, 1)$(FR UP)
        (d = 1) => irreducibleFactor(poly, 1)$(FR UP)
        listOfFactors : L Record(factor : UP, exponent : I) := _
          list [makeMonic poly, 1]
@@ -483,7 +479,6 @@ ComplexRootFindingPackage(R, UP) : public == private where
                  "just now we try to split the polynomial:"), p::OF]
              print vconcat lof
          split : FR UP  := pleskenSplit(p, eps0, info)
---         one? numberOfFactors split =>
          (numberOfFactors split = 1) =>
            -- in a later version we will change error bound and
            -- accuracy here to deal this case as well
@@ -497,7 +492,6 @@ ComplexRootFindingPackage(R, UP) : public == private where
          for rec in factors(split)$(FR UP) repeat
            newFactor : UP := rec.factor
            expOfFactor := exponentOfp * rec.exponent
---           one? degree newFactor =>
            (degree newFactor = 1) =>
              result := result * nilFactor(newFactor, expOfFactor)
            listOfFactors := cons([newFactor, expOfFactor], _
