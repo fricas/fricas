@@ -156,7 +156,6 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
 
     coerce(i : %) : OutputForm ==
       nm := num2O numer i
---      one? denom i => nm
       (denom i = 1) => nm
       (1::Integer::OutputForm) / (denom(i)::OutputForm) * nm
 
@@ -170,7 +169,6 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
 
     minimize i ==
       n := (#(nm := numer i))
---      one?(n) or (n < 3 and ret? nm) => i
       (n = 1) or (n < 3 and ret? nm) => i
       nrm    := retract(norm mkIdeal(nm, 1))@R
       for range in 1..5 repeat
@@ -670,7 +668,6 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
     0                    == divisor(1$R)
     divisor(g : R)         == [1, 0, g, true]
     makeDivisor(a, b, g) == [a, b, g, false]
---    princ? d             == one?(d.center) and zero?(d.polyPart)
     princ? d             == (d.center = 1) and zero?(d.polyPart)
     ideal d     == ideal([d.principalPart]) * mkIdeal(d.center, d.polyPart)
     decompose d == [ideal makeDivisor(d.center, d.polyPart, 1), d.principalPart]
@@ -699,7 +696,6 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
       divisor(d.principalPart ^ n) + divisor(mkIdeal(d.center, d.polyPart) ^ n)
 
     divisor(i : ID) ==
---      one?(n := #(v := basis minimize i)) => divisor v minIndex v
       (n := #(v := basis minimize i)) = 1 => divisor v minIndex v
       n ~= 2 => ERR
       a := v minIndex v
@@ -727,7 +723,6 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
     coerce(d : %) : O ==
       r := bracket [d.center::O, d.polyPart::O]
       g := prefix(dvd, [d.principalPart::O])
---      z := one?(d.principalPart)
       z := (d.principalPart = 1)
       princ? d => (z => zer; g)
       z => r

@@ -99,12 +99,10 @@ IntegerPrimesPackage(I : IntegerNumberSystem) : with
          -- for most n this probability is much greater than 3/4
          t := powmod(p, q, n)
          -- neither of these cases tells us anything
---         if not (one? t or t = nm1) then
          if not ((t = 1) or t = nm1) then
             for j in 1..k-1 repeat
                oldt := t
                t := mulmod(t, t, n)
---               one? t => return true
                (t = 1) => return true
                -- we have squared something not -1 and got 1
                t = nm1 => break
@@ -117,12 +115,10 @@ IntegerPrimesPackage(I : IntegerNumberSystem) : with
          t := powmod(p, q, n)
          -- neither of these cases tells us anything
          if t = nm1 then count2Order(1) := count2Order(1)+1
---         if not (one? t or t = nm1) then
          if not ((t = 1) or t = nm1) then
             for j in 1..k-1 repeat
                oldt := t
                t := mulmod(t, t, n)
---               one? t => return true
                (t = 1) => return true
                -- we have squared something not -1 and got 1
                t = nm1 =>
@@ -137,7 +133,6 @@ IntegerPrimesPackage(I : IntegerNumberSystem) : with
       if n < -1 then n := -n
       n < two => false
       n < nextSmallPrime => member?(n, smallPrimes)
---      not one? gcd(n, productSmallPrimes) => false
       not (gcd(n, productSmallPrimes) = 1) => false
       n < nextSmallPrimeSquared => true
 
@@ -259,7 +254,6 @@ IntegerRoots(I : IntegerNumberSystem) : Exports == Implementation where
 
     perfectNthRoot n ==  -- complexity (log log n)^2 (log n)^2
       m : NNI
---      one? n or zero? n or n = -1 => [n, 1]
       (n = 1) or zero? n or n = -1 => [n, 1]
       e : NNI := 1
       p : NNI := 2
@@ -272,14 +266,12 @@ IntegerRoots(I : IntegerNumberSystem) : Exports == Implementation where
 
     approxNthRoot(a, n) ==   -- complexity (log log n) (log n)^2
       zero? n => error "invalid arguments"
---      one? n => a
       (n = 1) => a
       n = 2 => approxSqrt a
       negative? a =>
         odd? n => - approxNthRoot(-a, n)
         0
       zero? a => 0
---      one? a => 1
       (a = 1) => 1
       -- quick check for case of large n
       ((3*n) quo 2)::I >= (l := length a) => two
@@ -365,7 +357,6 @@ IntegerFactorizationPackage(I) : Exports == Implementation where
        lim > (100000::I) => makeFR(u, factorList factor m)
        x := BasicSieve(m, lim)
        y :=
---         one?(m := unit x) => factorList x
          ((m := unit x) = 1) => factorList x
          (v := perfectSqrt m) case I =>
             concat!(factorList x, ["sqfr",v,2]$FFE)
@@ -456,7 +447,6 @@ IntegerFactorizationPackage(I) : Exports == Implementation where
                       else (n := m; u := 1)
        b := BasicSieve(n, 10000::I)
        flb := factorList b
---       one?(n := unit b) => makeFR(u, flb)
        ((n := unit b) = 1) => makeFR(u, flb)
        a : LMI := dictionary() -- numbers yet to be factored
        b : LMI := dictionary() -- prime factors found

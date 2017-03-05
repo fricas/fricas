@@ -49,11 +49,9 @@ Localize(M : Module R,
         [x.num, u]
       m/d == if zero? d then error "division by zero" else [m,d]
       coerce(x : %) : OutputForm ==
---        one?(xd := x.den) => (x.num)::OutputForm
         ((xd := x.den) = 1) => (x.num)::OutputForm
         (x.num)::OutputForm / (xd::OutputForm)
       latex(x : %) : String ==
---        one?(xd := x.den) => latex(x.num)
         ((xd := x.den) = 1) => latex(x.num)
         nl : String := concat("{", concat(latex(x.num), "}")$String)$String
         dl : String := concat("{", concat(latex(x.den), "}")$String)$String
@@ -307,20 +305,17 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
 
     if S has EuclideanDomain then
       wholePart x ==
---        one?(x.den) => x.num
         ((x.den) = 1) => x.num
         x.num quo x.den
 
     if S has IntegerNumberSystem then
 
       floor x ==
---        one?(x.den) => x.num
         ((x.den) = 1) => x.num
         x < 0 => -ceiling(-x)
         wholePart x
 
       ceiling x ==
---        one?(x.den) => x.num
         ((x.den) = 1) => x.num
         x < 0 => -floor(-x)
         1 + wholePart x
@@ -349,7 +344,6 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
 
       normalize x ==
         zero?(x.num) => 0
---        one?(x.den) => x
         ((x.den) = 1) => x
         uca := unitNormal(x.den)
         zero?(x.den := uca.canonical) => error "division by zero"
@@ -361,7 +355,6 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
         normalize [x.den, x.num]
 
       cancelGcd x ==
---        one?(x.den) => x.den
         ((x.den) = 1) => x.den
         d := gcd(x.num, x.den)
         xn := x.num exquo d
@@ -410,9 +403,7 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
 
       x : % * y : %  ==
         zero? x or zero? y => 0
---        one? x => y
         (x = 1) => y
---        one? y => x
         (y = 1) => x
         (x, y) := ([x.num, y.den], [y.num, x.den])
         cancelGcd x; cancelGcd y;
@@ -476,7 +467,6 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
           qqD : DP := map(x +-> retract(x*denqq), qq)
           g := gcdPolynomial(ppD, qqD)
           zero? degree g => 1
---          one? (lc := leadingCoefficient g) => map(x +-> x::%, g)
           ((lc := leadingCoefficient g) = 1) => map(x +-> x::%, g)
           map(x +-> x/lc, g)
 

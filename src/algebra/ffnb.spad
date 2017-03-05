@@ -154,7 +154,6 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
     a ^ ex  ==
       e : NNI := positiveRemainder(ex, sizeGF^((#a)::PI)-1)$I :: NNI
       zero?(e)$NNI => new(#a, trGen)$VGF
---      one?(e)$NNI  => copy(a)$VGF
       (e = 1)$NNI  => copy(a)$VGF
 --    inGroundField?(a) => new(#a, ((a.1*trGen) ^$GF e))$VGF
       e1 : SI := (length(e)$I)::SI
@@ -181,7 +180,6 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
 -- computes a^e by repeated squaring
     repSq(b, e) ==
       a := copy(b)$VGF
---      one? e => a
       (e = 1) => a
       odd?(e)$I => a * repSq(a*a, (e quo 2) pretend NNI)
       repSq(a*a, (e quo 2) pretend NNI)
@@ -546,12 +544,10 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF, uni) : Exports == _
     coerce(x : %) : OUT ==
       l : List OUT := nil()$(List OUT)
       n : PI := extdeg
---      one? n => (x.1) :: OUT
       (n = 1) => (x.1) :: OUT
       for i in 1..n for b in basisOutput repeat
         if not zero? x.i then
           mon : OUT :=
---            one? x.i => b
             (x.i = 1) => b
             ((x.i)::OUT) *$OUT b
           l := cons(mon, l)$(List OUT)

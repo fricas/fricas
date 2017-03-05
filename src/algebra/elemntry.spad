@@ -315,23 +315,19 @@ ElementaryFunction(R, F) : Exports == Implementation where
           even?(n::Z) => valueOrPole(values.m)
           valueOrPole(values.(m+1))
         (n := retractIfCan(2*q)@Union(Z, "failed")) case Z =>
---          one?(s := posrem(n::Z, 4)) => valueOrPole(values.(m+2))
           (s := posrem(n::Z, 4)) = 1 => valueOrPole(values.(m+2))
           valueOrPole(values.(m+3))
         (n := retractIfCan(3*q)@Union(Z, "failed")) case Z =>
---          one?(s := posrem(n::Z, 6)) => valueOrPole(values.(m+4))
           (s := posrem(n::Z, 6)) = 1 => valueOrPole(values.(m+4))
           s = 2 => valueOrPole(values.(m+5))
           s = 4 => valueOrPole(values.(m+6))
           valueOrPole(values.(m+7))
         (n := retractIfCan(4*q)@Union(Z, "failed")) case Z =>
---          one?(s := posrem(n::Z, 8)) => valueOrPole(values.(m+8))
           (s := posrem(n::Z, 8)) = 1 => valueOrPole(values.(m+8))
           s = 3 => valueOrPole(values.(m+9))
           s = 5 => valueOrPole(values.(m+10))
           valueOrPole(values.(m+11))
         (n := retractIfCan(6*q)@Union(Z, "failed")) case Z =>
---          one?(s := posrem(n::Z, 12)) => valueOrPole(values.(m+12))
           (s := posrem(n::Z, 12)) = 1 => valueOrPole(values.(m+12))
           s = 5 => valueOrPole(values.(m+13))
           s = 7 => valueOrPole(values.(m+14))
@@ -452,7 +448,6 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
     iasin x ==
       zero? x => 0
---      one? x =>   pi() / (2::F)
       (x = 1) =>   pi() / (2::F)
       x = -1 => - pi() / (2::F)
       -- y := dropfun x
@@ -462,7 +457,6 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
     iacos x ==
       zero? x => pi() / (2::F)
---      one? x => 0
       (x = 1) => 0
       x = -1 => pi()
       -- y := dropfun x
@@ -472,11 +466,9 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
     iatan x ==
       zero? x => 0
---      one? x =>   pi() / (4::F)
       (x = 1) =>   pi() / (4::F)
       x = -1 => - pi() / (4::F)
       x = (r3 := iisqrt3()) => pi() / (3::F)
---      one?(x*r3)          => pi() / (6::F)
       (x*r3) = 1          => pi() / (6::F)
       -- y := dropfun x
       -- is?(x, optan) => y
@@ -485,12 +477,10 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
     iacot x ==
       zero? x =>   pi() / (2::F)
---      one? x  =>   pi() / (4::F)
       (x = 1)  =>   pi() / (4::F)
       x = -1  =>   3 * pi() / (4::F)
       x = (r3 := iisqrt3())  =>  pi() / (6::F)
       x = -r3              =>  5 * pi() / (6::F)
---      one?(xx := x*r3)       =>  pi() / (3::F)
       (xx := x*r3) = 1      =>  pi() / (3::F)
       xx = -1           =>     2* pi() / (3::F)
       -- y := dropfun x
@@ -500,7 +490,6 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
     iasec x ==
       zero? x => INV
---      one? x => 0
       (x = 1) => 0
       x = -1 => pi()
       -- y := dropfun x
@@ -510,7 +499,6 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
     iacsc x ==
       zero? x => INV
---      one? x =>   pi() / (2::F)
       (x = 1) =>   pi() / (2::F)
       x = -1 => - pi() / (2::F)
       -- y := dropfun x
@@ -655,7 +643,6 @@ ElementaryFunction(R, F) : Exports == Implementation where
 
     iiilog x ==
       zero? x => INV
---      one? x => 0
       (x = 1) => 0
       (u := isExpt(x, opexp)) case Record(var : K, exponent : Integer) =>
            rec := u::Record(var : K, exponent : Integer)
@@ -665,7 +652,6 @@ ElementaryFunction(R, F) : Exports == Implementation where
       ilog x
 
     ilog x ==
---      ((num1 := one?(num := numer x)) or num = -1) and (den := denom x) ~= 1
       ((num1 := ((num := numer x) = 1)) or num = -1) and (den := denom x) ~= 1
         and empty? variables x => - kernel(oplog, (num1 => den; -den)::F)
       kernel(oplog, x)
