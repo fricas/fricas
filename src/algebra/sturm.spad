@@ -8,22 +8,18 @@
 ++ Keywords: localization
 ++ References:
 ++ Description:
-++ This package produces functions for counting
-++ etc. real roots of univariate polynomials in x over R, which must
-++ be an OrderedIntegralDomain
-SturmHabichtPackage(R, x) : T == C where
-  R : OrderedIntegralDomain
-  x : Symbol
+++ This package provides functions for counting real roots of
+++ univariate polynomials over an OrderedIntegralDomain.
 
-  UP ==> UnivariatePolynomial(x, R)
+SturmHabichtPackage(R, UP) : T == C where
+  R : OrderedIntegralDomain
+  UP : UnivariatePolynomialCategory R
+
   L ==> List
   INT ==> Integer
   NNI ==> NonNegativeInteger
 
   T == with
-     subresultantSequence : (UP, UP) -> L UP
-       ++ subresultantSequence(p1, p2) computes the (standard)
-       ++ subresultant sequence of p1 and p2
      SturmHabichtSequence : (UP, UP) -> L UP
        ++ SturmHabichtSequence(p1, p2) computes the Sturm-Habicht
        ++ sequence of p1 and p2
@@ -49,11 +45,7 @@ SturmHabichtPackage(R, x) : T == C where
 
 
   C == add
-     p1, p2 : UP
-
-     subresultantSequenceInner: (UP, UP) -> L UP
-     subresultantSequenceBegin: (UP, UP) -> L UP
-     subresultantSequenceNext: L UP -> L UP
+     import from SubResultantPackage(R, UP)
 
      delta: NNI -> R
      polsth1: (UP, NNI, UP, NNI, R) -> L UP
@@ -67,64 +59,6 @@ SturmHabichtPackage(R, x) : T == C where
      numbce: L R -> NNI
      wfunctaux: L R -> INT
      wfunct: L R -> INT
-
-     ++ \spad{subresultantSequenceBegin(P, Q)} computes the initial terms
-     ++ of the Subresultant sequence Sres(j)(P, deg(P), Q, deg(Q))
-     ++ when deg(Q)<deg(P)
-     subresultantSequenceBegin(p1, p2) : L UP ==
-         n : NNI := (degree(p1)-degree(p2)-1)::NNI
-         Pr : UP := pseudoRemainder(p1, p2)
-         n = 0 =>
-             [p1, p2, Pr]
-         lc1 := leadingCoefficient p1
-         lc2 := leadingCoefficient p2
-         n = 1 =>
-             [p1, p2, lc1*lc2*p2, -lc1*Pr]
-         LSubr := append([p1, p2], new((n-1)::NNI, 0))
-         append(LSubr, [(lc1*lc2)^n*p2, (-lc1)^n*Pr])
-
-     subresultantSequenceNext(LcsI : L UP) : L UP ==
-         p2 : UP := last LcsI
-         p1 : UP := second reverse LcsI
-         n : NNI := (degree(p1)-degree(p2)-1)::NNI
-         c1 : R := leadingCoefficient p1
-         Pr : UP := pseudoRemainder(p1, p2)
-         n = 0 =>
-             append(LcsI, [(Pr exquo c1^2)::UP])
-         pr1 := (leadingCoefficient(p2)^n*p2 exquo c1^n)::UP
-         pr2 := (Pr exquo (-c1)^(n+2))::UP
-         LSub := append(new((n-1)::NNI, 0), [pr1, pr2])
-         append(LcsI, LSub)
-
-     subresultantSequenceInner(p1, p2) : L UP ==
-         Lin : L UP := subresultantSequenceBegin(p1, p2)
-         indf : NNI := if Lin.last ~= 0 then degree(Lin.last)
-                                        else 0
-         while indf ~= 0 repeat
-             Lin := subresultantSequenceNext(Lin)
-             indf := if Lin.last ~= 0 then degree(Lin.last)
-                                      else 0
-         -- It's possible that #Lin is larger than degree(p1)
-         for j in #Lin..degree(p1) repeat
-             Lin := append(Lin, [0])
-         Lin
-
-
--- Computation of the subresultant sequence Sres(j)(P, p, Q, q) when:
---             deg(P) = p   and   deg(Q) = q   and   p > q
-
-     subresultantSequence(p1, p2) : L UP ==
-         n : INT := degree(p1)-degree(p2)-1
-         n < 0 => error "subresultantSequence : degree(p1) <= degree(p2)"
-         List1 : L UP := subresultantSequenceInner(p1, p2)
-         List2 : L UP := [p1, p2]
-         c1 : R := leadingCoefficient(p1)
-         for j in 3..#List1 repeat
-             Pr0 := List1.j
-             Pr1 := (Pr0 exquo c1^(n::NNI))::UP
-             List2 := append(List2, [Pr1])
-         List2
-
 
 -- Computation of the delta function:
 
@@ -149,10 +83,10 @@ SturmHabichtPackage(R, x) : T == C where
              Listf := append(Listf, new((p-r-2)::NNI, 0))
              Listf := append(Listf, [Pr5])
          List1 : L UP := if Pr1 = 0 then Listf
-                          else subresultantSequence(p1, Pr2)
+                          else parts subresultantVector(p1, Pr2)
          List2 : L UP := []
          for j in 0..(r-1) repeat
-             Pr6 := monomial(delta((p-j-1)::NNI), 0)*List1.((p-j+1)::NNI)
+             Pr6 := monomial(delta((p-j-1)::NNI), 0)*List1.(j+1)
              List2 := append([Pr6], List2)
          append(Listf, List2)
 
@@ -162,24 +96,24 @@ SturmHabichtPackage(R, x) : T == C where
          Pr2 := differentiate(p1)*p2
          Pr3 := monomial(sc1, 0)*Pr2
          Listf : L UP := [Pr1, Pr3]
-         List1 := subresultantSequence(p1, Pr2)
+         sres := subresultantVector(p1, Pr2)
          List2 : L UP := []
          for j in 0..(p-2) repeat
-             Pr4 := monomial(delta((p-j-1)::NNI), 0)*List1.((p-j+1)::NNI)
+             Pr4 := monomial(delta((p-j-1)::NNI), 0)*sres.j
              Pr5 := (Pr4 exquo c1)::UP
              List2 := append([Pr5], List2)
          append(Listf, List2)
 
-     polsth3(p1, p : NNI, p2, q : NNI, c1 : R) : L UP ==
+     polsth3(p1 : UP, p : NNI, p2 : UP, q : NNI, c1 : R) : L UP ==
          sc1 := (sign(c1))::R
          q1  := (q-1)::NNI
          v := p+q1
          Pr1 := monomial(delta(q1)*sc1^(q+1), 0)*p1
          Listf : L UP := [Pr1]
-         List1 := subresultantSequence(differentiate(p1)*p2, p1)
+         sres := subresultantVector(differentiate(p1)*p2, p1)
          List2 : L UP := []
          for j in 0..((p-1)::NNI) repeat
-             Pr2 := monomial(delta((v-j)::NNI), 0)*List1.((v-j+1)::NNI)
+             Pr2 := monomial(delta((v-j)::NNI), 0)*sres.j
              Pr3 := (Pr2 exquo c1)::UP
              List2 := append([Pr3], List2)
          append(Listf, List2)
