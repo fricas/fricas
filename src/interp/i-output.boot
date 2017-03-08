@@ -501,13 +501,10 @@ exptSuper [.,a,b] == superspan a+height b+(superspan a=0 => 0;-1)
 exptWidth [.,a,b] == WIDTH a+WIDTH b+(exptNeedsPren a => 2;0)
 
 needStar(wasSimple,wasQuotient,wasNumber,cur,op) ==
-  wasQuotient or isQuotient op => true
+  wasNumber or wasQuotient or isQuotient op => true
   wasSimple =>
-    atom cur or keyp cur="SUB" or isRationalNumber cur or op="**" or op = "^" or
-      (atom op and not NUMBERP op and not GETL(op,"APP"))
-  wasNumber =>
-    NUMBERP(cur) or isRationalNumber cur or
-        ((op="**" or op ="^") and NUMBERP(CADR cur))
+    atom cur or keyp cur="SUB" or isRationalNumber cur or op="**" or
+      op = "^" or (atom op and not NUMBERP op and not GETL(op,"APP"))
 
 isQuotient op ==
   op="/" or op="OVER"
@@ -639,14 +636,14 @@ braceApp(u,x,y,d) ==
 
 --% Aggregates
 aggWidth u ==
-  rest u is [a,:l] => WIDTH a + +/[1+WIDTH x for x in l]
+  rest u is [a,:l] => WIDTH a + +/[2+WIDTH x for x in l]
   0
 
 aggSub u == subspan rest u
 
 aggSuper u == superspan rest u
 
-aggApp(u,x,y,d) == aggregateApp(rest u,x,y,d,",")
+aggApp(u,x,y,d) == aggregateApp(rest u,x,y,d,", ")
 
 aggregateApp(u,x,y,d,s) ==
   if u is [a,:l] then
@@ -654,8 +651,8 @@ aggregateApp(u,x,y,d,s) ==
     x:= x+WIDTH a
     for b in l repeat
       d:= APP(s,x,y,d)
-      d:= APP(b,x+1,y,d)
-      x:= x+1+WIDTH b
+      d:= APP(b,x+WIDTH s,y,d)
+      x:= x+WIDTH s+WIDTH b
   d
 
 --% Function to compute Width
