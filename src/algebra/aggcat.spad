@@ -1076,14 +1076,13 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
      ++ leaf?(u) tests if u is a terminal node.
    value : % -> S
      ++ value(u) returns the value of the node u.
-   elt : (%,"value") -> S
-     ++ elt(u,"value") (also written: \spad{a. value}) is
-     ++ equivalent to \spad{value(a)}.
+   elt : (%, "value") -> S
+     ++ elt(u, "value") (also written: \spad{u.value}) is
+     ++ equivalent to \spad{value(u)}.
    cyclic? : % -> Boolean
      ++ cyclic?(u) tests if u has a cycle.
    leaves : % -> List S
-     ++ leaves(t) returns the list of values in obtained by visiting the
-     ++ nodes of tree \spad{t} in left-to-right order.
+     ++ leaves(u) returns the list of leaves in aggregate \spad{u}.
    distance : (%, %) -> Integer
      ++ distance(u, v) returns the path length (an integer) from node u to v.
    if S has BasicType then
@@ -1097,8 +1096,8 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
         ++ setchildren!(u, v) replaces the current children of node u
         ++ with the members of v in left-to-right order.
       setelt! : (%, "value", S) -> S
-        ++ setelt!(a, "value" ,x) (also written \spad{a.value := x})
-        ++ is equivalent to \spad{setvalue!(a, x)}
+        ++ setelt!(u, "value", x) (also written \spad{u.value := x})
+        ++ is equivalent to \spad{setvalue!(u, x)}
       setvalue! : (%, S) -> S
         ++ setvalue!(u, x) sets the value of node u to x.
  add
@@ -1106,6 +1105,12 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
    import from List(%)
 
    elt(x,"value") == value x
+
+   leaves x ==
+       empty? x => empty()$List(S)
+       leaf? x => [value x]
+       concat [leaves y for y in children x]
+
    if % has shallowlyMutable then
        setelt!(x, "value", y) == setvalue!(x,y)
    if % has BasicType and S has BasicType then
