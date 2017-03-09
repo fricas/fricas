@@ -363,6 +363,16 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
 
   leaf? x == empty? rest x
 
+  leaves x ==
+      y := x
+      for i in 0.. repeat
+          explicitlyEmpty? y => return []
+          lazy? y => error "leaves$Stream: infinite stream"
+          leaf? y => return [value y]
+          y := rst y -- there is only one children
+          if odd? i then x := rst x
+          eq?(x, y) => error "leaves$Stream: infinite stream"
+
   value x == first x
 
 --% URAGG functions
