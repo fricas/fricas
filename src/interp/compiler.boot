@@ -1248,19 +1248,8 @@ resolve(din,dout) ==
   dout
 
 modeEqual(x,y) ==
-  -- this is the late modeEqual
-  -- orders Unions
   atom x or atom y => x=y
   #x ~=#y => nil
-  x is ['Union,:xl] and y is ['Union,:yl] =>
-    for x1 in xl repeat
-      for y1 in yl repeat
-        modeEqual(x1,y1) =>
-          xl := delete(x1,xl)
-          yl := delete(y1,yl)
-          return nil
-    xl or yl => nil
-    true
   (and/[modeEqual(u,v) for u in x for v in y])
 
 modeEqualSubst(m1,m,e) ==
