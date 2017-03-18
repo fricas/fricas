@@ -751,10 +751,11 @@ putWidth u ==
 opWidth(op,has2Arguments) ==
   op = "EQUATNUM" => 4
   NUMBERP op => 2+SIZE STRINGIMAGE op
-  null has2Arguments =>
-    a:= GETL(op,"PREFIXOP") => SIZE a
-    2+SIZE PNAME op
-  a:= GETL(op,"INFIXOP") => SIZE a
+  if null has2Arguments then
+    a := GETL(op, "PREFIXOP") => return SIZE a
+  else
+    a := GETL(op, "INFIXOP") => return SIZE a
+  STRINGP op => 2 + # op
   2+SIZE PNAME op
 
 matrixBorder(x,y1,y2,d,leftOrRight) ==
