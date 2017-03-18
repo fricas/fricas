@@ -408,12 +408,6 @@ This variable is copied and returned by the function
 [[makeInitialModemapFrame]]. There is no initial value so this
 is probably a bug.
 
-\subsection{\$inLispVM}
-The [[$inLispVM]] is set to [[NIL]] in [[spad]]. LispVM is a
-non-common lisp that runs on IBM/370 mainframes. This is probably dead
-code.  It appears that this list has the same structure as an argument
-to the LispVM [[rdefiostream]] function.
-
 \subsection{\$InteractiveFrame}
 The [[$InteractiveFrame]] is set in [[restart]] to the value of the
 call to the [[makeInitialModemapFrame]] function. This function simply
@@ -421,16 +415,6 @@ returns a copy of the variable [[$InitialModemapFrame]]
 
 \subsection{\$InteractiveMode}
 The [[$InteractiveMode]] is set to [[T]] in [[ncTopLevel]].
-
-\subsection{\$intRestart}
-The [[$intRestart]] variable is used in [[intloop]] but has no value.
-This is probably a bug. While the variable's value is unchanged the
-system will continually reenter the [[SpadInterpretStream]] function.
-
-\subsection{\$intTopLevel}
-The [[$intTopLevel]] is a catch tag. Throwing to this tags which is
-caught in the [[intloop]] will
-restart the [[SpadInterpretStream]] function.
 
 \subsection{\$IOindex}
 The [[$IOindex]] index variable is set to [[1]] in [[restart]].
@@ -448,30 +432,17 @@ to the value of the [[$nopos]] variable.
 Since [[$nopos]] appears to have no value
 this is likely a bug.
 
-\subsection{\$libQuiet}
-The [[$libQuiet]] variable is set to the third argument of the
-[[SpadInterpretStream]] function. This is passed from [[intloop]]
-with the value of [[T]]. This variable appears to be intended to
-control the printing of library loading messages which would need
-to be suppressed if input was coming from a file.
-
 \subsection{\$library-directory-list}
 The [[$library-directory-list]] variable is set by [[reroot]] by
 mapping the function [[make-absolute-filename]] across the
 [[$relative-library-directory-list]] variable which is not yet set so this
 is probably a bug.
 
-\subsection{\$msgDatabaseName}
-The [[$msgDatabaseName]] is set to [[NIL]] in [[reroot]].
-
 \subsection{\$ncMsgList}
 The [[$ncMsgList]] is set to [[NIL]] in [[SpadInterpretStream]].
 
 \subsection{\$newcompErrorCount}
 The [[$newcompErrorCount]] is set to [[0]] in [[SpadInterpretStream]].
-
-\subsection{\$newspad}
-The [[$newspad]] is set to [[T]] in [[ncTopLevel]].
 
 \subsection{\$nopos}
 The [[$nopos]] variable is used in [[SpadInterpretStream]] but does
@@ -482,9 +453,6 @@ The [[$oldHistoryFileName]] is set at load time by a call to
 [[initvars]] to a value of ``[[last]]''.
 It is part of the history mechanism. It is used in the function
 [[oldHistFileName]] and [[restoreHistory]].
-
-\subsection{\$okToExecuteMachineCode}
-The [[$okToExecuteMachineCode]] is set to [[T]] in [[SpadInterpretStream]].
 
 \subsection{\$options}
 The [[$options]] variable is tested by the [[history]] function.
@@ -640,193 +608,7 @@ on input (as from a file).
 \end{list}
 
 \chapter{The History Mechanism}
-\section{)history}
-\index{ugSysCmdhistory}
-
 \index{history}
-
-
-\par\noindent{\bf User Level Required:} interpreter
-
-\par\noindent{\bf Command Syntax:}
-\begin{list}{}
-\item{\tt )history )on}
-\item{\tt )history )off}
-\item{\tt )history )write} {\it historyInputFileName}
-\item{\tt )history )show [{\it n}] [both]}
-\item{\tt )history )save} {\it savedHistoryName}
-\item{\tt )history )restore} [{\it savedHistoryName}]
-\item{\tt )history )reset}
-\item{\tt )history )change} {\it n}
-\item{\tt )history )memory}
-\item{\tt )history )file}
-\item{\tt \%}
-\item{\tt \%\%({\it n})}
-\item{\tt )set history on | off}
-\end{list}
-
-\par\noindent{\bf Command Description:}
-
-The {\it history} facility within Axiom allows you to restore your
-environment to that of another session and recall previous
-computational results.
-Additional commands allow you to review previous
-input lines and to create an {\bf .input} file of the lines typed to
-\index{file!input}
-Axiom.
-
-Axiom saves your input and output if the history facility is
-turned on (which is the default).
-This information is saved if either of
-\begin{verbatim}
-)set history on
-)history )on
-\end{verbatim}
-has been issued.
-Issuing either
-\begin{verbatim}
-)set history off
-)history )off
-\end{verbatim}
-will discontinue the recording of information.
-\index{history )on}
-\index{set history on}
-\index{set history off}
-\index{history )off}
-
-Whether the facility is disabled or not,
-the value of {\tt \%} in Axiom always
-refers to the result of the last computation.
-If you have not yet entered anything,
-{\tt \%} evaluates to an object of type
-{\tt Variable('\%)}.
-The function {\tt \%\%} may be  used to refer
-to other previous results if the history facility is enabled.
-In that case,
-{\tt \%\%(n)} is  the output from step {\tt n} if {\tt n > 0}.
-If {\tt n < 0}, the step is computed relative to the current step.
-Thus {\tt \%\%(-1)} is also the previous step,
-{\tt \%\%(-2)}, is the  step before that, and so on.
-If an invalid step number is given, Axiom will signal an error.
-
-The {\it environment} information can either be saved in a file or entirely in
-memory (the default).
-Each frame
-(\ref{ugSysCmdframe} on page~\pageref{ugSysCmdframe})
-has its own history database.
-When it is kept in a file, some of it may also be kept in memory for
-efficiency.
-When the information is saved in a file, the name of the file is
-of the form {\bf FRAME.axh} where ``{\bf FRAME}'' is the name of the
-current frame.
-The history file is placed in the current working directory
-(see \ref{ugSysCmdcd} on page~\pageref{ugSysCmdcd}).
-Note that these history database files are not text files (in fact,
-they are directories themselves), and so are not in human-readable
-format.
-
-The options to the {\tt )history} command are as follows:
-
-\begin{description}
-\item[{\tt )change} {\it n}]
-will set the number of steps that are saved in memory to {\it n}.
-This option only has effect when the history data is maintained in a
-file.
-If you have issued {\tt )history )memory} (or not changed the default)
-there is no need to use {\tt )history )change}.
-\index{history )change}
-
-\item[{\tt )on}]
-will start the recording of information.
-If the workspace is not empty, you will be asked to confirm this
-request.
-If you do so, the workspace will be cleared and history data will begin
-being saved.
-You can also turn the facility on by issuing {\tt )set history on}.
-
-\item[{\tt )off}]
-will stop the recording of information.
-The {\tt )history )show} command will not work after issuing this
-command.
-Note that this command may be issued to save time, as there is some
-performance penalty paid for saving the environment data.
-You can also turn the facility off by issuing {\tt )set history off}.
-
-\item[{\tt )file}]
-indicates that history data should be saved in an external file on disk.
-
-\item[{\tt )memory}]
-indicates that all history data should be kept in memory rather than
-saved in a file.
-Note that if you are computing with very large objects it may not be
-practical to kept this data in memory.
-
-\item[{\tt )reset}]
-will flush the internal list of the most recent workspace calculations
-so that the data structures may be garbage collected by the underlying
-Common Lisp system.
-Like {\tt )history )change}, this option only has real effect when
-history data is being saved in a file.
-
-\item[{\tt )restore} [{\it savedHistoryName}]]
-completely clears the environment and restores it to a saved session, if
-possible.
-The {\tt )save} option below allows you to save a session to a file
-with a given name. If you had issued
-{\tt )history )save jacobi}
-the command
-{\tt )history )restore jacobi}
-would clear the current workspace and load the contents of the named
-saved session. If no saved session name is specified, the system looks
-for a file called {\bf last.axh}.
-
-\item[{\tt )save} {\it savedHistoryName}]
-is used to save  a snapshot of the environment in a file.
-This file is placed in the current working directory
-(see \ref{ugSysCmdcd} on page~\pageref{ugSysCmdcd}).
-Use {\tt )history )restore} to restore the environment to the state
-preserved in the file.
-This option also creates an input file containing all the lines of input
-since you created the workspace frame (for example, by starting your
-Axiom session) or last did a {\tt )clear all} or
-{\tt )clear completely}.
-
-\item[{\tt )show} [{\it n}] [{\tt both}]]
-can show previous input lines and output results.
-{\tt )show} will display up to twenty of the last input lines
-(fewer if you haven't typed in twenty lines).
-{\tt )show} {\it n} will display up to {\it n} of the last input lines.
-{\tt )show both} will display up to five of the last input lines and
-output results.
-{\tt )show} {\it n} {\tt both} will display up to {\it n} of the last
-input lines and output results.
-
-\item[{\tt )write} {\it historyInputFile}]
-creates an {\bf .input} file with the input lines typed since the start
-of the session/frame or the last {\tt )clear all} or {\tt )clear
-completely}.
-If {\it historyInputFileName} does not contain a period (``.'') in the filename,
-{\bf .input} is appended to it.
-For example,
-{\tt )history )write chaos}
-and
-{\tt )history )write chaos.input}
-both write the input lines to a file called {\bf chaos.input} in your
-current working directory.
-If you issued one or more {\tt )undo} commands,
-{\tt )history )write}
-eliminates all
-input lines backtracked over as a result of {\tt )undo}.
-You can edit this file and then use {\tt )read} to have Axiom process
-the contents.
-\end{description}
-
-\par\noindent{\bf Also See:}
-{\tt )frame} \index{ugSysCmdframe},
-{\tt )read} \index{ugSysCmdread},
-{\tt )set} \index{ugSysCmdset}, and
-{\tt )undo} \index{ugSysCmdundo}.
-
 
 History recording is done in two different ways:
 \begin{itemize}
@@ -876,121 +658,6 @@ file and then write the in-memory history to a new file
 \end{list}
 
 \chapter{The Frame Mechanism}
-\section{)frame}
-%\label{ugSysCmdframe}
-%\index{frame}
-\par\noindent{\bf Command Syntax:}
-\begin{list}{}
-\item{\tt )frame  new  {\it frameName}}
-\item{\tt )frame  drop  {\it [frameName]}}
-\item{\tt )frame  next}
-\item{\tt )frame  last}
-\item{\tt )frame  names}
-\item{\tt )frame  import {\it frameName} {\it [objectName1 [objectName2 ...]]}}
-\item{\tt )set message frame on | off}
-\item{\tt )set message prompt frame}
-\end{list}
-
-\par\noindent{\bf Command Description:}
-
-A {\it frame} can be thought of as a logical session within the
-physical session that you get when you start the system.  You can
-have as many frames as you want, within the limits of your computer's
-storage, paging space, and so on.
-Each frame has its own {\it step number}, {\it environment} and {\it history.}
-You can have a variable named {\tt a} in one frame and it will
-have nothing to do with anything that might be called {\tt a} in
-any other frame.
-
-Some frames are created by the HyperDoc program and these can
-have pretty strange names, since they are generated automatically.
-\index{frame names}
-To find out the names
-of all frames, issue
-\begin{verbatim}
-)frame names
-\end{verbatim}
-It will indicate the name of the current frame.
-
-You create a new frame
-\index{frame new}
-``{\bf quark}'' by issuing
-\begin{verbatim}
-)frame new quark
-\end{verbatim}
-The history facility can be turned on by issuing either
-{\tt )set history on} or {\tt )history )on}.
-If the history facility is on and you are saving history information
-in a file rather than in the Axiom environment
-then a history file with filename {\bf quark.axh} will
-be created as you enter commands.
-If you wish to go back to what
-you were doing in the
-\index{frame next}
-``{\bf initial}'' frame, use
-\index{frame last}
-\begin{verbatim}
-)frame next
-\end{verbatim}
-or
-\begin{verbatim}
-)frame last
-\end{verbatim}
-to cycle through the ring of available frames to get back to
-``{\bf initial}''.
-
-If you want to throw
-away a frame (say ``{\bf quark}''), issue
-\begin{verbatim}
-)frame drop quark
-\end{verbatim}
-If you omit the name, the current frame is dropped.
-\index{frame drop}
-
-If you do use frames with the history facility on and writing to a file,
-you may want to delete some of the older history files.
-\index{file!history}
-These are directories, so you may want to issue a command like
-{\tt rm -r quark.axh} to the operating system.
-
-You can bring things from another frame by using
-\index{frame import}
-{\tt )frame import}.
-For example, to bring the {\tt f} and {\tt g} from the frame ``{\bf quark}''
-to the current frame, issue
-\begin{verbatim}
-)frame import quark f g
-\end{verbatim}
-If you want everything from the frame ``{\bf quark}'', issue
-\begin{verbatim}
-)frame import quark
-\end{verbatim}
-You will be asked to verify that you really want everything.
-
-There are two {\tt )set} flags
-\index{set message frame}
-to make it easier to tell where you are.
-\begin{verbatim}
-)set message frame on | off
-\end{verbatim}
-will print more messages about frames when it is set on.
-By default, it is off.
-\begin{verbatim}
-)set message prompt frame
-\end{verbatim}
-will give a prompt
-\index{set message prompt frame}
-that looks like
-\begin{verbatim}
-initial (1) ->
-\end{verbatim}
-\index{prompt!with frame name}
-when you start up. In this case, the frame name and step make up the
-prompt.
-
-\par\noindent{\bf Also See:}
-{\tt )history} \index{ugSysCmdhistory} and
-{\tt )set} \index{ugSysCmdset}.
 
 \section{Variables Used}
 \section{Data Structures}
@@ -998,81 +665,7 @@ prompt.
 \subsection{defun frameNames}
 
 \chapter{The Undo Mechanism}
-\section{)undo}
-\index{ugSysCmdundo}
 
-\index{undo}
-
-
-\par\noindent{\bf User Level Required:} interpreter
-
-\par\noindent{\bf Command Syntax:}
-\begin{list}{}
-\item{\tt )undo}
-\item{\tt )undo} {\it integer}
-\item{\tt )undo} {\it integer [option]}
-\item{\tt )undo} {\tt )redo}
-\end{list}
-%
-where {\it option} is one of
-%
-\begin{list}{}
-\item{\tt )after}
-\item{\tt )before}
-\end{list}
-
-\par\noindent{\bf Command Description:}
-
-This command is used to
-restore the state of the user environment to an earlier
-point in the interactive session.
-The argument of an {\tt )undo} is an integer which must designate some
-step number in the interactive session.
-
-\begin{verbatim}
-)undo n
-)undo n )after
-\end{verbatim}
-These commands return the state of the interactive
-environment to that immediately after step {\tt n}.
-If {\tt n} is a positive number, then {\tt n} refers to step nummber
-{\tt n}. If {\tt n} is a negative number, it refers to the \tt n-th
-previous command (that is, undoes the effects of the last $-n$
-commands).
-
-A {\tt )clear all} resets the {\tt )undo} facility.
-Otherwise, an {\tt )undo} undoes the effect of {\tt )clear} with
-options {\tt properties}, {\tt value}, and {\tt mode}, and
-that of a previous {\tt undo}.
-If any such system commands are given between steps $n$ and
-$n + 1$ ($n > 0$), their effect is undone
-for {\tt )undo m} for any $0 < m \leq n$..
-
-The command {\tt )undo} is equivalent to {\tt )undo -1} (it undoes
-the effect of the previous user expression).
-The command {\tt )undo 0} undoes any of the above system commands
-issued since the last user expression.
-
-\begin{verbatim}
-)undo n )before
-\end{verbatim}
-This command returns the state of the interactive
-environment to that immediately before step {\tt n}.
-Any {\tt )undo} or {\tt )clear} system commands
-given before step {\tt n} will not be undone.
-
-\begin{verbatim}
-)undo )redo
-\end{verbatim}
-This command reads the file {\tt redo.input}.
-created by the last {\tt )undo} command.
-This file consists of all user input lines, excluding those
-backtracked over due to a previous {\tt )undo}.
-
-\par\noindent{\bf Also See:}
-{\tt )history} \index{ugSysCmdhistory}.
-The command {\tt )history )write} will eliminate the ``undone'' command
-lines of your program.
 \section{Variables Used}
 \section{Data Structures}
 [[$frameRecord = [delta1, delta2,... ] ]] where
@@ -1147,17 +740,6 @@ final executable code and save it out as {\bf SAVESYS}.
 The {\bf SAVESYS} image is copied to the [[${AXIOM}/bin]]
 subdirectory and becomes the axiom executable image.
 
-
-\item creating debugsys, an image with all interpreted functions loaded.
-
-Occasionally we need to really get into the system internals.
-The best way to do this is to run almost all of the lisp code
-interpreted rather than compiled (note that cfuns.lisp and sockio.lisp
-still need to be loaded in compiled form as they depend on the
-loader to link with lisp internals). This image is nothing more
-than a load of the file src/interp/debugsys.lisp.pamphlet. If
-you need to make test modifications you can add code to that
-file and it will show up here.
 \end{list}
 
 \eject
