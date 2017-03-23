@@ -133,7 +133,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
     -- rewrites a kernel; all trig functions are
     -- expressed in terms of sin and cos; all hyperbolic trig
     -- functions are expressed in terms of exp
-      null(args := [newElem a for a in argument k]) => k :: FE
+      empty?(args := [newElem a for a in argument k]) => k :: FE
       iez  := inv(ez  := exp(z := first args))
       sinz := sin z; cosz := cos z
       is?(k, 'tan)  => sinz / cosz
@@ -186,7 +186,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
       -- expansion and returns the sum of these expansions, when 'op' is +
       -- and 'ans' is 0, or the product of these expansions, when 'op' is *
       -- and 'ans' is 1
-      while not null list repeat
+      while not(empty?(list)) repeat
         (term := iExprToXXP(first list, posCheck?)) case %problem =>
           return term
         ans := op(ans, term.%expansion)
@@ -215,8 +215,8 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
           error "inverse of series with many leading zero coefficients"
       xOpList := opsInvolvingX coef
       -- only function involving x is 'log'
-      (null xOpList) => true
-      (null rest xOpList and is?(first xOpList, 'log)) => true
+      empty?(xOpList) => true
+      (empty?(rest(xOpList)) and is?(first(xOpList), 'log)) => true
       -- lowest order coefficient is a product of exponentials and
       -- functions not involving x
       productOfNonZeroes? coef => true
@@ -415,7 +415,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
         stateProblem(fcnName,"essential singularity")
       deg > 0 => [fcn(upxs) :: UPXS :: XXP]
       lc := coefficient(upxs, 0); xOpList := opsInvolvingX lc
-      null xOpList => [fcn(upxs) :: UPXS :: XXP]
+      empty?(xOpList) => [fcn(upxs) :: UPXS :: XXP]
       opInOpList?('log, xOpList) =>
         stateProblem(fcnName,"logs in constant coefficient")
       contOnReals? fcnName => [fcn(upxs) :: UPXS :: XXP]

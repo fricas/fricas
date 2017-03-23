@@ -311,7 +311,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       -- series and returns the sum of these series, when 'op' is +
       -- and 'ans' is 0, or the product of these series, when 'op' is *
       -- and 'ans' is 1
-      while not null list repeat
+      while not(empty?(list)) repeat
         (term := feToUPS(first list, opt_rec)) case %problem =>
           return term
         ans := op(ans, term.%series)
@@ -1011,7 +1011,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
     -- rewrites a kernel; all trig functions are
     -- expressed in terms of sin and cos; all hyperbolic trig
     -- functions are expressed in terms of exp
-      null(args := [newElem a for a in argument k]) => k::FE
+      empty?(args := [newElem a for a in argument k])$List(FE) => k::FE
       iez  := inv(ez  := exp(z := first args))
       sinz := sin z; cosz := cos z
       is?(k, 'tan)  => sinz / cosz
@@ -1109,8 +1109,8 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
           error "inverse of series with many leading zero coefficients"
       xOpList := opsInvolvingX coef
       -- only function involving x is 'log'
-      (null xOpList) => [ups ^ n]
-      (null rest xOpList and is?(first xOpList, 'log)) =>
+      empty?(xOpList) => [ups ^ n]
+      (empty?(rest(xOpList)) and is?(first(xOpList), 'log)) =>
         [ups ^ n]
       -- lowest order coefficient is a product of exponentials and
       -- functions not involving x
@@ -1224,7 +1224,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         stateProblem(fcnName,"essential singularity")
       deg > 0 => [fcn(ups) :: UPS]
       lc := coefficient(ups, 0); xOpList := opsInvolvingX lc
-      null xOpList => [fcn(ups) :: UPS]
+      empty?(xOpList) => [fcn(ups) :: UPS]
       opInOpList?('log, xOpList) =>
         stateProblem(fcnName,"logs in constant coefficient")
       contOnReals? fcnName => [fcn(ups) :: UPS]

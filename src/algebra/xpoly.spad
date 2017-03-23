@@ -206,9 +206,9 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
 
        characteristic  == characteristic$R
        #x == #$Rep x
-       maxdeg p == if null p then  error "zero polynomial !!"
+       maxdeg p == if empty?(p) then  error "zero polynomial !!"
                              else p.first.k
-       mindeg p == if null p then  error "zero polynomial !!"
+       mindeg p == if empty?(p) then  error "zero polynomial !!"
                              else (last p).k
 
        coef(p, e)  ==
@@ -236,8 +236,8 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
 
        if R has noZeroDivisors then
          p1 : % * p2 : %  ==
-            null p1 => 0
-            null p2 => 0
+            empty?(p1) => 0
+            empty?(p2) => 0
             p1.first.k = 1$E => p1.first.c * p2
             p2 = 1 => p1
 --            +/[[[t1.k*t2.k, t1.c*t2.c]$TERM for t2 in p2]
@@ -246,8 +246,8 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
                    for t1 in p1]
         else
          p1 : % * p2 : %  ==
-            null p1 => 0
-            null p2 => 0
+            empty?(p1) => 0
+            empty?(p2) => 0
             p1.first.k = 1$E => p1.first.c * p2
             p2 = 1 => p1
 --            +/[[[t1.k*t2.k, r]$TERM for t2 in p2 | not (r := t1.c*t2.c) =$R 0]
@@ -267,8 +267,8 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
             r::EX * m::EX
 
 --       coerce(x: %) : EX ==
---         null x => (0$R) :: EX
---         le : List EX := nil
+--         empty?(x) => (0$R) :: EX
+--         le : List EX := []
 --         for rec in x repeat
 --           rec.c = 1$R => le := cons(rec.k :: EX, le)
 --           rec.k = 1$E => le := cons(rec.c :: EX, le)
@@ -345,7 +345,7 @@ XDistributedPolynomial(vl : OrderedSet, R : Ring) : XDPcat == XDPdef where
          [[v * t.k, t.c]$TERM for t in p]
 
        mirror p ==
-         null p => p
+         empty?(p) => p
          monom(mirror$WORD leadingSupport p, leadingCoefficient p) + _
                mirror reductum p
 
@@ -505,8 +505,8 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
          p1 * p2.c0 +$% lquo1(listOfTerms p1.reg, listOfTerms p2.reg)
 
        lquo1(x : LTERMS, y : LTERMS) : % ==
-         null x => 0$%
-         null y => 0$%
+         empty?(x) => 0$%
+         empty?(y) => 0$%
          x.first.k < y.first.k => lquo1(x, y.rest)
          x.first.k = y.first.k =>
              lquo(x.first.c, y.first.c) +$% lquo1(x.rest, y.rest)
@@ -518,8 +518,8 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
          p1.c0 * p2.c0 +$R coef1(listOfTerms p1.reg, listOfTerms p2.reg)
 
        coef1(x : LTERMS, y : LTERMS) : R ==
-         null x => 0$R
-         null y => 0$R
+         empty?(x) => 0$R
+         empty?(y) => 0$R
          x.first.k < y.first.k => coef1(x, y.rest)
          x.first.k = y.first.k =>
              coef(x.first.c, y.first.c) + coef1(x.rest, y.rest)

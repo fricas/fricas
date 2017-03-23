@@ -141,13 +141,13 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       if coefs.coef1 ~= 0$R then
         d := normalizeFracTerm ([coefs.coef1, s.den]$fTerm)
         c.whole := c.whole + d.whole
-        not (null d.fract) => c.fract := append(d.fract, c.fract)
+        not(empty?(d.fract)) => c.fract := append(d.fract, c.fract)
       c
 
     normalizeFracTerm(s : fTerm) ==
       -- makes sure num is "less than" den, whole may be non-zero
       qr : QR := divide(s.num, (expand s.den))
-      qr.remainder = 0$R => [qr.quotient, nil()$LfTerm]
+      qr.remainder = 0$R => [qr.quotient, []$LfTerm]
       -- now verify num and den are coprime
       f : R := nthFactor(s.den, 1)
       nexpon : Integer := nthExponent(s.den, 1)
@@ -179,8 +179,8 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
 
     padicFraction(a : %) ==
       b : % := compactFraction a
-      null b.fract => b
-      l : LfTerm := nil
+      empty?(b.fract) => b
+      l : LfTerm := []
       s : fTerm
       f : R
       e, d : Integer
@@ -198,7 +198,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       -- only one power for each distinct denom will remain
       2 > # a.fract => a
       af : LfTerm := reverse a.fract
-      bf : LfTerm := nil
+      bf : LfTerm := []
       bw : R := a.whole
       b : %
       s : fTerm := [(first af).num, (first af).den]$fTerm
@@ -211,19 +211,19 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
             (f ^$R ((e - nthExponent(t.den, 1)) :: NonNegativeInteger)))
         b := normalizeFracTerm s
         bw := bw + b.whole
-        if not (null b.fract) then bf := cons(first b.fract, bf)
+        if not(empty?(b.fract)) then bf := cons(first b.fract, bf)
         s := [t.num, t.den]$fTerm
         f := nthFactor(s.den, 1)
         e := nthExponent(s.den, 1)
       b := normalizeFracTerm s
       [bw + b.whole, append(b.fract, bf)]$%
 
-    0 == [0$R, nil()$LfTerm]
-    1 == [1$R, nil()$LfTerm]
+    0 == [0$R, []$LfTerm]
+    1 == [1$R, []$LfTerm]
     characteristic() == characteristic()$R
 
-    coerce(r : R) : % == [r, nil()$LfTerm]
-    coerce(n : Integer) : % == [(n :: R), nil()$LfTerm]
+    coerce(r : R) : % == [r, []$LfTerm]
+    coerce(n : Integer) : % == [(n :: R), []$LfTerm]
     coerce(a : %) : Fraction R ==
       q : Fraction R := (a.whole :: Fraction R)
       s : fTerm
@@ -243,10 +243,10 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     recip a == (1$% exquo a)
 
     firstDenom a ==         -- denominator of 1st fractional term
-      null a.fract => 1$FRR
+      empty?(a.fract) => 1$FRR
       (first a.fract).den
     firstNumer a ==         -- numerator of 1st fractional term
-      null a.fract => 0$R
+      empty?(a.fract) => 0$R
       (first a.fract).num
     numberOfFractionalTerms a == # a.fract
     nthFractionalTerm(a, n) ==
@@ -276,16 +276,16 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
 
     a = b ==
       a.whole ~= b.whole => false  -- must verify this
-      (null a.fract) =>
-        null b.fract => a.whole = b.whole
+      empty?(a.fract) =>
+        empty?(b.fract) => a.whole = b.whole
         false
-      null b.fract => false
+      empty?(b.fract) => false
       -- oh, no! following is temporary
       (a :: Fraction R) = (b :: Fraction R)
 
     - a ==
       s : fTerm
-      l : LfTerm := nil
+      l : LfTerm := []
       for s in reverse a.fract repeat l := cons([- s.num, s.den]$fTerm, l)
       [- a.whole, l]
 
@@ -298,7 +298,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       for s in reverse a.fract repeat
         c := normalizeFracTerm [r * s.num, s.den]$fTerm
         b.whole := b.whole + c.whole
-        not (null c.fract) => b.fract := append(c.fract, b.fract)
+        not(empty?(c.fract)) => b.fract := append(c.fract, b.fract)
       b
 
     n : Integer * a : % == (n :: R) * a
@@ -309,8 +309,8 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
           sort(LessThan, append(a.fract, copy b.fract))]$%
 
     a : % * b : % ==
-      null a.fract => a.whole * b
-      null b.fract => b.whole * a
+      empty?(a.fract) => a.whole * b
+      empty?(b.fract) => b.whole * a
       af : % := [0$R, a.fract]$%   --     a - a.whole
       c : % := (a.whole * b) + (b.whole * af)
       s, t : fTerm
@@ -320,10 +320,10 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       c
 
     coerce(a : %) : Ex ==
-      null a.fract => a.whole :: Ex
+      empty?(a.fract) => a.whole :: Ex
       s : fTerm
       l : List Ex
-      if a.whole = 0 then l := nil else l := [a.whole :: Ex]
+      if a.whole = 0 then l := [] else l := [a.whole :: Ex]
       for s in a.fract repeat
         s.den = 1$FRR => l := cons(s.num :: Ex, l)
         l := cons(s.num :: Ex /  s.den :: Ex, l)

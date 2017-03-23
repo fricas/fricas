@@ -39,8 +39,8 @@ Stack(S : SetCategory) : StackAggregate S with
     inspect s == top s
     push!(e, s) == (setref(s, cons(e, deref s));e)
     insert!(e : S, s : %) : % == (push!(e, s);s)
-    empty() == ref nil()$List(S)
-    empty? s == null deref s
+    empty() == ref []$List(S)
+    empty? s == empty?(deref(s))
     construct s == ref copy s
     stack s == construct s
     hashUpdate!(st, s) == hashUpdate!(st, deref s)
@@ -119,8 +119,9 @@ Queue(S : SetCategory) : QueueAggregate S with
   == Stack S add
     Rep := Reference List S
     lastTail==> LAST$Lisp
+
     enqueue!(e, q) ==
-        if null deref q then setref(q, list e)
+        if empty?(deref(q)) then setref(q, list e)
         else lastTail.(deref q).rest := list e
         e
     insert!(e, q) == (enqueue!(e, q);q)

@@ -172,8 +172,8 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
      Pol := [first(Pol1)]
      H := Pol
      Pol1 := rest(Pol1)
-     D := nil
-     while not null Pol1 repeat
+     D := []
+     while not(empty?(Pol1)) repeat
         h := first(Pol1)
         Pol1 := rest(Pol1)
         en := degree(h)
@@ -198,7 +198,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
 
      --------  loop
 
-     while not null D repeat
+     while not(empty?(D)) repeat
          D0 := first D
          ep := esPol(D0)
          D := rest(D)
@@ -245,7 +245,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
              --- erase multiple of e in D2 using crit M
 
    ecritMondd1(e : Expon, c : Dom, D2 : List(critPair))==
-      null D2 => nil
+      empty?(D2) => []
       x := first(D2)
       ecritM(e, c, x.lcmfij, lcm(leadingCoefficient(x.poli), leadingCoefficient(x.polj)))
          => ecritMondd1(e, c, rest(D2))
@@ -255,7 +255,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
 
    ecredPol(h : Dpol, F : List(Dpol) ) ==
         h0 : Dpol := 0
-        null F => h
+        empty?(F) => h
         while h ~= 0 repeat
            h0 := h0 + monomial(leadingCoefficient(h), degree(h))
            h := eRed(red(h), F, F)
@@ -265,11 +265,11 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
              --- reduce dd1 using crit T and crit M
 
    ecritMTondd1(dd1 : List(critPair))==
-           null dd1 => nil
+           empty?(dd1) => []
            f1 := first(dd1)
            s1 := #(dd1)
            cT1 := ecritT(f1)
-           s1= 1 and cT1 => nil
+           s1= 1 and cT1 => []
            s1= 1 => dd1
            e1 := f1.lcmfij
            r1 := rest(dd1)
@@ -286,7 +286,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
              --- erase elements in D fullfilling crit B
 
    ecritBonD(h : Dpol, D : List(critPair))==
-         null D => nil
+         empty?(D) => []
          x := first(D)
          x1 := x.poli
          x2 := x.polj
@@ -299,7 +299,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
              --- concat F and h and erase multiples of h in F
 
    eupdatF(h : Dpol, F : List(Dpol)) ==
-       null F => nil
+       empty?(F) => []
        f1 := first(F)
        ecritM(degree h, leadingCoefficient(h), degree f1, leadingCoefficient(f1))
            => eupdatF(h, rest(F))
@@ -309,7 +309,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
              --- concat H and h and erase multiples of h in H
 
    updatH(h : Dpol, H : List(Dpol), Hh : List(Dpol), Hhh : List(Dpol)) ==
-       null H => append(Hh, Hhh)
+       empty?(H) => append(Hh, Hhh)
        h1 := first(H)
        hlcm := sup(degree(h1), degree(h))
        plc := extendedEuclidean(leadingCoefficient(h), leadingCoefficient(h1))
@@ -325,7 +325,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
              ---- delete elements in cons(h, H)
 
    crithdelH(h : Dpol, H : List(Dpol))==
-        null H => nil
+        empty?(H) => []
         h1 := first(H)
         dh1 := degree h1
         dh := degree h
@@ -337,7 +337,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
         cons(h1, crithdelH(h, rest(H)))
 
    eminGbasis(F : List(Dpol)) ==
-        null F => nil
+        empty?(F) => []
         newbas := eminGbasis rest F
         cons(ecredPol( first(F), newbas), newbas)
 
@@ -345,7 +345,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
              --- does h belong to H
 
    ecrithinH(h : Dpol, H : List(Dpol))==
-        null H  => true
+        empty?(H) => true
         h1 := first(H)
         ecritM(degree h1, lc h1, degree h, lc h) => false
         ecrithinH(h, rest(H))
@@ -368,7 +368,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
             --- euclidean reduction mod F
 
    eRed(s : Dpol, H : List(Dpol), Hh : List(Dpol)) ==
-     ( s = 0 or null H ) => s
+     (s = 0 or empty?(H)) => s
      f1 := first(H)
      ds := degree s
      lf1 := leadingCoefficient(f1)
@@ -426,7 +426,7 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
             ---  insert element in sorted list
 
    sortin(p1 : Dpol, lp : List(Dpol))==
-      null lp => [p1]
+      empty?(lp) => [p1]
       f1 := first(lp)
       elf1 := degree(f1)
       ep1 := degree(p1)
@@ -436,8 +436,8 @@ EuclideanGroebnerBasisPackage(Dom, Expon, VarSet, Dpol) : T == C where
       cons(p1, lp)
 
    updatD(D1 : List(critPair), D2 : List(critPair)) ==
-      null D1 => D2
-      null D2 => D1
+      empty?(D1) => D2
+      empty?(D2) => D1
       dl1 := first(D1)
       dl2 := first(D2)
       (dl1.lcmfij  <  dl2.lcmfij) => cons(dl1, updatD(D1.rest, D2))

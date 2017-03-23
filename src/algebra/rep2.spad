@@ -308,7 +308,7 @@ RepresentationPackage2(R) : public == private where
         --be checked whether they are in the span of the vectors
         --computed so far. Of course we stop if we have got the whole
         --space.
-        while (not null furtherElts) and (nrows basis < #v)  repeat
+        while not(empty?(furtherElts)) and (nrows basis < #v)  repeat
           w : V R := first furtherElts
           nextVector : M R := matrix list entries w -- normalizing the vector
           -- will the rank change if we add this nextVector
@@ -337,7 +337,7 @@ RepresentationPackage2(R) : public == private where
         --will be checked whether they are in the span of the vectors
         --computed so far. Of course we stop if we  have got the whole
         --space.
-        while (not null furtherElts) and (nrows basis < #v)  repeat
+        while not(empty?(furtherElts)) and (nrows basis < #v)  repeat
           w : V R := first furtherElts
           nextVector : M R := matrix list entries w  -- normalizing the vector
           -- will the rank change if we add this nextVector
@@ -367,8 +367,8 @@ RepresentationPackage2(R) : public == private where
                                -- degree of representation
         submodule : V V R := cyclicSubmodule (algebraGenerators, vector)
         rankOfSubmodule : I := # submodule  -- R-Rank of submodule
-        submoduleRepresentation    : L M R := nil()
-        factormoduleRepresentation : L M R := nil()
+        submoduleRepresentation    : L M R := []
+        factormoduleRepresentation : L M R := []
         if n ~= rankOfSubmodule then
           messagePrint "  A proper cyclic submodule is found."
           if doSplitting? then   -- no else !!
@@ -416,7 +416,7 @@ RepresentationPackage2(R) : public == private where
         kernel : L V R := nullSpace xt
         result : L L M R :=  _
           splitInternal(algebraGeneratorsTranspose, first kernel, split?)
-        if null rest result then  -- this means first kernel generates
+        if empty?(rest(result)) then  -- this means first kernel generates
           -- the whole module
           if 1 = #kernel then
              messagePrint "  Representation is absolutely irreducible"
@@ -582,8 +582,8 @@ RepresentationPackage2(R) : public == private where
             messagePrint "  one-dimensional kernel"
             kernel : L V R := nullSpace x
             if n=#cyclicSubmodule(aG, first kernel) then
-              result := (irreducibilityTestInternal(aG, x, false)).1 ~= nil()$(L M R)
-              -- result := not null? first irreducibilityTestInternal(aG, x, false) -- this down't compile !!
+              result := not(empty?(
+                              (irreducibilityTestInternal(aG, x, false)).1))
             else -- we found a proper submodule
               result := false
               --split(aG, kernel.1) -- to get the splitting
@@ -611,8 +611,8 @@ RepresentationPackage2(R) : public == private where
         n : NNI := #submodule.1 -- R-rank of representation module =
                                 -- degree of representation
         rankOfSubmodule : I := (#submodule) :: I --R-Rank of submodule
-        submoduleRepresentation    : L M R := nil()
-        factormoduleRepresentation : L M R := nil()
+        submoduleRepresentation    : L M R := []
+        factormoduleRepresentation : L M R := []
         submoduleIndices : L I := [i for i in 1..rankOfSubmodule]
         factormoduleIndices : L I := [i for i in (1+rankOfSubmodule)..(n::I)]
         transitionMatrix : M R := _
@@ -690,7 +690,7 @@ RepresentationPackage2(R) : public == private where
                  good := #kernel = mm
                  v := first(kernel)
                  pres := split(algebraGenerators, v)
-                 if not null rest pres then return pres
+                 if not(empty?(rest(pres))) then return pres
                  if good then
                      messagePrint "Found good factor"
                      return irreducibilityTestInternal(algebraGenerators,
@@ -701,7 +701,7 @@ RepresentationPackage2(R) : public == private where
         meatAxe(algebraGenerators, randomelements, numberOfTries, _
            maxTests) ==
           numberOfGenerators  : NNI := #algebraGenerators
-          result : L L M R := nil()$(L L M R)
+          result : L L M R := []$(L L M R)
           q   : PI  := (size()$R)::PI
           -- need a start value for creating random matrices:
           -- if we switch to randomelements later, we take the last
@@ -751,7 +751,7 @@ RepresentationPackage2(R) : public == private where
                  --called "split" does the further work:
                  result := _
                    split(algebraGenerators, scanOneDimSubspaces(kernel, j))
-                 if not null rest result then
+                 if not(empty?(rest(result))) then
                      return result
                  else  -- no proper submodule
                    -- we were not successfull, i.e gen. submodule was
@@ -769,7 +769,7 @@ RepresentationPackage2(R) : public == private where
               else
                 messagePrint "Fingerprint element in generated algebra is non-singular"
           -- here ends the outer for-loop
-          result : L L M R := [nil()$(L M R), nil()$(L M R)]
+          result : L L M R := [[], []]
           messagePrint " "
           messagePrint "Sorry, no result, try meatAxe(...,true)"
           messagePrint "  or consider using an extension field."

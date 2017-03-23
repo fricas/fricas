@@ -409,7 +409,7 @@ HTMLFormat() : public == private where
     formatSC(args : L E, prec : I)  : Tree S ==
       if debug then sayHt "formatSC: "concat[" args=",_
         argsToString(args)," prec=",string(prec)$S]
-      null args => tree("")
+      empty?(args) => tree("")
       cells : L Tree S := [_
         newNode("td id='sc' style='border-bottom-style:solid'",_
         formatHtml(a, prec)) for a in args]
@@ -492,7 +492,7 @@ HTMLFormat() : public == private where
       op = 'PAREN =>
         newNodes("",[tree("("),formatHtml(first args, minPrec),tree(")")])
       op = 'OVERBAR =>
-        null args => tree("")
+        empty?(args) => tree("")
         buildOverbar(formatHtml(first args, minPrec))
       op = 'ROOT and #args < 1 => tree("")
       op = 'ROOT and #args = 1 => _
@@ -504,7 +504,7 @@ HTMLFormat() : public == private where
         -- '..' indicates a range in a list for example
         tmp : Tree S := newNodes("",[formatHtml(first args, minPrec),_
           tree("..")])
-        null rest args =>  tmp
+        empty?(rest(args)) =>  tmp
         newNodes("",[tmp,formatHtml(first rest args, minPrec)])
       op = 'SC => formatSC(args,minPrec)
       op = 'MATRIX => formatMatrix rest args
@@ -902,7 +902,7 @@ HTMLFormat() : public == private where
       if debug then sayHt "formatNaryNoGroup: "concat["op=",op,_
         " args=",argsToString(args)," prec=",string(prec)$S]
       checkargs : Boolean := false
-      null args => empty()$Tree(S)
+      empty?(args) => empty()$Tree(S)
       p : I := position(op, naryOps)
       p < 1 => error "unknown nary op"
       -- need to test for "ZAG" case and divert it here

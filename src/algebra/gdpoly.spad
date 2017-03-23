@@ -38,7 +38,7 @@ GeneralDistributedMultivariatePolynomial(vl, R, E) : public == private where
       Rep := List Term
       n := #vl
       Vec ==> Vector(NonNegativeInteger)
-      zero?(p : %) : Boolean == null(p :: Rep)
+      zero?(p : %) : Boolean == empty?(p::Rep)
 
       totalDegree p ==
          zero? p => 0
@@ -93,16 +93,16 @@ GeneralDistributedMultivariatePolynomial(vl, R, E) : public == private where
 
       numberOfMonomials(p : %) ==
         l : Rep := p :: Rep
-        null(l) => 1
+        empty?(l) => 1
         #l
 
       monomial?(p : %) : Boolean ==
         l : Rep := p :: Rep
-        null(l) or null rest(l)
+        empty?(l) or empty?(rest(l))
 
       if R has OrderedRing then
         maxNorm(p : %) : R ==
-          l : List R := nil
+          l : List R := []
           r, m : R
           m := 0
           for r in listCoef(p) repeat
@@ -112,7 +112,7 @@ GeneralDistributedMultivariatePolynomial(vl, R, E) : public == private where
 
       --trailingCoef(p : %) ==
       --  l : Rep := p : Rep
-      --  null l => 0
+      --  empty?(l) => 0
       --  r : Term := last l
       --  r.c
 
@@ -241,16 +241,16 @@ GeneralDistributedMultivariatePolynomial(vl, R, E) : public == private where
       coerce(p : %) : OutputForm ==
         zero?(p) => (0$R) :: OutputForm
         l, lt : List OutputForm
-        lt := nil
+        lt := []
         vl1 := [v::OutputForm for v in vl]
         for t in reverse p repeat
-          l := nil
+          l := []
           for i in 1..#vl1 repeat
             t.k.i = 0 => "next"
             t.k.i = 1 => l := cons(vl1.i, l)
             l := cons(vl1.i ^ t.k.i ::OutputForm, l)
           l := reverse l
-          if (t.c ~= 1) or (null l) then l := cons(t.c :: OutputForm, l)
+          if (t.c ~= 1) or empty?(l) then l := cons(t.c :: OutputForm, l)
           1 = #l => lt := cons(first l, lt)
           lt := cons(reduce("*",l),lt)
         1 = #lt => first lt

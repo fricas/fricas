@@ -148,7 +148,7 @@ TubePlotTools() : Exports == Implementation where
     unitVector p == (inv sqrt dot(p, p)) * p
 
     cosSinInfo n ==
-      ans : L L SF := nil()
+      ans : L L SF := []
       theta : SF := 2 * pi()/n
       for i in 1..(n-1) repeat             --!! make more efficient
         angle := i * theta
@@ -156,8 +156,8 @@ TubePlotTools() : Exports == Implementation where
       ans
 
     loopPoints(ctr, pNorm, bNorm, rad, cosSin) ==
-      ans : L Pt := nil()
-      while not null cosSin repeat
+      ans : L Pt := []
+      while not(empty?(cosSin)) repeat
         cossin := first cosSin; cos := first cossin; sin := second cossin
         ans := cons(ctr + rad * (cos * pNorm + sin * bNorm), ans)
         cosSin := rest cosSin
@@ -230,23 +230,23 @@ ExpressionTubePlot() : Exports == Implementation where
       (not (# varList1 <= 1)) or (not (# varList2 <= 1)) or _
        (not (# varList3 <= 1)) =>
         error "tubePlot: only one variable may be used"
-      null varList1 =>
-        null varList2 =>
-          null varList3 =>
+      empty?(varList1) =>
+        empty?(varList2) =>
+          empty?(varList3) =>
             error "tubePlot: a variable must appear in functions"
           first varList3
         t2 := first varList2
-        null varList3 => t2
+        empty?(varList3) => t2
         not (first varList3 = t2) =>
           error "tubePlot: only one variable may be used"
       t1 := first varList1
-      null varList2 =>
-        null varList3 => t1
+      empty?(varList2) =>
+        empty?(varList3) => t1
         not (first varList3 = t1) =>
           error "tubePlot: only one variable may be used"
         t1
       t2 := first varList2
-      null varList3 =>
+      empty?(varList3) =>
         not (t1 = t2) =>
           error "tubePlot: only one variable may be used"
         t1
@@ -304,8 +304,8 @@ ExpressionTubePlot() : Exports == Implementation where
       tvals := first tValues parPlot
       curvePts := first listBranches parPlot
       cosSin := cosSinInfo n
-      loopList : L L Pt := nil()
-      while not null tvals repeat
+      loopList : L L Pt := []
+      while not(empty?(tvals)) repeat
         -- note: tvals and curvePts have the same number of elements
         tval := first tvals; tvals := rest tvals
         ctr := first curvePts; curvePts := rest curvePts
@@ -420,7 +420,7 @@ NumericTubePlot(Curve) : Exports == Implementation where
     curveLoops(pts, r, nn) ==
       triads := curveTriads pts
       cosSin := cosSinInfo nn
-      loops : L L Pt := nil()
+      loops : L L Pt := []
       for pt in pts for triad in triads repeat
         n := triad.norm; b := triad.bin
         loops := concat(loopPoints(pt, n, b, r, cosSin), loops)
@@ -429,7 +429,7 @@ NumericTubePlot(Curve) : Exports == Implementation where
     tube(curve, r, n) ==
       n < 3 => error "tube: n should be at least 3"
       brans := listBranches curve
-      loops : L L Pt := nil()
+      loops : L L Pt := []
       for bran in brans repeat
         loops := concat(loops, curveLoops(bran, r, n))
       tube(curve, loops, false)

@@ -40,7 +40,7 @@ Partition : Exports == Implementation where
     import from PartitionsAndPermutations
 
     Rep := List Integer
-    0 == nil()
+    0 == []
 
     coerce (s : %) == s pretend List Integer
     convert x == copy(x pretend L I)
@@ -87,7 +87,7 @@ Partition : Exports == Implementation where
     li1 : L I  --!! 'bite' won't compile without this
     bite : (I, L I) -> L I
     bite(i, li) ==
-      empty? li => concat(0, nil())
+      empty? li => concat(0, [])
       first li = i =>
         li1 := bite(i, rest li)
         concat(first(li1) + 1, rest li1)
@@ -95,7 +95,7 @@ Partition : Exports == Implementation where
 
     li : L I  --!!  'powers' won't compile without this
     powers l ==
-      empty? l => nil()
+      empty?(l) => []
       li := bite(first l, rest l)
       concat([first l, first(li) + 1], powers(rest li))
 
@@ -108,10 +108,10 @@ Partition : Exports == Implementation where
 
     mkexp1 : L L I -> L OUT
     mkexp1 lli ==
-      empty? lli => nil()
+      empty?(lli) => []
       li := first lli
       empty?(rest lli) and second(li) = 1 =>
-        concat(first(li) :: OUT, nil())
+        concat(first(li)::OUT, [])
       concat(mkterm(first li, second li), mkexp1(rest lli))
 
     coerce(x : %) : OUT ==
@@ -133,8 +133,8 @@ SymmetricPolynomial(R : Ring) == PolynomialRing(R, Partition) add
 
        if R has EntireRing then
          (p1 : %) * (p2 : %)  ==
-            null p1 => 0
-            null p2 => 0
+            empty?(p1) => 0
+            empty?(p2) => 0
             zero?(p1.first.k) => p1.first.c * p2
             (p2 = 1) => p1
             +/[[[t1.k+t2.k, t1.c*t2.c]$Term for t2 in p2]
@@ -143,8 +143,8 @@ SymmetricPolynomial(R : Ring) == PolynomialRing(R, Partition) add
                    -- reduces both time and space [Abbott/Bradford/Davenport]
         else
          (p1 : %) * (p2 : %)  ==
-            null p1 => 0
-            null p2 => 0
+            empty?(p1) => 0
+            empty?(p2) => 0
             zero?(p1.first.k) => p1.first.c * p2
             (p2 = 1) => p1
             +/[[[t1.k+t2.k, r]$Term for t2 in p2 | (r := t1.c*t2.c) ~= 0]

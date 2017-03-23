@@ -87,11 +87,11 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
       -- error checks and special cases
       (fraction < 0) or (fraction > 1) =>
         error "clipDraw: fraction should be between 0 and 1"
-      empty? pointLists => [nil(), segment(0, 0), segment(0, 0)]
+      empty? pointLists => [[], segment(0, 0), segment(0, 0)]
       -- put all points together , sort them according to norm
       sortedList := sort((x : Pt, y : Pt) : Boolean +-> norm(x) < norm(y),
             select((z : Pt) : Boolean +-> not Pnan? z, concat pointLists))
-      empty? sortedList => [nil(), segment(0, 0), segment(0, 0)]
+      empty? sortedList => [[], segment(0, 0), segment(0, 0)]
       n := # sortedList
       num := numer fraction
       den := denom fraction
@@ -178,8 +178,8 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
       pt2
 
     discardAndSplit(pointList, pred, xMin, xMax, yMin, yMax) ==
-      ans : L L Pt := nil()
-      list : L Pt  := nil()
+      ans : L L Pt := []
+      list : L Pt  := []
       lastPt? : B  := false
       lastPt : Pt  := point(0, 0)
       while not empty? pointList repeat
@@ -198,7 +198,7 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
           ans := cons( list, ans)
         lastPt := pt
         lastPt? := true
-        list := nil()
+        list := []
       empty? list => ans
       reverse! cons(reverse! list, ans)
 
@@ -208,11 +208,11 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
         error "clipDraw: fraction should be between 0 and 1/2"
       xVals := xRange plot
       empty?(pointLists := listBranches plot) =>
-        [nil(), xVals, segment(0, 0)]
+        [[], xVals, segment(0, 0)]
       more?(pointLists := listBranches plot, 1) =>
         error "clipDraw: plot has more than one branch"
       empty?(pointList := first pointLists) =>
-        [nil(), xVals, segment(0, 0)]
+        [[], xVals, segment(0, 0)]
       sortedList := sort((x, y) +-> yCoord(x) < yCoord(y), pointList)
       n := # sortedList; num := numer fraction; den := denom fraction
       clipNum := (n * num) quo den
@@ -265,14 +265,14 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
       "failed"
 
     clipWithRanges(pointLists, xMin, xMax, yMin, yMax) ==
-      lists : L L Pt := nil()
+      lists : L L Pt := []
       for pointList in pointLists repeat
         lists := concat(lists, discardAndSplit(pointList, _
            (x : Pt) : Boolean +-> (xCoord(x) <= xMax) and (xCoord(x) >= xMin)_
               and (yCoord(x) <= yMax) and (yCoord(x) >= yMin), _
            xMin, xMax, yMin, yMax))
       (pt := findPt lists) case "failed" =>
-        [nil(), segment(0, 0), segment(0, 0)]
+        [[], segment(0, 0), segment(0, 0)]
       firstPt := pt :: Pt
       xMin : SF := xCoord firstPt; xMax : SF := xCoord firstPt
       yMin : SF := yCoord firstPt; yMax : SF := yCoord firstPt
