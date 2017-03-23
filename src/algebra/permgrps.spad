@@ -243,7 +243,7 @@ PermutationGroup(S : SetCategory) : public == private where
         #grpv = 0 => error "cosetRep needs nonempty group"
         degree := #(grpv(1))
         xelt : V NNI := [ n for n in 1..degree ]
-        word         := nil()$(L NNI)
+        word         := []$(L NNI)
         oorb         := o.orb
         osvc         := o.svc
         p := qelt(osvc, ppt)
@@ -272,7 +272,7 @@ PermutationGroup(S : SetCategory) : public == private where
     strip(z : V NNI, i : I, do_words : Boolean,
             orbs : V REC, grpv : V V NNI, wordv : V L NNI) : REC3 ==
         degree := #z
-        word := nil()$(L NNI)
+        word := []$(L NNI)
         tmpv : V NNI := new(degree, 0)
         noresult : Boolean := true
         for j in i..1 by -1 while noresult repeat
@@ -297,7 +297,7 @@ PermutationGroup(S : SetCategory) : public == private where
         while not zero? pos  repeat
             gpset : L PERM S := gp.gens
             for gen in gpset repeat
-                newList  := nil()$(L S)
+                newList  := []$(L S)
                 workList := orbitList.pos
                 for j in #workList..1 by -1 repeat
                     newList := cons(eval(gen, workList.j), newList)
@@ -312,7 +312,7 @@ PermutationGroup(S : SetCategory) : public == private where
         numberOfGenerators    := # group
         randomInteger : I     := 1 + random(numberOfGenerators)$Integer
         randomElement : V NNI := group.randomInteger
-        words                 := nil()$(L NNI)
+        words                 := []$(L NNI)
         do_words : Boolean := not(empty?(word))
         if do_words then words := word.(randomInteger::NNI)
         if maxLoops > 0 then
@@ -345,7 +345,7 @@ PermutationGroup(S : SetCategory) : public == private where
     else
         pointList(group : %) : L S ==
             not(empty?(group.information.mp)) => group.information.mp
-            support : FSET S :=  brace()   -- empty set !!
+            support : FSET S := empty()
             for perm in group.gens repeat
                 support := union(support, movedPoints perm)
             group.information.mp := parts support
@@ -419,7 +419,7 @@ PermutationGroup(S : SetCategory) : public == private where
         [reverse!(orbit), schreierVector ]
 
     orbitWithSvc(group : L V NNI, point : NNI) : REC ==
-        grpinv := nil()$(L V NNI)
+        grpinv := []$(L V NNI)
         for el in group repeat
             grpinv := cons(inv el, grpinv)
         grpinv := reverse grpinv
@@ -438,8 +438,8 @@ PermutationGroup(S : SetCategory) : public == private where
             k   := ort.orb
             k1  := # k
             if k1 ~= 1 then break
-        gpsgs := nil()$(L V NNI)
-        words2 := nil()$(L L NNI)
+        gpsgs := []$(L V NNI)
+        words2 := []$(L L NNI)
         gplength : NNI := #group
         -- j := nontrivial element
         for jj in 1..gplength repeat if (group.jj).i ~= i then break
@@ -452,8 +452,8 @@ PermutationGroup(S : SetCategory) : public == private where
                 gpsgs := cons(times(group.jj, el2), gpsgs)
                 if wordProblem then
                       words2 := cons(append(words.jj, words.k), words2)
-        group2 := nil()$(L V NNI)
-        words3 := nil()$(L L NNI)
+        group2 := []$(L V NNI)
+        words3 := []$(L L NNI)
         j : I  := 15
         while j > 0 repeat
             -- find generators for the stabilizer
@@ -471,7 +471,7 @@ PermutationGroup(S : SetCategory) : public == private where
             j := j - 1
         -- this is for word length control
         if wordProblem then maxLoops    := maxLoops - diff
-        if (null group2) or (maxLoops < 0) then
+        if empty?(group2) or (maxLoops < 0) then
             gp_info.gpbase := [i]
             setref(out, [gpsgs])
             setref(outword, [words2])
@@ -489,9 +489,9 @@ PermutationGroup(S : SetCategory) : public == private where
         -- try to reduce number of strong generators
         base_lst := gp_info.gpbase
         orbv := gp_info.orbs
-        sgs : L V NNI := nil()
-        res : L V NNI := nil()
-        grpinv := nil()$(L V NNI)
+        sgs : L V NNI := []
+        res : L V NNI := []
+        grpinv := []$(L V NNI)
         for i in 1..kkk repeat
             sgs := append(sgs, outl(i))
             grpinv := append(grpinv, map(inv, outl(i)))
@@ -540,10 +540,10 @@ PermutationGroup(S : SetCategory) : public == private where
         if degree = 0 then
             group.information := gp_info
             return 1
-        newGroup := nil()$(L V NNI)
+        newGroup := []$(L V NNI)
         tmpv : V NNI := new(degree, 0)
         gp       : L PERM S := group.gens
-        words := nil()$(L L NNI)
+        words := []$(L L NNI)
         for ggg in 1..#gp for ggp in gp repeat
             q := perm_to_vec(supp, ggp, degree)
             newGroup := cons(q, newGroup )
@@ -551,7 +551,7 @@ PermutationGroup(S : SetCategory) : public == private where
         if maxLoops < 1 then
             -- try to get the (approximate) base length
             if zero? (# ((group.information).gpbase)) then
-                k := bsgs1(newGroup, 1, nil()$(L L NNI), 20, group, 0,
+                k := bsgs1(newGroup, 1, []$(L L NNI), 20, group, 0,
                                  outr, outwordr)
             maxLoops := #((group.information).gpbase) - 1
         k := bsgs1(newGroup, 1, words, maxLoops, group, diff, outr, outwordr)
@@ -571,8 +571,8 @@ PermutationGroup(S : SetCategory) : public == private where
             gp_info.gpbase := baseOfGroup
             gp_info.orbs := orbv
             -- test whether we have a base and a strong generating set
-            sgs : L V NNI := nil()
-            wordlist := nil()
+            sgs : L V NNI := []
+            wordlist := []
             for i in 1..(kkk-1) repeat
                 sgs := append(sgs, out.i)
                 if wordProblem then wordlist := append (wordlist, outword.i)
@@ -603,7 +603,7 @@ PermutationGroup(S : SetCategory) : public == private where
                     y1    := inv ppp.elt
                     word3 := ppp.lst
                     for jjj in 1..#sgs while noresult repeat
-                        word         := nil()$(L NNI)
+                        word         := []$(L NNI)
                         times!(z, qelt(sgsv, jjj), y1)
                         if wordProblem then word := qelt(wordv, jjj)
                         ppp := strip(z, i, false, orbv, sgsv, wordv)
@@ -626,7 +626,7 @@ PermutationGroup(S : SetCategory) : public == private where
             if noAnswer then
                 add_cnt := add_cnt + 1
                 -- we have missed something
-                word2 := nil()$(L NNI)
+                word2 := []$(L NNI)
                 if wordProblem then
                     for wdi in word3 repeat
                         ttt := newGroup.wdi
@@ -657,7 +657,7 @@ PermutationGroup(S : SetCategory) : public == private where
 
 
     initialize(group : %) : FSET PERM S ==
-        group2 := brace()$(FSET PERM S)
+        group2 := empty()$(FSET PERM S)
         gp : L PERM S := group.gens
         for gen in gp repeat
             if degree gen > 0 then insert!(gen, group2)
@@ -684,9 +684,9 @@ PermutationGroup(S : SetCategory) : public == private where
         gp_info : REC2
         for x in mP repeat
             not member?(x, gr_supp) =>
-                return [false, nil()$(L NNI) ]
+                return [false, []$(L NNI)]
         if not(do_words) then
-            member?(p, gp.gens) => return [true, nil()$(L NNI) ]
+            member?(p, gp.gens) => return [true, []$(L NNI)]
         knownGroup? gp
         gp_info := gp.information
         sgsl := gp_info.sgset
@@ -866,9 +866,9 @@ PermutationGroup(S : SetCategory) : public == private where
         gr_supp := group.information.mp
         gr_sgs := group.information.sgset
         degree := # gr_supp
-        strongGens := nil()$(L PERM S)
+        strongGens := []$(L PERM S)
         for i in gr_sgs repeat
-            pairs := nil()$(L L S)
+            pairs := []$(L L S)
             for j in 1..degree repeat
                 pairs := cons([ gr_supp.j, gr_supp.(i.j)], pairs)
             strongGens := cons(coerceListOfPairs pairs, strongGens)
@@ -876,7 +876,7 @@ PermutationGroup(S : SetCategory) : public == private where
 
     elt(gp, i) == (gp.gens).i
 
-    movedPoints(gp) == brace pointList gp
+    movedPoints(gp) == set(pointList(gp))
 
     random(group, maximalNumberOfFactors) ==
         maximalNumberOfFactors < 1 => 1$(PERM S)
@@ -903,7 +903,7 @@ PermutationGroup(S : SetCategory) : public == private where
         knownGroup? group
         gr_base := group.information.gpbase
         gr_supp := group.information.mp
-        groupBase := nil()$(L S)
+        groupBase := []$(L S)
         for i in gr_base repeat
             groupBase := cons(gr_supp.i, groupBase)
         reverse groupBase
@@ -924,7 +924,7 @@ PermutationGroup(S : SetCategory) : public == private where
         group         := [gp, result]
 
     coerce(group : %) : OUT ==
-        outList := nil()$(L OUT)
+        outList := []$(L OUT)
         gp : L PERM S := group.gens
         for i in (maxIndex gp)..1 by -1 repeat
             outList := cons(coerce gp.i, outList)
@@ -934,20 +934,20 @@ PermutationGroup(S : SetCategory) : public == private where
     orbit(gp : %, el : S) : FSET S ==
         elList : L S := [el]
         outList      := orbitInternal(gp, elList)
-        outSet       := brace()$(FSET S)
+        outSet       := empty()$(FSET S)
         for i in 1..#outList repeat
             insert!(outList.i.1, outSet )
         outSet
 
     orbits(gp) ==
         spp    := movedPoints(gp)
-        orbits := nil()$(L FSET S)
+        orbits := []$(L FSET S)
         while cardinality spp > 0 repeat
             el       := extract! spp
             orbitSet := orbit(gp, el)
             orbits   := cons(orbitSet, orbits)
             spp      := difference(spp, orbitSet)
-        brace orbits
+        set(orbits)
 
     member? (p, gp) ==
         mi := memberInternal(p, gp, false)
@@ -964,7 +964,7 @@ PermutationGroup(S : SetCategory) : public == private where
             initializeGroupForWordProblem gp
             gp_info := gp.information
         lll : L NNI := wordInStrongGenerators(p, gp)
-        outlist := nil()$(L NNI)
+        outlist := []$(L NNI)
         words := gp.information.wd
         for n in lll repeat
             outlist := append (outlist, words(n))
@@ -992,14 +992,14 @@ PermutationGroup(S : SetCategory) : public == private where
     orbit(gp : %, startSet : FSET S) : FSET FSET S ==
         startList : L S := parts startSet
         outList         := orbitInternal (gp, startList)
-        outSet          := brace()$(FSET FSET S)
+        outSet          := empty()$(FSET FSET S)
         for i in 1..#outList repeat
-            newSet : FSET S := brace outList.i
+            newSet : FSET S := set(outList.i)
             insert!(newSet, outSet)
         outSet
 
     orbit(gp : %, startList : L S) : FSET L S ==
-        brace orbitInternal(gp, startList)
+        set(orbitInternal(gp, startList))
 
     initializeGroupForWordProblem(gp, maxLoops, diff) ==
         bsgs(gp, true, maxLoops, diff)
@@ -1211,7 +1211,7 @@ PermutationGroupExamples() : public == private where
 
       -- definition of the exported functions:
       youngGroup(l : L I) : PERMGRP I ==
-        gens := nil()$(L L L I)
+        gens := []$(L L L I)
         element : I := 1
         for n in l | n > 1 repeat
           gens := cons(list [i for i in element..(element+n-1)], gens)
@@ -1329,7 +1329,7 @@ PermutationGroupExamples() : public == private where
       janko2() : PERMGRP I == janko2 li1n 100
 
       abelianGroup(l : L PI) : PERMGRP I ==
-        gens := nil()$(L L L I)
+        gens := []$(L L L I)
         element : I := 1
         for n in l | n > 1 repeat
           gens := cons( list [i for i in element..(element+n-1) ], gens )

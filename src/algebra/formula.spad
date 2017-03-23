@@ -102,7 +102,7 @@ ScriptFormulaFormat() : public == private where
     naryPrecs     : L I := [700, 700, 800,  800, 110, 110,  0,    0, 0,
                             0,  0,  0]$(L I)
 --  naryNGOps     : L S := ["ROW"," here "]$(L S)
-    naryNGOps     : L S := nil$(L S)
+    naryNGOps     : L S := []
 
     plexOps       : L S := ["SIGMA","PI","INTSIGN"]$(L S)
     plexPrecs     : L I := [    700, 800,      700]$(L I)
@@ -180,7 +180,7 @@ ScriptFormulaFormat() : public == private where
 
     coerce(f : %) : E ==
       s, t : S
-      l : L S := nil
+      l : L S := []
       for s in f.prolog repeat l := concat(s, l)
       for s in f.formula repeat
         for t in splitLong(s, (_$LINELENGTH$Lisp pretend Integer) - 4) repeat
@@ -208,7 +208,7 @@ ScriptFormulaFormat() : public == private where
       splitLong1(str, len)
 
     splitLong1(str : S, len : I) ==
-      l : List S := nil
+      l : List S := []
       s : S := ""
       ls : I := 0
       ss : S
@@ -255,12 +255,12 @@ ScriptFormulaFormat() : public == private where
       op = "PRIME" =>
           formatSpecial("SUPERSUB", [first args, " "::E, second(args)], prec)
       op = "OVERBAR" =>
-        null args => ""
+        empty?(args) => ""
         group concat [formatFormula(first args, minPrec)," bar"]
       op = "ROOT" =>
-        null args => ""
+        empty?(args) => ""
         tmp : S := formatFormula(first args, minPrec)
-        null rest args => group concat ["sqrt ",tmp]
+        empty?(rest args) => group concat ["sqrt ",tmp]
         group concat ["midsup adjust(u 1.5 r 9) ",
           formatFormula(first rest args, minPrec)," sqrt ",tmp]
       op = "SC" =>
@@ -273,22 +273,22 @@ ScriptFormulaFormat() : public == private where
         form : List S := [formatFormula(first args, minPrec)]
         -- subscripts
         args := rest args
-        null args => concat form
+        empty?(args) => concat form
         tmp : S := formatFormula(first args, minPrec)
         if tmp ~= "" then form := append(form,[" sub ",tmp])$(List S)
         -- superscripts
         args := rest args
-        null args => group concat form
+        empty?(args) => group concat form
         tmp : S := formatFormula(first args, minPrec)
         if tmp ~= "" then form := append(form,[" sup ",tmp])$(List S)
         -- presuperscripts
         args := rest args
-        null args => group concat form
+        empty?(args) => group concat form
         tmp : S := formatFormula(first args, minPrec)
         if tmp ~= "" then form := append(form,[" presup ",tmp])$(List S)
         -- presubscripts
         args := rest args
-        null args => group concat form
+        empty?(args) => group concat form
         tmp : S := formatFormula(first args, minPrec)
         if tmp ~= "" then form := append(form,[" presub ",tmp])$(List S)
         group concat form
@@ -314,7 +314,7 @@ ScriptFormulaFormat() : public == private where
       args := rest args
       if hold ~= "" then
           s := concat [s," from",group concat ["\displaystyle ",hold]]
-      if not null rest args then
+      if not(empty?(rest args)) then
           hold := formatFormula(first args, minPrec)
           if hold ~= "" then
               s := concat [s," to",group concat ["\displaystyle ",hold]]
@@ -363,7 +363,7 @@ ScriptFormulaFormat() : public == private where
       group formatNaryNoGroup(op, args, prec)
 
     formatNaryNoGroup(op : S, args : L E, prec : I) : S ==
-      null args => ""
+      empty?(args) => ""
       p : I := position(op, naryOps)
       p < 1 => error "unknown Script Formula Formatter nary op"
       op :=
@@ -373,7 +373,7 @@ ScriptFormulaFormat() : public == private where
         op = " "     => blank
         op = "ROW"   => " here "
         op
-      l : L S := nil
+      l : L S := []
       opPrec := naryPrecs.p
       for a in args repeat
         l := concat(op, concat(formatFormula(a, opPrec), l)$L(S))$L(S)

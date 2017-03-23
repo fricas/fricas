@@ -41,7 +41,7 @@ CylindricalAlgebraicDecompositionUtilities(R, P) : PUB == PRIV where
 
      gcdBasisAdd(p, lpols) ==
          (degree(p) = 0) => lpols
-         null lpols => [unitCanonical p]
+         empty?(lpols) => [unitCanonical p]
          p1 := first(lpols)
          g := gcd(p, p1)
          (degree(g) = 0) => cons(p1, gcdBasisAdd(p, rest lpols))
@@ -128,7 +128,7 @@ SimpleCell(TheField, ThePols) : PUB == PRIV where
              append(separate(reverse(ll), left, middle),
                     rest(separate(cons(nbe, lr), middle, right)))
          new_right := (left + middle)/(2::TheField)
-         null ll =>
+         empty?(ll) =>
              new_left := (middle + right)/(2::TheField)
              while new_left >= first(lr) repeat
                  new_left := (middle + new_left)/(2::TheField)
@@ -136,7 +136,7 @@ SimpleCell(TheField, ThePols) : PUB == PRIV where
          while new_right <= first(ll) repeat
              new_right := (new_right + middle)/(2::TheField)
          new_left := (middle + right)/(2::TheField)
-         null lr => append(separate(reverse(ll), left, new_right),
+         empty?(lr) => append(separate(reverse(ll), left, new_right),
                            [middle, right])
          while new_left >= first(lr) repeat
              new_left := (middle + new_left)/(2::TheField)
@@ -153,14 +153,14 @@ SimpleCell(TheField, ThePols) : PUB == PRIV where
      PACK ==> CylindricalAlgebraicDecompositionUtilities(TheField, ThePols)
      allSimpleCells(lp : List(ThePols), var : Symbol) ==
          lp1 := gcdBasis(lp)$PACK
-         null(lp1) => [pointToCell(0, true, var)]
+         empty?(lp1) => [pointToCell(0, true, var)]
          b := ("max" / [ boundOfCauchy(p)$VARS for p in lp1])::TheField
          l := "append" / [allRootsOf(makeSUP(unitCanonical(p))) for p in lp1]
          l := sort(l)
          l1 := separate(l, -b, b)
          res : List(%) := [pointToCell(first(l1), true, var)]
          l1 := rest(l1)
-         while not(null(l1)) repeat
+         while not(empty?(l1)) repeat
              res := cons(pointToCell(first(l1), false, var), res)
              l1 := rest(l1)
              l1 = [] => error "Impossible, empty list"
@@ -220,9 +220,9 @@ Cell(TheField) : PUB == PRIV where
         paren [sc::O for sc in c]
 
     projection(cell) ==
-        null cell => error "projection: should not appear"
+        empty?(cell) => error "projection: should not appear"
         r := rest(cell)
-        null r => "failed"
+        empty?(r) => "failed"
         r
 
     makeCell(l : List(SCELL)) == l
@@ -230,21 +230,21 @@ Cell(TheField) : PUB == PRIV where
     makeCell(scell, toAdd) == cons(scell, toAdd)
 
     mainVariableOf(cell) ==
-        null(cell) =>
+        empty?(cell) =>
             error "Should not appear"
         variableOf(first(cell))
 
     variablesOf(cell) ==
-        null(cell) => []
+        empty?(cell) => []
         cons(mainVariableOf(cell), variablesOf(rest(cell)::%))
 
     dimension(cell) ==
-        null(cell) => 0
+        empty?(cell) => 0
         hasDimension?(first(cell)) => 1 + dimension(rest(cell))
         dimension(rest(cell))
 
     hasDimension?(cell, var) ==
-        null(cell) =>
+        empty?(cell) =>
             error "Should not appear"
         sc : SCELL := first(cell)
         v := variableOf(sc)
@@ -254,7 +254,7 @@ Cell(TheField) : PUB == PRIV where
         error "impossible"
 
     samplePoint(cell) ==
-        null(cell) => []
+        empty?(cell) => []
         cons(samplePoint(first(cell)), samplePoint(rest(cell)))
 
 )abbrev package CAD CylindricalAlgebraicDecompositionPackage

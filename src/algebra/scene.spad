@@ -1915,8 +1915,8 @@ SceneIFS(PT) : Exports == Implementation where
   -- construct a ifs representation of a mesh from a 2 dimensional
   -- array of points
   smesh(ptin : List List PT, clos : Boolean) : % ==
-   pt2 : List PT := nil()
-   in2 : List List NNI := nil()
+   pt2 : List PT := []
+   in2 : List List NNI := []
    rowLength := #ptin
    colLength := #(first ptin)
    j := 0
@@ -1952,7 +1952,7 @@ SceneIFS(PT) : Exports == Implementation where
   subdivide(me : %) : % ==
     indexSize : NNI := #(me.pts)
     pt2 : List PT := [(me.pts).i for i in 1..indexSize]
-    in2 : List List NNI := nil()
+    in2 : List List NNI := []
     for faceIx in me.inx repeat
       -- create new point as the average value of all the points in the face
       newPt := sipnt(0, 0, 0)
@@ -1976,7 +1976,7 @@ SceneIFS(PT) : Exports == Implementation where
   sierpinskiDivide(me : %, level : NNI) : % ==
     indexSize : NNI := #(me.pts)
     pt2 : List PT := [(me.pts).i for i in 1..indexSize]
-    in2 : List List NNI := nil()
+    in2 : List List NNI := []
     for faceIx in me.inx repeat
       -- create new point as the average value of edge ends
       for offset in 1..#faceIx repeat
@@ -2005,7 +2005,7 @@ SceneIFS(PT) : Exports == Implementation where
   -- listBranches(c) returns a list of lists of points, representing the
   -- branches of the curve c.
   listBranches(functions : List Clipd) : List List PT ==
-    outList : List List PT := nil()
+    outList : List List PT := []
     for curve in functions repeat
       outList := concat(curve.points, outList)
     outList
@@ -2061,7 +2061,7 @@ SceneIFS(PT) : Exports == Implementation where
   -- form: [[cos(n - 1) a, sin(n - 1) a], ..., [cos 2 a, sin 2 a], [cos a, sin a]]
   -- where a = 2 pi/n. Note: n should be greater than 2.
   cosSinInfo(n : Integer) : List List DF ==
-      ans : List List DF := nil()
+      ans : List List DF := []
       theta : DF := 2 * pi()/n
       for i in 1..(n-1) repeat --!! make more efficient
         angle := i * theta
@@ -2076,8 +2076,8 @@ SceneIFS(PT) : Exports == Implementation where
   -- lls, which is the \spadfun{cosSinInfo} of the number of points
   -- defining the loop.
   loopPoints(ctr : PT, pNorm : PT, bNorm : PT, rad : DF, cosSin : List List DF) : List PT ==
-      ans : List PT := nil()
-      while not null cosSin repeat
+      ans : List PT := []
+      while not(empty?(cosSin)) repeat
         cossin := first cosSin; cos := first cossin; sin := second cossin
         ans := cons(ctr + rad * (cos * pNorm + sin * bNorm), ans)
         cosSin := rest cosSin
@@ -2087,7 +2087,7 @@ SceneIFS(PT) : Exports == Implementation where
   curveLoops(pts1 : List PT, r : DF, nn : Integer) : List List PT ==
       triads := curveTriads pts1
       cosSin := cosSinInfo nn
-      loops : List List PT := nil()
+      loops : List List PT := []
       for pt in pts1 for triad in triads repeat
         n := triad.norm; b := triad.bin
         loops := concat(loopPoints(pt, n, b, r, cosSin), loops)
@@ -2098,7 +2098,7 @@ SceneIFS(PT) : Exports == Implementation where
   stube(functions : List Clipd, r : DF, n : Integer) : % ==
     n < 3 => error "tube: n should be at least 3"
     brans := listBranches functions
-    loops : List List PT := nil()
+    loops : List List PT := []
     for bran in brans repeat
       loops := concat(loops, curveLoops(bran, r, n))
     smesh(loops, true)
@@ -4601,7 +4601,7 @@ Scene(PT) : Exports == Implementation where
     ++ ptLst is the points. This will be set to ref([]) at the start
     ++       and will be built up as this function is called recursively
     ++ indexLst is list of faces, where faces are list of points indexed
-    ++          by ptLst This will be set to ref(nil()) at the start
+    ++          by ptLst This will be set to ref([]) at the start
     ++       and will be built up as this function is called recursively
     ++ tran is the default transform which may be overridden by subnodes
     ++ bb is the default boundary which may be overridden by subnodes
@@ -5361,14 +5361,14 @@ Scene(PT) : Exports == Implementation where
   -- in other words this represents a two dimensional force
   -- field with the arrows showing the direction of the field
   createArrows2Din2D(ptFun : PT -> PT, uSeg : SEG, vSeg : SEG, numPts : NNI) : % ==
-    arrows : List List PT := nil()
+    arrows : List List PT := []
     ustep := (low(uSeg) - high(uSeg))/numPts
     vstep := (low(vSeg) - high(vSeg))/numPts
     someV := high(vSeg)
     for iv in numPts..0 by -1 repeat
       if zero? iv then someV := low(vSeg)
       -- hack: get last number in segment within segment
-      lp : List PT := nil()
+      lp : List PT := []
       someU := high(uSeg)
       for iu in numPts..0 by -1 repeat
         if zero? iu then someU := low(uSeg)
@@ -6058,7 +6058,7 @@ Scene(PT) : Exports == Implementation where
 
   -- this returns a string to represent a sequence of points in a X3D file
   pointString(pts : List PT, tran : TR, bb : SBoundary(PT)) : List String ==
-    ptStr : List String := nil() -- list to hold result
+    ptStr : List String := [] -- list to hold result
     pntNum : NNI -- hold current position in parameters
     lastValid : Boolean := true -- used to detect first valid entry
     for param in pts repeat
@@ -6075,7 +6075,7 @@ Scene(PT) : Exports == Implementation where
 
   -- this returns a string to represent a sequence of points in a X3D file
   pointIndexString(pts : List List NNI, tran : TR, bb : SBoundary(PT)) : List String ==
-    ptStr : List String := nil() -- string to hold result
+    ptStr : List String := [] -- string to hold result
     pntNum : NNI -- hold current position in parameters
     for line in pts repeat
       for param in line repeat
@@ -6339,7 +6339,7 @@ Scene(PT) : Exports == Implementation where
   -- supplied.
   writeObj(n : %, filename : String) : Void ==
     ptLst : Reference List PT := ref([])
-    indexLst : Reference List List NNI := ref(nil())
+    indexLst : Reference List List NNI := ref([])
     indexNxt : Reference NNI := ref(0::NNI)
     defaultTransform : TR := identity()$TR
     defaultBounds : SBoundary(PT) := nullBoundary()
@@ -6436,13 +6436,13 @@ Scene(PT) : Exports == Implementation where
       p0 := concat(f l, p0)
     t := reverse! concat(h, t)
     p0 := reverse! concat(f h, p0)
-    branches : List List PT := nil()
-    newl : List PT := nil()
+    branches : List List PT := []
+    newl : List PT := []
     for p in p0 repeat
       if not Pnan? p then newl := cons(p, newl)
       else if not empty? newl then
             branches := concat(newl := reverse! newl, branches)
-            newl := nil()
+            newl := []
     if not empty? newl then branches := concat(newl := reverse! newl, branches)
     createSceneLines(branches)
 
@@ -6541,14 +6541,14 @@ Scene(PT) : Exports == Implementation where
   -- from mesh.spad
   -- PSFUN is (DF, DF) -> PT
   createPlot2Din3D(ptFun : PSFUN, uSeg : SEG, vSeg : SEG, numPts : NNI) : % ==
-    llp : List List PT := nil()
+    llp : List List PT := []
     ustep := (low(uSeg) - high(uSeg))/numPts
     vstep := (low(vSeg) - high(vSeg))/numPts
     someV := high(vSeg)
     for iv in numPts..0 by -1 repeat
       if zero? iv then someV := low(vSeg)
       -- hack: get last number in segment within segment
-      lp : List PT := nil()
+      lp : List PT := []
       someU := high(uSeg)
       for iu in numPts..0 by -1 repeat
         if zero? iu then someU := low(uSeg)

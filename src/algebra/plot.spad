@@ -167,15 +167,15 @@ Plot() : Exports == Implementation where
 --% graphics output
 
     listBranches plot ==
-      outList : L L P := nil()
+      outList : L L P := []
       for curve in plot.functions repeat
         -- curve is C
-        newl : L P := nil()
+        newl : L P := []
         for p in curve.points repeat
           if not Pnan? p then newl := cons(p, newl)
           else if not empty? newl then
                 outList := concat(newl := reverse! newl, outList)
-                newl := nil()
+                newl := []
         if not empty? newl then outList := concat(newl := reverse! newl, outList)
 --      print(outList::OutputForm)
       outList
@@ -233,13 +233,13 @@ Plot() : Exports == Implementation where
     rangeRefine(curve, nRange) ==
       checkRange nRange; l := low(nRange); h := high(nRange)
       t := curve.knots; p := curve.points; f := curve.source
-      while not null t and first t < l repeat
+      while not(empty?(t)) and first t < l repeat
         (t := rest t; p := rest p)
-      c : L F := nil(); q : L P := nil()
-      while not null t and (first t) <= h repeat
+      c : L F := []; q : L P := []
+      while not(empty?(t)) and (first t) <= h repeat
         c := concat(first t, c); q := concat(first p, q)
         t := rest t; p := rest p
-      if null c then return basicPlot(f, nRange)
+      if empty?(c) then return basicPlot(f, nRange)
       if first c < h then
         c := concat(h, c)
         q := concat(f h, q)
@@ -250,7 +250,7 @@ Plot() : Exports == Implementation where
         t := c := concat(l, c)
         p := q := concat(f l, p)
         NUMFUNEVALS := NUMFUNEVALS + 1
-      while not null rest t repeat
+      while not(empty?(rest(t))) repeat
         n := wholePart((second(t) - first(t))/s)
         d := (second(t) - first(t))/((n+1)::F)
         for i in 1..n repeat
@@ -277,12 +277,12 @@ Plot() : Exports == Implementation where
       minLength : F := 4::F/500::F
       maxLength : F := 1::F/6::F
       tLimit := tDiff/(pixelfraction*500)::F
-      while not null t and first t < l repeat (t := rest t; p := rest p)
+      while not(empty?(t)) and first t < l repeat (t := rest t; p := rest p)
       #t < 3 => curve
       headert := t; headerp := p
 
       -- jitter the input points
---      while not null rest rest t repeat
+--      while not(empty?(rest rest t)) repeat
 --        t0 := second(t); t1 := third(t)
 --        jitter := (random()$I) :: F
 --        jitter := sin (jitter)
@@ -293,7 +293,7 @@ Plot() : Exports == Implementation where
 
       st := headert; sp := headerp
       n : I := 0
-      while not null rest rest st repeat
+      while not(empty?(rest(rest(st)))) repeat
         t0 := first(st); t1 := second(st); t2 := third(st)
         if t2 > h then break
         t2 - t0 < tLimit =>
@@ -366,7 +366,7 @@ Plot() : Exports == Implementation where
       p := curve.points := copy curve.points
       l := low(nRange); h := high(nRange)
       f := curve.source
-      while not null rest t and first t < h repeat
+      while not(empty?(rest(t))) and first t < h repeat
         second(t) < l => (t := rest t; p := rest p)
         -- insert new point between t.0 and t.1
         tm : F := (first(t) + second(t))/2::F
@@ -428,7 +428,7 @@ Plot() : Exports == Implementation where
       if adaptive? then
         p := adaptivePlot(p, first r, second r, third r, 1)
         r := p.ranges
-      [ false, rest r, r, nil(), [ p ] ]
+      [false, rest(r), r, [], [p]]
 
     plot(f : F -> F, xRange : R, yRange : R) ==
       p := plot(f, xRange)
@@ -442,7 +442,7 @@ Plot() : Exports == Implementation where
       if adaptive? then
         p := adaptivePlot(p, first r, second r, third r, 8)
         r := p.ranges
-      [ true, rest r, r, nil(), [ p ] ]
+      [true, rest(r), r, [], [p]]
 
     plot(f : F -> F, g : F -> F, tRange : R, xRange : R, yRange : R) ==
       p := plot(f, g, tRange)
@@ -456,7 +456,7 @@ Plot() : Exports == Implementation where
       if adaptive? then
         p := adaptivePlot(p, first r, second r, third r, 8)
         r := p.ranges
-      [ true, rest r, r, nil(), [ p ] ]
+      [true, rest(r), r, [], [p]]
 
     pointPlot(f : F -> P, tRange : R, xRange : R, yRange : R) ==
       p := pointPlot(f, tRange)
@@ -464,7 +464,7 @@ Plot() : Exports == Implementation where
       p
 
     plot(l : L(F -> F), xRange : R) ==
-      if null l then error "empty list of functions"
+      if empty?(l) then error "empty list of functions"
       t : L C := [ basicPlot((z1 : F) : P +-> pt(z1, myTrap(f, z1)), xRange) for f in l ]
       yRange := join(t, 2)
       NUMFUNEVALS := # l * minPoints()
@@ -473,7 +473,7 @@ Plot() : Exports == Implementation where
                 for f in l for p in t]
         yRange := join(t, 2)
 --      print(NUMFUNEVALS::OUT)
-      [false, [xRange, yRange], [xRange, xRange, yRange], nil(), t ]
+      [false, [xRange, yRange], [xRange, xRange, yRange], [], t]
 
     plot(l : L(F -> F), xRange : R, yRange : R) ==
       p := plot(l, xRange)
@@ -494,7 +494,7 @@ Plot() : Exports == Implementation where
       tSymbol := message("t = ")
       plotSymbol := message("PLOT")
       tRange := (parametricRange r) :: OUT
-      f : L OUT := nil()
+      f : L OUT := []
       for curve in r.functions repeat
         xRange := second(curve.ranges) :: OUT
         yRange := third(curve.ranges) :: OUT

@@ -143,7 +143,7 @@ Segment(S : Type) : SegmentCategory(S) with
 
     if S has OrderedRing then
       expand(ls : List %) : List S ==
-        lr := nil()$List(S)
+        lr := []$List(S)
         for s in ls repeat
           l := low(s)
           h := high(s)
@@ -161,7 +161,7 @@ Segment(S : Type) : SegmentCategory(S) with
 
       expand(s : %) == expand([s]$List(%))$%
       map(f : S->S, s : %) : List S ==
-        lr := nil()$List(S)
+        lr := []$List(S)
         l := low(s)
         h := high(s)
         inc := (incr s)::S
@@ -206,7 +206,7 @@ SegmentFunctions2(R : Type, S : Type) : public == private where
 
     if R has OrderedRing then
      map(f : R->S, r : Segment R) : List S ==
-       lr := nil()$List(S)
+       lr := []$List(S)
        l := low(r)
        h := high(r)
        inc := (incr r)::R
@@ -413,15 +413,15 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
 
       expand(ls : List %) : Stream S ==
         st : Stream S := empty()
-        null ls => st
+        empty?(ls) => st
 
-        lb : List(Segment S) := nil()
-        while not null ls and hasHi first ls repeat
+        lb : List(Segment S) := []
+        while not(empty?(ls)) and hasHi first ls repeat
             s  := first ls
             ls := rest ls
             ns := BY(SEGMENT(low(s), high(s)), incr s)$Segment(S)
             lb := concat!(lb, ns)
-        if not null ls then
+        if not(empty?(ls)) then
             s := first ls
             st : Stream S := stream(x +-> x + incr(s)::S, low(s))
         else

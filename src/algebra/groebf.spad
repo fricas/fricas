@@ -163,11 +163,11 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol) : T == C where
      -- with next polynomial.
 
      while (not doSplitting?) and (not terminateWithBasis) repeat
-       terminateWithBasis := (null inputPolys and null lcP)
+       terminateWithBasis := empty?(inputPolys) and empty?(lcP)
        not terminateWithBasis =>  -- still polynomials left
          -- determine next polynomial "nP"
          nP :=
-           not null inputPolys =>
+           not(empty?(inputPolys)) =>
              p := first inputPolys
              inputPolys := rest inputPolys
              -- we know that p is not equal to 0 or 1, but, although,
@@ -215,7 +215,7 @@ GroebnerFactorizationPackage(Dom, Expon, VarSet, Dpol) : T == C where
              -- now we factorize "nP", which is not constant
              irreducibleFactors : L Dpol := createAllFactors(nP)
              -- if there are more than 1 factors we reduce them and split
-             (doSplitting? := not null rest irreducibleFactors) =>
+             (doSplitting? := not(empty?(rest irreducibleFactors))) =>
                -- and reduce and normalize the factors
                for fnP in irreducibleFactors repeat
                  fnP := hMonic redPol(fnP, redPols)

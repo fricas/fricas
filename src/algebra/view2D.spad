@@ -207,7 +207,7 @@ GraphImage () : Exports == Implementation where
       reverse! llp2
 
     graph demRanges ==
-      null demRanges =>  [ 0, [], [], [], [], [], [], [] ]
+      empty?(demRanges) =>  [ 0, [], [], [], [], [], [], [] ]
       demRangesSF : RANGESF := _
         [segment(convert(low(demRanges.1))@SF,
                  convert(high(demRanges.1))@SF)$(Segment(SF)),
@@ -254,8 +254,8 @@ GraphImage () : Exports == Implementation where
     plotLists(graf : Rep, listOfListsOfPoints : L L P, listOfPointColors : L PAL, listOfLineColors : L PAL, listOfPointSizes : L PI) : % ==
       givenLen := #listOfListsOfPoints
         -- take out point lists that are actually empty
-      listOfListsOfPoints := [ l for l in listOfListsOfPoints | not null l ]
-      if (null listOfListsOfPoints) then
+      listOfListsOfPoints := [l for l in listOfListsOfPoints | not empty?(l)]
+      if empty?(listOfListsOfPoints) then
         error "GraphImage was given a list that contained no valid point lists"
       if ((len := #listOfListsOfPoints) ~= givenLen) then
         sayBrightly(["   Warning: Ignoring pointless point list"::E]$List(E))$Lisp
@@ -286,10 +286,10 @@ GraphImage () : Exports == Implementation where
         error "You are trying to draw over an existing graph"
       transform := coord(graf.optionsField, cartesian$COORDSYS)$DrawOptionFunctions0
       graf.llPoints := putColorInfo(graf.llPoints, graf.pointColors)
-      if null(ranges graf) then  -- figure out best ranges for points
+      if empty?(ranges graf) then  -- figure out best ranges for points
         graf.rangesField := calcRanges(graf.llPoints)  --::V SEG SF
       graf.rangesField := roundRanges(graf.rangesField)
-      if null(units graf) then  -- figure out best ranges for points
+      if empty?(units graf) then  -- figure out best ranges for points
         graf.unitsField := figureUnits(graf.rangesField)  --::V SEG SF
       sayBrightly([message(
         "   Graph data being transmitted to the viewport manager...")$E
@@ -324,7 +324,7 @@ GraphImage () : Exports == Implementation where
     key graf                  == graf.key
     pointLists graf           == graf.llPoints
     ranges graf                ==
-      null graf.rangesField => []
+      empty?(graf.rangesField) => []
       [segment(convert(low(graf.rangesField.1))@F,
                convert(high(graf.rangesField.1))@F),
        segment(convert(low(graf.rangesField.2))@F,
@@ -337,7 +337,7 @@ GraphImage () : Exports == Implementation where
                  convert(high(rangesList.2))@SF)]
       rangesList
     units graf                ==
-      null(graf.unitsField) => []
+      empty?(graf.unitsField) => []
       [convert(graf.unitsField.1)@F, convert(graf.unitsField.2)@F]
     units (graf, unitsToBe)    ==
       graf.unitsField := [convert(unitsToBe.1)@SF, convert(unitsToBe.2)@SF]

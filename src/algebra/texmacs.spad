@@ -1031,19 +1031,19 @@ TexmacsFormat() : public == private where
         op = 'PRIME =>
             formatSpecial('SUPERSUB, [first args, " "::E, second(args)], prec)
         op = 'OVERBAR =>
-            null args => ""
+            empty?(args) => ""
             concat ["(wide ", formatExpr(first args, minPrec), " _"<bar>_")"]
             --OverBar
         op = 'ROOT =>
-            null args => ""
+            empty?(args) => ""
             tmp : S := group formatExpr(first args, minPrec)
-            null rest args => concat ["(sqrt ", tmp, ")"]
+            empty?(rest(args)) => concat ["(sqrt ", tmp, ")"]
             concat ["(sqrt ", tmp, " ", formatExpr(first rest args, minPrec),
                     ")"]
         op = 'SEGMENT =>
             tmp : S := concat [formatExpr(first args, minPrec), " _".._" "]
             group
-                null rest args =>  tmp
+                empty?(rest(args)) =>  tmp
                 concat [tmp, formatExpr(first rest args, minPrec)]
         op = 'SUB =>
             group concat ["(concat ", formatExpr(first args, minPrec),
@@ -1052,31 +1052,31 @@ TexmacsFormat() : public == private where
             base : S := formatExpr(first args, minPrec)
             args := rest args
             #args > 4 => error "multiscript object has more than 4 scripts"
-            if not(null(args)) then
+            if not(empty?(args)) then
                 base := concat [base, " ",
                                 optionalWrap("rsub", args(1), minPrec)]
                 args := rest args
-            if not(null(args)) then
+            if not(empty?(args)) then
                 base := concat [base, " ",
                                 optionalWrap("rsup", args(1), minPrec)]
                 args := rest args
-            if not(null(args)) then
+            if not(empty?(args)) then
                 base := concat [optionalWrap("lsup", args(1), minPrec),
                                 " ", base]
                 args := rest args
-            if not(null(args)) then
+            if not(empty?(args)) then
                 base := concat [optionalWrap("lsub", args(1), minPrec),
                                 " ", base]
             concat ["(concat ", base, ")"]
         op = 'SC =>
-            null args => ""
+            empty?(args) => ""
             tmp := formatNaryNoGroup('STRSEP, ")) (row (cell ",
                                      0, args, minPrec)
             concat ["(tabular (tformat (twith _"table-valign_" _"t_") (table (row (cell ", tmp, ")))))"]
         op = 'MATRIX => formatMatrix rest args
 )if false
         op = 'BOX =>
-            null args => ""
+            empty?(args) => ""
             tmp := formatNaryNoGroup("",args,minPrec)
             group concat ["<mtable frame=_"solid_"><mtr><mtd>",tmp,"</mtd></mtr></mtable>"]
         op = 'EQUATNUM =>
@@ -1235,7 +1235,7 @@ TexmacsFormat() : public == private where
         group formatNaryNoGroup(op, sep, opprec, args, prec)
 
     formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
-        null args => ""
+        empty?(args) => ""
         p : I := position(op, naryOps)
         p < 1 => error "unknown nary op"
         -- need to test for "ZAG" case and divert it here
@@ -1273,7 +1273,7 @@ TexmacsFormat() : public == private where
             op = 'ROW   => ") (cell "
             op = 'TENSOR => " _"<otimes>_" "
             concat [" _"", string(op), "_" "]
-        l : L S := nil
+        l : L S := []
         opPrec :=
             op = 'STRSEP => opprec
             naryPrecs.p

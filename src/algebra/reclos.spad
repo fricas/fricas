@@ -119,7 +119,7 @@ RealPolynomialUtilitiesPackage(TheField, ThePols) : PUB == PRIV where
        boundOfCauchy(p) ==
          c : TheField := inv(leadingCoefficient(p))
          l := [ c*term for term in rest(coefficients(p))]
-         null(l) => 1
+         empty?(l) => 1
          1 + ("max" / [ abs(t) for t in l ])
 
 --       sturmVariationsOf(l) ==
@@ -132,7 +132,7 @@ RealPolynomialUtilitiesPackage(TheField, ThePols) : PUB == PRIV where
 --         res
 
        sturmVariationsOf(l) ==
-         null(l) => error "POLUTIL: sturmVariationsOf: empty list !"
+         empty?(l) => error "POLUTIL: sturmVariationsOf: empty list !"
          l1 := first(l)
          -- first 0 counts as a sign
          ll : List(TheField) := []
@@ -140,7 +140,7 @@ RealPolynomialUtilitiesPackage(TheField, ThePols) : PUB == PRIV where
            -- zeros don't count
            if not(zero?(term)) then ll := cons(term, ll)
          -- if l1 is not zero then ll = reverse(l)
-         null(ll) => error "POLUTIL: sturmVariationsOf: Bad sequence"
+         empty?(ll) => error "POLUTIL: sturmVariationsOf: Bad sequence"
          ln := first(ll)
          ll := reverse(rest(ll))
          -- if l1 is not zero then first(l) = first(ll)
@@ -150,9 +150,9 @@ RealPolynomialUtilitiesPackage(TheField, ThePols) : PUB == PRIV where
 
        lazyVariations(l, sl, sh) ==
          zero?(sl) or zero?(sh) => error "POLUTIL: lazyVariations: zero sign!"
-         null(l) =>
+         empty?(l) =>
            if sl = sh then 0 else 1
-         null(rest(l)) =>
+         empty?(rest(l)) =>
            if zero?(first(l))
            then error "POLUTIL: lazyVariations: zero sign!"
            else
@@ -669,7 +669,7 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
 
 
    hasVarsl(l : List(TheField)) ==
-    null(l) => false
+    empty?(l) => false
     f := sign(first(l))
     for term in rest(l) repeat
       if f*term < 0 then return(true)

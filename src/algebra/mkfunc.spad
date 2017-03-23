@@ -104,7 +104,7 @@ InputForm():
                [u.symb for u in l2]))@%]$List(%))@%)))@%
 
     flatten0(s, sy, n) ==
-      atom? s => [nil(), s]
+      atom? s => [[], s]
       a := convert(concat(string sy, convert(n)@String)::Symbol)@%
       l2 := [flatten0(x, sy, n := n+1) for x in rest(l := destruct s)]
       [concat(concat [u.lst for u in l2], conv([convert(
@@ -130,7 +130,7 @@ InputForm():
     compile(name, types) ==
       symbol car cdr car
         selectLocalMms(mkProperOp name, convert(name)@%,
-          types, nil$List(%))$Lisp
+          types, []$List(%))$Lisp
 
     mkProperOp name ==
       op : % := mkAtree(nme := convert(name)@%)$Lisp
@@ -148,7 +148,7 @@ InputForm():
         concat(convert('Tuple), [convert x for x in l]$List(%))
 
     function(f, l, name) ==
-      nn := convert(new(1 + #l, convert(nil()$List(%)))$List(%))@%
+      nn := convert(new(1 + #l, convert([]$List(%)))$List(%))@%
       conv([convert('DEF), conv(cons(convert(name)@%,
                         [convert(x)@% for x in l])), nn, nn, f]$List(%))
 
@@ -244,7 +244,7 @@ MakeFunction(S : ConvertibleTo InputForm) : Exports == Implementation where
       ++ \spad{foo(x1, ..., xn) == e}.
 
   Implementation ==> add
-    function(s, name)            == function(s, name, nil())
+    function(s, name)            == function(s, name, [])
     function(s : S, name : SY, x : SY) == function(s, name, [x])
     function(s, name, x, y)      == function(s, name, [x, y])
 
@@ -410,7 +410,7 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
       unaryFunction compile(spadname, t)
 
     mkLispList l ==
-      ans := nil()$List(INF)
+      ans := []$List(INF)
       for s in l repeat
         (u := mkLisp s) case "failed" => return "failed"
         ans := concat(u::INF, ans)
