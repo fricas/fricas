@@ -609,6 +609,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     simplify0 : F -> F
     simplifyLog1 : F -> F
     logArgs   : List F -> F
+    opexp := operator(operator('exp)$CommonOperators)$F
 
     import from F
     import from List F
@@ -709,18 +710,20 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       ne * de
 
     termexp p ==
+      lk := variables p
+      empty? lk => p::F
       exponent : F := 0
       coef := (leadingCoefficient p)::P
-      lpow := select((z1 : K) : Boolean +-> is?(z1, POWER)$K, lk := variables p)$List(K)
+      lpow := select((z1 : K) : Boolean +-> is?(z1, POWER), lk)
       for k in lk repeat
         d := degree(p, k)
-        if is?(k, 'exp) then
+        if is?(k, opexp) then
           exponent := exponent + d * first argument k
         else if not is?(k, POWER) then
           -- Expand arguments to functions as well ... MCD 23/1/97
           --coef := coef * monomial(1, k, d)
           coef := coef * monomial(1, kernel(operator k, [simplifyExp u for u in argument k], height k), d)
-      coef::F * exp exponent * powersimp(p, lpow)
+      coef::F * exp simplifyExp exponent * powersimp(p, lpow)
 
     expandPower f ==
       l := select((z1 : K) : Boolean +-> is?(z1, POWER)$K, kernels f)$List(K)
@@ -732,11 +735,10 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       k := first l                           -- k = a^b
       a := first(arg := argument k)
       exponent := degree(p, k) * second arg
-      empty?(lk := select((z1 : K) : Boolean +-> a = first argument z1, rest l)) =>
-        (a ^ exponent) * powersimp(p, rest l)
+      lk := select((z1 : K) : Boolean +-> a = first argument z1, rest l)
       for k0 in lk repeat
-        exponent := exponent + degree(p, k0) * second argument k0
-      (a ^ exponent) * powersimp(p, setDifference(rest l, lk))
+          exponent := exponent + degree(p, k0) * second argument k0
+      (a ^ simplifyExp exponent) * powersimp(p, setDifference(rest l, lk))
 
     t2t x         == sin(x) / cos(x)
     c2t x         == cos(x) / sin(x)
@@ -783,7 +785,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       arg := [htrigs x for x in argument k]$List(F)
       num := univariate(numer f, k)
       den := univariate(denom f, k)
-      is?(op, 'exp) =>
+      op = opexp =>
         g1 := cosh(a := first arg) + sinh(a)
         g2 := cosh(a) - sinh(a)
         supexp(num, g1, g2, b:= (degree num)::Z quo 2)/supexp(den, g1, g2, b)
