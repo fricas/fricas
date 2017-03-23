@@ -246,7 +246,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
 
       listPtsOnHorizBdry(pRN, y, y0, xMinNF, xMaxNF) ==
       -- strict inequality here: corners on vertical boundary
-        pointList : L Pt := nil()
+        pointList : L Pt := []
         ySF := RNtoSF(y0)
         f := eval(pRN, y, y0)
         roots : L NF := kinte(f, EPSILON)
@@ -256,7 +256,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         pointList
 
       listPtsOnVertBdry(pRN, x, x0, yMinNF, yMaxNF) ==
-        pointList : L Pt := nil()
+        pointList : L Pt := []
         xSF := RNtoSF(x0)
         f := eval(pRN, x, x0)
         roots : L NF := kinte(f, EPSILON)
@@ -266,7 +266,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         pointList
 
       listPtsInRect(points, xMin, xMax, yMin, yMax) ==
-        pointList : L Pt := nil()
+        pointList : L Pt := []
         for point in points repeat
           xx := first point; yy := second point
           if (xMin<=xx) and (xx<=xMax) and (yMin<=yy) and (yy<=yMax) then
@@ -358,16 +358,16 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         else
           minVal := RNtoNF yMin
           maxVal := RNtoNF yMax
-        lf : L Pt := nil(); rt : L Pt := nil()
-        bt : L Pt := nil(); tp : L Pt := nil()
-        htans : L Pt := nil(); vtans : L Pt := nil()
-        bran : L L Pt := nil()
+        lf : L Pt := []; rt : L Pt := []
+        bt : L Pt := []; tp : L Pt := []
+        htans : L Pt := []; vtans : L Pt := []
+        bran : L L Pt := []
         roots := kinte(p, EPSILON)
-        sketchRoots : L SF := nil()
+        sketchRoots : L SF := []
         for root in roots repeat
           if (minVal <= root) and (root <= maxVal) then
               sketchRoots := cons(NFtoSF root, sketchRoots)
-        null sketchRoots =>
+        empty?(sketchRoots) =>
           [p, x, y, xMin, xMax, yMin, yMax, [lf, rt, bt, tp], htans, vtans, bran]
         if var = x then
           yMinSF := RNtoSF yMin; yMaxSF := RNtoSF yMax
@@ -394,10 +394,10 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         a := ground(coefficient(p, x, 1)) :: SF
         b := ground(coefficient(p, y, 1)) :: SF
         c := ground(coefficient(coefficient(p, x, 0), y, 0)) :: SF
-        lf : L Pt := nil(); rt : L Pt := nil()
-        bt : L Pt := nil(); tp : L Pt := nil()
-        htans : L Pt := nil(); vtans : L Pt := nil()
-        branch : L Pt := nil(); bran : L L Pt := nil()
+        lf : L Pt := []; rt : L Pt := []
+        bt : L Pt := []; tp : L Pt := []
+        htans : L Pt := []; vtans : L Pt := []
+        branch : L Pt := []; bran : L L Pt := []
         -- compute x coordinate of point on line with y = yMin
         xBottom := (- b*yMinSF - c)/a
         -- compute x coordinate of point on line with y = yMax
@@ -432,15 +432,15 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         repeat
           -- 'current' is the smallest element of 'topList' and 'botList'
           -- 'currentFrom' records the list from which it was taken
-          if null topList then
-            if null botList then
-              return [segment(lo, hi), hi, nil(), nil()]
+          if empty?(topList) then
+            if empty?(botList) then
+              return [segment(lo, hi), hi, [], []]
             else
               current := first botList
               botList := rest  botList
               currentFrom := BOTTOM
           else
-            if null botList then
+            if empty?(botList) then
               current := first topList
               topList := rest  topList
               currentFrom := TOP
@@ -458,15 +458,15 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           -- 'nxt' is the next smallest element of 'topList'
           --  and 'botList'
           -- 'nextFrom' records the list from which it was taken
-          if null topList then
-            if null botList then
-              return [segment(lo, hi), hi, nil(), nil()]
+          if empty?(topList) then
+            if empty?(botList) then
+              return [segment(lo, hi), hi, [], []]
             else
               nxt := first botList
               botList := rest botList
               nextFrom := BOTTOM
           else
-            if null botList then
+            if empty?(botList) then
               nxt := first topList
               topList := rest topList
               nextFrom := TOP
@@ -536,29 +536,29 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         htans := listPtsInRect(htanPts, xMinNF, xMaxNF, yMinNF, yMaxNF)
         vtans := listPtsInRect(vtanPts, xMinNF, xMaxNF, yMinNF, yMaxNF)
         -- Create lists which will contain boundary points.
-        lf : L Pt := nil(); rt : L Pt := nil()
-        bt : L Pt := nil(); tp : L Pt := nil()
+        lf : L Pt := []; rt : L Pt := []
+        bt : L Pt := []; tp : L Pt := []
         -- Determine values of the independent variable at the which
         -- the rational function has a pole as well as the values of
         -- the independent variable for which there is a point on the
         -- upper or lower boundary.
         singList : L SF :=
           roots : L NF := kinte(den, EPSILON)
-          outList : L SF := nil()
+          outList : L SF := []
           for root in roots repeat
             if (indVarMinNF < root) and (root < indVarMaxNF) then
               outList := cons(NFtoSF root, outList)
           sort((x, y) +-> x < y, outList)
         topList : L SF :=
           roots : L NF := kinte(eval(pRN, depVar, depVarMax), EPSILON)
-          outList : L SF := nil()
+          outList : L SF := []
           for root in roots repeat
             if (indVarMinNF < root) and (root < indVarMaxNF) then
               outList := cons(NFtoSF root, outList)
           sort((x, y) +-> x < y, outList)
         botList : L SF :=
           roots : L NF := kinte(eval(pRN, depVar, depVarMin), EPSILON)
-          outList : L SF := nil()
+          outList : L SF := []
           for root in roots repeat
             if (indVarMinNF < root) and (root < indVarMaxNF) then
               outList := cons(NFtoSF root, outList)
@@ -598,21 +598,21 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
             bt := cons(makePt(val, yMinSF), bt)
           for val in topList repeat
             tp := cons(makePt(val, yMaxSF), tp)
-        bran : L L Pt := nil()
+        bran : L L Pt := []
         -- Determine segments on which the rational function is to
         -- be plotted.
         if (depVarMinSF < leftVal) and (leftVal < depVarMaxSF) then
           lo := indVarMinSF
         else
-          if null topList then
-            if null botList then
+          if empty?(topList) then
+            if empty?(botList) then
               return [p, x, y, xMin, xMax, yMin, yMax, [lf, rt, bt, tp], _
                                               htans, vtans, bran]
             else
               lo := first botList
               botList := rest botList
           else
-            if null botList then
+            if empty?(botList) then
               lo := first topList
               topList := rest topList
             else
@@ -628,14 +628,14 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         if (depVarMinSF < rightVal) and (rightVal < depVarMaxSF) then
           hi := indVarMaxSF
         else
-          if null topList then
-            if null botList then
+          if empty?(topList) then
+            if empty?(botList) then
               error "makeRatFcnSketch: plot domain"
             else
               hi := last botList
               botList := remove(hi, botList)
           else
-            if null botList then
+            if empty?(botList) then
               hi := last topList
               topList := remove(hi, topList)
             else
@@ -651,7 +651,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           (minSF := xMinSF; maxSF := xMaxSF)
         else
           (minSF := yMinSF; maxSF := yMaxSF)
-        segList : L SEG SF := nil()
+        segList : L SEG SF := []
         repeat
           segInfo := segmentInfo(f, lo, hi, botList, topList, singList, _
                                       minSF, maxSF)
@@ -771,8 +771,8 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         lf := bdPts.left; rt := bdPts.right
         tp := bdPts.top ; bt := bdPts.bottom
         bdry := append(append(lf, rt), append(bt, tp))
-        bran : L L Pt := nil()
-        while not null bdry repeat
+        bran : L L Pt := []
+        while not(empty?(bdry)) repeat
           pt := first bdry
           p0 := dummyFirstPt(pt, dpdxSF, dpdySF, x, y, lf, rt, bt, tp)
           segInfo := listPtsOnSegment(pSF, dpdxSF, dpdySF, x, y, p0, pt, _
@@ -784,7 +784,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         -- add the branch to the list of branches
         -- update list of critical points by deleting any critical
         -- points which were plotted
-        while not null crits repeat
+        while not(empty?(crits)) repeat
           pt := first crits
           segInfo := listPtsOnLoop(pSF, dpdxSF, dpdySF, x, y, pt, _
                            corners, delta, err, bound, crits, bdry)
@@ -965,10 +965,10 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         y2Approxx := y2Approx
         -- xPointList will contain all critical points (x*, y*)
         -- with x* between x1 and x2Approx
-        xPointList : L Pt := nil()
+        xPointList : L Pt := []
         -- yPointList will contain all critical points (x*, y*)
         -- with y* between y1 and y2Approx
-        yPointList : L Pt := nil()
+        yPointList : L Pt := []
         for pt in crits repeat
           xx := xCoord pt; yy := yCoord pt
           -- if x1 = x2Approx, then p1 is a point with horizontal
@@ -980,7 +980,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
               xPointList := cons(pt, xPointList)
           if ((xLo < xx) and (xx < xHi)) then
             if min(abs(yy-yLo), abs(yy-yHi)) < delta then
-              xPointList := cons(pt, nil())
+              xPointList := cons(pt, [])
               x2Approx := xx
               if xx < x1 then xLo := xx else xHi := xx
           -- if y1 = y2Approx, then p1 is a point with vertical
@@ -991,11 +991,11 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
               yPointList := cons(pt, yPointList)
           if ((yLo < yy) and (yy < yHi)) then
             if min(abs(xx-xLo), abs(xx-xHi)) < delta then
-              yPointList := cons(pt, nil())
+              yPointList := cons(pt, [])
               y2Approx := yy
               if yy < y1 then yLo := yy else yHi := yy
         -- points in both xPointList and yPointList
-        if (not null xPointList) and (not null yPointList) then
+        if not(empty?(xPointList)) and not(empty?(yPointList)) then
           xPointList = yPointList =>
           -- this implies that the lists have only one point
             incVar := incVar0
@@ -1062,7 +1062,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           abs(y2Approx - y1) > abs(y2Temp - y1) =>
             return [critPt1::Pt, CRIT]
           return [critPt2::Pt, CRIT]
-        if (not null xPointList) and (null yPointList) then
+        if not(empty?(xPointList)) and empty?(yPointList) then
           y2Approx := y1 + (-px/py)*(x2Approx - x1)
           incVar0 = x =>
             incVar := x
@@ -1077,7 +1077,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           critPt case "failed" =>
             return [pt, NADA]
           return [critPt :: Pt, CRIT]
-        if (null xPointList) and (not null yPointList) then
+        if empty?(xPointList) and not(empty?(yPointList)) then
           x2Approx := x1 + (-py/px)*(y2Approx - y1)
           incVar0 = y =>
             incVar := y
@@ -1162,7 +1162,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
         les := message(" <= ")
         l : L OUT :=
           [pp, zip, com, xLo, les, xx, les, xHi, com, yLo, les, yy, les, yHi]
-        f : L OUT := nil()
+        f : L OUT := []
         for branch in acplot.branches repeat
           ll : L OUT := [p :: OUT for p in branch]
           f := cons(vconcat ll, f)

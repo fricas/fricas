@@ -227,7 +227,7 @@ Tree(S : SetCategory) : T==C where
       tree(value t, [cyclicCopy2(c, cycles) for c in children t])
 
     copyCycle2(cycle, cycleList) ==
-      newCycle := tree(value cycle, nil)
+      newCycle := tree(value cycle, [])
       setchildren!(newCycle,
         [copyCycle4(c, cycle, newCycle, cycleList) for c in children cycle])
       newCycle
@@ -258,7 +258,7 @@ Tree(S : SetCategory) : T==C where
     cyclicEqual?(t1, t2) ==
       cp1 := cyclicParents t1
       cp2 := cyclicParents t2
-      #cp1 ~= #cp2 or null cp1 => t1 = t2
+      #cp1 ~= #cp2 or empty?(cp1) => t1 = t2
       cyclicEqual4?(t1, t2, cp1, cp2)
 
     cyclicEqual4?(t1, t2, cp1, cp2) ==
@@ -300,13 +300,13 @@ Tree(S : SetCategory) : T==C where
       false
 
     eqMemberIndex(x, l, k) ==
-      null l => k
+      empty?(l) => k
       k := k + 1
       eq?(x, first l) => k
       eqMemberIndex(x, rest l, k)
 
     eqUnion(u, v) ==
-      null u => v
+      empty?(u) => v
       x := first u
       newV :=
         eqMember?(x, v) => v
@@ -438,7 +438,7 @@ BinarySearchTree(S : OrderedSet) : Exports == Implementation where
   Implementation == BinaryTree(S) add
     Rep := BinaryTree(S)
     binarySearchTree(u : List S) ==
-      null u => empty()
+      empty?(u) => empty()
       tree := binaryTree(first u)
       for x in rest u repeat insert!(x, tree)
       tree
@@ -476,7 +476,7 @@ BinaryTournament(S : OrderedSet) : Exports == Implementation where
   Implementation == BinaryTree(S) add
     Rep := BinaryTree(S)
     binaryTournament(u : List S) ==
-      null u => empty()
+      empty?(u) => empty()
       tree := binaryTree(first u)
       for x in rest u repeat insert!(x, tree)
       tree

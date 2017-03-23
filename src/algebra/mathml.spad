@@ -659,20 +659,20 @@ MathMLFormat() : public == private where
         op = 'PRIME =>
             formatPrime(args, prec)
         op = 'OVERBAR =>
-            null args => ""
+            empty?(args) => ""
             group concat ["<mover accent='true'><mrow>",
                           formatExpr(first args, minPrec),
                            "</mrow><mo stretchy='true'>&#x000AF;</mo></mover>"]
         op = 'ROOT =>
-            null args => ""
+            empty?(args) => ""
             tmp : S := group formatExpr(first args, minPrec)
-            null rest args => concat ["<msqrt>", tmp, "</msqrt>"]
+            empty?(rest(args)) => concat ["<msqrt>", tmp, "</msqrt>"]
             group concat ["<mroot><mrow>", tmp, "</mrow>",
                           formatExpr(first rest args, minPrec), "</mroot>"]
         op = 'SEGMENT =>
             tmp : S := concat [formatExpr(first args, minPrec), "<mo>..</mo>"]
             group
-                null rest args =>  tmp
+                empty?(rest(args)) => tmp
                 concat [tmp, formatExpr(first rest args, minPrec)]
         op = 'SUB =>
             group concat ["<msub>", formatExpr(first args, minPrec),
@@ -694,13 +694,13 @@ MathMLFormat() : public == private where
             concat [base, optionalWrap(args(4)), "</mmultiscripts>"]
         op = 'SC =>
             -- need to handle indentation someday
-            null args => ""
+            empty?(args) => ""
             tmp := formatNaryNoGroup('STRSEP, "</mtd></mtr><mtr><mtd>",
                                      800, args, minPrec)
             group concat ["<mtable><mtr><mtd>", tmp, "</mtd></mtr></mtable>"]
         op = 'MATRIX => formatMatrix rest args
         op = 'BOX =>
-            null args => ""
+            empty?(args) => ""
             tmp := formatNaryNoGroup('STRSEP, "", 0, args, minPrec)
             group concat ["<mtable frame=_"solid_"><mtr><mtd>", tmp,
                           "</mtd></mtr></mtable>"]
@@ -848,7 +848,7 @@ MathMLFormat() : public == private where
         group formatNaryNoGroup(op, sep, opprec, args, prec)
 
     formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
-        null args => ""
+        empty?(args) => ""
         p : I := position(op, naryOps)
         p < 1 => error "unknown nary op"
         ops : S :=
@@ -857,7 +857,7 @@ MathMLFormat() : public == private where
             op = 'ROW      => "</mtd><mtd>"
             op = 'TENSOR => "<mo>&#x02297;</mo>"
             concat ["<mo>", string(op), "</mo>"]
-        l : L S := nil
+        l : L S := []
         opPrec :=
             op = 'STRSEP => opprec
             naryPrecs.p

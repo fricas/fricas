@@ -171,7 +171,7 @@ Plot3D() : Exports == Implementation where
     tRange plot == first plot.bounds
 
     tValues plot ==
-      outList : L L F := nil()
+      outList : L L F := []
       for curve in plot.functions repeat
         outList := concat(curve.knots, outList)
       outList
@@ -192,13 +192,13 @@ Plot3D() : Exports == Implementation where
     rangeRefine(curve, nRange) ==
       checkRange nRange; l := low(nRange); h := high(nRange)
       t := curve.knots; p := curve.points; f := curve.source
-      while not null t and first t < l repeat
+      while not(empty?(t)) and first t < l repeat
         (t := rest t; p := rest p)
-      c : L F := nil(); q : L P := nil()
-      while not null t and first t <= h repeat
+      c : L F := []; q : L P := []
+      while not(empty?(t)) and first t <= h repeat
         c := concat(first t, c); q := concat(first p, q)
         t := rest t; p := rest p
-      if null c then return basicPlot(f, nRange)
+      if empty?(c) then return basicPlot(f, nRange)
       if first c < h then
         c := concat(h, c); q := concat(f h, q)
         NUMFUNEVALS := NUMFUNEVALS + 1
@@ -207,7 +207,7 @@ Plot3D() : Exports == Implementation where
       if (first t) ~= l then
         t := c := concat(l, c); p := q := concat(f l, p)
         NUMFUNEVALS := NUMFUNEVALS + 1
-      while not null rest t repeat
+      while not(empty?(rest(t))) repeat
         n := wholePart((second(t) - first(t))/s)
         d := (second(t) - first(t))/((n+1)::F)
         for i in 1..n repeat
@@ -243,13 +243,13 @@ Plot3D() : Exports == Implementation where
       minLength : F := 4::F/resolution::F
       maxLength := 1/4::F
       tLimit := tDiff/(pixelfraction*resolution)::F
-      while not null t and first t < l repeat (t := rest t; p := rest p)
+      while not(empty?(t)) and first t < l repeat (t := rest t; p := rest p)
       #t < 3 => curve
       headert := t; headerp := p
       st := headert; sp := headerp
       n : I := 0
 
-      while not null rest rest st repeat
+      while not(empty?(rest(rest(st)))) repeat
         t0 := first(st); t1 := second(st); t2 := third(st)
         if t2 > h then break
         t2 - t0 < tLimit =>
@@ -318,7 +318,7 @@ Plot3D() : Exports == Implementation where
       p := curve.points := copy curve.points
       l := low(nRange); h := high(nRange)
       f := curve.source
-      while not null rest t and first(t) < h repeat
+      while not(empty?(rest(t))) and first(t) < h repeat
         second(t) < l => (t := rest t; p := rest p)
         -- insert new point between t.0 and t.1
         tm : F := (first(t) + second(t))/2::F
@@ -376,7 +376,7 @@ Plot3D() : Exports == Implementation where
        p := adaptivePlot(p, first r, second r, third r, fourth r, 8, SCREENRES)
 --      print(NUMFUNEVALS::OUT)
 --      print(p::OUT)
-      [ rest r, r, SCREENRES, nil(), [ p ] ]
+      [rest(r), r, SCREENRES, [], [p]]
 
     pointPlot(f : F -> P, tRange : R, xRange : R, yRange : R, zRange : R) ==
       p := pointPlot(f, tRange)
@@ -399,7 +399,7 @@ Plot3D() : Exports == Implementation where
       if adaptive3D? then
        p := adaptivePlot(p, first r, second r, third r, fourth r, 8, SCREENRES)
 --      print(NUMFUNEVALS::OUT)
-      [ rest r, r, SCREENRES, nil(), [ p ] ]
+      [rest(r), r, SCREENRES, [], [p]]
 
     plot(f1 : F -> F, f2 : F -> F, f3 : F -> F, col : F -> F, _
               tRange : R, xRange : R, yRange : R, zRange : R) ==
@@ -416,7 +416,7 @@ Plot3D() : Exports == Implementation where
       zSymbol := message("z = ")
       tSymbol := message("t = ")
       tRange := (parametricRange r) :: OUT
-      f : L OUT := nil()
+      f : L OUT := []
       for curve in r.functions repeat
         xRange := coerce curve.ranges.1
         yRange := coerce curve.ranges.2
@@ -432,7 +432,7 @@ Plot3D() : Exports == Implementation where
 ----% graphics output
 
     listBranches plot ==
-      outList : L L P := nil()
+      outList : L L P := []
       for curve in plot.functions repeat
         outList := concat(curve.points, outList)
       outList

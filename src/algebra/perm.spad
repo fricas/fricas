@@ -224,8 +224,8 @@ domain.
     coerceToCycle(p : %, doSorting? : B) : L L S ==
       preim := p.1
       im := p.2
-      cycles := nil()$(L L S)
-      while not null preim repeat
+      cycles := []$(L L S)
+      while not(empty?(preim)) repeat
         -- start next cycle
         firstEltInCycle : S := first preim
         nextCycle : L S := list firstEltInCycle
@@ -240,7 +240,7 @@ domain.
           im := delete(im, i)
         nextCycle := reverse nextCycle
         -- check on 1-cycles, we don't list these
-        if not null rest nextCycle then
+        if not(empty?(rest(nextCycle))) then
           if doSorting? and (S has OrderedSet or S has Finite) then
               -- put smallest element in cycle first:
               nextCycle := rotateCycle nextCycle
@@ -253,7 +253,7 @@ domain.
 
     duplicates? (ls : L S ) : B ==
       x := copy ls
-      while not null x repeat
+      while not(empty?(x)) repeat
         member? (first x , rest x) => return true
         x := rest x
       false
@@ -307,7 +307,7 @@ removes fixed points from its result.
 
     orbit(p , el) ==
       -- start with a 1-element list:
-      out : Set S := brace list el
+      out : Set S := set(list(el))
       el2 := eval(p, el)
       while el2 ~= el repeat
         -- be carefull: insert adds one element
@@ -347,29 +347,29 @@ removes fixed points from its result.
 
     sort(inList : L %) : L % ==
       not (S has OrderedSet or S has Finite) => inList
-      ownList : L RECCYPE := nil()$(L RECCYPE)
+      ownList : L RECCYPE := []$(L RECCYPE)
       for sigma in inList repeat
         ownList :=
           cons([coerceToCycle(sigma, true), sigma]::RECCYPE, ownList)
       ownList := sort(permord, ownList)$(L RECCYPE)
-      outList := nil()$(L %)
+      outList := []$(L %)
       for rec in ownList repeat
         outList := cons(rec.permut, outList)
       reverse outList
 
     coerce (p : %) : OUTFORM ==
       cycles : L L S := coerceToCycle(p, true)
-      outfmL : L OUTFORM := nil()
+      outfmL : L OUTFORM := []
       for cycle in cycles repeat
-        outcycL : L OUTFORM := nil()
+        outcycL : L OUTFORM := []
         for elt in cycle repeat
           outcycL := cons(elt :: OUTFORM, outcycL)
         outfmL := cons(paren blankSeparate reverse outcycL, outfmL)
       -- The identity element will be output as 1:
-      null outfmL => outputForm(1@Integer)
+      empty?(outfmL) => outputForm(1@Integer)
       -- represent a single cycle in the form (a b c d)
       -- and not in the form ((a b c d)):
-      null rest outfmL => first outfmL
+      empty?(rest(outfmL)) => first outfmL
       hconcat reverse outfmL
 
     cycles(vs ) == coerceCycle vs
@@ -380,14 +380,14 @@ removes fixed points from its result.
       [ls, append(rest ls, list first ls)]
 
     coerceListOfPairs(loP) ==
-      preim := nil()$(L S)
-      im := nil()$(L S)
+      preim := []$(L S)
+      im := []$(L S)
       for pair in loP repeat
         if first pair ~=  second pair then
           preim := cons(first pair, preim)
           im := cons(second pair, im)
-      duplicates?(preim) or duplicates?(im) or brace(preim)$(Set S) _
-        ~= brace(im)$(Set S) =>
+      duplicates?(preim) or duplicates?(im) or set(preim)$(Set S) _
+        ~= set(im)$(Set S) =>
         error "coerceListOfPairs: the input cannot be interpreted as a permutation"
       [preim, im]
 
@@ -397,8 +397,8 @@ removes fixed points from its result.
       imOfp : V S := construct p.2
       preimOfq := q.1
       imOfq := q.2
-      preimOfqp   := nil()$(L S)
-      imOfqp   := nil()$(L S)
+      preimOfqp   := []$(L S)
+      imOfqp   := []$(L S)
       -- 1 = minIndex preimOfp
       for i in 1..(maxIndex preimOfp) repeat
         -- find index of image of p.i in q if it exists

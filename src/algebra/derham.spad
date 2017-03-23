@@ -59,13 +59,14 @@ ExtAlgBasis() : Export == Implement where
 
    Implement == add
      Rep := L I
+
      x, y :  %
 
      x = y == x =$Rep y
 
      x < y ==
-       null x            => not null y
-       null y            => false
+       empty?(x) => not(empty?(y))
+       empty?(y) => false
        first x = first y => rest x < rest y
        first x > first y
 
@@ -167,7 +168,7 @@ AntiSymm(R : Ring, lVar : List Symbol) : Export == Implement where
       1 == [[ Nul(dim)$EAB, 1$R ]]
 
       coefficient(a, u) ==
-        not null u.rest => error "2nd argument must be a basis element"
+        not(empty?(u.rest)) => error "2nd argument must be a basis element"
         x := u.first.base
         for t in a repeat
           if t.base = x then return t.coef
@@ -175,26 +176,26 @@ AntiSymm(R : Ring, lVar : List Symbol) : Export == Implement where
         0
 
       retractable?(a) ==
-        null a or (a.first.k  =  Nul(dim))
+          empty?(a) or (a.first.k  =  Nul(dim))
 
       retractIfCan(a):Union(R,"failed") ==
-        null a               => 0$R
+        empty?(a) => 0$R
         a.first.k = Nul(dim) => leadingCoefficient a
         "failed"
 
       retract(a) : R ==
-        null a => 0$R
+        empty?(a) => 0$R
         leadingCoefficient a
 
       homogeneous? a ==
-        null a => true
+        empty?(a) => true
         siz := _+/exponents(a.first.base)
         for ta in reductum a repeat
           _+/exponents(ta.base) ~= siz => return false
         true
 
       degree a ==
-        null a => 0$NNI
+        empty?(a) => 0$NNI
         homogeneous? a => (_+/exponents(a.first.base)) :: NNI
         error "not a homogeneous element"
 
@@ -227,10 +228,10 @@ AntiSymm(R : Ring, lVar : List Symbol) : Export == Implement where
         cons(getsgn(x, y), dum2)
 
       a * b ==
-        null a => 0
-        null b => 0
-        ((null a.rest) and (a.first.k = Nul(dim))) => a.first.c * b
-        ((null b.rest) and (b.first.k = Nul(dim))) => b.first.c * a
+        empty?(a) => 0
+        empty?(b) => 0
+        (empty?(a.rest) and (a.first.k = Nul(dim))) => a.first.c * b
+        (empty?(b.rest) and (b.first.k = Nul(dim))) => b.first.c * a
         z : % := 0
         for tb in b repeat
           for ta in a repeat
@@ -279,7 +280,7 @@ AntiSymm(R : Ring, lVar : List Symbol) : Export == Implement where
 
       coerce(a) : O ==
         zero? a     => 0$I::O
-        null rest(a @ Rep) =>
+        empty?(rest(a @ Rep)) =>
                  t := first(a @ Rep)
                  makeTerm(t.coef, t.base)
         reduce(_+, [makeTerm(t.coef, t.base) for t in (a @ Rep)])$L(O)
@@ -395,7 +396,7 @@ DeRhamComplex(CoefRing, listIndVar : List Symbol) : Export == Implement where
         a           = 0$Rep => 0$I::O
         ta := terms a
 --      reductum(a) = 0$Rep => makeTerm(leadingCoefficient a, a.first.k)
-        null ta.rest => makeTerm(ta.first.c, ta.first.k)
+        empty?(ta.rest) => makeTerm(ta.first.c, ta.first.k)
         reduce(_+, [makeTerm(t.c, t.k) for t in ta])$L(O)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

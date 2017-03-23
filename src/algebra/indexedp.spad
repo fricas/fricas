@@ -114,12 +114,12 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
        lx : List Term
     --define
        x = y ==
-         while not null x and not null y repeat
+         while not(empty?(x)) and not(empty?(y)) repeat
            x.first.k ~= y.first.k => return false
            x.first.c ~= y.first.c => return false
            x := x.rest
            y := y.rest
-         null x and null y
+         empty?(x) and empty?(y)
 
        coerce(x : %) : OutputForm ==
           bracket [rarrow(t.k :: OutputForm, t.c :: OutputForm) for t in x]
@@ -129,10 +129,10 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
        SMALLER_DEF ==>
            smaller?(x : %, y : %) : Boolean ==
                repeat
-                   null(y) =>
-                       null(x) => return false
+                   empty?(y) =>
+                       empty?(x) => return false
                        return cmp_x_0
-                   null(x) => return cmp_0_y
+                   empty?(x) => return cmp_0_y
                    if x.first.k = y.first.k then
                        if x.first.c = y.first.c then
                            x := rest(x)
@@ -148,8 +148,8 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
            monomial(r, s) == (r = 0 => 0; [[s, r]])
            map(f, x) == [[tm.k, a] for tm in x | not((a := f(tm.c)) = 0$A)]
 
-           reductum x     == (null x => 0; rest x)
-           leadingCoefficient x  == (null x => 0; x.first.c)
+           reductum x     == (empty?(x) => 0; rest(x))
+           leadingCoefficient x  == (empty?(x) => 0; x.first.c)
            if A has Comparable then
                SMALLER_DEF where
                    cmp_x_0 ==> smaller?(x.first.c, 0$A)
@@ -161,7 +161,7 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
 
            reductum x     == rest x
            leadingCoefficient x  ==
-               null x =>
+               empty?(x) =>
                    error "Can't take leadingCoefficient of empty product element"
                x.first.c
            if A has Comparable then
@@ -170,7 +170,7 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
                    cmp_0_y ==> true
 
        leadingSupport x  ==
-          null x => error "Can't take leadingCoefficient of empty product element"
+          empty?(x) => error "Can't take leadingCoefficient of empty product element"
           x.first.k
 
        monomial? x ==
@@ -193,7 +193,7 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
           lx
 
        leadingTerm x ==
-          null x => error "Can't take leadingCoefficient of empty product element"
+          empty?(x) => error "Can't take leadingCoefficient of empty product element"
           x.first
 
        listOfTerms x ==
@@ -244,11 +244,11 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
        if A has AbelianMonoid then
 
            0  == []
-           zero? x ==  null x
+           zero? x ==  empty?(x)
 
            add_gen(x : Rep, y : Rep) : Rep ==
-               null x => y
-               null y => x
+               empty?(x) => y
+               empty?(y) => x
                endcell : Rep
                res :  Rep
                newcell : Rep
@@ -262,8 +262,8 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
                    PLUS_BODY
 
                x + y ==
-                   null x => y
-                   null y => x
+                   empty?(x) => y
+                   empty?(y) => x
                    degx := (x.first.k) pretend Integer
                    degy := (y.first.k) pretend Integer
                    msi := max()$SingleInteger
@@ -288,8 +288,8 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
 
 
            x - y ==
-               null x => -y
-               null y => x
+               empty?(x) => -y
+               empty?(y) => x
                endcell : Rep := empty()
                res :  Rep := empty()
                while not empty? x and not empty? y repeat
@@ -321,7 +321,7 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
 
        if A has CancellationAbelianMonoid then
            subtractIfCan(x, y) ==
-               null y => x
+               empty?(y) => x
                endcell : Rep := empty()
                res :  Rep := empty()
                while not empty? x and not empty? y repeat

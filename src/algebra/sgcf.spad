@@ -100,7 +100,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
       ++ lexicographical order as long as {\em constructNotFirst} is true.
       ++ If {\em constructNotFirst} is false, the first lattice permutation
       ++ is returned.
-      ++ The result {\em nil} indicates that {\em lattP} has no successor.
+      ++ The result {\em []} indicates that {\em lattP} has no successor.
     nextPartition : (V I, V I, I) -> V I
       ++ nextPartition(gamma, part, number) generates the partition of
       ++ {\em number} which follows {\em part} according to the right-to-left
@@ -190,7 +190,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
 
 
     unrankImproperPartitions0(n, m, k) ==
-      l : L I  := nil$(L I)
+      l : L I  := []$(L I)
       k < 0 => error"counting of partitions is started at 0"
       k >= numberOfImproperPartitions(n, m) =>
         error"there are not so many partitions"
@@ -215,7 +215,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
       -- where cm is the length of the path. These subsets determine
       -- the positions for the non-zero labels for the partition
       -- to be formeded. The remaining positions are filled by zeros.
-      nonZeros   : L I := nil$(L I)
+      nonZeros   : L I := []
       partition  : V I :=  new(m::NNI, 0$I)$(V I)
       k < 0 => nonZeros
       k >= numberOfImproperPartitions(n, m) => nonZeros
@@ -267,7 +267,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
       n       : NNI := (+/lambda)::NNI
 
       not constructNotFirst =>   -- first lattice permutation
-        lattP := nil$(L I)
+        lattP := []$(L I)
         for i in columns..1 by -1 repeat
           for l in 1..lprime(i) repeat
             lattP := cons(i, lattP)
@@ -308,7 +308,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
         rightPosition := (rightPosition-1)::NNI
         if rightPosition = 1 then constructNotFirst := false
       -- end of repeat-loop
-      not constructNotFirst =>  nil$(L I)
+      not constructNotFirst =>  []$(L I)
       lattP
 
 
@@ -343,9 +343,9 @@ SymmetricGroupCombinatoricFunctions() : public == private where
     listYoungTableaus(lambda) ==
       lattice   : L I
       ytab      : M I
-      younglist : L M I := nil$(L M I)
+      younglist : L M I := []
       lattice   := nextLatticePermutation(lambda, lattice, false)
-      until null lattice repeat
+      until empty?(lattice) repeat
         ytab      := makeYoungTableau(lambda, lattice)
         younglist := append(younglist, [ytab]$(L M I))$(L M I)
         lattice   := nextLatticePermutation(lambda, lattice, true)
@@ -355,7 +355,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
     nextColeman(alpha, beta, C) ==
       nrow  : NNI := #beta
       ncol  : NNI := #alpha
-      vnull : V I  := vector(nil()$(L I)) -- empty vector
+      vnull : V I  := vector([]$(L I)) -- empty vector
       vzero : V I  := new(ncol, 0)
       vrest : V I  := new(ncol, 0)
       cnull : M I  := new(1, 1, 0)
@@ -401,7 +401,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
 
     nextPartition(gamma : L I, part : V I, number : I) ==
       n : NNI := #gamma
-      vnull : V I := vector(nil()$(L I)) -- empty vector
+      vnull : V I := empty() -- empty vector
       if part ~= vnull then
         i : NNI := 2
         sum := part(1)
@@ -427,7 +427,7 @@ SymmetricGroupCombinatoricFunctions() : public == private where
 
 
     inverseColeman(alpha, beta, C) ==
-      pi   : L I  := nil$(L I)
+      pi   : L I  := []$(L I)
       nrow : NNI := #beta
       ncol : NNI := #alpha
       help : V I  := new(nrow, 0)
@@ -446,24 +446,24 @@ SymmetricGroupCombinatoricFunctions() : public == private where
     coleman(alpha, beta, pi) ==
       nrow : NNI := #beta
       ncol : NNI := #alpha
-      temp : L L I := nil$(L L I)
-      help : L I  := nil$(L I)
+      temp : L L I := []
+      help : L I  := []
       colematrix : M I := new(nrow, ncol, 0)
       betasum  : NNI := 0
       alphasum : NNI := 0
       for i in 1..ncol repeat
-        help := nil$(L I)
+        help := []$(L I)
         for j in alpha(i)..1 by-1 repeat
           help := cons(pi(j::NNI+alphasum), help)
         alphasum := (alphasum + alpha(i))::NNI
         temp := append(temp, list(help)$(L L I))
       for i in 1..nrow repeat
-        help := nil$(L I)
+        help := []$(L I)
         for j in beta(i)..1 by-1 repeat
           help := cons(j::NNI+betasum, help)
         betasum := (betasum + beta(i))::NNI
         for j in 1..ncol repeat
-          colematrix(i, j) := #intersect(brace(help), brace(temp(j)))
+          colematrix(i, j) := #intersect(set(help), set(temp(j)))
       colematrix
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

@@ -239,7 +239,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     findQRelation(lv : List Symbol, lpar : List Symbol, lk : List F, _
              ker : F) : U ==
 
-        null lk => [true]
+        empty?(lk) => [true]
         isconstant := true
         m := #lv
         lvv := lv
@@ -270,13 +270,13 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     -- This is only correct if Schanuel Conjecture is true, otherwise
     -- we may miss some relations.
     findLinearRelation1(lk : List F, ker : F) : U ==
-        null lk => [true]
+        empty?(lk) => [true]
 
         n := #lk
         mat := new(1, n, 0)$(Matrix F)
         v := new(1, ker)$(Vector F)
         for j in 1..n for k in lk repeat
-            if null(variables(k)) then
+            if empty?(variables(k)) then
                 mat(1, j) := k
             else
                 mat(1, j) := 0::F
@@ -357,12 +357,12 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     findRelation(lv : List Symbol, lpar : List Symbol, lk : List K, _
               ker : K) : U ==
         is?(ker, 'log) or is?(ker, 'exp) =>
-            null(variables(ker::F)) =>
+            empty?(variables(ker::F)) =>
                 is?(ker, 'exp) => findLinearRelation1(toY lk, ktoY ker)
                 findLinearRelation2(lk, toZ lk, ker)
             findQRelation(lv, lpar, toY lk, ktoY ker)
         is?(ker, 'atan) or is?(ker, 'tan) =>
-            null(variables(ker::F)) =>
+            empty?(variables(ker::F)) =>
                 is?(ker, 'tan) => findLinearRelation1(toU lk, ktoU ker)
                 findLinearRelation2(lk, toV lk, ker)
             findQRelation(lv, lpar, toU lk, ktoU ker)

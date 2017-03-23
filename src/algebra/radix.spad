@@ -75,8 +75,8 @@ RadixExpansion(bb) : Exports == Implementation where
     characteristic() == 0
     differentiate a == 0
 
-    0     == [1, nil(),  nil(), nil()]
-    1     == [1, [1], nil(), nil()]
+    0     == [1, [],  [], []]
+    1     == [1, [1], [], []]
     - a   == (a = 0 => 0; [-a.sgn, a.int, a.pfx, a.cyc])
     a + b == (a::RN + b::RN)::%
     a - b == (a::RN - b::RN)@RN::%
@@ -98,7 +98,7 @@ RadixExpansion(bb) : Exports == Implementation where
       qr      := divide(numer q, denom q)
       whole   := radixInt (qr.quotient, bb)
       fractn  := radixFrac(qr.remainder, denom q, bb)
-      cycle   := (fractn.cyc = [0] => nil(); fractn.cyc)
+      cycle   := (fractn.cyc = [0] => []; fractn.cyc)
       [s, whole, fractn.pfx, cycle]
 
     retractIfCan(a):Union(RN,"failed") == a::RN
@@ -117,7 +117,7 @@ RadixExpansion(bb) : Exports == Implementation where
     fractionPart a ==
       n0 := 0
       for r in a.pfx repeat n0 := bb*n0 + r
-      null a.cyc =>
+      empty?(a.cyc) =>
           a.sgn*n0/bb^((#a.pfx)::NNI)
       n1 := n0
       for r in a.cyc repeat n1 := bb*n1 + r
@@ -132,10 +132,10 @@ RadixExpansion(bb) : Exports == Implementation where
 
     wholeRadix li ==
       checkRagits li
-      [1, li, nil(), nil()]
+      [1, li, [], []]
     fractRadix(lpfx, lcyc) ==
       checkRagits lpfx; checkRagits lcyc
-      [1, nil(), lpfx, lcyc]
+      [1, [], lpfx, lcyc]
 
     -- Output
 
@@ -164,11 +164,11 @@ RadixExpansion(bb) : Exports == Implementation where
     overBar(li : List I) : OUT == overbar intgroup li
 
     coerce(a) : OUT ==
-      le : List OUT := nil()
-      if not null a.cyc then le := concat(overBar  a.cyc, le)
-      if not null a.pfx then le := concat(intgroup a.pfx, le)
-      if not null le    then le := concat(message("."), le)
-      if not null a.int then le := concat(intgroup a.int, le)
+      le : List OUT := []
+      if not(empty?(a.cyc)) then le := concat(overBar(a.cyc), le)
+      if not(empty?(a.pfx)) then le := concat(intgroup(a.pfx), le)
+      if not(empty?(le))    then le := concat(message("."), le)
+      if not(empty?(a.int)) then le := concat(intgroup(a.int), le)
       else le := concat(0 :: OUT, le)
       rex := exprgroup le
       if a.sgn < 0 then -rex else rex
@@ -180,7 +180,7 @@ RadixExpansion(bb) : Exports == Implementation where
       true
 
     radixInt(n, bas) ==
-      rits : List I := nil()
+      rits : List I := []
       while abs n ~= 0 repeat
         qr   := divide(n, bas)
         n    := qr.quotient
@@ -231,8 +231,8 @@ RadixExpansion(bb) : Exports == Implementation where
           cfound := true
       if not cfound then c := n
       -- 4. Now produce the lists of ragits.
-      ritspfx : List I := nil()
-      ritscyc : List I := nil()
+      ritspfx : List I := []
+      ritscyc : List I := []
       for i in 1..p repeat
         ritspfx := concat(first(rits).quotient, ritspfx)
         rits    := rest rits
