@@ -489,8 +489,13 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       ++ htrigs(f) converts all the exponentials in f into
       ++ hyperbolic sines and cosines.
     simplifyExp : F -> F
-      ++ simplifyExp(f) converts every product \spad{exp(a)*exp(b)}
-      ++ appearing in f into \spad{exp(a+b)}.
+      ++ simplifyExp(f) performs the following simplifications on f:
+      ++ \begin{items}
+      ++ \item 1. rewrites \spad{exp(a)*exp(b)} as \spad{exp(a+b)}.
+      ++ \item 2. rewrites \spad{a^b*a^c} as \spad{a^(b+c)}.
+      ++ \item 3. rewrites \spad{exp(a)/exp(b)} as \spad{exp(a-b)}.
+      ++ \item 4. rewrites \spad{a^b/a^c} as \spad{a^(b-c)}.
+      ++ \end{items}
     simplifyLog : F -> F
       ++ simplifyLog(f) converts every \spad{log(a) - log(b)} appearing in f
       ++ into \spad{log(a/b)}, every \spad{log(a) + log(b)} into \spad{log(a*b)}
@@ -773,11 +778,36 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     removeCoshSq x== ueval2(x, 'cosh, (z1 : F) : F +-> 1 + (sinh z1)^2)
     removeSinhSq x== ueval2(x, 'sinh, sh2ch2)
     expandLog x   == smplog(numer x) / smplog(denom x)
-    simplifyExp x == (smpexp numer x) / (smpexp denom x)
     expand x      == (smpexpand numer x) / (smpexpand denom x)
     smpexpand p   == map(kerexpand, (r1 : R) : F +-> r1::F, p)
     smplog p      == map(logexpand, (r1 : R) : F +-> r1::F, p)
     smp2htrigs p  == map((k1 : K) : F +-> htrigs(k1::F), (r1 : R) : F +-> r1::F, p)
+
+    simplifyExp x ==
+        p := smpexp numer x
+        q := smpexp denom x
+        not (monomial?(p1 := numer p) and monomial?(q1 := numer q)) => p/q
+        -- currently only fraction of monomials are simplified, e.g:
+        -- (exp(a)*b^c*d^e*...)/(exp(f)*b^g*h^i*...)
+        lk1 := variables p1
+        lk2 := variables q1
+        term : F := 1
+        for k2 in lk2 repeat
+            -- assert!(degree(q1, k) = 1)
+            op := operator k2
+            args := argument k2
+            h := height k2
+            if op = opexp then
+                for k1 in lk1 repeat
+                    if is?(k1, opexp) then
+                        term := term * kernel(op, [-(args.1)], h)::F
+                        break
+            if is?(op, POWER) then
+                for k1 in lk1 repeat
+                    if is?(k1, POWER) and args.1 = first argument k1 then
+                        term := term * kernel(op, [args.1, -(args.2)], h)::F
+                        break
+        termexp(numer(p*term))/termexp(numer(q*term))
 
     htrigs f ==
       (m := mainKernel f) case "failed" => f
