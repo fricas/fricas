@@ -258,7 +258,7 @@ GraphImage () : Exports == Implementation where
       if empty?(listOfListsOfPoints) then
         error "GraphImage was given a list that contained no valid point lists"
       if ((len := #listOfListsOfPoints) ~= givenLen) then
-        sayBrightly(["   Warning: Ignoring pointless point list"::E]$List(E))$Lisp
+          say("   Warning: Ignoring pointless point list")$DisplayPackage
       graf.llPoints := listOfListsOfPoints
         -- do point colors
       if ((givenLen := #listOfPointColors) > len) then
@@ -291,9 +291,9 @@ GraphImage () : Exports == Implementation where
       graf.rangesField := roundRanges(graf.rangesField)
       if empty?(units graf) then  -- figure out best ranges for points
         graf.unitsField := figureUnits(graf.rangesField)  --::V SEG SF
-      sayBrightly([message(
-        "   Graph data being transmitted to the viewport manager...")$E
-                  ]$List(E))$Lisp
+      say(
+        "   Graph data being transmitted to the viewport manager..."
+                  )$DisplayPackage
       sendI(VIEW, typeGRAPH)
       sendI(VIEW, makeGRAPH)
       tonto := (graf.rangesField)::RANGESF
@@ -823,9 +823,8 @@ TwoDimensionalViewport () : Exports == Implementation where
       viewport := viewportDollar::Rep
       send_graphs(viewport.graphsField)
       doOptions viewport --local function to extract and assign optional arguments for 2D viewports
-      sayBrightly([message(
-        "   FriCAS2D data being transmitted to the viewport manager...")$E
-                  ]$List(E))$Lisp
+      say("   FriCAS2D data being transmitted to the viewport manager..."
+         )$DisplayPackage
       sendI(VIEW, typeVIEW2D)
       sendI(VIEW, makeVIEW2D)
       sendSTR(VIEW, viewport.title)
@@ -1044,9 +1043,9 @@ TwoDimensionalViewport () : Exports == Implementation where
           m := minIndex(avail := viewWriteAvailable())
           for aTypeOfFile in thingsToWrite repeat
             if (writeTypeInt := position(upperCase aTypeOfFile, avail)-m) < 0 then
-              sayBrightly([message("  > ")$E, (concat(aTypeOfFile, _
-                " is not a valid file type for writing a 2D viewport"))::E
-                          ]$List(E))$Lisp
+              say(["  > ", aTypeOfFile,
+                " is not a valid file type for writing a 2D viewport"
+                          ])$DisplayPackage
             else
               sendI(VIEW, writeTypeInt + 1$I)
                   --              stringToSend := concat [stringToSend,"%",aTypeOfFile]
