@@ -2013,20 +2013,8 @@ DEFPARAMETER($CoerceTable, '(                                          _
     (UnivariatePuiseuxSeries              indeterm   P2Upxs) _
     (UnivariateTaylorSeries               indeterm   P2Uts) _
     ))_
-  (Int . ( _
-    (Expression                           total      ncI2E) _
-    (Integer                              total      ncI2I) _
-  ))_
-  (Baby . ( _
-    (Expression                           total      ncI2E) _
-    (Integer                              total      ncI2I) _
-  ))_
   (Integer . ( _
-    (Baby                                 total      I2ncI) _
-    (EvenInteger                          partial    I2EI) _
-    (Int                                  total      I2ncI) _
     (NonNegativeInteger                   partial    I2NNI) _
-    (OddInteger                           partial    I2OI) _
     (PositiveInteger                      partial    I2PI) _
     ))_
   (List . ( _
