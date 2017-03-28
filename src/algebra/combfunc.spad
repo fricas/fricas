@@ -481,6 +481,8 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       ++ error if op is not a special function operator
     abs     : F -> F
       ++ abs(f) returns the absolute value operator applied to f
+    conjugate: F -> F
+      ++ conjugate(f) returns the conjugate value operator applied to f
     Gamma   : F -> F
       ++ Gamma(f) returns the formal Gamma function applied to f
     Gamma   : (F, F) -> F
@@ -636,6 +638,8 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       ++ iiGamma(x) should be local but conditional;
     iiabs     : F -> F
       ++ iiabs(x) should be local but conditional;
+    iiconjugate: F -> F
+      ++ iiconjugate(x) should be local but conditional;
     iiBeta     : List F -> F
       ++ iiBeta(x) should be local but conditional;
     iidigamma  : F -> F
@@ -682,6 +686,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     SPECIALINPUT ==> '%specialInput
 
     iabs      : F -> F
+    iconjugate: F -> F
     iGamma    : F -> F
     iBeta     : (F, F) -> F
     idigamma  : F -> F
@@ -705,6 +710,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
 
     opabs       := operator('abs)$CommonOperators
+    opconjugate := operator('conjugate)$CommonOperators
     opGamma     := operator('Gamma)$CommonOperators
     opGamma2    := operator('Gamma2)$CommonOperators
     opBeta      := operator('Beta)$CommonOperators
@@ -737,6 +743,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     op_erfis := operator('%erfis)$CommonOperators
 
     abs x         == opabs x
+    conjugate x   == opconjugate x
     Gamma(x)      == opGamma(x)
     Gamma(a, x)    == opGamma2(a, x)
     Beta(x, y)     == opBeta(x, y)
@@ -1699,6 +1706,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     operator op ==
       is?(op, 'abs)      => opabs
+      is?(op, 'conjugate)=> opconjugate
       is?(op, 'Gamma)    => opGamma
       is?(op, 'Gamma2)   => opGamma2
       is?(op, 'Beta)     => opBeta
@@ -1770,9 +1778,17 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     iabs x ==
       zero? x => 0
+      one? x => 1
       is?(x, opabs) => x
+      is?(x, opconjugate) => kernel(opabs, argument(retract(x)@K)(1))
       smaller?(x, 0) => kernel(opabs, -x)
       kernel(opabs, x)
+
+    iconjugate x ==
+      zero? x => 0
+      is?(x, opconjugate) => argument(retract(x)@K)(1)
+      is?(x, opabs) => x
+      kernel(opconjugate, x)
 
     iBeta(x, y) == kernel(opBeta, [x, y])
     idigamma x == kernel(opdigamma, x)
@@ -1857,6 +1873,19 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         abs(a::R)::F / abs(b::R)::F
 
     else iiabs x == iabs x
+
+    iiconjugate(x:F):F ==
+      is?(x, opconjugate) => argument(retract(x)@K)(1)
+      is?(x, opabs) => x
+      retractIfCan(x)@Union(Symbol, "failed") case Symbol => iconjugate(x)
+      x:=eval(x,kernels(x), _
+        map((k:Kernel F):F +-> _
+          ( (height(k)=0 or height(k)=1 and retractIfCan(k::F)@Union(Symbol, "failed") case Symbol) =>iconjugate(k::F);map(iiconjugate,k)), _
+          kernels(x))$ListFunctions2(Kernel F,F))
+      if R has conjugate : R -> R then
+        x:=map(conjugate$R,numer x)::F / _
+          map(conjugate$R,denom x)::F
+      return x
 
     if R has SpecialFunctionCategory then
       iiGamma x ==
@@ -1948,6 +1977,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     -- Default behaviour is to build a kernel
     evaluate(opGamma, iiGamma)$BasicOperatorFunctions1(F)
     evaluate(opabs, iiabs)$BasicOperatorFunctions1(F)
+    evaluate(opconjugate, iiconjugate)$BasicOperatorFunctions1(F)
 --    evaluate(opGamma2    , iiGamma2   )$BasicOperatorFunctions1(F)
     evaluate(opBeta      , iiBeta     )$BasicOperatorFunctions1(F)
     evaluate(opdigamma   , iidigamma  )$BasicOperatorFunctions1(F)
@@ -2137,6 +2167,9 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     OF ==> OutputForm
     SEX ==> SExpression
     NNI ==> NonNegativeInteger
+
+    dconjugate(lo : List OF) : OF == overbar lo.1
+    display(opconjugate,dconjugate)
 
     if F has RetractableTo(Integer) then
         get_int_listf : List F -> List Integer
