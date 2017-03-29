@@ -594,7 +594,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     smpexpand : P -> F
     smp2htrigs : P -> F
     kerexpand : K -> F
-    expandpow : K -> F
+    expandpow : (K, F -> F) -> F
     logexpand : K -> F
     sup2htrigs : (UP, F) -> F
     supexp    : (UP, F, F, Z) -> F
@@ -707,9 +707,9 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
     else simplify x == simplify0 x
 
-    expandpow k ==
-      a := expandPower first(arg := argument k)
-      b := expandPower second arg
+    expandpow(k, f) ==
+      a := f first(arg := argument k)
+      b := f second arg
       ne : F := (((numer a) = 1) => 1; numer(a)::F ^ b)
       de : F := (((denom a) = 1) => 1; denom(a)::F ^ (-b))
       ne * de
@@ -732,7 +732,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
     expandPower f ==
       l := select((z1 : K) : Boolean +-> is?(z1, POWER)$K, kernels f)$List(K)
-      eval(f, l, [expandpow k for k in l])
+      eval(f, l, [expandpow(k, expandPower) for k in l])
 
 -- l is a list of pure powers appearing as kernels in p
     powersimp(p, l) ==
@@ -844,7 +844,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
     kerexpand k ==
       nullary?(op := operator k) => k::F
-      is?(op, POWER) => expandpow k
+      is?(op, POWER) => expandpow(k, expand)
       arg := first argument k
       is?(op, 'sec) => inv expand cos arg
       is?(op, 'csc) => inv expand sin arg
