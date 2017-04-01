@@ -615,6 +615,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     simplifyLog1 : F -> F
     logArgs   : List F -> F
     opexp := operator(operator('exp)$CommonOperators)$F
+    oplog := operator(operator('log)$CommonOperators)$F
 
     import from F
     import from List F
@@ -656,7 +657,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
       -- Check for n*log(u)
       prod : Union(PRODUCT, "failed") := isMult(e)
-      (prod case PRODUCT) and is?(prod.var, 'log) =>
+      (prod case PRODUCT) and is?(prod.var, oplog) =>
         log simplifyLog ((first argument(prod.var))^(prod.coef))
 
       termList : Union(List(F),"failed") := isTimes(e)
@@ -699,7 +700,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
       kers : List K := kernels e
       not(((#kers) = 1)) => e -- Have a constant
-      kernel(operator first kers, [simplifyLog(u) for u in argument first kers])
+      (operator first kers) [simplifyLog(u) for u in argument first kers]
 
 
     if R has RetractableTo Integer then
