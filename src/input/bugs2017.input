@@ -56,7 +56,7 @@ testcase "determinant of zero matrix"
 
 testEquals("determinant(zero(2,2)$Matrix(POLY PF 2))", "0")
 
-testcase "simplifyExp"
+testcase "simplifyExp and expand of logarithm"
 
 testEquals("simplifyExp(exp(exp(a)*exp(b)))", "exp(exp(a+b))")
 testEquals("simplifyExp(d^(c^a*c^b))", "d^(c^(a+b))")
@@ -64,12 +64,22 @@ testEquals("simplifyExp(exp(a)/exp(b))", "exp(a-b)")
 testEquals("simplifyExp(a^b/a^c)", "a^(b-c)")
 testEquals("simplifyExp(exp((exp(a)+1)/exp(b))*exp(-(2*exp(a)+1)/exp(b)))",
            "exp(-exp(a-b))")
+testEquals("expand(log(a*b)^c)", "(log(b)+log(a))^c")
 
-testcase "simplification with variable named exp"
+testcase "simplification with variable named exp and log"
 
 expr := exp::Expression Integer
 testEquals("simplify(expr)", "expr")
 testEquals("htrigs(expr)", "expr")
+testEquals("simplifyLog(log)", "log")
+
+testcase "simplifyLog"
+
+a := log((-2*sqrt(2)+3)^2)-2*log((-2*sqrt(2)+3));
+testEquals("simplifyLog(a)", "0")
+testEquals("simplifyLog(exp(a + 1))", "exp(1)")
+testEquals("simplifyLog(sin(a + 1))", "sin(1)")
+testEquals("simplifyLog(exp(log(x)+log(y)))", "x*y")
 
 testcase "conjugate"
 
