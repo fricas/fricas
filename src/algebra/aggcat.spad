@@ -409,14 +409,6 @@ DictionaryOperations(S : Type) : Category == BagAggregate S with
    dictionary : List S -> %
      ++ dictionary([x, y, ..., z]) creates a dictionary consisting of
      ++ entries \spad{x, y, ..., z}.
--- insert: (S, %) -> S                 ++ insert an entry
--- member?: (S, %) -> Boolean                  ++ search for an entry
--- remove!: (S, %, NonNegativeInteger) -> %
---   ++ remove!(x, d, n) destructively changes dictionary d by removing
---   ++ up to n entries y such that \spad{y = x}.
--- remove!: (S->Boolean, %, NonNegativeInteger) -> %
---   ++ remove!(p, d, n) destructively changes dictionary d by removing
---   ++ up to n entries x such that \spad{p(x)} is true.
    if % has finiteAggregate then
      if S has BasicType then
        remove! : (S, %) -> %
@@ -538,14 +530,14 @@ SetAggregate(S : SetCategory):
      ++ intersect(u, v) returns the set aggregate w consisting of
      ++ elements common to both set aggregates u and v.
      ++ Note: equivalent to the notation (not currently supported)
-     ++ {x for x in u | member?(x, v)}.
+     ++ [x for x in u | member?(x, v)].
    difference : (%, %) -> %
      ++ difference(u, v) returns the set aggregate w consisting of
      ++ elements in set aggregate u but not in set aggregate v.
      ++ If u and v have no elements in common, \spad{difference(u, v)}
      ++ returns a copy of u.
      ++ Note: equivalent to the notation (not currently supported)
-     ++ \spad{{x for x in u | not member?(x, v)}}.
+     ++ \spad{[x for x in u | not member?(x, v)]}.
    difference : (%, S) -> %
      ++ difference(u, x) returns the set aggregate u with element x removed.
      ++ If u does not contain x, a copy of u is returned.
@@ -708,10 +700,6 @@ MultisetAggregate(S : SetCategory):
 ++ These aggregates serve as models for priority queues.
 OrderedMultisetAggregate(S : OrderedSet) : Category ==
    Join(MultisetAggregate S, PriorityQueueAggregate S) with
-   -- max: % -> S                     ++ smallest entry in the set
-   -- duplicates: % -> List Record(entry: S, count: NonNegativeInteger)
-        ++ to become an in order iterator
-   -- parts: % -> List S              ++ in order iterator
       min : % -> S
         ++ min(u) returns the smallest entry in the multiset aggregate u.
 
@@ -732,7 +720,7 @@ KeyedDictionary(Key : Type, Entry : Type) : Category ==
    key? : (Key, %) -> Boolean
      ++ key?(k, t) tests if k is a key in table t.
    keys : % -> List Key
-     ++ keys(t) returns the list the keys in table t.
+     ++ keys(t) returns the list of keys in table t.
    -- to become keys: % -> Key* and keys: % -> Iterator(Entry, Entry)
    remove! : (Key, %) -> Union(Entry,"failed")
      ++ remove!(k, t) searches the table t for the key k removing
@@ -934,7 +922,6 @@ TableAggregate(Key : Type, Entry : Type) : Category ==
 
    table()             == empty()
    table l             == dictionary l
--- empty()             == dictionary()
 
    insert!(p, t)      == (t(p.key) := p.entry; t)
    indices t           == keys t
@@ -1265,11 +1252,14 @@ DoublyLinkedAggregate(S : Type) : Category == RecursiveAggregate S with
      ++ Note: \spad{next(l) = rest(l)} and \spad{previous(next(l)) = l}.
    if % has shallowlyMutable then
       concat! : (%, %) -> %
-        ++ concat!(u, v) destructively concatenates doubly-linked aggregate v to the end of doubly-linked aggregate u.
+        ++ concat!(u, v) destructively concatenates doubly-linked aggregate v
+        ++ to the end of doubly-linked aggregate u.
       setprevious! : (%, %) -> %
-        ++ setprevious!(u, v) destructively sets the previous node of doubly-linked aggregate u to v, returning v.
+        ++ setprevious!(u, v) destructively sets the previous node of
+        ++ doubly-linked aggregate u to v, returning v.
       setnext! : (%, %) -> %
-        ++ setnext!(u, v) destructively sets the next node of doubly-linked aggregate u to v, returning v.
+        ++ setnext!(u, v) destructively sets the next node of doubly-linked
+        ++ aggregate u to v, returning v.
 
 )abbrev category URAGG UnaryRecursiveAggregate
 ++ Author: Michael Monagan; revised by Manuel Bronstein and Richard Jenks
@@ -1303,25 +1293,25 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    first : % -> S
       ++ first(u) returns the first element of u
       ++ (equivalently, the value at the current node).
-   elt : (%,"first") -> S
-      ++ elt(u,"first") (also written: \spad{u . first}) is equivalent to first u.
+   elt : (%, "first") -> S
+      ++ elt(u, "first") (also written: \spad{u.first}) is
+      ++ equivalent to first(u).
    first : (%, NonNegativeInteger) -> %
       ++ first(u, n) returns a copy of the first n (\spad{n >= 0}) elements of u.
    rest : % -> %
       ++ rest(u) returns an aggregate consisting of all but the first
-      ++ element of u
-      ++ (equivalently, the next node of u).
-   elt : (%,"rest") -> %
-      ++ elt(%,"rest") (also written: \spad{u.rest}) is
+      ++ element of u (equivalently, the next node of u).
+   elt : (%, "rest") -> %
+      ++ elt(%, "rest") (also written: \spad{u.rest}) is
       ++ equivalent to \spad{rest u}.
    rest : (%, NonNegativeInteger) -> %
       ++ rest(u, n) returns the \spad{n}th (n >= 0) node of u.
       ++ Note: \spad{rest(u, 0) = u}.
    last : % -> S
       ++ last(u) returns the last element of u.
-      ++ Note: for lists, \spad{last(u) = u . (maxIndex u) = u . (# u - 1)}.
-   elt : (%,"last") -> S
-      ++ elt(u,"last") (also written: \spad{u . last}) is equivalent to last u.
+      ++ Note: for lists, \spad{last(u) = u.(maxIndex u) = u.(# u - 1)}.
+   elt : (%, "last") -> S
+      ++ elt(u, "last") (also written: \spad{u.last}) is equivalent to last(u).
    last : (%, NonNegativeInteger) -> %
       ++ last(u, n) returns a copy of the last n (\spad{n >= 0}) nodes of u.
       ++ Note: \spad{last(u, n)} is a list of n elements.
@@ -1340,7 +1330,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       ++ aggregate u, or \spad{empty()} if none exists.
    cycleLength : % -> NonNegativeInteger
       ++ cycleLength(u) returns the length of a top-level cycle
-      ++ contained  in aggregate u, or 0 is u has no such cycle.
+      ++ contained in aggregate u, or 0 if u has no such cycle.
    cycleTail : % -> %
       ++ cycleTail(u) returns the last node in the cycle, or
       ++ empty if none exists.
@@ -1352,7 +1342,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
         ++ Note: \spad{concat!(a, x) = concat!(a, [x])}.
       cycleSplit! : % -> %
         ++ cycleSplit!(u) splits the aggregate by dropping off the cycle.
-        ++ The value returned is the cycle entry, or nil if none exists.
+        ++ The value returned is the cycle entry, or empty() if none exists.
         ++ For example, if \spad{w = concat(u, v)} is the cyclic list where v is
         ++ the head of the cycle, \spad{cycleSplit!(w)} will drop v off w thus
         ++ destructively changing w to u, and returning v.
@@ -1651,8 +1641,7 @@ StreamAggregate(S : Type) : Category ==
 ++ References:
 ++ Description:
 ++ A linear aggregate is an aggregate whose elements are indexed by integers.
-++ Examples of linear aggregates are strings, lists, and
-++ arrays.
+++ Examples of linear aggregates are strings, lists, and arrays.
 ++ Most of the exported operations for linear aggregates are non-destructive
 ++ but are not always efficient for a particular aggregate.
 ++ For example, \spadfun{concat} of two lists needs only to copy its first
@@ -1670,9 +1659,9 @@ LinearAggregate(S : Type) : Category ==
      ++ entries are x.
    concat : (%, S) -> %
      ++ concat(u, x) returns aggregate u with additional element x at the end.
-     ++ Note: for lists, \spad{concat(u, x) == concat(u, [x])}
+     ++ Note: for lists, \spad{concat(u, x) == concat(u, [x])}.
    concat : (S, %) -> %
-     ++ concat(x, u) returns aggregate u with additional element at the front.
+     ++ concat(x, u) returns aggregate u with additional element x at the front.
      ++ Note: for lists: \spad{concat(x, u) == concat([x], u)}.
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate consisting of the elements of u
@@ -1687,9 +1676,9 @@ LinearAggregate(S : Type) : Category ==
       ++ of b followed ... by the elements of c.
       ++ Note: \spad{concat(a, b, ..., c) = concat(a, concat(b, ..., c))}.
    map : ((S, S) -> S, %, %) -> %
-     ++ map(f, u, v) returns a new collection w with elements
+     ++ map(f, u, v) returns a new aggregate w with elements
      ++ \spad{z = f(x, y)} for corresponding elements x and y from u and v.
-     ++ Note: for linear aggregates, \spad{w.i = f(u.i, v.i)}.
+     ++ Note: \spad{w.i = f(u.i, v.i)}.
    delete : (%, Integer) -> %
       ++ delete(u, i) returns a copy of u with the \spad{i}th element deleted.
       ++ Note: for lists,
@@ -2124,7 +2113,7 @@ ExtensibleLinearAggregate(S : Type) : Category == Join(LinearAggregate S, _
      ++ delete!(u, i) destructively deletes the \spad{i}th element of u.
    delete! : (%, UniversalSegment(Integer)) -> %
      ++ delete!(u, i..j) destructively deletes elements u.i through u.j.
-   remove! : (S->Boolean, %) -> %
+   remove! : (S -> Boolean, %) -> %
      ++ remove!(p, u) destructively removes all elements x of
      ++ u such that \spad{p(x)} is true.
    insert! : (S, %, Integer) -> %
