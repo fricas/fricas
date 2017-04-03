@@ -609,6 +609,9 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     Part_REC ==> Record(particular : Vector Z, basis : List Vector Z)
 
+    -- Given solution a and basis b of homogenenous system over Q
+    -- find solution over Z and basis of homogeneous solutions
+    -- over Z.  Works only if basis has at most 1 element.
     z_basis(a : Vector Q, b : List Vector Q
            ) : Union(Part_REC, "failed") ==
         (nn := #b) > 1 => error "#b > 1"
@@ -892,7 +895,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     SREC ==> Record(degree : Z, factor : UP, coeff : F, ratpart : Z,
                     v_part : F, alg_part : UP, new_f : RF, radicand : RF,
-                    u_part : F, exponent : Z, shift_part : F)
+                    u_part : F, exponent : Z, shift_part : F,  a_val : F)
 
     ei_candidate(nf : UP, denf : UP, vlst : List(F), ulst : List(F),
                  k : K, x : SE, a : Z, tt : F, res : List SREC) : List SREC ==
@@ -904,7 +907,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         uvu case "failed" => res
         uv := uvu::UV_REC
         cons([1, nf1, 1, a, tt, 0, nf1/denf, 0, uv.u_part, uv.exponent,
-                                 uv.v_part]$SREC, res)
+                                 uv.v_part, 0]$SREC, res)
 
     special_ei_candidates(nf : UP, denf : UP, vlst : LF,
                        ulst : LF, k : K, x : SE) : List SREC ==
@@ -970,7 +973,269 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             nf2 := nf2*ur.coef
             unf := (ur.radicand)^m1
         cons([l1, nf2, unf, a, tt, f2, nf1/denf, nf2/gden1,
-              uv.u_part, uv.exponent, uv.v_part]$SREC, res)
+              uv.u_part, uv.exponent, uv.v_part, 0]$SREC, res)
+
+    solve_for_ratios(lc : List(F)) : List(Z) ==
+        n := #lc
+        nlc : List(F) := []
+        v := new(n, 1)$Vector(Integer)
+        for i in 1..n for c in lc repeat
+            retractIfCan(c)@Union(Q, "failed")
+              case Q => (v(i) := 0)
+            nlc := cons(c, nlc)
+        n1 := #nlc
+        n1 = 0 => []
+        n1 = 1 => [v(1) for i in 1..n]
+        c1 := first(nlc)
+        nlc := rest(nlc)
+        nn1 := (n1 - 1)::N
+        m := zero(nn1, 2*nn1 + 1)$Matrix(F)
+        for i in 1..nn1 for c in nlc repeat
+            m(i, 1) := -c
+            m(i, i + 1) := c1
+            m(i, i + n1) := 1
+        v0 := zero(nn1)$Vector(F)
+        res := solveLinearlyOverQ(m, v0)$IntegerLinearDependence(F)
+        bl := res.basis
+        empty?(bl) => []
+        s1 : Vector(Q) := first(bl)
+        d := gcd([denom(s1(i))$Q for i in 1..(nn1 + 1)]$List(Z))
+        j : N := 1
+        rl : List(Integer) := []
+        for i in n..1 by - 1 repeat
+            li : Z :=
+                v(i) = 0 => 0
+                jj := j
+                j := j + 1
+                numer(d*s1(jj))$Q
+            rl := cons(li, rl)
+        rl
+
+    M_rec ==> Record(coef : F, ratpart : Vector(Q))
+    S_rec ==> Record(particular : Union(M_rec, "failed"),
+                     basis : List(M_rec))
+
+    possible_sk(w0 : F, f : F, tk : K, x : SE) : List(List(Q)) ==
+        has?(operator tk, ALGOP)$BasicOperator => []
+        wu := univariate(w0, tk)
+        nwu := numer(wu)
+        dwu := denom(wu)
+        dnw := degree(nwu)
+        ddw := degree(dwu)
+        dnw = 0 and ddw = 0 => error "impossible"
+        fu := univariate(f, tk)
+        nfu := numer(fu)
+        dfu := denom(fu)
+        dnf := degree(nfu)
+        ddf := degree(dfu)
+        mindf : Z := 0
+        mindw : Z := 0
+        if is?(tk, 'exp) then
+            mindw := minimumDegree(nwu)
+            mindw :=
+                mindw > 0 => mindw
+                -minimumDegree(dwu)
+            mind := minimumDegree(dfu)
+            mindf :=
+                mind > 0 => -mind
+                minimumDegree(nfu)
+            ddf > mind =>
+                dfu := (dfu exquo monomial(1, mind))::UP
+                ddf := qcoerce(ddf - mind)
+                if (mind := minimumDegree(dwu)) > 0 then
+                    dwu := (dwu exquo monomial(1, mind))::UP
+                    ddw := degree(dwu)
+                if (mind := minimumDegree(nwu)) > 0 then
+                    nwu := (nwu exquo monomial(1, mind))::UP
+                    dnw := degree(nwu)
+            vq := vector([mindf::Q, (dnf - ddf)::Q])$Vector(Q)
+            mq := matrix([[mindw::Q, (dnw - ddw)::Q], [1, 1]])$Matrix(Q)
+            sol := solve(mq, vq)$LinearSystemMatrixPackage(
+                         Q, Vector Q, Vector Q, Matrix Q)
+            res : List(List(Q)) :=
+                sol.particular case "failed" => []
+                solq := (sol.particular)::Vector Q
+                [parts(solq)]
+            mindf < 0 and dnf - ddf > 0 => return res
+            if mindf = 0 then
+                nwu1 := nwu - monomial(coefficient(nwu, 0), 0)$UP
+                vq(1) := minimumDegree(nwu1)::Q
+            else if mindf > 0 then
+                vq(1) := 0$Q
+            else if dnf - ddf < 0 then
+                vq(2) := 0$Q
+            else -- dnf = ddf
+                nfu1 := reductum(nfu)
+                vq(2) := (degree(nfu1) - ddf)::Q
+            sol := solve(mq, vq)$LinearSystemMatrixPackage(
+                         Q, Vector Q, Vector Q, Matrix Q)
+            sol.particular case "failed" => return res
+            solq := (sol.particular)::Vector Q
+            return cons(parts(solq), res)
+        if dnf = 0 and ddf = 0 then
+            is?(tk, 'log) => dnf := 1
+            return []
+        ddf > 0 =>
+            g := gcd(dfu, dwu)
+            s : Q :=
+                degree(g) > 0 => ddf/ddw
+                ddf/dnw
+            [[s, mindf::Q - s*mindw]]
+        ss : Z := 1
+        if ddw > 0 then
+            dnw > 0 => return []
+            ss := -1
+            dnw := ddw
+            nwu := dwu
+        [[ss*dnf/dnw, 0]]
+
+    possible_w(f2 : F, w1 : F, x : SE) : List(F) ==
+        tk := top_kernel(1, w1, x)
+        w1u := univariate(w1, tk)
+        f2u := univariate(f2, tk)
+        nw1 := numer(w1u)
+        dw1 := denom(w1u)
+        nf2 := numer(f2u)
+        df2 := denom(f2u)
+        w2 : F
+        not(df2 = dw1) =>
+            []
+        if degree(dw1) > 0 then
+            r1 := nw1 rem dw1
+            r2 := nf2 rem dw1
+            w2u := r2 exquo r1
+            w2u case "failed" => return []
+            w2u2 := retractIfCan(w2u::UP)@Union(F, "failed")
+            w2u2 case "failed" => return []
+            w2 := w2u2::F
+        else
+            lc_nf2 := leadingCoefficient(nf2)
+            lc_nw1 := leadingCoefficient(nw1)
+            if degree(nw1) > 1 or not(is?(tk, 'log)) then
+                w2 := lc_nf2/lc_nw1
+            else
+                -- FIXME unimplemented
+                D(lc_nf2, x) ~= 0 =>
+                    error "unimplemented"
+                    return []
+                w2 := 1/lc_nw1
+        w2 = 0 => []
+        [w2]
+
+    gen_irr_log_cands(a : F, f : F, f2 : F, w1 : F, vlst : List(F),
+                      ulst : List(F), k : K, x : SE,
+                      res : List SREC
+                     ) : List SREC ==
+        lw2 := possible_w(f2, w1, x)
+        empty?(lw2) => res
+        w2 := first(lw2)
+        lw2' := D(w2, x)/w2
+        v' := lw2' + D(w1, x)/w1
+        dvvec := vector([D(vi, x) for vi in vlst])$Vector(F)
+        su := particularSolutionOverQ(dvvec, v'
+                                )$IntegerLinearDependence(F)
+        su case "failed" => res
+        sv := su::Vector(Q)
+        cd := splitDenominator(sv)$InnerCommonDenominator(
+                     Integer, Q, List(Integer), Vector(Q))
+        d := cd.den
+        d ~= 1 => res
+        -- h1 := height(k)
+        coeffs := cd.num
+        n := #coeffs
+        a1 := a - 1
+        w := -w1*w2
+        tt := f + w
+        wu := univariate(w, k)
+        su := particularSolutionOverQ(dvvec, lw2'
+                                     )$IntegerLinearDependence(F)
+        su case "failed" => error "impossible"
+        sv := su::Vector(Q)
+        cd := splitDenominator(sv)$InnerCommonDenominator(
+                     Integer, Q, List(Integer), Vector(Q))
+        d := cd.den
+        d ~= 1 => error "impossible"
+        coeffs2 := cd.num
+        w_cor := -w2
+        for ki in coeffs for k2i in coeffs2 for vi in vlst
+          for ui in ulst repeat
+                tt := tt - (ki::F)*a1*vi
+                w_cor := w_cor*(ui)^(-k2i)
+        D(w_cor, x) ~= 0 => error "impossible"
+        su := particularSolutionOverQ(dvvec, D(tt, x)
+                                )$IntegerLinearDependence(F)
+        su case "failed" => res
+        sv := su::Vector(Q)
+        cd := splitDenominator(sv)$InnerCommonDenominator(
+                     Integer, Q, List(Integer), Vector(Q))
+        d := cd.den
+        d ~= 1 => res
+        vli := cd.num
+        uu : F := -1
+        uu1 : F := 1
+        gl := gcd(coeffs)
+        if gl > 1 then
+            for ki in coeffs for ui in ulst repeat
+                uu1 := ui^(ki quo gl)*uu1
+        for li in vli for vi in vlst for ui in ulst repeat
+            tt := tt - (li::F)*vi
+            uu := uu*ui^(-li)
+        for i in 0..(gl-1) repeat
+            ai := a - i::F/(gl::F)
+            res := cons([0, 1, w_cor, 0, 0, 0, wu, 0, uu, 0, -tt, ai]$SREC,
+                        res)
+            uu := uu/uu1
+        res
+
+    irrational_gamma_candidates(nf : UP, denf : UP, vlst : List(F),
+            ulst : List(F), k : K, x : SE, res : List SREC) : List SREC ==
+        is?(k, 'log) and denf = 1 and degree(nf) =$Z 1 =>
+            n1 := height(k)
+            nlk := [kk for kk in kernels(coefficient(nf, 0)) |
+                      D(kk::F, x) ~= 0 and height(kk) = n1]
+            nlk := cons(k, nlk)
+            f := multivariate(nf/denf, k)
+            f2 := f
+            cl : List(F) := []
+            for kk in nlk repeat
+                not(is?(kk, 'log)) =>
+                    is?(kk, 'exp) => error "unimplemented"
+                    return res
+                nfr := univariate(f2, kk)
+                denom(nfr) ~= 1 => return res
+                nf1 := numer(nfr)
+                degree(nf1) = 0 => error "impossible"
+                degree(nf1) ~= 1 => return res
+                ck := leadingCoefficient(nf1)
+                f2 := coefficient(nf1, 0)
+                D(ck, x) ~= 0 => return res
+                cl := cons(ck, cl)
+            cl := reverse!(cl)
+            rl := solve_for_ratios(cl)
+            empty?(rl) => res
+            w0 : F := 1
+            for li in rl for kk in nlk repeat
+                ak := argument(kk).1
+                w0 := w0*ak^li
+            tk := top_kernel(1, w0, x)
+            lsk := possible_sk(w0, f2, tk, x)
+            for sk in lsk repeat
+                -- FIXME: need to handle unnormalized case
+                (sq, kmq) := sk
+                sq = 0 => "skip"
+                denom(sq) ~= 1 => "skip"
+                denom(kmq) ~= 1 => "skip"
+                s := retract(sq)@Z
+                km := retract(kmq)@Z
+                -- FIXME: choose nonzero element of rl
+                rls := [s*li for li in rl]
+                a := first(cl)
+                a := a/(s*first(rl)::F) + 1
+                w1 := w0^s*(tk::F)^km
+                res := gen_irr_log_cands(a, f, f2, w1, vlst,
+                               ulst, k, x, res)
+            res
+        res
 
     gammas1(nf : UP, a : Z, denf : UP, denf1 : UP, gexp : Z, n2 : Z,
             vlst : LF, ulst : LF,
@@ -1024,6 +1289,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                        vlst : List(F), ulst : List(F), k : K, x : SE
                       ) : List SREC ==
         res1 : List SREC := special_ei_candidates(nf, denf, vlst, ulst, k, x)
+        res1 := irrational_gamma_candidates(nf, denf, vlst, ulst, k, x, res1)
         a : Z := 0
         n1 := degree(nf)
         n2 := degree(denf)
@@ -1765,7 +2031,11 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             u0 := u0*ak^r0
         u_exp := scand.exponent
         vshift := scand.shift_part
-        (d := scand.degree) = 1 =>
+        (d := scand.degree) = 0 =>
+            nfp := der(nf1)
+            coeff1 := u0::UP*nfp
+            cons(coeff1, res)
+        d = 1 =>
             nfp := der(nf1)
             scand.coeff ~= 1 or cfac ~= 0 => error "impossible coeff"
             coeff1 := u0::UP*nfp/nf1
@@ -1834,7 +2104,10 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         uc := scand.coeff
         nf : RF := scand.new_f
         f := multivariate(nf, k)
-        (d := scand.degree) = 1 => [exp(-vshift)*Ei(f)]
+        (d := scand.degree) = 0 =>
+            a := scand.a_val
+            [exp(-vshift - (a - 1)*log(scand.coeff))*Gamma(a, f)]
+        d = 1 => [exp(-vshift)*Ei(f)]
         d > 1 =>
             rfc : F := 0
             rf1k : K
