@@ -37,9 +37,6 @@ FloatError(formatstring,arg) ==
 --        ERROR(formatstring,arg)
         ERROR FORMAT([],formatstring,arg)
 
-nangenericcomplex () ==
-        1.0/COMPLEX(0.0)
-
 float(x) == FLOAT(x, 0.0)
 
 fracpart(x) ==
@@ -129,7 +126,6 @@ gammaRatapprox (x) ==
                         if ZEROP restx  -- case of negative non-integer value
                         then
                           FloatError ('"Gamma undefined for non-positive integers: ~D",x)
-                          result := nangenericcomplex ()
                         else
                           result := Pi/(gammaRatapprox(1.0-x)*(-1.0)^(intpartx+1)*SIN(restx*Pi))
         result
