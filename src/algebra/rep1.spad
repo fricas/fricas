@@ -185,70 +185,66 @@ RepresentationPackage1(R) : public == private where
 
 
      if R has CommutativeRing then
-       antisymmetricTensors ( a : M R , k : PI ) ==
 
-         n      : NNI   := nrows a
-         k = 1 => a
-         k > n =>
-           error("second parameter for antisymmetricTensors is too large")
-         m      :   I   := binomial(n, k)$ICF
-         il     : L L I   := [subSet(n, k, i)$SGCF for i in 0..m-1]
-         b      :  M R   := zero(m::NNI, m::NNI)
-         for i in 1..m repeat
-           for j in 1..m repeat
-             c : M R := zero(k, k)
-             lr : L I := il.i
-             lt : L I := il.j
-             for  r in 1..k repeat
-               for t in 1..k repeat
-                 rr : I := lr.r
-                 tt : I := lt.t
-                 --c.r.t := a.(1+rr).(1+tt)
-                 setelt!(c, r, t, elt(a, 1+rr, 1+tt))
-             setelt!(b, i, j, determinant c)
-         b
+         antisymmetricTensors(a : M R, k : PI) ==
+             nr := nrows a
+             nc := ncols a
+             k = 1 => a
+             k > min(nr, nc) =>
+               error("second parameter for antisymmetricTensors is too large")
+             mr := binomial(nr, k)$ICF
+             mc := binomial(nc, k)$ICF
+             ilr : L L I := [subSet(nr, k, i)$SGCF for i in 0..mr - 1]
+             ilc : L L I := [subSet(nc, k, i)$SGCF for i in 0..mc - 1]
+             b : M R   := zero(mr::NNI, mc::NNI)
+             for i in 1..mr for lr in ilr repeat
+                 for j in 1..mc for lt in ilc repeat
+                     c : M R := zero(k, k)
+                     for r in 1..k for rr in lr repeat
+                         for t in 1..k for tt in lt repeat
+                             setelt!(c, r, t, elt(a, 1 + rr, 1 + tt))
+                     setelt!(b, i, j, determinant c)
+             b
 
 
-       antisymmetricTensors(la : L M R, k : PI) ==
-         [antisymmetricTensors(ma, k) for ma in la]
+         antisymmetricTensors(la : L M R, k : PI) ==
+             [antisymmetricTensors(ma, k) for ma in la]
 
 
 
-     symmetricTensors (a : M R, n : PI) ==
+     symmetricTensors(a : M R, n : PI) ==
 
-       m : NNI := nrows a
-       m ~= ncols a =>
-         error("Input to symmetricTensors is no square matrix")
-       n = 1 => a
+         mr := nrows a
+         mc := ncols a
+         n = 1 => a
 
-       dim : NNI := (binomial(m+n-1, n)$ICF)::NNI
-       c : M R := new(dim, dim, 0)
-       f : V I := new(n, 0)
-       g : V I := new(n, 0)
-       nullMatrix : M I := new(1, 1, 0)
-       colemanMatrix : M I
+         dimr := (binomial(mr + n - 1, n)$ICF)::NNI
+         dimc := (binomial(mc + n - 1, n)$ICF)::NNI
+         c : M R := new(dimr, dimc, 0)
+         f : V I := new(n, 0)
+         g : V I := new(n, 0)
+         nullMatrix : M I := new(1, 1, 0)
+         colemanMatrix : M I
 
-       for i in 1..dim repeat
-         -- unrankImproperPartitions1 starts counting from 0
-         alpha := unrankImproperPartitions1(n, m, i-1)$SGCF
-         f := invContent(alpha)
-         for j in 1..dim repeat
-           -- unrankImproperPartitions1 starts counting from 0
-           beta := unrankImproperPartitions1(n, m, j-1)$SGCF
-           g := invContent(beta)
-           colemanMatrix := nextColeman(alpha, beta, nullMatrix)$SGCF
-           while colemanMatrix ~= nullMatrix repeat
-             gamma := inverseColeman(alpha, beta, colemanMatrix)$SGCF
-             help : R := calcCoef(beta, colemanMatrix)::R
-             for k in 1..n repeat
-               help := help * a( (1+f k)::NNI, (1+g(gamma k))::NNI )
-             c(i, j) := c(i, j) + help
-             colemanMatrix := nextColeman(alpha, beta, colemanMatrix)$SGCF
-           -- end of while
-         -- end of j-loop
-       -- end of i-loop
-
-       c
+         for i in 1..dimr repeat
+             -- unrankImproperPartitions1 starts counting from 0
+             alpha := unrankImproperPartitions1(n, mr, i - 1)$SGCF
+             f := invContent(alpha)
+             for j in 1..dimc repeat
+                 -- unrankImproperPartitions1 starts counting from 0
+                 beta := unrankImproperPartitions1(n, mc, j - 1)$SGCF
+                 g := invContent(beta)
+                 colemanMatrix := nextColeman(alpha, beta, nullMatrix)$SGCF
+                 while colemanMatrix ~= nullMatrix repeat
+                     gamma := inverseColeman(alpha, beta, colemanMatrix)$SGCF
+                     help : R := calcCoef(beta, colemanMatrix)::R
+                     for k in 1..n repeat
+                         help := help*a((1 + f(k))::NNI,
+                                        (1 + g(gamma(k)))::NNI)
+                     c(i, j) := c(i, j) + help
+                     colemanMatrix := nextColeman(alpha, beta,
+                                                  colemanMatrix)$SGCF
+         c
 
 
      symmetricTensors(la : L M R, k : PI) ==
