@@ -1477,6 +1477,12 @@ hasCaty(d,cat,SL) ==
     atom x => SL
     ncond := subCopy(x, constructSubst d)
     ncond is ['has, =d, =cat] => 'failed
+    if ncond is ['OR, :nconds] then
+        nnconds := nconds
+        for nc in nconds repeat
+            if nc is ['has, =d, =cat] then
+                nnconds := delete(nc, nnconds)
+        ncond := ['OR, :nnconds]
     hasCaty1(ncond, SL)
   'failed
 
