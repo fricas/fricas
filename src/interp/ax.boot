@@ -221,7 +221,10 @@ axFormatType(typeform) ==
      STRINGP typeform =>
         ['Apply,'Enumeration, INTERN typeform]
      INTEGERP typeform =>
-       -- need to test for PositiveInteger vs Integer
+        -- need to test for PositiveInteger vs Integer
+        typeform = 0 =>
+           axAddLiteral('integer, 'Integer, 'Literal)
+           ['RestrictTo, ['LitInteger, '"0"], 'Integer]
         axAddLiteral('integer, 'PositiveInteger, 'Literal)
         ['RestrictTo, ['LitInteger, STRINGIMAGE typeform ], 'PositiveInteger]
      FLOATP typeform => ['LitFloat, STRINGIMAGE typeform]
