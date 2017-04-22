@@ -344,7 +344,7 @@ transformOperationAlist operationAlist ==
         condition = 'T => [sig,n]
         [sig,n,condition]
       [sig,n,condition,kind]
-    itemList := [signatureItem, :QLASSQ(op, newAlist)]
+    itemList := insert(signatureItem, QLASSQ(op, newAlist))
     newAlist:= insertAlist(op,itemList,newAlist)
   newAlist
 
