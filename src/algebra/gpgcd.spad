@@ -31,6 +31,8 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
          -- fourth is number of variables.
       monomContentSup   :    SUPP    -> SUPP
 
+      gcd_monomial : (SUPP, SUPP) -> SUPP
+
       gcdTrivial      :  (SUPP, SUPP)   -> SUPP
       gcdSameVariables :  (SUPP, SUPP, List OV)    -> SUPP
       recursivelyGCDCoefficients : (SUPP, List OV, SUPP, List OV) -> SUPP
@@ -51,22 +53,23 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
         c2 := monomContentSup(p2)
         p1 := (p1 exquo c1)::SUPP
         p2 := (p2 exquo c2)::SUPP
-        (p1 exquo p2) case SUPP => (unitNormal p2).canonical * gcd(c1, c2)
+        cg := gcd_monomial(c1, c2)
+        (p1 exquo p2) case SUPP => (unitNormal p2).canonical * cg
         vp1 := variables p1
         vp2 := variables p2
         v1 := setDifference(vp1, vp2)
         v2 := setDifference(vp2, vp1)
-        #v1 = 0 and #v2 = 0 => gcdSameVariables(p1, p2, vp1)*gcd(c1, c2)
+        #v1 = 0 and #v2 = 0 => gcdSameVariables(p1, p2, vp1)*cg
                  -- all variables are in common
         v := setDifference(vp1, v1)
         pp1 := flatten(p1, v1)
         pp2 := flatten(p2, v2)
         g := gcdSameVariables(pp1, pp2, v)
-        (g = 1) => gcd(c1, c2)::SUPP
+        (g = 1) => cg
         (#v1 = 0 or not (p1 exquo g) case "failed") and
                      -- if #vi = 0 then pp1 = p1, so we know g divides
               (#v2 = 0 or not (p2 exquo g) case "failed")
-            => g*gcd(c1, c2)  -- divdes them both, so is the gcd
+            => g*cg  -- divdes them both, so is the gcd
         -- OK, so it's not the gcd: try again
         v := variables g -- there can be at most these variables in answer
         v1 := setDifference(vp1, v)
@@ -74,18 +77,19 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
         if (#v1 = 0) then g := gcdSameVariables(g, flatten(p2, v2), v)
         else if (#v2 = 0) then g := gcdSameVariables(g, flatten(p1, v1), v)
         else g := gcdSameVariables(g, flatten(p1, v1)-flatten(p2, v2), v)
-        (g = 1) => gcd(c1, c2)::SUPP
+        (g = 1) => cg
         (#v1 = 0 or not (p1 exquo g) case "failed") and
               (#v2 = 0 or not (p2 exquo g) case "failed")
-            => g*gcd(c1, c2)::SUPP  -- divdes them both, so is the gcd
+            => g*cg  -- divdes them both, so is the gcd
         v := variables g -- there can be at most these variables in answer
         v1 := setDifference(vp1, v)
         if #v1 ~= 0 then
            g := recursivelyGCDCoefficients(g, v, p1, v1)
-           (g = 1) => return gcd(c1, c2)::SUPP
+           (g = 1) => return cg
            v := variables g -- there can be at most these variables in answer
         v2 := setDifference(vp2, v)
-        recursivelyGCDCoefficients(g, v, p2, v2)*gcd(c1, c2)
+        recursivelyGCDCoefficients(g, v, p2, v2)*cg
+
       if R has StepThrough then
          randomCount : R := init()
          randomR() ==
@@ -223,6 +227,10 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
            p2 := reductum p2
         un? => 1
         cp1::SUPP
+
+      gcd_monomial(p1 : SUPP, p2 : SUPP) ==
+          monomial(gcd(leadingCoefficient(p1), leadingCoefficient(p2)),
+                   min(degree(p1), degree(p2)))
 
       monomContentSup(u : SUPP) : SUPP ==
         degree(u) = 0$NonNegativeInteger => 1$SUPP
