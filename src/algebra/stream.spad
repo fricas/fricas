@@ -189,11 +189,16 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
       if odd? i then x := rst x
       eq?(x,y) => error "infinite stream"
 
---% CNAGG functions
+--% CLAGG functions
 
   construct l ==
-    empty? l => empty()
-    concat(first l, construct rest l)
+      empty? l => empty()
+      l := reverse l
+      res := empty()
+      while not empty? l repeat
+          res := concat(first l, res)
+          l := rest l
+      res
 
   --entries x ==
     -- returns a list of the stream elements
@@ -763,12 +768,9 @@ Stream(S : Type) : Exports == Implementation where
       setrst!(tail head, cycle)
       head
 
---% CNAGG functions
+--% CLAGG functions
 
-    construct l ==
-      -- copied from defaults to avoid loading defaults
-      empty? l => empty()
-      concat(first l, construct rest l)
+    construct l == APPEND(l, empty())$Lisp
 
 --% ELTAGG functions
 
@@ -1049,8 +1051,11 @@ Stream(S : Type) : Exports == Implementation where
       not explicitlyEmpty? x and not lazy? x
 
     numberOfComputedEntries x ==
-      explicitEntries? x => numberOfComputedEntries(rst x) + 1
-      0
+        count := 0
+        while explicitEntries? x repeat
+            count := count + 1
+            x := rst x
+        count
 
     setrestt!(x, n, y) ==
       n = 0 => setrst!(x, y)
