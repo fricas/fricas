@@ -146,38 +146,56 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
            result := cons(p1u::SUP, result)
         reverse result
 
+      not_coprime2 : (SUPP, SUP, List(SUP), List P, List NNI, List OV,
+                      List R) -> Union(SUPP, "failed")
+
     --Compute the gcd between not coprime polynomials
-      notCoprime(g : SUPP, p2 : SUPP, ldeg : List NNI, lvar1 : List OV, ltry : List List R) : SUPP ==
-        g1 := gcd(g, differentiate g)
-        l1 := (g exquo g1)::SUPP
-        lg : LGcd := localgcd(l1, p2, lvar1, ltry)
-        (l, ltry) := (lg.locgcd, lg.goodint)
-        lval := ltry.first
-        p2l := (p2 exquo l)::SUPP
-        (gd1, gd2) := (l, l)
-        ul := completeEval(l, lvar1, lval)
-        dl := degree ul
-        if degree gcd(ul, differentiate ul) ~= 0 then
-          newchoice := good(l, lvar1, ltry)
-          ul := newchoice.upol
-          ltry := newchoice.inval
+      notCoprime(g : SUPP, p2 : SUPP, ldeg : List NNI, lvar1 : List OV,
+                 ltry : List List R) : SUPP ==
+          g1 := gcd(g, differentiate g)
+          l1 := (g exquo g1)::SUPP
+          l : SUPP
+          p2u : Union(SUPP, "failed")
+          repeat
+              (l, ltry) := localgcd(l1, p2, lvar1, ltry)
+              p2u := (p2 exquo l)
+              if not(p2u case "failed") then break
           lval := ltry.first
-        ug1 := completeEval(g1, lvar1, lval)
-        ulist := [ug1, completeEval(p2l, lvar1, lval)]
-        lcpol : List P := [leadingCoefficient g1, leadingCoefficient p2]
-        while true repeat
-          d : SUP := gcd(cons(ul, ulist))
-          if degree d =0 then return gd1
-          lquo := (ul exquo d)::SUP
-          if degree lquo ~= 0 then
-            lgcd := gcd(cons(leadingCoefficient l, lcpol))
-            (gdl := lift(l,d,lquo,lgcd,lvar1,ldeg,lval)) case "failed" =>
-               return notCoprime(g, p2, ldeg, lvar1, ltry)
-            l := gd2 := gdl::SUPP
-            ul := completeEval(l, lvar1, lval)
-            dl := degree ul
-          gd1 := gd1*gd2
-          ulist := [(uf exquo d)::SUP for uf in ulist]
+          dl := degree(l)
+          p2l := p2u::SUPP
+          ul := completeEval(l, lvar1, lval)
+          dg1 := degree(g1)
+          dp2l := degree(p2l)
+          lcpol : List P := [leadingCoefficient g1, leadingCoefficient p2]
+          repeat
+              if dl = degree(ul) and degree(gcd(ul, differentiate ul)) = 0
+              then
+                  ug1 := completeEval(g1, lvar1, lval)
+                  ug2 := completeEval(p2l, lvar1, lval)
+                  resu := not_coprime2(l, ul, [ug1, ug2], lcpol, ldeg,
+                                       lvar1, lval)
+                  if resu case SUPP then return resu::SUPP
+              newchoice := good(l, lvar1, ltry)
+              ul := newchoice.upol
+              ltry := newchoice.inval
+              lval := ltry.first
+
+      not_coprime2(l : SUPP, ul : SUP, ulist : List(SUP), lcpol : List P,
+                   ldeg : List NNI, lvar1 : List OV, lval : List R
+                  ) : Union(SUPP, "failed") ==
+          gd1 := l
+          while true repeat
+              d : SUP := gcd(cons(ul, ulist))
+              if degree d = 0 then return gd1
+              lquo := (ul exquo d)::SUP
+              if degree lquo ~= 0 then
+                  lgcd := gcd(cons(leadingCoefficient l, lcpol))
+                  gdl := lift(l, d, lquo, lgcd, lvar1, ldeg, lval)
+                  gdl case "failed" => return "failed"
+                  l := gdl::SUPP
+                  ul := completeEval(l, lvar1, lval)
+              gd1 := gd1*l
+              ulist := [(uf exquo d)::SUP for uf in ulist]
 
       gcdPrimitive(p1 : SUPP, p2 : SUPP) : SUPP ==
         if (d1 := degree(p1)) > (d2 := degree(p2)) then
