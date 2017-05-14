@@ -41,7 +41,7 @@ NPCoef(BP, E, OV, R, P) : C == T where
 
                  ----   Local  Functions  ----
   listexp  :              BP                ->   List(NNI)
-  check      : (TermC,Vector P) -> Union(Detc,"failed")
+  check      : (TermC,Vector P) -> Union(Detc, "failed", "reject")
   buildvect  : (List(VTerm), NNI) -> Vector(List(VTerm))
   buildtable : (Vector(P), List(List NNI), List P) -> TCoef
   modify : (TCoef, Detc) -> TCoef
@@ -64,6 +64,7 @@ NPCoef(BP, E, OV, R, P) : C == T where
       dt := #tablecoef
       for i in 1..dt while not changed repeat
         (cf := check(tablecoef.i,ulist)) case "failed" => "next i"
+        cf case "reject" => return [[], [], factlist, leadlist]
         ltochange := cons(i, ltochange)
         celtf : Detc := cf::Detc
         tablecoef := modify(tablecoef, celtf)
@@ -93,7 +94,7 @@ NPCoef(BP, E, OV, R, P) : C == T where
     [detufact, detcoef, factlist, leadlist]$DetCoef
 
 
-  check(tterm:TermC,ulist:Vector(P)) : Union(Detc,"failed") ==
+  check(tterm:TermC,ulist:Vector(P)) : Union(Detc, "failed", "reject") ==
     cfu:P := 1$P;doit:NNI := 0;poselt:NNI := 0;pp:Union(P,"failed")
     termlist : List(VTerm) := tterm.detfacts
     vterm : VTerm := empty()
@@ -103,7 +104,11 @@ NPCoef(BP, E, OV, R, P) : C == T where
         (cu1 := elterm.pcoef) ~= 0 => cfu := cu1*cfu
         doit := doit+1
         poselt := position(elterm, vterm)::NNI
-      doit = 2  or (pp := tterm.coefu exquo cfu) case "failed" => "failed"
+      doit = 2 => "failed"
+      doit = 0 =>
+          tterm.coefu = cfu => "failed"
+          "reject"
+      (pp := tterm.coefu exquo cfu) case "failed" => "reject"
       [vterm.poselt.expt, pp::P, poselt]$Detc
     "failed"
 
