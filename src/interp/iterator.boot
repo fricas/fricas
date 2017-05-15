@@ -76,8 +76,8 @@ $identity_list := [ _
    ["*", ["One"]], _
    ['gcd, ["Zero"]], _
    ['lcm, ["One"]], _
-   ['append, ['nil]], _
-   ['union, ['nil]], _
+   ['append, ['construct]], _
+   ['union, ['construct]], _
    ['strconc, '""], _
    ['and, 'true], _
    ['or, 'false]]
