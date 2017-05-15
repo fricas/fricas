@@ -942,10 +942,6 @@ FunctionSpaceAttachPredicates(R, F, D) : Exports == Implementation where
       (u := property(operator k, PMPRED)) case "failed" => empty()
       (u::None) pretend List(Any)
 
---    st(k, l) ==
---      mkk assert(setProperty(copy operator k, PMPRED,
---                 concat(preds k, l) pretend None), string(new()$Symbol))
-
     -- Looks fishy, but we try to preserve meaning
     st(k, l) ==
       kk := copy operator k
@@ -973,9 +969,6 @@ FunctionSpaceAssertions(R, F) : Exports == Implementation where
   PMCONST ==> '%pmconstant
 
   Exports ==> with
---    assert  : (F, String) -> F
---      ++ assert(x, s) makes the assertion s about x.
---      ++ Error: if x is not a symbol.
     constant : F -> F
       ++ constant(x) tells the pattern matcher that x should
       ++ match only the symbol 'x and no other quantity.
@@ -993,7 +986,6 @@ FunctionSpaceAssertions(R, F) : Exports == Implementation where
 
   Implementation ==> add
     ass  : (K, Symbol) -> F
-    asst : (K, Symbol) -> F
     mkk  : BasicOperator -> F
 
     mkk op == kernel(op, empty()$List(F))
@@ -1001,15 +993,6 @@ FunctionSpaceAssertions(R, F) : Exports == Implementation where
     ass(k, s) ==
       has?(op := operator k, s) => k::F
       mkk assert(copy op, s)
-
-    asst(k, s) ==
-      has?(op := operator k, s) => k::F
-      mkk assert(op, s)
-
---    assert(x, s) ==
---      retractIfCan(x)@Union(Symbol, "failed") case Symbol =>
---        asst(retract(x)@K, s)
---      error "assert must be applied to symbols only"
 
     constant x ==
       retractIfCan(x)@Union(Symbol, "failed") case Symbol =>
@@ -1058,8 +1041,6 @@ PatternMatchAssertions() : Exports == Implementation where
   FE ==> Expression Integer
 
   Exports ==> with
---    assert  : (Symbol, String) -> FE
---      ++ assert(x, s) makes the assertion s about x.
     constant : Symbol -> FE
       ++ constant(x) tells the pattern matcher that x should
       ++ match only the symbol 'x and no other quantity.
@@ -1078,7 +1059,6 @@ PatternMatchAssertions() : Exports == Implementation where
     constant x   == constant(x::FE)
     multiple x   == multiple(x::FE)
     optional x   == optional(x::FE)
---    assert(x, s) == assert(x::FE, s)
 
 )abbrev domain HACKPI Pi
 ++ Expressions in %pi only
