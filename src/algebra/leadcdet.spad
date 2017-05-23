@@ -10,7 +10,7 @@ LeadingCoefDetermination(OV, E, Z, P) : C == T
  where
   OV    :   OrderedSet
   E     :   OrderedAbelianMonoidSup
-  Z     :   EuclideanDomain
+  Z     :   GcdDomain
   BP        ==> SparseUnivariatePolynomial Z
   P         :   PolynomialCategory(Z, E, OV)
   NNI       ==> NonNegativeInteger
@@ -54,7 +54,7 @@ LeadingCoefDetermination(OV, E, Z, P) : C == T
           y := distlist.((i-j)::NNI)
           while y ~= 1  repeat
             y := gcd(y, q)
-            q := q quo y
+            q := (q exquo y)::Z
           if q = 1 then return false
         distlist := append(distlist, [q])
       true
@@ -73,10 +73,10 @@ LeadingCoefDetermination(OV, E, Z, P) : C == T
       for i in 1..nf repeat
           lcp := leadingCoefficient (unilist.i)
           d := gcd(lcp, vl.i)
-          pl.i := (lcp quo d)*pl.i
-          d := vl.i quo d
+          pl.i := (lcp exquo d)::Z*pl.i
+          d := (vl.i exquo d)::Z
           unilist.i := d*unilist.i
-          contm := contm quo d
+          contm := (contm exquo d)::Z
       if contm ~= 1 then for i in 1..nf repeat pl.i := contm*pl.i
       [pl, contm, unilist]$LeadFact
 
@@ -105,7 +105,7 @@ LeadingCoefDetermination(OV, E, Z, P) : C == T
            aux.i := aux.i*(lpol.k ^ h)
            d := vl.k^h
            vlp.i := vlp.i*d
-           c := c quo d
+           c := (c exquo d)::Z
         if contm = 1 then vlp.i := c
       for k in 1..(# lpol) repeat if lexp.k ~= 0 then return "failed"
       contm = 1 => [[vlp.i*aux.i for i in 1..nf], 1, unilist]$LeadFact
