@@ -160,12 +160,23 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
                  "next"
             error "too many evaluations in GCD code"
           count >= 10 => error "too many evaluations in GCD code"
+
+      fix_lc(u : SUPR, lc : P, elc : R) : Union(SUPP, "failed") ==
+          u1 := elc*u
+          u1u := u1 exquo leadingCoefficient(u)
+          u1u case "failed" => "failed"
+          u2 := reductum(u1u::SUPR)
+          monomial(lc, degree(u)) + map(x +-> x::P, u2)
+
       lift(gR : SUPR, p : SUPP, cfR : SUPR, lv : List OV, lr : List R) ==
         -- lift the coprime factorisation gR*cfR = (univariate of p)
         -- where the variables lv have been evaluated at lr
         lcp := leadingCoefficient p
-        g := monomial(lcp, degree gR)+map(x +-> x::P, reductum gR)
-        cf := monomial(lcp, degree cfR)+map(x +-> x::P, reductum cfR)
+        elcp := ground(eval(lcp, lv, lr))
+        (gu := fix_lc(gR, lcp, elcp)) case "failed" => "failed"
+        g := gu::SUPP
+        (cfu := fix_lc(cfR, lcp, elcp)) case "failed" => "failed"
+        cf := cfu::SUPP
         p := lcp*p       -- impose leading coefficient of p on each factor
         while lv ~= [] repeat
            v := first lv
