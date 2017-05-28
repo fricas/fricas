@@ -19,6 +19,7 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
     T == add
 
       SUPR     ==> SparseUnivariatePolynomial R
+      B ==> Boolean
 
       import from UnivariatePolynomialCategoryFunctions2(R, SUPR, P, SUPP)
       import from UnivariatePolynomialCategoryFunctions2(P, SUPP, R, SUPR)
@@ -26,15 +27,16 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
 
       better          :    (P, P)     -> Boolean
 
-      lift  :  (SUPR,SUPP,SUPR,List OV,List R) -> Union(SUPP,"failed")
+      lift : (SUPR, SUPP, SUPR, P, List OV, List R) -> Union(SUPP, "failed")
          -- lifts first and third arguments as factors of the second
-         -- fourth is number of variables.
+         -- fourth is gcd of leading coefficients.
+
       monomContentSup   :    SUPP    -> SUPP
 
       gcd_monomial : (SUPP, SUPP) -> SUPP
 
       gcdTrivial      :  (SUPP, SUPP)   -> SUPP
-      gcdSameVariables :  (SUPP, SUPP, List OV)    -> SUPP
+      gcdSameVariables : (SUPP, SUPP, B, B, List OV) -> SUPP
       recursivelyGCDCoefficients : (SUPP, List OV, SUPP, List OV) -> SUPP
       flatten         : (SUPP, List OV) -> SUPP
                         -- evaluates out all variables in the second
@@ -54,36 +56,40 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
         p1 := (p1 exquo c1)::SUPP
         p2 := (p2 exquo c2)::SUPP
         cg := gcd_monomial(c1, c2)
+        if degree p1 < degree p2 then (p1, p2) := (p2, p1)
         (p1 exquo p2) case SUPP => (unitNormal p2).canonical * cg
         vp1 := variables p1
         vp2 := variables p2
         v1 := setDifference(vp1, vp2)
         v2 := setDifference(vp2, vp1)
-        #v1 = 0 and #v2 = 0 => gcdSameVariables(p1, p2, vp1)*cg
+        empty?(v1) and empty?(v2) =>
+            gcdSameVariables(p1, p2, true, true, vp1)*cg
                  -- all variables are in common
         v := setDifference(vp1, v1)
         pp1 := flatten(p1, v1)
         pp2 := flatten(p2, v2)
-        g := gcdSameVariables(pp1, pp2, v)
+        g := gcdSameVariables(pp1, pp2, empty?(v1), empty?(v2), v)
         (g = 1) => cg
-        (#v1 = 0 or not (p1 exquo g) case "failed") and
+        (empty?(v1) or not (p1 exquo g) case "failed") and
                      -- if #vi = 0 then pp1 = p1, so we know g divides
-              (#v2 = 0 or not (p2 exquo g) case "failed")
+              (empty?(v2) or not (p2 exquo g) case "failed")
             => g*cg  -- divdes them both, so is the gcd
         -- OK, so it's not the gcd: try again
         v := variables g -- there can be at most these variables in answer
         v1 := setDifference(vp1, v)
         v2 := setDifference(vp2, v)
-        if (#v1 = 0) then g := gcdSameVariables(g, flatten(p2, v2), v)
-        else if (#v2 = 0) then g := gcdSameVariables(g, flatten(p1, v1), v)
-        else g := gcdSameVariables(g, flatten(p1, v1)-flatten(p2, v2), v)
+        h :=
+            empty?(v1) => flatten(p2, v2)
+            empty?(v2) => flatten(p1, v1)
+            flatten(p1, v1) - flatten(p2, v2)
+        g := gcdSameVariables(h, g, false, true, v)
         (g = 1) => cg
-        (#v1 = 0 or not (p1 exquo g) case "failed") and
-              (#v2 = 0 or not (p2 exquo g) case "failed")
+        (empty?(v1) or not (p1 exquo g) case "failed") and
+              (empty?(v2) or not (p2 exquo g) case "failed")
             => g*cg  -- divdes them both, so is the gcd
         v := variables g -- there can be at most these variables in answer
         v1 := setDifference(vp1, v)
-        if #v1 ~= 0 then
+        if empty?(v1) then
            g := recursivelyGCDCoefficients(g, v, p1, v1)
            (g = 1) => return cg
            v := variables g -- there can be at most these variables in answer
@@ -102,19 +108,27 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
       else
 -- FIXME: strange random distribution used (#227).
             randomR() == (random(100)$Integer)::R
+
                      ---- JHD's local functions ---
-      gcdSameVariables(p1 : SUPP, p2 : SUPP, lv : List OV) ==
-            -- two non-trivial primitive (or, at least, we don't care
-            -- about content)
-            -- polynomials with precisely the same degree
+      gcdSameVariables(p1 : SUPP, p2 : SUPP, prim1 : B, prim2 : B,
+                       lv : List OV) : SUPP ==
+            -- two non-trivial polynomials, we return primitive
+            -- part of gcd
           #lv = 0 => map(coerce@(R->P), gcdPolynomial(map(ground, p1),
                                              map(ground, p2)))
-          degree p2 = 1 =>
-            p1 exquo p2 case SUPP => p2
-            1
+          if degree(p1) > degree(p2) then
+              (p1, p2) := (p2, p1)
+              (prim1, prim2) := (prim2, prim1)
+          degree p1 = 1 =>
+              if not(prim1) then p1 := (p1 exquo content(p1))::SUPP
+              p2 exquo p1 case SUPP => p1
+              1
           gcdLC := gcd(leadingCoefficient p1, leadingCoefficient p2)
           lr := [randomR() for vv in lv]
           count : NonNegativeInteger := 0
+          good_cnt : NonNegativeInteger := 0
+          v : SUPR
+          dv : NonNegativeInteger
           while count<10 repeat
             while zero? eval(gcdLC, lv, lr) and count<10 repeat
                   lr := [randomR() for vv in lv]
@@ -123,30 +137,31 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
             up1 : SUPR := map(x +-> ground eval(x, lv, lr), p1)
             up2 : SUPR := map(x +-> ground eval(x, lv, lr), p2)
             u := gcdPolynomial(up1, up2)
-            degree u = 0 => return 1
-            -- let's pick a second one, just to check
-            lrr := [randomR() for vv in lv]
-            while zero? eval(gcdLC, lv, lrr) and count<10 repeat
-                  lrr := [randomR() for vv in lv]
-                  count := count+1
-            count = 10 => error "too many evaluations in GCD code"
-            vp1 : SUPR := map(x +-> ground eval(x, lv, lrr), p1)
-            vp2 : SUPR := map(x +-> ground eval(x, lv, lrr), p2)
-            v := gcdPolynomial(vp1, vp2)
-            degree v = 0 => return 1
-            if degree v < degree u then
-               u := v
-               up1 := vp1
-               up2 := vp2
-               lr := lrr
+            (du := degree(u)) = 0 => return 1
+            -- we want two consistent evaluations
+            good_cnt = 0 =>
+                good_cnt := 1
+                v := u
+                dv := du
+            dv < du => "iterate"
+            du < dv =>
+                good_cnt := 1
+                v := u
+                dv := du
+            du = degree(p1) =>
+                if not(prim1) then
+                    p1 := (p1 exquo content(p1))::SUPP
+                    prim1 := true
+                p2 exquo p1 case SUPP => return p2
+                "next"
             up1 := (up1 exquo u)::SUPR
             degree gcd(u, up1) = 0 =>
-                ans := lift(u, p1, up1, lv, lr)
+                ans := lift(u, p1, up1, gcdLC, lv, lr)
                 ans case SUPP => return ans
                 "next"
             up2 := (up2 exquo u)::SUPR
             degree gcd(u, up2) = 0 =>
-                ans := lift(u, p2, up2, lv, lr)
+                ans := lift(u, p2, up2, gcdLC, lv, lr)
                 ans case SUPP => return ans
                 "next"
             -- so neither cofactor is relatively prime
@@ -155,7 +170,7 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
                r := randomR()
                uu := up1+r*up2
                degree gcd(u, uu)=0 =>
-                 ans := lift(u, p1+r::P *p2, uu, lv, lr)
+                 ans := lift(u, p1 + r::P *p2, uu, gcdLC, lv, lr)
                  ans case SUPP => return ans
                  "next"
             error "too many evaluations in GCD code"
@@ -168,16 +183,18 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
           u2 := reductum(u1u::SUPR)
           monomial(lc, degree(u)) + map(x +-> x::P, u2)
 
-      lift(gR : SUPR, p : SUPP, cfR : SUPR, lv : List OV, lr : List R) ==
+      lift(gR : SUPR, p : SUPP, cfR : SUPR, gcdLC : P, lv : List OV,
+           lr : List R) ==
         -- lift the coprime factorisation gR*cfR = (univariate of p)
         -- where the variables lv have been evaluated at lr
+        egcdLC := ground(eval(gcdLC, lv, lr))
+        (gu := fix_lc(gR, gcdLC, egcdLC)) case "failed" => "failed"
+        g := gu::SUPP
         lcp := leadingCoefficient p
         elcp := ground(eval(lcp, lv, lr))
-        (gu := fix_lc(gR, lcp, elcp)) case "failed" => "failed"
-        g := gu::SUPP
         (cfu := fix_lc(cfR, lcp, elcp)) case "failed" => "failed"
         cf := cfu::SUPP
-        p := lcp*p       -- impose leading coefficient of p on each factor
+        p := gcdLC*p       -- impose leading coefficient of p on each factor
         while lv ~= [] repeat
            v := first lv
            r := first lr
@@ -200,7 +217,9 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
               cf := cf+pn*second step
               pn := pn*prime
            thisp ~= g*cf => return "failed"
-        g
+        gcdLC = 1 => g
+        g exquo content(g)
+
       recursivelyGCDCoefficients(g : SUPP, v : List OV, p : SUPP, pv : List OV) ==
          mv := first pv   -- take each coefficient w.r.t. mv
          pv := rest pv    -- and recurse on pv as necessary
@@ -208,8 +227,8 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
          for i in 0..d repeat
              p1 := map(x +-> coefficient(x, mv, i), p)
              oldg := g
-             if pv = [] then g := gcdSameVariables(g, p1, v)
-             else g := recursivelyGCDCoefficients(p, v, p1, pv)
+             if pv = [] then g := gcdSameVariables(g, p1, true, false, v)
+             else g := recursivelyGCDCoefficients(g, v, p1, pv)
              (g = 1) => return 1
              g ~= oldg =>
                 oldv := v
