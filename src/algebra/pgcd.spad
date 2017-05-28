@@ -209,16 +209,12 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
            raisePolynomial(gcd(lowerPolynomial p1, lowerPolynomial p2))
         (p2 exquo p1) case SUPP => unitCanonical p1
         ltry : List List R := empty()
-        totResult := localgcd(p1, p2, lvar, ltry)
-        result : SUPP := totResult.locgcd
-        -- special cases
-        result = 1 => 1$SUPP
-        while failtest(result, p1, p2) repeat
---        SAY$Lisp  "retrying gcd"
-          ltry := totResult.goodint
-          totResult := localgcd(p1, p2, lvar, ltry)
-          result := totResult.locgcd
-        result
+        repeat
+            (result, ltry) := localgcd(p1, p2, lvar, ltry)
+            -- special cases
+            result = 1 => return 1$SUPP
+            if not(failtest(result, p1, p2)) then return result
+            -- SAY$Lisp  "retrying gcd"
 
     --local function for the gcd : it returns the evaluation point too
       localgcd(p1 : SUPP, p2 : SUPP, lvar : List(OV), ltry : List List R) : LGcd ==
