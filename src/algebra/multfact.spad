@@ -440,7 +440,7 @@ InnerMultFact(OV, E, R, P) : C == T
 
 MultivariateFactorize(OV, E, R, P) : C == T
  where
-  R          :   Join(EuclideanDomain, CharacteristicZero)
+  R          :   Join(PolynomialFactorizationExplicit, CharacteristicZero)
                     -- with factor on R[x]
   OV         :   OrderedSet
   E          :   OrderedAbelianMonoidSup
@@ -465,21 +465,25 @@ MultivariateFactorize(OV, E, R, P) : C == T
       ++ domain where p is represented as a univariate polynomial with
       ++ multivariate coefficients
   T == add
-    factor(p : P) : Factored P ==
-      R is Fraction Integer =>
-         factor(p)$MRationalFactorize(E, OV, Integer, P)
-      R is Fraction Complex Integer =>
-         factor(p)$MRationalFactorize(E, OV, Complex Integer, P)
-      R is Fraction Polynomial Integer and OV has convert : % -> Symbol =>
-         factor(p)$MPolyCatRationalFunctionFactorizer(E, OV, Integer, P)
-      R has PolynomialFactorizationExplicit =>
-         factor(p, factorPolynomial$R)$InnerMultFact(OV, E, R, P)
-      error "MULTFACT: factor unimplemented"
+    if R has EuclideanDomain then
+        if R is Fraction Integer then
+            factor(p : P) : Factored P ==
+                factor(p)$MRationalFactorize(E, OV, Integer, P)
+        else if R is Fraction Complex Integer then
+            factor(p : P) : Factored P ==
+                factor(p)$MRationalFactorize(E, OV, Complex Integer, P)
+        else if R is Fraction Polynomial Integer and
+                OV has convert : % -> Symbol then
+            factor(p : P) : Factored P ==
+                factor(p)$MPolyCatRationalFunctionFactorizer(E, OV, Integer, P)
+        else
+            factor(p : P) : Factored P ==
+                factor(p, factorPolynomial$R)$InnerMultFact(OV, E, R, P)
+    else
+        factor(p : P) : Factored P == factor(p)$P
 
     factor(up : USP) : Factored USP ==
-      R has PolynomialFactorizationExplicit =>
-          factor(up, factorPolynomial$R)$InnerMultFact(OV, E, R, P)
-      error "MULTFACT: factor unimplemented"
+        factor(up, factorPolynomial$R)$InnerMultFact(OV, E, R, P)
 
 )abbrev package ALGMFACT AlgebraicMultFact
 ++ Author: P. Gianni
