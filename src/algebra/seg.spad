@@ -18,12 +18,6 @@ SegmentCategory(S : Type) : Category == Type with
     BY : (%, Integer) -> %
         ++ \spad{s by n} creates a new segment in which only every \spad{n}-th
         ++ element is used.
-    lo : % -> S
-        ++ lo(s) returns the first endpoint of s.
-        ++ This function is obsolete, use low(s) instead.
-    hi : % -> S
-        ++ hi(s) returns the second endpoint of s.
-        ++ This function is obsolete, use high(s) instead.
     low : % -> S
         ++ low(s) returns the first endpoint of s.
         ++ Note: \spad{low(l..h) = l}.
@@ -99,9 +93,7 @@ Segment(S : Type) : SegmentCategory(S) with
     Rep := Record(low : S, high : S, incr : Integer)
 
     a..b == [a, b, 1]
-    lo s == s.low
     low s == s.low
-    hi s == s.high
     high s == s.high
     incr s == s.incr
     segment(a, b) == [a, b, 1]
@@ -331,19 +323,11 @@ UniversalSegment(S : Type) : SegmentCategory(S) with
       s case Rec => BY(s, i)$Rec :: Rep
       [low(s), i]$Rec2 :: Rep
 
-    lo s ==
-      s case Rec2 => (s :: Rec2).low
-      low(s)$Rec
-
     low s ==
       s case Rec2 => (s :: Rec2).low
       low(s)$Rec
 
     hasHi s == s case Rec
-
-    hi s ==
-      not hasHi(s) => error "hi: segment has no upper bound"
-      high(s)$Rec
 
     high s ==
       not hasHi(s) => error "high: segment has no upper bound"
