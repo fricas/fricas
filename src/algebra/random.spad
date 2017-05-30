@@ -118,24 +118,20 @@ RandomDistributions(S : SetCategory) : with
 
 
 ++ Description:
-++ This  package provides functions to lookup bits in integers
+++ This package provides functions to lookup bits in integers.
 -- Currently unused.
 IntegerBits : with
-    --  bitLength(n)  == # of bits to represent abs(n)
-    --  bitCoef (n, i) == coef of 2^i in abs(n)
-    --  bitTruth(n, i) == true if coef of 2^i in abs(n) is 1
-
-        bitLength : Integer -> Integer
-                ++ bitLength(n) returns the number of bits to represent abs(n)
-        bitCoef :   (Integer, Integer) -> Integer
-                ++ bitCoef(n, m) returns the coefficient of 2^m  in abs(n)
-        bitTruth :  (Integer, Integer) -> Boolean
-                ++ bitTruth(n, m) returns true if coefficient of 2^m in abs(n) is 1
+        bitCoef : (Integer, NonNegativeInteger) -> Integer
+            ++ bitCoef(n, m) returns the coefficient of 2^m in two
+            ++ complement representation of n.
+        bitTruth : (Integer, NonNegativeInteger) -> Boolean
+            ++ bitTruth(n, m) returns true if coefficient of 2^m in
+            ++ two complement representation of n is 1.
 
     == add
-        bitLength n   == INTEGER_-LENGTH(n)$Lisp
-        bitCoef (n, i) == if INTEGER_-BIT(n, i)$Lisp then 1 else 0
-        bitTruth(n, i) == INTEGER_-BIT(n, i)$Lisp
+
+        bitTruth(n, i) == LOGBITP(i, n)$Lisp
+        bitCoef(n, i) == if bitTruth(n, i) then 1 else 0
 
 )abbrev package RIDIST RandomIntegerDistributions
 ++ Description:
@@ -156,7 +152,6 @@ RandomIntegerDistributions() : with
                 ++ ridHack1(i, j, k, l) \undocumented
     == add
         import from RandomNumberSource()
-        import from IntegerBits()
 
         -- Compute uniform(a..b) as
         --
@@ -173,7 +168,7 @@ RandomIntegerDistributions() : with
             a := low(aTob);  b := high(aTob)
             l := min(a, b); m := abs(a-b) + 1
 
-            w := 2^(bitLength size() quo 2)::NonNegativeInteger
+            w := 2^(length size() quo 2)::NonNegativeInteger
 
             n  := 0
             mq := m  -- m quo w^n
