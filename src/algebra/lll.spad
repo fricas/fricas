@@ -1,0 +1,113 @@
+)abbrev package LLLRED LLLReduction
+++ Description: This package implements LLL reduction.  Before
+++  use user must set apropriate floation point precision.  Too
+++  low precision may cause nontermination.  Higher precisions
+++  require more compute time.
+LLLReduction() : Exports == Implementation where
+  MI ==> Matrix(Integer)
+  NNI ==> NonNegativeInteger
+
+  Exports ==> with
+
+      LLL : MI -> MI
+        ++ LLL(m) computes LLL reduction of m
+      find_relation : (List(Float), NNI) -> List(Integer)
+        ++ find_relation(lf, k) finds short integer relation
+        ++ between elements of lf rounded to k decimal places.
+
+  Implementation ==> add
+
+      MF ==> Matrix(Float)
+      VF ==> Vector(Float)
+
+      -- n gives number of vectors
+      -- N gives length of each vector
+
+      gram_step(k : Integer, N : Integer, bm : MI,
+                bsm : MF, mu : MF, nbs : VF, v1 : VF) : Void ==
+          mu(k, k) := 1
+          for i in 1..N repeat
+              v1(i) := bm(k, i)::Float
+          for j in 1..(k - 1) repeat
+              v2 := row(bsm, j)
+              mu(k, j) := dot(v1, v2)/nbs(j)
+              for i in 1..N repeat
+                  v1(i) := v1(i) - mu(k, j)*v2(i)
+          for i in 1..N repeat
+              bsm(k, i) := v1(i)
+          nbs(k) := dot(v1, v1)
+
+      LLL(L : MI) : MI ==
+            n := nrows(L)
+            N := ncols(L)
+            bsm := new(n, N, 0)$MF
+            nbs := new(n, 0)$VF
+            mu := new(n,n, 0)$MF
+            bm := copy(L)
+            delta : Float := 0.8
+            -- Gram-Schmidt
+            v1 := new(N, 0)$VF
+            for k in 1..n repeat
+                gram_step(k, N, bm, bsm, mu, nbs, v1)
+            kmax : Integer := n
+            k := 2
+            iters : Integer := 0
+            while k <= n repeat
+                iters := iters + 1
+                -- Babai size reduction
+                if k > kmax then
+                    gram_step(k, N, bm, bsm, mu, nbs, v1)
+                    kmax := k
+                for j in (k - 1)..1 by -1 repeat
+                    q := retract(round(mu(k, j)))@Integer
+                    if q ~= 0 then
+                        for i in 1..N repeat
+                            bm(k, i) := bm(k, i) - q*bm(j, i)
+                        for i in 1..j repeat
+                            mu(k, i) := mu(k, i) - q*mu(j, i)
+                del1 := delta - mu(k, k-1)^2
+                if del1*nbs(k - 1) <= nbs(k) then k := k + 1
+                else
+                    k1 := k - 1
+                    nv1 := nbs(k) + mu(k, k1)^2*nbs(k1)
+                    nv2 := nbs(k)*nbs(k1)/nv1
+                    m := mu(k, k1)*nbs(k1)/nv1
+                    for i in 1..N repeat
+                        -- swap rows of bm
+                        tmpi := bm(k, i)
+                        bm(k, i) := bm(k1, i)
+                        bm(k1, i) := tmpi
+                        -- update bsm
+                        v1i := bsm(k, i) + mu(k, k1)*bsm(k1, i)
+                        v2i := bsm(k1, i) - m*v1i
+                        bsm(k1, i) := v1i
+                        bsm(k, i) := v2i
+                    bs1 := row(bsm, k1)
+                    bs2 := row(bsm, k)
+                    -- abs(dot(bs1, bs2)) > 1 => error "not orthogonal"
+                    -- abs(dot(bs1, bs1) - nv1) > 1 => error "nv1"
+                    -- abs(dot(bs2, bs2) - nv2) > 1 => error "nv2"
+                    for i in 1..(k1 - 1) repeat
+                        tmp := mu(k, i)
+                        mu(k, i) := mu(k1, i)
+                        mu(k1, i) := tmp
+                    for i in (k + 1)..kmax repeat
+                        tmp := mu(i, k)
+                        mu(i, k) := mu(i, k1) - mu(k, k1)*mu(i, k)
+                        mu(i, k1) := tmp + m*mu(i, k)
+                    mu(k, k1) := m
+                    nbs(k1) := nv1
+                    nbs(k) := nv2
+                    k := qcoerce(max(2, k1))@NNI
+            bm
+
+      find_relation(la, k) ==
+          n := #la
+          m := new(n, n + 1, 0)$Matrix(Integer)
+          tenk := 10^k
+          for i in 1..n for a in la repeat
+              m(i, i) := 1
+              m(i, n + 1) := retract(round(tenk*a))@Integer
+          res := LLL(m)
+          [res(1, i) for i in 1..n]
+
