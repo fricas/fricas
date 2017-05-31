@@ -124,12 +124,13 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
               p2 exquo p1 case SUPP => p1
               1
           gcdLC := gcd(leadingCoefficient p1, leadingCoefficient p2)
-          lr := [randomR() for vv in lv]
           count : NonNegativeInteger := 0
           good_cnt : NonNegativeInteger := 0
           v : SUPR
           dv : NonNegativeInteger
           while count<10 repeat
+            lr := [randomR() for vv in lv]
+            count := count + 1
             while zero? eval(gcdLC, lv, lr) and count<10 repeat
                   lr := [randomR() for vv in lv]
                   count := count+1
@@ -180,8 +181,7 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
           u1 := elc*u
           u1u := u1 exquo leadingCoefficient(u)
           u1u case "failed" => "failed"
-          u2 := reductum(u1u::SUPR)
-          monomial(lc, degree(u)) + map(x +-> x::P, u2)
+          map(x +-> x::P, u1u::SUPR)
 
       lift(gR : SUPR, p : SUPP, cfR : SUPR, gcdLC : P, lv : List OV,
            lr : List R) ==
@@ -205,6 +205,8 @@ GeneralPolynomialGcdPackage(E, OV, R, P) : C == T where
            prime := v::P - r::P
            pn := prime
            origFactors := [g, cf]::List SUPP
+           g := monomial(eval(gcdLC, lv, lr), degree(g)) + reductum(g)
+           cf := monomial(eval(lcp, lv, lr), degree(cf)) + reductum(cf)
            for n in 1..d repeat
               Ecart := (thisp- g*cf) exquo pn
               Ecart case "failed" =>
