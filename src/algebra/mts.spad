@@ -136,6 +136,14 @@ SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
     monomial(r : %, v : Var, n : NNI) ==
       r * monom(monomial(1, v, n)$SMP, n)$STT
 
+    monomial(r : %, lv : List(Var), ln : List(NNI)) ==
+        n := reduce(_+, ln, 0)
+        r * monom(monomial(1, lv, ln)$SMP, n)$STT
+
+    monomial(r : Coef, d : IndexedExponents Var) ==
+        mp := monomial(r, d)$SMP
+        monom(mp, totalDegree(mp))$STT
+
 --% evaluation
 
     substvar : (SMP, L Var, L %) -> %
@@ -261,6 +269,8 @@ SparseMultivariateTaylorSeries(Coef, Var, SMP) : _
         concat(r::SMP, delay map((z1 : SMP) : SMP +-> intsmp(v, z1), f() pretend StS))
       integrate(s, v, r) ==
         concat(r::SMP, map((z1 : SMP) : SMP +-> intsmp(v, z1), s pretend StS))
+
+      integrate(s, v) == integrate(s, v, 0)
 
     -- If there is more than one term of the same order, group them.
     tout(p : SMP) : OUT ==
