@@ -119,6 +119,10 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
 
     -- private function definitions
 
+    -- define firstFactor/firstExponent because den of fTerm has only 1 factor
+    firstFactor(x : FRR) : R == first(factorList(x)).fctr
+    firstExponent(x : FRR) : Integer == first(factorList(x)).xpnt
+
     copypf(a : %) : % == [a.whole, copy a.fract]$%
 
     LessThan(s : fTerm, t : fTerm) ==
@@ -127,7 +131,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       else true
 
     multiplyFracTerms(s : fTerm, t : fTerm) ==
-      nthFactor(s.den, 1) = nthFactor(t.den, 1) =>
+      firstFactor(s.den) = firstFactor(t.den) =>
         normalizeFracTerm([s.num * t.num, s.den * t.den]$fTerm) :: Rep
       i : Union(Record(coef1 : R, coef2 : R),"failed")
       coefs : Record(coef1 : R, coef2 : R)
@@ -149,8 +153,8 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       qr : QR := divide(s.num, (expand s.den))
       qr.remainder = 0$R => [qr.quotient, []$LfTerm]
       -- now verify num and den are coprime
-      f : R := nthFactor(s.den, 1)
-      nexpon : Integer := nthExponent(s.den, 1)
+      f : R := firstFactor(s.den)
+      nexpon : Integer := firstExponent(s.den)
       expon  : Integer := 0
       q : QR := divide(qr.remainder, f)
       while (q.remainder = 0$R) and (expon < nexpon) repeat
@@ -167,11 +171,11 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       dn = 1$FRR => nm :: %
       qr : QR := divide(nm, expand dn)
       c : % := [0$R, [[qr.remainder,
-        nilFactor(nthFactor(dn, 1), nthExponent(dn, 1))]$fTerm]$LfTerm]
+        nilFactor(firstFactor(dn), firstExponent(dn))]$fTerm]$LfTerm]
       d : %
-      for i in 2..numberOfFactors(dn) repeat
+      for i in rest factorList dn repeat
         d :=
-          [0$R, [[1$R, nilFactor(nthFactor(dn, i), nthExponent(dn, i))]$fTerm]$LfTerm]
+          [0$R, [[1$R, nilFactor(i.fctr, i.xpnt)]$fTerm]$LfTerm]
         c := c * d
       (qr.quotient :: %) + c
 
@@ -185,9 +189,9 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       f : R
       e, d : Integer
       for s in b.fract repeat
-        e := nthExponent(s.den, 1)
+        e := firstExponent(s.den)
         e = 1 => l := cons(s, l)
-        f := nthFactor(s.den, 1)
+        f := firstFactor(s.den)
         d := degree(sp := padicallyExpand(f, s.num))
         while (sp ~= 0$SUPR) repeat
           l := cons([leadingCoefficient sp, nilFactor(f, e-d)]$fTerm, l)
@@ -202,19 +206,19 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       bw : R := a.whole
       b : %
       s : fTerm := [(first af).num, (first af).den]$fTerm
-      f : R := nthFactor(s.den, 1)
-      e : Integer := nthExponent(s.den, 1)
+      f : R := firstFactor(s.den)
+      e : Integer := firstExponent(s.den)
       t : fTerm
       for t in rest af repeat
-        f = nthFactor(t.den, 1) =>
+        f = firstFactor(t.den) =>
           s.num := s.num + (t.num *
-            (f ^$R ((e - nthExponent(t.den, 1)) :: NonNegativeInteger)))
+            (f ^$R ((e - firstExponent(t.den)) :: NonNegativeInteger)))
         b := normalizeFracTerm s
         bw := bw + b.whole
         if not(empty?(b.fract)) then bf := cons(first b.fract, bf)
         s := [t.num, t.den]$fTerm
-        f := nthFactor(s.den, 1)
-        e := nthExponent(s.den, 1)
+        f := firstFactor(s.den)
+        e := firstExponent(s.den)
       b := normalizeFracTerm s
       [bw + b.whole, append(b.fract, bf)]$%
 
