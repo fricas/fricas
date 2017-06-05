@@ -2,9 +2,8 @@
 ++ Author: Robert S. Sutor
 ++ Date Created: 1985
 ++ Basic Operations:
-++   expand, exponent, factorList, factors, flagFactor, irreducibleFactor,
-++   makeFR, map, nilFactor, nthFactor, nthFlag, numberOfFactors,
-++   primeFactor, sqfrFactor, unit, unitNormalize,
+++   expand, factorList, factors, flagFactor, irreducibleFactor, primeFactor,
+++   nilFactor, sqfrFactor, numberOfFactors, makeFR, map, unit, unitNormalize
 ++ Related Constructors: FactoredFunctionUtilities, FactoredFunctions2
 ++ Also See:
 ++ AMS Classifications: 11A51, 11Y05
@@ -37,10 +36,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       ++ "unfactored" object. Note: this is purposely not called \spadfun{coerce} which would
       ++ cause the interpreter to do this automatically.
 
-    exponent :  % -> Integer
-      ++ exponent(u) returns the exponent of the first factor of
-      ++ \spadvar{u}, or 0 if the factored form consists solely of a unit.
-
     makeFR  : (R, List FF) -> %
       ++ makeFR(unit, listOfFactors) creates a factored object (for
       ++ use by factoring code).
@@ -65,22 +60,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       ++ irreducibleFactor(base, exponent) creates a factored object with
       ++ a single factor whose base is asserted to be irreducible
       ++ (flag = "irred").
-
-    nthExponent : (%, Integer) -> Integer
-      ++ nthExponent(u, n) returns the exponent of the nth factor of
-      ++ \spadvar{u}.  If \spadvar{n} is not a valid index for a factor
-      ++ (for example, less than 1 or too big), 0 is returned.
-
-    nthFactor :  (%, Integer) -> R
-      ++ nthFactor(u, n) returns the base of the nth factor of
-      ++ \spadvar{u}.  If \spadvar{n} is not a valid index for a factor
-      ++ (for example, less than 1 or too big), 1 is returned.  If
-      ++ \spadvar{u} consists only of a unit, the unit is returned.
-
-    nthFlag :    (%, Integer) -> fUnion
-      ++ nthFlag(u, n) returns the information flag of the nth factor of
-      ++ \spadvar{u}.  If \spadvar{n} is not a valid index for a factor
-      ++ (for example, less than 1 or too big), "nil" is returned.
 
     numberOfFactors : %  -> NonNegativeInteger
       ++ numberOfFactors(u) returns the number of factors in \spadvar{u}.
@@ -364,27 +343,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     reciprocal u ==
       mkFF((recip unit u)::R,
                     [[y.flg, y.fctr, - y.xpnt]$FF for y in factorList u])
-
-    exponent u ==  -- exponent of first factor
-      empty?(fl := factorList u) or zero? u => 0
-      first(fl).xpnt
-
-    nthExponent(u, i) ==
-      l := factorList u
-      zero? u or i < 1 or i > #l => 0
-      (l.(minIndex(l) + i - 1)).xpnt
-
-    nthFactor(u, i) ==
-      zero? u => 0
-      zero? i => unit u
-      l := factorList u
-      negative? i or i > #l => 1
-      (l.(minIndex(l) + i - 1)).fctr
-
-    nthFlag(u, i) ==
-      l := factorList u
-      zero? u or i < 1 or i > #l => "nil"
-      (l.(minIndex(l) + i - 1)).flg
 
     flagFactor(r, i, fl) ==
       zero? i => 1
