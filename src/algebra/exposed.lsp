@@ -689,7 +689,6 @@
   (|IndexedTwoDimensionalArray| . IARRAY2)
   (|IndexedVector| . IVECTOR)
   (|InnerAlgFactor| . IALGFACT)
-  (|InnerAlgebraicNumber| . IAN)
   (|InnerCommonDenominator| . ICDEN)
   (|InnerFiniteField| . IFF)
   (|InnerFreeAbelianMonoid| . IFAMON)
