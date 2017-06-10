@@ -1,10 +1,6 @@
 )abbrev domain PFR PartialFraction
 ++ Author: Robert S. Sutor
 ++ Date Created: 1986
-++ Basic Operations: (Field), (Algebra),
-++   coerce, compactFraction, firstDenom, firstNumer,
-++   nthFractionalTerm, numberOfFractionalTerms, padicallyExpand,
-++   padicFraction, partialFraction, wholePart
 ++ Related Constructors:
 ++ Also See: ContinuedFraction
 ++ AMS Classifications:
@@ -19,14 +15,18 @@
 ++   denominator, while the ``p-adic'' form expands each numerator
 ++   p-adically via the prime p in the denominator.  For computational
 ++   efficiency, the compact form is used, though the p-adic form may
-++   be gotten by calling the function \spadfunFrom{padicFraction}{PartialFraction}.  For a
-++   general euclidean domain, it is not known how to factor the
-++   denominator.  Thus the function \spadfunFrom{partialFraction}{PartialFraction} takes as its
-++   second argument an element of \spadtype{Factored(R)}.
+++   be gotten by calling the function
+++   \spadfunFrom{padicFraction}{PartialFraction}.  For a general euclidean
+++   domain, it is not known how to factor the denominator.
+++   Thus the function \spadfunFrom{partialFraction}{PartialFraction} takes
+++   an element of \spadtype{Factored(R)} as its second argument.
 
 PartialFraction(R : EuclideanDomain) : Cat == Capsule where
   FRR  ==> Factored R
   SUPR ==> SparseUnivariatePolynomial R
+  fTerm ==> Record(num : R, den : FRR)  -- den should have unit = 1
+                                        -- and only 1 factor
+  LfTerm ==> List fTerm
 
   Cat == Join(Field, Algebra R) with
     coerce : % -> Fraction R
@@ -46,30 +46,15 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       ++ fraction has only one fractional term per prime in the
       ++ denominator.
 
-    firstDenom : % -> FRR
-      ++ firstDenom(p) extracts the denominator of the first fractional
-      ++ term. This returns 1 if there is no fractional part (use
-      ++ \spadfunFrom{wholePart}{PartialFraction} to get the whole part).
-
-    firstNumer : % -> R
-      ++ firstNumer(p) extracts the numerator of the first fractional
-      ++ term. This returns 0 if there is no fractional part (use
-      ++ \spadfunFrom{wholePart}{PartialFraction} to get the whole part).
-
-    nthFractionalTerm : (%, Integer) -> %
-      ++ nthFractionalTerm(p, n) extracts the nth fractional term from
-      ++ the partial fraction \spad{p}.  This returns 0 if the index
-      ++ \spad{n} is out of range.
-
     numberOfFractionalTerms : % -> Integer
       ++ numberOfFractionalTerms(p) computes the number of fractional
       ++ terms in \spad{p}. This returns 0 if there is no fractional
       ++ part.
 
-    fractionalTerms : % -> List Fraction R
-      ++ fractionalTerms(p) extracts all fractional terms from \spad{p}
-      ++ to a list of Fraction R.  This returns [] if there is no
-      ++ fractional part.
+    fractionalTerms : % -> LfTerm
+      ++ fractionalTerms(p) extracts the fractional part of \spad{p}
+      ++ to a list of Record(num : R, den : Factored R).  This returns
+      ++ [] if there is no fractional part.
 
     padicallyExpand : (R, R) -> SUPR
       ++ padicallyExpand(p, x) is a utility function that expands
@@ -101,10 +86,6 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     -- some constructor assignments and macros
 
     Ex     ==> OutputForm
-    fTerm  ==> Record(num : R, den : FRR)         -- den should have
-                                                  -- unit = 1 and only
-                                                  -- 1 factor
-    LfTerm ==> List fTerm
     QR     ==> Record(quotient : R, remainder : R)
 
     Rep    := Record(whole : R, fract : LfTerm)
@@ -246,22 +227,10 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       a * partialFraction(numer br, (denom br) :: FRR)
     recip a == (1$% exquo a)
 
-    firstDenom a ==         -- denominator of 1st fractional term
-      empty?(a.fract) => 1$FRR
-      (first a.fract).den
-    firstNumer a ==         -- numerator of 1st fractional term
-      empty?(a.fract) => 0$R
-      (first a.fract).num
     numberOfFractionalTerms a == # a.fract
-    nthFractionalTerm(a, n) ==
-      l : LfTerm := a.fract
-      (n < 1) or (n > # l) => 0$%
-      [0$R, [l.n]$LfTerm]$%
     wholePart a == a.whole
 
-    fractionalTerms a ==
-        l : LfTerm := a.fract
-        [(x.num)/expand(x.den) for x in l]
+    fractionalTerms a == a.fract
 
     partialFraction(nm : R, dn : FRR) ==
       nm = 0$R => 0$%
