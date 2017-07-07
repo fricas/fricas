@@ -1,0 +1,108 @@
+)clear completely
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "IntegerLocalizedAtPrime"
+
+-------------------------------------------------------------------
+testcase "RetractableFrom Q"
+-------------------------------------------------------------------
+Z ==> Integer
+Q ==>  Fraction Z
+C ==>IntegerLocalizedAtPrime(7)
+
+testEquals("0$Q", "(0$C)::Q")
+testEquals("exponent(retract(11/5)@C)", "0")
+testEquals("unitPart(retract(11/5)@C)", "11/5")
+
+t: C := retract(7^3/12)@C
+testEquals("exponent t", "3")
+testEquals("unitPart t", "1/12")
+
+-------------------------------------------------------------------
+testcase "RetractableTo Z"
+-------------------------------------------------------------------
+Z ==> Integer
+C ==>IntegerLocalizedAtPrime(7)
+
+testEquals("0$C", "(0$Z)::C")
+testEquals("exponent(49::C)", "2")
+testEquals("unitPart(49::C)", "1")
+testEquals("exponent(-98::C)", "2")
+testEquals("unitPart(-98::C)", "-2")
+e: C := 1$C
+testEquals("retract(e+e)@Z", "2")
+testEquals("(retractIfCan(e)$C)::Z", "1")
+
+t: C := retract(2/5)@C
+testEquals("retractIfCan(t)$C case Z", "false")
+
+-------------------------------------------------------------------
+testcase "EuclideanDomain"
+-------------------------------------------------------------------
+Z ==> Integer
+Q ==>  Fraction Z
+C ==>IntegerLocalizedAtPrime(7)
+
+c: C := retract(8/9)@C
+t: C := retract(1/5)@C
+z: C := c+t
+testEquals("exponent z", "2")
+testEquals("unitPart z", "1/45")
+
+h: C := z*c
+testEquals("exponent h", "2")
+testEquals("unitPart h", "8/405")
+
+h := -c
+testEquals("exponent h", "0")
+testEquals("unitPart h", "-8/9")
+
+h := z^3
+testEquals("exponent h", "6")
+testEquals("unitPart h", "1/91125")
+testEquals("euclideanSize h", "6")
+
+s := retract(7/3000)@C
+r := divide(s, h)
+testEquals("r.quotient", "0$C")
+testEquals("r.remainder", "s")
+
+r := divide(h, s)
+x: C := retract(8/243)@C
+testEquals("r.quotient", "7^5*x")
+testEquals("r.remainder", "0$C")
+
+testEquals("opposite?(c, -c)", "true")
+
+testEquals("unit?(c)", "true")
+testEquals("unit?(s)", "false")
+
+testEquals("gcd(h,s)", "7::C")
+l: C := retract(7^6/273375000)@C
+testEquals("lcm(h,s)", "l")
+lcc := lcmCoef(h,s)
+testEquals("lcc.llcm_res", "l")
+testEquals("lcc.coeff1", "retract(1/3000)@C")
+testEquals("lcc.coeff2", "retract(7^5/91125)@C")
+
+testEquals("recip(c)::C", "retract(9/8)@C")
+testEquals("recip(z) case C", "false")
+
+-------------------------------------------------------------------
+testcase "canonicalUnitNormal"
+-------------------------------------------------------------------
+Z ==> Integer
+Q ==>  Fraction Z
+C ==>IntegerLocalizedAtPrime(7)
+
+c: C := retract(49*3/5)@C
+uca := unitNormal c
+testEquals("uca.unit", "retract(3/5)@C")
+testEquals("uca.canonical", "49::C")
+testEquals("uca.associate", "retract(5/3)@C")
+
+d: C := retract(49*4/13)@C
+testEquals("associates?(c,d)", "true")
+
+statistics()
