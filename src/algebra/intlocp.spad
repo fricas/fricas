@@ -1,0 +1,144 @@
+)abbrev domain INTLOCP IntegerLocalizedAtPrime
+
+rep x ==> (x@%) pretend Rep
+per x ==> (x@Rep) pretend %
+P ==> PositiveInteger
+N ==> NonNegativeInteger
+Z ==> Integer
+Q ==> Fraction Z
+
+++ Author: Ralf Hemmecke
+++ Description:
+++ IntegerLocalizedAtPrime(p) represents the Euclidean domain of
+++ integers localized at a prime p, i.e., the set of rational numbers
+++ whose denominator is not divisible by p.
+IntegerLocalizedAtPrime(p : P) : Join(EuclideanDomain,
+  RetractableTo Z, RetractableFrom Q, canonicalUnitNormal) with
+    exponent : % -> N
+        ++ Each element x can be written as x=p^n*a/b with
+        ++ gcd(p,a)=gcd(p,b)=1.
+        ++ exponent(x) returns n.
+    unitPart : % -> Q
+        ++ Each element x can be written as x=p^n*a/b with
+        ++ gcd(p,a)=gcd(p,b)=1.
+        ++ unitPart(x) returns a/b.
+ == add
+    if not prime?(p)$IntegerPrimesPackage(Integer) then
+        error "Argument of IntegerLocalizedAtPrime must be a prime"
+
+    -- The representation is a (nonnegative) power of p times a fraction
+    -- a/b with gcd(a, p) = gcd(b, p) = 1.
+    Rep ==> Record(ppow : N, rat : Q)
+
+    -- auxiliary function
+    -- split(z) returns [d,a] such that z=p^n*a.
+    split(z : Z) : Record(ppow : N, pfree : Z) ==
+        zero? z => [0, 0]
+        a : Z := z
+        n : N := 0
+        while not((x := a exquo p) case "failed") repeat
+            a := x::Z
+            n := n + 1
+        [n, a]
+    -- : exported
+    exponent(x : %) : N == rep(x).ppow
+    unitPart(x : %) : Q == rep(x).rat
+    -- RetractableTo Z
+    coerce(z : Z) : % ==
+        s := split z
+        per [s.ppow, (s.pfree)::Q]
+    retract(x : %) : Z ==
+        q : Q := unitPart x
+        not one? denom q => error "not an integer"
+        p^exponent(x)*numer(q)
+    retractIfCan(x : %) : Union(Z, "failed") ==
+        q : Q := unitPart x
+        not one? denom q => "failed"
+        p^exponent(x)*numer(q)
+    -- RetractableFrom Q
+    coerce(x : %) : Q == p^exponent(x) * unitPart x
+    retract(q : Q) : % ==
+        d : Z := denom q
+        (d exquo p) case Z => error "denominator contains power of p"
+        snum := split numer q
+        per [snum.ppow, snum.pfree / d]
+    retractIfCan(q : Q) : Union(%, "failed") ==
+        d : Z := denom q
+        (d exquo p) case Z => "failed"
+        snum := split numer q
+        per [snum.ppow, snum.pfree / d]
+    coerce(x : %) : OutputForm == -- rep(x)::OutputForm
+        zero? exponent x => (unitPart x):: OutputForm
+        po := (p::OutputForm)
+        if exponent x > 1 then po := po^(exponent(x)::OutputForm)
+        q : Q := unitPart x
+        one? q => po
+        po * (q::OutputForm)
+    0 : % == (0$Z)::%
+    1 : % == (1$Z)::%
+    zero?(x : %) : Boolean == zero? unitPart x
+    ((x : %) + (y : %)) : % ==
+        zero? x => y
+        zero? y => x
+        e : Z := (exponent x)::Z - (exponent y)::Z
+        zero? e => -- similar to coerce : Q -> %
+            q : Q := (unitPart x + unitPart y)
+            zero? q => 0
+            snum := split numer q
+            per [exponent x + snum.ppow, snum.pfree / denom q]
+        if e < 0 then (e, x, y) := (-e, y, x) -- exchange roles of x and y.
+        -- If m>=n and gcd(r,p)=gcd(s,p)=1, then p^m*r + p^n*s = p^n * t
+        -- with t=p^(m-n)*r + s and gcd(t p)=1.
+        per [exponent y, p^(qcoerce(e)@N) * unitPart x + unitPart y]
+    (- (x : %)) : % == per [exponent x, - unitPart x]
+    ((x : %) * (y : %)) : % ==
+        zero? x or zero? y => 0
+        per [exponent x + exponent y, unitPart x * unitPart y]
+    ((z : Z) * (x : %)) : % == (z::%)*x
+    ((x : %) ^ (n : N)) : % == per [n * exponent x, unitPart(x)^n]
+    ((x : %) = (y : %)) : Boolean ==
+        exponent x = exponent y and unitPart x = unitPart y
+    characteristic() : N == 0
+    euclideanSize(x : %) : N == exponent x
+    -- local rationalDivide
+    divide(x : %, y : %) : Record(quotient : %, remainder : %) ==
+        zero? y => error "division by zero"
+        e : Z := (exponent x)::Z - (exponent y)::Z
+        e < 0 => [0, x] -- cannot divide, i.e., x is remainder
+        -- division is exact, i.e., remainder=0
+        z : % := per [qcoerce(e)@N, unitPart(x) / unitPart(y)]
+        [z, 0]
+    ((x : %) exquo (y : %)) : Union(%, "failed") ==
+        zero? y => "failed"
+        e : Z := (exponent x)::Z - (exponent y)::Z
+        e < 0 => "failed"
+        -- division is exact, i.e., remainder=0
+        z : % := per [qcoerce(e)@N, unitPart(x) / unitPart(y)]
+        z::Union(%, "failed")
+    opposite?(x : %, y : %) : Boolean ==
+        exponent x = exponent y and opposite?(unitPart x, unitPart y)
+    unitNormal(x : %) : Record(unit : %, canonical : %, associate : %) ==
+        zero? x => [1, x, 1]
+        [per [0, unitPart x], per [exponent x, 1], per [0, inv unitPart x]]
+    unitCanonical(x : %) : % ==
+        zero? x => x
+        per [exponent x, 1]
+    associates?(x : %, y : %) : Boolean ==
+        zero? x => zero? y
+        zero? y => zero? x
+        exponent x = exponent y
+    unit?(x : %) : Boolean == zero? exponent x and not zero? x
+    recip(x : %) : Union(%, "failed") ==
+        not unit? x => "failed"
+        (per [0, inv unitPart x])::Union(%, "failed")
+    gcd(x : %, y : %) : % == per [min(exponent x, exponent y), 1]
+    lcm(x : %, y : %) : % ==
+        per [max(exponent x, exponent y), unitPart(x)*unitPart(y)]
+    lcmCoef(x : %, y : %) : Record(llcm_res : %, coeff1 : %, coeff2 : %) ==
+        zero? x or zero? y => [0, 0, 0]
+        ex : N := exponent x; ux : Q := unitPart x
+        ey : N := exponent y; uy : Q := unitPart y
+        emax : N := max(ex, ey)
+        cx : % := per [qcoerce(emax::Z - ex::Z)@N, uy]
+        cy : % := per [qcoerce(emax::Z - ey::Z)@N, ux]
+        [per [emax, ux*uy], cx, cy]
