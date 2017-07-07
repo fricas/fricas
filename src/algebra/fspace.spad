@@ -53,23 +53,11 @@ ExpressionSpace() : Category == Defn where
       ++ being evaluated when operators are applied to it. For example,
       ++ \spad{log(1)} returns 0, but \spad{log(box 1)}
       ++ returns the formal kernel log(1).
-    box          : List % -> %
-      ++ box([f1, ..., fn]) returns \spad{(f1, ..., fn)} with a 'box'
-      ++ around them that
-      ++ prevents the fi from being evaluated when operators are applied to
-      ++ them, and makes them applicable to a unary operator. For example,
-      ++ \spad{atan(box [x, 2])} returns the formal kernel \spad{atan(x, 2)}.
     paren        : % -> %
       ++ paren(f) returns (f). This prevents f from
       ++ being evaluated when operators are applied to it. For example,
       ++ \spad{log(1)} returns 0, but \spad{log(paren 1)} returns the
       ++ formal kernel log((1)).
-    paren        : List % -> %
-      ++ paren([f1, ..., fn]) returns \spad{(f1, ..., fn)}. This
-      ++ prevents the fi from being evaluated when operators are applied to
-      ++ them, and makes them applicable to a unary operator. For example,
-      ++ \spad{atan(paren [x, 2])} returns the formal
-      ++ kernel \spad{atan((x, 2))}.
     distribute   : % -> %
       ++ distribute(f) expands all the kernels in f that are
       ++ formally enclosed by a \spadfunFrom{box}{ExpressionSpace}
@@ -192,8 +180,8 @@ ExpressionSpace() : Category == Defn where
     oppren := operator(PAREN)$CommonOperators()
     opbox  := operator(BOX)$CommonOperators()
 
-    box(x : %)     == box [x]
-    paren(x : %)   == paren [x]
+    box(x : %)     == opbox [x]
+    paren(x : %)   == oppren [x]
     belong? op   ==
         has?(op, 'any) and (is?(op, PAREN) or is?(op, BOX))
     listk f      == parts allKernels f
@@ -207,8 +195,6 @@ ExpressionSpace() : Category == Defn where
     freeOf?(x : %, s : SY)       == not member?(s, [name k for k in listk x])
     distribute x == unwrap([k for k in listk x |
                               is?(k, oppren) or is?(k, opbox)], x)
-    box(l : List %)                  == opbox l
-    paren(l : List %)                == oppren l
 
     if % has Ring then
 
