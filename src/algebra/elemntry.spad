@@ -209,33 +209,35 @@ ElementaryFunction(R, F) : Exports == Implementation where
     -- case user changes the precision
 
     if R has TranscendentalFunctionCategory then
-      Pie := pi()$R :: F
+        if R has arbitraryPrecision then
+            pi() == pi()$R :: F
+        else
+            Pie := pi()$R :: F
+            pi() == Pie
     else
-      Pie := kernel(oppi, []$List(F))
-
-    if R has TranscendentalFunctionCategory and R has arbitraryPrecision then
-      pi() == pi()$R :: F
-    else
-      pi() == Pie
+        Pie := kernel(oppi, []$List(F))
+        pi() == Pie
 
     if R has imaginary : () -> R then
       isqrt1 := imaginary()$R :: F
     else isqrt1 := sqrt(-1::F)
 
-    if R has RadicalCategory then
-      isqrt2 := sqrt(2::R)::F
-      isqrt3 := sqrt(3::R)::F
-    else
-      isqrt2 := sqrt(2::F)
-      isqrt3 := sqrt(3::F)
-
     iisqrt1() == isqrt1
-    if R has RadicalCategory and R has arbitraryPrecision then
-      iisqrt2() == sqrt(2::R)::F
-      iisqrt3() == sqrt(3::R)::F
+
+    if R has RadicalCategory then
+        if R has arbitraryPrecision then
+            iisqrt2() == sqrt(2::R)::F
+            iisqrt3() == sqrt(3::R)::F
+        else
+            isqrt2 := sqrt(2::R)::F
+            isqrt3 := sqrt(3::R)::F
+            iisqrt2() == isqrt2
+            iisqrt3() == isqrt3
     else
-      iisqrt2() == isqrt2
-      iisqrt3() == isqrt3
+        isqrt2 := sqrt(2::F)
+        isqrt3 := sqrt(3::F)
+        iisqrt2() == isqrt2
+        iisqrt3() == isqrt3
 
     ipi l == pi()
     log x == oplog x
