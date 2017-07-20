@@ -601,7 +601,7 @@
 (defun unistall-gmp-multiplication()
    (let ((package *PACKAGE*))
     (ccl:SET-DEVELOPMENT-ENVIRONMENT T)
-   (setf (symbol-function 'ccl::multiply-bignums)
+    (setf (symbol-function 'ccl::multiply-bignums)
           (symbol-function 'orig-multiply-bignums))
     (setf (symbol-function 'ccl::bignum-truncate)
           (symbol-function 'orig-bignum-truncate))
@@ -806,11 +806,11 @@
           (symbol-function 'orig-bignum-truncate))
     (setf (symbol-function 'sb-bignum::bignum-gcd)
           (symbol-function 'orig-bignum-gcd))
-    (sb-ext:lock-package "SB-BIGNUM"))
+    (sb-ext:lock-package "SB-BIGNUM")
     (sb-ext:unlock-package "COMMON-LISP")
     (setf (symbol-function 'common-lisp:isqrt)
           (symbol-function 'orig-isqrt))
-    (sb-ext:lock-package "COMMON-LISP")
+    (sb-ext:lock-package "COMMON-LISP"))
 
 )
 
@@ -819,7 +819,8 @@
         (if (ignore-errors (|quiet_load_alien| "libgmp.so") t)
             (if (ignore-errors
                     (|quiet_load_alien| wrapper-lib) t)
-                 (install-gmp-multiplication)
-                 (setf *gmp-multiplication-initialized* t)))))
+                (progn
+                    (install-gmp-multiplication)
+                    (setf *gmp-multiplication-initialized* t))))))
 
 )
