@@ -1,6 +1,8 @@
 fricas_c_runtime = core @fricas_c_runtime@
 LIBSPAD_SO_TARGET = @LIBSPAD_SO_TARGET@
 GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
+GMP_CPPFLAGS = @GMP_CPPFLAGS@
+GMP_LDFLAGS = @GMP_LDFLAGS@
 GMP_LIB = @GMP_LIB@
 lisp_flavor=@fricas_lisp_flavor@
 SOLIB_FLAGS = @SOLIB_FLAGS@
@@ -60,22 +62,26 @@ core_objects_32 = $(core_sources:.c=.$(OBJEXT)32)
 .PRECIOUS: %.$(OBJEXT)32
 
 %.$(OBJEXT)32: $(srcdir)/%.c $(fricas_c_macros_h)
-	$(CC) -g -m32 -fPIC $(CCF) -c $(fricas_includes) $(FRICAS_X11_CFLAGS) $< -o $@
+	$(CC) -g -m32 -fPIC $(CCF) -c $(fricas_includes) \
+	  $(FRICAS_X11_CFLAGS) $< -o $@
 
 $(LIBSPAD_SO): $(core_objects_32)
-	$(CC) -g -m32 $(SOLIB_FLAGS) $(core_objects_32) $(fricas_c_runtime_extra) -o $@
+	$(CC) -g -m32 $(SOLIB_FLAGS) $(core_objects_32) \
+	  $(fricas_c_runtime_extra) -o $@
 else
 $(LIBSPAD_SO): $(core_objects)
 	$(CC) -g $(SOLIB_FLAGS) $(core_objects) $(fricas_c_runtime_extra) -o $@
 
 $(GMP_WRAP_SO): $(srcdir)/gmp_wrap.c
-	$(CC) -g -fPIC $(SOLIB_FLAGS) $< $(GMP_LIB) -o $@
+	$(CC) $(GMP_CPPFLAGS) -g -fPIC $(GMP_LDFLAGS) $(SOLIB_FLAGS) $< \
+	  $(GMP_LIB) -o $@
 endif
 
 .PRECIOUS: %.$(OBJEXT)
 
 %.$(OBJEXT): $(srcdir)/%.c $(fricas_c_macros_h)
-	$(CC) -g -fPIC $(CCF) -c $(fricas_includes) $(FRICAS_X11_CFLAGS) $< -o $@
+	$(CC) -g -fPIC $(CCF) -c $(fricas_includes) \
+	  $(FRICAS_X11_CFLAGS) $< -o $@
 
 # This is a support library, so it does not change often and
 # we don't need to remove the produced objects in mostlyclean.
