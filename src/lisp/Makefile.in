@@ -10,6 +10,8 @@ fricas_c_runtime_extra = @fricas_c_runtime_extra@
 fricas_algebra_optimization = @fricas_algebra_optimization@
 fricas_has_directory_operations = @fricas_has_directory_operations@
 GMP_WRAP_SO_TARGET = @GMP_WRAP_SO_TARGET@
+GMP_LIBDIR = @GMP_LIBDIR@
+GMP_EXT = @GMP_EXT@
 LISP_CMD = $(FRICAS_LISP) $(fricas_quiet_flags)
 
 ## Create a fresh image for building interpsys and AXIOMsys
@@ -24,10 +26,10 @@ lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
 		    $(build_libdir)/libspad.a
 
 ifeq ($(lisp_flavor),sbcl)
-NUM_GMP = num_gmp.lisp
+NUM_GMP = num_gmpx.lisp
 else
 ifeq ($(lisp_flavor),openmcl)
-NUM_GMP = num_gmp.lisp
+NUM_GMP = num_gmpx.lisp
 else
 NUM_GMP =
 endif
@@ -84,9 +86,9 @@ fricas-package.lisp: $(srcdir)/fricas-package.lisp
 primitives.lisp : $(srcdir)/primitives.lisp
 	cp $< $@
 
-num_gmp.lisp: $(srcdir)/num_gmp.lisp
+num_gmpx.lisp: $(srcdir)/num_gmp.lisp
 	if [ x$(GMP_WRAP_SO_TARGET) != x ] ; then \
-	    cp $< $@ ; \
+	    sed -e "s|libgmp.so|$(GMP_LIBDIR)libgmp.$(GMP_EXT)|" $< > $@ ; \
 	else \
 	    (echo '(in-package "FRICAS-LISP")' ; \
 	     echo '(defun init-gmp(x) nil)' ; \
@@ -139,7 +141,7 @@ do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
    primitives.lisp
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
-            '#+(or :sbcl :openmcl) (load (compile-file "num_gmp.lisp"))' \
+            '#+(or :sbcl :openmcl) (load (compile-file "num_gmpx.lisp"))' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
 	    '(load (compile-file "primitives.lisp"))' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
@@ -166,7 +168,7 @@ mostlyclean-local:
 
 clean-local: mostlyclean
 	-rm -f $(OUT)/lisp$(EXEEXT) prelisp$(EXEEXT) do_it.$(lisp_flavor)
-	-rm -f *.$(LISPOBJEXT) fricas-ecl.lisp fricas-config.lisp
+	-rm -f *.$(LISPOBJEXT) fricas-ecl.lisp fricas-config.lisp $(NUM_GMP)
 	-rm -f *.fn *.data *.lib
 
 distclean-local: clean-local
