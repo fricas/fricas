@@ -64,7 +64,7 @@ npParse stream ==
 
 npItem()==
      npQualDef() =>
-            npEqKey "SEMICOLON" =>
+            npEqKey(";") =>
                       [a,b]:=npItem1 npPop1 ()
                       c:=pfEnSequence b
                       a => npPush c
@@ -74,7 +74,7 @@ npItem()==
 
 npItem1 c==
      npQualDef() =>
-            npEqKey "SEMICOLON" =>
+            npEqKey(";") =>
                       [a,b]:=npItem1 npPop1 ()
                       [a,append(c,b)]
             [true,append (c,npPop1())]
@@ -412,7 +412,7 @@ npDollar()== npEqPeek "$" and
    npPush tokConstruct("id","$",tokPosn $stok)
    npNext()
 
-npPrefixColon()== npEqPeek "COLON" and
+npPrefixColon()== npEqPeek(":") and
    npPush tokConstruct("id",":",tokPosn $stok)
    npNext()
 
@@ -440,7 +440,7 @@ npPrimary()==   npPrimary1() or npPrimary2()
 npDotted f== APPLY(f,nil) and npAnyNo function npSelector
 
 npSelector()==
-            npEqKey "DOT" and (npPrimary() or npTrap()) and
+            npEqKey(".") and (npPrimary() or npTrap()) and
               npPush(pfApplication(npPop2(),npPop1()))
 
 npApplication()==
@@ -462,9 +462,9 @@ npTypedForm(sy,fn) ==
      npEqKey sy  and (npApplication() or npTrap()) and
         npPush FUNCALL(fn,npPop2(),npPop1())
 
-npRestrict() == npTypedForm("AT",function pfRestrict)
+npRestrict() == npTypedForm("@", function pfRestrict)
 
-npCoerceTo() == npTypedForm("COERCE",function pfCoerceto)
+npCoerceTo() == npTypedForm("::", function pfCoerceto)
 
 npColonQuery() == npTypedForm("ATAT",function pfRetractTo)
 
@@ -475,35 +475,34 @@ npTypeStyle()==
 
 npTypified ()==npApplication() and npAnyNo function npTypeStyle
 
-npTagged() == npTypedForm1("COLON",function pfTagged)
+npTagged() == npTypedForm1(":", function pfTagged)
 
 npColon () == npTypified() and npAnyNo function npTagged
 
-npPower() == npRightAssoc('(POWER CARAT),function npColon)
+npPower() == npRightAssoc(["**", "^"], function npColon)
 
 npProduct()==
-    npLeftAssoc('(TIMES SLASH BACKSLASH SLASHSLASH
-       BACKSLASHBACKSLASH SLASHBACKSLASH BACKSLASHSLASH )
-                       ,function npPower)
+    npLeftAssoc(["*", "/", "\", "SLASHSLASH",
+       "BACKSLASHBACKSLASH", "/\", "\/"], function npPower)
 
 npRemainder()==
     npLeftAssoc(["rem", "quo", "exquo"], function npProduct)
 
 npTerm()==
-   npInfGeneric '(MINUS PLUS) and (npRemainder()
+   npInfGeneric(["-", "+"]) and (npRemainder()
         and npPush(pfApplication(npPop2(),npPop1())) or true)
              or npRemainder()
 
 
-npSum()==npLeftAssoc('(PLUS MINUS),function npTerm)
+npSum()==npLeftAssoc(["-", "+"], function npTerm)
 
-npArith()==npLeftAssoc('(MOD),function npSum)
+npArith()==npLeftAssoc(["mod"], function npSum)
 
 npSegment()==  npEqPeek "SEG"  and npPushId() and npFromdom()
 
 npInterval()==
   npArith() and
-   (npSegment() and ((npEqPeek "BAR"
+   (npSegment() and ((npEqPeek("|")
       and npPush(pfApplication(npPop1(),npPop1()))) or
      (npArith() and npPush(pfInfApplication(npPop2(),npPop2(),npPop1())))
             or npPush(pfApplication(npPop1(),npPop1()))) or true)
@@ -523,7 +522,7 @@ npSynthetic()==
     else false
 
 npRelation()==
-   npLeftAssoc ('(EQUAL NOTEQUAL LT LE GT GE OANGLE CANGLE),
+   npLeftAssoc(["=", "~=", "<", "<=", ">", ">=", "<<", ">>"],
             function npSynthetic)
 
 npQuiver()  ==    npRightAssoc('(ARROW LARROW),function npRelation)
@@ -532,7 +531,7 @@ npDiscrim() ==    npLeftAssoc(["case", "has"], function npQuiver)
 npDisjand() == npLeftAssoc(["and"], function npDiscrim)
 
 npLogical() == npLeftAssoc(["or"], function npDisjand)
-npSuch() == npLeftAssoc( '(BAR),function npLogical)
+npSuch() == npLeftAssoc(["|"], function npLogical)
 npMatch()   ==  npLeftAssoc(["is", "isnt"], function npSuch)
 
 npType()    ==  npMatch()  and
@@ -547,7 +546,7 @@ npConditionalStatement()==npConditional function npQualifiedDefinition
 
 npExpress1()==npConditionalStatement() or  npADD()
 
-npCommaBackSet()== npEqKey "COMMA" and (npEqKey "BACKSET" or true)
+npCommaBackSet()== npEqKey(",") and (npEqKey "BACKSET" or true)
 
 npExpress()==
      npExpress1() and
@@ -595,15 +594,15 @@ npBackTrack(p1,p2,p3)==
          true
      false
 
-npMDEF()== npBackTrack(function npStatement,"MDEF",function npMDEFinition)
+npMDEF()== npBackTrack(function npStatement, "==>", function npMDEFinition)
 
 npMDEFinition() == npPP function npMdef
 
-npAssign()== npBackTrack(function npMDEF,"BECOMES",function npAssignment)
+npAssign()== npBackTrack(function npMDEF, ":=", function npAssignment)
 
 npAssignment()==
     npAssignVariable() and
-      (npEqKey "BECOMES" or npTrap()) and
+      (npEqKey(":=") or npTrap()) and
         (npGives() or npTrap()) and
            npPush pfAssign (npPop2(),npPop1())
 
@@ -618,17 +617,17 @@ npAssignVariable()== npColon() and npPush pfListOf [npPop1()]
 
 npAssignVariablelist()== npListing function npAssignVariableName
 
-npExit()== npBackTrack(function npAssign,"EXIT",function npPileExit)
+npExit()== npBackTrack(function npAssign, "=>", function npPileExit)
 
 npPileExit()==
-     npAssign() and (npEqKey "EXIT" or npTrap()) and
+     npAssign() and (npEqKey("=>") or npTrap()) and
          (npStatement() or npTrap())
            and npPush pfExit (npPop2(),npPop1())
 
-npGives()== npBackTrack(function npExit,"GIVES",function npLambda)
+npGives()== npBackTrack(function npExit, "+->", function npLambda)
 
 npDefinitionOrStatement()==
-            npBackTrack(function npGives,"DEF",function npDef)
+            npBackTrack(function npGives, "==", function npDef)
 
 npVoid()== npAndOr("DO",function npStatement,function pfNovalue)
 
@@ -647,7 +646,7 @@ npLoop()==
                   npEqKey "repeat" and (npAssign() or npTrap()) and
                        npPush pfLoop1 npPop1 ()
 
-npSuchThat()==npAndOr("BAR",function npLogical,function pfSuchthat)
+npSuchThat()==npAndOr("|", function npLogical, function pfSuchthat)
 
 npWhile() == npAndOr("while", function npLogical, function pfWhile)
 
@@ -676,7 +675,7 @@ npImport() == npAndOr("import", function npQualTypelist, function pfImport)
 
 npInline()==npAndOr("INLINE",function npQualTypelist,function pfInline)
 
-npLocalDecl()== npEqKey "COLON" and (npType() or npTrap()) and
+npLocalDecl()== npEqKey(":") and (npType() or npTrap()) and
              npPush pfSpread (pfParts npPop2(),npPop1()) or
               npPush pfSpread (pfParts npPop1(),pfNothing())
 
@@ -753,7 +752,7 @@ npSCategory()==
     else
       a:=npState()
       if npPrimary()
-      then if npEqPeek "COLON"
+      then if npEqPeek(":")
            then
               npRestore a
               npSignature()
@@ -769,7 +768,7 @@ npSignatureDefinee()==
    npName() or npInfixOperator() or npPrefixColon()
 
 
-npSigDecl()== npEqKey "COLON" and (npType() or npTrap()) and
+npSigDecl()== npEqKey(":") and (npType() or npTrap()) and
            npPush pfSpread (pfParts npPop2(),npPop1())
 
 npSigItem()==npTypeVariable() and  (npSigDecl() or npTrap())
@@ -784,8 +783,8 @@ npSignature()==
 npSemiListing (p)==
        npListofFun(p,function npSemiBackSet,function pfAppend)
 
-npSemiBackSet()== npEqKey "SEMICOLON" and (npEqKey "BACKSET" or true)
-npDecl()== npEqKey "COLON" and (npType() or npTrap()) and
+npSemiBackSet()== npEqKey(";") and (npEqKey "BACKSET" or true)
+npDecl()== npEqKey(":") and (npType() or npTrap()) and
            npPush pfTyped (npPop2(),npPop1())
 
 npVariableName()==npName() and
@@ -796,7 +795,7 @@ npVariable()== npParenthesized function npVariablelist or
 
 npVariablelist()== npListing function npVariableName
 
-npListing (p)==npList(p,"COMMA",function pfListOf)
+npListing (p)==npList(p, ",", function pfListOf)
 npQualified(f)==
     if FUNCALL f
     then
@@ -806,7 +805,7 @@ npQualified(f)==
     else  npLetQualified  f
 
 npLetQualified f==
-      npEqKey "LET" and
+      npEqKey "LET" and BREAK() and
       (npDefinition() or npTrap()) and
       npCompMissing "in"  and
       (FUNCALL f or npTrap()) and
@@ -848,7 +847,7 @@ npTyping()==
 npDefaultItemlist()== npPC function npSDefaultItem
                              and npPush pfUnSequence npPop1 ()
 
-npDefaultDecl()== npEqKey "COLON" and (npType() or npTrap()) and
+npDefaultDecl()== npEqKey(":") and (npType() or npTrap()) and
            npPush pfSpread (pfParts npPop2(),npPop1())
 
 npDefaultItem()==npTypeVariable() and (npDefaultDecl() or npTrap())
@@ -865,9 +864,9 @@ npLambda()==
      (npVariable() and
       ((npLambda() or npTrap()) and
        npPush pfLam(npPop2(),npPop1()))) or
-         npEqKey "GIVES" and (npDefinitionOrStatement() or npTrap()) or
-          npEqKey "COLON" and (npType() or npTrap()) and
-            npEqKey "GIVES" and (npDefinitionOrStatement() or npTrap())
+         npEqKey("+->") and (npDefinitionOrStatement() or npTrap()) or
+          npEqKey(":") and (npType() or npTrap()) and
+            npEqKey("+->") and (npDefinitionOrStatement() or npTrap())
                and
                   npPush pfReturnTyped(npPop2(),npPop1())
 
@@ -881,7 +880,7 @@ npDef()==
     false
 
 --npDefTail()== npEqKey "DEF" and npDefinitionOrStatement()
-npDefTail()== (npEqKey "DEF" or npEqKey "MDEF") and npDefinitionOrStatement()
+npDefTail()== (npEqKey("==") or npEqKey("==>")) and npDefinitionOrStatement()
 
 npMdef()==
     npQuiver() =>
@@ -904,7 +903,7 @@ npDefinitionItem()==
       npImport()  or
           a:=npState()
           npStatement() =>
-               npEqPeek "DEF" =>
+               npEqPeek("==") =>
                   npRestore a
                   npDef()
                npRestore a
