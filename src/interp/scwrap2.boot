@@ -96,34 +96,7 @@ $trans_table := [["id", "IDENTIFIER"], ["key", "KEYWORD"], _
 
 $trans_key := [ _
                 ["ARROW", "->"], _
-                ["AT", "@"], _
-                ["BAR", "|"], _
-                ["BACKSLASHSLASH", "\/"], _
-                ["BECOMES", ":="], _
-                ["CARAT", "^"], _
-                ["COERCE", "::"], _
-                ["COLON", ":"], _
-                ["COMMA", ","], _
-                ["DEF", "=="], _
-                ["DOT", "."], _
-                ["EQUAL", "="], _
-                ["EXIT", "=>"], _
-                ["GE", ">="], _
-                ["GIVES", "+->"], _
-                ["GT", ">"], _
-                ["LE", "<="], _
-                ["LT", "<"], _
-                ["OANGLE", "<<"], _
-                ["CANGLE", ">>"], _
-                ["MDEF", "==>"], _
-                ["MINUS", "-"], _
-                ["NOTEQUAL", "~="], _
-                ["PLUS", "+"], _
                 ["SEG", ".."], _
-                ["SEMICOLON", ";"], _
-                ["SLASH", "/"], _
-                ["SLASHBACKSLASH", "/\"], _
-                ["TIMES", "*"], _
                 ["BACKSET", ";"]]
 
 $trans_key_id := [ _
@@ -132,8 +105,8 @@ $trans_key_id := [ _
                 ["RULE", "rule"] _
                 ]
 
-$expression_nostarters := [ "ARROW", "BACKSET", "BECOMES", "COLON", _
-    "COMMA", "DEF", "ELSE", "EXIT", "GIVES", "MDEF", "SEMICOLON",
+$expression_nostarters := [ "ARROW", "BACKSET", ":=", ":", _
+    ",", "==", "=>", "+->", "==>", ";",
     "has", "is", "pretend", "where", ")"]
 
 starts_expression?(sym, type) ==
@@ -201,7 +174,7 @@ ntokreader(token) ==
             ntype1 := first(ntok1)
             nsym := ntok1.1
             if ntype1 = "key" and nsym in ["then", "else",
-                  "COMMA", "SEMICOLON"] then
+                  ",", ";"] then
                 PUSH($ignored_tab, $tab_states)
                 $ignored_tab := true
                 return ntokreader(token)

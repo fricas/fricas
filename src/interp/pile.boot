@@ -223,7 +223,7 @@ separatePiles x==
          a:=car x
          lta := tokPart(last_tok(a))
          ftb := tokPart(first_tok(car(cdr x)))
-         EQ(lta, "COLON") or EQ(lta, "SEMICOLON") or EQ(lta, "(") or
+         EQ(lta, ":") or EQ(lta, ";") or EQ(lta, "(") or
            EQ(lta, "[") or EQ(lta, "{") or EQ(ftb, "in") or
              EQ(ftb, "then") or EQ(ftb, "else") or EQ(ftb, ")") or
                EQ(ftb, "]") or EQ(ftb, "}") =>
