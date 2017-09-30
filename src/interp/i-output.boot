@@ -1043,7 +1043,7 @@ overlabelSuper [.,a,b] == 1 + height a + superspan b
 overlabelWidth [.,a,b] == WIDTH b
 
 overlabelApp([.,a,b], x, y, d) ==
-  underApp:= APP(b,x,y,d)
+  d := APP(b, x, y, d) -- the part that is under the label
   endPoint := x + WIDTH b - 1
   middle := QUOTIENT(x + endPoint,2)
   h := y + superspan b + 1
@@ -1055,7 +1055,7 @@ overbarSuper u == 1 + superspan u.1
 overbarWidth u == WIDTH u.1
 
 overbarApp(u,x,y,d) ==
-  underApp:= APP(u.1,x,y,d)
+  d := APP(u.1, x, y, d) -- the part that is under the bar
   apphor(x,x+WIDTH u.1-1,y+superspan u.1+1,d,UNDERBAR)
 
 intSub u ==
