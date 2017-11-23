@@ -352,7 +352,7 @@
 
 (defun gmp-bignum-isqrt (x)
   (let* ((xl (digits_to_words (ccl::%bignum-length x)))
-         (rl (ceiling xl 2))
+         (rl (ceiling (+ 1 xl) 2))
          (xlb (words_to_bytes xl))
          (rlb (words_to_bytes rl))
          (rl2 (words_to_digits rl))
@@ -538,7 +538,7 @@
 #+:sbcl
 (defun gmp-bignum-isqrt (x)
   (let* ((len-x (sb-bignum::%bignum-length x))
-         (len-res (ceiling len-x 2))
+         (len-res (ceiling (+ 1 len-x) 2))
          (res (sb-bignum::%allocate-bignum len-res)))
         (declare (type fixnum len-x len-res))
         (sb-sys:with-pinned-objects (x res)
