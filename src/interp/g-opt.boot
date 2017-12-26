@@ -325,8 +325,6 @@ optRECORDCOPY ["RECORDCOPY",name,len] ==
 
 optSuchthat [.,:u] == ["SUCHTHAT",:u]
 
-optMINUS u == BREAK()
-
 opt_minus_SI u ==
   u is ['minus_SI, v] =>
     NUMBERP v => -v
@@ -350,7 +348,6 @@ optEQ u ==
 for x in '( (call         optCall) _
               (SEQ          optSEQ)_
               (EQ           optEQ)_
-              (MINUS        optMINUS)_
               (minus_SI     opt_minus_SI)_
               (_-           opt_-)_
               (SPADCALL     optSPADCALL)_

@@ -83,7 +83,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
    (+ " + ")
    (- " - ")
    (WHERE " WHERE ")
-   (AT " AT ")
    (MAX " MAX ")
    (MIN " MIN ")
        )) (MAKEPROP (CAR X) 'INFIXOP (CADR X)))
