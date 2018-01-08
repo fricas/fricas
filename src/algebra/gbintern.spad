@@ -30,7 +30,12 @@ GroebnerInternalPackage(Dom, Expon, Dpol) : T == C where
      redPol :   (Dpol, List(Dpol))  -> Dpol
         ++ redPol \undocumented
      gbasis :  (List(Dpol), Integer, Integer) -> List(Dpol)
-        ++ gbasis \undocumented
+        ++ gbasis(pols, f1, f2) computes a Groebner basis of pols.
+     gbasisExtend: (List(Dpol), List(Dpol), Integer, Integer) -> List(Dpol)
+        ++ gbasisExtend(pols, gb, f1, f2) computes a Groebner basis of
+        ++ concat(pols, gb) where gb is assumed to be already a Groebner
+        ++ basis, i.e. no S-polynomials among elements of gb will ever be
+        ++ considered.
      critT :  critPair   -> Boolean
         ++ critT \undocumented
      critM :  (Expon, Expon) -> Boolean
@@ -105,12 +110,16 @@ GroebnerInternalPackage(Dom, Expon, Dpol) : T == C where
 
    ------    calculate basis
 
-   gbasis(Pol : List(Dpol), xx1 : Integer, xx2 : Integer ) ==
+   gbasis(Pol: List(Dpol), xx1: Integer, xx2: Integer) ==
+       gbasisExtend(Pol, [], xx1, xx2)
+
+   gbasisExtend(Pol: List(Dpol), gb: List(Dpol), xx1: Integer, xx2: Integer) ==
      D, D1 : List(critPair)
      ---------   create D and Pol
 
+     sgb: List(sugarPol) := [[virtualDegree x, hMonic x] for x in gb]
      Pol1 := sort((z1, z2) +-> degree z1 > degree z2, Pol)
-     basPols := updatF(hMonic(first Pol1), virtualDegree(first Pol1), [])
+     basPols := updatF(hMonic(first Pol1), virtualDegree(first Pol1), sgb)
      Pol1 := rest(Pol1)
      D := []
      while not(empty?(Pol1)) repeat
