@@ -62,9 +62,14 @@ TransSolvePackage(R) : Exports == Implementation where
      solve :  (L EQ RE, L S) -> L L EQ RE
        ++ solve(leqs, lvar) returns a list of solutions to the list of
        ++ equations leqs with respect to the list of symbols lvar.
---     solve :  (L EQ RE, L Kernel RE) -> L L EQ RE
---       ++ solve(leqs, lker) returns a list of solutions to the list
---       ++ of equations leqs with respect to the list of kernels lker.
+     solve :  (L EQ RE, L Kernel RE) -> L L EQ RE
+       ++ solve(leqs, lker) returns a list of solutions to the list
+       ++ of equations leqs with respect to the list of kernels lker.
+     solve : (L EQ RE, L RE) -> L L EQ RE
+       ++ solve(leqs, lexpr) returns a list of solutions to the list
+       ++ of equations leqs with respect to the list of expressions lexpr.
+       ++ Each expression in lexpr is treated as a variable and
+       ++ must be a single kernel.
 
    Implementation == add
      import from ACF
@@ -575,15 +580,26 @@ TransSolvePackage(R) : Exports == Implementation where
         lexpr : L RE := [lhs(eq)-rhs(eq) for eq in leqs]
         solveList(lexpr, lvar)
 
---     solve(leqs: L EQ RE, lker: L Kernel RE): L L EQ RE ==
---        lexpr: L RE := [lhs(eq)-rhs(eq) for eq in leqs]
---        lvar : L S := [new()$S for k in lker]
---        lval : L RE := [kernel v for v in lvar]
---        nlexpr := [eval(expr, lker, lval) for expr in lexpr]
---        ans := solveList(nlexpr, lvar)
---        lker2 : L Kernel RE := [v::Kernel(RE) for v in lvar]
---        lval2 := [k::RE for k in lker]
---        [[map(eval(#1, lker2, lval2), neq) for neq in sol] for sol in ans]
+     solve(leqs : L EQ RE, lker : L Kernel RE) : L L EQ RE ==
+         lexpr: L RE := [lhs(eq)-rhs(eq) for eq in leqs]
+         lvar : L S := [new()$S for k in lker]
+         lval : L RE := [v::RE for v in lvar]
+         nlexpr := [eval(expr, lker, lval) for expr in lexpr]
+         ans := solveList(nlexpr, lvar)
+         lker2 : L Kernel RE := [kernel v for v in lvar]
+         lval2 := [k::RE for k in lker]
+         [[map((e : RE) : RE +-> eval(e, lker2, lval2), neq) for neq in sol]
+             for sol in ans]
+
+     retract2(e : RE) : K ==
+         k : Union(K, "failed") := retractIfCan(e)
+         k case "failed" =>
+             error "solve$TransSolvePackage: variable is not a single kernel"
+         k::K
+
+     solve(leqs : L EQ RE, lexpr : L RE) : L L EQ RE ==
+         lker : L K := [retract2(e) for e in lexpr]
+         solve(leqs, lker)
 
 )abbrev package SOLVESER TransSolvePackageService
 ++ Author: W. Wiwianka
