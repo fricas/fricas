@@ -147,7 +147,7 @@ TransSolvePackage(R) : Exports == Implementation where
           bigX := (first ausgabe1)::RE
           eq1 := eval(lside, bigX=(X::RE))
               -- Type  :  Expression R
-          f := univariate(eq1, first kernels (X::RE))
+          f := univariate(eq1, kernel X)
               -- Type  :  Fraction SparseUnivariatePolynomial Expression R
           lfatt := factors factorPolynomial(numer f
                                            )$ExpressionFactorPolynomial(R, RE)
@@ -242,31 +242,31 @@ TransSolvePackage(R) : Exports == Implementation where
 
 
      subsTan(exprvar : RE, y : S) : RE ==
-       Z := new()@Symbol
+       Z := new()$Symbol
        listofkern := tableXkernels(exprvar, y)
-       varkern := (first listofkern)::RE
-       Y := (numer first argument first (kernels(varkern)))::RE
-       test : Boolean := varkern = tan(((Y::RE)/(2::RE))::RE)
+       varkern : RE := first listofkern
+       Y := numerator first argument first kernels varkern
+       test : Boolean := varkern = tan(Y/2::RE)
        if not( (#listofkern = 1) and test) then
          return exprvar
-       fZ := eval(exprvar, varkern=(Z::RE))
-       fN := (numer fZ)::RE
-       f := univariate(fN, first kernels(Z::RE))
-       secondfun := (-2*(Y::RE)/((Y::RE)^2-1) )::RE
-       g := univariate(secondfun, first kernels(y::RE))
-       H := (new()@Symbol)::RE
-       newH := univariate(H, first kernels(Z::RE))
+       fZ := eval(exprvar, varkern = Z::RE)
+       fN := numerator fZ
+       f := univariate(fN, kernel Z)
+       secondfun := -2*Y/(Y^2-1)
+       g := univariate(secondfun, kernel y)
+       H := (new()$Symbol)::RE
+       newH := univariate(H, kernel Z)
        result := decomposeFunc(f, g, newH)
-       if not ( result = f ) then
-         result1 := result( H::RE )
-         resultnew := eval(result1, H=(( tan((Y::RE))::RE ) ))
+       if result ~= f then
+         result1 := result H
+         resultnew := eval(result1, H = tan(Y))
        else return exprvar
 
 
      eliminateKernRoot(var : RE, varkern : K) : RE ==
        X := new()@Symbol
        var1 := eval(var, (varkern::RE)=(X::RE) )
-       var2 := numer univariate(var1, first kernels(X::RE))
+       var2 := numer univariate(var1, kernel X)
        var3 := monomial(1, ( retract( second argument varkern)@I )::NNI)@SUP RE_
               - monomial(first argument varkern, 0::NNI)@SUP RE
        resultvar := resultant(var2, var3)
@@ -327,10 +327,10 @@ TransSolvePackage(R) : Exports == Implementation where
        anscoeff : RE := 1
        ansmant : RE := 0
        for i in n2list repeat
-          if freeOf?(i::RE, Z) then
-            anscoeff := (i::RE)*anscoeff
+          if freeOf?(i, Z) then
+            anscoeff := i*anscoeff
           else
-            ansmant := (i::RE)
+            ansmant := i
        [anscoeff, ansmant * nlist.1 ]
 
      logexpp(expr1 : RE, expr2 : RE) : RE ==
@@ -352,17 +352,15 @@ TransSolvePackage(R) : Exports == Implementation where
          expr := (reductum(numer expr))::RE
        ansexpr : RE := 0
        for i in keys(exprtable) repeat
-          ansexpr := ansexpr + logsumtolog(exprtable.i) * (i::RE)
+          ansexpr := ansexpr + logsumtolog(exprtable.i) * i
        ansexpr := ansexpr + ans
 
 
      testRootk(varlistk : RE, y : S) : Boolean ==
-       testList := ['nthRoot]::L(S)
        kernelofeqnvar := tableXkernels(varlistk, y)
-       if #kernelofeqnvar = 0 then
-         return false
+       empty? kernelofeqnvar => false
        for i in kernelofeqnvar repeat
-          if member?(name(first kernels(i)), testList) then
+          if is?(first kernels i, 'nthRoot) then
             return true
        false
 
@@ -375,10 +373,9 @@ TransSolvePackage(R) : Exports == Implementation where
        listkOfvar
 
      testTrig(eqnvar : RE, Z : S) : Boolean ==
-       testList := ['sin, 'cos, 'tan, 'cot, 'sec, 'csc]::L(S)
        kernelofeqnvar := tableXkernels(eqnvar, Z)
-       if #kernelofeqnvar = 0 then
-         return false
+       empty? kernelofeqnvar => false
+       testList := ['sin, 'cos, 'tan, 'cot, 'sec, 'csc]::L(S)
        for i in kernelofeqnvar repeat
           if not member?(name(first kernels(i)), testList) or _
              not testkernel( (first argument first kernels(i)) , Z) then
@@ -387,10 +384,9 @@ TransSolvePackage(R) : Exports == Implementation where
 
 
      testHTrig(eqnvar : RE, Z : S) : Boolean ==
-       testList := ['sinh, 'cosh, 'tanh, 'coth, 'sech, 'csch]::L(S)
        kernelofeqnvar := tableXkernels(eqnvar, Z)
-       if #kernelofeqnvar = 0 then
-         return false
+       empty? kernelofeqnvar => false
+       testList := ['sinh, 'cosh, 'tanh, 'coth, 'sech, 'csch]::L(S)
        for i in kernelofeqnvar repeat
           if not member?(name(first kernels(i)), testList) or _
              not testkernel( (first argument first kernels(i)) , Z) then
@@ -660,7 +656,7 @@ TransSolvePackageService(R) : Exports == Implementation where
        Z := new()@Symbol
        polyvar : Fraction SUP RE := 0
        for i in 1..((n+1)::Integer) repeat
-          vecti := univariate(vect( i ), first kernels(Z::RE))
+          vecti := univariate(vect.i, kernel Z)
           polyvar := polyvar + ( vecti )*( var )^( (n-i+1)::NonNegativeInteger )
        polyvar
 
