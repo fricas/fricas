@@ -227,8 +227,8 @@
 (defmacro |CharNE|    (x y) `(CHAR/= (the |Char| ,x) (the |Char| ,y)))
 (defmacro |CharLower|   (x) `(the |Char| (CHAR-DOWNCASE (the |Char| ,x))))
 (defmacro |CharUpper|   (x) `(the |Char| (CHAR-UPCASE (the |Char| ,x))))
-(defmacro |CharOrd|     (x) `(CHAR-INT (the |Char| ,x)))
-(defmacro |CharNum|     (x) `(INT-CHAR (the |SInt| ,x)))
+(defmacro |CharOrd|     (x) `(CHAR-CODE (the |Char| ,x)))
+(defmacro |CharNum|     (x) `(CODE-CHAR (the |SInt| ,x)))
 
 (defmacro |SFlo0|        () 0.0s0)
 (defmacro |SFlo1|        () 1.0s0)
