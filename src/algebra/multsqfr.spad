@@ -54,7 +54,7 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
         ++ nsqfree should be local
    intChoose  :           (SUP, List(OV), List List R)   -> Choice
         ++ intChoose should be local
-   coefChoose :           (Z, Factored P)               -> P
+   coefChoose : (Z, P, List FFEP) -> P
         ++ coefChoose should be local
    check      :     (List(FFE), List(FFE))              -> Boolean
         ++ check should be local
@@ -121,7 +121,7 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
        if ctf ~= 1 then g0 := ctf*g0
        npol := consnewpol(f, f0, exp0)
        (d, d0) := (npol.pol, npol.polval)
-       if leadpol then lcoef := coefChoose(exp0, sqlc)
+       if leadpol then lcoef := coefChoose(exp0, unitsq, sqlead)
        else lcoef := 1$P
        ldeg := myDegree(f, lvar, exp0::NNI)
        result := lift(d, g0, (d0 exquo g0)::BP, lcoef, lvar, ldeg, lval)
@@ -133,14 +133,24 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
        f := h::SUP
        f0 := completeEval(h, lvar, lval)
        lcr : P := leadingCoefficient result0
-       if leadpol and lcr ~= 1$P then
-         for lpfact in sqlead  while lcr ~= 1 repeat
+       nsqlead := sqlead
+       for lpfact in sqlead  while lcr ~= 1 repeat
            ground? lcr =>
              unitsq := (unitsq exquo lcr)::P
              lcr := 1$P
-           (h1 := lcr exquo lpfact.factor) case "failed" => "next"
-           lcr := h1::P
-           lpfact.exponent := (lpfact.exponent)-exp0
+           repeat
+               lpfact.exponent < exp0 => break
+               (h1 := lcr exquo lpfact.factor) case P =>
+                   lcr := h1::P
+                   lpfact.exponent := (lpfact.exponent) - exp0
+               hh1 := gcd(lcr, lpfact.factor)
+               hh1 = 1$P => break
+               lcr := (lcr exquo hh1)::P
+               nff := (lpfact.factor exquo hh1)::P
+               nsqlead := cons([nff, lpfact.exponent]$FFEP, nsqlead)
+               lpfact.factor := hh1
+               lpfact.exponent := (lpfact.exponent) - exp0
+       sqlead := nsqlead
      [((retract f) exquo ctf)::P, sqdec]$squareForm
 
 
@@ -256,9 +266,9 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
 
 
         ----  Choose the leading coefficient for the lifting  ----
-   coefChoose(exp : Z, sqlead : Factored(P)) : P ==
-     lcoef : P := unit(sqlead)
-     for term in factors(sqlead) repeat
+   coefChoose(exp : Z, unitsq : P, sqlead : List FFEP) : P ==
+     lcoef := unitsq
+     for term in sqlead repeat
        texp := term.exponent
        texp<exp => "next term"
        texp = exp => lcoef := lcoef*term.factor
