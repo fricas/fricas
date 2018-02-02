@@ -387,7 +387,8 @@ ModularEvaluation2() : Exports == Implementation where
 
     sas := create()$SingletonAsOrderedSet
 
-    m_inverse(x1 : RF, lmu : List(UP), ls : List(Symbol)) : RF ==
+    -- remove algebraics from denominator
+    m_reduc(x1 : RF, lmu : List(UP), ls : List(Symbol)) : RF ==
         for s in ls for m in lmu repeat
             q := univariate(x1, s, m)$Qfun
             x1 := retract(eval(q, sas, s::MP::RF::UP))@RF
@@ -400,17 +401,17 @@ ModularEvaluation2() : Exports == Implementation where
         pu := to_UP(p)
         lcg := leadingCoefficient(gu)
         dg := degree(gu)
-        gu := reductum(gu)
+        rgu := reductum(gu)
         lmu := [numer(univariate(ground(to_UP(m)$FP), s)$Qfun)
                  for m in lm for s in ls]
         while not((dp := degree(pu)) < dg or pu = 0) repeat
             lcp := leadingCoefficient(pu)
-            c1 := m_inverse(lcp/lcg, lmu, ls)
+            c1 := m_reduc(lcp/lcg, lmu, ls)
             pu := reductum(pu) -
-                    monomial(c1, (dp - dg)::NonNegativeInteger)*gu
+                    monomial(c1, (dp - dg)::NonNegativeInteger)*rgu
         while not(pu = 0) repeat
             lcp := leadingCoefficient(pu)
-            c1 := m_inverse(lcp, lmu, ls)
+            c1 := m_reduc(lcp, lmu, ls)
             not(c1 = 0) => return false
             pu := reductum(pu)
         true
