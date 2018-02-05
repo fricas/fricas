@@ -11,8 +11,7 @@
 ++ over finite fields.
 
 
-MultFiniteFactorize(OV, E, F, PG) : C == T
- where
+MultFiniteFactorize(OV, E, F, PG) : C == T where
   F          :   FiniteFieldCategory
   OV         :   OrderedSet
   E          :   OrderedAbelianMonoidSup
@@ -60,12 +59,12 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
 
                    ----  Local Functions  ----
     ran       :                   Z              -> R
-    mFactor   :                (P, Z)             -> MFinalFact
-    supFactor :              (SUP P, Z)           -> SUPFinalFact
-    mfconst   :        (SUP P, Z, L OV, L NNI)      -> L SUP P
-    mfpol     :        (SUP P, Z, L OV, L NNI)      -> L SUP P
+    mFactor : (P, OV, Z) -> MFinalFact
+    supFactor : (SUP P, OV, Z) -> SUPFinalFact
+    mfconst : (SUP P, Z, L OV, L NNI) -> L SUP P
+    mfpol : (SUP P, OV, Z, L OV, L NNI) -> L SUP P
     varChoose :           (P, L OV, L NNI)         -> NewOrd
-    simplify  :         (P, Z, L OV, L NNI)         -> MFinalFact
+    simplify : (P, OV, Z, L OV, L NNI) -> MFinalFact
     intChoose :        (SUP P, L OV, R, L P, L L R)  -> Valuf
     pretest   :         (P, NNI, L OV, L R)         -> FinalFact
     pushdcoef :                  PG              -> P
@@ -77,15 +76,13 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
     pM          :             L SUP R            -> R
     intfact     :     (SUP P, L OV, L NNI, MFinalFact, L L R) -> L SUP P
 
-    basicVar : OV := NIL$Lisp pretend OV  -- variable for the basic step
-
 
     convertPUP(lfg : MFinalFact) : SUPFinalFact ==
       [lfg.contp, [[lff.irr ::SUP P, lff.pow]$SUParFact
                     for lff in lfg.factors]]$SUPFinalFact
 
-    supFactor(um : SUP P, dx : Z) : SUPFinalFact ==
-        degree(um)=0 => convertPUP(mFactor(ground um, dx))
+    supFactor(um : SUP P, var : OV, dx : Z) : SUPFinalFact ==
+        degree(um) = 0 => convertPUP(mFactor(ground um, var, dx))
         lvar:L OV := "setUnion"/[variables cf for cf in coefficients um]
         lcont : SUP P
         lf : L SUP P
@@ -99,25 +96,27 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
           um := (um exquo f1)::SUP P
           factorlist := cons([monomial(1, 1), mdeg], factorlist)
           if degree um = 0 then return
-            lfg := convertPUP mFactor(ground um, dx)
+            lfg := convertPUP mFactor(ground um, var, dx)
             [lfg.contp, append(factorlist, lfg.factors)]
 
 
-        om := map((p1 : P) : PG +-> pushup(p1, basicVar), um)$UPCF2(P, SUP P, PG, SUP PG)
+        om := map((p1 : P) : PG +-> pushup(p1, var), um
+                 )$UPCF2(P, SUP P, PG, SUP PG)
         sqfacs := squareFree(om)
-        lcont := map((p1 : PG) : P +-> pushdown(p1, basicVar), unit sqfacs)$UPCF2(PG, SUP PG, P, SUP P)
+        lcont := map((p1 : PG) : P +-> pushdown(p1, var), unit(sqfacs)
+                    )$UPCF2(PG, SUP PG, P, SUP P)
 
                                    ----   Factorize the content  ----
         if ground? lcont then
           flead := convertPUP constantCase(ground lcont, empty())
         else
-          flead := supFactor(lcont, dx)
+          flead := supFactor(lcont, var, dx)
 
         factorlist := flead.factors
 
                                  ----  Make the polynomial square-free  ----
-        sqqfact := [[map((p1 : PG) : P +-> pushdown(p1, basicVar), ff.factor), ff.exponent]
-                      for ff in factors sqfacs]
+        sqqfact := [[map((p1 : PG) : P +-> pushdown(p1, var), ff.factor),
+                      ff.exponent] for ff in factors sqfacs]
 
                         ---  Factorize the primitive square-free terms ---
         for fact in sqqfact repeat
@@ -128,7 +127,7 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
           ldeg := ["max"/[degree(fc,xx) for fc in coefs] for xx in lvar]
           if ground?(leadingCoefficient ffactor) then
              lf := mfconst(ffactor, dx, lvar, ldeg)
-          else lf := mfpol(ffactor, dx, lvar, ldeg)
+          else lf := mfpol(ffactor, var, dx, lvar, ldeg)
           auxfl := [[lfp, ffexp]$SUParFact  for lfp in lf]
           factorlist := append(factorlist, auxfl)
         lcfacs := */[leadingCoefficient leadingCoefficient(f.irr)^((f.pow)::NNI)
@@ -140,16 +139,18 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
         lv : List OV := variables um
         ld := degree(um, lv)
         dx := "min"/ld
-        basicVar := lv.position(dx, ld)
-        cm := map((p1 : PG) : P +-> pushdown(p1, basicVar), um)$UPCF2(PG, SUP PG, P, SUP P)
-        flist := supFactor(cm, dx)
-        pushupconst(flist.contp, basicVar)::SUP(PG) *
-          (*/[primeFactor(map((p1 : P) : PG +-> pushup(p1, basicVar), u.irr)$UPCF2(P, SUP P, PG, SUP PG),
-                 u.pow) for u in flist.factors])
+        var := lv.position(dx, ld)
+        cm := map((p1 : PG) : P +-> pushdown(p1, var), um
+                 )$UPCF2(PG, SUP PG, P, SUP P)
+        flist := supFactor(cm, var, dx)
+        pushupconst(flist.contp, var)::SUP(PG) *
+          (*/[primeFactor(map((p1 : P) : PG +-> pushup(p1, var), u.irr
+                             )$UPCF2(P, SUP P, PG, SUP PG),
+                          u.pow) for u in flist.factors])
 
 
 
-    mFactor(m : P, dx : Z) : MFinalFact ==
+    mFactor(m : P, var : OV, dx : Z) : MFinalFact ==
       ground?(m) => constantCase(m, empty())
       lvar : L OV := variables m
       lcont : P
@@ -158,20 +159,20 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
       factorlist : L MParFact := empty()
                                   ---- is the Mindeg > 0? ----
       lmdeg := minimumDegree(m, lvar)
-      or/[n>0 for n in lmdeg] => simplify(m, dx, lvar, lmdeg)
+      or/[n > 0 for n in lmdeg] => simplify(m, var, dx, lvar, lmdeg)
                               ----  Make the polynomial square-free  ----
-      om := pushup(m, basicVar)
+      om := pushup(m, var)
       sqfacs := squareFree(om)
-      lcont := pushdown(unit sqfacs, basicVar)
+      lcont := pushdown(unit(sqfacs), var)
 
                                   ----  Factorize the content  ----
       if ground? lcont then
         flead := constantCase(lcont, empty())
       else
-        flead := mFactor(lcont, dx)
+        flead := mFactor(lcont, var, dx)
       factorlist := flead.factors
       sqqfact : List Record(factor : P, exponent : Integer)
-      sqqfact := [[pushdown(ff.factor, basicVar), ff.exponent]
+      sqqfact := [[pushdown(ff.factor, var), ff.exponent]
                                               for ff in factors sqfacs]
                        ---  Factorize the primitive square-free terms ---
       for fact in sqqfact repeat
@@ -189,8 +190,8 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
           lcont := gcd coefficients(univariate(ffactor, x))
           ffactor := (ffactor exquo lcont)::P
           factorlist := cons([ffactor, ffexp]$MParFact, factorlist)
-          for lcterm in mFactor(lcont, dx).factors repeat
-           factorlist := cons([lcterm.irr, lcterm.pow * ffexp], factorlist)
+          for lcterm in mFactor(lcont, var, dx).factors repeat
+              factorlist := cons([lcterm.irr, lcterm.pow*ffexp], factorlist)
 
         varch := varChoose(ffactor, lvar, ldeg)
         um := varch.npol
@@ -206,7 +207,7 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
           if pc ~= 1 then
             um := (um exquo pc)::SUP P
             ffactor := multivariate(um, x)
-            for lcterm in mFactor(pc, dx).factors repeat
+            for lcterm in mFactor(pc, var, dx).factors repeat
               factorlist := cons([lcterm.irr, lcterm.pow*ffexp], factorlist)
           ldeg := degree(ffactor, lvar)
 
@@ -219,7 +220,7 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
 
         if ground?(leadingCoefficient um)
         then lf := mfconst(um, dx, lvar, ldeg)
-        else lf := mfpol(um, dx, lvar, ldeg)
+        else lf := mfpol(um, var, dx, lvar, ldeg)
         auxfl := [[multivariate(lfp, x), ffexp]$MParFact  for lfp in lf]
         factorlist := append(factorlist, auxfl)
       flead.factors := factorlist
@@ -403,7 +404,7 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
                         --- the univariate polynomial is irreducible ---
        if nf = 1 then (unifact := [newm]; break)
 
-       lffc1 := lcnm * retract(unit luniv)@R * lffc1
+       lffc1 := lcnm * retract(unit(luniv))@R * lffc1
 
    --  the new integer give the same number of factors
        nfatt = nf =>
@@ -451,7 +452,8 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
 
                 ----  The polynomial has mindeg>0   ----
 
-    simplify(m : P, dm : Z, lvar : L OV, lmdeg : L NNI) : MFinalFact ==
+    simplify(m : P, var : OV, dm : Z, lvar : L OV, lmdeg : L NNI
+            ) : MFinalFact ==
       factorlist : L MParFact := empty()
       pol1 : P := 1$P
       for x in lvar repeat
@@ -461,7 +463,7 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
         factorlist := cons([x::P, i]$MParFact, factorlist)
       m := (m exquo pol1)::P
       ground? m => constantCase(m, factorlist)
-      flead := mFactor(m, dm)
+      flead := mFactor(m, var, dm)
       flead.factors := append(factorlist, flead.factors)
       flead
 
@@ -478,9 +480,10 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
       intfact(um, lvar, ldeg, [0, empty()]$MFinalFact, empty())
 
               --- m is square-free, primitive, lc is a polynomial  ---
-    mfpol(um : SUP P, dm : Z, lvar : L OV, ldeg : L NNI) : L SUP P ==
+    mfpol(um : SUP P, var : OV, dm : Z, lvar : L OV, ldeg : L NNI
+         ) : L SUP P ==
       dist : LeadFact
-      tleadpol := mFactor(leadingCoefficient um, dm)
+      tleadpol := mFactor(leadingCoefficient um, var, dm)
       intfact(um, lvar, ldeg, tleadpol, empty())
 
     factor(m : PG) : Factored PG ==
@@ -489,11 +492,11 @@ MultFiniteFactorize(OV, E, F, PG) : C == T
     -- reduce to multivariate over SUP
        ld := [degree(m, x) for x in lv]
        dx := "min"/ld
-       basicVar := lv(position(dx, ld))
-       cm := pushdown(m, basicVar)
-       flist := mFactor(cm, dx)
-       pushupconst(flist.contp, basicVar) *
-          (*/[primeFactor(pushup(u.irr, basicVar), u.pow)
+       var := lv(position(dx, ld))
+       cm := pushdown(m, var)
+       flist := mFactor(cm, var, dx)
+       pushupconst(flist.contp, var) *
+          (*/[primeFactor(pushup(u.irr, var), u.pow)
                                                  for u in flist.factors])
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
