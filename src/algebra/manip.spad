@@ -390,13 +390,23 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
               nlk := cons(nk, nlk)
           rootPower1(x, lk, nlk)
 
--- replaces (a^(1/n))^m in p by a power of a simpler radical of a if
--- n and m have a common factor
+-- 'k' is a nthRoot kernel: 'a^(1/n)'.  This function
+-- replaces '(a^(1/n))^m' in 'p' by a power of a simpler radical of 'a' if
+-- n and m have a common factor.  If 'a' itself is a nthRoot kernel
+-- 'b^(1/l)', then 'k' is replaced by simpler radical of 'b'.
       radeval(p, k) ==
         a := first(arg := argument k)
         n := (retract(second arg)@Integer)::NonNegativeInteger
         ans : F := 0
         q := univariate(p, k)
+        -- Check if 'a' itself is nthRoot.
+        ka1 := retractIfCan(a)@Union(K, "failed")
+        if ka1 case K and is?(ka1::K, 'nthRoot) then
+            ka := ka1::K
+            arg := argument ka
+            a := first arg
+            n := n * (retract(second arg)@Integer::NonNegativeInteger)
+            k := kernel(operator ka, [a, n::F], height ka)
         while (d := degree q) > 0 repeat
             term :F :=
                 g := gcd(d, n)
