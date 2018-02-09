@@ -1401,6 +1401,12 @@ FloatEllipticFunctions() : with
     ellipticF : (Complex Float, Complex Float) -> Complex Float
       ++ ellipticF(z, m) is the incomplete elliptic integral of the
       ++ first kind.
+    ellipticPi : (Float, Float, Float) -> Float
+      ++ ellipticPi(z, n, m) is the incomplete elliptic integral of the
+      ++ third kind.
+    ellipticPi : (Complex Float, Complex Float, Complex Float) -> Complex Float
+      ++ ellipticPi(z, n, m) is the incomplete elliptic integral of the
+      ++ third kind.
     -- Functions below should be local but overloaded
     rabs : Float -> Float
       ++ Undocumented.
@@ -2127,6 +2133,170 @@ FloatEllipticFunctions() : with
         obits := bits()
         try
             ellipticE_aux(z, m)
+        finally
+            bits(obits)
+
+    pi0_aux(t : Float, n1 : Float) : Float ==
+        n1 = 0 => t
+        0 < n1 =>
+            ns := sqrt(n1)
+            atan(ns*t)/ns
+        ns := sqrt(-n1)
+        atanh(ns*t)/ns
+
+    pi0(z : Float, n1 : Float) : Float ==
+        pi0_aux(z/sqrt(1 - z^2), n1)
+
+    pi0_auxc(t : CF, n1 : CF) : CF ==
+        n1 = 0 => t
+        ns := sqrt(n1)
+        atan(ns*t)/ns
+
+    pi0c(z : CF, n1 : CF) : CF ==
+        pi0_auxc(z/sqrt(1 - z^2), n1)
+
+    ellipticPi_r(z : Float, n : Float, m : Float) : Float ==
+        m > 1 =>
+            m*z^2 >= 1 => error "m*z^2 >= 1"
+            m1 := sqrt(m)
+            ellipticPi_r(m1*z, n/m, 1/m)/m1
+        z2 := z*z
+        z2 >= 1 =>
+            error "abs(z) >= 1"
+        n*z2 >= 1 =>
+            error "n*z^2 >= 1"
+        m = 1 =>
+            lzz := log((1 + z)/(1 - z))/2
+            n < 0 =>
+                n1 := sqrt(-n)
+                (n1*atan(-n1*z) - lzz)/(n - 1)
+            n = 1 =>
+                (lzz - z/(z2 - 1))/2
+            n1 := sqrt(n)
+            res1 := n1*log((1 + n1*z)/(1 - n1*z))/2
+            (res1 - lzz)/(n - 1)
+        0 < n and n < m or n < 0 and m < n =>
+            nn := m/n
+            nn1 := (1 - n)*(1 - nn)
+            ellipticF(z, m) - ellipticPi_r(z, nn, m)
+               + pi0_aux(z/sqrt((1 - m*z2)*(1 - z2)), nn1)
+        prec := bits()
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        llr := reverse(ll)
+        lz : List Float := []
+        lp : List Float := []
+        lnk : List Float := []
+        z0 := z
+        for k in llr repeat
+            delta := (1 + k)^2 - 4*k*z^2
+            z := 2*z/(1 + k + sqrt(delta))
+            lz := cons(z, lz)
+        f_val := asin(z)
+        nk := n
+        p := sqrt(1 - m/nk)
+        for k in llr repeat
+            lp := cons(p, lp)
+            cc := (1 + p)*(1 + k)/2
+            nk := nk*cc^2
+            lnk := cons(nk, lnk)
+            p := sqrt(1 - k^2/nk)
+        pi_val := pi0(z, 1 - nk)
+        p_inv : Float := 0
+        for k in ll for z in lz for p in lp for nk in lnk repeat
+            pi_val := pi_val - p_inv*pi0(z, 1 - nk)
+            k1 := 1 + k
+            f_val := k1*f_val
+            pi_val := 2*k1*pi_val + (p - 1)*f_val
+            p_inv := 1/p
+            pi_val := p_inv*pi_val
+        pi_val - p_inv*pi0(z0, 1 - n)
+
+    ellipticPi(z : Float, n : Float, m : Float) : Float ==
+        n = 0 => ellipticF(z, m)
+        obits := bits()
+        try
+            bits(obits+20)
+            ellipticPi_r(z, n, m)
+        finally
+            bits(obits)
+
+    -- Precondition: |m| \leq 1
+    ellipticPi_aux(z : CF, n : CF, m : CF) : CF ==
+        ctwo := 2.0::CF
+        z2 := z*z
+        m = 1 =>
+            lzz := log((1 + z)/(1 - z))/ctwo
+            n = 1 =>
+                (lzz - z/(z2 - 1))/ctwo
+            n1 := sqrt(n)
+            res1 := n1*log((1 + n1*z)/(1 - n1*z))/ctwo
+            (res1 - lzz)/(n - 1)
+        rabs(n) < rabs(m) =>
+            nn := m/n
+            nn1 := (1 - n)*(1 - nn)
+            ellipticF(z, m) - ellipticPi_aux(z, nn, m)
+              + pi0_auxc(z/(sqrt(1 - m*z2)*sqrt(1 - z2)), nn1)
+        nz := norm(z)
+        sf : Float := 1
+        res0 : CF := 0
+        if 1$Float < nz then
+            z0 := z
+            sf := 2::Float
+            z := half_z(z, m)
+            z2 := z0*z0
+            z12 := z*z
+            ss := sqrt(1 - z2)*sqrt(1 - m*z2)
+            ss := z2 - z12*ss
+            t := z0*z12/(1 - n*ss)
+            h := n*(1 - n)*(n - m)
+            res0 :=
+                h = 0 => t
+                h1 := sqrt(h)
+                atan(t*h1)/h1
+            res0 := n*res0
+        prec := bits()
+        eps := two_to_minus_n(prec quo 2)
+        ll := landen(m, eps)
+        llr := reverse(ll)
+        lz : List CF := []
+        lp : List CF := []
+        lnk : List CF := []
+        nk := n
+        z0 := z
+        for k in llr repeat
+            delta := (1 + k)^2 - 4*k*z^2
+            z := 2*z/(1 + k + sqrt(delta))
+            lz := cons(z, lz)
+        f_val := asin(z)
+        p := sqrt(1 - m/nk)
+        for k in llr repeat
+            lp := cons(p, lp)
+            cc := (1 + p)*(1 + k)/(2::CF)
+            nk := nk*cc^2
+            lnk := cons(nk, lnk)
+            p := sqrt(1 - k^2/nk)
+        pi_val := pi0c(z, 1 - nk)
+        p_inv : CF := 0
+        for k in ll for z in lz for p in lp for nk in lnk repeat
+            pi_val := pi_val - p_inv*pi0c(z, 1 - nk)
+            k1 := 1 + k
+            f_val := k1*f_val
+            pi_val := 2*k1*pi_val + (p - 1)*f_val
+            p_inv := 1/p
+            pi_val := p_inv*pi_val
+        pi_val := pi_val - p_inv*pi0c(z0, 1 - n)
+        sf*pi_val + res0
+
+    ellipticPi(z : CF, n : CF, m : CF) : CF ==
+        n = 0 => ellipticF(z, m)
+        obits := bits()
+        try
+            bits(obits+20)
+            rabs(m) > 1 =>
+                m1 := sqrt(m)
+                ellipticPi_aux(m1*z, n/m, 1/m)/m1
+            ellipticPi_aux(z, n, m)
         finally
             bits(obits)
 
