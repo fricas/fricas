@@ -269,7 +269,10 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
        if S has IntegerNumberSystem and S has OpenMath then OpenMath
        if S has Canonical and S has GcdDomain and S has canonicalUnitNormal
            then Canonical
-            ++ \spad{Canonical} means that equal elements are in fact identical.
+       if S has UniqueFactorizationDomain then
+           factorFraction : %  ->   Fraction Factored(S)
+             ++ factorFraction(r) factors the numerator and the denominator of
+             ++ the fraction r.
   == LocalAlgebra(S, S) add
 
     import from Integer
@@ -277,6 +280,11 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
     Rep := Record(num : S, den : S)
     coerce(d : S) : % == [d, 1]
     zero?(x : %) == zero? x.num
+
+    if S has UniqueFactorizationDomain then
+
+        factorFraction(p : %) : Fraction Factored(S) ==
+            factor(p.num)/factor(p.den)
 
     if S has GcdDomain and S has canonicalUnitNormal then
         x = y == (x.num = y.num) and (x.den = y.den)
