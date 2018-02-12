@@ -1595,48 +1595,9 @@ FiniteDcpo(S) : Exports == Impl where
     ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI, toOb : NNI,
                      xOffset : Integer, yOffset : Integer, map : List NNI)
 
-    Exports ==> Dcpo(S) with
-      finitePoset : (set1 : List S, struct1 : List List Boolean) -> %
-        ++ constructor where the set and structure is supplied
+    Exports ==> Dcpo(S)
 
-    Impl ==> add
-
-      -- This holds a complete set together with a structure to codify
-      -- the partial order. The elements are put in a list so they
-      -- can be enumerated and linked to the structure.
-      -- The structure is a two dimensional array to determine
-      -- is each element is connected to each other element.
-      Rep := Record(set1 : List S, struct1 : List List Boolean)
-
-      -- constructor where the set and structure is supplied
-      finitePoset(set1 : List S, struct1 : List List Boolean) : % ==
-          [set1, struct1]
-
-      -- returns a list of all the vertices (or objects)
-      getVert(s : %) : List S ==
-          s.set1
-
-      -- returns a list of all the arrows (or edges)
-      getArr(s : %) : List List Boolean ==
-          s.struct1
-
-      -- sets the list of all vertices (or objects)
-      setVert(s : %, v : List S) : Void ==
-          s.set1 := v
-          void
-
-      -- sets the list of all arrows (or edges)
-      setArr(s : %, v : List List Boolean) : Void ==
-          s.struct1 := v
-          void
-
-      -- local function to display a list
-      listToString(a : List NNI) : String ==
-          res : String := "["
-          for x in a repeat
-              res := concat(res, string(x))
-              res := concat(res, ", ")
-          concat(res, "]")
+    Impl ==> FinitePoset(S) add
 
       -- returns the join of 'a' and 'b'
       -- In this version of join nodes are represented as index values.
@@ -1697,48 +1658,9 @@ FiniteCoDcpo(S) : Exports == Impl where
     ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI, toOb : NNI,
                      xOffset : Integer, yOffset : Integer, map : List NNI)
 
-    Exports ==> CoDcpo(S) with
-      finitePoset : (set1 : List S, struct1 : List List Boolean) -> %
-        ++ constructor where the set and structure is supplied
+    Exports ==> CoDcpo(S)
 
-    Impl ==> add
-
-      -- This holds a complete set together with a structure to codify
-      -- the partial order. The elements are put in a list so they
-      -- can be enumerated and linked to the structure.
-      -- The structure is a two dimensional array to determine
-      -- is each element is connected to each other element.
-      Rep := Record(set1 : List S, struct1 : List List Boolean)
-
-      -- constructor where the set and structure is supplied
-      finitePoset(set1 : List S, struct1 : List List Boolean) : % ==
-          [set1, struct1]
-
-      -- returns a list of all the vertices (or objects)
-      getVert(s : %) : List S ==
-          s.set1
-
-      -- returns a list of all the arrows (or edges)
-      getArr(s : %) : List List Boolean ==
-          s.struct1
-
-      -- sets the list of all vertices (or objects)
-      setVert(s : %, v : List S) : Void ==
-          s.set1 := v
-          void
-
-      -- sets the list of all arrows (or edges)
-      setArr(s : %, v : List List Boolean) : Void ==
-          s.struct1 := v
-          void
-
-      -- local function to display a list
-      listToString(a : List NNI) : String ==
-          res : String := "["
-          for x in a repeat
-              res := concat(res, string(x))
-              res := concat(res, ", ")
-          concat(res, "]")
+    Impl ==> FinitePoset(S) add
 
       -- returns the meet of 'a' and 'b'
       -- In this version of meet nodes are represented as index values.
@@ -1792,48 +1714,9 @@ FiniteBiCPO(S) : Exports == Impl where
     ARROW ==> Record(name : String, arrType : NNI, fromOb : NNI, toOb : NNI,
                      xOffset : Integer, yOffset : Integer, map : List NNI)
 
-    Exports ==> BiCPO(S) with
-      finitePoset : (set1 : List S, struct1 : List List Boolean) -> %
-        ++ constructor where the set and structure is supplied
+    Exports ==> BiCPO(S)
 
-    Impl ==> add
-
-      -- This holds a complete set together with a structure to codify
-      -- the partial order. The elements are put in a list so they
-      -- can be enumerated and linked to the structure.
-      -- The structure is a two dimensional array to determine
-      -- is each element is connected to each other element.
-      Rep := Record(set1 : List S, struct1 : List List Boolean)
-
-      -- constructor where the set and structure is supplied
-      finitePoset(set1 : List S, struct1 : List List Boolean) : % ==
-          [set1, struct1]
-
-      -- returns a list of all the vertices (or objects)
-      getVert(s : %) : List S ==
-          s.set1
-
-      -- returns a list of all the arrows (or edges)
-      getArr(s : %) : List List Boolean ==
-          s.struct1
-
-      -- sets the list of all vertices (or objects)
-      setVert(s : %, v : List S) : Void ==
-          s.set1 := v
-          void
-
-      -- sets the list of all arrows (or edges)
-      setArr(s : %, v : List List Boolean) : Void ==
-          s.struct1 := v
-          void
-
-      -- local function to display a list
-      listToString(a : List NNI) : String ==
-          res : String := "["
-          for x in a repeat
-              res := concat(res, string(x))
-              res := concat(res, ", ")
-          concat(res, "]")
+    Impl ==> FinitePoset(S) add
 
       -- returns the join of 'a' and 'b'
       -- In this version of join nodes are represented as index values.
@@ -2048,7 +1931,7 @@ The REP is NNI since this is used as an index into the poset nodes
 ++ Date Created: Aug 2015
 FiniteLattice(S : SetCategory, p : FiniteBiCPO(S)) : Exports == Impl where
     NNI ==> NonNegativeInteger
-    Exports ==> Join(Lattice, CoercibleTo(OutputForm), SetCategory) with
+    Exports ==> Join(Lattice, Finite) with
       finiteLattice : (index : NNI) -> %
         ++ construct finite lattice element from index
       finiteLattice : (obj : S) -> %
@@ -2062,6 +1945,14 @@ FiniteLattice(S : SetCategory, p : FiniteBiCPO(S)) : Exports == Impl where
       -- construct finite lattice element from index
       finiteLattice(index : NNI) : % ==
           index
+
+      index(n : PositiveInteger) : % ==
+          finiteLattice(qcoerce(n - 1)@NNI)
+
+      lookup(el : %) : PositiveInteger ==
+          qcoerce((el::Rep) + 1)
+
+      size() : NNI == #getVert(p)
 
       -- construct finite lattice element from object
       finiteLattice(obj : S) : % ==
@@ -2150,7 +2041,7 @@ complement(a)\/complement(b)
 ++ Date Created: Oct 2015
 SubsetLattice(S : SetCategory, top : List(S)) : Exports == Impl where
     NNI ==> NonNegativeInteger
-    Exports ==> Join(Lattice, CoercibleTo(OutputForm), SetCategory) with
+    Exports ==> Lattice with
       subsetLattice : (obj : List(S)) -> %
         ++ construct subset lattice element
       complement : (a : %) -> %
@@ -2578,7 +2469,7 @@ ILogic() : Exports == Implementation where
  PR ==> Record(rft : %, pout : NNI)
    ++ parse result includes term returned and new index
 
- Exports == Join(BoundedLattice, CoercibleTo(OutputForm)) with
+ Exports == BoundedLattice with
   logicT : () -> %
     ++ true is a logical constant.
   logicF : () -> %
@@ -3350,7 +3241,7 @@ LatticeMeetOfJoins() : Exports == Implementation where
                var : Record(str : String) _
                )
 
- Exports == Join(BoundedDistributiveLattice, CoercibleTo(OutputForm)) with
+ Exports == BoundedDistributiveLattice with
    logicT : () -> %
      ++ construct true: a logical constant.
    logicF : () -> %
@@ -3708,7 +3599,7 @@ LatticeJoinOfMeets() : Exports == Implementation where
                var : Record(str : String) _
                )
 
- Exports == Join(BoundedDistributiveLattice, CoercibleTo(OutputForm)) with
+ Exports == BoundedDistributiveLattice with
    logicT : () -> %
      ++ construct true: a logical constant.
    logicF : () -> %
@@ -4212,7 +4103,7 @@ we cannot hold an infinite structure in a finite computer.
 ++ Date Created: Aug 2015
 BitStreamFrame() : Exports == Impl where
     NNI ==> NonNegativeInteger
-    Exports ==> Join(Lattice, CoercibleTo(OutputForm), SetCategory) with
+    Exports ==> Lattice with
       starts : (index : List(Boolean)) -> %
         ++ construct bit stream
       starts : (str : String) -> %
