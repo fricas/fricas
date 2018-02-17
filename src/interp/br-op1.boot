@@ -691,7 +691,10 @@ dbShowOperationsFromConform(htPage,which,opAlist) ==  --branch in with lists
     $topicHash := MAKE_-HASHTABLE 'ID
     for [x,:c] in '((extended . 0) (basic . 1) (hidden . 2)) repeat
       HPUT($topicHash,x,c)
-  if domform := htpProperty(htPage,'domname) then
+  domform := htpProperty(htPage,'domname)
+  if htpProperty(htPage, 'kind) = '"category" then
+      domform := false
+  if domform then
     $conformsAreDomains : local := true
     opAlist := reduceOpAlistForDomain(opAlist, domform, conform)
   conform := domform or conform
