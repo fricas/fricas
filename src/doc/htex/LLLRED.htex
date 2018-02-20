@@ -1,0 +1,36 @@
+The package \spadtype{LLLReduction} implements LLL reduction.  We
+show how to use it to find equation satisfied by imaginary part of fifth
+primitive root of \spad{1}.
+
+\xtc{Before use we must set appropriate floating point precision.
+}{
+\spadcommand{digits(24) \bound{prec}}
+}
+
+\xtc{Compute numeric value of the root.
+}{
+\spadcommand{ii := imag(exp(2.0*\%i*\%pi/5)) \free{prec} \bound{ii}}
+}
+
+\xtc{Prepare list of powers.
+}{
+\spadcommand{lf := [ii^i for i in 0..4] \free{ii} \bound{lf}}
+}
+
+\xtc{Use LLL reduction.
+}{
+\spadcommand{rel := find_relation(lf, 20)$LLLReduction
+             \free{lf} \bound{rel}}
+}
+
+\xtc{Convert to polynomial.
+}{
+\spadcommand{pol := reduce(_+, [ci*x^i for ci in rel for i in 0..4])
+             \free{rel} \bound{pol}}
+}
+
+\xtc{Test it.
+}{
+\spadcommand{eval(pol, x = ii) \free{pol, ii}}
+}
+
