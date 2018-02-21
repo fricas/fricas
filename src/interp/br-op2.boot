@@ -360,26 +360,11 @@ koAttrs(conform,domname) ==
       alist := insertAlist(op,insertAlist(args,[pred],LASSOC(op,alist)),alist)
     alist
 
-koOps(conform,domname,:options) == main where
+koOps(conform, domname, :options) == main where
 --returns alist of form ((op (sig . pred) ...) ...)
   main ==
     $packageItem: local := nil
---  relatives? := IFCAR options
-    ours :=
---    relatives? = 'onlyRelatives => nil
-      fn(conform,domname)
---    if relatives? then
---      relatives := relativesOf(conform,domname)
---      if domname then relatives :=
---      SUBLISLIS([domname,:rest domname],['_$,:rest conform],relatives)
---      --kill all relatives that have a sharp variable remaining in them
---      for x in relatives repeat
---      or/[y for y in CDAR x | isSharpVar y] => 'skip
---      acc := [x,:acc]
---      relatives := NREVERSE acc
---      for (pair := [pakform,:.]) in relatives repeat
---      $packageItem := sublisFormal(rest conform,pair)
---      ours := merge(fn(pakform,nil),ours)
+    ours := fn(conform, domname)
     listSort(function GLESSEQP,trim ours)
   trim u == [pair for pair in u | IFCDR pair]
   fn(conform,domname) ==

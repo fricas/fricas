@@ -1138,7 +1138,7 @@ database.
   (|browserAutoloadOnceTrigger|)
   (if br_data
       (progn
-          (|buildLibdb|)
+          (|buildLibdb| NIL)
           (|dbSplitLibdb|)
           (|mkUsersHashTable|)
           (|saveUsersHashTable|)
@@ -1159,7 +1159,7 @@ database.
                  (cons nil (mapcar #'|categoryForm?|
                                    (cddar (database-constructormodemap dbstruct)))))
            (when (and (|categoryForm?| con)
-                      (= (length (setq d (|domainsOf| (list con) NIL NIL))) 1))
+                      (= (length (setq d (|domainsOf| (list con) NIL))) 1))
                  (setq d (caar d))
                  (when (= (length d) (length (|getConstructorForm| con)))
                        (format t "   ~a has a default domain of ~a~%" con (car d))
