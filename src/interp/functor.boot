@@ -407,7 +407,7 @@ InvestigateConditions catvecListMaker ==
     MinimalPrimary=MaximalPrimary => nil
     MaximalPrimaries := [MaximalPrimary, :first (CatEval MaximalPrimary).4]
     MinimalPrimaries := [MinimalPrimary, :first (CatEval MinimalPrimary).4]
-    MaximalPrimaries:=S_-(MaximalPrimaries,MinimalPrimaries)
+    MaximalPrimaries := set_difference(MaximalPrimaries, MinimalPrimaries)
     [[x] for x in MaximalPrimaries]
   ($Conditions:= Conds($principal,nil)) where
     Conds(code,previous) ==
