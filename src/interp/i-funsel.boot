@@ -1477,13 +1477,7 @@ hasCaty(d,cat,SL) ==
     atom x => SL
     ncond := subCopy(x, constructSubst d)
     ncond is ['has, =d, =cat] => 'failed
-    if ncond is ['OR, :nconds] then
-        nnconds := nconds
-        for nc in nconds repeat
-            if nc is ['has, =d, =cat] then
-                nnconds := delete(nc, nnconds)
-        ncond := ['OR, :nnconds]
-    hasCaty1(ncond, SL)
+    hasCaty1(substitute('failed, ['has, d, cat], ncond), SL)
   'failed
 
 mkDomPvar(p, d, subs, y) ==
@@ -1502,9 +1496,11 @@ domArg2(arg, SL1, SL2) ==
   subCopy(arg, SL2)
 
 hasCaty1(cond,SL) ==
-  -- cond is either a (has a b) or an OR clause of such conditions
+  -- cond is either a (has a b) or an OR/AND clause of such conditions,
+  --     or a special flag 'failed to indicate failure
   -- SL is augmented, if cond is true, otherwise the result is 'failed
   $domPvar: local := NIL
+  cond is 'failed => 'failed
   cond is ['has,a,b] => hasCate(a,b,SL)
   cond is ['AND,:args] =>
     for x in args while not (S='failed) repeat S:=
