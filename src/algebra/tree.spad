@@ -393,7 +393,6 @@ BinaryTree(S : SetCategory) : Exports == Implementation where
      binaryTree(l, v, r) == node(l, v, r)
      binaryTree(v : S) == node(empty(), v, empty())
      empty? t == empty?(t)$Rep
-     leaf? t  == empty? t or empty? left t and empty? right t
      right t ==
        empty? t => error "binaryTree:no right"
        rest t
@@ -541,9 +540,6 @@ BalancedBinaryTree(S : SetCategory) : Exports == Implementation where
       ++ are evaluated.
   Implementation == BinaryTree(S) add
     Rep := BinaryTree(S)
-    leaf? x ==
-      empty? x => false
-      empty? left x and empty? right x
 --    balancedBinaryTree(x: S, u: List S) ==
 --      n := #u
 --      n = 0 => empty()
@@ -575,7 +571,7 @@ BalancedBinaryTree(S : SetCategory) : Exports == Implementation where
       leaf? x  => x.value
       x.value := fn(mapUp!(x.left, fn), mapUp!(x.right, fn))
     mapUp!(x, y, fn) ==
-      empty? x  => error "mapUp! is called on a null tree"
+      empty? x or empty? y => error "mapUp! is called on a null tree"
       leaf? x  =>
         leaf? y => x
         error "balanced binary trees are incompatible"
