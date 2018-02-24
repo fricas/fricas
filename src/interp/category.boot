@@ -436,7 +436,7 @@ JoinInner(l,$e) ==
 
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
-    globalDomains:= [:globalDomains,:S_-(b.5,globalDomains)]
+    globalDomains:= [:globalDomains, :set_difference(b.5, globalDomains)]
   for b in CondList repeat
     newpred:= first rest b
     sigl:=

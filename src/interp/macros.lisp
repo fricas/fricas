@@ -425,13 +425,14 @@
          ((equal x y) 't)
          ('t (or (contained\,equal x (car y)) (contained\,equal x (cdr y))))))
 
-(DEFUN S+ (X Y)
+(DEFUN |set_sum| (X Y)
   (COND ((ATOM Y) X)
         ((ATOM X) Y)
-        ((MEMBER (CAR X) Y :test #'equal) (S+ (CDR X) Y))
-        ((S+ (CDR X) (CONS (CAR X) Y)))))
+        ((MEMBER (CAR X) Y :test #'equal) (|set_sum| (CDR X) Y))
+        ((|set_sum| (CDR X) (CONS (CAR X) Y)))))
 
-(defun S- (l1 l2) (set-difference l1 l2 :test #'equal))
+(defun |set_difference| (l1 l2) (set-difference l1 l2 :test #'equal))
+
 
 (DEFUN PREDECESSOR (TL L)
   "Returns the sublist of L whose CDR is EQ to TL."
@@ -515,24 +516,9 @@
 
 (defvar |$sayBrightlyStream| nil "if not nil, gives stream for sayBrightly output")
 
-(defun |sayBrightly| (x) (|sayBrightly2| x *standard-output*))
+(defun |get_lisp_std_out| () *standard-output*)
 
-(defun |sayBrightly2| (x out-stream)
-  (COND ((NULL X) NIL)
-        (|$sayBrightlyStream| (|sayBrightly1| X |$sayBrightlyStream|))
-        (t (|sayBrightly1| X out-stream))))
-
-(defun |sayBrightlyI| (x)
- (let ((S *error-output*))
-    "Prints at console or output stream."
-  (if (NULL X) NIL (|sayBrightly1| X S))))
-
-(defun |sayBrightlyNT| (x) (|sayBrightlyNT2| x *standard-output*))
-
-(defun |sayBrightlyNT2| (x S)
-  (COND ((NULL X) NIL)
-        (|$sayBrightlyStream| (|sayBrightlyNT1| X |$sayBrightlyStream|))
-        (t (|sayBrightlyNT1| X S))))
+(defun |get_lisp_error_out| () *error-output*)
 
 (defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
 

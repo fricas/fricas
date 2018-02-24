@@ -69,7 +69,7 @@
 compClam(op, argl, body, kind, eqEtc, options) ==
   --similar to reportFunctionCompilation in SLAM BOOT
   if $InteractiveMode then startTimingProcess 'compilation
-  if u:= S_-(options,'(shift count)) then
+  if u := set_difference(options, '(shift count)) then
     keyedSystemError("S2GE0006",[op,:u])
   shiftFl := MEMQ('shift,options)
   countFl := MEMQ('count,options)
