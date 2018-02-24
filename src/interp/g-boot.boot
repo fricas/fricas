@@ -78,7 +78,7 @@ PURPOSE: Comp is a modified version of Compile which is a preprocessor for
          of Spad and interpreter compilers.
 )endif
 
-COMP_-1(x) ==
+COMP_1(x) ==
   [fname, lamex, :.] := x
   $FUNNAME : local := fname
   $FUNNAME_TAIL : local := [fname]
@@ -89,7 +89,7 @@ COMP_-1(x) ==
       FORMAT(true, '"~&~%;;;     ***       ~S REDEFINED~%", fname)
   [[fname, lamex], :$CLOSEDFNS]
 
-COMP_-2(args) ==
+COMP_2(args) ==
     [name, [type, argl, :bodyl], :junk] := args
     junk => MOAN (FORMAT(nil, '"******pren error in (~S (~S ...) ...)",_
                          name, type))
@@ -108,7 +108,7 @@ COMP_-2(args) ==
       COMP370(bodyl)
     name
 
-COMP(fun) == [COMP_-2 nf for nf in COMP_-1(fun)]
+COMP(fun) == [COMP_2 nf for nf in COMP_1(fun)]
 
 compSPADSLAM(name, argl, bodyl) ==
     al := INTERNL(name, '";AL")
@@ -195,10 +195,13 @@ compTran(x) ==
                             not(CONTAINED("EXIT", x3))) => x3
         ["SEQ", :xl3]
     fluids := REMDUP(NREVERSE($fluidVars))
-    $locVars := S_-(S_-(REMDUP(NREVERSE($locVars)), fluids), LISTOFATOMS (x2))
+    $locVars := set_difference(
+                   set_difference(REMDUP(NREVERSE($locVars)), fluids),
+                   LISTOFATOMS (x2))
     lvars := APPEND(fluids, $locVars)
     x3 :=
         fluids =>
+            BREAK()
             ["SPROG", compSpadProg(lvars),
              ["DECLARE", ["SPECIAL", :fluids]], x3]
         lvars or CONTAINED("RETURN", x3) =>

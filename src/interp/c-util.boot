@@ -206,9 +206,9 @@ intersectionContour(c,c') ==
         --but this can not be done here, but should be done by compIf
       m:=
         m1 is ["Union",:.] =>
-          m2 is ["Union",:.] => ["Union",:S_+(rest m1,rest m2)]
-          ["Union",:S_+(rest m1,[m2])]
-        m2 is ["Union",:.] => ["Union",:S_+(rest m2,[m1])]
+          m2 is ["Union", :.] => ["Union", :set_sum(rest m1, rest m2)]
+          ["Union", :set_sum(rest m1, [m2])]
+        m2 is ["Union",:.] => ["Union", :set_sum(rest m2, [m1])]
         ["Union",m1,m2]
       for u in getDomainsInScope $e repeat
         if u is ["Union",:u'] and (and/[member(v,u') for v in rest m]) then
