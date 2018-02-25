@@ -310,6 +310,8 @@ interpret(x, posnForm) ==
   --type analyzes and evaluates expression x, returns object
   $env:local := [[NIL]]
   $genValue:local := true       --evaluate all generated code
+  -- counter used to limit recursion depth during resolve
+  $resolve_level : local := 0
   interpret1(x,nil,posnForm)
 
 interpret1(x,rootMode,posnForm) ==
