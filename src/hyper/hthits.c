@@ -325,7 +325,7 @@ searchPage(char *pgname,char * pgtitle,char * pgbody)
 void
 squirt(char *s, int n)
 {
-    register char *t, *e;
+    char *t, *e;
     int c;
 
     c = s[n];
@@ -380,9 +380,9 @@ splitpage(char *buf, char **ptitle, char **pbody)
 
 
 void
-untexbuf(register char *s)
+untexbuf(char *s)
 {
-    register char *d = s;
+    char *d = s;
 
     while (*s)
         switch (*s) {
