@@ -521,7 +521,11 @@ resolveTM(t,m) ==
   $Subst : local := NIL
   $Coerce : local := 'T
   m := SUBSTQ("**",$EmptyMode,m)
+  -- arbitrary limit
+  $resolve_level > 15 => nil
+  $resolve_level := $resolve_level + 1
   tt := resolveTM1(t,m)
+  $resolve_level := $resolve_level - 1
   result := tt and isValidType tt and tt
   stopTimingProcess 'resolve
   result
