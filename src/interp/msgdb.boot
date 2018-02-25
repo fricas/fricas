@@ -1041,7 +1041,7 @@ sayBrightly1(x, str) ==
 
 sayBrightly(x) == sayBrightly2(x,  get_lisp_std_out())
 
-sayBrightlyI|(x) ==
+sayBrightlyI(x) ==
     NULL(X) => nil
     sayBrightly1(x, get_lisp_error_out())
 
