@@ -2178,6 +2178,7 @@ reportOperations(oldArg,u) ==
   $env:local := [[NIL]]
   $eval:local := true           --generate code-- don't just type analyze
   $genValue:local := true       --evaluate all generated code
+  $resolve_level : local := 15
   null u => nil
   u = $quadSymbol =>
      sayBrightly ['"   mode denotes", :bright '"any", "type"]
