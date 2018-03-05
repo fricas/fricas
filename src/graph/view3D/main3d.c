@@ -216,8 +216,8 @@ char            propertyBuffer[256];
                 /* global ps variables */
 int             psInit=no;      /* need to call globaInitPs() each run */
 GCptr           GChead=NULL;    /* ptr to head of ps GC linked list */
-char            *PSfilename;    /* output file name used in user directory */
-char            * env_fricas;   /* used for ps file paths */
+char PSfilename[280];    /* used for ps file path */
+char *env_fricas;
 
                /** Resource database **/
 XrmDatabase rDB;
@@ -322,15 +322,7 @@ main(void)
     }
   }
 
-  /* read default file name for postScript output */
-  if (XrmGetResource(rDB, "FriCAS.3D.postscriptFile", "", str_type,
-                     &value) == True) {
-      (void) strncpy(prop, value.addr, (int)value.size);
-  } else {
-      (void) strcpy(prop, "fricas3D.ps");
-  }
-  PSfilename = (char *)malloc(strlen(prop)+1);
-  strcpy(PSfilename,prop);
+  strcpy(PSfilename, "fricas3D.ps");
 
   XSync(dsply,0);
 

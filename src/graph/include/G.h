@@ -93,7 +93,7 @@ typedef struct _GCstruct {
  * client application source, eg, in main.c for view2D and view3D.
  */
 
-extern char *PSfilename;  /* User-definable output file name. */
+extern char PSfilename[280];  /* used as ps file pathname */
 
 extern int   psInit;      /* Flag for one-time PS initialization routine. */
 
