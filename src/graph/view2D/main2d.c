@@ -144,8 +144,8 @@ float aspectR = 1.0;
 /* global ps variables */
 int     psInit=no;      /* need to call globalInitPs() each run */
 GCptr   GChead=NULL;    /* ptr to head of ps GC linked list */
-char    *PSfilename,    /* output file name used in user directory */
-  * env_fricas;    /* used as ps file pathnames */
+char PSfilename[280];   /* used as ps file pathname */
+char *env_fricas;
 
 int
 main(void)
@@ -217,20 +217,7 @@ main(void)
       backgroundColor = WhitePixel(dsply,scrn);
     }
 
-
-  /* read default file name for postScript output */
-  if (XrmGetResource(rDB,
-                     "FriCAS.2D.postscriptFile",
-                     "",
-                     str_type, &value) == True)
-    (void) strncpy(prop,value.addr,(int)value.size);
-  else
-    (void) strcpy(prop, "fricas2D.ps");
-
-  PSfilename = (char *)malloc(strlen(prop)+1);
-  strcpy(PSfilename,prop);
-
-
+  strcpy(PSfilename, "fricas2D.ps");
 
   /**** Open global fonts ****/
   serverFont = XQueryFont(dsply,XGContextFromGC(DefaultGC(dsply,scrn)));
