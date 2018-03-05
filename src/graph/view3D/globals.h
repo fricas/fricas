@@ -156,7 +156,7 @@ extern int              smoothHue;
 extern int              smoothConst;
 extern int              smoothError;
 
-extern char             *PSfilename;  /* output file name in user directory */
-extern char             * env_fricas; /* used for ps file paths */
+extern char PSfilename[280];  /* used for ps file path */
+extern char *env_fricas;
 
 extern Atom wm_delete_window;

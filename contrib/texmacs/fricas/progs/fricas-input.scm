@@ -109,7 +109,7 @@
   (big-around fricas-input-big-around)
   ("<infty>"      "%infinity")
   ("<emptyset>"   "[]")
-;;  ("<mathd>"      "1,")
+  ("<mathd>"      "1,")
 ;;  ("<pi>"         "%pi")
   ("<mathpi>"     "%pi")
   ("<mathi>"      "%i")
