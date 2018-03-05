@@ -1189,6 +1189,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defmacro |idChar?| (x)
     `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
 
+(defun |write_to_string_radix| (int radix)
+    (write-to-string int :base radix))
+
 (in-package "BOOTTRAN")
 
 (defmacro |doInBoottranPackage| (expr)

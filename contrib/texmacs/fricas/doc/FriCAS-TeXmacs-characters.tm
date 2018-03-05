@@ -1,4 +1,4 @@
-<TeXmacs|1.99.1>
+<TeXmacs|1.99.5>
 
 <style|generic>
 
@@ -11,10 +11,10 @@
       System\ 
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Version: FriCAS
-      2013-09-27
+      2017-08-05
 
-      \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Timestamp: Mon Mar 31 09:53:33
-      EDT 2014
+      \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Timestamp: Wed Oct 18 15:43:23
+      HKT 2017
 
       \;
     </output>
@@ -70,16 +70,10 @@
       List(String)
     </unfolded-io>
 
-    <\input>
-      (3) -\<gtr\>\ 
-    <|input>
-      matrix(map(entries,a2))$OutputForm
-    </input>
-
     <\unfolded-io>
       (4) -\<gtr\>\ 
     <|unfolded-io>
-      b1:=["<math|\<b-0\>\<b-1\>\<b-2\>\<b-3\>\<b-4\>\<b-5\>\<b-6\>\<b-7\>\<b-8\>\<b-9\>>"]
+      matrix(map(entries,a2))$OutputForm
     <|unfolded-io>
       \;
 
@@ -87,15 +81,15 @@
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       OutputForm
-
-      \;
     </unfolded-io>
 
     <\unfolded-io>
       (5) -\<gtr\>\ 
     <|unfolded-io>
-      matrix(map(entries,b1))$OutputForm
+      b1:=["<math|\<b-0\>\<b-1\>\<b-2\>\<b-3\>\<b-4\>\<b-5\>\<b-6\>\<b-7\>\<b-8\>\<b-9\>>"]
     <|unfolded-io>
+      \;
+
       <with|mode|math|[<text|"<math|\<b-0\>\<b-1\>\<b-2\>\<b-3\>\<b-4\>\<b-5\>\<b-6\>\<b-7\>\<b-8\>\<b-9\>>">]>
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
@@ -104,6 +98,19 @@
 
     <\unfolded-io>
       (6) -\<gtr\>\ 
+    <|unfolded-io>
+      matrix(map(entries,b1))$OutputForm
+    <|unfolded-io>
+      \;
+
+      <with|mode|math|<matrix|<tformat|<table|<row|<cell|\<b-0\>>|<cell|\<b-1\>>|<cell|\<b-2\>>|<cell|\<b-3\>>|<cell|\<b-4\>>|<cell|\<b-5\>>|<cell|\<b-6\>>|<cell|\<b-7\>>|<cell|\<b-8\>>|<cell|\<b-9\>>>>>>>
+
+      \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
+      OutputForm
+    </unfolded-io>
+
+    <\unfolded-io>
+      (7) -\<gtr\>\ 
     <|unfolded-io>
       b2:=["<math|\<b-a\>\<b-b\>\<b-c\>\<b-d\>\<b-e\>\<b-f\>\<b-g\>\<b-h\>\<b-i\>\<b-j\>\<b-k\>\<b-l\>\<b-m\>>",
 
@@ -115,19 +122,6 @@
     <|unfolded-io>
       \;
 
-      <with|mode|math|<matrix|<tformat|<table|<row|<cell|\<b-0\>>|<cell|\<b-1\>>|<cell|\<b-2\>>|<cell|\<b-3\>>|<cell|\<b-4\>>|<cell|\<b-5\>>|<cell|\<b-6\>>|<cell|\<b-7\>>|<cell|\<b-8\>>|<cell|\<b-9\>>>>>>>
-
-      \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
-      OutputForm
-
-      \;
-    </unfolded-io>
-
-    <\unfolded-io>
-      (7) -\<gtr\>\ 
-    <|unfolded-io>
-      matrix(map(entries,b2))$OutputForm
-    <|unfolded-io>
       <with|mode|math|[<text|"<math|\<b-a\>\<b-b\>\<b-c\>\<b-d\>\<b-e\>\<b-f\>\<b-g\>\<b-h\>\<b-i\>\<b-j\>\<b-k\>\<b-l\>\<b-m\>>">,<text|"<math|\<b-n\>\<b-o\>\<b-p\>\<b-q\>\<b-r\>\<b-s\>\<b-t\>\<b-u\>\<b-v\>\<b-w\>\<b-x\>\<b-y\>\<b-z\>>">,<text|"<math|\<b-A\>\<b-B\>\<b-C\>\<b-D\>\<b-E\>\<b-F\>\<b-G\>\<b-H\>\<b-I\>\<b-J\>\<b-K\>\<b-L\>\<b-M\>>">,<text|"<math|\<b-N\>\<b-O\>\<b-P\>\<b-Q\>\<b-R\>\<b-S\>\<b-T\>\<b-U\>\<b-V\>\<b-W\>\<b-X\>\<b-Y\>\<b-Z\>>">]>
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
@@ -137,13 +131,7 @@
     <\unfolded-io>
       (8) -\<gtr\>\ 
     <|unfolded-io>
-      b3:=["<math|\<b-up-a\>\<b-up-b\>\<b-up-c\>\<b-up-d\>\<b-up-e\>\<b-up-f\>\<b-up-g\>\<b-up-h\>\<b-up-i\>\<b-up-j\>\<b-up-k\>\<b-up-l\>\<b-up-m\>>",
-
-      \ \ \ \ "<math|\<b-up-n\>\<b-up-o\>\<b-up-p\>\<b-up-q\>\<b-up-r\>\<b-up-s\>\<b-up-t\>\<b-up-u\>\<b-up-v\>\<b-up-w\>\<b-up-x\>\<b-up-y\>\<b-up-z\>>",
-
-      \ \ \ \ "<math|\<b-up-A\>\<b-up-B\>\<b-up-C\>\<b-up-D\>\<b-up-E\>\<b-up-F\>\<b-up-G\>\<b-up-H\>\<b-up-I\>\<b-up-J\>\<b-up-K\>\<b-up-L\>\<b-up-M\>>",
-
-      \ \ \ \ "<math|\<b-up-N\>\<b-up-O\>\<b-up-P\>\<b-up-Q\>\<b-up-R\>\<b-up-S\>\<b-up-T\>\<b-up-U\>\<b-up-V\>\<b-up-W\>\<b-up-X\>\<b-up-Y\>\<b-up-Z\>>"]
+      matrix(map(entries,b2))$OutputForm
     <|unfolded-io>
       \;
 
@@ -156,7 +144,13 @@
     <\unfolded-io>
       (9) -\<gtr\>\ 
     <|unfolded-io>
-      matrix(map(entries,b3))$OutputForm
+      b3:=["<math|\<b-up-a\>\<b-up-b\>\<b-up-c\>\<b-up-d\>\<b-up-e\>\<b-up-f\>\<b-up-g\>\<b-up-h\>\<b-up-i\>\<b-up-j\>\<b-up-k\>\<b-up-l\>\<b-up-m\>>",
+
+      \ \ \ \ "<math|\<b-up-n\>\<b-up-o\>\<b-up-p\>\<b-up-q\>\<b-up-r\>\<b-up-s\>\<b-up-t\>\<b-up-u\>\<b-up-v\>\<b-up-w\>\<b-up-x\>\<b-up-y\>\<b-up-z\>>",
+
+      \ \ \ \ "<math|\<b-up-A\>\<b-up-B\>\<b-up-C\>\<b-up-D\>\<b-up-E\>\<b-up-F\>\<b-up-G\>\<b-up-H\>\<b-up-I\>\<b-up-J\>\<b-up-K\>\<b-up-L\>\<b-up-M\>>",
+
+      \ \ \ \ "<math|\<b-up-N\>\<b-up-O\>\<b-up-P\>\<b-up-Q\>\<b-up-R\>\<b-up-S\>\<b-up-T\>\<b-up-U\>\<b-up-V\>\<b-up-W\>\<b-up-X\>\<b-up-Y\>\<b-up-Z\>>"]
     <|unfolded-io>
       \;
 
@@ -169,11 +163,7 @@
     <\unfolded-io>
       (10) -\<gtr\>\ 
     <|unfolded-io>
-      b4:=["<math|\<b-alpha\>\<b-beta\>\<b-gamma\>\<b-delta\>\<b-epsilon\>\<b-varepsilon\>\<b-zeta\>\<b-eta\>\<b-theta\>\<b-vartheta\>\<b-iota\>\<b-kappa\>\<b-lambda\>\<b-mu\>\<b-nu\>>",
-
-      \ \ \ \ "<math|\<b-xi\>\<b-omicron\>\<b-pi\>\<b-varpi\>\<b-rho\>\<b-varrho\>\<b-sigma\>\<b-varsigma\>\<b-tau\>\<b-upsilon\>\<b-phi\>\<b-varphi\>\<b-chi\>\<b-psi\>\<b-omega\>>",
-
-      \ \ \ \ "<math|\<b-Gamma\>\<b-Delta\>\<b-Theta\>\<b-Lambda\>\<b-Xi\>\<b-Sigma\>\<b-Upsilon\>\<b-Phi\>\<b-Psi\>\<b-Omega\>\<ldots\>\<ldots\>\<ldots\>\<ldots\>\<ldots\>>"]
+      matrix(map(entries,b3))$OutputForm
     <|unfolded-io>
       \;
 
@@ -181,7 +171,17 @@
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       OutputForm
+    </unfolded-io>
 
+    <\unfolded-io>
+      (11) -\<gtr\>\ 
+    <|unfolded-io>
+      b4:=["<math|\<b-alpha\>\<b-beta\>\<b-gamma\>\<b-delta\>\<b-epsilon\>\<b-varepsilon\>\<b-zeta\>\<b-eta\>\<b-theta\>\<b-vartheta\>\<b-iota\>\<b-kappa\>\<b-lambda\>\<b-mu\>\<b-nu\>>",
+
+      \ \ \ \ "<math|\<b-xi\>\<b-omicron\>\<b-pi\>\<b-varpi\>\<b-rho\>\<b-varrho\>\<b-sigma\>\<b-varsigma\>\<b-tau\>\<b-upsilon\>\<b-phi\>\<b-varphi\>\<b-chi\>\<b-psi\>\<b-omega\>>",
+
+      \ \ \ \ "<math|\<b-Gamma\>\<b-Delta\>\<b-Theta\>\<b-Lambda\>\<b-Xi\>\<b-Sigma\>\<b-Upsilon\>\<b-Phi\>\<b-Psi\>\<b-Omega\>\<ldots\>\<ldots\>\<ldots\>\<ldots\>\<ldots\>>"]
+    <|unfolded-io>
       \;
 
       <with|mode|math|[<text|"<math|\<b-alpha\>\<b-beta\>\<b-gamma\>\<b-delta\>\<b-epsilon\>\<b-varepsilon\>\<b-zeta\>\<b-eta\>\<b-theta\>\<b-vartheta\>\<b-iota\>\<b-kappa\>\<b-lambda\>\<b-mu\>\<b-nu\>>">,<text|"<math|\<b-xi\>\<b-omicron\>\<b-pi\>\<b-varpi\>\<b-rho\>\<b-varrho\>\<b-sigma\>\<b-varsigma\>\<b-tau\>\<b-upsilon\>\<b-phi\>\<b-varphi\>\<b-chi\>\<b-psi\>\<b-omega\>>">,<text|"<math|\<b-Gamma\>\<b-Delta\>\<b-Theta\>\<b-Lambda\>\<b-Xi\>\<b-Sigma\>\<b-Upsilon\>\<b-Phi\>\<b-Psi\>\<b-Omega\>...............>">]>
@@ -303,7 +303,15 @@
     \;
 
     <\unfolded-io>
-      (19) -\<gtr\>\ 
+      (1) -\<gtr\>\ 
+    <|unfolded-io>
+      )clear all
+    <|unfolded-io>
+      \ \ \ All user variables and function definitions have been cleared.
+    </unfolded-io>
+
+    <\unfolded-io>
+      (1) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<alpha\>\<beta\>\<gamma\>\<delta\>\<varepsilon\>\<epsilon\>\<zeta\>\<eta\>>
     <|unfolded-io>
@@ -316,7 +324,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (20) -\<gtr\>\ 
+      (2) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<theta\>\<vartheta\>\<iota\>\<kappa\>\<lambda\>\<mu\>\<nu\>\<xi\>>
     <|unfolded-io>
@@ -329,7 +337,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (21) -\<gtr\>\ 
+      (3) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<omicron\>\<pi\>\<varpi\>\<rho\>\<varrho\>\<sigma\>\<varsigma\>\<tau\>>
     <|unfolded-io>
@@ -342,7 +350,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (22) -\<gtr\>\ 
+      (4) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<upsilon\>\<phi\>\<varphi\>\<chi\>\<psi\>\<omega\>>
     <|unfolded-io>
@@ -355,7 +363,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (23) -\<gtr\>\ 
+      (5) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<Gamma\>\<Delta\>\<Theta\>\<Lambda\>\<Lambda\>\<Xi\>\<Pi\>\<Sigma\>\<Upsilon\>>
     <|unfolded-io>
@@ -368,7 +376,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (24) -\<gtr\>\ 
+      (6) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<Phi\>\<Psi\>\<Omega\>>
     <|unfolded-io>
@@ -381,7 +389,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (25) -\<gtr\>\ 
+      (7) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<b-a\>\<b-b\>\<b-c\>\<b-d\>\<b-e\>\<b-f\>\<b-g\>\<b-h\>\<b-j\>\<b-k\>\<b-l\>\<b-m\>>
     <|unfolded-io>
@@ -394,7 +402,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (26) -\<gtr\>\ 
+      (8) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<b-up-a\>\<b-up-b\>\<b-up-c\>\<b-up-d\>\<b-up-e\>\<b-up-f\>\<b-up-g\>\<b-up-h\>\<b-up-i\>\<b-up-j\>\<b-up-k\>\<b-up-l\>\<b-up-m\>>
     <|unfolded-io>
@@ -407,7 +415,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (27) -\<gtr\>\ 
+      (9) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<b-alpha\>\<b-beta\>\<b-gamma\>>
     <|unfolded-io>
@@ -420,7 +428,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (28) -\<gtr\>\ 
+      (10) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<cal-A\>\<cal-B\>\<cal-C\>\<cal-D\>\<cal-E\>>
     <|unfolded-io>
@@ -433,7 +441,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (29) -\<gtr\>\ 
+      (11) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<frak-a\>\<frak-b\>\<frak-A\>\<frak-B\>>
     <|unfolded-io>
@@ -446,7 +454,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (30) -\<gtr\>\ 
+      (12) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<bbb-a\>\<bbb-b\>>
     <|unfolded-io>
@@ -465,7 +473,7 @@
     \;
 
     <\unfolded-io>
-      (31) -\<gtr\>\ 
+      (13) -\<gtr\>\ 
     <|unfolded-io>
       <math|<math-up|sin>>(x)
     <|unfolded-io>
@@ -478,7 +486,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (32) -\<gtr\>\ 
+      (14) -\<gtr\>\ 
     <|unfolded-io>
       sin(x)
     <|unfolded-io>
@@ -495,7 +503,7 @@
     \;
 
     <\unfolded-io>
-      (33) -\<gtr\>\ 
+      (15) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<oplus\>>
     <|unfolded-io>
@@ -508,7 +516,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (34) -\<gtr\>\ 
+      (16) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<otimes\>>
     <|unfolded-io>
@@ -527,7 +535,7 @@
     \;
 
     <\unfolded-io>
-      (35) -\<gtr\>\ 
+      (17) -\<gtr\>\ 
     <|unfolded-io>
       <math|2*\<pi\>+1>
     <|unfolded-io>
@@ -540,7 +548,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (36) -\<gtr\>\ 
+      (18) -\<gtr\>\ 
     <|unfolded-io>
       <math|2*\<mathpi\>+1>
     <|unfolded-io>
@@ -553,7 +561,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (37) -\<gtr\>\ 
+      (19) -\<gtr\>\ 
     <|unfolded-io>
       %::Float
     <|unfolded-io>
@@ -570,7 +578,7 @@
     \;
 
     <\unfolded-io>
-      (38) -\<gtr\>\ 
+      (20) -\<gtr\>\ 
     <|unfolded-io>
       <math|i,\<b-i\>,\<b-up-i\>,\<frak-i\>,\<bbb-i\>>
     <|unfolded-io>
@@ -585,7 +593,7 @@
     \;
 
     <\unfolded-io>
-      (39) -\<gtr\>\ 
+      (21) -\<gtr\>\ 
     <|unfolded-io>
       <math|x,\<b-x\>,\<b-up-x\>,\<frak-x\>,\<bbb-x\>>
     <|unfolded-io>
@@ -602,7 +610,7 @@
     \;
 
     <\unfolded-io>
-      (40) -\<gtr\>\ 
+      (22) -\<gtr\>\ 
     <|unfolded-io>
       <math|X,\<b-X\>,\<b-up-X\>,\<cal-X\>,\<frak-X\>,\<bbb-X\>>
     <|unfolded-io>
@@ -614,16 +622,10 @@
       Tuple(OrderedVariableList([X,\<b-X\>,\<b-up-X\>,\<cal-X\>,\<frak-X\>,\<bbb-X\>]))
     </unfolded-io>
 
-    <\input>
-      (40) -\<gtr\>\ 
-    <|input>
-      <math|<big|sum><rsub|\<b-up-i\>=1\<ldots\>10>\<b-up-i\>>
-    </input>
-
     <\unfolded-io>
-      (41) -\<gtr\>\ 
+      (23) -\<gtr\>\ 
     <|unfolded-io>
-      <math|<big|sum><rsup|10><rsub|<with|mode|prog|i=1>>i>
+      <math|<big|sum><rsub|\<b-up-i\>=1\<ldots\>10>\<b-up-i\>>
     <|unfolded-io>
       \;
 
@@ -631,7 +633,13 @@
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       Fraction(Polynomial(Integer))
+    </unfolded-io>
 
+    <\unfolded-io>
+      (24) -\<gtr\>\ 
+    <|unfolded-io>
+      <math|<big|sum><rsup|10><rsub|<with|mode|prog|i=1>>i>
+    <|unfolded-io>
       \;
 
       <with|mode|math|55>
@@ -645,13 +653,13 @@
     \;
 
     <\unfolded-io>
-      (43) -\<gtr\>\ 
+      (25) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<mathe\>>
     <|unfolded-io>
       \;
 
-      <with|mode|math|e>
+      <with|mode|math|\<mathe\>>
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       Expression(Integer)
@@ -664,7 +672,7 @@
     \;
 
     <\unfolded-io>
-      (44) -\<gtr\>\ 
+      (26) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<mathi\><rsup|2>>
     <|unfolded-io>
@@ -681,7 +689,7 @@
     \;
 
     <\unfolded-io>
-      (45) -\<gtr\>\ 
+      (27) -\<gtr\>\ 
     <|unfolded-io>
       "<math|\<Mho\>>"
     <|unfolded-io>
@@ -694,7 +702,7 @@
     </unfolded-io>
 
     <\unfolded-io>
-      (46) -\<gtr\>\ 
+      (28) -\<gtr\>\ 
     <|unfolded-io>
       <math|\<Mho\>>
     <|unfolded-io>
@@ -708,79 +716,79 @@
       character.
 
       \ \ \ 2 error(s) parsing\ 
+
+      \;
     </unfolded-io>
 
     <\unfolded-io>
-      (56) -\<gtr\>\ 
+      (28) -\<gtr\>\ 
     <|unfolded-io>
       <math|f<around*|(|x|)>\<longequal\><around*|(|x\<less\>1\<Rightarrow\><around*|(|x\<assign\>x-1;1|)>;<around*|(|x\<assign\>x+1;x|)>|)>>
     <|unfolded-io>
-      \ \ \ Compiled code for f has been cleared.
-
-      \ \ \ 1 old definition(s) deleted for function or rule f\ 
-
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       Void
     </unfolded-io>
 
     <\unfolded-io>
-      (57) -\<gtr\>\ 
+      (29) -\<gtr\>\ 
     <|unfolded-io>
       f
     <|unfolded-io>
       \;
 
-      <with|mode|math|f<space|2quad>x<space|2quad>==<space|2quad>if<space|2quad>x\<less\>1<space|2quad><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|then<space|2quad><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|x:=x-1>>|<row|<cell|1>>>>>>>|<row|<cell|else<space|2quad><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|x:=x+1>>|<row|<cell|x>>>>>>>>>>>
+      <with|mode|math|f<space|1spc>x<space|1spc>==<space|1spc>if<space|1spc>x\<less\>1<space|1spc><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|then<space|1spc><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|x:=x-1>>|<row|<cell|1>>>>>>>|<row|<cell|else<space|1spc><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|x:=x+1>>|<row|<cell|x>>>>>>>>>>>
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       FunctionCalled(f)
     </unfolded-io>
 
     <\unfolded-io>
-      (48) -\<gtr\>\ 
+      (30) -\<gtr\>\ 
     <|unfolded-io>
       f(2)
     <|unfolded-io>
-      \ \ \ Compiling function f with type PositiveInteger -\<gtr\>
-      PositiveInteger\ 
+      \ \ \ Compiling function f with type PositiveInteger -\<gtr\> Integer\ 
 
       \;
 
-      <with|mode|math|2>
+      <with|mode|math|3>
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       PositiveInteger
     </unfolded-io>
 
     <\unfolded-io>
-      (53) -\<gtr\>\ 
+      (31) -\<gtr\>\ 
     <|unfolded-io>
       g x == if x\<less\>1 then if x\<less\>2 then 1 else x else y
     <|unfolded-io>
-      \ \ \ 1 old definition(s) deleted for function or rule g\ 
-
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       Void
     </unfolded-io>
 
     <\unfolded-io>
-      (54) -\<gtr\>\ 
+      (32) -\<gtr\>\ 
     <|unfolded-io>
       g
     <|unfolded-io>
       \;
 
-      <with|mode|math|g<space|2quad>x<space|2quad>==<space|2quad>if<space|2quad>x\<less\>1<space|2quad><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|then<space|2quad>if<space|2quad>x\<less\>2<space|2quad><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|then<space|2quad>1>>|<row|<cell|else<space|2quad>x>>>>>>>|<row|<cell|else<space|2quad>y>>>>>>
+      <with|mode|math|g<space|1spc>x<space|1spc>==<space|1spc>if<space|1spc>x\<less\>1<space|1spc><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|then<space|1spc>if<space|1spc>x\<less\>2<space|1spc><tabular|<tformat|<twith|table-valign|t>|<table|<row|<cell|then<space|1spc>1>>|<row|<cell|else<space|1spc>x>>>>>>>|<row|<cell|else<space|1spc>y>>>>>>
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type:
       FunctionCalled(g)
     </unfolded-io>
 
     <\unfolded-io>
-      (55) -\<gtr\>\ 
+      (33) -\<gtr\>\ 
     <|unfolded-io>
       g 1
     <|unfolded-io>
+      \ \ \ Compiling function g with type PositiveInteger -\<gtr\>
+      Polynomial(Integer
+
+      \ \ \ \ \ \ )\ 
+
       \;
 
       <with|mode|math|y>
@@ -790,16 +798,11 @@
     </unfolded-io>
 
     <\input>
-      (56) -\<gtr\>\ 
+      (34) -\<gtr\>\ 
     <|input>
       \;
     </input>
-
-    \;
   </session>
-
-  <math|if x\<less\>1<stack|<tformat|<twith|table-valign|t>|<table|<row|<cell|then
-  1>>|<row|<cell|else 2>>>>>>
 </body>
 
 <\initial>
@@ -808,9 +811,3 @@
     <associate|preamble|false>
   </collection>
 </initial>
-
-<\references>
-  <\collection>
-    <associate|auto-1|<tuple|1|?>>
-  </collection>
-</references>

@@ -975,9 +975,15 @@ TexmacsFormat() : public == private where
     group str ==
       concat ["(concat ",str,")"]
 
+    import from NumberFormats
     cork(x) ==
       res := search(x, Cork)
-      res case "failed" => ucodeToString(x::Integer)
+      res case "failed" =>
+         if (x > 1000) then  -- the range of Unicode that TeXmacs can't handle
+             s := FormatRadix(x, 16)
+             concat ["\<#", s, "\>"]
+         else
+             ucodeToString(x::Integer)
       res::String
 
     utf2cork str ==
@@ -1016,8 +1022,8 @@ TexmacsFormat() : public == private where
                             "</mtr></mtable>"))
 )endif
         op = 'CONCATB =>
-            --formatNary('STRSEP, "(space _"1quad_")", 0, args, prec)
-            formatNary('STRSEP, " ", 0, args, prec)
+            formatNary('STRSEP, "(space _"1spc_")", 0, args, prec)
+            --formatNary('STRSEP, " ", 0, args, prec)
         op = 'CONCAT =>
             formatNary('STRSEP, "", 0, args, minPrec)
         op = 'QUOTE =>
@@ -1323,12 +1329,13 @@ TexmacsFormat() : public == private where
                    concat [nstr, " ", str]
                  concat [elt(nstr, segment(2)$US)]
             else concat [" _"", str, "_" "]
-        str = "%pi" => "<pi>"
+        str = "%pi" => "<mathpi>"
         -- pi
-        str = "%e"  => "e"
+        str = "%e"  => "<mathe>"
         -- ExponentialE
-        str = "%i"  => "i"
+        str = "%i"  => "<mathi>"
         -- ImaginaryI
+        str = "infinity" => "<infty>"
         len > 0 and str.1 = char "%" => concat [" _"", str, "_" "]
         -- presumably this is a literal string
         -- WSP: preserve "..." and encode <less> symbols
