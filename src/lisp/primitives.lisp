@@ -127,11 +127,27 @@
 (defmacro ,(suffixed_name SETELT_U nb)(v i s)
     `(setf (aref (the (simple-array (unsigned-byte ,',nb) (*)) ,v) ,i)
            ,s))
+
 #+:sbcl
-(defun ,(suffixed_name GETREFV_U nb) (n x)
-    (let ((vec (sbcl_make_sized_vector ,nb n)))
-        (fill vec x)
-        vec))
+(let ((get-tag (find-symbol "%VECTOR-WIDETAG-AND-N-BITS" "SB-IMPL"))
+          (length-sym nil) (get-tag2 nil))
+        (if (null get-tag)
+            (progn
+                (setf get-tag2
+                    (find-symbol "%VECTOR-WIDETAG-AND-N-BITS-SHIFT"
+                                 "SB-IMPL"))
+                (setf length-sym (find-symbol "VECTOR-LENGTH-IN-WORDS"
+                                              "SB-IMPL"))))
+        (cond
+           ((and (null get-tag) (or (null get-tag2) (null length-sym)))
+            (defun ,(suffixed_name GETREFV_U nb)(n x)
+               (make-array n :initial-element x
+                          :element-type '(unsigned-byte ,nb))))
+           (t
+             (defun ,(suffixed_name GETREFV_U nb)(n x)
+                    (let ((vec (sbcl_make_sized_vector ,nb n)))
+                         (fill vec x)
+                         vec)))))
 
 #-:sbcl
 (defun ,(suffixed_name GETREFV_U nb)(n x)
