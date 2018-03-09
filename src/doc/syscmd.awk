@@ -5,9 +5,9 @@
 #      awk -f syscmd.awk ug16.htex
 #
 # with, perhaps, appropriate path information added.  This script
-# reads Chapter 15 of the AXIOM User Guide and generates individual
+# reads Chapter 16 of the FriCAS User Guide and generates individual
 # ASCII files that describe each of the system commands.  It handles
-# tex macros and flows lines together.  Should ug15.htex get updated,
+# tex macros and flows lines together.  Should ug16.htex get updated,
 # this script should be checked to make sure it is still processing
 # all the tex macros.
 #
