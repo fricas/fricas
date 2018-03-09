@@ -23,7 +23,7 @@ Aggregate : Category == Type with
      ++ eq?(u, v) tests if u and v are same objects.
    copy : % -> %
      ++ copy(u) returns a top-level (non-recursive) copy of u.
-     ++ Note: for collections, \spad{copy(u) == [x for x in u]}.
+     ++ Note: for collections, \spad{copy(u) = [x for x in u]}.
    empty : () -> %
      ++ empty()$D creates an aggregate of type D with 0 elements.
      ++ Note: The {\em $D} can be dropped if understood by context,
@@ -40,7 +40,7 @@ Aggregate : Category == Type with
      ++ sample yields a value of type %
    if % has finiteAggregate then
      "#" : % -> NonNegativeInteger
-       ++ # u returns the number of items in u.
+       ++ #(u) returns the number of elements in u.
  add
   eq?(a, b) == EQ(a, b)$Lisp
   sample() == empty()
@@ -177,7 +177,7 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
 ++ \spadfun{flexibleArray} for \spadtype{FlexibleArray}, and so on.
 Collection(S : Type) : Category == HomogeneousAggregate(S) with
    construct : List S -> %
-     ++ \spad{construct(x, y, ..., z)} returns the collection of elements \spad{x, y, ..., z}
+     ++ \spad{construct([x, y, ..., z])} returns the collection of elements \spad{x, y, ..., z}
      ++ ordered as given. Equivalently written as \spad{[x, y, ..., z]$D}, where
      ++ D is the domain. D may be omitted for those of type List.
    find : (S -> Boolean, %) -> Union(S, "failed")
@@ -200,11 +200,11 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
       remove : (S -> Boolean, %) -> %
         ++ remove(p, u) returns a copy of u removing all elements x such that
         ++ \spad{p(x)} is true.
-        ++ Note: \spad{remove(p, u) == [x for x in u | not p(x)]}.
+        ++ Note: \spad{remove(p, u) = [x for x in u | not p(x)]}.
       select : (S -> Boolean, %) -> %
         ++ select(p, u) returns a copy of u containing only those elements such
         ++ \spad{p(x)} is true.
-        ++ Note: \spad{select(p, u) == [x for x in u | p(x)]}.
+        ++ Note: \spad{select(p, u) = [x for x in u | p(x)]}.
       if S has BasicType then
         reduce : ((S, S) -> S, %, S, S) -> S
           ++ reduce(f, u, x, z) reduces the binary operation f across u, stopping
@@ -215,7 +215,7 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
         remove : (S, %) -> %
           ++ remove(x, u) returns a copy of u with all
           ++ elements equal to x removed.
-          ++ Note: \spad{remove(x, c) == [y for y in c | y ~= x]}.
+          ++ Note: \spad{remove(x, c) = [y for y in c | y ~= x]}.
         removeDuplicates : % -> %
           ++ removeDuplicates(u) returns a copy of u with all duplicates removed.
    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
@@ -905,7 +905,7 @@ TableAggregate(Key : Type, Entry : Type) : Category ==
   Join(KeyedDictionary(Key, Entry), IndexedAggregate(Key, Entry)) with
    setelt! : (%, Key, Entry) -> Entry
      ++ setelt!(t, k, e) (also written \spad{t.k := e}) is equivalent
-     ++ to \spad{(insert([k, e], t); e)}.
+     ++ to \spad{(insert!([k, e], t); e)}.
    table : () -> %
      ++ table()$T creates an empty table of type T.
    table : List Record(key : Key, entry : Entry) -> %
@@ -1290,7 +1290,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate w consisting of the elements of u
       ++ followed by the elements of v.
-      ++ Note: \spad{v = rest(w, #a)}.
+      ++ Note: \spad{v = rest(w, #u)}.
    concat : (S, %) -> %
       ++ concat(x, u) returns aggregate consisting of x followed by
       ++ the elements of u.
@@ -1303,7 +1303,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       ++ elt(u, "first") (also written: \spad{u.first}) is
       ++ equivalent to first(u).
    first : (%, NonNegativeInteger) -> %
-      ++ first(u, n) returns a copy of the first n (\spad{n >= 0}) elements of u.
+      ++ first(u, n) returns a copy of the first n elements of u.
    rest : % -> %
       ++ rest(u) returns an aggregate consisting of all but the first
       ++ element of u (equivalently, the next node of u).
@@ -1311,20 +1311,19 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       ++ elt(%, "rest") (also written: \spad{u.rest}) is
       ++ equivalent to \spad{rest u}.
    rest : (%, NonNegativeInteger) -> %
-      ++ rest(u, n) returns the \spad{n}th (n >= 0) node of u.
+      ++ rest(u, n) returns the \spad{n}th node of u.
       ++ Note: \spad{rest(u, 0) = u}.
    last : % -> S
       ++ last(u) returns the last element of u.
-      ++ Note: for lists, \spad{last(u) = u.(maxIndex u) = u.(# u - 1)}.
+      ++ Note: for lists, \spad{last(u) = u.(maxIndex u)}.
    elt : (%, "last") -> S
       ++ elt(u, "last") (also written: \spad{u.last}) is equivalent to last(u).
    last : (%, NonNegativeInteger) -> %
-      ++ last(u, n) returns a copy of the last n (\spad{n >= 0}) nodes of u.
+      ++ last(u, n) returns a copy of the last n nodes of u.
       ++ Note: \spad{last(u, n)} is a list of n elements.
    tail : % -> %
       ++ tail(u) returns the last node of u.
-      ++ Note: if u is \spad{shallowlyMutable},
-      ++ \spad{setrest(tail(u), v) = concat(u, v)}.
+      ++ Error if u is empty.
    second : % -> S
       ++ second(u) returns the second element of u.
       ++ Note: \spad{second(u) = first(rest(u))}.
@@ -1339,7 +1338,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       ++ contained in aggregate u, or 0 if u has no such cycle.
    cycleTail : % -> %
       ++ cycleTail(u) returns the last node in the cycle, or
-      ++ empty if none exists.
+      ++ empty() if none exists.
    if % has shallowlyMutable then
       concat! : (%, %) -> %
         ++ concat!(u, v) destructively concatenates v to the end of u.
@@ -1674,10 +1673,10 @@ LinearAggregate(S : Type) : Category ==
      ++ entries are x.
    concat : (%, S) -> %
      ++ concat(u, x) returns aggregate u with additional element x at the end.
-     ++ Note: for lists, \spad{concat(u, x) == concat(u, [x])}.
+     ++ Note: for lists, \spad{concat(u, x) = concat(u, [x])}.
    concat : (S, %) -> %
      ++ concat(x, u) returns aggregate u with additional element x at the front.
-     ++ Note: for lists: \spad{concat(x, u) == concat([x], u)}.
+     ++ Note: for lists: \spad{concat(x, u) = concat([x], u)}.
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate consisting of the elements of u
       ++ followed by the elements of v.
@@ -1685,40 +1684,42 @@ LinearAggregate(S : Type) : Category ==
       ++ \spad{w.i = u.i for i in indices u}
       ++ and \spad{w.(j + maxIndex u) = v.j for j in indices v}.
    concat : List % -> %
-      ++ concat(u), where u is a lists of aggregates \spad{[a, b, ..., c]},
+      ++ concat(u), where u is a list of aggregates \spad{[a, b, ..., c]},
       ++ returns a single aggregate consisting of the elements of \spad{a}
       ++ followed by those
       ++ of b followed ... by the elements of c.
-      ++ Note: \spad{concat(a, b, ..., c) = concat(a, concat(b, ..., c))}.
+      ++ Note: \spad{concat([a, b, ..., c]) = concat(a, concat([b, ..., c]))}.
    map : ((S, S) -> S, %, %) -> %
      ++ map(f, u, v) returns a new aggregate w with elements
      ++ \spad{z = f(x, y)} for corresponding elements x and y from u and v.
      ++ Note: \spad{w.i = f(u.i, v.i)}.
    delete : (%, Integer) -> %
       ++ delete(u, i) returns a copy of u with the \spad{i}th element deleted.
-      ++ Note: for lists,
-      ++ \spad{delete(a, i) == concat(a(0..i - 1), a(i + 1, ..))}.
+      ++ Note: for List,
+      ++ \spad{delete(u, i) = concat(u(1..i - 1), u(i + 1..))}.
    delete : (%, UniversalSegment(Integer)) -> %
       ++ delete(u, i..j) returns a copy of u with the \spad{i}th through
       ++ \spad{j}th element deleted.
-      ++ Note: \spad{delete(a, i..j) = concat(a(0..i-1), a(j+1..))}.
+      ++ Note: for List, \spad{delete(u, i..j) = concat(u(1..i-1), u(j+1..))}.
    first : (%, NonNegativeInteger) -> %
-      ++ first(u, n) returns a copy of the first n (\spad{n >= 0})
-      ++ elements x of u.  Error: if u has less than n elements.
+      ++ first(u, n) returns a copy of the first n
+      ++ elements of u.  Error: if u has less than n elements.
    insert : (S, %, Integer) -> %
       ++ insert(x, u, i) returns a copy of u having x as its \spad{i}th
       ++ element.
-      ++ Note: \spad{insert(x, a, k) = concat(concat(a(0..k-1), x), a(k..))}.
+      ++ Note: for List,
+      ++ \spad{insert(x, u, i) = concat(u(1..i - 1), concat(x, u(i..)))}.
    insert : (%, %, Integer) -> %
       ++ insert(v, u, k) returns a copy of u having v inserted beginning at the
       ++ \spad{i}th element.
-      ++ Note: \spad{insert(v, u, k) = concat( u(0..k-1), v, u(k..) )}.
+      ++ Note: for List,
+      ++ \spad{insert(v, u, k) = concat(u(1..k-1), concat(v, u(k..)))}.
    if % has shallowlyMutable then
       setelt! : (%, UniversalSegment(Integer), S) -> S
        ++ setelt!(u, i..j, x) (also written: \spad{u(i..j) := x}) destructively
        ++ replaces each element in the segment \spad{u(i..j)} by x.
        ++ The value x is returned.
-       ++ Note: u is destructively change so
+       ++ Note: u is destructively changed so
        ++ that \spad{u.k := x for k in i..j};
        ++ its length remains unchanged.
    if % has finiteAggregate then
@@ -2443,13 +2444,13 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
       ++ upperCase(s) returns the string with all characters in upper case.
     upperCase! : % -> %
       ++ upperCase!(s) destructively replaces the alphabetic characters
-      ++ in s by upper case characters.
+      ++ in s by corresponding upper case characters.
     prefix? : (%, %) -> Boolean
       ++ prefix?(s, t) tests if the string s is the initial substring of t.
-      ++ Note: \spad{prefix?(s, t) == reduce(and, [s.i = t.i for i in 0..maxIndex s])}.
+      ++ Note: \spad{prefix?(s, t) = reduce(and, [s.i = t.i for i in indices s])}.
     suffix? : (%, %) -> Boolean
       ++ suffix?(s, t) tests if the string s is the final substring of t.
-      ++ Note: \spad{suffix?(s, t) == reduce(and, [s.i = t.(n - m + i) for i in 0..maxIndex s])}
+      ++ Note: \spad{suffix?(s, t) = reduce(and, [s.i = t.(n - m + i) for i indices s])}
       ++ where m and n denote the maxIndex of s and t respectively.
     substring? : (%, %, Integer) -> Boolean
       ++ substring?(s, t, i) tests if s is a substring of t beginning at
@@ -2462,11 +2463,13 @@ StringAggregate : Category == OneDimensionalArrayAggregate Character with
     replace : (%, UniversalSegment(Integer), %) -> %
       ++ replace(s, i..j, t) replaces the substring \spad{s(i..j)} of s by string t.
     position : (%, %, Integer) -> Integer
-      ++ position(s, t, i) returns the position j of the substring s in string t,
-      ++ where \spad{j >= i} is required.
+      ++ position(s, t, i) returns the position j of the substring s in
+      ++ string t, beginning at index i.
+      ++ Returns \spad{minIndex(s) - 1} if there is no such j.
     position : (CharacterClass, %, Integer) -> Integer
-      ++ position(cc, t, i) returns the position \spad{j >= i} in t of
-      ++ the first character belonging to cc.
+      ++ position(cc, t, i) returns the position j in string t of
+      ++ the first character belonging to cc, beginning at index i.
+      ++ Returns \spad{minIndex(t) - 1} if there is no such j.
     coerce : Character -> %
       ++ coerce(c) returns c as a string s with the character c.
 
