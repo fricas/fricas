@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2017-08-05],
+AC_INIT([FriCAS], [2018-03-10],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -257,7 +257,7 @@ else
              AC_MSG_ERROR([sbcl $fricas_lisp_version is too old])
         fi
         case $fricas_lisp_version in
-           1.0.29|1.3.1|1.3.2|1.3.3|1.3.4)
+           1.0.29|1.3.1|1.3.1.*|1.3.2|1.3.3|1.3.4)
              AC_MSG_ERROR([sbcl $fricas_lisp_version has a bug which does not allow building FriCAS.
 Please use different sbcl version])
                   ;;
