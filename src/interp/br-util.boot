@@ -135,7 +135,7 @@ htPred2English(x,:options) ==
           if iprec > prec then htSay '"("
           fn(first l,iprec)
           for y in rest l repeat
-            htSay('" ",rename or op,'" ")
+            htSayList(['" ", rename or op, '" "])
             fn(y,iprec)
           if iprec > prec then htSay '")"
         if prec < 5 then htSay '"("
@@ -165,9 +165,9 @@ unMkEvalable u ==
  u is ['LIST,:r] => [unMkEvalable x for x in r]
  u
 
-args2HtString(x,:options) ==
+args2HtString(x) ==
   null x => '""
-  emList := IFCAR options
+  emList := nil
   SUBSTRING(form2HtString(['f,:x],emList),1,nil)
 
 quickForm2HtString(x) ==
@@ -258,21 +258,6 @@ getConstructorForm name ==
 
 getConstructorArgs conname == rest getConstructorForm conname
 
-bcComments(comments,:options) ==
-  italics? := not IFCAR options
-  STRINGP comments =>
-    comments = '"" => nil
-    htSay('"\newline ")
-    if italics? then htSay '"{\em "
-    htSay comments
-    if italics? then htSay '"}"
-  null comments => nil
-  htSay('"\newline ")
-  if italics? then htSay "{\em "
-  htSay first comments
-  for x in rest comments repeat htSay('" ",x)
-  if italics? then htSay '"}"
-
 bcConform1 form == main where
     main ==
         form is ['ifp,form1,:pred] =>
@@ -298,7 +283,7 @@ bcConform1 form == main where
             htSay('"'")
             hd CADR form
         head = 'SIGNATURE =>
-            htSay(CADR form,'": ")
+            htSayList([first(rest(form)), '": "])
             mapping CADDR form
         head = 'Mapping and rest form => mapping rest form
         head = ":" =>
@@ -346,9 +331,6 @@ bcConform(form,:options) ==
 
 bcConstructor(form) == htSayList dbConformGen form
 
-htSayList u ==
-  for x in u repeat htSay x
-
 conform2HtString form ==
   for u in form2String form repeat
     htSay u
@@ -369,10 +351,10 @@ dbEvalableConstructor? form ==
         res
     false
 
-htSayItalics s == htSay('"{\em ",s,'"}")
+htSayItalics s == htSayList(['"{\em ", s, '"}"])
 
 bcCon(name,:options) ==
-  argString := IFCAR options or '""
+  argString := '""
   s := STRINGIMAGE name
   bcStar name
   htSayConstructorName(s,s)
@@ -520,10 +502,8 @@ bcNameTable(u,fn,:option) ==   --option if * prefix
     htSay '"}"
   htEndTable()
 
-bcNameCountTable(u,fn,gn,:options) ==
-  linkFunction :=
-    IFCAR options => 'bcLispLinks
-    'bcLinks
+bcNameCountTable(u, fn, gn) ==
+  linkFunction := 'bcLispLinks
   htSay '"\newline"
   htBeginTable()
   firstTime := true
@@ -547,17 +527,13 @@ dbSayItems(countOrPrefix,singular,plural,:options) ==
      htSay prefix
      c
    countOrPrefix
-  if count = 0 then htSay('"No ",singular)
-  else if count = 1 then htSay('"1 ",singular)
-  else htSay(count,'" ",plural)
+  if count = 0 then htSayList(['"No ", singular])
+  else if count = 1 then htSayList(['"1 ", singular])
+  else htSayList([count, '" ", plural])
   for x in options repeat bcHt x
   if count ~= 0 then bcHt '":"
 
 dbBasicConstructor? conname == member(dbSourceFile conname,'("catdef" "coerce"))
-
-nothingFoundPage(:options) ==
-  htInitPage('"Sorry, no match found",nil)
-  htShowPage()
 
 htCopyProplist htPage == [[x,:y] for [x,:y] in htpPropertyList htPage]
 
@@ -567,14 +543,14 @@ dbInfovec name ==
   loadLibIfNotLoaded(name)
   u := GET(name, 'infovec) => u
 
-emptySearchPage(kind,filter,:options) ==
-  skipNamePart := IFCAR options
+emptySearchPage(kind, filter, skipNamePart) ==
   heading := ['"No ",capitalize kind,'" Found"]
   htInitPage(heading,nil)
   exposePart :=
     null $includeUnexposed? => '"{\em exposed} "
     '""
-  htSay('"\vspace{1}\newline\centerline{There is no ",exposePart,kind,'" matching pattern}\newline\centerline{{\em ")
+  htSayList(['"\vspace{1}\newline\centerline{There is no ", exposePart,
+             kind, '" matching pattern}\newline\centerline{{\em "])
   if filter then htPred2English filter
   htSay '"}}"
   htShowPage()
@@ -615,18 +591,17 @@ htErrorStar() ==
 htQueryPage(htPage,heading,message,query,fn) ==
   htInitPage(heading,nil)
   htSay message
-  htQuery(query,fn)
+  htQuery(query, fn, false)
   htShowPage()
 
-htQuery(question,fn,:options) ==
-  upLink? := IFCAR options
+htQuery(question, fn, upLink?) ==
   if question then
     htSay('"\vspace{1}\centerline{")
     htSay question
     htSay('"}")
   htSay('"\centerline{")
   htMakePage [['bcLispLinks,['"\fbox{Yes}",'"",fn,'yes]]]
-  htBlank 4
+  htBlanks(4)
   if upLink?
     then htSay('"\downlink{\fbox{No}}{UpPage}")
     else htMakePage [['bcLispLinks,['"\fbox{No}",'"",fn,'no]]]
@@ -636,13 +611,7 @@ kInvalidTypePage form ==
   htInitPage('"Error",nil)
   bcBlankLine()
   htSay('"\centerline{You gave an invalid type:}\newline\centerline{{\sf ")
-  htSay(form2HtString form,'"}}")
-  htShowPage()
-
-dbNotAvailablePage(:options) ==
-  htInitPage('"Missing Page",nil)
-  bcBlankLine()
-  htSay(IFCAR options or '"\centerline{This page is not available yet}")
+  htSayList([form2HtString form, '"}}"])
   htShowPage()
 
 --=======================================================================

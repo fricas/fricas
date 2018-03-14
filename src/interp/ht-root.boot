@@ -37,7 +37,7 @@ $newline := char 10
 downlink page ==
   $saturn => downlinkSaturn page
   htInitPage('"Bridge",nil)
-  htSay('"\replacepage{", page, '"}")
+  htSayList(['"\replacepage{", page, '"}"])
   htShowPage()
 
 downlinkSaturn fn ==
@@ -70,9 +70,9 @@ htSystemVariables() == main where
     for [heading,name,message,.,key,variable,options,func] in table repeat
       htSay('"\newline\item ")
       if heading = lastHeading then htSay '"\tab{8}" else
-        htSay(heading,'"\tab{8}")
+        htSayList([heading, '"\tab{8}"])
         lastHeading := heading
-      htSay('"{\em ",name,"}\tab{22}",message)
+      htSayList(['"{\em ", name, "}\tab{22}", message])
       htSay('"\tab{80}")
       key = 'FUNCTION =>
          null options => htMakePage [['bcLinks,['"reset",'"",func,nil]]]
@@ -81,7 +81,7 @@ htSystemVariables() == main where
          for option in rest options repeat
            option is ['break,:.] => 'skip
            [msg,class,var,valuesOrFunction,:.] := option
-           htSay('"\newline\tab{22}", msg,'"\tab{80}")
+           htSayList(['"\newline\tab{22}", msg,'"\tab{80}"])
            functionTail(name,class,var,valuesOrFunction)
       val := eval variable
       displayOptions(name,key,variable,val,options)
@@ -164,7 +164,9 @@ htGlossPage(htPage,pattern,tryAgain?) ==
   htSay('"\beginscroll\beginmenu")
   for line in lines repeat
     tick := charPosition($tick,line,1)
-    htSay('"\item{\em \menuitemstyle{}}\tab{0}{\em ",escapeString SUBSTRING(line,0,tick),'"} ",SUBSTRING(line,tick + 1,nil))
+    htSayList(['"\item{\em \menuitemstyle{}}\tab{0}{\em ",
+               escapeString SUBSTRING(line,0,tick),'"} ",
+               SUBSTRING(line,tick + 1,nil)])
   htSay '"\endmenu "
   htSay '"\endscroll\newline "
   htMakePage [['bcLinks,['"Search",'"",'htGlossSearch,nil]]]
@@ -216,14 +218,16 @@ htGreekSearch(filter) ==
     htShowPage()
   htInitPage(['"Greek letters matching search string {\em ",ss,'"}"],nil)
   if nonmatches
-    then htSay('"The greek letters that {\em match} your search string {\em ",ss,'"}:")
+    then htSayList([
+       '"The greek letters that {\em match} your search string {\em ",
+       ss, '"}:"])
     else htSay('"Your search string {\em ",ss,"} matches all of the greek letters:")
   htSay('"{\em \table{")
-  for x in matches repeat htSay('"{",x,'"}")
+  for x in matches repeat htSayList(['"{", x, '"}"])
   htSay('"}}\vspace{1}")
   if nonmatches then
     htSay('"The greek letters that {\em do not match} your search string:{\em \table{")
-    for x in nonmatches repeat htSay('"{",x,'"}")
+    for x in nonmatches repeat htSayList(['"{", x, '"}"])
     htSay('"}}")
   htShowPage()
 
@@ -249,14 +253,16 @@ htTextSearch(filter) ==
     htShowPage()
   htInitPage(['"Lines matching search string {\em ",s,'"}"],nil)
   if nonmatches
-    then htSay('"The lines that {\em match} your search string {\em ",s,'"}:")
+    then htSayList([
+           '"The lines that {\em match} your search string {\em ",
+           s, '"}:"])
     else htSay('"Your search string {\em ",s,"} matches both lines:")
   htSay('"{\em \table{")
-  for x in matches repeat htSay('"{",x,'"}")
+  for x in matches repeat htSayList(['"{", x, '"}"])
   htSay('"}}\vspace{1}")
   if nonmatches then
     htSay('"The line that {\em does not match} your search string:{\em \table{")
-    for x in nonmatches repeat htSay('"{",x,'"}")
+    for x in nonmatches repeat htSayList(['"{", x, '"}"])
     htSay('"}}")
   htShowPage()
 

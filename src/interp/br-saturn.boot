@@ -62,25 +62,28 @@ page() ==
 --=======================================================================
 
 --------------------> OLD DEFINITION (override in br-util.boot.pamphlet)
-htSay(x,:options) ==  --say for possibly both $saturn and standard code
-  htSayBind(x, options)
+htSay(x) ==  --say for possibly both $saturn and standard code
+    bcHt(x)
 
 htSayCold x ==
   htSay '"\lispLink{}{"
   htSay x
   htSay '"}"
 
-htSayStandard(x, :options) ==  --do AT MOST for $standard
+htSayStandard(x) ==  --do AT MOST for $standard
   $saturn: local := nil
-  htSayBind(x, options)
+  bcHt(x)
 
-htSaySaturn(x, :options) ==    --do AT MOST for $saturn
+htSayStandardList(lx) ==
+    $saturn : local := nil
+    htSayList(lx)
+
+htSaySaturn(x) ==    --do AT MOST for $saturn
   $standard: local := nil
-  htSayBind(x, options)
-
-htSayBind(x, options) ==
   bcHt x
-  for y in options repeat bcHt y
+
+htSayList(lx) ==
+  for x in lx repeat bcHt(x)
 
 --------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
 bcHt line ==
@@ -330,8 +333,7 @@ htMakePage1 itemList ==
 --      $standard => iht items
     itemType = 'lispLinks         => htLispLinks items
     itemType = 'lispmemoLinks     => htLispMemoLinks items
-    itemType = 'bcLinks           => htBcLinks items               --->
-    itemType = 'bcLinksNS         => htBcLinks(items,true)
+    itemType = 'bcLinks           => htBcLinks(items)
     itemType = 'bcLispLinks       => htBcLispLinks items           --->
     itemType = 'radioButtons      => htRadioButtons items
     itemType = 'bcRadioButtons    => htBcRadioButtons items
@@ -440,15 +442,13 @@ htDoneButton(func, htPage, :optionalArgs) ==
   FUNCALL(SYMBOL_-FUNCTION func, htPage)
 
 --------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
-htBcLinks(links,:options) ==
-  skipStateInfo? := IFCAR options
+htBcLinks(links) ==
   [links,options] := beforeAfter('options,links)
   for [message, info, func, :value] in links repeat
     link :=
       $saturn => '"\lispLink[d]"
       '"\lispdownlink"
-    htMakeButton(link,message,
-                   mkCurryFun(func, value),skipStateInfo?)
+    htMakeButton(link, message, mkCurryFun(func, value))
     bcIssueHt info
 
 --------------------> NEW DEFINITION (override in ht-util.boot.pamphlet)
@@ -461,13 +461,10 @@ htBcLispLinks links ==
     htMakeButton(link ,message, mkCurryFun(func, value))
     bcIssueHt info
 
-htMakeButton(htCommand, message, func,:options) ==
-  $saturn => htMakeButtonSaturn(htCommand, message, func, options)
-  skipStateInfo? := IFCAR options
+htMakeButton(htCommand, message, func) ==
+  $saturn => htMakeButtonSaturn(htCommand, message, func)
   iht [htCommand, '"{"]
   bcIssueHt message
-  skipStateInfo? =>
-    iht ['"}{(|htDoneButton| '|", func, '"| ",htpName $curPage, '")}"]
   iht ['"}{(|htDoneButton| '|", func, '"| (PROGN "]
   for [id, ., ., ., type, :.] in htpInputAreaAlist $curPage repeat
     iht ['"(|htpSetLabelInputString| ", htpName $curPage, '"'|", id, '"| "]
@@ -478,13 +475,8 @@ htMakeButton(htCommand, message, func,:options) ==
     iht '") "
   iht [htpName $curPage, '"))}"]
 
-htMakeButtonSaturn(htCommand, message, func,options) ==
-  skipStateInfo? := IFCAR options
+htMakeButtonSaturn(htCommand, message, func) ==
   iht htCommand
-  skipStateInfo? =>
-    iht ['"{\verb!(|htDoneButton| '|", func, '"| ",htpName page(), '")!}{"]
-    bcIssueHt message
-    iht '"}"
   iht ['"{\verb!(|htDoneButton| '|", func, '"| "]
   if $kPageSaturnArguments then
     iht '"(PROGN "
@@ -561,8 +553,8 @@ htInitPageNoHeading(propList) ==
   page()
 
 --------------------> NEW DEFINITION <--------------------------
-htpMakeEmptyPage(propList,:options) ==
-  name := IFCAR options or  GENTEMP()
+htpMakeEmptyPage(propList) ==
+  name := GENTEMP()
   if not $saturn then
     $activePageList := [name, :$activePageList]
   SET(name, val := VECTOR(name, nil, nil, nil, nil, nil, propList, nil))
@@ -571,7 +563,7 @@ htpMakeEmptyPage(propList,:options) ==
 --=======================================================================
 --              Redefinitions from br-con.boot
 --=======================================================================
-kPage(line,:options) == --any cat, dom, package, default package
+kPage(line, options) == --any cat, dom, package, default package
 --constructors    Cname\#\E\sig \args   \abb \comments (C is C, D, P, X)
   parts := dbXParts(line,7,1)
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := parts
@@ -858,7 +850,7 @@ dbShowConsKinds cAlist ==
          [['bcLinks,[menuButton(),'"",'dbShowConsKindsFilter,[kind,x]]]]
     htSaySaturn '"]"
     htSayStandard '"\tab{1}"
-    htSay('"{\em ",c := #x,'" ")
+    htSayList(['"{\em ", c := #x, '" "])
     htSay(c > 1 => pluralize kind; kind)
     htSay '":}"
     htSaySaturn '"\\"
@@ -920,8 +912,8 @@ kPageArgs([op,:args],[.,.,:source]) ==
     typeForm := (t is [":",.,t1] => t1; t)
     if pred = true
       then htMakePage [['bcLinks,[x,'"",'kArgPage,x]]]
-      else htSay('"{\em ",x,'"}")
-    htSayStandard( '"\tab{",STRINGIMAGE( # PNAME x),'"}, ")
+      else htSayList(['"{\em ", x, '"}"])
+    htSayStandardList(['"\tab{", STRINGIMAGE( # PNAME x), '"}, "])
     htSaySaturnAmpersand()
     htSay
       pred => '"a domain of category "
@@ -940,7 +932,7 @@ dbConform form ==
   ["\conf{",:form2StringList opOf form,'"}{",:form2Fence dbOuttran form,'"}"]
 
 --------------------> NEW DEFINITION (see br-op1.boot.pamphlet)
-htTab s == if $standard then htSayStandard ('"\tab{",s,'"}")
+htTab s == if $standard then htSayStandardList(['"\tab{", s, '"}"])
 
 --------------------> NEW DEFINITION (see br-op1.boot.pamphlet)
 dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
@@ -971,7 +963,8 @@ dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
       '""
     htSay '"}"
     if null atom thing then
-      if constructorIfTrue then htSay('" {\em ",dbShowKind thing,'"}")
+      if constructorIfTrue then
+          htSayList(['" {\em ", dbShowKind thing, '"}"])
       htSay '" "
       FUNCALL(fn,thing)
     htSay('":\newline ")
@@ -1169,19 +1162,20 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
   n := #sig
   do
     n = 2 and GETL(op, 'Nud) =>
-        htSay(ops,'" {\em ", quickForm2HtString IFCAR args, '"}")
+        htSayList([ops, '" {\em ", quickForm2HtString IFCAR args, '"}"])
     n = 3 and GETL(op, 'Led) =>
-        htSay('"{\em ", quickForm2HtString IFCAR args, '"} ", ops,
-              '" {\em ", quickForm2HtString IFCAR IFCDR args, '"}")
+        htSayList(['"{\em ", quickForm2HtString IFCAR args, '"} ", ops,
+              '" {\em ", quickForm2HtString IFCAR IFCDR args, '"}"])
     if unexposed? and $includeUnexposed? then
       htSayUnexposed()
     htSay(ops)
     predicate='ASCONST or GETDATABASE(op,'NILADIC) or member(op,'(0 1)) => 'skip
     which = '"attribute" and null args => 'skip
     htSay('"(")
-    if IFCAR args then htSay('"{\em ",quickForm2HtString IFCAR args,'"}")
+    if IFCAR args then
+        htSayList(['"{\em ", quickForm2HtString IFCAR args, '"}"])
     for x in IFCDR args repeat
-      htSay('",{\em ",quickForm2HtString x,'"}")
+        htSayList(['",{\em ", quickForm2HtString x, '"}"])
     htSay('")")
   -----------prepare to print description---------------------
   constring := form2HtString conform
@@ -1222,16 +1216,16 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
               htSaySaturn '"\\ "
               htSaySaturnAmpersand()
             firstTime := false
-            htSayIndentRel(15, true)
+            htSayIndentRel2(15, true)
             position := IFCAR relatives
             relatives := IFCDR relatives
             if IFCAR coSig and t ~= '(Type)
               then htMakePage [['bcLinks,[a,'"",'kArgPage,a]]]
-              else htSay('"{\em ",form2HtString(a),'"}")
+              else htSayList(['"{\em ", form2HtString(a), '"}"])
             htSay ", "
             coSig := IFCDR coSig
             htSayValue t
-            htSayIndentRel(-15,true)
+            htSayIndentRel2(-15, true)
             htSayStandard('"\newline ")
       htSaySaturn '"\\"
     if first $sig then
@@ -1239,9 +1233,9 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSayStandard('"\newline\tab{2}")
       htSay '"{\em Returns:}"
       htSaySaturnAmpersand()
-      htSayIndentRel(15, true)
+      htSayIndentRel2(15, true)
       htSayValue first $sig
-      htSayIndentRel(-15, true)
+      htSayIndentRel2(-15, true)
       htSaySaturn '"\\"
   -----------------------------------------------------------
   if origin and ($generalSearch? or origin ~= conform) and op~=opOf origin then
@@ -1263,11 +1257,11 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     firstTime := true
     for p in displayBreakIntoAnds SUBST($conform,"$",pred) repeat
       if not firstTime then htSaySaturn '"\\"
-      htSayIndentRel(15,count > 1)
+      htSayIndentRel2(15, count > 1)
       firstTime := false
       htSaySaturnAmpersand()
       bcPred(p,$conform,true)
-      htSayIndentRel(-15,count > 1)
+      htSayIndentRel2(-15, count > 1)
       htSayStandard('"\newline ")
     htSaySaturn '"\\"
   -----------------------------------------------------------
@@ -1277,7 +1271,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     htSayStandard('"\newline\tab{2}{\em Where:}")
     firstTime := true
     if assoc("$",$whereList) then
-      htSayIndentRel(15,true)
+      htSayIndentRel2(15, true)
       htSaySaturnAmpersand()
       htSayStandard '"{\em \$} is "
       htSaySaturn '"{\em \%} is "
@@ -1286,15 +1280,15 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
         '"the domain "
       bcConform(conform,true,true)
       firstTime := false
-      htSayIndentRel(-15,true)
+      htSayIndentRel2(-15, true)
     for [d,key,:t] in $whereList | d ~= "$" repeat
-      htSayIndentRel(15,count > 1)
+      htSayIndentRel2(15, count > 1)
       if not firstTime then htSaySaturn '"\\ "
       htSaySaturnAmpersand()
       firstTime := false
-      htSay("{\em ",d,"} is ")
+      htSayList(["{\em ", d, "} is "])
       htSayConstructor(key, sublisFormal(IFCDR conform, t))
-      htSayIndentRel(-15,count > 1)
+      htSayIndentRel2(-15, count > 1)
     htSaySaturn '"\\"
   -----------------------------------------------------------
   if doc and (doc ~= '"" and (doc isnt [d] or d ~= '"")) then
@@ -1353,8 +1347,9 @@ htSaySourceFile conname ==
               sourceFileName, '" ", conname, '"}"]]
 
 --------------------> NEW DEFINITION (see br-op2.boot.pamphlet)
-htSayIndentRel(n,:options) ==
-  flag := IFCAR options
+htSayIndentRel(n) == htSayIndentRel2(n, false)
+
+htSayIndentRel2(n, flag) ==
   m := ABS n
   if flag then m := m + 2
   if $standard then htSayStandard
@@ -1386,8 +1381,7 @@ htEndTable() ==
   htSaySaturn '"\end{dirlist}"
   htSayStandard '"}"
 
-htBeginMenu(kind,:options) ==
-  skip := IFCAR options
+htBeginMenu(kind) ==
   if $saturn then
     kind = 'description => htSaySaturn '"\begin{description}"
     htSaySaturn '"\begin{tabular}"
@@ -1395,8 +1389,7 @@ htBeginMenu(kind,:options) ==
       kind = 3 => '"{llp{0in}}"
       kind = 2 => '"{lp{0in}}"
       error nil
-  null skip => htSayStandard '"\beginmenu "
-  nil
+  htSayStandard '"\beginmenu "
 
 htEndMenu(kind) ==
   if $saturn then
@@ -1423,7 +1416,8 @@ htNewPage title ==
     htSaySaturn '"\browseTitle{"
     htSaySaturn title
     htSaySaturn '"}"
-  if $standard then htSayStandard('"\begin{page}{", htpName $curPage, '"}{")
+  if $standard then
+      htSayStandardList(['"\begin{page}{", htpName $curPage, '"}{"])
   htSayStandard title
   htSayStandard '"}"
 
@@ -1436,12 +1430,13 @@ mkTabularItem u == [:first u,:fn rest u] where fn x ==
 
 htSaySaturnAmpersand() == htSaySaturn $saturnAmpersand
 
-htBlank(:options) ==
-  options is [n] =>
+htBlank() ==
+    htSaySaturn '"\phantom{*}"
+    htSayStandard '"\space{1}"
+
+htBlanks(n) ==
     htSaySaturn("STRCONC"/['"\phantom{*}" for i in 1..n])
     htSayStandard STRCONC('"\space{",STRINGIMAGE n,'"}")
-  htSaySaturn '"\phantom{*}"
-  htSayStandard '"\space{1}"
 
 unTab s ==
   STRINGP s => unTab1 s
