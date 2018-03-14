@@ -37,9 +37,9 @@
 --                   Operation Description
 --=======================================================================
 
-htSayConstructor(key,u) ==
+htSayConstructor(key, u) ==
   u is ['CATEGORY,kind,:r] =>
-    htSay('"a ",kind,'" ")
+    htSayList(['"a ", kind, '" "])
     htSayExplicitExports(r)
   key = 'is =>
     htSay '"the domain "
@@ -68,8 +68,8 @@ htSayConstructor(key,u) ==
      htSayExplicitExports(r)
     htSay '" and "
     bcConform(r,true)
-  htSay(kind,'" ")
-  bcConform(u,true)
+  htSayList([kind, '" "])
+  bcConform(u, true)
 
 htSayExplicitExports r ==
   htSay '"with explicit exports"
@@ -120,7 +120,7 @@ htSayArgument t == --called only for operations not for constructors
   if k > -1 then
     typeOfArg := (rest $signature).k
     addWhereList(t,'member,typeOfArg)
-  htSay('"{\em ",t,'"}")
+  htSayList(['"{\em ", t, '"}"])
 
 addWhereList(id,kind,typ) ==
   $whereList := insert([id,kind,:typ],$whereList)
@@ -151,8 +151,8 @@ dbGetFormFromDocumentation(op,sig,x) ==
     parse is [=op,:.] and #parse = #sig => parse
   nil
 
-dbMakeContrivedForm(op,sig,:options) ==
-  $chooseDownCaseOfType : local := IFCAR options
+dbMakeContrivedForm(op, sig) ==
+  $chooseDownCaseOfType : local := false
   $NumberList : local := '(i j k l m n i1 j1 k1 l1 m1 n1 i2 j2 k2 l2 m2 n2 i3 j3 k3 l3 m3 n3 i4 j4 k4 l4 m4 n4 )
   $ElementList: local := '(x y z u v w x1 y1 z1 u1 v1 w1 x2 y2 z2 u2 v2 w2 x3 y3 z3 u3 v3 w3 x4 y4 z4 u4 v4 w4 )
   $FunctionList:local := '(f g h d e F G H)
@@ -276,7 +276,7 @@ whoUsesOperation(htPage,which,key) ==  --see dbPresentOps
   for [pair := [op,:sig],:namelist] in nopAlist repeat
     ops := escapeSpecialChars STRINGIMAGE op
     usedList := [pair,:usedList]
-    htSay('"Users of {\em ",ops,'": ")
+    htSayList(['"Users of {\em ", ops, '": "])
     bcConform ['Mapping,:sublisFormal(conargs,sig)]
     htSay('"}\newline")
     bcConTable listSort(function GLESSEQP,REMDUP namelist)
@@ -288,7 +288,7 @@ whoUsesOperation(htPage,which,key) ==  --see dbPresentOps
       [#noOneUses,'" operations:"]
     htSay '"\newline "
     for [op,:sig] in noOneUses repeat
-      htSay('"\tab{2}{\em ",escapeSpecialChars STRINGIMAGE op,'": ")
+      htSayList(['"\tab{2}{\em ", escapeSpecialChars STRINGIMAGE op, '": "])
       bcConform ['Mapping,:sublisFormal(conargs,sig)]
       htSay('"}\newline")
   htSayStandard '"\endscroll "
@@ -360,7 +360,7 @@ koAttrs(conform,domname) ==
       alist := insertAlist(op,insertAlist(args,[pred],LASSOC(op,alist)),alist)
     alist
 
-koOps(conform, domname, :options) == main where
+koOps(conform, domname) == main where
 --returns alist of form ((op (sig . pred) ...) ...)
   main ==
     $packageItem: local := nil
@@ -467,20 +467,15 @@ koaPageFilterByCategory(htPage,calledFrom) ==
   domname := htpProperty(htPage,'domname)
   ancestors := ASSOCLEFT ancestorsOf(conform,domname)
   htpSetProperty(page,'ancestors,listSort(function GLESSEQP,ancestors))
-  bcNameCountTable(ancestors,'form2HtString,'koaPageFilterByCategory1,true)
+  bcNameCountTable(ancestors, 'form2HtString, 'koaPageFilterByCategory1)
   htShowPage()
 
-dbHeading(items,which,heading,:options) ==
-  names?   := IFCAR options
-  count :=
-    names? => #items
-    +/[#(rest x) for x in items]
+dbHeading(items, which, heading) ==
+  count := +/[#(rest x) for x in items]
   capwhich := capitalize which
   prefix :=
     count < 2 =>
-      names? => pluralSay(count,STRCONC(capwhich," Name"),nil)
       pluralSay(count,capwhich,nil)
-    names? => pluralSay(count,nil,STRCONC(capwhich," Names"))
     pluralSay(count,nil,pluralize capwhich)
   [:prefix,'" for ",:heading]
 

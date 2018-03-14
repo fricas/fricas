@@ -166,6 +166,7 @@ compTran1(x) ==
         NOT(u = "SETQ") =>
             IDENTP(CADR(x)) => PUSHLOCVAR(CADR(x))
             EQCAR(CADR(x), "FLUID") =>
+                BREAK()
                 PUSH(CADADR(x), $fluidVars)
                 rplac(CADR(x), CADADR(x))
             BREAK()
@@ -209,7 +210,9 @@ compTran(x) ==
         x3
     fluids := compFluidize(x2)
     x2 := addTypesToArgs(x2)
-    fluids => [x1, x2, ["DECLARE", ["SPECIAL", :fluids]], x3]
+    fluids =>
+        BREAK()
+        [x1, x2, ["DECLARE", ["SPECIAL", :fluids]], x3]
     [x1, x2, x3]
 
 addTypesToArgs(args) ==
@@ -248,9 +251,13 @@ compNewnam(x) ==
 compFluidize(x) ==
     x and SYMBOLP(x) and x ~= "$" and x ~= "$$" and _
       SCHAR('"$", 0) = SCHAR(PNAME(x), 0) _
-      and not(DIGITP (SCHAR(PNAME(x), 1))) => x
+      and not(DIGITP (SCHAR(PNAME(x), 1))) =>
+          BREAK()
+          x
     ATOM(x) => nil
-    QCAR(x) = "FLUID" => SECOND(x)
+    QCAR(x) = "FLUID" =>
+        BREAK()
+        SECOND(x)
     a := compFluidize(QCAR(x))
     b := compFluidize(QCDR(x))
     a => CONS(a, b)
