@@ -466,11 +466,11 @@ genSearchSay(pair,summarize,kind,who,fn) ==
   short := summarize and uniqueCount >= $browseCountThreshold
   htMakePage
     [['bcLinks,[menuButton(),'"",'genSearchSayJump,[fullLineList,kind]]]]
-  if count = 0 then htSay('"{\em No ",kind,'"} ")
+  if count = 0 then htSayList(['"{\em No ", kind, '"} "])
   else if count = 1 then
-    htSay('"{\em 1 ",kind,'"} ")
+    htSayList(['"{\em 1 ", kind, '"} "])
   else
-    htSay('"{\em ",count,'" ",pluralize kind,'"} ")
+    htSayList(['"{\em ", count, '" ", pluralize kind, '"} "])
   short => 'done
   if uniqueCount ~= 1 then
     htSayStandard '"\indent{4}"
@@ -515,12 +515,10 @@ genSearchUniqueCount(u) ==
 
 dbGetName line == SUBSTRING(line,1,charPosition($tick,line,1) - 1)
 
-pluralSay(count,singular,plural,:options) ==
-  item := (options is [x,:options] => x; '"")
-  colon := (IFCAR options => '":"; '"")
-  count = 0 => concat('"No ",singular,item)
-  count = 1 => concat('"1 ",singular,item,colon)
-  concat(count,'" ",plural,item,colon)
+pluralSay(count,singular,plural) ==
+    count = 0 => concat('"No ", singular)
+    count = 1 => concat('"1 ", singular)
+    concat(count, '" ", plural)
 
 
 --=======================================================================
@@ -566,11 +564,11 @@ showNamedDoc([kind,:lines],index) ==
 sayDocMessage message ==
   htSay('"{\em ")
   if message is [leftEnd,left,middle,right,rightEnd] then
-    htSay(leftEnd,left,'"}")
+    htSayList([leftEnd, left, '"}"])
     if left ~= '"" and left.(MAXINDEX left) = $blank then htBlank()
     htSay middle
     if right ~= '"" and right.0 = $blank then htBlank()
-    htSay('"{\em ",right,rightEnd)
+    htSayList(['"{\em ", right, rightEnd])
   else
     htSay message
   htSay ('"}")
@@ -649,7 +647,7 @@ constructorSearch(filter,key,kind) ==
       code = char 'd => '"domain"
       code = char 'c => '"category"
       nil
-    kind = '"constructor" or kind = newkind => kPage line
+    kind = '"constructor" or kind = newkind => kPage(line, [])
     page := htInitPage('"Query Page",nil)
     htpSetProperty(page,'line,line)
     message :=
@@ -660,10 +658,11 @@ constructorSearch(filter,key,kind) ==
   filter = '"*" => grepSearchQuery(kind,[filter,key,kind,'constructorSearchGrep])
   constructorSearchGrep(filter,key,kind)
 
-grepConstructorSearch(htPage,yes) == kPage htpProperty(htPage,'line)
+grepConstructorSearch(htPage, yes) == kPage(htpProperty(htPage, 'line), [])
 
-conSpecialString?(filter,:options) ==
-  secondTime := IFCAR options
+conSpecialString?(filter) == conSpecialString2?(filter, false)
+
+conSpecialString2?(filter, secondTime) ==
   parse :=
     words := string2Words filter is [s] => ncParseFromString s
     and/[not member(x,'("and" "or" "not")) for x in words] => ncParseFromString filter
@@ -675,7 +674,7 @@ conSpecialString?(filter,:options) ==
   u := kisValidType form => u
   secondTime => false
   u := "STRCONC"/[string2Constructor x for x in dbString2Words filter]
-  conSpecialString?(u, true)
+  conSpecialString2?(u, true)
 
 dbString2Words l ==
   i := 0
@@ -723,12 +722,12 @@ dbSearch(lines,kind,filter) == --called by attribute, operation, constructor sea
   if member(kind,'("attribute" "operation")) then --should not be necessary!!
     lines := dbScreenForDefaultFunctions lines
   count := #lines
-  count = 0 => emptySearchPage(kind,filter)
+  count = 0 => emptySearchPage(kind, filter, false)
   member(kind,'("attribute" "operation")) => dbShowOperationLines(kind,lines)
   dbShowConstructorLines lines
 
 dbSearchAbbrev([.,:conlist],kind,filter) ==
-  null conlist => emptySearchPage('"abbreviation",filter)
+  null conlist => emptySearchPage('"abbreviation", filter, false)
   kind := intern kind
   if kind ~= 'constructor then
     conlist := [x for x in conlist | LASSOC('kind,IFCDR IFCDR x) = kind]
@@ -742,7 +741,7 @@ dbSearchAbbrev([.,:conlist],kind,filter) ==
     '" Abbreviations Match {\em ",STRINGIMAGE filter,'"}"],nil)
   for [nam,abbr,:r] in conlist repeat
     kind := LASSOC('kind,r)
-    htSay('"\newline{\em ",s := STRINGIMAGE abbr)
+    htSayList(['"\newline{\em ", s := STRINGIMAGE abbr])
     htSayStandard '"\tab{10}"
     htSay '"}"
     htSay kind
@@ -836,7 +835,7 @@ generalSearchDo(htPage,flag) ==
       '"constructor"
     which = 'ops  => '"operation"
     '"attribute"
-  null lines => emptySearchPage(kind,nil)
+  null lines => emptySearchPage(kind, nil, false)
   dbSearch(lines,kind,'"filter")
 
 generalSearchString(htPage,sel) ==

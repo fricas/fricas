@@ -47,8 +47,8 @@ conPage(a,:b) ==
                            (record . DomainRecord) (mapping . DomainMapping) _
                            (enumeration . DomainEnumeration))) =>
       downlink pageName       --special jump out for primitive domains
-  line := conPageFastPath da  => kPage(line,form) --lower case name of cons?
-  line := conPageFastPath UPCASE a => kPage(line,form) --upper case an abbr?
+  line := conPageFastPath da  => kPage(line, [form]) --lower case name of cons?
+  line := conPageFastPath UPCASE a => kPage(line, [form]) --upper case an abbr?
   ySearch a       --slow search (include default packages)
 
 conPageFastPath x == --called by conPage and constructorSearch
@@ -133,7 +133,7 @@ reportCategory(conform,typeForm,arg) ==
     reportAO('"operation",oplist)
 
 reportAO(kind,oplist) ==
-  htSay('"have ",kind,'":")
+  htSayList(['"have ", kind, '":"])
   for [op,sig,:pred] in oplist repeat
     htSay '"\newline "
     if #oplist = 1 then htSay '"\centerline{"
@@ -257,10 +257,11 @@ kePageDisplay(htPage,which,opAlist) ==
   if count ~= total then
     if count = 1
     then htSay('"1 name for ")
-    else htSay(STRINGIMAGE count,'" names for ")
+    else htSayList([STRINGIMAGE count, '" names for "])
   if total > 1
-    then htSay(STRINGIMAGE total,'" ",pluralize which,'" are explicitly exported:")
-    else htSay('"1 ",which,'" is explicitly exported:")
+    then htSayList([STRINGIMAGE total, '" ", pluralize which,
+                   '" are explicitly exported:"])
+    else htSayList(['"1 ", which, '" is explicitly exported:"])
   htSaySaturn '"\\"
   data := dbGatherData(htPage,opAlist,which,'names)
   dbShowOpItems(which,data,false)
@@ -331,7 +332,7 @@ kcPage(htPage,junk) ==
     htpSetProperty(htPage,'heading,heading)
   if kind = '"category" and dbpHasDefaultCategory? xpart then
     htSay '"This category has default package "
-    bcCon(STRCONC(name,char '_&),'"")
+    bcCon(STRCONC(name,char '_&))
   htSayStandard '"\newline"
   htBeginMenu(3)
   htSayStandard '"\item "
@@ -374,7 +375,7 @@ kcPage(htPage,junk) ==
     if HGET($defaultPackageNamesHT,conname)
       then htSay('" which {\em may use} this default package")
 --  htMakePage [['bcLinks,['"files",'"",'kcuPage,true]]]
-      else htSay('" which {\em use} this ",kind)
+      else htSayList(['" which {\em use} this ", kind])
   if kind ~= '"category" or dbpHasDefaultCategory? xpart then
     satBreak()
     message :=
@@ -640,9 +641,9 @@ dbCompositeWithMap htPage ==
 dbExtractUnderlyingDomain domain == or/[x for x in IFCDR domain | isValidType x]
 
 --conform is atomic if no parameters, otherwise must be valid domain form
-conOpPage1(conform,:options) ==
+conOpPage1(conform, options) ==
 --constructors    Cname\#\E\sig \args   \abb \comments (C is C, D, P, X)
-  bindingsAlist := IFCAR options
+  bindingsAlist := options
   conname       := opOf conform
   MEMQ(conname,$Primitives) =>
      dbSpecialOperations conname
@@ -671,8 +672,6 @@ conOpPage1(conform,:options) ==
   htpSetProperty(page,'domname,domname)         --> !!note!! <--
   htpSetProperty(page,'conform,conform)
   htpSetProperty(page,'signature,signature)
-  if selectedOperation := LASSOC('selectedOperation,IFCDR options) then
-    htpSetProperty(page,'selectedOperation,selectedOperation)
   for [a,:b] in bindingsAlist repeat htpSetProperty(page,a,b)
   koPage(page,'"operation")
 
@@ -707,8 +706,10 @@ koPageAux(htPage,which,domname,heading) == --from koPage, koPageFromKKPage
   conform := htpProperty(htPage,'conform)
   heading := htpProperty(htPage,'heading)
   opAlist          :=
-    which = '"attribute" => koAttrs(conform,domname)
-    which = '"general operation" => koOps(conform,domname,true)
+    which = '"attribute" =>
+        BREAK()
+        koAttrs(conform,domname)
+    which = '"general operation" => koOps(conform, domname)
     koOps(conform,domname)
   if selectedOperation := htpProperty(htPage,'selectedOperation) then
     opAlist := [assoc(selectedOperation,opAlist) or systemError()]
@@ -848,7 +849,7 @@ dbShowCons(htPage,key,:options) ==
       conname := CAAR x
       subject := (abbrev? => constructor? conname; conname)
       superMatch?(filter,DOWNCASE STRINGIMAGE subject)
-    null u => emptySearchPage('"constructor",filter)
+    null u => emptySearchPage('"constructor", filter, false)
     htPage := htInitPageNoScroll(htCopyProplist htPage)
     htpSetProperty(htPage,'cAlist,u)
     dbShowCons(htPage,htpProperty(htPage,'exclusion))

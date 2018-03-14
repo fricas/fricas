@@ -71,7 +71,7 @@ dbShowOps(htPage,which,key,:options) ==
     filter := IFCAR options or pmTransFilter(dbGetInputString htPage)
     filter is ['error,:.] => bcErrorPage filter
     opAlist:= [x for x in opAlist | superMatch?(filter,DOWNCASE STRINGIMAGE opOf x)]
-    null opAlist => emptySearchPage(which,filter)
+    null opAlist => emptySearchPage(which, filter, false)
     htPage := htInitPageNoScroll(htCopyProplist htPage)
     if which = '"operation"
       then htpSetProperty(htPage,'opAlist,opAlist)
@@ -378,7 +378,7 @@ dbGatherDataImplementation(htPage,opAlist) ==
   [nam,:$domainArgs] := domainForm
   $predicateList: local := GETDATABASE(nam,'PREDICATES)
   predVector := dom.3
-  u := getDomainOpTable(dom,true,ASSOCLEFT opAlist)
+  u := getDomainOpTable2(dom, true, ASSOCLEFT opAlist)
   --u has form ((op,sig,:implementor)...)
   --sort into 4 groups: domain exports, unexports, default exports, others
 
@@ -600,24 +600,24 @@ dbShowOpParameters(htPage,opAlist,which,data) ==
     do
       n = 2 and GETL(op, 'Nud) =>
         dbShowOpParameterJump(ops,which,count,single?)
-        htSay('" {\em ", IFCAR args, '"}")
+        htSayList(['" {\em ", IFCAR args, '"}"])
       n = 3 and GETL(op, 'Led) =>
-        htSay('"{\em ", IFCAR args, '"} ")
+        htSayList(['"{\em ", IFCAR args, '"} "])
         dbShowOpParameterJump(ops,which,count,single?)
-        htSay('" {\em ", IFCAR IFCDR args, '"}")
+        htSayList(['" {\em ", IFCAR IFCDR args, '"}"])
       dbShowOpParameterJump(ops,which,count,single?)
       tail = 'ASCONST or member(op,'(0 1)) or which = '"attribute" and null IFCAR args => 'skip
       htSay('"(")
-      if IFCAR args then htSay('"{\em ",IFCAR args,'"}")
+      if IFCAR args then htSayList(['"{\em ", IFCAR args, '"}"])
       for x in IFCDR args repeat
-        htSay('",{\em ",x,'"}")
+        htSayList(['", {\em ", x, '"}"])
       htSay('")")
     htSay '"}"
     count := count + 1
   htEndTable()
 
 dbShowOpParameterJump(ops,which,count,single?) ==
-  single? => htSay('"{\em ",ops,'"}")
+  single? => htSayList(['"{\em ", ops, '"}"])
   htMakePage [['bcLinks,[ops,'"",'dbShowOps,which,count]]]
 
 dbShowOpDocumentation(htPage,opAlist,which,data) ==
@@ -674,7 +674,7 @@ dbChooseDomainOp(htPage,which,index) ==
     dbResetOpAlistCondition(htPage,which,opAlist)
   dbShowOps(htPage,which,'documentation)
 
-htSayExpose(op,flag) ==
+htSayExpose(op, flag) ==
   $includeUnexposed? =>
     flag => htBlank()
     op.0 = char '_* => htSay '"{\em *} "
@@ -930,8 +930,9 @@ mathform2HtString form == escapeString
 --                Getting Operations from Domain
 --============================================================================
 
-getDomainOpTable(dom,fromIfTrue,:options) ==
-  ops := IFCAR options
+getDomainOpTable(dom, fromIfTrue) == getDomainOpTable2(dom, fromIfTrue, [])
+
+getDomainOpTable2(dom, fromIfTrue, ops) ==
   $predEvalAlist : local := nil
   $returnNowhereFromGoGet: local := true
   domname := dom.0
@@ -963,6 +964,10 @@ getDomainOpTable(dom,fromIfTrue,:options) ==
           substitute('_$, domname, devaluate r)
         'nowhere
       [sig1,:info]
+
+evalDomainOpPred2(dom, pred) ==
+    $predicateList : local := GETDATABASE(first(dom.0), 'PREDICATES)
+    evalDomainOpPred(dom,pred)
 
 evalDomainOpPred(dom,pred) == process(dom,pred) where
   process(dom,pred) ==
