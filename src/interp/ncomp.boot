@@ -255,7 +255,6 @@ boo_comp1(x) ==
     $leaveLevelStack : local := []
     $CategoryFrame : local := [[[]]]
     $insideFunctorIfTrue : local := false
-    $insideExpressionIfTrue : local := false
     $insideWhereIfTrue : local := false
     $insideCategoryIfTrue : local := false
     $insideCapsuleFunctionIfTrue : local := false
@@ -339,7 +338,6 @@ S_process(x) ==
     $leaveLevelStack : local := nil
     $CategoryFrame : local := [[[]]]
     $insideFunctorIfTrue : local := false
-    $insideExpressionIfTrue : local := false
     $insideWhereIfTrue : local := false
     $insideCategoryIfTrue : local := false
     $insideCapsuleFunctionIfTrue : local := false
