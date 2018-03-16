@@ -476,14 +476,13 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
 --LOCAL BOUND FLUID VARIABLES:
   $GENNO: local:= 0     --bound in compDefineFunctor1, then as parameter here
   $catvecList: local    --list of vectors v1..vn for each view
-  $hasCategoryAlist: local  --list of GENSYMs bound to (HasCategory ..) items
   $SetFunctions: local  --copy of p view with preds telling when fnct defined
   $MissingFunctionInfo: local --vector marking which functions are assigned
   $ConstantAssignments: local --code for creation of constants
   $epilogue: local := nil     --code to set slot 5, things to be done last
   $extraParms:local  --Set in DomainSubstitutionFunction, used in setVector12
-  $devaluateList: local --Bound to ((#1 . dv$1)..) where &1 := devaluate #1 later
-  $devaluateList:= [[arg,:b] for arg in args for b in $ModeVariableList]
+  $devaluateList : local := [[arg,:b] for arg in args
+                                      for b in $ModeVariableList]
 ------------------------
   oldtime := get_run_time()
   [catsig, :argsig] := sig
@@ -636,18 +635,6 @@ slot1Filter opList ==
     fn [op,:l] ==
       u := [entry for entry in l | INTEGERP CADR entry] => [op,:u]
       nil
-
-NRToptimizeHas u ==
---u is a list ((pred cond)...) -- see optFunctorBody
---produces an alist: (((HasCategory a b) . GENSYM)...)
-  u is [a,:b] =>
-    a='HasCategory => LASSOC(u,$hasCategoryAlist) or
-      $hasCategoryAlist := [[u,:(y:=GENSYM())],:$hasCategoryAlist]
-      y
-    a='has => NRToptimizeHas ['HasCategory,first b,MKQ first rest b]
-    a = 'QUOTE => u
-    [NRToptimizeHas a,:NRToptimizeHas b]
-  u
 
 NRTaddToSlam([name,:argnames],shell) ==
   $mutableDomain => return nil

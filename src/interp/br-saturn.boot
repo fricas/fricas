@@ -1333,10 +1333,6 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     htSayIndentRel(15)
     htSaySourceFile conname
     htSayIndentRel(-15)
-  ------------------> remove profile printouts for now <-------------------
-  if $standard and
-    exactlyOneOpSig and (infoAlist := htpProperty(htPage,'infoAlist)) then
-      displayInfoOp(htPage,infoAlist,op,sig)
   -----------------------------------------------------------
   htSaySaturn '"\end{tabular}"
 

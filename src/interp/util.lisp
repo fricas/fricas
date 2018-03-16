@@ -177,13 +177,8 @@ included in base system.
 ;;      |as|                         ;; now in as.boot
 ;;      |astran|                     ;; now in as.boot
         |spad2AxTranslatorAutoloadOnceTrigger|
-        |sourceFilesToAxcliqueAxFile|
-        |sourceFilesToAxFile|
         |setExtendedDomains|
-        |makeAxFile|
-        |makeAxcliqueAxFile|
-        |nrlibsToAxFile|
-        |attributesToAxFile| ))
+        |makeAxFile|))
 
 ;;; These are some old {\bf debugging} functions.  I can't imagine
 ;;; why you might autoload them but they don't need to be in a running

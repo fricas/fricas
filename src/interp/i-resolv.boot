@@ -120,7 +120,6 @@ resolveTT1(t1,t2) ==
   STRINGP(t2) =>
     t1 = $String => t1
     NIL
-  null acceptableTypesToResolve(t1,t2) => NIL
   if compareTT(t1,t2) then
      t := t1
      t1 := t2
@@ -139,23 +138,6 @@ resolveTT1(t1,t2) ==
       t := resolveTT1(last arg1,last arg2)
       t and ( resolveTT2(c1,c2,arg1,arg2,t) or
         resolveTT2(c2,c1,arg2,arg1,t) )
-
-acceptableTypesToResolve(t1,t2) ==
-  -- this is temporary. It ensures that two types that have coerces
-  -- that really should be converts don't automatically resolve.
-  -- when the coerces go away, so will this.
-  acceptableTypesToResolve1(t1,t2) and
-    acceptableTypesToResolve1(t2,t1)
-
-acceptableTypesToResolve1(t1,t2) ==
-  t1 = $Integer =>
-    t2 = $String => NIL
-    true
-  t1 = $DoubleFloat or t1 = $Float =>
-    t2 = $String => NIL
-    t2 = [$QuotientField, $Integer] => NIL
-    true
-  true
 
 resolveTT2(c1,c2,arg1,arg2,t) ==
   -- builds a tower and tests for all the necessary coercions

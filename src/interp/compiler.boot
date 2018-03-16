@@ -33,7 +33,6 @@
 
 DEFPARAMETER($currentFunctionLevel, 0)
 DEFPARAMETER($tryRecompileArguments, true)
-DEFPARAMETER($insideCompTypeOf, false)
 DEFPARAMETER($locVarsTypes, nil)
 
 initEnvHashTable(l) ==
@@ -66,7 +65,7 @@ compOrCroak1(x,m,e,compFn) ==
   fn(x,m,e,nil,nil,compFn) where
     fn(x,m,e,$compStack,$compErrorMessageStack,compFn) ==
       T:= CATCH("compOrCroak",FUNCALL(compFn,x,m,e)) => T
-      --stackAndThrow here and moan in UT LISP K does the appropriate THROW
+      -- stackAndThrow does the appropriate THROW
       $compStack:= [[x,m,e,$exitModeStack],:$compStack]
       $s:=
         compactify $compStack where
@@ -86,10 +85,6 @@ compOrCroak1(x,m,e,compFn) ==
       SAY("****** comp fails at level ",$level," with expression: ******")
       displayComp $level
       userError errorMessage
-
-tc() ==
-  comp($x,$m,$f)
-
 
 comp(x,m,e) ==
   T:= compNoStacking(x,m,e) => ($compStack:= nil; T)
@@ -130,18 +125,10 @@ comp3(x,m,$e) ==
   getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
   op=":" => compColon(x,m,e)
   op="::" => compCoerce(x,m,e)
-  not ($insideCompTypeOf=true) and stringPrefix?('"TypeOf",PNAME op) =>
-    compTypeOf(x,m,e)
   t:= compExpression(x,m,e)
   t is [x',m',e'] and not member(m',getDomainsInScope e') =>
     [x',m',addDomain(m',e')]
   t
-
-compTypeOf(x:=[op,:argl],m,e) ==
-  $insideCompTypeOf: local := true
-  newModemap:= EQSUBSTLIST(argl,$FormalMapVariableList,get(op,'modemap,e))
-  e:= put(op,'modemap,newModemap,e)
-  comp3(x,m,e)
 
 hasFormalMapVariable(x, vl) ==
   $formalMapVariables: local := vl
@@ -333,7 +320,6 @@ extractCodeAndConstructTriple(u, m, oldE) ==
   [["CONS",["function",op],env],m,oldE]
 
 compExpression(x,m,e) ==
-  $insideExpressionIfTrue: local:= true
   SYMBOLP(first x) and (fn := GET(first x, "SPECIAL")) =>
     FUNCALL(fn,x,m,e)
   compForm(x,m,e)
@@ -557,7 +543,6 @@ compSetq1(form,val,m,E) ==
     setqSetelt(form,val,m,E)
 
 compMakeDeclaration(x,m,e) ==
-  $insideExpressionIfTrue: local := false
   compColon(x,m,e)
 
 setqSetelt([v,:s],val,m,E) ==
@@ -698,7 +683,6 @@ setqMultipleExplicit(nameList,valList,m,e) ==
 
 --% WHERE
 compWhere([.,form,:exprList],m,eInit) ==
-  $insideExpressionIfTrue: local:= false
   $insideWhereIfTrue: local:= true
   e:= eInit
   u:=
@@ -768,7 +752,6 @@ compMacro(form,m,e) ==
 compSeq(["SEQ",:l],m,e) == compSeq1(l,[m,:$exitModeStack],e)
 
 compSeq1(l,$exitModeStack,e) ==
-  $insideExpressionIfTrue: local := false
   $finalEnv: local := false
            --used in replaceExitEtc.
   c:=
@@ -777,8 +760,7 @@ compSeq1(l,$exitModeStack,e) ==
 
       --this used to be compOrCroak-- but changed so we can back out
 
-        ($insideExpressionIfTrue:= NIL; compSeqItem(x,$NoValueMode,e) or return
-          "failed")).expr for x in l]
+        (compSeqItem(x, $NoValueMode, e) or return "failed")).expr for x in l]
   if c="failed" then return nil
   catchTag:= MKQ GENSYM()
   form:= ["SEQ",:replaceExitEtc(c,catchTag,"TAGGEDexit",$exitModeStack.(0))]
@@ -812,7 +794,6 @@ replaceExitEtc(x,tag,opFlag,opMode) ==
 
 comp_try(["try", expr, catcher, finallizer], m, e) ==
     $exitModeStack : local := [m, :$exitModeStack]
-    $insideExpressionIfTrue : local := false
     if catcher then
         stackAndThrow ["comp_try: catch unimplemented"]
     ([c1, m1, .] := comp(expr, m, e)) or return nil
@@ -1050,8 +1031,6 @@ compCase1(x,m,e) ==
   [["call",fn,x'],$Boolean,e']
 
 compColon([":",f,t],m,e) ==
-  $insideExpressionIfTrue=true => compColonInside(f,m,e,t)
-    --if inside an expression, ":" means to convert to m "on faith"
   t:=
     atom t and (t':= assoc(t,getDomainsInScope e)) => t'
     isDomainForm(t,e) and not $insideCategoryIfTrue =>
@@ -1092,10 +1071,6 @@ compPretend(["pretend",x,t],m,e) ==
      stackWarning(["cannot pretend ",x," of mode ",T.mode," to mode ",m])
   T:= [T.expr,t,T.env]
   T':= coerce(T,m) => (if warningMessage then stackWarning warningMessage; T')
-
-compColonInside(x,m,e,m') ==
-    return stackSemanticError([_
-        "compColonInside: colon inside expressions is unsupported"], nil)
 
 compIs(["is",a,b],m,e) ==
   [aval,am,e] := comp(a,$EmptyMode,e) or return nil

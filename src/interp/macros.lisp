@@ -79,7 +79,6 @@
 
 (def-boot-var |$insideCapsuleFunctionIfTrue|        "???")
 (def-boot-var |$insideCategoryIfTrue|               "???")
-(def-boot-var |$insideExpressionIfTrue|             "???")
 (def-boot-var |$insideFunctorIfTrue|                "???")
 (def-boot-var |$insideWhereIfTrue|                  "???")
 
