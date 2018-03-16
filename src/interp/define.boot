@@ -40,7 +40,6 @@ compDefine(form,m,e) ==
   result
 
 compDefine1(form,m,e) ==
-  $insideExpressionIfTrue: local:= false
   --1. decompose after macro-expanding form
   ['DEF,lhs,signature,specialCases,rhs]:= form:= macroExpand(form,e)
   $insideWhereIfTrue and isMacro(form,e) and (m=$EmptyMode or m=$NoValueMode)
@@ -637,7 +636,6 @@ orderByDependency(vl,dl) ==
   REMDUP NREVERSE orderedVarList --ordered so ith is indep. of jth if i < j
 
 compInternalFunction(df is ['DEF,form,signature,specialCases,body], m, e) ==
-    -- $insideExpressionIfTrue := false
     [op, :argl] := form
     not(IDENTP(op)) =>
         stackAndThrow ['"Bad name for internal function:", op]
@@ -664,7 +662,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $insideCapsuleFunctionIfTrue: local:= true
     $CapsuleModemapFrame: local:= e
     $CapsuleDomainsInScope: local:= get("$DomainsInScope","special",e)
-    $insideExpressionIfTrue: local:= true
     $returnMode:= m
     [$op,:argl]:= form
     $form:= [$op,:argl]
@@ -966,7 +963,6 @@ compTuple2Record u == ['Record,:[[":",i,x] for i in 1.. for x in rest u]]
 compCapsule(['CAPSULE,:itemList],m,e) ==
   $bootStrapMode = true =>
       [bootStrapError($functorForm, $edit_file), m, e]
-  $insideExpressionIfTrue: local:= false
   compCapsuleInner(itemList,m,addDomain('_$,e))
 
 compSubDomain(["SubDomain",domainForm,predicate],m,e) ==
@@ -1104,7 +1100,6 @@ doItIf(item is [., p, x, y], $predl, $e) ==
     RPLACD(item, [[p', x], ['(QUOTE T), y]])
 
 doItWhere(item is [.,form,:exprList], $predl, eInit) ==
-  $insideExpressionIfTrue: local:= false
   $insideWhereIfTrue: local:= true
   e:= eInit
   u:=

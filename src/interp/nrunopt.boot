@@ -87,7 +87,6 @@ makeCompactDirect u ==
 makeCompactDirect1(op,items) ==
 --NOTES: creates byte codes for ops implemented by the domain
     curAddress := $byteAddress
-    $op: local := op  --temp hack by RDJ 8/90 (see orderBySubsumption)
     newcodes :=
       "append"/[u for y in orderBySubsumption items | u := fn y] or return nil
     $byteVecAcc := [newcodes,:$byteVecAcc]
