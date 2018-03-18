@@ -571,12 +571,6 @@ setqSingle(id,val,m,E) ==
 
 finish_setq_single(T, m, id, val, currentProplist) ==
   T' := [x, m', e'] := convert(T, m) or return nil
-  if $profileCompiler = true then
-    null IDENTP id => nil
-    key :=
-      MEMQ(id,rest $form) => 'arguments
-      'locals
-    profileRecord(key,id,T.mode)
   newProplist:= consProplistOf(id,currentProplist,"value",removeEnv [val,:rest T])
   e':= (PAIRP id => e'; addBinding(id,newProplist,e'))
   if isDomainForm(val,e') then

@@ -487,8 +487,6 @@
 ;; ---- end of initial settings for variables used in test.boot
 
 
-;; By default, don't generate info files with old compiler.
-(setq |$profileCompiler| nil)
 
 (setq credits '(
 "An alphabetical listing of contributors to AXIOM (to October, 2006):"
