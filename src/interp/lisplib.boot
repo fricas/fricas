@@ -287,7 +287,6 @@ finalizeLisplib libName ==
   lisplibWrite('"parents",removeZeroOne $lisplibParents,$libFile)
   lisplibWrite('"ancestors",removeZeroOne $lisplibAncestors,$libFile)
   lisplibWrite('"documentation",finalizeDocumentation(),$libFile)
-  if $profileCompiler then profileWrite()
   if $lisplibForm and null rest $lisplibForm then
     MAKEPROP(first $lisplibForm, 'NILADIC, 'T)
 

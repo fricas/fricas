@@ -34,7 +34,6 @@
 
 --% Utilities
 
-DEFPARAMETER($fluidVars, nil)
 DEFPARAMETER($locVars, nil)
 DEFPARAMETER($PrettyPrint, false)
 DEFPARAMETER($COMPILE, true)
@@ -165,10 +164,7 @@ compTran1(x) ==
         compTran1(CDDR x)
         NOT(u = "SETQ") =>
             IDENTP(CADR(x)) => PUSHLOCVAR(CADR(x))
-            EQCAR(CADR(x), "FLUID") =>
-                BREAK()
-                PUSH(CADADR(x), $fluidVars)
-                rplac(CADR(x), CADADR(x))
+            EQCAR(CADR(x), "FLUID") => BREAK()
             BREAK()
             MAPC(FUNCTION PUSHLOCVAR, LISTOFATOMS(CADR x))
     MEMQ(u, '(PROG LAMBDA)) =>
@@ -185,7 +181,6 @@ compTranDryRun(x) ==
     compTran(x)
 
 compTran(x) ==
-    $fluidVars : local := nil
     $locVars : local := nil
     [x1, x2, :xl3] := comp_expand(x)
     compTran1 (xl3)
@@ -195,24 +190,14 @@ compTran(x) ==
                             first(x3) = "SEQ" or _
                             not(CONTAINED("EXIT", x3))) => x3
         ["SEQ", :xl3]
-    fluids := REMDUP(NREVERSE($fluidVars))
-    $locVars := set_difference(
-                   set_difference(REMDUP(NREVERSE($locVars)), fluids),
-                   LISTOFATOMS (x2))
-    lvars := APPEND(fluids, $locVars)
+    $locVars := set_difference(REMDUP(NREVERSE($locVars)),
+                               LISTOFATOMS (x2))
+    lvars := $locVars
     x3 :=
-        fluids =>
-            BREAK()
-            ["SPROG", compSpadProg(lvars),
-             ["DECLARE", ["SPECIAL", :fluids]], x3]
         lvars or CONTAINED("RETURN", x3) =>
             ["SPROG", compSpadProg(lvars), x3]
         x3
-    fluids := compFluidize(x2)
     x2 := addTypesToArgs(x2)
-    fluids =>
-        BREAK()
-        [x1, x2, ["DECLARE", ["SPECIAL", :fluids]], x3]
     [x1, x2, x3]
 
 addTypesToArgs(args) ==
@@ -247,21 +232,6 @@ compNewnam(x) ==
             RPLACA(rest(x), u)
     compNewnam(first(x))
     compNewnam(rest(x))
-
-compFluidize(x) ==
-    x and SYMBOLP(x) and x ~= "$" and x ~= "$$" and _
-      SCHAR('"$", 0) = SCHAR(PNAME(x), 0) _
-      and not(DIGITP (SCHAR(PNAME(x), 1))) =>
-          BREAK()
-          x
-    ATOM(x) => nil
-    QCAR(x) = "FLUID" =>
-        BREAK()
-        SECOND(x)
-    a := compFluidize(QCAR(x))
-    b := compFluidize(QCDR(x))
-    a => CONS(a, b)
-    b
 
 PUSHLOCVAR(x) ==
     x ~= "$" and SCHAR('"$", 0) = SCHAR(PNAME(x), 0) _
