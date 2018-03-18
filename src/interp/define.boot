@@ -313,9 +313,6 @@ compDefineCategory(df,m,e,prefix,fal) ==
 
 compDefineFunctor(df,m,e,prefix,fal) ==
   $domainShell: local -- holds the category of the object being compiled
-  -- Our profiling machinery is a big time sink ...
-  -- $profileCompiler: local := true
-  $profileAlist:    local := nil
   $LISPLIB => compDefineLisplib(df,m,e,prefix,fal,'compDefineFunctor1)
   compDefineFunctor1(df,m,e,prefix,fal)
 
@@ -691,10 +688,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $functionLocations := [[[$op,$signatureOfForm],:lineNumber],
       :$functionLocations]
     e:= addDomain(first signature',e)
-
-    if $profileCompiler then
-      for x in argl for t in rest signature' repeat profileRecord('arguments,x,t)
-
 
     --4. introduce needed domains into extendedEnv
     for domain in signature' repeat e:= addDomain(domain,e)

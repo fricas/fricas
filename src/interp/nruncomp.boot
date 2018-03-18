@@ -181,7 +181,6 @@ genDeltaEntry opMmPair ==
 --$NRTdeltaLength=0.. always equals length of $NRTdeltaList
   $compUniquelyIfTrue: local:= false
   [op,[dc,:sig],[.,cform:=[eltOrConst,.,nsig]]] := opMmPair
-  if $profileCompiler = true then profileRecord(dc,op,sig)
   eltOrConst = 'XLAM => cform
   if atom dc then
     dc = "$" => nsig := sig
