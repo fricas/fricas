@@ -112,9 +112,7 @@ htSayArgument t == --called only for operations not for constructors
       $generalSearch? => htSay '"{\em D} of the origin category"
       addWhereList("$",'is,nil)
       htSayStandard '"{\em $}"
-      htSaySaturn '"{\em \%}"
     htSayStandard '"{\em $}"
-    htSaySaturn '"{\em \%}"
   not IDENTP t => bcConform(t,true)
   k := position(t,$conargs)
   if k > -1 then

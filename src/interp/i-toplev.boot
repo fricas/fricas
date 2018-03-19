@@ -212,7 +212,6 @@ recordAndPrint(x,md) ==
   'done
 
 printTypeAndTime(x,m) ==  --m is the mode/type of the result
-  $saturn => printTypeAndTimeSaturn(x, m)
   printTypeAndTimeNormal(x, m)
 
 printTypeAndTimeNormal(x,m) ==
@@ -238,31 +237,6 @@ printTypeAndTimeNormal(x,m) ==
         $outputLines :=
             [justifyMyType msgText("S2GL0012", [type_string]), :$outputLines]
     sayKeyedMsg("S2GL0012", [type_string])
-
-printTypeAndTimeSaturn(x, m) ==
-  -- header
-  if $printTimeIfTrue then
-    timeString := makeLongTimeString($interpreterTimedNames,
-      $interpreterTimedClasses)
-  else
-    timeString := '""
-  if $printTypeIfTrue then
-    typeString := form2StringAsTeX devaluate m
-  else
-    typeString := '""
-  if $printTypeIfTrue then
-    printAsTeX('"\axPrintType{")
-    if CONSP typeString then
-      MAPC(FUNCTION printAsTeX, typeString)
-    else
-      printAsTeX(typeString)
-    printAsTeX('"}")
-  if $printTimeIfTrue then
-    printAsTeX('"\axPrintTime{")
-    printAsTeX(timeString)
-    printAsTeX('"}")
-
-printAsTeX(x) == PRINC(x, $texOutputStream)
 
 sameUnionBranch(uArg, m) ==
   uArg is [":", ., t] => t = m

@@ -35,20 +35,9 @@ $historyDisplayWidth := 120
 $newline := char 10
 
 downlink page ==
-  $saturn => downlinkSaturn page
   htInitPage('"Bridge",nil)
   htSayList(['"\replacepage{", page, '"}"])
   htShowPage()
-
-downlinkSaturn fn ==
-  u := dbReadLines(fn)
-  lines := '""
-  while u is [line,:u] repeat
-    n := MAXINDEX line
-    n < 1 => nil
-    line.0 = (char '_%) => nil
-    lines := STRCONC(lines,line)
-  issueHTSaturn lines
 
 dbNonEmptyPattern pattern ==
   null pattern => '"*"

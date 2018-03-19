@@ -379,17 +379,7 @@ throwKeyedMsgSP(key,args,atree) ==
     throwKeyedMsg(key,args)
 
 throwKeyedMsg(key,args) ==
-  $saturn => saturnThrowKeyedMsg(key, args)
   throwKeyedMsg1(key, args)
-
-saturnThrowKeyedMsg(key,args) ==
-  _*STANDARD_-OUTPUT_* : fluid := $texOutputStream
-  last := pushSatOutput("line")
-  sayString '"\bgroup\color{red}\begin{list}\item{} "
-  sayKeyedMsgAsTeX(key,args)
-  sayString '"\end{list}\egroup"
-  popSatOutput(last)
-  spadThrow()
 
 throwKeyedMsg1(key,args) ==
   sayMSG '" "
@@ -420,52 +410,11 @@ breakKeyedMsg(key,args) ==
   handleLispBreakLoop($BreakMode)
 
 keyedSystemError(key,args) ==
-  $saturn => saturnKeyedSystemError(key, args)
   keyedSystemError1(key, args)
-
-saturnKeyedSystemError(key, args) ==
-  _*STANDARD_-OUTPUT_* : fluid := $texOutputStream
-  sayString '"\bgroup\color{red}"
-  sayString '"\begin{verbatim}"
-  sayKeyedMsg("S2GE0000",NIL)
-  BUMPCOMPERRORCOUNT()
-  sayKeyedMsgAsTeX(key,args)
-  sayString '"\end{verbatim}"
-  sayString '"\egroup"
-  handleLispBreakLoop($BreakMode)
 
 keyedSystemError1(key,args) ==
   sayKeyedMsg("S2GE0000",NIL)
   breakKeyedMsg(key,args)
-
--- these 2 functions control the mode of saturn output.
--- having the stream writing functions control this would
--- be better (eg. sayText, sayCommands)
-
-pushSatOutput(arg) ==
-  $saturnMode = arg => arg
-  was := $saturnMode
-  arg = "verb" =>
-    $saturnMode := "verb"
-    sayString '"\begin{verbatim}"
-    was
-  arg = "line" =>
-    $saturnMode := "line"
-    sayString '"\end{verbatim}"
-    was
-  sayString FORMAT(nil, '"What is: ~a", $saturnMode)
-  $saturnMode
-
-popSatOutput(newmode) ==
-  newmode = $saturnMode => nil
-  newmode = "verb" =>
-    $saturnMode := "verb"
-    sayString '"\begin{verbatim}"
-  newmode = "line" =>
-    $saturnMode := "line"
-    sayString '"\end{verbatim}"
-  sayString FORMAT(nil, '"What is: ~a", $saturnMode)
-  $saturnMode
 
 systemErrorHere functionName ==
   keyedSystemError("S2GE0017",[functionName])
@@ -1081,13 +1030,6 @@ $htCharAlist := '(
 escapeSpecialChars s ==
   u := LASSOC(s,$htCharAlist) => u
   member(s, $htSpecialChars) => STRCONC('"_\", s)
-  null $saturn => s
-  ALPHA_-CHAR_-P (s.0) => s
-  not (or/[dbSpecialDisplayOpChar? s.i for i in 0..MAXINDEX s]) => s
-  buf := '""
-  for i in 0..MAXINDEX s repeat buf :=
-    dbSpecialDisplayOpChar?(s.i) => STRCONC(buf,'"\verb!",s.i,'"!")
-    STRCONC(buf,s.i)
-  buf
+  s
 
 dbSpecialDisplayOpChar? c == (c = char '_~)
