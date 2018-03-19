@@ -40,7 +40,6 @@
 (in-package "BOOT")
 
 (defvar |$standard| 't)
-(defvar |$saturn| nil)
 
 (setq |$printTimeIfTrue| nil)
 

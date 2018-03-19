@@ -79,7 +79,6 @@ kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
       bcHt
         nargs = 1 => '" takes one argument:"
         [" takes ",STRINGIMAGE nargs," arguments:"]
-  htSaturnBreak()
   htSayStandard '"\indentrel{2}"
   if nargs > 0 then kPageArgs(conform,signature)
   htSayStandard '"\indentrel{-2}"
@@ -93,7 +92,6 @@ kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
   htMakePage [['text,'"\unixcommand{",filename,'"}{_\$AXIOM/lib/SPADEDIT ",
               sourceFileName, '" ", name, '"}"]]
   if nargs ~= 0 then htSay '"."
-  htSaturnBreak()
 
 kArgPage(htPage,arg) ==
   [op,:args] := conform := htpProperty(htPage,'conform)
@@ -262,7 +260,6 @@ kePageDisplay(htPage,which,opAlist) ==
     then htSayList([STRINGIMAGE total, '" ", pluralize which,
                    '" are explicitly exported:"])
     else htSayList(['"1 ", which, '" is explicitly exported:"])
-  htSaySaturn '"\\"
   data := dbGatherData(htPage,opAlist,which,'names)
   dbShowOpItems(which,data,false)
 
@@ -844,7 +841,7 @@ dbShowCons(htPage,key,:options) ==
       subject := (abbrev? => constructor? conname; conname)
       superMatch?(filter,DOWNCASE STRINGIMAGE subject)
     null u => emptySearchPage('"constructor", filter, false)
-    htPage := htInitPageNoScroll(htCopyProplist htPage)
+    htPage := htInitPageNoHeading(htCopyProplist htPage)
     htpSetProperty(htPage,'cAlist,u)
     dbShowCons(htPage,htpProperty(htPage,'exclusion))
   if MEMQ(key,'(exposureOn exposureOff)) then
@@ -939,9 +936,7 @@ dbShowConsDoc1(htPage,conform,indexOrNil) ==
     GETDATABASE(conname,'CONSTRUCTORKIND) = 'category =>
       SUBLISLIS(conargs,$TriangleVariableList,signature)
     sublisFormal(conargs,signature)
-  htSaySaturn '"\begin{description}"
   displayDomainOp(htPage,'"constructor",conform,conname,sig,true,doc,indexOrNil,'dbSelectCon,null exposeFlag,nil)
-  htSaySaturn '"\end{description}"
   --NOTE that we pass conform is as "origin"
 
 getConstructorDocumentation conname ==
@@ -960,11 +955,9 @@ dbShowConditions(htPage,cAlist,kind) ==
   singular := [kind,'" is"]
   plural   := [pluralize STRINGIMAGE kind,'" are"]
   dbSayItems(#consNoPred,singular,plural,'" unconditional")
-  htSaySaturn '"\\"
   bcConPredTable(consNoPred,conname)
   htSayHrule()
   dbSayItems(#consPred,singular,plural,'" conditional")
-  htSaySaturn '"\\"
   bcConPredTable(consPred,conname)
 
 dbConsHeading(htPage,conlist,view,kind) ==
@@ -1008,10 +1001,7 @@ dbShowConstructorLines lines ==
 bcUnixTable(u) ==
   htSay '"\newline"
   htBeginTable()
-  firstTime := true
   for x in u repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     htSay '"{"
     ft :=
       isAsharpFileName? x => '("AS")

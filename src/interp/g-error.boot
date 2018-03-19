@@ -148,18 +148,7 @@ returnToReader() ==
   THROW('SPAD_READER, nil)
 
 sayErrorly(errorLabel, msg) ==
-  $saturn => saturnSayErrorly(errorLabel, msg)
   sayErrorly1(errorLabel, msg)
-
-saturnSayErrorly(errorLabel, msg) ==
-  _*STANDARD_-OUTPUT_* : fluid := $texOutputStream
-  old := pushSatOutput("line")
-  sayString '"\bgroup\color{red}"
-  sayString '"\begin{verbatim}"
-  sayErrorly1(errorLabel, msg)
-  sayString '"\end{verbatim}"
-  sayString '"\egroup"
-  popSatOutput(old)
 
 sayErrorly1(errorLabel, msg) ==
   sayBrightly '" "
