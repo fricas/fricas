@@ -201,7 +201,6 @@ mathprintWithNumber x ==
 
 mathprint x ==
    x := outputTran2 x
-   $saturn => texFormat1 x
    maprin x
 
 sayMath u ==

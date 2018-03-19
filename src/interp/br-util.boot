@@ -297,9 +297,7 @@ bcConform1 form == main where
         tl QCDR form
     mapping [target,:source] ==
         tuple source
-        bcHt
-            $saturn => '" {\ttrarrow} "
-            '" -> "
+        bcHt '" -> "
         hd target
     tuple u ==
         null u => bcHt '"()"
@@ -407,10 +405,7 @@ extractFileNameFromPath s == fn(s,0,#s) where
 
 bcOpTable(u,fn) ==
   htBeginTable()
-  firstTime := true
   for op in u for i in 0.. repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     htSay '"{"
     htMakePage [['bcLinks,[escapeSpecialChars STRINGIMAGE opOf op,'"",fn,i]]]
     htSay '"}"
@@ -423,10 +418,7 @@ bcNameConTable u ==
 
 bcConTable u ==
   htBeginTable()
-  firstTime := true
   for con in u repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     htSay '"{"
     bcStarSpace opOf con
     bcConform con
@@ -435,11 +427,8 @@ bcConTable u ==
 
 bcAbbTable u ==
   htBeginTable()
-  firstTime := true
   for x in REMDUP u repeat        --allow x to be NIL meaning "no abbreviation"
   -- for x in u repeat    --allow x to be NIL meaning "no abbreviation"
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     if x is [con,abb,:.] then
       htSay '"{"
       bcAbb(con,abb)
@@ -449,10 +438,7 @@ bcAbbTable u ==
 bcConPredTable(u,conname,:options) ==
   italicList := IFCAR options
   htBeginTable()
-  firstTime := true
   for [conform,:pred] in u repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     htSay '"{"
     bcStarSpace opOf conform
     form :=
@@ -492,10 +478,7 @@ splitConTable cons ==
 bcNameTable(u,fn,:option) ==   --option if * prefix
   htSay '"\newline"
   htBeginTable()
-  firstTime := true
   for x in u repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     htSay '"{"
     if IFCAR option then bcStar x
     htMakePage [['bcLinks,[s := escapeSpecialChars STRINGIMAGE x,'"",fn,s]]]
@@ -506,10 +489,7 @@ bcNameCountTable(u, fn, gn) ==
   linkFunction := 'bcLispLinks
   htSay '"\newline"
   htBeginTable()
-  firstTime := true
   for i in 0.. for x in u repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     htSay '"{"
     htMakePage [[linkFunction,[FUNCALL(fn,x),'"",gn,i]]]
     htSay '"}"

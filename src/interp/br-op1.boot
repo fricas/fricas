@@ -72,7 +72,7 @@ dbShowOps(htPage,which,key,:options) ==
     filter is ['error,:.] => bcErrorPage filter
     opAlist:= [x for x in opAlist | superMatch?(filter,DOWNCASE STRINGIMAGE opOf x)]
     null opAlist => emptySearchPage(which, filter, false)
-    htPage := htInitPageNoScroll(htCopyProplist htPage)
+    htPage := htInitPageNoHeading(htCopyProplist htPage)
     if which = '"operation"
       then htpSetProperty(htPage,'opAlist,opAlist)
       else htpSetProperty(htPage,'attrAlist,opAlist)
@@ -107,7 +107,7 @@ dbShowOp1(htPage,opAlist,which,key) ==
   INTEGERP key and opAlist is [[con,:.]] and htpProperty(htPage,'isFile)
       and constructor? con => return conPageChoose con
   if INTEGERP key then
-    htPage := htInitPageNoScroll(htCopyProplist htPage)
+    htPage := htInitPageNoHeading(htCopyProplist htPage)
     if which = '"operation"
       then htpSetProperty(htPage,'opAlist,opAlist)
       else htpSetProperty(htPage,'attrAlist,opAlist)
@@ -152,7 +152,7 @@ dbShowOp1(htPage,opAlist,which,key) ==
          pluralize capitalize which,:namedPart]
     prefix := pluralSay(dataCount,what,whats)
     [:prefix,'" for ",STRINGIMAGE opCount,'" ",pluralize capitalize which,:namedPart]
-  page := htInitPageNoScroll(htCopyProplist htPage)
+  page := htInitPageNoHeading(htCopyProplist htPage)
   ------------>above line used to call htInitPageHoHeading<----------
   htAddHeading dbShowOpHeading([:firstPart,:fromHeading page], branch)
   htpSetProperty(page,'data,data)
@@ -480,16 +480,12 @@ dbShowOpNames(htPage,opAlist,which,data) ==
   single? =>
     ops := escapeSpecialChars STRINGIMAGE CAAR opAlist
     htSayStandard('"Select a view below")
-    htSaySaturn '"Select a view with the right mouse button"
   exposedOnly? := $exposedOnlyIfTrue and not dbFromConstructor?(htPage)
   dbShowOpItems(which,data,exposedOnly?)
 
 dbShowOpItems(which,data,exposedOnly?) ==
   htBeginTable()
-  firstTime := true
   for i in 0.. for item in data repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     if atom item then
       op := item
       exposeFlag := true
@@ -564,10 +560,7 @@ dbShowOpSigList(which,dataItems,count) ==
 --dataItems is (((op,sig,:.),exposureFlag,...)
   single? := null rest dataItems
   htBeginTable()
-  firstTime := true
   for [[op,sig,:.],exposureFlag,:tail] in dataItems repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&";
     ops := escapeSpecialChars STRINGIMAGE op
     htSay '"{"
 --  if single? then htSay('"{\em ",ops,'"}") else.....
@@ -586,10 +579,7 @@ dbShowOpParameters(htPage,opAlist,which,data) ==
   single? := null rest data
   count := 0
   htBeginTable()
-  firstTime := true
   for item in data repeat
-    if firstTime then firstTime := false
-    else htSaySaturn '"&"
     [opform,exposeFlag,:tail] := item
     op := intern IFCAR opform
     args := IFCDR opform
@@ -638,7 +628,6 @@ dbShowOpDocumentation(htPage,opAlist,which,data) ==
     htpSetProperty(htPage,'conditionData,condata)
   base := -8192
   exactlyOneOpSig := opAlist is [[.,.]] --checked by displayDomainOp
-  htSaySaturn '"\begin{description}"
   for [op,:alist] in opAlist repeat
     base := 8192 + base
     for item in alist for j in 0.. repeat
@@ -657,7 +646,6 @@ dbShowOpDocumentation(htPage,opAlist,which,data) ==
           sig    := substitute(conform, '_$, sig)
           origin := substitute(conform, '_$, origin)
         displayDomainOp(htPage,newWhich,origin,op,sig,pred,doc,index,'dbChooseDomainOp,null exposeFlag,true)
-  htSaySaturn '"\end{description}"
 
 dbChooseDomainOp(htPage,which,index) ==
   [opKey,entryKey] := DIVIDE(index,8192)
@@ -666,7 +654,7 @@ dbChooseDomainOp(htPage,which,index) ==
     htpProperty(htPage,'attrAlist)
   [op,:entries] := opAlist . opKey
   entry := entries . entryKey
-  htPage := htInitPageNoScroll(htCopyProplist htPage)
+  htPage := htInitPageNoHeading(htCopyProplist(htPage))
   if which = '"operation"
     then htpSetProperty(htPage,'opAlist,[[op,entry]])
     else htpSetProperty(htPage,'attrAlist,[[op,entry]])
