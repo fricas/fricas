@@ -338,7 +338,7 @@ phInterpret carrier ==
   ncPutQ(carrier, 'value, val)
 
 intInterpretPform pf ==
-  processInteractive(zeroOneTran(packageTran(pf2Sex pf)), pf)
+    processInteractive(pf2Sex pf, pf)
 
 --% phReportMsgs: carrier[lines,messages,..]-> carrier[lines,messages,..]
 phIntReportMsgs(carrier, interactive?) ==
@@ -353,7 +353,7 @@ phIntReportMsgs(carrier, interactive?) ==
     'OK
 
 intSayKeyedMsg(key, args) ==
-  sayKeyedMsg(packageTran key, packageTran args)
+  sayKeyedMsg(key, args)
 
 mkLineList lines ==
   l := [rest line for line in lines | nonBlank rest line]

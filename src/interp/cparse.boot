@@ -123,8 +123,7 @@ npPop3()==
        a
 
 npParenthesized f==
-   npParenthesize("(",")",f)   or
-   npParenthesize("(|","|)",f)
+   npParenthesize("(",")",f) 
 
 npParenthesize (open,close,f)==
     a:=$stok
@@ -144,22 +143,16 @@ npEnclosed(open,close,fn,f)==
     false
 
 npParened f ==
-    npEnclosed("(",")",function pfParen,f) or
-    npEnclosed("(|","|)",function pfParen,f)
+    npEnclosed("(",")",function pfParen,f)
 
 npBracked f ==
-    npEnclosed("[","]",function pfBracket,f) or
-    npEnclosed("[|","|]",function pfBracketBar,f)
+    npEnclosed("[","]",function pfBracket,f)
 
 npBraced f ==
-    npEnclosed("{","}",function pfBrace,f) or
-    npEnclosed("{|","|}",function pfBraceBar,f)
-
-npAngleBared f ==
-    npEnclosed("<|","|>",function pfHide,f)
+    npEnclosed("{","}",function pfBrace,f)
 
 npBracketed f==
-  npParened f or npBracked f or npBraced f or npAngleBared f
+    npParened f or npBracked f or npBraced f
 
 npPileBracketed f==
  if npEqKey "SETTAB"
@@ -466,12 +459,10 @@ npRestrict() == npTypedForm("@", function pfRestrict)
 
 npCoerceTo() == npTypedForm("::", function pfCoerceto)
 
-npColonQuery() == npTypedForm("ATAT",function pfRetractTo)
-
 npPretend() == npTypedForm("pretend", function pfPretend)
 
 npTypeStyle()==
- npCoerceTo() or npRestrict() or npPretend() or npColonQuery()
+    npCoerceTo() or npRestrict() or npPretend()
 
 npTypified ()==npApplication() and npAnyNo function npTypeStyle
 
