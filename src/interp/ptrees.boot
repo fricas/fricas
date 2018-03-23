@@ -194,15 +194,9 @@ pfTweakIf form==
     pfTree('WIf,[pfIfCond form,pfIfThen form,b])
 
 pfInfApplication(op,left,right)==
-   pfCheckInfop left =>
-       pfWrong(pfDocument ['"infop as argument to infop"],pfListOf [])
-   pfCheckInfop right =>
-       pfWrong(pfDocument ['"infop as argument to infop"],pfListOf [])
    EQ(pfIdSymbol op,"and")=> pfAnd (left,right)
    EQ(pfIdSymbol op, "or")=> pfOr (left,right)
    pfApplication(op,pfTuple pfListOf [left,right])
-
-pfCheckInfop form== false
 
 pfAnd(pfleft, pfright) == pfTree('And, [pfleft, pfright])
 pfAnd?(pf) == pfAbSynOp? (pf, 'And)
@@ -239,13 +233,6 @@ pfLam(variable,body)==-- called from parser
     bdy:= if pfAbSynOp?(body,'returntyped) then pfSecond body else body
     pfLambda(variable,rets,bdy)
 
-pfTLam(variable,body)==-- called from parser
-    rets:= if pfAbSynOp?(body,'returntyped)
-           then pfFirst body
-           else pfNothing ()
-    bdy:= if pfAbSynOp?(body,'returntyped) then pfSecond body else body
-    pfTLambda(variable,rets,bdy)
-
 pfIfThenOnly(pred,first)==pfIf(pred,first,pfNothing())
 
 pfLp(iterators,body)==
@@ -260,12 +247,7 @@ pfReturnNoName(value)==pfReturn(value,pfNothing())
 pfBrace(a,part)==pfApplication(pfIdPos( "{}",tokPosn a),part)
 
 pfBracket(a,part) ==  pfApplication(pfIdPos( "[]",tokPosn a),part)
-pfBraceBar(a,part)==pfApplication(pfIdPos( "{||}",tokPosn a),part)
 
-pfBracketBar(a,part) ==  pfApplication(pfIdPos( "[||]",tokPosn a),part)
-pfHide(a,part) ==   pfTree("Hide",[part])
-pfHide? x== pfAbSynOp?(x,"Hide")
-pfHidePart x== CADR x
 pfParen(a,part)==part
 
 pfPile(part)==part
@@ -448,11 +430,6 @@ pfRestrict?(pf) == pfAbSynOp? (pf, 'Restrict)
 pfRestrictExpr pf == CADR pf       -- was ==>
 pfRestrictType pf == CADDR pf       -- was ==>
 
-pfRetractTo(pfexpr, pftype) == pfTree('RetractTo, [pfexpr, pftype])
-pfRetractTo?(pf) == pfAbSynOp? (pf, 'RetractTo)
-pfRetractToExpr pf == CADR pf       -- was ==>
-pfRetractToType pf == CADDR pf       -- was ==>
-
 
 -- Coerceto    := (Expr: Expr, Type:   Type)
 
@@ -480,16 +457,6 @@ pfLambdaRets pf == CADDR pf       -- was ==>
 pfLambdaBody pf == CADDDR pf       -- was ==>
 pf0LambdaArgs pf == pfParts pfLambdaArgs pf
 pfFix pf== pfApplication(pfId "Y",pf)
-
-
--- TLambda      := (Args: [Typed], Rets: ? Type, Body: Expr)
-
-pfTLambda(pfargs, pfrets, pfbody) == pfTree('TLambda, [pfargs, pfrets, pfbody])
-pfTLambda?(pf) == pfAbSynOp? (pf, 'TLambda)
-pfTLambdaArgs pf == CADR pf       -- was ==>
-pfTLambdaRets pf == CADDR pf       -- was ==>
-pfTLambdaBody pf == CADDDR pf       -- was ==>
-pf0TLambdaArgs pf == pfParts pfTLambdaArgs pf
 
 
 -- MLambda     := (Args: [Id], Body: Expr)

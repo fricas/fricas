@@ -506,12 +506,6 @@ $beginEndList := '(
 
 isDefaultPackageName x == (s := PNAME x).(MAXINDEX s) = char '_&
 
--- from packtran
-
-packageTran sex == sex
-
-zeroOneTran sex == sex
-
 -- from i-util
 
 --% Utility Functions Used Only by the Intepreter

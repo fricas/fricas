@@ -181,7 +181,7 @@ processInteractive1(form, posnForm) ==
   object
 
 ncParseAndInterpretString s ==
-   processInteractive(packageTran(parseFromString(s)), nil)
+   processInteractive(parseFromString(s), nil)
 
 --% Result Output Printing
 
