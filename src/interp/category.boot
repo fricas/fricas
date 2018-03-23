@@ -35,7 +35,7 @@
 
 Category() == nil --sorry to say, this hack is needed by isCategoryType
 
-CategoryPrint(D,$e) ==
+CategoryPrint(D) ==
   SAY "--------------------------------------"
   SAY "Name (and arguments) of category:"
   PRETTYPRINT D.(0)
@@ -309,8 +309,7 @@ FindFundAncs l ==
 
 CatEval x ==
   REFVECP x => x
-  $InteractiveMode => first compMakeCategoryObject(x, $CategoryFrame)
-  first compMakeCategoryObject(x, $e)
+  (compMakeCategoryObject(x, $EmptyEnvironment)).expr
 
 AncestorP(xname,leaves) ==
   -- checks for being a principal ancestor of one of the leaves
@@ -410,20 +409,17 @@ join_fundamental_ancestors(vec0, l) ==
       FundamentalAncestors := [[b.(0), condition], :FundamentalAncestors]
   FundamentalAncestors
 
-JoinInner(l,$e) ==
+JoinInner(l) ==
   NewCatVec := nil
   CondList := nil
   for u in l repeat
     for at in u.2 repeat
       at2:= first at
       if atom at2 then BREAK()
-      null isCategoryForm(at2,$e) => BREAK()
+      null isCategoryForm(at2, []) => BREAK()
 
       pred:= first rest at
         -- The predicate under which this category is conditional
-      -- member(pred,get("$Information","special",$e)) => l:= [:l,CatEval at2]
-          --It's true, so we add this as unconditional
-      -- not (pred is ["and",:.]) => CondList:= [[CatEval at2,pred],:CondList]
       CondList:= [[CatEval at2,pred],:CondList]
   [NewCatVec, :l] := l
   l':= [:CondList,:[[u,true] for u in l]]
@@ -456,12 +452,8 @@ JoinInner(l,$e) ==
   NewCatVec.4 := [c,FundamentalAncestors, CADDR NewCatVec.4]
   mkCategory(sigl, nil, globalDomains, NewCatVec)
 
-Join(:L) ==
-  env :=
-     not(BOUNDP('$e)) or NULL($e) or $InteractiveMode => $CategoryFrame
-     $e
-  JoinInner(L, env)
+Join(:L) == JoinInner(L)
 
 isCategoryForm(x,e) ==
   x is [name,:.] => categoryForm? name
-  atom x => u:= get(x,"macro",e) => isCategoryForm(u,e)
+  false
