@@ -23,13 +23,13 @@ AbelianProductCategory(A : Type) : Category == with
 ++ The ordered set \spad{S} is considered as the ``basis elements'' and
 ++ the elements from \spad{A} as ``coefficients''.
 
-IndexedDirectProductCategory(A : SetCategory, S : Comparable
+IndexedDirectProductCategory(A : SetCategory, S : SetCategory
                             ) : Category == Export where
   Term ==> Record(k : S, c : A)
 
   Export ==  AbelianProductCategory(A) with
 
-      if A has Comparable then Comparable
+      if A has Comparable and S has Comparable then Comparable
       if S has OrderedSet then
           if A has OrderedAbelianMonoid then OrderedAbelianMonoid
           if A has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
@@ -44,45 +44,48 @@ IndexedDirectProductCategory(A : SetCategory, S : Comparable
          ++ \spad{monomial?(x)} returns true if \spad{x} is a single
          ++ monomial, that is support of \spad{x} consists of a
          ++ single element.
-      leadingMonomial    : % -> %
-         ++ \spad{leadingMonomial(x)} returns the monomial supported by the
-         ++ first element from \spad{S}.  Error: if x has no support.
-      leadingCoefficient :   % -> A
-         ++ leadingCoefficient(z) returns the coefficient of the leading
-         ++ (with respect to the ordering on the indexing set)
-         ++ monomial of z.
-         ++ Error: if z has no support.
-      leadingSupport :   % -> S
-         ++ leadingSupport(z) returns the index of leading
-         ++ (with respect to the ordering on the indexing set) monomial of z.
-         ++ Error: if z has no support.
-      reductum :      % -> %
-         ++ \spad{reductum(z)} returns a new element created by removing the
-         ++ leading coefficient/support pair from the element z.
-         ++ Error: if z has no support.
       construct : List Term -> %
          ++ \spad{construct(l)} takes a list of terms and creates
-         ++ the object with these components.
-      constructOrdered : List Term -> %
-         ++ \spad{constructOrdered(l)} takes a list of terms and creates
-         ++ the object with these components.
-         ++ The list is assumed to be sorted (in reverse order) with respect
-         ++ to the ordering of S.  If R is a monoid, then the list is
-         ++ assumend to contain no zero elements.
-         ++ Caution: No checking is performed, so this should only be
-         ++ used in cases where those conditions are assured. If in
-         ++ doubt use \spad{construct}.
-      leadingTerm : % -> Term
-         ++ \spad{leadingTerm(x)} returns the leading
-         ++ (with respect to the ordering on the indexing set) term of z.
-         ++ Error: if z has no support.
+         ++ the object with these components.  First components
+         ++ of elements of \spad{l} should be different.
       listOfTerms : % -> List Term
          ++ \spad{listOfTerms(x)} returns a list \spad{lt} of terms with type
          ++ \spad{Record(k: S, c: R)} such that \spad{x} equals
-         ++ \spad{constructOrdered lt}.
+         ++ \spad{construct(lt)}.  If \spad{S has Comparable} than
+         ++ \spad{x} equals \spad{constructOrdered(lt)}.
       numberOfMonomials  : % -> NonNegativeInteger
          ++ \spad{numberOfMonomials(x)} returns the number
          ++ of monomials of \spad{x}.
+      if S has Comparable then
+          leadingMonomial    : % -> %
+             ++ \spad{leadingMonomial(x)} returns the monomial supported by
+             ++ the first element from \spad{S}.  Error: if x has no support.
+          leadingCoefficient :   % -> A
+             ++ leadingCoefficient(z) returns the coefficient of the leading
+             ++ (with respect to the ordering on the indexing set)
+             ++ monomial of z.
+             ++ Error: if z has no support.
+          leadingSupport :   % -> S
+             ++ leadingSupport(z) returns the index of leading (with respect
+             ++ to the ordering on the indexing set) monomial of z.
+             ++ Error: if z has no support.
+          reductum :      % -> %
+             ++ \spad{reductum(z)} returns a new element created by removing
+             ++ the leading coefficient/support pair from the element z.
+             ++ Error: if z has no support.
+          constructOrdered : List Term -> %
+             ++ \spad{constructOrdered(l)} takes a list of terms and creates
+             ++ the object with these components.
+             ++ The list is assumed to be sorted (in reverse order) with
+             ++ respect to the ordering of S.  If R is a monoid, then the
+             ++ list is assumend to contain no zero elements.
+             ++ Caution: No checking is performed, so this should only be
+             ++ used in cases where those conditions are assured. If in
+             ++ doubt use \spad{construct}.
+          leadingTerm : % -> Term
+             ++ \spad{leadingTerm(x)} returns the leading
+             ++ (with respect to the ordering on the indexing set) term of z.
+             ++ Error: if z has no support.
 
 )abbrev domain IDPO IndexedDirectProductObject
 ++ Description:
@@ -101,12 +104,35 @@ IndexedDirectProductCategory(A : SetCategory, S : Comparable
 -- according to the ordering of \spad{S}.  The \emph{leading term} of
 -- an object is the pair \spad{[s, a]} with \spad{s} maximal and thus
 -- the first entry in the list representing the object.
-IndexedDirectProductObject(A : SetCategory, S : Comparable
+IndexedDirectProductObject(A : SetCategory, S : SetCategory
                           ) : IndexedDirectProductCategory(A, S)
  == add
+
+    --representation
+    Term ==>  Record(k : S, c : A)
+    Rep :=  List Term
+
+    coerce(x : %) : OutputForm ==
+          bracket [rarrow(t.k :: OutputForm, t.c :: OutputForm) for t in x]
+
+    listOfTerms(x : %) == (x::Rep)
+
+    monomial?(x : %) == not(empty?(x)) and empty?(rest(x))
+
+    numberOfMonomials(x : %) == #x
+
+    if A has AbelianMonoid then
+
+        monomial(r, s) == (r = 0 => 0; [[s, r]])
+        map(f, x) == [[tm.k, a] for tm in x | not((a := f(tm.c)) = 0$A)]
+
+    else
+
+        monomial(r, s) == [[s, r]]
+        map(f, x) == [[tm.k, f(tm.c)] for tm in x]
+
+    if S has Comparable then
     --representations
-       Term ==>  Record(k : S, c : A)
-       Rep :=  List Term
     --declarations
        x, y : %
        f : A -> A
@@ -120,9 +146,6 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
            x := x.rest
            y := y.rest
          empty?(x) and empty?(y)
-
-       coerce(x : %) : OutputForm ==
-          bracket [rarrow(t.k :: OutputForm, t.c :: OutputForm) for t in x]
 
        -- sample(): % == [[sample()$S, sample()$A]$Term]$Rep
 
@@ -145,9 +168,6 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
 
        if A has AbelianMonoid then
 
-           monomial(r, s) == (r = 0 => 0; [[s, r]])
-           map(f, x) == [[tm.k, a] for tm in x | not((a := f(tm.c)) = 0$A)]
-
            reductum x     == (empty?(x) => 0; rest(x))
            leadingCoefficient x  == (empty?(x) => 0; x.first.c)
            if A has Comparable then
@@ -156,8 +176,6 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
                    cmp_0_y ==> smaller?(0$A, y.first.c)
 
        else
-           monomial(r, s) == [[s, r]]
-           map(f, x) == [[tm.k, f(tm.c)] for tm in x]
 
            reductum x     == rest x
            leadingCoefficient x  ==
@@ -172,10 +190,6 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
        leadingSupport x  ==
           empty?(x) => error "Can't take leadingCoefficient of empty product element"
           x.first.k
-
-       monomial? x == not(empty?(x)) and empty?(rest(x))
-
-       numberOfMonomials x == #x
 
        leadingMonomial x == monomial(first(x).c, first(x).k)
 
@@ -194,9 +208,6 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
        leadingTerm x ==
           empty?(x) => error "Can't take leadingCoefficient of empty product element"
           x.first
-
-       listOfTerms x ==
-          (x::Rep)
 
        qsetrest! ==> RPLACD$Lisp
 
@@ -380,6 +391,112 @@ IndexedDirectProductObject(A : SetCategory, S : Comparable
                x.first.k > y.first.k => cons(x.first, sup(x.rest, y))
                u := sup(x.first.c, y.first.c)
                cons([x.first.k, u], sup(x.rest, y.rest))
+
+    else
+
+        construct(lx : List Term) == lx
+
+        if A has AbelianMonoid then
+
+            0 == empty()$Rep
+
+            do_copy(xr : Rep) : Rep ==
+                res := empty()$Rep
+                for t in xr repeat
+                    res := cons([t.k, t.c], res)
+                reverse!(res)
+
+            x : % + y : % ==
+                xxr := x::Rep
+                yr := y::Rep
+                empty?(xxr) => y
+                empty?(yr) => x
+                #yr > #xxr => y + x
+                xr := do_copy(xxr)::Rep
+                for s in yr repeat
+                    sk := s.k
+                    sc := s.c
+                    done : Boolean := false
+                    first_time : Boolean := true
+                    nxr := xr
+                    cxr := xr
+                    pxr : Rep
+                    while not(empty?(cxr)) and not(done) repeat
+                        t := first(cxr)
+                        if t.k = sk then
+                            tc := t.c + sc
+                            if tc = 0 then
+                                if first_time then
+                                    nxr := rest(cxr)
+                                else
+                                    qsetrest!(pxr, rest(cxr))
+                            else
+                                t.c := tc
+                            done := true
+                        first_time := false
+                        pxr := cxr
+                        cxr := rest(cxr)
+                    xr := nxr
+                    if not(done) then
+                        xr := cons([sk, sc], xr)
+                xr
+
+            (x : % = y : %) : Boolean ==
+                xr := x::Rep
+                yr := y::Rep
+                #xr ~= #yr => false
+                for s in yr repeat
+                    sk := s.k
+                    sc := s.c
+                    done : Boolean := false
+                    for t in xr while not(done) repeat
+                        if t.k = sk then
+                            t.c = sc => done := true
+                            return false
+                    if not(done) then return false
+                true
+
+            if A has CancellationAbelianMonoid then
+
+                subtractIfCan(x : %, y : %) ==
+                    yr := y ::Rep
+                    empty?(yr) => x
+                    xr : Rep := do_copy(x::Rep)
+                    for s in yr repeat
+                        sk := s.k
+                        sc := s.c
+                        done : Boolean := false
+                        first_time : Boolean := true
+                        nxr := xr
+                        cxr := xr
+                        pxr : Rep
+                        while not(empty?(cxr)) and not(done) repeat
+                            t := first(cxr)
+                            if t.k = sk then
+                                tcu := subtractIfCan(t.c, sc)
+                                tcu case "failed" => return "failed"
+                                tc := tcu::A
+                                if tc = 0 then
+                                    if first_time then
+                                        nxr := rest(cxr)
+                                    else
+                                        qsetrest!(pxr, rest(cxr))
+                                else
+                                    t.c := tc
+                                done := true
+                            first_time := false
+                            pxr := cxr
+                            cxr := rest(cxr)
+                        xr := nxr
+                        if not(done) then
+                            tcu := subtractIfCan(0, sc)
+                            tcu case "failed" => return "failed"
+                            xr := cons([sk, tcu::A], xr)
+                    xr::%
+
+            if A has AbelianGroup then
+
+                - (x : %) == map(_-, x)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

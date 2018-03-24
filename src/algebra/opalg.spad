@@ -9,7 +9,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
   FG   ==> FreeGroup OP
   RM   ==> Record(coef : R, monom : FG)
   TERM ==> List RM
-  FAB  ==> FreeAbelianGroup TERM
+  FAB  ==> FreeModule(Integer, TERM)
 
   Exports ==> Join(Ring, RetractableTo R, RetractableTo OP,
                    Eltable(M, M)) with
@@ -70,7 +70,8 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
     coerce(r : R) : %       == (zero? r => 0; makeop(r, 1))
     coerce(op : OP) : %     == nocopy copy op
     nocopy(op : OP) : %     == makeop(1, op::FG)
-    elt(x : %, r : M)       == +/[t.exp * termeval(t.gen, r) for t in terms x]
+    elt(x : %, r : M)       ==
+        +/[t.c * termeval(t.k, r) for t in listOfTerms x]
     rmeval(t, r)        == t.coef * monomeval(t.monom, r)
     termcopy t          == [[rm.coef, rm.monom] for rm in t]
     characteristic()    == characteristic()$R
@@ -97,7 +98,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
 
     coerce(x : %) : O ==
       zero? x => (0$R)::O
-      reduce(_+, [trm2O(t.exp, t.gen) for t in terms x])$List(O)
+      reduce(_+, [trm2O(t.c, t.k) for t in listOfTerms x])$List(O)
 
     trm2O(c, t) ==
       (c = 1) => term2O t
@@ -113,8 +114,8 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       c::O * m::O
 
     x : % * y : % ==
-      +/[ +/[termprod0(t.exp * s.exp, t.gen, s.gen) for s in terms y]
-          for t in terms x]
+      +/[ +/[termprod0(t.c * s.c, t.k, s.k) for s in listOfTerms y]
+          for t in listOfTerms x]
 
     termprod0(n, x, y) ==
       n >= 0 => termprod(n, x, y)::%
@@ -194,7 +195,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
 
       r : R * x : %        == r::% * x
       x : % * r : R        == x * (r::%)
-      adjoint x        == +/[t.exp * termadj(t.gen) for t in terms x]
+      adjoint x        == +/[t.c * termadj(t.k) for t in listOfTerms x]
       rmadj t          == conjug(t.coef) * monomadj(t.monom)
       adjoint(op, adj) == nocopy setProperty(retract(op)@OP, OPADJ, adj::None)
 
