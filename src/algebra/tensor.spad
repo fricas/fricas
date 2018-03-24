@@ -372,14 +372,17 @@ and also no sorting is required.
 
         tensor(bb : List B) : % == monomial(1, vector bb)
 
-        tensor(xx : List M) : % ==
-            not size?(xx,n) => error "wrong size"
-            any?(zero?, xx) => 0
-            res : List TERM := []
-            tt : TERMtmp
-            for tt in partialTensor(empty()$(List B), xx) repeat
-                res := cons([vector reverse tt k, tt c], res)
-            constructOrdered reverse res
+        -- Always satisfied, but compiler is too weak to notice this
+        if Vector(B) has Comparable then
+
+            tensor(xx : List M) : % ==
+                not size?(xx,n) => error "wrong size"
+                any?(zero?, xx) => 0
+                res : List TERM := []
+                tt : TERMtmp
+                for tt in partialTensor(empty()$(List B), xx) repeat
+                    res := cons([vector reverse tt k, tt c], res)
+                constructOrdered reverse res
 
         -- Multiplication in the algebra
         -- We must reconstruct the elements of the factors. Take all terms,
