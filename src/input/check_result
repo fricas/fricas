@@ -1,0 +1,19 @@
+BEGIN {sum = 0 ;
+       errs = "";}
+/unexpected failures:/ {
+    cnt = $3;
+    if (cnt != "0") {
+        errs = errs "\n" FILENAME ": " cnt;
+        sum += 1;
+    }
+}
+END {
+    if (sum != 0) {
+        print "check failed";
+        print sum " failing files:";
+        print errs;
+        exit(1);
+    } else {
+        print "no unexpected failures";
+    }
+}
