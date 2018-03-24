@@ -1,0 +1,48 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "free module"
+
+testcase "Integer coefficients"
+
+Z1 := FreeModule(Integer, Reference(Symbol))
+a := ref('a)$Reference(Symbol)::Z1
+b := ref('b)$Reference(Symbol)::Z1
+c := ref('c)$Reference(Symbol)::Z1
+
+z := 0$Z1
+
+testTrue("not(a = b)")
+testTrue("not(a + b = b)")
+testTrue("not(a + c = a + b)")
+
+testEquals("a + b", "b + a")
+testEquals("(a + c) + (a + b)", "a + a + b + c")
+testEquals("(a + b) + (b + c)", "a + (b + b) + c")
+testEquals("(a + b) + a", "(a + a) + b")
+testEquals("(a + b + c) - a", "b + c")
+testEquals("(a + b + c) - b", "a + c")
+testEquals("(a + b + c) - c", "a + b")
+testEquals("(a + a + b) - a", "a + b")
+testEquals("(a + b + b) - b", "a + b")
+testEquals("a - b", "subtractIfCan(a, b)")
+
+testcase "NonNegativeInteger coefficients"
+
+Z2 := FreeModule(NonNegativeInteger, Reference(Symbol))
+a := ref('a)$Reference(Symbol)::Z2
+b := ref('b)$Reference(Symbol)::Z2
+c := ref('c)$Reference(Symbol)::Z2
+
+z := 0$Z2
+
+testEquals("subtractIfCan(a + b + c, a)", "b + c")
+testEquals("subtractIfCan(a + b + c, b)", "a + c")
+testEquals("subtractIfCan(a + b + c, c)", "a + b")
+testEquals("subtractIfCan(a + a + b, a)", "a + b")
+testEquals("subtractIfCan(a + b + b, b)", "a + b")
+
+testTrue("subtractIfCan(a, b) case _"failed_"")
+testTrue("subtractIfCan(a, a + a) case _"failed_"")
+
+statistics()

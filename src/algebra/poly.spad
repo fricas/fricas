@@ -46,7 +46,7 @@ SingletonAsOrderedSet() : OrderedSet with
 ++   but at the moment there is no need for this.
 FreeModuleCategory(R, S) : Category == Exports where
    R : Join(SemiRng, AbelianMonoid)
-   S : Comparable
+   S : SetCategory
 
    Exports == Join(BiModule(R, R), IndexedDirectProductCategory(R, S)) with
         if R has SemiRing then RetractableTo S
@@ -70,9 +70,9 @@ FreeModuleCategory(R, S) : Category == Exports where
              linearExtend : (S->R, %)->R
           ++ \spad{linearExtend: (f, x)} returns the linear extension
           ++ of a map defined on the basis applied to a linear combination
-        if R has Comparable then Comparable
+        if R has Comparable and S has Comparable then Comparable
       add
-        if R has Comparable then
+        if R has Comparable and S has Comparable then
           smaller?(p : %, q : %) : Boolean ==
               repeat
                   zero?(q) => return false
@@ -113,7 +113,7 @@ FreeModuleCategory(R, S) : Category == Exports where
 ++   Author: Michel Petitot (petitot@lifl.fr)
 
 
-FreeModule(R : Join(SemiRng, AbelianMonoid), S : Comparable) :
+FreeModule(R : Join(SemiRng, AbelianMonoid), S : SetCategory) :
         Join(BiModule(R, R), FreeModuleCategory(R, S)) with
     if R has CommutativeRing then Module(R)
  == IndexedDirectProductObject(R, S) add
@@ -203,11 +203,21 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : Comparable) :
 
            coerce(s : S) : % == [[s, 1$R]]
 
-       coefficient(x, s) ==
-         empty?(x) => 0$R
-         smaller?(s, x.first.k) => coefficient(rest x, s)
-         x.first.k = s => x.first.c
-         0$R
+       if S has Comparable then
+
+           coefficient(x, s) ==
+               empty?(x) => 0$R
+               smaller?(s, x.first.k) => coefficient(rest x, s)
+               x.first.k = s => x.first.c
+               0$R
+
+       else
+
+           coefficient(x, s) ==
+               xr := x::Rep
+               for t in xr repeat
+                   if t.k = s then return t.c
+               0
 
        if R has CommutativeRing then
            f : S->R
