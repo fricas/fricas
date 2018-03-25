@@ -32,7 +32,7 @@
 )package "BOOT"
 
 -----------------------------NEW buildFunctor CODE-----------------------------
-NRTaddDeltaCode() ==
+NRTaddDeltaCode(kvec) ==
 --NOTES: This function is called from NRTbuildFunctor to initially
 --  fill slots in $template. The $template so created is stored in the
 --  NRLIB. On load, makeDomainTemplate is called on this $template to
@@ -48,7 +48,6 @@ NRTaddDeltaCode() ==
 --  (5) identifiers/strings, parts of signatures (now parts of signatures
 --      now must all have slot numbers, represented by (QUOTE <entry>)
 --  (6) constants, like 0 and 1, represented by (CONS .. ) form
-  kvec := first $catvecList
   for i in $NRTbase.. for item in REVERSE $NRTdeltaList
     for compItem in REVERSE $NRTdeltaListComp
       |null (s:=kvec.i) repeat
@@ -285,11 +284,6 @@ NRTassignCapsuleFunctionSlot(op,sig) ==
 NRTisExported? opSig ==
   or/[u for u in $domainShell.1 | u.0 = opSig]
 
-consOpSig(op,sig,dc) ==
-  if null atom op then
-    keyedSystemError("S2GE0016",['"consOpSig",'"bad operator in table"])
-  mkList [MKQ op,mkList consSig(sig,dc)]
-
 consSig(sig,dc) == [consDomainName(sigpart,dc) for sigpart in sig]
 
 consDomainName(x,dc) ==
@@ -493,12 +487,10 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   -- indicating under what conditions this
   -- category should be present.  true => always
   makeCatvecCode:= first catvecListMaker
-  emptyVector := VECTOR()
   domainShell := GETREFV (6 + $NRTdeltaLength)
   for i in 0..4 repeat domainShell.i := $domainShell.i
     --we will clobber elements; copy since $domainShell may be a cached vector
   $template := GETREFV (6 + $NRTdeltaLength)
-  $catvecList:= [domainShell,:[emptyVector for u in CADR domainShell.4]]
   $SetFunctions:= GETREFV SIZE domainShell
   $MissingFunctionInfo:= GETREFV SIZE domainShell
   catNames := ['$, :[GENVAR() for u in rest catvecListMaker]]
@@ -513,8 +505,9 @@ buildFunctor($definition is [name,:args],sig,code,$locals,$e) ==
   [$NRTslot1PredicateList,predBitVectorCode1,:predBitVectorCode2] :=
       makePredicateBitVector [:ASSOCRIGHT $condAlist,:$NRTslot1PredicateList]
 
-  storeOperationCode := DescendCode(code, true, nil, first catNames)
-  outsideFunctionCode:= NRTaddDeltaCode()
+  storeOperationCode := DescendCode(code, true, nil, first catNames,
+                                    domainShell)
+  outsideFunctionCode:= NRTaddDeltaCode(domainShell)
   storeOperationCode:= NRTputInLocalReferences storeOperationCode
   NRTdescendCodeTran(storeOperationCode,nil) --side effects storeOperationCode
   codePart2:=
@@ -584,7 +577,7 @@ NRTsetVector4Part1(sigs, forms, conds) ==
                 [optimize COPY IFCAR comp(d, $EmptyMode, $e) or
                    d for d in $domainShell.4.0]
             uncond_list := APPEND(domainList, uncond_list)
-            if isCategoryForm(form, $e) then
+            if isCategoryForm(form) then
                 uncond_list := [form, :uncond_list]
         evalform := eval mkEvalableCategoryForm form
         cond = true =>
@@ -794,7 +787,7 @@ NRTaddInner x ==
     x is ['SubDomain, y, :.] => NRTinnerGetLocalIndex y
     getConstructorSignature x is [., :ml] =>
         for y in rest x for m in ml | not (y = '$) repeat
-            isCategoryForm(m, $CategoryFrame) => NRTinnerGetLocalIndex y
+            isCategoryForm(m) => NRTinnerGetLocalIndex y
     keyedSystemError("S2NR0003", [x])
   x
 

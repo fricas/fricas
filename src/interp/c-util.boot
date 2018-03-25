@@ -549,7 +549,7 @@ extendsCategoryForm(domain,form,form') ==
   form is ["CATEGORY",.,:l] =>
     member(form',l) or
       stackWarning ["not known that ",form'," is of mode ",form] or true
-  isCategoryForm(form,$EmptyEnvironment) =>
+  isCategoryForm(form) =>
           --Constructs the associated vector
     formVec:=(compMakeCategoryObject(form,$e)).expr
             --Must be $e to pick up locally bound domains

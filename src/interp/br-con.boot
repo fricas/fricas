@@ -407,7 +407,7 @@ kcpPage(htPage,junk) ==
 
 reduceAlistForDomain(alist,domform,conform) == --called from kccPage
   alist := SUBLISLIS(rest domform,rest conform,alist)
-  for pair in alist repeat RPLACD(pair, simpHasPred(rest pair, domform))
+  for pair in alist repeat RPLACD(pair, simpHasPred2(rest pair, domform))
   [pair for (pair := [.,:pred]) in alist | pred]
 
 kcaPage(htPage,junk) ==

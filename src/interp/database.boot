@@ -46,7 +46,7 @@ augLisplibModemapsFromCategory(form is [op,:argl],body,signature) ==
     mkAlistOfExplicitCategoryOps substitute("*1","$",body)
   domainList:=
     [[a,m] for a in rest form for m in rest signature |
-      isCategoryForm(m,$EmptyEnvironment)]
+      isCategoryForm(m)]
   catPredList:= [['ofCategory,:u] for u in [["*1",form],:domainList]]
   for (entry:= [[op,sig,:.],pred,sel]) in opAlist |
     member(sig,LASSOC(op,nonCategorySigAlist)) repeat
@@ -224,7 +224,7 @@ isDomainSubst u == main where
 
 signatureTran pred ==
   atom pred => pred
-  pred is ['has,D,catForm] and isCategoryForm(catForm,$e) =>
+  pred is ['has, D, catForm] and isCategoryForm(catForm) =>
     ['ofCategory,D,catForm]
   [signatureTran p for p in pred]
 
@@ -424,7 +424,7 @@ mkAlistOfExplicitCategoryOps target ==
     [[x,:fn(x,u)] for x in opList] where
       fn(op,u) ==
         u is [[a,:b],:c] => (a=op => [b,:fn(op,c)]; fn(op,c))
-  isCategoryForm(target,$e) => nil
+  isCategoryForm(target) => nil
   keyedSystemError("S2GE0016",
     ['"mkAlistOfExplicitCategoryOps",'"bad signature"])
 
@@ -442,7 +442,7 @@ flattenSignatureList(x) ==
   nil
 
 mkDatabasePred [a,t] ==
-  isCategoryForm(t,$e) => ['ofCategory,a,t]
+  isCategoryForm(t) => ['ofCategory, a, t]
   ['ofType,a,t]
 
 formal2Pattern x ==

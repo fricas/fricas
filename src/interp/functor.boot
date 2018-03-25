@@ -67,7 +67,7 @@ compCategories u ==
 compCategories1(u,v) ==
 -- v is the mode of u
   ATOM u => u
-  isCategoryForm(v,$e) => compCategories u
+  isCategoryForm(v) => compCategories u
   [c,:.] := comp(macroExpand(u,$e),v,$e) => c
   error 'compCategories1
 
@@ -163,21 +163,21 @@ mkDomainConstructor x ==
   x is [op,:argl] => ['LIST,MKQ op,:[mkDomainConstructor a for a in argl]]
 
 
-DescendCodeAdd(base,flag) ==
-  atom base => DescendCodeVarAdd(base,flag)
+DescendCodeAdd(base, flag, kvec) ==
+  atom base => DescendCodeVarAdd(base, flag, kvec)
   not (modemap:=get(opOf base,'modemap,$CategoryFrame)) =>
       if getmode(opOf base,$e) is ["Mapping",target,:formalArgModes]
          then formalArgs:= take(#formalArgModes,$FormalMapVariableList)
                 --argument substitution if parameterized?
 
          else keyedSystemError("S2OR0001",[opOf base])
-      DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes)
+      DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec)
   for [[[.,:formalArgs],target,:formalArgModes],.] in modemap repeat
-    (ans:= DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes))=>
-      return ans
+      (ans := DescendCodeAdd1(base, flag, target, formalArgs,
+                              formalArgModes, kvec)) => return ans
   ans
 
-DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes) ==
+DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec) ==
   slist:= pairList(formalArgs,rest $addFormLhs)
          --base = comp $addFormLhs-- bound in compAdd
   e:= $e
@@ -198,8 +198,8 @@ DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes) ==
       for i in 6..n | not atom cat.i and not atom (sig:= first cat.i)
          and
           (u:=
-            SetFunctionSlots(SUBLIS(slist,sig),['ELT,instantiatedBase,i],flag,
-              'adding))~=nil]
+            SetFunctionSlots(SUBLIS(slist, sig), ['ELT, instantiatedBase, i],
+                             flag, kvec)) ~= nil]
      --The code from here to the end is designed to replace repeated LOAD/STORE
      --combinations (SETELT ...(ELT ..)) by MVCs where this is practicable
   copyvec:=GETREFV (1+n)
@@ -221,21 +221,22 @@ DescendCodeAdd1(base,flag,target,formalArgs,formalArgModes) ==
       code:=[v,:code]
   [['LET,instantiatedBase,base],:code]
 
-DescendCode(code,flag,viewAssoc,EnvToPass) ==
+DescendCode(code, flag, viewAssoc, EnvToPass, kvec) ==
   -- flag = true if we are walking down code always executed;
   -- otherwise set to conditions in which
   code=nil => nil
   code='noBranch => nil
   code is ['add,base,:codelist] =>
     codelist:=
-      [v for u in codelist | (v:= DescendCode(u,flag,viewAssoc,EnvToPass))~=nil]
+        [v for u in codelist | (v := DescendCode(u, flag, viewAssoc,
+           EnvToPass, kvec)) ~= nil]
                   -- must do this first, to get this overriding Add code
-    ['PROGN,:DescendCodeAdd(base,flag),:codelist]
+    ['PROGN, :DescendCodeAdd(base, flag, kvec), :codelist]
   code is ['PROGN,:codelist] =>
     ['PROGN,:
             --Two REVERSEs leave original order, but ensure last guy wins
-      NREVERSE [v for u in REVERSE codelist |
-                    (v:= DescendCode(u,flag,viewAssoc,EnvToPass))~=nil]]
+      NREVERSE [v for u in REVERSE codelist | (v := DescendCode(
+                         u, flag, viewAssoc, EnvToPass, kvec)) ~= nil]]
   code is ['COND,:condlist] =>
     c := [[u2 := ProcessCond(first u), :q] for u in condlist] where q ==
           null u2 => nil
@@ -250,7 +251,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
           [DescendCode(v, f,
             if first u is ['HasCategory,dom,cat]
               then [[dom,:cat],:viewAssoc]
-              else viewAssoc,EnvToPass) for v in rest u]
+              else viewAssoc, EnvToPass, kvec) for v in rest u]
     TruthP CAAR c => ['PROGN,:CDAR c]
     while (c and (last c is [c1] or last c is [c1,[]]) and
             (c1 = '(QUOTE T))) repeat
@@ -277,7 +278,7 @@ DescendCode(code,flag,viewAssoc,EnvToPass) ==
       u := LASSOC(dom, viewAssoc) => ["getDomainView", dom, u]
       dom
     body:= ['CONS,implem,dom]
-    u:= SetFunctionSlots(sig,body,flag,'original)
+    u := SetFunctionSlots(sig, body, flag, kvec)
     ConstantCreator u =>
       if not (flag=true) then u := ['COND, [ProcessCond(flag), u]]
       $ConstantAssignments:= [u,:$ConstantAssignments]
@@ -305,10 +306,11 @@ ProcessCond(cond) ==
   INTEGERP POSN1(ncond,$NRTslot1PredicateList) => predicateBitRef ncond
   cond
 
-SetFunctionSlots(sig,body,flag,mode) == --mode is either "original" or "adding"
+SetFunctionSlots(sig, body, flag, kvec) ==
 --+
-  catNames := ['$]
-  for u in $catvecList for v in catNames repeat
+  v := '$
+  u := kvec
+  if true then
     null body => return NIL
     for catImplem in LookUpSigSlots(sig,u.1) repeat
       if catImplem is [q,.,index] and (q='ELT or q='CONST) then
@@ -538,9 +540,9 @@ getViewsConditions u ==
       --the two lines marked  ensure that the principal view comes first
       --if you don't want it, CDR it off
 
-DescendCodeVarAdd(base,flag) ==
-   princview := first $catvecList
-   [SetFunctionSlots(sig,SUBST('ELT,'CONST,implem),flag,'adding) repeat
+DescendCodeVarAdd(base, flag, kvec) ==
+   princview := kvec
+   [SetFunctionSlots(sig, SUBST('ELT,'CONST,implem), flag, kvec) repeat
        for i in 6..MAXINDEX princview |
          princview.i is [sig:=[op,types],:.] and
            LASSOC([base,:SUBST(base,'$,types)],get(op,'modemap,$e)) is
