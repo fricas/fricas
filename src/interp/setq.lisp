@@ -77,7 +77,6 @@
 (DEFPARAMETER |$bootStrapMode| NIL) ;; if true skip functor bodies
 (SETQ |$bootstrapDomains| NIL)
 (SETQ |$compileDontDefineFunctions| 'T)
-(SETQ |$compileOnlyCertainItems| NIL)
 (SETQ |$devaluateList| NIL)
 (SETQ |$doNotCompressHashTableIfTrue| T)
 (SETQ |$mutableDomains| NIL)     ; checked in DEFINE BOOT

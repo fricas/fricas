@@ -41,7 +41,6 @@
 (defvar |$reportInstantiations| nil)
 (defvar |$reportEachInstantiation| nil)
 (defvar |$reportCounts| nil)
-(defvar |$compileOnlyCertainItems| nil "list of functions to compile")
 (defvar |$doNotCompileJustPrint| nil "switch for compile")
 (defvar |$PrintCompilerMessageIfTrue| t)
 (defvar |$Rep| '|$Rep| "should be bound to gensym? checked in coerce")
