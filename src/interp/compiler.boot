@@ -1274,7 +1274,6 @@ compileSpad2Cmd args ==
     -- should be unhooked
 
     $scanIfTrue              : local := nil
-    $compileOnlyCertainItems : local := nil
     $f                       : local := nil  -- compiler
     $m                       : local := nil  --   variables
 
@@ -1307,7 +1306,7 @@ compileSpad2Cmd args ==
         fullopt = 'functions   =>
             null optargs =>
               throwKeyedMsg("S2IZ0037",['")functions"])
-            $compileOnlyCertainItems := optargs
+            throwKeyedMsg(")functions unsupported", [])
         fullopt = 'constructor =>
             null optargs =>
               throwKeyedMsg("S2IZ0037",['")constructor"])
@@ -1316,11 +1315,7 @@ compileSpad2Cmd args ==
         throwKeyedMsg("S2IZ0036",[STRCONC('")",object2String optname)])
 
     $InteractiveMode : local := nil
-    if $compileOnlyCertainItems then
-        null constructor => sayKeyedMsg("S2IZ0040",NIL)
-        compilerDoitWithScreenedLisplib(constructor, fun)
-    else
-        compilerDoit(constructor, fun)
+    compilerDoit(constructor, fun)
     extendLocalLibdb $newConlist
     terminateSystemCommand()
     spadPrompt()
@@ -1339,13 +1334,3 @@ compilerDoit(constructor, fun) ==
         null member(ii,$constructorsSeen) =>
           sayBrightly ['">>> Warning ",'%b,ii,'%d,'" was not found"]
 
-compilerDoitWithScreenedLisplib(constructor, fun) ==
-    EMBED('RWRITE,
-          '(LAMBDA (KEY VALUE STREAM)
-                   (COND ((AND (EQ STREAM $libFile)
-                               (NOT (MEMBER KEY $saveableItems)))
-                          VALUE)
-                         ((NOT NIL)
-                          (RWRITE KEY VALUE STREAM)))) )
-    UNWIND_-PROTECT(compilerDoit(constructor,fun),
-                   UNEMBED 'RWRITE)
