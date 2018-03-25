@@ -1232,12 +1232,9 @@ SparseUnivariateTaylorSeries(Coef, var, cen) : Exports == Implementation where
       refer := ref((-1)@I::COM)
       makeSeries(refer, iSeries(st, 0, refer))
 
-    nniToI : Stream Record(k : NNI, c : Coef) -> ST
-    nniToI st == delay
-      empty? st => empty()
-      term : Term := [(frst st).k, (frst st).c]
-      concat(term, nniToI rst st)
-
+    -- We consider the Rep of  InnerSparseUnivariatePowerSeries as
+    -- local knowledge and build on the fact that NNI=SubDomain(INT, #>=0)
+    nniToI x ==> (x @ Stream Record(k : NNI, c : Coef)) pretend ST
     series(st : Stream Record(k : NNI, c : Coef)) == series(nniToI st)$Rep
 
 --% Values
