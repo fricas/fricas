@@ -398,10 +398,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     op':= $op
     rettype:= signature'.target
     T:= compFunctorBody(body,rettype,$e,parForm)
-    -- If only compiling certain items, then ignore the body shell.
-    $compileOnlyCertainItems =>
-       reportOnFunctorCompilation()
-       [nil, ['Mapping, :signature'], originale]
 
     body':= T.expr
     lamOrSlam :=
@@ -703,10 +699,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     --6a skip if compiling only certain items but not this one
     -- could be moved closer to the top
     formattedSig := formatUnabbreviated ['Mapping,:signature']
-    $compileOnlyCertainItems and _
-      not member($op, $compileOnlyCertainItems) =>
-        sayBrightly ['"   skipping ", localOrExported,:bright $op]
-        [nil,['Mapping,:signature'],oldE]
     sayBrightly ['"   compiling ",localOrExported,
       :bright $op,'": ",:formattedSig]
 
@@ -839,23 +831,6 @@ compile u ==
         INTERN STRCONC(encodeItem $prefix, '";", encodeItem op)
       encodeFunctionName(op,$functorForm,$signatureOfForm,";",$suffix)
     u:= [op',lamExpr]
-  -- If just updating certain functions, check for previous existence.
-  -- Deduce old sequence number and use it (items have been skipped).
-  if $LISPLIB and $compileOnlyCertainItems then
-    parts := splitEncodedFunctionName(u.0, ";")
---  Next line JHD/SMWATT 7/17/86 to deal with inner functions
-    parts='inner => $savableItems:=[u.0,:$savableItems]
-    unew  := nil
-    for [s,t] in $splitUpItemsAlreadyThere repeat
-       if parts.0=s.0 and parts.1=s.1 and parts.2=s.2 then unew := t
-    null unew =>
-      sayBrightly ['"   Error: Item did not previously exist"]
-      sayBrightly ['"   Item not saved: ", :bright u.0]
-      sayBrightly ['"   What's there is: ", $lisplibItemsAlreadyThere]
-      nil
-    sayBrightly ['"   Renaming ", u.0, '" as ", unew]
-    u := [unew, :rest u]
-    $savableItems := [unew, :$saveableItems] -- tested by embedded RWRITE
   optimizedBody:= optimizeFunctionDef u
   stuffToCompile:=
     if null $insideCapsuleFunctionIfTrue
