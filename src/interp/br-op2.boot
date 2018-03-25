@@ -442,7 +442,7 @@ hashTable2Alist tb ==
   [[op,:HGET(tb,op)] for op in listSort(function GLESSEQP,HKEYS $if)]
 
 koCatAttrsAdd(catform,pred) ==
-  for [name, argl, :p] in first getConstructorExports catform repeat
+  for [name, argl, :p] in first getConstructorExports(catform, false) repeat
     npred  := quickAnd(pred,p)
     exists := HGET($if,name)
     if existingPred := LASSOC(argl,exists) then npred := quickOr(npred,existingPred)

@@ -73,7 +73,7 @@ compApplication(op,argl,m,e,T) ==
   T.mode is ['Mapping, retm, :argml] =>
     #argl ~= #argml => nil
     retm := resolve(m, retm)
-    retm = $Category or isCategoryForm(retm,e) => nil  -- not handled
+    retm = $Category or isCategoryForm(retm) => nil  -- not handled
     argTl := [[.,.,e] := comp(x,m,e) or return "failed"
               for x in argl for m in argml]
     argTl = "failed" => nil
@@ -86,13 +86,15 @@ compApplication(op,argl,m,e,T) ==
           op':= INTERN STRCONC(encodeItem nprefix,";",encodeItem T.expr)
       ['call, ['applyFun, T.expr], :[a.expr for a in argTl]]
     coerce([form, retm, e],resolve(retm,m))
+  -- If op is not 'elt' and not a mapping check if we can
+  -- use appropriate 'elt'
   op = 'elt => nil
   eltForm := ['elt, op, :argl]
   comp(eltForm, m, e)
 
 compFormWithModemap(form is [op,:argl],m,e,modemap) ==
   [map:= [.,target,:.],[pred,impl]]:= modemap
-  if isCategoryForm(target,e) and isFunctor op then
+  if isCategoryForm(target) and isFunctor op then
     [modemap,e]:= substituteIntoFunctorModemap(argl,modemap,e) or return nil
     [map:= [.,target,:.],:cexpr]:= modemap
   sv:=listOfSharpVars map
@@ -112,7 +114,7 @@ compFormWithModemap(form is [op,:argl],m,e,modemap) ==
       m':= SUBLIS(sl,map.(1))
       x':=
         form':= [f,:[t.expr for t in Tl]]
-        (m'=$Category or isCategoryForm(m',e)) and ATOM(f) => form'
+        (m' = $Category or isCategoryForm(m')) and ATOM(f) => form'
         -- try to deal with new-style Unions where we know the conditions
         op = "elt" and f is ['XLAM,:.] and IDENTP(z := first argl) and
           (c:=get(z,'condition,e)) and
@@ -129,7 +131,7 @@ compFormWithModemap(form is [op,:argl],m,e,modemap) ==
 
 applyMapping([op,:argl],m,e,ml) ==
   #argl~=#ml-1 => nil
-  isCategoryForm(first ml,e) =>
+  isCategoryForm(first ml) =>
                                 --is op a functor?
     pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
     ml' := SUBLIS(pairlis, ml)
@@ -188,7 +190,7 @@ compApplyModemap(form,modemap,$e,sl) ==
   -- 3.  obtain domain-specific function, if possible, and return
 
   --$bindings is bound by compMapCond
-  [f,$bindings]:= compMapCond(op,mc,sl,fnsel) or return nil
+  [f, bindings] := compMapCond(op, mc, sl, fnsel) or return nil
 
 --+ can no longer trust what the modemap says for a reference into
 --+ an exterior domain (it is calculating the displacement based on view
@@ -197,11 +199,11 @@ compApplyModemap(form,modemap,$e,sl) ==
 
 --$NRTflag=true and f is [op1,d,.] and NE(d,'$) and member(op1,'(ELT CONST)) =>
   f is [op1,d,.] and member(op1,'(ELT CONST)) =>
-    [genDeltaEntry [op,:modemap],lt',$bindings]
-  [f,lt',$bindings]
+      [genDeltaEntry([op, :modemap]), lt', bindings]
+  [f, lt', bindings]
 
-compMapCond(op,mc,$bindings,fnsel) ==
-  or/[compMapCond'(u,op,mc,$bindings) for u in fnsel]
+compMapCond(op, mc, bindings, fnsel) ==
+  or/[compMapCond'(u, op, mc, bindings) for u in fnsel]
 
 compMapCond'([cexpr,fnexpr],op,dc,bindings) ==
   compMapCond''(cexpr,dc) => compMapCondFun(fnexpr,op,dc,bindings)

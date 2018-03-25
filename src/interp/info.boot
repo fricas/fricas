@@ -82,13 +82,8 @@ formatInfo u ==
  --u is ("CATEGORY",junk,:l) => ("PROGN",:(formatInfo v for v in l))
   u is ["PROGN",:l] => ["PROGN",:[formatInfo v for v in l]]
   u is ["ATTRIBUTE",v] =>
-
-    -- The parser can't tell between those attributes that really
-    -- are attributes, and those that are category names
-    atom v and isCategoryForm([v],$e) => ["has","$",[v]]
-    atom v => BREAK()
-    isCategoryForm(v,$e) => ["has","$",v]
-    BREAK()
+      isCategoryForm(v) => ["has", "$", v]
+      BREAK()
   u is ["IF",a,b,c] =>
     c="noBranch" => ["COND",:liftCond [formatPred a,formatInfo b]]
     b="noBranch" => ["COND",:liftCond [["not",formatPred a],formatInfo c]]
@@ -107,9 +102,9 @@ liftCond (clause is [ante,conseq]) ==
 formatPred u ==
          --Assumes that $e is set up to point to an environment
   u is ["has",a,b] =>
-    atom b and isCategoryForm([b],$e) => ["has",a,[b]]
+    atom b and isCategoryForm([b]) => ["has", a, [b]]
     atom b => BREAK()
-    isCategoryForm(b,$e) => u
+    isCategoryForm(b) => u
     b is ["ATTRIBUTE",.] => BREAK()
     b is ["SIGNATURE",:.] => u
     BREAK()

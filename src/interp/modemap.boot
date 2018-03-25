@@ -47,11 +47,11 @@ addDomain(domain,e) ==
     addNewDomain(domain,e)
   (name:= first domain)='Category => e
   domainMember(domain,getDomainsInScope e) => e
-  getmode(name,e) is ["Mapping",target,:.] and isCategoryForm(target,e)=>
+  getmode(name, e) is ["Mapping", target, :.] and isCategoryForm(target) =>
       addNewDomain(domain,e)
     -- constructor? test needed for domains compiled with $bootStrapMode=true
   isFunctor name or constructor? name => addNewDomain(domain,e)
-  if not isCategoryForm(domain,e) and
+  if not isCategoryForm(domain) and
     not member(name,'(Mapping CATEGORY)) then
       unknownTypeError name
   e        --is not a functor
@@ -167,7 +167,7 @@ addNewDomain(domain,e) ==
 
 augModemapsFromDomain(name,functorForm,e) ==
   member(IFCAR name or name, $DummyFunctorNames) => e
-  name=$Category or isCategoryForm(name,e) => e
+  name = $Category or isCategoryForm(name) => e
   member(name, getDomainsInScope e) => e
   if u:= GETDATABASE(opOf functorForm,'SUPERDOMAIN) then
     e:= addNewDomain(first u,e)

@@ -712,7 +712,7 @@ extendsCategoryBasic0(dom,u,v) ==
   v is ['IF,p,['ATTRIBUTE,c],.] =>
     -- BREAK()
     uVec := (compMakeCategoryObject(u, $EmptyEnvironment)).expr
-    null atom c and isCategoryForm(c,nil) =>
+    null atom c and isCategoryForm(c) =>
       slot4 := uVec.4
       LASSOC(c,CADR slot4) is [=p,:.]
     slot2 := uVec.2
@@ -723,7 +723,7 @@ extendsCategoryBasic(dom,u,v) ==
   u is ["Join",:l] => or/[extendsCategoryBasic(dom,x,v) for x in l]
   u = v => true
   uVec := (compMakeCategoryObject(u, $EmptyEnvironment)).expr
-  isCategoryForm(v,nil) => catExtendsCat?(u,v,uVec)
+  isCategoryForm(v) => catExtendsCat?(u, v, uVec)
   v is ['SIGNATURE,op,sig] =>
       res := false
       for csig in uVec.1 repeat
