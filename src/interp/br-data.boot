@@ -77,7 +77,7 @@ buildLibdb(domainList) ==  --called by make-databases (daase.lisp.pamphlet)
   constructorList := domainList or allConstructors()
   for con in constructorList repeat
     writedb buildLibdbConEntry con
-    [attrlist,:oplist] := getConstructorExports $conform
+    [attrlist, :oplist] := getConstructorExports($conform, false)
     buildLibOps oplist
     buildLibAttrs attrlist
   SHUT $outStream

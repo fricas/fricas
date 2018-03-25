@@ -262,7 +262,7 @@ bottomUp t ==
     -- If this is a type producing form, then we don't want
     -- to store the representation object in the environment.
     -- Rather, we want to record the reified canonical form.
-    if ms is [m] and (m is ["Mode"] or isCategoryForm(m,$e))
+    if ms is [m] and (m is ["Mode"] or isCategoryForm(m))
     then putValue(t,objNew(devaluate objValUnwrap getValue t, m))
 
     -- given no target or package calling, force integer constants to

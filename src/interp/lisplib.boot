@@ -406,14 +406,14 @@ mkEvalableCategoryForm c ==       --from DEFINE
 isDomainForm(D,e) ==
   --added for MPOLY 3/83 by RDJ
   MEMQ(IFCAR D, $SpecialDomainNames) or isFunctor D or
-    -- ((D is ['Mapping,target,:.]) and isCategoryForm(target,e)) or
-     ((getmode(D,e) is ['Mapping,target,:.]) and isCategoryForm(target,e)) or
-       isCategoryForm(getmode(D,e),e) or isDomainConstructorForm(D,e)
+    -- ((D is ['Mapping,target,:.]) and isCategoryForm(target)) or
+     ((getmode(D, e) is ['Mapping, target, :.]) and isCategoryForm(target)) or
+       isCategoryForm(getmode(D, e)) or isDomainConstructorForm(D, e)
 
 isDomainConstructorForm(D,e) ==
   D is [op,:argl] and (u:= get(op,"value",e)) and
     u is [.,["Mapping",target,:.],:.] and
-      isCategoryForm(EQSUBSTLIST(argl,$FormalMapVariableList,target),e)
+      isCategoryForm(EQSUBSTLIST(argl, $FormalMapVariableList, target))
 
 isFunctor x ==
   op:= opOf x

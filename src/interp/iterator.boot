@@ -133,14 +133,6 @@ compRepeatOrCollect(form,m,e) ==
           m'
         coerceExit([form',m'',e'],targetMode)
 
---constructByModemap([x,source,e],target) ==
---  u:=
---    [cexpr
---      for (modemap:= [map,cexpr]) in getModemapList("construct",1,e) | map is [
---        .,t,s] and modeEqual(t,target) and modeEqual(s,source)] or return nil
---  fn:= (or/[selfn for [cond,selfn] in u | cond=true]) or return nil
---  [["call",fn,x],target,e]
-
 listOrVectorElementMode x ==
   x is [a,b,:.] and member(a,'(PrimitiveArray Vector List)) => b
 
@@ -273,62 +265,3 @@ modeIsAggregateOf(ListOrVector,m,e) ==
     m
   get(name,"value",e) is [[ =ListOrVector,R],:.] => [m,R]
 
---% VECTOR ITERATORS
-
---the following 4 functions are not currently used
-
---compCollectV(form,m,e) ==
---  fn(form,[m,:$exitModeStack],[#$exitModeStack,:$leaveLevelStack],e) where
---    fn(form,$exitModeStack,$leaveLevelStack,e) ==
---      [repeatOrCollect,it,body]:= form
---      [it',e]:= compIteratorV(it,e) or return nil
---      m:= first $exitModeStack
---      [mOver,mUnder]:= modeIsAggregateOf("Vector",m,e) or $EmptyMode
---      [body',m',e']:= compOrCroak(body,mUnder,e) or return nil
---      form':= ["COLLECTV",it',body']
---     {n:=
---        it' is ("STEP",.,s,i,f) or it' is ("ISTEP",.,s,i,f) =>
---              computeMaxIndex(s,f,i);
---        return nil}
---      coerce([form',mOver,e'],m)
---
---compIteratorV(it,e) ==
---  it is ["STEP",index,start,inc,final] =>
---    (start':= comp(start,$Integer,e)) and
---      (inc':= comp(inc,$NonNegativeInteger,start'.env)) and
---       (final':= comp(final,$Integer,inc'.env)) =>
---        indexmode:=
---          comp(start,$NonNegativeInteger,e) => $NonNegativeInteger
---          $Integer
---        if null get(index,"mode",e) then [.,.,e]:=
---          compMakeDeclaration([":",index,indexmode],$EmptyMode,final'.env) or
---            return nil
---        e:= put(index,"value",[genSomeVariable(),indexmode,e],e)
---        [["ISTEP",index,start'.expr,inc'.expr,final'.expr],e]
---    [start,.,e]:=
---      comp(start,$Integer,e) or return
---        stackMessage ["start value of index: ",start," is not an integer"]
---    [inc,.,e]:=
---      comp(inc,$NonNegativeInteger,e) or return
---        stackMessage ["index increment: ",inc," must be a non-negative integer"]
---    [final,.,e]:=
---      comp(final,$Integer,e) or return
---        stackMessage ["final value of index: ",final," is not an integer"]
---    indexmode:=
---      comp(CADDR it,$NonNegativeInteger,e) => $NonNegativeInteger
---      $Integer
---    if null get(index,"mode",e) then [.,.,e]:=
---      compMakeDeclaration([":",index,indexmode],$EmptyMode,e) or return nil
---    e:= put(index,"value",[genSomeVariable(),indexmode,e],e)
---    [["STEP",index,start,inc,final],e]
---  nil
---
---computeMaxIndex(s,f,i) ==
---  i~=1 => cannotDo()
---  s=1 => f
---  exprDifference(f,exprDifference(s,1))
---
---exprDifference(x,y) ==
---  y=0 => x
---  FIXP x and FIXP y => DIFFERENCE(x,y)
---  ["DIFFERENCE",x,y]

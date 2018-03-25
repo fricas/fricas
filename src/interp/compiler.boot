@@ -1029,7 +1029,7 @@ compColon([":",f,t],m,e) ==
     atom t and (t':= assoc(t,getDomainsInScope e)) => t'
     isDomainForm(t,e) and not $insideCategoryIfTrue =>
       (if not member(t,getDomainsInScope e) then e:= addDomain(t,e); t)
-    isDomainForm(t,e) or isCategoryForm(t,e) => t
+    isDomainForm(t, e) or isCategoryForm(t) => t
     t is ["Mapping",m',:r] => t
     unknownTypeError t
     t
@@ -1127,7 +1127,7 @@ coerceHard(T,m) ==
         (get(m,"value",$e) is [m'',:.] or getmode(m,$e) is ["Mapping",m'']) and
           modeEqual(m'',m') => [T.expr,m,T.env]
   STRINGP T.expr and T.expr=m => [T.expr,m,$e]
-  isCategoryForm(m,$e) =>
+  isCategoryForm(m) =>
       $bootStrapMode = true => [T.expr,m,$e]
       extendsCategoryForm(T.expr,T.mode,m) => [T.expr,m,$e]
       coerceExtraHard(T,m)

@@ -369,10 +369,10 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
        --this is used below to set $lisplibSlot1 global
     $NRTbase: local := 6 -- equals length of $domainShell
     $NRTaddForm: local := nil   -- see compAdd; NRTmakeSlot1
+    $NRTdeltaLength: local := 0 -- length of $NRTdeltaList
     $NRTdeltaList: local := nil --list of misc. elts used in compiled fncts
-    $NRTdeltaListComp: local := nil --list of COMP-ed forms for $NRTdeltaList
-    $NRTaddList: local := nil --list of fncts not defined in capsule (added)
-    $NRTdeltaLength: local := 0 -- =length of block of extra entries in vector
+    -- parallel to $NRTdeltaList, list of COMP-ed forms for $NRTdeltaList
+    $NRTdeltaListComp: local := nil
     -- the above optimizes the calls to local domains
     $template: local:= nil --stored in the lisplib (if $NRTvec = true)
     $functionLocations: local := nil --locations of defined functions in source
@@ -409,7 +409,8 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     operationAlist := SUBLIS($pairlis,$lisplibOperationAlist)
     if $LISPLIB then
       augmentLisplibModemapsFromFunctor(parForm,operationAlist,parSignature)
-    reportOnFunctorCompilation()
+    $functorStats := addStats($functorStats, $functionStats)
+    reportOnFunctorCompilation($functorStats)
 
 --  5. give operator a 'modemap property
     if $LISPLIB then
@@ -457,14 +458,13 @@ compFunctorBody(body,m,e,parForm) ==
     body
   T
 
-reportOnFunctorCompilation() ==
+reportOnFunctorCompilation(functorStats) ==
   displayMissingFunctions()
   if $semanticErrorStack then sayBrightly '" "
   displaySemanticErrors()
   if $warningStack then sayBrightly '" "
   displayWarnings()
-  $functorStats:= addStats($functorStats,$functionStats)
-  [byteCount,elapsedSeconds] := $functorStats
+  [byteCount, elapsedSeconds] := functorStats
   sayBrightly ['%l,:bright '"  Cumulative Statistics for Constructor",
     $op]
   timeString := normalizeStatAndStringify elapsedSeconds
@@ -527,13 +527,13 @@ makeFunctorArgumentParameters(argl,sigl,target) ==
       ['Join,s,['CATEGORY,'package,:ss]]
     fn(a,s) ==
       not(ATOM(a)) => BREAK()
-      if isCategoryForm(s,$CategoryFrame) then
+      if isCategoryForm(s) then
         s is ["Join", :catlist] => genDomainViewList(a, rest s)
         genDomainView(a, s, "getDomainView")
 
 genDomainViewList(id, catlist) ==
   null catlist => nil
-  catlist is [y] and not isCategoryForm(y,$EmptyEnvironment) => nil
+  catlist is [y] and not isCategoryForm(y) => nil
   for c in catlist repeat
       genDomainView(id, c, "getDomainView")
 
@@ -921,7 +921,7 @@ compAdd(['add,$addForm,capsule],m,e) ==
         $NRTaddForm := ["@Tuple", :[NRTgetLocalIndex x for x in rest $addForm]]
         compOrCroak(compTuple2Record $addForm,$EmptyMode,e)
       compOrCroak($addForm,$EmptyMode,e)
-  not(isCategoryForm(m1, e)) or m1 = '(Category) =>
+  not(isCategoryForm(m1)) or m1 = '(Category) =>
       userError(concat('"need domain before 'add', got", addForm,
                        '"of type", m1))
   compCapsule(capsule,m,e)
@@ -1093,7 +1093,7 @@ compJoin(["Join",:argl],m,e) ==
     [extract for x in catList] where
       extract() ==
         x is ["Join", ["mkCategory",:y]] => ["mkCategory",:y]
-        isCategoryForm(x,e) =>
+        isCategoryForm(x) =>
           parameters:=
             union("append"/[getParms(y,e) for y in rest x],parameters)
               where getParms(y,e) ==
@@ -1121,25 +1121,33 @@ compForMode(x,m,e) ==
   comp(x,m,e)
 
 compMakeCategoryObject(c,$e) ==
-  not isCategoryForm(c,$e) => nil
+  not isCategoryForm(c) => nil
   u := mkEvalableCategoryForm c => [c_eval u, $Category, $e]
   nil
 
 quotifyCategoryArgument x == MKQ x
 
 makeCategoryForm(c,e) ==
-  not isCategoryForm(c,e) => nil
+  not isCategoryForm(c) => nil
   [x,m,e]:= compOrCroak(c,$EmptyMode,e)
   [x,e]
+
+mk_acc() == [[], []]
+
+push_at_list(ati, acc) == acc.1 := [ati, :acc.1]
+
+get_at_list(acc) == acc.1
+
+push_sig_list(sig, acc) == acc.0 := [sig, :acc.0]
+
+get_sigs_list(acc) == acc.0
 
 compCategory(x,m,e) ==
   (m:= resolve(m,["Category"]))=["Category"] and x is ['CATEGORY,
     domainOrPackage,:l] =>
-      $sigList: local := nil
-      $atList: local := nil
-      for x in l repeat compCategoryItem(x,nil)
-      -- $atList ~= nil => BREAK()
-      rep := mkExplicitCategoryFunction($sigList, $atList)
+      acc := mk_acc()
+      for x in l repeat compCategoryItem(x, nil, acc)
+      rep := mkExplicitCategoryFunction(get_sigs_list(acc), get_at_list(acc))
     --if inside compDefineCategory, provide for category argument substitution
       [rep,m,e]
   systemErrorHere '"compCategory"
@@ -1197,18 +1205,18 @@ DomainSubstitutionFunction(parameters,body) ==
   body:= ["COND",[name],['(QUOTE T),['SETQ,name,body]]]
   body
 
-compCategoryItem(x,predl) ==
+compCategoryItem(x, predl, acc) ==
   x is nil => nil
   --1. if x is a conditional expression, recurse; otherwise, form the predicate
   x is ["COND",[p,e]] =>
     predl':= [p,:predl]
-    compCategoryItem(e,predl')
+    compCategoryItem(e, predl', acc)
   x is ["IF",a,b,c] =>
     predl':= [a,:predl]
-    if b ~= "noBranch" then compCategoryItem(b, predl')
+    if b ~= "noBranch" then compCategoryItem(b, predl', acc)
     c="noBranch" => nil
     predl':= [["not",a],:predl]
-    compCategoryItem(c,predl')
+    compCategoryItem(c, predl', acc)
   pred:= (predl => MKPF(predl,"AND"); true)
 
   --2. if attribute, push it and return
@@ -1216,17 +1224,17 @@ compCategoryItem(x,predl) ==
   x is ["ATTRIBUTE",y] =>
        -- should generate something else for conditional categories
        -- BREAK()
-       PUSH(MKQ [y,pred],$atList)
+       push_at_list(MKQ [y, pred], acc)
 
   --3. it may be a list, with PROGN as the CAR, and some information as the CDR
-  x is ["PROGN",:l] => for u in l repeat compCategoryItem(u,predl)
+  x is ["PROGN", :l] => for u in l repeat compCategoryItem(u, predl, acc)
 
 -- 4. otherwise, x gives a signature for a
 --    single operator name or a list of names; if a list of names,
 --    recurse
   ["SIGNATURE",op,:sig]:= x
   null atom op =>
-    for y in op repeat compCategoryItem(["SIGNATURE",y,:sig],predl)
+      for y in op repeat compCategoryItem(["SIGNATURE", y, :sig], predl, acc)
 
   --4. branch on a single type or a signature with source and target
-  PUSH(MKQ [rest x,pred],$sigList)
+  push_sig_list(MKQ [rest x, pred], acc)

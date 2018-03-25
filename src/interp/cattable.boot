@@ -89,7 +89,9 @@ simpCategoryTable() == main where
         [[x,:npred] for [x,:pred] in entry | npred := simpHasPred pred]
       HPUT($has_category_hash, key, change)
 
-simpHasPred(pred,:options) == main where
+simpHasPred(pred) == simpHasPred2(pred, [])
+
+simpHasPred2(pred, options) == main where
   main ==
     $hasArgs: local := IFCDR IFCAR options
     simp pred
@@ -335,16 +337,15 @@ makeCatPred(zz, cats, thePred) ==
         cats := makeCatPred(at, cats, curPred)
   cats
 
-getConstructorExports(conform,:options) == categoryParts(conform,
-  GETDATABASE(opOf conform,'CONSTRUCTORCATEGORY),IFCAR options)
+getConstructorExports(conform, do_constr) == categoryParts(conform,
+  GETDATABASE(opOf conform, 'CONSTRUCTORCATEGORY), do_constr)
 
 DEFVAR($attrlist)
 DEFVAR($oplist)
 DEFVAR($conslist)
 
-categoryParts(conform,category,:options) == main where
+categoryParts(conform, category, do_constr) == main where
   main ==
-    cons? := IFCAR options  --means to include constructors as well
     $attrlist: local := nil
     $oplist  : local := nil
     $conslist: local := nil
@@ -353,7 +354,7 @@ categoryParts(conform,category,:options) == main where
     $attrlist := listSort(function GLESSEQP,$attrlist)
     $oplist   := listSort(function GLESSEQP,$oplist)
     res := [$attrlist,:$oplist]
-    if cons? then res := [listSort(function GLESSEQP,$conslist),:res]
+    if do_constr then res := [listSort(function GLESSEQP, $conslist), :res]
     if GETDATABASE(conname,'CONSTRUCTORKIND) = 'category then
       tvl := TAKE(#rest conform,$TriangleVariableList)
       res := SUBLISLIS($FormalMapVariableList,tvl,res)
