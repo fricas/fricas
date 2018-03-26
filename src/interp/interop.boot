@@ -255,7 +255,7 @@ instantiate domenv ==
 hashTypeForm([fn,: args], percentHash) ==
    hashType([fn,:devaluateList args], percentHash)
 
---------------------> NEW DEFINITION (override in i-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in i-util.boot)
 devaluate(d) ==
   isDomain d =>
       -- ?need a shortcut for old domains
@@ -316,14 +316,14 @@ $oldAxiomDomainDispatch :=
           [function oldAxiomDomainHashCode],
           [function oldAxiomAddChild])
 
---------------------> NEW DEFINITION (see g-util.boot.pamphlet)
+--------------------> NEW DEFINITION (see g-util.boot)
 isDomain a ==
   PAIRP a and VECP(first a) and
     member((first a).0, $domainTypeTokens)
 
 -- following is interpreter interface to function lookup
 -- perhaps it should always work with hashcodes for signature?
---------------------> NEW DEFINITION (override in nrungo.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrungo.boot)
 NRTcompiledLookup(op,sig,dom) ==
   if CONTAINED('_#,sig) then
       sig := [NRTtypeHack t for t in sig]
@@ -334,7 +334,7 @@ NRTcompiledLookup(op,sig,dom) ==
       getDomainHash dom
   compiledLookupCheck(op, hashType(['Mapping,:sig], percentHash), dom)
 
---------------------> NEW DEFINITION (override in nrungo.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrungo.boot)
 compiledLookup(op, sig, dollar) ==
   if not isDomain dollar then dollar := NRTevalDomain dollar
   basicLookup(op, sig, dollar, dollar)
@@ -342,7 +342,7 @@ compiledLookup(op, sig, dollar) ==
 HasSignature(domain,[op,sig]) ==
   compiledLookup(op,sig,domain)
 
---------------------> NEW DEFINITION (override in nrungo.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrungo.boot)
 basicLookup(op,sig,domain,dollar) ==
   -- Spad case
   VECP domain =>
@@ -429,24 +429,24 @@ oldCompLookupNoDefaults(op, sig, domvec, dollar) ==
   $lookupDefaults:local := nil
   lookupInDomainVector(op,sig,domvec,dollar)
 
---------------------> NEW DEFINITION (override in nrungo.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrungo.boot)
 lookupInDomainVector(op,sig,domain,dollar) ==
   PAIRP domain => basicLookupCheckDefaults(op,sig,domain,domain)
   slot1 := domain.1
   SPADCALL(op,sig,dollar,slot1)
 
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrunfast.boot)
 lookupComplete(op,sig,dollar,env) ==
    hashCode? sig => hashNewLookupInTable(op,sig,dollar,env,nil)
    newLookupInTable(op,sig,dollar,env,nil)
 
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrunfast.boot)
 lookupIncomplete(op,sig,dollar,env) ==
    hashCode? sig => hashNewLookupInTable(op,sig,dollar,env,true)
    newLookupInTable(op,sig,dollar,env,true)
 
 
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrunfast.boot)
 lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
   if s = '$ then
 --  a = 0 => return true  --needed only if extra call in newGoGet to basicLookup
@@ -478,7 +478,7 @@ lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
   --above line is temporarily necessary until system is compiled 8/15/90
 --s = a
 
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrunfast.boot)
 getOpCode(op,vec,max) ==
 --search Op vector for "op" returning code if found, nil otherwise
   res := nil
@@ -575,7 +575,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   flag or someMatch => newLookupInAddChain(op,sig,domain,dollar)
   nil
 
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrunfast.boot)
 replaceGoGetSlot env ==
   [thisDomain,index,:op] := env
   thisDomainForm := devaluate thisDomain
@@ -618,7 +618,7 @@ newHasCategory(domain,catform) ==
     BREAK()
   lazyMatchAssocV(catform,auxvec,catvec,domain)         --new style
 
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrunfast.boot)
 lazyMatchAssocV(x,auxvec,catvec,domain) ==      --new style slot4
   -- Does not work (triggers type error due to initialization by NIL)
   -- n : FIXNUM := MAXINDEX catvec
@@ -660,7 +660,7 @@ HasCategory(domain,catform') ==
    opOf(catform) = "Type" or  --temporary hack
     or/[compareSigEqual(catform,cat,domain0,domain) for cat in catlist]
 
---------------------> NEW DEFINITION (override in nrunfast.boot.pamphlet)
+--------------------> NEW DEFINITION (override in nrunfast.boot)
 lazyDomainSet(form, thisDomain, slot) ==
   slotDomain := evalSlotDomain(form,thisDomain)
   if $monitorNewWorld then
@@ -671,7 +671,7 @@ lazyDomainSet(form, thisDomain, slot) ==
   SETELT(thisDomain,slot,slotDomain)
 
 
---------------------> NEW DEFINITION (override in template.boot.pamphlet)
+--------------------> NEW DEFINITION (override in template.boot)
 evalSlotDomain(u,dollar) ==
   $returnNowhereFromGoGet: local := false
   $ : fluid := dollar
@@ -710,12 +710,12 @@ evalSlotDomain(u,dollar) ==
   u is [op,:argl] => APPLY(op,[evalSlotDomain(x,dollar) for x in argl])
   systemErrorHere '"evalSlotDomain"
 
---------------------> NEW DEFINITION (override in i-util.boot.pamphlet)
+--------------------> NEW DEFINITION (override in i-util.boot)
 domainEqual(a,b) ==
   devaluate(a) = devaluate(b)
 
 
---------------------> NEW DEFINITION (see i-funsel.boot.pamphlet)
+--------------------> NEW DEFINITION (see i-funsel.boot)
 getFunctionFromDomain1(op, dc, target, args) ==
   -- finds the function op with argument types args in dc
   -- complains, if no function or ambiguous

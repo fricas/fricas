@@ -864,7 +864,7 @@ findFunctionInDomain1(omm,op,tar,args1,args2,SL) ==
     sayKeyedMsg("S2IF0006",[y])
     NIL
 
---------------------> NEW DEFINITION (override in xrun.boot.pamphlet)
+--------------------> NEW DEFINITION (override in xrun.boot)
 findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
   -- looks for a modemap for op with signature  args1 -> tar
   --   in the domain of computation dc

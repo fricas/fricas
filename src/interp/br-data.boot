@@ -43,7 +43,7 @@ lefts u ==
 --  operations      Op  \#\E\sig \conname\pred\comments (E is one of U/E)
 --  attributes      Aname\#\E\args\conname\pred\comments
 --  I = <x if exposed><d if category with a default package>
-buildLibdb(domainList) ==  --called by make-databases (daase.lisp.pamphlet)
+buildLibdb(domainList) ==  --called by make-databases (daase.lisp)
   $OpLst: local := nil
   $AttrLst: local := nil
   $DomLst : local := nil
@@ -385,7 +385,7 @@ getGlossLines instream ==
 -- This database is written out as USERS.DATABASE (database.boot) and read using
 -- function getUsersOfConstructor. See functions whoUses and kcuPage in browser.
 --============================================================================
-mkUsersHashTable() ==  --called by make-databases (daase.lisp.pamphlet)
+mkUsersHashTable() ==  --called by make-databases (daase.lisp)
   $usersTb := MAKE_-HASH_-TABLE()
   for x in allConstructors() repeat
     for conform in getImports x repeat

@@ -37,7 +37,7 @@ being the symbol ``.'' (dot).
 
 Below we try to explain essential properties of Axiom databases,
 for longer description (including many low level details) look
-at [[daase.lisp.pamphlet]].
+at [[daase.lisp]].
 General format of Axiom databases is as follows
 \begin{verbatim}
 stamp
