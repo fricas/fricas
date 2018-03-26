@@ -47,7 +47,7 @@ example:
    development)
 
 The list looks like (the names in bold are accessor names that can be
-found in {\bf property.lisp.pamphlet\cite{1}}. Look for "setName".):
+found in {\bf property.lisp\cite{1}}. Look for "setName".):
 \begin{list}{}
 \item {\bf 1} {\sl Name} the keyword the user will see. In this example
 the user would say "{\bf )set output userlevel}".
@@ -59,7 +59,7 @@ These commands are restricted to keep the user from causing damage.
 \item {\bf 4} {\sl Type} a symbol, one of {\bf FUNCTION}, {\bf INTEGER},
 {\bf STRING}, {\bf LITERALS}, or {\bf TREE}. See the function
 {\bf initializeSetVariables} in the file
-{\bf setvars.boot.pamphlet\cite{2}}.
+{\bf setvars.boot\cite{2}}.
 \item {\bf 5} {\sl Var} variable which holds the current user setting.
 \item {\bf 6} {\sl Leaf} is a list of all of the user levels
 that expose this command.
