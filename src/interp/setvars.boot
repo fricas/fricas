@@ -45,7 +45,7 @@ a description of itself and any conditions it imposes.
 appropriate.
 \end{list}
 Also by convention each top level function named in the FUNCTION
-slot (see the data structure in setvart.boot.pamphlet\cite{1}) has an
+slot (see the data structure in setvart.boot\cite{1}) has an
 associated describe function. Thus, for example,
 setOutputFortran is accompanied by function to describe
 its arguments, such as describeSetOutputFortran.

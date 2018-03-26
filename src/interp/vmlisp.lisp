@@ -840,7 +840,7 @@
     (/ (cos a) (sin a))
     (/ 1.0 (tan a))))
 
-;;; moved from unlisp.lisp.pamphlet
+;;; moved from unlisp.lisp
 (defun |AlistAssocQ| (key l)
   (assoc key l :test #'eq) )
 
