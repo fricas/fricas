@@ -56,17 +56,6 @@ ListMonoidOps(S, E, un) : Exports == Implementation where
       ++ leftMult(s, a) returns \spad{s * a} where
       ++ \spad{*} is the monoid operation,
       ++ which is assumed non-commutative.
-    plus          : (S, E, %) -> %
-      ++ plus(s, e, x) returns \spad{e * s + x} where \spad{+}
-      ++ is the monoid operation,
-      ++ which is assumed commutative.
-    plus          : (%, %) -> %
-      ++ plus(x, y) returns \spad{x + y} where \spad{+}
-      ++ is the monoid operation,
-      ++ which is assumed commutative.
-    commutativeEquality : (%, %) -> Boolean
-      ++ commutativeEquality(x, y) returns true if x and y are equal
-      ++ assuming commutativity
     mapExpon      : (E -> E, %) -> %
       ++ mapExpon(f, a1\^e1 ... an\^en) returns \spad{a1\^f(e1) ... an\^f(en)}.
     mapGen        : (S -> S, %) -> %
@@ -117,37 +106,6 @@ ListMonoidOps(S, E, un) : Exports == Implementation where
       s = f.first.gen => concat([s, f.first.exp + un], rest f)
       concat([s, un], f)
 
-    commutativeEquality(s1 : %, s2 : %) : Boolean ==
-      #s1 ~= #s2 => false
-      for t1 in s1 repeat
-          if not member?(t1, s2) then return false
-      true
-
-    plus!(s : S, n : E, f : %) : % ==
-      h := g := concat([s, n], f)
-      h1 := rest h
-      while not empty? h1 repeat
-        s = h1.first.gen =>
-          l :=
-            zero?(m := n + h1.first.exp) => rest h1
-            concat([s, m], rest h1)
-          setrest!(h, l)
-          return rest g
-        h := h1
-        h1 := rest h1
-      g
-
-    plus(s, n, f) == plus!(s, n, copy f)
-
-    plus(f, g) ==
-      #f < #g => localplus(f, g)
-      localplus(g, f)
-
-    localplus(f, g) ==
-      g := copy g
-      for x in f repeat
-        g := plus(x.gen, x.exp, g)
-      g
 
 )abbrev domain FMONOID FreeMonoid
 ++ Free monoid on any set of generators
@@ -501,130 +459,6 @@ FreeGroup(S : SetCategory) : Join(Group, RetractableTo S) with
                 lb:= rest lb
             false
 
-)abbrev category FAMONC FreeAbelianMonoidCategory
-++ Category for free abelian monoid on any set of generators
-++ Author: Manuel Bronstein
-++ Date Created: November 1989
-++ Description:
-++ A free abelian monoid on a set S is the monoid of finite sums of
-++ the form \spad{reduce(+, [ni * si])} where the si's are in S, and the ni's
-++ are in a given abelian monoid. The operation is commutative.
-FreeAbelianMonoidCategory(S : SetCategory, E : CancellationAbelianMonoid) : Category ==
-  Join(CancellationAbelianMonoid, RetractableTo S) with
-        "+"        : (S, %) -> %
-          ++ s + x returns the sum of s and x.
-        "*"        : (E, S) -> %
-          ++ e * s returns e times s.
-        size       : % -> NonNegativeInteger
-          ++ size(x) returns the number of terms in x.
-          ++ mapGen(f, a1\^e1 ... an\^en) returns \spad{f(a1)\^e1 ... f(an)\^en}.
-        terms      : % -> List Record(gen : S, exp : E)
-          ++ terms(e1 a1 + ... + en an) returns \spad{[[a1, e1], ..., [an, en]]}.
-        nthCoef    : (%, Integer) -> E
-          ++ nthCoef(x, n) returns the coefficient of the n^th term of x.
-        nthFactor  : (%, Integer) -> S
-          ++ nthFactor(x, n) returns the factor of the n^th term of x.
-        coefficient : (S, %) -> E
-          ++ coefficient(s, e1 a1 + ... + en an) returns ei such that
-          ++ ai = s, or 0 if s is not one of the ai's.
-        mapCoef    : (E -> E, %) -> %
-          ++ mapCoef(f, e1 a1 +...+ en an) returns
-          ++ \spad{f(e1) a1 +...+ f(en) an}.
-        mapGen     : (S -> S, %) -> %
-          ++ mapGen(f, e1 a1 +...+ en an) returns
-          ++ \spad{e1 f(a1) +...+ en f(an)}.
-        if E has OrderedAbelianMonoid then
-          highCommonTerms : (%, %) -> %
-            ++ highCommonTerms(e1 a1 + ... + en an, f1 b1 + ... + fm bm) returns
-            ++   \spad{reduce(+, [max(ei, fi) ci])}
-            ++ where ci ranges in the intersection
-            ++ of \spad{{a1, ..., an}} and \spad{{b1, ..., bm}}.
-
-)abbrev domain IFAMON InnerFreeAbelianMonoid
-++ Internal free abelian monoid on any set of generators
-++ Author: Manuel Bronstein
-++ Date Created: November 1989
-++ Description:
-++ Internal implementation of a free abelian monoid.
-InnerFreeAbelianMonoid(S : SetCategory, E : CancellationAbelianMonoid, un : E):
-  FreeAbelianMonoidCategory(S, E) == ListMonoidOps(S, E, un) add
-        Rep := ListMonoidOps(S, E, un)
-
-        0                          == makeUnit()
-        zero? f                    == empty? listOfMonoms f
-        terms f                    == copy listOfMonoms f
-        nthCoef(f, i)              == nthExpon(f, i)
-        nthFactor(f, i)            == nthFactor(f, i)$Rep
-        s : S + f : %                  == plus(s, un, f)
-        f : % + g : %                  == plus(f, g)
-        (f : % = g : %) : Boolean        == commutativeEquality(f, g)
-        n : E * s : S                  == makeTerm(s, n)
-        n : NonNegativeInteger * f : % == mapExpon(x +-> n * x, f)
-        coerce(f : %) : OutputForm     == outputForm(f, "+", (x, y) +-> y*x, 0)
-        mapCoef(f, x)              == mapExpon(f, x)
-        mapGen(f, x)               == mapGen(f, x)$Rep
-
-        coefficient(s, f) ==
-          for x in terms f repeat
-            x.gen = s => return(x.exp)
-          0
-
-        if E has OrderedAbelianMonoid then
-          highCommonTerms(f, g) ==
-            makeMulti [[x.gen, min(x.exp, n)] for x in listOfMonoms f |
-                                       (n := coefficient(x.gen, g)) > 0]
-
-)abbrev domain FAMONOID FreeAbelianMonoid
-++ Free abelian monoid on any set of generators
-++ Author: Manuel Bronstein
-++ Date Created: November 1989
-++ Description:
-++ The free abelian monoid on a set S is the monoid of finite sums of
-++ the form \spad{reduce(+, [ni * si])} where the si's are in S, and the ni's
-++ are non-negative integers. The operation is commutative.
-FreeAbelianMonoid(S : SetCategory):
-  FreeAbelianMonoidCategory(S, NonNegativeInteger)
-    == InnerFreeAbelianMonoid(S, NonNegativeInteger, 1)
-
-)abbrev domain FAGROUP FreeAbelianGroup
-++ Free abelian group on any set of generators
-++ Author: Manuel Bronstein
-++ Date Created: November 1989
-++ Description:
-++ The free abelian group on a set S is the monoid of finite sums of
-++ the form \spad{reduce(+, [ni * si])} where the si's are in S, and the ni's
-++ are integers. The operation is commutative.
-FreeAbelianGroup(S : SetCategory) : Exports == Implementation where
-  Exports ==> Join(AbelianGroup, Module Integer,
-                   FreeAbelianMonoidCategory(S, Integer)) with
-    if S has OrderedSet then OrderedSet
-
-  Implementation ==> InnerFreeAbelianMonoid(S, Integer, 1) add
-    - f == mapCoef("-", f)
-
-    if S has OrderedSet then
-      inmax : List Record(gen : S, exp : Integer) -> Record(gen : S, exp : Integer)
-
-      inmax l ==
-        mx := first l
-        for t in rest l repeat
-          if mx.gen < t.gen then mx := t
-        mx
-
-      -- lexicographic order
-      a < b ==
-        zero? a  =>
-          zero? b => false
-          0 < (inmax terms b).exp
-        ta := inmax terms a
-        zero? b => ta.exp < 0
-        tb := inmax terms b
-        ta.gen < tb.gen => 0 < tb.exp
-        tb.gen < ta.gen => ta.exp < 0
-        ta.exp < tb.exp => true
-        tb.exp < ta.exp => false
-        lc := ta.exp * ta.gen
-        (a - lc) < (b - lc)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
