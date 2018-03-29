@@ -439,24 +439,28 @@ DirectProduct(dim : NonNegativeInteger, R : Type):
         u : % * v : % == map(_*, u, v)$Rep
 
       if R has CancellationAbelianMonoid then
+        tmp0 := new(dim, 0)$Rep
+
         subtractIfCan(u:%, v:%):Union(%,"failed") ==
-          w := new(dim, 0)$Vector(R)
+          w := tmp0
           for i in 1..dim repeat
             (c := subtractIfCan(qelt(u, i)$Rep, qelt(v,i)$Rep)) case "failed" =>
                     return "failed"
             qsetelt!(w, i, c::R)$Rep
-          w pretend %
+          copy(w)$Rep
 
       if R has Monoid then
 
         1 == new(dim, 1)$Vector(R) pretend %
 
+        tmp1 := new(dim, 1)$Rep
+
         recip z ==
-          w := new(dim, 1)$Vector(R)
-          for i in minIndex w .. maxIndex w repeat
+          w := tmp1
+          for i in 1..dim repeat
             (u := recip qelt(z, i)) case "failed" => return "failed"
             qsetelt!(w, i, u::R)
-          w pretend %
+          copy(w)$Rep
 
       if R has AbelianMonoid and R has Monoid then
 
