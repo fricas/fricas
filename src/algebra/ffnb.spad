@@ -169,7 +169,7 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
       k : SI := 1$SI
       expT : List SI := expTable.sizeGF
       while (logqe >= expT.k) and not zero? expT.k repeat k := k +$SI 1$SI
-      mult : I := (sizeGF-1) *$I sizeGF ^$I ((k-1)pretend NNI) +$I
+      mult : I := (sizeGF - 1) *$I sizeGF ^$I (qcoerce(k - 1)) +$I
               ((logqe +$SI k -$SI 1$SI) quo$SI k)::I -$I 2
       (10*mult) >= (15 * (e1::I)) =>
 --      print("repeatedSquaring(a,e)"::OUT)
@@ -181,8 +181,8 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
     repSq(b, e) ==
       a := copy(b)$VGF
       (e = 1) => a
-      odd?(e)$I => a * repSq(a*a, (e quo 2) pretend NNI)
-      repSq(a*a, (e quo 2) pretend NNI)
+      odd?(e)$I => a * repSq(a*a, qcoerce(e quo 2))
+      repSq(a*a, qcoerce(e quo 2))
 
 -- computes a^e using the divide and conquer algorithm similar to the
 -- one from D.R.Stinson,
@@ -190,7 +190,7 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
 -- GF(2^n)", Siam J. Computation, Vol.19, No.4, pp.711-717, August 1990
     dAndcExp(a, e, k) ==
       plist : List VGF := [copy(a)$VGF]
-      qk : I := sizeGF^(k pretend NNI)
+      qk : I := sizeGF^(qcoerce(k))
       for j in 2..(qk-1) repeat
         if positiveRemainder(j, sizeGF)=0 then b := qPot(plist.(j quo sizeGF), 1)$%
                             else b := a *$% last(plist)$(List VGF)
@@ -198,7 +198,7 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
       l : List NNI := []
       ex : I := e
       while not(ex = 0) repeat
-        l := concat(l, positiveRemainder(ex, qk) pretend NNI)
+        l := concat(l, qcoerce(positiveRemainder(ex, qk)))
         ex := ex quo qk
       if first(l)=0 then erg : VGF := new(#a, trGen)$VGF
                     else erg : VGF := plist.(first(l))
@@ -337,7 +337,7 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
       m : I := n rem$I (sizeGF ^ degm)
       erg := zero(degm)$VGF
       for j in 1..degm repeat
-        erg.j := index((sizeGF+(m rem sizeGF)) pretend PI)$GF
+        erg.j := index(qcoerce(sizeGF + (m rem sizeGF)))$GF
         m := m quo sizeGF
       erg
 
@@ -430,7 +430,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF, uni) : Exports == _
 
     if uni case (Vector List TERM) then
       multTable := uni :: (Vector List TERM)
-      extdeg := (#multTable) pretend PI
+      extdeg := qcoerce(#multTable)
       vv : V := new(extdeg, 0)$V
       vv.1 := 1$GF
       setFieldInfo(multTable, 1$GF)$INBFF
@@ -438,7 +438,7 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF, uni) : Exports == _
       initmult? := false
      else
       defpol := uni :: SUP(GF)
-      extdeg := degree(defpol)$(SUP GF) pretend PI
+      extdeg := qcoerce(degree(defpol)$(SUP GF))
       multTable : Vector List TERM := new(extdeg, []$(List TERM))
 
     basisOutput : List OUT :=
@@ -614,7 +614,7 @@ divisor of the order of the multiplicative group"
 
     extensionDegree() == extdeg
 
-    -- sizeOfGroundField() == size()$GF pretend NNI
+    -- sizeOfGroundField() == qcoerce(size()$GF)
 
     definingPolynomial() == defpol
 
