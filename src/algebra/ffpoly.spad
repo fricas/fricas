@@ -209,7 +209,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       --  to avoid coercions in the main functions)
 
     reducedQPowers(f) ==
-      m : PI := degree(f)$SUP pretend PI
+      m : PI := qcoerce(degree(f)$SUP)
       m1 : I := m-1
       setPoly(f)$MM
       e := reduce(monomial(1, 1)$SUP)$MM ^ sizeGF
@@ -249,9 +249,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       coeffVector : Vector GF
       until empty? ns repeat
         newCoeffVector := ns.1
-        i : PI := (n+1) pretend PI
+        i : PI := qcoerce(n + 1)
         while newCoeffVector(i) = 0 repeat
-          i := (i - 1) pretend PI
+          i := qcoerce(i - 1)
         if i < dim then
           dim := i
           coeffVector := newCoeffVector
@@ -260,7 +260,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
                sizeGF^((k-2)::NNI))$SUP for k in 2..dim])
 
 --    qEulerPhiCyclotomic n ==
---      n = 1 => (sizeGF - 1) pretend PI
+--      n = 1 => qcoerce(sizeGF - 1)
 --      p : PI := characteristic()$GF :: PI
 --      (n rem p) = 0 => error
 --        "cyclotomic polynomial not defined for this argument value"
@@ -271,7 +271,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
 --      while (qe rem n) ~= 1 repeat
 --        e  := e + 1
 --        qe := qe * q
---      ((qe - 1) ^ ((eulerPhi(n) quo e) pretend PI) ) pretend PI
+--      qcoerce((qe - 1) ^ (qcoerce(eulerPhi(n) quo e)) )
 
     numberOfIrreduciblePoly n ==
       -- we compute the number Nq(n) of monic irreducible polynomials
@@ -286,7 +286,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       -- the divisors d > 1 of n :
       divisorsOfn : L PI := rest(divisors n) pretend L PI
       for d in divisorsOfn repeat
-        qd := qd * (sizeGF) ^ ((d - lastd) pretend PI)
+        qd := qd * (sizeGF) ^ (qcoerce(d - lastd))
         sum := sum + moebiusMu(n quo d) * qd
         lastd := d
       (sum quo n) :: PI
@@ -335,8 +335,8 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           e  := e + 1
           qe := qe * q
         prod := prod * _
-          ((qe - 1) ^ ((eulerPhi(d) quo e) pretend PI) ) pretend PI
-      (q^((n-m) pretend NNI) * prod quo n) pretend PI
+          qcoerce((qe - 1) ^ (qcoerce(eulerPhi(d) quo e)) )
+      qcoerce(q^(qcoerce(n - m)@NNI) * prod quo n)
 
     primitive? f ==
       -- let GF be a field of order q; a monic polynomial f in GF[X]
@@ -1067,7 +1067,7 @@ FiniteFieldPolynomialPackage2(F, GF) : Exports == Implementation where
           for j in 1..sizeGF repeat
             -- compute gcd(trace(beta * x) + gf, stillToFactor)
             h := gcd(stillToFactor, trModp +$(SUP F) _
-             (index(j pretend PI)$GF::F::(SUP F)))$(SUP F)
+             (index(qcoerce(j))$GF::F::(SUP F)))$(SUP F)
             -- make the gcd polynomial monic
             if leadingCoefficient(h)$(SUP F) ~= 1$F then
               h := (inv leadingCoefficient(h)) * h
