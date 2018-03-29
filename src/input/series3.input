@@ -86,10 +86,22 @@ testLibraryError("seriesSolve(de, f, x = 0, [1, 0, 0, 0])")
 
 testcase "odes"
 
+y := operator 'y
+
+eq := D(y(x), x) - 1/((x+1)*y(x))
+-- need to explicitely take 1 from EXPR(INT), othewise interpreter
+-- would coece 1 to equation
+res := seriesSolve(eq, y, x = 0, 1$EXPR(INT))
+es0 := [1, 1, -1, 4/3, -25/12, 217/60, -304/45]
+testEquals("[coefficient(res, i) for i in 0..6]", "es0")
+
+
+eq := D(y(x), x) - 1/(x*y(x))
+res := seriesSolve(eq, y, x = 1, [1])
+testEquals("[coefficient(res, i) for i in 0..6]", "es0")
+
 -- We will solve  y''' = sin(y'') * exp(y) + cos(x)
 -- subject to y(0) = 1, y'(0) = 0, y''(0) = 0
-
-y := operator 'y
 
 eq := differentiate(y x, x, 3) - sin differentiate(y x, x, 2) * exp y x
            = cos x
