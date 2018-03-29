@@ -195,32 +195,42 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       map(z +-> z*s, x)
 
     iDiv : (ST A, ST A, A) -> ST A
-    iDiv(x, y, ry0) == delay
+    iDiv(x, rst_y, ry0) == delay
       empty? x => empty()
       c0 := frst x * ry0
-      concat(c0, iDiv(rst x - c0 * rst y, y, ry0))
+      concat(c0, iDiv(rst x - c0*rst_y, rst_y, ry0))
+
+    i_div1 : (ST A, ST A, A, A) -> ST A
+    i_div1(rst_x, rst_y, ry0, c0) == delay
+        empty?(rst_y) => map(z +-> z*ry0, rst_x)
+        iDiv(rst_x - c0*rst_y, rst_y, ry0)
 
     x exquo y ==
+      y0 : A
       for n in 1.. repeat
         n > 1000 => return "failed"
         empty? y => return "failed"
         empty? x => return empty()
-        frst y = 0 =>
+        (y0 := frst y) = 0 =>
           frst x = 0 => (x := rst x; y := rst y)
           return "failed"
         -- first entry in y is non-zero
         break
-      (ry0 := recip frst y) case "failed" => "failed"
-      empty? rst y => map(z +-> z*(ry0 :: A), x)
-      iDiv(x, y, ry0 :: A)
+      (ry0u := recip y0) case "failed" => "failed"
+      ry0 := ry0u::A
+      x0 := frst x
+      c0 := x0*ry0
+      concat(c0, i_div1(rst x, rst y, ry0, c0))
 
     (x : ST A) / (y : ST A) == delay
       empty? y => error "/: division by zero"
       empty? x => empty()
-      (ry0 := recip frst y) case "failed" =>
+      (ry0u := recip frst y) case "failed" =>
         error "/: second argument is not invertible"
-      empty? rst y => map(z +-> z*(ry0 :: A), x)
-      iDiv(x, y, ry0 :: A)
+      ry0 := ry0u::A
+      x0 := frst x
+      c0 := x0*ry0
+      concat(c0, i_div1(rst x, rst y, ry0, c0))
 
     recip x ==
       empty? x => "failed"
@@ -228,7 +238,7 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       rh1 case "failed" => "failed"
       rh := rh1 :: A
       delay
-        concat(rh, iDiv(- rh * rst x, x, rh))
+        concat(rh, iDiv(- rh * rst x, rst x, rh))
 
 --% coefficients
 
