@@ -63,21 +63,21 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
     -- Rep := Union("zero", IntegerMod(size()$GF ^ degree(defpol) -1)),
     -- why doesn't the compiler like this ?
 
-    qzero ==> (-1)@SI pretend Rep
+    qzero ==> (-1)@SI
 
     extdeg : NNI  := degree(defpol)$(SUP GF)::NNI
     -- the extension degree
 
-    sizeFF : NNI := (size()$GF ^ extdeg) pretend NNI
+    sizeFF : NNI := qcoerce(size()$GF ^ extdeg)
     -- the size of the field
 
     if sizeFF > 2^20 then
       error "field too large for this representation"
 
-    sizeCG : SI := (sizeFF - 1) pretend SI
+    sizeCG : SI := qconvert(sizeFF - 1)
     -- the order of the cyclic group
 
-    sizeFG : SI := (sizeCG quo (size()$GF-1)) pretend SI
+    sizeFG : SI := qconvert(sizeCG quo (size()$GF - 1))
     -- the order of the factor group
 
 
@@ -122,7 +122,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
     order(x : %) : PI ==
       zero?(x) =>
         error"order: order of zero undefined"
-      (sizeCG quo gcd(sizeCG, x pretend NNI))::PI
+      (sizeCG quo gcd(sizeCG, qcoerce(convert(x)@I)@NNI))::PI
 
     primitive?(x : %) ==
       zero?(x) or (x = 1) => false
@@ -133,20 +133,20 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
       x = 0 => new(extdeg, 0)$(Vector GF)
       primElement : SAE := convert(monomial(1, 1)$(SUP GF))$SAE
 -- the primitive element in the corresponding algebraic extension
-      coordinates(primElement ^$SAE (x pretend SI))$SAE
+      coordinates(primElement ^$SAE convert(x)@I)$SAE
 
     x : % + y : % ==
       if initzech? then initializeZech()
       x =$Rep qzero => y
       y =$Rep qzero => x
       d : Rep := submod(y, x, sizeCG)$Rep
-      (d pretend SI) <= shift(sizeCG, -$SI (1$SI)) =>
-        zechlog.(d pretend SI) =$SI -1::SI => qzero
-        addmod(x, zechlog.(d pretend SI) pretend Rep, sizeCG)$Rep
+      d <= shift(sizeCG, -$SI (1$SI)) =>
+        zechlog.(convert(d)@I) =$SI -1::SI => qzero
+        addmod(x, zechlog.(convert(d)@I), sizeCG)$Rep
       --d: Rep := positiveRemainder(x -$Rep y, sizeCG)$Rep
       d : Rep := (sizeCG -$SI d)::Rep
-      addmod(y, zechlog.(d pretend SI) pretend Rep, sizeCG)$Rep
-      --positiveRemainder(x +$Rep zechlog.(d pretend SI) -$Rep d, sizeCG)$Rep
+      addmod(y, zechlog.(convert(d)@I), sizeCG)$Rep
+      --positiveRemainder(x +$Rep zechlog.(convert(d)@I) -$Rep d, sizeCG)$Rep
 
 
     initializeZech() ==
@@ -185,14 +185,14 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
 
     definingPolynomial() == defpol
 
-    random() == random(sizeFF  pretend Rep)$Rep -$Rep 1$Rep
+    random() == random(qconvert(sizeFF))$Rep -$Rep 1$Rep
 
 
 
     represents(v) ==
       u : FFP := represents(v)$FFP
       u =$FFP 0$FFP => 0
-      discreteLog(u)$FFP pretend Rep
+      qconvert(discreteLog(u)$FFP)
 
 
 
@@ -202,14 +202,14 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
       -- version before 10.20.92: log pretend Rep
       -- 1$GF is coerced to sizeCG pretend Rep by old version
       -- now 1$GF is coerced to 0$Rep which is correct.
-      positiveRemainder(log, sizeCG) pretend Rep
+      qconvert(positiveRemainder(log, sizeCG))
 
 
     retractIfCan(x : %) ==
       zero? x => 0$GF
-      u := (x::Rep) exquo$Rep (sizeFG pretend Rep)
+      u := (x::Rep) exquo$Rep qconvert(sizeFG)
       u = "failed" => "failed"
-      primEltGF ^$GF ((u::%) pretend SI)
+      primEltGF ^$GF (convert(u::%)@I)
 
     retract(x : %) ==
       a := retractIfCan(x)
@@ -221,7 +221,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
 
     inGroundField?(x) ==
       zero? x=> true
-      positiveRemainder(x::Rep, sizeFG pretend Rep)$Rep =$Rep 0$Rep => true
+      positiveRemainder(x::Rep, qconvert(sizeFG))$Rep =$Rep 0$Rep => true
       false
 
     discreteLog(b : %, x : %) ==
@@ -229,12 +229,12 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
       e := extendedEuclidean(b, sizeCG, x)$Rep
       e = "failed" => "failed"
       e1 : Record(coef1 : %, coef2 : %) := e :: Record(coef1 : %, coef2 : %)
-      positiveRemainder(e1.coef1, sizeCG)$Rep pretend NNI
+      qcoerce(convert(positiveRemainder(e1.coef1, sizeCG)$Rep)@I)
 
     - x : % ==
         x =$Rep qzero => qzero
         characteristic() =$I 2 => x
-        addmod(x, shift(sizeCG, -1)$SI pretend Rep, sizeCG)
+        addmod(x, shift(sizeCG, -1)$SI, sizeCG)
 
     generator() == 1$SI
     createPrimitiveElement() == 1$SI
@@ -242,7 +242,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
 
     discreteLog(x : %) ==
       zero? x => error "discrete logarithm error"
-      x pretend NNI
+      qcoerce(convert(x)@I)
 
     normalElement() ==
       if initelt? then initializeElt()
@@ -250,20 +250,20 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
 
     initializeElt() ==
       facOfGroupSize := factors(factor(sizeCG)$Integer)
-      normalElt := createNormalElement() pretend SI
+      normalElt := createNormalElement()::Rep
       initelt? := false
       void()$Void
 
-    extensionDegree() == extdeg pretend PI
+    extensionDegree() == qcoerce(extdeg)
 
     characteristic() == characteristic()$GF
 
     lookup(x : %) ==
-      x =$Rep (-$Rep 1$Rep) => sizeFF pretend PI
-      (x +$Rep 1$Rep) pretend PI
+      x =$Rep (-$Rep 1$Rep) => qcoerce(sizeFF)
+      qcoerce(convert(x +$Rep 1$Rep)@I)
 
     index(a : PI) ==
-      positiveRemainder(a, sizeFF)$I pretend Rep -$Rep 1$Rep
+      qconvert(positiveRemainder(a, sizeFF)$I) -$Rep 1$Rep
 
     0 == (-$Rep 1$Rep)
 
@@ -300,7 +300,7 @@ FiniteFieldCyclicGroupExtensionByPolynomial(GF, defpol) : _
     x : % ^ n : NNI == x ^ n::I
 
     x : % ^ n : I ==
-      m : Rep := positiveRemainder(n, sizeCG)$I pretend Rep
+      m : Rep := qconvert(positiveRemainder(n, sizeCG)$I)
       m =$Rep 0$Rep => 1
       x = 0 => 0
       mulmod(m, x, sizeCG::Rep)$Rep

@@ -246,7 +246,7 @@ CartesianTensor(minix, dim, R) : Exports == Implementation where
             for i in 1..rnk repeat
                 qr := divide(n, dim)
                 n  := qr.quotient
-                indv.((rnk-i+1) pretend NNI) := qr.remainder + minix
+                indv.(rnk - i + 1) := qr.remainder + minix
             n ~= 0 => error "Index error (too big)"
             indv
 
@@ -398,12 +398,12 @@ CartesianTensor(minix, dim, R) : Exports == Implementation where
 
         mkOutf(x : %, i0 : I, rnk : NNI) : Outf ==
             odd? rnk =>
-                rnk1  := (rnk-1) pretend NNI
+                rnk1  := qcoerce(rnk - 1)@NNI
                 nskip := dim^rnk1
                 [mkOutf(x, i0+nskip*i, rnk1) for i in 0..dim-1]::Outf
             rnk = 0 =>
                 get(x, i0)::Outf
-            rnk1  := (rnk-2) pretend NNI
+            rnk1  := qcoerce(rnk - 2)@NNI
             nskip := dim^rnk1
             matrix [[mkOutf(x, i0+nskip*(dim*i + j), rnk1)
                              for j in 0..dim-1] for i in 0..dim-1]
@@ -492,9 +492,10 @@ CartesianTensor(minix, dim, R) : Exports == Implementation where
                 error "Improper index for contraction"
             if i > j then (i, j) := (j, i)
 
-            rl:= (rx- j) pretend NNI; nl:= dim^rl; zol:= 1;     xol:= zol
-            rm:= (j-i-1) pretend NNI; nm:= dim^rm; zom:= nl;    xom:= zom*dim
-            rh:= (i - 1) pretend NNI; nh:= dim^rh; zoh:= nl*nm
+            rl := qcoerce(rx - j)@NNI; nl := dim^rl; zol := 1; xol := zol
+            rm := qcoerce(j - i - 1)@NNI; nm := dim^rm;
+            zom := nl; xom:= zom*dim
+            rh := qcoerce(i - 1)@NNI; nh := dim^rh; zoh := nl*nm
             xoh:= zoh*dim^2
             xok := nl*(1 + nm*dim)
             z   := new(nl*nm*nh, 0)
@@ -516,12 +517,12 @@ CartesianTensor(minix, dim, R) : Exports == Implementation where
             i < 1 or i > rx or j < 1 or j > ry =>
                 error "Improper index for contraction"
 
-            rly:= (ry-j) pretend NNI;  nly:= dim^rly;  oly:= 1;    zoly:= 1
-            rhy:= (j -1) pretend NNI; nhy:= dim^rhy
+            rly := qcoerce(ry - j)@NNI; nly := dim^rly; oly := 1; zoly := 1
+            rhy := qcoerce(j - 1)@NNI; nhy := dim^rhy
             ohy:= nly*dim; zohy:= zoly*nly
-            rlx:= (rx-i) pretend NNI;  nlx:= dim^rlx
+            rlx := qcoerce(rx - i)@NNI; nlx := dim^rlx
             olx:= 1;        zolx:= zohy*nhy
-            rhx:= (i -1) pretend NNI;  nhx:= dim^rhx
+            rhx := qcoerce(i - 1)@NNI;  nhx := dim^rhx
             ohx:= nlx*dim;  zohx:= zolx*nlx
 
             z := new(nlx*nhx*nly*nhy, 0)
@@ -548,9 +549,10 @@ CartesianTensor(minix, dim, R) : Exports == Implementation where
                 error "Improper indicies for transposition"
             if i > j then (i, j) := (j, i)
 
-            rl:= (rx- j) pretend NNI; nl:= dim^rl; zol:= 1;      zoi := zol*nl
-            rm:= (j-i-1) pretend NNI; nm:= dim^rm; zom:= nl*dim; zoj := zom*nm
-            rh:= (i - 1) pretend NNI; nh:= dim^rh; zoh:= nl*nm*dim^2
+            rl := qcoerce(rx - j)@NNI; nl := dim^rl; zol := 1; zoi := zol*nl
+            rm := qcoerce(j - i - 1)@NNI; nm := dim^rm;
+            zom := nl*dim; zoj := zom*nm
+            rh := qcoerce(i - 1)@NNI; nh := dim^rh; zoh := nl*nm*dim^2
             z   := new(#x, 0)
             for h in 1..nh for zh in 0..  by zoh repeat _
             for m in 1..nm for zm in zh.. by zom repeat _

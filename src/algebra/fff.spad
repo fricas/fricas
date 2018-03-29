@@ -115,7 +115,7 @@ FiniteFieldFunctions(GF) : Exports == Implementation where
           jt : I := 1
           vt : I := (k quo 2)+1
       -- compute matrix
-      vec : Vector I := zero(p1 pretend NNI)
+      vec : Vector I := zero(qcoerce(p1))
       for x in 1..k repeat
         for l in 1..n repeat
           vec.((t^(x-1) * pkn^(l-1)) pretend Integer+1) := _
@@ -146,7 +146,7 @@ FiniteFieldFunctions(GF) : Exports == Implementation where
         for j in (1::I)..(m::I) repeat
           if (v.j ~= 0) then
             -- take -v.j to get trace 1 instead of -1
-            term : TERM := [(convert(-v.j)@I)::GF, (j-2) pretend SI]$TERM
+            term : TERM := [(convert(-v.j)@I)::GF, qconvert(j - 2)@SI]$TERM
             l := cons(term, l)$(L TERM)
         qsetelt!(multtable, i, copy l)$(V L TERM)
       multtable
@@ -159,7 +159,7 @@ FiniteFieldFunctions(GF) : Exports == Implementation where
 
     createMultiplicationTable(f : SUP) ==
       sizeGF : NNI := size()$GF -- the size of the ground field
-      m : PI := degree(f)$SUP pretend PI
+      m : PI := qcoerce(degree(f)$SUP)
       m = 1 =>
         [[[-coefficient(f, 0)$SUP, (-1)::SI]$TERM]$(L TERM)]::(V L TERM)
       m1 : I := m-1
@@ -207,7 +207,7 @@ FiniteFieldFunctions(GF) : Exports == Implementation where
     createZechTable(f : SUP) ==
       sizeGF : NNI := size()$GF -- the size of the ground field
       m := degree(f)$SUP::PI
-      qm1 : SI := (sizeGF ^ m -1) pretend SI
+      qm1 : SI := qconvert(sizeGF^m - 1)
       zechlog : ARR := new(((sizeGF ^ m + 1) quo 2)::NNI, -1::SI)$ARR
       helparr : ARR := new(sizeGF ^ m::NNI, 0$SI)$ARR
       primElement := reduce(monomial(1, 1)$SUP)$SAE(GF, SUP, f)

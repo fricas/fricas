@@ -710,7 +710,7 @@ GroupPresentation() : Exports == Impl where
        toBeRemoved : NNI := 0
        for rel in rels1 repeat
            if #rel = 1 and toBeRemoved = 0 then
-               toBeRemoved := abs(first(rel)) pretend NNI
+               toBeRemoved := qcoerce(abs(first(rel)))
        if toBeRemoved = 0 then return s
        if trace then
            print hconcat([message("simplify: generator '"), _
@@ -737,7 +737,7 @@ GroupPresentation() : Exports == Impl where
        for rel in rels1 repeat
            if #rel = 2 and replaceFrom = 0 then
                replaceTo := second(rel)
-               replaceFrom := abs(first(rel)) pretend NNI
+               replaceFrom := qcoerce(abs(first(rel)))
                if first(rel) > 0 then replaceTo := -replaceTo
                -- don't replace an element with itself or its inverse
                if replaceFrom = abs(replaceTo) then replaceFrom := 0
@@ -1092,7 +1092,7 @@ GroupPresentation() : Exports == Impl where
    -- on the integers 1, ..., n.
    cyclicGroup(n : PI) : % ==
        ga : List(NNI) := [1]
-       ra : List(List(Integer)) := [[1 for x in 1..(n pretend Integer)]]
+       ra : List(List(Integer)) := [[1 for x in 1..(n@Integer)]]
        groupPresentation(ga, ra)
 
    -- dihedralGroup(n) constructs the dihedral group of order 2n
@@ -1533,7 +1533,7 @@ GroupPresentation() : Exports == Impl where
 
    -- output
    coerce(s : %) : OutputForm ==
-       ps : List(NNI) := parts((s.gens) pretend PrimitiveArray(NNI))
+       ps : List(NNI) := parts(s.gens)
        g : OutputForm := outputGenList(ps)
        rs : List(List(Integer)) := s.rels
        r : OutputForm := outputRelList(rs)
@@ -1690,8 +1690,7 @@ Homology() : Exports == Impl where
    -- more detailed output with generators
    dispGenerators(s : %) : OutputForm ==
        res : OutputForm := empty()$OutputForm
-       s1 := s pretend Record(torsionPart : List(GENI),
-                              freePart : List(Vector(Integer)))
+       s1 := s::Rep
        for g in s1.torsionPart repeat
            ln := hconcat([message("gen="), (g.vec)::OutputForm, _
                message(" ord="), (g.ord)::OutputForm])$OutputForm
@@ -1727,8 +1726,7 @@ Homology() : Exports == Impl where
    coerce(s : %) : OutputForm ==
        res : OutputForm := empty()$OutputForm
        firstTermRead : Boolean := false
-       s1 := s pretend Record(torsionPart : List(GENI),
-                              freePart : List(Vector(Integer)))
+       s1 := s::Rep
        --print("homologyGroup torsionPart : " << s1.torsionPart <<_
        --      " freePart : " << s1.freePart)
        nFree := #(s1.freePart)
