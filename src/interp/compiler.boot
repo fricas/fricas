@@ -113,12 +113,11 @@ comp2(x,m,e) ==
         --$bootStrapMode-test necessary for compiling Ring in $bootStrapMode
   [y,m',e]
 
-comp3(x,m,$e) ==
+comp3(x, m, e) ==
   --returns a Triple or else nil to signal can't do
-  $e:= addDomain(m,$e)
-  e:= $e --for debugging purposes
+  e := addDomain(m, e)
   m is ["Mapping",:.] => compWithMappingMode(x,m,e)
-  m is ["QUOTE",a] => (x=a => [x,m,$e]; nil)
+  m is ["QUOTE",a] => (x=a => [x, m, e]; nil)
   STRINGP m => (atom x => (m=x or m=STRINGIMAGE x => [m,m,e]; nil); nil)
   not x or atom x => compAtom(x,m,e)
   op:= first x
@@ -219,8 +218,9 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   e:= oldE
   isFunctor x =>
     if get(x,"modemap",$CategoryFrame) is [[[.,target,:argModeList],.],:.] and
-      (and/[extendsCategoryForm("$",s,mode) for mode in argModeList for s in sl]
-        ) and extendsCategoryForm("$",target,m') then return [x,m,e]
+        (and/[extendsCategoryForm("$", s, mode, e) for mode in argModeList
+                                                   for s in sl]
+          ) and extendsCategoryForm("$", target, m', e) then return [x, m, e]
   if STRINGP x then x:= INTERN x
   ress := nil
   old_style := true
@@ -357,7 +357,7 @@ compSymbol(s,m,e) ==
   v:= get(s,"value",e) =>
 --+
     MEMQ(s,$functorLocalParameters) =>
-        NRTgetLocalIndex s
+        NRTgetLocalIndex(s, e)
         [s,v.mode,e] --s will be replaced by an ELT form in beforeCompile
     [s,v.mode,e] --s has been SETQd
   m':= getmode(s,e) =>
@@ -848,15 +848,15 @@ compSel(form is ["Sel", aDomain, anOp], m, E) ==
 
 --% HAS
 
-compHas(pred is ["has",a,b],m,$e) ==
+compHas(pred is ["has", a, b], m, e) ==
   --b is (":",:.) => (.,.,E):= comp(b,$EmptyMode,E)
-  $e:= chaseInferences(pred,$e)
+  e := chaseInferences(pred, e)
   --pred':= ("has",a',b') := formatHas(pred)
-  predCode := compHasFormat1 pred
-  coerce([predCode,$Boolean,$e],m)
+  predCode := compHasFormat1(pred, e)
+  coerce([predCode, $Boolean, e], m)
 
-compHasFormat1(pred is ["has", a, b]) ==
-    [a, :.] := comp(a, $EmptyMode, $e) or return nil
+compHasFormat1(pred is ["has", a, b], e) ==
+    [a, :.] := comp(a, $EmptyMode, e) or return nil
     b is ["ATTRIBUTE", c] => BREAK()
     b is ["SIGNATURE", op, sig] =>
         ["HasSignature", a,
@@ -865,11 +865,11 @@ compHasFormat1(pred is ["has", a, b]) ==
     ["HasCategory", a, mkDomainConstructor b]
 
 --used in various other places to make the discrimination
-compHasFormat (pred is ["has",olda,b]) ==
+compHasFormat (pred is ["has",olda,b], e) ==
   argl := rest $form
   formals := TAKE(#argl,$FormalMapVariableList)
   a := SUBLISLIS(argl,formals,olda)
-  [a,:.] := comp(a,$EmptyMode,$e) or return nil
+  [a,:.] := comp(a, $EmptyMode, e) or return nil
   a := SUBLISLIS(formals,argl,a)
   b is ["ATTRIBUTE",c] => BREAK()
   b is ["SIGNATURE",op,sig] =>
@@ -1114,20 +1114,20 @@ coerceSubset([x,m,e],m') ==
   nil
 
 coerceHard(T,m) ==
-  $e: local:= T.env
+  e := T.env
   m':= T.mode
-  STRINGP m' and modeEqual(m,$String) => [T.expr,m,$e]
+  STRINGP m' and modeEqual(m, $String) => [T.expr, m, e]
   STRINGP T.expr and modeEqual(m', $String) and modeEqual(m, $Symbol) =>
-      [["QUOTE", INTERN(T.expr, "BOOT")], m, $e]
-  modeEqual(m',m) or
-    (get(m',"value",$e) is [m'',:.] or getmode(m',$e) is ["Mapping",m'']) and
-      modeEqual(m'',m) or
-        (get(m,"value",$e) is [m'',:.] or getmode(m,$e) is ["Mapping",m'']) and
-          modeEqual(m'',m') => [T.expr,m,T.env]
-  STRINGP T.expr and T.expr=m => [T.expr,m,$e]
+      [["QUOTE", INTERN(T.expr, "BOOT")], m, e]
+  modeEqual(m', m) or
+    (get(m', "value", e) is [m'', :.] or getmode(m', e) is ["Mapping", m''])
+      and modeEqual(m'', m) or
+        (get(m, "value", e) is [m'', :.] or getmode(m, e) is ["Mapping", m''])
+          and modeEqual(m'', m') => [T.expr, m, e]
+  STRINGP T.expr and T.expr = m => [T.expr, m, e]
   isCategoryForm(m) =>
-      $bootStrapMode = true => [T.expr,m,$e]
-      extendsCategoryForm(T.expr,T.mode,m) => [T.expr,m,$e]
+      $bootStrapMode = true => [T.expr, m, e]
+      extendsCategoryForm(T.expr, T.mode, m, e) => [T.expr, m, e]
       coerceExtraHard(T,m)
   coerceExtraHard(T,m)
 
@@ -1188,7 +1188,7 @@ coerceByModemap([x,m,e],m') ==
   --mm:= (or/[mm for (mm:=[.,[cond,.]]) in u | cond=true]) or return nil
   mm:=first u  -- patch for non-trival conditons
   fn :=
-    genDeltaEntry ['coerce,:mm]
+      genDeltaEntry(['coerce, :mm], e)
   [["call",fn,x],m',e]
 
 autoCoerceByModemap([x,source,e],target) ==

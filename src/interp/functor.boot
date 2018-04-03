@@ -41,18 +41,19 @@ mkDevaluate a ==
   a is ['LIST,:.] => a
   ['devaluate,a]
 
-compCategories u ==
+compCategories(u, e) ==
   ATOM u => u
   not ATOM first u =>
     error ['"compCategories: need an atom in operator position", first u]
   first u = "Record" =>
     -- There is no modemap property for these guys so do it by hand.
-    [first u, :[[":", a.1, compCategories1(a.2,'(SetCategory))] for a in rest u]]
+      [first u, :[[":", a.1, compCategories1(a.2, '(SetCategory), e)]
+                   for a in rest u]]
   first u = "Union" or first u = "Mapping" =>
     -- There is no modemap property for these guys so do it by hand.
-    [first u, :[compCategories1(a,'(SetCategory)) for a in rest u]]
-  u is ['SubDomain,D,.] => compCategories D
-  v:=get(first u,'modemap,$e)
+      [first u, :[compCategories1(a, '(SetCategory), e) for a in rest u]]
+  u is ['SubDomain, D, .] => compCategories(D, e)
+  v := get(first u, 'modemap, e)
   ATOM v =>
     error ['"compCategories: could not get proper modemap for operator",first u]
   rest v =>
@@ -61,14 +62,14 @@ compCategories u ==
   v:= CDDAAR v
   v:=resolvePatternVars(v, rest u) -- replaces #n forms
   -- select the modemap part of the first entry, and skip result etc.
-  u:=[first u,:[compCategories1(a,b) for a in rest u for b in v]]
+  u:=[first u, :[compCategories1(a, b, e) for a in rest u for b in v]]
   u
 
-compCategories1(u,v) ==
+compCategories1(u, v, e) ==
 -- v is the mode of u
   ATOM u => u
-  isCategoryForm(v) => compCategories u
-  [c,:.] := comp(macroExpand(u,$e),v,$e) => c
+  isCategoryForm(v) => compCategories(u, e)
+  [c, :.] := comp(macroExpand(u, e), v, e) => c
   error 'compCategories1
 
 optFunctorBody x ==
@@ -163,24 +164,23 @@ mkDomainConstructor x ==
   x is [op,:argl] => ['LIST,MKQ op,:[mkDomainConstructor a for a in argl]]
 
 
-DescendCodeAdd(base, flag, kvec) ==
-  atom base => DescendCodeVarAdd(base, flag, kvec)
+DescendCodeAdd(base, flag, kvec, e) ==
+  atom base => DescendCodeVarAdd(base, flag, kvec, e)
   not (modemap:=get(opOf base,'modemap,$CategoryFrame)) =>
-      if getmode(opOf base,$e) is ["Mapping",target,:formalArgModes]
+      if getmode(opOf base, e) is ["Mapping", target, :formalArgModes]
          then formalArgs:= take(#formalArgModes,$FormalMapVariableList)
                 --argument substitution if parameterized?
 
          else keyedSystemError("S2OR0001",[opOf base])
-      DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec)
+      DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec, e)
   for [[[.,:formalArgs],target,:formalArgModes],.] in modemap repeat
       (ans := DescendCodeAdd1(base, flag, target, formalArgs,
-                              formalArgModes, kvec)) => return ans
+                              formalArgModes, kvec, e)) => return ans
   ans
 
-DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec) ==
+DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec, e) ==
   slist:= pairList(formalArgs,rest $addFormLhs)
          --base = comp $addFormLhs-- bound in compAdd
-  e:= $e
   newModes:= SUBLIS(slist,formalArgModes)
   or/[not comp(u,m,e) for u in rest $addFormLhs for m in newModes] =>
     return nil
@@ -221,7 +221,7 @@ DescendCodeAdd1(base, flag, target, formalArgs, formalArgModes, kvec) ==
       code:=[v,:code]
   [['LET,instantiatedBase,base],:code]
 
-DescendCode(code, flag, viewAssoc, EnvToPass, kvec) ==
+DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
   -- flag = true if we are walking down code always executed;
   -- otherwise set to conditions in which
   code=nil => nil
@@ -229,14 +229,14 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec) ==
   code is ['add,base,:codelist] =>
     codelist:=
         [v for u in codelist | (v := DescendCode(u, flag, viewAssoc,
-           EnvToPass, kvec)) ~= nil]
+           EnvToPass, kvec, e)) ~= nil]
                   -- must do this first, to get this overriding Add code
-    ['PROGN, :DescendCodeAdd(base, flag, kvec), :codelist]
+    ['PROGN, :DescendCodeAdd(base, flag, kvec, e), :codelist]
   code is ['PROGN,:codelist] =>
     ['PROGN,:
             --Two REVERSEs leave original order, but ensure last guy wins
       NREVERSE [v for u in REVERSE codelist | (v := DescendCode(
-                         u, flag, viewAssoc, EnvToPass, kvec)) ~= nil]]
+                         u, flag, viewAssoc, EnvToPass, kvec, e)) ~= nil]]
   code is ['COND,:condlist] =>
     c := [[u2 := ProcessCond(first u), :q] for u in condlist] where q ==
           null u2 => nil
@@ -251,7 +251,7 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec) ==
           [DescendCode(v, f,
             if first u is ['HasCategory,dom,cat]
               then [[dom,:cat],:viewAssoc]
-              else viewAssoc, EnvToPass, kvec) for v in rest u]
+              else viewAssoc, EnvToPass, kvec, e) for v in rest u]
     TruthP CAAR c => ['PROGN,:CDAR c]
     while (c and (last c is [c1] or last c is [c1,[]]) and
             (c1 = '(QUOTE T))) repeat
@@ -262,7 +262,7 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec) ==
   code is ['LET,name,body,:.] =>
                     --only keep the names that are useful
     u:=member(name,$locals) =>
-        CONTAINED('$,body) and isDomainForm(body,$e) =>
+        CONTAINED('$, body) and isDomainForm(body, e) =>
           --instantiate domains which depend on $ after constants are set
           code:=[($QuickCode => 'QSETREFV; 'SETELT),[($QuickCode => 'QREFELT; 'ELT),'$,5],#$locals-#u,code]
           $epilogue:=
@@ -364,7 +364,7 @@ makeMissingFunctionEntry(alist,i) ==
 
 --%  Under what conditions may views exist?
 
-InvestigateConditions catvecListMaker ==
+InvestigateConditions(catvecListMaker, e) ==
   -- given a principal view and a list of secondary views,
   -- discover under what conditions the secondary view are
   -- always present.
@@ -378,7 +378,7 @@ InvestigateConditions catvecListMaker ==
   null secondaries => '(T)
       --return for packages which generally have no secondary views
   if $principal is [op,:.] then
-    [principal',:.]:=compMakeCategoryObject($principal,$e)
+    [principal', :.] := compMakeCategoryObject($principal, e)
               --Rather like eval, but quotes parameters first
     for u in CADR principal'.4 repeat
       if not TruthP(cond:=CADR u) then
@@ -398,7 +398,7 @@ InvestigateConditions catvecListMaker ==
           nil
         [pessimise first a,:pessimise rest a]
   null $Conditions => [true,:[true for u in secondaries]]
-  PrincipalSecondaries:= getViewsConditions principal'
+  PrincipalSecondaries:= getViewsConditions(principal', e)
   MinimalPrimary := first first PrincipalSecondaries
   MaximalPrimary:= CAAR $domainShell.4
   necessarySecondaries:= [first u for u in PrincipalSecondaries | rest u=true]
@@ -424,7 +424,8 @@ InvestigateConditions catvecListMaker ==
       [previous]
   $Conditions:= EFFACE(nil,[EFFACE(nil,u) for u in $Conditions])
   partList:=
-    [getViewsConditions partPessimise($principal,cond) for cond in $Conditions]
+    [getViewsConditions(partPessimise($principal, cond), e) 
+         for cond in $Conditions]
   masterSecondaries:= secondaries
   for u in partList repeat
     for [v,:.] in u repeat
@@ -460,12 +461,12 @@ InvestigateConditions catvecListMaker ==
                   mkOr(cond2,old)
               old
         list2
-  list:= ICformat_loop(list, secondaries)
+  list:= ICformat_loop(list, secondaries, e)
   [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
 
-ICformat_loop(list, secondaries) ==
+ICformat_loop(list, secondaries, e) ==
   $ICformat_hash : local := MAKE_-HASHTABLE 'EQUAL
-  [[sec,:ICformat u] for u in list for sec in secondaries]
+  [[sec, :ICformat(u, e)] for u in list for sec in secondaries]
 
 ORreduce l ==
     for u in l | u is ['AND, :.] or u is ['and, :.] repeat
@@ -478,15 +479,15 @@ ORreduce l ==
                            --Convince yourself that this code still works
     l
 
-ICformat u ==
+ICformat(u, e) ==
       atom u => u
       u is ['has,:.] =>
           (res := HGET($ICformat_hash, u)) => res
-          res := compHasFormat u
+          res := compHasFormat(u, e)
           HPUT($ICformat_hash, u, res)
           res
       u is ['AND,:l] or u is ['and,:l] =>
-        l:= REMDUP [ICformat v for [v,:l'] in tails l | not member(v,l')]
+        l:= REMDUP [ICformat(v, e) for [v,:l'] in tails l | not member(v,l')]
              -- we could have duplicates after, even if not before
         LENGTH l=1 => first l
         l1:= first l
@@ -495,8 +496,8 @@ ICformat u ==
         l1
       u is ['OR,:l] =>
         (l := ORreduce l)
-        LENGTH l=1 => ICformat first l
-        l:= ORreduce REMDUP [ICformat u for u in l]
+        LENGTH l=1 => ICformat(first l, e)
+        l:= ORreduce REMDUP [ICformat(u, e) for u in l]
                  --causes multiple ANDs to be squashed, etc.
                  -- and duplicates that have been built up by tidying
         (l:= Hasreduce l) where
@@ -525,11 +526,11 @@ partPessimise(a,trueconds) ==
   a is ['IF,cond,:.] => (member(cond,trueconds) => a; nil)
   [partPessimise(first a,trueconds),:partPessimise(rest a,trueconds)]
 
-getViewsConditions u ==
+getViewsConditions(u, e) ==
 
   --returns a list of all the categories that can be views of this one
   --paired with the condition under which they are such views
-  [vec,:.]:= compMakeCategoryObject(u,$e) or
+  [vec, :.] := compMakeCategoryObject(u, e) or
     systemErrorHere '"getViewsConditions"
   views:= [[first u,:CADR u] for u in CADR vec.4]
   null vec.0 =>
@@ -540,12 +541,12 @@ getViewsConditions u ==
       --the two lines marked  ensure that the principal view comes first
       --if you don't want it, CDR it off
 
-DescendCodeVarAdd(base, flag, kvec) ==
+DescendCodeVarAdd(base, flag, kvec, e) ==
    princview := kvec
    [SetFunctionSlots(sig, SUBST('ELT,'CONST,implem), flag, kvec) repeat
        for i in 6..MAXINDEX princview |
          princview.i is [sig:=[op,types],:.] and
-           LASSOC([base,:SUBST(base,'$,types)],get(op,'modemap,$e)) is
+           LASSOC([base, :SUBST(base, '$, types)], get(op, 'modemap, e)) is
                   [[pred,implem]]]
 
 resolvePatternVars(p,args) ==

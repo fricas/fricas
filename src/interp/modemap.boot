@@ -70,14 +70,14 @@ getModemapListFromDomain(op,numOfArgs,D,e) ==
     for (mm:= [[dc,:sig],:.]) in get(op,'modemap,e) | dc=D and #rest sig=
       numOfArgs]
 
-addModemapKnown(op,mc,sig,pred,fn,$e) ==
+addModemapKnown(op, mc, sig, pred, fn, e) ==
 --  if knownInfo pred then pred:=true
 --  that line is handled elsewhere
   $insideCapsuleFunctionIfTrue=true =>
     $CapsuleModemapFrame :=
       addModemap0(op,mc,sig,pred,fn,$CapsuleModemapFrame)
-    $e
-  addModemap0(op,mc,sig,pred,fn,$e)
+    e
+  addModemap0(op, mc, sig, pred, fn, e)
 
 addModemap0(op,mc,sig,pred,fn,e) ==
   --mc is the "mode of computation"; fn the "implementation"
@@ -92,18 +92,14 @@ addEltModemap(op,mc,sig,pred,fn,e) ==
   op='elt and sig is [:lt,sel] =>
     STRINGP sel =>
       id:= INTERN sel
-      if $insideCapsuleFunctionIfTrue=true
-         then $e:= makeLiteral(id,$e)
-         else e:= makeLiteral(id,e)
+      e := makeLiteral(id, e)
       addModemap1(op,mc,[:lt,id],pred,fn,e)
     -- atom sel => systemErrorHere '"addEltModemap"
     addModemap1(op,mc,sig,pred,fn,e)
   op = "setelt!" and sig is [:lt, sel, v] =>
     STRINGP sel =>
       id:= INTERN sel
-      if $insideCapsuleFunctionIfTrue=true
-         then $e:= makeLiteral(id,$e)
-         else e:= makeLiteral(id,e)
+      e := makeLiteral(id, e)
       addModemap1(op,mc,[:lt,id,v],pred,fn,e)
     -- atom sel => systemError '"addEltModemap"
     addModemap1(op,mc,sig,pred,fn,e)
@@ -192,13 +188,16 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
       e:= addModemapKnown(op,domainName,sig,cond,fnsel,e)
   e
 
-evalAndSub(domainName,viewName,functorForm,form,$e) ==
-  isCategory form => [substNames(domainName,viewName,functorForm,form.(1)),$e]
+evalAndSub(domainName, viewName, functorForm, form, e) ==
+  $tmp_e : local := e
+  isCategory form => [substNames(domainName,viewName,functorForm,form.(1)), e]
   --next lines necessary-- see MPOLY for which $ is actual arg. --- RDJ 3/83
-  if CONTAINED("$$",form) then $e:= put("$$","mode",get("$","mode",$e),$e)
+  if CONTAINED("$$",form) then
+      e := put("$$", "mode", get("$", "mode", e), e)
+  $tmp_e : local := e
   opAlist:= getOperationAlist(domainName,functorForm,form)
   substAlist:= substNames(domainName,viewName,functorForm,opAlist)
-  [substAlist,$e]
+  [substAlist, $tmp_e]
 
 getOperationAlist(name,functorForm,form) ==
   if atom name and GETDATABASE(name,'NILADIC) then functorForm:= [functorForm]
@@ -206,7 +205,8 @@ getOperationAlist(name,functorForm,form) ==
     ($insideFunctorIfTrue and first functorForm=first $functorForm) => u
   $insideFunctorIfTrue and name="$" =>
     ($domainShell => $domainShell.(1); systemError '"$ has no shell now")
-  T:= compMakeCategoryObject(form,$e) => ([.,.,$e]:= T; T.expr.(1))
+  T := compMakeCategoryObject(form, $tmp_e) =>
+      ([., ., $tmp_e] := T; T.expr.(1))
   stackMessage ["not a category form: ",form]
 
 substNames(domainName,viewName,functorForm,opalist) ==
@@ -234,14 +234,14 @@ compCat(form is [functorName,:argl],m,e) ==
   --sure if it uses any of the other signatures(see extendsCategoryForm)
   [form,catForm,e]
 
-addModemap(op, mc, sig, pred, fn, $e) ==
-    $InteractiveMode => $e
-    if knownInfo pred then pred := true
+addModemap(op, mc, sig, pred, fn, e) ==
+    $InteractiveMode => e
+    if known_info_in_env(pred, e) then pred := true
     $insideCapsuleFunctionIfTrue = true =>
         $CapsuleModemapFrame :=
           addModemap0(op, mc, sig, pred, fn, $CapsuleModemapFrame)
-        $e
-    addModemap0(op, mc, sig, pred, fn, $e)
+        e
+    addModemap0(op, mc, sig, pred, fn, e)
 
 addConstructorModemaps(name,form is [functorName,:.],e) ==
   $InteractiveMode: local:= nil

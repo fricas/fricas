@@ -45,10 +45,8 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
   $until: local := nil
   $initList: local := nil
   $endTestList: local := nil
-  $e:= e
-  itl:= [([.,$e]:= compIterator(x,$e) or return "failed").(0) for x in itl]
+  itl := [([., e] := compIterator(x, e) or return "failed").(0) for x in itl]
   itl="failed" => return nil
-  e:= $e
   acc:= GENSYM()
   afterFirst:= GENSYM()
   bodyVal:= GENSYM()

@@ -59,7 +59,7 @@ printInfo $e ==
   for u in get("$Information","special",$e) repeat PRETTYPRINT u
   nil
 
-addInformation(m,$e) ==
+addInformation(m, e) ==
   $Information: local := nil
   --$Information:= nil: done by previous statement anyway
   info m where
@@ -69,10 +69,10 @@ addInformation(m,$e) ==
       m is ["CATEGORY",.,:stuff] => for u in stuff repeat addInfo u
       m is ["Join",:stuff] => for u in stuff repeat info u
       nil
-  $e:=
+  e :=
     put("$Information","special",[:$Information,:
-      get("$Information","special",$e)],$e)
-  $e
+      get("$Information", "special", e)], e)
+  e
 
 addInfo u == $Information:= [formatInfo u,:$Information]
 
@@ -146,6 +146,8 @@ infoToHas a ==
   a
 
 DEFPARAMETER($cycleMarker, GENSYM())
+
+known_info_in_env(pred, $e) == knownInfo(pred)
 
 hashed_known_info(pred) ==
     $infoHash : local := MAKE_-HASHTABLE 'EQUAL
