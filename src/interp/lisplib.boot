@@ -381,25 +381,25 @@ getSlot1FromCategoryForm ([op, :argl]) ==
 --  The following functions are used by the compiler but are modified
 --  here for use with new LISPLIB scheme
 
-mkEvalableCategoryForm c ==       --from DEFINE
+mkEvalableCategoryForm(c, e) ==       --from DEFINE
   c is [op,:argl] =>
     op="Join" =>
-        nargs := [mkEvalableCategoryForm x or return nil for x in argl]
+        nargs := [mkEvalableCategoryForm(x, e) or return nil for x in argl]
         nargs => ["Join", :nargs]
     op is "DomainSubstitutionMacro" =>
         --$extraParms :local
         --catobj := EVAL c -- DomainSubstitutionFunction makes $extraParms
         --mkEvalableCategoryForm sublisV($extraParms, catobj)
-        mkEvalableCategoryForm CADR argl
+        mkEvalableCategoryForm(CADR argl, e)
     op is "mkCategory" => c
     MEMQ(op,$CategoryNames) =>
-        [x,m,$e]:= compOrCroak(c,$EmptyMode,$e)
+        [x, m, e] := compOrCroak(c, $EmptyMode, e)
         m=$Category => optFunctorBody x
     --loadIfNecessary op
     GETDATABASE(op,'CONSTRUCTORKIND) = 'category or
       get(op,"isCategory",$CategoryFrame) =>
         [op,:[quotifyCategoryArgument x for x in argl]]
-    [x,m,$e]:= compOrCroak(c,$EmptyMode,$e)
+    [x, m, e] := compOrCroak(c, $EmptyMode, e)
     m=$Category => x
   MKQ c
 

@@ -129,7 +129,7 @@ warnLiteral x ==
 
 intersectionEnvironment(e,e') ==
   ce:= makeCommonEnvironment(e,e')
-  ic:= intersectionContour(deltaContour(e,ce),deltaContour(e',ce))
+  ic := intersectionContour(deltaContour(e, ce), deltaContour(e', ce), ce)
   e'':= (ic => addContour(ic,ce); ce)
   --$ie:= e''   this line is for debugging purposes only
 
@@ -159,40 +159,43 @@ deltaContour([il1, :el],[il2, :el']) ==
       nil
   res
 
-intersectionContour(c,c') ==
+intersectionContour(c, c', ce) ==
   $var: local := nil
-  computeIntersection(c,c') where
-    computeIntersection(c,c') ==
+  computeIntersection(c, c', ce) where
+    computeIntersection(c, c', ce) ==
       varlist:= REMDUP ASSOCLEFT c
       varlist':= REMDUP ASSOCLEFT c'
       interVars:= intersection(varlist,varlist')
       unionVars:= union(varlist,varlist')
       diffVars:= setDifference(unionVars,interVars)
-      modeAssoc:= buildModeAssoc(diffVars,c,c')
+      modeAssoc := buildModeAssoc(diffVars, c, c', ce)
       [:modeAssoc,:
         [[x,:proplist]
           for [x,:y] in c | member(x,interVars) and
-            (proplist:= interProplist(y,LASSOC($var:= x,c')))]]
-    interProplist(p,p') ==
+            (proplist := interProplist(y, LASSOC($var := x, c'), ce))]]
+    interProplist(p, p', ce) ==
                             --p is new proplist; p' is old one
-      [:modeCompare(p,p'),:[pair' for pair in p | (pair':= compare(pair,p'))]]
-    buildModeAssoc(varlist,c,c') ==
-      [[x,:mp] for x in varlist | (mp:= modeCompare(LASSOC(x,c),LASSOC(x,c')))]
-    compare(pair is [prop,:val],p') ==
+        [:modeCompare(p, p', ce), :[pair' for pair in p |
+               (pair' := compare(pair, p', ce))]]
+    buildModeAssoc(varlist, c, c', ce) ==
+      [[x, :mp] for x in varlist |
+          (mp := modeCompare(LASSOC(x, c), LASSOC(x, c'), ce))]
+    compare(pair is [prop,:val], p', ce) ==
       --1. if the property-value pair are identical, accept it immediately
       pair=(pair':= assoc(prop,p')) => pair
       --2. if property="value" and modes are unifiable, give intersection
       --       property="value" but value=genSomeVariable)()
       (val':= IFCDR pair') and prop = "value" and
-        (m:= unifiable(val.mode,val'.mode)) => ["value",genSomeVariable(),m,nil]
+        (m:= unifiable(val.mode, val'.mode, ce)) =>
+            ["value",genSomeVariable(), m, nil]
             --this tells us that an undeclared variable received
             --two different values but with identical modes
       --3. property="mode" is covered by modeCompare
       prop="mode" => nil
-    modeCompare(p,p') ==
+    modeCompare(p, p', ce) ==
       pair:= assoc("mode",p) =>
         pair':= assoc("mode",p') =>
-          m'':= unifiable(rest pair,rest pair') => LIST ["mode",:m'']
+          m'' := unifiable(rest pair, rest pair', ce) => LIST ["mode", :m'']
           stackSemanticError(['%b,$var,'%d,"has two modes: "],nil)
        --stackWarning ("mode for",'%b,$var,'%d,"introduced conditionally")
         LIST ["conditionalmode",:rest pair]
@@ -200,7 +203,7 @@ intersectionContour(c,c') ==
        --stackWarning ("mode for",'%b,$var,'%d,"introduced conditionally")
       pair':= assoc("mode",p') => LIST ["conditionalmode",:rest pair']
         --LIST pair'
-    unifiable(m1,m2) ==
+    unifiable(m1, m2, ce) ==
       m1=m2 => m1
         --we may need to add code to coerce up to tagged unions
         --but this can not be done here, but should be done by compIf
@@ -210,7 +213,7 @@ intersectionContour(c,c') ==
           ["Union", :set_sum(rest m1, [m2])]
         m2 is ["Union",:.] => ["Union", :set_sum(rest m2, [m1])]
         ["Union",m1,m2]
-      for u in getDomainsInScope $e repeat
+      for u in getDomainsInScope ce repeat
         if u is ["Union",:u'] and (and/[member(v,u') for v in rest m]) then
           return m
         --this loop will return NIL if not satisfied
@@ -535,24 +538,26 @@ printStats [byteCount,elapsedSeconds] ==
   TERPRI()
   nil
 
-extendsCategoryForm(domain,form,form') ==
+extendsCategoryForm(domain, form, form', e) ==
   --is domain of category form also of category form'?
   --domain is only used for ensuring that X being a Ring means that it
   --satisfies (Algebra X)
   form=form' => true
   form=$Category => nil
   form' = $Category => nil
-  form' is ["Join",:l] => and/[extendsCategoryForm(domain,form,x) for x in l]
+  form' is ["Join", :l] => and/[extendsCategoryForm(domain, form, x, e)
+                                for x in l]
   form' is ["CATEGORY",.,:l] =>
-    and/[extendsCategoryForm(domain,form,x) for x in l]
-  form is ["Join",:l] => or/[extendsCategoryForm(domain,x,form') for x in l]
+    and/[extendsCategoryForm(domain, form, x, e) for x in l]
+  form is ["Join", :l] => or/[extendsCategoryForm(domain, x, form', e)
+                              for x in l]
   form is ["CATEGORY",.,:l] =>
     member(form',l) or
       stackWarning ["not known that ",form'," is of mode ",form] or true
   isCategoryForm(form) =>
           --Constructs the associated vector
-    formVec:=(compMakeCategoryObject(form,$e)).expr
-            --Must be $e to pick up locally bound domains
+    formVec := (compMakeCategoryObject(form, e)).expr
+            --Must be e to pick up locally bound domains
     form' is ["SIGNATURE",op,args,:.] =>
         assoc([op,args],formVec.(1)) or
             assoc(SUBSTQ(domain,"$",[op,args]),
@@ -565,7 +570,7 @@ extendsCategoryForm(domain,form,form') ==
     member(form',first catvlist) or
      member(form',SUBSTQ(domain,"$",first catvlist)) or
       (or/
-        [extendsCategoryForm(domain,SUBSTQ(domain,"$",cat),form')
+        [extendsCategoryForm(domain, SUBSTQ(domain, "$", cat), form', e)
           for [cat,:.] in CADR catvlist])
   nil
 
