@@ -429,7 +429,8 @@ compSel1(domain, op, argl, m, e) ==
               | x is [[ =domain, :.], :.]]
     (ans := compForm2([op, :argl], m, e, mml)) => ans
     op = "construct" and coerceable(domain, m, e) =>
-        (T := comp([op, :argl], domain, e) or return nil; coerce(T, m))
+        (T := comp_construct1(argl, domain, e)) or return nil
+        coerce(T, m)
     nil
 
 compForm1(form is [op,:argl],m,e) ==
@@ -690,21 +691,18 @@ compWhere([.,form,:exprList],m,eInit) ==
     eInit
   [x,m,eFinal]
 
-compConstruct(form is ["construct",:l],m,e) ==
-  y:= modeIsAggregateOf("List",m,e) =>
-    T:= compList(l,["List",CADR y],e) => convert(T,m)
-    compForm(form,m,e)
-  y:= modeIsAggregateOf("Vector",m,e) =>
-    T:= compVector(l,["Vector",CADR y],e) => convert(T,m)
-    compForm(form,m,e)
-  T:= compForm(form,m,e) => T
-  for D in getDomainsInScope e repeat
-    (y:=modeIsAggregateOf("List",D,e)) and
-      (T:= compList(l,["List",CADR y],e)) and (T':= convert(T,m)) =>
-         return T'
-    (y:=modeIsAggregateOf("Vector",D,e)) and
-      (T:= compVector(l,["Vector",CADR y],e)) and (T':= convert(T,m)) =>
-         return T'
+comp_construct1(l, m, e) ==
+    (y := modeIsAggregateOf("List", m, e)) =>
+        compList(l, ["List", CADR y], e)
+    (y := modeIsAggregateOf("Vector", m, e)) =>
+        compVector(l,["Vector",CADR y],e)
+
+compConstruct(form is ["construct", :l], m, e) ==
+    (T := comp_construct1(l, m, e)) and (T' := convert(T,m)) => T'
+    T := compForm(form, m, e) => T
+    for D in getDomainsInScope e repeat
+        (T := comp_construct1(l, D, e)) and (T' := convert(T, m)) =>
+            return T'
 
 compQuote(expr is [QUOTE, e1], m, e) ==
   SYMBOLP(e1) => [expr, ["Symbol"], e]
