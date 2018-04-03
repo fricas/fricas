@@ -104,7 +104,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     firstFactor(x : FRR) : R == first(factorList(x)).fctr
     firstExponent(x : FRR) : Integer == first(factorList(x)).xpnt
 
-    copypf(a : %) : % == [a.whole, copy a.fract]$%
+    copypf(a : %) : % == [a.whole, copy a.fract]$Rep
 
     LessThan(s : fTerm, t : fTerm) ==
       -- have to wait until FR has < operation
@@ -177,7 +177,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         while (sp ~= 0$SUPR) repeat
           l := cons([leadingCoefficient sp, nilFactor(f, e-d)]$fTerm, l)
           d := degree(sp := reductum sp)
-      [b.whole, sort(LessThan, l)]$%
+      [b.whole, sort(LessThan, l)]$Rep
 
     compactFraction(a : %) ==
       -- only one power for each distinct denom will remain
@@ -201,7 +201,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         f := firstFactor(s.den)
         e := firstExponent(s.den)
       b := normalizeFracTerm s
-      [bw + b.whole, append(b.fract, bf)]$%
+      [bw + b.whole, append(b.fract, bf)]$Rep
 
     0 == [0$R, []$LfTerm]
     1 == [1$R, []$LfTerm]
@@ -279,12 +279,12 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     a + b ==
       compactFraction
         [a.whole + b.whole,
-          sort(LessThan, append(a.fract, copy b.fract))]$%
+          sort(LessThan, append(a.fract, copy b.fract))]$Rep
 
     a : % * b : % ==
       empty?(a.fract) => a.whole * b
       empty?(b.fract) => b.whole * a
-      af : % := [0$R, a.fract]$%   --     a - a.whole
+      af : % := [0$R, a.fract]$Rep   --     a - a.whole
       c : % := (a.whole * b) + (b.whole * af)
       s, t : fTerm
       for s in a.fract repeat
