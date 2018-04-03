@@ -59,11 +59,6 @@ augmentLisplibModemapsFromFunctor(form,opAlist,signature) ==
   form:= [formOp,:argl]:= formal2Pattern form
   opAlist:= formal2Pattern opAlist
   signature:= formal2Pattern signature
-  for u in form for v in signature repeat
-    if MEMQ(u,$PatternVariableList) then
-      -- we are going to be EVALing categories containing these
-      -- pattern variables
-      $e:=put(u,'mode,v,$e)
   nonCategorySigAlist:=
     mkAlistOfExplicitCategoryOps first signature or return nil
   for (entry:= [[op,sig,:.],pred,sel]) in opAlist |

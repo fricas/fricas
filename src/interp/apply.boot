@@ -41,8 +41,8 @@ compAtomWithModemap(x, m, e, v) ==
         not(modeEqual(m, target)) => v1 := cons(map, v1)
         -- try exact match
         [[md, mr], :fnsel] := map
-        compMapCond(x, md, [], fnsel) =>
-            res := trans_delta(genDeltaEntry [x, :map], target, e)
+        compMapCond(x, md, [], fnsel, e) =>
+            res := trans_delta(genDeltaEntry([x, :map], e), target, e)
         v1 := cons(map, v1)
     res => res
     v1 := NREVERSE(v1)
@@ -52,8 +52,8 @@ compAtomWithModemap(x, m, e, v) ==
         not(mr) => "iterate"
         not coerceable(mr, m, e) => "iterate"
         [[md, mr], :fnsel] := map
-        if compMapCond(x, md, [], fnsel) then
-            res := trans_delta(genDeltaEntry [x, :map], target, e)
+        if compMapCond(x, md, [], fnsel, e) then
+            res := trans_delta(genDeltaEntry([x, :map], e), target, e)
             res := convert(res, m)
     res
 
@@ -158,7 +158,7 @@ applyMapping([op,:argl],m,e,ml) ==
 
 --% APPLY MODEMAPS
 
-compApplyModemap(form,modemap,$e,sl) ==
+compApplyModemap(form, modemap, e, sl) ==
   $generatingCall : local := true
   [op,:argl] := form                   --form to be compiled
   [[mc,mr,:margl],:fnsel] := modemap   --modemap we are testing
@@ -174,8 +174,8 @@ compApplyModemap(form,modemap,$e,sl) ==
   --     not possible
 
   lt:=
-    [[.,m',$e]:=
-      comp(y,g,$e) or return "failed" where
+    [[., m', e]:=
+      comp(y, g, e) or return "failed" where
         g:= SUBLIS(sl,m) where
             sl:= pmatchWithSl(m',m,sl) for y in argl for m in margl]
   lt="failed" => return nil
@@ -190,7 +190,7 @@ compApplyModemap(form,modemap,$e,sl) ==
   -- 3.  obtain domain-specific function, if possible, and return
 
   --$bindings is bound by compMapCond
-  [f, bindings] := compMapCond(op, mc, sl, fnsel) or return nil
+  [f, bindings] := compMapCond(op, mc, sl, fnsel, e) or return nil
 
 --+ can no longer trust what the modemap says for a reference into
 --+ an exterior domain (it is calculating the displacement based on view
@@ -199,24 +199,28 @@ compApplyModemap(form,modemap,$e,sl) ==
 
 --$NRTflag=true and f is [op1,d,.] and NE(d,'$) and member(op1,'(ELT CONST)) =>
   f is [op1,d,.] and member(op1,'(ELT CONST)) =>
-      [genDeltaEntry([op, :modemap]), lt', bindings]
+      [genDeltaEntry([op, :modemap], e), lt', bindings]
   [f, lt', bindings]
 
-compMapCond(op, mc, bindings, fnsel) ==
-  or/[compMapCond'(u, op, mc, bindings) for u in fnsel]
+compMapCond(op, mc, bindings, fnsel, e) ==
+  or/[compMapCond'(u, op, mc, bindings, e) for u in fnsel]
 
-compMapCond'([cexpr,fnexpr],op,dc,bindings) ==
-  compMapCond''(cexpr,dc) => compMapCondFun(fnexpr,op,dc,bindings)
+compMapCond'([cexpr,fnexpr], op, dc, bindings, e) ==
+  compMapCond''(cexpr, dc, e) => compMapCondFun(fnexpr,op,dc,bindings)
   stackMessage ["not known that",'%b,dc,'%d,"has",'%b,cexpr,'%d]
 
-compMapCond''(cexpr,dc) ==
+compMapCond''(cexpr, dc, e) ==
   cexpr=true => true
   cexpr is ["AND", :l] or cexpr is ["and", :l] =>
-      and/[compMapCond''(u, dc) for u in l]
+      and/[compMapCond''(u, dc, e) for u in l]
   cexpr is ["OR", :l] or cexpr is ["or", :l] =>
-      or/[compMapCond''(u, dc) for u in l]
-  cexpr is ["not",u] => not compMapCond''(u,dc)
-  cexpr is ["has",name,cat] => (knownInfo cexpr => true; false)
+      or/[compMapCond''(u, dc, e) for u in l]
+  -- FIXME: This will claim that 'not u' is true when we
+  -- do not know truth value
+  cexpr is ["not",u] => not compMapCond''(u, dc, e)
+  cexpr is ["has", name, cat] =>
+        known_info_in_env(cexpr, e) => true
+        false
         --for the time being we'll stop here - shouldn't happen so far
         --$disregardConditionIfTrue => true
         --stackSemanticError(("not known that",'%b,name,

@@ -165,7 +165,8 @@ compDefineCategory1(df is ['DEF,form,sig,sc,body],m,e,prefix,fal) ==
 -->
     $categoryPredicateList: local :=
         makeCategoryPredicates(form,$lisplibCategory)
-    compDefine1(mkCategoryPackage(form,cat,categoryCapsule),$EmptyMode,e)
+    compDefine1(mkCategoryPackage(form, cat, categoryCapsule, e),
+                $EmptyMode, e)
   [d,m,e]
 
 makeCategoryPredicates(form,u) ==
@@ -185,7 +186,7 @@ makeCategoryPredicates(form,u) ==
           pl
 
 --+ the following function
-mkCategoryPackage(form is [op,:argl],cat,def) ==
+mkCategoryPackage(form is [op, :argl], cat, def, e) ==
   packageName:= INTERN(STRCONC(PNAME op,'"&"))
   packageAbb := INTERN(STRCONC(GETDATABASE(op,'ABBREVIATION),'"-"))
   $options:local := []
@@ -203,7 +204,7 @@ mkCategoryPackage(form is [op,:argl],cat,def) ==
     cat is ['CATEGORY,:.] => rest rest cat
     cat is ['Join,:u] => gn last u
     nil
-  catvec := eval mkEvalableCategoryForm form
+  catvec := eval mkEvalableCategoryForm(form, e)
   fullCatOpList := (JoinInner([catvec])).1
   catOpList :=
     --note: this gets too many modemaps in general
@@ -317,8 +318,9 @@ compDefineFunctor(df,m,e,prefix,fal) ==
   compDefineFunctor1(df,m,e,prefix,fal)
 
 compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
-  m,$e,$prefix,$formalArgList) ==
+  m, $e, $prefix, $formalArgList) ==
 --  1. bind global variables
+    e := $e
     $addForm: local := nil
 
     $functionStats: local:= [0,0]
@@ -337,7 +339,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       $QuickCode = true => 'QSETREFV
       'SETELT
     $genSDVar: local:= 0
-    originale:= $e
+    originale := e
     [$op,:argl]:= form
     $formalArgList:= [:argl,:$formalArgList]
     $pairlis := [[a,:v] for a in argl for v in $FormalMapVariableList]
@@ -347,12 +349,12 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
          (if BOUNDP '$mutableDomains then MEMQ($op,$mutableDomains)
             else false )   --true if domain has mutable state
     signature':=
-      [first signature,:[getArgumentModeOrMoan(a,form,$e) for a in argl]]
+      [first signature, :[getArgumentModeOrMoan(a, form, e) for a in argl]]
     $functorForm:= $form:= [$op,:argl]
     if null first signature' then BREAK()
     target:= first signature'
-    $e:= giveFormalParametersValues(argl,$e)
-    [ds,.,$e]:= compMakeCategoryObject(target,$e) or
+    e := giveFormalParametersValues(argl, e)
+    [ds, ., e] := compMakeCategoryObject(target, e) or
       sayBrightly '"   cannot produce category object:"
       pp target
       userError '"cannot produce category object"
@@ -377,11 +379,12 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $template: local:= nil --stored in the lisplib (if $NRTvec = true)
     $functionLocations: local := nil --locations of defined functions in source
     -- generate slots for arguments first, then for $NRTaddForm in compAdd
-    for x in argl repeat NRTgetLocalIndex x
-    [.,.,$e]:= compMakeDeclaration([":",'_$,target],m,$e)
+    for x in argl repeat NRTgetLocalIndex(x, e)
+    [., ., e] := compMakeDeclaration([":", '_$, target], m, e)
+
 
     if $insideCategoryPackageIfTrue~= true  then
-        $e := augModemapsFromCategory('_$, '_$, '_$, target, $e)
+        e := augModemapsFromCategory('_$, '_$, '_$, target, e)
     $signature:= signature'
     parSignature:= SUBLIS($pairlis,signature')
     parForm:= SUBLIS($pairlis,form)
@@ -392,12 +395,14 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 --  to the A1,..,An view of D
 --+
     $functorLocalParameters := argl
-    makeFunctorArgumentParameters(argl, rest signature', first signature')
+    e := makeFunctorArgumentParameters(argl, rest signature',
+                                        first signature', e)
  -- must do above to bring categories into scope --see line 5 of genDomainView
 --  4. compile body in environment of %type declarations for arguments
     op':= $op
     rettype:= signature'.target
-    T:= compFunctorBody(body,rettype,$e,parForm)
+    $e := e
+    T := compFunctorBody(body, rettype, $e, parForm)
 
     body':= T.expr
     lamOrSlam :=
@@ -445,7 +450,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     if null argl then
       evalAndRwriteLispForm('NILADIC,
             ['MAKEPROP, ['QUOTE,op'], ['QUOTE,'NILADIC], true])
-    [fun,['Mapping,:signature'],originale]
+    [fun, ['Mapping, :signature'], originale]
 
 compFunctorBody(body,m,e,parForm) ==
   $bootStrapMode = true =>
@@ -494,9 +499,10 @@ displayMissingFunctions() ==
 
 --% domain view code
 
-makeFunctorArgumentParameters(argl,sigl,target) ==
+makeFunctorArgumentParameters(argl, sigl, target, e) ==
   $forceAdd: local:= true
   $ConditionalOperators: local := nil
+  $tmp_e := e
   for a in argl for s in sigl repeat fn(a,augmentSig(s,findExtras(a,target)))
           where
     findExtras(a,target) ==
@@ -530,6 +536,7 @@ makeFunctorArgumentParameters(argl,sigl,target) ==
       if isCategoryForm(s) then
         s is ["Join", :catlist] => genDomainViewList(a, rest s)
         genDomainView(a, s, "getDomainView")
+  $tmp_e
 
 genDomainViewList(id, catlist) ==
   null catlist => nil
@@ -539,16 +546,16 @@ genDomainViewList(id, catlist) ==
 
 genDomainView(viewName, c, viewSelector) ==
   c is ['CATEGORY, ., :l] => genDomainOps(viewName, viewName, c)
-  $e := augModemapsFromCategory(viewName, viewName, nil, c, $e)
+  $tmp_e := augModemapsFromCategory(viewName, viewName, nil, c, $tmp_e)
 
 genDomainOps(viewName,dom,cat) ==
-  oplist:= getOperationAlist(dom,dom,cat)
+  oplist := getOperationAlist(dom, dom, cat)
   siglist:= [sig for [sig,:.] in oplist]
   oplist:= substNames(dom,viewName,dom,oplist)
   for [opsig,cond,:.] in oplist for i in 0.. repeat
     if opsig in $ConditionalOperators then cond:=nil
     [op,sig]:=opsig
-    $e:= addModemap(op,dom,sig,cond,['ELT,viewName,i],$e)
+    $tmp_e:= addModemap(op,dom,sig,cond,['ELT,viewName,i],$tmp_e)
 
 compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
 -- form is lhs (f a1 ... an) of definition; body is rhs;
@@ -706,7 +713,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     T := CATCH('compCapsuleBody, compOrCroak(body,rettype,e))
            or ["",rettype,e]
 --+
-    NRTassignCapsuleFunctionSlot($op,signature')
+    NRTassignCapsuleFunctionSlot($op, signature', e)
     if $newCompCompare=true then
          SAY '"The old compiler generates:"
          prTriple T
@@ -775,15 +782,15 @@ checkAndDeclare(argl,form,sig,e) ==
       '" are of wrong type:",'%l,:stack]
   e
 
-getSignature(op,argModeList,$e) ==
+getSignature(op, argModeList, e) ==
   1=#
     (sigl:=
       REMDUP
-        [sig
-          for [[dc,:sig],[pred,:.]] in (mmList:= get(op,'modemap,$e)) | dc='_$
-            and rest sig=argModeList and knownInfo pred]) => first sigl
+        [sig for [[dc, :sig], [pred, :.]]
+           in (mmList := get(op, 'modemap, e)) | dc='_$ and
+               rest sig=argModeList and known_in_env(pred, e)]) => first sigl
   null sigl =>
-    (u:= getmode(op,$e)) is ['Mapping,:sig] => sig
+    (u := getmode(op, e)) is ['Mapping, :sig] => sig
     SAY '"************* USER ERROR **********"
     SAY("available signatures for ",op,": ")
     if null mmList
@@ -910,7 +917,7 @@ compAdd(['add,$addForm,capsule],m,e) ==
   if $addForm is ["SubDomain",domainForm,predicate] then
 --+
     $NRTaddForm := domainForm
-    NRTgetLocalIndex domainForm
+    NRTgetLocalIndex(domainForm, e)
     --need to generate slot for add form since all $ go-get
     --  slots will need to access it
     [$addForm, m1, e] := compSubDomain1(domainForm, predicate, m, e)
@@ -918,9 +925,7 @@ compAdd(['add,$addForm,capsule],m,e) ==
 --+
     $NRTaddForm := $addForm
     [$addForm, m1, e]:=
-      $addForm is ["@Tuple", :.] =>
-        $NRTaddForm := ["@Tuple", :[NRTgetLocalIndex x for x in rest $addForm]]
-        compOrCroak(compTuple2Record $addForm,$EmptyMode,e)
+      $addForm is ["@Tuple", :.] => BREAK()
       compOrCroak($addForm,$EmptyMode,e)
   not(isCategoryForm(m1)) or m1 = '(Category) =>
       userError(concat('"need domain before 'add', got", addForm,
@@ -1026,7 +1031,7 @@ doIt(item,$predl) ==
       RPLACA(item,($QuickCode => 'QSETREFV;'SETELT))
       rhsCode:=
        rhs'
-      RPLACD(item, ['$, NRTgetLocalIndex lhs, rhsCode])
+      RPLACD(item, ['$, NRTgetLocalIndex(lhs, $e), rhsCode])
     RPLACA(item,first code)
     RPLACD(item,rest code)
   item is [":",a,t] => [.,.,$e]:= compOrCroak(item,$EmptyMode,$e)
@@ -1121,9 +1126,9 @@ compForMode(x,m,e) ==
   $compForModeIfTrue: local:= true
   comp(x,m,e)
 
-compMakeCategoryObject(c,$e) ==
+compMakeCategoryObject(c, e) ==
   not isCategoryForm(c) => nil
-  u := mkEvalableCategoryForm c => [c_eval u, $Category, $e]
+  u := mkEvalableCategoryForm(c, e) => [c_eval u, $Category, e]
   nil
 
 quotifyCategoryArgument x == MKQ x
