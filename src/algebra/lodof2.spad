@@ -629,24 +629,23 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
         np := newtonpolygon(f)
         np1 := np.1
         slop := np1.slope
-        if option = "semireg" and slop = 0 then
+        option = "semireg" and slop = 0 =>
             va := value(factor_op(f, factorizer, "alg factor") :: RS)
-            if va case LL then
-                vr : LA
-                vr := [va :: LL, 1, 0, monomial(1, 1)]
-            else
-                vr := va :: LA
+            vr : LA :=
+                va case LL => [va :: LL, 1, 0, monomial(1, 1)]
+                va::LA
             xx : UP := monomial(1, 1)
-            i : UP := xx - coeffx(vr.ope, 0)
+            vr_ope := vr.ope
+            i := xx - coeffx(vr_ope, 0)
             n : Integer := degree(f) quo vr.dext
             if n = 1 then
                 il := convertUPtoUTS(i) :: US
                 return [[vr.ope + il :: LL, vr.rami, il]]
-            npf := factors(factorUP(eval(np1.npoly, monomial(1, 1),
+            npf1 := factors(factorUP(eval(np1.npoly, monomial(1, 1),
                                            monomial(1, 1) + i), factorizer))
             r : UP := 1
             sols : List Integer := []
-            for l in npf repeat
+            for l in npf1 repeat
                 diff : Union(Integer, "failed")
                 diff := retractIfCan(xx - l.factor)
                 if diff ~= "failed" then
@@ -667,16 +666,15 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             f2r := factor_newton2(subs, r, lns).Rt
             return [[f2r, vr.rami, convertUPtoUTS(i + n :: UP) :: US]]
         npf := factors(factorUP(np1.npoly, factorizer)).1
-        if (degree(f) <= 1 or (npf.exponent = 1 and
-           (option = "split over k((x))" or option = "all right factors"))) then
-            if option = "semireg" then
+        irred_f := degree(f) <= 1 or (npf.exponent = 1 and
+           (option = "split over k((x))" or option = "all right factors"))
+        irred_f =>
+            option = "semireg" =>
                 -- degree(f) = 1 and slope ~= 0
                 il : US := -truncate(coefficient(f, 0), 0)
-                return [[f + il :: LL, monomial(1, 1), il]]
-            else
-                -- f is irreducible
-                return [f]
-        else if degree(npf.factor) = 1 and denom(slop) = 1 then
+                return [[f + il :: LL, monomial(1, 1), il]]$SP
+            [f]$RS
+        degree(npf.factor) = 1 and denom(slop) = 1 =>
             -- now slope ~= 0
             cxs : US := -coefficient(npf.factor, 0) * monomial(1, -numer(slop))
             -- apply a homomorphism xD -> xD + cxs to simplify the problem.
@@ -691,18 +689,17 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                     retv := append(retv, [[vi.op, vi.ram, vi.expart + fullxr]])
                 return retv
             vrs := v :: RS
-            return [substitute(-cxs, i) for i in vrs] :: RS
-        else if option = "split over k((x))" then
+            return [substitute(-cxs, i) for i in vrs]$RS
+        option = "split over k((x))" =>
             -- an order 1 factor over the alg. closure of k((x))
             ric := factor_riccati(f, factorizer, "alg factor") :: RS
             r1 := value(ric) :: LA
             -- a righthand factor over k((x))
             rk := make_rightfactor(f, r1)
-            if rk = f then
-                return [f]
+            rk = f => return [f]
             lk := rightQuotient(f, rk)
             return append(factor_riccati(lk, factorizer, option) :: RS, [rk])
-        else if option = "all right factors" then
+        option = "all right factors" =>
             ric := factor_riccati(f, factorizer, "all alg factors") :: RS
             res : RS := []
             for i in ric repeat
@@ -712,7 +709,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 else
                     res := append(res, [rk])
             return res
-        else if degree(npf.factor) > 1 then
+        if degree(npf.factor) > 1 then
             -- now we need an algebraic extension on k
             gr : F := zeroOf(makeSUP(npf.factor))
             npgr : UP := (monomial(1, 1) - gr :: UP) ^ qcoerce(npf.exponent)
@@ -750,9 +747,9 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             r := monomial(coefr ^ n, qcoerce(denom(slop)))
             if v case SP then
                 vsp := v :: SP
-                res := [[i.op, eval(r, monomial(1, 1), i.ram), i.expart]
+                res_sp := [[i.op, eval(r, monomial(1, 1), i.ram), i.expart]
                         for i in vsp] :: SP
-                return res
+                return res_sp
             else
                 vrs := v :: RS
                 res : RS := []
@@ -1007,25 +1004,24 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 if option = "use adjoint" then
                     sr := adjoint(sr)
                 srl := convert(sr)$LODOConvertions(F, UP, RF)
-                if not(sng.point case F and sng.point::F = 0) then
+                zero_sing := sng.point case F and sng.point::F = 0
+                if not(zero_sing) then
                     ftmp := srl
                     srl := 0
+                    old_x := monomial(1, 1)$UP
+                    newx : RF :=
+                        sng.point = "infinity" => 1/old_x
+                        (old_x - sng.point::F::UP)::RF
+                    newd : L :=
+                        sng.point = "infinity" =>
+                            -(old_x^2)::RF * D()
+                        D()
                     while ftmp ~= 0 repeat
                         lc := leadingCoefficient(ftmp)
                         dg := degree(ftmp)
-                        newx : RF
-                        if sng.point = "infinity" then
-                            newx := 1 / monomial(1, 1)
-                        else
-                            newx := (monomial(1, 1) - sng.point :: F :: UP) :: RF
                         lcn := subsup(numer(lc), newx)
                         lcd := subsup(denom(lc), newx)
                         slc := lcn / lcd
-                        newd : L
-                        if sng.point = "infinity" then
-                            newd := -(monomial(1, 1)$UP ^ 2) :: RF * D()
-                        else
-                            newd := D()
                         srl := srl + slc * newd ^ dg
                         ftmp := reductum ftmp
                 if option ~= "use adjoint" then
