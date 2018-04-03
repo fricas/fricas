@@ -565,12 +565,8 @@ compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
 -- 1. create sigList= list of all signatures which have embedded
 --    declarations moved into global variable $sigAlist
   sigList:=
-    [transformType fetchType(a,x,e,form) for a in rest form for x in rest signature]
+    [transformType(x) for a in rest form for x in rest signature]
        where
-        fetchType(a,x,e,form) ==
-          x => x
-          getmode(a,e) or userError concat(
-            '"There is no mode for argument",a,'"of function",first form)
         transformType x ==
           atom x => x
           x is [":",R,Rtype] =>
@@ -583,8 +579,13 @@ compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
   argList:=
     [removeSuchthat a for a in rest form] where
       removeSuchthat x ==
-        x is ["|",y,p] => ($predAlist:= [[y,:p],:$predAlist]; y)
+        x is ["|",y,p] =>
+            BREAK()
+            ($predAlist:= [[y,:p],:$predAlist]; y)
         x
+
+  argList2 := [a for a in argList for t in sigList | not(NULL(t))]
+  sigList2 := [t for t in sigList | not(NULL(t))]
 
 -- 3. obtain a list of parameter identifiers (x1 .. xn) ordered so that
 --       the type of xi is independent of xj if i < j
@@ -595,7 +596,7 @@ compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
           dependencies() ==
             union(listOfIdentifiersIn y,
               delete(x,listOfIdentifiersIn LASSOC(x,$predAlist)))
-          argSigAlist:= [:$sigAlist,:pairList(argList,sigList)]
+          argSigAlist:= [:$sigAlist,:pairList(argList2, sigList2)]
 
 -- 4. construct a WhereList which declares and/or defines the xi's in
 --    the order constructed in step 3
