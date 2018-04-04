@@ -77,6 +77,8 @@ stamp-rootdirs:
 
 reltarget = target/$(target)
 
+fricas_lib = $(subst $(exec_prefix)/,,$(libdir))
+
 install: install-src install-contrib
 
 install-src:
@@ -128,8 +130,16 @@ install-src:
 	     || exit 1 ; \
 	done
 	echo '#!/bin/sh -' > '${COMMAND}'.tmp
-	echo exec_prefix='"$${FRICAS_PREFIX:-$(exec_prefix)}"' >> '${COMMAND}'.tmp
-	echo AXIOM='"$${exec_prefix}/lib/fricas/target/$(target)"' >> '${COMMAND}'.tmp
+	echo exec_prefix='"$${FRICAS_PREFIX:-$(exec_prefix)}"' \
+               >> '${COMMAND}'.tmp
+	if test "$(fricas_lib)" != "$(libdir)" ;  then \
+	   echo \
+	      AXIOM='"$${exec_prefix}/$(fricas_lib)/fricas/target/$(target)"' \
+	       >> '${COMMAND}'.tmp ; \
+	else \
+	   echo AXIOM='"$(libdir)/fricas/target/$(target)"' \
+               >> '${COMMAND}'.tmp ; \
+	fi
 	echo export AXIOM >> '${COMMAND}'.tmp
 
 	cat $(fricas_src_srcdir)/etc/fricas >> '${COMMAND}'.tmp
