@@ -33,7 +33,7 @@
 
 -----------------------------NEW buildFunctor CODE-----------------------------
 NRTaddDeltaCode(kvec) ==
---NOTES: This function is called from NRTbuildFunctor to initially
+--NOTES: This function is called from buildFunctor to initially
 --  fill slots in $template. The $template so created is stored in the
 --  NRLIB. On load, makeDomainTemplate is called on this $template to
 --  create a template which becomes slot 0 of the infovec for the constructor.
@@ -720,15 +720,7 @@ NRTputInHead bod ==
     bod
   bod is ["QUOTE",:.] => bod
   bod is ["CLOSEDFN",:.] => bod
-  bod is ["SPADCONST",dom,ind] =>
-    BREAK()
-    RPLACA(bod,$elt)
-    dom = '_$ => nil
-    k:= NRTassocIndex dom =>
-      RPLACA(LASTNODE bod,[$elt,'_$,k])
-      bod
-    keyedSystemError("S2GE0016",['"NRTputInHead",
-       '"unexpected SPADCONST form"])
+  bod is ["SPADCONST", dom, ind] => BREAK()
   NRTputInHead first bod
   NRTputInTail rest bod
   bod
@@ -750,8 +742,8 @@ NRTputInTail x ==
 --               Functions Creating Lisplib Information
 --=======================================================================
 NRTdescendCodeTran(u, condList) ==
-    -- NRTbuildFunctor calls to fill $template slots with names of
-    -- compiled functions
+    -- buildFunctor calls NRTdescendCodeTran to fill $template slots
+    -- with names of compiled functions
     null u => nil
     u is ['LIST] => nil
     u is [op, ., i, a] and MEMQ(op, '(SETELT QSETREFV)) =>

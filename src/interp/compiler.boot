@@ -108,9 +108,8 @@ comp2(x,m,e) ==
   [y,m',e]:= comp3(x,m,e) or return nil
   --if null atom y and isDomainForm(y,e) then e := addDomain(x,e)
         --line commented out to prevent adding derived domain forms
-  m~=m' and ($bootStrapMode or isDomainForm(m',e))=>[y,m',addDomain(m',e)]
+  m ~= m' and isDomainForm(m',e) => [y, m', addDomain(m', e)]
         --isDomainForm test needed to prevent error while compiling Ring
-        --$bootStrapMode-test necessary for compiling Ring in $bootStrapMode
   [y,m',e]
 
 comp3(x, m, e) ==
@@ -450,11 +449,6 @@ compForm1(form is [op,:argl],m,e) ==
   e:= addDomain(m,e) --???unneccessary because of comp2's call???
   (mmList:= getFormModemaps(form,e)) and (T:= compForm2(form,m,e,mmList)) => T
   compToApply(op,argl,m,e)
-
-compExpressionList(argl,m,e) ==
-  Tl := [[.,.,e] := comp(x, $OutputForm, e) or return "failed" for x in argl]
-  Tl="failed" => nil
-  convert([["LIST", :[y.expr for y in Tl]], $OutputForm, e], m)
 
 compForm2(form is [op,:argl],m,e,modemapList) ==
   sargl:= TAKE(# argl, $TriangleVariableList)
