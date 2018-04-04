@@ -173,9 +173,7 @@ postDef [defOp,lhs,rhs] ==
     lhs is [":",:.] => rest lhs
     [lhs,nil]
   if atom form then form := [form]
-  newLhs:=
-    [op,:argl]:= [(x is [":",a,.] => a; x) for x in form]
-    [op,:postDefArgs argl]
+  newLhs:= [(x is [":",a,.] => a; x) for x in form]
   argTypeList:=
     [(x is [":",.,t] => t; nil) for x in rest form]
   typeList:= [targetType,:argTypeList]
@@ -184,16 +182,6 @@ postDef [defOp,lhs,rhs] ==
       rhs is ["=>", a, b] => ['IF,postTran a, postTran b, 'noBranch]
       postTran rhs
   ['DEF, newLhs, typeList, specialCaseForm, trhs]
-
-postDefArgs argl ==
-  null argl => argl
-  argl is [[":",a],:b] =>
-    b => postError
-      ['"   Argument",:bright a,'"of indefinite length must be last"]
-    atom a or a is ['QUOTE,:.] => a
-    postError
-      ['"   Argument",:bright a,'"of indefinite length must be a name"]
-  [first argl,:postDefArgs rest argl]
 
 postMDef(t) ==
   [.,lhs,rhs] := t
