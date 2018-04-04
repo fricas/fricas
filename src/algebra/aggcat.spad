@@ -15,7 +15,7 @@
 ++ of members, explicitly or implicitly represented.
 ++ An aggregate can in principle
 ++ represent everything from a string of characters to abstract sets such
-++ as "the set of x satisfying relation {\em r(x)}"
+++ as "the set of x satisfying relation {\em r(x)}".
 ++ An attribute \spadatt{finiteAggregate} is used to assert that a domain
 ++ has a finite number of elements.
 Aggregate : Category == Type with
@@ -215,7 +215,7 @@ Collection(S : Type) : Category == HomogeneousAggregate(S) with
         remove : (S, %) -> %
           ++ remove(x, u) returns a copy of u with all
           ++ elements equal to x removed.
-          ++ Note: \spad{remove(x, c) = [y for y in c | y ~= x]}.
+          ++ Note: \spad{remove(x, u) = [y for y in u | y ~= x]}.
         removeDuplicates : % -> %
           ++ removeDuplicates(u) returns a copy of u with all duplicates removed.
    if S has ConvertibleTo InputForm then ConvertibleTo InputForm
@@ -315,13 +315,14 @@ QueueAggregate(S : Type) : Category == Join(BagAggregate S, finiteAggregate) wit
    enqueue! : (S, %) -> S
      ++ enqueue!(x, q) inserts x into the queue q at the back end.
    dequeue! : % -> S
-     ++ dequeue! s destructively extracts the first (top) element from queue q.
-     ++ The element previously second in the queue becomes the first element.
+     ++ dequeue!(q) destructively extracts the first (top) element
+     ++ from queue q. The element previously second in the queue
+     ++ becomes the first element.
      ++ Error: if q is empty.
    rotate! : % -> %
-     ++ rotate! q rotates queue q so that the element at the front of
+     ++ rotate!(q) rotates queue q so that the element at the front of
      ++ the queue goes to the back of the queue.
-     ++ Note: rotate! q is equivalent to enqueue!(dequeue!(q)).
+     ++ Note: rotate!(q) is equivalent to enqueue!(dequeue!(q)).
    front : % -> S
      ++ front(q) returns the element at the front of the queue.
      ++ The queue q is unchanged by this operation.
@@ -754,9 +755,9 @@ KeyedDictionary(Key : Type, Entry : Type) : Category ==
 ++ as a function from D to I.
 ++ Examples of eltable structures range from data structures, e.g. those
 ++ of type \spadtype{List}, to algebraic structures, e.g. \spadtype{Polynomial}.
-Eltable(S : Type, Im : Type) : Category == with
-  elt : (%, S) -> Im
-     ++ elt(u, i) (also written: u . i) returns the element of u indexed by i.
+Eltable(D : Type, I : Type) : Category == with
+  elt : (%, D) -> I
+     ++ elt(u, i) (also written: u.i) returns the element of u indexed by i.
      ++ Error: if i is not an index of u.
 
 )abbrev category ELTAGG EltableAggregate
@@ -770,10 +771,11 @@ Eltable(S : Type, Im : Type) : Category == with
 ++ References:
 ++ Description:
 ++ An eltable aggregate is one which can be viewed as a function.
-++ For example, the list \spad{[1, 7, 4]} can applied to 0, 1, and 2 respectively
-++ will return the integers 1, 7, and 4; thus this list may be viewed
-++ as mapping 0 to 1, 1 to 7 and 2 to 4. In general, an aggregate
-++ can map members of a domain {\em Dom} to an image domain {\em Im}.
+++ For example, the list \spad{[1, 7, 4]} can be applied to 1, 2, and 3
+++ respectively and will return the integers 1, 7, and 4; thus this
+++ list may be viewed as mapping 1 to 1, 2 to 7 and 3 to 4. In general,
+++ an aggregate can map members of a domain {\em Dom} to an image
+++ domain {\em Im}.
 EltableAggregate(Dom : Type, Im : Type) : Category ==
 -- This is separated from Eltable
 -- and series won't have to support qelt's and setelt's.
@@ -781,9 +783,6 @@ EltableAggregate(Dom : Type, Im : Type) : Category ==
     elt : (%, Dom, Im) -> Im
        ++ elt(u, x, y) applies u to x if x is in the domain of u,
        ++ and returns y otherwise.
-       ++ For example, if u is a polynomial in \spad{x} over the rationals,
-       ++ \spad{elt(u, n, 0)} may define the coefficient of \spad{x}
-       ++ to the power n, returning 0 when n is out of range.
     qelt : (%, Dom) -> Im
        ++ qelt(u, x) applies \spad{u} to \spad{x} without checking whether
        ++ \spad{x} is in the domain of \spad{u}.  If \spad{x} is not in the
@@ -793,13 +792,13 @@ EltableAggregate(Dom : Type, Im : Type) : Category ==
     if % has shallowlyMutable then
        setelt! : (%, Dom, Im) -> Im
            ++ setelt!(u, x, y) sets the image of x to be y under u,
-           ++ assuming x is in the domain of u.
+           ++ if x is in the domain of u.
            ++ Error: if x is not in the domain of u.
        qsetelt! : (%, Dom, Im) -> Im
            ++ qsetelt!(u, x, y) sets the image of \spad{x} to be \spad{y} under
            ++ \spad{u}, without checking that \spad{x} is in the domain of
            ++ \spad{u}.
-           ++ If such a check is required use the function \spad{setelt}.
+           ++ If such a check is required use the function \spad{setelt!}.
  add
   qelt(a, x) == elt(a, x)
   if % has shallowlyMutable then
@@ -841,13 +840,13 @@ IndexedAggregate(Index : Type, Entry : Type) : Category ==
       maxIndex : % -> Index
         ++ maxIndex(u) returns the maximum index i of aggregate u.
         ++ Note: in general,
-        ++ \spad{maxIndex(u) = reduce(max, [i for i in indices u])};
-        ++ if u is a list, \spad{maxIndex(u) = #u}.
+        ++ \spad{maxIndex(u) = reduce(max, indices u)};
+        ++ for List, \spad{maxIndex(u) = #u}.
       minIndex : % -> Index
         ++ minIndex(u) returns the minimum index i of aggregate u.
         ++ Note: in general,
-        ++ \spad{minIndex(a) = reduce(min, [i for i in indices a])};
-        ++ for lists, \spad{minIndex(a) = 1}.
+        ++ \spad{minIndex(a) = reduce(min, indices a)};
+        ++ for List, \spad{minIndex(a) = 1}.
       first : % -> Entry
         ++ first(u) returns the first element x of u.
         ++ Note: for collections, \spad{first([x, y, ..., z]) = x}.
@@ -1037,7 +1036,7 @@ TableAggregate(Key : Type, Entry : Type) : Category ==
 ++ Description:
 ++ A recursive aggregate over a type S is a model for a
 ++ a directed graph containing values of type S.
-++ Recursively, a recursive aggregate is a {\em node}
+++ Recursively, a recursive aggregate is either empty or a {\em node}
 ++ consisting of a \spadfun{value} from S and 0 or more \spadfun{children}
 ++ which are recursive aggregates.
 ++ A node with no children is called a \spadfun{leaf} node.
@@ -1117,13 +1116,13 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    -- needs preorder, inorder and postorder iterators
    left : % -> %
      ++ left(u) returns the left child.
-   elt : (%,"left") -> %
-     ++ elt(u,"left") (also written: \spad{a . left}) is
+   elt : (%, "left") -> %
+     ++ elt(u, "left") (also written: \spad{a.left}) is
      ++ equivalent to \spad{left(a)}.
    right : % -> %
      ++ right(a) returns the right child.
-   elt : (%,"right") -> %
-     ++ elt(a,"right") (also written: \spad{a . right})
+   elt : (%, "right") -> %
+     ++ elt(a, "right") (also written: \spad{a.right})
      ++ is equivalent to \spad{right(a)}.
    if % has shallowlyMutable then
       setelt! : (%, "left", %) -> %
@@ -1680,7 +1679,7 @@ LinearAggregate(S : Type) : Category ==
    concat : (%, %) -> %
       ++ concat(u, v) returns an aggregate consisting of the elements of u
       ++ followed by the elements of v.
-      ++ Note: if \spad{w = concat(u, v)} then
+      ++ Note: if \spad{w := concat(u, v)} then
       ++ \spad{w.i = u.i for i in indices u}
       ++ and \spad{w.(j + maxIndex u) = v.j for j in indices v}.
    concat : List % -> %
@@ -1695,25 +1694,25 @@ LinearAggregate(S : Type) : Category ==
      ++ Note: \spad{w.i = f(u.i, v.i)}.
    delete : (%, Integer) -> %
       ++ delete(u, i) returns a copy of u with the \spad{i}th element deleted.
-      ++ Note: for List,
-      ++ \spad{delete(u, i) = concat(u(1..i - 1), u(i + 1..))}.
+      ++ Note:
+      ++ \spad{delete(u, i) = concat(u(minIndex(u)..i - 1), u(i + 1..))}.
    delete : (%, UniversalSegment(Integer)) -> %
       ++ delete(u, i..j) returns a copy of u with the \spad{i}th through
       ++ \spad{j}th element deleted.
-      ++ Note: for List, \spad{delete(u, i..j) = concat(u(1..i-1), u(j+1..))}.
+      ++ Note: \spad{delete(u, i..j) = concat(u(minIndex(u)..i-1), u(j+1..))}.
    first : (%, NonNegativeInteger) -> %
       ++ first(u, n) returns a copy of the first n
       ++ elements of u.  Error: if u has less than n elements.
    insert : (S, %, Integer) -> %
       ++ insert(x, u, i) returns a copy of u having x as its \spad{i}th
       ++ element.
-      ++ Note: for List,
-      ++ \spad{insert(x, u, i) = concat(u(1..i - 1), concat(x, u(i..)))}.
+      ++ Note:
+      ++ \spad{insert(x, u, i) = concat(u(minIndex(u)..i-1), concat(x, u(i..)))}.
    insert : (%, %, Integer) -> %
-      ++ insert(v, u, k) returns a copy of u having v inserted beginning at the
+      ++ insert(v, u, i) returns a copy of u having v inserted beginning at the
       ++ \spad{i}th element.
-      ++ Note: for List,
-      ++ \spad{insert(v, u, k) = concat(u(1..k-1), concat(v, u(k..)))}.
+      ++ Note:
+      ++ \spad{insert(v, u, i) = concat(u(minIndex(u)..i-1), concat(v, u(i..)))}.
    if % has shallowlyMutable then
       setelt! : (%, UniversalSegment(Integer), S) -> S
        ++ setelt!(u, i..j, x) (also written: \spad{u(i..j) := x}) destructively
@@ -1740,7 +1739,7 @@ LinearAggregate(S : Type) : Category ==
        ++ predicate p.
       sorted? : ((S, S) -> Boolean, %) -> Boolean
        ++ sorted?(p, a) tests if \spad{a} is sorted according to predicate p.
-      position : (S->Boolean, %) -> Integer
+      position : (S -> Boolean, %) -> Integer
        ++ position(p, a) returns the index i of the first x in \spad{a}
        ++ such that \spad{p(x)} is true, and \spad{minIndex(a) - 1} if
        ++ there is no such x.
@@ -1759,7 +1758,7 @@ LinearAggregate(S : Type) : Category ==
          rightTrim : (%, S) -> %
           ++ rightTrim(u, x) returns a copy of u with all trailing occurrences
           ++ of x deleted.  For example, \spad{rightTrim("  abc  ", char " ")}
-          ++ returns \spad{"abc  "}.
+          ++ returns \spad{"  abc"}.
          trim : (%, S) -> %
           ++ trim(u, x) returns a copy of u with all occurrences of x deleted
           ++ from right and left ends.
@@ -2113,7 +2112,7 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
 ++ References:
 ++ Description:
 ++ An extensible aggregate is one which allows insertion and deletion of entries.
-++ These aggregates are models of lists and streams which are represented
+++ These aggregates are models of lists which are represented
 ++ by linked structures so as to make insertion, deletion, and
 ++ concatenation efficient. However, access to elements of these
 ++ extensible aggregates is generally slow since access is made from the end.
