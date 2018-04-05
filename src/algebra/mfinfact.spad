@@ -135,8 +135,18 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
         [(leadingCoefficient leadingCoefficient(um) exquo lcfacs)::R,
                        factorlist]$SUPFinalFact
 
+    factor_sup(m : R) : Factored SUP PG ==
+        fm := distdfact(m, false)$DistinctDegreeFactorize(F, R)
+        fr1 := */[primeFactor(map(c +-> c::PG, p.irr
+                                 )$UPCF2(F, R, PG, SUP PG), p.pow)
+                        for p in fm.factors]
+        makeFR(fm.cont::PG::SUP(PG), [])*fr1
+
     factor(um : SUP PG) : Factored SUP PG ==
         lv : List OV := variables um
+        empty?(lv) =>
+            factor_sup(map((p1 : PG) : F +-> ground(p1)@F, um
+                          )$UPCF2(PG, SUP PG, F, R))
         ld := degree(um, lv)
         dx := "min"/ld
         var := lv.position(dx, ld)

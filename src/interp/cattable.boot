@@ -137,7 +137,7 @@ simpHasSignature(pred,conform,op,sig) == --eval w/o loading
   candidates := [x for (x := [sig1,:.]) in u | #sig1 = #sig]  or return false
   match := or/[x for (x := [sig1,:.]) in candidates
                 | sig = sublisFormal(args,sig1)] or return false
-  simpHasPred(match is [sig,.,:p] and sublisFormal(args,p) or true)
+  simpHasPred(match is [sig,., p, :.] and sublisFormal(args,p) or true)
 
 hasIdent pred ==
   pred is [op,:r] =>
