@@ -11,6 +11,19 @@ LLLReduction() : Exports == Implementation where
 
       LLL : MI -> MI
         ++ LLL(m) computes LLL reduction of m
+        ++ LLL(m) is the same as extendedLLL!(copy m, ncols m).
+      extendedLLL! : (MI, NNI) -> MI
+        ++ extendedLLL!(m, n) with 1 <= n <= ncols(m) performs the
+        ++ LLL reduction of m where only the first n colums are
+        ++ considered significant.
+        ++ All matrix transformations, however, will be executed
+        ++ on the full matrix.
+        ++ m is destructively modified and will be lost after this call.
+      extendedLLL : MI -> Record(lll : MI, trf : MI)
+        ++ extendedLLL(m) returns the LLL reductions of m
+        ++ together with the transformation matrix, i.e., if
+        ++ [l, t] is returned then it holds l = t*m.
+
       find_relation : (List(Float), NNI) -> List(Integer)
         ++ find_relation(lf, k) finds short integer relation
         ++ between elements of lf rounded to k decimal places.
@@ -21,7 +34,8 @@ LLLReduction() : Exports == Implementation where
       VF ==> Vector(Float)
 
       -- n gives number of vectors
-      -- N gives length of each vector
+      -- N gives length of the significant part of each vector
+      -- cols >= N gives the actual number of columns of the input matrix L
 
       gram_step(k : Integer, N : Integer, bm : MI,
                 bsm : MF, mu : MF, nbs : VF, v1 : VF) : Void ==
@@ -37,13 +51,13 @@ LLLReduction() : Exports == Implementation where
               bsm(k, i) := v1(i)
           nbs(k) := dot(v1, v1)
 
-      LLL(L : MI) : MI ==
+      extendedLLL!(L : MI, N : NNI) : MI ==
             n := nrows(L)
-            N := ncols(L)
+            cols := ncols(L)
             bsm := new(n, N, 0)$MF
             nbs := new(n, 0)$VF
             mu := new(n,n, 0)$MF
-            bm := copy(L)
+            bm := L
             delta : Float := 0.8
             -- Gram-Schmidt
             v1 := new(N, 0)$VF
@@ -61,7 +75,7 @@ LLLReduction() : Exports == Implementation where
                 for j in (k - 1)..1 by -1 repeat
                     q := retract(round(mu(k, j)))@Integer
                     if q ~= 0 then
-                        for i in 1..N repeat
+                        for i in 1..cols repeat -- update bm matrix
                             bm(k, i) := bm(k, i) - q*bm(j, i)
                         for i in 1..j repeat
                             mu(k, i) := mu(k, i) - q*mu(j, i)
@@ -72,11 +86,8 @@ LLLReduction() : Exports == Implementation where
                     nv1 := nbs(k) + mu(k, k1)^2*nbs(k1)
                     nv2 := nbs(k)*nbs(k1)/nv1
                     m := mu(k, k1)*nbs(k1)/nv1
+                    swapRows!(bm, k, k1)
                     for i in 1..N repeat
-                        -- swap rows of bm
-                        tmpi := bm(k, i)
-                        bm(k, i) := bm(k1, i)
-                        bm(k1, i) := tmpi
                         -- update bsm
                         v1i := bsm(k, i) + mu(k, k1)*bsm(k1, i)
                         v2i := bsm(k1, i) - m*v1i
@@ -101,6 +112,25 @@ LLLReduction() : Exports == Implementation where
                     k := qcoerce(max(2, k1))@NNI
             bm
 
+      extendedLLL(L : MI): Record(lll : MI, trf : MI) ==
+          n := nrows L
+          N := ncols L
+          cols := N + n
+          LE : MI := new(n, cols, 0)
+          -- attach a unit matrix at the right of L
+          for i in 1..n repeat
+              for j in 1..N repeat qsetelt!(LE, i, j, qelt(L, i, j))
+              qsetelt!(LE, i, N+i, 1)
+          m := extendedLLL!(LE, N)
+          l : MI := new(n, N, 0)
+          t : MI := new(n, n, 0)
+          for i in 1..n repeat
+              for j in 1..N repeat qsetelt!(l, i, j, qelt(m, i, j))
+              for j in 1..n repeat qsetelt!(t, i, j, qelt(m, i, j+N))
+          [l, t]
+
+      LLL(L : MI) : MI == extendedLLL!(copy L, ncols L)
+
       find_relation(la, k) ==
           n := #la
           m := new(n, n + 1, 0)$Matrix(Integer)
@@ -110,4 +140,3 @@ LLLReduction() : Exports == Implementation where
               m(i, n + 1) := retract(round(tenk*a))@Integer
           res := LLL(m)
           [res(1, i) for i in 1..n]
-
