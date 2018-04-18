@@ -1,0 +1,38 @@
+Short overview of FriCAS build process.
+
+Normal build from svn works as follows:
+
+1) First is src/lisp subdirectory.  This creates 'lisp' executable
+   which is kind of virtual Lisp specialized to support FriCAS.
+   In particular it contains Lisp packages, utility functions
+   for creating executables and various Lisp macros and functions
+   for supporting Shoe and Spad.  Basically, thanks to our
+   functionality added to 'lisp' in other stages we have
+   resonably uniform set of tools.
+2) src/boot.  This contains Shoe to Lisp translator.  Uses bootstrap
+   techinque to build from cached (precompiled) Lisp files and
+   then re-build form Shoe sources.  Part titled 'The Boot Compiler'
+   in src/boot/Makenotes.tex contains reasonable description of
+   bootstrap process for Shoe.  The result of Shoe bootstrap
+   is 'bootsys'.
+3) src/interp.  Here we use 'bootsys' to compile '.boot' files.
+   Things are somewhat complicated because we want to include
+   Shoe to Lisp translator in 'interpsys' and 'AXIOMsys'.
+   Also ECL is different than other Lisps.  That is why we
+   first create 'makeint.lisp' from the Makefile and delegate
+   creation of executable to 'makeint.lisp'.  The result
+   is 'interpsys'.
+4) 'interpsys' is used to compile Spad files and bootstrap
+   algebra.  This is described in 'doc/algebra_build.txt'.
+5) Once algebra is build small but frequently used part
+   of algebra is preloaded into 'interpsys' creating
+   'AXIOMsys' (the rest of algebra is loaded on demand).
+   Also a few variables in 'AXIOMsys' have different value
+   than in 'interpsys'.  For ECL preloading does not work
+   and 'AXIOMsys' differs from 'interpsys' only in few
+   variables.
+6) AXIOMsys is used to generate .pht pages for HyperDoc.
+
+Release tarball contains pregenerated Lisp files for algebra,
+databases and .pht pages so in stage 4 there is only Lisp
+compilation and stage 6 is completely skipped.
