@@ -118,30 +118,30 @@ TwoFactorize(F) : C == T
        tmp
 
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flg : fUnion, fctr : P, xpnt : Integer)
+    FF     ==> Record(flag : fUnion, factor : P, exponent : Integer)
 
     generalSqFr(m : P) : Factored P ==
        m = 0 => 0
        degree m = 0 =>
          l := squareFree(leadingCoefficient m)
-         makeFR(unit(l)::P, [[u.flg, u.fctr::P, u.xpnt] for u in factorList l])
+         makeFR(unit(l)::P, [[u.flag, u.factor::P, u.exponent] for u in factorList l])
        cont := content m
        m := (m exquo cont)::P
        sqfrm := squareFree m
        pfaclist : List FF := empty()
        unitPart := unit sqfrm
        for u in factorList sqfrm repeat
-          u.flg = "nil" =>
-             uexp : NNI := (u.xpnt)::NNI
-             nfacs := squareFree(exchangeVars u.fctr)
+          u.flag = "nil" =>
+             uexp : NNI := (u.exponent)::NNI
+             nfacs := squareFree(exchangeVars u.factor)
              for v in factorList nfacs repeat
-                pfaclist := cons([v.flg, exchangeVars v.fctr, v.xpnt*uexp],
+                pfaclist := cons([v.flag, exchangeVars v.factor, v.exponent*uexp],
                               pfaclist)
              unitPart := unit(nfacs)^uexp * unitPart
           pfaclist := cons(u, pfaclist)
        cont ~= 1 =>
            sqp := squareFree cont
-           contlist := [[w.flg, (w.fctr)::P, w.xpnt] for w in factorList sqp]
+           contlist := [[w.flag, (w.factor)::P, w.exponent] for w in factorList sqp]
            pfaclist := append(contlist, pfaclist)
            makeFR(unit(sqp)*unitPart, pfaclist)
        makeFR(unitPart, pfaclist)
@@ -158,7 +158,7 @@ TwoFactorize(F) : C == T
        m = 0 => 0
        degree m = 0 =>
          l := factor(leadingCoefficient m)$DistinctDegreeFactorize(F, R)
-         makeFR(unit(l)::P, [[u.flg, u.fctr::P, u.xpnt] for u in factorList l])
+         makeFR(unit(l)::P, [[u.flag, u.factor::P, u.exponent] for u in factorList l])
        ll : List FF
        ll := []
        unitPart : P
@@ -169,7 +169,7 @@ TwoFactorize(F) : C == T
           m := m1
           contfact := factor(cont)$DistinctDegreeFactorize(F, R)
           unitPart := (unit contfact)::P
-          ll := [[w.flg, (w.fctr)::P, w.xpnt] for w in factorList contfact]
+          ll := [[w.flag, (w.factor)::P, w.exponent] for w in factorList contfact]
        else
           unitPart := cont::P
        sqfrm := squareFree m
@@ -189,17 +189,17 @@ TwoFactorize(F) : C == T
                 m1 case "failed" => error "consistency error in TwoFactor"
                 res := generalTwoFactor m1
                 unitPart := unitPart*unit(res)^((p*expon)::NNI)
-                ll := [:[[v.flg, v.fctr, expon *p*v.xpnt] for v in factorList res], :ll]
+                ll := [:[[v.flag, v.factor, expon *p*v.exponent] for v in factorList res], :ll]
               m2 := generalTwoFactor swap fac
               unitPart := unitPart*unit(m2)^(expon::NNI)
-              ll := [:[[v.flg, swap v.fctr, expon*v.xpnt] for v in factorList m2], :ll]
+              ll := [:[[v.flag, swap v.factor, expon*v.exponent] for v in factorList m2], :ll]
            ydeg := "max"/[degree w for w in coefficients fac]
            twoF := doFactor(fac, ydeg, do_ext)
            nfl := factorList(twoF)
-           #nfl = 1 and nfl(1).flg case "nil" =>
+           #nfl = 1 and nfl(1).flag case "nil" =>
                return twoF
            unitPart := unitPart*unit(twoF)^expon
-           ll := [:[[v.flg, v.fctr, expon*v.xpnt] for v in factorList twoF],
+           ll := [:[[v.flag, v.factor, expon*v.exponent] for v in factorList twoF],
                  :ll]
        makeFR(unitPart, ll)
 
@@ -220,10 +220,10 @@ TwoFactorize(F) : C == T
         res1 := doFactor(mm, dx, false)$TwoFactorize(extField)
         flist := factorList res1
         #flist = 1 =>
-            first(flist).flg = "prime" => primeFactor(m, 1)
+            first(flist).flag = "prime" => primeFactor(m, 1)
             nilFactor(m, 1)
         Normp := NormRetractPackage(F, extField, SUEx, TP, n)
-        lfacth := [fac.fctr for fac in flist]
+        lfacth := [fac.factor for fac in flist]
         lfactk : List P := []
         while not empty? lfacth repeat
             ff := first lfacth
@@ -246,7 +246,7 @@ TwoFactorize(F) : C == T
                 nsize < 1000 => doExtension1(m, n, dx,
                       FiniteFieldCyclicGroupExtension(F, n))
                 doExtension1(m, n, dx, FiniteFieldExtension(F, n))
-            first(factorList(res1)).flg = "prime" => return res1
+            first(factorList(res1)).flag = "prime" => return res1
         error "doExtension : Impossible"
 
     doFactor(m : P, dx : Integer, do_ext : Boolean) : Factored P ==

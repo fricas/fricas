@@ -26,7 +26,7 @@
 
 Factored(R : IntegralDomain) : Exports == Implementation where
   fUnion ==> Union("nil", "sqfr", "irred", "prime")
-  FF     ==> Record(flg : fUnion, fctr : R, xpnt : Integer)
+  FF     ==> Record(flag : fUnion, factor : R, exponent : Integer)
   SRFE   ==> Set(Record(factor : R, exponent : Integer))
 
   Exports ==> Join(IntegralDomain, DifferentialExtension R, Algebra R,
@@ -129,25 +129,25 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         empty?(lf := reverse factorList x) => convert(unit x)@InputForm
         l := empty()$List(InputForm)
         for rec in lf repeat
-          ((rec.fctr) = 1) => messagePrint("WARNING (convert$Factored):_
+          rec.factor = 1 => messagePrint("WARNING (convert$Factored):_
  1 should not appear as factor.")$OutputForm
-          iFactor : InputForm := binary( convert("::" :: Symbol)@InputForm, [convert(rec.fctr)@InputForm, (devaluate R)$Lisp :: InputForm ]$List(InputForm) )
-          iExpon  : InputForm := convert(rec.xpnt)@InputForm
+          iFactor : InputForm := binary( convert("::" :: Symbol)@InputForm, [convert(rec.factor)@InputForm, (devaluate R)$Lisp :: InputForm ]$List(InputForm) )
+          iExpon  : InputForm := convert(rec.exponent)@InputForm
           iFun    : List InputForm :=
-            rec.flg case "nil" =>
+            rec.flag case "nil" =>
                [convert('nilFactor)@InputForm, iFactor, iExpon]$List(InputForm)
-            rec.flg case "sqfr" =>
+            rec.flag case "sqfr" =>
                [convert('sqfrFactor)@InputForm, iFactor, iExpon]$List(InputForm)
-            rec.flg case "prime" =>
+            rec.flag case "prime" =>
                [convert('primeFactor)@InputForm, iFactor, iExpon
                      ]$List(InputForm)
-            rec.flg case "irred" =>
+            rec.flag case "irred" =>
                [convert('irreducibleFactor)@InputForm, iFactor, iExpon
                      ]$List(InputForm)
             []$List(InputForm)
           l := concat( iFun pretend InputForm, l )
---          l := concat(convert(rec.fctr)@InputForm, l)
---        l := concat(convert(rec.fctr)@InputForm ^ rec.xpnt, l)
+--          l := concat(convert(rec.factor)@InputForm, l)
+--        l := concat(convert(rec.factor)@InputForm ^ rec.exponent, l)
         empty? l => convert(unit x)@InputForm
         if unit x ~= 1 then l := concat(convert(unit x)@InputForm, l)
         empty? rest l => first l
@@ -176,8 +176,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     numberOfFactors u    == # u.fct
     0                    == [1, [["nil", 0, 1]$FF]]
     zero? u              == # u.fct = 1 and
-                             (first u.fct).flg case "nil" and
-                              zero? (first u.fct).fctr and
+                             first(u.fct).flag case "nil" and
+                              zero? first(u.fct).factor and
                                (u.unt = 1)
     1                    == [1, empty()]
     one? u               == empty? u.fct and u.unt = 1
@@ -186,9 +186,9 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     characteristic()     == characteristic()$R
     i : Integer * u : %      == (i :: %) * u
     r : R * u : %            == (r :: %) * u
-    factors u            == [[fe.fctr, fe.xpnt] for fe in factorList u]
+    factors u            == [[fe.factor, fe.exponent] for fe in factorList u]
     expand u             == retract u
-    negexp? x           == "or"/[negative?(y.xpnt) for y in factorList x]
+    negexp? x           == "or"/[negative?(y.exponent) for y in factorList x]
 
     makeFR(u, l) ==
 -- normalizing code to be installed when contents are handled better
@@ -204,8 +204,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
       rational x ==
         convert(unit x)@Integer *
-           _*/[(convert(f.fctr)@Integer)::Fraction(Integer)
-                                    ^ f.xpnt for f in factorList x]
+           _*/[(convert(f.factor)@Integer)::Fraction(Integer)
+                                    ^ f.exponent for f in factorList x]
 
     if R has Eltable(R, R) then
       elt(x : %, v : %) == x(expand v)
@@ -225,17 +225,17 @@ Factored(R : IntegralDomain) : Exports == Implementation where
   --  positive?(x: %): Boolean == not(zero? x) and even?(negcount x)
   --  negative?(x: %): Boolean == not(zero? x) and odd?(negcount x)
   --  negcount x ==
-  --    n := count(s +-> negative?(s.fctr), factorList x)$List(FF)
+  --    n := count(s +-> negative?(s.factor), factorList x)$List(FF)
   --    negative? unit x => n + 1
   --    n
 
       convert(x : %) : Float ==
         convert(unit x)@Float *
-                _*/[convert(f.fctr)@Float ^ f.xpnt for f in factorList x]
+                _*/[convert(f.factor)@Float ^ f.exponent for f in factorList x]
 
       convert(x : %) : DoubleFloat ==
         convert(unit x)@DoubleFloat *
-          _*/[convert(f.fctr)@DoubleFloat ^ f.xpnt for f in factorList x]
+          _*/[convert(f.factor)@DoubleFloat ^ f.exponent for f in factorList x]
 
     u : % * v : % ==
       zero? u or zero? v => 0
@@ -247,7 +247,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     u : % ^ n : NonNegativeInteger ==
       n = 0 => 1
       n = 1 => u
-      mkFF(unit(u)^n, [[x.flg, x.fctr, n * x.xpnt] for x in factorList u])
+      mkFF(unit(u)^n, [[x.flag, x.factor, n * x.exponent] for x in factorList u])
 
     SimplifyFactorization x ==
       empty? x => empty()
@@ -258,14 +258,14 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
     SimplifyFactorization1(f, x) ==
       empty? x =>
-        zero?(f.xpnt) => empty()
+        zero?(f.exponent) => empty()
         list f
       f1 := first x
-      f.fctr = f1.fctr =>
-        SimplifyFactorization1([stricterFlag(f.flg, f1.flg),
-                                      f.fctr, f.xpnt + f1.xpnt], rest x)
+      f.factor = f1.factor =>
+        SimplifyFactorization1([stricterFlag(f.flag, f1.flag),
+                                      f.factor, f.exponent + f1.exponent], rest x)
       l := SimplifyFactorization1(first x, rest x)
-      zero?(f.xpnt) => l
+      zero?(f.exponent) => l
       concat(f, l)
 
 
@@ -273,10 +273,10 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       empty?(lf := reverse factorList x) => (unit x)::OutputForm
       l := empty()$List(OutputForm)
       for rec in lf repeat
-        ((rec.fctr) = 1) => messagePrint "WARNING (coerce$Factored): 1 should not appear as factor."
-        ((rec.xpnt) = 1) =>
-          l := concat(rec.fctr :: OutputForm, l)
-        l := concat(rec.fctr::OutputForm ^ rec.xpnt::OutputForm, l)
+        rec.factor = 1 => messagePrint "WARNING (coerce$Factored): 1 should not appear as factor."
+        rec.exponent = 1 =>
+          l := concat(rec.factor :: OutputForm, l)
+        l := concat(rec.factor::OutputForm ^ rec.exponent::OutputForm, l)
       empty? l => (unit x) :: OutputForm
       e :=
         empty? rest l => first l
@@ -290,16 +290,16 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
     qexpand u ==
       unit u *
-         _*/[y.fctr ^ (y.xpnt::NonNegativeInteger) for y in factorList u]
+         _*/[y.factor ^ (y.exponent::NonNegativeInteger) for y in factorList u]
 
     retractIfCan(u:%):Union(R, "failed") ==
       negexp? u => "failed"
       qexpand u
 
     LispLessP(y, y1) ==
-      orderedR? => y.fctr < y1.fctr
-      comparableR? => smaller?(y.fctr, y1.fctr)
-      GGREATERP(y.fctr, y1.fctr)$Lisp => false
+      orderedR? => y.factor < y1.factor
+      comparableR? => smaller?(y.factor, y1.factor)
+      GGREATERP(y.factor, y1.factor)$Lisp => false
       true
 
     stricterFlag(fl1, fl2) ==
@@ -344,7 +344,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
     reciprocal u ==
       mkFF((recip unit u)::R,
-                    [[y.flg, y.fctr, - y.xpnt]$FF for y in factorList u])
+                    [[y.flag, y.factor, - y.exponent]$FF for y in factorList u])
 
     flagFactor(r, i, fl) ==
       zero? i => 1
@@ -353,11 +353,11 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
     differentiate(u : %, deriv : R -> R) ==
       ans := deriv(unit u) * ((u exquo unit(u)::%)::%)
-      ans + (_+/[fact.xpnt * deriv(fact.fctr) *
-       ((u exquo nilFactor(fact.fctr, 1))::%) for fact in factorList u])
+      ans + (_+/[fact.exponent * deriv(fact.factor) *
+       ((u exquo nilFactor(fact.factor, 1))::%) for fact in factorList u])
 
     map(fn, u) ==
-     fn(unit u) * _*/[irreducibleFactor(fn(f.fctr), f.xpnt) for f in factorList u]
+     fn(unit u) * _*/[irreducibleFactor(fn(f.factor), f.exponent) for f in factorList u]
 
     u exquo v ==
       empty?(factorList v) =>  unitNormal(retract v).associate *  u
@@ -366,7 +366,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       goodQuotient : Boolean := true
       x1 := factorList v1
       while (goodQuotient and (not empty? x1)) repeat
-        if x1.first.xpnt < 0
+        if x1.first.exponent < 0
           then goodQuotient := false
           else x1 := rest x1
       goodQuotient => v1
@@ -377,9 +377,9 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       as := ur::R
       vl := empty()$List(FF)
       for x in factorList u repeat
-        ucar := unitNormal(x.fctr)
-        e := abs(x.xpnt)::NonNegativeInteger
-        if x.xpnt < 0
+        ucar := unitNormal(x.factor)
+        e := abs(x.exponent)::NonNegativeInteger
+        if x.exponent < 0
           then  --  associate is recip of unit
             un := un * (ucar.associate ^ e)
             as := as * (ucar.unit ^ e)
@@ -387,7 +387,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
             un := un * (ucar.unit ^ e)
             as := as * (ucar.associate ^ e)
         if not ((ucar.canonical) = 1) then
-          vl := concat([x.flg, ucar.canonical, x.xpnt], vl)
+          vl := concat([x.flag, ucar.canonical, x.exponent], vl)
       [mkFF(un, empty()), mkFF(1, reverse! vl), mkFF(as, empty())]
 
     unitNormalize u ==
@@ -414,7 +414,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
             f1 := concat(i, f1)
             f2 := [i]
             for j in i+1..maxIndex x repeat
-              if x.i.fctr = x.j.fctr then
+              if x.i.factor = x.j.factor then
                   f1 := concat(j, f1)
                   f2 := concat(j, f2)
             f3 := concat(f2, f3)
@@ -427,7 +427,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
             f1 := rest f1
             while not empty? f1 repeat
               i := first f1
-              if x.i.xpnt < y.xpnt then y.xpnt := x.i.xpnt
+              if x.i.exponent < y.exponent then y.exponent := x.i.exponent
               f1 := rest f1
             x1 := concat(y, x1)
           f3 := rest f3
@@ -443,7 +443,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     if R has UniqueFactorizationDomain then
       prime? u ==
         not(empty?(l := factorList u)) and (empty? rest l) and
-                       ((l.first.xpnt) = 1) and (l.first.flg case "prime")
+                       (l.first.exponent = 1) and (l.first.flag case "prime")
 
 )abbrev package FRUTIL FactoredFunctionUtilities
 ++ Author:
@@ -479,7 +479,7 @@ FactoredFunctionUtilities(R) : Exports == Implementation where
 
   Implementation ==> add
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flg : fUnion, fctr : R, xpnt : Integer)
+    FF     ==> Record(flag : fUnion, factor : R, exponent : Integer)
 
     mergeFactors(f, g) ==
       makeFR(unit(f)*unit(g), append(factorList f, copy factorList g))
@@ -488,11 +488,11 @@ FactoredFunctionUtilities(R) : Exports == Implementation where
        u := unit(f)
        l : List FF := empty()
        for item in factorList f repeat
-         fitem := func item.fctr
-         u := u*unit(fitem) ^ (item.xpnt :: NonNegativeInteger)
-         if item.xpnt = 1 then
+         fitem := func item.factor
+         u := u*unit(fitem) ^ (item.exponent :: NonNegativeInteger)
+         if item.exponent = 1 then
             l := concat(factorList fitem, l)
-         else l := concat([[v.flg, v.fctr, v.xpnt*item.xpnt]
+         else l := concat([[v.flag, v.factor, v.exponent*item.exponent]
                           for v in factorList fitem], l)
        makeFR(u, l)
 

@@ -1002,7 +1002,7 @@ PolynomialToUnivariatePolynomial(x : Symbol, R : Ring) : with
 UnivariatePolynomialSquareFree(RC : IntegralDomain, P) : C == T
   where
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flg : fUnion, fctr : P, xpnt : Integer)
+    FF     ==> Record(flag : fUnion, factor : P, exponent : Integer)
     P : Join(UnivariatePolynomialCategory(RC), IntegralDomain) with
       gcd : (%, %) -> %
         ++ gcd(p, q) computes the greatest-common-divisor of p and q.
@@ -1030,19 +1030,19 @@ UnivariatePolynomialSquareFree(RC : IntegralDomain, P) : C == T
 
       if RC has FiniteFieldCategory then
         BumInSepFFE(ffe : FF) ==
-           ["sqfr", map(charthRoot,ffe.fctr), characteristic$P*ffe.xpnt]
+           ["sqfr", map(charthRoot,ffe.factor), characteristic$P*ffe.exponent]
       else if RC has CharacteristicNonZero then
          BumInSepFFE(ffe : FF) ==
-            np := multiplyExponents(ffe.fctr, characteristic$P::NonNegativeInteger)
+            np := multiplyExponents(ffe.factor, characteristic$P::NonNegativeInteger)
             (nthrp := charthRoot(np)) case "failed" =>
-               ["nil", np, ffe.xpnt]
-            ["sqfr", nthrp, characteristic$P*ffe.xpnt]
+               ["nil", np, ffe.exponent]
+            ["sqfr", nthrp, characteristic$P*ffe.exponent]
 
       else
         BumInSepFFE(ffe : FF) ==
           ["nil",
-           multiplyExponents(ffe.fctr, characteristic$P::NonNegativeInteger),
-            ffe.xpnt]
+           multiplyExponents(ffe.factor, characteristic$P::NonNegativeInteger),
+            ffe.exponent]
 
 
       if RC has CharacteristicZero then
@@ -1124,7 +1124,7 @@ PolynomialSquareFree(VarSet : OrderedSet, E, RC : GcdDomain, P) : C == T where
     SUP    ==> SparseUnivariatePolynomial(P)
     NNI    ==> NonNegativeInteger
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flg : fUnion, fctr : P, xpnt : Integer)
+    FF     ==> Record(flag : fUnion, factor : P, exponent : Integer)
 
     finSqFr : (P, List VarSet) -> Factored P
     pthPower : P -> Factored P
@@ -1164,9 +1164,9 @@ PolynomialSquareFree(VarSet : OrderedSet, E, RC : GcdDomain, P) : C == T where
           isSq  := true
         psqfr := finSqFr(proot, variables f)
         isSq  =>
-          makeFR((unit psqfr)^chrc, [[u.flg, u.fctr,
-           (u.xpnt)*chrc] for u in factorList psqfr])
-        makeFR((unit psqfr),[["nil",putPth u.fctr,u.xpnt]
+          makeFR((unit psqfr)^chrc, [[u.flag, u.factor,
+           (u.exponent)*chrc] for u in factorList psqfr])
+        makeFR((unit psqfr),[["nil", putPth u.factor, u.exponent]
                              for u in factorList psqfr])
 
     -- compute the square free decomposition, finite characteristic case
@@ -1182,13 +1182,13 @@ PolynomialSquareFree(VarSet : OrderedSet, E, RC : GcdDomain, P) : C == T where
          squf := squareFree(uf)$UnivariatePolynomialSquareFree(P, SUP)
          pfaclist : List FF := []
          for u in factorList squf repeat
-           uexp : NNI := (u.xpnt)::NNI
-           u.flg = "sqfr" =>  -- the square free factor is OK
-             pfaclist := cons([u.flg, multivariate(u.fctr, mv), uexp],
+           uexp : NNI := (u.exponent)::NNI
+           u.flag = "sqfr" =>  -- the square free factor is OK
+             pfaclist := cons([u.flag, multivariate(u.factor, mv), uexp],
                               pfaclist)
-           --listfin1 := finSqFr(multivariate(u.fctr, mv), lvar)
-           listfin1 := squareFree multivariate(u.fctr, mv)
-           flistfin1 := [[uu.flg, uu.fctr, uu.xpnt*uexp]
+           --listfin1 := finSqFr(multivariate(u.factor, mv), lvar)
+           listfin1 := squareFree multivariate(u.factor, mv)
+           flistfin1 := [[uu.flag, uu.factor, uu.exponent*uexp]
                         for uu in factorList listfin1]
            cont1 := cont1*((unit listfin1)^uexp)
            pfaclist := append(flistfin1, pfaclist)
@@ -1208,7 +1208,7 @@ PolynomialSquareFree(VarSet : OrderedSet, E, RC : GcdDomain, P) : C == T where
        up := (up exquo cont)::SUP
        squp := squareFree(up)$UnivariatePolynomialSquareFree(P, SUP)
        pfaclist : List FF :=
-         [[u.flg, multivariate(u.fctr, mv), u.xpnt]
+         [[u.flag, multivariate(u.factor, mv), u.exponent]
                                             for u in factorList squp]
        cont ~= 1 =>
          sqp := squareFree cont
