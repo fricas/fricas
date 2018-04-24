@@ -27,7 +27,6 @@
 Factored(R : IntegralDomain) : Exports == Implementation where
   fUnion ==> Union("nil", "sqfr", "irred", "prime")
   FF     ==> Record(flag : fUnion, factor : R, exponent : Integer)
-  SRFE   ==> Set(Record(factor : R, exponent : Integer))
 
   Exports ==> Join(IntegralDomain, DifferentialExtension R, Algebra R,
                    FullyEvalableOver R, FullyRetractableTo R) with
@@ -237,11 +236,24 @@ Factored(R : IntegralDomain) : Exports == Implementation where
           _*/[convert(f.factor)@DoubleFloat ^ f.exponent for f in factorList x]
 
     u : % * v : % ==
-      zero? u or zero? v => 0
-      (u = 1) => v
-      (v = 1) => u
-      mkFF(unit u * unit v,
-          SimplifyFactorization concat(factorList u, copy factorList v))
+        zero? u or zero? v => u
+        one? u => v
+        one? v => u
+        lu := factorList u; lv := factorList v
+        res : List FF := []
+        while not empty? lu and not empty? lv repeat
+            u1 := first lu; v1 := first lv
+            u1.factor = v1.factor =>
+                res := concat([stricterFlag(u1.flag, v1.flag), _
+                               u1.factor, u1.exponent + v1.exponent], res)
+                lu := rest lu; lv := rest lv
+            LispLessP(u1, v1) =>
+                res := concat(u1, res)
+                lu := rest lu
+            res := concat(v1, res)
+            lv := rest lv
+        res := concat!(reverse! res, if empty? lu then lv else lu)
+        mkFF(unit u * unit v, res)
 
     u : % ^ n : NonNegativeInteger ==
       n = 0 => 1
@@ -329,8 +341,14 @@ Factored(R : IntegralDomain) : Exports == Implementation where
               unitNormalize mkFF(1, [["nil", r, 1]$FF])
 
     u = v ==
-      (unit u = unit v) and # u.fct = # v.fct and
-        set(factors u)$SRFE =$SRFE set(factors v)$SRFE
+        unit u ~= unit v => false
+        lu := factorList u; lv := factorList v
+        while not empty? lu and not empty? lv repeat
+            u1 := first lu; v1 := first lv
+            u1.exponent ~= v1.exponent => return false
+            u1.factor ~= v1.factor => return false
+            lu := rest lu; lv := rest lv
+        empty? lu and empty? lv
 
     - u ==
       zero? u => u
@@ -406,37 +424,20 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         (expand((u exquo u1)::%) + expand((v exquo u1)::%)) * u1
 
       gcd(u, v) ==
-        (u = 1) or (v = 1) => 1
-        zero? u => v
-        zero? v => u
-        f1 := empty()$List(Integer)  -- list of used factor indices in x
-        f2 := f1      -- list of indices corresponding to a given factor
-        f3 := empty()$List(List Integer)    -- list of f2-like lists
-        x := concat(factorList u, factorList v)
-        for i in minIndex x .. maxIndex x repeat
-          if not member?(i, f1) then
-            f1 := concat(i, f1)
-            f2 := [i]
-            for j in i+1..maxIndex x repeat
-              if x.i.factor = x.j.factor then
-                  f1 := concat(j, f1)
-                  f2 := concat(j, f2)
-            f3 := concat(f2, f3)
-        x1 := empty()$List(FF)
-        while not empty? f3 repeat
-          f1 := first f3
-          if #f1 > 1 then
-            i  := first f1
-            y  := copy x.i
-            f1 := rest f1
-            while not empty? f1 repeat
-              i := first f1
-              if x.i.exponent < y.exponent then y.exponent := x.i.exponent
-              f1 := rest f1
-            x1 := concat(y, x1)
-          f3 := rest f3
-        if comparableR? then x1 := sort!(LispLessP, x1)
-        mkFF(1, x1)
+          one? u or one? v => u
+          zero? u => v
+          zero? v => u
+          lu := factorList u; lv := factorList v
+          res : List FF := []
+          while not empty? lu and not empty? lv repeat
+              u1 := first lu; v1 := first lv
+              u1.factor = v1.factor =>
+                  res := concat([stricterFlag(u1.flag, v1.flag), u1.factor, _
+                                 min(u1.exponent, v1.exponent)], res)
+                  lu := rest lu; lv := rest lv
+              LispLessP(u1, v1) => lu := rest lu
+              lv := rest lv
+          mkFF(1, reverse! res)
 
     else   -- R not a GCD domain
       u + v ==
