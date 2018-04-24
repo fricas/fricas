@@ -18,8 +18,8 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
 
  BP          ==> SparseUnivariatePolynomial(R)
  fUnion      ==> Union("nil","sqfr","irred","prime")
- ffSUP       ==> Record(flg : fUnion, fctr : SUP, xpnt : Integer)
- ffP         ==> Record(flg : fUnion, fctr : P, xpnt : Integer)
+ ffSUP       ==> Record(flag : fUnion, factor : SUP, exponent : Integer)
+ ffP         ==> Record(flag : fUnion, factor : P, exponent : Integer)
  FFE         ==> Record(factor : BP, exponent : Z)
  FFEP        ==> Record(factor : P, exponent : Z)
  FFES        ==> Record(factor : SUP, exponent : Z)
@@ -157,21 +157,21 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
    squareFree(f : SUP) : Factored SUP ==
      degree f =0 =>
        fu := squareFree retract f
-       makeFR((unit fu)::SUP,[["sqfr",ff.fctr::SUP,ff.xpnt]
+       makeFR((unit fu)::SUP, [["sqfr", ff.factor::SUP, ff.exponent]
                for ff in factorList fu])
      lvar := "setUnion"/[variables cf for cf in coefficients f]
      empty? lvar =>  -- the polynomial is univariate
        upol := map(ground, f)$UPCF2(P, SUP, R, BP)
        usqfr := squareFree upol
        makeFR(map(coerce, unit usqfr)$UPCF2(R, BP, P, SUP),
-              [["sqfr",map(coerce,ff.fctr)$UPCF2(R,BP,P,SUP),ff.xpnt]
+              [["sqfr", map(coerce, ff.factor)$UPCF2(R, BP, P, SUP), ff.exponent]
                  for ff in factorList usqfr])
 
      lcf := content f
      f := (f exquo lcf) ::SUP
      lcSq := squareFree lcf
-     lfs:List ffSUP := [["sqfr",ff.fctr ::SUP,ff.xpnt]
-                        for ff in factorList lcSq]
+     lfs : List ffSUP := [["sqfr", ff.factor::SUP, ff.exponent]
+                          for ff in factorList lcSq]
      partSq := nsqfree(f, lvar, empty())
 
      lfs := append([["sqfr",fu.factor,fu.exponent]$ffSUP
