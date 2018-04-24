@@ -170,12 +170,12 @@ GaloisGroupPolynomialUtilities(R, UP) : Exports == Implementation where
     factorOfDegree(d : P, r : Factored UP) : UP ==
       factor : UP := 0
       for i in factorList r repeat
-        factor := i.fctr
+        factor := i.factor
         if degree(factor)=(d::N) then return factor
       error "factorOfDegree: Bad arguments"
 
     degreePartition(r : Factored UP) : Multiset N ==
-      multiset([ degree(i.fctr) for i in factorList r ])
+      multiset([ degree(i.factor) for i in factorList r ])
 
     monic?(p : UP) : Boolean == (leadingCoefficient p) = 1
 
@@ -547,7 +547,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
   Implementation ==> add
 
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FFE ==> Record(flg : fUnion, fctr : UP, xpnt : Z) -- Flag-Factor-Exponent
+    FFE ==> Record(flag : fUnion, factor : UP, exponent : Z)
     HLR ==> Record(plist : List UP, modulo : Z) -- HenselLift Record
 
     mussertrials : P := 5
@@ -945,7 +945,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       for ff in flist.factors repeat
         fflist := cons(["prime", ff.irr, ff.pow]$FFE, fflist)
       for fc in factorList ctp repeat
-        fflist := cons([fc.flg, fc.fctr::UP, fc.xpnt]$FFE, fflist)
+        fflist := cons([fc.flag, fc.factor::UP, fc.exponent]$FFE, fflist)
       makeFR(unit(ctp)::UP, fflist)
 
     import from IntegerRoots(Z)
