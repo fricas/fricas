@@ -157,7 +157,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     comparableR? := R has Comparable
 
   -- Private function signatures:
-    reciprocal              : % -> %
     qexpand                 : % -> R
     negexp?                 : % -> Boolean
     SimplifyFactorization   : List FF -> List FF
@@ -342,10 +341,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       (r := recip unit u) case "failed" => "failed"
       mkFF(r::R, empty())
 
-    reciprocal u ==
-      mkFF((recip unit u)::R,
-                    [[y.flag, y.factor, - y.exponent]$FF for y in factorList u])
-
     flagFactor(r, i, fl) ==
       zero? i => 1
       zero? r => 0
@@ -360,17 +355,26 @@ Factored(R : IntegralDomain) : Exports == Implementation where
      fn(unit u) * _*/[irreducibleFactor(fn(f.factor), f.exponent) for f in factorList u]
 
     u exquo v ==
-      empty?(factorList v) =>  unitNormal(retract v).associate *  u
-      empty? factorList u => "failed"
-      v1 := u * reciprocal v
-      goodQuotient : Boolean := true
-      x1 := factorList v1
-      while (goodQuotient and (not empty? x1)) repeat
-        if x1.first.exponent < 0
-          then goodQuotient := false
-          else x1 := rest x1
-      goodQuotient => v1
-      "failed"
+        newunit := (unit(u) exquo unit(v))::R
+        lu := factorList u; lv := factorList v
+        empty? lv => mkFF(newunit, lu)
+        res : List FF := []
+        while not empty? lu and not empty? lv repeat
+            u1 := first lu; v1 := first lv
+            u1.factor = v1.factor =>
+                expn := u1.exponent - v1.exponent
+                expn < 0 => return "failed"
+                if expn > 0 then
+                    newfactor : FF := [stricterFlag(u1.flag, v1.flag), _
+                                       u1.factor, expn::NonNegativeInteger]
+                    res := concat(newfactor, res)
+                lu := rest lu; lv := rest lv
+            LispLessP(u1, v1) =>
+                res := concat(u1, res)
+                lu := rest lu
+            return "failed"
+        not empty? lv => "failed"
+        mkFF(newunit, concat!(reverse! res, lu))
 
     unitNormal u == -- does a bunch of work, but more canonical
       (ur := recip(un := unit u)) case "failed" => [1, u, 1]
@@ -398,8 +402,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       u + v ==
         zero? u => v
         zero? v => u
-        v1 := reciprocal(u1 := gcd(u, v))
-        (expand(u * v1) + expand(v * v1)) * u1
+        u1 := gcd(u, v)
+        (expand((u exquo u1)::%) + expand((v exquo u1)::%)) * u1
 
       gcd(u, v) ==
         (u = 1) or (v = 1) => 1
