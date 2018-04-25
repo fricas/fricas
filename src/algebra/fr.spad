@@ -158,10 +158,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
   -- Private function signatures:
     qexpand                 : % -> R
     negexp?                 : % -> Boolean
-    SimplifyFactorization   : List FF -> List FF
     LispLessP               : (FF, FF) -> Boolean
     mkFF                    : (R, List FF) -> %
-    SimplifyFactorization1  : (FF, List FF) -> List FF
     stricterFlag            : (fUnion, fUnion) -> fUnion
 
     nilFactor(r, i)      == flagFactor(r, i, "nil")
@@ -188,13 +186,38 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     expand u             == retract u
     negexp? x           == "or"/[negative?(y.exponent) for y in factorList x]
 
-    makeFR(u, l) ==
+    makeFR(u, x) ==
 -- normalizing code to be installed when contents are handled better
 -- current squareFree returns the content as a unit part.
 --        if (not unit?(u)) then
---            l := cons(["nil", u, 1]$FF,l)
+--            x := cons(["nil", u, 1]$FF, x)
 --            u := 1
-        unitNormalize mkFF(u, SimplifyFactorization l)
+        u = 0 => 0
+        empty? x => mkFF(u, empty())
+        x := sort!(LispLessP, x)
+        while not empty? x and x.first.exponent = 0 repeat x := rest x
+        empty? x => mkFF(u, empty())
+        o := x -- o is the constant pointer that holds the list
+        p := x -- p is the pointer that points to the previous node of x
+        f := first p -- f is the node that p is pointing at
+        f.factor = 0 => 0
+        x := rest x  -- x is the pointer that iterates through the list
+        while not empty? x repeat
+            f1 := first x
+            f1.exponent = 0 =>
+                setrest!(p, rest x)
+                x := rest x
+            f1.factor = 0 => return 0
+            f1.factor = f.factor =>
+                f := [stricterFlag(f.flag, f1.flag), f.factor,
+                      f.exponent + f1.exponent]
+                setfirst!(p, f)
+                setrest!(p, rest x)
+                x := rest x
+            p := x
+            f := f1
+            x := rest x
+        unitNormalize mkFF(u, o)
 
     if R has IntegerNumberSystem then
       rational? x     == true
@@ -259,26 +282,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       n = 0 => 1
       n = 1 => u
       mkFF(unit(u)^n, [[x.flag, x.factor, n * x.exponent] for x in factorList u])
-
-    SimplifyFactorization x ==
-      empty? x => empty()
-      x := sort!(LispLessP, x)
-      x := SimplifyFactorization1(first x, rest x)
-      if comparableR? then x := sort!(LispLessP, x)
-      x
-
-    SimplifyFactorization1(f, x) ==
-      empty? x =>
-        zero?(f.exponent) => empty()
-        list f
-      f1 := first x
-      f.factor = f1.factor =>
-        SimplifyFactorization1([stricterFlag(f.flag, f1.flag),
-                                      f.factor, f.exponent + f1.exponent], rest x)
-      l := SimplifyFactorization1(first x, rest x)
-      zero?(f.exponent) => l
-      concat(f, l)
-
 
     coerce(x : %) : OutputForm ==
       empty?(lf := reverse factorList x) => (unit x)::OutputForm
