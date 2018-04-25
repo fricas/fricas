@@ -22,11 +22,11 @@ FactoredFunctions(M : IntegralDomain) : Exports == Implementation where
       radi : List(M)  := (((unit ff) = 1) => empty(); [unit ff])
       lf            := factors ff
       d : N :=
-        empty? radi => gcd(concat(n, [t.exponent::N for t in lf]))::N
+        empty? radi => gcd(concat(n, [t.exponent for t in lf]))::N
         1
       n             := n quo d
       for term in lf repeat
-        qr    := divide(term.exponent::N quo d, n)
+        qr    := divide(term.exponent quo d, n)
         coeff := coeff * term.factor ^ qr.quotient
         not zero?(qr.remainder) =>
           radi := concat!(radi, term.factor ^ qr.remainder)
@@ -35,7 +35,7 @@ FactoredFunctions(M : IntegralDomain) : Exports == Implementation where
     log ff ==
       ans := unit ff
       concat([1, unit ff],
-             [[term.exponent::N, term.factor] for term in factors ff])
+             [[term.exponent, term.factor] for term in factors ff])
 
 )abbrev package POLYROOT PolynomialRoots
 ++ Author: Manuel Bronstein
@@ -305,11 +305,11 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
               if (u := unit(fp)) ~= 1 then
                   res := kernel(op, [u::F, n::F])::F
               for fr in factors(fp) repeat
-                  ne : N := (fr.exponent rem n)::N
+                  ne : N := fr.exponent rem n
                   ng := gcd(ne, n)
                   nn := (n exquo ng)::Z
                   ne := (ne exquo ng)::Z::N
-                  ce := (fr.exponent quo n)::N
+                  ce : N := fr.exponent quo n
                   rr :=
                       nn > 1 => kernel(op, [(fr.factor^ne)::F, nn::F])::F
                       1$F
