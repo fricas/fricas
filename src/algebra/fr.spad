@@ -92,6 +92,13 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       ++ the information flags (sets them to "nil") because the effect of
       ++ \userfun{fn} is clearly not known in general.
 
+    mergeFactors : (%, %) -> %
+      ++ mergeFactors(u, v) is used when the factorizations of \spadvar{u}
+      ++ and \spadvar{v} are known to be disjoint, e.g. resulting from a
+      ++ content/primitive part split. Essentially, it creates a new
+      ++ factored object by multiplying the units together and appending
+      ++ the lists of factors.
+
     -- the following operations are conditional on R
 
     if R has GcdDomain then GcdDomain
@@ -377,6 +384,9 @@ Factored(R : IntegralDomain) : Exports == Implementation where
                    [["nil", fn(f.factor), f.exponent]$FF for f in factorList u])
         makeFR(1, l)
 
+    mergeFactors(f, g) ==
+        mkFF(unit(f)*unit(g), merge(LispLessP, factorList f, factorList g))
+
     u exquo v ==
         newunit := (unit(u) exquo unit(v))::R
         lu := factorList u; lv := factorList v
@@ -457,7 +467,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
 )abbrev package FRUTIL FactoredFunctionUtilities
 ++ Author:
-++ Basic Operations: refine, mergeFactors
+++ Basic Operations: refine
 ++ Related Constructors: Factored
 ++ Also See:
 ++ AMS Classifications: 11A51, 11Y05
@@ -480,19 +490,9 @@ FactoredFunctionUtilities(R) : Exports == Implementation where
       ++ to that created by \spad{factor(100)} or
       ++ \spad{primeFactor(2, 2) * primeFactor(5, 2)}.
 
-    mergeFactors : (FR, FR) -> FR
-      ++ mergeFactors(u, v) is used when the factorizations of \spadvar{u}
-      ++ and \spadvar{v} are known to be disjoint, e.g. resulting from a
-      ++ content/primitive part split. Essentially, it creates a new
-      ++ factored object by multiplying the units together and appending
-      ++ the lists of factors.
-
   Implementation ==> add
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
     FF     ==> Record(flag : fUnion, factor : R, exponent : Integer)
-
-    mergeFactors(f, g) ==
-      makeFR(unit(f)*unit(g), append(factorList f, copy factorList g))
 
     refine(f, func) ==
        u := unit(f)
