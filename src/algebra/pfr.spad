@@ -27,6 +27,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
   fTerm ==> Record(num : R, den : FRR)  -- den should have unit = 1
                                         -- and only 1 factor
   LfTerm ==> List fTerm
+  NNI ==> NonNegativeInteger
 
   Cat == Join(Field, Algebra R) with
     coerce : % -> Fraction R
@@ -102,7 +103,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
 
     -- define firstFactor/firstExponent because den of fTerm has only 1 factor
     firstFactor(x : FRR) : R == first(factorList(x)).factor
-    firstExponent(x : FRR) : Integer == first(factorList(x)).exponent
+    firstExponent(x : FRR) : NNI == first(factorList(x)).exponent
 
     copypf(a : %) : % == [a.whole, copy a.fract]$Rep
 
@@ -135,8 +136,8 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       qr.remainder = 0$R => [qr.quotient, []$LfTerm]
       -- now verify num and den are coprime
       f : R := firstFactor(s.den)
-      nexpon : Integer := firstExponent(s.den)
-      expon  : Integer := 0
+      nexpon : NNI := firstExponent(s.den)
+      expon  : NNI := 0
       q : QR := divide(qr.remainder, f)
       while (q.remainder = 0$R) and (expon < nexpon) repeat
         expon := expon + 1
@@ -144,7 +145,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         q := divide(qr.remainder, f)
       expon = 0 => [qr.quotient, [[qr.remainder, s.den]$fTerm]$LfTerm]
       expon = nexpon => (qr.quotient + qr.remainder) :: %
-      [qr.quotient, [[qr.remainder, nilFactor(f, nexpon-expon)]$fTerm]$LfTerm]
+      [qr.quotient, [[qr.remainder, nilFactor(f, (nexpon-expon)::NNI)]$fTerm]$LfTerm]
 
     partialFractionNormalized(nm : R, dn : FRR) ==
       -- assume unit dn = 1
@@ -175,7 +176,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         f := firstFactor(s.den)
         d := degree(sp := padicallyExpand(f, s.num))
         while (sp ~= 0$SUPR) repeat
-          l := cons([leadingCoefficient sp, nilFactor(f, e-d)]$fTerm, l)
+          l := cons([leadingCoefficient sp, nilFactor(f, (e-d)::NNI)]$fTerm, l)
           d := degree(sp := reductum sp)
       [b.whole, sort(LessThan, l)]$Rep
 
@@ -193,7 +194,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       for t in rest af repeat
         f = firstFactor(t.den) =>
           s.num := s.num + (t.num *
-            (f ^$R ((e - firstExponent(t.den)) :: NonNegativeInteger)))
+            (f ^$R ((e - firstExponent(t.den)) :: NNI)))
         b := normalizeFracTerm s
         bw := bw + b.whole
         if not(empty?(b.fract)) then bf := cons(first b.fract, bf)
@@ -350,11 +351,9 @@ PartialFractionPackage(R) : Cat == Capsule where
       partialFraction(p, facq, v) ==
          up := UnivariatePolynomial(v, FPR)
          fup := Factored up
-         ffact : List(Record(irr : up, pow : Integer))
-         ffact := [[makeSup(u.factor, v) pretend up, u.exponent]
-                      for u in factors facq]
          fcont := makeSup(unit facq, v) pretend up
-         nflist : fup := fcont*(*/[primeFactor(ff.irr, ff.pow) for ff in ffact])
+         nflist : fup := fcont*(*/[primeFactor(makeSup(u.factor, v) pretend up,_
+                                   u.exponent) for u in factorList facq])
          pfup := partialFraction(makeSup(p, v) pretend up, nflist
                                 )$PartialFraction(up)
          coerce(pfup)$AnyFunctions1(PartialFraction up)
