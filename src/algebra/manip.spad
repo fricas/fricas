@@ -20,7 +20,7 @@ FactoredFunctions(M : IntegralDomain) : Exports == Implementation where
     nthRoot(ff, n) ==
       coeff : M       := 1
       radi : List(M)  := (((unit ff) = 1) => empty(); [unit ff])
-      lf            := factors ff
+      lf := factorList ff
       d : N :=
         empty? radi => gcd(concat(n, [t.exponent for t in lf]))::N
         1
@@ -35,7 +35,7 @@ FactoredFunctions(M : IntegralDomain) : Exports == Implementation where
     log ff ==
       ans := unit ff
       concat([1, unit ff],
-             [[term.exponent, term.factor] for term in factors ff])
+             [[term.exponent, term.factor] for term in factorList ff])
 
 )abbrev package POLYROOT PolynomialRoots
 ++ Author: Manuel Bronstein
@@ -304,7 +304,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
               res : F := 1
               if (u := unit(fp)) ~= 1 then
                   res := kernel(op, [u::F, n::F])::F
-              for fr in factors(fp) repeat
+              for fr in factorList(fp) repeat
                   ne : N := fr.exponent rem n
                   ng := gcd(ne, n)
                   nn := (n exquo ng)::Z
