@@ -293,7 +293,7 @@ IntegerNumberTheoryFunctions() : Exports == Implementation where
       lcm [(if pk.factor >= 3 or pk.exponent <= 2 then
               (pk.factor)^(qcoerce(pk.exponent - 1)@NNI)*(pk.factor - 1)
             else 2^(qcoerce(pk.exponent - 2)@NNI)) _
-           for pk in factors factor n]
+           for pk in factorList factor n]
 
   euler n ==
     n < 0 => error "euler not defined for negative integers"
@@ -396,14 +396,14 @@ IntegerNumberTheoryFunctions() : Exports == Implementation where
   eulerPhi n ==
     n = 0 => 0
     r : RN := 1
-    for entry in factors factor n repeat
+    for entry in factorList factor n repeat
       r := ((entry.factor - 1) /$RN entry.factor) * r
     numer(n * r)
 
 
   divisors n ==
     oldList : List Integer := [1]
-    for f in factors factor n repeat
+    for f in factorList factor n repeat
       newList : List Integer := oldList
       for k in 1..f.exponent repeat
         pow := f.factor ^ k
@@ -425,24 +425,24 @@ all possible positive powers of [[f]].
 
   numberOfDivisors n ==
     n = 0 => 0
-    */[1+entry.exponent for entry in factors factor n]
+    */[1+entry.exponent for entry in factorList factor n]
 
   sumOfDivisors n ==
     n = 0 => 0
     r : RN := */[(entry.factor^(entry.exponent + 1)-1)/
-      (entry.factor-1) for entry in factors factor n]
+      (entry.factor-1) for entry in factorList factor n]
     numer r
 
   sumOfKthPowerDivisors(n, k) ==
     n = 0 => 0
     r : RN := */[(entry.factor^(k*entry.exponent+k)-1)/
-      (entry.factor^k-1) for entry in factors factor n]
+      (entry.factor^k-1) for entry in factorList factor n]
     numer r
 
   moebiusMu n ==
     n = 1 => 1
     t := factor n
-    for k in factors t repeat
+    for k in factorList t repeat
       k.exponent > 1 => return 0
     odd? numberOfFactors t => -1
     1
