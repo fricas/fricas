@@ -60,7 +60,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       ++ a single factor whose base is asserted to be irreducible
       ++ (flag = "irred").
 
-    numberOfFactors : %  -> NonNegativeInteger
+    numberOfFactors : % -> NonNegativeInteger
       ++ numberOfFactors(u) returns the number of factors in \spadvar{u}.
 
     primeFactor :   (R, Integer) -> %
@@ -163,8 +163,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     comparableR? := R has Comparable
 
   -- Private function signatures:
-    qexpand                 : % -> R
-    negexp?                 : % -> Boolean
     LispLessP               : (FF, FF) -> Boolean
     mkFF                    : (R, List FF) -> %
     stricterFlag            : (fUnion, fUnion) -> fUnion
@@ -178,7 +176,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     unit u               == u.unt
     numberOfFactors u    == # u.fct
     0                    == [1, [["nil", 0, 1]$FF]]
-    zero? u              == # u.fct = 1 and
+    zero? u              == size?(u.fct, 1) and
                              first(u.fct).flag case "nil" and
                               zero? first(u.fct).factor and
                                (u.unt = 1)
@@ -190,8 +188,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     i : Integer * u : %      == (i :: %) * u
     r : R * u : %            == (r :: %) * u
     factors u            == [[fe.factor, fe.exponent] for fe in factorList u]
-    expand u             == retract u
-    negexp? x           == "or"/[negative?(y.exponent) for y in factorList x]
+    expand u == unit u * _*/[y.factor ^ y.exponent for y in factorList u]
 
     makeFR(u, x) ==
 -- normalizing code to be installed when contents are handled better
@@ -305,17 +302,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       1 = unit x => e
       (unit x)::OutputForm * e
 
-    retract(u : %) : R ==
-      negexp? u =>  error "Negative exponent in factored object"
-      qexpand u
-
-    qexpand u ==
-      unit u *
-         _*/[y.factor ^ (y.exponent::NonNegativeInteger) for y in factorList u]
-
-    retractIfCan(u:%):Union(R, "failed") ==
-      negexp? u => "failed"
-      qexpand u
+    retract(u : %) : R == expand u
+    retractIfCan(u : %) : Union(R, "failed") == expand(u)
 
     LispLessP(y, y1) ==
       orderedR? => y.factor < y1.factor
@@ -375,7 +363,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       unitNormalize mkFF(1, [[fl, r, i]$FF])
 
     differentiate(u : %, deriv : R -> R) ==
-      ans := deriv(unit u) * ((u exquo unit(u)::%)::%)
+      ans := deriv(unit u) * mkFF(1, factorList u)
       ans + (_+/[fact.exponent * deriv(fact.factor) *
        ((u exquo nilFactor(fact.factor, 1))::%) for fact in factorList u])
 
@@ -462,8 +450,8 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
     if R has UniqueFactorizationDomain then
       prime? u ==
-        not(empty?(l := factorList u)) and (empty? rest l) and
-                       (l.first.exponent = 1) and (l.first.flag case "prime")
+          l := factorList u
+          size?(l, 1) and (l.first.exponent = 1) and (l.first.flag case "prime")
 
 )abbrev package FRUTIL FactoredFunctionUtilities
 ++ Author:
@@ -502,8 +490,8 @@ FactoredFunctionUtilities(R) : Exports == Implementation where
          u := u*unit(fitem) ^ (item.exponent :: NonNegativeInteger)
          if item.exponent = 1 then
             l := concat(factorList fitem, l)
-         else l := concat([[v.flag, v.factor, v.exponent*item.exponent]
-                          for v in factorList fitem], l)
+         else l := concat!([[v.flag, v.factor, v.exponent * item.exponent]
+                            for v in factorList fitem], l)
        makeFR(u, l)
 
 )abbrev package FR2 FactoredFunctions2
