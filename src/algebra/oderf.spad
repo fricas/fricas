@@ -31,13 +31,13 @@ BalancedFactorisation(R, UP) : Exports == Implementation where
     balSqfr(a, n, l) ==
       b := first l
       empty? rest l => balSqfr1(a, n, b)
-      */[balSqfr1(f.factor, n, b) for f in factors balSqfr(a, n, rest l)]
+      */[balSqfr1(f.factor, n, b) for f in factorList balSqfr(a, n, rest l)]
 
     balancedFactorisation(a : UP, l : List UP) ==
       empty?(ll := select(z1 +-> z1 ~= 0, l)) =>
         error "balancedFactorisation: 2nd argument is empty or all 0"
       sa := squareFree a
-      unit(sa) * */[balSqfr(f.factor, f.exponent, ll) for f in factors sa]
+      unit(sa) * */[balSqfr(f.factor, f.exponent, ll) for f in factorList sa]
 
 )abbrev package BOUNDZRO BoundIntegerRoots
 ++ Author: Manuel Bronstein
@@ -210,11 +210,11 @@ PrimitiveRatDE(F, UP, L, LQ) : Exports == Implementation where
 
     hdenom(l, d, e) ==
       */[dd.factor ^ NPbound(dd.factor, l, e)
-                    for dd in factors balancedFactorisation(d, coefficients l)]
+                 for dd in factorList balancedFactorisation(d, coefficients l)]
 
     denom0(n, l, d, e, h) ==
       hdenom(l, d, e) * */[hh.factor ^ max(0, order(e, hh.factor) - n)::N
-                                 for hh in factors balancedFactorisation(h, e)]
+                              for hh in factorList balancedFactorisation(h, e)]
 
 -- returns a polynomials whose zeros are the zeros of e which are not
 -- zeros of d
@@ -227,7 +227,7 @@ PrimitiveRatDE(F, UP, L, LQ) : Exports == Implementation where
 
     indicialEquations(op : L, p : UP) ==
       [[dd.factor, indeq(dd.factor, op)]
-                   for dd in factors balancedFactorisation(p, coefficients op)]
+                for dd in factorList balancedFactorisation(p, coefficients op)]
 
 -- cannot return "failed" in the homogeneous case
     denomLODE(l : L, g : RF) ==
@@ -732,7 +732,7 @@ ConstantLODE(R, F, L) : Exports == Implementation where
           op := reductum op
       b : List(F) := empty()
       fp := factorPolynomial(p)$ExpressionFactorPolynomial(R, F)
-      for ff in factors fp repeat
+      for ff in factorList fp repeat
         b := concat!(b, basisSol(ff.factor, dec(ff.exponent), x))
       b
 
