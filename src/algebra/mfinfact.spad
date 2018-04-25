@@ -20,10 +20,11 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
   R          ==> SUP F
   P          ==> SparseMultivariatePolynomial(R, OV)
   Z          ==> Integer
+  NNI ==> NonNegativeInteger
   FFPOLY     ==> FiniteFieldPolynomialPackage(F)
-  MParFact   ==> Record(irr : P, pow : Z)
+  MParFact   ==> Record(irr : P, pow : NNI)
   MFinalFact ==> Record(contp : R, factors : List MParFact)
-  SUParFact    ==> Record(irr : SUP P, pow : Z)
+  SUParFact    ==> Record(irr : SUP P, pow : NNI)
   SUPFinalFact ==> Record(contp : R, factors : List SUParFact)
 
                  --  contp   =  content,
@@ -47,12 +48,11 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
     import from FactoringUtilities(E, OV, F, PG)
     import from GenExEuclid(R, SUP R)
 
-    NNI       ==> NonNegativeInteger
     L         ==> List
     UPCF2     ==> UnivariatePolynomialCategoryFunctions2
     LeadFact  ==> Record(polfac : L P, correct : R, corrfact : L SUP R)
     ContPrim  ==> Record(cont : P, prim : P)
-    ParFact   ==> Record(irr : SUP R, pow : Z)
+    ParFact   ==> Record(irr : SUP R, pow : NNI)
     FinalFact ==> Record(contp : R, factors : L ParFact)
     NewOrd    ==> Record(npol : SUP P, nvar : L OV, newdeg : L NNI)
     Valuf     ==> Record(inval : L L R, unvfact : L SUP R, lu : R, complead : L R)
@@ -130,7 +130,7 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
           else lf := mfpol(ffactor, var, dx, lvar, ldeg)
           auxfl := [[lfp, ffexp]$SUParFact  for lfp in lf]
           factorlist := append(factorlist, auxfl)
-        lcfacs := */[leadingCoefficient leadingCoefficient(f.irr)^((f.pow)::NNI)
+        lcfacs := */[leadingCoefficient leadingCoefficient(f.irr)^(f.pow)
                              for f in factorlist]
         [(leadingCoefficient leadingCoefficient(um) exquo lcfacs)::R,
                        factorlist]$SUPFinalFact
@@ -181,7 +181,7 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
       else
         flead := mFactor(lcont, var, dx)
       factorlist := flead.factors
-      sqqfact : List Record(factor : P, exponent : Integer)
+      sqqfact : List Record(factor : P, exponent : NonNegativeInteger)
       sqqfact := [[pushdown(ff.factor, var), ff.exponent]
                                               for ff in factors sqfacs]
                        ---  Factorize the primitive square-free terms ---

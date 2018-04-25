@@ -30,9 +30,10 @@ InnerMultFact(OV, E, R, P) : C == T
   BP         ==> SparseUnivariatePolynomial R
   UFactor    ==> (BP -> Factored BP)
   Z            ==> Integer
-  MParFact     ==> Record(irr : P, pow : Z)
+  NNI ==> NonNegativeInteger
+  MParFact     ==> Record(irr : P, pow : NNI)
   USP          ==> SparseUnivariatePolynomial P
-  SUParFact    ==> Record(irr : USP, pow : Z)
+  SUParFact    ==> Record(irr : USP, pow : NNI)
   SUPFinalFact ==> Record(contp : R, factors : List SUParFact)
   MFinalFact   ==> Record(contp : R, factors : List MParFact)
 
@@ -53,11 +54,9 @@ InnerMultFact(OV, E, R, P) : C == T
 
   T == add
 
-    NNI       ==> NonNegativeInteger
-
     LeadFact  ==> Record(polfac : L P, correct : R, corrfact : L BP)
     ContPrim  ==> Record(cont : P, prim : P)
-    ParFact   ==> Record(irr : BP, pow : Z)
+    ParFact   ==> Record(irr : BP, pow : NNI)
     FinalFact ==> Record(contp : R, factors : L ParFact)
     NewOrd    ==> Record(npol : USP, nvar : L OV, newdeg : L NNI)
     pmod : R   :=  (prevPrime(2^26)$IntegerPrimesPackage(Integer))::R
@@ -134,7 +133,7 @@ InnerMultFact(OV, E, R, P) : C == T
           mfpol(ffactor, lvar, ldeg, ufactor)
         auxfl := [[lfp, ffexp]$SUParFact  for lfp in lf]
         factorlist := append(factorlist, auxfl)
-      lcfacs := */[leadingCoefficient leadingCoefficient(f.irr)^((f.pow)::NNI)
+      lcfacs := */[leadingCoefficient leadingCoefficient(f.irr)^(f.pow)
                            for f in factorlist]
       uum1 : R := retract(retract(uum.unit)@P)
       [uum1*(leadingCoefficient leadingCoefficient(um) exquo lcfacs)::R,
@@ -417,7 +416,7 @@ InnerMultFact(OV, E, R, P) : C == T
         else lf := mfpol(um, lvar, ldeg, ufactor)
         auxfl := [[unitCanonical multivariate(lfp, x), ffexp]$MParFact  for lfp in lf]
         factorlist := append(factorlist, auxfl)
-      lcfacs := */[leadingCoefficient(f.irr)^((f.pow)::NNI) for f in factorlist]
+      lcfacs := */[leadingCoefficient(f.irr)^(f.pow) for f in factorlist]
       [(leadingCoefficient(m) exquo lcfacs):: R, factorlist]$MFinalFact
 
     factor(m : P, ufactor : UFactor) : Factored P ==

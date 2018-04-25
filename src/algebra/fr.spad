@@ -26,7 +26,7 @@
 
 Factored(R : IntegralDomain) : Exports == Implementation where
   fUnion ==> Union("nil", "sqfr", "irred", "prime")
-  FF     ==> Record(flag : fUnion, factor : R, exponent : Integer)
+  FF     ==> Record(flag : fUnion, factor : R, exponent : NonNegativeInteger)
 
   Exports ==> Join(IntegralDomain, DifferentialExtension R, Algebra R,
                    FullyEvalableOver R, FullyRetractableTo R) with
@@ -43,19 +43,19 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       ++ factorList(u) returns the list of factors with flags (for
       ++ use by factoring code).
 
-    nilFactor : (R, Integer) -> %
+    nilFactor : (R, NonNegativeInteger) -> %
       ++ nilFactor(base, exponent) creates a factored object with
       ++ a single factor with no information about the kind of
       ++ base (flag = "nil").
 
-    factors : % -> List Record(factor : R, exponent : Integer)
+    factors : % -> List Record(factor : R, exponent : NonNegativeInteger)
       ++ factors(u) returns a list of the factors in a form suitable
       ++ for iteration. That is, it returns a list where each element
       ++ is a record containing a base and exponent.  The original
       ++ object is the product of all the factors and the unit (which
       ++ can be extracted by \spad{unit(u)}).
 
-    irreducibleFactor : (R, Integer) -> %
+    irreducibleFactor : (R, NonNegativeInteger) -> %
       ++ irreducibleFactor(base, exponent) creates a factored object with
       ++ a single factor whose base is asserted to be irreducible
       ++ (flag = "irred").
@@ -63,17 +63,17 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     numberOfFactors : % -> NonNegativeInteger
       ++ numberOfFactors(u) returns the number of factors in \spadvar{u}.
 
-    primeFactor :   (R, Integer) -> %
+    primeFactor : (R, NonNegativeInteger) -> %
       ++ primeFactor(base, exponent) creates a factored object with
       ++ a single factor whose base is asserted to be prime
       ++ (flag = "prime").
 
-    sqfrFactor :   (R, Integer) -> %
+    sqfrFactor : (R, NonNegativeInteger) -> %
       ++ sqfrFactor(base, exponent) creates a factored object with
       ++ a single factor whose base is asserted to be square-free
       ++ (flag = "sqfr").
 
-    flagFactor : (R, Integer, fUnion) -> %
+    flagFactor : (R, NonNegativeInteger, fUnion) -> %
       ++ flagFactor(base, exponent, flag) creates a factored object with
       ++ a single factor whose base is asserted to be properly
       ++ described by the information flag.
@@ -124,10 +124,10 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     if R has InnerEvalable(Symbol, %) then InnerEvalable(Symbol, %)
 
   Implementation ==> add
-
-  -- Representation:
-    -- Note: exponents are allowed to be integers so that some special cases
-    -- may be used in simplifications
+    -- in Rep, the fct part is a sorted list, see LispLessP.
+    -- this implies that if R is not Comparable, then it must be Canonical,
+    -- (because LispLessP will compare the hash of underlying structure)
+    -- otherwise the result will be wrong.
     Rep := Record(unt : R, fct : List FF)
 
     if R has ConvertibleTo InputForm then
@@ -403,16 +403,11 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       vl := empty()$List(FF)
       for x in factorList u repeat
         ucar := unitNormal(x.factor)
-        e := abs(x.exponent)::NonNegativeInteger
-        if x.exponent < 0
-          then  --  associate is recip of unit
-            un := un * (ucar.associate ^ e)
-            as := as * (ucar.unit ^ e)
-          else
-            un := un * (ucar.unit ^ e)
-            as := as * (ucar.associate ^ e)
+        e := x.exponent
+        un := un * (ucar.unit ^ e)
+        as := as * (ucar.associate ^ e)
         if not ((ucar.canonical) = 1) then
-          vl := concat([x.flag, ucar.canonical, x.exponent], vl)
+          vl := concat([x.flag, ucar.canonical, e], vl)
       [mkFF(un, empty()), mkFF(1, reverse! vl), mkFF(as, empty())]
 
     unitNormalize u ==
@@ -480,14 +475,14 @@ FactoredFunctionUtilities(R) : Exports == Implementation where
 
   Implementation ==> add
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flag : fUnion, factor : R, exponent : Integer)
+    FF     ==> Record(flag : fUnion, factor : R, exponent : NonNegativeInteger)
 
     refine(f, func) ==
        u := unit(f)
        l : List FF := empty()
        for item in factorList f repeat
          fitem := func item.factor
-         u := u*unit(fitem) ^ (item.exponent :: NonNegativeInteger)
+         u := u*unit(fitem) ^ item.exponent
          if item.exponent = 1 then
             l := concat(factorList fitem, l)
          else l := concat!([[v.flag, v.factor, v.exponent * item.exponent]
@@ -522,7 +517,7 @@ FactoredFunctions2(R, S) : Exports == Implementation where
 
   Implementation ==> add
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
-    FF     ==> Record(flag : fUnion, factor : S, exponent : Integer)
+    FF     ==> Record(flag : fUnion, factor : S, exponent : NonNegativeInteger)
     map(fn, u) ==
         l := concat(["nil", fn(unit u), 1]$FF, _
                    [["nil", fn(f.factor), f.exponent]$FF for f in factors u])

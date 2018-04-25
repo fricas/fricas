@@ -18,11 +18,11 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
 
  BP          ==> SparseUnivariatePolynomial(R)
  fUnion      ==> Union("nil","sqfr","irred","prime")
- ffSUP       ==> Record(flag : fUnion, factor : SUP, exponent : Integer)
- ffP         ==> Record(flag : fUnion, factor : P, exponent : Integer)
- FFE         ==> Record(factor : BP, exponent : Z)
- FFEP        ==> Record(factor : P, exponent : Z)
- FFES        ==> Record(factor : SUP, exponent : Z)
+ ffSUP       ==> Record(flag : fUnion, factor : SUP, exponent : NNI)
+ ffP         ==> Record(flag : fUnion, factor : P, exponent : NNI)
+ FFE         ==> Record(factor : BP, exponent : NNI)
+ FFEP        ==> Record(factor : P, exponent : NNI)
+ FFES        ==> Record(factor : SUP, exponent : NNI)
  Choice      ==> Record(upol : BP, Lval : List(R), Lfact : List FFE, ctpol : R)
  squareForm  ==> Record(unitPart : P, suPart : List FFES)
  Twopol      ==> Record(pol : SUP, polval : BP)
@@ -94,7 +94,7 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
      ctf := univPol.ctpol
      leadpol : Boolean := false
      sqdec : List FFES := empty()
-     exp0 : Z := 0
+     exp0 : NNI := 0
      unitsq : P := 1
      lcf : P := leadingCoefficient f
      if ctf ~= 1 then
@@ -123,11 +123,11 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
        (d, d0) := (npol.pol, npol.polval)
        if leadpol then lcoef := coefChoose(exp0, unitsq, sqlead)
        else lcoef := 1$P
-       ldeg := myDegree(f, lvar, exp0::NNI)
+       ldeg := myDegree(f, lvar, exp0)
        result := lift(d, g0, (d0 exquo g0)::BP, lcoef, lvar, ldeg, lval)
        result case "failed" => return nsqfree(oldf,lvar,ltry)
        result0 : SUP := (result::List SUP).1
-       r1 : SUP := result0^(exp0::NNI)
+       r1 : SUP := result0^exp0
        if (h := f exquo r1) case "failed" then return nsqfree(oldf,lvar,empty())
        sqdec := cons([result0, exp0], sqdec)
        f := h::SUP
@@ -142,14 +142,14 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
                lpfact.exponent < exp0 => break
                (h1 := lcr exquo lpfact.factor) case P =>
                    lcr := h1::P
-                   lpfact.exponent := (lpfact.exponent) - exp0
+                   lpfact.exponent := (lpfact.exponent - exp0)::NNI
                hh1 := gcd(lcr, lpfact.factor)
                hh1 = 1$P => break
                lcr := (lcr exquo hh1)::P
                nff := (lpfact.factor exquo hh1)::P
                nsqlead := cons([nff, lpfact.exponent]$FFEP, nsqlead)
                lpfact.factor := hh1
-               lpfact.exponent := (lpfact.exponent) - exp0
+               lpfact.exponent := (lpfact.exponent - exp0)::NNI
        sqlead := nsqlead
      [((retract f) exquo ctf)::P, sqdec]$squareForm
 

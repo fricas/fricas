@@ -67,7 +67,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
   LL ==> LinearOrdinaryDifferentialOperator3(F, UTS, US)
   PO ==> Record(x : Integer, y : Integer)
   FZ ==> Fraction Integer
-  FA ==> Record(factor : UP, exponent : Integer)
+  FA ==> Record(factor : UP, exponent : NonNegativeInteger)
   F2 ==> Record(Qt : LL, Rt : LL)
   NL ==> Record(main : F2, nf : F2, error : LL)
   LW ==> Record(lr : NL, n_lifts : PositiveInteger)
@@ -282,13 +282,13 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             npol := k.npoly
             v := factors(factorUP(npol, factorizer))
             if k.slope ~= 0 then
-                v := [[il.factor ^ qcoerce(il.exponent), 0] for il in v]
+                v := [[il.factor ^ il.exponent, 0] for il in v]
             else
                 -- regular singular case, we compute the unsafe factors
                 unsafe := []
                 semi : OneDimensionalArray(UP) := new(#v, 0)
                 for i in v for ii in 1..#v repeat
-                    semi(ii) := i.factor ^ qcoerce(i.exponent)
+                    semi(ii) := i.factor ^ i.exponent
                 for i in v for ii in 1..#v for restl in tails(rest(v)) repeat
                     vif : UP := i.factor
                     dvif := degree(vif)
@@ -305,12 +305,10 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                                 if (vif - sbt) = 0 then
                                     if ie > 0 then
                                         unsafe := cons(i, unsafe)
-                                        semi(jj) := (semi(jj) * vif ^
-                                                     qcoerce(i.exponent))
+                                        semi(jj) := semi(jj) * vif ^ i.exponent
                                     else
                                         unsafe := cons(j, unsafe)
-                                        semi(ii) := (semi(ii) * vjf ^
-                                                     qcoerce(j.exponent))
+                                        semi(ii) := semi(ii) * vjf ^ j.exponent
                 v_old := v
                 v := setDifference(v, unsafe)
                 if option = "semireg" then
@@ -650,8 +648,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
                 diff := retractIfCan(xx - l.factor)
                 if diff ~= "failed" then
                     fact : UP := l.factor
-                    exp : Integer := l.exponent
-                    r := r * fact ^ qcoerce(exp)
+                    r := r * fact ^ l.exponent
                     sols := cons(diff :: Integer, sols)
             if degree(r) ~= n then
                 error "bug"
@@ -712,7 +709,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
         if degree(npf.factor) > 1 then
             -- now we need an algebraic extension on k
             gr : F := zeroOf(makeSUP(npf.factor))
-            npgr : UP := (monomial(1, 1) - gr :: UP) ^ qcoerce(npf.exponent)
+            npgr : UP := (monomial(1, 1) - gr :: UP) ^ npf.exponent
             f2r := factor_newton2(f, npgr, np1).Rt
             v : FRI := factor_riccati(f2r, factorizer, option)
             if v case SP then
@@ -736,7 +733,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             ror : LL := ramification_of(f, coefr ^ n, qcoerce(denom(slop)))
             exp := retract((1 - n * numer(slop)) /$FZ denom(slop))@Integer
             tosub : F := denom(slop) * coefr ^ exp
-            r : UP := (monomial(1, 1) - tosub :: UP) ^ qcoerce(npf.exponent)
+            r : UP := (monomial(1, 1) - tosub :: UP) ^ npf.exponent
             np := newtonpolygon(ror)
             lns : Record(point : PO, slope : FZ, npoly : UP)
             for i in np repeat

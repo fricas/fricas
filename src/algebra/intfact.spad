@@ -324,7 +324,7 @@ IntegerFactorizationPackage(I) : Exports == Implementation where
   NNI    ==> NonNegativeInteger
   LMI    ==> ListMultiDictionary I
   FFE    ==> Record(flag : Union("nil", "sqfr", "irred", "prime"),
-                    factor : I, exponent : Integer)
+                    factor : I, exponent : NonNegativeInteger)
 
   Exports ==>  with
     factor : I -> FF
@@ -426,10 +426,10 @@ IntegerFactorizationPackage(I) : Exports == Implementation where
        for s in l repeat
           d > lim => return makeFR(n, ls)
           if n<d*d then
-             if n>1 then ls := concat!(ls, ["prime",n,1]$FFE)
+             if n>1 then ls := concat(["prime", n, 1]$FFE, ls)
              return makeFR(1, ls)
           for m in 0.. while zero?(n rem d) repeat n := n quo d
-          if m>0 then ls := concat!(ls, ["prime",d,convert m]$FFE)
+          if m>0 then ls := concat(["prime", d, m]$FFE, ls)
           d := d+s
 
     BasicMethod n ==
@@ -472,11 +472,11 @@ IntegerFactorizationPackage(I) : Exports == Implementation where
        -- insert prime factors found
        while not empty? b repeat
           n := inspect b; c := count(n, b); remove!(n, b)
-          flb := concat!(flb, ["prime",n,convert c]$FFE)
+          flb := concat(["prime", n, c]$FFE, flb)
        -- insert non-prime factors found
        while not empty? f repeat
           n := inspect f; c := count(n, f); remove!(n, f)
-          flb := concat!(flb, ["nil",n,convert c]$FFE)
+          flb := concat(["nil", n, c]$FFE, flb)
        makeFR(u, flb)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

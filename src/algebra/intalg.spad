@@ -86,19 +86,19 @@ AlgebraicHermiteIntegration(F, UP, UPUP, R) : Exports == Implementation where
       if ((iden := cform.den) exquo (e := mat.den)) case "failed" then
         iden := (coef := (e exquo gcd(e, iden))::UP) * iden
         inum := coef * inum
-      for trm in factors squareFree iden | (j := trm.exponent) > 1 repeat
-        u' := (u := (iden exquo (v := trm.factor)^(j::N))::UP) * derivation v
+      for trm in factors squareFree iden | (j : N := trm.exponent) > 1 repeat
+        u' := (u := (iden exquo (v := trm.factor)^j)::UP) * derivation v
         sys := ((u * v) exquo e)::UP * m
         nn := minRowIndex sys - minIndex inum
         while j > 1 repeat
-          j := j - 1
+          j := (j - 1)::N
           p := - j * u'
           sol := localsolve(sys + scalarMatrix(n, p), inum, v)
           s0 := integralRepresents(sol, 1)
           corr := integralCoordinates(d0*s0)
           corr.den ~= 1 => error "impossible"
           cnum := corr.num
-          ratform := ratform + integralRepresents(sol, v ^ (j::N))
+          ratform := ratform + integralRepresents(sol, v ^ j)
           inum    := [((qelt(inum, i) - p * qelt(sol, i) -
                         dot(row(sys, i - nn), sol))
                           exquo v)::UP - u*(derivation qelt(sol, i) +
@@ -232,8 +232,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
                        mkAnswer(h.answer, empty(), [[h.logpart, dummy]])
       mkAnswer(h.answer, u::List(LOG), empty())
 
-    FAC2 ==> Record(factor : UP, exponent : Z)
-    PC ==> Record(factor : UP, exponent : Z, coeff : Q)
+    FAC2 ==> Record(factor : UP, exponent : NonNegativeInteger)
+    PC ==> Record(factor : UP, exponent : NonNegativeInteger, coeff : Q)
     RR ==> Record(result1 : List(PC), result2 : List(FAC2))
 
     find_multiples(f1 : FAC2, lp : List(FAC2)) : RR ==
@@ -274,7 +274,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         res := reverse!(res)
         [res, rr]$RR
 
-    PC2 ==> Record(factor : UP, exponent : Z, coeff : Q,
+    PC2 ==> Record(factor : UP, exponent : NonNegativeInteger, coeff : Q,
                    scalar : F, divisor : FD)
     RR2 ==> Record(result1 : List(LOG), result2 : List(PC2),
                    result3 : List(PC))
