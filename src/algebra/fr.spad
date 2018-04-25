@@ -373,7 +373,9 @@ Factored(R : IntegralDomain) : Exports == Implementation where
        ((u exquo nilFactor(fact.factor, 1))::%) for fact in factorList u])
 
     map(fn, u) ==
-     fn(unit u) * _*/[irreducibleFactor(fn(f.factor), f.exponent) for f in factorList u]
+        l := concat(["nil", fn(unit u), 1]$FF, _
+                   [["nil", fn(f.factor), f.exponent]$FF for f in factorList u])
+        makeFR(1, l)
 
     u exquo v ==
         newunit := (unit(u) exquo unit(v))::R
@@ -531,9 +533,12 @@ FactoredFunctions2(R, S) : Exports == Implementation where
       ++ example, to coerce every factor base to another type.
 
   Implementation ==> add
-    map(func, f) ==
-      func(unit f) *
-             _*/[nilFactor(func(g.factor), g.exponent) for g in factors f]
+    fUnion ==> Union("nil", "sqfr", "irred", "prime")
+    FF     ==> Record(flag : fUnion, factor : S, exponent : Integer)
+    map(fn, u) ==
+        l := concat(["nil", fn(unit u), 1]$FF, _
+                   [["nil", fn(f.factor), f.exponent]$FF for f in factors u])
+        makeFR(1, l)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
