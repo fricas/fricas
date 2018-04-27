@@ -178,20 +178,12 @@ symEqual(sym, sym2) == EQ(sym, sym2)
 
 SymMemQ(sy, l) == MEMQ(sy, l)
 
-pmDontQuote? sy ==
-   SymMemQ(sy, '(_+ _- _* _*_* _^ _/ log exp pi sqrt ei li erf ci si dilog _
-              sin cos tan cot sec csc asin acos atan acot asec acsc _
-              sinh cosh tanh coth sech csch asinh acosh atanh acoth asech acsc))
-
 pfOp2Sex pf ==
   alreadyQuoted := pfSymbol? pf
   op := pf2Sex1 pf
   op is ["QUOTE", realOp] =>
     $insideRule = 'left => realOp
-    $insideRule = 'right =>
-      pmDontQuote? realOp => realOp
-      $quotedOpList := [op, :$quotedOpList]
-      op
+    $insideRule = 'right => realOp
     symEqual(realOp, "|") => realOp
     symEqual(realOp, ":") => realOp
     symEqual(realOp, "?") => realOp

@@ -433,12 +433,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
          ++ applyQuote(foo, [x1, ..., xn]) returns \spad{'foo(x1, ..., xn)}.
        if R has ConvertibleTo InputForm then
          ConvertibleTo InputForm
-         eval     : (%, SY) -> %
-           ++ eval(f, foo) unquotes all the foo's in f.
-         eval     : (%, List SY) -> %
-           ++ eval(f, [foo1, ..., foon]) unquotes all the \spad{fooi}'s in f.
-         eval     : % -> %
-           ++ eval(f) unquotes all the quoted operators in f.
          eval     : (%, OP, %, SY) -> %
            ++ eval(x, s, f, y) replaces every \spad{s(a)} in x by \spad{f(y)}
            ++ with \spad{y} replaced by \spad{a} for any \spad{a}.
@@ -557,7 +551,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
     smpeval   : (MP, List K, List %) -> %
     smpsubst  : (MP, List K, List %) -> %
     smpderiv  : (MP, SY) -> %
-    smpunq    : (MP, List SY, Boolean) -> %
     kerderiv  : (K, SY)  -> %
     kgrad     : K -> List(List % -> %)
     opderiv   : (OP, N) -> List(List % -> %)
@@ -574,8 +567,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
     diffdiff  : (List %, SY) -> %
     subs      : (% -> %, K) -> %
     symsub    : (SY, Z) -> SY
-    kunq      : (K, List SY, Boolean) -> %
-    pushunq   : (List SY, List %) -> List %
     notfound  : (K -> %, List K) -> (K -> %)
 
     equaldiff : (K, K)->Boolean
@@ -613,7 +604,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
       indiff l ==
          r2 := convert([convert("::"::SY)@INP,convert(third l)@INP,convert('Symbol)@INP]@List INP)@INP
          pint [convert(differentiand l)@INP, r2]
-      eval(f : %, s : SY)            == eval(f, [s])
       eval(f : %, s : OP, g : %, x : SY) == eval(f, [s], [g], x)
 
       eval(f : %, ls : List OP, lg : List %, x : SY) ==
@@ -886,25 +876,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
               empty? setIntersection(tower(f := k::%), lk) => f
               fn k
 
-      if R has ConvertibleTo InputForm then
-        pushunq(l, arg) ==
-           empty? l => [eval a for a in arg]
-           [eval(a, l) for a in arg]
-
-        kunq(k, l, givenlist?) ==
-          givenlist? and empty? l => k::%
-          is?(k, opquote) and
-            (member?(s := retract(first argument k)@SY, l) or empty? l) =>
-              interpret(convert(concat(convert(s)@InputForm,
-                [convert a for a in pushunq(l, rest argument k)
-                   ]@List(InputForm)))@InputForm)$InputFormFunctions1(%)
-          (operator k) pushunq(l, argument k)
-
-        smpunq(p, l, givenlist?) ==
-          givenlist? and empty? l => p::%
-          map(x +-> kunq(x, l, givenlist?), y +-> y::%,
-            p)$PolynomialCategoryLifting(IndexedExponents K, K, R, MP, %)
-
       smpret p ==
         "or"/[symbolIfCan(k) case "failed" for k in variables p] =>
           "failed"
@@ -1007,9 +978,6 @@ FunctionSpace(R : Comparable) : Category == Definition where
         differentiate(x : %, s : SY)         == smpderiv(numer x, s)
         coerce(x : %) : OutputForm           == smp2O numer x
 
-        if R has ConvertibleTo InputForm then
-          eval(f : %, l : List SY) == smpunq(numer f, l, true)
-          eval f               == smpunq(numer f, empty(), false)
 
         eval(x : %, s : List SY, n : List N, f : List(List % -> %)) ==
           smprep(s, n, f, numer x)
@@ -1105,12 +1073,8 @@ FunctionSpace(R : Comparable) : Category == Definition where
             or (r := n::R exquo d::R) case "failed" => "failed"
         r::R
 
-      eval(f : %, l : List SY) ==
-        smpunq(numer f, l, true) / smpunq(denom f, l, true)
 
       if R has ConvertibleTo InputForm then
-        eval f ==
-          smpunq(numer f, empty(), false) / smpunq(denom f, empty(), false)
 
         eval(x : %, s : List SY, n : List N, f : List(List % -> %)) ==
           smprep(s, n, f, numer x) / smprep(s, n, f, denom x)
