@@ -189,34 +189,34 @@
 
 ;;; (x*y + z) using 32-bit x and y and 64-bit z and assuming that
 ;;; intermediate results fits into 64 bits
-(defmacro QSMULADD64-32 (x y z)
+(defmacro QSMULADD64_32 (x y z)
     `(the machine-int
          (+ (the machine-int
                (* (the (unsigned-byte 32) ,x)
                   (the (unsigned-byte 32) ,y)))
             (the machine-int ,z))))
 
-(defmacro QSMUL64-32 (x y)
+(defmacro QSMUL64_32 (x y)
     `(the machine-int
          (* (the (unsigned-byte 32) ,x)
             (the (unsigned-byte 32) ,y))))
 
 
-(defmacro QSMOD64-32 (x p)
+(defmacro QSMOD64_32 (x p)
     `(the (unsigned-byte 32)
          (rem (the machine-int ,x) (the (unsigned-byte 32) ,p))))
 
-(defmacro QSMULADDMOD64-32 (x y z p)
-    `(QSMOD64-32 (QSMULADD64-32 ,x ,y ,z) ,p))
+(defmacro QSMULADDMOD64_32 (x y z p)
+    `(QSMOD64_32 (QSMULADD64_32 ,x ,y ,z) ,p))
 
-(defmacro QSDOT2-64-32 (a1 b1 a2 b2)
-    `(QSMULADD64-32 ,a1 ,b1 (QSMUL64-32 ,a2 ,b2)))
+(defmacro QSDOT2_64_32 (a1 b1 a2 b2)
+    `(QSMULADD64_32 ,a1 ,b1 (QSMUL64_32 ,a2 ,b2)))
 
-(defmacro QSDOT2MOD64-32 (a1 b1 a2 b2 p)
-    `(QSMOD64-32 (QSDOT2-64-32 ,a1 ,b1 ,a2 ,b2) , p))
+(defmacro QSDOT2MOD64_32 (a1 b1 a2 b2 p)
+    `(QSMOD64_32 (QSDOT2_64_32 ,a1 ,b1 ,a2 ,b2) , p))
 
 (defmacro QSMULMOD32 (x y p)
-    `(QSMOD64-32 (QSMUL64-32 ,x ,y) ,p))
+    `(QSMOD64_32 (QSMUL64_32 ,x ,y) ,p))
 
 ;;; Modular scalar product
 
@@ -232,8 +232,8 @@
                    (type fixnum i1 i2 k k0))
           (prog ()
              l1
-              (if (>= k k0) (return (QSMOD64-32 s ,p)))
-              (setf s (QSMULADD64-32 (,eltfun v1 (|add_SI| i1 k))
+              (if (>= k k0) (return (QSMOD64_32 s ,p)))
+              (setf s (QSMULADD64_32 (,eltfun v1 (|add_SI| i1 k))
                                      (,eltfun v2 (|add_SI| i2 k))
                                      s))
               (setf k (|inc_SI| k))
@@ -402,10 +402,10 @@
 
 ;;; Double precision arrays and matrices
 
-(defmacro MAKE-DOUBLE-VECTOR (n)
+(defmacro MAKE_DOUBLE_VECTOR (n)
    `(make-array (list ,n) :element-type 'double-float))
 
-(defmacro MAKE-DOUBLE-VECTOR1 (n s)
+(defmacro MAKE_DOUBLE_VECTOR1 (n s)
    `(make-array (list ,n) :element-type 'double-float :initial-element ,s))
 
 (defmacro DELT(v i)
@@ -418,10 +418,10 @@
 (defmacro DLEN(v)
     `(length (the (simple-array double-float (*)) ,v)))
 
-(defmacro MAKE-DOUBLE-MATRIX (n m)
+(defmacro MAKE_DOUBLE_MATRIX (n m)
    `(make-array (list ,n ,m) :element-type 'double-float))
 
-(defmacro MAKE-DOUBLE-MATRIX1 (n m s)
+(defmacro MAKE_DOUBLE_MATRIX1 (n m s)
    `(make-array (list ,n ,m) :element-type 'double-float
            :initial-element ,s))
 
@@ -442,7 +442,7 @@
 ;;; complex number occupies two positions in the real
 ;;; array.
 
-(defmacro MAKE-CDOUBLE-VECTOR (n)
+(defmacro MAKE_CDOUBLE_VECTOR (n)
    `(make-array (list (* 2 ,n)) :element-type 'double-float))
 
 (defmacro CDELT(ov oi)
@@ -470,7 +470,7 @@
 (defmacro CDLEN(v)
     `(truncate (length (the (simple-array double-float (*)) ,v)) 2))
 
-(defmacro MAKE-CDOUBLE-MATRIX (n m)
+(defmacro MAKE_CDOUBLE_MATRIX (n m)
    `(make-array (list ,n (* 2 ,m)) :element-type 'double-float))
 
 (defmacro CDAREF2(ov oi oj)
