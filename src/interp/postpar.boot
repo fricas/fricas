@@ -36,6 +36,7 @@
 -- These functions are used by for SPAD code
 
 postTransform y ==
+  $insidePostCategoryIfTrue : local := nil
   x:= y
   u:= postTran x
   if u is ["@Tuple", :l, [":", y, t]] and (and/[IDENTP x for x in l]) then
