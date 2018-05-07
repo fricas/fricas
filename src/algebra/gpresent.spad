@@ -1539,6 +1539,34 @@ GroupPresentation() : Exports == Impl where
        r : OutputForm := outputRelList(rs)
        hconcat([message("<"), g, message(" | "), r, message(">")])
 
+
+)abbrev package GROUPPF1 GroupPresentationFunctions1
+GroupPresentationFunctions1(S : SetCategory) : with
+    convert : (List(S), List(FreeGroup(S))) -> GroupPresentation
+      ++ convert(lg, lr) builds group presentation from list
+      ++ of generators \spad{lg} and list of relations \spad{lr}.
+  == add
+
+    convert(lg, lr) ==
+        n := #lg
+        nlr : List(List(Integer)) := []
+        for r in lr repeat
+            nr : List(Integer) := []
+            fr := factors(r)
+            for t in fr repeat
+                k := position(t.gen, lg)
+                k < 1 => error "convert: relation contains generator"
+                               "not in list of generators"
+                m := t.exp
+                k :=
+                    m < 0 => -k
+                    k
+                m := abs(m)
+                for l in 1..m repeat
+                    nr := cons(k, nr)
+            nlr := cons(reverse!(nr), nlr)
+        groupPresentation([l for l in 1..n], reverse!(nlr))
+
 )if false
 \section{Homology}
 
