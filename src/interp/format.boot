@@ -352,7 +352,6 @@ form2StringAsTeX u ==
 form2StringLocal u ==
 --+
   $NRTmonitorIfTrue : local := nil
-  $fortInts2Floats  : local := nil
   form2String1 u
 
 constructorName con ==
