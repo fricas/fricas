@@ -36,18 +36,6 @@
 --  named stats (listofnames) grouped in classes (listofclasses)
 --  and with measurement types (property, classproperty).
 
-printNamedStatsByProperty(listofnames, property) ==
-  total := +/[GET(name, property) for [name, :.] in listofnames]
-  for [name,:.] in listofnames repeat
-    n := GET(name, property)
-    strname := STRINGIMAGE name
-    strval  := STRINGIMAGE n
-    sayBrightly concat(bright strname,
-      fillerSpaces(70-#strname-#strval,'"."),bright strval)
-  sayBrightly bright fillerSpaces(72,'"-")
-  sayBrightly concat(bright '"Total",
-    fillerSpaces(65-# STRINGIMAGE total,'"."),bright STRINGIMAGE total)
-
 makeLongStatStringByProperty _
  (listofnames, listofclasses, property, classproperty, units, flag) ==
   total := 0
@@ -163,7 +151,6 @@ DEFPARAMETER($interpreterTimedNames, '(
   (querycoerce    1 .   Q) _
   (other          3 .   O) _
   (diskread       3 .   K) _
-  (print          3 .   P) _
   (resolve        1 .   R) _
   ))
 
@@ -191,12 +178,6 @@ initializeTimedNames(listofnames,listofclasses) ==
 updateTimedName name ==
   count := (GET(name, 'TimeTotal) or 0) + computeElapsedTime()
   PUT(name, 'TimeTotal, count)
-
-printNamedStats listofnames ==
-  printNamedStatsByProperty(listofnames, 'TimeTotal)
-  sayBrightly '" "
-  sayBrightly '"Space (in bytes):"
-  printNamedStatsByProperty(listofnames, 'SpaceTotal)
 
 makeLongTimeString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,  _
