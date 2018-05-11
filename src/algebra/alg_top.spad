@@ -1384,6 +1384,9 @@ ChainComplex() : Exports == Impl where
   Exports ==> SetCategory() with
     chainComplex : (v : List(Matrix(Integer))) -> %
       ++ constructor
+    transition_matrices : % -> List(Matrix(Integer))
+      ++ transition_matrices(a) gives list of transition matrices
+      ++ of a.
     validate : (a : %) -> Boolean
       ++ true if this is a valid chain complex, that is:
       ++ 1. maps compose
@@ -1401,18 +1404,7 @@ ChainComplex() : Exports == Impl where
    chainComplex(v : List(Matrix(Integer))) : % ==
        v
 
-   -- local function to convert from matrix over int to matrix over rational
-   matrixOverRational(AInt : Matrix(Integer)) : Matrix(Fraction(Integer)) ==
-       -- It is important that zero dimensions 0*0 and n*0 retain these
-       -- dimenstions
-       -- so first handle this as a special case:
-       ARows : NNI := nrows(AInt)
-       ACols : NNI := ncols(AInt)
-       a : Matrix(Fraction(Integer)) := new(ARows, ACols, 0::Fraction(Integer))
-       for i in 1..ARows repeat
-           for j in 1..ACols repeat
-               a(i, j) := AInt(i, j)::Fraction(Integer)
-       a
+   transition_matrices(a : %) : List(Matrix(Integer)) == a::Rep
 
    -- true if this is a valid chain complex, that is:
    -- 1) maps compose
@@ -1532,6 +1524,8 @@ CoChainComplex(VS : AbelianGroup) : Exports == Impl where
   Exports ==> SetCategory() with
     coChainComplex : (v : List(Matrix(Integer))) -> %
       ++ constructor
+    coChainComplex : (s : ChainComplex) -> %
+      ++ constructor from \spad{ChainComplex}
     validate : (a : %) -> Boolean
       ++ true if this is a valid chain complex, that is:
       ++ 1. maps compose
@@ -1551,18 +1545,10 @@ CoChainComplex(VS : AbelianGroup) : Exports == Impl where
    coChainComplex(v : List(Matrix(Integer))) : % ==
        v
 
-   -- local function to convert from matrix over int to matrix over rational
-   matrixOverRational(AInt : Matrix(Integer)) : Matrix(Fraction(Integer)) ==
-       -- It is important that zero dimensions 0*0 and n*0 retain these
-       -- dimenstions
-       -- so first handle this as a special case:
-       ARows : NNI := nrows(AInt)
-       ACols : NNI := ncols(AInt)
-       a : Matrix(Fraction(Integer)) := new(ARows, ACols, 0::Fraction(Integer))
-       for i in 1..ARows repeat
-           for j in 1..ACols repeat
-               a(i, j) := AInt(i, j)::Fraction(Integer)
-       a
+   coChainComplex(s : ChainComplex) : % ==
+       tm := transition_matrices(s)
+       tm := reverse!(tm)
+       map(transpose, tm)
 
    -- true if this is a valid cochain complex, that is:
    -- 1) maps compose
@@ -2321,15 +2307,12 @@ FiniteSimplicialComplex(VS : AbelianGroup) : Exports == Impl where
    chain(s : %) : ChainComplex ==
        dc : DeltaComplex(VS) := deltaComplex(_
                    s pretend FiniteSimplicialComplex(VS))
-       cc : ChainComplex := chain(dc)$DeltaComplex(VS)
-       cc
+       chain(dc)$DeltaComplex(VS)
 
    -- returns a matrix sequence representing the face maps
    -- in linear algebra form
    coChain(s : %) : CoChainComplex(VS) ==
-       dc : DeltaComplex(VS) := deltaComplex(_
-                   s pretend FiniteSimplicialComplex(VS))
-       coChain(dc)$DeltaComplex(VS)
+       coChainComplex(chain(s))
 
    -- calculate homology using SmithNormalForm
    homology(s : %) : List(Homology) ==
@@ -3255,38 +3238,7 @@ DeltaComplex(VS : AbelianGroup) : Exports == Impl where
    -- in linear algebra form
    -- For more information:
    -- \url{http://www.euclideanspace.com/prog/scratchpad/mycode/topology/chain/cochain/index.htm}
-   coChain(s : %) : CoChainComplex(VS) ==
-       res := []$List(Matrix(Integer))
-       maps1 : List(List(List(Integer))) := reverse(s.MAPS)
-       n_rows : NNI := 1
-       --print(message "cochain maps1=" << maps1 << " n_rows=" << n_rows)
-       for faces in maps1 repeat
-           --print(message "cochain faces=" << faces << " res=" << res)
-           n_cols := #(faces)
-           -- zero constructs a Matrix containing '0's.
-           m : Matrix(Integer) := zero(n_cols, n_rows)
-           --print(message "cochain zero matrix=" << m << _
-           --      message " nrows=" << n_rows << _
-           --      message " ncols=" << n_cols)
-           for u in faces for nu in 1..(#faces) repeat
-               for v in u repeat
-                   v2 : Integer := abs(v)
-                   if v2 > 0 then
-                       ele : Integer := (v > 0 => 1; -1)
-                       --print(message " col=" << v2 << _
-                       --  message " row=" << nu << _
-                       --  message " n_cols=" << n_cols << " ele=" << ele)
-                       setelt!(m, nu, v2, qelt(m, nu, v2) + ele)
-           res := cons(m, res)
-           -- adjacent matrices can be multiplied together so the
-           -- number of rows in the next matrix is equal to the
-           -- number of columns in this matrix.
-           n_rows := n_cols
-       -- add matrix with zero cols
-       --print(message "cochain n_rows=" << n_rows)
-       m : Matrix(Integer) := new(0 ,n_rows, 0)
-       res := cons(m, res)
-       coChainComplex(res)
+   coChain(s : %) : CoChainComplex(VS) == coChainComplex(chain(s))
 
    -- calculate homology using SmithNormalForm
    homology(a : %) : List(Homology) ==
