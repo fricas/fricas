@@ -432,14 +432,15 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       ++ degree factorization of f computed by
       ++ \spadfunFrom{ddFact}{ModularDistinctDegreeFactorizer}
       ++ for some prime p.
-    modularFactor : UP -> MFact
-      ++ modularFactor(f) chooses a "good" prime and returns the factorization
-      ++ of f modulo this prime in a form that may be used by
+    modularFactor : (UP, Set N) -> MFact
+      ++ modularFactor(f, d) chooses a "good" prime and returns the
+      ++ factorization of f modulo this prime in a form that may be used by
       ++ \spadfunFrom{completeHensel}{GeneralHenselPackage}. If prime is zero
       ++ it means that f has been proved to be irreducible over the integers
       ++ or that f is a unit (i.e. 1 or -1).
       ++ f shall be primitive (i.e. content(p)=1) and square free (i.e.
       ++ without repeated factors).
+      ++ \spad{d} is set of possible degrees of factors.
     useSingleFactorBound? : () -> Boolean
       ++ useSingleFactorBound?() returns \spad{true} if algorithm with single
       ++ factor bound is used for factorization, \spad{false} for algorithm
@@ -492,23 +493,23 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
     factorSquareFree : (UP, N) -> Factored UP
       ++ factorSquareFree(p, r) factorizes the polynomial p using the single
       ++ factor bound algorithm and knowing that p has at least r factors.
-      ++ f is supposed not having any repeated factor (this is not checked).
+      ++ p is supposed not having any repeated factor (this is not checked).
     factorSquareFree : (UP, List N) -> Factored UP
       ++ factorSquareFree(p, listOfDegrees) factorizes the polynomial p using
       ++ the single factor bound algorithm and knowing that p has for possible
       ++ splitting of its degree listOfDegrees.
-      ++ f is supposed not having any repeated factor (this is not checked).
+      ++ p is supposed not having any repeated factor (this is not checked).
     factorSquareFree : (UP, List N, N) -> Factored UP
       ++ factorSquareFree(p, listOfDegrees, r) factorizes the polynomial p using
       ++ the single factor bound algorithm, knowing that p has for possible
       ++ splitting of its degree listOfDegrees and that p has at least r
       ++ factors.
-      ++ f is supposed not having any repeated factor (this is not checked).
+      ++ p is supposed not having any repeated factor (this is not checked).
     factorSquareFree : (UP, N, N) -> Factored UP
       ++ factorSquareFree(p, d, r) factorizes the polynomial p using the single
       ++ factor bound algorithm, knowing that d divides the degree of all
       ++ factors of p and that p has at least r factors.
-      ++ f is supposed not having any repeated factor (this is not checked).
+      ++ p is supposed not having any repeated factor (this is not checked).
     factorOfDegree : (P,UP) -> Union(UP,"failed")
       ++ factorOfDegree(d, p) returns a factor of p of degree d.
     factorOfDegree : (P,UP,N) -> Union(UP,"failed")
@@ -687,14 +688,13 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         [degs, () +-> separateFactors(res1, p
                         )$ModularDistinctDegreeFactorizer(UP)]
 
-    modularFactor(p : UP) : MFact ==
+    modularFactor(p : UP, d : Set N) : MFact ==
       not (abs(content(p)) = 1) =>
        error "modularFactor: the polynomial is not primitive."
       zero? (n := degree p) => [0, [p]]
 
       -- declarations --
       cprime : Z := 2
-      d : Set N := fullSet(n)
       dirred : Set N := set [0, n]
       s : Set N := empty()
       ddlist : List N := []
@@ -747,11 +747,18 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
     import from UnivariatePolynomialDecompositionPackage(Z, UP)
     import from BrillhartTests(UP) -- See [2]
 
+    divideSet : (Set N, N) -> Set N
+
+    sel_set(d : Set N, n : N, m : N) : Set N ==
+        n = 0 => set([0])
+        nm := n*m
+        select(x +-> x <= nm and x rem n = 0, d)
+
     -- local function, finds the factors of f primitive, square-free, with
     -- positive leading coefficient and non zero trailing coefficient,
     -- using the overall bound technique. If pdecomp is true then look
     -- for a functional decomposition of f.
-    henselfact(f : UP, pdecomp : Boolean) : List UP ==
+    henselfact(f : UP, pdecomp : Boolean, d : Set N) : List UP ==
       if brillhartIrreducible? f or
        (useeisensteincriterion => eisensteinIrreducible? f ; false)
       then return [f]
@@ -761,13 +768,19 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       else
         cf := "failed"
       cf case "failed" =>
-        m := modularFactor f
+        m := modularFactor(f, d)
         zero? (cprime := m.prime) => m.factors
         b : P := (2*leadingCoefficient(f)*beauzamyBound(f)) :: P
         completeHensel(f, m.factors, cprime, b)
       lrf := cf::LR
-      "append"/[ henselfact(g(lrf.right),false) for g in
-       henselfact(lrf.left, true) ]
+      dh := degree(lrf.right)
+      d1 := divideSet(d, dh)
+      "append"/[ henselfact(g(lrf.right), false,
+                           sel_set(d, degree(g), dh)) for g in
+         henselfact(lrf.left, true, d1) ]
+
+    henselfact1(f : UP, pdecomp : Boolean) : List UP ==
+        henselfact(f, pdecomp, fullSet(degree(f)))
 
     -- local function, returns the complete factorization of its arguments,
     -- using the single-factor bound technique
@@ -882,7 +895,8 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
     -- look for a functional decomposition of f.
     btwFactor(f : UP, d : Set N, r : N, pdecomp : Boolean) : List UP ==
       df := degree f
-      not (max(d) = df) => error "btwFact: Bad arguments"
+      not (max(d) = df) =>
+          error "btwFact: Bad arguments"
       reverse? : Boolean := false
       negativelc? : Boolean := false
 
@@ -902,7 +916,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       else
         cf := "failed"
       if cf case "failed" then
-        m := modularFactor f
+        m := modularFactor(f, d)
         zero? (cprime := m.prime) =>
           if reverse? then
             if negativelc? then return [ -reverse f ]
@@ -927,10 +941,11 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
         lf : List UP := empty()
         for i in 1..#lg repeat
           g := lg.i
-          dgh := (degree g)*dh
+          dg := degree g
+          dgh := dg*dh
           df := subtractIfCan(df, dgh)::N
           lfg := btwFactor(g(lrf.right),
-           select(x+->x<=dgh, d), max(2, r-df)::N, false)
+              sel_set(d, dg, dh), max(2, r-df)::N, false)
           lf := append(lf, lfg)
           r := max(2, r-#lfg)::N
       if reverse? then lf := [ reverse(fact) for fact in lf ]
@@ -1027,7 +1042,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
       -- other special cases to implement...
 
       -- f is square-free :
-      sqf => [c, append([[pf, 1]$ParFact for pf in henselfact(f, true)],
+      sqf => [c, append([[pf, 1]$ParFact for pf in henselfact1(f, true)],
        factorlist)]$FinalFact
 
       -- f is not square-free :
@@ -1041,7 +1056,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
           factorlist := append([[pf, mult]$ParFact for pf in quadratic(sqff)],
            factorlist)
         factorlist := append([[pf, mult]$ParFact for pf in
-         henselfact(sqff, true)], factorlist)
+         henselfact1(sqff, true)], factorlist)
       [c, factorlist]$FinalFact
 
     btwFact(f : UP, sqf : Boolean, fd : Set N, r : N) : FinalFact ==
