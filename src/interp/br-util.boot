@@ -66,7 +66,7 @@ $infovec  := nil             --bound in koOps
 $predvec  := nil             --bound in koOps
 $exposedOnlyIfTrue := nil    --see repeatSearch, dbShowOps, dbShowCon
 $bcMultipleNames := nil      --see bcNameConTable
-$docTableHash := MAKE_-HASHTABLE 'EQUAL  --see dbExpandOpAlistIfNecessary
+$docTableHash := MAKE_HASHTABLE('EQUAL)  --see dbExpandOpAlistIfNecessary
 $groupChoice := nil  --see dbShowOperationsFromConform
 
 ------------------> Initial Settings <---------------------

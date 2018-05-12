@@ -892,7 +892,7 @@ getTempPath kind == mkGrepFile kind
 
 dbWriteLines(s, :options) ==
   pathname := IFCAR options or getTempPath 'source
-  $outStream: local := MAKE_-OUTSTREAM pathname
+  $outStream : local := MAKE_OUTSTREAM(pathname)
   for x in s repeat writedb x
   SHUT $outStream
   pathname

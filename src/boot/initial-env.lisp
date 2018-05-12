@@ -45,7 +45,7 @@
 (defun |shoeCOMPILE-FILE| (fn) (compile-file fn ))
 (defun setdifference (x y) (set-difference x y))
 (defun make-cvec (sint) (make-string sint))
-(defun MAKE-VEC (n) (make-array n))
+(defun MAKE_VEC (n) (make-array n))
 (defun concat (&rest l)
   (progn
     (setq l (mapcar #'string l))
@@ -95,7 +95,7 @@
   (if length (subseq cvec start (+ start length))
     (subseq cvec start)))
 
-(defun MAKE-HASHTABLE (id1)
+(defun MAKE_HASHTABLE (id1)
   (let ((test (case id1
                     ((EQ ID) #'eq)
                     (CVEC #'equal)

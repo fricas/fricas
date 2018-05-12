@@ -69,8 +69,8 @@ incFile fn==
 incStream(st, fn) ==
    incRenumber incLude(0,incRgen st,0,[fn],[Top])
 
-incFileInput    fn == incRgen  MAKE_-INSTREAM fn
-incConsoleInput () == incRgen  MAKE_-INSTREAM 0
+incFileInput    fn == incRgen  MAKE_INSTREAM(fn)
+incConsoleInput () == incRgen  MAKE_INSTREAM(0)
 
 incLine(eb, str, gno, lno, ufo) ==
             ln := lnCreate(eb,str,gno,lno,ufo)

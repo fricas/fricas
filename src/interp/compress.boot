@@ -35,7 +35,7 @@
 -- to various situations are required
 
 minimalise x ==
-  $hash:local:=MAKE_-HASHTABLE 'UEQUAL
+  $hash : local := MAKE_HASHTABLE('UEQUAL)
   min x where
     min x ==
       y:=HGET($hash,x)

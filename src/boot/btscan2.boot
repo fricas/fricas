@@ -490,7 +490,7 @@ shoeInsert(s,d) ==
       k:=0
       while l <= #(ELT(u,k)) repeat
           k:=k+1
-      v := MAKE_-VEC(n+1)
+      v := MAKE_VEC(n+1)
       for i in 0..k-1 repeat QSETVELT(v, i, ELT(u, i))
       QSETVELT(v, k, s)
       for i in k..n-1 repeat QSETVELT(v, i + 1, ELT(u, i))
@@ -524,7 +524,7 @@ shoeSubStringMatch (l,d,i)==
 shoePunctuation c== shoePun.c =1
 
 shoeKeyTableCons()==
-   KeyTable:=MAKE_-HASHTABLE("CVEC")
+   KeyTable:=MAKE_HASHTABLE("CVEC")
    for st in shoeKeyWords repeat
       HPUT(KeyTable,CAR st,CADR st)
    KeyTable
@@ -532,8 +532,8 @@ shoeKeyTableCons()==
 shoeDictCons()==
       l:= HKEYS shoeKeyTable
       d :=
-          a:=MAKE_-VEC(256)
-          b:=MAKE_-VEC(1)
+          a:=MAKE_VEC(256)
+          b:=MAKE_VEC(1)
           QSETVELT(b, 0, MAKE_-CVEC 0)
           for i in 0..255 repeat QSETVELT(a, i, b)
           a

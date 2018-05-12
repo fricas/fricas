@@ -38,7 +38,7 @@
 --=======================================================================
 mkLowerCaseConTable() ==
 --Table is referenced by functions conPageFastPath and grepForAbbrev
-  $lowerCaseConTb := MAKE_-HASH_-TABLE()
+  $lowerCaseConTb := MAKE_HASHTABLE('EQUAL)
   for x in allConstructors() repeat augmentLowerCaseConTable x
   $lowerCaseConTb
 

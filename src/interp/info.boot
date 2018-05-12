@@ -150,7 +150,7 @@ DEFPARAMETER($cycleMarker, GENSYM())
 known_info_in_env(pred, $e) == knownInfo(pred)
 
 hashed_known_info(pred) ==
-    $infoHash : local := MAKE_-HASHTABLE 'EQUAL
+    $infoHash : local := MAKE_HASHTABLE('EQUAL)
     knownInfo pred
 
 knownInfo pred ==

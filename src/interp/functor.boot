@@ -465,7 +465,7 @@ InvestigateConditions(catvecListMaker, e) ==
   [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
 
 ICformat_loop(list, secondaries, e) ==
-  $ICformat_hash : local := MAKE_-HASHTABLE 'EQUAL
+  $ICformat_hash : local := MAKE_HASHTABLE('EQUAL)
   [[sec, :ICformat(u, e)] for u in list for sec in secondaries]
 
 ORreduce l ==

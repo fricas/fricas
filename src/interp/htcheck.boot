@@ -79,10 +79,10 @@ $primitiveHtCommands := '(
   ("\windowlink"         . 2))
 
 buildHtMacroTable() ==
-  $htMacroTable := MAKE_-HASHTABLE 'UEQUAL
+  $htMacroTable := MAKE_HASHTABLE('UEQUAL)
   fn := CONCAT(getEnv '"AXIOM", '"/share/hypertex/pages/util.ht")
   if PROBE_-FILE(fn) then
-    instream := MAKE_-INSTREAM fn
+    instream := MAKE_INSTREAM(fn)
     while not EOFP instream repeat
       line := read_line instream
       getHtMacroItem line is [string,:numOfArgs] =>

@@ -434,10 +434,10 @@ intern x ==
 
 -- variables used by browser
 
-$htHash      := MAKE_-HASH_-TABLE()
-$glossHash   := MAKE_-HASH_-TABLE()
-$lispHash    := MAKE_-HASH_-TABLE()
-$sysHash     := MAKE_-HASH_-TABLE()
+$htHash      := MAKE_HASHTABLE('EQUAL)
+$glossHash   := MAKE_HASHTABLE('EQUAL)
+$lispHash    := MAKE_HASHTABLE('EQUAL)
+$sysHash     := MAKE_HASHTABLE('EQUAL)
 $htSystemCommands := '(
  (boot . development) clear display (fin . development) edit help
  frame history load quit read set show synonym system

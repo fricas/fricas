@@ -111,7 +111,7 @@ setExtendedDomains(l) ==
 --rhx: Function seems to be unused.
 makeAxFile(filename, constructors) ==
   axForm := makeAxExportForm(filename, constructors)
-  st := MAKE_-OUTSTREAM(filename)
+  st := MAKE_OUTSTREAM(filename)
   PPRINT(axForm,st)
   CLOSE st
 

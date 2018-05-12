@@ -102,7 +102,7 @@ position1(x,y) ==
 
 Zeros n ==
     BOUNDP '$ZeroVecCache and #$ZeroVecCache = n => $ZeroVecCache
-    $ZeroVecCache := MAKE_-VEC n
+    $ZeroVecCache := MAKE_VEC(n)
     for i in 0..n-1 repeat $ZeroVecCache.i := 0
     $ZeroVecCache
 

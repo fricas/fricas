@@ -272,8 +272,8 @@ clearClam fn ==
   infovec := GET(fn, 'cacheInfo) or keyedSystemError("S2GE0003", [fn])
   -- eval infovec.cacheReset
   ir := infovec.cacheReset
-  ir is ["SETQ", var , ['MAKE_-HASHTABLE, ["QUOTE", mode]]] =>
-     SETF(SYMBOL_-VALUE(var), MAKE_-HASHTABLE(mode))
+  ir is ["SETQ", var , ['MAKE_HASHTABLE, ["QUOTE", mode]]] =>
+     SETF(SYMBOL_-VALUE(var), MAKE_HASHTABLE(mode))
   ir is ["SETQ", var , ["initCache", val]] =>
      SETF(SYMBOL_-VALUE(var), initCache(val))
   BREAK()

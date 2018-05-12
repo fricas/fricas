@@ -676,7 +676,7 @@ dbShowOperationsFromConform(htPage,which,opAlist) ==  --branch in with lists
   conform := htpProperty(htPage,'conform)
   --prepare opAlist for possible filtering of groups
   if null BOUNDP '$topicHash then
-    $topicHash := MAKE_-HASHTABLE 'ID
+    $topicHash := MAKE_HASHTABLE('ID)
     for [x,:c] in '((extended . 0) (basic . 1) (hidden . 2)) repeat
       HPUT($topicHash,x,c)
   domform := htpProperty(htPage,'domname)
@@ -828,7 +828,7 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
     expandFlag = 'lists => --lists are partially expanded
       -- entry is [sig, predicate, origin, exposeFlag, comments]
       $value: local := nil
-      $docTableHash := MAKE_-HASHTABLE 'EQUAL
+      $docTableHash := MAKE_HASHTABLE('EQUAL)
       packageSymbol := false
       domform := htpProperty(htPage,'domname) or htpProperty(htPage,'conform)
       if isDefaultPackageName opOf domform then
