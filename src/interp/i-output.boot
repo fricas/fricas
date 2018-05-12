@@ -278,10 +278,6 @@ outputTranIf ['IF,x,y,z] ==
     ["CONCATB", "if", outputTran x, "then", outputTran y]
   y' := outputTran y
   z' := outputTran z
---y' is ['SC,:.] or z' is ['SC,:.] =>
--- ['CONCATB, "if" ,outputTran x,
---   ['SC,['CONCATB, "then",y'],['CONCATB, "else" ,z']]]
---['CONCATB, "if", outputTran x, "then", outputTran y, "else", outputTran z]
   ['CONCATB, "if", outputTran x,
     ['SC,['CONCATB, "then", y'], ['CONCATB, "else", z']]]
 

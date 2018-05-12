@@ -76,7 +76,7 @@ optFunctorBody x ==
   atom x => x
   x is ['QUOTE,:l] => x
   x is ['DomainSubstitutionMacro,parms,body] =>
-    optFunctorBody DomainSubstitutionFunction(parms,body)
+      optFunctorBody(DomainSubstitutionFunction($definition, parms, body))
   x is ['LIST,:l] =>
     null l => nil
     l:= [optFunctorBody u for u in l]
@@ -137,13 +137,6 @@ cons5(p,l) ==
   LENGTH l < 5 => [p,:l]
   RPLACD(QCDDR(QCDDR l), nil)
   [p,:l]
-
---presence of GENSYM in arg-list differentiates mutable-domains
--- addMutableArg nameFormer ==
---   $mutableDomain =>
---     nameFormer is ['LIST,:.] => [:nameFormer, '(GENSYM)]
---     ['APPEND,nameFormer,'(LIST (GENSYM))]
---   nameFormer
 
 mkDomainConstructor x ==
   atom x => mkDevaluate x
