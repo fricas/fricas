@@ -667,7 +667,7 @@ genSlotSig(sig, e) ==
 DEFPARAMETER($infoHash, nil)
 
 deepChaseInferences(pred, e) ==
-    $infoHash : local := MAKE_-HASHTABLE 'EQUAL
+    $infoHash : local := MAKE_HASHTABLE('EQUAL)
     deepChaseInferences1(pred, e)
 
 deepChaseInferences1(pred, e) ==

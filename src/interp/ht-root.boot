@@ -131,8 +131,9 @@ htGlossPage(htPage,pattern,tryAgain?) ==
   $key: local := 'none
   results := applyGrep(grepForm,'gloss)
   --pathname := STRCONC('"/tmp/",PNAME resultFile,'".text.", getEnv '"SPADNUM")
-  --instream := MAKE_-INSTREAM pathname
-  defstream := MAKE_-INSTREAM STRCONC(getEnv '"AXIOM",'"/algebra/glossdef.text")
+  --instream := MAKE_INSTREAM(pathname)
+  defstream := MAKE_INSTREAM(STRCONC(getEnv '"AXIOM",
+                                     '"/algebra/glossdef.text"))
   lines := gatherGlossLines(results,defstream)
   -- OBEY STRCONC('"rm -f ", pathname)
   --PROBE_-FILE(pathname) and DELETE_-FILE(pathname)

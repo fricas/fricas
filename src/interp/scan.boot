@@ -155,7 +155,7 @@ scanKeyWords := [ _
                           ]
 
 scanKeyTableCons()==
-   KeyTable:=MAKE_-HASHTABLE("CVEC")
+   KeyTable := MAKE_HASHTABLE("EQUAL")
    for st in scanKeyWords repeat
       HPUT(KeyTable, first st, CADR st)
    KeyTable
@@ -168,7 +168,7 @@ scanInsert(s,d) ==
       k:=0
       while l <= #(ELT(u,k)) repeat
           k:=k+1
-      v := MAKE_-VEC(n+1)
+      v := MAKE_VEC(n + 1)
       for i in 0..k-1 repeat QSETVELT(v, i, ELT(u, i))
       QSETVELT(v, k, s)
       for i in k..n-1 repeat QSETVELT(v, i + 1, ELT(u, i))
@@ -178,8 +178,8 @@ scanInsert(s,d) ==
 scanDictCons()==
       l:= HKEYS scanKeyTable
       d :=
-          a:=MAKE_-VEC(256)
-          b:=MAKE_-VEC(1)
+          a := MAKE_VEC(256)
+          b := MAKE_VEC(1)
           QSETVELT(b, 0, make_full_CVEC(0, '" "))
           for i in 0..255 repeat QSETVELT(a, i, b)
           a

@@ -1073,7 +1073,7 @@ newHelpSpad2Cmd args ==
     OBEY STRCONC('"$AXIOM/lib/SPADEDIT ",namestring helpFile)
     true
 
-  filestream := MAKE_-INSTREAM(helpFile)
+  filestream := MAKE_INSTREAM(helpFile)
   repeat
     line := read_line(filestream,false)
     NULL line =>
@@ -1442,7 +1442,7 @@ writeInputLines(fn,initial) ==
       lineList := [vec,:lineList]
   file := histInputFileName(fn)
   maybe_delete_file(file)
-  inp:= MAKE_-OUTSTREAM(file)
+  inp := MAKE_OUTSTREAM(file)
   for x in removeUndoLines NREVERSE lineList repeat WRITE_-LINE(x,inp)
   -- see file "undo" for definition of removeUndoLines
   if fn ~= 'redo then sayKeyedMsg("S2IH0014",[namestring file])
@@ -1571,7 +1571,7 @@ undoFromFile(n) ==
   updateHist()
 
 saveHistory(fn) ==
-  $seen: local := MAKE_-HASHTABLE 'EQ
+  $seen : local := MAKE_HASHTABLE('EQ)
   not $HiFiAccess => sayKeyedMsg("S2IH0016",NIL)
   not $useInternalHistoryTable and
       null(make_input_filename(histFileName())) =>
@@ -1789,7 +1789,7 @@ safeWritify ob ==
 
 writify ob ==
     not ScanOrPairVec(function(unwritable?), ob) => ob
-    $seen:     local := MAKE_-HASHTABLE 'EQ
+    $seen : local := MAKE_HASHTABLE('EQ)
     $writifyComplained: local := false
 
     writifyInner ob where
@@ -1826,7 +1826,7 @@ writify ob ==
                     HPUT($seen, nob, nob)
                     nob
                 n   := QVMAXINDEX ob
-                nob := MAKE_-VEC(n+1)
+                nob := MAKE_VEC(n + 1)
                 HPUT($seen, ob, nob)
                 HPUT($seen, nob, nob)
                 for i in 0..n repeat
@@ -1855,7 +1855,7 @@ writify ob ==
                 keys := HKEYS ob
                 QRPLACD(nob,
                         ['HASHTABLE,
-                          HASHTABLE_-CLASS ob,
+                          HASHTABLE_CLASS(ob),
                             writifyInner keys,
                               [writifyInner HGET(ob,k) for k in keys]])
                 nob
@@ -1910,7 +1910,7 @@ dewritify ob ==
     (not ScanOrPairVec(function is?, ob)
             where  is? a == a = 'WRITIFIED_!_!) => ob
 
-    $seen:     local := MAKE_-HASHTABLE 'EQ
+    $seen : local := MAKE_HASHTABLE('EQ)
 
     dewritifyInner ob where
         dewritifyInner ob ==
@@ -1934,7 +1934,7 @@ dewritify ob ==
                     HPUT($seen, ob, f)
                     f
                 type = 'HASHTABLE =>
-                    nob := MAKE_-HASHTABLE ob.2
+                    nob := MAKE_HASHTABLE(ob.2)
                     HPUT($seen, ob, nob)
                     HPUT($seen, nob, nob)
                     for k in ob.3 for e in ob.4 repeat
@@ -1981,7 +1981,7 @@ dewritify ob ==
                 nob
             VECP ob =>
                 n   := QVMAXINDEX ob
-                nob := MAKE_-VEC(n+1)
+                nob := MAKE_VEC(n + 1)
                 HPUT($seen, ob, nob)
                 HPUT($seen, nob, nob)
                 for i in 0..n repeat
@@ -2000,7 +2000,7 @@ dewritify ob ==
             ob
 
 ScanOrPairVec(f, ob) ==
-    $seen:     local := MAKE_-HASHTABLE 'EQ
+    $seen : local := MAKE_HASHTABLE('EQ)
 
     CATCH('ScanOrPairVecAnswer, ScanOrInner(f, ob)) where
         ScanOrInner(f, ob) ==
@@ -2209,7 +2209,7 @@ reportOpsFromUnitDirectly0 D ==
 reportOpsFromUnitDirectly1 D ==
   showFile := pathname ['SHOW,'LISTING]
   erase_lib([showFile])
-  $sayBrightlyStream : fluid := MAKE_-OUTSTREAM(showFile)
+  $sayBrightlyStream : fluid := MAKE_OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromUnitDirectly D
   SHUT $sayBrightlyStream
@@ -2231,7 +2231,7 @@ reportOpsFromLisplib0(unitForm,u)  ==
 reportOpsFromLisplib1(unitForm,u)  ==
   showFile := pathname ['SHOW,'LISTING]
   erase_lib([showFile])
-  $sayBrightlyStream : fluid := MAKE_-OUTSTREAM (showFile)
+  $sayBrightlyStream : fluid := MAKE_OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromLisplib(unitForm,u)
   SHUT $sayBrightlyStream

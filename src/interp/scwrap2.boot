@@ -79,7 +79,7 @@ spadCompile1(name, pile_mode) ==
     $curent_line_number := 0
     $prev_line := nil
     $InteractiveFrame : local := $compiler_InteractiveFrame
-    $MacroTable := MAKE_-HASH_-TABLE()
+    $MacroTable := MAKE_HASHTABLE('EQUAL)
     $restore_list := nil
     $ncMsgList : local := nil
     a := ncloopIncFileName name

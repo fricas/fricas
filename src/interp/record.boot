@@ -83,7 +83,7 @@ inputFile2RecordFile(pathname,:option) ==
   $mkTestOutputType: local := nil
   $currentLine: local := nil
   if isExistingFile opathname then DELETE_-FILE opathname
-  $testStream := MAKE_-OUTSTREAM opathname
+  $testStream := MAKE_OUTSTREAM(opathname)
   CATCH('SPAD_READER, do_read(pathname, nil))
   --for trailing system commands
   if not null $currentLine then recordAndPrintTest '(ForSystemCommands)
@@ -96,7 +96,7 @@ printRecordFile(pathname,:option) ==
   $LINELENGTH : local := IFCAR option or 76
   $printTimeIfTrue: local := nil
   $printTypeIfTrue: local := true
-  stream := MAKE_-INSTREAM (pathname)
+  stream := MAKE_INSTREAM(pathname)
   repeat
     NULL (PEEK_-CHAR ( true, stream , nil, nil )) => return nil
     [i,t,:o] := dewritify VMREAD stream
@@ -141,7 +141,7 @@ verifyRecordFile(pathname) ==
   ifn := PATHNAME_-NAME pathname
   sayBrightly ['"Verifying",:bright ifn]
   not isExistingFile pathname => throwKeyedMsg("S2IL0003",[namestring ifn])
-  stream := MAKE_-INSTREAM pathname
+  stream := MAKE_INSTREAM(pathname)
   clearCmdAll()
   result := 'ok
   for j in 1.. repeat
@@ -174,7 +174,7 @@ testInput2Output(lines,n) ==
   [prefix2String typ,:output]
 
 evaluateLines lines ==
-  file := MAKE_-OUTSTREAM '"/tmp/temp.input"
+  file := MAKE_OUTSTREAM('"/tmp/temp.input")
   for line in lines repeat
 --  stringPrefix?('")read ",line) => 'skip
     stringPrefix?('")r",line) => 'skip
@@ -211,11 +211,11 @@ htFile2InputFile(pathname,:option) ==
   odirect := pathnameDirectory opath
   opathname := htMkPath(odirect,ifn,'"input")
   if isExistingFile opathname then DELETE_-FILE opathname
-  $htStream : local := MAKE_-INSTREAM pathname
+  $htStream : local := MAKE_INSTREAM(pathname)
   alist := [[htGetPageName u,:htGetSpadCommands()]
               while (u := htExampleFind '"\begin{page}")]
   SHUT $htStream
-  outStream := MAKE_-OUTSTREAM opathname
+  outStream := MAKE_OUTSTREAM(opathname)
   for [pageName,:commands] in alist repeat
     PRINTEXP('"-- ",outStream)
     PRINTEXP(pageName,outStream)

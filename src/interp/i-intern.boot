@@ -64,7 +64,7 @@ DEFCONST($failure, GENSYM())
 
 mkAtreeNode x ==
   -- maker of attrib tree node
-  v := MAKE_-VEC 5
+  v := MAKE_VEC(5)
   v.0 := x
   v
 

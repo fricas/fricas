@@ -1,17 +1,17 @@
-
+ 
 ; )package "BOOTTRAN"
-
+ 
 (IN-PACKAGE "BOOTTRAN")
-
+ 
 ; EQCAR(x,y)== CONSP x and EQ(CAR x,y)
-
+ 
 (DEFUN EQCAR (|x| |y|) (PROG () (RETURN (AND (CONSP |x|) (EQ (CAR |x|) |y|)))))
-
+ 
 ; dqUnit s==(a:=[s];CONS(a,a))
-
+ 
 (DEFUN |dqUnit| (|s|)
   (PROG (|a|) (RETURN (PROGN (SETQ |a| (LIST |s|)) (CONS |a| |a|)))))
-
+ 
 ; dqAppend(x,y)==
 ;     if null x
 ;     then y
@@ -21,81 +21,81 @@
 ;               RPLACD (CDR x,CAR y)
 ;               RPLACD (x,    CDR y)
 ;               x
-
+ 
 (DEFUN |dqAppend| (|x| |y|)
   (PROG ()
     (RETURN
      (COND ((NULL |x|) |y|) ((NULL |y|) |x|)
            ('T (RPLACD (CDR |x|) (CAR |y|)) (RPLACD |x| (CDR |y|)) |x|)))))
-
+ 
 ; dqConcat ld==
 ;     if null ld
 ;     then nil
 ;     else if null rest ld
 ;          then first ld
 ;          else dqAppend(first ld,dqConcat rest ld)
-
+ 
 (DEFUN |dqConcat| (|ld|)
   (PROG ()
     (RETURN
      (COND ((NULL |ld|) NIL) ((NULL (CDR |ld|)) (CAR |ld|))
            ('T (|dqAppend| (CAR |ld|) (|dqConcat| (CDR |ld|))))))))
-
+ 
 ; dqToList s==if null s then nil else CAR s
-
+ 
 (DEFUN |dqToList| (|s|)
   (PROG () (RETURN (COND ((NULL |s|) NIL) ('T (CAR |s|))))))
-
+ 
 ; shoeConstructToken(ln,lp,b,n)==[b.0,b.1,:cons(lp,n)]
-
+ 
 (DEFUN |shoeConstructToken| (|ln| |lp| |b| |n|)
   (PROG () (RETURN (CONS (ELT |b| 0) (CONS (ELT |b| 1) (CONS |lp| |n|))))))
-
+ 
 ; shoeTokType x== CAR x
-
+ 
 (DEFUN |shoeTokType| (|x|) (PROG () (RETURN (CAR |x|))))
-
+ 
 ; shoeTokPart x== CADR x
-
+ 
 (DEFUN |shoeTokPart| (|x|) (PROG () (RETURN (CADR |x|))))
-
+ 
 ; shoeTokPosn x== CDDR x
-
+ 
 (DEFUN |shoeTokPosn| (|x|) (PROG () (RETURN (CDDR |x|))))
-
+ 
 ; shoeTokConstruct(x,y,z)==[x,y,:z]
-
+ 
 (DEFUN |shoeTokConstruct| (|x| |y| |z|)
   (PROG () (RETURN (CONS |x| (CONS |y| |z|)))))
-
+ 
 ; DEFVAR($f)
-
+ 
 (DEFVAR |$f|)
-
+ 
 ; DEFVAR($floatok)
-
+ 
 (DEFVAR |$floatok|)
-
+ 
 ; DEFVAR($linepos)
-
+ 
 (DEFVAR |$linepos|)
-
+ 
 ; DEFVAR($ln)
-
+ 
 (DEFVAR |$ln|)
-
+ 
 ; DEFVAR($n)
-
+ 
 (DEFVAR |$n|)
-
+ 
 ; DEFVAR($r)
-
+ 
 (DEFVAR |$r|)
-
+ 
 ; DEFVAR($sz)
-
+ 
 (DEFVAR |$sz|)
-
+ 
 ; shoeNextLine(s)==
 ;      if bStreamNull s
 ;      then false
@@ -114,7 +114,7 @@
 ;                   s1:=cons(cons($ln,CDR $f),$r)
 ;                   shoeNextLine s1
 ;        true
-
+ 
 (DEFUN |shoeNextLine| (|s|)
   (PROG (|a| |s1|)
     (RETURN
@@ -131,7 +131,7 @@
                     (SETQ |s1| (CONS (CONS |$ln| (CDR |$f|)) |$r|))
                     (|shoeNextLine| |s1|)))
                   (#1# T)))))))
-
+ 
 ; shoeLineToks(s)==
 ;    $f: local:=nil
 ;    $r:local :=nil
@@ -160,7 +160,7 @@
 ;    while $n<$sz repeat toks:=dqAppend(toks,shoeToken())
 ;    null toks => shoeLineToks $r
 ;    cons([toks],$r)
-
+ 
 (DEFUN |shoeLineToks| (|s|)
   (PROG (|$linepos| |$floatok| |$sz| |$n| |$ln| |$r| |$f| |toks| |a| |dq|
          |command| |fst|)
@@ -212,7 +212,7 @@
                                     (|dqAppend| |toks| (|shoeToken|))))))))
                  (COND ((NULL |toks|) (|shoeLineToks| |$r|))
                        (#1# (CONS (LIST |toks|) |$r|)))))))))))))
-
+ 
 ; shoeLispToken(s,string)==
 ;       string:=
 ;             # string=0 or EQL(STR_ELT(string,0),STR_ELT('";",0))=> '""
@@ -222,7 +222,7 @@
 ;       [r,:st]:=shoeAccumulateLines(s,string)
 ;       dq:=dqUnit shoeConstructToken(ln,linepos,shoeLeafLisp st,0)
 ;       cons([dq],r)
-
+ 
 (DEFUN |shoeLispToken| (|s| |string|)
   (PROG (|ln| |linepos| |LETTMP#1| |r| |st| |dq|)
     (RETURN
@@ -242,7 +242,7 @@
               (|dqUnit|
                (|shoeConstructToken| |ln| |linepos| (|shoeLeafLisp| |st|) 0)))
       (CONS (LIST |dq|) |r|)))))
-
+ 
 ; shoeAccumulateLines(s,string)==
 ;    not shoeNextLine s =>  CONS(s,string)
 ;    null $n => shoeAccumulateLines($r,string)
@@ -260,7 +260,7 @@
 ;                 shoeAccumulateLines($r,CONCAT(string,command))
 ;             shoeAccumulateLines($r,string)
 ;    CONS(s,string)
-
+ 
 (DEFUN |shoeAccumulateLines| (|s| |string|)
   (PROG (|fst| |command| |a|)
     (RETURN
@@ -294,7 +294,7 @@
                                                       |command|))))))))
                  (#1# (|shoeAccumulateLines| |$r| |string|)))))
               (#1# (CONS |s| |string|)))))))))
-
+ 
 ; shoeToken () ==
 ;       ln:=$ln
 ;       c:=STR_ELT($ln,$n)
@@ -324,7 +324,7 @@
 ;             shoeError ()
 ;       null b => nil
 ;       dqUnit shoeConstructToken(ln,linepos,b,n)
-
+ 
 (DEFUN |shoeToken| ()
   (PROG (|b| |ch| |n| |linepos| |c| |ln|)
     (RETURN
@@ -348,25 +348,25 @@
                     (#1='T (|shoeError|))))
       (COND ((NULL |b|) NIL)
             (#1# (|dqUnit| (|shoeConstructToken| |ln| |linepos| |b| |n|))))))))
-
+ 
 ; shoeLeafId x==  ["ID",INTERN x]
-
+ 
 (DEFUN |shoeLeafId| (|x|) (PROG () (RETURN (LIST 'ID (INTERN |x|)))))
-
+ 
 ; shoeLeafKey x==["KEY",shoeKeyWord x]
-
+ 
 (DEFUN |shoeLeafKey| (|x|) (PROG () (RETURN (LIST 'KEY (|shoeKeyWord| |x|)))))
-
+ 
 ; shoeLeafInteger x==["INTEGER",shoeIntValue x]
-
+ 
 (DEFUN |shoeLeafInteger| (|x|)
   (PROG () (RETURN (LIST 'INTEGER (|shoeIntValue| |x|)))))
-
+ 
 ; shoeLeafFloat(a,w,e)==
 ;     b:=shoeIntValue CONCAT(a,w)
 ;     c:=DOUBLE b *  EXPT(DOUBLE 10, e-#w)
 ;     ["FLOAT",c]
-
+ 
 (DEFUN |shoeLeafFloat| (|a| |w| |e|)
   (PROG (|b| |c|)
     (RETURN
@@ -374,39 +374,39 @@
       (SETQ |b| (|shoeIntValue| (CONCAT |a| |w|)))
       (SETQ |c| (* (DOUBLE |b|) (EXPT (DOUBLE 10) (- |e| (LENGTH |w|)))))
       (LIST 'FLOAT |c|)))))
-
+ 
 ; shoeLeafString x  == ["STRING",x]
-
+ 
 (DEFUN |shoeLeafString| (|x|) (PROG () (RETURN (LIST 'STRING |x|))))
-
+ 
 ; shoeLeafLisp x    == ["LISP",x]
-
+ 
 (DEFUN |shoeLeafLisp| (|x|) (PROG () (RETURN (LIST 'LISP |x|))))
-
+ 
 ; shoeLeafLispExp x    == ["LISPEXP",x]
-
+ 
 (DEFUN |shoeLeafLispExp| (|x|) (PROG () (RETURN (LIST 'LISPEXP |x|))))
-
+ 
 ; shoeLeafLine x    == ["LINE",x]
-
+ 
 (DEFUN |shoeLeafLine| (|x|) (PROG () (RETURN (LIST 'LINE |x|))))
-
+ 
 ; shoeLeafComment x == ["COMMENT", x]
-
+ 
 (DEFUN |shoeLeafComment| (|x|) (PROG () (RETURN (LIST 'COMMENT |x|))))
-
+ 
 ; shoeLeafNegComment x== ["NEGCOMMENT", x]
-
+ 
 (DEFUN |shoeLeafNegComment| (|x|) (PROG () (RETURN (LIST 'NEGCOMMENT |x|))))
-
+ 
 ; shoeLeafError x   == ["ERROR",x]
-
+ 
 (DEFUN |shoeLeafError| (|x|) (PROG () (RETURN (LIST 'ERROR |x|))))
-
+ 
 ; shoeLeafSpaces x  == ["SPACES",x]
-
+ 
 (DEFUN |shoeLeafSpaces| (|x|) (PROG () (RETURN (LIST 'SPACES |x|))))
-
+ 
 ; shoeLispEscape()==
 ;          $n:=$n+1
 ;          if $n>=$sz
@@ -424,7 +424,7 @@
 ;                  shoeLeafLispExp  exp
 ;             $n:=n
 ;             shoeLeafLispExp  exp
-
+ 
 (DEFUN |shoeLispEscape| ()
   (PROG (|n| |exp| |a|)
     (RETURN
@@ -447,12 +447,12 @@
            (COND
             ((NULL |n|) (PROGN (SETQ |$n| |$sz|) (|shoeLeafLispExp| |exp|)))
             (#1# (PROGN (SETQ |$n| |n|) (|shoeLeafLispExp| |exp|)))))))))))))
-
+ 
 ; shoeEscape()==
 ;          $n:=$n+1
 ;          a:=shoeEsc()
 ;          if a then shoeWord true else nil
-
+ 
 (DEFUN |shoeEscape| ()
   (PROG (|a|)
     (RETURN
@@ -460,7 +460,7 @@
       (SETQ |$n| (+ |$n| 1))
       (SETQ |a| (|shoeEsc|))
       (COND (|a| (|shoeWord| T)) ('T NIL))))))
-
+ 
 ; shoeEsc()==
 ;      if $n>=$sz
 ;      then if shoeNextLine($r)
@@ -478,7 +478,7 @@
 ;                shoeEsc()
 ;                false
 ;            else true
-
+ 
 (DEFUN |shoeEsc| #1=()
   (PROG (|n1|)
     (RETURN
@@ -497,7 +497,7 @@
             (LOOP (COND (|$n| (RETURN NIL)) (#2# (|shoeNextLine| |$r|))))))
          (|shoeEsc|) NIL)
         (#2# T)))))))
-
+ 
 ; shoeStartsComment()==
 ;     if $n<$sz
 ;     then
@@ -509,7 +509,7 @@
 ;             else STR_ELT($ln,www) = shoePLUSCOMMENT
 ;          else false
 ;     else false
-
+ 
 (DEFUN |shoeStartsComment| ()
   (PROG (|www|)
     (RETURN
@@ -521,7 +521,7 @@
                (#1='T (EQUAL (STR_ELT |$ln| |www|) |shoePLUSCOMMENT|))))
         (#1# NIL)))
       (#1# NIL)))))
-
+ 
 ; shoeStartsNegComment()==
 ;     if $n< $sz
 ;     then
@@ -533,7 +533,7 @@
 ;             else STR_ELT($ln,www) = shoeMINUSCOMMENT
 ;          else false
 ;     else false
-
+ 
 (DEFUN |shoeStartsNegComment| ()
   (PROG (|www|)
     (RETURN
@@ -546,12 +546,12 @@
                (#1='T (EQUAL (STR_ELT |$ln| |www|) |shoeMINUSCOMMENT|))))
         (#1# NIL)))
       (#1# NIL)))))
-
+ 
 ; shoeNegComment()==
 ;       n:=$n
 ;       $n:=$sz
 ;       shoeLeafNegComment SUBSTRING($ln,n,nil)
-
+ 
 (DEFUN |shoeNegComment| ()
   (PROG (|n|)
     (RETURN
@@ -559,12 +559,12 @@
       (SETQ |n| |$n|)
       (SETQ |$n| |$sz|)
       (|shoeLeafNegComment| (SUBSTRING |$ln| |n| NIL))))))
-
+ 
 ; shoeComment()==
 ;       n:=$n
 ;       $n:=$sz
 ;       shoeLeafComment SUBSTRING($ln,n,nil)
-
+ 
 (DEFUN |shoeComment| ()
   (PROG (|n|)
     (RETURN
@@ -572,12 +572,12 @@
       (SETQ |n| |$n|)
       (SETQ |$n| |$sz|)
       (|shoeLeafComment| (SUBSTRING |$ln| |n| NIL))))))
-
+ 
 ; shoePunct()==
 ;             sss:=shoeMatch($ln,$n)
 ;             $n:=$n+#sss
 ;             shoeKeyTr sss
-
+ 
 (DEFUN |shoePunct| ()
   (PROG (|sss|)
     (RETURN
@@ -585,7 +585,7 @@
       (SETQ |sss| (|shoeMatch| |$ln| |$n|))
       (SETQ |$n| (+ |$n| (LENGTH |sss|)))
       (|shoeKeyTr| |sss|)))))
-
+ 
 ; shoeKeyTr w==
 ;        if EQ(shoeKeyWord w,"DOT")
 ;        then if $floatok
@@ -594,7 +594,7 @@
 ;        else
 ;            $floatok:=not shoeCloser w
 ;            shoeLeafKey w
-
+ 
 (DEFUN |shoeKeyTr| (|w|)
   (PROG ()
     (RETURN
@@ -602,14 +602,14 @@
       ((EQ (|shoeKeyWord| |w|) 'DOT)
        (COND (|$floatok| (|shoePossFloat| |w|)) (#1='T (|shoeLeafKey| |w|))))
       (#1# (SETQ |$floatok| (NULL (|shoeCloser| |w|))) (|shoeLeafKey| |w|))))))
-
+ 
 ; shoePossFloat (w)==
 ;      if $n>=$sz or not shoeDigit $ln.$n
 ;      then shoeLeafKey w
 ;      else
 ;        w:=shoeInteger()
 ;        shoeExponent('"0",w)
-
+ 
 (DEFUN |shoePossFloat| (|w|)
   (PROG ()
     (RETURN
@@ -617,7 +617,7 @@
       ((OR (NOT (< |$n| |$sz|)) (NULL (|shoeDigit| (ELT |$ln| |$n|))))
        (|shoeLeafKey| |w|))
       ('T (SETQ |w| (|shoeInteger|)) (|shoeExponent| "0" |w|))))))
-
+ 
 ; shoeSpace()==
 ;            n:=$n
 ;            $n:=STRPOSL('" ",$ln,$n,true)
@@ -627,7 +627,7 @@
 ;               shoeLeafSpaces 0
 ;               $n:= # $ln
 ;            else shoeLeafSpaces ($n-n)
-
+ 
 (DEFUN |shoeSpace| ()
   (PROG (|n|)
     (RETURN
@@ -637,24 +637,24 @@
       (SETQ |$floatok| T)
       (COND ((NULL |$n|) (|shoeLeafSpaces| 0) (SETQ |$n| (LENGTH |$ln|)))
             ('T (|shoeLeafSpaces| (- |$n| |n|))))))))
-
+ 
 ; shoe_e_concat(s1, s2) ==
 ;     #s2 = 0 => s1
 ;     shoeIdChar(s2.0) => CONCAT(s1, "__", s2)
 ;     CONCAT(s1, s2)
-
+ 
 (DEFUN |shoe_e_concat| (|s1| |s2|)
   (PROG ()
     (RETURN
      (COND ((EQL (LENGTH |s2|) 0) |s1|)
            ((|shoeIdChar| (ELT |s2| 0)) (CONCAT |s1| '_ |s2|))
            ('T (CONCAT |s1| |s2|))))))
-
+ 
 ; shoeString()==
 ;             $n:=$n+1
 ;             $floatok:=false
 ;             shoeLeafString shoeS ()
-
+ 
 (DEFUN |shoeString| #1=()
   (PROG #1#
     (RETURN
@@ -662,7 +662,7 @@
       (SETQ |$n| (+ |$n| 1))
       (SETQ |$floatok| NIL)
       (|shoeLeafString| (|shoeS|))))))
-
+ 
 ; shoeS()==
 ;    if $n>=$sz
 ;    then
@@ -694,7 +694,7 @@
 ;                        CONCAT(ec, shoeS())
 ;                      else shoeS()
 ;                   shoe_e_concat(str, b)
-
+ 
 (DEFUN |shoeS| ()
   (PROG (|b| |ec| |a| |str| |mn| |escsym| |strsym| |n|)
     (RETURN
@@ -719,11 +719,11 @@
                    (CONCAT |ec| (|shoeS|)))
                   (#1# (|shoeS|))))
          (|shoe_e_concat| |str| |b|))))))))
-
+ 
 ; shoeIdEnd(line,n)==
 ;      while n<#line and shoeIdChar line.n repeat n:=n+1
 ;      n
-
+ 
 (DEFUN |shoeIdEnd| (|line| |n|)
   (PROG #1=()
     (RETURN
@@ -735,11 +735,11 @@
             (RETURN NIL))
            ('T (SETQ |n| (+ |n| 1)))))))
       |n|))))
-
+ 
 ; shoeDigit x== DIGIT_-CHAR_-P x
-
+ 
 (DEFUN |shoeDigit| (|x|) (PROG () (RETURN (DIGIT-CHAR-P |x|))))
-
+ 
 ; shoeW(b)==
 ;        n1:=$n
 ;        $n:=$n+1
@@ -758,7 +758,7 @@
 ;                else [b,'""]   --  escape finds space or newline
 ;            -- [bb.0 or b,CONCAT(str,bb.1)]
 ;            [bb.0 or b, shoe_e_concat(str, bb.1)]
-
+ 
 (DEFUN |shoeW| (|b|)
   (PROG (|n1| |l| |endid| |str| |a| |bb|)
     (RETURN
@@ -775,7 +775,7 @@
         (SETQ |$n| (+ |endid| 1)) (SETQ |a| (|shoeEsc|))
         (SETQ |bb| (COND (|a| (|shoeW| T)) (#1# (LIST |b| ""))))
         (LIST (OR (ELT |bb| 0) |b|) (|shoe_e_concat| |str| (ELT |bb| 1)))))))))
-
+ 
 ; shoeWord(esp) ==
 ;           aaa:=shoeW(false)
 ;           w:=aaa.1
@@ -787,7 +787,7 @@
 ;                   $floatok:=true
 ;                   shoeLeafKey w
 ;                else shoeLeafId  w
-
+ 
 (DEFUN |shoeWord| (|esp|)
   (PROG (|aaa| |w|)
     (RETURN
@@ -798,11 +798,11 @@
       (COND ((OR |esp| (ELT |aaa| 0)) (|shoeLeafId| |w|))
             ((|shoeKeyWordP| |w|) (SETQ |$floatok| T) (|shoeLeafKey| |w|))
             ('T (|shoeLeafId| |w|)))))))
-
+ 
 ; shoeInteger()==shoeInteger1(false)
-
+ 
 (DEFUN |shoeInteger| #1=() (PROG #1# (RETURN (|shoeInteger1| NIL))))
-
+ 
 ; shoeInteger1(zro) ==
 ;        n:=$n
 ;        l:= $sz
@@ -817,7 +817,7 @@
 ;              a:=shoeEsc()
 ;              bb:=shoeInteger1(zro)
 ;              CONCAT(str,bb)
-
+ 
 (DEFUN |shoeInteger1| (|zro|)
   (PROG (|n| |l| |str| |a| |bb|)
     (RETURN
@@ -837,7 +837,7 @@
        (#1# (SETQ |str| (SUBSTRING |$ln| |n| (- |$n| |n|)))
         (SETQ |$n| (+ |$n| 1)) (SETQ |a| (|shoeEsc|))
         (SETQ |bb| (|shoeInteger1| |zro|)) (CONCAT |str| |bb|)))))))
-
+ 
 ; shoeIntValue(s) ==
 ;        ns := #s
 ;        ival := 0
@@ -845,7 +845,7 @@
 ;            d := shoeOrdToNum ELT(s,i)
 ;            ival := 10*ival + d
 ;        ival
-
+ 
 (DEFUN |shoeIntValue| (|s|)
   (PROG (|ns| |ival| |d|)
     (RETURN
@@ -862,7 +862,7 @@
           (SETQ |i| (+ |i| 1))))
        (- |ns| 1) 0)
       |ival|))))
-
+ 
 ; shoeNumber() ==
 ;        a := shoeInteger()
 ;        if $n>=$sz
@@ -880,7 +880,7 @@
 ;                w:=shoeInteger1(true)
 ;                shoeExponent(a,w)
 ;            else shoeLeafInteger a
-
+ 
 (DEFUN |shoeNumber| ()
   (PROG (|w| |n| |a|)
     (RETURN
@@ -894,7 +894,7 @@
                (SETQ |$n| |n|) (|shoeLeafInteger| |a|))
               (#1='T (SETQ |w| (|shoeInteger1| T)) (|shoeExponent| |a| |w|))))
             (#1# (|shoeLeafInteger| |a|)))))))
-
+ 
 ; shoeExponent(a,w)==
 ;      if $n>=$sz
 ;      then shoeLeafFloat(a,w,0)
@@ -933,7 +933,7 @@
 ;                         $n:=n
 ;                         shoeLeafFloat(a,w,0)
 ;         else shoeLeafFloat(a,w,0)
-
+ 
 (DEFUN |shoeExponent| (|a| |w|)
   (PROG (|n| |c| |e| |c1|)
     (RETURN
@@ -963,7 +963,7 @@
                                       (#1# |e|))))
                    (#1# (SETQ |$n| |n|) (|shoeLeafFloat| |a| |w| 0))))))))
              (#1# (|shoeLeafFloat| |a| |w| 0))))))))
-
+ 
 ; shoeError()==
 ;       n:=$n
 ;       $n:=$n+1
@@ -971,7 +971,7 @@
 ;         CONCAT( '"The character whose number is ",
 ;                 STRINGIMAGE STR_ELT($ln,n),'" is not a Boot character"))
 ;       shoeLeafError ($ln.n)
-
+ 
 (DEFUN |shoeError| ()
   (PROG (|n|)
     (RETURN
@@ -983,20 +983,20 @@
                                (STRINGIMAGE (STR_ELT |$ln| |n|))
                                " is not a Boot character"))
       (|shoeLeafError| (ELT |$ln| |n|))))))
-
+ 
 ; shoeOrdToNum x== DIGIT_-CHAR_-P x
-
+ 
 (DEFUN |shoeOrdToNum| (|x|) (PROG () (RETURN (DIGIT-CHAR-P |x|))))
-
+ 
 ; shoeKeyWord st   == GETHASH(st,shoeKeyTable)
-
+ 
 (DEFUN |shoeKeyWord| (|st|) (PROG () (RETURN (GETHASH |st| |shoeKeyTable|))))
-
+ 
 ; shoeKeyWordP st  ==  not null GETHASH(st,shoeKeyTable)
-
+ 
 (DEFUN |shoeKeyWordP| (|st|)
   (PROG () (RETURN (NULL (NULL (GETHASH |st| |shoeKeyTable|))))))
-
+ 
 ; shoeInsert(s,d) ==
 ;       l := #s
 ;       h := STR_ELT(s,0)
@@ -1005,13 +1005,13 @@
 ;       k:=0
 ;       while l <= #(ELT(u,k)) repeat
 ;           k:=k+1
-;       v := MAKE_-VEC(n+1)
+;       v := MAKE_VEC(n+1)
 ;       for i in 0..k-1 repeat QSETVELT(v, i, ELT(u, i))
 ;       QSETVELT(v, k, s)
 ;       for i in k..n-1 repeat QSETVELT(v, i + 1, ELT(u, i))
 ;       QSETVELT(d, h, v)
 ;       s
-
+ 
 (DEFUN |shoeInsert| (|s| |d|)
   (PROG (|l| |h| |u| |n| |k| |v|)
     (RETURN
@@ -1025,7 +1025,7 @@
          (LOOP
           (COND ((< (LENGTH (ELT |u| |k|)) |l|) (RETURN NIL))
                 (#1='T (SETQ |k| (+ |k| 1)))))))
-      (SETQ |v| (MAKE-VEC (+ |n| 1)))
+      (SETQ |v| (MAKE_VEC (+ |n| 1)))
       ((LAMBDA (|bfVar#2| |i|)
          (LOOP
           (COND ((> |i| |bfVar#2|) (RETURN NIL))
@@ -1041,12 +1041,12 @@
        (- |n| 1) |k|)
       (QSETVELT |d| |h| |v|)
       |s|))))
-
+ 
 ; shoeMatch(l,i)==shoeSubStringMatch(l,shoeDict,i)
-
+ 
 (DEFUN |shoeMatch| (|l| |i|)
   (PROG () (RETURN (|shoeSubStringMatch| |l| |shoeDict| |i|))))
-
+ 
 ; shoeSubStringMatch (l,d,i)==
 ;        h:= STR_ELT(l, i)
 ;        u:=ELT(d,h)
@@ -1068,7 +1068,7 @@
 ;                    true
 ;                  else false
 ;        s1
-
+ 
 (DEFUN |shoeSubStringMatch| (|l| |d| |i|)
   (PROG (|h| |u| |ll| |done| |s1| |s| |ls| |eql|)
     (RETURN
@@ -1105,22 +1105,22 @@
           (SETQ |j| (+ |j| 1))))
        (- (SIZE |u|) 1) 0)
       |s1|))))
-
+ 
 ; shoePunctuation c== shoePun.c =1
-
+ 
 (DEFUN |shoePunctuation| (|c|) (PROG () (RETURN (EQL (ELT |shoePun| |c|) 1))))
-
+ 
 ; shoeKeyTableCons()==
-;    KeyTable:=MAKE_-HASHTABLE("CVEC")
+;    KeyTable:=MAKE_HASHTABLE("CVEC")
 ;    for st in shoeKeyWords repeat
 ;       HPUT(KeyTable,CAR st,CADR st)
 ;    KeyTable
-
+ 
 (DEFUN |shoeKeyTableCons| ()
   (PROG (|KeyTable|)
     (RETURN
      (PROGN
-      (SETQ |KeyTable| (MAKE-HASHTABLE 'CVEC))
+      (SETQ |KeyTable| (MAKE_HASHTABLE 'CVEC))
       ((LAMBDA (|bfVar#6| |st|)
          (LOOP
           (COND
@@ -1130,18 +1130,18 @@
           (SETQ |bfVar#6| (CDR |bfVar#6|))))
        |shoeKeyWords| NIL)
       |KeyTable|))))
-
+ 
 ; shoeDictCons()==
 ;       l:= HKEYS shoeKeyTable
 ;       d :=
-;           a:=MAKE_-VEC(256)
-;           b:=MAKE_-VEC(1)
+;           a:=MAKE_VEC(256)
+;           b:=MAKE_VEC(1)
 ;           QSETVELT(b, 0, MAKE_-CVEC 0)
 ;           for i in 0..255 repeat QSETVELT(a, i, b)
 ;           a
 ;       for s in l repeat shoeInsert(s,d)
 ;       d
-
+ 
 (DEFUN |shoeDictCons| ()
   (PROG (|d| |b| |a| |l|)
     (RETURN
@@ -1149,8 +1149,8 @@
       (SETQ |l| (HKEYS |shoeKeyTable|))
       (SETQ |d|
               (PROGN
-               (SETQ |a| (MAKE-VEC 256))
-               (SETQ |b| (MAKE-VEC 1))
+               (SETQ |a| (MAKE_VEC 256))
+               (SETQ |b| (MAKE_VEC 1))
                (QSETVELT |b| 0 (MAKE-CVEC 0))
                ((LAMBDA (|i|)
                   (LOOP
@@ -1168,7 +1168,7 @@
           (SETQ |bfVar#7| (CDR |bfVar#7|))))
        |l| NIL)
       |d|))))
-
+ 
 ; shoePunCons()==
 ;     listing := HKEYS shoeKeyTable
 ;     a:=MAKE_-BVEC 256
@@ -1177,7 +1177,7 @@
 ;        if not shoeStartsId k.0 then
 ;            SETELT_BVEC(a, STR_ELT(k, 0), 1)
 ;     a
-
+ 
 (DEFUN |shoePunCons| ()
   (PROG (|a| |listing|)
     (RETURN

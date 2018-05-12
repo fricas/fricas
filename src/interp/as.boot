@@ -32,9 +32,9 @@
 )package "BOOT"
 
 --global hash tables for new compiler
-$docHash  := MAKE_-HASH_-TABLE()
-$conHash  := MAKE_-HASH_-TABLE()
-$opHash   := MAKE_-HASH_-TABLE()
+$docHash  := MAKE_HASHTABLE('EQUAL)
+$conHash  := MAKE_HASHTABLE('EQUAL)
+$opHash   := MAKE_HASHTABLE('EQUAL)
 $asyPrint := false
 
 asList() ==
@@ -47,9 +47,9 @@ asList() ==
 
 astran asyFile ==
 --global hash tables for new compiler
-  $docHash  := MAKE_-HASH_-TABLE()
-  $conHash := MAKE_-HASH_-TABLE()
-  $constantHash := MAKE_-HASH_-TABLE()
+  $docHash  := MAKE_HASHTABLE('EQUAL)
+  $conHash := MAKE_HASHTABLE('EQUAL)
+  $constantHash := MAKE_HASHTABLE('EQUAL)
   $niladics : local := nil
   $asyFile: local := asyFile
   $asFilename: local := STRCONC(PATHNAME_-NAME asyFile,'".as")
@@ -59,8 +59,8 @@ astran asyFile ==
     [[con,:asyConstructorModemap con] for con in conlist]
   $docAlist : local :=
     [[con,:REMDUP asyDocumentation con] for con in conlist]
-  $parentsHash : local := MAKE_-HASH_-TABLE()
---$childrenHash: local := MAKE_-HASH_-TABLE()
+  $parentsHash : local := MAKE_HASHTABLE('EQUAL)
+--$childrenHash: local := MAKE_HASHTABLE('EQUAL)
   for con in conlist repeat
     parents := asyParents con
     HPUT($parentsHash,con,asyParents con)
@@ -312,7 +312,7 @@ asyMakeOperationAlist(con,proplist, key) ==
       kind := 'domain
       u := NIL
     return nil
-  ht := MAKE_-HASH_-TABLE()
+  ht := MAKE_HASHTABLE('EQUAL)
   ancestorAlist := nil
   for ['Declare,id,form,r] in oplist repeat
     id = "%%" =>
@@ -382,7 +382,7 @@ asytran fn ==
   for d in u repeat
     ['Declare,name,:.] := d
     name = "%%" => 'skip       --skip over top-level properties
-    $docHashLocal: local := MAKE_-HASH_-TABLE()
+    $docHashLocal: local := MAKE_HASHTABLE('EQUAL)
     asytranDeclaration(d,'(top),nil,false)
     if null name then BREAK()
     HPUT($docHash,name,$docHashLocal)
@@ -531,7 +531,7 @@ asytranCategory(form,levels,predlist,local?) ==
   items :=
     cat is ['Sequence,:s] => s
     [cat]
-  catTable := MAKE_-HASH_-TABLE()
+  catTable := MAKE_HASHTABLE('EQUAL)
   catList  := nil
   for x in items | x repeat
     if null x then systemError()

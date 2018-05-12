@@ -50,7 +50,7 @@ buildLibdb(domainList) ==  --called by make-databases (daase.lisp)
   $CatLst : local := nil
   $PakLst : local := nil
   $DefLst : local := nil
-  $outStream: local := MAKE_-OUTSTREAM '"temp.text"
+  $outStream : local := MAKE_OUTSTREAM('"temp.text")
   --build local libdb if list of domains is given
   if null domainList then
     comments :=
@@ -225,7 +225,7 @@ dbHasExamplePage conname ==
 
 dbReadComments(n) ==
   n = 0 => '""
-  instream := MAKE_-INSTREAM STRCONC(getEnv('"AXIOM"),'"/algebra/comdb.text")
+  instream := MAKE_INSTREAM(STRCONC(getEnv('"AXIOM"), '"/algebra/comdb.text"))
   FILE_-POSITION(instream,n)
   line := read_line instream
   k := dbTickIndex(line,1,1)
@@ -238,9 +238,9 @@ dbReadComments(n) ==
   STRCONC(line, "STRCONC"/NREVERSE xtralines)
 
 dbSplitLibdb() ==
-  instream := MAKE_-INSTREAM  '"olibdb.text"
-  outstream:= MAKE_-OUTSTREAM '"libdb.text"
-  comstream:= MAKE_-OUTSTREAM '"comdb.text"
+  instream := MAKE_INSTREAM('"olibdb.text")
+  outstream := MAKE_OUTSTREAM('"libdb.text")
+  comstream := MAKE_OUTSTREAM('"comdb.text")
   PRINTEXP(0,    comstream)
   PRINTEXP($tick,comstream)
   PRINTEXP('"",  comstream)
@@ -292,19 +292,19 @@ buildGloss() ==  --called by buildDatabase (database.boot)
 --starting with gloss.text, build glosskey.text and glossdef.text
   $constructorName : local := nil
   $exposeFlag : local := true
-  $outStream: local := MAKE_-OUTSTREAM '"temp.text"
+  $outStream : local := MAKE_OUTSTREAM('"temp.text")
   $x : local := nil
   $attribute? : local := true     --do not surround first word
   pathname := '"gloss.text"
-  instream := MAKE_-INSTREAM pathname
+  instream := MAKE_INSTREAM(pathname)
   keypath  := '"glosskey.text"
   OBEY STRCONC('"rm -f ",keypath)
-  outstream:= MAKE_-OUTSTREAM keypath
+  outstream := MAKE_OUTSTREAM(keypath)
   htpath   := '"gloss.ht"
   OBEY STRCONC('"rm -f ",htpath)
-  htstream:= MAKE_-OUTSTREAM htpath
+  htstream := MAKE_OUTSTREAM(htpath)
   defpath  := '"glossdef.text"
-  defstream:= MAKE_-OUTSTREAM defpath
+  defstream := MAKE_OUTSTREAM(defpath)
   pairs := getGlossLines instream
   PRINTEXP('"\begin{page}{GlossaryPage}{G l o s s a r y}\beginscroll\beginmenu",htstream)
   for [name,:line] in pairs repeat
@@ -386,7 +386,7 @@ getGlossLines instream ==
 -- function getUsersOfConstructor. See functions whoUses and kcuPage in browser.
 --============================================================================
 mkUsersHashTable() ==  --called by make-databases (daase.lisp)
-  $usersTb := MAKE_-HASH_-TABLE()
+  $usersTb := MAKE_HASHTABLE('EQUAL)
   for x in allConstructors() repeat
     for conform in getImports x repeat
       name := opOf conform
@@ -414,7 +414,7 @@ getDefaultPackageClients con ==  --called by mkUsersHashTable
 -- dependents of a constructor.
 --============================================================================
 mkDependentsHashTable() == --called by make-databases (database.boot)
-  $depTb := MAKE_-HASH_-TABLE()
+  $depTb := MAKE_HASHTABLE('EQUAL)
   for nam in allConstructors() repeat
     for con in getArgumentConstructors nam repeat
       HPUT($depTb,con,[nam,:HGET($depTb,con)])
@@ -479,7 +479,7 @@ getParentsFor(cname,formalParams,constructorCategory) ==
   NREVERSE acc
 
 parentsOf con == --called by kcpPage, ancestorsRecur
-  if null BOUNDP '$parentsCache then SETQ($parentsCache,MAKE_-HASHTABLE 'ID)
+  if null BOUNDP '$parentsCache then SETQ($parentsCache, MAKE_HASHTABLE('ID))
   HGET($parentsCache,con) or
     parents := getParentsForDomain con
     HPUT($parentsCache,con,parents)
@@ -556,7 +556,7 @@ childArgCheck(argl, nargl) ==
 
 --computeDescendantsOf cat ==
 --dynamically generates descendants
---  hash := MAKE_-HASHTABLE 'UEQUAL
+--  hash := MAKE_HASHTABLE('UEQUAL)
 --  for [child,:pred] in childrenOf cat repeat
 --    childForm := getConstructorForm child
 --    HPUT(hash,childForm,pred)
@@ -580,8 +580,8 @@ ancestorsOf(conform,domform) ==  --called by kcaPage, originsInOrder,...
   computeAncestorsOf(conform,domform)
 
 computeAncestorsOf(conform,domform) ==
-  $done: local := MAKE_-HASHTABLE 'UEQUAL
-  $if:   local := MAKE_-HASHTABLE 'ID
+  $done : local := MAKE_HASHTABLE('UEQUAL)
+  $if :   local := MAKE_HASHTABLE('ID)
   ancestorsRecur(conform,domform,true,true)
   acc := nil
   for op in listSort(function GLESSEQP,HKEYS $if) repeat
@@ -719,7 +719,7 @@ sublisFormal(args,exp,:options) == main where
 --=======================================================================
 
 buildDefaultPackageNamesHT() ==
-  $defaultPackageNamesHT := MAKE_-HASH_-TABLE()
+  $defaultPackageNamesHT := MAKE_HASHTABLE('EQUAL)
   for nam in allConstructors() | isDefaultPackageName nam repeat
     HPUT($defaultPackageNamesHT,nam,true)
   $defaultPackageNamesHT

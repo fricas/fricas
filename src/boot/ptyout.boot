@@ -439,10 +439,10 @@ shoeDfu(a,fn)==
   if null a
   then shoeNotFound fn
   else
-     $lispWordTable:local :=MAKE_-HASHTABLE ("EQ")
+     $lispWordTable:local :=MAKE_HASHTABLE ("EQ")
      DO_-SYMBOLS(i(FIND_-PACKAGE "LISP"),HPUT($lispWordTable,i,true))
-     $bootDefined:local :=MAKE_-HASHTABLE "EQ"
-     $bootUsed:local :=MAKE_-HASHTABLE "EQ"
+     $bootDefined:local :=MAKE_HASHTABLE "EQ"
+     $bootUsed:local :=MAKE_HASHTABLE "EQ"
      $bootDefinedTwice:local:=nil
      $GenVarCounter:local :=0
      $bfClamming:local:=false
@@ -557,10 +557,10 @@ shoeXref(a,fn)==
   if null a
   then shoeNotFound fn
   else
-     $lispWordTable:local :=MAKE_-HASHTABLE ("EQ")
+     $lispWordTable:local :=MAKE_HASHTABLE ("EQ")
      DO_-SYMBOLS(i(FIND_-PACKAGE "LISP"),HPUT($lispWordTable,i,true))
-     $bootDefined:local :=MAKE_-HASHTABLE "EQ"
-     $bootUsed:local :=MAKE_-HASHTABLE "EQ"
+     $bootDefined:local :=MAKE_HASHTABLE "EQ"
+     $bootUsed:local :=MAKE_HASHTABLE "EQ"
      $GenVarCounter:local :=0
      $bfClamming:local:=false
      shoeDefUse shoeTransformStream a

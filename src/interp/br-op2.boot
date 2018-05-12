@@ -299,7 +299,7 @@ whoUses(opSigList,conform) ==
   acc  := nil
   $conname : local := first conform
   domList := getUsersOfConstructor $conname
-  hash := MAKE_-HASH_-TABLE()
+  hash := MAKE_HASHTABLE('EQUAL)
   for name in allConstructors() | MEMQ(name,domList) repeat
     $infovec : local := dbInfovec name
     null $infovec => 'skip           --category
@@ -431,7 +431,7 @@ koCatOps1 alist == [x for item in alist | x := pair] where
     false
 
 koCatAttrs(catform,domname) ==
-  $if: local := MAKE_-HASHTABLE 'ID
+  $if : local := MAKE_HASHTABLE('ID)
   catname   := opOf catform
   koCatAttrsAdd(domname or catform,true)
   ancestors := ancestorsOf(catform,domname)
