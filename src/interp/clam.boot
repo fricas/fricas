@@ -456,12 +456,6 @@ numberOfEmptySlots cache==
     if CAAR x='$failed then count:= count+1
   count
 
-addToSlam([name,:argnames],shell) ==
-  $mutableDomain => return nil
-  null argnames => addToConstructorCache(name,nil,shell)
-  args:= ['LIST,:[mkDevaluate a for a in argnames]]
-  addToConstructorCache(name,args,shell)
-
 addToConstructorCache(op,args,value) ==
   ['haddProp,'$ConstructorCache,MKQ op,args,['CONS,1,value]]
 

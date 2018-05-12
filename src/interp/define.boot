@@ -1180,11 +1180,11 @@ mustInstantiate D ==
     D is [fn,:.] and not (MEMQ(fn,$DummyFunctorNames) or
       GET(fn, "makeFunctionList"))
 
-DomainSubstitutionFunction(parameters,body) ==
+DomainSubstitutionFunction(definition, parameters,body) ==
   --see optFunctorBody
   if parameters then
-    (body:= Subst(parameters,body)) where
-      Subst(parameters,body) ==
+    (body:= Subst(definition, parameters,body)) where
+      Subst(definition, parameters,body) ==
         ATOM body =>
           MEMQ(body,parameters) => MKQ body
           body
@@ -1196,17 +1196,17 @@ DomainSubstitutionFunction(parameters,body) ==
            --For categories, bound and used in compDefineCategory
           MKQ g
         first body="QUOTE" => body
-        PAIRP $definition and
+        PAIRP definition and
             isFunctor first body and
-              first body ~= first $definition
+              first body ~= first definition
           =>  ['QUOTE,optimize body]
-        [Subst(parameters,u) for u in body]
+        [Subst(definition, parameters,u) for u in body]
   not (body is ["Join",:.]) => body
   body is ["Join", ["mkCategory", :.]] => body
-  atom $definition => body
-  null rest $definition => body
+  atom definition => body
+  null rest definition => body
            --should not bother if it will only be called once
-  name := INTERN STRCONC(IFCAR $definition, ";CAT")
+  name := INTERN STRCONC(IFCAR definition, ";CAT")
   output_lisp_defparameter(name, nil)
   body:= ["COND",[name],['(QUOTE T),['SETQ,name,body]]]
   body
