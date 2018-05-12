@@ -444,7 +444,7 @@ simplify_self_preds(catvecListMaker, condCats) ==
         [condCats, progress] := simplify_self_preds1(catvecListMaker, condCats)
     condCats
 
-buildFunctor($definition is [name, :args], sig, code, $locals, e) ==
+buildFunctor(definition is [name, :args], sig, code, $locals, e) ==
 --PARAMETERS
 --  $definition: constructor form, e.g. (SquareMatrix 10 (RationalNumber))
 --  sig: signature of constructor form
@@ -460,6 +460,8 @@ buildFunctor($definition is [name, :args], sig, code, $locals, e) ==
 --GLOBAL VARIABLES REFERENCED:
 --  $domainShell: passed in from compDefineFunctor1
 --  $QuickCode: compilation flag
+
+  $definition : local := definition
 
   if code is ['add,.,newstuff] then code := newstuff
 
@@ -515,7 +517,7 @@ buildFunctor($definition is [name, :args], sig, code, $locals, e) ==
   codePart2:=
       argStuffCode :=
         [[$setelt,'$,i,v] for i in 6.. for v in $FormalMapVariableList
-          for arg in rest $definition]
+          for arg in rest definition]
       if MEMQ($NRTaddForm,$locals) then
          addargname := $FormalMapVariableList.(POSN1($NRTaddForm,$locals))
          argStuffCode := [[$setelt,'$,5,addargname],:argStuffCode]
@@ -527,16 +529,17 @@ buildFunctor($definition is [name, :args], sig, code, $locals, e) ==
 --CODE: part 1
   codePart1:= [:devaluateCode, createDomainCode,
                 createViewCode,setVector0Code, slot3Code,:slamCode] where
+    -- FIXME: should devaluate only domain arguments
     devaluateCode:= [['LET,b,['devaluate,a]] for [a,:b] in $devaluateList]
     createDomainCode:=
-        ['LET, domname, ['LIST, MKQ first $definition,
+        ['LET, domname, ['LIST, MKQ first definition,
                          :ASSOCRIGHT $devaluateList]]
     createViewCode:= ['LET,'$,['GETREFV, 6+$NRTdeltaLength]]
     setVector0Code:=[$setelt,'$,0,'dv_$]
     slot3Code := ['QSETREFV,'$,3,['LET,'pv_$,predBitVectorCode1]]
     slamCode:=
-      isCategoryPackageName opOf $definition => nil
-      [NRTaddToSlam($definition,'$)]
+        isCategoryPackageName(opOf(definition)) => nil
+        [NRTaddToSlam(definition, '$)]
 
 --CODE: part 3
   $ConstantAssignments :=
