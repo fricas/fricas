@@ -267,8 +267,8 @@
 
 (SETQ |$updateCatTableIfTrue| NIL)
 
-(DEFPARAMETER |$ConstructorCache| (MAKE-HASHTABLE 'ID))
-(SETQ |$instantRecord| (MAKE-HASHTABLE 'ID))
+(DEFPARAMETER |$ConstructorCache| (MAKE_HASHTABLE 'ID))
+(SETQ |$instantRecord| (MAKE_HASHTABLE 'ID))
 (SETQ |$immediateDataSymbol| '|--immediateData--|)
 
 (SETQ |$useIntegerSubdomain| 'T)

@@ -900,7 +900,7 @@ bfMain(auxfn,op)==
   mainFunction:= ["DEFUN",op,arg,codeBody]
 
   cacheType:=     'hash_-table
-  cacheResetCode:=   ['SETQ,cacheName,['MAKE_-HASHTABLE,
+  cacheResetCode:=   ['SETQ,cacheName,['MAKE_HASHTABLE,
                         ["QUOTE","UEQUAL"]]]
   cacheCountCode:= ['hashCount,cacheName]
   cacheVector:=

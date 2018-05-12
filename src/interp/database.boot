@@ -512,7 +512,7 @@ dropPrefix(fn) ==
 DEFPARAMETER($globalExposureHash, nil)
 
 initExposureHash() ==
-    $globalExposureHash := MAKE_-HASH_-TABLE()
+    $globalExposureHash := MAKE_HASHTABLE('EQUAL)
     for grdata in $globalExposureGroupAlist repeat
         group := first(grdata)
         alist := rest(grdata)

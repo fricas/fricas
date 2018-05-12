@@ -125,7 +125,7 @@ reportFunctionCacheAll(op,nam,argl,body) ==
   compileInteractive mainFunction
   compileInteractive computeFunction
   cacheType:= 'hash_-table
-  cacheResetCode:= ['SETQ,cacheName,['MAKE_-HASHTABLE,''UEQUAL]]
+  cacheResetCode := ['SETQ, cacheName, ['MAKE_HASHTABLE, ''UEQUAL]]
   cacheCountCode:= ['hashCount,cacheName]
   cacheVector:=
     mkCacheVec(op,cacheName,cacheType,cacheResetCode,cacheCountCode)
@@ -208,7 +208,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
     --  also binds "stateVar" to its current value
     initialSetCode :=
       initialValueCode :=
-        extraArguments => ['MAKE_-HASHTABLE,''UEQUAL]
+        extraArguments => ['MAKE_HASHTABLE, ''UEQUAL]
         tripleCode
       cacheResetCode := ['SETQ,stateNam,initialValueCode]
       ['COND,[['NULL,['AND,['BOUNDP,MKQ stateNam], _

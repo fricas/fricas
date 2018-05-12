@@ -45,7 +45,7 @@ compTopLevel(x,m,e) ==
   $forceAdd: local:= false
   $compTimeSum: local := 0
   $resolveTimeSum: local := 0
-  $envHashTable: local := MAKE_-HASHTABLE 'EQUAL
+  $envHashTable : local := MAKE_HASHTABLE('EQUAL)
   initEnvHashTable(e)
   initEnvHashTable($CategoryFrame)
   -- The next line allows the new compiler to be tested interactively.

@@ -524,7 +524,7 @@
 (defun |sayMSG2File| (msg)
   (PROG (file str)
         (SETQ file (|makePathname| '|spadmsg| '|listing|))
-        (SETQ str (MAKE-OUTSTREAM file))
+        (SETQ str (MAKE_OUTSTREAM file))
         (|sayBrightly1| msg str)
         (SHUT str) ) )
 

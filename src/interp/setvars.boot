@@ -695,7 +695,7 @@ setOutputAlgebra arg ==
     filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_-OUTSTREAM(filename)) =>
+    (testStream := MAKE_OUTSTREAM(filename)) =>
       SHUT $algebraOutputStream
       $algebraOutputStream := testStream
       $algebraOutputFile := object2String filename
@@ -767,8 +767,8 @@ setOutputCharacters arg ==
   setOutputCharacters NIL
 
 makeStream(append,filename) ==
-  append => MAKE_-APPENDSTREAM(filename)
-  MAKE_-OUTSTREAM(filename)
+  append => MAKE_APPENDSTREAM(filename)
+  MAKE_OUTSTREAM(filename)
 
 setOutputFortran arg ==
   arg = "%initialize%" =>
@@ -886,7 +886,7 @@ setOutputMathml arg ==
     filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_-OUTSTREAM(filename)) =>
+    (testStream := MAKE_OUTSTREAM(filename)) =>
       SHUT $mathmlOutputStream
       $mathmlOutputStream := testStream
       $mathmlOutputFile := object2String filename
@@ -959,7 +959,7 @@ setOutputTexmacs arg ==
     filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_-OUTSTREAM(filename)) =>
+    (testStream := MAKE_OUTSTREAM(filename)) =>
       SHUT $texmacsOutputStream
       $texmacsOutputStream := testStream
       $texmacsOutputFile := object2String filename
@@ -1032,7 +1032,7 @@ setOutputHtml arg ==
     filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_-OUTSTREAM(filename)) =>
+    (testStream := MAKE_OUTSTREAM(filename)) =>
       SHUT $htmlOutputStream
       $htmlOutputStream := testStream
       $htmlOutputFile := object2String filename
@@ -1104,7 +1104,7 @@ setOutputOpenMath arg ==
     filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_-OUTSTREAM(filename)) =>
+    (testStream := MAKE_OUTSTREAM(filename)) =>
       SHUT $openMathOutputStream
       $openMathOutputStream := testStream
       $openMathOutputFile := object2String filename
@@ -1176,7 +1176,7 @@ setOutputFormula arg ==
     filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_-OUTSTREAM(filename)) =>
+    (testStream := MAKE_OUTSTREAM(filename)) =>
       SHUT $formulaOutputStream
       $formulaOutputStream := testStream
       $formulaOutputFile := object2String filename
@@ -1248,7 +1248,7 @@ setOutputTex arg ==
     filename := make_full_namestring([fn, ft])
     null filename =>
       sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_-OUTSTREAM(filename)) =>
+    (testStream := MAKE_OUTSTREAM(filename)) =>
       SHUT $texOutputStream
       $texOutputStream := testStream
       $texOutputFile := object2String filename
