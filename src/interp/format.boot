@@ -33,9 +33,6 @@
 
 --% Functions for display formatting system objects
 
--- some of these are redundant and should be compacted
-$formatSigAsTeX := 1
-
 --% Formatting modemaps
 
 sayModemap m ==
@@ -265,11 +262,9 @@ dollarPercentTran x ==
     x
 
 formatSignature sig ==
-  $formatSigAsTeX: local := 1
   formatSignature0 sig
 
 formatSignatureArgs sml ==
-  $formatSigAsTeX: local := 1
   formatSignatureArgs0 sml
 
 formatSignature0 sig ==
@@ -295,26 +290,12 @@ expr2String x ==
   atom (u:= prefix2String0 x) => u
   "STRCONC"/[atom2String y for y in u]
 
--- exports (this is a badly named bit of sillyness)
-prefix2StringAsTeX form ==
-  form2StringAsTeX form
-
 prefix2String form ==
-  $formatSigAsTeX: local := 1
   form2StringLocal form
 
 -- local version
 prefix2String0 form ==
   form2StringLocal form
-
---  SUBRP form => formWrapId BPINAME form
---  atom form =>
---    form=$EmptyMode or form=$quadSymbol => formWrapId specialChar 'quad
---    STRINGP form => formWrapId form
---    IDENTP form =>
---      constructor? form => app2StringWrap(formWrapId form, [form])
---      formWrapId form
---    formWrapId STRINGIMAGE form
 
 form2StringWithWhere u ==
   $permitWhere : local := true
@@ -336,21 +317,14 @@ formString u ==
 DEFPARAMETER($from_unparse, false)
 
 unparseInputForm u ==
-  $formatSigAsTeX: local := 1
   $InteractiveMode: local := false
   $from_unparse : local := true
   form2StringLocal u
 
 form2String u ==
-  $formatSigAsTeX: local := 1
-  form2StringLocal u
-
-form2StringAsTeX u ==
-  $formatSigAsTeX: local := 2
   form2StringLocal u
 
 form2StringLocal u ==
---+
   $NRTmonitorIfTrue : local := nil
   form2String1 u
 
@@ -511,12 +485,7 @@ appOrParen(x) ==
    form2String1 x
 
 
-formWrapId id ==
-  $formatSigAsTeX = 1 => id
-  $formatSigAsTeX = 2 =>
-    sep := '"`"
-    FORMAT(NIL,'"\verb~a~a~a",sep, id, sep)
-  error "Bad formatSigValue"
+formWrapId id == id
 
 formArguments2String(argl,ml) == [fn(x,m) for x in argl for m in ml] where
   fn(x,m) ==
@@ -690,12 +659,6 @@ application2String(op,argl, linkInfo) ==
   1=#argl =>
     first argl is ["<",:.] => concat(op,first argl)
     concat(app2StringWrap(formWrapId op, linkInfo), '"(", first argl, '")")
---op in '(UP SM) =>
---  newop:= (op = "UP" => "P";"M")
---  concat(newop,concat(lbrkSch(),argl.0,rbrkSch(),argl.1))
---op='RM  =>concat("M",concat(lbrkSch(),
---                     argl.0,",",argl.1,rbrkSch(),argl.2))
---op='MP =>concat("P",concat(argl.0,argl.1))
   op='SEGMENT =>
     null argl => '".."
     (null rest argl) or (null first rest argl) =>
@@ -707,15 +670,7 @@ application2String(op,argl, linkInfo) ==
 app2StringConcat0(x,y) ==
   FORMAT(NIL, '"~a ~a", x, y)
 
-app2StringWrap(string, linkInfo) ==
-  not linkInfo => string
-  $formatSigAsTeX = 1 => string
-  $formatSigAsTeX = 2 =>
-    str2 :=  "app2StringConcat0"/form2Fence linkInfo
-    sep := '"`"
-    FORMAT(NIL, '"\lispLink{\verb!(|conPage| '~a)!}{~a}",
-          str2, string)
-  error "Bad value for $formatSigAsTeX"
+app2StringWrap(string, linkInfo) == string
 
 record2String x ==
   argPart := NIL

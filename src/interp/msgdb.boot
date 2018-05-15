@@ -218,12 +218,9 @@ substituteSegmentedMsg(msg,args) ==
       if MEMQ(char 'm,q) then arg := [['"%m",:arg]]
       if MEMQ(char 's,q) then arg := [['"%s",:arg]]
       if MEMQ(char 'p,q) then
-          $texFormatting => arg := prefix2StringAsTeX arg
           arg := escape_strings(prefix2String arg)
       if MEMQ(char 'P,q) then
-          $texFormatting => arg := [prefix2StringAsTeX x for x in arg]
           arg := [prefix2String x for x in arg]
-      if MEMQ(char 'o, q) and $texFormatting then arg := operationLink(arg)
 
       if MEMQ(char 'c,q) then arg := [['"%ce",:arg]]
       if MEMQ(char 'r,q) then arg := [['"%rj",:arg]]
@@ -349,10 +346,6 @@ throw_msg(msg, args) ==
     say_Msg(msg, args)
     spadThrow()
 
-sayKeyedMsgAsTeX(key, args) ==
-  $texFormatting: fluid := true
-  say_msg_local(getKeyedMsg key, args)
-
 sayKeyedMsg(key,args) ==
   $texFormatting: fluid := false
   ioHook("startKeyedMsg", key, args)
@@ -435,9 +428,6 @@ flowSegmentedMsg(msg, len, offset) ==
   -- msgs that are entirely centered or right justified are not flowed
   msg is [[ce,:.]] and ce in '(%ce "%ce" %rj "%rj") => msg
 
-  -- if we are formatting latex, then we assume
-  -- that nothing needs to be done
-  $texFormatting => msg
   -- msgs that are entirely centered are not flowed
   msg is [[ce, :.]] and ce in '(%ce "%ce") => msg
 
@@ -577,7 +567,6 @@ brightPrint x ==
   NIL
 
 brightPrint0 x ==
-  $texFormatting => brightPrint0AsTeX x
   if IDENTP x then x := PNAME x
 
   -- if the first character is a backslash and the second is a percent sign,
@@ -610,33 +599,6 @@ brightPrint0 x ==
   STRINGP x => sayString x
   brightPrintHighlight x
 
-brightPrint0AsTeX x ==
-  x = '"%l" =>
-    sayString('"\\")
-    for i in 1..$MARG repeat sayString '"\ "
-  x = '"%i" =>
-    $MARG := $MARG + 3
-  x = '"%u" =>
-    $MARG := $MARG - 3
-    if $MARG < 0 then $MARG := 0
-  x = '"%U" =>
-    $MARG := 0
-  x = '"%" =>
-    sayString '"\ "
-  x = '"%%" =>
-    sayString  '"%"
-  x = '"%b" =>
-    sayString '" {\tt "
-  k := blankIndicator x => for i in 1..k repeat sayString '"\ "
-  x = '"%d" =>
-    sayString '"} "
-  x = '"_"$_"" =>
-    sayString('"_"\verb!$!_"")
-  x = '"$" =>
-    sayString('"\verb!$!")
-  STRINGP x => sayString x
-  brightPrintHighlight x
-
 blankIndicator x ==
   if IDENTP x then x := PNAME x
   null STRINGP x or MAXINDEX x < 1 => nil
@@ -652,7 +614,6 @@ brightPrint1 x ==
   NIL
 
 brightPrintHighlight x ==
-  $texFormatting => brightPrintHighlightAsTeX x
   IDENTP x =>
     pn := PNAME x
     sayString pn
@@ -679,41 +640,12 @@ brightPrintHighlight x ==
     brightPrint1 la
   sayString '")"
 
-brightPrintHighlightAsTeX x ==
-  IDENTP x =>
-    pn := PNAME x
-    sayString pn
-  ATOM x => sayString object2String x
-  VECP x => sayString '"UNPRINTABLE"
-  [key,:rst] := x
-  key = '"%m" => mathprint rst
-  key = '"%m" => rst
-  key = '"%s" =>
-    sayString '"\verb__"
-    PRETTYPRIN0 rst
-    sayString '"__"
-  key = '"%ce" => brightPrintCenter rst
-  key = '"%t"  => $MARG := $MARG + tabber rst
-  -- unhandled junk (print verbatim(ish)
-  sayString '"("
-  brightPrint1 key
-  if EQ(key,'TAGGEDreturn) then
-    rst := [first rst, CADR rst, CADDR rst, '"environment (omitted)"]
-  for y in rst repeat
-    sayString '" "
-    brightPrint1 y
-  if rst and (la := LASTATOM rst) then
-    sayString '" . "
-    brightPrint1 la
-  sayString '")"
-
 tabber num ==
     maxTab := 50
     num > maxTab => maxTab
     num
 
 brightPrintCenter x ==
-  $texFormatting => brightPrintCenterAsTeX x
   -- centers rst within $LINELENGTH, checking for %l's
   ATOM x =>
     x := object2String x
@@ -739,25 +671,6 @@ brightPrintCenter x ==
     sayNewLine()
     brightPrintCenter x
   NIL
-
-brightPrintCenterAsTeX x ==
-  ATOM x =>
-    sayString '"\centerline{"
-    sayString x
-    sayString '"}"
-  lst := x
-  while lst repeat
-    words := nil
-    while lst and not (first(lst) = "%l") repeat
-      words := [first lst, : words]
-      lst := rest lst
-    if lst then lst := cdr lst
-    sayString '"\centerline{"
-    words := nreverse words
-    for zz in words repeat
-      brightPrint0 zz
-    sayString '"}"
-  nil
 
 brightPrintRightJustify x ==
   -- right justifies rst within $LINELENGTH, checking for %l's
