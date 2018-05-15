@@ -185,12 +185,6 @@ appChar(string,x,y,d) ==
   appChar(string, x, y, nconc(d,
             [[y, :make_full_CVEC(10 + $LINELENGTH + $MARGIN, " ")]]))
 
-print(x,domain) ==
-  dom:= devaluate domain
-  $InteractiveMode: local:= true
-  $dontDisplayEquatnum: local:= true
-  output(x,dom)
-
 mathprintWithNumber x ==
   ioHook("startAlgebraOutput")
   x:= outputTran2 x

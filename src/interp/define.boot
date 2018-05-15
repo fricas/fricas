@@ -225,25 +225,26 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
   $prefix,$formalArgList) ==
     --1. bind global variables
     $insideCategoryIfTrue: local:= true
-    $definition: local := nil
+    $definition : local := form
                  --used by DomainSubstitutionFunction
-    $form: local := nil
     $op: local := nil
     $extraParms: local := nil
              --Set in DomainSubstitutionFunction, used further down
 --  1.1  augment e to add declaration $: <form>
-    [$op,:argl]:= $definition:= form
-    e:= addBinding("$",[['mode,:$definition]],e)
+    [$op, :argl] := form
+    e := addBinding("$", [['mode, :form]],e)
 
 --  2. obtain signature
     signature':=
-      [first signature,:[getArgumentModeOrMoan(a,$definition,e) for a in argl]]
+        [first signature, :[getArgumentModeOrMoan(a, form, e) for a in argl]]
     e:= giveFormalParametersValues(argl,e)
 
 --   3. replace arguments by $1,..., substitute into body,
 --     and introduce declarations into environment
     sargl:= TAKE(# argl, $TriangleVariableList)
-    $functorForm:= $form:= [$op,:sargl]
+    sform := [$op, :sargl]
+    $form : local := sform
+    $functorForm : local := $form
     $formalArgList:= [:sargl,:$formalArgList]
     aList:= [[a,:sa] for a in argl for sa in sargl]
     formalBody:= SUBLIS(aList,body)
@@ -272,7 +273,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
     -- FIXME: generate call to 'devaluate' only for domains
     body:=
         ['PROG1, ['LET, g:= GENSYM(), body],
-                 ['SETELT, g, 0, mkConstructor($form)]]
+                 ['SETELT, g, 0, mkConstructor(sform)]]
     fun := compile [op', ['category_functor, sargl, body]]
 
 --  5. give operator a 'modemap property
@@ -295,16 +296,15 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
       $lisplibModemap:= modemap
       $lisplibParents  :=
         getParentsFor($op,$FormalMapVariableList,$lisplibCategory)
-      $lisplibAncestors := computeAncestorsOf($form,nil)
+      $lisplibAncestors := computeAncestorsOf(sform, nil)
       $lisplibAbbreviation := constructor? $op
-      form':=[op',:sargl]
-      augLisplibModemapsFromCategory(form',formalBody,signature')
-    [fun,'(Category),e]
+      augLisplibModemapsFromCategory(sform, formalBody, signature')
+    [fun, '(Category), e]
 
 mkConstructor form ==
-  atom form => ['devaluate,form]
+  atom form => BREAK()
   null rest form => ['QUOTE,[first form]]
-  ['LIST,MKQ first form,:[mkConstructor x for x in rest form]]
+  ['LIST,MKQ first form, :[['devaluate, x] for x in rest form]]
 
 compDefineCategory(df,m,e,prefix,fal) ==
   $domainShell: local -- holds the category of the object being compiled
@@ -326,12 +326,10 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
-    $form: local := nil
     $op: local := nil
     $signature: local := nil
     $Representation: local := nil
          --Set in doIt, accessed in the compiler - compNoStacking
-    $functorForm: local := nil
     $functorLocalParameters: local := nil
     $CheckVectorList: local := nil
                   --prevents CheckVector from printing out same message twice
@@ -348,7 +346,8 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
             else false )   --true if domain has mutable state
     signature':=
       [first signature, :[getArgumentModeOrMoan(a, form, e) for a in argl]]
-    $functorForm:= $form:= [$op,:argl]
+    $form : local := form
+    $functorForm : local := $form
     if null first signature' then BREAK()
     target:= first signature'
     e := giveFormalParametersValues(argl, e)
@@ -436,7 +435,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
         $NRTslot1Info := NRTmakeSlot1Info()
         libFn := GETDATABASE(op','ABBREVIATION)
         $lookupFunction: local :=
-            NRTgetLookupFunction($functorForm,CADAR $lisplibModemap,$NRTaddForm)
+            NRTgetLookupFunction(form, CADAR $lisplibModemap, $NRTaddForm)
             --either lookupComplete (for forgetful guys) or lookupIncomplete
         $byteAddress :local := 0
         $byteVec :local := nil
@@ -651,7 +650,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     [lineNumber,:specialCases] := specialCases
     e := oldE
     --1. bind global variables
-    $form: local := nil
     $op: local := nil
     $functionStats: local:= [0,0]
     $finalEnv: local := nil
@@ -663,7 +661,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $CapsuleDomainsInScope: local:= get("$DomainsInScope","special",e)
     $returnMode:= m
     [$op,:argl]:= form
-    $form:= [$op,:argl]
+    $form : local := [$op, :argl]
     $formalArgList:= [:argl,:$formalArgList]
 
     --let target and local signatures help determine modes of arguments
