@@ -516,11 +516,11 @@ buildFunctor(definition is [name, :args], sig, code, $locals, e) ==
   NRTdescendCodeTran(storeOperationCode,nil) --side effects storeOperationCode
   codePart2:=
       argStuffCode :=
-        [[$setelt,'$,i,v] for i in 6.. for v in $FormalMapVariableList
+        [['QSETREFV, '$, i, v] for i in 6.. for v in $FormalMapVariableList
           for arg in rest definition]
       if MEMQ($NRTaddForm,$locals) then
          addargname := $FormalMapVariableList.(POSN1($NRTaddForm,$locals))
-         argStuffCode := [[$setelt,'$,5,addargname],:argStuffCode]
+         argStuffCode := [['QSETREFV, '$, 5, addargname], :argStuffCode]
       [['stuffDomainSlots,'$],:argStuffCode,
          :predBitVectorCode2, ['SETF, 'pv_$, ['QREFELT, '$, 3]],
             storeOperationCode]
@@ -535,7 +535,7 @@ buildFunctor(definition is [name, :args], sig, code, $locals, e) ==
         ['LET, domname, ['LIST, MKQ first definition,
                          :ASSOCRIGHT $devaluateList]]
     createViewCode:= ['LET,'$,['GETREFV, 6+$NRTdeltaLength]]
-    setVector0Code:=[$setelt,'$,0,'dv_$]
+    setVector0Code := ['QSETREFV, '$, 0, 'dv_$]
     slot3Code := ['QSETREFV,'$,3,['LET,'pv_$,predBitVectorCode1]]
     slamCode:=
         isCategoryPackageName(opOf(definition)) => nil
