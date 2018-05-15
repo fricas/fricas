@@ -94,8 +94,7 @@ COMP_2(args) ==
                          name, type))
     type is "SLAM" => BREAK()
     type is 'domain_functor =>
-        compClam(name, argl, bodyl, "$ConstructorCache",
-                 'domainEqualList, ['count])
+        compHash(name, argl, bodyl, "$ConstructorCache", 'domainEqualList)
     type is 'category_functor => compSPADSLAM(name, argl, bodyl)
     if type = 'mutable_domain_functor then
         type := 'LAMBDA
@@ -112,27 +111,28 @@ COMP(fun) == [COMP_2 nf for nf in COMP_1(fun)]
 compSPADSLAM(name, argl, bodyl) ==
     al := INTERNL(name, '";AL")
     auxfn := INTERNL(name, '";")
-    g1 := GENSYM()
-    g2 := GENSYM()
-    u :=
-         not(argl) => [[], [], [auxfn]]
-         not(rest(argl)) => [[g1], ["devaluate", g1], [auxfn, g1]]
-         [g1, ["devaluateList", g1], _
-           ["APPLY", ["FUNCTION", auxfn], g1]]
-    [arg, argtran, app] := u
-    la1 :=
-         argl => [["SETQ", g2, ["assoc", argtran, al]], ["CDR", g2]]
-         [al]
-    la2 :=
-         argl =>
-              [true, ["SETQ", al,
+    if argl then
+        g2 := GENSYM()
+        g3 := GENSYM()
+        argtran :=
+            -- FIXME: we should call 'devaluate' only on domains
+            not(rest(argl)) => ["devaluate", first(argl)]
+            ["LIST", :[["devaluate", g1] for g1 in argl]]
+        app := 
+            not(rest(argl)) => [auxfn, g3]
+            ["APPLY", ["FUNCTION", auxfn], g3]
+        la1 := [["SETQ", g2, ["assoc", g3, al]], ["CDR", g2]]
+        la2 := [true, ["SETQ", al,
                            ["cons5",
-                                ["CONS", argtran, ["SETQ", g2, app]], al]],
+                                ["CONS", g3, ["SETQ", g2, app]], al]],
                             g2]
-         [true, ["SETQ", al, app]]
-    lamex := ["LAMBDA", arg,
-                ["LET", [g2],
-                  ["COND", la1, la2]]]
+        lamex := ["LAMBDA", argl,
+                    ["LET", [g2, [g3, argtran]],
+                      ["COND", la1, la2]]]
+    else
+        lamex := ["LAMBDA", [],
+                    ["COND", [al], [true, ["SETQ", al, [auxfn]]]]]
+
     output_lisp_defparameter(al, nil)
     u := [name,lamex]
     if $PrettyPrint then PRETTYPRINT(u)

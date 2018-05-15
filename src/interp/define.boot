@@ -268,10 +268,11 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
         actuals:=[MKQ CDR u,:actuals]
       body := ['sublisV,['PAIR,['QUOTE,formals],['LIST,:actuals]],body]
     if argl then body:=  -- always subst for args after extraparms
-        ['sublisV,['PAIR,['QUOTE,sargl],['LIST,:
-          [['devaluate,u] for u in sargl]]],body]
+        ['sublisV, ['PAIR, ['QUOTE, sargl], ['LIST, :sargl]], body]
+    -- FIXME: generate call to 'devaluate' only for domains
     body:=
-      ['PROG1,['LET,g:= GENSYM(),body],['SETELT,g,0,mkConstructor $form]]
+        ['PROG1, ['LET, g:= GENSYM(), body],
+                 ['SETELT, g, 0, mkConstructor($form)]]
     fun := compile [op', ['category_functor, sargl, body]]
 
 --  5. give operator a 'modemap property
@@ -335,9 +336,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $CheckVectorList: local := nil
                   --prevents CheckVector from printing out same message twice
     $insideFunctorIfTrue: local:= true
-    $setelt: local :=
-      $QuickCode = true => 'QSETREFV
-      'SETELT
     $genSDVar: local:= 0
     originale := e
     [$op,:argl]:= form
