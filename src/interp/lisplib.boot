@@ -55,26 +55,6 @@ rwriteLispForm(key,form) ==
     rwrite( key,form,$libFile)
     output_lisp_form(form)
 
---% Uninstantiating
-
-unInstantiate(clist) ==
-  for c in clist repeat
-    clearConstructorCache(c)
-  killNestedInstantiations(clist)
-
-killNestedInstantiations(deps) ==
-  for key in HKEYS($ConstructorCache)
-    repeat
-      for [arg,count,:inst] in HGET($ConstructorCache,key) repeat
-        isNestedInstantiation(inst.0,deps) =>
-          HREMPROP($ConstructorCache,key,arg)
-
-isNestedInstantiation(form,deps) ==
-  form is [op,:argl] =>
-    op in deps => true
-    or/[isNestedInstantiation(x,deps) for x in argl]
-  false
-
 --% Loading
 
 loadLibIfNotLoaded libName ==
@@ -279,8 +259,8 @@ finalizeLisplib libName ==
   lisplibWrite('"constructorCategory",$lisplibCategory,$libFile)
   lisplibWrite('"sourceFile", namestring($edit_file), $libFile)
   lisplibWrite('"modemaps",removeZeroOne $lisplibModemapAlist,$libFile)
-  opsAndAtts:= getConstructorOpsAndAtts($lisplibForm, kind)
-  lisplibWrite('"operationAlist", removeZeroOne first opsAndAtts, $libFile)
+  ops := getConstructorOps($lisplibForm, kind)
+  lisplibWrite('"operationAlist", removeZeroOne ops, $libFile)
   lisplibWrite('"superDomain",removeZeroOne $lisplibSuperDomain,$libFile)
   lisplibWrite('"predicates",removeZeroOne  $lisplibPredicates,$libFile)
   lisplibWrite('"abbreviation",$lisplibAbbreviation,$libFile)
@@ -306,16 +286,16 @@ getPartialConstructorModemapSig(c) ==
   (s := getConstructorSignature c) => rest s
   throwEvalTypeMsg("S2IL0015",[c])
 
-getConstructorOpsAndAtts(form, kind) ==
-  kind is 'category => getCategoryOpsAndAtts(form)
-  getFunctorOpsAndAtts(form)
+getConstructorOps(form, kind) ==
+    kind is 'category => getCategoryOps(form)
+    getFunctorOps(form)
 
-getCategoryOpsAndAtts(catForm) ==
-  -- returns [operations, :attributes] of first catForm
-  [transformOperationAlist getSlot1FromCategoryForm(catForm)]
+getCategoryOps(catForm) ==
+    -- returns operations of first catForm
+    transformOperationAlist getSlot1FromCategoryForm(catForm)
 
-getFunctorOpsAndAtts(form) ==
-  [transformOperationAlist $lisplibOperationAlist]
+getFunctorOps(form) ==
+    transformOperationAlist $lisplibOperationAlist
 
 transformOperationAlist operationAlist ==
   --  this transforms the operationAlist which is written out onto LISPLIBs.
@@ -387,15 +367,11 @@ mkEvalableCategoryForm(c, e) ==       --from DEFINE
         nargs := [mkEvalableCategoryForm(x, e) or return nil for x in argl]
         nargs => ["Join", :nargs]
     op is "DomainSubstitutionMacro" =>
-        --$extraParms :local
-        --catobj := EVAL c -- DomainSubstitutionFunction makes $extraParms
-        --mkEvalableCategoryForm sublisV($extraParms, catobj)
         mkEvalableCategoryForm(CADR argl, e)
     op is "mkCategory" => c
     MEMQ(op,$CategoryNames) =>
         [x, m, e] := compOrCroak(c, $EmptyMode, e)
         m=$Category => optFunctorBody x
-    --loadIfNecessary op
     GETDATABASE(op,'CONSTRUCTORKIND) = 'category or
       get(op,"isCategory",$CategoryFrame) =>
         [op,:[quotifyCategoryArgument x for x in argl]]

@@ -35,13 +35,14 @@ DEFPARAMETER($getUnexposedOperations, true)
 
 --% Functions for manipulating MODEMAP DATABASE
 
-augLisplibModemapsFromCategory(form is [op,:argl],body,signature) ==
+augLisplibModemapsFromCategory(form is [op,:argl], body, signature,
+                               domainShell) ==
   sl := [["$",:"*1"],:[[a,:p] for a in argl
     for p in rest $PatternVariableList]]
   form:= SUBLIS(sl,form)
   body:= SUBLIS(sl,body)
   signature:= SUBLIS(sl,signature)
-  opAlist:= SUBLIS(sl,$domainShell.(1)) or return nil
+  opAlist:= SUBLIS(sl, domainShell.(1)) or return nil
   nonCategorySigAlist:=
     mkAlistOfExplicitCategoryOps substitute("*1","$",body)
   domainList:=

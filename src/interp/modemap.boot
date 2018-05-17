@@ -190,7 +190,6 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
 
 evalAndSub(domainName, viewName, functorForm, form, e) ==
   $tmp_e : local := e
-  isCategory form => [substNames(domainName,viewName,functorForm,form.(1)), e]
   --next lines necessary-- see MPOLY for which $ is actual arg. --- RDJ 3/83
   if CONTAINED("$$",form) then
       e := put("$$", "mode", get("$", "mode", e), e)
