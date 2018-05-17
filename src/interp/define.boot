@@ -286,8 +286,6 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
             ['MAKEPROP,['QUOTE,op'],'(QUOTE NILADIC),true])
 
 --   6. put modemaps into InteractiveModemapFrame
-    if not($bootStrapMode) or $LISPLIB then
-        $domainShell := eval [op',:MAPCAR('MKQ,sargl)]
     $lisplibCategory:= formalBody
     if $LISPLIB then
       $lisplibForm:= form
@@ -298,16 +296,17 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
         getParentsFor($op,$FormalMapVariableList,$lisplibCategory)
       $lisplibAncestors := computeAncestorsOf(sform, nil)
       $lisplibAbbreviation := constructor? $op
-      augLisplibModemapsFromCategory(sform, formalBody, signature')
+      domainShell := eval [op', :MAPCAR('MKQ, sargl)]
+      augLisplibModemapsFromCategory(sform, formalBody, signature',
+                                     domainShell)
     [fun, '(Category), e]
 
 mkConstructor form ==
   atom form => BREAK()
   null rest form => ['QUOTE,[first form]]
-  ['LIST,MKQ first form, :[['devaluate, x] for x in rest form]]
+  ['LIST, MKQ first form, :rest(form)]
 
 compDefineCategory(df,m,e,prefix,fal) ==
-  $domainShell: local -- holds the category of the object being compiled
   $lisplibCategory: local := nil
   not $insideFunctorIfTrue and $LISPLIB =>
     compDefineLisplib(df,m,e,prefix,fal,'compDefineCategory1)
@@ -363,8 +362,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $uncondAlist: local := nil
 -->>-- next global initialized here, reset by NRTbuildFunctor
     $NRTslot1PredicateList: local := nil
--->>-- next global initialized here, used by NRTgenAttributeAlist (NRUNOPT)
-    $NRTslot1Info: local  --set in NRTmakeSlot1 called by NRTbuildFunctor
        --this is used below to set $lisplibSlot1 global
     $NRTbase: local := 6 -- equals length of $domainShell
     $NRTaddForm: local := nil   -- see compAdd; NRTmakeSlot1
@@ -432,7 +429,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
         'domain
       $lisplibForm:= form
       if null $bootStrapMode then
-        $NRTslot1Info := NRTmakeSlot1Info()
+        NRTslot1Info := NRTmakeSlot1Info()
         libFn := GETDATABASE(op','ABBREVIATION)
         $lookupFunction: local :=
             NRTgetLookupFunction(form, CADAR $lisplibModemap, $NRTaddForm)
@@ -441,7 +438,8 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
         $byteVec :local := nil
         $NRTslot1PredicateList :=
           [simpBool x for x in $NRTslot1PredicateList]
-        output_lisp_form(['MAKEPROP,MKQ $op,''infovec,getInfovecCode()])
+        output_lisp_form(['MAKEPROP, MKQ $op, ''infovec,
+                          getInfovecCode(NRTslot1Info)])
       $lisplibOperationAlist:= operationAlist
       $lisplibMissingFunctions:= $CheckVectorList
     if null argl then
@@ -685,7 +683,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     e:= giveFormalParametersValues(argl,e)
 
     $signatureOfForm:= signature' --this global is bound in compCapsuleItems
-    $functionLocations := [[[$op,$signatureOfForm],:lineNumber],
+    $functionLocations := [[[$op, signature'], :lineNumber],
       :$functionLocations]
     e:= addDomain(first signature',e)
 
@@ -1155,13 +1153,9 @@ compCategory(x,m,e) ==
   systemErrorHere '"compCategory"
 
 mkExplicitCategoryFunction(sigList, atList) ==
-  body:=
-   ["Join",
-    ["mkCategory", ['LIST, :REVERSE sigList], ['LIST, :
-      REVERSE atList],MKQ domList,nil]] where
-        domList() ==
-          ("union"/[fn sig for ["QUOTE",[[.,sig,:.],:.]] in sigList]) where
-            fn sig == [D for D in sig | mustInstantiate D]
+  body:= ["Join",
+    ["mkCategory", ['LIST, :REVERSE sigList], ['LIST,
+      :REVERSE atList], nil, nil]]
   parameters:=
     REMDUP
       ("append"/
@@ -1171,10 +1165,6 @@ mkExplicitCategoryFunction(sigList, atList) ==
 
 wrapDomainSub(parameters,x) ==
    ["DomainSubstitutionMacro",parameters,x]
-
-mustInstantiate D ==
-    D is [fn,:.] and not (MEMQ(fn,$DummyFunctorNames) or
-      GET(fn, "makeFunctionList"))
 
 DomainSubstitutionFunction(definition, parameters,body) ==
   --see optFunctorBody

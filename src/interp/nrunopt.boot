@@ -34,11 +34,11 @@
 --=======================================================================
 --            Generate Code to Create Infovec
 --=======================================================================
-getInfovecCode() ==
+getInfovecCode(NRTslot1Info) ==
 --Function called by compDefineFunctor1 to create infovec at compile time
   ['LIST,
     MKQ makeDomainTemplate $template,
-      MKQ makeCompactDirect $NRTslot1Info,
+      MKQ makeCompactDirect NRTslot1Info,
         MKQ [],
           NRTmakeCategoryAlist(),
             MKQ $lookupFunction]
