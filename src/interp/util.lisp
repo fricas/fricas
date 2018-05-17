@@ -34,10 +34,6 @@ This file is a collection of utility functions that are useful
 for system level work.  {\bf build-interpsys} interfaces to the
 src/interp/Makefile.
 
-A third group of related functions are used to set up the
-{\bf autoload} mechanism. These enable whole subsystems to
-be kept out of memory until they are used.
-
 A fifth group of related functions are some translated boot
 functions we need to define here so they work and are available
 at load time.
@@ -80,178 +76,6 @@ at load time.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
-#|
-Old autoload machinery.  Currently the functions below are
-included in base system.
-
-;;; This is the {\bf Spad parser} subsystem. It is only needed by
-;;; algebra developers.
-(setq parse-functions
-      '(
-;;      loadparser
-        |oldParserAutoloadOnceTrigger|
-        |parse_Expression|
-        |spadCompile|
-        ))
-
-;;; This is the {\bf spad compiler} subsystem. It is only needed by
-;;; developers who write or modify algebra code.
-(setq comp-functions
-      '(
-;;      loadcompiler
-        |oldCompilerAutoloadOnceTrigger|
-        |compileSpad2Cmd|
-        |compilerDoit|
-        |compilerDoitWithScreenedLisplib|
-        |mkCategory|
-        |cons5|
-        |isCategoryForm|
-        |sublisV|))
-
-;;; This is the {\bf browser} subsystem. It will get autoloaded only
-;;; if you use the browse function of the {\bf hypertex} system.
-(setq browse-functions
-      '(
-;;      loadbrowse
-        |browserAutoloadOnceTrigger|
-        |parentsOf|           ;interop.boot
-        |getParentsFor|       ;old compiler
-        |folks|               ;for astran
-        |extendLocalLibdb|    ;)lib needs this
-        |evalDomainOpPred|    ;)show
-        |oSearch|
-        |aokSearch|
-        |kSearch|
-        |aSearch|
-        |genSearch|
-        |docSearch|
-        |abSearch|
-        |detailedSearch|
-        |ancestorsOf|
-        |aPage|
-        |dbGetOrigin|
-        |dbGetParams|
-        |dbGetKindString|
-        |dbGetOrigin|
-        |dbComments|
-        |grepConstruct|
-        |buildLibdb|
-        |bcDefiniteIntegrate|
-        |bcDifferentiate|
-        |bcDraw|
-        |bcExpand|
-        |bcIndefiniteIntegrate|
-        |bcLimit|
-        |bcMatrix|
-        |bcProduct|
-        |bcSeries|
-        |bcSolve|
-        |bcSum|
-        |cSearch|
-        |conPage|
-        |dbName|
-        |dbPart|
-        |extendLocalLibdb|
-        |form2HtString|
-        |htGloss|
-        |htGreekSearch|
-        |htHistory|
-        |htSystemCommands|
-        |htSystemVariables|
-        |htTextSearch|
-        |htUserVariables|
-        |htsv|
-        |oPage|
-        |oPageFrom|
-        |spadSys|
-        |spadType|
-        |syscomPage|
-        |unescapeStringsInForm|))
-
-;;; This is part of the {\bf ALDOR subsystem}. These will be loaded
-;;; if you compile a {\bf .as} file rather than a {\bf .spad} file.
-;;; {\bf ALDOR} is an external compiler that gets automatically called
-;;; if the file extension is {\bf .as}.
-(setq asauto-functions '(
-        loadas
-;;      |as|                         ;; now in as.boot
-;;      |astran|                     ;; now in as.boot
-        |spad2AxTranslatorAutoloadOnceTrigger|
-        |setExtendedDomains|
-        |makeAxFile|))
-
-;;; These are some old {\bf debugging} functions.  I can't imagine
-;;; why you might autoload them but they don't need to be in a running
-;;; system.
-(setq debug-functions '(
-        loaddebug
-        |showSummary|
-        |showPredicates|
-        |showAttributes|
-        |showFrom|
-        |showImp|))
-
-
-There are several subsystems within {\bf AXIOM} that are not normally
-loaded into a running system. They will be loaded only if you invoke
-one of the functions listed here. Each of these listed functions will
-have their definitions replaced by a special ``autoloader'' function.
-The first time a function named here is called it will trigger a
-load of the associated subsystem, the autoloader functions will get
-overwritten, the function call is retried and now succeeds. Files
-containing functions listed here are assumed to exist in the
-{\bf autoload} subdirectory. The list of files to load is defined
-in the src/interp/Makefile.
-
-
-
-This function is called by {\bf build-interpsys}. It takes two lists.
-The first is a list of functions that need to be used as
-``autoload triggers''. The second is a list of files to load if one
-of the trigger functions is called. At system build time each of the
-functions in the first list is set up to load every file in the second
-list. In this way we will automatically load a whole subsystem if we
-touch any function in that subsystem. We call a helper function
-called {\bf setBootAutoLoadProperty} to set up the autoload trigger.
-This helper function is listed below.
-
-(defun |setBootAutloadProperties| (fun-list file-list)
-  (mapc #'(lambda (fun) (|setBootAutoLoadProperty| fun file-list)) fun-list)
-)
-
-;;; This function knows where the {\bf autoload} subdirectory lives.
-;;; It is called by {\bf mkBootAutoLoad} above to find the necessary
-;;; files.
-(defun boot-load (file)
-  (let ((name (concat $SPADROOT "/autoload/" (pathname-name file))))
-    (if |$printLoadMsgs|
-        (|sayKeyedMsg| 'S2IL0030 (list name)))
-    (load name)))
-
-;;; This is a helper function to set up the autoload trigger. It sets
-;;; the function cell of each symbol to {\bf mkBootAutoLoad} which is
-;;; listed below.
-(defun |setBootAutoLoadProperty| (func file-list)
-  (setf (symbol-function func) (|mkBootAutoLoad| func file-list)) )
-
-This is how the autoload magic happens. Every function named in the
-autoload lists is actually just another name for this function. When
-the named function is called we call {\bf boot-load} on all of the
-files in the subsystem. This overwrites all of the autoload triggers.
-We then look up the new (real) function definition and call it again
-with the real arguments. Thus the subsystem loads and the original
-call succeeds.
-
-(defun |mkBootAutoLoad| (fn file-list)
-   (function (lambda (&rest args)
-                 #+:sbcl
-                 (handler-bind ((style-warning #'muffle-warning))
-                     (mapc #'boot-load file-list))
-                 #-:sbcl
-                 (mapc #'boot-load file-list)
-                 (unless (string= (subseq (string fn) 0 4) "LOAD")
-                  (apply (symbol-function fn) args)))))
-|#
 ;;; Prefix a filename with the {\bf AXIOM} shell variable.
 (defun make-absolute-filename (name)
  (concatenate 'string $spadroot name))
@@ -353,14 +177,12 @@ it loads all of the named files, resets a few global state variables,
 loads the databases, sets up autoload triggers and clears out hash tables.
 After this function is called the image is clean and can be saved.
 |#
-(defun build-interpsys (load-files parse-files comp-files browse-files
-             asauto-files spad)
+(defun build-interpsys (load-files spad)
   (declare (ignore nagbr-files))
   #-:ecl
   (progn
       (mapcar #'load load-files)
-      (interpsys-image-init parse-files comp-files browse-files
-             asauto-files spad))
+      (interpsys-image-init spad))
   (if (and (boundp 'FRICAS-LISP::*building-axiomsys*)
                 FRICAS-LISP::*building-axiomsys*)
        (progn
@@ -376,14 +198,6 @@ After this function is called the image is clean and can be saved.
            (append FRICAS-LISP::*fricas-initial-lisp-objects*
                    '("util.o")
                    load-files))
-#|
-      (dolist (el `(
-                    ("comp-files" ,comp-files)
-                    ("browse-files" ,browse-files)
-                    ("asauto-files" ,asauto-files)))
-          (c:build-fasl (concatenate 'string spad "/autoload/" (car el))
-                        :lisp-files (nth 1 el)))
-|#
       (let ((initforms nil))
           (dolist (el '(|$build_date| |$build_version| |$createLocalLibDb|))
               (if (boundp el)
@@ -411,22 +225,12 @@ After this function is called the image is clean and can be saved.
      (setf spad $spadroot)
      (format *standard-output* "spad = ~s~%" spad)
      (force-output  *standard-output*)
-     ;;; (load (concatenate 'string spad "/autoload/"  "parini.lsp"))
-#|
-     (interpsys-image-init
-           (list (concatenate 'string spad "/autoload/" "parse-files"))
-           (list (concatenate 'string spad "/autoload/" "comp-files"))
-           (list (concatenate 'string spad "/autoload/" "browse-files"))
-           (list (concatenate 'string spad "/autoload/" "asauto-files"))
-           spad)
-|#
-      (interpsys-image-init ()' ()' ()' ()' spad)
-      (format *standard-output* "before fricas-restart~%")
-      (force-output  *standard-output*)
+     (interpsys-image-init spad)
+     (format *standard-output* "before fricas-restart~%")
+     (force-output  *standard-output*)
 )
 
-(defun interpsys-image-init (parse-files comp-files browse-files
-             asauto-files spad)
+(defun interpsys-image-init (spad)
   (setf *package* (find-package "BOOT"))
   (initroot spad)
   #+:GCL
@@ -437,11 +241,6 @@ After this function is called the image is clean and can be saved.
   (setq compiler::*suppress-compiler-notes* t)
   (|interpsysInitialization|)
   (setq *load-verbose* nil)
-#|
-  (|setBootAutloadProperties| comp-functions comp-files)
-  (|setBootAutloadProperties| browse-functions browse-files)
-  (|setBootAutloadProperties| asauto-functions asauto-files)
-|#
   (resethashtables) ; the databases into core, then close the streams
  )
 
