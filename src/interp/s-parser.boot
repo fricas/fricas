@@ -574,9 +574,6 @@ parse_Sequence1() ==
           push_lform1("COLLECT", [:pop_stack_1(),
                                        pop_stack_1()]))
 
--- IteratorTail : "repeat" [Iterator*] | [Iterator*]
+-- IteratorTail : [Iterator*]
 parse_IteratorTail() ==
-    match_symbol("repeat") =>
-        repetition(nil, FUNCTION parse_Iterator) => true
-        push_reduction("null_Tail", nil)
     repetition(nil, FUNCTION parse_Iterator)

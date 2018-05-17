@@ -588,18 +588,12 @@ substituteOp(op',op,x) ==
   atom x => x
   [(op=(f:= first x) => op'; f),:[substituteOp(op',op,y) for y in rest x]]
 
---substituteForFormalArguments(argl,expr) ==
---  SUBLIS([[v,:a] for a in argl for v in $FormalMapVariableList],expr)
-
  -- following is only intended for substituting in domains slots 1 and 4
  -- signatures and categories
-sublisV(p,e) ==
-  (atom p => e; suba(p,e)) where
+sublisV(p,e) == 
+  LIST2REFVEC [suba(p, e.i) for i in 0..MAXINDEX e] where
     suba(p,e) ==
       STRINGP e => e
-      -- no need to descend vectors unless they are categories
-      --REFVECP e => LIST2REFVEC [suba(p,e.i) for i in 0..MAXINDEX e]
-      isCategory e => LIST2REFVEC [suba(p,e.i) for i in 0..MAXINDEX e]
       atom e => (y:= ASSQ(e,p) => rest y; e)
       u:= suba(p,QCAR e)
       v:= suba(p,QCDR e)

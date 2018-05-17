@@ -325,8 +325,6 @@ opOf x ==
 getProplist(x,E) ==
   not atom x => getProplist(first x,E)
   u:= search(x,E) => u
-  --$InteractiveMode => nil
-  --$InteractiveMode and (u:= search(x,$InteractiveFrame)) => u
   (pl:=search(x,$CategoryFrame)) =>
     pl
 

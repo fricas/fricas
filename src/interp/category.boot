@@ -121,10 +121,8 @@ mkCategory(sigList, attList, domList, PrincipalAncestor) ==
   if not(PrincipalAncestor = nil) then
       v.4 := [first PrincipalAncestor.4, CADR PrincipalAncestor.4, OldLocals]
    else v.4 := [nil,nil,OldLocals] --associated categories and domains
-  v.5:= domList
+  v.5:= nil
   v
-
-isCategory a == REFVECP a and #a>5 and a.3=["Category"]
 
 --% Subsumption code (for operators)
 
@@ -425,13 +423,11 @@ JoinInner(l) ==
     -- This is a list of all the categories that this extends
     -- conditionally or unconditionally
   sigl := NewCatVec.(1)
-  globalDomains := NewCatVec.5
   NewCatVec := COPY_-SEQ NewCatVec
   FundamentalAncestors := join_fundamental_ancestors(NewCatVec, l')
 
   for b in l repeat
     sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
-    globalDomains:= [:globalDomains, :set_difference(b.5, globalDomains)]
   for b in CondList repeat
     newpred:= first rest b
     sigl:=
@@ -449,7 +445,7 @@ JoinInner(l) ==
       FundamentalAncestors :=
           [x for x in FundamentalAncestors | first(x) ~= pName]
   NewCatVec.4 := [c,FundamentalAncestors, CADDR NewCatVec.4]
-  mkCategory(sigl, nil, globalDomains, NewCatVec)
+  mkCategory(sigl, nil, nil, NewCatVec)
 
 Join(:L) == JoinInner(L)
 
