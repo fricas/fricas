@@ -173,6 +173,13 @@ mkInterpTargetedADEF(t,vars,types,oldBody) ==
   body := ['rewriteMap1,MKQ $mapName,arglCode,MKQ types]
   compileADEFBody(t,vars,types,body,first types)
 
+wrapMapBodyWithCatch body ==
+    -- places a CATCH around the map body
+    -- note that we will someday have to fix up the catch identifier
+    -- to use the generated internal map name
+    $mapThrowCount = 0 => body
+    ['CATCH, MKQ mapCatchName $mapName, body]
+
 compileTargetedADEF(t,vars,types,body) ==
   val := compileBody(body, first types)
   computedResultType := objMode val

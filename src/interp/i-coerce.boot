@@ -1389,3 +1389,90 @@ hasCorrectTarget(m,sig is [dc,tar,:.]) ==
   m=tar => 'T
   tar is ['Union,t,'failed] => t=m
   tar is ['Union,'failed,t] and t=m
+
+
+--% Interpreter Code Generation Routines
+
+--Modified by JHD 9/9/93 to fix a problem with coerces inside
+--interpreter functions being used as mappings. They were being
+--handled with $useCoerceOrCroak being NIL, and therefore internal
+--coercions were not correctly handled. Fix: remove dependence
+--on $useCoerceOrCroak, and test explicitly for Mapping types.
+
+--% COERCE
+
+intCodeGenCOERCE(triple,t2) ==
+  -- NOTE: returns a triple
+  t1 := objMode triple
+  t1 = $EmptyMode => NIL
+  t1 = t2 => triple
+  val := objVal triple
+
+  val is ['THROW,label,code] =>
+    if label is ['QUOTE, l] then label := l
+    null($compilingMap) or (label ~= mapCatchName($mapName)) =>
+      objNew(['THROW,label,wrapped2Quote objVal
+        intCodeGenCOERCE(objNew(code,t1),t2)],t2)
+    -- we have a return statement. just send it back as is
+    objNew(val,t2)
+
+  val is ['PROGN,:code,lastCode] =>
+    objNew(['PROGN,:code,wrapped2Quote objVal
+      intCodeGenCOERCE(objNew(lastCode,t1),t2)],t2)
+
+  val is ['COND,:conds] =>
+    objNew(['COND,
+      :[[p,wrapped2Quote objVal intCodeGenCOERCE(objNew(v,t1),t2)]
+        for [p,v] in conds]],t2)
+
+  -- specially handle subdomain
+  absolutelyCanCoerceByCheating(t1,t2) => objNew(val,t2)
+
+  -- specially handle coerce to Any
+  t2 = '(Any) => objNew(['CONS,MKQ t1,val],t2)
+
+  -- optimize coerces from Any
+  (t1 = '(Any)) and (val is [ ='CONS,t1',val']) =>
+    intCodeGenCOERCE(objNew(val',removeQuote t1'),t2)
+
+  -- specially handle coerce from Equation to Boolean
+  (t1 is ['Equation,:.]) and (t2 = $Boolean) =>
+    coerceByFunction(triple,t2)
+
+  -- next is hack for if-then-elses
+  (t1 = '$NoValueMode) and (val is ['COND,pred]) =>
+    code :=
+      ['COND,pred,
+        [MKQ true,['throwKeyedMsg,MKQ "S2IM0016",MKQ $mapName]]]
+    objNew(code,t2)
+
+  -- optimize coerces to OutputForm
+  t2 = $OutputForm =>
+    coerceByFunction(triple,t2)
+
+  isSubDomain(t1, $Integer) =>
+    intCodeGenCOERCE(objNew(val, $Integer), t2)
+
+  -- generate code
+  -- 1. See if the coercion will go through (absolutely)
+  --    Must be careful about variables or else things like
+  --    P I --> P[x] P I might not have the x in the original polynomial
+  --    put in the correct place
+
+  (not containsVariables(t2)) and canCoerceByFunction(t1,t2) =>
+    -- try coerceByFunction
+    (not canCoerceByMap(t1,t2)) and
+      (code := coerceByFunction(triple,t2)) => code
+    intCodeGenCoerce1(val,t1,t2)
+
+  -- 2. Set up a failure point otherwise
+
+  intCodeGenCoerce1(val,t1,t2)
+
+intCodeGenCoerce1(val,t1,t2) ==
+  -- Internal function to previous one
+  -- designed to ensure that we don't use coerceOrCroak on mappings
+--(t2 is ['Mapping,:.]) => THROW('coerceOrCroaker, 'croaked)
+  objNew(['coerceOrCroak,mkObjCode(['wrap,val],t1),
+        MKQ t2, MKQ $mapName],t2)
+
