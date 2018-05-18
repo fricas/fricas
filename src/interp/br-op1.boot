@@ -375,7 +375,7 @@ dbGatherDataImplementation(htPage,opAlist) ==
   domainForm  := htpProperty(htPage,'domname)
   dom     := EVAL domainForm
   which   := '"operation"
-  [nam,:$domainArgs] := domainForm
+  [nam, :.] := domainForm
   $predicateList: local := GETDATABASE(nam,'PREDICATES)
   predVector := dom.3
   u := getDomainOpTable2(dom, true, ASSOCLEFT opAlist)
@@ -464,13 +464,6 @@ dbMakeSignature(op,[sig,:.]) == [op,sig]  --getDomainOpTable format
 dbGetOrigin(op,[.,.,origin,:.]) == origin
 
 dbGetCondition(op,[.,pred,:.]) == pred
-
---dbInsertOpAlist(op,item,opAlist) ==
---  insertAlist(op,[item,:LASSOC(op,opAlist)],opAlist)
-
---dbSortOpAlist opAlist ==
---  [[op,:listSort(function LEXLESSEQP,alist)]
---    for [op,:alist] in listSort(function LEXLESSEQP,opAlist)]
 
 --============================================================================
 --               Branches of Views

@@ -47,7 +47,7 @@ showImp(dom,:options) ==
   sayBrightly '"-------------Operation summary-----------------"
   missingOnlyFlag := IFCAR options
   domainForm := devaluate dom
-  [nam,:$domainArgs] := domainForm
+  [nam, :.] := domainForm
   $predicateList: local := GETDATABASE(nam,'PREDICATES)
   predVector := dom.3
   u := getDomainOpTable(dom,true)

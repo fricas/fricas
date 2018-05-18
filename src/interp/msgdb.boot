@@ -781,10 +781,6 @@ say2PerLineThatFit l ==
       sayBrightly '""
     sayBrightly '""
 
-sayDisplayStringWidth x ==
-  null x => 0
-  sayDisplayWidth x
-
 sayDisplayWidth x ==
   PAIRP x =>
     +/[fn y for y in x] where fn y ==
@@ -945,4 +941,3 @@ escapeSpecialChars s ==
   member(s, $htSpecialChars) => STRCONC('"_\", s)
   s
 
-dbSpecialDisplayOpChar? c == (c = char '_~)
