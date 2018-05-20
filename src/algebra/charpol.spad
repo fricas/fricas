@@ -1,0 +1,165 @@
+)abbrev package CHARPOL2 CharacteristicPolynomial2
+++ Description: This package computes characteristic polynomial
+++  using Danilewski method.
+CharacteristicPolynomial2(F : Field) : Exports == Implementation where
+
+  Mat ==> Matrix(F)
+  Rec ==> Record(matrix : Mat, block_list : List(Integer))
+  Up ==> SparseUnivariatePolynomial(F)
+  Exports ==> with
+    danilewski : Mat -> Rec
+      ++ danilewski(m) converts m to block form where
+      ++ each block represents transposition of multiplication
+      ++ by a polynomial.
+    char_pol : Mat -> Up
+      ++ char_pol(m) computes characteristic polynomial of m.
+
+  Implementation ==> add
+
+    NNI ==> NonNegativeInteger
+
+    danilewski(m : Mat) : Rec ==
+        n := ncols(m)
+        n ~= nrows(m) => error "need square matrix"
+        n1 := n::Integer
+        nn := n::Integer
+        blocks : List(Integer) := []
+        for nc in 1..(n - 1) repeat
+            n1 := n - nc + 1
+            k1 := n1 - 1
+            has_block : Boolean := false
+            if (piv := qelt(m, n1, k1)) = 0 then
+                has_block := true
+                for kk in 1..(k1 - 1) repeat
+                    if (piv := qelt(m, n1, kk)) ~= 0 then
+                        m := swapRows!(m, kk, k1)
+                        m := swapColumns!(m, kk, k1)
+                        has_block := false
+                        break
+            has_block =>
+                nn := k1
+                blocks := cons(n1, blocks)
+                "iterate"
+            piv := 1/piv
+            for i in 1..k1 repeat
+                cc := piv*qelt(m, i, k1)
+                for j in 1..nn repeat
+                    val :=
+                        j = k1 => cc
+                        qelt(m, i, j) - cc*qelt(m, n1, j)
+                    qsetelt!(m, i, j, val)
+            for j in 1..nn repeat
+                s : F := 0
+                for i in 1..k1 repeat
+                    s := s + qelt(m, n1, i)*qelt(m, i, j)
+                qsetelt!(m, k1, j, s)
+            for i in 0..(nn - n1) repeat
+                qsetelt!(m, k1, k1 + i, qelt(m, k1, k1 + i)
+                                        + qelt(m, n1, n1 + i))
+            for j in 1..nn repeat
+                qsetelt!(m, n1, j, 0)
+            qsetelt!(m, n1, k1, 1)
+        [m, cons(1, blocks)]
+
+
+    char_pol(m) ==
+        pp := danilewski(copy(m))
+        n := ncols(m)
+        blocks := pp.block_list
+        mp := pp.matrix
+        res := 1$Up
+        while not(empty?(blocks)) repeat
+            i0 := first(blocks)
+            blocks := rest(blocks)
+            i1 : Integer :=
+                 empty?(blocks) => n + 1
+                 first(blocks)
+            res1 := 0$Up
+            for i in 0..(i1 - i0 - 1) repeat
+                res1 := res1 + monomial(mp(i0, (i1 - i - 1)::NNI), i::NNI)$Up
+            res1 := monomial(-1$F, (i1 - i0)::NNI)$Up + res1
+            if even?(i1 - i0) then
+                res1 := -res1
+            res := res*res1
+        res
+
+)abbrev package CHARPOL3 CharacteristicPolynomial3
+++ Description: This package computes charateristi polynomial
+++  via interpolation from values at several points.
+++  Additionally, it computes determinant of matrix of
+++  fractions by clearing common denominators of rows.
+++  The determinant routine can be used to compute characteristic
+++  polynomial instead of regular determinant.
+CharacteristicPolynomial3(R : IntegralDomain) : Exports == Implementation where
+  Mat ==> Matrix(R)
+  Up ==> SparseUnivariatePolynomial(R)
+  F ==> Fraction(R)
+  MatF ==> Matrix(F)
+  UpF ==> SparseUnivariatePolynomial(F)
+  Exports ==> with
+    char_pol_via_interpolation : Mat -> Up
+      ++ char_pol_via_interpolation(m) computes characteristic
+      ++ polynomial of m.
+    if R has GcdDomain then
+        det_via_common_denominator : MatF -> F
+          ++ det_via_common_denominator(m) computes determinant of m.
+        char_pol_via_den_interpolation : MatF -> UpF
+          ++ char_pol_via_den_interpolation(m) computes characteristic
+          ++ polynomial of m.
+
+  Implementation ==> add
+
+    char_pol_via_interpolation0(m : Mat, ld : List(R)) : UpF ==
+        n := ncols(m)
+        n ~= nrows(m) => error "matrix not square"
+        A1 := copy(m)
+        res : UpF := 0
+        m1 : UpF := 1
+        v := create()$SingletonAsOrderedSet
+        for i in 0..n repeat
+            d1 := determinant(A1)
+            i_f := i::R::F
+            m1v := ground(eval(m1, v, i_f))
+            cor := d1::F - ground(eval(res, v, i_f))
+            res := res + (cor/m1v)*m1
+            m1 := (monomial(1, 1)$UpF - i_f::UpF)*m1
+            for j in 1..n for di in ld repeat
+                A1(j, j) := A1(j, j) - di
+        res
+
+    char_pol_via_interpolation(m : Mat) : Up ==
+        ld : List(R) := [1 for i in 1..ncols(m)]
+        p1 := char_pol_via_interpolation0(m, ld)
+        map(retract, p1
+           )$UnivariatePolynomialCategoryFunctions2(F, UpF, R, Up)
+
+    if R has GcdDomain then
+
+        to_common_denominator(m : MatF) : Record(mr : Mat, rd : List(R)) ==
+            n := nrows(m)
+            k := ncols(m)
+            lg : List(R) := []
+            B := new(n, n, 0)$Matrix(R)
+            for i in 1..n repeat
+               lr : List(R) := []
+               for j in 1..k repeat
+                    lr := cons(denom(qelt(m, i, j)), lr)
+               g := lcm(lr)
+               lg := cons(g, lg)
+               for j in 1..k repeat
+                   a := qelt(m, i, j)
+                   g1 := (g exquo denom(a))::R
+                   qsetelt!(B, i, j, g1*numer(a))
+            [B, reverse!(lg)]
+
+        det_via_common_denominator(m : MatF) : F ==
+            (B, lg) := to_common_denominator(m)
+            det1 := determinant(B)
+            d := reduce(_*, lg, 1)
+            det1/d
+
+        char_pol_via_den_interpolation(m : MatF) : UpF ==
+            (B, lg) := to_common_denominator(m)
+            res1 := char_pol_via_interpolation0(B, lg)
+            d := reduce(_*, lg, 1)::F
+            map(c +-> c/d, res1)

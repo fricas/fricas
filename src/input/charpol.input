@@ -1,0 +1,35 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "characteristic polynomial"
+
+testcase "characteristic polynomial"
+)expose CHARPOL2
+)expose CHARPOL3
+
+m0 := new(0, 0, 0)$Matrix(Integer)
+m1 := matrix([[7]])$Matrix(Integer)
+m2 := matrix([[1, 2], [3, 5]])$Matrix(Integer)
+m3 := matrix([[random(1000) for i in 1..8] for j in 1..8])$Matrix(Integer);
+
+ml := [m0, m1, m2, m3];
+cll := [[1], [-1, 7], [1, -6, -1], []]
+for m in ml for cl in cll repeat
+    p := characteristicPolynomial(m)
+    up := univariate(p)
+    cm := m
+    if not(empty?(cl)) and not(coefficients(p) = cl) then
+        print(coefficients(p))
+        print(cl)
+        testTrue("(_"coefficients(p) = cl_", false)")
+    testEquals("char_pol_via_interpolation(cm)", "up")
+    cm1 := map(c +-> c::Fraction(Integer), m)
+    p1 := characteristicPolynomial(cm1)
+    up1 := univariate(p1)
+    -- testEquals("up1", "map(c +-> c::Fraction(Integer), up)")
+    testEquals("det_via_common_denominator(cm1)", "coefficient(up1, 0)")
+    testEquals("char_pol(cm1)", "up1")
+    testEquals("char_pol_via_den_interpolation(cm1)", "up1")
+
+)set output algebra on
+statistics()
