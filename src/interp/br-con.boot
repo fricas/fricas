@@ -234,8 +234,6 @@ kePageOpAlist oplist ==
   opAlist := nil
   for [op,sig,:pred] in oplist repeat
     u := LASSOC(op,opAlist)
---was
---    opAlist := insertAlist(op,[[sig,pred],:u],opAlist)
     opAlist := insertAlist(zeroOneConvert op,[[sig,pred],:u],opAlist)
   opAlist
 

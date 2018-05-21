@@ -1290,14 +1290,6 @@ Rm2Sm(x,[.,n,m,S],[.,p,R]) ==
 
 Rm2V(x,[.,.,.,R],target) == M2V(x,['Matrix,R],target)
 
---% Script
-
-Scr2Scr(u, source is [.,S], target is [.,T]) ==
-  u = '_$fromCoerceable_$ => canCoerce(S,T)
-  null (v := coerceInt(objNewWrap(rest u, S), T)) =>
-    coercionFailure()
-  [first u, :objValUnwrap(v)]
-
 --% SparseUnivariatePolynomialnimial
 
 SUP2Up_aux(u,source is [.,S],target is [.,x,T]) ==
@@ -1698,8 +1690,6 @@ Var2OtherPS(u,source,target is [.,x,S]) ==
 
 V2M(u,[.,D],[.,R]) ==
   u = '_$fromCoerceable_$ => nil
-    -- D is ['Vector,:.] => nil  -- don't have data
-    -- canCoerce(D,R)
   -- first see if we are coercing a vector of vectors
   D is ['Vector,E] and
     isRectangularVector(u, n := MAXINDEX u, m := MAXINDEX u.0) =>
@@ -1712,8 +1702,6 @@ V2M(u,[.,D],[.,R]) ==
       res
   -- if not, try making it into a 1 by n matrix
   coercionFailure()
---LIST2VEC [LIST2VEC [objValUnwrap(coerceInt(objNewWrap(u.i,D),R))
---  for i in 0..MAXINDEX(u)]]
 
 V2Rm(u, source is [., D], [., n, m, R]) ==
   u = '_$fromCoerceable_$ => nil
@@ -2146,84 +2134,7 @@ DEFPARAMETER($CoerceTable, '(                                          _
     ) ) _
   ) )
 
--- this list is too long for the parser, so it has to be split into parts
--- specifies the commute functions
--- commute stands for partial commute function
---DEFPARAMETER($CommuteTable, '(                                           _
---  (DistributedMultivariatePolynomial . (                                _
---    (DistributedMultivariatePolynomial    commute    commuteMultPol)    _
---    (Complex                              commute    commuteMultPol)    _
---    (MultivariatePolynomial               commute    commuteMultPol)    _
---    (NewDistributedMultivariatePolynomial commute    commuteMultPol)    _
---    (Polynomial                           commute    commuteMultPol)    _
---    (Quaternion                           commute    commuteMultPol)    _
---    (Fraction                             commute    commuteMultPol)    _
---    (SquareMatrix                         commute    commuteMultPol)    _
---    (UnivariatePolynomial                 commute    commuteMultPol)    _
---    ))                                                                  _
---  (Complex . (                                                         _
---    (DistributedMultivariatePolynomial    commute    commuteG2)         _
---    (MultivariatePolynomial               commute    commuteG2)         _
---    (NewDistributedMultivariatePolynomial commute    commuteG2)         _
---    (Polynomial                           commute    commuteG1)         _
---    (Fraction                             commute    commuteG1)         _
---    (SquareMatrix                         commute    commuteG2)         _
---    (UnivariatePolynomial                 commute    commuteG2)         _
---    ))                                                                  _
---  (MultivariatePolynomial . (                                           _
---    (DistributedMultivariatePolynomial    commute    commuteMultPol)    _
---    (Complex                             commute    commuteMultPol)    _
---    (MultivariatePolynomial               commute    commuteMultPol)    _
---    (NewDistributedMultivariatePolynomial commute    commuteMultPol)    _
---    (Polynomial                           commute    commuteMultPol)    _
---    (Quaternion                           commute    commuteMultPol)    _
---    (Fraction                        commute    commuteMultPol)    _
---    (SquareMatrix                         commute    commuteMultPol)    _
---    (UnivariatePolynomial                       commute    commuteMultPol)    _
---    ))                                                                  _
---  (Polynomial . (                                                       _
---    (DistributedMultivariatePolynomial    commute    commuteMultPol)    _
---    (Complex                              commute    commuteMultPol)    _
---    (MultivariatePolynomial               commute    commuteMultPol)    _
---    (NewDistributedMultivariatePolynomial commute    commuteMultPol)    _
---    (Polynomial                           commute    commuteMultPol)    _
---    (Quaternion                           commute    commuteMultPol)    _
---    (Fraction                             commute    commuteMultPol)    _
---    (SquareMatrix                         commute    commuteMultPol)    _
---    (UnivariatePolynomial                 commute    commuteMultPol)    _
---    ))                                                                  _
---  (Quaternion . (                                                       _
---    (DistributedMultivariatePolynomial    commute    commuteQuat2)      _
---    (MultivariatePolynomial               commute    commuteQuat2)      _
---    (NewDistributedMultivariatePolynomial commute    commuteQuat2)      _
---    (Polynomial                           commute    commuteQuat1)      _
---    (SquareMatrix                         commute    commuteQuat2)      _
---    (UnivariatePolynomial                       commute    commuteQuat2)      _
---    ))                                                                  _
---  (SquareMatrix . (                                                     _
---    (DistributedMultivariatePolynomial    commute    commuteSm2)        _
---    (Complex                             commute    commuteSm1)        _
---    (MultivariatePolynomial               commute    commuteSm2)        _
---    (NewDistributedMultivariatePolynomial commute    commuteSm2)        _
---    (Polynomial                           commute    commuteSm1)        _
---    (Quaternion                           commute    commuteSm1)        _
---    (SparseUnivariatePolynomial           commute    commuteSm1)        _
---    (UnivariatePolynomial                 commute    commuteSm2)        _
---    ))                                                                  _
---  (UnivariatePolynomial . (                                                   _
---    (DistributedMultivariatePolynomial    commute    commuteUp2)        _
---    (Complex                              commute    commuteUp1)        _
---    (MultivariatePolynomial               commute    commuteUp2)        _
---    (NewDistributedMultivariatePolynomial commute    commuteUp2)        _
---    (Polynomial                           commute    commuteUp1)        _
---    (Quaternion                           commute    commuteUp1)        _
---    (Fraction                        commute    commuteUp1)        _
---    (SparseUnivariatePolynomial           commute    commuteUp1)        _
---    (SquareMatrix                         commute    commuteUp2)        _
---    (UnivariatePolynomial                 commute    commuteUp2)        _
---    ))                                                                  _
---  ))
-
+-- We use only existence of entries
 DEFPARAMETER($CommuteTable, '(                                           _
   (Complex . (                                                         _
     (DistributedMultivariatePolynomial    commute    commuteG2)         _

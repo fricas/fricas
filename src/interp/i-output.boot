@@ -235,7 +235,6 @@ outputTran x ==
             o := coerceInteractive(mkObjWrap(f, domain), '(OutputForm))
             objValUnwrap o
   [op, :l] := x
-  op = 'LAMBDA_-CLOSURE => 'Closure
   x is ['break,:.] => 'break
 
   op is ["$elt",targ,fun] or not $InteractiveMode and op is ["elt",targ,fun] =>
@@ -1295,10 +1294,7 @@ charyTop(u,start,linelength) ==
   d := APP(v,start,0,nil)
   n := superspan v
   m := - subspan v
--->
-  $testOutputLineFlag =>
-    $testOutputLineList :=
-      [:ASSOCRIGHT SORTBY('CAR,d),:$testOutputLineList]
+  -- FIXME: should we collect output here?
   until n < m repeat
     scylla(n,d)
     n := n - 1
@@ -1942,13 +1938,10 @@ bracketagglist(u, start, linelength, tchr, open, close) ==
 
 prnd(start, op) ==
   spcs := fillerSpaces(MAX(0,start - 1), '" ")
-  $testOutputLineFlag =>
-    string := STRCONC(spcs, op)
-    $testOutputLineList := [string,:$testOutputLineList]
-  PRINTEXP(spcs, $algebraOutputStream)
   $collectOutput =>
     string := STRCONC(spcs, op)
     $outputLines := [string, :$outputLines]
+  PRINTEXP(spcs, $algebraOutputStream)
   PRINTEXP(op,$algebraOutputStream)
   TERPRI $algebraOutputStream
 

@@ -45,7 +45,6 @@ DEFPARAMETER($QuietCommand, NIL)
 -- When $ProcessInteractiveValue is true, we don't want the value printed
 -- or recorded.
 DEFPARAMETER($ProcessInteractiveValue, NIL)
-DEFPARAMETER($HTCompanionWindowID, NIL)
 
 intSetQuiet() ==
   $QuietCommand := true
@@ -204,7 +203,6 @@ recordAndPrint(x,md) ==
   if $printTimeIfTrue or $printTypeIfTrue then printTypeAndTime(x',md')
   if $printStorageIfTrue then printStorage()
   if $printStatisticsSummaryIfTrue then printStatisticsSummary()
-  if FIXP $HTCompanionWindowID then mkCompanionPage md
   $mkTestFlag = true => recordAndPrintTest md
   $runTestFlag =>
     $mkTestOutputType := md

@@ -333,9 +333,6 @@ evalFormMkValue(op,form,tm) ==
 --EVAL BOOT contains the top level interface to the Scratchhpad-II
 --interpreter.  The Entry point into the interpreter from the parser is
 --processInteractive.
---The type analysis algorithm is contained in the file BOTMUP BOOT,
---and MODSEL boot,
---the map handling routines are in MAP BOOT and NEWMAP BOOT, and
 --the interactive coerce routines are in COERCE BOOT and COERCEFN BOOT.
 --
 --Conventions:

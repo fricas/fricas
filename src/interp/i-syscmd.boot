@@ -391,12 +391,6 @@ close args ==
     QUIT()
   nil
 
---% )constructor
-
-constructor args ==
-  sayMessage '"   Not implemented yet."
-  NIL
-
 --% )compiler
 
 compiler args ==
@@ -2489,7 +2483,6 @@ clearFrame() ==
 --              Undoing previous m commands
 --=======================================================================
 undoCount(n) ==  --computes the number of undo's, given $IOindex
---pp ["IOindex = ",$IOindex]
   m :=
     n >= 0 => $IOindex - n - 1
     -n
@@ -2519,7 +2512,6 @@ undoSteps(m,beforeOrAfter) ==
   for i in 0..m for framelist in tails $frameRecord repeat
     env := undoSingleStep(first framelist,env)
     framelist is [.,['systemCommand,:systemDelta],:.] =>
---     pp '"===============> AHA <============="
        framelist := rest framelist             --undoing system commands given
        env := undoSingleStep(systemDelta,env)  --  before command line
     lastTailSeen := framelist
@@ -2782,7 +2774,6 @@ processSynonyms() ==
   if (SIZE synstr) > (SIZE fun) then
     for i in (SIZE fun)..(SIZE synstr) repeat
       fun := CONCAT (fun, '" ")
---  $currentLine := STRCONC(fill,RPLACSTR(line, 1, SIZE synstr, fun),opt)
   cl := STRCONC(fill,RPLACSTR(line, 1, SIZE synstr, fun),opt)
   SETQ(LINE,cl)
   SETQ(CHR,LINE.(p+1))
