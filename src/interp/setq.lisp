@@ -133,7 +133,6 @@
 (setq *print-pretty* t)
 (setq *print-circle* nil)
 
-;; $SYSCOMMANDS is now defined at the top of i-syscmd.boot
 
 (SETQ |$systemCommands| '(
 ;;  COMMAND              USER LEVEL   - )set userlevel
@@ -470,8 +469,6 @@
 
 ;; ---- start of initial settings for variables used in test.boot
 
-(SETQ |$testOutputLineFlag| NIL)   ;; referenced by charyTop, prnd
-                                   ;; to stash lines
 (SETQ |$runTestFlag| NIL)          ;; referenced by maPrin to stash
                                    ;; output by recordAndPrint to not
                                    ;; print type/time

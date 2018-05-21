@@ -553,9 +553,6 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
   (opName ~= "elt") and (opName ~= "apply") and
     isEltable(op, argl, #argl) and (u := bottomUpElt t) => u
 
-  if FIXP $HTCompanionWindowID then
-    mkCompanionPage('operationError, t)
-
   amsl := printableArgModeSetList()
   opName1 :=
     opName0 = $immediateDataSymbol =>
