@@ -38,14 +38,6 @@
   converts input file "fn" to a record file stored at "<odir>fn.record".
   If you give one argument, <idir> is used for <odir>
 
-)bo htFile2RecordFile('"<idir>fn.ht",'"<odir>a.b")
-   converts HT file "fn" to a record file stored at "<odir>fn.record".
-   If you give one argument, record file goes to "<idir>fn.record".
-   A file "<odir>fn.input" is produced as a side-effect.
-
-)bo htFile2InputFile('"<idir>fn.input",'"<odir>a.b")
-   converts input file "fn" to an input file stored at "<odir>fn.input"
-
 )bo printRecordFile('"<idir>fn.record") to display results recorded
 
 )bo verifyRecordFile('"<idir>fn.record") to verfiy that same output
@@ -56,7 +48,6 @@
 --                      Global Variables
 --=======================================================================
 $backslash := char '_\
-$testOutputLineFlag := nil   -- referenced by charyTop, prnd to stash lines
 $runTestFlag := nil          -- referenced by maPrin to stash output
                              -- by recordAndPrint to not print type/time
 $mkTestFlag := nil           -- referenced by READLN to stash input
@@ -106,34 +97,6 @@ printRecordFile(pathname,:option) ==
     for x in o repeat maPrin x
     if t~= '(Void) then printTypeAndTime(nil,t)
 
-testPrin(u,w) == --same as maPrin but lines are stored in $testOutputLineList
-                 --these lines are needed for pasting into HT files
-  $LINELENGTH: local := w
-  $mkTestFlag: local := nil
-  $testOutputLineFlag: local := true
-  $testOutputLineList: local := nil
-  maPrin COPY u
-  res := REVERSE $testOutputLineList
-  for x in res repeat sayBrightly x
-  res
-
---=======================================================================
---     Function for converting a maPrin expression to HyperTeX format
---=======================================================================
-hyperize(u,w) ==
-  $LINELENGTH: local := w
-  $mkTestFlag: local := nil
-  $testOutputLineFlag: local := true
-  $testOutputLineList: local := nil
-  maPrin COPY u
-  res := REVERSE $testOutputLineList
-  null res => '""
-  null rest res => first res
-  "STRCONC"/[first res,:[STRCONC("\newline ",x) for x in rest res]]
-
-verbatimize u ==
-  u = '"" => u
-  STRCONC('"\begin{verbatim}",u,'"\end{verbatim}")
 --=======================================================================
 --                Function for Verifying a `record' file
 --=======================================================================
@@ -204,54 +167,11 @@ wasIs(old,new,:typePart) ==
 --=======================================================================
 --              Creating Input Files from HT Files
 --=======================================================================
-htFile2InputFile(pathname,:option) ==
-  ifn := pathnameName pathname
-  not isExistingFile pathname => throwKeyedMsg("S2IL0003",[namestring ifn])
-  opath := IFCAR option or pathname
-  odirect := pathnameDirectory opath
-  opathname := htMkPath(odirect,ifn,'"input")
-  if isExistingFile opathname then DELETE_-FILE opathname
-  $htStream : local := MAKE_INSTREAM(pathname)
-  alist := [[htGetPageName u,:htGetSpadCommands()]
-              while (u := htExampleFind '"\begin{page}")]
-  SHUT $htStream
-  outStream := MAKE_OUTSTREAM(opathname)
-  for [pageName,:commands] in alist repeat
-    PRINTEXP('"-- ",outStream)
-    PRINTEXP(pageName,outStream)
-    TERPRI outStream
-    PRINTEXP('")cl all",outStream)
-    TERPRI outStream
-    for x in commands repeat
-      PRINTEXP(htCommandToInputLine x,outStream)
-      TERPRI outStream
-    TERPRI outStream
-  SHUT outStream
-  opathname
-
-htCommandToInputLine s == fn(s,0) where fn(s,init) ==
---similar to htTrimAtBackSlash except removes all \
-  k := or/[i for i in init..MAXINDEX s | s.i = char '_\] =>
-    member(s.(k + 1),[char 'f,char 'b]) => SUBSTRING(s,init,k - init)
-    STRCONC(SUBSTRING(s,init,k - init),fn(s,k + 1))
-  SUBSTRING(s,init,nil)
-
-htTrimAtBackSlash s ==
-  backslash := char '_\
-  k := or/[i for i in 0..MAXINDEX s | s.i = backslash
-          and member(s.(i + 1),[char 'f,char 'b])] => SUBSTRING(s,0,k - 1)
-  s
 
 htMkPath(directory,name,typ) ==
   nameType := STRCONC(name,'".",typ)
   null directory => nameType
   STRCONC(directory,nameType)
-
---=======================================================================
---              Creating Record File from HT Files
---=======================================================================
-htFile2RecordFile(pathname,:option) ==
-  inputFile2RecordFile htFile2InputFile(pathname, IFCAR option)
 
 --=======================================================================
 --           Function to record and print values into $testStream

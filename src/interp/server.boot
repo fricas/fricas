@@ -138,7 +138,7 @@ executeQuietCommand() ==
     parseAndInterpret stringBuf)))
 
 parseAndEvalToHypertex str ==
-  lines := parseAndEvalToStringForHypertex str
+  lines := parseAndEvalToStringEqNum(str)
   len := LENGTH lines
   sockSendInt($MenuServer, len)
   for s in lines repeat
@@ -148,13 +148,6 @@ parseAndEvalToString str ==
   $collectOutput:local := true
   $outputLines: local := nil
   $IOindex: local := nil
-  v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
-  v = 'restart => ['"error"]
-  NREVERSE $outputLines
-
-parseAndEvalToStringForHypertex str ==
-  $collectOutput:local := true
-  $outputLines: local := nil
   v := CATCH('SPAD_READER, CATCH('top_level, parseAndEvalStr str))
   v = 'restart => ['"error"]
   NREVERSE $outputLines
