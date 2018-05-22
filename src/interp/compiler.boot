@@ -1107,27 +1107,45 @@ coerceSubset([x,m,e],m') ==
       [x,m',e]
   nil
 
+check_prop(pl, m) ==
+    (QLASSQ("value", pl) is [m'', :.] or
+      QLASSQ("mode", pl) is ["Mapping", m'']) and modeEqual(m'', m)
+
 coerceHard(T,m) ==
   e := T.env
   m':= T.mode
   STRINGP m' and modeEqual(m, $String) => [T.expr, m, e]
   STRINGP T.expr and modeEqual(m', $String) and modeEqual(m, $Symbol) =>
       [["QUOTE", INTERN(T.expr, "BOOT")], m, e]
-  modeEqual(m', m) or
-    (get(m', "value", e) is [m'', :.] or getmode(m', e) is ["Mapping", m''])
-      and modeEqual(m'', m) or
-        (get(m, "value", e) is [m'', :.] or getmode(m, e) is ["Mapping", m''])
-          and modeEqual(m'', m') => [T.expr, m, e]
+  modeEqual(m', m) => [T.expr, m, e]
   STRINGP T.expr and T.expr = m => [T.expr, m, e]
+  pl' := getProplist(m', e)
+  check_prop(pl', m) => [T.expr, m, e]
+  pl := getProplist(m, e)
+  check_prop(pl, m') => [T.expr, m, e]
   isCategoryForm(m) =>
       $bootStrapMode = true => [T.expr, m, e]
       extendsCategoryForm(T.expr, T.mode, m, e) => [T.expr, m, e]
-      coerceExtraHard(T,m)
-  coerceExtraHard(T,m)
+      coerceExtraHard(T, m, pl, pl')
+  coerceExtraHard(T, m, pl, pl')
 
-coerceExtraHard(T is [x,m',e],m) ==
+getmode_pl(x, pl) ==
+  u := QLASSQ("value", pl) => u.mode
+  QLASSQ("mode", pl)
+
+isUnionMode2(m, e, pl) ==
+  m is ["Union",:.] => m
+  (m' := getmode_pl(m, pl)) is ["Mapping", ["UnionCategory", :.]] => CADR m'
+  -- FIXME: Hardcoded assumprion about Rep
+  v :=
+      m = "$" => get("Rep", "value", e)
+      QLASSQ("value", pl)
+  v => (v.expr is ["Union",:.] => v.expr; nil)
+  nil
+
+coerceExtraHard(T is [x, m', e], m, pl, pl') ==
   T':= autoCoerceByModemap(T,m) => T'
-  isUnionMode(m',e) is ["Union",:l] and (t:= hasType(x,e)) and
+  isUnionMode2(m', e, pl') is ["Union",:l] and (t:= hasType(x,e)) and
     member(t,l) and (T':= autoCoerceByModemap(T,t)) and
       (T'':= coerce(T',m)) => T''
   m' is ['Record, :.] and m = $OutputForm =>
