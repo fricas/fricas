@@ -264,7 +264,7 @@ upAlgExtension t ==
   putHist(saeTypeSynonym,'value,saeTypeSynonymValue,$e)
   putHist(a,'mode,sae,$e)
   putHist(a,'value,T2:= objNew(expr,sae),$e)
-  clearDependencies(a,true)
+  clearDependencies(a)
   if $printTypeIfTrue then
     sayKeyedMsg("S2IS0003",NIL)
     sayMSG concat ['%l,'"   ",saeTypeSynonym,'" := ",
@@ -595,9 +595,9 @@ evalLoopIter itr ==
       getArgValue(step,$Integer),
         :[getArgValue(upper,$Integer) for upper in upperList]]
   itr is ['ISTEP,index,lower,step,:upperList] =>
-    ['ISTEP,getUnname index,getArgValue(lower,$SmallInteger),
-      getArgValue(step,$SmallInteger),
-        :[getArgValue(upper,$SmallInteger) for upper in upperList]]
+    ['ISTEP, getUnname index, getArgValue(lower, $SingleInteger),
+      getArgValue(step, $SingleInteger),
+        :[getArgValue(upper, $SingleInteger) for upper in upperList]]
   itr is ['IN,index,s] =>
     ['IN,getUnname index,getArgValue(s,['List,get(index,'mode,$env)])]
   (itr is [x,pred]) and (x in '(WHILE UNTIL SUCHTHAT)) =>
@@ -638,9 +638,9 @@ interpIter itr ==
     [m]:= bottomUp lower
     $indexTypes:= [m,:$indexTypes]
     for up in upperList repeat bottomUp up
-    ['ISTEP,getUnname index,getArgValue(lower,$SmallInteger),
-      getArgValue(step,$SmallInteger),
-        :[getArgValue(upper,$SmallInteger) for upper in upperList]]
+    ['ISTEP, getUnname index, getArgValue(lower, $SingleInteger),
+      getArgValue(step, $SingleInteger),
+        :[getArgValue(upper, $SingleInteger) for upper in upperList]]
   itr is ['IN,index,s] =>
     $indexVars:=[getUnname index,:$indexVars]
     [m]:= bottomUp s
@@ -1198,7 +1198,7 @@ declare(var,mode) ==
       1
     nargs ~= #args => throwKeyedMsg("S2IM0008",[var])
   if $compilingMap then mkLocalVar($mapName,var)
-  else clearDependencies(var,true)
+  else clearDependencies(var)
   isLocalVar(var) => put(var,'mode,mode,$env)
   mode is ['Mapping,:.] => declareMap(var,mode)
   v := get(var,'value,$e) =>

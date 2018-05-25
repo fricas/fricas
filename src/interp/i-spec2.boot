@@ -581,7 +581,7 @@ evalLETchangeValue(name,value) ==
       not ((localEnv and get(name,'mode,$env)) or get(name,'mode,$e))
     objMode val ~= objMode(value)
   if clearCompilationsFlag then
-    clearDependencies(name,true)
+    clearDependencies(name)
   if localEnv and isLocalVar(name)
     then $env:= putHist(name,'value,value,$env)
     else putIntSymTab(name,'value,value,$e)
@@ -1094,7 +1094,7 @@ upwhere t ==
   putValue(op,val)
   result := putModeSet(op,getModeSet tree)
   wcl := [op for op in $whereCacheList]
-  for op in wcl repeat clearDependencies(op,'T)
+  for op in wcl repeat clearDependencies(op)
   result
 
 upwhereClause(tree,env,e) ==

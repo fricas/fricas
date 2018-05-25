@@ -85,12 +85,6 @@
   `(let ((|$BreakMode| '|trapSpadErrors|))
        (catch '|trapSpadErrors| ,form)))
 
-;;;;;; considering this version for kcl
-;;(defmacro |trapNumericErrors| (form)
-;;   `(let ((val))
-;;      (setq val (errorset ,form))
-;;      (if (NULL val) |$numericFailure| (cons 0 (car val)))))
-
 (defparameter |$inLispVM| nil)
 
 #-:GCL

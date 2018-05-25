@@ -175,8 +175,6 @@ processInteractive1(form, posnForm) ==
   recordFrame 'normal
   stopTimingProcess 'print
 
---spadtestValueHook(objValUnwrap object, objMode object)
-
   object
 
 ncParseAndInterpretString s ==
@@ -307,8 +305,6 @@ interpret1(x,rootMode,posnForm) ==
   keyedSystemError("S2IS0053",[x])
 
 interpret2(object,m1,posnForm) ==
-  -- this is the late interpretCoerce. I removed the call to
-  -- coerceInteractive, so it only does the JENKS cases    ALBI
   x := objVal object
   m := objMode object
   m=$EmptyMode =>
