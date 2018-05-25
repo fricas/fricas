@@ -31,6 +31,8 @@
 
 )package "BOOT"
 
+$spadLibFT := 'NRLIB
+
 --% Standard Library Creation Functions
 
 readLib(fn, ft) ==

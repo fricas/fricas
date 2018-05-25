@@ -339,7 +339,7 @@ clearCmdParts(l is [opt,:vl]) ==
     vl := REMDUP(append(vl, pmacs))
   $e : local := $InteractiveFrame
   for x in vl repeat
-    clearDependencies(x,true)
+    clearDependencies(x)
     if option='properties and x in pmacs then clearParserMacro(x)
     if option='properties and x in imacs and not (x in pmacs) then
         sayMessage ['"   You cannot clear the definition of the system-defined macro ",

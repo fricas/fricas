@@ -939,9 +939,7 @@ grepFile(pattern, key, option) ==
   options := [option]
   source := grepSource key
   lines :=
-    not PROBE_-FILE source => NIL
-    $standard =>
-    -----AIX Version----------
+      not PROBE_-FILE source => NIL
       target := getTempPath 'target
       casepart :=
         MEMQ('iv,options)=> '"-vi"
@@ -950,9 +948,6 @@ grepFile(pattern, key, option) ==
       OBEY STRCONC(command, '" > ",target)
       dbReadLines target
       -- deleteFile target
-    ----Windows Version------
-    invert? := MEMQ('iv, options)
-    GREP(source, pattern, false, not invert?)
   dbUnpatchLines lines
 
 dbUnpatchLines lines ==  --concatenate long lines together, skip blank lines

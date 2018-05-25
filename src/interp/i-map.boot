@@ -42,15 +42,11 @@ DEFPARAMETER($definingMap, NIL)
 
 --% Generating internal names for functions
 
-DEFPARAMETER($specialMapNameSuffix, NIL)
-
 makeInternalMapName(userName,numArgs,numMms,extraPart) ==
   name := CONCAT('"*",STRINGIMAGE numArgs,'";",
     object2String userName,'";",STRINGIMAGE numMms,'";",
       object2String frameName first $interpreterFrameRing )
   if extraPart then name := CONCAT(name,'";",extraPart)
-  if $specialMapNameSuffix then
-    name := CONCAT(name,'";",$specialMapNameSuffix)
   INTERN name
 
 isInternalMapName name ==
@@ -153,7 +149,7 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
   --figure out the new dependencies for the new map (what it depends on)
   newDependencies := makeNewDependencies (op, userVariables4)
   putDependencies (op, newDependencies)
-  clearDependencies(op,'T)
+  clearDependencies(op)
   addMap(lhs,rhs,pred)
 
 addMap(lhs,rhs,pred) ==
@@ -352,9 +348,8 @@ putDependencies (op, dependencies) ==
   newDependencies := union (dependencies, oldDependencies)
   putFlag ("$dependencies", newDependencies)
 
-clearDependencies(x,clearLocalModemapsIfTrue) ==
-  $dependencies: local:= COPY getFlag "$dependencies"
-  clearDep1(x,nil,nil,$dependencies)
+clearDependencies(x) ==
+    clearDep1(x, [], [], COPY getFlag "$dependencies")
 
 clearDep1(x,toDoList,doneList,depList) ==
   x in doneList => nil

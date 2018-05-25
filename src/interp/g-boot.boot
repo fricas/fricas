@@ -38,8 +38,6 @@ DEFPARAMETER($locVars, nil)
 DEFPARAMETER($PrettyPrint, false)
 DEFPARAMETER($COMPILE, true)
 
--- $LET := 'SPADLET    -- LET is a standard macro in Common Lisp
-
 flattenCOND body ==
   -- transforms nested COND clauses to flat ones, if possible
   body isnt ['COND,:.] => body
@@ -80,7 +78,6 @@ PURPOSE: Comp is a modified version of Compile which is a preprocessor for
 COMP_1(x) ==
   [fname, lamex, :.] := x
   $FUNNAME : local := fname
-  $FUNNAME_TAIL : local := [fname]
   $CLOSEDFNS : local := nil
   lamex := compTran lamex
   compNewnam lamex
@@ -156,10 +153,8 @@ compTran1(x) ==
     ATOM(x) => nil
     u := first(x)
     u = "QUOTE" => nil
-    if u = "MAKEPROP" and $TRACELETFLAG then
-        rplac(first x, "MAKEPROP-SAY")
+    u = "MAKEPROP" => BREAK()
     MEMQ(u, '(SPADLET SETQ LET)) =>
-        NCONC(x, $FUNNAME_TAIL)
         RPLACA(x, "LETT")
         compTran1(CDDR x)
         NOT(u = "SETQ") =>
