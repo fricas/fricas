@@ -268,8 +268,6 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   --  Unfortunately, it makes various free variable references outside
   --  itself.  So we build a mini-vector that contains them all, and
   --  pass this as the environment to our inner function.
-  $FUNNAME :local := nil
-  $FUNNAME_TAIL : local := [nil]
   expandedFunction := compTranDryRun CADR uu
   frees := getFreeList(expandedFunction, vl, nil, e)
   expandedFunction :=

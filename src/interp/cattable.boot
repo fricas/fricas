@@ -386,22 +386,9 @@ categoryParts(conform, category, do_constr) == main where
     nil
 
 updateCategoryTable(cname,kind) ==
-  $updateCatTableIfTrue =>
-    kind = 'package => nil
-    kind = 'category => updateCategoryTableForCategory(cname)
-    updateCategoryTableForDomain(cname,getConstrCat(
-      GETDATABASE(cname,'CONSTRUCTORCATEGORY)))
---+
   kind = 'domain =>
     updateCategoryTableForDomain(cname,getConstrCat(
       GETDATABASE(cname,'CONSTRUCTORCATEGORY)))
-
-updateCategoryTableForCategory(cname) ==
-  clearTempCategoryTable([[cname,'category]])
-  addToCategoryTable(cname)
-  for id in HKEYS $ancestors_hash repeat
-      for (u:=[.,:b]) in GETDATABASE(id,'ANCESTORS) repeat
-        RPLACD(u,simpCatPredicate simpBool b)
 
 updateCategoryTableForDomain(cname,category) ==
   clearCategoryTable(cname)

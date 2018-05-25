@@ -190,14 +190,14 @@ compIterator1(it, e) ==
     --if all start/inc/end compile as small integers, then loop
     --is compiled as a small integer loop
     final':= nil
-    (start':= comp(start,$SmallInteger,e)) and
+    (start' := comp(start, $SingleInteger, e)) and
       (inc':= comp(inc,$NonNegativeInteger,start'.env)) and
         (not (optFinal is [final]) or
-          (final':= comp(final,$SmallInteger,inc'.env))) =>
+          (final' := comp(final, $SingleInteger, inc'.env))) =>
             indexmode:=
               comp(start,$NonNegativeInteger,e) =>
                       $NonNegativeInteger
-              $SmallInteger
+              $SingleInteger
             if null get(index,"mode",e) then [.,.,e]:=
               compMakeDeclaration([":",index,indexmode],$EmptyMode,
                 (final' => final'.env; inc'.env)) or return nil

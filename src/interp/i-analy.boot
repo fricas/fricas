@@ -788,7 +788,6 @@ isEltable(op,argl,numArgs) ==
   numArgs ~= 1 => nil
   name := getUnname op
   name = 'SEQ => nil
---not (name in '(a e h s)) and getAllModemapsFromDatabase(name, nil) => nil
   arg := first argl
   (getUnname arg) ~= 'construct => nil
   true

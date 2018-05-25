@@ -29,17 +29,7 @@
 ;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-(setq copyrights '(
- "Copyright The Numerical Algorithms Group Limited 1991-94."
- "All rights reserved"
- "Certain derivative-work portions Copyright (C) 1998 by Leslie Lamport."
- "Portions (c) Copyright Taiichi Yuasa and Masami Hagiya, 1984."
- "All rights reserved"))
-
 (in-package "BOOT")
-
-(defvar |$standard| 't)
 
 (setq |$printTimeIfTrue| nil)
 
@@ -101,8 +91,6 @@
 (setq |$Newline| #\Newline)
 
 
-(DEFPARAMETER $FUNNAME NIL)   ;; this and next used in COMP,TRAN,1
-(DEFPARAMETER $FUNNAME_TAIL '(()))
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
 (SETQ $OLDLINE NIL)  ;"used to output command lines"
 (SETQ |$edit_file| NIL)
@@ -262,10 +250,6 @@
 
 (SETQ |$CommandSynonymAlist| (COPY |$InitialCommandSynonymAlist|))
 
-(SETQ |$spadLibFT| 'NRLIB)
-
-(SETQ |$updateCatTableIfTrue| NIL)
-
 (DEFPARAMETER |$ConstructorCache| (MAKE_HASHTABLE 'ID))
 (SETQ |$instantRecord| (MAKE_HASHTABLE 'ID))
 (SETQ |$immediateDataSymbol| '|--immediateData--|)
@@ -342,7 +326,6 @@
 
 (SETQ |$printStorageIfTrue| NIL) ;; storage info disabled in common lisp
 (SETQ |$noEnv| NIL)
-(SETQ |$evalDomain| NIL)
 
 (SETQ |$SideEffectFreeFunctionList| '(
   |null| |case| |Zero| |One| \: |::| |has| |Mapping| |Record| |Union|
@@ -372,12 +355,6 @@
 (SETQ |$Void|  '(|Void|))
 (SETQ |$QuotientField| '|Fraction|)
 (SETQ |$FunctionalExpression| '|Expression|)
-
-;; Old names
-(SETQ |$SmallInteger| '(|SingleInteger|))
-
-;; New Names
-(SETQ |$SingleFloat| '(|SingleFloat|))
 (SETQ |$DoubleFloat| '(|DoubleFloat|))
 (SETQ |$SingleInteger| '(|SingleInteger|))
 
