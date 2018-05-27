@@ -1153,15 +1153,9 @@ compCategory(x,m,e) ==
   systemErrorHere '"compCategory"
 
 mkExplicitCategoryFunction(sigList, atList) ==
-  body:= ["Join",
+  ["Join",
     ["mkCategory", ['LIST, :REVERSE sigList], ['LIST,
       :REVERSE atList], nil, nil]]
-  parameters:=
-    REMDUP
-      ("append"/
-        [[x for x in sig | IDENTP x and x~='_$]
-          for ["QUOTE",[[.,sig,:.],:.]] in sigList])
-  wrapDomainSub(parameters,body)
 
 wrapDomainSub(parameters,x) ==
    ["DomainSubstitutionMacro",parameters,x]
