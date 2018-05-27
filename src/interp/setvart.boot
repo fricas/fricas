@@ -227,48 +227,6 @@ DEFPARAMETER($setOptions, '(
        $fortranArrayStartingIndex
        (0 1)
        1)
-      (calling
-      "options for external FORTRAN calls"
-      interpreter
-      TREE
-      novar
-      (
-        (tempfile
-         "set location of temporary data files"
-         interpreter
-         FUNCTION
-         setFortTmpDir
-         (("enter directory name for which you have write-permission"
-           DIRECTORY
-           $fortranTmpDir
-           chkDirectory
-           "/tmp/"))
-         NIL)
-        (directory
-         "set location of generated FORTRAN files"
-         interpreter
-         FUNCTION
-         setFortDir
-         (("enter directory name for which you have write-permission"
-           DIRECTORY
-           $fortranDirectory
-           chkDirectory
-           "./"))
-         NIL)
-        (linker
-         "linker arguments (e.g. libraries to search)"
-         interpreter
-         FUNCTION
-         setLinkerArgs
-         (("enter linker arguments "
-           STRING
-           $fortranLibraries
-           chkDirectory
-           "-lxlf"))
-         NIL
-         )
-       )
-      )
   ))
   (hyperdoc
    "options in using HyperDoc"

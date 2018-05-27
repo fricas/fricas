@@ -522,22 +522,10 @@ scanS()==
                   $n := $n + 1
                   e_concat(str, CONCAT(ec, scanS()))
 
---idChar? x== scanLetter x or DIGITP x or MEMQ(x,'(_? _%))
-
---scanLetter x==
---   if not CHARP x
---   then false
---   else STRPOSL(scanTrTable,x,0,NIL)
-
 posend(line,n)==
      while n<#line and idChar? line.n repeat n:=n+1
      n
 
---numend(line,n)==
---     while n<#line and digit? line.n repeat n:=n+1
---     n
-
---startsId? x==  scanLetter x or MEMQ(x,'(_? _%))
 digit? x== DIGITP x
 
 scanW(b)==             -- starts pointing to first char
