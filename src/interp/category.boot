@@ -55,40 +55,6 @@ CategoryPrint(D) ==
     atom first u => SAY("Alternate View corresponding to: ",u)
     PRETTYPRINT u
 
--- Compute list of parameters which occur in signatures on the
--- sigList, removing duplicates, and skipping "known"
--- constuctors
-sigParams(sigList) ==
-  result := nil
-  myhash := MAKE_HASHTABLE('EQUAL)
-  NewLocals:= nil
-  for s in sigList repeat
-    (NewLocals := Prepare (CADAR s, NewLocals)) where
-      Prepare (u, l) == for v in u repeat l := Prepare2(v, l)
-      Prepare2 (v,l) ==
-          v is "$" => l
-          STRINGP v => l
-          atom v => [v,:l]
-          MEMQ(first v,$PrimitiveDomainNames) => l
-            --This variable is set in INIT LISP
-            --It is a list of all the domains that we need not cache
-          v is ["Union",:w] =>
-            for x in stripUnionTags w repeat l := Prepare2 (x, l)
-            l
-          v is ["Mapping",:w] =>
-            for x in w repeat l := Prepare2 (x, l)
-            l
-          v is ["List",w] => Prepare2 (w, l)
-          v is ["Record",.,:w] =>
-            for x in w repeat l := Prepare2 (CADDR x, l)
-            l
-          [v,:l]
-  for s in NewLocals repeat
-     if null(HGET(myhash, s)) then
-        HPUT(myhash, s, true)
-        result := [s,:result]
-  result
-
 -- create a new category vector
 -- Arguments:
 --   sigList              - list of all signatures
@@ -98,29 +64,17 @@ mkCategory(sigList, attList, domList, PrincipalAncestor) ==
   NSigList := nil
   count := 6
   sigList:=
-    [if s is [sig,pred]
-       then
-         or/[x is [[ =sig,.,:impl],:num] for x in NSigList] => [sig,pred,:impl]
-                 --only needed for multiple copies of sig
-         nsig:= mkOperatorEntry(sig,pred,count)
-         NSigList:= [[nsig,:count],:NSigList]
-         count:= count+1
-         nsig
+    [if s is [sig,pred] then
+         mkOperatorEntry(sig,pred,count)
      else s for s in sigList]
-  NewLocals := sigParams(sigList)
-  OldLocals:= nil
-  if PrincipalAncestor then for u in (OldLocals:= CADDR PrincipalAncestor.4)
-     repeat NewLocals:= delete(first u,NewLocals)
-  for u in NewLocals repeat
-    (OldLocals:= [[u,:count],:OldLocals]; count:= count+1)
   v:= GETREFV 6
   v.(0):= nil
   v.(1):= sigList
   v.2:= attList
   v.3:= ["Category"]
   if not(PrincipalAncestor = nil) then
-      v.4 := [first PrincipalAncestor.4, CADR PrincipalAncestor.4, OldLocals]
-   else v.4 := [nil,nil,OldLocals] --associated categories and domains
+      v.4 := [first PrincipalAncestor.4, CADR PrincipalAncestor.4, nil]
+   else v.4 := [nil, nil, nil] --associated categories and domains
   v.5:= nil
   v
 
@@ -332,7 +286,7 @@ DescendantP(a,b) ==
   a:= CatEval a
   b is ["ATTRIBUTE",b'] => BREAK()
   member(b,first a.4) => true
-  AncestorP(b,[first u for u in CADR a.4]) => true
+  AncestorP(b, [first u for u in CADR a.4 | get_cond(u) = true]) => true
   nil
 
 
@@ -378,7 +332,6 @@ join_fundamental_ancestors(vec0, l) ==
   if vec0.(0) then FundamentalAncestors:=
     [[vec0.(0)],:FundamentalAncestors]
                     --principal ancestor . all those already included
-  -- Copy to avoid corrupting original vector
 
   for [b, condition] in FindFundAncs l repeat
       --This loop implements Category Subsumption
@@ -423,6 +376,7 @@ JoinInner(l) ==
     -- This is a list of all the categories that this extends
     -- conditionally or unconditionally
   sigl := NewCatVec.(1)
+  -- Copy to avoid corrupting original vector
   NewCatVec := COPY_-SEQ NewCatVec
   FundamentalAncestors := join_fundamental_ancestors(NewCatVec, l')
 
