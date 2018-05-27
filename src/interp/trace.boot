@@ -589,10 +589,16 @@ removeTracedMapSigs untraceList ==
   for name in untraceList repeat
     REMPROP(name,$tracedMapSignatures)
 
+coerceToOutput(value, mode) ==
+    $resolve_level : local := 0
+    -- following binding is to prevent forcing calculation of stream elements
+    $streamCount : local := 0
+    objValUnwrap coerceInteractive(objNewWrap(value, mode), $OutputForm)
+
 coerceTraceArgs2E(traceName,subName,args) ==
   MEMQ(name:= subName,$mathTraceList) =>
     SPADSYSNAMEP PNAME name => coerceSpadArgs2E(reverse rest reverse args)
-    [["=",name,objValUnwrap coerceInteractive(objNewWrap(arg,type),$OutputForm)]
+    [["=", name, coerceToOutput(arg, type)]
       for name in '(arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12 arg13 arg14 arg15 arg16 arg17 arg18 arg19 )
        for arg in args for type in rest LASSOC(subName,
         $tracedMapSignatures)]
@@ -600,9 +606,7 @@ coerceTraceArgs2E(traceName,subName,args) ==
   args
 
 coerceSpadArgs2E(args) ==
-  -- following binding is to prevent forcing calculation of stream elements
-  $streamCount:local := 0
-  [["=",name,objValUnwrap coerceInteractive(objNewWrap(arg,type),$OutputForm)]
+    [["=", name, coerceToOutput(arg, type)]
       for name in '(arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9 arg10 arg11 arg12 arg13 arg14 arg15 arg16 arg17 arg18 arg19 )
         for arg in args for type in rest $tracedSpadModemap]
 
@@ -616,15 +620,12 @@ coerceTraceFunValue2E(traceName,subName,value) ==
   MEMQ(name:= subName,$mathTraceList) =>
     SPADSYSNAMEP PNAME traceName => coerceSpadFunValue2E(value)
     (u:=LASSOC(subName,$tracedMapSignatures)) =>
-      objValUnwrap coerceInteractive(objNewWrap(value, first u), $OutputForm)
+        coerceToOutput(value, first u)
     value
   value
 
 coerceSpadFunValue2E(value) ==
-  -- following binding is to prevent forcing calculation of stream elements
-  $streamCount:local := 0
-  objValUnwrap coerceInteractive(objNewWrap(value, first $tracedSpadModemap),
-    $OutputForm)
+    coerceToOutput(value, first $tracedSpadModemap)
 
 isListOfIdentifiers l == and/[IDENTP x for x in l]
 
