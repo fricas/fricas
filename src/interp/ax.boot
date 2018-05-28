@@ -102,6 +102,13 @@ $literals  := nil
 
 spad2AxTranslatorAutoloadOnceTrigger any == true
 
+$foreignTag := 'Foreign
+setForeignStyle(tag) ==
+    $foreignTag := tag
+
+$conditionalCast := true
+setConditionalCast(flg) ==
+    $conditionalCast := flg
 
 $extendedDomains := nil
 
@@ -132,7 +139,7 @@ makeAxExportForm(filename, constructors) ==
   -- default body.
   if $defaultFlag then
      axForms :=
-        [['Foreign, ['Declare, 'dummyDefault, 'Exit], 'Lisp], :axForms]
+        [[$foreignTag, ['Declare, 'dummyDefault, 'Exit], 'Lisp], :axForms]
   axForms := APPEND(axDoLiterals(), axForms)
   axForm := ['Sequence, _
                ['Import, [], 'AxiomLib], ['Import, [], 'Boolean], :axForms]
@@ -280,7 +287,7 @@ axFormatType(typeform) ==
       ['Apply, 'FileCategory, axFormatType xx,
           ['PretendTo, axFormatType CADDR typeform, 'SetCategory]]
   typeform is [op,:args] =>
-      $pretendFlag and constructor? op and
+      $conditionalCast and $pretendFlag and constructor? op and
         GETDATABASE(op,'CONSTRUCTORMODEMAP) is [[.,target,:argtypes],.] =>
           ['Apply, op, :[pretendTo(a, t) for a in args for t in argtypes]]
       -- $augmentedArgs is non-empty if we are inside a "if A has T then ..."
@@ -306,6 +313,7 @@ pretendTo(a, t) == ['PretendTo, axFormatType a, axFormatType t]
 -- We could do a bit better, because we actually store some augmented type
 -- information for % in $augmentedArgs. But not yet.
 augmentTo(a, t) ==
+  not $conditionalCast => axFormatType a
   a = '$ => pretendTo(a, t)
   ax := axFormatType a -- a looks like |#i|
   not(null(kv:=ASSOC(a,$augmentedArgs))) =>

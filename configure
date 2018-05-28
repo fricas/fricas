@@ -626,6 +626,9 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 emacsdatadir
 BUILD_ALDOR_INTERFACE
+ALDOR_conditionalCast_true
+ALDOR_conditionalCast
+ALDOR_foreignStyle
 ALDOR_datadir
 ALDOR
 LDF
@@ -2291,7 +2294,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 ac_config_headers="$ac_config_headers config/fricas_c_macros.h"
 
-# AM_INIT_AUTOMAKE([foreign])
 
 
 
@@ -6454,6 +6456,34 @@ else
 fi
 
 fi
+
+
+
+if test x"$BUILD_ALDOR_INTERFACE" = xyes; then :
+
+    ## Check how foreign imports are mapped to syntax
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Aldor foreign style" >&5
+$as_echo_n "checking Aldor foreign style... " >&6; }
+    echo 'import foo: X from Foreign C' > tmp.as
+    if ${ALDOR} -Fap tmp.as > /dev/null 2>&1; then :
+  ALDOR_foreignStyle=Foreign
+	   ALDOR_conditionalCast=T
+	   ALDOR_conditionalCast_true='#'
+           if grep -q 'ForeignImport' tmp.ap;
+	   then
+	       ALDOR_foreignStyle=ForeignImport
+	       ALDOR_conditionalCast=NIL
+	       ALDOR_conditionalCast_true=
+	   fi;
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ALDOR_foreignStyle" >&5
+$as_echo "$ALDOR_foreignStyle" >&6; }
+else
+  as_fn_error $? "Failed to test aldor foreign syntax" "$LINENO" 5
+fi
+
+fi
+
+
 
 
 
