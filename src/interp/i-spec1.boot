@@ -349,7 +349,6 @@ upcase t ==
   triple := getValue lhs
   objMode(triple) isnt ['Union,:unionDoms] =>
     throwKeyedMsg("S2IS0004",NIL)
-  if (rhs' := isDomainValuedVariable(rhs)) then rhs := rhs'
   if first unionDoms is ['_:,.,.] then
      for i in 0.. for d in unionDoms repeat
         if d is ['_:,=rhs,.] then rhstag := i
@@ -363,6 +362,9 @@ upcase t ==
             ''TRUE],
               [''T,NIL]]
   else
+    (not $genValue) and or/[CONTAINED(var,rhs) for var in $localVars] =>
+        keyedMsgCompFailure("S2IC0006",[rhs])
+    rhs := evaluateType unabbrev rhs
     $genValue =>
         t' := coerceUnion2Branch triple
         rhs = objMode t' => code := wrap 'TRUE
