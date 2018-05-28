@@ -166,7 +166,6 @@ selectMms(op,args,$declaredMode) ==
 selectMms2(op,tar,args1,args2,$Coerce) ==
   -- decides whether to find functions from a domain or package
   --   or by general modemap evaluation
-  or/[STRINGP arg for arg in args1] => NIL
   if tar = $EmptyMode then tar := NIL
   nargs := #args1
   mmS := NIL
