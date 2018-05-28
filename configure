@@ -626,8 +626,11 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 emacsdatadir
 BUILD_ALDOR_INTERFACE
-ALDOR_datadir
+ALDOR_conditionalCast
+ALDOR_foreignStyle
 ALDOR
+ALDOR_datadir
+sys_ALDOR
 LDF
 CCF
 AXIOM
@@ -755,6 +758,7 @@ enable_debug_compiler
 enable_algebra_optimization
 with_x
 enable_aldor
+with_aldor_binary
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1417,6 +1421,8 @@ Optional Packages:
   --with-gmp-include=PATH specify directory for installed GMP include files
   --with-gmp-lib=PATH     specify directory for the installed GMP library
   --with-x                use the X Window System
+  --with-aldor-binary=PATH
+                          use the aldor binary given
 
 Some influential environment variables:
   CC          C compiler command
@@ -2291,7 +2297,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 ac_config_headers="$ac_config_headers config/fricas_c_macros.h"
 
-# AM_INIT_AUTOMAKE([foreign])
 
 
 
@@ -6388,6 +6393,20 @@ esac
 fi
 
 
+
+# Check whether --with-aldor-binary was given.
+if test "${with_aldor_binary+set}" = set; then :
+  withval=$with_aldor_binary; if test -x $withval; then :
+
+        ALDOR_binary=$withval
+else
+  ALDOR_binary=
+fi
+else
+  ALDOR_binary=
+fi
+
+
 ###################################################################
 ## If one of the Aldor related tests fail we should warn and
 ## not build the Aldor interface.
@@ -6402,11 +6421,11 @@ do
 set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_ALDOR+:} false; then :
+if ${ac_cv_prog_sys_ALDOR+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$ALDOR"; then
-  ac_cv_prog_ALDOR="$ALDOR" # Let the user override the test.
+  if test -n "$sys_ALDOR"; then
+  ac_cv_prog_sys_ALDOR="$sys_ALDOR" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -6415,7 +6434,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ALDOR="$ac_prog"
+    ac_cv_prog_sys_ALDOR="$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6425,26 +6444,32 @@ IFS=$as_save_IFS
 
 fi
 fi
-ALDOR=$ac_cv_prog_ALDOR
-if test -n "$ALDOR"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ALDOR" >&5
-$as_echo "$ALDOR" >&6; }
+sys_ALDOR=$ac_cv_prog_sys_ALDOR
+if test -n "$sys_ALDOR"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $sys_ALDOR" >&5
+$as_echo "$sys_ALDOR" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-  test -n "$ALDOR" && break
+  test -n "$sys_ALDOR" && break
 done
 
-  if test -z $ALDOR; then :
+  if test -z "$sys_ALDOR" -a -z "$ALDOR_binary"; then :
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Aldor not found." >&5
 $as_echo "$as_me: WARNING: Aldor not found." >&2;}
     as_fn_error $? "prerequisites for Aldor interface missing" "$LINENO" 5
     BUILD_ALDOR_INTERFACE=no
 
+fi
+  if test -z $ALDOR_binary; then :
+
+      ALDOR=$sys_ALDOR
+else
+  ALDOR=$ALDOR_binary
 fi
   if ALDOR_datadir=`${ALDOR} --print-confvar datadir`; then :
 
@@ -6454,6 +6479,32 @@ else
 fi
 
 fi
+
+
+
+
+if test x"$BUILD_ALDOR_INTERFACE" = xyes; then :
+
+    ## Check how foreign imports are mapped to syntax
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Aldor foreign style" >&5
+$as_echo_n "checking Aldor foreign style... " >&6; }
+    echo 'import foo: X from Foreign C' > tmp.as
+    if ${ALDOR} -Fap tmp.as > /dev/null 2>&1; then :
+  ALDOR_foreignStyle=Foreign
+           ALDOR_conditionalCast=T
+           if grep -q 'ForeignImport' tmp.ap;
+	   then
+	       ALDOR_foreignStyle=ForeignImport
+	       ALDOR_conditionalCast=NIL
+	   fi;
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ALDOR_foreignStyle" >&5
+$as_echo "$ALDOR_foreignStyle" >&6; }
+else
+  as_fn_error $? "Failed to test aldor foreign syntax" "$LINENO" 5
+fi
+
+fi
+
 
 
 
