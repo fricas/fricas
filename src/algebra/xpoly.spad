@@ -35,12 +35,12 @@ XAlgebra(R : Ring) : Category ==
 ++ Keywords:
 ++ References:
 ++ Description:
-++    This category specifies opeations for  polynomials
+++    This category specifies operations for  polynomials
 ++    and formal series with non-commutative variables.
 ++ Author: Michel Petitot (petitot@lifl.fr)
 
 XFreeAlgebra(vl : OrderedSet, R : Ring) : Category == Catdef where
-   WORD   ==> FreeMonoid(vl)          -- monoide libre
+   WORD   ==> FreeMonoid(vl)
    NNI    ==> NonNegativeInteger
    I      ==> Integer
    TERM   ==> Record(k : WORD, c : R)
@@ -266,17 +266,6 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
             m = 1 => r::EX
             r::EX * m::EX
 
---       coerce(x: %) : EX ==
---         empty?(x) => (0$R) :: EX
---         le : List EX := []
---         for rec in x repeat
---           rec.c = 1$R => le := cons(rec.k :: EX, le)
---           rec.k = 1$E => le := cons(rec.c :: EX, le)
---           le := cons(mkBinary("*"::EX,rec.c :: EX,
---             rec.k :: EX), le)
---         1 = #le => first le
---         mkNary("+" :: EX,le)
-
        coerce(a : %) : EX ==
             empty? a => (0$R)::EX
             reduce(_+, reverse! [outTerm(t.c, t.k) for t in a])$List(EX)
@@ -319,7 +308,7 @@ XDistributedPolynomial(vl : OrderedSet, R : Ring) : XDPcat == XDPdef where
        Rep  :=  List TERM
 
     -- local functions
-       shw : (WORD, WORD) -> %    -- shuffle de 2 mots
+       shw : (WORD, WORD) -> %    -- shuffle of two words
 
     -- definitions
 
