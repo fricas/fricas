@@ -994,8 +994,10 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       row(m, i) ==
         i < minRowIndex(m) or i > maxRowIndex(m) =>
           error "row: index out of range"
-        v : Row := new(ncols m, NIL$Lisp)
-        for j in minColIndex(m)..maxColIndex(m) _
+        (nc := ncols m) = 0 => empty()
+        mci := minColIndex(m)
+        v : Row := new(nc, qelt(m, i, mci))
+        for j in mci..maxColIndex(m) _
           for k in minIndex(v)..maxIndex(v) repeat
             qsetelt!(v, k, qelt(m, i, j))
         v
@@ -1005,8 +1007,10 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       column(m, j) ==
         j < minColIndex(m) or j > maxColIndex(m) =>
           error "column: index out of range"
-        v : Col := new(nrows m, NIL$Lisp)
-        for i in minRowIndex(m)..maxRowIndex(m) _
+        (nr := nrows m) = 0 => empty()
+        mri := minRowIndex(m)
+        v : Col := new(nr, qelt(m, mri, j))
+        for i in mri..maxRowIndex(m) _
           for k in minIndex(v)..maxIndex(v) repeat
             qsetelt!(v, k, qelt(m, i, j))
         v
