@@ -1,0 +1,155 @@
+It is easiest to debug problems when system signals errors.
+By doing
+
+)set break break
+
+we instruct interpreter to pass control to Lisp debugger
+on errors.  In Lisp debugger we can use commands like
+'backtrace' to examine call stack and locate place
+of error.  For example
+
+
+(5) -> f := D(log(sqrt(exp(x) + 1) + x), x)               
+
+               +-------+
+               |  x          x
+            2 \|%e  + 1  + %e
+   (5)  -------------------------
+            +-------+
+            |  x            x
+        2 x\|%e  + 1  + 2 %e  + 2
+                                                    Type: Expression(Integer)
+(6) -> integrate(f, x)
+ 
+   >> Error detected within library code:
+   integrate: implementation incomplete (constant residues)
+
+ 
+
+debugger invoked on a SIMPLE-CONDITION in thread
+#<THREAD "main thread" RUNNING {1006AA7223}>:
+  break
+
+Type HELP for debugger help, or (SB-EXT:EXIT) to exit from SBCL.
+
+restarts (invokable by number or by possibly-abbreviated name):
+  0: [CONTINUE] Return from BREAK.
+
+(|handleLispBreakLoop| |break|)
+0] backtrace 4                                        
+
+Backtrace for: #<SB-THREAD:THREAD "main thread" RUNNING {1006AA7223}>
+0: (|handleLispBreakLoop| |break|)
+1: (|errorSupervisor1| |AlgebraError| "integrate: implementation incomplete (constant residues)" |break|)
+2: (|INTALG;algintexp| ((1 ((1 (1 #1=#S# # #) 0 . 2) (0 (0 . 1) 0 . 1))
+...
+
+
+We truncated the backtrace as it is longish and most of it is not
+very informative.  From the part above we can see that error
+happened during execution of 'algintexp' in 'INTALG'.  Actually
+due to optimization in sbcl usually function that caused error
+is absent from the backtrace.  Instead we see function that
+called it.  But given error message this is frequently
+enough to accurately locate error.  In the case above error
+is signalled in 'alglogint', which can be deduced from error message.
+
+For Spad functions we usually can get shorter
+backtrace by setting variables appropriate variables, like below:
+
+(setf sb-ext:*debug-print-variable-alist*           
+     '((*print-array* . nil) (*print-length* . 10)))
+
+((*PRINT-ARRAY*) (*PRINT-LENGTH* . 10))
+0] backtrace 7                                         
+
+Backtrace for: #<SB-THREAD:THREAD "main thread" RUNNING {1006AA7223}>
+0: (|handleLispBreakLoop| |break|)
+1: (|errorSupervisor1| |AlgebraError| "integrate: implementation incomplete (constant residues)" |break|)
+2: (|INTALG;algintexp| ((1 ((1 (1 #1=#S# # #) 0 . 2) (0 (0 . 1) 0 . 1)) (2 . #2=(#3=(0 . 1) . #3#)) (1 (1 #1# (2 0 . -1) (0 0 . 2)) 0 . 1) (0 (1 #1# (2 0 . -1) (0 0 . 1)) 0 . 1)) (0 ((1 (0 . 1) 0 . 2) (0 (1 #1# #) 0 . 1)) (1 . #2#) (0 (1 #1# (2 0 . -1) (0 0 . 1)) 0 . 1))) (#<FUNCTION |INTEF;algexpint!1|> . #<(SIMPLE-VECTOR 3) {10093AB9DF}>) #<(SIMPLE-VECTOR 230) {1008C39A9F}>)
+3: (|INTALG;algintegrate;RMIr;27| ((1 ((1 (1 #1=#S# # #) 0 . 2) (0 (0 . 1) 0 . 1)) (2 . #2=(#3=(0 . 1) . #3#)) (1 (1 #1# (2 0 . -1) (0 0 . 2)) 0 . 1) (0 (1 #1# (2 0 . -1) (0 0 . 1)) 0 . 1)) (0 ((1 (0 . 1) 0 . 2) (0 (1 #1# #) 0 . 1)) (1 . #2#) (0 (1 #1# (2 0 . -1) (0 0 . 1)) 0 . 1))) (#<FUNCTION |INTEF;algexpint!1|> . #<(SIMPLE-VECTOR 3) {10093AB9DF}>) #<(SIMPLE-VECTOR 230) {1008C39A9F}>)
+4: (|INTAF;rootintegrate| ((1 #1=#S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {1007B970BF}> :ARG ((# . #2=#) (# . #2#)) :NEST 3) (1 0 . 2) (0 1 #3=#S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {100795368F}> :ARG (#) :NEST 2) (1 . #2#))) 1 #1# (1 1 #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {10077DE7FF}> :ARG NIL :NEST 1) (1 0 . 2)) (0 1 #3# (1 0 . 2) (0 0 . 2))) #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {100795368F}> :ARG (((1 #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {10077DE7FF}> :ARG NIL :NEST 1) (1 . #1=#)) . #1#)) :NEST 2) #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {1007B970BF}> :ARG (((1 #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {100795368F}> :ARG # :NEST 2) (1 . #1=#) (0 0 . 1)) . #1#) ((0 . 2) . #1#)) :NEST 3) (#<FUNCTION |INTEF;algexpint!1|> . #<(SIMPLE-VECTOR 3) {10093AB9DF}>) #<(SIMPLE-VECTOR 61) {10088CA16F}>)
+5: (|INTEF;alglfint| ((1 #1=#S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {1007B970BF}> :ARG ((# . #2=#) (# . #2#)) :NEST 3) (1 0 . 2) (0 1 #3=#S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {100795368F}> :ARG (#) :NEST 2) (1 . #2#))) 1 #1# (1 1 #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {10077DE7FF}> :ARG NIL :NEST 1) (1 0 . 2)) (0 1 #3# (1 0 . 2) (0 0 . 2))) #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {1007B970BF}> :ARG (((1 #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {100795368F}> :ARG # :NEST 2) (1 . #1=#) (0 0 . 1)) . #1#) ((0 . 2) . #1#)) :NEST 3) (#S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {1007B970BF}> :ARG (((1 #1=#S# # #) . #2=(0 . 1)) ((0 . 2) . #2#)) :NEST 3) #1# #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {10077DE7FF}> :ARG NIL :NEST 1)) |x| #<(SIMPLE-VECTOR 183) {100883EE8F}>)
+6: (|INTTOOLS;intPatternMatch;FSMMIr;13| ((1 #1=#S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {1007B970BF}> :ARG ((# . #2=#) (# . #2#)) :NEST 3) (1 0 . 2) (0 1 #3=#S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {100795368F}> :ARG (#) :NEST 2) (1 . #2#))) 1 #1# (1 1 #S(SPAD-KERNEL :OP #<(SIMPLE-VECTOR 3) {10077DE7FF}> :ARG NIL :NEST 1) (1 0 . 2)) (0 1 #3# (1 0 . 2) (0 0 . 2))) |x| (#<FUNCTION |INTEF;lfintegrate0|> . #<(SIMPLE-VECTOR 183) {100883EE8F}>) (#<FUNCTION |newGoGet|> #<(SIMPLE-VECTOR 183) {100883EE8F}> 446 . |pmintegrate|) #<(SIMPLE-VECTOR 110) {10088782EF}>)
+
+Backtrace is still somewhat cryptic, but now one can reconstruct
+call chain:
+
+2: (|INTALG;algintexp|
+3: (|INTALG;algintegrate;RMIr;27|
+4: (|INTAF;rootintegrate|
+5: (|INTEF;alglfint|
+6: (|INTTOOLS;intPatternMatch;FSMMIr;13|
+
+
+Tracing
+
+Once we located problematic spot we frequently need to gather
+more information.  FriCAS provides ')trace' system command
+which prints arguments and results of function calls.
+It is limited to exported functions, to see calls to
+internal function one needs to temporarly change source
+so that it is exported and recompile file containing it.
+
+
+Debugging printouts
+
+In harder cases it is frequently necessary to revert to
+classical method of adding debugging printouts.  In FriCAS
+one can recompile a single file and immediatly test
+the effect on the whole system,  so debugging via
+printouts works reasonably well.
+
+
+Profiling
+
+Profiling is normally used to locate code responsible for
+most of execution time whith the goal of increasing speed.
+However, sbcl profile frequently allows finding functions
+that perform given operation, so it may be used as first
+step during debugging.
+
+Alternatively, setting
+
+)set messages autoload on
+
+one will see messages when FriCAS loads new constructors,
+so from this one can deduce which constructors are needed
+for given operation.  Tracing can confirm this and indicate
+specific functions.
+
+
+Information about contructors.
+
+The following command gives information about values stored in slots:
+
+)boot dcSlots('ElementaryIntegration)
+
+that is functions, domains etc used by given domain/package
+(ElementaryIntegration in the case above).  This is mainly
+useful when debugging interpreter or Spad compiler problems,
+but may also help decrypting Lisp output from Spad compiler.
+For example, 'prim?' function from ElementaryIntegration
+is translated to the following Lisp:
+
+(SDEFUN |INTEF;prim?| ((|k| |Kernel| F) (|x| |Symbol|) ($ |Boolean|))
+        (COND ((SPADCALL |k| '|log| (QREFELT $ 13)) 'T)
+              ('T
+               (SPADCALL (SPADCALL |k| (QREFELT $ 15)) (QREFELT $ 8)
+                         (QREFELT $ 16)))))
+
+The Lisp form '(SPADCALL |k| '|log| (QREFELT $ 13))' calls function
+from slot 13 (the _last_ argument to SPADCALL is called function).
+Output from 'dcSlots' above contains line:
+
+13 latch is? : (%, Symbol) -> Boolean from Kernel(local(#2))
+
+from which we see that the call is to 'is?' function from Kernel
+('local(#2)' means second argument to ElementaryIntegration).
+
+One can also get more information using:
+
+)boot dcAll('ElementaryIntegration)
+
+
+
