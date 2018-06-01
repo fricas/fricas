@@ -118,6 +118,7 @@ simpHasPred2(pred, options) == main where
   simpHas(pred,a,b) ==
     b is ['ATTRIBUTE,attr] => BREAK()
     b is ['SIGNATURE,op,sig] => simpHasSignature(pred,a,op,sig)
+    STRINGP(a) => pred
     IDENTP a or hasIdent b => pred
     npred := eval pred
     IDENTP npred or null hasIdent npred => npred

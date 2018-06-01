@@ -575,17 +575,8 @@ kisValidType typeForm ==
   $noEvalTypeMsg: fluid := true
   $BreakMode : local := 'throw_reader
   CATCH('SPAD_READER, processInteractive(typeForm, nil))
-    is [[h,:.],:t] and member(h,'(Type Category)) =>
-      kCheckArgumentNumbers t and t
+    is [[h,:.],:t] and member(h,'(Type Category)) => t
   false
-
-kCheckArgumentNumbers t ==
-  [conname,:args] := t
-  cosig := IFCDR GETDATABASE(conname, 'COSIG)
-  #cosig ~= #args => false
-  and/[foo for domain? in cosig for x in args] where foo ==
-    domain? => kCheckArgumentNumbers x
-    true
 
 parseNoMacroFromString(s) ==
    s := next(function ncloopParse,
