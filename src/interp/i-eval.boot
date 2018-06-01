@@ -75,7 +75,6 @@ mkEvalable form ==
         typeFlag =>
           kind = 'category => MKQ x
           VECP x => MKQ x
-          loadIfNecessary x
           mkEvalable x
         x is ['QUOTE,:.] => x
         x is ['_#,y] => ['SIZE,MKQ y]

@@ -518,7 +518,7 @@ print_to_string1(TextNode *command,int * sizeBuf)
                 while (curr_line != NULL) {
                     for (lcount = 0, s = curr_line->buffer; *s && lcount < item->size;
                          s++, lcount++) {
-                        storeChar(funnyUnescape(*s));
+                        storeChar(funnyEscape(*s));
                     }
                     if (curr_line->len <= item->size && curr_line->next)
                         storeChar('\n');
