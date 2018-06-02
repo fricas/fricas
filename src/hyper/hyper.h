@@ -526,15 +526,6 @@ extern int space_width;
 
 /***      default fonts      ***/
 
-#if defined(RTplatform) || defined(PS2platform) || defined(RIOSplatform) || defined(AIX370platform)
-#define RmFontDefault         "Rom14"
-#define TtFontDefault         "Erg14"
-#define ActiveFontDefault     "Bld14"
-#define fricas_font_default      "Erg14"
-#define EmphasizeFontDefault  "Itl14"
-#define BoldFontDefault       "Bld14"
-#endif
-
 #if defined(SUNplatform) || defined (SUN4OS5platform) || defined(SGIplatform) || defined (HP9platform)  || defined(HP10platform) || defined (ALPHAplatform) || defined(LINUXplatform) || defined(MACOSXplatform) || defined(BSDplatform) || defined(CYGWINplatform)
 #define RmFontDefault         "-adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1"
 #define TtFontDefault         "-adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1"

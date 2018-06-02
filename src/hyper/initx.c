@@ -51,10 +51,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>
 
-#ifdef SUN4OS5platform
-extern int gethostname(char *, int );
-#endif
-
 #include "ht_icon"
 #include "extent.h"
 #include "hyper.h"

@@ -201,24 +201,6 @@ start_user_buffer(HyperDocPage *page)
          * TTT says : why not invoke with "-name fricasclient" and set any
          * defaults in the usual way
          */
-#ifdef RIOSplatform
-        sprintf(buf,
-                "aixterm -sb -sl 500 -name fricasclient -n '%s' -T '%s'  -e  %s %s %s&",
-                title, title, spadbuf, page->name, complfile);
-    else
-        sprintf(buf,
-         "aixterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s&",
-                title, title, spadbuf, page->name);
-#else
-#ifdef SUNplatform
-        sprintf(buf,
-        "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
-                title, title, spadbuf, page->name, complfile);
-    else
-        sprintf(buf,
-           "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s&",
-                title, title, spadbuf, page->name);
-#else
         sprintf(buf,
         "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
                 title, title, spadbuf, page->name, complfile);
@@ -226,8 +208,6 @@ start_user_buffer(HyperDocPage *page)
         sprintf(buf,
          "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s '%s'&",
                 title, title, spadbuf, page->name);
-#endif
-#endif
     ret_val = system(buf);
     if (ret_val == -1 || ret_val == 127) {
 
@@ -409,7 +389,7 @@ print_to_string1(TextNode *command,int * sizeBuf)
 
     /*
      * Init the stack of text nodes, things are pushed on here when I trace
-     * through a nodes data.node. This way I always no where my next is.
+     * through a nodes data.node. This way we always know where the next is.
      */
 
     for (node = command; node != NULL;) {
