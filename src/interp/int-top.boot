@@ -336,7 +336,9 @@ phInterpret carrier ==
   ncPutQ(carrier, 'value, val)
 
 intInterpretPform pf ==
-    processInteractive(pf2Sex pf, pf)
+    sform := pf2Sex(pf)
+    $QuietCommand : local := $QuietCommand_tmp
+    processInteractive(sform, pf)
 
 --% phReportMsgs: carrier[lines,messages,..]-> carrier[lines,messages,..]
 phIntReportMsgs(carrier, interactive?) ==
