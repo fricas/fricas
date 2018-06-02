@@ -46,11 +46,12 @@ DEFPARAMETER($QuietCommand, NIL)
 -- or recorded.
 DEFPARAMETER($ProcessInteractiveValue, NIL)
 
+DEFPARAMETER($QuietCommand_tmp, nil)
 intSetQuiet() ==
-  $QuietCommand := true
+  $QuietCommand_tmp := true
 
 intUnsetQuiet() ==
-  $QuietCommand := nil
+  $QuietCommand_tmp := nil
 
 --% Starting the interpreter from LISP
 
