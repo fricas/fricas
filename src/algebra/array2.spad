@@ -912,7 +912,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
 --% Creation
 
     copy m ==
-      ans := new(nrows m, ncols m, NIL$Lisp)
+      ans := qnew(nrows m, ncols m)
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
           qsetelt!(ans, i, j, qelt(m, i, j))
@@ -925,7 +925,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       m
 
     map(f : R -> R, m : %) : % ==
-      ans := new(nrows m, ncols m, NIL$Lisp)
+      ans := qnew(nrows m, ncols m)
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
           qsetelt!(ans, i, j, f(qelt(m, i, j)))
@@ -940,16 +940,17 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
     map(f, m, n) ==
       (nrows(m) ~= nrows(n)) or (ncols(m) ~= ncols(n)) =>
         error "map: arguments must have same dimensions"
-      ans := new(nrows m, ncols m, NIL$Lisp)
+      ans := qnew(nrows m, ncols m)
       for i in minRowIndex(m)..maxRowIndex(m) repeat
         for j in minColIndex(m)..maxColIndex(m) repeat
           qsetelt!(ans, i, j, f(qelt(m, i, j), qelt(n, i, j)))
       ans
 
     map(f, m, n, r) ==
+      -- FIXME: what if minRowIndex differ?
       maxRow := max(maxRowIndex m, maxRowIndex n)
       maxCol := max(maxColIndex m, maxColIndex n)
-      ans := new(max(nrows m, nrows n), max(ncols m, ncols n), NIL$Lisp)
+      ans := qnew(max(nrows m, nrows n), max(ncols m, ncols n))
       for i in minRowIndex(m)..maxRow repeat
         for j in minColIndex(m)..maxCol repeat
           qsetelt!(ans, i, j, f(elt(m, i, j, r), elt(n, i, j, r)))
