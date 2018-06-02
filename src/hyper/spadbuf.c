@@ -43,10 +43,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/time.h>
 #include <signal.h>
 
-#ifdef SGIplatform
-#include <bstring.h>
-#endif
-
 #include "bsdsignal.h"
 #include "edible.h"
 #include "com.h"

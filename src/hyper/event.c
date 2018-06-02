@@ -44,10 +44,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 #include <sys/time.h>
 
-#ifdef SGIplatform
-#include <bstring.h>
-#endif
-
 #include "keyin.h"
 #include "parse.h"
 
