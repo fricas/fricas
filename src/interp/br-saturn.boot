@@ -287,7 +287,6 @@ kPage(line, options) == --any cat, dom, package, default package
   page := htInitPageNoHeading(nil)
   htAddHeading heading
   htSayStandard("\beginscroll ")
-  htpSetProperty(page,'argSublis,mkConArgSublis rest conform)
   htpSetProperty(page,'isFile,true)
   htpSetProperty(page,'parts,parts)
   htpSetProperty(page,'heading,heading)
@@ -449,7 +448,6 @@ addParameterTemplates(page, conform) ==
     rest parlist => '"s:"
     '":"
   odd := false
-  argSublis := htpProperty(page,'argSublis)
   for parname in $PatternVariableList for par in rest conform repeat
     htSayStandard (odd or manuelsCode? => "\newline";"\tab{29}")
     odd := not odd
