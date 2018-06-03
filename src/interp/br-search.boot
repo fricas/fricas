@@ -339,26 +339,7 @@ spadType(x) ==  --called by \spadtype{x} from HyperDoc
             systemError ['"Argument: ",s,'" to spadType won't parse"]
   if atom form then form := [form]
   op    := opOf form
-  looksLikeDomainForm form => APPLY(function conPage,form)
   conPage(op)
-
-looksLikeDomainForm x ==
-  entry := getCDTEntry(opOf x,true) or return false
-  coSig := LASSOC('coSig,CDDR entry)
-  k := #coSig
-  atom x => k = 1
-  k ~= #x => false
-  and/[p for key in rest coSig for arg in rest x] where
-    p ==
-      key => looksLikeDomainForm arg
-      not IDENTP arg
-
-spadSys(x) ==   --called by \spadsyscom{x}
-  s := PNAME x
-  if s.0 = char '_) then s := SUBSTRING(s,1,nil)
-  form := ncParseFromString s or
-           systemError ['"Argument: ",s,'" to spadType won't parse"]
-  htSystemCommands PNAME opOf form
 
 --=======================================================================
 --                   Name and General Search

@@ -35,13 +35,13 @@
 --              Pages Initiated from HyperDoc Pages
 --=======================================================================
 
-conPage(a,:b) ==
+conPage(a) ==
   --The next 4 lines allow e.g. MATRIX INT  ==> Matrix Integer (see kPage)
   form :=
-    atom a => [a,:b]
+    atom a => [a]
     a
   $conArgstrings : local := [form2HtString x for x in IFCDR a]
-  if not atom a then a := first a
+  a := first a
   da := DOWNCASE a
   pageName := QLASSQ(da, '((type . CategoryType) (union . DomainUnion) _
                            (record . DomainRecord) (mapping . DomainMapping) _
@@ -818,11 +818,10 @@ dbAddChain conform ==
 --                Constructor Page Menu
 --=======================================================================
 
-dbShowCons(htPage,key,:options) ==
+dbShowCons(htPage, key) ==
   cAlist  := htpProperty(htPage,'cAlist)
   key = 'filter =>
-    --if $saturn, IFCAR options is the filter string
-    filter := pmTransFilter(IFCAR options or dbGetInputString htPage)
+    filter := pmTransFilter(dbGetInputString(htPage))
     filter is ['error,:.] => bcErrorPage filter
     abbrev? := htpProperty(htPage,'exclusion) = 'abbrs
     u := [x for x in cAlist | test] where test ==
@@ -1156,19 +1155,3 @@ PUT('Enumeration, 'documentation, SUBST(MESSAGE, 'MESSAGE, '(
      "\spad{coerce(s)} converts a symbol \spad{s} into an enumeration which has \spad{s} as a member symbol"))
   )))
 
-
-mkConArgSublis args ==
-  [[arg,:INTERN digits2Names PNAME arg] for arg in args
-     | (s := PNAME arg) and or/[DIGITP ELT(s,i) for i in 0..MAXINDEX s]]
-
-digits2Names s ==
---This is necessary since arguments of conforms CANNOT have digits in TechExplorer
-  str := '""
-  for i in 0..MAXINDEX s repeat
-    c := s.i
-    segment :=
-      n := DIGIT_-CHAR_-P c =>
-        ('("Zero" "One" "Two" "Three" "Four" "Five" "Six" "Seven" "Eight" "Nine")).n
-      c
-    CONCAT(str, segment)
-  str

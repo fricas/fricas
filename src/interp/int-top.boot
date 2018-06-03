@@ -31,11 +31,8 @@
 
 
 )if false
-This is the top level loop when reading from the input console.  This
-function calls itself after processing the current line.  Because of
-this it is important that the underlying common lisp supports
-tail-recursion.
-
+[[intloopReadConsole]]
+is the top level loop when reading from the input console.
 Normally we never really exit this function.
 
 We read a string from the input. The serverReadLine\cite{1} function
@@ -44,14 +41,13 @@ session manager code, which is a separate process running in parallel.
 In the usual case it just returns the current string.
 
 If the user enters a blank line ([[#a=]]) then just put up another prompt
-and then tail-recursively call [[intloopReadConsole]].
+and iterate.
 
 If the user has set [[$DALYMODE]] to true and the new line starts with
 an open parenthesis then the input is assumed to be a lisp expression
 and is evaluated by the underlying common lisp. This is useful if you
 are doing a lot of debugging. Commands can also be executed in the
-underlying common lisp by using the [[)lisp]] command. In either case we
-tail-recursively call [[intloopReadConsole]].
+underlying common lisp by using the [[)lisp]] command.
 
 If the user typed [[)fin]] then we exit the loop and drop into the
 underlying common lisp. You can use the [[(restart)]] function call
@@ -59,14 +55,14 @@ to return to the top level loop.
 
 If the input line starts with a close parenthesis we parse the
 input line as a command rather than an expression. We execute the command
-and then tail-recursively call [[intloopReadConsole]].
+and iterate.
 
 If the input line contains a trailing underscore, which is the standard
 end-of-line escape character, then we continue to read the line by
-tail-recursively calling [[intloopReadConsole]].
+iterating.
 
 If none of the above conditions occur we simply evaluate the input line
-and then tail-recursively call [[intloopReadConsole]].
+and iterate.
 )endif
 
 )package "BOOT"
@@ -125,7 +121,7 @@ ncTopLevel() ==
   _*EOF_*: fluid := NIL
   $InteractiveMode :fluid := true
   $e:fluid := $InteractiveFrame
-  ncIntLoop()
+  int_loop()
 
 ++ If the interpreter is spwan by the session manager, then
 ++ each successful connection also creates its own frame.
@@ -137,11 +133,8 @@ ncTopLevel() ==
 printFirstPrompt?() ==
     $interpreterFrameName ~= "initial" or not($SpadServer)
 
-ncIntLoop() ==
-  intloop()
 
-
-intloop () ==
+int_loop () ==
     mode := "restart"
     while mode = "restart" repeat
       resetStackLimits()
@@ -172,13 +165,10 @@ SpadInterpretStream(step_num, source, interactive?) ==
 
     -----------------------------------------------------------------
 
-SpadInterpretFile fn ==
-  SpadInterpretStream(1, fn, nil)
-
 ncINTERPFILE(file, echo) ==
   $EchoLines : local := echo
   $ReadingFile : local := true
-  SpadInterpretFile(file)
+  SpadInterpretStream(1, file, false)
 
 setCurrentLine s ==
   v := $currentLine
@@ -192,29 +182,27 @@ setCurrentLine s ==
      v
 
 intloopReadConsole(b, n)==
-    ioHook("startReadLine")
-    a:= serverReadLine(_*STANDARD_-INPUT_*)
-    ioHook("endOfReadLine")
-    not STRINGP a => leaveScratchpad()
-    b = [] and #a=0 =>
+    repeat
+        ioHook("startReadLine")
+        a := serverReadLine(_*STANDARD_-INPUT_*)
+        ioHook("endOfReadLine")
+        not STRINGP a => leaveScratchpad()
+        b = [] and #a=0 =>
              princPrompt()
-             intloopReadConsole([], n)
-    $DALYMODE and intloopPrefix?('"(",a) =>
+        $DALYMODE and intloopPrefix?('"(",a) =>
             intnplisp(a)
             princPrompt()
-            intloopReadConsole([], n)
-    pfx := stripSpaces intloopPrefix?('")fi",a)
-    pfx and ((pfx = '")fi") or (pfx = '")fin")) => []
-    b = [] and (d := intloopPrefix?('")", a)) =>
+        pfx := stripSpaces intloopPrefix?('")fi",a)
+        pfx and ((pfx = '")fi") or (pfx = '")fin")) => return []
+        b = [] and (d := intloopPrefix?('")", a)) =>
              setCurrentLine d
-             c := ncloopCommand(d,n)
+             n := ncloopCommand(d, n)
              princPrompt()
-             intloopReadConsole([], c)
-    b := CONS(a, b)
-    ncloopEscaped a => intloopReadConsole(b, n)
-    c := intloopProcessStrings(nreverse b, n)
-    princPrompt()
-    intloopReadConsole([], c)
+        b := CONS(a, b)
+        ncloopEscaped a => "iterate"
+        n := intloopProcessStrings(nreverse b, n)
+        princPrompt()
+        b := []
 
 -- The 'intloopPrefix?' function tests if the string 'prefix' is
 -- is a prefix of the string 'whole', ignoring leading whitespace.
@@ -264,11 +252,6 @@ intloopInclude0(st, name, n) ==
 intloopInclude(name, n) ==
     handle_input_file(name, function intloopInclude0, [name, n])
       or error('"File not found")
-
-intloopInclude1(name,n) ==
-          a:=ncloopIncFileName name
-          a => intloopInclude(a,n)
-          n
 
 fakepile(s) ==
     if npNull s then [false, 0, [], s]
@@ -369,10 +352,8 @@ nonBlank str ==
   value
 
 ncloopCommand (line,n) ==
-         a:=ncloopPrefix?('")include",line)=>
-                  ncloopInclude1( a,n)
-         InterpExecuteSpadSystemCommand(line)
-         n
+    InterpExecuteSpadSystemCommand(line)
+    n
 
 ncloopEscaped x == #x > 0 and x.(#x - 1) = '"__".0
 
@@ -409,22 +390,6 @@ ncloopParse s==
          [dq, stream] := first s
          [lines, .] := ncloopDQlines(dq, stream)
          cons([[lines, npParse dqToList dq]], rest s)
-
-ncloopInclude0(st, name, n) ==
-     $lines:local := incStream(st, name)
-     ncloopProcess(n,false,
-         next(function ncloopEchoParse,
-           next(function insertpile,
-            next(function lineoftoks,$lines))))
-
-ncloopInclude(name, n) ==
-    handle_input_file(name, function ncloopInclude0, [name, n])
-      or error('"File not found")
-
-ncloopInclude1(name,n) ==
-          a:=ncloopIncFileName name
-          a => ncloopInclude(a,n)
-          n
 
 incString s== incRenumber incLude(0,[s],0,['"strings"] ,[Top])
 
