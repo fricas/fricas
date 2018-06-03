@@ -385,8 +385,6 @@ npConstTok() ==
 
 npPrimary1() ==
    npEncAp function npAtom1 or
-   npLet() or
-   npFix() or
    npMacro() or
    npBPileDefinition() or npDefn() or
    npRule()
@@ -686,12 +684,7 @@ npLocal()== npEqKey "local" and (npLocalItemlist() or npTrap())
 npExport()== npEqKey "EXPORT" and (npLocalItemlist() or npTrap())
      and npPush pfExport npPop1()
 
-npLet()== npLetQualified function npDefinitionOrStatement
-
 npDefn()== npEqKey "DEFN" and  npPP function npDef
-
-npFix()== npEqKey "FIX" and  npPP function npDef
-               and npPush pfFix npPop1 ()
 
 npMacro()== npEqKey "MACRO" and  npPP function npMdef
 
@@ -788,20 +781,11 @@ npVariablelist()== npListing function npVariableName
 
 npListing (p)==npList(p, ",", function pfListOf)
 npQualified(f)==
-    if FUNCALL f
-    then
-     while npEqKey "where" and (npDefinition() or npTrap()) repeat
+    FUNCALL f =>
+        while npEqKey "where" and (npDefinition() or npTrap()) repeat
              npPush pfWhere(npPop1(),npPop1())
-     true
-    else  npLetQualified  f
-
-npLetQualified f==
-      npEqKey "LET" and BREAK() and
-      (npDefinition() or npTrap()) and
-      npCompMissing "in"  and
-      (FUNCALL f or npTrap()) and
-      npPush pfWhere(npPop2(),npPop1())
-
+        true
+    false
 
 npQualifiedDefinition()==
        npQualified function npDefinitionOrStatement
