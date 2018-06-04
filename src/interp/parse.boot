@@ -195,7 +195,7 @@ parseIf t ==
   ifTran(parseTran p,parseTran a,parseTran b) where
     ifTran(p,a,b) ==
       p = 'true  => a
-      p = 'false  => b
+      p = 'false => b
       p is ['not,p'] => ifTran(p',b,a)
       p is ['IF,p',a',b'] => ifTran(p',ifTran(a',COPY a,COPY b),ifTran(b',a,b))
       p is ['SEQ,:l,['exit,1,p']] =>

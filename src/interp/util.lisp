@@ -178,7 +178,6 @@ loads the databases, sets up autoload triggers and clears out hash tables.
 After this function is called the image is clean and can be saved.
 |#
 (defun build-interpsys (load-files spad)
-  (declare (ignore nagbr-files))
   #-:ecl
   (progn
       (mapcar #'load load-files)
