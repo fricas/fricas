@@ -50,9 +50,10 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
   acc:= GENSYM()
   afterFirst:= GENSYM()
   bodyVal:= GENSYM()
-  [part1,m,e]:= comp(["LET",bodyVal,body],m,e) or return nil
-  [part2,.,e]:= comp(["LET",acc,bodyVal],m,e) or return nil
-  [part3,.,e]:= comp(["LET",acc,parseTran [op,acc,bodyVal]],m,e) or return nil
+  [part1, m, e] := comp([":=", bodyVal, body], m, e) or return nil
+  [part2, ., e] := comp([":=", acc, bodyVal], m, e) or return nil
+  [part3, ., e] := comp([":=", acc, parseTran [op, acc, bodyVal]], m, e)
+                     or return nil
   identityCode:=
     id:= getIdentity(op,e) => u.expr where u() == comp(id,m,e) or return nil
     ["IdentityError",MKQ op]
@@ -136,12 +137,12 @@ listOrVectorElementMode x ==
 
 genLetHelper(op, arg, d, var) ==
     form0 := [["elt", d, op], arg]
-    ["LET", var, form0]
+    [":=", var, form0]
 
 compInitGstep(y, ef, sf, mOver, e) ==
     gvar := genSomeVariable()
     [., ., e] := compMakeDeclaration([":", gvar, mOver], $EmptyMode, e)
-    form := ["SEQ", ["LET", gvar, y],
+    form := ["SEQ", [":=", gvar, y],
                     genLetHelper("emptyFun", gvar, mOver, ef),
                        genLetHelper("stepFun", gvar, mOver, sf),
                          ["exit", 1, 1]]

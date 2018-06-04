@@ -1002,7 +1002,7 @@ doIt(item,$predl) ==
     RPLACA(item,first u)
     RPLACD(item,rest u)
     doIt(item,$predl)
-  item is ['LET,lhs,rhs,:.] =>
+  item is [":=", lhs, rhs, :.] =>
     not (compOrCroak(item,$EmptyMode,$e) is [code,.,$e]) =>
       stackSemanticError(["cannot compile assigned value to",:bright lhs],nil)
     not (code is ['LET,lhs',rhs',:.] and atom lhs') =>

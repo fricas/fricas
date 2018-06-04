@@ -67,7 +67,6 @@ postTran x ==
   op is ['Sel, a, b] =>
     u:= postTran [b,:rest x]
     [postTran op,:rest u]
-  op~=(y:= postOp op) => [y,:postTranList rest x]
   postForm x
 
 postTranList x == [postTran y for y in x]
@@ -92,19 +91,6 @@ postCapsule x ==
   checkWarningIndentation()
 
 postQUOTE x == x
-
-postColon u ==
-  u is [":",x] => [":",postTran x]
-  u is [":",x,y] => [":",postTran x,:postType y]
-
-postColonColon u ==
-  -- for Lisp package calling
-  -- boot syntax is package::fun but probably need to parenthesize it
-  postForm u
-
-postAtSign ["@",x,y] == ["@",postTran x,:postType y]
-
-postPretend ['pretend,x,y] == ['pretend,postTran x,:postType y]
 
 postConstruct u ==
   u is ['construct,b] =>
@@ -218,8 +204,6 @@ postForm (u is [op,:argl]) ==
   x is [., ["@Tuple", :y]] => [first x, :y]
   x
 
-postQuote [.,a] == ['QUOTE,a]
-
 postIf t ==
   t isnt ["if",:l] => t
   ['IF, :[(null(x := postTran x) => 'noBranch; x)
@@ -238,11 +222,6 @@ postJoin ['Join,a,:l] ==
 postMapping u  ==
   u isnt ["->",source,target] => u
   ['Mapping,postTran target,:unTuple postTran source]
-
-postOp x ==
-  x = ":=" => 'LET
-  x='Attribute => 'ATTRIBUTE
-  x
 
 postRepeat ['REPEAT,:m,x] == ['REPEAT,:postIteratorList m,postTran x]
 
