@@ -344,6 +344,12 @@ HasSignature(domain,[op,sig]) ==
 
 --------------------> NEW DEFINITION (override in nrungo.boot)
 basicLookup(op,sig,domain,dollar) ==
+  -- FIXME: We should use consistent representation, not hacks
+  -- like this one
+  if op = 0 then op := 'Zero
+  if op = ['Zero] then op := 'Zero
+  if op = 1 then op := 'One
+  if op = ['One] then op := 'One
   -- Spad case
   VECP domain =>
      isNewWorldDomain domain => -- getting ops from yourself (or for defaults)
