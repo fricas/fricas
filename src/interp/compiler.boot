@@ -523,13 +523,13 @@ substituteIntoFunctorModemap(argl,modemap is [[dc,:sig],:.],e) ==
 
 --% SETQ
 
-compSetq(["LET",form,val],m,E) == compSetq1(form,val,m,E)
+compSetq([":=", form, val], m, E) == compSetq1(form, val, m, E)
 
 compSetq1(form,val,m,E) ==
   IDENTP form => setqSingle(form,val,m,E)
   form is [":",x,y] =>
     [.,.,E']:= compMakeDeclaration(form,$EmptyMode,E)
-    compSetq(["LET",x,val],m,E')
+    compSetq([":=", x, val], m, E')
   form is [op,:l] =>
     op="CONS"  => setqMultiple(uncons form,val,m,E)
     op = "@Tuple" => setqMultiple(l, val, m, E)
