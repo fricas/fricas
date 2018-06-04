@@ -39,7 +39,7 @@ getSignatureDocumentation(lineno) ==
 record_on_docList(key, item) ==
     $docList := [[key, :item], :$docList]
 
-recordAttributeDocumentation(['Attribute,att],lineno) ==
+recordAttributeDocumentation(['ATTRIBUTE, att], lineno) ==
   name := opOf att
   UPPER_-CASE_-P (PNAME name).0 => nil
   recordDocumentation([name,['attribute,:IFCDR postTransform att]],lineno)

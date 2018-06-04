@@ -210,7 +210,7 @@ parseIf t ==
 makeSimplePredicateOrNil p ==
   isSimple p => nil
   u:= isAlmostSimple p => u
-  true => wrapSEQExit [['LET, [":", g := GENSYM(), ["Boolean"]], p], g]
+  true => wrapSEQExit [[":=", [":", g := GENSYM(), ["Boolean"]], p], g]
 
 parseSeq l ==
   not (l is [:.,['exit,:.]]) =>
@@ -222,7 +222,7 @@ transSeq l ==
   null rest l => decExitLevel first l
   [item,:tail]:= l
   item is ['SEQ,:l,['exit,1,['IF,p,['exit, =2,q],'noBranch]]] and
-    (and/[x is ['LET,:.] for x in l]) =>
+    (and/[x is [":=", :.] for x in l]) =>
       ['SEQ,:[decExitLevel x for x in l],['exit,1,['IF,decExitLevel p,
         decExitLevel q,transSeq tail]]]
   item is ['IF,a,['exit,1,b],'noBranch] =>
