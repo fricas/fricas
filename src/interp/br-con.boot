@@ -41,7 +41,7 @@ conPage(a) ==
     atom a => [a]
     a
   $conArgstrings : local := [form2HtString x for x in IFCDR a]
-  a := first a
+  a := first form
   da := DOWNCASE a
   pageName := QLASSQ(da, '((type . CategoryType) (union . DomainUnion) _
                            (record . DomainRecord) (mapping . DomainMapping) _
