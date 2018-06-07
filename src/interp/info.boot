@@ -55,26 +55,27 @@ where the condition looks like a 'has' clause, or the 'and' of several
 The use of two representations is admitted to be clumsy
 )endif
 
-printInfo $e ==
-  for u in get("$Information","special",$e) repeat PRETTYPRINT u
+printInfo e ==
+  for u in get("$Information", "special", e) repeat PRETTYPRINT u
   nil
 
 addInformation(m, e) ==
-  $Information: local := nil
-  --$Information:= nil: done by previous statement anyway
-  info m where
-    info m ==
+  ni := info(m, []) where
+    info(m, il) ==
       --Processes information from a mode declaration in compCapsule
-      atom m => nil
-      m is ["CATEGORY",.,:stuff] => for u in stuff repeat addInfo u
-      m is ["Join",:stuff] => for u in stuff repeat info u
-      nil
-  e :=
-    put("$Information","special",[:$Information,:
-      get("$Information", "special", e)], e)
+      atom m => il
+      m is ["CATEGORY", ., :stuff] =>
+          for u in stuff repeat il := addInfo(u, il)
+          il
+      m is ["Join",:stuff] =>
+          for u in stuff repeat il := info(u, il)
+          il
+      il
+  put("$Information", "special", [:ni,
+        :get("$Information", "special", e)], e)
   e
 
-addInfo u == $Information:= [formatInfo u,:$Information]
+addInfo(u, il) == [formatInfo u, :il]
 
 formatInfo u ==
   atom u => u

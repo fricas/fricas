@@ -440,9 +440,8 @@ database.
 ;  )
 (defun |interpOpen| ()
  "open the interpreter database and hash the keys"
- (declare (special $spadroot))
  (let (constructors pos stamp dbstruct)
-  (setq |$interp_stream| (open (DaaseName "interp.daase" nil)))
+  (setq |$interp_stream| (open (DaaseName "interp.daase")))
   (setq stamp (read |$interp_stream|))
   (unless (equal stamp |$interp_stream_stamp|)
    (format t "   Re-reading interp.daase")
@@ -504,9 +503,8 @@ database.
 
 (defun |browseOpen| ()
  "open the constructor database and hash the keys"
- (declare (special $spadroot))
  (let (constructors pos stamp dbstruct)
-  (setq |$browse_stream| (open (DaaseName "browse.daase" nil)))
+  (setq |$browse_stream| (open (DaaseName "browse.daase")))
   (setq stamp (read |$browse_stream|))
   (unless (equal stamp |$browse_stream_stamp|)
    (format t "   Re-reading browse.daase")
@@ -533,9 +531,8 @@ database.
 
 (defun |categoryOpen| ()
  "open category.daase and hash the keys"
- (declare (special $spadroot))
  (let (pos keys stamp)
-  (setq |$category_stream| (open (DaaseName "category.daase" nil)))
+  (setq |$category_stream| (open (DaaseName "category.daase")))
   (setq stamp (read |$category_stream|))
   (unless (equal stamp |$category_stream_stamp|)
    (format t "   Re-reading category.daase")
@@ -551,9 +548,8 @@ database.
 
 (defun |operationOpen| ()
  "read operation database and hash the keys"
- (declare (special $spadroot))
  (let (operations pos stamp)
-  (setq |$operation_stream| (open (DaaseName "operation.daase" nil)))
+  (setq |$operation_stream| (open (DaaseName "operation.daase")))
   (setq stamp (read |$operation_stream|))
   (unless (equal stamp |$operation_stream_stamp|)
    (format t "   Re-reading operation.daase")
@@ -1186,7 +1182,7 @@ database.
   (rename-file "category.build"
                (final-name "category")))))
 
-(defun DaaseName (name erase?)
+(defun DaaseName (name)
  (let (daase filename)
   (declare (special $spadroot))
   (if (setq daase (|getEnv| "DAASE"))
@@ -1194,21 +1190,7 @@ database.
     (setq filename  (concatenate 'string daase "/algebra/" name))
     (format t "   Using local database ~a.." filename))
    (setq filename (concatenate 'string $spadroot "/algebra/" name)))
-  (when erase? (delete-file filename))
   filename))
-
-;; rewrite this so it works in mnt
-;;(defun DaaseName (name erase?)
-;; (let (daase filename)
-;;  (declare (special $spadroot))
-;;  (if (setq daase (|getEnv| "DAASE"))
-;;   (progn
-;;    (setq filename  (concatenate 'string daase "/algebra/" name))
-;;    (format t "   Using local database ~a.." filename))
-;;   (setq filename (concatenate 'string $spadroot "/algebra/" name)))
-;;  (when erase? (system::system (concatenate 'string "rm -f " filename)))
-;;  filename))
-
 
 ;; The compress database is special. It contains a list of symbols.
 ;; The character string name of a symbol in the other databases is
@@ -1219,9 +1201,8 @@ database.
 
 (defun |compressOpen| ()
  (let (lst stamp pos)
-  (declare (special $spadroot))
   (setq |$compress_stream|
-    (open (DaaseName "compress.daase"  nil) :direction :input))
+    (open (DaaseName "compress.daase") :direction :input))
   (setq stamp (read |$compress_stream|))
   (unless (equal stamp |$compress_stream_stamp|)
    (format t "   Re-reading compress.daase")
@@ -1274,7 +1255,7 @@ database.
 
 (defun write-interpdb ()
  "build interp.daase from hash tables"
- (declare (special $spadroot) (special |$ancestors_hash|))
+ (declare (special |$ancestors_hash|))
  (let (opalistpos modemapspos cmodemappos master masterpos obj (*print-pretty* t)
         concategory categorypos kind niladic cosig abbrev defaultdomain
         ancestors ancestorspos out)
@@ -1342,7 +1323,6 @@ database.
 
 (defun write-browsedb ()
  "make browse.daase from hash tables"
- (declare (special $spadroot))
  (let (master masterpos src formpos docpos attpos predpos (*print-pretty* t) out)
   (print "building browse.daase")
   (setq out (open "browse.build" :direction :output :if-exists :supersede))
