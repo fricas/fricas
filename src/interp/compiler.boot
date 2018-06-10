@@ -893,6 +893,7 @@ canReturn(expr,level,exitCount,ValueFlag) ==  --SPAD: exit and friends
     expr is [.,count,data] => canReturn(data.expr,level,count,count=level)
   level=exitCount and not ValueFlag => nil
   op="SEQ" => or/[canReturn(u,level+1,exitCount,false) for u in rest expr]
+  op = "error" => nil
   op="TAGGEDreturn" => nil
   op="CATCH" =>
     [.,gs,data]:= expr
