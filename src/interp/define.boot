@@ -274,7 +274,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
     body:=
         ['PROG1, ['LET, g:= GENSYM(), body],
                  ['SETELT, g, 0, mkConstructor(sform)]]
-    fun := compile [op', ['category_functor, sargl, body]]
+    fun := do_compile [op', ['category_functor, sargl, body]]
 
 --  5. give operator a 'modemap property
     pairlis:= [[a,:v] for a in argl for v in $FormalMapVariableList]
@@ -402,7 +402,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     lamOrSlam :=
         $mutableDomain => 'mutable_domain_functor
         'domain_functor
-    fun:= compile SUBLIS($pairlis, [op',[lamOrSlam,argl,body']])
+    fun:= do_compile(SUBLIS($pairlis, [op', [lamOrSlam, argl, body']]))
     --The above statement stops substitutions gettting in one another's way
 --+
     operationAlist := SUBLIS($pairlis,$lisplibOperationAlist)
@@ -811,13 +811,13 @@ putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
 
 
 compileCases(x,$e) == -- $e is referenced in compile
-    compile x
+    do_compile x
 
 isLocalFunction op ==
     null member(op, $formalArgList) and
         getmode(op, $e) is ['Mapping, :.]
 
-compile u ==
+do_compile u ==
   [op,lamExpr] := u
   if $suffix then
     $suffix:= $suffix+1

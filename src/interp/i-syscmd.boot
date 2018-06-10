@@ -391,12 +391,12 @@ close args ==
     QUIT()
   nil
 
---% )compiler
+--% )compile
 
-compiler args ==
+compile args ==
     $newConlist: local := nil    --reset by compDefineLisplib and astran
     null args and null $options and null($edit_file) =>
-        helpSpad2Cmd '(compiler)
+        helpSpad2Cmd '(compile)
     if null args then args := [$edit_file]
 
     -- first see if the user has explicitly specified the compiler
@@ -461,7 +461,7 @@ compileAsharpCmd args ==
     spadPrompt()
 
 compileAsharpCmd1 args ==
-    -- Assume we entered from the "compiler" function, so args ~= nil
+    -- Assume we entered from the "compile" function, so args ~= nil
     -- and is a file with file extension .as or .ao
 
     path := pathname args
@@ -560,7 +560,7 @@ compileAsharpCmd1 args ==
     extendLocalLibdb $newConlist
 
 compileAsharpArchiveCmd args ==
-    -- Assume we entered from the "compiler" function, so args ~= nil
+    -- Assume we entered from the "compile" function, so args ~= nil
     -- and is a file with file extension .al. We also assume that
     -- the name is fully qualified.
 
@@ -619,7 +619,7 @@ compileAsharpArchiveCmd args ==
     spadPrompt()
 
 compileAsharpLispCmd args ==
-    -- Assume we entered from the "compiler" function, so args ~= nil
+    -- Assume we entered from the "compile" function, so args ~= nil
     -- and is a file with file extension .lsp
 
     path := pathname args
@@ -664,7 +664,7 @@ compileAsharpLispCmd args ==
     spadPrompt()
 
 compileSpadLispCmd args ==
-    -- Assume we entered from the "compiler" function, so args ~= nil
+    -- Assume we entered from the "compile" function, so args ~= nil
     -- and is a file with file extension .NRLIB
 
     libname := first args
@@ -1056,7 +1056,6 @@ newHelpSpad2Cmd args ==
        else if sarg = '"%%" then args := ['history]
   arg := selectOptionLC(first args,$SYSCOMMANDS,nil)
   if null arg then arg := first args
-  if arg = 'compiler then arg := 'compile
 
   -- see if new help file exists
 

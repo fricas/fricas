@@ -129,7 +129,7 @@
    (|cd|                             . |interpreter|)
    (|clear|                          . |interpreter|)
    (|close|                          . |interpreter|)
-   (|compiler|                       . |compiler|   )
+   (|compile|                        . |compiler|   )
    (|copyright|                      . |interpreter|)
    (|credits|                        . |interpreter|)
    (|display|                        . |interpreter|)
@@ -178,7 +178,7 @@
     |cd|
     |clear|
     |close|
-    |compiler|
+    |compile|
     |depends|
     |display|
     |edit|
@@ -222,10 +222,8 @@
        (|apropos|    . "what things")
        (|cache|      . "set functions cache")
        (|cl|         . "clear")
-       (|co|         . "compiler")
+       (|co|         . "compile")
        (|d|          . "display")
-       (|dep|        . "display dependents")
-       (|dependents| . "display dependents")
        (|expose|     . "set expose add constructor")
        (|fortran|    . "set output fortran")
        (|h|          . "help")
