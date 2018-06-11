@@ -1034,7 +1034,7 @@ compColon([":",f,t],m,e) ==
       signature:=
         ["Mapping",newTarget,:
           [(x is [":",a,m] => m;
-              getmode(x,e) or systemErrorHere '"compColonOld") for x in argl]]
+              getmode(x,e) or systemErrorHere '"compColon") for x in argl]]
       put(op,"mode",signature,e)
     put(f,"mode",t,e)
   if not $bootStrapMode and $insideFunctorIfTrue and
