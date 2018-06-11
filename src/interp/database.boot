@@ -99,6 +99,14 @@ saveDependentsHashTable() ==
     rwrite(k, HGET($depTb, k), stream)
   RSHUT stream
 
+save_browser_data() ==
+    buildLibdb(false)
+    dbSplitLibdb()
+    mkUsersHashTable()
+    saveUsersHashTable()
+    mkDependentsHashTable()
+    saveDependentsHashTable()
+
 getUsersOfConstructor(con) ==
   stream := readLib('USERS, 'DATABASE)
   val := rread_list(con, stream)

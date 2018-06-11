@@ -1130,16 +1130,8 @@ database.
                                                           dir)))))
                          'make-database))
 ;browse.daase
-  (|oldCompilerAutoloadOnceTrigger|)
-  (|browserAutoloadOnceTrigger|)
   (if br_data
-      (progn
-          (|buildLibdb| NIL)
-          (|dbSplitLibdb|)
-          (|mkUsersHashTable|)
-          (|saveUsersHashTable|)
-          (|mkDependentsHashTable|)
-          (|saveDependentsHashTable|)))
+      (|save_browser_data|))
   (write-compress)
   (if br_data
       (write-browsedb))
