@@ -34,7 +34,6 @@
 ;      Lars Ericson, Barry Trager, Martial Schor, tim daly, LVMCL, et al
 ;      IBM Thomas J. Watson Research Center
 ;      Summer, 1986
-;  see /spad/daly.changes
 
 ; This emulation package version is written for Symbolics Common Lisp.
 ; Emulation commentary refers to LISP/VM, IBM Program Number 5798-DQZ,
@@ -648,10 +647,6 @@
   (multiple-value-bind (sec min hour day month year) (get-decoded-time)
     (format nil "~2,'0D/~2,'0D/~2,'0D~2,'0D:~2,'0D:~2,'0D"
             month day (rem year 100) hour min sec)))
-
-; 97.0 Stuff In The Manual But Wierdly Documented
-
-(defun EBCDIC (x) (int-char x))
 
 ; 99.0 Ancient Stuff We Decided To Keep
 
