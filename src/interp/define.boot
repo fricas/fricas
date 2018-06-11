@@ -146,9 +146,6 @@ macroExpand(x,e) ==   --not worked out yet
   macroExpandList(x,e)
 
 macroExpandList(l,e) ==
-  -- macros should override niladic props
-  (l is [name]) and IDENTP name and GETDATABASE(name, 'NILADIC) and
-        (u := get(name, 'macro, e)) => macroExpand(u,e)
   [macroExpand(x,e) for x in l]
 
 compDefineCategory1(df is ['DEF,form,sig,sc,body],m,e,prefix,fal) ==
