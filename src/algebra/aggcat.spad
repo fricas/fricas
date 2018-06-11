@@ -1486,8 +1486,15 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
 
   if % has finiteAggregate then
       last(x, n) ==
-          n > (m := #x) => error "index out of range"
-          copy rest(x, (m - n)::NonNegativeInteger)
+          xn := x
+          for i in 1..n repeat
+              empty? xn => error "index out of range"
+              xn := rest xn
+          -- xn is n nodes ahead of x
+          while not empty? xn repeat
+              xn := rest xn
+              x := rest x
+          copy x
 
   if % has finiteAggregate and S has BasicType then
       x = y ==
@@ -2368,8 +2375,7 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
        removeDuplicates! l ==
            p := l
            while not empty? p repeat
-               p := setrest!(p, remove!((x : S) : Boolean +-> x = first p,
-                                        rest p))
+               p := setrest!(p, remove!(first p, rest p))
            l
 
    if S has OrderedSet then
