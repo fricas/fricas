@@ -1575,7 +1575,7 @@ appsum(u, x, y, d) ==
   sc :=
     syminusp first u => '"-"
     true => '"+"
-  dp := member(keyp absym first u, '(_+ _-))
+  dp := member(keyp ac, '(_+ _-))
   tempx := x + WIDTH ac + (dp => 5; true => 3)
   tempdblock :=
     temparg1 := APP(sc, x + 1, y, d)
@@ -2166,10 +2166,9 @@ mathPrint u ==
 
 mathPrintTran u ==
   atom u => u
-  true =>
-    for x in tails u repeat
-          rplac(first x, mathPrintTran first x)
-    u
+  for x in tails u repeat
+      rplac(first x, mathPrintTran first x)
+  u
 
 mathPrint1(x,fg) ==
   if fg and not $collectOutput then TERPRI $algebraOutputStream
