@@ -1,6 +1,7 @@
 )abbrev domain IPF InnerPrimeField
 ++ Authors: N.N., J.Grabmeier, A.Scheerhorn
 ++ Date Created: ?, November 1990, 26.03.1991
+++   Revision 05.06.2018 by J. Grabmeier
 ++ Basic Operations:
 ++ Related Constructors: PrimeField
 ++ Also See:
@@ -11,10 +12,18 @@
 ++  Its Applications, Vol. 20, Cambridge Univ. Press, 1983, ISBN 0 521 30240 4
 ++  J. Grabmeier, A. Scheerhorn: Finite Fields in Axiom.
 ++   Axiom Technical Report Series, ATR/5 NP2522.
+++  K. Pommerening: lectures on Cryptology,
+++   http://www.staff.uni-mainz.de/pommeren/Cryptology
 ++ Description:
-++   InnerPrimeField(p) implements the field with p elements.
+++   InnerPrimeField(p) implements the field with p elements by
+++   using IntegerMod p.
 ++   Note: argument p MUST be a prime (this domain does not check).
 ++   See \spadtype{PrimeField} for a domain that does check.
+++   In addition to the inherited operations of IntegerMod p, the domain 
+++   provides exploits the structure of the cyclic group of its invertible
+++   elements.  It stores a primitive element w, i.a. generator of this
+++   group and it stores a logarithm table for w as soon as this is required.
+++   sqrt was added in 2018.
 
 InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
 
@@ -24,46 +33,140 @@ InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
   TBL ==> Table(PI, NNI)
   R   ==> Record(key : PI, entry : NNI)
   SUP ==> SparseUnivariatePolynomial
-  OUT ==> OutputForm
+  OF  ==> OutputForm
 
   Exports ==> Join(FiniteFieldCategory, FiniteAlgebraicExtensionField(%), _
-                ConvertibleTo(Integer))
+                ConvertibleTo(Integer)) with 
+    sqrt : % -> %
+      ++ sqrt(x) computes one y such that y^2 = x, error if there is no 
+      ++ square root, i.e. jacobi(x,p) = -1.
+      ++ Implementation according to 
+      ++ http://www.staff.uni-mainz.de/pommeren/Cryptology/Asymmetric/5_NTh/
+    quadraticNonResidue: () ->  %
+      ++ quadraticNonResidue() computes the smallest non negative integer, 
+      ++ which represents a quadratic non residue.
 
   Implementation ==> IntegerMod p add
-
-    initializeElt : () -> Void
-    initializeLog : () -> Void
-
--- global variables ====================================================
-
+-- local variables ==========================================================
+    primitiveElementNotPresent? : Boolean := true
+    -- gets false after initialization of the primitive Element.
     primitiveElt : PI := 1
-    -- for the lookup the primitive Element computed by createPrimitiveElement()
-
-    sizeCG  := qcoerce(p-1)@NonNegativeInteger
-    -- the size of the cyclic group
-
-    facOfGroupSize := []$(List Record(factor : Integer, exponent : NonNegativeInteger))
-    -- the factorization of the cyclic group size
-
-    initlog? : Boolean := true
-    -- gets false after initialization of the logarithm table
-
-    initelt? : Boolean := true
-    -- gets false after initialization of the primitive Element
-
-
+    -- primitiveElt stores a primitive element as soon as it is computed by
+    -- createPrimitiveElement().
+    cyclicGroupSize : NNI := qcoerce(p-1)@NNI
+    -- the size of the cyclic group of invertible elements.
+    factorsOfCyclicGroupSize: List Record(factor : Integer,
+                                exponent : NonNegativeInteger) := []
+    -- will hold the factorization of the cyclic group size of the group of
+    -- invertible elements, as soon as the logarithm tables are required.
+    logarithmTableNotPresent? : Boolean := true
+    -- gets false after initialization of the logarithm tables.
     discLogTable : Table(PI, TBL) := table()$Table(PI, TBL)
-    -- tables indexed by the factors of the size q of the cyclic group
-    -- discLogTable.factor is a table of with keys
+    -- tables indexed by the prime factors of the size q of the cyclic group
+    -- discLogTable.factor is a table with keys
     -- primitiveElement() ^ (i * (q quo factor)) and entries i for
     -- i in 0..n-1, n computed in initialize() in order to use
     -- the minimal size limit 'limit' optimal.
 
--- functions ===========================================================
+-- local functions ========================================================
+    twoPowerOfCyclicGroupSize : NNI := 
+      cGS : NNI := cyclicGroupSize
+      r : NNI := 0 
+      while cGS rem 2 = 0 repeat 
+        cGS := cGS quo 2
+	r := r+1
+      r
+
+    twoPower: % -> NNI 
+      ++ twoPower(x: %) computes the highest power of two in the
+      ++ factorization of the order of x ~= 0.
+    twoPower(x: %): NNI == 
+      x = 0 => error "twoPower: argument must not be 0."
+      ord : NNI := order x
+      r : NNI := 0 
+      while ord rem 2 = 0 repeat 
+        ord := ord quo 2
+	r := r+1
+      r
+    initializePrimitiveElement : () -> Void
+      ++ initializePrimitiveElement() initializes the computation of a 
+      ++ primitive Element to be stored.
+    initializePrimitiveElement(): Void ==
+      factorsOfCyclicGroupSize := factors(factor(cyclicGroupSize)$I
+                                         )$(Factored I)
+      -- get a primitive element:
+      primitiveElt := lookup(createPrimitiveElement())
+      -- set initialization flag:
+      primitiveElementNotPresent? := false
+      void
+
+    initializeLogarithmTable : () -> Void
+      ++ initializeLogarithmTable() initializes the computation of a 
+      ++ logarithm table for the ++ primitive Element to be stored.
+    initializeLogarithmTable(): Void ==
+      if primitiveElementNotPresent? then initializePrimitiveElement()
+      -- now set up tables for discrete logarithm computations
+      limit : Integer := 30
+      -- the minimum size for the discrete logarithm table
+      for rec in factorsOfCyclicGroupSize repeat
+        primeDivisor := rec.factor
+        base : % := primitiveElement() ^ (cyclicGroupSize quo primeDivisor)
+        l : Integer := length primeDivisor
+        n : Integer := if odd? l
+	  then n := shift(primeDivisor, -(l quo 2))
+	  else n := shift(1, (l quo 2))
+        if n < limit then
+          d := (primeDivisor - 1) quo limit + 1
+          n := (primeDivisor - 1) quo d + 1
+        tbl : TBL := table()$TBL
+        a : % := 1
+        for i in 0..(n-1)::NNI repeat
+          insert!([lookup a , i::NNI]$R, tbl)$TBL
+          a := a * base
+        insert!([primeDivisor::PI, copy(tbl)$TBL]$Record(key: PI, entry: TBL),
+                discLogTable) 
+      -- set initialization flag:
+      logarithmTableNotPresent? := false
+      void
+
+-- exported functions from % ==============================================
+    quadraticNonResidue(): % == 
+      found? : Boolean := false
+      q : I := 1
+      while not found? repeat
+	q := q+1
+	found? := jacobi(q, p)$IntegerNumberTheoryFunctions = -1 
+      q :: %
+    sqrt(x: %): % == 
+      zero? x => x
+      jacobi(convert(x)@I, p)$IntegerNumberTheoryFunctions = -1 => 
+	error "sqrt: argument does not have a square root by Jacobi symbol."
+      3 = (p rem 4) => 
+	y : % := x ^ ((p+1) quo 4)
+        -- we choose the smaller one of y and -y of their canonical 
+        -- representatives in 0..p-1
+	if convert(y)@I < convert(-y)@I then y else -y
+      -- now we must have 1 = (p rem 4) and jacobi(x,p) = 1 (provided p is 
+      -- really a prime).
+      b : % := quadraticNonResidue()
+      e : NNI := twoPowerOfCyclicGroupSize 
+      u : NNI := ((p-1) :: NNI) quo (2^e)
+      z : % := x 
+      r : NNI := twoPower z
+      lr : List NNI := [r]
+      while r > 0 repeat
+        z := z * b ^ (2 ^ ( (e-r) :: NNI))
+	r := twoPower z
+	lr := cons(r, lr)
+      y : % := z ^ ( (u+1) quo 2)
+      for r in rest lr  repeat
+	y := y / b ^ (2 ^ (e-r-1) :: NNI) 
+      if convert(y)@I < convert(-y)@I then y else -y
 
     generator() == 1
 
-    -- This uses x^(p-1)=1 (mod p), so x^(q(p-1)+r) = x^r (mod p)
+    -- This uses Fermat's little theorem x^(p-1)=1 (mod p), so x^(q(p-1)+r) 
+    -- = x^r (mod p)
     x : % ^ n : Integer ==
       zero?(n) => 1
       zero?(x) => 0
@@ -72,7 +175,6 @@ InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
 
     if p <= convert(max()$SingleInteger)@Integer then
       q := p::SingleInteger
-
       recip x ==
         zero?(y := convert(x)@Integer :: SingleInteger) => "failed"
         invmod(y, q)::Integer::%
@@ -90,16 +192,16 @@ InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
     characteristic() == p
 
     factorsOfCyclicGroupSize() ==
-      p = 2 => facOfGroupSize -- this fixes an infinite loop of functions
-                            -- calls, problem was that factors factor(1)
-                            -- is the empty list
-      if empty? facOfGroupSize then initializeElt()
-      facOfGroupSize
+      -- this fixes an infinite loop of function calls, problem was that 
+      -- factors factor(1) is the empty list:
+      p = 2 => factorsOfCyclicGroupSize 
+      if empty? factorsOfCyclicGroupSize then initializePrimitiveElement()
+      factorsOfCyclicGroupSize
 
     representationType() == "prime"
 
     tableForDiscreteLogarithm(fac) ==
-      if initlog? then initializeLog()
+      if logarithmTableNotPresent? then initializeLogarithmTable()
       tbl := search(fac::PI, discLogTable)$Table(PI, TBL)
       tbl case "failed" =>
         error "tableForDiscreteLogarithm: argument must be prime divisor_
@@ -107,44 +209,9 @@ InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
       tbl pretend TBL
 
     primitiveElement() ==
-      if initelt? then initializeElt()
+      if primitiveElementNotPresent? then initializePrimitiveElement()
       index(primitiveElt)
 
-    initializeElt() ==
-      facOfGroupSize := factors(factor(sizeCG)$I)$(Factored I)
-      -- get a primitive element
-      primitiveElt := lookup(createPrimitiveElement())
-      -- set initialization flag
-      initelt? := false
-      void$Void
-
-    initializeLog() ==
-      if initelt? then initializeElt()
-      -- set up tables for discrete logarithm
-      limit : Integer := 30
-      -- the minimum size for the discrete logarithm table
-      for f in facOfGroupSize repeat
-        fac := f.factor
-        base : % := primitiveElement() ^ (sizeCG quo fac)
-        l : Integer := length(fac)$Integer
-        n : Integer := 0
-        if odd?(l)$Integer then n := shift(fac, -(l quo 2))
-                           else n := shift(1, (l quo 2))
-        if n < limit then
-          d := (fac-1) quo limit + 1
-          n := (fac-1) quo d + 1
-        tbl : TBL := table()$TBL
-        a : % := 1
-        for i in (0::NNI)..(n-1)::NNI repeat
-          insert!([lookup(a), i::NNI]$R, tbl)$TBL
-          a := a*base
-        insert!([fac::PI, copy(tbl)$TBL]_
-               $Record(key : PI, entry : TBL), discLogTable)$Table(PI, TBL)
-      -- tell user about initialization
-      --    print("discrete logarithm table initialized"::OUT)
-      -- set initialization flag
-      initlog? := false
-      void$Void
 
     degree(x) : PI == 1::PositiveInteger
     extensionDegree() : PI == 1::PositiveInteger
@@ -193,7 +260,10 @@ InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
 --++   with new compiler, want to put the error check before the add
 PrimeField(p : PositiveInteger) : Exp == Impl where
   Exp ==> Join(FiniteFieldCategory, FiniteAlgebraicExtensionField(%), _
-    ConvertibleTo(Integer))
+      ConvertibleTo(Integer)) with
+    sqrt : % -> %
+      ++ sqrt(x) computes one y such that y^2 = x, error if there is no square 
+      ++ root, i.e. jacobi(x,p) = -1.
   Impl ==>  InnerPrimeField(p) add
     if not prime?(p)$IntegerPrimesPackage(Integer) then
       error "Argument to prime field must be a prime"
