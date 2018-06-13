@@ -183,6 +183,18 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
 --    TT := InnerModularGcd(%, ZP, 67108859 pretend %, myNextPrime)
 --    gcdPolynomial(p, q) == modularGcd(p, q)$TT
 
+      -- copied from IntegerNumberSystem to get inline optimization,
+      -- speeds up functions like 'primes'
+      powmod(x, n, p) ==
+         if negative? x then x := positiveRemainder(x, p)
+         zero? x => 0
+         zero? n => 1
+         y : % := 1
+         z := x
+         repeat
+            if odd? n then y := mulmod(y, z, p)
+            zero?(n := shift(n, -1)) => return y
+            z := mulmod(z, z, p)
 
 )abbrev domain NNI NonNegativeInteger
 ++ Author:
