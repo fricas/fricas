@@ -114,7 +114,7 @@ compRepeatOrCollect(form,m,e) ==
           $NoValueMode
         [body',m',e']:=
           -- (m1:= listOrVectorElementMode targetMode) and comp(body,m1,e) or
-            compOrCroak(body,bodyMode,e) or return nil
+            comp(body, bodyMode, e) or return nil
         if $until then
           [untilCode,.,e']:= comp($until,$Boolean,e')
           itl':= substitute(["UNTIL",untilCode],'$until,itl')
