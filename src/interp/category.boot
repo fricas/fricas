@@ -80,12 +80,7 @@ mkCategory(sigList, attList, domList, PrincipalAncestor) ==
 
 --% Subsumption code (for operators)
 
-DropImplementations (a is [sig,pred,:implem]) ==
-  if implem is [[q,:.]] and (q="ELT" or q="CONST")
-     then if (q="ELT")  then [sig,pred]
-                        else [[:sig,:'(constant)],pred]
-     else a
-
+-- extra is after 'DropImplementations', original has implementations
 SigListUnion(extra,original) ==
   --augments original with everything in extra that is not in original
   for (o:=[[ofn,osig,:.],opred,:.]) in original repeat
@@ -381,12 +376,12 @@ JoinInner(l) ==
   FundamentalAncestors := join_fundamental_ancestors(NewCatVec, l')
 
   for b in l repeat
-    sigl:= SigListUnion([DropImplementations u for u in b.(1)],sigl)
+    sigl:= SigListUnion(b.(1), sigl)
   for b in CondList repeat
     newpred:= first rest b
     sigl:=
       SigListUnion(
-        [AddPredicate(DropImplementations u,newpred) for u in (first b).(1)],sigl) where
+        [AddPredicate(u, newpred) for u in (first b).(1)],sigl) where
           AddPredicate(op is [sig,oldpred,:implem],newpred) ==
             newpred=true => op
             oldpred=true => [sig,newpred,:implem]

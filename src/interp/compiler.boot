@@ -160,7 +160,7 @@ compLambda(x is ["+->", vl, body], m, e) ==
                  ress
              stackAndThrow ["compLambda: malformed argument list", x]
         stackAndThrow ["compLambda: malformed argument list", x]
-    stackAndThrow ["compLambda: signature needed", x]
+    nil
 
 getFreeList(u, bound, free, e) ==
     atom u =>
