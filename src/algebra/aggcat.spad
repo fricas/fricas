@@ -119,6 +119,14 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
         ++ members(u) returns a list of the consecutive elements of u.
         ++ For multisets \spadfun{members} gives result with no repetition.
         ++ See also \spadfun{parts}.
+      max : ((S, S) -> Boolean, %) -> S
+        ++ min(p, u) returns maximal element of u with respect to total
+        ++ ordering predicate p.  Error if u is empty.
+      if S has OrderedSet then
+        min : % -> S
+          ++ max(u) returns minimal element of u.  Error if u is empty.
+        max : % -> S
+          ++ max(u) returns maximal element of u.  Error if u is empty.
       if S has BasicType then
         count : (S, %) -> NonNegativeInteger
           ++ count(x, u) returns the number of occurrences of x in u.
@@ -146,6 +154,25 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
            true
        count(f : S -> Boolean, c : %) == _+/[1 for x in parts c | f x]
        members x == parts x
+
+       map1(f : S -> Void, u : %) : Void ==
+           for x in parts u repeat
+               f(x)
+       max(p : (S, S) -> Boolean, u : %) : S ==
+           empty?(u) => error "max of empty aggregate"
+           rr : Reference(Union(S, "none")) := ref("none")
+           f : S -> Void :=
+              s +->
+                  (tu := deref(rr)) case "none" => setref(rr, s)
+                  if p(tu::S, s) then
+                      setref(rr, s)
+           map1(f, u)
+           deref(rr)::S
+
+       if S has OrderedSet then
+           min(u : %) : S == max((x, y) +-> (y < x), u)
+           max(u : %) : S == max((x, y) +-> (x < y), u)
+
        if S has BasicType then
            count(e : S, c : %) == count(x +-> e = x, c)
            member?(e, c) == any?(x +-> e = x, c)
@@ -595,11 +622,6 @@ FiniteSetAggregate(S : SetCategory) : Category ==
         ++ i.e. the set of all values not in u.
       universe : () -> %
         ++ universe()$D returns the universal set for finite set aggregate D.
-    if S has OrderedSet then
-      max : % -> S
-        ++ max(u) returns the largest element of aggregate u.
-      min : % -> S
-        ++ min(u) returns the smallest element of aggregate u.
     if S has Comparable then Comparable
 
  add
