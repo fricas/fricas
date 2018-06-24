@@ -135,6 +135,9 @@ evalUntargetedADEF(t,vars,types,body) ==
   putModeSet(t,[objMode val])
 
 evalTargetedADEF(t,vars,types,body) ==
+    evalTargetedADEF1(t, vars, types, body, $env, $localVars, $freeVars)
+
+evalTargetedADEF1(t, vars, types, body, $env, $localVars, $freeVars) ==
   $mapName : local := makeInternalMapName('"anonymousFunction",
     #vars,$anonymousMapCounter,'"internal")
   $anonymousMapCounter := 1 + $anonymousMapCounter
@@ -152,11 +155,19 @@ evalTargetedADEF(t,vars,types,body) ==
   body := sublisNQ(sublist,body)
   vars := [rest v for v in sublist]
 
+  new_contour1 := [[v] for v in vars]
+  $env := [[new_contour1, :first($env)]]
+
   for m in rest types for var in vars repeat
     $env:= put(var,'mode,m,$env)
     mkLocalVar($mapName,var)
+  old_locals := $localVars
+  new_contour2 := []
   for lvar in getLocalVars($mapName,body) repeat
-    mkLocalVar($mapName,lvar)
+      mkLocalVar($mapName, lvar)
+      member(lvar, old_locals) => "iterate"
+      new_contour2 := [[lvar], :new_contour2]
+  $env := [[new_contour2, :first($env)]]
   -- set up catch point for interpret-code mode
   x := CATCH('mapCompiler,compileTargetedADEF(t,vars,types,body))
   x = 'tryInterpOnly => mkInterpTargetedADEF(t,vars,types,body)
