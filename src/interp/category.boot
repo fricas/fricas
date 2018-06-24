@@ -80,7 +80,6 @@ mkCategory(sigList, attList, domList, PrincipalAncestor) ==
 
 --% Subsumption code (for operators)
 
--- extra is after 'DropImplementations', original has implementations
 SigListUnion(extra,original) ==
   --augments original with everything in extra that is not in original
   for (o:=[[ofn,osig,:.],opred,:.]) in original repeat
