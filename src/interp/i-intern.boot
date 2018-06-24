@@ -613,9 +613,7 @@ get(x,prop,e) ==
 
 get0(x,prop,e) ==
   null atom x => get(QCAR x,prop,e)
-  u := QLASSQ(x, first QCAR e) => QLASSQ(prop, u)
-  (tail := rest QCAR e) and (u := fastSearchCurrentEnv(x, tail)) =>
-    QLASSQ(prop,u)
+  (pl := getProplist(x, e)) => QLASSQ(prop, pl)
   nil
 
 get1(x,prop,e) ==
