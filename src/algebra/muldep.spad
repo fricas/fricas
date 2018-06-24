@@ -8,7 +8,7 @@
 -- Currently the package uses naive quadratic algorithm: for each a_i it
 -- computes gcd of a_i with all elements of current basis.  Nontrivial gcd is
 -- used to split elements.
-GcdBasis(R : Join(GcdDomain, canonicalUnitNormal)) : Exports == Implementation where
+GcdBasis(R : GcdDomain) : Exports == Implementation where
    ResRec ==> Record(basis : Vector R, transform : Matrix Integer)
    Exports ==> with
       gcdBasis : Vector R -> Vector R
@@ -46,9 +46,6 @@ GcdBasis(R : Join(GcdDomain, canonicalUnitNormal)) : Exports == Implementation w
               nv(i) := numer(v(i))
               nv(i+n) := denom(v(i))
           pr := gcdDecomposition(nv)
-
-          pr
-
           cb := pr.basis
           ct0 := pr.transform
           m := #cb
@@ -73,11 +70,12 @@ GcdBasis(R : Join(GcdDomain, canonicalUnitNormal)) : Exports == Implementation w
                   b := cb(j)
                   unit?(b) => "iterate"
                   pquo := a exquo b
-                  pquo case R =>
+                  if pquo case R then
                       while pquo case R repeat
                           ct(j)(i) := ct(j)(i) + 1
                           a := pquo
                           pquo := a exquo b
+                  unit?(a) => break
                   sr1 := splitNums(a, b)
                   if sr1 case SplitRec then
                       sr : SplitRec := sr1
@@ -88,7 +86,7 @@ GcdBasis(R : Join(GcdDomain, canonicalUnitNormal)) : Exports == Implementation w
                           concat!(cb, b1)
                           concat!(ct, copy(ct(j)))
                           cb(j) := cf
-                          ct(j)(i) := 1
+                          ct(j)(i) := ct(j)(i) + 1
                           a := a1
                       else
                           dr1 := gcdDecomposition(vector([a1, b1, cf]))
@@ -115,7 +113,7 @@ GcdBasis(R : Join(GcdDomain, canonicalUnitNormal)) : Exports == Implementation w
                                   nv := new(n, 0)$(Vector Integer)
                                   for l in 1..n repeat
                                       nv(l) := c*ov(l)
-                                  nv(i) := ct1(k, 1)+ct1(k, 3)
+                                  nv(i) := nv(i) + ct1(k, 1) + ct1(k, 3)
                                   ct(m) := nv
                               else
                                   for l in 1..(ct1(k, 1)) repeat
