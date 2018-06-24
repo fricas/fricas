@@ -116,15 +116,22 @@ InnerEigenPackage(F : Field) : Exports == Implementation
          k = g  => [alpha, eigen.eigvec]
          [alpha, generalizedEigenvector(alpha, A, k, g)]
 
-     characteristicPolynomial(A : M) : UP ==
-         dimA := nrows A
-         dimA ~= ncols A => error " The matrix is not square"
-         dimA = 0 => 1$UP
-         B : Matrix(UP) := zero(dimA, dimA)
-         for i in 1..dimA repeat
-             for j in 1..dimA repeat  B(i, j) := A(i, j)::UP
-             B(i, i) := B(i, i) - monomial(1, 1)$UP
-         determinant B
+     if F has FiniteFieldCategory then
+
+         characteristicPolynomial(A : M) : UP ==
+              char_pol(A)$CharacteristicPolynomial2(F)
+
+     else
+
+         characteristicPolynomial(A : M) : UP ==
+              dimA := nrows A
+              dimA ~= ncols A => error " The matrix is not square"
+              dimA = 0 => 1$UP
+              B : Matrix(UP) := zero(dimA, dimA)
+              for i in 1..dimA repeat
+                  for j in 1..dimA repeat  B(i, j) := A(i, j)::UP
+                  B(i, i) := B(i, i) - monomial(1, 1)$UP
+              determinant B
 
      eigenvalues(A : M, fac : UP -> Factored(UP)) : List Eigenvalue ==
          pol := characteristicPolynomial(A)
