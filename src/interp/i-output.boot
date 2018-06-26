@@ -1190,6 +1190,7 @@ htmlFormat expr ==
   NIL
 
 output(expr,domain) ==
+  $resolve_level : local := 0
   if isWrapped expr then expr := unwrap expr
   isMapExpr expr and not(domain is ["FunctionCalled", .]) => BREAK()
   categoryForm? domain or domain = ["Mode"] =>
