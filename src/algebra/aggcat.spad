@@ -120,11 +120,11 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
         ++ For multisets \spadfun{members} gives result with no repetition.
         ++ See also \spadfun{parts}.
       max : ((S, S) -> Boolean, %) -> S
-        ++ min(p, u) returns maximal element of u with respect to total
+        ++ max(p, u) returns maximal element of u with respect to total
         ++ ordering predicate p.  Error if u is empty.
       if S has OrderedSet then
         min : % -> S
-          ++ max(u) returns minimal element of u.  Error if u is empty.
+          ++ min(u) returns minimal element of u.  Error if u is empty.
         max : % -> S
           ++ max(u) returns maximal element of u.  Error if u is empty.
       if S has BasicType then
@@ -155,19 +155,13 @@ HomogeneousAggregate(S : Type) : Category == Aggregate with
        count(f : S -> Boolean, c : %) == _+/[1 for x in parts c | f x]
        members x == parts x
 
-       map1(f : S -> Void, u : %) : Void ==
-           for x in parts u repeat
-               f(x)
        max(p : (S, S) -> Boolean, u : %) : S ==
-           empty?(u) => error "max of empty aggregate"
-           rr : Reference(Union(S, "none")) := ref("none")
-           f : S -> Void :=
-              s +->
-                  (tu := deref(rr)) case "none" => setref(rr, s)
-                  if p(tu::S, s) then
-                      setref(rr, s)
-           map1(f, u)
-           deref(rr)::S
+           empty?(u) => error "empty aggregate"
+           l := parts(u)
+           r := first(l)
+           for x in rest(l) repeat
+               if p(r, x) then r := x
+           r
 
        if S has OrderedSet then
            min(u : %) : S == max((x, y) +-> (y < x), u)
