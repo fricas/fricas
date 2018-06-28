@@ -80,8 +80,6 @@
   (VECTOR (LIST '|basic| '|categories|) NIL NIL))
 (SETQ |$localExposureData|
   (VECTOR (LIST '|basic| '|categories|) NIL NIL))
-(SETQ |$compilingInputFile| NIL)
-(SETQ |$minivectorNames| NIL)
 (setq |$ReadingFile| NIL)
 (setq |$NonNullStream| "NonNullStream")
 (setq |$NullStream| "NullStream")
@@ -345,7 +343,6 @@
 (SETQ |$ComplexInteger| (LIST '|Complex| |$Integer|))
 (SETQ |$NegativeInteger| '(|NegativeInteger|))
 (SETQ |$NonNegativeInteger| '(|NonNegativeInteger|))
-(SETQ |$NonPositiveInteger| '(|NonPositiveInteger|))
 (SETQ |$PositiveInteger| '(|PositiveInteger|))
 (SETQ |$RationalNumber| '(|Fraction| (|Integer|)))
 (SETQ |$String| '(|String|))

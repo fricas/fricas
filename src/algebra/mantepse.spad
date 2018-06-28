@@ -497,7 +497,8 @@ GuessOptionFunctions0() : Exports == Implementation where
 ++ Description: This package implements guessing GuessExpRat and
 ++ GuessBinRat functions of guessing package.
 GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
-  F : Field                          -- for example : FRAC POLY PF 5
+  -- for example : FRAC POLY PF 5
+  F : Join(Field, PolynomialFactorizationExplicit)
   -- in F we interpolate and check
 
   S : GcdDomain
@@ -681,13 +682,6 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
                                             NonNegativeInteger, F, F,
                                             SUP F)
 
-    -- does not work:
-    --                                                    6
-    --  WARNING (genufact): No known algorithm to factor ? , trying square-free.
-
-    -- GF ==> GenUFactorize F
-
-
     -- mimicking $q$-analoga
 
     defaultD : DIFFSPECN
@@ -803,7 +797,6 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
                 output("Guess: degree ExpRat ", i::OutputForm)$OutputPackage
 
             if debug(options)$GOPT0 then
-                systemCommand("sys date +%s")$MoreSystemCommands
                 output("Guess: interpolating...")$OutputPackage
 
             ri : FSUPFPOLYS
@@ -819,7 +812,6 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
     --            output(hconcat("xlist: ", xlist::OutputForm))$OutputPackage
     --            output(hconcat("ylist: ", ylist::OutputForm))$OutputPackage
     --            output(hconcat("ri: ", ri::OutputForm))$OutputPackage
-    --            systemCommand("sys date +%s")$MoreSystemCommands
                 output("Guess: polynomials...")$OutputPackage
 
             poly1 : POLYS := numer(elt(ri, x1)$SUP(FPOLYS) - y1)
@@ -845,7 +837,6 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
     -- another compiler bug: using i as iterator here makes the loop break
 
             if debug(options)$GOPT0 then
-    --            systemCommand("sys date +%s")$MoreSystemCommands
                 output("Guess: interpolating resultants...")$OutputPackage
 
             res1 : SUP S
@@ -876,7 +867,6 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
     --                  $OutputPackage
 
             if debug(options)$GOPT0 then
-    --            systemCommand("sys date +%s")$MoreSystemCommands
                 output("Guess: computing gcd...")$OutputPackage
 
     -- we want to solve over F
@@ -884,7 +874,6 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
             res3 : SUP F := SUPS2SUPF(primitivePart(gcd(res1, res2)))
 
             if debug(options)$GOPT0 then
-    --            systemCommand("sys date +%s")$MoreSystemCommands
                 output("Guess: solving...")$OutputPackage
 
     -- res3 is a polynomial in A=a0+(len+3)*a1
@@ -1310,7 +1299,8 @@ GuessExpBin(F, S, EXPRR, retract, coerce) : Exports == Implementation where
 ++ most common cases are provided as \spadtype{GuessInteger},
 ++ \spadtype{GuessPolynomial}, etc.
 Guess(F, S, EXPRR, retract, coerce) : Exports == Implementation where
-  F : Field                          -- for example : FRAC POLY PF 5
+  -- for example : FRAC POLY PF 5
+  F : Join(Field, PolynomialFactorizationExplicit)
   -- in F we interpolate and check
 
   S : GcdDomain

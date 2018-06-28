@@ -148,8 +148,6 @@ processInteractive(form, posnForm) ==
   $instantCanCoerceCount: local := 0
   $instantMmCondCount: local := 0
   $minivector: local := NIL
-  $minivectorCode: local := NIL
-  $minivectorNames: local := NIL
   $domPvar: local := NIL
   $inRetract: local := NIL
   object := processInteractive1(form, posnForm)

@@ -160,10 +160,6 @@ NRTgetMinivectorIndex(u,op,sig,domVector) ==
   k := or/[k for k in 0..(s-1)
         for x in $minivector | EQ(x,u)] => k
   $minivector := [:$minivector,u]
-  if $compilingInputFile then
-    $minivectorCode := [:$minivectorCode,[op,sig,devaluate domVector]]
---  pp '"-- minivectorCode -->"
---  pp $minivectorCode
   s
 
 is_op_slot(slot, dom, k, minivector_name, int_vec, bool_vec) ==
