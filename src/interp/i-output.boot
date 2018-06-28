@@ -772,7 +772,6 @@ maprinSpecial(x,$MARGIN,$LINELENGTH) == maprin0 x
 -- above line changed JHD 13/2/93 since it used to call maPrin
 
 maprin x ==
-  if $demoFlag=true then recordOrCompareDemoResult x
   CATCH('output,maprin0 x)
   nil
 
@@ -1500,22 +1499,7 @@ appagg1(u,x,y,d,s) ==
   temparg2 := APP(s,temp,y,temparg1)
   appagg1(rest u, 1 + temp, y, temparg2,s)
 
---Note the similarity between the definition below of appargs and above
---of appagg. (why?)
-
-appargs(u,x,y,d) == appargs1(u,x,y,d,'";")
-
---Note that the definition of appargs1 below is identical to that of
---appagg1 above except that the former calls appargs and the latter
---calls appagg.
-
-appargs1(u,x,y,d,s) ==
-  null u => d
-  null rest u => APP(first u,x,y,d)
-  temp := x + WIDTH first u
-  temparg1 := APP(first u,x,y,d)
-  temparg2 := APP(s,temp,y,temparg1)
-  true => appargs(rest u, 1 + temp, y, temparg2)
+appargs(u, x, y, d) == appagg1(u, x, y, d, '";")
 
 apprpar(x, y, y1, y2, d) ==
   (not ($tallPar) or (y2 - y1 < 2)) => APP('")", x, y, d)

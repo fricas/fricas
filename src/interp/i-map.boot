@@ -742,10 +742,7 @@ compileCoerceMap(op,argTypes,mm) ==
   parms:= [:parms,'envArg]
   body := ['SPADCALL,:argCode,['LIST,['function,imp]]]
   minivectorName := makeInternalMapMinivectorName(name)
-  $minivectorNames := [[op,:minivectorName],:$minivectorNames]
   body := SUBST(minivectorName,"$$$",body)
-  if $compilingInputFile then
-    $minivectorCode := [:$minivectorCode,minivectorName]
   SET(minivectorName,LIST2REFVEC $minivector)
   compileInteractive [name,['LAMBDA,parms,body]]
   first sig

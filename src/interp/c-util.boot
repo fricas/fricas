@@ -33,21 +33,15 @@
 
 --% Debugging Functions
 
-continue() == FIN comp($x,$m,$f)
-
-LEVEL(:l) == APPLY('level,l)
 level(:l) ==
   null l => same()
   l is [n] and INTEGERP n => displayComp ($level:= n)
   SAY '"Correct format: (level n) where n is the level you want to go to"
 
-UP() == up()
 up() == displayComp ($level:= $level-1)
 
-SAME() == same()
 same() == displayComp $level
 
-DOWN() == down()
 down() == displayComp ($level:= $level+1)
 
 displaySemanticErrors() ==
@@ -625,7 +619,6 @@ traceUp() ==
       sayBrightly [y,'" ==> mode",'%b,u.mode,'%d]
     sayBrightly [y,'" does not compile"]
 
-_?M x == _?m x
 _?m x ==
   u:= comp(x,$EmptyMode,$f) => u.mode
   nil
@@ -648,7 +641,6 @@ qArg(a,m) ==
   sayBrightly [a," --> ",m,'%b,yesOrNo,'%d]
   yesOrNo="yes"
 
-_?COMP x == _?comp x
 _?comp x ==
   msg:=
     u:= comp(x,$EmptyMode,$f) =>
@@ -657,16 +649,12 @@ _?comp x ==
   sayBrightly msg
 
 _?domains() == pp getDomainsInScope $f
-_?DOMAINS() == ?domains()
 
 _?mode x == displayProplist(x,[["mode",:getmode(x,$f)]])
-_?MODE x == _?mode x
 
 _?properties x == displayProplist(x,getProplist(x,$f))
-_?PROPERTIES x == _?properties x
 
 _?value x == displayProplist(x,[["value",:get(x,"value",$f)]])
-_?VALUE x == _?value x
 
 displayProplist(x,alist) ==
   sayBrightly ["properties of",'%b,x,'%d,":"]
