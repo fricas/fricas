@@ -38,10 +38,7 @@ reportFunctionCompilation(op,nam,argl,body,isRecursive) ==
 --+
   $compiledOpNameList := [nam]
   minivectorName := makeInternalMapMinivectorName(nam)
-  $minivectorNames := [[op,:minivectorName],:$minivectorNames]
   body := substitute(minivectorName, "$$$", body)
-  if $compilingInputFile then
-    $minivectorCode := [:$minivectorCode,minivectorName]
   SET(minivectorName,LIST2REFVEC $minivector)
   argl := COPY argl     -- play it safe for optimization
   init :=
