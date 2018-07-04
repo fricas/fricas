@@ -620,13 +620,6 @@ linearFormat x ==
     [op,"(",:argPart,")"]
   [linearFormat y for y in x]
 
-formatArgList l ==
-  null l => nil
-  acc:= linearFormat first l
-  for x in rest l repeat
-    acc:= concat(acc,",",linearFormat x)
-  acc
-
 formTuple2String argl ==
   null argl => nil
   string:= form2StringLocal first argl

@@ -64,7 +64,6 @@ DEFPARAMETER($tallPar, false)
 DEFCONST(MATBORCH, '"*")
 DEFCONST($EmptyString, '"")
 DEFCONST($DoubleQuote, '"_"")
-DEFPARAMETER($demoFlag, false)
 
 DEFVAR($algebraFormat, true) -- produce 2-d algebra output
 DEFVAR($formulaFormat, false) -- if true produce script formula output
@@ -178,10 +177,8 @@ atom2String x ==
 appChar(string,x,y,d) ==
   if CHARP string then string := PNAME string
   line:= LASSOC(y,d) =>
-    shiftedX:= (y=0 => x+$highlightDelta; x)
-      --shift x for brightening characters -- presently only if y=0
-    RPLACSTR(line,shiftedX,n:=#string,string,0,n)
-    d
+        RPLACSTR(line, x, n := #string, string, 0, n)
+        d
   appChar(string, x, y, nconc(d,
             [[y, :make_full_CVEC(10 + $LINELENGTH + $MARGIN, " ")]]))
 
@@ -633,14 +630,16 @@ aggSuper u == superspan rest u
 
 aggApp(u,x,y,d) == aggregateApp(rest u,x,y,d,", ")
 
-aggregateApp(u,x,y,d,s) ==
+aggregateApp(u, x, y, d, s) == agg_app(u, x, y, d, s, WIDTH(s))
+
+agg_app(u, x, y, d, s, width_s) ==
   if u is [a,:l] then
     d:= APP(a,x,y,d)
     x:= x+WIDTH a
     for b in l repeat
-      d:= APP(s,x,y,d)
-      d:= APP(b,x+WIDTH s,y,d)
-      x:= x+WIDTH s+WIDTH b
+        d := APP(s, x, y, d)
+        d := APP(b, x + width_s, y, d)
+        x := x + width_s + WIDTH(b)
   d
 
 --% Function to compute Width
@@ -769,7 +768,6 @@ widthSC u == 10000
 --% The over-large matrix package
 
 maprinSpecial(x,$MARGIN,$LINELENGTH) == maprin0 x
--- above line changed JHD 13/2/93 since it used to call maPrin
 
 maprin x ==
   CATCH('output,maprin0 x)
@@ -780,7 +778,6 @@ maprin0 x ==
   $MatrixList:local :=nil
   maprinChk x
   if $MatrixList then maprinRows $MatrixList
-  -- above line moved JHD 28/2/93 to catch all routes through maprinChk
 
 maprinChk x ==
   null $MatrixList => maPrin x
@@ -803,14 +800,11 @@ maprinChk x ==
       -- mm:=[[m,1,0],[0,m,1],[0,1,m]]
       -- and try to print mm**5
       u := assoc(y,$MatrixList)
-      --$MatrixList := deleteAssoc(first u,$MatrixList)
-      -- deleteAssoc no longer exists
       $MatrixList := delete(u,$MatrixList)
       maPrin ['EQUATNUM,n,rest u]
       if not $collectOutput then TERPRI $algebraOutputStream
     maPrin x
   maPrin x
-  -- above line added JHD 13/2/93 since otherwise x gets lost
 
 maprinRows matrixList ==
     if not $collectOutput then TERPRI($algebraOutputStream)
@@ -892,33 +886,19 @@ SubstWhileDesizing(u) ==
     --Taking out any outdated size information as it goes
   ATOM u => u
   [[op,:n],:l]:=u
-  --name := rassoc(u,$MatrixList) => name
-  -- doesn't work since rassoc seems to use an EQ test, and returns the
-  -- pair anyway. JHD 28/2/93
   op = 'MATRIX =>
     l' := SubstWhileDesizingList(rest l)
     u :=
-      -- CDR l=l' => u
-      -- this was a CONS-saving optimisation, but it doesn't work JHD 28/2/93
       [op,nil,:l']
     PushMatrix u
   l':=SubstWhileDesizingList(l)
-  -- [op,:l']
   ATOM op => [op,:l']
   [SubstWhileDesizing(op),:l']
 
 
 SubstWhileDesizingList(u) ==
-   u is [a,:b] =>
-     res:=
-       ATOM a => [a]
-       [SubstWhileDesizing(a)]
-     tail:=res
-     for i in b repeat
-        if ATOM i then  RPLACD(tail,[i]) else RPLACD(tail,[SubstWhileDesizing(i)])
-        tail := rest tail
-     res
-   u
+    [SubstWhileDesizing(i) for i in u]
+
 
 --% Printing of Sigmas , Pis and Intsigns
 
@@ -1067,31 +1047,32 @@ xLate(l,x,y,d) ==
     d:= appChar(c,x+a,y+b,d)
   d
 
-concatTrouble(u,d,start,lineLength,$addBlankIfTrue) ==
-  [x,:l] := splitConcat(u,lineLength,true)
+concatTrouble(u, d, start, lineLength, addBlankIfTrue) ==
+  [x,:l] := splitConcat(u, lineLength, true, addBlankIfTrue)
   null l =>
     sayALGEBRA ['%l,'%b,'"  Too wide to Print",'%d]
     THROW('output,nil)
-  charybdis(fixUp x,start,lineLength)
+  charybdis(fixUp(x, addBlankIfTrue), start, lineLength)
   for y in l repeat
     if d then prnd(start,d)
+    y := fixUp(y, addBlankIfTrue)
     if lineLength > 2 then
-       charybdis(fixUp y,start+2,lineLength-2) -- JHD needs this to avoid lunacy
-      else charybdis(fixUp y,start,1) -- JHD needs this to avoid lunacy
+       charybdis(y, start + 2, lineLength - 2) -- JHD needs this to avoid lunacy
+      else charybdis(y, start, 1) -- JHD needs this to avoid lunacy
   BLANK
  where
-  fixUp x ==
+  fixUp(x, addBlankIfTrue) ==
     rest x =>
-      $addBlankIfTrue => ['CONCATB,:x]
+      addBlankIfTrue => ['CONCATB,:x]
       ["CONCAT",:x]
     first x
 
-splitConcat(list,maxWidth,firstTimeIfTrue) ==
+splitConcat(list, maxWidth, firstTimeIfTrue, addBlankIfTrue) ==
   null list => nil
   -- split list l into a list of n lists, each of which
   -- has width < maxWidth
   totalWidth:= 0
-  oneOrZero := ($addBlankIfTrue => 1; 0)
+  oneOrZero := (addBlankIfTrue => 1; 0)
   l := list
   maxW:= (firstTimeIfTrue => maxWidth; maxWidth-2)
   maxW < 1 => [[x] for x in l] -- JHD 22.8.95, otherwise things can break
@@ -1101,7 +1082,7 @@ splitConcat(list,maxWidth,firstTimeIfTrue) ==
       totalWidth:= width
   x:= rest l
   rplac(rest l, nil)
-  [list,:splitConcat(x,maxWidth,nil)]
+  [list, :splitConcat(x, maxWidth, nil, addBlankIfTrue)]
 
 spadPrint(x,m) ==
   m = $NoValueMode => x
@@ -1274,7 +1255,6 @@ charybdis(u,start,linelength) ==
 charyTop(u,start,linelength) ==
   u is ['SC,:l] or u is [['SC,:.],:l] =>
     for a in l repeat charyTop(a,start,linelength)
-    '" "
   u is [['CONCATB,:.],:m,[['SC,:.],:l]] =>
     charyTop(['CONCATB,:m],start,linelength)
     charyTop(['SC,:l],start+2,linelength-2)
@@ -1292,7 +1272,6 @@ charyTop(u,start,linelength) ==
   until n < m repeat
     scylla(n,d)
     n := n - 1
-  '" "
 
 charyTopWidth u ==
     atom u => u
@@ -1301,23 +1280,10 @@ charyTopWidth u ==
     putWidth u
 
 charyTrouble(u,v,start,linelength) ==
-  al:= LargeMatrixp(u,linelength,2*linelength) =>
-    --$MatrixList =>
-      --[[m,:m1]] := al
-      --maPrin sublisMatAlist(m,m1,u)
-      --above three lines commented out JHD 25/2/93 since don't work
+  LargeMatrixp(u,linelength,2*linelength) =>
     u := SubstWhileDesizing(u)
     maprinChk u
   charyTrouble1(u,v,start,linelength)
-
-sublisMatAlist(m,m1,u) ==
-  u is [op,:r] =>
-    op is ['MATRIX,:.] and u=m => m1
-    op1 := sublisMatAlist(m,m1,op)
-    r1 := [sublisMatAlist(m,m1,s) for s in r]
-    op = op1 and r1 = r => u
-    [op1,:r1]
-  u
 
 charyTrouble1(u,v,start,linelength) ==
   NUMBERP u => outputNumber(start,linelength,atom2String u)
@@ -1355,13 +1321,11 @@ charyTrouble1(u,v,start,linelength) ==
     bracketagglist(rest u.1,start,linelength,v,
                    specialChar 'lbrc, specialChar 'rbrc)
   EQ(x,'EXT) => longext(u,start,linelength)
-  EQ(x,'MATRIX) => MATUNWND()
+  EQ(x,'MATRIX) => BREAK()
   EQ(x,'ELSE) => charyElse(u,v,start,linelength)
   EQ(x,'SC) => charySemiColon(u,v,start,linelength)
   charybdis(x,start,linelength)
   if rest u then charybdis(['ELSE,:rest u],start,linelength)
-  -- changed from charybdis(...) by JHD 2 Aug 89, since rest u might be null
-  '" "
 
 charySemiColon(u,v,start,linelength) ==
   for a in rest u repeat
@@ -1371,22 +1335,18 @@ charySemiColon(u,v,start,linelength) ==
 charyMinus(u,v,start,linelength) ==
   charybdis('"-",start,linelength)
   charybdis(v.1,start+3,linelength-3)
-  '" "
 
 charyBinary(d,u,v,start,linelength) ==
   d in '(" := " "= ") =>
     charybdis(['CONCATB,v.1,d],start,linelength)
     charybdis(v.2,start+2,linelength-2)
-    '" "
   charybdis(v.1,start+2,linelength-2)
   if d then prnd(start,d)
   charybdis(v.2,start+2,linelength-2)
-  '" "
 
 charyEquatnum(u,v,start,linelength) ==
   charybdis(['PAREN,u.1],start,linelength)
   charybdis(u.2,start,linelength)
-  '" "
 
 charySplit(u,v,start,linelength) ==
   v:= [first v.0,:rest v]
@@ -1411,19 +1371,16 @@ charySplit(u,v,start,linelength) ==
   split2(u,dm,ddm,start,linelength)
 
 split2(u,dm,ddm,start,linelength) ==
---prnd(start,(d:= GETL(keyp u,'INFIXOP) => d; opSrch(keyp u,OPLIST)))
   prnd(start,(d:= GETL(keyp u,'INFIXOP) => d; '","))
   RPLACD(dm,ddm)
   m:= WIDTH [keyp u,:dm]<linelength-2
   charybdis([keyp u,:dm],(m => start+2; start),(m => linelength-2; linelength))
-  '" "
 
 charyElse(u,v,start,linelength) ==
   charybdis(v.1,start+3,linelength-3)
   not (CDDR u) => '" "
   prnd(start,'",")
   charybdis(['ELSE,:CDDR v],start,linelength)
-  '" "
 
 scylla(n,v) ==
   y := LASSOC(n,v)
@@ -1483,17 +1440,9 @@ agggsuper u == superspan rest u
 
 agggwidth u == aggwidth rest u
 
-appagg(u,x,y,d) == appagg1(u,x,y,d,'",")
+appagg(u,x,y,d) == agg_app(u, x, y, d, '",", 1)
 
-appagg1(u,x,y,d,s) ==
-  null u => d
-  null rest u => APP(first u,x,y,d)
-  temp := x + WIDTH first u
-  temparg1 := APP(first u,x,y,d)
-  temparg2 := APP(s,temp,y,temparg1)
-  appagg1(rest u, 1 + temp, y, temparg2,s)
-
-appargs(u, x, y, d) == appagg1(u, x, y, d, '";")
+appargs(u, x, y, d) == agg_app(u, x, y, d, '";", 1)
 
 apprpar(x, y, y1, y2, d) ==
   (not ($tallPar) or (y2 - y1 < 2)) => APP('")", x, y, d)
@@ -1890,9 +1839,6 @@ matSuperList1(x, y) ==
 
 minusWidth(u) ==
   -1 + sumWidthA rest u
-
--- opSrch(name, x) ==
---   LASSOC(name, x) or '","
 
 bracketagglist(u, start, linelength, tchr, open, close) ==
   u := CONS(LIST('CONCAT, open, first u),
