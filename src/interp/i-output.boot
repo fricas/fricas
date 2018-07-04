@@ -836,7 +836,7 @@ LargeMatrixp(u,width, dist) ==
   CDAR u <= width => nil
        --CDAR is the width of a charybdis structure
   op:=CAAR u
-  op = 'MATRIX => largeMatrixAlist u
+  op = 'MATRIX => true
          --We already know the structure is more than 'width' wide
   MEMQ(op,'(LET SEGMENT _- CONCAT CONCATB PAREN BRACKET BRACE)) =>
       --Each of these prints the arguments in a width 3 smaller
@@ -844,36 +844,30 @@ LargeMatrixp(u,width, dist) ==
     width:=width-3
     ans:=
       for v in rest u repeat
-        (ans:=LargeMatrixp(v,width,dist)) => return largeMatrixAlist ans
+        (ans:=LargeMatrixp(v,width,dist)) => return ans
         dist:=dist - WIDTH v
         dist<0 => return nil
     ans
       --Relying that falling out of a loop gives nil
   MEMQ(op,'(_+ _* )) =>
       --Each of these prints the first argument in a width 3 smaller
-    (ans:=LargeMatrixp(CADR u,width-3,dist)) => largeMatrixAlist ans
+    (ans:=LargeMatrixp(CADR u,width-3,dist)) =>  ans
     n:=3+WIDTH CADR u
     dist:=dist-n
     ans:=
       for v in CDDR u repeat
-        (ans:=LargeMatrixp(v,width,dist)) => return largeMatrixAlist ans
+        (ans:=LargeMatrixp(v,width,dist)) => return ans
         dist:=dist - WIDTH v
         dist<0 => return nil
     ans
       --Relying that falling out of a loop gives nil
   ans:=
     for v in rest u repeat
-      (ans:=LargeMatrixp(v,width,dist)) => return largeMatrixAlist ans
+      (ans:=LargeMatrixp(v,width,dist)) => return ans
       dist:=dist - WIDTH v
       dist<0 => return nil
   ans
     --Relying that falling out of a loop gives nil
-
-largeMatrixAlist u ==
-  u is [op,:r] =>
-    op is ['MATRIX,:.] => deMatrix u
-    largeMatrixAlist op or largeMatrixAlist r
-  nil
 
 PushMatrix m ==
     --Adds the matrix to the look-aside list, and returns a name for it
