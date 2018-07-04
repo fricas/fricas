@@ -1,0 +1,148 @@
+)abbrev package EXTRED ExtendedPolynomialReduction
+++ ExtendedPolynomialReduction(C, E, R) is a package that allows
+++ denominatorFree reductions of a polynomial r from R wrt a list
+++ of polynomials from R (usually such a list is a Groebner basis wrt
+++ the order given via E). Additionally, the reduction steps are recorded
+++ and provided in the output.
+ExtendedPolynomialReduction(C, E, R): Exports == Implementation where
+  C: GcdDomain
+  E: OrderedAbelianMonoidSup
+  R: Join(FiniteAbelianMonoidRing(C, E), VariablesCommuteWithCoefficients)
+  V ==> Vector R
+  X ==> Record(poly: R, repr: V, mult: C)
+    -- The triple [p,r,m] stands for (p+dot(r,b))/m where n=#r=#b
+    -- and dot(v, b) = reduce(_+, [v.i * b.i for i in 1..n]).
+    -- Note that in the package no division will ever be done.
+  N ==> NonNegativeInteger
+  Exports ==> with
+    reduce: (R, List R) -> X
+      ++ reduce(r, bas) returns a triple (p, v, m) such that
+      ++ m*r = sum(bas.i * v.i, i=1..#bas) + p
+  Implementation ==> add
+    -- local functions
+    polynomial(x: X): R == x.poly
+    representation(x: X): V == x.repr
+    multiplier(x: X): C == x.mult
+
+    cancelGcd(c1: C, c2: C): Record(co1: C, co2: C) ==
+        g: C := gcd(c1, c2)
+        [(c1 exquo  g)::C, (c2 exquo g)::C]
+
+    -- A basis element r is put into the structure X such that the
+    -- resulting triple [r, v, 1] represents zero, i.e., adding a
+    -- basis elements only modifies the triples, but not the
+    -- representing value.
+    embedBasisElement(r: R, i: N, n: N): X ==
+        v: V := new(n, 0)
+        v.i := -1
+        -- The multiplier part is uninteresting here and will never be used.
+        [r, v, 1] -- For consistency, we set the multiplier to 1.
+
+    -- topReduce x wrt basis and remember multiplier with which x
+    -- had been multiplied in order to stay denominator free.
+    -- Assumption: For every b in the basis it holds:
+    -- b.poly = dot(b.repr, basis).                                 (*1)
+    -- Invariant:
+    -- Let z = denominatorFreeTopReduce(x, basis), then the following holds:
+    -- (x.poly + dot(x.repr, basis))/x.mult  =
+    -- (z.poly + dot(z.repr, basis))/z.mult                         (*2)
+    -- Proof the invariant:
+    -- Let's abbreviate x.poly by xp, x.repr by xr, x.mult by xm.
+    -- Assume that u is the value of z at the beginning of the while
+    -- body and v is the value of z at the end of the while body.
+    -- Then we have:
+    -- vp := f1      * up - f2 * bp
+    -- vr := (f1::R) * ur - f2 * br
+    -- vm := f1      * um
+    -- Thus
+    -- (vp + dot(vr, basis))/vm =
+    --   = (f1*up - f2 * bp + dot(f1*ur, basis) - dot(f2*br, basis))/(f1*um)
+    --   = (up + dot(ur, basis)/um - f2*(bp + dot(br, basis))/(f1*um)
+    -- Because of (*1) we have bp + dot(br, basis)=0.
+    -- Output condition:
+    -- If z = denominatorFreeTopReduce(x, basis), then
+    -- (*2) holds and leadingMonomial(z.poly) is not divisible
+    -- by any leading monomial of basis.
+    denominatorFreeTopReduce(x: X, basis: List X): X ==
+        -- The multiplier entries in the input are ignored except for
+        -- the multiplier stored in x.
+        z: X := [polynomial x, representation x, multiplier x] -- copy
+        bas := basis
+        while not zero?(pz := polynomial z) and not empty? bas repeat
+            b := first bas
+            pb: R := polynomial b
+            ee: Union(E, "failed") := subtractIfCan(degree pz, degree pb)
+            if ee case E then
+                l := lcmCoef(leadingCoefficient pz, leadingCoefficient pb)
+                f1: C := l.coeff1
+                f2: R := monomial(l.coeff2, ee::E)
+                z.poly := f1 * reductum pz - f2 * reductum pb
+                -- normalize leading coefficient
+                a: C := unitNormal(leadingCoefficient z.poly).associate
+                z.poly := a * z.poly
+                f1 := a * f1
+                f2 := a * f2
+                z.repr := (f1::R) * representation z - f2 * representation b
+                z.mult := f1      * multiplier z
+                bas := basis
+            else
+                bas := rest bas
+        return z
+
+    -- Reduce the non-leading terms of x.
+    -- Assumption (*1) from denominatorFreeTopReduce holds.
+    -- If z = tailReduce(x, basis) then also (*2) from above holds.
+    -- For the while loop below we need another invariant.
+    -- Let the unprimed variables denote the values at the beginning of
+    -- the while body and the primed ones at the end of the while body.
+    -- Then:
+    -- (r + p + dot(v, basis))/m = (r' + p' + dot(v', basis))/m'      (*3)
+    -- Note that after assigning the values r, p, v, m for the first time
+    -- and computing the reductum of p, we have
+    -- (x.poly + dot(x.repr, basis))/x.mult = (r + p + dot(v, basis))/m
+    -- By specification of denominatorFreeTopReduce, we have
+    -- (x'.poly + dot(x'.repr, basis))/x'.mult = p + dot(v, basis).
+    -- v' = x'.repr
+    -- r' + p' = x'.mult * r + x'.poly
+    -- m' = m * x'.mult
+    -- Thus
+    -- (r' + p' + dot(v', basis))/m' =
+    --   = (x'.mult * r + x'.mult*((x'.poly + dot(x'.repr, basis))/x'.mult))/m'
+    --   = x'.mult * (r + p + dot(v, basis))/(m*x'.mult)
+    --   = (r + p + dot(v, basis))/m
+    -- Output condition:
+    -- If z = tailReduce(x, basis), then (*3) holds for
+    -- p'=0, z=[r', v', m']. and not monomial in r' is divisible by
+    -- any leading monomial from basis.
+    tailReduce(x: X, basis: List X): X ==
+        empty? basis => x
+        p: R := polynomial x
+        zerp? p => x
+        -- We iterate over the non-leading terms of polynomial(x).
+        r: R := leadingMonomial p
+        p := reductum p
+        -- We keep the representation part attached to p and hand it
+        -- over to denominatorFreeTopReduce. Thus we get the representation
+        -- from the reduced polynomial.
+        -- In the following we rely on the fact the degree(0)=1, i.e.,
+        -- leadingMonomial(0)=0 and reductum(0)=0.
+        v: V := representation x
+        m: C := multiplier x
+        while not zero? p repeat
+            x := denominatorFreeTopReduce([p, v, 1], basis)
+            v := representation x
+            p := polynomial x
+            r := multiplier(x) * r + leadingMonomial p
+            p := reductum p
+            m := m * multiplier x
+        [r, v, m]
+
+    -- exported function
+    reduce(r: R, basis: List R): X ==
+        -- First we coerce every element into %. Then we reduce.
+        empty? basis => [r, empty()$V, 1]
+        n: N := #basis
+        x: X := [r, new(n, 0)$V, 1]
+        bas: List X := [embedBasisElement(b, i, n) for b in basis for i in 1..n]
+        x := denominatorFreeTopReduce(x, bas)
+        tailReduce(x, bas)
