@@ -117,24 +117,21 @@ ExtendedPolynomialReduction(C, E, R): Exports == Implementation where
     tailReduce(x: X, basis: List X): X ==
         empty? basis => x
         p: R := polynomial x
-        zero? p => x
         -- We iterate over the non-leading terms of polynomial(x).
-        r: R := leadingMonomial p
-        p := reductum p
+        r: R := 0
+        v: V := representation x
+        m: C := multiplier x
         -- We keep the representation part attached to p and hand it
         -- over to denominatorFreeTopReduce. Thus we get the representation
         -- from the reduced polynomial.
-        -- In the following we rely on the fact the degree(0)=1, i.e.,
-        -- leadingMonomial(0)=0 and reductum(0)=0.
-        v: V := representation x
-        m: C := multiplier x
         while not zero? p repeat
+            r := r + leadingMonomial p
+            p := reductum p
             x := denominatorFreeTopReduce([p, v, 1], basis)
             v := representation x
             p := polynomial x
-            r := multiplier(x) * r + leadingMonomial p
-            p := reductum p
-            m := m * multiplier x
+            m := multiplier(x) * m
+            r := multiplier(x) * r
         [r, v, m]
 
     -- exported function
