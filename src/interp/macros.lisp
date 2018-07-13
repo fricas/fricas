@@ -60,7 +60,7 @@
 (def-boot-val |$quadSymbol| $boxString "displays an APL quad")
 (def-boot-val $escapeString  (string (code-char 27))
    "string for single escape character")
-(def-boot-val |$boldString| (concatenate 'string $escapeString "[12m")
+(def-boot-val |$boldString| (concatenate 'string $escapeString "[1m")
   "switch into bold font")
 (def-boot-val |$normalString| (concatenate 'string $escapeString "[0;10m")
   "switch back into normal font")
