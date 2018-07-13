@@ -913,26 +913,7 @@ displayProperties(option,l) ==
           sayMSG '"   This is recursive."
         prop = 'isInterpreterFunction =>
           sayMSG '"   This is an interpreter function."
-          sayFunctionDeps v where
-            sayFunctionDeps x ==
-              if dependents := GETALIST($dependentAlist,x) then
-                null rest dependents =>
-                  sayMSG ['"   The following function or rule ",
-                    '"depends on this:",:bright first dependents]
-                sayMSG
-                  '"   The following functions or rules depend on this:"
-                msg := ["%b",'"     "]
-                for y in dependents repeat msg := ['" ",y,:msg]
-                sayMSG [:nreverse msg,"%d"]
-              if dependees := GETALIST($dependeeAlist,x) then
-                null rest dependees =>
-                  sayMSG ['"   This depends on the following function ",
-                    '"or rule:",:bright first dependees]
-                sayMSG
-                  '"   This depends on the following functions or rules:"
-                msg := ["%b",'"     "]
-                for y in dependees repeat msg := ['" ",y,:msg]
-                sayMSG [:nreverse msg,"%d"]
+          sayFunctionDeps v
         prop = 'isInterpreterRule =>
           sayMSG '"   This is an interpreter rule."
           sayFunctionDeps v
@@ -946,6 +927,26 @@ displayProperties(option,l) ==
         propsSeen:= [prop,:propsSeen]
     sayKeyedMsg("S2IZ0068",[option])
   terminateSystemCommand()
+
+sayFunctionDeps x ==
+  if dependents := GETALIST($dependentAlist,x) then
+    null rest dependents =>
+      sayMSG ['"   The following function or rule ",
+        '"depends on this:",:bright first dependents]
+    sayMSG
+      '"   The following functions or rules depend on this:"
+    msg := ["%b",'"     "]
+    for y in dependents repeat msg := ['" ",y,:msg]
+    sayMSG [:nreverse msg,"%d"]
+  if dependees := GETALIST($dependeeAlist,x) then
+    null rest dependees =>
+      sayMSG ['"   This depends on the following function ",
+        '"or rule:",:bright first dependees]
+    sayMSG
+      '"   This depends on the following functions or rules:"
+    msg := ["%b",'"     "]
+    for y in dependees repeat msg := ['" ",y,:msg]
+    sayMSG [:nreverse msg,"%d"]
 
 displayModemap(v,val,giveVariableIfNil) ==
   for mm in val repeat g(v,mm,giveVariableIfNil) where
