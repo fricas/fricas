@@ -196,7 +196,7 @@ NumberFormats() : NFexports == NFimplementation where
 ++ the expression rendering software (e.g.FORTRAN, TeX, or Script) and
 ++ the output coercions in the various domains.
 
-OutputForm() : SetCategory with
+OutputForm() : Join(SetCategory, ConvertibleTo InputForm) with
         --% Printing
         print  : % -> Void
           ++ print(u) prints the form u.
@@ -208,11 +208,11 @@ OutputForm() : SetCategory with
           ++ \spad{messagePrint(s)} is equivalent to \spad{print message(s)}.
         --% Creation of atomic forms
         outputForm : Integer -> %
-          ++ outputForm(n) creates an form for integer n.
+          ++ outputForm(n) creates a form for an integer.
         outputForm : Symbol  -> %
-          ++ outputForm(s) creates an form for symbol s.
+          ++ outputForm(s) creates a form for a symbol.
         outputForm : String  -> %
-          ++ outputForm(s) creates an form for string s.
+          ++ outputForm(s) creates a form for a string.
         empty   : () -> %
           ++ empty() creates an empty form.
 
@@ -469,6 +469,20 @@ OutputForm() : SetCategory with
 
         outputForm s ==
           sform concat(quote()$Character, concat(s, quote()$Character))
+
+        convert(a: %): InputForm ==
+            b: SExpression := a pretend SExpression
+            if atom?(b)$SExpression then
+                if string?(b)$SExpression then
+                    c: String := string(b)$SExpression
+                    l: Integer := maxIndex(c)
+                    if l >= 2 and c.1 = c.l and c.1 = quote()$Character then
+                        d: String := c.(2..(maxIndex c)-1)
+                        b: SExpression := convert(d)$SExpression
+                if not symbol?(b)$SExpression then
+                    return convert(b)$InputForm
+
+            convert([convert('QUOTE)$InputForm, convert(b)$InputForm])$InputForm
 
         width(a : %) : Integer == outformWidth(a)$Lisp
         width0() : Integer == _$LINELENGTH$Lisp
