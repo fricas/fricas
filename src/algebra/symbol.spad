@@ -90,7 +90,24 @@ Symbol() : Exports == Implementation where
     syprefix : Scripts -> String
     syscripts : Scripts -> L
 
-    convert(s : %) : InputForm == convert(s pretend Symbol)$InputForm
+    convert(s : %) : InputForm ==
+        n: InputForm := (name s) pretend InputForm
+        not scripted? s => n
+
+        ls := scripts s
+        A: List InputForm := [convert(e)@InputForm for e in ls.sub]
+        B: List InputForm := [convert(e)@InputForm for e in ls.sup]
+        C: List InputForm := [convert(e)@InputForm for e in ls.presup]
+        D: List InputForm := [convert(e)@InputForm for e in ls.presub]
+        E: List InputForm := [convert(e)@InputForm for e in ls.args]
+        a: InputForm := convert('script)$InputForm
+        b: InputForm := convert('construct)$InputForm
+        FF: List List InputForm := [cons(b, e) for e in [A, B, C, D, E]]
+        G: List InputForm := [convert(F)$InputForm for F in FF]
+        d: InputForm := convert(cons(b, G))$InputForm
+        convert([a, n, d])$InputForm
+
+
     convert(s : %) : Symbol    == s pretend Symbol
     coerce(s : String) : %     == VALUES(INTERN(s)$Lisp)$Lisp
     x = y                  == EQUAL(x, y)$Lisp

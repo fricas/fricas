@@ -561,6 +561,16 @@ CommonOperators() : Exports == Implementation where
       x = 1::O => e
       e ^ x
 
+    inputdefsum(a: List InputForm): InputForm ==
+        seg: InputForm := convert([convert('SEGMENT)$InputForm, a.4, a.5])$InputForm
+        eq: InputForm := convert([convert('equation)$InputForm, a.2, seg])
+        convert([convert('sum)$InputForm, a.1, eq])
+
+    inputdefprod(a: List InputForm): InputForm ==
+        seg: InputForm := convert([convert('SEGMENT)$InputForm, a.4, a.5])$InputForm
+        eq: InputForm := convert([convert('equation)$InputForm, a.2, seg])
+        convert([convert('product)$InputForm, a.1, eq])
+
     startUp b ==
       brandNew?() := b
       display(oppren, paren)
@@ -583,6 +593,9 @@ CommonOperators() : Exports == Implementation where
       input(oppow, (z1 : List InputForm) : InputForm +-> convert concat(convert("^"::Symbol)@InputForm, z1))
       input(oproot,
             (z1 : List InputForm) : InputForm +-> convert [convert("^"::Symbol)@InputForm, first z1, 1 / second z1])
+      input(opdsum, inputdefsum)
+      input(opdprod, inputdefprod)
+
       for op in algop   repeat assert(op, ALGOP)
       for op in rtrigop repeat assert(op, 'rtrig)
       for op in htrigop repeat assert(op, 'htrig)
