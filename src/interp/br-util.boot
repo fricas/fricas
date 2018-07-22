@@ -597,7 +597,6 @@ kInvalidTypePage form ==
 --=======================================================================
 --       Utility Functions for Manipulating Browse Datalines
 --=======================================================================
-dbpHasDefaultCategory? s ==  #s > 1 and s.1 = char 'x  --s is part 3 of line
 
 dbKind line == line.0
 

@@ -131,7 +131,6 @@ mkNewModemapList(mc,sig,pred,fn,curModemapList,e,filenameOrNil) ==
 
   --if new modemap less general, put at end; otherwise, at front
       for x in curModemapList]
-  $InteractiveMode => insertModemap(entry,curModemapList)
   mergeModemap(entry,curModemapList,e)
 
 mergeModemap(entry is [[mc,:sig],[pred,:.],:.],modemapList,e) ==
@@ -243,7 +242,6 @@ addModemap(op, mc, sig, pred, fn, e) ==
     addModemap0(op, mc, sig, pred, fn, e)
 
 addConstructorModemaps(name,form is [functorName,:.],e) ==
-  $InteractiveMode: local:= nil
   e:= putDomainsInScope(name,e) --frame
   fn := GET(functorName, "makeFunctionList")
   [funList,e]:= FUNCALL(fn,name,form,e)

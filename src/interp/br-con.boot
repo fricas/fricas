@@ -113,7 +113,7 @@ kArgPage(htPage,arg) ==
 
 reportCategory(conform,typeForm,arg) ==
   htSay('"Argument {\em ",arg,'"}")
-  [conlist,attrlist,:oplist] := categoryParts(conform,typeForm,true)
+  [conlist, :oplist] := categoryParts(conform,typeForm,true)
   htSay '" must "
   if conlist then
     htSay '"belong to "
@@ -125,7 +125,6 @@ reportCategory(conform,typeForm,arg) ==
        htSay('"categories:")
        bcConPredTable(conlist,opOf conform)
        htSay '"\newline "
-  if attrlist then BREAK()
   if oplist then
     if conlist or attrlist then htSay '" and "
     reportAO('"operation",oplist)
@@ -310,76 +309,6 @@ dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
       if domname then res := SUBST(domname,'$,res)
       res
   [:dbAddChain conform,:catforms]
-
-kcPage(htPage,junk) ==
-  [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
-  domname         := kDomainName(htPage,kind,name,nargs)
-  domname is ['error,:.] => errorPage(htPage,domname)
---  domain          := (kind = '"category" => nil; EVAL domname)
-  conform := htpProperty(htPage,'conform)
-  conname := opOf conform
-  heading :=
-    null domname => htpProperty(htPage,'heading)
-    ['"{\sf ",form2HtString(domname,nil,true),'"}"]
-  page := htInitPage(['"Cross Reference for ",:heading],htCopyProplist htPage)
-  if domname then
-    htpSetProperty(htPage,'domname,domname)
-    htpSetProperty(htPage,'heading,heading)
-  if kind = '"category" and dbpHasDefaultCategory? xpart then
-    htSay '"This category has default package "
-    bcCon(STRCONC(name,char '_&))
-  htSayStandard '"\newline"
-  htBeginMenu(3)
-  htSayStandard '"\item "
-  message :=
-    kind = '"category" => ['"Categories it directly extends"]
-    ['"Categories the ",(kind = '"default package" => '"package"; kind),'" belongs to by assertion"]
-  htMakePage [['bcLinks,['"\menuitemstyle{Parents}",
-    [['text,'"\tab{12}",:message]],'kcpPage,nil]]]
-  satBreak()
-  message :=
-    kind = '"category" => ['"All categories it is an extension of"]
-    ['"All categories the ",kind,'" belongs to"]
-  htMakePage [['bcLinks,['"\menuitemstyle{Ancestors}",
-    [['text,'"\tab{12}",:message]],'kcaPage,nil]]]
-  if kind = '"category" then
-    satBreak()
-    htMakePage [['bcLinks,['"\menuitemstyle{Children}",[['text,'"\tab{12}",
-      '"Categories which directly extend this category"]],'kccPage,nil]]]
-
-    satBreak()
-    htMakePage [['bcLinks,['"\menuitemstyle{Descendants}",[['text,'"\tab{12}",
-      '"All categories which extend this category"]],'kcdPage,nil]]]
-  if not asharpConstructorName? conname then
-    satBreak()
-    message := '"Constructors mentioning this as an argument type"
-    htMakePage [['bcLinks,['"\menuitemstyle{Dependents}",
-      [['text,'"\tab{12}",message]],'kcdePage,nil]]]
-  if not asharpConstructorName? conname and kind ~= '"category" then
-    satBreak()
-    htMakePage [['bcLinks,['"\menuitemstyle{Lineage}",
-      '"\tab{12}Constructor hierarchy used for operation lookup",'ksPage,nil]]]
-  if not asharpConstructorName? conname then
-   if kind = '"category" then
-    satBreak()
-    htMakePage [['bcLinks,['"\menuitemstyle{Domains}",[['text,'"\tab{12}",
-      '"All domains which are of this category"]],'kcdoPage,nil]]]
-   if kind ~= '"category" then
-    satBreak()
-    htMakePage [['bcLinks,['"\menuitemstyle{Clients}",'"\tab{12}Constructors",'kcuPage,nil]]]
-    if HGET($defaultPackageNamesHT,conname)
-      then htSay('" which {\em may use} this default package")
---  htMakePage [['bcLinks,['"files",'"",'kcuPage,true]]]
-      else htSayList(['" which {\em use} this ", kind])
-  if kind ~= '"category" or dbpHasDefaultCategory? xpart then
-    satBreak()
-    message :=
-      kind = '"category" => ['"Constructors {\em used by} its default package"]
-      ['"Constructors {\em used by} the ",kind]
-    htMakePage [['bcLinks,['"\menuitemstyle{Benefactors}",
-      [['text,'"\tab{12}",:message]],'kcnPage,nil]]]
-  htEndMenu(3)
-  htShowPage()
 
 kcpPage(htPage,junk) ==
   [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(htPage,'parts)

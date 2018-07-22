@@ -82,9 +82,7 @@ htSayExplicitExports r ==
       htMakePage [['bcLinks,[ops,'"",'oPage,ops]]]
       htSay '": "
       bcConform ['Mapping,:sig]
-    x is ['ATTRIBUTE,a] =>
-      s := form2HtString a
-      htMakePage [['bcLinks,[ops,'"",'aPage,s]]]
+    x is ['ATTRIBUTE, a] => BREAK()
     x is ['IF,:.] =>
       htSay('"{\em if ...}")
     systemError()
