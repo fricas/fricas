@@ -321,18 +321,6 @@ oPageFrom(opname,conname) == --called by \spadfunFrom{opname}{conname}
   opAlist := [itemlist]
   dbShowOperationsFromConform(htPage,'"operation",opAlist)
 
-aPage(a,:b) ==  --called by \spadatt{a}
-  $attributeArgs : local := nil
-  arg := IFCAR b or a
-  s   := pmParseFromString STRINGIMAGE arg
-  searchOn :=
-    ATOM s => s
-    IFCAR s
-  $attributeArgs : local := IFCAR IFCDR s
-  aSearch searchOn
---must recognize that not all attributes can be found in database
---e.g. constant(deriv) is not but appears in a conditional in LODO
-
 spadType(x) ==  --called by \spadtype{x} from HyperDoc
   s := PNAME x
   form := ncParseFromString s or
@@ -574,10 +562,6 @@ checkFilter filter ==
   filter := STRINGIMAGE filter
   filter = '"" => '"*"
   trimString filter
-
-aSearch filter ==  --called from HD (man0.ht): general attribute search
-  null (filter := checkFilter filter) => nil  --in case of filter error
-  dbSearch(grepConstruct(filter,'a),'"attribute",filter)
 
 oSearch filter == -- called from HD (man0.ht): operation search
   opAlist := opPageFastPath filter => opPageFast opAlist

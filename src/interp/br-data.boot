@@ -77,9 +77,8 @@ buildLibdb(domainList) ==  --called by make-databases (daase.lisp)
   constructorList := domainList or allConstructors()
   for con in constructorList repeat
     writedb buildLibdbConEntry con
-    [attrlist, :oplist] := getConstructorExports($conform, false)
+    [., :oplist] := getConstructorExports($conform, false)
     buildLibOps oplist
-    buildLibAttrs attrlist
   SHUT $outStream
   domainList => 'done         --leave new database in temp.text
   OBEY '"sort  _"temp.text_"  > _"libdb.text_""
@@ -198,22 +197,6 @@ checkCommentsForBraces(kind,sop,sigpart,comments) ==
   if count > 0 then
     sayBrightly ['"(",$conname,'" documentation) missing right brace--> ",:tail]
   if count ~= 0 or missingLeft then pp comments
-
-buildLibAttrs attrlist ==
-  for [name,argl,:pred] in attrlist repeat buildLibAttr(name,argl,pred)
-
-buildLibAttr(name,argl,pred) ==
---attributes      AKname\#\args\conname\pred\comments (K is U or C)
-  header := STRCONC('"a",STRINGIMAGE name)
-  argPart:= SUBSTRING(form2LispString ['f,:argl],1,nil)
-  pred := SUBLISLIS(rest $conform,$FormalMapVariableList,pred)
-  predString := (pred = 'T => '""; form2LispString pred)
-  header := STRCONC('"a",STRINGIMAGE name)
-  conname := STRCONC($kind,form2LispString $conname)
-  comments:= concatWithBlanks LASSOC(['attribute,:argl],LASSOC(name,$doc))
-  checkCommentsForBraces('attribute,STRINGIMAGE name,argl,comments)
-  writedb
-    buildLibdbString [header,# argl,$exposed?,argPart,conname,predString,comments]
 
 dbHasExamplePage conname ==
   sname    := STRINGIMAGE conname

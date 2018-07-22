@@ -341,40 +341,43 @@ makeCatPred(zz, cats, thePred) ==
 getConstructorExports(conform, do_constr) == categoryParts(conform,
   GETDATABASE(opOf conform, 'CONSTRUCTORCATEGORY), do_constr)
 
-DEFVAR($attrlist)
 DEFVAR($oplist)
 DEFVAR($conslist)
 
-categoryParts(conform, category, do_constr) == main where
+categoryParts(conform, category, do_constr) ==
+    kind := GETDATABASE(opOf(conform), 'CONSTRUCTORKIND)
+    categoryParts1(kind, conform, category, do_constr)
+
+categoryParts1(kind, conform, category, do_constr) == main where
   main ==
-    $attrlist: local := nil
     $oplist  : local := nil
     $conslist: local := nil
-    conname := opOf conform
     for x in exportsOf(category) repeat build(x,true)
-    $attrlist := listSort(function GLESSEQP,$attrlist)
     $oplist   := listSort(function GLESSEQP,$oplist)
-    res := [$attrlist,:$oplist]
-    if do_constr then res := [listSort(function GLESSEQP, $conslist), :res]
-    if GETDATABASE(conname,'CONSTRUCTORKIND) = 'category then
+    res :=
+        do_constr => listSort(function GLESSEQP, $conslist)
+        []
+    res := [res, :$oplist]
+    if kind = 'category then
       tvl := TAKE(#rest conform,$TriangleVariableList)
       res := SUBLISLIS($FormalMapVariableList,tvl,res)
     res
   build(item,pred) ==
     item is ['SIGNATURE,op,sig,:.] => $oplist   := [[opOf op,sig,:pred],:$oplist]
     --note: opOf is needed!!! Bug in compiler puts in (One) and (Zero)
-    item is ['ATTRIBUTE,attr] =>
+    item is ['ATTRIBUTE, attr] =>
       constructor? opOf attr =>
         $conslist := [[attr,:pred],:$conslist]
         nil
-      opOf attr = 'nil => 'skip
-      $attrlist := [[opOf attr,IFCDR attr,:pred],:$attrlist]
+      BREAK()
     item is ['TYPE,op,type] =>
+        BREAK()
         $oplist := [[op,[type],:pred],:$oplist]
     item is ['IF,pred1,s1,s2] =>
       build(s1,quickAnd(pred,pred1))
       s2 => build(s2,quickAnd(pred,['NOT,pred1]))
     item is ['PROGN,:r] => for x in r repeat build(x,pred)
+    item is ['CATEGORY, ., :l] => for x in l repeat build(x, pred)
     item in '(noBranch) => 'ok
     null item => 'ok
     systemError '"build error"

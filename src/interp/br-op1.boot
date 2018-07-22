@@ -63,7 +63,7 @@ dbShowOps(htPage,which,key,:options) ==
     htpProperty(htPage,'attrAlist)
   key = 'generalise =>
     arg  := STRINGIMAGE CAAR opAlist
-    which = '"attribute" => aPage arg
+    which = '"attribute" => BREAK()
     oPage arg
   key = 'allDomains => dbShowOpAllDomains(htPage,opAlist,which)
   key = 'filter =>
@@ -743,13 +743,7 @@ dbShowOperationLines(which,linelist) ==  --branch in with lines
     'expandAttributes
   htpSetProperty(htPage,expandProperty,'strings)
   dbResetOpAlistCondition(htPage,which,opAlist)
-  if which = '"attribute" and BOUNDP '$attributeArgs and $attributeArgs then
-    --code needed to handle commutative("*"); called from aPage
-    --must completely expand the opAlist then check for those with
-    --arguments equal to $attributeArgs
-    --here: opAlist is [[op,:itemlist]]
-    dbExpandOpAlistIfNecessary(htPage,opAlist,which,false,false)
-    opAlist := [[CAAR opAlist,:[item for item in CDAR opAlist | first item = $attributeArgs]]]
+  if which = '"attribute" then BREAK()
   dbShowOp1(htPage,opAlist,which,'names)
 
 --============================================================================

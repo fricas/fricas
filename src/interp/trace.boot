@@ -121,7 +121,6 @@ trace1(l, options) ==
       centerAndHighlight('"Traced function execution counts",78,"-")
       pcounters ()
     selectOptionLC(first opt,'(reset),'optionError)
-    resetSpacers()
     resetTimers()
     resetCounters()
     throwKeyedMsg("S2IT0002",NIL)
@@ -503,10 +502,6 @@ resetTimers () ==
   for timer in $timer_list repeat
     SET(INTERN STRCONC(timer,'"_,TIMER"),0)
 
-resetSpacers () ==
-  for spacer in _/SPACELIST repeat
-    SET(INTERN STRCONC(spacer,'"_,SPACE"),0)
-
 resetCounters () ==
   for k in $count_list repeat
     SET(INTERN STRCONC(k,'"_,COUNT"),0)
@@ -517,12 +512,6 @@ ptimers() ==
     sayBrightly ["  ",:bright timer,'_:,'" ",
       EVAL(INTERN STRCONC(timer, '"_,TIMER")) /
         FLOAT($timerTicksPerSecond, 0.0), '" sec."]
-
-pspacers() ==
-  null _/SPACELIST => sayBrightly '"   no functions have space monitored"
-  for spacer in _/SPACELIST repeat
-    sayBrightly ["  ",:bright spacer,'_:,'" ",
-      EVAL INTERN STRCONC(spacer,'"_,SPACE"),'" bytes"]
 
 pcounters() ==
   null $count_list => sayBrightly '"   no functions are being counted"
@@ -772,47 +761,12 @@ traceDomainLocalOps(dom,lops,options) ==
  sayMSG ['"  ",'"The )local option has been withdrawn"]
  sayMSG ['"  ",'"Use )ltr to trace local functions."]
  NIL
---  abb := abbreviate dom
---  loadLibIfNotLoaded abb
---  actualLops := getLocalOpsFromLisplib abb
---  null actualLops =>
---    sayMSG ['"  ",:bright abb,'"has no local functions to trace."]
---  lops = 'all => _/TRACE_,1(actualLops,options)
---  l := NIL
---  for lop in lops repeat
---    internalName := INTERN STRCONC(PNAME abb,'";",PNAME lop)
---    not MEMQ(internalName,actualLops) =>
---      sayMSG ['"  ",:bright abb,'"does not have a local",
---        '" function called",:bright lop]
---    l := cons(internalName,l)
---  l => _/TRACE_,1(l,options)
---  nil
 
 untraceDomainLocalOps(dom,lops) ==
  sayMSG ['"  ",:bright abb,'"has no local functions to untrace."]
  NIL
---  lops = "all" => untraceAllDomainLocalOps(dom)
---  abb := abbreviate dom
---  loadLibIfNotLoaded abb
---  actualLops := getLocalOpsFromLisplib abb
---  null actualLops =>
---    sayMSG ['"  ",:bright abb,'"has no local functions to untrace."]
---  l := NIL
---  for lop in lops repeat
---    internalName := INTERN STRCONC(PNAME abb,'";",PNAME lop)
---    not MEMQ(internalName,actualLops) =>
---      sayMSG ['"  ",:bright abb,'"does not have a local",
---        '" function called",:bright lop]
---    l := cons(internalName,l)
---  l => untrace l
---  nil
 
 untraceAllDomainLocalOps(dom) == NIL
---  abb := abbreviate dom
---  actualLops := getLocalOpsFromLisplib abb
---  null (l := intersection(actualLops, $trace_names)) => NIL
---  _/UNTRACE_,1(l,NIL)
---  NIL
 
 traceDomainConstructor(domainConstructor,options) ==
   -- Trace all domains built with the given domain constructor,
@@ -957,14 +911,6 @@ reportSpadTrace(header,[op,sig,n,:t]) ==
 
 orderBySlotNumber l ==
   ASSOCRIGHT orderList [[n,:x] for (x:= [.,.,n,:.]) in l]
-
-_/TRACEREPLY() ==
-  null $trace_names => MAKESTRING '"   Nothing is traced."
-  for x in $trace_names repeat
-    x is [d,:.] and isDomainOrPackage d =>
-      domainList:= [devaluate d,:domainList]
-    functionList:= [x,:functionList]
-  [:functionList,:domainList,"traced"]
 
 spadReply() ==
   [printName x for x in $trace_names] where
