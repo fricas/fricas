@@ -153,9 +153,9 @@ asMakeAlist con ==
   res
 
 asGetExports(kind, conform, catform) ==
-  u := asCategoryParts(kind, conform, catform, true) or return nil
+  [., :op_lst] := categoryParts1(kind, conform, catform, false) or return nil
   -- ensure that signatures are lists
-  [[op, sigpred] for [op,sig,:pred] in CDDR u] where
+  [[op, sigpred] for [op,sig,:pred] in op_lst] where
     sigpred ==
       pred :=
         pred = "T" => nil
@@ -1000,55 +1000,6 @@ asyComma? op == MEMQ(op,'(Comma Multi))
 hput(table,name,value) ==
   if null name then systemError()
   HPUT(table,name,value)
-
---============================================================================
---               category parts
---============================================================================
-
--- this constructs operation information from a category.
--- NB: This is categoryParts, but with the kind supplied by
--- an arguments
-asCategoryParts(kind,conform,category,:options) == main where
-  main ==
-    cons? := IFCAR options  --means to include constructors as well
-    $attrlist: local := nil
-    $oplist  : local := nil
-    $conslist: local := nil
-    conname := opOf conform
-    for x in exportsOf(category) repeat build(x,true)
-    $attrlist := listSort(function GLESSEQP,$attrlist)
-    $oplist   := listSort(function GLESSEQP,$oplist)
-    res := [$attrlist,:$oplist]
-    if cons? then res := [listSort(function GLESSEQP,$conslist),:res]
-    if kind = 'category then
-      tvl := TAKE(#rest conform,$TriangleVariableList)
-      res := SUBLISLIS($FormalMapVariableList,tvl,res)
-    res
-  build(item,pred) ==
-    item is ['SIGNATURE,op,sig,:.] => $oplist   := [[opOf op,sig,:pred],:$oplist]
-    --note: opOf is needed!!! Bug in compiler puts in (One) and (Zero)
-    item is ['ATTRIBUTE,attr] =>
-      constructor? opOf attr =>
-        $conslist := [[attr,:pred],:$conslist]
-        nil
-      opOf attr = 'nothing => 'skip
-      $attrlist := [[opOf attr,IFCDR attr,:pred],:$attrlist]
-    item is ['TYPE,op,type] =>
-        $oplist := [[op,[type],:pred],:$oplist]
-    item is ['IF,pred1,s1,s2] =>
-      build(s1,quickAnd(pred,pred1))
-      s2 => build(s2,quickAnd(pred,['NOT,pred1]))
-    item is ['PROGN,:r] => for x in r repeat build(x,pred)
-    item in '(noBranch) => 'ok
-    null item => 'ok
-    systemError '"build error"
-  exportsOf(target) ==
-    target is ['CATEGORY,.,:r] => r
-    target is ['Join,:r,f] =>
-      for x in r repeat $conslist := [[x,:true],:$conslist]
-      exportsOf f
-    $conslist := [[target,:true],:$conslist]
-    nil
 
 --============================================================================
 --               Dead Code (for a very odd value of 'dead')

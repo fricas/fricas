@@ -128,7 +128,7 @@ mkAtree1 x ==
   atom x =>
     x in '(noBranch noMapVal) => x
     x in '(nil true false) => mkAtree2([x],x,NIL)
-    x = '_/throwAway =>
+    x = "/throwAway" =>
       -- don't want to actually compute this
       tree := mkAtree1 '(void)
       putValue(tree,objNewWrap(voidValue(),$Void))
@@ -238,7 +238,6 @@ mkAtree3(x,op,argl) ==
       lowTest
     mkAtree1 z
   x is ['IF,p,'noBranch,a] => mkAtree1 ['IF,['not,p],a,'noBranch]
-  x is ['RULEDEF, :.] => [mkAtreeNode 'RULEDEF, :rest x]
   x is ['MDEF,sym,junk1,junk2,val] =>
     -- new macros look like  macro f ==  or macro f(x) ===
     -- so transform into that format

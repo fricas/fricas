@@ -71,7 +71,7 @@ spadCompile1(name, pile_mode) ==
     $comp370_apply : local := FUNCTION print_defun
     $file_apply : local := FUNCTION print_defun
     _*EOF_* : local := false
-    _/EDITFILE : local := name
+    $edit_file : local := name
     $InteractiveMode : local := false
     $spad_scanner : local := true
     $COMBLOCKLIST : local := nil
