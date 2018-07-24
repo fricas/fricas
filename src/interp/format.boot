@@ -389,12 +389,6 @@ form2String1 u ==
   op = 'construct =>
     concat(lbrkSch(),
            tuple2String [form2String1 x for x in argl],rbrkSch())
-  op = "SEGMENT" =>
-    null argl => '".."
-    lo := form2String1 first argl
-    argl := rest argl
-    (null argl) or null (first argl) => [lo, '".."]
-    [lo, '"..", form2String1 first argl]
   op = "MATRIX" => matrix2String argl
   u1 is ["ROOT", arg1] =>
      concat("sqrt(", appOrParen(arg1),")")
