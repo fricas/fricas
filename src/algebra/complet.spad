@@ -32,11 +32,18 @@ OrderedCompletion(R : SetCategory) : Exports == Implementation where
       rationalIfCan : % -> Union(Fraction Integer, "failed")
         ++ rationalIfCan(x) returns x as a finite rational number if
         ++ it is one and "failed" otherwise.
+    if R has ConvertibleTo InputForm then ConvertibleTo InputForm
 
   Implementation ==> add
     Rep := Union(fin : R, inf : B)  -- true = +infinity, false = -infinity
 
-    coerce(r : R) : %          == [r]
+    if R has ConvertibleTo InputForm then
+      convert(x : %) : InputForm ==
+          x case fin => convert(x.fin)@InputForm
+          x.inf => convert([convert('plusInfinity)$InputForm])$InputForm
+          convert([convert('minusInfinity)$InputForm])$InputForm
+
+    coerce(r : R) : %      == [r]
     retract(x:%):R         == (x case fin => x.fin; error "Not finite")
     finite? x              == x case fin
     infinite? x            == x case inf
@@ -152,9 +159,15 @@ OnePointCompletion(R : SetCategory) : Exports == Implementation where
       rationalIfCan : % -> Union(Fraction Integer, "failed")
         ++ rationalIfCan(x) returns x as a finite rational number if
         ++ it is one, "failed" otherwise.
+    if R has ConvertibleTo InputForm then ConvertibleTo InputForm
 
   Implementation ==> add
     Rep := Union(R, "infinity")
+
+    if R has ConvertibleTo InputForm then
+      convert(x : %) : InputForm ==
+          x case R => convert(x::R)@InputForm
+          convert([convert('infinity)$InputForm])$InputForm
 
     coerce(r : R) : %          == r
     retract(x:%):R         == (x case R => x::R; error "Not finite")
@@ -214,9 +227,9 @@ OnePointCompletionFunctions2(R, S) : Exports == Implementation where
 Infinity() : with
   infinity     : () -> OnePointCompletion Integer
     ++ infinity() returns infinity.
-  plusInfinity : () -> OrderedCompletion  Integer
-    ++ plusInfinity() returns plusIinfinity.
-  minusInfinity : () -> OrderedCompletion  Integer
+  plusInfinity : () -> OrderedCompletion Integer
+    ++ plusInfinity() returns plusInfinity.
+  minusInfinity : () -> OrderedCompletion Integer
     ++ minusInfinity() returns minusInfinity.
  == add
   infinity()      == infinity()$OnePointCompletion(Integer)
