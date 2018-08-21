@@ -5,7 +5,6 @@ AC_INIT([FriCAS], [2018-03-10],
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([config/fricas_c_macros.h])
-# AM_INIT_AUTOMAKE([foreign])
 AC_PREREQ([2.59])
 
 AC_CONFIG_SRCDIR(src/Makefile.in)
@@ -800,6 +799,28 @@ AS_IF([test x"$BUILD_ALDOR_INTERFACE" = xyes], [
 ])
 
 AC_SUBST(ALDOR_datadir)
+
+AS_IF([test x"$BUILD_ALDOR_INTERFACE" = xyes], [
+    ## Check how foreign imports are mapped to syntax
+    AC_MSG_CHECKING([Aldor foreign style])
+    echo 'import foo: X from Foreign C' > tmp.as
+    AS_IF([${ALDOR} -Fap tmp.as > /dev/null 2>&1],
+          [ALDOR_foreignStyle=Foreign
+	   ALDOR_conditionalCast=T
+	   ALDOR_conditionalCast_true='#'
+           if grep -q 'ForeignImport' tmp.ap;
+	   then
+	       ALDOR_foreignStyle=ForeignImport
+	       ALDOR_conditionalCast=NIL
+	       ALDOR_conditionalCast_true=
+	   fi;
+           AC_MSG_RESULT([$ALDOR_foreignStyle])],
+	  [AC_MSG_ERROR([Failed to test aldor foreign syntax])])
+    ])
+
+AC_SUBST(ALDOR_foreignStyle)
+AC_SUBST(ALDOR_conditionalCast)
+AC_SUBST(ALDOR_conditionalCast_true)
 
 ###################################################################
 # The installation is currently not done by recursively calling

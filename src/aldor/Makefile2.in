@@ -1,5 +1,8 @@
 VPATH=@srcdir@
 ALDOR=@ALDOR@
+ALDOR_FOREIGNSTYLE=|@ALDOR_foreignStyle@|
+ALDOR_CONDITIONALCAST=@ALDOR_conditionalCast@
+
 INTERPSYS = DAASE=$(fricas_targetdir) FRICAS_INITFILE='' $(fricas_target_bindir)/AXIOMsys
 
 # We assume here that the directory 'al' has already been created.
@@ -12,15 +15,22 @@ default: al/libaxiom.al
 # dependency order from now on.
 include cliques.mk
 AXIOM_CLIQUES=$(filter-out $(aldor_srcs), $(CLIQUES))
+@ALDOR_conditionalCast_true@AP_OVERRIDES=DIRPCAT FS
 
 ###################################################################
 # Now we create an .ap file for each clique.
-$(patsubst %,ap/%.ap,$(AXIOM_CLIQUES)): ap/%.ap: ap/%.lsp tmp/.dir
+$(patsubst %,ap/%.ap,$(filter-out $(AP_OVERRIDES), $(AXIOM_CLIQUES))): ap/%.ap: ap/%.lsp tmp/.dir
+	rm -f $@
 	$(INTERPSYS) < $< > tmp/$*.log
 	test -f $@
 
+$(patsubst %,ap/%.ap,$(AP_OVERRIDES)): ap/%.ap: ap/.dir tmp/.dir $(srcdir)/fixed_ap/%.ap
+	cp -p $(srcdir)/fixed_ap/$*.ap $@
+
 ap/%.lsp:
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))' >> $@
+	echo ')lisp (|setConditionalCast| $(ALDOR_CONDITIONALCAST))' >> $@
 	echo ')lisp (generate-ax-file "$*" (quote ($(filter-out init_%, $(MEMBERS_$*)))) (quote ($(patsubst %,|%|,$(filter init_%, $(MEMBERS_$*))))))' >> $@
 
 
@@ -36,7 +46,7 @@ $(patsubst %,ao/%.ao,$(aldor_src)): extra_ao_options=
 $(patsubst %,ao/%.ao,$(AXIOM_CLIQUES)): extra_ao_options=-Wname=axiom -Mno-abbrev -Mpreview
 .PRECIOUS: ao/%.ao
 ao/%.ao: ap/%.ap al/libaxiom_%.al ao/.dir
-	$(ALDOR) $(extra_ao_options) -Y al -L AxiomLib=axiom_$* -fao=$@ $<
+	/usr/bin/time $(ALDOR) $(extra_ao_options) -Y al -L AxiomLib=axiom_$* -fao=$@ $< 2>&1 | tee tmp/$*_ao.out
 
 # We compile a seperate temporary library for the compilation of each
 # .ao file in order to avoid trouble with big libraries and the aldor

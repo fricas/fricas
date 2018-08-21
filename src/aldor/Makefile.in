@@ -5,6 +5,8 @@
 VPATH=@srcdir@
 MAKEFLAGS += -Wwarn-undefined-variables
 ALDOR=@ALDOR@
+ALDOR_FOREIGNSTYLE=|@ALDOR_foreignStyle@|
+subdir=src/aldor/
 
 ###################################################################
 # WARNING: THE FOLLOWING DOCUMENTATION MIGHT BE INCORRECT.
@@ -41,12 +43,14 @@ INTERPSYS = DAASE=$(fricas_targetdir) FRICAS_INITFILE='' $(fricas_target_bindir)
 default: axiom.as al/libaxiom.al runtimefiles
 
 clean:
-	-rm domains.mk mkinit* initlist.lst initlist.ap
-	-rm easylist.lsp
-	-rm libaxiom.lst aldordepfiles domaindepfiles
-	-rm -rf tmp init_ap gendeps ap ao al
-	-rm cliques cliques.mk
-
+	rm -f domains.mk mkinit* initlist.lst initlist.ap
+	rm -f easylist.lsp mkeasy.lsp
+	rm -f libaxiom.lst aldordepfiles domaindepfiles
+	rm -rf tmp init_ap gendeps ap ao al lib lsp
+	rm -f cliques cliques.mk
+	rm -f lang.as axiom.as axextend.as axlit.as
+	rm -f minimach.as stub.as subsetc.as axiom.as
+	rm -f *.ao
 
 ###################################################################
 # Here we produce the list of all domains, categories and packages
@@ -113,6 +117,7 @@ easylist.lsp: mkeasy.lsp initlist.ap tmp/.dir
 
 mkeasy.lsp:
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-easy "easylist.lsp")' >> $@
 	echo ')lisp (quit)' >> $@
 
@@ -130,6 +135,7 @@ initlist.lst: mkinit.lsp easylist.lsp $(patsubst %,%/.dir,$(geninit_dirs))
 # does not work in ecl based FriCAS.
 mkinit.lsp:
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-init "initlist.lst")' >> $@
 	echo ')lisp (quit)' >> $@
 
@@ -145,6 +151,7 @@ $(domain_dep_files): gendeps/%.dep: tmp/dep_%.lsp tmp/.dir initlist.lst
 domain_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(domains))
 $(domain_lsp_files): tmp/dep_%.lsp: tmp/.dir gendeps/.dir
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-deps (quote ($*)))' >> $@
 	echo ')lisp (quit)' >> $@
 
@@ -197,6 +204,7 @@ $(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.lst gendeps/.dir
 aldor_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(aldor_srcs))
 $(aldor_lsp_files): tmp/dep_%.lsp: ap/%.ap tmp/.dir
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-deps-from-ap-files (quote (|$*|)))' >> $@
 	echo ')lisp (quit)' >> $@
 
@@ -299,3 +307,13 @@ install-runtimefiles: installdir-runtimefiles
 
 installdir-runtimefiles:
 	$(mkinstalldirs) '$(install_aldor_dir)/lib'
+
+Makefile2: $(srcdir)/Makefile2.in $(top_srcdir)/config/var-def.mk \
+	  $(top_srcdir)/config/setup-dep.mk \
+	  $(abs_top_builddir)/config.status
+	cd $(abs_top_builddir) && $(SHELL) ./config.status $(subdir)$@
+
+Makefile3: $(srcdir)/Makefile3.in $(top_srcdir)/config/var-def.mk \
+	  $(top_srcdir)/config/setup-dep.mk \
+	  $(abs_top_builddir)/config.status
+	cd $(abs_top_builddir) && $(SHELL) ./config.status $(subdir)$@
