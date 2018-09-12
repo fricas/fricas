@@ -1125,7 +1125,7 @@ copyHack(env) ==
 
 for name in $specialOps repeat
     (
-      functionName:=INTERNL('up,name) ;
+      functionName := INTERNL1('up, name) ;
       MAKEPROP(name,'up,functionName) ;
       functionName
      )

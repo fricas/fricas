@@ -866,7 +866,7 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
 -- fn is the name of some category/domain/package constructor;
 -- we will cache all of its values on $ConstructorCache with reference
 -- counts
-  auxfn := INTERNL(fn, '";")
+  auxfn := INTERNL1(fn, '";")
   output_lisp_form(["DECLAIM", ["NOTINLINE", auxfn]])
   if key = 'category_functor
       then u := compAndDefine form

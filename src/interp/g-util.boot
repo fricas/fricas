@@ -34,6 +34,17 @@
 
 --% Various lispy things
 
+MKQ(X) ==
+    NUMBERP(X) => X
+    ['QUOTE, X]
+
+INTERNL1(a, b) == INTERN(CONCAT(a, b))
+
+$GENNO := 0
+
+GENVAR() ==
+    INTERNL1('"$", STRINGIMAGE($GENNO := $GENNO + 1))
+
 Identity x == x
 
 length1? l == PAIRP l and not PAIRP QCDR l

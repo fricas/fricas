@@ -137,7 +137,8 @@ parseMDEF [lhs,tList,specialList,body] ==
 
 parseCategory x ==
   l:= parseTranList x
-  key:=
+  -- Needed only for error messages in interpreter
+  key :=
     CONTAINED("$",l) => "domain"
     'package
   ['CATEGORY,key,:l]
