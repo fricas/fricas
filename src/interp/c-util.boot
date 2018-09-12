@@ -429,13 +429,13 @@ flatten(l,key) ==
 
 genDomainVar() ==
   $Index:= $Index+1
-  INTERNL('"#D", STRINGIMAGE $Index)
+  INTERNL1('"#D", STRINGIMAGE($Index))
 
 genVariable() ==
-  INTERNL('"#G", STRINGIMAGE ($genSDVar:= $genSDVar+1))
+  INTERNL1('"#G", STRINGIMAGE($genSDVar := $genSDVar + 1))
 
 genSomeVariable() ==
-  INTERNL('"##", STRINGIMAGE ($genSDVar:= $genSDVar+1))
+  INTERNL1('"##", STRINGIMAGE($genSDVar := $genSDVar + 1))
 
 listOfIdentifiersIn x ==
   IDENTP x => [x]

@@ -889,7 +889,7 @@ findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
   if maxargs ~= -1 then
     SL:= NIL
     for i in 1..maxargs repeat
-      impls := SUBSTQ(GENSYM(),INTERNL('"#",STRINGIMAGE i),impls)
+        impls := SUBSTQ(GENSYM(), INTERNL1('"#", STRINGIMAGE i), impls)
   impls and
     SL:= constructSubst dc
     for mm in impls repeat

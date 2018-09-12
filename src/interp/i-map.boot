@@ -64,9 +64,9 @@ makeInternalMapMinivectorName(name) ==
     INTERN STRCONC(name,'";MV")
   INTERN STRCONC(PNAME name,'";MV")
 
-mkCacheName(name) == INTERNL(STRINGIMAGE name,'";AL")
+mkCacheName(name) == INTERNL1(STRINGIMAGE(name), '";AL")
 
-mkAuxiliaryName(name) == INTERNL(STRINGIMAGE name,'";AUX")
+mkAuxiliaryName(name) == INTERNL1(STRINGIMAGE(name), '";AUX")
 
 --% Adding a function definition
 
@@ -166,8 +166,9 @@ addMap(lhs,rhs,pred) ==
   argPredList:= NREVERSE predList
   finalPred :=
 -- handle g(a,T)==a+T confusion between pred=T and T variable
-    MKPF((pred and (pred ~= 'T) => [:argPredList,SUBLISNQ($sl,pred)]; argPredList),"and")
-  body:= SUBLISNQ($sl,rhs)
+      MKPF((pred and (pred ~= 'T) =>
+            [:argPredList, sublisNQ($sl, pred)]; argPredList), "and")
+  body := sublisNQ($sl, rhs)
   oldMap :=
     (obj := get(op,'value,$InteractiveFrame)) => objVal obj
     NIL

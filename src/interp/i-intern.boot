@@ -115,7 +115,7 @@ mkAtreeExpandMacros x ==
         [args,:body] := m
         #args = #argl =>
           sl := [[a,:s] for a in args for s in argl]
-          x := SUBLISNQ(sl,body)
+          x := sublisNQ(sl, body)
         null args => x := [body,:argl]
         x := [op,:argl]
       x := [mkAtreeExpandMacros op,:argl]

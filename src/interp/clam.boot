@@ -67,7 +67,7 @@
 
 compHash(op, argl, body, cacheName, eqEtc) ==
 
-  auxfn:= INTERNL(op,'";")
+  auxfn := INTERNL1(op, '";")
   g1:= GENSYM()  --argument or argument list
   [arg,cacheArgKey,computeValue] :=
   --    arg: to be used as formal argument of lambda construction;
@@ -82,8 +82,8 @@ compHash(op, argl, body, cacheName, eqEtc) ==
     key := ['devaluateList, g1] 
     [g1, key, ['APPLY,['function,auxfn],g1]]   --g1 is a parameter list
   if $reportCounts=true then
-    hitCounter:= INTERNL(op,'";hit")
-    callCounter:= INTERNL(op,'";calls")
+    hitCounter := INTERNL1(op, '";hit")
+    callCounter := INTERNL1(op, '";calls")
     SET(hitCounter,0)
     SET(callCounter,0)
     callCountCode := [['SETQ, callCounter, ['inc_SI, callCounter]]]
@@ -165,13 +165,13 @@ clearConstructorAndLisplibCaches() ==
 clearCategoryCaches() ==
   for name in allConstructors() repeat
     if GETDATABASE(name,'CONSTRUCTORKIND) = 'category then
-      if BOUNDP(cacheName := INTERNL(PNAME name, '";AL"))
+      if BOUNDP(cacheName := INTERNL1(PNAME(name), '";AL"))
             then SET(cacheName,nil)
-    if BOUNDP(cacheName := INTERNL(PNAME name, '";CAT"))
+    if BOUNDP(cacheName := INTERNL1(PNAME(name), '";CAT"))
           then SET(cacheName,nil)
 
 clearCategoryCache catName ==
-  cacheName := INTERNL(PNAME catName, '";AL")
+  cacheName := INTERNL1(PNAME(catName), '";AL")
   SET(cacheName,nil)
 
 displayHashtable x ==
@@ -294,8 +294,8 @@ clamStats() ==
     cacheVec := GET(op, 'cacheInfo) or systemErrorHere "clamStats"
     prefix:=
       $reportCounts~= true => nil
-      hitCounter:= INTERNL(op,'";hit")
-      callCounter:= INTERNL(op,'";calls")
+      hitCounter := INTERNL1(op, '";hit")
+      callCounter := INTERNL1(op, '";calls")
       res:= ["%b",eval hitCounter,"/",eval callCounter,"%d","calls to "]
       SET(hitCounter,0)
       SET(callCounter,0)

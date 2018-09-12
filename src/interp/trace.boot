@@ -894,7 +894,7 @@ shortenForPrinting val ==
   val
 
 spadTraceAlias(domainId,op,n) ==
-  INTERNL(domainId,".",op,",",STRINGIMAGE n)
+  INTERN(CONCAT(domainId, '".", op, '",", STRINGIMAGE(n)))
 
 getOption(opt,l) ==
   y:= assoc(opt,l) => rest y

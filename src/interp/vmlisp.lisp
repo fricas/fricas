@@ -83,7 +83,7 @@
 ; 9.13 Streams
 
 #+GCL
-(defun IS-CONSOLE (stream)
+(defun IS_CONSOLE (stream)
   (and (streamp stream) (output-stream-p stream)
        (eq (system:fp-output-stream stream)
            (system:fp-output-stream *terminal-io*))))
@@ -634,7 +634,7 @@
 (defun |mkOutputConsoleStream| ()
      (make-synonym-stream '*standard-output*))
 
-(defun SHUT (st) (if #+:GCL(is-console st)
+(defun SHUT (st) (if #+:GCL(IS_CONSOLE st)
                      #-:GCL(typep st 'synonym-stream)
                      st
                    (if (streamp st) (close st) -1)))

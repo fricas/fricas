@@ -269,7 +269,7 @@ axFormatType(typeform) ==
             STRINGP x => INTERN x
             x is ['QUOTE,val] and STRINGP val => INTERN val
             valueCount := valueCount + 1
-            INTERNL("value", STRINGIMAGE valueCount)
+            INTERNL1("value", STRINGIMAGE(valueCount))
           taglist := [tag ,: taglist]
       ['Apply, 'Union, :[axFormatDecl(name,type) for name in reverse taglist
                                 for type in args]]

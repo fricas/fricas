@@ -869,7 +869,7 @@ PushMatrix m ==
     for v in $MatrixList repeat
         EQUAL(m, CDR v) => return first v
   name => name
-  name:=INTERNL('"matrix",STRINGIMAGE($MatrixCount:=$MatrixCount+1))
+  name := INTERNL1('"matrix", STRINGIMAGE($MatrixCount := $MatrixCount + 1))
   $MatrixList:=[[name,:m],:$MatrixList]
   name
 
