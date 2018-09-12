@@ -303,26 +303,8 @@
 
 (defun LEXLESSEQP (X Y) (NOT (LEXGREATERP X Y)))
 
-; 7 CONTROL STRUCTURE
-
-; 7.1 Constants and Variables
-
-; 7.1.1 Reference
-
-(DEFUN MKQ (X)
-  "Evaluates an object and returns it with QUOTE wrapped around it."
-  (if (NUMBERP X) X (LIST 'QUOTE X)))
-
-(defvar $TRACELETFLAG NIL "Also referred to in Comp.Lisp")
 
 ; 10.3 Creating Symbols
-
-(defun INTERNL(a &rest b)
-    (INTERN (APPLY #'concat (CONS a b))))
-
-(defvar $GENNO 0)
-
-(DEFUN GENVAR () (INTERNL "$" (STRINGIMAGE (SETQ $GENNO (1+ $GENNO)))))
 
 (DEFUN IS_GENVAR (X)
   (AND (IDENTP X)
@@ -385,18 +367,6 @@
         (SETQ NFORM (CDR NFORM))
         (SETQ FORM (CDR FORM))
         (GO LP)))
-
-(DEFUN SUBLISNQ (KEY E) (if (NULL KEY) E (SUBANQ KEY E)))
-
-(DEFUN SUBANQ (KEY E)
-  (COND ((ATOM E) (SUBB KEY E))
-        ((EQCAR E (QUOTE QUOTE)) E)
-        ((MAPCAR #'(LAMBDA (J) (SUBANQ KEY J)) E))))
-
-(DEFUN SUBB (X E)
-  (COND ((ATOM X) E)
-        ((EQ (CAAR X) E) (CDAR X))
-        ((SUBB (CDR X) E))))
 
 (defun SUBLISLIS (newl oldl form)
    (sublis (mapcar #'cons oldl newl) form))

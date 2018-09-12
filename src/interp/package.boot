@@ -51,8 +51,8 @@ encodeFunctionName(fun,package is [packageName,:arglist],signature,sep,count)
         encodedPair() ==
           n=1 => encodeItem x
           STRCONC(STRINGIMAGE n,encodeItem x)
-    encodedName:= INTERNL(getAbbreviation(packageName,#arglist),";",
-        encodeItem fun,";",encodedSig, sep,STRINGIMAGE count)
+    encodedName := INTERN(CONCAT(getAbbreviation(packageName, #arglist), ";",
+        encodeItem(fun), ";", encodedSig, sep, STRINGIMAGE(count)))
     encodedName
 
 mkRepititionAssoc l ==
@@ -104,5 +104,5 @@ alistSize c ==
 
 addSuffix(n,u) ==
   ALPHA_-CHAR_-P((s := STRINGIMAGE u).(MAXINDEX s)) =>
-      INTERNL(s, STRINGIMAGE n)
-  INTERNL(s, '";", STRINGIMAGE n)
+      INTERNL1(s, STRINGIMAGE(n))
+  INTERN(CONCAT(s, '";", STRINGIMAGE(n)))

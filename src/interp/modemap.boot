@@ -175,7 +175,7 @@ augModemapsFromDomain(name,functorForm,e) ==
 
 substituteCategoryArguments(argl,catform) ==
   argl:= substitute("$$","$",argl)
-  arglAssoc:= [[INTERNL("#",STRINGIMAGE i),:a] for i in 1.. for a in argl]
+  arglAssoc := [[INTERNL1("#", STRINGIMAGE i), :a] for i in 1.. for a in argl]
   SUBLIS(arglAssoc,catform)
 
 augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==

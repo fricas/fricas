@@ -487,7 +487,7 @@ countCache n ==
       for x in l repeat
         NULL IDENTP x => sayKeyedMsg("S2IF0007",[x])
         $cacheAlist:= insertAlist(x,n,$cacheAlist)
-        cacheCountName:= INTERNL(x,'";COUNT")
+        cacheCountName := INTERNL1(x, '";COUNT")
         SET(cacheCountName,n)
         sayCacheCount(x,n)
     optionError(CAAR $options,nil)

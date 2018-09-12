@@ -106,8 +106,8 @@ COMP_2(args) ==
 COMP(fun) == [COMP_2 nf for nf in COMP_1(fun)]
 
 compSPADSLAM(name, argl, bodyl) ==
-    al := INTERNL(name, '";AL")
-    auxfn := INTERNL(name, '";")
+    al := INTERNL1(name, '";AL")
+    auxfn := INTERNL1(name, '";")
     if argl then
         g2 := GENSYM()
         g3 := GENSYM()
@@ -140,7 +140,7 @@ compSPADSLAM(name, argl, bodyl) ==
     name
 
 makeClosedfnName() ==
-    INTERNL($FUNNAME, '"!", STRINGIMAGE(LENGTH($CLOSEDFNS)))
+    INTERN(CONCAT($FUNNAME, '"!", STRINGIMAGE(LENGTH($CLOSEDFNS))))
 
 lambdaHelper1(y) ==
     NOT(MEMQ(y, $locVars)) =>
@@ -298,6 +298,8 @@ MK_inc_SI(x) ==
     ATOM(x) => ['inc_SI, x]
     x is [op, xx, 1] and (op = 'sub_SI or op = "-") => xx
     ['inc_SI, x]
+
+$TRACELETFLAG := false
 
 expandREPEAT(l) ==
     [conds, :body] := repeat_tran(l, [])
