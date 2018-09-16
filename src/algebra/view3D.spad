@@ -422,14 +422,6 @@ ThreeDimensionalViewport() : Exports == Implementation where
         error "This viewport has already been closed!"
       true
 
-    arcsinTemp(x : SF) : SF ==
-      -- the asin function doesn't exist in the SF domain currently
-      x >= 1  => (pi()$SF / 2)  -- to avoid floating point error from SF (ie 1.0 -> 1.00001)
-      x <= -1 => 3 * pi()$SF / 2
-      convert(asin(convert(x)@Float)$Float)@SF
-
-    arctanTemp(x : SF) : SF == convert(atan(convert(x)@Float)$Float)@SF
-
     doOptions(v : Rep) : Void ==
       v.title := title(v.optionsField,"FriCAS3D")
       st:S := style(v.optionsField, "render")
@@ -726,8 +718,8 @@ ThreeDimensionalViewport() : Exports == Implementation where
         convert(Scale)@SF, 1$SF, 1$SF, 1$SF, convert(DeltaX)@SF, convert(DeltaY)@SF]
 
     viewpoint (viewport : %, Theta : F, Phi : F) : Void ==
-      viewport.viewpoint.theta := convert(Theta)@SF * degreesSF
-      viewport.viewpoint.phi   := convert(Phi)@SF * degreesSF
+      viewport.viewpoint.theta := convert(Theta)@SF
+      viewport.viewpoint.phi   := convert(Phi)@SF
 
     viewpoint (viewport : %, X : F, Y : F, Z : F) : Void ==
       Theta : F
@@ -737,14 +729,14 @@ ThreeDimensionalViewport() : Exports == Implementation where
         if (Z>=0$F) then
           Phi := 0$F
         else
-          Phi := 180.0
+          Phi := pi()
       else
         Theta := asin(Y/(R := sqrt(X*X+Y*Y)))
         if (Z = 0$F) then
-          Phi := 90.0
+          Phi := pi()/(2::F)
         else
           Phi := atan(Z/R)
-      rotate(viewport, Theta * degrees, Phi * degrees)
+      rotate(viewport, Theta, Phi)
 
     title (viewport, Title) ==
       viewport.title := Title
