@@ -95,7 +95,8 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
 
     mkRat    : (F, REC, List K) -> RF
     mkRatlx  : (F, K, K, F, K, RF, F) -> RF
-    quadsubst : (K, K, F, UP) -> Record(diff : F, subs : REC, newk : List K)
+    quadsubst : (K, K, F, UP, List(F)) ->
+                   Record(diff : F, subs : REC, newk : List K)
     kerdiff  : (F, F) -> List K
     checkroot : (F, List K) -> F
     univ     : (F, List K, K) -> RF
@@ -176,17 +177,34 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
             lp1 := concat(rationalize_log(ll, k1), lp1)
         mkAnswer(rp1, lp1, notelem(irf))
 
+    field_gens(y : K, lf : List(F)) : List(F) ==
+        at := algtower(lf)
+        res : List(F) := []
+        for k in at repeat
+            k = y => "iterate"
+            res := cons(k::F, res)
+        res
+
     palgint0(f, x, y, den, radi) ==
       -- y is a square root so write f as f1 y + f0 and integrate separately
       ff := univariate(f, x, y, minPoly y)
       f0 := reductum ff
-      pr := quadsubst(x, y, den, radi)
+      lc := field_gens(y, [f])
+      pr := quadsubst(x, y, den, radi, lc)
       rf :=  mkRat(multivariate(leadingMonomial ff, x, y::F), pr.subs, pr.newk)
       irf := integrate(rf)
       irf1 : IR := map(f1+->f1(pr.diff), irf)
       if not(empty?(pr.newk)) then
           irf1 := rationalize_ir(irf1, first(pr.newk))
       map(f1+->f1(x::F), integrate(retract(f0)@RF)) + irf1
+
+    sqrt_in_field(a : F, lc : List(F)) : F ==
+        pol := monomial(1, 2)$UP - a::UP
+        fp := factor(pol, lc)$ExpressionFactorPolynomial(R, F)
+        lfac := factorList(fp)
+        ff := first(lfac).factor
+        degree(ff) = 1 => -coefficient(ff, 0)/coefficient(ff, 1)
+        sqrt(a)
 
 -- the algebraic relation is (den * y)^2 = p  where p is a * x^2 + b * x + c
 -- if p is squarefree, then parametrize in the following form:
@@ -208,11 +226,12 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
 -- returns [u(x, y), [h'(u), [x, y], [h(u), g(u)], l] in both cases,
 -- where l is empty if no new square root was needed,
 -- l := [k] if k is the new square root kernel that was created.
-    quadsubst(x, y, den, p) ==
+    quadsubst(x, y, den, p, lc) ==
       u   := dummy::F
       b   := coefficient(p, 1)
       c   := coefficient(p, 0)
-      sa  := rootSimp sqrt(a := coefficient(p, 2))
+      a := coefficient(p, 2)
+      sa := sqrt_in_field(a, lc)
       zero?(b * b - 4 * a * c) =>    -- case where p = a (x + b/(2a))^2
         [x::F, [1, [x, y], [u, sa * (u + b / (2*a)) / eval(den, x, u)]], empty()]
       empty? kerdiff(sa, a) =>
@@ -221,7 +240,7 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
         yy   := (ua := u + xx * sa) / q
         [den*y::F - x::F * sa, [2 * ua / bm2u, [x, y], [xx, yy]], empty()]
       u2ma := u^2 - a
-      sc  := rootSimp sqrt c
+      sc := sqrt_in_field(c, lc)
       q   := eval(den, x, xx := (b - 2 * u * sc) / u2ma)
       yy  := (ux := xx * u + sc) / q
       [(den*y::F - sc) / x::F, [- 2 * ux / u2ma, [x , y], [xx, yy]],
@@ -257,7 +276,8 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
               (y)
 
     palgRDE0(f, g, x, y, rischde, den, radi) ==
-      pr := quadsubst(x, y, den, radi)
+      lc := field_gens(y, [f, g])
+      pr := quadsubst(x, y, den, radi, lc)
       (u := rischde(checkroot(eval(f, pr.subs.var, pr.subs.val), pr.newk),
                     checkroot(pr.subs.coeff * eval(g, pr.subs.var, pr.subs.val),
                               pr.newk), symbolIfCan(dummy)::SY)) case "failed"
@@ -268,7 +288,8 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
       import from RationalLODE(F, UP)
 
       palgLODE0(eq, g, x, y, den, radi) ==
-        pr := quadsubst(x, y, den, radi)
+        lc := field_gens(y, cons(g, coefficients(eq)))
+        pr := quadsubst(x, y, den, radi, lc)
         d := monomial(univ(inv(pr.subs.coeff), pr.newk, dummy), 1)$LODO
         di : LODO := 1                  -- will accumulate the powers of d
         op : LODO := 0                  -- will accumulate the new LODO
