@@ -284,7 +284,7 @@
 (progn
 (defmacro |less_DF| (x y) `(< (the double-float ,x)
                                              (the double-float ,y)))
-(defmacro |eql_DF| (x y) `(EQL (the double-float ,x)
+(defmacro |eql_DF| (x y) `(= (the double-float ,x)
                                              (the double-float ,y)))
 (defmacro |expt_DF_I| (x y) `(EXPT (the double-float ,x)
                                  (the integer ,y)))
