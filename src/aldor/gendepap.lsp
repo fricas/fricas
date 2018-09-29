@@ -287,6 +287,7 @@
         ((eq tag '|Extend|)     (find-deps-extend   e args))
         ((eq tag '|For|)        (find-deps-for      e args))
         ((eq tag '|Foreign|)    (find-deps-foreign  e args))
+        ((eq tag '|ForeignImport|)    (find-deps-foreign  e args))
         ((eq tag '|Generate|)   (find-deps-generate e args))
         ((eq tag '|Has|)        (find-deps-has      e args))
         ((eq tag '|If|)         (find-deps-if       e args))
