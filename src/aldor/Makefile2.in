@@ -1,5 +1,7 @@
 VPATH=@srcdir@
 ALDOR=@ALDOR@
+ALDOR_FOREIGNSTYLE=|@ALDOR_foreignStyle@|
+ALDOR_CONDITIONALCAST=@ALDOR_conditionalCast@
 
 GENAX=@srcdir@/gendepap.lsp
 include @srcdir@/aldor.mk
@@ -26,6 +28,8 @@ $(patsubst %,ap/%.ap,$(AXIOM_CLIQUES)): ap/%.ap: ap/%.lsp tmp/.dir
 
 ap/%.lsp:
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))' >> $@
+	echo ')lisp (|setConditionalCast| $(ALDOR_CONDITIONALCAST))' >> $@
 	echo ')lisp (generate-ax-file "$*" (quote ($(filter-out init_%, $(MEMBERS_$*)))) (quote ($(patsubst %,|%|,$(filter init_%, $(MEMBERS_$*))))))' >> $@
 
 .PHONY: all-ap
