@@ -811,6 +811,25 @@ AS_IF([test x"$BUILD_ALDOR_INTERFACE" = xyes], [
 AC_SUBST(ALDOR_datadir)
 AC_SUBST(ALDOR)
 
+AS_IF([test x"$BUILD_ALDOR_INTERFACE" = xyes], [
+    ## Check how foreign imports are mapped to syntax
+    AC_MSG_CHECKING([Aldor foreign style])
+    echo 'import foo: X from Foreign C' > tmp.as
+    AS_IF([${ALDOR} -Fap tmp.as > /dev/null 2>&1],
+          [ALDOR_foreignStyle=Foreign
+           ALDOR_conditionalCast=T
+           if grep -q 'ForeignImport' tmp.ap;
+	   then
+	       ALDOR_foreignStyle=ForeignImport
+	       ALDOR_conditionalCast=NIL
+	   fi;
+           AC_MSG_RESULT([$ALDOR_foreignStyle])],
+	  [AC_MSG_ERROR([Failed to test aldor foreign syntax])])
+    ])
+
+AC_SUBST(ALDOR_foreignStyle)
+AC_SUBST(ALDOR_conditionalCast)
+
 ###################################################################
 # The installation is currently not done by recursively calling
 # install in the src subdirectories, so we have to hardcode the
