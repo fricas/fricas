@@ -299,7 +299,7 @@ static void
 readTitleBarImages(void)
 {
     int w, h;
-    char filename[128];
+    char filename[2048];
     char *fricas_env_var = NULL;
 
     fricas_env_var = getenv("AXIOM");
