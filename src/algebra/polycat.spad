@@ -688,16 +688,37 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
                     )$PatternMatchPolynomialCategory(Float, E, VarSet, R, %)
 
     if R has Ring then
+      RCX ==> Record(var : VarSet, exponent : NonNegativeInteger)
+      -- Must agree with 'patternMatch' in PatternMatchPolynomialCategory
+      -- so that x converted to pattern matches itself
+      conv_def(x, p_type) ==>
+          (r := retractIfCan(x)@Union(R, "failed")) case R =>
+              convert(r::R)
+          (vu := retractIfCan(x)@Union(VarSet, "failed")) case VarSet =>
+              convert(vu::VarSet)
+          (ex := isExpt x) case RCX =>
+              exr := ex::RCX
+              convert(exr.var)^(exr.exponent)
+          (lx := isTimes x) case List(%) =>
+              res : p_type := 1
+              for tx in reverse(lx::List(%)) repeat
+                  res := convert(tx)*res
+              res
+          (lx := isPlus x) case List(%) =>
+              res : p_type := 0
+              for mx in reverse(lx::List(%)) repeat
+                  res := convert(mx) + res
+              res
+          error "conv_def: impossible"
+
       if (R has ConvertibleTo Pattern Integer) and
             (VarSet has ConvertibleTo Pattern Integer) then
           convert(x : %) : Pattern(Integer) ==
-              map(convert, convert, x
-                )$PolynomialCategoryLifting(E, VarSet, R, %, Pattern Integer)
+              conv_def(x, Pattern(Integer))
       if (R has ConvertibleTo Pattern Float) and
             (VarSet has ConvertibleTo Pattern Float) then
           convert(x : %) : Pattern(Float) ==
-              map(convert, convert, x
-                )$PolynomialCategoryLifting(E, VarSet, R, %, Pattern Float)
+              conv_def(x, Pattern(Float))
     if (R has ConvertibleTo InputForm) and
        (VarSet has ConvertibleTo InputForm) then
          convert(p : %) : InputForm ==
