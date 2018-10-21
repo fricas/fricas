@@ -150,7 +150,7 @@ issue_dependent_commands(HyperDocPage *page, TextNode *command,int type)
                                           depend->spadcom->type);
                         while (!gIsEndOfOutput)
                             pause();
-                        sleep(1);
+                        fricas_sleep(100);
                     }
                 }
 }
@@ -216,7 +216,7 @@ start_user_buffer(HyperDocPage *page)
          */
     }
     accept_menu_server_connection(page);
-    sleep(2);
+    fricas_sleep(100);
 }
 
 /* Clears the execution marks in a hash table when a buffer has been killed */
