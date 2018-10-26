@@ -557,18 +557,6 @@ flip_canonical(int chann)
     Cursor_shape(2);
 }
 
-void
-etc_get_next_line(char * line,int * nr,int  fd)
-{
-  *nr = read(fd, line, 1024);
-  if(*nr == -1) {
-    perror("Reading /etc/master");
-  }
-  if(*nr == 0) {
-    fprintf(stderr, "Not found \n");
-  }
-}
-
 #define etc_whitespace(c) ((c == ' ' || c == '\t')?(1):(0))
 
 
