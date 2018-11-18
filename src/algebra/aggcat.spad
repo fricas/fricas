@@ -1054,13 +1054,14 @@ TableAggregate(Key : Type, Entry : Type) : Category ==
 ++ a directed graph containing values of type S.
 ++ Recursively, a recursive aggregate is either empty or a {\em node}
 ++ consisting of a \spadfun{value} from S and 0 or more \spadfun{children}
-++ which are recursive aggregates.
+++ which are also nodes.
 ++ A node with no children is called a \spadfun{leaf} node.
 ++ A recursive aggregate may be cyclic for which some operations as noted
 ++ may go into an infinite loop.
 RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
    children : % -> List %
      ++ children(u) returns a list of the children of aggregate u.
+     ++ Error: if u is empty.
    -- should be % -> %* and also needs children: % -> Iterator(S, S)
    nodes : % -> List %
      ++ nodes(u) returns a list of all of the nodes of aggregate u.
@@ -1170,7 +1171,7 @@ BinaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
        concat(nodes left x, concat(x, nodes right x))
 
    children x ==
-       empty? x => empty()
+       empty? x => error "children: argument is empty"
        empty? left x =>
            empty? right x => empty()
            [right x]
@@ -1299,7 +1300,6 @@ DoublyLinkedAggregate(S : Type) : Category == RecursiveAggregate S with
 ++ A node with one children models a non-empty list, with the
 ++ \spadfun{value} of the list designating the head, or \spadfun{first}, of the
 ++ list, and the child designating the tail, or \spadfun{rest}, of the list.
-++ A node with no child then designates the empty list.
 ++ Since these aggregates are recursive aggregates, they may be cyclic.
 UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
    concat : (%, %) -> %
@@ -1421,7 +1421,8 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       reverse! l
 
   children x ==
-      empty? x => empty()
+      empty? x => error "children: argument is empty"
+      empty? rest x => empty()
       [rest x]
 
   leaf? x ==
