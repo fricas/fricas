@@ -1104,8 +1104,12 @@ RecursiveAggregate(S : Type) : Category == HomogeneousAggregate(S) with
        empty? x => false
        empty? children x
 
+   nodes x ==
+       empty? x => empty()
+       concat(x, concat [nodes y for y in children x])
+
    leaves x ==
-       empty? x => empty()$List(S)
+       empty? x => empty()
        leaf? x => [value x]
        concat [leaves y for y in children x]
 
@@ -1424,6 +1428,10 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       empty? x => error "children: argument is empty"
       empty? rest x => empty()
       [rest x]
+
+  leaves x ==
+      empty? x => empty()
+      [last x]
 
   leaf? x ==
       empty? x => false
