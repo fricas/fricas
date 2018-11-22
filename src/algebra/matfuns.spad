@@ -15,7 +15,7 @@
 ++   \spad{MatrixCategory}
 InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
              Exports == Implementation where
-  R   : Field
+  R   : DivisionRing
   Row : FiniteLinearAggregate R
   Col : FiniteLinearAggregate R
   M   : MatrixCategory(R, Row, Col)
@@ -33,14 +33,15 @@ InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
       nullSpace : M -> List Col
         ++ \spad{nullSpace(m)} returns a basis for the null space of the
         ++ matrix m.
-    determinant : M -> R
-      ++ \spad{determinant(m)} returns the determinant of the matrix m.
-      ++ an error message is returned if the matrix is not square.
-    generalizedInverse : M -> M
-      ++ \spad{generalizedInverse(m)} returns the generalized (Moore--Penrose)
-      ++ inverse of the matrix m, i.e. the matrix h such that
-      ++ m*h*m=h, h*m*h=m, m*h and h*m are both symmetric matrices.
-    inverse : M -> Union(M,"failed")
+    if R has Field then
+      determinant : M -> R
+        ++ \spad{determinant(m)} returns the determinant of the matrix m.
+        ++ an error message is returned if the matrix is not square.
+      generalizedInverse : M -> M
+        ++ \spad{generalizedInverse(m)} returns the generalized
+        ++ (Moore--Penrose) inverse of the matrix m, i.e. the matrix h such
+        ++ that m*h*m=h, h*m*h=m, m*h and h*m are both symmetric matrices.
+    inverse : M -> Union(M, "failed")
       ++ \spad{inverse(m)} returns the inverse of the matrix m.
       ++ If the matrix is not invertible, "failed" is returned.
       ++ Error: if the matrix is not square.
@@ -220,35 +221,28 @@ InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
 
     nullity x == (ncols x - rank x)::NonNegativeInteger
 
-    generalizedInverse(x) ==
-      SUP := SparseUnivariatePolynomial R
-      FSUP := Fraction SUP
-      VFSUP := Vector FSUP
-      MATCAT2 := MatrixCategoryFunctions2(R, Row, Col, M,
-                   FSUP, VFSUP, VFSUP, Matrix FSUP)
-      MATCAT22 := MatrixCategoryFunctions2(FSUP, VFSUP, VFSUP, Matrix FSUP,
-                   R, Row, Col, M)
-      y := map((r1 : R) : FSUP +-> coerce(coerce(r1)$SUP)$FSUP, x)$MATCAT2
-      ty := transpose y
-      yy := ty*y
-      nc := ncols yy
-      var := monomial(1, 1)$SUP ::(Fraction SUP)
-      yy := inverse(yy+scalarMatrix(ncols yy, var))::Matrix(FSUP)*ty
-      map((z1 : FSUP) : R +-> elt(z1, 0), yy)$MATCAT22
+    if R has Field then
+        generalizedInverse(x) ==
+            SUP := SparseUnivariatePolynomial R
+            FSUP := Fraction SUP
+            VFSUP := Vector FSUP
+            MATCAT2 := MatrixCategoryFunctions2(R, Row, Col, M,
+                         FSUP, VFSUP, VFSUP, Matrix FSUP)
+            MATCAT22 := MatrixCategoryFunctions2(FSUP, VFSUP, VFSUP,
+                                                 Matrix FSUP, R, Row, Col, M)
+            y := map((r1 : R) : FSUP +-> coerce(
+                           coerce(r1)$SUP)$FSUP, x)$MATCAT2
+            ty := transpose y
+            yy := ty*y
+            nc := ncols yy
+            var := monomial(1, 1)$SUP ::(Fraction SUP)
+            yy := inverse(yy+scalarMatrix(ncols yy, var))::Matrix(FSUP)*ty
+            map((z1 : FSUP) : R +-> elt(z1, 0), yy)$MATCAT22
 
-    inverse x ==
+    inv_gen(x : M) : Union(M, "failed") ==
       (ndim := nrows x) ~= (ncols x) =>
         error "inverse: matrix must be square"
       ndim = 0 => x
-      ndim = 2 =>
-         ans2 : M := zero(ndim, ndim)
-         zero?(det :=  x(1,1)*x(2,2)-x(1,2)*x(2,1)) => "failed"
-         detinv := inv det
-         ans2(1, 1) := x(2, 2)*detinv
-         ans2(1, 2) := -x(1, 2)*detinv
-         ans2(2, 1) := -x(2, 1)*detinv
-         ans2(2, 2) := x(1, 1)*detinv
-         ans2
       AB : M := zero(ndim, ndim + ndim)
       minR := minRowIndex x; maxR := maxRowIndex x
       minC := minColIndex x; maxC := maxColIndex x
@@ -261,6 +255,24 @@ InnerMatrixLinearAlgebraFunctions(R, Row, Col, M) : _
       AB := rowEchelon AB
       elt(AB,kmax,lmax) = 0 => "failed"
       subMatrix(AB, kmin, kmax, lmin + ndim, lmax + ndim)
+
+    if R has Field and M is Matrix(R) then
+
+        inverse x ==
+            nrows(x) = 2 and ncols(x) = 2 =>
+                ans2 : M := zero(2, 2)
+                zero?(det :=  x(1,1)*x(2,2)-x(1,2)*x(2,1)) => "failed"
+                detinv := inv det
+                ans2(1, 1) := x(2, 2)*detinv
+                ans2(1, 2) := -x(1, 2)*detinv
+                ans2(2, 1) := -x(2, 1)*detinv
+                ans2(2, 2) := x(1, 1)*detinv
+                ans2
+            inv_gen(x)
+
+    else
+
+        inverse x == inv_gen(x)
 
 )abbrev package MATCAT2 MatrixCategoryFunctions2
 ++ Author: Clifton J. Williamson
