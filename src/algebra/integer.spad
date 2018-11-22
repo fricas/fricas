@@ -59,7 +59,6 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
       ZP ==> SparseUnivariatePolynomial %
       ZZP ==> SparseUnivariatePolynomial Integer
       x, y : %
-      n : NonNegativeInteger
 
       writeOMInt(dev : OpenMathDevice, x : %) : Void ==
         if x < 0 then
@@ -87,6 +86,7 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
       dec  x  == x - 1
       hashUpdate!(hs, s) == update!(hs, SXHASH(s)$Lisp)$HashState
       negative? x == MINUSP(x)$Lisp
+      positive? x == PLUSP(x)$Lisp
       coerce(x) : OutputForm == outputForm(x pretend Integer)
       coerce(m : Integer) : % == m pretend %
       convert(x : %) : Integer == x pretend Integer
@@ -125,15 +125,21 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
       random(x) == RANDOM(x)$Lisp
       x = y == EQL(x, y)$Lisp
       x < y == (x<y)$Lisp
+      x > y == (x>y)$Lisp
       -- critical for coercions to NonNegativeInteger
       x >= y == (x >= y)$Lisp
+      x <= y == (x <= y)$Lisp
       - x == (-x)$Lisp
       x + y == (x+y)$Lisp
       x - y == (x-y)$Lisp
       x * y == (x*y)$Lisp
       (m : Integer) * (y : %) == (m*y)$Lisp -- for subsumption problem
-      x ^ n == EXPT(x, n)$Lisp
+      (m : PositiveInteger) * (y : %) == (m*y)$Lisp
+      (m : NonNegativeInteger) * (y : %) == (m*y)$Lisp
+      (x : %) ^ (n : NonNegativeInteger) == EXPT(x, n)$Lisp
+      (x : %) ^ (n : PositiveInteger) == EXPT(x, n)$Lisp
       odd? x == ODDP(x)$Lisp
+      even? x == EVENP(x)$Lisp
       max(x, y) == MAX(x, y)$Lisp
       min(x, y) == MIN(x, y)$Lisp
       divide(x, y) == DIVIDE2(x, y)$Lisp
@@ -195,6 +201,17 @@ Integer : Join(IntegerNumberSystem, LinearlyExplicitOver Integer,
             if odd? n then y := mulmod(y, z, p)
             zero?(n := shift(n, -1)) => return y
             z := mulmod(z, z, p)
+
+      -- copied from IntegerNumberSystem to get inline optimization
+      symmetricRemainder(x, n) ==
+          r := x rem n
+          r = 0 => 0
+          if n < 0 then n := -n
+          r > 0 =>
+              2 * r > n => r - n
+              r
+          2 * r + n <= 0 => r + n
+          r
 
 )abbrev domain NNI NonNegativeInteger
 ++ Author:
