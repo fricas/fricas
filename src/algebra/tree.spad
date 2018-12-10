@@ -20,20 +20,7 @@ Tree(S : SetCategory) : T==C where
        ++ tree(ls) creates a tree from a list of elements of s.
      tree : S -> %
        ++ tree(nd) creates a tree with value nd, and no children.
-     cyclic? : % -> Boolean
-       ++ cyclic?(t) tests if t is a cyclic tree.
-     cyclicCopy : % -> %
-      ++ cyclicCopy(l) makes a copy of a (possibly) cyclic tree l.
-     cyclicEntries :    % -> List %
-       ++ cyclicEntries(t) returns a list of top-level cycles in tree t.
-     cyclicEqual? : (%, %) -> Boolean
-       ++ cyclicEqual?(t1, t2) tests if two cyclic trees have
-       ++ the same structure.
-     cyclicParents : % -> List %
-       ++ cyclicParents(t) returns a list of cycles that are parents of t.
  C== add
-    cycleTreeMax ==> 5
-
     Rep := Union(node:Record(value: S, args: List %),empty:"empty")
 
     import from Record(value: S, args: List %)
@@ -118,178 +105,23 @@ Tree(S : SetCategory) : T==C where
           s := hashUpdate!(s, subt)
       s
 
-    ---Functions that guard against cycles: =, #, copy-------------
+    t1 = t2 ==
+        empty? t1 => empty? t2
+        value t1 = value t2 and children t1 = children t2
 
-    -----> =
-    equal? : (%, %, %, %, Integer) -> Boolean
+    # t ==
+        empty? t => 0
+        1 + "+"/[# c for c in children t]
 
-    t1 = t2 == equal?(t1, t2, t1, t2, 0)
+    copy t ==
+        empty? t => empty()
+        tree(value t, [copy c for c in children t])
 
-    equal?(t1, t2, ot1, ot2, k) ==
-      k = cycleTreeMax and (cyclic? ot1 or cyclic? ot2) =>
-        error "use cyclicEqual? to test equality on cyclic trees"
-      t1 case empty => t2 case empty
-      t2 case empty => false
-      not (value t1 = value t2 and (c1 := children t1) = (c2 := children t2))
-          => false
-      for x in c1 for y in c2 | not equal?(x, y, ot1, ot2, k + 1) repeat
-          return false
-      true
-
-    -----> #
-    treeCount : (%, %, NonNegativeInteger) -> NonNegativeInteger
-    # t == treeCount(t, t, 0)
-    treeCount(t, origTree, k) ==
-      k = cycleTreeMax and cyclic? origTree =>
-        error "# is not defined on cyclic trees"
-      t case empty => 0
-      1 + +/[treeCount(c, origTree, k + 1) for c in children t]
-
-    -----> copy
-    copy1 : (%, %, Integer) -> %
-    copy t == copy1(t, t, 0)
-    copy1(t, origTree, k) ==
-      k = cycleTreeMax and cyclic? origTree =>
-        error "use cyclicCopy to copy a cyclic tree"
-      t case empty  => t
-      empty? children t => tree value t
-      tree(value t, [copy1(x, origTree, k + 1) for x in children t])
-
-    -----------Functions that allow cycles---------------
-    --local utility functions:
-    eqUnion : (List %, List %) -> List %
-    eqMember? : (%, List %) -> Boolean
-    eqMemberIndex : (%, List %, Integer) -> Integer
-    insert : (%, List %) -> List %
-
-    -----> coerce to OutputForm
-    multipleOverbar : (OutputForm, Integer, List %) -> OutputForm
-    coerce1 : (%, List %, List %) -> OutputForm
-
-    coerce(t : %) : OutputForm == coerce1(t, empty()$(List %), cyclicParents t)
-
-    coerce1(t, parents, pl) ==
-        t case empty => empty()@List(S)::OutputForm
-        eqMember?(t, parents) =>
-            multipleOverbar((message(".")), eqMemberIndex(t, pl,0),pl)
-        empty? children t => value t::OutputForm
+    coerce(t : %) : OutputForm ==
+        empty? t => empty()@List(S)::OutputForm
         nodeForm := (value t)::OutputForm
-        if (k := eqMemberIndex(t, pl, 0)) > 0 then
-            nodeForm := multipleOverbar(nodeForm, k, pl)
-        prefix(nodeForm,
-            [coerce1(br, cons(t, parents), pl) for br in children t])
-
-    multipleOverbar(x, k, pl) ==
-        k < 1 => x
-        #pl = 1 => overbar x
-        s : String := "abcdefghijklmnopqrstuvwxyz"
-        c := s.(1 + ((k - 1) rem 26))
-        overlabel(c::OutputForm, x)
-
-    -----> cyclic?
-    cyclic2? : (%, List %) -> Boolean
-
-    cyclic? t == cyclic2?(t, empty()$(List %))
-
-    cyclic2?(x, parents) ==
-      empty? x => false
-      eqMember?(x, parents) => true
-      for y in children x repeat
-        cyclic2?(y, cons(x, parents)) => return true
-      false
-
-    -----> cyclicCopy
-    cyclicCopy2 : (%, List %) -> %
-    copyCycle2 : (%, List %) -> %
-    copyCycle4 : (%, %, %, List %) -> %
-
-    cyclicCopy(t) == cyclicCopy2(t, cyclicEntries t)
-
-    cyclicCopy2(t, cycles) ==
-      eqMember?(t, cycles) => copyCycle2(t, cycles)
-      tree(value t, [cyclicCopy2(c, cycles) for c in children t])
-
-    copyCycle2(cycle, cycleList) ==
-      newCycle := tree(value cycle, [])
-      setchildren!(newCycle,
-        [copyCycle4(c, cycle, newCycle, cycleList) for c in children cycle])
-      newCycle
-
-    copyCycle4(t, cycle, newCycle, cycleList) ==
-      empty? cycle => empty()
-      eq?(t, cycle) => newCycle
-      eqMember?(t, cycleList) => copyCycle2(t, cycleList)
-      tree(value t,
-           [copyCycle4(c, cycle, newCycle, cycleList) for c in children t])
-
-    -----> cyclicEntries
-    cyclicEntries3 : (%, List %, List %) -> List %
-
-    cyclicEntries(t) == cyclicEntries3(t, empty()$(List %), empty()$(List %))
-
-    cyclicEntries3(t, parents, cl) ==
-      empty? t => cl
-      eqMember?(t, parents) => insert(t, cl)
-      parents := cons(t, parents)
-      for y in children t repeat
-        cl := cyclicEntries3(t, parents, cl)
-      cl
-
-    -----> cyclicEqual?
-    cyclicEqual4? : (%, %, List %, List %) -> Boolean
-
-    cyclicEqual?(t1, t2) ==
-      cp1 := cyclicParents t1
-      cp2 := cyclicParents t2
-      #cp1 ~= #cp2 or empty?(cp1) => t1 = t2
-      cyclicEqual4?(t1, t2, cp1, cp2)
-
-    cyclicEqual4?(t1, t2, cp1, cp2) ==
-      t1 case empty => t2 case empty
-      t2 case empty => false
-      0 ~= (k := eqMemberIndex(t1, cp1, 0)) => eq?(t2, cp2 . k)
-      value t1 ~= value t2 => false
-      for x in children t1 for y in children t2 _
-          | not cyclicEqual4?(x, y, cp1, cp2) repeat
-          return false
-      true
-
-    -----> cyclicParents t
-    cyclicParents3 : (%, List %, List %) -> List %
-
-    cyclicParents t == cyclicParents3(t, empty()$(List %), empty()$(List %))
-
-    cyclicParents3(x, parents, pl) ==
-      empty? x => pl
-      eqMember?(x, parents) =>
-        cycleMembers := [y for y in parents while not eq?(x, y)]
-        eqUnion(cons(x, cycleMembers), pl)
-      parents := cons(x, parents)
-      for y in children x repeat
-        pl := cyclicParents3(y, parents, pl)
-      pl
-
-    insert(x, l) ==
-      eqMember?(x, l) => l
-      cons(x, l)
-
-    eqMember?(y, l) ==
-      for x in l repeat eq?(x, y) => return true
-      false
-
-    eqMemberIndex(x, l, k) ==
-      empty?(l) => k
-      k := k + 1
-      eq?(x, first l) => k
-      eqMemberIndex(x, rest l, k)
-
-    eqUnion(u, v) ==
-      empty?(u) => v
-      x := first u
-      newV :=
-        eqMember?(x, v) => v
-        cons(x, v)
-      eqUnion(rest u, newV)
+        empty? children t => nodeForm
+        prefix(nodeForm, [coerce(c) for c in children t])
 
 )abbrev category BTCAT BinaryTreeCategory
 ++ Author: W. H. Burge
@@ -310,8 +142,6 @@ BinaryTreeCategory(S : SetCategory) : Category ==
      ++ node(l, v, r) creates a binary tree with value \spad{v},
      ++ left subtree \spad{l}, and right subtree \spad{r}.
  add
-     cycleTreeMax ==> 5
-
      copy t ==
        empty? t => empty()
        node(copy left t, value t, copy right t)
@@ -324,14 +154,11 @@ BinaryTreeCategory(S : SetCategory) : Category ==
          map!(f, left t)
          map!(f, right t)
          t
-     treeCount : (%, NonNegativeInteger) -> NonNegativeInteger
-     #t == treeCount(t, 0)
-     treeCount(t, k) ==
-         empty? t => k
-         k := k + 1
-         k = cycleTreeMax and cyclic? t => error "cyclic binary tree"
-         k := treeCount(left t, k)
-         treeCount(right t, k)
+
+     # t ==
+         empty? t => 0
+         1 + # left t + # right t
+
      distance1(t1 : %, t2 : %) : Integer ==
        t1 = t2 => 0
        empty? t2 => -1
