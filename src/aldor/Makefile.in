@@ -5,6 +5,7 @@
 VPATH=@srcdir@
 MAKEFLAGS += -Wwarn-undefined-variables
 ALDOR=@ALDOR@
+subdir=src/aldor/
 
 ###################################################################
 # WARNING: THE FOLLOWING DOCUMENTATION MIGHT BE INCORRECT.
@@ -182,13 +183,7 @@ subsetc.as: stub.as
 	tail -4 $< >> $@
 
 
-aldor_lang       = lang
-aldor_basics     = minimach boolean0
-aldor_extensions = axextend axlit
-# subsetc.as contains a definition for the SPAD builtin type
-# SubsetCategory.
-aldor_misc = subsetc
-aldor_srcs = $(aldor_lang) $(aldor_basics) $(aldor_extensions) $(aldor_misc)
+include $(srcdir)/aldor.mk
 
 aldor_dep_files = $(patsubst %,gendeps/%.dep,$(aldor_srcs))
 $(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.lst gendeps/.dir
@@ -250,6 +245,12 @@ cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
 al/libaxiom.al: cliques.mk al/.dir
 	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)"
 
+$(patsubst %,ao/%.ao,$(CLIQUES)): ao/%.ao: cliques.mk al/.dir
+	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)" $@
+
+$(patsubst %,ap/%.ap,$(CLIQUES)): ap/%.ap: cliques.mk al/.dir
+	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)" $@
+
 
 ###################################################################
 # Runtime - things required to run aldor files
@@ -301,3 +302,13 @@ install-runtimefiles: installdir-runtimefiles
 
 installdir-runtimefiles:
 	$(mkinstalldirs) '$(install_aldor_dir)/lib'
+
+Makefile2: $(srcdir)/Makefile2.in $(top_srcdir)/config/var-def.mk \
+	  $(top_srcdir)/config/setup-dep.mk \
+	  $(abs_top_builddir)/config.status
+	cd $(abs_top_builddir) && $(SHELL) ./config.status $(subdir)$@
+
+Makefile3: $(srcdir)/Makefile3.in $(top_srcdir)/config/var-def.mk \
+	  $(top_srcdir)/config/setup-dep.mk \
+	  $(abs_top_builddir)/config.status
+	cd $(abs_top_builddir) && $(SHELL) ./config.status $(subdir)$@
