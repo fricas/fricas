@@ -102,6 +102,13 @@ $literals  := nil
 
 spad2AxTranslatorAutoloadOnceTrigger any == true
 
+$foreignTag := 'Foreign
+setForeignStyle(tag) ==
+    $foreignTag := tag
+
+$conditionalCast := true
+setConditionalCast(flg) ==
+    $conditionalCast := flg
 
 $extendedDomains := nil
 
@@ -132,7 +139,7 @@ makeAxExportForm(filename, constructors) ==
   -- default body.
   if $defaultFlag then
      axForms :=
-        [['Foreign, ['Declare, 'dummyDefault, 'Exit], 'Lisp], :axForms]
+        [[$foreignTag, ['Declare, 'dummyDefault, 'Exit], 'Lisp], :axForms]
   axForms := APPEND(axDoLiterals(), axForms)
   axForm := ['Sequence, _
                ['Import, [], 'AxiomLib], ['Import, [], 'Boolean], :axForms]
@@ -280,7 +287,7 @@ axFormatType(typeform) ==
       ['Apply, 'FileCategory, axFormatType xx,
           ['PretendTo, axFormatType CADDR typeform, 'SetCategory]]
   typeform is [op,:args] =>
-      $pretendFlag and constructor? op and
+      $conditionalCast and $pretendFlag and constructor? op and
         GETDATABASE(op,'CONSTRUCTORMODEMAP) is [[.,target,:argtypes],.] =>
           ['Apply, op, :[pretendTo(a, t) for a in args for t in argtypes]]
       -- $augmentedArgs is non-empty if we are inside a "if A has T then ..."
@@ -306,6 +313,7 @@ pretendTo(a, t) == ['PretendTo, axFormatType a, axFormatType t]
 -- We could do a bit better, because we actually store some augmented type
 -- information for % in $augmentedArgs. But not yet.
 augmentTo(a, t) ==
+  not $conditionalCast => axFormatType a
   a = '$ => pretendTo(a, t)
   ax := axFormatType a -- a looks like |#i|
   not(null(kv:=ASSOC(a,$augmentedArgs))) =>
@@ -367,9 +375,12 @@ axFormatPred pred ==
       ['Test,['Has,name, ftype]]
    axArglist := [axFormatPred arg for arg in args]
    op = 'AND => ['And,:axArglist]
+   op = 'and => ['And,:axArglist]
    op = 'OR  => ['Or,:axArglist]
+   op = 'or  => ['Or,:axArglist]
    op = 'NOT => ['Not,:axArglist]
-   error "unknown predicate"
+   op = 'not => ['Not,:axArglist]
+   error LIST("unknown predicate", pred)
 
 
 -- This function is where we grow $augmentedType.
@@ -446,13 +457,13 @@ addDefaults(catname, withform) ==
   withform isnt ['With, joins, ['Sequence,: oplist]] =>
      error "bad category body"
   null(defaults := getDefaultingOps catname) => withform
-  defaultdefs := [makeDefaultDef(decl) for decl in defaults]
+  defaultdefs := [decl for decl in defaults]
   ['With, joins,
      ['Sequence, :oplist, ['Default, ['Sequence,: defaultdefs]]]]
 
 makeDefaultDef(decl) ==
   decl isnt ['Declare, op, type] =>
-       error "bad default definition"
+       error LIST("bad default definition", decl)
   $defaultFlag := true
   type is ['Apply, "->", args, result] =>
        ['Define, decl, ['Lambda, makeDefaultArgs args, result,
@@ -480,15 +491,34 @@ getDefaultingOps catname ==
       curIndex := get1defaultOp(op,curIndex)
   $pretendFlag : local := true
   catops := GETDATABASE(catname, 'OPERATIONALIST)
-  [axFormatDefaultOpSig(op,sig,catops) for opsig in $opList | opsig is [op,sig]]
+  catdefops := GETDATABASE(name, 'OPERATIONALIST)
+  [axFormatDefaultOpSig(op,sig,catops,catdefops) for opsig in $opList | opsig is [op,sig]]
 
-axFormatDefaultOpSig(op, sig, catops) ==
-  #sig > 1 => axFormatOpSig(op,sig)
-  nsig := substitute('$, '($), sig) -- dcSig listifies '$ ??
-  (catsigs := LASSOC(op, catops)) and
-    (catsig := assoc(nsig, catsigs)) and last(catsig) = 'CONST =>
-       axFormatConstantOp(op, sig)
-  axFormatOpSig(op,sig)
+axFormatDefaultOpSig(op, sig, catops,catdefops) ==
+  defsigs := LASSOC(op, catdefops)
+  --nsig := sig -- substitute('$, '($), sig) -- dcSig listifies '$ ??
+  catsigs := LASSOC(op, catops)
+  nsig2 := axCatSignature(sig)
+  theOp := LASSOC(nsig2, catsigs)
+  cond := axFormatPred NTH(1, theOp)
+  if cond = "T" then
+      cond := nil -- cond of true is the same as unconditional
+  #sig > 1 => axFormatCond(cond, makeDefaultDef(axFormatOpSig(op,sig)))
+  catsigs and
+    (catsig := assoc(nsig2, catsigs)) and last(catsig) = 'CONST =>
+       axFormatCond(cond, makeDefaultDef(axFormatConstantOp(op, sig)))
+  axFormatCond(cond, makeDefaultDef(axFormatOpSig(op, sig)))
+
+axCatSignature(sig) ==
+    ATOM sig => sig
+    sig = '($) => '$
+    CAR(sig) = "local" => CADR(sig)
+    CAR(sig) = "QUOTE" => CADR(sig)
+    [axCatSignature elt for elt in sig]
+
+axFormatCond(cond, inner) ==
+  NOT cond => inner
+  ['If, cond, inner, []]
 
 get1defaultOp(op,index) ==
   numvec := getCodeVector()

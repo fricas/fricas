@@ -5,6 +5,7 @@
 VPATH=@srcdir@
 MAKEFLAGS += -Wwarn-undefined-variables
 ALDOR=@ALDOR@
+ALDOR_FOREIGNSTYLE=|@ALDOR_foreignStyle@|
 subdir=src/aldor/
 
 ###################################################################
@@ -116,6 +117,7 @@ easylist.lsp: mkeasy.lsp initlist.ap tmp/.dir
 
 mkeasy.lsp:
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-easy "easylist.lsp")' >> $@
 	echo ')lisp (quit)' >> $@
 
@@ -133,6 +135,7 @@ initlist.lst: mkinit.lsp easylist.lsp $(patsubst %,%/.dir,$(geninit_dirs))
 # does not work in ecl based FriCAS.
 mkinit.lsp:
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-init "initlist.lst")' >> $@
 	echo ')lisp (quit)' >> $@
 
@@ -148,6 +151,7 @@ $(domain_dep_files): gendeps/%.dep: tmp/dep_%.lsp tmp/.dir initlist.lst
 domain_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(domains))
 $(domain_lsp_files): tmp/dep_%.lsp: tmp/.dir gendeps/.dir
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-deps (quote ($*)))' >> $@
 	echo ')lisp (quit)' >> $@
 
@@ -194,6 +198,7 @@ $(aldor_dep_files): gendeps/%.dep: tmp/dep_%.lsp initlist.lst gendeps/.dir
 aldor_lsp_files = $(patsubst %,tmp/dep_%.lsp,$(aldor_srcs))
 $(aldor_lsp_files): tmp/dep_%.lsp: ap/%.ap tmp/.dir
 	echo ')lisp (load "$(GENAX)")' > $@
+	echo ')lisp (|setForeignStyle| (quote $(ALDOR_FOREIGNSTYLE)))'
 	echo ')lisp (generate-deps-from-ap-files (quote (|$*|)))' >> $@
 	echo ')lisp (quit)' >> $@
 
