@@ -626,6 +626,8 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 emacsdatadir
 BUILD_ALDOR_INTERFACE
+ALDOR_conditionalCast
+ALDOR_foreignStyle
 ALDOR
 ALDOR_datadir
 sys_ALDOR
@@ -6474,6 +6476,31 @@ fi
 else
   as_fn_error $? "You need a newer version of Aldor" "$LINENO" 5
 
+fi
+
+fi
+
+
+
+
+if test x"$BUILD_ALDOR_INTERFACE" = xyes; then :
+
+    ## Check how foreign imports are mapped to syntax
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Aldor foreign style" >&5
+$as_echo_n "checking Aldor foreign style... " >&6; }
+    echo 'import foo: X from Foreign C' > tmp.as
+    if ${ALDOR} -Fap tmp.as > /dev/null 2>&1; then :
+  ALDOR_foreignStyle=Foreign
+           ALDOR_conditionalCast=T
+           if grep -q 'ForeignImport' tmp.ap;
+	   then
+	       ALDOR_foreignStyle=ForeignImport
+	       ALDOR_conditionalCast=NIL
+	   fi;
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ALDOR_foreignStyle" >&5
+$as_echo "$ALDOR_foreignStyle" >&6; }
+else
+  as_fn_error $? "Failed to test aldor foreign syntax" "$LINENO" 5
 fi
 
 fi
