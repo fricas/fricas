@@ -5,7 +5,6 @@ AC_INIT([FriCAS], [2018-03-10],
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([config/fricas_c_macros.h])
-# AM_INIT_AUTOMAKE([foreign])
 AC_PREREQ([2.59])
 
 AC_CONFIG_SRCDIR(src/Makefile.in)
@@ -780,6 +779,13 @@ AC_ARG_ENABLE(aldor,
   )]
 )
 
+AC_ARG_WITH([aldor-binary],
+    [AS_HELP_STRING([--with-aldor-binary=PATH],[use the aldor binary given])],
+    [AS_IF([test -x $withval],[
+        ALDOR_binary=$withval],
+       [ALDOR_binary=])],
+    [ALDOR_binary=])
+
 ###################################################################
 ## If one of the Aldor related tests fail we should warn and
 ## not build the Aldor interface.
@@ -787,12 +793,15 @@ AC_ARG_ENABLE(aldor,
 ## open-source version of Aldor.
 AS_IF([test x"$BUILD_ALDOR_INTERFACE" = xyes], [
   ## check whether Aldor is available
-  AC_CHECK_PROGS([ALDOR], [aldor])
-  AS_IF([test -z $ALDOR], [
+  AC_CHECK_PROGS([sys_ALDOR], [aldor])
+  AS_IF([test -z "$sys_ALDOR" -a -z "$ALDOR_binary"], [
     AC_MSG_WARN([Aldor not found.])
     AC_MSG_ERROR([prerequisites for Aldor interface missing])
     BUILD_ALDOR_INTERFACE=no
   ])
+  AS_IF([test -z $ALDOR_binary],[
+      ALDOR=$sys_ALDOR],
+      [ALDOR=$ALDOR_binary])
   AS_IF([ALDOR_datadir=`${ALDOR} --print-confvar datadir`],
     [],
     [AC_MSG_ERROR([You need a newer version of Aldor])]
@@ -800,6 +809,7 @@ AS_IF([test x"$BUILD_ALDOR_INTERFACE" = xyes], [
 ])
 
 AC_SUBST(ALDOR_datadir)
+AC_SUBST(ALDOR)
 
 ###################################################################
 # The installation is currently not done by recursively calling
