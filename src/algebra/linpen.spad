@@ -1,0 +1,1317 @@
+-- Linear Multivariate Matrix Pencils in FriCAS
+-- Created: Mit 2016-02-03 17:28
+-- Changed: Don 2016-04-28 18:15
+-- Changed: Fre 2016-08-19 17:46
+-- Changed: Mon 2017-01-30 14:50
+-- Changed: Sam 2018-03-31 18:49
+-- Changed: Sam 2018-09-01 10:36
+
+)abbrev domain LINPEN LinearMultivariateMatrixPencil
+++ Author: Konrad Schrempf <schrempf@math.tugraz.at>
+++ Date Created: Mit 2016-02-03 17:20
+++ Date Changed: Sam 2018-09-01 10:37
+++ Basic Functions:
+++ Related Constructors: Matrix
+++ Also See: FreeDivisionAlgebra
+++ AMS Classifications:
+++ Keywords: 
+++ References: 
+++ Description:
+
+LinearMultivariateMatrixPencil(R) : Exports == Implementation where
+  R : Ring
+  
+  NNI ==> NonNegativeInteger
+  OF ==> OutputForm
+  G ==> Polynomial(R)
+  EQG ==> Equation(G)
+  FG ==> Fraction(G)
+  EQFG ==> Equation(FG)
+
+  Exports == with
+    -- Implementation (basics)
+    -- Changed: Mit 2018-08-15 19:27
+
+    qnew : (NNI, NNI, NNI) -> %
+      ++ \spad{qnew(m, n, l)} creates an empty linear pencil
+      ++ with l matrices with m rows and n columns.
+    copy : (%) -> %
+      ++ \spad{copy(p)} returns a copy of the linear pencil p.
+    append : (%, NNI) -> %
+      ++ \spad{append(p, l)} appends l matrices to the linear pencil.
+    append! : (%, NNI) -> %
+      ++ \spad{append!(p, l)} appends l matrices to the linear pencil.
+
+    coerce : (%) -> OutputForm
+      ++ \spad{coerce(p)} prints the linear pencil p in list form.
+
+    _= : (%, %) -> Boolean
+      ++ \spad{p = q} entrywise equality.
+
+    equal? : (%, List(NNI), %, List(NNI)) -> Boolean
+      ++ \spad{equal?(p, pos_p, q, pos_q)} checks, if the matrices
+      ++ pos_p in p are equal to the pos_q in q. Not spacified
+      ++ matrices have to be zero.
+
+    qequal? : (%, List(NNI), %, List(NNI), NNI) -> Boolean
+      ++ \spad{qequal?(p, pos_p, q, pos_q, offset)} checks, if the
+      ++ matrices are equal starting at offset.
+
+    nrows : (%) -> NNI
+      ++ \spad{nrows(p)} returns the number of rows.
+    ncols : (%) -> NNI
+      ++ \spad{ncols(p)} returns the number of columns.
+    nelem : (%) -> NNI
+      ++ \spad{nelem(p)} returns the number of elements.
+
+    qzero? : (%, NNI, NNI) -> Boolean
+      ++ \spad{qzero?(p, i, j)} checks if all the entries (i,j)
+      ++ of the linear pencil p are zero. (no index check)
+    qzero? : (%, NNI, NNI, NNI, NNI) -> Boolean
+      ++ \spad{qzero?(p, i_min, i_max, j_min, j_max)} checks if
+      ++ the specified block of the linear pencil p is zero for
+      ++ all matrices. (no index check)
+    qzero? : (%, NNI, NNI, NNI, NNI, NNI) -> Boolean
+      ++ \spad{qzero?(p, i_min, i_max, j_min, j_max, l)} checks if
+      ++ the specified block of matrix l of the linear pencil p is
+      ++ zero (no index check)
+    qsemizero? : (%, NNI, NNI, NNI, NNI, NNI) -> Boolean
+      ++ \spad{qsemizero?(p, i_min, i_max, j_min, j_max, l)}
+      ++ checks, if the specified submatrix is zero except
+      ++ for matrix l (no index check).
+
+    zero? : (%, NNI, NNI) -> Boolean
+      ++ \spad{zero?(p, i, j)} checks if all the entries (i,j)
+      ++ of the linear pencil p are zero.
+
+    -- Declaration (elementary)
+    -- Changed: Mit 2018-08-15 19:24
+
+    diagonal? : (%, NNI) -> Boolean
+      ++ \spad{diagonal?(p, l)} is the matrix l diagonal?
+    qdiagonal? : (%, NNI, NNI, NNI) -> Boolean
+      ++ \spad{qdiagonal?(p, k_min, k_max, l)} is the matrix l diagonal
+      ++ between k_min and k_max? (no range check)
+    diagonal : (%, NNI) -> List(R)
+      ++ \spad{diagonal(p, l)} returns the entries along the
+      ++ diagonal in a list.
+    qdiagonal : (%, NNI, NNI, NNI) -> List(R)
+      ++ \spad{qdiagonal(p, k_min, k_max, l)} returns the entries along
+      ++ the diagonal between k_min and k_max. (no range check)
+
+    uppertriangular? : (%, NNI) -> Boolean
+      ++ \spad{uppertriangular?(p, l)} is the matrix l upper
+      ++ triangular?
+    quppertriangular? : (%, NNI, NNI, NNI) -> Boolean
+      ++ \spad{quppertriangular?(p, k_min, k_max, l)} is the matrix l
+      ++ upper triangular with respect to the specified block?
+      ++ (no range check)
+    qnilpotent? : (%, NNI, NNI, NNI) -> Boolean
+      ++ \spad{qnilpotent?(p, k_min, k_max, l)} ist the matrix l
+      ++ nilpotent with respect to the specified block?
+      ++ (no range check)
+
+    qcolumnIndices : (%, NNI, NNI) -> List(List(NNI))
+      ++ \spad{qcolumnIndices(p, off, l)} returns a list of
+      ++ column indices for nonzero elements in matrix l for
+      ++ every row starting at the specified offset.
+      ++ (no range check)
+    qcolumnIndices : (%, NNI, NNI, NNI) -> List(NNI)
+      ++ \spad{qcolumnIndices(p, off, i, l)} returns a list of
+      ++ column indices for nonzero elements in the specified row
+      ++ of matrix l for starting at the specified offset.
+      ++ (no range check)
+    qcolumnIndices : (%, NNI) -> List(List(NNI))
+      ++ \spad{qcolumnIndices(p, off)} returns a list of
+      ++ column indices for nozero elements for every row
+      ++ starting at the specified offset. (no range check)
+    qrowIndices : (%, NNI, NNI, NNI) -> List(NNI)
+      ++ \spad{qrowIndices(p, off, j, l)} returns a list
+      ++ of row indices for nozero elements in column j in
+      ++ matrix l (no range check)
+    qrowIndices : (%, NNI, NNI) -> List(List(NNI))
+      ++ \spad{qrowIndices(p, off, l)} returns a list of
+      ++ row indices for nonzero elements in matrix l
+      ++ for every column starting at the specified offset.
+      ++ (no range check)
+    qrowIndices : (%, NNI) -> List(List(NNI))
+      ++ \spad{qrowIndices(p, off)} returns a list of
+      ++ row indices for nonzero elements for every column
+      ++ starting at the specified offset. (no range check)
+
+    qelt : (%, NNI, NNI, NNI) -> R
+      ++ \spad{elt(p, i, j, l)} returns the element (i,j) in
+      ++ matrix l of the linear pencil p (no index-check).
+    elt : (%, NNI, NNI, NNI) -> R
+      ++ \spad{elt(p, i, j, l)} returns the element (i,j) in
+      ++ matrix l of the linear pencil p.
+    qelt : (%, NNI, NNI) -> List(R)
+      ++ \spad{elt(p, i, j)} returns the elements (i,j) from
+      ++ the linear pencil p as a list (no check).
+    elt : (%, NNI, NNI) -> List(R)
+      ++ \spad{elt(p, i, j)} returns the elements (i,j) from
+      ++ the linear pencil p as a list.
+
+    matrix : (%, NNI) -> Matrix(R)
+      ++ \spad{matrix(p, l)} returns matrix l in the linear
+      ++ pencil p.
+
+    subMatrix : (%, NNI, NNI, NNI, NNI, NNI) -> Matrix(R)
+      ++ \spad{subMatrix(p, r_min, r_max, c_min, c_max, l)}
+      ++ returns the specified submatrix l of the linear
+      ++ pencil p.
+    subPencil : (%, NNI, NNI, NNI, NNI) -> %
+      ++ \spad{subPencil(p, r_min, r_max, c_min, c_max)}
+      ++ returns a pencil with the specified submatrices.
+    subPencil : (%, List(NNI), List(NNI)) -> %
+      ++ \spad{subPencil(p, lst_row, lst_col)}
+      ++ returns a pencil with submatrices specified by
+      ++ a list of rows and columns.
+    removeRowsColumns : (%, List(NNI), List(NNI)) -> %
+      ++ \spad{removeRowsColumns(p, lst_row, lst_col)} returns
+      ++ a new pencil with submatrices specified by the complement
+      ++ of the list of rows and columns.
+    insertRowsColumns : (%, List(NNI), List(NNI)) -> %
+      ++ \spad{insertRowsColumns(p, lst_row, lst_col)} returns
+      ++ a new pencil with additional rows and columns after
+      ++ the specified indices. addRowsColumns(p, [0,0,1], [0,0,3])
+      ++ would insert 2 rows and columns at the beginning an one
+      ++ row and column between rows 1 and 2 and columns 3 and 4
+      ++ respectively.
+
+    swapRows! : (%, NNI, NNI) -> %
+      ++ \spad{swapRows!(p, i, j)} exchanges rows i and j
+      ++ in all matrices of the linear pencil p.
+    qswapRows! : (%, NNI, NNI) -> %
+      ++ \spad{qswapRows!(p, i, j)} exchanges rows i and j
+      ++ in all matrices of the linear pencil p (no index check).
+    addRows! : (%, NNI, NNI, R) -> %
+      ++ \spad{addRows!(p, i, j, alpha)} adds alpha*row(i)
+      ++ to row(j) in all matrices of the linear pencil p.
+    qaddRows! : (%, NNI, NNI, R) -> %
+      ++ \spad{qaddRows!(p, i, j, alpha)} adds alpha*row(i)
+      ++ to row(j) in all matrices of the linear pencil p (no index check).
+      ++ (no index check)
+    qmultiplyRow! : (%, NNI, R) -> %
+      ++ \spad{qmultiplyRow!(p, i, alpha)} multiplies row(i) by alpha.
+      ++ (no index check)
+    multiplyRow! : (%, NNI, R) -> %
+      ++ \spad{multiplyRow!(p, i, alpha)} multiplies row(i) by alpha.
+    qswapColumns! : (%, NNI, NNI) -> %
+      ++ \spad{qswapColumns!(p, i, j)} exchanges columns i and j
+      ++ in all matrices of the linear pencil p (no index check)
+    swapColumns! : (%, NNI, NNI) -> %
+      ++ \spad{swapColumns!(p, i, j)} exchanges columns i and j
+      ++ in all matrices of the linear pencil p.
+    addColumns! : (%, NNI, NNI, R) -> %
+      ++ \spad{addColumns!(p, i, j, alpha)} adds alpha*column(i)
+      ++ to column(j) in all matrices of the linear pencil p.
+    qaddColumns! : (%, NNI, NNI, R) -> %
+      ++ \spad{addColumns!(p, i, j, alpha)} adds alpha*column(i)
+      ++ to column(j) in all matrices of the linear pencil p.
+      ++ (no index check)
+    multiplyColumn! : (%, NNI, R) -> %
+      ++ \spad{multiplyColumn!(p, j, alphat)} multiplies column(j)
+      ++ by alpha.
+    qmultiplyColumn! : (%, NNI, R) -> %
+      ++ \spad{multiplyColumn!(p, j, alphat)} multiplies column(j)
+      ++ by alpha.
+
+    qscaleBlock! : (%, NNI, NNI, NNI, NNI, NNI, R) -> %
+      ++ \spad{qscalesubMatrix!(p, i_min, i_max, j_min, j_max, l, alpha)}
+      ++ multiplies the entries in the specified block of matrix l
+      ++ with alpha.
+
+    _* : (%, Matrix(R)) -> %
+      ++ \spad{p * U} column transformation ...
+
+    _* : (Matrix(R), %) -> %
+      ++ \spad{T * P} row transformation ...
+
+    transformRows! : (%, Matrix(R)) -> %
+      ++ \spad{transformRows!(p, T)} multiplies the matrices of
+      ++ the linear pencil from the left by T.
+    transformColumns! : (%, Matrix(R)) -> %
+      ++ \spad{transformColumns!(p, U)} multiplies the matrices
+      ++ of the linear pencil from the right by U.
+
+    leftIdentity : (%) -> Matrix(R)
+      ++ \spad{leftIdentity(p)} returns the left identity matrix.
+    rightIdentity : (%) -> Matrix(R)
+      ++ \spad{rightIdentity(p)} returns the right identity matrix.
+
+    qsetelt! : (%, NNI, NNI, NNI, R) -> R
+      ++ \spad{qselelt!(p, i, j, l, alpha)} sets the element (i,j)
+      ++ in matrix l of the linear pencil p to alpha.
+    qsetelt! : (%, NNI, NNI, List(R)) -> List(R)
+      ++ \spad{qsetelt!(p, i, j, lst)} sets the element (i,j)
+      ++ in the matrices of the linear pencil p according to the
+      ++ elements in lst.
+    setelt! : (%, NNI, NNI, NNI, R) -> R
+      ++ \spad{selelt!(p, i, j, l, alpha)} sets the element (i,j)
+      ++ in matrix l of the linear pencil p to alpha.
+    setelt! : (%, NNI, NNI, List(R)) -> List(R)
+      ++ \spad{setelt!(p, i, j, lst)} sets the element (i,j)
+      ++ in the matrices of the linear pencil p according to the
+      ++ elements in lst.
+
+    setsubMatrix! : (%, NNI, NNI, NNI, Matrix(R)) -> Matrix(R)
+      ++ \spad{setsubMatrix!(p, i, j, l, a)} sets the matrix a
+      ++ into the matrix l of p in position (i,j).
+    setsubPencil! : (%, NNI, NNI, %) -> %
+      ++ \spad{setsubPencil!(p, i, j, q)} sets the matrices of
+      ++ pencil q into the matrices of p in position (i,j).
+
+    if R has Field then
+      -- Declaration (solver)
+      -- Changed: Mit 2018-08-15 19:20
+      -- Changed: Sam 2018-09-01 10:26
+
+      blockElimination : (%, List(NNI), List(NNI), List(NNI), _
+          List(NNI), List(NNI), List(NNI)) -> List(Matrix(R))
+        ++ \spad{blockElimination(p, rsrc, rdst, rext, csrc, cdst, cext)}
+        ++ r___ rows, c___ columns
+        ++ _src source, _dst destination, _ext extra (zeros)
+        ++ Uses a linear system of equations to determine row and column
+        ++ transformation matrices to eliminate the entries in rdst+rext
+        ++ \times cdst+cext and returns an empty list if there is no
+        ++ solution.
+
+      -- Declaration (groebner)
+      -- Changed: Mit 2018-08-29 20:48
+
+      eliminationTransformations : (%, List(NNI), List(NNI), Symbol, _
+          List(NNI), List(NNI), Symbol) -> List(Matrix(G))
+        ++ \spad{eliminationTransformations(p, row_P, col_P, sym_P, row_Q, col_Q, sym_Q)}
+        ++ returns a pair of transformation matrices with commutative
+        ++ variables sym_P[i] in rows/columns row_P/col_P respectively
+        ++ sym_Q[i] in rows/columns row_Q/col_Q.
+      eliminationTransformations : (%, List(NNI), List(NNI), _
+          List(NNI), List(NNI)) -> List(Matrix(G))
+        ++ \spad{eliminationTransformations(p, row_P, col_P, row_Q, col_Q)}
+        ++ returns a pair of transformation matrices with commutative
+        ++ variables 'a[i] in rows/columns row_P/col_P respectively
+        ++ 'b[i] in rows/columns row_Q/col_Q.
+      eliminationTransformations : (%, List(NNI), List(NNI), _
+          List(NNI), List(NNI), List(EQG)) -> List(Matrix(R))
+        ++ \spad{eliminationTransformations(p, row_P, col_P, row_Q, col_Q, sol)}
+        ++ Uses eval to set the values in sol into the variables in the
+        ++ transformation matrices.
+
+      eliminationEquations : (%, List(NNI), List(NNI), List(NNI), List(NNI), _
+          List(NNI), List(NNI)) -> List(Matrix(G))
+        ++ \spad{eliminationEquations(p, row_P, col_P, row_Q, col_Q, rdst, cdst)}
+        ++ returns a list of matrices with equations to eliminate the entries
+        ++ in rows/columns rdst/cdst.
+      eliminationEquations : (%, List(NNI), List(NNI), List(NNI), List(NNI), _
+          List(NNI), List(NNI), List(NNI), List(NNI), List(NNI), List(NNI)) -> List(Matrix(G))
+        ++ \spad{eliminationEquations(p, row_P, col_P, row_Q, col_Q, rdst, cdst, rex1, cex1, rex2, cex2)}
+        ++ returns a list of matrices with equations to eliminate the entries
+        ++ in rows/columns rdst/cdst, rex1/cex1 and rex2/cex2.
+      eliminationEquations : (%, List(NNI), List(NNI), List(NNI), List(NNI), _
+          List(NNI), List(NNI), List(NNI), List(NNI), List(NNI), List(NNI)) -> List(G)
+        ++ \spad{eliminationEquations(p, row_P, col_P, row_Q, col_Q, rdst, cdst, rex1, cex1, rex2, cex2)}
+        ++ returns a list of equations with equations to eliminate the entries
+        ++ in rows/columns rdst/cdst, rex1/cex1 and rex2/cex2, including
+        ++ det(P)-1 and det(Q)-1.
+      eliminationGroebner : (%, List(NNI), List(NNI), List(NNI), List(NNI), _
+          List(NNI), List(NNI), List(NNI), List(NNI), List(NNI), List(NNI)) -> List(G)
+        ++ \spad{eliminationGroebner(p, row_P, col_P, row_Q, col_Q, rdst, cdst, rex1, cex1, rex2, cex2)}
+        ++ computes a Groebner--Shirshov basis for the ideal generated by the
+        ++ equations from eliminationEquations(...) using the domain
+        ++ DistributedMultivariatePolynomial.
+
+      eliminationSolve : (G, List(R)) -> List(List(EQG))
+        ++ \spad{eliminationSolve(eqn, lst_val)} computes all solutions
+        ++ of equation eqn by trying the values of lst_val for undetermined
+        ++ variables.
+      eliminationSolve : (G, List(R), List(EQG)) -> List(List(EQG))
+        ++ \spad{eliminationSolve(eqn, lst_val, sub)} computes all solutions
+        ++ of equation eqn by trying the values of lst_val for undetermined
+        ++ variables with respect to given subsolution sub.
+      eliminationSolve : (G, List(R), List(List(EQG))) -> List(List(EQG))
+        ++ \spad{eliminationSolve(eqn, lst_val, lst_sub)} computes all solutions
+        ++ of equation eqn by trying the values of lst_val for undetermined
+        ++ variables with respect to given subsolutions lst_sub.
+      eliminationSolve : (List(G), List(R), List(List(EQG))) -> List(List(EQG))
+        ++ \spad{eliminationSolve(lst_eqn, lst_val, lst_sub)} computes all
+        ++ solutions of the first equation of lst_eqn by trying the values
+        ++ of lst_val for undetermined variables with respect to given
+        ++ subsolutions lst_sub and return those which fulfill all other
+        ++ equations in lst_eqn.
+      eliminationSolve : (List(G)) -> List(List(EQG))
+        ++ \spad{eliminationSolve(lst_eqn)} calls
+        ++ eliminationSolve(lst_eqn, [0,1], []).
+
+      --<-<SPAD:linpen dcl09>>
+
+  Implementation == add
+    Rep := Record(nr:NNI, _
+                  nc:NNI, _
+                  A:List(Matrix(R)))
+    -- Implementation (basics)
+    -- Changed: Mit 2018-08-15 19:27
+
+    qnew (m:NNI, n:NNI, l:NNI) : % ==
+      A_ref := new(m,n,0$R)$Matrix(R)
+      A_lst := new(l, A_ref)$List(Matrix(R))
+      for k in 2 .. l repeat
+        A_lst(k) := new(m,n,0$R)$Matrix(R)
+      [m, n, A_lst]
+
+    copy (p:%) : % ==
+      A_lst := copy(p.A)
+      for k in 1 .. #A_lst repeat
+        A_lst(k) := copy(elt(p.A, k))
+      [p.nr, p.nc, A_lst]
+
+    append (p:%, l:NNI) : % ==
+      A_ref := copy(elt(p.A, 1))
+      A_lst := new(#p.A + l, A_ref)$List(Matrix(R))
+      m := nrows(A_ref)
+      n := ncols(A_ref)
+      for k in 2 .. #p.A repeat
+        A_lst(k) := copy(elt(p.A, k))
+      for k in 1 .. l repeat
+        A_lst(#p.A+k) := new(m, n, 0$R)$Matrix(R)
+      [p.nr, p.nc, A_lst]
+
+    append! (p:%, l:NNI) : % ==
+      A_ref := elt(p.A, 1)
+      A_lst := new(l, A_ref)$List(Matrix(R))
+      m := nrows(A_ref)
+      n := ncols(A_ref)
+      for k in 1 .. l repeat
+        A_lst(k) := new(m, n, 0$R)$Matrix(R)
+      p.A := append(p.A, A_lst)
+      p
+
+    coerce (p:%) : OutputForm ==
+      (p.A)::OF
+
+    nrows (p:%) : NNI == p.nr
+
+    ncols (p:%) : NNI == p.nc
+
+    nelem (p:%) : NNI == #(p.A)
+
+    _= (p:%, q:%) : Boolean ==
+      flg_wrk := true
+      if not((#(p.A) = #(q.A)) or (p.nc = q.nc) or (p.nr = q.nr)) then
+        return false
+      for k in 1 .. #(p.A) repeat
+        if not(elt(p.A, k) = elt(q.A, k)) then
+          flg_wrk := false
+          break
+      flg_wrk
+
+    equal? (p:%, lst_p:List(NNI), q:%, lst_q:List(NNI)) : Boolean ==
+      #lst_p ~= #lst_q =>
+        error "LINPEN: equal?(%,lst_p,%,lst_q) - index lists have different lengths."
+      if not(p.nc = q.nc) and not(p.nr = q.nr) then
+        return(false)
+      flg_p := new(#(p.A), true)$List(Boolean)
+      flg_q := new(#(q.A), true)$List(Boolean)
+      for k in 1 .. #lst_p repeat
+        l_p := lst_p(k)
+        l_q := lst_q(k)
+        if not(elt(p.A, l_p) = elt(q.A, l_q)) then
+          return(false)
+        flg_p(l_p) := false
+        flg_q(l_q) := false
+      for k in 1 .. #(p.A) repeat
+        if flg_p(k) then
+          if not(zero?(elt(p.A, k))) then
+            return(false)
+      for k in 1 .. #(q.A) repeat
+        if flg_q(k) then
+          if not(zero?(elt(q.A, k))) then
+            return(false)
+      true
+
+    qequal? (p:%, lst_p:List(NNI), q:%, lst_q:List(NNI), off:NNI) : Boolean ==
+      if not(p.nc = q.nc) and not(p.nr = q.nr) then
+        return(false)
+      flg_p := new(#(p.A), true)$List(Boolean)
+      flg_q := new(#(q.A), true)$List(Boolean)
+      for k in 1 .. #lst_p repeat
+        l_p := lst_p(k)
+        l_q := lst_q(k)
+        A_p := elt(p.A, l_p)
+        A_q := elt(q.A, l_q)
+        for i in off .. p.nr repeat
+          for j in off .. p.nc repeat
+            if not(qelt(A_p, i, j) = qelt(A_q, i, j)) then
+              return(false)
+        flg_p(l_p) := false
+        flg_q(l_q) := false
+      for k in 1 .. #(p.A) repeat
+        if flg_p(k) then
+          if not(zero?(elt(p.A, k))) then
+            return(false)
+      for k in 1 .. #(q.A) repeat
+        if flg_q(k) then
+          if not(zero?(elt(q.A, k))) then
+            return(false)
+      true
+
+    qzero? (p:%, i:NNI, j:NNI) : Boolean ==
+      for l in 1 .. #(p.A) repeat
+        if not(zero?(qelt(elt(p.A, l), i, j))) then
+          return(false)
+      true
+
+    qzero? (p:%, i_min:NNI, i_max:NNI, j_min:NNI, j_max:NNI) : Boolean ==
+      for l in 1 .. #(p.A) repeat
+        A_wrk := elt(p.A, l)
+        for i in i_min .. i_max repeat
+          for j in j_min .. j_max repeat
+            if not(zero?(qelt(A_wrk, i, j))) then
+              return(false)
+      true
+
+    qzero? (p:%, i_min:NNI, i_max:NNI, j_min:NNI, j_max:NNI, l:NNI) : Boolean ==
+      A_wrk := elt(p.A, l)
+      for i in i_min .. i_max repeat
+        for j in j_min .. j_max repeat
+          if not(zero?(qelt(A_wrk, i, j))) then
+            return(false)
+      true
+
+    qsemizero? (p:%, i_min:NNI, i_max:NNI, j_min:NNI, j_max:NNI, l:NNI) : Boolean ==
+      for k in 1 .. #(p.A) repeat
+        if not(k = l) then
+          A_wrk := elt(p.A, k)
+          for i in i_min .. i_max repeat
+            for j in j_min .. j_max repeat
+              if not(zero?(qelt(A_wrk, i, j))) then
+                return(false)
+      true
+
+    -- FIXME: -0 bei DFLOAT, etc.?
+    zero? (p:%, i:NNI, j:NNI) : Boolean ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nc) =>
+        error "LINPEN: zero?(%,i,j) - index out of range."
+      flg_wrk := true
+      for l in 1 .. #(p.A) repeat
+        if qelt(elt(p.A, l), i, j) ~= 0$R then
+          flg_wrk := false
+          break
+      flg_wrk
+
+    -- Implementation (elementary)
+    -- Changed: Sam 2018-09-01 10:15
+
+    diagonal? (p:%, l:NNI) : Boolean ==
+      l > #(p.A) =>
+        error "LINPEN: diagonal?(%,l) - index out of range."
+      qdiagonal?(p, 1, min(p.nr, p.nc), l)
+
+    qdiagonal? (p:%, k_min:NNI, k_max:NNI, l:NNI) : Boolean ==
+      A_wrk := elt(p.A, l)
+      for i in k_min .. k_max repeat
+        for j in k_min .. k_max repeat
+          if not(i=j) and not(zero?(qelt(A_wrk, i, j))) then
+            return(false)
+      true
+
+    diagonal (p:%, l:NNI) : List(R) ==
+      l > #(p.A) =>
+        error "LINPEN: diagonal(%,l) - index out of range."
+      qdiagonal(p, 1, min(p.nr, p.nc), l)
+
+    qdiagonal (p:%, k_min:NNI, k_max:NNI, l:NNI) : List(R) ==
+      A_wrk := elt(p.A, l)
+      n := (k_max + 1 - k_min)::NNI
+      lst_wrk := new(n, 0$R)$List(R)
+      for k in 0 .. (n-1) repeat
+        lst_wrk(k+1) := qelt(A_wrk, k_min+k, k_min+k)
+      lst_wrk
+
+    uppertriangular? (p:%, l:NNI) : Boolean ==
+      l > #(p.A) =>
+        error "LINPEN: uppertriangular?(%,l) - index out of range."
+      quppertriangular?(p, 1, min(p.nr, p.nc), l)
+
+    -- FIXME: non-square matrices?
+    quppertriangular? (p:%, k_min:NNI, k_max:NNI, l:NNI) : Boolean ==
+      A_wrk := elt(p.A, l)
+      for i in k_min .. k_max repeat
+        for j in k_min .. k_max repeat
+          if (j < i) and not(zero?(qelt(A_wrk, i, j))) then
+            return(false)
+      true
+
+    qnilpotent? (p:%, k_min:NNI, k_max:NNI, l:NNI) : Boolean ==
+      A_wrk := elt(p.A, l)
+      for i in k_min .. k_max repeat
+        for j in k_min .. k_max repeat
+          if (j <= i) and not(zero?(qelt(A_wrk, i, j))) then
+            return(false)
+      true
+
+    qcolumnIndices (p:%, off:NNI, l:NNI) : List(List(NNI)) ==
+      n := (p.nr + 1 - off)::NNI
+      lst_row := new(n, [])$List(List(NNI))
+      A_wrk := elt(p.A, l)
+      for i in off .. p.nr repeat
+        lst_tmp : List(NNI) := []
+        for j in p.nc .. off by -1 repeat
+          if not(zero?(qelt(A_wrk, i, j))) then
+            lst_tmp := cons((j+1-off)::NNI, lst_tmp)
+        k := (i+1-off)::NNI
+        lst_row(k) := lst_tmp
+      lst_row
+
+    qcolumnIndices (p:%, off:NNI, i:NNI, l:NNI) : List(NNI) ==
+      n := (p.nr + 1 - off)::NNI
+      i_wrk := (off+i-1)::NNI
+      lst_col := new(n, [])$List(List(NNI))
+      A_wrk := elt(p.A, l)
+      lst_col : List(NNI) := []
+      for j in p.nc .. off by -1 repeat
+        if not(zero?(qelt(A_wrk, i_wrk, j))) then
+          lst_col := cons((j+1-off)::NNI, lst_col)
+      lst_col
+
+    qcolumnIndices (p:%, off:NNI) : List(List(NNI)) ==
+      n := (p.nr + 1 - off)::NNI
+      lst_row := new(n, [])$List(List(NNI))
+      for i in off .. p.nr repeat
+        lst_tmp : List(NNI) := []
+        for j in p.nc .. off by -1 repeat
+          if not(qzero?(p, i, j)) then
+            lst_tmp := cons((j+1-off)::NNI, lst_tmp)
+        k := (i+1-off)::NNI
+        lst_row(k) := lst_tmp
+      lst_row
+
+    qrowIndices (p:%, off:NNI, j:NNI, l:NNI) : List(NNI) ==
+      n := (p.nc + 1 - off)::NNI
+      j_wrk := (off+j-1)::NNI
+      A_wrk := elt(p.A, l)
+      lst_col : List(NNI) := []
+      for i in p.nr .. off by -1 repeat
+        if not(zero?(qelt(A_wrk, i, j_wrk))) then
+          lst_col := cons((i+1-off)::NNI, lst_col)
+      lst_col
+
+    qrowIndices (p:%, off:NNI, l:NNI) : List(List(NNI)) ==
+      n := (p.nc + 1 - off)::NNI
+      lst_col := new(n, [])$List(List(NNI))
+      A_wrk := elt(p.A, l)
+      for j in off .. p.nc repeat
+        lst_tmp : List(NNI) := []
+        for i in p.nr .. off by -1 repeat
+          if not(zero?(qelt(A_wrk, i, j))) then
+            lst_tmp := cons((i+1-off)::NNI, lst_tmp)
+        k := (j+1-off)::NNI
+        lst_col(k) := lst_tmp
+      lst_col
+
+    qrowIndices (p:%, off:NNI) : List(List(NNI)) ==
+      n := (p.nc + 1 - off)::NNI
+      lst_col := new(n, [])$List(List(NNI))
+      for j in off .. p.nc repeat
+        lst_tmp : List(NNI) := []
+        for i in p.nr .. off by -1 repeat
+          if not(qzero?(p, i, j)) then
+            lst_tmp := cons((i+1-off)::NNI, lst_tmp)
+        k := (j+1-off)::NNI
+        lst_col(k) := lst_tmp
+      lst_col
+
+    qelt (p:%, i:NNI, j:NNI, l:NNI) : R ==
+      qelt(elt(p.A, l), i, j)
+
+    elt (p:%, i:NNI, j:NNI, l:NNI) : R ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nc) or (l < 1) or (l > #(p.A)) =>
+        error "LINPEN: elt(%,i,j,l) - index out of range."
+      A_wrk := elt(p.A, l)
+      qelt(A_wrk, i, j)
+
+    elt (p:%, i:NNI, j:NNI) : List(R) ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nc) =>
+        error "LINPEN: elt(%,i,j) - index out of range."
+      lst_wrk := new(#(p.A), 0$R)$List(R)
+      for k in 1 .. #(p.A) repeat
+        A_wrk := elt(p.A, k)
+        lst_wrk(k) := qelt(A_wrk, i, j)
+      lst_wrk
+
+    qelt (p:%, i:NNI, j:NNI) : List(R) ==
+      lst_wrk := new(#(p.A), 0$R)$List(R)
+      for k in 1 .. #(p.A) repeat
+        A_wrk := elt(p.A, k)
+        lst_wrk(k) := qelt(A_wrk, i, j)
+      lst_wrk
+
+    matrix (p:%, l:NNI) : Matrix(R) ==
+      (l < 1) or (l > #(p.A)) =>
+        error "LINPEN: matrix(%,l) - index out of range."
+      elt(p.A, l)
+
+    subMatrix (p:%, r_min:NNI, r_max:NNI, c_min:NNI, c_max:NNI, l:NNI) : Matrix(R) ==
+      (r_min < 1) or (r_min > r_max) or (r_max > p.nr) _
+        or (c_min < 1) or (c_min > c_max) or (c_max > p.nc) _
+        or (l < 1) or (l > #(p.A)) =>
+          error "LINPEN: subMatrix(%,r_min,r_max,c_min,c_max,l) - index out of range."
+      subMatrix(elt(p.A, l), r_min, r_max, c_min, c_max)
+
+    subPencil (p:%, r_min:NNI, r_max:NNI, c_min:NNI, c_max:NNI) : % ==
+      (r_min < 1) or (r_min > r_max) or (r_max > p.nr) _
+        or (c_min < 1) or (c_min > c_max) or (c_max > p.nc) =>
+          error "LINPEN: subPencil(%,r_min,r_max,c_min,c_max) - index out of range."
+      A_lst := copy(p.A)
+      for k in 1 .. #A_lst repeat
+        A_lst(k) := subMatrix(elt(p.A, k), r_min, r_max, c_min, c_max)
+      m_new := (r_max + 1 - r_min)::NNI
+      n_new := (c_max + 1 - c_min)::NNI
+      [m_new, n_new, A_lst]
+
+    subPencil (p:%, lst_row:List(NNI), lst_col:List(NNI)) : % ==
+      r_min := reduce(min, lst_row)$List(NNI)
+      r_max := reduce(max, lst_row)$List(NNI)
+      c_min := reduce(min, lst_col)$List(NNI)
+      c_max := reduce(max, lst_col)$List(NNI)
+      (r_min < 1) or (r_max > p.nr) or (c_min < 1) or (c_max > p.nc) =>
+        error "LINPEN: subPencil(%,lst_row,lst_col) - invalid indices."
+      lp_new := qnew(#lst_row, #lst_col, #(p.A))
+      for k in 1 .. #(p.A) repeat
+        A_new := elt(lp_new.A, k)
+        A_wrk := elt(p.A, k)
+        for i in 1 .. lp_new.nr repeat
+          for j in 1 .. lp_new.nc repeat
+            qsetelt!(A_new, i, j, qelt(A_wrk, lst_row(i), lst_col(j)))
+      lp_new
+
+    removeRowsColumns (p:%, lst_row:List(NNI), lst_col:List(NNI)) : % ==
+      r_min := reduce(min, lst_row)$List(NNI)
+      r_max := reduce(max, lst_row)$List(NNI)
+      c_min := reduce(min, lst_col)$List(NNI)
+      c_max := reduce(max, lst_col)$List(NNI)
+      (r_min < 1) or (r_max > p.nr) or (c_min < 1) or (c_max > p.nc) =>
+        error "LINPEN: removeRowsColumns(%,lst_row,lst_col) - invalid indices."
+      l_row : List(NNI) := []
+      for i in p.nr .. 1 by -1 repeat
+        if position(i, lst_row) = 0$Integer then
+          l_row := cons(i, l_row)
+      l_col : List(NNI) := []
+      for j in p.nc .. 1 by -1 repeat
+        if position(j, lst_col) = 0$Integer then
+          l_col := cons(j, l_col)
+      lp_new := qnew(#l_row, #l_col, #(p.A))
+      for k in 1 .. #(p.A) repeat
+        A_new := elt(lp_new.A, k)
+        A_wrk := elt(p.A, k)
+        for i in 1 .. lp_new.nr repeat
+          for j in 1 .. lp_new.nc repeat
+            qsetelt!(A_new, i, j, qelt(A_wrk, l_row(i), l_col(j)))
+      lp_new
+
+    insertRowsColumns (p:%, lst_row:List(NNI), lst_col:List(NNI)) : % ==
+      r_max := reduce(max, lst_row)$List(NNI)
+      c_max := reduce(max, lst_col)$List(NNI)
+      (r_max > p.nr) or (c_max > p.nc) =>
+        error "LINPEN: insertRowsColumns(%,lst_row,lst_col) - invalid indices."
+      m := p.nr + #lst_row
+      n := p.nc + #lst_col
+      lp_new := qnew(m, n, #(p.A))
+      l_tmp := sort(lst_row)
+      l_row := new(p.nr, 0$NNI)$List(NNI)
+      i_dst := 1$NNI
+      i_ins := 1$NNI
+      for i in 1 .. p.nr repeat
+        while (i_ins <= #lst_row) and (l_tmp(i_ins) < i) repeat
+          i_ins := i_ins + 1
+          i_dst := i_dst + 1
+        l_row(i) := i_dst
+        i_dst := i_dst + 1
+      l_tmp := sort(lst_col)
+      l_col := new(p.nc, 0$NNI)$List(NNI)
+      j_dst := 1$NNI
+      j_ins := 1$NNI
+      for j in 1 .. p.nc repeat
+          while (j_ins <= #lst_col) and (l_tmp(j_ins) < j) repeat
+            j_ins := j_ins + 1
+            j_dst := j_dst + 1
+          l_col(j) := j_dst
+          j_dst := j_dst + 1
+      for k in 1 .. #(p.A) repeat
+        A_src := elt(p.A, k)
+        A_dst := elt(lp_new.A, k)
+        for i in 1 .. p.nr repeat
+          for j in 1 .. p.nc repeat
+            qsetelt!(A_dst, l_row(i), l_col(j), qelt(A_src, i, j))
+      lp_new
+
+    qswapRows! (p:%, i:NNI, j:NNI) : % ==
+      if not(i = j) then
+        for A_wrk in p.A repeat
+          for k in 1 .. p.nc repeat
+            a_tmp := qelt(A_wrk, i, k)
+            qsetelt!(A_wrk, i, k, qelt(A_wrk, j, k))
+            qsetelt!(A_wrk, j, k, a_tmp)
+      p
+
+    swapRows! (p:%, i:NNI, j:NNI) : % ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nr) =>
+        error "LINPEN: swapRows!(%,i,j) - index/indices out of range."
+      qswapRows!(p, i, j)
+      p
+
+    qaddRows! (p:%, i:NNI, j:NNI, alpha:R) : % ==
+      for A_wrk in p.A repeat
+        for k in 1 .. p.nc repeat
+          qsetelt!(A_wrk, j, k, _
+            qelt(A_wrk, j, k) + alpha*qelt(A_wrk, i, k))
+      p
+
+    addRows! (p:%, i:NNI, j:NNI, alpha:R) : % ==
+      i = j =>
+        error "LINPEN: addRows!(%,i,j,alpha) - indices must be different."
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nr) =>
+        error "LINPEN: addRows!(%,i,j,alpha) - index/indices out of range."
+      qaddRows!(p, i, j, alpha)
+      p
+
+    qmultiplyRow! (p:%, i:NNI, alpha:R) : % ==
+      for A_wrk in p.A repeat
+        for k in 1 .. p.nc repeat
+          qsetelt!(A_wrk, i, k, alpha*qelt(A_wrk, i, k))
+      p
+
+    multiplyRow! (p:%, i:NNI, alpha:R) : % ==
+      (i < 1) or (i > p.nr) =>
+        error "LINPEN: multiplyRow!(%,i,alpha) - index out of range."
+      qmultiplyRow!(p, i, alpha)
+
+    qswapColumns! (p:%, i:NNI, j:NNI) : % ==
+      if not(i = j) then
+        for A_wrk in p.A repeat
+          for k in 1 .. p.nr repeat
+            a_tmp := qelt(A_wrk, k, i)
+            qsetelt!(A_wrk, k, i, qelt(A_wrk, k, j))
+            qsetelt!(A_wrk, k, j, a_tmp)
+      p
+
+    swapColumns! (p:%, i:NNI, j:NNI) : % ==
+      (i < 1) or (i > p.nc) or (j < 1) or (j > p.nc) =>
+        error "LINPEN: swapColumns!(%,i,j) - index/indices out of range."
+      qswapColumns!(p, i, j)
+
+    qaddColumns! (p:%, i:NNI, j:NNI, alpha:R) : % ==
+      for A_wrk in p.A repeat
+        for k in 1 .. p.nr repeat
+          qsetelt!(A_wrk, k, j, _
+            qelt(A_wrk, k, j) + alpha*qelt(A_wrk, k, i))
+      p
+
+    addColumns! (p:%, i:NNI, j:NNI, alpha:R) : % ==
+      i = j =>
+        error "LINPEN: addColumns!(%,i,j,alpha) - indices must be different."
+      (i < 1) or (i > p.nc) or (j < 1) or (j > p.nc) =>
+        error "LINPEN: addColumns!(%,i,j,alpha) - index/indices out of range."
+      qaddColumns!(p, i, j, alpha)
+
+    qmultiplyColumn! (p:%, j:NNI, alpha:R) : % ==
+      for A_wrk in p.A repeat
+        for k in 1 .. p.nr repeat
+          qsetelt!(A_wrk, k, j, alpha*qelt(A_wrk, k, j))
+      p
+
+    multiplyColumn! (p:%, j:NNI, alpha:R) : % ==
+      (j < 1) or (j > p.nc) =>
+        error "LINPEN: multiplyColumn!(%,j,alpha) - index out of range."
+      qmultiplyColumn!(p, j, alpha)
+
+    qscaleBlock! (p:%, i_min:NNI, i_max:NNI, j_min:NNI, j_max:NNI, l:NNI, alpha:R) : % ==
+      A_wrk := elt(p.A, l)
+      for i in i_min .. i_max repeat
+        for j in j_min .. j_max repeat
+          qsetelt!(A_wrk, i, j, alpha * qelt(A_wrk, i, j))
+      p
+
+    p:% * U:Matrix(R) ==
+      lp_new := copy(p)
+      transformColumns!(lp_new, U)
+      lp_new
+
+    T:Matrix(R) * p:% ==
+      lp_new := copy(p)
+      transformRows!(lp_new, T)
+      lp_new
+
+    transformRows! (p:%, T:Matrix(R)) : % ==
+      not(nrows(T) = ncols(T)) or not(nrows(T) = p.nr) =>
+        error "LINPEN: transformRows!(%,T) - wrong matrix size."
+      A_lst := p.A
+      for k in 1 .. #(p.A) repeat
+        A_lst(k) := T * A_lst(k)
+      p
+
+    transformColumns! (p:%, U:Matrix(R)) : % ==
+      not(nrows(U) = ncols(U)) or not(nrows(U) = p.nc) =>
+        error "LINPEN: transformColumns!(%,U) - wrong matrix size."
+      A_lst := p.A
+      for k in 1 .. #(p.A) repeat
+        A_lst(k) := A_lst(k) * U
+      p
+
+    leftIdentity (p:%) : Matrix(R) ==
+      trf_mtx := new(p.nr, p.nr, 0$R)$Matrix(R)
+      for k in 1 .. p.nr repeat
+        qsetelt!(trf_mtx, k, k, 1$R)
+      trf_mtx
+
+    rightIdentity (p:%) : Matrix(R) ==
+      trf_mtx := new(p.nc, p.nc, 0$R)$Matrix(R)
+      for k in 1 .. p.nc repeat
+        qsetelt!(trf_mtx, k, k, 1$R)
+      trf_mtx
+       
+
+    qsetelt! (p:%, i:NNI, j:NNI, l:NNI, alpha:R) : R ==
+      qsetelt!(elt(p.A, l), i, j, alpha)
+      alpha
+
+    qsetelt! (p:%, i:NNI, j:NNI, lst:List(R)) : List(R) ==
+      for l in 1 .. #lst repeat
+        qsetelt!(elt(p.A, l), i, j, lst(l))
+      lst
+
+    setelt! (p:%, i:NNI, j:NNI, l:NNI, alpha:R) : R ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nc) or (l < 1) or (l > #(p.A)) =>
+        error "LINPEN: setelt!(%,i,j,l,alpha) - index out of range."
+      qsetelt!(elt(p.A, l), i, j, alpha)
+      alpha
+
+    setelt! (p:%, i:NNI, j:NNI, lst:List(R)) : List(R) ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nc) =>
+        error "LINPEN: setelt!(%,i,j,lst) - index out of range."
+      #lst > #(p.A) =>
+        error "LINPEN: setelt!(%,i,j,lst) - list of elements to long."
+      for l in 1 .. #lst repeat
+        qsetelt!(elt(p.A, l), i, j, lst(l))
+      lst
+
+    setsubMatrix! (p:%, i:NNI, j:NNI, l:NNI, a:Matrix(R)) : Matrix(R) ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nc) or (l < 1) or (l > #(p.A)) =>
+        error "LINPEN: setsubMatrix!(%,i,j,l,a) - index out of range."
+      A_wrk := elt(p.A, l)
+      setsubMatrix!(A_wrk, i, j, a)$Matrix(R)
+
+    setsubPencil! (p:%, i:NNI, j:NNI, q:%) : % ==
+      (i < 1) or (i > p.nr) or (j < 1) or (j > p.nc) =>
+        error "LINPEN: setsubPencil!(%,i,j,%) - index out of range."
+      (q.nr > (p.nr+1-i)::NNI) or (q.nc > (p.nc+1-j)::NNI) =>
+        error "LINPEN: setsubPencil!(%,i,j,%) - pencil to big."
+      not(#(p.A) = #(q.A)) =>
+        error "LINPEN: setsubPencil!(%,i,j,%) - different number of matrices."
+      for k in 1 .. #(p.A) repeat
+        A_wrk := elt(p.A, k)
+        setsubMatrix!(A_wrk, i, j, elt(q.A, k))
+      p
+
+    if R has Field then
+      -- Implementation (solver)
+      -- Changed: Mit 2018-08-15 19:21
+      -- Changed: Sam 2018-09-01 10:25
+
+      -- FIXME: check indices, e.g. overlapping?
+      blockElimination (p:%, rsrc:List(NNI), rdst:List(NNI), rext:List(NNI), _
+          csrc:List(NNI), cdst:List(NNI), cext:List(NNI)) : List(Matrix(R)) ==
+        row_src := rsrc
+        row_dst := rdst
+        row_ext := rext
+        col_src := csrc
+        col_dst := cdst
+        col_ext := cext
+        -- Prepare linear system
+        nc_fct := #col_src * #col_dst
+        nr_fct := #row_src * #row_dst
+        n_fct := nc_fct + nr_fct
+        n_col := #col_dst + #col_ext
+        n_row := #row_dst + #row_ext
+        n_eqn := n_row * n_col
+        n_var := #(p.A)
+        mtx_sys := new(n_var*n_eqn, n_fct, 0$R)$Matrix(R)
+        lst_rhs := new(n_var*n_eqn, 0$R)$List(R)
+        for k in 1 .. n_var repeat
+          A_wrk := elt(p.A, k)
+          k_off := (k-1)::NNI * n_eqn
+          for i in 1 .. n_row repeat
+            i_wrk := 0$NNI
+            i_off := (i-1)::NNI * n_col
+            if i <= #row_dst then
+                i_wrk := row_dst(i)
+              else
+                i_wrk := row_ext((i-#row_dst)::NNI)
+            for j in 1 .. n_col repeat
+              j_wrk := 0$NNI
+              if j <= #col_dst then
+                  j_wrk := col_dst(j)
+                else
+                  j_wrk := col_ext((j-#col_dst)::NNI)
+              idx_eqn := k_off + i_off + j
+              lst_rhs(idx_eqn) := -qelt(A_wrk, i_wrk, j_wrk)
+              -- Contribution from rows
+              if i <= #row_dst then
+                for l in 1 .. #row_src repeat
+                  i_src := row_src(l)
+                  idx_fct := (i-1)::NNI * #row_src + l
+                  qsetelt!(mtx_sys, idx_eqn, idx_fct, qelt(A_wrk, i_src, j_wrk))
+              -- Contribution from columns
+              if j <= #col_dst then
+                for l in 1 .. #col_src repeat
+                  j_src := col_src(l)
+                  idx_fct := nr_fct::NNI + (j-1)::NNI * #col_src + l
+                  qsetelt!(mtx_sys, idx_eqn, idx_fct, qelt(A_wrk, i_wrk, j_src))
+        sol_wrk := solve(mtx_sys, vector(lst_rhs))$LinearSystemMatrixPackage1(R)
+        -- Debugging
+        --sol_out := new(n_fct, 0::OF)$List(OF)
+        --for i in 1 .. #row_dst repeat
+        --  i_wrk := row_dst(i)
+        --  for l in 1 .. #row_src repeat
+        --   i_src := row_src(l)
+        --    idx_fct := (i-1)::NNI * #row_src + l
+        --    lst_tmp := [i::OF, l::OF]$List(OF)
+        --    sol_out(idx_fct) := subscript('p::Symbol, lst_tmp)::OF
+        --for j in 1 .. #col_dst repeat
+        --  j_wrk := col_dst(j)
+        --  for l in 1 .. #col_src repeat
+        --    j_src := col_src(l)
+        --    idx_fct := nr_fct + (j-1)::NNI * #col_src + l
+        --    lst_tmp := [j::OF, l::OF]$List(OF)
+        --    sol_out(idx_fct) := subscript('q::Symbol, lst_tmp)::OF
+        --output(mtx_sys::OF * vconcat(sol_out) = vector(lst_rhs)::OF)$OutputPackage
+        lst_trn : List(Matrix(R)) := []
+        if not(sol_wrk.particular case "failed") then
+          T_wrk := new(p.nr, p.nr, 0$R)$Matrix(R)
+          for i in 1 .. p.nr repeat
+            qsetelt!(T_wrk, i, i, 1$R)
+          U_wrk := new(p.nc, p.nc, 0$R)$Matrix(R)
+          for j in 1 .. p.nc repeat
+            qsetelt!(U_wrk, j, j, 1$R)
+          lst_coe := parts((sol_wrk.particular)::Vector(R))
+          for i in 1 .. #row_dst repeat
+            i_wrk := row_dst(i)
+            for l in 1 .. #row_src repeat
+              i_src := row_src(l)
+              idx_fct := (i-1)::NNI * #row_src + l
+              qsetelt!(T_wrk, i_wrk, i_src, lst_coe(idx_fct))
+          for j in 1 .. #col_dst repeat
+            j_wrk := col_dst(j)
+            for l in 1 .. #col_src repeat
+              j_src := col_src(l)
+              idx_fct := nr_fct + (j-1)::NNI * #col_src + l
+              qsetelt!(U_wrk, j_src, j_wrk, lst_coe(idx_fct))
+          lst_trn := cons(U_wrk, lst_trn)
+          lst_trn := cons(T_wrk, lst_trn)
+        lst_trn
+
+      -- Implementation (groebner)
+      -- Changed: Don 2018-08-30 11:23
+
+      eliminationTransformations (p:%, row_P:List(NNI), col_P:List(NNI), sym_P:Symbol, _
+          row_Q:List(NNI), col_Q:List(NNI), sym_Q:Symbol) : List(Matrix(G)) ==
+        P_wrk := new(p.nr, p.nr, 0$G)$Matrix(G)
+        Q_wrk := new(p.nc, p.nc, 0$G)$Matrix(G)
+        for i in 1 .. p.nr repeat
+          qsetelt!(P_wrk, i, i, 1$G)
+        for i in 1 .. p.nc repeat
+          qsetelt!(Q_wrk, i, i, 1$G)
+        idx_P := 0$NNI
+        for i in row_P repeat
+          for j in col_P repeat
+            idx_P := idx_P + 1
+            qsetelt!(P_wrk, i, j, ((sym_P[idx_P::OF])::Symbol)::G)
+        idx_Q := 0$NNI
+        for i in row_Q repeat
+          for j in col_Q repeat
+            idx_Q := idx_Q + 1
+            qsetelt!(Q_wrk, i, j, ((sym_Q[idx_Q::OF])::Symbol)::G)
+        [P_wrk, Q_wrk]
+
+      eliminationTransformations (p:%, row_P:List(NNI), col_P:List(NNI), _
+          row_Q:List(NNI), col_Q:List(NNI)) : List(Matrix(G)) ==
+        eliminationTransformations(p, row_P, col_P, 'a, row_Q, col_Q, 'b)
+
+      eliminationTransformations (p:%, row_P:List(NNI), col_P:List(NNI), _
+          row_Q:List(NNI), col_Q:List(NNI), sol:List(EQG)) : List(Matrix(R)) ==
+        lst_trn := eliminationTransformations(p, row_P, col_P, row_Q, col_Q)
+        P_wrk := new(p.nr, p.nr, 0$R)$Matrix(R)
+        Q_wrk := new(p.nc, p.nc, 0$R)$Matrix(R)
+        sym_P := 'a::Symbol
+        sym_Q := 'b::Symbol
+        for i in 1 .. p.nr repeat
+          qsetelt!(P_wrk, i, i, 1$R)
+        for i in 1 .. p.nc repeat
+          qsetelt!(Q_wrk, i, i, 1$R)
+        idx_P := 0$NNI
+        for i in row_P repeat
+          for j in col_P repeat
+            idx_P := idx_P + 1
+            val_wrk := eval(((sym_P[idx_P::OF])::Symbol)::G, sol)
+            if totalDegree(val_wrk) < 1$NNI then
+              qsetelt!(P_wrk, i, j, retract(val_wrk))
+        rank(P_wrk) < p.nr =>
+          error "LINPEN: eliminationTransformations(p,...) - row transformation matrix not invertible."
+        idx_Q := 0$NNI
+        for i in row_Q repeat
+          for j in col_Q repeat
+            idx_Q := idx_Q + 1
+            val_wrk := eval(((sym_Q[idx_Q::OF])::Symbol)::G, sol)
+            if totalDegree(val_wrk) < 1$NNI then
+              qsetelt!(Q_wrk, i, j, retract(val_wrk))
+        rank(Q_wrk) < p.nc =>
+          error "LINPEN: eliminationTransformations(p,...) - column transformation matrix not invertible."
+        [P_wrk, Q_wrk]
+
+      eliminationEquations (p:%, row_P:List(NNI), col_P:List(NNI), _
+          row_Q:List(NNI), col_Q:List(NNI), rdst:List(NNI), cdst:List(NNI)) : List(Matrix(G)) ==
+        lst_trn := eliminationTransformations(p, row_P, col_P, 'a, row_Q, col_Q, 'b)
+        lst_mtx : List(Matrix(G)) := []
+        A_wrk := new(p.nr, p.nc, 0$G)$Matrix(G)
+        for k in #p.A .. 1 by -1 repeat
+          A_tmp := elt(p.A, k)
+          for i in 1 .. p.nr repeat
+            for j in 1 .. p.nc repeat
+              qsetelt!(A_wrk, i, j, qelt(A_tmp, i, j)::G)
+          B_wrk := lst_trn(1) * A_wrk * lst_trn(2)
+          E_wrk := zero(p.nr, p.nc)$Matrix(G)
+          for i in rdst repeat
+            for j in cdst repeat
+              qsetelt!(E_wrk, i, j, qelt(B_wrk, i, j))
+          lst_mtx := cons(E_wrk, lst_mtx)
+        lst_mtx
+
+      eliminationEquations (p:%, row_P:List(NNI), col_P:List(NNI), _
+          row_Q:List(NNI), col_Q:List(NNI), rdst:List(NNI), cdst:List(NNI),
+          rex1:List(NNI), cex1:List(NNI), rex2:List(NNI), cex2:List(NNI)) : List(Matrix(G)) ==
+        lst_trn := eliminationTransformations(p, row_P, col_P, 'a, row_Q, col_Q, 'b)
+        lst_mtx : List(Matrix(G)) := []
+        A_wrk := new(p.nr, p.nc, 0$G)$Matrix(G)
+        for k in #p.A .. 1 by -1 repeat
+          A_tmp := elt(p.A, k)
+          for i in 1 .. p.nr repeat
+            for j in 1 .. p.nc repeat
+              qsetelt!(A_wrk, i, j, qelt(A_tmp, i, j)::G)
+          B_wrk := lst_trn(1) * A_wrk * lst_trn(2)
+          E_wrk := zero(p.nr, p.nc)$Matrix(G)
+          for i in rdst repeat
+            for j in cdst repeat
+              qsetelt!(E_wrk, i, j, qelt(B_wrk, i, j))
+          for i in rex1 repeat
+            for j in cex1 repeat
+              qsetelt!(E_wrk, i, j, qelt(B_wrk, i, j))
+          for i in rex2 repeat
+            for j in cex2 repeat
+              qsetelt!(E_wrk, i, j, qelt(B_wrk, i, j))
+          lst_mtx := cons(E_wrk, lst_mtx)
+        lst_mtx
+
+      -- FIXME: Check indices?
+      eliminationEquations (p:%, row_P:List(NNI), col_P:List(NNI), _
+          row_Q:List(NNI), col_Q:List(NNI), rdst:List(NNI), cdst:List(NNI),
+          rex1:List(NNI), cex1:List(NNI), rex2:List(NNI), cex2:List(NNI)) : List(G) ==
+        lst_trn := eliminationTransformations(p, row_P, col_P, 'a, row_Q, col_Q, 'b)
+        lst_eqn : List(G) := []
+        A_wrk := new(p.nr, p.nc, 0$G)$Matrix(G)
+        for k in #p.A .. 1 by -1 repeat
+          A_tmp := elt(p.A, k)
+          for i in 1 .. p.nr repeat
+            for j in 1 .. p.nc repeat
+              qsetelt!(A_wrk, i, j, qelt(A_tmp, i, j)::G)
+          B_wrk := lst_trn(1) * A_wrk * lst_trn(2)
+          for i in rdst repeat
+            for j in cdst repeat
+              if not(zero?(qelt(B_wrk, i, j))) then
+                lst_eqn := cons(qelt(B_wrk, i, j), lst_eqn)
+          for i in rex1 repeat
+            for j in cex1 repeat
+              if not(zero?(qelt(B_wrk, i, j))) then
+                lst_eqn := cons(qelt(B_wrk, i, j), lst_eqn)
+          for i in rex2 repeat
+            for j in cex2 repeat
+              if not(zero?(qelt(B_wrk, i, j))) then
+                lst_eqn := cons(qelt(B_wrk, i, j), lst_eqn)
+        det_P := 1$G - determinant(lst_trn(1))
+        det_Q := 1$G - determinant(lst_trn(2))
+        if not(zero?(det_P)) then
+          lst_eqn := cons(det_P, lst_eqn)
+        if not(zero?(det_Q)) then
+          lst_eqn := cons(det_Q, lst_eqn)
+        lst_eqn
+
+      eliminationGroebner (p:%, row_P:List(NNI), col_P:List(NNI), _
+          row_Q:List(NNI), col_Q:List(NNI), rdst:List(NNI), cdst:List(NNI),
+          rex1:List(NNI), cex1:List(NNI), rex2:List(NNI), cex2:List(NNI)) : List(G) ==
+        lst_eqn := eliminationEquations(p, row_P, col_P, row_Q, col_Q, _
+          rdst, cdst, rex1, cex1, rex2, cex2)
+        tmp_var := map(variables, lst_eqn)$ListFunctions2(G, List(Symbol))
+        lst_var : List(Symbol) := removeDuplicates(concat(tmp_var))
+        tDMP := DistributedMultivariatePolynomial(lst_var, R)
+        tOVL := OrderedVariableList(lst_var)
+        tPRD := DirectProduct(#lst_var, NNI)
+        var_wrk : List(tOVL) := [variable(var)::tOVL for var in lst_var]
+        eqn_wrk : List(tDMP) := [pToDmp(eqn)$PolToPol(lst_var, R) for eqn in lst_eqn]
+        bas_gro := groebner(eqn_wrk)$GroebnerPackage(R, tPRD, tDMP)
+        lst_gro : List(G) := [dmpToP(eqn)$PolToPol(lst_var, R) for eqn in bas_gro]
+        lst_gro
+
+      eliminationSolve (eqn:G, lst_val:List(R)) : List(List(EQG)) ==
+        eliminationSolve(eqn, lst_val, [])
+
+      solveEquation (eqn:G, var:Symbol, lst_add:List(EQG)) : List(List(EQG)) ==
+        lst_sol : List(List(EQG)) := []
+        sol_wrk := solve(list(coerce(eqn)@Fraction(G)), [var])$SystemSolvePackage(R)
+        -- check solutions and add usable ones to list
+        for sol1 in sol_wrk repeat
+          --output(sol1::OF)$OutputPackage
+          sol_tst := first(sol1)$List(EQFG)
+          lhs_tst := lhs(sol_tst)$EQFG
+          rhs_tst := rhs(sol_tst)$EQFG
+          if retractIfCan(lhs_tst)$Fraction(G)@Union(Symbol,"failed") case Symbol then
+            if denom(rhs_tst)=1$G then
+              sol_tmp := list(equation(numer(lhs_tst), numer(rhs_tst)))$List(EQG)
+              for sol2 in lst_add repeat
+                sol_tmp := cons(sol2, sol_tmp)
+              lst_sol := cons(sol_tmp, lst_sol)
+        lst_sol
+
+      equalEquation? (sol:List(EQG), lst_sol:List(List(EQG))) : Boolean ==
+        if zero?(#sol) then
+          for tmp in lst_sol repeat
+            if zero?(#tmp) then
+              return(true)
+          return(false)
+        for tmp in lst_sol repeat
+          pos := position(first(sol), tmp)
+          if not(zero?(pos)) then
+            if #setUnion(sol, tmp) = max(#sol, #tmp) then
+              return(true)
+        false
+
+      eliminationSolve (eqn:G, lst_val:List(R), sub:List(EQG)) : List(List(EQG)) ==
+        lst_sol : List(List(EQG)) := []
+        lst_tmp : List(EQG) := []
+        lst_var := variables(eqn)
+        k_val := #lst_val
+        if zero?(#lst_var) then
+          return(lst_sol)
+        zero?(k_val) =>
+          error "LINPEN: eliminationSolve(eqn, lst_val) - missing values."
+        if (#lst_var = 1) and zero?(#sub) then
+          lst_sol := solveEquation(eqn, first(lst_var), [])
+          return(lst_sol)
+        var_sub : List(Symbol) := []
+        for ele in sub repeat
+          var_sub := removeDuplicates(concat(var_sub, variables(lhs(ele)$EQG)))
+        lst_var := setDifference(lst_var, var_sub)
+        -- nothing to do, use given solutions
+        if zero?(#lst_var) then
+          lst_sol := cons(sub, lst_sol)
+          return(lst_sol)
+        -- no parameters
+        if #lst_var = 1 then
+          eqn_tmp := eval(eqn, sub)$G
+          if zero?(eqn_tmp) then
+            -- FIXME: How to handle free parameters, e.g. c[3]=%A?
+            lst_sol := cons(sub, lst_sol)
+            return(lst_sol)
+          sol_wrk := solveEquation(eqn_tmp, first(lst_var), sub)
+          for sol in sol_wrk repeat
+            if #sol > 0$NNI then
+              lst_sol := cons(sol, lst_sol)
+          return(lst_sol)
+        -- Is subsolution also a solution?
+        eqn_tmp := eval(eqn, sub)$G
+        if zero?(eqn_tmp) then
+          lst_sol := cons(sub, lst_sol)
+          return(lst_sol)
+        -- extra parameters (create all combinations of values)
+        for var in lst_var repeat
+          --output(var::OF)$OutputPackage
+          vars := remove(var, lst_var)
+          for i in 1 .. k_val^#vars repeat
+            lst_tmp := copy(sub)
+            for j in 1 .. #vars repeat
+              idx_val := (i-1)::NNI quo$NNI (k_val^(j-1)::NNI)
+              idx_val := idx_val rem$NNI k_val
+              --ltmp := [i::NNI, j::NNI, idx_val::NNI+1$NNI]::List(NNI)
+              --output(ltmp::OF)$OutputPackage
+              lst_tmp := cons(equation(vars(j)::G, lst_val(idx_val+1)::G), lst_tmp)
+            eqn_tmp := eval(eqn, lst_tmp)$G
+            if zero?(eqn_tmp) then
+                lst_sol := cons(lst_tmp, lst_sol)  
+              else
+                eqn_tmp := eval(eqn, lst_tmp)$G
+                sol_wrk := solveEquation(eqn_tmp, var, lst_tmp)
+                for sol in sol_wrk repeat
+                  if not(equalEquation?(sol, lst_sol)) then
+                    lst_sol := cons(sol, lst_sol)
+        lst_sol
+
+      eliminationSolve (eqn:G, lst_val:List(R), lst_sub:List(List(EQG))) : List(List(EQG)) ==
+        lst_sol : List(List(EQG)) := []
+        if zero?(#lst_sub) then
+          lst_wrk := eliminationSolve(eqn, lst_val, []$List(EQG))
+          for sol in lst_wrk repeat
+            if not(equalEquation?(sol, lst_sol)) then
+              lst_sol := cons(sol, lst_sol)
+          return(lst_sol)
+        for sub in lst_sub repeat
+          lst_wrk := eliminationSolve(eqn, lst_val, sub)
+          for sol in lst_wrk repeat
+            if not(equalEquation?(sol, lst_sol)) then
+              lst_sol := cons(sol, lst_sol)
+        lst_sol
+
+      eliminationSolve (lst_eqn:List(G), lst_val:List(R), lst_sub:List(List(EQG))) : List(List(EQG)) ==
+        zero?(#lst_eqn) =>
+          error "LINPEN: eliminationSolve(lst_eqn, lst_val, lst_sub) - missing equation(s)."
+        lst_sol : List(List(EQG)) := []
+        if zero?(#lst_sub) then
+          lst_wrk := eliminationSolve(first(lst_eqn), lst_val, []$List(EQG))
+          for sol in lst_wrk repeat
+            flg_sol := true
+            for eqn in rest(lst_eqn) repeat
+              eqn_tmp := eval(eqn, sol)$G
+              if not(zero?(eqn_tmp)) then
+                flg_sol := false
+                break
+            if flg_sol then
+              if not(equalEquation?(sol, lst_sol)) then
+                lst_sol := cons(sol, lst_sol)
+          return(lst_sol)
+        for sub in lst_sub repeat
+          lst_wrk := eliminationSolve(first(lst_eqn), lst_val, sub)
+          for sol in lst_wrk repeat
+            flg_sol := true
+            for eqn in rest(lst_eqn) repeat
+              eqn_tmp := eval(eqn, sol)$G
+              if not(zero?(eqn_tmp)) then
+                flg_sol := false
+                break
+            if flg_sol then
+              if not(equalEquation?(sol, lst_sol)) then
+                lst_sol := cons(sol, lst_sol)
+        lst_sol
+
+      eliminationSolve (lst_eqn:List(G)) : List(List(EQG)) ==
+        lst_val := [0, 1]$List(R)
+        lst_wrk : List(G) := []
+        lst_sol : List(List(EQG)) := []
+        for k in #lst_eqn .. 1 by -1 repeat
+          lst_wrk := cons(lst_eqn(k), lst_wrk)
+          sol_wrk := eliminationSolve(lst_wrk, lst_val, lst_sol)
+          --lst_tmp : List(NNI) := [k, #sol_wrk]
+          --output(lst_tmp::OF)$OutputPackage
+          if zero?(#sol_wrk) then
+            return([])
+          lst_sol := copy(sol_wrk)
+        lst_sol
+
+      --<-<SPAD:linpen imp09>>
+    
