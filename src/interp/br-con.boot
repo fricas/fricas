@@ -126,7 +126,7 @@ reportCategory(conform,typeForm,arg) ==
        bcConPredTable(conlist,opOf conform)
        htSay '"\newline "
   if oplist then
-    if conlist or attrlist then htSay '" and "
+    if conlist then htSay '" and "
     reportAO('"operation",oplist)
 
 reportAO(kind,oplist) ==
@@ -206,12 +206,11 @@ kePage(htPage,junk) ==
                (domname => form2HtString(domname,nil,true); constring),'"}"]
   data := sublisFormal(IFCDR domname or rest conform,
                        getConstructorExports((domname or conform),true))
-  [conlist,attrlist,:oplist] := data
+  [conlist, :oplist] := data
   if domname then
     for x in conlist repeat  rplac(rest x, simpHasPred rest x)
-    for x in attrlist repeat rplac(CDDR x, simpHasPred CDDR x)
     for x in oplist   repeat rplac(CDDR x, simpHasPred CDDR x)
-  prefix := pluralSay(#conlist + #attrlist + #oplist,'"Export",'"Exports")
+  prefix := pluralSay(#conlist + #oplist, '"Export", '"Exports")
   page := htInitPage([:prefix,'" of ",:heading],htCopyProplist htPage)
   htSayStandard '"\beginmenu "
   htpSetProperty(page,'data,data)
@@ -220,11 +219,8 @@ kePage(htPage,junk) ==
     htSayStandard '"\tab{2}"
     htSay  '"All attributes and operations from:"
     bcConPredTable(conlist,opOf conform,rest conform)
-  if attrlist then
-    if conlist then htBigSkip()
-    kePageDisplay(page,'"attribute",kePageOpAlist attrlist)
   if oplist then
-    if conlist or attrlist then htBigSkip()
+    if conlist then htBigSkip()
     kePageDisplay(page,'"operation",kePageOpAlist oplist)
   htSayStandard '" \endmenu "
   htShowPage()
