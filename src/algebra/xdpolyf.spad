@@ -1,0 +1,302 @@
+-- Hankel matrices and linear representation for noncommutative polynomials
+-- Created: Don 2014-11-13 17:45
+-- Changed: Mon 2015-10-05 16:09
+
+)abbrev package XDPOLYF XDistributedPolynomialFunctions
+++ Author: Konrad Schrempf <schrempf@math.tugraz.at>
+++ Date Created: Don 2014-11-13 17:45
+++ Date Changed: Mon 2015-10-05 16:11
+++ Basic Functions:
+++ Related Constructors: NonCommutativeRationalFunctions
+++ Also See: XDistributedPolynomial
+++ AMS Classifications:
+++ Keywords: polynomials in noncommuting variables, Hankel matrix, minimal representation, rational functions
+++ Examples:
+++ References: On the Problems of Constructing Minimal Realizations for Two-Dimensional Filters by Fornasini+Marchesini
+++ Description:
+++ Using the Hankel matrix of a noncommutative polynomial one can determine
+++ the rank (Matrices de Hankel by Fliess). The extended Ho-Algorithmus
+++ (Fornasini+Marchesini) is used to create a minimal linear representation.
+++ Another approach is implemented in NonCommutativeRationalFunctions.
+
+XDistributedPolynomialFunctions(VAR, F) : Exports == Implementation where
+  F : Field
+  VAR : OrderedSet
+  
+  PI ==> PositiveInteger
+  NNI ==> NonNegativeInteger
+  OF ==> OutputForm
+
+  L1 ==> ListMonoidOps(VAR, NNI, 1)
+  M1 ==> FreeMonoid(VAR)
+  XDP ==> XDistributedPolynomial(VAR, F)
+  TERM ==> Record(k:M1, c:F)
+
+  LINREP ==> Record(alpha:Matrix(F), _
+                    mu:List(Matrix(F)), _
+                    var:List(VAR), _
+                    beta:Matrix(F))
+                    
+  HANSYS ==> Record(rows:List(M1), _
+                    cols:List(M1), _
+                    H:Matrix(F))
+
+  Exports == with
+    -- Hankel Matrices of Noncommutative Polynomials [xdpolyf.han]
+    hankelIndices : (XDP) -> List(M1)
+      ++ \spad{hankelIndices(p)} returns a list of all left and
+      ++ right factors of the monomials of a given multivariate
+      ++ noncommutative polynomial. Factorization: w = u*v
+    hankelMatrix : (XDP) -> Matrix(F)
+      ++ \spad{hankelMatrix(p)} returns the Hankel matrix H(p)
+      ++ of given polynomial p, i.e. the entries at (u,v) are
+      ++ the coefficients of the monomials w = u*v. Rows and
+      ++ columns are indexed by words.
+    hankelMatrix : (XDP, VAR) -> Matrix(F)
+      ++ \spad{hankelMatrix(p,x)} returns a matrix with the entries
+      ++ of the coefficients of p at (u,v) where the monomials
+      ++ factorizes through w = u*x*v. This matrix is indexed
+      ++ by all words of the Hankel matrix.
+    hankelSystem : (XDP) -> HANSYS
+      ++ \spad{hankelSystem(p)} creates a Hankel-matrix for the
+      ++ polynomial p with respect to the basis of all factors in p.
+      ++ Row- and column-indices can be different.
+    display : (HANSYS) -> OutputForm
+      ++ \spad{display(sys)} prints the Hankel matrix in an extended
+      ++ form with row-indices as column 0 and column-indices as row 0.
+
+
+    -- Extended Ho-Algorithm [xdpolyf.hoa] 
+    minimalMatrix : (Matrix(F), NNI) -> Matrix(F)
+      ++ \spad{minimalMatrix(A,r)} returns the minimal (upper-left)
+      ++ submatrix of A such that the rank corresponds to the given.
+    findNonZeroEntry : (Matrix(F), NNI, NNI) -> List(NNI)
+      ++ \spad{findNonZeroEntry(A,i,j)} returns the indices [k,l]
+      ++ with i<=k<=m and j<=l<=n such that A(k,l) is non-zero
+      ++ and [0,0] otherwise. A is of size m x n.
+    transformationMatrices : (Matrix(F)) -> List(Matrix(F))
+      ++ \spad{transformationMatrices(A)} returns a list of two
+      ++ matrices P and Q such that P*A*Q = J where the upper diagonal
+      ++ block of J is I_k for k = rank(A).
+    minimalRepresentation : (XDP) -> LINREP
+      ++ \spad{minimalRepresentation(p)} returns a minimal representation
+      ++ using the generalized Ho algorithm [Fornasini, 1978]
+      ++ p = sum_w alpha*mu(w)*beta*w [Theorem 3.3, Salomaa--Soittola 1978]
+ 
+
+  Implementation == add
+    
+    hankelIndices(p:XDP) : List(M1) ==
+      lst_row : List(M1) := [1$M1]
+      lst_col : List(M1) := [1$M1]
+      for m in support(p) repeat
+        u := 1$M1
+        for f in factors(m) repeat
+          for k in 1 .. f.exp repeat
+            u := u * f.gen
+            lst_row := cons(u, lst_row)
+        u := 1$M1
+        for f in reverse(factors(m)) repeat
+          for k in 1 .. f.exp repeat
+            u := f.gen * u
+            lst_col := cons(u, lst_col)
+      sort(removeDuplicates(merge(lst_row, lst_col)))
+
+    hankelMatrix(p:XDP) : Matrix(F) ==
+      lst_idx := hankelIndices(p)
+      n := #lst_idx
+      mtx_wrk := new(n, n, 0)$Matrix(F)
+      lst_sup := support(p)
+      lst_coe := coefficients(p)
+      for l in 1 .. #lst_sup repeat
+        m := lst_sup(l)
+        c := lst_coe(l)
+        u := 1$M1
+        i := position(u, lst_idx)
+        j := position(m, lst_idx)
+        mtx_wrk(i,j) := mtx_wrk(i,j) + c
+        for f in factors(m) repeat
+          for k in 1 .. f.exp repeat
+            u := u * f.gen
+            v := lquo(m, u)::M1
+            i := position(u, lst_idx)
+            j := position(v, lst_idx)
+            mtx_wrk(i,j) := mtx_wrk(i,j) + c
+      mtx_wrk
+
+    hankelMatrix (p:XDP, x:VAR) : Matrix(F) ==
+      lst_idx := hankelIndices(p)
+      n := #lst_idx
+      mtx_wrk := new(n, n, 0)$Matrix(F)
+      lst_sup := support(p)
+      lst_coe := coefficients(p)
+      for l in 1 .. #lst_sup repeat
+        m := lst_sup(l)
+        c := lst_coe(l)
+        u := 1$M1
+        for f in factors(m) repeat
+          for k in 1 .. f.exp repeat
+            if (f.gen = x) then
+              v := lquo(m, u*x)::M1
+              i := position(u, lst_idx)
+              j := position(v, lst_idx)
+              mtx_wrk(i,j) := mtx_wrk(i,j) + c
+            u := u * f.gen
+      mtx_wrk
+
+    hankelSystem (p:XDP) : HANSYS ==
+      lst_row : List(M1) := [1$M1]
+      lst_col : List(M1) := [1$M1]
+      for m in support(p) repeat
+        u := 1$M1
+        for f in factors(m) repeat
+          for k in 1 .. f.exp repeat
+            u := u * f.gen
+            lst_row := cons(u, lst_row)
+        u := 1$M1
+        for f in reverse(factors(m)) repeat
+          for k in 1 .. f.exp repeat
+            u := f.gen * u
+            lst_col := cons(u, lst_col)
+      lst_row := sort(removeDuplicates(lst_row))
+      lst_col := sort(removeDuplicates(lst_col))
+      mtx_wrk := new(#lst_row,#lst_col,0)$Matrix(F)
+      lst_sup := support(p)
+      lst_coe := coefficients(p)
+      for l in 1 .. #lst_sup repeat
+        m := lst_sup(l)
+        c := lst_coe(l)
+        u := 1$M1
+        i := position(u, lst_row)
+        j := position(m, lst_col)
+        mtx_wrk(i,j) := mtx_wrk(i,j) + c
+        for f in factors(m) repeat
+          for k in 1 .. f.exp repeat
+            u := u * f.gen
+            v := lquo(m, u)::M1
+            i := position(u, lst_row)
+            j := position(v, lst_col)
+            mtx_wrk(i,j) := mtx_wrk(i,j) + c
+      [lst_row, lst_col, mtx_wrk]
+
+    display (sys:HANSYS) : OutputForm ==
+      m := #sys.rows
+      n := #sys.cols
+      lst_tmp : List(OF) := []
+      mtx := new(m+1, lst_tmp)$List(List(OF))
+--      lst_wrk : List(OF) := [" "::String::OF]
+      lst_wrk : List(OF) := [hspace(1)]      
+      for j in 1 .. n repeat
+        lst_wrk := cons(qelt(sys.cols, j)::OF, lst_wrk)
+      qsetelt!(mtx, 1, reverse(lst_wrk))
+      for i in 1 .. m repeat
+        lst_wrk : List(OF) := [qelt(sys.rows, i)::OF]
+        for j in 1 .. n repeat
+          lst_wrk := cons(qelt(sys.H, i, j)::OF, lst_wrk)
+        qsetelt!(mtx, i+1, reverse(lst_wrk))
+      matrix(mtx)
+
+    -- FIXME: Such-Reihenfolge?
+    findNonZeroEntry(A:Matrix(F), i:NNI, j:NNI) : List(NNI) ==
+      flg_nz := false
+      row_nz := 0$NNI
+      col_nz := 0$NNI
+      for l in j .. ncols(A) repeat
+        for k in i .. nrows(A) repeat
+        --for l in j .. ncols(A) repeat
+          if not(qelt(A, k, l) = 0) then
+            flg_nz := true
+            row_nz := k
+            col_nz := l
+            break
+        if flg_nz then
+          break
+      [row_nz, col_nz]
+
+    addRows!(A:Matrix(F), i:NNI, j:NNI, alpha:F) : Matrix(F) ==
+      for k in 1 .. ncols(A) repeat
+        qsetelt!(A, j, k, alpha*qelt(A, i, k) + qelt(A, j, k))
+      A
+
+    -- FIXME: Testen!
+    minimalMatrix(A:Matrix(F), r:NNI) : Matrix(F) ==
+      m := nrows(A)
+      n := ncols(A)
+      B := copy(A)
+      -- get number of rows
+      while (rank(B) >= r) repeat
+        for j in 1 .. ncols(A) repeat
+          B(m,j) := 0$F
+        m := (m - 1)::PI
+      for i in m .. nrows(A) repeat
+        for j in 1 .. ncols(A) repeat
+          B(i,j) := A(i,j)
+      -- get number of columns
+      while (rank(B) >= r) repeat
+        for i in 1 .. nrows(A) repeat
+          B(i,n) := 0$F
+        n := (n - 1)::PI
+      m := m+1
+      n := n+1
+      subMatrix(A, 1, m, 1, n)
+
+    -- FIXME: +0 and -0 for DoubleFloat ...
+    transformationMatrices(A:Matrix(F)) : List(Matrix(F)) ==
+      m := nrows(A)
+      n := ncols(A)
+      rnk_A := rank(A)
+      P := new(m,m,0)$Matrix(F)
+      Q := new(n,n,0)$Matrix(F)
+      for i in 1 .. m repeat
+        P(i,i) := 1$F
+      for j in 1 .. n repeat
+        Q(j,j) := 1$F
+      B := copy(A)
+      for j in 1 .. rnk_A repeat
+        idx := findNonZeroEntry(B, j, j)
+        if not(j = idx(1)) then
+          swapRows!(B, idx(1), j)
+          swapRows!(P, idx(1), j)
+        if not(j = idx(2)) then
+          swapColumns!(B, idx(2), j)
+          swapColumns!(Q, idx(2), j)
+        beta := 1/qelt(B, j, j)
+        for k in 1 .. n repeat
+          qsetelt!(B, j, k, beta*qelt(B, j, k))
+        for k in 1 .. m repeat
+          qsetelt!(P, j, k, beta*qelt(P, j, k))
+        for k in 1 .. m repeat
+          if not(k = j) then
+            addRows!(P, j, k, -B(k,j))
+            addRows!(B, j, k, -B(k,j))
+      [P, Q]
+
+    minimalRepresentation(p:XDP) : LINREP ==
+      mtx_hankel : Matrix(F) := hankelMatrix(p)
+      rnk_p := rank(mtx_hankel)
+      min_hankel : Matrix(F) := minimalMatrix(mtx_hankel, rnk_p)
+      m : NNI := nrows(min_hankel)
+      n : NNI := ncols(min_hankel)
+      lst_tr := transformationMatrices(min_hankel)
+      P := lst_tr(1)
+      Q := lst_tr(2)
+      I_1 := new(rnk_p, m, 0)$Matrix(F)
+      I_2 := new(n, rnk_p, 0)$Matrix(F)
+      V_1 := new(1, m, 0)$Matrix(F)
+      V_1(1,1) := 1
+      V_2 := new(n, 1, 0)$Matrix(F)
+      V_2(1,1) := 1
+      for k in 1 .. rnk_p repeat
+        I_1(k,k) := 1
+        I_2(k,k) := 1
+      a_wrk : Matrix(F) := V_1 * min_hankel * Q * I_2
+      b_wrk : Matrix(F) := I_1 * P * min_hankel * V_2
+      mu_lst : List(Matrix(F)) := []
+      var_lst : List(VAR) := varList(p)
+      for sym in reverse(var_lst) repeat
+        H := hankelMatrix(p, sym)
+        mu_wrk := I_1 * P * subMatrix(H, 1, m, 1, n) * Q * I_2
+        mu_lst := cons(mu_wrk, mu_lst)
+      [a_wrk, mu_lst, var_lst, b_wrk]
+
+    

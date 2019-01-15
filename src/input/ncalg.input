@@ -1,0 +1,176 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "ncalg"
+
+testcase "fractions"
+
+ALPHABET := ['x, 'y, 'z];
+OVL := OrderedVariableList(ALPHABET)
+F := Fraction(Integer)
+OFM := FreeMonoid(OVL)
+FDA := FDALG(OVL, F)
+
+x := 'x::OFM::FDA;
+y := 'y::OFM::FDA;
+z := 'z::OFM::FDA;
+
+testEquals("(x^-1 + y^-1)^-1 - y*(x + y)^-1*x", "0")
+testEquals("x - (x^-1 + (y^-1 - x)^-1)^-1 - x*y*x", "0")
+
+f1 := x + y
+f2 := x + 3*y
+f3 := x - y
+
+testEquals("((f1 + f2) + f3) - (f1 + (f2 + f3))", "0")
+testEquals("((f1 + f2^-1) + f3) - (f1 + (f2^-1 + f3))", "0")
+testEquals("(f1*f2)*f3 - f1*(f2*f3)", "0")
+testEquals("(f1*f2^-2)*f3 - f1*(f2^-2*f3)", "0")
+testEquals("(f1 + f2)*f3 - f1*f3 - f2*f3", "0")
+testEquals("(f1 + f2^-1)*f3 - f1*f3 - f2^-1*f3", "0")
+
+testcaseNoClear "admissible linear systems"
+
+als ==> admissibleLinearSystem
+
+-- preparing some admissible linear systems representing zero
+f_0 := 0$FDA;
+f_1 : FDA := qnew(2);
+f_2 : FDA := qnew(3);
+for k in 2 .. 3 repeat _
+  qsetelt!(pencil(f_1), k, k, 1, 1$F)
+for k in 2 .. 4 repeat _
+  qsetelt!(pencil(f_2), k, k, 1, 1$F)
+f_3 := copy(f_2);
+addRows!(f_3, 2, 3, 2);
+f_4 : FDA := x*y*z;
+f_4(4) := 0;
+
+-- preparing some admissible linear systems
+f_5 : FDA := x*y*z;
+f_6 := copy(f_5);
+f_6 := addRows!(f_6, 3, 4, 2);
+f_7 := insertRowsColumns(f_5, [1], [2]);
+f_8 : FDA := x*z*y;
+
+-- preparing some big admissible linear systems
+f_11 : FDA := x*y*x*y*x*y*x*y + z
+f_12 : FDA := x*y*x*y*x*y*x*y + x
+f_13 := invertMIN(f_11)
+f_14 := invertMIN(f_12)
+
+-- prepare some tiny admissible linear systems
+f_15 : FDA := z^-1;
+f_16 := insertRowsColumns(f_15, [0,1], [0,1]);
+qsetelt!(pencil(f_16), 2, 3, 1, -2);
+qsetelt!(pencil(f_16), 2, 4, 1, -1/2);
+f_16(1) := 1;
+f_16(2) := 0;
+f_16(3) := -2;
+
+-- check minimization
+als(minimize(f_1))
+als(minimize(f_2))
+als(minimize(f_3))
+als(minimize(f_4))
+als(minimize(f_16))
+
+-- simple tests (zero)
+testTrue("zero?(f_0)")
+testTrue("zero?(f_1)")
+testTrue("zero?(f_2)")
+testTrue("zero?(f_3)")
+testTrue("zero?(f_4)")
+
+-- simple tests (true)
+testEquals("f_0", "f_0")
+testEquals("f_1", "f_0")
+testEquals("f_0", "f_2")
+testEquals("f_1", "f_4")
+testEquals("f_5", "f_6")
+testEquals("f_5", "f_7")
+testEquals("f_7", "f_6")
+
+-- simple tests (false)
+testTrue("not(f_5 = f_8)")
+testTrue("not(f_8 = f_6)")
+testTrue("not(f_8 = f_7)")
+
+-- tests which depend on linear word problem (false)
+testTrue("not(f_13 = f_14)")
+
+testcaseNoClear "factoring"
+
+XDP ==> XDPOLY(OVL, F)
+lS ==> List(Symbol)
+
+x := 'x::OFM::XDP;
+y := 'y::OFM::XDP;
+z := 'z::OFM::XDP;
+
+XDP_to_FDA(p) ==
+    lt := listOfTerms(p)
+    res : FDA := 0
+    for t in lt repeat
+        res := res + (t.c)::FDA*(t.k)::FDA
+    res
+
+e1 := ['mult1]$lS
+e2 := ['mult1, 'mult2]$lS
+p2 := ['mult1, 'prop2]$lS
+
+check_factor_prop(nl1, nl) ==
+    free nl1
+    free pfi2
+    free pfi
+    testTrue("(nl2 := factor(nl1); true)")
+    for fi2 in nl2 for fi in nl repeat
+        pfi2 := fi2
+        pfi := fi
+        testTrue("scalar?(pfi2/pfi)")
+
+test_factor(l: List XDP, ol : lS): Void ==
+    free l1
+    free nl
+    free nl1
+    nl := [XDP_to_FDA(p) for p in l]
+    l1 := reduce(*, l)
+    nl1 := reduce(*, nl)
+    if member?('mult1, ol) then
+        testEquals("factor nl1", "nl")
+    if member?('mult2, ol) then
+        nl1 := XDP_to_FDA(l1)
+        testEquals("factor nl1", "nl")
+    if member?('prop2, ol) then
+        nl1 := XDP_to_FDA(l1)
+        -- check_factor_prop(nl1, nl)
+
+a2 := x*y - y*x
+a3 := x*y*z - x*z*y + z*x*y - z*y*x + y*z*x - y*x*z
+
+test_factor([x, y], e2)
+test_factor([x, 1+y*x], e2)
+test_factor([1 - x*y, 1 - y*x], e2)
+test_factor([1 - x*y], e2)
+test_factor([x*y-y*x], e2)
+test_factor([x*y+y*x], e2)
+test_factor([1 - x*y*z*y*x*z], e2)
+test_factor([x - 3, x - 3], p2)
+test_factor([2*x - 3, 2*x - 3], p2)
+test_factor([x*x-2], e2)
+test_factor([x+y, x-y], e2)
+test_factor([x, 1 + y*x, 1+z*y, x*y*z-z*x*y], e2)
+test_factor([1-x*y, 2+y*x, 3-y*z, 2-z*y, 1-x*z], e1)
+test_factor([3*x*y+5*y*x, 3*x*y+5*y*x], p2)
+test_factor([3*x*y+5*y*x, 3*x*y+5*y*x, 3*x*y+5*y*x], p2)
+test_factor([2 + x, (1/2)*(1 + y), -6 + 2*z], e2)
+test_factor([1-x*y, 2+y*x, 3-y*z, 2-z*y, x], p2)
+test_factor([(1/12)*(x^2 + 5), 12*(x^2 + x + 7)], e2)
+test_factor([-(29/3)*(3*x^2 - x - 7), -(3/29)*(2*x^2 +3*x - 4)], e1)
+test_factor([(1/5)*(x^2 + 5), 5*(x^3 + x + 7)], e1)
+test_factor([x^3 + 5, x^3 + x + 7], e1)
+test_factor([(1/7)*(x^3 + x + 7), 7*a3, a2], e1)
+test_factor([a2^2 - 2, a2^2 - 3], e1)
+test_factor([a3, 1 + y], e2)
+
+statistics()

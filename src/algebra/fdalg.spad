@@ -1,0 +1,2531 @@
+-- Free Fields in FriCAS
+-- Created: Mon 2016-03-21 13:07
+-- Changed: Mon 2017-06-12 13:07
+-- Changed: Die 2018-07-03 19:25
+-- Changed: Don 2018-08-30 09:09
+-- Changed: Fre 2018-09-07 14:24
+
+)abbrev domain FDALG FreeDivisionAlgebra
+++ Author: Konrad Schrempf <schrempf@math.tugraz.at>
+++ Date Created: Mit 2016-08-17 09:27
+++ Date Changed: Fre 2018-09-07 14:24
+++ Basic Functions:
+++ Related Constructors: LinearMultivariateMatrixPencil, XDistributedPolynomial, FreeAssociative Algebra
+++ Also See: XDistributedPolynomialFunctions
+++ AMS Classifications:
+++ Keywords: admissible linear system, minimal linear representation, noncommutative rational function, linearization, realization
+++ References: Cohn and Reutenauer 1999, Schrempf 2017/2018
+++ Description:
+++ The elements of the Free Field are represented by Admissible
+++ Linear Systems (ALS) in standard form ...
+
+FreeDivisionAlgebra(VAR, F) : Exports == Implementation where
+  F : Field
+  VAR : OrderedSet
+
+  FLGDBG ==> true
+  ALTOUT ==> true
+
+  PI ==> PositiveInteger
+  NNI ==> NonNegativeInteger
+  OF ==> OutputForm
+
+  LMMP ==> LinearMultivariateMatrixPencil(F)
+  G ==> Polynomial(F)
+  EQG ==> Equation(G)
+  FG ==> Fraction(G)
+  EQFG ==> Equation(FG)
+  M1 ==> FreeMonoid(VAR)
+  XDP ==> XDistributedPolynomial(VAR, F)
+  TERM ==> Record(k:M1, c:F)
+
+  IDXMIN ==> 1$NNI
+  IDXMAX ==> 2::NNI
+  IDXSZE ==> 3::NNI
+  IDXREF ==> 4::NNI
+
+  Exports == Join(DivisionRing(), Algebra(F)) with
+
+    -- Declaration (internal)
+    -- Changed: Fre 2018-09-07 14:27
+
+    interval : (NNI, NNI) -> List(NNI)
+      ++ \spad{interval(i, j)} creates list [i, i+1, ..., j]
+
+    -- Declaration (basics)
+    -- Changed: Mit 2018-08-15 20:23
+    -- Changed: Sam 2018-09-01 23:07
+
+    qnew : (NNI) -> %
+      ++ \spad{qnew(n)} creates an empty ALS of dimension n.
+    qnew : (NNI, List(M1)) -> %
+      ++ \spad{qnew(n, lst)} creates an empty ALS of dimension n.
+    new : (LMMP, List(M1)) -> %
+      ++ \spad{new(lp, lst)} creates an element by the linear
+      ++ multivariate matrix pencil lp and the list of monomials lst.
+    new : (c:F) -> %
+      ++ \spad{new(c)} creates a constant element.
+    new : (m:M1, c:F) -> %
+      ++ \spad{new(m,c)} creates a monomial element with coefficient c.
+
+    copy : (%) -> %
+      ++ \spad{copy(f)} gives a copy of the element f.
+    copy : (%, F) -> %
+      ++ \spad{copy(f, alpha)} gives a copy of element f
+      ++ multiplied by alpha.
+    coerce : (m:M1) -> %
+      ++ \spad{coerce(m)} converts the monoid m into an element of
+      ++ the free field represented by an ALS in minimal refined form.
+    coerce : (c:F) -> %
+      ++ \spad{coerce(c)} converts the constant c into an element of
+      ++ the free field represented by an ALS in minimal refined form.
+
+    enableDebugOutput : (f:%) -> %
+      ++ \spad{enableDebugOutput(f)} enable displaying the ALS.
+    disableDebugOutput : (f:%) -> %
+      ++ \spad{disableDebugOutput(f)} disable displaying the ALS.
+    toggleDebugOutput : (f:%) -> %
+      ++ \spad{toggleDebugOutput(f)} enable/disable ALS.
+    enableAlternativeOutput : (f:%) -> %
+      ++ \spad{enableAlternativeOutput(f)} enable output as
+      ++ rational expression.
+    disableAlternativeOutput : (f:%) -> %
+      ++ \spad{disableAlternativeOutput(f)} disable output as
+      ++ rational expression.
+    toggleAlternativeOutput : (f:%) -> %
+      ++ \spad{toggleAlternativeOutput(f)} enable/disable output
+      ++ as rational expression.
+
+    minimal? : (%) -> Boolean
+      ++ \spad{minimal?(f)} is f represented by a minimal ALS?
+    mutable? : (%) -> Boolean
+      ++ \spad{mutable?(f)} is the underlying ALS of f mutable?
+
+    qregular? : (%, NNI, NNI) -> Boolean
+      ++ \spad{qregular?(f, i_min, i_max)} does the specified
+      ++ diagonal block define a regular element?
+    scalar? : (%, NNI, NNI) -> Boolean
+      ++ \spad{scalar?(f, i, j)} is A(i,j) scalar?
+    zero? : (%, NNI, NNI) -> Boolean
+      ++ \spad{zero?(f, i, j)} is A(i,j) zero?
+    scalar? : (%) -> Boolean
+      ++ \spad{scalar?(f)} is f scalar?
+    regular? : (%) -> Boolean
+      ++ \spad{regular?(f)} is f a regular element?
+    polynomial? : (%) -> Boolean
+      ++ \spad{polynomial?(f)} is the ALS in polynomial form?
+
+    dimension : (%) -> NNI
+      ++ \spad{dimension(f)} returns the dimension of the ALS.
+    variables : (%) -> List(M1)
+      ++ \spad{variables(f)} returns a list of the variables.
+
+    elt : (%, NNI) -> F
+      ++ \spad{elt(f, i)} returns v(i) from the ALS of f.
+    qelt : (%, NNI, NNI) -> XDP
+      ++ \spad{qelt(f, i, j)} returns A(i,j) from the ALS of f.
+    elt : (%, NNI, NNI) -> XDP
+      ++ \spad{elt(f, i, j)} returns A(i,j) from the ALS of f.
+    setelt! : (%, NNI, F) -> F
+      ++ \spad{setelt!(f, i, alpha)} sets v(i) = alpha in the ALS of f.
+    setelt! : (%, NNI, NNI, XDP) -> XDP
+      ++ \spad{setelt!(f, i, j, p)} sets A(i,j) = p in the ALS of f
+      ++ (where p has degree less equal one) if the system is in
+      ++ polynomial form and j>i.
+
+    vector : (%) -> Matrix(F)
+      ++ \spad{vector(f)} returns v from the ALS of f.
+    vector : (%) -> Matrix(XDP)
+      ++ \spad{vector(f)} returns v from the ALS of f.
+    matrix : (%, M1) -> Matrix(F)
+      ++ \spad{matrix(f,m)} returns the coefficient matrix for
+      ++ the monomial m of the ALS of f.
+    matrix : (%) -> Matrix(XDP)
+      ++ \spad{matrix(f)} returns the matrix of the ALS of f.
+
+    appendSupport! : (%, List(M1)) -> %
+      ++ \spad{appendSupport! (f, lst)} appends variables not in the support.
+
+    -- FIXME: For testing and debugging only (should return a copy).
+    pencil : (%) -> LMMP
+      ++ \spad{pencil(f)} returns a pointer to the underlying pencil.
+
+    swapRowsColumns! : (%, NNI, NNI) -> %
+      ++ \spad{swapRowsColumns!(f, i, j)} exchanges rows i and j and
+      ++ columns j and i in the ALS of f.
+    swapRows! : (%, NNI, NNI) -> %
+      ++ \spad{swapRows!(f, i, j)} exchanges rows i and j in the ALS of f.
+    qswapRows! : (%, NNI, NNI) -> %
+      ++ \spad{swapRows!(f, i, j)} exchanges rows i and j in the ALS of f.
+    addRowsColumns! : (%, NNI, NNI, F) -> %
+      ++ \spad{addRowsColumns!(f, i, j, alpha)} adds alpha*row(i) to
+      ++ row(j) and subtracts alpha*column(j) from column(i) in the ALS of f.
+    addColumnsRows! : (%, NNI, NNI, F) -> %
+      ++ \spad{addColumnsRows!(f, i, j, alpha)} adds alpha*column(i) to
+      ++ column(j) and subtracts alpha*row(j) from row(i) in the ALS of f.
+    addRows! : (%, NNI, NNI, F) -> %
+      ++ \spad{addRows!(f, i, j, alpha)} adds alpha*row(i) to row(j) in
+      ++ the ALS of f.
+    qaddRows! : (%, NNI, NNI, F) -> %
+      ++ \spad{addRows!(f, i, j, alpha)} adds alpha*row(i) to row(j) in
+      ++ the ALS of f.
+    multiplyRow! : (%, NNI, F) -> %
+      ++ \spad{multiplyRow!(f, i, alpha)} multiplies row(i) by alpha
+      ++ in the ALS of f.
+    multiplyColumn! : (%, NNI, F) -> %
+      ++ \spad{multiplyColumn!(f, i, alpha)} multiplies column(i) by alpha
+      ++ in the ALS of f.
+    qswapColumns! : (%, NNI, NNI) -> %
+      ++ \spad{swapColumns!(f, i, j)} exchanges columns i and j in
+      ++ the ALS of f.
+    swapColumns! : (%, NNI, NNI) -> %
+      ++ \spad{swapColumns!(f, i, j)} exchanges columns i and j in
+      ++ the ALS of f.
+    qaddColumns! : (%, NNI, NNI, F) -> %
+      ++ \spad{addColumns!(f, i, j, alpha)} adds alpha*column(i) to
+      ++ column(j) in A and subtracts row(j) from row(i) in s (in the
+      ++ ALS of f), i.e. (A*U)(U^-1*s) = v.
+    addColumns! : (%, NNI, NNI, F) -> %
+      ++ \spad{addColumns!(f, i, j, alpha)} adds alpha*column(i) to
+      ++ column(j) in A and subtracts row(j) from row(i) in s (in the
+      ++ ALS of f), i.e. (A*U)(U^-1*s) = v.
+    removeRowsColumns : (%, List(NNI), List(NNI)) -> %
+      ++ \spad{removeRowsColumns(f, lst_row, lst_col)} returns
+      ++ a new system with the specified rows and columns removed.
+      ++ The number of rows and columns have to be the same!
+    insertRowsColumns : (%, List(NNI), List(NNI)) -> %
+      ++ \spad{insertRowsColumns(f, lst_row, lst_col)} returns
+      ++ a new system with rows and columns inserted. An index
+      ++ k means a new row/column between k and k+1. The number
+      ++ of rows and columns have to be the same!
+
+    qzero? : (%, NNI, NNI, NNI, NNI) -> Boolean
+      ++ \spad{qzero?(f, i_min, i_max, j_min, j_max)} is the
+      ++ spezified block zero (in the system matrix)?
+    qzero? : (%, NNI, NNI, NNI, NNI, NNI) -> Boolean
+      ++ \spad{qzero?(f, i_min, i_max, j_min, j_max, l)} is the
+      ++ spezified block zero in matrix l?
+    qzero? : (%, NNI, NNI, NNI, NNI, M1) -> Boolean
+      ++ \spad{qzero?(f, i_min, i_max, j_min, j_max, m)} is the
+      ++ spezified block zero in the (system) matrix corresponding
+      ++ to the monomial m?
+
+    blockStructure : (%) -> Matrix(NNI)
+      ++ \spad{blockStructure(f)} analyzes the structure of the ALS
+      ++ of f and detects blocks with respect to an upper triangular
+      ++ structure. Entry (i,1) contains the first row, (i,2) the
+      ++ last row, (i,3) the size and (i,4) if block i is refined.
+    refined? : (%) -> Boolean
+      ++ \spad{refined?(f)} is f represented by a refined ALS?
+
+    blockElimination : (%, List(NNI), List(NNI), Boolean, _
+        List(NNI), List(NNI), Boolean) -> List(Matrix(F))
+      ++ \spad{blockElimination(f, rsrc, rdst, flg_u, csrc, cdst, flg_v)}
+      ++ returns transformation matrices if it is possible to eliminate
+      ++ all entries in rdst x cdst (including columns in u if flg_u = true,
+      ++ including rows in v if flg_v = true) by using rows in rsrc and
+      ++ columns in csrc. Otherwise an empty list.
+    blockElimination : (%, List(NNI), List(NNI), List(NNI), List(NNI)) -> List(Matrix(F))
+      ++ \spad{blockElimination(f, rsrc, rdst, csrc, cdst)}
+      ++ flg_u = true, flg_v = true
+
+    display : (%, OutputForm) -> OutputForm
+      ++ \spad{display(f,sol)} prints the element f as A*sol = v.
+    display : (%, List(Symbol)) -> OutputForm
+      ++ \spad{display(f,[s])} prints the element f as A*(s_1,s_2,...,s_n)' = v.
+    admissibleLinearSystem : (%) -> OutputForm
+      ++ \spad{admissibleLinearSystem(f)} output as ALS.
+    linearization : (%) -> Matrix(XDP)
+      ++ \spad{linearization(f)} returns the element f as linearization.
+    linearization : (%) -> Matrix(%)
+      ++ \spad{linearization(f)} returns the element f as linearization
+      ++ with entries represented by admissible linear systems in minimal
+      ++ refined form.
+    representation : (%) -> List(Matrix(XDP))
+      ++ \spad{representation(f)} returns the element f as linear
+      ++ representation (u,A,v).
+
+    _* : (f:%, U:Matrix(F)) -> %
+      ++ \spad{f * U} column transformation
+    _* : (T:Matrix(F), f:%) -> %
+      ++ \spad{T * f} row transformation
+    transformationMatrix : (%) -> Matrix(F)
+      ++ \spad{transformationMatrix(f)} returns the identity matrix
+      ++ to be modified and used within transformRows! or transformColumns!
+    transformRows! : (%, Matrix(F)) -> %
+      ++ \spad{transformRows!(f, T)} transforms the ALS of f from the left.
+    transformColumns! : (%, Matrix(F)) -> %
+      ++ \spad{transformColumns!(f, U)} transforms the ALS of f from the right.
+
+    -- Declaration (calculation)
+    -- Changed: Son 2018-08-12 11:09
+    -- Changed: Sam 2018-09-01 23:31
+
+    normalizeRHS! : (%) -> %
+      ++ \spad{normalizeRHS!(f)} eliminates non-zero entries in the
+      ++ right hand side of ALS with respect of the non-zero entry
+      ++ with the highest index.
+    normalizePLS! : (%) -> %
+      ++ \spad{normalizePLS!(f)} scales and rearranges rows and
+      ++ columns of the system matrix such that the constant part
+      ++ of the system matrix is the identity matrix (possibly of
+      ++ smaller size).
+    normalizeDIAG! : (%) -> %
+      ++ \spad{normalizeDIAG!(f)} rescales the rows such that the
+      ++ first nonzero entry of the coefficient matrix in the diagonal
+      ++ is one.
+    normalize! : (%) -> %
+      ++ \spad{normalize!(f)} rescales the rows such that the first
+      ++ nonzero entry of the coefficient matrix in the diagonal is
+      ++ one. The right hand side is normalized by normalizeRHS!
+      ++ and the non-zero entry is in the last row of the corresponding
+      ++ block.
+
+    polynomial : (%) -> XDP
+      ++ \spad{polynomial(f)} returns f as XDPOLY (if possible)
+    solutionVector : (%) -> Matrix(XDP)
+      ++ \spad{solutionVector(f)} computes the solution vector s
+      ++ of As=v if f is polynomial.
+    solutionVector : (%, NNI) -> Matrix(XDP)
+      ++ \spad{solutionVector(f, k)} computes the approximated
+      ++ solution vector up to powers M^k v' where PAs=Pv=v' with
+      ++ PA = I-M.
+    columnSpan : (%) -> Stream(Matrix(XDP))
+      ++ \spad{columnSpan(f)} computes the column span for a regular
+      ++ element, that is (v', Mv', M^2v', ...) where PAs=Pv=v' with
+      ++ PA = I-M.
+    rowSpan : (%) -> Stream(Matrix(XDP))
+      ++ \spad{rowSpan(f)} computes the row span for a regular element,
+      ++ that is (u; uM; uM^2; ...) where PAs=Pv with PA = I-M.
+
+    scaleALS : (%, F) -> %
+      ++ \spad{scaleALS(f, alpha)} computes alpha*f by scaling
+      ++ the right hand side of the ALS for f.
+    addALS : (%, %) -> %
+      ++ \spad{addALS(f,g)} computes f+g in terms of the admissible
+      ++ linear systems for f and g (without minimization).
+    multiplyALS : (%, %) -> %
+      ++ \spad{multiplyALS(f,g)} computes f*g in terms of the admissible
+      ++ linear systems for f and g (without minimization).
+    invertALS : (%) -> %
+      ++ \spad{invertALS(f)} computes f^-1 in terms of the ALS for f.
+      ++ There is no check if f is invertible!
+    invertSTD : (%) -> %
+      ++ \spad{invertSTD(f)} computes the standard inverse of f in
+      ++ terems of the admissible linear system There is no check if
+      ++ f is invertible!
+
+    -- Declaration (factorization)
+    -- Changed: Sam 2018-09-01 23:45
+
+    factors : (%) -> List(%)
+      ++ \spad{factors(f)} analysis the block structure of the
+      ++ system matrix of the ALS of f to split f into factors.
+    summands : (%) -> List(%)
+      ++ \spad{summands(f)} analysis the block structure of the
+      ++ system matrix of the ALS of f to split f into summands.
+    leftFamily : (%) -> List(OutputForm)
+      ++ \spad{leftFamily(f)} prints the left family s=A^-1*v.
+    rightFamily : (%) -> List(OutputForm)
+      ++ \spad{rightFamily(f)} prints the right family t=u*A^-1.
+    ratexprInverse : (%, Boolean) -> OutputForm
+      ++ \spad{ratexprInverse(f, flg)} returns f in output form if
+      ++ it is a polynomial, (f)^-1 if f^-1 is a polynomial, "r<rank>"
+      ++ if the system is minimal and "d<dim>" in general.
+    ratexpr : (%) -> OutputForm
+      ++ \spad{ratexpr(f)} analysis the block structure of the
+      ++ admissible linear system to write f as rational expression.
+
+    coerce : (%) -> OutputForm
+      ++ \spad{coerce(f)} prints the ALS of f if the debug flag is
+      ++ set and a rational expression if the alternative output
+      ++ flag is set.
+
+    leftFactor : (%, NNI) -> %
+      ++ \spad{leftFactor(f,k)} returns the left factor of rank k
+      ++ of a polynomial f or 1 if it's not possible by linear
+      ++ techniques.
+    rightFactor : (%, NNI) -> %
+      ++ \spad{rightFactor(f,k)} returns the right factor of rank k
+      ++ of a polynomial f or 1 if it's not possible by linear
+      ++ techniques.
+
+    factorize : (%, NNI) -> List(%)
+      ++ \spad{factorize(f,k)} factorizes f in f=g*h with rank(g)=k
+      ++ if possible (if necessary by using non-linear techniques).
+    factor : (%) -> List(%)
+      ++ \spad{factor(f)} factorizes f in f=f_1*f_2*...*f_k with
+      ++ atoms (irreducible elements) f_i. Notice that this factorization
+      ++ is unique only with respect to similiarity.
+
+    factorizationTransformations : (%, NNI, NNI, List(EQG)) -> List(Matrix(F))
+      ++ \spad{factorizationTransformations(f,k_rows,k_cols,sol)}
+      ++ for debugging purposes (interface LINPEN)
+    factorizationEquations : (%, NNI, NNI) -> List(G)
+      ++ \spad{factorizationEquations(f,k_rows,k_cols)}
+      ++ for debugging purposes (interface LINPEN)
+    factorizationGroebner : (%, NNI, NNI) -> List(G)
+      ++ \spad{factorizationGroebner(f,k_rows,k_cols)}
+      ++ for debugging purposes (interface LINPEN)
+    factorizationSolve : (%, NNI, NNI) -> List(List(EQG))
+      ++ \spad{factorizationSolve(f,k_rows,k_cols)} returns a
+      ++ (possible empty) list of solutions for an admissible
+      ++ transformation to create an upper right block of zeros
+      ++ of size k_rows times k_cols.
+
+    refineUR! : (%, NNI) -> %
+      ++ \spad{refineUR!(f,k)} uses linear techniques to create an
+      ++ upper right block of zeros with k rows (if possible).
+    refineUR! : (%) -> %
+      ++ \spad{refineUR!(f)} uses linear techniques to create upper
+      ++ right blocks of zeros in staircase form (as far as possible).
+
+    -- Declaration (minimization)
+    -- Changed: Fre 2018-09-07 15:55
+
+    extendedALS : (%) -> %
+      ++ \spad{extendedALS(f)} returns an extended ALS for f, that is,
+      ++ 1*f (with a scalar first row).
+    normalALS : (%) -> %
+      ++ \spad{normalALS(f)} removes a scalar first row of an (extended) ALS.
+    leftMinimization : (%, NNI, NNI) -> %
+      ++ \spad{leftMinimization(f, i_min, i_max)} tries to apply a
+      ++ left minimization step with respect to the pivot block with
+      ++ the rows/columns (i_min, ..., i_max).
+    rightMinimization : (%, NNI, NNI) -> %
+      ++ \spad{rightMinimization(f, i_min, i_max)} tries to apply a
+      ++ right minimization step with respect to the pivot block with
+      ++ the rows/columns (i_min, ..., i_max).
+    minimize : (%) -> %
+      ++ \spad{minimize(f)} minimizes the unterlying ALS by applying
+      ++ left and right block minimization steps. Minimality is only
+      ++ guaranteed if the remaining blocks are refined.
+
+    addMIN : (%, %) -> %
+      ++ \spad{addMIN(f,g)} uses addALS(f,g) with minimization.
+    multiplyMIN : (%, %) -> %
+      ++ \spad{multiplyMIN(f,g)} uses multiplyALS(f,g) with minimization.
+    invertMIN : (%) -> %
+      ++ \spad{invertMIN(f)} uses invertSTD(f) and minimization to
+      ++ construct a minimal system for f^-1. Linear techniques are
+      ++ used to get a fine pivot block structure.
+    inverse : (%) -> %
+      ++ \spad{inverse(f)} f^-1 using invertMIN.
+
+    _+ : (%, F) -> %
+      ++ \spad{f + alpha} adds the scalar alpha to f.
+    _- : (%, F) -> %
+      ++ \spad{f - alpha} subtracts the scalar alpha from f.
+    _+ : (F, %) -> %
+      ++ \spad{alpha + f} adds the scalar alpha to f.
+    _- : (F, %) -> %
+      ++ \spad{alpha - f} adds the scalar alpha to -f.
+    _/ : (%, F) -> %
+      ++ \spad{f / alpha} computes f / alpha for nonzero alpha.
+    _/ : (F, %) -> %
+      ++ \spad{alpha / f} computes alpha / f for nonzero f.
+    _/ : (%, %) -> %
+      ++ \spad{f / g} computes f * g^-1 for nonzero element g.
+    _^ : (%, PositiveInteger) -> %
+      ++ \spad{f^n} returns f^n.
+    _^ : (%, Integer) -> %
+      ++ \spad{f^n} returns f^n.
+
+    setRefined! : (%, NNI) -> %
+      ++ \spad{setRefined!(f,max_sze)} sets the internal flag if the
+      ++ system is refined (over the ground field) up to the specified
+      ++ block size.
+
+    refine! : (%, Boolean) -> %
+      ++ \spad{refine!(f, flg)} refines the underlying admissible
+      ++ admissible linear system using simple and linear techniques
+      ++ and if flg=true also non-linear techniques (Groebner basis).
+    refine! : (%) -> %
+      ++ \spad{refine!(f)} refines f using non-linear techniques.
+
+    refinementTransformations : (%, NNI, NNI, List(EQG)) -> List(Matrix(F))
+      ++ \spad{refinementTransformations(f,i_min,i_max,sol)}
+      ++ for debugging purposes (interface LINPEN)
+    refinementEquations : (%, NNI, NNI, NNI, Boolean, Boolean) -> List(G)
+      ++ \spad{refinementEquations(f,i_min,i_max,k_rows,flg_u,flg_r)}
+      ++ for debugging purposes (interface LINPEN)
+    refinementGroebner : (%, NNI, NNI, NNI, Boolean, Boolean) -> List(G)
+      ++ \spad{refinementGroebner(f,i_min,i_max,k_rows,flg_u,flg_r)}
+      ++ computes a Groebner basis for the ideal generated by the
+      ++ equations for creating a zero block with k rows within the
+      ++ pivot block i_min..i_max and conditions to guarantee invertible
+      ++ transformations.
+    refinementSolve : (%, NNI, NNI, NNI, Boolean, Boolean) -> List(List(EQG))
+      ++ \spad{refinementSolve(f,i_min,i_max,k_rows,flg_u,flg_r)}
+      ++ Computes a list of solutions (for the entries in transformation
+      ++ matrices) to create a lower left block of zeros with k rows in
+      ++ the pivot block i_min..i_max.
+
+    rank : (%) -> NNI
+      ++ \spad{rank(f)} returns the rank of the element f, that is,
+      ++ the dimension of a minimal admissible linear system (for f).
+
+    coerce : (%) -> XDP
+      ++ \spad{coerce(f)} converts the element to XDPOLY (if possible).
+    coerce : (XDP) -> %
+      ++ \spad{coerce(p)} converts the polynomial p to an element in the
+      ++ free field represented by an minimal admissible linear system.
+
+    --<-<SPAD:fdalg dcl05>>
+
+  Implementation == add
+    -- f = u * A^-1 * v, A full, u = [1,0,...,0]
+    Rep := Record(size:NNI, _
+                  supp:List(M1), _
+                  lmmp:LMMP, _
+                  flg_minimal:Boolean, _
+                  flg_refined:Boolean, _
+                  flg_mutable:Boolean, _
+                  flg_debug:Boolean, _
+                  flg_output:Boolean)
+    -- Implementation (internal)
+    -- Changed: Fre 2018-09-07 14:28
+
+    -- The admissible linear system \pi = (u,A,v) of dimension n
+    -- for an element f=u*A^-1*v in the free field is represented
+    -- by a matrix pencil of size n+1: [0, u; v, A]. To simplify
+    -- the access to the system matrix A and the (scalar) vectors
+    -- u and v we use the following functions ...
+
+    POS_1 ==> 1$NNI -- The position of the coefficient matrix w.r.t. the empty word
+    NUM_R ==> 1$NNI -- Number of rows of the matrix u in u*A^-1*v
+    NUM_C ==> 1$NNI -- Number of columns of the matrix v in u*A^-1*v
+
+    characteristic() == characteristic()$F
+
+    -- Warning: Notice that NUM_R = NUM_C > 1 is a matrix algebra
+    -- (with zero devisors) over the free field and NOT a field
+    -- anymore. Everything except NUM_R = NUM_C = 1 has not been
+    -- tested. The notion of minimality is not clear for NUM_R > 1
+    -- or NUM_C > 1.
+
+    qeltA (p:LMMP, i:NNI, j:NNI, l:NNI) : F ==
+      qelt(p, NUM_R+i, NUM_C+j, l)
+    qeltv (p:LMMP, i:NNI, l:NNI) : F ==
+      qelt(p, NUM_R+i, 1, l)
+    qeltu (p:LMMP, j:NNI, l:NNI) : F ==
+      qelt(p, 1, NUM_C+j, l)
+    qlstA (p:LMMP, i:NNI, j:NNI) : List(F) ==
+      qelt(p, NUM_R+i, NUM_C+j)
+
+    qsetu! (p:LMMP, i:NNI, l:NNI, alpha:F) : F ==
+      qsetelt!(p, 1, NUM_C+i, l, alpha)
+    qsetA! (p:LMMP, i:NNI, j:NNI, l:NNI, alpha:F) : F ==
+      qsetelt!(p, NUM_R+i, NUM_C+j, l, alpha)
+    qsetv! (p:LMMP, i:NNI, l:NNI, alpha:F) : F ==
+      qsetelt!(p, NUM_R+i, 1, l, alpha)
+
+    qmtxu (p:LMMP, j1:NNI, j2:NNI, l:NNI) : Matrix(F) ==
+      subMatrix(p, 1, NUM_R, NUM_C+j1, NUM_C+j2, l)
+    qmtxA (p:LMMP, i1:NNI, i2:NNI, j1:NNI, j2:NNI, l:NNI) : Matrix(F) ==
+      subMatrix(p, NUM_R+i1, NUM_R+i2, NUM_C+j1, NUM_C+j2, l)
+    qmtxv (p:LMMP, i1:NNI, i2:NNI, l:NNI) : Matrix(F) ==
+      subMatrix(p, NUM_R+i1, NUM_R+i2, 1, NUM_C, l)
+
+    qscalev!(p:LMMP, i1:NNI, i2:NNI, l:NNI, alpha:F) : LMMP ==
+      qscaleBlock!(p, NUM_R+i1, NUM_R+i2, 1, NUM_C, l, alpha)
+
+    qscale!(f:%, alpha:F) : % ==
+      qscaleBlock!(f.lmmp, NUM_R+1, NUM_R+f.size, 1, NUM_C, POS_1, alpha)
+      f
+
+    qsetmtxu! (p:LMMP, j:NNI, l:NNI, a:Matrix(F)) : Matrix(F) ==
+      setsubMatrix!(p, 1, NUM_C+j, l, a)
+    qsetmtxA! (p:LMMP, i:NNI, j:NNI, l:NNI, a:Matrix(F)) : Matrix(F) ==
+      setsubMatrix!(p, NUM_R+i, NUM_C+j, l, a)
+    qsetmtxv! (p:LMMP, i:NNI, l:NNI, a:Matrix(F)) : Matrix(F) ==
+      setsubMatrix!(p, NUM_R+i, 1, l, a)
+
+    qzeroA? (p:LMMP, i:NNI, j:NNI) : Boolean ==
+      qzero?(p, NUM_R+i, NUM_C+j)
+    qzeromtxA? (p:LMMP, i1:NNI, i2:NNI, j1:NNI, j2:NNI) : Boolean ==
+      qzero?(p, NUM_R+i1, NUM_R+i2, NUM_C+j1, NUM_C+j2)
+    qsemizeroA? (p:LMMP, i1:NNI, i2:NNI, j1:NNI, j2:NNI, l:NNI) : Boolean ==
+      qsemizero?(p, NUM_R+i1, NUM_R+i2, NUM_C+j1, NUM_C+j2, l)
+    qzerov? (p:LMMP, i1:NNI, i2:NNI) : Boolean ==
+      qzero?(p, NUM_R+i1, NUM_R+i2, 1, NUM_C)
+
+    interval (i_min:NNI, i_max:NNI) : List(NNI) ==
+      lst_wrk : List(NNI) := []
+      for k in i_max .. i_min by -1 repeat
+        lst_wrk := cons(k, lst_wrk)
+      lst_wrk
+
+    -- Implementation (basics)
+    -- Changed: Mit 2018-08-22 08:52
+    -- Changed: Sam 2018-09-01 23:27
+
+    qnew (n:NNI) : % ==
+      lst_new := [1$M1]$List(M1)
+      lp := qnew(n+1, n+1, #lst_new)$LMMP
+      qsetelt!(lp, 1, 2, POS_1, 1$F)
+      flg_min := false
+      flg_ref := false
+      [n, lst_new, lp, flg_min, flg_ref, true, FLGDBG, ALTOUT]
+
+    qnew (n:NNI, lst:List(M1)) : % ==
+      lst_new := cons(1$M1, remove(1$M1, lst))
+      lp := qnew(n+1, n+1, #lst_new)$LMMP
+      qsetelt!(lp, 1, 2, POS_1, 1$F)
+      flg_min := false
+      flg_ref := false
+      [n, lst_new, lp, flg_min, flg_ref, true, FLGDBG, ALTOUT]
+
+    -- FIXME: Check entries in pencil (fullness of system matrix, etc.)
+    new (lp:LMMP, lst:List(M1)) : % ==
+      for mon in lst repeat
+        length(mon) > 1 =>
+          error "FDALG: new(lp, lst) - monomials not linear."
+      nrows(lp) ~= ncols(lp) =>
+        error "FDALG: new(lp,lst) - Linear Pencil is not square."
+      #lst ~= nelem(lp) =>
+        error "FDALG: new(lp,lst) - lengths do not agree."
+      n := (nrows(lp) - 1)::NNI
+      flg_min := false
+      flg_ref := false
+      [n, lst, lp, flg_min, flg_ref, true, FLGDBG, ALTOUT]
+
+    getSupport (var:List(VAR)) : List(M1) ==
+      lst_mon := new(1+#var, 1$M1)$List(M1)
+      for k in 1 .. #var repeat
+        lst_mon(k+1) := var(k)::M1
+      lst_mon
+
+    new (c:F) : % ==
+      if zero?(c) then
+        return(copy(0))
+      als := qnew(1)
+      qsetA!(als.lmmp, 1, 1, POS_1, 1$F)
+      qsetv!(als.lmmp, 1, POS_1, c)
+      als.flg_minimal := true
+      als.flg_refined := true
+      als
+
+    new (m:M1, c:F) : % ==
+      if zero? c then
+          als := qnew(1)
+          qsetA!(als.lmmp, 1, 1, POS_1, 1$F)
+        else
+          n := length(m) + 1
+          als := qnew(n, getSupport(varList(m)))
+          l := 0$NNI
+          -- e.g. for m = xyyx
+          -- factors(m) = [[gen=x,exp=1], [gen=y,exp=2], [gen=x,exp=1]]
+          for fct in factors(m) repeat
+            pos := position((fct.gen)::M1, als.supp)::NNI
+            for i in 1 .. fct.exp repeat
+              qsetA!(als.lmmp, 1+l, 1+l+1, pos, -1$F)
+              l := l + 1
+          for k in 1 .. n repeat
+            qsetA!(als.lmmp, k, k, POS_1, 1$F)
+          qsetv!(als.lmmp, n, POS_1, c)
+      als.flg_minimal := true
+      als.flg_refined := true
+      als
+
+    -- Info: Matrix size 0 causes problems, therefore a matrix of dimension 1 is used.
+    0 : % ==
+      als := qnew(1)
+      qsetA!(als.lmmp, 1, 1, POS_1, 1$F)
+      als.flg_minimal := true
+      als.flg_refined := true
+      als.flg_mutable := false
+      als.flg_debug := false
+      als.flg_output := false
+      als
+
+    1 : % ==
+      als := qnew(1)
+      qsetA!(als.lmmp, 1, 1, POS_1, 1$F)
+      qsetv!(als.lmmp, 1, POS_1, 1$F)
+      als.flg_minimal := true
+      als.flg_refined := true
+      als.flg_mutable := false
+      als.flg_debug := false
+      als.flg_output := false
+      als
+
+    copy (f:%) : % ==
+      lmmp_new := copy(f.lmmp)
+      supp_new := copy(f.supp)
+      [f.size, supp_new, lmmp_new, f.flg_minimal, f.flg_refined, _
+        true, f.flg_debug, f.flg_output]
+
+    copy (f:%, alpha:F) : % ==
+      if zero?(alpha) then
+        return(copy(0))
+      lmmp_new := copy(f.lmmp)
+      supp_new := copy(f.supp)
+      qscalev!(lmmp_new, 1, f.size, POS_1, alpha)
+      [f.size, supp_new, lmmp_new, f.flg_minimal, f.flg_refined, _
+        true, f.flg_debug, f.flg_output]
+
+    coerce (m:M1) : % ==
+      new(m, 1$F)
+
+    coerce (c:F) : % ==
+      copy(1, c)
+
+    enableDebugOutput (f:%) : % ==
+      f.flg_debug := true
+      f
+      
+    disableDebugOutput (f:%) : % ==
+      f.flg_debug := false
+      f
+
+    toggleDebugOutput (f:%) : % ==
+      f.flg_debug := not(f.flg_debug)
+      f
+
+    enableAlternativeOutput (f:%) : % ==
+      f.flg_output := true
+      f
+
+    disableAlternativeOutput (f:%) : % ==
+      f.flg_output := false
+      f
+
+    toggleAlternativeOutput (f:%) : % ==
+      f.flg_output := not(f.flg_output)
+      f
+
+    minimal? (f:%) : Boolean ==
+      f.flg_minimal
+
+    mutable? (f:%) : Boolean ==
+      f.flg_mutable
+
+    qregular? (f:%, i_min:NNI, i_max:NNI) : Boolean ==
+      if not(qdiagonal?(f.lmmp, NUM_R+i_min, NUM_R+i_max, POS_1)) then
+        return(false)
+      lst_ele := qdiagonal(f.lmmp, NUM_R+i_min, NUM_R+i_max, POS_1)
+      for i in 1 .. #lst_ele repeat
+        if not(lst_ele(i) = 1$F) then
+          return(false)
+      true
+      
+    -- FIXME: Index check?
+    scalar? (f:%, i:NNI, j:NNI) : Boolean ==
+      a_lst := qlstA(f.lmmp, i, j)
+      flg_wrk := true
+      for k in 2 .. #(f.supp) repeat
+        if not(zero?(a_lst(k))) then
+          flg_wrk := false
+          break
+      flg_wrk
+
+    zero? (f:%, i:NNI, j:NNI) : Boolean ==
+      flg_wrk := scalar?(f, i, j) and zero?(qeltA(f.lmmp, i, j, POS_1))
+      flg_wrk
+
+    scalar? (f:%) : Boolean ==
+      if f.size > 1 then
+        return(false)
+      if not(qregular?(f, 1, f.size)) then
+        return(false)
+      for k in 2 .. #(f.supp) repeat
+        if not(qnilpotent?(f.lmmp, NUM_R+1, NUM_R+f.size, k)) then
+          return(false)
+      true
+
+    regular? (f:%) : Boolean ==
+      n := f.size
+      flg_wrk := false
+      if rank(qmtxA(f.lmmp, 1, n, 1, n, POS_1)) = n then
+        flg_wrk := true
+      flg_wrk
+
+    polynomialForm? (f:%) : Boolean ==
+      if not(quppertriangular?(f.lmmp, NUM_R+1, NUM_R+f.size, POS_1)) then
+        return(false)
+      for k in 2 .. #(f.supp) repeat
+        if not(qnilpotent?(f.lmmp, NUM_R+1, NUM_R+f.size, k)) then
+          return(false)
+      lst_ele := qdiagonal(f.lmmp, NUM_R+1, NUM_R+f.size, POS_1)
+      for i in 1 .. #lst_ele repeat
+        if not(lst_ele(i) = 1$F) then
+          return(false)
+      true
+
+    polynomial? (f:%) : Boolean ==
+      polynomialForm?(f)
+
+    dimension (f:%) : NNI ==
+      f.size
+
+    variables (f:%) : List(M1) ==
+      copy(f.supp)
+
+    elt (f:%, i:NNI) : F ==
+      (i < 1) or (i > f.size) =>
+        error "FDALG: elt(%,i) - index out of range."
+      qeltv(f.lmmp, i, POS_1)
+
+    qelt (f:%, i:NNI, j:NNI) : XDP ==
+      a_tmp := 0$XDP
+      for k in 1 .. #(f.supp) repeat
+        a_tmp := a_tmp + qeltA(f.lmmp, i, j, k)*elt(f.supp, k)::XDP
+      a_tmp
+
+    elt (f:%, i:NNI, j:NNI) : XDP ==
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: elt(%,i,j) - index out of range."
+      qelt(f, i, j)
+
+    setelt! (f:%, i:NNI, alpha:F) : F ==
+      not(f.flg_mutable) =>
+        error "FDALG: setelt!(%,i,alpha) - element is not mutable."
+      (i < 1) or (i > f.size) =>
+        error "FDALG: setelt!(%,i,alpha) - index out of range."
+      v_old := qeltv(f.lmmp, i, POS_1)
+      if not(v_old = alpha) then
+        qsetv!(f.lmmp, i, POS_1, alpha)
+        f.flg_minimal := false
+        f.flg_refined := false
+      alpha
+
+    setelt! (f:%, i:NNI, j:NNI, p:XDP) : XDP ==
+      not(f.flg_mutable) =>
+        error "FDALG: setelt!(%,i,j,p) - element is not mutable."
+      not(polynomialForm?(f)) =>
+        error "FDALG: setelt!(%,i,j,p) - system not in polynomial form."
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: setelt!(%,i,j,p) - index out of range."
+      i > j =>
+        error "FDALG: setelt!(%,i,j,p) - entry not above diagonal."
+      if not(zero?(p)) then
+        degree(p) > 1 =>
+          error "FDALG: setelt!(%,i,j,p) - degree higher than one."
+      p_old := qlstA(f.lmmp, i, j)
+      for k in 1 .. #(f.supp) repeat
+        qsetA!(f.lmmp, i, j, k, 0$F)
+      for mon in getSupport(varList(p)) repeat
+        pos := position(mon, f.supp)::NNI
+        pos = 0 =>
+          error "FDALG: setelt!(%,i,j,p) - monomial not available."
+        qsetA!(f.lmmp, i, j, pos, coefficient(p, mon))
+      p_new := qlstA(f.lmmp, i, j)
+      if not(p_old = p_new) then
+        f.flg_minimal := false
+      p
+
+    vector (f:%) : Matrix(F) ==
+      qmtxv(f.lmmp, 1, f.size, POS_1)
+
+    vector (f:%) : Matrix(XDP) ==
+      v_tmp := qmtxv(f.lmmp, 1, f.size, POS_1)
+      v_wrk := new(nrows(v_tmp), 1, 0$XDP)$Matrix(XDP)
+      for i in 1 .. nrows(v_tmp) repeat
+        qsetelt!(v_wrk, i, 1, qelt(v_tmp, i, 1)::XDP)
+      v_wrk
+
+    matrix (f:%, m:M1) : Matrix(F) ==
+      pos := position(m, f.supp)::NNI
+      pos = 0 =>
+        error "FDALG: matrix(%,m) - monoid not available."
+      qmtxA(f.lmmp, 1, f.size, 1, f.size, pos)
+
+    matrix (f:%) : Matrix(XDP) ==
+      n := f.size
+      A_wrk := new(n,n,0$XDP)$Matrix(XDP)
+      for k in 1 .. #(f.supp) repeat
+        A_tmp := qmtxA(f.lmmp, 1, f.size, 1, f.size, k)
+        for i in 1 .. n repeat
+          for j in 1 .. n repeat
+            qsetelt!(A_wrk, i, j, qelt(A_wrk, i, j) _
+              + qelt(A_tmp, i, j)*elt(f.supp, k)::XDP)
+      A_wrk
+
+    appendSupport! (f:%, lst:List(M1)) : % ==
+      lst_new : List(M1) := []
+      for mon in lst repeat
+        pos := position(mon, f.supp)::NNI
+        if zero?(pos) then
+          lst_new := cons(mon, lst_new)
+      if #lst_new > 0 then
+        append!(f.lmmp, #lst_new)
+      f.supp := append(f.supp, lst_new)
+      f
+
+    pencil (f:%) : LMMP ==
+      f.lmmp
+
+    qswapRows! (f:%, i:NNI, j:NNI) : % ==
+      if not(i = j) then
+        qswapRows!(f.lmmp, NUM_R+i, NUM_R+j)
+      f
+
+    -- FIXME: Swapping rows within a block should not change refinement flag.
+    swapRows! (f:%, i:NNI, j:NNI) : % ==
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: swapRows!(%,i,j) - index/indices out of range."
+      if not(i = j) then
+        qswapRows!(f.lmmp, NUM_R+i, NUM_R+j)
+      f.flg_refined := false
+      f
+
+    qaddRows! (f:%, i:NNI, j:NNI, alpha:F) : % ==
+      if not(i=j) then
+        qaddRows!(f.lmmp, NUM_R+i, NUM_R+j, alpha)
+      f
+
+    addRowsColumns! (f:%, i:NNI, j:NNI, alpha:F) : % ==
+      i = j =>
+        error "FDALG: addRowsColumns!(%,i,j,alpha) - indices must be different."
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: addRowsColumns!(%,i,j,alpha) - index/indices out of range."
+      j = 1 =>
+        error "FDALG: addRowsColumns!(%,i,j,alpha) - first column must not be used."
+      qaddRows!(f.lmmp, NUM_R+i, NUM_R+j, alpha)
+      qaddColumns!(f.lmmp, NUM_C+j, NUM_C+i, -alpha)
+      if i < j then
+        f.flg_refined := false
+      f
+
+    addColumnsRows! (f:%, i:NNI, j:NNI, alpha:F) : % ==
+      i = j =>
+        error "FDALG: addColumnsRows!(%,i,j,alpha) - indices must be different."
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: addColumnsRows!(%,i,j,alpha) - index/indices out of range."
+      i = 1 =>
+        error "FDALG: addColumnsRows!(%,i,j,alpha) - first column must not be used."
+      qaddColumns!(f.lmmp, NUM_C+i, NUM_C+j, alpha)
+      qaddRows!(f.lmmp, NUM_R+j, NUM_R+i, -alpha)
+      f
+
+    addRows! (f:%, i:NNI, j:NNI, alpha:F) : % ==
+      i = j =>
+        error "FDALG: addRows!(%,i,j,alpha) - indices must be different."
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: addRows!(%,i,j,alpha) - index/indices out of range."
+      addRows!(f.lmmp, NUM_R+i, NUM_R+j, alpha)
+      if i < j then
+        f.flg_refined := false
+      f
+
+    qmultiplyRow! (f:%, i:NNI, alpha:F) : % ==
+      qmultiplyRow!(f.lmmp, NUM_R+i, alpha)
+      f
+
+    multiplyRow! (f:%, i:NNI, alpha:F) : % ==
+      if alpha = 1$F then
+        return(f)
+      (i < 1) or (i > f.size) =>
+        error "FDALG: multiplyRow!(%,i,alpha) - index out of range."
+      zero?(alpha) =>
+        error "FDALG: multiplyRow!(%,i,alpha) - zero factor."
+      qmultiplyRow!(f.lmmp, NUM_R+i, alpha)
+      f
+      
+    qmultiplyColumn! (f:%, i:NNI, alpha:F) : % ==
+      qmultiplyColumn!(f.lmmp, NUM_C+i, alpha)
+      f
+
+    multiplyColumn! (f:%, i:NNI, alpha:F) : % ==
+      if alpha = 1$F then
+        return(f)
+      (i < 1) or (i > f.size) =>
+        error "FDALG: multiplyColumn!(%,i,alpha) - index out of range."
+      zero?(alpha) =>
+        error "FDALG: multiplyColumn!(%,i,alpha) - zero factor."
+      qmultiplyColumn!(f.lmmp, NUM_C+i, alpha)
+      f
+    qswapColumns! (f:%, i:NNI, j:NNI) : % ==
+      if not(i = j) then
+        qswapColumns!(f.lmmp, NUM_C+i, NUM_C+j)
+      f
+
+    -- FIXME: Swapping columns within a block should not change refinement flag.
+    swapColumns! (f:%, i:NNI, j:NNI) : % ==
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: swapColumns!(%,i,j) - index/indices out of range."
+      i = 1 or j = 1 =>
+        error "FDALG: swapColumns!(%,i,j) - first column must not be changed."
+      if not(i = j) then
+        qswapColumns!(f.lmmp, NUM_C+i, NUM_C+j)
+      f.flg_refined := false
+      f
+
+    swapRowsColumns! (f:%, i:NNI, j:NNI) : % ==
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: swapRowsColumns!(%,i,j) - index/indices out of range."
+      i = 1 or j = 1 =>
+        error "FDALG: swapRowsColumns!(%,i,j) - first column must not be changed."
+      if not(i = j) then
+        qswapRows!(f.lmmp, NUM_R+i, NUM_R+j)
+        qswapColumns!(f.lmmp, NUM_C+i, NUM_C+j)
+      f.flg_refined := false
+      f
+
+    addColumns! (f:%, i:NNI, j:NNI, alpha:F) : % ==
+      i = j =>
+        error "FDALG: addColumns!(%,i,j,alpha) - indices must be different."
+      (i < 1) or (i > f.size) or (j < 1) or (j > f.size) =>
+        error "FDALG: addColumns!(%,i,j,alpha) - index/indices out of range."
+      i = 1 =>
+        error "FDALG: addColumns!(%,i,j,alpha) - first column must not be used."
+      addColumns!(f.lmmp, NUM_C+i, NUM_C+j, alpha)
+      if i > j then
+        f.flg_refined := false
+      f
+
+    qaddColumns! (f:%, i:NNI, j:NNI, alpha:F) : % ==
+      if not(i=j) then
+        addColumns!(f.lmmp, NUM_C+i, NUM_C+j, alpha)
+      f
+
+    -- FIXME: Check row and column indices?
+    removeRowsColumns (f:%, lst_row:List(NNI), lst_col:List(NNI)) : % ==
+      lst_r := map(a +-> a+1, removeDuplicates(lst_row))$List(NNI)
+      lst_c := map(a +-> a+1, removeDuplicates(lst_col))$List(NNI)
+      #lst_r ~= #lst_c =>
+        error "FDALG: removeRowsColumns(%,rows,cols) - number of rows and columns differ."
+      f_new := new(removeRowsColumns(f.lmmp, lst_r, lst_c), f.supp)
+      f_new
+
+    insertRowsColumns (f:%, lst_row:List(NNI), lst_col:List(NNI)) : % ==
+      lst_r := map(a +-> a+1, lst_row)$List(NNI)
+      lst_c := map(a +-> a+1, lst_col)$List(NNI)
+      #lst_r ~= #lst_c =>
+        error "FDALG: insertRowsColumns(%,rows,cols) - number of rows and columns differ."
+      f_new := new(insertRowsColumns(f.lmmp, lst_r, lst_c), f.supp)
+      for k in 1 .. #lst_r repeat
+        qsetA!(f_new.lmmp, k+lst_row(k), k+lst_col(k), POS_1, 1$F)
+      f_new
+
+    qzero? (f:%, i_min:NNI, i_max:NNI, j_min:NNI, j_max:NNI) : Boolean ==
+      qzero?(f.lmmp, NUM_R+i_min, NUM_R+i_max, NUM_C+j_min, NUM_C+j_max)
+
+    qzero? (f:%, i_min:NNI, i_max:NNI, j_min:NNI, j_max:NNI, l:NNI) : Boolean ==
+      qzero?(f.lmmp, NUM_R+i_min, NUM_R+i_max, NUM_C+j_min, NUM_C+j_max, l)
+
+    qzero? (f:%, i_min:NNI, i_max:NNI, j_min:NNI, j_max:NNI, m:M1) : Boolean ==
+      l := position(m, f.supp)::NNI
+      qzero?(f.lmmp, NUM_R+i_min, NUM_R+i_max, NUM_C+j_min, NUM_C+j_max, l)
+
+    blockStructure (f:%) : Matrix(NNI) ==
+      -- Basic structure from zeros in lower left part
+      cnt_l : List(NNI) := []
+      for i in f.size .. 1 by -1 repeat
+        j_wrk := 1$NNI
+        while qzeroA?(f.lmmp, i, j_wrk) repeat
+          j_wrk := j_wrk + 1
+        cnt_l := cons(min((i-1)::NNI, (j_wrk-1)::NNI), cnt_l)
+      idx_l := [1]$List(NNI)
+      for i in 2 .. f.size repeat
+        if cnt_l(i) = (i-1)::NNI then
+          flg_tmp := true
+          for k in i+1 .. f.size repeat
+            if cnt_l(k) < cnt_l(i) then
+              flg_tmp := false
+          if flg_tmp then
+            idx_l := cons(i, idx_l)
+      -- Determine block sizes
+      m := #idx_l
+      blo_mtx := new(m, 4, 0$NNI)$Matrix(NNI)
+      idx_l := sort(idx_l)
+      qsetelt!(blo_mtx, m, IDXMAX, f.size)
+      for k in 1 .. m repeat
+        qsetelt!(blo_mtx, k, IDXMIN, idx_l(k))
+      for k in 1 .. (m-1)::NNI repeat
+        qsetelt!(blo_mtx, k, IDXMAX, (idx_l(k+1)-1)::NNI)
+      for k in 1 .. m repeat
+        sze_tmp := (qelt(blo_mtx, k, IDXMAX) + 1 - qelt(blo_mtx, k, IDXMIN))::NNI
+        qsetelt!(blo_mtx, k, IDXSZE, sze_tmp)
+        if sze_tmp = 1 then
+          qsetelt!(blo_mtx, k, IDXREF, 1$NNI)
+      blo_mtx
+
+    refined? (f:%) : Boolean ==
+      blo_mtx := blockStructure(f)
+      if nrows(blo_mtx) = f.size then
+        return(true)
+      f.flg_refined
+
+    qblockElimination (f:%, rsrc:List(NNI), rdst:List(NNI), flg_u:Boolean, _
+        csrc:List(NNI), cdst:List(NNI), flg_v:Boolean) : List(Matrix(F)) ==
+      row_src := map(a +-> a+1, rsrc)$List(NNI)
+      row_dst := map(a +-> a+1, rdst)$List(NNI)
+      row_ext : List(NNI) := []
+      if flg_u then
+        row_ext := cons(1, row_ext)
+      col_src := map(a +-> a+1, csrc)$List(NNI)
+      col_dst := map(a +-> a+1, cdst)$List(NNI)
+      col_ext : List(NNI) := []
+      if flg_v then
+        col_ext := cons(1, col_ext)
+      lst_trn := blockElimination(f.lmmp, row_src, row_dst, row_ext, _
+        col_src, col_dst, col_ext)
+      lst_trn
+
+    blockElimination (f:%, rsrc:List(NNI), rdst:List(NNI), flg_u:Boolean, _
+        csrc:List(NNI), cdst:List(NNI), flg_v:Boolean) : List(Matrix(F)) ==
+      n := f.size
+      flg_row := true
+      if #rsrc>0 then
+        if (reduce(min, rsrc)$List(NNI) < 1) or (reduce(max, rsrc)$List(NNI) > n) then
+          flg_row := false
+      if #rdst>0 then
+        if (reduce(min, rdst)$List(NNI) < 1) or (reduce(max, rdst)$List(NNI) > n) then
+          flg_row := false
+      not(flg_row) =>
+        error "FDALG: blockElimination(f, ...) - row index out of range."
+      flg_col := true
+      if #csrc>0 then
+        if (reduce(min, csrc)$List(NNI) < 1) or (reduce(max, csrc)$List(NNI) > n) then
+          flg_col := false
+      if #cdst>0 then
+        if (reduce(min, cdst)$List(NNI) < 1) or (reduce(max, cdst)$List(NNI) > n) then
+          flg_col := false
+      not(flg_col) =>
+        error "FDALG: blockElimination(f, ...) - column index index out of range."
+      lst_trn := qblockElimination(f, rsrc, rdst, flg_u, csrc, cdst, flg_v)
+      if #lst_trn > 0 then
+        for k in 1 .. #lst_trn repeat
+          lst_trn(k) := subMatrix(lst_trn(k), 2, f.size+1, 2, f.size+1)
+      lst_trn
+
+    blockElimination (f:%, rsrc:List(NNI), rdst:List(NNI), _
+        csrc:List(NNI), cdst:List(NNI)) : List(Matrix(F)) ==
+      blockElimination(f, rsrc, rdst, true, csrc, cdst, true)
+
+
+    toMatrix (p:LMMP, lst:List(M1), r_min:NNI, r_max:NNI, c_min:NNI, c_max:NNI) : Matrix(XDP) ==
+      nelem(p) ~= #lst =>
+        error "FDALG: toMatrix(p,lst) - number of elements do not agree."
+      m := (r_max + 1 - r_min)::NNI
+      n := (c_max + 1 - c_min)::NNI
+      A_wrk := new(m,n,0$XDP)$Matrix(XDP)
+      for k in 1 .. #lst repeat
+        A_tmp := subMatrix(p, r_min, r_max, c_min, c_max, k)
+        for i in 1 .. m repeat
+          for j in 1 .. n repeat
+            qsetelt!(A_wrk, i, j, qelt(A_wrk, i, j) + qelt(A_tmp, i, j)*lst(k)::XDP)
+      A_wrk
+
+    display (f:%, sym:List(Symbol)) : OutputForm ==
+      n := f.size
+      sym_wrk : Symbol := 's
+      if #sym > 0 then
+        sym_wrk := first(sym)
+      lst := new(n,[])$List(List(OutputForm))
+      for k in 1 .. n repeat
+        lst(k) := [sub(sym_wrk::OF, k::OF)@OF]
+      display(f, matrix(lst)::OF)
+
+    display (f:%, sol:OutputForm) : OutputForm ==
+      n := f.size
+      mtx_A := toMatrix(f.lmmp, f.supp, NUM_R+1, NUM_R+n, NUM_C+1, NUM_C+n)
+      mtx_v := toMatrix(f.lmmp, f.supp, NUM_R+1, NUM_R+n, 1, NUM_C)
+      als_of := mtx_A::OF * sol::OF = mtx_v::OF
+      als_of
+
+    admissibleLinearSystem (f:%) : OutputForm ==
+      n := f.size
+      mtx_A := toMatrix(f.lmmp, f.supp, NUM_R+1, NUM_R+n, NUM_C+1, NUM_C+n)
+      mtx_v := toMatrix(f.lmmp, f.supp, NUM_R+1, NUM_R+n, 1, NUM_C)
+      sym_wrk : Symbol := 's
+      lst_A := new(nrows(mtx_A), [])$List(List(OF))
+      blo_mtx := blockStructure(f)
+      for k in 1 .. nrows(blo_mtx) repeat
+        for i in blo_mtx(k, IDXMIN) .. blo_mtx(k, IDXMAX) repeat
+          row_a := new(ncols(mtx_A), hspace(1))$List(OF)
+          for j in blo_mtx(k, IDXMIN) .. n repeat
+            qsetelt!(row_a, j, qelt(mtx_A, i, j)::OF)
+          lst_A(i) := row_a
+      als_of := matrix(lst_A) * sym_wrk::OF = mtx_v::OF
+      als_of
+
+    linearization (f:%) : Matrix(XDP) ==
+      L_wrk := toMatrix(f.lmmp, f.supp, 1, NUM_R+f.size, 1, NUM_C+f.size)
+      for k in 2 .. nrows(L_wrk) repeat
+        qsetelt!(L_wrk, k, 1, -qelt(L_wrk, k, 1))
+      L_wrk
+
+    linearization (f:%) : Matrix(%) ==
+      n := f.size
+      L_wrk := new(n+1, n+1, 0)$Matrix(%)
+      for i in 1 .. n+1 repeat
+        for j in 1 .. n+1 repeat
+          if qsemizero?(f.lmmp, i, i, j, j, POS_1) then
+              a_wrk := qelt(f.lmmp, i, j, POS_1)
+              if j = 1 then
+                a_wrk := -a_wrk
+              if not(zero?(a_wrk)) then
+                qsetelt!(L_wrk, i, j, disableDebugOutput(copy(1, a_wrk)))
+            else
+              als := qnew(2, f.supp)
+              lp_new := als.lmmp
+              qsetu!(lp_new, 1, POS_1, 1$F)
+              qsetv!(lp_new, 2, POS_1, 1$F)
+              qsetA!(lp_new, 1, 1, POS_1, 1$F)
+              qsetA!(lp_new, 2, 2, POS_1, 1$F)
+              for l in 1 .. #f.supp repeat
+                qsetA!(lp_new, 1, 2, l, -qelt(f.lmmp, i, j, l))
+              als.flg_minimal := true$Boolean
+              als.flg_refined := true$Boolean
+              als.flg_debug := false
+              qsetelt!(L_wrk, i, j, disableDebugOutput(als))
+      L_wrk
+
+    representation (f:%) : List(Matrix(XDP)) ==
+      n := f.size
+      mtx_u := toMatrix(f.lmmp, f.supp, 1, NUM_R, NUM_C+1, NUM_C+n)
+      mtx_A := toMatrix(f.lmmp, f.supp, NUM_R+1, NUM_R+n, NUM_C+1, NUM_C+n)
+      mtx_v := toMatrix(f.lmmp, f.supp, NUM_R+1, NUM_R+n, 1, NUM_C)
+      [mtx_u, mtx_A, mtx_v]
+
+    f:% * U:Matrix(F) ==
+      f_new := copy(f)
+      transformColumns!(f_new, U)
+
+    T:Matrix(F) * f:% ==
+      f_new := copy(f)
+      transformRows!(f_new, T)
+
+    transformationMatrix (f:%) : Matrix(F) ==
+      trf_mtx := new(f.size, f.size, 0$F)$Matrix(F)
+      for k in 1 .. f.size repeat
+        qsetelt!(trf_mtx, k, k, 1$F)
+      trf_mtx
+
+    transformRows! (f:%, T:Matrix(F)) : % ==
+      not(nrows(T) = ncols(T)) or not(nrows(T) = f.size) =>
+        error "FDALG: transformRows!(%,T) - wrong matrix size."
+      rank(T) < f.size =>
+        error "FDALG: transformRows!(%,T) - matrix not invertible."
+      trf_mtx := leftIdentity(f.lmmp)
+      setsubMatrix!(trf_mtx, 2, 2, T)
+      transformRows!(f.lmmp, trf_mtx)
+      f.flg_refined := false
+      f
+
+    transformColumns! (f:%, U:Matrix(F)) : % ==
+      not(nrows(U) = ncols(U)) or not(nrows(U) = f.size) =>
+        error "FDALG: transformColumns!(%,U) - wrong matrix size."
+      flg_wrk := true
+      for j in 2 .. f.size repeat
+        if not(zero?(qelt(U, 1, j))) then
+          flg_wrk := false
+          break
+      not(qelt(U, 1, 1) = 1$F) or not(flg_wrk) =>
+        error "FDALG: transformColumns!(%,U) - first column must not be changed."
+      rank(U) < f.size =>
+        error "FDALG: transformColumns!(%,U) - matrix not invertible."
+      trf_mtx := rightIdentity(f.lmmp)
+      setsubMatrix!(trf_mtx, 2, 2, U)
+      transformColumns!(f.lmmp, trf_mtx)
+      f.flg_refined := false
+      f
+
+    -- Implementation (calculation)
+    -- Changed: Fre 2018-09-07 14:42
+
+    -- Information: For simplicity most of the (elementary) transformations
+    -- are done using matrices. This is clearly not optimal but with respect
+    -- to the use of Groebner bases for factorization or refinement not a big
+    -- issue. Since the underlying coefficient matrices of the linear pencil
+    -- are often sparse, the whole representation of matrices (including
+    -- transformations) could be built on sparse matrices ...
+
+    normalizeRHS! (f:%) : % ==
+      i_ref := 0$NNI
+      v_ref := 0$F
+      for i in f.size .. 1 by -1 repeat
+        v_wrk := qeltv(f.lmmp, i, POS_1)
+        if not(zero?(v_wrk)) then
+          if i_ref > 0 then
+              qaddRows!(f, i_ref, i, -v_wrk/v_ref)
+            else
+              v_ref := v_wrk
+              i_ref := i
+      f
+
+    normalizePLS! (f:%) : % ==
+      n := f.size
+      for j_wrk in 1 .. n repeat
+        i_ref := 0$NNI
+        for i_wrk in j_wrk .. n repeat
+          a_wrk := qeltA(f.lmmp, i_wrk, j_wrk, POS_1)
+          if not(zero?(a_wrk)) then
+            if zero?(i_ref) then
+              i_ref := i_wrk
+              qmultiplyRow!(f, i_ref, 1/a_wrk)
+              if i_ref ~= j_wrk then
+                qswapRows!(f, i_ref, j_wrk)
+              break
+        if not(zero?(i_ref)) then
+          for i_wrk in 1 .. n repeat
+            a_wrk := qeltA(f.lmmp, i_wrk, i_ref, POS_1)
+            if not(zero?(a_wrk)) and (i_wrk ~= i_ref) then
+              qaddRows!(f, i_ref, i_wrk, -a_wrk)
+      f            
+
+    normalizeDIAG! (f:%) : % ==
+      for i in 1 .. f.size repeat
+        a_lst := qlstA(f.lmmp, i, i)
+        for l in 1 .. #a_lst repeat
+          if not(zero?(a_lst(l))) then
+            qmultiplyRow!(f, i, 1/a_lst(l))
+            break
+      f
+
+    normalize! (f:%) : % ==
+      normalizeRHS!(f)
+      normalizeDIAG!(f)
+      blo_mtx := blockStructure(f)
+      i_ref := 1$NNI
+      while (i_ref <= f.size) and zero?(qeltv(f.lmmp, i_ref, POS_1)) repeat
+        i_ref := i_ref+1
+      -- FIXME: Check if non-zero entry is not in last block? (only in non-minimal case)
+      if i_ref < f.size then
+        i_max := 0$NNI
+        for k in 1 .. nrows(blo_mtx) repeat
+          if blo_mtx(k, IDXMAX) >= i_ref then
+            i_max := blo_mtx(k, IDXMAX)
+            break
+        if i_ref < i_max then
+          qswapRows!(f, i_ref, i_max)
+      f
+
+    regularMatrix (f:%) : Matrix(XDP) ==
+      not(qregular?(f, 1, f.size)) =>
+        error "FDALG: regularMatrix(f) - f is not regular."
+      n := f.size
+      Q_wrk := -matrix(f)
+      for i in 1 .. n repeat
+        qsetelt!(Q_wrk, i, i, qelt(Q_wrk, i, i) + 1$XDP)
+      Q_wrk
+
+    polynomial (f:%) : XDP ==
+      s_wrk := solutionVector(f)@Matrix(XDP)
+      p_wrk := qelt(s_wrk, 1, 1)
+
+    solutionVector (f:%) : Matrix(XDP) ==
+      not(polynomialForm?(f)) =>
+        error "FDALG: solutionVector(f) - f is not polynomial."
+      n := f.size
+      s_wrk := new(n, 1, 0$XDP)$Matrix(XDP)
+      for i in n .. 1 by -1 repeat
+        p_wrk := elt(f, i)::XDP
+        for j in i+1 .. n repeat
+          p_wrk := p_wrk - elt(f, i, j) * qelt(s_wrk, j, 1)
+        qsetelt!(s_wrk, i, 1, p_wrk)
+      s_wrk
+
+    solutionVector (f:%, k:NNI) : Matrix(XDP) ==
+      als := copy(f)
+      normalizePLS!(als)
+      Q_wrk := regularMatrix(als)
+      v_wrk := vector(als)@Matrix(XDP)
+      s_wrk := copy(v_wrk)
+      for i in 1 .. k repeat
+        v_wrk := Q_wrk * v_wrk
+        s_wrk := s_wrk + v_wrk
+      s_wrk
+
+    columnSpan (f:%) : Stream(Matrix(XDP)) ==
+      als := copy(f)
+      normalizePLS!(als)
+      Q_wrk := regularMatrix(als)
+      v_wrk := vector(als)@Matrix(XDP)
+      fnc : (Matrix(XDP)) -> Matrix(XDP) := (v +-> Q_wrk*v)
+      stream(fnc, v_wrk)
+
+    rowSpan (f:%) : Stream(Matrix(XDP)) ==
+      als := copy(f)
+      normalizePLS!(als)
+      Q_wrk := regularMatrix(als)
+      u_wrk := new(1,als.size,0$XDP)$Matrix(XDP)
+      u_wrk(1,1) := 1$XDP
+      fnc : (Matrix(XDP)) -> Matrix(XDP) := (u +-> u*Q_wrk)
+      stream(fnc, u_wrk)
+
+    scaleALS (f:%, alpha:F) : % ==
+      if zero?(alpha) then
+        return(copy(0))
+      copy(f, alpha)
+
+    addALS (f:%, g:%) : % ==
+      if scalar?(f) and zero?(qeltv(f.lmmp, 1, POS_1)) then
+        return copy(g)
+      if scalar?(g) and zero?(qeltv(g.lmmp, 1, POS_1)) then
+        return copy(f)
+      lst := sort(removeDuplicates(merge(f.supp, g.supp)))
+      als := qnew(f.size+g.size, lst)
+      lp_f := f.lmmp
+      lp_g := g.lmmp
+      lp_new := als.lmmp
+      for k in 1 .. #(f.supp) repeat
+        mon := elt(f.supp, k)
+        pos := position(mon, lst)::NNI
+        qsetmtxu!(lp_new, 1, pos, qmtxu(lp_f, 1, f.size, k))
+        qsetmtxA!(lp_new, 1, 1, pos, qmtxA(lp_f, 1, f.size, 1, f.size, k))
+        qsetmtxv!(lp_new, 1, pos, qmtxv(lp_f, 1, f.size, k))
+      for k in 1 .. #(g.supp) repeat
+        mon := elt(g.supp, k)
+        pos := position(mon, lst)::NNI
+        qsetmtxu!(lp_new, f.size+1, pos, qmtxu(lp_g, 1, g.size, k))
+        qsetmtxA!(lp_new, f.size+1, f.size+1, pos, _
+          qmtxA(lp_g, 1, g.size, 1, g.size, k))
+        qsetmtxv!(lp_new, f.size+1, pos, qmtxv(lp_g, 1, g.size, k))
+      qaddColumns!(als, 1, f.size+1, -1$F)
+      als.flg_refined := f.flg_refined and g.flg_refined
+      als
+
+    multiplyALS (f:%, g:%) : % ==
+      if scalar?(f) then
+        return(copy(g, qeltv(f.lmmp, 1, POS_1)))
+      if scalar?(g) then
+        return(copy(f, qeltv(g.lmmp, 1, POS_1)))
+      lst := sort(removeDuplicates(merge(f.supp, g.supp)))
+      als := qnew(f.size+g.size, lst)
+      lp_f := f.lmmp
+      lp_g := g.lmmp
+      lp_new := als.lmmp
+      for k in 1 .. #(f.supp) repeat
+        mon := elt(f.supp, k)
+        pos := position(mon, lst)::NNI
+        qsetmtxA!(lp_new, 1, f.size+1, pos, -qmtxv(lp_f, 1, f.size, k))
+        qsetmtxA!(lp_new, 1, 1, pos, qmtxA(lp_f, 1, f.size, 1, f.size, k))
+      for k in 1 .. #(g.supp) repeat
+        mon := elt(g.supp, k)
+        pos := position(mon, lst)::NNI
+        qsetmtxv!(lp_new, f.size+1, pos, qmtxv(lp_g, 1, g.size, k))
+        qsetmtxA!(lp_new, f.size+1, f.size+1, pos, _
+          qmtxA(lp_g, 1, g.size, 1, g.size, k))
+      als.flg_refined := f.flg_refined and g.flg_refined
+      als
+
+    invertALS (f:%) : % ==
+      n := f.size
+      f_inv := qnew(n+1, f.supp)
+      qsetv!(f_inv.lmmp, n+1, POS_1, 1$F)
+      setsubMatrix!(f_inv.lmmp, n+2, 3, POS_1, subMatrix(f.lmmp, 1, 1, 2, n+1, POS_1))
+      setsubMatrix!(f_inv.lmmp, 2, 2, POS_1, -subMatrix(f.lmmp, 2, n+1, 1, 1, POS_1))
+      for k in 1 .. #(f_inv.supp) repeat
+        setsubMatrix!(f_inv.lmmp, 2, 3, k, subMatrix(f.lmmp, 2, n+1, 2, n+1, k))
+      f_inv.flg_refined := false
+      f_inv.flg_minimal := false
+      f_inv
+
+    invertSTD (f:%) : % ==
+      n := f.size
+      f_inv := qnew(n+1, f.supp)
+      qsetv!(f_inv.lmmp, n+1, POS_1, 1$F)
+      setsubMatrix!(f_inv.lmmp, n+2, 3, POS_1, subMatrix(f.lmmp, 1, 1, 2, n+1, POS_1))
+      setsubMatrix!(f_inv.lmmp, 2, 2, POS_1, -subMatrix(f.lmmp, 2, n+1, 1, 1, POS_1))
+      for k in 1 .. #(f_inv.supp) repeat
+        setsubMatrix!(f_inv.lmmp, 2, 3, k, subMatrix(f.lmmp, 2, n+1, 2, n+1, k))
+      T_wrk := new(n+2, n+2, 0$F)$Matrix(F)
+      U_wrk := new(n+2, n+2, 0$F)$Matrix(F)
+      qsetelt!(T_wrk, 1, 1, 1$F)
+      qsetelt!(T_wrk, n+2, n+2, 1$F)
+      qsetelt!(U_wrk, 1, 1, 1$F)
+      qsetelt!(U_wrk, 2, 2, 1$F)
+      for k in 1 .. n repeat
+        qsetelt!(T_wrk, k+1, (n+2-k)::NNI, -1$F)
+        qsetelt!(U_wrk, k+2, (n+3-k)::NNI, 1$F)
+      transformRows!(f_inv.lmmp, T_wrk)
+      transformColumns!(f_inv.lmmp, U_wrk)
+      blo_mtx := blockStructure(f_inv)
+      f_inv.flg_minimal := false
+      f_inv.flg_refined := false
+      if nrows(blo_mtx) = f_inv.size then
+        f_inv.flg_refined := true
+      f_inv
+
+    -- Implementation (factorization)
+    -- Changed: Fre 2018-09-07 14:42
+
+    -- FIXME: Minimize support?
+    factors (f:%) : List(%) ==
+      lst_fct : List(%) := []
+      als := copy(f)
+      blo_mtx := blockStructure(als)
+      m := nrows(blo_mtx)
+      if m = 1 then
+        lst_fct := cons(als, lst_fct)
+        return(lst_fct)
+      n := als.size
+      f_1 : %
+      f_2 : %
+      for k in (m-1)::NNI .. 1 by -1 repeat
+        n_1 := blo_mtx(k, IDXMAX)
+        n_2 := (n-n_1)::NNI
+        flg_ur := true
+        if n_1+1 < n then
+          flg_ur := qzero?(als, 1, n_1, n_1+2, n)
+        flg_uc := qsemizeroA?(als.lmmp, 1, n_1, n_1+1, n_1+1, POS_1)
+        flg_uv := qzerov?(als.lmmp, 1, n_1)
+        flg_00 := false
+        flg_10 := false
+        flg_01 := false
+        if flg_ur and flg_uv then
+          if flg_uc then
+            flg_00 := true
+          if not(flg_00) then
+            --if not(qsemizeroA?(als.lmmp, 1, n_1, 1, n_1+1, POS_1)) then
+            if not(qsemizeroA?(als.lmmp, n_1+1, n, n_1+1, n, POS_1)) then
+              flg_10 := true
+          if not(flg_00 or flg_10) and (n_1 > 1) then
+            if qzero?(als, 1, (n_1-1)::NNI, n_1+1, n_1+1) then
+              flg_01 := true
+        -- coupling type (0,0)
+        if flg_00 then
+          f_1 := qnew(n_1, als.supp)
+          f_2 := qnew(n_2, als.supp)
+          for l in 1 .. #(als.supp) repeat
+            qsetmtxA!(f_1.lmmp, 1, 1, l, qmtxA(als.lmmp, 1, n_1, 1, n_1, l))
+            qsetmtxA!(f_2.lmmp, 1, 1, l, qmtxA(als.lmmp, n_1+1, n, n_1+1, n, l))
+          qsetmtxv!(f_1.lmmp, 1, POS_1, -qmtxA(als.lmmp, 1, n_1, n_1+1, n_1+1, POS_1))
+          qsetmtxv!(f_2.lmmp, 1, POS_1, qmtxv(als.lmmp, n_1+1, n, POS_1))
+        -- coupling type (0,1)
+        if flg_01 then
+          f_1 := qnew(n_1, als.supp)
+          f_2 := qnew(n_2+1, als.supp)
+          for l in 1 .. #(als.supp) repeat
+            qsetmtxA!(f_1.lmmp, 1, 1, l, qmtxA(als.lmmp, 1, n_1, 1, n_1, l))
+            qsetmtxA!(f_2.lmmp, 1, 2, l, qmtxA(als.lmmp, n_1, n, n_1+1, n, l))
+          qsetA!(f_2.lmmp, 1, 1, POS_1, 1$F)
+          qsetv!(f_1.lmmp, n_1, POS_1, 1$F)
+          qsetmtxv!(f_2.lmmp, 1, POS_1, qmtxv(als.lmmp, n_1, n, POS_1))
+        -- coupling type (1,0)
+        if flg_10 then
+          f_1 := qnew(n_1+1, als.supp)
+          f_2 := qnew(n_2, als.supp)
+          for l in 1 .. #(als.supp) repeat
+            qsetmtxA!(f_1.lmmp, 1, 1, l, qmtxA(als.lmmp, 1, n_1, 1, n_1+1, l))
+            qsetmtxA!(f_2.lmmp, 1, 1, l, qmtxA(als.lmmp, n_1+1, n, n_1+1, n, l))
+          qsetA!(f_1.lmmp, n_1+1, n_1+1, POS_1, 1$F)
+          qsetv!(f_1.lmmp, n_1+1, POS_1, 1$F)
+          qsetmtxv!(f_2.lmmp, 1, POS_1, qmtxv(als.lmmp, n_1+1, n, POS_1))
+        -- FIXME: Special cases? (1x1 pivot blocks, etc.)
+        if flg_00 or flg_01 or flg_10 then
+          f_2.flg_refined := f.flg_refined
+          f_2.flg_minimal := f.flg_minimal
+          lst_fct := cons(f_2, lst_fct)
+          als := f_1
+          n := als.size
+      als.flg_refined := f.flg_refined
+      als.flg_minimal := f.flg_minimal
+      lst_fct := cons(als, lst_fct)
+      lst_fct
+
+    -- FIXME: Minimize support.
+    summands (f:%) : List(%) ==
+      lst_sum : List(%) := []
+      als := copy(f)
+      blo_mtx := blockStructure(als)
+      m := nrows(blo_mtx)
+      if m = 1 then
+        lst_sum := cons(als, lst_sum)
+        return(lst_sum)
+      n := als.size
+      f_1 : %
+      f_2 : %
+      for k in (m-1)::NNI .. 1 by -1 repeat
+        n_1 := blo_mtx(k, IDXMAX)
+        n_2 := (n-n_1)::NNI
+        lst_tmp : List(NNI) := [k, n_1, n_2]
+        --output(lst_tmp::OF)$OutputPackage
+        lst_1 := interval(n_1+1, n)
+        lst_2 := interval(1, n_1)
+        lst_3 := interval(1, n_1)
+        lst_4 := interval(n_1+1, n)
+        trn_wrk := qblockElimination(als, lst_1, lst_2, false, lst_3, lst_4, false)
+        if #trn_wrk > 0 then
+          transformRows!(als.lmmp, trn_wrk(1))
+          transformColumns!(als.lmmp, trn_wrk(2))
+          f_1 := qnew(n_1, als.supp)
+          f_2 := qnew(n_2, als.supp)
+          for l in 1 .. #(als.supp) repeat
+            qsetmtxA!(f_1.lmmp, 1, 1, l, qmtxA(als.lmmp, 1, n_1, 1, n_1, l))
+            qsetmtxA!(f_2.lmmp, 1, 1, l, qmtxA(als.lmmp, n_1+1, n, n_1+1, n, l))
+          qsetmtxv!(f_1.lmmp, 1, POS_1, qmtxv(als.lmmp, 1, n_1, POS_1))
+          qsetmtxv!(f_2.lmmp, 1, POS_1, qmtxv(als.lmmp, n_1+1, n, POS_1))
+          qsetmtxu!(f_2.lmmp, 1, POS_1, qmtxu(als.lmmp, n_1+1, n, POS_1))
+          idx_u := 0$NNI
+          u_wrk := 0$F
+          for j in 1 .. f_2.size repeat
+            u_wrk := qeltu(f_2.lmmp, j, POS_1)
+            if not(zero?(u_wrk)) then
+              idx_u := j
+              break
+          if zero?(u_wrk) then
+              --output(matrix(pencil(f_2),1)::OF)$OutputPackage
+              f_2 := copy(0)
+            else
+              if idx_u ~= 1$NNI then
+                qswapColumns!(f_2.lmmp, NUM_C+1, NUM_C+idx_u)
+              if not(u_wrk = 1$F) then
+                qmultiplyColumn!(f_2.lmmp, NUM_C+1, 1/u_wrk)
+                for j in 2 .. n_2 repeat
+                  u_tmp := qeltu(f_2.lmmp, j, POS_1)
+                  if not(zero?(u_tmp)) then
+                    qaddColumns!(f_2.lmmp, NUM_C+1, j+1, -u_tmp)
+              normalize!(f_2)
+              f_2.flg_refined := f.flg_refined
+              f_2.flg_minimal := f.flg_minimal
+          lst_sum := cons(f_2, lst_sum)
+          als := f_1
+          n := als.size
+      if #lst_sum > 0 then
+          normalize!(f_1)
+          f_1.flg_refined := f.flg_refined
+          f_1.flg_minimal := f.flg_minimal
+          lst_sum := cons(f_1, lst_sum)
+        else
+          lst_sum := cons(copy(f), lst_sum)
+      lst_sum
+
+    ratexprPolynomial (p:XDP) : OutputForm ==
+      sup_wrk := support(p)
+      out_wrk := p::OF
+      if (#sup_wrk > 1) or (length(first(sup_wrk)) > 1) _
+          or (leadingCoefficient(p) ~= 1$F) then
+        out_wrk := paren(out_wrk)
+      out_wrk
+
+    -- FIXME: Implement general case (with bigger pivot blocks).
+    leftFamily (f:%) : List(OutputForm) ==
+      blo_mtx := blockStructure(f)
+      n := f.size
+      nrows(blo_mtx) < n =>
+        error "FDALG: leftFamily(%) - not upper triangular."
+      a_idx := new(n, [])$List(List(NNI))
+      p_wrk := new(n, 0$XDP)$List(XDP)
+      for i in 1 .. n repeat
+        p_wrk(i) := elt(f, i, i)
+        p_wrk(i) := p_wrk(i)
+        for j in i+1 .. n repeat
+          if not(qzeroA?(f.lmmp, i, j)) then
+            a_idx(i) := cons(j, a_idx(i))
+      s_lst := new(n, 0$Integer::OF)$List(OF)
+      for i in n .. 1 by -1 repeat
+        flg_wrk := false
+        s_lst(i) := qeltv(f.lmmp, i, POS_1)::OF
+        if (i < n) and not(zero?(qeltv(f.lmmp, i, POS_1))) then
+          flg_wrk := true
+        if #a_idx(i) > 0 then
+          j := first(a_idx(i))
+          if (j = n) and (p_wrk(j) = 1$XDP) then
+              if flg_wrk then
+                  s_lst(i) := s_lst(i) + ratexprPolynomial(-elt(f, i, j))
+                else
+                  s_lst(i) := ratexprPolynomial(-elt(f, i, j))
+                  flg_wrk := true
+            else
+              if flg_wrk then
+                  s_lst(i) := s_lst(i) + ratexprPolynomial(-elt(f, i, j)) * s_lst(j)
+                else
+                  s_lst(i) := ratexprPolynomial(-elt(f, i, j)) * s_lst(j)
+                  flg_wrk := true
+          for j in rest(a_idx(i)) repeat
+            s_lst(i) := s_lst(i) + ratexprPolynomial(-elt(f, i, j)) * s_lst(j)
+        if not(p_wrk(i) = 1$XDP) then
+          s_lst(i) := super(ratexprPolynomial(p_wrk(i)), (-1$Integer)::OF) * s_lst(i)
+        if (i > 1) and (i < n) then
+          s_lst(i) := paren(s_lst(i))
+      s_lst
+
+    ratexprInverse (f:%, flg:Boolean) : OutputForm ==
+      f_wrk := copy(f)
+      normalizePLS!(f_wrk)
+      normalizeRHS!(f_wrk)
+      if polynomialForm?(f_wrk) then
+        p_wrk := polynomial(f_wrk)
+        s_wrk := support(p_wrk)
+        if (#s_wrk = 1) and (length(first(s_wrk)) <= 1) _
+            and (leadingCoefficient(p_wrk) = 1$F) then
+          return(p_wrk::OF)
+        if flg then
+          return(paren(p_wrk::OF))
+        return(p_wrk::OF)
+      f_wrk := invertMIN(f)
+      normalizePLS!(f_wrk)
+      normalizeRHS!(f_wrk)
+      if polynomialForm?(f_wrk) then
+        p_wrk := polynomial(f_wrk)
+        s_wrk := support(p_wrk)
+        if (#support(p_wrk) = 1) and (length(first(s_wrk)) <= 1) _
+            and (leadingCoefficient(p_wrk) = 1$F) then
+          return(super(p_wrk::OF, (-1$Integer)::OF))
+        return(super(paren(p_wrk::OF), (-1$Integer)::OF))
+      sum_f : List(%) := []
+      sum_f := cons(f, sum_f)
+      sum_f := summands(f)
+      if #sum_f = 1 then
+        if nrows(blockStructure(f)) = f.size then
+          o_wrk := first(leftFamily(f))
+          if flg then
+            o_wrk := paren(o_wrk)
+          return(o_wrk)
+        sym_d := 'd::Symbol::OF
+        sym_r := 'r::Symbol::OF
+        o_wrk : OF := if minimal?(f) then sym_r else sym_d
+        o_wrk := paren(hconcat(o_wrk, f.size::OF))
+        return(o_wrk)
+      o_wrk := ratexprInverse(first(sum_f), false)
+      for g in rest(sum_f) repeat
+        o_wrk := o_wrk + ratexprInverse(g, false)
+      if flg then
+        o_wrk := paren(o_wrk)
+      o_wrk
+
+    ratexpr (f:%) : OutputForm ==
+      fct_f := factors(f)
+      sum_f := summands(f)
+      if #fct_f > 1 then
+        out_of := ratexprInverse(first(fct_f), true)
+        for fct in rest(fct_f) repeat
+          out_of := out_of * ratexprInverse(fct, true)
+        return(out_of)
+      if #sum_f > 1 then
+        out_of := ratexprInverse(first(sum_f), true)
+        for sum in rest(sum_f) repeat
+          out_of := out_of + ratexprInverse(sum, false)
+        return(out_of)
+      out_of := ratexprInverse(first(fct_f), false)
+      out_of
+
+    coerce (f:%) : OutputForm ==
+      lst_of : List(OF) := []
+      if f.flg_output then
+        rex_of := ratexpr(f)
+        if f.flg_debug then
+          rex_of := rex_of := hconcat(hspace(1)$OF, rex_of)
+        lst_of := cons(rex_of, lst_of)
+      if f.flg_debug then
+        --sym_s : Symbol := 's
+        sym := '?::Symbol::OF
+        sym_M := 'M::Symbol::OF
+        sym_R := 'R::Symbol::OF
+        flg_of := hspace(1)$OF
+        flg_of := hconcat(flg_of, if minimal?(f) then sym_M else sym)
+        flg_of := hconcat(flg_of, if refined?(f) then sym_R else sym)
+        lst_of := cons(flg_of, lst_of)
+        --lst_of := cons(display(f, sym_s::OF), lst_of)
+        lst_of := cons(admissibleLinearSystem(f), lst_of)
+      if not(f.flg_output) and not(f.flg_debug) then
+        rex_of := ratexpr(f)
+        lst_of := cons(rex_of, lst_of)
+      semicolonSeparate(lst_of)
+
+    -- FIXME: General implementation (with respect to the pivot blocks)
+    leftFactor (f:%, k:NNI) : % ==
+      zero?(k) or (k > f.size) =>
+        error "FDALG: leftFactor(f, k) - invalid rank."
+      not(polynomialForm?(f)) =>
+        error "FDALG: leftFactor(f, k) - ALS is not in polynomial form."
+      not(minimal?(f)) =>
+        error "FDALG: leftFactor(f, k) - ALS is not minimal."
+      if k = 1 then
+        return(copy(1))
+      if k = f.size then
+        return(copy(f))
+      n := f.size
+      i_max := (k-1)::NNI
+      lst_1 := interval(k, n)
+      lst_2 := interval(1, i_max)
+      lst_3 := interval(1, i_max)
+      lst_4 := interval(k+1, n)
+      trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+      if zero?(#trn_wrk) then
+        lst_1 := interval(k+1, n)
+        lst_3 := interval(1, k)
+        trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+      if zero?(#trn_wrk) then
+        return(copy(1))
+      f_wrk := copy(f)
+      transformRows!(f_wrk.lmmp, trn_wrk(1))
+      transformColumns!(f_wrk.lmmp, trn_wrk(2))
+      -- Simplified version for polynomials ("factors" not applicable)
+      f_1 := qnew(k, f_wrk.supp)
+      for l in 1 .. #(f_wrk.supp) repeat
+        qsetmtxA!(f_1.lmmp, 1, 1, l, qmtxA(f_wrk.lmmp, 1, k, 1, k, l))
+      qsetv!(f_1.lmmp, k, POS_1, 1$F)
+      f_1.flg_refined := f.flg_refined
+      f_1.flg_minimal := f.flg_minimal
+      f_1
+
+    -- FIXME: General implementation (with respect to the pivot blocks)
+    rightFactor (f:%, k:NNI) : % ==
+      zero?(k) or (k > f.size) =>
+        error "FDALG: rightFactor(f, k) - invalid rank."
+      not(polynomialForm?(f)) =>
+        error "FDALG: rightFactor(f, k) - ALS is not in polynomial form."
+      not(minimal?(f)) =>
+        error "FDALG: rightFactor(f, k) - ALS is not minimal."
+      if k = 1 then
+        return(copy(1))
+      if k = f.size then
+        return(copy(f))
+      n := f.size
+      i_max := (n-k)::NNI
+      lst_1 := interval(i_max+1, n)
+      lst_2 := interval(1, i_max)
+      lst_3 := interval(1, i_max)
+      lst_4 := interval(i_max+2, n)
+      trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+      if zero?(#trn_wrk) then
+        lst_1 := interval(i_max+2, n)
+        lst_3 := interval(1, i_max+1)
+        trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+      if zero?(#trn_wrk) then
+        return(copy(1))
+      f_wrk := copy(f)
+      transformRows!(f_wrk.lmmp, trn_wrk(1))
+      transformColumns!(f_wrk.lmmp, trn_wrk(2))
+      -- Simplified version for polynomials ("factors" not applicable)
+      f_2 := qnew(k, f_wrk.supp)
+      m := (n-k)::NNI
+      for l in 1 .. #(f_wrk.supp) repeat
+        qsetmtxA!(f_2.lmmp, 1, 1, l, qmtxA(f_wrk.lmmp, m+1, n, m+1, n, l))
+      qsetmtxv!(f_2.lmmp, 1, POS_1, qmtxv(f_wrk.lmmp, m+1, n, POS_1))
+      f_2.flg_refined := f.flg_refined
+      f_2.flg_minimal := f.flg_minimal
+      f_2
+
+    qfactorizationTransformations (f:%, k_rows:NNI, k_cols:NNI, sol:List(EQG)) : List(Matrix(F)) ==
+      n := f.size
+      j_min := (n-k_cols+1)::NNI
+      row_P := interval(NUM_R+1, NUM_R+k_rows)
+      col_P := interval(NUM_C+(j_min-1)::NNI, NUM_C+(n-1)::NNI)
+      row_Q := interval(NUM_R+2, NUM_R+k_rows+1)
+      col_Q := interval(NUM_C+j_min, NUM_C+n)
+      eliminationTransformations(f.lmmp, row_P, col_P, row_Q, col_Q, sol)
+
+    -- FIXME: Minimize support?
+    factorize (f:%, k:NNI) : List(%) ==
+      zero?(k) or (k > f.size) =>
+        error "FDALG: factorize(f, k) - invalid rank."
+      not(polynomialForm?(f)) =>
+        error "FDALG: factorize(f, k) - ALS is not in polynomial form."
+      not(minimal?(f)) =>
+        error "FDALG: factorize(f, k) - ALS is not minimal."
+      f_wrk := copy(f)
+      lst_fct : List(%) := [f_wrk]
+      if (k = 1) or (k = f.size) then
+        return(lst_fct)
+      n := f.size
+      i_max := (k-1)::NNI
+      lst_1 := interval(k, n)
+      lst_2 := interval(1, i_max)
+      lst_3 := interval(1, i_max)
+      lst_4 := interval(k+1, n)
+      trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+      if zero?(#trn_wrk) then
+        lst_1 := interval(k+1, n)
+        lst_3 := interval(1, k)
+        trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+      if zero?(#trn_wrk) then
+        lst_sol := factorizationSolve(f, (k-1)::NNI, (n-k)::NNI)
+        if zero?(#lst_sol) then
+          return(lst_fct)
+        trn_wrk := qfactorizationTransformations(f, (k-1)::NNI, (n-k)::NNI, first(lst_sol))
+      transformRows!(f_wrk.lmmp, trn_wrk(1))
+      transformColumns!(f_wrk.lmmp, trn_wrk(2))
+      n_1 := k
+      n_2 := (n-k+1)::NNI
+      f_1 := qnew(n_1, f_wrk.supp)
+      f_2 := qnew(n_2, f_wrk.supp)
+      for l in 1 .. #(f_wrk.supp) repeat
+        qsetmtxA!(f_1.lmmp, 1, 1, l, qmtxA(f_wrk.lmmp, 1, k, 1, k, l))
+        qsetmtxA!(f_2.lmmp, 1, 1, l, qmtxA(f_wrk.lmmp, k, n, k, n, l))
+      qsetv!(f_1.lmmp, k, POS_1, 1$F)
+      qsetmtxv!(f_2.lmmp, 1, POS_1, qmtxv(f_wrk.lmmp, k, n, POS_1))
+      f_1.flg_refined := f.flg_refined
+      f_1.flg_minimal := f.flg_minimal
+      f_2.flg_refined := f.flg_refined
+      f_2.flg_minimal := f.flg_minimal
+      [f_1, f_2]
+
+    factor (f:%) : List(%) ==
+      not(polynomialForm?(f)) =>
+        error "FDALG: factor(f) - ALS is not in polynomial form."
+      not(minimal?(f)) =>
+        error "FDALG: factor(f) - ALS is not minimal."
+      f_wrk := copy(f)
+      refineUR!(f_wrk)
+      lst_wrk := factors(f_wrk)
+      lst_fct : List(%) := []
+      for elt in lst_wrk repeat
+        elt_tmp := elt
+        while elt_tmp.size > 2 repeat
+          flg_irr := true
+          for k in 2 .. (elt_tmp.size-1)::NNI repeat
+            lst_tmp := factorize(elt_tmp, k)
+            if #lst_tmp = 2::NNI then
+              flg_irr := false
+              lst_fct := cons(lst_tmp(1), lst_fct)
+              elt_tmp := lst_tmp(2)
+              break
+          if flg_irr then
+            break
+        lst_fct := cons(elt_tmp, lst_fct)
+      reverse(lst_fct)
+
+    factorizationTransformations (f:%, k_rows:NNI, k_cols:NNI, sol:List(EQG)) : List(Matrix(F)) ==
+      n := f.size
+      j_min := (n-k_cols+1)::NNI
+      row_P := interval(NUM_R+1, NUM_R+k_rows)
+      col_P := interval(NUM_C+(j_min-1)::NNI, NUM_C+(n-1)::NNI)
+      row_Q := interval(NUM_R+2, NUM_R+k_rows+1)
+      col_Q := interval(NUM_C+j_min, NUM_C+n)
+      lst_trn := eliminationTransformations(f.lmmp, row_P, col_P, row_Q, col_Q, sol)
+      [subMatrix(lst_trn(1), NUM_R+1, NUM_R+n, NUM_C+1, NUM_C+n), _
+       subMatrix(lst_trn(2), NUM_R+1, NUM_R+n, NUM_C+1, NUM_C+n)]
+
+    factorizationEquations (f:%, k_rows:NNI, k_cols:NNI) : List(G) ==
+      n := f.size
+      j_min := (n-k_cols+1)::NNI
+      row_P := interval(NUM_R+1, NUM_R+k_rows)
+      col_P := interval(NUM_C+(j_min-1)::NNI, NUM_C+(n-1)::NNI)
+      row_Q := interval(NUM_R+2, NUM_R+k_rows+1)
+      col_Q := interval(NUM_C+j_min, NUM_C+n)
+      rdst := interval(NUM_R+1, NUM_R+k_rows)
+      cdst := interval(NUM_C+j_min, NUM_C+n)
+      rex1 : List(NNI) := [1]
+      cex1 : List(NNI) := [1]
+      rex2 : List(NNI) := []
+      cex2 : List(NNI) := []
+      lst_eqn := eliminationEquations(f.lmmp, row_P, col_P, row_Q, col_Q, _
+        rdst, cdst, rex1, cex1, rex2, cex2)@List(G)
+      lst_eqn
+
+    -- FIXME: Use function from LINPEN?
+    factorizationGroebner (f:%, k_rows:NNI, k_cols:NNI) : List(G) ==
+      lst_eqn := factorizationEquations(f, k_rows, k_cols)
+      tmp_var := map(variables, lst_eqn)$ListFunctions2(G, List(Symbol))
+      lst_var : List(Symbol) := removeDuplicates(concat(tmp_var))
+      tDMP := DistributedMultivariatePolynomial(lst_var, F)
+      tOVL := OrderedVariableList(lst_var)
+      tPRD := DirectProduct(#lst_var, NNI)
+      var_wrk : List(tOVL) := [variable(var)::tOVL for var in lst_var]
+      eqn_wrk : List(tDMP) := [pToDmp(eqn)$PolToPol(lst_var, F) for eqn in lst_eqn]
+      bas_gro := groebner(eqn_wrk)$GroebnerPackage(F, tPRD, tDMP)
+      lst_gro : List(G) := [dmpToP(eqn)$PolToPol(lst_var, F) for eqn in bas_gro]
+      lst_gro
+
+    factorizationSolve (f:%, k_rows:NNI, k_cols:NNI) : List(List(EQG)) ==
+      lst_eqn := factorizationGroebner(f, k_rows, k_cols)
+      lst_val := [0]$List(F)
+      lst_wrk : List(G) := []
+      lst_sol : List(List(EQG)) := []
+      for k in #lst_eqn .. 1 by -1 repeat
+        lst_wrk := cons(lst_eqn(k), lst_wrk)
+        sol_wrk := eliminationSolve(lst_wrk, lst_val, lst_sol)
+        if zero?(#sol_wrk) then
+          return([])
+        lst_sol := copy(sol_wrk)
+      lst_sol
+
+    refineUR! (f:%, k_rows:NNI) : % ==
+      n := f.size
+      if n <= 2 then
+        return(f)
+      lst_2 := interval(1, k_rows)
+      lst_4 := interval(k_rows+2, n)
+      blo_mtx := blockStructure(f)
+      cmaxa := 1$NNI
+      cmaxb := 1$NNI
+      rmina := n
+      rminb := n
+      j_ref := k_rows+2
+      for k in 1 .. nrows(blo_mtx) repeat
+        if (blo_mtx(k, IDXMIN) <= j_ref) and (blo_mtx(k, IDXMAX) >= j_ref) then
+          if k > 1 then
+            cmaxa := blo_mtx((k-1)::NNI, IDXMAX)
+          cmaxb := blo_mtx(k, IDXMAX)
+          rmina := blo_mtx(k, IDXMIN)
+          if k < nrows(blo_mtx) then
+            rminb := blo_mtx(k+1, IDXMIN)
+          break
+      lst_1 := interval(max(rmina, k_rows+1), n)
+      lst_3 := interval(1, cmaxa)
+      trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+      if #trn_wrk > 0 then
+          transformRows!(f.lmmp, trn_wrk(1))
+          transformColumns!(f.lmmp, trn_wrk(2))
+        else
+          lst_1 := interval(rminb, n)
+          lst_3 := interval(1, min(cmaxb, k_rows+1))
+          trn_wrk := qblockElimination(f, lst_1, lst_2, true, lst_3, lst_4, true)
+          if #trn_wrk > 0 then
+            transformRows!(f.lmmp, trn_wrk(1))
+            transformColumns!(f.lmmp, trn_wrk(2))
+      f
+
+    refineUR! (f:%) : % ==
+      n := f.size
+      if n <=2 then
+        return(f)
+      for k in 1 .. (n-2)::NNI repeat
+        refineUR!(f, k)
+      f
+
+    -- Implementation (minimization)
+    -- Changed: Sam 2018-09-01 23:36
+
+    extendedALS (f:%) : % ==
+      f_new := new(insertRowsColumns(f.lmmp, [1$NNI], [1$NNI]), f.supp)
+      qsetA!(f_new.lmmp, 1, 1, POS_1, 1$F)
+      qsetA!(f_new.lmmp, 1, 2, POS_1, -1$F)
+      qsetu!(f_new.lmmp, 1, POS_1, 1$F)
+      qsetu!(f_new.lmmp, 2, POS_1, 0$F)
+      f_new.flg_refined := f.flg_refined
+      f_new
+
+    normalALS (f:%) : % ==
+      n := f.size
+      blo_mtx := blockStructure(f)
+      a_flg := qsemizeroA?(f.lmmp, 1, 1, 1, n, POS_1)
+      not(qeltA(f.lmmp, 1, 1, POS_1) = 1$F and a_flg) _
+          or (nrows(blo_mtx)=1) or (blo_mtx(1,IDXSZE)>1) =>
+        error "FDALG: normalALS(f) - not in extended form."
+      i_ref := 2::NNI
+      while zero?(qeltA(f.lmmp, 1, i_ref, POS_1)) repeat
+        i_ref := i_ref + 1
+        if i_ref > n then
+          return(copy(1, qeltv(f.lmmp, 1, POS_1)))
+      i_min := 2::NNI
+      i_max := 0$NNI
+      for k in 2 .. nrows(blo_mtx) repeat
+        if blo_mtx(k, IDXMAX) >= i_ref then
+          break
+        i_max := blo_mtx(k, IDXMAX)
+      lst_tmp : List(NNI) := []
+      for k in i_max .. i_min by -1 repeat
+        lst_tmp := cons(k, lst_tmp)
+      als := copy(f)
+      if #lst_tmp > 0 then
+        als := removeRowsColumns(f, lst_tmp, lst_tmp)
+      n := als.size
+      i_ref := (i_ref - #lst_tmp)::NNI
+      a_ref := qeltA(als.lmmp, 1, i_ref, POS_1)
+      if not(i_ref = 2::NNI) then
+        swapColumns!(als, 2, i_ref)
+      multiplyColumn!(als, 2, -1/a_ref)
+      for k in 3 .. n repeat
+        addColumns!(als, 2, k, qeltA(als.lmmp, 1, k, POS_1))
+      als := removeRowsColumns(als, [1$NNI], [1$NNI])
+      qsetu!(als.lmmp, 1, POS_1, 1$F)
+      als.flg_refined := f.flg_refined
+      als
+
+    -- FIXME: Check if this is indeed a pivot block?
+    leftMinimization (f:%, i_min:NNI, i_max:NNI) : % ==
+      (i_min > i_max) or (i_min < 1) or (i_max >= f.size) =>
+        error "FDALG: leftMinimization(f, i_min, i_max) - indices invalid."
+      lst_1 : List(NNI) := []
+      for i in i_max .. i_min by -1 repeat
+        lst_1 := cons(i, lst_1)
+      lst_2 : List(NNI) := []
+      for i in f.size .. (i_max+1) by -1 repeat
+        lst_2 := cons(i, lst_2)
+      trn_wrk := blockElimination(f, lst_2, lst_1, true, lst_1, lst_2, true)
+      g := copy(f)
+      if #trn_wrk > 0 then
+        if i_min = 1 then
+          return(0)
+        transformRows!(g, trn_wrk(1))
+        transformColumns!(g, trn_wrk(2))
+        g := removeRowsColumns(g, lst_1, lst_1)
+        g.flg_refined := f.flg_refined
+        return(g)
+      g
+
+    -- FIXME: Can flg_refined be used?
+    rightMinimization (f:%, i_min:NNI, i_max:NNI) : % ==
+      (i_min > i_max) or (i_min <= 1) or (i_max > f.size) =>
+        error "FDALG: rightMinimization(f, i_min, i_max) - indices invalid."
+      lst_1 : List(NNI) := []
+      for i in i_max .. i_min by -1 repeat
+        lst_1 := cons(i, lst_1)
+      lst_2 : List(NNI) := []
+      for i in (i_min-1)::NNI .. 1 by -1 repeat
+        lst_2 := cons(i, lst_2)
+      trn_wrk := blockElimination(f, lst_1, lst_2, true, lst_2, lst_1, false)
+      g := copy(f)
+      if #trn_wrk > 0 then
+        transformRows!(g, trn_wrk(1))
+        transformColumns!(g, trn_wrk(2))
+        g := removeRowsColumns(g, lst_1, lst_1)
+        normalizeRHS!(g)
+        g.flg_refined := f.flg_refined
+        return(g)
+      g
+
+    -- FIXME: optimization possible (avoid copying non-changing elements)
+    minimize (f:%) : % ==
+      als := copy(f)
+      blo_mtx := blockStructure(f)
+      k := 2::NNI
+      n := als.size
+      m := nrows(blo_mtx)
+      while k <= m repeat
+        k_l := (m+1-k)::NNI
+        flg_wrk := true
+        als := leftMinimization(als, blo_mtx(k_l, IDXMIN), blo_mtx(k_l, IDXMAX))
+        if als.size < n then
+          if (k > 2) and (2*k > m+1) then
+            k := (k-1)::NNI
+          flg_wrk := false
+        if flg_wrk and (k_l = 1$NNI) then
+          als := extendedALS(als)
+          als := leftMinimization(als, blo_mtx(k_l, IDXMIN)+1, blo_mtx(k_l, IDXMAX)+1)
+          -- Trick wie in summands verwenden ...
+          als := normalALS(als)
+          if als.size < n then
+            if (k > 2) and (2*k > m+1) then
+              k := (k-1)::NNI
+            flg_wrk := false
+        if flg_wrk then
+          als := rightMinimization(als, blo_mtx(k, IDXMIN), blo_mtx(k, IDXMAX))
+          if als.size < n then
+            if (k > 2) and (2*k > m+1) then
+              k := (k-1)::NNI
+            flg_wrk := false
+        if flg_wrk then
+            k := k+1
+          else
+            blo_mtx := blockStructure(als)
+            m := nrows(blo_mtx)
+            n := als.size
+      if refined?(f) then
+        als.flg_minimal := true
+        als.flg_refined := true
+      als  
+
+    addMIN (f:%, g:%) : % ==
+      als := minimize(addALS(f, g))
+      normalize!(als)
+      als
+
+    multiplyMIN (f:%, g:%) : % ==
+      als := minimize(multiplyALS(f, g))
+      normalize!(als)
+      als
+
+    gamma:Integer * f:% == scaleALS(f, gamma::F)
+
+    alpha:F * f:% == scaleALS(f, alpha)
+
+    f:% * alpha:F == scaleALS(f, alpha)
+
+    f:% * g:% == multiplyMIN(f, g)
+
+    f:% - alpha:F == addMIN(f, -alpha::%)
+
+    f:% + alpha:F == addMIN(f, alpha::%)
+
+    alpha:F - f:% == addMIN(alpha::%, -f)
+
+    alpha:F + f:% == addMIN(alpha::%, f)
+
+    f:% - g:% == addMIN(f, -g)
+
+    f:% + g:% == addMIN(f, g)
+
+    - f == copy(f, -1$F)
+
+    f:% / alpha:F ==
+      zero?(alpha) =>
+        error "FDALG: f / alpha - division by zero."
+      copy(f, 1$F / alpha)
+
+    f:% ^ n:PositiveInteger ==
+      f_wrk := f
+      for k in 2 .. n repeat
+        f_wrk := multiplyMIN(f_wrk, f)
+      f_wrk
+
+    standardVector? (f:%) : Boolean ==
+      qzerov?(f.lmmp, 1, (f.size-1)::NNI)
+
+    standardFirstColumn? (f:%) : Boolean ==
+      n := f.size
+      a_ref := qlstA(f.lmmp, 1, 1)
+      for l in 2 .. #(f.supp) repeat
+        if not(zero?(a_ref(l))) then
+          return(false)
+      if not(a_ref(1) = 1$F) _
+          or not(qsemizeroA?(f.lmmp, 2, n, 1, 1, POS_1)) then
+        return(false)
+      true
+
+    standardLastRow? (f:%) : Boolean ==
+      n := f.size
+      a_ref := qlstA(f.lmmp, n, n)
+      for l in 2 .. #(f.supp) repeat
+        if not(zero?(a_ref(l))) then
+          return(false)
+      if not(a_ref(1) = 1$F) _
+          or not(qsemizeroA?(f.lmmp, n, n, 1, (n-1)::NNI, POS_1)) then
+        return(false)
+      true
+
+    -- FIXME: Permuations should not be done by transformation matrices.
+    invertMIN (f:%) : % ==
+      if scalar?(f) then
+        zero?(qeltv(f.lmmp, 1, POS_1)) =>
+          error "FDALG: invertMIN(f) - zero element is not invertible."
+        return(copy(1, 1/qeltv(f.lmmp, 1, POS_1)))
+      f_wrk := copy(f)
+      refineUR!(f_wrk)
+      n := f_wrk.size
+      m := f_wrk.size
+      flg_vec := standardVector?(f_wrk)
+      flg_col := standardFirstColumn?(f_wrk)
+      flg_row := standardLastRow?(f_wrk)
+      -- Inverse type (1,1)
+      if flg_vec and flg_col and flg_row then
+        m := (f_wrk.size-1)::NNI
+        f_inv := qnew(m, f_wrk.supp)
+        for k in 1 .. #(f_inv.supp) repeat
+          setsubMatrix!(f_inv.lmmp, 2, 2, k, subMatrix(f_wrk.lmmp, 2, n, 3, n+1, k))
+        T_wrk := new(m+1, m+1, 0$F)$Matrix(F)
+        U_wrk := new(m+1, m+1, 0$F)$Matrix(F)
+        qsetelt!(T_wrk, 1, 1, 1$F)
+        qsetelt!(U_wrk, 1, 1, 1$F)
+        for k in 1 .. m repeat
+          qsetelt!(T_wrk, k+1, (m+2-k)::NNI, -1$F)
+          qsetelt!(U_wrk, k+1, (m+2-k)::NNI, 1$F)
+        qsetelt!(U_wrk, m+1, 2, qeltv(f_wrk.lmmp, n, POS_1))
+        transformRows!(f_inv.lmmp, T_wrk)
+        transformColumns!(f_inv.lmmp, U_wrk)
+        qsetu!(f_inv.lmmp, m, POS_1, 0$F)
+        qsetu!(f_inv.lmmp, 1, POS_1, 1$F)
+        qsetv!(f_inv.lmmp, m, POS_1, 1$F)
+        f_inv.flg_refined := false
+        f_inv.flg_minimal := f_wrk.flg_minimal
+        refine!(f_inv, false)
+        normalize!(f_inv)
+        return(f_inv)
+      -- Inverse type (1,0)
+      if flg_vec and flg_col then
+        f_inv := qnew(m, f_wrk.supp)
+        for k in 1 .. #(f_inv.supp) repeat
+          setsubMatrix!(f_inv.lmmp, 2, 3, k, subMatrix(f_wrk.lmmp, 2, n+1, 3, n+1, k))
+        T_wrk := new(m+1, m+1, 0$F)$Matrix(F)
+        U_wrk := new(m+1, m+1, 0$F)$Matrix(F)
+        qsetelt!(T_wrk, 1, 1, 1$F)
+        qsetelt!(U_wrk, 1, 1, 1$F)
+        qsetelt!(U_wrk, 2, 2, 1$F)
+        for k in 1 .. m repeat
+          qsetelt!(T_wrk, k+1, (m+2-k)::NNI, -1$F)
+        for k in 2 .. m repeat
+          qsetelt!(U_wrk, k+1, (m+3-k)::NNI, 1$F)
+        qsetelt!(T_wrk, 2, m+1, -1/qeltv(f_wrk.lmmp, n, POS_1))
+        transformRows!(f_inv.lmmp, T_wrk)
+        transformColumns!(f_inv.lmmp, U_wrk)
+        qsetu!(f_inv.lmmp, 1, POS_1, 1$F)
+        qsetv!(f_inv.lmmp, m, POS_1, 1$F)
+        qsetA!(f_inv.lmmp, 1, 1, POS_1, 1$F)
+        -- FIXME: Direct minimization possible?
+        f_inv := minimize(f_inv)
+        f_inv.flg_refined := false
+        f_inv.flg_minimal := f_wrk.flg_minimal
+        refine!(f_inv, false)
+        normalize!(f_inv)
+        return(f_inv)
+      -- Inverse type (0,1)
+      if flg_vec and flg_row then
+        f_inv := qnew(m, f_wrk.supp)
+        for k in 1 .. #(f_inv.supp) repeat
+          setsubMatrix!(f_inv.lmmp, 2, 2, k, subMatrix(f_wrk.lmmp, 2, n, 2, n+1, k))
+        T_wrk := new(m+1, m+1, 0$F)$Matrix(F)
+        U_wrk := new(m+1, m+1, 0$F)$Matrix(F)
+        qsetelt!(T_wrk, 1, 1, 1$F)
+        qsetelt!(T_wrk, m+1, m+1, 1$F)
+        qsetelt!(U_wrk, 1, 1, 1$F)
+        for k in 2 .. m repeat
+          qsetelt!(T_wrk, k, (m+2-k)::NNI, -1$F)
+        for k in 1 .. m repeat
+          qsetelt!(U_wrk, k+1, (m+2-k)::NNI, 1$F)
+          qsetelt!(U_wrk, m+1, 2, qeltv(f_wrk.lmmp, n, POS_1))
+        transformRows!(f_inv.lmmp, T_wrk)
+        transformColumns!(f_inv.lmmp, U_wrk)
+        qsetu!(f_inv.lmmp, m, POS_1, 0$F)
+        qsetu!(f_inv.lmmp, 1, POS_1, 1$F)
+        qsetv!(f_inv.lmmp, m, POS_1, 1$F)
+        qsetA!(f_inv.lmmp, m, m, POS_1, 1$F)
+        -- FIXME: Direct minimization possible?
+        f_inv := minimize(f_inv)
+        f_inv.flg_refined := false
+        f_inv.flg_minimal := f_wrk.flg_minimal
+        refine!(f_inv, false)
+        normalize!(f_inv)
+        return(f_inv)
+      -- Inverse 0
+      f_inv := minimize(invertSTD(f_wrk))
+      f_inv.flg_refined := false
+      f_inv.flg_minimal := f_wrk.flg_minimal
+      refine!(f_inv, false)
+      normalize!(f_inv)
+      f_inv
+
+    inverse (f:%) : % ==
+      not(f.flg_minimal) =>
+        error "FDALG: inverse(f) - system is not minimal."
+      refine!(f, false)
+      setRefined!(invertMIN(f), 4)
+
+    inv (f:%) : % ==
+      not(f.flg_minimal) =>
+        error "FDALG: inv(f) - system is not minimal."
+      refine!(invertMIN(f))
+
+    alpha:F / f:% ==
+      if zero?(alpha) then
+        return(copy(0))
+      f_inv := refine!(invertMIN(f))
+      qscalev!(f_inv.lmmp, 1, f_inv.size, POS_1, alpha)
+      f_inv
+
+    f:% / g:% ==
+      not(g.flg_refined) or not(g.flg_minimal) =>
+        error "FDALG: f / g - g not in minimal refined form."
+      f_inv := refine!(invertMIN(g))
+      multiplyMIN(f, f_inv)
+
+    f:% ^ n:Integer ==
+      if zero?(n) then
+        return(1)
+      if n < 0 then
+        g := inv(f)
+        return(g^(-n)::PositiveInteger)
+      f^n
+
+    qrefinementTransformations (f:%, i_min:NNI, i_max:NNI, sol:List(EQG)) : List(Matrix(F)) ==
+      n := f.size
+      row_P := interval(NUM_R+i_min, NUM_R+i_max)
+      col_P := interval(NUM_C+i_min, NUM_C+min(i_max, (n-1)::NNI))
+      row_Q := interval(NUM_R+max(i_min, 2), NUM_R+i_max)
+      col_Q := interval(NUM_C+i_min, NUM_C+i_max)
+      eliminationTransformations(f.lmmp, row_P, col_P, row_Q, col_Q, sol)
+
+    refinementTransformations (f:%, i_min:NNI, i_max:NNI, sol:List(EQG)) : List(Matrix(F)) ==
+      n := f.size
+      row_P := interval(NUM_R+i_min, NUM_R+i_max)
+      col_P := interval(NUM_C+i_min, NUM_C+min(i_max, (n-1)::NNI))
+      row_Q := interval(NUM_R+max(i_min, 2), NUM_R+i_max)
+      col_Q := interval(NUM_C+i_min, NUM_C+i_max)
+      lst_trn := eliminationTransformations(f.lmmp, row_P, col_P, row_Q, col_Q, sol)
+      [subMatrix(lst_trn(1), NUM_R+1, NUM_R+n, NUM_C+1, NUM_C+n), _
+       subMatrix(lst_trn(2), NUM_R+1, NUM_R+n, NUM_C+1, NUM_C+n)]
+
+    refinementEquations (f:%, i_min:NNI, i_max:NNI, k_rows:NNI, _
+        flg_u:Boolean, flg_r:Boolean) : List(G) ==
+      row_P := interval(NUM_R+i_min, NUM_R+i_max)
+      col_P := interval(NUM_C+i_min, NUM_C+min(i_max, (f.size-1)::NNI))
+      row_Q := interval(NUM_R+max(i_min, 2), NUM_R+i_max)
+      col_Q := interval(NUM_C+i_min, NUM_C+i_max)
+      j_min := i_min
+      j_max := (i_max-k_rows)::NNI
+      rdst := interval(NUM_R+(i_max-k_rows+1)::NNI, NUM_R+i_max)
+      cdst := interval(NUM_C+j_min, NUM_C+j_max)
+      rex1 : List(NNI) := []
+      cex1 : List(NNI) := []
+      if flg_u then
+        rex1 := interval(NUM_R+1, NUM_R+(i_min-1)::NNI)
+        cex1 := interval(NUM_C+i_min+1, NUM_C+i_max)
+      rex2 : List(NNI) := []
+      cex2 : List(NNI) := []
+      if flg_r then
+        rex2 := interval(NUM_R+i_min, NUM_R+(i_max-1)::NNI)
+        cex2 := interval(NUM_C+i_max+1, NUM_C+f.size)
+      lst_eqn := eliminationEquations(f.lmmp, row_P, col_P, row_Q, col_Q, _
+        rdst, cdst, rex1, cex1, rex2, cex2)@List(G)
+      lst_eqn
+
+    -- FIXME: Replace by function in LINPEN?
+    refinementGroebner (f:%, i_min:NNI, i_max:NNI, k_rows:NNI, _
+        flg_1:Boolean, flg_2:Boolean) : List(G) ==
+      lst_eqn := refinementEquations(f, i_min, i_max, k_rows, flg_1, flg_2)
+      tmp_var := map(variables, lst_eqn)$ListFunctions2(G, List(Symbol))
+      lst_var : List(Symbol) := removeDuplicates(concat(tmp_var))
+      tDMP := DistributedMultivariatePolynomial(lst_var, F)
+      tOVL := OrderedVariableList(lst_var)
+      tPRD := DirectProduct(#lst_var, NNI)
+      var_wrk : List(tOVL) := [variable(var)::tOVL for var in lst_var]
+      eqn_wrk : List(tDMP) := [pToDmp(eqn)$PolToPol(lst_var, F) for eqn in lst_eqn]
+      bas_gro := groebner(eqn_wrk)$GroebnerPackage(F, tPRD, tDMP)
+      lst_gro : List(G) := [dmpToP(eqn)$PolToPol(lst_var, F) for eqn in bas_gro]
+      lst_gro
+
+    refinementSolve (f:%, i_min:NNI, i_max:NNI, k_rows:NNI, _
+        flg_u:Boolean, flg_r:Boolean) : List(List(EQG)) ==
+      lst_eqn := refinementGroebner(f, i_min, i_max, k_rows, flg_u, flg_r)
+      lst_val := [0]$List(F)
+      lst_wrk : List(G) := []
+      lst_sol : List(List(EQG)) := []
+      for k in #lst_eqn .. 1 by -1 repeat
+        lst_wrk := cons(lst_eqn(k), lst_wrk)
+        sol_wrk := eliminationSolve(lst_wrk, lst_val, lst_sol)
+        if zero?(#sol_wrk) then
+          return([])
+        lst_sol := copy(sol_wrk)
+      lst_sol
+
+    qrefinedGroebner? (f:%, i_min:NNI, i_max:NNI, i:NNI) : Boolean ==
+      groe := refinementGroebner(f, i_min, i_max, i, false, false)
+      if (#groe > 1) then
+        return(false)
+      if first(groe) ~= 1$G then
+        return(false)
+      true
+
+    qrefined? (f:%, max_sze:NNI) : Boolean ==
+      blo_mtx := blockStructure(f)
+      flg_ref := true
+      for k in 1 .. nrows(blo_mtx) repeat
+        m := blo_mtx(k, IDXSZE)
+        if m <= max_sze then
+            for i in 1 .. (m-1)::NNI repeat
+              if not(qrefinedGroebner?(f, blo_mtx(k, IDXMIN), blo_mtx(k, IDXMAX), i)) then
+                return(false)
+          else
+            flg_ref := false
+      flg_ref
+
+    setRefined! (f:%, max_sze:NNI) : % ==
+      if qrefined?(f, max_sze) then
+        f.flg_refined := true
+      f
+
+    -- FIXME: Detection of splitted zero blocks?
+    refinePERM! (f:%, i_min:NNI, i_max:NNI) : % ==
+      n := f.size
+      flg_tmp := false
+      if (i_max < n) and not(flg_tmp) then
+        for i in i_min .. (i_max-1)::NNI repeat
+          if qzeromtxA?(f.lmmp, i, i, i_min, (i_max-1)::NNI) then
+            qswapRows!(f, i, i_max)
+            flg_tmp := true
+            break
+      if (i_min > 1) and not(flg_tmp) then
+        for j in i_min+1 .. i_max repeat
+          if qzeromtxA?(f.lmmp, i_min+1, i_max, j, j) then
+            qswapColumns!(f, j, i_min)
+            flg_tmp := true
+            break
+      f
+
+    -- FIXME: Check if block can be refined at all and avoid multiple
+    -- computations of Groebner basis ...
+    refine! (f:%, flg:Boolean) : % ==
+      n := f.size
+      blo_mtx := blockStructure(f)
+      if (n = 1) or (nrows(blo_mtx) = n) then
+        f.flg_refined := true
+        return(f)
+      -- Refinement by permutation of rows/columns
+      num_blo := (nrows(blo_mtx)-1)::NNI
+      while num_blo < nrows(blo_mtx) repeat
+        num_blo := nrows(blo_mtx)
+        for k in 1 .. nrows(blo_mtx) repeat
+          m := blo_mtx(k, IDXSZE)
+          if m >= 2 then
+            refinePERM!(f, blo_mtx(k, IDXMIN), blo_mtx(k, IDXMAX))
+        blo_mtx := blockStructure(f)
+      -- FIXME: Refinement by linear techniques ...
+      if not(flg) then
+        if nrows(blo_mtx) = f.size then
+          f.flg_refined := true
+        return(f)
+      -- Refinement by using Groebner bases
+      num_blo := (nrows(blo_mtx)-1)::NNI
+      while num_blo < nrows(blo_mtx) repeat
+        num_blo := nrows(blo_mtx)
+        for k in 1 .. nrows(blo_mtx) repeat
+          m := blo_mtx(k, IDXSZE)
+          i_min := blo_mtx(k, IDXMIN)
+          i_max := blo_mtx(k, IDXMAX)
+          if m >= 2 then
+            for i in 1 .. (m-1)::NNI repeat
+              lst_sol := refinementSolve(f, i_min, i_max, i, true, true)
+              if zero?(#lst_sol) then
+                lst_sol := refinementSolve(f, i_min, i_max, i, true, false)
+              if zero?(#lst_sol) then
+                lst_sol := refinementSolve(f, i_min, i_max, i, false, true)
+              if zero?(#lst_sol) then
+                lst_sol := refinementSolve(f, i_min, i_max, i, false, false)
+              if #lst_sol > 0 then
+                lst_trn := qrefinementTransformations(f, i_min, i_max, first(lst_sol))
+                transformRows!(f.lmmp, lst_trn(1))
+                transformColumns!(f.lmmp, lst_trn(2))
+                break
+        blo_mtx := blockStructure(f)
+      normalize!(f)
+      f.flg_refined := true
+      f
+
+    refine! (f:%) : % ==
+      refine!(f, true)
+
+    rank (f:%) : NNI ==
+      if minimal?(f) then
+        if f.size = 1 then
+          if zero?(qeltv(f.lmmp, 1, POS_1)) then
+            return(0$NNI)
+        return(f.size)
+      als := minimize(f)
+      refine!(als)
+      als := minimize(als)
+      if als.size = 1 then
+        if zero?(qeltv(als.lmmp, 1, POS_1)) then
+          return(0$NNI)
+      als.size
+
+    zero? (f:%) : Boolean ==
+      -- check right hand side
+      if qzerov?(f.lmmp, 1, f.size) then
+        return(true)
+      if not(minimal?(f)) then
+        -- try linear techniques (minimization)
+        als := minimize(f)
+        if qzerov?(als.lmmp, 1, als.size) then
+          return(true)
+        minimal?(als) => return(false)
+        -- refinement and minimization
+        refine!(als)
+        als := minimize(als)
+        if qzerov?(als.lmmp, 1, als.size) then
+          return(true)
+      false
+
+    _= (f:%, g:%) : Boolean ==
+      scalar?(f) and zero?(qeltv(f.lmmp, 1, POS_1)) => zero?(g)
+      scalar?(g) and zero?(qeltv(g.lmmp, 1, POS_1)) => zero?(f)
+      f.flg_minimal and g.size < f.size => false
+      g.flg_minimal and f.size < g.size => false
+      -- try linear techniques (word problem)
+      als := addALS(f, -g)
+      lst_1 := interval(1, f.size)
+      lst_2 := interval(f.size+1, f.size+g.size)
+      trn_wrk := blockElimination(als, lst_2, lst_1, lst_1, lst_2)
+      if #trn_wrk > 0 then
+        return(true)
+      f.flg_minimal and g.flg_minimal => false
+      -- use minimization
+      zero?(als)
+
+    coerce (f:%) : XDP ==
+      polynomial(f)
+
+    coerce (p:XDP) : % ==
+      f_wrk := 0$%
+      for trm in listOfTerms(p) repeat
+        f_wrk := addMIN(f_wrk, new(trm.k, trm.c))
+      f_wrk
+
+    --<-<SPAD:fdalg imp05>>
+    
