@@ -1,0 +1,539 @@
+)abbrev package XPFACT XPolynomialFactor
+
+XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
+  G   ==> Polynomial(F)
+  XDP ==> XDistributedPolynomial(vl, F)
+  YDP ==> XDistributedPolynomial(vl, G)
+  fM ==> FreeMonoid(vl)
+  lift_rec ==> Record(l_fac : YDP, r_fac : YDP, residual : YDP,
+                      nsym : Union(Symbol, "none"))
+  GCD_rec ==> Record(g : XDP, c1 : XDP, c2 : XDP, cu : XDP, cv  : XDP)
+  d_rec ==> Record(quotient : XDP, remainder : XDP)
+  Exports ==> with
+    homo_fact : XDP -> List(XDP)
+    top_split : XDP -> List(XDP)
+    left_ext_GCD : (XDP, XDP) -> Union(GCD_rec, "failed")
+    ldivide : (XDP, XDP) -> d_rec
+    lift1 : (fM, YDP, Integer, fM, YDP, Integer, F, YDP, Boolean) -> lift_rec
+       ++ lift1(lw, lfy, d1, rw, rfy, j, lc, rp, o_case)
+    if F has PolynomialFactorizationExplicit then
+        factor : XDP -> List(XDP)
+  Implementation ==> add
+
+    Tm ==> Record(k: fM, c: F)
+    Tm2 ==> Record(k: fM, c: G)
+    lT ==> List(Tm)
+    lT2 ==> List(Tm2)
+    NNI ==> NonNegativeInteger
+    RG ==> Fraction(G)
+    EqRG ==> Equation(RG)
+    sol_pack ==> SystemSolvePackage(F)
+
+    my_degree(p : XDP) : Integer ==
+        p = 0 => -1
+        degree(p)
+
+    -- split p into homogeneous part of maximal degree and lower order terms
+    top_split(p) ==
+        d := degree(p)
+        d = 0 => [p, 0$XDP]
+        lt := listOfTerms(p)
+        lt1 := [r for r in lt | length(r.k) = d]
+        lt2 := [r for r in lt | length(r.k) < d]
+        p1 := construct(lt1)$XDP
+        p2 := construct(lt2)$XDP
+        [p1, p2]
+
+    -- d_rec ==> Record(quotient : XDP, remainder : XDP)
+
+    ldivide(x : XDP, y : XDP) : d_rec ==
+        w := maxdeg(y)
+        ilc := 1/leadingCoefficient(y)
+        dy := degree(y)
+        dx := my_degree(x)
+        dx < dy => [0, x]
+        qq := 0$XDP
+        repeat
+            tx := top_split(x)
+            q1 := ilc*lquo(first(tx), w)
+            x := x - y*q1
+            qq := qq + q1
+            ndx := my_degree(x)
+            ndx = dx or ndx < dy => return [qq, x]
+            dx := ndx
+
+    lexquo(x : XDP, y : XDP) : Union(XDP, "failed") ==
+        (q, r) := ldivide(x, y)
+        r = 0 => q
+        "failed"
+
+    left_ext_GCD(a : XDP, b : XDP) : Union(GCD_rec, "failed") ==
+        a0 := a
+        u0 := v := 1$XDP
+        v0 := u := 0$XDP
+        while b ~= 0 repeat
+            -- print(message("ldivide")$OutputForm)$OutputForm
+            -- print(a::OutputForm)$OutputForm
+            -- print(b::OutputForm)$OutputForm
+            (q, r) := ldivide(a, b)
+            -- print(r::OutputForm)$OutputForm
+            not(my_degree(r) < degree(b)) => return "failed"
+            (a, b) := (b, r)
+            (u0, u):= (u, u0 - u*q)
+            (v0, v):= (v, v0 - v*q)
+        [a, u0, v0, u, v]
+
+
+    -- find lowest degree factor of homogeneous polynomial p
+    -- returns list of factor and quotient or empty list
+    -- if p is irreducible
+    homo_fact1(p1 : XDP) : List(XDP) ==
+        n := numberOfMonomials(p1)
+        lw2 := maxdeg(p1)
+        c0 := leadingCoefficient(p1)
+        lw1 := 1$fM
+        length(lw2) = 0 => []
+        while length(lw2) > 0 repeat
+            lw1 := lw1*(first(lw2)::fM)
+            lw2 := rest(lw2)
+            length(lw2) = 0 => break
+            rf := lquo(p1, lw1)
+            n2 := numberOfMonomials(rf)
+            n1u := n exquo n2
+            n1u case "failed" => "iterate"
+            n1 := n1u::Integer
+            lf := rquo(p1, lw2)
+            (n1 ~= numberOfMonomials(lf)) => "iterate"
+            lf := (1/c0)*lf
+            p1 = lf*rf => return [lf, rf]
+        []
+
+    -- factor homogeneous polynomial into irreducible factors
+    homo_fact(p) ==
+        res : List(XDP) := []
+        repeat 
+            fl1 := homo_fact1(p)
+            -- print(fl1)
+            empty?(fl1) =>
+                res := cons(p, res)
+                res := reverse(res)
+                -- print("returning")
+                -- print(res)
+                return res
+            p1 := first(fl1)
+            res := cons(p1, res)
+            p := first(rest(fl1))
+        res
+
+    XDP_to_YDP(p : XDP) : YDP ==
+        lt := listOfTerms(p)
+        lt2 : lT2 := []
+        for t in lt repeat
+            lt2 := cons([t.k, (t.c)::G]$Tm2, lt2)
+        lt2 := reverse!(lt2)
+        construct(lt2)$YDP
+
+    eval_YDP(p : YDP, ls : List(Symbol), lval : List(F)) : XDP ==
+        lt := listOfTerms(p)
+        lt2 : lT := []
+        for t in lt repeat
+            nc := ground(eval(t.c, ls, lval))
+            nc = 0 => "iterate"
+            lt2 := cons([t.k, nc]$Tm, lt2)
+        construct(lt2)$XDP
+
+    SUP ==> SparseUnivariatePolynomial(F)
+
+    eval_sup(p1 : SUP, w : XDP) : XDP ==
+        res : XDP := 0
+        od : Integer := -1
+        while p1 ~= 0 repeat
+            c := leadingCoefficient(p1)
+            nd := degree(p1)
+            for i in nd..(od - 1) repeat
+                res := w*res
+            res := res + c::XDP
+            p1 := reductum(p1)
+            od := nd
+        for i in 1..od repeat
+            res := w*res
+        res
+
+    restn(w : fM, j : Integer) : fM ==
+        for i in 1..j repeat w := rest(w)
+        w
+
+    firstn(w : fM, j : Integer) : fM ==
+        res := 1$fM
+        for i in 1..j repeat
+            res := res*(first(w)::fM)
+            w := rest(w)
+        res
+
+    my_ground(fr : RG) : F ==
+        ground(numer(fr))/ground(denom(fr))
+
+    rational_solution1(eq : EqRG) : List(RG) ==
+        le := lhs(eq)
+        denom(le) ~= 1$G => []
+        nl := numer(le)
+        totalDegree(nl) ~= 1 or reductum(nl) ~= 0 => []
+        re := rhs(eq)
+        nr := numer(re)
+        not(ground?(nr)) => []
+        dr := denom(re)
+        not(ground?(dr)) => []
+        [le, (((1/leadingCoefficient(nl))*my_ground(re))::G)::RG]
+
+    rational_solution(leq : List(EqRG), ls : List(Symbol)) : List(F) ==
+        -- print leq
+        -- print ls
+        sol : List(F) := []
+        for eq in leq for s in ls repeat
+            empty?(sol1 := rational_solution1(eq)) => return []
+            v := first(variables(numer(first(sol1))))
+            s ~= v => error "strange solution"
+            sol := cons(my_ground(first(rest(sol1))), sol)
+        reverse(sol)
+
+    -- find solutions in base field
+    -- assumes that equations have only finite number of solutions
+    get_rational_solution(eqs : List(G), ls : List(Symbol)) : List(F) ==
+        lsol := solve([eq::RG for eq in eqs], ls)$sol_pack
+        for leq in lsol repeat
+            if not(empty?(sol := rational_solution(leq, ls))) then
+                return [sol]
+        []
+
+    my_mul(l : List(XDP)) : XDP ==
+        l := reverse l
+        res := first(l)
+        for p in rest(l) repeat
+            res := p*res
+        res
+
+    overlap_steps(ll : List(XDP), rl : List(XDP)) : List(Integer) ==
+        res : List(Integer) := []
+        p1 := last(ll)
+        d := degree(p1)
+        kk := #ll
+        for p2 in rl for k in 1..kk repeat
+            if p2 = p1 then
+                if first(rl, k) = rest(ll, (kk - k)::NNI) then
+                    res := cons(d, res)
+            d := d + degree(p2)
+        reverse(res)
+
+    -- solve lift exquation for one step of lifting
+    lift1(lw : fM, lfy : YDP, d1 : Integer, rw : fM, rfy : YDP, j : Integer,
+          lc : F, rp : YDP, o_case : Boolean) : lift_rec ==
+        nsu : Union(Symbol, "none") := "none"
+        lcw := restn(lw, d1 - j)
+        rop := lquo(rfy, lcw)
+        if rop = 0 then
+            rf1p := lquo(rp, lw)
+            rf1 := (1/lc)::G*rf1p
+            rp := rp - lfy*rf1
+            lf1 := rquo(rp, rw)
+            rp := rp - lf1*rfy
+        else
+            rcw := firstn(rw, j)
+            lop := rquo(lfy, rcw)
+            row := lw*maxdeg(rop)
+            if (lop = 0) or (row < (low := maxdeg(lop)*rw)) then
+                lf1 := rquo(rp, rw)
+                rp := rp - lf1*rfy
+                rf1p := lquo(rp, lw)
+                rf1 := (1/lc)::G*rf1p
+                rp := rp - lfy*rf1
+            else if low < row then
+                -- the same as rop = 0
+                rf1p := lquo(rp, lw)
+                rf1 := (1/lc)::G*rf1p
+                rp := rp - lfy*rf1
+                lf1 := rquo(rp, rw)
+                rp := rp - lf1*rfy
+            else if o_case then
+                -- print "overlap"
+                ns := new()$Symbol
+                nsu := ns
+                nc := monomial(1, ns, 1)$G
+                oc := coefficient(rp, low)
+                rf1p := lquo(rp, lw)
+                rf1 := (1/lc)::G*rf1p
+                lf1 := rquo(rp, rw)
+                rf1 := rf1 + nc*rop
+                lf1 := lf1 - ((oc/lc)::G + nc)*lop
+                rp := rp - lfy*rf1 - lf1*rfy
+            else
+                -- print "false overlap"
+                -- print low
+                oc := coefficient(rp, low)
+                dif_p := lfy*rop - lop*rfy
+                dif_p = 0 => error "impossible 1"
+                dw := maxdeg(dif_p)
+                dw >= low => error "impossible 2"
+                dc := coefficient(rp, dw)
+                rdc : F := 0
+                ldc : F := 0
+                ldc0 : G :=
+                        (rqu := lquo(dw, lw)) case "failed" => 0
+                        rdc := ground(coefficient(rop, rqu::fM))
+                        (1/lc)*dc
+                rdc0 : G :=
+                        (lqu := rquo(dw, rw)) case "failed" => 0
+                        ldc := ground(coefficient(lop, lqu::fM))
+                        dc
+                piv2 := rdc - 1
+                piv2 = 0 => error "impossible 3"
+                nc2 := (1/piv2)*(dc - ldc0 - rdc0 + ldc*oc)
+                nc1 := -oc - nc2
+                rf1p := lquo(rp, lw)
+                rf1 := (1/lc)::G*rf1p
+                rf1 := rf1 + nc1*rop
+                lf1 := rquo(rp, rw)
+                lf1 := lf1 + nc2*lop
+                rp := rp - lfy*rf1 - lf1*rfy
+        [lf1, rf1, rp, nsu]
+
+
+    if F has PolynomialFactorizationExplicit then
+
+      dummy := create()$SingletonAsOrderedSet
+
+      -- Find factor of form P(t), where t is noncommutative
+      -- with no overlaps in top part and P is irreducible
+      -- commutative polynomial
+      dc_fact11(lf : XDP, lrl : List(YDP),  eqs : List(G)
+             ) : Union(XDP, "failed") ==
+        -- print(eqs::OutputForm)$OutputForm
+        ueqs := [univariate(eq) for eq in eqs]
+        eq1 := gcd(ueqs)
+        degree(eq1) < 1 => "failed"
+        -- print(eq1::OutputForm)$OutputForm
+        feq := factor(eq1)
+        fl := factorList(feq)
+        md := min([degree(fr.factor) for fr in fl])
+        -- print(lrl::OutputForm)$OutputForm
+        tt := -univariate(constant(first(lrl)))
+        degree(tt) > 1 => error "degree(tt) > 1"
+        tt0 := coefficient(tt, 0)
+        tt1 := leadingCoefficient(tt)
+        inv_tt := (1/tt1)*(monomial(1,1)$SUP - tt0::SUP)
+        for fr in fl repeat
+            fac := fr.factor
+            degree(fac) > md => "iterate"
+            nfac := eval(fac, dummy, inv_tt)
+            -- print(nfac::OutputForm)$OutputForm
+            w := lf + eval_YDP(reduce(_+, rest(lrl), 0$YDP), [], [])
+            return eval_sup(nfac, w)
+        error "impossible"
+
+      Fact1 ==> Union(List(XDP), XDP, "failed")
+
+    -- tries to extend factorization of homogeneous part of
+    -- maximal degree to full factorization
+    -- d is degree of homogeneous part
+    -- lc is coefficient of leading term
+    -- ll gives factrization of homogeneous part of left factor
+    -- rl gives factrization of homogeneous part of right factor
+    -- rs are lower order terms
+    -- returns list of factors or "failed" if there are no factorization
+    -- with given homogeneous part
+      dc_fact1(d : NNI, lc : F, ll : List(XDP), rl : List(XDP),
+             rs : XDP) : Fact1 ==
+        lf := lc*my_mul(ll)
+        rf := my_mul(rl)
+        lfy := XDP_to_YDP(lf)
+        rfy := XDP_to_YDP(rf)
+        d1 := degree(lf)
+        d2 := degree(rf)
+        lw := maxdeg(lf)
+        rw := maxdeg(rf)
+        md := min(d1, d2)
+        lovl := overlap_steps(ll, rl)
+        lovl := concat(lovl, md + 1)
+        ovls := first(lovl)
+        lovl := rest(lovl)
+        lrl : List(YDP) := []
+        rrl : List(YDP) := []
+        eqs : List(G) := []
+        -- print lf
+        -- print rf
+        ls : List(Symbol) := []
+        alg_case : Boolean := true
+        for j in 1..md repeat
+            -- print "step"
+            -- print j
+            o_case := false
+            if j = ovls then
+                o_case := true
+                ovls := first(lovl)
+                lovl := rest(lovl)
+            rp : YDP := -reduce(_+, [lr1*rr1 for lr1 in lrl for rr1 in rrl], 0)
+            if d - j = my_degree(rs) then
+                ts := top_split(rs)
+                rp := rp + XDP_to_YDP(first(ts))
+                rs := first(rest(ts))
+
+            -- solve lift exquation for one step of lifting
+            (lf1, rf1, rp, nsu) := lift1(lw, lfy, d1, rw, rfy, j,
+                                         lc, rp, o_case)
+            if nsu case Symbol then
+                ls := cons(nsu::Symbol, ls)
+                if j < md then alg_case := false
+            -- print lf1
+            -- print rf1
+            -- print rp
+            eqs := concat(eqs, coefficients(rp))
+            lrl := cons(lf1, lrl)
+            rrl := concat(rrl, rf1)
+        if d1 > d2 then
+            for j in (md + 1)..d1 repeat
+                -- print "step"
+                -- print j
+                rp : YDP := -reduce(_+, [lr1*rr1 for lr1 in lrl for rr1 in rrl])
+                if d - j = my_degree(rs) then
+                    ts := top_split(rs)
+                    rp := rp + XDP_to_YDP(first(ts))
+                    rs := first(rest(ts))
+                lf1 := rquo(rp, rw)
+                -- print lf1
+                rp := rp - lf1*rfy
+                -- print rp
+                eqs := concat(eqs, coefficients(rp))
+                lrl := cons(lf1, lrl)
+        rrl1 := rrl
+        if d2 > d1 then
+            for j in (md + 1)..d2 repeat
+                -- print "step"
+                -- print j
+                rp : YDP := -reduce(_+, [lr1*rr1 for lr1 in lrl for rr1 in rrl1])
+                if d - j = my_degree(rs) then
+                    ts := top_split(rs)
+                    rp := rp + XDP_to_YDP(first(ts))
+                    rs := first(rest(ts))
+                rf1 := lquo(rp, lw)
+                rf1 := (1/lc)::G*rf1
+                rp := rp - lfy*rf1
+                -- print rf1
+                -- print rp
+                eqs := concat(eqs, coefficients(rp))
+                rrl := concat(rrl, rf1)
+                rrl1 := rest(concat(rrl1, rf1))
+        for j in (max(d1, d2) + 1)..d repeat
+            rp : YDP := -reduce(_+, [lr1*rr1 for lr1 in lrl for rr1 in rrl1])
+            if d - j = my_degree(rs) then
+                ts := top_split(rs)
+                rp := rp + XDP_to_YDP(first(ts))
+                rs := first(rest(ts))
+            -- print rp
+            eqs := concat(eqs, coefficients(rp))
+            rrl1 := rest(rrl1)
+        empty?(eqs) =>
+            empty?(ls) =>
+                lf := lf + eval_YDP(reduce(_+, lrl), [], [])
+                rf := rf + eval_YDP(reduce(_+, rrl), [], [])
+                [lf, rf]
+            error "impossible"
+        -- print eqs
+        empty?(ls) => "failed"
+        alg_case =>
+            #ls ~= 1 => error "impossible"
+            au := dc_fact11(lf, lrl, eqs)
+            au case "failed" => "failed"
+            au::XDP
+        sol := get_rational_solution(eqs, ls)
+        empty?(sol) => "failed"
+        -- print sol
+        lf := lf + eval_YDP(reduce(_+, lrl), ls, sol)
+        rf := rf + eval_YDP(reduce(_+, rrl), ls, sol)
+        [lf, rf]
+
+    -- factor p, returns list of factors
+    -- finds single factorization into irreducible factors
+      factor(p) ==
+        (dd := my_degree(p)) <= 1 => [p]
+        d := dd::NNI
+        ts := top_split(p)
+        tp := first(ts)
+        rs := first(rest(ts))
+        lc := leadingCoefficient(tp)
+        tp := (1/lc)*tp
+        rf := homo_fact(tp)
+        rf0 := rf
+        lf : List(XDP) := []
+        res : List(XDP) := []
+        repeat
+            lf := concat(lf, first(rf))
+            rf := rest(rf)
+            empty?(rf) =>
+                res := cons(p, res)
+                break
+            -- print "trying"
+            -- print d
+            -- print lc
+            -- print lf
+            -- print rf
+            -- print rs
+            fu := dc_fact1(d, lc, lf, rf, rs)
+            -- print fu
+            if fu case List(XDP) then
+                fl := fu::List(XDP)
+                res := cons(first(fl), res)
+                p := first(rest(fl))
+                ts := top_split(p)
+                lc := leadingCoefficient(p)
+                d := my_degree(p)::NNI
+                rs := first(rest(ts))
+                lf := []
+                rf0 := rf
+            if fu case XDP then
+                f1 := fu::XDP
+                pu := lexquo(p, f1)
+                pu case "failed" => error "lexquo(p, f1)"
+                p1 := pu::XDP
+                d1 := my_degree(p1)::NNI
+                d1 = 0 =>
+                    res := cons(p, res)
+                    break
+                p := p1
+                res := cons(f1, res)
+                lc := leadingCoefficient(p)
+                ts := top_split(p)
+                rs := first(rest(ts))
+                lf := []
+                while d > d1 repeat
+                    p1 := first(rf0)
+                    rf0 := rest(rf0)
+                    d := (d - degree(p1))::NNI
+                d < d1 => error "d < d1"
+                rf := rf0
+        reverse(res)
+
+    -- a2 := x*y - y*x
+    -- a3 := x*y*z - x*z*y + z*x*y - z*y*x + y*z*x - y*x*z
+    -- (x+y+z)^4+x*y*z*x
+    -- ((x+y+z)^2+x*y)*((x+y+z)^2+y*x)
+)if false
+    factor(4*x*x-9)
+    factor(x*x-9/4)
+    factor((x - 2)*(x - 3)*(x - 5)*(x - 7))
+    factor((x^2 + 5)*(x^2 + x + 7))
+    factor((2*x^2 +3*x - 4)*(3*x^2 - x - 7))
+    factor((x^2 + 5)*(x^3 + x + 7))
+    factor((x^3 + 5)*(x^3 + x + 7))
+    -- Was very long time: 2397.40 sec
+    factor((x^4 + 5)*(x^4 + x + 7))
+    -- Still long time: 2510.13 sec
+    factor(((x^2+y)^4 + 5)*((x^2+y)^4 + (x^2+y) + 7))
+    factor((x^3 + x + 7)*a3*a2)
+    factor((x^3 + x + 7)*(a3*a3 + 7))
+    factor((a2^2 - 2)*(a2^2 - 3)*(a2^2 - 5))
+    factor((a3^2 - 2)*(a3^2 - 3)*(a3^2 - 5))
+    factor((3+x*z*y)*a3)
+    factor(a3*(1+y))
+    -- Two different factorizations
+    factor((x^2*y - y + 1)*(y*x^2 + x^2 - y))
+    factor((x^2*y + x^2 - y)*(y*x^2 - y + 1))
+)endif

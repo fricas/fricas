@@ -102,6 +102,7 @@ testTrue("not(f_13 = f_14)")
 testcaseNoClear "factoring"
 
 XDP ==> XDPOLY(OVL, F)
+XPF ==> XPolynomialFactor(OVL, F)
 lS ==> List(Symbol)
 
 x := 'x::OFM::XDP;
@@ -115,24 +116,55 @@ XDP_to_FDA(p) ==
         res := res + (t.c)::FDA*(t.k)::FDA
     res
 
-e1 := ['mult1]$lS
-e2 := ['mult1, 'mult2]$lS
-p2 := ['mult1, 'prop2]$lS
+e1 := ['mult1, 'mult3]$lS
+e1p3 := ['mult1, 'prop3]$lS
+e1o3 := ['mult1, 'ord3]$lS
+e2 := ['mult1, 'mult2, 'mult3]$lS
+p2 := ['mult1, 'prop2, mult3]$lS
+p23 := ['mult1, 'prop2, 'prop3]$lS
+p3 := ['mult1, 'mult2, 'prop3]$lS
+e3 := ['mult3]$lS
 
 check_factor_prop(nl1, nl) ==
-    free nl1
-    free pfi2
-    free pfi
-    testTrue("(nl2 := factor(nl1); true)")
+    nl2 : List(FDA) := factor(nl1)
     for fi2 in nl2 for fi in nl repeat
-        pfi2 := fi2
-        pfi := fi
-        testTrue("scalar?(pfi2/pfi)")
+        if not(scalar?(fi2/fi)) then return false
+    true
+
+check_factor_prop3(x1, lx) ==
+    lx2 := factor(x1)$XPF
+    for fi2 in lx2 for fi1 in lx repeat
+        lc2 := leadingCoefficient(fi2)
+        lc1 := leadingCoefficient(fi1)
+        if not(lc2*fi1 = lc1*fi2) then
+            print fi1::OutputForm
+            print fi2::OutputForm
+            return false
+    true
+
+check_factor_ord3(x1, lx) ==
+    lx2 := factor(x1)$XPF
+    for fi2 in lx2 repeat
+        res := false
+        for fi1 in lx for k in 1.. repeat
+            lc2 := leadingCoefficient(fi2)
+            lc1 := leadingCoefficient(fi1)
+            not(lc2*fi1 = lc1*fi2) => "iterate"
+            res := true
+            break
+        not res =>
+            print fi2::OutputForm
+            print lx::OutputForm
+            return res
+        lx := delete(lx, k)
+    true
 
 test_factor(l: List XDP, ol : lS): Void ==
+    free lx
     free l1
     free nl
     free nl1
+    lx := l
     nl := [XDP_to_FDA(p) for p in l]
     l1 := reduce(*, l)
     nl1 := reduce(*, nl)
@@ -143,34 +175,42 @@ test_factor(l: List XDP, ol : lS): Void ==
         testEquals("factor nl1", "nl")
     if member?('prop2, ol) then
         nl1 := XDP_to_FDA(l1)
-        -- check_factor_prop(nl1, nl)
+        testTrue("check_factor_prop(nl1, nl)")
+    if member?('mult3, ol) then
+        testEquals("factor(l1)$XPF", "lx")
+    if member?('prop3, ol) then
+        testTrue("check_factor_prop3(l1, lx)")
+    if member?('ord3, ol) then
+        testTrue("check_factor_ord3(l1, lx)")
 
 a2 := x*y - y*x
 a3 := x*y*z - x*z*y + z*x*y - z*y*x + y*z*x - y*x*z
 
 test_factor([x, y], e2)
 test_factor([x, 1+y*x], e2)
-test_factor([1 - x*y, 1 - y*x], e2)
+test_factor([1 - x*y, 1 - y*x], p3)
 test_factor([1 - x*y], e2)
 test_factor([x*y-y*x], e2)
 test_factor([x*y+y*x], e2)
 test_factor([1 - x*y*z*y*x*z], e2)
 test_factor([x - 3, x - 3], p2)
-test_factor([2*x - 3, 2*x - 3], p2)
+test_factor([2*x - 3, 2*x - 3], p23)
 test_factor([x*x-2], e2)
 test_factor([x+y, x-y], e2)
 test_factor([x, 1 + y*x, 1+z*y, x*y*z-z*x*y], e2)
-test_factor([1-x*y, 2+y*x, 3-y*z, 2-z*y, 1-x*z], e1)
-test_factor([3*x*y+5*y*x, 3*x*y+5*y*x], p2)
-test_factor([3*x*y+5*y*x, 3*x*y+5*y*x, 3*x*y+5*y*x], p2)
-test_factor([2 + x, (1/2)*(1 + y), -6 + 2*z], e2)
-test_factor([1-x*y, 2+y*x, 3-y*z, 2-z*y, x], p2)
-test_factor([(1/12)*(x^2 + 5), 12*(x^2 + x + 7)], e2)
-test_factor([-(29/3)*(3*x^2 - x - 7), -(3/29)*(2*x^2 +3*x - 4)], e1)
-test_factor([(1/5)*(x^2 + 5), 5*(x^3 + x + 7)], e1)
+test_factor([1-x*y, 2+y*x, 3-y*z, 2-z*y, 1-x*z], e1p3)
+test_factor([3*x*y+5*y*x, 3*x*y+5*y*x], p23)
+test_factor([3*x*y+5*y*x, 3*x*y+5*y*x, 3*x*y+5*y*x], p23)
+test_factor([2 + x, (1/2)*(1 + y), -6 + 2*z], p3)
+test_factor([1-x*y, 2+y*x, 3-y*z, 2-z*y, x], p23)
+test_factor([(1/12)*(x^2 + 5), 12*(x^2 + x + 7)], p23)
+test_factor([-(29/3)*(3*x^2 - x - 7), -(3/29)*(2*x^2 +3*x - 4)], e1p3)
+test_factor([(1/5)*(x^2 + 5), 5*(x^3 + x + 7)], e1p3)
 test_factor([x^3 + 5, x^3 + x + 7], e1)
-test_factor([(1/7)*(x^3 + x + 7), 7*a3, a2], e1)
-test_factor([a2^2 - 2, a2^2 - 3], e1)
+test_factor([(1/7)*(x^3 + x + 7), 7*a3, a2], e1p3)
+test_factor([a2^2 - 2, a2^2 - 3], e1o3)
 test_factor([a3, 1 + y], e2)
+test_factor([x^4 + 5, x^4 + x + 7], e3)
+test_factor([a2^2 - 5, a2^2 - 3, a2^2 - 2], e3)
 
 statistics()
