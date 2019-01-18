@@ -250,7 +250,7 @@ FakePolynomial : Exports == Implementation where
   PT ==> Record(var : Symbol, coef : UP)
   FrP ==> Record(numer : MP, denom : MP)
 
-  Exports ==> with
+  Exports ==> CoercibleTo(OutputForm) with
       degree : (%, Symbol) -> NonNegativeInteger
       ground : % -> FrP
       map : (MP -> MP, %) -> %
@@ -263,6 +263,24 @@ FakePolynomial : Exports == Implementation where
 
       Node ==> Record(deg : NonNegativeInteger, coef : FrP)
       Rep := Record(var : Symbol, coef : List Node)
+
+      frac_out(fr : FrP) : OutputForm ==
+          (fr.numer)::OutputForm / (fr.denom::OutputForm)
+
+      mon_out(mon : Node, v : Symbol) : OutputForm ==
+          (d := mon.deg) = 0 => frac_out(mon.coef)
+          vo := v::OutputForm
+          pw :=
+              d = 1 => vo
+              vo ^ d::OutputForm
+          frac_out(mon.coef) * pw
+
+      coerce(p : %) : OutputForm ==
+          pr1 := p::Rep
+          cl := pr1.coef
+          empty?(cl) => (0$Integer)::OutputForm
+          ol := [mon_out(mon, pr1.var) for mon in pr1.coef]
+          reduce(_+, ol)
 
       ground(p : %) : FrP ==
           pr1 := p::Rep
