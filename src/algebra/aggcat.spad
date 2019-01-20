@@ -475,13 +475,13 @@ Dictionary(S : Type) : Category ==
 
    dictionary l ==
        d := dictionary()
-       for x in l repeat insert!(x, d)
+       for x in l repeat d := insert!(x, d)
        d
 
    if % has finiteAggregate then
        -- remove(f: S->Boolean, t: %)  == remove!(f, copy t)
        -- select(f, t)        == select!(f, copy t)
-       select!(f, t)      == remove!((x : S) : Boolean +-> not f(x), t)
+       select!(f, t) == remove!((x : S) : Boolean +-> not f(x), t)
 
        --extract! d ==
        --  empty? d => error "empty dictionary"
@@ -495,7 +495,7 @@ Dictionary(S : Type) : Category ==
                every?((x : S) : Boolean +-> member?(x, t), parts s)
 
            remove!(f : S->Boolean, t : %) ==
-               for m in parts t repeat if f m then remove!(m, t)
+               for m in parts t repeat if f m then t := remove!(m, t)
                t
 
 )abbrev category MDAGG MultiDictionary
@@ -628,7 +628,7 @@ FiniteSetAggregate(S : SetCategory) : Category ==
    s = t           == #s = #t and empty? difference(s, t)
    set   l         == construct l
    cardinality s   == #s
-   construct l     == (s := set(); for x in l repeat insert!(x, s); s)
+   construct l     == (s := set(); for x in l repeat s := insert!(x, s); s)
    count(x : S, s : %) == (member?(x, s) => 1; 0)
    subset?(s, t)   ==
        #s <= #t and every?((x : S) : Boolean +-> member?(x, t), parts s)
@@ -638,23 +638,23 @@ FiniteSetAggregate(S : SetCategory) : Category ==
 
    intersect(s, t) ==
        i := set()
-       for x in parts s | member?(x, t) repeat insert!(x, i)
+       for x in parts s | member?(x, t) repeat t := insert!(x, i)
        i
 
    difference(s : %, t : %) ==
        m := copy s
-       for x in parts t repeat remove!(x, m)
+       for x in parts t repeat m := remove!(x, m)
        m
 
    symmetricDifference(s, t) ==
        d := copy s
        for x in parts t repeat
-           if member?(x, s) then remove!(x, d) else insert!(x, d)
+           if member?(x, s) then d := remove!(x, d) else d := insert!(x, d)
        d
 
    union(s : %, t : %) ==
        u := copy s
-       for x in parts t repeat insert!(x, u)
+       for x in parts t repeat u := insert!(x, u)
        u
 
    if S has Finite then
@@ -1545,7 +1545,7 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       setelt!(x, "first", a) == setfirst!(x, a)
       setelt!(x,  "last", a) == setlast!(x, a)
       setelt!(x,  "rest", a) == setrest!(x, a)
-      concat(x : %, y : %)      == concat!(copy x, y)
+      concat(x : %, y : %) == concat!(copy x, y)
 
       -- The qxxx variants are for speed.  If we do not care about
       -- speed the regular ones will do.
