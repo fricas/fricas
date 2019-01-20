@@ -198,12 +198,34 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
 
     -- find solutions in base field
     -- assumes that equations have only finite number of solutions
-    get_rational_solution(eqs : List(G), ls : List(Symbol)) : List(F) ==
-        lsol := solve([eq::RG for eq in eqs], ls)$sol_pack
+    get_rational_solution(lsol : List(List(EqRG)), ls : List(Symbol)
+                         ) : List(F) ==
         for leq in lsol repeat
             if not(empty?(sol := rational_solution(leq, ls))) then
                 return [sol]
         []
+
+    Alg_rec ==> Record(pol : G, sol1 : List(F))
+
+    algebraic_solution(leq : List(EqRG), alg_sym : Symbol,
+                       ls : List(Symbol)) : Union(Alg_rec, "failed") ==
+        sol1 := rational_solution(rest(leq), ls)
+        empty?(sol1) =>
+            "failed"
+        eq1 := first(leq)
+        eqf := lhs(eq1) - rhs(eq1)
+        eq := numer(eqf)
+        v_lst := variables(eq)
+        v_lst = [alg_sym] => [eq, sol1]
+        "failed"
+
+    get_algebraic_solution(lsol : List(List(EqRG)), alg_sym : Symbol,
+                           ls : List(Symbol)) : Union(Alg_rec, "failed") ==
+        for leq in lsol repeat
+            sol := algebraic_solution(leq, alg_sym, ls)
+            sol case Alg_rec =>
+                return sol
+        "failed"
 
     my_mul(l : List(XDP)) : XDP ==
         l := reverse l
@@ -329,6 +351,19 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
             return eval_sup(nfac, w)
         error "impossible"
 
+      dc_fact12(lf : XDP, lrl : List(YDP),  eq : G,
+             sol1 : List(F), ls : List(Symbol)
+             ) : XDP ==
+          ueq := univariate(eq)
+          tt := -univariate(constant(first(lrl)))
+          degree(tt) > 1 => error "degree(tt) > 1"
+          tt0 := coefficient(tt, 0)
+          tt1 := leadingCoefficient(tt)
+          inv_tt := (1/tt1)*(monomial(1,1)$SUP - tt0::SUP)
+          nfac := eval(ueq, dummy, inv_tt)
+          w := lf + eval_YDP(reduce(_+, rest(lrl), 0$YDP), ls, sol1)
+          eval_sup(nfac, w)
+
       Fact1 ==> Union(List(XDP), XDP, "failed")
 
     -- tries to extend factorization of homogeneous part of
@@ -362,6 +397,7 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
         -- print rf
         ls : List(Symbol) := []
         alg_case : Boolean := true
+        alg_case2 : Boolean := false
         for j in 1..md repeat
             -- print "step"
             -- print j
@@ -382,6 +418,7 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
             if nsu case Symbol then
                 ls := cons(nsu::Symbol, ls)
                 if j < md then alg_case := false
+                if j = md then alg_case2 := true
             -- print lf1
             -- print rf1
             -- print rp
@@ -443,8 +480,17 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
             au := dc_fact11(lf, lrl, eqs)
             au case "failed" => "failed"
             au::XDP
-        sol := get_rational_solution(eqs, ls)
-        empty?(sol) => "failed"
+        lsol := solve([eq::RG for eq in eqs], ls)$sol_pack
+        sol := get_rational_solution(lsol, ls)
+        empty?(sol) =>
+            alg_case2 =>
+                alg_sym := first(ls)
+                ls := rest(ls)
+                solu := get_algebraic_solution(lsol, alg_sym, ls)
+                solu case "failed" => "failed"
+                solr := solu::Alg_rec
+                dc_fact12(lf, lrl, solr.pol, solr.sol1, ls)
+            "failed"
         -- print sol
         lf := lf + eval_YDP(reduce(_+, lrl), ls, sol)
         rf := rf + eval_YDP(reduce(_+, rrl), ls, sol)
@@ -525,8 +571,13 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
     factor((x^3 + 5)*(x^3 + x + 7))
     -- Was very long time: 2397.40 sec
     factor((x^4 + 5)*(x^4 + x + 7))
-    -- Still long time: 2510.13 sec
+    -- Was very long time: 2510.13 sec
     factor(((x^2+y)^4 + 5)*((x^2+y)^4 + (x^2+y) + 7))
+    factor(((2*x^2+y)^4 + 5)*((2*x^2+y)^4 + (2*x^2+y) + 7))
+    -- quite large, multiplication takes 233.30 sec
+    -- and produces 293573 monomials
+    -- needs 1940.88 sec
+    -- factor(((a2^2+y)^4 + 5)*((a2^2+y)^4 + (a2^2+y) + 7))
     factor((x^3 + x + 7)*a3*a2)
     factor((x^3 + x + 7)*(a3*a3 + 7))
     factor((a2^2 - 2)*(a2^2 - 3)*(a2^2 - 5))
