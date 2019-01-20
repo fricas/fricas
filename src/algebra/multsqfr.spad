@@ -37,10 +37,6 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
      ++ squareFree(p) computes the square free
      ++ decomposition of a multivariate polynomial p presented as
      ++ a univariate polynomial with multivariate coefficients.
-   squareFreePrim :      P     -> Factored P
-     ++ squareFreePrim(p) compute the square free decomposition
-     ++ of a primitive multivariate polynomial p.
-
 
 
                     ----  local functions  ----
@@ -292,8 +288,8 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
        leadpol := true
        ud := lcoef*ud
        lcg0 : R := leadingCoefficient g0
-       if ground? lcoef then g0 := retract(lcoef) quo lcg0 *g0
-       else g0 := (retract(eval(lcoef, lvar, lval)) quo lcg0) * g0
+       if ground? lcoef then g0 := (retract(lcoef) exquo lcg0)::R *g0
+       else g0 := (retract(eval(lcoef, lvar, lval)) exquo lcg0)::R * g0
        g1 := lcg0*g1
        leadlist := [lcoef, lcd]
      plist := lifting(ud, lvar, [g0, g1], lval, leadlist, ldeg, pmod)
@@ -311,15 +307,6 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
      makeFR(multivariate(cf*unit result, x),
          [["sqfr",multivariate(term.factor,x),term.exponent]
            for term in factorList result])
-
---   squareFreePrim(p: P) : Factored P ==
---     -- p is content free
---     ground? p => makeFR(p, [])      ---   the polynomial is constant  ---
---
---     lvar: List(OV) := variables p
---     #lvar=1 =>                    ---  the polynomial is univariate ---
---       univcase(p, lvar.first)
---     nsqfree(p, lvar, 1)
 
    compdegd(lfact : List(FFE)) : Z ==
      ris : Z := 0
