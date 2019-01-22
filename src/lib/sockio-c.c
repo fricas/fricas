@@ -805,15 +805,16 @@ remote_stdio(Sock *sock)
       return;
     }
     if (FD_ISSET(0, &rd)) {
-      fgets(buf,1024,stdin);
-      len = strlen(buf);
-      /*
-          gets(buf);
-          len = strlen(buf);
-          *(buf+len) = '\n';
-          *(buf+len+1) = '\0';
-      */
-      swrite(sock, buf, len, "writing to remote stdin");
+      len = read(0, buf, 1024);
+      if (len == -1) {
+        perror("read from stdin");
+        return;
+      }
+      if (len == 0) {
+        /* EOF (CTRL-D) received, ignore it for now */
+      } else {
+        swrite(sock, buf, len, "writing to remote stdin");
+      }
     }
     if (FD_ISSET(sock->socket, &rd)) {
       len = sread(sock, buf, 1024, "stdio");
