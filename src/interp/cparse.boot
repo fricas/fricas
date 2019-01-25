@@ -123,7 +123,7 @@ npPop3()==
        a
 
 npParenthesized f==
-   npParenthesize("(",")",f) 
+   npParenthesize("(",")",f)
 
 npParenthesize (open,close,f)==
     a:=$stok

@@ -115,7 +115,7 @@ compSPADSLAM(name, argl, bodyl) ==
             -- FIXME: we should call 'devaluate' only on domains
             not(rest(argl)) => ["devaluate", first(argl)]
             ["LIST", :[["devaluate", g1] for g1 in argl]]
-        app := 
+        app :=
             not(rest(argl)) => [auxfn, g3]
             ["APPLY", ["FUNCTION", auxfn], g3]
         la1 := [["SETQ", g2, ["assoc", g3, al]], ["CDR", g2]]

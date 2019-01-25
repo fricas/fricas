@@ -417,7 +417,7 @@ InvestigateConditions(catvecListMaker, e) ==
       [previous]
   $Conditions:= EFFACE(nil,[EFFACE(nil,u) for u in $Conditions])
   partList:=
-    [getViewsConditions(partPessimise($principal, cond), e) 
+    [getViewsConditions(partPessimise($principal, cond), e)
          for cond in $Conditions]
   masterSecondaries:= secondaries
   for u in partList repeat
