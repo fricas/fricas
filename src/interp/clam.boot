@@ -76,10 +76,10 @@ compHash(op, argl, body, cacheName, eqEtc) ==
     null argl => [nil,nil,[auxfn]]
     argl is [.] =>
       -- FIXME: we shall call 'devaluate' only on domains
-      key := ['devaluate, g1] 
+      key := ['devaluate, g1]
       [[g1],['LIST,key],[auxfn,g1]]  --g1 is a parameter
     -- FIXME: we shall call 'devaluate' only on domains
-    key := ['devaluateList, g1] 
+    key := ['devaluateList, g1]
     [g1, key, ['APPLY,['function,auxfn],g1]]   --g1 is a parameter list
   if $reportCounts=true then
     hitCounter := INTERNL1(op, '";hit")
