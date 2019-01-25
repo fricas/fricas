@@ -585,7 +585,7 @@ substituteOp(op',op,x) ==
 
  -- following is only intended for substituting in domains slots 1 and 4
  -- signatures and categories
-sublisV(p,e) == 
+sublisV(p,e) ==
   LIST2REFVEC [suba(p, e.i) for i in 0..MAXINDEX e] where
     suba(p,e) ==
       STRINGP e => e
