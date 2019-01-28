@@ -535,6 +535,14 @@ int flag = MSG_NOSIGNAL;
    [AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Host has MSG_NOSIGNAL])],[])
 
 AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <sys/socket.h>
+   ], [
+int flag = SO_NOSIGPIPE;
+   ],
+   [AC_DEFINE([HAVE_SO_NOSIGPIPE], [1], [Host has SO_NOSIGPIPE])],[])
+
+AC_TRY_COMPILE([
 #include <errno.h>
 #include <sys/socket.h>
    ], [
