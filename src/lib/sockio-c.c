@@ -882,8 +882,10 @@ open_server(char *server_name)
 
   init_socks();
 #ifndef HAVE_MSG_NOSIGNAL
+#ifndef HAVE_SO_NOSIGPIPE
 #ifdef SIGPIPE
   bsdSignal(SIGPIPE, sigpipe_handler,RestartSystemCalls);
+#endif
 #endif
 #endif
   if (make_server_name(name, server_name) == -1)
@@ -931,6 +933,11 @@ open_server(char *server_name)
       server[1].socket = 0;
       return -2;
     }
+#ifdef HAVE_SO_NOSIGPIPE
+    /* macOS doesn't have MSG_NOSIGNAL, so use SO_NOSIGPIPE instead */
+    int set = 1;
+    setsockopt(server[1].socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+#endif
     FD_SET(server[1].socket, &socket_mask);
     FD_SET(server[1].socket, &server_mask);
     listen(server[1].socket, 5);
