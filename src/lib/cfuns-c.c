@@ -110,7 +110,7 @@ directoryp(char *path)
 int
 makedir(char *path)
 {
-#ifdef S_IRWXO
+#ifdef HAVE_TWO_ARG_MKDIR
    return ( mkdir (path,(S_IRWXU | S_IRWXO | S_IRWXG)) );
 #else
    return ( mkdir (path) );
