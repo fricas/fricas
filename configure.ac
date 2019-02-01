@@ -550,6 +550,13 @@ int code = EPIPE;
    ],
    [AC_DEFINE([HAVE_EPIPE], [1], [Host has EPIPE])],[])
 
+AC_TRY_COMPILE([
+#include <sys/stat.h>
+#include <sys/types.h>
+   ], [
+int code = mkdir ("./foo", (S_IRWXU | S_IRWXO | S_IRWXG));
+   ],
+   [AC_DEFINE([HAVE_TWO_ARG_MKDIR], [1], [Host has two arg mkdir])], [])
 
 if test x$fricas_host_has_socket != xyes; then \
     AC_MSG_ERROR([FriCAS needs support for sockets.])
