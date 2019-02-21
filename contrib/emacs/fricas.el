@@ -688,7 +688,7 @@ See `comint-dynamic-complete-filename'.  Returns t if successful."
          (dirsuffix (cond ((not comint-completion-addsuffix)
                            "")
                           ((not (consp comint-completion-addsuffix))
-                           (char-to-string directory-sep-char))
+                           (char-to-string ?/))
                           (t
                            (car comint-completion-addsuffix))))
          (filesuffix (cond ((not comint-completion-addsuffix)
