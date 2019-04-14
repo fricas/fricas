@@ -21,9 +21,6 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
                 ++ solve(u) \undocumented
         particularSolution :  UP -> F
                 ++ particularSolution(u) \undocumented
-        mapSolve :   (UP, F -> F) -> Record(solns : L F,
-                                           maps : L Record(arg : F, res : F))
-                ++ mapSolve(u, f) \undocumented
 
         linear :     UP -> L F
                 ++ linear(u) \undocumented
@@ -55,33 +52,8 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
 
     PSFdef == add
 
-        -----------------------------------------------------------------
-        -- Stuff for mapSolve
-        -----------------------------------------------------------------
-        id ==> (IDENTITY$Lisp)
-
-        maplist : List Record(arg : F, res : F) := []
-        mapSolving? : Boolean := false
-        -- map: F -> F := id #1    replaced with line below
-        map : Boolean := false
-
-        mapSolve(p, fn) ==
-            -- map := fn #1   replaced with line below
-            locmap : F -> F := x +-> fn x; map := id locmap
-            mapSolving? := true;  maplist := []
-            slist := solve p
-            mapSolving? := false
-            -- map := id #1   replaced with line below
-            locmap := x +-> id x; map := id locmap
-            [slist, maplist]
-
         part(s : F) : F ==
-            not mapSolving? => s
-            -- t := map s     replaced with line below
-            t : F := SPADCALL(s, map)$Lisp
-            t = s => s
-            maplist := cons([t, s], maplist)
-            t
+            s
 
         -----------------------------------------------------------------
         -- Entry points and error handling
