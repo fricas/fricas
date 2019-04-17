@@ -460,7 +460,9 @@ concatSuper [.,:l] == "MAX"/[superspan x for x in l]
 
 concatWidth [.,:l] == +/[WIDTH x for x in l]
 
-concatbWidth [.,:l] == +/[1+WIDTH x for x in l]-1
+concatbWidth [.,:l] ==
+    null l => 0
+    +/[1+WIDTH x for x in l]-1
 
 exptApp([.,a,b],x,y,d) ==
   pren:= exptNeedsPren a
