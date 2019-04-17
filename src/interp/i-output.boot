@@ -490,6 +490,8 @@ needStar(wasSimple,wasQuotient,wasNumber,cur,op) ==
   wasSimple =>
     atom cur or keyp cur="SUB" or keyp cur = "OVERBAR" or op="**" or
       op = "^" or (atom op and not NUMBERP op and not GETL(op,"APP"))
+        -- deal with cases like "x*f'(x)"
+        or (keyp op = "PRIME" or keyp op = "SUB")
 
 isQuotient op ==
   op="/" or op="OVER"
