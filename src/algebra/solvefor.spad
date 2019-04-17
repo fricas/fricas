@@ -1,6 +1,8 @@
 )abbrev package SOLVEFOR PolynomialSolveByFormulas
--- Examples of fields with "^": (%, Fraction Integer) -> % are
---     Complex Float, RealClosure(K) and AlgebraicNumber
+-- Examples of \spadtype{F} (fields with "^" : (%, Fraction Integer) -> %) are
+--     Expression Integer, Complex Float, RealClosure(K) and AlgebraicNumber
+-- If \spadtype{F} is Expression(RR), you should put \spadtype{RR} as
+-- the third argument to this package for simplification purposes.
 -- RealClosure(K) is unlikly to work here...
 ++ Author: Stephen M. Watt, Barry Trager
 ++ Description:
@@ -9,10 +11,11 @@
 ++ Care is taken to introduce few radicals so that radical extension
 ++ domains can more easily simplify the results.
 
-PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
+PolynomialSolveByFormulas(UP, F, RR) : PSFcat == PSFdef where
 
     UP : UnivariatePolynomialCategory F
     F :  Field with "^": (%, Fraction Integer) -> %
+    RR : Join(PolynomialFactorizationExplicit, Comparable, CharacteristicZero)
 
     L  ==> List
 
@@ -54,6 +57,19 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
 
         part(s : F) : F ==
             s
+
+        -- if F is Expression(RR), then we can simplify "s^(1/2)" to
+        -- "a*b^(1/2)" by sqaure-free factorization. Note that we should
+        -- the unit separately; and the sign of "a" is not important because
+        -- we will return both roots later.
+        sqrt2(s : F) : F ==
+            if F is Expression RR then
+                K ==> Kernel F
+                PP ==> SparseMultivariatePolynomial(RR, K)
+                res := froot(s, 2)$PolynomialRoots(IndexedExponents K, K, RR, PP, F)
+                res.coef * (res.radicand)^(1/res.exponent)
+            else
+                s^(1/2)
 
         -----------------------------------------------------------------
         -- Entry points and error handling
@@ -139,7 +155,7 @@ PolynomialSolveByFormulas(UP, F) : PSFcat == PSFdef where
             needLcoef c2; needChar0()
             (c0 = 0) => cons(0$F, linear(c2, c1))
             (c1 = 0) => [(-c0/c2)^(1/2), -(-c0/c2)^(1/2)]
-            D := part(c1^2 - 4*c2*c0)^(1/2)
+            D := sqrt2(c1^2 - 4*c2*c0)
             [(-c1+D)/(2*c2), (-c1-D)/(2*c2)]
 
         aQuadratic(c2, c1, c0) ==
