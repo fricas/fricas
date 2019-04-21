@@ -2034,6 +2034,7 @@ suScWidth u ==
   WIDTH u.1 + aggwidth CDDR u
 
 vconcatapp(u, x, y, d) ==
+  null rest u => d
   w := vConcatWidth u
   y := y + superspan u.1 + 1
   for a in rest u repeat
@@ -2058,8 +2059,10 @@ binomialApp(u, x, y, d) ==
   APP('")",x,y,d)
 
 vConcatSub u ==
+  null rest u => 0
   subspan u.1 + +/[height a for a in CDDR u]
 vConcatSuper u ==
+  null rest u => 0
   superspan u.1
 vConcatWidth u ==
   w := 0
