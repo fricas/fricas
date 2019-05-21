@@ -391,9 +391,8 @@ dbPresentCons(htPage,kind,:exclusions) ==
   htSay '"}{"
   if $exposedOnlyIfTrue
     then
-      if one?
-      then htSay '"{\em Unexposed Also}"
-      else htMakePage [['bcLinks,['"Unexposed Also",'"",'dbShowCons,'exposureOff]]]
+      htMakePage([['bcLinks, ['"Unexposed Also", '"", 'dbShowCons,
+                              'exposureOff]]])
     else
       if one?
       then htSay '"{\em Exposed Only}"
@@ -583,9 +582,9 @@ dbPresentOps(htPage,which,:exclusions) ==
   if star? then
     htSay '"{"
     if $exposedOnlyIfTrue
-    then if one?
-         then htSay '"{\em Unexposed Also}"
-         else htMakePage [['bcLinks,['"Unexposed Also",'"",'dbShowOps,which,'exposureOff]]]
+    then
+         htMakePage([['bcLinks, ['"Unexposed Also", '"", 'dbShowOps,
+                                 which, 'exposureOff]]])
     else if one?
          then htSay '"{\em Exposed Only}"
          else htMakePage [['bcLinks,['"Exposed Only",'"",'dbShowOps, which,'exposureOn]]]
