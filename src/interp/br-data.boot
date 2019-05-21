@@ -144,14 +144,8 @@ concatWithBlanks r ==
 
 writedb(u) ==
   not STRINGP u => nil        --skip if not a string
-  PRINTEXP(addPatchesToLongLines(u,500),$outStream)
-  --positions for tick(1), dashes(2), and address(9), i.e. 12
+  PRINTEXP(u, $outStream)
   TERPRI $outStream
-
-addPatchesToLongLines(s,n) ==
-  #s > n => STRCONC(SUBSTRING(s,0,n),
-              addPatchesToLongLines(STRCONC('"--",SUBSTRING(s,n,nil)),n))
-  s
 
 buildLibOps oplist == for [op,sig,:pred] in oplist repeat buildLibOp(op,sig,pred)
 
