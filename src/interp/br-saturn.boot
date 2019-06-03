@@ -488,6 +488,7 @@ htTab s == htSayStandardList(['"\tab{", s, '"}"])
 
 --------------------> NEW DEFINITION (see br-op1.boot)
 dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
+  which ~= '"operation" => BREAK()
   single? := null rest data
   htBeginMenu 'description
   bincount := 0
@@ -522,7 +523,9 @@ dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
   htEndMenu 'description
 
 --------------------> NEW DEFINITION (see br-op1.boot)
-dbPresentOps(htPage,which,:exclusions) ==
+dbPresentOps(htPage, which, exclusion) ==
+  which ~= '"operation" => BREAK()
+  exclusions := [exclusion]
   asharp? := htpProperty(htPage,'isAsharpConstructor)
   fromConPage? := (conname := opOf htpProperty(htPage,'conform))
   usage? := nil
@@ -558,7 +561,8 @@ dbPresentOps(htPage,which,:exclusions) ==
     else htMakePage [['bcLispLinks,['"Names",'"",'dbShowOps,which,'names]]]
   if not star? then
     htSay '"}{"
-    if not implementation? or member('implementation,exclusions) or which = '"attribute" or
+    which = '"attribute" => BREAK()
+    if not(implementation?) or member('implementation, exclusions) or
       ((conname := opOf htpProperty(htPage,'conform))
         and GETDATABASE(conname,'CONSTRUCTORKIND) = 'category)
     then htSay '"{\em Implementations}"
@@ -574,8 +578,8 @@ dbPresentOps(htPage,which,:exclusions) ==
     then htSay '"{\em Parameters}"
     else htMakePage [['bcLispLinks,['"Parameters",'"",'dbShowOps,which,'parameters]]]
   htSay '"}{"
-  if which ~= '"attribute" then
-    if one? or member('signatures,exclusions)
+  which = '"attribute" => BREAK()
+  if one? or member('signatures, exclusions)
       then htSay '"{\em Signatures}"
       else htMakePage [['bcLispLinks,['"Signatures",'"",'dbShowOps,which,'signatures]]]
   htSay '"}"
@@ -621,9 +625,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
                  or origin
   if $generalSearch? then $DomainList := rest $DomainList
   opform :=
-    which = '"attribute" =>
-      null sig => [op]
-      [op,sig]
+    which = '"attribute" => BREAK()
     which = '"constructor" => origin
     dbGetDisplayFormForOp(op,sig,doc)
   htSayStandard('"\newline")
@@ -647,7 +649,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSayUnexposed()
     htSay(ops)
     predicate='ASCONST or GETDATABASE(op,'NILADIC) or member(op,'(0 1)) => 'skip
-    which = '"attribute" and null args => 'skip
+    which = '"attribute" => BREAK()
     htSay('"(")
     if IFCAR args then
         htSayList(['"{\em ", quickForm2HtString IFCAR args, '"}"])
@@ -671,8 +673,9 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     --check the signature for SegmentExpansionCategory, e.g.
     tvarlist := TAKE(# $conargs,$TriangleVariableList)
     $signature := SUBLISLIS($FormalMapVariableList,tvarlist,$signature)
+  which = '"attribute" => BREAK()
   $sig :=
-    which = '"attribute" or which = '"constructor" => sig
+    which = '"constructor" => sig
     $conkind ~= '"package" => sig
     symbolsUsed := [x for x in rest conform | IDENTP x]
     $DomainList := SETDIFFERENCE($DomainList,symbolsUsed)

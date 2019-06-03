@@ -127,23 +127,19 @@ reportCategory(conform,typeForm,arg) ==
        htSay '"\newline "
   if oplist then
     if conlist then htSay '" and "
-    reportAO('"operation",oplist)
+    report_ops(oplist)
 
-reportAO(kind,oplist) ==
-  htSayList(['"have ", kind, '":"])
+report_ops(oplist) ==
+  htSayList(['"have ", '"operation", '":"])
   for [op,sig,:pred] in oplist repeat
-    htSay '"\newline "
-    if #oplist = 1 then htSay '"\centerline{"
-    if kind = '"attribute" then
-      attr := form2String [op,:sig]
-      satDownLink(attr,['"(|attrPage| '|",attr,'"|)"])
-    else
+      htSay('"\newline ")
+      if #oplist = 1 then htSay('"\centerline{")
       ops  := escapeSpecialChars STRINGIMAGE op
       sigs := form2HtString ['Mapping,:sig]
       satDownLink(ops,['"(|opPage| '|",ops,'"| |",sigs,'"|)"])
-      htSay '": "
+      htSay('": ")
       bcConform ['Mapping,:sig]
-    if #oplist = 1 then htSay '"}"
+      if #oplist = 1 then htSay('"}")
   htSay '"\newline "
 
 mkDomTypeForm(typeForm,conform,domname) == --called by kargPage
@@ -221,7 +217,7 @@ kePage(htPage,junk) ==
     bcConPredTable(conlist,opOf conform,rest conform)
   if oplist then
     if conlist then htBigSkip()
-    kePageDisplay(page,'"operation",kePageOpAlist oplist)
+    kePageDisplay(page, kePageOpAlist(oplist))
   htSayStandard '" \endmenu "
   htShowPage()
 
@@ -232,17 +228,13 @@ kePageOpAlist oplist ==
     opAlist := insertAlist(zeroOneConvert op,[[sig,pred],:u],opAlist)
   opAlist
 
-kePageDisplay(htPage,which,opAlist) ==
+kePageDisplay(htPage, opAlist) ==
   count := #opAlist
   total := +/[#(rest entry) for entry in opAlist]
   count = 0 => nil
-  if which = '"operation"
-    then htpSetProperty(htPage,'opAlist,opAlist)
-    else htpSetProperty(htPage,'attrAlist,opAlist)
-  expandProperty :=
-    which = '"operation" => 'expandOperations
-    'expandAttributes
-  htpSetProperty(htPage,expandProperty,'lists)  --mark as unexpanded
+  htpSetProperty(htPage, 'opAlist, opAlist)
+  htpSetProperty(htPage, 'expandOperations, 'lists)  --mark as unexpanded
+  which := '"operation"
   htMakePage [['bcLinks,[menuButton(),'"",'dbShowOps,which,'names]]]
   htSayStandard '"\tab{2}"
   if count ~= total then
@@ -253,7 +245,7 @@ kePageDisplay(htPage,which,opAlist) ==
     then htSayList([STRINGIMAGE total, '" ", pluralize which,
                    '" are explicitly exported:"])
     else htSayList(['"1 ", which, '" is explicitly exported:"])
-  data := dbGatherData(htPage,opAlist,which,'names)
+  data := dbGatherData(htPage, opAlist, '"operation", 'names)
   dbShowOpItems(which,data,false)
 
 ksPage(htPage,junk) ==
@@ -582,6 +574,7 @@ conOpPage1(conform, options) ==
 --           Operation Page from Main Page
 --=======================================================================
 koPage(htPage,which) ==
+  which = '"attribute" => BREAK()
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   constring       := STRCONC(name,args)
   conname         := INTERN name
@@ -598,28 +591,10 @@ koPage(htPage,which) ==
   heading := [capitalize kind,'" {\sf ",headingString,'"}"]
   htpSetProperty(htPage,'which,which)
   htpSetProperty(htPage,'heading,heading)
-  koPageAux(htPage,which,domname,heading)
-
-koPageFromKKPage(htPage,ao) ==
-  koPageAux(htPage,ao,htpProperty(htPage,'domname),htpProperty(htPage,'heading))
-
-koPageAux(htPage,which,domname,heading) == --from koPage, koPageFromKKPage
-  htpSetProperty(htPage,'which,which)
-  domname := htpProperty(htPage,'domname)
   conform := htpProperty(htPage,'conform)
-  heading := htpProperty(htPage,'heading)
-  opAlist          :=
-    which = '"attribute" =>
-        BREAK()
-        koAttrs(conform,domname)
-    which = '"general operation" => koOps(conform, domname)
-    koOps(conform,domname)
+  opAlist := koOps(conform, domname)
   if selectedOperation := htpProperty(htPage,'selectedOperation) then
     opAlist := [assoc(selectedOperation,opAlist) or systemError()]
-  dbShowOperationsFromConform(htPage,which,opAlist)
-
-koPageAux1(htPage,opAlist) ==
-  which   := htpProperty(htPage,'which)
   dbShowOperationsFromConform(htPage,which,opAlist)
 
 koaPageFilterByName(htPage,functionToCall) ==
@@ -679,10 +654,11 @@ dbAddDocTable conform ==
          HPUT($docTable,op1,[[conform,:alist],:HGET($docTable,op1)])
     --note opOf is needed!!! for some reason, One and Zero appear within prens
 
-dbGetDocTable(op,$sig,docTable,$which,aux) == main where
+dbGetDocTable(op, $sig, docTable, which, aux) == main where
 --docTable is [[origin,entry1,...,:code] ...] where
 --  each entry is [sig,doc] and code is NIL or else a topic code for op
   main ==
+    which = '"attribute" => BREAK()
     if null FIXP op and DIGITP (s := STRINGIMAGE op).0 then
           BREAK()
           op := string2Integer s
@@ -701,7 +677,6 @@ dbGetDocTable(op,$sig,docTable,$which,aux) == main where
     comments := or/[p for entry in rest u | p := hn entry] or return nil
     [$conform,first comments,:code]
   hn [sig,:doc] ==
-    $which = '"attribute" => sig is ['attribute,: =$sig] and doc
     pred := #$sig = #sig and
       alteredSig := SUBLISLIS(IFCDR $conform, $FormalMapVariableList, sig)
       alteredSig = $sig
@@ -953,7 +928,7 @@ dbSpecialExports(conname) ==
   conform := getConstructorForm conname
   page := htInitPage(['"Exports of {\sf ",form2HtString conform,'"}"],nil)
   opAlist := dbSpecialExpandIfNecessary(conform,rest GETL(conname,'documentation))
-  kePageDisplay(page,'"operation",opAlist)
+  kePageDisplay(page, opAlist)
   htShowPage()
 
 dbSpecialExpandIfNecessary(conform,opAlist) ==

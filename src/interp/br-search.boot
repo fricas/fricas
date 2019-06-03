@@ -226,7 +226,10 @@ grepSplit(lines,doc?) ==
       kind = char '_- => 'skip                --for now
       systemError 'kind
   if doc? then CLOSE instream2
-  [['"attribute",:NREVERSE atts],
+  not(atts = []) => BREAK()
+  [ 
+     -- no attributes
+     -- ['"attribute",:NREVERSE atts],
      ['"operation",:NREVERSE ops],
        ['"category",:NREVERSE cats],
          ['"domain",:NREVERSE doms],
@@ -680,14 +683,15 @@ grepSearchJump(htPage,yes) ==
 --            Branch Functions After Database Search
 --=======================================================================
 dbSearch(lines,kind,filter) == --called by attribute, operation, constructor search
+  kind = '"attribute" => BREAK()
   lines is ['error,:.] => bcErrorPage lines
   null filter => nil      --means filter error
   lines is ['Abbreviations,:r] => dbSearchAbbrev(lines,kind,filter)
-  if member(kind,'("attribute" "operation")) then --should not be necessary!!
+  if kind = '"operation" then --should not be necessary!!
     lines := dbScreenForDefaultFunctions lines
   count := #lines
   count = 0 => emptySearchPage(kind, filter, false)
-  member(kind,'("attribute" "operation")) => dbShowOperationLines(kind,lines)
+  kind = '"operation" => dbShowOperationLines(kind, lines)
   dbShowConstructorLines lines
 
 dbSearchAbbrev([.,:conlist],kind,filter) ==
@@ -762,13 +766,15 @@ generalSearchDo(htPage,flag) ==
   selectors :=
     which = 'cons => '(conname connargs consig)
     which = 'ops  => '(opname  opnargs  opsig)
-    '(attrname attrnargs attrargs)
+    BREAK()
   name := generalSearchString(htPage,selectors.0)
   nargs:= generalSearchString(htPage,selectors.1)
   npat := standardizeSignature generalSearchString(htPage,selectors.2)
   kindCode :=
     which = 'ops => char 'o
-    which = 'attrs => char 'a
+    which = 'attrs =>
+        BREAK()
+        char 'a
     acc := '""
     if htButtonOn?(htPage,'cats) then acc := STRCONC(char 'c,acc)
     if htButtonOn?(htPage,'doms) then acc := STRCONC(char 'd,acc)
@@ -791,7 +797,7 @@ generalSearchDo(htPage,flag) ==
         '"default package"
       '"constructor"
     which = 'ops  => '"operation"
-    '"attribute"
+    BREAK()
   null lines => emptySearchPage(kind, nil, false)
   dbSearch(lines,kind,'"filter")
 

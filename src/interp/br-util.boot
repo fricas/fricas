@@ -72,7 +72,7 @@ $groupChoice := nil  --see dbShowOperationsFromConform
 ------------------> Initial Settings <---------------------
 $pmFilterDelimiters := [char '_(,char '_),char '_ ]
 $dbKindAlist :=
-  [[char 'a,:'"attribute"],[char 'o,:'"operation"],
+  [[char 'o, :'"operation"],
     [char 'd,:'"domain"],[char 'p,:'"package"],
       [char 'c,:'"category"],[char 'x,:'"default_ package"]]
 $OpViewTable := '(
@@ -176,7 +176,6 @@ quickForm2HtString(x) ==
 
 form2HtString(x,:options) ==
   $emList:local := IFCAR options   --list of atoms to be emphasized
-  $brief: local := IFCAR IFCDR options --see dbShowOperationsFromConform (lib11)
   fn(x) where
     fn x ==
       atom x =>
@@ -192,7 +191,6 @@ form2HtString(x,:options) ==
       first x = 'construct => fnTail(rest x,'"[]")
       tail := fnTail(rest x,'"()")
       head := fn first x
---    $brief and #head + #tail > 35 => STRCONC(head,'"(...)")
       STRCONC(head,tail)
     fnTail(x,str) ==
       null x => '""
