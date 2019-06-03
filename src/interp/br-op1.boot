@@ -49,33 +49,25 @@ dbDoesOneOpHaveParameters? opAlist ==
 --               Master Switch Functions for Operation Views
 --============================================================================
 
-dbShowOps(htPage,which,key,:options) ==
+dbShowOps(htPage, which, key) ==
   --NEXT LINE SHOULD BE REMOVED if we are sure that which is a string
   which := STRINGIMAGE which
+  which ~= '"operation" => BREAK()
   if MEMQ(key,'(extended basic all)) then
     $groupChoice := key
     key := htpProperty(htPage,'key) or 'names
-  opAlist  :=
-    which = '"operation" => htpProperty(htPage,'opAlist)
---      al := reduceByGroup(htPage,htpProperty(htPage,'principalOpAlist))
---      htpSetProperty(htPage,'opAlist,al)
---      al
-    htpProperty(htPage,'attrAlist)
+  opAlist := htpProperty(htPage, 'opAlist)
   key = 'generalise =>
     arg  := STRINGIMAGE CAAR opAlist
-    which = '"attribute" => BREAK()
     oPage arg
   key = 'allDomains => dbShowOpAllDomains(htPage,opAlist,which)
   key = 'filter =>
-    --if $saturn, IFCAR options contains filter string
-    filter := IFCAR options or pmTransFilter(dbGetInputString htPage)
+    filter := pmTransFilter(dbGetInputString htPage)
     filter is ['error,:.] => bcErrorPage filter
     opAlist:= [x for x in opAlist | superMatch?(filter,DOWNCASE STRINGIMAGE opOf x)]
     null opAlist => emptySearchPage(which, filter, false)
     htPage := htInitPageNoHeading(htCopyProplist htPage)
-    if which = '"operation"
-      then htpSetProperty(htPage,'opAlist,opAlist)
-      else htpSetProperty(htPage,'attrAlist,opAlist)
+    htpSetProperty(htPage, 'opAlist, opAlist)
     if not (htpProperty(htPage, 'condition?) = 'no) then
       dbResetOpAlistCondition(htPage,which,opAlist)
     dbShowOps(htPage,which,htpProperty(htPage,'exclusion))
@@ -99,7 +91,7 @@ reduceByGroup(htPage,opAlist) ==
 
 dbShowOp1(htPage,opAlist,which,key) ==
   --set up for filtering below in dbGatherData
-  $which: local := which
+  which ~= '"operation" => BREAK()
   if INTEGERP key then
     -- BREAK()
     opAlist := dbSelectData(htPage,opAlist,key)
@@ -108,9 +100,7 @@ dbShowOp1(htPage,opAlist,which,key) ==
       and constructor? con => return conPageChoose con
   if INTEGERP key then
     htPage := htInitPageNoHeading(htCopyProplist htPage)
-    if which = '"operation"
-      then htpSetProperty(htPage,'opAlist,opAlist)
-      else htpSetProperty(htPage,'attrAlist,opAlist)
+    htpSetProperty(htPage, 'opAlist, opAlist)
     if not (htpProperty(htPage, 'condition?) = 'no) then
       dbResetOpAlistCondition(htPage,which,opAlist)
   dbExpandOpAlistIfNecessary(htPage,opAlist,which,true,false)
@@ -167,8 +157,8 @@ dbShowOp1(htPage,opAlist,which,key) ==
   htShowPageNoScroll()
 
 opAlistCount(opAlist, which) == +/[foo for [op,:items] in opAlist] where foo ==
-  null $exposedOnlyIfTrue or which = '"attribute" => #items
-  --count if unexpanded---CDDR(w) = nil---or if w.3 = true
+  which = '"attribute" => BREAK()
+  null $exposedOnlyIfTrue => #items
   +/[1 for w in items | null (p := CDDR w) or p . 1]
 
 dbShowOpHeading(heading, branch) ==
@@ -298,6 +288,7 @@ conname2StringList form == [PNAME unAbbreviateIfNecessary opOf form]
 --               Data Gathering Code
 --============================================================================
 dbGatherData(htPage,opAlist,which,key) ==
+  which ~= '"operation" => BREAK()
   key = 'implementation => dbGatherDataImplementation(htPage,opAlist)
   dataFunction := LASSOC(key,table) where
     table ==
@@ -365,6 +356,7 @@ dbGatherData(htPage,opAlist,which,key) ==
         atom tail => tail
         listSort(function LEXLESSEQP,tail)
       RPLACD(rest entry, tail)
+  SAY(["dbGatherData", data])
   data := listSort(function LEXLESSEQP,data)
   data
 
@@ -456,7 +448,6 @@ dbReduceBySelection(opAlist,key,fn) ==
   NREVERSE acc
 
 dbContrivedForm(op,[sig,:.]) ==
-  $which = '"attribute" => [op,sig]
   dbMakeContrivedForm(op,sig)
 
 dbMakeSignature(op,[sig,:.]) == [op,sig]  --getDomainOpTable format
@@ -551,18 +542,19 @@ dbShowOpSignatures(htPage,opAlist,which,data) == dbShowOpSigList(which,data,0)
 
 dbShowOpSigList(which,dataItems,count) ==
 --dataItems is (((op,sig,:.),exposureFlag,...)
+  which ~= '"operation" => BREAK()
   single? := null rest dataItems
   htBeginTable()
   for [[op,sig,:.],exposureFlag,:tail] in dataItems repeat
     ops := escapeSpecialChars STRINGIMAGE op
     htSay '"{"
---  if single? then htSay('"{\em ",ops,'"}") else.....
     htSayExpose(ops,exposureFlag)
     htMakePage [['bcLinks,[ops,'"",'dbShowOps,which,count]]]
-    if which = '"attribute" then htSay args2HtString (sig and [sig]) else
-      htSay '": "
-      tail = 'ASCONST => bcConform first sig
-      bcConform ['Mapping,:sig]
+    htSay '": "
+    if tail = 'ASCONST then
+        bcConform(first(sig))
+    else
+        bcConform(['Mapping, :sig])
     htSay '"}"
     count := count + 1
   htEndTable()
@@ -589,7 +581,8 @@ dbShowOpParameters(htPage,opAlist,which,data) ==
         dbShowOpParameterJump(ops,which,count,single?)
         htSayList(['" {\em ", IFCAR IFCDR args, '"}"])
       dbShowOpParameterJump(ops,which,count,single?)
-      tail = 'ASCONST or member(op,'(0 1)) or which = '"attribute" and null IFCAR args => 'skip
+      which = '"attribute" => BREAK()
+      tail = 'ASCONST or member(op,'(0 1)) => 'skip
       htSay('"(")
       if IFCAR args then htSayList(['"{\em ", IFCAR args, '"}"])
       for x in IFCDR args repeat
@@ -604,17 +597,10 @@ dbShowOpParameterJump(ops,which,count,single?) ==
   htMakePage [['bcLinks,[ops,'"",'dbShowOps,which,count]]]
 
 dbShowOpDocumentation(htPage,opAlist,which,data) ==
+  which ~= '"operation" => BREAK()
   if $exposedOnlyIfTrue and not dbFromConstructor?(htPage) then
-    opAlist :=
-      which = '"operation" => htpProperty(htPage,'opAlist)
-      htpProperty(htPage,'attrAlist)
-    --NOTE: this line is necessary to get indexing right.
-    --The test below for $exposedOnlyIfTrue causes unexposed items
-    --to be skipped.
-  newWhich :=
-    conform := htpProperty(htPage,'domname) or htpProperty(htPage,'conform)
-    which = '"package operation" => '"operation"
-    which
+      opAlist := htpProperty(htPage, 'opAlist)
+  conform := htpProperty(htPage, 'domname) or htpProperty(htPage, 'conform)
   expand := dbExpandOpAlistIfNecessary(htPage,opAlist,which,true,false)
   if expand then
     condata := dbGatherData(htPage,opAlist,which,'conditions)
@@ -635,12 +621,11 @@ dbShowOpDocumentation(htPage,opAlist,which,data) ==
         doc := (STRINGP comments and comments ~= '"" => comments; nil)
         pred := predicate or true
         index := (exactlyOneOpSig => nil; base + j)
-        if which = '"package operation" then
-          sig    := substitute(conform, '_$, sig)
-          origin := substitute(conform, '_$, origin)
-        displayDomainOp(htPage,newWhich,origin,op,sig,pred,doc,index,'dbChooseDomainOp,null exposeFlag,true)
+        displayDomainOp(htPage, '"operation", origin, op, sig, pred,
+                        doc, index, 'dbChooseDomainOp, null(exposeFlag), true)
 
 dbChooseDomainOp(htPage,which,index) ==
+  which ~= '"operation" => BREAK()
   [opKey,entryKey] := DIVIDE(index,8192)
   opAlist :=
     which = '"operation" => htpProperty(htPage,'opAlist)
@@ -665,6 +650,7 @@ htSayExpose(op, flag) ==
 --               Branch-in From Other Places
 --============================================================================
 dbShowOperationsFromConform(htPage,which,opAlist) ==  --branch in with lists
+  which ~= '"operation" => BREAK()
   $groupChoice := nil
   conform := htpProperty(htPage,'conform)
   --prepare opAlist for possible filtering of groups
@@ -688,19 +674,11 @@ dbShowOperationsFromConform(htPage,which,opAlist) ==  --branch in with lists
     form2HtString conform
   heading :=
     ['" from ",exposePart,kind,'" {\em ",fromPart,'"}"]
-  expandProperty :=
-    which = '"operation" => 'expandOperations
-    'expandAttributes
-  htpSetProperty(htPage,expandProperty,'lists)
+  htpSetProperty(htPage, 'expandOperations, 'lists)
   htpSetProperty(htPage,'fromHeading,heading)
-  reducedOpAlist :=
-    which = '"operation" =>  reduceByGroup(htPage,opAlist)
-    opAlist
-  if which = '"operation"
-    then
-      htpSetProperty(htPage,'principalOpAlist,opAlist)
-      htpSetProperty(htPage,'opAlist,reducedOpAlist)
-    else htpSetProperty(htPage,'attrAlist,opAlist)
+  reducedOpAlist := reduceByGroup(htPage, opAlist)
+  htpSetProperty(htPage, 'principalOpAlist, opAlist)
+  htpSetProperty(htPage, 'opAlist, reducedOpAlist)
   if domform
    then htpSetProperty(htPage,'condition?,'no)
    else dbResetOpAlistCondition(htPage,which,opAlist)
@@ -725,6 +703,7 @@ reduceOpAlistForDomain(opAlist,domform,conform) ==
   NREVERSE(new_opAlist)
 
 dbShowOperationLines(which,linelist) ==  --branch in with lines
+  which ~= '"operation" => BREAK()
   htPage := htInitPage(nil,nil)  --create empty page
   opAlist := nil
   lines := linelist
@@ -734,6 +713,7 @@ dbShowOperationLines(which,linelist) ==  --branch in with lines
     while (lines := rest lines) and name = dbName (x := first lines) repeat
       pile := [x,:pile]
     opAlist := [[name,:NREVERSE pile],:opAlist]
+  -- sorting list of pairs (String, List(String))
   opAlist := listSort(function LEXLESSEQP,NREVERSE opAlist)
   if which = '"operation"
     then htpSetProperty(htPage,'opAlist,opAlist)
@@ -750,15 +730,7 @@ dbShowOperationLines(which,linelist) ==  --branch in with lines
 --                Code to Expand opAlist
 --============================================================================
 dbResetOpAlistCondition(htPage,which,opAlist) ==
-  value := dbExpandOpAlistIfNecessary(htPage,opAlist,which,false,true)
-  htpSetProperty(htPage,'condition?,(value => 'yes; 'no))
-  value
-
-dbSetOpAlistCondition(htPage,opAlist,which) ==
---called whenever a new opAlist is needed
---property can only be inherited if 'no (a subset says NO if whole says NO)
-  condition := htpProperty(htPage,'condition?)
-  MEMQ(condition,'(yes no)) => condition = 'yes
+  which ~= '"operation" => BREAK()
   value := dbExpandOpAlistIfNecessary(htPage,opAlist,which,false,true)
   htpSetProperty(htPage,'condition?,(value => 'yes; 'no))
   value
@@ -774,6 +746,7 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
 --            i.e. opAlist is ((op . (string ...))...) if unexpanded
 --  'lists,   if not fully expanded and it contains lists
 --            i.e. opAlist is ((op . ((sig pred) ...))...) if unexpanded
+    which ~= '"operation" => BREAK()
     condition? := condition? and not $exposedOnlyIfTrue
     value      := nil  --return value
     expandProperty :=
@@ -837,8 +810,7 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
             dbGetDocTable(op,sig,docTable,which,nil)
           origin := IFCAR u or origin
           docCode := IFCDR u   --> (doc . code)
---        if null FIXP rest docCode then harhar(op) -->
-          if null doc and which = '"attribute" then doc := getRegistry(op,sig)
+          which = '"attribute" => BREAK()
           RPLACD(tail,[origin,isExposedConstructor opOf origin,:docCode])
         $value => return $value
       $value => $value
