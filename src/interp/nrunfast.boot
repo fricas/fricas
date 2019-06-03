@@ -392,7 +392,7 @@ newHasTest(domform,catOrAtt) ==
   GETDATABASE(opOf domform, 'ASHARP?) => fn(domform,catOrAtt) where
   -- atom (infovec := getInfovec opOf domform) => fn(domform,catOrAtt) where
     fn(a,b) ==
-      categoryForm?(a) => assoc(b, ancestorsOf(a, nil))
+      categoryForm?(a) => assoc(b, ancestors_of_cat(a, nil))
       isPartialMode a => throwKeyedMsg("S2IS0025",NIL)
       b is ["SIGNATURE",:opSig] =>
         HasSignature(evalDomain a,opSig)
@@ -413,7 +413,8 @@ newHasTest(domform,catOrAtt) ==
       systemError '"strange Mapping type in newHasTest"
   GETDATABASE(opOf domform,'CONSTRUCTORKIND) = 'category =>
       domform = catOrAtt => 'T
-      for [aCat,:cond] in ancestorsOf(domform,NIL) |  aCat = catOrAtt  repeat
+      for [aCat, :cond] in ancestors_of_cat(domform, NIL)
+           | aCat = catOrAtt  repeat
          return evalCond cond where
            evalCond x ==
              ATOM x => x

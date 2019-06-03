@@ -150,9 +150,6 @@ mkDomainConstructor x ==
     ['LIST,MKQ 'Record,:[mkDomainConstructor y for y in argl]]
   x is ['Join,:argl] =>
     ['LIST,MKQ 'Join,:[mkDomainConstructor y for y in argl]]
-  x is ['call,:argl] => ['MKQ, optCall x]
-        --The previous line added JHD/BMT 20/3/84
-        --Necessary for proper compilation of DPOLY SPAD
   x is [op] => MKQ x
   x is [op,:argl] => ['LIST,MKQ op,:[mkDomainConstructor a for a in argl]]
 
@@ -231,7 +228,7 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
       NREVERSE [v for u in REVERSE codelist | (v := DescendCode(
                          u, flag, viewAssoc, EnvToPass, kvec, e)) ~= nil]]
   code is ['COND,:condlist] =>
-    c := [[u2 := ProcessCond(first u), :q] for u in condlist] where q ==
+    c := [[u2 := ProcessCond(first(u), e), :q] for u in condlist] where q ==
           null u2 => nil
           f:=
             TruthP u2 => flag;
@@ -260,7 +257,7 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
           code:=[($QuickCode => 'QSETREFV; 'SETELT),[($QuickCode => 'QREFELT; 'ELT),'$,5],#$locals-#u,code]
           $epilogue:=
             TruthP flag => [code,:$epilogue]
-            [['COND, [ProcessCond(flag), code]], :$epilogue]
+            [['COND, [ProcessCond(flag, e), code]], :$epilogue]
           nil
         code
     code -- doItIf deletes entries from $locals so can't optimize this
@@ -273,7 +270,7 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
     body:= ['CONS,implem,dom]
     u := SetFunctionSlots(sig, body, flag, kvec)
     ConstantCreator u =>
-      if not (flag=true) then u := ['COND, [ProcessCond(flag), u]]
+      if not (flag = true) then u := ['COND, [ProcessCond(flag, e), u]]
       $ConstantAssignments:= [u,:$ConstantAssignments]
       nil
     u
@@ -294,9 +291,9 @@ ConstantCreator u ==
   u is ['CONS,:.] => nil
   true
 
-ProcessCond(cond) ==
+ProcessCond(cond, et) ==
   ncond := SUBLIS($pairlis,cond)
-  INTEGERP POSN1(ncond,$NRTslot1PredicateList) => predicateBitRef ncond
+  INTEGERP POSN1(ncond, $NRTslot1PredicateList) => predicateBitRef(ncond, et)
   cond
 
 SetFunctionSlots(sig, body, flag, kvec) ==
@@ -357,43 +354,44 @@ makeMissingFunctionEntry(alist,i) ==
 
 --%  Under what conditions may views exist?
 
-InvestigateConditions(catvecListMaker, e) ==
+InvestigateConditions(catvecListMaker, base_shell, e) ==
   -- given a principal view and a list of secondary views,
   -- discover under what conditions the secondary view are
   -- always present.
-  $Conditions: local := nil
-  $principal: local := nil
-  [$principal,:secondaries]:= catvecListMaker
+  [principal, :secondaries] := catvecListMaker
       --We are not interested in the principal view
       --The next block allows for the possibility that $principal may
       --have conditional secondary views
 --+
   null secondaries => '(T)
       --return for packages which generally have no secondary views
-  if $principal is [op,:.] then
-    [principal', :.] := compMakeCategoryObject($principal, e)
+  if principal is [op, :.] then
+    [principal', :.] := compMakeCategoryObject(principal, e)
               --Rather like eval, but quotes parameters first
     for u in CADR principal'.4 repeat
       if not TruthP(cond:=CADR u) then
         new := ['CATEGORY, 'domain,
                 ['IF, cond, ['ATTRIBUTE, first u], 'noBranch]]
-        $principal is ['Join,:l] =>
+        principal is ['Join, :l] =>
           not member(new,l) =>
-            $principal:=['Join,:l,new]
-        $principal:=['Join,$principal,new]
-  principal' :=
-    pessimise $principal where
-      pessimise a ==
-        atom a => a
-        a is ['SIGNATURE,:.] => a
+             principal := ['Join, :l, new]
+        principal := ['Join, principal, new]
+  [principal', Conditions] :=
+    pessimise(principal, nil) where
+      pessimise(a, Conditions) ==
+        atom a => [a, Conditions]
+        a is ['SIGNATURE, :.] => [a, Conditions]
         a is ['IF,cond,:.] =>
-          if not member(cond,$Conditions) then $Conditions:= [cond,:$Conditions]
-          nil
-        [pessimise first a,:pessimise rest a]
-  null $Conditions => [true,:[true for u in secondaries]]
+          if not member(cond, Conditions) then
+              Conditions := [cond, Conditions]
+          [nil, Conditions]
+        [r1, Conditions] := pessimise(first(a), Conditions)
+        [r2, Conditions] := pessimise(rest(a), Conditions)
+        [[r1, :r2], Conditions]
+  null Conditions => [true, :[true for u in secondaries]]
   PrincipalSecondaries:= getViewsConditions(principal', e)
   MinimalPrimary := first first PrincipalSecondaries
-  MaximalPrimary:= CAAR $domainShell.4
+  MaximalPrimary:= CAAR base_shell.4
   necessarySecondaries:= [first u for u in PrincipalSecondaries | rest u=true]
   and/[member(u,necessarySecondaries) for u in secondaries] =>
     [true,:[true for u in secondaries]]
@@ -404,7 +402,7 @@ InvestigateConditions(catvecListMaker, e) ==
     MinimalPrimaries := [MinimalPrimary, :first (CatEval MinimalPrimary).4]
     MaximalPrimaries := set_difference(MaximalPrimaries, MinimalPrimaries)
     [[x] for x in MaximalPrimaries]
-  ($Conditions:= Conds($principal,nil)) where
+  (Conditions := Conds(principal, nil)) where
     Conds(code,previous) ==
            --each call takes a list of conditions, and returns a list
            --of refinements of that list
@@ -415,10 +413,10 @@ InvestigateConditions(catvecListMaker, e) ==
       code is ['CATEGORY,:l] => "union"/[Conds(u,previous) for u in l]
       code is ['Join,:l] => "union"/[Conds(u,previous) for u in l]
       [previous]
-  $Conditions:= EFFACE(nil,[EFFACE(nil,u) for u in $Conditions])
+  Conditions := EFFACE(nil, [EFFACE(nil, u) for u in Conditions])
   partList:=
-    [getViewsConditions(partPessimise($principal, cond), e)
-         for cond in $Conditions]
+    [getViewsConditions(partPessimise(principal, cond), e)
+         for cond in Conditions]
   masterSecondaries:= secondaries
   for u in partList repeat
     for [v,:.] in u repeat
@@ -430,7 +428,7 @@ InvestigateConditions(catvecListMaker, e) ==
     mkNilT u ==
       u => true
       nil
-  for u in $Conditions for newS in partList repeat
+  for u in Conditions for newS in partList repeat
     --newS is a list of secondaries and conditions (over and above
     --u) for which they apply
     u:=

@@ -79,9 +79,7 @@ compApplication(op,argl,m,e,T) ==
     argTl = "failed" => nil
     form:=
       not (member(op,$formalArgList) or member(T.expr,$formalArgList)) and ATOM T.expr =>
-        nprefix := $prefix or
-        -- following needed for referencing local funs at capsule level
-           getAbbreviation($op,#rest $form)
+        nprefix := $prefix or BREAK()
         [op',:[a.expr for a in argTl],"$"] where
           op':= INTERN STRCONC(encodeItem nprefix,";",encodeItem T.expr)
       ['call, ['applyFun, T.expr], :[a.expr for a in argTl]]
@@ -147,9 +145,7 @@ applyMapping([op,:argl],m,e,ml) ==
   if argl'="failed" then return nil
   form:=
     not member(op,$formalArgList) and ATOM op and not get(op,'value,e) =>
-      nprefix := $prefix or
-   -- following needed for referencing local funs at capsule level
-        getAbbreviation($op,#rest $form)
+      nprefix := $prefix or BREAK()
       [op',:argl',"$"] where
         op':= INTERN STRCONC(encodeItem nprefix,";",encodeItem op)
     ['call,['applyFun,op],:argl']

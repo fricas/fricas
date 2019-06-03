@@ -360,7 +360,6 @@
 (SETQ |$NoValue| '|$NoValue|)
 (SETQ |$NoValueMode| '|NoValueMode|)
 (SETQ |$DummyFunctorNames| '(|Mapping|))
-(SETQ |$form| NIL)
 (SETQ |$EmptyVector| (VECTOR))
 (SETQ |$Index| 0)
 (SETQ |$true| ''T)

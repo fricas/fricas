@@ -258,7 +258,6 @@ boo_comp1(x) ==
     $insideWhereIfTrue : local := false
     $insideCategoryIfTrue : local := false
     $insideCapsuleFunctionIfTrue : local := false
-    $form : local := nil
     $e : local := $EmptyEnvironment
     $genSDVar : local :=  0
     $previousTime : local := get_run_time()
@@ -341,7 +340,6 @@ S_process(x) ==
     $insideWhereIfTrue : local := false
     $insideCategoryIfTrue : local := false
     $insideCapsuleFunctionIfTrue : local := false
-    $form : local := nil
     $e : local := $EmptyEnvironment
     $genSDVar : local := 0
     $previousTime : local := get_run_time()
