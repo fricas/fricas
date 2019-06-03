@@ -268,10 +268,10 @@ cheap_comp_delta_entry(item) ==
         ok
     false
 
-NRTassignCapsuleFunctionSlot(op, sig, e) ==
+NRTassignCapsuleFunctionSlot(op, sig, base_shell, e) ==
 --called from compDefineCapsuleFunction
   opSig := [op,sig]
-  [.,.,implementation] := NRTisExported? opSig or return nil
+  [., ., implementation] := NRTisExported?(opSig, base_shell) or return nil
     --if opSig is not exported, it is local and need not be assigned
   if $insideCategoryPackageIfTrue then
       sig := substitute('$,CADR($functorForm),sig)
@@ -282,8 +282,8 @@ NRTassignCapsuleFunctionSlot(op, sig, e) ==
   $NRTdeltaListComp := [nil,:$NRTdeltaListComp]
   $NRTdeltaLength := $NRTdeltaLength+1
 
-NRTisExported? opSig ==
-  or/[u for u in $domainShell.1 | u.0 = opSig]
+NRTisExported?(opSig, base_shell) ==
+  or/[u for u in base_shell.1 | u.0 = opSig]
 
 consSig(sig, dc, e) == [consDomainName(sigpart, dc, e) for sigpart in sig]
 
@@ -444,7 +444,8 @@ simplify_self_preds(catvecListMaker, condCats) ==
         [condCats, progress] := simplify_self_preds1(catvecListMaker, condCats)
     condCats
 
-buildFunctor(definition is [name, :args], sig, code, $locals, e) ==
+buildFunctor(definition is [name, :args], sig, code, $locals,
+             base_shell, e) ==
 --PARAMETERS
 --  $definition: constructor form, e.g. (SquareMatrix 10 (RationalNumber))
 --  sig: signature of constructor form
@@ -456,16 +457,14 @@ buildFunctor(definition is [name, :args], sig, code, $locals, e) ==
 --  $locals: list of variables to go into slot 5, e.g. (R Rep R,1 R,2 R,3 R,4)
 --           same as $functorLocalParameters
 --           this list is not augmented by this function
---  $e: environment
 --GLOBAL VARIABLES REFERENCED:
---  $domainShell: passed in from compDefineFunctor1
 --  $QuickCode: compilation flag
 
   $definition : local := definition
 
   if code is ['add,.,newstuff] then code := newstuff
 
-  changeDirectoryInSlot1(e)  --this extends $NRTslot1PredicateList
+  changeDirectoryInSlot1(base_shell, e)  --this extends $NRTslot1PredicateList
 
   --pp '"=================="
   --for item in $NRTdeltaList repeat pp item
@@ -485,15 +484,15 @@ buildFunctor(definition is [name, :args], sig, code, $locals, e) ==
   [catsig, :argsig] := sig
   catvecListMaker:=REMDUP
     [(comp(catsig, $EmptyMode, e)).expr,
-      :[compCategories(first u, e) for u in CADR $domainShell.4]]
-  condCats := InvestigateConditions([catsig, :rest catvecListMaker], e)
+      :[compCategories(first u, e) for u in CADR base_shell.4]]
+  condCats := InvestigateConditions([catsig, :rest catvecListMaker],
+                                    base_shell, e)
   -- a list, one for each element of catvecListMaker
   -- indicating under what conditions this
   -- category should be present.  true => always
   makeCatvecCode:= first catvecListMaker
   domainShell := GETREFV (6 + $NRTdeltaLength)
-  for i in 0..4 repeat domainShell.i := $domainShell.i
-    --we will clobber elements; copy since $domainShell may be a cached vector
+  for i in 0..4 repeat domainShell.i := base_shell.i
   $template := GETREFV (6 + $NRTdeltaLength)
   $SetFunctions:= GETREFV SIZE domainShell
   $MissingFunctionInfo:= GETREFV SIZE domainShell
@@ -505,9 +504,10 @@ buildFunctor(definition is [name, :args], sig, code, $locals, e) ==
 -->  Do this now to create predicate vector; then DescendCode can refer
 -->  to predicate vector if it can
   [$uncondAlist,:$condAlist] :=    --bound in compDefineFunctor1
-      NRTsetVector4Part1(catNames, catvecListMaker, condCats, e)
+      NRTsetVector4Part1(catNames, catvecListMaker, condCats, base_shell, e)
   [$NRTslot1PredicateList,predBitVectorCode1,:predBitVectorCode2] :=
-      makePredicateBitVector [:ASSOCRIGHT $condAlist,:$NRTslot1PredicateList]
+      makePredicateBitVector([:ASSOCRIGHT($condAlist),
+                              :$NRTslot1PredicateList], e)
 
   storeOperationCode := DescendCode(code, true, nil, first catNames,
                                     domainShell, e)
@@ -572,7 +572,7 @@ NRTcheckVector domainShell ==
       [[first v,:$SetFunctions.i],:alist]
   alist
 
-NRTsetVector4Part1(sigs, forms, conds, e) ==
+NRTsetVector4Part1(sigs, forms, conds, base_shell, e) ==
     uncond_list := nil
     cond_list := nil
     for sig in reverse sigs for form in reverse forms
@@ -580,7 +580,7 @@ NRTsetVector4Part1(sigs, forms, conds, e) ==
         sig = '$ =>
             domainList :=
                 [optimize COPY IFCAR comp(d, $EmptyMode, e) or
-                   d for d in $domainShell.4.0]
+                   d for d in base_shell.4.0]
             uncond_list := APPEND(domainList, uncond_list)
             if isCategoryForm(form) then
                 uncond_list := [form, :uncond_list]
@@ -606,22 +606,22 @@ reverseCondlist cl ==
       RPLACD(u, [x, :rest u])
   alist
 
-NRTmakeSlot1Info() ==
+NRTmakeSlot1Info(form, base_shell) ==
 -- 4 cases:
 -- a:T == b add c  --- slot1 directory has #s for entries defined in c
 -- a:T == b        --- slot1 has all slot #s = NIL (see compFunctorBody)
 -- a == b add c    --- not allowed (line 7 of getTargetFromRhs)
   pairlis :=
     $insideCategoryPackageIfTrue = true =>
-      [:argl,dollarName] := rest $form
+      [:argl, dollarName] := rest(form)
       [[dollarName,:'_$],:mkSlot1sublis argl]
-    mkSlot1sublis rest $form
-  lisplibOpAlist := transformOperationAlist SUBLIS(pairlis, $domainShell.1)
+    mkSlot1sublis(rest(form))
+  lisplibOpAlist := transformOperationAlist(SUBLIS(pairlis, base_shell.1))
   opList :=
     $insideCategoryPackageIfTrue = true => slot1Filter lisplibOpAlist
     lisplibOpAlist
   addList := SUBLIS(pairlis,$NRTaddForm)
-  [first $form,[addList,:opList]]
+  [first(form), [addList, :opList]]
 
 mkSlot1sublis argl ==
   [[a,:b] for a in argl for b in $FormalMapVariableList]
@@ -639,8 +639,8 @@ NRTaddToSlam([name,:argnames],shell) ==
   args:= ['LIST,:ASSOCRIGHT $devaluateList]
   addToConstructorCache(name,args,shell)
 
-genOperationAlist() ==
-  $lisplibOperationAlist := [sigloc entry for entry in $domainShell.1] where
+genOperationAlist(base_shell) ==
+  $lisplibOperationAlist := [sigloc entry for entry in base_shell.1] where
     sigloc [opsig,pred,fnsel] ==
         if pred ~= 'T then
           pred := simpBool pred
@@ -651,13 +651,13 @@ genOperationAlist() ==
           [opsig,pred,[op,a,vectorLocation(first opsig,CADR opsig)]]
         [opsig,pred,fnsel]
 
-changeDirectoryInSlot1(e) ==  --called by buildFunctor
-  genOperationAlist()
+changeDirectoryInSlot1(base_shell, e) ==  --called by buildFunctor
+  genOperationAlist(base_shell)
   sortedOplist := listSort(function GLESSEQP,
                            COPY_-LIST $lisplibOperationAlist,function CADR)
   $lastPred :local := nil
   $newEnv : local := e
-  $domainShell.1 := [fn(entry, e) for entry in sortedOplist] where
+  base_shell.1 := [fn(entry, e) for entry in sortedOplist] where
     fn([[op, sig], pred, fnsel], e) ==
        if $lastPred ~= pred then
             $newEnv := deepChaseInferences(pred, e)

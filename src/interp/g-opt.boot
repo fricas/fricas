@@ -158,9 +158,6 @@ optCall (x is ["call",:u]) ==
 
 optCallSpecially(q,x,n,R) ==
     MEMQ(IFCAR R, $optimizableConstructorNames) => optSpecialCall(x, R, n)
-    (y:= get(R,"value",$e)) and
-      MEMQ(opOf y.expr,$optimizableConstructorNames) =>
-        optSpecialCall(x,y.expr,n)
     nil
 
 optCallEval u ==

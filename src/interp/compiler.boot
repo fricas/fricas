@@ -858,7 +858,7 @@ compHasFormat1(pred is ["has", a, b], e) ==
 
 --used in various other places to make the discrimination
 compHasFormat (pred is ["has",olda,b], e) ==
-  argl := rest $form
+  argl := rest($functorForm)
   formals := TAKE(#argl,$FormalMapVariableList)
   a := SUBLISLIS(argl,formals,olda)
   [a,:.] := comp(a, $EmptyMode, e) or return nil

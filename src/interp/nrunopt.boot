@@ -34,13 +34,13 @@
 --=======================================================================
 --            Generate Code to Create Infovec
 --=======================================================================
-getInfovecCode(NRTslot1Info) ==
+getInfovecCode(NRTslot1Info, et) ==
 --Function called by compDefineFunctor1 to create infovec at compile time
   ['LIST,
     MKQ makeDomainTemplate $template,
-      MKQ makeCompactDirect NRTslot1Info,
+      MKQ makeCompactDirect(NRTslot1Info, et),
         MKQ [],
-          NRTmakeCategoryAlist(),
+          NRTmakeCategoryAlist(et),
             MKQ $lookupFunction]
 
 --=======================================================================
@@ -75,30 +75,32 @@ makeGoGetSlot(item,index) ==
 --                Generate OpTable at Compile Time
 --=======================================================================
 --> called by getInfovecCode (see top of this file) from compDefineFunctor1
-makeCompactDirect u ==
+makeCompactDirect(u, et) ==
   $predListLength :local := LENGTH $NRTslot1PredicateList
   $byteVecAcc: local := nil
   [nam,[addForm,:opList]] := u
   --pp opList
-  d := [[op,y] for [op,:items] in opList | y := makeCompactDirect1(op,items)]
+  d := [[op, y] for [op, :items] in opList 
+        | y := makeCompactDirect1(op, items, et)]
   $byteVec := [:$byteVec,:"append"/NREVERSE $byteVecAcc]
   LIST2VEC ("append"/d)
 
-makeCompactDirect1(op,items) ==
+makeCompactDirect1(op, items, et) ==
 --NOTES: creates byte codes for ops implemented by the domain
     curAddress := $byteAddress
     newcodes :=
-      "append"/[u for y in orderBySubsumption items | u := fn y] or return nil
+      "append"/[u for y in orderBySubsumption items
+                  | u := fn(y, et)] or return nil
     $byteVecAcc := [newcodes,:$byteVecAcc]
     curAddress
- where fn y ==
+ where fn(y, et) ==
   [sig,:r] := y
   if r is [n,:s] then
     slot :=
       n is [p, :.] => p  --the rest is linenumber of function definition
       n
     predCode :=
-      s is [pred,:.] => predicateBitIndex pred
+      s is [pred, :.] => predicateBitIndex(pred, et)
       0
   --> drop items which are not present (predCode = -1)
   predCode = -1 => return nil
@@ -166,16 +168,16 @@ stuffSlot(dollar,i,item) ==
 --                Predicate utilities
 --=======================================================================
 
-predicateBitIndex x ==
-      u := simpBool transHasCode x
+predicateBitIndex(x, et) ==
+      u := simpBool(transHasCode(x, et))
       u = 'T  =>  0
       u = nil => -1
       p := POSN1(u,$NRTslot1PredicateList) => p + 1
       systemError nil
 
-predicateBitRef x ==
+predicateBitRef(x, et) ==
   x = 'T => 'T
-  ['testBitVector,'pv_$,predicateBitIndex x]
+  ['testBitVector, 'pv_$, predicateBitIndex(x, et)]
 
 makePrefixForm(u,op) ==
   u := MKPF(u,op)
@@ -184,12 +186,12 @@ makePrefixForm(u,op) ==
 --=======================================================================
 --               Generate Slot 3 Predicate Vector
 --=======================================================================
-makePredicateBitVector pl ==   --called by buildFunctor
+makePredicateBitVector(pl, et) ==   --called by buildFunctor
   if $insideCategoryPackageIfTrue = true then
     pl := union(pl,$categoryPredicateList)
   $predGensymAlist := nil
   for p in removeAttributePredicates pl repeat
-    pred := simpBool transHasCode p
+    pred := simpBool(transHasCode(p, et))
     atom pred => 'skip                --skip over T and NIL
     if isHasDollarPred pred then
       lasts := insert(pred,lasts)
@@ -235,12 +237,12 @@ removeAttributePredicates pl ==
       p
     fnl p == [fn x for x in p]
 
-transHasCode x ==
+transHasCode(x, et) ==
   atom x => x
   op := QCAR x
   op is "HasCategory" => x
-  EQ(op, 'has) => compHasFormat(x, $e)
-  [transHasCode y for y in x]
+  EQ(op, 'has) => compHasFormat(x, et)
+  [transHasCode(y, et) for y in x]
 
 mungeAddGensyms(u,gal) ==
   ['LIST,:[fn(x,gal,0) for x in u]] where fn(x,gal,n) ==
@@ -285,7 +287,7 @@ bitsOf n ==
 --=======================================================================
 --               Generate Slot 4 Constructor Vectors
 --=======================================================================
-NRTmakeCategoryAlist() ==
+NRTmakeCategoryAlist(et) ==
   $depthAssocCache : local := MAKE_HASHTABLE('ID)
   $catAncestorAlist: local := NIL
   pcAlist := [:[[x,:'T] for x in $uncondAlist],:$condAlist]
@@ -293,7 +295,7 @@ NRTmakeCategoryAlist() ==
   opcAlist := NREVERSE SORTBY(function NRTcatCompare,pcAlist)
   newPairlis := [[5 + i,:b] for [.,:b] in $pairlis for i in 1..]
   slot1 := [[a,:k] for [a,:b] in SUBLIS($pairlis,opcAlist)
-                   | (k := predicateBitIndex b) ~= -1]
+                   | (k := predicateBitIndex(b, et)) ~= -1]
   slot0 := [hasDefaultPackage opOf a for [a,:b] in slot1]
   sixEtc := [5 + i for i in 1..#$pairlis]
   formals := ASSOCRIGHT $pairlis

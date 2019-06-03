@@ -113,13 +113,13 @@ formatPred u ==
   u is ["and",:v] => ["and",:[formatPred w for w in v]]
   systemError '"formatPred"
 
-chaseInferences(pred,$e) ==
-  foo hasToInfo pred where
-    foo pred ==
+chaseInferences(pred, $info_e) ==
+  foo(hasToInfo(pred)) where
+    foo(pred) ==
       knownInfo pred => nil
-      $e:= actOnInfo(pred,$e)
+      $info_e := actOnInfo(pred, $info_e)
       pred:= infoToHas pred
-      for u in get("$Information","special",$e) repeat
+      for u in get("$Information", "special", $info_e) repeat
         u is ["COND",:l] =>
           for [ante,:conseq] in l repeat
             ante=pred => [foo w for w in conseq]
@@ -129,12 +129,12 @@ chaseInferences(pred,$e) ==
                 LENGTH ante'=1 => first ante'
                 ["and",:ante']
               v':= ["COND",[v',:conseq]]
-              member(v',get("$Information","special",$e)) => nil
-              $e:=
-                put("$Information","special",[v',:
-                  get("$Information","special",$e)],$e)
+              member(v', get("$Information", "special", $info_e)) => nil
+              $info_e :=
+                put("$Information", "special", [v',:
+                  get("$Information", "special", $info_e)], $info_e)
             nil
-  $e
+  $info_e
 
 hasToInfo (pred is ["has",a,b]) ==
   b is ["SIGNATURE",:data] => ["SIGNATURE",a,:data]
@@ -148,7 +148,7 @@ infoToHas a ==
 
 DEFPARAMETER($cycleMarker, GENSYM())
 
-known_info_in_env(pred, $e) == knownInfo(pred)
+known_info_in_env(pred, $info_e) == knownInfo(pred)
 
 hashed_known_info(pred) ==
     $infoHash : local := MAKE_HASHTABLE('EQUAL)
@@ -158,7 +158,7 @@ knownInfo pred ==
                --true %if the information is already known
   pred=true => true
   --pred = "true" => true
-  member(pred,get("$Information","special",$e)) => true
+  member(pred, get("$Information", "special", $info_e)) => true
   not($infoHash) => hashed_known_info(pred)
   ress := HGET($infoHash, pred) =>
       ress = $cycleMarker => nil
@@ -187,12 +187,12 @@ knownInfo1 pred ==
     -- FIXME: there is confusion between '$ in outer domain
     -- (the one which needs info) and freshly compiled
     -- domain...
-    v:= compForMode(name,$EmptyMode,$e)
+    v := compForMode(name, $EmptyMode, $info_e)
     null v => stackSemanticError(["can't find category of ",name],nil)
     vmode := CADR v
     cat = vmode => true
     vmode is ["Join",:l] and member(cat,l) => true
-    [vv, ., .] := get_catlist(vmode, $e)
+    [vv, ., .] := get_catlist(vmode, $info_e)
     catlist := vv.4
     --catlist := SUBST(name,'$,vv.4)
     null vv => stackSemanticError(["can't make category of ",name],nil)
@@ -207,7 +207,7 @@ knownInfo1 pred ==
           for u in CADR catlist] => true
     false
   pred is ["SIGNATURE",name,op,sig,:.] =>
-      v:= get(op,"modemap",$e)
+      v:= get(op, "modemap", $info_e)
       res := false
       for w in v while(not(res)) repeat
           w1 := first(w)
@@ -219,38 +219,40 @@ knownInfo1 pred ==
       res
   false
 
-actOnInfo(u,$e) ==
-  null u => $e
-  u is ["PROGN",:l] => (for v in l repeat $e:= actOnInfo(v,$e); $e)
-  $e:=
-    put("$Information","special",Info:= [u,:get("$Information","special",$e)],$e
-      )
+actOnInfo(u, e) ==
+  null u => e
+  u is ["PROGN", :l] =>
+      for v in l repeat
+          e := actOnInfo(v, e)
+      e
+  Info := [u, :get("$Information", "special", e)]
+  e := put("$Information", "special", Info, e)
   u is ["COND",:l] =>
       --there is nowhere %else that this sort of thing exists
     for [ante,:conseq] in l repeat
       if member(hasToInfo ante,Info) then for v in conseq repeat
-        $e:= actOnInfo(v,$e)
-    $e
+        e := actOnInfo(v, e)
+    e
   u is ["ATTRIBUTE",name,att] => BREAK()
   u is ["SIGNATURE",name,operator,modemap] =>
     implem:=
-      (implem:= assoc([name,:modemap],get(operator,'modemap,$e))) =>
+      (implem := assoc([name, :modemap], get(operator, 'modemap, e))) =>
           CADADR implem
       name = "$" => ['ELT,name,-1]
       ['ELT,name,substitute('$,name,modemap)]
-    $e:= addModemap(operator,name,modemap,true,implem,$e)
-    [vval,vmode,venv]:= GetValue name
+    e := addModemap(operator, name, modemap, true, implem, e)
+    [vval, vmode, venv] := GetValue(name, e)
     SAY("augmenting ",name,": ",u)
     key:= if CONTAINED("$",vmode) then "domain" else name
     cat:= ["CATEGORY",key,["SIGNATURE",operator,modemap]]
-    $e:= put(name,"value",[vval,mkJoin(cat,vmode),venv],$e)
+    put(name, "value", [vval, mkJoin(cat, vmode), venv], e)
   u is ["has",name,cat] =>
-    [vval,vmode,venv]:= GetValue name
-    cat=vmode => $e --stating the already known
-    u:= compMakeCategoryObject(cat,$e) =>
+    [vval, vmode, venv] := GetValue(name, e)
+    cat = vmode => e --stating the already known
+    u := compMakeCategoryObject(cat, e) =>
          --we are adding information about a category
-      [catvec,.,$e]:= u
-      [ocatvec,.,$e]:= compMakeCategoryObject(vmode,$e)
+      [catvec, ., e] := u
+      [ocatvec, ., e] := compMakeCategoryObject(vmode, e)
       -- member(vmode, first catvec.4) =>
       --    JHD 82/08/08 01:40 This does not mean that we can ignore the
       --    extension, since this may not be compatible with the view we
@@ -261,28 +263,28 @@ actOnInfo(u,$e) ==
       --    SAY("augmenting ",name,": ",cat)
       --    put(name, "value", (vval, cat, venv), $e)
       member(cat,first ocatvec.4) or
-         assoc(cat,CADR ocatvec.4) is [.,'T,.] => $e
+         assoc(cat, CADR ocatvec.4) is [., 'T, .] => e
         --SAY("Category extension error:
         --cat shouldn't be a join
                       --what was being asserted is an ancestor of what was known
       -- augModemapsFromCategory asserts that domain is in scope,
       -- so make sure it really is (and not only the extra view we add)
-      $e := addDomain(name, $e)
-      if ATOM(name)
-        then $e:= augModemapsFromCategory(name,name,name,cat,$e)
-        else
-            $e := augModemapsFromCategory(name, name, nil, cat, $e)
+      e := addDomain(name, e)
+      if ATOM(name) then
+          e := augModemapsFromCategory(name, name, name, cat, e)
+      else
+          e := augModemapsFromCategory(name, name, nil, cat, e)
       SAY("augmenting ",name,": ",cat)
-      $e:= put(name,"value",[vval,mkJoin(cat,vmode),venv],$e)
+      e := put(name, "value", [vval, mkJoin(cat, vmode), venv], e)
     SAY("extension of ",vval," to ",cat," ignored")
-    $e
+    e
   systemError '"knownInfo"
 
 mkJoin(cat,mode) ==
   mode is ['Join,:cats] => ['Join,cat,:cats]
   ['Join,cat,mode]
 
-GetValue name ==
-  u:= get(name,"value",$e) => u
-  u:= comp(name,$EmptyMode,$e) => u  --name may be a form
+GetValue(name, e) ==
+  u := get(name,"value", e) => u
+  u := comp(name, $EmptyMode, e) => u  --name may be a form
   systemError [name,'" is not bound in the current environment"]

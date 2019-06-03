@@ -543,8 +543,8 @@ childArgCheck(argl, nargl) ==
 --      HPUT(hash,form,newPred)
 --  mySort [[key,:HGET(hash,key)] for key in HKEYS hash]
 
-ancestorsOf(conform,domform) ==  --called by kcaPage, originsInOrder,...
-  'category = GETDATABASE((conname := opOf conform),'CONSTRUCTORKIND) =>
+ancestors_of_cat(conform, domform) ==
+       conname := opOf(conform)
        alist := GETDATABASE(conname,'ANCESTORS)
        argl := IFCDR domform or IFCDR conform
        [pair for [a,:b] in alist | pair] where pair ==
@@ -553,6 +553,10 @@ ancestorsOf(conform,domform) ==  --called by kcaPage, originsInOrder,...
          if domform then right := simpHasPred right
          null right => false
          [left,:right]
+
+ancestorsOf(conform,domform) ==  --called by kcaPage, originsInOrder,...
+  'category = GETDATABASE((conname := opOf(conform)), 'CONSTRUCTORKIND) =>
+       ancestors_of_cat(conform, domform)
   computeAncestorsOf(conform,domform)
 
 computeAncestorsOf(conform,domform) ==
@@ -572,7 +576,8 @@ ancestorsRecur(conform,domform,pred,firstTime?) == --called by ancestorsOf
       $lisplibParents
     parentsOf op
   originalConform :=
-    firstTime? and ($insideCategoryIfTrue or $insideFunctorIfTrue) => $form
+    firstTime? and ($insideCategoryIfTrue or $insideFunctorIfTrue) =>
+        $functorForm
     getConstructorForm op
   if conform ~= originalConform then
     parents := SUBLISLIS(IFCDR conform,IFCDR originalConform,parents)

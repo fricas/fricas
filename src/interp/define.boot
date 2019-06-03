@@ -62,19 +62,17 @@ compDefine1(form,m,e) ==
 --     otherwise, fill in all NILs in the signature
   not (and/[null x for x in rest signature]) => compDefWhereClause(form,m,e)
   signature.target=$Category =>
-    compDefineCategory(form,m,e,nil,$formalArgList)
+      compDefineCategory(form, m, e, nil, $formalArgList)
   isDomainForm(rhs,e) and not $insideFunctorIfTrue =>
     if null signature.target then signature:=
       [getTargetFromRhs(lhs,rhs,giveFormalParametersValues(rest lhs,e)),:
           rest signature]
     rhs:= addEmptyCapsuleIfNecessary(signature.target,rhs)
-    compDefineFunctor(['DEF,lhs,signature,specialCases,rhs],m,e,nil,
-      $formalArgList)
-  null $form => stackAndThrow ['"bad == form ",form]
-  newPrefix:=
-    $prefix => INTERN STRCONC(encodeItem $prefix,'",",encodeItem $op)
-    getAbbreviation($op,#rest $form)
-  compDefineCapsuleFunction(form,m,e,newPrefix,$formalArgList)
+    new_prefix := getAbbreviation(first(lhs), #(rest(lhs)))
+    compDefineFunctor(['DEF, lhs, signature, specialCases, rhs], m, e,
+                      new_prefix, $formalArgList)
+  null($functorForm) => stackAndThrow ['"bad == form ",form]
+  compDefineCapsuleFunction(form, m, e, $prefix, $formalArgList)
 
 compDefineAddSignature([op,:argl],signature,e) ==
   (sig:= hasFullSignature(argl,signature,e)) and
@@ -240,8 +238,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
 --     and introduce declarations into environment
     sargl:= TAKE(# argl, $TriangleVariableList)
     sform := [$op, :sargl]
-    $form : local := sform
-    $functorForm : local := $form
+    $functorForm : local := sform
     $formalArgList:= [:sargl,:$formalArgList]
     aList:= [[a,:sa] for a in argl for sa in sargl]
     formalBody:= SUBLIS(aList,body)
@@ -271,7 +268,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
     body:=
         ['PROG1, ['LET, g:= GENSYM(), body],
                  ['SETELT, g, 0, mkConstructor(sform)]]
-    fun := do_compile [op', ['category_functor, sargl, body]]
+    fun := do_compile([op', ['category_functor, sargl, body]], e)
 
 --  5. give operator a 'modemap property
     pairlis:= [[a,:v] for a in argl for v in $FormalMapVariableList]
@@ -315,14 +312,12 @@ compDefineFunctor(df,m,e,prefix,fal) ==
   compDefineFunctor1(df,m,e,prefix,fal)
 
 compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
-  m, $e, $prefix, $formalArgList) ==
+  m, e, $prefix, $formalArgList) ==
 --  1. bind global variables
-    e := $e
     $addForm: local := nil
 
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
-    $op: local := nil
     $signature: local := nil
     $Representation: local := nil
          --Set in doIt, accessed in the compiler - compNoStacking
@@ -343,8 +338,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
             else false )   --true if domain has mutable state
     signature':=
       [first signature, :[getArgumentModeOrMoan(a, form, e) for a in argl]]
-    $form : local := form
-    $functorForm : local := $form
+    $functorForm : local := form
     if null first signature' then BREAK()
     target:= first signature'
     e := giveFormalParametersValues(argl, e)
@@ -353,7 +347,8 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       pp target
       userError '"cannot produce category object"
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
-    $domainShell:= COPY_-SEQ ds
+    base_shell := COPY_-SEQ ds
+    $domainShell := base_shell
 --+ 7 lines for $NRT follow
 -->--these globals used by NRTmakeCategoryAlist, set by NRTsetVector4Part1
     $condAlist: local := nil
@@ -393,14 +388,13 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 --  4. compile body in environment of %type declarations for arguments
     op':= $op
     rettype:= signature'.target
-    $e := e
-    T := compFunctorBody(body, rettype, $e, parForm)
+    T := compFunctorBody(body, rettype, e, parForm, base_shell)
 
     body':= T.expr
     lamOrSlam :=
         $mutableDomain => 'mutable_domain_functor
         'domain_functor
-    fun:= do_compile(SUBLIS($pairlis, [op', [lamOrSlam, argl, body']]))
+    fun := do_compile(SUBLIS($pairlis, [op', [lamOrSlam, argl, body']]), e)
     --The above statement stops substitutions gettting in one another's way
 --+
     operationAlist := SUBLIS($pairlis,$lisplibOperationAlist)
@@ -416,7 +410,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       $lisplibCategory := modemap.mmTarget
       $lisplibParents  :=
         getParentsFor($op,$FormalMapVariableList,$lisplibCategory)
-      $lisplibAncestors := computeAncestorsOf($form,nil)
+      $lisplibAncestors := computeAncestorsOf(form, nil)
       $lisplibAbbreviation := constructor? $op
     $insideFunctorIfTrue:= false
     if $LISPLIB then
@@ -427,7 +421,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
         'domain
       $lisplibForm:= form
       if null $bootStrapMode then
-        NRTslot1Info := NRTmakeSlot1Info()
+        NRTslot1Info := NRTmakeSlot1Info(form, base_shell)
         libFn := GETDATABASE(op','ABBREVIATION)
         $lookupFunction: local :=
             NRTgetLookupFunction(form, CADAR $lisplibModemap, $NRTaddForm)
@@ -437,7 +431,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
         $NRTslot1PredicateList :=
           [simpBool x for x in $NRTslot1PredicateList]
         output_lisp_form(['MAKEPROP, MKQ $op, ''infovec,
-                          getInfovecCode(NRTslot1Info)])
+                          getInfovecCode(NRTslot1Info, e)])
       $lisplibOperationAlist:= operationAlist
       $lisplibMissingFunctions:= $CheckVectorList
     if null argl then
@@ -445,9 +439,9 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
             ['MAKEPROP, ['QUOTE,op'], ['QUOTE,'NILADIC], true])
     [fun, ['Mapping, :signature'], originale]
 
-compFunctorBody(body,m,e,parForm) ==
+compFunctorBody(body, m, e, parForm, base_shell) ==
   $bootStrapMode = true =>
-    genOperationAlist()
+    genOperationAlist(base_shell)
     [bootStrapError($functorForm, $edit_file), m, e]
   T:= compOrCroak(body,m,e)
   body is [op,:.] and MEMQ(op,'(add CAPSULE)) => T
@@ -657,7 +651,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $returnMode:= m
     $op: local := nil
     [$op,:argl]:= form
-    $form : local := [$op, :argl]
     $formalArgList:= [:argl,:$formalArgList]
 
     --let target and local signatures help determine modes of arguments
@@ -689,7 +682,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     for domain in signature' repeat e:= addDomain(domain,e)
 
     --6. compile body in environment with extended environment
-    rettype:= resolve(signature'.target,$returnMode)
+    rettype := resolve(signature'.target, $returnMode)
 
     localOrExported :=
       null member($op,$formalArgList) and
@@ -705,7 +698,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     T := CATCH('compCapsuleBody, compOrCroak(body,rettype,e))
            or ["",rettype,e]
 --+
-    NRTassignCapsuleFunctionSlot($op, signature', e)
+    NRTassignCapsuleFunctionSlot($op, signature', $domainShell, e)
     if $newCompCompare=true then
          SAY '"The old compiler generates:"
          prTriple T
@@ -808,14 +801,14 @@ putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
   def
 
 
-compileCases(x,$e) == -- $e is referenced in compile
-    do_compile x
+compileCases(x, e) ==
+    do_compile(x, e)
 
-isLocalFunction op ==
+isLocalFunction(op, e) ==
     null member(op, $formalArgList) and
-        getmode(op, $e) is ['Mapping, :.]
+        getmode(op, e) is ['Mapping, :.]
 
-do_compile u ==
+do_compile(u, e) ==
   [op,lamExpr] := u
   if $suffix then
     $suffix:= $suffix+1
@@ -823,10 +816,10 @@ do_compile u ==
       opexport:=nil
       opmodes:=
         [sel
-          for [[DC,:sig],[.,sel]] in get(op,'modemap,$e) |
+          for [[DC, :sig], [., sel]] in get(op, 'modemap, e) |
             DC='_$ and (opexport:=true) and
              (and/[modeEqual(x,y) for x in sig for y in $signatureOfForm])]
-      isLocalFunction op =>
+      isLocalFunction(op, e) =>
         if opexport then userError ['%b,op,'%d,'" is local and exported"]
         INTERN STRCONC(encodeItem $prefix, '";", encodeItem op)
       encodeFunctionName(op,$functorForm,$signatureOfForm,";",$suffix)
@@ -966,7 +959,7 @@ compCapsuleInner(itemList,m,e) ==
   if $addForm then data:= ['add,$addForm,data]
   code:=
     $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => BREAK()
-    processFunctor($form,$signature,data,localParList,e)
+    processFunctor($functorForm, $signature, data, localParList, e)
   [MKPF([code],"PROGN"),m,e]
 
 --% PROCESS FUNCTOR CODE
@@ -974,70 +967,82 @@ compCapsuleInner(itemList,m,e) ==
 processFunctor(form,signature,data,localParList,e) ==
   form is ["CategoryDefaults"] =>
     error "CategoryDefaults is a reserved name"
-  buildFunctor(form,signature,data,localParList,e)
+  buildFunctor(form, signature, data, localParList, $domainShell, e)
 
-compCapsuleItems(itemlist,$predl,$e) ==
+compCapsuleItems(itemlist, $predl, e) ==
   $signatureOfForm: local := nil
   $suffix: local:= 0
-  for item in itemlist repeat $e:= compSingleCapsuleItem(item,$predl,$e)
-  $e
+  for item in itemlist repeat e := compSingleCapsuleItem(item, $predl, e)
+  e
 
-compSingleCapsuleItem(item,$predl,$e) ==
-  doIt(macroExpandInPlace(item,$e),$predl)
-  $e
+compSingleCapsuleItem(item, $predl, e) ==
+  doIt(macroExpandInPlace(item, e), $predl, e)
 
-doIt(item,$predl) ==
+doIt(item, $predl, e) ==
   $GENNO: local:= 0
   item is ['SEQ,:l,['exit,1,x]] =>
     RPLACA(item,"PROGN")
     RPLACA(LASTNODE item,x)
-    for it1 in rest item repeat $e:= compSingleCapsuleItem(it1,$predl,$e)
+    for it1 in rest item repeat e := compSingleCapsuleItem(it1, $predl, e)
         --This will RPLAC as appropriate
-  isDomainForm(item,$e) =>
+    e
+  isDomainForm(item, e) =>
      -- convert naked top level domains to import
     u:= ['import, [first item,:rest item]]
     userError ["Use: import ", [first item,:rest item]]
     RPLACA(item,first u)
     RPLACD(item,rest u)
-    doIt(item,$predl)
+    doIt(item, $predl, e)
   item is [":=", lhs, rhs, :.] =>
-    not (compOrCroak(item,$EmptyMode,$e) is [code,.,$e]) =>
+    not (compOrCroak(item, $EmptyMode, e) is [code, ., e]) =>
       stackSemanticError(["cannot compile assigned value to",:bright lhs],nil)
+      e
     not (code is ['LET,lhs',rhs',:.] and atom lhs') =>
       code is ["PROGN",:.] =>
          stackSemanticError(["multiple assignment ",item," not allowed"],nil)
+         e
       RPLACA(item,first code)
       RPLACD(item,rest code)
+      e
     lhs:= lhs'
     if not member(IFCAR rhs, $NonMentionableDomainNames) and
       not MEMQ(lhs, $functorLocalParameters) then
          $functorLocalParameters:= [:$functorLocalParameters,lhs]
-    if code is ['LET,.,rhs',:.] and isDomainForm(rhs',$e) then
+    if code is ['LET, ., rhs', :.] and isDomainForm(rhs', e) then
       if lhs="Rep" then
-        $Representation:= (get("Rep",'value,$e)).(0)
+        -- FIXME: $Representation is set unconditionally, but
+        -- assignment to Rep may be conditional ...
+        $Representation := (get("Rep", 'value, e)).(0)
            --$Representation bound by compDefineFunctor, used in compNoStacking
 --+
 --+
 --+
-    code is ['LET,:.] =>
+    code is ['LET, :.] =>
       RPLACA(item,($QuickCode => 'QSETREFV;'SETELT))
       rhsCode:=
        rhs'
-      RPLACD(item, ['$, NRTgetLocalIndex(lhs, $e), rhsCode])
+      RPLACD(item, ['$, NRTgetLocalIndex(lhs, e), rhsCode])
+      e
     RPLACA(item,first code)
     RPLACD(item,rest code)
-  item is [":",a,t] => [.,.,$e]:= compOrCroak(item,$EmptyMode,$e)
+    e
+  item is [":", a, t] =>
+      [., ., e] := compOrCroak(item, $EmptyMode, e)
+      e
   item is ['import,:doms] =>
      for dom in doms repeat
        sayBrightly ['"   importing ",:formatUnabbreviated dom]
-     [.,.,$e] := compOrCroak(item,$EmptyMode,$e)
+     [., ., e] := compOrCroak(item, $EmptyMode, e)
      RPLACA(item,'PROGN)
      RPLACD(item,NIL) -- creates a no-op
-  item is ["IF",:.] => doItIf(item,$predl,$e)
-  item is ["where",b,:l] => doItWhere(item, $predl, $e)
-  item is ["MDEF",:.] => [.,.,$e]:= compOrCroak(item,$EmptyMode,$e)
+     e
+  item is ["IF", :.] => doItIf(item, $predl, e)
+  item is ["where", b, :l] => doItWhere(item, $predl, e)
+  item is ["MDEF", :.] =>
+      [., ., e] := compOrCroak(item, $EmptyMode, e)
+      e
   item is ['DEF,[op,:.],:.] =>
-    [.,.,$e]:= t:= compOrCroak(item,$EmptyMode,$e)
+    [., ., e] := t := compOrCroak(item, $EmptyMode, e)
     RPLACA(item,"CodeDefine")
         --Note that DescendCode, in CodeDefine, is looking for this
     RPLACD(CADR item,[$signatureOfForm])
@@ -1046,8 +1051,10 @@ doIt(item,$predl) ==
     functionPart:= ['dispatchFunction,t.expr]
     RPLACA(CDDR item,functionPart)
     RPLACD(CDDR item,nil)
-  u:= compOrCroak(item,$EmptyMode,$e) =>
-    ([code,.,$e]:= u; RPLACA(item,first code); RPLACD(item,rest code))
+    e
+  u := compOrCroak(item, $EmptyMode, e) =>
+    ([code, ., e] := u; RPLACA(item, first code); RPLACD(item, rest code))
+    e
   true => cannotDo()
 
 isMacro(x,e) ==
@@ -1055,15 +1062,18 @@ isMacro(x,e) ==
     null get(op,'modemap,e) and null args and null get(op,'mode,e)
       and signature is [nil] => body
 
-doItIf(item is [., p, x, y], $predl, $e) ==
-    olde := $e
-    [p', ., $e] := comp(p, $Boolean, $e) or userError ['"not a Boolean:", p]
+-- FIXME: we ignore effects of computation of condition and
+-- do not merge branches
+doItIf(item is [., p, x, y], $predl, e) ==
+    olde := e
+    [p', ., e] := comp(p, $Boolean, e) or userError ['"not a Boolean:", p]
     if x ~= "noBranch" then
-        compSingleCapsuleItem(x, $predl, getSuccessEnvironment(p, $e))
+        compSingleCapsuleItem(x, $predl, getSuccessEnvironment(p, e))
     if y ~= "noBranch" then
         compSingleCapsuleItem(y, $predl, getInverseEnvironment(p, olde))
     RPLACA(item, "COND")
     RPLACD(item, [[p', x], ['(QUOTE T), y]])
+    olde
 
 doItWhere(item is [.,form,:exprList], $predl, eInit) ==
   $insideWhereIfTrue: local:= true
@@ -1077,9 +1087,9 @@ doItWhere(item is [.,form,:exprList], $predl, eInit) ==
   eFinal:=
     del:= deltaContour(eAfter, eBefore) => addContour(del, eInit)
     eInit
-  $e := eFinal
   RPLACA(item, "PROGN")
   RPLACD(item, [["PROGN", :exprList], form1])
+  eFinal
 
 
 --% CATEGORY AND DOMAIN FUNCTIONS
