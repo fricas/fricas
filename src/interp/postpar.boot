@@ -212,8 +212,8 @@ postIf t ==
 postJoin ['Join,a,:l] ==
   a:= postTran a
   l:= postTranList l
-  if l is [b] and b is [name,:.] and MEMQ(name,'(ATTRIBUTE SIGNATURE)) then l
-    := LIST ['CATEGORY,b]
+  if l is [b] and b is [name, :.] and MEMQ(name, ["ATTRIBUTE", "SIGNATURE"])
+  then l := LIST(['CATEGORY, b])
   al:=
     a is ["@Tuple", :c] => c
     LIST a
@@ -339,7 +339,8 @@ postWhere ["where",a,b] ==
 postWith ["with",a] ==
   $insidePostCategoryIfTrue: local := true
   a:= postTran a
-  a is [op,:.] and MEMQ(op,'(SIGNATURE ATTRIBUTE IF)) => ['CATEGORY,a]
+  a is [op, :.] and MEMQ(op, ["ATTRIBUTE", "SIGNATURE", "IF"]) =>
+      ['CATEGORY, a]
   a is ['PROGN,:b] => ['CATEGORY,:b]
   a
 
