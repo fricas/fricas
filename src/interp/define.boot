@@ -173,7 +173,7 @@ makeCategoryPredicates(form,u) ==
         fn(u,pl) ==
           u is ['Join,:.,a] => fn(a,pl)
           u is ['has,:.] => insert(EQSUBSTLIST($mvl,$tvl,u),pl)
-          u is [op,:.] and MEMQ(op,'(SIGNATURE ATTRIBUTE)) =>
+          u is [op, :.] and MEMQ(op, ["SIGNATURE", "ATTRIBUTE"]) =>
                -- EQ(op, 'ATTRIBUTE) => BREAK()
                pl
           atom u => pl
@@ -224,10 +224,10 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
     $insideCategoryIfTrue: local:= true
     $definition : local := form
                  --used by DomainSubstitutionFunction
-    $op: local := nil
     $extraParms: local := nil
              --Set in DomainSubstitutionFunction, used further down
 --  1.1  augment e to add declaration $: <form>
+    $op: local := nil
     [$op, :argl] := form
     e := addBinding("$", [['mode, :form]],e)
 
@@ -332,6 +332,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     $insideFunctorIfTrue: local:= true
     $genSDVar: local:= 0
     originale := e
+    $op: local := nil
     [$op,:argl]:= form
     $formalArgList:= [:argl,:$formalArgList]
     $pairlis := [[a,:v] for a in argl for v in $FormalMapVariableList]
@@ -645,7 +646,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     [lineNumber,:specialCases] := specialCases
     e := oldE
     --1. bind global variables
-    $op: local := nil
     $functionStats: local:= [0,0]
     $finalEnv: local := nil
              --used by ReplaceExitEtc to get a common environment
@@ -655,6 +655,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     $CapsuleModemapFrame: local:= e
     $CapsuleDomainsInScope: local:= get("$DomainsInScope","special",e)
     $returnMode:= m
+    $op: local := nil
     [$op,:argl]:= form
     $form : local := [$op, :argl]
     $formalArgList:= [:argl,:$formalArgList]
@@ -1204,7 +1205,7 @@ compCategoryItem(x, predl, acc) ==
 
   --2. if attribute, push it and return
   x is ["ATTRIBUTE", 'nil] => BREAK()
-  x is ["ATTRIBUTE",y] =>
+  x is ["ATTRIBUTE", y] =>
        -- should generate something else for conditional categories
        -- BREAK()
        push_at_list(MKQ [y, pred], acc)
