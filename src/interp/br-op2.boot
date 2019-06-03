@@ -512,7 +512,6 @@ opPageFast opAlist == --called by oSearch
   htpSetProperty(htPage,'opAlist,opAlist)
   htpSetProperty(htPage,'expandOperations,'lists)
   which := '"operation"
---dbResetOpAlistCondition(htPage,which,opAlist)
   dbShowOp1(htPage,opAlist,which,'names)
 
 opPageFastPath opstring ==

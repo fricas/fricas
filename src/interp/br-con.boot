@@ -295,12 +295,10 @@ dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
         $domain => EVAL p
         p
       if domname and CONTAINED('$,pred) then pred := SUBST(domname,'$,pred)
---    which = '"attribute" => pred    --all categories
       (pak := catinfo . i) and pred   --only those with default packages
     pakform ==
       pak and not IDENTP pak => devaluate pak --in case it has been instantiated
       catform := kFormatSlotDomain catvec . i
---    which = '"attribute" => dbSubConform(rest conform,catform)
       res := dbSubConform(rest conform,[pak,"$",:rest catform])
       if domname then res := SUBST(domname,'$,res)
       res
