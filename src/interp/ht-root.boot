@@ -89,10 +89,10 @@ htSystemVariables() == main where
       htMakePage '((domainConditions (isDomain INT (Integer))))
       htMakePage  [['bcStrings,[5,STRINGIMAGE val,name,'INT]]]
     class = 'STRING =>
-      htSay('"{\em ",val,'"}\space{1}")
+      htSayList ['"{\em ", val, '"}\space{1}"]
     for x in options repeat
       val = x or val = true and x = 'on or null val and x = 'off =>
-        htSay('"{\em ",x,'"}\space{1}")
+        htSayList ['"{\em ", x, '"}\space{1}"]
       htMakePage [['bcLispLinks,[x,'" ",'htSetSystemVariable,[variable,x]]]]
   fn(t,al,firstTime) ==
     atom t => al
