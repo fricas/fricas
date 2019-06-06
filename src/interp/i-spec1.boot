@@ -477,6 +477,8 @@ transformCollect [:itrl,body] ==
     it is ['_|,pred] =>
       [['SUCHTHAT,mkAtree1 pred]]
     it is [op,:.] and (op in '(VALUE UNTIL)) => nil
+    keyedSystemError("S2GE0016",
+        ['"transformCollect",'"Unknown type of iterator"])
   bodyTree:=mkAtree1 body
   iterList:=NCONC(iterList,[:iterTran2 for it in itrl]) where
     iterTran2 ==
@@ -537,7 +539,7 @@ upLoopIters itrl ==
       -- following is an optimization
       typeIsASmallInteger(get(index,'mode,$env)) =>
         RPLACA(iter,'ISTEP)
-    NIL       -- should have error msg here?
+    throwKeyedMsg("Malformed iterator")
 
 upLoopIterIN(iter,index,s) ==
   iterMs := bottomUp s
