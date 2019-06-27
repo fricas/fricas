@@ -447,7 +447,6 @@ extern int space_width;
 #define NoChar   -9999
 #define temp_dir "/tmp/"
 #define db_file_name "ht.db"
-#define def_spad "/usr/local/fricas"
 
 
 /* Types of HyperDoc pages */

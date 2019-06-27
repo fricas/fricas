@@ -190,7 +190,8 @@ start_user_buffer(HyperDocPage *page)
 
     SPAD = (char *) getenv("AXIOM");
     if (SPAD == NULL) {
-        sprintf(SPAD, "/spad/mnt/rios");
+        fprintf(stderr, "start_user_buffer: $AXIOM is empty\n");
+        exit(-1);
     }
     sprintf(spadbuf, "%s/lib/spadbuf", SPAD);
     sprintf(complfile, "%s/lib/command.list", SPAD);
