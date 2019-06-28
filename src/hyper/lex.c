@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * that -- the scanner input mode may be switched restore_scanner_state() --
  * undo the saved state
  *
- * Note: The scanner reads from three seperate input locations depending on the
+ * Note: The scanner reads from three separate input locations depending on the
  * value of the variable "input_type".  If this variable is:
  *
  * FromFile       -- it read from the file pointed to by "cfile". FromString
@@ -98,7 +98,7 @@ char *input_string;             /* input string read when from_string is true */
 int last_ch;                    /* last character read, for unget_char */
 int last_command;               /* the last socket command */
 int keyword;                    /* the last command was a keyword, or a group */
-int cfd;                        /* current file decriptor */
+int cfd;                        /* current file descriptor */
 FILE *cfile;                    /* currently active file pointer */
 FILE *unixfd;
 int line_number;
@@ -676,7 +676,7 @@ begin_type(void)
      * This routine parses a statement of the form \begin{word}. Once it has
      * read the word it tries to assign it a type. Once that is done it sends
      * the word id, and the type to push_be_stack and then returns the type.
-     * For the moment I amnot even going to use a has_table, although in the
+     * For the moment I am not even going to use a has_table, although in the
      * future this may be needed
      */
     ret_val = be_type("begin");
@@ -709,7 +709,7 @@ end_type(void)
 
     /*
      * This routine gets the end type just as the begin_type routine does,
-     * But then it checks to see if recieved the proper end_type. By a clever
+     * But then it checks to see if received the proper end_type. By a clever
      * trick, the proper end type is 3000 + type. When environments this will
      * have to change
      */
@@ -783,7 +783,7 @@ keyword_type(void)
         else                    /* We have no idea what we've got */
             token.type = Unkeyword;
     }
-    else {                      /* We am probably in htadd so just return. It
+    else {                      /* We are probably in htadd so just return. It
                                  * is only concerned with pages anyway */
         token.type = Unkeyword;
     }
@@ -856,7 +856,7 @@ spad_busy(void)
     return get_int(session_server);
 }
 
-/* connect to FRICAS, return 0 if succesful, 1 if not */
+/* connect to FRICAS, return 0 if successful, 1 if not */
 int
 connect_spad(void)
 {
