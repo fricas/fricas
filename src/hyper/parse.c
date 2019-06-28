@@ -179,7 +179,7 @@ format_page(UnloadedPage *ulpage)
 
     /*
      * In case of an error I will have to get at this page so I can free the
-     * waisted memory
+     * wasted memory
      */
     formatpage = page;
     page->type = Normal;
@@ -422,7 +422,7 @@ parse_HyperDoc(void)
             else {
                 /* Oops I had a problem parsing this puppy */
                 curr_node->type = Noop;
-                fprintf(stderr, "(HyperDoc) \\else found without macthing if?\n");
+                fprintf(stderr, "(HyperDoc) \\else found without matching if?\n");
                 longjmp(jmpbuf, 1);
                 fprintf(stderr, "(HyperDoc) Longjmp failed -- Exiting \n");
                 exit(-1);

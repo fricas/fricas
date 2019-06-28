@@ -95,7 +95,7 @@ number(char *str)
     return 1;
 }
 
-/* Parse a given macro given the pointer to the unlaoded macro ** */
+/* Parse a given macro given the pointer to the unloaded macro ** */
 
 static char *
 load_macro(MacroStore *macro)
@@ -118,7 +118,7 @@ load_macro(MacroStore *macro)
     get_expected_token(Macro);
     if (strcmp(token.id, macro->name)) {
         /** WOW, Somehow I had the location of the wrong macro **/
-        fprintf(stderr, "Expected macro name %s got insted %s in load_macro\n",
+        fprintf(stderr, "Expected macro name %s, got instead %s in load_macro\n",
                 macro->name, token.id);
         longjmp(jmpbuf, 1);
     }
@@ -178,10 +178,10 @@ init_parameter_elem(int number)
     ParameterList new;
     int count;
 
-    /** allocate the space neeeded **/
+    /** allocate the space needed **/
     new = (ParameterList) halloc(sizeof(struct parameter_list_type),
                                  "ParameterList");
-    /** now allocate the memeory  for the pointers to the  parameters **/
+    /** now allocate the memory  for the pointers to the  parameters **/
     if (number) {
         new->list = (char **) halloc(number * sizeof(char *), "Parameter List");
 
@@ -321,7 +321,7 @@ get_parameter_strings(int number,char * macro_name)
                 *buffer_pntr++ = c;
                 break;
               case '#':
-                /* uh oh, I have a parameter reference inside a paramter */
+                /* uh oh, I have a parameter reference inside a parameter */
                 /* get the number */
                 if (parameters == NULL) {
                     *buffer_pntr++ = c;
