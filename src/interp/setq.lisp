@@ -90,7 +90,6 @@
 
 
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
-(SETQ $OLDLINE NIL)  ;"used to output command lines"
 (SETQ |$edit_file| NIL)
 (DEFPARAMETER |$InteractiveMode| T)
 
