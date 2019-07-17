@@ -422,22 +422,69 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         zero? u => v
         zero? v => u
         u1 := gcd(u, v)
-        (expand((u exquo u1)::%) + expand((v exquo u1)::%)) * u1
+        eu1 := expand(u1)
+        ((expand(u) exquo eu1)::R + (expand(v) exquo eu1)::R) * u1
+
+      all_primes(lf : List(FF)) : Boolean ==
+          for f in lf repeat
+              fg := f.flag
+              if not(fg case "prime" or fg case "irred") then
+                  return false
+          true
+
+      all_sqf(lf : List(FF)) : Boolean ==
+          for f in lf repeat
+              fg := f.flag
+              if fg case "nil" then
+                  return false 
+          true
+
+      gcd1(lu : List(FF), lv : List(FF)) : % ==
+          (nu, nv) := (#lu, #lv)
+          vr := new(nu + nv, 0)$Vector(R)
+          for f in lu for i in 1..nu repeat
+              vr(i) := f.factor
+          for f in lv for i in (nu + 1)..(nu + nv) repeat
+              vr(i) := f.factor
+          dr := gcdDecomposition(vr)$GcdBasis(R)
+          nfv := dr.basis
+          tr := dr.transform
+          res := []$List(FF)
+          fg : fUnion :=
+              all_sqf(lu) and all_sqf(lv) => "sqfr"
+              "nil"
+          for j in 1..#nfv repeat
+              nf := nfv(j)
+              unit?(nf) => "iterate"
+              eu := 0$NonNegativeInteger
+              for f in lu for i in 1..nu repeat
+                  eu := eu + f.exponent*qcoerce(tr(j, i))
+              eu = 0 => "iterate"
+              ev := 0$NonNegativeInteger
+              for f in lv for i in (nu + 1)..(nu + nv) repeat
+                  ev := ev + f.exponent*qcoerce(tr(j, i))
+              ev = 0 => "iterate"
+              res := cons([fg, nf, min(eu, ev)]$FF, res)
+          res := sort!(LispLessP, res) 
+          mkFF(1, res)
 
       gcd(u, v) ==
           one? u or one? v => 1
           zero? u => v
           zero? v => u
           lu := factorList u; lv := factorList v
+          not(all_primes(lu) and all_primes(lv)) =>
+              gcd1(lu, lv)
           res : List FF := []
-          while not empty? lu and not empty? lv repeat
-              u1 := first lu; v1 := first lv
-              u1.factor = v1.factor =>
-                  res := concat([stricterFlag(u1.flag, v1.flag), u1.factor, _
-                                 min(u1.exponent, v1.exponent)], res)
-                  lu := rest lu; lv := rest lv
-              LispLessP(u1, v1) => lu := rest lu
-              lv := rest lv
+          (nu, nv) := (#lu, #lv)
+          if nu > nv then
+              (lu, lv) := (lv, lu)
+          for u1 in lu repeat
+              for v1 in lv repeat
+                  if u1.factor = v1.factor then
+                      res := cons([stricterFlag(u1.flag, v1.flag), u1.factor,
+                                   min(u1.exponent, v1.exponent)], res)
+                      break
           mkFF(1, reverse! res)
 
     else   -- R not a GCD domain
