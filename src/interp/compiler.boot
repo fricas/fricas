@@ -120,7 +120,6 @@ comp3(x, m, e) ==
   STRINGP m => (atom x => (m=x or m=STRINGIMAGE x => [m,m,e]; nil); nil)
   not x or atom x => compAtom(x,m,e)
   op:= first x
-  getmode(op,e) is ["Mapping",:ml] and (u:= applyMapping(x,m,e,ml)) => u
   op=":" => compColon(x,m,e)
   op="::" => compCoerce(x,m,e)
   t:= compExpression(x,m,e)
@@ -317,12 +316,15 @@ extractCodeAndConstructTriple(u, m, oldE) ==
   [["CONS",["function",op],env],m,oldE]
 
 compExpression(x,m,e) ==
-  SYMBOLP(first x) and (fn := GET(first x, "SPECIAL")) =>
+  op := first x
+  SYMBOLP(op) and (fn := GET(op, "SPECIAL")) =>
     FUNCALL(fn,x,m,e)
+  getmode(op, e) is ["Mapping", :ml] and (u := applyMapping(x, m, e, ml)) => u
   compForm(x,m,e)
 
 compAtom(x, m, e) ==
     res := compAtom1(x, m, e) => res
+    -- Needed at least for bootstrap of FFIELDC.spad
     compAtomWithModemap(x, m, e, get(x, "modemap", e))
 
 compAtom1(x, m, e) ==
