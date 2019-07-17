@@ -170,11 +170,9 @@ optionError(x,u) == commandErrorMessage("option",x,u)
 
 commandErrorIfAmbiguous(x, u) ==
   null u => nil
-  SETQ($OLDLINE, LINE)
   commandAmbiguityError("command", x, u)
 
 commandErrorMessage(kind,x,u) ==
-  SETQ ($OLDLINE,LINE)
   null u =>
     sayKeyedMsg("S2IZ0008",[kind,x])
     terminateSystemCommand()
