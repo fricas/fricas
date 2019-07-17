@@ -86,7 +86,6 @@ ioHook(x, :args) ==
 
 -- Variables to control phases and their output
 
-$ncmParse :=            NIL
 $ncmMacro :=            NIL
 $ncmPhase :=      NIL
 
@@ -123,7 +122,7 @@ ncTopLevel() ==
   $e:fluid := $InteractiveFrame
   int_loop()
 
-++ If the interpreter is spwan by the session manager, then
+++ If the interpreter is spawn by the session manager, then
 ++ each successful connection also creates its own frame.
 ++ In particular, the only time we get to do anything in the `initial'
 ++ frame is when we get the first connection.  In that case, we would
@@ -139,7 +138,7 @@ int_loop () ==
     while mode = "restart" repeat
       resetStackLimits()
       mode := CATCH("top_level",
-                    SpadInterpretStream(1, ["TIM", "DALY", "?"], true))
+                    SpadInterpretStream(1, [], true))
 
 
 SpadInterpretStream(step_num, source, interactive?) ==
@@ -404,9 +403,6 @@ ncError() ==
 --% phParse: carrier[tokens,...] -> carrier[ptree, tokens,...]
 phParse(carrier,ptree) ==
     phBegin 'Parsing
-    if $ncmParse then
-           nothing
-           intSayKeyedMsg ('S2CTP003,[%pform ptree])
     ncPutQ(carrier, 'ptree, ptree)
     'OK
 
