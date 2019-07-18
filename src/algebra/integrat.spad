@@ -1,3 +1,48 @@
+)abbrev package FSCINTA FunctionSpaceComplexIntegrationAux
+++ Top-level complex function integration
+++ Author: Manuel Bronstein
+++ Date Created: 4 February 1988
+++ Description:
+++   \spadtype{FunctionSpaceComplexIntegrationAux} provides functions for the
+++   indefinite integration of complex-valued functions.
+++ Keywords: function, integration.
+FunctionSpaceComplexIntegrationAux(G, FG) : Exports == Implementation where
+  G : Join(GcdDomain, Comparable, CharacteristicZero,
+           PolynomialFactorizationExplicit,
+           RetractableTo Integer, LinearlyExplicitOver Integer)
+  FG : Join(TranscendentalFunctionCategory,
+            AlgebraicallyClosedFunctionSpace G)
+
+  SY  ==> Symbol
+  IR  ==> IntegrationResult FG
+
+  Exports ==> with
+    internalIntegrate : (FG, SY) -> IR
+        ++ internalIntegrate(f, x) returns the integral of \spad{f(x)dx}
+        ++ where x is viewed as a complex variable.
+
+  Implementation ==> add
+    import from ElementaryIntegration(G, FG)
+    import from ElementaryFunctionStructurePackage(G, FG)
+    import from TrigonometricManipulationsAux(G, FG)
+
+    import from List(Kernel(FG))
+    import from List(SY)
+    import from BasicOperator
+    
+    RTRIG := 'rtrig
+
+    internalIntegrate(f, x) ==
+      f := distribute(f, x::FG)
+      g := realElementary(f, x)
+      tg := tower(g)
+      lt := [k for k in tg | member?(x, variables(k::FG))]
+      any?(x1+->has?(operator x1, RTRIG), lt) =>
+          h := trigs2explogs(g, [k for k in tower f
+                         | is?(k, 'tan) or is?(k, 'cot)])
+          lfintegrate(h, x)
+      lfintegrate(g, x)
+
 )abbrev package FSCINT FunctionSpaceComplexIntegration
 ++ Top-level complex function integration
 ++ Author: Manuel Bronstein
@@ -267,11 +312,14 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
     -- ltan is the list of all the tangents in l
     goComplex?(rt, l, ltan) == not(empty? ltan) or rt
 
+    FSCINTA ==> FunctionSpaceComplexIntegrationAux(R, F)
+
     integrate(f, x) ==
       -- FIXME: we need better way to check if base ring is
       -- real
       R has imaginary : () -> % or R is AlgebraicNumber =>
-          complexIntegrate(f, x)
+          ir := internalIntegrate(f, x)$FSCINTA
+          complexExpand(ir)
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
       tf := tower f

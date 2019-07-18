@@ -25,9 +25,9 @@ ComplexCategory(R : CommutativeRing) : Category ==
        _exquo : (%,R) -> Union(%,"failed")
          ++ exquo(x, r) returns the exact quotient of x by r, or
          ++ "failed" if r does not divide x exactly.
-     if R has EuclideanDomain then EuclideanDomain
-     if R has multiplicativeValuation then multiplicativeValuation
-     if R has additiveValuation then additiveValuation
+     if R has IntegerNumberSystem then
+         EuclideanDomain
+         multiplicativeValuation
      if R has Field then        -- this is a lie; we must know that
        Field                    -- x^2+1 is irreducible in R
      if R has ConvertibleTo InputForm then ConvertibleTo InputForm
@@ -296,13 +296,10 @@ ComplexCategory(R : CommutativeRing) : Category ==
              x := c.associate * x
              [c.unit ::%, x, c.associate ::%]
 
-       if R has EuclideanDomain then
-          if R has additiveValuation then
-              euclideanSize x == max(euclideanSize real x,
-                                     euclideanSize imag x)
-          else
-              euclideanSize x == euclideanSize(real(x)^2 + imag(x)^2)$R
-          if R has IntegerNumberSystem then
+       if R has IntegerNumberSystem then
+
+            euclideanSize x == euclideanSize(real(x)^2 + imag(x)^2)$R
+
             x rem y ==
               zero? imag y =>
                 yr := real y
@@ -318,32 +315,22 @@ ComplexCategory(R : CommutativeRing) : Category ==
                         (xi-symmetricRemainder(xi, yr)) quo yr)
               divide(x, y).quotient
 
-          else
-            x rem y ==
-              zero? imag y =>
-                yr := real y
-                complex(real(x) rem yr, imag(x) rem yr)
-              divide(x, y).remainder
-            x quo y ==
-              zero? imag y => complex(real x quo real y, imag x quo real y)
-              divide(x, y).quotient
-
-          divide(x, y) ==
-            r := norm y
-            y1 := conjugate y
-            xx := x * y1
-            x1 := real(xx) rem r
-            a  := x1
-            if x1 ~= 0 and sizeLess?(r, 2 * x1) then
-              a := x1 - r
-              if sizeLess?(x1, a) then a := x1 + r
-            x2 := imag(xx) rem r
-            b  := x2
-            if x2 ~= 0 and sizeLess?(r, 2 * x2) then
-              b := x2 - r
-              if sizeLess?(x2, b) then b := x2 + r
-            y1 := (complex(a, b) exquo y1)::%
-            [((x - y1) exquo y)::%, y1]
+            divide(x, y) ==
+              r := norm y
+              y1 := conjugate y
+              xx := x * y1
+              x1 := real(xx) rem r
+              a  := x1
+              if x1 ~= 0 and sizeLess?(r, 2 * x1) then
+                  a := x1 - r
+                  if sizeLess?(x1, a) then a := x1 + r
+              x2 := imag(xx) rem r
+              b  := x2
+              if x2 ~= 0 and sizeLess?(r, 2 * x2) then
+                  b := x2 - r
+                  if sizeLess?(x2, b) then b := x2 + r
+              y1 := (complex(a, b) exquo y1)::%
+              [((x - y1) exquo y)::%, y1]
 
        if R has TranscendentalFunctionCategory then
          half := recip(2::R)::R
