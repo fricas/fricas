@@ -738,6 +738,70 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
             lf2 := [realElementary f for f in lf]
             rischNormalize(lf2, lx).funcs
 
+
+)abbrev package TRIGMNPA TrigonometricManipulationsAux
+)boot $tryRecompileArguments := nil
+++ Trigs to/from exps and logs
+++ Author: Manuel Bronstein
+++ Date Created: 4 April 1988
+++ Description:
+++   This package provides transformations from trigonometric functions
+++   to exponentials and logarithms, and back.
+++   F and FG should be the same type of function space.
+++ Keywords: trigonometric, function, manipulation.
+TrigonometricManipulationsAux(G, FG) : Exports == Implementation where
+  G  : Join(IntegralDomain, Comparable)
+  FG : Join(FunctionSpace G, RadicalCategory,
+            TranscendentalFunctionCategory)
+
+  Z   ==> Integer
+  SY  ==> Symbol
+  OP  ==> BasicOperator
+  KG  ==> Kernel FG
+  PG  ==> SparseMultivariatePolynomial(G, KG)
+  UP  ==> SparseUnivariatePolynomial PG
+
+  Exports ==> with
+    trigs2explogs : (FG, List KG) -> FG
+      ++ trigs2explogs(f, [k1, ..., kn]) rewrites
+      ++ all the trigonometric functions appearing in \spad{f}
+      ++ in terms of complex logarithms and
+      ++ exponentials. A kernel of the form \spad{tan(u)} is expressed
+      ++ using \spad{exp(u)^2} if it is one of the \spad{ki's}, in terms of
+      ++ \spad{exp(2*u)} otherwise.
+
+  Implementation ==> add
+
+    ker2explogs : (KG, List KG) -> FG
+    smp2explogs : (PG, List KG) -> FG
+
+    im1 : G :=
+        G has imaginary : () -> G => imaginary()$G
+        error "G must have imaginary unit"
+    im := im1::FG
+
+-- This expects the argument to have only tan and atans left.
+-- Does a half-angle correction if k is not in the initial kernel list.
+    ker2explogs(k, l) ==
+      kf := k::FG
+      empty?(args := [trigs2explogs(a, l)
+                                    for a in argument k]$List(FG)) => kf
+      z  := first args
+      is?(k, 'tan)  =>
+        e := (member?(k, l) => exp(im * z) ^ 2;  exp(2 * im * z))
+        - im * (e - 1) /$FG (e + 1)
+      is?(k, 'atan) =>
+        im * log((1 -$FG im *$FG z)/$FG (1 +$FG im *$FG z))$FG / (2::FG)
+      (operator k) args
+
+    trigs2explogs(f, l) ==
+      smp2explogs(numer f, l) / smp2explogs(denom f, l)
+
+    smp2explogs(p, l) ==
+      map(x +-> ker2explogs(x, l), y +-> y::FG,
+           p)$PolynomialCategoryLifting(IndexedExponents KG, KG, G, PG, FG)
+)boot $tryRecompileArguments := true
+
 )abbrev package ITRIGMNP InnerTrigonometricManipulations
 )boot $tryRecompileArguments := nil
 ++ Trigs to/from exps and logs
