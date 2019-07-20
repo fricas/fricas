@@ -1019,6 +1019,63 @@ FloatLiouvilianFunctions() : Exports == Implementation where
     Shi(x : RF) : RF == real(Shi(complex(x, 0)))
 
 
+)abbrev package DFELEM DoubleFloatElementaryFunctions
+DoubleFloatElementaryFunctions : with
+    log_plus_1 : DoubleFloat -> DoubleFloat
+    atanh : Complex(DoubleFloat) -> Complex(DoubleFloat)
+  == add
+
+    dF ==> DoubleFloat
+    cdF ==> Complex(dF)
+    large := 1.0e30::dF
+    two := 2::dF
+    half := 1/(2::dF)
+    half_pi : dF := pi()$dF/(2::dF)
+    four := 4::dF
+    fourth := 1/(4::dF)
+
+    import from DoubleFloatEllipticIntegrals
+
+    log_plus_1(x : dF) : dF ==
+        x1 := x + 1
+        x > half or x < -half => log(x1)
+        x2 := half*(1 + x1)
+        x*ellipticRC(x2*x2, x1)
+
+    atanh(z : cdF) : cdF ==
+        x := real(z)
+        y := imag(z)
+        x < 0 =>
+            -atanh(-z)
+        ay := abs(y)
+        x > large or ay > large =>
+            s := sign(y)*half_pi
+            x > ay =>
+                t := ay/x
+                t := 1/(1 + t*t)
+                complex(t/x, s)
+            t := x/ay
+            t := t/(1+t*t)
+            complex(t/ay, s)
+        x < half and ay < half =>
+            z*ellipticRC(1, 1 - z*z)
+        u := 1 - x
+        sy := sign(y)::dF
+        u = 0 =>
+            y = 0 => error "atanh: evaluating at pole"
+            t := four + y*y
+            rr := log(sqrt(sqrt(t))/sqrt(ay))
+            ri := half*sy*(half_pi + atan(half*ay))
+            complex(rr, ri)
+        t := u*u + ay*ay
+        rr := fourth*log_plus_1((four*x)/t)
+        t2 := u*(1 + x) - ay*ay
+        ri :=
+            ay < t2 => half*atan((two*y)/t2)
+            y = 0 => sy*half_pi
+            half*sy*(half_pi - atan(t2/(two*ay)))
+        complex(rr, ri)
+
 
 )abbrev package ELIPIDF DoubleFloatEllipticIntegrals
 )boot $tryRecompileArguments := nil
