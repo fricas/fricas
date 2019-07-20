@@ -317,10 +317,8 @@ AGAIN:
             last_command = cmd = get_int(spad_socket);
             if (cmd == EndOfPage)
                 return EOF;
-#ifndef HTADD
             if (cmd == SpadError)
                 spad_error_handler();
-#endif
         }
         read_again = get_string_buf(spad_socket, sock_buf, 1023);
         /* this will be null if this is the last time*/
@@ -815,7 +813,6 @@ get_expected_token(int type)
 }
 
 
-#ifndef HTADD
 static void
 spad_error_handler(void)
 {
@@ -843,7 +840,6 @@ reset_connection(void)
         connect_spad();
     }
 }
-#endif
 
 
 /* returns true if spad is currently computing */
