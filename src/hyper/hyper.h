@@ -75,7 +75,6 @@ struct group_item;
 #define Footer    3
 #define Title     4
 
-#ifndef HTADD
 extern int MenuServerOpened;
 
 /* These are all the colors one can use in HyperDoc. */
@@ -108,9 +107,6 @@ extern XFontStruct  *gActiveFont,
                     *gTtFont;
 
 
-#endif
-
-
 /** I am implementing a state node stack, this is the structure I store **/
 
 typedef struct state_node {
@@ -124,10 +120,8 @@ typedef struct state_node {
  struct state_node *next;
 } StateNode;
 
-#ifndef HTADD
 /** pointer to the top of the state node graph **/
 extern StateNode *top_state_node;
-#endif
 
 
 /* structure for a hyper text link */
@@ -401,7 +395,6 @@ extern HDWindow *gParentWindow;       /* the parent window. The one that
 extern HyperLink *quitLink; /** a special link to the protected quit page **/
 
 
-#ifndef HTADD
 /* From hyper.c */
 extern int      gXScreenNumber;
 extern Display *gXDisplay;
@@ -439,7 +432,6 @@ extern int need_scroll_up_button;
 extern int scrolling;
 extern int need_scroll_down_button;
 extern int space_width;
-#endif
 
 /* Here are some of the functions and constants declared and needed in
       htadd.c                                                    ******/
