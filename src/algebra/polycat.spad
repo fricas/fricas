@@ -760,16 +760,50 @@ PolynomialCategoryLifting(E, Vars, R, P, S) : Exports == Implementation where
       ++ in S.
 
   Implementation ==> add
-    map(fv, fc, p) ==
-      (x1 := mainVariable p) case "failed" => fc leadingCoefficient p
-      up := univariate(p, x1::Vars)
-      t  := fv(x1::Vars)
-      ans := map(fv, fc, leadingCoefficient up) * t ^ (degree up)
-      up  := reductum up
-      while not zero? up repeat
-        ans := ans + map(fv, fc, leadingCoefficient up) * t ^ (degree up)
-        up  := reductum up
-      ans
+
+    if S has SemiRng then
+      map(fv, fc, p) ==
+          (x1 := mainVariable p) case "failed" => fc leadingCoefficient p
+          up := univariate(p, x1::Vars)
+          ml := reverse(monomials(up))
+          t  := fv(x1::Vars)
+          mon0 := first(ml)
+          ans : S
+          pow0 : S
+          i0 := degree(mon0)
+          pow0 : S
+          lc0 := map(fv, fc, leadingCoefficient mon0)
+          if i0 > 0 then
+              pow0 := t^i0
+              ans := lc0*pow0
+          else
+              ans := lc0
+          for mon in rest(ml) repeat
+              i := degree(mon)
+              i = 0 => ans := ans + map(fv, fc, leadingCoefficient mon)
+              pow :=
+                  i0 <= 0 => t^i
+                  i > i0 => pow0*t^qcoerce(i - i0)@PositiveInteger
+                  t^i
+              i0 := i
+              pow0 := pow
+              ans := ans + map(fv, fc, leadingCoefficient mon)*pow
+          ans
+
+    else
+
+      -- preserve operations for use by InputForm
+      map(fv, fc, p) ==
+          (x1 := mainVariable p) case "failed" => fc leadingCoefficient p
+          up := univariate(p, x1::Vars)
+          t := fv(x1::Vars)
+          ans := map(fv, fc, leadingCoefficient up)*t^(degree up)
+          up := reductum up
+          while not zero? up repeat
+              ans := ans + map(fv, fc, leadingCoefficient up)*t^(degree up)
+              up  := reductum up
+          ans
+
 
 )abbrev category UPOLYC UnivariatePolynomialCategory
 ++ Author:
