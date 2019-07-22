@@ -575,7 +575,7 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n) : Exports == Impl where
   UP2 ==> SparseUnivariatePolynomial UP
   REC ==> Record(factor : UP, exponent : N)
   MOD ==> monomial(1, n)$UPUP - radicnd::UPUP
-  INIT ==> if (deref brandNew?) then startUp false
+  INIT ==> if brandNew? then startUp false
 
   Exports ==> FunctionFieldCategory(F, UP, UPUP)
 
@@ -597,9 +597,9 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n) : Exports == Impl where
     radcand     : () -> UP
     charPintbas : (UPUP, RF, Vector RF, Vector RF) -> Void
 
-    brandNew? : Reference(Boolean) := ref true
-    discPoly : Reference(RF) := ref(0$RF)
-    newrad : Reference(UP) := ref(0$UP)
+    brandNew? : Boolean := true
+    discPoly : RF := 0$RF
+    newrad : UP := 0$UP
     n1 := (n - 1)::N
     modulus := MOD
     ibasis : Vector(RF)     := new(n, 0)
@@ -608,8 +608,8 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n) : Exports == Impl where
     invinfbasis : Vector(RF) := new(n, 0)
     mini := minIndex ibasis
 
-    discriminant()                   == (INIT; discPoly())
-    radcand()                        == (INIT; newrad())
+    discriminant()                   == (INIT; discPoly)
+    radcand()                        == (INIT; newrad)
     integralBasis()                  == (INIT; diag ibasis)
     integralBasisAtInfinity()        == (INIT; diag infbasis)
     basisvec()                       == (INIT; ibasis)
@@ -702,20 +702,20 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n) : Exports == Impl where
       charPintbas(r.poly, (r.coef) x, infbasis, invinfbasis)
 
     startUp b ==
-      brandNew?() := b
+      brandNew? := b
       if zero?(p := characteristic()$F) or p > n then char0StartUp()
                                                  else charPStartUp()
       dsc : RF := ((-1)$Z ^ ((n *$N n1) quo 2::N) * (n::Z)^n)$Z *
                radicnd ^ n1 *
                   */[qelt(ibasis, i) ^ 2 for i in mini..maxIndex ibasis]
-      discPoly() := primitivePart(numer dsc) / denom(dsc)
+      discPoly := primitivePart(numer dsc) / denom(dsc)
       void
 
     char0StartUp() ==
       rp          := rootPoly(radicnd, n)
       rp.exponent ~= n => error "RadicalFunctionField: curve is not irreducible"
-      newrad()    := rp.radicand
-      ib          := iBasis(newrad(), n)
+      newrad      := rp.radicand
+      ib          := iBasis(newrad, n)
       infb        := inftyBasis(radicnd, n)
       invden : RF   := 1
       for i in mini..maxIndex ib repeat
@@ -769,7 +769,7 @@ AlgebraicFunctionField(F, UP, UPUP, modulus) : Exports == Impl where
   QF  ==> Fraction UPUP
   UP2 ==> SparseUnivariatePolynomial UP
   SAE ==> SimpleAlgebraicExtension(RF, UPUP, modulus)
-  INIT ==> if (deref brandNew?) then startUp false
+  INIT ==> if brandNew? then startUp false
 
   Exports ==> FunctionFieldCategory(F, UP, UPUP) with
     knownInfBasis : N -> Void
@@ -785,9 +785,9 @@ AlgebraicFunctionField(F, UP, UPUP, modulus) : Exports == Impl where
     vect       : Matrix RF -> Vector %
     getInfBasis : () -> Void
 
-    brandNew? : Reference(Boolean) := ref true
-    infBr? : Reference(Boolean) := ref true
-    discPoly : Reference(RF) := ref 0
+    brandNew? : Boolean := true
+    infBr? : Boolean := true
+    discPoly : RF := 0
     n  := degree modulus
     n1 := (n - 1)::N
     ibasis : Matrix(RF)     := zero(n, n)
@@ -795,8 +795,8 @@ AlgebraicFunctionField(F, UP, UPUP, modulus) : Exports == Impl where
     infbasis : Matrix(RF)   := copy ibasis
     invinfbasis : Matrix(RF) := copy ibasis
 
-    branchPointAtInfinity?()   == (INIT; infBr?())
-    discriminant()             == (INIT; discPoly())
+    branchPointAtInfinity?()   == (INIT; infBr?)
+    discriminant()             == (INIT; discPoly)
     integralBasis()            == (INIT; vect ibasis)
     integralBasisAtInfinity()  == (INIT; vect infbasis)
     integralMatrix()           == (INIT; ibasis)
@@ -813,7 +813,7 @@ AlgebraicFunctionField(F, UP, UPUP, modulus) : Exports == Impl where
       splitDenominator(coordinates(f) * inverseIntegralMatrix())
 
     knownInfBasis d ==
-      if deref brandNew? then
+      if brandNew? then
         alpha := [monomial(1, d * i)$UP :: RF for i in 0..n1]$Vector(RF)
         ib := diagonalMatrix
           [inv qelt(alpha, i) for i in minIndex alpha .. maxIndex alpha]
@@ -848,7 +848,7 @@ AlgebraicFunctionField(F, UP, UPUP, modulus) : Exports == Impl where
       void
 
     startUp b ==
-      brandNew?() := b
+      brandNew? := b
       nmod : UP2    := map(retract, modulus)
       ib          := integralBasis()$FunctionFieldIntegralBasis(UP, UP2,
                                 SimpleAlgebraicExtension(UP, UP2, nmod))
@@ -867,9 +867,9 @@ AlgebraicFunctionField(F, UP, UPUP, modulus) : Exports == Impl where
       dsc  := resultant(modulus, differentiate modulus)
       dsc0 := dsc * determinant(infbasis) ^ 2
       degree(numer dsc0) > degree(denom dsc0) =>error "Shouldn't happen"
-      infBr?() := degree(numer dsc0) < degree(denom dsc0)
+      infBr? := degree(numer dsc0) < degree(denom dsc0)
       dsc := dsc * determinant(ibasis) ^ 2
-      discPoly() := primitivePart(numer dsc) / denom(dsc)
+      discPoly := primitivePart(numer dsc) / denom(dsc)
       void
 
     integralDerivationMatrix d ==
