@@ -1420,6 +1420,18 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
   cyclic? x       == not empty? x and not empty? findCycle x
   last x          == first tail x
 
+  first(x, n) ==
+      l : List S := []
+      for i in 1..n repeat
+          empty? x => error "Index out of range"
+          l := concat(first x, l)
+          x := rest x
+      res : % := empty()
+      while not empty? l repeat
+          res := concat(first l, res)
+          l := rest l
+      res
+
   nodes x ==
       l := empty()$List(%)
       while not empty? x repeat
@@ -1616,15 +1628,8 @@ StreamAggregate(S : Type) : Category ==
 
    import from Integer
 
-   c2 : (%, %) -> S
-
    explicitlyFinite? x == not cyclic? x
    possiblyInfinite? x == cyclic? x
-   first(x, n)         == construct [c2(x, x := rest x) for i in 1..n]
-
-   c2(x, r) ==
-       empty? x => error "Index out of range"
-       first x
 
    elt(x : %, i : Integer) ==
        i := i - minIndex x
