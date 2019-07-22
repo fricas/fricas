@@ -39,8 +39,8 @@ SetOfMIntegersInOneToN(m, n) : Exports == Implementation where
     reallyEnumerate : () -> Vector %
     enum : (N, N, PI) -> List Bits
 
-    all : Reference Vector % := ref empty()
-    sz : Reference N := ref 0
+    all : Vector % := empty()
+    sz : N := 0
 
     s1 = s2                == s1.bits =$Bits s2.bits
     coerce(s : %) : OutputForm == brace [i::OutputForm for i in elements s]
@@ -48,8 +48,8 @@ SetOfMIntegersInOneToN(m, n) : Exports == Implementation where
     member?(p, s)          == s.bits.p
 
     enumerate() : Vector(%) ==
-      if empty? all() then all() := reallyEnumerate()
-      all()
+      if empty? all then all := reallyEnumerate()
+      all
 
 -- enumerates the sets of p integers in 1..q, returns them as sets in 1..n
 -- must have p <= q
@@ -66,19 +66,19 @@ SetOfMIntegersInOneToN(m, n) : Exports == Implementation where
       concat!(enum(p, q1, n), l)
 
     size() ==
-      if zero? sz() then
-         sz() := binomial(n, m)$IntegerCombinatoricFunctions(Integer) :: N
-      sz()
+      if zero? sz then
+         sz := binomial(n, m)$IntegerCombinatoricFunctions(Integer) :: N
+      sz
 
     lookup s ==
-      if empty? all() then all() := reallyEnumerate()
-      if zero?(s.pos) then s.pos := position(s, all()) :: N
+      if empty? all then all := reallyEnumerate()
+      if zero?(s.pos) then s.pos := position(s, all) :: N
       s.pos :: PI
 
     index p ==
       p > size() => error "index: argument too large"
-      if empty? all() then all() := reallyEnumerate()
-      all().p
+      if empty? all then all := reallyEnumerate()
+      all.p
 
     setOfMinN l ==
       s := new(n, false)$Bits

@@ -35,9 +35,9 @@ SimpleAlgebraicExtension(R : CommutativeRing,
     d   := degree M
     d1  := subtractIfCan(d, 1)::NonNegativeInteger
     discmat : Matrix(R) := zero(d, d)
-    nodiscmat? : Reference(Boolean) := ref true
-    disc : Reference(R) := ref 0
-    nodisc? : Reference(Boolean) := ref true
+    nodiscmat? : Boolean := true
+    disc : R := 0
+    nodisc? : Boolean := true
     bsis := [monomial(1, i)$Rep for i in 0..d1]$Vector(Rep)
 
     if R has Finite then
@@ -104,20 +104,20 @@ SimpleAlgebraicExtension(R : CommutativeRing,
                                     map(lift, v)$VectorFunctions2(%, UP))
 
     discriminant() ==
-      if nodisc?() then mkDisc false
-      disc()
+      if nodisc? then mkDisc false
+      disc
 
     mkDisc b ==
-      nodisc?() := b
-      disc() := discriminant M
+      nodisc? := b
+      disc := discriminant M
       void
 
     traceMatrix() ==
-      if nodiscmat?() then mkDiscMat false
+      if nodiscmat? then mkDiscMat false
       discmat
 
     mkDiscMat b ==
-      nodiscmat?() := b
+      nodiscmat? := b
       mr := minRowIndex discmat; mc := minColIndex discmat
       for i in 0..d1 repeat
         for j in 0..d1 repeat
