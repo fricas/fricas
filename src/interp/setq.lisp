@@ -340,7 +340,6 @@
 
 (SETQ |$Integer| '(|Integer|))
 (SETQ |$ComplexInteger| (LIST '|Complex| |$Integer|))
-(SETQ |$NegativeInteger| '(|NegativeInteger|))
 (SETQ |$NonNegativeInteger| '(|NonNegativeInteger|))
 (SETQ |$PositiveInteger| '(|PositiveInteger|))
 (SETQ |$RationalNumber| '(|Fraction| (|Integer|)))
