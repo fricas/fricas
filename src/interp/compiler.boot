@@ -341,7 +341,7 @@ primitiveType x ==
   INTEGERP x =>
     x=0 => $NonNegativeInteger
     x>0 => $PositiveInteger
-    true => $NegativeInteger
+    $Integer
   FLOATP x => $DoubleFloat
   nil
 
