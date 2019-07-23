@@ -261,7 +261,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 (MAKEPROP '|Integer| '|Subsets|
   '((|PositiveInteger| . (|>| * 0))
     (|NonNegativeInteger| . (|>=| * 0))
-    (|NegativeInteger| . (|<| * 0))
     (|SingleInteger| . (SINTP *))
     ))
 
