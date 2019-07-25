@@ -1367,6 +1367,12 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       concat! : (%, S) -> %
         ++ concat!(u, x) destructively adds element x to the end of u.
         ++ Note: \spad{concat!(a, x) = concat!(a, [x])}.
+      concat! : List % -> %
+        ++ concat!(lu), where \spad{lu} is a list of aggregates
+        ++ \spad{[a, b, ..., c]}, returns a single aggregate consisting
+        ++ of the elements of \spad{a} followed by those of \spad{b}
+        ++ followed ... by the elements of \spad{c}.  This function may
+        ++ destructively modify the aggregates in \spad{lu}.
       cycleSplit! : % -> %
         ++ cycleSplit!(u) splits the aggregate by dropping off the cycle.
         ++ The value returned is the cycle entry, or empty() if none exists.
@@ -1560,6 +1566,17 @@ UnaryRecursiveAggregate(S : Type) : Category == RecursiveAggregate S with
       setelt!(x,  "last", a) == setlast!(x, a)
       setelt!(x,  "rest", a) == setrest!(x, a)
       concat(x : %, y : %) == concat!(copy x, y)
+
+      concat!(lu : List %) ==
+          while not empty? lu and empty? first lu repeat lu := rest lu
+          empty? lu => empty()
+          res := first lu
+          t := tail res
+          for u in rest lu repeat
+              not empty? u =>
+                  setrest!(t, u)
+                  t := tail t
+          res
 
       -- The qxxx variants are for speed.  If we do not care about
       -- speed the regular ones will do.
