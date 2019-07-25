@@ -271,13 +271,13 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                   ta:Term := first repa; tb:Term := first repb
                   ra:Rep := rest repa;  rb:Rep := rest repb
                   res :=
-                    smaller?(tb.Mn, ta.Mn)  => (repa := ra; concat!(res, ta))
-                    smaller?(ta.Mn, tb.Mn) => (repb := rb; concat!(res, tb))
+                    smaller?(tb.Mn, ta.Mn) => (repa := ra; concat(ta, res))
+                    smaller?(ta.Mn, tb.Mn) => (repb := rb; concat(tb, res))
                     repa := ra; repb := rb
                     not zero?(r := ta.Cf + tb.Cf) =>
-                                        concat!(res, [ta.Mn, r])
+                                        concat([ta.Mn, r], res)
                     res
-                per concat!(res, concat(repa, repb))
+                per concat!(reverse! res, if empty? repa then repb else repa)
 
             coefficient(a, m) ==
                 for t in a repeat
