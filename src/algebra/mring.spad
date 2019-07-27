@@ -236,14 +236,17 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                 while not empty? xs repeat
                     t1:= first xs
                     xs := rest xs
+                    newc := t1.c
                     while not empty? xs repeat
                         t2:= first xs
                         if t1.k = t2.k then
-                           t1.c:= t1.c+t2.c
-                           xs:= rest xs
+                            newc := newc + t2.c
+                            xs := rest xs
                         else break
-                    if not zero? t1.c then
-                        res := cons (t1, res)
+                    if not zero? newc then
+                        res :=
+                            newc = t1.c => cons(t1, res)
+                            cons([newc, t1.k], res)
                 res
 
             if R has CommutativeRing then
