@@ -96,8 +96,7 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
           r = 0 => empty()
           [[m, r]]
 
-        monomial?(x) ==
-            #(rep(x)) <= 1
+        monomial?(x) == empty? x or empty? rest x
 
         if (R has Finite and M has Finite) then
           size() == size()$R ^ size()$M
@@ -140,7 +139,8 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
 
         0                   == empty()
         1                   == [[1, 1]]
---        terms a             == (copy a) pretend List(Term)
+        zero? a == empty? a
+        one? a == size?(a, 1) and one?(a.first.Cf) and one?(a.first.Mn)
         terms a             == copy rep a
         monomials a         == [[t] for t in a]
         coefficients a      == [t.Cf for t in a]
@@ -158,19 +158,23 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
            then
             (r : R) * (a : %) ==
               r = 0 => 0
+              one? r => a
               [[t.Mn, r*t.Cf] for t in a]
            else
             (r : R) * (a : %) ==
               r = 0 => 0
+              one? r => a
               [[t.Mn, rt] for t in a | (rt := r*t.Cf) ~= 0]
         if R has noZeroDivisors
            then
             (n : Integer) * (a : %) ==
               n = 0 => 0
+              n = 1 => a
               [[t.Mn, n*t.Cf] for t in a]
            else
             (n : Integer) * (a : %) ==
               n = 0 => 0
+              n = 1 => a
               [[t.Mn, nt] for t in a | (nt := n*t.Cf) ~= 0]
         map(f, a)           == [[t.Mn, ft] for t in a | (ft := f(t.Cf)) ~= 0]
         numberOfMonomials a == #a
@@ -186,11 +190,9 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
         if R has noZeroDivisors then
           if M has Group then
             recip a ==
-              lt := terms a
-              #lt ~= 1 => "failed"
-              (u := recip lt.first.Cf) case "failed" => "failed"
-              --(u::R) * inv lt.first.Mn
-              monomial((u::R), inv lt.first.Mn)$%
+              not size?(a, 1) => "failed"
+              (u := recip a.first.Cf) case "failed" => "failed"
+              monomial((u::R), inv a.first.Mn)
           else
             recip a ==
               #a ~= 1 or a.first.Mn ~= 1 => "failed"
@@ -213,7 +215,7 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
             leadingSupport a    == (empty? a => 1; a.first.Mn)
             leadingMonomial a    ==
                 empty? rep a => error "empty support"
-                monomial((first rep a).Cf, (first rep a).Mn)
+                [first a]
 
             leadingTerm a    ==
                 empty? a => error "empty support"
@@ -269,6 +271,8 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                 true
 
             a + b ==
+                zero? a => b
+                zero? b => a
                 repa:Rep := rep a
                 repb:Rep := rep b
                 res : Rep := empty()
@@ -314,11 +318,13 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                     construct! concat! [[[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
                         for tb in b] for ta in a]
 
-        else -- M hasn't OrderedSet
+        else -- M hasn't Comparable
             -- Terms are stored in random order.
           a = b ==
             #a ~= #b => false
-            set(a pretend List(Term)) =$Set(Term) set(b pretend List(Term))
+            for t in a repeat
+                not member?(t, b) => return false
+            true
 
           coefficient(a, m) ==
             for t in a repeat
