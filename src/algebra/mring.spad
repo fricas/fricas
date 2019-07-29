@@ -229,8 +229,8 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
 
             termless(t1:Term, t2:Term):Boolean == smaller?(t1.k, t2.k)
 
-            construct(x : List Term) : % ==
-                xs : List Term := sort(termless, x)
+            construct!(x : List Term) : % ==
+                xs : List Term := sort!(termless, x)
                 res : List Term := empty()
                 -- find duplicates
                 while not empty? xs repeat
@@ -248,6 +248,8 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                             newc = t1.c => cons(t1, res)
                             cons([t1.k, newc], res)
                 res
+
+            construct(x : List Term) : % == construct! copy x
 
             if R has CommutativeRing then
                 f : M -> R
@@ -305,43 +307,12 @@ MonoidRing(R : Ring, M : Monoid) : MonoidRingCategory(R, M) == MRdefinition wher
                       for ta in reverse a]
             else -- M hasn't OrderedMonoid
 
-            -- we cannot assume that mutiplying an ordered list of
-            -- monoid elements by a single element respects the ordering:
-            -- we have to order and to collect equal terms
-              ge : (Term, Term) -> Boolean
-              ge(s, t) == not smaller? (s.Mn, t.Mn)
-
-              sortAndAdd : List Term -> List Term
-              sortAndAdd(liTe) ==  -- assume liTe not empty
-                liTe := sort(ge, liTe)
-                m : M :=  (first liTe).Mn
-                cf : R := (first liTe).Cf
-                res : List Term := []
-                for te in rest liTe repeat
-                  if m = te.Mn then
-                    cf := cf + te.Cf
-                  else
-                    if not zero? cf then res := cons([m, cf]$Term, res)
-                    m := te.Mn
-                    cf := te.Cf
-                if not zero? cf then res := cons([m, cf]$Term, res)
-                reverse res
-
-
-              if R has noZeroDivisors then
                 a : % * b : % ==
-                  zero? a => a
-                  zero? b => b  -- avoid calling sortAndAdd with []
-                  +/[sortAndAdd [[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
-                    for tb in b ] for ta in reverse a]
-              else
-                a : % * b : % ==
-                  zero? a => a
-                  zero? b => b  -- avoid calling sortAndAdd with []
-                  +/[sortAndAdd [[ta.Mn*tb.Mn, r]$Term
-                    for tb in b | not zero?(r := ta.Cf*tb.Cf)]
-                      for ta in reverse a]
-
+                    zero? a or zero? b => 0
+                    one? a => b
+                    one? b => a
+                    construct! concat! [[[ta.Mn*tb.Mn, ta.Cf*tb.Cf]$Term
+                        for tb in b] for ta in a]
 
         else -- M hasn't OrderedSet
             -- Terms are stored in random order.
