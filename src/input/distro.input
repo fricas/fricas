@@ -237,10 +237,26 @@ h15:= hh.5;
 h25:= monotoneCumulants(mu2).5
 testEquals("h15", "h25")
 
+-- orthogonal convolution identity
+)clear prop mu nu mumnu muonu
+mu := distributionByMoments([a[k] for k in 1..]);
+nu := distributionByMoments([b[k] for k in 1..]);
+mumnu := monotoneConvolution(mu, nu);
+muonu := booleanConvolution(nu, orthogonalConvolution(mu, nu));
+testEquals("firstn(moments mumnu, 10)", "firstn(moments muonu, 10)")
+
+-- subordination convolution identity
+)clear prop mu nu mufnu mumnu
+mu := distributionByMoments([a[k] for k in 1..]);
+nu := distributionByMoments([b[k] for k in 1..]);
+mufnu := freeConvolution(mu, nu);
+mumnu := monotoneConvolution(nu, subordinationConvolution(mu, nu));
+testEquals("firstn(moments mufnu, 10)", "firstn(moments mumnu, 10)")
+
 
 expected() ==
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
-    messagePrint("distro                      0     (5)               0    (37)")$OutputForm
+    messagePrint("distro                      0     (5)               0    (39)")$OutputForm
 
 statistics()
 expected()
