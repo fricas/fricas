@@ -12,44 +12,44 @@ subdir=src/aldor/
 # WARNING: THE FOLLOWING DOCUMENTATION MIGHT BE INCORRECT.
 #
 # This Makefile is only responsible to prepare the stage for the
-# actual compilation of libaxiom.al.
+# actual compilation of libfricas.al.
 # The main output is the file cliques.mk which is a Makefile that
 # will be included in Makefile2.
-# cliques.mk basically contains for each domain from the Axiom library
+# cliques.mk basically contains for each domain from the FriCAS library
 # its (recursive) dependencies on other domains. In fact, that is
 # not exactly true since several domains are grouped together in
-# cliques due to a lot of interdependencies in the axiom library.
+# cliques due to a lot of interdependencies in the FriCAS library.
 # Fortunately, there are only a few cliques left that have more
 # than one element. Most interdependencies are broken by the types
 # that appear in initlist.as.
 # Furthermore, cliques.mk contains a number of dependencies for and on
 # a number of basic aldor files and, in particular, the files
 # axlit.as and axextend.as. The latter two files extend various
-# Axiom domains so that certain Aldor can interpret literals etc.
-# Naturally, these files depend on existing Axiom types and thus
-# must occur somewhere in the middle of the Axiom type hierarchy,
+# FriCAS domains so that certain Aldor can interpret literals etc.
+# Naturally, these files depend on existing FriCAS types and thus
+# must occur somewhere in the middle of the FriCAS type hierarchy,
 # i.e., compilation order.
 #
 # The whole Makefile is about to find out where axlit and axextend
 # live in the compilation order and find out about the cliques of
-# the Axiom library.
+# the FriCAS library.
 ###################################################################
 
-# For the compilation of libaxiom.al we must use the compiled form of
+# For the compilation of libfricas.al we must use the compiled form of
 # the database. Since the variable DAASE is already set in var-def.mk,
-# we explicitly override it here for the call of AXIOMsys.
-INTERPSYS = DAASE=$(fricas_targetdir) FRICAS_INITFILE='' $(fricas_target_bindir)/AXIOMsys
+# we explicitly override it here for the call of FRICASsys.
+INTERPSYS = DAASE=$(fricas_targetdir) FRICAS_INITFILE='' $(fricas_target_bindir)/FRICASsys
 
-default: axiom.as al/libaxiom.al runtimefiles
+default: fricas.as al/libfricas.al runtimefiles
 
 clean:
 	rm -f domains.mk mkinit* initlist.lst initlist.ap
 	rm -f easylist.lsp mkeasy.lsp
-	rm -f libaxiom.lst aldordepfiles domaindepfiles
+	rm -f libfricas.lst aldordepfiles domaindepfiles
 	rm -rf tmp init_ap gendeps ap ao al lib lsp
 	rm -f cliques cliques.mk
-	rm -f lang.as axiom.as axextend.as axlit.as
-	rm -f minimach.as stub.as subsetc.as axiom.as
+	rm -f lang.as axextend.as axlit.as
+	rm -f minimach.as stub.as subsetc.as fricas.as
 	rm -f *.ao
 
 ###################################################################
@@ -101,7 +101,7 @@ GENAX=$(srcdir)/gendepap.lsp
 ###################################################################
 # Generate initlist.ap from initlist.as.
 # initlist.as lists the initial type that are used to break
-# a lot of big circular dependencies in the Axiom algebra library.
+# a lot of big circular dependencies in the FriCAS algebra library.
 initlist.ap: initlist.as tmp/.dir
 	$(ALDOR) -Fap=tmp/$@ $<
 	sed -e 's/\([->A-Za-z0-9\\]\+\)/|\1|/g' tmp/$@ > $@
@@ -168,7 +168,7 @@ ALDORBASICS=$(ALDOR_top_srcdir)/aldor
 ALDORLANG=$(ALDOR_top_srcdir)/aldor
 XCAT=cat
 
-axiom.as axlit.as stub.as: %.as: $(ALDORBASICS)/%.as
+fricas.as axlit.as stub.as: %.as: $(ALDORBASICS)/%.as
 	$(XCAT) $< > $@
 
 axextend.as: $(ALDORBASICS)/axextend.as
@@ -177,13 +177,13 @@ axextend.as: $(ALDORBASICS)/axextend.as
 
 minimach.as: $(ALDORBASICS)/minimach.as
 	$(XCAT) $< | \
-	sed -e 's/^#.*//;s/Language;/AxiomLib;inline from AxiomLib;/' > $@
+	sed -e 's/^#.*//;s/Language;/FriCASLib;inline from FriCASLib;/' > $@
 
 lang.as: $(ALDORLANG)/lang.as
 	$(XCAT) $< > $@
 
 subsetc.as: stub.as
-	grep AxiomLib $< > $@
+	grep FriCASLib $< > $@
 	tail -4 $< >> $@
 
 
@@ -212,22 +212,22 @@ aldordepfiles: $(aldor_dep_files)
 
 
 ###################################################################
-# Starting from the list initlist.lst, we create a file libaxiom.lst.
+# Starting from the list initlist.lst, we create a file libfricas.lst.
 # That file contains pairs of the form
 ## keyword filename
-# where keyword is one of "base", "initaxiom", "axiom", and "aldorext".
-# libaxiom.lst is used for the computation of cliques in the
-# axiom library, see program 'cliques'.
+# where keyword is one of "base", "initfricas", "fricas", and "aldorext".
+# libfricas.lst is used for the computation of cliques in the
+# FriCAS library, see program 'cliques'.
 #
 # Note that the function dep-type-or-nil in gendepap.lsp tests whether an
-# identifier is indeed an Axiom type. Therefore, it is necessary to make
-# attrib.as a dependency of every axiom clique.
-libaxiom.lst: initlist.lst
-	sed -e 's/^/initaxiom /' initlist.lst > $@
+# identifier is indeed a FriCAS type. Therefore, it is necessary to make
+# attrib.as a dependency of every FriCAS clique.
+libfricas.lst: initlist.lst
+	sed -e 's/^/initfricas /' initlist.lst > $@
 	for i in $(aldor_lang);       do echo "lang $$i"     >> $@; done
 	for i in $(aldor_basics);     do echo "base $$i"     >> $@; done
 	for i in $(aldor_misc);       do echo "base $$i"     >> $@; done
-	for i in $(domains);          do echo "axiom $$i"    >> $@; done
+	for i in $(domains);          do echo "fricas $$i"   >> $@; done
 	for i in $(aldor_extensions); do echo "aldorext $$i" >> $@; done
 
 
@@ -240,14 +240,14 @@ cliques: cliques.as
 #	$(ALDOR) $(CLIQUEOPTS) $<
 	$(ALDOR) $(CLIQUEOPTS) -dTRACE $<
 
-cliques.mk: libaxiom.lst cliques domaindepfiles aldordepfiles
-	./cliques libaxiom.lst > $@
+cliques.mk: libfricas.lst cliques domaindepfiles aldordepfiles
+	./cliques libfricas.lst > $@
 
 
 ###################################################################
 # After we have generated cliques.mk, we can do the real work an start
-# compilation of al/libaxiom.al.
-al/libaxiom.al: cliques.mk al/.dir
+# compilation of al/libfricas.al.
+al/libfricas.al: cliques.mk al/.dir
 	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)"
 
 $(patsubst %,ao/%.ao,$(CLIQUES)): ao/%.ao: cliques.mk al/.dir
@@ -259,11 +259,11 @@ $(patsubst %,ap/%.ap,$(CLIQUES)): ap/%.ap: cliques.mk al/.dir
 
 ###################################################################
 # Runtime - things required to run aldor files
-runtimefiles: al/libaxiom.al
+runtimefiles: al/libfricas.al
 	$(MAKE) runtimelib
 
 # The target 'runtimelib' is here as a direct entry point for cases
-# where al/libaxiom.al is already assumed to be up-to-date.
+# where al/libfricas.al is already assumed to be up-to-date.
 runtimelib:
 	$(MAKE) -f Makefile3 aldor_srcs="$(aldor_srcs)"
 
@@ -286,7 +286,7 @@ runtimelib:
 
 .PHONY: install
 ###################################################################
-# We need libaxiom.al and the .o (runtime support) files in the lib
+# We need libfricas.al and the .o (runtime support) files in the lib
 # subdirectory.
 install: install-libalgebra install-runtimefiles
 
@@ -294,8 +294,8 @@ install: install-libalgebra install-runtimefiles
 install_target_dir = $(DESTDIR)$(libdir)/fricas/target/$(target)
 install_algebra_dir = $(install_target_dir)/algebra
 install-libalgebra:
-	$(INSTALL_DATA) al/libaxiom.al $(install_algebra_dir)
-	$(INSTALL_DATA) axiom.as $(install_algebra_dir)
+	$(INSTALL_DATA) al/libfricas.al $(install_algebra_dir)
+	$(INSTALL_DATA) fricas.as $(install_algebra_dir)
 
 # runtime_files should be the same as in Makefile3.in
 runtime_files = $(patsubst %,lib/%.$(FASLEXT), runtime $(aldor_srcs))

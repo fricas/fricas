@@ -132,7 +132,7 @@ htGlossPage(htPage,pattern,tryAgain?) ==
   results := applyGrep(grepForm,'gloss)
   --pathname := STRCONC('"/tmp/",PNAME resultFile,'".text.", getEnv '"SPADNUM")
   --instream := MAKE_INSTREAM(pathname)
-  defstream := MAKE_INSTREAM(STRCONC(getEnv '"AXIOM",
+  defstream := MAKE_INSTREAM(STRCONC(getEnv '"FRICAS",
                                      '"/algebra/glossdef.text"))
   lines := gatherGlossLines(results,defstream)
   -- OBEY STRCONC('"rm -f ", pathname)

@@ -142,7 +142,7 @@ makeAxExportForm(filename, constructors) ==
         [[$foreignTag, ['Declare, 'dummyDefault, 'Exit], 'Lisp], :axForms]
   axForms := APPEND(axDoLiterals(), axForms)
   axForm := ['Sequence, _
-               ['Import, [], 'AxiomLib], ['Import, [], 'Boolean], :axForms]
+               ['Import, [], 'FriCASLib], ['Import, [], 'Boolean], :axForms]
   axForm
 
 

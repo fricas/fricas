@@ -11,7 +11,7 @@
     <\output>
       Checking for foreign routines
 
-      AXIOM="/usr/lib/fricas/target/i686-pc-linux-gnu"
+      FRICAS="/usr/lib/fricas/target/i686-pc-linux-gnu"
 
       spad-lib="/usr/lib/fricas/target/i686-pc-linux-gnu/lib/libspad.so"
 
@@ -20,13 +20,13 @@
       openServer result -2
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ FriCAS Computer Algebra
-      System\ 
+      System\
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Version: FriCAS
       1.1.8
 
       \ \ \ \ \ \ \ \ \ \ \ \ \ \ Timestamp: Friday September 21, 2012 at
-      18:21:14\ 
+      18:21:14\
 
       -----------------------------------------------------------------------------
 
@@ -38,13 +38,13 @@
 
       -----------------------------------------------------------------------------
 
-      \ 
+      \
 
       Value = #\<less\>INTERPRETED-FUNCTION NIL {BBB3CFD}\<gtr\>
     </output>
 
     <\unfolded-io-math>
-      (1) -\<gtr\>\ 
+      (1) -\<gtr\>\
     <|unfolded-io-math>
       expand<around*|(|<around*|(|x+y-z|)><rsup|5>|)>
     <|unfolded-io-math>
@@ -57,7 +57,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (2) -\<gtr\>\ 
+      (2) -\<gtr\>\
     <|unfolded-io-math>
       <big|int><frac|1|x<rsup|4>-1>*\<mathd\>x
     <|unfolded-io-math>
@@ -70,7 +70,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (3) -\<gtr\>\ 
+      (3) -\<gtr\>\
     <|unfolded-io-math>
       <big|sum><rsub|n=1><rsup|10><frac|1|n<rsup|2>>
     <|unfolded-io-math>
@@ -83,7 +83,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (4) -\<gtr\>\ 
+      (4) -\<gtr\>\
     <|unfolded-io-math>
       sinx\<assign\>series<around*|(|sin<around*|(|x|)>,x=0|)>
     <|unfolded-io-math>
@@ -96,7 +96,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (5) -\<gtr\>\ 
+      (5) -\<gtr\>\
     <|unfolded-io-math>
       cosx\<assign\>series<around*|(|cos<around*|(|x|)>,x=0|)>
     <|unfolded-io-math>
@@ -109,7 +109,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (6) -\<gtr\>\ 
+      (6) -\<gtr\>\
     <|unfolded-io-math>
       sinx<rsup|2>+cosx<rsup|2>
     <|unfolded-io-math>
@@ -122,7 +122,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (7) -\<gtr\>\ 
+      (7) -\<gtr\>\
     <|unfolded-io-math>
       m\<assign\><matrix|<tformat|<table|<row|<cell|a>|<cell|b>>|<row|<cell|c>|<cell|d>>>>>
     <|unfolded-io-math>
@@ -135,7 +135,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (8) -\<gtr\>\ 
+      (8) -\<gtr\>\
     <|unfolded-io-math>
       mi\<assign\>m<rsup|-1>
     <|unfolded-io-math>
@@ -148,7 +148,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (9) -\<gtr\>\ 
+      (9) -\<gtr\>\
     <|unfolded-io-math>
       m*mi
     <|unfolded-io-math>
@@ -161,7 +161,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (10) -\<gtr\>\ 
+      (10) -\<gtr\>\
     <|unfolded-io-math>
       <det|<tformat|<table|<row|<cell|a>|<cell|b>>|<row|<cell|c>|<cell|d>>>>>
     <|unfolded-io-math>
@@ -171,7 +171,7 @@
     </unfolded-io-math>
 
     <\unfolded-io-math>
-      (11) -\<gtr\>\ 
+      (11) -\<gtr\>\
     <|unfolded-io-math>
       )q
     <|unfolded-io-math>
@@ -179,7 +179,7 @@
     </unfolded-io-math>
 
     <\input-math>
-      (12) -\<gtr\>\ 
+      (12) -\<gtr\>\
     <|input-math>
       \;
     </input-math>

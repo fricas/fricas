@@ -308,11 +308,11 @@ forkView3D(int typeOfViewport)
 #ifdef DEBUG
     fprintf(stderr,"Executing ThreeDimensionalViewport process\n");
 #endif
-    env_fricas = getenv("AXIOM");
+    env_fricas = getenv("FRICAS");
     {
         size_t env_fricas_len = strlen(env_fricas);
         if (env_fricas_len > 20000) {
-            fprintf(stderr, "AXIOM env var too long\n");
+            fprintf(stderr, "FRICAS env var too long\n");
             exit(-1);
         }
         run_view = malloc(env_fricas_len + strlen("/lib/view3D") + 1);

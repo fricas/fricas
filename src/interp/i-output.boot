@@ -1189,7 +1189,7 @@ output(expr,domain) ==
   (FUNCTIONP(opOf domain)) and (not(SYMBOLP(opOf domain))) and
     (printfun := compiledLookup("<<",'(TextWriter TextWriter $), evalDomain domain))
        and (textwrit := compiledLookup("print", '($), TextWriter())) =>
-     sayMSGNT [:bright '"AXIOM-XL",'"output:   "]
+     sayMSGNT [:bright '"Aldor",'"output:   "]
      SPADCALL(SPADCALL textwrit, expr, printfun)
      sayMSGNT '%l
 

@@ -691,7 +691,7 @@ PSGlobalInit(void)
 
   /* path specific file names */
 
-  if ((env_fricas = getenv("DEVE")) != NULL) {  /* get env var AXIOM */
+  if ((env_fricas = getenv("DEVE")) != NULL) {  /* get env var FRICAS */
 
     psData[headerps].flag = yes;
     fricas_sprintf_to_buf2(psData[headerps].filename, "%s%s", env_fricas, "/Gdraws/PS/header.ps");
@@ -727,7 +727,7 @@ PSGlobalInit(void)
     fricas_sprintf_to_buf2(psData[setupps].filename, "%s%s", env_fricas, "/Gdraws/PS/setup.ps");
     fricas_sprintf_to_buf2(psData[endps].filename, "%s%s", env_fricas, "/Gdraws/PS/end.ps");
   }
-  else if ((env_fricas = getenv("AXIOM")) != NULL) {
+  else if ((env_fricas = getenv("FRICAS")) != NULL) {
     psData[headerps].flag = yes;
     fricas_sprintf_to_buf2(psData[headerps].filename, "%s%s", env_fricas,
             "/lib/graph/header.ps");
@@ -767,7 +767,7 @@ PSGlobalInit(void)
             "/lib/graph/end.ps");
   }
   else {
-    fprintf(stderr, " need environment variable AXIOM or DEVE; process aborted\n");
+    fprintf(stderr, " need environment variable FRICAS or DEVE; process aborted\n");
     return (psError);
   }
 

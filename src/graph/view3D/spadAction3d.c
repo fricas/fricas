@@ -198,7 +198,7 @@ spadAction (void)
     if (viewport->haveControl) drawControlPanel();
     break;
 
-/* Non-uniform scaling is not in AXIOM yet. */
+/* Non-uniform scaling is not in FriCAS yet. */
 /* Neither is object or origin rotation. */
 
   case perspectiveOnOff:

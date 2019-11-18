@@ -19,7 +19,7 @@ BOOTSYS= $(fricas_build_bindir)/bootsys
 
 LOADSYS= $(fricas_build_bindir)/lisp$(EXEEXT)
 SAVESYS= $(fricas_build_bindir)/interpsys$(EXEEXT)
-AXIOMSYS= $(fricas_target_bindir)/AXIOMsys$(EXEEXT)
+FRICASSYS= $(fricas_target_bindir)/FRICASsys$(EXEEXT)
 
 OBJ_files= macros setq \
 	buildom cattable clam clammed \
@@ -54,14 +54,14 @@ ALL_OBJ_files = vmlisp ${ASCOMP_files} ${OBJ_files} ax ${BROBJ_files} \
 ALL_OBJS = $(patsubst %, %.$(LISPOBJEXT), $(ALL_OBJ_files))
 
 .PRECIOUS:	${SAVESYS}
-.PRECIOUS:	${AXIOMSYS}
+.PRECIOUS:	${FRICASSYS}
 
 PROCLAIMS=(progn (load "$(srcdir)/interp-proclaims.lisp"))
 
 .SUFFIXES:
 .SUFFIXES: .boot .clisp .lisp
 
-.PHONY: all all-ax all-interpsys all-axiomsys
+.PHONY: all all-ax all-interpsys all-fricassys
 
 all: all-ax
 
@@ -106,7 +106,7 @@ clean-local: mostlyclean-local
 
 distclean-local: clean-local
 
-${SAVESYS} ${AXIOMSYS}: makeint.lisp \
+${SAVESYS} ${FRICASSYS}: makeint.lisp \
     ${ALL_OBJS} util.$(LISPOBJEXT) \
     database.date ${LOADSYS} \
     $(fricas_targetdir)/algebra/exposed.$(FASLEXT) \
@@ -131,7 +131,7 @@ makeint.lisp: ../boot/lobj_lst
 	echo '))))' >> makeint.lisp
 	echo '(build-interpsys' \
 	  '(quote ($(patsubst %, "%", ${ALL_OBJS})))' \
-	  '"${AXIOM}")' >> makeint.lisp
+	  '"${FRICAS}")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	echo '#-:ecl(|clearClams|)' >> makeint.lisp
 	@ echo '#+:GCL (setq compiler::*suppress-compiler-notes* t)' >> makeint.lisp
@@ -145,15 +145,15 @@ ${SAVESYS}:
 	ls $@
 	@ echo 6 ${SAVESYS} created
 
-.PHONY: all-axiomsys
+.PHONY: all-fricassys
 
-all-axiomsys: ${AXIOMSYS}
+all-fricassys: ${FRICASSYS}
 
-${AXIOMSYS}: ../etc/stamp-databases
-	echo '(defparameter FRICAS-LISP::*building-axiomsys* t)' \
+${FRICASSYS}: ../etc/stamp-databases
+	echo '(defparameter FRICAS-LISP::*building-fricassys* t)' \
 	   '(load "makeint.lisp") #-:ecl(BOOT::reclaim)' \
 	   '#+:cmu (setf (ext:search-list "libspad:")' \
-	   '(list "${AXIOM}/lib/" "${libdir}/fricas/target/${target}/lib/"))' \
+	   '(list "${FRICAS}/lib/" "${libdir}/fricas/target/${target}/lib/"))' \
 	   '#+:cmu (setq ext:*top-level-auto-declare* t)' \
 	   '#+:cmu (setq *compile-verbose* nil)' \
 	   '#+:cmu (setq *compile-print* nil)' \
@@ -161,7 +161,7 @@ ${AXIOMSYS}: ../etc/stamp-databases
 	   '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
 	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' \
              | DAASE="$(BASE)$(fricas_targetdir)" ${BOOTSYS}
-	@ echo 6a ${AXIOMSYS} created
+	@ echo 6a ${FRICASSYS} created
 
 exposed.lsp: $(fricas_src_algdir)/exposed.lsp
 	@ echo 615 making $@ from $<

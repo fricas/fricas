@@ -34,7 +34,7 @@
 --====================> WAS b-util.boot <================================
 
 --=======================================================================
---                     AXIOM Browser
+--                     FRICAS Browser
 -- Initial entry is from man0.ht page to one of these functions:
 --   kSearch (cSearch, dSearch, or pSearch), for constructors
 --   oSearch, for operations

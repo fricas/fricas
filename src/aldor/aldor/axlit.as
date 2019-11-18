@@ -1,16 +1,16 @@
 -----------------------------------------------------------------------------
 ----
----- axlit.as: Function definitions needed by the Axiom library.
+---- axlit.as: Function definitions needed by the FriCAS library.
 ----
 -----------------------------------------------------------------------------
 ---- Copyright (c) 1990-2007 Aldor Software Organization Ltd (Aldor.org).
 -----------------------------------------------------------------------------
 
--- This file extends some Axiom types provide literal formers and other
--- functions for compiling Axiom-generated .ax files.
+-- This file extends some FriCAS types provide literal formers and other
+-- functions for compiling FriCAS-generated .ax files.
 
-import from AxiomLib;
-inline from AxiomLib;
+import from FriCASLib;
+inline from FriCASLib;
 
 macro {
         rep x == x @ % pretend Rep;

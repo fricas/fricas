@@ -65,7 +65,7 @@ at load time.
     "/share/spadhelp/" ))
 
 ;;; The relative directory list specifies how to find the algebra
-;;; directory from the current {\bf AXIOM} shell variable.
+;;; directory from the current {\bf FRICAS} shell variable.
 (defvar $relative-library-directory-list '("/algebra/"))
 
 ;;; This is the system-wide list of directories to search.
@@ -76,23 +76,23 @@ at load time.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
-;;; Prefix a filename with the {\bf AXIOM} shell variable.
+;;; Prefix a filename with the {\bf FRICAS} shell variable.
 (defun make-absolute-filename (name)
  (concatenate 'string $spadroot name))
 
 #|
 The reroot function is used to reset the important variables used by
 the system. In particular, these variables are sensitive to the
-{\bf AXIOM} shell variable. That variable is renamed internally to
+{\bf FRICAS} shell variable. That variable is renamed internally to
 be {\bf \$spadroot}. The {\bf reroot} function will change the
 system to use a new root directory and will have the same effect
-as changing the {\bf AXIOM} shell variable and rerunning the system
+as changing the {\bf FRICAS} shell variable and rerunning the system
 from scratch.  A correct call looks like:
 \begin{verbatim}
 (in-package "BOOT")
-(reroot "${AXIOM}")
+(reroot "${FRICAS}")
 \end{verbatim}
-where the [[${AXIOM}]] variable points to installed tree.
+where the [[${FRICAS}]] variable points to installed tree.
 |#
 (defun reroot (dir)
   (setq $spadroot dir)
@@ -104,15 +104,15 @@ where the [[${AXIOM}]] variable points to installed tree.
         (pathname (make-absolute-filename "/share/msgs/s2-us.msgs")))
   )
 
-;;; Sets up the system to use the {\bf AXIOM} shell variable if we can
+;;; Sets up the system to use the {\bf FRICAS} shell variable if we can
 ;;; and default to the {\bf \$spadroot} variable (which was the value
-;;; of the {\bf AXIOM} shell variable at build time) if we can't.
+;;; of the {\bf FRICAS} shell variable at build time) if we can't.
 (defun initroot (&optional (newroot nil))
-  (reroot (or (|getEnv| "AXIOM") newroot $spadroot
-              (error "setenv AXIOM or (setq $spadroot)"))))
+  (reroot (or (|getEnv| "FRICAS") newroot $spadroot
+              (error "setenv FRICAS or (setq $spadroot)"))))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
-;;; to the default memory setup to run Axiom efficently.
+;;; to the default memory setup to run FriCAS efficently.
 ;;; This function performs those setup commands.
 (defun init-memory-config (&key
                            (cons 500)
@@ -182,8 +182,8 @@ After this function is called the image is clean and can be saved.
   (progn
       (mapcar #'load load-files)
       (interpsys-image-init spad))
-  (if (and (boundp 'FRICAS-LISP::*building-axiomsys*)
-                FRICAS-LISP::*building-axiomsys*)
+  (if (and (boundp 'FRICAS-LISP::*building-fricassys*)
+                FRICAS-LISP::*building-fricassys*)
        (progn
            #+:GCL(setf compiler::*default-system-p* nil)
            #+:GCL(compiler::emit-fn nil)
@@ -260,7 +260,7 @@ After this function is called the image is clean and can be saved.
  (cond
   ((load "./exposed" :verbose nil :if-does-not-exist nil)
     '|done|)
-  ((load (concat (|getEnv| "AXIOM") "/algebra/exposed")
+  ((load (concat (|getEnv| "FRICAS") "/algebra/exposed")
      :verbose nil :if-does-not-exist nil)
    '|done|)
   (t '|failed|) ))
@@ -280,10 +280,10 @@ After this function is called the image is clean and can be saved.
 #+:GCL (system:gbc-time 0)
     #+(or :sbcl :clisp :openmcl :lispworks)
     (if *fricas-load-libspad*
-        (let* ((ax-dir (|getEnv| "AXIOM"))
+        (let* ((ax-dir (|getEnv| "FRICAS"))
                (spad-lib (concatenate 'string ax-dir "/lib/libspad.so")))
             (format t "Checking for foreign routines~%")
-            (format t "AXIOM=~S~%" ax-dir)
+            (format t "FRICAS=~S~%" ax-dir)
             (format t "spad-lib=~S~%" spad-lib)
             (if (|fricas_probe_file| spad-lib)
                 (progn
@@ -388,4 +388,3 @@ After this function is called the image is clean and can be saved.
    (|setIOindex| (- |$IOindex| 3))
   )
 )
-

@@ -89,7 +89,7 @@ kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
   if filename ~= '"" then
     htSayStandard '"\newline{}"
     htSay('"The source code for the constructor is found in ")
-  htMakePage [['text,'"\unixcommand{",filename,'"}{_\$AXIOM/lib/SPADEDIT ",
+  htMakePage [['text,'"\unixcommand{",filename,'"}{_\$FRICAS/lib/SPADEDIT ",
               sourceFileName, '" ", name, '"}"]]
   if nargs ~= 0 then htSay '"."
 
@@ -893,7 +893,7 @@ bcUnixTable(u) ==
       isAsharpFileName? x => '("AS")
       '("SPAD")
     filename := NAMESTRING find_file(STRINGIMAGE x, ft)
-    htMakePage [['text, '"\unixcommand{",PATHNAME_-NAME x, '"}{$AXIOM/lib/SPADEDIT ", filename, '"} "]]
+    htMakePage [['text, '"\unixcommand{",PATHNAME_-NAME x, '"}{$FRICAS/lib/SPADEDIT ", filename, '"} "]]
     htSay '"}"
   htEndTable()
 
@@ -1052,4 +1052,3 @@ PUT('Enumeration, 'documentation, SUBST(MESSAGE, 'MESSAGE, '(
           ((_$ (Symbol))
      "\spad{coerce(s)} converts a symbol \spad{s} into an enumeration which has \spad{s} as a member symbol"))
   )))
-

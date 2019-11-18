@@ -23,11 +23,11 @@
 
 \begin{abstract}
   This pamphlet details the configuration process of setting up
-  \Tool{Axiom} for build from source codes.
+  \Tool{FriCAS} for build from source codes.
   It also explains general dependencies on external tools.
   The configuration process scrutinizes the build, host,  and target
   environments, and finally instantiates \File{Makefile}s for building
-  \Tool{Axiom} interpreter, compiler, libraries, and auxiliary tools
+  \Tool{FriCAS} interpreter, compiler, libraries, and auxiliary tools
   where appropriate.
 \end{abstract}
 
@@ -35,16 +35,16 @@
 \label{sec:intro}
 
 This is the top-level \Tool{Autoconf} description that sets up the
-minimum environment for building \Tool{Axiom}.  This effort
+minimum environment for building \Tool{FriCAS}.  This effort
 strives for describing the build machinery at a sufficiently abstract
 level that
 enables interoperability with existing conventional frameworks, \eg{}
 the GNU build framework.
-The task is compounded by the fact that the existing \Tool{Axiom} system
+The task is compounded by the fact that the existing \Tool{FriCAS} system
 is complex and very poorly documented, with blatantly conflicting or
 questionable codes.
 
-The \Tool{Axiom} system is written for the most part in Lisp, or
+The \Tool{FriCAS} system is written for the most part in Lisp, or
 thereof.  That in itself is a great source of portability
 problems\footnote{even after half a century of existence},
 let alone issues related to insulation from mainstream
@@ -80,13 +80,13 @@ that we gather information from two platforms:
 
 The build platform is where we build the system, \eg{} where
 the \File{configure} script is executed.  The host platform
-is where \Tool{Axiom} will run.  Note that in full generality, there is
+is where \Tool{FriCAS} will run.  Note that in full generality, there is
 a third platform: the \emph{target platform}.  It is the platform for which
 we are building the system.
 
 For typical build instantiations, those  three  platforms are the same: we
 call that a \emph{native build instantiation} or just \emph{native build}.
-The Axiom system only support native build at the moment, due to its
+The FriCAS system only support native build at the moment, due to its
 dependence on \Tool{GCL} which supports only native build.
 
 To facilitate the porting of programs across platforms, the GNU build
@@ -114,14 +114,14 @@ Here is how we get the canonical names for the above three platforms:
 AC_CANONICAL_SYSTEM
 
 ## Where tools for the build machine are built
-axiom_builddir=`pwd`/build/$build
-AC_SUBST(axiom_builddir)
-axiom_build_bindir=$axiom_builddir/bin
-AC_SUBST(axiom_build_bindir)
+fricas_builddir=`pwd`/build/$build
+AC_SUBST(fricas_builddir)
+fricas_build_bindir=$fricas_builddir/bin
+AC_SUBST(fricas_build_bindir)
 
 ## Prefix for the staging target installation directory
-axiom_targetdir=`pwd`/target/$target
-AC_SUBST(axiom_targetdir)
+fricas_targetdir=`pwd`/target/$target
+AC_SUBST(fricas_targetdir)
 @
 
 After that call, the configuration names of the three platforms
@@ -143,7 +143,7 @@ We say that the build instantiation is a \emph{cross build} when
 the build platform is different from the target platform; \eg{}, when
 [[build]] $\neq$ [[target]].
 
-For the moment, the \Tool{Axiom} base source code is written
+For the moment, the \Tool{FriCAS} base source code is written
 in a way that does not support cross build.  However, we do
 want to make cross build possible; consequently we issue
 a warning when we detect attempt at cross build:
@@ -163,7 +163,7 @@ the C compiler used is a cross compiler.
 \subsubsection{Canadian cross}
 
 As we said previously, most software don't care about the target
-platform.  But compilers do.  And \Tool{Axiom} does because, among
+platform.  But compilers do.  And \Tool{FriCAS} does because, among
 other things, it uses Lisp and C compilers, and it provides a Spad compiler.
 Another type of build instantiation arises when the host platform
 is different from the target platform.  The resulting compiler
@@ -176,13 +176,13 @@ The type of the compiler should not be confused with the type of the
 build instantiation.  It perfectly makes sense to have a build
 instantiation that cross builds a cross-compiler, \ie{} all three
 platforms are different: This is called \emph{Canadian cross}.
-The \Tool{Axiom} system does not that support that level of
+The \Tool{FriCAS} system does not that support that level of
 sophistication yet.  Although we could test for Canadian cross build
 at this point, we delay that check for when we look for a C compiler.
 
 \subsection{Directories for the build instantiation}
 
-Although \Tool{Axiom} does not support cross build yet, let
+Although \Tool{FriCAS} does not support cross build yet, let
 alone Canadian cross, we want to make sure that we do not write
 the build machinery in a way that actively unsupports
 cross build.  Consequently, in the build tree, we sequester
@@ -190,12 +190,12 @@ tools that we build and use on the build platform,
 in  sub-directories different from others.
 <<host build target platforms>>=
 ## Where tools for the build platform are sequestered
-axiom_build_sharedir=$axiom_builddir/share
+fricas_build_sharedir=$fricas_builddir/share
 @
 
 \section{Host characteristics}
 
-As mentioned in the introduction, a small part of \Tool{Axiom} is
+As mentioned in the introduction, a small part of \Tool{FriCAS} is
 written in the C programming language.  That C runtime support
 can be decomposed in three components:
 \begin{enumerate}
@@ -209,14 +209,14 @@ can be decomposed in three components:
 \subsubsection{Signals}
 
 The host platform must be able to handle signals.  Although, this is
-not strictly necessary, that is the way \Tool{Axiom} source code
+not strictly necessary, that is the way \Tool{FriCAS} source code
 is currently written.  We ask for a POSIX or ISO C semantics, though
 we have a strong preference for POSIX-conformant semantics.
 
 <<C headers and libraries>>=
 AC_CHECK_HEADERS([signal.h],
                  [],
-                 [AC_MSG_ERROR([Axiom needs signal support.])])
+                 [AC_MSG_ERROR([FriCAS needs signal support.])])
 AC_CHECK_DECLS([sigaction], [], [],
                [#include <signal.h>])
 @
@@ -224,7 +224,7 @@ AC_CHECK_DECLS([sigaction], [], [],
 
 \subsubsection{Files and directories}
 
-Some parts of \Tool{Axiom} manipulate files and directories.  They
+Some parts of \Tool{FriCAS} manipulate files and directories.  They
 more or less directly reflect the underlying platform semantics.
 For the moment, we require POSIX semantics, though that does not
 seem necessary.  That restriction should be removed as soon as possible.
@@ -232,9 +232,9 @@ seem necessary.  That restriction should be removed as soon as possible.
 <<C headers and libraries>>=
 AC_CHECK_HEADERS([sys/stat.h],
                  [],
-		 [AC_MSG_ERROR([Axiom needs <sys/stat.h>.])])
+		 [AC_MSG_ERROR([FriCAS needs <sys/stat.h>.])])
 AC_CHECK_HEADERS([unistd.h], [],
-                 [AC_MSG_ERROR([Axiom needs <unistd.h>])])
+                 [AC_MSG_ERROR([FriCAS needs <unistd.h>])])
 AC_CHECK_DECLS([getuid, geteuid, getgid, getegid], [], [],
                [#include <unistd.h>])
 
@@ -245,9 +245,9 @@ AC_CHECK_DECLS([kill], [], [],
 \subsubsection{Sockets}
 
 The host environment must be capable of handling communication through
-sockets.  This is required for interfacing \Tool{AXIOMsys}
+sockets.  This is required for interfacing \Tool{FRICASsys}
 and \Tool{Superman}.  Notice that ideally, we should decouple
-that interface in such a way that we can still build \Tool{Axiom}
+that interface in such a way that we can still build \Tool{FriCAS}
 when \Tool{Superman} is not needed or a socket library is not
 available.
 
@@ -255,25 +255,25 @@ available.
 case $host in
     *mingw*)
 	AC_CHECK_HEADERS([winsock2.h],
-	                [axiom_host_has_socket=yes],
+	                [fricas_host_has_socket=yes],
 			[])
-	axiom_c_runtime_extra="-lwsock32"
+	fricas_c_runtime_extra="-lwsock32"
 	;;
     *)
         AC_CHECK_HEADERS([sys/socket.h],
-                         [axiom_host_has_socket=yes],
+                         [fricas_host_has_socket=yes],
 		         [])
 	;;
 esac
-if test x$axiom_host_has_socket != xyes; then \
-    AC_MSG_ERROR([Axiom needs support for sockets.])
+if test x$fricas_host_has_socket != xyes; then \
+    AC_MSG_ERROR([FriCAS needs support for sockets.])
 fi
 
 ## solaris-based systems tend to hide the socket library.
 case $host in
     *solaris*)
 	AC_SEARCH_LIBS([accept], [socket],
-	    [axiom_c_runtime_extra="-lsocket"],
+	    [fricas_c_runtime_extra="-lsocket"],
 	    [AC_MSG_ERROR([socket library not found])])
 	;;
     *) ;;
@@ -306,7 +306,7 @@ AC_EGREP_HEADER([has_af_unix],
 
 \subsection{Pty support}
 
-[[clef]] and [[sman]] use ptys to communicate with [[AXIOMsys]]. The
+[[clef]] and [[sman]] use ptys to communicate with [[FRICASsys]]. The
 legacy pty code doesn't work on MacOS X (it also have problem on some
 Linux installations). We will try to build with the Unix98 standard
 [[openpty]] function. We need to detect two headers and a library.
@@ -335,10 +335,10 @@ AC_CHECK_DECL([openpty],
 AC_CHECK_LIB([util], [openpty],
                  [AC_DEFINE([HAVE_OPENPTY], [1],
 		            [openpty is available])
-                   axiom_c_runtime_extra="${axiom_c_runtime_extra} -lutil"
+                   fricas_c_runtime_extra="${fricas_c_runtime_extra} -lutil"
                  ]) # HAVE_OPENPTY
 
-AC_SUBST(axiom_c_runtime_extra)
+AC_SUBST(fricas_c_runtime_extra)
 
 @
 \subsection{Terminal I/O}
@@ -360,16 +360,16 @@ AC_CHECK_DECLS([fork],
 
 if test x"$ac_cv_have_decl_fork" = xyes \
      -a x"$ac_cv_have_decl_wait" = xyes; then \
-    axiom_c_runtime="$axiom_c_runtime terminal_io"
-    axiom_src_all="$axiom_src_all all-sman all-clef"
-    axiom_src_subdirs="$axiom_src_subdirs clef sman"
-    AXIOM_MAKEFILE([src/clef/Makefile])
-    AXIOM_MAKEFILE([src/sman/Makefile])
+    fricas_c_runtime="$fricas_c_runtime terminal_io"
+    fricas_src_all="$fricas_src_all all-sman all-clef"
+    fricas_src_subdirs="$fricas_src_subdirs clef sman"
+    FRICAS_MAKEFILE([src/clef/Makefile])
+    FRICAS_MAKEFILE([src/sman/Makefile])
 else
     AC_MSG_NOTICE([Superman component is disabled.])
 fi
 
-axiom_src_all="all-axiomsys $axiom_src_all"
+fricas_src_all="all-fricassys $fricas_src_all"
 @
 
 
@@ -405,41 +405,41 @@ AC_SUBST(X_LIBS)
 AC_SUBST(X_EXTRA_LIBS)
 
 ## Finally, output the list of libraries that need to appear before -lX11
-## Some part of Axiom depends on Xpm.  That library has kind uncertain
+## Some part of FriCAS depends on Xpm.  That library has kind uncertain
 ## future.  At some point in the past, it was deprecated, to be
 ## replaced by xpm-nox; then came back again.  So, its support may
 ## vary from system to system.  For the moment, we do a quick sanity
-## check and disable X11 if Xpm is not present.  Long term, Axiom should
+## check and disable X11 if Xpm is not present.  Long term, FriCAS should
 ## get rid of dependence on Xpm.  Another possibility is to (optionally)
 ## bundle Xpm source tarball and build Xpm if needed.
 
 if test -z $no_x; then
   AC_CHECK_LIB([Xpm], [XpmReadFileToImage],
-              [axiom_has_xpm=yes],
-	      [axiom_has_xpm=no],
+              [fricas_has_xpm=yes],
+	      [fricas_has_xpm=no],
 	      [$X_LIBS -lX11])
 else
-  axiom_has_xpm=no
+  fricas_has_xpm=no
 fi
 
 X_PRE_LIBS="-lXpm $X_PRE_LIBS"
 AC_SUBST(X_PRE_LIBS)
 
 ## If the system supports X11, then build graphics and hyperdoc
-if test x"$axiom_has_xpm" = xyes; then
-    axiom_c_runtime="$axiom_c_runtime graphics"
-    axiom_src_all="$axiom_src_all all-graph"
-    axiom_src_subdirs="$axiom_src_subdirs graph"
-    AXIOM_MAKEFILE([src/graph/Makefile])
-    AXIOM_MAKEFILE([src/graph/Gdraws/Makefile])
-    AXIOM_MAKEFILE([src/graph/view2D/Makefile])
-    AXIOM_MAKEFILE([src/graph/view3D/Makefile])
-    AXIOM_MAKEFILE([src/graph/viewAlone/Makefile])
-    AXIOM_MAKEFILE([src/graph/viewman/Makefile])
+if test x"$fricas_has_xpm" = xyes; then
+    fricas_c_runtime="$fricas_c_runtime graphics"
+    fricas_src_all="$fricas_src_all all-graph"
+    fricas_src_subdirs="$fricas_src_subdirs graph"
+    FRICAS_MAKEFILE([src/graph/Makefile])
+    FRICAS_MAKEFILE([src/graph/Gdraws/Makefile])
+    FRICAS_MAKEFILE([src/graph/view2D/Makefile])
+    FRICAS_MAKEFILE([src/graph/view3D/Makefile])
+    FRICAS_MAKEFILE([src/graph/viewAlone/Makefile])
+    FRICAS_MAKEFILE([src/graph/viewman/Makefile])
 else
     AC_MSG_NOTICE([The Graphics and HyperDoc components are disabled.])
 fi
-AC_SUBST(axiom_src_all)
+AC_SUBST(fricas_src_all)
 @
 
 \subsubsection{HyperDoc}
@@ -449,15 +449,15 @@ We require [[<regex.h>]], with POSIX-conformant definition.
 Note this test makes sense only if X11 is available, for otherwise
 we certainly are not going to build HyperDoc.
 <<C headers and libraries>>=
-if test x"$axiom_has_xpm" = xyes; then
+if test x"$fricas_has_xpm" = xyes; then
    AC_CHECK_HEADER([regex.h],
-                   [axiom_src_all="$axiom_src_all all-hyper all-paste"
-		    axiom_src_subdirs="$axiom_src_subdirs hyper paste"
-		    AXIOM_MAKEFILE([src/paste/Makefile])],
+                   [fricas_src_all="$fricas_src_all all-hyper all-paste"
+		    fricas_src_subdirs="$fricas_src_subdirs hyper paste"
+		    FRICAS_MAKEFILE([src/paste/Makefile])],
                    [AC_MSG_NOTICE([HyperDoc is disabled.])])
 fi
 # We need the Makefile (for util.ht) even if we do not build HyperDoc.
-AXIOM_MAKEFILE([src/hyper/Makefile])
+FRICAS_MAKEFILE([src/hyper/Makefile])
 @
 
 \subsection{Lisp runtime}
@@ -469,37 +469,37 @@ and the corresponding library.  We configure \Tool{GCL} to
 use its own copy of \Tool{BFD} accordingly.   FIXME: This must
 be taken care of by \Tool{GCL} itself.
 <<gcl options>>=
-axiom_host_has_libbfd=
+fricas_host_has_libbfd=
 AC_CHECK_HEADER([bfd.h])
-AC_HAVE_LIBRARY([bfd], [axiom_host_has_libbfd=yes])
+AC_HAVE_LIBRARY([bfd], [fricas_host_has_libbfd=yes])
 
-axiom_gcl_bfd_option=
+fricas_gcl_bfd_option=
 if test x"$ac_cv_header_bfd_h" = xyes \
-    && test x"$axiom_host_has_libbfd" = xyes; then
-    axiom_gcl_bfd_option="--disable-dynsysbfd"
+    && test x"$fricas_host_has_libbfd" = xyes; then
+    fricas_gcl_bfd_option="--disable-dynsysbfd"
 else
-    axiom_gcl_bfd_option="--disable-statsysbfd --enable-locbfd"
+    fricas_gcl_bfd_option="--disable-statsysbfd --enable-locbfd"
 fi
 @
 
 \Tool{GCL} has an elaborate memory management system and
-\Tool{Axiom} seems to
+\Tool{FriCAS} seems to
 put ``unusual'' pressure on it.  Here we specify some values that have
 been empirically known to work.
 <<gcl options>>=
-# axiom_gcl_mm_option="--enable-maxpage=256*1024"
+# fricas_gcl_mm_option="--enable-maxpage=256*1024"
 @
 
 Furthermore, we don't need (at the moment) \Tool{GCL} to build support for
 X Window system or TCL/TK:
 <<gcl options>>=
-axiom_gcl_x_option="--disable-tkconfig --disable-x --disable-xgcl"
+fricas_gcl_x_option="--disable-tkconfig --disable-x --disable-xgcl"
 @
 
 Other aspects depend on the platform being considered.
 
 
-\Tool{Axiom} source code had developed the appalling and irritating habit
+\Tool{FriCAS} source code had developed the appalling and irritating habit
 of testing for
 platforms, when in fact it is interested in functionalities.
 The outcome is an ever-growing pile increasing disgusting hacks.
@@ -534,13 +534,13 @@ case $target in
         AC_DEFINE([MACOSXplatform], [], [MACOX flavour])
 	CCF="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE \
 	    -I/usr/include -I/usr/include/sys"
-        axiom_gcl_bfd_option="--disable-statsysbfd \
+        fricas_gcl_bfd_option="--disable-statsysbfd \
                                 --enable-machine=powerpc-macosx"
-        axiom_gcl_mm_option="--enable-vssize=65536*2"
+        fricas_gcl_mm_option="--enable-vssize=65536*2"
 	;;
 esac
 
-GCLOPTS="$axiom_gcl_bfd_option $axiom_gcl_mm_option $axiom_gcl_x_option"
+GCLOPTS="$fricas_gcl_bfd_option $fricas_gcl_mm_option $fricas_gcl_x_option"
 
 AC_SUBST(PLF)
 AC_SUBST(CCF)
@@ -566,7 +566,7 @@ platforms.
 <<build utils>>=
 ## Accumulate list of utils needed for the build platform
 ## It is vital that noweb is present in the build environment.
-axiom_all_prerequisites=
+fricas_all_prerequisites=
 
 <<find make>>
 
@@ -584,7 +584,7 @@ axiom_all_prerequisites=
 <<lisp options>>
 <<compiled lisp extension>>
 
-AC_SUBST(axiom_all_prerequisites)
+AC_SUBST(fricas_all_prerequisites)
 @
 
 The next paragraphs detail each of the cluster of build utilities
@@ -596,7 +596,7 @@ Of course, no build can proceed with \File{Tool} inexisting from
 the build-environment.  We insist on GNU \Tool{Make} program as there
 are way too many variations, way too many incompatible implementations
 and extensions.  Please, note that this requirement just reflects
-\Tool{Axiom}'s dependencies on external tools:  \Tool{Axiom} relies on
+\Tool{FriCAS}'s dependencies on external tools:  \Tool{FriCAS} relies on
 \Tool{GCL}, which in turn uses \Tool{GCC}.  Building \Tool{GCC} requires
 \Tool{GNU Make}, and \Tool{GCL} itself requires \Tool{GNU Make}.
 <<find make>>=
@@ -611,7 +611,7 @@ case $build in
         AC_CHECK_PROGS([MAKE], [gmake make],
                        [AC_MSG_ERROR([Make utility missing.])])
 	if ! $MAKE --version | grep 'GNU' 2>/dev/null; then
-	    AC_MSG_ERROR([Axiom build system needs GNU Make.])
+	    AC_MSG_ERROR([FriCAS build system needs GNU Make.])
 	fi
 	;;
 esac
@@ -621,7 +621,7 @@ esac
 First of all, check for a C compiler.  As written, this test is OK
 because currently we support only native builds.  However,
  it needs to be more carefully written when we move to cross-compilation.
-Axiom, in its current form, cannot be compiled with a C compiler
+FriCAS, in its current form, cannot be compiled with a C compiler
 other than from GNU.  We take that as a requirement.
 <<find C compiler>>=
 ## Make sure the C compiler is from GCC
@@ -629,8 +629,8 @@ AC_PROG_CC
 if test x$GCC != xyes; then
     AC_MSG_ERROR([We need a C compiler from GCC])
 fi
-axiom_cflags="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE"
-AC_SUBST(axiom_cflags)
+fricas_cflags="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE"
+AC_SUBST(fricas_cflags)
 
 ## What is the extension of object files on this platform?
 AC_OBJEXT
@@ -651,33 +651,33 @@ AC_CHECK_PROGS([MKTEMP], [mktemp])
 The old build machinery needs 'awk'.  Currently, it checks for
 'gawk', 'nawk', and 'awk'.  Autoconf has a predefined test for that
 task.  It checks for 'gawk', 'mawk', 'nawk', and 'awk' in that order.
-That should be OK and match Axiom's need.
+That should be OK and match FriCAS's need.
 
 The old build system claims that on solaris9, gawk, gtar
 and gpatch are required (with no much explanation of why).  Notice
-that these programs are needed only to build Axiom; so we do
+that these programs are needed only to build FriCAS; so we do
 check based on the value of [[build]].
 <<awk and tar program>>=
 case $build in
      *-solaris9)
         AC_CHECK_PROG([AWK], [gawk],
-                      [gawk], [AC_MSG_ERROR([Axiom needs gawk])])
+                      [gawk], [AC_MSG_ERROR([FriCAS needs gawk])])
 
         AC_CHECK_PROG([TAR], [gtar],
-                      [gtar], [AC_MSG_ERROR([Axiom needs gtar])])
+                      [gtar], [AC_MSG_ERROR([FriCAS needs gtar])])
 
         AC_CHECK_PROG([PATCH], [gpatch],
-                      [gptach], [AC_MSG_ERROR([Axiom needs gpatch])])
+                      [gptach], [AC_MSG_ERROR([FriCAS needs gpatch])])
         ;;
 
       *)
         AC_PROG_AWK
 
         AC_CHECK_PROGS([TAR], [gtar tar],
-                       [AC_MSG_ERROR([Axiom needs a tar program])])
+                       [AC_MSG_ERROR([FriCAS needs a tar program])])
 
         AC_CHECK_PROGS([PATCH], [gpatch patch],
-                       [AC_MSG_ERROR([Axiom needs a patch program])])
+                       [AC_MSG_ERROR([FriCAS needs a patch program])])
         ;;
 esac
 @
@@ -692,10 +692,10 @@ AC_CHECK_PROG([AR], [ar], [ar], [AC_MSG_ERROR([program 'ar' is missing])])
 
 \paragraph{Doc utils.}
 
-Axiom sources is literate, and it uses the \Tool{noweb} technology.
+FriCAS sources is literate, and it uses the \Tool{noweb} technology.
 \Tool{noweb} is used to extract both the actual source code from the
 pamphlet files, and the documentation as \LaTeX{} source files.
-There are many platforms on which \Tool{noweb} is inexistent.  Axiom source
+There are many platforms on which \Tool{noweb} is inexistent.  FriCAS source
 repository used to cache a copy of \Tool{noweb}.  We now require
 that an external [[noweb]] executable.
 %
@@ -708,41 +708,41 @@ AC_CHECK_PROG([MAKEINDEX], [makeindex])
 ## -------------------------
 ##
 
-axiom_build_noweb=
+fricas_build_noweb=
 AC_ARG_WITH([included-noweb],
             [  --with-included-noweb    build noweb from included sources],
             [case $withval in
-                yes) if test -f $axiom_top_srcdir/zips/noweb-2.10a.tgz ; then
-		         axiom_build_noweb=yes
+                yes) if test -f $fricas_top_srcdir/zips/noweb-2.10a.tgz ; then
+		         fricas_build_noweb=yes
                      else
                          AC_MSG_ERROR([--with-included-noweb specified, but no noweb sources is present])
                      fi  ;;
-                no) axiom_build_noweb=no ;;
+                no) fricas_build_noweb=no ;;
                 *) AC_MSG_ERROR([erroneous value for --with-included-noweb]) ;;
              esac])
 ## Check for notangle and noweb if we are not explicitly told
-## to build noweb from Axiom sources.
-if test x$axiom_build_noweb != xyes ; then
+## to build noweb from FriCAS sources.
+if test x$fricas_build_noweb != xyes ; then
     AC_CHECK_PROGS([NOTANGLE], [notangle])
     AC_CHECK_PROGS([NOWEAVE], [noweave])
 
     ## In case noweb is missing we need to build our own.
     if test -z $NOTANGLE -o -z $NOWEAVE ; then
-        if test x$axiom_build_noweb = xno ; then
+        if test x$fricas_build_noweb = xno ; then
 	   AC_MSG_ERROR([noweb utils are missing but --without-included-noweb is specified])
-        elif test -f $axiom_top_srcdir/zips/noweb-2.10a.tgz ; then
-           axiom_build_noweb=yes
+        elif test -f $fricas_top_srcdir/zips/noweb-2.10a.tgz ; then
+           fricas_build_noweb=yes
         else
            AC_MSG_ERROR([noweb utils and noweb sources missing])
 	fi
     fi
 fi
 
-if test x$axiom_build_noweb = xyes ; then
-    axiom_all_prerequisites="$axiom_all_prerequisites all-noweb"
-    echo "axiom_build_bindir = $axiom_build_bindir"
-    NOTANGLE=$axiom_build_bindir/notangle
-    NOWEAVE=$axiom_build_bindir/noweave
+if test x$fricas_build_noweb = xyes ; then
+    fricas_all_prerequisites="$fricas_all_prerequisites all-noweb"
+    echo "fricas_build_bindir = $fricas_build_bindir"
+    NOTANGLE=$fricas_build_bindir/notangle
+    NOWEAVE=$fricas_build_bindir/noweave
 fi
 AC_SUBST(NOTANGLE)
 AC_SUBST(NOWEAVE)
@@ -751,9 +751,9 @@ AC_SUBST(NOWEAVE)
 
 \paragraph{The Lisp platform.}
 
-\Tool{Axiom} uses Lisp as its main platform.  If no Lisp implementation
-is available in the build environment (or if \Tool{Axiom} is told not
-to look for one) then \Tool{Axiom} must build its own version from the
+\Tool{FriCAS} uses Lisp as its main platform.  If no Lisp implementation
+is available in the build environment (or if \Tool{FriCAS} is told not
+to look for one) then \Tool{FriCAS} must build its own version from the
 copy of \Tool{GCL} sources it keeps in the \File{gcl/} directory.
 <<find lisp>>=
 ## ------------------------
@@ -761,26 +761,26 @@ copy of \Tool{GCL} sources it keeps in the \File{gcl/} directory.
 ## ------------------------
 ##
 ## We will default to GCL later, if no lisp implementation is specified.
-axiom_lisp=
-axiom_lisp_flavor=unknown
+fricas_lisp=
+fricas_lisp_flavor=unknown
 AC_ARG_WITH([lisp], [ --with-lisp=L         use L as Lisp platform],
-              [axiom_lisp=$withval])
+              [fricas_lisp=$withval])
 @
 
 The [[configure]] option \verb!--with-lisp=L! specifies which
-Lisp implementation flavor to use for building Axiom.  For all values
+Lisp implementation flavor to use for building FriCAS.  For all values
 of [[L]], except \Tool{GCL}, the assumption is that the Lisp
 image [[L]] is available in the build environment.  For \Tool{GCL},
 we make an exception: if no GCL image is available, or if
-the option \verb!--enable-gcl! is specified then \Tool{Axiom}
+the option \verb!--enable-gcl! is specified then \Tool{FriCAS}
 builds its own version from the source tree.
 <<find lisp>>=
 ## If --enable-gcl is specified, we need to check for consistency
-axiom_include_gcl=
-if test -z $axiom_lisp; then
-    AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from Axiom source],
+fricas_include_gcl=
+if test -z $fricas_lisp; then
+    AC_ARG_ENABLE([gcl], [  --enable-gcl   build GCL from FriCAS source],
                   [case $withval in
-                       yes|no) axiom_include_gcl=$withval ;;
+                       yes|no) fricas_include_gcl=$withval ;;
                        *) AC_MSG_ERROR([erroneous value for --enable-gcl]) ;;
                    esac])
 fi
@@ -794,13 +794,13 @@ Do we need to build our own version of \Tool{GCL}?  The answer is yes, if
 Consequently, we need to check for \Tool{GCL}:
 <<find lisp>>=
 ## We need to build our own GCL is none is available
-if test -z $axiom_lisp; then
-    AC_PATH_PROG([AXIOM_LISP], [gcl])
-    axiom_lisp=$AXIOM_LISP
+if test -z $fricas_lisp; then
+    AC_PATH_PROG([FRICAS_LISP], [gcl])
+    fricas_lisp=$FRICAS_LISP
 else
     ## Honor use of Lisp image specified on command line
-    AXIOM_LISP=$axiom_lisp
-    AC_SUBST(AXIOM_LISP)
+    FRICAS_LISP=$fricas_lisp
+    AC_SUBST(FRICAS_LISP)
     :
 fi
 @
@@ -812,28 +812,28 @@ We may be presented with incoherent options if
 \end{itemize}
 <<find lisp>>=
 ## Coherence check for GCL inclusion.
-case $axiom_include_gcl,$axiom_lisp in
+case $fricas_include_gcl,$fricas_lisp in
     ,|no,|yes*)
        ## It doesn't make sense not to include GCL when no Lisp image
        ## is available.  Give up.
-       if test $axiom_include_gcl,$AXIOM_LISP = no,; then
+       if test $fricas_include_gcl,$FRICAS_LISP = no,; then
 	   AC_MSG_ERROR([--disable-gcl specified but no GCL image found])
        fi
 
        ## No Lisp image was specified and none was available from
-       ## the build environment; build GCL from Axiom source.
-       if test -f $axiom_top_srcdir/gcl/configure.in ; then
-         AXIOM_LISP='$(axiom_build_bindir)/gcl'
-         axiom_all_prerequisites="$axiom_all_prerequisites all-gcl"
-         axiom_include_gcl=yes
-         axiom_lisp_flavor=gcl
-         axiom_fasl_type=o
+       ## the build environment; build GCL from FriCAS source.
+       if test -f $fricas_top_srcdir/gcl/configure.in ; then
+         FRICAS_LISP='$(fricas_build_bindir)/gcl'
+         fricas_all_prerequisites="$fricas_all_prerequisites all-gcl"
+         fricas_include_gcl=yes
+         fricas_lisp_flavor=gcl
+         fricas_fasl_type=o
        else
           AC_MSG_ERROR([GCL and GCL sources missing, see README.wh])
        fi
        ;;
     yes,*)
-       AC_MSG_ERROR([--with-lisp=$axiom_lisp conflicts with --enable-gcl])
+       AC_MSG_ERROR([--with-lisp=$fricas_lisp conflicts with --enable-gcl])
        ;;
 esac
 
@@ -843,14 +843,14 @@ AC_ARG_WITH([lisp-flavor],
 		   gcl clisp sbcl ecl can be autodetected],
             [case $withval in
 	    gcl|clisp|sbcl|ecl|openmcl)
-	           axiom_lisp_flavor=$withval
+	           fricas_lisp_flavor=$withval
 		   ;;
 	    *)
 	      AC_MSG_ERROR([--with-lisp-flavor requires one of gcl clisp sbcl ecl openmcl]);;
 	    esac])
 
 
-if test x$axiom_lisp_flavor = xunknown ; then
+if test x$fricas_lisp_flavor = xunknown ; then
 
        ## As of this writing, the Lisp systems ECL, GCL, and SBCL all
        ## understands the command line option --help, though they do
@@ -858,38 +858,38 @@ if test x$axiom_lisp_flavor = xunknown ; then
        ## help information and exits.  Others, such as GCL, think they
        ## must enter a read-eval-print loop (which isn't very helpful).
        AC_MSG_CHECKING([which flavor of Lisp])
-       what=`echo '(quit)' | $axiom_lisp --help`
+       what=`echo '(quit)' | $fricas_lisp --help`
        case $what in
 	   *GCL*)
-	       axiom_lisp_flavor=gcl
+	       fricas_lisp_flavor=gcl
 	       ;;
 	   *ecl*)
-	       axiom_lisp_flavor=ecl
+	       fricas_lisp_flavor=ecl
 	       ;;
 	   *sbcl*)
-	       axiom_lisp_flavor=sbcl
+	       fricas_lisp_flavor=sbcl
 	       ;;
 	   *CLISP*)
-	       axiom_lisp_flavor=clisp
+	       fricas_lisp_flavor=clisp
 	       ;;
        esac
-       AC_MSG_RESULT([$axiom_lisp_flavor])
+       AC_MSG_RESULT([$fricas_lisp_flavor])
 fi
-AC_SUBST(axiom_include_gcl)
-AC_SUBST(axiom_lisp_flavor)
+AC_SUBST(fricas_include_gcl)
+AC_SUBST(fricas_lisp_flavor)
 
 ## The following is a horrible to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
-case $axiom_lisp_flavor,$target in
+case $fricas_lisp_flavor,$target in
     gcl,*mingw*)
-        axiom_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(AXIOM_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
+        fricas_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(FRICAS_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
 	;;
     *)
-        axiom_gcl_rsym_hack=':'
+        fricas_gcl_rsym_hack=':'
 	;;
 esac
-AC_SUBST(axiom_gcl_rsym_hack)
+AC_SUBST(fricas_gcl_rsym_hack)
 @
 
 \paragraph{Lisp system options.}  Lisp implementations greatly vary in
@@ -900,31 +900,31 @@ files to process in batch mode.
 <<lisp options>>=
 ## How are we supposed to tell the Lisp system to eval an expression
 ## in batch mode?  What is the extension of a compiled Lisp file?
-case $axiom_lisp_flavor in
+case $fricas_lisp_flavor in
     gcl)
-       axiom_quiet_flags='-batch'
-       axiom_eval_flags='-eval'
+       fricas_quiet_flags='-batch'
+       fricas_eval_flags='-eval'
        ;;
     ecl)
-       axiom_quiet_flags=
-       axiom_eval_flags='-eval'
+       fricas_quiet_flags=
+       fricas_eval_flags='-eval'
        ;;
     sbcl)
-       axiom_quiet_flags='--noinform --noprint'
-       axiom_eval_flags='--eval'
+       fricas_quiet_flags='--noinform --noprint'
+       fricas_eval_flags='--eval'
        ;;
     clisp)
-       axiom_quiet_flags='--quiet'
-       axiom_eval_flags='-x'
+       fricas_quiet_flags='--quiet'
+       fricas_eval_flags='-x'
        ;;
     openmcl)
-       axiom_quiet_flags=
-       axiom_eval_flags='--eval'
+       fricas_quiet_flags=
+       fricas_eval_flags='--eval'
        ;;
-    *) AC_MSG_ERROR([We do not know how to build Axiom this $axiom_lisp]) ;;
+    *) AC_MSG_ERROR([We do not know how to build FriCAS this $fricas_lisp]) ;;
 esac
-AC_SUBST(axiom_quiet_flags)
-AC_SUBST(axiom_eval_flags)
+AC_SUBST(fricas_quiet_flags)
+AC_SUBST(fricas_eval_flags)
 @
 
 \paragraph{Compiled Lisp file extensions.}
@@ -934,41 +934,41 @@ be found in the majority of Unix world.  Consequently we need to
 determine that by looking at the Lisp type of the pathname that
 Lisp's [[compile-file]] would produce.
 <<compiled lisp extension>>=
-if test -z $axiom_fasl_type; then
+if test -z $fricas_fasl_type; then
     AC_MSG_CHECKING([compiled Lisp file extension])
     ## We set the IFS to <space> as we don't want automatic
     ## replacement of <newline> by <space>.
-    axiom_save_IFS=$IFS
+    fricas_save_IFS=$IFS
     IFS=' '
-    axiom_fasl_type=`$axiom_lisp $axiom_quiet_flags $axiom_eval_flags '(progn (format t "axiom_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
+    fricas_fasl_type=`$fricas_lisp $fricas_quiet_flags $fricas_eval_flags '(progn (format t "fricas_fasl_type=~a" (pathname-type (compile-file-pathname "foo.lisp"))) (quit))'`
 
     ## Now pull out the fasl type.  ECL has the habit of spitting noise
     ## about internal loading.  Therefore, we must look only for a line that
-    ## begins with axiom_fasl_type.
-    axiom_fasl_type=`echo $axiom_fasl_type | grep '^axiom_fasl_type'`
-    IFS=$axiom_save_IFS
-    axiom_fasl_type=`echo $axiom_fasl_type | sed -e 's/axiom_fasl_type=//'`
-    if test -z $axiom_fasl_type; then
+    ## begins with fricas_fasl_type.
+    fricas_fasl_type=`echo $fricas_fasl_type | grep '^fricas_fasl_type'`
+    IFS=$fricas_save_IFS
+    fricas_fasl_type=`echo $fricas_fasl_type | sed -e 's/fricas_fasl_type=//'`
+    if test -z $fricas_fasl_type; then
 	AC_MSG_ERROR([Could not determine extension for compiled Lisp files])
     fi
-    AC_MSG_RESULT([$axiom_fasl_type])
+    AC_MSG_RESULT([$fricas_fasl_type])
 fi
-AC_SUBST(axiom_fasl_type)
+AC_SUBST(fricas_fasl_type)
 @
 
-\section{The [[AXIOM]] variable}
+\section{The [[FRICAS]] variable}
 
-The Axiom source files (especially the source files for the
-interpreter) use the environment variable [[AXIOM]] in a very
+The FriCAS source files (especially the source files for the
+interpreter) use the environment variable [[FRICAS]] in a very
 pervasive way.   That variable needs to be set before the
 build start --- or else, it will fail.
 
 BASE contains the operating system root of the build environment.
 In the case of MSYS/MinGW build environment on Windows it is
-necessary that the AXIOM variable be a Windows absolute path.
+necessary that the FRICAS variable be a Windows absolute path.
 Therefore BASE is set to the MSYS root or otherwise empty.
 
-<<define AXIOM>>=
+<<define FRICAS>>=
 case $host in
     *mingw*)
         BASE=`(cd /;pwd -W)`
@@ -978,15 +978,15 @@ case $host in
         ;;
 esac
 AC_SUBST(BASE)
-AXIOM=${BASE}${axiom_targetdir}
-AC_SUBST(AXIOM)
+FRICAS=${BASE}${fricas_targetdir}
+AC_SUBST(FRICAS)
 @
 
 
 \section{Configuration options}
 \label{sec:config-options}
 
-We strive for making \Tool{Axiom}'s build system integrate as seamlessly as
+We strive for making \Tool{FriCAS}'s build system integrate as seamlessly as
 possibly into the standard GNU build framework.
 
 \subsection{Standard options}
@@ -995,7 +995,7 @@ possibly into the standard GNU build framework.
 At the moment, we honor the following options:
 \begin{description}
 \item \verb!--prefix!:
-  By default, \Tool{Axiom}'s build system will install files
+  By default, \Tool{FriCAS}'s build system will install files
   in ``\File{/usr/local}''.  However, you
   can select a different location prefix using this option.
 
@@ -1011,15 +1011,15 @@ At the moment, we honor the following options:
 \end{description}
 
 
-\subsection{\Tool{Axiom}-specific options}
-\label{sec:config-options:axiom-specific}
+\subsection{\Tool{FriCAS}-specific options}
+\label{sec:config-options:fricas-specific}
 
 \begin{description}
 \item \verb!--enable-gcl!:
-  \Tool{Axiom} needs an implementation of Lisp to support its
+  \Tool{FriCAS} needs an implementation of Lisp to support its
   runtime system.  At the moment, GNU Common Lisp (\Tool{GCL} for short)
-  is used.  This options instructs \Tool{Axiom} to build its own copy
-  of \Tool{GCL}.  Use \verb!--disable-gcl! to prevent Axiom
+  is used.  This options instructs \Tool{FriCAS} to build its own copy
+  of \Tool{GCL}.  Use \verb!--disable-gcl! to prevent FriCAS
   from building \Tool{GCL}.
 \end{description}
 
@@ -1032,10 +1032,10 @@ At the moment, we honor the following options:
 The \Tool{Autoconf} machinery needs to be initialized with several pieces of
 information:
 \begin{itemize}
-\item the \emph{name} of the system --- ``Axiom wh-sandbox branch''
+\item the \emph{name} of the system --- ``FriCAS wh-sandbox branch''
 \item its \emph{version}.  I choose to use the date of last checkin.
   It should probably include the revision number so as to
-  unambiguously identify which Axiom flavour du jour is being
+  unambiguously identify which FriCAS flavour du jour is being
   built;
 \item and where to send feedback, \emph{e.g.} bug reports.  At the moment,
   we use
@@ -1044,11 +1044,11 @@ information:
   suffer from traffic...
 \end{itemize}
 <<Autoconf init>>=
-sinclude(config/axiom.m4)
+sinclude(config/fricas.m4)
 AC_INIT([FriCAS], [2007-09-05],
         [fricas-devel@googlegroups.com])
-axiom_top_srcdir=`cd $srcdir && pwd`
-AC_SUBST(axiom_top_srcdir)
+fricas_top_srcdir=`cd $srcdir && pwd`
+AC_SUBST(fricas_top_srcdir)
 @
 
 \Tool{Autoconf} needs some auxiliary files that are present in the
@@ -1059,17 +1059,17 @@ AC_CONFIG_MACRO_DIR(config)
 @
 
 Not all platforms present the same operating system API to applications.
-For the part of \Tool{Axiom} written in the C programming language, we
+For the part of \Tool{FriCAS} written in the C programming language, we
 can collect, in a single file, variabilities in operating system
 API in form of C preprocessor macros.  That file is for the most part
 automatically generated by \Tool{Autoheader}.
 <<Autoconf init>>=
-AC_CONFIG_HEADERS([config/axiom-c-macros.h])
+AC_CONFIG_HEADERS([config/fricas-c-macros.h])
 @
 
 Note that at configuration time, \Tool{configure} will instantiate a
-file \File{config/axiom-c-macros.h} in the directory [[$(top_builddir)]],
-appropriate for all C sub-parts of \Tool{Axiom} to include.
+file \File{config/fricas-c-macros.h} in the directory [[$(top_builddir)]],
+appropriate for all C sub-parts of \Tool{FriCAS} to include.
 
 
 Notice that since we don't use Automake (yet), we don't initialize
@@ -1103,10 +1103,10 @@ AC_CONFIG_SRCDIR(src/Makefile.pamphlet)
 
 
 
-\subsubsection{The [[AXIOM]] variable}
+\subsubsection{The [[FRICAS]] variable}
 
-The Axiom source files (especially the source files for the
-interpreter) use the environment variable [[AXIOM]] in a very
+The FriCAS source files (especially the source files for the
+interpreter) use the environment variable [[FRICAS]] in a very
 pervasive way.   That variable needs to be set before the
 build start --- or else, it will fail.
 
@@ -1114,16 +1114,16 @@ build start --- or else, it will fail.
 
 <<instantiate config files>>=
 
-AXIOM_MAKEFILE([Makefile])
-AXIOM_MAKEFILE([src/Makefile])
-AXIOM_MAKEFILE([src/lib/Makefile])
-AXIOM_MAKEFILE([src/lisp/Makefile])
-AXIOM_MAKEFILE([src/boot/Makefile])
-AXIOM_MAKEFILE([src/interp/Makefile])
-AXIOM_MAKEFILE([src/share/Makefile])
-AXIOM_MAKEFILE([src/algebra/Makefile])
-AXIOM_MAKEFILE([src/input/Makefile])
-AXIOM_MAKEFILE([src/etc/Makefile])
+FRICAS_MAKEFILE([Makefile])
+FRICAS_MAKEFILE([src/Makefile])
+FRICAS_MAKEFILE([src/lib/Makefile])
+FRICAS_MAKEFILE([src/lisp/Makefile])
+FRICAS_MAKEFILE([src/boot/Makefile])
+FRICAS_MAKEFILE([src/interp/Makefile])
+FRICAS_MAKEFILE([src/share/Makefile])
+FRICAS_MAKEFILE([src/algebra/Makefile])
+FRICAS_MAKEFILE([src/input/Makefile])
+FRICAS_MAKEFILE([src/etc/Makefile])
 
 
 AC_OUTPUT
@@ -1164,8 +1164,8 @@ fi
 
 <<sanity check>>
 
-axiom_src_subdirs="lib lisp boot interp share algebra input etc doc"
-AC_SUBST(axiom_src_subdirs)
+fricas_src_subdirs="lib lisp boot interp share algebra input etc doc"
+AC_SUBST(fricas_src_subdirs)
 
 <<host build target platforms>>
 
@@ -1173,16 +1173,16 @@ AC_SUBST(axiom_src_subdirs)
 
 # FIXME: Move this out of here.
 # The core runtime is always built.
-axiom_c_runtime=core
-AC_SUBST(axiom_c_runtime)
+fricas_c_runtime=core
+AC_SUBST(fricas_c_runtime)
 
 <<C headers and libraries>>
 
-<<define AXIOM>>
+<<define FRICAS>>
 
 <<platform specific bits>>
 <<instantiate config files>>
-echo "Type '${MAKE}' (without quotes) to build Axiom"
+echo "Type '${MAKE}' (without quotes) to build FriCAS"
 @
 
 

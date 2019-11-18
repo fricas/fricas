@@ -264,7 +264,7 @@ displaySetVariableSettings(setTree,label) ==
 
 setAsharpArgs arg ==
   arg = "%initialize%" =>
-    $asharpCmdlineFlags := '"-O -Fasy -Fao -Flsp -laxiom -Mno-ALDOR__W__WillObsolete -DAxiom -Y $AXIOM/algebra -I $AXIOM/algebra"
+    $asharpCmdlineFlags := '"-O -Fasy -Fao -Flsp -lfricas -Mno-ALDOR__W__WillObsolete -DFriCAS -Y $FRICAS/algebra -I $FRICAS/algebra"
   arg = "%display%" =>
     $asharpCmdlineFlags
   (null arg) or (arg = "%describe%") or (first arg = '_?) =>

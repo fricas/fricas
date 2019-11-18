@@ -23,7 +23,7 @@
 #      [-emacs]             setup for emacs frontend
 #
 
-PATH=$AXIOM/bin:${PATH}:/usr/bin/X11
+PATH=$FRICAS/bin:${PATH}:/usr/bin/X11
 export PATH
 
 # NAGMAN needs to know the hostname
@@ -90,13 +90,13 @@ if [ -z ${ALDOR_COMPILER} ]; then
 fi
 export ALDOR_COMPILER
 
-if [ ! -d "$AXIOM" ] ; then
-  echo "The directory for FriCAS, $AXIOM, does not exist."
+if [ ! -d "$FRICAS" ] ; then
+  echo "The directory for FriCAS, $FRICAS, does not exist."
   ciao
 fi
 
 # Name the workspace directories.
-rootwsdir=$AXIOM/bin
+rootwsdir=$FRICAS/bin
 
 # 2. Process command line arguments.
 algebra_off=')set output algebra off'
@@ -105,28 +105,28 @@ markers=")lisp (setf |\$ioHook| (lambda (x &optional args) (cond ((eq x '|startP
 
 
 if [ "$*" = "-texmacs" ] ; then
-    exec "$AXIOM/bin/AXIOMsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
+    exec "$FRICAS/bin/FRICASsys" -- -eval "$algebra_off" -eval "$markers" -eval "$texmacs_on"
 fi
 
 # Start FriCAS from inside emacs. Discard output to stderr.
 if [ "$*" = "-emacs" ] ; then
-    eval "exec $AXIOM/bin/sman -noclef 2>/dev/null"
+    eval "exec $FRICAS/bin/sman -noclef 2>/dev/null"
 fi
 
 if [ "$1" = "-nosman" ] ; then
     shift
-    exec "$AXIOM/bin/AXIOMsys" "$@"
+    exec "$FRICAS/bin/FRICASsys" "$@"
     exit 1
 fi
 
 # Defaults for command-line arguments.
 list=no
 go=yes
-wsname=AXIOMsys
+wsname=FRICASsys
 
 otheropts=""
 
-if [ ! -f $AXIOM/lib/viewman ] ; then
+if [ ! -f $FRICAS/lib/viewman ] ; then
     echo "viewman not present, disabling graphics"
     otheropts="-nogr"
 fi
@@ -190,7 +190,7 @@ listwspaces()
 }
 
 if [ $list = yes ] ; then
-          listwspaces "FriCAS workspaces in \$AXIOM/bin = $rootwsdir: " $rootwsdir
+          listwspaces "FriCAS workspaces in \$FRICAS/bin = $rootwsdir: " $rootwsdir
 fi
 
 # 5. Try to ensure a suitable workspace on this host.
@@ -210,8 +210,8 @@ fi
 
 if [ $go = no ] ; then
         echo "Would now start the processes."
-        echo "exec $AXIOM/bin/sman $otheropts -ws $serverws"
+        echo "exec $FRICAS/bin/sman $otheropts -ws $serverws"
         exit 0
 fi
 
-eval "exec $AXIOM/bin/sman $otheropts -ws $serverws"
+eval "exec $FRICAS/bin/sman $otheropts -ws $serverws"

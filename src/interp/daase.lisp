@@ -33,7 +33,7 @@
 #|
 \section{Database structure}
 In order to understand this program you need to understand some details
-of the structure of the databases it reads. Axiom has 5 databases,
+of the structure of the databases it reads. FriCAS has 5 databases,
 the interp.daase, operation.daase, category.daase, compress.daase, and
 browse.daase. The compress.daase is special and does not follow the
 normal database format.
@@ -301,13 +301,13 @@ database.
 (defvar |$all_constructors| nil "a list of all the constructors in the system")
 (defvar |$all_operations| nil "a list of all the operations in the system")
 
-(defvar |$asharp_flags| "-O -laxiom -Fasy -Flsp" "library compiler flags")
+(defvar |$asharp_flags| "-O -lfricas -Fasy -Flsp" "library compiler flags")
 
 (defun asharp (file &optional (flags |$asharp_flags|))
- "call the asharp compiler"
+ "call the aldor compiler"
  (#| system::system |#
    obey
-   (concatenate 'string (|getEnv| "AXIOM") "/compiler/bin/axiomxl "
+   (concatenate 'string (|getEnv| "FRICAS") "/compiler/bin/aldor "
     flags " " file)))
 
 (defun resethashtables ()
@@ -411,7 +411,7 @@ database.
   |Integer| |List| |OutputForm|))
  (dolist (con constr)
   (let ((c (concatenate 'string
-             (|getEnv| "AXIOM") "/algebra/"
+             (|getEnv| "FRICAS") "/algebra/"
              (string (getdatabase con 'abbreviation)) "." |$lisp_bin_filetype|)))
     (format t "   preloading ~a.." c)
     (if (probe-file c)
@@ -1429,25 +1429,25 @@ database.
  |$all_operations|)
 
 ; the variable NOPfuncall is a funcall-able object that is a dummy
-; initializer for libaxiom asharp domains.
+; initializer for libfricas aldor domains.
 (defvar NOPfuncall (cons 'identity nil))
 
 (defun |createInitializers| ()
-;; since libaxiom is now built with -name=axiom following unnecessary
+;; since libfricas is now built with -name=fricas following unnecessary
 ;; (dolist (con (|allConstructors|))
 ;;   (let ((sourcefile (getdatabase con 'sourcefile)))
 ;;     (if sourcefile
 ;;       (set (foam::axiomxl-file-init-name (pathname-name sourcefile))
 ;;             NOPfuncall))))
- (set (foam::axiomxl-file-init-name "axiom") NOPfuncall)
+ (set (foam::axiomxl-file-init-name "fricas") NOPfuncall)
 ;; (set (foam::axiomxl-file-init-name "axclique") NOPfuncall)
  (set (foam::axiomxl-file-init-name "filecliq") NOPfuncall)
  (set (foam::axiomxl-file-init-name "attrib") NOPfuncall)
  (|createInitializers2|))
 
-;; following needs to happen inside restart since $AXIOM may change
+;; following needs to happen inside restart since $FRICAS may change
 (defun |createInitializers2| ()
- (let ((asharprootlib (strconc (|getEnv| "AXIOM") "/aldor/lib/")))
+ (let ((asharprootlib (strconc (|getEnv| "FRICAS") "/aldor/lib/")))
    (set-file-getter (strconc asharprootlib "runtime"))
    (set-file-getter (strconc asharprootlib "lang"))
    (set-file-getter (strconc asharprootlib "attrib"))
@@ -1598,7 +1598,7 @@ database.
          (bootname (intern stringname 'boot)))
     (declare (ignore libname))
     (if (and (eq hcode 'foam-user::|initializer|) (not (boundp asharpname)))
-        (error (format nil "AxiomXL file ~s is missing!" stringname)))
+        (error (format nil "Aldor file ~s is missing!" stringname)))
     (unless (or (not (numberp hcode)) (zerop hcode) (boundp asharpname))
           (when (|constructor?| bootname)
                 (set asharpname

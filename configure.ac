@@ -659,7 +659,7 @@ else
     AC_MSG_NOTICE([Superman component is disabled.])
 fi
 
-fricas_src_all="all-axiomsys $fricas_src_all"
+fricas_src_all="all-fricassys $fricas_src_all"
 AC_PATH_XTRA
 ## Output directives for the C compiler
 AC_SUBST(X_CFLAGS)
@@ -726,8 +726,8 @@ FRICAS_MAKEFILE([src/doc/Makefile])
 
 BASE=""
 AC_SUBST(BASE)
-AXIOM=${BASE}${fricas_targetdir}
-AC_SUBST(AXIOM)
+FRICAS=${BASE}${fricas_targetdir}
+AC_SUBST(FRICAS)
 
 CCF="-O2 -Wall -D_GNU_SOURCE"
 LDF=

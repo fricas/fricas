@@ -1,15 +1,15 @@
 -----------------------------------------------------------------------------
 ----
----- axextend.as: Extensions to domains from the Axiom library.
+---- axextend.as: Extensions to domains from the FriCAS library.
 ----
 -----------------------------------------------------------------------------
 ---- Copyright (c) 1990-2007 Aldor Software Organization Ltd (Aldor.org).
 -----------------------------------------------------------------------------
 
--- This file extends some Axiom types for general use from AXIOM-XL programs.
+-- This file extends some FriCAS types for general use from Aldor programs.
 
-import from AxiomLib;
-inline from AxiomLib;
+import from FriCASLib;
+inline from FriCASLib;
 
 macro {
         rep x == x @ % pretend Rep;

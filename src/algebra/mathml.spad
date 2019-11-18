@@ -17,7 +17,7 @@ markup language from OutputForm.
 Both this code and documentation are still under development and
 I don't pretend they are anywhere close to perfect or even finished.
 However the code does work and I hope it might be useful to somebody
-both for it's ability to output MathML from Axiom and as an example
+both for it's ability to output MathML from FriCAS and as an example
 of how to write a new output form.
 
 \section{Introduction to Mathematical Markup Language}
@@ -25,12 +25,12 @@ of how to write a new output form.
 MathML exists in two forms : presentation and content.
 At this time (2007-02-11) the package only has a presentation
 package.  A content package is in the
-works however it is more difficult.  Unfortunately Axiom does
+works however it is more difficult.  Unfortunately FriCAS does
 not make its semantics easily available.  The \spadtype{OutputForm}
-domain mediates between the individual Axiom domains and the
+domain mediates between the individual FriCAS domains and the
 user visible output but \spadtype{OutputForm} does not provide full
 semantic information.  From my currently incomplete understanding
-of Axiom it appears that remedying this would entail going back
+of FriCAS it appears that remedying this would entail going back
 to the individual domains and rewriting a lot of code.
 However some semantics are conveyed directly by \spadtype{OutputForm} and other
 things can be deduced from \spadtype{OutputForm} or from the original
@@ -76,18 +76,18 @@ The testing is made using {\tt of.input} test file.
 \section{)set output mathml on}
 
 
-Making mathml appear as output during a normal Axiom session
+Making mathml appear as output during a normal FriCAS session
 by invoking ")set output mathml on" proved to be a bit tedious
 and seems to be undocumented.  I document my experience here
 in case it proves useful to somebody else trying to get a new
-output format from Axiom.
+output format from FriCAS.
 
 In \spadtype{MathMLFormat} the functions
 \spadfun{coerce(expr : OutputForm) : String} and
 \spadfun{display(s : String) : Void} provide the desired mathml output.
 Note that this package was constructed by close examination of
 Robert Sutor's \spadtype{TexFormat} domain and much remains from that source.
-To have mathml displayed as output we need to get Axiom to
+To have mathml displayed as output we need to get FriCAS to
 call display(coerce(expr)) at the appropriate place.  Here's what
 I did to get that to happen. Note that my starting point here was
 an attempt by Andrey Grozin to do the same.  To figure things out
@@ -156,7 +156,7 @@ objects from a domain into \spadtype{OutputForm} and then apply
 to them.  It is to save programmers the trouble of doing
 the coercion themselves from inside spad code.  It does
 not appear to be used for the main purpose of delivering
-Axiom output in TeX format.  In order to keep the mathml
+FriCAS output in TeX format.  In order to keep the mathml
 package as simple as possible, and because I didn't see much
 use for this, I didn't copy the \spadtype{TexFormat1} package.  So
 no analog of the TEX1 entries in "Makefile.in" were
@@ -227,7 +227,7 @@ nicer to look at than what comes from coerce. Note that coerceS returns
 the same value as coerce but invokes a display function as well so that
 the result will be printed twice in different formats.  The need for this
 is that the output from coerce is automatically formatted with line breaks
-by Axiom's output routine that are not in the right place.
+by FriCAS' output routine that are not in the right place.
 
     \spadfun{coerceL : E -$>$ S}  Similar to coerceS except that the displayed result
 is the MathML string in one long line.  These functions can be used,
@@ -264,7 +264,7 @@ Still need to format \\zag in formatSpecial!
 In formatPlex the case op = "INTSIGN" is now passed off to
 formatIntSign which is a change from the TexFormat domain.
 This is done here for presentation mark up to replace the
-ugly bound variable that Axiom delivers.  For content mark up
+ugly bound variable that FriCAS delivers.  For content mark up
 this has to be done anyway.
 
 In the function formatSpecial various cases are handled including
@@ -274,7 +274,7 @@ I know of using these are partial derivatives for SUB and ordinary
 derivatives or SUPERSUB however in TexFormat the capability is there
 to handle multiscripts, i.e. an object with subscripts, superscripts,
 pre-subscripts and pre-superscripts but I am so far unaware of any
-Axiom command that produces such a multiscripted object.
+FriCAS command that produces such a multiscripted object.
 
 Another question is how to represent derivatives.  At present I have
 differential notation for partials and prime notation for ordinary

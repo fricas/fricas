@@ -768,7 +768,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
 htSaySourceFile conname ==
   sourceFileName := (GETDATABASE(conname,'SOURCEFILE) or '"none")
   filename :=  extractFileNameFromPath sourceFileName
-  htMakePage [['text,'"\unixcommand{",filename,'"}{_\$AXIOM/lib/SPADEDIT ",
+  htMakePage [['text,'"\unixcommand{",filename,'"}{_\$FRICAS/lib/SPADEDIT ",
               sourceFileName, '" ", conname, '"}"]]
 
 --------------------> NEW DEFINITION (see br-op2.boot)
@@ -875,4 +875,3 @@ screenLocalLine(line, conlist) ==
 purgeLocalLibdb() ==   --called by the user through a clear command?
   $newConstructorList := nil
   deleteFile '"libdb.text"
-

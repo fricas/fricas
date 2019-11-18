@@ -302,7 +302,7 @@ readTitleBarImages(void)
     char filename[2048];
     char *fricas_env_var = NULL;
 
-    fricas_env_var = getenv("AXIOM");
+    fricas_env_var = getenv("FRICAS");
 
     if (fricas_env_var)
         sprintf(filename, "%s/share/hypertex/bitmaps/%s",

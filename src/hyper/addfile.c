@@ -136,11 +136,11 @@ build_ht_filename(char *fname, char *aname, char *name)
         HTPATH = (char *) getenv("HTPATH");
         if (HTPATH == NULL) {
         /** The user does not have a HTPATH, so I will use the the directory
-        $AXIOM/share/hypertex/pages/ as the default path ***/
-          char *spad = (char *) getenv("AXIOM");
+        $FRICAS/share/hypertex/pages/ as the default path ***/
+          char *spad = (char *) getenv("FRICAS");
           if (spad == NULL) {
             fprintf(stderr,
-            "ht_file_open:Cannot find ht data base: setenv HTPATH or AXIOM\n");
+            "ht_file_open:Cannot find ht data base: setenv HTPATH or FRICAS\n");
              exit(-1);
           }
           HTPATH = (char *) halloc(1024 * sizeof(char), "HTPATH");
@@ -206,7 +206,7 @@ ht_file_open(char *fname, char *aname, char *name)
 
 /*
  * This function is responsible for actually opening the database file. For the
- * moment it gets the $AXIOM environment variable, and appends to it
+ * moment it gets the $FRICAS environment variable, and appends to it
  * "share/hypertex/ht.db", and then opens it
  */
 
@@ -241,7 +241,7 @@ db_file_open(char *db_file)
     if (gDatabasePath == NULL) {
         gDatabasePath = (char *) getenv("HTPATH");
         if (gDatabasePath == NULL) {
-            spad = (char *) getenv("AXIOM");
+            spad = (char *) getenv("FRICAS");
             if (spad == NULL) {
 /*                fprintf(stderr,
                    "addfile:db_file_open: Cannot find ht data base path:\n");*/

@@ -98,14 +98,14 @@ MKDIR_P = mkdir -p
 STAMP = echo timestamp >
 
 ## ---------------------
-## -- Axiom variables --
+## -- FriCAS variables --
 ## ---------------------
 
-## Absolute path to the toplevel source directory for Axiom.  This is
+## Absolute path to the toplevel source directory for FriCAS.  This is
 ## almost like Autoconf-standard abs_top_srcdir except that, it retains
 ## the same syntactic values in subdirectories.
 
-## Where The Axiom distribution main source files are kept.
+## Where The FriCAS distribution main source files are kept.
 ## Notice, this is the src/ directory within the toplevel source
 ## directory
 
@@ -144,14 +144,14 @@ fricas_includes = -I$(fricas_src_srcdir)/include -I$(fricas_configdir)
 fricas_build_helper = $(abs_top_srcdir)/src/scripts/build_helper
 
 ## Where the staging build directory is found
-AXIOM = @AXIOM@
-export AXIOM
+FRICAS = @FRICAS@
+export FRICAS
 BASE = @BASE@
 export BASE
 
 TMP=$(fricas_builddir)
 
-## Old Axiom ENV variables
+## Old FriCAS ENV variables
 
 VERSION = @PACKAGE_STRING@
 
@@ -172,7 +172,7 @@ FASLEXT = @fricas_fasl_type2@
 ##
 
 ##
-AXIOMXLROOT=${AXIOM}/compiler
+AXIOMXLROOT=${FRICAS}/compiler
 
 ## GCL command to end a session.
 BYE=quit

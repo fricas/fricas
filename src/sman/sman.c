@@ -55,7 +55,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "sockio-c.H1"
 #include "openpty.H1"
 
-char *ws_path = "$AXIOM/bin/AXIOMsys";
+char *ws_path = "$FRICAS/bin/FRICASsys";
 int start_clef = 1;                 /* start clef under spad */
 int start_graphics = 1;             /* start the viewman */
 int start_ht = 1;                   /* start hypertex */
@@ -69,12 +69,12 @@ int tpd=0;                      /* to-print-debug information */
 /* definitions of programs which sman can start */
 /************************************************/
 
-char    *GraphicsProgram        = "$AXIOM/lib/viewman";
-char    *HypertexProgram        = "$AXIOM/bin/hypertex -s";
+char    *GraphicsProgram        = "$FRICAS/lib/viewman";
+char    *HypertexProgram        = "$FRICAS/bin/hypertex -s";
 char    *ClefProgram            =
-           "$AXIOM/bin/clef -f $AXIOM/lib/command.list -e ";
-char    *SessionManagerProgram  = "$AXIOM/lib/session";
-char    *SpadClientProgram      = "$AXIOM/lib/spadclient";
+           "$FRICAS/bin/clef -f $FRICAS/lib/command.list -e ";
+char    *SessionManagerProgram  = "$FRICAS/lib/session";
+char    *SpadClientProgram      = "$FRICAS/lib/spadclient";
 char    *PasteFile              = NULL;
 char    *MakeRecordFile         = NULL;
 char    *VerifyRecordFile       = NULL;
@@ -167,7 +167,7 @@ process_arguments(int argc,char ** argv)
     else if (strcmp(argv[arg], "-ws")          == 0)
       ws_path = argv[++arg];
     else if (strcmp(argv[arg], "-comp")        == 0)
-      ws_path = "$AXIOM/etc/images/comp";
+      ws_path = "$FRICAS/etc/images/comp";
     else if (strcmp(argv[arg], "-nox")         == 0)
       {
         use_X = 0;
@@ -183,7 +183,7 @@ process_arguments(int argc,char ** argv)
     else if (strcmp(argv[arg], "-clefprog")    == 0) {
       strcpy(ClefCommandLine,argv[++arg]);
       ClefProgram =
-        strcat(ClefCommandLine, " -f $AXIOM/lib/command.list -e ");
+        strcat(ClefCommandLine, " -f $FRICAS/lib/command.list -e ");
     }
     else if (strcmp(argv[arg], "-sessionprog") == 0)
       SessionManagerProgram = argv[++arg];
@@ -566,7 +566,7 @@ fork_FriCAS(void)
     }
         augmented_ws_path = (char *)malloc(2 * strlen(ws_path) + strlen(eval_code) + strlen(" -- ") + 1);
     strcpy(augmented_ws_path,ws_path);          /* write the name    */
-    /* Pass '--' to make sure that argument(s) passed to AXIOMsys
+    /* Pass '--' to make sure that argument(s) passed to FRICASsys
        do not cause trouble from host Lisp (Closure CL would
        treat argument as Lisp kernel name, Clisp signals error
        if it can not recognize the option. */

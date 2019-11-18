@@ -209,9 +209,9 @@ build_db_filename(short flag, char *db_dir, char *dbfilename)
 
 
     if (flag & System) {
-        SPAD = (char *) getenv("AXIOM");
+        SPAD = (char *) getenv("FRICAS");
         if (SPAD == NULL) {
-            fprintf(stderr, "build_db_filename: $AXIOM is empty\n");
+            fprintf(stderr, "build_db_filename: $FRICAS is empty\n");
             exit(-1);
         }
         sprintf(dbfilename, "%s/share/hypertex/pages/%s", SPAD, db_file_name);
@@ -262,7 +262,7 @@ build_db_filename(short flag, char *db_dir, char *dbfilename)
            paths are found as follows:
               (i) If the user has an environment variable HTPATH set, the
               paths mentioned are used.
-              (ii) If not, then the $AXIOM environment variable is used.
+              (ii) If not, then the $FRICAS environment variable is used.
 ****/
 
 static void

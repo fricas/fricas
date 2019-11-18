@@ -188,9 +188,9 @@ start_user_buffer(HyperDocPage *page)
     char complfile[250];
     int ret_val;
 
-    SPAD = (char *) getenv("AXIOM");
+    SPAD = (char *) getenv("FRICAS");
     if (SPAD == NULL) {
-        fprintf(stderr, "start_user_buffer: $AXIOM is empty\n");
+        fprintf(stderr, "start_user_buffer: $FRICAS is empty\n");
         exit(-1);
     }
     sprintf(spadbuf, "%s/lib/spadbuf", SPAD);

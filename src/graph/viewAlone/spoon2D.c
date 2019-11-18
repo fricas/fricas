@@ -85,11 +85,11 @@ spoonView2D(void)
     printf("(spoon2D child) start the TwoDimensionalViewport process\n");
     fricas_sprintf_to_buf1(errorStr, "%s",
         "(viewAlone) execution of the TwoDimensionalViewport process");
-    env_fricas = getenv("AXIOM");
+    env_fricas = getenv("FRICAS");
     {
         size_t env_fricas_len = strlen(env_fricas);
         if (env_fricas_len > 20000) {
-            fprintf(stderr, "AXIOM env var too long\n");
+            fprintf(stderr, "FRICAS env var too long\n");
             exit(-1);
         }
         run_view = malloc(env_fricas_len + strlen("/lib/view2D") + 1);

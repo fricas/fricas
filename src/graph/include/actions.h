@@ -134,7 +134,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* misc */
 
-#define spadPressedAButton 100  /* used for communications with the .AXIOM file */
+#define spadPressedAButton 100  /* used for communications with the .FRICAS file */
 #define colorDef           101
 #define moveViewport       102
 #define resizeViewport     103

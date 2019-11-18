@@ -231,7 +231,7 @@
        (|recurrence| . "set functions recurrence")
        (|restore|    . "history )restore")
        (|save|       . "history )save")
-       (|startGraphics|    .  "system $AXIOM/lib/viewman &")
+       (|startGraphics|    .  "system $FRICAS/lib/viewman &")
        (|stopGraphics|     .  "lisp (|sockSendSignal| 2 15)")
        (|time|       . "set message time")
        (|type|       . "set message type")

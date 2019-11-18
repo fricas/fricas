@@ -1,5 +1,5 @@
 -- This program is responsible for the generation of cliques.mk.
--- It takes as input a file libaxiom.lst and the dependency files
+-- It takes as input a file libfricas.lst and the dependency files
 -- from the 'gendeps' directory.
 
 -- Copyright (C) 2005-2008,  Peter Broadbery
@@ -8,8 +8,8 @@
 -- The program was originally written by Peter Broadbery.
 -- Ralf Hemmecke extended the program to write out dependencies
 -- in actual compilation order and thus make the compilation process
--- of libaxiom.al easier. There is no longer any need to generate
--- .lst files so that libaxiom.al contains the .ao files in an
+-- of libfricas.al easier. There is no longer any need to generate
+-- .lst files so that libfricas.al contains the .ao files in an
 -- appropriate order (later files only depend on earlier files).
 
 #include "aldor.as"
@@ -330,7 +330,7 @@ Cliques: OutputType with {
 -- The idea is that we break the library up into things that the
 -- axextend/axlit depends on, then all the rest.  The reason is that
 -- axextend/axlit supplies the literal methods which are required for
--- compilation of some axiom files - knowledge of that could be built in
+-- compilation of some FriCAS files - knowledge of that could be built in
 -- to genax.lsp, but life's too short sometimes.
 
 -- Mail of Peter Broadbery 27-May-2008
@@ -349,7 +349,7 @@ Cliques: OutputType with {
 
 MakefileGeneration: with {
 	generateMakefile: String -> ();
-		++ generateMakefile(libaxiom.lst)
+		++ generateMakefile(libfricas.lst)
 		++ writes a Makefile to stdout.
 } == add {
 	macro S  == String;
@@ -357,21 +357,21 @@ MakefileGeneration: with {
 	out: TextWriter := stdout;
 	nl: Character := newline;
 
-        generateMakefile(libaxiomlst: S): () == {
+        generateMakefile(libfricaslst: S): () == {
 		TRACE("generateMakefile: ", "Enter");
 		import from MachineInteger, S, List S;
-		files: List S := [readNames libaxiomlst];
+		files: List S := [readNames libfricaslst];
 
 		fileMap: HashTable(S, List S) := table();
 		fileMap."lang"      := [];
 		fileMap."base"      := [];
-		fileMap."axiom"     := [];
-		fileMap."initaxiom" := [];
+		fileMap."fricas"    := [];
+		fileMap."initfricas":= [];
 		fileMap."aldorext"  := [];
 
 		allTypes: List S := []; -- does not contain duplicates
 
-		-- Read libaxiom.lst.
+		-- Read libfricas.lst.
 		for pair in extractPairs files repeat {
 			(class, ident) := pair;
 			fileMap.class := cons(ident, fileMap.class);
@@ -393,13 +393,13 @@ MakefileGeneration: with {
 
 		-- Every other domain should depend on the aldor base domains.
 		ids: List S := [];
-		ids := append!(ids, copy fileMap."initaxiom");
-		ids := append!(ids, copy fileMap."axiom");
+		ids := append!(ids, copy fileMap."initfricas");
+		ids := append!(ids, copy fileMap."fricas");
 		ids := append!(ids, copy fileMap."aldorext");
 		for id in ids repeat addDependencies!(g, fileMap."base", id);
 
 		-- "T" depends on "init_T"
-		for id in fileMap."initaxiom" repeat {
+		for id in fileMap."initfricas" repeat {
 			addDependency!(g, id, substring(id, 5));
 		}
 
@@ -428,7 +428,7 @@ MakefileGeneration: with {
 		      not member?(s, lowerTypes) and
 		      not member?(s, fileMap."lang") and
 		      not member?(s, fileMap."base") and
-		      not member?(s, fileMap."initaxiom") and
+		      not member?(s, fileMap."initfricas") and
 		      not member?(s, fileMap."aldorext")
 		];
 
@@ -452,12 +452,12 @@ MakefileGeneration: with {
 		-- Output all members and dependencies
 		-- To find out about cliques with size bigger than 1 use:
 		-- grep '^MEMBERS_.* = .* .*' cliques.mk
-		initaxiom := fileMap."initaxiom";
-		for c in cliques repeat writeVariables(c, initaxiom);
+		initfricas := fileMap."initfricas";
+		for c in cliques repeat writeVariables(c, initfricas);
 		for c in cliques repeat writeTargets c;
 	}
 
-	local writeVariables(clq: Clique, initaxiom: List S): () == {
+	local writeVariables(clq: Clique, initfricas: List S): () == {
 		name: S := name clq;
 		---------------------------------------------------
 		-- write out the members
@@ -473,8 +473,8 @@ MakefileGeneration: with {
 		--   (2) x is "init_X" and y is "init_Y"
 		--         and x is lex smaller than y
 		--   (3) x is not "init_X" and y is not "init_Y"
-		--         and "init_X" is in fileMap."initaxiom"
-		--         and ("init_Y" is not in file.Map."initaxiom"
+		--         and "init_X" is in fileMap."initfricas"
+		--         and ("init_Y" is not in file.Map."initfricas"
 		--             or x is lex smaller than y)
 		--   (4) x is lex smaller than y
 		local smaller?(x: S, y: S): Boolean == {
@@ -487,11 +487,11 @@ MakefileGeneration: with {
 				x < y;
 			}
 			init? y => false;
-			member?("init__" + x, initaxiom) => {
-				member?("init__" + y, initaxiom) => x < y;
+			member?("init__" + x, initfricas) => {
+				member?("init__" + y, initfricas) => x < y;
 				true;
 			}
-			member?("init__" + y, initaxiom) => false;
+			member?("init__" + y, initfricas) => false;
 			x < y;
 		}
 		sortedMembers: List S := sort!([id for id in clq], smaller?);
@@ -510,8 +510,8 @@ MakefileGeneration: with {
 	local writeTargets(clq: Clique): () == {
 		import from List Clique;
 		name: S := name clq;
-		libaxiom := "al/libaxiom.al";
-		libname  := "al/libaxiom__" + name + ".al";
+		libfricas := "al/libfricas.al";
+		libname  := "al/libfricas__" + name + ".al";
 		depmember:= "($(DEPS__" + name + "))";
 
 		-- Each member depends on the corresponding .ao file.
@@ -522,7 +522,7 @@ MakefileGeneration: with {
 		-- Now we know that there is at least one dependency.
 		-- What goes into the temporary library...
 		-- The order of members in the temporary library is
-		-- as in libaxiom.al.
+		-- as in libfricas.al.
 		out << libname << ": ";
 		out << "$(patsubst %,ao/%,$(DEPS__" + name + "))" << nl;
 		out << tab << "ar r $@ $+" << nl;

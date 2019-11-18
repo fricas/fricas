@@ -219,11 +219,11 @@ forkView2D(void)
 #ifdef DEBUG
     fprintf(stderr,"Executing TwoDimensionalViewport process\n");
 #endif
-    env_fricas = getenv("AXIOM");
+    env_fricas = getenv("FRICAS");
     {
         size_t env_fricas_len = strlen(env_fricas);
         if (env_fricas_len > 20000) {
-            fprintf(stderr, "AXIOM env var too long\n");
+            fprintf(stderr, "FRICAS env var too long\n");
             exit(-1);
         }
         run_view = malloc(env_fricas_len + strlen("/lib/view2D") + 1);

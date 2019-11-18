@@ -1,6 +1,5 @@
-
-
-import from AxiomLib;inline from AxiomLib;
+import from FriCASLib;
+inline from FriCASLib;
 
 Byte ==> XByte;  --!! Needed to disambiguate
 

@@ -1,6 +1,6 @@
 -- The whole file is handcrafted and serves the purpose of reducing
--- the size of Axiom cliques. Furthermore, it should help to bring
--- down the interdependencies of Axiom types so much as to be able
+-- the size of FriCAS cliques. Furthermore, it should help to bring
+-- down the interdependencies of FriCAS types so much as to be able
 -- to compile axlit.as and axextend.as in a separate compilation step
 -- after the compilation of the types they depend on.
 
@@ -14,7 +14,7 @@ Tuple:    with;
 (->):     with;
 
 -- The following list contains some basic domains and categories from
--- the Axiom algebra library.
+-- the FriCAS algebra library.
 -- Declarations are sufficient.
 
 -- Note that because of the incomplete analysis of the dependencies,

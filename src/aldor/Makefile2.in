@@ -6,22 +6,22 @@ ALDOR_CONDITIONALCAST=@ALDOR_conditionalCast@
 GENAX=@srcdir@/gendepap.lsp
 include @srcdir@/aldor.mk
 
-INTERPSYS = DAASE=$(fricas_targetdir) FRICAS_INITFILE='' $(fricas_target_bindir)/AXIOMsys
+INTERPSYS = DAASE=$(fricas_targetdir) FRICAS_INITFILE='' $(fricas_target_bindir)/FRICASsys
 
 # We assume here that the directory 'al' has already been created.
-default: al/libaxiom.al
+default: al/libfricas.al
 
 ###################################################################
-# Now we can start to build libaxiom. All the computation up to here
+# Now we can start to build libfricas. All the computation up to here
 # has only be done to get cliques.mk. That file contains all (recursive)
 # dependencies of the types/files, so things should compile in the right
 # dependency order from now on.
 include cliques.mk
-AXIOM_CLIQUES=$(filter-out $(aldor_srcs), $(CLIQUES))
+FRICAS_CLIQUES=$(filter-out $(aldor_srcs), $(CLIQUES))
 
 ###################################################################
 # Now we create an .ap file for each clique.
-$(patsubst %,ap/%.ap,$(AXIOM_CLIQUES)): ap/%.ap: ap/%.lsp tmp/.dir
+$(patsubst %,ap/%.ap,$(FRICAS_CLIQUES)): ap/%.ap: ap/%.lsp tmp/.dir
 	rm -f $@
 	$(INTERPSYS) < $< > tmp/$*.log
 	test -f $@
@@ -33,25 +33,25 @@ ap/%.lsp:
 	echo ')lisp (generate-ax-file "$*" (quote ($(filter-out init_%, $(MEMBERS_$*)))) (quote ($(patsubst %,|%|,$(filter init_%, $(MEMBERS_$*))))))' >> $@
 
 .PHONY: all-ap
-all-ap: $(patsubst %,ap/%.ap,$(AXIOM_CLIQUES))
+all-ap: $(patsubst %,ap/%.ap,$(FRICAS_CLIQUES))
 
 ###################################################################
-# All the files that should go into libaxiom.al
-libaxiom_members=$(patsubst %,ao/%.ao,$(CLIQUES))
-al/libaxiom.al: $(libaxiom_members)
+# All the files that should go into libfricas.al
+libfricas_members=$(patsubst %,ao/%.ao,$(CLIQUES))
+al/libfricas.al: $(libfricas_members)
 	ar r $@ $+
 
 # From the .ap dependency we get a lot more dependencies, see cliques.mk.
 $(patsubst %,ao/%.ao,$(aldor_src)): extra_ao_options=
-$(patsubst %,ao/%.ao,$(AXIOM_CLIQUES)): extra_ao_options=-Wname=axiom -Mno-abbrev -Mpreview
+$(patsubst %,ao/%.ao,$(FRICAS_CLIQUES)): extra_ao_options=-Wname=fricas -Mno-abbrev -Mpreview
 .PRECIOUS: ao/%.ao
-ao/%.ao: ap/%.ap al/libaxiom_%.al ao/.dir
-	$(ALDOR) $(extra_ao_options) -Y al -L AxiomLib=axiom_$* -fao=$@ $< 2>&1 | tee tmp/$*_ao.out
+ao/%.ao: ap/%.ap al/libfricas_%.al ao/.dir
+	$(ALDOR) $(extra_ao_options) -Y al -L FriCASLib=fricas_$* -fao=$@ $< 2>&1 | tee tmp/$*_ao.out
 
 # We compile a seperate temporary library for the compilation of each
 # .ao file in order to avoid trouble with big libraries and the aldor
 # compiler.
-# Another option would be to build libaxiom.al step by step in the right
+# Another option would be to build libfricas.al step by step in the right
 # dependency order. If the Aldor compiler produces correct code that
 # should become the method of choice.
 # The dependencies are in cliques.mk.

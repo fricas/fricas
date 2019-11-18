@@ -94,7 +94,7 @@ psStruct psData[psDrawNo];      /* need psDrawNo of them */
 
 extern  int             scrn;          /* screen */
 extern  Display         *dsply;        /* display */
-/* environment variable AXIOM or DEVE */
+/* environment variable FRICAS or DEVE */
 extern  char            * env_fricas;
 
 

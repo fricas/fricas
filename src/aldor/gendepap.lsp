@@ -1,10 +1,10 @@
 ; This file does a number of things.
 ; 1) generate-init
 ;    It generates initial init_X.ap files for domains X that will be
-;    extended during the build of libaxiom.al. These domains are listed
+;    extended during the build of libfricas.al. These domains are listed
 ;    in init-domains.
 ; 2) generate-deps
-;    It generates dependencies for domains from the Axiom algebra library.
+;    It generates dependencies for domains from the FriCAS algebra library.
 ; 3) generate-deps-from-ap
 ;    It generates dependencies from the .ap files of a number of aldor
 ;    domains.
@@ -36,7 +36,7 @@
 (defun type-name (initform)
   (cadr (cadr initform)))
 
-; That is an Axiom function that sets the variable |$extendedDomains|.
+; That is an FriCAS function that sets the variable |$extendedDomains|.
 ; |$extendedDomains| have relevance during the call to
 ; |makeAxExportForm|.
 ; The execution of this function is necessary to make loading the code
@@ -49,7 +49,7 @@
 ; from an Aldor source file. In particular for axlit.as and axextend.as
 ; we have to treat some tags differently. For example, an |Extend|
 ; should require full information of the extended domain.
-(setq *extends-axiom-domains* nil)
+(setq *extends-fricas-domains* nil)
 
 ; We introduce some debugging information.
 (defun debug-print (x y)
@@ -154,7 +154,7 @@
 (defun generate-init-list (dest)
   ; actually for init files it doesn't make any difference whether
   ; *aldor-source* is set to t or nil.
-  (setq *extends-axiom-domains* nil)
+  (setq *extends-fricas-domains* nil)
   ;; list of file names (abbreviated type names) into the file 'dest'.
   (with-open-file (bstr (pathname dest) :direction :output)
     (dolist (initform *initforms*)
@@ -178,7 +178,7 @@
 
 
 
-;; Generate .ap files from Axiom types.
+;; Generate .ap files from FriCAS types.
 (defun generate-ax-file (name content inits)
   (let* ((*print-circle* nil)
          (filename (pathname (format nil "ap/~a.ap" name)))
@@ -193,7 +193,7 @@
 
 ;; .dep from SPAD constructor
 (defun generate-deps (namelist)
-  (setq *extends-axiom-domains* nil)
+  (setq *extends-fricas-domains* nil)
   (dolist (name namelist)
     (let* ((constructor (|abbreviation?| name))
            (apform (|makeAxExportForm| "UnusedArgument" (list constructor))))
@@ -201,11 +201,11 @@
       (print-dependencies apform name))))
 
 ;; .dep from .ap file (corresponds to .as sources)
-; Actually, it would suffice to set *extends-axiom-domains* to t only for
+; Actually, it would suffice to set *extends-fricas-domains* to t only for
 ; the files axlit.as and axextend.as since all the other .as files
-; will be compiled before any Axiom related stuff anyway.
+; will be compiled before any FriCAS related stuff anyway.
 (defun generate-deps-from-ap-files (namelist)
-  (setq *extends-axiom-domains* t)
+  (setq *extends-fricas-domains* t)
 ;  (trace find-deps)
 ;  (trace find-deps-with)
 ;  (trace find-deps-apply)
@@ -243,12 +243,12 @@
 
 
 ; The following code walks through the .ap form of aldor code and
-; returns a list of dependencies. It basically looks for any Axiom
+; returns a list of dependencies. It basically looks for any FriCAS
 ; type and tries to decide according the list of nodes to it (its
 ; path) whether full information is needed or whether initial
 ; information in the form of "D: with == add" would be sufficient. If
 ; a type T is tagged with "init" then (later in the build process of
-; libaxiom.al) initial information will be taken only if a file
+; libfricas.al) initial information will be taken only if a file
 ; init_T.ap is actually available. If no such file is available,
 ; "init" will be ignored and "full" information is taken.
 
@@ -317,7 +317,7 @@
 ;   A == a domain
 ;   B == the add-body
 (defun find-deps-add (env args)
-  (if *extends-axiom-domains*
+  (if *extends-fricas-domains*
       (map-find-deps env args)
     nil))
 
@@ -399,7 +399,7 @@
 ;   B == an add-body
 ;        |Define|
 (defun find-deps-default (env args)
-  (if *extends-axiom-domains*
+  (if *extends-fricas-domains*
       (map-find-deps env args)
     nil))
 
@@ -616,7 +616,7 @@
          '(|subsetc|))
         ; Since |isNameOfType| returns false for attributes, we must
         ; make attrib.as available for the compilation of every file.
-        ((is-axiom-type-name item)
+        ((is-fricas-type-name item)
          (let ((type (full-or-init (env-path env) item)))
            (format t "Adding ~a ~a ~a~%" type item (env-path env))
            ; Note that every file depends on Boolean. We will have
@@ -628,12 +628,12 @@
 
 ; Since |isNameOfType| returns false for attributes, we must
 ; make attrib.as available for the compilation of every file.
-(defun is-axiom-type-name (item)
+(defun is-fricas-type-name (item)
   ; Certain types are built into aldor. They will anyway be available
-  ; through the base of libaxiom.al, see aldor_basics in Makefile.in and
+  ; through the base of libfricas.al, see aldor_basics in Makefile.in and
   ; in particular the file lang.as.
   ; Maybe we have to reconsider later since Exit and Tuple have different
-  ; types in axllib and Axiom. So there should perhaps be some
+  ; types in axllib and FriCAS. So there should perhaps be some
   ; 'init_Exit' and 'init_Tuple' in the directory 'init_ap'.
   ;
 
@@ -697,9 +697,9 @@
          (|abbreviate| item))
 
         ; We need initial or full information depending on whether or
-        ; not we actually extend Axiom domains.
+        ; not we actually extend FriCAS domains.
         ((member (car path) '(|Extend|))
-         (if *extends-axiom-domains*
+         (if *extends-fricas-domains*
              (|abbreviate| item)
            (could-be-init item)))
 
@@ -720,10 +720,10 @@
 ; where path collects the nodes from the top node to the current one, and
 ; variables contains all the declared variable names so far.
 
-; We alway start with "variables" |%| and |AxiomLib|, since they
+; We alway start with "variables" |%| and |FriCASLib|, since they
 ; should never occur as dependencies.
 (defun make-null-env ()
-  (list nil '(|%| |AxiomLib|)))
+  (list nil '(|%| |FriCASLib|)))
 
 ; Adds the variable 'var' to the environment.
 (defun env-add-var (env var)

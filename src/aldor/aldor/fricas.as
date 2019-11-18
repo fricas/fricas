@@ -1,8 +1,8 @@
--- Standard include file for using or extending Axiom library via AXIOM-XL
+-- Standard include file for using or extending FriCAS library via Aldor
 
-#library AxiomLib "axiom"
-import from AxiomLib;
-inline from AxiomLib;
+#library FriCASLib "fricas"
+import from FriCASLib;
+inline from FriCASLib;
 
 macro {
         rep x == x @ % pretend Rep;

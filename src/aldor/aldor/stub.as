@@ -1,13 +1,13 @@
 -----------------------------------------------------------------------------
 ----
----- stub.as:  Stub domain/category definitions for the Axiom library.
+---- stub.as:  Stub domain/category definitions for the FriCAS library.
 ----
 -----------------------------------------------------------------------------
 ---- Copyright (c) 1990-2007 Aldor Software Organization Ltd (Aldor.org).
 -----------------------------------------------------------------------------
 
-import from AxiomLib;
-inline from AxiomLib;
+import from FriCASLib;
+inline from FriCASLib;
 
 macro {
 	StubDomain X == X: with == add;

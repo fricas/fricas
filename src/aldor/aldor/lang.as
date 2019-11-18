@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 ----
----- lang.as: AXIOM-XL Language-defined types.
+---- lang.as: Aldor Language-defined types.
 ----
 -----------------------------------------------------------------------------
 ---- Copyright (c) 1990-2007 Aldor Software Organization Ltd (Aldor.org).

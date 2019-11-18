@@ -715,9 +715,9 @@ withAsharpCmd args ==
 --% )copyright -- display copyright notice
 
 summary l ==
- OBEY STRCONC ('"cat ",getEnv('"AXIOM"),'"/lib/summary")
+ OBEY STRCONC ('"cat ",getEnv('"FRICAS"),'"/lib/summary")
 copyright () ==
- OBEY STRCONC ('"cat ",getEnv('"AXIOM"),'"/lib/copyright")
+ OBEY STRCONC ('"cat ",getEnv('"FRICAS"),'"/lib/copyright")
 
 --% )credits -- display credit list
 
@@ -1062,7 +1062,7 @@ newHelpSpad2Cmd args ==
   null(helpFile := make_input_filename([narg, 'HELPSPAD])) => nil
 
   $useFullScreenHelp =>
-    OBEY STRCONC('"$AXIOM/lib/SPADEDIT ",namestring helpFile)
+    OBEY STRCONC('"$FRICAS/lib/SPADEDIT ",namestring helpFile)
     true
 
   filestream := MAKE_INSTREAM(helpFile)

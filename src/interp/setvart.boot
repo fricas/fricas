@@ -106,7 +106,7 @@ DEFPARAMETER($setOptions, '(
           STRING
           $asharpCmdlineFlags
           chkDirectory
-          "-O -Fasy -Fao -Flsp -laxiom -Mno-ALDOR__W__WillObsolete -DAxiom -Y $AXIOM/algebra -I $AXIOM/algebra"))
+          "-O -Fasy -Fao -Flsp -lfricas -Mno-ALDOR__W__WillObsolete -DFriCAS -Y $FRICAS/algebra -I $FRICAS/algebra"))
        NIL)
     ))
   (expose

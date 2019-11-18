@@ -6,7 +6,7 @@
 \author{Timothy Daly and Waldek Hebisch}
 \maketitle
 \begin{abstract}
-[[asq]] is a mini-browser for Axiom databases.  It understands
+[[asq]] is a mini-browser for FriCAS databases.  It understands
 structure of databases and can retrieve information about
 constructors.  To do this it implements (limited) Lisp-like
 S-expressions.
@@ -16,14 +16,14 @@ S-expressions.
 \eject
 \section{S-expressions}
 
-Data in Axiom databases is stored as S-expressions.  One could
+Data in FriCAS databases is stored as S-expressions.  One could
 try to handle them with purely string based methods.  But such
-approach would be inflexible and awkward. Namely, Axiom perform
+approach would be inflexible and awkward. Namely, FriCAS perform
 various transformations before writing S-expressions to files.
 Such transformations are natural and easy on S-expressions,
 but complicated (require parsing and multiple string substitutions)
 on string level.  So [[asq]]
-needs S-expression support.  Axiom uses only very special forms
+needs S-expression support.  FriCAS uses only very special forms
 of S-expression: pairs, lists, strings, symbols and integers.
 We implement lists, strings, symbols and small integers.  Actually,
 since in C it is easier to work with arrays than with genuine lists,
@@ -35,10 +35,10 @@ being the symbol ``.'' (dot).
 
 \section{Database format}
 
-Below we try to explain essential properties of Axiom databases,
+Below we try to explain essential properties of FriCAS databases,
 for longer description (including many low level details) look
 at [[daase.lisp]].
-General format of Axiom databases is as follows
+General format of FriCAS databases is as follows
 \begin{verbatim}
 stamp
 indirect hunks
@@ -81,7 +81,7 @@ which contains a single list of values.  Values from other files may
 be put in the [[compress.daase]] and replaced by minus their index
 on the [[compress.daase]] list.
 
-For example, expanded form of S-expression describing Axiom [[Type]]
+For example, expanded form of S-expression describing FriCAS [[Type]]
 (one of the simplest categories) is:
 \begin{verbatim}
  (|Type| NIL (((|Type|) (|Category|)) (T |Type|)) NIL "TYPE"
@@ -522,7 +522,7 @@ print_cars(item * it)
 
 /*
    Utilities to read S-expression from files.  Support only things
-   which appear in Axiom databases.
+   which appear in FriCAS databases.
 */
 
 /* Precondition: File is positioned before item.
@@ -659,7 +659,7 @@ read_item(FILE * file)
 
 /* Main program */
 
-char * AXIOM;
+char * FRICAS;
 FILE *
 open_file(const char * name)
 {
@@ -667,10 +667,10 @@ open_file(const char * name)
     long offset;
     item_list * stamp;
     char * file_path;
-    if (AXIOM != NULL) {
-        file_path = my_malloc(strlen(AXIOM)+strlen("%s/algebra/%s.daase")
+    if (FRICAS != NULL) {
+        file_path = my_malloc(strlen(FRICAS)+strlen("%s/algebra/%s.daase")
                               +strlen(name));
-        sprintf(file_path, "%s/algebra/%s.daase", AXIOM, name);
+        sprintf(file_path, "%s/algebra/%s.daase", FRICAS, name);
     } else {
         file_path = my_malloc(strlen("%s.daase")+strlen(name));
         sprintf(file_path, "%s.daase", name);
@@ -876,10 +876,10 @@ main(int argc, char * * argv)
     char * cname;
     char * propname = "all";
     long ct_n;
-    AXIOM=(char *)getenv("AXIOM");
+    FRICAS=(char *)getenv("FRICAS");
 
-    if (AXIOM == 0)
-        fprintf(stderr, "AXIOM shell variable has no value. "
+    if (FRICAS == 0)
+        fprintf(stderr, "FRICAS shell variable has no value. "
                            "using current directory\n");
     if (argc < 2 || argc > 3) {
         usage(argv[0]);

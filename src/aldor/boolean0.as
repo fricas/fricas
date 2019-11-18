@@ -1,3 +1,3 @@
-import from AxiomLib;
+import from FriCASLib;
 
 Boolean: with == add;
