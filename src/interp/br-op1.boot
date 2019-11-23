@@ -356,7 +356,6 @@ dbGatherData(htPage,opAlist,which,key) ==
         atom tail => tail
         listSort(function LEXLESSEQP,tail)
       RPLACD(rest entry, tail)
-  SAY(["dbGatherData", data])
   data := listSort(function LEXLESSEQP,data)
   data
 
