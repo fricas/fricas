@@ -1002,7 +1002,7 @@ is_it_850(XFontStruct *fontarg)
 /* return 1 if it is 850 */
 
     s = XGetAtomName(gXDisplay,(Atom)fontarg->properties[i].card32);
-    val = !( strcmp("850",s) * strcmp("ibm-850",s));
+    val = !( strcmp("850",s) && strcmp("ibm-850",s));
     XFree(s);
     return( val );
   }
