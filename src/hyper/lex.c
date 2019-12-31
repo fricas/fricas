@@ -32,22 +32,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /*
- * Lexical analyzer stuff. Exported functions: parser_init()       --
- * initialize the parser tables with keywords init_scanner()       --
- * initialize scanner for reading a new page get_token()                   --
- * sets the "token" variable to be the next -- token in the current input
- * stream save_scanner_state(   )  -- save the current state of scanner so
- * that -- the scanner input mode may be switched restore_scanner_state() --
+ * Lexical analyzer stuff. Exported functions:
+ *
+ * -- parser_init()
+ * initialize the parser tables with keywords
+ *
+ * -- init_scanner()
+ * initialize scanner for reading a new page
+ *
+ * -- get_token()
+ * sets the "token" variable to be the next token in the current input stream
+ *
+ * -- save_scanner_state()
+ * save the current state of scanner so that the scanner input mode may
+ * be switched
+ *
+ * -- restore_scanner_state()
  * undo the saved state
  *
  * Note: The scanner reads from three separate input locations depending on the
  * value of the variable "input_type".  If this variable is:
  *
- * FromFile       -- it read from the file pointed to by "cfile". FromString
- * -- It reads from the string "input_string". FromSpadSocket -- It reads
- * from the socket pointed to by spad_socket FromFD       -- It reads from a
- * file descriptor
- *
+ * FromFile       -- it read from the file pointed to by "cfile".
+ * FromString     -- It reads from the string "input_string".
+ * FromSpadSocket -- It reads from the socket pointed to by spad_socket
+ * FromFD         -- It reads from a file descriptor
  *
  * New variable useAscii -- tells us if we we should translate
  * graphics characters on the fly
