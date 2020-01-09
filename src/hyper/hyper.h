@@ -517,14 +517,12 @@ extern int space_width;
 
 /***      default fonts      ***/
 
-#if defined(SUNplatform) || defined (SUN4OS5platform) || defined(SGIplatform) || defined (HP9platform)  || defined(HP10platform) || defined (ALPHAplatform) || defined(LINUXplatform) || defined(MACOSXplatform) || defined(BSDplatform) || defined(CYGWINplatform)
 #define RmFontDefault         "-adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1"
 #define TtFontDefault         "-adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1"
 #define ActiveFontDefault     "-adobe-courier-bold-r-normal--18-*-*-*-m-*-iso8859-1"
 #define fricas_font_default      "-adobe-courier-bold-o-normal--18-*-*-*-m-*-iso8859-1"
 #define EmphasizeFontDefault  "-adobe-courier-medium-o-normal--18-*-*-*-m-*-iso8859-1"
 #define BoldFontDefault       "-adobe-courier-bold-r-normal--18-*-*-*-m-*-iso8859-1"
-#endif
 
 
 

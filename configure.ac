@@ -738,19 +738,6 @@ case $target in
         CCF="-O2 -pipe -Wall -D_GNU_SOURCE -I/usr/local/include"
         LDF="-L/usr/local/lib"
         ;;
-    windows)
-        AC_DEFINE([MSYSplatform], [], [MS])
-        SRCDIRS=bootdir interpdir algebradir etcdir docdir inputdir
-        ;;
-    *linux*)
-        AC_DEFINE([LINUXplatform], [], [Linux flavour])
-        ;;
-    *cygwin*)
-        AC_DEFINE([CYGWINplatform], [], [Cygwin flavour])
-        ;;
-    *solaris*)
-        AC_DEFINE([SUNplatform], [], [SunOS flavour])
-        ;;
     *darwin*)
         AC_DEFINE([MACOSXplatform], [], [MACOX flavour])
         CCF="-O2 -Wall -D_GNU_SOURCE"
