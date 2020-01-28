@@ -521,7 +521,7 @@ MomentPackage(R : CommutativeRing) : Exports == Implementation where
 ++ Keywords:
 ++ References:
 ++ Description:
-++   A package to computes Taylor and Puiseux series of S-transforms.
+++   A package to compute Taylor and Puiseux series of S-transforms.
 STransformPackage(R, UTSR, ULSR, UPSR) : Exports == Implementation where
   R : Join(CommutativeRing, Algebra Fraction Integer)
   UTSR : UnivariateTaylorSeriesCategory R
@@ -531,9 +531,11 @@ STransformPackage(R, UTSR, ULSR, UPSR) : Exports == Implementation where
   STSOR ==> StreamTaylorSeriesOperations R
   TERM ==> Record(k : Fraction Integer, c : Coef)
   STRREC ==> Record(order : Fraction Integer, coeff : Stream R)
+  STRRECP ==> Record(puiseux : Fraction Integer, laurent : Fraction Integer,
+                    coef : Sequence R)
   Exports ==> with
     STransform1 : (DISTR) -> UTSR
-      ++ \spad{STransform(x)} returns the Taylor expansion the S-transform
+      ++ \spad{STransform(x)} returns the Taylor expansion of the S-transform
       ++ \spad{S(z)} of the distribution \spad{x} if the mean is nonzero.
     STransform2 : (DISTR) -> UPSR
       ++ \spad{STransform(x)} returns the Puiseux expansion of the
@@ -542,13 +544,8 @@ STransformPackage(R, UTSR, ULSR, UPSR) : Exports == Implementation where
       ++ \spad{STransform(x)} returns the Puiseux expansion of the
       ++ S-transform \spad{S(z)}.
     distributionBySTransform : UPSR -> DISTR
-      ++ of the distributions \spad{x} if the mean is zero
       ++ \spad{distributionBySTransform(x)} returns the distribution
       ++ with S-transform x.
-    freeMultiplicativeConvolution : (DISTR, DISTR) -> DISTR
-      ++ \spad{freeMultiplicativeConvolution(x, y)} returns the free
-      ++ multiplicative convolution of the distributions
-      ++ \spad{x} and \spad{y}.
 
   Implementation ==> add
     STransform1(x : DISTR) : UTSR ==
@@ -592,27 +589,9 @@ STransformPackage(R, UTSR, ULSR, UPSR) : Exports == Implementation where
             puiseux(1, laurent(0, S))$UPSR --$
 
     distributionBySTransform(S : UPSR) : DISTR ==
-        if order(S) = 0 then
-          -- Taylor case
-          S1 : UTSR := retract retract S
-          -- multiply with z/(1+z)
-          z1z : UTSR := series(cons(0, repeating([1, -1])$(Stream R)))
-          chi : Stream R := coefficients(S1*z1z)
-          psi : Stream R := revert(chi)$STSOR
-          return distributionByMoments sequence rest psi
-        else if not order(S) = -1/2 then
-          error "Not an S-transform"
-        if not rationalPower S = 1/2 then
-          error "Not an S-transform"
-        -- Puiseux case. Evaluating at z^2 is the same
-        -- as taking the Laurent representative
-        S2 := laurentRep S
-        -- multiply with z^2/(1+z^2)
-        z1z : UTSR := series(cons(0, repeating([0, 1, 0, -1])$(Stream R)))
-        chi2 : UTSR := retract(S2*laurent(0, z1z))
-        psi2 := revert(coefficients chi2)$STSOR
-        psi := powern(2::Fraction Integer, psi2)
-        distributionByMoments sequence rest psi
+        laurS : ULSR := laurentRep(S)$UPSR
+        taylS : UTSR := taylorRep laurS        
+        distributionBySTransform(rationalPower S, order S, sequence coefficients taylS)
 
 )abbrev category DISTCAT DistributionCategory
 ++ Author: Franz Lehner lehner@math.tugraz.at, Waldek Hebisch
@@ -925,7 +904,7 @@ Distribution(R : CommutativeRing) : Exports == Implementation where
           Sxc := stream Sx.coef
           Syc := stream Sy.coef
           Sxyc : Stream R
-          if Sx.puiseux = 1 and Sx.puiseux = 1 then
+          if Sx.puiseux = 1 and Sy.puiseux = 1 then
             Sxyc := Sxc *$STSOR Syc
             return distributionBySTransform (1, 0, sequence Sxyc)
           else if Sx.puiseux = 1/2 then

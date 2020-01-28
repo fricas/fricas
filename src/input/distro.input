@@ -184,12 +184,18 @@ papbser:=series(Mpapb,z=0);
 papbm2:=entries complete first (rest coefficients papbser, 10);
 testEquals("papbm1","papbm2")
 
+
 -- polynomial evaluation
 p2:UnivariatePolynomial(z, Integer):= z^2
 sem:= wignerDistribution 1
 fp1:= freePoissonDistribution 1
 fp2a:=p2(sem)
 testEquals("firstn(moments fp1, 10)", "firstn(moments fp2a, 10)")
+
+-- multiplicative free convolution is commutative (regression 28.01.2020)
+semfp := freeMultiplicativeConvolution(sem, fp1)
+fpsem := freeMultiplicativeConvolution(fp1, sem)
+testEquals("firstn(moments semfp, 10)", "firstn(moments fpsem, 10)")
 
 -- J continued fraction
 R:= Fraction Integer
@@ -256,7 +262,7 @@ testEquals("firstn(moments mufnu, 10)", "firstn(moments mumnu, 10)")
 
 expected() ==
     messagePrint("testsuite | testcases: failed (total) | tests: failed (total)")$OutputForm
-    messagePrint("distro                      0     (5)               0    (39)")$OutputForm
+    messagePrint("distro                      0     (5)               0    (40)")$OutputForm
 
 statistics()
 expected()
