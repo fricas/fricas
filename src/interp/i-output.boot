@@ -1257,6 +1257,9 @@ charybdis(u,start,linelength) ==
   charyTop(u,start,linelength)
 
 charyTop(u,start,linelength) ==
+  linelength < 1 =>
+      sayALGEBRA ['%l,'%b,'"  Too wide to Print",'%d]
+      THROW('output,nil)
   u is ['SC,:l] or u is [['SC,:.],:l] =>
     for a in l repeat charyTop(a,start,linelength)
   u is [['CONCATB,:.],:m,[['SC,:.],:l]] =>
