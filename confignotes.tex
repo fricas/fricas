@@ -86,8 +86,7 @@ we are building the system.
 
 For typical build instantiations, those  three  platforms are the same: we
 call that a \emph{native build instantiation} or just \emph{native build}.
-The FriCAS system only support native build at the moment, due to its
-dependence on \Tool{GCL} which supports only native build.
+The FriCAS system only support native build at the moment.
 
 To facilitate the porting of programs across platforms, the GNU build
 system has standardized on designation of platforms, called
@@ -113,15 +112,6 @@ Here is how we get the canonical names for the above three platforms:
 <<host build target platforms>>=
 AC_CANONICAL_SYSTEM
 
-## Where tools for the build machine are built
-fricas_builddir=`pwd`/build/$build
-AC_SUBST(fricas_builddir)
-fricas_build_bindir=$fricas_builddir/bin
-AC_SUBST(fricas_build_bindir)
-
-## Prefix for the staging target installation directory
-fricas_targetdir=`pwd`/target/$target
-AC_SUBST(fricas_targetdir)
 @
 
 After that call, the configuration names of the three platforms
@@ -188,10 +178,6 @@ the build machinery in a way that actively unsupports
 cross build.  Consequently, in the build tree, we sequester
 tools that we build and use on the build platform,
 in  sub-directories different from others.
-<<host build target platforms>>=
-## Where tools for the build platform are sequestered
-fricas_build_sharedir=$fricas_builddir/share
-@
 
 \section{Host characteristics}
 
@@ -265,9 +251,6 @@ case $host in
 		         [])
 	;;
 esac
-if test x$fricas_host_has_socket != xyes; then \
-    AC_MSG_ERROR([FriCAS needs support for sockets.])
-fi
 
 ## solaris-based systems tend to hide the socket library.
 case $host in
@@ -462,73 +445,13 @@ FRICAS_MAKEFILE([src/hyper/Makefile])
 
 \subsection{Lisp runtime}
 
-\Tool{GCL} relies on the library \Tool{BFD}, the include
-headers of which may not exist (quite common).  In order to avoid
-\Tool{GCL} build failure, we test for the existence of [[<bfd.h>]]
-and the corresponding library.  We configure \Tool{GCL} to
-use its own copy of \Tool{BFD} accordingly.   FIXME: This must
-be taken care of by \Tool{GCL} itself.
-<<gcl options>>=
-fricas_host_has_libbfd=
-AC_CHECK_HEADER([bfd.h])
-AC_HAVE_LIBRARY([bfd], [fricas_host_has_libbfd=yes])
-
-fricas_gcl_bfd_option=
-if test x"$ac_cv_header_bfd_h" = xyes \
-    && test x"$fricas_host_has_libbfd" = xyes; then
-    fricas_gcl_bfd_option="--disable-dynsysbfd"
-else
-    fricas_gcl_bfd_option="--disable-statsysbfd --enable-locbfd"
-fi
-@
-
-\Tool{GCL} has an elaborate memory management system and
-\Tool{FriCAS} seems to
-put ``unusual'' pressure on it.  Here we specify some values that have
-been empirically known to work.
-<<gcl options>>=
-# fricas_gcl_mm_option="--enable-maxpage=256*1024"
-@
-
-Furthermore, we don't need (at the moment) \Tool{GCL} to build support for
-X Window system or TCL/TK:
-<<gcl options>>=
-fricas_gcl_x_option="--disable-tkconfig --disable-x --disable-xgcl"
-@
-
-Other aspects depend on the platform being considered.
-
-
-\Tool{FriCAS} source code had developed the appalling and irritating habit
-of testing for
-platforms, when in fact it is interested in functionalities.
-The outcome is an ever-growing pile increasing disgusting hacks.
-For example, most the XXXplatform below really have nothing to
-do with platforms.
-
 <<platform specific bits>>=
-<<gcl options>>
-
-PFL=
-CCF="-O2 -fno-strength-reduce -Wall -D_GNU_SOURCE"
-LDF=
-LISP=lsp
 
 case $target in
     *bsd*)
         AC_DEFINE([BSDplatform], [], [BSD flavour])
 	CCF="-O2 -pipe -fno-strength-reduce -Wall -D_GNU_SOURCE -I/usr/local/include"
 	LDF="-L/usr/local/lib"
-	;;
-    windows)
-        AC_DEFINE([MSYSplatform], [], [MS])
-	SRCDIRS=bootdir interpdir sharedir algebradir etcdir docdir inputdir
-	;;
-    *linux*)
-        AC_DEFINE([LINUXplatform], [], [Linux flavour])
-	;;
-    *solaris*)
-        AC_DEFINE([SUNplatform], [], [SunOS flavour])
 	;;
     *darwin*)
         AC_DEFINE([MACOSXplatform], [], [MACOX flavour])
