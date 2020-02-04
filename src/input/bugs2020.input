@@ -1,0 +1,36 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "bugs2020"
+
+testcase "operations on SingleInteger"
+
+testTrue("(factor(max()$SingleInteger); true)")
+testTrue("(squareFree(max()$SingleInteger); true)")
+
+i : Integer
+j : Integer
+
+i := prevPrime((max()$SingleInteger)::Integer)
+testTrue("prime?(i::SingleInteger)")
+
+do_sint_tst() ==
+    free i, j
+    if max()$SingleInteger > 2^128 then
+        print(message("max()$SingleInteger is surprizingly big")$OutputForm)
+    else
+        i := 8
+        j := 31
+        binomial(j, i) > max()$SingleInteger =>
+            testTrue("binomial(j, i) <= max()$SingleInteger")
+        repeat
+            p := binomial(j, i)
+            i*p > max()$SingleInteger => break
+            j := j + 1
+            j < 3*i => "iterate"
+            i := i + 1
+        testTrue("(binomial(j::SingleInteger, i::SingleInteger); true)")
+
+do_sint_tst()
+
+statistics()
