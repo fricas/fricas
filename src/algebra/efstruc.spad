@@ -410,11 +410,19 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
 
       is?(op, POWER)       => (zero? z => 0; exp(last(args) * log z))
       is?(op, 'cot)   => inv tan z
-      is?(op, 'acot)  => atan inv z
-      is?(op, 'asin)  => atan(z / sqrt(1 - z^2))
-      is?(op, 'acos)  => atan(sqrt(1 - z^2) / z)
+      is?(op, 'acot)  =>
+          z = 0 => acot(z)
+          atan inv z
+      is?(op, 'asin)  =>
+          z^2 = 1 => asin(z)
+          atan(z / sqrt(1 - z^2))
+      is?(op, 'acos)  =>
+          z = 0 => acos(z)
+          atan(sqrt(1 - z^2) / z)
       is?(op, 'asec)  => atan sqrt(z^2 - 1)
-      is?(op, 'acsc)  => atan inv sqrt(z^2 - 1)
+      is?(op, 'acsc)  =>
+          z^2 = 1 => acsc(z)
+          atan inv sqrt(z^2 - 1)
       is?(op, 'asinh) => log(sqrt(1 + z^2) + z)
       is?(op, 'acosh) => log(sqrt(z^2 - 1) + z)
       is?(op, 'atanh) => log((z + 1) / (1 - z)) / (2::F)
