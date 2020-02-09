@@ -110,8 +110,6 @@ int received_window_request = 0;/* true iff Spad wants a pop-up    */
 int in_next_event = 0;          /* true when in XNextEvent                 */
 int make_input_file = 0;        /* true when making input files from ht */
 int make_patch_files = 0;       /* true when making patch files from ht */
-int gmake_record_file= 0;       /* true when making record files from ht */
-int gverify_record_file = 0;    /* true when verifying record files from ht */
 int gverify_dates = 0;          /* true when we want hypertex to verify ht.db dates */
 
 Sock *session_server;           /* socket connecting to session manager */
@@ -223,7 +221,7 @@ main(int argc, char **argv)
      * colors we will need.
      */
 
-    if (!make_input_file && !gmake_record_file && !gverify_record_file) {
+    if (!make_input_file) {
 /*        fprintf(stderr,"hyper:main:calling  initializeWindowSystem\n");*/
         initializeWindowSystem();
 /*        fprintf(stderr,"hyper:main:returned initializeWindowSystem\n");*/
@@ -285,8 +283,6 @@ main(int argc, char **argv)
 
 
         if (make_input_file) ht2_input();
-        if (gmake_record_file) make_record();
-        if (gverify_record_file) verify_record();
         exit(0);
     }
 
@@ -375,16 +371,6 @@ check_arguments(void)
         break;
       case 'k':
         kill_spad = 1;
-        break;
-      case 'r':
-        if (gArgv[i][2] == 'm')
-          gmake_record_file=1;
-        else if (gArgv[i][2] == 'v')
-          gverify_record_file=1;
-        else
-          fprintf(stderr, "(HyperDoc) v or m must follow -r\n");
-        input_file_list = gArgv + i + 1;
-        input_file_count = gArgc - i - 1;
         break;
       default:
         fprintf(stderr, "(HyperDoc) Unexpected Command Line Argument %s\n", gArgv[i]);

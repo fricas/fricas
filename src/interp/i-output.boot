@@ -2112,9 +2112,6 @@ mathPrint1(x,fg) ==
 
 maPrin u ==
   null u => nil
--->
-  if $runTestFlag or $mkTestFlag then
-    $mkTestOutputStack := [COPY u, :$mkTestOutputStack]
   $highlightDelta := 0
   c := CATCH('outputFailure,charybdis(u, $MARGIN, $LINELENGTH))
   c ~= 'outputFailure => c

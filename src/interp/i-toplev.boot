@@ -200,10 +200,6 @@ recordAndPrint(x,md) ==
   if $printTimeIfTrue or $printTypeIfTrue then printTypeAndTime(x',md')
   if $printStorageIfTrue then printStorage()
   if $printStatisticsSummaryIfTrue then printStatisticsSummary()
-  $mkTestFlag = true => recordAndPrintTest md
-  $runTestFlag =>
-    $mkTestOutputType := md
-    'done
   'done
 
 printTypeAndTime(x,m) ==  --m is the mode/type of the result

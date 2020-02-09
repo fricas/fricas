@@ -71,50 +71,6 @@ int num_inactive_files = 0;
 int include_bf = 0;
 char buf_for_record_commands[256];
 
-
-
-void
-make_record(void)
-{
-  int i;
-  for (i=0;i<input_file_count;i++){
-    send_lisp_command("(|clearCmdCompletely|)");
-    send_lisp_command("(setq |$testingSystem| T)");
-    send_lisp_command("(setq |$printLoadMsgs| NIL)");
-    send_lisp_command("(setq |$BreakMode| '|resume|)");
-    sprintf(buf_for_record_commands,"(|inputFile2RecordFile| '\"%s\")",input_file_list[i]);
-    fprintf(stderr,"%s\n",buf_for_record_commands);
-    send_lisp_command(buf_for_record_commands);
-  }
-  if (kill_spad){
-    i = connect_spad();
-    if (i != NotConnected && i != SpadBusy)
-      send_int(spad_socket, KillLispSystem);
-  }
-
-}
-
-void
-verify_record(void)
-{
-  int i;
-  for (i=0;i<input_file_count;i++){
-    send_lisp_command("(|clearCmdCompletely|)");
-    send_lisp_command("(setq |$testingSystem| T)");
-    send_lisp_command("(setq |$printLoadMsgs| NIL)");
-    send_lisp_command("(setq |$BreakMode| '|resume|)");
-    sprintf(buf_for_record_commands,"(|verifyRecordFile| '\"%s\")",input_file_list[i]);
-    fprintf(stderr,"%s\n",buf_for_record_commands);
-    send_lisp_command(buf_for_record_commands);
-  }
-  if (kill_spad) {
-    i = connect_spad();
-    if (i != NotConnected && i != SpadBusy)
-      send_int(spad_socket, KillLispSystem);
-  }
-}
-
-
 void
 ht2_input(void)
 {
