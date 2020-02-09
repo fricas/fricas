@@ -261,9 +261,10 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
       for u in $extraParms repeat
         formals := [first u, :formals]
         actuals:=[MKQ CDR u,:actuals]
-      body := ['sublisV,['PAIR,['QUOTE,formals],['LIST,:actuals]],body]
+      body := ['sublisV, ['MAKE_PAIRS, ['QUOTE, formals],
+                                       ['LIST, :actuals]], body]
     if argl then body:=  -- always subst for args after extraparms
-        ['sublisV, ['PAIR, ['QUOTE, sargl], ['LIST, :sargl]], body]
+        ['sublisV, ['MAKE_PAIRS, ['QUOTE, sargl], ['LIST, :sargl]], body]
     -- FIXME: generate call to 'devaluate' only for domains
     body:=
         ['PROG1, ['LET, g:= GENSYM(), body],

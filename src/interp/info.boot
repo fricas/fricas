@@ -82,7 +82,7 @@ formatInfo u ==
   u is ["SIGNATURE",:v] => ["SIGNATURE","$",:v]
  --u is ("CATEGORY",junk,:l) => ("PROGN",:(formatInfo v for v in l))
   u is ["PROGN",:l] => ["PROGN",:[formatInfo v for v in l]]
-  u is ["ATTRIBUTE",v] =>
+  u is ["ATTRIBUTE", v] =>
       isCategoryForm(v) => ["has", "$", v]
       BREAK()
   u is ["IF",a,b,c] =>

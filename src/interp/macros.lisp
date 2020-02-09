@@ -458,7 +458,7 @@
 ; (defun QLASSQ (p a-list) (let ((y (assoc p a-list :test #'eq))) (if y (cdr y))))
 (defun QLASSQ (p a-list) (cdr (assq p a-list)))
 
-(defun pair (x y) (mapcar #'cons x y))
+(defun MAKE_PAIRS (x y) (mapcar #'cons x y))
 
 ;;; Operations on Association Sets (AS)
 
@@ -490,13 +490,6 @@
 (defun |get_lisp_error_out| () *error-output*)
 
 (defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
-
-(defun |sayMSG2File| (msg)
-  (PROG (file str)
-        (SETQ file (|makePathname| '|spadmsg| '|listing|))
-        (SETQ str (MAKE_OUTSTREAM file))
-        (|sayBrightly1| msg str)
-        (SHUT str) ) )
 
 (defvar |$fortranOutputStream|)
 
