@@ -145,12 +145,17 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       ++ on whether or not FE has a function \spad{abs}.  This should be
       ++ a local function, but the compiler won't allow it.
     atan1 : UPS -> UPS
+      ++ atan1 should be local but conditional
     integ : UPS -> UPS
       ++ integ should be local but conditional
+    integt : UTS -> UTS
+      ++ integt should be local but conditional
     integ_df : (UPS, UPS) -> UPS
       ++ integ_df should be local but conditional
     powToUPS : (List(FE), OPT_REC) -> Result
       ++ powToUPS should be local but conditional
+    my_digamma : FE -> FE
+      ++ my_digamma should be local but conditional
 
   Implementation ==> add
 
@@ -536,6 +541,8 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         sc : Stream(FE) := stream(genc, f(0))
         series(sc)$UTS
 
+    my_pi : FE := pi()$FE
+
     lpi : FE := log(2::FE*pi()$FE)/2::FE
 
     sqpi : FE := 1/sqrt(pi())
@@ -576,6 +583,66 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         leis :=  make_taylor(i +-> gen_eis(i, rv))
         [apply_taylor(leis, iups)]
 
+    replace_log(lc : FE, k : FE, lx : FE, ups1 : UPS) : UPS ==
+        c1 := k*lx + log(lc)
+        c1::UPS + log(ups1)
+
+    can_integrate_uts : Boolean := false
+
+    if UTS has integrate : UTS -> UTS then
+
+        can_integrate_uts := true
+
+        integt(f) == integrate(f)
+
+    else
+
+        integt(f) == error "can not integrate"
+
+    if FE has SpecialFunctionCategory then
+
+        my_digamma(xx) == digamma(xx)
+
+    else
+
+        my_digamma(xx) == error "need digamma"
+
+    do_Ei00(xx : UTS, exx : UTS, lc : FE, k : FE, lx : FE, ups1 : UPS,
+           ups : UPS) : Result ==
+        d_eiu := ((exx - 1$UTS) exquo xx)
+        d_eiu case "failed" => error "impossible: exquo failed"
+        d_ei := d_eiu::UTS
+        ei0 := integt(d_ei)
+        r1 := -my_digamma(1$FE)::UPS + replace_log(lc, k, lx, ups1)
+        r2 := apply_taylor(ei0, ups)
+        [r1 + r2]
+
+    do_Ei0(lc : FE, k : FE, lx : FE, ups1 : UPS, ups : UPS) : Result ==
+        xx := monomial(1, 1)$UTS
+        exx := exp(xx)$UTS
+        do_Ei00(xx, exx, lc, k, lx, ups1, ups)
+
+    do_Ci0(lc : FE, k : FE, lx : FE, ups1 : UPS, ups : UPS) : Result ==
+        xx := monomial(1, 1)$UTS
+        cxx := exp(xx)$UTS
+        do_Ei00(xx, cxx, lc, k, lx, ups1, ups)
+        
+    do_Chi0(lc : FE, k : FE, lx : FE, ups1 : UPS, ups : UPS) : Result ==
+        xx := monomial(1, 1)$UTS
+        chxx := cosh(xx)$UTS
+        do_Ei00(xx, chxx, lc, k, lx, ups1, ups)
+
+    do_dilog0(lc : FE, k : FE, lx : FE, ups1 : UPS, ups : UPS) : Result ==
+        xx := monomial(1, 1)$UTS
+        lxx := log(1$UTS - xx)$UTS
+        l1 := apply_taylor(lxx, ups)
+        r1 := ((pi()$FE)^2/(6::FE))::UPS - replace_log(lc, k, lx, ups1)*l1
+        lx1u := (lxx exquo xx)
+        lx1u case "failed" => error "impossible: exquo failed"
+        lx1 := lx1u::UTS
+        lx2 := integt(lx1)
+        r2 := apply_taylor(lx2, ups)
+        [r1 + r2]
 
     gen_lg(i : Integer) : FE ==
         i = 0 => lpi
@@ -586,9 +653,8 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
     do_log_gamma(lc : FE, k : FE, lx : FE, ups : UPS, ups1 : UPS,
               iups : UPS) : Result ==
         lgs := make_taylor(gen_lg)
-        c1 := k*lx + log(lc)
-        l1 := log(ups1)
-        r1 := (ups - (1/2::FE)::UPS) *$UPS (l1 + c1::UPS) -$UPS ups
+        l1 := replace_log(lc, k, lx, ups1)
+        r1 := (ups - (1/2::FE)::UPS) *$UPS l1 -$UPS ups
         r2 : UPS := apply_taylor(lgs, iups)$TEXP
         [r1 +$UPS r2]
 
@@ -596,20 +662,58 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
               ) : Result ==
         lgs := make_taylor(gen_lg)
         ldig := monomial(-1, 2)$UTS*differentiate(lgs)$UTS
-        c1 := k*lx + log(lc)
-        r1  : UPS := log(ups1) + c1::UPS + (-1/2::FE)*iups
+        l1 := replace_log(lc, k, lx, ups1)
+        r1  : UPS := l1 + (-1/2::FE)*iups
         r2 : UPS := apply_taylor(ldig, iups)$TEXP
         [r1 +$UPS r2]
 
+    do_polygamma_n(n : Integer, iups : UPS) : Result ==
+        lpol := make_taylor(gen_lg)
+        lpol := monomial(-1, 2)$UTS*differentiate(lpol)$UTS
+        lpol := monomial(1, 1)$UTS + monomial((1/2::FE), 2)$UTS +
+                  monomial(-1, 2)$UTS*differentiate(lpol)$UTS
+        for i in 2..n repeat
+            lpol := monomial(-1, 2)$UTS*differentiate(lpol)$UTS
+        [apply_taylor(lpol, iups)$TEXP]
+
     spec_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
         nm := name(ker)
+        nn : Integer
+        polygamma_n := (nm = 'polygamma) and
+            ((nu := retractIfCan(args(1))@Union(Integer, "failed"))
+                                         case Integer)
+               and ((nn := nu::Integer) >= 0)
+        ei_ci_chi := (nm = 'Ei or nm = 'Ci or nm = 'Chi)
         if nm = 'digamma or nm = '%logGamma or nm = '%eis or nm = '%erfs
-           or nm = '%erfis then
+           or nm = '%erfis  or ei_ci_chi or nm = 'dilog or polygamma_n then
             arg1 := args(1)
+            if polygamma_n then
+                arg1 := args(2)
             (nsu := i_expr_to_PS(arg1, opt_rec)) case %problem =>
                 return nsu
             ups := nsu.%series
-            if (ord := order(ups, 0)) < 0 then return
+            ord := order(ups, 0)
+            if (ei_ci_chi or nm = 'dilog) and ord = 0 and
+                 (ord := order(ups, 1::Expon)) > 0 then return
+                not(opt_rec.log_x_replace) or not(can_integrate_uts) =>
+                    stateProblem(string(nm), "expansion at 0")
+                ord := order(ups)
+                lc := coefficient(ups, ord)
+                (signum := sign(lc)$SIGNEF) case "failed" =>
+                    stateProblem(string(nm), "branch problem")
+                signum = -1 =>
+                    stateProblem(string(nm), "negative argument")
+                ups1 := monomial(1/lc, -ord)*ups
+                nm = 'Ei =>
+                    do_Ei0(lc, coerce_Ex(ord), opt_rec.log_x_val, ups1, ups)
+                nm = 'Ci =>
+                    do_Ci0(lc, coerce_Ex(ord), opt_rec.log_x_val, ups1, ups)
+                nm = 'Chi =>
+                    do_Chi0(lc, coerce_Ex(ord), opt_rec.log_x_val, ups1, ups)
+                nm = 'dilog =>
+                    do_dilog0(lc, coerce_Ex(ord), opt_rec.log_x_val, ups1, ups)
+                error "impossible"
+            else if ord < 0 then return
                 not(opt_rec.log_x_replace) =>
                     stateProblem(string(nm), "argument not Taylor")
                 lc := coefficient(ups, ord)
@@ -622,12 +726,14 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
                 nm = '%erfs => do_erfs(iups)
                 nm = '%erfis => do_erfis(iups)
                 ups1 := monomial(1/lc, -ord)*ups
-                nm = 'digamma =>
+                nm = 'digamma or (polygamma_n and nn = 0) =>
                     do_digamma(lc, coerce_Ex(ord), opt_rec.log_x_val,
                                ups1, iups)
                 nm = '%logGamma =>
                     do_log_gamma(lc, coerce_Ex(ord), opt_rec.log_x_val,
                                  ups, ups1, iups)
+                polygamma_n =>
+                    do_polygamma_n(nn, iups)
         (aresu := handle_args(args, opt_rec)) case Result =>
              aresu
         ares := aresu::ARES
@@ -752,7 +858,10 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
             return stateProblem("handle_args", "argument not Taylor")
         coef := coefficient(ups, 0)
         nm = 'Ei or nm = 'Ci or nm = 'Chi or nm = 'dilog =>
-            coef = 0 => stateProblem(string(nm), "expansion at 0")
+            coef = 0 =>
+                can_integrate_uts and opt_rec.log_x_replace =>
+                    spec_to_UPS(ker, argument(ker), opt_rec)
+                stateProblem(string(nm), "expansion at 0")
             do_prim(ker, coef, opt_rec)
         nm = 'li =>
             coef = 0 => stateProblem(string(nm), "expansion at 0")
