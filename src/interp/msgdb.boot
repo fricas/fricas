@@ -887,7 +887,7 @@ sayBrightlyNT1(x, $fricasOutput) ==
 sayBrightlyNT(x) == sayBrightlyNT2(x, get_lisp_std_out())
 
 sayBrightly2(x, str) ==
-    NULL(X) => nil
+    NULL(x) => nil
     $sayBrightlyStream => sayBrightly1(x, $sayBrightlyStream)
     sayBrightly1(x, str)
 
@@ -900,7 +900,7 @@ sayBrightly1(x, str) ==
 sayBrightly(x) == sayBrightly2(x,  get_lisp_std_out())
 
 sayBrightlyI(x) ==
-    NULL(X) => nil
+    NULL(x) => nil
     sayBrightly1(x, get_lisp_error_out())
 
 sayMSGNT(x) == sayBrightlyNT1(x, $algebraOutputStream)
