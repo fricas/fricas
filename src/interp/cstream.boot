@@ -53,8 +53,12 @@ explains the strange parsing technique).
 
 npNull x== StreamNull x
 
+StreamExplicitlyNull(x) ==
+    null x or EQCAR (x, "nullstream") => true
+    false
+
 StreamNull x==
-  null x or EQCAR (x,"nullstream") => true
+  StreamExplicitlyNull(x) => true
   while EQCAR(x,"nonnullstream") repeat
           st:=APPLY(CADR x,CDDR x)
           RPLACA(x, first st)
@@ -88,7 +92,9 @@ incZip1(:z)==
      StreamNull f2 => StreamNil
      cons(FUNCALL(g,car f1,car f2),incZip(g,cdr f1,cdr f2))
 
-incAppend(x,y)==Delay(function incAppend1,[x,y])
+incAppend(x, y) ==
+    StreamExplicitlyNull(x) => y
+    Delay(function incAppend1,[x,y])
 
 incAppend1(:z)==
      [x,y]:=z
