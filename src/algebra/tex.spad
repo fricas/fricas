@@ -319,6 +319,27 @@ TexFormat() : public == private where
     parenthesize str ==
       concat ["\left( ",str," \right)"]
 
+    format_prime(args : L E, prec : I) : S ==
+        arg2 := second(args)
+        narg2 :=
+            string?(arg2) =>
+                arg2s : S := string(arg2)
+                c_char := char(",")
+                every?(c +-> c = c_char, arg2s) =>
+                    prime_str := "\prime"
+                    n := #arg2s
+                    n = 1 => message(prime_str)
+                    res := new(n*#prime_str, char(" "))
+                    k := 1
+                    for i in 1..n repeat
+                        for j in 1..#prime_str repeat
+                            qsetelt!(res, k, qelt(prime_str, j))
+                            k := k + 1
+                    message(res)
+                arg2
+            arg2           
+        formatSpecial('SUPERSUB, [first args, empty()$E, narg2], prec)
+
     formatSpecial(op : Sy, args : L E, prec : I) : S ==
         arg : E
         prescript : Boolean := false
@@ -352,7 +373,7 @@ TexFormat() : public == private where
         op = 'PAREN =>
             group parenthesize ungroup formatExpr(first args, minPrec)
         op = 'PRIME =>
-            formatSpecial('SUPERSUB, [first args, " "::E, second(args)], prec)
+            format_prime(args, prec)
         op = 'OVERBAR =>
             empty?(args) => ""
             group concat ["\overline ", formatExpr(first args, minPrec)]
