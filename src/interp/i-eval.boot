@@ -31,6 +31,9 @@
 
 )package "BOOT"
 
+-- Initialize for use in msgdb
+$genValue := false
+
 --% Constructor Evaluation
 
 -- For use from compiled code
