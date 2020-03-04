@@ -725,7 +725,7 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
   FAIL==> error "failed - cannot handle that integrand"
 
   Exports ==> with
-    algint : (F, K, K, UP -> UP) -> IR
+    algint : (F, K, K, UP -> UP, F -> IR) -> IR
       ++ algint(f, x, y, d) returns the integral of \spad{f(x, y)dx}
       ++ where y is an algebraic function of x;
       ++ d is the derivation to use on \spad{k[x]}.
@@ -746,8 +746,8 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                         K, R, P, F)
 
-    rootintegrate : (F, K, K, UP -> UP) -> IR
-    algintegrate : (F, K, K, UP -> UP) -> IR
+    rootintegrate : (F, K, K, UP -> UP, F -> IR) -> IR
+    algintegrate : (F, K, K, UP -> UP, F -> IR) -> IR
     UPUP2F       : (UPUP, RF, K, K) -> F
     F2UPUP       : (F, K, K, UP) -> UPUP
     UP2UPUP      : (UP, K) -> UPUP
@@ -762,22 +762,24 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
 
     F2UPUP(f, kx, k, p) == UP2UPUP(univariate(f, k, p), kx)
 
-    rootintegrate(f, t, k, derivation) ==
+    rootintegrate(f, t, k, derivation, rec_int) ==
       r1     := mkIntegral(modulus := UP2UPUP(p := minPoly k, t))
       f1     := F2UPUP(f, t, k, p) monomial(inv(r1.coef), 1)
       r      := radPoly(r1.poly)::Record(radicand : RF, deg : N)
       q      := retract(r.radicand)
       curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
       map(x1+->UPUP2F(lift x1, r1.coef, t, k),
-                            algintegrate(reduce f1, derivation)$ALG)$IR2
+                            algintegrate(reduce f1, derivation, rec_int
+                                        )$ALG)$IR2
 
-    algintegrate(f, t, k, derivation) ==
+    algintegrate(f, t, k, derivation, rec_int) ==
       r1     := mkIntegral(modulus := UP2UPUP(p := minPoly k, t))
       f1     := F2UPUP(f, t, k, p) monomial(inv(r1.coef), 1)
       modulus := UP2UPUP(p := minPoly k, t)
       curve  := AlgebraicFunctionField(F, UP, UPUP, r1.poly)
       map(x1+->UPUP2F(lift x1, r1.coef, t, k),
-                            algintegrate(reduce f1, derivation)$ALG)$IR2
+                            algintegrate(reduce f1, derivation, rec_int
+                                        )$ALG)$IR2
 
     Curv_Rec ==> Record(funs : List(UPUP),
                    irec : Record(coef : Fraction(UP), poly : UPUP),
@@ -837,9 +839,9 @@ AlgebraicIntegration(R, F) : Exports == Implementation where
          p)$SparseUnivariatePolynomialFunctions2(RF, F)
                                             (multivariate(cf, t) * k::F)
 
-    algint(f, t, y, derivation) ==
-      is?(y, 'nthRoot) => rootintegrate(f, t, y, derivation)
-      is?(y, 'rootOf)  => algintegrate(f, t, y, derivation)
+    algint(f, t, y, derivation, rec_int) ==
+      is?(y, 'nthRoot) => rootintegrate(f, t, y, derivation, rec_int)
+      is?(y, 'rootOf)  => algintegrate(f, t, y, derivation, rec_int)
       FAIL
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

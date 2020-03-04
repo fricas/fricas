@@ -153,6 +153,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
   GP  ==> LaurentPolynomial(F, UP)
   K   ==> Kernel F
   IR  ==> IntegrationResult R
+  IRF ==> IntegrationResult F
   UPR ==> SparseUnivariatePolynomial R
   FD  ==> FiniteDivisor(F, UP, UPUP, R)
   LOG ==> Record(scalar : Q, coeff : UPR, logand : UPR)
@@ -166,8 +167,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
   NOTI  ==> error "Not integrable (provided residues have no relations)"
 
   Exports ==> with
-    algintegrate  : (R, UP -> UP) -> IR
-      ++ algintegrate(f, d) integrates f with respect to the derivation d.
+    algintegrate  : (R, UP -> UP, F -> IRF) -> IR
+      ++ algintegrate(f, d, rec) integrates f with respect to the derivation d.
     palgintegrate : (R, UP -> UP) -> IR
       ++ palgintegrate(f, d) integrates f with respect to the derivation d.
       ++ Argument f must be a pure algebraic function.
@@ -196,8 +197,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
     nonQ       : (DIV, UP)           -> Union(List LOG, "failed")
     rlift      : (F, K, K) -> R
     varRoot?   : (UP, F -> F) -> Boolean
-    algintexp  : (R, UP -> UP) -> IR
-    algintprim : (R, UP -> UP) -> IR
+    algintexp  : (R, UP -> UP, F -> IRF) -> IR
+    algintprim : (R, UP -> UP, F -> IRF) -> IR
 
     dummy : R := 0
 
@@ -207,7 +208,19 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
     F2UPR f == F2R(f)::UPR
     F2R f   == f::UP::QF::R
 
-    algintexp(f, derivation) ==
+    IRF_to_IR(irf : IRF) : IR ==
+        map(F2R, irf)$IntegrationResultFunctions2(F, R)
+
+    RF ==> Fraction UP
+
+    R_to_F(f : R) : Union(F, "failed") ==
+        (u1 := retractIfCan(f)@Union(RF, "failed")) case "failed" => "failed"
+        f1 := u1::RF
+        (u2 := retractIfCan(f1)@Union(UP, "failed")) case "failed" => "failed"
+        f2 := u2::UP
+        retractIfCan(f2)@Union(F, "failed")
+
+    algintexp(f, derivation, rec_int) ==
       d := (c := integralCoordinates f).den
       v := c.num
       vp : Vector(GP) := new(n := #v, 0)
@@ -218,16 +231,23 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         qsetelt!(vp, i, r.polyPart)
       ff := represents(vf, w := integralBasis())
       h := HermiteIntegrate(ff, derivation)
-      p := represents(map((x1 : GP) : QF+->convert(x1)@QF, vp)$VectorFunctions2(GP, QF), w)
-      zero?(h.logpart) and zero? p => h.answer::IR
+      p := represents(map((x1 : GP) : QF+->convert(x1)@QF,
+                      vp)$VectorFunctions2(GP, QF), w)
+      not(zero?(p)) => FAIL3
+      zero?(h.logpart) => h.answer::IR
+      (p1u := R_to_F(h.logpart)) case F =>
+          res1 := rec_int(p1u::F)
+          mkAnswer(h.answer, empty(), empty()) + IRF_to_IR(res1)
       (u := alglogint(h.logpart, derivation)) case "failed" =>
                        mkAnswer(h.answer, empty(), [[p + h.logpart, dummy]])
-      zero? p => mkAnswer(h.answer, u::List(LOG), empty())
-      FAIL3
+      mkAnswer(h.answer, u::List(LOG), empty())
 
-    algintprim(f, derivation) ==
+    algintprim(f, derivation, rec_int) ==
       h := HermiteIntegrate(f, derivation)
       zero?(h.logpart) => h.answer::IR
+      (p1u := R_to_F(h.logpart)) case F =>
+          res1 := rec_int(p1u::F)
+          mkAnswer(h.answer, empty(), empty()) + IRF_to_IR(res1)
       (u := alglogint(h.logpart, derivation)) case "failed" =>
                        mkAnswer(h.answer, empty(), [[h.logpart, dummy]])
       mkAnswer(h.answer, u::List(LOG), empty())
@@ -572,19 +592,20 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
       mkAnswer(h.answer, u::List(LOG), [[difFirstKind, dummy]])
 
 -- for mixed functions. f dx not assumed locally integral at infinity
-    algintegrate(f, derivation) ==
+    algintegrate(f, derivation, rec_int) ==
       x' := derivation(x := monomial(1, 1)$UP)
       zero? degree(x') =>
-         algintprim(f, derivation)
+         algintprim(f, derivation, rec_int)
       ((xx := x' exquo x) case UP) and
         (retractIfCan(xx::UP)@Union(F, "failed") case F) =>
-          algintexp(f, derivation)
+          algintexp(f, derivation, rec_int)
       error "should not happen"
 
     alglogint(f, derivation) ==
         r := primitivePart(doubleResultant(f, derivation))
         varRoot?(r, x1+->retract(derivation(x1::UP))@F) => "failed"
         FAIL0
+
 )boot $tryRecompileArguments := true
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
