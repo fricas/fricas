@@ -39,7 +39,7 @@ NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
     checkRiccati     : (F, F, K) -> Union(List F, "failed")
     solveRiccati     : (List F, OP, SY, F) -> Union(F, "failed")
     partSolRiccati   : (List F, OP, SY, F) -> Union(F, "failed")
-    integratingFactor : (F, F, SY, SY) -> U
+    integratingFactor : (F, F, F, SY, SY) -> U
 
     unk    := new()$SY
     kunk : K := kernel unk
@@ -55,7 +55,7 @@ NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
       mm := d * mm
       nn := d * nn
 -- look for an integrating factor mu
-      (u := integratingFactor(mm, nn, unk, x)) case F =>
+      (u := integratingFactor(mm, nn, d, unk, x)) case F =>
         mu := u::F
         mm := mm * mu
         nn := nn * mu
@@ -69,9 +69,10 @@ NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
       "failed"
 
 -- look for an integrating factor
-    integratingFactor(m, n, y, x) ==
+    integratingFactor(m, n, den, y, x) ==
 -- check first for exactness
       zero?(d := differentiate(m, y) - differentiate(n, x)) => 1
+      zero?(differentiate(m/den, y) - differentiate(n/den, x)) => 1/den
 -- look for an integrating factor involving x only
       not member?(y, variables(f := d / n)) => expint(f, x)
 -- look for an integrating factor involving y only
