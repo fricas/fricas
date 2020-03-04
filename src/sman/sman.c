@@ -564,7 +564,7 @@ fork_FriCAS(void)
       perror("setting the term buffer");
       exit(-1);
     }
-        augmented_ws_path = (char *)malloc(2 * strlen(ws_path) + strlen(eval_code) + strlen(" -- ") + 1);
+    augmented_ws_path = (char *)malloc(2 * strlen(ws_path) + strlen(eval_code) + strlen(" -- ") + strlen(" ") + 1);
     strcpy(augmented_ws_path,ws_path);          /* write the name    */
     /* Pass '--' to make sure that argument(s) passed to FRICASsys
        do not cause trouble from host Lisp (Closure CL would
