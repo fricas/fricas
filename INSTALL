@@ -40,7 +40,6 @@ xvfb-run --server-args="-screen 0 1024x768x24" --auto-servernum -n 0 make viewpo
 Prerequisites:
 
 - Lisp, one of:
-    * GCL, 2.6.7 or 2.6.8
     * sbcl, 1.0.7 or later
     * clisp, 2.41 or later
     * Clozure CL (former openmcl), starting from openmcl 1.1 prerelease
@@ -56,7 +55,11 @@ Prerequisites:
   than clisp), Clozure CL the second (about 1.5 times slower than sbcl),
   than gcl and ECL (about 3 times slower than sbcl) and clisp is the slowest
   one.  Note: older versions of ECL were much (about 4 times) slower,
-  you should use newest version if you care about speed.
+  you should use newest version if you care about speed.  FriCAS used
+  to build using GCL.  However, due to incompatible changes in GCL newest
+  GCL will not work for FriCAS, build will fail.  Unfortunatly failing
+  versions show the same version number, namely 2.6.12 as working ones.
+  So currently using GCL for building FriCAS is unsupported.
 
   Some computation work much faster on 64-bit machines, especially
   when using sbcl.
@@ -128,6 +131,8 @@ Known problems:
 
   Alternatively for sbcl one can use '--dynamic-space-size' argument
   to decrease use of virtual memory.
+
+- building FriCAS fails when using newest gcl
 
 - older gcl had serious problems on Macs and Windows.
 
@@ -224,15 +229,6 @@ _one_ of the following:
 
   http://ecls.sourceforge.net
 
-- gcl, version 2.6.8 works OK.  If you want to try development
-  version from git note that main branch currently is very
-  unstable and can not build FriCAS.
-
-  In the past in case of build problems the following configure line
-  was helpful:
-
-  ./configure --disable-xgcl --disable-dynsysbfd --disable-statsysbfd --enable-locbfd
-
 - clisp
 
   http://clisp.cons.org
@@ -255,6 +251,12 @@ follow instructions.
 
 svn co svn://svn.code.sf.net/p/fricas/code/trunk fricas
 
+Aternatively, there is git mirror at github.  To fetch it is
+the following command (remove the "--depth 1" option for access
+to the change history):
+
+git clone --depth 1 https://github.com/fricas/fricas
+
 2) Create build directory and change to it:
 
 mkdir ax-build
@@ -273,6 +275,39 @@ make
 make install
 
 If you want graphic examples read the note before.
+
+-------------------------------------------------------
+
+Arguments for the configure script
+
+To choose the installation location, use the '--prefix' option and specify a
+path.
+
+Selecting a Lisp compiler:
+
+Currently --with-lisp option accepts all supported lisp variants, namely
+sbcl, clisp, ecl and Clozure CL (openmcl).  Note: the argument
+is just command to invoke chosen Lisp.  Build machinery will
+automatically detect which Lisp is in use and adjust as needed.
+
+Optimization settings for Lisp compilation: see "Algebra optimization".
+
+GMP (for faster arbitrary precision arithmetic): search for "Using GMP" in this
+document.
+
+Example configure command:
+
+../fricas/configure --prefix=/home/nsajko/usr \
+        '--with-lisp=sbcl --control-stack-size 512 --dynamic-space-size 6000' \
+        --enable-gmp
+
+This configures make to
+
+* install to /home/nsajko/usr
+
+* build lisp with SBCL and increased stack and heap memory limits
+
+* make FriCAS use GMP which is installed in /usr
 
 -------------------------------------------------------
 
@@ -314,7 +349,37 @@ contain errors which can crash the whole system.
 
 --------------------------------------------------------
 
+Linux: get better performance when really necessary
+
+The Linux operating system kernel usually uses methods to mitigate some CPU
+security bugs, and these mitigations can take a great toll on code execution
+speed. This is mainly a problem for Intel machines.
+
+As the mitigations are required for security on affected harware platforms when
+executing untrusted code (like in Web browsers, for example); the typical
+scenario where one would disable the kernel mitigations while using FriCAS is
+when it is known that the computations will be resource and time (e.g., many
+hours) demanding, or when one has a machine dedicated to trusted code (so no
+browsing the Web).
+
+If one wants to execute untrusted code while running FriCAS; even if the
+untrusted code is behind a hypervisor, virtual machine, JavaScript engine,
+etc.; DO NOT DISABLE THE MITIGATIONS.
+
+If one is sure that it is safe for one's system to do so, one may disable some
+of these mitigations by adding mitigations=off to the kernel's boot parameters.
+This will probably be accomplished by configuring the bootloader, so read the
+bootloader's documentation for details. The following may also be useful:
+https://wiki.archlinux.org/index.php/Kernel_parameters
+https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html
+https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/
+
+--------------------------------------------------------
+
 Using GMP with sbcl or Clozure CL.
+
+See https://gmplib.org for more information on the GNU Multiple Precision
+Arithmetic Library.
 
 Currently on average FriCAS is fastest when compiled using sbcl.
 However, sbcl normally uses its own routines for computations
@@ -322,9 +387,8 @@ with large numbers and those routines are slower than GMP.
 FriCAS now has special support to replace sbcl arithmetic
 routines by GMP.  To use this support install GMP including
 header files (development package if you install via a package
-manager).  Currently there are two available GMP versions,
-version 5 is much faster than version 4.  Then configure FriCAS
-adding '--enable-gmp' option to the 'configure' arguments.
+manager).  Then configure FriCAS adding '--enable-gmp' option
+to the 'configure' arguments.
 
 FriCAS also has support for using GMP with Clozure CL.
 Currently Clozure CL with GMP works on 32/64 bit Intel/AMD
