@@ -46,20 +46,6 @@ GenerateUnivariatePowerSeries1(R) : Exports == Implementation where
       ++ \spad{puiseux(n +-> a(n), x = a, r0..r1, r)} returns
       ++ \spad{sum(n = r0 + k*r while n <= r1, a(n) * (x - a)^n)}.
 
-    series : (I -> R, SY, R) -> Any
-      ++ \spad{series(n +-> a(n), x = a)} returns
-      ++ \spad{sum(n = 0.., a(n)*(x-a)^n)}.
-    series : (I -> R, SY, R, SEG I) -> Any
-      ++ \spad{series(n +-> a(n), x, a, n0..)} returns
-      ++ \spad{sum(n = n0.., a(n) * (x - a)^n)};
-      ++ \spad{series(n +-> a(n), x, a, n0..n1)} returns
-      ++ \spad{sum(n = n0..n1, a(n) * (x - a)^n)}.
-    series : (RN -> R, SY, R, SEG RN, RN) -> Any
-      ++ \spad{series(n +-> a(n), x = a, r0.., r)} returns
-      ++ \spad{sum(n = r0, r0 + r, r0 + 2*r..., a(n) * (x - a)^n)};
-      ++ \spad{series(n +-> a(n), x = a, r0..r1, r)} returns
-      ++ \spad{sum(n = r0 + k*r while n <= r1, a(n) * (x - a)^n)}.
-
   Implementation ==> add
 
     genStream : (I -> R, I) -> ST(R)
@@ -140,8 +126,7 @@ GenerateUnivariatePowerSeries1(R) : Exports == Implementation where
 ++ Description:
 ++   \spadtype{GenerateUnivariatePowerSeries} provides functions that create
 ++   power series from explicit formulas for their \spad{n}th coefficient.
-GenerateUnivariatePowerSeries2(R, FE) : Exports == Implementation where
-  R : Join(IntegralDomain, RetractableTo Integer)
+GenerateUnivariatePowerSeries2(FE) : Exports == Implementation where
   FE : Join(Ring, RetractableTo SY)
   ANY1 ==> AnyFunctions1
   EQ   ==> Equation
@@ -190,7 +175,7 @@ GenerateUnivariatePowerSeries2(R, FE) : Exports == Implementation where
       ++ \spad{series(n +-> a(n), x = a, r0..r1, r)} returns
       ++ \spad{sum(n = r0 + k*r while n <= r1, a(n) * (x - a)^n)}.
 
-    if FE has FunctionSpace(R) then
+    if FE has RetractableTo(I) and FE has Evalable(FE) then
 
       taylor : (FE, SY, EQ FE) -> Any
         ++ \spad{taylor(a(n), n, x = a)} returns
@@ -206,6 +191,8 @@ GenerateUnivariatePowerSeries2(R, FE) : Exports == Implementation where
         ++ \spad{sum(n = n0.., a(n) * (x - a)^n)};
         ++ \spad{laurent(a(n), n, x=a, n0..n1)} returns
         ++ \spad{sum(n = n0..n1, a(n) * (x - a)^n)}.
+
+    if FE has RetractableTo(RN) and FE has Evalable(FE) then
 
       puiseux : (FE, SY, EQ FE, SEG RN, RN) -> Any
         ++ \spad{puiseux(a(n), n, x = a, r0.., r)} returns
@@ -265,7 +252,7 @@ GenerateUnivariatePowerSeries2(R, FE) : Exports == Implementation where
     series(f : RN -> FE, eq : EQ FE, seg : SEG RN, r : RN) ==
         puiseux(f, eq, seg, r)
 
-    if FE has FunctionSpace(R) then
+    if FE has RetractableTo(I) and FE has Evalable(FE) then
 
       taylor(an : FE, n : SY, eq : EQ FE) : Any ==
           taylor((i : I) : FE +-> eval(an, (n :: FE) = (i :: FE)), eq)
@@ -275,6 +262,8 @@ GenerateUnivariatePowerSeries2(R, FE) : Exports == Implementation where
 
       laurent(an, n, eq, seg) ==
           laurent((i : I) : FE +-> eval(an, (n :: FE) = (i :: FE)), eq, seg)
+
+    if FE has RetractableTo(RN) and FE has Evalable(FE) then
 
       puiseux(an, n, eq, r0, m) ==
           puiseux((r : RN) : FE +-> eval(an, (n :: FE) = (r :: FE)), eq, r0, m)
@@ -295,7 +284,7 @@ GenerateUnivariatePowerSeries(
            LinearlyExplicitOver Integer),
     FE : Join(RetractableTo Symbol, TranscendentalFunctionCategory,
               FunctionSpace R)) ==
-      GenerateUnivariatePowerSeries2(R, FE)
+      GenerateUnivariatePowerSeries2(FE)
 
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
