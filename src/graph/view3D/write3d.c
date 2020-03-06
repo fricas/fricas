@@ -49,8 +49,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "all_3d.H1"
 #include "strutil.h"
 
-  /* upper limit as to how many kinds of files could be written (numBits-1) */
-#define numBits (8*sizeof(int))
 #define StellarColors 9
 
 int
@@ -136,7 +134,7 @@ writeViewport (int thingsToWrite)
     }  /* else was able to open file under the given filename */
 
            /* write out special files */
-    for (ii=1; ii<numBits; ii++) {   /* write.h is one-based */
+    for (ii=1; ii<OutTypeLimit; ii++) {   /* write.h is one-based */
       if (thingsToWrite & (1<<ii)) {
         switch (ii) {
         case Bitmap:

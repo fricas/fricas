@@ -45,9 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Gfun.H1"
 #include "strutil.h"
 
-
-#define numBits (8*sizeof(int))
-
 int
 writeViewport(int thingsToWrite)
 {
@@ -141,7 +138,7 @@ writeViewport(int thingsToWrite)
     } /* else */
 
            /* write out special files */
-    for (ii=1; ii<numBits; ii++) {   /* write.h is one-based */
+    for (ii=1; ii<OutTypeLimit; ii++) {   /* write.h is one-based */
       if (thingsToWrite & (1<<ii)) {
         switch (ii) {
         case Pixmap:

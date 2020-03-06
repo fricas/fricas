@@ -40,3 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define Bitmap          2
 #define Postscript      3
 #define Image           4
+
+/* Not an output type, but must equal the greatest output type + 1 */
+#define OutTypeLimit 5
