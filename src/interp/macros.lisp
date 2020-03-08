@@ -489,8 +489,6 @@
 
 (defun |get_lisp_error_out| () *error-output*)
 
-(defparameter |$fricasOutput| (make-synonym-stream '*standard-output*))
-
 (defvar |$fortranOutputStream|)
 
 (defvar |$formulaOutputStream|)

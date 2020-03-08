@@ -526,15 +526,17 @@ mkMessage msg ==
 
 sayMessage msg == sayMSG mkMessage msg
 
-sayNewLine() ==
+sayNewLine() == TERPRI()
+
+say_new_line(str) ==
   -- Note: this function should *always* be used by sayBrightly and
   -- friends rather than TERPRI
-  TERPRI($fricasOutput)
+  TERPRI(str)
 
-sayString x ==
+sayString(x, str) ==
   -- Note: this function should *always* be used by sayBrightly and
   -- friends rather than PRINTEXP
-  PRINTEXP (x, $fricasOutput)
+  PRINTEXP(x, str)
 
 spadStartUpMsgs() ==
   -- messages displayed when the system starts up
@@ -561,12 +563,13 @@ HELP() == sayKeyedMsg("S2GL0019",NIL)
 
 --% Some Advanced Formatting Functions
 
-brightPrint x ==
-  $MARG : local := 0
-  for y in x repeat brightPrint0 y
+brightPrint(x, str) ==
+  marg := 0
+  for y in x repeat
+      marg := brightPrint0(y, str, marg)
   NIL
 
-brightPrint0 x ==
+brightPrint0(x, str, marg) ==
   if IDENTP x then x := PNAME x
 
   -- if the first character is a backslash and the second is a percent sign,
@@ -574,30 +577,46 @@ brightPrint0 x ==
   -- it without the backslash.
 
   STRINGP x and STRINGLENGTH x > 1 and x.0 = char "\" and x.1 = char "%" =>
-    sayString SUBSTRING(x,1,NIL)
+      sayString(SUBSTRING(x, 1, NIL), str)
+      marg
   x = '"%l" =>
-    sayNewLine()
-    for i in 1..$MARG repeat sayString '" "
+      say_new_line(str)
+      for i in 1..marg repeat
+          sayString('" ", str)
+      marg
   x = '"%i" =>
-    $MARG := $MARG + 3
+      marg + 3
   x = '"%u" =>
-    $MARG := $MARG - 3
-    if $MARG < 0 then $MARG := 0
+      marg := marg - 3
+      marg < 0 => 0
+      marg
   x = '"%U" =>
-    $MARG := 0
+      0
   x = '"%" =>
-    sayString '" "
+      sayString('" ", str)
+      marg
   x = '"%%" =>
-    sayString  '"%"
+      sayString('"%", str)
+      marg
   x = '"%b" =>
-    NULL $highlightAllowed        => sayString '" "
-    sayString $highlightFontOn
-  k := blankIndicator x => BLANKS (k, $fricasOutput)
+      NULL $highlightAllowed =>
+          sayString('" ", str)
+          marg
+      sayString($highlightFontOn, str)
+      marg
+  k := blankIndicator x =>
+      BLANKS(k, str)
+      marg
   x = '"%d" =>
-    NULL $highlightAllowed        => sayString '" "
-    sayString $highlightFontOff
-  STRINGP x => sayString x
-  brightPrintHighlight x
+      NULL $highlightAllowed =>
+          sayString('" ", str)
+          marg
+      sayString($highlightFontOff, str)
+      marg
+  STRINGP x =>
+      sayString(x, str)
+      marg
+  brightPrintHighlight(x, str, marg)
 
 blankIndicator x ==
   if IDENTP x then x := PNAME x
@@ -607,45 +626,55 @@ blankIndicator x ==
     1
   nil
 
-brightPrint1 x ==
-  if x in '(%l "%l") then sayNewLine()
-  else if STRINGP x then sayString x
-       else brightPrintHighlight x
-  NIL
+brightPrint1(x, str, marg) ==
+  if x in '(%l "%l") then say_new_line(str)
+  else if STRINGP x then sayString(x, str)
+       else marg := brightPrintHighlight(x, str, marg)
+  marg
 
-brightPrintHighlight x ==
+brightPrintHighlight(x, str, marg) ==
   IDENTP x =>
     pn := PNAME x
-    sayString pn
+    sayString(pn, str)
+    marg
   -- following line helps find certain bugs that slip through
   -- also see sayBrightlyLength1
-  VECP x => sayString '"UNPRINTABLE"
-  ATOM x => sayString object2String x
+  VECP x =>
+      sayString('"UNPRINTABLE", str)
+      marg
+  ATOM x =>
+      sayString(object2String(x), str)
+      marg
   [key,:rst] := x
   if IDENTP key then key:=PNAME key
-  key = '"%m" => mathprint rst
-  key in '("%p" "%s") => PRETTYPRIN0 rst
-  key = '"%ce" => brightPrintCenter rst
-  key = '"%rj" => brightPrintRightJustify rst
-  key = '"%t"  => $MARG := $MARG + tabber rst
-  sayString '"("
-  brightPrint1 key
+  key = '"%m" =>
+      mathprint rst
+      marg
+  key in '("%p" "%s") =>
+      PRETTYPRIN0(rst, str)
+      marg
+  key = '"%ce" => brightPrintCenter(rst, str, marg)
+  key = '"%rj" => brightPrintRightJustify(rst, str, marg)
+  key = '"%t"  => marg + tabber(rst)
+  sayString('"(", str)
+  marg := brightPrint1(key, str, marg)
   if EQ(key,'TAGGEDreturn) then
     rst := [first rst, CADR rst, CADDR rst, '"environment (omitted)"]
   for y in rst repeat
-    sayString '" "
-    brightPrint1 y
+    sayString('" ", str)
+    marg := brightPrint1(y, str, marg)
   if rst and (la := LASTATOM rst) then
-    sayString '" . "
-    brightPrint1 la
-  sayString '")"
+    sayString('" . ", str)
+    marg := brightPrint1(la, str, marg)
+  sayString('")", str)
+  marg
 
 tabber num ==
     maxTab := 50
     num > maxTab => maxTab
     num
 
-brightPrintCenter x ==
+brightPrintCenter(x, str, marg) ==
   -- centers rst within $LINELENGTH, checking for %l's
   ATOM x =>
     x := object2String x
@@ -653,8 +682,9 @@ brightPrintCenter x ==
     if wid < $LINELENGTH then
       f := DIVIDE($LINELENGTH - wid,2)
       x := LIST(fillerSpaces(f.0,'" "),x)
-    for y in x repeat brightPrint0 y
-    NIL
+    for y in x repeat
+        marg := brightPrint0(y, str, marg)
+    marg
   y := NIL
   ok := true
   while x and ok repeat
@@ -666,23 +696,24 @@ brightPrintCenter x ==
   if wid < $LINELENGTH then
     f := DIVIDE($LINELENGTH - wid,2)
     y := CONS(fillerSpaces(f.0,'" "),y)
-  for z in y repeat brightPrint0 z
+  for z in y repeat
+      marg := brightPrint0(z, str, marg)
   if x then
-    sayNewLine()
-    brightPrintCenter x
-  NIL
+      say_new_line(str)
+      marg := brightPrintCenter(x, str, marg)
+  marg
 
-brightPrintRightJustify x ==
+brightPrintRightJustify(x, str, marg) ==
   -- right justifies rst within $LINELENGTH, checking for %l's
   ATOM x =>
     x := object2String x
     wid := STRINGLENGTH x
     wid < $LINELENGTH =>
       x := LIST(fillerSpaces($LINELENGTH-wid,'" "),x)
-      for y in x repeat brightPrint0 y
-      NIL
-    brightPrint0 x
-    NIL
+      for y in x repeat
+          marg := brightPrint0(y, str, marg)
+      marg
+    brightPrint0(x, str, marg)
   y := NIL
   ok := true
   while x and ok repeat
@@ -693,11 +724,12 @@ brightPrintRightJustify x ==
   wid := sayBrightlyLength y
   if wid < $LINELENGTH then
     y := CONS(fillerSpaces($LINELENGTH-wid,'" "),y)
-  for z in y repeat brightPrint0 z
+  for z in y repeat
+      marg := brightPrint0(z, str, marg)
   if x then
-    sayNewLine()
-    brightPrintRightJustify x
-  NIL
+    say_new_line(str)
+    marg := brightPrintRightJustify(x, str, marg)
+  marg
 
 --% Message Formatting Utilities
 
@@ -879,10 +911,11 @@ sayBrightlyNT2(x, str) ==
     $sayBrightlyStream => sayBrightlyNT1(x, $sayBrightlyStream)
     sayBrightlyNT1(x, str)
 
-sayBrightlyNT1(x, $fricasOutput) ==
+sayBrightlyNT1(x, str) ==
     if x then
-        ATOM(x) => brightPrint0(x)
-        brightPrint(x)
+        ATOM(x) =>
+            brightPrint0(x, str, 0)
+        brightPrint(x, str)
 
 sayBrightlyNT(x) == sayBrightlyNT2(x, get_lisp_std_out())
 
