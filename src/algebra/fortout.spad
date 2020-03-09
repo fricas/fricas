@@ -115,6 +115,8 @@ FortranCodeTools : with
                 op = "-" and atom?(first(args)) => s
                 nprec <= prec => [")", :s, "("]
                 s
+            symbol?(op0) and symbol(op0) = 'PAREN =>
+                [")", :exp2Fort2(first args, -1, op), "("]
             exp2FortFn(op, args, nargs)
         op = "CMPLX" =>
             nargs ~= 2 => error "Bad number of arguments to CMPLX"
@@ -393,7 +395,8 @@ FortranCodeTools : with
             message(concat(["[", string(operator(arg)), :tailPart, "]"]))
         op = 'PAREN =>
             op1 := operator(args(1))
-            not(symbol?(op1) and symbol(op1) = 'CONCATB) => fortPre1(args(1))
+            not(symbol?(op1) and symbol(op1) = 'CONCATB) =>
+                elt('PAREN::O, [fortPre1(args(1))])
             -- Have a matrix element
             mkMat(arguments(args(1)))
         op = 'SUB =>
