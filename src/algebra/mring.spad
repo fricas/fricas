@@ -15,39 +15,20 @@
 MonoidRingCategory(R : Ring, M : Monoid) : Category == MRCdefinition where
     Term ==> Record(k : M, c : R)
 
-    MRCdefinition == Join(Ring, RetractableTo M, RetractableTo R) with
-        monomial         : (R, M) -> %
-          ++ monomial(r, m) creates a scalar multiple of the basis element m.
-        coefficient : (%, M) -> R
-          ++ coefficient(f, m) extracts the coefficient of m in f with respect
-          ++ to the canonical basis M.
+    MRCdefinition == Join(Ring, FreeModuleCategory(R, M), RetractableTo M,
+                          RetractableTo R) with
         coerce :   List Term -> %
           ++ coerce(lt) converts a list of terms and coefficients to a member of the domain.
         terms       : % -> List Term
           ++ terms(f) gives the list of non-zero coefficients combined
           ++ with their corresponding basis element as records.
           ++ This is the internal representation.
-        map         : (R -> R, %) -> %
-          ++ map(fn, u) maps function fn onto the coefficients
-          ++ of the non-zero monomials of u.
-        monomial?   : % -> Boolean
-          ++ monomial?(f) tests if f is a single monomial.
-        coefficients : % -> List R
-          ++ coefficients(f) lists all non-zero coefficients.
-        monomials : % -> List %
-           ++ monomials(f) gives the list of all monomials whose
-           ++ sum is f.
-        numberOfMonomials : % -> NonNegativeInteger
-           ++ numberOfMonomials(f) is the number of non-zero coefficients
-           ++ with respect to the canonical basis.
         if R has CharacteristicZero then CharacteristicZero
         if R has CharacteristicNonZero then CharacteristicNonZero
         if R has CommutativeRing then Algebra(R)
         if R has CommutativeRing and M has CommutativeStar then
             CommutativeRing
         if (R has Finite and M has Finite) then Finite
-        if M has Comparable then
-          FreeModuleCategory(R, M)
 
 )abbrev domain MRING MonoidRing
 ++ Authors: Stephan M. Watt; revised by Johannes Grabmeier
