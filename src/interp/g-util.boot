@@ -45,6 +45,34 @@ $GENNO := 0
 GENVAR() ==
     INTERNL1('"$", STRINGIMAGE($GENNO := $GENNO + 1))
 
+contained_eq(x, y) ==
+    ATOM(y) => EQ(x, y)
+    contained_eq(x, first(y)) or contained_eq(x, rest(y))
+
+contained_equal(x, y) ==
+    x = y => true
+    ATOM(y) => false
+    contained_equal(x, first(y)) or contained_equal(x, rest(y))
+
+CONTAINED(x, y) ==
+    SYMBOLP(x) => contained_eq(x, y)
+    contained_equal(x, y)
+
+ELEMN(l, n, def_val) ==
+    for i in 1..(n - 1) repeat
+        NULL(l) => return def_val
+        l := rest(l)
+    NULL(l) => def_val
+    first(l)
+
+LISTOFATOMS1(l, rl) ==
+    NULL(l) => rl
+    ATOM(l) => CONS(l, rl)
+    rl := LISTOFATOMS1(first(l), rl)
+    LISTOFATOMS1(rest(l), rl)
+
+LISTOFATOMS(l) == NREVERSE(LISTOFATOMS1(l, []))
+
 Identity x == x
 
 length1? l == PAIRP l and not PAIRP QCDR l

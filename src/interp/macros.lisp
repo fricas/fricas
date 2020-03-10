@@ -324,16 +324,6 @@
 
 ; 15.2 Lists
 
-(defun ELEMN (X N DEFAULT)
-  (COND ((NULL X) DEFAULT)
-        ((EQL N 1) (CAR X))
-        ((ELEMN (CDR X) (- N 1) DEFAULT))))
-
-(defun LISTOFATOMS (X)
-  (COND ((NULL X) NIL)
-        ((ATOM X) (LIST X))
-        ((NCONC (LISTOFATOMS (CAR X)) (LISTOFATOMS (CDR X))))))
-
 (DEFUN LASTATOM (L) (if (ATOM L) L (LASTATOM (CDR L))))
 
 (defun DROP (N X &aux m)
@@ -372,27 +362,6 @@
    (sublis (mapcar #'cons oldl newl) form))
 
 ; 15.5 Using Lists as Sets
-
-;;; The [[CONTAINED]] predicate is used to walk internal structures
-;;; such as modemaps to see if the $X$ object occurs within $Y$. One
-;;; particular use is in a function called [[isPartialMode]] (see
-;;; i-funsel.boot) to decide
-;;; if a modemap is only partially complete. If this is true then the
-;;; modemap will contain the constant [[$EmptyMode]]. So the call
-;;; ends up being [[CONTAINED |$EmptyMode| Y]].
-(DEFUN CONTAINED (X Y)
-  (if (symbolp x)
-      (contained\,eq X Y)
-      (contained\,equal X Y)))
-
-(defun contained\,eq (x y)
-       (if (atom y) (eq x y)
-           (or (contained\,eq x (car y)) (contained\,eq x (cdr y)))))
-
-(defun contained\,equal (x y)
-   (cond ((atom y) (equal x y))
-         ((equal x y) 't)
-         ('t (or (contained\,equal x (car y)) (contained\,equal x (cdr y))))))
 
 (DEFUN |set_sum| (X Y)
   (COND ((ATOM Y) X)
@@ -605,13 +574,6 @@
 
 (DEFUN |rightBindingPowerOf| (X IND &AUX (Y (GET X IND)))
    (IF Y (ELEMN Y 4 105) 105))
-
-(defun |make_BF| (MT EP) (LIST |$BFtag| MT EP))
-
-(defun |make_float| (int frac fraclen exp)
-    (if (= frac 0)
-          (|make_BF| int exp)
-          (|make_BF| (+ (* int (expt 10 fraclen)) frac) (- exp fraclen)) ))
 
 (defun |print_full2| (expr stream)
    (let ((*print-circle* t) (*print-array* t) *print-level* *print-length*)
