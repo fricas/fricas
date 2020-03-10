@@ -414,6 +414,7 @@ simplify_self_preds1(catvecListMaker, condCats) ==
     self_preds := get_self_preds(condCats)
     self_preds := [cat for p in self_preds | p is ["QUOTE", cat]]
     self_preds = [] => [condCats, false]
+    found_preds := []
     false_preds := []
     for c1 in self_preds repeat
         op1 := opOf(c1)

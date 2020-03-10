@@ -80,7 +80,7 @@ makeCompactDirect(u, et) ==
   $byteVecAcc: local := nil
   [nam,[addForm,:opList]] := u
   --pp opList
-  d := [[op, y] for [op, :items] in opList 
+  d := [[op, y] for [op, :items] in opList
         | y := makeCompactDirect1(op, items, et)]
   $byteVec := [:$byteVec,:"append"/NREVERSE $byteVecAcc]
   LIST2VEC ("append"/d)

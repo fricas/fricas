@@ -111,8 +111,8 @@ runspad() ==
   mode:='restart
   while mode='restart repeat
     resetStackLimits()
-    CATCH($quitTag, CATCH('coerceFailure,
-                  mode:=CATCH('top_level, ncTopLevel())))
+    CATCH('coerceFailure,
+                  mode:=CATCH('top_level, ncTopLevel()))
 
 ncTopLevel() ==
 -- Top-level read-parse-eval-print loop for the interpreter.  Uses

@@ -48,11 +48,7 @@
 ;;(defmacro |trappedSpadEval| (form) form) ;;nop for now
 
 #+:GCL
-(setq |$quitTag| system::*quit-tag*)
-#+:GCL
 (defun |resetStackLimits| () (system:reset-stack-limits))
-#-:GCL
-(setq |$quitTag| (gensym))
 #-:GCL
 (defun |resetStackLimits| () nil)
 
