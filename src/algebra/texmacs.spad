@@ -921,7 +921,6 @@ TexmacsFormat() : public == private where
     newWithNum :     I -> %
     parenthesize :   S -> S
     postcondition :  S -> S
-    stringify :      E -> S
     ungroup :        S -> S
 
     -- public function definitions
@@ -964,8 +963,6 @@ TexmacsFormat() : public == private where
       str
 
 
-
-    stringify expr == (mathObject2String$Lisp expr)@S
 
     optionalWrap(s : S, expr : E, prec : I) : S ==
         tmp : S := formatExpr(expr, prec)
@@ -1179,8 +1176,9 @@ TexmacsFormat() : public == private where
             bodyL := arguments(body)
             if #bodyL = 2 and has_op?(bvar := bodyL(2), 'CONCAT) then
                 bvarL := arguments(bvar)
-                if #bvarL = 2 and is_symbol?(bvarL(1), 'd) then
-                    bvarS : S := stringify (bvarL(2))
+                if #bvarL = 2 and is_symbol?(bvarL(1), 'd)
+                        and symbol?(bvarL(2)) then
+                    bvarS : S := string(symbol(bvarL(2)))
                     return concat ["(concat ", formatExpr(bodyL(1), opPrec),
                                    " _"*<mathd>", bvarS, "_")"]
         formatExpr(body, opPrec)
@@ -1296,9 +1294,8 @@ TexmacsFormat() : public == private where
       -- expressions
       is_symbol?(first args, "..."::Symbol) => "<ldots>"
       not(has_op?(first args, 'ZAG)) =>
-          op : S := stringify first args
-           error "formatZag: Last argument in ZAG construct "
-                 "has unknown operator: " op
+          error "formatZag: Last argument in ZAG construct "
+                 "has unknown operator"
       tmpZag : L E := arguments(first args)
       #args > 1 => "(frac " formatExpr(first tmpZag, minPrec) "(concat "
                     formatExpr(first rest tmpZag, minPrec) " _"+_" "
@@ -1310,11 +1307,10 @@ TexmacsFormat() : public == private where
       i, len : Integer
       intSplitLen : Integer := 20
       atom?(expr) =>
-        str := stringify expr
-        len := #str
-        -- this bit seems to deal with integers
+        -- this bit deals with integers
         integer?(expr) =>
           i := integer(expr)
+          str := string(expr)
           if (i < 0) or (i > 9)
             then
               group
@@ -1330,13 +1326,20 @@ TexmacsFormat() : public == private where
                    concat [nstr, " ", str]
                  concat [elt(nstr, segment(2)$US)]
             else concat [" _"", str, "_" "]
-        str = "%pi" => "<mathpi>"
-        -- pi
-        str = "%e"  => "<mathe>"
-        -- ExponentialE
-        str = "%i"  => "<mathi>"
-        -- ImaginaryI
-        str = "infinity" => "<infty>"
+        
+        if symbol?(expr) then
+            es := symbol(expr)
+            es = "%pi"::Sy => return "<mathpi>"
+            es = "%e"::Sy => return "<mathe>"
+            es = "%i"::Sy  => return "<mathi>"
+            es = 'infinity => return "<infty>"
+            str := string(es)
+        else if string?(expr) then
+            str := string(expr)
+        else
+            error "Unrecognized atom in OutputForm"
+        len := #str
+
         len > 0 and str.1 = char "%" => concat [" _"", str, "_" "]
         -- presumably this is a literal string
         -- WSP: preserve "..." and encode <less> symbols

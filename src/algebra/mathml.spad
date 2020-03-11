@@ -292,7 +292,7 @@ have to be switched by swapping names.
 ++ Date: January 2007
 ++ This package is based on the TeXFormat domain by Robert S. Sutor
 ++ without which I wouldn't have known where to start.
-++ Basic Operations: coerce, coerceS, coerceL, exprex, display
+++ Basic Operations: coerce, coerceS, coerceL, display
 ++ Description:
 ++    \spadtype{MathMLFormat} provides a coercion from \spadtype{OutputForm}
 ++    to MathML format.
@@ -315,16 +315,6 @@ MathMLFormat() : public == private where
     coerceL :   E -> S
       ++ coerceL(o) changes o in the standard output format to MathML
       ++ format and displays result as one long string.
-    exprex :    E -> S
-      ++ exprex(o) converts \spadtype{OutputForm} to \spadtype{String}
-      ++ with the structure preserved with braces.  Actually this is
-      ++ not quite accurate.  The function \spadfun{precondition} is first
-      ++ applied to the
-      ++ \spadtype{OutputForm} expression before \spadfun{exprex}.
-      ++ The raw \spadtype{OutputForm} and
-      ++ the nature of the \spadfun{precondition} function is
-      ++ still obscure to me
-      ++ at the time of this writing (2007-02-14).
     display :   S -> Void
       ++ prints the string returned by coerce, adding <math ...> tags.
 
@@ -429,7 +419,6 @@ MathMLFormat() : public == private where
       -- the whole expression needs to be enclosed in a mrow element.
       -- It also checks for +- and removes the +.
 
-    stringify :      E -> S
     tagEnd :         (S, I, S) -> I
       ++  finds closing ">" of start or end tag for mathML element
     ungroup :        S -> S
@@ -463,29 +452,6 @@ MathMLFormat() : public == private where
         sayExpr "</math>"
         void()$Void
 
-
-
-    exprex(expr : E) : S ==
-      -- This breaks down an expression into atoms and returns it as
-      -- a string.  It's for developmental purposes to help understand
-      -- the expressions.
-      a : E
-      expr := precondition expr
---      sayMsg "0: "stringify expr
-      atom?(expr) or (stringify expr = "NOTHING") =>
-        concat ["{",stringify expr,"}"]
-      op := operator(expr)
-      sop : S := exprex op
-      args : L E := arguments(expr)
-      nargs : I := #args
---      sayMsg concat ["1: ",stringify first le," : ",string(nargs)$S]
-      s : S := concat ["{",sop]
-      if nargs > 0  then
-        for a in args repeat
---        sayMsg concat ["2: ",stringify a]
-          s1 : S := exprex a
-          s := concat [s, s1]
-      s := concat [s,"}"]
 
 
     displayElt(mathML : S) : Void ==
@@ -603,8 +569,6 @@ MathMLFormat() : public == private where
       str
 
 
-
-    stringify expr == (mathObject2String$Lisp expr)@S
 
     optionalWrap(expr : E) : S ==
         tmp : S := formatExpr(expr, minPrec)
@@ -871,11 +835,10 @@ MathMLFormat() : public == private where
       i, len : Integer
       intSplitLen : Integer := 20
       atom?(expr) =>
-        str := stringify expr
-        len := #str
-        -- this bit seems to deal with integers
+        -- this bit deals with integers
         integer?(expr) =>
           i := integer(expr)
+          str := string(i)
           if (i < 0) or (i > 9)
             then
               group
@@ -891,12 +854,17 @@ MathMLFormat() : public == private where
                    concat [nstr, " ", str]
                  concat ["<mn>", elt(nstr, segment(2)$US), "</mn>"]
             else concat ["<mn>", str, "</mn>"]
-        str = "%pi" => "<mi>&#x003C0;</mi>"
-        -- pi
-        str = "%e"  => "<mi>&#x02147;</mi>"
-        -- ExponentialE
-        str = "%i"  => "<mi>&#x02148;</mi>"
-        -- ImaginaryI
+        if symbol?(expr) then
+            es := symbol(expr)
+            es = "%pi"::Sy => return "<mi>&#x003C0;</mi>"
+            es = "%e"::Sy => return "<mi>&#x02147;</mi>"
+            es = "%i"::Sy  => return "<mi>&#x02148;</mi>"
+            str := string(es)
+        else if string?(expr) then
+            str := string(expr)
+        else
+            error "Unrecognized atom in OutputForm"
+        len := #str
         len > 0 and str.1 = char "%" => concat ["<mi>", str, "</mi>"]
         -- should handle floats
         len > 1 and digit? str.1 => concat ["<mn>", str, "</mn>"]
