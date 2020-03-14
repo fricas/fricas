@@ -271,13 +271,6 @@ o  there is some code at the end of SPECEVAL BOOT that puts "up"
 (DOLIST (X '(TENSOR * + AND OR PROGN)) (MAKEPROP X 'NARY T))
 
 (DOLIST (X '(
-  (|Record| |mkRecordFunList|)
-  (|Union| |mkUnionFunList|)
-  (|Mapping| |mkMappingFunList|)
-  (|Enumeration| |mkEnumerationFunList|)
-)) (MAKEPROP (CAR X) '|makeFunctionList| (CADR X)))
-
-(DOLIST (X '(
 
   (|and| |parseAnd|)
   (CATEGORY |parseCategory|)

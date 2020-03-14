@@ -872,7 +872,7 @@ findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
   not MEMQ(dcName,'(Record Union Enumeration)) => NIL
   fun:= NIL
  --  cat := constructorCategory dc
-  makeFunc := GET(dcName, "makeFunctionList") or
+  makeFunc := get_oplist_maker(dcName) or
       systemErrorHere '"findFunctionInCategory"
   [funlist,.] := FUNCALL(makeFunc,"$",dc,$CategoryFrame)
   -- get list of implementations and remove sharps

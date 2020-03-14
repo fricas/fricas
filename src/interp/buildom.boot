@@ -257,6 +257,13 @@ createEnum(sym, dom) ==
 
 --% INSTANTIATORS
 
+get_oplist_maker(op) ==
+    op = "Record" => "mkRecordFunList"
+    op = "Union" => "mkUnionFunList"
+    op = "Mapping" => "mkMappingFunList"
+    op = "Enumeration" => "mkEnumerationFunList"
+    false
+
 RecordCategory(:x) == constructorCategory ['Record,:x]
 
 EnumerationCategory(:x) == constructorCategory ["Enumeration",:x]
@@ -265,7 +272,7 @@ UnionCategory(:x) == constructorCategory ["Union",:x]
 
 
 constructorCategory (title is [op,:.]) ==
-  constructorFunction:= GET(op, "makeFunctionList") or
+  constructorFunction := get_oplist_maker(op) or
               systemErrorHere '"constructorCategory"
   [funlist,.]:= FUNCALL(constructorFunction,"$",title,$CategoryFrame)
   oplist:= [[[a,b],true,c] for [a,b,c] in funlist]
