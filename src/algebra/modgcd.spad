@@ -23,9 +23,6 @@ InnerModularGcd(R, BP, pMod, nextMod) : C == T
      modularGcdPrimitive    : List BP  -> BP
          ++ modularGcdPrimitive(listf) computes the gcd of the list
          ++ of primitive polynomials listf  by modular methods.
-     modularGcd    : List BP  -> BP
-         ++ modularGcd(listf) computes the gcd of the list of polynomials
-         ++ listf  by modular methods.
      reduction :       (BP, R)              ->   BP
          ++ reduction(f, p) reduces the coefficients of the polynomial f
          ++ modulo the prime p.
@@ -66,33 +63,6 @@ InnerModularGcd(R, BP, pMod, nextMod) : C == T
       for f in rest listf | not zero? f  while degree g > 0 repeat
         g := modGcdPrimitive(g, f)
       g
-
-    -- gcd for univariate polynomials
-    modularGcd(listf : List BP) : BP  ==
-      listf := remove!(0$BP, listf)
-      empty? listf => 0$BP
-      # listf = 1 => first listf
-      minpol := 1$BP
-      -- extract a monomial gcd
-      mdeg := "min"/[minimumDegree f for f in listf]
-      if mdeg>0 then
-        minpol1 := monomial(1, mdeg)
-        listf := [(f exquo minpol1)::BP for f in listf]
-        minpol := minpol*minpol1
-      listdeg := [degree f for f in listf ]
-    -- make the polynomials primitive
-      listCont := [content f for f in listf]
-      contgcd := gcd listCont
-      -- make the polynomials primitive
-      listf := [(f exquo cf)::BP for f in listf for cf in listCont]
-      minpol := contgcd*minpol
-      ans : BP :=
-         --one polynomial is constant
-         member?(1, listf) => 1
-         --one polynomial is linear
-         member?(1, listdeg) => lincase(listdeg, listf)
-         modularGcdPrimitive listf
-      minpol*ans
 
                   --  local functions --
 
