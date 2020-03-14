@@ -460,8 +460,6 @@
 
 (defvar |$fortranOutputStream|)
 
-(defvar |$formulaOutputStream|)
-
 (defvar |$highlightAllowed| nil "Used in BRIGHTPRINT and is a )set variable.")
 
 (defvar |$highlightFontOn| (concat " " |$boldString|)

@@ -44,8 +44,7 @@
 (setq |$algebraOutputStream|
       (setq |$fortranOutputStream|
             (setq |$texOutputStream|
-                  (setq |$formulaOutputStream|
-                        (make-synonym-stream '*standard-output*)))))
+                        (make-synonym-stream '*standard-output*))))
 
 (defvar |$frameMessages| nil)
 (defvar |$displayStartMsgs| nil)

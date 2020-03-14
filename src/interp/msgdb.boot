@@ -952,8 +952,6 @@ sayALGEBRA(x) == sayBrightly1(x, $algebraOutputStream)
 
 sayMSG(x) == sayBrightly1(x, $algebraOutputStream)
 
-sayFORMULA(x) == sayBrightly1(x, $formulaOutputStream)
-
 sayMSG2File(msg) ==
     file := makePathname("spadmsg", "listing")
     str := MAKE_OUTSTREAM(file)

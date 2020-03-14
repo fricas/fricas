@@ -502,23 +502,6 @@ DEFPARAMETER($setOptions, '(
         chkOutputFileName
         "console"))
       NIL)
-     (script
-      "display output in SCRIPT formula format"
-      interpreter
-      FUNCTION
-      setOutputFormula
-      (("display output in SCRIPT format"
-        LITERALS
-        $formulaFormat
-        (off on)
-        off)
-       (break $formulaFormat)
-       ("where script output goes (enter {\em console} or a a pathname)"
-        FILENAME
-        $formulaOutputFile
-        chkOutputFileName
-        "console"))
-      NIL)
      (scripts
       "show subscripts,... linearly"
       interpreter
