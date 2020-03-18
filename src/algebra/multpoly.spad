@@ -225,6 +225,40 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
           return unlikeUnivReconstruct(u, mvar)
         [mvar, u]$VPoly
 
+      construct(lt) ==
+          res : % := 0
+          ltr := reverse(lt)
+          for t in lt repeat
+              res := res + monomial(t.c, t.k)
+          res
+
+      constructOrdered(lt) == construct(lt)
+
+      leadingSupport(p) == degree(p)
+
+      leadingTerm(p) == [degree(p), leadingCoefficient(p)]
+
+      linearExtend(f, p) ==
+          res : % := 0
+          while not(zero?(p)) repeat
+              res := leadingCoefficient(p)*f(degree(p)) + res
+              p := reductum(p)
+          res
+
+      listOfTerms(p) ==
+          res : List(Record(k : IndexedExponents(VarSet), c : R)) := []
+          while not(zero?(p)) repeat
+              res := cons(leadingTerm(p), res)
+              p := reductum(p)
+          reverse!(res)
+
+      support(p) ==
+          res : List(IndexedExponents(VarSet)) := []
+          while not(zero?(p)) repeat
+              res := cons(degree(p), res)
+              p := reductum(p)
+          reverse!(res)
+
       ground?(p : %) : Boolean ==
         p case R => true
         false

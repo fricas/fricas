@@ -19,27 +19,13 @@
 ++ Conceptually at least, only the non-zero terms are ever operated on.
 
 AbelianMonoidRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
-                 ) : Category == Join(SemiRng, BiModule(R, R)) with
-    leadingCoefficient : % -> R
-      ++ leadingCoefficient(p) returns the coefficient highest degree term of p.
-    leadingMonomial : % -> %
-      ++ leadingMonomial(p) returns the monomial of p with the highest degree.
+                 ) : Category == Join(SemiRng, BiModule(R, R),
+                     IndexedProductCategory(R, E)) with
     degree : % -> E
       ++ degree(p) returns the maximum of the exponents of the terms of p.
-    map : (R -> R, %) -> %
-      ++ map(fn, u) maps function fn onto the coefficients
-      ++ of the non-zero monomials of u.
-    monomial? : % -> Boolean
-      ++ monomial?(p) tests if p is a single monomial.
-    monomial : (R, E) -> %
-      ++ monomial(r, e) makes a term from a coefficient r and an exponent e.
-    reductum : % -> %
-         ++ reductum(u) returns u minus its leading monomial
-         ++ returns zero if handed the zero element.
     coefficient : (%, E) -> R
          ++ coefficient(p, e) extracts the coefficient of the monomial with
          ++ exponent e from polynomial p, or returns zero if exponent is not present.
-    if R has CancellationAbelianMonoid then CancellationAbelianMonoid
     if R has SemiRing then SemiRing
     if R has Ring then Ring
     if R has Field then "/": (%,R) -> %
@@ -80,17 +66,14 @@ AbelianMonoidRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
 
 FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
                         E : OrderedAbelianMonoid) : Category ==
-   Join(AbelianMonoidRing(R, E), FullyRetractableTo R) with
+   Join(AbelianMonoidRing(R, E), FreeModuleCategory(R, E),
+        FullyRetractableTo R) with
     ground? : % -> Boolean
       ++ ground?(p) tests if polynomial p is a member of the coefficient ring.
                     -- can't be defined earlier, since a power series
                     -- might not know if there were other terms or not
     ground : % -> R
       ++ ground(p) retracts polynomial p to the coefficient ring.
-    coefficients : % -> List R
-      ++ coefficients(p) gives the list of non-zero coefficients of polynomial p.
-    numberOfMonomials : % -> NonNegativeInteger
-      ++ numberOfMonomials(p) gives the number of non-zero monomials in polynomial p.
     minimumDegree : % -> E
       ++ minimumDegree(p) gives the least exponent of a non-zero term of polynomial p.
       ++ Error: if applied to 0.

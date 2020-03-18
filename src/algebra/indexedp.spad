@@ -9,8 +9,8 @@ AbelianProductCategory(A : Type) : Category == with
     if A has AbelianGroup then AbelianGroup
 
 
-)abbrev category IDPC IndexedDirectProductCategory
-++ Author: James Davenport
+)abbrev category IPC IndexedProductCategory
+++ Author: James Davenport, Waldek Hebisch
 ++ Basic Functions:
 ++ Related Constructors:
 ++ Also See:
@@ -18,21 +18,19 @@ AbelianProductCategory(A : Type) : Category == with
 ++ Keywords:
 ++ References:
 ++ Description:
-++ This category represents the direct product of some set with
-++ respect to an ordered indexing set.
-++ The ordered set \spad{S} is considered as the ``basis elements'' and
+++ This category represents the product of some set with
+++ respect to an indexing set.
+++ The set \spad{S} is considered as the ``basis elements'' and
 ++ the elements from \spad{A} as ``coefficients''.
+++ Elements may have infinite support.  For
+++ \spad{Comparable} (ordered) \spad{S} we assume that support
+++ of each element is well-orderd.
 
-IndexedDirectProductCategory(A : SetCategory, S : SetCategory
+IndexedProductCategory(A : SetCategory, S : SetCategory
                             ) : Category == Export where
   Term ==> Record(k : S, c : A)
 
   Export ==  AbelianProductCategory(A) with
-
-      if A has Comparable and S has Comparable then Comparable
-      if S has OrderedSet then
-          if A has OrderedAbelianMonoid then OrderedAbelianMonoid
-          if A has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
 
       map :           (A -> A, %) -> %
          ++ map(f, z) returns the new element created by applying the
@@ -48,14 +46,6 @@ IndexedDirectProductCategory(A : SetCategory, S : SetCategory
          ++ \spad{construct(l)} takes a list of terms and creates
          ++ the object with these components.  First components
          ++ of elements of \spad{l} should be different.
-      listOfTerms : % -> List Term
-         ++ \spad{listOfTerms(x)} returns a list \spad{lt} of terms with type
-         ++ \spad{Record(k: S, c: R)} such that \spad{x} equals
-         ++ \spad{construct(lt)}.  If \spad{S has Comparable} than
-         ++ \spad{x} equals \spad{constructOrdered(lt)}.
-      numberOfMonomials  : % -> NonNegativeInteger
-         ++ \spad{numberOfMonomials(x)} returns the number
-         ++ of monomials of \spad{x}.
       if S has Comparable then
           leadingMonomial    : % -> %
              ++ \spad{leadingMonomial(x)} returns the monomial supported by
@@ -87,6 +77,38 @@ IndexedDirectProductCategory(A : SetCategory, S : SetCategory
              ++ (with respect to the ordering on the indexing set) term of z.
              ++ Error: if z has no support.
 
+
+)abbrev category IDPC IndexedDirectProductCategory
+++ Author: James Davenport
+++ Basic Functions:
+++ Related Constructors:
+++ Also See:
+++ AMS Classifications:
+++ Keywords:
+++ References:
+++ Description:
+++ This category represents the direct product of some set with
+++ respect to an ordered indexing set.
+++ The ordered set \spad{S} is considered as the ``basis elements'' and
+++ the elements from \spad{A} as ``coefficients''.
+
+IndexedDirectProductCategory(A : SetCategory, S : SetCategory
+                            ) : Category == Export where
+  Term ==> Record(k : S, c : A)
+
+  Export ==  IndexedProductCategory(A, S) with
+
+      if A has Comparable and S has Comparable then Comparable
+
+      listOfTerms : % -> List Term
+         ++ \spad{listOfTerms(x)} returns a list \spad{lt} of terms with type
+         ++ \spad{Record(k: S, c: R)} such that \spad{x} equals
+         ++ \spad{construct(lt)}.  If \spad{S has Comparable} than
+         ++ \spad{x} equals \spad{constructOrdered(lt)}.
+      numberOfMonomials  : % -> NonNegativeInteger
+         ++ \spad{numberOfMonomials(x)} returns the number
+         ++ of monomials of \spad{x}.
+
 )abbrev domain IDPO IndexedDirectProductObject
 ++ Description:
 ++ Indexed direct products of objects over a set \spad{A}
@@ -105,7 +127,10 @@ IndexedDirectProductCategory(A : SetCategory, S : SetCategory
 -- an object is the pair \spad{[s, a]} with \spad{s} maximal and thus
 -- the first entry in the list representing the object.
 IndexedDirectProductObject(A : SetCategory, S : SetCategory
-                          ) : IndexedDirectProductCategory(A, S)
+                          ) : IndexedDirectProductCategory(A, S) with
+      if S has OrderedSet then
+          if A has OrderedAbelianMonoid then OrderedAbelianMonoid
+          if A has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
  == add
 
     --representation
