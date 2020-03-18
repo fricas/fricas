@@ -75,7 +75,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
     rmeval(t, r)        == t.coef * monomeval(t.monom, r)
     termcopy t          == [[rm.coef, rm.monom] for rm in t]
     characteristic()    == characteristic()$R
-    mkop(r, fg)         == [[r, fg]$RM]$TERM :: %
+    mkop(r, fg)         == monomial(1, [[r, fg]$RM]$TERM)$FAB
     evaluate(f, g)   == nocopy setProperty(retract(f)@OP, OPEVAL, g pretend None)
 
     if R has OrderedSet then
@@ -118,8 +118,8 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
           for t in listOfTerms x]
 
     termprod0(n, x, y) ==
-      n >= 0 => termprod(n, x, y)::%
-      - (termprod(-n, x, y)::%)
+      n >= 0 => monomial(1, termprod(n, x, y))$FAB
+      - monomial(1, termprod(-n, x, y))$FAB
 
     termprod(n, x, y) ==
       lc := first(xx := termcopy x)
