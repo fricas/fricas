@@ -346,7 +346,7 @@ database.
   (|Fraction| . |Algebra|) (|Fraction| . |CoercibleTo|)
   (|Fraction| . |OrderedSet|) (|Fraction| . |RetractableTo|)
   (|Integer| . |Algebra|) (|Integer| . |CoercibleTo|)
-  (|Integer| . |ConvertibleTo|) (|Integer| . |LinearlyExplicitRingOver|)
+  (|Integer| . |ConvertibleTo|) (|Integer| . |LinearlyExplicitOver|)
   (|Integer| . |RetractableTo|)
   (|List| . |CoercibleTo|) (|List| . |FiniteLinearAggregate|)
   (|List| . |OrderedSet|)
@@ -392,7 +392,7 @@ database.
   |UnivariatePolynomialCategory&| |FlexibleArray|
   |SparseMultivariatePolynomial| |PolynomialCategory&|
   |DifferentialExtension&| |IndexedFlexibleArray| |AbelianMonoidRing&|
-  |FiniteAbelianMonoidRing&| |DivisionRing&| |FullyLinearlyExplicitRingOver&|
+  |FiniteAbelianMonoidRing&| |DivisionRing&| |FullyLinearlyExplicitOver&|
   |IndexedVector| |IndexedOneDimensionalArray| |LocalAlgebra| |Localize|
   |Boolean| |Field&| |Vector| |IndexedDirectProductObject| |Aggregate&|
   |PolynomialRing| |FreeModule| |IndexedDirectProductAbelianGroup|
