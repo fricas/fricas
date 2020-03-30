@@ -53,6 +53,11 @@ FunctionFieldCategory(F, UP, UPUP) : Category == Definition where
       ++ integralBasisAtInfinity() returns the local integral basis at infinity.
     integralAtInfinity?    : %  -> Boolean
       ++ integralAtInfinity?(f) tests if f is locally integral at infinity.
+    special_order : (%, List(UP)) -> Integer
+      ++ special_order(f, lp) computes sum of orders at special places,
+      ++ that is at infinite places and at places over zeros in
+      ++ polynomials in \spad{lp}.  Elements of \spad{lp} must be
+      ++ relatively prime.
     integral?              : %  -> Boolean
       ++ integral?(f) tests if f is integral over \spad{k[x]}.
     complementaryBasis     : Vector % -> Vector %
@@ -271,6 +276,28 @@ FunctionFieldCategory(F, UP, UPUP) : Category == Definition where
     integralAtInfinity? f ==
       not any?(s +-> infOrder(s) < 0,
          coordinates(f) * inverseIntegralMatrixAtInfinity())$Vector(RF)
+
+    pol_order_at_p(f : UP, p : UP) : Z ==
+        k : Z := 0
+        k1 : Z := degree(p)
+        while (k1 > 0) repeat
+            while (qu := f exquo p) case UP repeat
+                f := qu::UP
+                k := k + k1
+            k1 = 1 => return k
+            p := gcd(f, p)
+            k1 := degree(p)
+        k
+
+    rf_order_at_p(f : RF, p : UP) : Z ==
+        pol_order_at_p(numer(f), p) - pol_order_at_p(denom(f), p)
+
+    special_order(f, lp) ==
+        nf := norm(f)
+        k : Z := 0
+        for p in lp repeat
+            k := k + rf_order_at_p(nf, p)
+        k + infOrder(nf)
 
     numberOfComponents() ==
       count(integralAtInfinity?, integralBasis())$Vector(%)

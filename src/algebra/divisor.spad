@@ -604,6 +604,18 @@ FiniteDivisorCategory(F, UP, UPUP, R) : Category == Result where
     generator  : % -> Union(R, "failed")
       ++ generator(d) returns f if \spad{(f) = d},
       ++ "failed" if d is not principal.
+      ++ d is assumed to be of degree 0.
+    generator  : (%, Integer, List(UP)) -> Union(R, "failed")
+      ++ generator(d, k, lp) returns f if \spad{(f) = d},
+      ++ "failed" if d is not principal. k is sum of orders of d
+      ++ at special places.  Special places are places over infinity
+      ++ and over zeros of polynomials in lp.  Elements of lp are
+      ++ assumed to be relatively prime.
+    divisor : (R, UP, UP) -> %
+      ++ divisor(h, d, g) returns gcd of divisor of zeros of \spad{h}
+      ++ and divisor of zeros of \spad{d}.  \spad{d} must be
+      ++ squarefree.  All ramified zeros of \spad{d} must be contained
+      ++ in zeros of \spad{g}.
     divisor    : (R, UP, UP, UP, F) -> %
       ++ divisor(h, d, d', g, r) returns the sum of all the finite points
       ++ where \spad{h/d} has residue \spad{r}.
@@ -612,7 +624,11 @@ FiniteDivisorCategory(F, UP, UPUP, R) : Category == Result where
       ++ \spad{d'} is some derivative of \spad{d} (not necessarily dd/dx).
       ++ \spad{g = gcd(d, discriminant)} contains the ramified zeros of \spad{d}
    add
+
     principal? d == generator(d) case R
+
+    divisor(h, d, dp, g, r) ==
+        divisor(h - (r * dp)::Fraction(UP)::R, d, g)
 
 )abbrev domain HELLFDIV HyperellipticFiniteDivisor
 ++ Finite rational divisors on an hyperelliptic curve
@@ -746,6 +762,16 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
       princ? d => d.principalPart
       "failed"
 
+    generator(d, k, lp) ==
+        d := reduce d
+        princ?(d) => d.principalPart
+        cp := d.center
+        for p in lp while degree(cp) > 0 repeat
+            cg := gcd(cp, p)
+            cp := (cp exquo cg)::UP
+        degree(cp) = 0 => d.principalPart
+        "failed"
+
     - d ==
       a := d.center
       di := makeDivisor(a, - d.polyPart, inv(a::RF * d.principalPart))
@@ -770,8 +796,7 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
                 [qelt(v, i) rem b for i in minIndex v .. maxIndex v], 1)
 
 -- with hyperelliptic curves, it is cheaper to keep divisors in reduced form
-    divisor(h, a, dp, g, r) ==
-      h  := h - (r * dp)::RF::R
+    divisor(h, a, g) ==
       a  := gcd(a, retract(norm h)@UP)
       h  := intReduce(h, a)
       if not ground? gcd(g, a) then h := intReduce(h ^ rank(), a)
@@ -822,12 +847,13 @@ FiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
       ideal d                 == ideal(d)$Rep
       reduce d                == reduce(d)$Rep
       generator d             == generator(d)$Rep
+      generator(d, k, lp)     == generator(d, k, lp)$Rep
       decompose d             == decompose(d)$Rep
       divisor(i : ID)           == divisor(i)$Rep
       divisor(f : R)            == divisor(f)$Rep
       divisor(a, b)           == divisor(a, b)$Rep
-      divisor(a, b, n)        == divisor(a, b, n)$Rep
-      divisor(h, d, dp, g, r) == divisor(h, d, dp, g, r)$Rep
+      divisor(a : F, b : F, n : Integer)  == divisor(a, b, n)$Rep
+      divisor(h : R, d : UP, g : UP) == divisor(h, d, g)$Rep
 
     else
       Rep := Record(id : ID, fbasis : Vector(R))
@@ -850,7 +876,8 @@ FiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
       (n : Integer) * d       == divisor(ideal(d) ^ n)
       d1 + d2                 == divisor(ideal d1 * ideal d2)
       - d                     == divisor inv ideal d
-      divisor(h, d, dp, g, r) == makeDivisor(d, lift h - (r * dp)::RF::UPUP, g)
+      divisor(h : R, d : UP, g : UP) ==
+          makeDivisor(d, lift(h), g)
 
       intReduce(h, b) ==
         v := integralCoordinates(h).num
@@ -863,7 +890,7 @@ FiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
                                           error "divisor: point is singular"
         makeDivisor(d, monomial(1, 1)$UPUP - b::UP::RF::UPUP, 1)
 
-      divisor(a, b, n) ==
+      divisor(a : F, b : F, n : Integer) ==
         not(ground? gcd(d := monomial(1, 1)$UP - a::UP,
             retract(discriminant())@UP)) and
                   ((n exquo rank()) case "failed") =>
@@ -897,6 +924,14 @@ FiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
         for i in minIndex bsis .. maxIndex bsis repeat
           integralAtInfinity? qelt(bsis, i) =>
             return primitivePart qelt(bsis, i)
+        "failed"
+
+      generator(d, k, lp) ==
+        bas := finiteBasis d
+        for i in minIndex bas .. maxIndex bas repeat
+            (kk := special_order(fi := qelt(bas,i), lp)) = k =>
+                return primitivePart(fi)
+            print(kk::OutputForm)$OutputForm
         "failed"
 
       lSpaceBasis d ==
