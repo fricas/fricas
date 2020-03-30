@@ -2256,7 +2256,7 @@ reportOpsFromUnitDirectly unitForm ==
     opt = 'operations =>
       if isRecordOrUnion
         then
-          constructorFunction:= GETL(top,"makeFunctionList") or
+          constructorFunction := get_oplist_maker(top) or
             systemErrorHere '"reportOpsFromUnitDirectly"
           [funlist,.]:= FUNCALL(constructorFunction,"$",unitForm,
             $CategoryFrame)
