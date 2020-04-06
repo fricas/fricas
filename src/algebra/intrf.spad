@@ -151,7 +151,12 @@ MonomialExtensionTools(F, UP) : Exports == Implementation where
     normalDenom(f, derivation) == split(denom f, derivation).normal
 
     split(p, derivation) ==
-      pbar := (gcd(p, derivation p) exquo gcd(p, differentiate p))::UP
+      derp := derivation(p)
+      difp := differentiate(p)
+      derp = difp => [p, 1]
+      g := gcd(p, derp)
+      zero? degree(g) => [p, 1]
+      pbar := (g exquo gcd(p, difp))::UP
       zero? degree pbar => [p, 1]
       rec := split((p exquo pbar)::UP, derivation)
       [rec.normal, pbar * rec.special]
