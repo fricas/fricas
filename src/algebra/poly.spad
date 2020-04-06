@@ -1065,6 +1065,77 @@ UnivariatePolynomialSquareFree(RC : IntegralDomain, P) : C == T
                  lffe := [["sqfr",pi,i],:lffe]
            makeFR(lcp::P, lffe)
 
+      else if RC has FiniteFieldCategory then
+
+        Res1 ==> Record(f_list : List(P), e_list : List(NonNegativeInteger))
+
+        char_RC := characteristic()$RC
+
+        --Bernardin modification to Yun, see Bernardin thesis
+        squareFree1(p : P) : Res1 ==
+            dp := differentiate(p)
+            -- facs_pow contains powers of factors
+            facs_pow := gcd(p, dp)
+            degree(facs_pow) = 0 => [[p], [1]]
+            -- product of factors in power 1 or 0
+            facs := (p exquo facs_pow)::P
+            i : NonNegativeInteger := 1
+            lf : List(P) := []
+            le : List(NonNegativeInteger) := []
+            di := (dp exquo facs_pow)::P - differentiate(facs)
+            while i < char_RC - 1 and di ~=0 repeat
+                fac_i := gcd(facs, di)
+                if degree(fac_i) > 0 then
+                    lf := cons(fac_i, lf)
+                    le := cons(i, le)
+                facs := (facs exquo fac_i)::P
+                facs_pow := (facs_pow exquo facs)::P
+                di := (di exquo fac_i)::P - differentiate(facs)
+                i := i + 1
+            if degree(facs) > 0 then
+                lf := cons(facs, lf)
+                le := cons(i, le)
+            degree(facs_pow) = 0 => [lf, le]
+            facs_pow := map(charthRoot, divideExponents(facs_pow, char_RC)::P)
+            res1 := squareFree1(facs_pow)
+            rec_fl := res1.f_list
+            rec_el := res1.e_list
+            res_lf : List(P) := []
+            res_le : List(NonNegativeInteger) := []
+            for rec_f in rec_fl for rec_e in rec_el repeat
+                nlf : List(P) := []
+                nle : List(NonNegativeInteger) := []
+                for f in lf for e in le repeat
+                    f1 := gcd(f, rec_f)
+                    if degree(f1) > 0 then
+                        res_lf := cons(f1, res_lf)
+                        res_le := cons(char_RC*rec_e + e, res_le)
+                        nf := (f exquo f1)::P
+                        rec_f := (rec_f exquo f1)::P
+                    else
+                        nf := f
+                    if degree(nf) > 0 then
+                        nlf := cons(nf, nlf)
+                        nle := cons(e, nle)
+                if degree(rec_f) > 0 then
+                    res_lf := cons(rec_f, res_lf)
+                    res_le := cons(char_RC*rec_e, res_le)
+                lf := reverse!(nlf)
+                le := reverse!(nle)
+            for f in lf for e in le repeat
+                res_lf := cons(f, res_lf)
+                res_le := cons(e, res_le)
+            [reverse!(res_lf), reverse!(res_le)]
+
+        squareFree(p : P) ==
+            u := leadingCoefficient(p)
+            res1 := squareFree1((1/u)*p)
+            fl : List FF := []
+            for f in res1.f_list for e in res1.e_list repeat
+                fl := cons(["sqfr", f, e], fl)
+            -- we assume that GCD are monic, so we know correct unit
+            makeFR(u::P, fl)
+
       else
         squareFree(p : P) ==           --Musser's algorithm - see SYMSAC '76, p.27
              --p MUST BE PRIMITIVE, Any characteristic.
