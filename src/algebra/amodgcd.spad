@@ -261,7 +261,6 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
 
     VMR ==> VectorModularReconstructor
     IMODHP ==> InnerModularHermitePade
-    PEVALUT ==> PolynomialEvaluationUtilities
 
     compare_coeff1(nv : Integer, exps : SortedExponentVector, _
                    nexps : SortedExponentVector) : Integer ==
@@ -318,13 +317,28 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
             t : Integer := random(p)
             member?(t, lt) => "iterate"
             lt := cons(t, lt)
-            xt := eval1(x, vt, t, pss1)$ME
-            yt := eval1(y, vt, t, pss1)$ME
-            lmt := [eval1(m, vt, t, pss1)$ME for m in lm]
-            lcbad : Boolean := false
-            for m in lmt for deg in pss.sldeg for z in pss.svz repeat
-                if degree(m, z) < deg then lcbad := true
-            lcbad or (degree(xt, vx) < dx or degree(yt, vx) < dy) =>
+            xt : MP
+            yt : MP
+            lmt : List(MP) := []
+            bad_ev : Boolean := false
+            xtu := eval1(x, vt, t, pss1)$ME
+            bad_ev := xtu case "failed"
+            if not(bad_ev) then
+               xt := xtu::MP
+               ytu := eval1(y, vt, t, pss1)$ME
+               bad_ev := ytu case "failed"
+               if not(bad_ev) then
+                   yt := ytu::MP
+            for m in lm while not(bad_ev) repeat
+               lmtu := eval1(m, vt, t, pss1)$ME
+               lmtu case "failed" =>
+                   bad_ev := true
+               lmt := cons(lmtu::MP, lmt)
+            lmt := reverse!(lmt)
+            if not(bad_ev) then
+                for m in lmt for deg in pss.sldeg for z in pss.svz repeat
+                    if degree(m, z) < deg then bad_ev := true
+            bad_ev or (degree(xt, vx) < dx or degree(yt, vx) < dy) =>
                 bad_cnt := bad_cnt + 1
                 bad_cnt > good_cnt + 2 => return "failed"
             gtfp := algebraicGcd2(xt, yt, lmt, nlv, pss)
@@ -426,14 +440,25 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
             member?(p, lp) => 0
             lp := cons(p, lp)
             pss1.prime := p
-            xp := modpreduction(x, p)$ME
-            yp := modpreduction(y, p)$ME
+            yp : MP
+            xpu := modpreduction(x, p)$ME
+            xpu case "failed" => "iterate"
+            xp := xpu::MP
+            ypu := modpreduction(y, p)$ME
+            ypu case "failed" => "iterate"
+            yp := ypu::MP
             (degree(xp, vx) < dx) and (degree(yp, vx) < dy) => "iterate"
-            lmp := [modpreduction(m, p)$ME for m in lm]
-            lcbad : Boolean := false
-            for m in lmp for deg in pss.sldeg for z in lvz repeat
-                if degree(m, z) < deg then lcbad := true
-            lcbad => "iterate"
+            lmp : List(MP) := []
+            bad_ev : Boolean := false
+            for m in lm while not(bad_ev) repeat
+                lmp1 := modpreduction(m, p)$ME
+                lmp1 case "failed" => bad_ev := true
+                lmp := cons(lmp1::MP, lmp)
+            lmp := reverse!(lmp)
+            if not(bad_ev) then
+                for m in lmp for deg in pss.sldeg for z in lvz repeat
+                    if degree(m, z) < deg then bad_ev := true
+            bad_ev => "iterate"
             gtpp := algebraicGcd2(xp, yp, lmp, lv, pss)
             gtpp case "failed" => "iterate"
             gtp := gtpp::PDR

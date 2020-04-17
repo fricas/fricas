@@ -191,13 +191,10 @@ ModularEvaluationCategory(PT : Type, MP : Type) : Category == Exports where
       ++ be one of auxiliary variables and must be lexicographically
       ++ first variable which appears in p.  Moreover, p must be
       ++ a polynomial in v (not a rational function).
-    eval1a : (MP, Integer, PSS) -> Integer
-      ++ eval1a(p, r, pss) evaluates p at r.  p must be polynomial
-      ++ in single variable.  pss is global state.
-    eval1 : (MP, Symbol, Integer, PSS) -> MP
+    eval1 : (MP, Symbol, Integer, PSS) -> Union(MP, "failed")
       ++ eval1(p, v, r, pss) evaluates p with respect to single
       ++ variable v at r.  pss is global state.
-    modpreduction : (MP, Integer) -> MP
+    modpreduction : (MP, Integer) -> Union(MP, "failed")
       ++ modpreduction(p, q) reduces all coefficients of p modulo q.
     subst_vars : (PT, List Symbol, List Symbol) -> MP
       ++ subst_vars(p, lv1, lv2) substitutes variables from list lv2
@@ -220,7 +217,6 @@ ModularEvaluation1() : Exports == Implementation where
 
     degree(p, s) == degree(p, s)$MP
     ldegree(p, s) == degree(p, s)$MP
-    eval1a(p, pt, s) == eval1a(p, pt, s)$PE
     eval1(p, v, pt, s) == eval1(p, v, pt, s)$PE
     modpreduction(p, q) == modpreduction(p, q)$PE
 
@@ -253,7 +249,7 @@ FakePolynomial : Exports == Implementation where
   Exports ==> CoercibleTo(OutputForm) with
       degree : (%, Symbol) -> NonNegativeInteger
       ground : % -> FrP
-      map : (MP -> MP, %) -> %
+      map : (MP -> MP, %) -> Union(%, "failed")
       map : (MP -> MP, PT) -> %
       map : (FrP -> Union(MP, "failed"), %) -> Union(MPU, "failed")
       subst_var : (%, List(Symbol), List(Symbol)) -> %
@@ -290,7 +286,7 @@ FakePolynomial : Exports == Implementation where
           not(r1.deg = 0) => error "ground: not(r1.deg = 0)"
           r1.coef
 
-      map(f : MP -> MP, p : %) : % ==
+      map(f : MP -> MP, p : %) : Union(%, "failed") ==
           pr1 := p::Rep
           pr := pr1.coef
           res0 : List Node := [[0, [0, 0]]]
@@ -302,8 +298,10 @@ FakePolynomial : Exports == Implementation where
               pr := rest(pr)
               c1 := r1.coef
               n1 := f(c1.numer)
+              d1 := f(c1.denom)
+              d1 = 0 => return "failed"
               n1 = 0 => "iterate"
-              res1 := qsetrest!(res1, [[r1.deg, [n1, f(c1.denom)]]])
+              res1 := qsetrest!(res1, [[r1.deg, [n1, d1]]])
 
       map(f : MP -> MP, p : PT) : % ==
           pr := p.coef
@@ -315,6 +313,8 @@ FakePolynomial : Exports == Implementation where
               c1 := leadingCoefficient(pr)
               pr := reductum(pr)
               n1 := f(numer(c1))
+              d1 := f(denom(c1))
+              d1 = 0 => error "FAKEPOL map PT: division by 0"
               n1 = 0 => "iterate"
               res1 := qsetrest!(res1, [[d, [n1, f(denom(c1))]]])
 
