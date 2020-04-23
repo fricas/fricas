@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2018-03-10],
+AC_INIT([FriCAS], [2020-04-23],
         [fricas-devel@googlegroups.com])
 
 AC_CONFIG_AUX_DIR(config)
@@ -25,7 +25,7 @@ AC_SUBST(fricas_src_subdirs)
 AC_CANONICAL_SYSTEM
 
 case $build in
-  *mingw*)
+  *mingw*|*msys*)
     fricas_pwd=`pwd -W`
     fricas_top_srcdir=`cd "$srcdir" && pwd -W`
      ;;
