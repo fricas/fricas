@@ -59,7 +59,9 @@ InnerMultFact(OV, E, R, P) : C == T
     ParFact   ==> Record(irr : BP, pow : NNI)
     FinalFact ==> Record(contp : R, factors : L ParFact)
     NewOrd    ==> Record(npol : USP, nvar : L OV, newdeg : L NNI)
-    pmod : R   :=  (prevPrime(2^26)$IntegerPrimesPackage(Integer))::R
+
+    -- Make sure that pmod is prime over gaussian integers
+    pmod : Integer := 8388619
 
     import from MultivariateLifting(E, OV, R, P)
     import from FactoringUtilities(E, OV, R, P)
@@ -267,6 +269,11 @@ InnerMultFact(OV, E, R, P) : C == T
       flead.factors := append(factorlist, flead.factors)
       flead
 
+    next_mod(m : Integer) : Integer ==
+        repeat
+            m := nextPrime(m)$IntegerPrimesPackage(Integer)
+            if (m - 3) rem 4 = 0 then return m
+
     -- This is the key internal function
     -- We now know that the polynomial is square-free etc.,
     -- We use intChoose to find a set of integer values to reduce the
@@ -276,8 +283,8 @@ InnerMultFact(OV, E, R, P) : C == T
     -- is consistent with leading coefficient determination (else try again)
     -- We then lift the univariate factors to multivariate factors, and
     -- return the result
-    intfact(um : USP, lvar : L OV, ldeg : L NNI, tleadpol : MFinalFact,
-                                   ltry : L L R, ufactor : UFactor) :  L USP ==
+    intfact1(um : USP, lvar : L OV, ldeg : L NNI, tleadpol : MFinalFact,
+            ltry : L L R, ufactor : UFactor, npmod : Integer) :  L USP ==
       polcase : Boolean := (not empty? tleadpol.factors)
       vfchoo : Valuf :=
         polcase =>
@@ -298,7 +305,8 @@ InnerMultFact(OV, E, R, P) : C == T
         leadval := vfchoo.complead
         distf := distFact(vfchoo.lu, unifact, tleadpol, leadval, lvar, lval)
         distf case "failed" =>
-             return intfact(um, lvar, ldeg, tleadpol, ltry, ufactor)
+             return intfact1(um, lvar, ldeg, tleadpol, ltry, ufactor,
+                             next_mod(pmod))
         dist := distf :: LeadFact
           -- check the factorization of leading coefficient
         lpol := dist.polfac
@@ -310,12 +318,17 @@ InnerMultFact(OV, E, R, P) : C == T
         unifact := [dd * unif for unif in unifact]
         umd := ((dd^(nfact-1)::NNI)::P)*um
       else umd := um
-      (ffin := lifting(umd, lvar, unifact, lval, lpol, ldeg, pmod))
-        case "failed" => intfact(um,lvar,ldeg,tleadpol,ltry,ufactor)
+      (ffin := lifting(umd, lvar, unifact, lval, lpol, ldeg, npmod::R))
+        case "failed" => intfact1(um, lvar, ldeg, tleadpol, ltry, ufactor,
+                                 next_mod(pmod))
       factfin : L USP := ffin :: L USP
       if dd ~= 1 then
         factfin := [primitivePart ff for ff in factfin]
       factfin
+
+    intfact(um : USP, lvar : L OV, ldeg : L NNI, tleadpol : MFinalFact,
+            ltry : L L R, ufactor : UFactor) :  L USP ==
+        intfact1(um, lvar, ldeg, tleadpol, ltry, ufactor, pmod)
 
                 ----  m square-free, primitive, lc constant  ----
     mfconst(um : USP, lvar : L OV, ldeg : L NNI, ufactor : UFactor) : L USP ==

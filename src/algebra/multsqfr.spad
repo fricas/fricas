@@ -54,7 +54,8 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
         ++ coefChoose should be local
    check      :     (List(FFE), List(FFE))              -> Boolean
         ++ check should be local
-   lift       : (SUP,BP,BP,P,List(OV),List(NNI),List(R)) -> Union(List(SUP),"failed")
+   lift : (SUP, BP, BP, P, List(OV), List(NNI), List(R), R
+          ) -> Union(List(SUP), "failed")
         ++ lift should be local
    myDegree   :       (SUP, List OV, NNI)                -> List NNI
         ++ myDegree should be local
@@ -65,7 +66,8 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
 
  T == add
 
-   pmod : R   :=  (prevPrime(2^26)$IntegerPrimesPackage(Integer))::R
+   -- Make sure that pmod is prime over gaussian integers
+   pmod : Integer := 8388619
 
 
    import from MultivariateLifting(E, OV, R, P)
@@ -73,11 +75,15 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
    import from FactoringUtilities(E, OV, R, P)
    import from IntegerCombinatoricFunctions(Z)
 
+   next_mod(m : Integer) : Integer ==
+       repeat
+           m := nextPrime(m)$IntegerPrimesPackage(Integer)
+           if (m - 3) rem 4 = 0 then return m
 
-    ----  Are the univariate square-free decompositions consistent?  ----
-
-     ----  new square-free algorithm for primitive polynomial  ----
-   nsqfree(oldf : SUP, lvar : List(OV), ltry : List List R) : squareForm ==
+   ----  new square-free algorithm for primitive polynomial  ----
+   nsqfree1(oldf : SUP, lvar : List(OV), ltry : List List R,
+            npmod : Integer
+          ) : squareForm ==
      f := oldf
      univPol := intChoose(f, lvar, ltry)
 --     debug msg
@@ -120,11 +126,14 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
        if leadpol then lcoef := coefChoose(exp0, unitsq, sqlead)
        else lcoef := 1$P
        ldeg := myDegree(f, lvar, exp0)
-       result := lift(d, g0, (d0 exquo g0)::BP, lcoef, lvar, ldeg, lval)
-       result case "failed" => return nsqfree(oldf,lvar,ltry)
+       result := lift(d, g0, (d0 exquo g0)::BP, lcoef, lvar, ldeg, lval,
+                      npmod::R)
+       result case "failed" =>
+           return nsqfree1(oldf, lvar, ltry, next_mod(npmod))
        result0 : SUP := (result::List SUP).1
        r1 : SUP := result0^exp0
-       if (h := f exquo r1) case "failed" then return nsqfree(oldf,lvar,empty())
+       if (h := f exquo r1) case "failed" then
+           return nsqfree1(oldf, lvar, [], next_mod(npmod))
        sqdec := cons([result0, exp0], sqdec)
        f := h::SUP
        f0 := completeEval(h, lvar, lval)
@@ -148,6 +157,9 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
                lpfact.exponent := (lpfact.exponent - exp0)::NNI
        sqlead := nsqlead
      [((retract f) exquo ctf)::P, sqdec]$squareForm
+
+   nsqfree(oldf : SUP, lvar : List(OV), ltry : List List R) : squareForm ==
+       nsqfree1(oldf, lvar, ltry, pmod)
 
 
    squareFree(f : SUP) : Factored SUP ==
@@ -279,7 +291,8 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
 
          ----  lift the univariate square-free factor  ----
    lift(ud : SUP, g0 : BP, g1 : BP, lcoef : P, lvar : List(OV),
-                        ldeg:List(NNI),lval:List(R)) : Union(List SUP,"failed") ==
+        ldeg : List(NNI), lval : List(R), npmod : R
+       ) : Union(List SUP,"failed") ==
      leadpol : Boolean := false
      lcd : P := leadingCoefficient ud
      leadlist : List(P) := empty()
@@ -292,7 +305,7 @@ MultivariateSquareFree (E, OV, R, P) : C == T where
        else g0 := (retract(eval(lcoef, lvar, lval)) exquo lcg0)::R * g0
        g1 := lcg0*g1
        leadlist := [lcoef, lcd]
-     plist := lifting(ud, lvar, [g0, g1], lval, leadlist, ldeg, pmod)
+     plist := lifting(ud, lvar, [g0, g1], lval, leadlist, ldeg, npmod)
      plist case "failed" => "failed"
      (p0 : SUP, p1 : SUP) := ((plist::List SUP).1, (plist::List SUP).2)
      if completeEval(p0, lvar, lval) ~= g0 then (p0, p1) := (p1, p0)
