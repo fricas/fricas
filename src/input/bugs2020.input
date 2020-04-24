@@ -60,4 +60,54 @@ pu := univariate(p, x)
 -- used to crash
 testTrue("(ll := [factorPolynomial(pu) for i in 1..5000]; true)")
 
+testcase "factor for SUP(EXPR(INT))"
+
+pE := SUP(EXPR(INT))
+
+test_fac1(p, fp) ==
+    fl1 := factorList(fp)
+    free tp1, tp2
+    pr1 := 1$pE
+    free fac1
+    for fac in fl1 repeat
+        pr1 := pr1*fac.factor^fac.exponent
+        fac1 := fac
+        testEquals("fac1.flag", "_"prime_"")
+    pr1 := unit(fp)*pr1
+    tp1 := pr1
+    tp2 := p
+    testEquals("tp1", "tp2")
+
+test_fac(p) ==
+    f1 := factor(p)
+    test_fac1(p, f1)
+    f2 := factorPolynomial(p)$ExpressionFactorPolynomial(INT, EXPR(INT))
+    test_fac1(p, f2)
+
+c0 := exp(x)/(exp(x) - 1)
+c1 := exp(x)/(exp(x) - 2)
+
+p1 := monomial(c1, 1)$pE + c0
+test_fac(p1)
+
+p2 := monomial(c1, 2)$pE + c0
+test_fac(p2)
+
+test_fac(p1*p1)
+test_fac(p1*p2)
+test_fac(p1*p1*p2)
+
+c2 := sqrt(exp(x) - 1)
+p3 := monomial(c2, 1)$pE + c0
+test_fac(p3)
+
+p4 := monomial(c2, 3)$pE + c0
+test_fac(p4)
+
+test_fac(p1*p3)
+test_fac(p3*p4)
+test_fac(p1*p4)
+test_fac(p3^2)
+test_fac(p3*p4^2)
+
 statistics()

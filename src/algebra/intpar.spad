@@ -199,7 +199,7 @@ ExpressionFactorPolynomial(R, F) : Exports == Implementation where
             fr1 := frec.factor
             degree(fr1) < 1 => "iterate"
             frec.flag ~= "prime" and frec.flag ~= "irred" => error "impossible"
-            fru := map(c1 +-> c1::F, fr1
+            fru : UP := map(c1 +-> c1::F, fr1
                        )$UPCF2(MP, UMP, F, UP)
             fr2 := fru/leadingCoefficient(fru)
             res := res*primeFactor(fr2, frec.exponent)
@@ -214,13 +214,13 @@ ExpressionFactorPolynomial(R, F) : Exports == Implementation where
         cn = 0 => nilFactor(p, 1)
         cnp := cn::UP
         n < 1 => makeFR(cnp, [])
-        n = 1 => makeFR(cnp, [["prime", p, 1]])
+        n = 1 => makeFR(cnp, [["prime", p/cn, 1]])
         empty? lk => fpoly_factor(p)
         q   := minPoly(k1 := reduce(max, lk))
         lk2 := [k for k in lk | k ~= k1]
         sae := SimpleAlgebraicExtension(F, UP, q)
         ups := SparseUnivariatePolynomial sae
-        p2 := map(x +-> reduce univariate(x, k1, q)$PCQF, p
+        p2 : ups := map(x +-> reduce univariate(x, k1, q)$PCQF, p
                  )$UPCF2(F, UP, sae, ups)
         fres1 := factor(p2, x +-> ifactor(x, lk2)
                        )$InnerAlgFactor(F, UP, sae, ups)
@@ -229,7 +229,7 @@ ExpressionFactorPolynomial(R, F) : Exports == Implementation where
         for frec in factorList(fres1) repeat
             fr1 := frec.factor
             frec.flag ~= "prime" and frec.flag ~= "irred" => error "impossible"
-            fru := map(c1 +-> lift(c1)(kf), fr1
+            fru : UP := map(c1 +-> lift(c1)(kf), fr1
                       )$UPCF2(sae, ups, F, UP)
             fr2 := fru/leadingCoefficient(fru)
             res := res*primeFactor(fr2, frec.exponent)

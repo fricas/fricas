@@ -564,6 +564,10 @@ FactoredFunctions2(R, S) : Exports == Implementation where
       ++ factor of \spadvar{u}. The new factored object will have all its
       ++ information flags set to "nil". This function is used, for
       ++ example, to coerce every factor base to another type.
+    map_preserving : (R -> S, Factored R) -> Factored S
+      ++ map_preserving(fn, u) is used to apply the function \userfun{fn}
+      ++ to every factor of \spadvar{u}.  The new factored object will
+      ++ have the same flags as original.
 
   Implementation ==> add
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
@@ -572,6 +576,11 @@ FactoredFunctions2(R, S) : Exports == Implementation where
         l := concat(["nil", fn(unit u), 1]$FF, _
                    [["nil", fn(f.factor), f.exponent]$FF for f in factorList u])
         makeFR(1, l)
+
+    map_preserving(fn, u) ==
+        nu := fn(unit(u))
+        nl := [[f.flag, fn(f.factor), f.exponent]$FF for f in factorList u]
+        makeFR(nu, nl)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
