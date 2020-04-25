@@ -712,7 +712,7 @@
 
       \ \ Error \ A: Improper syntax.
 
-      \ \ Error \ B: The character #\\INVERTED_OHM_SIGN is not an FriCAS
+      \ \ Error \ B: The character #\\INVERTED_OHM_SIGN is not a FriCAS
       character.
 
       \ \ \ 2 error(s) parsing\ 

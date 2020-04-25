@@ -593,7 +593,7 @@ start_the_FriCAS(char **envp)
   server_num = make_server_number();
   clean_up_old_sockets();
   if (server_num == -1) {
-    fprintf(stderr, "could not get an FriCAS server number\n");
+    fprintf(stderr, "could not get a FriCAS server number\n");
     exit(-1);
   }
   if (ptyopen(&ptcNum, &ptsNum, ptcPath, ptsPath) == -1) {

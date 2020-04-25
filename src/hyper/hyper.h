@@ -409,7 +409,7 @@ extern HashTable gImageHashTable;           /* A global hash table for images */
 extern Cursor gNormalCursor;          /* The normal mouse cursor                */
 extern Cursor gActiveCursor;          /* The cursor in active regions           */
 extern Cursor gBusyCursor;            /* The clock cursor for when I am busy    */
-/* true iff HyperDoc is acting as an FriCAS server */
+/* true iff HyperDoc is acting as a FriCAS server */
 extern int is_fricas_server;
 extern int    gArgc;                  /* original argc from main */
 extern char **gArgv;                  /* original argv from main */

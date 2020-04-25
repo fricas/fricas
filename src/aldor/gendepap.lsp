@@ -36,7 +36,7 @@
 (defun type-name (initform)
   (cadr (cadr initform)))
 
-; That is an FriCAS function that sets the variable |$extendedDomains|.
+; That is a FriCAS function that sets the variable |$extendedDomains|.
 ; |$extendedDomains| have relevance during the call to
 ; |makeAxExportForm|.
 ; The execution of this function is necessary to make loading the code
