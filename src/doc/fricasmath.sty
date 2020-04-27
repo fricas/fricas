@@ -1,0 +1,102 @@
+%% fricasmath.sty
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Copyright (c) 2014, 2020  Ralf Hemmecke <ralf@hemmecke.org>
+%% All rights reserved.
+%%
+%% Redistribution and use in source and binary forms, with or without
+%% modification, are permitted provided that the following conditions are
+%% met:
+%%
+%% 1. Redistributions of source code must retain the above copyright
+%% notice, this list of conditions and the following disclaimer.
+%%
+%% 2. Redistributions in binary form must reproduce the above
+%% copyright notice, this list of conditions and the following
+%% disclaimer in the documentation and/or other materials provided
+%% with the distribution.
+%%
+%% 3. Neither the name of the copyright holder nor the names of its
+%% contributors may be used to endorse or promote products derived
+%% from this software without specific prior written permission.
+%%
+%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+%% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+%% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+%% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+%% COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+%% INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+%% (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+%% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+%% HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+%% STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+%% OF THE POSSIBILITY OF SUCH DAMAGE.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{amsmath}
+\usepackage[mathstyleoff]{breqn}
+\usepackage{tensor}
+\usepackage{mleftright}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{fricasmath}[1]%
+  {\def\arg{#1}%
+   \ifx\arg\empty \def\BEGIN{\begin{dmath*}[compact]}%
+                  \def\END{\end{dmath*}}%
+            \else \def\BEGIN{\begin{dmath}[compact,number={#1}]}%
+                  \def\END{\end{dmath}}%
+
+   \fi
+   \def\EulerE{e}% %e
+   \def\ImaginaryI{i}% %i
+   \def\csch{\operatorname{csch}}%
+   \def\erf{\operatorname{erf}}%
+   \def\coloneqq{\mathrel{:\mkern-1.2mu=}}%
+   \def\embrace##1##2##3{\left##1\relax##3\right##2\relax}%
+   \def\BRACE{\embrace{\{}{\}}}%
+   \def\BRACKET{\embrace{[}{]}}%
+   \def\PAREN##1{\mleft(##1\mright)}%
+   \def\ZAG##1##2{\frac{\left.{##1}\right|}{\left|{##2}\right.}}%
+   \def\QUOTE##1{\texttt{'}##1}%
+   \def\BOX##1{\boxed{##1}}%
+   \def\SEGMENTi##1{{##1}\operatorname{..}}%
+   \def\SEGMENTii##1##2{{##1}\operatorname{..}{##2}}%
+   \def\SUB##1##2{{{##1}_{##2}}}%
+   \def\SUPER##1##2{{{##1}^{##2}}}%
+   \def\SLASH##1##2{\left.##1\vphantom{{##1}{##2}}\right/ ##2}%
+   \def\PRIMEx##1{{##1}\endgroup}%
+   % Translate comma into \prime.
+   \def\PRIME##1{\begingroup% redefinitions are only local
+     {##1}%
+     % for the second parameter redefine \STRING and \PAREN
+     \def\PAREN{\def\STRING{\embrace{(}{)}}}%
+     \def\STRING{\begingroup\lccode`\~=`\,\lowercase{\endgroup\def~{\prime}}}%
+     ^\PRIMEx}%
+   \def\OVERLABEL##1{\FUN{OVERLABEL}(##1)}%
+   \def\REM##1##2{{##1}\mathbin{\mathrm{rem}}{##2}}%
+   \def\QUO##1##2{{##1}\mathbin{\mathrm{quo}}{##2}}%
+   \def\EXQUO##1##2{{##1}\mathbin{\mathrm{exquo}}{##2}}%
+   \def\EQUATNUM##1##2{(##1)\qquad ##2}%
+   \def\COMMA{,\linebreak[2]\:}% allow breaks in lists and sets
+   \def\SEMICOLON{;\:}%
+   \def\TIMES{\,}%
+   \def\theMap##1{\FUN{theMap}(\FUN{##1})}%
+   \def\ALTSUPERSUB##1##2{\tensor*{##1}{*##2}}%
+   \def\SCRIPTS##1##2##3##4##5{\tensor*[^{##4}_{##5}]{##1}{_{##2}^{##3}}}%
+   \newenvironment{MATRIX}[1]%
+     {\setcounter{MaxMatrixCols}{##1}\begin{bmatrix}}{\end{bmatrix}}%
+   \newenvironment{PILE}{\begin{array}[t]{l}}{\end{array}}%
+   \newenvironment{VCONCAT}{\begin{array}{c}}{\end{array}}%
+   \def\DefSpecialChars{%
+     \def\^{{\tiny\ensuremath{^{\wedge}}}}%
+     \def\\{\ensuremath{\backslash}}%
+     \def\~{\char`~}%
+   }%
+   % If there is only one letter in the argument of \FUN, then
+   % do not typeset it with \operatorname.
+   \def\FUN##1{{\DefSpecialChars\DEFOPNAME##1\ENDDEFOPNAME\OPNAME{##1}}}%
+   \def\DEFOPNAME##1##2\ENDDEFOPNAME{\def\arg{##2}%
+     \ifx\arg\empty\def\OPNAME{}\else\def\OPNAME{\operatorname}\fi}%
+   \def\STRING##1{\texttt{\DefSpecialChars ##1}}%
+   \def\SYMBOL##1{{\DefSpecialChars ##1}}%
+   \BEGIN{}}%
+  {\END{}}

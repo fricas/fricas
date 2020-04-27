@@ -1,0 +1,637 @@
+-------------------------------------------------------------------
+---
+--- FriCAS FormatLaTeX
+--- Copyright (C) 2014-2015, 2019-2020  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions
+-- are met:
+--
+-- 1. Redistributions of source code must retain the above copyright
+-- notice, this list of conditions and the following disclaimer.
+--
+-- 2. Redistributions in binary form must reproduce the above
+-- copyright notice, this list of conditions and the following
+-- disclaimer in the documentation and/or other materials provided
+-- with the distribution.
+--
+-- 3. Neither the name of the copyright holder nor the names of its
+-- contributors may be used to endorse or promote products derived
+-- from this software without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+-- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+-- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+-- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+-- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+-- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+-- OF THE POSSIBILITY OF SUCH DAMAGE.
+-------------------------------------------------------------------
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage{literatedoc}
+\usepackage{fricasmath}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{A \LaTeX{} formatter}
+\author{Ralf Hemmecke}
+\date{14-Jul-2014}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+\begin{abstract}
+  The formatter \spadtype{FormatLaTeX} is part of the \SYSTEM{}
+  formatting framework and transforms elements of
+  \spadtype{OutputForm} to \
+  spadtype{OutputBox} such that they can be
+  included into a \LaTeX{} document when the package
+  \url{fricasmath.sty} is used.
+\end{abstract}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+For an overview of the formatting framework in \SYSTEM{} look into the
+\url{fmt.spad} document.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Unfortunately, there is no document that clearly describes the meaning
+of the primitives in \spadtype{OutputForm}. The following code of the
+domain \spadtype{FormatLaTeX} is a complete reimplementation, but with
+similar intend as the domain \spadtype{TexFormat} (by R. S. Sutor).
+
+The domain \spadtype{OutputForm} as well as the former implementation
+of \spadtype{TexFormat} has been analyzed and a new structure of the
+code has been designed.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Implementation of \spadtype{FormatLaTeX}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev domain FMTLATEX FormatLaTeX
+++ \spadtype{FormatLaTeX} provides a coercion from
+++ \spadtype{OutputForm} to \LaTeX{} format. The particular dialect of
+++ \TeX{} used is \LaTeX{}, but for flexibility reasons
+++ \spadtype{FormatLaTeX} outputs everything into a fricasmath
+++ environment in which certain additional commands are avaiblable.
+++ These commands are defined in a .sty file that is distributed with
+++ the source code of FriCAS.
+FormatLaTeX: Exports == Implementation where
+  E   ==> OutputForm
+  Z   ==> Integer
+  S   ==> String
+  LE  ==> List E
+  BOX ==> OutputBox
+  LBOX ==> S -> BOX -- Label box for prologue and epilogue
+  HANDLER ==> (Z, LE) -> OutputBox -- (precedence, arguments) +-> resulting box
+  H ==> HANDLER
+
+  Exports ==> FormatterCategory with
+    environment: (S, S, S, H) -> H
+      ++ \spad{environmnt(env, x, sep)} returns a handler that typesets
+      ++ its arguments (without parentheses) in a \LaTeX{} environment
+      ++ with name \spad{env}. The string \spad{x} is put right after
+      ++ the start of the environment.
+      ++ The arguments are separated by the string \spad{sep}.
+
+  Implementation ==> add
+    Rep ==> Record(prolog: BOX, fmt: BOX, epilog: BOX)
+    import from Rep
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    FE ==> formatExpression
+    MIN ==> minPrecedence()
+    MAX ==> maxPrecedence()
+
+    coerce(x: %): OutputForm == rep(x)::OutputForm
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+By default the \LaTeX{} part is introduced by
+\verb'\begin{fricasmath}{STEPNUMBER}' and ended by
+\verb'\end{fricasmath}'.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    defaultPrologue(label: S): BOX ==
+        box concat ["\begin{fricasmath}{", label, "}"]
+    defaultEpilogue(label: S): BOX == box "\end{fricasmath}"
+
+    -- Functions from FormatterCategory
+    parenthesize(left: S, right: S, b: BOX): BOX ==
+        if left = "(" and right = ")" then (left := "\PAREN{"; right := "}")
+        hconcat [box left, b, box right]
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\spad{texEscapeString(s)} escapes all \TeX{} special characters.
+These characters are: \verb|\ { } $ ^ _ % ~ # &|.
+We prepend these characters with a backslash in front of them.
+Of course, this requires at least for \verb'\\' and \verb'\^' to define
+them appropriately in the style file
+
+In order to keep spaces, we also escape spaces by a backslash.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    -- local functions: texEscape, tex1, tex1Escape, tex2
+    texEscapeString(s: S): S == -- local function
+        cc: CharacterClass := charClass " \{}$^_%~#&" --$
+        p: Integer := position(cc, s, 1)
+        zero? p => s
+        str: S := ""
+        n: Integer := 1
+        while (p := position(cc, s, n)) > 0 repeat
+            str := concat(str, s(n..p-1))
+            n := p+1
+            str := concat(str, concat("\", s.p))
+        concat(str, s(n..#s))
+
+    braceBox(b: BOX): BOX == parenthesize("{", "}", b)
+    tex1(cmd: S, b: BOX): BOX == hconcat [box cmd, braceBox b]
+    tex1Escape(cmd: S, s: S): BOX == tex1(cmd, box texEscapeString s)
+    tex2(cmd: S, b1: BOX, b2: BOX): BOX == hconcat [tex1(cmd, b1), braceBox b2]
+
+    -- Take category default for formatInteger
+    formatFloat(s: S): BOX == box remove(char "__", s)
+    formatString(s: S): BOX == tex1Escape("\STRING", s)
+    formatSymbol(s: S): BOX == tex1Escape("\SYMBOL", s)
+    formatFunctionSymbol(s: S): BOX == tex1Escape("\FUN", s)
+
+    -- If a is of the form (* x (CONCAT d y)) then replace it
+    -- by (INTSEP x (CONCAT d y)).
+    integralArgument(a: E): E ==
+        import from OutputFormTools
+        atom? a => a
+        op: E := operator a
+        not is_symbol?(op, "*"::Symbol) => a
+        args: LE := arguments a
+        #args ~= 2 => a
+        op2: E := operator(args.2)
+        not is_symbol?(op2, "CONCAT"::Symbol) => a
+        op3: E := first arguments(args.2)
+        not is_symbol?(op3, "d"::Symbol) => a
+        elt("INTSEP"::Symbol::E, [args.1, args.2])
+        -- create a (INTSEP x (CONCAT d y)) form
+
+    integral(p: Z): H == (prec: Z, args: LE): BOX +->
+        -- We can assume #args=3.
+        bl: BOX := formatExpression(args.1, MIN) -- lower limit
+        bu: BOX := formatExpression(args.2, MIN) -- upper limit
+        a: E := integralArgument(args.3)
+        ba: BOX := formatExpression(a, MIN)
+        if not empty? bl then bl := parenthesize("__{", "}", bl)
+        if not empty? bu then bu := parenthesize("^{",  "}", bu)
+        parenthesizeIf(p < prec, hconcat [box "\int", bl, bu, braceBox ba])
+
+    -- local
+    operatorWithLimits(s: String, p: Z): H == (prec: Z, args: LE): BOX +->
+        -- We can assume #args>=2.
+        bl: BOX := formatExpression(args.1, MIN) -- lower limit
+        bu: BOX := empty() -- upper limit
+        ba: BOX := formatExpression(args.2, MIN) -- upper limit or arg
+        if #args = 3 then
+            bu := ba                                  -- upper limit
+            ba := formatExpression(args.3, MIN) -- arg
+        if not empty? bl then bl := parenthesize("__{", "}", bl)
+        if not empty? bu then bu := parenthesize("^{",  "}", bu)
+        parenthesizeIf(p < prec, hconcat [box s, bl, bu, braceBox ba])
+
+    sum(p: Z): H == operatorWithLimits("\sum", p)
+    product(p: Z): H == operatorWithLimits("\prod", p)
+
+    theMap(prec: Z, args: LE): BOX ==
+        import from OutputFormTools
+        a: E := first args
+        s: S :=
+            atom? a and not string? a and not symbol? a => ";?;"
+            b: BOX := formatExpression(a, MIN) -- assume only one line!!!
+            first lines b -- strings are already run through texEscape
+        p1 := position(char ";", s)
+        p2 := position(char ";", s, p1+1)
+        tex1("\theMap", box s(p1+1..p2-1)) -- \theMap{FUNNAME}
+
+    overbar(p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
+        parenthesizeIf(p < prec, tex1("\overline", hh(p, args)))
+
+    box(hh: H): H == (prec: Z, args: LE): BOX +->
+        tex1("\BOX", hh(prec, [args.1]))
+
+    -- \sqrt[n]{x}
+    nthRoot(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        bx: BOX := bracket("{", "}", h1)(p, [args.1])
+        bn: BOX := empty()
+        if #args > 1 then bn := bracket("[", "]", h2)(p, [args.2])
+        parenthesizeIf(p < prec, hconcat [box "\sqrt", bn, bx])
+
+    -- This handles multi-dots super(x,"....").
+    -- scripts(f, [sub, super, presuper, presub]) -->
+    -- \SCRIPTS{f}{d}{u}{pu}{pd}
+    -- can assume #args>2
+    scripts(p: Z): H == (prec: Z, args: LE): BOX +->
+        import from OutputFormTools
+        b: BOX := tex1("\SCRIPTS", formatExpression(first args, p))
+        args := rest args
+        for i in 1..4 repeat
+            empty? args => b := hconcat [b, box "{}"]
+            a := first args
+            args := rest args
+            string? a and string a = " " => b := hconcat [b, box "{}"]
+            b := hconcat [b, box "{", formatExpression(a, MIN), box "}"]
+        parenthesizeIf(p < prec, b)
+
+    subscript(p: Z): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := formatExpression(args.1, p+1)
+        b2: BOX := formatExpression(args.2, MIN)
+        parenthesizeIf(p < prec, tex2("\SUB", b1, b2))
+
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The handler \spad{altsupersub} treats an expression that is generated by
+\begin{verbcode}
+supersub(a, [sub1, super1, sub2, super2, ...])
+\end{verbcode}
+from \spadtype{OutputForm}.
+We basically turn it into something like
+\begin{verbcode}
+\ALTSUPERSUB{a}{_{sub1}^{super1}_{sub2}^{super2}...}
+\end{verbcode}
+and let an appropriate \LaTeX{} package deal with the actual formatting,
+for example, the \href{http://www.ctan.org/pkg/tensor}{tensor package}.
+
+For example, for
+\begin{verbcode}
+supersub(x, [a, b, 1, 2+b, 1/3, 4])
+\end{verbcode}
+the above code then looks like this
+\begin{verbcode}
+\ALTSUPERSUB{\SYMBOL{x}}{_{\SYMBOL{a}}^{\SYMBOL{b}}_{1}^{2+\SYMBOL{b}}_{\frac{1}{3}}^{4}}
+\end{verbcode}
+and is printed like this.
+\begin{fricasmath}{}
+\ALTSUPERSUB{\SYMBOL{x}}{_{\SYMBOL{a}}^{\SYMBOL{b}}_{1}^{2+\SYMBOL{b}}_{\frac{1}{3}}^{4}}
+\end{fricasmath}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    altsupersub(p: Z): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := formatExpression(first args, p)
+        lb: List BOX := empty()
+        for a in rest args for i in 1.. repeat
+            -- add "_{a}" or "^{a}"
+            o: S := if odd? i then "__" else "^"
+            lb := cons(tex1(o, formatExpression(a, MIN)), lb)
+        b2: BOX := hconcat reverse! lb
+        parenthesizeIf(p < prec, tex2("\ALTSUPERSUB", b1, b2))
+
+    -- we must treat the special format of a prime expression
+    prime(p: Z): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := formatExpression(args.1, p+1)
+        b2: BOX := formatExpression(args.2, MIN)
+        parenthesizeIf(p < prec, tex2("\PRIME", b1, b2))
+
+    -- local
+    aux2(s: S, p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        parenthesizeIf(p < prec, tex2(s, h1(p, [args.1]), h2(p, [args.2])))
+
+    power(p: Z, h1: H, h2: H): H == aux2("\SUPER", p, h1, h2)
+    fraction(p: Z, h1: H, h2: H): H == aux2("\frac", p, h1, h2)
+    slash(p: Z, h1: H, h2: H): H == aux2("\SLASH", p, h1, h2)
+
+    binomial(prec: Z, args: LE): BOX ==
+        b1: BOX := formatExpression(args.1, MIN)
+        b2: BOX := formatExpression(args.2, MIN)
+        tex2("\binom", b1, b2)
+
+    -- \def\ZAG##1##2{\frac{\left.{##1}\right|}{\left|{##2}\right.}}%
+    zag(prec: Z, args: LE): BOX ==
+        b1: BOX := formatExpression(args.1, MIN)
+        b2: BOX := formatExpression(args.2, MIN)
+        tex2("\ZAG", b1, b2)
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The function \spad{environment} is a general handler to create a
+\LaTeX{} environment.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    environment(env: S, x: S, sep: S, h: H): H == (prec: Z, args: LE): BOX +->
+        -- We must return a box with just one line, but we want to see
+        -- newlines in the actual tex-output. Therefore, we introduce
+        -- explicit newlines.
+        empty? args => empty()
+        b: BOX := box concat ["\begin{", env, "}", x]
+        e: BOX := box concat ["\end{", env, "}"]
+        entries: BOX := nary(sep, MIN, h)(MIN, args)
+        hconcat [b, entries, e]
+
+    vconcat(h: H): H == environment("VCONCAT", "", "\\", h)
+    pile(h: H): H == environment("PILE", "", "\\", h)
+
+    matrix(left: S, right: S): H == (prec: Z, args: LE): BOX +->
+        -- We ignore the left and right parameters and rather use
+        -- LaTeX definitions to do the formatting. We also rely on an
+        -- entry for the ROW operator to be present in the
+        -- operatorHandlers table.
+
+        -- format for args is [[], [ROW ...], [ROW ...], [ROW ...]]
+        import from OutputFormTools
+        n: S := concat ["{", convert(# arguments first rest args), "}"]
+        environment("MATRIX", n, "\\", FE MIN)(MIN, rest args)
+
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Now all function are defined and we can fill the \spad{oh}
+data structure.
+The operators have been mainly extracted from the definitions of
+\spadtype{OutputForm} and the original implementation of
+\spadtype{TexFormat} by R. S. Sutor
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    setOperatorHandlers!(oh: OperatorHandlers H): OperatorHandlers H ==
+        NARY ==> -1 -- means n-ary.
+        PAREN p ==> bracket("\PAREN{", "}", FE p)
+        BRACE p ==> bracket("{", "}", FE p)
+        BRACE2(p1, p2) ==> binary(BRACE p1, BRACE p2)
+
+        o(n, op, hdl) ==> setHandler!(oh, n, op, hdl)
+
+        o(0, "NOTHING",     nothing())
+        o(0, "%pi",         formatConstant "\pi ")
+        o(0, "%e",          formatConstant "\EulerE ")
+        o(0, "%i",          formatConstant "\ImaginaryI ")
+        o(0, "%Infinity",   formatConstant "\infty ")
+        o(0, "infinity",    formatConstant "\infty ") -- for %minusInfinity
+        o(0, "...",         formatConstant "\ldots ")
+
+        o(1, "cos",         prefix("\cos",    900, PAREN MIN))
+        o(1, "cot",         prefix("\cot",    900, PAREN MIN))
+        o(1, "csc",         prefix("\csc",    900, PAREN MIN))
+        o(1, "log",         prefix("\log",    900, PAREN MIN))
+        o(1, "sec",         prefix("\sin",    900, PAREN MIN))
+        o(1, "sin",         prefix("\sin",    900, PAREN MIN))
+        o(1, "tan",         prefix("\tan",    900, PAREN MIN))
+        o(1, "cosh",        prefix("\cosh",   900, PAREN MIN))
+        o(1, "coth",        prefix("\coth",   900, PAREN MIN))
+        o(1, "csch",        prefix("\csch",   900, PAREN MIN))
+        o(1, "sech",        prefix("\sech",   900, PAREN MIN))
+        o(1, "sinh",        prefix("\sinh",   900, PAREN MIN))
+        o(1, "tanh",        prefix("\tanh",   900, PAREN MIN))
+        o(1, "acos",        prefix("\arccos", 900, PAREN MIN))
+        o(1, "asin",        prefix("\arcsin", 900, PAREN MIN))
+        o(1, "atan",        prefix("\arctan", 900, PAREN MIN))
+        o(1, "erf",         prefix("\erf",    900, PAREN MIN))
+
+        o(1, "-",           prefix("-",       710, FE 715))
+        o(1, "not",         prefix("\lnot ",  710, FE 715))
+
+        o(1, "QUOTE",       bracket("\QUOTE{", "}",  FE 990))
+        o(1, "OVERBAR",     bracket("\overline{", "}", FE MIN))
+        o(1, "BOX",         box FE MIN)
+        o(1, "Aleph",       bracket("\SUB{\aleph}{", "}", FE MIN))
+        o(1, "BRACE",       bracket("\BRACE{", "}", FE MIN))
+        o(1, "BRACKET",     bracket("\BRACKET{", "}", FE MIN))
+        o(1, "PAREN",       bracket("\PAREN{", "}", FE MIN))
+        o(1, "Gamma",       bracket("\Gamma\PAREN{", "}", FE MIN))
+        o(1, "ROOT",        bracket("\sqrt{", "}", FE MIN))
+        o(1, "SEGMENT",     bracket("\SEGMENTi{", "}", FE MIN))
+        o(1, "STRING",      bracket("\STRING{", "}", FE MIN))
+
+        o(2, "rem",  infix("", 810, bracket("\REM{",   "}", FE 811), BRACE 811))
+        o(2, "quo",  infix("", 810, bracket("\QUO{",   "}", FE 811), BRACE 811))
+        o(2, "exquo",infix("", 810, bracket("\EXQUO{", "}", FE 811), BRACE 811))
+
+        o(2, "^",           power(950, FE 960, FE MIN))
+        o(2, "/",           fraction(910, FE MIN, FE MIN))
+        o(2, "OVER",        fraction(910, FE MIN, FE MIN))
+        o(2, "SLASH",       slash(880, FE 881, FE 882))
+        o(2, "ZAG",         zag)
+        o(2, "BINOMIAL",    binomial)
+        o(2, "PRIME",       prime 950)
+
+        o(2, "ROOT",        nthRoot(970, FE MIN, FE MIN))
+        o(2, "SUB",         subscript 950)
+
+        o(2, "SEGMENT",     prefix("\SEGMENTii", 100, BRACE2(100, 100)))
+
+        o(2, "TENSOR",      infix("\otimes ",    850, FE 850, FE 850))
+
+        o(2, "EQUATNUM",    prefix("\EQUATNUM",  MAX, BRACE2(MIN, MIN)))
+        o(2, "OVERLABEL",   prefix("\OVERLABEL", MAX, BRACE2(MIN, MIN)))
+
+        o(2, "==",          nary("==",         400, FE 401))
+
+        o(2, "=",           nary("=",          400, FE 400))
+        o(2, "~=",          nary("\ne ",       400, FE 400))
+        o(2, "<",           nary("<",          400, FE 400))
+        o(2, ">",           nary(">",          400, FE 400))
+        o(2, "<=",          nary("\leq ",      400, FE 400))
+        o(2, ">=",          nary("\geq ",      400, FE 400))
+        o(2, "and",         nary("\land ",     300, FE 300))
+        o(2, "or",          nary("\lor ",      200, FE 200))
+        o(2, "LET",         nary("\coloneqq ", 125, FE 125))
+        o(2, "TAG",         nary("\to ",       100, FE 100))
+        o(2, "+->",         nary("\mapsto ",   100, FE 100))
+        o(2, "|",           nary("\mid ",      100, FE 100))
+
+        o(2, "SIGMA",       sum 750)
+        o(2, "PI",          product 750)
+
+        o(3, "SIGMA2",      sum 750)
+        o(3, "PI2",         product 750)
+        o(3, "INTSIGN",     integral 700)
+        o(2, "INTSEP",      infix("\, ", MAX, FE MIN, FE MIN)) -- non-OutputForm
+
+        o(NARY, "+",           naryPlus("+", "-",  700, FE 700))
+        -- Does n-ary minus ever appear in OutputForm???
+        o(NARY, "-",           naryPlus("+", "-",  700, FE 700))
+
+        o(NARY, "*",           nary("\TIMES ",     800, FE 800))
+
+        o(NARY, "AGGLST",      nary("\COMMA ",     MAX, FE MIN))
+        o(NARY, "AGGSET",      nary("\SEMICOLON ", MAX, FE MIN))
+        o(NARY, "CONCAT",      nary("",            MAX, FE MIN))
+        o(NARY, "CONCATB",     nary("\ ",          MAX, FE MIN))
+
+        o(NARY, "ALTSUPERSUB", altsupersub 900)
+        o(NARY, "SUPERSUB",    scripts 900)
+        o(NARY, "SC",          pile FE MIN) -- pile notation
+        o(NARY, "VCONCAT",     vconcat FE MIN)
+
+        o(NARY, "ROW",         nary("&", MAX, FE MIN))
+        o(NARY, "MATRIX",      matrix("[", "]"))
+        o(NARY, "theMap",      theMap) -- one or two arguments
+
+        return oh
+
+    -- local variable declarations and definitions
+    operatorData: OperatorHandlers(H) := setOperatorHandlers! new()
+    operatorHandlers(): OperatorHandlers(HANDLER) == operatorData
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{A style file for use with output of \spadtype{FormatLaTeX}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{verbcode}
+%% fricasmath.sty
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Copyright (c) 2014, 2020  Ralf Hemmecke <ralf@hemmecke.org>
+%% All rights reserved.
+%%
+%% Redistribution and use in source and binary forms, with or without
+%% modification, are permitted provided that the following conditions are
+%% met:
+%%
+%% 1. Redistributions of source code must retain the above copyright
+%% notice, this list of conditions and the following disclaimer.
+%%
+%% 2. Redistributions in binary form must reproduce the above
+%% copyright notice, this list of conditions and the following
+%% disclaimer in the documentation and/or other materials provided
+%% with the distribution.
+%%
+%% 3. Neither the name of the copyright holder nor the names of its
+%% contributors may be used to endorse or promote products derived
+%% from this software without specific prior written permission.
+%%
+%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+%% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+%% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+%% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+%% COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+%% INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+%% (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+%% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+%% HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+%% STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+%% OF THE POSSIBILITY OF SUCH DAMAGE.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{amsmath}
+\usepackage[mathstyleoff]{breqn}
+\usepackage{tensor}
+\usepackage{mleftright}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{fricasmath}[1]%
+  {\def\arg{#1}%
+   \ifx\arg\empty \def\BEGIN{\begin{dmath*}[compact]}%
+                  \def\END{\end{dmath*}}%
+            \else \def\BEGIN{\begin{dmath}[compact,number={#1}]}%
+                  \def\END{\end{dmath}}%
+
+   \fi
+   \def\EulerE{e}% %e
+   \def\ImaginaryI{i}% %i
+   \def\csch{\operatorname{csch}}%
+   \def\erf{\operatorname{erf}}%
+   \def\coloneqq{\mathrel{:\mkern-1.2mu=}}%
+   \def\embrace##1##2##3{\left##1\relax##3\right##2\relax}%
+   \def\BRACE{\embrace{\{}{\}}}%
+   \def\BRACKET{\embrace{[}{]}}%
+   \def\PAREN##1{\mleft(##1\mright)}%
+   \def\ZAG##1##2{\frac{\left.{##1}\right|}{\left|{##2}\right.}}%
+   \def\QUOTE##1{\texttt{'}##1}%
+   \def\BOX##1{\boxed{##1}}%
+   \def\SEGMENTi##1{{##1}\operatorname{..}}%
+   \def\SEGMENTii##1##2{{##1}\operatorname{..}{##2}}%
+   \def\SUB##1##2{{{##1}_{##2}}}%
+   \def\SUPER##1##2{{{##1}^{##2}}}%
+   \def\SLASH##1##2{\left.##1\vphantom{{##1}{##2}}\right/ ##2}%
+   \def\PRIMEx##1{{##1}\endgroup}%
+   % Translate comma into \prime.
+   \def\PRIME##1{\begingroup% redefinitions are only local
+     {##1}%
+     % for the second parameter redefine \STRING and \PAREN
+     \def\PAREN{\def\STRING{\embrace{(}{)}}}%
+     \def\STRING{\begingroup\lccode`\~=`\,\lowercase{\endgroup\def~{\prime}}}%
+     ^\PRIMEx}%
+   \def\OVERLABEL##1{\FUN{OVERLABEL}(##1)}%
+   \def\REM##1##2{{##1}\mathbin{\mathrm{rem}}{##2}}%
+   \def\QUO##1##2{{##1}\mathbin{\mathrm{quo}}{##2}}%
+   \def\EXQUO##1##2{{##1}\mathbin{\mathrm{exquo}}{##2}}%
+   \def\EQUATNUM##1##2{(##1)\qquad ##2}%
+   \def\COMMA{,\linebreak[2]\:}% allow breaks in lists and sets
+   \def\SEMICOLON{;\:}%
+   \def\TIMES{\,}%
+   \def\theMap##1{\FUN{theMap}(\FUN{##1})}%
+   \def\ALTSUPERSUB##1##2{\tensor*{##1}{*##2}}%
+   \def\SCRIPTS##1##2##3##4##5{\tensor*[^{##4}_{##5}]{##1}{_{##2}^{##3}}}%
+   \newenvironment{MATRIX}[1]%
+     {\setcounter{MaxMatrixCols}{##1}\begin{bmatrix}}{\end{bmatrix}}%
+   \newenvironment{PILE}{\begin{array}[t]{l}}{\end{array}}%
+   \newenvironment{VCONCAT}{\begin{array}{c}}{\end{array}}%
+   \def\DefSpecialChars{%
+     \def\^{{\tiny\ensuremath{^{\wedge}}}}%
+     \def\\{\ensuremath{\backslash}}%
+     \def\~{\char`~}%
+   }%
+   % If there is only one letter in the argument of \FUN, then
+   % do not typeset it with \operatorname.
+   \def\FUN##1{{\DefSpecialChars\DEFOPNAME##1\ENDDEFOPNAME\OPNAME{##1}}}%
+   \def\DEFOPNAME##1##2\ENDDEFOPNAME{\def\arg{##2}%
+     \ifx\arg\empty\def\OPNAME{}\else\def\OPNAME{\operatorname}\fi}%
+   \def\STRING##1{\texttt{\DefSpecialChars ##1}}%
+   \def\SYMBOL##1{{\DefSpecialChars ##1}}%
+   \BEGIN{}}%
+  {\END{}}
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Customization}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The visual appearance of expressions in a \LaTeX{} document can be
+customized in two places. The definitions of the \TeX{} commands in
+the style file \url{fricasmath.sty} can be changed. Furthermore also
+the internal data structure of the handlers can be modified, see
+documentation of the formatting framework in \SYSTEM{}.
+
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif

@@ -1,0 +1,575 @@
+-------------------------------------------------------------------
+---
+--- FriCAS Format2D
+--- Copyright (C) 2020  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions
+-- are met:
+--
+-- 1. Redistributions of source code must retain the above copyright
+-- notice, this list of conditions and the following disclaimer.
+--
+-- 2. Redistributions in binary form must reproduce the above
+-- copyright notice, this list of conditions and the following
+-- disclaimer in the documentation and/or other materials provided
+-- with the distribution.
+--
+-- 3. Neither the name of the copyright holder nor the names of its
+-- contributors may be used to endorse or promote products derived
+-- from this software without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+-- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+-- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+-- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+-- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+-- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+-- OF THE POSSIBILITY OF SUCH DAMAGE.
+-------------------------------------------------------------------
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage{literatedoc}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Format2D---A 2D output formatter}
+\author{Ralf Hemmecke}
+\date{30-Mar-2020}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+\begin{abstract}
+  In \SYSTEM{} there is a special domain \spadtype{OutputForm} that
+  functions as an abstraction between algebraic expressions and the
+  actual visual output. \spadtype{Format2D} provides functionality to
+  transform an element of \spadtype{OutputForm} into a two-dimensional
+  monospaced format intended to be output to a console.
+\end{abstract}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+For an overview of the formatting framework in \SYSTEM{} look into the
+\url{fmt.spad} document.
+
+The functionality of \spadtype{Format2D} is not new in \SYSTEM{}, but
+before its existence, the formatting was done via BOOT code from
+\url{src/interp/i-output.boot}. With the introduction of a new
+formatting framework we moved the 2D-formatting functionality into
+SPAD code.
+
+As can be seen from the testing files, in some places our code behaves
+better, for example, with respect to putting parentheses when the
+output might be ambiguous, and in some places it is not yet perfect,
+for example, fractions of fractions lead to bigger fraction signs when
+output via \url{i-output.boot}, but with equally long (and therefore
+ambiguous) fraction signs with our code.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementation of \spadtype{Format2D}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev domain FMT2D Format2D
+++ \spadtype{Format2D} provides a coercion from
+++ \spadtype{OutputForm} to two-dimensional format.
+Format2D: Exports == Implementation where
+  E   ==> OutputForm
+  Z   ==> Integer
+  N   ==> NonNegativeInteger
+  S   ==> String
+  LE  ==> List E
+  BOX ==> OutputBox
+  LBOX ==> S -> BOX -- Label box for prologue and epilogue
+  HANDLER ==> (Z, LE) -> OutputBox -- (precedence, arguments) +-> resulting box
+  H ==> HANDLER
+  asN x ==> qcoerce(x)@N
+
+  Exports ==> FormatterCategory
+
+  Implementation ==> add
+    Rep ==> Record(prolog: BOX, fmt: BOX, epilog: BOX)
+    import from Rep
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    FE ==> formatExpression
+    MIN ==> minPrecedence()
+    MAX ==> maxPrecedence()
+
+    coerce(x: %): OutputForm == rep(x)::OutputForm
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+By default there is no prologue or epilogue for one-dimensional output.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    defaultPrologue(label: S): BOX == empty()
+    defaultEpilogue(label: S): BOX == empty()
+
+    -- Take category default for formatInteger
+    formatFloat(s: S): BOX == box remove(char "__", s)
+    formatString(s: S): BOX == box s
+    formatSymbol(s: S): BOX == box s
+    formatFunctionSymbol(s: S): BOX == box s
+
+    parenthesize(left: S, right: S, b: BOX): BOX ==
+        h := height b
+        t := h + depth b
+        bl := box left
+        br := box right
+        bxl := vconcat([bl for i in 1..t], h)
+        bxr := vconcat([br for i in 1..t], h)
+        hconcat [bxl, b, bxr]
+
+    -- local function definitions
+    -- like \fbox{bx} in LaTeX
+    fbox(bx: BOX): BOX ==
+        h: N := height bx
+        d: N := depth bx
+        w: N := width bx
+        l := box "| "; l := vconcat([l for i in 1..h+d], h)
+        r := box " |"; r := vconcat([r for i in 1..h+d], h)
+        bar: BOX := box concat ["+-", new(w, char "-"), "-+"]
+        vconcat([bar, hconcat[l, bx, r], bar], h+1)
+
+    -- If a is of the form (* x (CONCAT d y)) then replace it
+    -- by (INTSEP x (CONCAT d y)).
+    integralArgument(a: E): E ==
+        import from OutputFormTools
+        atom? a => a
+        op: E := operator a
+        not is_symbol?(op, "*"::Symbol) => a
+        args: LE := arguments a
+        #args ~= 2 => a
+        op2: E := operator(args.2)
+        not is_symbol?(op2, "CONCAT"::Symbol) => a
+        op3: E := first arguments(args.2)
+        not is_symbol?(op3, "d"::Symbol) => a
+        elt("INTSEP"::Symbol::E, [args.1, args.2])
+        -- create a (INTSEP x (CONCAT d y)) form
+
+    integral(p: Z): H == (prec: Z, args: LE): BOX+->
+        -- We can assume #args=3.
+        op: BOX := vconcat([_
+            box " ++",_
+            box " | ",_
+            box "++ "], 2)
+        bl: BOX := formatExpression(args.1, MIN) -- lower limit
+        bu: BOX := formatExpression(args.2, MIN) -- upper limit
+        a: E := integralArgument(args.3)
+        ba: BOX := formatExpression(a, MIN)
+        bx := vconcat([bu, op, bl], height op + height bu + depth bu)
+        parenthesizeIf(p < prec, hconcat [bx, box " ", ba])
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The following function treats sums and products.
+Such expressions either come with two or three parameters. For example:
+\begin{verbcode}
+(product(x, y))::OutputForm pretend SExpression
+(PI y x)
+\end{verbcode}
+\begin{verbcode}
+(sum(sin y, y=u..v))::OutputForm pretend SExpression
+(SIGMA2 (= y u) v (sin y))
+\end{verbcode}
+In case of three parameters, the first two are the lower and upper
+limits and the third is the argument that the (sum, product)
+quantor applies to.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    -- We can assume #args>=2.
+    operatorWithLimits(op: BOX, p: Z): H == (prec: Z, args: LE): BOX+->
+        b1: BOX := formatExpression(args.1, MIN) -- lower limit
+        b2: BOX := formatExpression(args.2, MIN) -- upper limit or arg
+        #args = 2 => hconcat [vconcat([op, b1], height op), box " ", b2]
+        b3: BOX := formatExpression(args.3, MIN)
+        bx := vconcat([b2, op, b1], height op + height b2 + depth b2)
+        parenthesizeIf(p < prec, hconcat [bx, box " ", b3])
+
+    sum(p: Z): H ==
+        op: BOX := vconcat([_
+            box "--+",_
+            box ">  ",_
+            box "--+"], 2)
+        operatorWithLimits(op, p)
+    product(p: Z): H ==
+        op: BOX := vconcat([_
+            box "++-++",_
+            box " | | ",_
+            box " | | "], 2)
+        operatorWithLimits(op, p)
+
+    theMap(prec: Z, args: LE): BOX ==
+        import from OutputFormTools
+        a: E := first args
+        s: S :=
+            atom? a and not string? a and not symbol? a => ";?;"
+            b: BOX := formatExpression(a, MIN) -- assume only one line!!!
+            first lines b -- strings are already run through texEscape
+        p1 := position(char ";", s)
+        p2 := position(char ";", s, p1+1)
+        parenthesize("theMap(", ")", box s(p1+1..p2-1))
+
+    overbar(p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
+        bx: BOX := hh(MIN, [first args])
+        bar: BOX := box new(width bx, char "__")
+        parenthesizeIf(p < prec, vconcat([bar, bx], 1 + height bx))
+
+    box(hh: H): H == (prec: Z, args: LE): BOX +->
+        fbox hh(MIN, [first args])
+
+    -- \sqrt[n]{x}
+    nthRoot(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        bx: BOX := h1(p, [first args])
+        -- If 2 argument then it's an nth-root if only 1 argument
+        -- then it is a square root
+        h: N := height bx
+        d: N := depth bx
+        w: N := width bx
+        l := box "|"; l := vconcat([l for i in 1..h+d], h)
+        r := box " "; r := vconcat([r for i in 1..h+d], h)
+        bar: BOX := box concat ["+", new(w, char "-"), "+"]
+        br: BOX := vconcat([bar, hconcat[l, bx, r]], h+1)
+        -- br is the part under the root sign together with parts
+        -- of the root symbol.
+
+        -- Now we produce the part that comes in front of the box br.
+        -- We must distinguish the sqrt case from the nth-root case.
+        bspace: BOX := box " "
+        bn: BOX := bspace -- assume square root, i.e. not printing "2"
+        bv: BOX := box "\"
+        if # args > 1 then -- nth root case
+            -- Here we determine the box for the n (which can be
+            -- an arbitrary expression that might result in an
+            -- overall height+depth of the front part that is bigger
+            -- than the br box.
+            bn: BOX := h2(p, [args.2]) -- get the n
+            bv := pad(0, 0, asN(width bn - 1), 0)(bv) -- pad on the left
+
+        -- Now we have the boxes bv and the argument box bn, both of
+        -- the appropriate width of the argument box bn. Note that the
+        -- height of bar is the same as the height of bv, namely equal
+        -- to one, so we can ignore it in the following computation.
+
+        -- There are two possibilities.
+        -- (a) The hdn:=height(bn)+depth(bn) of bn is bigger than h+d.
+        --     Then we must pad br on the top by hd-(h+d) lines.
+        -- (b) If hdn < h+d then we must pad bn by (h+d)-hd lines ont the top.
+        hdn := height bn + depth bn
+        lb: List BOX := [bn, bv]
+        if hdn > h + d then -- case (a)
+            br := pad(asN(hdn - h - d), 0, 0, 0)(br)
+          else -- case (b)
+            -- We must put more lines on top of lb.
+            lb := concat([bspace for i in 1..h+d-hdn], lb)
+        parenthesizeIf(p < prec, hconcat [vconcat(lb, height br), br])
+
+        -- normalize box returns empty() if the box consists only of
+        -- an empty string or a string with one space.
+    normalizeBox(b: BOX): BOX ==
+        height b > 1 or depth b > 1 => b
+        zero? height b => empty()
+        --assert(one? height b)
+        l := first lines b
+        l = "" or l = " " => empty()
+        b
+
+    -- scripts(f, [sub, super, presuper, presub])
+    -- can assume #args>2
+    scripts(p: Z): HANDLER == (prec: Z, args: LE): BOX +->
+        bx: BOX := formatExpression(first args, p)
+        lb: List BOX := [formatExpression(a, MIN) for a in rest args]
+        lb := concat(lb, [empty() for i in 1..4])
+        lr: BOX := normalizeBox(lb.1)
+        ur: BOX := normalizeBox(lb.2)
+        ul: BOX := normalizeBox(lb.3)
+        ll: BOX := normalizeBox(lb.4)
+        h := height bx
+        hspace: BOX := vconcat([box "" for i in 1..h+depth(bx)], h)
+        wr := max(width ur, width lr)
+        ur := pad(0, 0, 0, asN(wr - width ur))(ur)
+        lr := pad(0, 0, 0, asN(wr - width lr))(lr)
+        right: BOX := vconcat([ur, hspace, lr], height ur + depth ur + h)
+        wl := max(width ul, width ll)
+        ul := pad(0, 0, asN(wl - width ul), 0)(ul)
+        ll := pad(0, 0, asN(wl - width ll), 0)(ll)
+        left: BOX := vconcat([ul, hspace, ll], height ul + depth ul + h)
+        parenthesizeIf(p < prec, hconcat [left, bx, right])
+
+    -- This handles subscript(v, [1,n,t]) from Symbol which leads to
+    -- (SUB v 1 n t).
+    subscript(p: Z): H == (prec: Z, args: LE): BOX +->
+        bx: BOX := formatExpression(first args, p)
+        sb: BOX := nary(", ", MAX, FE MIN)(MIN, rest args)
+        bspace: BOX := box " " -- corresponds to the baseline
+        sb := vconcat([bspace, sb], 1)
+        parenthesizeIf(p < prec, hconcat [bx, sb])
+
+    altsupersub(p: Z): H == (prec: Z, args: LE): BOX +->
+        bx: BOX := formatExpression(first args, p)
+        lb: List BOX := [formatExpression(a, MIN) for a in rest args]
+        if odd?(#lb) then lb := concat(lb, empty())
+        h := height bx
+        hspace: BOX := vconcat([box "" for i in 1..h+depth(bx)], h)
+        while not empty? lb repeat
+            bl := first lb; lb := rest lb; wl := width bl
+            bu := first lb; lb := rest lb; wu := width bu
+            w: N := max(wl, wu) + 1
+            bl := pad(0, 0, 0, asN(w-wl))(bl)
+            bu := pad(0, 0, 0, asN(w-wu))(bu)
+            right: BOX := vconcat([bu, hspace, bl], h+height(bu)+depth(bu))
+            bx := hconcat [bx, right]
+        bx
+
+    prime(p: Z): H == (prec: Z, args: LE): BOX +->
+        import from OutputFormTools
+        --assert(#args=2)
+        a2: E := args.2
+        not atom? a2 => power(p, FE(p+1), FE MIN)(prec, args)
+
+        b1: BOX := formatExpression(first args, p)
+        -- Is should be a number of commas.
+        not string? a2 => error "prime: second argument error"
+        s2 := string a2
+        n := # s2
+        for i in 1..n repeat if s2.i ~= char "," then error "prime: no comma"
+        b: BOX := box new(n, char "'")
+        h: N := height b1
+        if h>1 then
+            raise: BOX := vconcat([box " " for i in 1..h-1], asN(h-1))
+            b := vconcat([b, raise], h)
+        parenthesizeIf(p < prec, hconcat [b1, b])
+
+    power(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := h1(p+1, [args.1])
+        b2: BOX := h2(MIN, [args.2])
+        ht1: N := height b1
+        ht2: N := height b2
+        bx1: BOX := pad(ht2,0,0,0)(b1)
+        raise: BOX := vconcat([box " " for i in 1..ht1], ht1)
+        bx2: BOX := vconcat([b2, raise], ht1+ht2+depth(b2))
+        parenthesizeIf(p < prec, hconcat [bx1, bx2])
+
+    fraction(p: Z, h1: H, h2: H): H ==  (prec: Z, args: LE): BOX +->
+        b1: BOX := h1(MIN, [args.1])
+        b2: BOX := h2(MIN, [args.2])
+        hd: N := height b1 + depth b1
+        bar: BOX := box new(max(width b1, width b2), char "-")
+        parenthesizeIf(p < prec, vconcat([b1, bar, b2], hd + 1))
+
+    slash(p: Z, h1: H, h2: H): H == infix(" / ", p, h1, h2)
+
+    binomial(prec: Z, args: LE): BOX ==
+        b1: BOX := formatExpression(args.1, MIN)
+        b2: BOX := formatExpression(args.2, MIN)
+        hd: N := height b1 + depth b1
+        bspace: BOX := box new(max(width b1, width b2), char " ")
+        parenthesize("(", ")", vconcat([b1, bspace, b2], hd + 1))
+
+    zag(prec: Z, args: LE): BOX ==
+        bx: BOX := fraction(MAX, FE MIN, FE MIN)(prec, args)
+        --assert(height bx = 2)
+        bl: BOX := vconcat([box "+-", box "| "], 1)
+        br: BOX := vconcat([box " |", box "-+"], 2)
+        hconcat [bl,  bx, br]
+
+    formatList(prec: Z, args: LE): List BOX ==
+        -- args is supposed to contain the actual column elements
+        [formatExpression(a, prec) for a in args]
+
+    -- align = 1 --> left aligned
+    -- align = 0 --> centered
+    vconcatAligned(align: Z): H == (prec: Z, args: LE): BOX +->
+        empty? args => empty() -- no rows
+        boxes: List BOX := formatList(prec, args)
+        w: N := max [width b for b in boxes] -- maximal width
+        h := height first boxes
+        zero? align => vconcat([hcenter(w)(b) for b in  boxes], h)
+        one? align =>
+            vconcat([pad(0, 0, 0, asN(w - width b))(b) for b in boxes], h)
+        vconcat([pad(0, 0, asN(w - width b), 0)(b) for b in boxes], h)
+
+    vconcat(h: H): H == vconcatAligned 0
+    pile(h: H): H == vconcatAligned 1
+
+    matrix(left: S, right: S): H == (prec: Z, args: LE): BOX +->
+        import from OutputFormTools
+        empty? args => empty() -- no rows
+        -- format for args is [[], [ROW ...], [ROW ...], [ROW ...]]
+        rows: List List BOX :=
+            [formatList(prec, arguments a) for a in rest args]
+        n: N := #first rows
+        wd: Vector N := new(n, 0) -- column widths for each column
+        for row in rows repeat
+            for b in row for i in 1..n repeat wd.i := max(wd.i, width b)
+        -- Now we know the widths of each column.
+        sep: BOX := box "  " -- separator horizontally and vertically
+        rowBoxes: List BOX := empty()
+        for row in rows repeat
+            rrow: List BOX := [hcenter(wd.1)(first row)]
+            for b in rest row for i in 2..n repeat
+                rrow := cons(hcenter(wd.i)(b), cons(sep, rrow))
+            rowBoxes := cons(hconcat reverse! rrow, rowBoxes)
+        t := reduce(_+, [height b + depth b + 1 for b in rowBoxes])
+        rb: List BOX := [first rowBoxes]
+        for b in rest rowBoxes repeat rb := cons(b, cons(sep, rb))
+        t := shift(t+1, -1)
+        parenthesize(left, right, vconcat(rb, asN t))
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Now all function are defined and we can fill the \spad{oh}
+data structure.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    setOperatorHandlers!(oh: OperatorHandlers H): OperatorHandlers H ==
+        NARY ==> -1 -- means n-ary.
+        PAREN p ==> bracket("(", ")", FE p)
+        PAREN2(p1, p2) ==> bracket("(", ")", infix(", ", MAX, FE MIN, FE MIN))
+
+        o(n, op, hdl) ==> setHandler!(oh, n, op, hdl)
+
+        o(0, "NOTHING",     nothing())
+        o(0, "%pi",         formatConstant "%pi")
+        o(0, "%e",          formatConstant "%e")
+        o(0, "%i",          formatConstant "%i")
+        o(0, "%Infinity",   formatConstant "%Infinity")
+        o(0, "infinity",    formatConstant "infinity") -- %plus... and %minus...
+
+        o(0, "...",         formatConstant "...")
+
+        o(1, "cos",         prefix("cos",    MAX, PAREN MIN))
+        o(1, "cot",         prefix("cot",    MAX, PAREN MIN))
+        o(1, "csc",         prefix("csc",    MAX, PAREN MIN))
+        o(1, "log",         prefix("log",    MAX, PAREN MIN))
+        o(1, "sec",         prefix("sin",    MAX, PAREN MIN))
+        o(1, "sin",         prefix("sin",    MAX, PAREN MIN))
+        o(1, "tan",         prefix("tan",    MAX, PAREN MIN))
+        o(1, "cosh",        prefix("cosh",   MAX, PAREN MIN))
+        o(1, "coth",        prefix("coth",   MAX, PAREN MIN))
+        o(1, "csch",        prefix("csch",   MAX, PAREN MIN))
+        o(1, "sech",        prefix("sech",   MAX, PAREN MIN))
+        o(1, "sinh",        prefix("sinh",   MAX, PAREN MIN))
+        o(1, "tanh",        prefix("tanh",   MAX, PAREN MIN))
+        o(1, "acos",        prefix("acos",   MAX, PAREN MIN))
+        o(1, "asin",        prefix("asin",   MAX, PAREN MIN))
+        o(1, "atan",        prefix("atan",   MAX, PAREN MIN))
+        o(1, "erf",         prefix("erf",    MAX, PAREN MIN))
+
+        o(1, "-",           prefix("-",      710, FE 715))
+        o(1, "not",         prefix("not ",   710, FE 715))
+
+        o(1, "QUOTE",       prefix("'",      720, FE 960))
+        o(1, "OVERBAR",     overbar(MAX, FE MIN))
+        o(1, "BOX",         box FE MIN)
+        o(1, "Aleph",       prefix("Aleph", MAX, PAREN MIN))
+        o(1, "BRACE",       bracket("{", "}", FE MIN))
+        o(1, "BRACKET",     bracket("[", "]", FE MIN))
+        o(1, "PAREN",       bracket("(", ")", FE MIN))
+        o(1, "Gamma",       prefix("Gamma", MAX, PAREN MIN))
+        o(1, "ROOT",        nthRoot(970, FE MIN, FE MIN))
+        o(1, "SEGMENT",     bracket("", " .. ", FE 990))
+        o(1, "STRING",      bracket("_"", "_"", FE MIN))
+
+        o(2, "rem",         infix(" rem ",   810, FE 811, FE 811))
+        o(2, "quo",         infix(" quo ",   810, FE 811, FE 811))
+        o(2, "exquo",       infix(" exquo ", 810, FE 811, FE 811))
+
+        o(2, "^",           power(950, FE 960, FE MIN))
+        o(2, "/",           fraction(910, FE MIN, FE MIN))
+        o(2, "OVER",        fraction(910, FE MIN, FE MIN))
+        o(2, "SLASH",       slash(880, FE 881, FE 882))
+        o(2, "ZAG",         zag)
+        o(2, "BINOMIAL",    binomial)
+        o(2, "PRIME",       prime 950)
+
+        o(2, "ROOT",        nthRoot(970, FE MIN, FE 850))
+        o(2, "SUB",         subscript 950)
+
+        o(2, "SEGMENT",     infix(" .. ",        100, FE 100, FE 100))
+
+        o(2, "TENSOR",      infix(" # ",         850, FE 850, FE 850))
+
+        o(2, "EQUATNUM",    prefix("\EQUATNUM",  MAX, PAREN2(MIN, MIN)))
+        o(2, "OVERLABEL",   prefix("\OVERLABEL", MAX, PAREN2(MIN, MIN)))
+
+        o(2, "==",          nary(" == ",       400, FE 401))
+
+        o(2, "=",           nary(" = ",        400, FE 400))
+        o(2, "~=",          nary(" ~= ",       400, FE 400))
+        o(2, "<",           nary(" < ",        400, FE 400))
+        o(2, ">",           nary(" > ",        400, FE 400))
+        o(2, "<=",          nary(" <= ",       400, FE 400))
+        o(2, ">=",          nary(" >= ",       400, FE 400))
+        o(2, "and",         nary(" and ",      300, FE 300))
+        o(2, "or",          nary(" or ",       200, FE 200))
+        o(2, "LET",         nary(" := ",       125, FE 125))
+        o(2, "TAG",         nary(" -> ",       100, FE 100))
+        o(2, "+->",         nary(" +-> ",      100, FE 100))
+        o(2, "|",           nary(" | ",        100, FE 100))
+
+        o(2, "SIGMA",       sum 750)
+        o(2, "PI",          product 750)
+
+        o(3, "SIGMA2",      sum 750)
+        o(3, "PI2",         product 750)
+        o(3, "INTSIGN",     integral 700)
+        o(2, "INTSEP",      infix("", MAX, FE MIN, FE MIN)) --non OutputForm
+
+        o(NARY, "+",           naryPlus(" + ", " - ", 700, FE 700))
+        -- Does n-ary minus ever appear in OutputForm???
+        o(NARY, "-",           naryPlus("+", "-",  700, FE 700))
+
+        o(NARY, "*",           nary("*",           800, FE 800))
+
+        o(NARY, "AGGLST",      nary(", ",          MAX, FE MIN))
+        o(NARY, "AGGSET",      nary("; ",          MAX, FE MIN))
+        o(NARY, "CONCAT",      nary("",            MAX, FE MIN))
+        o(NARY, "CONCATB",     nary(" ",           MAX, FE MIN))
+
+        o(NARY, "ALTSUPERSUB", altsupersub 900)
+        o(NARY, "SUPERSUB",    scripts 900)
+        o(NARY, "SC",          pile FE MIN) -- pile notation
+        o(NARY, "VCONCAT",     vconcat FE MIN)
+
+        o(NARY, "ROW",         nary("  ", MAX, FE MIN))
+        o(NARY, "MATRIX",      matrix("[", "]"))
+        o(NARY, "theMap",      theMap) -- one or two arguments
+
+        return oh
+
+    -- local variable declarations and definitions
+    operatorData: OperatorHandlers(H) := setOperatorHandlers! new()
+    operatorHandlers(): OperatorHandlers(HANDLER) == operatorData
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif

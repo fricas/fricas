@@ -1,0 +1,551 @@
+-------------------------------------------------------------------
+---
+--- FriCAS FormatMathJax
+--- Copyright (C) 2020  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions
+-- are met:
+--
+-- 1. Redistributions of source code must retain the above copyright
+-- notice, this list of conditions and the following disclaimer.
+--
+-- 2. Redistributions in binary form must reproduce the above
+-- copyright notice, this list of conditions and the following
+-- disclaimer in the documentation and/or other materials provided
+-- with the distribution.
+--
+-- 3. Neither the name of the copyright holder nor the names of its
+-- contributors may be used to endorse or promote products derived
+-- from this software without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+-- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+-- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+-- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+-- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+-- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+-- OF THE POSSIBILITY OF SUCH DAMAGE.
+-- -------------------------------------------------------------------
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage{literatedoc}
+\usepackage{amsmath}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{A \LaTeX{} output formatter variant MathJax}
+\author{Ralf Hemmecke}
+\date{15-Apr-2020}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+\begin{abstract}
+The domain \spadtype{FormatMathjax} is nearly identical to the
+\spadtype{FormatLaTeX} domain, but simplifies the output so that it
+is interpretable by MathJax.
+\end{abstract}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+For an overview of the formatting framework in \SYSTEM{} look into the
+\url{fmt.spad} document.
+
+Since this domain takes the functionality from \spadtype{FormatLaTeX},
+look up more documentation there.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Implementation of \spadtype{FormatMathJax}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev domain FMTMJAX FormatMathJax
+++ \spadtype{FormatMathJax} provides a coercion from
+++ \spadtype{OutputForm} to a \LaTeX{} format in a variant that can be
+++ understood by MahtJax (https://www.mathjax.org).
+FormatMathJax: Exports == Implementation where
+  E   ==> OutputForm
+  Z   ==> Integer
+  N   ==> NonNegativeInteger
+  S   ==> String
+  LE  ==> List E
+  BOX ==> OutputBox
+  LBOX ==> S -> BOX -- Label box for prologue and epilogue
+  HANDLER ==> (Z, LE) -> OutputBox -- (precedence, arguments) +-> resulting box
+  H ==> HANDLER
+
+  Exports ==> FormatterCategory with
+    environment: (S, S, S, H) -> H
+      ++ \spad{environmnt(env, x, sep)} returns a handler that typesets
+      ++ its arguments (without parentheses) in a \LaTeX{} environment
+      ++ with name \spad{env}. The string \spad{x} is put right after
+      ++ the start of the environment.
+      ++ The arguments are separated by the string \spad{sep}.
+
+  Implementation ==> add
+    Rep ==> Record(prolog: BOX, fmt: BOX, epilog: BOX)
+    import from Rep
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    FE ==> formatExpression
+    MIN ==> minPrecedence()
+    MAX ==> maxPrecedence()
+
+    coerce(x: %): OutputForm == rep(x)::OutputForm
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+By default the \LaTeX{} part is introduced by
+\verb'\[' and ended by \verb'\]'.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    defaultPrologue(label: S): BOX == box "\["
+    defaultEpilogue(label: S): BOX == box "\]"
+
+    -- Functions from FormatterCategory
+    parenthesize(left: S, right: S, b: BOX): BOX ==
+        if left = "(" and right = ")" then (left :="\left("; right :="\right)")
+        hconcat [box left, b, box right]
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\spad{texEscapeString(s)} escapes all \TeX{} special characters.
+These characters are: \verb|\ { } $ ^ _ % ~ # &|.
+
+We treat \verb|\ ^ ~| in a special way and prepend the other
+characters with a backslash in front of them.
+
+In order to keep spaces, we also escape spaces by a backslash.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    -- local functions: texEscape, tex1, tex1Escape, tex2
+    texEscapeString(s: S): S == -- local function
+        cc: CharacterClass := charClass " \{}$^_%~#&" --$
+        p: Integer := position(cc, s, 1)
+        zero? p => s
+        str: S := ""
+        n: Integer := 1
+        while (p := position(cc, s, n)) > 0 repeat
+            str := concat(str, s(n..p-1))
+            n := p+1
+            c := s.p
+            esc := concat("\", s.p)
+            if c = char "^" then esc := "{\wedge}"
+            if c = char "\" then esc := "{\backslash}"
+            if c = char "~" then esc := "{\tilde{}}"
+            str := concat(str, esc)
+        concat(str, s(n..#s))
+
+    braceBox(b: BOX): BOX == parenthesize("{", "}", b)
+    tex1(cmd: S, b: BOX): BOX == hconcat [box cmd, braceBox b]
+    tex1Escape(cmd: S, s: S): BOX == tex1(cmd, box texEscapeString s)
+    tex2(cmd: S, b1: BOX, b2: BOX): BOX == hconcat [tex1(cmd, b1), braceBox b2]
+
+    -- Take category default for formatInteger
+    formatFloat(s: S): BOX == box remove(char "__", s)
+    duplicateBackslashes(s: S): S ==
+        m: Z := 1 -- minIndex(s)
+        p: Z := position(char "\", s)
+        p < m => s
+        t: S := s(1..p)
+        while (q := position(char "\", s, p+1)) >= m repeat
+            t := concat(t, s(p..q))
+            p := q
+        concat(t, s(p..#s))
+    formatString(s: S): BOX ==
+        -- The backslash must be escaped by a second backslash.
+        tex1("\texttt", box duplicateBackslashes s)
+    formatSymbol(s: S): BOX == box texEscapeString s
+    formatFunctionSymbol(s: S): BOX ==
+        b := box texEscapeString s
+        if one? width b then b else tex1("\operatorname", b)
+
+    -- If a is of the form (* x (CONCAT d y)) then replace it
+    -- by (INTSEP x (CONCAT d y)).
+    integralArgument(a: E): E ==
+        import from OutputFormTools
+        atom? a => a
+        op: E := operator a
+        not is_symbol?(op, "*"::Symbol) => a
+        args: LE := arguments a
+        #args ~= 2 => a
+        op2: E := operator(args.2)
+        not is_symbol?(op2, "CONCAT"::Symbol) => a
+        op3: E := first arguments(args.2)
+        not is_symbol?(op3, "d"::Symbol) => a
+        elt("INTSEP"::Symbol::E, [args.1, args.2])
+        -- create a (INTSEP x (CONCAT d y)) form
+
+    integral(p: Z): H == (prec: Z, args: LE): BOX +->
+        -- We can assume #args=3.
+        bl: BOX := formatExpression(args.1, MIN) -- lower limit
+        bu: BOX := formatExpression(args.2, MIN) -- upper limit
+        a: E := integralArgument(args.3)
+        ba: BOX := formatExpression(a, MIN)
+        if not empty? bl then bl := parenthesize("__{", "}", bl)
+        if not empty? bu then bu := parenthesize("^{",  "}", bu)
+        parenthesizeIf(p < prec, hconcat [box "\int", bl, bu, braceBox ba])
+
+    -- local
+    operatorWithLimits(s: S, p: Z): H == (prec: Z, args: LE): BOX +->
+        -- We can assume #args>=2, but the first argument can be empty
+        bl: BOX := formatExpression(args.1, MIN) -- lower limit
+        bu: BOX := empty() -- upper limit
+        ba: BOX := formatExpression(args.2, MIN) -- upper limit or arg
+        if #args = 3 then
+            bu := ba                                  -- upper limit
+            ba := formatExpression(args.3, MIN) -- arg
+        if not empty? bl then bl := parenthesize("__{", "}", bl)
+        if not empty? bu then bu := parenthesize("^{",  "}", bu)
+        parenthesizeIf(p < prec, hconcat [box s, bl, bu, braceBox ba])
+
+    sum(p: Z): H == operatorWithLimits("\sum", p)
+    product(p: Z): H == operatorWithLimits("\prod", p)
+
+    theMap(prec: Z, args: LE): BOX ==
+        import from OutputFormTools
+        a: E := first args
+        s: S :=
+            atom? a and not string? a and not symbol? a => ";?;"
+            b: BOX := formatExpression(a, MIN) -- assume only one line!!!
+            first lines b -- strings are already run through texEscape
+        p1 := position(char ";", s)
+        p2 := position(char ";", s, p1+1)
+        parenthesize("\operatorname{theMap}(", ")", box s(p1+1..p2-1))
+
+    overbar(p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
+        parenthesizeIf(p < prec, tex1("\overline", hh(p, args)))
+
+    box(hh: H): H == (prec: Z, args: LE): BOX +->
+        tex1("\boxed", hh(prec, [args.1]))
+
+    -- \sqrt[n]{x}
+    nthRoot(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        bx: BOX := bracket("{", "}", h1)(p, [args.1])
+        bn: BOX := empty()
+        if #args > 1 then bn := bracket("[", "]", h2)(p, [args.2])
+        parenthesizeIf(p < prec, hconcat [box "\sqrt", bn, bx])
+
+    -- This handles multi-dots super(x,"....").
+    -- scripts(f, [sub, super, presuper, presub]) -->
+    -- {}_{presub}^{presuper}f_{sub}^{super}
+    -- can assume #args>2
+    emptyArgs?(args: LE): Boolean == -- local
+        import from OutputFormTools
+        empty? args or (string? first args and string first args = " ")
+
+    scripts(p: Z): H == (prec: Z, args: LE): BOX +->
+        b: BOX := braceBox formatExpression(first args, p)
+        v: BOX := hconcat [box "\vphantom", b]
+        for i in 1..4 repeat
+            args := rest args
+            if not emptyArgs? args then
+                bx: BOX := braceBox formatExpression(first args, MIN)
+                pre: BOX := if (i=1) or (i=4) then box "__" else box "^"
+                if i<3 then (b := hconcat [b, pre, bx]; s: BOX := box "")
+                       else (b := hconcat [pre, bx, b]; s: BOX := v)
+        parenthesizeIf(p < prec, hconcat [s, b])
+
+    subscript(p: Z): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := braceBox formatExpression(args.1, p+1)
+        b2: BOX := braceBox formatExpression(args.2, MIN)
+        parenthesizeIf(p < prec, hconcat [b1, box "__", b2])
+
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The handler \spad{altsupersub} treats an expression that is generated by
+\begin{verbcode}
+supersub(a, [sub1, super1, sub2, super2, ...])
+supersub(a, [l1, u1, l2, u2, ...])
+\end{verbcode}
+from \spadtype{OutputForm}.
+We basically turn it into something like
+\begin{verbcode}
+{a}_{l1L}^{u1U}A_{l2L}^{u2U}A_{l3L}^{u3U}...}
+\end{verbcode}
+where $A$, $L$, and $U$ are (respectively) replaced by the following
+expressions.
+\begin{verbcode}
+\vphantom{a}
+\vphantom{{l1}{l2}{l3}...}
+\vphantom{{u1}{u2}{u3}...}
+\end{verbcode}
+$A$ serves the purpose of letting subscripts and superscripts all be
+based on the same box size whereas $L$ and $U$ are meant to bring the
+respective subscripts and superscripts all on the same baseline.
+
+For example, for
+\begin{verbcode}
+supersub(x, [a, b, 1, 2+b, 1/3, 4])
+\end{verbcode}
+the above code then looks like this
+\begin{verbcode}
+x_{a\vphantom{{a}{1}{\frac{1}{3}}}}^{b\vphantom{{b}{2+b}{4}}}
+\vphantom{x}_{1\vphantom{{a}{1}{\frac{1}{3}}}}^{2+b\vphantom{{b}{2+b}{4}}}
+\vphantom{x}_{\frac{1}{3}\vphantom{{a}{1}{\frac{1}{3}}}}^{4\vphantom{{b}{2+b}{4}}}
+\end{verbcode}
+and is printed like this.
+\begin{gather*}
+x_{a\vphantom{{a}{1}{\frac{1}{3}}}}^{b\vphantom{{b}{2+b}{4}}}
+\vphantom{x}_{1\vphantom{{a}{1}{\frac{1}{3}}}}^{2+b\vphantom{{b}{2+b}{4}}}
+\vphantom{x}_{\frac{1}{3}\vphantom{{a}{1}{\frac{1}{3}}}}^{4\vphantom{{b}{2+b}{4}}}
+\end{gather*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    altsupersub(p: Z): H == (prec: Z, args: LE): BOX +->
+        ba: BOX := formatExpression(first args, p)
+        empty?(args := rest args) => parenthesizeIf(p < prec, ba)
+        bx: BOX := ba
+        ba := tex1("\vphantom", ba)
+        ll: List BOX := empty()
+        lu: List BOX := empty()
+        for a in args for i in 1.. repeat
+            b: BOX := braceBox formatExpression(a, MIN)
+            if odd? i then ll := cons(b, ll) else lu := cons(b, lu)
+        if odd?(#args) then cons(empty(), lu)
+        ll := reverse! ll; bl: BOX := tex1("\vphantom", hconcat ll)
+        lu := reverse! lu; bu: BOX := tex1("\vphantom", hconcat lu)
+        --assert(#ll>1 and #lu>1 and #ll=#lu)
+        tl := tex1("__", hconcat [first ll, bl])
+        tu := tex1("^",  hconcat [first lu, bu])
+        bx := hconcat [braceBox bx, tl, tu]
+        for l in rest ll for u in rest lu repeat
+            tl := tex1("__", hconcat [l, bl])
+            tu := tex1("^",  hconcat [u, bu])
+            bx := hconcat [bx, ba, tl, tu]
+        parenthesizeIf(p < prec, bx)
+
+    -- we must treat the special format of a prime expression
+    prime(p: Z): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := formatExpression(args.1, p+1)
+        n: Z := numberOfPrimes(args.2)
+        n < 0 => error "error in PRIME expression"
+        if n < 4 then
+            b2: BOX := box(new(n::N, char("'")$Character)$String)
+          else
+            r: S := lowerCase(FormatRoman(n::PositiveInteger)$NumberFormats)--$
+            b2: BOX := box concat ["^{(", r, ")}"]
+        parenthesizeIf(p < prec, hconcat [b1, b2])
+
+    power(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := braceBox h1(p+1, [args.1])
+        b2: BOX := braceBox h2(MIN, [args.2])
+        parenthesizeIf(p < prec, hconcat [b1, box "^", b2])
+
+    fraction(p: Z, h1: H, h2: H): H ==  (prec: Z, args: LE): BOX +->
+        b1: BOX := h1(MIN, [args.1])
+        b2: BOX := h2(MIN, [args.2])
+        parenthesizeIf(p < prec, tex2("\frac", b1, b2))
+
+    -- \def\SLASH##1##2{\left.##1\vphantom{{##1}{##2}}\right/ ##2}%
+    slash(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        -- formats an infix slash of appropriate size
+        b1: BOX := braceBox h1(MIN, [args.1])
+        b2: BOX := braceBox h2(MIN, [args.2])
+        b: BOX := tex1("\vphantom", hconcat [b1, b2])
+        b := hconcat [box "\left.", b1, b, box "\right/", b2]
+        parenthesizeIf(p < prec, b)
+
+    binomial(prec: Z, args: LE): BOX ==
+        b1: BOX := formatExpression(args.1, MIN)
+        b2: BOX := formatExpression(args.2, MIN)
+        tex2("\binom", b1, b2)
+
+    -- \def\ZAG##1##2{\frac{\left.{##1}\right|}{\left|{##2}\right.}}%
+    zag(prec: Z, args: LE): BOX ==
+        b1: BOX := formatExpression(args.1, MIN)
+        b2: BOX := formatExpression(args.2, MIN)
+        b1: BOX := parenthesize("\left.","\right|", b1)
+        b2: BOX := parenthesize("\left|","\right.", b2)
+        tex2("\frac", b1, b2)
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The function \spad{environment} is a general handler to create a
+\LaTeX{} environment.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    environment(env: S, x: S, sep: S, h: H): H == (prec: Z, args: LE): BOX +->
+        -- We must return a box with just one line, but we want to see
+        -- newlines in the actual tex-output. Therefore, we introduce
+        -- explicit newlines.
+        empty? args => empty()
+        b: BOX := box concat ["\begin{", env, "}", x]
+        e: BOX := box concat ["\end{", env, "}"]
+        entries: BOX := nary(sep, MIN, h)(MIN, args)
+        hconcat [b, entries, e]
+
+    vconcat(h: H): H == environment("array", "[t]{c}", "\\", h)
+    pile(h: H): H == environment("array", "[t]{l}", "\\", h)
+
+    -- \begin{bmatrix}}{\end{bmatrix}
+    matrix(left: S, right: S): H == (prec: Z, args: LE): BOX +->
+        -- Choose the type of the environemt according to the left
+        -- parameter.
+
+        -- format for args is [[], [ROW ...], [ROW ...], [ROW ...]]
+        h: H := formatExpression MIN
+        matrixtype: S := "bmatrix"
+        if left = "(" then matrixtype := "pmatrix"
+        environment(matrixtype, "", "\\", h)(MIN, rest args)
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Now all function are defined and we can fill the \spad{oh}
+data structure.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    setOperatorHandlers!(oh: OperatorHandlers H): OperatorHandlers H ==
+        NARY ==> -1 -- means n-ary.
+        PAREN p ==> bracket("\left(", "\right)", FE p)
+        BRACE p ==> bracket("{", "}", FE p)
+        BRACE2(p1, p2) ==> binary(BRACE p1, BRACE p2)
+
+        o(n, op, hdl) ==> setHandler!(oh, n, op, hdl)
+
+        o(0, "NOTHING",     nothing())
+        o(0, "%pi",         formatConstant "\pi ")
+        o(0, "%e",          formatConstant "e")
+        o(0, "%i",          formatConstant "i")
+        o(0, "%Infinity",   formatConstant "\infty ")
+        o(0, "infinity",    formatConstant "\infty ") -- for %minusInfinity
+        o(0, "...",         formatConstant "\ldots ")
+
+        o(1, "cos",         prefix("\cos",    900, PAREN MIN))
+        o(1, "cot",         prefix("\cot",    900, PAREN MIN))
+        o(1, "csc",         prefix("\csc",    900, PAREN MIN))
+        o(1, "log",         prefix("\log",    900, PAREN MIN))
+        o(1, "sec",         prefix("\sin",    900, PAREN MIN))
+        o(1, "sin",         prefix("\sin",    900, PAREN MIN))
+        o(1, "tan",         prefix("\tan",    900, PAREN MIN))
+        o(1, "cosh",        prefix("\cosh",   900, PAREN MIN))
+        o(1, "coth",        prefix("\coth",   900, PAREN MIN))
+        o(1, "csch",        prefix("\csch",   900, PAREN MIN))
+        o(1, "sech",        prefix("\sech",   900, PAREN MIN))
+        o(1, "sinh",        prefix("\sinh",   900, PAREN MIN))
+        o(1, "tanh",        prefix("\tanh",   900, PAREN MIN))
+        o(1, "acos",        prefix("\arccos", 900, PAREN MIN))
+        o(1, "asin",        prefix("\arcsin", 900, PAREN MIN))
+        o(1, "atan",        prefix("\arctan", 900, PAREN MIN))
+        o(1, "erf",         prefix("\operatorname{erf}", 900, PAREN MIN))
+
+        o(1, "-",           prefix("-",       710, FE 715))
+        o(1, "not",         prefix("\lnot ",  710, FE 715))
+
+        o(1, "QUOTE",       prefix("\texttt{'}", 710,  FE 960))
+        o(1, "OVERBAR",     bracket("\overline{", "}", FE MIN))
+        o(1, "BOX",         box FE MIN)
+        o(1, "Aleph",       bracket("\aleph__{", "}", FE MIN))
+        o(1, "BRACE",       bracket("\left\{", "\right\}", FE MIN))
+        o(1, "BRACKET",     bracket("\left[", "\right]", FE MIN))
+        o(1, "PAREN",       bracket("\left(", "\right)", FE MIN))
+        o(1, "Gamma",       bracket("\Gamma\left(", "\right)", FE MIN))
+        o(1, "ROOT",        bracket("\sqrt{", "}", FE MIN))
+        o(1, "SEGMENT",     bracket("", "{\operatorname{..}}", FE MIN))
+        o(1, "STRING",      bracket("\STRING{", "}", FE MIN))
+
+        o(2, "rem",  infix("\mathbin{\operatorname{rem}}",  810,FE 811,FE 811))
+        o(2, "quo",  infix("\mathbin{\operatorname{quo}}",  810,FE 811,FE 811))
+        o(2, "exquo",infix("\mathbin{\operatorname{exquo}}",810,FE 811,FE 811))
+
+        o(2, "^",           power(950, FE 960, FE MIN))
+        o(2, "/",           fraction(910, FE MIN, FE MIN))
+        o(2, "OVER",        fraction(910, FE MIN, FE MIN))
+        o(2, "SLASH",       slash(880, FE 881, FE 882))
+        o(2, "ZAG",         zag)
+        o(2, "BINOMIAL",    binomial)
+        o(2, "PRIME",       prime 950)
+
+        o(2, "ROOT",        nthRoot(970, FE MIN, FE MIN))
+        o(2, "SUB",         subscript 950)
+
+        o(2, "SEGMENT", infix("\mathbin{\operatorname{..}}",100,FE 100,FE 100))
+
+        o(2, "TENSOR",      infix("\otimes ",    850, FE 850, FE 850))
+
+        o(2, "EQUATNUM",    prefix("\EQUATNUM",  MAX, BRACE2(MIN, MIN)))
+        o(2, "OVERLABEL",   prefix("\OVERLABEL", MAX, BRACE2(MIN, MIN)))
+
+        o(2, "==",          nary("==",         400, FE 401))
+
+        o(2, "=",           nary("=",          400, FE 400))
+        o(2, "~=",          nary("\ne ",       400, FE 400))
+        o(2, "<",           nary("<",          400, FE 400))
+        o(2, ">",           nary(">",          400, FE 400))
+        o(2, "<=",          nary("\leq ",      400, FE 400))
+        o(2, ">=",          nary("\geq ",      400, FE 400))
+        o(2, "and",         nary("\land ",     300, FE 300))
+        o(2, "or",          nary("\lor ",      200, FE 200))
+        o(2, "LET",         nary(":=",         125, FE 125))
+        o(2, "TAG",         nary("\to ",       100, FE 100))
+        o(2, "+->",         nary("\mapsto ",   100, FE 100))
+        o(2, "|",           nary("\mid ",      100, FE 100))
+
+        o(2, "SIGMA",       sum 750)
+        o(2, "PI",          product 750)
+
+        o(3, "SIGMA2",      sum 750)
+        o(3, "PI2",         product 750)
+        o(3, "INTSIGN",     integral 700)
+        o(2, "INTSEP",      infix("\, ", MAX, FE MIN, FE MIN)) -- non-OutputForm
+
+        o(NARY, "+",           naryPlus("+", "-",  700, FE 700))
+        -- Does n-ary minus ever appear in OutputForm???
+        o(NARY, "-",           naryPlus("+", "-",  700, FE 700))
+
+        o(NARY, "*",           nary("\, ",         800, FE 800))
+
+        o(NARY, "AGGLST",      nary(", ",          MAX, FE MIN))
+        o(NARY, "AGGSET",      nary("; ",          MAX, FE MIN))
+        o(NARY, "CONCAT",      nary("",            MAX, FE MIN))
+        o(NARY, "CONCATB",     nary("\ ",          MAX, FE MIN))
+
+        o(NARY, "ALTSUPERSUB", altsupersub 900)
+        o(NARY, "SUPERSUB",    scripts 900)
+        o(NARY, "SC",          pile FE MIN) -- pile notation
+        o(NARY, "VCONCAT",     vconcat FE MIN)
+
+        o(NARY, "ROW",         nary("&", MAX, FE MIN))
+        o(NARY, "MATRIX",      matrix("[", "]"))
+        o(NARY, "theMap",      theMap) -- one or two arguments
+
+        return oh
+
+    -- local variable declarations and definitions
+    operatorData: OperatorHandlers(H) := setOperatorHandlers! new()
+    operatorHandlers(): OperatorHandlers(HANDLER) == operatorData
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif

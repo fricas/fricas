@@ -1,0 +1,1757 @@
+-------------------------------------------------------------------
+---
+--- FriCAS Formatting Framework
+--- Copyright (C) 2020  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions
+-- are met:
+--
+-- 1. Redistributions of source code must retain the above copyright
+-- notice, this list of conditions and the following disclaimer.
+--
+-- 2. Redistributions in binary form must reproduce the above
+-- copyright notice, this list of conditions and the following
+-- disclaimer in the documentation and/or other materials provided
+-- with the distribution.
+--
+-- 3. Neither the name of the copyright holder nor the names of its
+-- contributors may be used to endorse or promote products derived
+-- from this software without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+-- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+-- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+-- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+-- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+-- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+-- OF THE POSSIBILITY OF SUCH DAMAGE.
+-------------------------------------------------------------------
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage{literatedoc}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{A formatting framework for \SYSTEM{}}
+\author{Ralf Hemmecke}
+\date{09-Apr-2020}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+\begin{abstract}
+  We describe a formatting framework for values of \SYSTEM{} domains.
+\end{abstract}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The default way in \SYSTEM{} to output something is via coercion into
+\spadtype{OutputForm}. Nearly every domain in \SYSTEM{} provides a
+function
+\begin{verbcode}
+coerce: % -> OutputForm
+\end{verbcode}
+that transforms an element of the current domain into an element of
+\spadtype{OutputForm}. The domain \spadtype{OutputForm} itself is
+meant to be an abstraction from the visual form of an expression, but,
+in fact, is actually a mixture of a representation of an expression in
+a tree form and a small number of styling elements, like
+\spad{blankSeparate} or \spad{vconcat}.
+
+We believe that it would be better to actually get rid of the styling
+part and create a proper expression tree domain for values with an
+easily extensible set of possible tree nodes as, for example, it is
+already done in the Aldor algebra library, see
+\url{https://github.com/pippijn/aldor/tree/master/aldor/lib/algebra/src/extree}.
+
+\spadtype{OutputForm} looks like being tailored for 2D-output and the
+ability to format the output in \TeX{} form look like an afterthought.
+
+Nevertheless the following framework builds solely on what
+\spadtype{OutputForm} provides and creates a domain
+\spadtype{FormattedOutput} that is able display different formats.
+
+The proposed way to enable disable the output of a certain format is
+like shown in the following piece of code, i.e, one sets a list of
+formatter in the \spadtype{FormattedOutput} domain.
+
+\begin{verbcode}
+)set output formatted on
+F ==> Formatter
+l := [F FormatLaTeX, F Format2D, F Format1D];
+setFormats!(l pretend List(OutputFormatterCategory))$FormattedOutput
+\end{verbcode}
+%$
+
+The formatters themselves simply provide functionality to turn an
+element of \spadtype{OutputForm} into an element of
+\spadtype{OutputBox}. They have no knowledge of how they are put into
+a file of onto a console and therefore can be used standalone.
+
+The domaine \spadtype{OutputBox} is our abstraction for the visual
+representation of an output form. It can hold a 2D-monospaced
+representation (by a number of lines) or the \LaTeX{} expression (just
+one line) for the \SYSTEM{} expression in question.
+
+The domain \spadtype{Formatter} is an auxiliary domain that provides
+code to put text before and after the actual formatted expression
+which can be modified at runtime. A natural usage is to let the
+\LaTeX{} format appear inside a special \LaTeX{} mathematics
+environment. Furthermore, \spadtype{Formatter} turns the actual
+formatters like for example, \spadtype{FormatLaTeX} or
+\spadtype{Format2D}, into a domain of category
+\spadtype{OutputFormatterCategory}, i.e.,
+\begin{verbcode}
+convert: (OutputForm, Integer) -> %
+display: % -> Void
+\end{verbcode}
+is available to display an element of \spadtype{OutputForm} in the
+respective format on the screen or to put it into a file.
+
+\spadtype{FormatCategory} abstracts from the \spadtype{OutputForm}
+operations and lists a number of functions that every Formatter in
+\SYSTEM{} must provide so that formatting and expression of type
+\spadtype{OutputForm} is easily achievable.
+
+Formatters like, for example, \spadtype{FormatLaTeX} or
+\spadtype{Format2D} can be adapted during a session to the needs of a
+user. For this to work, each formatter provides a data structure
+(represented by the domain \spadtype{OperatorHandlers}) that holds the
+functions that are called in order to format the respective operator
+of \spadtype{OutputForm}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The domain \spadtype{OutputBox}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The domain \spadtype{OutputBox} is an auxiliary domain that is mainly
+intended to hold a number of string that are later to be output
+(separated by newlines) onto a stream. Initially it was intended to
+hold the 2D representation of a certain expression, but later it
+became also useful to hold other representations like, for example,
+\LaTeX{}.
+
+Functions are provided to put these boxes horizontally and vertically
+together. Therefore, an \spadtype{OutputBox} knows about its size,
+namely the
+\begin{description}
+\item[height:] that is the number of lines above and including the
+  baseline;
+\item[depth:] that is the number of lines below the baseline; and
+\item[width:] that is the number of characters of each line of the box.
+\end{description}
+
+The idea of such a format strategy is that the repective sub-parts of
+an expression are (recursively) put into boxes and then put together
+into a bigger box. It allows for the representation of 2D output as
+well as other outputs such as 1D, \LaTeX{} or HTML.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev domain OUTBOX OutputBox
+++ The domain \spad{OutputBox} represents the two-dimensional form of
+++ an expresssion by a number of strings (lines). Such a box has a
+++ baseline (at which such boxes will be horizontally aligned, a
+++ height (size above and including the baseline), a depth (size below
+++ the baseline), and a width (horizontal size).
+OutputBox : Exports == Implementation where
+  N ==> NonNegativeInteger
+  Z ==> Integer
+  asN x ==> qcoerce(x)@N
+
+  Exports ==> CoercibleTo OutputForm with
+    empty: () -> %
+      ++ Create an empty box of size 0.
+    empty?: % -> Boolean
+      ++ empty?(b) returns true of the box has height and depth equal to 0.
+    box: String -> %
+      ++ \spad{box(s)} creates a box that contains the string s.
+    height: % -> N
+      ++ \spad{height(box)} returns the height of the box (above the
+      ++ baseline) including the baseline.
+    width: % -> N
+      ++ \spad{width(box)} returns the width of the box.
+    depth: % -> N
+      ++ \spad{depth(box)} returns the height of the box below the
+      ++ baseline.
+    lines: % -> List String
+      ++ \spad{lines(box)} returns the contents of the box as strings
+      ++ (all of the same length (width(box)).
+    pad: (N, N, N, N) -> % -> %
+      ++ \spad{pad(t, b, l, r)(box)} returns a new box that is padded by
+      ++ t empty lines at the top,
+      ++ b empty lines at the bottom,
+      ++ l space characters at the left,
+      ++ r space characters at the right.
+      ++ If w, h, d are the widht, heigth and depth of box then the
+      ++ resulting box will have width l+w+r and height t+h and depth
+      ++ d+b.
+    hcenter: N -> % -> %
+      ++ \spad{hcenter(w)(box)} centers the box horizontally inside a
+      ++ box of width w.
+    vconcat: (List %, N, Z) -> %
+      ++ \spad{vconcat(lbox, h, adjust)} computes the maximal width of
+      ++ the boxes in the list lbox; then if \spad{adjust<0}, left
+      ++ adjusts, if \spad{adjust>0}, right adjusts, and otherwise
+      ++ centers each smaller box in a new box of this maximal width
+      ++ and returns a box by putting all the boxes vertically on top
+      ++ of each other. The height of the new box is given by
+      ++ \spad{h}, the depth results from the difference of the number
+      ++ of lines and \spad{h}.
+    vconcat: (List %, N) -> %
+      ++ \spad{vconcat(lbox, h)} returns \spad{vconcat(lbox,h, 0)},
+    hconcat: List % -> %
+      ++ \spad{hconcat(lbox)} aligns the boxes at their baseline and
+      ++ concats those boxes horizontally from left to right.
+
+  Implementation ==> add
+    Rep ==> Record(ht: N, dp: N, wd: N, ct: List String)
+    import from Rep
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    coerce(x: %): OutputForm == rep(x)::OutputForm
+    empty(): % == per [0, 0, 0, empty()$List(String)]
+    box(s: String): % == per [1, 0, #s, [s]]
+    height(box: %): N == rep(box).ht
+    depth(box: %): N == rep(box).dp
+    width(box: %): N == rep(box).wd
+    lines(box: %): List String == rep(box).ct
+    empty?(box: %): Boolean == zero? height box and zero? depth box
+
+    pad(t: N, b: N, l: N, r: N): % -> % == (box: %): % +->
+        w := width box
+        nw: N := l + w + r
+        nh: N := t + height box
+        nd: N := b + depth box
+        emptyLine: String := new(nw, char " ")
+        newLines: List String := empty()
+        for i in 1..t repeat newLines := cons(copy emptyLine, newLines)
+        for boxline in lines(box) repeat
+            line: String := copy emptyLine
+            for i in 1..w repeat line(i+l) := boxline.i
+            newLines := cons(line, newLines)
+        for i in 1..b repeat newLines := cons(copy emptyLine, newLines)
+        per [nh, nd, nw, reverse! newLines]
+
+    hcenter(w: N): % -> % == (box: %): % +->
+        d: Z := w - width box
+        d < 0 => error "cannot fit into box"
+        l: N := asN shift(d, -1)
+        r: N := l
+        if odd? d then l := l+1 -- one more space on the left
+        pad(0, 0, l, r)(box)
+
+    vconcat(lb: List %, h: N, adjust: Z): % ==
+        empty? lb => empty()
+        w: N := max [width b for b in lb]
+        newLines: List String :=
+            adjust < 0 => -- left adjust
+                concat [lines pad(0,0,0,(w-width(b))::N)(b) for b in lb]
+            adjust > 0 => -- right adjust
+                concat [lines pad(0,0,(w-width(b))::N,0)(b) for b in lb]
+            -- center
+            concat [lines hcenter(w)(b) for b in lb]
+        d: Z := #newLines - h
+        d < 0 => error "vconcat: negative depth"
+        per [h, asN d, w, newLines]
+
+    vconcat(lb: List %, h: N): % == vconcat(lb, h, 0)
+
+    hconcat(lb: List %): % ==
+        empty? lb => empty()
+        h: N := max [height b for b in lb]
+        d: N := max [depth b for b in lb]
+        w: N := reduce(_+, [width b for b in lb])
+        emptyLine: String := new(w, char " ")
+        newLines: List String := empty()
+        for i in 1..h+d repeat
+            newLine := copy emptyLine
+            wx := 0
+            for b in lb repeat
+                wb := width b
+                hb := height b
+                ix := hb - h + i
+                if 0 < ix and ix <= hb + depth b then -- copy line ix
+                    line := lines(b).ix
+                    for j in 1..wb repeat newLine(wx+j) := line.j
+                wx := wx + wb
+            newLines := cons(newLine, newLines)
+        per [h, d, w, reverse! newLines]
+
+
+
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The OperatorHandlers Domain}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev domain OPHANDL OperatorHandlers
+++ OperatorHandlers is an auxiliary domain. It is used holds functions
+++ for each operator of \spad{OutputForm}, classified by the arity and
+++ the name of that operator.
+OperatorHandlers(HANDLER: Type): Exports == Implementation where
+  Z ==> Integer
+  S ==> String
+  Exports == with
+    new: () -> %
+      ++ \spad{new()} creates an empty structure of handlers.
+    knownHandler?: (%, Z, S) -> Boolean
+      ++ \spad{knownHandler?(x, n, op)} checks
+      ++ whether a handler for operator \spad{op} is known.
+      ++ The number \spad{n} denotes the number of arguments that the
+      ++ operator can take.
+      ++ It is OK if both \spad{knownOperator?(m, op)} and
+      ++ \spad{knownOperator?(n, op)} return true for different
+      ++ \spad{m} and \spad{n}.
+    handler: (%, Z, S) -> HANDLER
+      ++ \spad{handler(x, n, op)} is only valid if
+      ++ \spad{knownHandler?(n, op)} is true.
+      ++ It returns the respective handler stored in \spad{x}.
+    setHandler!: (%, Z, S, HANDLER) -> HANDLER
+      ++ \spad{setHandler!(x, n, op, hdl)} puts \spad{hdl} into the
+      ++ data structure \spad{x} such that it can be queried
+      ++ afterwards.
+    removeHandler!: (%, Z, S) -> Void
+      ++ \spad{removeHandler!(n, op)} removes any handler from an
+      ++ internal data structure (for the pair \spad{(n, op)} such
+      ++ that afterwards \spad{knownHandler?(x, n, op)} returns false.
+  Implementation == add
+    T ==> XHashTable(S, HANDLER)
+    Rep ==> XHashTable(Z, T)
+    N ==> -1 -- means n-ary.
+    import from Z, Rep
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    new(): % == per empty()
+    knownHandler?(t: %, n: Z, op: S): Boolean ==
+        key?(n, rep t) and key?(op, rep(t).n)
+    handler(t: %, n: Z, op: S): HANDLER == rep(t).n.op
+    setHandler!(t: %, n: Z, op: S, h: HANDLER): HANDLER ==
+        if not key?(n, rep t) then rep(t).n := empty()
+        rep(t).n.op := h
+    removeHandler!(t: %, n: Z, op: S): Void ==
+        if key?(n, rep t) then remove!(op, rep(t).n)
+
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The FormatterCategory Category}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The category \spadtype{FormatterCategory} is intended to provide
+functionality for formatter domains.
+
+A formatter domain must essentially provide 3 parts.
+\begin{enumerate}
+\item A \spad{defaultPrologue}, that is a function that given a
+  label returns an \spadtype{OutputBox} that must be printed before
+  the actual expression is printed.
+\item The \spad{defaultEpilogue}, that is a function that given a
+  label returns an \spad{OutputBox} that must be printed after the
+  actual expression.
+\item The actual output box of the expression through a call to the
+  function \spad{formatExpression}.
+\end{enumerate}
+
+Since in this framework a formatter can change its behaviour at the
+request of a user, there are a number of other functions provided to
+do this. Where generically possible some of those functions come with
+a default implementation in this category.
+
+For some examples below we use \SYSTEM{} 1.3.6 and the following
+definitions.
+\begin{verbcode}
+E ==> Expression Integer
+OF ==> OutputForm
+macro R == Record(OUTPUTFORM:OF, SEXPRESSION: SExpression)
+macro e x == (_
+    o:=x::OF;_
+    print(([o, outputTran(o)$Lisp]$R)::OF);_
+    x)
+a: OF := "a"::Symbol::OF
+aa: OF := "aa"::Symbol::OF
+b: OF := "b"::Symbol::OF
+bb: OF := "bb"::Symbol::OF
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev category FMTCAT FormatterCategory
+FormatterCategory: Category == Exports where
+  E   ==> OutputForm
+  Z   ==> Integer
+  N   ==> NonNegativeInteger
+  S   ==> String
+  LE  ==> List E
+  BOX ==> OutputBox
+  LBOX ==> S -> BOX -- Label box for prologue and epilogue
+  HANDLER ==> (Z, LE) -> OutputBox -- (precedence, arguments) +-> resulting box
+  H ==> HANDLER
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Exported Functions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The main function is \spad{formatExpression(e, p)} (which comes
+already with a default implementation.
+%
+This dispatcher routine first checks whether the given expression $e$
+is a nullary operator or has 1 or 2 or more arguments. Depending on
+the number of arguments it checks whether the given operator of the
+respective arity is known and calls the respective handler. If the
+operator is not known, \spad{formatExpression} checks for a known
+$n$-ary case and calls the respective handler. If the operator in the
+expression $e$ is unknown, it is interpreted as a function symbol and
+formatted as a function call with arguments.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+  Exports ==> CoercibleTo OutputForm with
+    defaultPrologue: LBOX
+      ++ \spad{defaultPrologue(label)} returns a box that is used at the
+      ++ beginning of every format.
+
+    defaultEpilogue: LBOX
+      ++ \spad{defaultEpilogue(label)} returns a box that is used at
+      ++ the end of every format.
+
+    minPrecedence: () -> Z -- default is 0
+      ++ minPrecedence() returns the minimal precedence value.
+    maxPrecedence: () -> Z -- default is 10000
+      ++ maxPrecedence() returns the maximal precedence value,
+
+    formatExpression: (E, Z) -> BOX -- has default implementation
+      ++ \spad{formatExpression(o, p)} returns an \spadtype{OutputBox}
+      ++ that represent the expression \spad{o} in the respective
+      ++ format when considered in a context with outer precedence
+      ++ \spad{p}. This function is the main dispatcher function. It
+      ++ first checks whether \spad{o} is an integer or a string and
+      ++ treats these cases. Then, if the number n of arguments is
+      ++ less than 3, it tries to find a handler for the top-level
+      ++ operator of \spad{o}. If none is found, it checks for a
+      ++ handler of an n-ary operator. If no handler is found, the
+      ++ operator is treated as a function symbol and formatted as
+      ++ such.
+
+    formatExpression: E -> BOX -- has default implementation
+      ++ \spad{formatExpression(o)} returns
+      ++ \spad{formatExpression(o, minPrecedence())}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The following functions are exported to create formatters that format
+certain leaf types in a special way. Sometimes, the representation in
+\spadtype{OutputForm} does not clearly distinguise between the
+different leaf types. In fact, these \emph{leaf functions} are
+somewhat questionable. Nevertheless they are useful for the
+implementation of new formatters.
+
+Unfortunately, the representation of a floating point number in
+\spadtype{OutputForm} is given by a string representation of its
+decimal expansion. In the default implementation of
+\spad{formatExpression} we try to detect floating point numbers.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    formatInteger: Z -> BOX -- has default implementation
+      ++ \spad{formatInteger(n)} formats an integer.
+    formatFloat: S -> BOX -- has default implementation
+      ++ \spad{formatFloat(s)} formats a floating point number from it
+      ++ string representation in \spadtype{OutputForm}.
+    formatString: S -> BOX
+      ++ \spad{formatString(s)} formats a string.
+    formatSymbol: S -> BOX
+      ++ \spad{formatSymbol(s)} formats a symbol.
+    formatFunctionSymbol: S -> BOX
+      ++ \spad{formatFunctionSymbol(s)} formats an otherwise unknown
+      ++ function symbol.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The following functions are only exported to aid with changing
+a formatting domain during a session.
+
+To a certain extend there exists a handler for each operator in
+\spadtype{OutputForm}. In fact, the functions below come with enough
+parameters to produce a common interface to work for several
+formatters. These functions are stored in an
+\spadtype{OperatorHandlers} data structure.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    operatorHandlers: () -> OperatorHandlers(HANDLER)
+      ++ \spad{operatorHandlers()} returns an internal data structure
+      ++ that is used for the selection of respective handlers.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Precedence of operators is used to decide whether or not to put parentheses
+around an expression.
+We fix minimal and maximal precedence, although it would be possible to
+use any range, since the code mostly only relies on a linear order,
+but putting the minimal or maximal precedence value can sometimes
+force or prevent an appearance of parentheses.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    parenthesize: (S, S, BOX) -> BOX
+      ++ \spad{parenthesize(lb, rb, bx)} returns the box bx with
+      ++ left and right brackets (lb and rb) around it.
+
+    parenthesizeIf: (Boolean, BOX) -> BOX -- has default implementation
+      ++ \spad{parenthesizeIf(paren?, bx)} returns parentheses (of
+      ++ appropriate size if \spad}paren?} is true. Otherwise,
+      ++ \spad{bx} is returned.
+
+    nothing: () -> H -- default is empty box
+      ++ \spad{nothing()} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} returns an empty box.
+      ++ This corresponds to NOTHING in \spad{OutputForm}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+A constant operator is an special operator with no arguments. Examples
+are \verb|%pi| or \verb|%i| that in \spad{OutputForm} represent
+themselves. In \SYSTEM{} there are only a few such operators like the
+above and \verb|%e| and \verb|%infinity|.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    formatConstant: S -> H -- default is a the operator string itself
+      ++ \spad{nullary(op)} is a handler to format constant operators.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The function \spad{handler(p)} is a handler that formats only one
+argument in a context with precedence \spad{p}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    formatExpression: Z -> H -- default is formatExpression perhaps inside (, )
+      ++ \spad{formatExpression(p)} returns a handler \spad{h} that
+      ++ \spad{h(prec, args)} returns
+      ++ \spad{formatExpression(first args, p)}.
+      ++ This handler is used to change the precedence context in
+      ++ which the argument is formatted.
+
+    precedence: (Z, H) -> H -- default
+      ++ \spad{precedence(p, hh)} returns a handler \spad{h} that
+      ++ \spad{h(prec, args)} returns \spad{hh(p, args)}. This handler
+      ++ can be used to change the context in which an expression is
+      ++ formatted.
+
+    bracket: (S, S, H) -> H -- has default
+      ++ \spad{bracket(lb, rb, hh)} returns a handler \spad{h} such
+      ++ that \spad{h(prec, args)} formats its first argument
+      ++ according to \spad{hh} and then put left and right brackets
+      ++ given by \spad{lb} and \spad{rb} around the resulting box.
+
+    prefix: (S, Z, H) -> H -- has default
+      ++ \spad{prefix(s, p, hh)} returns a handler \spad{h} such
+      ++ that \spad{h(prec, args)} formats its first argument
+      ++ according to \spad{hh} and then prefixes this box by
+      ++ \spad{box s}.
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+    binary: (H, H) -> H --has default
+      ++ \spad{binary(h1, h2)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats the first argument according to
+      ++ \spad{h1} and the second argument by \spad{h2}. Both boxes
+      ++ will be horizontally concatenated.
+      ++ binary(h1, h2) is equal to infix("", maxPrecedence(), h1, h2)
+
+    infix: (S, Z, H, H) -> H -- has default
+      ++ \spad{infix(op, p, h1, h2)} returns a handler \spad{h} such
+      ++ that \spad{h(prec, args)} formats the first argument by
+      ++ \spad{h1} and the second argument by \spad{h2}. Both boxes
+      ++ will be horizontally concatenated with \spad{box op} in the
+      ++ middle. Outer parentheses are added if \spad{p < prec}.
+
+    nary: (S, Z, H) -> H -- has default
+      ++ \spad(nary(s, p, hh)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats each argument according to
+      ++ \spad{hh}. All resulting boxes will be horizontally
+      ++ concatenated with \spad{box s} inbetween.
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+    naryPlus: (S, S, Z, H) -> H -- has default
+      ++ \spad(nary(plus, minus, p, hh)} returns a handler \spad{h}
+      ++ such that \spad{h(prec, args)} formats each argument
+      ++ according to \spad{hh}. All resulting boxes will be
+      ++ horizontally concatenated with \spad{box minus} or
+      ++ \spad{box plus} inbetween depending on whether the respective
+      ++ argument starts with a unary minus or not.
+
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+      ++ This is a special handler that treats the case that a sum is
+      ++ represented as a nary expression that contains unary
+      ++ subexpressions that are unary minus expressions. This handler
+      ++ transforms something like (+ a (- b)) into a - b.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The following functions treat sums, products, and integrals.
+Such expressions either come with two or three parameters. For example:
+\begin{verbcode}
+(product(x, y))::OutputForm pretend SExpression
+(PI y x)
+\end{verbcode}
+\begin{verbcode}
+(sum(sin y, y=u..v))::OutputForm pretend SExpression
+(SIGMA2 (= y u) v (sin y))
+\end{verbcode}
+\begin{verbcode}
+(integral(sin y * cos y, y))::OutputForm pretend SExpression
+(INTSIGN (NOTHING) y (* (* (cos %N) (sin %N)) (CONCAT d %N)))
+\end{verbcode}
+In case of three parameters, the first two are the lower and upper
+limits and the third is the argument that the (sum, product, integral)
+quantor applies to.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{integral} handler corresponds to the
+\spad{INTSIGN} operator of \spadtype{OutputForm}.
+
+\begin{verbcode}
+(41) -> e(int(a))
+                  ++
+   [OUTPUTFORM =  |  a , SEXPRESSION = (INTSIGN (NOTHING) (NOTHING) a)]
+                 ++
+
+(42) -> e(int(a, b))
+                  ++
+   [OUTPUTFORM =  |  a , SEXPRESSION = (INTSIGN b (NOTHING) a)]
+                 ++
+                 b
+
+(43) -> e(integrate(x^x, x)^2)
+                    x         2
+                  ++    %A
+   [OUTPUTFORM =  |   %A  d%A  ,
+                 ++
+    SEXPRESSION = (^ (INTSIGN (NOTHING) x (* (^ %A %A) (CONCAT d %A))) 2)]
+\end{verbcode}
+
+Note that in order to show the expression under the integral sign in a
+natural way, it should be checked whether it is of the form:
+\begin{verbcode}
+(* x (CONCAT d y))
+\end{verbcode}
+and then formatted without an explicit multiplication sign.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    integral: Z -> H
+      ++ \spad{integral(p)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats the expression as an integral
+      ++ with integral sign and respective limits.
+
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{sum} handler corresponds to the \spad{SIGMA}, \spad{SIGMA2}
+operators of \spadtype{OutputForm}.
+
+\begin{verbcode}
+(44) -> e sum(a)
+                 --+
+   [OUTPUTFORM = >    a, SEXPRESSION = (SIGMA (NOTHING) a)]
+                 --+
+
+(45) -> e sum(x^x, x)
+                 --+   x
+   [OUTPUTFORM = >    x , SEXPRESSION = (SIGMA x (^ x x))]
+                 --+
+                  x
+
+(46) -> e sum(x^x, x=u..v)
+                   v
+                  --+    x
+   [OUTPUTFORM =  >     x , SEXPRESSION = (SIGMA2 (= x u) v (^ x x))]
+                  --+
+                 x = u
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    sum: Z -> H
+      ++ \spad{sum(p)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats a sum expresssion with
+      ++ summation sign and respective limits.
+
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{product} handler corresponds to the \spad{PI} and \spad{PI2}
+operators of \spadtype{OutputForm}.
+
+\begin{verbcode}
+(47) -> e prod(a)
+                 ++-++
+   [OUTPUTFORM =  | |   a, SEXPRESSION = (PI (NOTHING) a)]
+                  | |
+
+(50) -> e product(x^x, x)
+                 ++-++   x
+   [OUTPUTFORM =  | |   x , SEXPRESSION = (PI x (^ x x))]
+                  | |
+                   x
+
+(48) -> e(product(x^x, x=u..v)^2)
+                    v       2
+                  ++-++   x
+   [OUTPUTFORM = ( | |   x ) , SEXPRESSION = (^ (PI2 (= x u) v (^ x x)) 2)]
+                   | |
+                  x = u
+
+(49) -> e(product(x^x, x=1..u/v)^(r+s))
+                    u       s + r
+                    -
+                    v
+                  ++-++   x
+   [OUTPUTFORM = ( | |   x )     ,
+                   | |
+                  x = 1
+    SEXPRESSION = (^ (PI2 (= x 1) (/ u v) (^ x x)) (+ s r))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    product: Z -> H
+      ++ \spad{product(p)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats a product with product sign and
+      ++ respective limits.
+
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For
+\begin{verbcode}
+(positive?$Integer)::OutputForm pretend SExpression
+\end{verbcode}
+%$
+we get
+\begin{verbcode}
+(theMap INS-;positive?;SB;4 655)
+\end{verbcode}
+From that we can extract the text between the first and second semicolon
+of the first argument.
+Unfortunately, for
+\begin{verbcode}
+addx x == ((y: Integer): Integer +-> x + y)
+((addx 10)::OutputForm) pretend SExpression
+\end{verbcode}
+we will see
+\begin{verbcode}
+(theMap
+ #<FUNCTION (LAMBDA (#:G719 |envArg|) :IN |*1;addx;1;initial|) {1004405F2B}>
+ 655)
+\end{verbcode}
+where the second entry cannot be formatted by \spad{formatExpression},
+since it is an atom but neither a string nor a symbol.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    theMap: H
+      ++ \spad{theMap} is a special handler to format a function.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{overbar} handler corresponds to the \spad{OVERBAR} operator
+of \spadtype{OutputForm}.
+
+\begin{verbcode}
+(155) -> e overbar(a+b*aa)
+                 ________
+   [OUTPUTFORM = a + b aa, SEXPRESSION = (OVERBAR (+ a (* b aa)))]
+
+(309) -> e decimal(1/352)
+                        __
+   [OUTPUTFORM = 0.0028409,
+    SEXPRESSION = (CONCAT 0 "." (CONCAT 0 0 2 8 4) (OVERBAR (CONCAT 0 9)))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    overbar: (Z, H) -> H
+      ++ \spad{overbar(p, hh)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats arguments via
+      ++ \spad{hh(p, args)} and then draws a bar over the resulting box.
+
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{box} handler corresponds to the \spad{BOX} operator of
+\spadtype{OutputForm}.
+
+\begin{verbcode}
+(157) -> e box{123}$OF
+                 +-----+
+   [OUTPUTFORM = | 123 |, SEXPRESSION = (BOX 123)]
+                 +-----+
+\end{verbcode}
+%$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    box: H -> H
+      ++ \spad{box(hh)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats the arguments via
+      ++ \spad{hh(prec, args)} and then draws a box frame around the
+      ++ resulting box.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{nthRoot} handler corresponds to the \spad{ROOT} operator of
+\spadtype{OutputForm}.
+
+\begin{verbcode}
+(165) -> e((5 + sqrt 63 + sqrt 847)^(1/3))
+                  +-----------+
+                 3|    +-+
+   [OUTPUTFORM = \|14 \|7  + 5 , SEXPRESSION = (ROOT (+ (* 14 (ROOT 7)) 5) 3)]
+
+(166) -> e(root(5)$OF + root(a+b, a+2)$OF)
+                  +-+   a + 2+-----+
+   [OUTPUTFORM = \|5  +     \|a + b ,
+    SEXPRESSION = (+ (ROOT 5) (ROOT (+ a b) (+ a 2)))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    nthRoot: (Z, H, H) -> H --has default
+      ++ Format square roots and nth roots.
+      ++ \spad{nthRoot(p, h1, h2)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats the first argument according to
+      ++ \spad{h1}.
+
+      ++ If there is no second argument, then the nth root is a square
+      ++ root and formatted accordingly. Otherwise the second argument
+      ++ is formatted by \spad{h2}.
+
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{scripts} handler corresponds to the \spad{SUPERSUB} operator
+of \spadtype{OutputForm}. It formats subscripts, superscripts,
+pre-superscripts and pre-subscripts.
+
+\begin{verbcode}
+(187) -> e super(a, b)$OF
+                  b
+   [OUTPUTFORM = a , SEXPRESSION = (SUPERSUB a " " b)]
+
+(189) -> e super(a+aa, b+bb)$OF
+                       b + bb
+   [OUTPUTFORM = a + aa      , SEXPRESSION = (SUPERSUB (+ a aa) " " (+ b bb))]
+
+(283) -> e box presub(F::OF, 2::OF)
+                 +-----+
+                 |     |
+   [OUTPUTFORM = |  F  |, SEXPRESSION = (BOX (SUPERSUB F " " " " " " 2))]
+                 | 2   |
+                 +-----+
+
+(285) -> e box scripts(F::OF, [2::OF, empty()$OF, empty()$OF, 1::OF])
+                 +-----+
+                 |     |
+   [OUTPUTFORM = |  F  |,
+                 | 1 2 |
+                 +-----+
+    SEXPRESSION = (BOX (SUPERSUB F 2 (NOTHING) (NOTHING) 1))]
+
+(288) -> e box scripts(F, [2,4])$OF
+                 +----+
+                 |  4 |
+   [OUTPUTFORM = | F  |, SEXPRESSION = (BOX (SUPERSUB F 2 4))]
+                 |  2 |
+                 +----+
+
+(289) -> e box scripts(F, [2,4,7])$OF
+                 +-----+
+                 | 7 4 |
+   [OUTPUTFORM = |  F  |, SEXPRESSION = (BOX (SUPERSUB F 2 4 7))]
+                 |   2 |
+                 +-----+
+
+(290) -> e box scripts(F, [2,4,7,11])$OF
+                 +------+
+                 |  7 4 |
+   [OUTPUTFORM = |   F  |, SEXPRESSION = (BOX (SUPERSUB F 2 4 7 11))]
+                 | 11 2 |
+                 +------+
+
+(345) -> e script(Mammoth, [[i,j],[k,l],[0,1],[2],[u,v,w]])
+                 0, 1       k, l
+   [OUTPUTFORM =     Mammoth    (u,v,w),
+                    2       i, j
+
+       SEXPRESSION
+     =
+       ((SUPERSUB Mammoth (AGGLST i j) (AGGLST k l) (AGGLST 0 1) 2) u v w)
+     ]
+
+(355) -> e(superscript(v, [1,n,t])^4)
+                  1, n, t4
+   [OUTPUTFORM = v        ,
+    SEXPRESSION = (^ (SUPERSUB v (AGGLST) (AGGLST 1 n t)) 4)]
+\end{verbcode}
+%$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    scripts: Z -> H
+      ++ Formats super- and subscripts also presuper and presub.
+      ++ \spad{scripts(p)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats the first argument with respect
+      ++ to the precedence \spad{p}. The other arguments are
+      ++ interpreted as subscript, superscript, presuperscript, and
+      ++ presubscript (in this order).
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{subscript} handler corresponds to the \spad{SUB} operator of
+\spadtype{OutputForm}.
+
+\begin{verbcode}
+(274) -> e sub(a, b)$OF
+   [OUTPUTFORM = a , SEXPRESSION = (SUB a b)]
+                  b
+
+(276) -> e sub(a+b, a+bb)$OF
+   [OUTPUTFORM = a + b      , SEXPRESSION = (SUB (+ a b) (+ a bb))]
+                      a + bb
+
+(354) -> e(subscript(v, [1,n,t])^3)
+                         3
+   [OUTPUTFORM = v        , SEXPRESSION = (^ (SUB v (AGGLST 1 n t)) 3)]
+                  1, n, t
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    subscript: Z -> H
+      ++ \spad{subscript(p)} returns a handler such that
+      ++ \spad{subscript(p)(prec, args)} formats the first argument
+      ++ with respect to the precedence \spad{p}.
+      ++ The other arguments are formatted without parentheses and
+      ++ interpreted as subscripts separated by commas.
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{aldtsupersub} handler corresponds to the \spad{ALTSUPERSUB}
+operator of \spadtype{OutputForm}.
+
+\begin{verbcode}
+(259) -> e supersub(aa+bb,[a])
+   [OUTPUTFORM = aa + bb  , SEXPRESSION = (ALTSUPERSUB (+ aa bb) a (NOTHING))]
+                        a
+
+(260) -> e supersub(a,[a,b,1,2,3,4])
+                  b 2 4
+   [OUTPUTFORM = a      , SEXPRESSION = (ALTSUPERSUB a a b 1 2 3 4)]
+                  a 1 3
+
+(261) -> e supersub(a,[a,b,1,2+b,3+a*b,4,5])
+                  b 2 + b 4
+   [OUTPUTFORM = a                  ,
+                  a 1     3 + a b 5
+    SEXPRESSION = (ALTSUPERSUB a a b 1 (+ 2 b) (+ 3 (* a b)) 4 5 (NOTHING))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    altsupersub: Z -> H
+      ++ \spad{altsupersub(p)} returns a handler such that
+      ++ \spad{altsupersub(p)(prec, args)} formats the first argument
+      ++ with respect to the precedence \spad{p}.
+      ++ The remaining arguments are formatted without parentheses and
+      ++ interpreted as subscript, superscript, subscript, superscript, etc.
+      ++ where the subscripts and superscripts are pairwise aligned.
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{prime} handler corresponds to the \spad{PRIME}
+operator of \spadtype{OutputForm}.
+Note that as of the time of writing this documentation, there are
+some peculiarities which can be easily seen from the examples below.
+The representation of \spad{PRIME} in \spadtype{OutputForm} is
+expected to change in the future.
+
+\begin{verbcode}
+(201) -> e prime a
+                  ,
+   [OUTPUTFORM = a , SEXPRESSION = (PRIME a ",")]
+
+(202) -> e prime prime a
+                   ,
+                  ,
+   [OUTPUTFORM = a  , SEXPRESSION = (PRIME (PRIME a ",") ",")]
+
+(203) -> e prime(a, 2)
+                  ,,
+   [OUTPUTFORM = a  , SEXPRESSION = (PRIME a ",,")]
+
+(204) -> e prime(a, 4)
+                  ,,,,
+   [OUTPUTFORM = a    , SEXPRESSION = (PRIME a ",,,,")]
+
+(205) -> e prime(a+b)
+                      ,
+   [OUTPUTFORM = a + b , SEXPRESSION = (PRIME (+ a b) ",")]
+
+(195) -> e differentiate(a, 3)
+                  ,,,
+   [OUTPUTFORM = a   , SEXPRESSION = (PRIME a ",,,")]
+
+(196) -> e differentiate(a, 4)
+                  (iv)
+   [OUTPUTFORM = a    , SEXPRESSION = (PRIME a (PAREN "iv"))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    numberOfPrimes: E -> Z
+      ++ \spad{numberOfPrimes(e)} counts the number of commas in e and
+      ++ returns it. If s does not only contain commas, but has a
+      ++ parenthesis at the beginning and the end of the string, then
+      ++ the part between the parentheses is interpreted as a roman
+      ++ numeral and translated into an integer. For any other format
+      ++ the function returns -1.
+    prime: Z -> H
+      ++ \spad{prime(p)} returns a handler that treats the
+      ++ typesetting of primes. Note that differentiate(a, 3) gives
+      ++ the following s-expression in OutputForm: (PRIME a ",,,")
+      ++ whereas differentiate(a+b, 4) gives: (PRIME (+ a b) (PAREN "iv")).
+      ++ the precedence p1.
+      ++ Outer parentheses are added if \spad{p < prec}.
+      ++ See also the auxiliary function \spad{numberOfPrimes}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{power} handler corresponds to the \spad{^} operator of
+\spadtype{OutputForm}.
+
+\begin{verbcode}
+(135) -> e exp(%pi)
+                   %pi
+   [OUTPUTFORM = %e   , SEXPRESSION = (^ %e %pi)]
+
+(12) -> e((%pi+x/2)^sin(2*x+3))
+                  x + 2 %pi sin(2 x + 3)
+   [OUTPUTFORM = (---------)            ,
+                      2
+
+(13) -> e(%pi^((2*x+3)/(4*y-2)))
+                    2 x + 3
+                    -------
+                    4 y - 2
+   [OUTPUTFORM = %pi       ,
+    SEXPRESSION = (^ %pi (/ (+ (* 2 x) 3) (+ (* 4 y) - 2)))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    power: (Z, H, H) -> H
+      ++ \spad{power(op, p, h1, h2)} returns a handler \spad{h} such
+      ++ that \spad{h(prec, args)} formats \spad{args.1} and
+      ++ \spad{args.2} according to \spad{h1} and \spad{h2},
+      ++ respectively.
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{fraction} handler corresponds to the \spad{/} and
+\spad{OVER} operator of \spadtype{OutputForm}.
+
+\begin{verbcode}
+(17) -> e tan(x/2)
+                     x
+   [OUTPUTFORM = tan(-), SEXPRESSION = (tan (/ x 2))]
+                     2
+
+(18) -> e asin((x+1)/2)
+                      x + 1
+   [OUTPUTFORM = asin(-----), SEXPRESSION = (asin (/ (+ x 1) 2))]
+                        2
+
+(19) -> e tan((2*x+3)/(4*y-2))
+                     2 x + 3
+   [OUTPUTFORM = tan(-------),
+                     4 y - 2
+    SEXPRESSION = (tan (/ (+ (* 2 x) 3) (+ (* 4 y) - 2)))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    fraction: (Z, H, H) -> H
+      ++ Format a fraction.
+      ++ \spad{fraction(p, h1, h2)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats the first argument by
+      ++ \spad{h1} and the second argument by \spad{h2}.
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{slash} handler corresponds to the \spad{SLASH} operator of
+\spadtype{OutputForm}.
+
+\begin{verbcode}
+(164) -> e slash(a,b)$OF
+   [OUTPUTFORM = a/b, SEXPRESSION = (SLASH a b), SEXPRESSION = (SLASH a b)]
+\end{verbcode}
+%$
+
+It prints a fraction linearly in a $a/b$ form.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    slash: (Z, H, H) -> H
+      ++ Format a fraction linearly.
+      ++ \spad{slash(p, h1, h2)} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats the first argument according to
+      ++ \spad{h1} and the second argument by \spad{h2}.
+      ++ Outer parentheses are added if \spad{p < prec}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{binomial} handler corresponds to the \spad{BINOMIAL}
+operator of \spadtype{OutputForm}.
+
+\begin{verbcode}
+(190) -> e binomial(a, b)
+                  a
+   [OUTPUTFORM = ( ), SEXPRESSION = (BINOMIAL a b)]
+                  b
+
+(192) -> e(binomial((a+b)^5, a*b)^2)
+                         5 2
+                  (a + b)
+   [OUTPUTFORM = (        ) ,
+                    a b
+    SEXPRESSION = (^ (BINOMIAL (^ (+ a b) 5) (* a b)) 2)]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    binomial: H
+      ++ \spad{binomial} is a handler such that
+      ++ \spad{binomial(prec,args)} formats a binomial expresssion of
+      ++ the first two arguments.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{zag} handler corresponds to the \spad{ZAG} operator of
+\spadtype{OutputForm}.
+
+\begin{verbcode}
+(175) -> e continuedFraction(314159/100000)
+                       1 |     1  |     1 |     1  |     1 |     1 |     1 |
+   [OUTPUTFORM = 3 + +---+ + +----+ + +---+ + +----+ + +---+ + +---+ + +---+,
+                     | 7     | 15     | 1     | 25     | 1     | 7     | 4
+
+       SEXPRESSION
+     =
+       (+  3  (ZAG 1 7)  (ZAG 1 15)  (ZAG 1 1)  (ZAG 1 25)  (ZAG 1 1)
+        (ZAG 1 7)  (ZAG 1 4))
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    zag: H
+      ++ \spad{zag} is a handler such that \spad{zag(prec, args)}
+      ++ formats one part of a continued fraction.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{vconcat} handler corresponds to the \spad{VCONCAT} operator
+of \spadtype{OutputForm}. This operator does not normally appear in an
+algebraic expression in \SYSTEM{} and can only appear if explicitly
+constructed via a call to \spad{vconcat} from \spadtype{OutputForm}.
+
+\begin{verbcode}
+(35) -> e(a + vconcat [a^b, b, aa+a, bb])
+                        b
+   [OUTPUTFORM = a +   a   ,
+                       b
+                     aa + a
+                       bb
+    SEXPRESSION = (+ a (VCONCAT (^ a b) b (+ aa a) bb))]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    vconcat: H -> H
+      ++ \spad{vconcat(hh)} returns a handler \spad{h} such
+      ++ that \spad{h(prec, args)} formats args according to \spad{hh}
+      ++ and then puts them on top of each other where the lines are
+      ++ centered.
+      ++ The baseline corresponds to the baseline of the first argument.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{pile} handler corresponds to the \spad{SC} operator
+of \spadtype{OutputForm}. This operator does not normally appear in an
+algebraic expression in \SYSTEM{} and can only appear if explicitly
+constructed via a coll to \spad{vconcat} from \spadtype{OutputForm}.
+However, it is used
+
+\begin{verbcode}
+(269) -> e  (a^b + pile [a, b, aa+a, bb])
+   [
+       OUTPUTFORM
+     =
+          b
+         a
+       +
+         a
+         b
+         aa + a
+         bb
+     ,
+    SEXPRESSION = (+ (^ a b) (SC a b (+ aa a) bb))]
+
+(337) -> e(x +-> if x < 0 then -x else x)
+   [
+       OUTPUTFORM
+     =
+         x
+       +->
+         if x < 0
+           then - x
+           else x
+     ,
+
+       SEXPRESSION
+     =
+       (+-> x (CONCATB if (< x 0) (SC (CONCATB then (- x)) (CONCATB else x))))
+     ]
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    pile: H -> H
+      ++ \spad{pile()} returns a handler \spad{h} such that
+      ++ \spad{h(prec, args)} formats args according to \spad{hh} and
+      ++ then puts them on top of each other left adjusted.
+      ++ The baseline corresponds to the baseline of the first argument.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The \spad{matrix} handler corresponds to the \spad{MATRIX} operator of
+\spadtype{OutputForm}. Note that there is no operation in
+\spadtype{OutputForm} that allows to create a form that only consists
+of a \spad{ROW} operator without the wrapping \spad{MATRIX} operator.
+
+\begin{verbcode}
+(262) -> e matrix [[10*i+j for j in 1..2] for i in 1..2] + a
+                 +11  12+
+   [OUTPUTFORM = |      |, SEXPRESSION = (MATRIX () (ROW 11 12) (ROW 21 22))]
+                 +21  22+
+\end{verbcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    matrix: (S, S) -> H
+      ++ \spad{matrix(left, right)} returns a handler that
+      ++ typesets a matrix with parentheses given by left and right
+      ++ where rows are formatted using \spad{h}.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Default Implementation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+   add
+    NARY ==> -1 -- means n-ary.
+    import from List BOX
+    minPrecedence(): Z == 0
+    maxPrecedence(): Z == 10000
+
+    numberOfPrimes(a2: E): Z == -- second argument of a PRIME expression
+        import from OutputFormTools
+        atom? a2 => -- Is should be a number of commas.
+            not string? a2 => return -1 -- error "second argument error"
+            s2 := string a2
+            n := # s2
+            for i in 1..n repeat
+                if s2.i ~= char "," then return -1 -- error "no comma"
+            return n
+        opex: E := operator a2
+        not symbol? opex => -1 -- error "second argument no symbol"
+
+        o2 := string symbol opex
+        o2 ~= "PAREN" => -1 -- error "second argument no PAREN"
+
+        #(aa2 := arguments a2) > 1 => -1 -- error "second argument too long"
+
+        not string? first aa2 => -1 -- error "second argument no roman"
+
+        ScanRoman(string first aa2)$NumberFormats -- might give error
+
+    -- float? is a local function.
+    float?(s: S): Boolean ==
+        -- float?(s) returns true if the string can be interpreted as
+        -- a floating point number. In fact, this function tries to
+        -- recognize a floating point number from its string
+        -- representation in OutputForm.
+        -- general output looks like "0.1234567890_123456789 E -10"
+        import from Character
+        zero?(d:=position(char ".", s)) => false
+        for i in 1 .. d-1 repeat if not digit?(s.i) then return false
+        i: Z := d + 1; n := #s
+        s := copy s
+        while i <= n repeat
+            if s.i = char "__" then (s.i := space(); i := i + 1)
+            i := i + 1
+        -- There should not be any underscore left.
+        i := d+1
+        while i <= n repeat
+            if not(digit?(s.i) or s.i = space()) then break
+            i := i + 1
+        i > n => return true
+        -- Now we must have s.i="E".
+        s.i ~= char "E" => false
+        -- We skip over spaces.
+        while i < n repeat
+            i := i + 1
+            if s.i ~= space() then break
+        if s.i = char "-" then i := i + 1 -- might have an optional "-"
+        -- From now on we only accept digits.
+        while i <= n repeat
+            if digit?(s.i) then i := i + 1 else return false
+        return true
+
+    formatInteger(n: Z): BOX == box convert n
+    formatFloat(s: String): BOX == box s
+    formatString(s: S): BOX == box s
+    formatSymbol(s: S): BOX == box s
+    formatFunctionSymbol(s: S): BOX == box s
+    formatFunction(b: BOX, args: LE): BOX ==
+        m: Z := minPrecedence()
+        a: BOX := nary(", ", maxPrecedence(), formatExpression m)(m, args)
+        hconcat [b, parenthesize("(", ")", a)]
+
+    parenthesizeIf(needParen?: Boolean, bx: BOX): BOX ==
+        needParen? => parenthesize("(", ")", bx)
+        bx
+
+    formatExpression(expr: E, prec: Z): BOX ==
+        import from OutputFormTools
+        operatorData: OperatorHandlers(HANDLER) := operatorHandlers()
+        atom? expr =>
+            integer? expr => formatInteger integer expr
+            string? expr =>
+                s: S := string expr
+                float? s => formatFloat s
+                formatString s
+            not symbol? expr => box "[[BAD OUTPUTFORM]]"
+            -- We've got a symbol here.
+            -- We are in the nullary case.
+            str: S := string symbol expr
+            knownHandler?(operatorData, 0, str) =>
+                handler(operatorData, 0, str)(prec, empty()$LE)
+            formatSymbol str
+
+        -- now we take apart a list
+        opex: E := operator expr
+        args: LE := arguments expr
+        not symbol? opex =>
+            formatFunction(formatExpression(opex, minPrecedence()), args)
+
+        nargs: Z := #args
+        op: S := string symbol opex
+
+        knownHandler?(operatorData, nargs, op) =>
+            handler(operatorData, nargs, op)(prec, args)
+
+        -- check n-ary
+        knownHandler?(operatorData, NARY, op) =>
+            handler(operatorData, NARY, op)(prec, args)
+
+        -- We format as a function with function name op and argument
+        -- give by args.
+        formatFunction(formatFunctionSymbol op, args)
+
+    formatExpression(expr: E): BOX == formatExpression(expr, minPrecedence())
+
+    nothing(): H == (prec: Z, args: LE): BOX +-> empty()
+
+    formatConstant(op: S): H == (prec: Z, args: LE): BOX +-> box op
+
+    formatExpression(p: Z): H == (prec: Z, args: LE): BOX +->
+        formatExpression(first args, p)
+
+    precedence(p: Z, h: H): H == (prec: Z, args: LE): BOX +-> h(p, args)
+
+    bracket(left: S, right: S, h: H): H == (prec: Z, args: LE): BOX+->
+        parenthesize(left, right, h(prec, args))
+
+    prefix(op: S, p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
+        parenthesizeIf(p < prec, hconcat [box op, hh(prec, args)])
+
+    infix(op: S, p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
+        b1: BOX := h1(prec, [args.1])
+        b2: BOX := h2(prec, [args.2])
+        parenthesizeIf(p < prec, hconcat [b1, box op, b2])
+
+    binary(h1: H, h2: H): H == infix("", maxPrecedence(), h1, h2)
+
+    nary(sep: S, p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
+        empty? args => box ""
+        sepbox: BOX := box sep
+        l: List BOX := [hh(p, [first args])]
+        for a in rest args repeat l := cons(hh(prec, [a]), cons(sepbox, l))
+        parenthesizeIf(p < prec, hconcat reverse! l)
+
+    -- local function
+    unaryMinus?(a: E): Boolean ==
+        import from OutputFormTools
+        atom? a => false
+        opa := operator a
+        not symbol? opa => false
+        string symbol opa = "-" and one?(# arguments a)
+
+    naryPlus(plus: S, minus: S, p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
+        empty? args => empty()$BOX
+        l: List BOX := [hh(p, [first args])]
+        for a in rest args repeat
+            if unaryMinus? a then
+                sep := box minus
+                -- remove the minus operator
+                a := first(arguments(a)$OutputFormTools)
+              else
+                sep := box plus
+            l := cons(hh(p, [a]), cons(sep, l))
+        parenthesizeIf(p < prec, hconcat reverse! l)
+
+
+
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The Formatter Domain}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The \spadtype{Formatter} domain turns a formatter that it gets as an
+argument into a domain of type \spadtype{OutputFormatterCategory}.
+
+The \spadtype{Formatter} domain consists of 3 parts.
+\begin{enumerate}
+\item The \emph{prologue}, that is an \spadtype{OutputBox} that must
+  be printed before the actual expression is printed. This might be,
+  for example, \verb|\begin{equation}| in the case of \LaTeX{} output.
+\item The actual output box of the expression.
+\item The \emph{epilogue}, that is an \spadtype{OutputBox} that must be
+  printed after the actual expression. It might be, for example,
+  \verb|\end{equation}|.
+\end{enumerate}
+The default values for the prologue and epilogue can be set by the
+function \spad{setDefault!}.
+
+The essential exported functions are \spad{format} and
+\spad{formatStep} which correspond to
+\begin{verbcode}
+coerce: OutputForm -> %
+convert: (OutputForm, Integer) -> %
+\end{verbcode}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev domain FORMAT Formatter
+Formatter(F: FormatterCategory): Exports == Implementation where
+  E   ==> OutputForm
+  Z   ==> Integer
+  L   ==> List
+  S   ==> String
+  LE  ==> List E
+  BOX ==> OutputBox
+  LBOX ==> S -> BOX -- Label box for prologue and epilogue
+  HANDLER ==> (Z, LE) -> OutputBox -- (precedence, arguments) +-> resulting box
+  H ==> HANDLER
+
+  Exports ==> Join(OutputFormatterCategory, CoercibleFrom OutputForm,
+                   CoercibleTo OutputForm) with
+    new: () -> %
+      ++ \spad{new()} create a new, empty object with
+      ++ defaultPrologue("") and defaultEpilogue(""). Use
+      ++ \spadfun{setPrologue!}, \spadfun{setFormat!} and
+      ++ \spadfun{setEpilogue!} to set the various components of this
+      ++ object.
+    prologue: % -> BOX
+      ++ \spad{prologue(t)} extracts the prologue section of the form
+      ++ t.
+    epilogue: % -> BOX
+      ++ \spad{epilogue(t)} extracts the epilogue section of the form
+      ++ t. This is a function \spad{f} such that f(l) returns a box
+      ++ with label l.
+    format: % -> BOX
+      ++ \spad{format(t)} extracts the fmt section of a 2D-form t.
+
+    setDefault!: (LBOX, LBOX) -> Record(prolog: LBOX, epilog: LBOX)
+      ++ Set the prologue and epilogue that is used by default.
+      ++ Between the elements of the list
+      ++ the stepnumber will be inserted. The old values are returned.
+    setPrologue!: (%, BOX) -> BOX
+      ++ \spad{setPrologue!(t, pro)} sets the prologue section of
+      ++ the form t to pro and returns the previous prologue.
+    setEpilogue!: (%, BOX) -> BOX
+      ++ \spad{setEpilogue!(t, epi)} sets the epilogue section of
+      ++ the form t to epi and returns the previous epilogue.
+    setFormat!:  (%, BOX) -> BOX
+      ++ \spad{setFormat!(t, box)} sets the fmt section of a
+      ++ form t and returns the previous box.
+
+    operatorHandlers: () -> OperatorHandlers(HANDLER)
+      ++ \spad{operatorHandlers()} returns an internal data structure
+      ++ that is used for the selection of respective handlers.
+
+    format: E -> %
+      ++ \spad{format(o)} creates a formatted form of the
+      ++ \spad{OutputForm} o.
+
+    formatStep: (E, Z) -> %
+      ++ \spad{format(o, n)} creates a formatted form of the
+      ++ \spad{OutputForm} o with step number n.
+
+  Implementation ==> add
+    Rep ==> Record(prolog: BOX, fmt: BOX, epilog: BOX)
+    ProEpi ==> Record(prolog: LBOX, epilog: LBOX)
+    import from Rep
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    sayExpr(s: String): Void == sayFormatted(s)$Lisp --$
+
+    coerce(e: E): % == format(e)
+    convert(e: E, n: Z): % == formatStep(e, n)
+
+    display(f: %): Void ==
+        for s in lines prologue f repeat sayExpr s
+        for s in lines format   f repeat sayExpr s
+        for s in lines epilogue f repeat sayExpr s
+
+    coerce(x: %): OutputForm == rep(x)::OutputForm
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+By default the \LaTeX{} part is introduced by
+\verb'\[' and ended by \verb'\]'.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    defaultProEpi: ProEpi := [defaultPrologue$F, defaultEpilogue$F]
+
+    setDefault!(p: LBOX, e: LBOX): ProEpi ==
+        currentProEpi: ProEpi := [defaultProEpi.prolog, defaultProEpi.epilog]
+        defaultProEpi.prolog := p
+        defaultProEpi.epilog := e
+        currentProEpi
+
+    setPrologue!(x: %, b: BOX): BOX ==
+        current: BOX := rep(x).prolog
+        rep(x).prolog := b
+        current
+
+    setEpilogue!(x: %, b: BOX): BOX ==
+        current: BOX := rep(x).epilog
+        rep(x).epilog := b
+        current
+
+    setFormat!(x: %, b: BOX): BOX  ==
+        current: BOX := rep(x).fmt
+        rep(x).fmt := b
+        current
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The following functions access or modify the internal data structure
+for the handlers.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    newStructure(label: S): % ==
+        pro: BOX := (defaultProEpi.prolog)(label)
+        epi: BOX := (defaultProEpi.epilog)(label)
+        per [pro, empty()$BOX, epi]
+
+    -- public function definitions
+    new(): % == newStructure("")
+
+    prologue(f: %): BOX == rep(f).prolog
+    format(f: %): BOX == rep(f).fmt
+    epilogue(f: %): BOX == rep(f).epilog
+
+    format(expr: E): % ==
+        f: % := new()
+        e: E := precondition(expr)$OutputFormTools
+        setFormat!(f, formatExpression e)
+        f
+
+    formatStep(expr: E, stepNum: Z): % ==
+        f: % := newStructure convert stepNum
+        e: E := precondition(expr)$OutputFormTools
+        setFormat!(f, formatExpression e)
+        f
+
+    operatorHandlers(): OperatorHandlers(H) == operatorHandlers()$F
+
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The FormattedOutput Domain}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev domain FMTOUT FormattedOutput
+++ The domain \spad{FormattedOutput} is used when
+++ ")set output formatted on" is issued on the command line.
+++ Then for each formatter that is stored in the internal data
+++ structure of \spad{FormattedOutput}
+FormattedOutput: Exports == Implementation where
+  OFC ==> OutputFormatterCategory
+  Exports ==> OFC with
+    setFormats!: List OFC -> Void
+      ++ \spad{setFormats!(l)} takes a list \spad{l} of formatters and
+      ++ sets this for future output in a session.
+  Implementation ==> add
+    Rep ==> Record(out: OutputForm, step: Integer)
+    import from Rep
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    formatters: Reference List OFC := ref empty()
+
+    setFormats!(l: List OFC): Void == setelt!(formatters, l)
+
+    convert(e: OutputForm, n: Integer): % == per [e, n]
+
+    display(x: %): Void ==
+        for F in deref formatters repeat
+            display(convert(rep(x).out, rep(x).step)$F)$F
+
+)if LiterateDoc
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Customization of Formatter domains}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+How a operator of \spadtype{OutputForm} is formatted can easily be
+customized. Each formatter comes with a data structure of functions
+that are called for the respective operator connected to a certain
+arity of that operator. These functions can be replaced by user
+provided functions at runtime. However, such modifications are global
+for the whole runtime of the program. If you want the original
+behaviour back, you have to first save the current handler, then set a
+new handler, do your customized formatting, and then put the saved
+handler back.
+
+Suppose that $F$ represents a formatter domain, e.g.,
+\spad{F==>FormatLaTeX} and instead of the command \verb|\COMMA| you
+would rather want that a comma appears in the output of
+\spadtype{FormatLaTeX}.
+%
+Then you can use the following sequence to change it
+\begin{verbcode}
+HANDLER ==> (Integer, List OutputForm) -> OutputBox
+OH ==> OperatorHandlers(HANDLER)
+h := operatorHandlers()$F;
+MAX ==> maxPrecedence()$F
+MIN ==> minPrecedence()$F
+FE ==> formatExpression$F
+NARY ==> nary$F
+setHandler!(h, -1 , "AGGLST" , NARY(", ", MAX, FE MIN))$OH
+\end{verbcode}
+The second parameter, $-1$, in the above call, stands for \emph{nary
+  operator}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ToDos}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The current implementation of the formatting framework does not
+respect any line length. It happily makes the boxes as big as the
+expression needs it.
+%
+That is not a big problem for \LaTeX{} output, because
+\url{fricasmath.sty} takes (via the package \url{breqn} mostly care of
+line breaking. Also 1D output can be broken easily before the end of
+the line by adding escaped newlines at breakpoints. Since MathJax
+output is intended to appear in a Jupyter notebook, we expect
+horizontal scrolling facilities there.
+%
+The actual problem is the monospaced 2D format via
+\spadtype{Format2D}. Breaking at places where boxes have been
+concatted horizontally, might be an option, but in general it is hard
+to find a good breakpoint. The author of the framework does not like
+the (somewhat) lisp-like indention of big expressions. It might rather
+be an idea to simply cut a big box at the line length and continue the
+box after an empty line.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
