@@ -738,7 +738,7 @@ setOutputFortran arg ==
 
 describeSetOutputFortran() == describeSetOutputU(
     '"fortran", '"FORTRAN", '"sfort", false, setOutputFortran "%display%")
-    
+
 setOutputMathml arg ==
   arg = "%initialize%" =>
     $mathmlOutputStream := mkOutputConsoleStream()
@@ -783,7 +783,6 @@ setOutputMathml arg ==
 
 describeSetOutputMathml() == describeSetOutputU(
     '"mathml", '"MathML", '"smml", false, setOutputMathml "%display%")
-
 
 setOutputTexmacs arg ==
   arg = "%initialize%" =>
@@ -967,6 +966,51 @@ setOutputTex arg ==
 describeSetOutputTex() == describeSetOutputU(
     '"tex", '"TeX", '"stex", false, setOutputTex "%display%")
 
+
+setOutputFormatted arg ==
+  arg = "%initialize%" =>
+    $formattedOutputStream := mkOutputConsoleStream()
+    $formattedOutputFile := '"CONSOLE"
+    $formattedFormat := NIL
+
+  arg = "%display%" =>
+    if $formattedFormat then label := '"On:" else label := '"Off:"
+    STRCONC(label, $formattedOutputFile)
+
+  (null arg) or (arg = "%describe%") or (first arg = '_?) =>
+    describeSetOutputFormatted()
+
+  -- try to figure out what the argument is
+
+  if arg is [fn] and
+    fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
+      then 'ok
+      else arg := [fn,'formatted]
+
+  arg is [fn] =>
+    UPCASE(fn) in '(Y N YE O OF) =>
+      sayKeyedMsg("S2IV0002",'(FORMATTED formatted))
+    UPCASE(fn) in '(NO OFF) => $formattedFormat := NIL
+    UPCASE(fn) in '(YES ON) => $formattedFormat := true
+    UPCASE(fn) = 'CONSOLE =>
+      stream_close($formattedOutputStream)
+      $formattedOutputStream := mkOutputConsoleStream()
+      $formattedOutputFile := '"CONSOLE"
+
+  (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
+    [testStream, filename] := try_open(fn, ft, false)
+    testStream =>
+      stream_close($formattedOutputStream)
+      $formattedOutputStream := testStream
+      $formattedOutputFile := filename
+      sayKeyedMsg("S2IV0004",['"FORMATTED",$formattedOutputFile])
+    sayKeyedMsg("S2IV0003",[fn,ft])
+
+  sayKeyedMsg("S2IV0005",NIL)
+  describeSetOutputFormatted()
+
+describeSetOutputFormatted() == describeSetOutputU(
+    '"formatted",'"formatted",'"formatted",false,setOutputFormatted "%display%")
 
 setStreamsCalculate arg ==
   arg = "%initialize%" =>

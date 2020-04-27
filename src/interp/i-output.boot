@@ -71,6 +71,7 @@ DEFVAR($htmlFormat, false) -- if true produce HTML output
 DEFVAR($mathmlFormat, false) -- if true produce Math ML output
 DEFVAR($texFormat, false) -- if true produce tex output
 DEFVAR($texmacsFormat, false) -- if true produce Texmacs output
+DEFVAR($formattedFormat, false) -- if true produce formatted output
 
 makeCharacter n == INTERN(NUM2USTR(n))
 
@@ -132,6 +133,8 @@ get_texmacs_stream() == get_lisp_stream($texmacsOutputStream)
 get_html_stream() == get_lisp_stream($htmlOutputStream)
 
 get_tex_stream() == get_lisp_stream($texOutputStream)
+
+get_formatted_stream() == get_lisp_stream($formattedOutputStream)
 
 specialChar(symbol) ==
   -- looks up symbol in $specialCharacterAlist, gets the index
@@ -1170,6 +1173,15 @@ htmlFormat expr ==
   FORCE_-OUTPUT(get_html_stream())
   NIL
 
+formattedFormat expr ==
+  ty := '(FormattedOutput)
+  formatFn := getFunctionFromDomain("convert", ty, [$OutputForm, $Integer])
+  displayFn := getFunctionFromDomain("display", ty , [ty])
+  SPADCALL(SPADCALL(expr,$IOindex,formatFn),displayFn)
+  say_new_line(get_formatted_stream())
+  FORCE_-OUTPUT(get_formatted_stream())
+  NIL
+
 output(expr,domain) ==
   $resolve_level : local := 0
   if isWrapped expr then expr := unwrap expr
@@ -1188,6 +1200,7 @@ output(expr,domain) ==
     if $mathmlFormat  then mathmlFormat x
     if $texmacsFormat then texmacsFormat x
     if $htmlFormat    then htmlFormat x
+    if $formattedFormat then formattedFormat x
   (FUNCTIONP(opOf domain)) and (not(SYMBOLP(opOf domain))) and
     (printfun := compiledLookup("<<",'(TextWriter TextWriter $), evalDomain domain))
        and (textwrit := compiledLookup("print", '($), TextWriter())) =>
