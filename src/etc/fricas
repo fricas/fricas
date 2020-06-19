@@ -6,6 +6,7 @@
 #      [-ht   |-noht]       whether to use HyperDoc
 #      [-gr   |-nogr]       whether to use Graphics
 #      [-clef |-noclef]     whether to use Clef
+#      [-rl]                whether to use GNU Readline via rlwrap
 #      [-iw   |-noiw]       start in interpreter window
 #      [-ihere|-noihere]    start an interpreter buffer in the original window
 #      [-nox]               don't use X Windows
@@ -42,6 +43,14 @@ needsubopt () {
         ciao
 }
 
+
+have_rlwrap() {
+	if [ -z "$(command -v rlwrap)" ] ; then
+	    echo "Ignoring -rl option; rlwrap not found."
+	    return 1
+	fi
+        return 0
+}
 
 showuse() {
 echo "fricas"
@@ -115,7 +124,32 @@ fi
 
 if [ "$1" = "-nosman" ] ; then
     shift
-    exec "$FRICAS/bin/FRICASsys" "$@"
+
+    # Filter out -rl option.
+    opts=""
+    do_rlwrap=0
+    while [ "$*" != "" ] ; do
+        case $1 in
+        -rl)
+		if have_rlwrap ; then
+		    do_rlwrap=1
+		fi
+                ;;
+
+        *)
+		opts="$opts $1"
+                ;;
+        esac
+
+        shift
+    done
+
+    if [ $do_rlwrap -eq 1 ] ; then
+	exec rlwrap $FRICAS/bin/FRICASsys "$opts"
+    else
+	exec "$FRICAS/bin/FRICASsys" "$opts"
+    fi
+
     exit 1
 fi
 
@@ -158,6 +192,12 @@ while [ "$*" != "" ] ; do
                 ;;
         -clef|-noclef|-gr|-nogr|-ht|-noht|-iw|-noiw|-ihere|-noihere|-nox)
                 otheropts="$otheropts $1"
+                ;;
+
+        -rl)
+		if have_rlwrap ; then
+                    otheropts="$otheropts -clefprog ${exec_prefix}/bin/fricas-readline"
+		fi
                 ;;
 
         -h)
