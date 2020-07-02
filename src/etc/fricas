@@ -44,9 +44,10 @@ needsubopt () {
 }
 
 
+RLWRAP=${RLWRAP:=rlwrap}
 have_rlwrap() {
-	if [ -z "$(command -v rlwrap)" ] ; then
-	    echo "Ignoring -rl option; rlwrap not found."
+	if [ -z "$(command -v ${RLWRAP})" ] ; then
+	    echo "Ignoring -rl option; rlwrap program \"${RLWRAP}\" not found."
 	    return 1
 	fi
         return 0
@@ -123,33 +124,17 @@ if [ "$*" = "-emacs" ] ; then
     eval "exec $FRICAS/bin/sman -noclef 2>/dev/null"
 fi
 
+# Call FRICASsys directly.
 if [ "$1" = "-nosman" ] ; then
     shift
 
-    # Filter out -rl option.
-    opts=""
-    do_rlwrap=0
-    while [ "$*" != "" ] ; do
-        case $1 in
-        -rl)
-		if have_rlwrap ; then
-		    do_rlwrap=1
-		fi
-                ;;
-
-        *)
-		opts="$opts $1"
-                ;;
-        esac
-
+    # If -rl option is given, it must come right after -nosman
+    if [ "$1" = "-rl" ] ; then
         shift
-    done
-
-    if [ $do_rlwrap -eq 1 ] ; then
-	exec rlwrap $FRICAS/bin/FRICASsys "$opts"
-    else
-	exec "$FRICAS/bin/FRICASsys" "$opts"
+        if ! have_rlwrap ; then RLWRAP=""; fi
     fi
+
+    exec $RLWRAP "$FRICAS/bin/FRICASsys" "$@"
 
     exit 1
 fi
