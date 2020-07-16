@@ -562,6 +562,36 @@ setHistory arg ==
     historySpad2Cmd()
   setHistory NIL
 
+
+describeSetOutputU(s_nam, o_nam, o_ext, is_on, cs) ==
+         sayBrightly LIST ('%b,'")set output ", s_nam,'%d,_
+  '"is used to tell FriCAS to turn ", o_nam, '"-style output",'%l,_
+  '"printing on and off, and where to place the output.  By default, the",'%l,_
+  '"destination for the output is the screen but printing is turned off.",'%l,_
+  '%l, '"Syntax:   )set output ", s_nam, '" <arg>",'%l,_
+  '"    where arg can be one of",'%l,_
+  '"  on          turn ", o_nam, _
+   (is_on => '" printing on (default state)"; '" printing on") ,'%l,_
+  '"  off         turn ", o_nam,
+   (is_on => '" printing off"; '" printing off (default state)"),'%l,_
+  '"  console     send ", o_nam, '" output to screen (default state)",'%l,_
+  '"  fp<.fe>     send ", o_nam, _
+    '" output to file with file prefix fp and file",'%l, _
+  '"              extension .fe. If not given, .fe defaults to .", _
+    o_ext, '".",'%l, '%l,_
+  '"If you wish to send the output to a file, you may need to issue this command",'%l,_
+  '"twice: once with", '%b, '"on", '%d, _
+    '"and once with the file name. For example, to send", '%l,_
+  o_nam, '" output to the file", '%b, '"polymer.", o_ext, '",", '%d, _
+  '"issue the two commands", '%l, _
+  '%l, _
+  '"  )set output ", s_nam, '" on", '%l, _
+  '"  )set output ", s_nam, '" polymer", '%l,_
+  '%l, _
+  '"The output is placed in the directory from which you invoked FriCAS or", _
+  '%l, '"the one you set with the )cd system command.", '%l, _
+  '"The current setting is: ",'%b, cs,'%d)
+
 setOutputAlgebra arg ==
   arg = "%initialize%" =>
     $algebraOutputStream := mkOutputConsoleStream()
@@ -609,31 +639,8 @@ setOutputAlgebra arg ==
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputAlgebra()
 
-describeSetOutputAlgebra() ==
-  sayBrightly LIST ('%b,'")set output algebra",'%d,_
-   '"is used to tell FriCAS to turn algebra-style output",'%l,_
-   '"printing on and off, and where to place the output.  By default, the",'%l,_
-   '"destination for the output is the screen but printing is turned off.",'%l,_
-   '%l,_
-   '"Syntax:   )set output algebra <arg>",'%l,_
-  '"    where arg can be one of",'%l,_
-  '"  on          turn algebra printing on (default state)",'%l,_
-  '"  off         turn algebra printing off",'%l,_
-  '"  console     send algebra output to screen (default state)",'%l,_
-  '"  fp<.fe>     send algebra output to file with file prefix fp",'%l,_
-  '"              and file extension .fe. If not given, .fe defaults to .spout.",'%l,
-  '%l,_
-  '"If you wish to send the output to a file, you may need to issue this command",'%l,_
-  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
-  '"algebra output to the file",'%b,'"polymer.spout,",'%d,'"issue the two commands",'%l,_
-  '%l,_
-  '"  )set output algebra on",'%l,_
-  '"  )set output algebra polymer",'%l,_
-  '%l,_
-  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
-  '"the one you set with the )cd system command.",'%l,_
-  '"The current setting is: ",'%b,setOutputAlgebra "%display%",'%d)
-
+describeSetOutputAlgebra() == describeSetOutputU(
+    '"algebra", '"algebra", '"spout", true, setOutputAlgebra "%display%")
 
 setOutputCharacters arg ==
   -- this sets the special character set
@@ -716,7 +723,8 @@ setOutputFortran arg ==
       fn := STRCONC(pathnameDirectory fn,pathnameName fn)
       ft := ptype
     filename := make_full_namestring([fn, ft])
-    null filename => sayKeyedMsg("S2IV0003",[fn,ft])
+    null filename =>
+      sayKeyedMsg("S2IV0003",[fn,ft])
     (testStream := makeStream(append,filename)) =>
       SHUT $fortranOutputStream
       $fortranOutputStream := testStream
@@ -726,33 +734,9 @@ setOutputFortran arg ==
   if null quiet then sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputFortran()
 
-describeSetOutputFortran() ==
-  sayBrightly LIST ('%b,'")set output fortran",'%d,_
-   '"is used to tell FriCAS to turn FORTRAN-style output",'%l,_
-   '"printing on and off, and where to place the output.  By default, the",'%l,_
-   '"destination for the output is the screen but printing is turned off.",'%l,_
-   '%l,_
-   '"Also See: )set fortran",'%l,
-   '%l,_
-   '"Syntax:   )set output fortran <arg>",'%l,_
-  '"    where arg can be one of",'%l,_
-  '"  on          turn FORTRAN printing on",'%l,_
-  '"  off         turn FORTRAN printing off (default state)",'%l,_
-  '"  console     send FORTRAN output to screen (default state)",'%l,_
-  '"  fp<.fe>     send FORTRAN output to file with file prefix fp and file",'%l,_
-  '"              extension .fe. If not given, .fe defaults to .sfort.",'%l,
-  '%l,_
-  '"If you wish to send the output to a file, you must issue this command",'%l,_
-  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
-  '"FORTRAN output to the file",'%b,'"polymer.sfort,",'%d,'"issue the two commands",'%l,_
-  '%l,_
-  '"  )set output fortran on",'%l,_
-  '"  )set output fortran polymer",'%l,_
-  '%l,_
-  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
-  '"the one you set with the )cd system command.",'%l,_
-  '"The current setting is: ",'%b,setOutputFortran "%display%",'%d)
-
+describeSetOutputFortran() == describeSetOutputU(
+    '"fortran", '"FORTRAN", '"sfort", false, setOutputFortran "%display%")
+    
 setOutputMathml arg ==
   arg = "%initialize%" =>
     $mathmlOutputStream := mkOutputConsoleStream()
@@ -800,30 +784,8 @@ setOutputMathml arg ==
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputMathml()
 
-describeSetOutputMathml() ==
-  sayBrightly LIST ('%b,'")set output mathml",'%d,_
-   '"is used to tell FriCAS to turn MathML-style output",'%l,_
-   '"printing on and off, and where to place the output.  By default, the",'%l,_
-   '"destination for the output is the screen but printing is turned off.",'%l,_
-   '%l,_
-   '"Syntax:   )set output mathml <arg>",'%l,_
-  '"    where arg can be one of",'%l,_
-  '"  on          turn MathML printing on",'%l,_
-  '"  off         turn MathML printing off (default state)",'%l,_
-  '"  console     send MathML output to screen (default state)",'%l,_
-  '"  fp<.fe>     send MathML output to file with file prefix fp and file",'%l,_
-  '"              extension .fe. If not given, .fe defaults to .stex.",'%l,
-  '%l,_
-  '"If you wish to send the output to a file, you must issue this command",'%l,_
-  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
-  '"MathML output to the file",'%b,'"polymer.smml,",'%d,'"issue the two commands",'%l,_
-  '%l,_
-  '"  )set output mathml on",'%l,_
-  '"  )set output mathml polymer",'%l,_
-  '%l,_
-  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
-  '"the one you set with the )cd system command.",'%l,_
-  '"The current setting is: ",'%b,setOutputMathml "%display%",'%d)
+describeSetOutputMathml() == describeSetOutputU(
+    '"mathml", '"MathML", '"smml", false, setOutputMathml "%display%")
 
 
 setOutputTexmacs arg ==
@@ -844,7 +806,7 @@ setOutputTexmacs arg ==
   if arg is [fn] and
     fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
       then 'ok
-      else arg := [fn,'smml]
+      else arg := [fn,'stmx]
 
   arg is [fn] =>
     UPCASE(fn) in '(Y N YE O OF) =>
@@ -873,30 +835,8 @@ setOutputTexmacs arg ==
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputTexmacs()
 
-describeSetOutputTexmacs() ==
-  sayBrightly LIST ('%b,'")set output texmacs",'%d,_
-   '"is used to tell FriCAS to turn MathML-style output",'%l,_
-   '"printing on and off, and where to place the output.  By default, the",'%l,_
-   '"destination for the output is the screen but printing is turned off.",'%l,_
-   '%l,_
-   '"Syntax:   )set output texmacs <arg>",'%l,_
-  '"    where arg can be one of",'%l,_
-  '"  on          turn Texmacs printing on",'%l,_
-  '"  off         turn Texmacs printing off (default state)",'%l,_
-  '"  console     send Texmacs output to screen (default state)",'%l,_
-  '"  fp<.fe>     send Texmacs output to file with file prefix fp and file",'%l,_
-  '"              extension .fe. If not given, .fe defaults to .stex.",'%l,
-  '%l,_
-  '"If you wish to send the output to a file, you must issue this command",'%l,_
-  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
-  '"MathML output to the file",'%b,'"polymer.smml,",'%d,'"issue the two commands",'%l,_
-  '%l,_
-  '"  )set output texmacs on",'%l,_
-  '"  )set output texmacs polymer",'%l,_
-  '%l,_
-  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
-  '"the one you set with the )cd system command.",'%l,_
-  '"The current setting is: ",'%b,setOutputMathml "%display%",'%d)
+describeSetOutputTexmacs() == describeSetOutputU(
+    '"texmacs", '"Texmacs", '"stmx", false, setOutputTexmacs "%display%")
 
 
 setOutputHtml arg ==
@@ -917,7 +857,7 @@ setOutputHtml arg ==
   if arg is [fn] and
     fn in '(Y N YE YES NO O ON OF OFF CONSOLE y n ye yes no o on of off console)
       then 'ok
-      else arg := [fn,'html]
+      else arg := [fn,'shtml]
 
   arg is [fn] =>
     UPCASE(fn) in '(Y N YE O OF) =>
@@ -946,30 +886,8 @@ setOutputHtml arg ==
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputHtml()
 
-describeSetOutputHtml() ==
-  sayBrightly LIST ('%b,'")set output html",'%d,_
-   '"is used to tell FriCAS to turn HTML-style output",'%l,_
-   '"printing on and off, and where to place the output.  By default, the",'%l,_
-   '"destination for the output is the screen but printing is turned off.",'%l,_
-   '%l,_
-   '"Syntax:   )set output html <arg>",'%l,_
-  '"    where arg can be one of",'%l,_
-  '"  on          turn HTML printing on",'%l,_
-  '"  off         turn HTML printing off (default state)",'%l,_
-  '"  console     send HTML output to screen (default state)",'%l,_
-  '"  fp<.fe>     send HTML output to file with file prefix fp and file",'%l,_
-  '"              extension .fe. If not given, .fe defaults to .shtml.",'%l,
-  '%l,_
-  '"If you wish to send the output to a file, you must issue this command",'%l,_
-  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
-  '"MathML output to the file",'%b,'"polymer.shtml,",'%d,'"issue the two commands",'%l,_
-  '%l,_
-  '"  )set output html on",'%l,_
-  '"  )set output html polymer",'%l,_
-  '%l,_
-  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
-  '"the one you set with the )cd system command.",'%l,_
-  '"The current setting is: ",'%b,setOutputHthml "%display%",'%d)
+describeSetOutputHtml() == describeSetOutputU(
+    '"html", '"HTML", '"shtml", false, setOutputHtml "%display%")
 
 setOutputOpenMath arg ==
   arg = "%initialize%" =>
@@ -1018,30 +936,9 @@ setOutputOpenMath arg ==
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputOpenMath()
 
-describeSetOutputOpenMath() ==
-  sayBrightly LIST ('%b,'")set output openmath",'%d,_
-   '"is used to tell FriCAS to turn OpenMath output",'%l,_
-   '"printing on and off, and where to place the output.  By default, the",'%l,_
-   '"destination for the output is the screen but printing is turned off.",'%l,_
-   '%l,_
-   '"Syntax:   )set output openmath <arg>",'%l,_
-  '"    where arg can be one of",'%l,_
-  '"  on          turn OpenMath printing on",'%l,_
-  '"  off         turn OpenMath printing off (default state)",'%l,_
-  '"  console     send OpenMath output to screen (default state)",'%l,_
-  '"  fp<.fe>     send OpenMath output to file with file prefix fp and file",'%l,_
-  '"              extension .fe. If not given, .fe defaults to .som.",'%l,
-  '%l,_
-  '"If you wish to send the output to a file, you must issue this command",'%l,_
-  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
-  '"OpenMath output to the file",'%b,'"polymer.som,",'%d,'"issue the two commands",'%l,_
-  '%l,_
-  '"  )set output openmath on",'%l,_
-  '"  )set output openmath polymer",'%l,_
-  '%l,_
-  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
-  '"the one you set with the )cd system command.",'%l,_
-  '"The current setting is: ",'%b,setOutputOpenMath "%display%",'%d)
+describeSetOutputOpenMath() == describeSetOutputU(
+    '"openmath", '"OpenMath", '"som", false, setOutputOpenMath "%display%")
+
 
 setOutputTex arg ==
   arg = "%initialize%" =>
@@ -1090,30 +987,9 @@ setOutputTex arg ==
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputTex()
 
-describeSetOutputTex() ==
-  sayBrightly LIST ('%b,'")set output tex",'%d,_
-   '"is used to tell FriCAS to turn TeX-style output",'%l,_
-   '"printing on and off, and where to place the output.  By default, the",'%l,_
-   '"destination for the output is the screen but printing is turned off.",'%l,_
-   '%l,_
-   '"Syntax:   )set output tex <arg>",'%l,_
-  '"    where arg can be one of",'%l,_
-  '"  on          turn TeX printing on",'%l,_
-  '"  off         turn TeX printing off (default state)",'%l,_
-  '"  console     send TeX output to screen (default state)",'%l,_
-  '"  fp<.fe>     send TeX output to file with file prefix fp and file",'%l,_
-  '"              extension .fe. If not given, .fe defaults to .stex.",'%l,
-  '%l,_
-  '"If you wish to send the output to a file, you must issue this command",'%l,_
-  '"twice: once with",'%b,'"on",'%d,'"and once with the file name. For example, to send",'%l,_
-  '"TeX output to the file",'%b,'"polymer.stex,",'%d,'"issue the two commands",'%l,_
-  '%l,_
-  '"  )set output tex on",'%l,_
-  '"  )set output tex polymer",'%l,_
-  '%l,_
-  '"The output is placed in the directory from which you invoked FriCAS or",'%l,_
-  '"the one you set with the )cd system command.",'%l,_
-  '"The current setting is: ",'%b,setOutputTex "%display%",'%d)
+describeSetOutputTex() == describeSetOutputU(
+    '"tex", '"TeX", '"stex", false, setOutputTex "%display%")
+
 
 setStreamsCalculate arg ==
   arg = "%initialize%" =>
