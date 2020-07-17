@@ -592,6 +592,18 @@ describeSetOutputU(s_nam, o_nam, o_ext, is_on, cs) ==
   '%l, '"the one you set with the )cd system command.", '%l, _
   '"The current setting is: ",'%b, cs,'%d)
 
+stream_close(st) ==
+    if first(st) then CLOSE(rest(st))
+
+try_open(fn, ft, append) ==
+    if (ptype := pathnameType fn) then
+        fn := STRCONC(pathnameDirectory fn,pathnameName fn)
+        ft := ptype
+    filename := make_full_namestring([fn, ft])
+    null filename => [NIL, NIL]
+    (testStream := makeStream(append, filename)) => [testStream, filename]
+    [NIL, NIL]
+
 setOutputAlgebra arg ==
   arg = "%initialize%" =>
     $algebraOutputStream := mkOutputConsoleStream()
@@ -618,21 +630,16 @@ setOutputAlgebra arg ==
     UPCASE(fn) in '(NO OFF)  => $algebraFormat := NIL
     UPCASE(fn) in '(YES ON) => $algebraFormat := true
     UPCASE(fn) = 'CONSOLE =>
-      SHUT $algebraOutputStream
+      stream_close($algebraOutputStream)
       $algebraOutputStream := mkOutputConsoleStream()
       $algebraOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    if (ptype := pathnameType fn) then
-      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
-      ft := ptype
-    filename := make_full_namestring([fn, ft])
-    null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_OUTSTREAM(filename)) =>
-      SHUT $algebraOutputStream
+    [testStream, filename] := try_open(fn, ft, false)
+    testStream =>
+      stream_close($algebraOutputStream)
       $algebraOutputStream := testStream
-      $algebraOutputFile := object2String filename
+      $algebraOutputFile := filename
       sayKeyedMsg("S2IV0004",['"Algebra",$algebraOutputFile])
     sayKeyedMsg("S2IV0003",[fn,ft])
 
@@ -678,8 +685,8 @@ setOutputCharacters arg ==
   setOutputCharacters NIL
 
 makeStream(append,filename) ==
-  append => MAKE_APPENDSTREAM(filename)
-  MAKE_OUTSTREAM(filename)
+  append => make_append_stream(filename)
+  make_out_stream(filename)
 
 setOutputFortran arg ==
   arg = "%initialize%" =>
@@ -714,21 +721,16 @@ setOutputFortran arg ==
     UPCASE(fn) in '(NO OFF)  => $fortranFormat := NIL
     UPCASE(fn) in '(YES ON)  => $fortranFormat := true
     UPCASE(fn) = 'CONSOLE =>
-      SHUT $fortranOutputStream
+      stream_close($fortranOutputStream)
       $fortranOutputStream := mkOutputConsoleStream()
       $fortranOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    if (ptype := pathnameType fn) then
-      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
-      ft := ptype
-    filename := make_full_namestring([fn, ft])
-    null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := makeStream(append,filename)) =>
-      SHUT $fortranOutputStream
+    [testStream, filename] := try_open(fn, ft, append)
+    testStream =>
+      stream_close($fortranOutputStream)
       $fortranOutputStream := testStream
-      $fortranOutputFile := object2String filename
+      $fortranOutputFile := filename
       if null quiet then sayKeyedMsg("S2IV0004",['FORTRAN,$fortranOutputFile])
     if null quiet then sayKeyedMsg("S2IV0003",[fn,ft])
   if null quiet then sayKeyedMsg("S2IV0005",NIL)
@@ -763,21 +765,16 @@ setOutputMathml arg ==
     UPCASE(fn) in '(NO OFF)  => $mathmlFormat := NIL
     UPCASE(fn) in '(YES ON) => $mathmlFormat := true
     UPCASE(fn) = 'CONSOLE =>
-      SHUT $mathmlOutputStream
+      stream_close($mathmlOutputStream)
       $mathmlOutputStream := mkOutputConsoleStream()
       $mathmlOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    if (ptype := pathnameType fn) then
-      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
-      ft := ptype
-    filename := make_full_namestring([fn, ft])
-    null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_OUTSTREAM(filename)) =>
-      SHUT $mathmlOutputStream
+    [testStream, filename] := try_open(fn, ft, false)
+    testStream =>
+      stream_close($mathmlOutputStream)
       $mathmlOutputStream := testStream
-      $mathmlOutputFile := object2String filename
+      $mathmlOutputFile := filename
       sayKeyedMsg("S2IV0004",['"MathML",$mathmlOutputFile])
     sayKeyedMsg("S2IV0003",[fn,ft])
 
@@ -814,21 +811,16 @@ setOutputTexmacs arg ==
     UPCASE(fn) in '(NO OFF)  => $texmacsFormat := NIL
     UPCASE(fn) in '(YES ON) => $texmacsFormat := true
     UPCASE(fn) = 'CONSOLE =>
-      SHUT $texmacsOutputStream
+      stream_close($texmacsOutputStream)
       $texmacsOutputStream := mkOutputConsoleStream()
       $texmacsOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    if (ptype := pathnameType fn) then
-      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
-      ft := ptype
-    filename := make_full_namestring([fn, ft])
-    null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_OUTSTREAM(filename)) =>
-      SHUT $texmacsOutputStream
+    [testStream, filename] := try_open(fn, ft, false)
+    testStream =>
+      stream_close($texmacsOutputStream)
       $texmacsOutputStream := testStream
-      $texmacsOutputFile := object2String filename
+      $texmacsOutputFile := filename
       sayKeyedMsg("S2IV0004",['"Texmacs",$texmacsOutputFile])
     sayKeyedMsg("S2IV0003",[fn,ft])
 
@@ -865,21 +857,16 @@ setOutputHtml arg ==
     UPCASE(fn) in '(NO OFF)  => $htmlFormat := NIL
     UPCASE(fn) in '(YES ON) => $htmlFormat := true
     UPCASE(fn) = 'CONSOLE =>
-      SHUT $htmlOutputStream
+      stream_close($htmlOutputStream)
       $htmlOutputStream := mkOutputConsoleStream()
       $htmlOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    if (ptype := pathnameType fn) then
-      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
-      ft := ptype
-    filename := make_full_namestring([fn, ft])
-    null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_OUTSTREAM(filename)) =>
-      SHUT $htmlOutputStream
+    [testStream, filename] := try_open(fn, ft, false)
+    testStream =>
+      stream_close($htmlOutputStream)
       $htmlOutputStream := testStream
-      $htmlOutputFile := object2String filename
+      $htmlOutputFile := filename
       sayKeyedMsg("S2IV0004",['"HTML",$htmlOutputFile])
     sayKeyedMsg("S2IV0003",[fn,ft])
 
@@ -915,21 +902,16 @@ setOutputOpenMath arg ==
     UPCASE(fn) in '(NO OFF)  => $openMathFormat := NIL
     UPCASE(fn) in '(YES ON) => $openMathFormat := true
     UPCASE(fn) = 'CONSOLE =>
-      SHUT $openMathOutputStream
+      stream_close($openMathOutputStream)
       $openMathOutputStream := mkOutputConsoleStream()
       $openMathOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    if (ptype := pathnameType fn) then
-      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
-      ft := ptype
-    filename := make_full_namestring([fn, ft])
-    null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_OUTSTREAM(filename)) =>
-      SHUT $openMathOutputStream
+    [testStream, filename] := try_open(fn, ft, false)
+    testStream =>
+      stream_close($openMathOutputStream)
       $openMathOutputStream := testStream
-      $openMathOutputFile := object2String filename
+      $openMathOutputFile := filename
       sayKeyedMsg("S2IV0004",['"OpenMath",$openMathOutputFile])
     sayKeyedMsg("S2IV0003",[fn,ft])
 
@@ -966,21 +948,16 @@ setOutputTex arg ==
     UPCASE(fn) in '(NO OFF)  => $texFormat := NIL
     UPCASE(fn) in '(YES ON) => $texFormat := true
     UPCASE(fn) = 'CONSOLE =>
-      SHUT $texOutputStream
+      stream_close($texOutputStream)
       $texOutputStream := mkOutputConsoleStream()
       $texOutputFile := '"CONSOLE"
 
   (arg is [fn,ft]) or (arg is [fn,ft,fm]) => -- aha, a file
-    if (ptype := pathnameType fn) then
-      fn := STRCONC(pathnameDirectory fn,pathnameName fn)
-      ft := ptype
-    filename := make_full_namestring([fn, ft])
-    null filename =>
-      sayKeyedMsg("S2IV0003",[fn,ft])
-    (testStream := MAKE_OUTSTREAM(filename)) =>
-      SHUT $texOutputStream
+    [testStream, filename] := try_open(fn, ft, false)
+    testStream =>
+      stream_close($texOutputStream)
       $texOutputStream := testStream
-      $texOutputFile := object2String filename
+      $texOutputFile := filename
       sayKeyedMsg("S2IV0004",['"TeX",$texOutputFile])
     sayKeyedMsg("S2IV0003",[fn,ft])
 

@@ -193,7 +193,7 @@ recordAndPrint(x,md) ==
     md' := md
   mode:= (md=$EmptyMode => quadSch(); md)
   if (md ~= $Void) or $printVoidIfTrue then
-    if null $collectOutput then TERPRI $algebraOutputStream
+    if null $collectOutput then TERPRI(get_algebra_stream())
     if $QuietCommand = false then
       output(x',md')
   putHist('%,'value,objNewWrap(x,md),$e)

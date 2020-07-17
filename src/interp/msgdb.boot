@@ -936,21 +936,29 @@ sayBrightlyI(x) ==
     NULL(x) => nil
     sayBrightly1(x, get_lisp_error_out())
 
-sayMSGNT(x) == sayBrightlyNT1(x, $algebraOutputStream)
+sayMSGNT(x) == sayBrightlyNT1(x, get_algebra_stream())
 
-sayHtml(x) == sayBrightly1(x, $htmlOutputStream)
+say_simple(x, str) ==
+    if x then
+        if true then
+            ATOM(x) => sayString(x, str)
+            for y in x repeat
+                sayString(y, str)
+        TERPRI(str)
 
-sayMathML(x) == sayBrightly1(x, $mathmlOutputStream)
+sayHtml(x) == say_simple(x, get_html_stream())
 
-sayTeX(x) == sayBrightly1(x, $texOutputStream)
+sayMathML(x) == say_simple(x, get_mathml_stream())
 
-sayTexmacs(x) == sayBrightly1(x, $texmacsOutputStream)
+sayTeX(x) == say_simple(x, get_tex_stream())
 
-saySpadMsg(x) == sayBrightly1(x, $algebraOutputStream)
+sayTexmacs(x) == say_simple(x, get_texmacs_stream())
 
-sayALGEBRA(x) == sayBrightly1(x, $algebraOutputStream)
+saySpadMsg(x) == sayBrightly1(x, get_algebra_stream())
 
-sayMSG(x) == sayBrightly1(x, $algebraOutputStream)
+sayALGEBRA(x) == sayBrightly1(x, get_algebra_stream())
+
+sayMSG(x) == sayBrightly1(x, get_algebra_stream())
 
 sayMSG2File(msg) ==
     file := makePathname("spadmsg", "listing")

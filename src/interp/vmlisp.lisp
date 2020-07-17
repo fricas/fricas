@@ -616,23 +616,26 @@
                   :direction :input :if-does-not-exist nil))))
 
 (defun MAKE_OUTSTREAM (filespec)
-   (cond ((numberp filespec) (make-synonym-stream '*standard-output*))
+   (cond 
          ((null filespec) (error "not handled yet"))
          (t (open (|make_filename| filespec) :direction :output
                #+(or :cmucl :openmcl :sbcl) :if-exists
                #+(or :cmucl :sbcl) :supersede
                #+:openmcl :ignored))))
 
+(defun |make_out_stream| (filespec) (CONS T (MAKE_OUTSTREAM filespec)))
+
 (defun MAKE_APPENDSTREAM (filespec)
  "fortran support"
  (cond
-  ((numberp filespec) (make-synonym-stream '*standard-output*))
   ((null filespec) (error "MAKE_APPENDSTREAM: not handled yet"))
   ('else (open (|make_filename| filespec) :direction :output
           :if-exists :append :if-does-not-exist :create))))
 
-(defun |mkOutputConsoleStream| ()
-     (make-synonym-stream '*standard-output*))
+(defun |make_append_stream| (filespec)
+    (CONS T (MAKE_APPENDSTREAM filespec)))
+
+(defun |mkOutputConsoleStream| () (CONS NIL *standard-output*))
 
 (defun SHUT (st) (if #+:GCL(IS_CONSOLE st)
                      #-:GCL(typep st 'synonym-stream)

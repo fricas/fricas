@@ -642,7 +642,7 @@
   (let* ((*standard-output* (make-string-output-stream))
          (curoutstream *standard-output*)
          (*error-output* *standard-output*)
-         (|$algebraOutputStream| *standard-output*)
+         (|$algebraOutputStream| (CONS NIL *standard-output*))
         val)
     (declare (special curoutstream
                       |$algebraOutputStream|))

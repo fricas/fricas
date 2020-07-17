@@ -41,10 +41,8 @@
 #+(and :GCL :IEEE-FLOATING-POINT)
   (setq system:*print-nans* T)
 
-(setq |$algebraOutputStream|
-      (setq |$fortranOutputStream|
-            (setq |$texOutputStream|
-                        (make-synonym-stream '*standard-output*))))
+;;; In case 'setvart.boot' does not work...
+(setq |$algebraOutputStream| (|mkOutputConsoleStream|))
 
 (defvar |$frameMessages| nil)
 (defvar |$displayStartMsgs| nil)
