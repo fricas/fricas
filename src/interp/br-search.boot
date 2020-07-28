@@ -131,7 +131,7 @@ grepf(pattern,s,not?) ==  --s=sourceFile or list of strings
     not? => 'iv
     'i
   source :=
-    LISTP s => dbWriteLines s
+    LISTP s => dbWriteLines(s, getTempPath 'source)
     s
   grepFile(pattern,source,option)
 
@@ -854,8 +854,7 @@ underscoreDollars(s) == fn(s,0,MAXINDEX s) where
 
 getTempPath kind == mkGrepFile kind
 
-dbWriteLines(s, :options) ==
-  pathname := IFCAR options or getTempPath 'source
+dbWriteLines(s, pathname) ==
   $outStream : local := MAKE_OUTSTREAM(pathname)
   for x in s repeat writedb x
   SHUT $outStream

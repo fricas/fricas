@@ -414,12 +414,11 @@ systemErrorHere functionName ==
 
 queryUserKeyedMsg(key,args) ==
   -- display message and return reply
-  conStream := MAKE_INSTREAM(0)
+  conStream := get_console_input()
   sayKeyedMsg(key,args)
   ioHook("startQueryUser")
   ans := read_line conStream
   ioHook("endOfQueryUser")
-  SHUT conStream
   ans
 
 flowSegmentedMsg(msg, len, offset) ==

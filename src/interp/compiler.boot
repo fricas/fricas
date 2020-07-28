@@ -337,12 +337,12 @@ compAtom1(x, m, e) ==
 
 primitiveType x ==
   x is nil => $EmptyMode
-  STRINGP x => $String
+  STRINGP x => BREAK() -- handled in compAtom1
   INTEGERP x =>
     x=0 => $NonNegativeInteger
     x>0 => $PositiveInteger
     $Integer
-  FLOATP x => $DoubleFloat
+  FLOATP x => BREAK() -- no longer used
   nil
 
 DEFPARAMETER($compForModeIfTrue, false)

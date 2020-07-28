@@ -609,6 +609,8 @@
 
 ; 27.1 Creation
 
+(defun |get_console_input| () *standard-input*)
+
 (defun MAKE_INSTREAM (filespec)
    (cond ((numberp filespec) (make-synonym-stream '*standard-input*))
          ((null filespec) (error "not handled yet"))

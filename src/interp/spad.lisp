@@ -96,12 +96,6 @@
 
 ;; function to create byte and half-word vectors in new runtime system 8/90
 
-(defun |makeByteWordVec| (initialvalue)
-  (let ((n (cond ((null initialvalue) 7) ('t (reduce #'max initialvalue)))))
-    (make-array (length initialvalue)
-      :element-type (list 'mod (1+ n))
-      :initial-contents initialvalue)))
-
 (defun |makeByteWordVec2| (maxelement initialvalue)
   (let ((n (cond ((null initialvalue) 7) ('t maxelement))))
     (make-array (length initialvalue)

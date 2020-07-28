@@ -115,13 +115,6 @@ $extendedDomains := nil
 setExtendedDomains(l) ==
         $extendedDomains := l
 
---rhx: Function seems to be unused.
-makeAxFile(filename, constructors) ==
-  axForm := makeAxExportForm(filename, constructors)
-  st := MAKE_OUTSTREAM(filename)
-  PPRINT(axForm,st)
-  CLOSE st
-
 makeAxExportForm(filename, constructors) ==
   $defaultFlag : local := false
   $literals := []
