@@ -167,7 +167,8 @@ FRICAS_LISP = @FRICAS_LISP@
 # Extension of the output file name returned by compile-file
 LISPOBJEXT = @fricas_fasl_type@
 FASLEXT = @fricas_fasl_type2@
-
+FRICAS_LISP_FLAVOR=@fricas_lisp_flavor@
+FRICAS_LISP_VERSION=@fricas_lisp_version@
 
 ##
 

@@ -266,6 +266,7 @@ Please use different sbcl version])
 fi
 
 AC_SUBST(fricas_lisp_flavor)
+AC_SUBST(fricas_lisp_version)
 
 ## Check if we need shared libspad library.
 case $fricas_lisp_flavor in
