@@ -612,7 +612,7 @@
 (defun |get_console_input| () *standard-input*)
 
 (defun MAKE_INSTREAM (filespec)
-   (cond ((numberp filespec) (make-synonym-stream '*standard-input*))
+   (cond
          ((null filespec) (error "not handled yet"))
          (t (open (|make_input_filename| filespec)
                   :direction :input :if-does-not-exist nil))))

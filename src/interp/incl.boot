@@ -70,7 +70,6 @@ incStream(st, fn) ==
    incRenumber incLude(0,incRgen st,0,[fn],[Top])
 
 incFileInput    fn == incRgen  MAKE_INSTREAM(fn)
-incConsoleInput () == incRgen  MAKE_INSTREAM(0)
 
 incLine(eb, str, gno, lno, ufo) ==
             ln := lnCreate(eb,str,gno,lno,ufo)
@@ -102,7 +101,6 @@ incCommand?(s) == #s > 1 and s.0 = char ")" and not (s.1 = char " ")
 incCommands :=
             ['"say"    , _
              '"include", _
-             '"console", _
              '"fin"    , _
              '"assert" , _
              '"if"     , _
@@ -164,10 +162,6 @@ assertCond(s, info) ==
 
 
 incActive?(fn,ufos)==MEMBER(fn,ufos)
-
-incNConsoles ufos==
-        a:=MEMBER('"console",ufos)
-        if a then 1+incNConsoles rest a else 0
 
 Top            := 01
 IfSkipToEnd    := 10
@@ -236,18 +230,6 @@ xlNoFile(eb, str, lno, ufos) ==
 xlCannotRead(eb, str, lno, ufos, fn) ==
           xlMsg(eb, str, lno,ufos.0,
               [inclmsgCannotRead(fn), "error"])
-
-xlConsole(eb, str, lno, ufos)  ==
-          xlMsg(eb, str, lno,ufos.0,
-              [inclmsgConsole(),"say"])
-
-xlConActive(eb, str, lno, ufos, n) ==
-          xlMsg(eb, str, lno,ufos.0,
-              [inclmsgConActive(n),"warning"])
-
-xlConStill(eb, str, lno, ufos, n) ==
-          xlMsg(eb, str, lno,ufos.0,
-              [inclmsgConStill(n), "say"])
 
 xlSkippingFin(eb, str, lno, ufos) ==
           xlMsg(eb, str, lno,ufos.0,
@@ -343,22 +325,6 @@ incLude1 (:z) ==
                     xlOK(eb,str,lno,ufos.0),
                           incAppend(Includee, Rest s))
 
-            info.2 = '"console" =>
-                Skipping? state => cons(xlSkip(eb,str,lno,ufos.0), Rest s)
-                Head :=
-                 incLude(eb+info.1,incConsoleInput(),0,
-                     cons('"console",ufos),cons(Top,states) )
-                Tail := Rest s
-
-                n := incNConsoles ufos
-                if n > 0 then
-                   Head := cons(xlConActive(eb, str, lno,ufos,n),Head)
-                   Tail :=
-                       cons(xlConStill (eb, str, lno,ufos,n),Tail)
-
-                Head := cons (xlConsole(eb, str, lno,ufos), Head)
-                cons(xlOK(eb,str,lno,ufos.0),incAppend(Head,Tail))
-
             info.2 = '"fin" =>
                 Skipping? state =>
                     cons(xlSkippingFin(eb, str, lno,ufos), Rest s)
@@ -443,12 +409,6 @@ inclmsgFileCycle(ufos,fn) ==
     f1    := porigin fn
     cycle := [:[:[n,'"==>"] for n in flist], f1]
     ['S2CI0004, [%id cycle, %id f1]]
-inclmsgConsole   () ==
-    ['S2CI0005, []]
-inclmsgConActive n  ==
-    ['S2CI0006, [%id n]]
-inclmsgConStill  n  ==
-    ['S2CI0007, [%id n]]
 inclmsgFinSkipped() ==
     ['S2CI0008, []]
 inclmsgIfSyntax(ufo,found,context) ==
