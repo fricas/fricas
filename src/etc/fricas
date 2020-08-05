@@ -1,29 +1,5 @@
 #!/bin/sh
 
-# Start everything for FriCAS.
-#
-# fricas
-#      [-ht   |-noht]       whether to use HyperDoc
-#      [-gr   |-nogr]       whether to use Graphics
-#      [-clef |-noclef]     whether to use Clef
-#      [-rl]                whether to use GNU Readline via rlwrap
-#      [-iw   |-noiw]       start in interpreter window
-#      [-ihere|-noihere]    start an interpreter buffer in the original window
-#      [-nox]               don't use X Windows
-#      [-go  |-nogo]        whether to start system
-#      [-ws wsname]         use named workspace
-#      [-list]              list workspaces only
-#      [-grprog fname]      use named program for Graphics
-#      [-htprog fname]      use named program for HyperDoc
-#      [-clefprog fname]    use named program for Clef
-#      [-sessionprog fname] use named program for session
-#      [-clientprog fname]  use named program for spadclient
-#      [-h]                 show usage
-#      [-eval code]         evaluate specified code at start
-#      [-texmacs]           setup FriCAS for communication in TeXmacs protocol
-#      [-emacs]             setup for emacs frontend
-#
-
 PATH=$FRICAS/bin:${PATH}:/usr/bin/X11
 export PATH
 
@@ -33,57 +9,65 @@ export HOST
 
 # 0. Basic utilities
 
+showuse() {
+  echo "Usage:"
+  echo "  fricas [options]"
+  echo
+  echo "The following options are recognized."
+  echo "  -clef | -noclef    use Clef (default: -clef)"
+  echo "  -clefprog fname    use named program for Clef"
+  echo "  -eval code         evaluate specified code at start"
+  echo "  -go   | -nogo      whether to start system"
+  echo "  -gr   | -nogr      use Graphics (default: -gr)"
+  echo "  -ht   | -noht      use HyperDoc (default: -ht)"
+  echo "  -ihere| -noihere   start an interpreter buffer in the original window"
+  echo "  -iw   | -noiw      start in interpreter window"
+  echo "  -list              list workspaces only"
+  echo "  -nox               don't use X Windows"
+  echo "  -rl                use GNU Readline via rlwrap if available"
+  echo "  -ws wsname         use named workspace"
+  #echo "  -grprog fname      use named program for Graphics"
+  #echo "  -htprog fname      use named program for HyperDoc"
+  #echo "  -sessionprog fname use named program for session"
+  #echo "  -clientprog fname  use named program for spadclient"
+  echo
+  echo "Some options can only be given in the first position."
+  echo
+  echo "Start only a plain commandline interface."
+  echo "  fricas -nosman [-rl] [-eval code]"
+  echo
+  echo "Print this help screen and exit."
+  echo "  fricas --help"
+  echo
+  echo "Print version information and exit."
+  echo "  fricas --version"
+  echo
+  echo "Setup special frontends."
+  echo "  fricas -texmacs"
+  echo "  fricas -emacs"
+}
+
 ciao() {
-        echo "Goodbye."
-        exit 1
+    echo "Goodbye."
+    exit 1
 }
 
 needsubopt () {
-        echo "The $1 option requires an argument."
-        ciao
+    echo "The $1 option requires an argument."
+    ciao
 }
 
 
 RLWRAP=${RLWRAP:=rlwrap}
 have_rlwrap() {
-	if [ -z "$(command -v ${RLWRAP})" ] ; then
-	    echo "Ignoring -rl option; rlwrap program \"${RLWRAP}\" not found."
-	    return 1
-	fi
-        return 0
-}
-
-showuse() {
-echo "fricas"
-echo "     [-nosman]            use plain command line interface (disables other options)"
-echo "     [-ht   |-noht]       whether to use HyperDoc"
-echo "     [-gr   |-nogr]       whether to use Graphics"
-echo "     [-clef |-noclef]     whether to use Clef"
-echo "     [-rl]                whether to use GNU Readline via rlwrap"
-echo "     [-iw   |-noiw]       start in interpreter window"
-echo "     [-ihere|-noihere]    start an interpreter buffer in the original window."
-echo "     [-nox]               don't use X Windows"
-echo "     [-go  |-nogo]        whether to start system"
-echo "     [-ws wsname]         use named workspace"
-echo "     [-list]              list workspaces only"
-#echo "     [-grprog fname]      use named program for Graphics"
-#echo "     [-htprog fname]      use named program for HyperDoc"
-echo "     [-clefprog fname]    use named program for Clef"
-#echo "     [-sessionprog fname] use named program for session"
-#echo "     [-clientprog fname]  use named program for spadclient"
-echo "     [-h]                 show usage"
-echo "     [-eval code]         evaluate specified code at start"
-echo "     [-texmacs]           setup FriCAS for communication in TeXmacs protocol"
-echo "     [-emacs]             setup for emacs frontend"
+    if [ -z "$(command -v ${RLWRAP})" ] ; then
+	echo "Ignoring -rl option; rlwrap program \"${RLWRAP}\" not found."
+	return 1
+    fi
+    return 0
 }
 
 # 1. Ensure the environment is set.
-
-# Just process '-h'
-
-if [ "$*" = "-h" ] ; then
-     showuse
-fi
 
 # The aldor compiler is usually expected to be in PATH at the time of
 # starting fricas, but, we allow for more flexibility.
@@ -160,56 +144,62 @@ fi
 
 
 while [ "$*" != "" ] ; do
-
-        case $1 in
-        -list)  list=yes
-                go=no;;
-        -go)    go=yes ;;
-        -nogo)  go=no ;;
-
+    opt=$1
+    case $1 in
+        -h|--help)
+            showuse
+            exit 0
+            ;;
+        --version)
+            echo "FriCAS $FRICAS_VERSION"
+            exit 0
+            ;;
+        -list)
+            list=yes
+            go=no
+            ;;
+        -go)
+            go=yes
+            ;;
+        -nogo)
+            go=no
+            ;;
         -ws)
-                if [ "$2" = "" ] ; then needsubopt "$1" ; fi
-                shift
-                wsname="$1"
-                ;;
-
+            if [ "$2" = "" ] ; then needsubopt "$1" ; fi
+            shift
+            wsname="$1"
+            ;;
         -grprog|-htprog|-clefprog|-sessionprog|-clientprog|-paste|-rm|-rv)
-                if [ "$2" = "" ] ; then needsubopt "$1" ; fi
-                otheropts="$otheropts  $1 $2"
-                shift
-                ;;
+            if [ "$2" = "" ] ; then needsubopt "$1" ; fi
+            otheropts="$otheropts $1 $2"
+            shift
+            ;;
         -clef|-noclef|-gr|-nogr|-ht|-noht|-iw|-noiw|-ihere|-noihere|-nox)
-                otheropts="$otheropts $1"
-                ;;
-
+            otheropts="$otheropts $1"
+            ;;
         -rl)
-		if have_rlwrap ; then
-                    otheropts="$otheropts -clefprog ${FRICAS}/bin/fricas-readline"
-		fi
-                ;;
-
-        -h)
-                go=no
-                ;;
-
+	    if have_rlwrap ; then
+                otheropts="$otheropts -clefprog ${FRICAS}/bin/fricas-readline"
+	    fi
+            ;;
         -eval)
-                shift
-                if [ -z "$*" ] ; then
-                    echo "Parameter -eval must be provided with a value"
-                    ciao
-                else
-                    patt='s,[^A-Za-z0-9],\\&,g'
-                    npar=`echo "$1" | sed $patt`
-                    otheropts="$otheropts -eval $npar"
-                fi
-                ;;
-
-        *)      echo "Unknown option: $1"
-                echo "To use a specific workspace use, e.g.: fricas -ws $1"
+            shift
+            if [ -z "$*" ] ; then
+                echo "Parameter of -eval must be provided with a value"
                 ciao
-                ;;
+            else
+                patt='s,[^A-Za-z0-9],\\&,g'
+                npar=`echo "$1" | sed $patt`
+                otheropts="$otheropts -eval $npar"
+            fi
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo
+            showuse
+            ciao
+            ;;
         esac
-
         shift
 done
 
@@ -223,7 +213,7 @@ listwspaces()
 }
 
 if [ $list = yes ] ; then
-          listwspaces "FriCAS workspaces in \$FRICAS/bin = $rootwsdir: " $rootwsdir
+    listwspaces "FriCAS workspaces in \$FRICAS/bin = $rootwsdir: " $rootwsdir
 fi
 
 # 5. Try to ensure a suitable workspace on this host.
@@ -242,9 +232,11 @@ fi
 # 6. Start processes
 
 if [ $go = no ] ; then
-        echo "Would now start the processes."
-        echo "exec $FRICAS/bin/sman $otheropts -ws $serverws"
-        exit 0
+    echo "Would now execute the following."
+    echo "FRICAS=\"${exec_prefix}/lib/fricas/target/x86_64-linux-gnu\""
+    echo "export FRICAS"
+    echo "$FRICAS/bin/sman $otheropts -ws $serverws"
+    exit 0
 fi
 
 eval "exec $FRICAS/bin/sman $otheropts -ws $serverws"
