@@ -1,6 +1,8 @@
 sinclude(config/fricas.m4)
 AC_INIT([FriCAS], [2020-04-23],
-        [fricas-devel@googlegroups.com])
+        [fricas-devel@googlegroups.com],
+        [fricas],
+        [https://fricas.github.io])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
