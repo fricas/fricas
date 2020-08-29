@@ -70,6 +70,7 @@ typedef struct {
   union {
     struct sockaddr u_addr;
     struct sockaddr_in i_addr;
+    char pad[32];
   } addr;
   char *host_name;      /* name of foreign host if type == AF_INET */
 } Sock;
