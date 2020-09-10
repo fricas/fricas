@@ -752,13 +752,13 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
     return NULL;
   }
   /* connect socket using name specified in command line */
-  memset(server[1].addr.u_addr.sa_data, 0,
-         sizeof(server[1].addr.u_addr.sa_data));
   sock->addr.u_addr.sa_family = FRICAS_AF_LOCAL;
-  strcpy(sock->addr.u_addr.sa_data, name);
+  strcpy(sock->addr.pad +
+          ((char *)(&(sock->addr.u_addr.sa_data))
+           -(char *)(&(sock->addr.u_addr))), name);
   for(i=0; i<max_con; i++) {
     code = connect(sock->socket, &sock->addr.u_addr,
-                   sizeof(sock->addr.u_addr));
+                   sizeof(sock->addr.pad));
     if (code == -1) {
       if (
         /* @@@ Why we need this */
@@ -923,12 +923,13 @@ open_server(char *server_name)
     server[1].socket = 0;
     return -2;
   } else {
-    server[1].addr.u_addr.sa_family = FRICAS_AF_LOCAL;
-    memset(server[1].addr.u_addr.sa_data, 0,
-           sizeof(server[1].addr.u_addr.sa_data));
-    strcpy(server[1].addr.u_addr.sa_data, name);
-    if (bind(server[1].socket, &server[1].addr.u_addr,
-             sizeof(server[1].addr.u_addr))) {
+    Sock * sock = &(server[1]);
+    sock->addr.u_addr.sa_family = FRICAS_AF_LOCAL;
+    strcpy(sock->addr.pad +
+          ((char *)(&(sock->addr.u_addr.sa_data))
+           -(char *)(&(sock->addr.u_addr))), name);
+    if (bind(sock->socket, &(sock->addr.u_addr),
+             sizeof(sock->addr.pad))) {
       perror("binding local server socket");
       server[1].socket = 0;
       return -2;
@@ -936,11 +937,12 @@ open_server(char *server_name)
 #ifdef HAVE_SO_NOSIGPIPE
     /* macOS doesn't have MSG_NOSIGNAL, so use SO_NOSIGPIPE instead */
     int set = 1;
-    setsockopt(server[1].socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+    setsockopt(sock->socket, SOL_SOCKET, SO_NOSIGPIPE,
+               (void *)&set, sizeof(int));
 #endif
-    FD_SET(server[1].socket, &socket_mask);
-    FD_SET(server[1].socket, &server_mask);
-    listen(server[1].socket, 5);
+    FD_SET(sock->socket, &socket_mask);
+    FD_SET(sock->socket, &server_mask);
+    listen(sock->socket, 5);
   }
   s = getenv("SPADSERVER");
   if (s == NULL) {
