@@ -1,0 +1,409 @@
+%% fricas.sty
+%% Copyright (C) 2014, 2018  Ralf Hemmecke <ralf@hemmecke.org>
+%%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This .sty file is supposed to be useful for the compilation
+% of an adapted version of the original AXIOM book by Richard Jenks
+% and Robert Sutor for the FriCAS system.
+
+\usepackage{epsf}
+\def\epsfsize#1#2{.24\textheight}
+\let\spadepsffilesave\epsffile
+\def\epsffile[#1]#2{\begin{center}\spadepsffilesave[#1]{#2}\end{center}}
+
+\usepackage{fricasmath}
+\usepackage{verbatim} % Needed for the discard environment.
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{makeidx}
+\makeindex
+
+% We use xparse for the definition of a number of verbatim-like
+% commands via \NewDocumentCommand.
+\usepackage{xparse}
+
+% For a small graph...
+\usepackage{tikz}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Markup for a TeX command sequence.
+% The argument should only consist of letters.
+%TODO: We should index it.
+\DeclareRobustCommand\cs[1]{\texttt{\char`\\#1}}
+
+\newenvironment{TeXOutput}%
+  {\begin{ColoredBackground}{bgmathoutput}\small}%
+  {\end{ColoredBackground}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% for foreword.tex + tecintro.tex
+\def\schapter{\chapter*}
+\def\pseudoSection{\section*}
+
+% Normal sections start like this: \head{section}{TITLE}{LABEL}
+\long\def\head#1#2#3{\@nameuse{#1}{#2}\label{#3}\setcounter{equation}{0}\par}
+
+
+\newcommand{\xdefault}[1]{The default value is \texttt{"#1"}.}
+\def\noHyphens{\hyphenpenalty=10001}
+\def\Browse{{Browse}}
+\def\Clef{{Clef}}
+\def\Gallery{{\Language{} Images}}
+\def\HyperName{{HyperDoc}}
+\def\Language{{FriCAS}}
+\def\Lisp{{Common LISP}}
+\def\Fortran{Fortran}
+\def\aldor{Aldor}
+
+% Important things are framed.
+\def\beginImportant{\begin{framed}\begin{minipage}{\textwidth}}%
+\def\endImportant{\end{minipage}\end{framed}}
+
+% following handles things like "i-th" but uses superscripts for "th"
+\def\eth#1{\ensuremath{{#1}^{\textrm{\small th}}}}
+
+\let\mathOrSpad\ensuremath
+\let\smath\ensuremath
+\def\twodim{two-di\-men\-sion\-al}
+\def\threedim{three-di\-men\-sion\-al}
+\def\titledspadref#1#2{`#1' in \spadref{#2}}
+
+\def\nonLibAxiomType{\spadtype}          % things that browse can't handle
+\def\pspadtype{\spadtype}
+
+\def\spadsys#1{\texttt{#1}}
+
+\def\spadgloss#1{\index{#1}{\it #1}}
+\def\spadglossSee#1#2{\index{#2}{\it #1}}
+\def\spadgraph{\spadcommand}
+\def\spadkey#1{\index{#1 @\begingroup \string\tt{} #1 \endgroup}}
+\def\spadref#1{Section \ref{#1} on page \pageref{#1}}
+\def\chapref#1{Chapter~\ref{#1}}
+\def\appxref#1{Appendix~\ref{#1}}
+\def\subscriptIt#1#2{$\hbox{\it #1}_{#2}$}
+\def\subscriptText#1#2{$\hbox{\it #1}_{\hbox{\small\rm #2}}$}
+% \def\tab#1{}
+\long\def\texht#1#2{#1}
+\def\windowlink#1#2{{\bf #1}}
+\def\xmpref#1{`\texttt{#1}' on page \pageref{#1Xmp}}
+
+% Bitmaps
+\newcommand\bmbutton[1]{{\setlength{\unitlength}{0.01in}%
+    \begin{picture}(50,16)(0,0)\special{psfile=#1.ps}\end{picture}}}
+\newcommand\StdExitButton{\bmbutton{exit}}
+\newcommand\ReturnButton{\bmbutton{home}}
+\newcommand\StdHelpButton{\bmbutton{help}}
+\newcommand\UpButton{\bmbutton{up}}
+\let\UpBitmap\UpButton
+
+% file extension for library source files
+\def\spadFileExt{.spad}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NewDocumentCommand{\verbspadop}{v}{\textcolor{magenta}{\texttt{#1}}}
+\NewDocumentCommand{\verbspadfun}{v}{\textcolor{red}{\texttt{#1}}}
+\NewDocumentCommand{\verbspadtype}{v}{\textcolor{blue}{\textsf{#1}}}
+\NewDocumentCommand{\verbspadsyntax}{v}{\textcolor[rgb]{0,0.5,0.5}{\texttt{#1}}}
+
+\NewDocumentCommand{\textspadop}{m}{\textcolor{magenta}{\texttt{#1}}}
+\NewDocumentCommand{\textspadfun}{m}{\textcolor{red}{\textsf{#1}}}
+\NewDocumentCommand{\textspadtype}{m}{\textcolor{blue}{\textbf{#1}}}
+\NewDocumentCommand{\textspadexpr}{m}{\textcolor[rgb]{0,0.5,0}{\texttt{#1}}}
+\NewDocumentCommand{\textspadsyntax}{m}{``\textcolor[rgb]{0,0.5,0.5}{\texttt{#1}}''}
+
+\NewDocumentCommand{\spadindex}{m >{\EscapeMakeindexSpecial} m}{%
+  \index{#1`#2`}}
+\def\EscapeMakeindexSpecial#1{%
+   \def\ProcessedArgument{\ProcessList{#1}{\EscapeMakeindexSpecialOne}}}
+\def\EscapeMakeindexSpecialOne#1{%
+  \if#1!"\fi
+  \if#1@"\fi
+  \if#1|"\fi
+  #1}
+
+\catcode`\$=12\relax % other
+\NewDocumentCommand{\spadname}{m >{\SplitArgument{1}{$}} v}{%$
+  \csname format#1\endcsname#2}
+\catcode`\$=3\relax % math shift
+
+\def\formatop#1#2{%
+  \textspadop{#1}%
+%  \IfNoValueTF{#2}{}{\textspadop{(#2)}}%
+  \spadindex{library!operations!\verbspadop}{#1}}
+
+\def\formatfun#1#2{%
+  \textspadfun{#1}%
+%  \IfNoValueTF{#2}{}{\textspadfun{(#2)}}%
+  \spadindex{library!operations!\verbspadfun}{#1}}
+
+\def\formattype#1#2{%
+  \textspadtype{#1}%
+%  \IfNoValueTF{#2}{}{\textspadtype{(#2)}}%
+  \spadindex{library!constructors!\verbspadtype}{#1}}
+
+\def\spadop{\spadname{op}}
+\def\spadfun{\spadname{fun}}
+\def\spadtype{\spadname{type}}
+
+\NewDocumentCommand{\spadSyntax}{v}{%
+  \textspadsyntax{#1}%
+  \spadindex{\verbspadsyntax}{#1}}
+
+\def\spadreplace#1#2{\textcolor[rgb]{0,0.5,0.5}{#1}}
+% Terrible hack, but without a box, breqn.sty seems to have changed
+% something, so that an underscore does not work in #1 in \spadreplace.
+\newbox\spadboxsigmak \setbox\spadboxsigmak=%
+  \hbox{\textcolor[rgb]{0,0.5,0.5}{$\sigma_k$}}
+\def\spadsigmak#1{\copy\spadboxsigmak}
+\def\spad{\lstinline[%
+  basicstyle={\ttfamily\color[rgb]{0,0.5,0}},
+  breaklines=true,
+  literate={->}{$\to$}{2},
+  classoffset=0,keywords={sigma_k},keywordstyle=\spadsigmak,
+  classoffset=1,keywords={sigma},  keywordstyle=\spadreplace{$\sigma$},
+  classoffset=2,keywords={mu},     keywordstyle=\spadreplace{$\mu$},
+  classoffset=3,keywords={phi},    keywordstyle=\spadreplace{$\varphi$},
+]}
+
+% We cannot have verbose-type commands inside other commands.
+\let\spadfootnotesave\footnote
+\def\footnote#1{\begingroup
+  \def\spad{\textspadexpr}%
+  \def\spadop{\textspadop}%
+  \def\spadfunFrom##1{\textspadfun{##1}\@gobble}%
+  \def\spadtype{\textspadtype}%
+  \def\spadSyntax{\textspadsyntax}%
+  \spadfootnotesave{#1}\endgroup}
+
+\let\spadcaptionsave\caption
+\def\caption#1{\begingroup
+  \def\spadfunFrom##1{\textspadfun{##1}\@gobble}
+  \def\spadfun{\textspadfun}
+  \def\spadtype{\textspadtype}%
+  \spadcaptionsave{#1}\endgroup}
+
+\NewDocumentCommand{\spadfunX}{v}{\spadfun`#1!`}
+\NewDocumentCommand{\spadfunFrom}{v v}{\spadfun`#1`}
+\NewDocumentCommand{\spadfunFromX}{v v}{\formatfun{#1!}{#2}}%$
+\NewDocumentCommand{\spadopFrom}{v v}{\formatop{#1}{#2}}
+\NewDocumentCommand{\aliascon}{v v}{\spadtype`#1`}
+
+
+
+\def\void{the unique value of \formattype{Void}{}}
+\def\showBlurb#1{Issue the system command \texttt{)show #1} %(
+  to display the full list of operations defined by \formattype{#1}{}.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\fakeAxiomFun#1{{\bf #1}}              % not really in library
+\def\pspadfun{\fakeAxiomFun}
+
+
+\def\userfun#1{\index{example functions!#1 @\begingroup \string\bf{} #1 \endgroup}{\bf #1}}
+
+\def\exptypeindex#1{\index{library!constructors!#1 @\begingroup \string\sf{} #1 \endgroup}}
+\def\syscmdindex#1{\index{system commands!#1 @\begingroup \string\tt{} )#1 \endgroup}}
+
+% Some macros for Jenks' glossary
+\newenvironment{items}{\begin{itemize}}{\end{itemize}}
+
+% Environments
+\newenvironment{discard}{\comment}{\endcomment}
+% TODO: should get rid of the following
+\newenvironment{htonly}{\comment}{\endcomment}
+\newenvironment{texonly}{}{}
+
+
+
+
+% This environment provides a simple, unbulleted list, one level deep.
+\newenvironment{simpleList}%
+  {\begin{list}{}{\itemsep 2pt \topsep \parskip \parsep \z@
+   \leftmargin 1pc \partopsep \z@ \parskip \z@
+   \if@twocolumn\else\linewidth\textwidth\fi}}
+  {\end{list}\vskip -\parskip}
+
+% ------------------------------------------------------------------------
+% the code, comments, line numbers environment
+% ------------------------------------------------------------------------
+
+% ------------------------------------------------------------------------
+% the two-column comment and \spadcommand macros
+% ------------------------------------------------------------------------
+
+% for some reason morekeywords swallows a space, so we reintroduce it here
+\def\formatResultType#1{\begingroup
+  \begin{ColoredBackground}{bgresulttype}
+    \hfill
+    \lstinline[%
+      basicstyle=\footnotesize\sffamily\color{blue},%
+      literate={->}{$\to$}{2},%
+      breaklines=true,]`#1`%
+  \end{ColoredBackground}\endgroup}
+
+\lstdefinelanguage{spad}{basicstyle=\footnotesize\ttfamily,%
+  comment=[l]--,commentstyle=\footnotesize\color{blue},texcl,%
+  escapebegin=\rmfamily}
+
+\lstset{language={},basicstyle=\footnotesize\ttfamily}
+
+\lstnewenvironment{spadsrc}%
+  {\lstset{language=spad,backgroundcolor=\color{bgspadinputcolor},%
+      breaklines=true,breakatwhitespace=true,prebreak={\_}}}%
+  {}
+\lstnewenvironment{SysCmdOutput}%
+  {\lstset{backgroundcolor=\color{bgmessagecolor}}}%
+  {}
+\lstnewenvironment{MessageOutput}%
+  {\lstset{backgroundcolor=\color{bgmessagecolor}}}%
+  {}
+
+%% This one does not reset the line numbers. Does have horizontal rules.
+\lstnewenvironment{xmpLinesNoReset}%
+  {\lstset{language=spad,backgroundcolor=\color{bgcode},numbers=left,frame=tb,
+      firstnumber=last}%
+    \def\spad{\textspadexpr}}
+  {}
+
+%% This one does reset the line numbers. Does have horizontal rules.
+\lstnewenvironment{xmpLines}%
+  {\lstset{language=spad,backgroundcolor=\color{bgcode},numbers=left,frame=tb}%
+    \def\spad{\textspadexpr}}
+  {}
+
+%% This one does not reset the line numbers. Does not have horizontal rules.
+\lstnewenvironment{xmpLinesNoResetPlain}%
+  {\lstset{language=spad,backgroundcolor=\color{bgcode},numbers=left,
+      firstnumber=last}%
+    \def\spad{\textspadexpr}}
+  {}
+
+%% This one does reset the line numbers. Does not have horizontal rules.
+\lstnewenvironment{xmpLinesPlain}%
+  {\lstset{language=spad,backgroundcolor=\color{bgcode},numbers=left}%
+    \def\spad{\textspadexpr}}
+  {}
+
+%% xmpLines with caption
+\lstnewenvironment{figXmpLines}[1][]%
+  {\lstset{language=spad,backgroundcolor=\color{bgcode},numbers=left,#1}%
+    \def\spad{\textspadexpr}}
+  {}
+
+
+
+
+
+\def\MakeFramed{\begingroup}
+\def\endMakeFramed{\endgroup}%
+\IfFileExists{framed.sty}{%
+  \usepackage{framed}[2003/07/21 v 0.8a]%
+}{%
+  \PackageWarning{fricas.sty}{framed.sty not found}%
+}
+\newenvironment{ColoredBackground}[1]%
+  {\@ifundefined{background#1}%
+     {\def\FrameCommand{}}%
+     {\def\FrameCommand{\csname background#1\endcsname}}%
+   \trivlist\item\MakeFramed{}}%
+  {\endMakeFramed\endtrivlist}
+\def\backgroundColor#1#2#{\background@Color{#1}{#2}}
+\def\background@Color#1#2#3{%
+  \expandafter\gdef\csname background#1\endcsname{\@backgroundColor{#1}#2{#3}}}
+\def\@backgroundColor#1{\colorbox}%
+\renewcommand{\theequation}{\arabic{equation}}
+
+%--rhx: TODO: The xtc stuff must be simplified. There is no real need
+%--rhx: for 4 environments.
+\newenvironment{xtc}{}{}
+\newenvironment{noOutputXtc}% Silence also messages ... no output.
+  {\renewenvironment{MessageOutput}{\comment}{\endcomment}}%
+  {}
+\newenvironment{nullXtc}{}{}
+\newenvironment{psXtc}{}{}
+
+% An appropriate definiton of this environment might produce a similar
+% look for the explanation of the tutorial spad commands as it was in
+% the original AXIOM book.
+\newenvironment{xtccomment}{}{}%
+
+\hyphenation{
+AXIOM
+Distributed-Mul-ti-var-iate-Poly-nomial
+Double-Float
+draw-Vector-Field
+Expression
+Founda-tion
+Full-Partial-Fraction-Expansion
+General-Distributed-Mul-ti-var-iate-Poly-nomial
+Homo-gen-eous-Dis-tributed-Multi-var-i-ate-Pol-y-nomial
+Homo-gen-eous-Distributed-Mul-ti-var-iate-Poly-nomial
+Hyper-Doc
+In-dexed-Aggre-gate
+Integer
+Lin-ear-Aggre-gate
+Linear-Ordinary-Differential-Operator
+localSymbols
+Machine-Complex
+Machine-Float
+Matrix
+Mul-ti-var-iate-Poly-nomial
+New-Distributed-Mul-ti-var-iate-Poly-nomial
+One-Dimensional-Array
+Quad-rat-ic-Form
+set-Clip-Value
+set-Imag-Steps
+set-Real-Steps
+shallowly-Mutable
+Single-Integer
+sub-program
+SUB-ROUTINE
+SUB-ROUTINEs
+Uni-var-iate-Poly-nomial
+}
+
+\pagestyle{headings}
+\makeindex
+
+% For chapter 6 (User-Defined Functions, Macros and Rules)
+\newcommand{\pred}[1]{\subscriptIt{pred}{#1}}
+\newcommand{\expr}[1]{\subscriptIt{expression}{#1}}
+
+% For chapter 7 (Graphics)
+\newcommand{\optArg}[1]{{{\tt [}{#1}{\tt ]}}}
+\newcommand{\argDef}[1]{{\tt ({#1})}}
+\newcommand{\funArgs}[1]{{\tt ({\small\it {#1}})}\newline}
+
+% For chapter 16 (\Language{} System Commands)
+\newcommand{\lanb}{{\tt [}}
+\newcommand{\ranb}{{\tt ]}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Customization area
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setlength{\topmargin}{\z@}
+\setlength{\oddsidemargin}{\z@}
+\setlength{\evensidemargin}{\z@}
+\addtolength{\textwidth}{35mm}
+
+\parskip .5\baselineskip \parindent \z@
+\def\baselinestretch{1.0}
+\raggedbottom
+
+% color settings
+\definecolor{bgspadinputcolor}{rgb}{0.95,1,0.95} % (green)  spad input boxes
+\definecolor{bgmessagecolor}{rgb}{1,0.95,0.95}   % (rose)   output messages
+\definecolor{bgcode}{rgb}{1,1,0.7}               % (yellow) spad source code
+\backgroundColor{bgmathoutput}[rgb]{0.95,0.95,1} % (gray)   spad output
+\backgroundColor{bgresulttype}[rgb]{0.98,0.98,1} % (gray)   result type

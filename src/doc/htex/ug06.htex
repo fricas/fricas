@@ -31,11 +31,6 @@
 % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-\texht{\setcounter{chapter}{5}}{} % Chapter 6
-
-\newcommand{\pred}[1]{\subscriptIt{pred}{#1}}
-\newcommand{\expr}[1]{\subscriptIt{expression}{#1}}
-
 % *********************************************************************
 \head{chapter}{User-Defined Functions, Macros and Rules}{ugUser}
 % *********************************************************************
@@ -285,9 +280,9 @@ For example, \spad{- 2 + 5} converts to \spad{(- 2) + 5} producing
 the value \spad{3}.
 Any prefix function taking two arguments can be written in
 an infix manner by putting an
-ampersand (\spadSyntax{\&}) before the name.
+ampersand (\spadSyntax{&}) before the name.
 Thus \spad{D(2*x,x)} can be written as
-\spad{2*x \&D x} returning \spad{2}.
+\spad{2*x &D x} returning \spad{2}.
 
 Every function in \Language{} is identified by
 a \spadgloss{name} and \spadgloss{type}.\footnote{An exception is
@@ -295,11 +290,11 @@ an ``anonymous function''
 discussed in
 \spadref{ugUserAnon}.}
 The type of a function is always a mapping of the form
-\spadsig{Source}{Target}
-where \spad{Source} and \spad{Target} are types.
+\spadtype{Source->Target}
+where \spadtype{Source} and \spadtype{Target} are types.
 To enter a type from the keyboard, enter the arrow by using
 a hyphen \spadSyntax{-} followed by a greater-than sign
-\spadSyntax{>}, e.g. {\tt Integer -> Integer}.
+\spadSyntax{>}, e.g. spadtype{Integer -> Integer}.
 
 Let's go back to \spadop{+}.
 There are many \spadop{+} functions in the
@@ -328,10 +323,10 @@ function objects.
 \beginImportant
 A function is an object of type
 \begin{center}
-\spadsig{Source}{Type}
+\spadtype{Source->Type}
 \end{center}
-where \spad{Source} and \spad{Target} can be any type.
-A common type for \spad{Source} is
+where \spadtype{Source} and \spadtype{Target} can be any type.
+A common type for \spadtype{Source} is
 (\subscriptIt{T}{1}, \ldots, \subscriptIt{T}{n}),
 to indicate a function of \spad{n} arguments.
 \endImportant
@@ -442,7 +437,7 @@ Create a stream of those values of \spad{i} such that
 \spadcommand{mersenneIndex := [n for n in 1.. | prime?(mersenne(n))] \bound{mersenneIndex}\free{mersenne}}
 }
 \xtc{
-Finally, write a function that returns the \eth{\spad{n}} Mersenne
+Finally, write a function that returns the \eth{n} Mersenne
 prime.
 }{
 \spadcommand{mersennePrime n == mersenne mersenneIndex(n) \free{mersenne mersenneIndex}\bound{mersennePrime}}
@@ -460,9 +455,8 @@ If you declare the type of a function, you can apply
 it to any data that can be converted to the source type
 of the function.
 
-\labelSpace{2pc}
 \xtc{
-Define \userfun{f} with type \spadsig{Integer}{Integer}.
+Define \userfun{f} with type \spadtype{Integer->Integer}.
 }{
 \spadcommand{f(x: Integer): Integer == x + 1 \bound{f}}
 }
@@ -543,7 +537,7 @@ However, note that the integer is not the name \spad{n} itself, but
 the value that you assign to \spad{n}.
 
 Similarly, you can declare a variable \spad{f} in your workspace to have
-type \spadsig{Integer}{Integer}, then assign \spad{f}, through a definition
+type \spadtype{Integer->Integer}, then assign \spad{f}, through a definition
 or an assignment of an anonymous function.
 You then speak of the function \spad{f}.
 However, the function is not \spad{f}, but the value that you
@@ -578,7 +572,6 @@ delayed assignments.
 In this section we show the difference between delayed
 assignments and functions of no arguments.
 
-\labelSpace{2pc}
 \xtc{
 A function of no arguments is sometimes called a {\it nullary function.}
 }{
@@ -791,12 +784,12 @@ When a function is compilable, you have the choice of whether it is
 compiled to \Lisp{} and then interpreted by the \Lisp{}
 interpreter or then further compiled from \Lisp{} to machine code.
 \index{machine code}
-The option is controlled via \spadcmd{)set functions compile}.
+The option is controlled via \spadsys{)set functions compile}.
 \syscmdindex{set function compile}
-Issue \spadcmd{)set functions compile on} to compile all the way to
+Issue \spadsys{)set functions compile on} to compile all the way to
 machine code.
 With
-the default setting \spadcmd{)set functions compile off},
+the default setting \spadsys{)set functions compile off},
 \Language{} has its \Lisp{} code interpreted
 because the overhead of further compilation is larger than the run-time
 of most of the functions our users have defined.
@@ -806,7 +799,7 @@ give you the best performance in your particular application.
 For example, if you are writing functions for graphics applications
 where hundreds of points are being computed, it is almost certainly true
 that you will get the best performance by issuing
-\spadcmd{)set functions compile on}.
+\spadsys{)set functions compile on}.
 
 % *********************************************************************
 \head{section}{Piece-Wise Function Definitions}{ugUserPiece}
@@ -955,7 +948,7 @@ What is the \Language{}'s definition of \spad{eleven}?
 
 Here are the details about how \Language{} creates a function from its
 pieces.
-\Language{} converts the \eth{\spad{i}} piece of a function definition into a
+\Language{} converts the \eth{i} piece of a function definition into a
 conditional expression of the form: \spad{if} \pred{i} \spad{then}
 \expr{i}.
 If any new piece has a \pred{i} that is identical\footnote{after all
@@ -1046,12 +1039,12 @@ What are the first ten values of \spad{s}?
 % \spadcommand{)display value s\free{rf4}}
 % }
 \Language{} can create infinite streams in the positive direction (for
-example, for index values \spad{0,1, \ldots}) or negative direction (for
-example, for index values \spad{0,-1,-2, \ldots}).
+example, for index values \mathOrSpad{0,1, \ldots}) or negative direction (for
+example, for index values \mathOrSpad{0,-1,-2, \ldots}).
 Here we would like a stream of values of \spad{s(n)} that is infinite in
 both directions.
-The function \spad{t(n)} below returns the \eth{\spad{n}} term of the infinite
-stream \spad{[s(0), s(1), s(-1), s(2), s(-2), \ldots].}
+The function \spad{t(n)} below returns the \eth{n} term of the infinite
+stream \mathOrSpad{[s(0), s(1), s(-1), s(2), s(-2), \ldots].}
 Its definition has three pieces.
 \xtc{
 Define the initial term.
@@ -1147,7 +1140,8 @@ You can use such ``constant'' arguments for integers,
 strings, and quoted symbols.
 \index{constant function argument}
 The \spadtype{Boolean} values \spad{true} and \spad{false} can also be used
-if qualified with ``\spad{@}'' or ``\spad{\$}'' and \spadtype{Boolean}.
+if qualified with ``\spad{@}'' or ``\spad{$}'' %$
+and \spadtype{Boolean}.
 The following are all valid function definition fragments using
 constant arguments.
 \begin{verbatim}
@@ -1204,7 +1198,7 @@ By default, \Language{} does not save the values of any function.
 \index{function!caching values}
 You can cause it to save values and not to recompute unnecessarily
 \index{remembering function values}
-by using \spadcmd{)set functions cache}.
+by using \spadsys{)set functions cache}.
 \syscmdindex{set functions cache}
 This should be used before the functions are defined or, at least, before
 they are executed.
@@ -1215,7 +1209,7 @@ If you then give a list of names of functions, the caching
 only affects those functions.
 Use no list of names when you want to define the default
 behavior for functions not specifically mentioned in other
-\spadcmd{)set functions cache} statements.
+\spadsys{)set functions cache} statements.
 If you give no list of names, all functions will have the caching behavior.
 If you explicitly turn on caching for one or more names, you must
 explicitly turn off caching for those names when you want to stop
@@ -1235,7 +1229,7 @@ This is a sample definition for \userfun{f}.
 \xtc{
 A message is displayed stating what \userfun{f} will cache.
 }{
-\spadcommand{f(4) \free{}\free{cache}}
+\spadcommand{f(4) \free{cache}}
 }
 \xtc{
 This causes all other functions to have all computed values saved by
@@ -1344,7 +1338,7 @@ as many as \texht{$10^{104}$}{\spad{10^104}} operations!
 By default, \Language{} transforms any recurrence relation it recognizes
 into an iteration.
 Iterations are efficient.
-To compute the value of the \eth{\spad{n}}
+To compute the value of the \eth{n}
 term of a recurrence relation using an iteration requires only
 \spad{n} function calls.\footnote{If
 you compare the speed of our \userfun{fib} function
@@ -1363,7 +1357,7 @@ To turn off this special recurrence relation compilation, issue
 To turn it back on, substitute ``{\tt on}'' for ``{\tt off}''.
 
 The transformations that \Language{} uses for \userfun{fib} caches the
-last two values.\footnote{For a more general \eth{\spad{k}} order recurrence
+last two values.\footnote{For a more general \eth{k} order recurrence
 relation, \Language{} caches the last \spad{k} values.}
 If, after computing a value for \userfun{fib}, you ask
 for some larger value, \Language{} picks up the cached values
@@ -1561,7 +1555,6 @@ or are written in a piece-wise manner.
 The body of the function can be a block, as discussed in
 \spadref{ugLangBlocks}.
 
-\labelSpace{1pc}
 \xtc{
 Here is a short function that swaps two elements of a list,
 array or vector.
@@ -1593,12 +1586,12 @@ You see that the second and fourth elements are interchanged.
 Using this, we write a couple of different sort functions.
 First, a simple bubble sort.
 \index{sort!bubble}
-The operation \spadopFrom{\#}{List} returns the number of elements in
+The operation \spadopFrom{#}{List} returns the number of elements in
 an aggregate.
 }{
 \begin{spadsrc}[\bound{bubbleSort}]
 bubbleSort(m) ==
-  n := \#m
+  n := #m
   for i in 1..(n-1) repeat
     for j in n..(i+1) by -1 repeat
       if m.j < m.(j-1) then swap(m,j,j-1)
@@ -1624,15 +1617,15 @@ Moreover, \spad{m} is destructively changed to be the sorted version.
 \xtc{
 This function implements an insertion sort.
 \index{sort!insertion}
-The basic idea is to traverse the list and insert the \eth{\spad{i}}
+The basic idea is to traverse the list and insert the \eth{i}
 element in its correct position among the \spad{i-1} previous
 elements.
 Since we start at the beginning of the list, the list elements before the
-\eth{\spad{i}} element have already been placed in ascending order.
+\eth{i} element have already been placed in ascending order.
 }{
 \begin{spadsrc}[\bound{insertionSort}]
 insertionSort(m) ==
-  for i in 2..\#m repeat
+  for i in 2..#m repeat
     j := i
     while j > 1 and m.j < m.(j-1) repeat
       swap(m,j,j-1)
@@ -1655,10 +1648,10 @@ As with our bubble sort, this is a destructive function.
 }
 
 Neither of the above functions is efficient for sorting large lists since
-they reference elements by asking for the \eth{\spad{j}} element of the
+they reference elements by asking for the \eth{j} element of the
 structure \spad{m}.
 %For lists, compute \spad{m.(j+1) = rest(m,j).first}, and thus, starting at
-%the first node of \spad{m}, walk down to the \eth{\spad{j}} node, then call
+%the first node of \spad{m}, walk down to the \eth{j} node, then call
 %\spadfun{first}.
 
 \xtc{
@@ -1721,7 +1714,6 @@ in the
 workspace.
 \index{global variable}
 
-\labelSpace{1pc}
 \xtc{
 This is a global workspace variable.
 }{
@@ -1975,9 +1967,16 @@ What is the 1000th Fibonacci number?
 
 As an exercise, we suggest you write a function in an iterative
 style that computes the value of the recurrence relation
-\texht{$p(n) = p(n-1) - 2 \, p(n-2) + 4 \, p(n-3)$}{\spad{p(n) = p(n-1) - 2*p(n-2) + 4*p(n-3)}}
+\begin{texonly}
+$p(n) = p(n-1) - 2 \, p(n-2) + 4 \, p(n-3)$
+\end{texonly}
+\begin{htonly}
+\spad{p(n) = p(n-1) - 2*p(n-2) + 4*p(n-3)}
+\end{htonly}
 having the initial values
-\texht{$p(1) = 1,\, p(2) = 3 \hbox{ and } p(3) = 9.$}{\spad{p(1) = 1, p(2) = 3 {\rm and} p(3) = 9.}}
+\mathOrSpad{p(1) = 1},
+\mathOrSpad{p(2) = 3}, and
+\mathOrSpad{p(3) = 9},
 How would you write the function using an element
 \spadtype{OneDimensionalArray} or \spadtype{Vector}
 to hold the previously computed values?
@@ -1993,10 +1992,11 @@ An {\it anonymous function} is a function that is
 defined
 \index{anonymous function}
 by giving a list of parameters, the ``maps-to'' compound
-\index{+-> @{\tt +->}}
-symbol \spadSyntax{+->} \texht{(from the mathematical symbol
-$\mapsto$)}{},
-and by an expression involving the parameters, the evaluation of
+symbol \spadSyntax{+->}%
+\begin{texonly}%
+(from the mathematical symbol $\mapsto$)%
+\end{texonly}%
+, and by an expression involving the parameters, the evaluation of
 which determines the return value of the function.
 
 \begin{center}
@@ -2179,7 +2179,6 @@ anonymous function must be declared.
 This example shows how you can use \Language{} to organize a database of
 lineage data and then query the database for relationships.
 
-\labelSpace{1.5pc}
 \xtc{
 The database is entered as ``assertions'' that are really
 pieces of a function definition.
@@ -2240,7 +2239,7 @@ Well, a great-grandparent is a grandparent of a person who has children.
 }{
 \begin{spadsrc}[\free{d6}\bound{d7}]
 greatGrandParents == [x for x in people |
-  reduce(\_or,[not empty? children(y) for y in grandchildren(x)],false)]
+  reduce(_or,[not empty? children(y) for y in grandchildren(x)],false)]
 \end{spadsrc}
 }
 \xtc{
@@ -2290,7 +2289,6 @@ Pascal's triangle.
 It demonstrates the use of piece-wise definitions and some output
 operations you probably haven't seen before.
 
-\labelSpace{1pc}
 \xtc{
 To make these output operations
 available, we have to \spadgloss{expose} the domain
@@ -2325,7 +2323,7 @@ pascal(i,j | 1 < i and i < j) ==
 Now that we have defined the coefficients in Pascal's triangle,
 let's write a couple of one-liners to display it.
 \xtc{
-First, define a function that gives the \eth{\spad{n}} row.
+First, define a function that gives the \eth{n} row.
 }{
 \spadcommand{pascalRow(n) == [pascal(i,n) for i in 1..n] \bound{pascalRow}\free{pas3}}
 }
@@ -2386,7 +2384,7 @@ backwards and forwards.
 For example, the string ``Madam I'm Adam'' is a palindrome (excluding blanks
 and punctuation) and so is the number \spad{123454321.}
 The definition works for any datatype that has \spad{n} components that
-are accessed by the indices \spad{1\ldots n}.
+are accessed by the indices \mathOrSpad{1\ldots n}.
 
 \xtc{
 Here is the definition for \userfun{pal?}.
@@ -2469,9 +2467,13 @@ Well, let's test them all!
 % *********************************************************************
 
 A common mathematical formula is
-\texht{\narrowDisplay{%
-\log(x) + \log(y) = \log(x y) \quad\forall \, x \hbox{\ and\ } y.}}{
-\spad{log(x) + log(y) == log(x * y)} for any \spad{x} and \spad{y}.}
+\begin{texonly}
+\begin{displaymath}
+\log(x) + \log(y) = \log(x y) \quad\forall \, x \hbox{\ and\ } y.
+\end{displaymath}
+\begin{htonly}
+\spad{log(x) + log(y) == log(x * y)} for any \spad{x} and \spad{y}.
+\end{htonly}
 The presence of
 \texht{``$\forall$''}{the word ``any''}
 indicates that \spad{x} and \spad{y} can stand for arbitrary mathematical
@@ -2497,7 +2499,7 @@ right-side side is called its \spadgloss{substitution}.
 
 \xtc{
 Create a rewrite rule named \userfun{logrule}.
-The generated symbol beginning with a \spadSyntax{\%} is a place-holder
+The generated symbol beginning with a \spadSyntax{%} is a place-holder
 for any other terms that might occur in the sum.
 }{
 \spadcommand{logrule := rule log(x) + log(y) == log(x * y) \bound{logrule}}
@@ -2539,7 +2541,7 @@ The details of what happens will be covered later.
 The customary \Language{} notation for patterns is actually a shorthand for a
 longer, more general notation.
 Pattern variables can be made explicit by using a percent
-(\spadSyntax{\%}) as the first character of the variable name.
+(\spadSyntax{%}) as the first character of the variable name.
 To say that a name stands for itself, you can prefix that name with a quote
 operator (\spadSyntax{'}).
 Although the current \Language{} parser does not let you quote an operation
@@ -2582,8 +2584,14 @@ assigned to a variable and applied to expressions to transform them.
 Rewrite rules can be collected
 into rulesets so that a set of rules can be applied at once.
 Here is another simplification rule for logarithms.
-\texht{\narrowDisplay{y \log(x) = \log(x^y) \quad\forall \, x \hbox{\ and\ } y.}}{
-\spad{y * log(x) == log(x ^ y)} for any \spad{x} and \spad{y}.}
+\begin{texonly}
+\begin{displaymath}
+y \log(x) = \log(x^y) \quad\forall \, x \text{ and } y.
+\end{displaymath}
+\end{texonly}
+\begin{htonly}
+\spad{y * log(x) == log(x ^ y)} for any \spad{x} and \spad{y}.
+\end{htonly}
 If instead of giving a single rule following the reserved word \spad{rule}
 you give a ``pile'' of rules, you create
 what is called a {\it ruleset.}
@@ -2617,7 +2625,14 @@ above examples.
 Often you want a variable only to match expressions
 satisfying some predicate.
 For example, we may want to apply the transformation
-\texht{\narrowDisplay{y \log(x) = \log(x^y)}}{\spad{y * log(x) == log(x ^ y)}}
+\begin{texonly}
+\begin{displaymath}
+y \log(x) = \log(x^y)
+\end{displaymath}
+\end{texonly}
+\begin{htonly}
+\spad{y * log(x) == log(x ^ y)}
+\end{htonly}
 only when \spad{y} is an integer.
 %
 The way to restrict a pattern variable \spad{y} by a predicate \spad{f(y)}
@@ -2706,10 +2721,16 @@ product to match \spad{0} or \spad{1}.
 If so, prefix its name
 with a \spadSyntax{?} whenever it appears in a left-hand side of a rule.
 For example, consider the following rule for the exponential integral:
-\texht{\narrowDisplay{\int \left(\frac{y+e^x}{x}\right)\: dx = \int \frac{y}{x}\: dx + \hbox{\rm Ei}(x)
-\quad\forall \, x \hbox{\ and\ } y.}}{
+\begin{texonly}
+\begin{displaymath}
+  \int \left(\frac{y+e^x}{x}\right)\: dx = \int \frac{y}{x}\: dx + \hbox{\rm Ei}(x)
+  \quad\forall \, x \hbox{\ and\ } y.
+\end{displaymath}
+\end{texonly}
+\begin{htonly}
 \spad{integral((y + exp x)/x, x) == integral(y/x, x) + Ei x}
-for any \spad{x} and \spad{y}.}
+for any \spad{x} and \spad{y}.
+\end{htonly}
 This rule is valid for \spad{y = 0}.
 One solution is to create a \spadtype{Ruleset} with two
 rules, one with and one without \spad{y}.
@@ -2735,7 +2756,7 @@ Apply rule \spad{eirule} to an integral with this term.
 
 Here is one final adornment you will find useful.
 When matching a pattern of the form \spad{x + y} to an expression containing a
-long sum of the form \spad{a +\ldots+ b}, there is no way to predict in
+long sum of the form \mathOrSpad{a +\ldots+ b}, there is no way to predict in
 advance which subset of the sum  matches \spad{x} and which matches
 \spad{y}.
 Aside from efficiency, this is generally unimportant since the rule holds for
@@ -2790,12 +2811,12 @@ Summary of pattern variable adornments:
 \vskip .5\baselineskip
 \begin{tabular}{@{}ll}
 {\tt (x | predicate?(x))} &
-  means that the substutution \spad{s} for \spad{x}\\ &
-  must satisfy \spad{predicate?(s) = true.} \\
+  means that the substitution \mathOrSpad{s} for \mathOrSpad{x}\\ &
+  must satisfy \textspadexpr{predicate?(s) = true}. \\
 {\tt ?x} &
-  means that \spad{x} can match an identity \\ & element (0 or 1). \\
+  means that \mathOrSpad{x} can match an identity \\ & element (0 or 1). \\
 {\tt :x} &
-  means that \spad{x} can match several terms \\ & in a sum.
+  means that \mathOrSpad{x} can match several terms \\ & in a sum.
 \end{tabular}
 \endImportant
 \end{texonly}

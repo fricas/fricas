@@ -30,24 +30,6 @@
 % NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-\texht{\setcounter{chapter}{10}}{} % Chapter 11
-
-\begin{texonly}
-\hyphenation{
-In-dexed-Aggre-gate
-Lin-ear-Aggre-gate
-shallowly-Mutable
-draw-Vector-Field
-set-Real-Steps
-set-Imag-Steps
-set-Clip-Value
-}
-\begin{discard}
-)expose DRAWCX
-\end{discard}
-\end{texonly}
-
 % Here and throughout the book we should use the terminology
 % "type of a function", rather than talking about source and target.
 % This is how the brave new world of SMWATT regards them. A function
@@ -92,44 +74,42 @@ basis.
 A new, faster compiler will be available in version 2.0
 of \Language{}.
 
-\begin{figXmpLines}
-\label{pak-cdraw}
-\xmpLine{C      ==> Complex DoubleFloat}{All constructors used in a file}
-\xmpLine{S      ==> Segment DoubleFloat}{\quad{}must be spelled out in full}
-\xmpLine{INT    ==> Integer}{\quad{}unless abbreviated by macros}
-\xmpLine{DFLOAT ==> DoubleFloat}{\quad{}like these at the top of}
-\xmpLine{VIEW3D ==> ThreeDimensionalViewport}{\quad{}a file.}
-\xmpLine{CURVE  ==> List List Point DFLOAT}{}
-\xmpLine{}{}
-\xmpLine{)abbrev package DRAWCX DrawComplex}{Identify kinds and abbreviations}
-\xmpLine{DrawComplex(): Exports == Implementation where}{Type definition begins here.}
-\xmpLine{}{}
-\xmpLine{  Exports == with}{Export part begins.}
-\xmpLine{    drawComplex: (C -> C,S,S,Boolean) -> VIEW3D}{Exported Operations}
-\xmpLine{    drawComplexVectorField: (C -> C,S,S) -> VIEW3D}{}
-\xmpLine{    setRealSteps: INT -> INT}{}
-\xmpLine{    setImagSteps: INT -> INT}{}
-\xmpLine{    setClipValue: DFLOAT-> DFLOAT}{}
-\xmpLine{}{}
-\xmpLine{  Implementation == add}{Implementation part begins.}
-\xmpLine{    arrowScale : DFLOAT := (0.2)::DFLOAT --relative size}{Local variable 1.}
-\xmpLine{    arrowAngle : DFLOAT := pi()-pi()/(20::DFLOAT)}{Local variable 2.}
-\xmpLine{    realSteps  : INT := 11 --\# real steps}{Local variable 3.}
-\xmpLine{    imagSteps  : INT := 11 --\# imaginary steps}{Local variable 4.}
-\xmpLine{    clipValue  : DFLOAT  := 10::DFLOAT --maximum vector length}{Local variable 5.}
-\xmpLine{}{}
-\xmpLine{    setRealSteps(n) == realSteps := n}{Exported function definition 1.}
-\xmpLine{    setImagSteps(n) == imagSteps := n}{Exported function definition 2.}
-\xmpLine{    setClipValue(c) == clipValue := c}{Exported function definition 3.}
-\xmpLine{}{}
-\xmpLine{    clipFun: DFLOAT -> DFLOAT --Clip large magnitudes.}{}
-\xmpLine{    clipFun(x) == min(max(x, -clipValue), clipValue)}{Local function definition 1.}
-\xmpLine{}{}
-\xmpLine{    makeArrow: (Point DFLOAT,Point DFLOAT,DFLOAT,DFLOAT) -> CURVE}{}
-\xmpLine{    makeArrow(p1, p2, len, arg) == ...}{Local function definition 2.}
-\xmpLine{}{}
-\xmpLine{    drawComplex(f, realRange, imagRange, arrows?) == ...}{Exported function definition 4.}
-\caption{The DrawComplex package.}\label{fig-pak-cdraw}
+\begin{figXmpLines}[caption={The DrawComplex package.},label={fig-pak-cdraw}]
+C      ==> Complex DoubleFloat                       -- All constructors used in a file
+S      ==> Segment DoubleFloat                       -- \quad{}must be spelled out in full
+INT    ==> Integer                                   -- \quad{}unless abbreviated by macros
+DFLOAT ==> DoubleFloat                               -- \quad{}like these at the top of
+VIEW3D ==> ThreeDimensionalViewport                  -- \quad{}a file.
+CURVE  ==> List List Point DFLOAT
+
+)abbrev package DRAWCX DrawComplex                   -- Identify kinds and abbreviations
+DrawComplex(): Exports == Implementation where       -- Type definition begins here.
+
+  Exports == with                                    -- Export part begins.
+    drawComplex: (C -> C,S,S,Boolean) -> VIEW3D      -- Exported Operations
+    drawComplexVectorField: (C -> C,S,S) -> VIEW3D
+    setRealSteps: INT -> INT
+    setImagSteps: INT -> INT
+    setClipValue: DFLOAT-> DFLOAT
+
+  Implementation == add                              -- Implementation part begins.
+    arrowScale : DFLOAT := (0.2)::DFLOAT             -- (relative size) Local variable 1.
+    arrowAngle : DFLOAT := pi()-pi()/(20::DFLOAT)    -- Local variable 2.
+    realSteps  : INT := 11                           -- (real steps) Local variable 3.
+    imagSteps  : INT := 11                           -- (imaginary steps) Local variable 4.
+    clipValue  : DFLOAT  := 10::DFLOAT               -- (maximum vector length) Local variable 5.
+
+    setRealSteps(n) == realSteps := n                -- Exported function definition 1.
+    setImagSteps(n) == imagSteps := n                -- Exported function definition 2.
+    setClipValue(c) == clipValue := c                -- Exported function definition 3.
+
+    clipFun: DFLOAT -> DFLOAT                        -- Clip large magnitudes.
+    clipFun(x) == min(max(x, -clipValue), clipValue) -- Local function definition 1.
+
+    makeArrow: (Point DFLOAT,Point DFLOAT,DFLOAT,DFLOAT) -> CURVE
+    makeArrow(p1, p2, len, arg) == ...               -- Local function definition 2.
+
+    drawComplex(f, realRange, imagRange, arrows?) == ... -- Exported function definition 4.
 \end{figXmpLines}
 
 % *********************************************************************
@@ -147,15 +127,14 @@ of
 between two and seven capital letters and digits, beginning with a letter.
 See \spadref{ugTypesWritingAbbr} for more information.}
 To be sure that you have not chosen a name or abbreviation already used by
-the system, issue the system command \spadcmd{)show} for both the name and
+the system, issue the system command \spadsys{)show} for both the name and
 the abbreviation.
 \syscmdindex{show}
 
 Once you have named the package and its abbreviation, you can choose any new
 filename you like with extension ``{\bf \spadFileExt{}}'' to hold the
 definition of your package.
-We choose the name {\bf
-drawpak\spadFileExt{}}.
+We choose the name {\bf drawpak\spadFileExt{}}.
 If your application involves more than one package, you
 can put them all in the same file.
 \Language{} assumes no relationship between the name of a library file, and
@@ -163,7 +142,7 @@ the name or abbreviation of a package.
 
 Near the top of the ``{\bf \spadFileExt{}}'' file, list all the
 abbreviations for the packages
-using \spadcmd{)abbrev}, each command beginning in column one.
+using \spadsys{)abbrev}, each command beginning in column one.
 Macros giving names to \Language{} expressions can also be placed near the
 top of the file.
 The macros are only usable from their point of definition until the
@@ -395,7 +374,7 @@ Writing packages requires forethought, care and discipline.
 
 Once you have defined the package \nonLibAxiomType{DrawComplex},
 you need to compile and test it.
-To compile the package, issue the system command \spadcmd{)compile drawpak}.
+To compile the package, issue the system command \spadsys{)compile drawpak}.
 \Language{} reads the file {\bf drawpak\spadFileExt{}}
 and compiles its contents into machine binary.
 If all goes well, the file {\bf DRAWCX.NRLIB} is created in your
@@ -406,7 +385,7 @@ operation.
 \nullXtc{
 Compile the package.
 }{
-\nullspadcommand{)compile drawpak}
+\spadcommand{)compile drawpak}
 }
 \xtc{
 Expose the package.
@@ -438,7 +417,7 @@ Draw the \spadfun{Gamma} function.
 }{
 \spadgraph{drawComplex(f,-\%pi..\%pi,-\%pi..\%pi, false) \free{srs scs f}}
 }{
-\epsffile[0 0 300 300]{../ps/3Dgamma11.ps}
+\epsffile[0 0 300 300]{3Dgamma11.ps}
 }
 
 % *********************************************************************
@@ -473,13 +452,13 @@ bubbleSort(m) ==
 
 What properties of ``lists of integers'' are assumed by the sorting
 algorithm?
-In the first line, the operation \spadfun{\#} computes the maximum index of
+In the first line, the operation \spadop{#} computes the maximum index of
 the list.
 The first obvious property is that \spad{m} must have a finite number of
 elements.
 In \Language{}, this is done
 by your telling \Language{} that \spad{m} has
-the ``attribute'' \spadatt{finiteAggregate}.
+the ``attribute'' \spadtype{finiteAggregate}.
 An \spadgloss{attribute} is a property
 that a domain either has or does not have.
 As we show later in \spadref{ugCategoriesAttributes},
@@ -489,7 +468,7 @@ The operation \spadfunX{swap} swaps elements of \spad{m}.
 Using \Browse{}, you find that \spadfunX{swap} requires its
 elements to come from a domain of category
 \spadtype{IndexedAggregate} with attribute
-\spadatt{shallowlyMutable}.
+\spadtype{shallowlyMutable}.
 This attribute means that you can change the internal components
 of \spad{m} without changing its external structure.
 Shallowly-mutable data structures include lists, streams, one- and
@@ -506,11 +485,11 @@ choose \spad{Index = }\spadtype{Integer}.
 The most general class of domains for which \spad{bubbleSort} and
 \spad{insertionSort} are defined are those of
 category \spadtype{IndexedAggregate(Integer,Entry)} with the two
-attributes \spadatt{shallowlyMutable} and
-\spadatt{finiteAggregate}.
+attributes \spadtype{shallowlyMutable} and
+\spadtype{finiteAggregate}.
 
 Using \Browse{}, you can also discover that \Language{} has many kinds of domains
-with attribute \spadatt{shallowlyMutable}.
+with attribute \spadtype{shallowlyMutable}.
 Those of class \spadtype{IndexedAggregate(Integer,Entry)} include
 \spadtype{Bits}, \spadtype{FlexibleArray}, \spadtype{OneDimensionalArray},
 \spadtype{List}, \spadtype{String}, and \spadtype{Vector}, and also
@@ -542,29 +521,29 @@ This uniform naming convention is used for \Language{} operation
 names that destructively change one or more of their arguments.
 
 \begin{xmpLines}
-\xmpLine{SortPackage(S,A) : Exports == Implementation where}{}
-\xmpLine{  S: Object}{}
-\xmpLine{  A: IndexedAggregate(Integer,S)}{}
-\xmpLine{    with (finiteAggregate; shallowlyMutable)}{}
-\xmpLine{}{}
-\xmpLine{  Exports == with}{}
-\xmpLine{    bubbleSort!: (A,(S,S) -> Boolean) -> A}{}
-\xmpLine{    insertionSort!: (A, (S,S) -> Boolean) -> A}{}
-\xmpLine{}{}
-\xmpLine{  Implementation == add}{}
-\xmpLine{    bubbleSort!(m,f) ==}{}
-\xmpLine{      n := \#m}{}
-\xmpLine{      for i in 1..(n-1) repeat}{}
-\xmpLine{        for j in n..(i+1) by -1 repeat}{}
-\xmpLine{          if f(m.j,m.(j-1)) then swap!(m,j,j-1)}{}
-\xmpLine{      m}{}
-\xmpLine{    insertionSort!(m,f) ==}{}
-\xmpLine{      for i in 2..\#m repeat}{}
-\xmpLine{        j := i}{}
-\xmpLine{        while j > 1 and f(m.j,m.(j-1)) repeat}{}
-\xmpLine{          swap!(m,j,j-1)}{}
-\xmpLine{          j := (j - 1) pretend PositiveInteger}{}
-\xmpLine{      m}{}
+SortPackage(S,A) : Exports == Implementation where
+  S: Object
+  A: IndexedAggregate(Integer,S)
+    with (finiteAggregate; shallowlyMutable)
+
+  Exports == with
+    bubbleSort!: (A,(S,S) -> Boolean) -> A
+    insertionSort!: (A, (S,S) -> Boolean) -> A
+
+  Implementation == add
+    bubbleSort!(m,f) ==
+      n := #m
+      for i in 1..(n-1) repeat
+        for j in n..(i+1) by -1 repeat
+          if f(m.j,m.(j-1)) then swap!(m,j,j-1)
+      m
+    insertionSort!(m,f) ==
+      for i in 2..#m repeat
+        j := i
+        while j > 1 and f(m.j,m.(j-1)) repeat
+          swap!(m,j,j-1)
+          j := (j - 1) pretend PositiveInteger
+      m
 \end{xmpLines}
 
 % *********************************************************************
@@ -582,13 +561,13 @@ The presence of the
 operation \spadop{<} is guaranteed when \spad{S} is an ordered set.
 
 \begin{xmpLines}
-\xmpLine{Exports == with}{}
-\xmpLine{    bubbleSort!: (A,(S,S) -> Boolean) -> A}{}
-\xmpLine{    insertionSort!: (A, (S,S) -> Boolean) -> A}{}
-\xmpLine{}{}
-\xmpLine{    if S has OrderedSet then}{}
-\xmpLine{      bubbleSort!: A -> A}{}
-\xmpLine{      insertionSort!: A -> A}{}
+Exports == with
+    bubbleSort!: (A,(S,S) -> Boolean) -> A
+    insertionSort!: (A, (S,S) -> Boolean) -> A
+
+    if S has OrderedSet then
+      bubbleSort!: A -> A
+      insertionSort!: A -> A
 \end{xmpLines}
 
 In addition to exporting the one-argument sort operations
@@ -601,11 +580,11 @@ corresponding two-argument functions with the operation
 \spadop{<} from \spad{S}.
 
 \begin{xmpLines}
-\xmpLine{  Implementation == add}{}
-\xmpLine{       ...}{}
-\xmpLine{    if S has OrderedSet then}{}
-\xmpLine{      bubbleSort!(m) == bubbleSort!(m,<\$S)}{}
-\xmpLine{      insertionSort!(m) == insertionSort!(m,<\$S)}{}
+  Implementation == add
+       ...
+    if S has OrderedSet then
+      bubbleSort!(m) == bubbleSort!(m,<$S)
+      insertionSort!(m) == insertionSort!(m,<$S)
 \end{xmpLines}
 
 In \spadref{ugUserBlocks}, we give an alternative definition of
@@ -614,7 +593,7 @@ In \spadref{ugUserBlocks}, we give an alternative definition of
 which access to any element requires traversing the list from its
 first node).
 To implement a more efficient algorithm for lists, we need the
-operation \spadfun{setelt!} which allows us to destructively change
+operation \spadfunX{setelt} which allows us to destructively change
 the \spadfun{first} and \spadfun{rest} of a list.
 Using \Browse{}, you find that these operations come from category
 \spadtype{UnaryRecursiveAggregate}.
@@ -625,23 +604,23 @@ We provide two different implementations for
 for list-like structures, another for array-like structures.
 
 \begin{xmpLines}
-\xmpLine{Implementation == add}{}
-\xmpLine{        ...}{}
-\xmpLine{    if A has UnaryRecursiveAggregate(S) then}{}
-\xmpLine{      bubbleSort!(m,fn) ==}{}
-\xmpLine{        empty? m => m}{}
-\xmpLine{        l := m}{}
-\xmpLine{        while not empty? (r := l.rest) repeat}{}
-\xmpLine{           r := bubbleSort! r}{}
-\xmpLine{           x := l.first}{}
-\xmpLine{           if fn(r.first,x) then}{}
-\xmpLine{             l.first := r.first}{}
-\xmpLine{             r.first := x}{}
-\xmpLine{           l.rest := r}{}
-\xmpLine{           l := l.rest}{}
-\xmpLine{         m}{}
-\xmpLine{       insertionSort!(m,fn) ==}{}
-\xmpLine{          ...}{}
+Implementation == add
+        ...
+    if A has UnaryRecursiveAggregate(S) then
+      bubbleSort!(m,fn) ==
+        empty? m => m
+        l := m
+        while not empty? (r := l.rest) repeat
+           r := bubbleSort! r
+           x := l.first
+           if fn(r.first,x) then
+             l.first := r.first
+             r.first := x
+           l.rest := r
+           l := l.rest
+         m
+       insertionSort!(m,fn) ==
+          ...
 \end{xmpLines}
 
 The ordering of definitions is important.
@@ -658,24 +637,24 @@ Another equivalent way to write the capsule is to use an
 \spadkey{if}
 
 \begin{xmpLines}
-\xmpLine{     if A has UnaryRecursiveAggregate(S) then}{}
-\xmpLine{        ...}{}
-\xmpLine{     else}{}
-\xmpLine{        ...}{}
+     if A has UnaryRecursiveAggregate(S) then
+        ...
+     else
+        ...
 \end{xmpLines}
 
 % *********************************************************************
 \head{section}{Testing}{ugPackagesCompiling}
 % *********************************************************************
 %
-Once you have written the package, embed it in a file, for example, {\bf
-sortpak\spadFileExt{}}.
+Once you have written the package, embed it in a file, for example,
+{\bf sortpak\spadFileExt{}}.
 \index{testing}
 Be sure to include an \spad{)abbrev} command at the top of the file:
 \begin{verbatim}
 )abbrev package SORTPAK SortPackage
 \end{verbatim}
-Now compile the file (using \spadcmd{)compile sortpak\spadFileExt{}}).
+Now compile the file (using \spadsys{)compile sortpak\spadFileExt{}}).
 \xtc{
 Expose the constructor.
 You are then ready to begin testing.
@@ -773,26 +752,16 @@ operations from the package become known to the interpreter.
 Each of these operations is expressed as a {\it modemap} in which the type
 \index{modemap}
 of the operation is written in terms of symbolic domains.
-\nullXtc{
+\noOutputXtc{
+}{
+\spadcommand{)expose SORTPAK}
+}
+
+\xtc{
 See the modemaps for \fakeAxiomFun{bubbleSort!}.
 }{
-\nullspadcommand{)display op bubbleSort!}
+\spadcommand{)display op bubbleSort!}
 }
-\begin{verbatim}
-There are 2 exposed functions called bubbleSort! :
-
-   [1] D1 -> D1 from SortPackage(D2,D1)
-         if D2 has ORDSET and D2 has OBJECT and D1 has
-         IndexedAggregate(Integer, D2) with
-              finiteAggregate
-              shallowlyMutable
-
-   [2] (D1,((D3,D3) -> Boolean)) -> D1 from SortPackage(D3,D1)
-         if D3 has OBJECT and D1 has
-         IndexedAggregate(Integer,D3) with
-              finiteAggregate
-              shallowlyMutable
-\end{verbatim}
 
 What happens if you ask for \spad{bubbleSort!([1,-5,3])}?
 There is a unique modemap for an operation named
@@ -816,8 +785,8 @@ An applicable operation has been found!
 Now \Language{} builds the package
 \spadtype{SortPackage(List(Integer), Integer)}.
 According to its definition, this package exports the required
-operation: \fakeAxiomFun{bubbleSort!}: \spadsig{List Integer}{List
-Integer}.
+operation:
+\fakeAxiomFun{bubbleSort!}: \spadtype{List Integer->List Integer}.
 The interpreter then asks the package for a function implementing
 this operation.
 The package gets all the functions it needs (for example,

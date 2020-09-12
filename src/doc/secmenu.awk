@@ -38,20 +38,10 @@ BEGIN                   {
         sectionHandler($0,16,"")
         next
 }
-/^\\headTODO{section}/      {
-        sectionHandler($0,20,"\\bf ")
-        next
-}
-
 /^\\head{subsection}/      {
         subSectionHandler($0,19,"")
         next
 }
-/^\\headTODO{subsection}/      {
-        subSectionHandler($0,23,"\\bf ")
-        next
-}
-
 # otherwise
                 {
         next

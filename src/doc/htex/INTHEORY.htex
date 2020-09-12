@@ -63,7 +63,7 @@ list we just created.
 
 Of course, you can compute the number of divisors of an integer \spad{n},
 usually denoted \spad{d(n)}, and the sum of the divisors of an integer
-\spad{n}, usually denoted \spad{\texht{$\sigma$}{sigma}(n)},
+\spad{n}, usually denoted \spad{sigma(n)},
 \index{sigma@{$\sigma$}}
 without ever listing the divisors of \spad{n}.
 
@@ -80,19 +80,18 @@ In \Language{}, you can simply call the operations
 }
 
 The key is that \spad{d(n)} and
-\spad{\texht{$\sigma$}{sigma}(n)}
+\spad{sigma(n)}
 are ``multiplicative functions.''
 This means that when \spad{n} and \spad{m} are relatively prime, that is, when
 \spad{n} and \spad{m} have no prime factor in common, then
 \spad{d(nm) = d(n) d(m)} and
-\spad{\texht{$\sigma$}{sigma}(nm) = \texht{$\sigma$}{sigma}(n)
-\texht{$\sigma$}{sigma}(m)}.
+\spad{sigma(nm) = sigma(n) sigma(m)}.
 Note that these functions are trivial to compute when \spad{n} is a prime
 power and are computed for general \spad{n} from the prime factorization
 of \spad{n}.
 Other examples of multiplicative functions are
-\spad{\texht{$\sigma_k$}{sigma_k}(n)}, the sum of the \eth{\spad{k}} powers of
-the divisors of \spad{n} and \texht{$\varphi(n)$}{\spad{phi(n)}}, the
+\spad{sigma_k(n)}, the sum of the \eth{k} powers of
+the divisors of \spad{n} and \spad{phi(n)}, the
 number of integers between 1 and \spad{n} which are prime to \spad{n}.
 The corresponding \Language{} operations are called
 \spadfunFrom{sumOfKthPowerDivisors}{IntegerNumberTheoryFunctions} and
@@ -100,15 +99,15 @@ The corresponding \Language{} operations are called
 \index{phi@{$\varphi$}}
 \index{Euler!phi function@{$\varphi$ function}}
 
-An interesting function is \spad{\texht{$\mu$}{mu}(n)},
+An interesting function is \spad{mu(n)},
 \index{mu@{$\mu$}}
 the \texht{M\"{o}bius $\mu$}{Moebius mu} function, defined
 \index{Moebius@{M\"{o}bius}!mu function@{$\mu$ function}}
 as follows:
-\spad{\texht{$\mu$}{mu}(1) = 1}, \spad{\texht{$\mu$}{mu}(n) = 0},
+\spad{mu(1) = 1}, \spad{mu(n) = 0},
 when \spad{n} is divisible by a
 square, and
-\spad{\texht{$\mu = {(-1)}^k$}{mu(n) = (-1) ^ k}}, when \spad{n}
+\texht{$\mu = {(-1)}^k$}{\spad{mu(n) = (-1) ^ k}}, when \spad{n}
 is the product of \spad{k} distinct primes.
 The corresponding \Language{} operation is
 \spadfunFrom{moebiusMu}{IntegerNumberTheoryFunctions}.
@@ -119,18 +118,30 @@ This function occurs in the following theorem:
 %\texht{\begin{quotation}\noindent}{\newline\indent{5}}
 Let \spad{f(n)} be a function on the positive integers and let \spad{F(n)}
 be defined by
-\texht{\narrowDisplay{F(n) = \sum_{d \mid n} f(n)}}{\spad{F(n) =}
-sum of \spad{f(n)} over \spad{d | n}}
+\begin{texonly}
+\begin{displaymath}
+F(n) = \sum_{d \mid n} f(n)
+\end{displaymath}
+\end{texonly}
+\begin{htonly}
+\spad{F(n) =} sum of \spad{f(n)} over \spad{d | n}
+\end{htonly}
 where the sum is taken over the positive divisors of \spad{n}.
 Then the values of \spad{f(n)} can be recovered from the values of
 \spad{F(n)}:
-\texht{\narrowDisplay{f(n) = \sum_{d \mid n} \mu(n) F({{n}\over {d}})}}{\spad{f(n) =}
-sum of \spad{mu(n) F(n/d)} over \spad{d | n},}
+\begin{texonly}
+\begin{displaymath}
+f(n) = \sum_{d \mid n} \mu(n) F(\frac{n}{d})
+\end{displaymath}
+\end{texonly}
+\begin{htonly}
+\spad{f(n) =} sum of \spad{mu(n) F(n/d)} over \spad{d | n},
+\end{htonly}
 where again the sum is taken over the positive divisors of \spad{n}.
 
 \xtc{
 When \spad{f(n) = 1}, then \spad{F(n) = d(n)}.
-Thus, if you sum \spad{\texht{$\mu$}{mu}(d) \texht{$\cdot$}{*} d(n/d)}
+Thus, if you sum \spad{mu(d) d(n/d)}
 over the positive divisors
 \spad{d} of \spad{n}, you should always get \spad{1}.
 }{
@@ -145,9 +156,9 @@ over the positive divisors
 \spadcommand{f1(846) \free{f1}}
 }
 \xtc{
-Similarly, when \spad{f(n) = n}, then \spad{F(n) = \texht{$\sigma$}{sigma}(n)}.
-Thus, if you sum \spad{\texht{$\mu$}{mu}(d) \texht{$\cdot$}{*}
-\texht{$\sigma$}{sigma}(n/d)} over the positive divisors
+Similarly, when \spad{f(n) = n}, then \spad{F(n) = sigma(n)}.
+Thus, if you sum
+\spad{mu(d) sigma (n/d)} over the positive divisors
 \spad{d} of \spad{n}, you should always get \spad{n}.
 }{
 \spadcommand{f2(n) == reduce(+,[moebiusMu(d) * sumOfDivisors(quo(n,d)) for d in divisors(n)]) \bound{f2}}
@@ -168,23 +179,36 @@ formal Dirichlet series.
 \index{Dirichlet series}
 A Dirichlet series is an infinite series of the
 \index{series!Dirichlet}
-form \narrowDisplay{\sum_{n=1}^\infty a(n) n^{-s}}
-When \narrowDisplay{
+form
+\begin{displaymath}
+\sum_{n=1}^\infty a(n) n^{-s}
+\end{displaymath}
+When
+\begin{displaymath}
 \sum_{n=1}^\infty a(n) n^{-s} \cdot \sum_{n=1}^\infty b(n) n^{-s}
-= \sum_{n=1}^\infty c(n) n^{-s} }
+= \sum_{n=1}^\infty c(n) n^{-s}
+\end{displaymath}
 then $c(n) = \sum_{d \mid n} a(d) b(n/d).$
 \index{zeta@$\zeta$}
 Recall that the Riemann $\zeta$ function
 \index{Riemann!zeta function@{$\zeta$ function}}
-is defined by \narrowDisplay{
-\zeta(s) = \prod_p (1 - p^{-s})^{-1} = \sigma_{n = 1}^\infty n^{-s}}
+is defined by
+\begin{displaymath}
+\zeta(s) = \prod_p (1 - p^{-s})^{-1} = \sigma_{n = 1}^\infty n^{-s}
+\end{displaymath}
 where the product is taken over the set of (positive) primes.
-Thus, \narrowDisplay{
-\zeta(s)^{-1} = \prod_p (1 - p^{-s}) = \sigma_{n=1}^\infty \mu(n) n^{-s} }
-Now if $F(n) = \sum_{d \mid n) f(d)},$ then \narrowDisplay{
-\sum f(n) n^{-s} \cdot \zeta(s) = \sum F(n) n^{-s} }
-Thus, \narrowDisplay{
-\zeta(s)^{-1} \cdot \sum F(n) n^{-s} = \sum f(n) n^{-s} }
+Thus,
+\begin{displaymath}
+\zeta(s)^{-1} = \prod_p (1 - p^{-s}) = \sigma_{n=1}^\infty \mu(n) n^{-s}
+\end{displaymath}
+Now if $F(n) = \sum_{d \mid n) f(d)},$ then
+\begin{displaymath}
+\sum f(n) n^{-s} \cdot \zeta(s) = \sum F(n) n^{-s}
+\end{displaymath}
+Thus,
+\begin{displaymath}
+\zeta(s)^{-1} \cdot \sum F(n) n^{-s} = \sum f(n) n^{-s}
+\end{displaymath}
 and $f(n) = \sum_{d \mid n} \mu(d) F(n/d)$.
 \end{texonly}
 
@@ -193,7 +217,7 @@ The Fibonacci numbers are defined by \spad{F(1) = F(2) = 1} and
 \spad{F(n) = F(n-1) + F(n-2)} for \spad{n = 3,4, ...}.
 \xtc{
 The operation \spadfunFrom{fibonacci}{IntegerNumberTheoryFunctions}
-computes the \eth{\spad{n}} Fibonacci number.
+computes the \eth{n} Fibonacci number.
 }{
 \spadcommand{fibonacci(25)}
 }
@@ -220,17 +244,17 @@ Quadratic symbols can be computed with the operations
 \spadfunFrom{jacobi}{IntegerNumberTheoryFunctions}.
 The Legendre symbol
 \index{Legendre!symbol}
-\texht{$\left({a \over p}\right)$}{\spad{(a/p)}}
+\texht{$\left(\frac{a}{p}\right)$}{\spad{(a/p)}}
 is defined for integers \spad{a} and
 \spad{p} with \spad{p} an odd prime number.
-By definition, \texht{$\left({a \over p}\right)$}{\spad{(a/p) = +1}},
+By definition, \texht{$\left(\frac{a}{p}\right)$}{\spad{(a/p) = +1}},
 when \spad{a} is a square \spad{(mod p)},
-\texht{$\left({a \over p}\right)$}{\spad{(a/p) = -1}},
+\texht{$\left(\frac{a}{p}\right)$}{\spad{(a/p) = -1}},
 when \spad{a} is not a square \spad{(mod p)}, and
-\texht{$\left({a \over p}\right)$}{\spad{(a/p) = 0}},
+\texht{$\left(\frac{a}{p}\right)$}{\spad{(a/p) = 0}},
 when \spad{a} is divisible by \spad{p}.
 \xtc{
-You compute \texht{$\left({a \over p}\right)$}{\spad{(a/p)}}
+You compute \texht{$\left(\frac{a}{p}\right)$}{\spad{(a/p)}}
 via the command \spad{legendre(a,p)}.
 }{
 \spadcommand{legendre(3,5)}
@@ -239,7 +263,7 @@ via the command \spad{legendre(a,p)}.
 }{
 \spadcommand{legendre(23,691)}
 }
-The Jacobi symbol \texht{$\left({a \over n}\right)$}{\spad{(a/n)}}
+The Jacobi symbol \texht{$\left(\frac{a}{p}\right)$}{\spad{(a/n)}}
 is the usual extension of the Legendre
 symbol, where \spad{n} is an arbitrary integer.
 The most important property of the Jacobi symbol is the following:

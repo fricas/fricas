@@ -31,8 +31,6 @@
 % SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-\texht{\setcounter{chapter}{11}}{} % Chapter 12
-
 % *********************************************************************
 \head{chapter}{Categories}{ugCategories}
 % *********************************************************************
@@ -116,9 +114,9 @@ the most basic of the algebraic categories in \Language{}.
 \exptypeindex{SetCategory}
 
 \begin{xmpLines}
-\xmpLine{SetCategory(): Category ==}{}
-\xmpLine{   Join(Type,CoercibleTo OutputForm) with}{}
-\xmpLine{      "=" : (\%, \%) -> Boolean}{}
+SetCategory(): Category ==
+   Join(Type,CoercibleTo OutputForm) with
+      "=" : (%, %) -> Boolean
 \end{xmpLines}
 
 The definition starts off with the name of the
@@ -159,7 +157,7 @@ category of all domains, and
 %\footnote{\spadtype{CoercibleTo(OutputForm)}
 %can also be written (and is written in the definition above) without
 %parentheses.}
-The operation \spad{Join} is a system-defined operation that
+The operation \spadtype{Join} is a system-defined operation that
 \spadkey{Join}
 forms a single category from two or more other categories.
 
@@ -195,8 +193,8 @@ source\quad{\tt ->}\quad target
 \end{center}
 
 The category \spadtype{SetCategory} has a single export: the operation
-\spadop{=} whose type is given by the mapping {\tt (\%, \%) -> Boolean}.
-The \spadSyntax{\%} in a mapping type always means ``the domain.'' Thus
+\spadop{=} whose type is given by the mapping \spad{(%, %) -> Boolean}.
+The \spadSyntax{%} in a mapping type always means ``the domain.'' Thus
 the operation \spadop{=} takes two arguments from the domain and
 returns a value of type \spadtype{Boolean}.
 
@@ -212,11 +210,11 @@ Here are examples of formats of various operations with some
 contrived names.
 
 \begin{verbatim}
-someIntegerConstant  :    $
+someIntegerConstant  :    %
 aZeroArgumentOperation:   () -> Integer
-aOneArgumentOperation:    Integer -> $
-aTwoArgumentOperation:    (Integer,$) -> Void
-aThreeArgumentOperation:  ($,Integer,$) -> Fraction($)
+aOneArgumentOperation:    Integer -> %
+aTwoArgumentOperation:    (Integer,%) -> Void
+aThreeArgumentOperation:  (%,Integer,%) -> Fraction(%)
 \end{verbatim}
 
 % *********************************************************************
@@ -229,17 +227,17 @@ an important component: its library documentation.
 Here is its definition, complete with documentation.
 
 \begin{xmpLines}
-\xmpLine{++ Description:}{}
-\xmpLine{++ \bs{}spadtype\{SetCategory\} is the basic category}{}
-\xmpLine{++ for describing a collection of elements with}{}
-\xmpLine{++ \bs{}spadop\{=\} (equality) and a \bs{}spadfun\{coerce\}}{}
-\xmpLine{++ to \bs{}spadtype\{OutputForm\}.}{}
-\xmpLine{}{}
-\xmpLine{SetCategory(): Category ==}{}
-\xmpLine{  Join(Type, CoercibleTo OutputForm) with}{}
-\xmpLine{    "=": (\%, \%) -> Boolean}{}
-\xmpLine{      ++ \bs{}spad\{x = y\} tests if \bs{}spad\{x\} and}{}
-\xmpLine{      ++ \bs{}spad\{y\} are equal.}{}
+++ Description:
+++ \spadtype{SetCategory} is the basic category
+++ for describing a collection of elements with
+++ \spadop{=} (equality) and a \spadfun{coerce}
+++ to \spadtype{OutputForm}.
+
+SetCategory(): Category ==
+  Join(Type, CoercibleTo OutputForm) with
+    "=": (%, %) -> Boolean
+      ++ \spad{x = y} tests if \spad{x} and
+      ++ \spad{y} are equal.
 \end{xmpLines}
 
 Documentary comments are an important part of constructor definitions.
@@ -255,13 +253,16 @@ All lines of the description following the initial line are
 indented by the same amount.
 
 {\texht{\sloppy}{}
-Surround the name of any constructor (with or without parameters) with an
-\texht{\verb+\spadtype{}+}{\\spadtype\{\}}.
-Similarly, surround an
-operator name with \texht{\verb+\spadop{}+}{\\spadop\{\}},
-an \Language{} operation with \texht{\verb+\spadfun{}+}{\\spadfun\{\}}, and a
+Mark the name of any constructor (with or without parameters) with
+\cs{spadtype} like this
+\begin{verbatim}
+\spadtype{Polynomial(Integer)}
+\end{verbatim}
+Similarly, mark an
+operator name with \cs{spadop},
+a \Language{} operation (function) with \cs{spadfun}, and a
 variable or \Language{} expression with
-\texht{\verb+\spad{}+}{\\spad\{\}}.
+\cs{spad}.
 Library documentation is given in a \TeX{}-like language so that
 it can be used both for hard-copy and for \Browse{}.
 These different wrappings cause operations and types to have
@@ -300,9 +301,9 @@ A second example of a category is
 \exptypeindex{SemiGroup}
 
 \begin{xmpLines}
-\xmpLine{SemiGroup(): Category == SetCategory with}{}
-\xmpLine{      "*":  (\%,\%) -> \%}{}
-\xmpLine{      "^": (\%, PositiveInteger) -> \%}{}
+SemiGroup(): Category == SetCategory with
+      "*":  (%,%) -> %
+      "^": (%, PositiveInteger) -> %
 \end{xmpLines}
 
 This definition is as simple as that for \spadtype{SetCategory},
@@ -361,8 +362,10 @@ Since \spadtype{String} is a member of \spadtype{SemiGroup}, it also is
 a member of \spadtype{SetCategory} and thus has an operation
 \spadop{=} for testing that two strings are equal.
 
-\texht{Now turn to the algebraic category hierarchy inside the
-front cover of this book.}{}
+\begin{texonly}
+  Now turn to the algebraic category hierarchy inside the front cover
+  of this book.
+\end{texonly}
 Any domain that is a member of a
 category extending \spadtype{SemiGroup} is a member of
 \spadtype{SemiGroup} (that is, it {\it is} a semigroup).
@@ -394,12 +397,12 @@ part of the definition of
 Here now is its complete \Language{} definition.
 
 \begin{xmpLines}
-\xmpLine{SemiGroup(): Category == SetCategory with}{}
-\xmpLine{      "*": (\%, \%) -> \%}{}
-\xmpLine{      "^": (\%, PositiveInteger) -> \%}{}
-\xmpLine{    add}{}
-\xmpLine{      import RepeatedSquaring(\%)}{}
-\xmpLine{      x: \% ^ n: PositiveInteger == expt(x,n)}{}
+SemiGroup(): Category == SetCategory with
+      "*": (%, %) -> %
+      "^": (%, PositiveInteger) -> %
+    add
+      import RepeatedSquaring(%)
+      x: % ^ n: PositiveInteger == expt(x,n)
 \end{xmpLines}
 
 The \spad{add} part at the end is used to give ``default definitions'' for
@@ -410,14 +413,15 @@ define exponentiation
 for positive integer exponents
 using repeated multiplication:
 \begin{texonly}
-\narrowDisplay{x^n = {\underbrace{x \, x \, x \, \cdots \,
-x}_{\displaystyle n \hbox{\ times}}}}
+\begin{displaymath}
+x^n = {\underbrace{x \, x \, x \, \cdots \, x}_{\displaystyle n \hbox{\ times}}}
+\end{displaymath}
 \end{texonly}%
-\htonly
+\begin{htonly}
 \begin{center}
 \spad{x ^ n = x * x * ... * x}   ( \spad{n} copies of \spad{x} )
 \end{center}
-\endhtonly
+\end{htonly}
 This definition for \spadop{^} is called a {\it default} definition.
 In general, a category can give default definitions for any
 operation it exports.
@@ -438,7 +442,7 @@ The line
 import RepeatedSquaring(%)
 \end{verbatim}
 references the package
-\spadtype{RepeatedSquaring(\%)}, that is, the package
+\spadtype{RepeatedSquaring(%)}, that is, the package
 \spadtype{RepeatedSquaring} that takes ``this domain'' as its
 parameter.
 For example, if the semigroup \spadtype{Polynomial (Integer)}
@@ -451,21 +455,21 @@ package.
 The default definitions are collected to form a ``default
 package'' for the category.
 The name of the package is the same as  the category but with an
-ampersand (\spadSyntax{\&}) added at the end.
+ampersand (\spadSyntax{&}) added at the end.
 A default package always takes an additional argument relative to the
 category.
-Here is the definition of the default package \pspadtype{SemiGroup\&} as
+Here is the definition of the default package \pspadtype{SemiGroup&} as
 automatically generated by \Language{} from the above definition of
 \spadtype{SemiGroup}.
 
 \begin{xmpLines}
-\xmpLine{SemiGroup\_\&(\%): Exports == Implementation where}{}
-\xmpLine{  \%: SemiGroup}{}
-\xmpLine{  Exports == with}{}
-\xmpLine{    "^": (\%, PositiveInteger) -> \%}{}
-\xmpLine{  Implementation == add}{}
-\xmpLine{    import RepeatedSquaring(\%)}{}
-\xmpLine{    x:\% ^ n:PositiveInteger == expt(x,n)}{}
+SemiGroup_&(%): Exports == Implementation where
+  %: SemiGroup
+  Exports == with
+    "^": (%, PositiveInteger) -> %
+  Implementation == add
+    import RepeatedSquaring(%)
+    x:% ^ n:PositiveInteger == expt(x,n)
 \end{xmpLines}
 
 % *********************************************************************
@@ -500,7 +504,7 @@ The definition for \spadtype{SemiGroup} has documentation that states:
     \texht{\vskip .5\baselineskip}{}
     {Axioms:}
 
-    {\small\tt associative("*" : (\%,\%)->\%) -- (x*y)*z = x*(y*z)}
+    {\small\spad{associative("*" : (%,%)->%)} \quad\quad\quad \spad{(x*y)*z = x*(y*z)}}
 \texht{\end{quotation}}{\indent{3}}
 
 According to the author's remarks, the mere
@@ -526,7 +530,7 @@ While such statements are only comments,
 \index{correctness}
 \Language{} can enforce their intention simply by shifting the burden of
 responsibility onto the author of a domain.
-A domain belongs to category \spad{Ring} only if the
+A domain belongs to category \spadtype{Ring} only if the
 author asserts that the domain  belongs to \spadtype{Ring} or
 to a category that extends \spadtype{Ring}.
 
@@ -579,13 +583,13 @@ ring axioms for \spadop{+} hold.
 Most axioms are not computationally useful.
 Those that are can be explicitly expressed by what \Language{} calls an
 \spadgloss{attribute}.
-The attribute \spadatt{CommutativeStar}, for example, is used to assert
+The attribute \spadtype{CommutativeStar}, for example, is used to assert
 that a domain has commutative multiplication.
 Its definition is given by its documentation:
 
 \texht{\begingroup \parindent=1pc \narrower\noindent}{\indent{3}}%
-    A domain \spad{R} has \spadatt{CommutativeStar}
-    if it has an operation "*": \spadsig{(R,R)}{R} such that \spad{x * y = y * x}.
+    A domain \spad{R} has \spadtype{CommutativeStar}
+    if it has an operation "*": \spad{(R,R)->R} such that \spad{x * y = y * x}.
 \texht{\par\endgroup}{\indent{0}}
 
 Just as you can test whether a domain has the category \spadtype{Ring}, you
@@ -613,29 +617,29 @@ it is high time that we show you its definition:
 \exptypeindex{Ring}
 
 \begin{xmpLines}
-\xmpLine{Ring(): Category ==}{}
-\xmpLine{  Join(Rng,Monoid,LeftModule(\%: Rng)) with}{}
-\xmpLine{      characteristic: -> NonNegativeInteger}{}
-\xmpLine{      coerce: Integer -> \%}{}
-\xmpLine{      unitsKnown}{}
-\xmpLine{    add}{}
-\xmpLine{      n:Integer}{}
-\xmpLine{      coerce(n) == n * 1\$\%}{}
+Ring(): Category ==
+  Join(Rng,Monoid,LeftModule(%: Rng)) with
+      characteristic: -> NonNegativeInteger
+      coerce: Integer -> %
+      unitsKnown
+    add
+      n:Integer
+      coerce(n) == n * 1$%
 \end{xmpLines}
 
 There are only two new things here.
-First, look at the \spadSyntax{\$\%} on the last line.
+First, look at the \spadSyntax{$%} on the last line.
 This is not a typographic error!
-The \spadSyntax{\$} says that the \spad{1} is to come from some
+The \spadSyntax{$} says that the \spad{1} is to come from some
 domain.
-The \spadSyntax{\%} says that the domain is ``this domain.''
-If \spadSyntax{\%} is \spadtype{Fraction(Integer)}, this line reads {\tt
-coerce(n) == n * 1\$Fraction(Integer)}.
+The \spadSyntax{%} says that the domain is ``this domain.''
+If \spadSyntax{%} is \spadtype{Fraction(Integer)}, this line reads
+\spad{coerce(n) == n * 1$Fraction(Integer)}.
 
 The second new thing is the presence of attribute ``\spad{unitsKnown}''.
 \Language{} can always distinguish an attribute from an operation.
 An operation has a name and a type. An attribute has no type.
-The attribute \spadatt{unitsKnown} asserts a rather subtle mathematical
+The attribute \spadtype{unitsKnown} asserts a rather subtle mathematical
 fact that is normally taken for granted when working with
 rings.\footnote{With this axiom, the units of a domain are the set of
 elements \spad{x} that each have a multiplicative
@@ -660,8 +664,8 @@ different representations and indexing schemes.
 Its definition has the form:
 
 \begin{xmpLines}
-\xmpLine{MatrixCategory(R,Row,Col): Category ==}{}
-\xmpLine{    TwoDimensionalArrayCategory(R,Row,Col) with ...}{}
+MatrixCategory(R,Row,Col): Category ==
+    TwoDimensionalArrayCategory(R,Row,Col) with ...
 \end{xmpLines}
 
 The category extends \spadtype{TwoDimensionalArrayCategory} with
@@ -691,11 +695,11 @@ Adding the declarations for parameters to the definition for
 \spadtype{MatrixCategory}, we have:
 
 \begin{xmpLines}
-\xmpLine{R: Ring}{}
-\xmpLine{(Row, Col): FiniteLinearAggregate(R)}{}
-\xmpLine{}{}
-\xmpLine{MatrixCategory(R, Row, Col): Category ==}{}
-\xmpLine{    TwoDimensionalArrayCategory(R, Row, Col) with ...}{}
+R: Ring
+(Row, Col): FiniteLinearAggregate(R)
+
+MatrixCategory(R, Row, Col): Category ==
+    TwoDimensionalArrayCategory(R, Row, Col) with ...
 \end{xmpLines}
 
 % *********************************************************************
@@ -719,11 +723,11 @@ Here is a portion of the definition of \spadtype{QuotientFieldCategory}:
 \exptypeindex{QuotientFieldCategory}
 
 \begin{xmpLines}
-\xmpLine{QuotientFieldCategory(R) : Category == ... with ...}{}
-\xmpLine{     if R has OrderedSet then OrderedSet}{}
-\xmpLine{     if R has IntegerNumberSystem then}{}
-\xmpLine{       ceiling: \% -> R}{}
-\xmpLine{         ...}{}
+QuotientFieldCategory(R) : Category == ... with ...
+     if R has OrderedSet then OrderedSet
+     if R has IntegerNumberSystem then
+       ceiling: % -> R
+         ...
 \end{xmpLines}
 
 Think of category \spadtype{QuotientFieldCategory(R)} as
@@ -742,7 +746,7 @@ polynomials and other algebraic structures.
 Because of this conditional,
 the domain \spadtype{Fraction(Integer)} exports
 an operation
-\spadfun{ceiling}: \spadsig{Fraction Integer}{Integer}, but
+\spadfun{ceiling}: \spadtype{Fraction Integer->Integer}, but
 \spadtype{Fraction Polynomial Integer} does not.
 
 Conditionals can also appear in the default definitions for the
@@ -775,20 +779,20 @@ We could, instead, give this category a name:
 
 %
 \begin{xmpLines}
-\xmpLine{DrawComplexCategory(): Category == with}{}
-\xmpLine{   drawComplex: (C -> C,S,S,Boolean) -> VIEW3D}{}
-\xmpLine{   drawComplexVectorField: (C -> C,S,S) -> VIEW3D}{}
-\xmpLine{   setRealSteps: INT -> INT}{}
-\xmpLine{   setImagSteps: INT -> INT}{}
-\xmpLine{   setClipValue: DFLOAT-> DFLOAT}{}
+DrawComplexCategory(): Category == with
+   drawComplex: (C -> C,S,S,Boolean) -> VIEW3D
+   drawComplexVectorField: (C -> C,S,S) -> VIEW3D
+   setRealSteps: INT -> INT
+   setImagSteps: INT -> INT
+   setClipValue: DFLOAT-> DFLOAT
 \end{xmpLines}
 %
 and then define \spadtype{DrawComplex} by:
 %
 \begin{xmpLines}
-\xmpLine{DrawComplex(): DrawComplexCategory == Implementation}{}
-\xmpLine{   where}{}
-\xmpLine{      ...}{}
+DrawComplex(): DrawComplexCategory == Implementation
+   where
+      ...
 \end{xmpLines}
 %
 

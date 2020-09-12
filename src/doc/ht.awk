@@ -7,16 +7,17 @@
 # One argument case:
 #   - argument 1 is a ugXX.htex Users Guide chapter file where XX
 #     is the chapter number.
-#   - \head{chapter}... or \headTODO{chapter}... tags are included
+#   - \head{chapter}... tag is included
 #
 # Four argument case:
 #   - this is an example file for an exposed constructor of the form
 #     abbr.htex where abbr is the constructor abbreviation. This file
 #     name is the first argument
-#   - 2nd argument = full constructor name
-#   - 3rd argument = the users guide chapter number for the examples
+#   - 2nd argument = directory of .menu files
+#   - 3rd argument = full constructor name
+#   - 4th argument = the users guide chapter number for the examples
 #     chapter
-#   - 4th argument = the section number to be used for the constructor
+#   - 5th argument = the section number to be used for the constructor
 
 BEGIN           {
         globalPagePrefix = "NOT-ASSIGNED-YET"
@@ -77,57 +78,45 @@ BEGIN           {
 }
 
 # delete lines between \begin{texonly} and \end{texonly}
-/^\\begin{texonly}/     {
-        while (substr($1,1,13) != "\\end{texonly}") # might have trailing %
-                getline
-        next
-}
-# delete lines between \texonly and \endtexonly
-/^\\texonly/     {
-        while (substr($1,1,11) != "\\endtexonly") # might have trailing %
-                getline
-        next
+/^\\begin{texonly}/,/^\\end{texonly}/ {next}
+
+# HyperDoc should never see stuff that is not intended for it, i.e. we
+# translate \texht{T}{H} into H. We assume that \texht with arguments
+# appears on a single line.
+/\\texht{/ {
+        cmd = "\\texht{"
+        line = $0
+        p = index(line,cmd)
+        while (p > 0) {
+            pref = (p == 1) ? "" : substr(line,1,p-1)
+            line = substr(line,p)
+            n = endMacroIndex(line,2)
+            if (n < 0) {
+                print ARGV[1] ":" NR ": ERROR: texht not on ended on the same line"
+                print $0
+                next
+            }
+            line = extractArg(line,2) substr(line,n+1)
+            if (p != 1) {line = pref line}
+            p = index(line,cmd)
+        }
+        $0 = line
 }
 
 # delete lines between \begin{inputonly} and \end{inputonly}
-/^\\begin{inputonly}/     {
-        while (substr($1,1,15) != "\\end{inputonly}") # might have trailing %
-                getline
-        next
-}
+/^\\begin{inputonly}/,/^\\end{inputonly}/ {next}
 
 # handle discard stuff (delete the lines)
-/^\\begin{discard}/   {
-        while (substr($1,1,13) != "\\end{discard}") # might have trailing %
-                getline
-        next
-}
+/^\\begin{discard}/,/^\\end{discard}/ {next}
 
-# delete \htonly and \endhtonly lines (leaving what is in between)
-/^\\htonly/ || /^\\endhtonly/  {
-        next
-}
+# delete \begin{htonly} and \end{htonly} lines (leaving what is in between)
+/^\\begin{htonly}/ || /^\\end{htonly}/  {next}
 
-# ignore towrite environment
-/^\\begin{towrite}/ || /^\\end{towrite}/ {
-    next
-}
-
-# translate tinyverbatim mode to verbatim and pass through
-/^\\begin{tinyverbatim}/        {
-        print "\\begin{verbatim}"
-        getline
-        while ($1 != "\\end{tinyverbatim}") {
-                print
-                getline
-        }
-        print "\\end{verbatim}"
-        next
-}
 
 # handle various xmpLines and figXmpLines environments
 
 /^\\begin{xmpLinesNoReset}/ {
+        inXmpLines = 1
         print "\\beginImportant"
         print "  "
         print "\\noindent"
@@ -135,35 +124,53 @@ BEGIN           {
 }
 /^\\end{xmpLinesNoReset}/ {
         print "\\endImportant"
+        inXmpLines = 0
         next
 }
 /^\\begin{xmpLinesNoResetPlain}/ || /^\\end{xmpLinesNoResetPlain}/{
+        if(/^\\begin/) {inXmpLines=1} else {inXmpLines=0}
         print "  "
         print "\\noindent"
         next
 }
 /^\\begin{xmpLinesPlain}/ || /^\\end{xmpLinesPlain}/{
+        if(/^\\begin/) {inXmpLines=1} else {inXmpLines=0}
         xmpStepCounter = 0
         print "  "
         print "\\noindent"
         next
 }
 /^\\begin{xmpLines}/ || /^\\begin{figXmpLines}/ {
+        inXmpLines = 1
         print "\\beginImportant"
         print "  "
         print "\\noindent"
         xmpStepCounter = 0
+        # We can have an optional argument of the form
+        # [caption={...}, label={...}]
+        # which must all appear on one line.
+        # We'll remove [ and ] and change "caption=" into "\caption"
+        # and ", *label=" into "\label".
+        if(/\\begin{figXmpLines}\[/){
+            opts=substr($0,21)
+            sub(/] *$/, "",opts)
+            sub(/caption=/, "\\caption", opts)
+            sub(/, *label=/, "\\label", opts)
+        } else {
+            opts=""
+        }
         next
 }
 /^\\end{xmpLines}/ || /^\\end{figXmpLines}/ {
+        if(opts != "") {print opts}
         print "\\endImportant"
         xmpStepCounter = 0
+        inXmpLines = 0
         next
 }
 
-/^\\xmpLine\{/  {
-        code = extractArg($0,1) # throw away comments
-        gsub(/ /,"\\ ",code)
+inXmpLines==1 {
+        if(/^%%%/){print substr($0,4);  next}
         xmpStepCounter++
         sc = xmpStepCounter"."
         scl = length(sc)
@@ -171,7 +178,19 @@ BEGIN           {
           sc = sc"\\ "    # adding two characters
           scl++
         }
-        printf "{\\tt %s\\ %s}\\newline\n",sc,code
+        sub(/ *--.*/, "") # throw away comments
+        gsub(/\\/, "\\bs{}")
+        gsub(/{/, "\\{")
+        gsub(/}/, "\\}")
+        gsub(/\\bs\\{\\}/, "\\bs{}")
+        gsub(/ /, "\\ ")
+        gsub(/&/, "\\\\&")
+        gsub(/\#/, "\\#")
+        gsub(/\$/, "\\$")
+        gsub(/%/, "\\%")
+        gsub(/_/, "\\_")
+        gsub(/~=/, "\\notequal{}")
+        printf "{\\tt %s\\ %s}\\newline\n",sc,$0
         next
 }
 
@@ -204,16 +223,6 @@ BEGIN           {
         print "\\spadpaste"substr($0,13)
         next
 }
-/^\\nullspadcommand/        {
-        gsub(/\\_/,"_")
-        print "\\spadpaste"substr($0,17)
-        next
-}
-/^\\spadpaste/          {
-        gsub(/\\_/,"_")
-        print
-        next
-}
 /^\\spadgraph/          {
         gsub(/\\_/,"_")
         print "\\graphpaste"substr($0,11)
@@ -221,9 +230,19 @@ BEGIN           {
 }
 
 # do some translations
-        {
-        gsub(/upclick/,"uparrow")
-}
+
+# Escape TeX special characters inside arguments of
+# \spad, \spadop, \spadopFrom, \spadfun, \spadfunFrom, \spadtype, \spadSyntax.
+# texSpecialChars = "\\{ }$&#^_%~"
+#/\\userfun{/     {$0 = escapeArgs($0, "\\userfun{",     1)}
+#/\\pspadtype{/   {$0 = escapeArgs($0, "\\pspadtype{",   1)}
+/\\spad{/        {$0 = escapeArgs($0, "\\spad{",        1)}
+/\\spadop{/      {$0 = escapeArgs($0, "\\spadop{",      1)}
+/\\spadfun{/     {$0 = escapeArgs($0, "\\spadfun{",     1)}
+/\\spadtype{/    {$0 = escapeArgs($0, "\\spadtype{",    1)}
+/\\spadopFrom{/  {$0 = escapeArgs($0, "\\spadopFrom{",  2)}
+/\\spadfunFrom{/ {$0 = escapeArgs($0, "\\spadfunFrom{", 2)}
+/\\spadSyntax{/  {$0 = escapeArgs($0, "\\spadSyntax{",  1)}
 
 # handle cross references
 /\\spadref/             {
@@ -311,29 +330,13 @@ BEGIN           {
         startPage(16)
         next
 }
-/^\\headTODO{chapter}/      {
-        inChap = 1
-        inSubSect = 0
-        subSecNum = 0
-        startPage(20)
-        next
-}
 
 /^\\head{section}/      {
         handleSection(16)
         next
 }
-/^\\headTODO{section}/      {
-        handleSection(20)
-        next
-}
-
 /^\\head{subsection}/      {
         handleSubSection(19)
-        next
-}
-/^\\headTODO{subsection}/      {
-        handleSubSection(23)
         next
 }
 
@@ -521,25 +524,76 @@ function unnumber(s) {
         return s
 }
 
-function endMacroIndex(line,parms,    pp,x,bc,cc) {
+# Escape special characters by a backslash. Replace "\" by "\bs{}"
+function escapeArg(arg) {
+        gsub(/\\/, "\\bs{}", arg)
+        gsub(/{/, "\\{", arg)
+        gsub(/}/, "\\}", arg)
+        gsub(/\\bs\\{\\}/, "\\bs{}", arg)
+        gsub(/\$/, "\\$", arg)
+        gsub(/&/, "\\\\&", arg)
+        gsub(/\#/, "\\#", arg)
+        gsub(/_/, "\\_", arg)
+        gsub(/%/, "\\%", arg)
+#        gsub(/^/, "\\^", arg) # not necessary
+        gsub(/~=/, "\\notequal{}", arg)
+        gsub(/~/, "\\~", arg)
+        return arg
+}
+
+function escapeArgs(line, cmd, params,    p, n, arg, result) {
+        p = index(line,cmd)
+        result = ""
+        while (p > 0) {
+          if (p > 1) {result = result substr(line,1,p-1)}
+          result = result cmd
+          line = substr(line,p)
+          n = endMacroIndex(line,params)
+          if (n < 0) {
+              print
+              print "!!!"
+              print "!!!" ARGV[1] ":" NR ":", cmd "<<no end>>}"
+              print "!!!"
+              exit 1
+          }
+          arg = escapeArg(extractArg(line,1))
+          result = result arg "}"
+          for (param = 2; param <= params; param++) {
+              arg = extractArg(line,param)
+              result = result "{" arg "}"
+          }
+          line = substr(line,n+1)
+          p = index(line,cmd)
+        }
+        return result line
+}
+
+
+function endMacroIndex(line,parms,    pp,x,bc,cc,len,found) {
 # assumes start of line is a macro call and returns position of final "}"
         x = 0
+        found = -1
         pp = index(line,"{")
+        len = length(line)
         if (pp != 0) {
           bc = 1
-          for (x = pp+1; ; x++) {
+          for (x = pp+1; x<=len; x++) {
             cc = substr(line,x,1)
             if (cc == "{")
               bc++
+
             else if (cc == "}") {
               bc--
               if (bc == 0) {
                 parms--
-                if (parms == 0)
-                  break
+                if (parms == 0) {
+                    found = 1
+                    break
+                }
               }
             }
           }
+          x = x * found # negative if not found
         }
         return x
 }

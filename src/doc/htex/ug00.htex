@@ -1,0 +1,368 @@
+\head{chapter}{Introduction to \Language{}}{ugNewIntro}
+
+Welcome to the world of \Language{}.
+We call \Language{} a scientific computation system:
+a self-contained toolbox designed to meet
+your scientific programming needs,
+from symbolics, to numerics, to graphics.
+
+This introduction is a quick overview of what \Language{} offers.
+
+\head{section}{Symbolic computation}{ugNewIntroSymbolic}
+
+\Language{} provides a wide range of
+simple commands for
+symbolic mathematical problem solving.
+Do you need to solve an equation,
+to expand a series,
+or to obtain an integral?
+If so, just ask \Language{} to do it.
+
+%
+\xtc{
+Integrate \texht{$\frac{1}{(x^3 \  {(a+b x)}^{1/3})}$}{} with
+respect to \smath{x}.
+}{
+\spadcommand{integrate(1/(x^3 * (a+b*x)^(1/3)),x)}
+}
+
+\Language{} provides state-of-the-art algebraic machinery to
+handle your most advanced symbolic problems.
+For example, \Language{}'s integrator gives you the answer
+when an answer exists.
+If one does not, it provides a proof that
+there is no answer.
+Integration is just one of a multitude of symbolic operations that
+\Language{} provides.
+
+\head{section}{Numeric computation}{ugNewIntroNumeric}
+
+\Language{} has a numerical library that includes operations for
+linear algebra, solution of equations, and special functions.
+For many of these operations, you can select any number of
+floating point digits to be carried out in the computation.
+
+%
+\xtc{
+Solve \texht{$x^{49}-49x^4+9$}{} to
+49 digits of accuracy.
+}{
+\spadcommand{solve(x^49-49*x^4+9 = 0,1.e-49)}
+}
+
+The output of a computation can be converted to FORTRAN to be used
+in a later numerical computation.
+Besides floating point numbers, \Language{} provides literally
+dozens of kinds of numbers to compute with.
+These range from various kinds of integers, to fractions, complex
+numbers, quaternions, continued fractions, and to numbers represented
+with an arbitrary base.
+
+%
+\xtc{
+What is \spad{10} to
+the \eth{100} power in base \spad{32}?
+}{
+\spadcommand{radix(10^100,32)}
+}
+
+
+\head{section}{Graphics}{ugNewIntroGraphics}
+
+You may often want to visualize a symbolic formula or draw
+a graph from a set of numerical values.
+To do this, you can call upon the \Language{}
+graphics capability.
+
+\psXtc{
+Draw \texht{$J_0(\sqrt{x^2+y^2})$}{} for
+\texht{$-20 \leq x,y \leq 20$}{}.
+}{
+\spadgraph{draw(5*besselJ(0,sqrt(x^2+y^2)), x=-20..20, y=-20..20)}
+}{
+\epsffile[0 0 295 295]{bessintr.ps}
+}
+
+Graphs in \Language{} are interactive objects you can manipulate with
+your mouse.
+Just click on the graph, and a control panel pops up.
+Using this mouse and the control panel, you can translate,
+rotate, zoom,
+change the coloring, lighting, shading, and
+perspective on the picture.
+You can also generate a PostScript copy of your graph to produce
+hard-copy output.
+
+\head{section}{\HyperName{}}{ugNewIntroFriCAS}
+
+\HyperName{} presents you windows on the world of \Language{}, offering
+on-line help,
+examples, tutorials, a browser, and reference material.
+\HyperName{} gives you on-line access to this book in a ``hypertext'' format.
+Words that appear in a different font
+(for example, \spadtype{Matrix}, \spadfun{factor}, and
+\spadgloss{category}) are generally mouse-active; if you click on one
+with your mouse, \HyperName{} shows you a new window for that word.
+
+As another example of a \HyperName{} facility,
+suppose that you want to compute the roots of
+\texht{$x^{49} - 49x^4 + 9$}{} to \smath{49} digits (as in our previous example)
+and you don't know how to tell \Language{} to do this.
+The ``basic command'' facility of \HyperName{} leads the way.
+Through the series of \HyperName{} windows shown in Figure \ref{fig-intro-br}
+and the specified mouse clicks, you and \HyperName{}
+generate the correct command to issue to compute the answer.
+
+
+\begin{texonly}
+\begin{figure}[thb]
+\vspace*{5.10in}
+\caption{Computing the roots of $x^{49}-49x^4+9.$\label{fig-intro-br}}
+\vskip .5\baselineskip
+\end{figure}
+\end{texonly}
+
+\head{section}{Interactive Programming}{ugNewIntroInteractive}
+
+\Language{}'s interactive programming language lets you
+define your own functions.
+A simple example of a user-defined function is one
+that computes the successive Legendre polynomials.
+\Language{} lets you define these polynomials in a piece-wise way.
+
+%
+\xtc{
+The first Legendre polynomial.
+}{
+\spadcommand{p(0) == 1}
+}
+%
+\xtc{
+The second Legendre polynomial.
+}{
+\spadcommand{p(1) == x}
+}
+%
+\xtc{
+The \eth{n} Legendre polynomial for \texht{$(n > 1)$}{\spad{n > 1}}.
+}{
+\spadcommand{p(n) == ((2*n-1)*x*p(n-1) - (n-1) * p(n-2))/n}
+}
+
+In addition to letting you define simple functions like this,
+the interactive language can be used
+to create entire application packages.
+All the graphs in the \Gallery{} section
+in the center of the book, for example,
+were created by programs written in the interactive language.
+
+The above definitions for \spad{p} do no computation---they simply
+tell \Language{} how to compute \spad{p(k)} for some positive
+integer \spad{k}.
+To actually get a value of a Legendre polynomial, you ask for it.
+\index{Legendre polynomials}
+
+%
+\xtc{
+What is the tenth Legendre polynomial?
+}{
+\spadcommand{p(10)}
+}
+
+\Language{} applies the above pieces for
+\spad{p} to obtain the value of \spad{p(10)}.
+But it does more:
+it creates an optimized, compiled function for \spad{p}.
+The function is formed by putting the pieces together into
+a single piece of code.
+By {\it compiled}, we mean that the function is translated into
+basic machine-code.
+By {\it optimized}, we mean that certain transformations are
+performed on that code to make it run faster.
+For \spad{p}, \Language{} actually translates the original definition
+that is recursive (one that calls itself)
+to one that is iterative (one that consists of a simple loop).
+
+%
+\xtc{
+What is the coefficient of \smath{x^{90}} in \spad{p(90)}?
+}{
+\spadcommand{coefficient(p(90),x,90)}
+}
+
+In general, a user function is type-analyzed and compiled on first use.
+Later, if you use it with a different kind of object, the function
+is recompiled if necessary.
+
+\head{section}{Data Structures}{ugNewIntroData}
+
+A variety of data structures are available for interactive use.
+These include strings, lists, vectors, sets, multisets, and hash
+tables.
+A particularly useful structure for interactive use is the
+infinite stream:
+
+\begin{inputonly}
+p(0) == 1
+p(1) == x
+p(n) == ((2*n-1)*x*p(n-1) - (n-1) * p(n-2))/n
+p(2)
+\end{inputonly}
+%
+\xtc{
+Create the infinite stream of derivatives of Legendre
+polynomials
+}{
+\spadcommand{[D(p(i),x) for i in 1..]}
+}
+
+Streams display only a few of their initial elements.
+Otherwise, they are ``lazy'': they
+only compute elements when you ask for them.
+
+Data structures are an important component for building
+application software. Advanced users can
+represent data for applications in optimal fashion.
+In all, \Language{} offers
+over forty kinds of aggregate data structures, ranging
+from mutable structures (such as cyclic lists and flexible arrays) to
+storage efficient structures (such as bit vectors).
+As an example, streams are used as the internal data structure
+for power series.
+
+%
+\xtc{
+What is the series expansion
+of \texht{$\log(\cot(x))$}{}
+about \texht{$x=\pi/2$}{}?
+}{
+\spadcommand{series(log(cot(x)),x = \%pi/2)}
+}
+
+Series and streams make no attempt to compute {\it all} their elements!
+Rather, they stand ready to deliver elements on demand.
+
+%
+\xtc{
+What is the coefficient of the \eth{50}
+term of this series?
+}{
+\spadcommand{coefficient(\%,50)}
+}
+
+\head{section}{Mathematical Structures}{ugNewIntroMathematical}
+
+\Language{} also has many kinds of mathematical structures.
+These range from simple ones (like polynomials and matrices) to
+more esoteric ones (like ideals and Clifford algebras).
+Most structures allow the construction of arbitrarily complicated
+``types.''
+
+%
+\xtc{
+Even a simple input expression can
+result in a type with several levels.
+}{
+\spadcommand{matrix [[x + \%i,0], [1,-2]]}
+}
+
+The \Language{} interpreter builds types in response to user
+input.
+Often, the type of the result is changed in order to be applicable
+to an operation.
+
+%
+\xtc{
+The inverse operation requires that elements of the above matrices
+are fractions.
+}{
+\spadcommand{inverse(\%)}
+}
+
+\head{section}{Pattern Matching}{ugNewIntroPattern}
+
+A convenient facility for symbolic computation is ``pattern
+matching.''
+Suppose you have a trigonometric expression and you want to
+transform it to some equivalent form.
+Use a \spad{rule} command to describe the transformation rules you
+\spadkey{rule}
+need.
+Then give the rules a name and apply that name as a function to
+your trigonometric expression.
+
+%
+\xtc{
+Introduce two rewrite rules.
+}{
+\begin{spadsrc}
+sinCosExpandRules := rule
+  sin(x+y) == sin(x)*cos(y) + sin(y)*cos(x)
+  cos(x+y) == cos(x)*cos(y) - sin(x)*sin(y)
+  sin(2*x) == 2*sin(x)*cos(x)
+  cos(2*x) == cos(x)^2 - sin(x)^2
+\end{spadsrc}
+}
+
+%
+\xtc{
+Apply the rules to a simple trigonometric expression.
+}{
+\spadcommand{sinCosExpandRules(sin(a+2*b+c))}
+}
+
+Using input files, you can create your own library of
+transformation rules relevant to your applications, then
+selectively apply the rules you need.
+
+\head{section}{Polymorphic Algorithms}{ugNewIntroPolymorphic}
+
+All components of the \Language{} algebra library are written in
+the \Language{} library language.
+This language is similar to the interactive language
+except for protocols that authors are obliged to follow.
+The library language permits you to write ``polymorphic
+algorithms,'' algorithms defined to work in
+their most natural settings and over a variety of types.
+
+%
+\xtc{
+Define a system of polynomial equations \spad{S}.
+}{
+\spadcommand{S := [3*x^3 + y + 1 = 0,y^2 = 4]}
+}
+%
+\xtc{
+Solve the system \spad{S} using rational number arithmetic and
+30 digits of accuracy.
+}{
+\spadcommand{solve(S,1/10^30)}
+}
+%
+\xtc{
+Solve \spad{S} with the solutions expressed in radicals.
+}{
+\spadcommand{radicalSolve(S)}
+}
+
+While these solutions look very different, the results were
+produced by the same internal algorithm!
+The internal algorithm actually works with equations over any ``field.''
+Examples of fields are the rational numbers, floating point
+numbers, rational functions, power series, and general expressions
+involving radicals.
+
+\head{section}{Extensibility}{ugNewIntroExtensibility}
+
+Users and system developers alike can augment the \Language{}
+library, all using one common language.
+Library code, like interpreter code, is compiled into machine
+binary code for run-time efficiency.
+
+Using this language, you can create new computational types and
+new algorithmic packages.
+All library code is polymorphic, described in terms of a database
+of algebraic properties.
+By following the language protocols, there is an automatic,
+guaranteed interaction between your code and that of colleagues
+and system implementers.
