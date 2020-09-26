@@ -1,0 +1,1710 @@
+-------------------------------------------------------------------
+---
+--- FriCAS Web API Generator
+--- Copyright (C) 2014-2020,  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions
+-- are met:
+--
+-- 1. Redistributions of source code must retain the above copyright
+-- notice, this list of conditions and the following disclaimer.
+--
+-- 2. Redistributions in binary form must reproduce the above
+-- copyright notice, this list of conditions and the following
+-- disclaimer in the documentation and/or other materials provided
+-- with the distribution.
+--
+-- 3. Neither the name of the copyright holder nor the names of its
+-- contributors may be used to endorse or promote products derived
+-- from this software without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+-- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+-- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+-- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+-- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+-- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+-- OF THE POSSIBILITY OF SUCH DAMAGE.
+-------------------------------------------------------------------
+-- This program first computes a data structure that represents the
+-- documentation of all constructors and the documentation of their
+-- signatures in raw (SExpression).
+-- In the following pass, the ++ docstrings are embellished by
+-- transforming (known) constructor names into links.
+-- Finally, the data structure will be output into a collection of
+-- .rst files that can be processed by sphinx.
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+rep x ==> (x@%) pretend Rep
+per x ==> (x@Rep) pretend %
+
+sex x ==> convert(x::Symbol)@SExpression
+SEX ==> SExpression
+RSTString ==> String -- for reStructuredText formatted strings
+
+DNF ==> DisjunctiveNormalForm SEX
+CATCONDS ==> XHashTable(SEX, DNF) -- catsig +-> condition
+
+CATEXPORT ==> Record(orig: SEX, cond: DNF, docstr: String)
+CATEXPORTS ==> XHashTable(SEX, CATEXPORT) -- catsig +-> (origin, cond, doc)
+ARGCATS ==> XHashTable(SEX, CATEXPORTS) -- argid +-> argcategories
+
+CATDOCS ==> XHashTable(SEX, String)
+CONDOC ==> Record(docstr: String, cds: CATDOCS)
+
+CATSIGS ==> Record(fcat: String, fsigs: List String)
+CATSSIGS ==> Record(fcats: List String, fsigs: List String)
+
+CONINFO ==> Record(fn: String, pos: String, ckind: String)
+CONSTRUCTORS ==> XHashTable(String, CONINFO)
+
+assert(x) ==> void()$Void -- do nothing
+
+)abbrev package SOPS SExpressionOperations
+++ SExpressionOperations provides a number of operations that
+++ are missing from SExpression.
+SExpressionOperations: with
+    true: SEX
+      ++ true is the Lisp's T value as an SExpression.
+    true?: SEX -> Boolean
+      ++ true?(x) returns the boolean value true, if x is equal to the
+      ++ SExpression true.
+    cons: (SEX, SEX) -> SEX
+      ++ cons(x, l) assumse that list?(l) is true and prepends x to l.
+    has?: (SEX, SEX) -> SEX
+      ++ has?(dom, cat) returns true if domainform dom satisfies category
+      ++ cat and false otherwise.
+    toString: SEX -> String
+      ++ toString(x) returns a string representation of the SExpression x.
+    sx0: SEX
+    sx1: SEX
+    sxATTRIBUTE: SEX
+    sxCATEGORY: SEX
+    sxColon: SEX
+    sxconstant: SEX
+    sxconstructor: SEX
+    sxDollar: SEX
+    sxhas: SEX
+    sxIF: SEX
+    sxJoin: SEX
+    sxMapping: SEX
+    sxnoBranch: SEX
+    sxOne: SEX
+    sxPercent: SEX
+    sxPercentPercent: SEX
+    sxPROGN: SEX
+    sxSIGNATURE: SEX
+    sxType: SEX
+    sxZero: SEX
+  == add
+    TRUE ==> (true@Boolean) pretend SEX -- dangerous?
+    true: SEX == TRUE -- see implementation of true$Boolean as EQ(2,2)$Lisp
+    true?(x: SEX): Boolean == x = TRUE
+    sx0: SEX == sex "0"
+    sx1: SEX == sex "1"
+    sxATTRIBUTE: SEX == sex "ATTRIBUTE"
+    sxCATEGORY: SEX == sex "CATEGORY"
+    sxColon: SEX == sex ":"
+    sxconstant: SEX == sex "constant"
+    sxconstructor: SEX == sex "constructor"
+    sxDollar: SEX == sex "$"
+    sxhas: SEX == sex "has"
+    sxIF: SEX == sex "IF"
+    sxJoin: SEX == sex "Join"
+    sxMapping: SEX == sex "Mapping"
+    sxnoBranch: SEX == sex "noBranch"
+    sxOne: SEX  == convert [sex "One"]
+    sxPercent: SEX == sex "%"
+    sxPercentPercent: SEX == sex "%%"
+    sxPROGN: SEX == sex "PROGN"
+    sxSIGNATURE: SEX == sex "SIGNATURE"
+    sxType: SEX == sex "Type"
+    sxZero: SEX == convert [sex "Zero"]
+
+    cons(x: SEX, l: SEX): SEX ==
+--        assert(list? l)
+        convert(cons(x, destruct l)@List(SEX))
+    has?(domainform: SEX, catform: SEX): SEX ==
+        HasCategory(EVAL(domainform)$Lisp, catform)$Lisp
+    toString(x: SEX): String ==
+        str: String := ""
+        atom? x =>
+            symbol? x =>
+                str := string symbol x
+                str = "T$" => "T"
+                str
+            string? x => string x
+            integer? x => convert(integer x)@String
+            error "toString: expected symbol or string or integer"
+        -- Here we treat a list recursively.
+        l: List SEX := destruct x
+        empty? l => "()"
+        str := concat("(", toString first l)
+        for s in rest l repeat str := concat [str, " ", toString s]
+        concat(str, ")")
+
+-------------------------------------------------------------------
+
+)abbrev domain LITFORM LiteralForm
+++ LiteralForm(S) represents a domain of positive and negative literals.
+LiteralForm(S: SetCategory): SetCategory with
+    positive: S -> %
+      ++ positive(s) returns s as a positive literal.
+    negative: S -> %
+      ++ negative(s) returns s as a negative literal.
+    positive?: % -> Boolean
+      ++ positive?(l) returns true if l is a positive literal and
+      ++  false otherwise.
+    element: % -> S
+      ++ element(l) returns the underlying element forgetting whether
+      ++ it is a positive or negative literal.
+    complement: % -> %
+      ++ complement(l) turns a positive literal into a negative one
+      ++ and a negative literal into a positive.
+  == add
+    Rep ==> Record(positive: Boolean, elem: S)
+    positive(s: S): % == per [true, s]
+    negative(s: S): % == per [false, s]
+    positive?(l: %): Boolean == rep(l).positive
+    element(l: %): S == rep(l).elem
+    complement(l: %): % == per [not positive? l, element l]
+    ((x: %) = (y: %)): Boolean ==
+        positive? x = positive? y and element x = element y
+    coerce(x: %): OutputForm ==
+        positive? x => element(x)::OutputForm
+        hconcat("~"::Symbol::OutputForm, element(x)::OutputForm)
+    hashUpdate!(hs: HashState, x: %): HashState ==
+        hashUpdate!(hashUpdate!(hs, positive? x), element x)
+
+-------------------------------------------------------------------
+
+)abbrev domain DNF DisjunctiveNormalForm
+++ DisjunctiveNormalForm(S) represents conditions in disjunctive
+++ normalform, i.e., it's always a list of lists, so that
+++ ((a1 a2 ... an) (b1 b2 ... bm) ... (z1 ... zk)) stands for
+++ (a1 and ... and an) or ... or (z1 and ... and zk).
+++ () represents FALSE and (()) represents TRUE.
+++ Note that this domain does not represent the full disjunctive normal form.
+++ Therefore, if for two forms x~=y holds, it does not mean that also their
+++ respective truth tables are different. However, if x=y then x represents
+++ the same DNF as y and therefore, their truth tables are equal.
+DisjunctiveNormalForm(S: SetCategory): Join(Logic, SetCategory) with
+    true: %
+      ++ true is a logical constant.
+    false: %
+      ++ false is a logical constant.
+    coerce: S -> %
+      ++ coerce(s) turns the element s into a disjunctive normal form.
+    coerce: LiteralForm S -> %
+      ++ coerce(l) turns the literal l into a disjunctive normal form.
+    literal: (Boolean, S) -> %
+      ++ literal(b, s) turns s into a positive (b=true) or negative (b=false)
+      ++ literal considered as a disjunctive normal form.
+    coerce: % -> Set Set LiteralForm S
+      ++ coerce(x) returns the disjunctive normalform of literals as a
+      ++ set of sets with meaning that
+      ++ [[a1 a2 ... an], [b1 b2 ... bm], ..., [z1 ... zk]] stands for
+      ++ (a1 and ... and an) or ... or (z1 and ... and zk)
+      ++ and [] represents false and [[]] represents true.
+  == add
+    import from SExpressionOperations
+    L ==> LiteralForm S
+    H ==> XHashTable(S, Boolean)
+    Rep ==> List H
+    true: % == per [empty()]
+    false: % == per []
+    false?(x: %): Boolean == empty? rep x
+    true?(x: %): Boolean ==
+        z ==> rep x
+        not empty? z and empty? rest z and empty? first z
+    ((x: %) = (y: %)): Boolean ==
+        asSet z ==> set(rep z) $ Set(H)
+        asSet x = asSet y
+    hashUpdate!(hs: HashState, x: %): HashState == hashUpdate!(hs, rep x)
+    coerce(x: %): OutputForm ==
+        s(z) ==> z :: Symbol :: OutputForm
+        o(z) ==> z :: OutputForm
+        true? x  => s "true"
+        false? x => s "false"
+        oAnd: OutputForm := s " /\ "
+        oOr:  OutputForm := s " \/ "
+        t: Set Set L := x :: Set(Set L)
+        infix(oOr, [infix(oAnd, [o z for z in members a]) for a in members t])
+    literal(b: Boolean, s: S): % ==
+        h: H := empty()
+        h.s := b
+        per [h]
+    coerce(l: L): % == literal(positive? l, element l)
+    coerce(s: S): % == literal(true, s)
+
+    -- Only used for coerce: % -> Set Set L
+    literalSet(h: H): Set L == -- auxiliary
+        a: Set L := empty()
+        for s in keys h repeat
+            if h.s then a := union(a, positive s)
+                   else a := union(a, negative s)
+        a
+    coerce(x: %): Set Set L == set [literalSet h for h in rep x]
+
+    complement(h: H): % == -- auxiliary
+        r: % := false
+        for s in keys h repeat r := r \/ literal(not h.s, s)
+        r
+
+    _~(x: %): % ==
+        true? x => false
+        false? x => true
+        r: % := true
+        for a in rep x repeat r := r /\ complement a
+        r
+
+    -- subset?(a, b) returns true if each (key, entry) pair of a is in b.
+    subset?(a: H, b: H): Boolean ==
+        #a > #b => false
+        for k in keys a repeat
+            if not key?(k, b) or a.k ~= b.k then return false
+        true
+
+    -- If a = (l1, l2, ..., ln) and b = (~l1, l2, ..., ln) then
+    -- orComplement(a, b) returns the key k such that a.k~=b.k and
+    -- a.i=b.i for all i different from k. It returns failed otherwise.
+    orComplement(a: H, b: H): Union(S, "failed") ==
+        s: S
+        n: NonNegativeInteger := 0
+        #a ~= #b => "failed"
+        for k in keys a repeat
+            if not key?(k, b) then return "failed"
+            if (not(a.k) = b.k) then (n := n+1; s:=k)
+        n ~= 1 => "failed" -- There should be exactly one negated literal.
+        s::Union(S, "failed")
+
+    -- orClause(a, y) returns (a \/ y) where a represents a clause of the
+    -- form a = a1 /\ a2 /\ ... /\ ak.
+    orClause(a: H, y: %): % == -- auxiliary
+        -- Because of the absorption law, we can remove all elements
+        -- from the set y that are supersets of a.
+        r: Rep := [b for b in rep y | not subset?(a, b)]
+        -- Because of the absorption law, a need not be added to y if it
+        -- is a superset of one of the elments of y.
+        for b in r repeat if subset?(b, a) then return per r
+        -- If in y there is a set b that has identical keys with a and
+        -- there is exactly one key s in a and b such that a.s = ~(b.s),
+        -- i.e. orComplement(a, b)=s, then we can remove b from r and
+        -- key s from a and start afresh with adding a to y.
+        z: Rep := empty()
+        while not empty? r repeat
+            h: H := first r
+            r := rest r
+            s := orComplement(a, h)
+            if s case S then
+                c: H := copy a
+                remove!(s::S, c) -- Does not fail, because s is a key.
+                if empty? c then return true -- return a DNF
+                return orClause(c, per concat(r, z))
+            z := cons(h, z)
+        per cons(a, z)
+
+    ((x: %) \/ (y: %)): % ==
+        false? x => y
+        false? y => x
+        true? x or true? y => true
+        x = y => x
+        for a in rep x repeat y := orClause(a, y)
+        y
+
+    -- union(a, b) assumes that for all keys k that are in a and b it holds
+    -- a.k = b.k.
+    -- union(a, b) returns the union of the (key,entry) pairs of a and b.
+    union(a: H, b: H): H == -- auxiliary
+        if #a > #b then (a, b) := (b, a) -- copy the longer hash
+        c := copy b
+        for k in keys a repeat c.k := a.k
+        c
+
+    -- andUnion(a, b) returns the union of a and b reduced, i.e,,
+    -- if a literal from set a appears negated as a literal in set b
+    -- then andUnion(a, b) = false.
+    andUnion(a: H, b: H): % == -- auxiliary
+        for k in keys a repeat
+            if key?(k, b) and (not(a.k) = b.k) then return false
+        per [union(a, b)]
+
+    ((x: %) /\ (y: %)): % ==
+        false? x or false? y => false
+        true? y => x
+        true? y => y
+        x = y => x
+        r: % := false
+        for a in rep x repeat for b in rep y repeat r := r \/ andUnion(a, b)
+        r
+
+-------------------------------------------------------------------
+
+)abbrev package CDBTOOL ConstructorDataBaseTools
+++ Query internal information about constructors.
+ConstructorDataBaseTools: with
+    constructorCategory: String -> CATCONDS
+      ++ constructorCategory(s) returns the exports of a contructor as a
+      ++ hash table with keys being the exported expression and value being
+      ++ the condition under which the export happens.
+      ++ Only those exports appear in the hash table that are explicitly given
+      ++ in the definition of the constructor.
+      ++ In case s is a category that is defined like
+      ++ Cat: Category == Join(...) with ...
+      ++ then the result stands for the right-hand side.
+      ++ If s is a domain or package that is defined like
+      ++ Dom: C with ... == ...
+      ++ then the result stands for the part "C with ...".
+      ++ Exports can be considered to be a list of categories and
+      ++ signatures together with the respective condition that must
+      ++ hold, i.e. we return a "list of pairs".
+      ++ The first entry of the pair (i.e., the hash table key) is the
+      ++ s-expression of a category name with parameters, e.g.,
+      ++ "(PolynomialCategory #1 (IndexedExponents (Symbol))"
+      ++ or a signature, e.g.,
+      ++ "(SIGNATURE integrate (% % (Symbol)))".
+      ++ The second entry of the pair (i.e., the hash table value for the
+      ++ above key) is the condition that must be fulfilled for the first
+      ++ part to be exported.
+      ++ Unconditioned exports have the DNF value true as condition.
+      ++ Basic Conditions look often
+      ++ like "(has #1 (Algebra (Fraction (Integer))))" or are
+      ++ negations or conjunctions or disjunctions of such forms, see
+      ++ DisjunctiveNormalForm.
+    documentation: String -> CONDOC
+      ++ documentation(s) returns the docstring for the constructor s
+      ++ together with a hash of signature/docstring pairs of signatures
+      ++ that are explicitly documented in the definition of that
+      ++ constructor.
+    constructorKind: String -> String
+      ++ constructorKind(s) returns "category", "domain", or "package"
+      ++ depending on whether s is the name of a category, domain, or package.
+      ++ It returns "unknown-constructor", if s is not a constructor
+      ++ identifier that is currently known.
+    argumentIdentifiers: String -> List SEX
+      ++ argumentIdentifiers(s) yields the names of the arguments of
+      ++ constructor s.
+    argumentTypes: String -> List SEX
+      ++ argumentTypes(s) returns a list of the types of the arguments
+      ++ of the constructor. The types are in correspondence with
+      ++ argumentIdentifiers(x). Note that for dependent types
+      ++ there might occur placeholders like #1, #2, etc. in the result.
+      ++ These placeholders correspond to the argumentIdentifiers list.
+    replaceArguments: (SEX, List SEX) -> SEX
+      ++ replaceArguments(x, a) replaces the symbols #1, #2, ... in the
+      ++ form x by the given list of expressions from a.
+  == add
+    import from SExpressionOperations
+    import from DisjunctiveNormalForm(SExpression)
+
+    G(x,y) ==> (GETDATABASE(x, sex y)$Lisp)@SEX
+
+    -- replace old $ by %
+    -- replace t#i by #i
+    normalize(x: SEX, s: SEX): SEX ==
+        fromSymbols: SEX := cons(sxDollar, _$TriangleVariableList$Lisp)
+        toSymbols:   SEX := cons(sxPercent, _$FormalMapVariableList$Lisp)
+        SUBLIS(pairList(fromSymbols, toSymbols)$Lisp, s)$Lisp
+
+    -- Translate (IF x y z) forms into [y-->x, z-->(NOT x)] (a hashtable).
+    if2cond(x: SEX): CATCONDS ==
+        t: CATCONDS := empty()
+        symbol? x and x = sxnoBranch => return t -- in recursive call
+        not list? x => error "if2cond: must be list here"
+        x1: SEX := car x
+        x1 = sxATTRIBUTE => (t(car cdr x) := true; return t)
+
+        x1 = sxSIGNATURE =>
+            if list?(x.2) then
+                -- x.2 might be "(Zero)" or "(One)" -->  replace by 0 or 1.
+                s: SEX := cdr cdr x
+                x.2 = sxZero => x := cons(sxSIGNATURE, cons(sx0, s)) -- leave
+                x.2 = sxOne  => x := cons(sxSIGNATURE, cons(sx1, s)) -- if block
+                x := cons(sxSIGNATURE, cons(sex toString car x, s))
+            t.x := true
+            return t
+
+        x1 = sxPROGN =>
+            for c in destruct cdr x repeat
+                i: CATCONDS := if2cond c
+                for catsig in keys i repeat
+                    t.catsig := elt(t, catsig, false$DNF) \/ i.catsig
+            return t
+
+        x1 ~= sxIF =>
+            print(x::OutputForm)
+            error "if2cond: expecting IF"
+
+        -- form is (IF x.2 x.3 x.4)
+        x2: DNF := (x.2)::DNF -- x.2 as positive literal in DNF
+        t := if2cond(x.3) -- then branch
+        for catsig in keys t repeat t.catsig := x2 /\ t.catsig
+        e := if2cond(x.4) -- else branch
+        a: DNF := false -- dummy value to declare a
+        for catsig in keys e repeat
+            if key?(catsig, t) then -- if same signatures
+                if t.catsig = x2 then -- and same condition
+                    -- instead of (u or (not u and v)) we add (u or v)
+                    a := e.catsig
+                else
+                    a := (~x2) /\ e.catsig
+                t.catsig := t.catsig \/ a
+            else
+                t.catsig :=  (~x2) /\ e.catsig
+        t
+
+    withcatconds(x: SEX): CATCONDS ==
+        -- x is assumed to be a form like
+        -- (CATEGORY domain :CCAT) or (CATEGORY package :CCAT)
+        -- CCAT is of the form (recursively defined)
+        -- 1. (IF (has U V) SIG SIG) -- with THEN and ELSE branch
+        --    - U is #i or t#i
+        --    - V is a category name (with arguments)
+        --    - SIG = is of the form CCAT
+        -- 2. (ATTRIBUTE C) where c is a category (with arguments)
+        -- 3. (SIGNATURE funname (targettype :argumenttypes))
+        -- 4. (PROGN :SIGS) where SIGS is a list of one of the three above.
+        --:assert(x.1 = sex "CATEGORY")
+        x := cdr cdr x -- remove CATEGORY and domain/package
+        h: CATCONDS := empty()
+        for c in destruct x repeat -- loop over all entries
+            i: CATCONDS := if2cond c
+            for catsig in keys i repeat
+                h.catsig := elt(h, catsig, false$DNF) \/ i.catsig
+        h
+
+    catconds(x: SEX): CATCONDS ==
+        -- Assume x looks like
+        -- (Join (C1 a11 a12) (C2 a21) ... (CATEGORY ? :CCAT))
+        -- where CCAT is ...
+        -- or x looks like (CATEGORY ? :CCAT)
+        -- We are going to transform this into
+        -- [[(C1 a11 a12), T], [(C2 a21), T], ...
+        --  [(CC1 ...), cond1], ... [(SIGNATURE CS1 ...), conds1], ...]
+        not list? x =>
+            print(x::OutputForm)
+            error "join2cond: must be a list"
+        h: CATCONDS := empty()
+        cats: List SEX := destruct x
+        -- For "Enumeration", "Mapping", "Record", "Union" the call to
+        -- G(x, "CONSTRUCTORCATEGORY") returns NIL.
+        empty? cats => return h
+        c: SEX := first cats
+        c = sxCATEGORY => withcatconds x
+        if c = sxJoin then
+            cats := rest cats
+        else -- a single category -- Example: Foo: BasicType == Integer
+            cats := [x]
+        for c in cats repeat
+            if car c = sxCATEGORY then
+                w: CATCONDS := withcatconds c -- signatures and conditionals
+                for catsig in keys w repeat h.catsig := w.catsig
+              else
+                h.c := true -- unconditioned categories
+        h
+
+    -- exported functions
+    constructorKind(s: String): String ==
+        k: SEX := G(sex s, "CONSTRUCTORKIND")
+        null? k => "unknown-constructor"
+        not symbol? k =>
+            print (k::OutputForm)
+            error "constructorKind: unknown form"
+        toString k
+
+    argumentIdentifiers(s: String): List SEX ==
+        destruct G(convert(s::Symbol), "CONSTRUCTORARGS")
+
+    argumentTypes(s: String): List SEX ==
+        x: SEX := sex s
+        destruct cdr cdr car normalize(x, G(x, "CONSTRUCTORMODEMAP"))
+
+    constructorCategory(s: String): CATCONDS ==
+        x: SEX := sex s
+        catconds normalize(x, G(x, "CONSTRUCTORCATEGORY"))
+
+    documentation(s: String): CONDOC ==
+        x: SEX := sex s
+        ds: String := "undocumented"
+        sigdocs: List SEX := destruct normalize(x, G(x, "DOCUMENTATION"))
+        h: CATDOCS := empty()
+        for sigdoc in sigdocs repeat
+            for typedoc in destruct cdr sigdoc repeat
+                n: SEX := car sigdoc
+                t: SEX := typedoc.1
+                d: String := string(typedoc.2)
+                -- The docstring for the constructor itself is stored
+                -- inside the structure that comes from G(x, 'DOCUMENTATION)
+                -- as a function with name "constructor" and type NIL.
+                n = sxconstructor and null? t => ds := d
+                -- n might be "(Zero)" or "(One)", replace by 0 and 1.
+                if n = sxZero then n := sx0
+                if n = sxOne  then n := sx1
+                nt: SEX := convert [n, t]
+                h.nt := d -- put into the hash table
+        [ds, h]
+
+    -- replace #1, #2, ... in the form x by the given list of symbols
+    replaceArguments(x: SEX, toSymbols: List SEX): SEX ==
+        fromSymbols: List SEX := destruct(_$FormalMapVariableList$Lisp)
+        SUBLIS(pairList(fromSymbols, toSymbols)$Lisp, x)$Lisp
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-- Starting from here, we should not be using LISP anymore.
+-- At most SExpression is used.
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+)abbrev domain CONDATA ConstructorData
+++ The data of a constructor.
+ConstructorData: CoercibleTo(OutputForm) with
+    constructorData: String -> %
+      ++ constructorData(s) creates a datastructure that contains
+      ++ enough information creat documentation for the constructor with
+      ++ identifier x.
+    identifier: % -> String
+      ++ identifier(x) returns the identifier of the constructor, i.e., the
+      ++ name of the constructor without any arguments.
+    kind: % -> String
+      ++ kind(x) returns one of "category", "domain", "package" depending
+      ++ on the kind of the constructor.
+    argumentIdentifiers: % -> List SEX
+      ++ argumentIdentifiers(x) returns a list of ids of the arguments of
+      ++ the constructor. The ids are in correspondence with
+      ++ argumentTypes(x).
+    argumentTypes: % -> List SEX
+      ++ argumentTypes(x) returns a list of the types of the arguments
+      ++ of the constructor. The types are in correspondence with
+      ++ argumentIdentifiers(x).
+    docString: % -> String
+      ++ docString(x) returns the docstring for the constructor.
+    explicitExports: (%, List SEX) -> CATEXPORTS
+      ++ explicitExports(x, args) returns the explicit export of
+      ++ the constructor together with their condition and docstring
+      ++ where the arguments are assumed to be given by args instead of
+      ++ argumentIdentifiers(x). Best used as
+      ++ explicitExports(x, argumentIdentifiers x).
+    categoryExports: % -> CATEXPORTS
+      ++ categoryExports!(x) returns all signatures and categories together
+      ++ with their origins, their conditions and docstrings.
+      ++ For efficiency reasons the first call stores that data into the
+      ++ structure x.
+    catExports: SEX -> CATEXPORTS
+      ++ This function is only an internal helper function for categoryExports.
+  == add
+    Rep ==> Record(cid: String, _
+                   ckind: String, _
+                   cargids: List SEX, _
+                   cargtypes: List SEX, _
+                   cexports: CATEXPORTS, _
+                   cdoc: String)
+    import from SExpressionOperations
+    import from ConstructorDataBaseTools
+
+    -- global cache variable to hold constructor data of all constructors
+    allConstructorData: XHashTable(String, %) := empty()
+
+    -- global cache variable to hold category exports
+    -- It maps "(Complex R)" to the (saturated) exports for that
+    -- particular parameter R.
+    allCategoryExports: XHashTable(SEX, CATEXPORTS) := empty()
+
+    -- auxiliary functions
+
+    replaceArguments(condition: DNF, args: List SEX): DNF ==
+        ncond: DNF := false
+        for a in members(condition::Set(Set LiteralForm SEX)) repeat
+            acond: DNF := true
+            for l in members a repeat
+                s: SEX := replaceArguments(element l, args)
+                d: DNF := (if positive? l then positive s else negative s)::DNF
+                acond := acond /\ d
+            ncond := ncond \/ acond
+        ncond
+
+    -- addExports!(all, catsig, condition) returns all with the exports for
+    -- the constructor catsig added recursively.
+    -- origin is supposed to be a list of constructor name and arguments
+    addExports!(cex: CATEXPORTS, origin: SEX, condition: DNF): CATEXPORTS ==
+        ex: CATEXPORTS := catExports origin
+        -- We must take care of whether there is already something stored for
+        -- this catsig. If ther is, we must 'or' the conditions.
+        -- We neither update the origin nor the docstring.
+        for catsig in keys ex repeat
+            co: DNF := ex.catsig.cond /\ condition
+            if key?(catsig, cex) then
+                cex.catsig.cond := cex.catsig.cond \/ co -- update conditon
+            else
+                -- Only replace orig if it is not yet different from %%.
+                o: SEX := ex.catsig.orig
+                if o = sxPercentPercent then o := origin
+                cex.catsig := [o, co, ex.catsig.docstr] -- new record!
+        cex
+
+--      ++ saturateExports!(cex) adds to cex all categories and signatures
+--      ++ that can be reached from cex, i.e., cex then describes all
+--      ++ exports of the constructor in question.
+    saturateExports!(cex: CATEXPORTS): CATEXPORTS ==
+        for origin in keys cex | car origin ~= sxSIGNATURE repeat
+            cex := addExports!(cex, origin, cex.origin.cond)
+        cex
+
+--    parameterFree?: SEX -> Boolean
+--      ++ parameterFree?(x) returns true if there is no parameter in x.
+--      ++ x is not parameter free if it is an atom or empty list or
+--      ++ when in a list of the form x = (head a1 a2 ... an)
+--      ++ parameterFree?(ai) is false for at least one i.
+    parameterFree?(s: SEX): Boolean ==
+        null? s or atom? s => false
+        for x in rest destruct s repeat not parameterFree? x => return false
+        true
+
+    -- hasForm?(s) returns true if s is of the form (has d c)
+    hasForm?(s: SEX): Boolean == list? s and #s = 3 and s.1 = sxhas
+
+    -- Try to simplify a conditional form and/or/not/has.
+    -- simplify(s, cex, catsig) tries to simplify condition s
+    -- in the context cex where catsig is the current category/signature
+    -- whose export condition is considered.
+    simplifyHasForm(s: SEX,
+                    cex: CATEXPORTS, catsig: SEX, argcats: ARGCATS): SEX ==
+        not hasForm?(s) => s
+        dom: SEX := s.2
+        cat: SEX := s.3
+        dom = sxPercent =>
+            -- if % is unconditionally of category s.3
+            key?(cat, cex) and cex.cat.cond = true => return true@SEX
+            return s
+
+        -- let FriCAS compute whether "s.2 has s.3"
+        if parameterFree? dom and parameterFree? cat and
+           not null? has?(dom, cat) then return true@SEX
+
+        not list? dom =>
+            -- We might have a situation that the arguments say something like
+            --   R: Join(SemiRng, AbelianMonoid)
+            -- and the condition, for example, says
+            --   *: (NonNegativeInteger, %) -> % if R has AbelianMonoid
+            -- as we would get in AbelianMonoidRing(R, E)
+            -- In that case we know that "R has AbelianMonoid" since that
+            -- follows from the requiremet on R in the parameter list.
+            -- We check whether dom is a parameter and whether cat is
+            -- a subcategory of the respective argument category.
+            if key?(dom, argcats) and key?(cat, argcats.dom) then
+                return true@SEX
+            return s -- don't know about parameters
+
+        -- For example, for AlgebraicFunctionField(F, UP, UPUP, modulus)
+        -- we get 'AbelianGroup if Fraction UP has AbelianGroup or
+        -- Fraction UP has FiniteFieldCategory' which should be simplified
+        -- to just 'AbelianGroup' without any condition, because
+        -- Fraction(UP) has AbelianGroup is true in Fraction without any
+        -- condition.
+        -- In other words, we try to find out about inheritance statically
+        -- even in the presence of parameters.
+        cex2: CATEXPORTS := catExports dom
+        key?(cat, cex2) and cex2.cat.cond = true => return true@SEX
+
+        -- No further idea how to simplify.
+        return s
+
+    -- percentHas?(s, catsig) returns true if s is
+    -- '(has % catsig)' and false otherwise.
+    percentHas?(s: SEX, catsig: SEX): Boolean ==
+        not hasForm?(s) => false
+        dom: SEX := s.2
+        cat: SEX := s.3
+        dom = sxPercent and cat = catsig
+
+    L ==> LiteralForm SEX
+    -- Note that in case a is an andClause of at least two literals and
+    -- there is a literal l of the form '(has % Foo)' and 'catsig=Foo',
+    -- then l can be removed from the literals, because in something like
+    -- "if cond and % has Foo then Foo" is equivalent to
+    -- "if cond then Foo".
+    -- However, if we simply have "if % has Foo then Foo", we can
+    -- remove exporting Foo completely. This case is not treated here, but
+    -- in removeFalseExports(form, cex), because it does not only work
+    -- on the conditions, but on the whole export list.
+    simplifyAndClause(a: Set L,
+                      cex: CATEXPORTS, catsig: SEX, argcats: ARGCATS): DNF ==
+        d: DNF := true
+        for l in members a repeat
+            sx: SEX := simplifyHasForm(element l, cex, catsig, argcats)
+            true? sx =>
+                not positive? l => return false
+            null? sx => -- false
+                positive? l => return false
+            -- sx is an unevaluteted SExpression
+            d := d /\ literal(positive? l, sx)
+        -- Now d is an andClause.
+        andClause: List L := members first members(d::Set(Set L))
+        -- If the condition d (andClause) consists of just one literal, we
+        -- can simply return that condition.
+        if #andClause = 1 then return d
+        -- Otherwise, all conditions of the form '(has % catsig)' can be
+        -- removed.
+        d := true
+        for l in andClause | not percentHas?(element l, catsig) repeat
+            d := d /\ (l::DNF)
+        d
+
+    -- implies?(clause1, clause2) returns true, if clause1 implies
+    -- clause2, i.e. clause2 is unnecessary.
+    -- This is the case if #clause1=1 and positive? first clause1 and
+    -- in clause2 there is one positive literal (has dom2 cat2) such that
+    -- element first clause1 = (has dom1 cat1) and cat1 is in the exports
+    -- of cat2 with a true condition.
+    implies?(clause1: List L, clause2: List L): Boolean ==
+        #clause1~=1 or not positive? first clause1 => false
+        e1: SEX := element first clause1
+        not hasForm? e1 => false
+        cat1: SEX := e1.3
+        for l in clause2 | positive? l repeat
+            e2: SEX := element l
+            if hasForm? e2 then
+                cex2: CATEXPORTS := catExports(e2.3)
+                if key?(cat1, cex2) and cex2.cat1.cond = true then
+                    return true
+        false
+
+    -- redundant?(clause, clauses) returns true, if clause follows
+    -- from one of the clauses, i.e. clause is redundant.
+    -- This is the case if there is one clause c in clauses such that
+    -- implies?(c, clause}.
+    redundant?(clause: List L, clauses: List List L): Boolean ==
+        for c in clauses repeat if implies?(c, clause) then return true
+        false
+
+    -- removeRedundant(c, clauses) removes every clause from clauses that
+    -- is made redundant by c.
+    removeRedundant(c: List L, clauses: List List L): List List L ==
+        [clause for clause in clauses | not implies?(c, clause)]
+
+    -- We might end up with conditions like
+    -- 'R has Ring or R has CharacteristicZero and ...'.
+    -- Since CharacteristicZero inherits unconditionally from Ring,
+    -- that condition can be simplified to 'R has Ring'.
+    -- So we take every component of an orForm (a conjunctive clause).
+    -- If it just consists of a positive literal, we remove all other
+    -- conjunctive clauses that are consequences of the current literal.
+    simplifyViaInheritance(r: DNF): DNF ==
+        s: Set(Set L) := r :: Set(Set L)
+        #s < 2 => r -- Nothing can be done or needs to be done.
+        clauses: List List L := [[l for l in members a] for a in members s]
+        newClauses: List List L := empty()
+        while not empty? clauses repeat
+            clause := first clauses
+            clauses := rest clauses
+            if not redundant?(clause, clauses) then
+                clauses := removeRedundant(clause, clauses)
+                newClauses := cons(clause, newClauses)
+        -- convert back into DNF
+        r := false
+        for c in newClauses repeat
+            t: DNF := true
+            for l in c repeat t := t /\ (l::DNF)
+            r := r \/ t
+        r
+
+    -- decpompose, evaluate, and combine DNF
+    simplifyDNF(condition: DNF,
+                cex: CATEXPORTS, catsig: SEX, ac: ARGCATS): DNF ==
+        s: Set Set L := condition :: Set(Set L)
+        r: DNF := false
+        for a in members s repeat r := r \/ simplifyAndClause(a, cex, catsig, ac)
+        simplifyViaInheritance r
+
+    addArgCat!(argcat: CATEXPORTS, t: SEX): CATEXPORTS ==
+        not list? t or t.1 = sxType or t.1 = sxCATEGORY => argcat
+        cex: CATEXPORTS := catExports t
+        argcat.t := [t, true@DNF, ""]
+        for catsig in keys cex | car catsig ~= sxSIGNATURE repeat
+            argcat.catsig := cex.catsig
+        argcat
+
+    -- argumentCategory(t) assumes that t is a constructor form, i.e., either
+    -- a domain form or a category form. For domain forms empty() is
+    -- returned. For category forms all inherited categories are returned.
+    argumentCategory(t: SEX): CATEXPORTS ==
+        argcat: CATEXPORTS := empty()
+        not list? t or t.1 = sxType or t.1 = sxCATEGORY => argcat
+        t.1 = sxJoin =>
+            for s in rest destruct t repeat argcat := addArgCat!(argcat, s)
+            return argcat
+        constructorKind toString(t.1) ~= "category" => argcat
+        addArgCat!(argcat, t)
+
+    -- onePositiveLiteral(d) returns an SExpression s, such that
+    -- (d=s::DNF). If no such s exists, it returns NIL, i.e, an
+    -- SExpression x such that null? x is true.
+    onePositiveLiteral(d: DNF): SEX ==
+        sxNil: SEX := convert(empty()$List(SEX))
+        dnfList: List Set L := members(d :: Set(Set L))
+        #dnfList ~= 1 => return sxNil
+        a: List L := members first dnfList
+        #a ~= 1 => return sxNil
+        l: LiteralForm := first a
+        if positive? l then element l else sxNil
+
+    -- removeFalseExports!(form, cex) removes exports from cex whose
+    -- conditions are false or cannot be true where cex are the exports
+    -- corresponding to form.
+    -- Remove export 'Foo' if the condition is just '(has % Foo)',
+    -- i.e., ce.cond is a single literal, and % has no arguments.
+    -- If % has arguments, then 'if arg has Bar then Foo' would lead
+    -- to a condition '(has arg Bar) \/ (has % Foo)' for the export of
+    -- Foo, i.e., not a condition with just one literal. In such a
+    -- case we could simplify to '(has arg Bar)', but this is not yet done.
+    -- In other words, we can remove exports that have '(has % Foo)' from
+    -- the export list if Foo is not among the exports cex, regardless
+    -- of the number of arguments of %.
+    removeFalseExports!(form: SEX, cex: CATEXPORTS): CATEXPORTS ==
+        -- First remove 'Foo' if the (only) condition is '% has Foo'.
+        catsigs: List SEX := keys cex
+        for catsig in catsigs | not (cex.catsig.cond = true) repeat
+            ce: CATEXPORT := cex.catsig
+            s: SEX := onePositiveLiteral(ce.cond)
+            if not null? s and percentHas?(s, catsig) then remove!(catsig, cex)
+
+        -- Now we can remove all exports with condition '% has Foo', if
+        -- Foo is not among the exports of %.
+        -- WRONG!
+        -- Assume
+        --   C1: Category == with {if % has shallowlyMutable then foo: % -> %}
+        --   D1: C1 == add ...
+        --   D2: Join(C1, shallowlyMutable) == add ...
+        -- then D1 wouldn't export foo, while D2 would, so we cannot simply
+        -- remove foo from the exports of C1.
+        -- However, since FriCAS does not have the "extend" keyword (as Aldor),
+        -- if the argument "form" is a domain, i.e. kind="domain", then
+        -- removal of the signature is OK.
+        constructorKind toString(form.1) ~= "domain" => return cex
+        catsigs := keys cex
+        for catsig in catsigs | not (cex.catsig.cond = true) repeat
+            ce: CATEXPORT := cex.catsig
+            s: SEX := onePositiveLiteral(ce.cond)
+            if not null? s and hasForm?(s) and s.2 = sxPercent then
+                -- Check that s.3 is not exported in cex.
+                -- Note that we assume here that cex has saturated exports.
+                if not key?(s.3, cex) then remove!(catsig, cex)
+        return cex
+
+    catExports(form: SEX): CATEXPORTS == -- auxiliary for categoryExports
+        key?(form, allCategoryExports) => allCategoryExports.form
+        not list? form => error "catExports: not a correct form"
+        x := constructorData toString(form.1)
+        args: List SEX := rest destruct form
+        cex: CATEXPORTS := saturateExports! explicitExports(x, args)
+        -- Although we are not yet finished with cex, we set it already, so
+        -- that a recursive call of catExports with identical argument,
+        -- returns already by returning that temporary result instead of
+        -- recursing indefinitely.
+        -- Fixes Problem with SemiRng and BiModule(%,%) after commit r2102.
+        allCategoryExports.form := cex
+        -- Now we have collected all signatures and categories. It's time
+        -- to try to evaluate and simplify the conditions.
+        argcats: ARGCATS := empty()
+        for id in argumentIdentifiers x for t in argumentTypes x repeat
+            argcat: CATEXPORTS := argumentCategory t
+            if not empty? argcat then argcats.id := argcat
+        -- simplify the conditions
+        for catsig in keys cex | not (cex.catsig.cond = true) repeat
+            ce: CATEXPORT := cex.catsig
+            ce.cond := simplifyDNF(ce.cond, cex, catsig, argcats)
+        removeFalseExports!(form, cex)
+
+    computeConstructorData(s: String): % == -- auxiliary
+        -- kind = "category", "domain", "package"
+        kind: String := constructorKind s
+        -- argument identifiers
+        argids: List SEX := argumentIdentifiers s
+        -- argument types
+        argtypes: List SEX :=
+            [replaceArguments(t, argids) for t in argumentTypes s]
+        -- what does the constructor export explicitly...
+        catconds: CATCONDS := constructorCategory s
+        -- what is documented ...
+        condoc: CONDOC := documentation s
+        doc: String := condoc.docstr -- constructor docstring
+        catdocs: CATDOCS := condoc.cds -- signatures with docstrings
+        -- now we build up signatures with conditions and documentation
+        exports: CATEXPORTS := empty()
+        for catsig in keys catconds repeat
+            scond: DNF := catconds.catsig
+            sdoc: String := "" -- initialize with no documentation
+            -- now we are trying to find some docstring
+            if car catsig = sxSIGNATURE then
+                sig := cdr catsig -- remove "SIGNATURE"
+                -- Maybe there is a "constant" tag in the signature
+                -- We simply ignore the third element in sig.
+                if #sig=3 then sig := convert [sig.1, sig.2]
+                -- Now we can check whether that signature is documented.
+                if key?(sig, catdocs) then sdoc := catdocs.sig
+            exports.catsig := [sxPercentPercent, scond, sdoc]
+        per [s, kind, argids, argtypes, exports, doc]
+
+    -- exported functions
+
+    constructorData(con: String): % ==
+        key?(con, allConstructorData) => allConstructorData.con
+        allConstructorData.con := computeConstructorData con
+    identifier(x: %): String == rep(x).cid
+    kind(x: %): String == rep(x).ckind
+    argumentIdentifiers(x: %): List SEX == rep(x).cargids
+    argumentTypes(x: %): List SEX ==
+        [replaceArguments(t, rep(x).cargids) for t in rep(x).cargtypes]
+    docString(x: %): String == rep(x).cdoc
+    explicitExports(x: %, args: List SEX): CATEXPORTS ==
+        ex: CATEXPORTS := rep(x).cexports
+        h: CATEXPORTS := empty()
+        for catsig in keys ex repeat
+            catexport: CATEXPORT := ex.catsig
+            ncatsig: SEX := replaceArguments(catsig, args)
+            ncond: DNF := replaceArguments(catexport.cond, args)
+            h.ncatsig := [catexport.orig, ncond, catexport.docstr]
+        h
+    categoryExports(x: %): CATEXPORTS ==
+        form: SEX := convert cons(sex identifier x, argumentIdentifiers x)
+        catExports form
+    coerce(x: %): OutputForm == rep(x)::OutputForm
+
+-------------------------------------------------------------------
+
+)abbrev package CDOCSPX ConstructorDocumentationSphinxTools
+++ Some sphinx specific functions that are also needed for linking
+++ inside the docstrings, i.e. for ConstructorDocumentationTeXTools.
+ConstructorDocumentationSphinxTools(mustDocument?): Exports == Implementation
+ where
+  mustDocument?: XHashTable(String, Boolean)
+  Exports ==> with
+    anchor: String -> RSTString
+      ++ anchor(s) encodes s for its use as a sphinx anchor/label.
+      ++ Since we want to generate unique anchors, we encode them as
+      ++ the hexadecimal representation of the UTF-8 representation of
+      ++ S prepended by the small letter "l".
+    anchor2: (String, String) -> RSTString
+      ++ anchor2(id, type) returns anchor(type) with the hexString of
+      ++ id appended (and separated by a minus sign).
+    sphinxref: (String, String, String) -> RSTString
+      ++ sphinxref(role, text, ref) creates a sphinx text representing
+      ++ the text with an underlying link to ref with the given role.
+    constructorRef: String -> RSTString
+      ++ constructorRef(constructor) creates a sphinx reference to the
+      ++ constructor. For constructors in the list of constructors
+      ++ whose .rst files will be created this give a
+      ++ :ref:`constructor`<constructor>`. For other constructors, we
+      ++ refer to the official FriCAS API via :fricasapi:`constructor
+      ++ <constructor.html>`.
+    functionRef: (String, String) -> RSTString
+      ++ functionRef(id, constructor) creates a sphinx reference the
+      ++ function with name id in the page of the constructor. If the
+      ++ constructor is in the list of constructors whose .rst files
+      ++ will be created (mustDocument?(constructore) is true), then
+      ++ it refers to this file. Otherwise mustDocument?(constructore)
+      ++ is false), the reference is into the official FriCAS API
+      ++ pages. If the constructor is not in the mustDocument? hash
+      ++ then just id is returned. If constructor="", then id is
+      ++ output in a special style without a link.
+  Implementation ==> add
+    hex(c: Character): RSTString ==
+        digits := "0123456789abcdef"
+        z: Record(quotient: Integer, remainder: Integer) := divide(ord c, 16)
+        q: Integer := z.quotient
+        r: Integer := z.remainder
+        construct([digits(q+1), digits(r+1)]$List(Character))
+
+    hexString(str: String): String == concat [hex c for c in entries str]
+
+    anchor(str: String): RSTString == concat("l", hexString str)
+
+    anchor2(id: String, type: String): RSTString ==
+        concat ["l", hexString type, "-", hexString id]
+
+    sphinxref(role: String, text: String, ref: RSTString): RSTString ==
+        concat ["\ ", role, "`", text, " <", ref, ">`\ "]
+
+    rstEscapeChar(c: Character): RSTString ==
+       c = char "*" => "\*"
+       c = char "\" => "\\"
+       c :: RSTString
+
+    rstEscapeStr(str: String): RSTString ==
+        concat [rstEscapeChar c for c in entries str]
+
+    constructorRef(constructor: String): RSTString ==
+        not key?(constructor, mustDocument?) => constructor
+        label: RSTString := anchor constructor
+        mustDocument?(constructor) => sphinxref(":ref:", constructor, label)
+        sphinxref(":fricasapi:", constructor, concat(constructor, ".html"))
+
+    functionRef(id: String, constructor: String): RSTString ==
+        funid := rstEscapeStr id
+        constructor = "%" => concat [":spadfun:`", funid, "`"]
+        empty? constructor or not key?(constructor, mustDocument?) => funid
+
+        ref: RSTString := anchor2(id, constructor)
+        mustDocument?(constructor) => sphinxref(":ref:", funid, ref)
+
+        sphinxref(":fricasapi:", funid, concat [constructor, ".html#", ref])
+
+-------------------------------------------------------------------
+
+)abbrev package CDOCTEX ConstructorDocumentationTeXTools
+++ Transform current FriCAS (LaTeX-like) docstring to reST format.
+ConstructorDocumentationTeXTools(mustDocument?): Exports == Implementation
+ where
+  mustDocument?: XHashTable(String, Boolean)
+  Exports ==> with
+    tex2rst: String -> RSTString
+  Implementation==> add
+    import from ConstructorDocumentationSphinxTools mustDocument?
+
+    -- auxiliary functions
+
+    -- endMacroIndex(str) finds the index in str with the closing brace.
+    -- It returns 0 if no closing brace is found.
+    endMacroIndex(line: String): NonNegativeInteger ==
+        p: NonNegativeInteger := 0
+        len: NonNegativeInteger := #line
+        bc: Integer := 1 -- brace count
+        while (p := p+1; p<=len) repeat
+            c: Character := line.p
+            c = char "{" => bc := bc+1 -- next iteration
+            c = char "}" =>
+                bc := bc-1
+                if zero? bc then return p
+        0$NonNegativeInteger
+
+    --rhx: TODO: should rather get the raw ++ docstring.
+    -- In the database a comma is seen as ",{}", thus we substitute back.
+    removeCommaBraces(s: String): String ==
+        -- replace ",{}" by ","
+        n: Integer := 1
+        while (n := position(",{}", s, n)) > 0 repeat
+            s := concat(s(1..n), s(n+3..#s))
+        s
+
+    -- formatDoc0(doc, s, r) replaces all occurrences of s in doc by r.
+    formatDoc0(doc: String, searchString: String, replace: String): RSTString ==
+        n: Integer := position(searchString, doc, 1)
+        zero? n => doc
+        prefix: RSTString := doc(1..n-1)
+        doc := formatDoc0(doc(n+#searchString..#doc), searchString, replace)
+        concat [prefix, replace, doc]
+
+    -- formatDoc1(doc s, trf) replaces each occurrenc that starts with
+    -- the string s and ends with the next "}" by trf(x) where x is
+    -- the text from doc between s and the next "}".
+    -- It's an error if the closing brace is not found.
+    formatDoc1(doc: String, searchString: RSTString, _
+               transformArg: String -> RSTString): RSTString ==
+        n: Integer := position(searchString, doc, 1)
+        zero? n => doc
+        prefix: RSTString := doc(1..n-1)
+        doc := doc(n+#searchString..#doc)
+        n := endMacroIndex doc
+        n = 0 =>
+            print(doc::OutputForm)
+            error "formatDoc1: no closing brace"
+        arg: RSTString :=
+            formatDoc1(doc(1..n-1), searchString, (x: String): String +-> x)
+        suffix: RSTString :=
+            formatDoc1(doc(n+1..#doc), searchString, transformArg)
+        concat [prefix, transformArg arg, suffix]
+
+    -- formatDoc2(doc s, trf) replaces each occurrenc that starts with
+    -- the string s, is followed by "}{" and ends with the next "}" by
+    -- trf(x,y) where x and y are the texts from doc between s and
+    -- "}{" and between "}{" and the next "}", respectively.
+    -- It's an error if the closing braces are not found.
+    formatDoc2(doc: String, searchString: String, _
+               transformArgs: (String, String) -> RSTString): RSTString ==
+        n: Integer := position(searchString, doc, 1)
+        zero? n => doc
+        prefix: String := doc(1..n-1)
+        doc := doc(n+#searchString..#doc)
+        n := endMacroIndex doc
+        n = 0 =>
+            print(doc::OutputForm)
+            error "formatDoc2: no first closing brace"
+        arg1: String := doc(1..n-1)
+        n>=#doc or doc(n+1) ~= char "{" =>
+            print(doc::OutputForm)
+            error "formatSpad2: no second opening brace"
+        doc := doc(n+2..#doc)
+        n := endMacroIndex doc
+        n = 0 =>
+            print(doc::OutputForm)
+            error "formatDoc2: no second closing brace"
+        arg2: String := doc(1..n-1)
+        suffix: String := formatDoc2(doc(n+1..#doc), searchString,transformArgs)
+        concat [prefix, transformArgs(arg1, arg2), suffix]
+
+    spad(s: String): RSTString == concat ["\ ``", s, "``\ "]
+    role(r: String): String -> RSTString ==
+        (s: String): RSTString +-> concat ["\ :", r, ":`", s, "`\ "]
+    emph(s: String): RSTString == concat ["\ *", s, "*\ "]
+    boldface(s: String): RSTString == concat ["\ **", s, "**\ "]
+    -- Make a link to a function in the respective constructor.
+
+    id(s: String): RSTString == s
+    id2(s1: String, s2: String): RSTString == s2
+    replace(s: String): String -> RSTString == (x: String): RSTString +-> s
+    tex2rst(s: String): RSTString ==
+        s := removeCommaBraces s
+        s := formatDoc1(s, "\spad{", spad)
+        s := formatDoc1(s, "\spadop{",   role "spadop")
+        s := formatDoc1(s, "\spadfun{",  role "spadfun")
+        s := formatDoc1(s, "\spadtype{", constructorRef)
+        s := formatDoc1(s, "{\em ", emph)
+        s := formatDoc1(s, "{\it ", emph)
+        s := formatDoc2(s, "\spadfunFrom{", functionRef)
+        s := formatDoc2(s, "\spadopFrom{", functionRef)
+        s := formatDoc2(s, "\indented{", id2)
+        s := formatDoc1(s, "\undocumented{", replace "is undocumented.")
+        s := formatDoc1(s, "\spadignore{", id)
+        s := formatDoc1(s, "\space{", replace " ")
+        s := formatDoc1(s, "\tab{", replace " ")
+        s := formatDoc1(s, "\LaTeX{", replace "LaTeX")
+        s := formatDoc1(s, "\TeX{", replace "TeX")
+        s := formatDoc0(s, "\blankline", " ")
+        s := formatDoc0(s, "\newline", " ")
+
+-------------------------------------------------------------------
+
+)abbrev package CONDOCG ConstructorDocumentationGeneric
+ConstructorDocumentationGeneric(mustDocument?): Exports == Implementation
+ where
+  mustDocument?: XHashTable(String, Boolean)
+    -- If for some constructor c the entry mustDocument?.c does not exist,
+    -- then just c is output, otherwise if the result is true, a :ref:
+    -- reference is generated, if it is false, a :fricasapi: reference
+    -- is generated, see xreftype.
+  Exports ==> with
+    documentConstructors: (String, String, CONSTRUCTORS) -> Void
+      ++ documentConstructors(title, kind, cs) documents all constructors
+      ++ of a certain kind (category, package, domain).
+  Implementation ==> add
+    import from SExpressionOperations
+    import from ConstructorDataBaseTools
+    import from ConstructorDocumentationSphinxTools(mustDocument?)
+    import from ConstructorDocumentationTeXTools(mustDocument?)
+
+    -- sort constructors alphabetically where case does not matter
+    lex(s1: String, s2: String): Boolean == lowerCase s1 < lowerCase s2
+
+    -- This function is for sorting signatures.
+    -- We sort operators (non-alphabet letters as initial characters) as
+    -- being smaller than identifiers that start with [a-zA-Z]. The special
+    -- idenifiers 0 and 1 are even smaller.
+    lt(s1: String, s2: String): Boolean ==
+        c1: Character := s1.1
+        c2: Character := s2.1
+        a1: Boolean := alphabetic? c1
+        a2: Boolean := alphabetic? c2
+        a2 =>
+            a1 => lowerCase s1 < lowerCase s2
+            true
+        a1 => false
+        -- we sort non-alphabetic identifiers
+        c1 = char "0" => true
+        c2 = char "0" => false
+        c1 = char "1" => true
+        c2 = char "1" => false
+        lowerCase s1 < lowerCase s2
+
+    leftTrimSpace(s: String): String == leftTrim(s, char " ")
+
+    -- joinBy(sep, l) returns a string where all elements of l are
+    -- concatenated by sep as the separation string.
+    joinBy(separator: String, l: List String): String ==
+        empty? l => ""
+        str: String := first l
+        for s in rest l repeat str := concat [str, separator, s]
+        str
+
+    -- formatTUPLE(l) returns a string where all elements of l are
+    -- concatenated with ", " as the separation string and with
+    -- parentheses around the expression if the length of the list l is
+    -- different from 1.
+    -- Additionally, parentheses will be added around the argument, if
+    -- the argument string begins with a space.
+    formatTUPLE(l: List String): RSTString ==
+        #l = 1 => -- one entry
+            a := first l
+            a.1 ~= char " " => a -- without parens
+            a.1 := char "("
+            concat [a, ")"]
+        concat ["(", joinBy(", ", map(leftTrimSpace, l)), ")"]
+
+    -- formatTypeWithArguments(id, args) returns the prefix form of id
+    -- with arguments arg, i.e. for ("f", ["a", "b"]) we get
+    -- "f(a, b)". The one-argument case ("f", ["a"]) will return
+    -- "f a" without parentheses if the firt character of "a" is not a
+    -- space and will return "f(a)" otherwise.
+    formatTypeWithArguments(id: String, args: List String): RSTString ==
+        empty? args => id
+        empty? rest args => -- just one argument
+            a := first args
+            a.1 ~= char " " => concat [id, " ", a] -- without parens
+            a.1 := char "("
+            concat [id, a, ")"]
+        concat(id, formatTUPLE args)
+
+    nostyle(str: String): RSTString == str
+    xreftype(c: String): RSTString ==
+        -- undocumented  constructors
+        c="%" or c="Record" or c="Union" or c="Enumeration" => c
+        constructorRef c
+
+    type2rstAux(s: SEX, style: String -> String): RSTString ==
+        -- Assume an expression like (EltableAggregate Key (Integer))
+        -- Transform it into Eltable(Key, Integer) where Eltable and
+        -- Integer will be links, but Key will not.
+        -- As a special case we accept (SIGNATURE id (A B ...)) and
+        -- treat it like (Mapping A B ...) as needed in formatSIGNATURE.
+        -- If a constructed type is complex like "A -> B", then we mark
+        -- it by prepending a space in front of it.
+        not list? s => toString s
+        s1: SEX := car s
+        s := cdr s
+        -- Write a: B instead of :(a,B).
+        s1 = sxColon =>
+            concat [toString(s.1), ": ", leftTrimSpace type2rstAux(s.2, style)]
+        s1 = sxMapping or s1 = sxSIGNATURE =>
+            if s1 = sxSIGNATURE then
+               s := cdr s -- remove the function id
+               a := cdr s -- additional information
+               s := car s -- the type part
+               -- constant case first -- write 0: % instead of 0: () -> %
+               not null? a and car a = sxconstant =>
+                   return type2rstAux(s, style)
+            tt: String := leftTrimSpace type2rstAux(car s, style) -- target type
+            sourceTypes: List SEX := destruct cdr s
+            t: List String := [type2rstAux(x, style) for x in sourceTypes]
+            st: String := formatTUPLE t
+            concat [" ", st, " -> ", tt]
+        args: List String := [type2rstAux(x, style) for x in destruct s]
+        formatTypeWithArguments(style toString s1, args)
+
+    type2rst(s: SEX, style: String -> String): String ==
+        leftTrimSpace type2rstAux(s, style)
+
+    type2rstref(s: SEX): String == type2rst(s, xreftype)
+
+    formatHeader(con: String, argids: List String): List String ==
+        con := formatTypeWithArguments(con, argids)
+        str := copy con
+        fill!(str, char "=")
+        [con, str]
+
+    -- prefix(p,l) prepends string p to all strings in list l
+    prefix(p: String, l: List String): List String == [concat(p, s) for s in l]
+
+    -- The expression s is assumed to have the form
+    --   (SIGNATURE funid (tt st1 st2 .. stn))
+    -- where tt is the target type
+    -- st1, ..., stn are the source types (0<=n)
+    -- That should be turned int
+    --   funid: (st1,...,stn) -> tt
+    -- It might happen that the signature looks like
+    --   (SIGNATURE 0 (%) constant)
+    -- which is turned into
+    --   0: %
+    -- instead of
+    --   0: () -> %
+    functionIdentifier(s: SEX): String == toString car cdr s
+
+    formatSIGNATURE(s: SEX, funid: String, style: String -> String): String ==
+        type: String := type2rst(s, style)
+        concat [funid, "\: ", type]
+
+    -- signature without embellishment or character escaping
+    -- (for key in XHashTable)
+    plainSIGNATURE(s: SEX): String ==
+        formatSIGNATURE(s, functionIdentifier s, nostyle)
+
+    -- Create string (with embellishment depending on origin) for the
+    -- function signature.
+    -- If origin is "%", the function name is typeset via the :spadfun: role.
+    -- If origin is "" or key?(origin, mustDocument?) is false, then
+    -- the function name does not link to anything.
+    -- If mustDocument?(origin) then the function name links to the
+    -- documentation in the constructor name given by origin, otherwise
+    -- the function name links to the official FriCAS API documentation.
+    functionSIGNATURE(s: SEX, origin: String): String ==
+        funref: String := functionRef(functionIdentifier s, origin)
+        formatSIGNATURE(s, funref, xreftype)
+
+    formatCATEGORYType(type: SEX): List String ==
+        sigs: List SEX := destruct cdr cdr type
+        -- We sort the signatures.
+        h: XHashTable(String, String) := empty()
+        for s in sigs repeat h(plainSIGNATURE s) := functionSIGNATURE(s, "")
+        [h.sig for sig in sort(lt, keys h)]
+
+    -- The treatment of signatures might lead to a listing of signatures
+    -- with repeated entries. However, as of the time of review
+    -- (12-Jul-2017), arguments come with at most one "cxCATEGORY" form,
+    -- i.e., we could even write "sigs := formatCATEGORYType c".
+    formatJoinType(type: SEX): CATSSIGS ==
+        cats: List String := empty()
+        sigs: List String := empty()
+        for c in destruct cdr type repeat
+            car c = sxCATEGORY => sigs := concat(formatCATEGORYType c, sigs)
+            cats := cons(type2rstref c, cats)
+        [reverse! cats, sigs]
+
+    formatConstructorType(type: SEX): CATSSIGS ==
+        -- Example AlgebraicFunctionField: The 4th argument is of
+        -- type #3. So this is simply the name of an argument, i.e. a symbol.
+        symbol? type => [[type2rstref type], empty()]
+        type.1 = sxJoin => formatJoinType type
+        type.1 = sxCATEGORY => [empty(), formatCATEGORYType type]
+        -- Here we have a single type.
+        [[type2rstref type], empty()]
+
+    -- formatArguments(id, type) takes a constructor argument
+    -- together with its type expression and returns two lists of string.
+    -- The first entry denotes named categories or a constructor,
+    -- i.e. something like Join(A, B) or just A. The following entries
+    -- denote signatures.
+    -- The type form can look like this
+    -- * (Join C1 C2 .. Cn)
+    -- * (CATEGORY domain S1 S2 .. Sm)
+    -- * (ConstructorId ...)
+    -- where one of the Ci may be a (CATEGORY ...) form and
+    -- the Sj are (SIGNATURE ...) forms.
+    formatArgument(id: String, type: SEX): CATSIGS ==
+        r: CATSSIGS := formatConstructorType type
+        str: String := concat(id, ": ")
+        if #(r.fcats) = 1 then
+            str := concat(str, first(r.fcats))
+        else if #(r.fcats) > 1 then -- Join
+            str := concat(str, formatTypeWithArguments("Join", r.fcats))
+        if not empty? r.fsigs then str := concat(str, " with")
+        [str, r.fsigs]
+
+    -- If the type of the parameter looks like
+    --   Database(S) : Exports == Implementation where
+    --     S : OrderedSet with
+    --       elt : (%, Symbol) -> String
+    --       display : % -> Void
+    -- we get from GETDATABASE an expression like this:
+    --   (Join (OrderedSet)
+    --         (CATEGORY  domain
+    --           (SIGNATURE elt ((String) $ (Symbol)))
+    --           (SIGNATURE display ((Void) $))))
+    -- Thus, we must include the case that the type is a category
+    -- with join and explicit exports.
+    formatArguments(argids: List String, argtypes: List SEX): List String ==
+        args: List String := empty()
+        for a in argids for t in argtypes repeat
+            r: CATSIGS := formatArgument(a, t)
+            sigs: List String := prefix("    ", r.fsigs)
+            sigs := concat [[s, ""] for s in sigs]
+            args := concat [args, [concat("* ", r.fcat), ""], sigs]
+        args
+
+    -- We can assume that the expression looks like (has D C) where C
+    -- is a category form so it can also be a signature.
+    formatLiteral(l: LiteralForm SEX): String ==
+        s: SEX := element l
+        h: String := if positive? l then " has " else " hasn't "
+        list? s and #s=3 and s.1 = sxhas => -- hasForm?(s)$ConstructorData
+            c: String := if car(s.3) = sxSIGNATURE _
+                             then functionSIGNATURE(s.3, "") _
+                             else type2rstref(s.3)
+            concat [type2rstref(s.2), h, c]
+        print(l::OutputForm)
+        error "not a has-form literal"
+
+    -- Result should be read as if "and" binds stronger than "or".
+    formatCondition(condition: DNF): String ==
+        joinBy(" or ", [joinBy(" and ", [formatLiteral l for l in members a])
+                        for a in members(condition::Set(Set LiteralForm SEX))])
+
+    formatIf(s: DNF): String ==
+        s = true => "" -- signature is conditionless
+        concat("if ", formatCondition s)
+
+    -- We assume that l contains as the first entry a label/anchor.
+    -- Such labels/anchors should not go into the .rst file multiple
+    -- times. So, we record the first appearance of a label and remove
+    -- the first element of l if it is already recorded.
+    uniq!(h: XHashTable(String, String), l: List String): List String ==
+        empty? l => l
+        key?(first l, h) => rest l
+        h(first l) := first l
+        l
+
+    -- format reST for all signature
+    -- signatures from origin=%% should give their docstring
+    -- whereas other signatures should have a link to their defining docstring
+    reStructuredTextSignatures(c: ConstructorData): List RSTString ==
+        cex: CATEXPORTS := categoryExports c
+        sigs: XHashTable(String, List String) := empty()
+        for catsig in keys cex | car catsig = sxSIGNATURE repeat
+            catexport: CATEXPORT := cex.catsig
+            origin: String := type2rstref catexport.orig
+            sig: String := plainSIGNATURE catsig
+            condition: String := formatIf(catexport.cond)
+            -- id of the function for the anchor and index
+            -- We don't need to escape backslash.
+            id: String := toString(catsig.2)$SExpressionOperations
+            cid: String := identifier c
+            label: String := anchor2(id, cid)
+
+            -- The label line must be the first entry in the list for
+            -- uniq to work correctly.
+            origin ~= "%%" => -- a function exported from another constructor
+                -- that gives a link to the respective definition
+                o: String := toString car catexport.orig
+                fsig: RSTString := functionSIGNATURE(catsig, o)
+                sigs.sig := [concat [".. __", label, ":"], _
+                             "", _
+                             concat [fsig, " ", condition], _
+                             concat("  from ", origin)]
+
+            -- Here we treat a function exported from another constructor.
+            fsig: RSTString := functionSIGNATURE(catsig, "%")
+            sigs.sig := [concat [".. __", label, ":"], _
+                         "", _
+                         ".. index::", _
+                         concat ["   pair: ", cid, "; ", id], _
+                         "", _
+                         concat [fsig, " ", condition], _
+                         concat("  ", tex2rst(catexport.docstr))]
+
+        -- We should not put the same label/anchor twice.
+        h: XHashTable(String, String) := empty()
+        concat [cons("", uniq!(h, sigs.s)) for s in sort(lt, keys sigs)]
+
+    -- reStructuredTextCategories(c) returns a list of all categories
+    -- (with corresponding arguments) that are among the exports of
+    -- the given constructor represented by c.
+    -- The returned strings will be formatted as reStructuredText.
+    reStructuredTextCategories(c: ConstructorData): List RSTString ==
+        cex: CATEXPORTS := categoryExports c
+        cats: XHashTable(String, String) := empty()
+        for catsig in keys cex | car catsig ~= sxSIGNATURE repeat
+            catref: String := type2rstref catsig
+            condition: String := formatIf(cex.catsig.cond)
+            catref := concat [catref, " ", condition]
+            -- Don't add the category "Type". It's pretty redundant.
+            type: String := type2rst(catsig, nostyle)
+            if type ~= "Type" then cats.type := catref
+        concat [["", cats.cat] for cat in sort(lt, keys cats)]
+
+    -- reStructuredText(con, fn, pos) creates a list of reStructuredText
+    -- lines for the constructor con.
+    -- The parameters fn and pos are used to create a link to the source
+    -- file and line number of the constructor.
+    reStructuredText(con: String, fn: String, pos: String): List RSTString ==
+        c: ConstructorData := constructorData con
+        -- index the type
+        indexType: String := concat(".. index:: ", con)
+
+        -- make a label for the type
+        labelType: String := concat [".. __", anchor con, ":"]
+
+        -- the header
+        argids: List String := [toString id for id in argumentIdentifiers c]
+        header: List String := formatHeader(con, argids)
+
+        -- reference to the (github) source of the constructor
+        linktext: String := concat [fn, ".spad line ", pos]
+        linkpos: String := concat [" <", fn, ".spad#L", pos, ">"]
+        viewCode := concat [":viewcode:`", linktext, linkpos, "`"]
+        editCode := concat [":editcode:`[edit on github]", linkpos, "`"]
+
+        -- what args does the constructor have
+        argtypes: List String := formatArguments(argids, argumentTypes c)
+
+        -- the docstring of the constructor
+        constructorDoc: String := tex2rst docString c
+
+        -- list of signatures and categories
+        signatures: List String := reStructuredTextSignatures c
+        categories: List String := reStructuredTextCategories c
+
+        nl: List String := [""] -- The empty string will lead to a newline.
+        import from List String
+        concat [ _
+            [indexType], _
+            nl, _
+            [labelType], _
+            nl, _
+            header, _
+            nl, _
+            [concat [viewCode, " ", editCode]], _
+            nl, _
+            argtypes, _
+            nl, _
+            [constructorDoc], _
+            nl, _
+            signatures, _
+            nl, _
+            categories]
+
+--rhx: TODO: The following function may be a candidate to be an exported
+-- function. Just to parallelize the .rst file generation.
+    -- reStructuredTextFile(con, fn, pos) creates a file with filename
+    -- con and extension .rst for the constructor con.
+    -- The parameters fn and pos are used to create a link to the source
+    -- file and line number of the constructor.
+    reStructuredTextFile(con: String, fn: String, pos: String): Void ==
+        print(con::OutputForm) -- status message on console
+        f: TextFile := open(filename("", con, "rst"), "output")
+        for s in reStructuredText(con, fn, pos) repeat writeLine!(f, s)
+        writeLine!(f)
+        close! f
+
+    -- documentConstructorsTOC(title, l) creates a file with name title and
+    -- extension .rst that contains the table of contents for all the
+    -- constructors given by the strings in l.
+    documentConstructorsTOC(title: String, l: List String): Void ==
+        f: TextFile := open(filename("", title, "rst"), "output")
+        writeLine!(f, title)
+        str := copy title
+        fill!(str, char "=")
+        writeLine!(f, str)
+        writeLine! f
+        writeLine!(f, "Contents:")
+        writeLine!(f)
+        writeLine!(f, ".. toctree::")
+        writeLine!(f, "   :maxdepth: 1")
+        writeLine!(f)
+        for c in l repeat writeLine!(f, concat("   ", c))
+        writeLine!(f)
+        close! f
+
+    documentConstructors(title: String, kind: String, cs: CONSTRUCTORS): Void ==
+        l: List String := [x for x in keys cs | cs.x.ckind = kind]
+        l := sort!(lex, l)
+        documentConstructorsTOC(title, l) -- table of contents
+        for c in l repeat reStructuredTextFile(c, cs.c.fn, cs.c.pos) -- files
+
+-------------------------------------------------------------------
+
+)abbrev package CONDOC ConstructorDocumentation
+ConstructorDocumentation: with
+    documentAll: String -> Void
+      ++ documentAll(path) takes as argument
+      ++  a path to a file that contains lines in the form
+      ++ "FILENAME LINENUMBER KIND ABBREV CONSTRUCTOR"
+      ++ which looks, for example, like this
+      ++ "acplot 48 domain ACPLOT PlaneAlgebraicCurvePlot"
+      ++ and writes out for each constructor X a file with name
+      ++ X.rst that contains the API description, i.e., docstring
+      ++ and a list of exported function names together with their
+      ++ types.
+
+      ++ Additionally, the following 4 files will be output:
+      ++  index.rst       -- an overview page
+      ++  Categories.rst  -- a list of  all categories
+      ++  Damain.rst      -- a list of all domains
+      ++  Packages.rst    -- a list of all domains
+
+      ++ The lines in the input file denote the constructors that are
+      ++ going to be output.
+
+      ++ The ABBREV column is currently unused.
+      ++ The FILENAME and LINENUMBER denote the .spad file and the
+      ++ corresponding line number where the constructor is defined.
+      ++ The KIND, ABBREV, and CONSTRUCTOR columns are as they appear
+      ++ in the ")abbrev" declaration in the respective file.
+      ++ The FILENAME, LINENUMBER and docurl will be used to construct
+      ++ a link to the source code in the form
+      ++ "${PACKAGE_SOURCE_VIEW}/api/${FILENAME}.spad#L${LINENUMBER}`"
+      ++ where PACKAGE_SOURCE_VIEW is, in fact, given through the role
+      ++ ":viewcode:" that is defined in the
+      ++ sphinx/source/conf.py file like this:
+      ++   extlinks = {'viewsource':(PACKAGE_SOURCE_VIEW + '/%s', ''),
+      ++               'viewcode':(PACKAGE_SOURCE_VIEW + '/src/algebra/%s', ''),
+      ++               'editcode':(PACKAGE_SOURCE_EDIT + '/src/algebra/%s', ''),
+      ++               'fricasapi':(FRICAS_URL + '/api/%s', '')
+      ++              }
+
+      ++ If the constructor is not listed in the file that is given by
+      ++ the parameter path, it will for example, be output as
+      ++   :fricasapi:`Integer <Integer>`
+      ++ which eventually results in a link to the FriCAS API page.
+
+    readConstructors: String -> CONSTRUCTORS
+      ++ readConstructors(path) read the file given by path and store
+      ++ it in a hashtable indexed by the full constructor name. That
+      ++ gives us a structure that can tell for each constructor, in
+      ++ which source file it is defined, and at which line it starts,
+      ++ as well as its kind, i.e., whether it is a category, a domain
+      ++ or a package.
+
+  == add
+    -- We assume there is a file abbrev.list (given through the 'path'
+    -- parameter) that lists the abbrev lines of the .spad files in
+    -- the form
+    --    FILENAME LINENUMBER KIND ABBREV CONSTRUCTOR
+    -- which looks like this
+    --    acplot 1 package REALSOLV RealSolvePackage
+    --    acplot 48 domain ACPLOT PlaneAlgebraicCurvePlot
+    --    aggcat2 1 package FLAGG2 FiniteLinearAggregateFunctions2
+    readConstructors(path: String): CONSTRUCTORS ==
+        constructors: CONSTRUCTORS := empty()
+        f: TextFile := open(path::FileName)
+        while not endOfFile? f repeat
+            l: List String := split(readLine! f, char " ")
+            constructors(l.5) := [l.1, l.2, l.3]
+        close! f
+        constructors
+
+    -- exported function
+    documentAll(abbrevs: String): Void ==
+        fname: String := "index"
+        f: TextFile := open(filename("", fname, "rst"), "output")
+        writeLine!(f, "|PACKAGE_NAME| API")
+        writeLine!(f, "==================")
+        writeLine!(f)
+        writeLine!(f, "Contents:")
+        writeLine!(f)
+        writeLine!(f, ".. toctree::")
+        writeLine!(f, "   :maxdepth: 1")
+        writeLine!(f)
+        writeLine!(f, "   Categories")
+        writeLine!(f, "   Domains")
+        writeLine!(f, "   Packages")
+        writeLine!(f)
+        writeLine!(f, "Links:")
+        writeLine!(f)
+        writeLine!(f, "* |git repository|")
+        writeLine!(f, "* |home page|")
+        writeLine!(f, "* |mailing list|")
+        close! f
+
+        -- These are all known constructors in the running system.
+        -- Constructors that should be documented will be marked with
+        -- a "true" value. The others will only be referenced by
+        -- a link to the official FriCAS API page.
+        -- References to unknown constructors will not lead to a link.
+        mustDocument?: XHashTable(String, Boolean) := empty()
+        all: List SExpression := destruct(allConstructors()$Lisp)
+        for x in [string symbol x for x in all] repeat mustDocument?.x := false
+        -- The list of constructors that we want to document should be
+        -- a sublist of all constructors.
+        constructors: CONSTRUCTORS := readConstructors abbrevs
+        for x in keys constructors repeat mustDocument?.x := true
+
+        import from ConstructorDocumentationGeneric(mustDocument?)
+        documentConstructors("Categories", "category", constructors)
+        documentConstructors("Domains",    "domain",   constructors)
+        documentConstructors("Packages",   "package",  constructors)
+        void()

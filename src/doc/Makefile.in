@@ -4,9 +4,10 @@
 #--- Copyright (C) 2013, 2014, 2020  Ralf Hemmecke <ralf@hemmecke.org>
 #---
 #------------------------------------------------------------------
-# The main target of this Makefile are "all" and "book.pdf".
+# The main targets of this Makefile are "all" and "doc".
+# Other useful targets are "localdoc", "book.pdf", "stamp-html".
 
-# Whereas "all" is made during normal FriCAS build, "book.pdf" must be
+# Whereas "all" is made during normal FriCAS build, "doc" must be
 # invoked separately.
 
 # The "all" target builds the contents of HyperDoc and creates the
@@ -60,6 +61,24 @@
 # - LaTeX book.tex, call makeindex, and re-latex to get references right.
 # - Convert book.dvi to book.ps.
 # - Convert book.ps to book.pdf.
+#
+# "make stamp-html" does the following:
+# - Copy the source .rst files into the tmp directory.
+# - Generate the .rst files for the API via api.spad into the tmp directory.
+# - Call "make html" inside tmp/sphinx to generate the .html files.
+#
+# "make doc" builds book.pdf and the .html files and copies everything
+# into the src/doc/html directory. The content of the html directory
+# can be committed to the the
+# https://github.com/fricas/fricas.github.io repository.
+#
+# "make localdoc" is like "make doc" except that links point to the local
+# repository instead of pointing to github. In fact, by adding the line
+#   text/x-spad	spad
+# to /etc/mime.types (https://help.ubuntu.com/community/AddingMimeTypes)
+# and associating text/x-spad in firefox with your editor, would open
+# the respective .spad file, if you click the respective file link at
+# the top of an API page.
 #
 # ------------------------------------------------------------------
 # General notes
@@ -581,7 +600,8 @@ dist:
 
 
 ###################################################################
-# Below this point are targets for building book.pdf.
+# Below this point are targets for building book.pdf and html
+# documentation.
 ###################################################################
 # The following targets create .input files from .htex files. The
 # .input files contain the same text as the .htex file except that
@@ -703,7 +723,84 @@ clean-book:
 	-rm -f ${patsubst %,book.%, aux idx ind out ps dvi ilg log pdf toc}
 
 ###################################################################
-clean-local: clean-book
+# The official FriCAS homepage. It is supposed that the API description
+# lives under "${FRICAS_URL}/api".
+FRICAS_URL=${PACKAGE_URL}
+
+# In case we consider another git branch of ${PACKAGE_SOURCE}.
+BRANCH=master
+
+# Base source URL into the git repo. Appending the repsective path
+# should give a valid URL to view/edit a file.
+# Local references must include a absolute path like this:
+# PACKAGE_SOURCE_VIEW="file:///home/hemmecke/g/fricas".
+PACKAGE_SOURCE_VIEW=${PACKAGE_SOURCE}/blob/${BRANCH}
+PACKAGE_SOURCE_EDIT=${PACKAGE_SOURCE}/edit/${BRANCH}
+SHOW_ON_GITHUB_URL=${PACKAGE_SOURCE_VIEW}/src/doc/sphinx/source/{path}
+EDIT_ON_GITHUB_URL=${PACKAGE_SOURCE_EDIT}/src/doc/sphinx/source/{path}
+###################################################################
+# The following environment variables considered in
+# sphinx/source/conf.py, so we export them for sphinx "make html".
+export PACKAGE_URL
+export FRICAS_URL
+export PACKAGE_SOURCE
+export PACKAGE_SOURCE_VIEW
+export PACKAGE_SOURCE_EDIT
+export PACKAGE_NAME
+export PACKAGE_VERSION
+export PACKAGE_TARNAME
+export PACKAGE_BUGREPORT
+export SHOW_ON_GITHUB_URL
+export EDIT_ON_GITHUB_URL
+###################################################################
+API_DIR=tmp/sphinx/source/api
+
+# Copy the sphinx sources into the tmp directory
+stamp-sphinx: ${srcdir}/sphinx/source/conf.py
+	-rm -rf tmp/sphinx
+	${MKDIR_P} tmp
+	cp -r ${srcdir}/sphinx tmp/
+	${STAMP} $@
+
+# Generate the API documentation into ${API_DIR}/*.rst files.
+stamp-api: tmp/abbrev-lines.list stamp-sphinx
+	-rm -rf tmp/sphinx/build ${API_DIR}
+	$(MKDIR_P) ${API_DIR}
+	(cd ${API_DIR}; \
+	  (echo ')compile "$(srcdir)/api.spad"'; \
+	   echo 'documentAll("${abs_builddir}/$<")') \
+	  | FRICAS_INITFILE='' $(FRICAS)/bin/fricas -nosman) > $@
+
+# Call sphinx-build to compile the .rst files into .html files.
+stamp-html: stamp-api
+	sphinx-build --version \
+	|| (echo "==> sphinx-build not found. Please install it."; exit 1)
+	cd tmp/sphinx && ${MAKE} html
+	${STAMP} $@
+
+# Copy the generated html directory into the target place and include
+# book.pdf.
+stamp-doc: book.pdf stamp-html
+	-rm -rf html
+	cp -R tmp/sphinx/build/html .
+	cp $< html
+	${STAMP} $@
+
+doc: stamp-doc
+
+# The following target makes links point to the local repository.
+# Might be useful for development without internet connection.
+localdoc:
+	${MAKE} PACKAGE_SOURCE_VIEW=file://${abs_top_srcdir} \
+	        PACKAGE_BOOK=file://${abs_builddir}/html/book.pdf \
+	    stamp-doc
+
+clean-html:
+	-rm -rf html tmp/sphinx
+	-rm -rf stamp-sphinx stamp-api stamp-html stamp-doc
+
+###################################################################
+clean-local: clean-book clean-html
 	-rm -f ${GEN_NONVIEWPORTFILES_PHT} ${GEN_VIEWPORTFILES_PHT}
 	-rm -f ${GEN_FILES_HT} *.input *.help *.text *.ps
 	-rm -rf tmp
