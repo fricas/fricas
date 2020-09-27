@@ -1,0 +1,191 @@
+-------------------------------------------------------------------
+---
+--- A support package for jFriCAS.
+--- Copyright (C) 2020  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions
+-- are met:
+--
+-- 1. Redistributions of source code must retain the above copyright
+-- notice, this list of conditions and the following disclaimer.
+--
+-- 2. Redistributions in binary form must reproduce the above
+-- copyright notice, this list of conditions and the following
+-- disclaimer in the documentation and/or other materials provided
+-- with the distribution.
+--
+-- 3. Neither the name of the copyright holder nor the names of its
+-- contributors may be used to endorse or promote products derived
+-- from this software without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+-- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+-- COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+-- INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+-- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+-- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+-- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+-- OF THE POSSIBILITY OF SUCH DAMAGE.
+-------------------------------------------------------------------
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage{literatedoc}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{A sypport package for jFriCAS}
+\author{Ralf Hemmecke}
+\date{27-Sep-2020}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+\begin{abstract}
+  This package supports the use of the FormatMathJax, Format1D,
+  Format2D, and FormatLaTeX domains with the jFriCAS Jupyter notebook
+  frontend.
+\end{abstract}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The jFriCAS Jupyter notebook frontend for FriCAS was designed to be
+used also with the new formatting framework of FriCAS, in particular
+with the FormatMathJax domain.
+
+To switch on the MathJax tailored \LaTeX{} commands of FormatMathJax
+for output in the Jupyter notebook frontend, one would have to do the
+following.
+
+\begin{verbcode}
+setDefault!(_
+  (s: String): OutputBox +-> _
+    vconcat([box "--FORMAT:BEG:FormatMathJax", _
+             defaultPrologue(s)$FormatMathJax],1,-1)$OutputBox,_
+  (s: String): OutputBox +->
+    vconcat([defaultEpilogue(s)$FormatMathJax,
+             box "--FORMAT:END:FormatMathJax"],1,-1)$OutputBox_
+ )$Formatter(FormatMathJax);
+setFormats!(_
+  [Formatter FormatMathJax] pretend List(OutputFormatterCategory)_
+  )$FormattedOutput;
+)set ouput formatted on
+\end{verbcode}
+
+It is important for jFriCAS to figure out the begin and end of the
+respective FriCAS output. jFriCAS does this by looking for
+\texttt{--FORMAT:BEG:FormatMathJax} and
+\texttt{--FORMAT:END:FormatMathJax} (and similar for the other
+formatters).
+
+Here we provide a packages that makes switching on/off MathJax output
+a oneliner, namely
+
+\begin{verbcode}
+setFormat!(FormatMathJax)$JFriCASSupport
+\end{verbcode}
+or for several formatters
+\begin{verbcode}
+setFormats!([FormatMathJax, Format1D])$JFriCASSupport
+\end{verbcode}
+
+The command
+\begin{verbcode}
+)set output formatted on
+\end{verbcode}
+is not explicitly needed, because it will also be issued.
+
+Using
+\begin{verbcode}
+setFormats!([])$JFriCASSupport
+\end{verbcode}
+is equivalent to
+\begin{verbcode}
+)set output formatted off
+\end{verbcode}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The JFriCASSupport package}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+)abbrev package JFRICAS JFriCASSupport
+++ The package \spad{JFriCASSupport} provides a number of service
+++ functions to more easily switch on/off certain formats, in
+++ particular the use of the FormatMathJax formatter.
+++ Use \spad{setFormat! FormatMathJax} to switch on MathJax output
+++ or \spad{setFormats [FormatMathJax, Format1D]} to enable several
+++ output formats.
+JFriCASSupport: Exports == Implementation where
+  OFC ==> OutputFormatterCategory
+  Exports ==> with
+    setFormat!: Type -> Void
+      ++ \spad{setFormat! f} returns \spad{setFormats! [f]}.
+    setFormats!: List Type -> Void
+      ++ \spad{setFormats!(l)} takes a list \spad{l} of formatters and
+      ++ sets this for future output in a session.
+      ++ It also issues a command equivalent to ")set output formatted on"
+      ++ if the given list is non-empty and ")set output formatted off"
+      ++ if the input list is empty.
+  Implementation ==> add
+    S ==> String
+    BOX ==> OutputBox
+    setFormatsAux!(lf: List FormatterCategory): Void ==
+        empty? lf =>
+            systemCommand("set output formatted off")$MoreSystemCommands
+
+        for f in lf repeat
+            -- get the name of the domain f
+            -- see UnivariatePolynomialCategoryFunctions2
+            n: String := string CAR(devaluate(f)$Lisp)$Lisp
+            b: BOX := box concat("--FORMAT:BEG:", n)
+            e: BOX := box concat("--FORMAT:END:", n)
+            setDefault!(_
+                (s: S): BOX +-> vconcat([b, defaultPrologue(s)$f],1,-1)$BOX,_
+                (s: S): BOX +-> vconcat([defaultEpilogue(s)$f, e],1,-1)$BOX_
+              )$Formatter(f);
+        setFormats!([Formatter f for f in lf] pretend List(OFC))$FormattedOutput
+        systemCommand("set output formatted on")$MoreSystemCommands
+
+    setFormats!(lt: List Type): Void ==
+        for t in lt repeat
+            if not(t has FormatterCategory) then
+                error "Argument not of type List(FormatterCategory)"
+        setFormatsAux!(lt pretend List FormatterCategory)
+
+    setFormat!(t: Type): Void ==
+        t has FormatterCategory => setFormats!([t])
+        error "Argument not of type FormatterCategory"
+
+
+)if LiterateDoc
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
