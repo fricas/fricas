@@ -175,7 +175,7 @@ rst_epilog = """
        PACKAGE_NAME, PACKAGE_NAME, PACKAGE_URL)
 
 rst_epilog = rst_epilog + """
-.. _SPAD: http://axiom-wiki.newsynthesis.org/ProgrammingSPAD
+.. _SPAD: http://fricas-wiki.math.uni.wroc.pl/ProgrammingSPAD
 """
 
 print('=== PACKAGE_NAME:        ' + PACKAGE_NAME)

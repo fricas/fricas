@@ -1,33 +1,38 @@
 Examples
 ========
 
+* `FriCAS Demos and Tutorials <fricas-notebooks/index.html>`_
+
+* `Status of Implementation of Risch's Integration algorithm
+  <http://fricas-wiki.math.uni.wroc.pl/RischImplementationStatus>`_
+
 * `Integration
-  <http://axiom-wiki.newsynthesis.org/FriCASIntegration>`_
+  <http://fricas-wiki.math.uni.wroc.pl/FriCASIntegration>`_
 
 * `Integration and defining polynomial
-  <http://axiom-wiki.newsynthesis.org/ExampleIntegration>`_
+  <http://fricas-wiki.math.uni.wroc.pl/ExampleIntegration>`_
 
 * `Integration with special functions
-  <http://axiom-wiki.newsynthesis.org/FriCASSpecialIntegration>`_
+  <http://fricas-wiki.math.uni.wroc.pl/FriCASSpecialIntegration>`_
 
-* `TaylorSeries <http://axiom-wiki.newsynthesis.org/TaylorSeries>`_
+* `Polynomials over finite fields and rings <http://fricas-wiki.math.uni.wroc.pl/SandBoxPolynomialOverFiniteField>`_
 
-* `Polynomials over finite fields and rings <http://axiom-wiki.newsynthesis.org/SandBoxPolynomialOverFiniteField>`_
+* `Gröbner bases <http://fricas-wiki.math.uni.wroc.pl/ExampleGroebner>`_
 
-* `Gröbner bases <http://axiom-wiki.newsynthesis.org/ExampleGroebner>`_
-
-* `Non-commutative polynomials <http://axiom-wiki.newsynthesis.org/ExampleSkewPolynomial>`_
+* `Guessing formulas for sequences <http://fricas-wiki.math.uni.wroc.pl/GuessingFormulasForSequences>`_
 
 * `Noncommutative Gröbner bases
-  <http://axiom-wiki.newsynthesis.org/NoncommutativeGroebnerBases?root=NoncommutativePolynomials>`_
+  <http://fricas-wiki.math.uni.wroc.pl/NoncommutativeGroebnerBases?root=NoncommutativePolynomials>`_
 
-* `Noncommutative group ring over commuting polynomials <http://axiom-wiki.newsynthesis.org/NonCommutativeLaurentPolynomials>`_
+* `Noncommutative group ring over commuting polynomials <http://fricas-wiki.math.uni.wroc.pl/NonCommutativeLaurentPolynomials>`_
 
-* `FreeAbelianGroup <http://axiom-wiki.newsynthesis.org/ExampleFreeAbelianGroup>`_
+* `FreeAbelianGroup <http://fricas-wiki.math.uni.wroc.pl/ExampleFreeAbelianGroup>`_
 
-* `Fun with functions <http://axiom-wiki.newsynthesis.org/FunWithFunctions>`_
+* `Fun with functions <http://fricas-wiki.math.uni.wroc.pl/FunWithFunctions>`_
 
-* `Programming in SPAD <http://axiom-wiki.newsynthesis.org/Programmi+ngSPAD>`_
+* `Programming in SPAD <http://fricas-wiki.math.uni.wroc.pl/ProgrammingSPAD>`_
+
+* `An Introduction to Programming in FriCAS <http://fricas-wiki.math.uni.wroc.pl/TutorialIntroductionToFriCAS>`_
 
 * `FriCAS Tutorium (in German) <https://www.math.tugraz.at/mathc/compmath2/Demo/fricas-tutorium-0.6.pdf>`_
 

@@ -13,7 +13,8 @@ computer algebra system.
 * |git repository|
 * |home page|
 * |mailing list|
-* Bug reports: |PACKAGE_BUGREPORT|
+* Bug reports: |PACKAGE_BUGREPORT| or
+  `Issues at GitHub <https://github.com/fricas/fricas/issues>`_
 * |PACKAGE_BOOK| (official version)
 
 .. toctree::
@@ -24,6 +25,6 @@ computer algebra system.
    download
    help
    examples
-   contribute
+   development
    citation
    history

@@ -12,7 +12,7 @@ following BibTeX entry to refer to |PACKAGE_NAME| in any publication.
     @Misc{FriCAS,
       key =          {FriCAS},
       author =       {{FriCAS team}},
-      year =         {2020},
+      year =         {2021},
       title =        {{FriCAS---an advanced computer algebra system}},
       note =         {Available at \url{http://fricas.github.io}}
     }
@@ -142,6 +142,19 @@ In the following we list publications mentioning FriCAS.
   (DOI: `10.1007/978-3-030-04480-0_11
   <https://doi.org/10.1007/978-3-030-04480-0_11>`_)
 
+* **Ralf Hemmecke**, **Peter Paule**, and  **Silviu Radu**
+  (2021):
+  `Construction of an Integral Basis for $M^\infty(121)$
+  <https://doi.org/10.1080/10652469.2020.1806261>`_
+  (DOI: `10.1080/10652469.2020.1806261
+  <https://doi.org/10.1080/10652469.2020.1806261>`_)
+
+* **Konrad Schrempf**
+  (2021):
+  `Free (rational) derivations
+  <https://arxiv.org/abs/1809.05425>`_
+  (DOI: `10.17398/2605-5686.36.1.25
+  <https://doi.org/10.17398/2605-5686.36.1.25>`_
 
 * `Sage <http://www.sagemath.org>`_ provides an
   `interface to FriCAS
@@ -155,4 +168,4 @@ In the following we list publications mentioning FriCAS.
   <http://www.12000.org/my_notes/CAS_integration_tests/index.htm>`_
 
 * `Old collection of online articles connected to FriCAS and Axiom
-  <http://axiom-wiki.newsynthesis.org/public/refs/articles.html>`_
+  <http://fricas-wiki.math.uni.wroc.pl/public/refs/articles.html>`_
