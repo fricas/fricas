@@ -78,13 +78,13 @@ Whitespaces around punctuation
 Continuation lines
 ------------------
 
-explicit ``_`` (underscore) even when not required
+Use explicit ``_`` (underscore) even when not required
 
 
 Function signature
 ------------------
 
-explicit types, that is::
+Use explicit types, that is::
 
   func(a : Integer) : Integer ==
 
@@ -126,24 +126,19 @@ Otherwise it should be like this
 
 ::
 
-      if .... then
-        ....
+      if ... then
+        ...
       else
-        ....
+        ...
 
-Or is this a valid option?
-
-::
-
-  if ....
-    then ....
-    else ....
 
 
 elt vs. qelt
 ------------
 
-I prefer better error messages over speed.
+We encourage better error messages over speed, i.e., use ``elt``.
+``qelt`` should only be used in cases where it is clear from the
+context that no index error can happen.
 
 _+ vs. "+"
 ----------
@@ -166,7 +161,7 @@ Boolean valued functions
 ------------------------
 
 Functions that return boolean values have names that end in ``?``.
-Rather define::
+Define::
 
   positive? : Integer -> Boolean
 

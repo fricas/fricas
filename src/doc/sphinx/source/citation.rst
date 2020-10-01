@@ -12,7 +12,7 @@ following BibTeX entry to refer to |PACKAGE_NAME| in any publication.
     @Misc{FriCAS,
       key =          {FriCAS},
       author =       {{FriCAS team}},
-      year =         {2020},
+      year =         {2021},
       title =        {{FriCAS---an advanced computer algebra system}},
       note =         {Available at \url{http://fricas.github.io}}
     }
@@ -155,4 +155,4 @@ In the following we list publications mentioning FriCAS.
   <http://www.12000.org/my_notes/CAS_integration_tests/index.htm>`_
 
 * `Old collection of online articles connected to FriCAS and Axiom
-  <http://axiom-wiki.newsynthesis.org/public/refs/articles.html>`_
+  <http://fricas-wiki.math.uni.wroc.pl/public/refs/articles.html>`_
