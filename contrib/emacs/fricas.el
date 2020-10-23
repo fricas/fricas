@@ -301,6 +301,10 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
       (fricas-run)
       (setq fricas-process (get-buffer-process (current-buffer))))
 
+    (if (> emacs-major-version 23)
+	;; enable copletion at point
+	(cl-pushnew 'fricas-complete-at-point completion-at-point-functions))
+
     (if (> emacs-major-version 21)
 	(set-process-query-on-exit-flag fricas-process nil)
       (process-kill-without-query fricas-process))
@@ -740,6 +744,32 @@ See `comint-dynamic-complete-filename'.  Returns t if successful."
                     (unless minibuffer-p
                       (message "Partially completed")))))))
     success))
+
+(defun fricas-complete-at-point ()
+  "Fricas function for complete at point."
+  (let ((start (or
+		(car (bounds-of-thing-at-point 'filename))
+		(car (bounds-of-thing-at-point 'symbol))
+		(point)))
+	(beg-of-input (fricas-beginning-of-region-pos (point))))
+    (if (and (fricas-prompt? (1- beg-of-input))
+             (save-excursion
+               (goto-char beg-of-input)
+               (looking-at " *)")))
+	(let ((files
+	       (let* ((prev-char (char-after start))
+		      (dir (if (and prev-char (char-equal prev-char ?/))
+			       (file-name-directory
+				(buffer-substring-no-properties start (point)))
+			     default-directory))
+		      (results (fricas-file-name-all-completions "" dir)))
+		 (if (not (string= dir default-directory))
+		     (mapcar (lambda (s) (concat dir s)) results)
+		   results))))
+	  (if files
+	      (list start (point) files)
+	    nil))
+      (list start (point) fricas-symbol-list))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; yanking input
