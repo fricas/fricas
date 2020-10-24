@@ -25,7 +25,7 @@ subdir=src/aldor/
 # Furthermore, cliques.mk contains a number of dependencies for and on
 # a number of basic aldor files and, in particular, the files
 # axlit.as and axextend.as. The latter two files extend various
-# FriCAS domains so that certain Aldor can interpret literals etc.
+# FriCAS domains so that Aldor can interpret literals etc.
 # Naturally, these files depend on existing FriCAS types and thus
 # must occur somewhere in the middle of the FriCAS type hierarchy,
 # i.e., compilation order.
@@ -245,11 +245,14 @@ cliques.mk: libfricas.lst cliques domaindepfiles aldordepfiles
 
 
 ###################################################################
-# After we have generated cliques.mk, we can do the real work an start
+# After we have generated cliques.mk, we can do the real work and start
 # compilation of al/libfricas.al.
 al/libfricas.al: cliques.mk al/.dir
 	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)"
 
+# The following targets are actually handled in Makefile2 and are
+# only useful to start a computation via
+#   make CLIQUES=LODOF2 ao/LODOF2.ao
 $(patsubst %,ao/%.ao,$(CLIQUES)): ao/%.ao: cliques.mk al/.dir
 	$(MAKE) -f Makefile2 aldor_srcs="$(aldor_srcs)" GENAX="$(GENAX)" $@
 
