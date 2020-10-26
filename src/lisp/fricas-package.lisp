@@ -4,7 +4,6 @@
                     "LISP")))
 #+:sbcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
-    (setf SB-IMPL::*DEFAULT-EXTERNAL-FORMAT* :LATIN-1)
     (ignore-errors (require "SB-SPROF")))
 
 #+:cmu
