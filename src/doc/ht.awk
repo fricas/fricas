@@ -185,7 +185,7 @@ inXmpLines==1 {
         gsub(/\\bs\\{\\}/, "\\bs{}")
         gsub(/ /, "\\ ")
         gsub(/&/, "\\\\&")
-        gsub(/\#/, "\\#")
+        gsub(/#/, "\\#")
         gsub(/\$/, "\\$")
         gsub(/%/, "\\%")
         gsub(/_/, "\\_")
@@ -532,7 +532,7 @@ function escapeArg(arg) {
         gsub(/\\bs\\{\\}/, "\\bs{}", arg)
         gsub(/\$/, "\\$", arg)
         gsub(/&/, "\\\\&", arg)
-        gsub(/\#/, "\\#", arg)
+        gsub(/#/, "\\#", arg)
         gsub(/_/, "\\_", arg)
         gsub(/%/, "\\%", arg)
 #        gsub(/^/, "\\^", arg) # not necessary

@@ -5,7 +5,7 @@
     n=0
 }
 
-(/:\\\psXtc/ || /:\\xtc/ || /:\\noOutputXtc/ || /:\\nullXtc/) {n++}
+(/:\\psXtc/ || /:\\xtc/ || /:\\noOutputXtc/ || /:\\nullXtc/) {n++}
 
 /:\\spadgraph/ {spadgraph=1}
 

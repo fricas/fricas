@@ -36,7 +36,7 @@ BEGIN {
 /^-- \\begin{inputonly}/,/^-- \\end{inputonly}/ {next}
 
 # start of xtc
-/^-- \\begin{xtc}/ || /^-- \begin{noOutputXtc}/ {
+/^-- \\begin{xtc}/ || /^-- \\begin{noOutputXtc}/ {
     inxtc=1
     sub(/^-- /, "")
     print $0
@@ -54,7 +54,7 @@ inxtc==0 {
 # For everything below xtc>0.
 
 # end of xtc
-/^-- \end{xtc}$/ || /^-- \end{noOutputXtc}$/ {
+/^-- \\end{xtc}$/ || /^-- \\end{noOutputXtc}$/ {
     printf("%s\n",substr($0,4))
     inxtc=0
     next

@@ -72,9 +72,9 @@ xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
     gsub(/^\\spadgraph{/, "")
     gsub(/}$/, "")
     gsub(/\\\$/, "$")
-    gsub(/\\\%/, "%")
-    gsub(/\\\#/, "#")
-    gsub(/\\\_/, "_")
+    gsub(/\\%/, "%")
+    gsub(/\\#/, "#")
+    gsub(/\\_/, "_")
     gsub(/\\free{.*/, "")
     gsub(/\\bound{.*/, "")
     print "-- " $0
