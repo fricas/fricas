@@ -1035,6 +1035,8 @@ upconstruct t ==
       for x in l repeat if not getTarget(x) then putTarget(x,ud)
     first(tar) in '(Matrix SquareMatrix RectangularMatrix) =>
       vec := ['List,underDomainOf tar]
+      (l is [[realOp, :.]]) and (getUnname(realOp) = 'COLLECT) =>
+          putTarget(first(l), ['List, vec])
       for x in l repeat if not getTarget(x) then putTarget(x,vec)
   argModeSetList:= [bottomUp x for x in l]
   dol and dol is [topType,:.] and not (topType in aggs) =>
