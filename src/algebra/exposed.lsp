@@ -551,7 +551,6 @@
   (|UnivariateSkewPolynomialCategory| . OREPCAT)
   (|UnivariateTaylorSeriesCategory| . UTSCAT)
   (|VectorCategory| . VECTCAT)
-  (|VectorSpace| . VSPACE)
   (|XAlgebra| . XALG)
   (|XFreeAlgebra| . XFALG)
   (|XPolynomialsCat| . XPOLYC)
@@ -1051,7 +1050,7 @@
   (|UnivariateSkewPolynomialCategory&| . OREPCAT-)
   (|UnivariateTaylorSeriesCategory&| . UTSCAT-)
   (|VectorCategory&| . VECTCAT-)
-  (|VectorSpace&| . VSPACE-)))
+  ))
 )
 (setq |$localExposureDataDefault| (VECTOR
 (LIST
