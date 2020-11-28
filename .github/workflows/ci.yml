@@ -1,0 +1,19 @@
+name: FriCAS CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependencies
+      run: sudo apt-get install sbcl libxpm-dev
+    - name: configure
+      run: ./configure --with-lisp=sbcl --with-gmp --with-x
+    - name: make
+      run: make -j2 --output-sync
+    - name: make check
+      run: make check -j2 --output-sync
