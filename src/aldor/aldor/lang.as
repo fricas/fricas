@@ -68,7 +68,7 @@ PackedMap(A: Tuple Type, R: Tuple Type): with == add;
 #endif
 
 
-+++ Tuple(T) is the type of n-ary, homogenous products of values in T.
++++ Tuple(T) is the type of n-ary, homogeneous products of values in T.
 +++ E.g.  `(), (1), (1, 2), (1,3,7,8)'	are all values of type Tuple Integer.
 +++ Tuple values are not mutable.
 +++
@@ -180,7 +180,7 @@ Ref(T: Type): with == add;
 
 
 +++ Literal is the type in which the source literals are made available
-+++ to a progam.
++++ to a program.
 +++
 +++ Author: AXIOM-XL library
 +++ Date Created: 1992-94

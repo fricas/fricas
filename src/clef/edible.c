@@ -179,7 +179,7 @@ main(int argc, char *argv[])
     exit(-1);
   case 0:
     /* CHILD */
-    /* Dissasociate form my parents group so all my child processes
+    /* Disassociate form my parents group so all my child processes
        look at my terminal as the controlling terminal for the group */
     setsid();
 

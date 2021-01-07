@@ -720,7 +720,7 @@
 ; where path collects the nodes from the top node to the current one, and
 ; variables contains all the declared variable names so far.
 
-; We alway start with "variables" |%| and |FriCASLib|, since they
+; We always start with "variables" |%| and |FriCASLib|, since they
 ; should never occur as dependencies.
 (defun make-null-env ()
   (list nil '(|%| |FriCASLib|)))
