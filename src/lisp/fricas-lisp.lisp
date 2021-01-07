@@ -203,7 +203,7 @@ with this hack and will try to convince the GCL crowd to fix this.
      (save-core-restart core-image nil))
 
 ;; Load Lisp files (any LOADable file), given as a list of file names.
-;; The file names are strings, as approrpriate for LOAD.
+;; The file names are strings, as appropriate for LOAD.
 (defun load-lisp-files (files)
   (mapcar #'(lambda (f) (load f)) files))
 
