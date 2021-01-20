@@ -32,7 +32,7 @@ Obvious things can go in without review. Really minor changes to
 patches also can go without extra round of review.
 
 Of course patches should satisfy technical requirements (pass test,
-update documentation when apropriate, contain tests for changes).
+update documentation when appropriate, contain tests for changes).
 
 Patches should be logical unit of change. Do not join unrelated things
 unless it is a cleanup type patch that functionally should be a no-op.
@@ -42,7 +42,7 @@ steps---if several patches have a common purpose and there are
 dependencies between them, then they probably should go in as one
 patch. This is not a hard rule, it make sense to split really large
 patches (say more than thousend lines) and sometimes part of the
-functionality is ready and may be commited before the feature is
+functionality is ready and may be committed before the feature is
 complete.
 
 
