@@ -2,7 +2,7 @@ History
 =======
 
 The origin of FriCAS is in IBM laboratories. About 1965 J. Griesmer
-from IBM started a project to develop a computer algbera system. In
+from IBM started a project to develop a computer algebra system. In
 1970 the project was named Scratchpad. In 1976 the Scratchpad team
 decided to develop a new system with a novel architecture under name
 Scratchpad II. Around 1982 the Spad language took shape quite similar
@@ -16,18 +16,18 @@ Codemist Common Lisp (CCL), which dramatically reduced memory
 requirements, so that Axiom could run on PC class computers (but 16 Mb
 required memory meant that it was limited to largest PC).
 
-For various reasons Axiom did not satify NAG hopes and around 1998
-system developement stopped and in 2001 Axiom was withdrown from the
-market. Fortunatly NAG decided to release Axiom to the public under
+For various reasons Axiom did not satisfy NAG hopes and around 1998
+system development stopped and in 2001 Axiom was withdrawn from the
+market. Fortunately NAG decided to release Axiom to the public under
 open source licence. In 2002 Tim Daly received Axiom sources from NAG
-and started open-source Axiom project. Developement of Axiom moved
+and started open-source Axiom project. Development of Axiom moved
 slowely, concentrating on build system. Build system was a nontrivial
 problem as during commercial times Axiom/Scratchpad II required having
 running system for recompilation -- open source version dropped this
 requirement.
 
-In 2007 after serious disagreement about developement strategy Waldek
-Hebisch forked Axiom creating FriCAS. Shortly tereafter Gabriel Dos
+In 2007 after serious disagreement about development strategy Waldek
+Hebisch forked Axiom creating FriCAS. Shortly thereafter Gabriel Dos
 Reis forked Axiom second time creating Open Axiom. Tim Daly continues
 his work keeping Axiom name. FriCAS had several releases each bringing
 some incremental improvement. In 2013, majority of FriCAS code is from
