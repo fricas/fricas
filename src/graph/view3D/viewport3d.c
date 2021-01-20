@@ -44,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "spadMask.mask"
 
 #include "header.h"
-    /*** definition for the axes and labels - this is the minimun that will be
+    /*** definition for the axes and labels - this is the minimum that will be
          drawn on the window - thus allowing the user some idea of the
          orientation of the coordinate axes when rotating, etc. The
          drawing of the mesh is aborted when an appropriate X event occurs.

@@ -50,7 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*****************************
  ***      traverse(n)      ***
  *** returns the nth point ***
- *** in a point resevoir   ***
+ *** in a point reservoir  ***
  *****************************/
 
 viewTriple *
