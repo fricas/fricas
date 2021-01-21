@@ -493,7 +493,7 @@ open_window(Window w)
   This routine gets and sets the size for a new window. If the w parameter
   is null, it means that this is the initial window. Thus the user
   preferences are checked. If this is not the first window, then the
-  window w is used as a guidline, and the new window is placed on top of
+  window w is used as a guideline, and the new window is placed on top of
   it.
   ***/
 
@@ -880,7 +880,7 @@ change_text(int color, XFontStruct *font)
 /*
  * This routine checks the .Xdefaults file of the user for the
  * specified color. If found it allocates a place in the color map for it. If
- * not found, or if an error occurrs, it writes an error message, and
+ * not found, or if an error occurs, it writes an error message, and
  * uses the given default value
  */
 

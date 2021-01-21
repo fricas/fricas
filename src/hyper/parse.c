@@ -411,7 +411,7 @@ parse_HyperDoc(void)
             else {
                 curr_node->type = Noop;
                 /* Oops I had a problem parsing this puppy */
-                fprintf(stderr, "(HyperDoc) \\fi found without macthing if?\n");
+                fprintf(stderr, "(HyperDoc) \\fi found without matching if?\n");
                 longjmp(jmpbuf, 1);
                 fprintf(stderr, "(HyperDoc) Longjmp failed -- Exiting \n");
                 exit(-1);

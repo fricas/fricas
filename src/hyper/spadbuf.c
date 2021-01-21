@@ -231,7 +231,7 @@ main(int argc,char **  argv)
     bsdSignal(SIGINT, spadbuf_inter_handler,RestartSystemCalls);
 
     /*
-     * set contNum so it is pointing down the socket to the childs
+     * set contNum so it is pointing down the socket to the children
      */
     contNum = session_sock->socket;
     send_string(menu_sock, buff_name);

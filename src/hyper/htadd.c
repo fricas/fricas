@@ -460,7 +460,7 @@ get_filename(void)
       case '\\':
       case '{':
       case '}':
-        fprintf(stderr, "Error unexpexted character %c\n",c);
+        fprintf(stderr, "Error unexpected character %c\n",c);
         exit(-1);
       default:
         do {

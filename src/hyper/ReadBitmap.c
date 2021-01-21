@@ -48,7 +48,7 @@ static int read_w_and_h(FILE * fd, unsigned int * width,
  * This file was produced by J.M. Wiley with some help from the bitmap editor
  * routine. It reads in a bitmap file, and calls XCreatePixmapFromBitmapData
  * to transform it into a Pixmap. He did this because the routine
- * XReadBitmapFile does not seeem to work to well (whatecer that means).
+ * XReadBitmapFile does not seem to work to well (whatever that means).
  */
 
 XImage *

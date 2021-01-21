@@ -595,7 +595,7 @@ parse_env(TextNode *node)
 
 /*
  * This parse_value routine accepts an empty {} but makes it a zero instead
- * of a one. Thus \indent{} is equivelant to \indent{0}
+ * of a one. Thus \indent{} is equivalent to \indent{0}
  */
 
 void
@@ -625,7 +625,7 @@ parse_value1(void)
 
 /*
  * This command accepts an empty argument command. Thus \space{} is
- * equivelant \space{1}
+ * equivalent to \space{1}
  */
 
 void

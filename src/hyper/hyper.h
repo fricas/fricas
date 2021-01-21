@@ -279,7 +279,7 @@ typedef struct button_list {
   struct button_list    *next;
 } ButtonList;
 
-/* Stucture for unformatted hyper text page */
+/* Structure for unformatted hyper text page */
 
 typedef struct hyperdoc_page {
   short type;                   /* Normal, Quitbutton, Upbutton etc.       */
@@ -343,7 +343,7 @@ typedef struct {
                                 /*        button                         */
   int scrolldowny;              /* Current y position of the scroll      */
                                 /*        downbutton                     */
-  int scrollbary;               /* Current y position of teh scrollbar   */
+  int scrollbary;               /* Current y position of the scrollbar   */
   int scrollx;                  /* X coordinates for all of the above    */
   int border_width;             /* Width of the border                   */
   HyperDocPage *page;           /* currently displayed page              */
