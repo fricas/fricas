@@ -103,7 +103,7 @@ HashTable gFileHashTable;            /* hash table of HyperDoc files */
 HashTable gImageHashTable;           /* hash table for images */
 
 
-/* Some things needed for Handling interupts properly                      */
+/* Some things needed for Handling interrupts properly                      */
 
 int gIsEndOfOutput;              /* set to true when spad has finished output */
 int received_window_request = 0;/* true iff Spad wants a pop-up    */
@@ -412,7 +412,7 @@ make_server_connections(void)
 
         /*
          * Modified on 11/20 so that it prints an error message every ten for
-         * ten tries at opeing the socket. If it fails all ten times, it
+         * ten tries at opening the socket. If it fails all ten times, it
          * gives up and exits.
          */
 

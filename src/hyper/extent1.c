@@ -178,7 +178,7 @@ compute_punctuation_extent(TextNode * node)
         twidth += inter_word_space;
 
     /*
-     * now calcualte the width of the next one if it needs to be considered
+     * now calculate the width of the next one if it needs to be considered
      */
 
     if (!(node->space & BACKSPACE))
@@ -742,8 +742,8 @@ static void
 endif_extent(TextNode *node)
 {
     /*
-     * This node has the responsibilty for updating text_x and text_y so that
-     * they are the maxaimum width of teh else and then statements
+     * This node has the responsibility for updating text_x and text_y so that
+     * they are the maximum width of the else and then statements
      */
 
     text_x = if_node->x;

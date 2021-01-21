@@ -563,7 +563,7 @@ get_hyper_link(XButtonEvent * event)
 
 /*
  * Handle a button pressed event. window is the subwindow in which the event
- * occured, and button is the button which was pressed
+ * occurred, and button is the button which was pressed
  */
 
 static void

@@ -617,7 +617,7 @@ scrollScroller(XButtonEvent * event)
 
     /*
      * This routine checks to see where in the window the button press
-     * occured. It then tries to move the scroller so that the top of the
+     * occurred. It then tries to move the scroller so that the top of the
      * scroller is at the spot of the event
      */
 

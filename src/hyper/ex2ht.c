@@ -261,7 +261,7 @@ addFile(char *filename)
     int c;
 
     if (file == NULL) {
-        fprintf(stderr, "Couln't open %s for reading\n", filename);
+        fprintf(stderr, "Could not open %s for reading\n", filename);
         exit(-1);
     }
     while ((c = getc(file)) != EOF)

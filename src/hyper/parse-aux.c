@@ -427,7 +427,7 @@ add_dependencies(void)
     SpadcomDepend *depend;
 
     if (cur_spadcom == NULL) {
-        fprintf(stderr, "(HyperDoc) \\bound occuring outside a \\spadcom\n");
+        fprintf(stderr, "(HyperDoc) \\bound occurring outside a \\spadcom\n");
         print_page_and_filename();
         exit(-1);
     }
