@@ -221,6 +221,25 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         pu case F => pu::F
         f
 
+    extend_tower(lk : List(K)) : List(K) ==
+        res : List(K) := []
+        for k in lk repeat
+            l1 := [k]
+            op := operator(k)
+            if name(op) = 'polylog then
+                args := argument(k)
+                iu := retractIfCan(first(args))@Union(Integer, "failed")
+                if iu case Integer then
+                    if (i := iu::Integer) > 0 and i < 10 then
+                        while i > 2 repeat
+                            i := i - 1
+                            ke := kernel(op, cons(i::R::F, rest(args)))
+                            l1 := cons(retract(ke)@K, l1)
+            for k1 in l1 repeat
+                member?(k1, res) => "iterate"
+                res := cons(k1, res)
+        reverse!(res)
+
 -- ltan = list of tangents in the integrand after real normalization
     postSubst(f, otf, lv, lk, ltan, ekers, evals, x) ==
       for v in lv for k in lk repeat
@@ -323,7 +342,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
           complexExpand(ir)
       not real? f => complexIntegrate(f, x)
       f   := distribute(f, x::F)
-      tf := tower f
+      tf := extend_tower(tower(f))
       ltf := select(x1+->is?(operator x1, 'tan), tf)
       ht  := any?(x1+->has?(operator x1, HTRIG), tf)
       etf := [realLiouvillian(k::F, x) for k in tf]

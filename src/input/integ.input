@@ -4,8 +4,13 @@
 testsuite "integ"
 
 is_evaluated_integral(res, f) ==
-    k1 := first kernels res
-    not is?(operator k1, 'integral) or member?(k1, kernels(f))
+    kf := kernels(f)
+    for k1 in kernels res repeat
+       op := operator k1
+       not is?(op, 'integral) and not is?(op, '%iint) => "iterate"
+       member?(k1, kf) => "iterate"
+       return false
+    true
 
 testIntegrate(f: String, x: String, issue: String): Void ==
     testcaseNoClear("integrate(" f ", " x ") (" issue ")")
@@ -709,6 +714,9 @@ testIntegrate("((2+x^3)*(1-2*x^3-x^4+x^6)^(1/2))/(-x^3-x^5+x^6)", "x", "alg")
 -- Failed in 'find_multiples'
 testIntegrate("((-1+2*x^4)*(32+7*x^2+64*x^4)*(8+35*x^4+32*x^8)^(1/2))/"
               "(x^3*(20-x^2+79*x^4-2*x^6+80*x^8))", "x", "alg")
+
+-- Had spurious %iint in result
+testIntegrate("polylog(3, x)", "x", "liou")
 
 testcase "specific integrals"
 
