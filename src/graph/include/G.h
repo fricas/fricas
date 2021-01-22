@@ -52,7 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define psForeground    psBlack /* foreground color: black */
 #define psBackground    psWhite /* background color: white */
 
-/* Gray scale defintions -- same as that in src/XShade.h for XShadeMax */
+/* Gray scale definitions -- same as that in src/XShade.h for XShadeMax */
 
 #define psShadeMax      17.0    /* same as XShadeMax */
 #define psShadeMul      (1.0/(psShadeMax-1.0))  /* white and 16 gray shades */

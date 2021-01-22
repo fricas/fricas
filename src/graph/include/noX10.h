@@ -62,8 +62,8 @@ typedef struct _Vertex {
   */
 typedef struct _XAssoc {
   struct _XAssoc *next; /* Next object in this bucket. */
-  struct _XAssoc *prev; /* Previous obejct in this bucket. */
-  Display *display;     /* Display which ownes the id. */
+  struct _XAssoc *prev; /* Previous object in this bucket. */
+  Display *display;     /* Display which owns the id. */
   XID x_id;             /* X Window System id. */
   char *data;           /* Pointer to untyped memory. */
 } XAssoc;

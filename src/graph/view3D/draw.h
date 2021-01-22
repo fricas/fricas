@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define clipOffset 500
 
-/* recalculation occurs if any of these situations have occured */
+/* recalculation occurs if any of these situations have occurred */
 
 #define recalc (rotated || zoomed || translated || !finishedList || \
                 firstTime || switchedPerspective || changedEyeDistance)
