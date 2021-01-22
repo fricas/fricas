@@ -1,4 +1,4 @@
-;;; Lisp file which creates shared library contaning FriCAS.
+;;; Lisp file which creates shared library containing FriCAS.
 ;;; Works with ECL.
 ;;;
 ;;; After creating the shared library you can load it:
