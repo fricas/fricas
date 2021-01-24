@@ -2928,7 +2928,7 @@ splitIntoOptionBlocks str ==
   nreverse blockList
 
 dumbTokenize str ==
-  -- split into tokens delimted by spaces, taking quoted strings into account
+  -- split into tokens delimited by spaces, taking quoted strings into account
   inString := false
   tokenList := nil
   tokenStart := 0

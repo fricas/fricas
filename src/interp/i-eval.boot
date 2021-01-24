@@ -102,7 +102,7 @@ mkEvalableUnion form ==
 evaluateType form ==
   -- Takes a parsed, unabbreviated type and evaluates it, replacing
   --  type valued variables with their values, and calling bottomUp
-  --  on non-type valued arguemnts to the constructor
+  --  on non-type valued arguments to the constructor
   --  and finally checking to see whether the type satisfies the
   --  conditions of its modemap
   domain:= isDomainValuedVariable form => domain
@@ -413,7 +413,7 @@ evalFormMkValue(op,form,tm) ==
 --      code unevaluated.  If $genValue is false then we are compiling.
 --    $op: name of the top level operator (unused except in map printing)
 --    $mapList:  list of maps being type analyzed, used in recursive
---               map type anlysis.
+--               map type analysis.
 --    $compilingMap: true when compiling a map, used to detect where to
 --                   THROW when interpret-only is invoked
 --    $compilingLoop: true when compiling a loop body, used to control

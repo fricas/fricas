@@ -119,9 +119,9 @@ MUST(x) ==
     x => true
     spad_syntax_error(nil, nil)
 
--- Return successfuly regardless of status of x.  Used for
+-- Return successfully regardless of status of x.  Used for
 -- optional elements in the grammar.  Code matching 'x' must
--- preserve number of elements on the eduction stack.
+-- preserve number of elements on the reduction stack.
 OPTIONAL(x) == true
 
 -- The same as OPTIONAL, but used for actions.

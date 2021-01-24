@@ -284,7 +284,7 @@ computeTargetMode(lhs, rhs) ==
         modemap := GETDATABASE(op, 'CONSTRUCTORMODEMAP)
         modemap is [[form, sig, :.], [=true,.]] =>
             pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
-            -- substitue
+            -- substitute
             SUBLIS(pairlis, sig)
         PRETTYPRINT("strange untyped def")
         PRETTYPRINT([lhs, rhs, modemap])
@@ -306,7 +306,7 @@ computeTargetMode(lhs, rhs) ==
  modemaps                   ; almost unused in the compiler -- used to
                               invalidate old modemaps when updating
                               *operation-hash* (which in turn is used
-                              only in intepreter).
+                              only in interpreter).
  niladic                    ; +
  object                     ; +-
  operationalist             ; interp.

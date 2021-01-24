@@ -78,7 +78,7 @@ bassertNot x == [[[x],nil]]
 --           the last case means disjunction of coaf-s on the list
 --        coaf is true | false | [neg pos]
 --           in the last case neg and pos are lists of items
---           this case means conjuntion of items in pos and
+--           this case means conjunction of items in pos and
 --           negations of items in neg
 
 orDnf(a,b) ==                   -- or:  (dnf, dnf) -> dnf

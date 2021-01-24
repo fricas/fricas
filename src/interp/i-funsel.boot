@@ -563,7 +563,7 @@ selectLocalMms(op,name,types,tar) ==
 --  for mm in mmS repeat
 --    [., targ, :.] := mm
 --    if tar = targ then matchingMms := cons(mm, matchingMms)
---  -- if we got some exact matchs on the target, return them
+--  -- if we got some exact matches on the target, return them
 --  matchingMms => nreverse matchingMms
 --
 --  obj := getValue op

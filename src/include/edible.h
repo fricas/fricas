@@ -171,7 +171,7 @@ extern int num_proc;         /**   num chars processed after a read       **/
 extern int buff_pntr;        /**   present length of  buff                **/
 extern int curr_pntr;        /** the current position in buff             **/
 
-/** Here are a bunch of macros for edin.c. They are mostly just charcter
+/** Here are a bunch of macros for edin.c. They are mostly just character
         comparison stuff                                                  ***/
 #define back_word(x) (((*(x) == _5) && (*(x+1) == _9) && \
                                         (*(x+2) == _q))?(1):(0))

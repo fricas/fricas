@@ -545,7 +545,7 @@ isDefaultPackageName x == (s := PNAME x).(MAXINDEX s) = char '_&
 
 -- from i-util
 
---% Utility Functions Used Only by the Intepreter
+--% Utility Functions Used Only by the Interpreter
 
 -- A wrapped value represents something that need not be evaluated
 -- when code is generated.  This includes objects from domains or things

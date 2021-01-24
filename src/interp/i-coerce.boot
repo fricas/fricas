@@ -646,7 +646,7 @@ canCoercePermute(t1,t2) ==
   -- at this point, first towers = t1 and last towers should be similar
   -- to t2 in the sense that the components of t1 are in the same order
   -- as in t2. If length towers = 2 and t2 = last towers, we quit to
-  -- avoid an infinte loop.
+  -- avoid an infinite loop.
   NULL towers or NULL rest towers => NIL
   NULL CDDR towers and t2 = CADR towers => NIL
   -- do the coercions successively, quitting if any fail
@@ -1225,7 +1225,7 @@ coerceIntPermute(object,t2) ==
   -- at this point, first towers = t1 and last towers should be similar
   -- to t2 in the sense that the components of t1 are in the same order
   -- as in t2. If length towers = 2 and t2 = last towers, we quit to
-  -- avoid an infinte loop.
+  -- avoid an infinite loop.
   NULL towers or NULL rest towers => NIL
   NULL CDDR towers and t2 = CADR towers => NIL
   -- do the coercions successively, quitting if any fail

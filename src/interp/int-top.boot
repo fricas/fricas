@@ -69,7 +69,7 @@ and iterate.
 
 -- User function to call when performing interactive input or output.
 
--- $ioHook receives two arguments, namely a symbol identifying curent i/o
+-- $ioHook receives two arguments, namely a symbol identifying current i/o
 -- event, and a list (or nil) containing optional arguments, depending on the
 -- event.
 

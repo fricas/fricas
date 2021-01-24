@@ -459,7 +459,7 @@ executeInterpreterCommand command ==
   FORCE_-OUTPUT()
 
 typeCheckInputAreas htPage ==
-  -- This needs to be severly beefed up
+  -- This needs to be severely beefed up
   inputAlist := nil
   errorCondition := false
   for entry in htpInputAreaAlist htPage

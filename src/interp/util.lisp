@@ -112,7 +112,7 @@ where the [[${FRICAS}]] variable points to installed tree.
               (error "setenv FRICAS or (setq $spadroot)"))))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
-;;; to the default memory setup to run FriCAS efficently.
+;;; to the default memory setup to run FriCAS efficiently.
 ;;; This function performs those setup commands.
 (defun init-memory-config (&key
                            (cons 500)
