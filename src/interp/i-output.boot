@@ -714,7 +714,7 @@ WIDTH u ==
        1 + negative + l10i
 
     -- width is very large, it would be expensive to compute it
-    -- accuratly, so we just make sure that we overestimate.
+    -- accurately, so we just make sure that we overestimate.
     -- l10 should have about 14 digits of accuracy
     1 + negative + FLOOR(l10 * (1.0 + 1.0e-12))
 

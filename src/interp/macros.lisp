@@ -395,7 +395,7 @@
         ((CONS (CAR L) (ADDASSOC X Y (CDR L))))))
 
 (DEFUN DELLASOS (U V)
-  "Remove any assocation pair (U . X) from list V."
+  "Remove any association pair (U . X) from list V."
   (COND ((ATOM V) NIL)
         ((EQUAL U (CAAR V)) (CDR V))
         ((CONS (CAR V) (DELLASOS U (CDR V))))))

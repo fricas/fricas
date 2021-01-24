@@ -426,7 +426,7 @@ axFormatOp op ==
       -- ops are either single op or ['PROGN, ops]
       -- In case we meet "if A has T then X else Y", we augment the type of
       -- A by T inside X. Inside Y nothing is augmented.
-      -- We only care about such A that are parameters in a sourrounding
+      -- We only care about such A that are parameters in a surrounding
       -- constructor, i.e. something looking like |#i|.
       -- The form "if not(A has T) then ..." is not supported.
       axFormattedPred := axFormatPred pred

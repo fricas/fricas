@@ -516,7 +516,7 @@ database.
     (setq item (unsqueeze item))
     (unless (setq dbstruct (get (car item) 'database))
      (format t "browseOpen:~%")
-     (format t "the browse database contains a contructor ~a~%" item)
+     (format t "the browse database contains a constructor ~a~%" item)
      (format t "that is not in the interp.daase file. we cannot~%")
      (format t "get the database structure for this constructor and~%")
      (warn "will create a new one~%")
@@ -1461,7 +1461,7 @@ database.
 
 ; how the magic works:
 ;  when a )library is done on a new compiler file we set up multiple
-;  functions (refered to as autoloaders). there is an autoloader
+;  functions (referred to as autoloaders). there is an autoloader
 ;  stored in the symbol-function of the G-filename (e.g. G-basic)
 ;  (see set-file-getter function)
 ;  and an autoloader stored in the symbol-function of every domain
