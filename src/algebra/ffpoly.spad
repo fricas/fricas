@@ -69,13 +69,12 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
     createPrimitiveNormalPoly : PI -> SUP
       ++ createPrimitiveNormalPoly(n)$FFPOLY(GF) generates a normal and
       ++ primitive polynomial of degree n over the field {\em GF}.
-    nextIrreduciblePoly : SUP -> Union(SUP, "failed")
-      ++ nextIrreduciblePoly(f) yields the next monic irreducible polynomial
-      ++ over a finite field {\em GF} of the same degree as f in the following
-      ++ order, or "failed" if there are no greater ones.
-      ++ Error: if f has degree 0.
-      ++ Note: the input polynomial f is made monic.
-      ++ Also, \spad{f < g} if
+    lexSmaller? : (SUP, SUP) -> Boolean
+      ++ lexSmaller?(f, g) compares monic f and g of the same
+      ++ degree in the following order.
+      ++ Error: if f or g is not monic or if f and g have different
+      ++ degrees or if common degree is 0.
+      ++ \spad{f < g} if
       ++ the number of monomials of f is less
       ++ than this number for g.
       ++ If f and g have the same number of monomials,
@@ -83,56 +82,73 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       ++ If these lists are also equal, the lists of coefficients
       ++ are compared according to the lexicographic ordering induced by
       ++ the ordering of the elements of {\em GF} given by {\em lookup}.
+    clexSmaller? : (SUP, SUP) -> Boolean
+      ++ clexSmaller?(f, g) compares monic f and g of the same
+      ++ degree in the following order.
+      ++ Error: if f or g is not monic or if f and g have different
+      ++ degrees or if common degree is 0.
+      ++ \spad{f < g} if the constant term of \spad{f} is zero
+      ++ and constant term of \spad{g} is nonzero.
+      ++ If both
+      ++ constant term of \spad{f} and \spad{g} are nonzero
+      ++ then \spad{f < g} if the {\em lookup} of the constant term
+      ++ of f is less than
+      ++ this number for g.
+      ++ If these values are equal, then \spad{lexSmaller?} is used
+      ++ as ordering predicate.
+    nlexSmaller? : (SUP, SUP) -> Boolean
+      ++ nlexSmaller?(f, g) compares monic f and g of the same
+      ++ degree \pdad{n} in the following order.
+      ++ Error: if f or g is not monic or if f and g have different
+      ++ degrees or if common degree is 0.
+      ++ \spad{f < g} if the coefficient of the term of degree {\em n-1}
+      ++ of \spad{f} is zero and than that for g is nonzero.
+      ++ Also, \spad{f < g} if both coefficients are nonzero and
+      ++ {\em lookup} of the coefficient of \spad{f} is less than
+      ++ that for \spad{g}.
+      ++ In case those coefficients are equal, then \spad{lexSmaller?}
+      ++ is used as ordering predicate.
+    cnlexSmaller? : (SUP, SUP) -> Boolean
+      ++ cnlexSmaller?(f, g) compares monic f and g of the same
+      ++ degree \pdad{n} in the following order.
+      ++ Error: if f or g is not monic or if f and g have different
+      ++ degrees or if common degree is 0.
+      ++ \spad{f < g} if the constant term of \spad{f} is zero
+      ++ and constant term of \spad{g} is nonzero.  If both
+      ++ constant term of \spad{f} and \spad{g} are nonzero
+      ++ then \spad{f < g} if the {\em lookup} of the constant term
+      ++ of f is less than
+      ++ this number for g.
+      ++ If constant terms are equal then \spad{nlexSmaller?}
+      ++ is used as ordering predicate.
+    nextIrreduciblePoly : SUP -> Union(SUP, "failed")
+      ++ nextIrreduciblePoly(f) yields the next monic irreducible polynomial
+      ++ over a finite field {\em GF} of the same degree as f in the following
+      ++ order, or "failed" if there are no greater ones.
+      ++ Error: if f has degree 0.
+      ++ Note: the input polynomial f is made monic.
+      ++ \spad{lexSmaller?} is used as ordering predicate.
     nextPrimitivePoly : SUP -> Union(SUP, "failed")
       ++ nextPrimitivePoly(f) yields the next primitive polynomial over
       ++ a finite field {\em GF} of the same degree as f in the following
       ++ order, or "failed" if there are no greater ones.
       ++ Error: if f has degree 0.
       ++ Note: the input polynomial f is made monic.
-      ++ Also, \spad{f < g} if the {\em lookup} of the constant term
-      ++ of f is less than
-      ++ this number for g.
-      ++ If these values are equal, then \spad{f < g} if
-      ++ if the number of monomials of f is less than that for g or if
-      ++ the lists of exponents of f are lexicographically less than the
-      ++ corresponding list for g.
-      ++ If these lists are also equal, the lists of coefficients are
-      ++ compared according to the lexicographic ordering induced by
-      ++ the ordering of the elements of {\em GF} given by {\em lookup}.
+      ++ \spad{clexSmaller?} is used as ordering predicate.
     nextNormalPoly : SUP -> Union(SUP, "failed")
       ++ nextNormalPoly(f) yields the next normal polynomial over
       ++ a finite field {\em GF} of the same degree as f in the following
       ++ order, or "failed" if there are no greater ones.
       ++ Error: if f has degree 0.
       ++ Note: the input polynomial f is made monic.
-      ++ Also, \spad{f < g} if the {\em lookup} of the coefficient
-      ++ of the term of degree
-      ++ {\em n-1} of f is less than that for g.
-      ++ In case these numbers are equal, \spad{f < g} if
-      ++ if the number of monomials of f is less that for g or if
-      ++ the list of exponents of f are lexicographically less than the
-      ++ corresponding list for g.
-      ++ If these lists are also equal, the lists of coefficients are
-      ++ compared according to the lexicographic ordering induced by
-      ++ the ordering of the elements of {\em GF} given by {\em lookup}.
+      ++ \spad{nlexSmaller?} is used as ordering predicate.
     nextNormalPrimitivePoly : SUP -> Union(SUP, "failed")
       ++ nextNormalPrimitivePoly(f) yields the next normal primitive polynomial
       ++ over a finite field {\em GF} of the same degree as f in the following
       ++ order, or "failed" if there are no greater ones.
       ++ Error: if f has degree 0.
       ++ Note: the input polynomial f is made monic.
-      ++ Also, \spad{f < g} if the {\em lookup} of the constant
-      ++ term of f is less than
-      ++ this number for g or if
-      ++ {\em lookup} of the coefficient of the term of degree {\em n-1}
-      ++ of f is less than this number for g.
-      ++ Otherwise, \spad{f < g}
-      ++ if the number of monomials of f is less than
-      ++ that for g or if the lists of exponents for f are
-      ++ lexicographically less than those for g.
-      ++ If these lists are also equal, the lists of coefficients are
-      ++ compared according to the lexicographic ordering induced by
-      ++ the ordering of the elements of {\em GF} given by {\em lookup}.
+      ++ \spad{cnlexSmaller?} is used as ordering predicate.
       ++ This operation is equivalent to nextPrimitiveNormalPoly(f).
     nextPrimitiveNormalPoly : SUP -> Union(SUP, "failed")
       ++ nextPrimitiveNormalPoly(f) yields the next primitive normal polynomial
@@ -140,18 +156,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       ++ order, or "failed" if there are no greater ones.
       ++ Error: if f has degree 0.
       ++ Note: the input polynomial f is made monic.
-      ++ Also, \spad{f < g} if the {\em lookup} of the
-      ++ constant term of f is less than
-      ++ this number for g or, in case these numbers are equal, if the
-      ++ {\em lookup} of the coefficient of the term of degree {\em n-1}
-      ++ of f is less than this number for g.
-      ++ If these numbers are equals, \spad{f < g}
-      ++ if the number of monomials of f is less than
-      ++ that for g, or if the lists of exponents for f are lexicographically
-      ++ less than those for g.
-      ++ If these lists are also equal, the lists of coefficients are
-      ++ coefficients according to the lexicographic ordering induced by
-      ++ the ordering of the elements of {\em GF} given by {\em lookup}.
+      ++ \spad{cnlexSmaller?} is used as ordering predicate.
       ++ This operation is equivalent to nextNormalPrimitivePoly(f).
 --    random : () -> SUP
 --      ++ random()$FFPOLY(GF) generates a random monic polynomial
@@ -182,20 +187,34 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
     import from IntegerNumberTheoryFunctions
     import from DistinctDegreeFactorize(GF, SUP)
 
+    sizeGF : PI := size()$GF :: PI
+
+    char_GF : PI := characteristic()$GF :: PI
+
+    deg_GF : NNI := 0
+
+    get_deg_GF() : PI ==
+        if deg_GF = 0 then
+            n : PI := 1$PI;
+            ss : NNI := sizeGF;
+            while ss > char_GF repeat
+                ss := (ss exquo$NNI char_GF)::NNI
+                n := n +$PI 1$PI
+            deg_GF := n
+        deg_GF::PI
+
+    elem1 : GF := index(1)$GF
+
+    poly_or_prime_rep := representationType()$GF case "polynomial"
+                         or representationType()$GF case "prime"
 
     MM := ModMonic(GF, SUP)
 
-    sizeGF : PI := size()$GF :: PI
-
-    revListToSUP(l : Repr) : SUP ==
-        newl : Repr := empty()
-        -- cannot use map since copy for Record is an XLAM
-        for t in l repeat newl := cons(copy t, newl)
-        newl pretend SUP
+    rep_to_SUP(l) ==> l pretend SUP
 
     listToSUP(l : Repr) : SUP ==
         newl : Repr := [copy t for t in l]
-        newl pretend SUP
+        rep_to_SUP(newl)
 
     nextSubset : (L NNI, NNI) -> Union(L NNI, "failed")
       -- for a list s of length m with 1 <= s.1 < ... < s.m <= bound,
@@ -337,26 +356,20 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
           qcoerce((qe - 1) ^ (qcoerce(eulerPhi(d) quo e)) )
       qcoerce(q^(qcoerce(n - m)@NNI) * prod quo n)
 
-    primitive? f ==
+    -- test if monic irreducible f is primitve
+    primitive_i?(f : SUP) : Boolean ==
       -- let GF be a field of order q; a monic polynomial f in GF[X]
       -- of degree n is primitive over GF if and only if its constant
-      -- term is non-zero, f divides X^(q^n - 1) - 1 and,
+      -- term is non-zero, f is irreducible and,
       -- for each prime divisor d of q^n - 1,
       -- f does not divide X^((q^n - 1) / d) - 1
       -- (cf. [LN] p.89, Th. 3.16, and p.87, following Th. 3.11)
       n : NNI := degree f
       n = 0 => false
-      leadingCoefficient f ~= 1 => false
-      coefficient(f, 0) = 0 => false
       q  : PI := sizeGF
       qn1 : PI := (q^n - 1) :: NNI :: PI
       setPoly f
       x := reduce(monomial(1, 1)$SUP)$MM -- X rem f represented in MM
-      --
-      -- may be improved by tabulating the residues x^(i*q)
-      -- for i = 0, ..., n-1 :
-      --
-      lift(x ^ qn1)$MM ~= 1 => false -- X^(q^n - 1) rem f in GF[X]
       lrec  := factorList(factor qn1)
       lfact : L PI := []              -- collect the prime factors
       for rec in lrec repeat          -- of q^n - 1
@@ -365,6 +378,14 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         if (expt := (qn1 quo d)) >= n then
           lift(x ^ expt)$MM = 1 => return false
       true
+
+    primitive?(f) ==
+        degree(f) = 0 => false
+        leadingCoefficient f ~= 1 => false
+        coefficient(f, 0) = 0 => false
+        -- cheaper and prunes better than computation of x^(q^n - 1)
+        not(irreducible?(f)) => false
+        primitive_i?(f)
 
     normal? f ==
       -- let GF be a field with q elements; a monic irreducible
@@ -380,6 +401,9 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       l := [entries vectorise(g.i, n)$SUP for i in 0..(n-1)::NNI]
       rank(matrix(l)$Matrix(GF)) = n => true
       false
+
+    normal_and_primitive?(f : SUP) : Boolean ==
+        normal?(f) and primitive_i?(f)
 
     nextSubset(s, bound) ==
       m : NNI := #(s)
@@ -409,465 +433,397 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
         s := cons(j, s)           -- initial part of s
       s
 
+    lexSmaller?(f : SUP, g : SUP) : Boolean ==
+        n := degree(f)
+        n ~= degree(g) => error "polynomials must have equal degrees"
+        n < 1 => error "polynomials must have positive degree"
+        k1 := numberOfMonomials(f)
+        k2 := numberOfMonomials(g)
+        k1 < k2 => true
+        k2 < k1 => false
+        f1 := reductum(f)
+        g1 := reductum(g)
+        while f1 ~= 0 repeat
+            k1 := degree(f1)
+            k2 := degree(g1)
+            k1 < k2 => return true
+            k2 < k1 => return false
+            f1 := reductum(f1)
+            g1 := reductum(g1)
+        f1 := reductum(f)
+        g1 := reductum(g)
+        while f1 ~= 0 repeat
+            k1 := lookup(leadingCoefficient(f1))
+            k2 := lookup(leadingCoefficient(g1))
+            k1 < k2 => return true
+            k2 < k1 => return false
+            f1 := reductum(f1)
+            g1 := reductum(g1)
+        false
+
+    ll_cmp(x1 : GF, x2 : GF) : SingleInteger ==
+        x1 = 0 and x2 ~= 0 => -1
+        x1 ~= 0 and x2 = 0 => 1
+        k1 := lookup(x1)
+        k2 := lookup(x2)
+        k1 < k2 => -1
+        k2 < k2 => 1
+        0
+
+    clexSmaller?(f : SUP, g : SUP) : Boolean ==
+        n := degree(f)
+        n ~= degree(g) => error "polynomials must have equal degrees"
+        n < 1 => error "polynomials must have positive degree"
+        s := ll_cmp(coefficient(f, 0), coefficient(g, 0))
+        s < 0 => true
+        0 < s => false
+        lexSmaller?(f, g)
+
+    nlexSmaller?(f : SUP, g : SUP) : Boolean ==
+        n := degree(f)
+        n ~= degree(g) => error "polynomials must have equal degrees"
+        n < 1 => error "polynomials must have positive degree"
+        s := ll_cmp(coefficient(f, (n - 1)::NNI), coefficient(g, (n - 1)::NNI))
+        s < 0 => true
+        0 < s => false
+        lexSmaller?(f, g)
+
+    cnlexSmaller?(f : SUP, g : SUP) : Boolean ==
+        n := degree(f)
+        n ~= degree(g) => error "polynomials must have equal degrees"
+        n < 1 => error "polynomials must have positive degree"
+        s := ll_cmp(coefficient(f, 0), coefficient(g, 0))
+        s < 0 => true
+        0 < s => false
+        nlexSmaller?(f, g)
+
+    v_NNI ==> PrimitiveArray(NNI)
+    v_GF ==> PrimitiveArray(GF)
+
+    vecs_to_pol(exp_v : v_NNI,  coeff_v : v_GF, w : NNI) : SUP ==
+        resl : Repr := []
+        for i in 0..w repeat
+            resl := cons([exp_v(i), coeff_v(i)], resl)
+        rep_to_SUP(resl)
+
+    do_weight(exp_v : v_NNI, ind_v : v_NNI, coeff_v : v_GF,
+              min_i : NNI, max_i : NNI, w : NNI,
+              tp? : SUP -> Boolean) : Union(SUP, "failed") ==
+        -- skip reducible cases
+        if sizeGF = 2 and odd?(w) then
+            -- fill vectors with expected values
+            for i in min_i..(max_i - 1) repeat
+                exp_v(i) := i
+                coeff_v(i) := elem1
+                ind_v(i) := 1
+            return "failed"
+        repeat
+            i := min_i
+            while i < max_i repeat
+                j := ind_v(i)
+                j := j + 1 -- lookup(f_i)$GF + 1
+                j = sizeGF =>
+                    ind_v(i) := 1
+                    coeff_v(i) := elem1
+                    i := i + 1
+                ind_v(i) := j
+                coeff_v(i) := index(j::PI)
+                break
+            -- if coeffs wrapped around need to take next
+            -- exponents tuple
+            if i = max_i then
+                i := max(min_i, 1)
+                while i < max_i repeat
+                    j := exp_v(i)
+                    j := j + 1
+                    j = exp_v(i + 1) =>
+                        exp_v(i) := exp_v(i - 1) + 1
+                        i := i + 1
+                    exp_v(i) := j
+                    break
+                -- need bigger weight, fail this one
+                i = max_i => return "failed"
+            pol := vecs_to_pol(exp_v, coeff_v, w)
+            -- print(pol::OutputForm)
+            tp?(pol) => return pol
+
+    -- run through the possible weights, starting from w
+    do_weights(exp_v : v_NNI, ind_v : v_NNI, coeff_v : v_GF,
+               min_i : NNI, max_i : NNI, w : NNI,
+               tp? : SUP -> Boolean) : Union(SUP, "failed") ==
+        n := exp_v(w)
+        repeat
+            -- skip weight if there nothing else to increase
+            if max_i > min_i then
+                resu := do_weight(exp_v, ind_v, coeff_v, min_i,
+                                  max_i, w, tp?)
+                resu case SUP => return resu::SUP
+            w = n => return "failed"
+            w1 := w
+            w := w + 1
+            i := w
+            for i1 in w1..max_i by -1 repeat
+                exp_v(i) := exp_v(i1)
+                coeff_v(i) := coeff_v(i1)
+                i := i1
+            exp_v(max_i) := max_i
+            ind_v(max_i) := 1
+            coeff_v(max_i) := elem1
+            max_i := max_i + 1
+            -- artificial, we will bump it in do_weight
+            ind_v(min_i) := 0
+
+    get_rep(f) ==> f pretend Repr
+
     nextIrreduciblePoly f ==
-      n : NNI := degree f
-      n = 0 => error "polynomial must have positive degree"
-      -- make f monic
-      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
-      fRepr : Repr := f pretend Repr
-      fcopy : Repr := []
-      -- we can not simply write fcopy := copy fRepr because
-      -- the input(!) f would be modified by assigning
-      -- a new value to one of its records
-      for term in fRepr repeat
-        fcopy := cons(copy term, fcopy)
-      if term.expnt ~= 0 then
-        fcopy := cons([0, 0]$Rec, fcopy)
-      tailpol : Repr := []
-      headpol : Repr := fcopy  -- [[0, f0], ... , [n, fn]] where
-                               -- fi is non-zero for i > 0
-      fcopy   := reverse fcopy
-      weight  : NNI := (#(fcopy) - 1) :: NNI -- #s(f) as explained above
-      taillookuplist : L NNI := []
-      -- the zeroes in the headlookuplist stand for the fi
-      -- whose lookup's were not yet computed :
-      headlookuplist : L NNI := new(weight, 0)
-      s  : L NNI := [] -- we will compute s(f) only if necessary
-      n1 : NNI := (n - 1) :: NNI
-      repeat
-        -- (run through the possible weights)
-        while not empty? headlookuplist repeat
-          -- find next polynomial in the above order with fixed weight;
-          -- assume at this point we have
-          -- headpol = [[i1, f{i1}], [i2, f{i2}], ... , [n, 1]]
-          -- and tailpol = [[k, fk], ... , [0, f0]] (with k < i1)
-          term := first headpol
-          j := first headlookuplist
-          if j = 0 then j := lookup(term.coeff)$GF
-          j := j + 1 -- lookup(f{i1})$GF + 1
-          j rem sizeGF = 0 =>
-            -- in this case one has to increase f{i2}
-            tailpol := cons(term, tailpol) -- [[i1, f{i1}], ..., [0, f0]]
-            headpol := rest headpol        -- [[i2, f{i2}], ..., [n, 1]]
-            taillookuplist := cons(j, taillookuplist)
-            headlookuplist := rest headlookuplist
-          -- otherwise set f{i1} := index(j)$GF
-          setelt!(first headpol, coeff, index(j :: PI)$GF)
-          setfirst!(headlookuplist, j)
-          if empty? taillookuplist then
-            pol := revListToSUP(headpol)
-            --
-            -- may be improved by excluding reciprocal polynomials
-            --
-            irreducible? pol => return pol
-          else
-            -- go back to fk
-            headpol := cons(first tailpol, headpol) -- [[k, fk], ..., [n, 1]]
-            tailpol := rest tailpol
-            headlookuplist := cons(first taillookuplist, headlookuplist)
-            taillookuplist := rest taillookuplist
-        -- must search for polynomial with greater weight
-        if empty? s then -- compute s(f)
-          restfcopy := rest fcopy
-          for entry in restfcopy repeat s := cons(entry.expnt, s)
-        weight = n => return "failed"
-        s1 := nextSubset(rest s, n1) :: L NNI
-        s := cons(0, s1)
-        weight := #s
-        taillookuplist := []
-        headlookuplist := cons(sizeGF, new((weight-1) :: NNI, 1))
-        tailpol := []
-        headpol := [] -- [[0, 0], [s.2, 1], ... , [s.weight, 1], [n, 1]] :
-        s1 := cons(n, reverse s1)
-        while not empty? s1 repeat
-          headpol := cons([first s1, 1]$Rec, headpol)
-          s1 := rest s1
-        headpol := cons([0, 0]$Rec, headpol)
+        n : NNI := degree f
+        n = 0 => error "polynomial must have positive degree"
+        -- make f monic
+        if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
+        f_rep : Repr := get_rep(f)
+        c0 := coefficient(f, 0)
+        n = 1 =>
+            xn := first(f_rep)
+            lc : NNI := (c0 = 0 => 0; lookup(c0))
+            lc = sizeGF - 1 => "failed"
+            c := index((lc + 1)::PI)
+            rep_to_SUP([xn, [0, c]$Rec])
+        w : NNI := (#(f_rep) - 1) :: NNI
+        if c0 = 0 then w := w + 1
+        good_binomials := true
+        -- skip binomials if all are reducible
+        if n > 1 and w = 1 then
+            facs := factors(factor(n))
+            good_binomials : Boolean := odd?(char_GF)
+            for fac in facs while good_binomials repeat
+                fac.factor = 2 and fac.exponent > 1 =>
+                    (sizeGF - 1) rem 4 ~= 0 =>
+                        good_binomials := false
+                if (sizeGF - 1) rem fac.factor ~= 0 then
+                    good_binomials := false
+            if not(good_binomials) then w := 2
+        exp_v : v_NNI := new(n + 1, 0)
+        ind_v : v_NNI := new(n + 1, 0)
+        coeff_v : v_GF := new(n + 1, 0)
+        for term in f_rep for i in 0.. repeat
+            exp_v(w - i) := term.expnt
+            ci := term.coeff
+            coeff_v(w - i) := ci
+            ind_v(w - i) := lookup(ci)
+        if not(good_binomials) then
+            exp_v(1) := 1
+            coeff_v(1) := elem1
+            ind_v(1) := 1
+        do_weights(exp_v, ind_v, coeff_v, 0, w, w, irreducible?)
+
+    lc_Rec ==> Record(nl : PI, nc : GF)
+
+    -- Find nl bigger or equal than l such that m1_to_n*index(nl)
+    -- is primitive.  If succesful return [nl, index(nl)],
+    -- otherwise return "failed"
+    get_next_GF_generator(l : NNI, m1_to_n : GF) : Union(lc_Rec, "failed") ==
+        l1 := l::PI
+        while l1 < sizeGF repeat
+            c := index(l1)$GF
+            primitive?(m1_to_n*c)$GF => return [l1, c]
+            l1 := l1 + 1
+        "failed"
 
     nextPrimitivePoly f ==
-      n : NNI := degree f
-      n = 0 => error "polynomial must have positive degree"
-      -- make f monic
-      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
-      fRepr : Repr := f pretend Repr
-      fcopy : Repr := []
-      -- we can not simply write fcopy := copy fRepr because
-      -- the input(!) f would be modified by assigning
-      -- a new value to one of its records
-      for term in fRepr repeat
-        fcopy := cons(copy term, fcopy)
-      if term.expnt ~= 0 then
-        term  := [0, 0]$Rec
-        fcopy := cons(term, fcopy)
-      fcopy   := reverse fcopy
-      xn : Rec := first fcopy
-      c0 : GF  := term.coeff
-      l  : NNI := lookup(c0)$GF rem sizeGF
-      n = 1 =>
-        -- the polynomial X + c is primitive if and only if -c
-        -- is a primitive element of GF
-        q1 : NNI  := (sizeGF - 1) :: NNI
-        while l < q1 repeat -- find next c such that -c is primitive
-          l := l + 1
-          c := index(l :: PI)$GF
-          primitive?(-c)$GF =>
-            return [xn, [0, c]$Rec] pretend SUP
-        "failed"
-      weight : NNI := (#(fcopy) - 1) :: NNI -- #s(f)+1 as explained above
-      s  : L NNI := [] -- we will compute s(f) only if necessary
-      n1 : NNI := (n - 1) :: NNI
-      -- a necessary condition for a monic polynomial f of degree n
-      -- over GF to be primitive is that (-1)^n * f(0) be a
-      -- primitive element of GF (cf. [LN] p.90, Th. 3.18)
-      c  : GF  := c0
-      while l < sizeGF repeat
-        -- (run through the possible values of the constant term)
-        noGenerator : Boolean := true
-        while noGenerator and l < sizeGF repeat
-          -- find least c >= c0 such that (-1)^n c0 is primitive
-          primitive?((-1)^n * c)$GF => noGenerator := false
-          l := l + 1
-          c := index(l :: PI)$GF
-        noGenerator => return "failed"
-        constterm : Rec := [0, c]$Rec
-        if c = c0 and weight > 1 then
-          headpol : Repr := rest reverse fcopy -- [[i0, f{i0}], ..., [n, 1]]
-                                               -- fi is non-zero for i>0
-          -- the zeroes in the headlookuplist stand for the fi
-          -- whose lookup's were not yet computed :
-          headlookuplist : L NNI := new(weight, 0)
-        else
-          -- X^n + c can not be primitive for n > 1 (cf. [LN] p.90,
-          -- Th. 3.18); next possible polynomial is X^n + X + c
-          headpol : Repr := [[1, 0]$Rec, xn] -- 0*X + X^n
-          headlookuplist : L NNI := [sizeGF]
-          s := [0, 1]
-          weight := 2
-        tailpol : Repr := []
-        taillookuplist : L NNI := []
-        notReady : Boolean := true
-        while notReady repeat
-          -- (run through the possible weights)
-          while not empty? headlookuplist repeat
-            -- find next polynomial in the above order with fixed
-            -- constant term and weight; assume at this point we have
-            -- headpol = [[i1, f{i1}], [i2, f{i2}], ... , [n, 1]] and
-            -- tailpol = [[k, fk], ..., [k0, fk0]] (k0<...<k<i1<i2<...<n)
-            term := first headpol
-            j := first headlookuplist
-            if j = 0 then j := lookup(term.coeff)$GF
-            j := j + 1 -- lookup(f{i1})$GF + 1
-            j rem sizeGF = 0 =>
-              -- in this case one has to increase f{i2}
-              tailpol := cons(term, tailpol) -- [[i1, f{i1}], ..., [k0, f{k0}]]
-              headpol := rest headpol        -- [[i2, f{i2}], ..., [n, 1]]
-              taillookuplist := cons(j, taillookuplist)
-              headlookuplist := rest headlookuplist
-            -- otherwise set f{i1} := index(j)$GF
-            setelt!(first headpol, coeff, index(j :: PI)$GF)
-            setfirst!(headlookuplist, j)
-            if empty? taillookuplist then
-              pol := revListToSUP cons(constterm, headpol)
-              --
-              -- may be improved by excluding reciprocal polynomials
-              --
-              primitive? pol => return pol
-            else
-              -- go back to fk
-              headpol := cons(first tailpol, headpol) -- [[k, fk], ..., [n, 1]]
-              tailpol := rest tailpol
-              headlookuplist := cons(first taillookuplist,
-                                              headlookuplist)
-              taillookuplist := rest taillookuplist
-          if weight = n then notReady := false
-          else
-            -- must search for polynomial with greater weight
-            if empty? s then -- compute s(f)
-              restfcopy := rest fcopy
-              for entry in restfcopy repeat s := cons(entry.expnt, s)
-            s1 := nextSubset(rest s, n1) :: L NNI
-            s  := cons(0, s1)
-            weight := #s
-            taillookuplist := []
-            headlookuplist := cons(sizeGF, new((weight-2) :: NNI, 1))
-            tailpol := []
-            -- headpol = [[s.2, 0], [s.3, 1], ... , [s.weight, 1], [n, 1]] :
-            headpol := [[first s1, 0]$Rec]
-            while not empty? (s1 := rest s1) repeat
-              headpol := cons([first s1, 1]$Rec, headpol)
-            headpol := reverse cons([n, 1]$Rec, headpol)
-        -- next polynomial must have greater constant term
-        l := l + 1
-        c := index(l :: PI)$GF
-      "failed"
+        n : NNI := degree f
+        n = 0 => error "polynomial must have positive degree"
+        -- make f monic
+        if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
+        f_rep : Repr := get_rep(f)
+        xn : Rec := first(f_rep)
+        c0 : GF  := coefficient(f, 0)
+        lc : NNI := lookup(c0)$GF
+        n = 1 =>
+             m1_to_n := -(1$GF)
+             -- x + c is primitive iff -c is primitve
+             lcu := get_next_GF_generator(lc + 1, m1_to_n)
+             lcu case "failed" => "failed"
+             c := (lcu::lc_Rec).nc
+             rep_to_SUP([xn, [0, c]$Rec])
+        w : NNI := (#(f_rep) - 1)::NNI
+        if c0 = 0 then w := w + 1
+        exp_v : v_NNI := new(n + 1, 0)
+        ind_v : v_NNI := new(n + 1, 0)
+        coeff_v : v_GF := new(n + 1, 0)
+        for term in f_rep for i in 0.. repeat
+            exp_v(w - i) := term.expnt
+            ci := term.coeff
+            coeff_v(w - i) := ci
+            ind_v(w - i) := lookup(ci)
+        -- a necessary condition for a monic polynomial f of degree n
+        -- over GF to be primitive is that (-1)^n * f(0) be a
+        -- primitive element of GF (cf. [LN] p.90, Th. 3.18)
+        c  : GF  := c0
+        m1_to_n := ((-1$Integer)^n)::GF
+        -- if c = 0 then set lc to 1
+        if c = 0 then lc := 1
+        repeat
+            lcu := get_next_GF_generator(lc, m1_to_n)
+            lcu case "failed" => return "failed"
+            lcr := lcu::lc_Rec
+            -- move to next constant term
+            lc := lcr.nl + 1
+            ind_v(0) := lcr.nl
+            coeff_v(0) := c := lcr.nc
+            if not(c = c0 and w > 1) then
+                -- X^n + c can not be primitive for n > 1 (cf. [LN] p.90,
+                -- Th. 3.18); next possible polynomial is X^n + X + c
+                w := 2
+                exp_v(1) := 1
+                ind_v(1) := 0
+                coeff_v(1) := 0
+                exp_v(w) := n
+                ind_v(w) := 1
+                coeff_v(w) := 1
+            resu := do_weights(exp_v, ind_v, coeff_v, 1, w, w, primitive?)
+            resu case SUP => return resu::SUP
 
     nextNormalPoly f ==
-      n : NNI := degree f
-      n = 0 => error "polynomial must have positive degree"
-      -- make f monic
-      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
-      fRepr : Repr := f pretend Repr
-      fcopy : Repr := []
-      -- we can not simply write fcopy := copy fRepr because
-      -- the input(!) f would be modified by assigning
-      -- a new value to one of its records
-      for term in fRepr repeat
-        fcopy := cons(copy term, fcopy)
-      if term.expnt ~= 0 then
-        term  := [0, 0]$Rec
-        fcopy := cons(term, fcopy)
-      fcopy     := reverse fcopy -- [[n, 1], [r, fr], ... , [0, f0]]
-      xn : Rec  := first fcopy
-      middlepol : Repr := rest fcopy -- [[r, fr], ... , [0, f0]]
-      a0 : GF  := (first middlepol).coeff -- fr
-      l  : NNI := lookup(a0)$GF rem sizeGF
-      n = 1 =>
-        -- the polynomial X + a is normal if and only if a is not zero
-        l = sizeGF - 1 => "failed"
-        [xn, [0, index((l+1) :: PI)$GF]$Rec] pretend SUP
-      n1 : NNI := (n  - 1) :: NNI
-      n2 : NNI := (n1 - 1) :: NNI
-      -- if the polynomial X^n + a * X^(n-1) + ... is normal then
-      -- a = -(x + x^q +...+ x^(q^n)) can not be zero (where q = #GF)
-      a  : GF  := a0
-      -- if a = 0 then set a := 1
-      if l = 0 then
-        l := 1
-        a := 1$GF
-      while l < sizeGF repeat
-        -- (run through the possible values of a)
-        if a = a0 then
-          -- middlepol = [[0, f0], ... , [m, fm]] with m < n-1
-          middlepol := reverse rest middlepol
-          weight : NNI := #middlepol -- #s(f) as explained above
-          -- the zeroes in the middlelookuplist stand for the fi
-          -- whose lookup's were not yet computed :
-          middlelookuplist : L NNI := new(weight, 0)
-          s : L NNI := [] -- we will compute s(f) only if necessary
-        else
-          middlepol := [[0, 0]$Rec]
-          middlelookuplist : L NNI := [sizeGF]
-          s : L NNI := [0]
-          weight : NNI := 1
-        headpol : Repr := [xn, [n1, a]$Rec] -- X^n + a * X^(n-1)
-        tailpol : Repr := []
-        taillookuplist : L NNI := []
-        notReady : Boolean := true
-        while notReady repeat
-          -- (run through the possible weights)
-          while not empty? middlelookuplist repeat
-            -- find next polynomial in the above order with fixed
-            -- a and weight; assume at this point we have
-            -- middlepol = [[i1, f{i1}], [i2, f{i2}], ... , [m, fm]] and
-            -- tailpol = [[k, fk], ..., [0, f0]] ( with k<i1<i2<...<m)
-            term := first middlepol
-            j := first middlelookuplist
-            if j = 0 then j := lookup(term.coeff)$GF
-            j := j + 1 -- lookup(f{i1})$GF + 1
-            j rem sizeGF = 0 =>
-              -- in this case one has to increase f{i2}
-              -- tailpol = [[i1, f{i1}], ..., [0, f0]]
-              tailpol   := cons(term, tailpol)
-              middlepol := rest middlepol -- [[i2, f{i2}], ..., [m, fm]]
-              taillookuplist   := cons(j, taillookuplist)
-              middlelookuplist := rest middlelookuplist
-            -- otherwise set f{i1} := index(j)$GF
-            setelt!(first middlepol, coeff, index(j :: PI)$GF)
-            setfirst!(middlelookuplist, j)
-            if empty? taillookuplist then
-              pol := listToSUP append(headpol, reverse middlepol)
-              --
-              -- may be improved by excluding reciprocal polynomials
-              --
-              normal? pol => return pol
-            else
-              -- go back to fk
-              -- middlepol = [[k, fk], ..., [m, fm]]
-              middlepol := cons(first tailpol, middlepol)
-              tailpol := rest tailpol
-              middlelookuplist := cons(first taillookuplist,
-                                               middlelookuplist)
-              taillookuplist := rest taillookuplist
-          if weight = n1 then notReady := false
-          else
-            -- must search for polynomial with greater weight
-            if empty? s then -- compute s(f)
-              restfcopy := rest rest fcopy
-              for entry in restfcopy repeat s := cons(entry.expnt, s)
-            s1 := nextSubset(rest s, n2) :: L NNI
-            s  := cons(0, s1)
-            weight := #s
-            taillookuplist := []
-            middlelookuplist := cons(sizeGF, new((weight-1) :: NNI, 1))
-            tailpol   := []
-            -- middlepol = [[0, 0], [s.2, 1], ... , [s.weight, 1]] :
-            middlepol := []
-            s1 := reverse s1
-            while not empty? s1 repeat
-              middlepol := cons([first s1, 1]$Rec, middlepol)
-              s1 := rest s1
-            middlepol := cons([0, 0]$Rec, middlepol)
-        -- next polynomial must have greater a
-        l := l + 1
-        a := index(l :: PI)$GF
-      "failed"
+        n : NNI := degree f
+        n = 0 => error "polynomial must have positive degree"
+        n1 := (n - 1)::NNI
+        -- make f monic
+        if (lcf := leadingCoefficient(f)) ~= 1 then f := (inv lcf) * f
+        f_rep : Repr := get_rep(f)
+        a0 : GF  := coefficient(f, n1)
+        la  : NNI := lookup(a0)$GF rem sizeGF
+        n = 1 =>
+            xn : Rec  := first(f_rep)
+            -- the polynomial X + a is normal if and only if a is not zero
+            la = sizeGF - 1 => "failed"
+            rep_to_SUP([xn, [0, index((la + 1)::PI)$GF]$Rec])
+
+        -- if the polynomial X^n + a * X^(n-1) + ... is normal then
+        -- a = -(x + x^q +...+ x^(q^n)) can not be zero (where q = #GF)
+        a  : GF  := a0
+        -- if a = 0 then set la := 1
+        if la = 0 then
+            la := 1
+            a := elem1
+        w : NNI := (#(f_rep) - 1) :: NNI
+        if coefficient(f, 0) = 0 then w := w + 1
+        exp_v : v_NNI := new(n + 1, 0)
+        ind_v : v_NNI := new(n + 1, 0)
+        coeff_v : v_GF := new(n + 1, 0)
+        for term in f_rep for i in 0.. repeat
+            exp_v(w - i) := term.expnt
+            ci := term.coeff
+            coeff_v(w - i) := ci
+            ind_v(w - i) := lookup(ci)
+        while la < sizeGF repeat
+            -- (run through the possible values of a)
+            if not(a = a0) then
+                w := 2
+                ind_v(0) := 0
+                coeff_v(0) := 0
+                exp_v(w - 1) := n1
+                ind_v(w - 1) := la
+                coeff_v(w - 1) := a
+                exp_v(w) := n
+                ind_v(w) := 1
+                coeff_v(w) := 1
+            resu := do_weights(exp_v, ind_v, coeff_v, 0, (w - 1)::NNI,
+                               w, normal?)
+            resu case SUP => return resu::SUP
+            la := la + 1
+            a := index(la::PI)$GF
+        "failed"
 
     nextNormalPrimitivePoly f ==
-      n : NNI := degree f
-      n = 0 => error "polynomial must have positive degree"
-      -- make f monic
-      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
-      -- if f = fn*X^n + ... + f{i0}*X^{i0} with the fi non-zero
-      -- then fRepr := [[n, fn], ... , [i0, f{i0}]]
-      fRepr : Repr := f pretend Repr
-      fcopy : Repr := []
-      -- we can not simply write fcopy := copy fRepr because
-      -- the input(!) f would be modified by assigning
-      -- a new value to one of its records
-      for term in fRepr repeat
-        fcopy := cons(copy term, fcopy)
-      if term.expnt ~= 0 then
-        term  := [0, 0]$Rec
-        fcopy := cons(term, fcopy)
-      fcopy   := reverse fcopy -- [[n, 1], [r, fr], ... , [0, f0]]
-      xn : Rec := first fcopy
-      c0 : GF  := term.coeff
-      lc : NNI := lookup(c0)$GF rem sizeGF
-      n = 1 =>
-        -- the polynomial X + c is primitive if and only if -c
-        -- is a primitive element of GF
-        q1 : NNI  := (sizeGF - 1) :: NNI
-        while lc < q1 repeat -- find next c such that -c is primitive
-          lc := lc + 1
-          c  := index(lc :: PI)$GF
-          primitive?(-c)$GF =>
-            return [xn, [0, c]$Rec] pretend SUP
-        "failed"
-      n1 : NNI := (n  - 1) :: NNI
-      n2 : NNI := (n1 - 1) :: NNI
-      middlepol : Repr := rest fcopy -- [[r, fr], ..., [i0, f{i0}], [0, f0]]
-      a0 : GF  := (first middlepol).coeff
-      la : NNI := lookup(a0)$GF rem sizeGF
-      -- if the polynomial X^n + a * X^(n-1) +...+ c is primitive and
-      -- normal over GF then (-1)^n * c is a primitive element of GF
-      -- (cf. [LN] p.90, Th. 3.18), and a = -(x + x^q +...+ x^(q^n))
-      -- is not zero (where q = #GF)
-      c : GF  := c0
-      a : GF  := a0
-      -- if a = 0 then set a := 1
-      if la = 0 then
-        la := 1
-        a  := 1$GF
-      while lc < sizeGF repeat
-        -- (run through the possible values of the constant term)
-        noGenerator : Boolean := true
-        while noGenerator and lc < sizeGF repeat
-          -- find least c >= c0 such that (-1)^n * c0 is primitive
-          primitive?((-1)^n * c)$GF => noGenerator := false
-          lc := lc + 1
-          c  := index(lc :: PI)$GF
-        noGenerator => return "failed"
-        constterm : Rec := [0, c]$Rec
-        while la < sizeGF repeat
-        -- (run through the possible values of a)
-          headpol : Repr := [xn, [n1, a]$Rec] -- X^n + a X^(n-1)
-          if c = c0 and a = a0 then
-            -- middlepol = [[i0, f{i0}], ... , [m, fm]] with m < n-1
-            middlepol := rest reverse rest middlepol
-            weight : NNI := #middlepol + 1 -- #s(f)+1 as explained above
-            -- the zeroes in the middlelookuplist stand for the fi
-            -- whose lookup's were not yet computed :
-            middlelookuplist : L NNI := new((weight-1) :: NNI, 0)
-            s : L NNI := [] -- we will compute s(f) only if necessary
-          else
-            pol := listToSUP append(headpol, [constterm])
-            normal? pol and primitive? pol => return pol
-            middlepol := [[1, 0]$Rec]
-            middlelookuplist : L NNI := [sizeGF]
-            s : L NNI := [0, 1]
-            weight : NNI := 2
-          tailpol : Repr := []
-          taillookuplist : L NNI := []
-          notReady : Boolean := true
-          while notReady repeat
-          -- (run through the possible weights)
-            while not empty? middlelookuplist repeat
-              -- find next polynomial in the above order with fixed
-              -- c, a and weight; assume at this point we have
-              -- middlepol = [[i1, f{i1}], [i2, f{i2}], ... , [m, fm]]
-              -- tailpol = [[k, fk], ..., [k0, fk0]] (k0<...<k<i1<...<m)
-              term := first middlepol
-              j := first middlelookuplist
-              if j = 0 then j := lookup(term.coeff)$GF
-              j := j + 1 -- lookup(f{i1})$GF + 1
-              j rem sizeGF = 0 =>
-                -- in this case one has to increase f{i2}
-                -- tailpol = [[i1, f{i1}], ..., [k0, f{k0}]]
-                tailpol   := cons(term, tailpol)
-                middlepol := rest middlepol -- [[i2, f{i2}], ..., [m, fm]]
-                taillookuplist   := cons(j, taillookuplist)
-                middlelookuplist := rest middlelookuplist
-              -- otherwise set f{i1} := index(j)$GF
-              setelt!(first middlepol, coeff, index(j :: PI)$GF)
-              setfirst!(middlelookuplist, j)
-              if empty? taillookuplist then
-                pol := listToSUP append(headpol, reverse
-                                cons(constterm, middlepol))
-                --
-                -- may be improved by excluding reciprocal polynomials
-                --
-                normal? pol and primitive? pol => return pol
-              else
-                -- go back to fk
-                -- middlepol = [[k, fk], ..., [m, fm]]
-                middlepol := cons(first tailpol, middlepol)
-                tailpol := rest tailpol
-                middlelookuplist := cons(first taillookuplist,
-                                                 middlelookuplist)
-                taillookuplist := rest taillookuplist
-            if weight = n1 then notReady := false
-            else
-              -- must search for polynomial with greater weight
-              if empty? s then -- compute s(f)
-                restfcopy := rest rest fcopy
-                for entry in restfcopy repeat s := cons(entry.expnt, s)
-              s1 := nextSubset(rest s, n2) :: L NNI
-              s  := cons(0, s1)
-              weight := #s
-              taillookuplist := []
-              middlelookuplist := cons(sizeGF, new((weight-2)::NNI, 1))
-              tailpol   := []
-              -- middlepol = [[s.2, 0], [s.3, 1], ... , [s.weight, 1] :
-              middlepol := [[first s1, 0]$Rec]
-              while not empty? (s1 := rest s1) repeat
-                middlepol := cons([first s1, 1]$Rec, middlepol)
-              middlepol := reverse middlepol
-          -- next polynomial must have greater a
-          la := la + 1
-          a  := index(la :: PI)$GF
-        -- next polynomial must have greater constant term
-        lc := lc + 1
-        c  := index(lc :: PI)$GF
-        la := 1
-        a  := 1$GF
-      "failed"
+        n : NNI := degree f
+        -- degree 1 primitive polynomial is normal
+        n = 1 => nextPrimitivePoly(f)
+        n = 0 => error "polynomial must have positive degree"
+        n1 := (n - 1)::NNI
+        -- make f monic
+        if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
+        f_rep : Repr := get_rep(f)
+        c0 : GF  := coefficient(f, 0)
+        lc : NNI := lookup(c0)$GF
+        a0 : GF  := coefficient(f, n1)
+        la : NNI := lookup(a0)$GF
+        -- if the polynomial X^n + a * X^(n-1) +...+ c is primitive and
+        -- normal over GF then (-1)^n * c is a primitive element of GF
+        -- (cf. [LN] p.90, Th. 3.18), and a = -(x + x^q +...+ x^(q^n))
+        -- is not zero (where q = #GF)
+        c : GF  := c0
+        a : GF  := a0
+        -- if a = 0 then set la := 1
+        if a = 0 then
+            la := 1
+            a  := elem1
+        m1_to_n := ((-1$Integer)^n)::GF
+        w : NNI := (#(f_rep) - 1) :: NNI
+        -- if c = 0 then set lc to 1
+        if c = 0 then
+            lc := 1
+            w := w + 1
+        exp_v : v_NNI := new(n + 1, 0)
+        ind_v : v_NNI := new(n + 1, 0)
+        coeff_v : v_GF := new(n + 1, 0)
+        for term in f_rep for i in 0.. repeat
+            exp_v(w - i) := term.expnt
+            ci := term.coeff
+            coeff_v(w - i) := ci
+            ind_v(w - i) := lookup(ci)
+        first_pass := true
+        repeat
+            lcu := get_next_GF_generator(lc, m1_to_n)
+            lcu case "failed" => return "failed"
+            lcr := lcu::lc_Rec
+            lc := lcr.nl
+            c := lcr.nc
+            while la < sizeGF repeat
+                -- We use original coefficients only on first
+                -- pass here and then only when a0 and c0 were OK.
+                -- Otherwise we need to reinitialize vectors
+                if not (a = a0 and c = c0) then
+                    first_pass := false
+                    w := 2
+                    ind_v(0) := lc
+                    coeff_v(0) := c
+                    exp_v(w - 1) := n1
+                    ind_v(w - 1) := la
+                    coeff_v(w - 1) := a
+                    exp_v(w) := n
+                    ind_v(w) := 1
+                    coeff_v(w) := 1
+                if w = 2 and not(first_pass) then
+                    pol := vecs_to_pol(exp_v, coeff_v, w)
+                    normal_and_primitive?(pol) => return pol
+                resu := do_weights(exp_v, ind_v, coeff_v, 1,
+                                   (w - 1)::NNI, w, normal_and_primitive?)
+                resu case SUP => return resu::SUP
+                la := la + 1
+                a  := index(la :: PI)$GF
+            la := 1
+            a := 1
+            lc := lc + 1
 
     nextPrimitiveNormalPoly f == nextNormalPrimitivePoly f
 
     createIrreduciblePoly n ==
-      x := monomial(1, 1)$SUP
-      n = 1 => x
-      xn := monomial(1, n)$SUP
-      n >= sizeGF => nextIrreduciblePoly(xn + x) :: SUP
-      -- (since in this case there is most no irreducible binomial X+a)
-      odd? n => nextIrreduciblePoly(xn + 1) :: SUP
-      nextIrreduciblePoly(xn) :: SUP
+        x := monomial(1, 1)$SUP
+        n = 1 => x
+        xn := monomial(1, n)$SUP
+        -- does not make much sense, but we do this to keep output
+        -- the same as in earlier versions
+        n >= sizeGF => nextIrreduciblePoly(xn + x) :: SUP
+
+        dg := get_deg_GF()
+        kg : GF :=
+            poly_or_prime_rep =>
+                (l := gcd(n, dg)) > 1 =>
+                    index((char_GF^((dg exquo l)::NNI) - 1)::PI)
+                odd? n => 1
+                0
+            0
+        nextIrreduciblePoly(xn + kg::SUP)::SUP
 
     createPrimitivePoly n ==
     -- (see also the comments in the code of nextPrimitivePoly)
@@ -923,14 +879,17 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       c0  : GF  := (-1)^n * primitiveElement()$GF
       constterm  := monomial(c0, 0)$SUP
       -- try first the polynomials f = X^n + a *  X^(n-1) + ...
-      -- with a = -1
+      -- with a = -1 (there should be one)
       pol := xn + monomial(-1, n1)$SUP + constterm
       normal? pol and primitive? pol => pol
       res := nextNormalPrimitivePoly(pol)
       res case SUP => res
+      print(message("weird, can not find normal and primitve"
+                    "poly with a{n-1} = -1")$OutputForm)
       -- if there is no normal primitive f with a = -1
       -- get now one with arbitrary (non-zero) a
       -- (the existence is proved in [LS])
+      -- FIXME: elem1 instead of 1 ????
       pol := xn + monomial(1, n1)$SUP + constterm
       normal? pol and primitive? pol => pol
       nextNormalPrimitivePoly(pol) :: SUP
@@ -962,7 +921,7 @@ FiniteFieldPolynomialPackage GF : Exports == Implementation where
       for i in 0..n1 repeat
         if (c := random()$GF) ~= 0 then
           polRepr := cons([i, c]$Rec, polRepr)
-      cons([n, 1$GF]$Rec, polRepr) pretend SUP
+      rep_to_SUP(cons([n, 1$GF]$Rec, polRepr))
 
     random(m, n) ==
       if m > n then (m, n) := (n, m)
