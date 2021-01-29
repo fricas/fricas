@@ -1,0 +1,122 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "poly ops over Galois fields"
+
+testcase "ffpoly"
+
+P := PrimeField(7)
+
+list_pols(f, inc_f, n_max) ==
+    l : List SUP(P) := []
+    i := 1
+    for i in 1..n_max while (fu := inc_f(f)) case SUP(P) repeat
+        f := fu::SUP(P)
+        l := cons(f, l)
+    reverse!(l)
+
+check_ops1(f1, lp, cf, cd) ==
+    for f2 in lp repeat
+        not(cf(f1, f2)) =>
+            print(message("f1 not " cd "smaller than f2")$OutputForm);
+            print(f1::OutputForm)
+            print(f2::OutputForm)
+            return false
+        f1 := f2
+    true
+
+check_ops(k, n_max) ==
+    free lp
+    free n
+    f1 := (x^k)::SUP(P)
+    lp := list_pols(f1, nextIrreduciblePoly$FFPOLY(P), n_max)
+    n := numberOfIrreduciblePoly(k)$FFPOLY(P)
+    if n <= n_max then
+        testEquals("(_"i_"; #lp)", "n")
+    res1 := check_ops1(f1, lp, lexSmaller?$FFPOLY(P), "lex")
+    lp := list_pols(f1, nextPrimitivePoly$FFPOLY(P), n_max)
+    n := numberOfPrimitivePoly(k)$FFPOLY(P)
+    if n <= n_max then
+        testEquals("(_"p_"; #lp)", "n")
+    res1 := res1 and check_ops1(f1, lp, clexSmaller?$FFPOLY(P), "clex")
+    lp := list_pols(f1, nextNormalPoly$FFPOLY(P), n_max)
+    n := numberOfNormalPoly(k)$FFPOLY(P)
+    if n <= n_max then
+        testEquals("(_"n_"; #lp)", "n")
+    res1 := res1 and check_ops1(f1, lp, nlexSmaller?$FFPOLY(P), "nlex")
+    lp := list_pols(f1, nextNormalPrimitivePoly$FFPOLY(P), n_max)
+    res1 and check_ops1(f1, lp, cnlexSmaller?$FFPOLY(P), "cnlex")
+
+testTrue("check_ops(3, 2000)")
+testTrue("check_ops(4, 2000)")
+testTrue("check_ops(8, 100)")
+p := 3
+P := PrimeField(p)
+
+testTrue("check_ops(3, 2000)")
+testTrue("check_ops(4, 2000)")
+testTrue("check_ops(7, 100)")
+testTrue("check_ops(9, 100)")
+
+-- get two small extension degrees
+d1:=2
+d2:=3
+
+F1 := P
+f1 := createNormalPoly(d1)$FFPOLY(F1)
+P := FFNBP(F1, f1)
+
+testTrue("check_ops(3, 200)")
+testTrue("check_ops(4, 100)")
+testTrue("check_ops(11, 20)")
+-- get irreducible polynomial of degree d2 over P
+f2 := createIrreduciblePoly(d2)$FFPOLY(P)
+P := FFP(P, f2)
+
+testTrue("check_ops(3, 20)")
+testTrue("check_ops(4, 20)")
+testTrue("check_ops(9, 20)")
+testTrue("check_ops(10, 20)")
+
+f1 := createPrimitivePoly(3)$FFPOLY(F1)
+P := FFCGP(F1, f1)
+
+testTrue("check_ops(3, 20)")
+testTrue("check_ops(4, 20)")
+testTrue("check_ops(9, 20)")
+testTrue("check_ops(10, 20)")
+
+P := PrimeField(2)
+testTrue("check_ops(3, 20)")
+testTrue("check_ops(4, 20)")
+-- in full range would be expensive
+testTrue("check_ops(9, 50)")
+-- following are expensive
+-- testTrue("check_ops(10, 1000)")
+-- testTrue("check_ops(20, 20)")
+-- testTrue("check_ops(30, 20)")
+
+F1 := P
+f1 := createNormalPoly(4)$FFPOLY(F1)
+P := FFNBP(F1, f1)
+
+testTrue("check_ops(3, 20)")
+testTrue("check_ops(4, 20)")
+testTrue("check_ops(5, 20)")
+testTrue("check_ops(9, 20)")
+testTrue("check_ops(10, 20)")
+testTrue("check_ops(15, 20)")
+testTrue("check_ops(17, 20)")
+
+f1 := createPrimitivePoly(5)$FFPOLY(F1)
+P := FFCGP(F1, f1)
+
+testTrue("check_ops(3, 20)")
+testTrue("check_ops(4, 20)")
+testTrue("check_ops(5, 20)")
+testTrue("check_ops(9, 20)")
+testTrue("check_ops(10, 20)")
+testTrue("check_ops(15, 20)")
+testTrue("check_ops(17, 20)")
+
+statistics()
