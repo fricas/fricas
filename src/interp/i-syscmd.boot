@@ -400,14 +400,13 @@ compile args ==
     -- first see if the user has explicitly specified the compiler
     -- to use.
 
-    optlist := '(new old translate constructor)
+    optlist := '(new old constructor)
     haveNew := nil
     haveOld := nil
     for opt in $options while not (haveNew and haveOld) repeat
         [optname,:optargs] := opt
         fullopt := selectOptionLC(optname,optlist,nil)
         fullopt = 'new => haveNew := true
-        fullopt = 'translate => haveOld := true
         fullopt = 'constructor => haveOld := true
         fullopt = 'old => haveOld := true
 
@@ -472,7 +471,6 @@ compileAsharpCmd1 args ==
     optList :=  '( _
       new _
       old _
-      translate _
       onlyargs _
       moreargs _
       quiet _
@@ -494,9 +492,7 @@ compileAsharpCmd1 args ==
         fullopt := selectOptionLC(optname,optList,nil)
 
         fullopt = 'new       => nil
-        fullopt = 'old       => error "Internal error: compileAsharpCmd got )old"
-        fullopt = 'translate => error "Internal error: compileAsharpCmd got )translate"
-
+        fullopt = 'old  => error "Internal error: compileAsharpCmd got )old"
         fullopt = 'quiet     => beQuiet := true
         fullopt = 'noquiet   => beQuiet := false
 
