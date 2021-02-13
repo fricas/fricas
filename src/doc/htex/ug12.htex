@@ -577,13 +577,16 @@ wrongfully apply algorithms to \spadtype{Boolean} elements that  presume that th
 ring axioms for \spadop{+} hold.
 
 % *********************************************************************
-\head{section}{Attributes}{ugCategoriesAttributes}
+\head{section}{Categories as attributes}{ugCategoriesAttributes}
 % *********************************************************************
 
 Most axioms are not computationally useful.
-Those that are can be explicitly expressed by what \Language{} calls an
-\spadgloss{attribute}.
-The attribute \spadtype{CommutativeStar}, for example, is used to assert
+Those that are can be explicitly expressed by using special
+categories that export on operations.
+Note: in the past intstead of categories \Language{} used
+special construct called \spad{attribute}.
+
+The category \spadtype{CommutativeStar}, for example, is used to assert
 that a domain has commutative multiplication.
 Its definition is given by its documentation:
 
@@ -592,8 +595,11 @@ Its definition is given by its documentation:
     if it has an operation "*": \spad{(R,R)->R} such that \spad{x * y = y * x}.
 \texht{\par\endgroup}{\indent{0}}
 
-Just as you can test whether a domain has the category \spadtype{Ring}, you
-can test that a domain has a given attribute.
+% Just as you can test whether a domain has the category \spadtype{Ring}, you
+% can test that a domain has a given attribute.
+So, to test is a domain is known to satisfy an axiom we just
+test if it has corresponding category, like \spadtype{CommutativeStar}
+above.
 
 \xtc{
 Do polynomials over the integers
@@ -608,27 +614,41 @@ have commutative multiplication?
 \spadcommand{Matrix Integer has CommutativeStar}
 }
 
-Attributes are used to conditionally export and define
-operations for a domain (see \spadref{ugDomainsAssertions}).
-Attributes can also be asserted in a category definition.
+Using categories to assert axioms and category conditions
+we can conditionally export and define
+operations for a domain depending on axioms
+(see \spadref{ugDomainsAssertions}).
+Of course categories can also be asserted in a category definition.
 
 After mentioning category \spadtype{Ring} many times in this book,
 it is high time that we show you its definition:
 \exptypeindex{Ring}
 
 \begin{xmpLines}
-Ring(): Category ==
-  Join(Rng,Monoid,LeftModule(%: Rng)) with
-      characteristic: -> NonNegativeInteger
-      coerce: Integer -> %
-      unitsKnown
-    add
-      n:Integer
+Ring() : Category == Join(Rng, SemiRing, NonAssociativeRing,
+                          unitsKnown)
+\end{xmpLines}
+
+As you can see \spadtype{Ring} just combines properties of
+othere categores.
+So let us see \spadtype{NonAssociativeRing}:
+
+\begin{xmpLines}
+NonAssociativeRing() : Category == Join(NonAssociativeRng,
+                                        NonAssociativeSemiRing) with
+    --operations
+      characteristic : -> NonNegativeInteger
+        ++ characteristic() returns the characteristic of the ring.
+        --we can not make this a constant, since some domains are mutable
+      coerce : Integer -> %
+        ++ coerce(n) coerces the integer n to an element of the ring.
+   add
+      n : Integer
       coerce(n) == n * 1$%
 \end{xmpLines}
 
-There are only two new things here.
-First, look at the \spadSyntax{$%} on the last line.
+There is one new things here.
+Look at the \spadSyntax{$%} on the last line.
 This is not a typographic error!
 The \spadSyntax{$} says that the \spad{1} is to come from some
 domain.
@@ -636,10 +656,9 @@ The \spadSyntax{%} says that the domain is ``this domain.''
 If \spadSyntax{%} is \spadtype{Fraction(Integer)}, this line reads
 \spad{coerce(n) == n * 1$Fraction(Integer)}.
 
-The second new thing is the presence of attribute ``\spad{unitsKnown}''.
-\Language{} can always distinguish an attribute from an operation.
-An operation has a name and a type. An attribute has no type.
-The attribute \spadtype{unitsKnown} asserts a rather subtle mathematical
+Let us comment on category \spadtype{unitsKnown} appearing
+in definition of \spadtype{Ring} above.
+The category \spadtype{unitsKnown} asserts a rather subtle mathematical
 fact that is normally taken for granted when working with
 rings.\footnote{With this axiom, the units of a domain are the set of
 elements \spad{x} that each have a multiplicative
@@ -647,9 +666,9 @@ inverse \spad{y} in the domain.
 Thus \spad{1} and \spad{-1} are units in domain \spadtype{Integer}.
 Also, for \spadtype{Fraction Integer}, the domain of rational numbers,
 all non-zero elements are units.}
-Because programs can test for this attribute, \Language{} can
+Because programs can test for this category, \Language{} can
 correctly handle rather more complicated mathematical structures (ones
-that are similar to rings but do not have this attribute).
+that are similar to rings but do not have this category).
 
 % *********************************************************************
 \head{section}{Parameters}{ugCategoriesParameters}
