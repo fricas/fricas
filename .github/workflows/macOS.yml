@@ -1,0 +1,19 @@
+name: FriCAS CI on macOS
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependencies
+      run: brew install sbcl
+    - name: configure
+      run: mkdir ../build && cd ../build && ../fricas/configure --with-lisp=sbcl
+    - name: make
+      run: cd ../build && make -j2
+    - name: make check
+      run: cd ../build && make check -j2
