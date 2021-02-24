@@ -64,6 +64,21 @@ if test $build != $target; then
    AC_MSG_WARN([Please notify fricas-devel@googlegroups.com if you succeed.])
 fi
 
+AC_MSG_CHECKING([for in-tree build on case insensitive file system])
+if test "$fricas_top_srcdir" = "$fricas_pwd"; then
+   rm -f ac_TEST_filenames_CASE_sensitive ac_test_filenames_case_sensitive
+   echo foo > ac_test_filenames_case_sensitive
+   if test -f ac_TEST_filenames_CASE_sensitive; then
+      rm ac_test_filenames_case_sensitive
+      AC_MSG_ERROR([in tree build on case insensitive file system is not supported. Use out-of-source build instead.])
+   else
+      rm ac_test_filenames_case_sensitive
+      AC_MSG_RESULT([no])
+   fi
+else
+   AC_MSG_RESULT([no])
+fi
+
 ## Accumulate list of utils needed for the build platform
 fricas_all_prerequisites=
 
