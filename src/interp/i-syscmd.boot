@@ -268,16 +268,10 @@ clearSpad2Cmd l ==
   arg := selectOptionLC(first l,'(all completely scaches),NIL)
   arg = 'all          => clearCmdAll()
   arg = 'completely   => clearCmdCompletely()
-  arg = 'scaches      => clearCmdSortedCaches()
+  arg = 'scaches      => clear_sorted_caches()
   $clearExcept => clearCmdExcept(l)
   clearCmdParts(l)
   updateCurrentInterpreterFrame()
-
-clearCmdSortedCaches() ==
-  $lookupDefaults: local := false
-  for [.,.,:domain] in HGET($ConstructorCache,'SortedCache) repeat
-    pair := compiledLookupCheck('clearCache,[$Void],domain)
-    SPADCALL pair
 
 clearCmdCompletely() ==
   clearCmdAll()
@@ -291,7 +285,7 @@ clearCmdCompletely() ==
   NIL
 
 clearCmdAll() ==
-  clearCmdSortedCaches()
+  clear_sorted_caches()
   ------undo special variables------
   $frameRecord := nil
   $previousBindings := nil
@@ -1598,7 +1592,7 @@ restoreHistory(fn) ==
   oldInternal := $useInternalHistoryTable
   restoreHistory2(oldInternal, restfile, fn')
   sayKeyedMsg("S2IH0025",[namestring(restfile)])
-  clearCmdSortedCaches()
+  clear_sorted_caches()
   nil
 
 restoreHistory2(oldInternal, restfile, fn) ==

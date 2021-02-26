@@ -149,7 +149,14 @@ reportAndClearClams() ==
   cacheStats()
   clearClams()
 
+clear_sorted_caches() ==
+    scl := HGET($ConstructorCache, "SortedCache")
+    for [., ., :dom] in scl repeat
+       cc := compiledLookupCheck("clearCache", [$Void], dom)
+       SPADCALL(cc)
+
 clearConstructorCaches() ==
+  clear_sorted_caches()
   clearCategoryCaches()
   CLRHASH $ConstructorCache
 

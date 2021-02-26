@@ -909,7 +909,8 @@ database.
    (asharp file)
    (setq file (|astran| (concatenate 'string (pathname-name file) ".asy")))
    (localasy file object only make-database? noexpose))
-  (CLRHASH |$ConstructorCache|))))
+  (|clearConstructorCaches|))
+))
 
 (defun localasy (asy object only make-database? noexpose)
  "given an alist from the asyfile and the objectfile update the database"
