@@ -418,6 +418,12 @@ compSel1(domain, op, argl, m, e) ==
            for x in argl]], m, e]
     (op = "COLLECT") and coerceable(domain, m, e) =>
       (T := comp([op, :argl], domain, e) or return nil; coerce(T, m))
+    -- FIXME: we should handle 0 and 1 in systematic way, instead
+    -- of renaming hacks like below
+    if op = 0 then
+        op := "Zero"
+    else if op = 1 then
+        op := "One"
     -- Next clause added JHD 8/Feb/94: the clause after doesn't work
     -- since addDomain refuses to add modemaps from Mapping
     e :=
@@ -1228,7 +1234,19 @@ resolve(din,dout) ==
   dout
 
 modeEqual(x,y) ==
-  atom x or atom y => x=y
+  EQ(x, y) => true
+  -- FIXME: we should eliminate confusion due to 0 and 1 instead
+  -- of hacks like below
+  atom x =>
+      x = y => true
+      x = 0 => y = ["Zero"]
+      x = 1 => y = ["One"]
+      false
+  atom y =>
+      x = y => true
+      y = 0 => x = ["Zero"]
+      y = 1 => x = ["One"]
+      false
   #x ~=#y => nil
   (and/[modeEqual(u,v) for u in x for v in y])
 
