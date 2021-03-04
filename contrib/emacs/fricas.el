@@ -302,7 +302,7 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
       (setq fricas-process (get-buffer-process (current-buffer))))
 
     (if (> emacs-major-version 23)
-	;; enable copletion at point
+	;; enable completion at point
 	(cl-pushnew 'fricas-complete-at-point completion-at-point-functions))
 
     (if (> emacs-major-version 21)
