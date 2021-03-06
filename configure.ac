@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2020-04-23],
+AC_INIT([FriCAS], [2021-03-06],
         [fricas-devel@googlegroups.com],
         [fricas],
         [https://fricas.github.io])
@@ -747,7 +747,7 @@ AC_SUBST(BASE)
 FRICAS=${BASE}${fricas_targetdir}
 AC_SUBST(FRICAS)
 
-CCF="-O2 -Wall -D_GNU_SOURCE"
+CCF="-g -O2 -Wall -D_GNU_SOURCE"
 LDF=
 
 case $target in
