@@ -79,11 +79,6 @@ maintainer-clean-recursive:
 .PHONY: dvi
 dvi: dvi-recursive
 
-$(top_srcdir)/configure: $(top_srcdir)/configure.ac \
-			 $(top_srcdir)/config/fricas.m4
-	cd $(top_srcdir) && $(AUTOCONF)
-
-
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_srcdir)/config/var-def.mk \
 	  $(top_srcdir)/config/setup-dep.mk \
