@@ -769,3 +769,6 @@
 ;;;           available for a new entry
 (defvar HASHTABLEVACANT  (gensym))
 (defvar HASHTABLEDELETED (gensym))
+
+;;; Support for re-seeding the lisp random number generator.
+(defun SEEDRANDOM () (setf *random-state* (make-random-state t)))
