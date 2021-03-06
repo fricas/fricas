@@ -313,8 +313,8 @@ spadAction (void)
 
     readViewman(&f1, floatSize);
     readViewman(&f2, floatSize);
-    viewData.theta = f1;
-    viewData.phi = f2;
+    viewport->theta = f1;
+    viewport->phi = f2;
     while (viewport->theta >= two_pi) viewport->theta -= two_pi;
     while (viewport->theta < 0.0)     viewport->theta += two_pi;
     while (viewport->phi > pi)        viewport->phi   -= two_pi;
