@@ -598,7 +598,7 @@
     (setf *PACKAGE* package))
 )
 
-(defun unistall-gmp-multiplication()
+(defun uninstall-gmp-multiplication()
    (let ((package *PACKAGE*))
     (ccl:SET-DEVELOPMENT-ENVIRONMENT T)
     (setf (symbol-function 'ccl::multiply-bignums)
@@ -795,10 +795,9 @@
     (sb-ext:unlock-package "COMMON-LISP")
     (setf (symbol-function 'common-lisp:isqrt)
           (symbol-function 'gmp-isqrt))
-    (sb-ext:lock-package "COMMON-LISP")
-)
+    (sb-ext:lock-package "COMMON-LISP"))
 
-(defun unistall-gmp-multiplication()
+(defun uninstall-gmp-multiplication()
     (sb-ext:unlock-package "SB-BIGNUM")
     (setf (symbol-function 'sb-bignum::multiply-bignums)
           (symbol-function 'orig-multiply-bignums))
@@ -810,9 +809,7 @@
     (sb-ext:unlock-package "COMMON-LISP")
     (setf (symbol-function 'common-lisp:isqrt)
           (symbol-function 'orig-isqrt))
-    (sb-ext:lock-package "COMMON-LISP"))
-
-)
+    (sb-ext:lock-package "COMMON-LISP")))
 
 (defun init-gmp(wrapper-lib)
     (if (not *gmp-multiplication-initialized*)
@@ -821,6 +818,4 @@
                     (|quiet_load_alien| wrapper-lib) t)
                 (progn
                     (install-gmp-multiplication)
-                    (setf *gmp-multiplication-initialized* t))))))
-
-)
+                    (setf *gmp-multiplication-initialized* t)))))))
