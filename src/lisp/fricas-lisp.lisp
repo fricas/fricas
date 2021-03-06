@@ -124,7 +124,7 @@ with this hack and will try to convince the GCL crowd to fix this.
          (save-options-arg
              (if save-options-keyword (list save-options-keyword t) nil))
         )
-        (unistall-gmp-multiplication)
+        (uninstall-gmp-multiplication)
         (apply #'sb-ext::save-lisp-and-die
               (append `(,core-image :toplevel ,top-fun :executable t)
                       save-options-arg))
