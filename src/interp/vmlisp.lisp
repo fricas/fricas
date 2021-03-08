@@ -757,9 +757,8 @@
              (sb-ext::run-program "/bin/sh"
                     (list "-c" S) :input t :output t :error t))
    #+:win32 (sb-ext::process-exit-code
-             (sb-ext::run-program (make-absolute-filename "/lib/obey.bat")
-                    (list S) :input t :output t :error t))
-)
+             (sb-ext::run-program "sh"
+                    (list "-c" S) :input t :output t :error t :search t)))
 
 #+:openmcl
 (defun OBEY (S)
