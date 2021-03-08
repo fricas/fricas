@@ -1,5 +1,6 @@
 (in-package "BOOT")
 
+
 ;;; Making constant doubles
 (defun |make_DF|(x e)
     (let ((res (read-from-string (format nil "~D.0d~D" x e))))
@@ -8,184 +9,191 @@
 
 (defmacro |mk_DF|(x e) (|make_DF| x e))
 
+;;; Fast FIXNUM arithmetic
+
+(defmacro DEF_SI_BINOP (name op)
+  `(fricas-lisp::define-inlined-function ,name (x y)
+     (the fixnum (,op (the fixnum x)
+                      (the fixnum y)))))
+
+(DEF_SI_BINOP |add_SI| +)
+(DEF_SI_BINOP |sub_SI| -)
+(DEF_SI_BINOP |mul_SI| *)
+(DEF_SI_BINOP |min_SI| min)
+(DEF_SI_BINOP |max_SI| max)
+(DEF_SI_BINOP |rem_SI| rem)
+(DEF_SI_BINOP |quo_SI_aux| truncate)
+(DEF_SI_BINOP |lshift_SI| ash)
+(DEF_SI_BINOP |and_SI| logand)
+(DEF_SI_BINOP |or_SI| logior)
+(DEF_SI_BINOP |xor_SI| logxor)
+(fricas-lisp::define-inlined-function |quo_SI| (a b)
+  (values (|quo_SI_aux| a b)))
+
+(defmacro DEF_SI_UNOP (name op)
+  `(fricas-lisp::define-inlined-function ,name (x)
+     (the fixnum (,op (the fixnum x)))))
+
+(DEF_SI_UNOP |minus_SI| -)
+(DEF_SI_UNOP |abs_SI| abs)
+(DEF_SI_UNOP |inc_SI| 1+)
+(DEF_SI_UNOP |dec_SI| 1-)
+(DEF_SI_UNOP |not_SI| lognot)
+
+(defmacro DEF_SI_ARG_BINOP (name op)
+  `(fricas-lisp::define-inlined-function ,name (x y) 
+     (,op (the fixnum x) (the fixnum y))))
+
+(DEF_SI_ARG_BINOP |eql_SI| eql)
+(DEF_SI_ARG_BINOP |less_SI| <)
+(DEF_SI_ARG_BINOP |greater_SI| >)
+
+(defmacro DEF_SI_ARG_UNOP (name op)
+  `(fricas-lisp::define-inlined-function ,name (x)
+     (,op (the fixnum x))))
+
+(DEF_SI_ARG_UNOP |zero?_SI| zerop)
+(DEF_SI_ARG_UNOP |negative?_SI| minusp)
+(DEF_SI_ARG_UNOP |odd?_SI| oddp)
+
+
 ;;; Fast array accessors
 
-(defmacro QAREF1(v i)
-`(aref (the (simple-array T (*)) ,v) ,i))
+(fricas-lisp::define-inlined-function QAREF1 (v i)
+  (aref (the (simple-array T (*)) v) i))
 
-(defmacro QSETAREF1(v i s)
-    `(setf (aref (the (simple-array T (*)) ,v) ,i) ,s))
+(fricas-lisp::define-inlined-function QSETAREF1 (v i s)
+  (setf (aref (the (simple-array T (*)) v) i) s))
 
 ;;; arrays of arbitrary offset
 
-(defmacro QAREF1O(v i o)
-    `(aref (the (simple-array T (*)) ,v) (|sub_SI| ,i ,o)))
+(fricas-lisp::define-inlined-function QAREF1O (v i o)
+  (aref (the (simple-array T (*)) v) (|sub_SI| i o)))
 
-(defmacro QSETAREF1O (v i s o)
-    `(setf (aref (the (simple-array T (*)) ,v)
-                 (|sub_SI| ,i ,o))
-           ,s))
+(fricas-lisp::define-inlined-function QSETAREF1O (v i s o)
+  (setf (aref (the (simple-array T (*)) v)
+              (|sub_SI| i o))
+        s))
 
-(defmacro QAREF2O(m i j oi oj)
-    `(aref (the (simple-array T (* *)) ,m)
-           (|sub_SI| ,i ,oi)
-           (|sub_SI| ,j ,oj)))
+(fricas-lisp::define-inlined-function QAREF2O (m i j oi oj)
+  (aref (the (simple-array T (* *)) m)
+        (|sub_SI| i oi)
+        (|sub_SI| j oj)))
 
-(defmacro QSETAREF2O (m i j r oi oj)
-    `(setf (aref (the (simple-array T (* *)) ,m)
-                 (|sub_SI| ,i ,oi)
-                 (|sub_SI| ,j ,oj))
-           ,r))
+(fricas-lisp::define-inlined-function QSETAREF2O (m i j r oi oj)
+  (setf (aref (the (simple-array T (* *)) m)
+              (|sub_SI| i oi)
+              (|sub_SI| j oj))
+        r))
 
 ;;; array creation
 
-(defun MAKEARR1 (size init)
-    (make-array size :initial-element init))
+(fricas-lisp::define-inlined-function MAKEARR1 (size init)
+  (make-array size :initial-element init))
 
 
-(defun MAKE_MATRIX (size1 size2)
-    (make-array (list size1 size2)))
+(fricas-lisp::define-inlined-function MAKE_MATRIX (size1 size2)
+  (make-array (list size1 size2)))
 
-(defun MAKE_MATRIX1 (size1 size2 init)
-    (make-array (list size1 size2) :initial-element init))
+(fricas-lisp::define-inlined-function MAKE_MATRIX1 (size1 size2 init)
+  (make-array (list size1 size2) :initial-element init))
 
 ;;; array dimensions
 
-(defmacro ANROWS (v)
-    `(array-dimension (the (simple-array T (* *)) ,v) 0))
+(fricas-lisp::define-inlined-function ANROWS (v)
+  (array-dimension (the (simple-array T (* *)) v) 0))
 
-(defmacro ANCOLS (v)
-    `(array-dimension (the (simple-array T (* *)) ,v) 1))
+(fricas-lisp::define-inlined-function ANCOLS (v)
+  (array-dimension (the (simple-array T (* *)) v) 1))
 
 ;;; string accessors
 
-(defmacro STR_ELT(s i)
-    `(char-code (char (the string ,s) (the fixnum ,i))))
+(fricas-lisp::define-inlined-function STR_ELT (s i)
+  (char-code (char (the string s) (the fixnum i))))
 
+;;; TODO: compiler macro
 (defmacro STR_SETELT(s i c)
-    (if (integerp c)
-        `(progn
-             (setf (char (the string ,s) (the fixnum ,i))
-                   (code-char (the fixnum ,c)))
-             ,c)
-        (let ((sc (gensym)))
-         `(let ((,sc ,c))
-             (setf (char (the string ,s) (the fixnum ,i))
-                   (code-char (the fixnum ,sc)))
-             ,sc))))
+  (if (integerp c)
+      `(progn
+         (setf (char (the string ,s) (the fixnum ,i))
+               (code-char (the fixnum ,c)))
+         ,c)
+      (let ((sc (gensym)))
+        `(let ((,sc ,c))
+           (setf (char (the string ,s) (the fixnum ,i))
+                 (code-char (the fixnum ,sc)))
+           ,sc))))
 
-(defmacro STR_ELT1(s i)
-    `(char-code (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))))
+(fricas-lisp::define-inlined-function STR_ELT1 (s i)
+  (char-code (char (the string s) (the fixnum (1- (the fixnum i))))))
 
+
+;;; TODO: compiler macro
 (defmacro STR_SETELT1(s i c)
-    (if (integerp c)
-        `(progn
-             (setf (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))
-                   (code-char (the fixnum ,c)))
-             ,c)
-        (let ((sc (gensym)))
-         `(let ((,sc ,c))
-             (setf (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))
-                   (code-char (the fixnum ,sc)))
-             ,sc))))
+  (if (integerp c)
+      `(progn
+         (setf (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))
+               (code-char (the fixnum ,c)))
+         ,c)
+      (let ((sc (gensym)))
+        `(let ((,sc ,c))
+           (setf (char (the string ,s) (the fixnum (- (the fixnum ,i) 1)))
+                 (code-char (the fixnum ,sc)))
+           ,sc))))
 
 ;;; Creating characters
 
-(defun |STR_to_CHAR_fun| (s)
-    (if (eql (length s) 1)
-        (STR_ELT s 0)
-        (|error| "String is not a single character")))
+(defun |STR_to_CHAR| (s)
+  (if (= 1 (length s))
+      (STR_ELT s 0)
+      (|error| "String is not a single character")))
 
-(defmacro |STR_to_CHAR| (s)
-    (if (and (stringp s) (eql (length s) 1))
-        (STR_ELT s 0)
-        `(|STR_to_CHAR_fun| ,s)))
+(define-compiler-macro |STR_to_CHAR| (&whole whole s)
+  ;; Some partial evaluation.
+  (if (and (stringp s) (= 1 (length s)))
+      (STR_ELT s 0)
+      whole))
 
 ;;; Vectors and matrices of of small integer 32-bit numbers
 
-(defmacro suffixed_name(name s)
-    `(intern (concatenate 'string (symbol-name ',name)
-                                  (format nil "~A" ,s))))
-
-#+:sbcl
-(defmacro sbcl_make_sized_vector(nb n)
-    (let ((get-tag (find-symbol "%VECTOR-WIDETAG-AND-N-BITS" "SB-IMPL"))
-          (length-sym nil))
-        (if (null get-tag)
-            (progn
-                (setf get-tag
-                    (find-symbol "%VECTOR-WIDETAG-AND-N-BITS-SHIFT"
-                                 "SB-IMPL"))
-                (setf length-sym (find-symbol "VECTOR-LENGTH-IN-WORDS"
-                                              "SB-IMPL"))))
-        (multiple-value-bind (typetag n-bits)
-            (FUNCALL get-tag `(unsigned-byte ,nb))
-            (let ((length-form
-                   (if length-sym
-                       `(,length-sym ,n ,n-bits)
-                       `(ceiling (* ,n ,n-bits) sb-vm:n-word-bits))))
-                `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n ,length-form)))))
-
-(defmacro DEF_SIZED_UOPS(nb)
-
-`(progn
-(defmacro ,(suffixed_name ELT_U nb) (v i)
-    `(aref (the (simple-array (unsigned-byte ,',nb) (*)) ,v) ,i))
-
-(defmacro ,(suffixed_name SETELT_U nb)(v i s)
-    `(setf (aref (the (simple-array (unsigned-byte ,',nb) (*)) ,v) ,i)
-           ,s))
-
-#+:sbcl
-(let ((get-tag (find-symbol "%VECTOR-WIDETAG-AND-N-BITS" "SB-IMPL"))
-          (length-sym nil) (get-tag2 nil))
-        (if (null get-tag)
-            (progn
-                (setf get-tag2
-                    (find-symbol "%VECTOR-WIDETAG-AND-N-BITS-SHIFT"
-                                 "SB-IMPL"))
-                (setf length-sym (find-symbol "VECTOR-LENGTH-IN-WORDS"
-                                              "SB-IMPL"))))
-        (cond
-           ((and (null get-tag) (or (null get-tag2) (null length-sym)))
-            (defun ,(suffixed_name GETREFV_U nb)(n x)
-               (make-array n :initial-element x
-                          :element-type '(unsigned-byte ,nb))))
-           (t
-             (defun ,(suffixed_name GETREFV_U nb)(n x)
-                    (let ((vec (sbcl_make_sized_vector ,nb n)))
-                         (fill vec x)
-                         vec)))))
-
-#-:sbcl
-(defun ,(suffixed_name GETREFV_U nb)(n x)
-    (make-array n :initial-element x
-               :element-type '(unsigned-byte ,nb)))
-
-(defmacro ,(suffixed_name QV_LEN_U nb)(v)
-    `(length (the (simple-array (unsigned-byte ,',nb) (*)) ,v)))
-
-(defmacro ,(suffixed_name MAKE_MATRIX_U nb) (n m)
-   `(make-array (list ,n ,m) :element-type '(unsigned-byte ,',nb)))
-
-(defmacro ,(suffixed_name MAKE_MATRIX1_U nb) (n m s)
-   `(make-array (list ,n ,m) :element-type '(unsigned-byte ,',nb)
-           :initial-element ,s))
-
-(defmacro ,(suffixed_name AREF2_U nb) (v i j)
-   `(aref (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) ,i ,j))
-
-(defmacro ,(suffixed_name SETAREF2_U nb) (v i j s)
-   `(setf (aref (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) ,i ,j)
-          ,s))
-
-(defmacro ,(suffixed_name ANROWS_U nb) (v)
-    `(array-dimension (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) 0))
-
-(defmacro ,(suffixed_name ANCOLS_U nb) (v)
-    `(array-dimension (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) 1))
-
-))
+(defmacro DEF_SIZED_UOPS (nb)
+  (check-type nb (integer 1))
+  (flet ((suffixed_name (name s)
+           (intern (format nil "~A~A" (symbol-name name) s) (symbol-package name))))
+    `(progn
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'ELT_U nb) (v i)
+         (aref (the (simple-array (unsigned-byte ,nb) (*)) v) i))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'SETELT_U nb)(v i s)
+         (setf (aref (the (simple-array (unsigned-byte ,nb) (*)) v) i)
+               s))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'GETREFV_U nb) (n x)
+         (make-array n :initial-element x
+                       :element-type '(unsigned-byte ,nb)))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'QV_LEN_U nb) (v)
+         (length (the (simple-array (unsigned-byte ,nb) (*)) v)))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'MAKE_MATRIX_U nb) (n m)
+         (make-array (list n m) :element-type '(unsigned-byte ,nb)))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'MAKE_MATRIX1_U nb) (n m s)
+         (make-array (list n m) :element-type '(unsigned-byte ,nb)
+                                :initial-element s))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'AREF2_U nb) (v i j)
+         (aref (the (simple-array (unsigned-byte ,nb) (* *)) v) i j))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'SETAREF2_U nb) (v i j s)
+         (setf (aref (the (simple-array (unsigned-byte ,nb) (* *)) v) i j)
+               s))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'ANROWS_U nb) (v)
+         (array-dimension (the (simple-array (unsigned-byte ,nb) (* *)) v) 0))
+       
+       (fricas-lisp::define-inlined-function ,(suffixed_name 'ANCOLS_U nb) (v)
+         (array-dimension (the (simple-array (unsigned-byte ,nb) (* *)) v) 1)))))
 
 (DEF_SIZED_UOPS 32)
 (DEF_SIZED_UOPS 16)
@@ -193,62 +201,58 @@
 
 ;;; Modular arithmetic
 
-(deftype machine-int () '(unsigned-byte 64))
+(deftype ub32 () '(unsigned-byte 32))
+(deftype ub64 () '(unsigned-byte 64))
 
 ;;; (x*y + z) using 32-bit x and y and 64-bit z and assuming that
 ;;; intermediate results fits into 64 bits
-(defmacro QSMULADD64_32 (x y z)
-    `(the machine-int
-         (+ (the machine-int
-               (* (the (unsigned-byte 32) ,x)
-                  (the (unsigned-byte 32) ,y)))
-            (the machine-int ,z))))
+(fricas-lisp::define-inlined-function QSMULADD64_32 (x y z)
+  (the ub64
+       (+ (the ub64
+               (* (the ub32 x)
+                  (the ub32 y)))
+          (the ub64 z))))
 
-(defmacro QSMUL64_32 (x y)
-    `(the machine-int
-         (* (the (unsigned-byte 32) ,x)
-            (the (unsigned-byte 32) ,y))))
+(fricas-lisp::define-inlined-function QSMUL64_32 (x y)
+  (the ub64
+       (* (the ub32 x)
+          (the ub32 y))))
 
+(fricas-lisp::define-inlined-function QSMOD64_32 (x p)
+  (the ub32
+       (rem (the ub64 x) (the ub32 p))))
 
-(defmacro QSMOD64_32 (x p)
-    `(the (unsigned-byte 32)
-         (rem (the machine-int ,x) (the (unsigned-byte 32) ,p))))
+(fricas-lisp::define-inlined-function QSMULADDMOD64_32 (x y z p)
+  (QSMOD64_32 (QSMULADD64_32 x y z) p))
 
-(defmacro QSMULADDMOD64_32 (x y z p)
-    `(QSMOD64_32 (QSMULADD64_32 ,x ,y ,z) ,p))
+(fricas-lisp::define-inlined-function QSDOT2_64_32 (a1 b1 a2 b2)
+  (QSMULADD64_32 a1 b1 (QSMUL64_32 a2 b2)))
 
-(defmacro QSDOT2_64_32 (a1 b1 a2 b2)
-    `(QSMULADD64_32 ,a1 ,b1 (QSMUL64_32 ,a2 ,b2)))
+(fricas-lisp::define-inlined-function QSDOT2MOD64_32 (a1 b1 a2 b2 p)
+  (QSMOD64_32 (QSDOT2_64_32 a1 b1 a2 b2) p))
 
-(defmacro QSDOT2MOD64_32 (a1 b1 a2 b2 p)
-    `(QSMOD64_32 (QSDOT2_64_32 ,a1 ,b1 ,a2 ,b2) , p))
-
-(defmacro QSMULMOD32 (x y p)
-    `(QSMOD64_32 (QSMUL64_32 ,x ,y) ,p))
+(fricas-lisp::define-inlined-function QSMULMOD32 (x y p)
+  (QSMOD64_32 (QSMUL64_32 x y) p))
 
 ;;; Modular scalar product
 
-(defmacro QMODDOT0 (eltfun varg1 varg2 ind1 ind2 kk s0 p)
-    `(let ((s ,s0)
-           (v1 ,varg1)
-           (v2 ,varg2)
-           (i1 ,ind1)
-           (i2 ,ind2)
-           (k0 ,kk)
-           (k 0))
-          (declare (type machine-int s)
-                   (type fixnum i1 i2 k k0))
-          (prog ()
-             l1
-              (if (>= k k0) (return (QSMOD64_32 s ,p)))
-              (setf s (QSMULADD64_32 (,eltfun v1 (|add_SI| i1 k))
-                                     (,eltfun v2 (|add_SI| i2 k))
-                                     s))
-              (setf k (|inc_SI| k))
-              (go l1))))
+(fricas-lisp::define-inlined-function QMODDOT0 (eltfun v1 v2 i1 i2 k0 s p)
+  (declare (type ub64 s)
+           (type fixnum i1 i2 k0))
+  (let ((k 0))
+    (declare (type fixnum k))
+    (prog ()
+     l1
+       (when (>= k k0)
+         (return (QSMOD64_32 s p)))
+       (setf s (QSMULADD64_32 (funcall eltfun v1 (|add_SI| i1 k))
+                              (funcall eltfun v2 (|add_SI| i2 k))
+                              s))
+       (setf k (|inc_SI| k))
+       (go l1))))
 
-(defmacro QMODDOT32 (v1 v2 ind1 ind2 kk s0 p)
-     `(QMODDOT0 ELT32 ,v1 ,v2 ,ind1 ,ind2 ,kk ,s0 ,p))
+(fricas-lisp::define-inlined-function QMODDOT32 (v1 v2 ind1 ind2 kk s0 p)
+  (QMODDOT0 'ELT32 v1 v2 ind1 ind2 kk s0 p))
 
 ;;; Support for HashState domain.
 ;;; Here the FNV-1a algorithm is employed.
@@ -259,13 +263,14 @@
 (defconstant HASHSTATEBASIS 14695981039346656037)
 (defconstant HASHSTATEPRIME 1099511628211)
 ; FNV-1a algorithm with 64bit truncation (18446744073709551615=2^64-1).
-(defmacro HASHSTATEUPDATE (x y)
-    `(logand (* HASHSTATEPRIME (logxor ,x ,y)) 18446744073709551615))
+(fricas-lisp::define-inlined-function HASHSTATEUPDATE (x y)
+  (logand (* HASHSTATEPRIME (logxor x y)) 18446744073709551615))
 ; Make a fixnum out of (unsigned-byte 64)
-(defmacro HASHSTATEMAKEFIXNUM (x)
-    `(logand ,x most-positive-fixnum))
-(defmacro HASHSTATEMOD (x y)
-    `(mod ,x ,y))
+(fricas-lisp::define-inlined-function HASHSTATEMAKEFIXNUM (x)
+  (logand x most-positive-fixnum))
+
+(fricas-lisp::define-inlined-function HASHSTATEMOD (x y)
+  (mod x y))
 
 ;;; Floating point macros
 
@@ -273,10 +278,13 @@
 ;; for it we need to omit type declarations to disable optimization
 #-(and :openmcl (not :CCL-1.8))
 (defmacro DEF_DF_BINOP (name op)
-   `(defmacro ,name (x y) `(the double-float (,',op (the double-float ,x)
-                                                    (the double-float ,y)))))
+  `(fricas-lisp::define-inlined-function ,name (x y)
+     (the double-float (,op (the double-float x)
+                            (the double-float y)))))
 #+(and :openmcl (not :CCL-1.8))
-(defmacro DEF_DF_BINOP (name op) `(defmacro ,name (x y) `(,',op ,x ,y)))
+(defmacro DEF_DF_BINOP (name op)
+  `(fricas-lisp::define-inlined-function ,name (x y) 
+     (,op x y)))
 
 (DEF_DF_BINOP |add_DF| +)
 (DEF_DF_BINOP |mul_DF| *)
@@ -285,55 +293,68 @@
 (DEF_DF_BINOP |sub_DF| -)
 (DEF_DF_BINOP |div_DF| /)
 
-(defmacro |abs_DF| (x) `(FLOAT-SIGN (the (double-float 1.0d0 1.0d0) 1.0d0)
-                                    (the double-float ,x)))
+(fricas-lisp::define-inlined-function |abs_DF| (x)
+  (FLOAT-SIGN (the (double-float 1.0d0 1.0d0) 1.0d0)
+              (the double-float x)))
 
 #-(and :openmcl (not :CCL-1.8))
 (progn
-(defmacro |less_DF| (x y) `(< (the double-float ,x)
-                                             (the double-float ,y)))
-(defmacro |eql_DF| (x y) `(= (the double-float ,x)
-                                             (the double-float ,y)))
-(defmacro |expt_DF_I| (x y) `(EXPT (the double-float ,x)
-                                 (the integer ,y)))
-(defmacro |expt_DF| (x y) `(EXPT (the double-float ,x)
-                                  (the double-float ,y)))
-(defmacro |mul_DF_I| (x y) `(* (the double-float ,x)
-                                  (the integer ,y)))
-(defmacro |div_DF_I| (x y) `(/ (the double-float ,x)
-                                  (the integer ,y)))
-(defmacro |zero?_DF| (x) `(ZEROP (the double-float ,x)))
-(defmacro |negative?_DF| (x) `(MINUSP (the double-float ,x)))
-(defmacro |sqrt_DF| (x) `(SQRT (the double-float ,x)))
-(defmacro |log_DF| (x) `(LOG (the double-float ,x)))
-(defmacro |qsqrt_DF| (x) `(the double-float (SQRT
-                              (the (double-float 0.0d0 *) ,x))))
-(defmacro |qlog_DF| (x) `(the double-float (LOG
-                              (the (double-float 0.0d0 *) ,x))))
+(fricas-lisp::define-inlined-function |less_DF| (x y)
+  (< (the double-float x)
+     (the double-float y)))
+(fricas-lisp::define-inlined-function |eql_DF| (x y)
+  (= (the double-float x)
+     (the double-float y)))
+(fricas-lisp::define-inlined-function |expt_DF_I| (x y)
+  (EXPT (the double-float x)
+        (the integer y)))
+(fricas-lisp::define-inlined-function |expt_DF| (x y)
+  (EXPT (the double-float x)
+        (the double-float y)))
+(fricas-lisp::define-inlined-function |mul_DF_I| (x y)
+  (* (the double-float x)
+     (the integer y)))
+(fricas-lisp::define-inlined-function |div_DF_I| (x y) 
+  (/ (the double-float x)
+     (the integer y)))
+(fricas-lisp::define-inlined-function |zero?_DF| (x)
+  (ZEROP (the double-float x)))
+(fricas-lisp::define-inlined-function |negative?_DF| (x) 
+  (MINUSP (the double-float x)))
+(fricas-lisp::define-inlined-function |sqrt_DF| (x) 
+  (SQRT (the double-float x)))
+(fricas-lisp::define-inlined-function |log_DF| (x) 
+  (LOG (the double-float x)))
+(fricas-lisp::define-inlined-function |qsqrt_DF| (x) 
+  (the double-float
+       (SQRT (the (double-float 0.0d0 *) x))))
+(fricas-lisp::define-inlined-function |qlog_DF| (x) 
+  (the double-float
+       (LOG (the (double-float 0.0d0 *) x))))
 
 (defmacro DEF_DF_UNOP (name op)
-    `(defmacro ,name (x) `(the double-float (,',op (the double-float ,x)))))
-)
+  `(fricas-lisp::define-inlined-function ,name (x)
+     (the double-float (,op (the double-float x))))))
 
 #+(and :openmcl (not :CCL-1.8))
 (progn
-(defmacro |less_DF| (x y) `(<  ,x ,y))
-(defmacro |eql_DF| (x y) `(EQL ,x ,y))
-(defmacro |expt_DF_I| (x y) `(EXPT ,x ,y))
-(defmacro |expt_DF| (x y) `(EXPT ,x ,y))
-(defmacro |mul_DF_I| (x y) `(* ,x ,y))
-(defmacro |div_DF_I| (x y) `(/ ,x ,y))
-(defmacro |zero?_DF| (x) `(ZEROP ,x))
-(defmacro |negative?_DF| (x) `(MINUSP ,x))
-(defmacro |sqrt_DF|(x) `(SQRT ,x))
-(defmacro |log_DF| (x) `(LOG ,x))
-(defmacro |qsqrt_DF|(x) `(SQRT ,x))
-(defmacro |qlog_DF| (x) `(LOG ,x))
+(fricas-lisp::define-inlined-function |less_DF| (x y) (< x y))
+(fricas-lisp::define-inlined-function |eql_DF| (x y) (EQL x y))
+(fricas-lisp::define-inlined-function |expt_DF_I| (x y) (EXPT x y))
+(fricas-lisp::define-inlined-function |expt_DF| (x y) (EXPT x y))
+(fricas-lisp::define-inlined-function |mul_DF_I| (x y) (* x y))
+(fricas-lisp::define-inlined-function |div_DF_I| (x y) (/ x y))
+(fricas-lisp::define-inlined-function |zero?_DF| (x) (ZEROP x))
+(fricas-lisp::define-inlined-function |negative?_DF| (x) (MINUSP x))
+(fricas-lisp::define-inlined-function |sqrt_DF|(x) (SQRT x))
+(fricas-lisp::define-inlined-function |log_DF| (x) (LOG x))
+(fricas-lisp::define-inlined-function |qsqrt_DF|(x) (SQRT x))
+(fricas-lisp::define-inlined-function |qlog_DF| (x) (LOG x))
 
 
 (defmacro DEF_DF_UNOP (name op)
-    `(defmacro ,name (x) `(,',op ,x)))
-)
+  `(fricas-lisp::define-inlined-function ,name (x)
+     (,op ,x))))
 
 
 (DEF_DF_UNOP |exp_DF| EXP)
@@ -348,274 +369,235 @@
 
 ;;; Machine integer operations
 
-(defmacro DEF_SI_BINOP (name op)
-   `(defmacro ,name (x y) `(the fixnum (,',op (the fixnum ,x)
-                                                    (the fixnum ,y)))))
-(DEF_SI_BINOP |add_SI| +)
-(DEF_SI_BINOP |sub_SI| -)
-(DEF_SI_BINOP |mul_SI| *)
-(DEF_SI_BINOP |min_SI| min)
-(DEF_SI_BINOP |max_SI| max)
-(DEF_SI_BINOP |rem_SI| rem)
-(DEF_SI_BINOP |quo_SI_aux| truncate)
-(DEF_SI_BINOP |lshift_SI| ash)
-(DEF_SI_BINOP |and_SI| logand)
-(DEF_SI_BINOP |or_SI| logior)
-(DEF_SI_BINOP |xor_SI| logxor)
-(defmacro |quo_SI|(a b) `(values (|quo_SI_aux| ,a ,b)))
 
-(defmacro DEF_SI_UNOP (name op)
-    `(defmacro ,name (x) `(the fixnum (,',op (the fixnum ,x)))))
+;;; Small finite field operations
 
-(DEF_SI_UNOP |minus_SI| -)
-(DEF_SI_UNOP |abs_SI| abs)
-(DEF_SI_UNOP |inc_SI| 1+)
-(DEF_SI_UNOP |dec_SI| 1-)
-(DEF_SI_UNOP |not_SI| lognot)
+;;; The following functions assume 0 <= x,y < z.
+;;;
+;;; QSADDMOD additionally assumes that rsum has correct value even
+;;; when (x + y) exceeds range of a fixnum.  This is true if fixnums
+;;; use modular arithmetic with no overflow checking, but according to
+;;; ANSI Lisp the result is undefined in such case.
 
-(defmacro DEF_SI_ARG_BINOP (name op)
-   `(defmacro ,name (x y) `(,',op (the fixnum ,x) (the fixnum ,y))))
+(fricas-lisp::define-inlined-function |addmod_SI| (x y z)
+  (let* ((sum (|add_SI| x y))
+         (rsum (|sub_SI| sum z)))
+    (if (|negative?_SI| rsum)
+        sum
+        rsum)))
 
-(DEF_SI_ARG_BINOP |eql_SI| eql)
-(DEF_SI_ARG_BINOP |less_SI| <)
-(DEF_SI_ARG_BINOP |greater_SI| >)
+(fricas-lisp::define-inlined-function |submod_SI| (x y z)
+  (let ((dif (|sub_SI| x y)))
+     (if (|negative?_SI| dif)
+         (|add_SI| dif z)
+         dif)))
 
-(defmacro DEF_SI_ARG_UNOP (name op)
-   `(defmacro ,name (x) `(,',op (the fixnum ,x))))
-
-(DEF_SI_ARG_UNOP |zero?_SI| zerop)
-(DEF_SI_ARG_UNOP |negative?_SI| minusp)
-(DEF_SI_ARG_UNOP |odd?_SI| oddp)
-
-; Small finite field operations
-;
-;; following macros assume 0 <= x,y < z
-;; qsaddmod additionally assumes that rsum has correct value even
-;; when (x + y) exceeds range of a fixnum.  This is true if
-;; fixnums use modular arithmetic with no overflow checking,
-;; but according to ANSI Lisp the result is undefined in
-;; such case.
-
-(defmacro |addmod_SI| (x y z)
-   `(let* ((sum (|add_SI| ,x ,y))
-           (rsum (|sub_SI| sum ,z)))
-         (if (|negative?_SI| rsum) sum rsum)))
-
-(defmacro |submod_SI| (x y z)
-    `(let ((dif (|sub_SI| ,x ,y)))
-         (if (|negative?_SI| dif) (|add_SI| dif ,z) dif)))
-
-(defmacro |mulmod_SI| (x y z) `(rem (* (the fixnum ,x) (the fixnum ,y))
-                                     ,z))
+(fricas-lisp::define-inlined-function |mulmod_SI| (x y z)
+  (rem (* (the fixnum x) (the fixnum y))
+       z))
 
 ;;; Double precision arrays and matrices
 
-(defmacro MAKE_DOUBLE_VECTOR (n)
-   `(make-array (list ,n) :element-type 'double-float))
+(fricas-lisp::define-inlined-function MAKE_DOUBLE_VECTOR (n)
+  (make-array (list n) :element-type 'double-float))
 
-(defmacro MAKE_DOUBLE_VECTOR1 (n s)
-   `(make-array (list ,n) :element-type 'double-float :initial-element ,s))
+(fricas-lisp::define-inlined-function MAKE_DOUBLE_VECTOR1 (n s)
+  (make-array (list n) :element-type 'double-float :initial-element s))
 
-(defmacro DELT(v i)
-   `(aref (the (simple-array double-float (*)) ,v) ,i))
+(fricas-lisp::define-inlined-function DELT (v i)
+  (aref (the (simple-array double-float (*)) v) i))
 
-(defmacro DSETELT(v i s)
-   `(setf (aref (the (simple-array double-float (*)) ,v) ,i)
-           ,s))
+(fricas-lisp::define-inlined-function DSETELT (v i s)
+  (setf (aref (the (simple-array double-float (*)) v) i)
+        s))
 
-(defmacro DLEN(v)
-    `(length (the (simple-array double-float (*)) ,v)))
+(fricas-lisp::define-inlined-function DLEN (v)
+  (length (the (simple-array double-float (*)) v)))
 
-(defmacro MAKE_DOUBLE_MATRIX (n m)
-   `(make-array (list ,n ,m) :element-type 'double-float))
+(fricas-lisp::define-inlined-function MAKE_DOUBLE_MATRIX (n m)
+  (make-array (list n m) :element-type 'double-float))
 
-(defmacro MAKE_DOUBLE_MATRIX1 (n m s)
-   `(make-array (list ,n ,m) :element-type 'double-float
-           :initial-element ,s))
+(fricas-lisp::define-inlined-function MAKE_DOUBLE_MATRIX1 (n m s)
+  (make-array (list n m) :element-type 'double-float
+                         :initial-element s))
 
-(defmacro DAREF2(v i j)
-   `(aref (the (simple-array double-float (* *)) ,v) ,i ,j))
+(fricas-lisp::define-inlined-function DAREF2 (v i j)
+   (aref (the (simple-array double-float (* *)) v) i j))
 
-(defmacro DSETAREF2(v i j s)
-   `(setf (aref (the (simple-array double-float (* *)) ,v) ,i ,j)
-          ,s))
+(fricas-lisp::define-inlined-function DSETAREF2(v i j s)
+   (setf (aref (the (simple-array double-float (* *)) v) i j)
+         s))
 
-(defmacro DANROWS(v)
-    `(array-dimension (the (simple-array double-float (* *)) ,v) 0))
+(fricas-lisp::define-inlined-function DANROWS(v)
+  (array-dimension (the (simple-array double-float (* *)) v) 0))
 
-(defmacro DANCOLS(v)
-    `(array-dimension (the (simple-array double-float (* *)) ,v) 1))
+(fricas-lisp::define-inlined-function DANCOLS(v)
+  (array-dimension (the (simple-array double-float (* *)) v) 1))
 
 ;;; We implement complex array as arrays of doubles -- each
 ;;; complex number occupies two positions in the real
 ;;; array.
 
-(defmacro MAKE_CDOUBLE_VECTOR (n)
-   `(make-array (list (* 2 ,n)) :element-type 'double-float))
+(fricas-lisp::define-inlined-function MAKE_CDOUBLE_VECTOR (n)
+  (make-array (list (* 2 n)) :element-type 'double-float))
 
-(defmacro CDELT(ov oi)
-   (let ((v (gensym))
-         (i (gensym)))
-   `(let ((,v ,ov)
-          (,i ,oi))
-      (cons
-          (aref (the (simple-array double-float (*)) ,v) (* 2 ,i))
-          (aref (the (simple-array double-float (*)) ,v) (+ (* 2 ,i) 1))))))
+(fricas-lisp::define-inlined-function CDELT (v i)
+  (cons
+   (aref (the (simple-array double-float (*)) v) (* 2 i))
+   (aref (the (simple-array double-float (*)) v) (1+ (* 2 i)))))
 
-(defmacro CDSETELT(ov oi os)
-   (let ((v (gensym))
-         (i (gensym))
-         (s (gensym)))
-   `(let ((,v ,ov)
-          (,i ,oi)
-          (,s ,os))
-        (setf (aref (the (simple-array double-float (*)) ,v) (* 2 ,i))
-           (car ,s))
-        (setf (aref (the (simple-array double-float (*)) ,v) (+ (* 2 ,i) 1))
-           (cdr ,s))
-        ,s)))
+(fricas-lisp::define-inlined-function CDSETELT (v i s)
+  (setf (aref (the (simple-array double-float (*)) v) (* 2 i))
+        (car s))
+  (setf (aref (the (simple-array double-float (*)) v) (1+ (* 2 i)))
+        (cdr s))
+  s)
 
-(defmacro CDLEN(v)
-    `(truncate (length (the (simple-array double-float (*)) ,v)) 2))
+(fricas-lisp::define-inlined-function CDLEN (v)
+  (truncate (length (the (simple-array double-float (*)) v)) 2))
 
-(defmacro MAKE_CDOUBLE_MATRIX (n m)
-   `(make-array (list ,n (* 2 ,m)) :element-type 'double-float))
+(fricas-lisp::define-inlined-function MAKE_CDOUBLE_MATRIX (n m)
+  (make-array (list n (* 2 m)) :element-type 'double-float))
 
-(defmacro CDAREF2(ov oi oj)
-   (let ((v (gensym))
-         (i (gensym))
-         (j (gensym)))
-   `(let ((,v ,ov)
-          (,i ,oi)
-          (,j ,oj))
-        (cons
-            (aref (the (simple-array double-float (* *)) ,v) ,i (* 2 ,j))
-            (aref (the (simple-array double-float (* *)) ,v)
-                  ,i (+ (* 2 ,j) 1))))))
+(fricas-lisp::define-inlined-function CDAREF2 (v i j)
+  (cons
+   (aref (the (simple-array double-float (* *)) v) i (* 2 j))
+   (aref (the (simple-array double-float (* *)) v) i (1+ (* 2 j)))))
 
-(defmacro CDSETAREF2(ov oi oj os)
-   (let ((v (gensym))
-         (i (gensym))
-         (j (gensym))
-         (s (gensym)))
-   `(let ((,v ,ov)
-          (,i ,oi)
-          (,j ,oj)
-          (,s ,os))
-         (setf (aref (the (simple-array double-float (* *)) ,v) ,i (* 2 ,j))
-               (car ,s))
-         (setf (aref (the (simple-array double-float (* *)) ,v)
-                     ,i (+ (* 2 ,j) 1))
-               (cdr ,s))
-         ,s)))
+(fricas-lisp::define-inlined-function CDSETAREF2 (v i j s)
+  (setf (aref (the (simple-array double-float (* *)) v) i (* 2 j))
+        (car s))
+  (setf (aref (the (simple-array double-float (* *)) v) i (1+ (* 2 j)))
+        (cdr s))
+  s)
 
-(defmacro CDANROWS(v)
-    `(array-dimension (the (simple-array double-float (* *)) ,v) 0))
+(fricas-lisp::define-inlined-function CDANROWS (v)
+  (array-dimension (the (simple-array double-float (* *)) v) 0))
 
-(defmacro CDANCOLS(v)
-    `(truncate
-         (array-dimension (the (simple-array double-float (* *)) ,v) 1) 2))
-
+(fricas-lisp::define-inlined-function CDANCOLS (v)
+  (truncate
+   (array-dimension (the (simple-array double-float (* *)) v) 1)
+   2))
 
 (defstruct (SPAD-KERNEL
-          (:print-function
-               (lambda (p s k)
-                   (format s "#S~S" (list
-                        'SPAD-KERNEL
-                         :OP (SPAD-KERNEL-OP p)
-                         :ARG (SPAD-KERNEL-ARG p)
-                         :NEST (SPAD-KERNEL-NEST p))))))
-           OP ARG NEST (POSIT 0))
+            (:print-function
+             (lambda (p s k)
+               (declare (ignore k))
+               (format s "#S~S" (list 'SPAD-KERNEL
+                                      :OP (SPAD-KERNEL-OP p)
+                                      :ARG (SPAD-KERNEL-ARG p)
+                                      :NEST (SPAD-KERNEL-NEST p))))))
+  OP ARG NEST (POSIT 0))
 
-(defmacro SET-SPAD-KERNEL-POSIT(s p) `(setf (SPAD-KERNEL-POSIT ,s) ,p))
+(fricas-lisp::define-inlined-function SET-SPAD-KERNEL-POSIT (s p) 
+  (setf (SPAD-KERNEL-POSIT s) p))
 
-(defun |makeSpadKernel|(o a n) (MAKE-SPAD-KERNEL :OP o :ARG a :NEST n))
+(defun |makeSpadKernel| (o a n)
+  (MAKE-SPAD-KERNEL :OP o :ARG a :NEST n))
 
-; Hashtable accessors
+;;; Hash Table accessors
 
-(defmacro HGET (table key)
-   `(gethash ,key ,table))
+(fricas-lisp::define-inlined-function HGET (table key)
+  (values (gethash key table)))
 
-(defmacro HGET2 (table key default)
-   `(gethash ,key ,table ,default))
+(fricas-lisp::define-inlined-function HGET2 (table key default)
+  (values (gethash key table default)))
 
-(defmacro HPUT(table key value) `(setf (gethash ,key ,table) ,value))
+(fricas-lisp::define-inlined-function HPUT (table key value)
+  (setf (gethash key table) value))
 
-(defmacro HREM (table key) `(remhash ,key ,table))
+(fricas-lisp::define-inlined-function HREM (table key) 
+  (remhash key table))
 
-; Misc operations
+;;; Misc operations
 
-(defmacro |qset_first|(l x) `(SETF (CAR (the cons ,l)) ,x))
+(fricas-lisp::define-inlined-function |qset_first| (l x)
+  (SETF (CAR (the cons l)) x))
 
-(defmacro |qset_rest|(l x) `(SETF (CDR (the cons ,l)) ,x))
+(fricas-lisp::define-inlined-function |qset_rest| (l x)
+  (SETF (CDR (the cons l)) x))
 
-(defmacro setelt (vec ind val) `(setf (elt ,vec ,ind) ,val))
+(fricas-lisp::define-inlined-function setelt (vec ind val)
+  (setf (elt vec ind) val))
 
-(defmacro pairp (x) `(consp ,x))
+(fricas-lisp::define-inlined-function pairp (x)
+  (consp x))
 
-(defmacro qcar (x) `(car (the cons ,x)))
+(fricas-lisp::define-inlined-function qcar (x) 
+  (car (the cons x)))
 
-(defmacro qcdr (x) `(cdr (the cons ,x)))
+(fricas-lisp::define-inlined-function qcdr (x)
+  (cdr (the cons x)))
 
-(defmacro qcaar (x)
- `(car (the cons (car (the cons ,x)))))
+(fricas-lisp::define-inlined-function qcaar (x)
+  (car (the cons (car (the cons x)))))
 
-(defmacro qcadr (x)
- `(car (the cons (cdr (the cons ,x)))))
+(fricas-lisp::define-inlined-function qcadr (x)
+ (car (the cons (cdr (the cons x)))))
 
-(defmacro qcdar (x)
- `(cdr (the cons (car (the cons ,x)))))
+(fricas-lisp::define-inlined-function qcdar (x)
+ (cdr (the cons (car (the cons x)))))
 
-(defmacro qcddr (x)
- `(cdr (the cons (cdr (the cons ,x)))))
+(fricas-lisp::define-inlined-function qcddr (x)
+ (cdr (the cons (cdr (the cons x)))))
 
 ;; qeqcar should be used when you know the first arg is a pair
 ;; the second arg should either be a literal fixnum or a symbol
 ;; the car of the first arg is always of the same type as the second
 
 (defmacro qeqcar (x y)
-    (cond ((typep y 'fixnum) `(eql (the fixnum (qcar ,x)) (the fixnum ,y)))
-          ((symbolp y) `(eq (qcar ,x) ,y))
-          (t (BREAK))))
+  (etypecase y
+    (fixnum `(eql (the fixnum (qcar ,x)) (the fixnum ,y)))
+    (symbol `(eq (qcar ,x) ,y))))
 
-(defmacro qcsize (x)
- `(the fixnum (length (the #-(or :ecl :gcl)simple-string
-                           #+(or :ecl :gcl)string ,x))))
+(fricas-lisp::define-inlined-function qcsize (x)
+ (the fixnum (length (the #-(or :ecl :gcl) simple-string
+                          #+(or :ecl :gcl) string
+                          x))))
 
-(defmacro qrefelt (vec ind) `(svref ,vec ,ind))
+(fricas-lisp::define-inlined-function qrefelt (vec ind)
+  (svref vec ind))
 
-(defmacro qrplaca (a b) `(rplaca (the cons ,a) ,b))
+(fricas-lisp::define-inlined-function qrplaca (a b)
+  (rplaca (the cons a) b))
 
-(defmacro qrplacd (a b) `(rplacd (the cons ,a) ,b))
+(fricas-lisp::define-inlined-function qrplacd (a b)
+  (rplacd (the cons a) b))
 
-(defmacro qsetrefv (vec ind val)
- `(setf (svref ,vec (the fixnum ,ind)) ,val))
+(fricas-lisp::define-inlined-function qsetrefv (vec ind val)
+  (setf (svref vec (the fixnum ind)) val))
 
-(defmacro qsetvelt (vec ind val)
- `(setf (svref ,vec (the fixnum ,ind)) ,val))
+(fricas-lisp::define-inlined-function qsetvelt (vec ind val)
+  (setf (svref vec (the fixnum ind)) val))
 
-(defmacro qvelt (vec ind) `(svref ,vec (the fixnum ,ind)))
+(fricas-lisp::define-inlined-function qvelt (vec ind)
+  (svref vec (the fixnum ind)))
 
-(defmacro qvmaxindex (x)
- `(the fixnum (1- (the fixnum (length (the simple-vector ,x))))))
+(fricas-lisp::define-inlined-function qvmaxindex (x)
+  (the fixnum (1- (the fixnum (length (the simple-vector x))))))
 
-(defmacro qvsize (x)
- `(the fixnum (length (the simple-vector ,x))))
+(fricas-lisp::define-inlined-function qvsize (x)
+  (the fixnum (length (the simple-vector x))))
 
 (defmacro eqcar (x y)
   (if (atom x)
-    `(and (consp ,x) (eql (qcar ,x) ,y))
-    (let ((xx (gensym)))
-     `(let ((,xx ,x))
-       (and (consp ,xx) (eql (qcar ,xx) ,y))))))
+      `(and (consp ,x) (eql (qcar ,x) ,y))
+      (let ((xx (gensym)))
+        `(let ((,xx ,x))
+           (and (consp ,xx) (eql (qcar ,xx) ,y))))))
 
-(defmacro |bool_to_bit| (b) `(if ,b 1 0))
+(fricas-lisp::define-inlined-function |bool_to_bit| (b)
+  (if b 1 0))
 
-(defmacro |bit_to_bool| (b) `(eql ,b 1))
+(fricas-lisp::define-inlined-function |bit_to_bool| (b)
+  (eql b 1))
 
-(defmacro ELT_BVEC (bv i)    `(sbit ,bv ,i))
-(defmacro SETELT_BVEC (bv i x)  `(setf (sbit ,bv ,i) ,x))
-(defmacro |size_BVEC| (bv)  `(size ,bv))
+(fricas-lisp::define-inlined-function ELT_BVEC (bv i)
+  (sbit bv i))
+(fricas-lisp::define-inlined-function SETELT_BVEC (bv i x)
+  (setf (sbit bv i) x))
+(fricas-lisp::define-inlined-function |size_BVEC| (bv)
+  (size bv))
 
 ; macros needed for Spad:
 
@@ -708,40 +690,42 @@
           ,@args
           (cdr ,gi))))))
 
-(defmacro SPADMAP(&rest args) `'(SPADMAP ,@args))
+(defmacro SPADMAP (&rest args) `'(SPADMAP ,@args))
 
-(defmacro |finally|(x y) `(unwind-protect ,x ,y))
+(defmacro |finally| (x y) `(unwind-protect ,x ,y))
 
 (defmacro |spadConstant| (dollar n)
  `(SPADCALL (svref ,dollar (the fixnum ,n))))
 
-(defmacro |SPADfirst| (l)
-  (let ((tem (gensym)))
-    `(let ((,tem ,l)) (if ,tem (car ,tem) (first-error)))))
-
-(defun first-error () (error "Cannot take first of an empty list"))
+(defun |SPADfirst| (l)
+  (if (null l)
+      (error "Cannot take first of an empty list")
+      (car l)))
 
 (defmacro |dispatchFunction| (name) `(FUNCTION ,name))
 
 (defmacro |Record| (&rest args)
-    (list '|Record0|
-          (cons 'LIST
-                (mapcar #'(lambda (x) (list 'CONS (MKQ (CADR x)) (CADDR x)))
-                        args))))
+  (list '|Record0|
+        (cons 'LIST
+              (mapcar #'(lambda (x) (list 'CONS (MKQ (CADR x)) (CADDR x)))
+                      args))))
 
 (defmacro |Enumeration| (&rest args)
-      (cons '|Enumeration0|
-                    (mapcar #'(lambda (x) (list 'QUOTE x)) args)))
+  (cons '|Enumeration0|
+        (mapcar #'(lambda (x) (list 'QUOTE x)) args)))
 
 ;;; Used for Record arguments
-(defmacro |:| (tag expr) `(LIST '|:| ,(MKQ tag) ,expr))
+(defmacro |:| (tag expr)
+  `(LIST '|:| ,(MKQ tag) ,expr))
 
-(defmacro |Zero|() 0)
-(defmacro |One|() 1)
+(defmacro |Zero| () 0)
+(defmacro |One| () 1)
 
 ;;; range tests and assertions
 
-(defmacro |assert| (x y) `(IF (NULL ,x) (|error| ,y)))
+(defmacro |assert| (x y)
+  `(when (null ,x)
+     (|error| ,y)))
 
 (defun coerce-failure-msg (val mode)
    (STRCONC (MAKE-REASONABLE (STRINGIMAGE val))
@@ -766,17 +750,20 @@
 
 ;;; Misc
 
-(defmacro |rplac| (x y) `(setf ,x ,y))
+(defmacro |rplac| (x y)
+  `(setf ,x ,y))
 
-(defmacro |do| (&rest args) (CONS 'PROGN args))
+(defmacro |do| (&body args)
+  `(progn ,@args))
 
 ;;; Support for double hashing tables
 ;;; Double hashing hash tables need two distinct values.
 ;;; VACANT  - a marker for a free position that has never been used
 ;;; DELETED - a marker for a position that has been used but is now
 ;;;           available for a new entry
-(defvar HASHTABLEVACANT  (gensym))
-(defvar HASHTABLEDELETED (gensym))
+(defvar HASHTABLEVACANT  (gensym "VACANT"))
+(defvar HASHTABLEDELETED (gensym "DELETED"))
 
 ;;; Support for re-seeding the lisp random number generator.
-(defun SEEDRANDOM () (setf *random-state* (make-random-state t)))
+(defun SEEDRANDOM ()
+  (setf *random-state* (make-random-state t)))

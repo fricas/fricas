@@ -2,6 +2,7 @@
 ;;; differences between Lisp dialects.
 
 (in-package "FRICAS-LISP")
+
 #+:cmu
 (progn
      (defvar *saved-terminal-io* *terminal-io*)
@@ -200,12 +201,12 @@ with this hack and will try to convince the GCL crowd to fix this.
 )
 
 (defun save-core (core-image)
-     (save-core-restart core-image nil))
+  (save-core-restart core-image nil))
 
 ;; Load Lisp files (any LOADable file), given as a list of file names.
 ;; The file names are strings, as appropriate for LOAD.
 (defun load-lisp-files (files)
-  (mapcar #'(lambda (f) (load f)) files))
+  (mapc #'load files))
 
 ;;; How to exit Lisp process
 #+:GCL
@@ -218,8 +219,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:sbcl
 (defun exit-with-status (s)
-    (setf *terminal-io* *saved-terminal-io*)
-    (sb-ext::quit :UNIX-STATUS s))
+  (setf *terminal-io* *saved-terminal-io*)
+  (sb-ext:quit :UNIX-STATUS s))
 
 #+:clisp
 (defun exit-with-status (s) (ext::quit s))
@@ -845,8 +846,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun trim-directory-name (name)
     #+(or :unix :win32)
-    (if (char= (char name (1- (length name))) #\/)
-        (setf name (subseq name 0 (1- (length name)))))
+    (when (char= (char name (1- (length name))) #\/)
+      (setf name (subseq name 0 (1- (length name)))))
     name)
 
 (defun pad-directory-name (name)
@@ -869,7 +870,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:sbcl
 (defun makedir (fname)
-    (sb-unix:unix-mkdir fname #o777))
+  (sb-unix:unix-mkdir fname #o777))
 
 #+:openmcl
 (defun makedir (fname)
@@ -886,11 +887,12 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;;
 
 #+:sbcl
-(defmacro sbcl-file-kind(x)
-    (let ((file-kind-fun
-            (or (find-symbol "NATIVE-FILE-KIND" :sb-impl)
-                (find-symbol "UNIX-FILE-KIND" :sb-unix))))
-         `(,file-kind-fun ,x)))
+(defun sbcl-file-kind (x)
+  (let ((file-kind-fun
+          (or (find-symbol "NATIVE-FILE-KIND" ':sb-impl)
+              (find-symbol "UNIX-FILE-KIND" ':sb-unix)
+              (error "Can't find symbol to determine file kind on SBCL..."))))
+    (funcall file-kind-fun x)))
 
 (defun file-kind (filename)
    #+(or :GCL :ecl) (file_kind filename)
@@ -930,7 +932,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+(or :ecl :GCL :sbcl :clisp :openmcl)
 (defun get-current-directory ()
-    (trim-directory-name (namestring (truename ""))))
+  (trim-directory-name (namestring (truename ""))))
 
 #+:poplog
 (defun get-current-directory ()
@@ -971,12 +973,13 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #-:cmu
 (defun relative-to-absolute (name)
-    (let ((ns (namestring name)))
-         (if (and (consp (pathname-directory name))
-                  (eq (car (pathname-directory name))
-                      #-:GCL :absolute #+:GCL :root))
-             ns
-             (concatenate 'string (get-current-directory)  "/" ns))))
+  (let ((ns (namestring name)))
+    (if (and (consp (pathname-directory name))
+             (eq (car (pathname-directory name))
+                 #-:GCL :absolute
+                 #+:GCL :root))
+        ns
+        (concatenate 'string (get-current-directory)  "/" ns))))
 #+:cmu
 (defun relative-to-absolute (name)
   (unix::unix-maybe-prepend-current-directory name))
@@ -993,17 +996,16 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #-(or :ecl :poplog)
 (defun fricas_compile_file (f output-file)
-    (compile-file f :output-file (relative-to-absolute output-file)))
+  (compile-file f :output-file (relative-to-absolute output-file)))
 
 (defun fricas_compile_fasl (f output-file)
-#-:ecl
-    (fricas_compile_file f output-file)
-#+:ecl
-    (compile-file f :output-file (relative-to-absolute output-file))
-)
+  #-:ecl
+  (fricas_compile_file f output-file)
+  #+:ecl
+  (compile-file f :output-file (relative-to-absolute output-file)))
 
 (defmacro DEFCONST (name value)
-   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
+  `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
 
 #+:cmu
 (defconstant +list-based-union-limit+ 80)
@@ -1094,17 +1096,24 @@ with this hack and will try to convince the GCL crowd to fix this.
                       table)
               union))))))
 
-(defmacro MEMQ (a b) `(member ,a ,b :test #'eq))
+(defmacro define-inlined-function (name lambda-list &body body)
+  `(progn
+     (declaim (inline ,name))
+     (defun ,name ,lambda-list ,@body)))
+
+(define-inlined-function MEMQ (a b)
+  (member a b :test #'eq))
 
 (defun |handle_input_file|(fn fun args)
-    (with-open-file (stream fn :direction :input
-       :if-does-not-exist nil)
-       (APPLY fun (cons stream args))))
+  (with-open-file (stream fn :direction :input
+                             :if-does-not-exist nil)
+    (APPLY fun (cons stream args))))
 
 (defun |handle_output_file|(fn fun args)
-    (with-open-file (stream fn :direction :output
-       :if-exists :supersede)
-       (APPLY fun (cons stream args))))
+  (with-open-file (stream fn :direction :output
+                             :if-exists :supersede)
+    (APPLY fun (cons stream args))))
+
 
 (in-package "BOOT")
 
@@ -1113,9 +1122,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defmacro IFCAR (x)
   (if (atom x)
       `(and (consp ,x) (qcar ,x))
-    (let ((xx (gensym)))
-      `(let ((,xx ,x))
-         (and (consp ,xx) (qcar ,xx))))))
+      (let ((xx (gensym)))
+        `(let ((,xx ,x))
+           (and (consp ,xx) (qcar ,xx))))))
 
 (defmacro IFCDR (x)
   (if (atom x)
@@ -1124,34 +1133,39 @@ with this hack and will try to convince the GCL crowd to fix this.
       `(let ((,xx ,x))
          (and (consp ,xx) (qcdr ,xx))))))
 
-(defmacro |function| (name) `(FUNCTION ,name))
+(defmacro |function| (name)
+  `(FUNCTION ,name))
 
-(defmacro |replaceString| (result part start)
-    `(replace ,result ,part :start1 ,start))
+(fricas-lisp::define-inlined-function |replaceString| (result part start)
+  (replace result part :start1 start))
 
-(defmacro |elapsedUserTime| () '(get-internal-run-time))
+(defun |elapsedUserTime| ()
+  (get-internal-run-time))
 
-#+:GCL
-(defmacro |elapsedGcTime| () '(system:gbc-time))
-#-:GCL
-(defmacro |elapsedGcTime| () '0)
+(defun |elapsedGcTime| ()
+  #+GCL (system:gbc-time)
+  #-GCL 0)
 
-(defmacro |char| (arg)
+(defun |char| (arg)
+  (character arg))
+
+(define-compiler-macro |char| (&whole whole arg &environment env)
   (cond ((stringp arg) (character arg))
         ((integerp arg) (code-char arg))
-        ((and (consp arg) (eq (car arg) 'quote)) (character (cadr arg)))
-        (t `(character ,arg))))
+        ((typep arg '(cons (member quote)) env) (character (cadr arg)))
+        (t whole)))
 
-(defmacro add1 (x) `(1+ ,x))
+(fricas-lisp::define-inlined-function add1 (x)
+  (1+ x))
 
-(defmacro assq (a b)
- `(assoc ,a ,b :test #'eq))
+(fricas-lisp::define-inlined-function assq (a b)
+ (assoc a b :test #'eq))
 
-(defmacro fetchchar (x i)
- `(char ,x ,i))
+(defun fetchchar (x i)
+  (char x i))
 
-(defmacro fixp (x)
- `(integerp ,x))
+(fricas-lisp::define-inlined-function fixp (x)
+  (integerp x))
 
 (defmacro identp (x)
  (if (atom x)
@@ -1160,40 +1174,46 @@ with this hack and will try to convince the GCL crowd to fix this.
     `(let ((,xx ,x))
       (and ,xx (symbolp ,xx))))))
 
-(defmacro LASTNODE (l)
- `(last ,l))
+(fricas-lisp::define-inlined-function LASTNODE (l)
+  (last l))
 
-(defmacro makestring (a) a)
+(fricas-lisp::define-inlined-function makestring (a)
+  a)
 
-(defmacro maxindex (x)
- `(the fixnum (1- (the fixnum (length ,x)))))
+(fricas-lisp::define-inlined-function maxindex (x)
+ (the fixnum (1- (the fixnum (length x)))))
 
-(defmacro refvecp (v) `(simple-vector-p ,v))
+(fricas-lisp::define-inlined-function refvecp (v)
+  (simple-vector-p v))
 
-(defmacro sintp (n)
- `(typep ,n 'fixnum))
+(fricas-lisp::define-inlined-function sintp (n)
+  (typep n 'fixnum))
 
-(defmacro stringlength (x)
- `(length (the string ,x)))
+(fricas-lisp::define-inlined-function stringlength (x)
+  (length (the string x)))
 
-(defmacro subrp (x)
- `(compiled-function-p ,x))
+(fricas-lisp::define-inlined-function subrp (x)
+  (compiled-function-p x))
 
-(defmacro vecp (v) `(simple-vector-p ,v))
+(fricas-lisp::define-inlined-function vecp (v)
+  (simple-vector-p v))
 
 ;;; The following defines syntax of Spad identifiers
 
-(defmacro |startsId?| (x)
-    `(or (alpha-char-p ,x) (member ,x '(#\? #\% #\!) :test #'char=)))
+(fricas-lisp::define-inlined-function |startsId?| (x)
+  (or (alpha-char-p x)
+      (member x '(#\? #\% #\!) :test #'char=)))
 
-(defmacro |idChar?| (x)
-    `(or (alphanumericp ,x) (member ,x '(#\? #\% #\' #\!) :test #'char=)))
+(fricas-lisp::define-inlined-function |idChar?| (x)
+  (or (alphanumericp x)
+      (member x '(#\? #\% #\' #\!) :test #'char=)))
 
-(defun |write_to_string_radix| (int radix)
-    (write-to-string int :base radix))
+(fricas-lisp::define-inlined-function |write_to_string_radix| (int radix)
+  (write-to-string int :base radix))
+
 
 (in-package "BOOTTRAN")
 
 (defmacro |doInBoottranPackage| (expr)
-    `(let ((*PACKAGE* (find-package "BOOTTRAN")))
-         ,expr))
+  `(let ((*PACKAGE* (find-package "BOOTTRAN")))
+     ,expr))
