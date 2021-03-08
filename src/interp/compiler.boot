@@ -426,6 +426,9 @@ compSel1(domain, op, argl, m, e) ==
         op := "One"
     -- Next clause added JHD 8/Feb/94: the clause after doesn't work
     -- since addDomain refuses to add modemaps from Mapping
+    domain=$Float and op="float" and m=$DoubleFloat =>
+        argl is [mant, exp, 10] => try_constant_DF(mant, exp, m, e)
+        nil
     e :=
         domain is ['Mapping, :.] =>
             augModemapsFromDomain1(domain, domain, e)
@@ -436,6 +439,14 @@ compSel1(domain, op, argl, m, e) ==
     op = "construct" and coerceable(domain, m, e) =>
         (T := comp_construct1(argl, domain, e)) or return nil
         coerce(T, m)
+    nil
+
+try_constant_DF(mant, exp, m, e) ==
+    if mant = ["Zero"] then mant := 0
+    if mant = ["One"] then mant := 1
+    if exp = ["Zero"] then exp := 0
+    if exp = ["One"] then exp := 1
+    INTEGERP(mant) and INTEGERP(exp) => [["mk_DF", mant, exp], m, e]
     nil
 
 compForm1(form is [op,:argl],m,e) ==
@@ -1086,6 +1097,7 @@ coerce(T,m) ==
       '"function coerce called from the interpreter."])
   rplac(CADR T,substitute("$",$Rep,CADR T))
   T':= coerceEasy(T,m) => T'
+  T' := constant_coerce(T, m) => T'
   T':= coerceSubset(T,m) => T'
   T':= coerceHard(T,m) => T'
   T.expr = "$fromCoerceable$" or isSomeDomainVariable m => nil
@@ -1185,6 +1197,7 @@ compCoerce1(x,m',e) ==
   m1:=
     STRINGP T.mode => $String
     T.mode
+  T1 := constant_coerce(T, m') => T1
   m':=resolve(m1,m')
   T:=[T.expr,m1,T.env]
   T':= coerce(T,m') => T'
@@ -1195,6 +1208,22 @@ compCoerce1(x,m',e) ==
     code := ['PROG1, ['LET, gg, T.expr],
                      ['check_subtype2, pred, MKQ m', MKQ T.mode, gg]]
     [code,m',T.env]
+
+constant_coerce([x, m, e], m') ==
+    m' = $SingleInteger =>
+        if x = ["Zero"] then x = 0
+        if x = ["One"] then x = 1
+        not(INTEGERP(x)) => nil
+        -- Check if in range of FIXNUM on all supported implementations
+        x > 8000000 or x < -8000000 => nil
+        m = $Integer or m = $PositiveInteger or $NonNegativeInteger =>
+            [x, m', e]
+        nil
+    m' = $DoubleFloat and m = $Float =>
+        x is [["Sel", ["Float"], "float"], mant, exp, 10] =>
+            try_constant_DF(mant, exp, m, e)
+        nil
+    nil
 
 coerceByModemap([x,m,e],m') ==
 --+ modified 6/27 for new runtime system

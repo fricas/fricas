@@ -1,5 +1,13 @@
 (in-package "BOOT")
 
+;;; Making constant doubles
+(defun |make_DF|(x e)
+    (let ((res (read-from-string (format nil "~D.0d~D" x e))))
+         res)
+)
+
+(defmacro |mk_DF|(x e) (|make_DF| x e))
+
 ;;; Fast array accessors
 
 (defmacro QAREF1(v i)
