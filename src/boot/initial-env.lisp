@@ -85,8 +85,15 @@
 (defun make-full-cvec (sint &optional (char #\space))
   (make-string sint :initial-element (character char)))
 
-(defun |shoeread-line| (st &optional (eofval nil))
-  (read-line st nil eofval))
+(defun |shoeread-line| (st)
+  (let ((str (read-line st nil nil)))
+      (if (not str) str
+          ;; remove dos CR
+          (let ((l_str (length str)))
+              (if (and (> l_str 0)
+                       (eq (char str (1- l_str)) #\Return))
+                  (subseq str 0 (1- l_str))
+                  str)))))
 
 (defun |shoePLACEP| (item)
   (eq item nil))
