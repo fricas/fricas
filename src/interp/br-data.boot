@@ -274,10 +274,10 @@ buildGloss() ==  --called by buildDatabase (database.boot)
   pathname := '"gloss.text"
   instream := MAKE_INSTREAM(pathname)
   keypath  := '"glosskey.text"
-  OBEY STRCONC('"rm -f ",keypath)
+  maybe_delete_file(keypath)
   outstream := MAKE_OUTSTREAM(keypath)
   htpath   := '"gloss.ht"
-  OBEY STRCONC('"rm -f ",htpath)
+  maybe_delete_file(htpath)
   htstream := MAKE_OUTSTREAM(htpath)
   defpath  := '"glossdef.text"
   defstream := MAKE_OUTSTREAM(defpath)
@@ -723,4 +723,4 @@ extendLocalLibdb conlist ==   --  called by astran
   oldlines := purgeNewConstructorLines(dbReadLines localLibdb, conlist)
   newlines := dbReadLines '"temp.text"
   dbWriteLines(MSORT union(oldlines,newlines), '"libdb.text")
-  PROBE_-FILE '"temp.text" => deleteFile '"temp.text"
+  maybe_delete_file('"temp.text")
