@@ -1,4 +1,4 @@
-name: FriCAS CI
+name: FriCAS CI on Linux
 
 on: [push, pull_request]
 
@@ -6,13 +6,14 @@ jobs:
   build:
 
     runs-on: ubuntu-20.04
+    timeout-minutes: 30
 
     steps:
     - uses: actions/checkout@v2
     - name: install dependencies
-      run: sudo apt-get install sbcl libxpm-dev
+      run: sudo apt-get install sbcl libgmp-dev libxpm-dev
     - name: configure
-      run: ./configure --with-lisp=sbcl --with-gmp --with-x
+      run: ./configure --with-lisp=sbcl --with-gmp --with-x || cat config.log
     - name: make
       run: make -j2 --output-sync
     - name: make check

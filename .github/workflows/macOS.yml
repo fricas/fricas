@@ -6,14 +6,17 @@ jobs:
   build:
 
     runs-on: macos-10.15
+    timeout-minutes: 30
 
     steps:
     - uses: actions/checkout@v2
     - name: install dependencies
-      run: brew install sbcl
+      run: brew install sbcl gmp
     - name: configure
-      run: mkdir ../build && cd ../build && ../fricas/configure --with-lisp=sbcl
+      run: |
+        mkdir ../build && cd ../build
+        ../fricas/configure --with-lisp=sbcl --with-gmp || cat config.log
     - name: make
-      run: cd ../build && make -j2
+      run: cd ../build && make -j3
     - name: make check
-      run: cd ../build && make check -j2
+      run: cd ../build && make check -j3
