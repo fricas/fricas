@@ -1,0 +1,33 @@
+name: FriCAS CI on Windows
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        install: make mingw-w64-x86_64-gcc
+    - name: download SBCL
+      run: wget https://downloads.sourceforge.net/project/sbcl/sbcl/2.0.0/sbcl-2.0.0-x86-64-windows-binary.msi
+    - name: install SBCL
+      # for unknown reason, msiexec pops up a window under msys2, so use cmd instead
+      shell: cmd
+      run: msiexec /a sbcl-2.0.0-x86-64-windows-binary.msi TARGETDIR=C:\sbcl /qn
+    - uses: actions/checkout@v2
+    - name: configure and make
+      run: |
+        export SBCL_HOME="/c/sbcl/PFiles/Steel Bank Common Lisp/2.0.0"
+        export PATH="$SBCL_HOME":$PATH
+        mkdir ../build && cd ../build
+        ../fricas/configure --with-lisp=sbcl || cat config.log
+        make -j2 --output-sync
+    - name: make check
+      run: cd ../build && make check -j2 --output-sync
