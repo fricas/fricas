@@ -582,57 +582,45 @@
 
 ;; moved here from preparse.lisp
 
-(defun NEXT-TAB-LOC (i) (* (1+ (truncate i 8)) 8))
+(defvar tab-size-in-spaces 8
+  "How many spaces do we consider a #\Tab character?")
 
-(defun INDENT-POS (STR)
-  (do ((i 0 (1+ i))
-       (pos 0))
-      ((>= i (length str)) nil)
-      (case (char str i)
-            (#\space (incf pos))
-            (#\tab (setq pos (next-tab-loc pos)))
-            (otherwise (return pos)))))
+(defun NEXT-TAB-LOC (i)
+  "Given a character position I, on what position would a #\Tab land
+us?"
+  (* tab-size-in-spaces (1+ (truncate i tab-size-in-spaces))))
 
-;;(defun expand-tabs (str)
-;;  (let ((bpos (nonblankloc str))
-;;      (tpos (indent-pos str)))
-;;    (if (eql bpos tpos) str
-;;      (concatenate 'string (make-string tpos :initial-element #\space)
-;;                 (subseq str bpos)))))
 (defun expand-tabs (str)
-   (if (and (stringp str) (> (length str) 0))
-      (let ((bpos (nonblankloc str))
-            (tpos (indent-pos str)))
-        (setq str
-              (if (eql bpos tpos)
-                  str
-                  (concatenate 'string
-                               (make-string tpos :initial-element #\space)
-                               (subseq str bpos))))
-        (loop
-            (let ((tloc (tabloc str)))
-                (if (null tloc) (return))
-                (let ((rloc (NEXT-TAB-LOC tloc)))
-                    (if (eql tloc rloc)
-                        (setf (aref str tloc) #\Space)
-                        (setf str
-                            (concatenate 'string
-                                (subseq str 0 tloc)
-                                (make-string (+ 1 (- rloc tloc))
-                                    :initial-element #\space)
-                                (subseq str (+ 1 tloc))))))))
-         ;; remove dos CR
-        (let ((lpos (maxindex str)))
-          (if (eq (char str lpos) #\Return) (subseq str 0 lpos) str)))
-    str))
+  "Given a string STR, expand all #\Tab characters to spaces, minding
+the correct column each #\Tab would carry us to.
 
-(defun blankp (char) (or (eq char #\Space) (eq char #\tab)))
-
-(defun nonblankloc (str) (position-if-not #'blankp str))
-
-(defun tabp (c) (equal c #\tab))
-
-(defun tabloc (str) (position-if #'tabp str))
+This function respects intermediate #\Newline characters and drops
+#\Return characters."
+  (cond
+    ((stringp str)
+     (with-output-to-string (s)
+       (loop :with column := 0
+             :for c :across str
+             :do (case c
+                   (#\Tab
+                    ;; How many spaces does our tab carry us forward
+                    ;; by?
+                    (let ((num-spaces (- (next-tab-loc column) column)))
+                      (incf column num-spaces)
+                      ;; This format string just writes something N
+                      ;; times without consing up garbage.
+                      (format s "~v@{~C~:*~}" num-spaces #\Space)))
+                   (#\Newline
+                    (setf column 0)
+                    (write-char #\Newline s))
+                   (#\Return
+                    ;; Drop this character completely.
+                    nil)
+                   (t
+                    (incf column)
+                    (write-char c s))))))
+    (t
+     str)))
 
 ;; stream handling for paste-in generation
 
