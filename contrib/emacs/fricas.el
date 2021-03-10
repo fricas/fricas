@@ -194,7 +194,6 @@ This variable is buffer-local."
 (defvar fricas-stored-incomplete-input nil
   "Stored input for history cycling.")
 
-;;;###autoload
 ;;; Note that fricas-mode does *not* derive from comint mode.  A failed attempt
 ;;; can be found as fricas-comint-failed-attempt.el in the FriCAS subversion
 ;;; repository, revision 381.  comint mode assumes that the new input is always
@@ -338,7 +337,6 @@ BUFFER can be either a buffer or the name of one."
   (let ((proc (get-buffer-process buffer)))
     (and proc (memq (process-status proc) '(open run stop)))))
 
-;;;###autoload
 (defun fricas ()
   "Run an inferior FriCAS process, in a BUFFER `*fricas*'.  If BUFFER exists
 but FriCAS process is not running, make new FriCAS.  If BUFFER exists and
