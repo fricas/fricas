@@ -61,7 +61,7 @@
 (require 'fricas-cpl)
 
 ;; required because of remove-if-not
-(require 'cl)
+(require 'cl-lib)
 ;; required for tab-completion
 (require 'comint)
 
@@ -258,8 +258,8 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   (setq fricas-yank-file (make-temp-file "fricas" nil ".input"))
   (make-local-variable 'fricas-TeX-file)
   (setq fricas-TeX-file (make-temp-file "fricas" nil ".tex"))
-;; this is not completely right: we are going to write to the files with
-;; extension dvi, log, aux, too, so we should check for their presence.
+  ;; this is not completely right: we are going to write to the files with
+  ;; extension dvi, log, aux, too, so we should check for their presence.
   (make-local-variable 'fricas-TeX-buffer)
   (setq fricas-TeX-buffer "")          ;; buffer to put TeX code
   (make-local-variable 'fricas-save-history?)
@@ -300,7 +300,13 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
       (fricas-run)
       (setq fricas-process (get-buffer-process (current-buffer))))
 
-    (process-kill-without-query fricas-process)
+    (if (> emacs-major-version 23)
+	;; enable completion at point
+	(cl-pushnew 'fricas-complete-at-point completion-at-point-functions))
+
+    (if (> emacs-major-version 21)
+	(set-process-query-on-exit-flag fricas-process nil)
+      (process-kill-without-query fricas-process))
     (set-process-filter fricas-process (function fricas-banner-filter))
     (process-send-string fricas-process
                          (concat ")lisp (setf |$ioHook| "
@@ -617,7 +623,7 @@ Repeating the command at that point scrolls the list."
 (defun fricas-file-name-all-completions (pathnondir directory)
   "Returns all filenames relevant to fricas"
   (save-match-data
-    (remove-if-not
+    (cl-remove-if-not
      (function (lambda (f)
                  (or (and (string-match "\\.[^.]*\\'" f)
                           (member (match-string 0 f)
@@ -630,22 +636,22 @@ Repeating the command at that point scrolls the list."
 DIRECTORY that start with FILE.  If there is only one and FILE matches it
 exactly, returns t.  Returns nil if DIR contains no name starting with FILE."
   (let* ((completions (fricas-file-name-all-completions file directory))
-         (frst (first completions))
+         (frst (cl-first completions))
          (len  (length frst))
          (start      0)
          (not-done   t))
-    (cond ((consp (rest completions))
+    (cond ((consp (cl-rest completions))
            (while (and not-done
                        (> len start))
              (let ((char (substring frst start (1+ start)))
-                   (rst  (rest completions)))
+                   (rst  (cl-rest completions)))
                (while (and not-done
                            (consp rst))
-                 (if (and (> (length (first rst)) start)
-                          (string= (substring (first rst)
+                 (if (and (> (length (cl-first rst)) start)
+                          (string= (substring (cl-first rst)
                                               start (1+ start))
                                    char))
-                     (setq rst (rest rst))
+                     (setq rst (cl-rest rst))
                    (setq not-done nil))))
              (when not-done
                (setq start (1+ start))))
@@ -737,13 +743,40 @@ See `comint-dynamic-complete-filename'.  Returns t if successful."
                       (message "Partially completed")))))))
     success))
 
+(defun fricas-complete-at-point ()
+  "Fricas function for complete at point."
+  (let ((start (or
+		(car (bounds-of-thing-at-point 'filename))
+		(car (bounds-of-thing-at-point 'symbol))
+		(point)))
+	(beg-of-input (fricas-beginning-of-region-pos (point))))
+    (if (and (fricas-prompt? (1- beg-of-input))
+             (save-excursion
+               (goto-char beg-of-input)
+               (looking-at " *)")))
+	(let ((files
+	       (let* ((prev-char (char-after start))
+		      (dir (if (and prev-char (char-equal prev-char ?/))
+			       (file-name-directory
+				(buffer-substring-no-properties start (point)))
+			     default-directory))
+		      (results (fricas-file-name-all-completions "" dir)))
+		 (if (not (string= dir default-directory))
+		     (mapcar (lambda (s) (concat dir s)) results)
+		   results))))
+	  (if files
+	      (list start (point) files)
+	    nil))
+      (list start (point) fricas-symbol-list))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; yanking input
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; from emacs 22
-(defun make-temp-file (prefix &optional dir-flag suffix)
-  "Create a temporary file.
+(if (< emacs-major-version 22)
+    (defun make-temp-file (prefix &optional dir-flag suffix)
+      "Create a temporary file.
 The returned file name (created by appending some random characters at the end
 of PREFIX, and expanding against `temporary-file-directory' if necessary),
 is guaranteed to point to a newly created empty file.
@@ -752,32 +785,32 @@ You can then use `write-region' to write new data into the file.
 If DIR-FLAG is non-nil, create a new empty directory instead of a file.
 
 If SUFFIX is non-nil, add that at the end of the file name."
-  (let ((umask (default-file-modes))
-        file)
-    (unwind-protect
-        (progn
-          ;; Create temp files with strict access rights.  It's easy to
-          ;; loosen them later, whereas it's impossible to close the
-          ;; time-window of loose permissions otherwise.
-          (set-default-file-modes ?\700)
-          (while (condition-case ()
-                     (progn
-                       (setq file
-                             (make-temp-name
-                              (expand-file-name prefix temporary-file-directory)))
-                       (if suffix
-                           (setq file (concat file suffix)))
-                       (if dir-flag
-                           (make-directory file)
-                         (write-region "" nil file nil 'silent nil 'excl))
-                       nil)
-                   (file-already-exists t))
-            ;; the file was somehow created by someone else between
-            ;; `make-temp-name' and `write-region', let's try again.
-            nil)
-          file)
-      ;; Reset the umask.
-      (set-default-file-modes umask))))
+      (let ((umask (default-file-modes))
+            file)
+	(unwind-protect
+            (progn
+              ;; Create temp files with strict access rights.  It's easy to
+              ;; loosen them later, whereas it's impossible to close the
+              ;; time-window of loose permissions otherwise.
+              (set-default-file-modes ?\700)
+              (while (condition-case ()
+			 (progn
+			   (setq file
+				 (make-temp-name
+				  (expand-file-name prefix temporary-file-directory)))
+			   (if suffix
+                               (setq file (concat file suffix)))
+			   (if dir-flag
+                               (make-directory file)
+                             (write-region "" nil file nil 'silent nil 'excl))
+			   nil)
+                       (file-already-exists t))
+		;; the file was somehow created by someone else between
+		;; `make-temp-name' and `write-region', let's try again.
+		nil)
+              file)
+	  ;; Reset the umask.
+	  (set-default-file-modes umask)))))
 
 (defun fricas-yank (&optional quiet)
   "Puts the front item of the kill ring into a temporary file and
@@ -1476,3 +1509,4 @@ a FriCAS-buffer."
     (fricas-set-properties pos (point-max) last-type)))
 
 (provide 'fricas)
+;;; fricas.el ends here
