@@ -1,5 +1,5 @@
 These instructions show you how to build FriCAS on MS Windows from the sources
-in the subversion repository.  You may want to consider building FriCAS from a
+in the git repository.  You may want to consider building FriCAS from a
 distribution tarball instead, which contains pregenerated algebra Lisp,
 HyperDoc pages and graphic examples.  Moreover, using the tarball the build is
 much faster - a few minutes instead of a few hours.  You can get a tarball via
@@ -9,18 +9,15 @@ First of all, do not be afraid!  The instructions below probably look more
 intimidating than they really should be.  In case something goes wrong, do not
 hesitate to ask at fricas-devel@googlegroups.com.
 
-Note1: Compilation of current trunk seem to fail at least on
-some versions of Windows.  Release 1.1.2 is reported to build
-but with not working ')compile' command.  This is under
-investigation.
-
 To compile FriCAS on MS Windows, we proceed as follows:
 
 I) If you do not have Cygwin installed, go to
 
-    http://cygwin.org/
+    https://cygwin.com/
 
-    Look for a link called setup.exe and save it to disk.
+    Look for a link called setup-x86_64.exe or setup-x86.exe and save it to disk.
+    But 32bit Cygwin is not recommended by upstream.  Following instructions are
+    tested in the 64bit version.
 
 II) Start Cygwin's setup program.  The first few questions can be answered with
     the default values, until you get to the "Select Packages" dialog.
@@ -32,36 +29,41 @@ II) Start Cygwin's setup program.  The first few questions can be answered with
     will also select many packages they depend on, this should happen
     automatically.)
 
-           In Devel: gcc-mingw
-                     gcc-mingw-core
+           In Devel: gcc-core
                      make
-                     patchutils
-                     subversion
-           In Math:    clisp
-           In Publishing: psutils
-                          tetex
-                          tetex-base
-                          tetex-bin
-                          tetex-extra
-                          tetex-tiny
-                          tetex-x11
-           In Web: wget
-           In X11: xterm
+                     git
+           In X11 (optional):
+                   xterm
                    libICE-devel
                    libXpm-devel
                    libSM-devel
                    libX11-devel
                    xinit
-                   font-adobe-dpi75
-           In Editors: emacs
+                   xorg-x11-fonts-dpi75
+           In Editors (optional):
+                       emacs
                        emacs-X11
 
     Complete the Cygwin installation process.
 
+    1) Install a Common Lisp implementation
+
+    Clisp is in the Cygwin repo, it but can not build FriCAS due to the
+    "cygwin-no-save-executable.patch".  So we compile ecl from source here.
+
+    Install libgc1 libgc-devel libgmp-devel libffi-devel libatomic_ops1
+    libatomic_ops-devel to compile ecl.
+
+  tar xvf ecl-21.2.1.tgz
+  cd ecl-21.2.1
+  ./configure
+  make
+  make install
+
 III) start Cygwin - a black console window should appear.  Note that
     it's better *not* to start Cygwin/X, but rather an "ordinary"
-    shell.  Furthermore, it seems that it's a good idea to close all
-    other applications before building.
+    shell.  If the building process is very slow, please consider
+    turning off anti-virus software or add Cygwin to its exception list.
 
     find a place to build FriCAS.
 
@@ -73,55 +75,28 @@ III) start Cygwin - a black console window should appear.  Note that
     Otherwise the build won't work...)
 
 IV) follow the instructions in INSTALL (but note that we are going to build
-    FriCAS using clisp), that is:
+    FriCAS using ecl), that is:
 
     1) Fetch sources:
 
-  svn co https://fricas.svn.sourceforge.net/svnroot/fricas/trunk fricas
+  git clone https://github.com/fricas/fricas
 
-    alternatively, download a release version of the source.  In this
-    case step 2) and 6) below should also be omitted.
+    alternatively, download a release version of the source.
 
     2) create the build directory (again: without spaces!)
 
   mkdir fri-build
   cd fri-build
 
-    3) configure.  Possibly, you will have to restrict the PATH to
-    Cygwin programs, because otherwise configure may pick, for
-    example, Borland grep which causes failure later.  You can do
-    this by typing
+    3) configure
 
-  export PATH=/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin
+  ../fricas/configure --with-lisp=ecl
 
-  ../fricas/configure --prefix=/usr --with-lisp=clisp
+    4) build
 
-    4) build and install:
+  make -jN
 
-  make
-
-    5) make the graphics examples:
-
-    IMPORTANT NOTE: this step failed when I tried.  After the first
-    drawing appeared and disappeared, it did not continue.  The
-    example graphics are in no way essential though and can be easily
-    reproduced in the installed system.
-
-    6a) start a Cygwin/X shell
-
-    6b) run the examples
-
-  cd /cygwin/c/scratch/fri-build/src/paste
-  make gphts
-
-       at this point (which will take a while), graphics should appear and
-       disappear.
-
-  cd ../..
-  make
-
-
-    7) install
+    5) install
 
   make install
 
@@ -133,6 +108,3 @@ V) You can now start fricas with a comfortable user interface by
     or, without emacs, using
 
   fricas
-
-    efricas may sometimes randomly fail, this is a known
-    inconvenience.  A fix is very welcome.
