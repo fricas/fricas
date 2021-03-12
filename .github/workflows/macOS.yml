@@ -20,3 +20,12 @@ jobs:
       run: cd ../build && make -j3
     - name: make check
       run: cd ../build && make check -j3
+    - name: Create artifact archives
+      run: |
+        cd ../build && make dist-osx-dmg
+        mv FriCAS.dmg ../fricas/FriCAS-macOS-x86_64-${{ github.sha }}.dmg
+    - name: Upload macOS binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: FriCAS-macOS-x86_64-binary
+        path: FriCAS-macOS-x86_64-${{ github.sha }}.dmg

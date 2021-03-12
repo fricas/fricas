@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: msys2/setup-msys2@v2
       with:
-        install: make mingw-w64-x86_64-gcc
+        install: make mingw-w64-x86_64-gcc zip
     - name: download SBCL
       run: wget https://downloads.sourceforge.net/project/sbcl/sbcl/2.0.0/sbcl-2.0.0-x86-64-windows-binary.msi
     - name: install SBCL
@@ -31,3 +31,10 @@ jobs:
         make -j2 --output-sync
     - name: make check
       run: cd ../build && make check -j2 --output-sync
+    - name: Create artifact archives
+      run: cd ../build && zip -r ../fricas/FriCAS-windows-x86_64-${{ github.sha }}.zip target/
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: FriCAS-windows-x86_64-binary
+        path: FriCAS-windows-x86_64-${{ github.sha }}.zip
