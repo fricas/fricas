@@ -15,16 +15,12 @@
 ;; uses FriCAS' ioHooks to communicate with FriCAS, and is therefore much more
 ;; robust than its predecessor axiom.el.
 
-;; IMPORTANT: this emacs mode requires FriCAS svn revision 375 or later.  It
-;; should work with GNU Emacs 21 and later.  A port to XEmacs would be much
-;; appreciated.
-
 ;; GETTING STARTED
 ;;=============================================================================
 ;; to try it out:
 ;;
 ;; copy this file and fricas-cpl.el into a directory where emacs can find it,
-;; possibly /usr/share/emacs/site-lisp/ or ~/emacs. Type
+;; possibly /usr/share/emacs/site-lisp/ or ~/.emacs.d .  Type
 ;;
 ;; M-x load-file RET fricas.el
 ;;
@@ -38,7 +34,7 @@
 ;;
 ;; C-h m
 ;;
-;; (that is: ctrl-h, then m) to get a brief description how to use it.
+;; (that is: ctrl-h, then m) to get a brief description on how to use it.
 ;;
 ;; If you like it, append the line
 ;;
