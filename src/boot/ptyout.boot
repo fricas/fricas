@@ -258,14 +258,14 @@ streamTake(n,s)==
          else cons(car s,streamTake(n-1,cdr s))
 
 shoeFileLines (lines,fn) ==
-        shoeFileLine( '" ",fn)
+        shoeFileLine('"", fn)
         for line in lines repeat shoeFileLine (shoeAddComment line,fn)
-        shoeFileLine ('" ",fn)
+        shoeFileLine('"", fn)
 
 shoeConsoleLines lines ==
-        shoeConsole '" "
+        shoeConsole '""
         for line in lines repeat shoeConsole shoeAddComment line
-        shoeConsole '" "
+        shoeConsole '""
 
 shoeFileLine(x, stream) ==
     WRITE_-LINE(x, stream)
@@ -291,7 +291,12 @@ shoeConsoleTrees s ==
           REALLYPRETTYPRINT fn
           s:=CDR s
 
-shoeAddComment l==  CONCAT('"; ",CAR l)
+shoeAddComment l ==
+    line := CAR l
+    if LENGTH line = 0 then
+        '";"
+    else
+        CONCAT('"; ", line)
 
 shoeOutParse stream ==
     $inputStream :local:= stream

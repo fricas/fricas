@@ -479,15 +479,15 @@
            ('T (CONS (CAR |s|) (|streamTake| (- |n| 1) (CDR |s|))))))))
 
 ; shoeFileLines (lines,fn) ==
-;         shoeFileLine( '" ",fn)
+;         shoeFileLine('"", fn)
 ;         for line in lines repeat shoeFileLine (shoeAddComment line,fn)
-;         shoeFileLine ('" ",fn)
+;         shoeFileLine('"", fn)
 
 (DEFUN |shoeFileLines| (|lines| |fn|)
   (PROG ()
     (RETURN
      (PROGN
-      (|shoeFileLine| " " |fn|)
+      (|shoeFileLine| "" |fn|)
       ((LAMBDA (|bfVar#1| |line|)
          (LOOP
           (COND
@@ -496,18 +496,18 @@
            ('T (|shoeFileLine| (|shoeAddComment| |line|) |fn|)))
           (SETQ |bfVar#1| (CDR |bfVar#1|))))
        |lines| NIL)
-      (|shoeFileLine| " " |fn|)))))
+      (|shoeFileLine| "" |fn|)))))
 
 ; shoeConsoleLines lines ==
-;         shoeConsole '" "
+;         shoeConsole '""
 ;         for line in lines repeat shoeConsole shoeAddComment line
-;         shoeConsole '" "
+;         shoeConsole '""
 
 (DEFUN |shoeConsoleLines| (|lines|)
   (PROG ()
     (RETURN
      (PROGN
-      (|shoeConsole| " ")
+      (|shoeConsole| "")
       ((LAMBDA (|bfVar#2| |line|)
          (LOOP
           (COND
@@ -516,7 +516,7 @@
            ('T (|shoeConsole| (|shoeAddComment| |line|))))
           (SETQ |bfVar#2| (CDR |bfVar#2|))))
        |lines| NIL)
-      (|shoeConsole| " ")))))
+      (|shoeConsole| "")))))
 
 ; shoeFileLine(x, stream) ==
 ;     WRITE_-LINE(x, stream)
@@ -574,9 +574,19 @@
                  (REALLYPRETTYPRINT |fn|)
                  (SETQ |s| (CDR |s|)))))))))))
 
-; shoeAddComment l==  CONCAT('"; ",CAR l)
+; shoeAddComment l ==
+;     line := CAR l
+;     if LENGTH line = 0 then
+;         '";"
+;     else
+;         CONCAT('"; ", line)
 
-(DEFUN |shoeAddComment| (|l|) (PROG () (RETURN (CONCAT "; " (CAR |l|)))))
+(DEFUN |shoeAddComment| (|l|)
+  (PROG (|line|)
+    (RETURN
+     (PROGN
+      (SETQ |line| (CAR |l|))
+      (COND ((EQL (LENGTH |line|) 0) ";") ('T (CONCAT "; " |line|)))))))
 
 ; shoeOutParse stream ==
 ;     $inputStream :local:= stream
