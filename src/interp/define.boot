@@ -247,6 +247,7 @@ compDefineCategory2(form,signature,specialCases,body,m,e,
     $functionStats: local:= [0,0]
     $functorStats: local:= [0,0]
     $addForm: local:= nil
+    $functor_cosig1 : local := [categoryForm?(t) for t in rest(signature')]
     for x in sargl for t in rest signature' repeat
       [.,.,e]:= compMakeDeclaration([":",x,t],m,e)
 
@@ -366,6 +367,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     -- the above optimizes the calls to local domains
     $template: local:= nil --stored in the lisplib (if $NRTvec = true)
     $functionLocations: local := nil --locations of defined functions in source
+    $functor_cosig1 : local := [categoryForm?(t) for t in rest(signature')]
     -- generate slots for arguments first, then for $NRTaddForm in compAdd
     for x in argl repeat NRTgetLocalIndex(x, e)
     [., ., e] := compMakeDeclaration([":", '_$, target], m, e)

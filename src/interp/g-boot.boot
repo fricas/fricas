@@ -105,6 +105,10 @@ COMP_2(args) ==
 
 COMP(fun) == [COMP_2 nf for nf in COMP_1(fun)]
 
+maybe_devaluate(a, ca) ==
+    ca => ["devaluate", a]
+    a
+
 compSPADSLAM(name, argl, bodyl) ==
     al := INTERNL1(name, '";AL")
     auxfn := INTERNL1(name, '";")
@@ -112,9 +116,11 @@ compSPADSLAM(name, argl, bodyl) ==
         g2 := GENSYM()
         g3 := GENSYM()
         argtran :=
-            -- FIXME: we should call 'devaluate' only on domains
-            not(rest(argl)) => ["devaluate", first(argl)]
-            ["LIST", :[["devaluate", g1] for g1 in argl]]
+            -- we call 'devaluate' only on domains
+            not(rest(argl)) =>
+                maybe_devaluate(first(argl), first($functor_cosig1))
+            ["LIST", :[maybe_devaluate(g1, c1) for g1 in argl
+                                               for c1 in $functor_cosig1]]
         app :=
             not(rest(argl)) => [auxfn, g3]
             ["APPLY", ["FUNCTION", auxfn], g3]

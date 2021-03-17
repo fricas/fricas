@@ -75,11 +75,16 @@ compHash(op, argl, body, cacheName, eqEtc) ==
   --    computeValue: the form used to compute the value from arg
     null argl => [nil,nil,[auxfn]]
     argl is [.] =>
-      -- FIXME: we shall call 'devaluate' only on domains
-      key := ['devaluate, g1]
+      -- we call 'devaluate' only on domains
+      key := maybe_devaluate(g1, first($functor_cosig1))
       [[g1],['LIST,key],[auxfn,g1]]  --g1 is a parameter
-    -- FIXME: we shall call 'devaluate' only on domains
-    key := ['devaluateList, g1]
+    -- we call 'devaluate' only on domains
+    all_type := true
+    for c in $functor_cosig1 while all_type repeat
+        all_type := c
+    key :=
+        all_type => ['devaluateList, g1]
+        ["devaluate_sig", g1, ["QUOTE", $functor_cosig1]]
     [g1, key, ['APPLY,['function,auxfn],g1]]   --g1 is a parameter list
   if $reportCounts=true then
     hitCounter := INTERNL1(op, '";hit")
@@ -126,6 +131,8 @@ compHash(op, argl, body, cacheName, eqEtc) ==
     pp computeFunction
   compileQuietly computeFunction
   op
+
+devaluate_sig(tl, cl) == [(c => devaluate(t); t) for t in tl for c in cl]
 
 CDRwithIncrement x ==
   RPLACA(x, inc_SI first x)
@@ -457,18 +464,8 @@ rightJustifyString(x,maxWidth) ==
   size > maxWidth => keyedSystemError("S2GE0014",[x])
   [fillerSpaces(maxWidth-size,'" "),x]
 
-domainEqualList(argl1,argl2) ==
-  --function used to match argument lists of constructors
-  while argl1 and argl2 repeat
-    item1 := devaluate first argl1
-    item2 := first argl2
-    partsMatch:=
-      item1 = item2 => true
-      false
-    null partsMatch => return nil
-    argl1:= rest argl1; argl2 := rest argl2
-  argl1 or argl2 => nil
-  true
+-- Should be better, but ATM this must do
+domainEqualList(argl1, argl2) == EQUAL(argl1, argl2)
 
 removeAllClams() ==
   for [fun,:.] in $clamList repeat

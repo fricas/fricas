@@ -287,6 +287,10 @@ NRTisExported?(opSig, base_shell) ==
 
 consSig(sig, dc, e) == [consDomainName(sigpart, dc, e) for sigpart in sig]
 
+maybe_cons_dn(y, dc, e, c) ==
+    c => consDomainName(y, dc, e)
+    y
+
 consDomainName(x, dc, e) ==
   x = dc => ''$
   x = '$ => ''$
@@ -298,6 +302,10 @@ consDomainName(x, dc, e) ==
                    for [.,tag,dom] in argl]]
     isFunctor op or op = 'Mapping or constructor? op =>
          -- call to constructor? needed if op was compiled in $bootStrapMode
+        not(op = 'Mapping or op = 'Union) and
+          (cosig := GETDATABASE(op, 'COSIG)) =>
+            mkList([MKQ op, :[maybe_cons_dn(y, dc, e, c) for y in argl
+                              for c in rest(cosig)]])
         mkList [MKQ op, :[consDomainName(y, dc, e) for y in argl]]
     substitute('$,"$$",x)
   x = [] => x
@@ -528,10 +536,11 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
 
   $CheckVectorList := NRTcheckVector domainShell
 --CODE: part 1
-  codePart1:= [:devaluateCode, createDomainCode,
+  devaluate_code := [['LET,b, maybe_devaluate(a, c)]
+                      for [a,:b] in $devaluateList for c in $functor_cosig1]
+  codePart1:= [:devaluate_code, createDomainCode,
                 createViewCode,setVector0Code, slot3Code,:slamCode] where
     -- FIXME: should devaluate only domain arguments
-    devaluateCode:= [['LET,b,['devaluate,a]] for [a,:b] in $devaluateList]
     createDomainCode:=
         ['LET, domname, ['LIST, MKQ first definition,
                          :ASSOCRIGHT $devaluateList]]
