@@ -25,7 +25,7 @@ int main(int argc, const char *argv[]) {
 
   setenv("FRICAS_PREFIX", CFStringGetCStringPtr(path, encoding), 1);
 
-  system("/usr/X11/bin/xterm"
-         " -e \"${FRICAS_PREFIX}/bin/fricas\"");
+  system("open -a Terminal.app"
+         " \"${FRICAS_PREFIX}/usr/local/bin/fricas\"");
   return 0;
 }

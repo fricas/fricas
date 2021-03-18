@@ -133,9 +133,11 @@ install-src:
 	echo exec_prefix='"$${FRICAS_PREFIX:-$(exec_prefix)}"' \
                >> '${COMMAND}'.tmp
 	if test "$(fricas_lib)" != "$(libdir)" ;  then \
-	   echo \
-	      FRICAS='"$${exec_prefix}/$(fricas_lib)/fricas/target/$(target)"' \
-	       >> '${COMMAND}'.tmp ; \
+     if test $(uname -s) != "Darwin" ; then \
+	      echo FRICAS='"$${exec_prefix}/$(fricas_lib)/fricas/target/$(target)"' >> '${COMMAND}'.tmp ; \
+     else \
+	      echo FRICAS='"`dirname $$0`/../$(fricas_lib)/fricas/target/$(target)"' >> '${COMMAND}'.tmp ; \
+     fi \
 	else \
 	   echo FRICAS='"$(libdir)/fricas/target/$(target)"' \
                >> '${COMMAND}'.tmp ; \
@@ -175,6 +177,7 @@ clean-local: mostlyclean-local
 distclean-local: clean-local
 	@-rm -rf build
 	-rm -rf target
+	-rm -rf FriCAS.app FriCAS.dmg
 	-cd contrib/emacs && ${MAKE} distclean
 	@-rm -f config.status config.log config_cl.out
 	@-rm -f Makefile
@@ -246,6 +249,15 @@ ${DIST_TARBALL}: out-of-source-check lastBuildDate dist-help dist-lisp dist-doc
 	tar cjf $@ ${distdir}
 
 dist: ${DIST_TARBALL}
+
+dist-osx-dmg: out-of-source-check
+	-rm -rf FriCAS.app FriCAS.dmg
+	${MKDIR_P} FriCAS.app/Contents/{MacOS,Resources}
+	${MAKE} DESTDIR=./FriCAS.app/Contents/Resources install-src
+	cp $(fricas_top_srcdir)/contrib/macos/Info.plist ./FriCAS.app/Contents/
+	cp $(fricas_top_srcdir)/contrib/macos/appIcon.icns ./FriCAS.app/Contents/Resources/
+	cc -framework CoreFoundation $(fricas_top_srcdir)/contrib/macos/FriCAS.c -o ./FriCAS.app/Contents/MacOS/FriCAS
+	hdiutil create -srcfolder FriCAS.app FriCAS.dmg
 
 clean-distdir:
 	-rm -rf ${distdir} ${DIST_TARBALL}
