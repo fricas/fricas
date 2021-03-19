@@ -107,8 +107,17 @@ where the [[${FRICAS}]] variable points to installed tree.
 ;;; Sets up the system to use the {\bf FRICAS} shell variable if we can
 ;;; and default to the {\bf \$spadroot} variable (which was the value
 ;;; of the {\bf FRICAS} shell variable at build time) if we can't.
+;;; Use the parent directory of FRICASsys binary as fallback.
 (defun initroot (&optional (newroot nil))
-  (reroot (or (|getEnv| "FRICAS") newroot $spadroot
+  (reroot (or (|getEnv| "FRICAS") newroot
+              (if (|fricas_probe_file| $spadroot) $spadroot)
+              (let ((bin-parent-dir
+                     (concatenate 'string
+                                  (directory-namestring (car (|getCLArgs|)))
+                                  "/../")))
+                (if (|fricas_probe_file| (concatenate 'string bin-parent-dir
+                                                      "algebra/interp.daase"))
+                    bin-parent-dir))
               (error "setenv FRICAS or (setq $spadroot)"))))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
