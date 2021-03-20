@@ -388,7 +388,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
     e := makeFunctorArgumentParameters(argl, rest signature',
                                         first signature', e)
  -- must do above to bring categories into scope --see line 5 of genDomainView
---  4. compile body in environment of %type declarations for arguments
+--  4. compile body in environment of type declarations for arguments
     op':= $op
     rettype:= signature'.target
     T := compFunctorBody(body, rettype, e, parForm, base_shell)
@@ -711,7 +711,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     fun:=
       body':= replaceExitEtc(T.expr,catchTag,"TAGGEDreturn",$returnMode)
       finalBody:= ["CATCH",catchTag,body']
-      compileCases([$op,["LAMBDA",[:argl,'_$],finalBody]],oldE)
+      do_compile([$op, ["LAMBDA", [:argl, '_$], finalBody]], oldE)
     $functorStats:= addStats($functorStats,$functionStats)
 
 
@@ -803,9 +803,6 @@ putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
   NRTputInTail CDDADR def
   def
 
-
-compileCases(x, e) ==
-    do_compile(x, e)
 
 isLocalFunction(op, e) ==
     null member(op, $formalArgList) and

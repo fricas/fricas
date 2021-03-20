@@ -80,14 +80,6 @@
 
 (defun LOG2 (x) (LOG x 2.0))
 
-; 9.13 Streams
-
-#+GCL
-(defun IS_CONSOLE (stream)
-  (and (streamp stream) (output-stream-p stream)
-       (eq (system:fp-output-stream stream)
-           (system:fp-output-stream *terminal-io*))))
-
 ; 11.0 Operations on Identifiers
 
 ; 11.1 Creation
@@ -639,10 +631,7 @@
 
 (defun |mkOutputConsoleStream| () (CONS NIL *standard-output*))
 
-(defun SHUT (st) (if #+:GCL(IS_CONSOLE st)
-                     #-:GCL(typep st 'synonym-stream)
-                     st
-                   (if (streamp st) (close st) -1)))
+(defun SHUT (st) (if (streamp st) (close st) -1))
 
 (defun EOFP (stream) (null (peek-char nil stream nil nil)))
 

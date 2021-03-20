@@ -197,10 +197,6 @@ substituteSegmentedMsg(msg,args) ==
     (n > 2) and (c = char "%") and (x.1 = char "k") =>
         l := NCONC(NREVERSE pkey SUBSTRING(x,2,NIL),l)
 
-    -- ?name gets replaced by '"Push PF10" or '"Type >b (enter)"
-    (x.0 = char "?") and n > 1 and (v := pushOrTypeFuture(INTERN x,nil)) =>
-      l := NCONC(NREVERSE v,l)
-
     -- x requires parameter substitution
     (x.0 = char "%") and (n > 1) and (DIGITP x.1) =>
       a := DIG2FIX x.1

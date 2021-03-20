@@ -61,7 +61,6 @@ CategoryPrint(D) ==
 --   attList              - list of all conditional ancestors
 --   PrincipalAncestor    - principal ancestor (if any)
 mkCategory(sigList, attList, domList, PrincipalAncestor) ==
-  NSigList := nil
   count := 6
   sigList:=
     [if s is [sig,pred] then
