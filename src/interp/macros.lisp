@@ -431,7 +431,7 @@
 
 ;;; Operations on Association Sets (AS)
 
-(defun AS-INSERT (A B L)
+(defun AS_INSERT (A B L)
     (let ((pp (assoc A L :test #'equal)))
         (if pp
             (progn
@@ -500,7 +500,7 @@
 
 ; 25 MISCELLANEOUS FEATURES
 
-(defun MAKE-REASONABLE (Z)
+(defun MAKE_REASONABLE (Z)
    (if (> (length Z) 30) (CONCAT "expression beginning " (subseq Z 0 20)) Z))
 
 (defun DROPTRAILINGBLANKS  (LINE)
@@ -590,7 +590,7 @@
 us?"
   (* tab-size-in-spaces (1+ (truncate i tab-size-in-spaces))))
 
-(defun expand-tabs (str)
+(defun EXPAND_TABS (str)
   "Given a string STR, expand all #\Tab characters to spaces, minding
 the correct column each #\Tab would carry us to.
 
@@ -696,7 +696,7 @@ This function respects intermediate #\Newline characters and drops
 ; NAME:    Debugging Package
 ; PURPOSE: Debugging hooks for Boot code
 
-(defun enable-backtrace (&rest arg))
+(defun ENABLE_BACKTRACE (&rest arg))
 
 (defun |adjoin_equal|(x y) (ADJOIN x y :test #'equal))
 

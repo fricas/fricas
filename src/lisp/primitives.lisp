@@ -193,26 +193,26 @@
 
 ;;; Modular arithmetic
 
-(deftype machine-int () '(unsigned-byte 64))
+(deftype machine_int () '(unsigned-byte 64))
 
 ;;; (x*y + z) using 32-bit x and y and 64-bit z and assuming that
 ;;; intermediate results fits into 64 bits
 (defmacro QSMULADD64_32 (x y z)
-    `(the machine-int
-         (+ (the machine-int
+    `(the machine_int
+         (+ (the machine_int
                (* (the (unsigned-byte 32) ,x)
                   (the (unsigned-byte 32) ,y)))
-            (the machine-int ,z))))
+            (the machine_int ,z))))
 
 (defmacro QSMUL64_32 (x y)
-    `(the machine-int
+    `(the machine_int
          (* (the (unsigned-byte 32) ,x)
             (the (unsigned-byte 32) ,y))))
 
 
 (defmacro QSMOD64_32 (x p)
     `(the (unsigned-byte 32)
-         (rem (the machine-int ,x) (the (unsigned-byte 32) ,p))))
+         (rem (the machine_int ,x) (the (unsigned-byte 32) ,p))))
 
 (defmacro QSMULADDMOD64_32 (x y z p)
     `(QSMOD64_32 (QSMULADD64_32 ,x ,y ,z) ,p))
@@ -236,7 +236,7 @@
            (i2 ,ind2)
            (k0 ,kk)
            (k 0))
-          (declare (type machine-int s)
+          (declare (type machine_int s)
                    (type fixnum i1 i2 k k0))
           (prog ()
              l1
@@ -517,19 +517,19 @@
          (array-dimension (the (simple-array double-float (* *)) ,v) 1) 2))
 
 
-(defstruct (SPAD-KERNEL
+(defstruct (SPAD_KERNEL
           (:print-function
                (lambda (p s k)
                    (format s "#S~S" (list
-                        'SPAD-KERNEL
-                         :OP (SPAD-KERNEL-OP p)
-                         :ARG (SPAD-KERNEL-ARG p)
-                         :NEST (SPAD-KERNEL-NEST p))))))
+                        'SPAD_KERNEL
+                         :OP (SPAD_KERNEL-OP p)
+                         :ARG (SPAD_KERNEL-ARG p)
+                         :NEST (SPAD_KERNEL-NEST p))))))
            OP ARG NEST (POSIT 0))
 
-(defmacro SET-SPAD-KERNEL-POSIT(s p) `(setf (SPAD-KERNEL-POSIT ,s) ,p))
+(defmacro SET_SPAD_KERNEL_POSIT(s p) `(setf (SPAD_KERNEL-POSIT ,s) ,p))
 
-(defun |makeSpadKernel|(o a n) (MAKE-SPAD-KERNEL :OP o :ARG a :NEST n))
+(defun |makeSpadKernel|(o a n) (MAKE-SPAD_KERNEL :OP o :ARG a :NEST n))
 
 ; Hashtable accessors
 
@@ -619,7 +619,7 @@
 
 ; macros needed for Spad:
 
-(defun TranslateTypeSymbol (ts typeOrValue)
+(defun |TranslateTypeSymbol| (ts typeOrValue)
   (let ((typDecl (assoc (car (cdr ts))
           '(((|Void|) (null nil))
             ((|SingleInteger|) (fixnum 0))
@@ -629,32 +629,32 @@
             :test #'equal
             )))
   (if typDecl (setf typDecl (car (cdr typDecl)))
-              (return-from TranslateTypeSymbol (list (car ts))))
+              (return-from |TranslateTypeSymbol| (list (car ts))))
   (cons (car ts) (if typeOrValue (cdr typDecl) (car typDecl)))))
 
-(defun GetLispType (ts)
-  (TranslateTypeSymbol ts nil))
+(defun |GetLispType| (ts)
+  (|TranslateTypeSymbol| ts nil))
 
-(defun GetLispValue (ts)
-  (TranslateTypeSymbol ts 't))
+(defun |GetLispValue| (ts)
+  (|TranslateTypeSymbol| ts 't))
 
-(defun MakeDeclarations (typSyms)
-  (let* ((tranTypSyms (mapcar #'GetLispType typSyms))
+(defun |MakeDeclarations| (typSyms)
+  (let* ((tranTypSyms (mapcar #'|GetLispType| typSyms))
          (lispTypSyms (remove-if-not #'cdr tranTypSyms)))
     (mapcar #'(lambda (ts) `(declare (type ,(cdr ts) ,(car ts)))) lispTypSyms)))
 
-(defun MakeInitialValues (typSyms)
-  (let ((initVals (mapcar #'GetLispValue typSyms)))
+(defun |MakeInitialValues| (typSyms)
+  (let ((initVals (mapcar #'|GetLispValue| typSyms)))
     (mapcar #'(lambda (v) (if (endp (cdr v)) (car v) v)) initVals)))
 
 (defmacro SDEFUN (name args body)
   (let ((vars (mapcar #'car args))
-        (decls (MakeDeclarations (butlast args))))
+        (decls (|MakeDeclarations| (butlast args))))
         `(defun ,name ,vars ,@decls ,body)))
 
 (defmacro SPROG (vars &rest statements)
-  (let ((names (MakeInitialValues vars))
-        (decls (MakeDeclarations vars)))
+  (let ((names (|MakeInitialValues| vars))
+        (decls (|MakeDeclarations| vars)))
     `(block nil (let ,names ,@decls ,@statements))))
 
 (defmacro EXIT (&rest value) `(return-from SEQ ,@value))
@@ -717,9 +717,9 @@
 
 (defmacro |SPADfirst| (l)
   (let ((tem (gensym)))
-    `(let ((,tem ,l)) (if ,tem (car ,tem) (first-error)))))
+    `(let ((,tem ,l)) (if ,tem (car ,tem) (first_error)))))
 
-(defun first-error () (error "Cannot take first of an empty list"))
+(defun first_error () (error "Cannot take first of an empty list"))
 
 (defmacro |dispatchFunction| (name) `(FUNCTION ,name))
 
@@ -743,19 +743,8 @@
 
 (defmacro |assert| (x y) `(IF (NULL ,x) (|error| ,y)))
 
-(defun coerce-failure-msg (val mode)
-   (STRCONC (MAKE-REASONABLE (STRINGIMAGE val))
-            " cannot be coerced to mode "
-            (STRINGIMAGE (|devaluate| mode))))
-
-(defmacro |check_subtype| (pred submode val)
-   `(|assert| ,pred (coerce-failure-msg ,val ,submode)))
-
 (defmacro |check_subtype2| (pred submode mode val)
    `(|assert| ,pred (|coerce_failure_msg| ,val ,submode ,mode)))
-
-(defmacro |check_union| (pred branch val)
-   `(|assert| ,pred (coerce-failure-msg ,val ,branch )))
 
 (defmacro |check_union2| (pred branch umode val)
    `(|assert| ,pred (|check_union_failure_msg| ,val ,branch ,umode)))

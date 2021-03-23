@@ -462,7 +462,7 @@
 
 ; 17.2 Accessing
 
-(defun string2id-n (cvec sint)
+(defun STRING2ID_N (cvec sint)
   (if (< sint 1)
       nil
       (let ((start (position-if-not #'(lambda (x) (char= x #\Space)) cvec)))
@@ -470,7 +470,7 @@
             (let ((end (or (position #\Space cvec :start start) (length cvec))))
               (if (= sint 1)
                   (intern (subseq cvec start end))
-                  (string2id-n (subseq cvec end) (1- sint))))
+                  (STRING2ID_N (subseq cvec end) (1- sint))))
             0))))
 
 (defun substring (cvec start length)

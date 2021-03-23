@@ -180,7 +180,7 @@ reportOpSymbol op1 ==
     sayKeyedMsg("S2IF0010",[op1])
     if SIZE PNAME op1 < 3 then
       x := UPCASE queryUserKeyedMsg("S2IZ0060",[op1])
-      null MEMQ(STRING2ID_-N(x,1),'(Y YES)) =>
+      null MEMQ(STRING2ID_N(x, 1),'(Y YES)) =>
         ok := nil
         sayKeyedMsg("S2IZ0061",[op1])
     ok => apropos [op1]

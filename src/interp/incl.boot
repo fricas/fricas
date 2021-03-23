@@ -275,7 +275,7 @@ incLude1 (:z) ==
                      '")--premature end",  lno,ufos), StreamNil)
                 StreamNil
 
-            str  :=  EXPAND_-TABS first ss
+            str  :=  EXPAND_TABS(first(ss))
             has_cont :=
                 (nn := #str) < 1 => false
                 str.(nn - 1) = char('"__")

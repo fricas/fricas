@@ -107,7 +107,7 @@ synonymsForUserLevel l ==
   $UserLevel = 'development => l
   nl := NIL
   for syn in reverse l repeat
-    cmd := STRING2ID_-N(rest syn, 1)
+    cmd := STRING2ID_N(rest(syn), 1)
     null selectOptionLC(cmd,commandsForUserLevel
       $systemCommands,NIL) => nil
     nl := [syn,:nl]
@@ -235,7 +235,7 @@ abbreviationsSpad2Cmd l ==
 
 listConstructorAbbreviations() ==
   x := UPCASE queryUserKeyedMsg("S2IZ0056",NIL)
-  MEMQ(STRING2ID_-N(x,1),'(Y YES)) =>
+  MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
     whatSpad2Cmd '(categories)
     whatSpad2Cmd '(domains)
     whatSpad2Cmd '(packages)
@@ -379,7 +379,7 @@ close args ==
     sockSendInt($SessionManager, $currentFrameNum)
     closeInterpreterFrame(NIL)
   x := UPCASE queryUserKeyedMsg("S2IZ0072", nil)
-  MEMQ(STRING2ID_-N(x,1), '(YES Y)) =>
+  MEMQ(STRING2ID_N(x, 1), '(YES Y)) =>
     QUIT()
   nil
 
@@ -833,7 +833,7 @@ getWorkspaceNames() ==
 displayOperations l ==
   null l =>
     x := UPCASE queryUserKeyedMsg("S2IZ0058",NIL)
-    if MEMQ(STRING2ID_-N(x,1),'(Y YES))
+    if MEMQ(STRING2ID_N(x, 1), '(Y YES))
       then for op in allOperations() repeat reportOpSymbol op
       else sayKeyedMsg("S2IZ0059",NIL)
     nil
@@ -1248,7 +1248,7 @@ importFromFrame args ==
   fenv := frameEnvironment fname
   null args =>
     x := UPCASE queryUserKeyedMsg("S2IZ0076",[fname])
-    MEMQ(STRING2ID_-N(x,1),'(Y YES)) =>
+    MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
       vars := NIL
       for [v,:props] in CAAR fenv repeat
         v = "--macros" =>
@@ -1342,7 +1342,7 @@ historySpad2Cmd() ==
         initHistList()
         sayKeyedMsg("S2IH0008",NIL)
       x := UPCASE queryUserKeyedMsg("S2IH0009",NIL)
-      MEMQ(STRING2ID_-N(x,1),'(Y YES)) =>
+      MEMQ(STRING2ID_N(x, 1), '(Y YES)) =>
         histFileErase histFileName()
         $HiFiAccess:= 'T
         $options := nil
@@ -1814,14 +1814,14 @@ writify ob ==
                 for i in 0..n repeat
                     QSETVELT(nob, i, writifyInner QVELT(ob,i))
                 nob
-            SPAD_-KERNEL_-P ob =>
-                nob := makeSpadKernel(NIL, NIL, SPAD_-KERNEL_-NEST(ob))
+            SPAD_KERNEL_-P ob =>
+                nob := makeSpadKernel(NIL, NIL, SPAD_KERNEL_-NEST(ob))
                 HPUT($seen, ob, nob)
                 HPUT($seen, nob, nob)
-                SETF(SPAD_-KERNEL_-OP(nob), _
-                     writifyInner SPAD_-KERNEL_-OP(ob))
-                SETF(SPAD_-KERNEL_-ARG(nob), _
-                     writifyInner SPAD_-KERNEL_-ARG(ob))
+                SETF(SPAD_KERNEL_-OP(nob), _
+                     writifyInner SPAD_KERNEL_-OP(ob))
+                SETF(SPAD_KERNEL_-ARG(nob), _
+                     writifyInner SPAD_KERNEL_-ARG(ob))
                 nob
             ob = 'WRITIFIED_!_! =>
                 ['WRITIFIED_!_!, 'SELF]
@@ -1969,14 +1969,14 @@ dewritify ob ==
                 for i in 0..n repeat
                     QSETVELT(nob, i, dewritifyInner QVELT(ob,i))
                 nob
-            SPAD_-KERNEL_-P ob =>
-                nob := makeSpadKernel(NIL, NIL, SPAD_-KERNEL_-NEST(ob))
+            SPAD_KERNEL_-P(ob) =>
+                nob := makeSpadKernel(NIL, NIL, SPAD_KERNEL_-NEST(ob))
                 HPUT($seen, ob, nob)
                 HPUT($seen, nob, nob)
-                SETF(SPAD_-KERNEL_-OP(nob), _
-                     dewritifyInner SPAD_-KERNEL_-OP(ob))
-                SETF(SPAD_-KERNEL_-ARG(nob), _
-                     dewritifyInner SPAD_-KERNEL_-ARG(ob))
+                SETF(SPAD_KERNEL_-OP(nob), _
+                     dewritifyInner SPAD_KERNEL_-OP(ob))
+                SETF(SPAD_KERNEL_-ARG(nob), _
+                     dewritifyInner SPAD_KERNEL_-ARG(ob))
                 nob
             -- Default case: return the object itself.
             ob
@@ -1996,9 +1996,9 @@ ScanOrPairVec(f, ob) ==
                 HPUT($seen, ob, true)
                 for i in 0..#ob-1 repeat ScanOrInner(f, ob.i)
                 nil
-            SPAD_-KERNEL_-P ob =>
-                ScanOrInner(f, SPAD_-KERNEL_-OP ob)
-                ScanOrInner(f, SPAD_-KERNEL_-ARG ob)
+            SPAD_KERNEL_-P(ob) =>
+                ScanOrInner(f, SPAD_KERNEL_-OP(ob))
+                ScanOrInner(f, SPAD_KERNEL_-ARG(ob))
             FUNCALL(f, ob) =>
                 THROW('ScanOrPairVecAnswer, true)
             nil
@@ -2062,7 +2062,7 @@ quit() == quitSpad2Cmd()
 quitSpad2Cmd() ==
   $quitCommandType ~= 'protected => leaveScratchpad()
   x := UPCASE queryUserKeyedMsg("S2IZ0031",NIL)
-  MEMQ(STRING2ID_-N(x,1),'(Y YES)) => leaveScratchpad()
+  MEMQ(STRING2ID_N(x, 1), '(Y YES)) => leaveScratchpad()
   sayKeyedMsg("S2IZ0032",NIL)
   terminateSystemCommand()
 
@@ -2364,7 +2364,7 @@ synonymSpad2Cmd() ==
   terminateSystemCommand()
 
 processSynonymLine line ==
-  key := STRING2ID_-N (line, 1)
+  key := STRING2ID_N (line, 1)
   value := removeKeyFromLine line where
     removeKeyFromLine line ==
       line := dropLeadingBlanks line
@@ -2752,7 +2752,7 @@ processSynonyms() ==
   to := STRPOS ('" ", line, 1, nil)
   if to then to := to - 1
   synstr := SUBSTRING (line, 1, to)
-  syn := STRING2ID_-N (synstr, 1)
+  syn := STRING2ID_N (synstr, 1)
   null (fun := LASSOC (syn, $CommandSynonymAlist)) => NIL
   to := STRPOS('")",fun,1,NIL)
   if to and to ~= SIZE(fun)-1 then

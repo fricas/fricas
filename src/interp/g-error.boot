@@ -94,7 +94,7 @@ handleLispBreakLoop($BreakMode) ==
   TERPRI()
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
-  ENABLE_-BACKTRACE(nil)
+  ENABLE_BACKTRACE(nil)
   $BreakMode = 'break =>
     sayBrightly '" "
     BREAK()
@@ -108,7 +108,7 @@ handleLispBreakLoop($BreakMode) ==
         '"    ",:bright '"top     ",'"  to return to top level, or",'%l,_
         '"    ",:bright '"break   ",'"  to enter a LISP break loop.",'%l,_
         '%l,'"   Please enter your choice now:"]
-      x := STRING2ID_-N(queryUser msgQ,1)
+      x := STRING2ID_N(queryUser(msgQ), 1)
       x :=
         selectOptionLC(x,'(top break continue),NIL)
       null x =>
@@ -181,7 +181,7 @@ check_union_failure_msg(val, branch, umode) ==
            str1 := nice_failure_msg(val, branch, umode);
            got_str1 := true)))
     got_str1 => str1
-    str1 := MAKE_-REASONABLE(STRINGIMAGE val)
+    str1 := MAKE_REASONABLE(STRINGIMAGE(val))
     STRCONC(str1,
             '" of mode ", STRINGIMAGE(devaluate(umode)),
               '" cannot be coerced to mode ",

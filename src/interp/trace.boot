@@ -719,12 +719,12 @@ spadTrace(domain,options) ==
   if listOfVariables then
     for [.,.,n] in sigSlotNumberAlist repeat
       fn := first domain.n
-      $letAssoc := AS_-INSERT(BPINAME fn,
+      $letAssoc := AS_INSERT(BPINAME(fn),
         listOfVariables,$letAssoc)
   if listOfBreakVars then
     for [.,.,n] in sigSlotNumberAlist repeat
       fn := first domain.n
-      $letAssoc := AS_-INSERT(BPINAME fn,
+      $letAssoc := AS_INSERT(BPINAME(fn),
         [["BREAK",:listOfBreakVars]],$letAssoc)
   for (pair:= [op,mm,n]) in sigSlotNumberAlist repeat
     alias:= spadTraceAlias(domainId,op,n)
@@ -1050,7 +1050,7 @@ break msg ==
   condition := monitor_eval_tran($break_condition, nil)
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
-  ENABLE_-BACKTRACE(nil)
+  ENABLE_BACKTRACE(nil)
   EVAL condition =>
     sayBrightly msg
     INTERRUPT()
