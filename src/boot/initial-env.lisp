@@ -87,13 +87,13 @@
 
 (defun |shoeread-line| (st)
   (let ((str (read-line st nil nil)))
-      (if (not str) str
-          ;; remove dos CR
-          (let ((l_str (length str)))
-              (if (and (> l_str 0)
-                       (eq (char str (1- l_str)) #\Return))
-                  (subseq str 0 (1- l_str))
-                  str)))))
+    (if (null str)
+        str
+        (let ((len (length str)))
+          (if (or (zerop len)
+                  (char/= #\Return (char str (1- len))))
+              str
+              (subseq str 0 (1- len))))))) ; Trim CR from end.
 
 (defun |shoePLACEP| (item)
   (eq item nil))
