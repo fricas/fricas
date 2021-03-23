@@ -111,8 +111,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define graphBarSelectColor     monoColor(15)
 #define graphBarNotSelectColor  monoColor(138)
 
-#define viewportCreateMASK (CWBackPixel|CWBorderPixel|CWEventMask|CWCursor|CWColormap)
-#define viewportTitleCreateMASK (CWBackPixel|CWBorderPixel|CWCursor|CWColormap|CWEventMask|CWOverrideRedirect)
+#define viewportCreateMASK (CWBackPixel|CWBorderPixel|CWEventMask|CWColormap)
+#define viewportTitleCreateMASK (CWBackPixel|CWBorderPixel|CWColormap|CWEventMask|CWOverrideRedirect)
 
 #define viewportMASK (KeyPressMask + ButtonPressMask + ExposureMask)
 #define titleMASK    ExposureMask

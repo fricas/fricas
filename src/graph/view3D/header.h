@@ -57,8 +57,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                       /***         axes stuff         ***/
                       /**********************************/
 
-#define viewportCreateMASK CWBackPixel | CWBorderPixel | CWEventMask | CWCursor | CWColormap
-#define viewportTitleCreateMASK CWBackPixel | CWBorderPixel | CWCursor | CWColormap | CWEventMask | CWOverrideRedirect
+#define viewportCreateMASK CWBackPixel | CWBorderPixel | CWEventMask | CWColormap
+#define viewportTitleCreateMASK CWBackPixel | CWBorderPixel | CWColormap | CWEventMask | CWOverrideRedirect
 #define carefullySetFont(gc,font) if (font != serverFont) XSetFont(dsply,gc,font->fid)
 
 #define viewportMASK    (KeyPressMask + ButtonPressMask + ExposureMask)
@@ -353,17 +353,6 @@ typedef struct _controlXY {
   int           putX, putY;
 } controlXY;
 
-
-
-      /************************** Bitmap Files ***************************/
-#if 0
-#include "../include/purty/mouse11.bitmap"
-#include "../include/purty/mouse11.mask"
-#include "../include/purty/spadBitmap.bitmap"
-#include "../include/purty/spadMask.mask"
-#include "../include/purty/light11.bitmap"
-#include "../include/purty/light11.mask"
-#endif
 
 
       /******* useful definitions *******/

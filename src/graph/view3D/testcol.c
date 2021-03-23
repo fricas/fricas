@@ -52,9 +52,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "XShade.H1"
 #include "all_3d.H1"
 
-#include "spadBitmap.bitmap"
-#include "spadMask.mask"
-
 viewPoints      *viewport;
 GCptr           GChead=NULL;    /* ptr to head of ps GC linked list */
 char            *PSfilename;    /* output file name used in user directory */
@@ -504,12 +501,6 @@ main(void)
   /* Initialize the translation matrix. */
   TRANSLATE(-viewport->deltaX,-viewport->deltaY,0.0,T);
            /**** make the windows for the viewport ****/
-  spadbits = XCreateBitmapFromData(dsply,rtWindow,
-                                   spadBitmap_bits,
-                                   spadBitmap_width,spadBitmap_height);
-  spadmask = XCreateBitmapFromData(dsply,rtWindow,
-                                   spadMask_bits,
-                                   spadMask_width,spadMask_height);
   viewAttrib.background_pixel = backgroundColor;
   viewAttrib.border_pixel = foregroundColor;
 
@@ -524,8 +515,6 @@ main(void)
 */
   XQueryColor(dsply,colorMap,&foreColor);
   XQueryColor(dsply,colorMap,&backColor);
-  viewAttrib.cursor = XCreatePixmapCursor(dsply,spadbits,spadmask,
-                                          &foreColor,&backColor,spadBitmap_x_hot,spadBitmap_y_hot);
   viewAttrib.event_mask = titleMASK;
   if (viewData.vW) {
     titleSizeHints.flags  = PPosition | PSize;

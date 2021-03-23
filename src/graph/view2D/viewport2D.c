@@ -54,8 +54,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.H1"
 #include "XSpadFill.H1"
 
-#include "spadBitmap.bitmap"
-#include "spadMask.mask"
 #include "strutil.h"
 
 #define rint(z) ((int)(z))
@@ -548,12 +546,6 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
   viewport->splineOn = splineON;
 
   /**** Make the windows for the viewport ****/
-  spadbits = XCreateBitmapFromData(dsply,rtWindow,
-                                   spadBitmap_bits,
-                                   spadBitmap_width,spadBitmap_height);
-  spadmask = XCreateBitmapFromData(dsply,rtWindow,
-                                   spadMask_bits,
-                                   spadMask_width,spadMask_height);
   viewAttrib.background_pixel = backgroundColor;
   viewAttrib.border_pixel = foregroundColor;
   viewAttrib.override_redirect = overrideManager;
@@ -563,8 +555,6 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
   backColor.pixel = backgroundColor;
   XQueryColor(dsply,colorMap,&foreColor);
   XQueryColor(dsply,colorMap,&backColor);
-  viewAttrib.cursor = XCreatePixmapCursor(dsply,spadbits,spadmask,
-                  &foreColor,&backColor,spadBitmap_x_hot,spadBitmap_y_hot);
 
   viewAttrib.event_mask = titleMASK;
   if (vW) {
