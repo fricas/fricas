@@ -956,7 +956,6 @@ compCapsuleInner(itemList,m,e) ==
       --RPLACd by compCapsuleItems and Friends
   e:= compCapsuleItems(itemList,nil,e)
   localParList:= $functorLocalParameters
-  if $addForm then data:= ['add,$addForm,data]
   code:=
     $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => BREAK()
     processFunctor($functorForm, $signature, data, localParList, e)
@@ -965,8 +964,6 @@ compCapsuleInner(itemList,m,e) ==
 --% PROCESS FUNCTOR CODE
 
 processFunctor(form,signature,data,localParList,e) ==
-  form is ["CategoryDefaults"] =>
-    error "CategoryDefaults is a reserved name"
   buildFunctor(form, signature, data, localParList, $domainShell, e)
 
 compCapsuleItems(itemlist, $predl, e) ==

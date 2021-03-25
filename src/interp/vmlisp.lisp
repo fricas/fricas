@@ -649,10 +649,8 @@
 
 (defun PLACEP (item) (eq item *read-place-holder*))
 (defun get_read_placeholder() *read-place-holder*)
-(defun VMREAD (st &optional (eofval *read-place-holder*))
-  (read st nil eofval))
-(defun |read_line| (st &optional (eofval *read-place-holder*))
-  (read-line st nil eofval))
+(defun VMREAD (st) (read st nil *read-place-holder*))
+(defun |read_line| (st) (read-line st nil nil))
 
 #+(OR IBCL KCL)
 (defun gcmsg (x)

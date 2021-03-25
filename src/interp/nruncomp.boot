@@ -471,8 +471,6 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
 
   $definition : local := definition
 
-  if code is ['add,.,newstuff] then code := newstuff
-
   changeDirectoryInSlot1(base_shell, e)  --this extends $NRTslot1PredicateList
 
   --pp '"=================="
