@@ -11,15 +11,44 @@ ModularFactorization : Exports == Implementation where
   LDD ==> List DDRec
   Exports ==> with
     mfactor : (U32Vector, Integer) -> List(U32Vector)
+      ++ mfactor(pv, p) computes factorization of pv into
+      ++ irreducibles modulo p.  pv is assumed square-free,
+      ++ p is assumed prime.
     ddfact : (U32Vector, Integer) -> LDD
+      ++ ddfact(pv, p) computes distint degree factorization of
+      ++ pv.  pv is assumed square-free, p is assumed prime.
     mmul : (U32Matrix, U32Matrix, Integer) -> U32Matrix
+      ++ mmul(m1, m2, p) multiplies m1 by transpose of m2 modulo p
     mod_exp : (U32Vector, Integer, LIPr) -> U32Vector
+      ++ mod_exp(pv, d, rd) computes \spad{pv^d} modulo
+      ++ reduction data in \spad{rd}.
     power_matrix : (U32Vector, NNI, List(IPr)
                    ) -> Record(matr : U32Matrix, poly : U32Vector)
+      ++ power_matrix(s, l, rd) computes [m, p] such that
+      ++ \spad{p = s^l} modulo reduction data \spad{rd} and
+      ++ column \spad{j} of \spad{m} contain \spad{s^j} modulo
+      ++ reduction data \spad{rd}.  Note that lowest column index
+      ++ is \spad{j = 0} and highest index is \spad{j=l-1}.
+      ++ \spad{rd} should be obtained by earlier call to
+      ++ \spad{ini_rdata}.
     modular_compose : (U32Vector, U32Matrix, U32Vector,
                        NNI, NNI, List(IPr)) -> U32Vector
+      ++ modular_compose(pol, pm, p1, l1, l2, rd) computes
+      ++ composion of \spad{pol} with \spad{p0} modulo
+      ++ reduction data \spad{rd}.  \spad{pm} and \spad{p1}
+      ++ are as from call to \spad{power_matrix(p0, l1, rd)}.
+      ++ \spad{l2} must be such that \spad{l1*l2} is bigger
+      ++ or equal to degree from \spad{rd}.
     ini_rdata : ( U32Vector, Integer) -> LIPr
+      ++ ini_rdata(pv, p) generates data allowing faster computation
+      ++ of remainders from division by \spad{pv} modulo \spad{p}.
+      ++ Result is used by other function in this package, in
+      ++ particular \spad{red_pol}.
     red_pol : (U32Vector, List(IPr)) -> Void
+      ++ red_pol(pv, rd) computes remainder of pv using reduction
+      ++ data \spad{rd} produced by earlier call to
+      ++ \spad{ini_rdata}.
+
   Implementation ==> add
 
     import from U32VectorPolynomialOperations
