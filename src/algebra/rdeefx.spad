@@ -234,6 +234,40 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
         [m2, [bv(1..nc) for bv in l3]]
 
 
+)abbrev package LLINDEP LiftLinearDependence
+LiftLinearDependence(F, Q, UP) : Exports == Implementation where
+  F  : Field
+  Q  : Field
+  UP : UnivariatePolynomialCategory(F)
+  RF  ==> Fraction(UP)
+  Exports ==> with
+    csolve_pol : (Matrix(F) -> List(Vector(Q)), List(UP)) -> List(Vector(Q))
+      ++ csolve_pol(solf, lp) uses \spad{solf} to solve linear dependence
+      ++ for univariate polynomials
+    csolve_rf : (Matrix(F) -> List(Vector(Q)), List(RF)) -> List(Vector(Q))
+      ++ csolve_rf(solf, lrf) uses \spad{solf} to solve linear dependence
+      ++ for univariate rational functions
+    csolve_rmat : (Matrix(F) -> List(Vector(Q)), Matrix(RF)) -> List(Vector(Q))
+      ++ csolve_rf(solf, mrf) uses \spad{solf} to solve linear dependence
+      ++ for univariate rational functions
+  Implementation ==> add
+
+    csolve_pol(csolve, lp) ==
+        m1 := matrix([lp])$Matrix(UP)
+        rs1 : Matrix F := reducedSystem(m1)
+        csolve(rs1)
+
+    csolve_rf(csolve, lrf) ==
+        m1 := matrix([lrf])$Matrix(RF)
+        rs1 : Matrix UP := reducedSystem(m1)
+        rs2 : Matrix F := reducedSystem(rs1)
+        csolve(rs2)
+
+    csolve_rmat(csolve, mrf) ==
+        rs1 : Matrix UP := reducedSystem(mrf)$RF
+        rs2 : Matrix F := reducedSystem(rs1)
+        csolve(rs2)
+
 )abbrev package PRROOT PolynomialRationalRoots
 PolynomialRationalRoots(F, UP) : Exports == Implementation where
   F  : Join(IntegralDomain, LinearlyExplicitOver Integer)

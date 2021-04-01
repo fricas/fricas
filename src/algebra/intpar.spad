@@ -380,14 +380,14 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
     import from LinearCombinationUtilities(F, UP)
     import from LinearCombinationUtilities(Q, SparseUnivariatePolynomial(Q))
     import from TranscendentalHermiteIntegration(F, UP)
+    import from LiftLinearDependence(F, F, UP)
+    import from LiftLinearDependence(F, Q, UP)
 
     monologextint(lup, csolve, rec1) ==
         n0 := #lup
         lc0 := [coefficient(p, 0) for p in lup]
         lup2 := [p - c0::UP for p in lup for c0 in lc0]
-        m1 := matrix([lup2])$Matrix(UP)
-        rs1 : Matrix F := reducedSystem(m1)
-        cb := csolve(rs1)
+        cb := csolve_pol(csolve, lup2)
         nlc0 := [lin_comb(bv, lc0) for bv in cb]
         (ll, bl) := rec1(nlc0)
         empty?(bl) => [[], []]
@@ -407,10 +407,7 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
         n0 := #lg
         lghr := [HermiteIntegrate(g, der) for g in lg]
         lg1 := [ghr.answer for ghr in lghr]
-        m1 := matrix([lg1])$Matrix(RF)
-        rs1 : Matrix UP := reducedSystem(m1)
-        rs2 : Matrix F := reducedSystem(rs1)
-        cb := csolve(rs2)
+        cb := csolve_rf(csolve, lg1)
         lg2 := [ghr.logpart for ghr in lghr]
         lg3 := [lin_comb(bv, lg2) for bv in cb]
         lden1 := [denom(g) for g in lg3]
@@ -467,10 +464,7 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
             lg6 := cons(q::RF, lg6)
         lrf := reverse!(lrf)
         lg6 := reverse!(lg6)
-        m1 := matrix([lrf])$Matrix(RF)
-        rs1 : Matrix UP := reducedSystem(m1)
-        rs2 : Matrix F := reducedSystem(rs1)
-        cb4 := csolve(rs2)
+        cb4 := csolve_rf(csolve, lrf)
         ncb2 := [lin_comb(bv, ncb) for bv in cb4]
         cb4e := [lin_comb(bv, cb3e) for bv in cb4]
         lg7 := [lin_comb(bv, lg6) for bv in cb4]
@@ -502,10 +496,7 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
         n := #lg
         lghr := [HermiteIntegrate(g, der) for g in lg]
         lg1 := [ghr.logpart for ghr in lghr]
-        m1 := matrix([lg1])$Matrix(RF)
-        rs1 : Matrix UP := reducedSystem(m1)
-        rs2 : Matrix F := reducedSystem(rs1)
-        cb := csolve(rs2)
+        cb := csolve_rf(csolve, lg1)
         a1l := [ghr.answer for ghr in lghr]
         lba : List(RF) := [0 for bv in cb]
         lg2 := [ghr.polypart for ghr in lghr]
@@ -552,10 +543,7 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
         empty?(lg) => []
         lghr := [HermiteIntegrate(g, der) for g in lg]
         lg1 := [ghr.logpart for ghr in lghr]
-        m1 := matrix([lg1])$Matrix(RF)
-        rs1 : Matrix UP := reducedSystem(m1)
-        rs2 : Matrix F := reducedSystem(rs1)
-        cb := csolve(rs2)
+        cb := csolve_rf(csolve, lg1)
         a1l := [ghr.answer for ghr in lghr]
         lba : List(GP) := [0 for bv in cb]
         lg2 := [ghr.polypart::GP + RF_to_GP(ghr.specpart) for ghr in lghr]
@@ -601,10 +589,7 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
                 lg : List RF) : L_Param_F ==
         lup := [trim(g) for g in lg]
         lg1 := [g - up::RF for g in lg for up in lup]
-        m1 := matrix([lg1])$Matrix(RF)
-        rs1 : Matrix(UP) := reducedSystem(m1)
-        rs2 : Matrix F := reducedSystem(rs1)
-        cb := csolve(rs2)
+        cb := csolve_rf(csolve, lg1)
         lup1 := [lin_comb(bv, lup) for bv in cb]
         res1 := ext(lup1)
         [[re.ratpart, lin_comb(re.coeffs, cb)] for re in res1]
@@ -1360,6 +1345,8 @@ AlgebraicIntegrate2(R0, F, UP, UPUP, R) : Exports == Implementation where
       L_Param_UP ==> List Param_Rec_UP
       RSOL ==> Record(ans : UP, remainder : UP)
 
+      import from LiftLinearDependence(F, F, UP)
+
       algprimextint : (UP -> UP, List(QF) -> L_Param_Q,
                       (QF, List QF) -> L_Param_Q,
                        Matrix F -> List Vector F, List(R)) -> L_Param_R
@@ -1447,9 +1434,7 @@ AlgebraicIntegrate2(R0, F, UP, UPUP, R) : Exports == Implementation where
               llog0 := [gv(i) for gv in lgv]
               (lup1, llog1) := split_logparts(lup0, llog0, denom(dmi))
               llog2 := [lin_comb(bv, llog1) for bv in cb]
-              rs1 : Matrix UP := reducedSystem(matrix([llog2]))$QF
-              rs2 : Matrix F := reducedSystem(rs1)
-              res1 := csolve(rs2)
+              res1 := csolve_rf(csolve, llog2)
               ncb0 := [lin_comb(bv, cb) for bv in res1]
               nca0 := [lin_comb2(bv, ca) for bv in res1]
               cb := ncb0
@@ -1516,9 +1501,7 @@ AlgebraicIntegrate2(R0, F, UP, UPUP, R) : Exports == Implementation where
           lh := list_hermite(lg, hermite1)
           lg1 := [h.logpart + h.polypart for h in lh]
           rs1 : Matrix(QF) := reducedSystem(matrix([lg1]))
-          rs2 : Matrix(UP) := reducedSystem(rs1)
-          rs3 : Matrix(F) := reducedSystem(rs2)
-          res1 := csolve(rs3)
+          res1 := csolve_rmat(csolve, rs1)
           ca0 := [h.answer for h in lh]
           [[-lin_comb2(bv, ca0), bv] for bv in res1]
 
@@ -1584,6 +1567,7 @@ ParametricIntegration(R, F) : Exports == Implementation where
     import from FunctionSpacePrimitiveElement(R, F)
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
+    import from LiftLinearDependence(F, F, UP)
 
     PRIM := 'prim
     ALGOP := '%alg
@@ -1813,9 +1797,7 @@ ParametricIntegration(R, F) : Exports == Implementation where
         #args ~= 3 => error "internal error, k is not a diff"
         arg3 := args(3)
         (da3 := differentiate(arg3, x)) = 0 =>
-            m1 : Matrix(UP) := matrix([lup])
-            rs1 : Matrix(F) := reducedSystem(m1)
-            b0 := csolve(rs1)
+            b0 := csolve_pol(csolve, lup)
             [[0, bv] for bv in b0]
         lg0 := [coefficient(up, 0) for up in lup]
         lg1 := [coefficient(up, 1) for up in lup]
