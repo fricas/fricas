@@ -10,8 +10,89 @@ Note: this text is mostly about installation from sources.
 If you fetched compiled binaries skip to section about
 binary distribution.
 
-Quick installation
-------------------
+Quick installation from binary release tarball
+----------------------------------------------
+
+Quick installation (Linux)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FriCAS offers release binaries for Linux on Intel/AMD processors.
+Get the respective binary tarball.
+::
+
+   V=1.3.7
+   wget https://github.com/fricas/fricas/releases/download/$V/fricas-$V.amd64.tar.bz2
+
+Binaries have only few dependencies: libc, libm, libutil, libXpm,
+libSM, libICE, libX11 which should be present in all desktop Linux
+systems. They should work correctly on many different Linux
+distributions.
+
+
+
+Root install
+""""""""""""
+
+On a 64-bit OS do the following to install FriCAS into the directories
+``/usr/local/bin/`` and ``/usr/local/lib/fricas/``.
+::
+
+   sudo tar xjf fricas-$V.amd64.tar.bz2 -C /
+
+
+Installation into ``$HOME``
+"""""""""""""""""""""""""""
+
+You can install into ``$HOME`` by replacing the last command as
+follows.
+::
+
+   F=$HOME/software
+   L=$F/usr/local
+   mkdir -p $L
+   tar xjf fricas-$V.amd64.tar.bz2 -C $L
+   sed -i "s|^exec_prefix=|FRICAS_PREFIX=\"$L\"\nexport FRICAS_PREFIX\nexec_prefix=|" $L/bin/fricas
+   sed -i "s|^exec_prefix=|FRICAS_PREFIX=\"$L\"\nexport FRICAS_PREFIX\nexec_prefix=|;s|/usr/local/|$L/|" $L/bin/efricas
+
+
+Issues
+""""""
+
+If after start of the ``fricas`` script you see
+::
+
+   (HyperDoc) Cannot load font -adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1 ; using defaul.
+
+on the console, do the following.
+::
+
+   sudo apt install xfonts-100dpi
+   xset fp rehash
+
+
+Quick installation (MacOS)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The provided tarball contains Mac OSX application bundle which should
+just work after unpacking.
+
+Note: FriCAS is also available via MacPorts and homebrew, those may be
+preferable to binaries available
+from https://github.com/fricas/fricas/releases/.
+
+
+Quick installation (Windows)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Just download the Windows zip file, decompress it, and double click
+``FRICASsys.exe`` in the ``bin`` directory.
+
+Note: Windows binaries do not support X11, so there is no graphic support
+and no HyperDoc).
+
+
+Quick installation from source (Linux)
+--------------------------------------
 
 FriCAS now tries to support standard GNU build/installation
 conventions.  So if you have sources and all prerequisites, then
@@ -23,6 +104,70 @@ should work.  The above will install FriCAS files into
 ``/usr/local/lib/fricas/``  and put the ``fricas`` command into
 ``/usr/local/bin/``.
 You can give arguments to ``configure`` to change those locations.
+
+
+Recommended installation for Xubuntu 24.04
+------------------------------------------
+
+FriCAS has a number of prerequisites. Do the following for a
+recommended full installation (including documentation and Aldor
+library). See below for a more fine-grained explanation.
+::
+
+   sudo apt install libx11-dev libxt-dev libice-dev \
+                    libsm-dev libxau-dev libxdmcp-dev libxpm-dev \
+                    xfonts-100dpi \
+                    libgmp-dev \
+                    sbcl \
+                    git emacs \
+                    texlive auctex dvipng xvfb sphinx-doc
+   xset fp rehash
+
+Modify the line
+::
+
+   <policy domain="coder" rights="read|write" pattern="PS" />
+
+in ``/etc/ImageMagick-6/policy.xml``.
+::
+
+   sudo emacs /etc/ImageMagick-6/policy.xml
+
+Install the LaTeX packages
+::
+
+   amsmath
+   breqn
+   tensor
+   mleftright
+   epsf
+   verbatim
+   hyperref
+   color
+   listings
+   makeidx
+   xparse
+   tikz
+
+As ordinary user
+::
+
+   cd $HOME
+   mkdir -p software
+   git clone --depth 1 https://github.com/fricas/fricas
+   BUILD=$HOME/fr-build
+   mkdir -p $BUILD
+   cd $BUILD
+   ../fricas/configure --with-lisp="sbcl --dynamic-space-size 4096" --prefix=$HOME/software --enable-gmp --enable-aldor
+   make -j8
+   make install
+
+   # add 'PATH=$HOME/software:$PATH' to your .bashrc.
+   emacs $HOME/.bashrc
+   cd src/doc   # then in: fr-build/src/doc
+   make localdoc
+   cd html      # then in: fr-build/
+   git clone -b gh-pages https://github.com/fricas/fricas-notebooks
 
 
 
@@ -109,7 +254,7 @@ Then do
     cd hsbcl
     ./build_hsbcl > build_hsbcl.log 2>&1
 
-This assumes that the base Lisp to use is SBCL_ and creates executable
+This assumes that the base Lisp to use is SBCL_ and it creates an executable
 binary ``hsbcl`` which contains Hunchentoot_.  If your SBCL_ is started
 in different way (say via full pathname), then edit ``build_hsbcl`` to
 match.  After creating ``hsbcl`` one can then configure FriCAS like
@@ -117,7 +262,7 @@ match.  After creating ``hsbcl`` one can then configure FriCAS like
 
     ../fricas-1.3.9/configure --with-lisp=/path/to/hsbcl --enable-gmp
 
-FriCAS build in this way will contain Hunchentoot_ and can be used
+FriCAS built in this way will contain Hunchentoot_ and can be used
 by jFriCAS_.
 
 
@@ -127,8 +272,9 @@ X libraries (optional, but needed for graphics and HyperDoc)
 On Debian (or Ubuntu) install the following packages.
 ::
 
-   sudo apt install libx11-dev libxt-dev libice-dev \
-                    libsm-dev libxau-dev libxdmcp-dev libxpm-dev
+   sudo apt install libx11-dev libxt-dev libice-dev
+                    libsm-dev libxau-dev libxdmcp-dev libxpm-dev \
+                    xfonts-100dpi
 
 
 xvfb (optional, but highly recommended)
@@ -167,6 +313,7 @@ to show rendered TeX output.  For that to work, you need the following.
 
    sudo apt install texlive auctex dvipng
 
+
 In order to build the |PACKAGE_BOOK|, you also need the following
 LaTeX packages (available from CTAN_).
 ::
@@ -185,6 +332,14 @@ LaTeX packages (available from CTAN_).
    tikz
    verbatim
    xparse
+
+For security reasons, ImageMagick fails for some conversion.
+For compiling images you must, therefore, relax the policy. Modify the
+respective line in the file ``/etc/ImageMagick-6/policy.xml`` to
+::
+
+   <policy domain="coder" rights="read|write" pattern="PS" />
+
 
 
 SphinxDoc (optional)
@@ -457,7 +612,7 @@ Guide) do
 
    make book
 
-This build |PACKAGE_BOOK| into ``src/doc/book.pdf''.
+This build |PACKAGE_BOOK| into ``src/doc/book.pdf``.
 
 The |home page| can be built via
 ::
@@ -822,7 +977,7 @@ and experiment with different versions of how to start FriCAS.
 You can also download or clone the demo notebooks from
 https://github.com/fricas/fricas-notebooks/ and compare them with what
 you see at
-`FriCAS Demos and Tutorials <https://fricas.github.io/fricas-notebooks/index.html>`_.
+`FriCAS Demos and Tutorials <https://fricas.github.io/fricas-notebooks>`_.
 
 
 Install frimacs
@@ -902,7 +1057,7 @@ course, you can set ``FDIR`` to anything you like).
    tar xjf fricas-x.y.z.amd64.tar.bz2
 
 If before running ``tar`` you change to the root directory and do
-this command as ``root``, then you will get ready to run FriCAS in
+this command as ``root``, then you will get a ready-to-run FriCAS in
 the ``/usr/local`` subtree of the filesystem.  This puts FriCAS files
 in the same places as running ``install`` after build from source
 using default settings.
@@ -912,9 +1067,7 @@ which is useful if you want to install FriCAS without administrator
 rights.
 
 For this to work you need to adapt the ``fricas`` and ``efricas`` scripts
-to point to the right paths.  This is explained in
-
-http://fricas.sourceforge.net/doc/INSTALL-bin.txt
+to point to the right paths.
 
 After installation you can start FriCAS with full path name
 like one of the following commands.

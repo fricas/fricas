@@ -22,11 +22,11 @@ Examples
 * `Guessing formulas for sequences <http://wiki.fricas.org/GuessingFormulasForSequences>`_
 
 * `Noncommutative Gröbner bases
-  <http://wiki.fricas.org/NoncommutativeGroebnerBases?root=NoncommutativePolynomials>`_
+  <http://wiki.fricas.org/NoncommutativeGroebnerBases>`_
 
 * `Noncommutative group ring over commuting polynomials <http://wiki.fricas.org/NonCommutativeLaurentPolynomials>`_
 
-* `FreeAbelianGroup <http://wiki.fricas.org/ExampleFreeAbelianGroup>`_
+* `FreeModule <http://wiki.fricas.org/ExampleFreeModule>`_
 
 * `Fun with functions <http://wiki.fricas.org/FunWithFunctions>`_
 
@@ -41,3 +41,13 @@ Examples
 
 * `Tensor Products
   <http://wiki.fricas.org/SandBoxTensorAlgebra2>`_
+
+
+External Code
+-------------
+
+* `QEta <https://hemmecke.github.io/qeta/>`_
+  is a software package that implements algorithms in connection
+  with series expansions of modular functions at cusps.
+
+* `Format FriCAS output to Mathematica syntax <https://github.com/hemmecke/fricas/blob/wip/fmtmma/src/algebra/fmtmma.spad>`_

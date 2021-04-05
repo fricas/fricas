@@ -7,15 +7,13 @@ How to cite FriCAS
 If you use |PACKAGE_NAME| in your research, you should use the
 following BibTeX entry to refer to |PACKAGE_NAME| in any publication.
 
-::
-
-    @Misc{FriCAS,
-      key =          {FriCAS},
-      author =       {{FriCAS team}},
-      year =         {2025},
-      title =        {{FriCAS} 1.3.12---an advanced computer algebra system},
-      note =         {Available at \url{http://fricas.github.io}}
-    }
+   | @Misc{FriCAS,
+   |   key =    {FriCAS},
+   |   author = {{FriCAS team}},
+   |   year =   {|PACKAGE_YEAR|},
+   |   title =  {{FriCAS} |PACKAGE_VERSION|---an advanced computer algebra system},
+   |   note =   {Available at \url{http://fricas.github.io}}
+   | }
 
 
 Citations of FriCAS in articles, talks, websites, etc.
@@ -23,21 +21,32 @@ Citations of FriCAS in articles, talks, websites, etc.
 
 In the following we list publications mentioning FriCAS.
 
+* **David Joyner**
+  (2008):
+  `Open Source Computer Algebra Systems: Axiom
+  <https://doi.org/10.1145/1394042.1394046>`_
+
 * **Waldemar Hebisch** and **Martin Rubey**
   (2010):
   `Extended RATE, more GFUN
-  <https://arxiv.org/abs/math/0702086>`_
+  <https://doi.org/10.1016/j.jsc.2011.01.004>`_
 
 * **Franz Lehner** and **Stephan Wagner**
   (2010):
   `Free Lamplighter Groups and a Question of Atiyah
   <https://arxiv.org/abs/1005.2347>`_
+  (DOI:`10.1353/ajm.2013.0029 <https://doi.org/10.1353/ajm.2013.0029>`_)
+
+* **Wilfried Huss**, **Ecaterina Sava**
+  (2011):
+  `Rotor-Router Aggregation on the Comb
+  <https://doi.org/10.37236/711>`_
 
 * **Waldek Hebisch**
   (2015):
   `Integration in terms of exponential integrals and incomplete gamma
   functions
-  <https://dl.acm.org/citation.cfm?id=2850460>`_
+  <https://doi.org/10.1145/2850449.2850460>`_
 
   .. There is my ISSAC 2015 poster about integration, with shorter
      version which appeared in ACM Communications in Computer Algebra:
@@ -52,8 +61,7 @@ In the following we list publications mentioning FriCAS.
   (2016):
   `Calculus and design of discrete velocity models using computer
   algebra
-  <http://dx.doi.org/10.1063/1.4967672>`_
-  (DOI: `10.1063/1.4967672 <http://dx.doi.org/10.1063/1.4967672>`_)
+  <http://doi.org/10.1063/1.4967672>`_
 
   .. American Institute of Physics
 
@@ -71,15 +79,13 @@ In the following we list publications mentioning FriCAS.
   (2016):
   `Integration in terms of exponential integrals and incomplete
   gamma functions (slides)
-  <http://www.math.uni.wroc.pl/~hebisch/other/icms.pdf>`_
+  <https://fricas.org/~hebisch/other/icms.pdf>`_
   Talk at `ICMS <http://icms2016.zib.de/>`_
 
 * **Larry A. Lambe**
   (2016):
   `An Algebraic Study of the Klein Bottle
   <https://doi.org/10.1007/s40062-016-0156-9>`_
-  (DOI: `10.1007/s40062-016-0156-9
-  <https://doi.org/10.1007/s40062-016-0156-9>`_)
 
   .. Journal of Homotopy and Related Structures, 11(4), 885-891.
 
@@ -102,6 +108,13 @@ In the following we list publications mentioning FriCAS.
   `On the Factorization of Non-Commutative Polynomials (in Free
   Associative Algebras)
   <https://arxiv.org/abs/1706.01806>`_
+
+* **Giedrius Alkauskas**
+  (2017):
+  `The modular group and words in its two generators
+  <https://arxiv.org/abs/1512.02596v5>`_
+  (DOI: `10.1007/s10986-017-9339-2
+  <https://doi.org/10.1007/s10986-017-9339-2>`_
 
 * **Ralf Hemmecke**
   (2018):
@@ -144,10 +157,14 @@ In the following we list publications mentioning FriCAS.
 
 * **Ralf Hemmecke**, **Peter Paule**, and  **Silviu Radu**
   (2021):
-  `Construction of an Integral Basis for $M^\infty(121)$
+  `Construction of an Integral Basis for $M^\\infty(121)$
   <https://doi.org/10.1080/10652469.2020.1806261>`_
-  (DOI: `10.1080/10652469.2020.1806261
-  <https://doi.org/10.1080/10652469.2020.1806261>`_)
+
+* **Thomas Hickman**, **Christian Pardillo Laursen**, **Simon Foster**
+  (2021):
+  `Certifying Differential Equation Solutions from Computer Algebra
+  Systems in Isabelle/HOL
+  <https://arxiv.org/abs/2102.02679>`_
 
 * **Konrad Schrempf**
   (2021):
@@ -155,6 +172,42 @@ In the following we list publications mentioning FriCAS.
   <https://arxiv.org/abs/1809.05425>`_
   (DOI: `10.17398/2605-5686.36.1.25
   <https://doi.org/10.17398/2605-5686.36.1.25>`_)
+
+* **Jan Dymara**, **Tadeusz Januszkiewicz**
+  `Tautological characteristic classes I
+  <https://arxiv.org/abs/2307.05765v1>`_
+
+* **Jan Dymara**, **Tadeusz Januszkiewicz**
+  `Tautological characteristic classes II: the Witt class
+  <https://arxiv.org/abs/2403.05255v1>`_
+
+* **Franz Lehner**, **Kamil Szpojankowski**
+  (2024):
+  `Free Integral Calculus I <https://arxiv.org/abs/2311.04039>`_
+
+* **Hao Do**, **Yiman Gao**, **Wenquao Li**, **Ziming Li**
+  (2025):
+  `Complete Reduction for Derivatives in a Primitive Tower
+  <https://doi.org/10.1145/3747199.3747545>`_
+
+* **Frédéric Chapoton**
+  (2025):
+  `On posets and polytopes attached to arbors
+  <https://www.arxiv.org/pdf/2503.04247v2>`_
+  (DOI: `10.7146/math.scand.a-159563
+  <https://doi.org/10.7146/math.scand.a-159563>`_
+
+* **Ralf Hemmecke**, **Peter Paule**, and  **Silviu Radu**
+  (2026):
+  `An Algorithm to Compute Algebraic Relations Between Modular Functions
+  <https://doi.org/10.1007/s11139-025-01310-4>`_
+
+* **Ralf Hemmecke**, **Peter Paule**, and  **Silviu Radu**
+  (2026):
+  `Computer-assisted Construction of Ramanujan-Sato Series for 1 over π,
+  <https://doi.org/10.1007/s11139-026-01352-2>`_
+
+
 
 * `Sage <http://www.sagemath.org>`_ provides an
   `interface to FriCAS

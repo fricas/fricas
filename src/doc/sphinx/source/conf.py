@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.abspath('_ext'))
 # -- Project information -----------------------------------------------------
 # The full version, including alpha/beta/rc tags
 PACKAGE_VERSION = os.environ.get('PACKAGE_VERSION', '0.0.0')
+PACKAGE_YEAR = os.environ.get('PACKAGE_YEAR', '2026')
 PACKAGE_NAME = os.environ.get('PACKAGE_NAME', 'FriCAS')
 PACKAGE_TARNAME = os.environ.get('PACKAGE_TARNAME', PACKAGE_NAME.lower())
 PACKAGE_BUGREPORT = os.environ.get('PACKAGE_BUGREPORT',
@@ -44,7 +45,7 @@ PACKAGE_SOURCE_EDIT = os.environ.get(
 PACKAGE_BOOK = os.environ.get('PACKAGE_BOOK', FRICAS_URL + '/book.pdf')
 
 ###################################################################
-copyright = '2007-2025, FriCAS Team'
+copyright = '2007-' + PACKAGE_YEAR + ', FriCAS Team'
 author = 'FriCAS Team'
 project = PACKAGE_TARNAME
 release = PACKAGE_VERSION
@@ -145,6 +146,7 @@ rst_prolog = """
 
 rst_epilog = """
 .. |PACKAGE_VERSION| replace:: %s
+.. |PACKAGE_YEAR| replace:: %s
 .. |PACKAGE_TARNAME| replace:: %s
 .. |PACKAGE_NAME| replace:: %s
 .. |FriCAS| replace:: `%s`_
@@ -162,6 +164,7 @@ rst_epilog = """
 .. |home page| replace:: `%s home page`_
 .. _%s home page: %s/index.html
 """ % (PACKAGE_VERSION,
+       PACKAGE_YEAR,
        PACKAGE_TARNAME,
        PACKAGE_NAME,
        PACKAGE_NAME, PACKAGE_NAME, PACKAGE_URL,
@@ -181,6 +184,7 @@ rst_epilog = rst_epilog + """
 print('=== PACKAGE_NAME:        ' + PACKAGE_NAME)
 print('=== PACKAGE_TARNAME:     ' + PACKAGE_TARNAME)
 print('=== PACKAGE_VERSION:     ' + PACKAGE_VERSION)
+print('=== PACKAGE_YEAR:        ' + PACKAGE_YEAR)
 print('=== PACKAGE_BUGREPORT:   ' + PACKAGE_BUGREPORT)
 print('=== PACKAGE_URL:         ' + PACKAGE_URL)
 print('=== PACKAGE_SOURCE:      ' + PACKAGE_SOURCE)
