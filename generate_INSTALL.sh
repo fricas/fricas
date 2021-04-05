@@ -7,6 +7,7 @@
 # In fact, we only treat
 # - certain macros of the form |...|,
 # - remove the underlining of subsubsections,
+# - remove the underlining of subsubsubsections,
 # - replace double `` by a single doublequote,
 # - remove "::" at the end of a line,
 # - remove the trailing underscore that directly follows a word.
@@ -28,6 +29,7 @@ sed -n \
     -e '/^   :local:/d' \
     -e '/^   :depth:/d' \
     -e '/^[\^][\^]*$/d' \
+    -e '/^""*$/d' \
     -e '/^ *::$/d' \
     -e 's/::$//' \
     -e 's/|git repository|/FriCAS git repository/g' \

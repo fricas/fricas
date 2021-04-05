@@ -10,8 +10,100 @@ Note: this text is mostly about installation from sources.
 If you fetched compiled binaries skip to section about
 binary distribution.
 
-Quick installation
-------------------
+
+
+Quick installation from binary release tarball
+----------------------------------------------
+
+Quick installation (Linux)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FriCAS offers release binaries for Linux on Intel/AMD processors.
+Get the respective binary tarball (replace `x.y.z` by |PACKAGE_VERSION|).
+
+::
+
+   V=x.y.z
+   wget https://github.com/fricas/fricas/releases/download/$V/fricas-$V.amd64.tar.bz2
+
+Binaries have only few dependencies: libc, libm, libutil, libXpm,
+libSM, libICE, libX11 which should be present in all desktop Linux
+systems.  They should work correctly on many different Linux
+distributions.
+
+
+Root install
+""""""""""""
+
+On a 64-bit OS do the following to install FriCAS into the directories
+``/usr/local/bin/`` and ``/usr/local/lib/fricas/``.
+::
+
+   sudo tar xjf fricas-$V.amd64.tar.bz2 -C /
+
+
+Installation into ``$HOME``
+"""""""""""""""""""""""""""
+
+You can install into ``$HOME`` by replacing the last command as
+follows.
+::
+
+   F=$HOME/software
+   L=$F/usr/local
+   mkdir -p $L
+   tar xjf fricas-$V.amd64.tar.bz2 -C $F
+   sed -i "s|^exec_prefix=|FRICAS_PREFIX=\"$L\"\nexport FRICAS_PREFIX\nexec_prefix=|" $L/bin/fricas
+   sed -i "s|^exec_prefix=|FRICAS_PREFIX=\"$L\"\nexport FRICAS_PREFIX\nexec_prefix=|;s|/usr/local/|$L/|" $L/bin/efricas
+
+
+Issues
+""""""
+
+If after start of the ``fricas`` script you see
+::
+
+   (HyperDoc) Cannot load font -adobe-courier-medium-r-normal--18-*-*-*-m-*-iso8859-1 ; using defaul.
+
+on the console, do the following::
+
+   sudo apt install xfonts-100dpi
+   xset fp rehash
+
+Restart the X server (log out and log in again) in case the font
+in HyperDoc still does not look pretty.
+
+
+
+Quick installation (macOS)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The provided tarball from the `Nightly Builds
+<https://github.com/fricas/fricas-nightly-builds/releases/tag/nightly>`_
+contains unsigned macOS application bundle.
+
+FriCAS is also available via
+`MacPorts <https://ports.macports.org/port/fricas/>`_
+and
+`Homebrew <https://formulae.brew.sh/formula/fricas>`_,
+those are the preferred way to do installation.
+
+
+Quick installation (Windows)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Just download the
+`Windows zip file <https://github.com/fricas/fricas/releases>`_,
+decompress it, and double click ``FRICASsys.exe`` in the ``bin``
+directory.
+
+Note: Windows binaries do not support X11, so there is no graphic
+support and no HyperDoc).
+
+
+
+Quick installation from source (Linux)
+--------------------------------------
 
 FriCAS now tries to support standard GNU build/installation
 conventions.  So if you have sources and all prerequisites, then
@@ -109,7 +201,7 @@ Then do
     cd hsbcl
     ./build_hsbcl > build_hsbcl.log 2>&1
 
-This assumes that the base Lisp to use is SBCL_ and creates executable
+This assumes that the base Lisp to use is SBCL_ and it creates an executable
 binary ``hsbcl`` which contains Hunchentoot_.  If your SBCL_ is started
 in different way (say via full pathname), then edit ``build_hsbcl`` to
 match.  After creating ``hsbcl`` one can then configure FriCAS like
@@ -117,7 +209,7 @@ match.  After creating ``hsbcl`` one can then configure FriCAS like
 
     ../fricas-1.3.9/configure --with-lisp=/path/to/hsbcl --enable-gmp
 
-FriCAS build in this way will contain Hunchentoot_ and can be used
+FriCAS built in this way will contain Hunchentoot_ and can be used
 by jFriCAS_.
 
 
@@ -168,23 +260,31 @@ to show rendered TeX output.  For that to work, you need the following.
    sudo apt install texlive auctex dvipng
 
 In order to build the |PACKAGE_BOOK|, you also need the following
-LaTeX packages (available from CTAN_).
+LaTeX packages (available from CTAN_) or your package manager.
 ::
 
-   amsmath
-   amssymb
-   breqn
-   color
-   epstopdf
-   framed
-   graphicx
-   hyperref
-   listings
-   makeidx
-   tensor
-   tikz
-   verbatim
-   xparse
+   amssymb                                   (texlive-base)
+   amsmath graphicx hyperref verbatim xparse (texlive-latex-base)
+   breqn listings                            (texlive-latex-recommended)
+   color framed makeidx                      (texlive-latex-extra)
+   tensor                                    (texlive-science)
+   tikz                                      (texlive-pictures)
+
+The respective package can be searched for on
+`Ubuntu package search <https://packages.ubuntu.com/>`_.
+::
+
+   sudo apt install texlive-base \
+                    texlive-latex-base \
+                    texlive-latex-recommended \
+                    texlive-latex-extra \
+                    texlive-science \
+                    texlive-pictures
+
+Additionally you need the ``epstopdf`` converter.
+::
+
+   sudo apt install texlive-font-utils
 
 
 SphinxDoc (optional)
@@ -195,6 +295,11 @@ The documentation is built via Sphinx_.
 
    sudo apt install python3 python3-pip
    pip3 install -U Sphinx
+
+or use your package manager.
+::
+
+   sudo apt install sphinx-common
 
 
 Aldor (optional)
@@ -270,7 +375,8 @@ We assume that you have installed all necessary prerequisites.
    type
    ::
 
-      ../fricas/configure --with-lisp="sbcl --dynamic-space-size 4096" --prefix=/tmp/usr --enable-gmp --enable-aldor
+      ../fricas/configure --with-lisp="sbcl --dynamic-space-size 4096" \
+                          --prefix=/tmp/usr --enable-gmp --enable-aldor
 
    to build with SBCL_ and 4 GiB dynamic space, use GMP_, and enable the
    build of the Aldor_ library ``libfricas.al``.
@@ -309,18 +415,18 @@ Extra information
 The preferred way to build FriCAS is to use an already installed Lisp.
 Also, it is preferable to use a separate build directory.  Assuming
 that the source tree is in ``$HOME/fricas``, you build in
-``$HOME/fricas-build`` subdirectory and your Lisp is called
+``$HOME/fr-build`` subdirectory and your Lisp is called
 ``sbcl`` the following should just work.
 ::
 
-   cd $HOME/fricas-build
+   cd $HOME/fr-build
    $HOME/fricas/configure --with-lisp=sbcl && make && sudo make install
 
 Currently ``--with-lisp`` option accepts all supported lisp variants,
 namely SBCL, CLISP, ECL, GCL and Clozure CL (openmcl).  Note: the
 argument is just a command to invoke the respective Lisp variant.
-Build machinery will automatically detect which Lisp is in use and
-adjust as needed.
+The build machinery will automatically detect which Lisp is in use
+and adjust as needed.
 
 Note that jFriCAS_ has currently only been tested to work with SBCL_.
 
@@ -331,8 +437,8 @@ HyperDoc and graphics
 If you compile FriCAS from the |git repository|, and ``configure``
 does not detect the ``xvfb-run`` program, then graphic examples will
 not be built.  This results in broken HyperDoc pages -- all graphic
-examples will be missing (and trying to access them will crash
-hypertex).
+examples will be missing (and trying to access them will crash the
+hypertex process).
 
 To get working graphic examples login into X and replace ``make``
 above by the following
@@ -379,8 +485,8 @@ safety.  However, some FriCAS users want different tradeoff.  The
    --enable-algebra-optimization=S
 
 option to configure allows changing this setting: S is a Lisp
-expression specifying speed/safety tradeoff used by Lisp compiler.  For
-example
+expression specifying speed/safety tradeoff used by Lisp compiler.
+For example
 ::
 
   --enable-algebra-optimization="((speed 3) (safety 0))"
@@ -396,7 +502,6 @@ Note: this setting affects only algebra (that is mathematical code).
 The rest of FriCAS always uses default setting.  Rationale for this is
 that mathematical code is unlikely to contain errors which can crash
 the whole system.
-
 
 
 Using GMP with SBCL or Clozure CL
@@ -442,10 +547,8 @@ These options also implicitly set ``--enable-gmp``.  However, if
 Post-compilation steps (optional)
 ---------------------------------
 
-
 Build extra documentation (book and website)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 After a build of FriCAS, (suppose your build directory is under
 ``$BUILD``), you can build the documentation provided at
@@ -457,7 +560,7 @@ Guide) do
 
    make book
 
-This build |PACKAGE_BOOK| into ``src/doc/book.pdf''.
+This build |PACKAGE_BOOK| into ``src/doc/book.pdf``.
 
 The |home page| can be built via
 ::
@@ -541,18 +644,12 @@ your editor, then clicking on a ``.spad`` file opens the ``.spad``
 file in this editor.
 
 
-
 Build FriCAS-Aldor interface (libfricas.al)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can not only extend the FriCAS library by ``.spad`` files (SPAD
 programs), but also by ``.as`` files (Aldor_ programs).  For the latter
 to work FriCAS needs a library ``libfricas.al``.
-
-Note that building the interface temporarily needs about 2 GB extra
-disk space.  Since currently, building the Aldor interface accesses the
-build files of a previous FriCAS_ build, you need about 3 GB disk
-space.
 
 If you configured FriCAS using ``--enable-aldor`` option, then
 ``make`` will also build ``libfricas.al`` and ``make install``
@@ -598,14 +695,13 @@ The program ``sieve.as`` is
   }
 
 
-
 Install jFriCAS
 ^^^^^^^^^^^^^^^
 
 There are a couple of things to install.
 
-#. Jupyter
-#. jFriCAS
+#. Jupyter_
+#. jFriCAS_
 
 The simplest way to install jFriCAS_ is via `pip` as follows
 ::
@@ -712,7 +808,6 @@ You can go back to standard 2D ASCII output as follows.
    )set output algebra on
 
 
-
 (optional) Install JupyText
 """""""""""""""""""""""""""
 
@@ -772,7 +867,6 @@ generate it.
 
    jupyter notebook --generate-config
 
-
 For the following see
 https://jupyter-notebook.readthedocs.io/en/stable/config.html .
 ::
@@ -784,9 +878,6 @@ The following enables JupyText_.
 ::
 
    sed -i 's|^# *c.NotebookApp.contents_manager_class =.*|c.NotebookApp.contents_manager_class = "jupytext.TextFileContentsManager"|' $HOME/.jupyter/jupyter_notebook_config.py
-
-
-
 
 
 Put the following input into the file ``$FDIR/foo.input``.
@@ -822,7 +913,7 @@ and experiment with different versions of how to start FriCAS.
 You can also download or clone the demo notebooks from
 https://github.com/fricas/fricas-notebooks/ and compare them with what
 you see at
-`FriCAS Demos and Tutorials <https://fricas.github.io/fricas-notebooks/index.html>`_.
+`FriCAS Demos and Tutorials <https://fricas.github.io/fricas-notebooks>`_.
 
 
 Install frimacs
@@ -848,8 +939,7 @@ to your ``.emacs`` or ``.emacs.d/init.el`` file.
 To start a FriCAS_ session use
 ::
 
-   M-x run-fricas
-
+   M-x frimacs-run-fricas
 
 
 
@@ -860,16 +950,17 @@ The source distribution can be created as follows.  Fetch and
 build sources, taking care to build Hyperdoc pages and graphic
 examples.  Make sure that text of help pages is available in some
 directory (they are **not** part of source tree, some are generated,
-but the rest is copied to tarball).  Assuming that you build FriCAS
-in ``fr-build`` and ``$SRC`` point to FriCAS source tree do
+but the rest is copied to the tarball).  Assuming that you built
+FriCAS in ``fr-build`` and ``$SRC`` points to the FriCAS source tree,
+do
 ::
 
    cd fr-build
    $SRC/src/scripts/mkdist.sh --copy_lisp --copy_phts \
      --copy_help=/full/path/to/help/files
-   mv dist ../fricas-X.Y.Z
+   mv dist ../fricas-x.y.z
    cd ..
-   tar -cjf fricas-X.Y.Z.tar.bz2 fricas-X.Y.Z
+   tar -cjf fricas-x.y.z.tar.bz2 fricas-x.y.z
 
 Note: FriCAS source distributions are created from a branch which
 differs from trunk, namely release branch has version number, trunk
@@ -877,76 +968,16 @@ instead gives date of last update to ``configure.ac``.  If you
 wish you can create distribution tarballs from trunk.
 
 The binary distribution can be created as follows.  First fetch and
-unpack source tarball in work directory.  Then in work directory
+unpack source tarball into the work directory.  Then in the work directory
 ::
 
    mkdir fr-build
-   ../fricas-X.Y.Z/configure --enable--gmp --with-lisp=/path/to/hsbcl
+   cd fr-build
+   ../fricas-x.y.z/configure --enable--gmp --with-lisp=/path/to/hsbcl
    make -j 7 > makelog 2>&1
    make DESTDIR=/full/path/to/auxiliary/dir install
    cd /full/path/to/auxiliary/dir
    tar -cjf fricas-x.y.z.amd64.tar.bz2 usr
-
-
-Installation from binary distribution
--------------------------------------
-
-You can download the latest release as a ``.tar.bz2`` from
-https://github.com/fricas/fricas/releases and install as follows (of
-course, you can set ``FDIR`` to anything you like).
-::
-
-   FDIR=$HOME/fricas
-   mkdir -p $FDIR
-   cd $FDIR
-   tar xjf fricas-x.y.z.amd64.tar.bz2
-
-If before running ``tar`` you change to the root directory and do
-this command as ``root``, then you will get ready to run FriCAS in
-the ``/usr/local`` subtree of the filesystem.  This puts FriCAS files
-in the same places as running ``install`` after build from source
-using default settings.
-
-Alternatively, you can put FriCAS files anywhere in your file system,
-which is useful if you want to install FriCAS without administrator
-rights.
-
-For this to work you need to adapt the ``fricas`` and ``efricas`` scripts
-to point to the right paths.  This is explained in
-
-http://fricas.sourceforge.net/doc/INSTALL-bin.txt
-
-After installation you can start FriCAS with full path name
-like one of the following commands.
-::
-
-   $FDIR/usr/local/bin/fricas
-   $FDIR/usr/local/bin/efricas
-
-Of course, you must have Emacs_ installed for the ``efricas``
-script to work correctly.
-
-You might have to install
-::
-
-   sudo apt install xfonts-75dpi xfonts-100dpi
-
-and restart the X server (log out and log in again) in case the font
-in HyperDoc does not look pretty.
-
-That is, however, not necessary, if you do not intend to use HyperDoc
-a lot and rather look at the FriCAS_ homepage in order to find
-relevant information.
-
-Optionally, set the PATH in ``$HOME/.bashrc``:
-
-Edit the file ``$HOME/.bashrc`` (or whatever your shell initialization
-resource is) and put in something like the following in order to make
-all fricas scripts available.
-::
-
-   FDIR=$HOME/fricas
-   export PATH=$FDIR/usr/local/bin:$PATH
 
 
 
