@@ -602,9 +602,41 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
           algintexp(f, derivation, rec_int)
       error "should not happen"
 
+    -- Just most naive heuristic, to check feasibilty
+    try_logs(f : R, derivation : UP -> UP, r : UP, lp : List(UP)
+            ) : Union(List(LOG), "failed") ==
+        rec := algSplitSimple(f, derivation)
+        -- FIXME: should get algebraic generators of constant
+        -- field
+        u0 := factor(makeSUP(r), []
+                    )$ExpressionFactorPolynomial(R0, F)
+        u := map(SUP2UP, u0)$FactoredFunctions2(SUP, UP)
+        lf := factors(u)
+        llg : List(LOG) := []
+        for fac in lf repeat
+            p := fac.factor
+            alpha := rootOf(UP2SUP p)
+            di := divisor(rec.num, rec.den, rec.derivden, rec.gd, alpha)
+            gu := generator(di, -fac.exponent, [])
+            gu case "failed" => return "failed"
+            nlog := mkLog(p, 1, gu::R, alpha)
+            llg := concat(nlog, llg)
+        llg
+
     alglogint(f, derivation) ==
         r := primitivePart(doubleResultant(f, derivation))
         varRoot?(r, x1+->retract(derivation(x1::UP))@F) => "failed"
+        xx := monomial(1, 1)$UP
+        dxx := derivation(xx)
+        lp : List(UP) :=
+            degree(dxx) = 1 and reductum(dxx) = 0 => [xx]
+            []
+        lu := try_logs(f, derivation, r, lp)
+        lu case "failed" => FAIL0
+        ll := lu::List(LOG)
+        diff1 := f - +/[pLogDeriv(lg,
+            x1+->differentiate(x1, derivation)) for lg in ll]
+        zero?(diff1) => ll
         FAIL0
 
 )boot $tryRecompileArguments := true
