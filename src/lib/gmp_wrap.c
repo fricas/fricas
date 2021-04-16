@@ -45,8 +45,8 @@ gmp_wrap_isqrt(mp_limb_t *res, mp_size_t l2, mp_limb_t *n1, mp_size_t l1)
 {
     if (n1[l1 - 1] == 0) {
         l1--;
-        res[l2 - 1] = 0;
     }
+    res[l2 - 1] = 0;
     mpn_sqrtrem(res, 0, n1, l1);
 }
 
