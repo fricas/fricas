@@ -24,6 +24,16 @@
     (is_plus(n nl)
        #-:X8664-TARGET `(eql (the fixnum (ccl::%bignum-sign ,n)) 0)
        #+:X8664-TARGET `(ccl::%bignum-0-or-plusp ,n ,nl))
+    (alloc_bignum (rl res)
+       #+(and :64-BIT-TARGET :CCL-1.12)
+         `(ccl::%maybe-allocate-bignum ,rl ,res)
+       #-(and :64-BIT-TARGET :CCL-1.12)
+         `(ccl::%alloc-misc ,rl (bignum_subtag)))
+    (maybe_call_with_res_2 (f x y)
+       #+(and :64-BIT-TARGET :CCL-1.12)
+         `(,f ,x ,y res)
+       #-(and :64-BIT-TARGET :CCL-1.12)
+         `(,f ,x ,y))
     )
 
 #+:X8632-TARGET
@@ -383,16 +393,19 @@
     (setf (symbol-function 'orig-isqrt)
           (symbol-function 'common-lisp:isqrt)))
 
-(defun gmp-multiply-bignums(x y)
+(defun gmp-multiply-bignums(x y &optional res)
   (let ((xl0 (ccl::%bignum-length x))
         (yl0 (ccl::%bignum-length y)))
        (declare (type fixnum xl0 yl0))
   (if (< xl0 30)
-      (return-from gmp-multiply-bignums (orig-multiply-bignums x y)))
+      (return-from gmp-multiply-bignums
+           (maybe_call_with_res_2 orig-multiply-bignums x y)))
   (if (< yl0 30)
-      (return-from gmp-multiply-bignums (orig-multiply-bignums y x)))
+      (return-from gmp-multiply-bignums
+           (maybe_call_with_res_2 orig-multiply-bignums y x)))
   (if (< (+ xl0 yl0) 120)
-      (return-from gmp-multiply-bignums (orig-multiply-bignums x y)))
+      (return-from gmp-multiply-bignums
+            (maybe_call_with_res_2 orig-multiply-bignums x y)))
   (let* ((xl (digits_to_words xl0))
          (yl (digits_to_words yl0))
          (x-plusp nil)
@@ -404,7 +417,7 @@
          (itmp 0)
          (tmp nil)
          (rlb 0)
-         (res (ccl::%alloc-misc rl2 (bignum_subtag))))
+         (res (alloc_bignum rl2 res)))
         (declare (type fixnum xl yl rl rl2 xlb ylb rlb itmp))
         ;;; XXX Does not work
         ;;; (declare (dynamic-extent res))
@@ -443,14 +456,14 @@
          (ccl::%normalize-bignum-2 t res)))))
 
 
-(defun gmp-positive-bignum-gcd(x y)
+(defun gmp-positive-bignum-gcd(x y &optional res)
   (let* ((xl (digits_to_words (ccl::%bignum-length x)))
          (yl (digits_to_words (ccl::%bignum-length y)))
          (rl (if (< xl yl) xl yl))
          (xlb (words_to_bytes xl))
          (ylb (words_to_bytes yl))
          (rlb (+ xlb ylb))
-         (res nil))
+        )
         (declare (type fixnum xl yl rl xlb ylb rlb))
         ;;; XXX Does not work
         ;;; (declare (dynamic-extent res))
@@ -464,7 +477,7 @@
                      :address tx :long xl
                      :address ty :long yl
                      :long))
-         (setf res (ccl::%alloc-misc (words_to_digits rl) (bignum_subtag)))
+         (setf res (alloc_bignum (words_to_digits rl) res))
          (gmp-bignum-copy-to-lisp tr res rl)
          (ccl::%normalize-bignum-2 t res))))
 ;;; Tests
@@ -818,4 +831,5 @@
                     (|quiet_load_alien| wrapper-lib) t)
                 (progn
                     (install-gmp-multiplication)
-                    (setf *gmp-multiplication-initialized* t)))))))
+                    (setf *gmp-multiplication-initialized* t))))))
+)
