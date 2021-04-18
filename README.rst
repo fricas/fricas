@@ -10,8 +10,8 @@ The basic goal of FriCAS_ is to create a free advanced world-class
 CAS.  In 2007 FriCAS_ forked from Axiom_. Currently the FriCAS_ algebra
 library is one of the largest and most advanced free general purpose
 computer algebra systems -- this gives a good foundation to build
-on.  Additionally, FriCAS_ algebra library is written in a high
-level statically typed language (Spad), which allows natural expression
+on.  Additionally, the FriCAS_ algebra library is written in a high
+level strongly typed language (Spad), which allows natural expression
 of mathematical algorithms.  This makes FriCAS_ easier to understand
 and extend.
 
