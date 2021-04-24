@@ -1814,6 +1814,35 @@ writify ob ==
                 for i in 0..n repeat
                     QSETVELT(nob, i, writifyInner QVELT(ob,i))
                 nob
+            GENERAL_ARRAY?(ob) =>
+                dims := ARRAY_-DIMENSIONS(ob)
+                nob := MAKE_-ARRAY(dims)
+                HPUT($seen, ob, nob)
+                HPUT($seen, nob, nob)
+                n := ARRAY_-TOTAL_-SIZE(ob)
+                for i in 0..(n - 1) repeat
+                    SETF(ROW_-MAJOR_-AREF(nob, i),
+                         writifyInner(ROW_-MAJOR_-AREF(ob, i)))
+                nob
+            is_BVEC(ob) => ob
+            STRINGP ob =>
+                EQ(ob, $NullStream) => ['WRITIFIED_!_!, 'NULLSTREAM]
+                EQ(ob, $NonNullStream) => ['WRITIFIED_!_!, 'NONNULLSTREAM]
+                ob
+            ARRAYP(ob) =>
+                tt := get_type_tag(ARRAY_-ELEMENT_-TYPE(ob))
+                tt =>
+                    dims := ARRAY_-DIMENSIONS(ob)
+                    n := ARRAY_-TOTAL_-SIZE(ob)
+                    nv := MAKE_VEC(n)
+                    nob := ['WRITIFIED_!_!, 'TYARR, tt, dims, nv]
+                    HPUT($seen, ob, nob)
+                    HPUT($seen, nob, nob)
+                    for i in 0..(n - 1) repeat
+                        QSETVELT(nv, i,
+                            writifyInner(ROW_-MAJOR_-AREF(ob, i)))
+                    nob
+                THROW('writifyTag, 'writifyFailed)
             SPAD_KERNEL_-P ob =>
                 nob := makeSpadKernel(NIL, NIL, SPAD_KERNEL_-NEST(ob))
                 HPUT($seen, ob, nob)
@@ -1850,24 +1879,47 @@ writify ob ==
             -- Create an object of the right shape, nonetheless.
             READTABLEP ob =>
                 THROW('writifyTag, 'writifyFailed)
-            -- Default case: return the object itself.
-            STRINGP ob =>
-                EQ(ob, $NullStream) => ['WRITIFIED_!_!, 'NULLSTREAM]
-                EQ(ob, $NonNullStream) => ['WRITIFIED_!_!, 'NONNULLSTREAM]
-                ob
             FLOATP ob =>
                 ob = READ_-FROM_-STRING STRINGIMAGE ob => ob
                 ['WRITIFIED_!_!, 'FLOAT, ob,:
                    MULTIPLE_-VALUE_-LIST INTEGER_-DECODE_-FLOAT ob]
+            -- Default case: return the object itself.
             ob
 
 
 unwritable? ob ==
-    PAIRP  ob or VECP ob       => false   -- first for speed
+    -- first for speed
+    PAIRP(ob) => false
+    EQ(ob, $NullStream) or EQ(ob, $NonNullStream) => true
+    -- writable arrays
+    VECP(ob) or GENERAL_ARRAY?(ob) or STRINGP(ob) or is_BVEC(ob) => false
+    -- other arrays are unwritable
+    ARRAYP(ob) => true
     COMPILED_-FUNCTION_-P   ob or HASHTABLEP ob => true
     PLACEP ob or READTABLEP ob => true
     FLOATP ob => true
     false
+
+$type_tags := [
+   ["U8",     ['UNSIGNED_-BYTE, 8]],
+    ["U16",   ['UNSIGNED_-BYTE, 16]],
+     ["U32",  ['UNSIGNED_-BYTE, 32]],
+      ["DF",  'DOUBLE_-FLOAT]]
+
+get_type_tag(lt) ==
+    res := false
+    for tp in $type_tags while not(res) repeat
+        ct := tp.1
+        if SUBTYPEP(lt, ct) and SUBTYPEP(ct, lt) then
+            res := tp.0
+    res
+
+get_lisp_type(tt) ==
+    res := false
+    for tp in $type_tags while not(res) repeat
+        if tt = tp.0 then
+            res := tp.1
+    res
 
 -- Create a full isomorphic object which can be saved in a lisplib.
 -- Note that  dewritify(writify(x))  preserves UEQUALity of hashtables.
@@ -1915,6 +1967,17 @@ dewritify ob ==
                         error '"A required BPI has been redefined."
                     HPUT($seen, ob, f)
                     f
+                type = 'TYARR =>
+                    lt := get_lisp_type(ob.2)
+                    nob := MAKE_TYPED_ARRAY(ob.3, lt)
+                    HPUT($seen, ob, nob)
+                    HPUT($seen, nob, nob)
+                    ov := ob.4
+                    n := ARRAY_-TOTAL_-SIZE(nob)
+                    for i in 0..(n - 1) repeat
+                        SETF(ROW_-MAJOR_-AREF(nob, i),
+                             dewritifyInner(QVELT(ov, i)))
+                    nob
                 type = 'HASHTABLE =>
                     nob := MAKE_HASHTABLE(ob.2)
                     HPUT($seen, ob, nob)
@@ -1969,6 +2032,16 @@ dewritify ob ==
                 for i in 0..n repeat
                     QSETVELT(nob, i, dewritifyInner QVELT(ob,i))
                 nob
+            GENERAL_ARRAY?(ob) =>
+                dims := ARRAY_-DIMENSIONS(ob)
+                nob := MAKE_-ARRAY(dims)
+                HPUT($seen, ob, nob)
+                HPUT($seen, nob, nob)
+                n := ARRAY_-TOTAL_-SIZE(ob)
+                for i in 0..(n - 1) repeat
+                    SETF(ROW_-MAJOR_-AREF(nob, i),
+                         dewritifyInner(ROW_-MAJOR_-AREF(ob, i)))
+                nob
             SPAD_KERNEL_-P(ob) =>
                 nob := makeSpadKernel(NIL, NIL, SPAD_KERNEL_-NEST(ob))
                 HPUT($seen, ob, nob)
@@ -1995,6 +2068,12 @@ ScanOrPairVec(f, ob) ==
             VECP ob =>
                 HPUT($seen, ob, true)
                 for i in 0..#ob-1 repeat ScanOrInner(f, ob.i)
+                nil
+            GENERAL_ARRAY?(ob) =>
+                HPUT($seen, ob, true)
+                n := ARRAY_-TOTAL_-SIZE(ob)
+                for i in 0..(n - 1) repeat
+                    ScanOrInner(f, ROW_-MAJOR_-AREF(ob, i))
                 nil
             SPAD_KERNEL_-P(ob) =>
                 ScanOrInner(f, SPAD_KERNEL_-OP(ob))

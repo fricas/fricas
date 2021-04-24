@@ -57,6 +57,11 @@
 (defmacro ANCOLS (v)
     `(array-dimension (the (simple-array T (* *)) ,v) 1))
 
+;;; general arrays
+(defun GENERAL_ARRAY? (v) (typep v '(array t)))
+
+(defun MAKE_TYPED_ARRAY (dims lt) (make-array dims :element-type lt))
+
 ;;; string accessors
 
 (defmacro STR_ELT(s i)
@@ -616,6 +621,8 @@
 (defmacro ELT_BVEC (bv i)    `(sbit ,bv ,i))
 (defmacro SETELT_BVEC (bv i x)  `(setf (sbit ,bv ,i) ,x))
 (defmacro |size_BVEC| (bv)  `(size ,bv))
+
+(defun |is_BVEC| (bv) (simple-bit-vector-p bv))
 
 ; macros needed for Spad:
 
