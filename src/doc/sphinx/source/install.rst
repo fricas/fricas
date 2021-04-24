@@ -25,6 +25,11 @@ You can give arguments to ``configure`` to change those locations.
 Prerequisites
 -------------
 
+Standard build tools
+^^^^^^^^^^^^^^^^^^^^
+
+To *build* FriCAS you need standard build tools like C compiler and
+make.
 
 Lisp
 ^^^^
@@ -32,21 +37,24 @@ Lisp
 To *build* FriCAS you need *one* of the following Lisp variants:
 
 * SBCL_ 1.0.7 or later (preferred)
+
+  http://sbcl.sourceforge.net/platform-table.html
+
 * `Clozure CL`_ (former openmcl), starting from openmcl 1.1 prerelease
   070512
+
+  https://ccl.clozure.com/download.html
+
 * ECL_ 0.9l or later
+
+  https://common-lisp.net/project/ecl
+
 * CLISP_ 2.41 or later
 * CMUCL_
-* GCL_ version 2.6.8 works OK.
 
-  If you want to try development version of GCL from git note that
-  main branch currently is very unstable and can not build FriCAS.
-
-  In the past in case of build problems the following configure line
-  was helpful
-  ::
-
-     ./configure --disable-xgcl --disable-dynsysbfd --disable-statsysbfd --enable-locbfd
+* FriCAS builds also using GCL_, at least build using released version
+  2.6.12 works. Build using newer GCL versions from git repository
+  fails.
 
 
 All Lisp implementations should give essentially the same
@@ -57,8 +65,8 @@ default FriCAS tries to use SBCL, since it is fast and reliable. On
 64-bit AMD64 on average SBCL is the fastest one (9 times faster than
 CLISP), Clozure CL the second (about 1.5 times slower than SBCL), than
 GCL and ECL (about 3 times slower than SBCL) and CLISP is the slowest
-one. Note: older versions of ECL were much (about 4 times) slower, you
-should use newest version if you care about speed.
+one. Note: very old versions of ECL were much (about 4 times) slower, you
+should use reasonably new version if you care about speed.
 
 Some computation work much faster on 64-bit machines, especially
 when using SBCL.
@@ -94,7 +102,7 @@ Note: using GMP should work on all SBCL and Clozure CL platforms
 except for Clozure CL on Power PC.
 ::
 
-   sudo apt install libgmp3-dev
+   sudo apt install libgmp-dev
 
 
 LaTeX (optional)
@@ -146,15 +154,6 @@ course, hava Aldor_ installed, and add ``--enable-aldor`` to your
 configure options when you compile FriCAS.
 
 
-Extra libraries needed by GCL
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This only applies if you use Debian GCL.
-::
-
-   sudo apt install libreadline5-dev libncurses5-dev libgmp3-dev \
-                    libxmu-dev and libxaw7-dev
-
 Extra libraries needed by ECL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -170,28 +169,44 @@ Detailed installations instructions
 
 We assume that you have installed all necessary prerequisittes.
 
-1. Change to a directory with enough (0.8 GB) free space
+0. Change to a directory with enough (0.8 GB) free space
 
-2. Fetch sources
+
+1. Fetch sources
    ::
 
-      git clone https://github.com/fricas/fricas
+      git clone --depth 1 https://github.com/fricas/fricas
       cd fricas
+
+   Remove the ``--depth 1`` option for access to the change history.
+
+2. Create build directory and change to it
+   ::
+
+       mkdir fricas-build
+       cd fricas-build
 
 3. Configure.  Assuming that you want fricas files to be installed in
    ``//tmp/usr``.
    ::
 
-      ./configure --with-lisp=/path/to/your/lisp --prefix=/tmp/usr
+      ../configure --with-lisp=/path/to/your/lisp --prefix=/tmp/usr
 
    where ``/path/to/your/lisp`` is name of your Lisp. For example,
    type
    ::
 
-     ./configure --with-lisp="sbcl --dynamic-space-size 4096" --prefix=/tmp/usr --enable-gmp --enable-aldor
+     ../configure --with-lisp="sbcl --dynamic-space-size 4096" --prefix=/tmp/usr --enable-gmp --enable-aldor
 
    to build with SBCL and 4 GiB dynamic space, use GMP, and enable the
    build of the Aldor library ``libfricas.al``.
+
+   Type
+   ::
+
+      ../configure --help
+
+   to see all possible options.
 
 4. Build and install
    ::
@@ -199,12 +214,11 @@ We assume that you have installed all necessary prerequisittes.
       make
       make install
 
-Type
-::
+   Optionaly, to gain confidence that your build works, you can
+   run tests
+   ::
 
-   configure --help
-
-to see all possible options.
+      make check
 
 
 Extra information
@@ -219,11 +233,6 @@ that the source tree is in ``$HOME/fricas``, you build in
 
   cd $HOME/fricas-build
   $HOME/fricas/configure --with-lisp=sbcl && make && sudo make install
-
-Alternatively, if you use GCL you can just put GCL sources as a
-subdirectory (called ``gcl``) of the ``fricas`` directory -- in this
-case the build process should automatically build GCL and later use
-the freshly build GCL.
 
 Currently ``--with-lisp`` option accepts all supported lisp variants,
 namely SBCL, CLISP, ECL, GCL and Clozure CL (openmcl). Note: the
@@ -246,7 +255,7 @@ The get working graphic examples login into X and replace ``make``
 above by the following
 ::
 
-   make MAYBE_VIEWPORT=viewports
+   make MAYBE_VIEWPORTS=viewports
 
 Alternatively, after ``make`` finishes use
 ::
@@ -258,7 +267,7 @@ will not work on text console. During build drawings will temporarily
 appear on the screen. Redirecting X via ``ssh`` should work fine, but
 may be slow.
 
-It is preferrable to use the ``xvfb-run`` program, replacing ``make
+It is possible to use the ``xvfb-run`` program, replacing ``make
 viewports`` above by
 ::
 
@@ -435,7 +444,7 @@ in in this editor.
 Aldor library libfricas.al
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You cannot only extend the FriCAS library by ``.spad`` files (SPAD
+You can not only extend the FriCAS library by ``.spad`` files (SPAD
 programs), but also by ``.as`` files (Aldor_ programs). For the latter
 to work FriCAS needs a library ``libfricas.al``.
 
@@ -486,6 +495,14 @@ Known problems
   separate directory (in-tree build will fail). This does not affect
   release tarball.
 
+- In general, any error when generating documentation will cause build
+  to hang.
+
+- 32-bit sbcl from 1.5.9 to 2.1.3 may miscompile floating point
+  comparisons.  Due to this most plots wil fail.  The problem is
+  fixed in developement version of sbcl.  Alternatively, use older
+  version of sbcl.  64-bit sbcl works OK.
+
 - by default sbcl 1.0.54 and newer limits memory use to 1GB, which is
   too small for heavy use. To work around this one can pass
   ``--dynamic-space-size`` argument during sbcl build to increase
@@ -493,6 +510,23 @@ Known problems
   We recommend limit slightly smaller than amount of
   available RAM (in this way FriCAS will be able to use almost all
   RAM, but limit should prevent thrashing).
+
+- Some Linux versions, notably SuSE, by default seem to have very
+  small limit on virtual memory. This causes build failure when using
+  sbcl or Clozure CL. Also if limit on virtual memory is too small
+  sbcl-based or Clozure CL-based FriCAS binary will silently fail at
+  startup. The simplest workaround is to increase limit, in the shell
+  typing
+  ::
+
+    ulimit -v unlimited
+
+  Alternatively for sbcl one can use ``--dynamic-space-size`` argument
+  to decrease use of virtual memory.
+
+- On new Linux kernel build using Clisp may take very long time. This
+  is caused by frequent calls to ``fsync`` performed without need by
+  Clisp.
 
 - on some systems (notably MAC OSX) when using sbcl default limit of
   open files may be too low. To workaround increase limit (experiments
@@ -514,18 +548,8 @@ Known problems
 - in sbcl 1.0.35 and up Control-C handling did not work. This should
   be fixed in current FriCAS.
 
-- Some Linux versions, notably SuSE, by default seem to have very
-  small limit on virtual memory. This causes build failure when using
-  sbcl or Clozure CL. Also if limit on virtual memory is too small
-  sbcl-based or Clozure CL-based FriCAS binary will silently fail at
-  startup. The simplest workaround is to increase limit, in the shell
-  typing
-  ::
-
-    ulimit -v unlimited
-
-  Alternatively for sbcl one can use ``--dynamic-space-size`` argument
-  to decrease use of virtual memory.
+- prerelease gcl from gcl git repository is incompatible with FriCAS
+  and build will fail.
 
 - older gcl had serious problems on Macs and Windows.
 
@@ -580,9 +604,6 @@ Known problems
   harmless, but may cause build to hang (for example when generating
   ``ug13.pht``).
 
-- In general, any error when generating documentation will cause build
-  to hang.
-
 - Clozure CL 1.10 apparently miscompiles some operations on U32Matrix.
   Version 1.11 works OK.
 
@@ -601,10 +622,6 @@ Known problems
   opening already opened file -- this is error is spurious, the file
   in question in fact is closed, but for some reason Clisp got
   confused.
-
-- On new Linux kernel build using Clisp may take very long time. This
-  is caused by frequent calls to ``fsync`` performed without need by
-  Clisp.
 
 
 .. _Aldor: https://github.com/aldorlang/aldor
