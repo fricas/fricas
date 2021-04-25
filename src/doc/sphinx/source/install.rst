@@ -5,7 +5,6 @@ Installation Guide
    :local:
 
 
-
 Quick installation
 ------------------
 
@@ -36,23 +35,23 @@ Lisp
 
 To *build* FriCAS you need *one* of the following Lisp variants:
 
-* SBCL_ 1.0.7 or later (preferred)
+- `SBCL`_ 1.0.7 or later (preferred)
 
   http://sbcl.sourceforge.net/platform-table.html
 
-* `Clozure CL`_ (former openmcl), starting from openmcl 1.1 prerelease
+- `Clozure CL`_ (former openmcl), starting from openmcl 1.1 prerelease
   070512
 
   https://ccl.clozure.com/download.html
 
-* ECL_ 0.9l or later
+- ECL_ 0.9l or later
 
   https://common-lisp.net/project/ecl
 
-* CLISP_ 2.41 or later
-* CMUCL_
+- CLISP_ 2.41 or later
+- CMUCL_
 
-* FriCAS builds also using GCL_, at least build using released version
+- FriCAS builds also using GCL_, at least build using released version
   2.6.12 works.  Build using newer GCL versions from git repository
   fails.
 
@@ -116,7 +115,7 @@ If you run FriCAS in Emacs_ (efricas) you can enable
 to show rendered TeX output.  For that to work, you need the following.
 ::
 
-     sudo apt install texlive auctex dvipng
+   sudo apt install texlive auctex dvipng
 
 In order to build the |PACKAGE_BOOK|, you also need the following
 LaTeX packages (available from CTAN_).
@@ -160,7 +159,7 @@ Extra libraries needed by ECL
 This only applies if you use Debian ECL.
 ::
 
-     sudo apt install libffi-dev
+   sudo apt install libffi-dev
 
 
 
@@ -169,10 +168,9 @@ Detailed installations instructions
 
 We assume that you have installed all necessary prerequisittes.
 
-0. Change to a directory with enough (0.8 GB) free space
+0. Change to a directory with enough (0.8 GB) free space.
 
-
-1. Fetch sources
+1. Fetch sources.
    ::
 
       git clone --depth 1 https://github.com/fricas/fricas
@@ -186,7 +184,7 @@ We assume that you have installed all necessary prerequisittes.
       cd fr-build
 
 3. Configure.  Assuming that you want fricas files to be installed in
-   ``//tmp/usr``.
+   ``/tmp/usr``.
    ::
 
       ../fricas/configure --with-lisp=/path/to/your/lisp --prefix=/tmp/usr
@@ -230,8 +228,8 @@ that the source tree is in ``$HOME/fricas``, you build in
 ``sbcl`` the following should just work.
 ::
 
-  cd $HOME/fricas-build
-  $HOME/fricas/configure --with-lisp=sbcl && make && sudo make install
+   cd $HOME/fricas-build
+   $HOME/fricas/configure --with-lisp=sbcl && make && sudo make install
 
 Currently ``--with-lisp`` option accepts all supported lisp variants,
 namely SBCL, CLISP, ECL, GCL and Clozure CL (openmcl).  Note: the
@@ -266,8 +264,8 @@ will not work on text console.  During build drawings will temporarily
 appear on the screen.  Redirecting X via ``ssh`` should work fine, but
 may be slow.
 
-It is possible to use the ``xvfb-run`` program, replacing ``make
-viewports`` above by
+It is possible to use the ``xvfb-run`` program, replacing
+``make viewports`` above by
 ::
 
    xvfb-run -a -n 0 -s '-screen 0 1024x768x24' make viewports
@@ -300,7 +298,8 @@ example::
 
   --enable-algebra-optimization="((speed 3) (safety 0))"
 
-chooses fastest (but unsafe) variant, while ::
+chooses fastest (but unsafe) variant, while
+::
 
   --enable-algebra-optimization="((speed 2) (safety 3))"
 
@@ -339,7 +338,8 @@ specify the location with
 
 This supposes that the include file is in ``PATH/include`` and libgmp
 is in ``PATH/lib``.  If you have a different setup, then you can
-specify ::
+specify
+::
 
    --with-gmp-include=INCLUDEPATH --with-gmp-lib=LIBPATH
 
@@ -411,7 +411,7 @@ to the above command.
    PACKAGE_VERSION="1.3.6+ `date +'%Y-%m-%d %H:%M'`"
 
 Then, checkout the ``gh-pages`` branch and put the data from
-``$BUILD?src/doc/html`` into your ``gh-pages`` branch.
+``$BUILD/src/doc/html`` into your ``gh-pages`` branch.
 ::
 
    git clone git@github.com:hemmecke/fricas.git
@@ -456,7 +456,8 @@ This library can be build as follows.
    make install
 
 After that you should be able to compile and use the program below in
-a FriCAS session via ::
+a FriCAS session via
+::
 
    )compile sieve.as
    sieve 10
@@ -518,7 +519,7 @@ Known problems
   typing
   ::
 
-    ulimit -v unlimited
+     ulimit -v unlimited
 
   Alternatively for sbcl one can use ``--dynamic-space-size`` argument
   to decrease use of virtual memory.
@@ -588,7 +589,7 @@ Known problems
   build stopped with the message
   ::
 
-    fork_Axiom: Failed to reopen server: No such file or directory
+     fork_Axiom: Failed to reopen server: No such file or directory
 
   This problem is believed to be fixed in FriCAS-1.0.5 (and later).
 
