@@ -1,8 +1,12 @@
 Contributors
 ============
 
-The following people have contributed to FriCAS since its fork from
-Axiom in 2007 (listed with Lastname, Firstname).
+|FriCAS| has a long `history <history.html>`_.
+Apart from the developers of the original Axiom system
+and the people who contributed to `Axiom <https://github.com/daly/axiom>`_
+since its open-source release in 2003, the following people have
+contributed to |FriCAS| since its fork from the Axiom code base in 2007
+(listed alphabetically with Lastname, Firstname).
 
 * Baclawski, Krystian
 * Baid, Abhinav
@@ -34,6 +38,7 @@ Axiom in 2007 (listed with Lastname, Firstname).
 * Saushev, Aleksej
 * Schrempf, Konrad
 * Solovets, Alexander
+* Smith, Robert
 * Vanuxem, Gregory
 * Wilson, Stephen
 * Yun, Qian

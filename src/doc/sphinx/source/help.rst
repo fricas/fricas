@@ -1,9 +1,10 @@
 Help
 ====
 
-If you  run into any  problems with |FriCAS|  do not hesitate  to send
-your  problem to  |PACKAGE_BUGREPORT|,  i.e., the  |mailing list|.
-To prevent spam, you have to subscribe to the |mailing list|.
+If you run into any problems with |FriCAS| do not hesitate to send
+your problem to |PACKAGE_BUGREPORT|, i.e., the |mailing list|. Since
+we do not want spam, you have to subscribe to the |mailing list| in
+order to post something there.
 
 There is also a
 `read-only mirror
@@ -11,38 +12,17 @@ There is also a
 of the mailing list.
 
 
-We are well aware of the steep learning curve of |FriCAS|. By
-asking your questions you not only give you a chance to solve your
-problem quickly, but also help us to improve |FriCAS| by letting
-us know of what a user finds hard to accomplish with the system.
+We are well aware of the steep learning curve of |FriCAS|. By asking
+your questions, you not only give you a chance to solve your problem
+quickly, but also help us to improve |FriCAS| by letting us know of
+what a user finds hard to accomplish with the system.
 
 Apart from the |home page| (in particular the |PACKAGE_BOOK|) there
 is also help available locally. You can generate a local copy of the
-|home page| by doing the following.
-::
+|home page|, see
+`Building documentation <install.html#building-documentation>`_
+for instructions.
 
-   git clone https://github.com/fricas/fricas
-   cd fricas
-   ./configure
-   make
-   cd src/doc
-   make localhtml
-   firefox html/index.html
-
-..
-   In order to link to another code repository and another branch, put
-   the following variables assignments onto the "make localhtml"
-   commandline
-
-   PACKAGE_SOURCE=https://github.com/hemmecke/fricas BRANCH=formatted
-
-..
-   Open ``.spad`` file from localhtml
-
-   * add
-       text/x-spad       spad
-    to ``/etc/mime.types``
-   * in firefox add associate text/x-spad with your editor
 
 If you are working with |FriCAS| in an operating system that has
 the `X Window System <https://en.wikipedia.org/wiki/X_Window_System>`_
@@ -61,4 +41,9 @@ about them by typing
   )help set
 
 In particular, for the `)set` command you can find the output
-`here <http://axiom-wiki.newsynthesis.org/FriCASHelpSet>`_.
+`here <fricas-notebooks/system-command-set.html>`_.
+
+.. toctree::
+   :maxdepth: 1
+
+   faq

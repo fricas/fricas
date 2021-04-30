@@ -16,9 +16,10 @@ The capabilities of |FriCAS| cover areas such as
 - arbitrary precision numerical computations,
 - modular arithmetic,
 - continued fractions, partial fraction decomposition,
-  - integer factorization, polynomial factorization,
-- polynomial idedowals, Gröbner bases, Gröbner factorization,
+- integer factorization, polynomial factorization,
+- polynomial ideals, Gröbner bases, Gröbner factorization,
   triangular sets, regular chains,
+- guessing of formulas for sequences,
 - computation with cardinal numbers.
 
 A distinguished feature of |FriCAS| is its type system. It
