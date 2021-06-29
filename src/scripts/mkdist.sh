@@ -61,14 +61,10 @@ echo copy_phts=\"${copy_phts}\"
 echo GCL_DIST=\"${GCL_DIST}\"
 echo HELP_DIR=\"${HELP_DIR}\"
 
-clean_svn () {
-    find $1 -name .svn -type d -exec rm -rf {} \+
-}
-
 # copy sources
 cp -r $SRCDIR dist
 cd dist || exit 1
-clean_svn .
+rm -rf .git
 
 # copy gcl
 if [ ! -z "${GCL_DIST}" ] ; then
