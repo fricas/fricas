@@ -24,7 +24,7 @@ AC_DEFUN([FRICAS_CHECK_PROG],
 fricas_src_subdirs="lib lisp boot interp algebra input etc"
 AC_SUBST(fricas_src_subdirs)
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 
 case $build in
   *mingw*|*msys*)
@@ -64,19 +64,26 @@ if test $build != $target; then
    AC_MSG_WARN([Please notify fricas-devel@googlegroups.com if you succeed.])
 fi
 
-AC_MSG_CHECKING([for in-tree build on case insensitive file system])
-if test "$fricas_top_srcdir" = "$fricas_pwd"; then
+AC_ARG_ENABLE([case-insensitive-file-system-check],
+	      [AS_HELP_STRING([--enable-case-insensitive-file-system-check],
+                             [enable case-insensitive-file-system-check (default yes)])],
+	      [fricas_test_case_insensitive_fs=$enableval],
+	      [fricas_test_case_insensitive_fs=yes])
+if test x$fricas_test_case_insensitive_fs = xyes; then
+  AC_MSG_CHECKING([for in-tree build on case insensitive file system])
+  if test "$fricas_top_srcdir" = "$fricas_pwd"; then
    rm -f ac_TEST_filenames_CASE_sensitive ac_test_filenames_case_sensitive
    echo foo > ac_test_filenames_case_sensitive
    if test -f ac_TEST_filenames_CASE_sensitive; then
       rm ac_test_filenames_case_sensitive
-      AC_MSG_ERROR([in tree build on case insensitive file system is not supported. Use out-of-source build instead.])
+      AC_MSG_ERROR([in tree build on case insensitive file system is not supported. Use out-of-source-tree build instead.])
    else
       rm ac_test_filenames_case_sensitive
       AC_MSG_RESULT([no])
    fi
-else
+  else
    AC_MSG_RESULT([no])
+  fi
 fi
 
 ## Accumulate list of utils needed for the build platform
@@ -202,9 +209,10 @@ AC_ARG_WITH([lisp-flavor],
             [AC_MSG_WARN([--with-lisp-flavor is ignored now])]
            )
 
-AC_MSG_CHECKING([Lisp implementation])
 rm -f config_cl.out
 echo '(load "'"$fricas_top_srcdir"'/config.lisp")' | $fricas_lisp
+echo ''
+AC_MSG_CHECKING([Lisp implementation])
 
 if test x$fricas_lisp_flavor = xunknown ; then
       fricas_lisp_flavor=`sed -n -e 's/fricas_lisp_flavor=//p' config_cl.out`
@@ -338,6 +346,7 @@ AC_ARG_WITH([gmp-lib],
             [GMP_WRAP_SO_TARGET=gmp_wrap_so
              GMP_LDFLAGS="-L$withval"
              GMP_LIBDIR="$withval/"])
+
 AC_ARG_ENABLE([gmp],
             [AS_HELP_STRING([--enable-gmp],
                [use gmp for bignums with SBCL or Clozure CL])],
@@ -439,6 +448,7 @@ case $fricas_lisp_flavor in
 esac
 AC_SUBST(fricas_quiet_flags)
 
+AC_MSG_CHECKING([for extension of compiled Lisp files])
 if test -z $fricas_fasl_type; then
    AC_MSG_ERROR([Could not determine extension for compiled Lisp files])
 fi
@@ -545,36 +555,32 @@ case $host in
         ;;
 esac
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/socket.h>
-   ], [
+   ]], [[
 int flag = MSG_NOSIGNAL;
-   ],
-   [AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Host has MSG_NOSIGNAL])],[])
+   ]])],[AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Host has MSG_NOSIGNAL])],[])
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
-   ], [
+   ]], [[
 int flag = SO_NOSIGPIPE;
-   ],
-   [AC_DEFINE([HAVE_SO_NOSIGPIPE], [1], [Host has SO_NOSIGPIPE])],[])
+   ]])],[AC_DEFINE([HAVE_SO_NOSIGPIPE], [1], [Host has SO_NOSIGPIPE])],[])
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <errno.h>
 #include <sys/socket.h>
-   ], [
+   ]], [[
 int code = EPIPE;
-   ],
-   [AC_DEFINE([HAVE_EPIPE], [1], [Host has EPIPE])],[])
+   ]])],[AC_DEFINE([HAVE_EPIPE], [1], [Host has EPIPE])],[])
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/stat.h>
 #include <sys/types.h>
-   ], [
+   ]], [[
 int code = mkdir ("./foo", (S_IRWXU | S_IRWXO | S_IRWXG));
-   ],
-   [AC_DEFINE([HAVE_TWO_ARG_MKDIR], [1], [Host has two arg mkdir])], [])
+   ]])],[AC_DEFINE([HAVE_TWO_ARG_MKDIR], [1], [Host has two arg mkdir])],[])
 
 if test x$fricas_host_has_socket != xyes; then \
     AC_MSG_ERROR([FriCAS needs support for sockets.])
