@@ -17,4 +17,21 @@ testEquals("(-1 :: Complex(Float))^(3/2)", "-%i")
 testEquals("(-1 :: Complex(DoubleFloat))^(1/2)", "%i")
 testEquals("(-1 :: Complex(DoubleFloat))^(3/2)", "-%i")
 
+testcase "predicates in rules"
+
+p1 := suchThat(x, (x : EXPR(INT)) : Boolean +-> even?(x))
+p2 := suchThat(x, (x : EXPR(INT)) : Boolean +-> odd?(x))
+
+op1 := operator(kernels(p1).1)
+op2 := operator(kernels(p2).1)
+
+testTrue("not(op1 = op2)")
+
+rl := rule
+  cos(y)^(x | even?(x)) == 1
+  cos(y)^(x | odd?(x)) == 0
+
+testEquals("rl(cos(x)^2)", "1")
+testEquals("rl(cos(x)^3)", "0")
+
 statistics()

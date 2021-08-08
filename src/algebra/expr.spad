@@ -941,10 +941,12 @@ FunctionSpaceAttachPredicates(R, F, D) : Exports == Implementation where
       (u := property(operator k, PMPRED)) case "failed" => empty()
       (u::None) pretend List(Any)
 
-    -- Looks fishy, but we try to preserve meaning
     st(k, l) ==
       kk := copy operator k
       setProperty(kk, PMPRED, concat(preds k, l) pretend None)
+      -- assert is needed, otherwise copy of operator could be
+      -- equal to original and we could get wrong kernel
+      assert(kk, new()$Symbol)
       kernel(kk, empty()$List(F))
 
     suchThat(p : F, l : List(D -> Boolean)) ==
