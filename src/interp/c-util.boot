@@ -585,7 +585,7 @@ substituteOp(op',op,x) ==
 
  -- following is only intended for substituting in domains slots 1 and 4
  -- signatures and categories
-sublisV(p,e) ==
+sublis_vec(p, e) ==
   LIST2REFVEC [suba(p, e.i) for i in 0..MAXINDEX e] where
     suba(p,e) ==
       STRINGP e => e
@@ -594,6 +594,10 @@ sublisV(p,e) ==
       v:= suba(p,QCDR e)
       EQ(QCAR e,u) and EQ(QCDR e,v) => e
       [u,:v]
+
+subst_in_cat(fp, ap, cv) ==
+    pp := MAPCAR(FUNCTION CONS, fp, ap)
+    sublis_vec(pp, cv)
 
 --% DEBUGGING PRINT ROUTINES used in breaks
 
