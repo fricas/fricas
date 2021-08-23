@@ -540,7 +540,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     INTEF ==> ElementaryIntegration(R, F)
 
-    ei_int_alg(n : Z, f : F, g : F, x : SE, k : K, lk : LK) : PSOL2 ==
+    ei_int_alg(f : F, g : F, x : SE, k : K, lk : LK) : PSOL2 ==
         kx := kmax(lk)
         not(symbolIfCan(kx) case SE) =>
             do_risch_DE(f, g, x, cons(k, lk))$ElementaryRischDEX2(R, F)
@@ -554,7 +554,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         dfx := D(fx, nx)
         ng := dfx*eval(g, [kx, k], [fx, fy])
         nf := eval(f, [kx, k], [fx, fy])
-        res1 := ei_int(n, nf, ng, nx)
+        res1 := ei_int(1, nf, ng, nx)
         kf := k::F
         r1 := eval(res1.right/dfx, nxk, kf)
         a1 := eval(res1.ans, nxk, kf)
@@ -985,7 +985,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                     tt : F, f2 : UP, vlst : LF, ulst : LF, k : K, x : SE,
                     res : List SREC) : List SREC ==
         nffacs := factorList(fnf)
-        lexp : List Z := [fac1.exponent for fac1 in nffacs]
+        lexp : List(Z) := [fac1.exponent for fac1 in nffacs]
         l1 := gcd(gexp, gcd(lexp))
         l1 = 1 => res
         lexp1 : List(N) := [(e1 quo l1)::N for e1 in lexp]
@@ -2215,7 +2215,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         k := top_kernel(f, g, x)
         lk := [kk for kk in lk | kk ~= k]
         has?(operator k, ALGOP)$BasicOperator =>
-            ei_int_alg(1, f, g, x, k, lk)
+            ei_int_alg(f, g, x, k, lk)
         fpu := univariate(fp, k)
         gu := univariate(g, k)
         is?(k, OPDIFF) => ei_int_diff(f, g, gu, x, k, lk)
