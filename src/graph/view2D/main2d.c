@@ -432,7 +432,6 @@ main(void)
   bsdSignal(SIGTERM,goodbye,DontRestartSystemCalls);
 
   /* send acknowledgement to viewport manager */
-  i = 345;
   check(write(Socket,&(viewport->viewWindow),sizeof(Window)));
 
   processEvents();

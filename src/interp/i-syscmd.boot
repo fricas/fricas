@@ -151,7 +151,6 @@ selectOption(x,l,errorFunction) ==
 
 terminateSystemCommand() ==
     FRESH_-LINE()
-    TOK := 'END_UNIT
     throw_to_reader()
 
 commandUserLevelError(x,u) == userLevelErrorMessage("command",x,u)
@@ -2843,7 +2842,6 @@ processSynonyms() ==
       fun := CONCAT (fun, '" ")
   cl := STRCONC(fill,RPLACSTR(line, 1, SIZE synstr, fun),opt)
   SETQ(LINE,cl)
-  SETQ(CHR,LINE.(p+1))
   processSynonyms ()
 
 -- functions for interfacing to system commands from algebra code

@@ -180,7 +180,7 @@ scanDictCons()==
       d :=
           a := MAKE_VEC(256)
           b := MAKE_VEC(1)
-          QSETVELT(b, 0, make_full_CVEC(0, '" "))
+          QSETVELT(b, 0, make_full_CVEC(0))
           for i in 0..255 repeat QSETVELT(a, i, b)
           a
       for s in l repeat scanInsert(s,d)
@@ -440,7 +440,7 @@ scanComment()==
               finish_comment()
           $comment_line := first(rest(rest($linepos)))
           $comment_indent := n
-          PUSH(CONCAT(make_full_CVEC(n, '" "), c_str), $current_comment_block)
+          PUSH(CONCAT(make_full_CVEC(n), c_str), $current_comment_block)
       res := lfcomment(n, $linepos, c_str)
       checkEsc()
       res

@@ -404,9 +404,6 @@ resolveTCat(t,c) ==
   c in '((Field) (EuclideanDomain)) and ofCategory(t,'(IntegralDomain))=>
       [$QuotientField, t]
 
-  c = '(Field) and t = $Symbol =>
-      [$QuotientField, ['Fraction, $Integer]]
-
   (t is [t0]) and (sd := getImmediateSuperDomain(t0)) and sd ~= t0 =>
     resolveTCat(sd,c)
 

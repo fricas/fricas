@@ -144,7 +144,7 @@ insertWOC(x,y) ==
 
 fillerSpaces(n, charPart) ==
   n <= 0 => '""
-  make_full_CVEC(n, charPart)
+  make_full_CVEC2(n, charPart)
 
 centerString(text,width,fillchar) ==
   wid := entryWidth text

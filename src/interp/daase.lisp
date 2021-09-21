@@ -1367,37 +1367,10 @@ database.
   #+:GCL (force-output out)
   (close out)))
 
-(defun unsqueeze (expr)
-  (cond ((atom expr)
-         (cond ((and (numberp expr) (< expr 0))
-                (svref |$compress_vector| (- expr)))
-               (t expr)))
-        (t (rplaca expr (unsqueeze (car expr)))
-           (rplacd expr (unsqueeze (cdr expr)))
-           expr)))
 
-(defun squeeze (expr)
-  (if |$do_not_compress_databases|
-    expr
-    (let (leaves pos (bound (length |$compress_vector|)))
-     (labels (
-      (flat (expr)
-       (when (and (numberp expr) (< expr 0))
-        (print expr)
-        (break "squeeze found a negative number"))
-       (if (atom expr)
-        (unless (or (null expr)
-                    (and (symbolp expr) (char= (schar (symbol-name expr) 0) #\*)))
-         (setq leaves (adjoin expr leaves)))
-        (progn
-         (flat (car expr))
-         (flat (cdr expr))))))
-     (setq leaves nil)
-     (flat expr)
-     (dolist (leaf leaves)
-      (when (setq pos (position leaf |$compress_vector|))
-        (nsubst (- pos) leaf expr)))
-     expr))))
+(defun unsqueeze (expr) expr)
+
+(defun squeeze (expr) expr)
 
 (defun write-operationdb ()
  (let (pos master out (*print-pretty* t))

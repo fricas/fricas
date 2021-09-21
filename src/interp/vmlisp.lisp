@@ -455,10 +455,12 @@
 
 (define-function 'strconc #'concat)
 
-(defun |make_full_CVEC|(sint &optional (char #\space))
+(defun |make_full_CVEC2|(sint char)
   (make-string sint :initial-element (if (integerp char)
                                        (code-char char)
                                        (character char))))
+
+(defun |make_full_CVEC|(sint) (|make_full_CVEC2| sint #\space))
 
 ; 17.2 Accessing
 
@@ -610,7 +612,7 @@
                   :direction :input :if-does-not-exist nil))))
 
 (defun MAKE_OUTSTREAM (filespec)
-   (cond 
+   (cond
          ((null filespec) (error "not handled yet"))
          (t (open (|make_filename| filespec) :direction :output
                #+(or :cmucl :openmcl :sbcl) :if-exists

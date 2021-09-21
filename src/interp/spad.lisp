@@ -73,8 +73,6 @@
 ;; This is used in the domain Boolean
 (defun |BooleanEquality| (x y) (if x y (null y)))
 
-(MAKEPROP 'END_UNIT 'KEY T)
-
 ;;; (defun |evalSharpOne| (x \#1) (declare (special \#1)) (EVAL x))
 (defun |evalSharpOne| (x |#1|)
    (declare (special |#1|))

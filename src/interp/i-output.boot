@@ -196,7 +196,7 @@ appChar(string,x,y,d) ==
         RPLACSTR(line, x, n := #string, string, 0, n)
         d
   appChar(string, x, y, nconc(d,
-            [[y, :make_full_CVEC(10 + $LINELENGTH + $MARGIN, " ")]]))
+            [[y, :make_full_CVEC(10 + $LINELENGTH + $MARGIN)]]))
 
 mathprintWithNumber x ==
   ioHook("startAlgebraOutput")

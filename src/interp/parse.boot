@@ -169,13 +169,8 @@ parseExit [a,:b] ==
     ['exit,a,:b]
   ['exit,1,a]
 
-parseLeave [a,:b] ==
+parseLeave [a] ==
   a:= parseTran a
-  b:= parseTran b
-  b =>
-    null INTEGERP a =>
-      (MOAN('"first arg ",a,'" for 'leave' must be integer"); ['leave,1,a])
-    ['leave,a,:b]
   ['leave,1,a]
 
 parseJoin l ==
