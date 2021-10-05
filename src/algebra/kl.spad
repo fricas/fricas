@@ -103,9 +103,7 @@ SortedCache(S : CachableSet) : Exports == Implementation where
         while k < cache_use repeat
             vscan := cache
             y := vscan(k)
-            equal?(y) =>
-                setPosition(x, position y)
-                return y
+            equal?(y) => return y
             vscan := cache
             -- skip over elements possibly inserted by equal?
             while not(EQ(y, vscan(k))$Lisp) repeat k := k + 1
@@ -140,9 +138,7 @@ SortedCache(S : CachableSet) : Exports == Implementation where
                 has_vm := true
             i := shift(l + m, -1)
             cp := triage(x, y := qelt(vscan, i))
-            zero?(cp) =>
-                setPosition(x, position y)
-                return y
+            zero?(cp) => return y
             vscan := cache
             if not(l < 0) then
                 if not(EQ(vl, qelt(vscan, l))$Lisp) then
@@ -210,10 +206,10 @@ MakeCachableSet(S : SetCategory) : Exports == Implementation where
 --      position(x) < position(y)
 
     x = y ==
-      if position(x) = 0 then enterInCache(x,
-                                 (x1 +-> (x::S = x1::S))@(% -> Boolean))
-      if position(y) = 0 then enterInCache(y,
-                                 (x1 +-> (y::S = x1::S))@(% -> Boolean))
+      if position(x) = 0 then 
+           x := enterInCache(x, (x1 +-> (x::S = x1::S))@(% -> Boolean))
+      if position(y) = 0 then
+           y := enterInCache(y, (x1 +-> (y::S = x1::S))@(% -> Boolean))
       position(x) = position(y)
 
 )abbrev domain KERNEL Kernel
