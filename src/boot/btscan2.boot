@@ -41,7 +41,6 @@ dqAppend(x,y)==
     else if null y
          then x
          else
-              RPLACD (CDR x,CAR y)
               RPLACD (x,    CDR y)
               x
 
