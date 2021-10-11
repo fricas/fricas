@@ -41,6 +41,10 @@ SortedCache(S : CachableSet) : Exports == Implementation where
       ++ determine whether \spad{x < y (f(x, y) < 0), x = y (f(x, y) = 0)}, or
       ++ \spad{x > y (f(x, y) > 0)}.
       ++ It returns x with an integer associated with it.
+    binarySearch : (S, (S, S) -> Integer) -> Union(S, "failed")
+      ++ binarySearch(x, f) searches x in the cache, calling \spad{f(x, y)}
+      ++ to determine order.  It returns y from cache
+      ++ such that f(y) or failed is no such y exists.
 
   Implementation ==> add
     shiftCache   : (N, N) -> Void
@@ -117,15 +121,13 @@ SortedCache(S : CachableSet) : Exports == Implementation where
         insertAtEnd(x)
         x
 
-    enterInCache(x : S, triage : (S, S) -> Integer) ==
+    binarySearch(x : S, triage : (S, S) -> Integer) ==
+        zero?(cache_use) => "failed"
+    search_body ==>
         vscan := cache
         l : Integer := -1
         m : Integer := cache_use
         m0 := m
-        zero?(cache_use) =>
-            setPosition(x, DIFF)
-            insertAtEnd(x)
-            return x
         while (l + 1) < m repeat
             vl : S
             vm : S
@@ -160,6 +162,18 @@ SortedCache(S : CachableSet) : Exports == Implementation where
                 m := i
             else
                 l := i
+
+    binarySearch(x : S, triage : (S, S) -> Integer) ==
+        zero?(cache_use) => "failed"
+        search_body
+        "failed"
+
+    enterInCache(x : S, triage : (S, S) -> Integer) ==
+        zero?(cache_use) =>
+            setPosition(x, DIFF)
+            insertAtEnd(x)
+            return x
+        search_body
         m = cache_use =>
             setPosition(x, (position qelt(vscan, m - 1)) + DIFF)
             insertAtEnd(x)
@@ -294,10 +308,17 @@ Kernel(S : Comparable) : Exports == Implementation where
         #(argument k1) ~= #(argument k2) => false
         f(k1, k2)
 
+    kerEqual0(k1 : %, k2 : %) : Boolean ==
+        triage(k1, k2) = 0
+
     kernelEnterInCache(k : %) : % ==
+        (res := binarySearch(k, triage)) case % => res::%
         if (f0 := property(operator k, SPECIALEQUAL)) case None then
             f1 := (f0::None) pretend ((%, %) -> Boolean)
             (res := linearSearch(k, y +-> kerEqual(k, y, f1))) case % =>
+                return res::%
+        else
+            (res := linearSearch(k, y +-> kerEqual0(k, y))) case % =>
                 return res::%
         enterInCache(k, triage)
 
