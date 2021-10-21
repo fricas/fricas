@@ -185,7 +185,7 @@ postMDef(t) ==
 
 postExit ["=>",a,b] == ['IF,postTran a,['exit,postTran b],'noBranch]
 
-
+-- quadratic in case of semicolon...
 postFlatten(x,op) ==
   x is [ =op,a,b] => [:postFlatten(a,op),:postFlatten(b,op)]
   LIST x
