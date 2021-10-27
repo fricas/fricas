@@ -322,6 +322,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
   FF  ==> Record(ratpart : F,  coeff : F)
   FFR ==> Record(ratpart : RF, coeff : RF)
   UF  ==> Union(FF,  "failed")
+  UFS ==> Union(Record(ratpart : F,  coeff : F, prim : F), "failed")
   UF2 ==> Union(List F, "failed")
   REC ==> Record(ir : IR, specpart : RF, polypart : UP)
   DREC ==> Record(answer : RF, logpart : RF, ir : IR)
@@ -329,7 +330,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
   PSOL2 ==> Record(ans : F, right : F, primpart : F, sol? : Boolean)
 
   Exports ==> with
-    primintegrate  : (RF, UP -> UP, RF -> DREC, F -> UF)          -> IRF
+    primintegrate  : (RF, UP -> UP, RF -> DREC, (F, N) -> UFS) -> IRF
       ++ primintegrate(f, ', foo) returns \spad{[g, a]} such that
       ++ \spad{f = g' + a}, and \spad{a = 0} or \spad{a} has no integral in UP.
       ++ Argument foo is an extended integration function on F.
@@ -358,7 +359,7 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
     import from TranscendentalHermiteIntegration(F, UP)
     import from CommuteUnivariatePolynomialCategory(F, UP, UP2)
 
-    primintegratepoly  : (UP, F -> UF, F) -> Union(UPF, UPUP)
+    primintegratepoly  : (UP, (F, N) -> UFS, F) -> Union(UPF, UPUP)
     expintegratepoly2   : (GP, (Z, F) -> PSOL2) -> Union(GPF, GPGP)
     expextintfrac      : (RF, UP -> UP, RF) -> Union(FFR, "failed")
     logprmderiv        : (RF, UP -> UP)    -> RF
@@ -543,13 +544,13 @@ TranscendentalIntegration(F, UP) : Exports == Implementation where
       zero? p => [0, 0$F]
       ans : UP := 0
       while (d := degree p) > 0 repeat
-        (ans1 := extendedint leadingCoefficient p) case "failed" =>
+        (ans1 := extendedint(leadingCoefficient(p), d)) case "failed" =>
           return([ans, p])
         p   := reductum p - monomial(d * t' * ans1.ratpart, (d - 1)::N)
         ans := ans + monomial(ans1.ratpart, d)
-                              + monomial(ans1.coeff / (d + 1)::F, d + 1)
-      (ans1 := extendedint(rp := retract(p)@F)) case "failed" => [ans,rp]
-      [monomial(ans1.coeff, 1) + ans1.ratpart::UP + ans, 0$F]
+                 + monomial(ans1.coeff / (d + 1)::F, d + 1) + (ans1.prim)::UP
+      (ans1 := extendedint(rp := retract(p)@F, 0)) case "failed" => [ans,rp]
+      [monomial(ans1.coeff, 1) + (ans1.ratpart + ans1.prim)::UP + ans, 0$F]
 
 )abbrev package INTRAT RationalIntegration
 ++ Rational function integration

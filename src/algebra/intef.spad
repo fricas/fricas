@@ -27,6 +27,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
   Ext_Rec ==> Record(ratpart:F, coeff:F)
   U2  ==> Union(Ext_Rec, "failed")
   U3  ==> Union(Record(mainpart:F, limitedlogs:LLG), "failed")
+  U4  ==> Union(Record(ratpart : F, coeff : F, prim : F), "failed")
   ANS ==> Record(special : F, integrand : F)
   PSOL==> Record(ans : F, right : F, sol? : Boolean)
   PSOL2 ==> Record(ans : F, right : F, primpart : F, sol? : Boolean)
@@ -54,6 +55,8 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
                                                              K, R, P, F)
     import from ParametricIntegration(R, F)
+
+    N ==> NonNegativeInteger
 
     PRIM := 'prim
     ALGOP := '%alg
@@ -254,11 +257,8 @@ ElementaryIntegration(R, F) : Exports == Implementation where
           is?(k, 'log) => (rf : RF) : DREC +-> denint_li(rf, k, x)
           denint_dummy
       dk := differentiate(k::F, x)
-      ext := (f1 : F) : U2 +->
-          r1 := extendedint(f1, x, lk, [dk]).particular
-          r1 case "failed" => "failed"
-          rf := r1::Param_Rec_F
-          [rf.ratpart, (rf.coeffs)(1)]
+      ext := (f1 : F, d : N) : U4 +->
+          polylog_int(f1, x, k, d, lk, dk)
       r1 := primintegrate(univariate(f, k),
               (x1 : UP) : UP+->differentiate(x1,
                 (x2 : F) : F+->differentiate(x2, x), dk::UP),
