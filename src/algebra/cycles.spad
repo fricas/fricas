@@ -95,30 +95,35 @@ CycleIndicators : Exports == Implementation where
     trm pt == monomial(inv(pdct(pt) :: RN), pt)
 
     list : Stream L I -> L L I
-    list st == entries complete st
+    list(st) == entries(complete(st))
 
-    complete i ==
-           if i = 0 then 1
-           else if i < 0 then 0
-                else
-                   _+/[trm(partition pt) for pt in list(partitions i)]
+    sorted_partitions(i : I) : List(PTN) ==
+        lli := list(partitions(i))
+        lp := map(partition$PTN, lli)$ListFunctions2(L(I), PTN)
+        sort(reverse(lp))
 
+    complete(i) ==
+        i = 0 => 1
+        i < 0 => 0
+        _+/[trm(pt) for pt in sorted_partitions(i)]
 
     even? : L I -> B
-    even? li == even?( #([i for i in li | even? i]))
+    even? li ==
+        le := [i for i in li | even?(i)$Integer]
+        even?(#le)$Integer
 
-    alt i ==
-      2 * _+/[trm(partition li) for li in list(partitions i) | even? li]
-    elementary i ==
-           if i = 0 then 1
-           else if i < 0 then 0
-                else
-                  _+/[(spol := trm(partition pt); even? pt => spol; -spol)
-                          for pt in list(partitions i)]
+    alternating(i) ==
+        2 * _+/[trm(pt) for pt in sorted_partitions(i) | even?(pt::L(I))]
+
+    elementary(i) ==
+        i = 0 => 1
+        i < 0 => 0
+        _+/[(spol := trm(pt); even?(pt::L(I)) => spol; -spol)
+               for pt in sorted_partitions(i)]
 
     divisors : I -> L I
     divisors n ==
-      b := factorList(n :: FR)
+      b := factorList(factor(n))
       c := concat(1,"append"/
                  [[a.factor^j for j in 1..a.exponent] for a in b])
       if #(b) = 1 then c else concat(n, c)
@@ -150,11 +155,13 @@ CycleIndicators : Exports == Implementation where
         c :=
           odd? ll0 => ss(ll0, ll1 * k)
           ss(k, ll1) * ss(ll0, ll1 * (k - 1))
-        c := c * ss(ll0, ll0 * ((ll1*(ll1 - 1)) quo 2))
+        qq1 := (ll1*(ll1 - 1)) quo 2
+        c := c * ss(ll0, ll0*qq1)
         prod2 : SPOL RN := 1
         for r in lli | first(r) < ll0 repeat
-          r0 := first r; r1 := second r
-          prod2 := ss(lcm(r0, ll0), gcd(r0, ll0) * r1 * ll1) * prod2
+            r0 := first r; r1 := second r
+            pp1 := gcd(r0, ll0) * r1 * ll1
+            prod2 := ss(lcm(r0, ll0), pp1) * prod2
         prod := c * prod2 * prod
       xx * prod
 
