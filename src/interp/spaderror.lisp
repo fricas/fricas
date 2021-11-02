@@ -81,6 +81,23 @@
   `(let ((|$BreakMode| '|trapSpadErrors|))
        (catch '|trapSpadErrors| ,form)))
 
+#+:sbcl
+(progn
+(defun |do_timeout| (f ti)
+   (handler-case
+          (sb-ext:with-timeout ti (SPADCALL f))
+       (sb-ext:timeout (e)
+          (THROW '|trapSpadErrors| |$numericFailure|))
+   )
+)
+
+(defun |eval_with_timeout| (f ti)
+    (CATCH '|trapSpadErrors| (cons 0 (|do_timeout| f ti))))
+)
+
+#-:sbcl
+(defun |eval_with_timeout| (f ti) (|error| "unimplemented for this Lisp"))
+
 (defparameter |$inLispVM| nil)
 
 #-:GCL
