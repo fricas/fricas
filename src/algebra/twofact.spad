@@ -75,10 +75,6 @@ TwoFactorize(F) : C == T
       ++ tryTwoFactor(p) returns the factorisation of polynomial p,
       ++ if it does not require using field extensions, otherwise
       ++ returns p unfactored (nil factorization).
-    generalSqFr    : (P)  ->  Factored P
-      ++ generalSqFr(p) returns the square-free factorisation of polynomial p,
-      ++ a sparse univariate polynomial (sup) over a
-      ++ sup over F.
     twoFactor    : (P, Integer)  ->  Factored P
       ++ twoFactor(p, n) returns the factorisation of polynomial p,
       ++ a sparse univariate polynomial (sup) over a
@@ -98,19 +94,8 @@ TwoFactorize(F) : C == T
     import from CommuteUnivariatePolynomialCategory(F, R, P)
 
                    ----  Local Functions  ----
-    exchangeVars   :           P          -> P
-    exchangeVarTerm :        (R, NNI)      -> P
     pthRoot        :     (R, NNI, NNI)    -> R
 
-    exchangeVars(p : P) : P ==
-       p = 0 => 0
-       exchangeVarTerm(leadingCoefficient p, degree p) +
-          exchangeVars(reductum p)
-
-    exchangeVarTerm(c : R, e : NNI) : P ==
-       c = 0 => 0
-       monomial(monomial(leadingCoefficient c, e)$R, degree c)$P +
-          exchangeVarTerm(reductum c, e)
 
     pthRoot(poly : R, p : NonNegativeInteger, PthRootPow : NonNegativeInteger) : R ==
        tmp := divideExponents(map((x : F) : F +-> (x::F)^PthRootPow, poly), p)
@@ -119,32 +104,6 @@ TwoFactorize(F) : C == T
 
     fUnion ==> Union("nil", "sqfr", "irred", "prime")
     FF     ==> Record(flag : fUnion, factor : P, exponent : NNI)
-
-    generalSqFr(m : P) : Factored P ==
-       m = 0 => 0
-       degree m = 0 =>
-         l := squareFree(leadingCoefficient m)
-         makeFR(unit(l)::P, [[u.flag, u.factor::P, u.exponent] for u in factorList l])
-       cont := content m
-       m := (m exquo cont)::P
-       sqfrm := squareFree m
-       pfaclist : List FF := empty()
-       unitPart := unit sqfrm
-       for u in factorList sqfrm repeat
-          u.flag = "nil" =>
-             uexp : NNI := (u.exponent)::NNI
-             nfacs := squareFree(exchangeVars u.factor)
-             for v in factorList nfacs repeat
-                pfaclist := cons([v.flag, exchangeVars v.factor, v.exponent*uexp],
-                              pfaclist)
-             unitPart := unit(nfacs)^uexp * unitPart
-          pfaclist := cons(u, pfaclist)
-       cont ~= 1 =>
-           sqp := squareFree cont
-           contlist := [[w.flag, (w.factor)::P, w.exponent] for w in factorList sqp]
-           pfaclist := append(contlist, pfaclist)
-           makeFR(unit(sqp)*unitPart, pfaclist)
-       makeFR(unitPart, pfaclist)
 
     doTwoFactor : (P, Boolean) -> Factored P
 

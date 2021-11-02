@@ -259,13 +259,6 @@ IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
       mkPrim : (F, SE) -> F
         ++ mkPrim(f, x) makes the logs in f which are linear in x
         ++ primitive with respect to x.
-      if R has ConvertibleTo Pattern Integer and R has PatternMatchable Integer
-        and F has LiouvillianFunctionCategory and F has RetractableTo SE then
-          intPatternMatch : (F, SE, (F, SE) -> IR, (F, SE) -> U) -> IR
-            ++ intPatternMatch(f, x, int, pmint) tries to integrate \spad{f}
-            ++ first by using the integration function \spad{int}, and then
-            ++ by using the pattern match intetgration function \spad{pmint}
-            ++ on any remaining unintegrable part.
 
   Impl ==> add
 
@@ -337,27 +330,6 @@ IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
         (u := isExpt(p := ((p exquo cont(p, varselect(variables p, x)))::P)))
           case "failed" => [1, p::F]
         [u.exponent, u.var::F]
-
-      if R has Join(ConvertibleTo Pattern Integer, PatternMatchable Integer)
-        and F has Join(LiouvillianFunctionCategory, RetractableTo SE) then
-          intPatternMatch(f, x, int, pmint) ==
-            ir := int(f, x)
-            empty?(l := notelem ir) => ir
-            ans := ratpart ir
-            nl : List(Record(integrand : F, intvar : F)) := empty()
-            lg := logpart ir
-            for rec in l repeat
-              u := pmint(rec.integrand, retract(rec.intvar))
-              if u case ANS then
-                 rc := u::ANS
-                 ans := ans + rc.special
-                 if rc.integrand ~= 0 then
-                   ir0 := intPatternMatch(rc.integrand, x, int, pmint)
-                   ans := ans + ratpart ir0
-                   lg  := concat(logpart ir0, lg)
-                   nl  := concat(notelem ir0, nl)
-              else nl := concat(rec, nl)
-            mkAnswer(ans, lg, nl)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
