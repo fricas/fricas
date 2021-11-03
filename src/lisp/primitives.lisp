@@ -113,7 +113,7 @@
                                   (format nil "~A" ,s))))
 
 #+:sbcl
-(defmacro sbcl_make_sized_vector(nb n)
+(defmacro sbcl_make_sized_vector(nb b_spec n)
     (let ((get-tag (find-symbol "%VECTOR-WIDETAG-AND-N-BITS" "SB-IMPL"))
           (length-sym nil))
         (if (null get-tag)
@@ -124,21 +124,21 @@
                 (setf length-sym (find-symbol "VECTOR-LENGTH-IN-WORDS"
                                               "SB-IMPL"))))
         (multiple-value-bind (typetag n-bits)
-            (FUNCALL get-tag `(unsigned-byte ,nb))
+            (FUNCALL get-tag `(,b_spec ,nb))
             (let ((length-form
                    (if length-sym
                        `(,length-sym ,n ,n-bits)
                        `(ceiling (* ,n ,n-bits) sb-vm:n-word-bits))))
                 `(SB-KERNEL:ALLOCATE-VECTOR ,typetag ,n ,length-form)))))
 
-(defmacro DEF_SIZED_UOPS(nb)
+(defmacro DEF_SIZED_OPS(nb nbn b_spec)
 
 `(progn
-(defmacro ,(suffixed_name ELT_U nb) (v i)
-    `(aref (the (simple-array (unsigned-byte ,',nb) (*)) ,v) ,i))
+(defmacro ,(suffixed_name ELT_ nbn) (v i)
+    `(aref (the (simple-array (,',b_spec ,',nb) (*)) ,v) ,i))
 
-(defmacro ,(suffixed_name SETELT_U nb)(v i s)
-    `(setf (aref (the (simple-array (unsigned-byte ,',nb) (*)) ,v) ,i)
+(defmacro ,(suffixed_name SETELT_ nbn)(v i s)
+    `(setf (aref (the (simple-array (,',b_spec ,',nb) (*)) ,v) ,i)
            ,s))
 
 #+:sbcl
@@ -153,48 +153,56 @@
                                               "SB-IMPL"))))
         (cond
            ((and (null get-tag) (or (null get-tag2) (null length-sym)))
-            (defun ,(suffixed_name GETREFV_U nb)(n x)
+            (defun ,(suffixed_name GETREFV_ nbn)(n x)
                (make-array n :initial-element x
-                          :element-type '(unsigned-byte ,nb))))
+                          :element-type '(,b_spec ,nb))))
            (t
-             (defun ,(suffixed_name GETREFV_U nb)(n x)
-                    (let ((vec (sbcl_make_sized_vector ,nb n)))
+             (defun ,(suffixed_name GETREFV_ nbn)(n x)
+                    (let ((vec (sbcl_make_sized_vector ,nb ,b_spec n)))
                          (fill vec x)
                          vec)))))
 
 #-:sbcl
-(defun ,(suffixed_name GETREFV_U nb)(n x)
+(defun ,(suffixed_name GETREFV_ nbn)(n x)
     (make-array n :initial-element x
-               :element-type '(unsigned-byte ,nb)))
+               :element-type '(,b_spec ,nb)))
 
-(defmacro ,(suffixed_name QV_LEN_U nb)(v)
-    `(length (the (simple-array (unsigned-byte ,',nb) (*)) ,v)))
+(defmacro ,(suffixed_name QV_LEN_ nbn)(v)
+    `(length (the (simple-array (,',b_spec ,',nb) (*)) ,v)))
 
-(defmacro ,(suffixed_name MAKE_MATRIX_U nb) (n m)
-   `(make-array (list ,n ,m) :element-type '(unsigned-byte ,',nb)))
+(defmacro ,(suffixed_name MAKE_MATRIX_ nbn) (n m)
+   `(make-array (list ,n ,m) :element-type '(,',b_spec ,',nb)))
 
-(defmacro ,(suffixed_name MAKE_MATRIX1_U nb) (n m s)
-   `(make-array (list ,n ,m) :element-type '(unsigned-byte ,',nb)
+(defmacro ,(suffixed_name MAKE_MATRIX1_ nbn) (n m s)
+   `(make-array (list ,n ,m) :element-type '(,',b_spec ,',nb)
            :initial-element ,s))
 
-(defmacro ,(suffixed_name AREF2_U nb) (v i j)
-   `(aref (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) ,i ,j))
+(defmacro ,(suffixed_name AREF2_ nbn) (v i j)
+   `(aref (the (simple-array (,',b_spec ,',nb) (* *)) ,v) ,i ,j))
 
-(defmacro ,(suffixed_name SETAREF2_U nb) (v i j s)
-   `(setf (aref (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) ,i ,j)
+(defmacro ,(suffixed_name SETAREF2_ nbn) (v i j s)
+   `(setf (aref (the (simple-array (,',b_spec ,',nb) (* *)) ,v) ,i ,j)
           ,s))
 
-(defmacro ,(suffixed_name ANROWS_U nb) (v)
-    `(array-dimension (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) 0))
+(defmacro ,(suffixed_name ANROWS_ nbn) (v)
+    `(array-dimension (the (simple-array (,',b_spec ,',nb) (* *)) ,v) 0))
 
-(defmacro ,(suffixed_name ANCOLS_U nb) (v)
-    `(array-dimension (the (simple-array (unsigned-byte ,',nb) (* *)) ,v) 1))
+(defmacro ,(suffixed_name ANCOLS_ nbn) (v)
+    `(array-dimension (the (simple-array (,',b_spec ,',nb) (* *)) ,v) 1))
 
 ))
+
+(defmacro DEF_SIZED_UOPS(nb)
+   `(DEF_SIZED_OPS ,nb ,(suffixed_name U nb) unsigned-byte))
+
+(defmacro DEF_SIZED_IOPS(nb)
+   `(DEF_SIZED_OPS ,nb ,(suffixed_name I nb) signed-byte))
 
 (DEF_SIZED_UOPS 32)
 (DEF_SIZED_UOPS 16)
 (DEF_SIZED_UOPS 8)
+
+(DEF_SIZED_IOPS 16)
 
 ;;; Modular arithmetic
 
