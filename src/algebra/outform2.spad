@@ -12,6 +12,10 @@ OutputFormatterCategory : Category == with
 OutputFormTools : with
     atom? : OutputForm -> Boolean
       ++ atom?(f) checks if form f is atomic, false means composite
+    atom_to_string : OutputForm -> String
+      ++ atom_to_string(f) converts f to string form.
+    empty? : OutputForm -> Boolean
+      ++ empty?(f) checks if form f is empty.
     integer? : OutputForm -> Boolean
       ++ integer?(f) checks if f is an integer, this implies atom?(f)
     integer : OutputForm -> Integer
@@ -47,6 +51,17 @@ OutputFormTools : with
   == add
 
     atom?(x) == ATOM(x)$Lisp
+
+    atom_to_string(x) ==
+        symbol?(x) => string(x pretend Symbol)
+        integer?(x) => string(x pretend Integer)
+        string?(x) => x pretend String
+        error "unrecognized kind of atom"
+
+    empty?(x) ==
+        atom?(x) or not(empty?(arguments(x))) => false
+        op := operator(x)
+        symbol?(op) and (op pretend Symbol) = 'NOTHING
 
     integer?(x) == INTEGERP(x)$Lisp
 
