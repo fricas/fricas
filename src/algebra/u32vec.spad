@@ -604,7 +604,7 @@ U32VectorPolynomialOperations() : Export == Implementation where
             res
 
         inner_mul : (PA, PA, PA,  SingleInteger, SingleInteger, _
-                      SingleInteger, Integer) -> Void
+                      SingleInteger, SingleInteger, Integer) -> Void
 
         mul(x : PA, y : PA, p : Integer) : PA ==
             xdeg := qconvert(degree(x))@SingleInteger
@@ -623,10 +623,12 @@ U32VectorPolynomialOperations() : Export == Implementation where
             zdeg : SingleInteger := xdeg + ydeg
             zdeg0 := qcoerce((zdeg + 1)::Integer)@NonNegativeInteger
             zcoeffs := new(zdeg0, 0)$PA
-            inner_mul(xcoeffs, ycoeffs, zcoeffs, xdeg, ydeg, zdeg, p)
+            inner_mul(xcoeffs, ycoeffs, zcoeffs, xdeg, ydeg, 0, zdeg, p)
             zcoeffs
 
-        inner_mul(x, y, z, xdeg, ydeg, zdeg, p) ==
+        inner_mul(x, y, z, xdeg, ydeg, d, zdeg, p) ==
+            -- Logically not necessary, but helps to get better code
+            ds : SingleInteger := d
             if ydeg < xdeg then
                 tmpp := x
                 tmp := xdeg
@@ -640,36 +642,42 @@ U32VectorPolynomialOperations() : Export == Implementation where
             ydeg :=
                 zdeg < ydeg => zdeg
                 ydeg
-            ss : Integer
+            ss : U64Int
             i : SingleInteger
             j : SingleInteger
             for i in 0..xdeg repeat
-                ss := z(i)
+                ss := qconvert(z(i + ds))
                 for j in 0..i repeat
                     ss := Qmuladd(x(i - j), y(j), ss)
-                z(i) := Qrem(ss, p)
+                z(i + d) := Qrem(ss, p)
             for i in (xdeg+1)..ydeg repeat
-                ss := z(i)
+                ss := qconvert(z(i + ds))
                 for j in 0..xdeg repeat
                     ss := Qmuladd(x(j), y(i-j), ss)
-                z(i) := Qrem(ss, p)
+                z(i + d) := Qrem(ss, p)
             for i in (ydeg+1)..zdeg repeat
-                ss := z(i)
+                ss := qconvert(z(i + ds))
                 for j in (i-xdeg)..ydeg repeat
                     ss := Qmuladd(x(i - j), y(j), ss)
-                z(i) := Qrem(ss, p)
+                z(i + ds) := Qrem(ss, p)
 
         truncated_mul_add(x, y, z, m, p) ==
+            xdeg := qconvert(degree(x))@SingleInteger
+            ydeg := qconvert(#y - 1)@SingleInteger
+            inner_mul(x, y, z, xdeg, ydeg, 0, qconvert(m)@SingleInteger, p)
+
+        truncated_mul_add2(x, y, z, d, m, p) ==
             xdeg := qconvert(#x - 1)@SingleInteger
             ydeg := qconvert(#y - 1)@SingleInteger
-            inner_mul(x, y, z, xdeg, ydeg, qconvert(m)@SingleInteger, p)
+            inner_mul(x, y, z, xdeg, ydeg, qconvert(d)@SingleInteger,
+                      qconvert(m - d)@SingleInteger, p)
 
         truncated_multiplication(x, y, m, p) ==
             xdeg := qconvert(#x - 1)@SingleInteger
             ydeg := qconvert(#y - 1)@SingleInteger
             z := new(qcoerce(qconvert(m)@SingleInteger + 1
                             )@NonNegativeInteger, 0)$PA
-            inner_mul(x, y, z, xdeg, ydeg, qconvert(m)@SingleInteger, p)
+            inner_mul(x, y, z, xdeg, ydeg, 0, qconvert(m)@SingleInteger, p)
             z
 
         pow(x : PA, n : PositiveInteger, d : NonNegativeInteger, _
