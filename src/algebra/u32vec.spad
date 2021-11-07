@@ -283,10 +283,14 @@ U32VectorPolynomialOperations() : Export == Implementation where
           ++ Polynomial multiplication.
         truncated_multiplication : (PA, PA, Integer, Integer) -> PA
           ++ truncated_multiplication(x, y, d, p) computes
-          ++ x*y truncated after degree d
+          ++ x*y truncated after degree d.
         truncated_mul_add : (PA, PA, PA, Integer, Integer) -> Void
           ++ truncated_mul_add(x, y, z, d, p) adds to z
-          ++ the produce x*y truncated after degree d
+          ++ the product x*y truncated after degree d.
+        truncated_mul_add2 : (PA, PA, PA, Integer, Integer, Integer) -> Void
+          ++ truncated_mul_add2(x, y, z, d1, d2, p) adds to z
+          ++ the product x*y and the variable to power d1
+          ++ truncated after degree d.
         pow : (PA, PositiveInteger, NonNegativeInteger, Integer) -> PA
           ++ pow(u, n, d, p) returns u^n truncated after degree d, except if
           ++ n=1, in which case u itself is returned
@@ -429,8 +433,16 @@ U32VectorPolynomialOperations() : Export == Implementation where
         divide!(r0 : PA, r1 : PA, res : PA, p : Integer) : Void ==
             dr0 := qconvert(degree(r0))@SingleInteger
             dr1 := qconvert(degree(r1))@SingleInteger
+            dr1 < 0 => error "divide!: zero divisor"
+            dr0 < 0 => return void()
             c0 := r1(dr1)
             c0 := modInverse(c0, p)
+            dr1 = 0 =>
+                while not(dr0 < 0) repeat
+                    c1 : Integer := Qmul(c0, r0(dr0), p)
+                    res(dr0) := c1
+                    r0(dr0) := 0
+                    dr0 := dr0 - 1
             while not(dr0 < dr1) repeat
                 delta := dr0 - dr1
                 c1 : Integer := Qmul(c0, r0(dr0), p)
@@ -447,6 +459,12 @@ U32VectorPolynomialOperations() : Export == Implementation where
         remainder!(r0 : PA, r1 : PA, p : Integer) : Void ==
             dr0 := qconvert(degree(r0))@SingleInteger
             dr1 := qconvert(degree(r1))@SingleInteger
+            dr1 < 0 => error "remainder!: zero divisor"
+            dr0 < 0 => return void()
+            dr1 = 0 =>
+                while not(dr0 < 0) repeat
+                    r0(dr0) := 0
+                    dr0 := dr0 - 1
             c0 := r1(dr1)
             c0 := modInverse(c0, p)
             while not(dr0 < dr1) repeat
@@ -520,8 +538,8 @@ U32VectorPolynomialOperations() : Export == Implementation where
 
         lcm2(v1 : PA, v2 : PA, p : Integer) : PA ==
             pp := gcd(v1, v2, p)
-            dv2 := degree(v2)
-            dpp := degree(pp)
+            dv2 := qconvert(degree(v2))@SingleInteger
+            dpp := qconvert(degree(pp))@SingleInteger
             dv2 = dpp =>
                 v1
             dpp = 0 => mul(v1, v2, p)
