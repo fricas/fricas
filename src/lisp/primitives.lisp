@@ -26,6 +26,12 @@
                  (|sub_SI| ,i ,o))
            ,s))
 
+(defmacro QAREF2(m i j)
+    `(aref (the (simple-array T (* *)) ,m) ,i ,j))
+
+(defmacro QSETAREF2(m i j r)
+    `(setf (aref (the (simple-array T (* *)) ,m) ,i ,j) ,r))
+
 (defmacro QAREF2O(m i j oi oj)
     `(aref (the (simple-array T (* *)) ,m)
            (|sub_SI| ,i ,oi)
@@ -640,7 +646,8 @@
             ((|SingleInteger|) (fixnum 0))
             ((|String|) (string ""))
             ((|Boolean|) (BOOLEAN nil))
-            ((|DoubleFloat|) (DOUBLE-FLOAT 0.0d0)))
+            ((|DoubleFloat|) (DOUBLE-FLOAT 0.0d0))
+            ((|U64Int|) (machine_int 0)))
             :test #'equal
             )))
   (if typDecl (setf typDecl (car (cdr typDecl)))

@@ -169,6 +169,8 @@ optCallEval u ==
   u is ["PrimitiveArray",:.] => PrimitiveArray Integer()
   u is ["Matrix", :.] => Matrix Integer()
   u is ["TwoDimensionalArray", :.] => TwoDimensionalArray Integer()
+  u is ["PrimitiveTwoDimensionalArray", :.] =>
+                       PrimitiveTwoDimensionalArray(Integer())
   eval u
 
 optCons (x is ["CONS",a,b]) ==

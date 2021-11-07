@@ -405,6 +405,7 @@
      |String| |Boolean| |Symbol| |DoubleFloat| |PrimitiveArray| |Vector|
      |Matrix| |OneDimensionalArray| |TwoDimensionalArray| |U32Vector|
      |U32Matrix| |U16Vector| |U16Matrix| |U8Vector| |U8Matrix|
+     |I16Vector| |I16Matrix| |U64Int| |PrimitiveTwoDimensionalArray|
      |DoubleFloatVector| |DoubleFloatMatrix| |ComplexDoubleFloatVector|
      |ComplexDoubleFloatMatrix| |Character| |SortedExponentVector|
      |HashState| ))
