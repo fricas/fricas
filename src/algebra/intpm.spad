@@ -15,24 +15,9 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
   Z   ==> Integer
   SY  ==> Symbol
   K   ==> Kernel F
-  P   ==> SparseMultivariatePolynomial(R, K)
-  SUP ==> SparseUnivariatePolynomial F
   PAT ==> Pattern Z
   RES ==> PatternMatchResult(Z, F)
   OFE ==> OrderedCompletion F
-  REC ==> Record(which : Z, exponent : F, coeff : F)
-  REC2 ==> Record(which : Z, exponent : F, coeff : F, addpart : F)
-  ANS ==> Record(special : F, integrand : F)
-  NONE ==> 0
-  EI   ==> 1
-  ERF  ==> 2
-  SI   ==> 3
-  CI   ==> 4
-  GAM2 ==> 5
-  CI0  ==> 6
-  -- Fresnel integrals
-  FS ==> 7
-  FC ==> 8
 
   Exports ==> with
     splitConstant : (F, SY) -> Record(const : F, nconst : F)
@@ -40,16 +25,6 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
       ++ \spad{f = c * g} and \spad{c} does not involve \spad{t}.
     if R has ConvertibleTo Pattern Integer and
        R has PatternMatchable Integer then
-         if F has LiouvillianFunctionCategory then
-           pmComplexintegrate : (F, SY) -> Union(ANS, "failed")
-             ++ pmComplexintegrate(f, x) returns either "failed" or
-             ++ \spad{[g, h]} such that
-             ++ \spad{integrate(f, x) = g + integrate(h, x)}.
-             ++ It only looks for special complex integrals that pmintegrate
-             ++ does not return.
-           pmintegrate : (F, SY) -> Union(ANS, "failed")
-             ++ pmintegrate(f, x) returns either "failed" or \spad{[g,h]} such
-             ++ that \spad{integrate(f, x) = g + integrate(h, x)}.
          if F has SpecialFunctionCategory then
            pmintegrate : (F, SY, OFE, OFE) -> Union(F, "failed")
              ++ pmintegrate(f, x = a..b) returns the integral of
@@ -118,134 +93,6 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
 
     if R has ConvertibleTo Pattern Integer and
        R has PatternMatchable Integer then
-         if F has LiouvillianFunctionCategory then
-           import from ElementaryFunctionSign(R, F)
-
-           insqrt     : F -> F
-           matchei    : (F, SY) -> REC
-           matcherfei : (F, SY, Boolean) -> REC
-           matchli    : (F, SY) -> List F
-           matchli0   : (F, K, SY) -> List F
-           matchdilog : (F, SY) -> List F
-           matchdilog0 : (F, K, SY, P, F) -> List F
-           goodlilog? : (K, P) -> Boolean
-           gooddilog? : (K, P, P) -> Boolean
-
-           goodlilog?(k, p) == is?(k, 'log) and (minimumDegree(p, k) = 1)
-
-           gooddilog?(k, p, q) ==
-             is?(k, 'log) and (degree(p, k) = 1) and zero? degree(q, k)
-
--- matches the integral to a result of the form d * erf(u) or d * ei(u)
--- returns [case, u, d]
-           matcherfei(f, x, comp?) ==
-             res0 := new()$RES
-             pat := c * exp(pma::F)
-             failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
-               comp? => [NONE, 0, 0]
-               matchei(f, x)
-             l := mkalist res
-             da := differentiate(a := l.pma, x)
-             d := a * (cc := l.pmc) / da
-             zero? differentiate(d, x) => [EI, a, d]
-             comp? or (((u := sign a) case Z) and (u::Z) < 0) =>
-               d := cc * (sa := insqrt(- a)) / da
-               zero? differentiate(d, x) => [ERF, sa, - d * spi]
-               [NONE, 0, 0]
-             [NONE, 0, 0]
-
--- matches the integral to a result of the form d * ei(k * log u)
--- returns [case, k * log u, d]
-           matchei(f, x) ==
-             res0 := new()$RES
-             a := pma::F
-             pat := c * a^w / log a
-             failed?(res := patternMatch(f, convert(pat)@PAT, res0)) =>
-               [NONE, 0, 0]
-             l := mkalist res
-             da := differentiate(a := l.pma, x)
-             d := (cc := l.pmc) / da
-             zero? differentiate(d, x) => [EI, (1 + l.pmw) * log a, d]
-             [NONE, 0, 0]
-
--- matches the integral to a result of the form d * dilog(u) + int(v),
--- returns [u, d, v] or []
-           matchdilog(f, x) ==
-             n := numer f
-             df := (d := denom f)::F
-             for k in select!((x1 : K) : Boolean+->gooddilog?(x1, n, d),
-               variables n)$List(K) repeat
-                 not empty?(l := matchdilog0(f, k, x, n, df)) => return l
-             empty()
-
--- matches the integral to a result of the form d * dilog(a) + int(v)
--- where k = log(a)
--- returns [a, d, v] or []
-           matchdilog0(f, k, x, p, q) ==
-             zero?(da := differentiate(a := first argument k, x)) => empty()
-             a1 := 1 - a
-             d := coefficient(univariate(p, k), 1)::F * a1 / (q * da)
-             zero? differentiate(d, x) => [a, d, f - d * da * (k::F) / a1]
-             empty()
-
--- matches the integral to a result of the form d * li(u) + int(v),
--- returns [u, d, v] or []
-           matchli(f, x) ==
-             d := denom f
-             for k in select!((x1 : K) : Boolean+->goodlilog?(x1, d),
-               variables d)$List(K) repeat
-                 not empty?(l := matchli0(f, k, x)) => return l
-             empty()
-
--- matches the integral to a result of the form d * li(a) + int(v)
--- where k = log(a)
--- returns [a, d, v] or []
-           matchli0(f, k, x) ==
-             g := (lg := k::F) * f
-             zero?(da := differentiate(a := first argument k, x)) => empty()
-             zero? differentiate(d := g / da, x) => [a, d, 0]
-             ug := univariate(g, k)
-             (u := retractIfCan(ug)@Union(SUP,"failed")) case "failed" => empty()
-             degree(p := u::SUP) > 1 => empty()
-             zero? differentiate(d := coefficient(p, 0) / da, x) =>
-               [a, d, leadingCoefficient p]
-             empty()
-
-           pmd := new pm
-           pme := new pm
-           pmf := new pm
-           opt_d := optional(pmd::F)
-           opt_e := optional(pme::F)
-
--- returns a simplified sqrt(y)
-           insqrt y ==
-             rec := froot(y, 2)$PolynomialRoots(IndexedExponents K, K, R, P, F)
-             ((rec.exponent) = 1) => rec.coef * rec.radicand
-             rec.exponent ~= 2 => error "insqrt: should not happen"
-             rec.coef * sqrt(rec.radicand)
-
-           pmintegrate(f, x) ==
-             (rc := splitConstant(f, x)).const ~= 1 =>
-               (u := pmintegrate(rc.nconst, x)) case "failed" => "failed"
-               rec := u::ANS
-               [rc.const * rec.special, rc.const * rec.integrand]
-             not empty?(l := matchli(f, x)) => [second l * li first l, third l]
-             not empty?(l := matchdilog(f, x)) =>
-                                            [second l * dilog first l, third l]
-             cse := (rec := matcherfei(f, x, false)).which
-             cse = EI   => [rec.coeff * Ei(rec.exponent), 0]
-             cse = ERF  => [rec.coeff * erf(rec.exponent), 0]
-
-             "failed"
-
-           pmComplexintegrate(f, x) ==
-             (rc := splitConstant(f, x)).const ~= 1 =>
-               (u := pmComplexintegrate(rc.nconst, x)) case "failed" => "failed"
-               rec := u::ANS
-               [rc.const * rec.special, rc.const * rec.integrand]
-             cse := (rec := matcherfei(f, x, true)).which
-             cse = ERF  => [rec.coeff * erf(rec.exponent), 0]
-             "failed"
 
          if F has SpecialFunctionCategory then
            match1    : (F, SY, F, F) -> List F
@@ -264,6 +111,7 @@ PatternMatchIntegration(R, F) : Exports == Implementation where
 
 -- returns [w, m, s, c] or []
 -- matches only formula (1) of the Geddes & al, AAECC 1 (1990) paper
+-- c*t^w*log(t)^m*exp(-t^s)
            match1(f, x, t, cc) ==
              res0 := new()$RES
              pat := cc * log(t)^m * exp(-t^s)
