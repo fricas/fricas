@@ -574,15 +574,20 @@ handle_button(int button, XButtonEvent * event)
     char *page_name;
 
     /* Hack to support mouse wheel */
-    if (event->window == gWindow->fMainWindow ||
-        event->window == gWindow->fScrollWindow) {
-        if (button == 4) {
-            scrollUp();
-            return;
-        } else if (button == 5) {
-            scrollDown();
-            return;
-        }
+    /* Interpret all button 4 and 5 events as vertical scrolling
+       requests regardless of where they occur, and ignore buttons 6
+       and 7 (horizontal scrolling).  This stops unexpected paste
+       actions happening when you are two-finger scrolling on a
+       touchpad and the pointer happens to land on a fragment of SPAD
+       code. */
+    if (button == 4) {
+      scrollUp();
+      return;
+    } else if (button == 5) {
+      scrollDown();
+      return;
+    } else if ((button == 6) || (button == 7)) {
+      return;
     }
 
     /* find page name from sub-window handle */
