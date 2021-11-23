@@ -1338,6 +1338,12 @@ DoubleFloatEllipticIntegrals : Exports == Implementation where
 
 )abbrev package DFSFUN2 DoubleFloatSpecialFunctions2
 DoubleFloatSpecialFunctions2() : with
+    Beta : (DoubleFloat, DoubleFloat) -> DoubleFloat
+    Beta : (Complex(DoubleFloat), Complex(DoubleFloat)) -> Complex(DoubleFloat)
+    Gamma : DoubleFloat -> DoubleFloat
+    Gamma : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    logGamma : DoubleFloat -> DoubleFloat
+    logGamma : Complex(DoubleFloat) -> Complex(DoubleFloat)
     erf : DoubleFloat -> DoubleFloat
     erfi : DoubleFloat -> DoubleFloat
     fresnelC : DoubleFloat -> DoubleFloat
@@ -1350,6 +1356,175 @@ DoubleFloatSpecialFunctions2() : with
     Shi : DoubleFloat -> DoubleFloat
 
   == add
+
+    DF ==> DoubleFloat
+    CDF ==> Complex(DF)
+
+    -- B(2k + 2)/((2k +2)(2k+1))
+    bernoulli_coeffs := construct([
+      0.0833333333_3333333333_3333,      -0.0027777777_7777777777_77777,
+      0.0007936507_9365079365_07936507,  -0.0005952380_9523809523_8095238,
+      0.0008417508_4175084175_08417508,  -0.0019175269_1752691752_6917526,
+      0.0064102564_1025641025_6410256,   -0.0295506535_9477124183_006535,
+      0.1796443723_6883057316_493849,    -1.3924322169_0590111642_743,
+      13.4028640441_6839199447_8951])$DoubleFloatVector
+
+    bernoulli_gamma_series_CDF(z : CDF) : CDF ==
+        zinv := 1/z
+        zk := zinv
+        z2inv := zinv*zinv
+        s := complex(bernoulli_coeffs(10), 0)
+        for k in 9..0 by -1 repeat
+            s := z2inv*s + complex(bernoulli_coeffs(k), 0)
+        zinv*s
+
+    bernoulli_gamma_series_DF(z : DF) : DF ==
+        zinv := 1/z
+        zk := zinv
+        z2inv := zinv*zinv
+        s := bernoulli_coeffs(10)
+        for k in 9..0 by -1 repeat
+            s := z2inv*s + bernoulli_coeffs(k)
+        zinv*s
+
+    -- (1/2)*log(2\pi)
+    c1 : DF := 0.9189385332_0467274178_032
+    c_pi : DF := 3.1415926535_8979323846_2643
+    c_lpi : DF := 1.1447298858_4940017414_3427
+
+    logGamma_a1_CDF(z : CDF) : CDF ==
+        (z - complex(0.5::DF, 0))*log(z) - z + complex(c1, 0)
+
+    logGamma_a1_DF(z : DF) : DF ==
+        (z - 0.5::DF)*log(z) - z + c1
+
+    logGamma1_CDF(z : CDF) : CDF ==
+        logGamma_a1_CDF(z) + bernoulli_gamma_series_CDF(z)
+
+    logGamma1_DF(z : DF) : DF ==
+        logGamma_a1_DF(z) + bernoulli_gamma_series_DF(z)
+
+    -- Taylor coefficients of (1/Gamma(z) - 1)/((z - 1)(z - 2))
+    gamma_coefs := construct([
+        -0.5135166683_8205029558_4635,     0.1646981057_8113240580_0989,
+         0.0525510685_7397673471_42894,   -0.0416156810_5120862277_6535,
+         0.0063368333_0508263175_83644,    0.0021579532_6930791286_6601,
+        -0.0011042580_8696598207_28076,    1.488873_0693989812_2356486e-4,
+         2.58886_7051563457_724778606e-5, -1.38812_5531031499_92363164e-5,
+         2.1338_6236728164_7878133e-6,     6.220163039_5027142600_36e-8,
+        -8.936369293_0098301290_57e-8,     1.703595941_8001670232_39e-8,
+        -9.127269879_4856299939e-10,      -2.700399916_5481406771e-10,
+         7.456662630_2508629829_9e-11,    -7.970325279_3912482429e-12,
+        -9.078412261_8522708038e-14,       1.699271280_9388051214e-13]
+      )$DoubleFloatVector
+
+    Gamma_taylor(z : DF) : DF ==
+        s : DF := 0
+        z1 := z - 1.5::DF
+        z2 := z1*z1
+        for i in 18..0 by -2 repeat
+            s := z2*s + z1*gamma_coefs(i+1) + gamma_coefs(i)
+        1/(1 + s*(z - 1)*(z - 2::DF))
+
+    Gamma1a_DF(z : DF) : DF == exp(logGamma1_DF(z))
+
+    Gamma(z : DF) : DF ==
+        z < 0 =>
+            -- Reflection
+            z_int := round(z)
+            z1 := z - z_int
+            z1 = 0 => error "Pole of Gamma"
+            sign : DF :=
+                odd?(retract(z_int)@Integer) => -1
+                1
+            sign*c_pi/(Gamma(1 - z)*sin(c_pi*z1))
+        z < 1 =>
+            Gamma_taylor(z+1)/z
+        9.0::DF < z =>
+            Gamma1a_DF(z)
+        2.0::DF < z =>
+            p := 1
+            while 2.0::DF < z repeat
+                z := z - 1
+                p := p*z
+            p*Gamma_taylor(z)
+        Gamma_taylor(z)
+
+    Beta(a : DF, b : DF) : DF == Gamma(a)*Gamma(b)/Gamma(a + b)
+
+    logGamma(z : DF) : DF ==
+        not(0 < z) => error "logGamma: nonpositive z"
+        8.0::DF < z => logGamma1_DF(z)
+        log(Gamma(z))
+
+    Gamma1a_CDF(z : CDF) : CDF == exp(logGamma1_CDF(z))
+
+    Gamma1b(z : CDF) : CDF ==
+        zi := imag(z)
+        zr := real(z)
+        zp := z
+        for i in 1..7 repeat
+            zp := zp*(z+complex(i::DF, 0))
+        Gamma1a_CDF(z + complex(8::DF, 0))/zp
+
+    Gamma(z : CDF) : CDF ==
+        zi := imag(z)
+        -- For large imaginary part asymptotic works without reflection
+        8::DF < abs(zi) => Gamma1a_CDF(z)
+        zr := real(z)
+        8::DF < zr => Gamma1a_CDF(z)
+        zr < 0.5::DF =>
+            -- Reflection
+            z_int := round(zr)
+            z1 := z - complex(z_int, 0)
+            z1 = 0 => error "Pole of Gamma"
+            sign : DF :=
+                odd?(retract(z_int)@Integer) => -1
+                1
+            complex(sign*c_pi, 0)/(Gamma(1 - z)*sin(c_pi*z1))
+        Gamma1b(z)
+
+    -- real(z) >= 1/2 and imag(z) >= 0
+    logGamma1b(z : CDF) : CDF ==
+        p1 := z
+        for i in 1..7 repeat
+            p1 := p1*(z+complex(i::DF, 0))
+        lp1 := log(p1)
+        if imag(lp1) < 0 then
+            lp1 := lp1 + complex(0, 2.0*c_pi)
+        logGamma1_CDF(z + complex(8.0, 0)) - lp1
+
+    -- log(sin(\pi z))
+    log_sin(z : CDF) : CDF ==
+        zr := real(z)
+        zi := imag(z)
+        n := round(zr)
+        res1 :=
+            zi < 0 => complex(0, n*c_pi)
+            complex(0, -n*c_pi)
+        zr := zr - n
+        z := complex(c_pi*zr, c_pi*zi)
+        res2 :=
+            zr < 0 =>
+                zi < 0 => log(sin(-z)) - complex(0, c_pi)
+                log(sin(-z)) + complex(0, c_pi)
+            log(sin(z))
+        res1 + res2
+
+    logGamma(z : CDF) : CDF ==
+        zi := imag(z)
+        -- For large imaginary part asymptotic works without reflection
+        8::DF < abs(zi) => logGamma1_CDF(z)
+        zr := real(z)
+        8::DF < zr => logGamma1_CDF(z)
+        zr < 0.5::DF =>
+            -- Reflection
+            res1 := logGamma(complex(1, 0) - z)
+            complex(c_lpi, 0) - log_sin(z) - res1
+        zi < 0 => conjugate(logGamma1b(conjugate(z)))
+        logGamma1b(z)
+
+    Beta(x : CDF, y : CDF) : CDF == Gamma(x)*Gamma(y)/Gamma(x+y)
 
     import FloatLiouvilianFunctions
 
