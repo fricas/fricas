@@ -463,7 +463,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
 (setf *c-type-to-ffi* '(
+    (char SB-ALIEN::char)
+    (short SB-ALIEN::short)
     (int SB-ALIEN::int)
+    (long SB-ALIEN::long)
     (c-string SB-ALIEN::c-string)
     (double SB-ALIEN::double)
 ))
