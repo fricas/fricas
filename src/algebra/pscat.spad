@@ -135,6 +135,29 @@ UnivariatePowerSeriesCategory(Coef, Expon) : Category == Definition where
       monomial(coefficient(f, ord), ord)
     reductum f == f - leadingMonomial f
 
+)abbrev category RATPSCT UnivariateSeriesWithRationalExponents
+UnivariateSeriesWithRationalExponents(Coef, Expon) : Category == Def where
+  Coef   : Ring
+  Expon  : OrderedAbelianMonoid
+  Def ==> UnivariatePowerSeriesCategory(Coef, Expon) with
+    if Coef has Algebra Fraction Integer then
+      integrate : % -> %
+        ++ \spad{integrate(f(x))} returns an anti-derivative of the power
+        ++ series \spad{f(x)} with constant coefficient 0.
+        ++ We may integrate a series when we can divide coefficients
+        ++ by integers.
+      if Coef has integrate : (Coef, Symbol) -> Coef and _
+         Coef has variables : Coef -> List Symbol then
+        integrate : (%, Symbol) -> %
+          ++ \spad{integrate(f(x), y)} returns an anti-derivative of the
+          ++ power series \spad{f(x)} with respect to the variable \spad{y}.
+      RadicalCategory
+        --++ We provide rational powers when we can divide coefficients
+        --++ by integers.
+      TranscendentalFunctionCategory
+        --++ We provide transcendental functions when we can divide
+        --++ coefficients by integers.
+
 )abbrev category UTSCAT UnivariateTaylorSeriesCategory
 ++ Author: Clifton J. Williamson
 ++ Date Created: 21 December 1989
@@ -160,7 +183,7 @@ UnivariateTaylorSeriesCategory(Coef) : Category == Definition where
   STNC ==> StreamTranscendentalFunctionsNonCommutative Coef
   Term ==> Record(k : NNI, c : Coef)
 
-  Definition ==> UnivariatePowerSeriesCategory(Coef, NNI) with
+  Definition ==> UnivariateSeriesWithRationalExponents(Coef, NNI) with
 
     series : Stream Term -> %
       ++ \spad{series(st)} creates a series from a stream of non-zero terms,
@@ -197,31 +220,6 @@ UnivariateTaylorSeriesCategory(Coef) : Category == Definition where
         ++ When the coefficient ring is a field, we may raise a series
         ++ to an exponent from the coefficient ring provided that the
         ++ constant coefficient of the series is 1.
-
-    if Coef has Algebra Fraction Integer then
-      integrate : % -> %
-        ++ \spad{integrate(f(x))} returns an anti-derivative of the power
-        ++ series \spad{f(x)} with constant coefficient 0.
-        ++ We may integrate a series when we can divide coefficients
-        ++ by integers.
-      if Coef has integrate : (Coef, Symbol) -> Coef and _
-         Coef has variables : Coef -> List Symbol then
-        integrate : (%, Symbol) -> %
-          ++ \spad{integrate(f(x), y)} returns an anti-derivative of the
-          ++ power series \spad{f(x)} with respect to the variable \spad{y}.
-      if Coef has TranscendentalFunctionCategory and _
-         Coef has PrimitiveFunctionCategory and _
-         Coef has AlgebraicallyClosedFunctionSpace Integer then
-        integrate : (%, Symbol) -> %
-          ++ \spad{integrate(f(x), y)} returns an anti-derivative of
-          ++ the power series \spad{f(x)} with respect to the variable
-          ++ \spad{y}.
-      RadicalCategory
-        --++ We provide rational powers when we can divide coefficients
-        --++ by integers.
-      TranscendentalFunctionCategory
-        --++ We provide transcendental functions when we can divide
-        --++ coefficients by integers.
 
    add
 
@@ -389,7 +387,7 @@ UnivariateLaurentSeriesCategory(Coef) : Category == Definition where
   NNI  ==> NonNegativeInteger
   Term ==> Record(k : I, c : Coef)
 
-  Definition ==> UnivariatePowerSeriesCategory(Coef, Integer) with
+  Definition ==> UnivariateSeriesWithRationalExponents(Coef, Integer) with
 
     series : Stream Term -> %
       ++ \spad{series(st)} creates a series from a stream of non-zero terms,
@@ -413,30 +411,6 @@ UnivariateLaurentSeriesCategory(Coef) : Category == Definition where
         ++ consisting of the sum of all terms of f of degree d with
         ++ \spad{k1 <= d <= k2}.
 
-    if Coef has Algebra Fraction Integer then
-      integrate : % -> %
-        ++ \spad{integrate(f(x))} returns an anti-derivative of the power
-        ++ series \spad{f(x)} with constant coefficient 0.
-        ++ We may integrate a series when we can divide coefficients
-        ++ by integers.
-      if Coef has integrate : (Coef, Symbol) -> Coef and _
-         Coef has variables : Coef -> List Symbol then
-        integrate : (%, Symbol) -> %
-          ++ \spad{integrate(f(x), y)} returns an anti-derivative of the power
-          ++ series \spad{f(x)} with respect to the variable \spad{y}.
-      if Coef has TranscendentalFunctionCategory and _
-         Coef has PrimitiveFunctionCategory and _
-         Coef has AlgebraicallyClosedFunctionSpace Integer then
-        integrate : (%, Symbol) -> %
-          ++ \spad{integrate(f(x), y)} returns an anti-derivative of
-          ++ the power series \spad{f(x)} with respect to the variable
-          ++ \spad{y}.
-      RadicalCategory
-        --++ We provide rational powers when we can divide coefficients
-        --++ by integers.
-      TranscendentalFunctionCategory
-        --++ We provide transcendental functions when we can divide
-        --++ coefficients by integers.
     if Coef has Field then Field
         --++ Univariate Laurent series over a field form a field.
         --++ In fact, K((x)) is the quotient field of K[[x]].
@@ -467,7 +441,7 @@ UnivariatePuiseuxSeriesCategory(Coef) : Category == Definition where
   RN   ==> Fraction Integer
   Term ==> Record(k : RN, c : Coef)
 
-  Definition ==> UnivariatePowerSeriesCategory(Coef, RN) with
+  Definition ==> UnivariateSeriesWithRationalExponents(Coef, RN) with
 
     series : (NNI, Stream Term) -> %
       ++ \spad{series(n, st)} creates a series from a common denomiator and
@@ -479,30 +453,6 @@ UnivariatePuiseuxSeriesCategory(Coef) : Category == Definition where
       ++ \spad{multiplyExponents(f, r)} multiplies all exponents of the power
       ++ series f by the positive rational number r.
 
-    if Coef has Algebra Fraction Integer then
-      integrate : % -> %
-        ++ \spad{integrate(f(x))} returns an anti-derivative of the power
-        ++ series \spad{f(x)} with constant coefficient 1.
-        ++ We may integrate a series when we can divide coefficients
-        ++ by rational numbers.
-      if Coef has integrate : (Coef, Symbol) -> Coef and _
-         Coef has variables : Coef -> List Symbol then
-        integrate : (%, Symbol) -> %
-          ++ \spad{integrate(f(x), var)} returns an anti-derivative of the power
-          ++ series \spad{f(x)} with respect to the variable \spad{var}.
-      if Coef has TranscendentalFunctionCategory and _
-         Coef has PrimitiveFunctionCategory and _
-         Coef has AlgebraicallyClosedFunctionSpace Integer then
-        integrate : (%, Symbol) -> %
-          ++ \spad{integrate(f(x), y)} returns an anti-derivative of
-          ++ the power series \spad{f(x)} with respect to the variable
-          ++ \spad{y}.
-      RadicalCategory
-        --++ We provide rational powers when we can divide coefficients
-        --++ by integers.
-      TranscendentalFunctionCategory
-        --++ We provide transcendental functions when we can divide
-        --++ coefficients by integers.
     if Coef has Field then Field
         --++ Univariate Puiseux series over a field form a field.
 
