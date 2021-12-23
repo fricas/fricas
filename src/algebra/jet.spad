@@ -38,8 +38,8 @@
 ++ Description:
 ++ \spadtype{JetBundleCategory} provides basic data structures and
 ++ procedures for jet bundles. Nearly all necessary functions are implemented
-++ already here. Only the representation and functions which direct access
-++ to it must be implemented in a domain.
+++ already here. Only the representation and functions which directly access
+++ it must be implemented in a domain.
 ++ Two notations of derivatives are supported. Default is multi-index
 ++ notation, where the i-th entry of the index denotes the number of
 ++ differentiations taken with respect to \spad{x^i}. In repeated index
@@ -1288,8 +1288,8 @@ JetBundleBaseFunctionCategory(JB : JBC) : Category == Def where
 ++  \spad{SparseEchelonMatrix(C, D)} implements sparse matrices whose columns
 ++  are enumerated by the \spadtype{OrderedSet} \spad{C} and whose entries
 ++  belong to the \spadtype{GcdDomain} \spad{D}. The basic operation of
-++  this domain is the computation of an row echelon form. The used algorithm
-++  tries to maintain the sparsity and is especially adapted to matrices who
+++  this domain is the computation of an row echelon form. The algorithm used
+++  tries to maintain the sparsity and is especially adapted to matrices which
 ++  are already close to a row echelon form.
 
 SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
@@ -2216,6 +2216,9 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
 
 IndexedJetBundle(x, u, p, n, m) : Cat == Def where
 
+  x, u, p : Sy
+  m, n   : PI
+
   V    ==> Vector
   B    ==> Boolean
   Sy   ==> Symbol
@@ -2235,9 +2238,6 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
   Multi    ==> "Multi"::Sy
   Repeated ==> "Repeated"::Sy
   DerMode  ==> [Multi, Repeated]@L Sy
-
-  x, u, p : Sy
-  m, n   : PI
 
   Cat ==> JBC
 
@@ -6348,6 +6348,9 @@ LUDecomposition(D : Field) : Cat == Def where
 
 JetCoordinateTransformation(JB1, JB2, Y, W) : Cat == Def where
 
+  JB1, JB2 : JBC
+  Y, W     : V(E2)
+
   Sy   ==> Symbol
   L    ==> List
   V    ==> Vector
@@ -6364,10 +6367,6 @@ JetCoordinateTransformation(JB1, JB2, Y, W) : Cat == Def where
   Indep ==> "Indep"::Sy
   Dep   ==> "Dep"::Sy
   Deriv ==> "Deriv"::Sy
-
-
-  JB1, JB2 : JBC
-  Y, W     : V E2
 
 
   Cat ==> with
@@ -6539,6 +6538,11 @@ JetBundlePolynomial(R : Ring, JB : JBC) : Cat == Def where
 
 DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
 
+  R   : Ring
+  E   : DPC
+  JB  : JBC
+  LJV : L(JB)
+
   B    ==> Boolean
   L    ==> List
   NNI  ==> NonNegativeInteger
@@ -6552,11 +6556,6 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
   PGCD ==> PolynomialGcdPackage(E, JB, R, %)
   GBP  ==> GroebnerPackage(R, E, %)
   JBP  ==> JetBundlePolynomial(R, JB)
-
-  R   : Ring
-  E   : DPC
-  JB  : JBC
-  LJV : L JB
 
   Cat ==> PCD with
 
@@ -6821,6 +6820,12 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
 
 JetGroebner(R, JB, LJV, P, E) : Cat == Def where
 
+  R   : GcdDomain
+  E   : DPC
+  JB  : JBC
+  LJV : L JB
+  P   : Join(JBFC, PC)
+
   L    ==> List
   NNI  ==> NonNegativeInteger
   JBC  ==> JetBundleCategory
@@ -6829,13 +6834,6 @@ JetGroebner(R, JB, LJV, P, E) : Cat == Def where
   IE   ==> IndexedExponents JB
   PC   ==> PolynomialCategory(R, IE, JB)
   DJBP ==> DistributedJetBundlePolynomial(R, JB, LJV, E)
-
-
-  R   : GcdDomain
-  E   : DPC
-  JB  : JBC
-  LJV : L JB
-  P   : Join(JBFC, PC)
 
 
   Cat ==> with
