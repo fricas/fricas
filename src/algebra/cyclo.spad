@@ -1,0 +1,421 @@
+)abbrev package CYCLOT2 CyclotomicUtilities
+++ Author: W. Hebisch
+++ References:
+++  A. Arnold, M. Monagan, Calculating cyclotomic polynomials,
+++  Math. Comp. 80 (276) 2011, 2359-2379.
+CyclotomicUtilities : Exports == Implementation where
+  iT ==> Integer
+  pA ==> PrimitiveArray(iT)
+  uP ==> SparseUnivariatePolynomial(Integer)
+  rU ==> Union(Integer, "failed")
+  Exports ==> with
+    cyclotomic : Integer -> uP
+      ++ cyclotomic(n) computes n-th cyclotomic polynomial.
+    cyclotomic_array : Integer -> pA
+      ++ cyclotomic_array(n) computes pa containing lower half of
+      ++ coefficients of n-th cyclotomic polynomial.
+      ++ maximal index in \spad{pa} is \spad{eulerPhi(n)/2}.
+      ++ Due to symmetry this is enough to reconstruct
+      ++ cyclotomic polynomial from computed coefficients.
+    inverse_cyclotomic : Integer -> uP
+      ++ inverse_cyclotomic(n) computes n-th inverse cyclotomic
+      ++ polynomial, that is \spad{(x^n - 1)/cyclotomic(n)}.
+    cyclotomic? : uP -> rU
+      ++ cyclotomic?(p) checks if p is a cyclotomic polynomial.
+      ++ If yes returns \spad{n} such that \spad{p = cyclotomic(n)}.
+      ++ Otherwise returns "failed".
+    cyclotomic_decomposition : Integer -> List(uP)
+      ++ cyclotomic_decomposition(n) computes list of irreducible
+      ++ factors of \spad{x^n - 1} over integers.
+    cocyclotomic_decomposition : Integer -> List(uP)
+      ++ cocyclotomic_decomposition(n) computes list of irreducible
+      ++ factors of \spad{x^n + 1} over integers.
+
+  Implementation ==> add
+
+    lU ==> Union(List(Integer), "failed")
+
+    recursive_check_even : (pA, Integer, Integer, Integer,
+                            List(Integer), List(Integer)) -> lU
+    recursive_check_odd : (pA, Integer, Integer, Integer,
+                           List(Integer), List(Integer)) -> lU
+
+    filter_prods(p : Integer, pl : List(Integer), ev_odd : Boolean,
+                 mp : Integer) : List(Integer) ==
+        res : List(Integer) :=
+            ev_odd => [-p]
+            [p]
+        for pr in pl repeat
+            c := -p*pr
+            abs(c) > mp => "iterate"
+            res := cons(c, res)
+        res
+
+    recursive_check2(p : Integer, pa : pA, mp : Integer, m : Integer,
+                     res : Integer, rl : List(Integer), ev_odd : Boolean,
+                     pl : List(Integer)) : lU ==
+        not(prime?(p)) => "failed"
+        res := res*p
+        rl := cons(p, rl)
+        mu := m exquo (p - 1)
+        mu case "failed" => "failed"
+        m := mu::Integer
+        m < p + 1 => "failed"
+        mp := min(mp, m)
+        pl1 := filter_prods(p, pl, ev_odd, mp)
+        for p in pl1 repeat
+            if p > 0 then
+                for i in p..mp repeat pa(i) := pa(i) + pa(i - p)
+            else
+                for i in mp..(-p) by -1 repeat pa(i) := pa(i) - pa(i + p)
+        pl := append(pl1, pl)
+        ev_odd => recursive_check_even(pa, mp, m, res, rl, pl)
+        recursive_check_odd(pa, mp, m, res, rl, pl)
+
+    recursive_check_even(pa : pA, mp : Integer, m : Integer,
+                         res : Integer, rl : List(Integer), pl : List(Integer)
+                        ) : lU ==
+        i := 3
+        while i < mp and pa(i) = 0 repeat i := i + 1
+        i = mp =>
+            pa(i) = 0 and prime?(m + 1) =>
+                cons(res*(m + 1), cons(m + 1, rl))
+            "failed"
+        not(pa(i) = 1) => "failed"
+        recursive_check2(i, pa, mp, m, res, rl, true, pl)
+
+    recursive_check_odd(pa : pA, mp : Integer, m : Integer,
+                        res : Integer, rl : List(Integer), pl : List(Integer)
+                       ) : lU ==
+        -- find next prime factor of n
+        i := 3
+        while i < mp and pa(i) = 1 repeat i := i + 1
+        i = mp =>
+            pa(i) = 1 and prime?(m + 1) =>
+                cons(res*(m + 1), cons(m + 1, rl))
+            "failed"
+        not(pa(i) = 0) => "failed"
+        recursive_check2(i, pa, mp, m, res, rl, false, pl)
+
+    maybe_cyclotomic2?(pa : pA, mp : Integer, m : Integer) : lU ==
+        two_fac := (pa(1) = 1 and pa(2) = 0) or
+                   (pa(1) = -1 and pa(2) = 1)
+        res :=
+            two_fac => 2
+            1
+        m = 2 => [res*3, 3]
+        if two_fac then
+            for i in 1..mp by 2 repeat pa(i) := -pa(i)
+        pa(2) = 1 => recursive_check_odd(pa, mp, m, res, [], [])
+        pa(2) = 0 => recursive_check_even(pa, mp, m, res, [], [])
+        "failed"
+
+    maybe_cyclotomic?(p : uP, m1 : Integer, m2 : Integer) : lU ==
+        mp := min(approxSqrt(m2)$IntegerRoots(Integer) + 3, m2)
+        pa := new((mp + 1)::NonNegativeInteger, 0)$pA
+        m := m1*m2
+        for i in 0..mp repeat
+            degree(p) < m => m := m - m1
+            degree(p) > m => return "failed"
+            pa(i) := leadingCoefficient(p)
+            p := reductum(p)
+            m := m - m1
+        maybe_cyclotomic2?(pa, mp, m2)
+
+    cyclotomic_SPS2 : (Integer, Integer, pA, List(Integer), Integer) -> Void
+
+    cyclotomic?(p : uP) : rU ==
+        not(leadingCoefficient(p) = 1) => "failed"
+        m : Integer := degree(p)
+        p1 := reductum(p)
+        m = 1 =>
+            c0 := leadingCoefficient(p1)
+            c0 = -1 => 1
+            c0 = 1 => 2::Integer
+            "failed"
+        odd?(m) => "failed"
+        m1 := m - degree(p1)
+        m2u := m exquo m1
+        m2u case "failed" => "failed"
+        m2 := m2u::Integer
+        r1u : lU :=
+            m2 = 1 =>
+                c0 := leadingCoefficient(p1)
+                c0 = 1 => [2]
+                return "failed"
+            maybe_cyclotomic?(p, m1, m2)
+        r1u case "failed" => "failed"
+        rl := r1u::List(Integer)
+        r1 := first(rl)
+        fl := rest(rl)
+        mm := m1
+        while mm > 1 repeat
+            mm1 := gcd(r1, mm)
+            mm1 = 1 => return "failed"
+            mm := (mm exquo mm1)::Integer
+        m2 = 1 and empty?(fl) => r1*m1
+        mm := m2 quo 2
+        pa := new((mm + 1)::NonNegativeInteger, 0)$pA
+        cp := cyclotomic_SPS2(mm, #fl, pa, fl, 1)
+        two_fac : Integer :=
+            odd?(r1) => 1
+            -1
+        tcf : Integer := 1
+        for i in 0..mm repeat
+            -- print([m, degree(p), pa(i), leadingCoefficient(p)]::OutputForm)
+            degree(p) < m =>
+                not(pa(i) = 0) => return "failed"
+                tcf := two_fac*tcf
+                m := m - m1
+            degree(p) > m => return "failed"
+            not(tcf*pa(i) = leadingCoefficient(p)) => return "failed"
+            tcf := two_fac*tcf
+            p := reductum(p)
+            m := m - m1
+        for i in (mm+1)..m2 repeat
+            degree(p) < m =>
+                not(pa(m2 - i) = 0) => return "failed"
+                tcf := two_fac*tcf
+                m := m - m1
+            degree(p) > m => return "failed"
+            not(tcf*pa(m2 - i) = leadingCoefficient(p)) => return "failed"
+            tcf := two_fac*tcf
+            p := reductum(p)
+            m := m - m1
+        r1*m1
+
+    expand_prods(fl : List(Integer), k : Integer) : List(Integer) ==
+        k = 1 => cons(-1, fl)
+        pk := first(fl)
+        fl := rest(fl)
+        plk := expand_prods(fl, k - 1)
+        res : List(Integer) := []
+        for pr1 in plk repeat
+            res := cons(-pr1, res)
+            res := cons(pk*pr1, res)
+        res
+
+    cyclotomic_SPS2(m : Integer, k : Integer, pa : pA, fl : List(Integer),
+                   do_inv : Integer) : Void ==
+        k = 1 =>
+            do_inv = -1 =>
+                pa(0) := 1
+                for i in 1..m repeat pa(i) := 0
+            for i in 0..m repeat pa(i) := 1
+        pk := first(fl)
+        fl := rest(fl)
+        mk := m quo pk
+        cyclotomic_SPS2(mk, k - 1, pa, fl, do_inv)
+        for i in mk..1 by -1 repeat
+            pa(pk*i) := pa(i)
+            pa(i) := 0
+        pl := expand_prods(fl, k - 1)
+        for p in pl repeat
+            p := do_inv*p
+            if p > 0 then
+                for i in p..m repeat pa(i) := pa(i) + pa(i - p)
+            else
+                for i in m..(-p) by -1 repeat pa(i) := pa(i) - pa(i + p)
+
+    gen_poly(m : Integer, m2 : Integer, pa : pA, two_fac : Integer) : uP ==
+        tcf : Integer := 1
+        res : uP := 0
+        for i in 0..m2 repeat
+            res := res + monomial(tcf*pa(i), i::NonNegativeInteger)$uP
+            tcf := two_fac*tcf
+        for i in (m2+1)..m repeat
+            res := res + monomial(tcf*pa(m - i), i::NonNegativeInteger)$uP
+            tcf := two_fac*tcf
+        res
+
+    cyclotomic_SPS1(m : Integer, fl : List(Integer), two_fac : Integer) : uP ==
+        m2 := m quo 2
+        pa := new((m2 + 1)::NonNegativeInteger, 0)$pA
+        cyclotomic_SPS2(m2, #fl, pa, fl, 1)
+        gen_poly(m, m2, pa, two_fac)
+
+    cyclotomic_array(n : Integer) : pA ==
+        n < 3 => error "cyclotomic_array: n must be >= 3"
+        fl := factorList(factor(n)$IntegerFactorizationPackage(Integer))
+        m : Integer := 1
+        fl1 : List(Integer) := []
+        for fac in fl repeat
+            f1 := fac.factor
+            fac.exponent > 1 => error "cyclotomic_array: n must be squarefree"
+            f1 = 2 => error "cyclotomic_array: n must be odd"
+            fl1 := cons(f1, fl1)
+            m := (f1 - 1)*m
+        m2 := m quo 2
+        pa := new((m2 + 1)::NonNegativeInteger, 0)$pA
+        fl1 := reverse(sort(fl1))
+        cyclotomic_SPS2(m2, #fl1, pa, fl1, 1)
+        pa
+
+    cyclotomic(n : Integer) : uP ==
+        n <= 0 => error "cyclotomic: n must be positive"
+        n = 1 => monomial(1,1)$uP - 1::uP
+        n = 2 => monomial(1,1)$uP + 1::uP
+        fl := factorList(factor(n)$IntegerFactorizationPackage(Integer))
+        n1 : Integer := 1
+        m1 : Integer := 1
+        fl1 : List(Integer) := []
+        two_fac : Integer := 1
+        for fac in fl repeat
+            f1 := fac.factor
+            n1 := f1*n1
+            f1 = 2 => (two_fac := -1)
+            fl1 := cons(f1, fl1)
+            m1 := (f1 - 1)*m1
+        r1 :=
+            empty?(fl1) => monomial(1,1)$uP + 1$uP
+            cyclotomic_SPS1(m1, reverse(sort(fl1)), two_fac)
+        n2 := (n exquo n1)::Integer
+        n2 > 1 => multiplyExponents(r1, n2::NonNegativeInteger)
+        r1
+
+    inverse_cyclotomic_SPS1(m : Integer, fl : List(Integer)) : uP ==
+        m2 := m quo 2
+        pa := new((m2+1)::NonNegativeInteger, 0)$pA
+        cyclotomic_SPS2(m2, #fl, pa, fl, -1)
+        res : uP := 0
+        for i in 0..m2 repeat
+            res := res + monomial(-pa(i), i::NonNegativeInteger)$uP
+        for i in (m - m2)..m repeat
+            res := res + monomial(pa(m - i), i::NonNegativeInteger)$uP
+        res
+
+    inverse_cyclotomic(n : Integer) : uP ==
+        n <= 0 => error "inverse_cyclotomic: n must be positive"
+        n = 1 => 1::uP
+        n = 2 => monomial(1,1)$uP - 1::uP
+        fl := factorList(factor(n)$IntegerFactorizationPackage(Integer))
+        n1 : Integer := 1
+        m1 : Integer := 1
+        fl1 : List(Integer) := []
+        for fac in fl repeat
+            f1 := fac.factor
+            n1 := f1*n1
+            fl1 := cons(f1, fl1)
+            m1 := (f1 - 1)*m1
+        r1 := inverse_cyclotomic_SPS1(n1 - m1, reverse(sort(fl1)))
+        n2 := (n exquo n1)::Integer
+        n2 > 1 => multiplyExponents(r1, n2::NonNegativeInteger)
+        r1
+
+    fac_Rec ==> Record(factor : Integer, exponent : NonNegativeInteger)
+
+    mult_lst1(f1 : Integer, e : Integer, res : List(Integer),
+              nres : List(Integer)) : List(Integer) ==
+        for m in res repeat
+            fp : Integer := 1
+            for i in 1..e repeat
+                fp := f1*fp
+                nres := cons(fp*m, nres)
+        nres
+
+    mult_lst(fli : List(Integer), fl : List(fac_Rec), co : Boolean,
+             two_fac : Integer) : List(Integer) ==
+        res : List(Integer) := [1]
+        for fac in fl repeat
+            e := fac.exponent
+            f1 := fac.factor
+            nres : List(Integer) := []
+            f1 = 2 and co =>
+                return mult_lst1(2^e, 1, res, [])
+            f1 = 2 and two_fac = -1 and e > 1 =>
+                return mult_lst1(2, e - 1, res, res)
+            empty?(fli) => "iterate"
+            first(fli) < f1 => "iterate"
+            f1 < first(fli) => error "wrong order of factors"
+            fli := rest(fli)
+            e = 1 => "iterate"
+            res := mult_lst1(f1, e - 1, res, res)
+        res
+
+    gen_lists(fl : List(Integer)) : List(List(Integer)) ==
+        res : List(List(Integer)) := [[]]
+        for f1 in fl repeat
+            nres : List(List(Integer)) := res
+            for l1 in res repeat
+                nres := cons(cons(f1, l1), nres)
+            res := nres
+        res
+
+    add_mults(p1 : uP, res: List(uP), fl : List(Integer),
+              fl0 : List(fac_Rec), co : Boolean, two_fac : Integer
+             ) : List(uP) ==
+        ml := mult_lst(fl, fl0, co, two_fac)
+        for mi in ml repeat
+            pi := multiplyExponents(p1, mi::NonNegativeInteger)
+            res := cons(pi, res)
+        res
+
+    add_factors(fl : List(Integer), fl0 : List(fac_Rec), two_fac : Integer,
+                co : Boolean, pa : pA, res : List(uP)) : List(uP) ==
+        m : Integer := 1
+        empty?(fl) =>
+            co =>
+                fac := last(fl0)
+                nn : NonNegativeInteger :=
+                    fac.factor = 2 => 2^(fac.exponent)
+                    1
+                p1 := monomial(1, nn)$uP + 1$uP
+                cons(p1, res)
+            p1 := monomial(1, 1)$uP - two_fac::uP
+            res := cons(p1, res)
+            two_fac = -1 =>
+                fac := last(fl0)
+                not(fac.factor = 2) => error "impossible factor"
+                for i in 2..fac.exponent repeat
+                    p1 := multiplyExponents(p1, 2)
+                    res := cons(p1, res)
+                p1 := monomial(1, 1)$uP - 1$uP
+                cons(p1, res)
+            res
+        for f1 in fl repeat m := (f1 - 1)*m
+        m2 := m quo 2
+        k := #fl
+        for i in 0..m2 repeat pa(i) := 0
+        cyclotomic_SPS2(m2, k, pa, fl, 1)
+        co =>
+            p1 := gen_poly(m, m2, pa, -1)
+            add_mults(p1, res, fl, fl0, co, -1)
+        p1 := gen_poly(m, m2, pa, 1)
+        res := add_mults(p1, res, fl, fl0, co, 1)
+        two_fac = -1 =>
+            p1 := gen_poly(m, m2, pa, -1)
+            add_mults(p1, res, fl, fl0, co, -1)
+        res
+
+    cyclo_decomposition1(m : Integer, fl : List(Integer), fl0 : List(fac_Rec),
+                         two_fac : Integer, co : Boolean) : List(uP) ==
+        m2 := m quo 2
+        pa := new((m2 + 1)::NonNegativeInteger, 0)$pA
+        ll := gen_lists(reverse(fl))
+        res : List(uP) := []
+        for fl1 in ll repeat
+            res := add_factors(fl1, fl0, two_fac, co, pa, res)
+        res
+
+    cyclo_decomposition(n : Integer, co : Boolean) : List(uP) ==
+        fl := factors(factor(n)$IntegerFactorizationPackage(Integer))
+        fl1 : List(Integer) := []
+        m1 : Integer := 1
+        two_fac : Integer := 1
+        for fac in fl repeat
+            f1 := fac.factor
+            f1 = 2 => (two_fac := -1)
+            fl1 := cons(f1, fl1)
+            m1 := (f1 - 1)*m1
+        cyclo_decomposition1(m1, fl1, reverse(fl), two_fac, co)
+
+    cyclotomic_decomposition(n : Integer) : List(uP) ==
+        n <= 0 => error "cyclotomic_decomposition: n must be positive"
+        n = 1 => [monomial(1,1)$uP - 1$uP]
+        cyclo_decomposition(n, false)
+
+    cocyclotomic_decomposition(n : Integer) : List(uP) ==
+        n <= 0 => error "cocyclotomic_decomposition: n must be positive"
+        n = 1 => [monomial(1,1)$uP + 1$uP]
+        cyclo_decomposition(n, true)
+

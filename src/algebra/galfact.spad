@@ -389,7 +389,7 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
   UP : UnivariatePolynomialCategory Z
   N ==> NonNegativeInteger
   P ==> PositiveInteger
-  CYC ==> CyclotomicPolynomialPackage()
+  CYC ==> CyclotomicUtilities()
   SUPZ ==> SparseUnivariatePolynomial Z
 
   ParFact ==> Record(irr : UP, pow : N)
@@ -1021,24 +1021,18 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
 
       -- is f cyclotomic (x^n - 1)?
       -lcPol = reductum(f) =>    -- if true, both will = 1
-          cfl := cyclotomicDecomposition(d)$CYC
+          cfl := cyclotomic_decomposition(d)$CYC
           for fac in map(z+->unmakeSUP(z)$UP, cfl
                         )$ListFunctions2(SUPZ, UP) repeat
               factorlist := cons([fac, 1]$ParFact, factorlist)
           [c, factorlist]$FinalFact
 
-      -- is f odd cyclotomic (x^(2*n+1) + 1)?
-      odd?(d) and (lcPol = reductum(f)) =>
-          for sfac in cyclotomicDecomposition(d)$CYC repeat
-              fac := subMinusX sfac
-              if leadingCoefficient fac < 0 then fac := -fac
+      -- is f cocyclotomic (x^n + 1)?
+      (lcPol = reductum(f)) =>
+          cfl := cocyclotomic_decomposition(d)$CYC
+          for fac in map(z+->unmakeSUP(z)$UP, cfl
+                         )$ListFunctions2(SUPZ, UP) repeat
               factorlist := cons([fac, 1]$ParFact, factorlist)
-          [c, factorlist]$FinalFact
-
-      -- is the poly of the form x^n + 1 with n a power of 2?
-      -- if so, then irreducible
-      isPowerOf2(d) and (lcPol = reductum(f)) =>
-          factorlist := cons([f, 1]$ParFact, factorlist)
           [c, factorlist]$FinalFact
 
       -- other special cases to implement...

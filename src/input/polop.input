@@ -1,0 +1,41 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+testsuite "Poly Ops"
+testcase "cyclotomic"
+)expose CyclotomicUtilities
+x1 := monomial(1, 1)$SUP(Integer)
+t_lst := [2, 3, 2*3, 5, 25, 2*5, 50, 100, 8, 8*3^2*5, 3^4*5^2*7,
+            8*3*5^3*7, 5*7, 2*5*7, 3*5*7, 2*3*5*7,
+           3*5*7*11, 2*3*5*7*11, 3*5*43, 2*3*5*43, 3*5*7*51,
+          3*5*7*11*51]
+
+
+for i in t_lst repeat
+    n := i
+    cn := cyclotomic(n);
+    icn := inverse_cyclotomic(n);
+    testTrue("cyclotomic?(cn) case Integer")
+    testEquals("gcd(cn, icn)", "1")
+    testEquals("cn*icn", "x1^n - 1")
+    i = 58905 => iterate
+    cd := cyclotomic_decomposition(n);
+    testEquals("reduce(*, cd)", "x1^n - 1")
+    icd := cocyclotomic_decomposition(n);
+    testEquals("reduce(*, icd)", "x1^n + 1")
+
+cn := cyclotomic(3*5*7);
+testTrue("not(cyclotomic?(cn + 1) case Integer)")
+testTrue("not(cyclotomic?(cn^2) case Integer)")
+testTrue("not(cyclotomic?(multiplyExponents(cn, 2)) case Integer)")
+testTrue("not(cyclotomic?(multiplyExponents(cn, 11)) case Integer)")
+testTrue("not(cyclotomic?(cn + x1^25 + x1^24) case Integer)")
+testTrue("not(cyclotomic?(cn - x1^46 - x1^2) case Integer)")
+
+testEquals("reduce(min, coefficients(cn))", "-2")
+for na in [[11305, 23], [26565, 59], [40755, 359], [4849845, 669606]] repeat
+    n := first(na)
+    cn := cyclotomic(n);
+    a := second(na)
+    testEquals("reduce(max, coefficients(cn))", "a")
+
+statistics()
