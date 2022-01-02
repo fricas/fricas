@@ -990,7 +990,9 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
        minusX : SUPZ := monomial(-1, 1)$SUPZ
        unmakeSUP(elt(supPol, minusX)$SUPZ)
 
-    henselFact(f : UP, sqf : Boolean) : FinalFact ==
+    part_Fact ==> Record(f : UP, contp : Z, factors: List(ParFact))
+
+    gen_fact1(f : UP) : Union(part_Fact, FinalFact) ==
       factorlist : List(ParFact) := empty()
 
       -- make m primitive
@@ -1019,126 +1021,92 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
 
       -- is f cyclotomic (x^n - 1)?
       -lcPol = reductum(f) =>    -- if true, both will = 1
-        for fac in map(z+->unmakeSUP(z)$UP,
-         cyclotomicDecomposition(d)$CYC)$ListFunctions2(SUPZ, UP) repeat
-          factorlist := cons([fac, 1]$ParFact, factorlist)
-        [c, factorlist]$FinalFact
+          cfl := cyclotomicDecomposition(d)$CYC
+          for fac in map(z+->unmakeSUP(z)$UP, cfl
+                        )$ListFunctions2(SUPZ, UP) repeat
+              factorlist := cons([fac, 1]$ParFact, factorlist)
+          [c, factorlist]$FinalFact
 
       -- is f odd cyclotomic (x^(2*n+1) + 1)?
       odd?(d) and (lcPol = reductum(f)) =>
-        for sfac in cyclotomicDecomposition(d)$CYC repeat
-           fac := subMinusX sfac
-           if leadingCoefficient fac < 0 then fac := -fac
-           factorlist := cons([fac, 1]$ParFact, factorlist)
-        [c, factorlist]$FinalFact
+          for sfac in cyclotomicDecomposition(d)$CYC repeat
+              fac := subMinusX sfac
+              if leadingCoefficient fac < 0 then fac := -fac
+              factorlist := cons([fac, 1]$ParFact, factorlist)
+          [c, factorlist]$FinalFact
 
       -- is the poly of the form x^n + 1 with n a power of 2?
       -- if so, then irreducible
       isPowerOf2(d) and (lcPol = reductum(f)) =>
-        factorlist := cons([f, 1]$ParFact, factorlist)
-        [c, factorlist]$FinalFact
+          factorlist := cons([f, 1]$ParFact, factorlist)
+          [c, factorlist]$FinalFact
 
       -- other special cases to implement...
+      [f, c, factorlist]::part_Fact
 
-      -- f is square-free :
-      sqf => [c, append([[pf, 1]$ParFact for pf in henselfact1(f, true)],
-       factorlist)]$FinalFact
+    henselFact(f : UP, sqf : Boolean) : FinalFact ==
+        ru := gen_fact1(f)
+        ru case FinalFact => ru::FinalFact
+        (f, c, factorlist) := ru::part_Fact
+        -- f is square-free :
+        sqf =>
+            fla := [[pf, 1]$ParFact for pf in henselfact1(f, true)]
+            [c, append(fla, factorlist)]$FinalFact
 
-      -- f is not square-free :
-      sqfflist := factorList squareFree f
-      for sqfr in sqfflist repeat
-        mult := sqfr.exponent
-        sqff := sqfr.factor
-        d := degree sqff
-        (d = 1) => factorlist := cons([sqff, mult]$ParFact, factorlist)
-        d = 2 =>
-          factorlist := append([[pf, mult]$ParFact for pf in quadratic(sqff)],
-           factorlist)
-        factorlist := append([[pf, mult]$ParFact for pf in
-         henselfact1(sqff, true)], factorlist)
-      [c, factorlist]$FinalFact
+        -- f is not square-free :
+        sqfflist := factorList(squareFree(f))
+        for sqfr in sqfflist repeat
+            mult := sqfr.exponent
+            sqff := sqfr.factor
+            d := degree sqff
+            (d = 1) => factorlist := cons([sqff, mult]$ParFact, factorlist)
+            fl1 :=
+                d = 2 => quadratic(sqff)
+                henselfact1(sqff, true)
+            fla := [[pf, mult]$ParFact for pf in fl1]
+            factorlist := append(fla, factorlist)
+        [c, factorlist]$FinalFact
 
     btwFact(f : UP, sqf : Boolean, fd : Set N, r : N) : FinalFact ==
-      d := degree f
-      not(max(fd)=d) => error "btwFact: Bad arguments"
-      factorlist : List(ParFact) := empty()
+        d := degree f
+        not(max(fd)=d) => error "btwFact: Bad arguments"
+        ru := gen_fact1(f)
+        ru case FinalFact => ru::FinalFact
+        (f, c, factorlist) := ru::part_Fact
+        
+        if (d1 := degree(f)) < d then
+            del_d := d - d1
+            r := max(2, r - del_d)::N
+            d := d1
+            fd := select(x+-> x <= d, fd)
 
-      -- make m primitive
-      c : Z := content f
-      f := (f exquo c)::UP
+        -- f is square-free :
+        sqf =>
+            fla := [[pf, 1]$ParFact for pf in btwFactor(f, fd, r, true)]
+            [c, append(fla, factorlist)]$FinalFact
 
-      -- make the leading coefficient positive
-      if leadingCoefficient f < 0 then
-        c := -c
-        f := -f
-
-      -- is x^d factor of f
-      if (maxd := minimumDegree f) > 0 then
-        f := monicDivide(f, monomial(1, maxd)).quotient
-        factorlist := [[monomial(1, 1), maxd]$ParFact]
-        r := max(2, r-maxd)::N
-        d := subtractIfCan(d, maxd)::N
-        fd := select(x+->x<=d, fd)
-
-      -- is f constant?
-      zero? d => [c, factorlist]$FinalFact
-
-      -- is f linear?
-      (d = 1) => [c, cons([f, 1]$ParFact, factorlist)]$FinalFact
-
-      lcPol : UP := leadingCoefficient(f) :: UP
-
-      -- is f cyclotomic (x^n - 1)?
-      -lcPol = reductum(f) =>    -- if true, both will = 1
-        for fac in map(z+->unmakeSUP(z)$UP,
-         cyclotomicDecomposition(d)$CYC)$ListFunctions2(SUPZ, UP) repeat
-          factorlist := cons([fac, 1]$ParFact, factorlist)
+        -- f is not square-free :
+        sqfflist := factorList(squareFree(f))
+        if (#(sqfflist)) = 1 then -- indeed f was a power of a square-free
+            r := max(r quo ((first sqfflist).exponent), 2)::N
+        else
+            r := 2
+        for sqfr in sqfflist repeat
+            mult := sqfr.exponent
+            sqff := sqfr.factor
+            d := degree sqff
+            (d = 1) =>
+                factorlist := cons([sqff, mult]$ParFact, factorlist)
+                maxd := (max(fd) - mult)::N
+                fd := select(x +-> x <= maxd, fd)
+            fl1 :=
+                d = 2 => quadratic(sqff)
+                btwFactor(sqff, select(x +-> x <= d, fd), r, true)
+            fla := [[pf, mult]$ParFact for pf in fl1]
+            factorlist := append(fla, factorlist)
+            maxd := (max(fd) - d*mult)::N
+            fd := select(x +-> x <= maxd, fd)
         [c, factorlist]$FinalFact
-
-      -- is f odd cyclotomic (x^(2*n+1) + 1)?
-      odd?(d) and (lcPol = reductum(f)) =>
-        for sfac in cyclotomicDecomposition(d)$CYC repeat
-           fac := subMinusX sfac
-           if leadingCoefficient fac < 0 then fac := -fac
-           factorlist := cons([fac, 1]$ParFact, factorlist)
-        [c, factorlist]$FinalFact
-
-      -- is the poly of the form x^n + 1 with n a power of 2?
-      -- if so, then irreducible
-      isPowerOf2(d) and (lcPol = reductum(f)) =>
-        factorlist := cons([f, 1]$ParFact, factorlist)
-        [c, factorlist]$FinalFact
-
-      -- other special cases to implement...
-
-      -- f is square-free :
-      sqf => [c, append([[pf, 1]$ParFact for pf in btwFactor(f, fd, r, true)],
-       factorlist)]$FinalFact
-
-      -- f is not square-free :
-      sqfflist := factorList squareFree(f)
-      if ((#(sqfflist)) = 1) then -- indeed f was a power of a square-free
-        r := max(r quo ((first sqfflist).exponent), 2)::N
-      else
-        r := 2
-      for sqfr in sqfflist repeat
-        mult := sqfr.exponent
-        sqff := sqfr.factor
-        d := degree sqff
-        (d = 1) =>
-          factorlist := cons([sqff, mult]$ParFact, factorlist)
-          maxd := (max(fd)-mult)::N
-          fd := select(x+->x<=maxd, fd)
-        d = 2 =>
-          factorlist := append([[pf, mult]$ParFact for pf in quadratic(sqff)],
-           factorlist)
-          maxd := (max(fd)-2*mult)::N
-          fd := select(x+->x<=maxd, fd)
-        factorlist := append([[pf, mult]$ParFact for pf in
-         btwFactor(sqff, select(x+->x<=d, fd), r, true)], factorlist)
-        maxd := (max(fd)-d*mult)::N
-        fd := select(x+->x<=maxd, fd)
-      [c, factorlist]$FinalFact
 
     factor(f : UP) : Factored UP ==
       makeFR
