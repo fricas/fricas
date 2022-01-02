@@ -329,8 +329,10 @@ HTMLFormat() : public == private where
       -- the expressions.
       a : E
       expr := precondition expr
-      atom?(expr) or (stringify expr = "NOTHING") =>
-        concat ["{",stringify expr,"}"]
+      empty?(expr) =>
+          concat ["{", "NOTHING", "}"]
+      atom?(expr) => atom_to_string(expr)
+          concat ["{", atom_to_string(expr), "}"]
       op := operator(expr)
       sop : S := exprex op
       args : L E := arguments(expr)
@@ -347,8 +349,8 @@ HTMLFormat() : public == private where
       -- expressions.
       -- expr should be preconditioned.
       le : L E := []
-      atom?(expr) or (stringify expr = "NOTHING") =>
-        le := append(le, list(expr))
+      empty?(expr) => le
+      atom?(expr) => [expr]
       letmp := cons(operator(expr), arguments(expr))
       for a in letmp repeat
         le := append(le, atomize a)
@@ -581,7 +583,7 @@ HTMLFormat() : public == private where
       -- starting at the NOTHING or ...
       if debug then sayHt "formatIntSign: "concat[" args=",_
         argsToString(args)," prec=",string(opPrec)$S]
-      (stringify first args) = "NOTHING" =>
+      empty?(first(args)) =>
         buildPlex2(formatHtml(args.3,opPrec),tree("&int;"),_
           formatHtml(args.2, opPrec)) -- could use &#x0222B; or &int;
       buildPlex3(formatHtml(first args, opPrec), formatHtml(args.3, opPrec), _
