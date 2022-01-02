@@ -16,6 +16,9 @@ DegreeReductionPackage(R1, R2) : Cat == Capsule where
         expand :  (RE, PI) ->  List RE
           ++ expand(f, n) returns list of all solutions y to
           ++ equation y^n = f
+        cyclotomic_roots :  PI -> List(RE)
+          ++ cyclotomic_roots(n) returns list of roots of
+          ++ n-th cyclotomic polynomial.
 
     Capsule == add
 
@@ -38,9 +41,26 @@ DegreeReductionPackage(R1, R2) : Cat == Capsule where
             arg : RE := 2*j*pi()/(n::RE)
             cos arg + (-1)^(1/2) * sin arg
 
+        even_part(gp : PI) : PI ==
+            g : NonNegativeInteger := gp
+            res : PI := 1
+            while even?(g) repeat
+                g := g quo 2
+                res := res*2
+            res
+
         expand(s, g) ==
             g = 1 => [s]
-            [rootOfUnity(i, g)*s^(1/g) for i in 0..g-1]
+            sr :=
+                s = -1 =>
+                    g2 := even_part(g)
+                    g2 = 1 => s
+                    s^(1/g2)
+                s^(1/g)
+            [rootOfUnity(i, g)*sr for i in 0..g-1]
+
+        cyclotomic_roots(n) ==
+            [rootOfUnity(i, n) for i in 0..(n - 1) | gcd(i, n) = 1]
 
 
 )abbrev package SOLVERAD RadicalSolvePackage
@@ -133,6 +153,8 @@ RadicalSolvePackage(R) : Cat == Capsule where
           ++ where rf is a rational function. The result contains  new
           ++ symbols for common subexpressions in order to reduce the
           ++ size of the output.
+        cyclotomic_case? :  UP -> Union(Integer, "failed")
+          ++ cyclotomic_case?(u) should be local but conditional
     Capsule ==> add
         import from DegreeReductionPackage(PR, R)
         import from SOLVEFOR
@@ -278,9 +300,35 @@ RadicalSolvePackage(R) : Cat == Capsule where
         makeEq(nres : L RE, lv : L SY) : L EQ RE ==
           [equation(x :: RE, r) for x in lv for r in nres]
 
+        if R has RetractableTo(Integer) then
+
+            cyclotomic_case?(u : UP) : Union(Integer, "failed") ==
+                iu : SparseUnivariatePolynomial(Integer) := 0
+                while not(u = 0) repeat
+                    cp := leadingCoefficient(u)
+                    not(ground?(cp)) => return "failed"
+                    c := ground(cp)
+                    icu := retractIfCan(c)@Union(Integer, "failed")
+                    icu case "failed" => return "failed"
+                    iu := iu + monomial(icu::Integer, degree(u))
+                    u := reductum(u)
+                cyclotomic?(iu)$CyclotomicUtilities
+
+        else
+
+            cyclotomic_case?(u : UP) : Union(Integer, "failed") == "failed"
+
         solveInner(pq : PR, v : SY, contractFlag : B) ==
             SideEquations := []
             ContractSoln  := contractFlag
+            t := reduce(univariate(pq, v))
+            u := t.pol
+            (degree(u) = 1 and
+                    leadingCoefficient(u) = -coefficient(u, 0)) =>
+                [expand(1$RE, t.deg), []]
+            (degree(u) = 1 and
+                    leadingCoefficient(u) = coefficient(u, 0)) =>
+                [expand(-1$RE, t.deg), []]
 
             lfactors := factorList
                (factor pq)$MultivariateFactorize(SY, IndexedExponents SY, R, PR)
@@ -300,6 +348,11 @@ RadicalSolvePackage(R) : Cat == Capsule where
                 l : List RE :=
                     n = 1 => linear u
                     n = 2 => quadratic u
+                    (iu := cyclotomic_case?(u)) case Integer =>
+                        T0 := cyclotomic_roots(t.deg*iu::Integer::PI)
+                        for i in 1..f.exponent repeat
+                            solutions := append(T0, solutions)
+                        []
                     n = 3 => cubic u
                     n = 4 => quartic u
                     unsolved := cons(ff, unsolved)
