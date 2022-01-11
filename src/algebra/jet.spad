@@ -395,7 +395,7 @@ JetBundleCategory() : Category == Def where
       integrate(jv : %, i : PI) : % ==
           ji := integrateIfCan(jv, i)
           ji case "failed" => error errmsg3
-          ji::%
+          ji
 
       -- -------- --
       -- Ordering --
@@ -1034,7 +1034,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   for jv in LD while jv > ld repeat
                       i := i + 1
                   LD := insert(ld, LD, i)
-                  LS := insert(ls::%, LS, i)
+                  LS := insert(ls@%, LS, i)
 
           newSys : L % := map(simpOne@(% -> %), sys1)$L(%)
           empty? LD => newSys
@@ -1078,7 +1078,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   for jv in LD while jv > ld repeat
                       i := i + 1
                   LD := insert(ld, LD, i)
-                  LS := insert(ls::%, LS, i)
+                  LS := insert(ls@%, LS, i)
 
           newSys : L % := map(simpOne, sys1)
           res : L % := empty
@@ -1126,7 +1126,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   for jv in LD while jv > ld repeat
                       i := i + 1
                   LD := insert(ld, LD, i)
-                  LS := insert(ls::%, LS, i)
+                  LS := insert(ls@%, LS, i)
 
           newSys := map(simpOne, sys1)
           empty? LD => newSys
@@ -2018,7 +2018,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             res := numer(f)*d
             tmp := res exquo denom(f)
             tmp case "failed" => error "cannot divide in mult"
-            tmp::D
+            tmp
 
         LM : MFD * AA : % ==
             ncols(LM) ~= AA.NRows => error "improper matrix dimensions"
@@ -2043,7 +2043,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                     d case "failed" => error "cannot divide in *"
                     r := qelt(res.Rows, k)
                     r.Indices := cons(c, r.Indices)
-                    r.Entries := cons(d::D, r.Entries)
+                    r.Entries := cons(d@D, r.Entries)
                     qsetelt!(res.Rows, k, r)
 
             for k in 1..rlen repeat
@@ -2448,7 +2448,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
                 if jv case "failed" then
                     newco := newco * (vs::EI)
                 else
-                    JV := cons(jv::JB, JV)
+                    JV := cons(jv@JB, JV)
                     Exp := cons(degree(mon, v), Exp)
             res := res + newco*monomial(1, reverse! JV, reverse! Exp)
         res
@@ -2469,7 +2469,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
     f1 : % exquo f2 : % ==
         p := (numer(f1) exquo$SMP numer(f2))
         p case "failed" => "failed"
-        p::SMP::%
+        p@SMP::%
 
     recip(f : %) : Union(%, "failed") == 1/f
 
@@ -2535,7 +2535,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         tv := mainVariable p
         tv case "failed" => error "inconsistent system"
         --print("simpSMP")$OUT
-        v := tv::K
+        v := tv@K
         up := univariate(p, v)
         monomial? up =>
             --print("  monomial")$OUT
@@ -2883,7 +2883,7 @@ JetBundleXExpression(JB : JBC) : Cat == Def where
     retract(p : JBE) : % ==
         px : Union(%, "failed") := retractIfCan(p)
         px case "failed" => error errmsg
-        px::%
+        px
 
 
 )abbrev domain JBLF JetBundleLinearFunction
@@ -3017,19 +3017,19 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
 
         retractIfCan(ex : JBE) : Union(%, "failed") ==
             pd := retractIfCan(ex)$D
-            pd case D => [[pd::D], [1$JB]]
+            pd case D => [[pd@D], [1$JB]]
             resJ := jetVariables ex
             resC : L D := empty
             for jv in resJ repeat
                 cd := retractIfCan(differentiate(ex, jv))$D
                 cd case "failed" => return "failed"
-                resC := cons(cd::D, resC)
+                resC := cons(cd@D, resC)
             [reverse! resC, resJ]
 
         retract(ex : JBE) : % ==
             pl : Union(%, "failed") := retractIfCan ex
             pl case "failed" => error errmsg1
-            pl::%
+            pl
 
     -- -------- --
     -- Equality --
@@ -3095,7 +3095,7 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
     recip(l : %) : Union(%, "failed") ==
         l.JVars = [1] =>
             rc := recip(first(l.Coeffs))$D
-            rc case D => rc::D::%
+            rc case D => rc@D::%
             "failed"
         "failed"
 
@@ -3911,7 +3911,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         dep case "failed" => [[1 for i in der], [false for i in der]]
         resDer : L NNI := empty
         resPro? : L B := empty
-        for d in dep::L L NNI repeat
+        for d in dep@L(L(NNI)) repeat
             if one?(#d) then
                 resDer := cons(qelt(der, first d), resDer)
                 resPro? := cons(qelt(pro?, first d), resPro?)
@@ -4822,7 +4822,7 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
           zero? i => 1
           zero? k => 1
           ans := search([i, k, q], remember)
-          ans case NNI => ans::NNI
+          ans case NNI => ans
 
           if one? k then
               res := reduce("+", [q + j for j in 1..i])
@@ -5103,19 +5103,19 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
     depVars : L(Sy) := empty()
     if xi case Sy then
         if nn > 1 then
-            depVars := [superscript(xi::Sy, [i::OUT])  for i in 1..nn]
+            depVars := [superscript(xi@Sy, [i::OUT])  for i in 1..nn]
         else
-            depVars := [xi::Sy]
+            depVars := [xi@Sy]
     else
-        depVars := xi::L(Sy)
+        depVars := xi@L(Sy)
     if eta case Sy then
         if mm > 1 then
             depVars := append(depVars, _
-                          [superscript(eta::Sy, [i::OUT])  for i in 1..mm])
+                          [superscript(eta@Sy, [i::OUT])  for i in 1..mm])
         else
-            depVars := append(depVars, [eta::Sy])
+            depVars := append(depVars, [eta@Sy])
     else
-        depVars := append(depVars, eta::L(Sy))
+        depVars := append(depVars, eta@L(Sy))
 
     Rep := JetBundle(indVars, depVars)
 
@@ -5255,19 +5255,19 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
     depVars : L Sy := empty
     if xi case Sy then
         if nn > 1 then
-            depVars : L Sy := [superscript(xi::Sy, [i::OUT])  for i in 1..nn]
+            depVars : L Sy := [superscript(xi@Sy, [i::OUT])  for i in 1..nn]
         else
-            depVars : L Sy := [xi::Sy]
+            depVars : L Sy := [xi@Sy]
     else
-        depVars : L Sy := xi::L Sy
+        depVars : L Sy := xi@L Sy
     if eta case Sy then
         if mm > 1 then
             depVars := append(depVars, _
-                          [superscript(eta::Sy, [i::OUT])  for i in 1..mm])
+                          [superscript(eta@Sy, [i::OUT])  for i in 1..mm])
         else
-            depVars := append(depVars, [eta::Sy])
+            depVars := append(depVars, [eta@Sy])
     else
-        depVars : L Sy := append(depVars, eta::L Sy)
+        depVars : L Sy := append(depVars, eta@L(Sy))
     JVars : L JBE1 := [jv::JBE1  for jv in vars]
 
 
@@ -5368,7 +5368,7 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
         for eq in sys   for jv in sjb repeat
             tmp := solveFor(eq, jv)
             tmp case "failed" => error "cannot solve in detsys"
-            solEq := cons(jv::JBE1 = tmp::JBE1, solEq)
+            solEq := cons(jv::JBE1 = tmp@JBE1, solEq)
         solEq := reverse! solEq
 
         -- determining conditions
@@ -5596,8 +5596,8 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
 
     jetVars(f : UDS) : L JB ==
-        f case D => jetVariables(f::D)$D
-        jetVariables(f::%)
+        f case D => jetVariables(f@D)$D
+        jetVariables(f@%)
 
 
     greater(lt1 : REF LazyTerm, lt2 : REF LazyTerm) : B ==
@@ -5631,32 +5631,32 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
 
     zeroU?(f : UDS) : B ==
-        f case D => zero?(f::D)$D
-        zero?(f::%)
+        f case D => zero?(f)$D
+        zero?(f)$%
 
 
     oneU?(f : UDS) : B ==
-        f case D => one?(f::D)$D
-        one?(f::%)
+        f case D => one?(f)$D
+        one?(f)$%
 
 
     minus(f : UDS) : UDS ==
-        f case D => -$D (f::D)
-        fs := f::%
+        f case D => -$D (f@D)
+        fs := f@%
         groundFlag? f => -$D extract fs
         - fs
 
 
     mult(f : UDS, g : UDS) : UDS ==
         f case D =>
-            fd := f::D
-            g case D => fd *$D (g::D)
-            gs := g::%
+            fd := f@D
+            g case D => fd *$D (g@D)
+            gs := g@%
             groundFlag? gs => fd *$D extract gs
             fd * gs
-        fs := f::%
-        g case D => (g::D) * fs
-        gs := g::%
+        fs := f@%
+        g case D => (g@D) * fs
+        gs := g@%
         groundFlag? gs => extract(gs) * fs
         fs * gs
 
@@ -5716,8 +5716,8 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
 
     printFun(fun : UDS) : OUT ==
-        fun case D => fun::D::OUT
-        fun::%::OUT
+        fun case D => fun@D::OUT
+        fun@%::OUT
 
 
     printDiff(der : LazyDer) : OUT ==
@@ -5771,11 +5771,11 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
                         prod := lt.LCoeff
                     else
                         prod := mult(der.DFun, lt.LCoeff)
-                    if (prod case D) or ground?(prod::%) then
+                    if (prod case D) or ground?(prod@%) then
                         if prod case D then
                             newCoeff : UDS := prod
                         else
-                            newCoeff : UDS := extract(prod::%)
+                            newCoeff : UDS := extract(prod@%)
                         newEval? := true
                         newLD := leadingDer(newCoeff::D)
                         newSharp? : B := true
@@ -6003,7 +6003,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
         ground? exp =>
             rd := recip(extract exp)$D
             rd case "failed" => "failed"
-            rd::D::%
+            rd@D::%
         "failed"
 
 
@@ -6068,12 +6068,12 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
                     djv := differentiate(jv, i)
                     if djv case "0" then
                         JV := cons(jv, JV)
-                    else if one?(djv::JB) then
+                    else if one?(djv@JB) then
                         res := res + df
                         JV := cons(jv, JV)
                     else
-                        res := res + df*(djv::JB::%)
-                        JV := append([jv, djv::JB], JV)
+                        res := res + df*(djv@JB::%)
+                        JV := append([jv, djv@JB], JV)
             if deref(f).Sharp? then
                 deref(res).Sharp? := true
             LRes := cons(res, LRes)
@@ -6112,7 +6112,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
     solveFor(exp : %, jv : JB) : Union(%, "failed") ==
         sf := solveFor(exp::D, jv)$D
         sf case "failed" => "failed"
-        sf::D::%
+        sf@D::%
 
 
     subst(exp : %, jv : JB, sub : %) : % ==
@@ -6431,7 +6431,7 @@ JetCoordinateTransformation(JB1, JB2, Y, W) : Cat == Def where
     transform(jv : JB1) : E2 ==
         -- first check memory
         ans := search(jv::EI, remember)
-        ans case E2 => ans::E2
+        ans case E2 => ans
 
         jt := type jv
         if jt = Const then      res := 1$E2
@@ -6517,7 +6517,7 @@ JetBundlePolynomial(R : Ring, JB : JBC) : Cat == Def where
                 cc : R := retract c
                 rc := recip cc
                 rc case "failed" => "failed"
-                rc::R * p - jv::%
+                rc@R * p - jv::%
             "failed"
 
     if R has GcdDomain then
@@ -6660,7 +6660,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
         (xx := mainVariable p) case "failed" =>
             cc : R := retract p
             cc::%
-        x := xx::JB
+        x := xx@JB
         not member?(x, LJV) => error "illegal jet variable"
         up := univariate(p, x)
         res : % := 0
@@ -6674,7 +6674,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
         (xx := mainVariable p) case "failed" =>
             cc : R := retract p
             cc::JBP
-        x := xx::JB
+        x := xx@JB
         up := univariate(p, x)
         res : JBP := 0
         while not zero? up repeat
@@ -6706,7 +6706,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
     univariate(p : %) : SUP(R) ==
         pv := mainVariable(p)$%
         pv case "failed" => monomial(leadingCoefficient p, 0)
-        up := univariate(p, pv::JB)
+        up := univariate(p, pv@JB)
         res : SUP(R) := 0
         while not zero? up repeat
             res := res + monomial(const leadingCoefficient up, degree up)
@@ -6757,7 +6757,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
         -- local function
         j := mainVariable p
         j case "failed" => p
-        pv := j::JB
+        pv := j@JB
         empty? Ljvar or empty? Lpval => p
         mvar := Ljvar.first
         mvar > pv => evalSortedVarlist(p, Ljvar.rest, Lpval.rest)
@@ -6849,7 +6849,7 @@ JetGroebner(R, JB, LJV, P, E) : Cat == Def where
         (xx := mainVariable p) case "failed" =>
             cc : R := retract p
             cc::DJBP
-        x := xx::JB
+        x := xx@JB
         not member?(x, LJV) => error "illegal jet variable"
         up := univariate(p, x)
         res : DJBP := 0
@@ -6866,7 +6866,7 @@ JetGroebner(R, JB, LJV, P, E) : Cat == Def where
         (xx := mainVariable p) case "failed" =>
             cc : R := retract p
             cc::P
-        x := xx::JB
+        x := xx@JB
         up := univariate(p, x)
         res : P := 0
         while not zero? up repeat
@@ -7109,7 +7109,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
     recip(q : %) : Union(%, "failed") ==
         r := recip(q::D)$D
         r case "failed" => "failed"
-        convert(r::D)
+        convert(r@D)
 
 
     if D has Field then
@@ -7217,7 +7217,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         pos < minIndex(q.hJV) => "failed"
         dr := recip(q.hCoeff.pos)$D
         dr case "failed" => "failed"
-        d : D := - (dr::D)
+        d : D := - (dr@D)
         #q.hJV = 1 => convert(d *$D q.low)
         [[d *$D c  for c in delete(q.hCoeff, pos)], delete(q.hJV, pos), _
          d *$D q.low, q.ord, false]

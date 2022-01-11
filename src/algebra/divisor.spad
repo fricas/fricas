@@ -116,7 +116,7 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
       nr := empty()$List(A)
       for x in removeDuplicates l repeat
         if (u := retractIfCan(x)@Union(F, "failed")) case F
-          then lr := concat(retract(u::F)@R, lr)
+          then lr := concat(retract(u@F)@R, lr)
           else nr := concat(x, nr)
       r    := gcd(lr)
       g    := agcd nr
@@ -172,7 +172,7 @@ FractionalIdeal(R, F, UP, A) : Exports == Implementation where
       (n = 1) or (n < 3 and ret? nm) => i
       nrm    := retract(norm mkIdeal(nm, 1))@R
       for range in 1..5 repeat
-        (u := tryRange(range, nm, nrm, i)) case % => return(u::%)
+        (u := tryRange(range, nm, nrm, i)) case % => return u
       i
 
 )abbrev package FRIDEAL2 FractionalIdealFunctions2
@@ -337,7 +337,7 @@ ModularHermitianRowReduction(R) : Exports == Implementation where
       zero? m => -1
       for i in 0.. repeat
         (mm := m exquo p) case "failed" => return i
-        m := mm::R
+        m := mm@R
 
     if R has IntegerNumberSystem then
         normalizedDivide(n : R, d : R) : Record(quotient : R, remainder : R) ==
@@ -717,17 +717,17 @@ HyperellipticFiniteDivisor(F, UP, UPUP, R) : Exports == Implementation where
       a := v minIndex v
       h := v maxIndex v
       (u := polyIfCan a) case UP =>
-        (w := redpolyIfCan(h, u::UP)) case UP => makeDivisor(u::UP, w::UP, 1)
+        (w := redpolyIfCan(h, u@UP)) case UP => makeDivisor(u@UP, w@UP, 1)
         ERR
       (u := polyIfCan h) case UP =>
-        (w := redpolyIfCan(a, u::UP)) case UP => makeDivisor(u::UP, w::UP, 1)
+        (w := redpolyIfCan(a, u@UP)) case UP => makeDivisor(u@UP, w@UP, 1)
         ERR
       ERR
 
     polyIfCan a ==
       (u := retractIfCan(a)@Union(RF, "failed")) case "failed" => "failed"
-      (v := retractIfCan(u::RF)@Union(UP, "failed")) case "failed" => "failed"
-      v::UP
+      (v := retractIfCan(u@RF)@Union(UP, "failed")) case "failed" => "failed"
+      v@UP
 
     redpolyIfCan(h, a) ==
       degree(p := lift h) ~= 1 => "failed"

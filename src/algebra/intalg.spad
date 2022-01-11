@@ -215,9 +215,9 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
 
     R_to_F(f : R) : Union(F, "failed") ==
         (u1 := retractIfCan(f)@Union(RF, "failed")) case "failed" => "failed"
-        f1 := u1::RF
+        f1 := u1@RF
         (u2 := retractIfCan(f1)@Union(UP, "failed")) case "failed" => "failed"
-        f2 := u2::UP
+        f2 := u2@UP
         retractIfCan(f2)@Union(F, "failed")
 
     algintexp(f, derivation, rec_int) ==
@@ -236,21 +236,21 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
       not(zero?(p)) => FAIL3
       zero?(h.logpart) => h.answer::IR
       (p1u := R_to_F(h.logpart)) case F =>
-          res1 := rec_int(p1u::F)
+          res1 := rec_int(p1u@F)
           mkAnswer(h.answer, empty(), empty()) + IRF_to_IR(res1)
       (u := alglogint(h.logpart, derivation)) case "failed" =>
                        mkAnswer(h.answer, empty(), [[p + h.logpart, dummy]])
-      mkAnswer(h.answer, u::List(LOG), empty())
+      mkAnswer(h.answer, u@List(LOG), empty())
 
     algintprim(f, derivation, rec_int) ==
       h := HermiteIntegrate(f, derivation)
       zero?(h.logpart) => h.answer::IR
       (p1u := R_to_F(h.logpart)) case F =>
-          res1 := rec_int(p1u::F)
+          res1 := rec_int(p1u@F)
           mkAnswer(h.answer, empty(), empty()) + IRF_to_IR(res1)
       (u := alglogint(h.logpart, derivation)) case "failed" =>
                        mkAnswer(h.answer, empty(), [[h.logpart, dummy]])
-      mkAnswer(h.answer, u::List(LOG), empty())
+      mkAnswer(h.answer, u@List(LOG), empty())
 
     FAC2 ==> Record(factor : UP, exponent : NonNegativeInteger)
     PC ==> Record(factor : UP, exponent : NonNegativeInteger, coeff : Q)
@@ -279,14 +279,14 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
             fac := cp/cp1
             facu := retractIfCan(fac)@Union(Fraction(Integer), "failed")
             facu case "failed" => "iterate"
-            nfac := facu::Fraction(Integer)
+            nfac := facu@Fraction(Integer)
             nfac_ok := true
             if n > 1 then
                 nnu := perfectNthRoot(numer(nfac), n)$IntegerRoots(Z)
                 nnu case "failed" => nfac_ok := false
                 ndu := perfectNthRoot(denom(nfac), n)$IntegerRoots(Z)
                 ndu case "failed" => nfac_ok := false
-                nfac := (nnu::Z)/(ndu::Z)
+                nfac := (nnu@Z)/(ndu@Z)
             not(nfac_ok) => "iterate"
             p1 ~= (nfac::F)^(-k)*elt(p, monomial(nfac::F, 1)$UP) => "iterate"
             res := cons([p, f.exponent, nfac]$PC, res)
@@ -334,7 +334,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
             nfac := peq.coeff
             fu := find((x : PC) : Boolean +-> x.coeff = -nfac, lp)
             fu case "failed" => return [[], [], lp]
-            ff := fu::PC
+            ff := fu@PC
             if ff.exponent ~= peq.exponent then return [[], [], lp]
         handle_multiples1(rec, lp1, 1)
 
@@ -422,7 +422,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
                 pp case "failed" =>
                     nlins2 := cons(nfl, nlins2)
                     root_fails := root_fails + #nfl
-                ppr.result1 := concat(pp::List(LOG), ppr.result1)
+                ppr.result1 := concat(pp@List(LOG), ppr.result1)
             nlins2 := cons(nfl, nlins2)
         nlins2 := reverse!(nlins2)
         root_fails = 1 and #nlins2 = 1 and #nlins1 = 0 => "failed"
@@ -458,7 +458,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
             ld := get_ld(rec, lins1, lins2)
             tr1u := trace1(fcf, la, ld, fc1.divisor, fc1.scalar, bb)
             tr1u case "failed" => "failed"
-            concat(ppr.result1, tr1u::List(LOG))
+            concat(ppr.result1, tr1u@List(LOG))
         #lins1 + #lins2 > 1 => FAIL1
         fc2 : PC
         if #nlins2 = 1 then
@@ -480,7 +480,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         v1 := divisor(rec.num, rec.den, rec.derivden, rec.gd, alpha)
         tr1u := trace1(fcf, la, ld, v1, alpha, bb)
         tr1u case "failed" => "failed"
-        concat(ppr.result1, tr1u::List(LOG))
+        concat(ppr.result1, tr1u@List(LOG))
 
     do_root(q : UP, rec : DIV) : Union(List LOG, "failed") ==
         alpha := rootOf UP2SUP q
@@ -588,9 +588,9 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         ((u := palglogint(h.logpart, derivation)) case "failed") =>
                       mkAnswer(h.answer, empty(), [[h.logpart, dummy]])
       zero?(difFirstKind := h.logpart - +/[pLogDeriv(lg,
-            x1+->differentiate(x1, derivation)) for lg in u::List(LOG)]) =>
-                mkAnswer(h.answer, u::List(LOG), empty())
-      mkAnswer(h.answer, u::List(LOG), [[difFirstKind, dummy]])
+            x1+->differentiate(x1, derivation)) for lg in u@List(LOG)]) =>
+                mkAnswer(h.answer, u@List(LOG), empty())
+      mkAnswer(h.answer, u@List(LOG), [[difFirstKind, dummy]])
 
 -- for mixed functions. f dx not assumed locally integral at infinity
     algintegrate(f, derivation, rec_int) ==
@@ -619,7 +619,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
             di := divisor(rec.num, rec.den, rec.derivden, rec.gd, alpha)
             gu := generator(di, -fac.exponent, [])
             gu case "failed" => return "failed"
-            nlog := mkLog(p, 1, gu::R, alpha)
+            nlog := mkLog(p, 1, gu, alpha)
             llg := concat(nlog, llg)
         llg
 
@@ -633,7 +633,7 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
             []
         lu := try_logs(f, derivation, r, lp)
         lu case "failed" => FAIL0
-        ll := lu::List(LOG)
+        ll := lu@List(LOG)
         diff1 := f - +/[pLogDeriv(lg,
             x1+->differentiate(x1, derivation)) for lg in ll]
         zero?(diff1) => ll

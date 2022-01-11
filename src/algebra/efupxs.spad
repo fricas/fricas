@@ -112,7 +112,7 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef, ULS, UPXS, EFULS) : _
           error "root of series with many leading zero coefficients"
       uls := uls * monomial(1, -deg)$ULS
       (ulsRoot := nthRootIfCan(uls,n)) case "failed" => "failed"
-      puiseux(r, ulsRoot :: ULS) * monomial(1, deg * r * inv(n :: RN))
+      puiseux(r, ulsRoot@ULS) * monomial(1, deg * r * inv(n :: RN))
 
     if Coef has Field then
        (upxs : UPXS) ^ (q : RN) ==
@@ -133,7 +133,7 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef, ULS, UPXS, EFULS) : _
     applyIfCan(fcn, upxs) ==
       uls := fcn laurentRep upxs
       uls case "failed" => "failed"
-      puiseux(rationalPower upxs, uls :: ULS)
+      puiseux(rationalPower upxs, uls@ULS)
 
     expIfCan   upxs == applyIfCan(expIfCan, upxs)
     logIfCan   upxs == applyIfCan(logIfCan, upxs)
@@ -182,7 +182,7 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef, ULS, UPXS, EFULS) : _
         cc := asec(coefficient(upxs, 0)) :: UPXS
         f := (upxs*upxs - 1)^(-1/2) * (differentiate upxs)
         (rec := recip upxs) case "failed" => "failed"
-        cc + integrate(f * (rec :: UPXS))
+        cc + integrate(f * (rec@UPXS))
       "failed"
 
     acscIfCan upxs ==
@@ -191,7 +191,7 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef, ULS, UPXS, EFULS) : _
         cc := acsc(coefficient(upxs, 0)) :: UPXS
         f := -(upxs*upxs - 1)^(-1/2) * (differentiate upxs)
         (rec := recip upxs) case "failed" => "failed"
-        cc + integrate(f * (rec :: UPXS))
+        cc + integrate(f * (rec@UPXS))
       "failed"
 
     asinhIfCan upxs ==
@@ -210,14 +210,14 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef, ULS, UPXS, EFULS) : _
       TRANSFCN =>
         order(upxs,0) < 0 => "failed"
         (rec := recip upxs) case "failed" => "failed"
-        log((1 + (1 - upxs*upxs)*(1/2)) * (rec :: UPXS))
+        log((1 + (1 - upxs*upxs)*(1/2)) * (rec@UPXS))
       "failed"
 
     acschIfCan upxs ==
       TRANSFCN =>
         order(upxs,0) < 0 => "failed"
         (rec := recip upxs) case "failed" => "failed"
-        log((1 + (1 + upxs*upxs)*(1/2)) * (rec :: UPXS))
+        log((1 + (1 + upxs*upxs)*(1/2)) * (rec@UPXS))
       "failed"
 
     applyOrError:(UPXS -> Union(UPXS,"failed"),String,UPXS) -> UPXS
@@ -225,7 +225,7 @@ ElementaryFunctionsUnivariatePuiseuxSeries(Coef, ULS, UPXS, EFULS) : _
       ans := fcn upxs
       ans case "failed" =>
         error concat(name," of function with singularity")
-      ans :: UPXS
+      ans@UPXS
 
     exp upxs   == applyOrError(expIfCan,"exp",upxs)
     log upxs   == applyOrError(logIfCan,"log",upxs)

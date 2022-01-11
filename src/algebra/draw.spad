@@ -268,7 +268,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
         else
           "No explicit user-specified clipping"
       else
-        segList := retract(cl :: Any)$ANY1(L SEG)
+        segList := retract(cl@Any)$ANY1(L SEG)
         empty? segList =>
           error "draw: you may specify at least 1 segment for 2D clipping"
         more?(segList, 2) =>
@@ -317,7 +317,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
     myTrap1(ff : SF-> SF, f : SF) : SF ==
       s := trapNumericErrors(ff(f))$Lisp :: Union(SF, "failed")
       s case "failed" => 0
-      r := s::SF
+      r := s@SF
       r > max()$SF => max()$SF
       r < min()$SF => min()$SF
       r
@@ -338,7 +338,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
         -- default coordinate transformation
         ff := [x +-> makePt2(x, myTrap1(f, x))]
       else
-        cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
+        cc : L(Pt -> Pt) := [retract(c@Any)$ANY1(Pt -> Pt)]
         ff := [x +-> (first cc)((first ff)(x))]
       -- create PLOT
       pl := pointPlot(first ff, normalize seg)
@@ -364,7 +364,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       fcn : L(SF -> Pt) := [x +-> makePt2(myTrap1(f, x), myTrap1(g, x))]
       -- process change of coordinates
       if not (c := option(l, 'coordinates)) case "failed" then
-        cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
+        cc : L(Pt -> Pt) := [retract(c@Any)$ANY1(Pt -> Pt)]
         fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
       pl := pointPlot(first fcn, normalize seg)
@@ -414,10 +414,10 @@ TopLevelDrawFunctionsForCompiledFunctions():
       if not (c1 := option(l, 'colorFunction1)) case "failed" then
         pointsColored? := true
         fcn := [x +-> makePt4(myTrap1(f, x), myTrap1(g, x), _
-                myTrap1(h, x), retract(c1 :: Any)$ANY1(SF -> SF)(x))]
+                myTrap1(h, x), retract(c1@Any)$ANY1(SF -> SF)(x))]
       -- process change of coordinates
       if not (c := option(l, 'coordinates)) case "failed" then
-        cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
+        cc : L(Pt -> Pt) := [retract(c@Any)$ANY1(Pt -> Pt)]
         fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
       pl := pointPlot(first fcn, normalize seg)$Plot3D
@@ -434,7 +434,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
         if not pointsColored? then
           if (c3 := option(l, 'colorFunction3)) case "failed"
             then colorPoints(loops, zCoord)  -- default color function
-            else colorPoints(loops, retract(c3 :: Any)$ANY1((SF, SF, SF) -> SF))
+            else colorPoints(loops, retract(c3@Any)$ANY1((SF, SF, SF) -> SF))
         mesh(s, loops, false, false)
         s
       -- draw curve
@@ -450,10 +450,10 @@ TopLevelDrawFunctionsForCompiledFunctions():
       pointsColored? : Boolean := false
       if not (c1 := option(l, 'colorFunction1)) case "failed" then
         pointsColored? := true
-        fcn := [x +-> concat(psc(x), retract(c1 :: Any)$ANY1(SF -> SF)(x))]
+        fcn := [x +-> concat(psc(x), retract(c1@Any)$ANY1(SF -> SF)(x))]
       -- process change of coordinates
       if not (c := option(l, 'coordinates)) case "failed" then
-        cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
+        cc : L(Pt -> Pt) := [retract(c@Any)$ANY1(Pt -> Pt)]
         fcn := [x +-> (first cc)((first fcn)(x))]
       -- create PLOT
       pl := pointPlot(first fcn, normalize seg)$Plot3D
@@ -501,7 +501,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
     myTrap2(ff : (SF, SF) -> SF, u : SF, v : SF) : SF ==
       s := trapNumericErrors(ff(u, v))$Lisp :: Union(SF, "failed")
       s case "failed" =>  0
-      r : SF := s::SF
+      r : SF := s@SF
       r >max()$SF => max()$SF
       r < min()$SF => min()$SF
       r
@@ -524,7 +524,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
       pointsColored? : Boolean := false
       if not (c2 := option(l, 'colorFunction2)) case "failed" then
         pointsColored? := true
-        col2 := [retract(c2 :: Any)$ANY1((SF, SF) -> SF)]
+        col2 := [retract(c2@Any)$ANY1((SF, SF) -> SF)]
       fcn : L((SF, SF) -> Pt) :=
         [(x, y) +-> makePt4(myTrap2(f, x, y), x, y, (first col2)(x, y))]
       -- process change of coordinates
@@ -532,7 +532,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
         -- default coordinate transformation
         fcn := [(x, y) +-> makePt4(x, y, myTrap2(f, x, y), (first col2)(x, y))]
       else
-        cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
+        cc : L(Pt -> Pt) := [retract(c@Any)$ANY1(Pt -> Pt)]
         fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- process color function of three variables, if there was no
       -- color function of two variables
@@ -540,7 +540,7 @@ TopLevelDrawFunctionsForCompiledFunctions():
         c := option(l, 'colorFunction3)
         fcn :=
           c case "failed" => [recolor((first fcn),zCoord)]
-          [recolor((first fcn), retract(c :: Any)$ANY1((SF, SF, SF) -> SF))]
+          [recolor((first fcn), retract(c@Any)$ANY1((SF, SF, SF) -> SF))]
       -- create mesh
       mesh := meshPar2Var(sp, first fcn, normalize xSeg, normalize ySeg, l)
       mesh
@@ -568,20 +568,20 @@ TopLevelDrawFunctionsForCompiledFunctions():
       pointsColored? : Boolean := false
       if not (c2 := option(l, 'colorFunction2)) case "failed" then
         pointsColored? := true
-        col2 := [retract(c2 :: Any)$ANY1((SF, SF) -> SF)]
+        col2 := [retract(c2@Any)$ANY1((SF, SF) -> SF)]
       fcn : L((SF, SF) -> Pt) :=
         [(x, y) +-> makePt4(myTrap2((first f), x, y), myTrap2((first g), x, y),
          myTrap2((first h), x, y), myTrap2((first col2), x, y))]
       -- process change of coordinates
       if not (c := option(l, 'coordinates)) case "failed" then
-        cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
+        cc : L(Pt -> Pt) := [retract(c@Any)$ANY1(Pt -> Pt)]
         fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- process color function of three variables, if there was no
       -- color function of two variables
       if not pointsColored? then
         col3 : L((SF, SF, SF) -> SF) := [zCoord]  -- default color function
         if not (c := option(l, 'colorFunction3)) case "failed" then
-          col3 := [retract(c :: Any)$ANY1((SF, SF, SF) -> SF)]
+          col3 := [retract(c@Any)$ANY1((SF, SF, SF) -> SF)]
         fcn := [recolor((first fcn), (first col3))]
       -- create mesh
       mesh := meshPar2Var(sp, first fcn, normalize uSeg, normalize vSeg, l)
@@ -594,13 +594,13 @@ TopLevelDrawFunctionsForCompiledFunctions():
       pointsColored? : Boolean := false
       if not (c2 := option(l, 'colorFunction2)) case "failed" then
         pointsColored? := true
-        col2 := [retract(c2 :: Any)$ANY1((SF, SF) -> SF)]
+        col2 := [retract(c2@Any)$ANY1((SF, SF) -> SF)]
       fcn : L((SF, SF) -> Pt) :=
         pointsColored? => [(x, y) +-> concat(s(x, y), (first col2)(x, y))]
         [s]
       -- process change of coordinates
       if not (c := option(l, 'coordinates)) case "failed" then
-        cc : L(Pt -> Pt) := [retract(c :: Any)$ANY1(Pt -> Pt)]
+        cc : L(Pt -> Pt) := [retract(c@Any)$ANY1(Pt -> Pt)]
         fcn := [(x, y) +-> (first cc)((first fcn)(x, y))]
       -- create mesh
       mesh := meshPar2Var(sp, first fcn, normalize uSeg, normalize vSeg, l)
@@ -993,14 +993,14 @@ TopLevelDrawFunctionsForAlgebraicCurves(R, Ex) : Exports == Implementation where
     intConvert r ==
       (nn := retractIfCan(r)@Union(I,"failed")) case "failed" =>
         error "draw: polynomial must have rational coefficients"
-      nn :: I
+      nn
 
     polyEquation : EQ Ex -> P I
     polyEquation eq ==
       ff := lhs(eq) - rhs(eq)
       (r := retractIfCan(ff)@Union(FRAC P R,"failed")) case "failed" =>
         error "draw: not a polynomial equation"
-      rat := r :: FRAC P R
+      rat := r@FRAC P R
       (retractIfCan(denom rat)$P(R))@Union(R,"failed") case "failed" =>
         error "draw: non-constant denominator"
       map(intConvert, numer rat)$PolynomialFunctions2(R, I)
@@ -1020,14 +1020,14 @@ TopLevelDrawFunctionsForAlgebraicCurves(R, Ex) : Exports == Implementation where
       xRangeFloat : SEG F := segment(0, 0)    -- dummy value
       yRangeFloat : SEG F := segment(0, 0)    -- dummy value
       if not ratRange case "failed" then
-        ranges := retract(ratRange :: Any)$ANY1(L SEG RN)
+        ranges := retract(ratRange@Any)$ANY1(L SEG RN)
         not size?(ranges,2) => error "draw: you must specify two ranges"
         xRange := first ranges; yRange := second ranges
         xRangeFloat := map((s : RN) : F +-> convert(s)@Float, xRange)@(SEG F)
         yRangeFloat := map((s : RN) : F +-> convert(s)@Float, yRange)@(SEG F)
         floatRanges := [xRangeFloat, yRangeFloat]
       else
-        floatRanges := retract(floatRange :: Any)$ANY1(L SEG F)
+        floatRanges := retract(floatRange::Any)$ANY1(L SEG F)
         not size?(floatRanges, 2) =>
           error "draw: you must specify two ranges"
         xRangeFloat := first floatRanges

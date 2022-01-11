@@ -263,7 +263,7 @@ ExpressionSpace() : Category == Defn where
                   arg := argument k
                   s0  := remove!(retract(second arg)@K, allKernels first arg)
                   arg := rest rest arg
-                  n   := (u::None) pretend N
+                  n   := (u@None) pretend N
                   if n > 1 then arg := rest arg
                   union(s0, allk arg)
               allk argument k
@@ -279,28 +279,28 @@ ExpressionSpace() : Category == Defn where
 
     elt(op : OP, args : List %) ==
       not belong? op => error concat("Unknown operator 3: ",string(name(op)))$String
-      ((u := arity op) case N) and (#args ~= u::N)
+      ((u := arity op) case N) and (#args ~= u@N)
                                     => error "Wrong number of arguments"
-      (v := evaluate(op, args)$BasicOperatorFunctions1(%)) case % => v::%
+      (v := evaluate(op, args)$BasicOperatorFunctions1(%)) case % => v
       okkernel(op, args)
 
     retract f ==
       (k := mainKernel f) case "failed" => error "not a kernel"
-      k::K::% ~= f => error "not a kernel"
-      k::K
+      k@K::% ~= f => error "not a kernel"
+      k
 
     retractIfCan f ==
       (k := mainKernel f) case "failed" => "failed"
-      k::K::% ~= f => "failed"
+      k@K::% ~= f => "failed"
       k
 
     is?(f : %, s : SY) ==
       (k := retractIfCan f) case "failed" => false
-      is?(k::K, s)
+      is?(k@K, s)
 
     is?(f : %, op : OP) ==
       (k := retractIfCan f) case "failed" => false
-      is?(k::K, op)
+      is?(k@K, op)
 
     unwrap(l, x) ==
       for k in reverse! l repeat
@@ -330,8 +330,8 @@ ExpressionSpace() : Category == Defn where
       for eq in leq repeat
         (k := retractIfCan(lhs eq)@Union(K, "failed")) case "failed" =>
                           error "left hand side must be a single kernel"
-        if not member?(k::K, lk) then
-          lk := concat(k::K, lk)
+        if not member?(k@K, lk) then
+          lk := concat(k@K, lk)
           lv := concat(rhs eq, lv)
       [lk, lv]
 
@@ -343,7 +343,7 @@ ExpressionSpace() : Category == Defn where
 
        intpred?(x, pred?) ==
            (u := retractIfCan(x)@Union(Integer, "failed")) case Integer
-                  and pred?(u::Integer)
+                  and pred?(u@Integer)
 
 
 )abbrev package ES1 ExpressionSpaceFunctions1
@@ -365,7 +365,7 @@ ExpressionSpaceFunctions1(F : ExpressionSpace, S : Type) : with
     map(F2S, prop, k) ==
       args := [F2S x for x in argument k]$List(S)
       (p := property(operator k, prop)) case None =>
-                                  ((p::None) pretend (List S -> S)) args
+                                  ((p@None) pretend (List S -> S)) args
       error "Operator does not have required property"
 
 )abbrev package ES2 ExpressionSpaceFunctions2
@@ -604,7 +604,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
           do_eval := false
           s : SY :=
               (su := retractIfCan(a3)@Union(SY, "failed")) case SY =>
-                  su::SY
+                  su
               do_eval := true
               new()$SY
           ne := eval(first l, retract(second l)@K, (do_eval => s::%; a3))
@@ -633,14 +633,14 @@ FunctionSpace(R : Comparable) : Category == Definition where
     variables(lx : List(%)) ==
       l := empty()$List(SY)
       for k in tower lx repeat
-        if ((s := symbolIfCan k) case SY) then l := concat(s::SY, l)
+        if ((s := symbolIfCan k) case SY) then l := concat(s@SY, l)
       reverse! l
 
     variables(x : %) == variables([x])
 
     retractIfCan(x:%):Union(SY, "failed") ==
       (k := retractIfCan(x)@Union(K,"failed")) case "failed" => "failed"
-      symbolIfCan(k::K)
+      symbolIfCan(k@K)
 
     if R has Ring then
 
@@ -675,7 +675,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
       smprep(lop, lexp, lfunc, p) ==
         (v := mainVariable p) case "failed" => p::%
         -- symbolIfCan(k := v::K) case SY => p::%
-        k := v::K
+        k := v@K
         g := (op := operator k)
            (arg := [eval(a, lop, lexp, lfunc) for a in argument k]$List(%))
         q := map(y +-> eval(y::%, lop, lexp, lfunc),
@@ -709,7 +709,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
         m.i := t
         d_name :=
             (dnu := property(operator k, 'disp_name)) case None =>
-                (dnu::None) pretend O
+                (dnu@None) pretend O
             name(operator k)::O
         [d_name, hconcat(","::SY::O, (i+1-minIndex a)::O),
             m, operator(k), (empty? rest a => 1; 0)]
@@ -720,7 +720,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
           zero?(rec.level) => sub(rec.name, rec.sub)
           differentiate(rec.name, rec.level)
         (f := property(rec.orig_op, '%diffDisp)) case None =>
-            ((f::None) pretend (List OutputForm -> OutputForm))
+            ((f@None) pretend (List OutputForm -> OutputForm))
                (cons(opname, rec.arg))
         prefix(opname, rec.arg)
 
@@ -802,7 +802,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
         k : K
         g := retract(second l)@K
         ((u := retractIfCan(first l)@Union(K, "failed")) case "failed")
-          or (u case K and symbolIfCan(k := u::K) case SY) => dfeval(l, g)
+          or (u case K and symbolIfCan(k := u@K) case SY) => dfeval(l, g)
         op := operator k
         (ud := derivative op) case "failed" =>
              -- possible trouble
@@ -835,7 +835,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
         op := operator k
         grad :=
           (u := derivative op) case "failed" => opderiv(op, n)
-          u::List(List % -> %)
+          u@List(List % -> %)
         #grad ~= n => opderiv(op, n)
         grad
 
@@ -844,11 +844,11 @@ FunctionSpace(R : Comparable) : Category == Definition where
     -- for instance with implicit algebraics.
       kerderiv(k, x) ==
         (v := symbolIfCan(k)) case SY =>
-          v::SY = x => 1
+          v@SY = x => 1
           0
         ak := argument k
         (fn := property(operator k, SPECIALDIFF)) case None =>
-           ((fn::None) pretend ((List %, SY) -> %)) (ak, x)
+           ((fn@None) pretend ((List %, SY) -> %)) (ak, x)
         +/[g(ak)*dyx for g in kgrad k for y in ak
             | (dyx := differentiate(y, x)) ~= 0]
 
@@ -863,7 +863,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
       worse?(k1, k2) ==
         (u := less?(name operator k1,name operator k2)) case "failed" =>
           k1 < k2
-        u::Boolean
+        u
 
       bestKernel l ==
         empty? rest l => first l
@@ -872,7 +872,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
         first l
 
       smp2O p ==
-        (r := retractIfCan(p)@Union(R,"failed")) case R =>r::R::OutputForm
+        (r := retractIfCan(p)@Union(R,"failed")) case R =>r@R::OutputForm
         a :=
           userOrdered?() => bestKernel variables p
           mainVariable(p)::K
@@ -907,24 +907,25 @@ FunctionSpace(R : Comparable) : Category == Definition where
 
       isExpt(x : %, op : OP) ==
         (u := isExpt x) case "failed" => "failed"
-        v := (u::Record(var : K, exponent : Z)).var
+        v := (u@Record(var : K, exponent : Z)).var
         is?(v, op) and #argument(v) = 1 => u
         "failed"
 
       isExpt(x : %, sy : SY) ==
         (u := isExpt x) case "failed" => "failed"
-        v := (u::Record(var : K, exponent : Z)).var
+        v := (u@Record(var : K, exponent : Z)).var
         is?(v, sy) and #argument(v) = 1 => u
         "failed"
 
       if R has RetractableTo Z then
           smpIsMult p ==
-            (u := mainVariable p) case K and (degree(q := univariate(p, u::K))=1)
+            (u := mainVariable p) case K and
+                            (degree(q := univariate(p, u@K))=1)
               and zero?(leadingCoefficient reductum q)
                 and ((r := retractIfCan(leadingCoefficient q)@Union(R,"failed"))
                    case R)
-                     and (n := retractIfCan(r::R)@Union(Z, "failed")) case Z =>
-                       [n::Z, u::K]
+                     and (n := retractIfCan(r@R)@Union(Z, "failed")) case Z =>
+                       [n@Z, u@K]
             "failed"
 
       evaluate(opdiff, diffEval)
@@ -1007,20 +1008,20 @@ FunctionSpace(R : Comparable) : Category == Definition where
 
         isPlus x ==
           (u := isPlus numer x) case "failed" => "failed"
-          [p::% for p in u::List(MP)]
+          [p::% for p in u@List(MP)]
 
         isTimes x ==
           (u := isTimes numer x) case "failed" => "failed"
-          [p::% for p in u::List(MP)]
+          [p::% for p in u@List(MP)]
 
         isExpt x ==
           (u := isExpt numer x) case "failed" => "failed"
-          r := u::Record(var : K, exponent : NonNegativeInteger)
+          r := u@Record(var : K, exponent : NonNegativeInteger)
           [r.var, r.exponent::Z]
 
         isPower x ==
           (u := isExpt numer x) case "failed" => "failed"
-          r := u::Record(var : K, exponent : NonNegativeInteger)
+          r := u@Record(var : K, exponent : NonNegativeInteger)
           [r.var::%, r.exponent::Z]
 
         if R has ConvertibleTo Pattern Z then
@@ -1092,8 +1093,8 @@ FunctionSpace(R : Comparable) : Category == Definition where
       retractIfCan(x:%):Union(R, "failed") ==
         (n := retractIfCan(numer x)@Union(R, "failed")) case "failed" or
           (d := retractIfCan(denom x)@Union(R, "failed")) case "failed"
-            or (r := n::R exquo d::R) case "failed" => "failed"
-        r::R
+            or (r := n@R exquo d@R) case "failed" => "failed"
+        r@R
 
 
       if R has ConvertibleTo InputForm then
@@ -1122,12 +1123,12 @@ FunctionSpace(R : Comparable) : Category == Definition where
       retractIfCan(x:%):Union(PR, "failed") ==
         (u := retractIfCan(x)@Union(Fraction PR,"failed")) case "failed"
           => "failed"
-        retractIfCan(u::Fraction(PR))
+        retractIfCan(u@Fraction(PR))
 
       retractIfCan(x:%):Union(Fraction PR, "failed") ==
         (n := smpret numer x) case "failed" => "failed"
         (d := smpret denom x) case "failed" => "failed"
-        n::PR / d::PR
+        n@PR / d@PR
 
       coerce(p : Polynomial Q) : % ==
         map(x +-> x::%, y +-> y::%,
@@ -1140,11 +1141,11 @@ FunctionSpace(R : Comparable) : Category == Definition where
         isMult x ==
            (u := smpIsMult numer x) case "failed"
               or (v := retractIfCan(denom x)@Union(R, "failed")) case "failed"
-                 or (w := retractIfCan(v::R)@Union(Z, "failed")) case "failed"
+                 or (w := retractIfCan(v@R)@Union(Z, "failed")) case "failed"
                      => "failed"
-           r := u::Record(coef : Z, var : K)
-           (q := r.coef exquo w::Z) case "failed" => "failed"
-           [q::Z, r.var]
+           r := u@Record(coef : Z, var : K)
+           (q := r.coef exquo w@Z) case "failed" => "failed"
+           [q@Z, r.var]
 
       if R has ConvertibleTo Pattern Z then
         convert(x : %) : Pattern(Z) == convert(numer x) / convert(denom x)

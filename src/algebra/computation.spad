@@ -1038,7 +1038,7 @@ Lambda(UT) : Exports == Implementation where
   getBoundValue(n : %) : NNI ==
     if n case boundTerm then
       return n.boundTerm.varBound
-    0::NNI
+    0$NNI
 
   -- introspection: returns value of unbound variable in unbound leaf
   -- node or bound variable in lambda term
@@ -1065,7 +1065,7 @@ Lambda(UT) : Exports == Implementation where
     if n case boundTerm then
       if n.boundTerm.varBound = i then return false
     if n case lambdaTerm then
-      if not freeVariable?(n.lambdaTerm.c3, (i+1)::NNI) then return false
+      if not freeVariable?(n.lambdaTerm.c3, i+1) then return false
     if n case compoundTerm then
       if (not freeVariable?(n.compoundTerm.c1, i)) or _
          (not freeVariable?(n.compoundTerm.c2, i)) then return false
@@ -1076,7 +1076,7 @@ Lambda(UT) : Exports == Implementation where
   free?(n : %) : Boolean ==
     if n case lambdaTerm then
       --s1: String := name(n.lambdaTerm.nm)$UT
-      return freeVariable?(n.lambdaTerm.c3, 0::NNI)
+      return freeVariable?(n.lambdaTerm.c3, 0)
     print(message "warning free called on non-lambda term" << n)
     false
 
@@ -1086,23 +1086,23 @@ Lambda(UT) : Exports == Implementation where
     ch := qelt(t1, p1)
     if not (ch = char("\")) then
       error "lambda term must start with \"
-      return [[[0::NNI]], p1]
-    p1 := p1 + (1::NNI)
+      return [[[0$NNI]], p1]
+    p1 := p1 + 1
     if p1 > maxIndex(t1) then
       error "lambda term not complete"
-      return [[[0::NNI]], p1]
+      return [[[0$NNI]], p1]
     r := parseVarTerm(t1, p1)$UT
     p1 := r.pout
     ch := qelt(t1, p1)
     --print(message "parseLambdaTerm'(" << t1 << "," << string(p1) << ")")
     if not (ch = char(".")) then
       error "lambda term must have ."
-      return [[[0::NNI]], p1]
-    p1 := p1 + (1::NNI)
+      return [[[0$NNI]], p1]
+    p1 := p1 + 1
     --print(message "parseLambdaTerm''(" << t1 << "," << string(p1) << ")")
     if p1 > maxIndex(t1) then
       error "lambda term must contain something"
-      return [[[0::NNI]], p1]
+      return [[[0$NNI]], p1]
     --print(message "parseLambdaTerm'''(" << t1 << "," << string(p1) << ")")
     r2 := parseTerm(t1, p1)
     ex : % := r2.rft
@@ -1114,19 +1114,19 @@ Lambda(UT) : Exports == Implementation where
     ch := qelt(t1, p1)
     if not (ch = char("(")) then
       error "bracket term must start with ("
-      return [[[0::NNI]], p1]
-    p1 := p1 + (1::NNI)
+      return [[[0$NNI]], p1]
+    p1 := p1 + 1
     if p1 > maxIndex(t1) then
       error "opening but no closing bracket"
-      return [[[0::NNI]], p1]
+      return [[[0$NNI]], p1]
     r2 := parseTerm(t1, p1)
     trm := r2.rft
     p1 := r2.pout
     ch := qelt(t1, p1)
     if not (ch = char(")")) then
       error "can't find closing bracket"
-      return [[[0::NNI]], p1]
-    p1 := p1 + (1::NNI)
+      return [[[0$NNI]], p1]
+    p1 := p1 + 1
     [trm, p1]
 
   parseVariableTerm(t1 : String, pin : NNI) : PR ==
@@ -1145,19 +1145,19 @@ Lambda(UT) : Exports == Implementation where
       if ch = char("7") then inx := inx*10 + 7
       if ch = char("8") then inx := inx*10 + 8
       if ch = char("9") then inx := inx*10 + 9
-      p1 := p1 + (1::NNI)
+      p1 := p1 + 1
       if p1 > maxIndex(t1) then return [lambda(inx), p1]
       ch := qelt(t1, p1)
     [lambda(inx), p1]
 
   parseTerm(t1 : String, pin : NNI) : PR ==
     p1 := pin
-    res : % := [[0::NNI]]
+    res : % := [[0$NNI]]
     ch := qelt(t1, p1)
     --print(message "parseTerm ch=" << ch << " p1=" << string(p1))
     -- first remove leading spaces
     while ch = char(" ") repeat
-      p1 := p1 + (1::NNI)
+      p1 := p1 + 1
       if p1 > maxIndex(t1) then
         --print(message "parseTerm(" << t1 << ") 1 giving:" << _
         --  toString(res))
@@ -1180,7 +1180,7 @@ Lambda(UT) : Exports == Implementation where
       return [res, p1]
     ch := qelt(t1, p1)
     if ch = char(" ") then
-      p1 := p1 + (1::NNI)
+      p1 := p1 + 1
       if p1 > maxIndex(t1) then
         --print(message "parseTerm(" << t1 << ") 3 giving:" << _
         --  toString(res))
@@ -1336,7 +1336,7 @@ Lambda(UT) : Exports == Implementation where
       if isLambda?(term1) then
         -- apply term1 to term2
         boundVarName : String := getName(term1.lambdaTerm.nm)$UT
-        return subst(term1, term2, lambda(0::NNI))
+        return subst(term1, term2, lambda(0$NNI))
       return lambda(redux(term1), redux(term2))
     if n case lambdaTerm then
       return lambda(redux(n.lambdaTerm.c3), n.lambdaTerm.nm)
@@ -1862,19 +1862,19 @@ SKICombinators(UT) : Exports == Implementation where
   -- returns true if this is an I combinator node
   isI?(n : %) : Boolean ==
     if not (n case lf) then return false
-    if n.lf = "I"::Symbol then return true
+    if n.lf = 'I then return true
     false
 
   -- returns true if this is a K combinator node
   isK?(n : %) : Boolean ==
     if not (n case lf) then return false
-    if n.lf = "K"::Symbol then return true
+    if n.lf = 'K then return true
     false
 
   -- returns true if this is a S combinator node
   isS?(n : %) : Boolean ==
     if not (n case lf) then return false
-    if n.lf = "S"::Symbol then return true
+    if n.lf = 'S then return true
     false
 
   -- introspection: returns the variable, if this is not a
@@ -1902,9 +1902,9 @@ SKICombinators(UT) : Exports == Implementation where
     s:String := ""
     if n case lf then
       -- leaf node so print I, K or S
-      if n.lf = "I"::Symbol then s := "I"
-      if n.lf = "K"::Symbol then s := "K"
-      if n.lf = "S"::Symbol then s := "S"
+      if n.lf = 'I then s := "I"
+      if n.lf = 'K then s := "K"
+      if n.lf = 'S then s := "S"
     if n case nd then
       -- binary node which has two subnodes c1 and c2
       if atom?(n.nd.c2) then
@@ -1951,8 +1951,8 @@ SKICombinators(UT) : Exports == Implementation where
   redux(n : %) : % ==
     lastResult := ["I"::Symbol]
     thisResult := redux1(n)
-    triesLeft : NNI := 20::NNI -- limit tries in case of loop
-    while (lastResult ~= thisResult) and (triesLeft > (1::NNI)) repeat
+    triesLeft : NNI := 20 -- limit tries in case of loop
+    while lastResult ~= thisResult and triesLeft > 1 repeat
       lastResult := thisResult
       thisResult := redux1(lastResult)
       triesLeft := (triesLeft - 1)::NNI
@@ -2327,7 +2327,7 @@ compUtil(UT) : Exports == Implementation where
   -- I am wary of defining a variable outside of a function but
   -- can't find another non-messy way to update it from several
   -- functions.
-  varNum : NNI := 0::NNI
+  varNum : NNI := 0
 
   -- used by coerce SKI combinators to Lambda term.
   Ski2Lambda(s : SU) : LU ==

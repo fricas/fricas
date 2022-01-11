@@ -104,7 +104,7 @@ AlgebraicallyClosedField() : Category == Join(Field, RadicalCategory) with
         (sqrt(b^2 - 4 * a * coefficient(p, 0)) - b) / (2 * a)
       (r := retractIfCan(reductum p)@Union(%,"failed")) case "failed" =>
         rootOf(p, y)
-      nthRoot(- (r::% / a), d)
+      nthRoot(- (r@% / a), d)
 
     binomialRoots(p, y, fn) ==
      -- p = a * x^n + b
@@ -237,15 +237,15 @@ AlgebraicallyClosedFunctionSpace(R : Join(Comparable, IntegralDomain)):
       rootsOf(n, x)
 
     rootsOf(p : SparseUnivariatePolynomial %, y : Symbol) ==
-      (r := retractIfCan(p)@Union(%,"failed")) case % => rootsOf(r::%,y)
+      (r := retractIfCan(p)@Union(%,"failed")) case % => rootsOf(r@%, y)
       rootsOf(p, y)$AlgebraicallyClosedField_&(%)
 
     zerosOf(p : SparseUnivariatePolynomial %, y : Symbol) ==
-      (r := retractIfCan(p)@Union(%,"failed")) case % => zerosOf(r::%,y)
+      (r := retractIfCan(p)@Union(%,"failed")) case % => zerosOf(r@%,y)
       zerosOf(p, y)$AlgebraicallyClosedField_&(%)
 
     zeroOf(p : SparseUnivariatePolynomial %, y : Symbol) ==
-      (r := retractIfCan(p)@Union(%,"failed")) case % => zeroOf(r::%, y)
+      (r := retractIfCan(p)@Union(%,"failed")) case % => zeroOf(r@%, y)
       zeroOf(p, y)$AlgebraicallyClosedField_&(%)
 
 
@@ -325,7 +325,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
       k := kernel(x)$K
       (r := retractIfCan(p)@Union(F, "failed")) case "failed" =>
         inrootof(p, k::F)
-      n := numer(f := univariate(r::F, k))
+      n := numer(f := univariate(r@F, k))
       degree denom f > 0 => error "roofOf: variable appears in denom"
       inrootof(n, k::F)
 
@@ -355,7 +355,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         (d := degree q) <= 0 => error "rootOf: constant polynomial"
         (d = 1) => - leadingCoefficient(reductum q) / leadingCoefficient q
         ((rx := retractIfCan(x)@Union(SE, "failed")) case SE) and
-          ((r := UP2R q) case UPR) => rootOf(r::UPR, rx::SE)::F
+          ((r := UP2R q) case UPR) => rootOf(r::UPR, rx@SE)::F
         kernel(opalg, [q x, x])
 
       UP2R p ==
@@ -363,7 +363,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         while p ~= 0 repeat
           (r := retractIfCan(leadingCoefficient p)@Union(R, "failed"))
             case "failed" => return "failed"
-          ans := ans + monomial(r::R, degree p)
+          ans := ans + monomial(r@R, degree p)
           p   := reductum p
         ans
 
@@ -486,7 +486,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         (((dx := denom x) ~= 1) and
            ((rx := retractIfCan(dx)@Union(Integer,"failed")) case Integer) and
                positive?(rx)) =>
-                   hackroot((numer x)::F, n)/hackroot(rx::Integer::F, n)
+                   hackroot((numer x)::F, n)/hackroot(rx@Integer::F, n)
         (x = -1) and n = 4 =>
           ((-1::F) ^ (1::Q / 2::Q) + 1) / ((2::F) ^ (1::Q / 2::Q))
         kernel(oproot, [x, n::F])
@@ -494,7 +494,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
       inroot l ==
         zero?(n := retract(second l)@Z) => error "root: exponent = 0"
         ((x := first l) = 1) or (n = 1) => x
-        (r := retractIfCan(x)@Union(R,"failed")) case R => iroot(r::R,n)
+        (r := retractIfCan(x)@Union(R,"failed")) case R => iroot(r@R,n)
         inroot0(x, n, false, false)
 
 -- removes powers of positive integers from numer and denom
@@ -503,14 +503,14 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         rn:Union(Z, "failed") := (num? => "failed"; retractIfCan numer x)
         rd:Union(Z, "failed") := (den? => "failed"; retractIfCan denom x)
         (rn case Z) and (rd case Z) =>
-          rec := qroot(rn::Z / rd::Z, n::NonNegativeInteger)
+          rec := qroot(rn@Z / rd@Z, n::NonNegativeInteger)
           rec.coef * hackroot(rec.radicand, rec.exponent)
         rn case Z =>
-          rec := qroot(rn::Z::Fraction(Z), n::NonNegativeInteger)
+          rec := qroot(rn@Z::Fraction(Z), n::NonNegativeInteger)
           rec.coef * inroot0((rec.radicand^(n exquo rec.exponent)::Z)
                                 / (denom(x)::F), n, true, den?)
         rd case Z =>
-          rec := qroot(rd::Z::Fraction(Z), n::NonNegativeInteger)
+          rec := qroot(rd@Z::Fraction(Z), n::NonNegativeInteger)
           inroot0((numer(x)::F) /
                   (rec.radicand ^ (n exquo rec.exponent)::Z),
                    n, num?, true) / rec.coef
@@ -540,7 +540,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
 
       definingPolynomial x ==
         (r := retractIfCan(x)@Union(K, "failed")) case K =>
-          is?(k := r::K, opalg) => first argument k
+          is?(k := r@K, opalg) => first argument k
           is?(k, oproot) =>
             dumvar ^ retract(second argument k)@Z - first argument k
           dumvar - x

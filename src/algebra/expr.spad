@@ -55,12 +55,12 @@ Expression(R : Comparable) : Exports == Implementation where
     belong? op == true
 
     retNotUnit x ==
-      (u := constantIfCan(k := retract(x)@K)) case R => u::R
+      (u := constantIfCan(k := retract(x)@K)) case R => u
       error "Not retractable"
 
     retNotUnitIfCan x ==
       (r := retractIfCan(x)@Union(K,"failed")) case "failed" => "failed"
-      constantIfCan(r::K)
+      constantIfCan(r@K)
 
     if not(R has IntegralDomain) then
         operator op ==
@@ -68,7 +68,7 @@ Expression(R : Comparable) : Exports == Implementation where
             belong?(op)$ESD => operator(op)$ESD
             nullary? op and has?(op, SYMBOL) => operator(kernel(name op)$K)
             (n := arity op) case "failed" => operator name op
-            operator(name op, n::NonNegativeInteger)
+            operator(name op, n@NonNegativeInteger)
 
     SPCH ==> SparsePolynomialCoercionHelpers(R, Symbol, K)
 
@@ -365,7 +365,7 @@ Expression(R : Comparable) : Exports == Implementation where
                 belong?(op)$ESD => operator(op)$ESD
                 nullary? op and has?(op, SYMBOL) => operator(kernel(name op)$K)
                 (n := arity op) case "failed" => operator name op
-                operator(name op, n::NonNegativeInteger)
+                operator(name op, n@NonNegativeInteger)
 
             reduc(x, l) ==
                 for k in l repeat
@@ -608,12 +608,12 @@ Expression(R : Comparable) : Exports == Implementation where
                     retractIfCan(x : %) : Union(AN, "failed") ==
                         ((n := smp2an numer x) case AN) and
                           ((d := smp2an denom x) case AN)
-                            => (n::AN) / (d::AN)
+                            => (n@AN) / (d@AN)
                         "failed"
 
                     R2AN r ==
                         (u := retractIfCan(r::%)@Union(Q, "failed")) case Q =>
-                             u::Q::AN
+                             u@Q::AN
                         "failed"
 
                     k2an k ==
@@ -623,10 +623,10 @@ Expression(R : Comparable) : Exports == Implementation where
                             a2 := args.2
                             k1u := retractIfCan(a2)@Union(K, "failed")
                             k1u case "failed" => "failed"
-                            k1 := k1u::K
+                            k1 := k1u@K
                             s1u := retractIfCan(a2)@Union(Symbol, "failed")
                             s1u case "failed" => "failed"
-                            s1 := s1u::Symbol
+                            s1 := s1u@Symbol
                             a1 := args.1
                             denom(a1) ~= 1 =>
                                 error "Bad argument to rootOf"
@@ -636,7 +636,7 @@ Expression(R : Comparable) : Exports == Implementation where
                                 cc := leadingCoefficient(eq)::%
                                 ccu := retractIfCan(cc)@Union(AN, "failed")
                                 ccu case "failed" => return "failed"
-                                eqa := eqa + monomial(ccu::AN, degree eq)
+                                eqa := eqa + monomial(ccu@AN, degree eq)
                                 eq := reductum eq
                             rootOf(eqa, s1)$AN
                         arg : List(AN) := empty()
@@ -644,7 +644,7 @@ Expression(R : Comparable) : Exports == Implementation where
                             if (a := retractIfCan(x)@Union(AN, "failed"))
                               case "failed" then
                                 return "failed"
-                            else arg := concat(a::AN, arg)
+                            else arg := concat(a@AN, arg)
                         (operator(op)$AN) reverse!(arg)
 
                     smp2an p ==
@@ -656,11 +656,11 @@ Expression(R : Comparable) : Exports == Implementation where
                         while not ground? up repeat
                             (c := smp2an leadingCoefficient up)
                               case "failed" => return "failed"
-                            ans := ans + (c::AN) * (t::AN) ^ (degree up)
+                            ans := ans + (c::AN) * (t@AN) ^ (degree up)
                             up  := reductum up
                         (c := smp2an leadingCoefficient up)
                           case "failed" => "failed"
-                        ans + c::AN
+                        ans + c@AN
 
             if R has ConvertibleTo InputForm then
                 convert(x : %) : InputForm == convert(x)$Rep
@@ -939,7 +939,7 @@ FunctionSpaceAttachPredicates(R, F, D) : Exports == Implementation where
 
     preds k ==
       (u := property(operator k, PMPRED)) case "failed" => empty()
-      (u::None) pretend List(Any)
+      (u@None) pretend List(Any)
 
     st(k, l) ==
       kk := copy operator k
@@ -1108,11 +1108,11 @@ Pi() : Exports == Implementation where
       ans
 
     coerce(x : %) : OutputForm ==
-      (r := retractIfCan(x)@Union(UP, "failed")) case UP => p2o(r::UP)
+      (r := retractIfCan(x)@Union(UP, "failed")) case UP => p2o(r)
       p2o(numer x) / p2o(denom x)
 
     convert(x : %) : InputForm ==
-      (r := retractIfCan(x)@Union(UP, "failed")) case UP => p2i(r::UP)
+      (r := retractIfCan(x)@Union(UP, "failed")) case UP => p2i(r)
       p2i(numer x) / p2i(denom x)
 
     p2sf p ==

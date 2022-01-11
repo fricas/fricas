@@ -152,7 +152,7 @@ IntegrationResult(F : Field) : Exports == Implementation where
       Q2F(log.scalar) * ans
 
     coerce(u : %) : O ==
-      (r := retractIfCan u) case F => r::F::O
+      (r := retractIfCan u) case F => r@F::O
       l := reverse! [LOG2O f for f in logpart u]$List(O)
       if ratpart u ~= 0 then l := concat(ratpart(u)::O, l)
       if not elem? u then l := concat([NE2O f for f in notelem u], l)
@@ -207,7 +207,7 @@ IntegrationResultFunctions2(E, F) : Exports == Implementation where
 
     NLE2F(func, r)         == [func(r.coeff), func(r.logand)]
     NEE2F(func, n)         == [func(n.integrand), func(n.intvar)]
-    map(func:E -> F, u:UE) == (u case "failed" => "failed"; func(u::E))
+    map(func:E -> F, u:UE) == (u case "failed" => "failed"; func(u))
 
     map(func : E -> F, ir : IRE) ==
       mkAnswer(func ratpart ir, [LGE2F(func, f) for f in logpart ir],
@@ -293,7 +293,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
           freeOf?(num::F, x) => 0
           f
         ans : P := 0
-        for term in u::List(P) repeat
+        for term in u@List(P) repeat
           if not freeOf?(term::F, x) then ans := ans + term
         ans / den
 
@@ -317,7 +317,7 @@ IntegrationTools(R : Comparable, F : FunctionSpace R) : Exp == Impl where
       linearLog?(k, f, x) ==
         is?(k, 'log) and
          ((u := retractIfCan(univariate(f,k))@Union(UP,"failed")) case UP)
-             and (degree(pol := u::UP) = 1)
+             and (degree(pol := u@UP) = 1)
                 and not member?(x, variables leadingCoefficient(pol))
                    and ((p0 := reductum(pol)) = 0 or
                          not member?(k, tower leadingCoefficient(p0)))

@@ -655,7 +655,7 @@ RDEaux(F) : Exports == Implementation where
         lr := reverse!(lr)
         res1 := multi_SPDE(a, b + der(a), reverse!(lnc), d - degree(a)$UP, der)
         res1 case DSOL =>
-            dres := res1::DSOL
+            dres := res1@DSOL
             [[a*s2 + r for s2 in dres.ans for r in lr], a*dres.acoeff,
              dres.eegen, dres.bpar, dres.lcpar, dres.dpar]$DSOL
         [[a*s1.ans + r, s1.remainder]$RSOL for s1 in res1::List(RSOL)
@@ -789,7 +789,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
         rl : List Frec := []
         for rq in rql repeat
             if (mu := retractIfCan(rq)@Union(Z, "failed")) case Z then
-                m := mu::Z
+                m := mu@Z
                 if m > 0 then
                     pi := gcd(a - m::F*dd1, d1)
                     rl := cons([pi, m], rl)
@@ -824,7 +824,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
         n1 := #lc
         s1 := multi_SPDE(a, b, lc, d, der)$RDEaux(F)
         s1 case List(RSOL) =>
-            lrs := s1::List(RSOL)
+            lrs := s1@List(RSOL)
             m1 := matrix([[rsol.remainder for rsol in lrs]])$Matrix(UP)
             rs1 : Matrix(F) := reducedSystem(m1)
             rs2 := get_rs(rs1)
@@ -940,12 +940,12 @@ ParametricRischDE(R, F) : Exports == Implementation where
             f0 := -leadingCoefficient(b)/leadingCoefficient(a)
             base_case =>
                 if (mu := retractIfCan(f0)@Union(Z, "failed")) case Z then
-                    n := max(n, mu::Z)
+                    n := max(n, mu@Z)
             r0 := dehomogenize(ext(lk, [-f0, fp])).particular
             if not(r0 case "failed") then
-                mf : F := ((r0::Param_Rec_F).coeffs)(1)
+                mf : F := ((r0@Param_Rec_F).coeffs)(1)
                 if (mu := retractIfCan(mf)@Union(Z, "failed")) case Z then
-                    n := max(n, mu::Z)
+                    n := max(n, mu@Z)
         if not base_case and da = db then
             f0 := -leadingCoefficient(b)/leadingCoefficient(a)
             b1 := f0*a + b
@@ -953,9 +953,9 @@ ParametricRischDE(R, F) : Exports == Implementation where
                 f1 := -leadingCoefficient(b1)/leadingCoefficient(a)
                 r0 := dehomogenize(ext(lk, [-f1, fp])).particular
                 if not(r0 case "failed") then
-                    mf : F := ((r0::Param_Rec_F).coeffs)(1)
+                    mf : F := ((r0@Param_Rec_F).coeffs)(1)
                     if (mu := retractIfCan(mf)@Union(Z, "failed")) case Z then
-                        n := max(n, mu::Z)
+                        n := max(n, mu@Z)
         do_degrad := (bb : RF, lc1 : List(RF)) : L_Param_Q +->
             do_SPDE_prim(1, bb, is_der, lc1, k, lk, ext, logi, der, get_rs, x)
         res1 := param_SPDE(a, b, lc, n, der, get_rs, do_degrad, x)
@@ -1014,7 +1014,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
         bv := first(bl)
         nu := retractIfCan(bv(2)/bv(1))@Union(Integer, "failed")
         nu case "failed" => n0
-        min(nu::Integer, n0)
+        min(nu@Integer, n0)
 
     exp_upper_bound(a : UP, b : UP, nc1 : Z, lk : LK, eta : F,
                    logi : (LK, LF) -> Param_Rec_QF) : Z ==
@@ -1029,7 +1029,7 @@ ParametricRischDE(R, F) : Exports == Implementation where
         bv := first(bl)
         nu := retractIfCan(bv(2)/bv(1))@Union(Integer, "failed")
         nu case "failed" => n0
-        max(nu::Integer, n0)
+        max(nu@Integer, n0)
 
     do_SPDE_exp(a : UP, bbr : RF, lcr : List RF, lk : LK,
                 ext : (LK, LF) -> L_Param_F,
@@ -1510,7 +1510,7 @@ AlgebraicIntegrate2(R0, F, UP, UPUP, R) : Exports == Implementation where
           zero? degree(x') =>
               algprimextint(der, ext, rde, csolve, lg)
           ((xx := x' exquo x) case UP) and
-            (retractIfCan(xx::UP)@Union(F, "failed") case F) =>
+            (retractIfCan(xx@UP)@Union(F, "failed") case F) =>
               algexpextint(der, ext, rde, csolve, lg)
           error "algextint: unhandled case"
 
@@ -1686,7 +1686,7 @@ ParametricIntegration(R, F) : Exports == Implementation where
     extendedint0(f : F, x : SE, l : List K, g : F) : UFS ==
         r1 := extendedint(f, x, l, [g]).particular
         r1 case "failed" => "failed"
-        rf := r1::Param_Rec_F
+        rf := r1@Param_Rec_F
         [rf.ratpart, (rf.coeffs)(1), 0]$PC_Rec
 
     import from TranscendentalHermiteIntegration(F, UP)

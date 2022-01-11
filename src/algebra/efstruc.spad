@@ -232,7 +232,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     tanSum(c, l) ==
       k := c / mpiover2        -- k = - 2 c / pi, check for odd integer
                                -- tan((2n+1) pi/2 x) = - 1 / tan x
-      (r := retractIfCan(k)@Union(Z, "failed")) case Z and odd?(r::Z) =>
+      (r := retractIfCan(k)@Union(Z, "failed")) case Z and odd?(r@Z) =>
            - inv tanSum l
       tanSum concat(tan c, l)
 
@@ -264,7 +264,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
         for i in 1..m for var in lvv repeat
             for j in 1..n for k in lk repeat
                 mat(i, j) := differentiate(k, var)
-        (u := particularSolutionOverQ(mat, v)) case Vector(Q) => [u::Vector(Q)]
+        (u := particularSolutionOverQ(mat, v)) case Vector(Q) => [u@Vector(Q)]
         [true]
 
     -- This is only correct if Schanuel Conjecture is true, otherwise
@@ -280,7 +280,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
                 mat(1, j) := k
             else
                 mat(1, j) := 0::F
-        (u := particularSolutionOverQ(mat, v)) case Vector(Q) => [u::Vector(Q)]
+        (u := particularSolutionOverQ(mat, v)) case Vector(Q) => [u@Vector(Q)]
         [true]
 
     ALGOP  := '%alg
@@ -291,7 +291,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
        is?(ker, 'log) and F has RetractableTo Q =>
           z : F := argument(ker).1
           qu := retractIfCan(z)@Union(Q, "failed")
-          qu case Q => qu::Q
+          qu case Q => qu@Q
           1
        1
 
@@ -308,7 +308,8 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
             -- of rational numbers (we should do better)
             q := ktoQ(ker)
             not(q = 1 or q = -1) =>
-                (u := logDependenceQ([toQ (lk)], q)) case Vector(Q) => [u::Vector(Q)]
+                (u := logDependenceQ([toQ (lk)], q)) case Vector(Q) =>
+                    [u@Vector(Q)]
                 [true]
             kerF := ker :: F
             F is Expression(R) and R has ConvertibleTo(Float) _
@@ -318,7 +319,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
                     Fratio : F := kerF/log(z1)
                     (fratio := numericIfCan(Fratio, 20)$Numeric(R) _
                          ) case Float =>
-                        qratio := rationalApproximation(fratio::Float, 8)
+                        qratio := rationalApproximation(fratio@Float, 8)
                         nd : Integer
                         nq : Integer
                         (qratio = 0 or
@@ -463,7 +464,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
         nm = 'polylog and
           (iu := retractIfCan(first(args))@Union(Integer, "failed"))
                  case Integer =>
-            (i := iu::Integer) > 0 and i < 10 => do_int(op, args)
+            (i := iu@Integer) > 0 and i < 10 => do_int(op, args)
             k2Elem0(k, op, args)
         k2Elem0(k, op, args)
 
@@ -485,7 +486,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
         nm = 'polylog and
           (iu := retractIfCan(first(args))@Union(Integer, "failed"))
                  case Integer =>
-            (i := iu::Integer) > 0 and i < 10 => do_int(op, args)
+            (i := iu@Integer) > 0 and i < 10 => do_int(op, args)
             k2Elem0(k, op, args)
         (nm = 'ellipticE2 or nm = 'ellipticF) and D(args(2), x) = 0 =>
             do_int1(op, args, x)
@@ -560,7 +561,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
       for i in minIndex v .. maxIndex v for k in ll repeat
         is?(k, s) and (i >= j) and
            ((r := recip(qelt(v, i))) case Q) and
-            (retractIfCan(r::Q)@Union(Z, "failed") case Z)
+            (retractIfCan(r@Q)@Union(Z, "failed") case Z)
               and gdCoef?(qelt(v, i), v) => return([i, k])
       "failed"
 
@@ -667,7 +668,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
     rootNormalize(f, k) ==
         (u := rootKernelNormalize([f], toR(tower f, first argument k), k))
              case "failed" => f
-        first((u::REC2).funcs)
+        first((u@REC2).funcs)
 
 
     rootKernelNormalize(lf, l, k) ==
@@ -679,7 +680,7 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
       (c := particularSolutionOverQ(construct([differentiate(g, x)
          for g in (fns := toY twr)]$List(F))@Vector(F),
            differentiate(eta, x))) case "failed" => "failed"
-      v := c::Vector(Q)
+      v := c@Vector(Q)
       g := eta - +/[qelt(v, i) * yy
                         for i in minIndex v .. maxIndex v for yy in fns]
       */[exp(yy) ^ qelt(v, i)
@@ -735,11 +736,11 @@ ElementaryFunctionStructurePackage(R, F) : Exports == Implementation where
 
       factdeprel(l, k) ==
         ((r := retractIfCan(n := first argument k)@Union(Z, "failed"))
-          case Z) and (r::Z > 0) => [factorial(r::Z)::F]
+          case Z) and (r@Z > 0) => [factorial(r@Z)::F]
         for x in l repeat
           m := first argument x
           ((r := retractIfCan(n - m)@Union(Z, "failed")) case Z) =>
-            (r::Z > 0) => return([*/[(m + i::F) for i in 1..r] * x::F])
+            (r@Z > 0) => return([*/[(m + i::F) for i in 1..r] * x::F])
             error "bad order of factorials"
         [true]
 
@@ -990,7 +991,7 @@ InnerTrigonometricManipulations(R, F, FG) : Exports == Implementation where
       df := denom f
       (m := mainKernel f) case "failed" =>
         GR2GF(retract(nf)@GR) / GR2GF(retract(df)@GR)
-      op  := operator(operator(k := m::KG))$F
+      op  := operator(operator(k := m@KG))$F
       arg := [explogs2trigs x for x in argument k]
       num := univariate(nf, k)
       den := univariate(df, k)
@@ -1107,7 +1108,7 @@ TrigonometricManipulations(R, F) : Exports == Implementation where
       for k in tower f repeat
         if (u := kcomplex k) case F then
            lk := concat(k, lk)
-           lv := concat(u::F, lv)
+           lv := concat(u@F, lv)
       [lk, lv]
 
 -- returns f if it is certain that k is not a real kernel and k = f,
@@ -1118,10 +1119,10 @@ TrigonometricManipulations(R, F) : Exports == Implementation where
       is?(k, 'nthRoot) =>
         arg := argument k
         even?(retract(n := second arg)@Z) and ((u := sign(first arg)) case Z)
-          and (u::Z < 0) => op(s1, n / 2::F) * op(- first arg, n)
+          and (u@Z < 0) => op(s1, n / 2::F) * op(- first arg, n)
         "failed"
       is?(k, 'log) and ((u := sign(a := first argument k)) case Z)
-          and (u::Z < 0) => op(- a) + ipi
+          and (u@Z < 0) => op(- a) + ipi
       "failed"
 
     complexForm f ==

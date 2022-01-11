@@ -267,7 +267,7 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
         g1 := eval(g, y, r*z::F)
         (u := rischde(eval(f1, x, xx), multivariate(dx, z)*eval(g1, x, xx),
                       symbolIfCan(z)::SY)) case "failed" => "failed"
-        eval(u::F, z, y::F/r)
+        eval(u@F, z, y::F/r)
 
 -- given p = sum_i a_i(X) Y^i, returns  sum_i a_i(x) y^i
     multivariate(p, x, y) ==
@@ -282,7 +282,7 @@ GenusZeroIntegration(R, F, L) : Exports == Implementation where
                     checkroot(pr.subs.coeff * eval(g, pr.subs.var, pr.subs.val),
                               pr.newk), symbolIfCan(dummy)::SY)) case "failed"
                                     => "failed"
-      eval(u::F, dummy, pr.diff)
+      eval(u@F, dummy, pr.diff)
 
     if L has LinearOrdinaryDifferentialOperatorCategory F then
       import from RationalLODE(F, UP)
@@ -462,7 +462,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
                 ci := numer(coefficient(p, i))
                 ui := ci exquo ppow
                 ui case "failed" => return "failed"
-                np1 := monomial(ui::UP::RF, i)$UPUP + np1
+                np1 := monomial(ui@UP::RF, i)$UPUP + np1
                 ppow := p_fac*ppow
             p := np1
             y_coeff := y_coeff/(p_fac::RF)
@@ -480,7 +480,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
                     ci := numer(leadingCoefficient(p))
                     ui := ci exquo ppow
                     ui case "failed" => return "failed"
-                    np1 := monomial(ui::UP::RF, i)$UPUP + np1
+                    np1 := monomial(ui@UP::RF, i)$UPUP + np1
                     p := reductum(p)
                 ppow := p_fac*ppow
             p := np1
@@ -503,7 +503,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       ((r := retractIfCan(rf)@Union(RF,"failed")) case RF) and rf ~= 0 =>
             -- in this case, ff := lc(ff) y^i + r so we integrate both terms
             -- separately to gain time
-            map(f1+->f1(x::F), integrate(r::RF)) +
+            map(f1+->f1(x::F), integrate(r@RF)) +
                  prootintegrate1(leadingMonomial ff, x, y, modulus)
       prootintegrate1(ff, x, y, modulus)
 
@@ -526,7 +526,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
        ((u := chvarIfCan(cv.func, 1, q, inv qprime)) case UPUP) =>
          m := monomial(1, r.deg)$UPUP - q::RF::UPUP
          map(x1+->UPUP2F1(RF2UPUP(x1, m), cv.c1, cv.c2, x, y),
-            rationalInt(u::UPUP, r.deg, monomial(1, 1)))
+            rationalInt(u@UPUP, r.deg, monomial(1, 1)))
       curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
       dcv := multivariate(differentiate(cv.c1)::RF, x)
       algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, y),
@@ -559,7 +559,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       ground? p => l
       for i in 2..degree p repeat
         if (u := composite(p, xi := monomial(1, i))) case UP then
-          l := concat([u::UP, xi], l)
+          l := concat([u@UP, xi], l)
       concat([monomial(1, 1), p], l)
 
 -- checks whether Int(p(x, y) dx) can be rewritten as
@@ -572,7 +572,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       for cnd in candidates(rec.radicand) repeat
         (u := chvarIfCan(p, rec.coef, cnd.right,
               inv(differentiate(cnd.right)::RF))) case UPUP =>
-                 return [u::UPUP, cnd.left, cnd.right, rec.coef, rec.exponent]
+                 return [u@UPUP, cnd.left, cnd.right, rec.coef, rec.exponent]
       "failed"
 
 -- checks whether Int(p(x, y) dx) can be rewritten as
@@ -584,7 +584,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       while p ~= 0 repeat
         (v := composite(u1 * leadingCoefficient(p) / d ^ degree(p), u))
           case "failed" => return "failed"
-        ans := ans + monomial(v::RF, degree p)
+        ans := ans + monomial(v@RF, degree p)
         p   := reductum p
       ans
 
@@ -598,14 +598,16 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       r       := radPoly(modulus)::Record(radicand : RF, deg : N)
       rec     := rootPoly(r.radicand, r.deg)
       dqdx    := inv(differentiate(q := rec.radicand)::RF)
-      ((uf := chvarIfCan(ff := univariate(f, x, k, p), rec.coef, q, 1)) case UPUP) and
-        ((ug := chvarIfCan(gg := univariate(g, x, k, p), rec.coef, q, dqdx)) case UPUP) =>
-            (u := rde(chv0(uf::UPUP, rec.exponent, 1, 0), rec.exponent *
+      uf := chvarIfCan(ff := univariate(f, x, k, p), rec.coef, q, 1)
+      (uf case UPUP) and
+        ((ug := chvarIfCan(gg := univariate(g, x, k, p), rec.coef, q, dqdx)
+              ) case UPUP) =>
+            (u := rde(chv0(uf, rec.exponent, 1, 0), rec.exponent *
                     (dumk::F) ^ (rec.exponent * (rec.exponent - 1))
-                      * chv0(ug::UPUP, rec.exponent, 1, 0),
+                      * chv0(ug, rec.exponent, 1, 0),
                        symbolIfCan(dumk)::SY)) case "failed" => "failed"
             c1 := multivariate(rec.coef, x)
-            eval(u::F, dumk, c1 * k::F)
+            eval(u@F, dumk, c1 * k::F)
       ((rec.coef) = 1) =>
         curve  := RadicalFunctionField(F, UP, UPUP, q::RF, rec.exponent)
         rc := algDsolve(D()$LDALG + reduce(univariate(nfp, x, k, p))::LDALG,

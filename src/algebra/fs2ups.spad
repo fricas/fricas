@@ -239,7 +239,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       -- numbers when n in even
       if even?(n :: I) then
         if posCheck? and ((signum := sign(coef)$SIGNEF) case I) then
-          (signum :: I) = -1 =>
+          (signum@I) = -1 =>
             return stateProblem("nth root","negative leading coefficient")
           not rightOnly? and not zero? deg => -- nth root not unique
             return stateProblem("nth root","series of non-zero order")
@@ -247,7 +247,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
           stateProblem("nth root", "need to invert bad coefficient")
       (ans := nthRootIfCan(ups,n)) case "failed" =>
         stateProblem("nth root","no nth root")
-      [ans :: UPS]
+      [ans@UPS]
 
     stateProblem(function, problem) ==
       -- records the problem which occured in converting an expression
@@ -275,18 +275,18 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       --!!                         - cjw 1 Dec 94
       --not member?(x, variables fcn) => [monomial(fcn, 0)]
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
-          polyToUPS(univariate(poly::POL, x), opt_rec)
+          polyToUPS(univariate(poly@POL, x), opt_rec)
       (sum := isPlus fcn) case L(FE) =>
-          listToUPS(sum :: L(FE), i_expr_to_PS, opt_rec, 0,
+          listToUPS(sum, i_expr_to_PS, opt_rec, 0,
                   (y1, y2) +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-          listToUPS(prod :: L(FE), i_expr_to_PS, opt_rec, 1,
+          listToUPS(prod, i_expr_to_PS, opt_rec, 1,
                   (y1, y2) +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val : FE, exponent : I) =>
-          power := expt :: Record(val : FE, exponent : I)
+          power := expt@Record(val : FE, exponent : I)
           powerToUPS(power.val, power.exponent, opt_rec)
       (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-          kernelToUPS(ker :: K, opt_rec)
+          kernelToUPS(ker, opt_rec)
       error "exprToUPS: neither a sum, product, power, nor kernel"
 
     polyToUPS(poly, opt_rec) ==
@@ -485,7 +485,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         cn1u := recip(cn)
         cn1u case "failed" =>
             error "do_diff_eq: called at singular point"
-        cn1 := -(cn1u::UTS)
+        cn1 := -(cn1u@UTS)
         ecl := [c*cn1 for c in rest(ecl)]
         nker : FE := kernel(operator(ker), nargs)
         lc : L(FE) := [nker]
@@ -611,7 +611,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
            ups : UPS) : Result ==
         d_eiu := ((exx - 1$UTS) exquo xx)
         d_eiu case "failed" => error "impossible: exquo failed"
-        d_ei := d_eiu::UTS
+        d_ei := d_eiu@UTS
         ei0 := integt(d_ei)
         r1 := -my_digamma(1$FE)::UPS + replace_log(lc, k, lx, ups1)
         r2 := apply_taylor(ei0, ups)
@@ -639,7 +639,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         r1 := ((pi()$FE)^2/(6::FE))::UPS - replace_log(lc, k, lx, ups1)*l1
         lx1u := (lxx exquo xx)
         lx1u case "failed" => error "impossible: exquo failed"
-        lx1 := lx1u::UTS
+        lx1 := lx1u@UTS
         lx2 := integt(lx1)
         r2 := apply_taylor(lx2, ups)
         [r1 + r2]
@@ -682,7 +682,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         polygamma_n := (nm = 'polygamma) and
             ((nu := retractIfCan(args(1))@Union(Integer, "failed"))
                                          case Integer)
-               and ((nn := nu::Integer) >= 0)
+               and ((nn := nu@Integer) >= 0)
         ei_ci_chi := (nm = 'Ei or nm = 'Ci or nm = 'Chi)
         if nm = 'digamma or nm = '%logGamma or nm = '%eis or nm = '%erfs
            or nm = '%erfis  or ei_ci_chi or nm = 'dilog or polygamma_n then
@@ -736,7 +736,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
                     do_polygamma_n(nn, iups)
         (aresu := handle_args(args, opt_rec)) case Result =>
              aresu
-        ares := aresu::ARES
+        ares := aresu@ARES
         losers := ares.osers
         lsers := ares.sers
         lsere := ares.sere
@@ -875,7 +875,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
     unknown_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
         (aresu := handle_args(args, opt_rec)) case Result =>
              aresu
-        ares := aresu::ARES
+        ares := aresu@ARES
         losers := ares.osers
         lsers := ares.sers
         lsere := ares.sere
@@ -888,7 +888,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
     kernelToUPS(ker, opt_rec) ==
       -- converts a kernel to a power series
       (sym := symbolIfCan(ker)) case Symbol =>
-        (sym :: Symbol) = x => [monomial(1, 1)]
+        (sym@Symbol) = x => [monomial(1, 1)]
         [monomial(ker :: FE, 0)]
       empty?(args := argument ker) => [monomial(ker :: FE, 0)]
       not member?(x, variables(ker :: FE)) => [monomial(ker :: FE, 0)]
@@ -941,7 +941,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       -- if 'posCheck?' is true, we do not allow logs of negative numbers
       if opt_rec.pos_Check? then
         if ((signum := sign(coef)$SIGNEF) case I) then
-          (signum :: I) = -1 =>
+          (signum@I) = -1 =>
             return stateProblem("log","negative leading coefficient")
       if not(check_inverse(coef, opt_rec)) then
           return stateProblem("log", "need to invert bad coefficient")
@@ -983,7 +983,8 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
             plusMinus = 1 => posNegPi2
             pi()/(2 :: FE) - posNegPi2
             --return stateProblem("atan","branch problem")
-          left? : B := atanFlag = "real: left side"; n := signum :: Integer
+          left? : B := atanFlag = "real: left side"
+          n := signum@Integer
           (left? and n = 1) or (not left? and n = -1) =>
             plusMinus = 1 => -pi()/(2 :: FE)
             pi()
@@ -1007,14 +1008,14 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
             plusMinus = 1 => atanIfCan(ups)
             acotIfCan(ups)
         res1 case "failed" => stateProblem("atan","failed")
-        [res1::UPS]
+        [res1@UPS]
 
     applyIfCan(fcn, arg, fcnName, opt_rec) ==
       -- converts fcn(arg) to a power series
       (ups := i_expr_to_PS(arg, opt_rec)) case %problem => ups
       ans := fcn(ups.%series)
       ans case "failed" => stateProblem(fcnName,"essential singularity")
-      [ans :: UPS]
+      [ans@UPS]
 
     tranToUPS(ker, arg, opt_rec) ==
       -- converts ker to a power series for certain functions
@@ -1075,7 +1076,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         expon
       ans := expIfCan((expon.%series) * (logBase.%series))
       ans case "failed" => stateProblem("exp","essential singularity")
-      [ans :: UPS]
+      [ans@UPS]
 
     if Expon has RetractableFrom(FE) and Expon has Ring then
 
@@ -1095,7 +1096,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
                 b1 := monomial(1, -eb)*bs
                 lbu := logIfCan(b1)
                 lbu case "failed" => stateProblem("pow", "transcendental log")
-                ans1 := expIfCan(pow*(lbu::UPS))
+                ans1 := expIfCan(pow*(lbu@UPS))
                 ans1 case "failed" => stateProblem("pow", "transcendental exp")
                 [monomial(1, ep*eb)*ans1]
             powToUPS2(args, opt_rec)
@@ -1160,18 +1161,18 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       --!!                         - cjw 1 Dec 94
       --not member?(x, variables fcn) => [monomial(fcn, 0)]
       (poly := retractIfCan(fcn)@Union(POL,"failed")) case POL =>
-          polyToUPS(univariate(poly::POL, x), opt_rec)
+          polyToUPS(univariate(poly, x), opt_rec)
       (sum := isPlus fcn) case L(FE) =>
-        listToUPS(sum :: L(FE), iExprToGenUPS, opt_rec, 0,
+        listToUPS(sum, iExprToGenUPS, opt_rec, 0,
                   (y1, y2) +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-        listToUPS(prod :: L(FE), iExprToGenUPS, opt_rec, 1,
+        listToUPS(prod, iExprToGenUPS, opt_rec, 1,
                   (y1, y2) +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val : FE, exponent : I) =>
-        power := expt :: Record(val : FE, exponent : I)
+        power := expt@Record(val : FE, exponent : I)
         powerToGenUPS(power.val, power.exponent, opt_rec)
       (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-        kernelToGenUPS(ker :: K, opt_rec)
+        kernelToGenUPS(ker, opt_rec)
       error "exprToGenUPS: neither a sum, product, power, nor kernel"
 
     opsInvolvingX fcn ==
@@ -1186,8 +1187,8 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
 
     exponential? fcn ==
       -- is 'fcn' of the form exp(f)?
-      (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-        is?(ker::K, 'exp)
+      (ker := retractIfCan(fcn)@Union(K, "failed")) case K =>
+        is?(ker@K, 'exp)
       false
 
     productOfNonZeroes? fcn ==
@@ -1195,7 +1196,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       -- means an exponential or a function not involving x
       exponential? fcn => true
       (prod := isTimes fcn) case "failed" => false
-      for term in (prod :: L(FE)) repeat
+      for term in (prod@L(FE)) repeat
         (not exponential? term) and member?(x, variables term) =>
           return false
       true
@@ -1229,7 +1230,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
     kernelToGenUPS(ker, opt_rec) ==
       -- converts a kernel to a generalized power series
       (sym := symbolIfCan(ker)) case Symbol =>
-        (sym :: Symbol) = x => [monomial(1, 1)]
+        (sym@Symbol) = x => [monomial(1, 1)]
         [monomial(ker :: FE, 0)]
       empty?(args := argument ker) => [monomial(ker :: FE, 0)]
       empty? rest args =>
@@ -1269,15 +1270,16 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       -- if 'posCheck?' is true, we do not allow logs of negative numbers
       if opt_rec.pos_Check? then
         if ((signum := sign(coef)$SIGNEF) case I) then
-          (signum :: I) = -1 =>
-            return stateProblem("log","negative leading coefficient")
+            (signum@I) = -1 =>
+                return stateProblem("log","negative leading coefficient")
       -- create logarithmic term, avoiding log's of negative rationals
-      lt := monomial(coef, deg)$UPS; cen := center lt
+      lt := monomial(coef, deg)$UPS
+      cen := center lt
       -- check to see if lowest order coefficient is a negative rational
       negRat? : Boolean :=
         ((rat := ratIfCan coef) case RN) =>
-          (rat :: RN) < 0 => true
-          false
+            (rat@RN) < 0 => true
+            false
         false
       logTerm : FE :=
         mon : FE := (x :: FE) - (cen :: FE)
@@ -1349,7 +1351,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         trouble.prob = "essential singularity" => [monomial(fe,0)$UPS]
         ups
       (ans := fcn(ups.%series)) case "failed" => [monomial(fe,0)$UPS]
-      [ans :: UPS]
+      [ans@UPS]
 
     tranToGenUPS(ker, arg, opt_rec) ==
       -- converts op(arg) to a power series for certain functions

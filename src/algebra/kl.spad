@@ -115,8 +115,7 @@ SortedCache(S : CachableSet) : Exports == Implementation where
         return "failed"
 
     enterInCache(x : S, equal? : S -> Boolean) ==
-        (res := linearSearch(x, equal?)) case S =>
-            res::S
+        (res := linearSearch(x, equal?)) case S => res
         setPosition(x, 1 + cache_use)
         insertAtEnd(x)
         x
@@ -294,7 +293,7 @@ Kernel(S : Comparable) : Exports == Implementation where
 
     preds o ==
       (u := property(o, PMPRED)) case "failed" => []
-      (u::None) pretend List(Any)
+      (u@None) pretend List(Any)
 
     symbolIfCan k ==
       has?(operator k, SYMBOL) => name operator k
@@ -310,14 +309,14 @@ Kernel(S : Comparable) : Exports == Implementation where
         triage(k1, k2) = 0
 
     kernelEnterInCache(k : %) : % ==
-        (res := binarySearch(k, triage)) case % => res::%
+        (res := binarySearch(k, triage)) case % => res
         if (f0 := property(operator k, SPECIALEQUAL)) case None then
-            f1 := (f0::None) pretend ((%, %) -> Boolean)
+            f1 := (f0@None) pretend ((%, %) -> Boolean)
             (res := linearSearch(k, y +-> kerEqual(k, y, f1))) case % =>
-                return res::%
+                return res
         else
             (res := linearSearch(k, y +-> kerEqual0(k, y))) case % =>
-                return res::%
+                return res
         enterInCache(k, triage)
 
     k1 = k2 ==
@@ -331,7 +330,7 @@ Kernel(S : Comparable) : Exports == Implementation where
       position(k1) < position(k2)
 
     kernel(fn, x, n) ==
-      ((u := arity fn) case N) and (#x ~= u::N)
+      ((u := arity fn) case N) and (#x ~= u@N)
                                     => error "Wrong number of arguments"
       kernelEnterInCache(mkKer(fn, x, n))
 
@@ -339,9 +338,9 @@ Kernel(S : Comparable) : Exports == Implementation where
     -- it is used when the converting the arguments first is not good,
     -- for instance with formal derivatives.
     coerce(k : %) : OutputForm ==
-      (v := symbolIfCan k) case Symbol => v::Symbol::OutputForm
+      (v := symbolIfCan k) case Symbol => v@Symbol::OutputForm
       (f := property(o := operator k, SPECIALDISP)) case None =>
-        ((f::None) pretend (List S -> OutputForm)) (argument k)
+        ((f@None) pretend (List S -> OutputForm)) (argument k)
       l := [x::OutputForm for x in argument k]$List(OutputForm)
       (u := display o) case "failed" => prefix(name(o)::OutputForm, l)
       (u::(List OutputForm -> OutputForm)) l
@@ -359,9 +358,9 @@ Kernel(S : Comparable) : Exports == Implementation where
 
     if S has ConvertibleTo InputForm then
       convert(k : %) : InputForm ==
-        (v := symbolIfCan k) case Symbol => convert(v::Symbol)@InputForm
+        (v := symbolIfCan k) case Symbol => convert(v@Symbol)@InputForm
         (f := property(o := operator k, SPECIALINPUT)) case None =>
-          ((f::None) pretend (List S -> InputForm)) (argument k)
+          ((f@None) pretend (List S -> InputForm)) (argument k)
         l := [convert x for x in argument k]$List(InputForm)
         (u := input operator k) case "failed" =>
           convert concat(convert name operator k, l)
@@ -381,7 +380,7 @@ Kernel(S : Comparable) : Exports == Implementation where
       convert(k : %) : Pattern(Float) ==
         o := operator k
         (v := symbolIfCan k) case Symbol =>
-          s  := patternVariable(v::Symbol,
+          s  := patternVariable(v@Symbol,
                       has?(o, PMCONST), has?(o, PMOPT), has?(o, PMMULT))
           empty?(l := preds o) => s
           setPredicates(s, l)

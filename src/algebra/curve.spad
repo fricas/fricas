@@ -163,12 +163,13 @@ FunctionFieldCategory(F, UP, UPUP) : Category == Definition where
     yCoordinates f         == splitDenominator coordinates f
 
     hyperelliptic() ==
-      degree(f := definingPolynomial()) ~= 2 => "failed"
-      (u := retractIfCan(reductum f)@Union(RF,"failed")) case "failed" => "failed"
-      (v := retractIfCan(-(u::RF) / leadingCoefficient f)@Union(UP, "failed"))
-        case "failed" => "failed"
-      odd? degree(p := v::UP) => p
-      "failed"
+        degree(f := definingPolynomial()) ~= 2 => "failed"
+        (u := retractIfCan(reductum f)@Union(RF,"failed"))
+           case "failed" => "failed"
+        (v := retractIfCan(-(u@RF) / leadingCoefficient f)@Union(UP, "failed"))
+           case "failed" => "failed"
+        odd? degree(p := v@UP) => p
+        "failed"
 
     algSplitSimple(f, derivation) ==
       cd := splitDenominator lift f
@@ -177,9 +178,9 @@ FunctionFieldCategory(F, UP, UPUP) : Category == Definition where
                                     gcd(dd, retract(discriminant())@UP)]
 
     elliptic() ==
-      (u := hyperelliptic()) case "failed" => "failed"
-      degree(p := u::UP) = 3 => p
-      "failed"
+        (u := hyperelliptic()) case "failed" => "failed"
+        degree(p := u@UP) = 3 => p
+        "failed"
 
     import from RF
 
@@ -372,7 +373,7 @@ FunctionFieldCategory(F, UP, UPUP) : Category == Definition where
                   * qelt(ans, i) for i in minIndex sol .. maxIndex sol])
 
     integral?(f : %, p : UP) ==
-      (r := retractIfCan(p)@Union(F,"failed")) case F => integral?(f,r::F)
+      (r := retractIfCan(p)@Union(F,"failed")) case F => integral?(f, r@F)
       (integralCoordinates(f).den exquo p) case "failed"
 
     differentiate(f : %, d : UP -> UP) ==
@@ -568,9 +569,9 @@ ChangeOfVariable(F, UP, UPUP) : Exports == Implementation where
         good?(-a, q, ld)        => return -a
 
     radPoly p ==
-      (r := retractIfCan(reductum p)@Union(RF, "failed")) case "failed"
-        => "failed"
-      [- (r::RF), degree p]
+        (r := retractIfCan(reductum p)@Union(RF, "failed")) case "failed"
+            => "failed"
+        [-(r@RF), degree p]
 
 -- we have y^m = g(x) = n(x)/d(x), so if we can write
 -- (n(x) * d(x)^(m-1)) ^ (1/m)  =  c(x) * P(x) ^ (1/n)
@@ -685,9 +686,9 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n) : Exports == Impl where
       ans.0 := unit p
       l := factors p
       for i in 1..maxIndex ans repeat
-        ans.i :=
-          (u := find(s +-> s.exponent = i, l)) case "failed" => 1
-          (u::REC).factor
+          ans.i :=
+              (u := find(s +-> s.exponent = i, l)) case "failed" => 1
+              (u@REC).factor
       ans
 
 -- return (f0, ..., f(n-1)) s.t. (f0, y f1, ..., y^(n-1) f(n-1))
@@ -755,19 +756,19 @@ RadicalFunctionField(F, UP, UPUP, radicnd, n) : Exports == Impl where
 
     ramified?(p : UP) ==
       (r := retractIfCan(p)@Union(F, "failed")) case F =>
-        singular?(r::F)
+          singular?(r@F)
       (radcand() exquo p) case UP
 
     singular?(p : UP) ==
       (r := retractIfCan(p)@Union(F, "failed")) case F =>
-        singular?(r::F)
+          singular?(r@F)
       (radcand() exquo(p^2)) case UP
 
     branchPoint?(p : UP) ==
       (r := retractIfCan(p)@Union(F, "failed")) case F =>
-        branchPoint?(r::F)
+          branchPoint?(r@F)
       ((q := (radcand() exquo p)) case UP) and
-        ((q::UP exquo p) case "failed")
+          ((q@UP exquo p) case "failed")
 
     singular?(point : F) ==
       zero?(radcand()  point) and
@@ -910,7 +911,7 @@ AlgebraicFunctionField(F, UP, UPUP, modulus) : Exports == Impl where
 
     branchPoint?(p : UP) ==
       INIT
-      (r := retractIfCan(p)@Union(F,"failed")) case F =>branchPoint?(r::F)
+      (r := retractIfCan(p)@Union(F,"failed")) case F => branchPoint?(r@F)
       not ground? gcd(retract(discriminant())@UP, p)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

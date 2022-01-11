@@ -122,7 +122,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
       (k := deg exquo n) case "failed" => "failed"
       uts := taylor(uls * monomial(1, -deg))
       (root := nthRootUTS(uts,n)) case "failed" => "failed"
-      monomial(1, k :: I) * (root :: UTS :: ULS)
+      monomial(1, k@I) * (root@UTS :: ULS)
 
     if Coef has Field then
        (uls : ULS) ^ (r : RN) ==
@@ -136,7 +136,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
          (k := deg exquo den) case "failed" =>
            error "^: rational power does not exist"
          uts := taylor(uls * monomial(1, -deg)) ^ r
-         monomial(1, (k :: I) * num) * (uts :: ULS)
+         monomial(1, (k@I) * num) * (uts::ULS)
 
 --% transcendental functions
 
@@ -144,7 +144,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
     applyIfCan(fcn, uls) ==
       uts := taylorIfCan uls
       uts case "failed" => "failed"
-      fcn(uts :: UTS) :: ULS
+      fcn(uts) :: ULS
 
     expIfCan   uls == applyIfCan(exp, uls)
     sinIfCan   uls == applyIfCan(sin, uls)
@@ -165,14 +165,14 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
     logIfCan uls ==
       uts := taylorIfCan uls
       uts case "failed" => "failed"
-      zero? coefficient(ts := uts :: UTS,0) => "failed"
+      zero? coefficient(ts := uts@UTS,0) => "failed"
       log(ts) :: ULS
 
     tanIfCan uls ==
       -- don't call 'tan' on a UTS (tan(uls) may have a singularity)
       uts := taylorIfCan uls
       uts case "failed" => "failed"
-      sc := sincos(coefficients(uts :: UTS))$STTF
+      sc := sincos(coefficients(uts@UTS))$STTF
       (cosInv := recip(series(sc.cos) :: ULS)) case "failed" => "failed"
       (series(sc.sin) :: ULS) * (cosInv :: ULS)
 
@@ -180,20 +180,20 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
       -- don't call 'cot' on a UTS (cot(uls) may have a singularity)
       uts := taylorIfCan uls
       uts case "failed" => "failed"
-      sc := sincos(coefficients(uts :: UTS))$STTF
+      sc := sincos(coefficients(uts@UTS))$STTF
       (sinInv := recip(series(sc.sin) :: ULS)) case "failed" => "failed"
       (series(sc.cos) :: ULS) * (sinInv :: ULS)
 
     secIfCan uls ==
       cos := cosIfCan uls
       cos case "failed" => "failed"
-      (cosInv := recip(cos :: ULS)) case "failed" => "failed"
+      (cosInv := recip(cos@ULS)) case "failed" => "failed"
       cosInv :: ULS
 
     cscIfCan uls ==
       sin := sinIfCan uls
       sin case "failed" => "failed"
-      (sinInv := recip(sin :: ULS)) case "failed" => "failed"
+      (sinInv := recip(sin@ULS)) case "failed" => "failed"
       sinInv :: ULS
 
     atanIfCan uls ==
@@ -206,7 +206,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
               lc := coefficient(uls, ord)
               (rat := retractIfCan(lc)@Union(RN,"failed")) case "failed" =>
                 (1/2) * pi()
-              (rat :: RN) > 0 => (1/2) * pi()
+              (rat@RN) > 0 => (1/2) * pi()
               (-1/2) * pi()
             (1/2) * pi()
           return "failed"
@@ -214,7 +214,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
         TRANSFCN => atan coef
         return "failed"
       (z := recip(1 + uls*uls)) case "failed" => "failed"
-      (cc :: ULS) + integrate(differentiate(uls) * (z :: ULS))
+      (cc :: ULS) + integrate(differentiate(uls) * (z@ULS))
 
     acotIfCan uls ==
       coef := coefficient(uls, 0)
@@ -224,51 +224,51 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
           RATS =>
             lc := coefficient(uls, ord)
             (rat := retractIfCan(lc)@Union(RN,"failed")) case "failed" => 0
-            (rat :: RN) > 0 => 0
+            (rat@RN) > 0 => 0
             TRANSFCN => pi()
             return "failed"
           0
         TRANSFCN => acot coef
         return "failed"
       (z := recip(1 + uls*uls)) case "failed" => "failed"
-      (cc :: ULS) - integrate(differentiate(uls) * (z :: ULS))
+      (cc :: ULS) - integrate(differentiate(uls) * (z@ULS))
 
     tanhIfCan uls ==
       -- don't call 'tanh' on a UTS (tanh(uls) may have a singularity)
       uts := taylorIfCan uls
       uts case "failed" => "failed"
-      sc := sinhcosh(coefficients(uts :: UTS))$STTF
+      sc := sinhcosh(coefficients(uts@UTS))$STTF
       (coshInv := recip(series(sc.cosh) :: ULS)) case "failed" =>
         "failed"
-      (series(sc.sinh) :: ULS) * (coshInv :: ULS)
+      (series(sc.sinh) :: ULS) * (coshInv@ULS)
 
     cothIfCan uls ==
       -- don't call 'coth' on a UTS (coth(uls) may have a singularity)
       uts := taylorIfCan uls
       uts case "failed" => "failed"
-      sc := sinhcosh(coefficients(uts :: UTS))$STTF
+      sc := sinhcosh(coefficients(uts@UTS))$STTF
       (sinhInv := recip(series(sc.sinh) :: ULS)) case "failed" =>
         "failed"
-      (series(sc.cosh) :: ULS) * (sinhInv :: ULS)
+      (series(sc.cosh) :: ULS) * (sinhInv@ULS)
 
     sechIfCan uls ==
       cosh := coshIfCan uls
       cosh case "failed" => "failed"
-      (coshInv := recip(cosh :: ULS)) case "failed" => "failed"
-      coshInv :: ULS
+      (coshInv := recip(cosh@ULS)) case "failed" => "failed"
+      coshInv@ULS
 
     cschIfCan uls ==
       sinh := sinhIfCan uls
       sinh case "failed" => "failed"
-      (sinhInv := recip(sinh :: ULS)) case "failed" => "failed"
-      sinhInv :: ULS
+      (sinhInv := recip(sinh@ULS)) case "failed" => "failed"
+      sinhInv@ULS
 
     applyOrError:(ULS -> Union(ULS,"failed"),S,ULS) -> ULS
     applyOrError(fcn, name, uls) ==
       ans := fcn uls
       ans case "failed" =>
         error concat(name," of function with singularity")
-      ans :: ULS
+      ans@ULS
 
     exp uls   == applyOrError(expIfCan,"exp",uls)
     log uls   == applyOrError(logIfCan,"log",uls)
@@ -307,7 +307,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
               lc := coefficient(uls, ord)
               (rat := retractIfCan(lc)@Union(RN,"failed")) case "failed" =>
                 (1/2) * pi()
-              (rat :: RN) > 0 => (1/2) * pi()
+              (rat@RN) > 0 => (1/2) * pi()
               (-1/2) * pi()
             (1/2) * pi()
           error "atan: series expansion involves transcendental constants"
@@ -316,7 +316,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
         error "atan: series expansion involves transcendental constants"
       (z := recip(1 + uls*uls)) case "failed" =>
         error "atan: leading coefficient not invertible"
-      (cc :: ULS) + integrate(differentiate(uls) * (z :: ULS))
+      (cc :: ULS) + integrate(differentiate(uls) * (z@ULS))
 
     acot uls ==
     -- code is duplicated so that correct error messages will be returned
@@ -328,7 +328,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
           RATS =>
             lc := coefficient(uls, ord)
             (rat := retractIfCan(lc)@Union(RN,"failed")) case "failed" => 0
-            (rat :: RN) > 0 => 0
+            (rat@RN) > 0 => 0
             TRANSFCN => pi()
             error "acot: series expansion involves transcendental constants"
           0
@@ -336,7 +336,7 @@ ElementaryFunctionsUnivariateLaurentSeries(Coef, UTS, ULS) : _
         error "acot: series expansion involves transcendental constants"
       (z := recip(1 + uls*uls)) case "failed" =>
         error "acot: leading coefficient not invertible"
-      (cc :: ULS) - integrate(differentiate(uls) * (z :: ULS))
+      (cc :: ULS) - integrate(differentiate(uls) * (z@ULS))
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

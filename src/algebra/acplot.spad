@@ -1020,8 +1020,8 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
             y2New case "failed" =>
               return computeNextPt(pSF, dpdxSF, dpdySF, x, y, p0, p1, corners, _
                             abs((x2Approx-x1)/2), err, bound, crits, bdry)
-            pt1 := makePt(x2Approx, y2New :: SF)
-            pt2 := makePt(x2New :: SF, y2Approx)
+            pt1 := makePt(x2Approx, y2New@SF)
+            pt2 := makePt(x2New@SF, y2Approx)
             critPt1 := findPtOnList(pt1, crits)
             critPt2 := findPtOnList(pt2, crits)
             (critPt1 case "failed") and (critPt2 case "failed") =>
@@ -1029,12 +1029,13 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
                 return [pt1, NADA]
               return [pt2, NADA]
             (critPt1 case "failed") =>
+              -- Should be @ but compiler is too stupid
               return [critPt2::Pt, CRIT]
             (critPt2 case "failed") =>
-              return [critPt1::Pt, CRIT]
+                return [critPt1@Pt, CRIT]
             abs(x2Approx - x1) > abs(x2Temp - x1) =>
-              return [critPt2::Pt, CRIT]
-            return [critPt1::Pt, CRIT]
+                return [critPt2@Pt, CRIT]
+            return [critPt1@Pt, CRIT]
           y2Temp := y1 + (-px/py)*(x2Approx - x1)
           f := SFPolyToUPoly(eval(pSF, x, x2Approx))
           y2New := newtonApprox(f, y2Temp, err, bound)
@@ -1048,8 +1049,8 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           x2New case "failed" =>
             return computeNextPt(pSF, dpdxSF, dpdySF, x, y, p0, p1, corners, _
                           abs((y2Approx-y1)/2), err, bound, crits, bdry)
-          pt1 := makePt(x2Approx, y2New :: SF)
-          pt2 := makePt(x2New :: SF, y2Approx)
+          pt1 := makePt(x2Approx, y2New@SF)
+          pt2 := makePt(x2New@SF, y2Approx)
           critPt1 := findPtOnList(pt1, crits)
           critPt2 := findPtOnList(pt2, crits)
           (critPt1 case "failed") and (critPt2 case "failed") =>
@@ -1057,12 +1058,13 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
               return [pt2, NADA]
             return [pt1, NADA]
           (critPt1 case "failed") =>
+            -- Should be @ but compiler is too stupid
             return [critPt2::Pt, CRIT]
           (critPt2 case "failed") =>
-            return [critPt1::Pt, CRIT]
+              return [critPt1@Pt, CRIT]
           abs(y2Approx - y1) > abs(y2Temp - y1) =>
-            return [critPt1::Pt, CRIT]
-          return [critPt2::Pt, CRIT]
+              return [critPt1@Pt, CRIT]
+          return [critPt2@Pt, CRIT]
         if not(empty?(xPointList)) and empty?(yPointList) then
           y2Approx := y1 + (-px/py)*(x2Approx - x1)
           incVar0 = x =>
@@ -1073,11 +1075,11 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           y2New case "failed" =>
             x2Approx := x2Approxx
             y2Approx := y2Approxx     -- proceed
-          pt := makePt(x2Approx, y2New::SF)
+          pt := makePt(x2Approx, y2New@SF)
           critPt := findPtOnList(pt, crits)
           critPt case "failed" =>
             return [pt, NADA]
-          return [critPt :: Pt, CRIT]
+          return [critPt@Pt, CRIT]
         if empty?(xPointList) and not(empty?(yPointList)) then
           x2Approx := x1 + (-py/px)*(y2Approx - y1)
           incVar0 = y =>
@@ -1088,11 +1090,11 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           x2New case "failed" =>
             x2Approx := x2Approxx
             y2Approx := y2Approxx     -- proceed
-          pt := makePt(x2New::SF, y2Approx)
+          pt := makePt(x2New@SF, y2Approx)
           critPt := findPtOnList(pt, crits)
           critPt case "failed" =>
             return [pt, NADA]
-          return [critPt :: Pt, CRIT]
+          return [critPt@Pt, CRIT]
         if incVar = x then
           x2 := x2Approx
           f := SFPolyToUPoly(eval(pSF, x, x2))
@@ -1100,7 +1102,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           y2New case "failed" =>
             return computeNextPt(pSF, dpdxSF, dpdySF, x, y, p0, p1, corners, _
                                    abs((x2-x1)/2), err, bound, crits, bdry)
-          y2 := y2New :: SF
+          y2 := y2New@SF
         else
           y2 := y2Approx
           f := SFPolyToUPoly(eval(pSF, y, y2))
@@ -1108,7 +1110,7 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           x2New case "failed" =>
             return computeNextPt(pSF, dpdxSF, dpdySF, x, y, p0, p1, corners, _
                                    abs((y2-y1)/2), err, bound, crits, bdry)
-          x2 := x2New :: SF
+          x2 := x2New@SF
         pt := makePt(x2, y2)
         --!! check that 'pt' is not out of bounds
         -- check if you've gotten a critical or boundary point
@@ -1118,11 +1120,11 @@ PlaneAlgebraicCurvePlot() : Exports == Implementation where
           bdryPt := findPtOnList(pt, bdry)
           bdryPt case "failed" =>
             error "couldn't find boundary point"
-          [bdryPt :: Pt, BDRY]
+          [bdryPt@Pt, BDRY]
         critPt := findPtOnList(pt, crits)
         critPt case "failed" =>
           [pt, NADA]
-        [critPt :: Pt, CRIT]
+        [critPt@Pt, CRIT]
 
 --% Newton iterations
 

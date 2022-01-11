@@ -141,9 +141,9 @@ FiniteAbelianMonoidRing(R : Join(SemiRng, AbelianMonoid),
           zero? x => 0
           ans : % := 0
           while not zero? x repeat
-              t := leadingCoefficient x exquo r
+              t := leadingCoefficient(x) exquo r
               t case "failed" => return "failed"
-              ans := ans + monomial(t::R, degree x)
+              ans := ans + monomial(t@R, degree x)
               x := reductum x
           ans
     if R has GcdDomain then
@@ -418,8 +418,8 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
             concat(r::%, l)
         isExpt p ==
             (u := mainVariable p) case "failed" => "failed"
-            p = monomial(1, u::VarSet, d := degree(p, u::VarSet)) =>
-                [u::VarSet, d]
+            p = monomial(1, u@VarSet, d := degree(p, u@VarSet)) =>
+                [u@VarSet, d]
             "failed"
     coefficient(p, v, n) == coefficient(univariate(p, v), n)
     coefficient(p, lv, ln) ==
@@ -435,7 +435,7 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
       q::% = p => q
       error "Polynomial is not a single variable"
     retractIfCan(p:%):Union(VarSet, "failed") ==
-      ((q := mainVariable p) case VarSet) and (q::VarSet::% = p) => q
+      ((q := mainVariable p) case VarSet) and (q@VarSet::% = p) => q
       "failed"
 
     totalDegree p ==
@@ -577,7 +577,7 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
                     deg1 : List NonNegativeInteger
                     deg1 := [ ((nd := (d::Integer) exquo ch)
                                case "failed" => return "failed" ;
-                                nd::Integer::NonNegativeInteger)
+                                nd@Integer::NonNegativeInteger)
                            for d in degs ]
                     redmons := cons(monomial(1, vars, deg1), redmons)
                     llR := [cons(ground coefficient(u, vars, degs), v)
@@ -596,14 +596,14 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
             empty? vars =>
               ans := charthRoot ground p
               ans case "failed" => "failed"
-              ans::R::%
+              ans@R::%
             ch := characteristic()$%
             charthRootlv(p, vars, ch)
           charthRootlv(p, vars, ch) ==
             empty? vars =>
               ans := charthRoot ground p
               ans case "failed" => "failed"
-              ans::R::%
+              ans@R::%
             v := first vars
             vars := rest vars
             d := degree(p, v)
@@ -616,7 +616,7 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
                ansx := charthRootlv(cp, vars, ch)
                ansx case "failed" => return "failed"
                d := degree(p, v)
-               ans := ans+monomial(ansx, v, dd::Integer::NonNegativeInteger)
+               ans := ans+monomial(ansx, v, dd@Integer::NonNegativeInteger)
             ansx := charthRootlv(p, vars, ch)
             ansx case "failed" => return "failed"
             return ans+ansx
@@ -676,20 +676,20 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
       -- so that x converted to pattern matches itself
       conv_def(x, p_type) ==>
           (r := retractIfCan(x)@Union(R, "failed")) case R =>
-              convert(r::R)
+              convert(r@R)
           (vu := retractIfCan(x)@Union(VarSet, "failed")) case VarSet =>
-              convert(vu::VarSet)
+              convert(vu@VarSet)
           (ex := isExpt x) case RCX =>
-              exr := ex::RCX
+              exr := ex@RCX
               convert(exr.var)^(exr.exponent)
           (lx := isTimes x) case List(%) =>
               res : p_type := 1
-              for tx in reverse(lx::List(%)) repeat
+              for tx in reverse(lx@List(%)) repeat
                   res := convert(tx)*res
               res
           (lx := isPlus x) case List(%) =>
               res : p_type := 0
-              for mx in reverse(lx::List(%)) repeat
+              for mx in reverse(lx@List(%)) repeat
                   res := convert(mx) + res
               res
           error "conv_def: impossible"
@@ -747,7 +747,7 @@ PolynomialCategoryLifting(E, Vars, R, P, S) : Exports == Implementation where
     if S has SemiRng then
       map(fv, fc, p) ==
           (x1 := mainVariable p) case "failed" => fc leadingCoefficient p
-          up := univariate(p, x1::Vars)
+          up := univariate(p, x1@Vars)
           ml := reverse(monomials(up))
           t  := fv(x1::Vars)
           mon0 := first(ml)
@@ -777,8 +777,8 @@ PolynomialCategoryLifting(E, Vars, R, P, S) : Exports == Implementation where
       -- preserve operations for use by InputForm
       map(fv, fc, p) ==
           (x1 := mainVariable p) case "failed" => fc leadingCoefficient p
-          up := univariate(p, x1::Vars)
-          t := fv(x1::Vars)
+          up := univariate(p, x1@Vars)
+          t := fv(x1@Vars)
           ans := map(fv, fc, leadingCoefficient up)*t^(degree up)
           up := reductum up
           while not zero? up repeat
@@ -997,7 +997,7 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
          zero? degree n =>
            nn := nextItem leadingCoefficient n
            nn case "failed" => "failed"
-           nn::R::%
+           nn@R::%
          n1 := reductum n
          n2 := nextItemInner n1 -- try stepping the reductum
          n2 case % => monomial(leadingCoefficient n, degree n) + n2
@@ -1114,7 +1114,7 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
       composite(f : Fraction %, q : %) ==
         (n := composite(numer f, q)) case "failed" => "failed"
         (d := composite(denom f, q)) case "failed" => "failed"
-        n::% / d::%
+        n@% / d@%
 
       composite(p : %, q : %) ==
         ground? p => p
@@ -1122,8 +1122,8 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
         ground?(cqr.remainder) and
           ((v := cqr.remainder exquo cqr.coef) case %) and
             ((u := composite(cqr.quotient, q)) case %) and
-              ((w := (u::%) exquo cqr.coef) case %) =>
-                v::% + monomial(1, 1) * w::%
+              ((w := (u@%) exquo cqr.coef) case %) =>
+                v@% + monomial(1, 1) * w@%
         "failed"
 
       elt(p : %, f : Fraction %) ==
@@ -1142,7 +1142,7 @@ UnivariatePolynomialCategory(R : Join(SemiRng, AbelianMonoid)) : Category ==
         ans : NonNegativeInteger := 0
         repeat
           (u  := p exquo q) case "failed" => return ans
-          p   := u::%
+          p   := u@%
           ans := ans + 1
 
     if R has GcdDomain then

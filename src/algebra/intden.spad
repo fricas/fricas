@@ -99,7 +99,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             su := particularSolutionOverQ(dvvec, D(rsum, x)
                                     )$IntegerLinearDependence(F)
             su case "failed" => "iterate"
-            sv := su::Vector(Q)
+            sv := su@Vector(Q)
             -- print("Found capable complex factor"::OutputForm)
             -- print(f1::OutputForm)
             -- print(lk::OutputForm)
@@ -149,7 +149,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             su := particularSolutionOverQ(dvvec, D(lprod, x)/(deg1::R::F*lprod)
                                     )$IntegerLinearDependence(F)
             su case "failed" => "iterate"
-            sv := su::Vector(Q)
+            sv := su@Vector(Q)
             -- print("Found capable complex factor"::OutputForm)
             -- print(f1::OutputForm)
             -- print(lk::OutputForm)
@@ -228,19 +228,19 @@ DenominatorIntegration(R, F) : Exports == Implementation where
                 -- print(degdf::OutputForm)
                 -- print(degnu::OutputForm)
                 return "failed"
-            n := qu::Integer
+            n := qu@Integer
             (qu := degnf exquo degnu) case "failed" =>
                 -- print("degnf exquo degnu failed"::OutputForm)
                 -- print(degnf::OutputForm)
                 -- print(degnu::OutputForm)
                 return "failed"
-            m := qu::Integer - n
+            m := qu@Integer - n
         else if degnu = 0 then
             -- print("degnu = 0"::OutputForm)
             (qu := degdf exquo degdu) case "failed" => return "failed"
-            m := qu::Integer
+            m := qu@Integer
             (qu := degnf exquo degdu) case "failed" => return "failed"
-            n := qu::Integer - m
+            n := qu@Integer - m
         else
             -- print("rational case"::OutputForm)
             m := p_power_in_q(du, df1)
@@ -265,7 +265,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             -- print("df1 exquo (dup*nup)) not in F"::OutputForm)
             -- print(ccu::OutputForm)
             return "failed"
-        cc := ccru::F
+        cc := ccru@F
         nf1 := (1/cc)*nf1
         coefs := [new()$Symbol for j in -n..m]
         eqs := nf1
@@ -288,7 +288,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
         eqsl := coefficients(eqs)
         sl0 := lin_sol(eqsl, coefs)$Esol
         sl0 case "failed" => "failed"
-        sl := sl0::List(F)
+        sl := sl0@List(F)
         for c in sl repeat
             if D(c, x) ~= 0 then return "failed"
         [[c, j::F] for c in sl for j in (-n)..m | c ~= 0]
@@ -345,7 +345,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
                 tf := retract(linum)@F
             liu := li_int1(tf, u1, x)
             liu case "failed" => return "failed"
-            lli := liu::List(List(F))
+            lli := liu@List(List(F))
             -- print(lli::OutputForm)
             -- print(u1::OutputForm)
             -- print(c_shift::OutputForm)
@@ -426,7 +426,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
                 tf := retract(polynum)@F
             polyu := li_int1(tf, v1, x)
             polyu case "failed" => return "failed"
-            lpoly := polyu::List(List(F))
+            lpoly := polyu@List(List(F))
             #lpoly = 1 and lpoly(1)(2) = 0 =>
                 elpart := elpart + polynum/polyden
             rf1k : K
@@ -460,7 +460,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
                            is?(kk, 'exp) or (is?(kk, 'log) and kk ~= k)], x)
         res := li_int3(f, rf, k, lk, x)
         res case "failed" => [0, rf, 0]
-        res::DREC
+        res
 
     poly_int(rf, k, x) ==
         f := multivariate(rf, k)$PolynomialCategoryQuotientFunctions(Exp,
@@ -469,4 +469,4 @@ DenominatorIntegration(R, F) : Exports == Implementation where
                            is?(kk, 'exp) or (is?(kk, 'log) and kk ~= k)], x)
         res := poly_int3(f, rf, k, lk, x)
         res case "failed" => [0, rf, 0]
-        res::DREC
+        res

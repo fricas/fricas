@@ -248,10 +248,10 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
     algebraicGcd1a(x, y, mu, vx, lvz) ==
         xuu := MPtoMPT(x, vx, lvz, mu)
         xuu case "failed" => "failed"
-        xu := xuu::MPT
+        xu := xuu@MPT
         yuu := MPtoMPT(y, vx, lvz, mu)
         yuu case "failed" => "failed"
-        yu := yuu::MPT
+        yu := yuu@MPT
         repeat
             w1 := pseudoRem(xu, yu, mu)
             zero?(w1) =>
@@ -278,10 +278,10 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
         lvz := pss.svz
         mdp := pack_modulus(lm, lvz, p)
         mdp case "failed" => "failed"
-        mu := mdp::MD
+        mu := mdp@MD
         pres := algebraicGcd1a(x, y, mu, vx, lvz)
         pres case "failed" => "failed"
-        res1 := pres::MPT
+        res1 := pres@MPT
         dg := degree(res1)
         dg > pss.degg => "failed"
         msize := pss.sizem
@@ -333,7 +333,7 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
                lmtu := eval1(m, vt, t, pss1)$ME
                lmtu case "failed" =>
                    bad_ev := true
-               lmt := cons(lmtu::MP, lmt)
+               lmt := cons(lmtu@MP, lmt)
             lmt := reverse!(lmt)
             if not(bad_ev) then
                 for m in lmt for deg in pss.sldeg for z in pss.svz repeat
@@ -345,7 +345,7 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
             gtfp case "failed" =>
                 bad_cnt := bad_cnt + 1
                 bad_cnt > good_cnt + 2 => return "failed"
-            gtf := gtfp::PDR
+            gtf := gtfp@PDR
             nexps := gtf.expdata
             coeffs := gtf.coeffdata
             pss.degg = 0 => return
@@ -398,7 +398,7 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
                               offsets, exps)$VMR
             pp case "failed" => "iterate"
             -- if successful return
-            return pp::PDR
+            return pp@PDR
 
     base_vars : List Symbol := ['u0, 'u1, 'u2, 'u3, 'u4, 'u5, 'u6, _
               'u7, 'u8, 'u9, 'v0, 'v1, 'v2, 'v3, 'v4, 'v5, 'v6, 'v7, _
@@ -443,17 +443,17 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
             yp : MP
             xpu := modpreduction(x, p)$ME
             xpu case "failed" => "iterate"
-            xp := xpu::MP
+            xp := xpu@MP
             ypu := modpreduction(y, p)$ME
             ypu case "failed" => "iterate"
-            yp := ypu::MP
+            yp := ypu@MP
             (degree(xp, vx) < dx) and (degree(yp, vx) < dy) => "iterate"
             lmp : List(MP) := []
             bad_ev : Boolean := false
             for m in lm while not(bad_ev) repeat
                 lmp1 := modpreduction(m, p)$ME
                 lmp1 case "failed" => bad_ev := true
-                lmp := cons(lmp1::MP, lmp)
+                lmp := cons(lmp1@MP, lmp)
             lmp := reverse!(lmp)
             if not(bad_ev) then
                 for m in lmp for deg in pss.sldeg for z in lvz repeat
@@ -461,7 +461,7 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
             bad_ev => "iterate"
             gtpp := algebraicGcd2(xp, yp, lmp, lv, pss)
             gtpp case "failed" => "iterate"
-            gtp := gtpp::PDR
+            gtp := gtpp@PDR
             nexps := gtp.expdata
             coeffs := gtp.coeffdata
             if pss.degg < dg or empty?(exps) then
@@ -504,7 +504,7 @@ ModularAlgebraicGcd2(PT : Type, MP : Type,
 
             pp := reconstruct(rstate, offsets)$VIR
             pp case "failed" => "iterate"
-            res := reconstruct3(lv, vx, lvz, exps, pp::PAI)
+            res := reconstruct3(lv, vx, lvz, exps, pp@PAI)
             if trial_division(x, res, lm, vx, lvz)$ME and
                trial_division(y, res, lm, vx, lvz)$ME then
                 return res
@@ -719,12 +719,12 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
         lv1 := rest(lvz)
         lm1u := pack_modulus1(rest(lm), lv1, p)
         lm1u case "failed" => "failed"
-        lm1 := lm1u::List(MP)
+        lm1 := lm1u@List(MP)
         m1u := univariate(first(lm), v1)
         c0 := leadingCoefficient(m1u)
         ic0u := m_inverse(c0, lm1, lv1, p)
         ic0u case "failed" => "failed"
-        ic0 := ic0u::MP
+        ic0 := ic0u@MP
         res1u := map((c : MP) : MP +-> mreduction1(c, lm1, lv1, p), ic0*m1u)
         cons(multivariate(res1u, v1), lm1)
 
@@ -739,7 +739,7 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
         for deg in reverse(ldeg) repeat
             msize := deg*msize
             sizes := cons(msize, sizes)
-        [lvz, nlmu::List(MP), sizes, p]
+        [lvz, nlmu@List(MP), sizes, p]
 
     pack_exps0(exps : SortedExponentVector, sizes : List(Integer),
                ns : Integer, start : Integer) : Void ==
@@ -874,7 +874,7 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
         degree(c0) > 0 => "failed"
         ic0u := m_inverse(ground(c0), lm1, lv1, p)
         ic0u case "failed" => "failed"
-        ic0 := ic0u::MP
+        ic0 := ic0u@MP
         res1 := multivariate(ic0*ee(2), v1)
         mreduction1(res1, lm, lv, p)
 
@@ -885,7 +885,7 @@ ModularAlgebraicGcdTools3 : Exports == Implementation where
         cl : MP := leadingCoefficient(x)
         rr := m_inverse(cl, lm, lv, p)
         rr case "failed" => "failed"
-        mreduction((rr::MP)*x, mu)
+        mreduction((rr@MP)*x, mu)
 
     pseudoRem(x : MPU, y : MPU, mu : MD) : MPU ==
         i : Integer := degree(x)

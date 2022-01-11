@@ -313,7 +313,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
             case "failed" or
              (k := retractIfCan(second l)@Union(K,"failed")) case "failed"
                => idsum l
-        +/[eval(first l, k::K, i::F) for i in r1::Z .. r2::Z]
+        +/[eval(first l, k@K, i::F) for i in r1@Z .. r2@Z]
 
       iidprod l ==
         (r1 := retractIfCan(fourth l)@Union(Z,"failed"))
@@ -322,11 +322,11 @@ CombinatorialFunction(R, F) : Exports == Implementation where
             case "failed" or
              (k := retractIfCan(second l)@Union(K,"failed")) case "failed"
                => idprod l
-        */[eval(first l, k::K, i::F) for i in r1::Z .. r2::Z]
+        */[eval(first l, k@K, i::F) for i in r1@Z .. r2@Z]
 
       iiipow l ==
           (u := isExpt(x := first l, OPEXP)) case "failed" => kernel(oppow, l)
-          rec := u::Record(var : K, exponent : Z)
+          rec := u@Record(var : K, exponent : Z)
           y := first argument(rec.var)
           (r := retractIfCan(y)@Union(Fraction Z, "failed")) case
               "failed" => kernel(oppow, l)
@@ -336,12 +336,12 @@ CombinatorialFunction(R, F) : Exports == Implementation where
         ipow l ==
           (r := retractIfCan(second l)@Union(Fraction Z,"failed"))
             case "failed" => iiipow l
-          first(l) ^ (r::Fraction(Z))
+          first(l) ^ (r@Fraction(Z))
       else
         ipow l ==
           (r := retractIfCan(second l)@Union(Z, "failed"))
             case "failed" => iiipow l
-          first(l) ^ (r::Z)
+          first(l) ^ (r@Z)
 
     else
       ipow l ==
@@ -351,7 +351,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
         (x = 1) or zero?(n : F := second l) => 1
         (n = 1) => x
         (u := isExpt(x, OPEXP)) case "failed" => kernel(oppow, l)
-        rec := u::Record(var : K, exponent : Z)
+        rec := u@Record(var : K, exponent : Z)
         ((y := first argument(rec.var))=1) or y = -1 =>
             (operator(rec.var)) (rec.exponent * y * n)
         kernel(oppow, l)
@@ -359,13 +359,13 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     if R has CombinatorialFunctionCategory then
       iifact x ==
         (r := retractIfCan(x)@Union(R,"failed")) case "failed" => ifact x
-        factorial(r::R)::F
+        factorial(r@R)::F
 
       iiperm l ==
         (r1 := retractIfCan(first l)@Union(R,"failed")) case "failed" or
           (r2 := retractIfCan(second l)@Union(R,"failed")) case "failed"
             => iperm l
-        permutation(r1::R, r2::R)::F
+        permutation(r1@R, r2@R)::F
 
       if R has RetractableTo(Z) and F has Algebra(Fraction(Z)) then
 
@@ -376,26 +376,26 @@ CombinatorialFunction(R, F) : Exports == Implementation where
          iibinom l ==
            (s := retractIfCan(second l)@Union(R,"failed")) case R and
               (t := retractIfCan(s)@Union(Z,"failed")) case Z and t>0 =>
-                ans := 1::F
+                ans := 1$F
                 for i in 0..t-1 repeat
                     ans := ans*(first l - i::R::F)
                 (1/factorial t) * ans
            (s := retractIfCan(first l-second l)@Union(R,"failed")) case R and
              (t := retractIfCan(s)@Union(Z,"failed")) case Z and t>0 =>
-                ans := 1::F
+                ans := 1$F
                 for i in 1..t repeat
                     ans := ans*(second l+i::R::F)
                 (1/factorial t) * ans
            (r1 := retractIfCan(first l)@Union(R,"failed")) case "failed" or
              (r2 := retractIfCan(second l)@Union(R,"failed")) case "failed"
                => ibinom l
-           binomial(r1::R, r2::R)::F
+           binomial(r1@R, r2@R)::F
       else
          iibinom l ==
            (r1 := retractIfCan(first l)@Union(R,"failed")) case "failed" or
              (r2 := retractIfCan(second l)@Union(R,"failed")) case "failed"
                => ibinom l
-           binomial(r1::R, r2::R)::F
+           binomial(r1@R, r2@R)::F
 
     else
       iifact x  == ifact x
@@ -407,7 +407,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
         (r1 := retractIfCan(first l)@Union(R,"failed")) case "failed" or
           (r2 := retractIfCan(second l)@Union(R,"failed")) case "failed"
             => ipow l
-        (r1::R ^ r2::R)::F
+        (r1@R ^ r2@R)::F
     else
       iipow l == ipow l
 
@@ -1854,10 +1854,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       iiabs x ==
         (r := retractIfCan(x)@Union(Fraction Polynomial R, "failed"))
           case "failed" => iabs x
-        f := r::Fraction Polynomial R
+        f := r@Fraction(Polynomial(R))
         (a := retractIfCan(numer f)@Union(R, "failed")) case "failed" or
           (b := retractIfCan(denom f)@Union(R,"failed")) case "failed" => iabs x
-        abs(a::R)::F / abs(b::R)::F
+        abs(a@R)::F / abs(b@R)::F
 
     else iiabs x == iabs x
 
@@ -1877,69 +1877,69 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     if R has SpecialFunctionCategory then
       iiGamma x ==
         (r := retractIfCan(x)@Union(R,"failed")) case "failed" => iGamma x
-        Gamma(r::R)::F
+        Gamma(r@R)::F
 
       iiBeta l ==
         (r := retractIfCan(first l)@Union(R,"failed")) case "failed" or _
         (s := retractIfCan(second l)@Union(R,"failed")) case "failed" _
             => iBeta(first l, second l)
-        Beta(r::R, s::R)::F
+        Beta(r@R, s@R)::F
 
       iidigamma x ==
         (r := retractIfCan(x)@Union(R,"failed")) case "failed" => idigamma x
-        digamma(r::R)::F
+        digamma(r@R)::F
 
       iipolygamma l ==
         (s := retractIfCan(first l)@Union(R,"failed")) case "failed" or _
         (r := retractIfCan(second l)@Union(R,"failed")) case "failed" _
             => iiipolygamma(first l, second l)
-        polygamma(s::R, r::R)::F
+        polygamma(s@R, r@R)::F
 
       iiBesselJ l ==
         (r := retractIfCan(first l)@Union(R,"failed")) case "failed" or _
         (s := retractIfCan(second l)@Union(R,"failed")) case "failed" _
             => iiiBesselJ(first l, second l)
-        besselJ(r::R, s::R)::F
+        besselJ(r@R, s@R)::F
 
       iiBesselY l ==
         (r := retractIfCan(first l)@Union(R,"failed")) case "failed" or _
         (s := retractIfCan(second l)@Union(R,"failed")) case "failed" _
             => iiiBesselY(first l, second l)
-        besselY(r::R, s::R)::F
+        besselY(r@R, s@R)::F
 
       iiBesselI l ==
         (r := retractIfCan(first l)@Union(R,"failed")) case "failed" or _
         (s := retractIfCan(second l)@Union(R,"failed")) case "failed" _
             => iiiBesselI(first l, second l)
-        besselI(r::R, s::R)::F
+        besselI(r@R, s@R)::F
 
       iiBesselK l ==
         (r := retractIfCan(first l)@Union(R,"failed")) case "failed" or _
         (s := retractIfCan(second l)@Union(R,"failed")) case "failed" _
             => iiiBesselK(first l, second l)
-        besselK(r::R, s::R)::F
+        besselK(r@R, s@R)::F
 
       iiAiryAi x ==
         (r := retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryAi x
-        airyAi(r::R)::F
+        airyAi(r@R)::F
 
       iiAiryAiPrime x ==
         (r := retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryAiPrime x
-        airyAiPrime(r::R)::F
+        airyAiPrime(r@R)::F
 
       iiAiryBi x ==
         (r := retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryBi x
-        airyBi(r::R)::F
+        airyBi(r@R)::F
 
-      iiAiryBi x ==
+      iiAiryBiPrime x ==
         (r := retractIfCan(x)@Union(R,"failed")) case "failed" => iAiryBiPrime x
-        airyBiPrime(r::R)::F
+        airyBiPrime(r@R)::F
 
     else
       if R has RetractableTo Integer then
         iiGamma x ==
           (r := retractIfCan(x)@Union(Integer, "failed")) case Integer
-            and (r::Integer >= 1) => factorial(r::Integer - 1)::F
+            and (r@Integer >= 1) => factorial(r@Integer - 1)::F
           iGamma x
       else
         iiGamma x == iGamma x
@@ -2476,11 +2476,11 @@ FunctionSpaceSum(R, F) : Exports == Implementation where
     sum(x : F, s : SegmentBinding F) ==
       k := kernel(variable s)@K
       (u := innersum(x, k)) case "failed" => summation(x, s)
-      eval(u::F, k, 1 + high(segment(s))) - eval(u::F, k, low(segment(s)))
+      eval(u@F, k, 1 + high(segment(s))) - eval(u@F, k, low(segment(s)))
 
     sum(x : F, v : SE) ==
       (u := innersum(x, kernel(v)@K)) case "failed" => summation(x,v)
-      u::F
+      u@F
 
     notRF?(f, k) ==
       for kk in tower f repeat
@@ -2493,7 +2493,7 @@ FunctionSpaceSum(R, F) : Exports == Implementation where
       notRF?(f := normalize(x / (x1 := eval(x, k, k::F - 1))), k) =>
         "failed"
       (u := GospersMethod(f, k, newk)) case "failed" => "failed"
-      x1 * eval(u::F, k, k::F - 1)
+      x1 * eval(u@F, k, k::F - 1)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.

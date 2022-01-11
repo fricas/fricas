@@ -104,8 +104,8 @@ OrderedCompletion(R : SetCategory) : Exports == Implementation where
       rational  x == rational(retract(x)@R)
 
       rationalIfCan x ==
-        (r:= retractIfCan(x)@Union(R,"failed")) case "failed" =>"failed"
-        rational(r::R)
+        (r := retractIfCan(x)@Union(R,"failed")) case "failed" =>"failed"
+        rational(r@R)
 
 )abbrev package ORDCOMP2 OrderedCompletionFunctions2
 ++ Lifting of maps to ordered completions
@@ -166,23 +166,25 @@ OnePointCompletion(R : SetCategory) : Exports == Implementation where
 
     if R has ConvertibleTo InputForm then
       convert(x : %) : InputForm ==
+          -- Using @ instead of :: triggers compiler bug
           x case R => convert(x::R)@InputForm
           convert([convert('infinity)$InputForm])$InputForm
 
     coerce(r : R) : %          == r
-    retract(x:%):R         == (x case R => x::R; error "Not finite")
+    retract(x:%):R         == (x case R => x; error "Not finite")
     finite? x              == x case R
     infinite? x            == x case "infinity"
     infinity()             == "infinity"
-    retractIfCan(x:%):Union(R, "failed") == (x case R => x::R; "failed")
+    retractIfCan(x:%):Union(R, "failed") == (x case R => x; "failed")
 
     coerce(x : %) : OutputForm ==
       x case "infinity" => 'infinity::OutputForm
-      x::R::OutputForm
+      x@R::OutputForm
 
     x = y ==
       x case "infinity" => y case "infinity"
       y case "infinity" => false
+      -- Using @ instead of :: triggers compiler bug
       x::R = y::R
 
     if R has IntegerNumberSystem then
@@ -190,7 +192,8 @@ OnePointCompletion(R : SetCategory) : Exports == Implementation where
       rational  x == rational(retract(x)@R)
 
       rationalIfCan x ==
-        (r:= retractIfCan(x)@Union(R,"failed")) case "failed" =>"failed"
+        (r := retractIfCan(x)@Union(R,"failed")) case "failed" =>"failed"
+        -- Using @ instead of :: triggers compiler bug
         rational(r::R)
 
 )abbrev package ONECOMP2 OnePointCompletionFunctions2

@@ -167,16 +167,16 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
       (poly := retractIfCan(fcn)@Union(POL, "failed")) case POL =>
         [exprToUPS(fcn, false, "real: two sides").%series :: XXP]
       (sum := isPlus fcn) case L(FE) =>
-        listToXXP(sum :: L(FE), posCheck?, 0, (y1 : XXP, y2 : XXP) : XXP
+        listToXXP(sum, posCheck?, 0, (y1 : XXP, y2 : XXP) : XXP
                                                +-> y1 + y2)
       (prod := isTimes fcn) case L(FE) =>
-        listToXXP(prod :: L(FE), posCheck?, 1, (y1 : XXP, y2 : XXP) : XXP
+        listToXXP(prod, posCheck?, 1, (y1 : XXP, y2 : XXP) : XXP
                                                 +-> y1*y2)
       (expt := isNonTrivPower fcn) case Record(val : FE, exponent : I) =>
         power := expt :: Record(val : FE, exponent : I)
         powerToXXP(power.val, power.exponent, posCheck?)
       (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-        kernelToXXP(ker :: K, posCheck?)
+        kernelToXXP(ker, posCheck?)
       error "exprToXXP: neither a sum, product, power, nor kernel"
 
 --% sums and products
@@ -198,7 +198,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
     isNonTrivPower fcn ==
       -- is the function a power with exponent other than 0 or 1?
       (expt := isPower fcn) case "failed" => "failed"
-      power := expt :: Record(val : FE, exponent : I)
+      power := expt@Record(val : FE, exponent : I)
       (power.exponent = 1) => "failed"
       power
 
@@ -257,11 +257,11 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
       -- numbers when n in even
       if even?(n :: I) then
         if posCheck? and ((signum := sign(coef)$SIGNEF) case I) then
-          (signum :: I) = -1 =>
+          (signum@I) = -1 =>
             return stateSeriesProblem("nth root","root of negative number")
       (ans := nthRootIfCan(ups,n)) case "failed" =>
         stateSeriesProblem("nth root","no nth root")
-      [ans::UPXS]
+      [ans@UPXS]
 
     nthRootXXPIfCan(xxp, n, posCheck?) ==
       num := numer xxp; den := denom xxp
@@ -367,13 +367,13 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
       -- if 'posCheck?' is true, we do not allow logs of negative numbers
       if posCheck? then
         if ((signum := sign(coef)$SIGNEF) case I) then
-          (signum :: I) = -1 =>
+          (signum@I) = -1 =>
             return stateSeriesProblem("log","negative leading coefficient")
       lt := monomial(coef, deg)$UPXS
       -- check to see if lowest order coefficient is a negative rational
       negRat? : Boolean :=
         ((rat := ratIfCan coef) case RN) =>
-          (rat :: RN) < 0 => true
+          (rat@RN) < 0 => true
           false
         false
       logTerm : FE :=
@@ -434,7 +434,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
       (f := retractIfCan(xxp)@Union(UPXS,"failed")) case "failed" =>
         stateProblem("exp","multiply nested exponential")
       (ans := fcn(f :: UPXS)) case "failed" => [monomial(fe,0)$UPXS :: XXP]
-      [ans :: UPXS :: XXP]
+      [ans@UPXS :: XXP]
 
     CONTFCNS : L S := ["sin","cos","atan","acot","exp","asinh"]
     -- functions which are defined and continuous at all real numbers
@@ -458,7 +458,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
     exponential? fcn ==
       -- is 'fcn' of the form exp(f)?
       (ker := retractIfCan(fcn)@Union(K,"failed")) case K =>
-        is?(ker::K, 'exp)
+        is?(ker@K, 'exp)
       false
 
     productOfNonZeroes? fcn ==
@@ -466,7 +466,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
       -- means an exponential or a function not involving x
       exponential? fcn => true
       (prod := isTimes fcn) case "failed" => false
-      for term in (prod :: L(FE)) repeat
+      for term in (prod@L(FE)) repeat
         (not exponential? term) and member?(x, variables term) =>
           return false
       true
@@ -479,23 +479,23 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
       -- tan, cot, sec, csc, sinh, cosh, tanh, coth, sech, csch
       -- acosh, atanh, acoth, asech, acsch
       is?(ker, 'sin) =>
-        applyBddIfCan(ker :: FE,sinIfCan,arg,"sin",posCheck?)
+          applyBddIfCan(ker::FE, sinIfCan, arg, "sin", posCheck?)
       is?(ker, 'cos) =>
-        applyBddIfCan(ker :: FE,cosIfCan,arg,"cos",posCheck?)
+          applyBddIfCan(ker::FE, cosIfCan, arg, "cos", posCheck?)
       is?(ker, 'asin) =>
-        applyIfCan(asinIfCan,arg,"asin",posCheck?)
+          applyIfCan(asinIfCan, arg, "asin", posCheck?)
       is?(ker, 'acos) =>
-        applyIfCan(acosIfCan,arg,"acos",posCheck?)
+          applyIfCan(acosIfCan, arg, "acos", posCheck?)
       is?(ker, 'atan) =>
-        atancotToXXP(ker :: FE, arg, posCheck?, 1)
+          atancotToXXP(ker::FE, arg, posCheck?, 1)
       is?(ker, 'acot) =>
-        atancotToXXP(ker :: FE, arg, posCheck?, -1)
+          atancotToXXP(ker::FE, arg, posCheck?, -1)
       is?(ker, 'asec) =>
-        applyIfCan(asecIfCan,arg,"asec",posCheck?)
+          applyIfCan(asecIfCan, arg, "asec", posCheck?)
       is?(ker, 'acsc) =>
-        applyIfCan(acscIfCan,arg,"acsc",posCheck?)
+          applyIfCan(acscIfCan, arg, "acsc", posCheck?)
       is?(ker, 'asinh) =>
-        applyIfCan(asinhIfCan,arg,"asinh",posCheck?)
+          applyIfCan(asinhIfCan, arg, "asinh", posCheck?)
       stateProblem(string name ker,"unknown kernel")
 
     if FE has abs : FE -> FE then
@@ -509,7 +509,8 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
     atancotToXXP(fe, arg, posCheck?, plusMinus) ==
       -- converts atan(f(x)) to a generalized power series
       posCheck? : Boolean := true
-      (result := exprToGenUPS(arg,posCheck?, "real: right side")$FS2UPS) case %problem =>
+      result := exprToGenUPS(arg,posCheck?, "real: right side")$FS2UPS
+      result case %problem =>
         trouble := result.%problem
         trouble.prob = "essential singularity" => [monomial(fe,0)$UPXS :: XXP]
         [result.%problem]
@@ -531,7 +532,7 @@ FunctionSpaceToExponentialExpansion(R, FE, x, cen) : _
             posNegPi2 := signOfExpression(lc) * pi()/(2 :: FE)
             plusMinus = 1 => posNegPi2
             pi()/(2 :: FE) - posNegPi2
-          (n := signum :: Integer) = -1 =>
+          (n := signum@Integer) = -1 =>
             plusMinus = 1 => -pi()/(2 :: FE)
             pi()
           plusMinus = 1 => pi()/(2 :: FE)

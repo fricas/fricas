@@ -191,7 +191,7 @@ QuotientFieldCategory(S : IntegralDomain) : Category ==
 
       retractIfCan(x:%):Union(Symbol, "failed") ==
         (r := retractIfCan(x)@Union(S,"failed")) case "failed" =>"failed"
-        retractIfCan(r::S)
+        retractIfCan(r@S)
 
     if (S has ConvertibleTo Pattern Integer) then
       convert(x : %) : Pattern(Integer)==(convert numer x)/(convert denom x)
@@ -220,7 +220,7 @@ QuotientFieldCategory(S : IntegralDomain) : Category ==
         retractIfCan(x:%):Union(Integer, "failed") ==
           (u := retractIfCan(x)@Union(S, "failed")) case "failed" =>
             "failed"
-          retractIfCan(u::S)
+          retractIfCan(u@S)
 
     reducedSystem(m : Matrix %, v : Vector %):
       Record(mat : Matrix S, vec : Vector S) ==
@@ -371,8 +371,8 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
         xd := x.den exquo d
         xd case "failed" =>
           error "gcd not gcd in QF cancelGcd (denominator)"
-        x.num := xn :: S
-        x.den := xd :: S
+        x.num := xn@S
+        x.den := xd@S
         d
 
       nn : S / dd : S ==
@@ -448,7 +448,7 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
 
       retractIfCan(x:%):Union(Fraction Integer, "failed") ==
         (u := retractIfCan(x)@Union(S, "failed")) case "failed" => "failed"
-        retractIfCan(u::S)
+        retractIfCan(u@S)
 
     else if (S has RetractableTo Integer) then
       retract(x : %) : Fraction(Integer) ==
@@ -457,7 +457,7 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
       retractIfCan(x:%):Union(Fraction Integer, "failed") ==
         (n := retractIfCan numer x) case "failed" => "failed"
         (d := retractIfCan denom x) case "failed" => "failed"
-        (n::Integer) / (d::Integer)
+        (n@Integer) / (d@Integer)
 
     QFP ==> SparseUnivariatePolynomial %
     DP ==> SparseUnivariatePolynomial S
@@ -510,7 +510,7 @@ Fraction(S : IntegralDomain) : QuotientFieldCategory S with
             matD := matrix [ clear l for l in listOfLists mat ]
             ansD := conditionP matD
             ansD case "failed" => "failed"
-            ansDD := ansD :: Vector(S)
+            ansDD := ansD@Vector(S)
             [ ansDD(i)::% for i in 1..#ansDD]$Vector(%)
 
        factorPolynomial(pp) ==

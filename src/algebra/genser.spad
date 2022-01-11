@@ -1,4 +1,5 @@
 )abbrev package EFGUSER ElementaryFunctionsGeneralizedUnivariatePowerSeries
+++ Author: Waldek Hebisch
 ElementaryFunctionsGeneralizedUnivariatePowerSeries(
     Coef : Algebra Fraction Integer,
      Expon : OrderedAbelianMonoid,
@@ -27,7 +28,7 @@ ElementaryFunctionsGeneralizedUnivariatePowerSeries(
         s1 := monom(c0, 0)$STSO +$STSO monom(1, 1)$STSO
         fxu : Union(Stream(Coef), "failed") := trappedSpadEval(ft(s1))$Lisp
         fxu case "failed" => "failed"
-        apply_taylor(fxu::Stream(Coef), x - monomial(c0, 0)$PS)
+        apply_taylor(fxu, x - monomial(c0, 0)$PS)
 
     if Expon has Algebra(Fraction(Integer)) then
 
@@ -45,7 +46,7 @@ ElementaryFunctionsGeneralizedUnivariatePowerSeries(
         res1 := apply_taylor1((s : Stream(Coef)) : Stream(Coef) +->
                                powern(1/n, s)$STSO, x1)
         res1 case "failed" => "failed"
-        monomial(1, (1/n)*ord)*res1::PS
+        monomial(1, (1/n)*ord)*res1@PS
 
     expIfCan(x : PS) ==
         x := removeZeros(x, 0)
@@ -75,34 +76,34 @@ ElementaryFunctionsGeneralizedUnivariatePowerSeries(
     sinIfCan(x) ==
         usc := sincos(x)
         usc case "failed" => "failed"
-        (usc::Record(sin : PS, cos : PS)).sin
+        (usc@Record(sin : PS, cos : PS)).sin
 
     cosIfCan(x) ==
         usc := sincos(x)
         usc case "failed" => "failed"
-        (usc::Record(sin : PS, cos : PS)).cos
+        (usc@Record(sin : PS, cos : PS)).cos
 
     tanIfCan(x) ==
         usc := sincos(x)
         usc case "failed" => "failed"
-        do_quo((usc::Record(sin : PS, cos : PS)).sin,
+        do_quo((usc@Record(sin : PS, cos : PS)).sin,
           (usc::Record(sin : PS, cos : PS)).cos)
 
     cotIfCan(x) ==
         usc := sincos(x)
         usc case "failed" => "failed"
-        do_quo((usc::Record(sin : PS, cos : PS)).cos,
-          (usc::Record(sin : PS, cos : PS)).sin)
+        do_quo((usc@Record(sin : PS, cos : PS)).cos,
+          (usc@Record(sin : PS, cos : PS)).sin)
 
     secIfCan(x) ==
         usc := sincos(x)
         usc case "failed" => "failed"
-        do_quo(1$PS, (usc::Record(sin : PS, cos : PS)).cos)
+        do_quo(1$PS, (usc@Record(sin : PS, cos : PS)).cos)
 
     cscIfCan(x) ==
         usc := sincos(x)
         usc case "failed" => "failed"
-        do_quo(1$PS, (usc::Record(sin : PS, cos : PS)).sin)
+        do_quo(1$PS, (usc@Record(sin : PS, cos : PS)).sin)
 
     asinIfCan(x) == apply_taylor1(asin$STTF, x)
 
@@ -134,34 +135,34 @@ ElementaryFunctionsGeneralizedUnivariatePowerSeries(
     sinhIfCan(x) ==
         usc := sinhcosh(x)
         usc case "failed" => "failed"
-        (usc::Record(sinh : PS, cosh : PS)).sinh
+        (usc@Record(sinh : PS, cosh : PS)).sinh
 
     coshIfCan(x) ==
         usc := sinhcosh(x)
         usc case "failed" => "failed"
-        (usc::Record(sinh : PS, cosh : PS)).cosh
+        (usc@Record(sinh : PS, cosh : PS)).cosh
 
     tanhIfCan(x) ==
         usc := sinhcosh(x)
         usc case "failed" => "failed"
-        do_quo((usc::Record(sinh : PS, cosh : PS)).sinh,
-          (usc::Record(sinh : PS, cosh : PS)).cosh)
+        do_quo((usc@Record(sinh : PS, cosh : PS)).sinh,
+          (usc@Record(sinh : PS, cosh : PS)).cosh)
 
     cothIfCan(x) ==
         usc := sinhcosh(x)
         usc case "failed" => "failed"
-        do_quo((usc::Record(sinh : PS, cosh : PS)).cosh,
-          (usc::Record(sinh : PS, cosh : PS)).sinh)
+        do_quo((usc@Record(sinh : PS, cosh : PS)).cosh,
+          (usc@Record(sinh : PS, cosh : PS)).sinh)
 
     sechIfCan(x) ==
         usc := sinhcosh(x)
         usc case "failed" => "failed"
-        do_quo(1$PS, (usc::Record(sinh : PS, cosh : PS)).cosh)
+        do_quo(1$PS, (usc@Record(sinh : PS, cosh : PS)).cosh)
 
     cschIfCan(x) ==
         usc := sinhcosh(x)
         usc case "failed" => "failed"
-        do_quo(1$PS, (usc::Record(sinh : PS, cosh : PS)).sinh)
+        do_quo(1$PS, (usc@Record(sinh : PS, cosh : PS)).sinh)
 
     asinhIfCan(x) == apply_taylor1(asinh$STTF, x)
 
@@ -189,6 +190,7 @@ ElementaryFunctionsGeneralizedUnivariatePowerSeries(
 
 
 )abbrev domain GENUSER GeneralizedUnivariatePowerSeries
+++ Author: Waldek Hebisch
 GeneralizedUnivariatePowerSeries(Coef : Ring,
      Expon : Join(OrderedAbelianMonoid, SemiRing),
      var : Symbol, cen : Coef) : Exports == Implementation where
@@ -321,7 +323,7 @@ GeneralizedUnivariatePowerSeries(Coef : Ring,
             -- (dkiu : Union(Expon, "failed") := subtractIfCan(tx.k, ky)$Expon)
             (dkiu := subtractIfCan(tx.k, ky)$Expon)
                case "failed" => error "cannot subtract exponents"
-            dki := dkiu::Expon
+            dki := dkiu@Expon
             ci := cyinv*tx.c
             concat([dki, ci],
                    exquo1(rst(x) - monomial(ci, dki)*rst(y), y, cyinv, ky))
@@ -343,7 +345,7 @@ GeneralizedUnivariatePowerSeries(Coef : Ring,
                 subtractIfCan(tx.k, ky) case Expon => break
                 not(tx.c = 0) => return "failed"
                 x := rst(x)
-            exquo1(x, y, cyinv::Coef, ky)
+            exquo1(x, y, cyinv@Coef, ky)
 
         x : % exquo y : % == exquo2(x, y)
 
@@ -355,7 +357,7 @@ GeneralizedUnivariatePowerSeries(Coef : Ring,
                 resu := x exquo y
                 resu case "failed" =>
                     error "division by possibly zero series"
-                resu::%
+                resu
 
     infsum1(stx : Stream(%), k1 : Expon, c1 : Coef) : % == delay
         empty?(stx) => concat([k1, c1], empty())
@@ -477,7 +479,7 @@ GeneralizedUnivariatePowerSeries(Coef : Ring,
     apply_or_error(fn : % -> Union(%, "failed"), xs : String, x : %) : % ==
         resu := fn(x)
         resu case "failed" => error(concat(xs, ": failed"))
-        resu::%
+        resu
 
     EFS ==> ElementaryFunctionsGeneralizedUnivariatePowerSeries(
                Coef, Expon, %)
