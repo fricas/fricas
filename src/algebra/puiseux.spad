@@ -126,7 +126,7 @@ UnivariatePuiseuxSeriesConstructor(Coef, ULS) : _
     laurent upxs ==
       (uls := laurentIfCan upxs) case "failed" =>
         error "laurent: Puiseux series has fractional powers"
-      uls :: ULS
+      uls
 
     multExp : (RN, LTerm) -> PTerm
     multExp(r, lTerm) == [r * lTerm.k, lTerm.c]
@@ -137,7 +137,7 @@ UnivariatePuiseuxSeriesConstructor(Coef, ULS) : _
     clearDen(n, lTerm) ==
       (int := retractIfCan(n * lTerm.k)@Union(I,"failed")) case "failed" =>
         error "series: inappropriate denominator"
-      [int :: I, lTerm.c]
+      [int@I, lTerm.c]
 
     series(n, stream) ==
       str := map((t1 : PTerm) : LTerm +-> clearDen(n, t1), stream)$ST2PL
@@ -195,7 +195,7 @@ UnivariatePuiseuxSeriesConstructor(Coef, ULS) : _
     recip pxs ==
       rec := recip getULS pxs
       rec case "failed" => "failed"
-      puiseux(getExpon pxs, rec :: ULS)
+      puiseux(getExpon pxs, rec@ULS)
 
     RATALG : Boolean := Coef has Algebra(Fraction Integer)
 
@@ -229,7 +229,7 @@ UnivariatePuiseuxSeriesConstructor(Coef, ULS) : _
       inv upxs ==
         (invUpxs := recip upxs) case "failed" =>
           error "inv: multiplicative inverse does not exist"
-        invUpxs :: %
+        invUpxs
 
 --% values
 
@@ -341,8 +341,8 @@ UnivariatePuiseuxSeriesConstructor(Coef, ULS) : _
         integrateWithOneAnswer : (Coef, Symbol) -> Coef
         integrateWithOneAnswer(f, s) ==
           res := integrate(f, s)$FunctionSpaceIntegration(I, Coef)
-          res case Coef => res :: Coef
-          first(res :: List Coef)
+          res case Coef => res
+          first(res@List(Coef))
 
         integrate(upxs : %, s : Symbol) ==
           (s = variable(upxs)) => integrate upxs
@@ -454,7 +454,7 @@ UnivariatePuiseuxSeries(Coef, var, cen) : Exports == Implementation where
     retractIfCan(upxs:%):Union(UTS,"failed") ==
       (ulsIfCan := retractIfCan(upxs)@Union(ULS,"failed")) case "failed" =>
         "failed"
-      retractIfCan(ulsIfCan :: ULS)
+      retractIfCan(ulsIfCan@ULS)
 
     --retract(upxs: %): UTS ==
       --(ulsIfCan := retractIfCan(upxs)@Union(ULS,"failed")) case "failed" =>

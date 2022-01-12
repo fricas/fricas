@@ -64,7 +64,7 @@ IntegralBasisPolynomialTools(K, R, UP, L) : Exports == Implementation where
       ans : R := 0
       while not zero? poly repeat
         (lc := f leadingCoefficient poly) case "failed" => return "failed"
-        ans := ans + monomial(lc :: K, degree poly)
+        ans := ans + monomial(lc@K, degree poly)
         poly := reductum poly
       ans
 
@@ -74,7 +74,7 @@ IntegralBasisPolynomialTools(K, R, UP, L) : Exports == Implementation where
       for i in 1..m repeat for j in 1..n repeat
         (poly := mapUnivariateIfCan(f,qelt(mat,i,j))) case "failed" =>
           return "failed"
-        qsetelt!(matOut, i, j, poly :: R)
+        qsetelt!(matOut, i, j, poly@R)
       matOut
 
     mapBivariate(f, poly) ==
@@ -351,7 +351,7 @@ PAdicWildFunctionFieldIntegralBasis(K, R, UP, F) : Exports == Implementation whe
       gg := gcd map(numer, cden.num)$L2(Q, R)
       (ans := denom exquo gg) case "failed" =>
         error "PWFFINTB: error in reduced discriminant computation"
-      ans :: R
+      ans
 
     compLocalBasis : (UP, R) -> Result
     compLocalBasis(poly, prime) ==
@@ -401,16 +401,16 @@ PAdicWildFunctionFieldIntegralBasis(K, R, UP, F) : Exports == Implementation whe
       b : Matrix R :=
         bas := mapMatrixIfCan(retractIfCan, ib.basis)$IBPTOOLS(K, R, UP, E)
         bas case "failed" => error "retraction of basis failed"
-        bas :: Matrix R
+        bas
       bInv : Matrix R :=
         --bas := mapMatrixIfCan(ric, ib.basisInv)$IBPTOOLS(K, R, UP, E)
         bas := mapMatrixIfCan(retractIfCan, ib.basisInv)$IBPTOOLS(K, R, UP, E)
         bas case "failed" => error "retraction of basis inverse failed"
-        bas :: Matrix R
+        bas
       bDen : R :=
         p := mapUnivariateIfCan(retractIfCan, ib.basisDen)$IBPTOOLS(K, R, UP, E)
         p case "failed" => error "retraction of basis denominator failed"
-        p :: R
+        p
       [b, bDen, bInv]
 
     padicLocalIntegralBasis : (UP, R, R, R) -> IResult

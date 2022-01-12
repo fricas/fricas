@@ -155,7 +155,7 @@ TransSolvePackage(R) : Exports == Implementation where
           r1 := []::L RE
           for i in 1..#lr repeat
              finv := funcinv(bigX, lr(i))
-             if finv case RE then r1 := cons(finv::RE, r1)
+             if finv case RE then r1 := cons(finv@RE, r1)
           bigX_back := funcinv(bigX, bigX)::RE
           if not testkernel(bigX_back, x) then
             if bigX = bigX_back then return []::L EQ RE
@@ -189,7 +189,7 @@ TransSolvePackage(R) : Exports == Implementation where
      --  alternative to normalize.
      simplifyingLog(f : RE) : RE ==
        (u := isExpt(f, 'exp)) case Record(var : Kernel RE, exponent : Integer) =>
-         rec := u::Record(var : Kernel RE, exponent : Integer)
+         rec := u@Record(var : Kernel RE, exponent : Integer)
          rec.exponent * first argument(rec.var)
        log f
 
@@ -205,7 +205,7 @@ TransSolvePackage(R) : Exports == Implementation where
      solveRetract(lexpr:L RE, lvar:L S):Union(L L EQ RE, "failed") ==
         nlexpr : L Fraction Polynomial R := []
         for expr in lexpr repeat
-           rf:Union(Fraction Polynomial R, "failed") := retractIfCan(expr)$RE
+           rf : Union(Fraction Polynomial R, "failed") := retractIfCan(expr)$RE
            rf case "failed" => return "failed"
            nlexpr := cons(rf, nlexpr)
         radicalSolve(nlexpr, lvar)$RadicalSolvePackage(R)
@@ -282,7 +282,7 @@ TransSolvePackage(R) : Exports == Implementation where
 
      logsumtolog(var : RE) : RE ==
        (listofexpr := isPlus(var)) case "failed" => var
-       listofexpr := listofexpr ::L RE
+       listofexpr := listofexpr@L(RE)
        listforgcd := []::L R
        for i in listofexpr repeat
           exprcoeff := leadingCoefficient(numer(i))
@@ -402,7 +402,7 @@ TransSolvePackage(R) : Exports == Implementation where
      dropfun (x : RE) : RE ==
         ((k := retractIfCan(x)@Union(K, "failed")) case "failed") or
           empty?(argument(k::K)) => 0
-        first argument(k::K)
+        first argument(k@K)
 
      funcinv(k:RE,l:RE) : Union(RE,"failed") ==
        is?(k, 'sin)   =>
@@ -561,9 +561,9 @@ TransSolvePackage(R) : Exports == Implementation where
 
      solveList(lexpr : L RE, lvar : L S) : L L EQ RE ==
         ans1 := solveRetract(lexpr, lvar)
-        not(ans1 case "failed") => ans1 :: L L EQ RE
+        not(ans1 case "failed") => ans1
         ans1 := tryLinear(lexpr, lvar)
-        not(ans1 case "failed") => ans1 :: L L EQ RE
+        not(ans1 case "failed") => ans1
         lfrac : L Fraction Polynomial RE :=
            [makeFracPoly(expr, lvar) for expr in lexpr]
         trianglist := triangularSystems(lfrac, lvar)
@@ -590,7 +590,7 @@ TransSolvePackage(R) : Exports == Implementation where
          k : Union(K, "failed") := retractIfCan(e)
          k case "failed" =>
              error "solve$TransSolvePackage: variable is not a single kernel"
-         k::K
+         k@K
 
      solve(leqs : L EQ RE, lexpr : L RE) : L L EQ RE ==
          lker : L K := [retract2(e) for e in lexpr]
@@ -671,7 +671,7 @@ TransSolvePackageService(R) : Exports == Implementation where
        newF1,newF2 : Union(SUP RE, "failed")
        N := degF exquo degG
        if not ( N case "failed" ) then
-         m := N::Integer
+         m := N@Integer
          newF1 := subsSolve(f1, degF, g1, g2, m, newH)
          if f2 = 1 then
            newF2 := 1 :: SUP RE

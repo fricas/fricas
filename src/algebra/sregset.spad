@@ -256,9 +256,9 @@ SquareFreeQuasiComponentPackage(R, E, V, P, TS) : Exports == Implementation wher
      subQuasiComponent?(ts : TS, us : TS) : Boolean ==
        k : Key := [ts, us]
        e := extractIfCan(k)$H
-       e case Entry => e::Entry
+       e case Entry => e@Entry
        ubf : Union(Boolean,"failed") := internalSubQuasiComponent?(ts,us)
-       b : Boolean := (ubf case Boolean) and (ubf::Boolean)
+       b : Boolean := (ubf case Boolean) and ubf
        insert!(k, b)$H
        b
 
@@ -572,7 +572,7 @@ SquareFreeRegularTriangularSetGcdPackage(R, E, V, P, TS) : Exports == Implementa
        gi1i2 := gcd(init(p1), init(p2))
        ex : Union(P,"failed") := (gi1i2 * lsr) exquo$P init(lsr)
        ex case "failed" => [[lsr,ts]$PWT]
-       [[ex::P, ts]$PWT]
+       [[ex@P, ts]$PWT]
 
      stoseInternalLastSubResultant(p1 : P, p2 : P, ts : TS, b1 : B, b2 : B) : List PWT ==
        -- ASSUME mvar(p1) = mvar(p2) > mvar(ts) and mdeg(p1) >= mdeg(p2)
@@ -580,7 +580,7 @@ SquareFreeRegularTriangularSetGcdPackage(R, E, V, P, TS) : Exports == Implementa
        -- if b2 BREAK with the first non-trivial gcd
        k : KeyGcd := [p1, p2, ts, b2]
        e := extractIfCan(k)$HGcd
-       e case EntryGcd => e::EntryGcd
+       e case EntryGcd => e@EntryGcd
        toSave : List PWT
        empty? ts =>
          toSave := stoseIntegralLastSubResultant(p1, p2, ts)
@@ -807,7 +807,7 @@ SquareFreeRegularTriangularSetGcdPackage(R, E, V, P, TS) : Exports == Implementa
        --iprint("/")$iprintpack
        k : KeyInvSet := [p, ts]
        e := extractIfCan(k)$HInvSet
-       e case EntryInvSet => e::EntryInvSet
+       e case EntryInvSet => e@EntryInvSet
        q := primitivePart initiallyReduce(p, ts)
        zero? q => []
        normalized?(q, ts) => [ts]
@@ -1264,7 +1264,7 @@ SquareFreeRegularTriangularSet(R, E, V, P) : Exports == Implementation where
          eif := extendIfCan(ts, first(lp))
          not (eif case %) =>
            error"in construct : List P -> %  from SREGSET : bad #1"
-         ts := eif::%
+         ts := eif@%
          lp := rest lp
        ts
 

@@ -184,18 +184,18 @@ PrecomputedAssociatedEquations(R, L) : Exports == Implementation where
       a : A := new(n := degree op, 0)
       for i in 0..(n-1)::N repeat
         (u := coefficient(op, i) exquo lc) case "failed" => return "failed"
-        a.i := - (u::R)
+        a.i := - (u@R)
       a
 
     A32 op ==
       (u := makeMonic op) case "failed" => "failed"
-      a := u::A
+      a := u@A
       matrix [[0, 1, 0], [a.1, a.2, 1],
               [diff(a.1) + a.1 * a.2 - a.0, diff(a.2) + a.2^2 + a.1, 2 * a.2]]
 
     A42 op ==
       (u := makeMonic op) case "failed" => "failed"
-      a := u::A
+      a := u@A
       a': A := new(4, 0)
       a'': A := new(4, 0)
       for i in 0..3 repeat
@@ -287,15 +287,15 @@ AssociatedEquations(R, L) : Exports == Implementation where
           ww.i := elements wi
           for k in 1..m1 repeat
               u := incrementKthElement(wi, k::PI)$S
-              if u case S then eq(lookup(u::S)) := 1
+              if u case S then eq(lookup(u@S)) := 1
           if member?(n, wi) then
               for j in 1..n | a.j ~= 0 repeat
                   u := replaceKthElement(wi, m, j::PI)
                   if u case S then
-                    eq(lookup(u::S)) := (odd? delta(wi, m, j::PI) => -a.j; a.j)
+                    eq(lookup(u@S)) := (odd? delta(wi, m, j::PI) => -a.j; a.j)
           else
               u := incrementKthElement(wi, m)$S
-              if u case S then eq(lookup(u::S)) := 1
+              if u case S then eq(lookup(u@S)) := 1
           setRow!(M, i, eq)
       [M, ww]
 
@@ -319,7 +319,7 @@ AssociatedEquations(R, L) : Exports == Implementation where
 
         associatedEquations(op, m) ==
           (u := firstUncouplingMatrix(op, m)) case "failed" => computeIt(op,m,1)
-          (v := inverse(u::MAT)) case "failed" => computeIt(op, m, 2)
+          (v := inverse(u@MAT)) case "failed" => computeIt(op, m, 2)
           S := SetOfMIntegersInOneToN(m, degree(op)::PI)
           w := enumerate()$S
           s := size()$S
@@ -332,7 +332,7 @@ AssociatedEquations(R, L) : Exports == Implementation where
           a := uncouplingMatrices(rec.mat)
           n := #a
           for i in k..n repeat
-            (u := inverse(a.i)) case MAT => return makeeq(rec.vec, u::MAT, i, n)
+            (u := inverse(a.i)) case MAT => return makeeq(rec.vec, u@MAT, i, n)
           error "associatedEquations: full degenerate case"
 
         makeop v ==
@@ -419,17 +419,18 @@ LinearOrdinaryDifferentialOperatorFactorizer(F, UP) : Exports == Impl where
       (n := degree l) <= 1 => [l]
       ll := adjoint l
       for i in 1..(n quo 2) repeat
-        (r1? or (i > 1)) and ((u := rightFactor(l, i, zeros, ezfactor)) case L) =>
-           return concat!(rfactor(l, u::L, zeros, ezfactor, false), u::L)
+        (r1? or (i > 1)) and
+                  ((u := rightFactor(l, i, zeros, ezfactor)) case L) =>
+           return concat!(rfactor(l, u@L, zeros, ezfactor, false), u@L)
         (2 * i < n) and ((u := rightFactor(ll, i, zeros, ezfactor)) case L) =>
-           return concat(adjoint(u::L), map!(adjoint,
-                    reverse!(rfactor(ll, u::L, zeros, ezfactor, true))))
+           return concat(adjoint(u@L), map!(adjoint,
+                    reverse!(rfactor(ll, u@L, zeros, ezfactor, true))))
       [l]
 
     rightFactor(l, n, zeros, ezfactor) ==
       (n = 1) =>
         (u := expsol(l, zeros, ezfactor)) case "failed" => "failed"
-        D() - u::RF::L
+        D() - u@RF::L
 --    rec := associatedEquations(l, n::PositiveInteger)
 --    empty?(sol := expsols(rec.eq, zeros, ezfactor, true)) => "failed"
       "failed"

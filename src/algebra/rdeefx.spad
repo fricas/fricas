@@ -129,7 +129,7 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
         args := argument(k)
         nargs : List(EF)
         if (u := property(op, DUMMYVAR)) case None then
-            n := u::None pretend NonNegativeInteger
+            n := u@None pretend NonNegativeInteger
             da := retract(a1 := second(args))@K1
             if not(member?(da, ldmvar)) then
                 ldmvar := cons(da, ldmvar)
@@ -316,7 +316,7 @@ PolynomialRationalRoots(F, UP) : Exports == Implementation where
         for r in lr repeat
             qu := retractIfCan(r)@Union(Integer, "failed")
             qu case "failed" => "iterate"
-            q := qu::Integer
+            q := qu@Integer
             if q < res then res := q
         res
 
@@ -402,7 +402,7 @@ ElementaryRischDEX2(R, F) : Exports == Implementation where
         part := do_param_RDE(f, g, [], x, lk)
         part case "failed" =>
             [0, 0, 0, false]
-        p1 := part::Param_Rec_F
+        p1 := part@Param_Rec_F
         [p1.ratpart, g, 0, true]
 
     if R has EuclideanDomain and F has LiouvillianFunctionCategory
@@ -546,7 +546,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             do_risch_DE(f, g, x, cons(k, lk))$ElementaryRischDEX2(R, F)
         (cvu := genus0_if_can(k, kx)) case "failed" =>
             do_risch_DE(f, g, x, cons(k, lk))$ElementaryRischDEX2(R, F)
-        cv := cvu::CV_REC
+        cv := cvu@CV_REC
         nx := new()$Symbol
         nxk := kernel(nx)
         fx := multivariate(cv.coef1, nxk)
@@ -592,7 +592,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         su := particularSolutionOverQ(dvvec, D(tt, x)
                                 )$IntegerLinearDependence(F)
         su case "failed" => "failed"
-        sv := su::Vector(Q)
+        sv := su@Vector(Q)
         cd := splitDenominator(sv)$InnerCommonDenominator(
                      Integer, Q, List(Integer), Vector(Q))
         d := cd.den
@@ -612,7 +612,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                coefficients(f2))$LF) => return "failed"
         uvu := get_uv(tt, vlst, ulst, k, x)
         uvu case "failed" => return "failed"
-        uv := uvu::UV_REC
+        uv := uvu@UV_REC
         u := uv.u_part
         u_exp := uv.exponent
         v0 := uv.v_part
@@ -727,7 +727,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                     r0u := retractIfCan(r0f)@Union(Z, "failed")
                     r0u case "failed" =>
                         no_sol := true
-                    r0 := r0u::Z
+                    r0 := r0u@Z
                     f2 := (a1 + r0f)^deg1*eval(f2,
                              dummy, monomial(1/(a1 + r0f), 1))
                 not(every?((c : F) : Boolean +-> D(c, x) = 0,
@@ -744,12 +744,12 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             sol_rec := solveLinearlyOverQ(vecf, dv0)$IntegerLinearDependence(F)
             psolu := sol_rec.particular
             psolu case "failed" => "iterate"
-            psol := psolu::Vector(Q)
+            psol := psolu@Vector(Q)
             if has_r0 then
                 psol := vector(cons(r0::Q, entries(psol)))$Vector(Q)
             zbu := z_basis(psol, sol_rec.basis)
             zbu case "failed" => "iterate"
-            zb := zbu::Record(particular : Vector Z, basis : List Vector Z)
+            zb := zbu@Record(particular : Vector Z, basis : List Vector Z)
             vec1 := zb.particular
             r0 := vec1(1)
             a1n := a1 + r0::F
@@ -780,11 +780,11 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 error "wrong format of solution 1"
             ru0 := retractIfCan(rv)@Union(FP, "failed")
             ru0 case "failed" => []
-            ru1 := retractIfCan(ru0::FP)@Union(F, "failed")
+            ru1 := retractIfCan(ru0@FP)@Union(F, "failed")
             ru1 case "failed" => []
-            ru2 := retractIfCan(ru1::F)@Union(Q, "failed")
+            ru2 := retractIfCan(ru1@F)@Union(Q, "failed")
             ru2 case "failed" => []
-            [ru2::Q]
+            [ru2@Q]
         eq1p := numer(lhs(eq1))$FRF
         member?(s2, variables(eq1p))$List(SE) =>
                 error "wrong format of solution 2"
@@ -852,16 +852,16 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             ccu := retractIfCan(cc)@Union(Z, "failed")
             if ccu case Z then
                 has_r_bad := true
-                r_bad := ccu::Z
+                r_bad := ccu@Z
         res : List(EI_REC) := []
         for sol in lsol repeat
             (ru := retractIfCan(sol.ratpart)@Union(Z, "failed"))
                case "failed" => "iterate"
-            has_r_bad and ru::Z = r_bad => "iterate"
+            has_r_bad and ru@Z = r_bad => "iterate"
             res1 := handle_factor(gd, nf, denf, sol.alg_part, ru::Z, u,
                      vlst, ulst, k, x, true)
             res1 case "failed" => "iterate"
-            res := cons(res1::EI_REC, res)
+            res := cons(res1@EI_REC, res)
         nnp := differentiate(nf)*denf - differentiate(denf)*nf + a::F::UP
         eq1 := resultant(nnp, gd)
         ratl := get_rational_roots(eq1, a)$FunctionSpaceRationalRoots(R, F)
@@ -873,7 +873,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         for r0 in ratl repeat
             (ru := retractIfCan(r0)@Union(Z, "failed")) case "failed" =>
                 "iterate"
-            ri := ru::Z
+            ri := ru@Z
             nn := nf + monomial(ri::F, 1)$UP * denf
             res1l := ei_args3(gd, nn, denf, k, vlst, ulst, x)
             for res1 in res1l repeat
@@ -908,7 +908,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             resu := handle_factor(gd, nf, denf, f1, 0, 1, vlst, ulst,
                                   k, x, false)
             if resu case EI_REC then
-                res := cons(resu::EI_REC, res)
+                res := cons(resu@EI_REC, res)
         res
 
     ei_args3(gd : UP, nf : UP, denf : UP, k : K, vlst : List(F),
@@ -940,7 +940,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         degree(nf1) > 0 and not(is?(k, 'exp)) => res
         uvu := get_uv(tt, vlst, ulst, k, x)
         uvu case "failed" => res
-        uv := uvu::UV_REC
+        uv := uvu@UV_REC
         cons([1, nf1, 1, a, tt, 0, nf1/denf, 0, uv.u_part, uv.exponent,
                                  uv.v_part, 0]$SREC, res)
 
@@ -974,7 +974,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             lc := leadingCoefficient(nf)
             (rcu := retractIfCan(lc)@Union(Z, "failed")) case "failed" =>
                 return []
-            a := -(rcu::Z)
+            a := -(rcu@Z)
             nf := nf + monomial(a::F,1)$UP*denf
         if degree(nf) = degree(denf) then
             tt := leadingCoefficient(nf)
@@ -996,7 +996,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             my_exp(gden1, (gexp quo l1)::N)
         uvu := get_uv(tt, vlst, ulst, k, x)
         uvu case "failed" => res
-        uv := uvu::UV_REC
+        uv := uvu@UV_REC
         unf := retract(unit(fnf))@F
         if D(unf, x) ~= 0 then
             ur := froot(unf, l1::N
@@ -1004,7 +1004,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             if D(ur.radicand, x) ~= 0 then return res
             mu := l1 exquo ur.exponent
             if mu case "failed" then return res
-            m1 := mu::Z
+            m1 := mu@Z
             nf2 := nf2*ur.coef
             unf := (ur.radicand)^m1
         cons([l1, nf2, unf, a, tt, f2, nf1/denf, nf2/gden1,
@@ -1140,9 +1140,9 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             r2 := nf2 rem dw1
             w2u := r2 exquo r1
             w2u case "failed" => return []
-            w2u2 := retractIfCan(w2u::UP)@Union(F, "failed")
+            w2u2 := retractIfCan(w2u@UP)@Union(F, "failed")
             w2u2 case "failed" => return []
-            w2 := w2u2::F
+            w2 := w2u2
         else
             lc_nf2 := leadingCoefficient(nf2)
             lc_nw1 := leadingCoefficient(nw1)
@@ -1169,7 +1169,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         su := particularSolutionOverQ(dvvec, v'
                                 )$IntegerLinearDependence(F)
         su case "failed" => res
-        sv := su::Vector(Q)
+        sv := su@Vector(Q)
         cd := splitDenominator(sv)$InnerCommonDenominator(
                      Integer, Q, List(Integer), Vector(Q))
         d := cd.den
@@ -1184,7 +1184,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         su := particularSolutionOverQ(dvvec, lw2'
                                      )$IntegerLinearDependence(F)
         su case "failed" => error "impossible"
-        sv := su::Vector(Q)
+        sv := su@Vector(Q)
         cd := splitDenominator(sv)$InnerCommonDenominator(
                      Integer, Q, List(Integer), Vector(Q))
         d := cd.den
@@ -1199,7 +1199,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         su := particularSolutionOverQ(dvvec, D(tt, x)
                                 )$IntegerLinearDependence(F)
         su case "failed" => res
-        sv := su::Vector(Q)
+        sv := su@Vector(Q)
         cd := splitDenominator(sv)$InnerCommonDenominator(
                      Integer, Q, List(Integer), Vector(Q))
         d := cd.den
@@ -1333,7 +1333,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             lc := leadingCoefficient(nf)
             (rcu := retractIfCan(lc)@Union(Z, "failed")) case "failed" =>
                 return res1
-            a := rcu::Z
+            a := rcu@Z
             nf := nf - monomial(a::F,1)$UP*denf
             n1 := n2
         n3 := max(n1, n2)
@@ -1370,7 +1370,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 for r0 in ratl repeat
                     ru := retractIfCan(r0)@Union(Z, "failed")
                     ru case "failed" => "iterate"
-                    ri := ru::Z
+                    ri := ru@Z
                     nn := nf + monomial(ri::F, 1)$UP * denf
                     res1 := gammas1(nn, ri, denf, denf1, gexp, n2,
                                     vlst, ulst, k, x, res1)
@@ -1383,7 +1383,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             for sol in lsol repeat
                ru := retractIfCan(sol.ratpart)@Union(Z, "failed")
                ru case "failed" => "iterate"
-               ri := ru::Z
+               ri := ru@Z
                nn := nf + monomial(ri::F, 1)$UP * denf
                res1 := gammas1(nn, ri, denf, denf1, gexp, n2,
                                vlst, ulst, k, x, res1)
@@ -1413,7 +1413,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         csolu := particularSolutionOverConstants(vs, rr1f,
                    [(c : F) : F +-> D(c, x)])$ConstantLinearDependence(R, F)
         csolu case "failed" => [0, 0, 0, false]
-        csol := csolu::Vector(F)
+        csol := csolu@Vector(F)
         finish_special_integrate2(rr1f, csol, a1p, as, scands, denf,
                                   gexp, k)
 
@@ -1449,7 +1449,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         partu := do_param_RDE(f, g1, lg1, x, cons(k, lk)
                              )$ElementaryRischDEX2(R, F)
         partu case "failed" => [0, 0, 0, false]
-        part := partu::Param_Rec_F
+        part := partu@Param_Rec_F
         as := new(#scoeffs, 0)$Vector(F)
         finish_special_integrate2(g1, part.coeffs, part.ratpart, as,
                                   scands, denf, gexp, k)
@@ -1459,7 +1459,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     do_spde1(rr1 : RF, nfp : UP, k : K, der : UP -> UP) : PSOL3 ==
         spec1u := retractIfCan(rr1)@Union(UP, "failed")
         spec1u case "failed" => error "impossible 7"
-        spec1p := spec1u::UP
+        spec1p := spec1u@UP
         res1 := SPDE1(nfp, spec1p, der)$RDEaux(F)
         a1 := res1.ans
         r2 := der(a1) + nfp*a1
@@ -1525,7 +1525,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
           vlst : LF, ulst : LF, k : K, lk : List(K), x : SE) : PSOL2 ==
         spec1u := retractIfCan(rr1)@Union(UP, "failed")
         spec1u case "failed" => error "impossible 10"
-        spec1p := spec1u::UP
+        spec1p := spec1u@UP
         res2 := SPDE1(nfp, spec1p, derivation)$RDEaux(F)
         a1 := a1 + multivariate(res2.ans::RF, k)
         (spec1p := res2.remainder) = 0 => return [a1, g, ansp, true]
@@ -1545,7 +1545,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         l_pifp := D(pif, x)/pif
         uvu0 := get_uv(l_pifp, vlst, ulst, k, x)
         uvu0 case "failed" => [a1, r1, ansp, false]
-        uv0 := uvu0::UV_REC
+        uv0 := uvu0@UV_REC
         fl1 := [(fac.factor)^(((fac.exponent - 1) quo 2)::N)
                 for fac in factorList(f_denr)]
         fl2 := [(fac.factor)^(((fac.exponent + 1) quo 2)::N)
@@ -1588,7 +1588,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             rcu := (retractIfCan(sol0(1)::Q/(2::Q))$Q)@Union(Z, "failed")
             rcu case "failed" => [a1, r1, ansp, false]
             -- now we have a single candidate
-            ri := rcu::Z
+            ri := rcu@Z
             nn := nf + monomial(ri::F, 1)
             cands := gammas1(nn, rcu::Z, 1, 1, 0, 1, vlst, ulst, k, x, [])
             derivation3 : RF -> RF := z1 +->
@@ -1608,7 +1608,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             u1 := mk_pow(uu, ulst1, solb1)
             cis := solve_u(phi/u0, u1, x)$DenominatorIntegration(R, F)
             cis case "failed" => [a1, r1, ansp, false]
-            cil := cis::List(List(F))
+            cil := cis@List(List(F))
             cndl := []$List(SREC)
             for ci in cil repeat
                 ii := retract(second(ci))@Z
@@ -1685,14 +1685,14 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             ddf := differentiate(eiden) rem denf1
             ppu := extendedEuclidean(denf1, ddf, einum)
             ppu case "failed" => error "impossible 4"
-            einum := (ppu::Record(coef1 : UP, coef2 : UP)).coef2
+            einum := (ppu@Record(coef1 : UP, coef2 : UP)).coef2
             einum := (einum*differentiate(denf1)) rem denf1
         cu := einum exquo lnum1
         cu case "failed" => [0, 0, 0, 0]
-        cp := cu::UP
+        cp := cu@UP
         cu1 := retractIfCan(cp)@Union(F, "failed")
         cu1 case "failed" => [0, 0, 0, 0]
-        c := cu1::F
+        c := cu1@F
         differentiate(c, x) ~= 0 => [0, 0, 0, 0]
         ansp1 := c*exp(-vshift - rfc)*Ei(multivariate(ei_arg, k))
         zzl : List(F) :=
@@ -1719,7 +1719,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         repeat
             nqu := q exquo p
             nqu case "failed" => break
-            q := nqu::UP
+            q := nqu@UP
             nn := nn + 1
         nn
 
@@ -1758,7 +1758,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             ddf := differentiate(er.factor) rem denf1
             ppu := extendedEuclidean(denf1, ddf, einum)
             ppu case "failed" => error "impossible 4"
-            einum := (ppu::Record(coef1 : UP, coef2 : UP)).coef2
+            einum := (ppu@Record(coef1 : UP, coef2 : UP)).coef2
             einum := (einum*differentiate(denf1)) rem denf1
         lnum1 : F :=
             degree(fac1) > 1 => retract(dvr.remainder)@F
@@ -1768,7 +1768,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         u1 := er.u_part2
         res1u := solve_u(einum1/lnum1, u1, x)$DenominatorIntegration(R, F)
         res1u case "failed" => [0, 0, 0, 0]
-        res1 := res1u::List(List(F))
+        res1 := res1u@List(List(F))
         ansp1 : F := 0
         lp_cor : RF := 0
         eiarg_inc := (monomial((er.ratpart2)::F, 1)$UP + (er.v_part2)::UP)
@@ -1879,7 +1879,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         v1 := (r1::F/(first(lei).ratpart - r0)::F)*v1
         uvu := get_uv(v1, vlst, ulst, k, x)
         uvu case "failed" => error "impossible, get_uv failed"
-        uv := uvu::UV_REC
+        uv := uvu@UV_REC
         u1 := uv.u_part*(argument(k)(1))^r1
         er2 := [bpol, r0, v0, 0, er1.u_part, 0, er1.shift_part,
                 true, r1, v1, u1, uv.v_part]$EI_REC2
@@ -2261,7 +2261,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         her.polypart := her.polypart - ar1.polypart
         lp1u := retractIfCan(lp)@Union(UP, "failed")
         lp1u case "failed" => [a1, r1, 0, false]
-        her.polypart := her.polypart + lp1u::UP
+        her.polypart := her.polypart + lp1u@UP
         her.polypart = 0 and her.specpart = 0 => [a1, g, ansp, true]
         denf = 1 and degree(nf) = 0 and (is?(k, 'log)
           or has?(operator k, PRIM)) =>
@@ -2304,7 +2304,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         if log_recursion then
             spec1u := retractIfCan(rr1)@Union(UP, "failed")
             spec1u case "failed" => error "impossible 9"
-            spec1p := spec1u::UP
+            spec1p := spec1u@UP
             d := degree(spec1p)
             aa : F := 0
             kf := k::F
@@ -2329,10 +2329,10 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             lc := leadingCoefficient(nf)
             (rcu1 := retractIfCan(lc)@Union(Q, "failed")) case "failed" =>
                 "skip"
-            rcq := rcu1::Q
+            rcq := rcu1@Q
             (rcu2 := retractIfCan(rcq)@Union(Z, "failed")) case "failed" =>
                 "skip"
-            rc := rcu2::Z
+            rc := rcu2@Z
             u := (argument(k)(1))^rc
             f1 := coefficient(nf, 0)
             res4 := ei_int(1, f1, rr1f*u, x)

@@ -84,7 +84,7 @@ RewriteRule(Base, R, F) : Exports == Implementation where
       constant? pattern r =>
         (u:= retractIfCan(lhs r)@Union(Kernel F,"failed")) case "failed"
           => "failed"
-        F2Symbol(u::Kernel(F)::F) = rhs r
+        F2Symbol(u@Kernel(F)::F) = rhs r
       "failed"
 
     rule(p, s, l) ==
@@ -113,7 +113,7 @@ RewriteRule(Base, R, F) : Exports == Implementation where
 --   sin(x) @ y
     bad? u ==
       u case List(P) =>
-        for x in u::List(P) repeat
+        for x in u@List(P) repeat
           generic? x and not appear?(x, u::List(P)) => return false
         true
       false
@@ -178,8 +178,8 @@ ApplyRules(Base, R, F) : Exports == Implementation where
         if (u := retractIfCan(r)@Union(Equation F, "failed"))
             case "failed" then ncr := concat(r, ncr)
           else
-            lk := concat(retract(lhs(u::Equation F))@K, lk)
-            lv := concat(rhs(u::Equation F), lv)
+            lk := concat(retract(lhs(u@Equation F))@K, lk)
+            lv := concat(rhs(u@Equation F), lv)
       [lk, lv, ncr]
 
     applyRules(l, s) ==
@@ -225,11 +225,11 @@ ApplyRules(Base, R, F) : Exports == Implementation where
         not failed?(u := isit(subject, pattern r)) =>
           return rewrite(rhs r, u, quotedOperators r)
       (k := retractIfCan(subject)@Union(K, "failed")) case K =>
-        operator(k::K) applist(lrule, argument(k::K))
-      (l := isPlus  subject) case List(F) => +/applist(lrule, l::List(F))
-      (l := isTimes subject) case List(F) => */applist(lrule, l::List(F))
+        operator(k@K) applist(lrule, argument(k::K))
+      (l := isPlus  subject) case List(F) => +/applist(lrule, l@List(F))
+      (l := isTimes subject) case List(F) => */applist(lrule, l@List(F))
       (e := isPower subject) case Record(val : F, exponent : Integer) =>
-        ee := e::Record(val : F, exponent : Integer)
+        ee := e@Record(val : F, exponent : Integer)
         f  := app(lrule, ee.val)
         positive?(ee.exponent) => f ^ (ee.exponent)::NonNegativeInteger
         recip(f)::F ^ (- ee.exponent)::NonNegativeInteger

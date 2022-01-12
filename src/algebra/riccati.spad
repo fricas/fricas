@@ -214,7 +214,7 @@ PrimitiveRatRicDE(F, UP, L, LQ) : Exports == Implementation where
       for i in 0..n | (li := coefficient(l, i)) ~= 0 repeat
         for j in i+1..n | (lj := coefficient(l, j)) ~= 0 repeat
           u := (nu li - nu lj) exquo (i-j)
-          if (u case Z) and ((b := u::Z) > 0) then
+          if (u case Z) and ((b := u@Z) > 0) then
             lb := concat([[i, j], b::N], lb)
       lb
 
@@ -396,8 +396,8 @@ RationalRicDE(F, UP) : Exports == Implementation where
         ((u := FifCan rhs eq) case "failed") or
           ((v := retractIfCan(lhs eq)@Union(SY, "failed")) case "failed")
              => return "failed"
-        lv := concat(u::F, lv)
-        ls := concat(v::SY, ls)
+        lv := concat(u@F, lv)
+        ls := concat(v@SY, ls)
       [ls, lv]
 
     ratsol l ==
@@ -446,7 +446,7 @@ RationalRicDE(F, UP) : Exports == Implementation where
         s : UTS := monomial(1, (m - d * n - degree c)::N)$UTS * reverseUP c
         aeq := aeq + monomial(s, d)
         l := reductum l
-      (u := newtonSolve(aeq, a, n)) case UTS => reverseUTS(u::UTS, n)
+      (u := newtonSolve(aeq, a, n)) case UTS => reverseUTS(u@UTS, n)
       -- newton lifting failed, so revert to traditional method
       atn := monomial(a, n)$UP
       neq := changeVar(l, atn)
@@ -464,7 +464,7 @@ RationalRicDE(F, UP) : Exports == Implementation where
       sol := a::UTS
       for i in 1..n repeat
         (xquo := eq(sol) exquo deq(sol)) case "failed" => return "failed"
-        sol := truncate(sol - xquo::UTS, i)
+        sol := truncate(sol - xquo@UTS, i)
       sol
 
 -- there could be the same solutions coming in different ways, so we

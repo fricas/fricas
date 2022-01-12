@@ -149,7 +149,7 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
            p1 := univariate eval(leadpol, lvar, lval) * pol
            p1u := p1 exquo leadingCoefficient pol
            p1u case "failed" => return "failed"
-           result := cons(p1u::SUP, result)
+           result := cons(p1u@SUP, result)
         reverse result
 
       not_coprime2 : (SUPP, SUP, List(SUP), List P, List NNI, List OV,
@@ -164,12 +164,12 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
           p2u : Union(SUPP, "failed")
           lgu := localgcd(l1, p2, lvar1, ltry, npmod)
           lgu case "failed" => "failed"
-          (l, ltry) := lgu::LGcd
+          (l, ltry) := lgu@LGcd
           p2u := (p2 exquo l)
           p2u case "failed" => "failed"
           lval := ltry.first
           dl := degree(l)
-          p2l := p2u::SUPP
+          p2l := p2u@SUPP
           ul := completeEval(l, lvar1, lval)
           dg1 := degree(g1)
           dp2l := degree(p2l)
@@ -180,7 +180,7 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
                   ug2 := completeEval(p2l, lvar1, lval)
                   resu := not_coprime2(l, ul, [ug1, ug2], lcpol, ldeg,
                                        lvar1, lval, npmod)
-                  if resu case SUPP then return resu::SUPP
+                  if resu case SUPP then return resu@SUPP
           "failed"
 
       not_coprime2(l : SUPP, ul : SUP, ulist : List(SUP), lcpol : List P,
@@ -195,7 +195,7 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
                   lgcd := gcd(cons(leadingCoefficient l, lcpol))
                   gdl := lift(l, d, lquo, lgcd, lvar1, ldeg, lval, npmod)
                   gdl case "failed" => return "failed"
-                  l := gdl::SUPP
+                  l := gdl@SUPP
                   ul := completeEval(l, lvar1, lval)
               gd1 := gd1*l
               ulist := [(uf exquo d)::SUP for uf in ulist]
@@ -221,7 +221,7 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
         repeat
             lgu := localgcd(p1, p2, lvar, ltry, npmod::R)
             if lgu case LGcd then
-                (result, ltry) := lgu::LGcd
+                (result, ltry) := lgu@LGcd
                 -- special cases
                 result = 1 => return 1$SUPP
                 if not(failtest(result, p1, p2)) then return result
@@ -250,7 +250,7 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
         (h := lift?(p1, p2, uterm, ldeg, lvar, npmod)) case notCoprime =>
           res1u := notCoprime(p1, p2, ldeg, lvar, ltry, npmod)
           res1u case "failed" => "failed"
-          [res1u::SUPP, ltry]$LGcd
+          [res1u@SUPP, ltry]$LGcd
         h case failed => "failed"
         [h.s, ltry]$LGcd
 
@@ -325,7 +325,7 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
           lgcd := gcd(leadingCoefficient p1, leadingCoefficient p2)
           l := lift(f, d, uf, lgcd, lvar, ldeg, lval, npmod)
           l case "failed" => ["failed"]
-          [l :: SUPP]
+          [l@SUPP]
 
    -- interface with the general "lifting" function
       lift(f : SUPP, d : SUP, uf : SUP, lgcd : P, lvar : List OV,
@@ -346,15 +346,15 @@ PolynomialGcdPackage(E, OV, R, P) : C == T where
               retract(eval(lgcd, lvar, lval))
           du := (lgcd1*d) exquo lcd
           du case "failed" => "failed"
-          d := du::SUP
+          d := du@SUP
           uf := lcd*uf
         leadlist := [lgcd, lcf]
         lgu := imposelc([d, uf], lvar, lval, leadlist)
         lgu case "failed" => "failed"
-        lg := lgu::List(SUP)
+        lg := lgu@List(SUP)
         pl := lifting(f,lvar, lg, lval, leadlist, ldeg, npmod)
         pl case "failed" => "failed"
-        plist := pl :: List SUPP
+        plist := pl@List SUPP
         (p0 : SUPP, p1 : SUPP) := (plist.first, plist.2)
         if completeEval(p0, lvar, lval) ~= lg.first then
            (p0, p1) := (p1, p0)

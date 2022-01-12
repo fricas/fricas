@@ -39,24 +39,24 @@ RetractSolvePackage(Q, R) : Exports == Implementation where
     solveRetract(lp, lv) ==
       (u := QIfCan lp) case "failed" =>
         solve([p::F for p in lp]$List(F), lv)$SSP(R)
-      [LEQQ2F l for l in solve(u::List(FQ), lv)$SSP(Q)]
+      [LEQQ2F l for l in solve(u@List(FQ), lv)$SSP(Q)]
 
     QIfCan l ==
       ans : List(FQ) := empty()
       for p in l repeat
         (u := PQIfCan p) case "failed" => return "failed"
-        ans := concat(u::FQ, ans)
+        ans := concat(u@FQ, ans)
       ans
 
     PQIfCan p ==
       (u := mainVariable p) case "failed" =>
-        (r := retractIfCan(ground p)@Union(Q,"failed")) case Q => r::Q::PQ::FQ
+        (r := retractIfCan(ground p)@Union(Q,"failed")) case Q => r@Q::PQ::FQ
         "failed"
       up := univariate(p, s := u::SY)
       ans : FQ := 0
       while up ~= 0 repeat
         (v := PQIfCan leadingCoefficient up) case "failed" => return "failed"
-        ans := ans + monomial(1, s, degree up)$PQ * (v::FQ)
+        ans := ans + monomial(1, s, degree up)$PQ * (v@FQ)
         up  := reductum up
       ans
 
@@ -129,15 +129,15 @@ NonLinearSolvePackage(R : IntegralDomain) : Exports == Implementation where
                                      else lsubs := concat(eq, lsubs)
           else
             if ((u := retractIfCan(lhs eq)@Union(P, "failed")) case P) and
-               ((# variables(u::P)) = 1) and ((r := RIfCan rhs eq) case R) then
-                 luniv := concat(u::P - r::R::P, luniv)
+               ((# variables(u@P)) = 1) and ((r := RIfCan rhs eq) case R) then
+                 luniv := concat(u@P - r@R::P, luniv)
             else return [l]
         empty? luniv => [l]
         [concat(z, concat(evalSol(lsubs, z), lassign)) for z in allRoots luniv]
 
       RIfCan f ==
         ((n := retractIfCan(numer f)@Union(R,"failed")) case R) and
-          ((d := retractIfCan(denom f)@Union(R,"failed")) case R) => n::R / d::R
+          ((d := retractIfCan(denom f)@Union(R,"failed")) case R) => n@R / d@R
         "failed"
     else
       solve l       == solveInField l

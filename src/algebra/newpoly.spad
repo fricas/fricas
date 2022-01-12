@@ -88,21 +88,21 @@ NewSparseUnivariatePolynomial(R) : Exports == Implementation where
        (p pretend SUPR)::Union(SUPR,"failed")
 
      monicModulo(x, y) ==
-                zero? y =>
-                   error "in monicModulo$NSUP: division by 0"
-                ground? y =>
-                   error "in monicModulo$NSUP: ground? #2"
-                yy := rep y
-                not ((yy.first.c) = 1) =>
-                   error "in monicModulo$NSUP: not monic #2"
-                xx := rep x; empty? xx => x
-                e := yy.first.k; y := per(yy.rest)
-                -- while (not empty? xx) repeat
-                repeat
-                  if (u := subtractIfCan(xx.first.k,e)) case "failed" then break
-                  xx := rep fmecg(per rest(xx), u, xx.first.c, y)
-                  if empty? xx then break
-                per xx
+         zero? y =>
+             error "in monicModulo$NSUP: division by 0"
+         ground? y =>
+             error "in monicModulo$NSUP: ground? #2"
+         yy := rep y
+         not ((yy.first.c) = 1) =>
+             error "in monicModulo$NSUP: not monic #2"
+         xx := rep x; empty? xx => x
+         e := yy.first.k; y := per(yy.rest)
+         -- while (not empty? xx) repeat
+         repeat
+             if (u := subtractIfCan(xx.first.k,e)) case "failed" then break
+             xx := rep fmecg(per rest(xx), u, xx.first.c, y)
+             if empty? xx then break
+         per xx
 
      lazyResidueClass(x, y) ==
                 zero? y =>
@@ -147,7 +147,7 @@ NewSparseUnivariatePolynomial(R) : Exports == Implementation where
                 qq : Rep := []; y := per(yy.rest)
                 repeat
                   if (u := subtractIfCan(xx.first.k,e)) case "failed" then break
-                  qq := cons([u::NNI, xx.first.c]$Term, rep (co * per qq))
+                  qq := cons([u@NNI, xx.first.c]$Term, rep (co * per qq))
                   xx := rep fmecg(co * per rest(xx), u, xx.first.c, y)
                   pow := subtractIfCan(pow, 1)::NNI
                   if empty? xx then break
@@ -163,7 +163,7 @@ NewSparseUnivariatePolynomial(R) : Exports == Implementation where
                 qq : Rep := []; co := yy.first.c; y := per(yy.rest)
                 repeat
                   if (u := subtractIfCan(xx.first.k,e)) case "failed" then break
-                  qq := cons([u::NNI, xx.first.c]$Term, rep (co * per qq))
+                  qq := cons([u@NNI, xx.first.c]$Term, rep (co * per qq))
                   xx := rep fmecg(co * per rest(xx), u, xx.first.c, y)
                   if empty? xx then break
                 per reverse qq
@@ -660,7 +660,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
 
      infRittWu? (a, b) ==
        lc : Union(Boolean,"failed") := RittWuCompare(a,b)
-       lc case Boolean => lc::Boolean
+       lc case Boolean => lc
        false
 
      supRittWu? (a, b) ==
@@ -854,12 +854,14 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
        [lcbv, (delta::NNI), q, a]
 
      monicModulo (a, b) ==
-       ground?(b) => error "Error in monicModulo from RPOLCAT : #2 is constant"
-       rec : Union(%,"failed")
-       rec := recip((ib := init(b)))$%
-       (rec case "failed")@Boolean => error "Error in monicModulo from RPOLCAT : #2 is not monic"
-       ground? a => a
-       ib * ((lazyPremWithDefault ((rec::%) * a, (rec::%) * b)).remainder)
+         ground?(b) =>
+             error "Error in monicModulo from RPOLCAT : #2 is constant"
+         rec : Union(%, "failed") := recip((ib := init(b)))$%
+         rec case "failed" =>
+             error "Error in monicModulo from RPOLCAT : #2 is not monic"
+         ground? a => a
+         r1 := rec@%
+         ib * ((lazyPremWithDefault(r1*a, r1*b)).remainder)
 
      lazyResidueClass(a, b) ==
        zero? b => [a, 1$%, 0$NNI]
@@ -1123,7 +1125,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
              retract(pq : PQ) ==
                rif : Union(%,"failed") := retractIfCan(pq)@Union(%,"failed")
                (rif case "failed") => error "failed in retract: POLY Z -> % from RPOLCAT"
-               rif::%
+               rif
 
              convert(pq : PQ) ==
                retract(pq)@%
@@ -1152,7 +1154,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                  retract(pr : PR) ==
                    rif : Union(%,"failed") := retractIfCan(pr)@Union(%,"failed")
                    (rif case "failed") => error "failed in retract: POLY Z -> % from RPOLCAT"
-                   rif::%
+                   rif
 
                  convert(pr : PR) ==
                    retract(pr)@%
@@ -1180,7 +1182,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                      convert(pr : PR) ==
                        lrif : Union(%,"failed") := localRetractIfCan(pr)@Union(%,"failed")
                        (lrif case "failed") => error "failed in convert: PR->% from RPOLCAT"
-                       lrif::%
+                       lrif
                    else
                      convert(pr : PR) ==
                        pq : PQ := PRToPQ(pr)
@@ -1192,7 +1194,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
              retract(pz : PZ) ==
                rif : Union(%,"failed") := retractIfCan(pz)@Union(%,"failed")
                (rif case "failed") => error "failed in retract: POLY Z -> % from RPOLCAT"
-               rif::%
+               rif
 
              convert(pz : PZ) ==
                retract(pz)@%
@@ -1217,7 +1219,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                  retract(pr : PR) ==
                    rif : Union(%,"failed") := retractIfCan(pr)@Union(%,"failed")
                    (rif case "failed") => error "failed in retract: POLY Z -> % from RPOLCAT"
-                   rif::%
+                   rif
 
                  convert(pr : PR) ==
                    retract(pr)@%
@@ -1235,7 +1237,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                      convert(pr : PR) ==
                        lrif : Union(%,"failed") := localRetractIfCan(pr)@Union(%,"failed")
                        (lrif case "failed") => error "failed in convert: PR->% from RPOLCAT"
-                       lrif::%
+                       lrif
                      retractIfCan(pz : PZ) ==
                        localRetractIfCanPZ(pz)@Union(%,"failed")
                    else
@@ -1256,7 +1258,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
              retract(pr : PR) ==
                rif : Union(%,"failed") := retractIfCan(pr)@Union(%,"failed")
                (rif case "failed") => error "failed in retract: POLY Z -> % from RPOLCAT"
-               rif::%
+               rif
 
              convert(pr : PR) ==
                retract(pr)@%
@@ -1445,8 +1447,8 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
            (rec case "failed") =>
              error "Error in monicModulo from NSMP : #2 is not monic"
            a case R => a
-           a := (rec::R) * a
-           b := (rec::R) * b
+           a := (rec@R) * a
+           b := (rec@R) * b
            mM := ib * localMonicModulo (a, b)
          else
            mM := localMonicModulo (a, b)
@@ -1563,7 +1565,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
 
        exactQuo(x : %, y : %) : % ==
          ex : Union(%,"failed") := x exquo$% y
-         (ex case %) => ex::%
+         (ex case %) => ex
          error "in exactQuotient$NSMP: bad args"
 
        LazardQuotient(x : %, y : %, n : N) : % ==
@@ -1635,12 +1637,12 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
 
          exactQuotient (a : %, b : R) ==
            (b = 1) => a
-           a case R => (a::R quo$R b)::%
+           a case R => (a@R quo$R b)::%
            ([a.v, map((a1 : %) : % +-> exactQuotient(a1, b), a.ts)$SUP2]$VPoly)::Rep
 
          exactQuotient! (a : %, b : R) ==
            (b = 1) => a
-           a case R => (a::R quo$R b)::%
+           a case R => (a@R quo$R b)::%
            a.ts := map((a1 : %) : % +-> exactQuotient!(a1, b), a.ts)$SUP2
            a
 
@@ -1648,12 +1650,12 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
 
          exactQuotient (a : %, b : R) ==
            (b = 1) => a
-           a case R => ((a::R exquo$R b)::R)::%
+           a case R => ((a@R exquo$R b)::R)::%
            ([a.v, map((a1 : %) : % +-> exactQuotient(a1, b), a.ts)$SUP2]$VPoly)::Rep
 
          exactQuotient! (a : %, b : R) ==
            (b = 1) => a
-           a case R => ((a::R exquo$R b)::R)::%
+           a case R => ((a@R exquo$R b)::R)::%
            a.ts := map((a1 : %) : % +-> exactQuotient!(a1, b), a.ts)$SUP2
            a
 
@@ -1661,7 +1663,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
      then
 
        localGcd(r : R, p : %) : R ==
-         p case R => gcd(r, p::R)$R
+         p case R => gcd(r, p@R)$R
          gcd(r, content(p))$R
 
        gcd(r : R, p : %) : R ==

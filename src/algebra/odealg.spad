@@ -117,7 +117,7 @@ SystemODESolver(F, LO) : Exports == Implementation where
 
     USL_to_FPL(u : USL) : FPL ==
         u case "failed" => [[], []]
-        us := u::SOL
+        us := u@SOL
         [[[us.particular, new(1, 1)]], us.basis]
 
     solve(mm : MF, v : V, solf : (LO,F)->USL) ==
@@ -166,7 +166,7 @@ SystemODESolver(F, LO) : Exports == Implementation where
     solveInField(m : M, lv : List V, solf : (LO, List F) -> FPL) ==
       ((n := nrows m) = ncols m) and
          ((u := M2F(diagonalMatrix [diff for i in 1..n] - m)) case MF) =>
-             solve(u::MF, lv, solf)
+             solve(u@MF, lv, solf)
       rec := solve(m, 0, lv, solf)
       rec case "failed" => error "solveInField: system is underdeterminded"
       rec::VPL
@@ -177,7 +177,7 @@ SystemODESolver(F, LO) : Exports == Implementation where
             for j in minColIndex m .. maxColIndex m repeat
                 (u := retractIfCan(m(i, j))@Union(F, "failed")) case "failed" =>
                      return "failed"
-                mf(i, j) := u::F
+                mf(i, j) := u@F
         mf
 
     triangulate(m : M, lv : List V) == rowEchelon(m, 0, lv)

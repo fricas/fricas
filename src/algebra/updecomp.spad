@@ -34,7 +34,7 @@ UnivariatePolynomialDivisionPackage(R, UP) : Exports == Implementation where
         c := leadingCoefficient(p1) exquo lc
         c case "failed" => return "failed"
         ee := e::N
-        q := q+monomial(c::R, ee)
+        q := q+monomial(c@R, ee)
         p1 := p1 - c*mapExponents(x +-> x + ee, p2)
       [q, p1]
 
@@ -125,7 +125,7 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
            coefficient(p, subtractIfCan(dp+i, k)::N)
         cquo := c exquo ((k*n)::R*lcp)
         cquo case "failed" => return "failed"
-        q := q+monomial(cquo::R, subtractIfCan(dq, k)::N)
+        q := q+monomial(cquo@R, subtractIfCan(dq, k)::N)
       q
 
     char_R : N := characteristic()$R
@@ -139,7 +139,7 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
         (zero? dp) or (zero? dq) => "failed"
         nc := dp exquo dq
         nc case "failed" => "failed"
-        n := nc::N
+        n := nc@N
         char_R = 0 or n < char_R => rightFactorIfCan0(p, dq, n, lcq)
         -- fail in wild case
         (nr := n::R) = 0 => "failed"
@@ -151,7 +151,7 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
         lcn1 := nr*leadingCoefficient(qn1)
         cc0u := leadingCoefficient(p) exquo lcn
         cc0u case "failed" => "failed"
-        cc0 := cc0u::R
+        cc0 := cc0u@R
         cc1 := cc0*nr
         cc2 := cc0*lcn1
         p1 := p - cc0*qn
@@ -171,7 +171,7 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
                               coefficient(qn1, qcoerce(dp - dq - i + j)@N)
             cu := c exquo cc2
             cu case "failed" => return "failed"
-            q := q + monomial(cu::R, qcoerce(dq - i)@N)
+            q := q + monomial(cu@R, qcoerce(dq - i)@N)
         q
 
     monicRightFactorIfCan(p, dq) == rightFactorIfCan(p, dq, 1$R)
@@ -184,7 +184,7 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
       for i in 0.. while not zero? f repeat
         qrf := divideIfCan(f, h)
         qrf case "failed" => return "failed"
-        qr := qrf :: QR
+        qr := qrf@QR
         r := qr.remainder
         not ground? r => return "failed"
         g := g+monomial(ground(r), i)
@@ -197,14 +197,14 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
       for dh in 2..subtractIfCan(df, 1)::N | zero?(df rem dh) repeat
         h := monicRightFactorIfCan(f, dh)
         h case UP =>
-         g := leftFactorIfCan(f, h::UP)
-         g case UP => return [g::UP, h::UP]
+         g := leftFactorIfCan(f, h@UP)
+         g case UP => return [g@UP, h@UP]
       "failed"
 
     monicCompleteDecompose f ==
       cf := monicDecomposeIfCan f
       cf case "failed" => [ f ]
-      lr := cf :: LR
+      lr := cf@LR
       append(monicCompleteDecompose lr.left, [lr.right])
 
     if R has Field then
@@ -214,7 +214,7 @@ UnivariatePolynomialDecompositionPackage(R, UP) : Exports == Implementation wher
             f  := f/lc
             res1 := monicDecomposeIfCan(f)
             res1 case "failed" => "failed"
-            lr := res1::LR
+            lr := res1@LR
             [lc*lr.left, lr.right]
 
         completeDecompose(f) ==

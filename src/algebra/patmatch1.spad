@@ -65,7 +65,7 @@ PatternMatchResult(R : SetCategory, S : SetCategory) : SetCategory with
     failed? r => false
     lr := r::LR
     lv := [if (u := search(v, lr)) case "failed" then return "failed"
-                        else  u::S for v in topPredicate(p).var]$List(S)
+                        else  u@S for v in topPredicate(p).var]$List(S)
     satisfy?(lv, p)
 
   union(x, y) ==
@@ -90,7 +90,7 @@ PatternMatchResult(R : SetCategory, S : SetCategory) : SetCategory with
     al := l::LR
     sy := retract(p)@Symbol
     (r := search(sy, al)) case "failed" => insertMatch(p, x, l)
-    r::S = x => l
+    r@S = x => l
     failed()
 
   getMatch(p, l) ==
@@ -211,7 +211,7 @@ PatternMatchSymbol(S : SetCategory) : with
     generic? p  => addMatch(p, s, l)
     constant? p =>
       ((u := retractIfCan(p)@Union(Symbol, "failed")) case Symbol)
-        and (u::Symbol) = s => l
+        and (u@Symbol) = s => l
       failed()
     failed()
 
@@ -255,13 +255,13 @@ PatternMatchKernel(S, E) : Exports == Implementation where
     patternMatchInner(s, p, l) ==
       generic? p => addMatch(p, s::E, l)
       (u := isOp p) case Record(op : BasicOperator, arg : List PAT) =>
-        ur := u::Record(op : BasicOperator, arg : List PAT)
+        ur := u@Record(op : BasicOperator, arg : List PAT)
         ur.op = operator s => patternMatchArg(argument s, ur.arg, l)
         failed()
       constant? p =>
         ((v := retractIfCan(p)@Union(Symbol, "failed")) case Symbol)
           and ((w := symbolIfCan s) case Symbol) and
-            (v::Symbol = w::Symbol) => l
+            (v@Symbol = w@Symbol) => l
         failed()
       "failed"
 
@@ -271,41 +271,41 @@ PatternMatchKernel(S, E) : Exports == Implementation where
 
       patternMatchOpt(x, lp, l, id) ==
         (u := optpair lp) case List(PAT) =>
-          failed?(l := addMatch(first(u::List(PAT)), id, l)) => failed()
-          patternMatch(x, second(u::List(PAT)), l)
+          failed?(l := addMatch(first(u@List(PAT)), id, l)) => failed()
+          patternMatch(x, second(u@List(PAT)), l)
         failed()
 
       patternMatchMonoid(s, p, l) ==
-        (u := patternMatchInner(s, p, l)) case PRS => u::PRS
+        (u := patternMatchInner(s, p, l)) case PRS => u@PRS
         (v := isPower p) case Record(val : PAT, exponent : PAT) =>
-          vr := v::Record(val : PAT, exponent : PAT)
+          vr := v@Record(val : PAT, exponent : PAT)
           is?(op := operator s, POWER) =>
             patternMatchArg(argument s, [vr.val, vr.exponent], l)
           is?(op, NTHRT) and ((r := recip(second(arg := argument s))) case E) =>
-            patternMatchArg([first arg, r::E], [vr.val, vr.exponent], l)
+            patternMatchArg([first arg, r@E], [vr.val, vr.exponent], l)
           optional?(vr.exponent) =>
             failed?(l := addMatch(vr.exponent, 1, l)) => failed()
             patternMatch(s::E, vr.val, l)
           failed()
         (w := isTimes p) case List(PAT) =>
-          patternMatchOpt(s::E, w::List(PAT), l, 1)
+          patternMatchOpt(s::E, w@List(PAT), l, 1)
         "failed"
 
       if E has AbelianMonoid then
         patternMatch(s, p, l) ==
-          (u := patternMatchMonoid(s, p, l)) case PRS => u::PRS
+          (u := patternMatchMonoid(s, p, l)) case PRS => u@PRS
           (w := isPlus p) case List(PAT) =>
-            patternMatchOpt(s::E, w::List(PAT), l, 0)
+            patternMatchOpt(s::E, w@List(PAT), l, 0)
           failed()
 
       else
         patternMatch(s, p, l) ==
-          (u := patternMatchMonoid(s, p, l)) case PRS => u::PRS
+          (u := patternMatchMonoid(s, p, l)) case PRS => u@PRS
           failed()
 
     else
       patternMatch(s, p, l) ==
-        (u := patternMatchInner(s, p, l)) case PRS => u::PRS
+        (u := patternMatchInner(s, p, l)) case PRS => u@PRS
         failed()
 
 )abbrev package PMDOWN PatternMatchPushDown
@@ -348,19 +348,20 @@ PatternMatchPushDown(S, A, B) : Exports == Implementation where
 
     patternMatch(a, p, l) ==
       (u := fixPredicates(p, l, new())) case "failed" => failed()
-      union(l, map((a1 : A) : B +-> a1::B, patternMatch(a, (u::REC).pat, (u::REC).res)))
+      union(l, map((a1 : A) : B +-> a1::B,
+                   patternMatch(a, (u@REC).pat, (u@REC).res)))
 
     inA(p, l) ==
       (u := getMatch(p, l)) case "failed" => empty()
-      (r := retractIfCan(u::B)@Union(A, "failed")) case A => [r::A]
+      (r := retractIfCan(u@B)@Union(A, "failed")) case A => [r@A]
       "failed"
 
     fixList(fn, l, lb, la) ==
       ll : List(PAT) := empty()
       for x in l repeat
         (f := fixPredicates(x, lb, la)) case "failed" => return "failed"
-        ll := concat((f::REC).pat, ll)
-        la := (f::REC).res
+        ll := concat((f@REC).pat, ll)
+        la := (f@REC).res
       [fn ll, la]
 
     fixPred f ==
@@ -372,36 +373,38 @@ PatternMatchPushDown(S, A, B) : Exports == Implementation where
     fixPredicates(p, lb, la) ==
       (r := retractIfCan(p)@Union(S,"failed")) case S or quoted? p =>[p,la]
       (u := isOp p) case Record(op : BasicOperator, arg : List PAT) =>
-        ur := u::Record(op : BasicOperator, arg : List PAT)
+        ur := u@Record(op : BasicOperator, arg : List PAT)
         fixList((l1 : List(PAT)) : PAT +-> (ur.op) l1, ur.arg, lb, la)
       (us := isPlus p) case List(PAT) =>
-        fixList((l1 : List(PAT)) : PAT +-> reduce("+", l1), us::List(PAT), lb, la)
+        fixList((l1 : List(PAT)) : PAT +-> reduce("+", l1),
+                 us@List(PAT), lb, la)
       (us := isTimes p) case List(PAT) =>
-        fixList((l1 : List(PAT)) : PAT +-> reduce("*", l1), us::List(PAT), lb, la)
+        fixList((l1 : List(PAT)) : PAT +-> reduce("*", l1),
+                us@List(PAT), lb, la)
       (v := isQuotient p) case Record(num : PAT, den : PAT) =>
-        vr := v::Record(num : PAT, den : PAT)
+        vr := v@Record(num : PAT, den : PAT)
         (fn := fixPredicates(vr.num, lb, la)) case "failed" => "failed"
-        la  := (fn::REC).res
+        la  := (fn@REC).res
         (fd := fixPredicates(vr.den, lb, la)) case "failed" => "failed"
-        [(fn::REC).pat / (fd::REC).pat, (fd::REC).res]
+        [(fn@REC).pat / (fd@REC).pat, (fd@REC).res]
       (w := isExpt p) case Record(val : PAT, exponent : NonNegativeInteger) =>
-        wr := w::Record(val : PAT, exponent : NonNegativeInteger)
+        wr := w@Record(val : PAT, exponent : NonNegativeInteger)
         (f := fixPredicates(wr.val, lb, la)) case "failed" => "failed"
-        [(f::REC).pat ^ wr.exponent, (f::REC).res]
+        [(f@REC).pat ^ wr.exponent, (f@REC).res]
       (uu := isPower p) case Record(val : PAT, exponent : PAT) =>
-        uur := uu::Record(val : PAT, exponent : PAT)
+        uur := uu@Record(val : PAT, exponent : PAT)
         (fv := fixPredicates(uur.val, lb, la)) case "failed" => "failed"
-        la  := (fv::REC).res
+        la  := (fv@REC).res
         (fe := fixPredicates(uur.exponent, lb, la)) case "failed" =>
           "failed"
-        [(fv::REC).pat ^ (fe::REC).pat, (fe::REC).res]
+        [(fv@REC).pat ^ (fe@REC).pat, (fe@REC).res]
       generic? p =>
         (ua := inA(p, lb)) case "failed" => "failed"
-        lp := [if (h := fixPred g) case Any then h::Any else
+        lp := [if (h := fixPred g) case Any then h@Any else
                         return "failed" for g in predicates p]$List(Any)
         q := setPredicates(patternVariable(retract p, constant? p,
                                            optional? p, multiple? p), lp)
-        [q, (empty?(ua::List A) => la; insertMatch(q, first(ua::List A), la))]
+        [q, (empty?(ua@List A) => la; insertMatch(q, first(ua@List A), la))]
       error "Should not happen"
 
 )abbrev package PMTOOLS PatternMatchTools
@@ -453,7 +456,7 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
     negConstant l ==
       for x in l repeat
         ((r := retractIfCan(x)@Union(R, "failed")) case R) and
-          smaller?(r::R, 0) => return x
+          smaller?(r@R, 0) => return x
       "failed"
 
 -- tries to match the list of patterns lp to the list of subjects rc.s
@@ -470,9 +473,10 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
 -- handles -1 in the pattern list.
     patternMatchTimes(ls, lp, l, pmatch) ==
       member?(mn1, lp) =>
-        (u := negConstant ls) case "failed" => failed()
-        if (u::P ~= -1::P) then ls := concat(-u::P, ls)
-        patternMatch(remove(u::P, ls), remove(mn1, lp), (l1 : List(P)) : P +-> */l1, l, pmatch)
+          (u := negConstant ls) case "failed" => failed()
+          if (u@P ~= -1::P) then ls := concat(-u@P, ls)
+          patternMatch(remove(u@P, ls), remove(mn1, lp),
+                       (l1 : List(P)) : P +-> */l1, l, pmatch)
       patternMatch(ls, lp, (l1 : List(P)) : P +-> */l1, l, pmatch)
 
 -- finds a match for p in ls, try not to match to a "bad" value
@@ -494,8 +498,8 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
     preprocessList(pattern, ls, l) ==
       generic? pattern =>
         (u := getMatch(pattern, l)) case P =>
-          member?(u::P, ls) => [u::P]
-          "failed"
+            member?(u@P, ls) => [u@P]
+            "failed"
         empty()
       empty()
 
@@ -503,9 +507,9 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
     filterMatchedPatterns(lp, ls, l) ==
       for p in lp repeat
         (rc := preprocessList(p, ls, l)) case "failed" => return "failed"
-        if not empty?(rc::List(P)) then
+        if not empty?(rc@List(P)) then
           lp := remove(p,  lp)
-          ls := remove(first(rc::List(P)), ls)
+          ls := remove(first(rc@List(P)), ls)
       [lp, ls]
 
 -- select a generic pattern with no predicate if possible
@@ -520,8 +524,8 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
     patternMatch(ls, lp, op, l, pmatch) ==
       ident := op empty()
       (rc := filterMatchedPatterns(lp, ls, l)) case "failed" => return failed()
-      lp := (rc::RC).pat
-      ls := (rc::RC).s
+      lp := (rc@RC).pat
+      ls := (rc@RC).s
       empty? lp => l
       #(lpm := select(optional?, lp)) > 1 =>
         error "More than one optional pattern in sum/product"
@@ -548,15 +552,15 @@ PatternMatchTools(S, R, P) : Exports == Implementation where
       rec : REC := [l, ls]
       (u := tryToMatch(l1, rec, ident, pmatch)) case "failed" =>
         failed()
-      (u := tryToMatch(l2, u::REC, ident, pmatch)) case "failed" =>
+      (u := tryToMatch(l2, u@REC, ident, pmatch)) case "failed" =>
         failed()
-      (u := tryToMatch(l3, u::REC, ident, pmatch)) case "failed" =>
+      (u := tryToMatch(l3, u@REC, ident, pmatch)) case "failed" =>
         failed()
-      rec := u::REC
+      rec := u@REC
       (rc := filterMatchedPatterns(l4,rec.s,rec.res)) case "failed" => failed()
-      rec := [rec.res, (rc::RC).s]
-      (u := tryToMatch((rc::RC).pat,rec,ident,pmatch)) case "failed" => failed()
-      rec := u::REC
+      rec := [rec.res, (rc@RC).s]
+      (u := tryToMatch((rc@RC).pat,rec,ident,pmatch)) case "failed" => failed()
+      rec := u@REC
       l := rec.res
       ls := rec.s
       empty? lpm =>
@@ -589,7 +593,7 @@ PatternMatchListAggregate(S, R, L) : Exports == Implementation where
 
     patternMatch(l, p, r) ==
       (u := isList p) case "failed" => failed()
-      match(l, u::List Pattern S, r, true)
+      match(l, u@List Pattern S, r, true)
 
     match(l, lp, r, new?) ==
       empty? lp =>
@@ -646,37 +650,41 @@ PatternMatchIntegerNumberSystem(I : IntegerNumberSystem) : with
                           case "failed") then (p1 := p2; p2 := first lp)
        (r := retractIfCan(p1)@Union(Integer, "failed")) case "failed" =>
                                                                 failed()
-       (y := invOp(x, r::Integer::I)) case "failed" => failed()
-       patternMatchRestricted(y::I, p2, l, ident)
+       (y := invOp(x, r@Integer::I)) case "failed" => failed()
+       patternMatchRestricted(y@I, p2, l, ident)
      failed()
 
    patternMatchInner(x, p, l) ==
      constant? p =>
        (r := retractIfCan(p)@Union(Integer, "failed")) case Integer =>
-         convert(x)@Integer = r::Integer => l
+         convert(x)@Integer = r@Integer => l
          failed()
        failed()
      (u := isExpt p) case Record(val : PAT, exponent : NonNegativeInteger) =>
-       ur := u::Record(val : PAT, exponent : NonNegativeInteger)
+       ur := u@Record(val : PAT, exponent : NonNegativeInteger)
        (v := perfectNthRoot(x, ur.exponent)) case "failed" => failed()
-       patternMatchRestricted(v::I, ur.val, l, 1)
+       patternMatchRestricted(v@I, ur.val, l, 1)
      (uu := isPower p) case Record(val : PAT, exponent : PAT) =>
-       uur := uu::Record(val : PAT, exponent : PAT)
+       uur := uu@Record(val : PAT, exponent : PAT)
        pr := perfectNthRoot x
        failed?(l := patternMatchRestricted(pr.exponent::Integer::I,
                                          uur.exponent, l, 1)) => failed()
        patternMatchRestricted(pr.base, uur.val, l, 1)
      (w := isTimes p) case List(PAT) =>
-       patternMatchSumProd(x, w::List(PAT), l, (i1:I, i2 : I) : Union(I, "failed") +-> i1 exquo i2, 1)
+         patternMatchSumProd(x, w@List(PAT), l,
+                (i1:I, i2 : I) : Union(I, "failed") +-> i1 exquo i2, 1)
      (w := isPlus p) case List(PAT) =>
-      patternMatchSumProd(x,w::List(PAT),l,(i1:I, i2 : I) : Union(I, "failed") +-> (i1-i2)::Union(I,"failed"),0)
+         patternMatchSumProd(x,w@List(PAT), l,
+               (i1:I, i2 : I) : Union(I, "failed") +->
+                   (i1-i2)::Union(I,"failed"),
+             0)
      (uv := isQuotient p) case Record(num : PAT, den : PAT) =>
-       uvr := uv::Record(num : PAT, den : PAT)
+       uvr := uv@Record(num : PAT, den : PAT)
        (r := retractIfCan(uvr.num)@Union(Integer,"failed")) case Integer
-         and (v := r::Integer::I exquo x) case I =>
-           patternMatchRestricted(v::I, uvr.den, l, 1)
+         and (v := r@Integer::I exquo x) case I =>
+           patternMatchRestricted(v@I, uvr.den, l, 1)
        (r := retractIfCan(uvr.den)@Union(Integer,"failed")) case Integer
-         => patternMatch(r::Integer * x, uvr.num, l)
+         => patternMatch(r@Integer * x, uvr.num, l)
        failed()
      failed()
 
@@ -707,9 +715,9 @@ PatternMatchQuotientFieldCategory(S, R, Q) : Exports == Implementation where
     patternMatch(x, p, l) ==
       generic? p => addMatch(p, x, l)
       (r := retractIfCan x)@Union(R, "failed") case R =>
-        patternMatch(r::R, p, l)
+          patternMatch(r::R, p, l)
       (u := isQuotient p) case Record(num : PAT, den : PAT) =>
-        ur := u::Record(num : PAT, den : PAT)
+        ur := u@Record(num : PAT, den : PAT)
         failed?(l := patternMatch(numer x, ur.num, l)) => l
         patternMatch(denom x, ur.den, l)
       failed()
@@ -759,38 +767,41 @@ PatternMatchPolynomialCategory(S, E, V, R, P) : Exports== Implementation where
     patternMatch(x, p, l, vmatch) ==
       generic? p => addMatch(p, x, l)
       (r := retractIfCan(x)@Union(R, "failed")) case R =>
-        patternMatch(r::R, p, l)
+          patternMatch(r@R, p, l)
       (v := retractIfCan(x)@Union(V, "failed")) case V =>
-        vmatch(v::V, p, l)
+          vmatch(v@V, p, l)
       (u := isPlus p) case List(PAT) =>
-        (lx := isPlus x) case List(P) =>
-          patternMatch(lx::List(P), u::List(PAT), (l1 : List(P)) : P +-> +/l1, l,
-              (p1 : P, p2 : PAT, p3 : PRS) : PRS +-> patternMatch(p1, p2, p3, vmatch))
-        (u := optpair(u::List(PAT))) case List(PAT) =>
-          failed?(l := addMatch(first(u::List(PAT)), 0, l)) => failed()
-          patternMatch(x, second(u::List(PAT)), l, vmatch)
-        failed()
+          (lx := isPlus x) case List(P) =>
+              patternMatch(lx@List(P), u@List(PAT),
+                           (l1 : List(P)) : P +-> +/l1, l,
+                 (p1 : P, p2 : PAT, p3 : PRS) : PRS +->
+                     patternMatch(p1, p2, p3, vmatch))
+          (u := optpair(u@List(PAT))) case List(PAT) =>
+              failed?(l := addMatch(first(u@List(PAT)), 0, l)) => failed()
+              patternMatch(x, second(u@List(PAT)), l, vmatch)
+          failed()
       (u := isTimes p) case List(PAT) =>
-        (lx := isTimes x) case List(P) =>
-          patternMatchTimes(lx::List(P), u::List(PAT), l,
-              (p1 : P, p2 : PAT, p3 : PRS) : PRS +-> patternMatch(p1, p2, p3, vmatch))
-        (u := optpair(u::List(PAT))) case List(PAT) =>
-          failed?(l := addMatch(first(u::List(PAT)), 1, l)) => failed()
-          patternMatch(x, second(u::List(PAT)), l, vmatch)
-        failed()
+          (lx := isTimes x) case List(P) =>
+              patternMatchTimes(lx@List(P), u@List(PAT), l,
+                  (p1 : P, p2 : PAT, p3 : PRS) : PRS +->
+                      patternMatch(p1, p2, p3, vmatch))
+          (u := optpair(u::List(PAT))) case List(PAT) =>
+              failed?(l := addMatch(first(u@List(PAT)), 1, l)) => failed()
+              patternMatch(x, second(u@List(PAT)), l, vmatch)
+          failed()
       (uu := isPower p) case Record(val : PAT, exponent : PAT) =>
-        uur := uu::Record(val : PAT, exponent : PAT)
-        (ex := isExpt x) case RCX =>
-          failed?(l := patternMatch((ex::RCX).exponent::Integer::P,
-                                   uur.exponent, l, vmatch)) => failed()
-          vmatch((ex::RCX).var, uur.val, l)
-        optional?(uur.exponent) =>
-          failed?(l := addMatch(uur.exponent, 1, l)) => failed()
-          patternMatch(x, uur.val, l, vmatch)
-        failed()
+          uur := uu@Record(val : PAT, exponent : PAT)
+          (ex := isExpt x) case RCX =>
+              failed?(l := patternMatch((ex@RCX).exponent::Integer::P,
+                               uur.exponent, l, vmatch)) => failed()
+              vmatch((ex@RCX).var, uur.val, l)
+          optional?(uur.exponent) =>
+              failed?(l := addMatch(uur.exponent, 1, l)) => failed()
+              patternMatch(x, uur.val, l, vmatch)
+          failed()
       ((ep := isExpt p) case RCP) and ((ex := isExpt x) case RCX) and
-           (ex::RCX).exponent = (ep::RCP).exponent =>
-               vmatch((ex::RCX).var, (ep::RCP).val, l)
+           (ex@RCX).exponent = (ep@RCP).exponent =>
+               vmatch((ex@RCX).var, (ep@RCP).val, l)
       failed()
 
 )abbrev package PMFS PatternMatchFunctionSpace
@@ -828,40 +839,41 @@ PatternMatchFunctionSpace(S, R, F) : Exports== Implementation where
     patternMatch(x, p, l) ==
       generic? p => addMatch(p, x, l)
       (r := retractIfCan(x)@Union(R, "failed")) case R =>
-        patternMatch(r::R, p, l)
+          patternMatch(r@R, p, l)
       (v := retractIfCan(x)@Union(K, "failed")) case K =>
-        patternMatch(v::K, p, l)
+          patternMatch(v@K, p, l)
       (q := isQuotient p) case Record(num : PAT, den : PAT) =>
-        uq := q::Record(num : PAT, den : PAT)
-        failed?(l := patternMatch(numerator(x), uq.num, l)) => l
-        patternMatch(denominator(x), uq.den, l)
+          uq := q@Record(num : PAT, den : PAT)
+          failed?(l := patternMatch(numerator(x), uq.num, l)) => l
+          patternMatch(denominator(x), uq.den, l)
       (u := isPlus p) case List(PAT) =>
-        (lx := isPlus x) case List(F) =>
-          patternMatch(lx::List(F), u::List(PAT), l1 +-> +/l1, l, patternMatch)
-        (u := optpair(u::List(PAT))) case List(PAT) =>
-          failed?(l := addMatch(first(u::List(PAT)), 0, l)) => failed()
-          patternMatch(x, second(u::List(PAT)), l)
-        failed()
+          (lx := isPlus x) case List(F) =>
+              patternMatch(lx@List(F), u@List(PAT), l1 +-> +/l1, l,
+                           patternMatch)
+          (u := optpair(u@List(PAT))) case List(PAT) =>
+              failed?(l := addMatch(first(u@List(PAT)), 0, l)) => failed()
+              patternMatch(x, second(u@List(PAT)), l)
+          failed()
       (u := isTimes p) case List(PAT) =>
-        (lx := isTimes x) case List(F) =>
-          patternMatchTimes(lx::List(F), u::List(PAT), l, patternMatch)
-        (u := optpair(u::List(PAT))) case List(PAT) =>
-          failed?(l := addMatch(first(u::List(PAT)), 1, l)) => failed()
-          patternMatch(x, second(u::List(PAT)), l)
-        failed()
+          (lx := isTimes x) case List(F) =>
+              patternMatchTimes(lx@List(F), u@List(PAT), l, patternMatch)
+          (u := optpair(u@List(PAT))) case List(PAT) =>
+              failed?(l := addMatch(first(u@List(PAT)), 1, l)) => failed()
+              patternMatch(x, second(u@List(PAT)), l)
+          failed()
       (uu := isPower p) case Record(val : PAT, exponent : PAT) =>
-        uur := uu::Record(val : PAT, exponent : PAT)
-        (ex := isExpt x) case RCX =>
-          failed?(l := patternMatch((ex::RCX).exponent::Integer::F,
+          uur := uu@Record(val : PAT, exponent : PAT)
+          (ex := isExpt x) case RCX =>
+              failed?(l := patternMatch((ex@RCX).exponent::Integer::F,
                                            uur.exponent, l)) => failed()
-          patternMatch((ex::RCX).var, uur.val, l)
-        optional?(uur.exponent) =>
-          failed?(l := addMatch(uur.exponent, 1, l)) => failed()
-          patternMatch(x, uur.val, l)
-        failed()
+              patternMatch((ex@RCX).var, uur.val, l)
+          optional?(uur.exponent) =>
+              failed?(l := addMatch(uur.exponent, 1, l)) => failed()
+              patternMatch(x, uur.val, l)
+          failed()
       ((ep := isExpt p) case RCP) and ((ex := isExpt x) case RCX) and
-           (ex::RCX).exponent = ((ep::RCP).exponent)::Integer =>
-               patternMatch((ex::RCX).var, (ep::RCP).val, l)
+           (ex@RCX).exponent = ((ep@RCP).exponent)::Integer =>
+               patternMatch((ex@RCX).var, (ep@RCP).val, l)
       failed()
 
 )abbrev package PATMATCH PatternMatch

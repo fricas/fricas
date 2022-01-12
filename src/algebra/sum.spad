@@ -110,14 +110,14 @@ GosperSummationMethod(E, V, R, P, Q) : Exports == Impl where
 
       GospersMethod(aquo, n, newV) ==
         ((q := RF2QIfCan aquo) case "failed") or
-          ((u := InnerGospersMethod(q::RQ, n, newV)) case "failed") =>
+          ((u := InnerGospersMethod(q@RQ, n, newV)) case "failed") =>
              "failed"
-        RFQ2R(u::RQ)
+        RFQ2R(u@RQ)
 
       RF2QIfCan f ==
         (n := UP2QIfCan numer f) case "failed" => "failed"
         (d := UP2QIfCan denom f) case "failed" => "failed"
-        n::PQ / d::PQ
+        n@PQ / d@PQ
 
       UP2QIfCan p ==
         every?(rat?, coefficients p) =>
@@ -149,7 +149,7 @@ GosperSummationMethod(E, V, R, P, Q) : Exports == Impl where
             --      p(n) = q(n+1)*f(n) - r(n)*f(n-1)
             (ufn := GosperF(k, pn, qn, rn, n, newV)) case "failed" =>
               "failed"
-            fn  := ufn::RQ
+            fn  := ufn@RQ
 
             -- 6. The sum is q(n-1)/p(n)*f(n) * a(n). We leave out a(n).
             --qnm1 := eval(qn, n, n::PQ - 1)
@@ -180,7 +180,7 @@ GosperSummationMethod(E, V, R, P, Q) : Exports == Impl where
                     qsetelt!(mat, dz + minRowIndex mat,
                                  dmz + minColIndex(mat) - 1, cmz)
             (soln := particularSolution(mat, vec)) case "failed" => "failed"
-            vec := soln::Vector RQ
+            vec := soln@Vector(RQ)
             (+/[np^i * vec(i + minIndex vec) for i in 0..k])@RQ
 
       GosperPQR(an, anm1, n, newV) ==
@@ -234,7 +234,7 @@ GosperSummationMethod(E, V, R, P, Q) : Exports == Impl where
             -- The degree bd is now given by k, and the root of L.
             k0 := linearAndNNIntRoot(lcpk, mainVariable(kk)::V)
             k0 case "failed" => k
-            max(k0::I, k)
+            max(k0@I, k)
 
       pCoef(p, nom) ==
             not monomial? nom =>
@@ -255,7 +255,7 @@ GosperSummationMethod(E, V, R, P, Q) : Exports == Impl where
              case "failed" or
               (p0 := retractIfCan(coefficient(p, 0))@Union(RN,"failed"))
                case "failed" => "failed"
-            rt := -(p0::RN)/(p1::RN)
+            rt := -(p0@RN)/(p1@RN)
             rt < 0 or denom rt ~= 1 => "failed"
             numer rt
 
@@ -296,12 +296,12 @@ RationalFunctionSum(R) : Exports == Impl where
         (indef := innersum(f, v := variable s)) case "failed" =>
           summation(f::FE, map((z : RF) : FE +-> z::FE,
                                s)$SegmentBindingFunctions2(RF, FE))
-        eval(indef::RF, v, 1 + high(segment(s)))
-          - eval(indef::RF, v, low(segment(s)))
+        eval(indef@RF, v, 1 + high(segment(s)))
+          - eval(indef@RF, v, low(segment(s)))
 
       sum(an : RF, n : SE) ==
         (u := innersum(an, n)) case "failed" => summation(an::FE, n)
-        u::RF
+        u@RF
 
       sum(p : P, s : SegmentBinding P) ==
         f := sum(p, v := variable s)
@@ -313,8 +313,8 @@ RationalFunctionSum(R) : Exports == Impl where
            an1 := eval(an, n, -1 + n::RF)
            (u := GospersMethod(an/an1, n, new$SE)) case "failed" =>
              "failed"
-           an1 * eval(u::RF, n, -1 + n::RF)
-        sum(r::P, n)
+           an1 * eval(u@RF, n, -1 + n::RF)
+        sum(r@P, n)
 
       sum(p : P, n : SE) ==
         rec := sum(p, n)$InnerPolySum(IndexedExponents SE, SE, R, P)

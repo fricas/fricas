@@ -137,18 +137,18 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
     if M has ExpressionSpace then
       opeval(op, r) ==
         (func := property(op, OPEVAL)) case "failed" => kernel(op, r)
-        ((func::None) pretend (M -> M)) r
+        ((func@None) pretend (M -> M)) r
 
     else
       opeval(op, r) ==
         (func := property(op, OPEVAL)) case "failed" =>
           error "eval: operator has no evaluation function"
-        ((func::None) pretend (M -> M)) r
+        ((func@None) pretend (M -> M)) r
 
     opInvEval(op, r) ==
       (func := property(op, INVEVAL)) case "failed" =>
          error "eval: operator has no inverse evaluation function"
-      ((func::None) pretend (M -> M)) r
+      ((func@None) pretend (M -> M)) r
 
     termeval(t, r)  ==
       for rm in reverse t repeat r := rmeval(rm, r)
@@ -166,8 +166,8 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
 
     recip x ==
       (r := retractIfCan(x)@Union(R, "failed")) case "failed" => "failed"
-      (r1 := recip(r::R)) case "failed" => "failed"
-      r1::R::%
+      (r1 := recip(r@R)) case "failed" => "failed"
+      r1@R::%
 
     retractIfCan(x:%):Union(R, "failed") ==
       (r:= retractIfCan(x)@Union(TERM,"failed")) case "failed" => "failed"
@@ -180,7 +180,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
 
     retractIfCan(x:%):Union(OP, "failed") ==
       (r:= retractIfCan(x)@Union(TERM,"failed")) case "failed" => "failed"
-      empty?(t := r::TERM) => "failed"
+      empty?(t := r@TERM) => "failed"
       empty? rest t =>
         rm := first t
         (rm.coef = 1) => retractIfCan(rm.monom)
@@ -212,7 +212,7 @@ ModuleOperator(R : Ring, M : LeftModule(R)) : Exports == Implementation where
       opadj op ==
         (adj := property(op, OPADJ)) case "failed" =>
            error "adjoint: operator does not have a defined adjoint"
-        (adj::None) pretend %
+        (adj@None) pretend %
 
       if R has conjugate : R -> R then conjug r == conjugate r else conjug r == r
 

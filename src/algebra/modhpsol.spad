@@ -457,7 +457,7 @@ InnerModularHermitePade : with
                 nlcq := gv0(j)
                 res1 := eval1(nlcq, var, pt, pss)$PEVALUT
                 res1 case "failed" => return "failed"
-                ress(j) := res1::FrP
+                ress(j) := res1@FrP
             resl := cons(ress, resl)
         reverse!(resl)
 
@@ -470,7 +470,7 @@ InnerModularHermitePade : with
                 nlcq := gv0(j)
                 res1 := modpreduction(nlcq, p)$PEVALUT
                 res1 case "failed" => return "failed"
-                ress(j) := res1::FrP
+                ress(j) := res1@FrP
             resl := cons(ress, resl)
         reverse!(resl)
 
@@ -710,13 +710,13 @@ InnerModularHermitePade : with
         nvars = 1 =>
             ngv10p := eval1s(gvl, pt, first vars, pss1)
             ngv10p case "failed" => return "failed"
-            ngv10 := ngv10p::List(PA)
+            ngv10 := ngv10p@List(PA)
             ngv2 := gen(ngv10, p, pss.pss_qval)
             ve := pss.degree_bounds
             blr := do_modular_solve(ngv2, ve, pss.pss_sigma,
                                       pss.points, p, pss.pss_kind)
             blr case "no_solution" => return "no_solution"
-            rblr := blr::NBR
+            rblr := blr@NBR
             bm := rblr.basis
             va := rblr.defects
             civ := rblr.cinds
@@ -750,7 +750,7 @@ InnerModularHermitePade : with
             return [va, civ, m, ov, nev, ncv]
         ngv0p := eval2s(gvl, pt, first vars, pss1)
         ngv0p case "failed" => return "failed"
-        ngvl := ngv0p::List(PMP1)
+        ngvl := ngv0p@List(PMP1)
         return do_poly_modular(rest vars, ngvl, pss, gen)
 
     do_poly_modular(vars : List(Symbol), gvl : List(PMP1), pss : PSS,
@@ -800,7 +800,7 @@ InnerModularHermitePade : with
                 bad_cnt := bad_cnt + 1
                 bad_cnt > good_cnt + 2 => return "failed"
                 "iterate"
-            ppr := pprp::PBR
+            ppr := pprp@PBR
 
             -- check for bad reduction and other loosage
             va := ppr.defects
@@ -894,7 +894,7 @@ InnerModularHermitePade : with
                               offsets, exps)$VMR
             pp case "failed" => "iterate"
             -- if successful return
-            rr := pp::PDR
+            rr := pp@PDR
             return [va, civ, m, rr.offsetdata, _
                     rr.expdata, rr.coeffdata]
 
@@ -927,12 +927,12 @@ InnerModularHermitePade : with
             -- eval and solve reduced system
             ngv0p := eval3s(gvl, p)
             ngv0p case "failed" => "iterate"
-            ngvl := ngv0p::List(PMP1)
+            ngvl := ngv0p@List(PMP1)
             pprp := do_poly_modular(vars, ngvl, pss, gen)
 
             pprp case "no_solution" => return "no_solution"
             pprp case "failed" => "iterate"
-            ppr := pprp::PBR
+            ppr := pprp@PBR
 
             -- check for bad reduction and other loosage
             va := ppr.defects
@@ -1022,7 +1022,7 @@ InnerModularHermitePade : with
             pp case "failed" => "iterate"
             -- if successful return
             return [va, civ, m, offsets, _
-                    exps, pp::PAI]
+                    exps, pp@PAI]
 
     do_poly_integer(vars : List Symbol, gvl : List(PMP),
                       ve : Vector Integer,
@@ -1217,7 +1217,7 @@ ModularHermitePade() : with
        for i in 1..m for p in lpi repeat
            vpp := PPFtoPA(p, sigma, psi)
            vpp case "failed" => return "failed"
-           vpa(i) := vpp::PA
+           vpa(i) := vpp@PA
        vpa
 
    intpoly_to_PFI(p : SparseUnivariatePolynomial(Integer)) : PFI ==
@@ -1279,13 +1279,13 @@ ModularHermitePade() : with
            psi := prime::K1
            gv0p := LLFI_to_LPA(list, 0, psi)
            gv0p case "failed" => "iterate"
-           gv0 := gv0p::List(PA)
+           gv0 := gv0p@List(PA)
            gv2 := gen(gv0, prime, 1)
 
            blr := do_modular_solve(gv2, ve, sigma, pts, prime, _
                      kind)$InnerModularHermitePade
            blr case "no_solution" => return false
-           rblr := blr::NBR
+           rblr := blr@NBR
            bm := rblr.basis
            va := rblr.defects
            civ := rblr.cinds
@@ -1339,7 +1339,7 @@ ModularHermitePade() : with
            pp := reconstruct(rstate, offsets)
            pp case "failed" =>
                "iterate"
-           ppr := pp::PAI
+           ppr := pp@PAI
            k := 0
            resv :=  new(nsols::NonNegativeInteger, _
                         empty()$Vector(SparseUnivariatePolynomial Integer) _
@@ -1447,8 +1447,8 @@ ModularHermitePade() : with
         pres := HP_solve_I(nlist, degs, kind, sigma, gen,
                              (x : List(SUP(Integer))) : CHKR
                                 +-> check(LPI_to_LPPI(x)))
-        pres case Boolean => return pres::Boolean
-        resi := pres::MPI
+        pres case Boolean => return pres@Boolean
+        resi := pres@MPI
         nr := nrows(resi)
         nc := ncols(resi)
         res := new(nr, nc, 0)$MPPI
@@ -1486,7 +1486,7 @@ ModularHermitePade() : with
            pp := do_poly_integer(vars, gv0, ve, sigma, pts, _
                      kind, qvar, gen)$InnerModularHermitePade
            pp case "no_solution" => return false
-           ppr := pp :: PBRI
+           ppr := pp@PBRI
            offsets := ppr.offsetdata
            oc := #offsets
            exps := ppr.expdata
@@ -1547,7 +1547,7 @@ ModularHermitePade() : with
        blr := do_modular_solve(gv, ve, sigma, pts, prime, _
                   kind)$InnerModularHermitePade
        blr case "no_solution" => return false
-       rblr := blr::NBR
+       rblr := blr@NBR
        bm := rblr.basis
        va := rblr.defects
        nsols := #va
@@ -1681,8 +1681,8 @@ ModularHermitePadeSolver(F : CommutativeRing, S : CommutativeRing)_
                                         degs, kind, p, sigma,
                                         gen, checkPF)
                     pp case Matrix SUP Integer =>
-                        return (pp::Matrix(SUP Integer) pretend Matrix(SUP S))
-                    return (pp::Boolean)
+                        return (pp@Matrix(SUP Integer) pretend Matrix(SUP S))
+                    return (pp@Boolean)
             else
                 HP_solve(l, degs, kind, qvar, sigma, gen, check) == true
             gen_Monte_Carlo_check(check, l, kind, qvar, sigma, gen) ==
@@ -1713,7 +1713,7 @@ ModularHermitePadeSolver(F : CommutativeRing, S : CommutativeRing)_
                 lpt := reverse!(lpt)
                 gv0p := LLF_to_LPA(list, n0 + delta, vars, lpt, p)
                 gv0p case "failed" => "iterate"
-                gvl := gv0p::List(PA)
+                gvl := gv0p@List(PA)
                 #gvl ~= 1 =>
                    "check_sol_mod_diff: #gvl ~= 1"
                 gv0 := first(gvl)

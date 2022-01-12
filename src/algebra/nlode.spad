@@ -56,16 +56,16 @@ NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
       nn := d * nn
 -- look for an integrating factor mu
       (u := integratingFactor(mm, nn, d, unk, x)) case F =>
-        mu := u::F
+        mu := u@F
         mm := mm * mu
         nn := nn * mu
         eval(int(mm, x) + int(nn-int(differentiate(mm, unk), x), unk), [kunk], [yx])
 -- check for Bernoulli equation
       (w := checkBernoulli(m, n, k1 := first lk)) case BER =>
-        solveBernoulli(w::BER, y, x, yx)
+        solveBernoulli(w@BER, y, x, yx)
 -- check for Riccati equation
       (v := checkRiccati(m, n, k1)) case List(F) =>
-        solveRiccati(v::List(F), y, x, yx)
+        solveRiccati(v@List(F), y, x, yx)
       "failed"
 
 -- look for an integrating factor
@@ -124,7 +124,7 @@ NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
 -- once a particular solution yp is known, the general solution is of the
 -- form  y = yp + 1/v  where v satisfies the linear 1st order equation
 -- v' - (l.2 + 2 l.3 yp) v = l.3
-      deq := differentiate(yx, x) - (l.2 + 2 * l.3 * u::F) * yx - l.3
+      deq := differentiate(yx, x) - (l.2 + 2 * l.3 * u@F) * yx - l.3
       gsol := solve(deq, y, x)::SOL         -- can always solve for order 1
 -- if v = vp + c v0 is the general solution of the above equation, then
 -- the general first integral for the Riccati equation is
@@ -142,7 +142,7 @@ NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
       lineq := differentiate(yx, x, 2) + q1 * differentiate(yx, x) + q0 * yx
 -- should be made faster by requesting a particular nonzero solution only
       (not((gsol := solve(lineq, y, x)) case SOL))
-                              or empty?(bas := (gsol::SOL).basis) => "failed"
+                              or empty?(bas := (gsol@SOL).basis) => "failed"
       differentiate(first bas, x) / (l3 * first bas)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

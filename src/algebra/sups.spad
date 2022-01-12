@@ -567,7 +567,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
           explicitEntries? x => return "failed"
           lazyEvaluate x
       -- check if ups2 is a monomial
-      empty? rst y => iMap2((y1, m) +-> y1*(ry :: Coef), z +-> z - ny,
+      empty? rst y => iMap2((y1, m) +-> y1*(ry@Coef), z +-> z - ny,
                             false, ups1)
       explicitlyEmpty? x => 0
       nx :=
@@ -576,7 +576,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
           deg - 1
         -- can't have elt(xRefer) = infty unless all terms have been computed
         retract(elt xRefer)@I
-      divide(ups1, nx, ups2, ny, ry :: Coef)
+      divide(ups1, nx, ups2, ny, ry@Coef)
 
     taylorQuoByVar ups ==
       iMap2((y, n) +-> y, z +-> z - 1, false,
@@ -759,7 +759,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       cRationalPower(uts, r) ==
         (ord0 := orderOrFailed uts) case "failed" =>
           error "^: series with many leading zero coefficients"
-        order := ord0 :: I
+        order := ord0@I
         (n := order exquo denom(r)) case "failed" =>
           error "^: rational power does not exist"
         cc := coefficient(uts, order)
@@ -771,9 +771,9 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
             (ccInv :: Coef) ^ ((-num) :: NNI)
           RATPOWERS => cc ^ r
           error "^ rational power of coefficient undefined"
-        uts1 := (ccInv :: Coef) * uts
+        uts1 := (ccInv@Coef) * uts
         uts2 := uts1 * monomial(1, -order)
-        monomial(ccPow, (n :: I) * numer(r)) * cPower(uts2, r :: Coef)
+        monomial(ccPow, (n@I) * numer(r)) * cPower(uts2, r :: Coef)
 
       cExp uts ==
         zero?(cc := coefficient(uts, 0)) => iExp(uts, 1)
@@ -834,7 +834,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
             -- compute order of 'x'
             (ord := orderOrFailed x) case "failed" =>
               error concat("asin: ",MAYFPOW)
-            (order := ord :: I) = -1 => return asin(cc) :: %
+            (order := ord@I) = -1 => return asin(cc) :: %
             odd? order => error concat("asin: ",FPOWERS)
             c0 := asin(cc) :: %
             c0 + integrate(cRationalPower(x, -1/2) * differentiate(uts))
@@ -853,7 +853,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
             -- compute order of 'x'
             (ord := orderOrFailed x) case "failed" =>
               error concat("acos: ",MAYFPOW)
-            (order := ord :: I) = -1 => return acos(cc) :: %
+            (order := ord@I) = -1 => return acos(cc) :: %
             odd? order => error concat("acos: ",FPOWERS)
             c0 := acos(cc) :: %
             c0 + integrate(-cRationalPower(x, -1/2) * differentiate(uts))
@@ -868,7 +868,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         TRANSFCN =>
           (y := iExquo(1,(1 :: %) + uts*uts,true)) case "failed" =>
             error concat("atan: ",LOGS)
-          (atan(cc) :: %) + integrate((y :: %) * (differentiate uts))
+          (atan(cc) :: %) + integrate((y@%) * (differentiate uts))
         error concat("atan: ",TRCONST)
 
       cAcot uts ==
@@ -876,7 +876,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
           (y := iExquo(1,(1 :: %) + uts*uts,true)) case "failed" =>
             error concat("acot: ",LOGS)
           cc := coefficient(uts, 0)
-          (acot(cc) :: %) + integrate(-(y :: %) * (differentiate uts))
+          (acot(cc) :: %) + integrate(-(y@%) * (differentiate uts))
         error concat("acot: ",TRCONST)
 
       cAsec uts ==
@@ -889,13 +889,13 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
               -- compute order of 'x'
               (ord := orderOrFailed x) case "failed" =>
                 error concat("asec: ",MAYFPOW)
-              (order := ord :: I) = -1 => return asec(cc) :: %
+              (order := ord@I) = -1 => return asec(cc) :: %
               odd? order => error concat("asec: ",FPOWERS)
               cRationalPower(x, -1/2) * differentiate(uts)
             cRationalPower(x, -1/2) * differentiate(uts)
           (z := iExquo(y,uts,true)) case "failed" =>
             error concat("asec: ",NOTINV)
-          (asec(cc) :: %) + integrate(z :: %)
+          (asec(cc) :: %) + integrate(z@%)
         error concat("asec: ",TRCONST)
 
       cAcsc uts ==
@@ -908,13 +908,13 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
               -- compute order of 'x'
               (ord := orderOrFailed x) case "failed" =>
                 error concat("acsc: ",MAYFPOW)
-              (order := ord :: I) = -1 => return acsc(cc) :: %
+              (order := ord@I) = -1 => return acsc(cc) :: %
               odd? order => error concat("acsc: ",FPOWERS)
               -cRationalPower(x, -1/2) * differentiate(uts)
             -cRationalPower(x, -1/2) * differentiate(uts)
           (z := iExquo(y,uts,true)) case "failed" =>
             error concat("asec: ",NOTINV)
-          (acsc(cc) :: %) + integrate(z :: %)
+          (acsc(cc) :: %) + integrate(z@%)
         error concat("acsc: ",TRCONST)
 
       sinhcosh : % -> Record(%sinh : %, %cosh : %)
@@ -957,7 +957,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
         TRANSFCN =>
           (ord := orderOrFailed x) case "failed" =>
             error concat("asinh: ",MAYFPOW)
-          (order := ord :: I) = -1 => return asinh(cc) :: %
+          (order := ord@I) = -1 => return asinh(cc) :: %
           odd? order => error concat("asinh: ",FPOWERS)
           -- the argument to 'log' must have a non-zero constant term
           cLog(uts + cRationalPower(x, 1/2))
@@ -973,7 +973,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
             -- compute order of 'x'
             (ord := orderOrFailed x) case "failed" =>
               error concat("acosh: ",MAYFPOW)
-            (order := ord :: I) = -1 => return acosh(cc) :: %
+            (order := ord@I) = -1 => return acosh(cc) :: %
             odd? order => error concat("acosh: ",FPOWERS)
             -- the argument to 'log' must have a non-zero constant term
             cLog(uts + cRationalPower(x, 1/2))
@@ -1009,14 +1009,14 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
             -- compute order of 'x'
             (ord := orderOrFailed x) case "failed" =>
               error concat("asech: ",MAYFPOW)
-            (order := ord :: I) = -1 => return asech(cc) :: %
+            (order := ord@I) = -1 => return asech(cc) :: %
             odd? order => error concat("asech: ",FPOWERS)
             (utsInv := iExquo(1,uts,true)) case "failed" =>
               error concat("asech: ",NOTINV)
-            cLog((1 + cRationalPower(x, 1/2)) * (utsInv :: %))
+            cLog((1 + cRationalPower(x, 1/2)) * (utsInv@%))
           (utsInv := iExquo(1,uts,true)) case "failed" =>
             error concat("asech: ",NOTINV)
-          cLog((1 + cRationalPower(x, 1/2)) * (utsInv :: %))
+          cLog((1 + cRationalPower(x, 1/2)) * (utsInv@%))
         error concat("asech: ",TRCONST)
 
       cAcsch uts ==
@@ -1027,11 +1027,11 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
           -- compute order of 'x'
           (ord := orderOrFailed x) case "failed" =>
             error concat("acsc: ",MAYFPOW)
-          (order := ord :: I) = -1 => return acsch(cc) :: %
+          (order := ord@I) = -1 => return acsch(cc) :: %
           odd? order => error concat("acsch: ",FPOWERS)
           (utsInv := iExquo(1,uts,true)) case "failed" =>
             error concat("acsch: ",NOTINV)
-          cLog((1 + cRationalPower(x, 1/2)) * (utsInv :: %))
+          cLog((1 + cRationalPower(x, 1/2)) * (utsInv@%))
         error concat("acsch: ",TRCONST)
 
 --% Output forms
@@ -1065,7 +1065,7 @@ InnerSparseUnivariatePowerSeries(Coef) : Exports == Implementation where
       l :=
         explicitlyEmpty? st => l
         (deg := retractIfCan(elt refer)@Union(I,"failed")) case I =>
-            concat(prefix('O :: OUT, [vv^((((deg::I) + 1)*r) :: OUT)]), l)
+            concat(prefix('O :: OUT, [vv^((((deg@I) + 1)*r) :: OUT)]), l)
         l
       empty? l => (0$Coef) :: OUT
       reduce("+",reverse! l)
@@ -1515,7 +1515,7 @@ SparseUnivariateLaurentSeries(Coef, var, cen) : Exports == Implementation where
     taylor uls ==
       (uts := taylorIfCan uls) case "failed" =>
         error "taylor: Laurent series has a pole"
-      uts :: SUTS
+      uts
 
     retractIfCan(x:%):Union(SUTS,"failed") == taylorIfCan x
 
@@ -1545,7 +1545,7 @@ SparseUnivariateLaurentSeries(Coef, var, cen) : Exports == Implementation where
       uls1 : % / uls2 : % ==
         (q := uls1 exquo uls2) case "failed" =>
           error "quotient cannot be computed"
-        q :: %
+        q
 
     differentiate(uls : %, v : Variable(var)) == differentiate uls
 
@@ -1556,7 +1556,7 @@ SparseUnivariateLaurentSeries(Coef, var, cen) : Exports == Implementation where
         (recipr := recip uls2) case "failed" =>
           error "elt: second argument not invertible"
         uls3 := uls1 * monomial(1, -ord)
-        iCompose(uls3, uls2) * (recipr :: %) ^ ((-ord) :: NNI)
+        iCompose(uls3, uls2) * (recipr@%) ^ ((-ord) :: NNI)
       iCompose(uls1, uls2)
 
     if Coef has IntegralDomain then
@@ -1622,7 +1622,7 @@ SparseUnivariateLaurentSeries(Coef, var, cen) : Exports == Implementation where
               error "^: rational power does not exist"
             uts := retract(uls * monomial(1, -order))@SUTS
             utsPow := (uts ^ r) :: %
-            monomial(1, (n :: I) * numer(r)) * utsPow
+            monomial(1, (n@I) * numer(r)) * utsPow
           uts := retract(uls)@SUTS
           (uts ^ r) :: %
 
@@ -1633,7 +1633,7 @@ SparseUnivariateLaurentSeries(Coef, var, cen) : Exports == Implementation where
       if not(explicitlyEmpty? st or explicitEntries? st) _
         and (nx := retractIfCan(elt getRef uls))@Union(I,"failed") case I then
         count : NNI := _$streamCount$Lisp
-        degr := min(count, (nx :: I) + count + 1)
+        degr := min(count, (nx::I) + count + 1)
         extend(uls, degr)
       seriesToOutputForm(st, getRef uls, variable uls, center uls, 1)
 
@@ -1701,7 +1701,7 @@ SparseUnivariatePuiseuxSeries(Coef, var, cen) : Exports == Implementation where
     retractIfCan(upxs:%):Union(SUTS,"failed") ==
       (uls := retractIfCan(upxs)@Union(SULS,"failed")) case "failed" =>
         "failed"
-      retractIfCan(uls :: SULS)@Union(SUTS,"failed")
+      retractIfCan(uls@SULS)@Union(SUTS,"failed")
 
     if Coef has "*": (Fraction Integer, Coef) -> Coef then
       differentiate(upxs : %, v : Variable(var)) == differentiate upxs
@@ -1717,7 +1717,7 @@ SparseUnivariatePuiseuxSeries(Coef, var, cen) : Exports == Implementation where
       if not(explicitlyEmpty? st or explicitEntries? st) _
         and (nx := retractIfCan(elt refer)@Union(I,"failed")) case I then
         count : NNI := _$streamCount$Lisp
-        degr := min(count, (nx :: I) + count + 1)
+        degr := min(count, (nx@I) + count + 1)
         extend(sups, degr)
       seriesToOutputForm(st, refer, variable x, center x, rationalPower x)
 

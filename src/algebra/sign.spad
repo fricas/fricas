@@ -22,7 +22,7 @@ ToolsForSign(R : Ring) : with
     if R has RetractableTo Fraction Integer then
       sign r ==
         (u := retractIfCan(r)@Union(Fraction Integer, "failed"))
-          case Fraction(Integer) => sign(u::Fraction Integer)
+          case Fraction(Integer) => sign(u@Fraction Integer)
         nonQsign r
 
     else
@@ -30,7 +30,7 @@ ToolsForSign(R : Ring) : with
         sign r ==
           (u := retractIfCan(r)@Union(Integer, "failed"))
             case "failed" => "failed"
-          sign(u::Integer)
+          sign(u@Integer)
 
       else
         sign r ==
@@ -68,7 +68,7 @@ InnerPolySign(R, UP) : Exports == Implementation where
     signAround(p : UP, x : R, rsign : R -> U) ==
       (ur := signAround(p, x,  1, rsign)) case "failed" => "failed"
       (ul := signAround(p, x, -1, rsign)) case "failed" => "failed"
-      (ur::Integer) = (ul::Integer) => ur
+      (ur@Integer) = (ul@Integer) => ur
       "failed"
 
     signAround(p, x, dir, rsign) ==
@@ -76,14 +76,14 @@ InnerPolySign(R, UP) : Exports == Implementation where
       zero?(r := p x) =>
         (u := signAround(differentiate p, x, dir, rsign)) case "failed"
           => "failed"
-        dir * u::Integer
+        dir * u@Integer
       rsign r
 
     signAround(p : UP, dir : Integer, rsign : R -> U) ==
       zero? p => 0
       (u := rsign leadingCoefficient p) case "failed" => "failed"
-      (dir > 0) or (even? degree p) => u::Integer
-      - (u::Integer)
+      (dir > 0) or (even? degree p) => u@Integer
+      - (u@Integer)
 
 )abbrev package SIGNRF RationalFunctionSign
 --%% RationalFunctionSign
@@ -126,44 +126,44 @@ RationalFunctionSign(R : GcdDomain) : Exports == Implementation where
     sign f ==
       (un := psign numer f) case "failed" => "failed"
       (ud := psign denom f) case "failed" => "failed"
-      (un::Integer) * (ud::Integer)
+      (un@Integer) * (ud@Integer)
 
     finiteSign(g, a) ==
       (ud := signAround(denom g, a, sign$%)) case "failed" => "failed"
       (un := signAround(numer g, a, sign$%)) case "failed" => "failed"
-      (un::Integer) * (ud::Integer)
+      (un@Integer) * (ud@Integer)
 
     sign(f, x, a) ==
       g := univariate(f, x)
       zero?(n := whatInfinity a) => finiteSign(g, retract a)
       (ud := signAround(denom g, n, sign$%)) case "failed" => "failed"
       (un := signAround(numer g, n, sign$%)) case "failed" => "failed"
-      (un::Integer) * (ud::Integer)
+      (un@Integer) * (ud@Integer)
 
     sign(f, x, a, st) ==
       (ud := signAround(denom(g := univariate(f, x)), a,
                     d := direction st, sign$%)) case "failed" => "failed"
       (un := signAround(numer g, a, d, sign$%)) case "failed" => "failed"
-      (un::Integer) * (ud::Integer)
+      (un@Integer) * (ud@Integer)
 
     psign p ==
-      (r := retractIfCan(p)@Union(R, "failed")) case R => sign(r::R)$SGN
+      (r := retractIfCan(p)@Union(R, "failed")) case R => sign(r@R)$SGN
       (u := sign(retract(unit(s := squareFree p))@R)$SGN) case "failed" =>
         "failed"
-      ans := u::Integer
+      ans := u@Integer
       for term in factorList s | odd?(term.exponent) repeat
         (u := sqfrSign(term.factor)) case "failed" => return "failed"
-        ans := ans * (u::Integer)
+        ans := ans * (u@Integer)
       ans
 
     sqfrSign p ==
       (u := termSign first(l := monomials p)) case "failed" => "failed"
-      listSign(rest l, u::Integer)
+      listSign(rest l, u@Integer)
 
     listSign(l, s) ==
       for term in l repeat
         (u := termSign term) case "failed" => return "failed"
-        u::Integer ~= s => return "failed"
+        u@Integer ~= s => return "failed"
       s
 
     termSign term ==
@@ -177,6 +177,7 @@ RationalFunctionSign(R : GcdDomain) : Exports == Implementation where
 ++ Date Created: 4 October 1989
 ++ Description: Computation of limits for rational functions.
 ++ Keywords: limit, rational function.
+-- Exposed, but unused internally
 RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
   Z       ==> Integer
   P       ==> Polynomial R
@@ -238,13 +239,13 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
     limit(f : RF, eq : EQ RF) ==
       (xx := retractIfCan(lhs eq)@Union(SE,"failed")) case "failed" =>
         error "limit: left hand side must be a variable"
-      x := xx :: SE; a := rhs eq
+      x := xx@SE; a := rhs eq
       locallimit(f, x, a::ORF)
 
     complexLimit(f : RF, eq : EQ RF) ==
       (xx := retractIfCan(lhs eq)@Union(SE,"failed")) case "failed" =>
         error "limit: left hand side must be a variable"
-      x := xx :: SE; a := rhs eq
+      x := xx@SE; a := rhs eq
       locallimitcomplex(f, x, a::OPF)
 
     limit(f : RF, eq : EQ OrderedCompletion P) ==
@@ -252,7 +253,7 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
         error "limit: left hand side must be a variable"
       (xx := retractIfCan(p)@Union(SE,"failed")) case "failed" =>
         error "limit: left hand side must be a variable"
-      x := xx :: SE
+      x := xx@SE
       a := map(y +-> y::RF, rhs eq)$OrderedCompletionFunctions2(P, RF)
       locallimit(f, x, a)
 
@@ -261,13 +262,13 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
         error "limit: left hand side must be a variable"
       (xx := retractIfCan(p)@Union(SE,"failed")) case "failed" =>
         error "limit: left hand side must be a variable"
-      x := xx :: SE
+      x := xx@SE
       a := map(y +-> y::RF, rhs eq)$OnePointCompletionFunctions2(P, RF)
       locallimitcomplex(f, x, a)
 
     fLimit(n, d, a, dir) ==
       (s := signAround(d, a, dir, sign$RFSGN)) case "failed" => "failed"
-      si := n * (s::Z)
+      si := n * (s@Z)
       si = 0 => error "fLimit: sign is 0"
       si > 0 => plusInfinity()
       minusInfinity()
@@ -281,13 +282,13 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
       zero?(n := (numer f) a) => 0$RF::ORF
       zero?(d := (denom f) a) =>
         (s := sign(n)$RFSGN) case "failed" => "failed"
-        rhsl := fLimit(s::Z, denom f, a, 1)
-        lhsl := fLimit(s::Z, denom f, a, -1)
+        rhsl := fLimit(s@Z, denom f, a, 1)
+        lhsl := fLimit(s@Z, denom f, a, -1)
         rhsl case "failed" =>
           lhsl case "failed" => "failed"
           [lhsl, rhsl]
         lhsl case "failed" => [lhsl, rhsl]
-        rhsl::ORF = lhsl::ORF => lhsl::ORF
+        rhsl@ORF = lhsl@ORF => lhsl@ORF
         [lhsl, rhsl]
       (n / d)::ORF
 
@@ -297,7 +298,7 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
       (dn := degree numer g) > (dd := degree denom g) =>
         (sn := signAround(numer g, n, sign$RFSGN)) case "failed" => "failed"
         (sd := signAround(denom g, n, sign$RFSGN)) case "failed" => "failed"
-        si := (sn::Z) * (sd::Z)
+        si := (sn@Z) * (sd@Z)
         si = 0 => error "locallimit: sign is 0"
         si > 0 => plusInfinity()
         minusInfinity()
@@ -307,17 +308,17 @@ RationalFunctionLimitPackage(R : GcdDomain) : Exports==Implementation where
     limit(f, eq, st) ==
       (xx := retractIfCan(lhs eq)@Union(SE,"failed")) case "failed" =>
         error "limit: left hand side must be a variable"
-      x := xx :: SE; a := rhs eq
+      x := xx@SE; a := rhs eq
       zero?(n := (numer(g := univariate(f, x))) a) => 0$RF::ORF
       zero?(d := (denom g) a) =>
         (s := sign(n)$RFSGN) case "failed" => "failed"
-        fLimit(s::Z, denom g, a, direction st)
+        fLimit(s@Z, denom g, a, direction st)
       (n / d)::ORF
 
     locallimitcomplex(f, x, a) ==
       g := univariate(f, x)
       (r := retractIfCan(a)@Union(RF, "failed")) case RF =>
-        finiteComplexLimit(g, r::RF)
+        finiteComplexLimit(g, r@RF)
       (dn := degree numer g) > (dd := degree denom g) => infinity()
       dn < dd => 0$RF::OPF
       ((leadingCoefficient numer g) / (leadingCoefficient denom g))::OPF

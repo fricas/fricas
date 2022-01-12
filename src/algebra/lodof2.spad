@@ -630,7 +630,7 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
         option = "semireg" and slop = 0 =>
             va := value(factor_op(f, factorizer, "alg factor") :: RS)
             vr : LA :=
-                va case LL => [va :: LL, 1, 0, monomial(1, 1)]
+                va case LL => [va@LL, 1, 0, monomial(1, 1)]
                 va::LA
             xx : UP := monomial(1, 1)
             vr_ope := vr.ope
@@ -715,12 +715,12 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             if v case SP then
                 return v
             else
-                vrs := v :: RS
+                vrs := v@RS
                 res : RS := []
                 for i in vrs repeat
                     if i case LL then
                         nt : LA
-                        nt := [i :: LL, qcoerce(degree(npf.factor)), gr,
+                        nt := [i@LL, qcoerce(degree(npf.factor)), gr,
                                monomial(1, 1)]
                         res := append(res, [nt])
                     else
@@ -743,19 +743,19 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             v : FRI := factor_riccati(f2r, factorizer, option)
             r := monomial(coefr ^ n, qcoerce(denom(slop)))
             if v case SP then
-                vsp := v :: SP
+                vsp := v@SP
                 res_sp := [[i.op, eval(r, monomial(1, 1), i.ram), i.expart]
                         for i in vsp] :: SP
                 return res_sp
             else
-                vrs := v :: RS
+                vrs := v@RS
                 res : RS := []
                 for i in vrs repeat
                     nt : LA
                     if i case LL then
-                        nt := [i :: LL, 1, 0, r]
+                        nt := [i@LL, 1, 0, r]
                     else
-                        ir := i :: LA
+                        ir := i@LA
                         nt := [ir.ope, ir.dext, ir.alpha, eval(r, monomial(1,1), ir.rami)]
                     res := append(res, [nt])
                 return res
@@ -767,13 +767,13 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
     substitute(a, f) ==
         new_mon : LL := monomial(1, 1)
         if a case UP then
-            new_mon := new_mon + convertL3toLL(a :: UP :: RF :: L3)
+            new_mon := new_mon + convertL3toLL(a@UP :: RF :: L3)
         else
-            new_mon := new_mon + a :: US :: LL
+            new_mon := new_mon + a@US :: LL
         if f case LL then
-            ftmp := f :: LL
+            ftmp := f@LL
         else
-            fr := f :: LA
+            fr := f@LA
             ftmp := fr.ope
             new_mon := ramification_of(new_mon, leadingCoefficient(fr.rami),
                                        qcoerce(degree(fr.rami)))
@@ -784,10 +784,10 @@ LinearOrdinaryDifferentialOperatorFactorizer2(var, cen) : Exports == Impl where
             res := res + lc * new_mon ^ dg
             ftmp := reductum ftmp
         if f case LL then
-            fl := f :: LL
+            fl := f@LL
             return res
         else
-            fr := f :: LA
+            fr := f@LA
             return [res, fr.dext, fr.alpha, fr.rami]
 
     testsb(a, f) ==

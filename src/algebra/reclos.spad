@@ -244,7 +244,7 @@ RealRootCharacterizationCategory(TheField, ThePols) : Category == PUB where
         recip(toInv, rootChar) ==
           degree(toInv) = 0 =>
             res := recip(leadingCoefficient(toInv))
-            if (res case "failed") then "failed" else (res::TheField::ThePols)
+            if (res case "failed") then "failed" else (res@TheField::ThePols)
           defPol := definingPolynomial(rootChar)
           d := principalIdeal([defPol, toInv])
           zero?(d.generator,rootChar) => "failed"
@@ -728,7 +728,7 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
           newPol := (rootChar.defPol exquo toTest)::P
           ((1$ThePolDom - inv(newPol.c)*newPol) exquo toTest)::P
       else
-         ((1$ThePolDom - (r::TheField)*rootChar.defPol) exquo toTest)::P
+         ((1$ThePolDom - (r@TheField)*rootChar.defPol) exquo toTest)::P
 
    recip(toTest, rootChar) ==
      degree(toTest) = 0 or degree(rootChar.defPol) <= degree(toTest) =>
@@ -1053,23 +1053,23 @@ RealClosure(TheField) : PUB == PRIV where
           x.val
 
        coerce(x : %) : E ==
-          x case TheField => x::TheField :: E
+          x case TheField => x@TheField :: E
           xx : % := coerce(x)
           outputForm(univariate(xx.val), x.outForm)$SUP
 
 
        inv(x) ==
           (res := recip x) case "failed" => error "Division by 0"
-          res :: %
+          res
 
        recip(x) ==
          x case TheField =>
            if ((r := recip(x)$TheField) case TheField)
-           then r::%
+           then r@%
            else "failed"
          if ((r := recip(x.val,x.seg)$SEG) case "failed")
          then "failed"
-         else lessAlgebraic([x.seg, r::PME, x.outForm, x.order]$Rec)
+         else lessAlgebraic([x.seg, r@PME, x.outForm, x.order]$Rec)
 
        (n : Z * x : %) : % ==
           x case TheField => n *$TheField x
@@ -1132,9 +1132,9 @@ RealClosure(TheField) : PUB == PRIV where
                nonNull([x.seg, (x.val)+y::PME, x.outForm, x.order]$Rec)
              -- now both are algebraic
           y.order > x.order =>
-               nonNull([y.seg, x::PME+y.val, y.outForm, y.order]$Rec)
+               nonNull([y.seg, x::PME + y.val, y.outForm, y.order]$Rec)
           x.order > y.order =>
-               nonNull([x.seg, (x.val)+y::PME, x.outForm, x.order]$Rec)
+               nonNull([x.seg, (x.val) + y::PME, x.outForm, x.order]$Rec)
               -- now x.exp = y.exp
               -- we simply add polynomials (since degree cannot increase)
               -- however wee need to call lessAlgebraic
@@ -1142,7 +1142,7 @@ RealClosure(TheField) : PUB == PRIV where
 
 
        -x ==
-          x case TheField => -$TheField (x::TheField)
+          x case TheField => -$TheField (x@TheField)
           [x.seg, -$PME x.val, x.outForm, x.order]$Rec
 
 

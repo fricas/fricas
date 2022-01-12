@@ -131,11 +131,11 @@ BasicOperator() : Exports == Implementation where
 
     display op ==
       (u := property(op, DISPLAY)) case "failed" => "failed"
-      (u::None) pretend (List O -> O)
+      (u@None) pretend (List O -> O)
 
     input op ==
       (u := property(op, SEXPR)) case "failed" => "failed"
-      (u::None) pretend (List SEX -> SEX)
+      (u@None) pretend (List SEX -> SEX)
 
     arity op ==
       negative?(n := op.narg) => "failed"
@@ -153,14 +153,14 @@ BasicOperator() : Exports == Implementation where
       op1.narg ~= op2.narg => false
       set(keys properties op1) ~=$Set(Symbol) set(keys properties op2) => false
       (func := property(op1, EQUAL?)) case None =>
-                   ((func::None) pretend ((%, %) -> Boolean)) (op1, op2)
+                   ((func@None) pretend ((%, %) -> Boolean)) (op1, op2)
       true
 
 -- property WEIGHT allows one to change the ordering around
 -- by default, every operator has weight 1
     weight op ==
       (w := property(op, WEIGHT)) case "failed" => 1
-      (w::None) pretend NonNegativeInteger
+      (w@None) pretend NonNegativeInteger
 
 -- property LESS? contains a function f: (BOP, BOP) -> Boolean
 -- such that f(o1, o2) is true iff o1 < o2
@@ -175,9 +175,9 @@ BasicOperator() : Exports == Implementation where
         n1 ~= (n2 := #(d2 := difference(k2, k1))) => n1 < n2
         inspect(d1) < inspect(d2)
       (func := property(op1, LESS?)) case None =>
-                   ((func::None) pretend ((%, %) -> Boolean)) (op1, op2)
+                   ((func@None) pretend ((%, %) -> Boolean)) (op1, op2)
       (func := property(op1, EQUAL?)) case None =>
-              not(((func::None) pretend ((%, %) -> Boolean)) (op1, op2))
+              not(((func@None) pretend ((%, %) -> Boolean)) (op1, op2))
       false
 
 )abbrev package BOP1 BasicOperatorFunctions1
@@ -236,18 +236,18 @@ BasicOperatorFunctions1(A : SetCategory) : Exports == Implementation where
 
     evaluate op ==
       (func := property(op, EVAL)) case "failed" => "failed"
-      (func::None) pretend (List A -> A)
+      (func@None) pretend (List A -> A)
 
     evaluate(op : OP, args : List A) ==
       (func := property(op, EVAL)) case "failed" => "failed"
-      ((func::None) pretend (List A -> A)) args
+      ((func@None) pretend (List A -> A)) args
 
     evaluate(op : OP, func : List A -> A) ==
       setProperty(op, EVAL, func pretend None)
 
     derivative op ==
       (func := property(op, DIFF)) case "failed" => "failed"
-      ((func::None) pretend List(List A -> A))
+      ((func@None) pretend List(List A -> A))
 
     derivative(op : OP, grad : List(List A -> A)) ==
       setProperty(op, DIFF, grad pretend None)
@@ -268,14 +268,14 @@ BasicOperatorFunctions1(A : SetCategory) : Exports == Implementation where
     eqconst?(a, b) ==
       (va := property(a, CONST)) case "failed" => not has?(b, CONST)
       ((vb := property(b, CONST)) case None) and
-         ((va::None) pretend A) = ((vb::None) pretend A)
+         ((va@None) pretend A) = ((vb@None) pretend A)
     opconst : OP
     if A has Comparable then
       ltconst? : (OP, OP) -> Boolean
       ltconst?(a, b) ==
         (va := property(a, CONST)) case "failed" => has?(b, CONST)
         ((vb := property(b, CONST)) case None) and
-           smaller?((va::None) pretend A, (vb::None) pretend A)
+           smaller?((va@None) pretend A, (vb@None) pretend A)
       opconst :=
         comparison(equality(operator('constant, 0), eqconst?), ltconst?)
     else
@@ -288,7 +288,7 @@ BasicOperatorFunctions1(A : SetCategory) : Exports == Implementation where
 
     constantOpIfCan op ==
       is?(op, 'constant) and
-        ((u := property(op, CONST)) case None) => (u::None) pretend A
+        ((u := property(op, CONST)) case None) => (u@None) pretend A
       "failed"
 
     if A has ConvertibleTo InputForm then

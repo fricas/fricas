@@ -447,20 +447,20 @@ TriangularSetCategory(R : IntegralDomain, E : OrderedAbelianMonoidSup, _
      construct(lp : List(P)) ==
        rif := retractIfCan(lp)@Union(%,"failed")
        not (rif case %) => error"in construct : LP -> % from TSETCAT : bad arg"
-       rif::%
+       rif
 
      retractIfCan(lp : List(P)) ==
        empty? lp => (empty()$%)::Union(%,"failed")
        lp := sort(supRittWu?, lp)
        rif := retractIfCan(rest(lp))@Union(%,"failed")
        not (rif case %) => error"in retractIfCan : LP -> ... from TSETCAT : bad arg"
-       extendIfCan(rif::%,first(lp))@Union(%,"failed")
+       extendIfCan(rif@%, first(lp))@Union(%, "failed")
 
      extend(ts : %, p : P) : % ==
        eif := extendIfCan(ts,p)@Union(%,"failed")
        not (eif case %) =>
            error "in extend : (%, P) -> % from TSETCAT : bad args"
-       eif::%
+       eif
 
      if V has Finite
      then
@@ -1029,9 +1029,8 @@ PolynomialSetUtilitiesPackage (R, E, V, P) : Exports == Implementation where
          rs := (rec::RBT).top
          -- ar := autoReduce(bs2, lazyPrem, reduced?)@Union(T, List(P))
          ar := bs2::Union(T, List(P))
-         if (ar case T)@B
-           then
-             bs2 := ar::T
+         if (ar case T) then
+             bs2 := ar@T
              if infRittWu?(bs2, bs1)
                then
                  rs := rewriteSetWithReduction(rs, bs2, redOp, redOp?)$T
@@ -1039,7 +1038,7 @@ PolynomialSetUtilitiesPackage (R, E, V, P) : Exports == Implementation where
                else
                  stop := true
              rs := concat(members(bs2), rs)
-           else
+         else
              rs := concat(ar::LP, rs)
          if any?(ground?, rs)
            then
@@ -1155,9 +1154,8 @@ PolynomialSetUtilitiesPackage (R, E, V, P) : Exports == Implementation where
                  f := first copylf
                  copylf := rest copylf
                  test := (newcp exquo$P f)
-                 if (test case P)@B
-                   then
-                     newcp := test::P
+                 if (test case P) then
+                     newcp := test@P
            if ground? newcp
              then
                newp := unitCanonical(newp)
@@ -1251,20 +1249,17 @@ PolynomialSetUtilitiesPackage (R, E, V, P) : Exports == Implementation where
 
        unprotectedRemoveRedundantFactors (a, b) ==
          c := b exquo$P a
-         if (c case P)@B
-           then
-             d : P := c::P
-             if ground? d
-               then
+         if (c case P) then
+             d : P := c@P
+             if ground? d then
                  return([a])
-               else
+             else
                  return([a, d])
-           else
+         else
              g : P := gcd(a, b)$P
-             if ground? g
-               then
+             if ground? g then
                  return([a, b])
-               else
+             else
                  return([g, (a exquo$P g)::P, (b exquo$P g)::P])
 
      else
@@ -1297,16 +1292,14 @@ PolynomialSetUtilitiesPackage (R, E, V, P) : Exports == Implementation where
 
        unprotectedRemoveRedundantFactors (a, b) ==
          c := b exquo$P a
-         if (c case P)@B
-           then
-             d : P := c::P
-             if ground? d
-               then
+         if (c case P) then
+             d : P := c@P
+             if ground? d then
                  return([a])
-               else
+             else
                  if infRittWu?(d, a) then (a, d) := (d, a)
                  return(unprotectedRemoveRedundantFactors(a, d))
-            else
+         else
               return([a, b])
 
      removeRedundantFactors (lp : LP) ==
@@ -1490,9 +1483,8 @@ WuWenTsunTriangularSet(R, E, V, P) : Exports == Implementation where
        bs : %
        while (not empty? rs) and (not contradiction) repeat
          rec := basicSet(rs, redOp?)
-         contradiction := (rec case "failed")@B
-         if not contradiction
-           then
+         contradiction := (rec case "failed")
+         if not contradiction then
              bs := (rec::RBT).bas
              rs := (rec::RBT).top
              rs :=  rewriteIdealWithRemainder(rs, bs)
@@ -1501,8 +1493,7 @@ WuWenTsunTriangularSet(R, E, V, P) : Exports == Implementation where
                then
                  rs := rewriteSetWithReduction(rs, bs, redOp, redOp?)
                  contradiction := ((not empty? rs) and (first(rs) = 1))
-         if (not empty? rs) and (not contradiction)
-           then
+         if (not empty? rs) and (not contradiction) then
              rs := removeDuplicates concat(rs, members(bs))
              rs := rewriteIdealWithQuasiMonicGenerators(rs, redOp?, redOp)$pa
              contradiction := ((not empty? rs) and (first(rs) = 1))
@@ -1511,8 +1502,8 @@ WuWenTsunTriangularSet(R, E, V, P) : Exports == Implementation where
 
      medialSet(ps : LP, redOp? : ((P, P)->B), redOp : ((P, P)->P)) ==
        foo : Union(RBT,"failed") := medialSetWithTrace(ps,redOp?,redOp)
-       (foo case "failed") => "failed" :: Union(%,"failed")
-       ((foo::RBT).bas) :: Union(%,"failed")
+       (foo case "failed") => "failed"
+       (foo@RBT).bas
 
      medialSet(ps : LP) == medialSet(ps, initiallyReduced?, initiallyReduce)
 
@@ -1526,22 +1517,19 @@ WuWenTsunTriangularSet(R, E, V, P) : Exports == Implementation where
        ms : %
        while (not empty? rs) and (not contradiction) repeat
          rec := medialSetWithTrace (qs, redOp?, redOp)
-         contradiction := (rec case "failed")@B
-         if not contradiction
-           then
+         contradiction := (rec case "failed")
+         if not contradiction then
              ms := (rec::RBT).bas
              qs := (rec::RBT).top
              qs := rewriteIdealWithRemainder(qs, ms)
              contradiction := ((not empty? qs) and (first(qs) = 1))
-             if not contradiction
-               then
+             if not contradiction then
                  rs :=  rewriteSetWithReduction(qs, ms, lazyPrem, reduced?)
                  contradiction := ((not empty? rs) and (first(rs) = 1))
-             if  (not contradiction) and (not empty? rs)
-               then
+             if  (not contradiction) and (not empty? rs) then
                  qs := removeDuplicates(concat(rs, concat(members(ms), qs)))
-       contradiction => "failed"::Union(%,"failed")
-       ms::Union(%,"failed")
+       contradiction => "failed"
+       ms
 
      characteristicSet(ps : LP, redOp? : ((P, P)->B), redOp : ((P, P)->P)) ==
        characteristicSetUsingTrace(ps, redOp?, redOp)
@@ -1553,20 +1541,18 @@ WuWenTsunTriangularSet(R, E, V, P) : Exports == Implementation where
        while ((esl := extractSplittingLeaf(a)) case ALpT) repeat
           ps := value(value(esl::ALpT)$ALpT)$NLpT
           charSet? := characteristicSetUsingTrace(ps, redOp?, redOp)
-          if not (charSet? case %)
-             then
+          if not (charSet? case %) then
                 setvalue!(esl::ALpT, [[]$LP, empty()$%, true]$NLpT)
                 updateStatus!(a)
-             else
+          else
                 cs := (charSet?)::%
                 lics := initials(cs)
                 lics := removeRedundantFactors(lics)$pa
                 lics := sort(infRittWu?, lics)
-                if empty? lics
-                   then
+                if empty? lics then
                       setvalue!(esl::ALpT, [ps, cs, true]$NLpT)
                       updateStatus!(a)
-                   else
+                else
                       ln : List NLpT := [[[]$LP, cs, true]$NLpT]
                       while not empty? lics repeat
                          newps := cons(first(lics), concat(cs::LP, ps))
@@ -1587,8 +1573,8 @@ WuWenTsunTriangularSet(R, E, V, P) : Exports == Implementation where
          p := (first ts)::P
          rsts : Union(%,"failed")
          rsts := removeSquares((rest ts)::%)
-         not(rsts case %) => "failed"::Union(%,"failed")
-         newts := rsts::%
+         not(rsts case %) => "failed"
+         newts := rsts@%
          empty? newts =>
            p := squareFreePart(p)
            (per([primitivePart(p)]$LP))::Union(%,"failed")
@@ -1607,9 +1593,8 @@ WuWenTsunTriangularSet(R, E, V, P) : Exports == Implementation where
            ts := first lts
            lts := rest lts
            iic := removeSquares(ts)
-           if iic case %
-             then
-               newlts := cons(iic::%, newlts)
+           if iic case % then
+               newlts := cons(iic@%, newlts)
          newlts := removeDuplicates(newlts)$(List %)
          sort(infRittWu?, newlts)
 

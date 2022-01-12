@@ -395,11 +395,11 @@ RationalLODE(F, UP) : Exports == Implementation where
         sol := ratDsolve0(monicRightDivide(op, monomial(1, 1)).quotient, g)
         b : List(RF) := [1]
         for f in sol.basis repeat
-          if (uu := infieldint f) case RF then b := concat(uu::RF, b)
+          if (uu := infieldint f) case RF then b := concat(uu@RF, b)
         sol.particular case "failed" => ["failed", b]
         [infieldint(sol.particular::RF), b]
       (u := denomLODE(op, g)) case "failed" => ["failed", empty()]
-      rec := candidates(op, [g], u::UP)
+      rec := candidates(op, [g], u@UP)
       l := lb := lsol := empty()$List(RF)
       for q in rec.basis repeat
           if zero?(opq := op q) then lsol := concat(q, lsol)
@@ -592,7 +592,7 @@ ODETools(F, LODO) : Exports == Implementation where
       zero? g => 0
       (sol := variationOfParameters(op, g, b)) case "failed" => "failed"
       ans : F := 0
-      for f in b for i in minIndex(s := sol::V) .. repeat
+      for f in b for i in minIndex(s := sol@V) .. repeat
         ans := ans + integration(qelt(s, i)) * f
       ans
 
@@ -636,8 +636,8 @@ ODEIntegration(R, F) : Exports == Implementation where
 
 -- This is the integration function to be used for quadratures
     int(f, x) ==
-      (u := integrate(f, x)) case F => u::F
-      first(u::List(F))
+      (u := integrate(f, x)) case F => u@F
+      first(u@List(F))
 
 -- mkprod([q1, f1], ..., [qn, fn]) returns */(fi^qi) but groups the
 -- qi having the same denominator together
@@ -652,16 +652,16 @@ ODEIntegration(R, F) : Exports == Implementation where
 -- computes exp(int(f, x)) in a non-naive way
     expint(f, x) ==
       a := int(f, x)
-      (u := validExponential(tower a, a, x)) case F => u::F
+      (u := validExponential(tower a, a, x)) case F => u@F
       da := denom a
       l :=
-        (v := isPlus(na := numer a)) case List(P) => v::List(P)
+        (v := isPlus(na := numer a)) case List(P) => v@List(P)
         [na]
       exponent : P := 0
       lrec : List(REC) := empty()
       for term in l repeat
         if (w := isQlog(term / da)) case REC then
-          lrec := concat(w::REC, lrec)
+          lrec := concat(w@REC, lrec)
         else
           exponent := exponent + term
       mkprod(lrec) * exp(exponent / da)
@@ -671,17 +671,17 @@ ODEIntegration(R, F) : Exports == Implementation where
       prod : Q := 1
       for x in l repeat
         (u := retractIfCan(x)@UQ) case "failed" => return "failed"
-        prod := prod * u::Q
+        prod := prod * u@Q
       prod
 
 -- checks if a non-sum expr is of the form c * log(g) for a rational number c
     isQlog f ==
       is?(f, 'log) => [1, first argument(retract(f)@K)]
       -- fixme FIXME
-      (v := isTimes f) case List(F) and (#(l := v::List(F)) <= 3) =>
+      (v := isTimes f) case List(F) and (#(l := v@List(F)) <= 3) =>
           l := reverse! sort!(smaller?, l)
           is?(first l, 'log) and ((u := isQ rest l) case Q) =>
-              [u::Q, first argument(retract(first(l))@K)]
+              [u@Q, first argument(retract(first(l))@K)]
           "failed"
       "failed"
 
@@ -755,7 +755,7 @@ ConstantLODE(R, F, L) : Exports == Implementation where
     quadSol(p, x) ==
       (u := sign(delta := (b := coefficient(p, 1))^2 - 4 *
         (a := leadingCoefficient p) * (c := coefficient(p, 0))))
-          case Z and negative?(u::Z) =>
+          case Z and negative?(u@Z) =>
             y := x / (2 * a)
             r := - b * y
             i := rootSimp(sqrt(-delta)) * y

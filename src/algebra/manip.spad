@@ -115,14 +115,14 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
       rroot(x, n) ==
         (r := retractIfCan(x)@Union(Fraction Z,"failed")) case "failed"
           => [n, 1, x::P::F]
-        qroot(r::Q, n)
+        qroot(r@Q, n)
 
     else
       if R has RetractableTo Z then
         rroot(x, n) ==
           (r := retractIfCan(x)@Union(Z,"failed")) case "failed"
             => [n, 1, x::P::F]
-          qroot(r::Z::Q, n)
+          qroot(r@Z::Q, n)
       else
         rroot(x, n) == [n, 1, x::P::F]
 
@@ -132,7 +132,7 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
       for q in l repeat
         if (u := retractIfCan(q)@Union(R, "failed")) case "failed"
           then p := p * q
-          else r := r * u::R
+          else r := r * u@R
       [r, p]
 
     if R has GcdDomain then
@@ -140,7 +140,7 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
         nthr(x, n) ==
           (r := retractIfCan(x)@Union(Z,"failed")) case "failed"
              => nthRoot(squareFree x, n)
-          rec := zroot(r::Z, n)
+          rec := zroot(r@Z, n)
           [rec.exponent, rec.coef::P, [rec.radicand::P]]
       else nthr(x, n) == nthRoot(squareFree x, n)
 
@@ -338,7 +338,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
       if R has RadicalCategory then
         rootKerSimp(op, x, n) ==
           (r := retractIfCan(x)@Union(R, "failed")) case R =>
-             nthRoot(r::R, n)::F
+             nthRoot(r@R, n)::F
           inroot(op, x, n)
       else
         rootKerSimp(op, x, n) == inroot(op, x, n)
@@ -401,8 +401,8 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
         q := univariate(p, k)
         -- Check if 'a' itself is nthRoot.
         ka1 := retractIfCan(a)@Union(K, "failed")
-        if ka1 case K and is?(ka1::K, 'nthRoot) then
-            ka := ka1::K
+        if ka1 case K and is?(ka1@K, 'nthRoot) then
+            ka := ka1@K
             arg := argument ka
             a := first arg
             n := n * (retract(second arg)@Integer::NonNegativeInteger)
@@ -423,7 +423,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
         (x ~= -1) and (((num := numer x) = 1) or (num = -1)) =>
           inv inroot(op, (num * denom x)::F, n)
         (u := isExpt(x, op)) case "failed" => kernel(op, [x, n::F])
-        pr := u::Record(var : K, exponent : Integer)
+        pr := u@Record(var : K, exponent : Integer)
         q := pr.exponent /$Fraction(Z)
                                 (n * retract(second argument(pr.var))@Z)
         qr := divide(numer q, denom q)
@@ -678,7 +678,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
         -- them together.  However, if there is a constant or arithmetic
         -- expression (i.e. something which looks like a Polynomial) we would
         -- like to combine it with a log term.
-        terms : List F := [simplifyLog(term) for term in termList::List(F)]
+        terms : List F := [simplifyLog(term) for term in termList@List(F)]
         exprs : List F := []
         nterms : List F := []
         for term in terms repeat
@@ -822,7 +822,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
 
     htrigs f ==
       (m := mainKernel f) case "failed" => f
-      op  := operator(k := m::K)
+      op  := operator(k := m@K)
       arg := [htrigs x for x in argument k]$List(F)
       num := univariate(numer f, k)
       den := univariate(denom f, k)

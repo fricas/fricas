@@ -213,8 +213,8 @@ Pattern(R : SetCategory) : Exports == Implementation where
             pateq?(p1.pat, p2.pat)
 
     isPower p ==
-      (u := isTaggedOp(p, PAT_EXPT)) case "failed" => "failed"
-      [first(u::List(%)), second(u::List(%))]
+        (u := isTaggedOp(p, PAT_EXPT)) case "failed" => "failed"
+        [first(u@List(%)), second(u@List(%))]
 
     taggedElt(n, l) ==
       mkPat(every?(constant?, l), [[n, dummy, l]$KER], incmax l)
@@ -257,11 +257,11 @@ Pattern(R : SetCategory) : Exports == Implementation where
       p1 = 0 => p2
       p2 = 0 => p1
       (u1 := isPlus p1) case List(%) =>
-        (u2 := isPlus p2) case List(%) =>
-          taggedElt(PAT_PLUS, concat(u1::List %, u2::List %))
-        taggedElt(PAT_PLUS, concat(u1::List %, p2))
+          (u2 := isPlus p2) case List(%) =>
+              taggedElt(PAT_PLUS, concat(u1@List(%), u2@List(%)))
+          taggedElt(PAT_PLUS, concat(u1@List(%), p2))
       (u2 := isPlus p2) case List(%) =>
-        taggedElt(PAT_PLUS, concat(p1, u2::List %))
+          taggedElt(PAT_PLUS, concat(p1, u2@List(%)))
       taggedElt(PAT_PLUS, [p1, p2])
 
     p1 * p2 ==
@@ -269,11 +269,11 @@ Pattern(R : SetCategory) : Exports == Implementation where
       p1 = 1 => p2
       p2 = 1 => p1
       (u1 := isTimes p1) case List(%) =>
-        (u2 := isTimes p2) case List(%) =>
-          taggedElt(PAT_TIMES, concat(u1::List %, u2::List %))
-        taggedElt(PAT_TIMES, concat(u1::List %, p2))
+          (u2 := isTimes p2) case List(%) =>
+              taggedElt(PAT_TIMES, concat(u1@List(%), u2@List(%)))
+          taggedElt(PAT_TIMES, concat(u1@List(%), p2))
       (u2 := isTimes p2) case List(%) =>
-        taggedElt(PAT_TIMES, concat(p1, u2::List %))
+          taggedElt(PAT_TIMES, concat(p1, u2@List(%)))
       taggedElt(PAT_TIMES, [p1, p2])
 
     isOp(p, o) ==
@@ -328,8 +328,8 @@ Pattern(R : SetCategory) : Exports == Implementation where
       p.ker.tag = PAT_PLUS  => LPAT2O("+", p.ker.arg)
       p.ker.tag = PAT_TIMES => LPAT2O("*", p.ker.arg)
       p.ker.tag = PAT_LIST => (p.ker.arg)::O
-      p.ker.tag = PAT_ZERO => 0::Integer::O
-      p.ker.tag = PAT_ONE  => 1::Integer::O
+      p.ker.tag = PAT_ZERO => 0$Integer::O
+      p.ker.tag = PAT_ONE  => 1$Integer::O
       l := [x::O for x in p.ker.arg]$List(O)
       (u := display(p.ker.op)) case "failed" =>prefix(name(p.ker.op)::O,l)
       (u::(List O -> O)) l
@@ -444,25 +444,25 @@ PatternFunctions2(R : SetCategory, S : SetCategory) : with
   == add
     map(f, p) ==
       (r := (retractIfCan p)@Union(R, "failed")) case R =>
-        f(r::R)::Pattern(S)
+          f(r@R)::Pattern(S)
       (u := isOp p) case Record(op : BasicOperator, arg : List Pattern R) =>
-        ur := u::Record(op : BasicOperator, arg : List Pattern R)
-        (ur.op) [map(f, x) for x in ur.arg]
+          ur := u@Record(op : BasicOperator, arg : List Pattern R)
+          (ur.op) [map(f, x) for x in ur.arg]
       (v := isQuotient p) case Record(num : Pattern R, den : Pattern R) =>
-        vr := v::Record(num : Pattern R, den : Pattern R)
-        map(f, vr.num) / map(f, vr.den)
+          vr := v@Record(num : Pattern R, den : Pattern R)
+          map(f, vr.num) / map(f, vr.den)
       (l := isPlus p) case List(Pattern R) =>
-        reduce("+", [map(f, x) for x in l::List(Pattern R)])
+          reduce("+", [map(f, x) for x in l@List(Pattern R)])
       (l := isTimes p) case List(Pattern R) =>
-        reduce("*", [map(f, x) for x in l::List(Pattern R)])
+          reduce("*", [map(f, x) for x in l@List(Pattern R)])
       (x := isPower p) case
-       Record(val : Pattern R, exponent : Pattern R) =>
-        xr := x::Record(val : Pattern R, exponent : Pattern R)
-        map(f, xr.val) ^ map(f, xr.exponent)
+          Record(val : Pattern R, exponent : Pattern R) =>
+              xr := x@Record(val : Pattern R, exponent : Pattern R)
+              map(f, xr.val) ^ map(f, xr.exponent)
       (w := isExpt p) case
-       Record(val : Pattern R, exponent : NonNegativeInteger) =>
-        wr := w::Record(val : Pattern R, exponent : NonNegativeInteger)
-        map(f, wr.val) ^ wr.exponent
+          Record(val : Pattern R, exponent : NonNegativeInteger) =>
+              wr := w@Record(val : Pattern R, exponent : NonNegativeInteger)
+              map(f, wr.val) ^ wr.exponent
       sy := retract(p)@Symbol
       setPredicates(sy::Pattern(S), copy predicates p)
 

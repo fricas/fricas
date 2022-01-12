@@ -78,7 +78,7 @@ MultivariateLifting(E, OV, R, P) : C == T
       #lvar = 0 =>
         lp := bsolv(map(ground, m)$SUPF2(P, R))
         if lp case "failed" then return "failed"
-        lcoef := [map(coerce, mp)$SUPF2(R, P) for mp in lp::L BP]
+        lcoef := [map(coerce, mp)$SUPF2(R, P) for mp in lp@L(BP)]
 
       diff, ddiff, pol, polc : SUP
       listpolv, listcong : L SUP
@@ -92,7 +92,7 @@ MultivariateLifting(E, OV, R, P) : C == T
       um := map((p1 : P) : P +-> eval(p1, y, a), m)
       flcoef := corrPoly(um, lvar, fval.rest, ld.rest, listpolv, bsolv)
       if flcoef case "failed" then return "failed"
-      else lcoef := flcoef :: L SUP
+      else lcoef := flcoef@L(SUP)
       listcong := [*/[flist.i for i in 1..np | i ~= l] for l in 1..np]
       polc : SUP := (monomial(1, y, 1) - a)::SUP
       pol := 1$SUP
@@ -104,7 +104,7 @@ MultivariateLifting(E, OV, R, P) : C == T
         ddiff = 0 => "next l"
         fbeta := corrPoly(ddiff, lvar, fval.rest, ld.rest, listpolv, bsolv)
         if fbeta case "failed" then return "failed"
-        else beta := fbeta :: L SUP
+        else beta := fbeta@L(SUP)
         lcoef := [lcoef.i+beta.i*pol  for i in 1..np]
         diff := diff- +/[listcong.i*beta.i for i in 1..np]*pol
       lcoef
@@ -166,7 +166,7 @@ MultivariateLifting(E, OV, R, P) : C == T
          flalpha := corrPoly(mc, subsvar.rest, subsval.rest,
                           ldeg.rest, conglist, bsolv)
          if flalpha case "failed" then return "failed"
-         else lalpha := flalpha :: L SUP
+         else lalpha := flalpha@L(SUP)
          plist := [term-alpha*pol for term in plist for alpha in lalpha]
         -- PGCD may call with a smaller valure of degj
         idegj : Integer := maxDegree(m, x)
@@ -204,7 +204,7 @@ MultivariateLifting(E, OV, R, P) : C == T
                       sfu::SF)
       if ffl case "failed" then return "failed"
       -- FIXME: this may require sorting the result!
-      append(listdet, ffl:: L SUP)
+      append(listdet, ffl@L(SUP))
 
     if R has EuclideanDomain then
 

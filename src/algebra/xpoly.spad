@@ -229,7 +229,7 @@ XPolynomialRing(R : Ring, E : OrderedMonoid) : T == C where
            p = 0 => "failed"
            p.first.k > 1$E => "failed"
            (u := recip(p.first.c)) case "failed" => "failed"
-           (u::R)::%
+           (u@R)::%
 
        coerce(r : R) == if r = 0$R then 0$% else [[1$E, r]]
        coerce(n : Integer) == (n::R)::%
@@ -447,7 +447,7 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
 
        rquo(p1 : %, p2 : %) : % ==
          p2 case R => p1 * p2::R
-         p1 case R => p1  * p2.c0
+         p1 case R => p1 * p2.c0
          x : REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms(p1.reg) _
                          | (a := rquo(t.c, p2)) ~=$% 0 ]$LTERMS
          simplifie [coef(p1, p2), x]$VPOLY
@@ -470,7 +470,7 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
        if R has CommutativeRing then
          sh(p : %, n : NNI) : % ==
             n = 0 => 1
-            p case R => (p::R)^ n
+            p case R => (p@R)^ n
             n1 : NNI := (n-1)::NNI
             p1 : % := n *$% sh(p, n1)
             lt : LTERMS := [[t.k, sh(t.c, p1)]$TERM for t in listOfTerms p.reg]
@@ -520,7 +520,7 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
           reduce(_+, reverse! le)$List(EX)
 
        coerce(p : %) : EX ==
-          p case R => (p::R)::EX
+          p case R => (p@R)::EX
           p.c0 = 0 => outForm p.reg
           p.c0::EX + outForm p.reg
 
@@ -545,7 +545,7 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
          (first w) * coerce(rest w)
 
        expand p ==
-         p case R => p::R::XDPOLY
+         p case R => p@R::XDPOLY
          lt : LTERMS := listOfTerms(p.reg)
          ep : XDPOLY := (p.c0)::XDPOLY
          for t in lt repeat
@@ -629,7 +629,7 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
 
        characteristic == characteristic()$R
        recip p ==
-         p case R => recip(p::R)
+         p case R => recip(p@R)
          "failed"
 
        mindeg p ==
@@ -650,7 +650,7 @@ XRecursivePolynomial(VarSet : OrderedSet, R : Ring) :  Xcat == Xdef where
           length(maxdeg p)
 
        map(fn, p) ==
-         p case R => fn(p::R)
+         p case R => fn(p@R)
          x : REGPOLY := construct [[t.k, a]$TERM for t in listOfTerms p.reg
                          |(a := map(fn, t.c)) ~=$% 0]
          simplifie [fn(p.c0), x]$VPOLY

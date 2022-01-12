@@ -25,7 +25,7 @@ Polynomial(R : Ring):
     import from UserDefinedPartialOrdering(Symbol)
 
     coerce(p : %) : OutputForm ==
-      (r := retractIfCan(p)@Union(R,"failed")) case R => r::R::OutputForm
+      (r := retractIfCan(p)@Union(R,"failed")) case R => r@R::OutputForm
       a :=
         userOrdered?() => largest variables p
         mainVariable(p)::Symbol
@@ -281,7 +281,7 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
 
       coefficient(p : %, e : IndexedExponents(VarSet)) : R ==
         zero? e =>
-          p case R  => p::R
+          p case R  => p
           coefficient(coefficient(p.ts, 0), e)
         p case R => 0
         ve := leadingSupport e
@@ -396,7 +396,7 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
       pow_aux(p : %, k : NonNegativeInteger) : % ==
          k = 0 => m_one
          kp := qcoerce(k)@PositiveInteger
-         p case R => p::R ^$R kp
+         p case R => p@R ^$R kp
          -- univariate special case
          not moreThanOneVariable? p =>
              multivariate( (univariateKnown p) ^ kp , p.v)
@@ -418,16 +418,16 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
          unitNormal(p) ==
             u, c, a : R
             p case R =>
-              (u, c, a) := unitNormal(p::R)$R
+              (u, c, a) := unitNormal(p@R)$R
               [u::%, c::%, a::%]$UnitCorrAssoc
             (u, c, a) := unitNormal(leadingCoefficient(p))$R
             [u::%, (a*p)::%, a::%]$UnitCorrAssoc
          unitCanonical(p) ==
-            p case R => unitCanonical(p::R)$R
+            p case R => unitCanonical(p@R)$R
             (u, c, a) := unitNormal(leadingCoefficient(p))$R
             a*p
          unit? p ==
-            p case R => unit?(p::R)$R
+            p case R => unit?(p@R)$R
             false
          associates?(p1, p2) ==
             p1 case R => p2 case R and associates?(p1, p2)$R
@@ -553,19 +553,19 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
               mong
 
       coerce(p) : OutputForm ==
-        p case R => (p::R)::OutputForm
+        p case R => (p@R)::OutputForm
         outputForm(p.ts, p.v::OutputForm)
 
       coefficients p ==
-        p case R => list(p :: R)$List(R)
+        p case R => list(p@R)$List(R)
         "append"/[coefficients(p1)$% for p1 in coefficients(p.ts)]
 
       retract(p : %) : R ==
-        p case R => p :: R
+        p case R => p@R
         error "cannot retract nonconstant polynomial"
 
       retractIfCan(p:%):Union(R, "failed") ==
-        p case R => p::R
+        p case R => p@R
         "failed"
 
 --      leadingCoefficientRecursive(p: %): % ==
@@ -779,7 +779,7 @@ SparsePolynomialCoercionHelpers(R : Ring, VarSet1 : OrderedSet,
     LV2 ==> List VarSet2
 
     convert_sorted(p1 : SmpRep1, lv1 : LV1, lv2 : LV2) : SmpRep2 ==
-        p1 case R => (p1 :: R)
+        p1 case R => (p1@R)
         empty?(lv1) => error "p has variable not in lv1"
         v1 : VarSet1 := p1.v
         v2 := first(lv2)

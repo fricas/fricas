@@ -145,7 +145,7 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
     taylor uls ==
       (uts := taylorIfCan uls) case "failed" =>
         error "taylor: Laurent series has a pole"
-      uts :: UTS
+      uts
 
     termExpon : TERM -> I
     termExpon term == term.k
@@ -225,16 +225,17 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
       zero? n => 1
       laurent(n * getExpon(x), getUTS(x) ^ n)
 
+    -- FIXME: should be lazy
     recip x ==
       x := removeZeroes(1000, x)
       zero? coefficient(x,d := degree x) => "failed"
       (uts := recip getUTS x) case "failed" => "failed"
-      laurent(-d, uts :: UTS)
+      laurent(-d, uts)
 
     elt(uls1 : %, uls2 : %) ==
       (uts := taylorIfCan uls2) case "failed" =>
         error "elt: second argument must have positive order"
-      uts2 := uts :: UTS
+      uts2 := uts@UTS
       not zero? coefficient(uts2, 0) =>
         error "elt: second argument must have positive order"
       if (deg := getExpon uls1) < 0 then uls1 := removeZeroes(-deg, uls1)
@@ -242,7 +243,7 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
         (recipr := recip(uts2 :: %)) case "failed" =>
           error "elt: second argument not invertible"
         uts1 := taylor(uls1 * monomial(1, -deg))
-        (elt(uts1, uts2) :: %) * (recipr :: %) ^ ((-deg) :: NNI)
+        (elt(uts1, uts2) :: %) * (recipr@%) ^ ((-deg) :: NNI)
       elt(taylor uls1, uts2) :: %
 
     eval(uls : %, r : Coef) ==
@@ -252,7 +253,7 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
         zero? r => error "eval: 0 raised to negative power"
         (recipr := recip r) case "failed" =>
           error "eval: non-unit raised to negative power"
-        (recipr :: Coef) ^ ((-n) :: NNI) *$STTAYLOR eval(uts, r)
+        (recipr@Coef) ^ ((-n) :: NNI) *$STTAYLOR eval(uts, r)
       zero? n => eval(uts, r)
       r ^ (n :: NNI) *$STTAYLOR eval(uts, r)
 
@@ -302,6 +303,8 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
         positive? e => poly * (v - c) ^ (e :: NNI)
         poly / (v - c) ^ ((-e) :: NNI)
 
+      -- FIXME: This looks bogus due to eager search for zeros
+      --
       --  La fonction < exquo > manque dans laurent.spad,
       --les lignes suivantes le mettent en evidence :
       --
@@ -318,7 +321,7 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
         y := removeZeroes(1000, y)
         zero? coefficient(y, d := degree y) => "failed"
         (uts := (getUTS x) exquo (getUTS y)) case "failed" => "failed"
-        laurent(degree x-d, uts :: UTS)
+        laurent(degree x-d, uts)
 
     if Coef has coerce : Symbol -> Coef then
       if Coef has "^": (Coef,I) -> Coef then
@@ -372,12 +375,12 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
       inv x ==
         (xInv := recip x) case "failed" =>
           error "multiplicative inverse does not exist"
-        xInv :: %
+        xInv
 
       (x : %) / (y : %) ==
         (yInv := recip y) case "failed" =>
           error "inv: multiplicative inverse does not exist"
-        x * (yInv :: %)
+        x * (yInv@%)
 
       (x : UTS) / (y : UTS) == (x :: %) / (y :: %)
 
@@ -454,8 +457,8 @@ UnivariateLaurentSeriesConstructor(Coef, UTS) : _
         integrateWithOneAnswer : (Coef, Symbol) -> Coef
         integrateWithOneAnswer(f, s) ==
           res := integrate(f, s)$FunctionSpaceIntegration(I, Coef)
-          res case Coef => res :: Coef
-          first(res :: List Coef)
+          res case Coef => res
+          first(res@List Coef)
 
         integrate(x : %, s : Symbol) ==
           (s = variable(x)) => integrate x

@@ -390,19 +390,19 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     cycElt := cycleElt x
     cycElt case "failed" =>
       error "cycleEntry: non-cyclic stream"
-    computeCycleEntry(x, cycElt::%)
+    computeCycleEntry(x, cycElt@%)
 
   cycleLength x ==
     cycElt := cycleElt x
     cycElt case "failed" =>
       error "cycleLength: non-cyclic stream"
-    computeCycleLength(cycElt::%)
+    computeCycleLength(cycElt@%)
 
   cycleTail x ==
     cycElt := cycleElt x
     cycElt case "failed" =>
       error "cycleTail: non-cyclic stream"
-    y := x := computeCycleEntry(x, cycElt::%)
+    y := x := computeCycleEntry(x, cycElt@%)
     z := rst x
     repeat
       eq?(x, z) => return y
@@ -725,7 +725,7 @@ Stream(S : Type) : Exports == Implementation where
         cycElt case "failed" =>
           le := listm(x, empty(), _$streamCount$Lisp)
           bracket reverse! le
-        cycEnt := computeCycleEntry(x, cycElt :: %)
+        cycEnt := computeCycleEntry(x, cycElt@%)
         le : L OUT := empty()
         while not eq?(x, cycEnt) repeat
           le := concat(frst(x) :: OUT, le)
@@ -756,7 +756,7 @@ Stream(S : Type) : Exports == Implementation where
     copy x ==
       cycElt := cycleElt x
       cycElt case "failed" => lazyCopy x
-      ce := cycElt :: %
+      ce := cycElt@%
       len := computeCycleLength(ce)
       e := computeCycleEntry(x, ce)
       d := distance(x, e)
@@ -930,7 +930,7 @@ Stream(S : Type) : Exports == Implementation where
       cycElt := cycleElt x
       cycElt case "failed" =>
         error "cycleSplit!: non-cyclic stream"
-      y := computeCycleEntry(x, cycElt :: %)
+      y := computeCycleEntry(x, cycElt@%)
       eq?(x, y) => (setToNil! x; return y)
       z := rst x
       repeat
@@ -945,7 +945,7 @@ Stream(S : Type) : Exports == Implementation where
       for i in 1..n while not empty? y repeat y := rst y
       cycElt := cycleElt x
       cycElt case "failed" => x
-      e := computeCycleEntry(x, cycElt :: %)
+      e := computeCycleEntry(x, cycElt@%)
       d : I := distance(x, e)
       d >= n => x
       if d = 0 then

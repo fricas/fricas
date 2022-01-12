@@ -18,7 +18,7 @@ OrderedExpression() : Join(OrderedRing,
        di := y - x
        di = 0 => false
        (s := sign(di pretend Expression(Integer))$SIGNEF) case Integer =>
-           (s::Integer) = 1
+           (s@Integer) = 1
        error "can not determine sign"
 
 
@@ -138,7 +138,7 @@ MrvLimitPackage : Exports == Implementation where
                               l_atan := cons(kernels(nk).1, l_atan)
                               l_as := cons(ns, l_as)
                               ntf(1) := nk
-                          la := lau::OFE
+                          la := lau@OFE
                           ss : Integer := whatInfinity(la)
                           ss = 0 => "iterate"
                           nk :=
@@ -148,7 +148,7 @@ MrvLimitPackage : Exports == Implementation where
                   nm = 'tan =>
                           need_subst : Boolean :=
                               lau case "failed" => true
-                              la := lau::OFE
+                              la := lau@OFE
                               ss : Integer := whatInfinity(la)
                               not(ss = 0)
                           not(need_subst) => "iterate"
@@ -158,7 +158,7 @@ MrvLimitPackage : Exports == Implementation where
                           l_ts := cons(ns, l_ts)
                           ntf(1) := nk
                   lau case "failed" => "iterate"
-                  la := lau::OFE
+                  la := lau@OFE
                   ss : Integer := whatInfinity(la)
                   nm = 'Gamma =>
                       ss = 1 =>
@@ -213,12 +213,12 @@ MrvLimitPackage : Exports == Implementation where
                   degree(ne, kk) > degree(de, kk) => false
                   sde := sign(de::FE)$SIGNEF
                   sde case Z =>
-                      sde::Z ~= 0
+                      sde@Z ~= 0
                   false
               member?(kk, state.atan_kers) =>
                   sde := sign(eval(de::FE, kk, atan(kk::FE)))$SIGNEF
                   sde case Z =>
-                      sde::Z ~= 0
+                      sde@Z ~= 0
                   false
               true
           vde := variables(de::FE)
@@ -242,12 +242,12 @@ MrvLimitPackage : Exports == Implementation where
                   degree(ne, kk) < degree(de, kk) => false
                   sde := sign(de::FE)$SIGNEF
                   sde case Z =>
-                      sde::Z ~= 0
+                      sde@Z ~= 0
                   false
               member?(kk, state.atan_kers) =>
                   sde := sign(eval(de::FE, kk, atan(kk::FE)))$SIGNEF
                   sde case Z =>
-                      sde::Z ~= 0
+                      sde@Z ~= 0
                   false
               false
 
@@ -294,7 +294,7 @@ MrvLimitPackage : Exports == Implementation where
             log(y :: FE)
         ppu := mrv_limit(x1/y1, v, state)
         ppu case OFE =>
-           pp1 := ppu::OFE
+           pp1 := ppu@OFE
            pp1 = (0::OFE) => [-1, 0]
            finite?(pp1) =>
               [0, retract(pp1)]
@@ -315,7 +315,7 @@ MrvLimitPackage : Exports == Implementation where
            is?(y, "exp" :: Symbol) =>
               icu := mrv_cmp(y, res_k, x, state)
               icu case "failed" => return "failed"
-              ic := icu::CMP_RES
+              ic := icu@CMP_RES
               i := ic.sign
               c := ic.coeff
               i > 0 =>
@@ -399,7 +399,7 @@ MrvLimitPackage : Exports == Implementation where
                e0 = (v::FE) => plusInfinity()@OFE
                mrv_limit(e0, v, state)
          lip case OFE =>
-            lipp : OFE := lip :: OFE
+            lipp : OFE := lip@OFE
             ss : Integer := whatInfinity(lipp)
             (ss = 0) =>
                 error "Wrong mrv element"
@@ -425,12 +425,12 @@ MrvLimitPackage : Exports == Implementation where
          --    error "Can not determine sign"
          rkcu := mrv_set(e, v, state)
          rkcu case "failed" => "failed"
-         rkc := rkcu::SET_RES
+         rkc := rkcu@SET_RES
          lx := rkc.lk
          lcc := rkc.lc
          ssu : SER_RESU := mrv_rewrite(e, lx, lcc, v, state)
          ssu case "failed" => "failed"
-         ss := ssu::SER_RES
+         ss := ssu@SER_RES
          mrv_sign(ss.coeff, v, state)
 
       -- Compute limit of e when v goes to infinity
@@ -441,19 +441,19 @@ MrvLimitPackage : Exports == Implementation where
              "failed"
          rkcu := mrv_set(e, v, state)
          rkcu case "failed" => "failed"
-         rkc := rkcu::SET_RES
+         rkc := rkcu@SET_RES
          lx := rkc.lk
          lcc := rkc.lc
          ssu : SER_RESU := mrv_rewrite(e, lx, lcc, v, state)
          ssu case "failed" => "failed"
-         ss := ssu::SER_RES
+         ss := ssu@SER_RES
          deg := ss.degree
          deg > 0 => 0$FE::OFE
          deg = 0 => mrv_limit(ss.coeff, v, state)
          deg < 0 =>
                su := mrv_sign(ss.coeff, v, state)
                su case "failed" => "failed"
-               s := su::Integer
+               s := su@Integer
                s = 1 =>
                    plusInfinity()
                s = -1 =>
@@ -471,7 +471,7 @@ MrvLimitPackage : Exports == Implementation where
 
           (var := retractIfCan(f)@Union(SY,"failed")) case "failed" =>
               error "limit:left hand side must be a variable"
-          mrv_limit(e, var::SY, rhs eq)
+          mrv_limit(e, var@SY, rhs eq)
 
       mrv_limit2(e : FE, v : SY, a : OFE) : U ==
           ii := whatInfinity a
@@ -480,7 +480,7 @@ MrvLimitPackage : Exports == Implementation where
           ii = 1 =>
               resu := mrv_limit1(e, v)
               resu case "failed" => "failed"
-              resu::OFE
+              resu@OFE
 
           -- Case negative infinity
           ii = -1 =>
@@ -489,7 +489,7 @@ MrvLimitPackage : Exports == Implementation where
               et : FE := eval(e, vK, -vK::FE)
               resu := mrv_limit1(et, v)
               resu case "failed" => "failed"
-              resu::OFE
+              resu@OFE
 
           -- Case finite real value
           ii = 0 =>
@@ -506,33 +506,33 @@ MrvLimitPackage : Exports == Implementation where
 
               ll = lr =>
                   lr case "failed" => "failed"
-                  lr::OFE
+                  lr@OFE
               [ll, lr]$TwoSide
 
       subst_in_result(r : RESULT, k : Kernel(FE), f : FE) : RESULT ==
           r case "failed" => r
           ru := retractIfCan(r)@Union(FE, "failed")
           ru case "failed" => r
-          subst(ru::FE, [k], [f])::OFE
+          subst(ru@FE, [k], [f])::OFE
 
       mrv_limit(e : FE,  v : SY, a : OFE) : U ==
           (ae := retractIfCan(a)@Union(FE,"failed")) case FE and
-             member?(v, variables(ae::FE)) =>
+             member?(v, variables(ae@FE)) =>
               knv := kernel(new()$Symbol)$Kernel(FE)
               kv := kernel(v)$Kernel(FE)
-              a1 := subst(ae::FE, [kv], [knv::FE])
+              a1 := subst(ae@FE, [kv], [knv::FE])
               res1 := mrv_limit2(e, v, a1::OFE)
               res1 case "failed" => res1
               res1 case TwoSide => error "impossible"
               res2 := subst_in_result(res1, knv, kv::FE)
               res2 case "failed" => error "impossible"
-              res2::OFE
+              res2@OFE
           mrv_limit2(e, v, a)
 
       mrv_limit(e : FE, eq : EQ FE, s : String) : RESULT ==
           (f := retractIfCan(lhs eq)@Union(SY,"failed")) case "failed" =>
               error "limit:left hand side must be a variable"
-          mrv_limit(e, f::SY, rhs eq, s)
+          mrv_limit(e, f@SY, rhs eq, s)
 
       mrv_limit3(e : FE, v : SY, a : FE, s : String) : RESULT ==
           vK := kernel(v)@Kernel(FE)
