@@ -642,14 +642,38 @@
 
 ; macros needed for Spad:
 
-(defun |TranslateTypeSymbol| (ts typeOrValue)
-  (let ((typDecl (assoc (car (cdr ts))
+(defparameter |empty_u8_vector| (GETREFV_U8 0 0))
+(defparameter |empty_u32_vector| (GETREFV_U32 0 0))
+(defparameter |empty_double_float_vector| (MAKE_DOUBLE_VECTOR 0))
+(defparameter |empty_double_float_matrix| (MAKE_DOUBLE_MATRIX 0 0))
+
+(defparameter |spad_to_lisp_type_assoc|
+    (append
           '(((|Void|) (null nil))
             ((|SingleInteger|) (fixnum 0))
+            ((|Integer|) (integer 0))
+            ((|NonNegativeInteger|) ((integer 0 *) 0))
+            ((|PositiveInteger|) ((integer 1 *) 1))
             ((|String|) (string ""))
             ((|Boolean|) (BOOLEAN nil))
             ((|DoubleFloat|) (DOUBLE-FLOAT 0.0d0))
             ((|U64Int|) (machine_int 0)))
+        (list
+            (list '(|U8Vector|) (list '(simple-array (unsigned-byte 8) (*))
+                                       |empty_u8_vector|))
+            (list '(|U32Vector|) (list '(simple-array (unsigned-byte 32) (*))
+                                       |empty_u32_vector|))
+            (list '(|DoubleFloatVector|) (list '(simple-array DOUBLE-FLOAT (*))
+                                          |empty_double_float_vector|))
+            (list '(|DoubleFloatMatrix|) (list '(simple-array DOUBLE-FLOAT
+                                                              (* *))
+                                          |empty_double_float_matrix|))
+        )
+    )
+)
+
+(defun |TranslateTypeSymbol| (ts typeOrValue)
+  (let ((typDecl (assoc (car (cdr ts)) |spad_to_lisp_type_assoc|
             :test #'equal
             )))
   (if typDecl (setf typDecl (car (cdr typDecl)))

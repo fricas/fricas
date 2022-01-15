@@ -35,6 +35,7 @@
 --% Utilities
 
 DEFPARAMETER($locVars, nil)
+DEFPARAMETER($function_args, nil)
 DEFPARAMETER($PrettyPrint, false)
 DEFPARAMETER($COMPILE, true)
 
@@ -183,7 +184,9 @@ compTranDryRun(x) ==
 
 compTran(x) ==
     $locVars : local := nil
-    [x1, x2, :xl3] := comp_expand(x)
+    [x1, x2, :xl3] := x
+    $function_args : local := x2
+    xl3 := comp_expand(xl3)
     compTran1 (xl3)
     [x3, :xlt3] := xl3
     x3 :=
@@ -205,7 +208,7 @@ addTypesToArgs(args) ==
     $insideCapsuleFunctionIfTrue =>
         sig := $signatureOfForm
         spadTypes := [(ATOM(t) => [t]; t) for t in [:rest(sig), first(sig)]]
-        [[a, :t] for a in args for t in spadTypes]
+        [[a, t] for a in args for t in spadTypes]
     args
 
 addNilTypesToArgs(args) ==
@@ -272,14 +275,31 @@ expandCOLLECT(l) ==
 
 BADDO(OL) == ERROR(FORMAT(nil, '"BAD DO FORMAT~%~A", OL))
 
+arg_type(v) ==
+    p := position(v, $function_args)
+    p < 0 => nil
+    t := NTH(p, rest($signatureOfForm))
+    [v, :t]
+
+has_typed_init(v) ==
+    not($insideCapsuleFunctionIfTrue) => nil
+    tv := ASSOC(v, $locVarsTypes) or arg_type(v)
+    NULL(tv) => nil
+    vt := [v, rest(tv)]
+    GetLispValue(vt)
+
 expandDO(vl, endtest, exitforms, body_forms) ==
     vars := []
     u_vars := []
     u_vals := []
     inits := []
     for vi in vl repeat
-        [v, init] := vi
+        [v, :init_pom] := vi
         not(IDENTP(v)) => BADDO(OL)
+        NULL(init_pom) and has_typed_init(v) => "iterate"
+        init :=
+            NULL(init_pom) => nil
+            first(init_pom)
         vars := [v, :vars]
         inits := [init, :inits]
         if vi is [., ., u_val] then
@@ -380,7 +400,7 @@ expandREPEAT(l) ==
                              ["PROGN", ["SETQ", first(U), ["CAR", G]],
                                :APPEND(tt, [nil])]], :tests]
             vl := [[G, CADR(U), ["CDR", G]], :vl]
-            vl := [[first(U), nil], :vl]
+            vl := [[first(U)], :vl]
         op = "UNTIL" =>
             G := GENSYM()
             tests := [G, :tests]
