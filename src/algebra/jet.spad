@@ -224,7 +224,7 @@ JetBundleCategory() : Category == Def where
       mm : PI := numDepVar()
 
       m2r(mi : L NNI) : L PI ==
-          ri : L PI := empty
+          ri : L PI := []
           k : PI := 1
           for i in mi repeat
               for j in 1..i repeat
@@ -240,7 +240,7 @@ JetBundleCategory() : Category == Def where
           mi
 
       allRepeated(mu : L NNI) : L L PI ==
-          res : L L PI := empty
+          res : L L PI := []
           for i in 1..nn  for k in mu repeat
               if not zero? k then
                   nu := copy mu
@@ -248,7 +248,7 @@ JetBundleCategory() : Category == Def where
                   tmp := allRepeated nu
                   res := concat!(res, map((x : L PI) : L PI +-> cons(i::PI, x),
                                           tmp))
-          empty? res => [empty$(L PI)]
+          empty? res => [[]$(L PI)]
           res
 
       repeatedIndex(jv : %) : L PI == m2r multiIndex jv
@@ -292,7 +292,7 @@ JetBundleCategory() : Category == Def where
 
       P(up : PI, lo : L NNI) : % ==
           getNotation() = Multi => Pm(up, lo)
-          lop : L PI := empty
+          lop : L PI := []
           for i in lo repeat
               zero? i => error errmsg1
               lop := cons(i::PI, lop)
@@ -357,22 +357,22 @@ JetBundleCategory() : Category == Def where
               setelt!(mind, i, elt(mind, i - 1 + minIndex(mind)) + 1)
               Pm(index jv, mind)
           rind := repeatedIndex jv
-          empty? rind => Pr(index jv, [i])
-          nind : L PI := empty
-          while not empty? rind  while first(rind) > i repeat
+          empty?(rind) => Pr(index jv, [i])
+          nind : L PI := []
+          while not empty?(rind) while first(rind) > i repeat
               nind := cons(first(rind), nind)
               rind := rest rind
           nind := concat!(reverse!(nind), cons(i, rind))
           Pr(index jv, nind)
 
       derivativeOf?(jv1 : %, jv2 : %) : L NNI ==
-          type(jv1) ~= Deriv => empty
+          type(jv1) ~= Deriv => []
           jt := type jv2
-          jt ~= Deriv and jt ~= Dep => empty
-          index(jv1) ~= index(jv2) => empty
-          res : L NNI := empty
+          jt ~= Deriv and jt ~= Dep => []
+          index(jv1) ~= index(jv2) => []
+          res : L NNI := []
           for i1 in multiIndex(jv1) for i2 in multiIndex(jv2) repeat
-              i1 < i2 => return empty
+              i1 < i2 => return []
               res := cons((i1 - i2)::NNI, res)
           reverse! res
 
@@ -460,14 +460,14 @@ JetBundleCategory() : Category == Def where
           IndList : L L PI := [[i::PI]  for i in nn..1 by -1]
 
           for qq in 2..q repeat
-              NIndList : L L PI := empty
+              NIndList : L L PI := []
               for ind in OIndList repeat
                   for j in first(ind)..nn repeat
                       NIndList := cons(cons(j::PI, ind), NIndList)
               OIndList := reverse NIndList
               IndList := concat!(NIndList, IndList)
 
-          JV : L % := empty
+          JV : L % := []
           for ind in IndList repeat
               for k in 1..mm repeat
                   JV := cons(Pr(k::PI, ind), JV)
@@ -475,17 +475,17 @@ JetBundleCategory() : Category == Def where
                               [U(i::PI)  for i in 1..mm]), JV)
 
       variables(q : NNI, c : PI) : L % ==
-          zero? q => empty
+          zero? q => []
 
           OIndList : L L PI := [[i::PI]  for i in c..nn]
           for qq in 2..q repeat
-              NIndList : L L PI := empty
+              NIndList : L L PI := []
               for ind in OIndList repeat
                   for j in first(ind)..nn repeat
                       NIndList := cons(cons(j::PI, ind), NIndList)
               OIndList := reverse! NIndList
 
-          JV : L % := empty
+          JV : L % := []
           for ind in OIndList repeat
               for k in 1..mm repeat
                   JV := cons(Pr(k::PI, ind), JV)
@@ -735,7 +735,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
 
       const?(Phi : %) : B ==
           JV := jetVariables Phi
-          empty? JV => true
+          empty?(JV) => true
           #JV > 1 => false
           first(JV) = 1
 
@@ -745,7 +745,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
 
       leadingDer(fun : %) : JB ==
           JV := jetVariables fun
-          empty? JV => 1
+          empty?(JV) => 1
           first JV
 
       freeOf?(fun : %, jv : JB) : B == not member?(jv, jetVariables fun)
@@ -762,7 +762,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
               JVar : L JB := jetVariables of
               for jvar in JVar  until jvar < jv repeat
                   d := derivativeOf?(jvar, jv)
-                  if not empty? d then
+                  if not empty?(d) then
                       dexp := formalDiff(exp, d)
                       nf := subst(nf, jvar, dexp)
           nf
@@ -802,8 +802,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
               JvList := removeDuplicates! merge(">", JvList, vars)
           JM : SEM := new(JvList, #funs)
           for f in funs  for vars in varlist  for i in 1.. repeat
-              ents : L % := empty
-              inds : L JB := empty
+              ents : L % := []
+              inds : L JB := []
               for jv in vars repeat
                   df := differentiate(f, jv)
                   if noChecks? or not zero? df then
@@ -816,10 +816,10 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
           JVL : L L JB := [jetVariables fun  for fun in funs]
           ol : L NNI := [order(first jl)$JB  for jl in JVL]
           ord := reduce(max, ol, 0)
-          oJV : L L JB := empty
-          allJV : L JB := empty
+          oJV : L L JB := []
+          allJV : L JB := []
           for jl in JVL repeat
-              ojl : L JB := empty
+              ojl : L JB := []
               while not(empty?(jl) or order(first jl)$JB < ord) repeat
                   ojl := cons(first jl, ojl)
                   jl := rest jl
@@ -830,8 +830,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
 
           symb : SEM := new(allJV, #funs)
           for f in funs  for ojl in oJV  for i in 1.. repeat
-              ents : L % := empty
-              inds : L JB := empty
+              ents : L % := []
+              inds : L JB := []
               for jv in ojl repeat
                   df := differentiate(f, jv)
                   if noChecks? or not zero? df then
@@ -844,9 +844,9 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
           inds := allIndices jm
           o := order first inds
           inds := rest inds
-          while not(empty? inds) and (order(first inds) = o) repeat
+          while not(empty?(inds)) and (order(first inds) = o) repeat
               inds := rest inds
-          empty? inds => jm
+          empty?(inds) => jm
           horizSplit(jm, first inds).Left
 
       -- ---------------------- --
@@ -877,15 +877,15 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
           -- Returns list of effectively occurring jet variables for
           -- each function.
           inds := allIndices JM
-          empty? inds => [[0 for eq in Sys], [empty for eq in Sys]]
-          LRes : L % := empty
-          LJV : L L JB := empty
+          empty?(inds) => [[0 for eq in Sys], [[] for eq in Sys]]
+          LRes : L % := []
+          LJV : L L JB := []
 
           -- compute formal derivative for each function
           for l in 1..nrows(JM) repeat
               r := row(JM, l)
               res : % := 0
-              JV : L JB := empty
+              JV : L JB := []
               for df in reverse r.Entries  for jv in reverse r.Indices repeat
                   if noChecks? or not zero? df then
                       djv := differentiate(jv, i)
@@ -933,7 +933,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
           l := rest l
           cur.LD ~= first(l).LD => cons(cur, simpLD l)
           eqLD : L LDREC := [cur]
-          while not(empty? l) and (cur.LD = (fl : LDREC := first l).LD) repeat
+          while not(empty?(l)) and (cur.LD = (fl : LDREC := first l).LD) repeat
               fl.Fake? => error errmsg
               eqLD := cons(fl, eqLD)
               l := rest l
@@ -944,7 +944,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
               s := solveFor(eq.Fun, cur.LD)
               solvable? := (s case %)
               seq := eq
-          newL : L LDREC := empty
+          newL : L LDREC := []
           if solvable? then
               for eq in eqLD | eq ~= seq repeat
                   neweq := simpOne subst(eq.Fun, cur.LD, s::%)
@@ -985,7 +985,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
       simplify(sys : L %, jm : SEM) : SIMPREC ==
           -- Tries to get as far as possible by analysing leading derivatives
           -- Will give an error if there are dependent equations in sys
-          newSys : L % := empty
+          newSys : L % := []
           for eq in sys  for i in 1.. repeat
               neq := simpOne eq
               if neq ~= eq then
@@ -1023,8 +1023,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
           -- solved for their leading derivatives. It further assumes that sys2
           -- is already simplified and reduced.
           empty?(sys1) or empty?(sys2) => sys1
-          LD : L JB := empty
-          LS : L % := empty
+          LD : L JB := []
+          LS : L % := []
 
           for eq2 in sys2 repeat
               ld := leadingDer eq2
@@ -1037,18 +1037,18 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   LS := insert(ls@%, LS, i)
 
           newSys : L % := map(simpOne@(% -> %), sys1)$L(%)
-          empty? LD => newSys
-          res : L % := empty
+          empty?(LD) => newSys
+          res : L % := []
           for eq1 in newSys repeat
               neq := eq1
               LD1 : L JB := LD
               LS1 : L % := LS
-              until empty? LD1 repeat
+              until empty?(LD1) repeat
                   ld := leadingDer neq
-                  while not empty? LD1 and first(LD1) > ld repeat
+                  while not empty?(LD1) and first(LD1) > ld repeat
                       LD1 := rest LD1
                       LS1 := rest LS1
-                  if not empty? LD1 then
+                  if not empty?(LD1) then
                       neq := subst(neq, first LD1, first LS1)
                       LD1 := rest LD1
                       LS1 := rest LS1
@@ -1067,8 +1067,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
               [sys1, jm, [[i::NNI] for i in 1..#sys1]]
           --print("simpMod")$OUT
           osys := sys1
-          LD : L JB := empty
-          LS : L % := empty
+          LD : L JB := []
+          LS : L % := []
 
           for eq2 in sys2 repeat
               ld := leadingDer eq2
@@ -1081,17 +1081,17 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   LS := insert(ls@%, LS, i)
 
           newSys : L % := map(simpOne, sys1)
-          res : L % := empty
+          res : L % := []
           for eq1 in newSys repeat
               neq := eq1
               LD1 : L JB := LD
               LS1 : L % := LS
-              until empty? LD1 repeat
+              until empty?(LD1) repeat
                   ld := leadingDer neq
-                  while not empty? LD1 and first(LD1) > ld repeat
+                  while not empty?(LD1) and first(LD1) > ld repeat
                       LD1 := rest LD1
                       LS1 := rest LS1
-                  if not empty? LD1 then
+                  if not empty?(LD1) then
                       neq := subst(neq, first LD1, first LS1)
                       LD1 := rest LD1
                       LS1 := rest LS1
@@ -1099,7 +1099,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   neq := simpOne neq
               res := cons(neq, res)
 
-          resSys : L % := empty
+          resSys : L % := []
           resJM := jm
           for neq in res  for oeq in reverse! osys  for i in #res..1 by -1 repeat
               if neq ~= oeq then
@@ -1115,8 +1115,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
           -- sys2 is already simplified and reduced.
           empty?(sys1) or empty?(sys2) => sys1
           --print("reduceMod")$OUT
-          LD : L JB := empty
-          LS : L % := empty
+          LD : L JB := []
+          LS : L % := []
 
           for eq2 in sys2 repeat
               ld := leadingDer eq2
@@ -1129,8 +1129,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   LS := insert(ls@%, LS, i)
 
           newSys := map(simpOne, sys1)
-          empty? LD => newSys
-          res : L % := empty
+          empty?(LD) => newSys
+          res : L % := []
           for eq1 in newSys repeat
               eq := eq1
               oeq : % := 0
@@ -1140,12 +1140,12 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   oeq := neq
                   LD1 : L JB := LD
                   LS1 : L % := LS
-                  until empty? LD1 repeat
+                  until empty?(LD1) repeat
                       ld := leadingDer neq
-                      while not(empty? LD1) and first(LD1) > ld repeat
+                      while not(empty?(LD1)) and first(LD1) > ld repeat
                           LD1 := rest LD1
                           LS1 := rest LS1
-                      if not empty? LD1 then
+                      if not empty?(LD1) then
                           neq := dSubst(neq, first LD1, first LS1)
                           LD1 := rest LD1
                           LS1 := rest LS1
@@ -1162,16 +1162,16 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
           -- Equations which can not be solved for their leading derivatives
           -- are kept in a special list. May be they become solvable after
           -- some other simplifications ...
-          empty? sys => empty
+          empty?(sys) => []
           one?(#sys) => sys
           --print("autoReduce")$OUT
 
           nl : L % := map(simpOne, sys)   -- new equations
-          nsl : L % := empty               -- unsolved equations
-          sl : L LDREC := empty          -- solved equations
+          nsl : L % := []               -- unsolved equations
+          sl : L LDREC := []            -- solved equations
           osl := sl                            -- old value of sl
 
-          while not empty? nl repeat
+          while not empty?(nl) repeat
 
               -- try to solve new equations
               for eq in nl repeat
@@ -1180,19 +1180,19 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                   if su case "failed" then
                       nsl := cons(eq, nsl)
                   else
-                      sl := merge!(greater, sl, [[ld, true, empty, su::%]])
-              nl := empty
+                      sl := merge!(greater, sl, [[ld, true, [], su::%]])
+              nl := []
 
               -- reduce solved equations
-              osl := empty
+              osl := []
               sl := reverse! sl          -- now ordered smallest ld first
-              while not empty? sl repeat
+              while not empty?(sl) repeat
                   sub := first sl
                   osl := cons(sub, osl)
                   sl := rest sl
 
                   -- check for integrability conditions
-                  while not(empty? sl) repeat
+                  while not(empty?(sl)) repeat
                       rec := first sl
                       rec.LD > sub.LD => break
                       sl := rest sl
@@ -1200,12 +1200,12 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
                       if not zero? ic then
                           nl := cons(ic, nl)
 
-                  tmp : L LDREC := empty
+                  tmp : L LDREC := []
                   for rec in sl repeat
                       d := derivativeOf?(rec.LD , sub.LD)
-                      if empty? d then
+                      if empty?(d) then
                           seq := dSubst(rec.Fun, sub.LD, sub.Fun)
-                          tmp := cons([rec.LD, true, empty, seq], tmp)
+                          tmp := cons([rec.LD, true, [], seq], tmp)
                       else
                           ic := dSubst(formalDiff(sub.Fun, d) - _
                                        rec.Fun, sub.LD, sub.Fun)
@@ -1216,7 +1216,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
               sl := osl                      -- now ordered largest first
 
               -- reduce unsolved equations
-              ol : L % := empty
+              ol : L % := []
               for eq in nsl repeat
                   seq := eq
                   for sub in sl repeat
@@ -1229,7 +1229,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
               nsl := ol
 
               -- reduce new equations
-              ol : L % := empty
+              ol : L % := []
               for eq in nl repeat
                   seq := eq
                   for sub in sl repeat
@@ -1239,8 +1239,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
               nl := ol
 
           -- recombine lists
-          tmp1 := [[leadingDer(eq), true, empty, eq]  for eq in nsl]
-          tmp2 := [[rec.LD, true, empty, simpOne(rec.LD::% - rec.Fun)] _
+          tmp1 := [[leadingDer(eq), true, [], eq]  for eq in nsl]
+          tmp2 := [[rec.LD, true, [], simpOne(rec.LD::% - rec.Fun)] _
                         for rec in sl]
           tmp1 := sort!(greater, concat!(tmp1, tmp2))
           --print("END autoReduce")$OUT
@@ -1446,14 +1446,14 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
     minInd : I := minIndex([i for i in 1..1])
     offset : I := minInd-1
-    emptyRec : ROWREC := [empty, empty]
+    emptyRec : ROWREC := [[], []]
     noChecks? : B := D has lazyRepresentation  -- flag for lazy representation
     seed : I := 113                   -- seed for random number generation
     GCDmode : Sy := iter              -- flag for gcd algorithm
 
     greater(r1 : ROWREC, r2 : ROWREC) : B ==
-        empty? r1.Indices => false
-        empty? r2.Indices => true
+        empty?(r1.Indices) => false
+        empty?(r2.Indices) => true
         first(r2.Indices) < first(r1.Indices)
 
     -- -------------- --
@@ -1515,7 +1515,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             inds := r.Indices
             ents := r.Entries
             for ind in A.AllInds  for j in minColIndex(AA).. _
-                    while not empty? inds repeat
+                    while not empty?(inds) repeat
                 if ind = first inds then
                     qsetelt!(AA, i, j, first ents)
                     inds := rest inds
@@ -1538,7 +1538,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     -- ----------------------- --
 
     elimZeroCols!(A : %) : Void ==
-        newInds : L C := empty
+        newInds : L C := []
         for r in entries(A.Rows) repeat
             newInds := removeDuplicates! merge!((x, y) +-> y < x,
                                                 newInds, r.Indices)
@@ -1546,7 +1546,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         void
 
     purge!(A : %, crit : C-> B) : Void ==
-        newInds : L C := empty
+        newInds : L C := []
         for c in A.AllInds repeat
             if not crit c then
                 newInds := cons(c, newInds)
@@ -1555,8 +1555,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             A.AllInds := newInds
             for l in 1..A.NRows repeat
                 r := qelt(A.Rows, l)
-                newInds : L C := empty
-                newEnts : L D := empty
+                newInds : L C := []
+                newEnts : L D := []
                 for c in r.Indices   for e in r.Entries repeat
                     if not crit c then
                         newInds := cons(c, newInds)
@@ -1566,11 +1566,11 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
     sortedPurge!(A : %, crit : C-> B) : Void ==
         if crit first A.AllInds then
-            while not(empty? A.AllInds) and crit first A.AllInds repeat
+            while not(empty?(A.AllInds)) and crit first A.AllInds repeat
                 A.AllInds := rest A.AllInds
             for l in 1..A.NRows repeat
                 r := qelt(A.Rows, l)
-                while not(empty? r.Indices) and crit first r.Indices repeat
+                while not(empty?(r.Indices)) and crit first r.Indices repeat
                     r.Indices := rest r.Indices
                     r.Entries := rest r.Entries
                 qsetelt!(A.Rows, l, r)
@@ -1593,7 +1593,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         newRows : L ROWREC := cons(r, entries A.Rows)
         A.Rows := construct newRows
         newInds := setDifference(r.Indices, A.AllInds)
-        if not empty? newInds then
+        if not empty?(newInds) then
             A.AllInds := merge((x, y) +-> y < x, A.AllInds,
                                sort!((x, y) +-> y < x, newInds))
         void
@@ -1603,7 +1603,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         newRows : L ROWREC := concat(entries A.Rows, r)
         A.Rows := construct newRows
         newInds := setDifference(r.Indices, A.AllInds)
-        if not empty? newInds then
+        if not(empty?(newInds)) then
             A.AllInds := merge((x, y) +-> y < x, A.AllInds,
                                sort!((x, y) +-> y < x, newInds))
         void
@@ -1611,7 +1611,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     extract(A : %, i1 : I, i2 : I) : % ==
         nr := (i2-i1+1)::NNI
         resRows : V ROWREC := new(nr, emptyRec)
-        newInds : L C := empty
+        newInds : L C := []
         for i in i1..i2 repeat
             qsetelt!(resRows, i-i1+1, row(A, i))
             newInds := removeDuplicates! merge((x, y) +-> y < x,
@@ -1642,31 +1642,31 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
     horizSplit(A : %, c : C) : Record(Left : %, Right : %) ==
         rinds : L C := allIndices A
-        linds : L C := empty
-        while not(empty? rinds) and (first(rinds) > c) repeat
+        linds : L C := []
+        while not(empty?(rinds)) and (first(rinds) > c) repeat
             linds := cons(first(rinds), linds)
             rinds := rest rinds
-        empty? linds => [new(linds, A.NRows), A]
+        empty?(linds) => [new(linds, A.NRows), A]
         linds := reverse! linds
-        empty? rinds => [A, new(rinds, A.NRows)]
+        empty?(rinds) => [A, new(rinds, A.NRows)]
         LA : % := new(linds, A.NRows)
         RA : % := new(rinds, A.NRows)
         for i in 1..A.NRows repeat
             r := row(A, i)
             ri : L C := r.Indices
             re : L D := r.Entries
-            li : L C := empty
-            le : L D := empty
-            while not(empty? ri) and (first(ri) > c) repeat
+            li : L C := []
+            le : L D := []
+            while not(empty?(ri)) and (first(ri) > c) repeat
                 li := cons(first(ri), li)
                 le := cons(first re, le)
                 ri := rest ri
                 re := rest re
-            if not empty? li then
+            if not empty?(li) then
                 li := reverse! li
                 le := reverse! le
                 setRow!(LA, i, li, le)
-            if not empty? ri then
+            if not(empty?(ri)) then
                 setRow!(RA, i, ri, re)
         [LA, RA]
 
@@ -1677,14 +1677,14 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     addRows(d1 : D, r1 : ROWREC, d2 : D, r2 : ROWREC) : ROWREC ==
         -- Computes linear combination of two rows.
         -- Local function.
-        empty? r1.Indices =>
+        empty?(r1.Indices) =>
             one? d2 => r2
             [r2.Indices, [d2*e2  for e2 in r2.Entries]]
-        empty? r2.Indices =>
+        empty?(r2.Indices) =>
             one? d1 => r1
             [r1.Indices, [d1*e1  for e1 in r1.Entries]]
-        resI : L C := empty
-        resE : L D := empty
+        resI : L C := []
+        resE : L D := []
         lent1 : L D
         lent2 : L D
         if not(noChecks?) and one? d1 then
@@ -1698,12 +1698,12 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         lind2 := copy r2.Indices
 
         for c1 in r1.Indices  for e1 in lent1 repeat
-            while not(empty? lind2) and c1 < first(lind2) repeat
+            while not(empty?(lind2)) and c1 < first(lind2) repeat
                 resI := cons(first lind2, resI)
                 resE := cons(first(lent2), resE)
                 lind2 := rest lind2
                 lent2 := rest lent2
-            if not(empty? lind2) and first(lind2) = c1 then
+            if not(empty?(lind2)) and first(lind2) = c1 then
                 sum := e1+first(lent2)
                 if noChecks? or not zero? sum then
                     resI := cons(c1, resI)
@@ -1716,20 +1716,20 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
         resI := concat!(reverse! resI, lind2)
         resE := concat!(reverse! resE, lent2)
-        while not(empty? resE) and zero? first resE repeat
+        while not(empty?(resE)) and zero? first resE repeat
             resI := rest resI
             resE := rest resE
         [resI, resE]
 
     pivot(A : %, i : I) : Record(Index : C, Entry : D) ==
         r := row(A, i)
-        empty? r.Indices => error "empty row"
+        empty?(r.Indices) => error "empty row"
         [first r.Indices, first r.Entries]
 
     pivots(A : %) : ROWREC ==
-        resI : L C := empty
-        resE : L D := empty
-        for r in entries A.Rows | not empty? r.Indices repeat
+        resI : L C := []
+        resE : L D := []
+        for r in entries A.Rows | not empty?(r.Indices) repeat
             resI := cons(first r.Indices, resI)
             resE := cons(first r.Entries, resE)
         [reverse! resI, reverse! resE]
@@ -1737,13 +1737,13 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     rowEchelon(AA : %) : Record(Ech : %, Lt : MD, Pivots : L D, Rank : NNI) ==
         A := copy AA
         LTr : MD := diagonalMatrix [1$D  for i in 1..A.NRows]
-        Pivs : L D := empty
+        Pivs : L D := []
 
         -- check pivots
         for i in 1..A.NRows repeat
             r := qelt(A.Rows, i)
             changed? : B := false
-            while not(empty? r.Entries) and zero? first r.Entries repeat
+            while not(empty?(r.Entries)) and zero? first r.Entries repeat
                 r.Entries := rest r.Entries
                 r.Indices := rest r.Indices
                 changed? := true
@@ -1770,7 +1770,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
         pivlen, pivrow, rk : NNI
         for i in 1..A.NRows  until finished? repeat
             r := qelt(A.Rows, i)
-            finished? := empty? r.Indices
+            finished? := empty?(r.Indices)
             if finished? then
                 rk : NNI := (i-1)::NNI
             else                         -- search good pivot
@@ -1779,7 +1779,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                 pivrow := i
                 k : I := 0
                 for j in (i+1)..A.NRows _
-                        while not(empty? qelt(A.Rows, j).Indices) and _
+                        while not(empty?(qelt(A.Rows, j).Indices)) and _
                             pivind = first(qelt(A.Rows, j).Indices) repeat
                     len := #qelt(A.Rows, j).Indices
                     k := k+1
@@ -1838,11 +1838,11 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             f := first le
             g := second le
             l := rest rest le
-            while not empty? l repeat
+            while not empty?(l) repeat
                 one? first l => return 1$D
                 f := f + (1+random(113)$I)*first(l)
                 l := rest l
-                if not empty? l then
+                if not empty?(l) then
                     one? first l => return 1$D
                     g := g + (1+random(113)$I)*first(l)
                     l := rest l
@@ -1881,13 +1881,13 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                 Record(Ech : %, Lt : MFD, Pivots : L D, Rank : NNI) ==
             A := copy AA
             LTr : MFD := diagonalMatrix [1$FD  for i in 1..A.NRows]
-            Pivs : L D := empty
+            Pivs : L D := []
 
             -- check pivots
             for i in 1..A.NRows repeat
                 r := qelt(A.Rows, i)
                 changed? : B := false
-                while not(empty? r.Entries) and zero? first r.Entries repeat
+                while not(empty?(r.Entries)) and zero? first r.Entries repeat
                     r.Entries := rest r.Entries
                     r.Indices := rest r.Indices
                     changed? := true
@@ -1914,7 +1914,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             pivlen, pivrow, rk : NNI
             for i in 1..A.NRows  until finished? repeat
                 r := qelt(A.Rows, i)
-                finished? := empty? r.Indices
+                finished? := empty?(r.Indices)
                 if finished? then
                     rk : NNI := (i-1)::NNI
                 else                          -- search good pivot
@@ -1923,7 +1923,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                     pivrow := i
                     k : I := 0
                     for j in (i+1)..A.NRows _
-                            while not(empty? qelt(A.Rows, j).Indices) and _
+                            while not(empty?(qelt(A.Rows, j).Indices)) and _
                               pivind = first(qelt(A.Rows, j).Indices) repeat
                         len := #qelt(A.Rows, j).Indices
                         k := k+1
@@ -1992,7 +1992,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
             for i in 1..A.NRows repeat
                 r := qelt(A.Rows, i)
                 inds := r.Indices
-                if not(empty? inds) and first(inds) = c then
+                if not(empty?(inds)) and first(inds) = c then
                     for k in 1..rlen | not zero? qelt(LM, k, i) repeat
                         qsetelt!(tmp, k, qelt(tmp, k) + qelt(LM, k, i)* _
                                  first(r.Entries))
@@ -2031,7 +2031,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
                 for i in 1..A.NRows repeat
                     r := qelt(A.Rows, i)
                     inds := r.Indices
-                    if not(empty? inds) and first(inds) = c then
+                    if not(empty?(inds)) and first(inds) = c then
                         for k in 1..rlen | not zero? qelt(LM, k, i) repeat
                             qsetelt!(tmp, k, qelt(tmp, k) + qelt(LM, k, i)* _
                                      first(r.Entries))
@@ -2154,7 +2154,7 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
     D(u : Sy, der : L Sy) : % ==
         up := position(u, DVar)
         up < minIndex(DVar) => error errmsg4
-        lower : L PI := empty
+        lower : L PI := []
         for d in der repeat
             pos := position(d, IVar)
             pos < minIndex(IVar) => error errmsg4
@@ -2179,7 +2179,7 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
         jt = 'Dep => qelt(nameU, i)
         mu := repeatedIndex jv
         res := qelt(nameU, i)
-        lower : L OUT := empty
+        lower : L OUT := []
         for j in mu repeat
             lower := cons(qelt(nameX, j)::OUT, lower)
         lower := reverse! lower
@@ -2439,8 +2439,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         PM := primitiveMonomials p
         CO := coefficients p
         for mon in PM  for co in CO repeat
-            JV : L JB := empty
-            Exp : L NNI := empty
+            JV : L JB := []
+            Exp : L NNI := []
             newco : EI := co::EI
             for v in variables mon repeat
                 vs := v::%
@@ -2483,7 +2483,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         -- recursive computation of independent sets
         res := sets
         newVars := remVars
-        while not empty? newVars repeat
+        while not empty?(newVars) repeat
             jk := first newVars
             newVars := rest newVars
             elem : B := false
@@ -2506,7 +2506,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         for lv in rest lmv repeat
             allvars := removeDuplicates! merge(lv, allvars)
         dim0 := (dimJ(q)$JB - #allvars)::NNI
-        indSets := dimrec(lmv, empty, allvars, empty)
+        indSets := dimrec(lmv, [], allvars, [])
         dim : NNI := 0
         for ind in indSets repeat
             dim := max(dim, #ind)
@@ -2519,7 +2519,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         for lv in rest lmv repeat
             allvars := removeDuplicates! merge(lv, allvars)
         dim0 := (dimS(q)$JB - #allvars)::NNI
-        indSets := dimrec(lmv, empty, allvars, empty)
+        indSets := dimrec(lmv, [], allvars, [])
         dim : NNI := 0
         for ind in indSets repeat
             dim := max(dim, #ind)
@@ -2559,8 +2559,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
 
     greaterLD(r1 : LDREC, r2 : LDREC) : B ==
         -- local function for sorting purposes
-        empty? r1.JMR.Indices => false
-        empty? r2.JMR.Indices => true
+        empty?(r1.JMR.Indices) => false
+        empty?(r2.JMR.Indices) => true
         ind1 := r1.JMR.Indices
         ind2 := r2.JMR.Indices
         first(ind1) = first(ind2) => #ind1 < #ind2
@@ -2579,7 +2579,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         -- equations. Looses all information about dependencies.
         print(assign(message("groebnerSimp: #"), (#sysL)::OUT))$OUT
         tmp : L L NNI := [rec.Depend  for rec in sysL]
-        resDep : L NNI := reduce(setUnion, tmp, empty)
+        resDep : L NNI := reduce(setUnion, tmp, [])
         resSys := groebner([rec.Fun  for rec in sysL])
         resJM := jacobiMatrix(resSys, [ind  for eq in resSys])
         print(message("END groebnerSimp"))$OUT
@@ -2592,8 +2592,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         solved? : B := false
         srec : LDREC
         sld : JB
-        rsysL : L LDREC := empty
-        while not(solved? or empty? sysL) repeat
+        rsysL : L LDREC := []
+        while not(solved? or empty?(sysL)) repeat
             rec := first sysL
             sysL := rest sysL
             ld := first rec.JMR.Indices
@@ -2636,20 +2636,20 @@ JetBundleExpression(JB : JBC) : Cat == Def where
             --print("END simpRec")$OUT
             cons(frec, simpRec(sysL, ind))
         eqLD : L LDREC := [frec]
-        while not(empty? sysL) and (sld = fld) repeat
+        while not(empty?(sysL)) and (sld = fld) repeat
             eqLD := cons(srec, eqLD)
             sysL := rest sysL
-            if not empty? sysL then
+            if not empty?(sysL) then
                 srec := first sysL
                 sld := first srec.JMR.Indices
         eqLD := sort!(greaterLD, linearSimp(reverse! eqLD, ind))
         srec := first eqLD
         sld := first srec.JMR.Indices
-        resLD : L LDREC := empty
-        while not(empty? eqLD) and (sld = fld) repeat
+        resLD : L LDREC := []
+        while not(empty?(eqLD)) and (sld = fld) repeat
             resLD := cons(srec, resLD)
             eqLD := rest eqLD
-            if not empty? eqLD then
+            if not empty?(eqLD) then
                 srec := first eqLD
                 sld := first srec.JMR.Indices
         newSysL : L LDREC := merge(greaterLD, eqLD, sysL)
@@ -2662,7 +2662,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         -- for its leading derivative or by Groebner bases.
         --print("##### SIMPLIFY #####")$OUT
         inds := allIndices jm
-        sysL : L LDREC := empty
+        sysL : L LDREC := []
         for eq in sys | not zero? eq  for i in 1.. repeat
             neq := simpOne eq
             if neq = eq then
@@ -2672,12 +2672,12 @@ JetBundleExpression(JB : JBC) : Cat == Def where
             empty?(r.Indices) or (type(first r.Indices) = Indep) =>
                 error "inconsistent system"
             sysL := cons([neq, r, [i::NNI]], sysL)
-        empty? sysL => [empty, new(empty, 0), empty]
+        empty?(sysL) => [[], new(empty, 0), []]
         sysL := simpRec(sort!(greaterLD, sysL), inds)
 
-        resSys : L % := empty
+        resSys : L % := []
         resJM : SEM := new(inds, #sysL)
-        resDep : L L NNI := empty
+        resDep : L L NNI := []
         for rec in sysL  for i in 1.. repeat
             empty?(rec.JMR.Indices) or (first rec.JMR.Indices < U(1)$JB) =>
                 error "inconsistent system"
@@ -2692,7 +2692,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
     -- -------------- --
 
     jetVariables(Phi : %) : L JB ==
-        JV : L JB := empty
+        JV : L JB := []
         LKernels := tower Phi
         LOps := [operator Ke  for Ke in LKernels]
         for Ke in LKernels  for Op in LOps | has?(Op, "%jet"::Symbol)$BOP repeat
@@ -2732,7 +2732,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         vquo := variables md.quotient
         member?(var, append(vrem, vquo)) => "failed"
         zero? md.remainder =>
-            empty? vquo => 0
+            empty?(vquo) => 0
             "failed"
         - md.remainder / md.quotient
 
@@ -2762,17 +2762,17 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         l := rest l
         show : I := retract first l
         l := rest l
-        args : L OUT := empty
+        args : L OUT := []
         for k in 1..show repeat
             args := concat!(args, [first(l)::OUT])
             l := rest l
         for k in (show + 1)..num repeat
             l := rest l
-        if empty? l then
+        if empty?(l) then
             op := name::OUT
         else
             op := sub(name::OUT, commaSeparate [e::OUT  for e in l])
-        empty? args => op
+        empty?(args) => op
         prefix(op, args)
 
     hidediff(l : L %, x : Sy) : % ==
@@ -2786,7 +2786,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         l := rest l
         show : I := retract first l
         l := rest l
-        args : L % := empty
+        args : L % := []
         for k in 1..num repeat
             args := cons(first l, args)
             l := rest l
@@ -2982,15 +2982,15 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
         [[ex], [1]]
 
     coerce(jm : SEMD) : L % ==
-        res : L % := empty
+        res : L % := []
         for i in 1..nrows(jm) repeat
             r := row(jm, i)
-            if not empty? r.Indices then
+            if not empty?(r.Indices) then
                 res := cons([r.Entries, r.Indices], res)
         reverse! res
 
     coerce(ll : L %) : SEMD ==
-        inds : L JB := empty
+        inds : L JB := []
         for l in ll repeat
             inds := removeDuplicates! merge(">", inds, l.JVars)
         res : SEMD := new(inds, #ll)
@@ -3019,7 +3019,7 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
             pd := retractIfCan(ex)$D
             pd case D => [[pd@D], [1$JB]]
             resJ := jetVariables ex
-            resC : L D := empty
+            resC : L D := []
             for jv in resJ repeat
                 cd := retractIfCan(differentiate(ex, jv))$D
                 cd case "failed" => return "failed"
@@ -3035,7 +3035,7 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
     -- Equality --
     -- -------- --
 
-    zero?(l : %) : B == empty? l.JVars
+    zero?(l : %) : B == empty?(l.JVars)
 
     l1 : % = l2 : % == zero?(l1-l2)
 
@@ -3054,8 +3054,8 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
         zero? l2 => l1
         lc2 := copy l2.Coeffs
         lj2 := copy l2.JVars
-        resC : L D := empty
-        resJ : L JB := empty
+        resC : L D := []
+        resJ : L JB := []
 
         for c1 in l1.Coeffs  for j1 in l1.JVars repeat
             while not empty?(lj2) and first(lj2) > j1 repeat
@@ -3105,7 +3105,7 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
     l1 : % exquo l2 : % ==
         not one? first l2.JVars => "failed"
         d := first l2.Coeffs
-        newC : L D := empty
+        newC : L D := []
         for c in l1.Coeffs repeat
             e := c exquo d
             e case "failed" => return "failed"
@@ -3124,7 +3124,7 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
 
     jetVariables(l : %) : L JB ==
         zero? l => []
-        res : L JB := empty
+        res : L JB := []
         for c in l.Coeffs repeat
             res := merge(">", res, jetVariables c)
         res := removeDuplicates! res
@@ -3136,8 +3136,8 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
 
     differentiate(l : %, s : Sy) : % ==
         -- No check whether symbol might be a jet variable!!!
-        resC : L D := empty
-        resJ : L JB := empty
+        resC : L D := []
+        resJ : L JB := []
         for c in l.Coeffs  for j in l.JVars repeat
             dc := differentiate(c, s)$D
             if not zero? dc then
@@ -3148,8 +3148,8 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
     differentiate(l : %, jv : JB) : % ==
         jt := type jv
         jt = Indep =>
-            resC : L D := empty
-            resJ : L JB := empty
+            resC : L D := []
+            resJ : L JB := []
             for c in l.Coeffs  for j in l.JVars repeat
                 dc := differentiate(c, jv)$D
                 if not zero? dc then
@@ -3161,13 +3161,13 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
         [[qelt(l.Coeffs, pos)], [1]]
 
     jacobiMatrix(sys : L %) : SEM ==
-        inds : L JB := empty
-        cinds : L JB := empty
+        inds : L JB := []
+        cinds : L JB := []
         for eq in sys repeat
             inds := removeDuplicates! merge(">", inds, eq.JVars)
             while #cinds < nn  for co in eq.Coeffs repeat
                 cinds := removeDuplicates! merge(">", cinds, jetVariables(co)$D)
-        empty? cinds =>             -- constant coefficients
+        empty?(cinds) =>             -- constant coefficients
             res : SEM := new(inds, #sys)
             for eq in sys  for i in 1.. repeat
                 setRow!(res, i, eq.JVars, [co::% for co in eq.Coeffs])
@@ -3175,17 +3175,17 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
         res : SEM := new(append(inds, cinds), #sys)
         for eq in sys  for i in 1.. repeat
             ents := [co::%  for co in eq.Coeffs]
-            rowJ : L JB := empty
-            rowC : L % := empty
+            rowJ : L JB := []
+            rowC : L % := []
             for cjv in cinds repeat
-                dJV : L JB := empty
-                dCo : L D := empty
+                dJV : L JB := []
+                dCo : L D := []
                 for co in eq.Coeffs  for jv in eq.JVars repeat
                     dco := differentiate(co, cjv)$D
                     if not zero? dco then
                         dJV := cons(jv, dJV)
                         dCo := cons(dco, dCo)
-                if not empty? dJV then
+                if not empty?(dJV) then
                     rowJ := cons(cjv, rowJ)
                     rowC := cons([reverse! dCo, reverse! dJV], rowC)
             setRow!(res, i, append(eq.JVars, reverse! rowJ), _
@@ -3201,20 +3201,20 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
             ents := [co::%  for co in eq.Coeffs]
             ivars := sort!("<", select((x : JB) : Boolean +->
                                    type(x) = Indep, vars))
-            if empty? ivars then
+            if empty?(ivars) then
                 setRow!(res, i, eq.JVars, ents)
             else
-                rowJ : L JB := empty
-                rowC : L % := empty
+                rowJ : L JB := []
+                rowC : L % := []
                 for ijv in ivars repeat
-                    dJV : L JB := empty
-                    dCo : L D := empty
+                    dJV : L JB := []
+                    dCo : L D := []
                     for co in eq.Coeffs  for jv in eq.JVars repeat
                         dco := differentiate(co, ijv)$D
                         if not zero? dco then
                             dJV := cons(jv, dJV)
                             dCo := cons(dco, dCo)
-                    if not empty? dJV then
+                    if not empty?(dJV) then
                       rowJ := cons(ijv, rowJ)
                       rowC := cons([reverse! dCo, reverse! dJV], rowC)
                 setRow!(res, i, append(eq.JVars, reverse! rowJ), _
@@ -3251,8 +3251,8 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
         jt = Const => error errmsg2
         jt = Indep =>                          -- substitution in coefficients
             xexp : D := retract exp
-            resC : L D := empty
-            resJ : L JB := empty
+            resC : L D := []
+            resJ : L JB := []
             for c in l.Coeffs for cj in l.JVars repeat
                 nc := subst(c, jv, xexp)$D
                 if not zero? nc then
@@ -3278,33 +3278,33 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
         -- construct new Jacobi matrix and build dependency list
         inds := allIndices jm
         cinds := copy inds
-        while not(empty? cinds) and (type(first cinds) ~= Indep) repeat
+        while not(empty?(cinds)) and (type(first cinds) ~= Indep) repeat
             cinds := rest cinds
-        if not empty? cinds then
+        if not empty?(cinds) then
             cinds := reverse! cinds
         newJM : SEM := new(inds, #newSys)
-        dep : L L NNI := empty
+        dep : L L NNI := []
         for eq in newSys  for j in 1.. repeat
-            if empty? cinds then            -- constant coefficients
+            if empty?(cinds) then            -- constant coefficients
                 setRow!(newJM, j, eq.JVars, [co::% for co in eq.Coeffs])
             else                            -- non-constant coefficients
                 ents := [co::%  for co in eq.Coeffs]
-                rowJ : L JB := empty
-                rowC : L % := empty
+                rowJ : L JB := []
+                rowC : L % := []
                 for cjv in cinds repeat
-                    dJV : L JB := empty
-                    dCo : L D := empty
+                    dJV : L JB := []
+                    dCo : L D := []
                     for co in eq.Coeffs  for jv in eq.JVars repeat
                         dco := differentiate(co, cjv)$D
                         if not zero? dco then
                             dJV := cons(jv, dJV)
                             dCo := cons(dco, dCo)
-                    if not empty? dJV then
+                    if not empty?(dJV) then
                         rowJ := cons(cjv, rowJ)
                         rowC := cons([reverse! dCo, reverse! dJV], rowC)
                 setRow!(newJM, j, append(eq.JVars, reverse! rowJ), _
                                   append(ents, reverse! rowC))
-            depj : L NNI := empty
+            depj : L NNI := []
             for k in maxR..minR by -1 repeat
                 kb := k+minIndex(sys)-minR
                 if not zero? qelt(Trafo, j, k) then
@@ -3418,7 +3418,7 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
         c::OUT * sub(message("D"), jb::OUT)
 
     coerce(v : %) : OUT ==
-        empty? v.Dir => 0$D ::OUT
+        empty?(v.Dir) => 0$D ::OUT
         one?(#v.Dir) => monom(first v.Coeff, first v.Dir)
         reduce("+", [monom(c, jb) for c in v.Coeff for jb in v.Dir])
 
@@ -3437,9 +3437,9 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
     -- Arithmetic --
     -- ---------- --
 
-    0 : % == [empty, empty]
+    0 : % == [[], []]
 
-    zero?(v : %) : B == empty? v.Dir
+    zero?(v : %) : B == empty?(v.Dir)
 
     - v : % == [[-$D c  for c in v.Coeff], v.Dir]
 
@@ -3448,8 +3448,8 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
         zero? w => v
         lc2 : L D := copy w.Coeff
         lj2 : L JB := copy w.Dir
-        resC : L D := empty
-        resJ : L JB := empty
+        resC : L D := []
+        resJ : L JB := []
 
         for c1 in v.Coeff  for j1 in v.Dir repeat
             while not empty?(lj2) and first(lj2) < j1 repeat
@@ -3482,10 +3482,10 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
         zero? q => v
         dirs := directions v
         coeffs := coefficients v
-        xi : L D := empty
-        eta : L D := empty
-        ind1 : L PI := empty
-        ind2 : L PI := empty
+        xi : L D := []
+        eta : L D := []
+        ind1 : L PI := []
+        ind2 : L PI := []
 
         for jv in dirs  for co in coeffs repeat
             jt := type jv
@@ -3505,7 +3505,7 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
                 qsetelt!(dxi, i, j, formalDiff2(co, j::PI, jm).DPhi)
 
         j : I := mm
-        oldCo : L D := empty
+        oldCo : L D := []
         for co in eta  for i in ind2 repeat
             while j > i repeat
                 oldCo := cons(0, oldCo)
@@ -3519,8 +3519,8 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
 
         res : % := v
         for qq in 1..q repeat
-            newCo : L D := empty
-            newDir : L JB := empty
+            newCo : L D := []
+            newDir : L JB := []
             for jv in oldDir  for co in oldCo repeat
                 jm := jacobiMatrix [co]
                 a := index jv
@@ -3551,8 +3551,8 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
         res
 
     commutator(v : %, w : %) : % ==
-        rco : L D := empty
-        rjb : L JB := empty
+        rco : L D := []
+        rjb : L JB := []
         for c1 in v.Coeff  for j1 in v.Dir repeat
             sum : D := 0
             for c2 in w.Coeff  for j2 in w.Dir repeat
@@ -3562,8 +3562,8 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
                 rjb := cons(j1, rjb)
         res1 : % := [reverse! rco, reverse! rjb]
 
-        rco : L D := empty
-        rjb : L JB := empty
+        rco : L D := []
+        rjb : L JB := []
         for c2 in w.Coeff  for j2 in w.Dir repeat
             sum : D := 0
             for c1 in v.Coeff  for j1 in v.Dir repeat
@@ -3578,7 +3578,7 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
         len := #lv
         zero? len => error "empty list in table"
         res : TwoDimensionalArray % := new(len, len, 0)
-        for i in 1..  until empty? lv repeat
+        for i in 1..  until empty?(lv) repeat
             v1 := first lv
             lv := rest lv
             for v2 in lv  for j in (i+1).. repeat
@@ -3690,9 +3690,9 @@ JetDifferential(JB : JBC, D : JBFC JB) : Cat == Def where
     -- Arithmetic --
     -- ---------- --
 
-    0 : % == [empty, empty]
+    0 : % == [[], []]
 
-    zero?(om : %) : B == empty? om.Diff
+    zero?(om : %) : B == empty?(om.Diff)
 
     - om : % == [[-$D c  for c in om.Coeff], om.Diff]
 
@@ -3701,8 +3701,8 @@ JetDifferential(JB : JBC, D : JBFC JB) : Cat == Def where
         zero? om2 => om1
         lc2 := copy om2.Coeff
         lj2 := copy om2.Diff
-        resC := empty()$L(D)
-        resJ := empty()$L(JB)
+        resC := []$L(D)
+        resJ := []$L(JB)
 
         for c1 in om1.Coeff  for j1 in om1.Diff repeat
             while not empty?(lj2) and first(lj2) < j1 repeat
@@ -3733,7 +3733,7 @@ JetDifferential(JB : JBC, D : JBFC JB) : Cat == Def where
 
     d(f : D) : % ==
         JV := reverse! jetVariables f
-        empty? JV => 0
+        empty?(JV) => 0
         Co : L D := [differentiate(f, jv)  for jv in JV]
         [Co, JV]
 
@@ -3909,8 +3909,8 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         -- Adapts Deriv and Prolonged? after simplification.
         -- Local function.
         dep case "failed" => [[1 for i in der], [false for i in der]]
-        resDer : L NNI := empty
-        resPro? : L B := empty
+        resDer : L NNI := []
+        resPro? : L B := []
         for d in dep@L(L(NNI)) repeat
             if one?(#d) then
                 resDer := cons(qelt(der, first d), resDer)
@@ -3947,20 +3947,20 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         [newSys, newOrd]
 
     order(De : %) : NNI ==
-        empty? De.Order => 0
+        empty?(De.Order) => 0
         first De.Order
 
     retract(De : %) : L D ==
         LSys := [sys.Eqs  for sys in De.Sys]
-        reduce(append, LSys, empty)
+        reduce(append, LSys, [])
 
     jacobiMatrix(De : %) : L SEM == [sys.JM  for sys in De.Sys]
 
     printSys(sys : L D) : OUT ==
         -- Prints system as "vector" of equations
-        empty? sys => empty
+        empty?(sys) => empty()
         leq : L EQ D := [eq = 0  for eq in sys]
-        tmp : L OUT := empty
+        tmp : L OUT := []
         for eq in leq repeat
             tmp := cons(eq::OUT, cons(message(" "), tmp))
         vconcat reverse tmp
@@ -3995,19 +3995,19 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         resOrd := reverse sort removeDuplicates lord
         nord := #resOrd
         inds := allIndices jm
-        ljm : L SEM := empty
+        ljm : L SEM := []
         for q in resOrd  repeat
             while order(first inds) > q repeat
                 inds := rest inds
             ljm := cons(new(inds, 1), ljm)
 
-        vsys : V L D := new(nord, empty)
-        vder : V L NNI := new(nord, empty)
+        vsys : V L D := new(nord, [])
+        vder : V L NNI := new(nord, [])
         vjm : V SEM := construct reverse! ljm
         for eq in reverse sys  for i in reverse der  for q in reverse lord _
                 for j in nrows(jm)..1 by -1 repeat
             pos := position(q, resOrd)+1-minIndex(resOrd)
-            if empty? qelt(vsys, pos) then
+            if empty?(qelt(vsys, pos)) then
                 qsetelt!(vsys, pos, [eq])
                 setRow!(qelt(vjm, pos), 1, row(jm, j))
                 qsetelt!(vder, pos, [i])
@@ -4018,7 +4018,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
 
         --for j in minIndex(vjm)..maxIndex(vjm) repeat
         --  elimZeroCols! qelt(vjm, i)
-        resSys : L SysRec := empty
+        resSys : L SysRec := []
         for ord in resOrd  for i in minIndex(vsys).. repeat
             rec : SysRec := [qelt(vsys, i), qelt(vjm, i), qelt(vder, i), _
                              new(#qelt(vder, i), false), false, false, 0]
@@ -4026,7 +4026,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         [reverse! resSys, resOrd]
 
     makeSystem(sys : L D) : % ==
-        empty? sys => [[], []]
+        empty?(sys) => [[], []]
         nsys := [numerator eq  for eq in sys]
         der : L NNI := [1  for eq in nsys]
         jm : SEM := jacobiMatrix nsys
@@ -4036,15 +4036,15 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         cDe1 := copy De1; cDe2 := copy De2
         sys1 := cDe1.Sys; sys2 := cDe2.Sys
         ord1 := cDe1.Order; ord2 := cDe2.Order
-        resSys : L SysRec := empty
-        resOrd : L NNI := empty
+        resSys : L SysRec := []
+        resOrd : L NNI := []
 
-        while not(empty? ord1 and empty? ord2) repeat
-            if empty? ord1 then
+        while not(empty?(ord1) and empty?(ord2)) repeat
+            if empty?(ord1) then
                 resSys := concat!(reverse! sys2, resSys)
                 resOrd := concat!(reverse! ord2, resOrd)
                 ord2 := empty
-            else if empty? ord2 then
+            else if empty?(ord2) then
                 resSys := concat!(reverse! sys1, resSys)
                 resOrd := concat!(reverse! ord1, resOrd)
                 ord1 := empty
@@ -4082,12 +4082,12 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
     dimension(De : %, q : NNI) : NNI ==
         -- The dimension is computed order by order
         -- Caution: Dim and Dim? are changed in De!
-        empty? De.Order => dimJ(q)$JB
+        empty?(De.Order) => dimJ(q)$JB
         simp? := true$B
 
         tsys := copy De.Sys
         tord := copy De.Order
-        resSys := empty()$L(SysRec)
+        resSys := []$L(SysRec)
 
         while first(tord) > q repeat
             resSys := cons(first tsys, resSys)
@@ -4128,20 +4128,20 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         -- Simplification is performed order by order, starting with the highest
         -- order. If equations of lower order are generated, they are moved into
         -- the corresponding subsystem.
-        resSys := empty()$L(SysRec)
-        resOrd := empty()$L(NNI)
-        ICs := empty()$L(D)
+        resSys := []$L(SysRec)
+        resOrd := []$L(NNI)
+        ICs := []$L(D)
 
         cDe := copy De
         tsys := cDe.Sys
         tord := cDe.Order
 
-        AllEqs := empty()$L(D)
+        AllEqs := []$L(D)
 
         if simpMode > 0 then
             AllEqs := retract cDe
 
-        while not empty? tord repeat
+        while not empty?(tord) repeat
             q := first tord
             sys := first tsys
             if sys.Simp? then                      -- already simplified
@@ -4196,13 +4196,13 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
                         else
                             rec : SysRec := [[eq], djm, [1], [pro?], _
                                              false, false, 0]
-                            hord : L NNI := empty
+                            hord : L NNI := []
                             pos := minIndex(tord) - 1
-                            while not empty? tord and first(tord) > o repeat
+                            while not empty?(tord) and first(tord) > o repeat
                                 hord := cons(first tord, hord)
                                 tord := rest tord
                                 pos := pos + 1
-                            if empty? tord then
+                            if empty?(tord) then
                                 tord := reverse! cons(o, hord)
                                 concat!(tsys, rec)
                             else
@@ -4221,7 +4221,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
             jm0 := first(resSys).JM
             for eq in first(resSys).Eqs  for i in 1.. repeat
                 lj := row(jm0, i).Indices
-                empty? lj => error "inconsistent system"
+                empty?(lj) => error "inconsistent system"
                 u? : B := false
                 for j in 1..mm  until u? repeat
                     u? := member?(U(j::PI)$JB, lj)
@@ -4240,7 +4240,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         resOrd := cDe.Order
         check : B := true
 
-        while not empty? resOrd and first(resOrd) > q repeat
+        while not empty?(resOrd) and first(resOrd) > q repeat
             check := check and first(resSys).Simp?
             resSys := rest resSys
             resOrd := rest resOrd
@@ -4255,10 +4255,10 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         -- integrability conditions.
 
         -- prolong equations of highest order
-        pEqs : L D := empty
-        pDer : L NNI := empty
-        pJV : L L JB := empty
-        pIC : L D := empty
+        pEqs : L D := []
+        pDer : L NNI := []
+        pJV : L L JB := []
+        pIC : L D := []
         rec := first De.Sys
         q := first De.Order
         for eq in rec.Eqs  for j in rec.Deriv  for k in 1.. repeat
@@ -4284,9 +4284,9 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         lastRec.Prolonged? := [true  for j in rec.Deriv]
         lastOrd := q
         for rec in rest De.Sys  for ord in rest De.Order repeat
-            pEqs := empty
-            pDer := empty
-            pJV := empty
+            pEqs := []
+            pDer := []
+            pJV := []
             for eq in rec.Eqs  for j in rec.Deriv  for pro? in rec.Prolonged? _
                     for k in 1.. repeat
                 if not pro? then
@@ -4296,7 +4296,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
                         pEqs := cons(FDiff.DPhi, pEqs)
                         pDer := cons(i::NNI, pDer)
                         pJV := cons(FDiff.JVars, pJV)
-            if empty? pEqs then
+            if empty?(pEqs) then
                 pSys := cons(lastRec, pSys)
                 pOrd := cons(lastOrd, pOrd)
             else
@@ -4331,9 +4331,9 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         cDe := copy De
         tsys := cDe.Sys
         tord := cDe.Order
-        pSys : L SysRec := empty
-        pOrd : L NNI := empty
-        pIC : L D := empty
+        pSys : L SysRec := []
+        pOrd : L NNI := []
+        pIC : L D := []
 
         while first(tord) > q repeat
             pSys := cons(first tsys, pSys)
@@ -4344,9 +4344,9 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         if not first(tord) = q then
 
             -- prolong equations of highest order (< q)
-            pEqs : L D := empty
-            pDer : L NNI := empty
-            pJV : L L JB := empty
+            pEqs : L D := []
+            pDer : L NNI := []
+            pJV : L L JB := []
             rec := first tsys
             ord := first tord
             for eq in rec.Eqs  for j in rec.Deriv  for k in 1.. repeat
@@ -4372,9 +4372,9 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
 
         -- prolong remaining equations, if necessary
         for rec in rest tsys  for ord in rest tord repeat
-            pEqs : L D := empty
-            pDer : L NNI := empty
-            pJV : L L JB := empty
+            pEqs : L D := []
+            pDer : L NNI := []
+            pJV : L L JB := []
             for eq in rec.Eqs  for j in rec.Deriv  for pro? in rec.Prolonged? _
                     for k in 1.. repeat
                 if not pro? then
@@ -4384,7 +4384,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
                         pEqs := cons(FDiff.DPhi, pEqs)
                         pDer := cons(i::NNI, pDer)
                         pJV := cons(FDiff.JVars, pJV)
-            if empty? pEqs then
+            if empty?(pEqs) then
                 pSys := cons(lastRec, pSys)
                 pOrd := cons(lastOrd, pOrd)
             else
@@ -4433,7 +4433,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         MSum := 0$NNI
         BetaI := 0$NNI
         LastClass : NNI := nn
-        LBeta : L NNI := empty
+        LBeta : L NNI := []
 
         for jv in pivs.Indices repeat
             CurClass := class jv
@@ -4456,7 +4456,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
     prolongSymbol(Symb : SEM) : SEM ==
         -- Direct prolongation of a symbol without differentiation.
         oldInds := allIndices Symb
-        newInds : L JB := empty
+        newInds : L JB := []
         for jv in reverse oldInds repeat
             for i in 1..nn repeat
                 newInds := cons(differentiate(jv, i::PI)::JB, newInds)
@@ -4471,7 +4471,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
 
     prolongMV(mv : MVREC) : MVREC ==
         oldBeta := reverse mv.Betas
-        newBeta : L NNI := empty
+        newBeta : L NNI := []
         sum : NNI := 0
         rank : NNI := 0
         msum : NNI := 0
@@ -4492,7 +4492,7 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         -- mask tells which coefficients are not zero.
         res : D := 1
         k : PI := 1
-        while not empty? mask repeat
+        while not empty?(mask) repeat
             while k < first(mask) repeat
                 mu := rest mu
                 k := k + 1
@@ -4531,8 +4531,8 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
                 a := index jv
                 mu := multiIndex jv
                 qsetelt!(sum, a, qelt(sum, a) + ent*power(coeffs, mu, cinds))
-            li : L JB := empty
-            le : L D := empty
+            li : L JB := []
+            le : L D := []
             for i in 1..mm  for s in entries sum repeat
                 if not zero? s then
                     li := cons(U(i::PI), li)
@@ -4857,7 +4857,7 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
 
       alphaHilbert(hilp : PFR) : L NNI ==
           -- Cartan characters from Hilbert polynomial
-          res : L NNI := empty
+          res : L NNI := []
           ifac := factorial(n)$I
           for i in n..1 by -1 repeat
               sum : FI := 0
@@ -4961,7 +4961,7 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
           PD := prolong PrevDe
           CurDe := PD.SDe
           ICs := PD.IC                          -- integrability conditions
-          if (redMode > 0) and not(empty? ICs) then
+          if (redMode > 0) and not(empty?(ICs)) then
               ICs := autoReduce reduceMod(ICs, CompSys)
 
           q := order De                         -- counter for order
@@ -5017,7 +5017,7 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
                       CurMV := analyseSymbol CurSymb
                       CurSymbDim := (dimSq1 - CurMV.Rank)::NNI
                   CurDeDim := dimension(CurDe, q1)
-                  if not empty? PD.IC then
+                  if not empty?(PD.IC) then
                       if redMode > 0 then
                           ICs := autoReduce concat!(ICs,
                                               reduceMod(PD.IC, CompSys))
@@ -5047,13 +5047,13 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
                       PrevDe := project(CurDe, q)
                   PD := prolong(CurDe, q1)
                   CurDe := PD.SDe
-                  if not empty? PD.IC then
+                  if not empty?(PD.IC) then
                       if redMode > 0 then
                           ICs := autoReduce reduceMod(PD.IC, CompSys)
                       else
                           ICs := PD.IC
                   else
-                      ICs := empty
+                      ICs := []
 
           if ode then
               PrevSymb := extractSymbol(PrevDe, false)
@@ -5100,7 +5100,7 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
     vars : L JB1 := concat!([X(i::PI)$JB1  for i in 1..nn], _
                           [U(i::PI)$JB1  for i in 1..mm])
     indVars : L(Sy) := [name(jv)  for jv in vars]
-    depVars : L(Sy) := empty()
+    depVars : L(Sy) := []
     if xi case Sy then
         if nn > 1 then
             depVars := [superscript(xi@Sy, [i::OUT])  for i in 1..nn]
@@ -5252,7 +5252,7 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
     vars : L JB1 := concat!([X(i::PI)$JB1  for i in 1..nn], _
                             [U(i::PI)$JB1  for i in 1..mm])
     indVars : L Sy := [name(jv)  for jv in vars]
-    depVars : L Sy := empty
+    depVars : L Sy := []
     if xi case Sy then
         if nn > 1 then
             depVars : L Sy := [superscript(xi@Sy, [i::OUT])  for i in 1..nn]
@@ -5293,8 +5293,8 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
 
     transform(f : JBE1) : JBE2 ==
-        JV : L EI := empty
-        SubL : L K := empty
+        JV : L EI := []
+        SubL : L K := []
         LKernels := tower f
         LOps := [operator Ke  for Ke in LKernels]
         for Ke in LKernels  for Op in LOps repeat
@@ -5316,18 +5316,18 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
                     arg := rest arg
                     num : I := retract first arg
                     arg := rest rest arg
-                    rarg : L JBE1 := empty
+                    rarg : L JBE1 := []
                     for i in 1..num repeat
                         rarg := cons(first arg, rarg)
                         arg := rest arg
                     rarg := reverse! rarg
                     diff : L JBE1 := arg
-                    if empty? diff then
+                    if empty?(diff) then
                         JV := cons(U(pos::PI)$JB2::EI, JV)
                         SubL := cons(first kernels(Ke::JBE1::EI), SubL)
                     else
                         up := pos::PI
-                        lower : L PI := empty
+                        lower : L PI := []
                         for d in diff repeat
                             id : I := retract d
                             --a := qelt(rarg, id)
@@ -5341,7 +5341,7 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
 
     --linearize(sys : L JBE2) : L JBL2 ==
-    --  res : L JBL2 := empty
+    --  res : L JBL2 := []
     --  for eq in sys repeat
     --    tmp : Union(JBL2, "failed") := retractIfCan(eq)$JBL2
     --    tmp case "failed" => error "non-linear equation in linearize"
@@ -5364,7 +5364,7 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
     detSys(sys : L JBE1, sjb : L JB1, vf : VF1) : L JBE1 ==
         -- solving equations for given jet variable
-        solEq : L EQ JBE1 := empty
+        solEq : L EQ JBE1 := []
         for eq in sys   for jv in sjb repeat
             tmp := solveFor(eq, jv)
             tmp case "failed" => error "cannot solve in detsys"
@@ -5379,8 +5379,8 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
         crit : L JBE1 := [eval(pvf, eq)  for eq in sys]
         pcrit : L JP1 := [numerJP eval(eq, solEq)  for eq in crit]
         coL := [coefficients jp  for jp in pcrit]
-        conds := reduce(append, coL, empty)
-        -- conds := reduce(append, [coefficients jp  for jp in pcrit], empty)
+        conds := reduce(append, coL, [])
+        -- conds := reduce(append, [coefficients jp  for jp in pcrit], [])
         [co::JBE1  for co in conds]
 
 
@@ -5400,10 +5400,10 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
     ncDetSys(sys : L JBE1, sjb : L JB1, vf : VF1) : L JBE1 ==
         dirs := directions vf
         coeffs := coefficients vf
-        Xi : L JBE1 := empty
-        tmp : L JBE1 := empty
-        ind1 : L PI := empty
-        ind2 : L PI := empty
+        Xi : L JBE1 := []
+        tmp : L JBE1 := []
+        ind1 : L PI := []
+        ind2 : L PI := []
 
         -- separating independent and dependent variables
         for jv in dirs  for co in coeffs repeat
@@ -5419,7 +5419,7 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
         -- closing gaps in eta
         j : I := mm
-        Eta : L JBE1 := empty
+        Eta : L JBE1 := []
         for co in tmp  for i in ind2 repeat
             while j > i repeat
                 Eta := cons(0, Eta)
@@ -5431,8 +5431,8 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
                 Eta := cons(0, Eta)
 
         -- invariant surface conditions
-        isc : L JBE1 := empty
-        ijb : L JB1 := empty
+        isc : L JBE1 := []
+        ijb : L JB1 := []
         for e in Eta  for j in 1..mm repeat
             cond : JBE1 := -e
             jv : JB1 := 1
@@ -5577,7 +5577,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
     emptyDer : LazyDer := [true, Null, 1$D]
 
-    zeroRec : RepRec := [1$JB, true, true, empty, empty, _
+    zeroRec : RepRec := [1$JB, true, true, [], [], _
                        [ref [1$JB, true, true, 0$D, ref emptyDer]]]
 
 
@@ -5611,21 +5611,21 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
     convert(lt : LazyTerm) : % ==
         JV := removeDuplicates! _
               merge(">", jetVars(lt.LCoeff), jetVars(deref(lt.LDer).DFun))
-        ref [lt.LLD, lt.LSharp?, lt.LEval?, empty, JV, [ref lt]]
+        ref [lt.LLD, lt.LSharp?, lt.LEval?, [], JV, [ref lt]]
 
 
     adapt(rec : RepRec, newLazy : L REF LazyTerm) : RepRec ==
         -- adapts values for LD etc. to new list newLazy
-        empty? newLazy => zeroRec
+        empty?(newLazy) => zeroRec
         lt := deref first newLazy
         newLD := lt.LLD
         newSharp? := lt.LSharp? and _
                    (empty?(rest newLazy) or (newLD > deref(second(newLazy)).LLD))
         newJV1 := rec.JV1
-        while not(empty? newJV1) and first(newJV1) > newLD repeat
+        while not(empty?(newJV1)) and first(newJV1) > newLD repeat
             newJV1 := rest newJV1
         newJV2 := rec.JV2
-        while not(empty? newJV2) and first(newJV2) > newLD repeat
+        while not(empty?(newJV2)) and first(newJV2) > newLD repeat
             newJV2 := rest newJV2
         [newLD, newSharp?, rec.Ground?, newJV1, newJV2, newLazy]
 
@@ -5699,14 +5699,14 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
     -- --------- --
 
     coerce(jv : JB) : % ==
-        ref [jv, true, true, [jv], empty, _
+        ref [jv, true, true, [jv], [], _
              [ref [jv, true, true, jv::D, ref emptyDer]$LazyTerm]]$RepRec
 
 
     coerce(d : D) : % ==
         ld := leadingDer(d)$D
         JV := jetVariables(d)$D
-        ref [ld, true, true, JV, empty, _
+        ref [ld, true, true, JV, [], _
              [ref [ld, true, true, d, ref emptyDer]$LazyTerm]]$RepRec
 
 
@@ -5733,7 +5733,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
     printLazy(llt : L REF LazyTerm) : OUT ==
         #llt = 1 => printLazyTerm deref first llt
-        --reduce("+", [printLazyTerm(deref lt)  for lt in llt], empty$OUT)
+        --reduce("+", [printLazyTerm(deref lt)  for lt in llt], empty()$OUT)
         printLazyTerm(deref first llt) + printLazy rest llt
 
 
@@ -5753,12 +5753,12 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
         -- This checks especially whether since the last call some terms
         -- have been evaluated.
         rec := deref exp
-        empty? rec.Lazy =>
+        empty?(rec.Lazy) =>
             setref(exp, zeroRec)
             exp
         d : D := 0
         res : B := true
-        newLazy : L REF LazyTerm := empty
+        newLazy : L REF LazyTerm := []
 
         for rlt in rec.Lazy repeat
             lt := deref rlt
@@ -5856,7 +5856,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
         rec := deref exp
         rec.Ground? => exp
         lazy := rec.Lazy
-        empty? lazy =>
+        empty?(lazy) =>
             setref(exp, zeroRec)
             exp
         rlt := first lazy
@@ -5867,7 +5867,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
             while rco.LEval? repeat
                 d := d +$D (rco.LCoeff::D)
                 lazy := rest lazy
-                empty? lazy => return d::%
+                empty?(lazy) => return d::%
                 rlt := first lazy
                 rco := deref rlt
             lazy := rest lazy
@@ -5894,7 +5894,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
     0 : % == ref zeroRec
 
 
-    1 : % == ref [1$JB, true, true, empty, empty, _
+    1 : % == ref [1$JB, true, true, [], [], _
                   [ref [1$JB, true, true, 1$D, ref emptyDer]$LazyTerm]]$RepRec
 
 
@@ -5963,7 +5963,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
     i : I * x : % ==
         rec := deref x
-        resLazy : L REF LazyTerm := empty
+        resLazy : L REF LazyTerm := []
         for rlt in rec.Lazy repeat
             lt := deref rlt
             resLazy := concat!(resLazy, [ref [lt.LLD, _
@@ -5980,7 +5980,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
             (extract(x) *$D extract(y))::%
         xrec := deref x
         yrec := deref y
-        resLazy : L REF LazyTerm := empty
+        resLazy : L REF LazyTerm := []
         for xlt in xrec.Lazy repeat
             for ylt in yrec.Lazy repeat
                 resLazy := merge(greater, resLazy, [multLazy(xlt, ylt)])
@@ -6013,7 +6013,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
     const?(exp : %) : B ==
         rec := deref exp
-        empty? rec.JV1 => const?(exp::D)$D
+        empty?(rec.JV1) => const?(exp::D)$D
         false
 
 
@@ -6036,7 +6036,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
         newJV := removeDuplicates! merge(">", rec.JV1, rec.JV2)
         not member?(jv, newJV) => 0
         LazyDiff := LazyDiff + 1
-        ref [ld, false, false, empty, newJV, _
+        ref [ld, false, false, [], newJV, _
              [ref [ld, false, false, 1$D, ref [false, jv, exp]]]]
 
 
@@ -6045,7 +6045,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
         rec := deref exp
         ld := rec.LD
         newJV := removeDuplicates! merge(">", rec.JV1, rec.JV2)
-        ref [ld, false, false, empty, newJV, _
+        ref [ld, false, false, [], newJV, _
              [ref [ld, false, false, 1$D, ref [false, x, exp]]]]
 
 
@@ -6054,15 +6054,15 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
         -- Basically as the default implementation in JBFC;
         -- only eqRep? is used instead of zero?.
         inds := allIndices JM
-        empty? inds => [[0 for eq in Sys], [empty for eq in Sys]]
-        LRes : L % := empty
-        LJV : L L JB := empty
+        empty?(inds) => [[0 for eq in Sys], [[] for eq in Sys]]
+        LRes : L % := []
+        LJV : L L JB := []
 
         -- compute formal derivative for each function
         for l in 1..nrows(JM)   for f in Sys repeat
             r := row(JM, l)
             res : % := 0
-            JV : L JB := empty
+            JV : L JB := []
             for df in reverse r.Entries  for jv in reverse r.Indices repeat
                 if not eqRep?(df, 0) then
                     djv := differentiate(jv, i)
@@ -6139,7 +6139,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
         l := rest l
         cld ~= ld(first l) => cons(cur, simpLD l)
         eqLD : L SREC := [cur]
-        while not(empty? l) and (cld = ld(fl : SREC := first l)) repeat
+        while not(empty?(l)) and (cld = ld(fl : SREC := first l)) repeat
             eqLD := cons(fl, eqLD)
             l := rest l
 
@@ -6149,7 +6149,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
             s := solveFor(eq.Fun, cld)
             solvable? := (s case %)
             seq := eq
-        newL : L SREC := empty
+        newL : L SREC := []
         if solvable? then
             for eq in eqLD | eq ~= seq repeat
                 neweq := numerator subst(eq.Fun, cld, s::%)
@@ -6163,12 +6163,12 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
             oldDep := [eq.Dep  for eq in eqLD]
             tmp := simplify(sys, jacobiMatrix(sys))$D
             if tmp.Depend = "failed" then
-                dep := removeDuplicates! reduce(append, oldDep, empty)
+                dep := removeDuplicates! reduce(append, oldDep, [])
                 newDep : L L NNI := [dep  for eq in tmp.Sys]
             else
-                newDep : L L NNI := empty
+                newDep : L L NNI := []
                 for dep in tmp.Depend::L L NNI repeat
-                    ndep : L NNI := empty
+                    ndep : L NNI := []
                     for d in dep repeat
                         ndep := removeDuplicates! concat!(ndep, qelt(oldDep, d))
                     newDep := cons(ndep, newDep)
@@ -6203,8 +6203,8 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 )if false
     simpOne(sys : L %) : L % ==
         -- Simplifies only evaluated equations
-        groundSys : L D := empty()
-        remSys : L % := empty
+        groundSys : L D := []
+        remSys : L % := []
         for exp in sys repeat
             if ground? exp then
                 groundSys := cons(extract exp, groundSys)
@@ -6267,7 +6267,7 @@ LUDecomposition(D : Field) : Cat == Def where
         minC := minColIndex A; maxC := maxColIndex A
         maxR ~= maxC => error "LU decomposition only of square matrices"
         PermV : V I := new((maxR - minR + 1)::NNI, 0)
-        Pivs : L D := empty
+        Pivs : L D := []
 
         for j in minC..maxC repeat
             for i in minR..(j-1) repeat
@@ -6524,7 +6524,7 @@ JetBundlePolynomial(R : Ring, JB : JBC) : Cat == Def where
         groebner(lp : L %) : L % ==
             print(message("groebner"))$OUT
             lj : L L JB := [jetVariables p  for p in lp]
-            LJV : L JB := reduce(setUnion, lj, empty)
+            LJV : L JB := reduce(setUnion, lj, [])
             print(assign(message("LJV"), LJV::OUT))$OUT
             groebner(lp)$JGB
 
@@ -6610,11 +6610,11 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
 
     monomial?(p : %) : B ==
         l : Rep := p::Rep
-        empty?(l) or empty? rest(l)
+        empty?(l) or empty?(rest(l))
 
     numberOfMonomials(p : %) ==
         l : Rep := p::Rep
-        empty? l => 1
+        empty?(l) => 1
         #l
 
     mainVariable(p : %) : Union(JB, "failed") ==
@@ -6635,15 +6635,15 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
 
     coerce(p : %) : OUT ==
         zero? p => 0$R ::OUT
-        lt : L OUT := empty
+        lt : L OUT := []
         for t in reverse p repeat
-            l : L OUT := empty
+            l : L OUT := []
             for i in 1..nl repeat
                 t.k.i = 0 => l
                 t.k.i = 1 => l := cons(LJVO.i, l)
                 l := cons(LJVO.i ^ t.k.i::OUT, l)
             l := reverse l
-            if (t.c ~= 1) or empty? l then
+            if (t.c ~= 1) or empty?(l) then
                 l := cons(t.c::OUT, l)
             if #l = 1 then
                 lt := cons(first l, lt)
@@ -6749,7 +6749,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
     eval(p : %, jv : JB, val : R) : % == eval(p, jv, val::%)$%
 
     eval(p : %, ljv : L JB, lval : L R) : % ==
-        empty? ljv => p
+        empty?(ljv) => p
         eval(eval(p, first ljv, (first lval)::%)$%, rest ljv, rest lval)$%
 
     evalSortedVarlist(p : %, Ljvar : L JB, Lpval : L %) : % ==
@@ -6758,7 +6758,7 @@ DistributedJetBundlePolynomial(R, JB, LJV, E) : Cat == Def where
         j := mainVariable p
         j case "failed" => p
         pv := j@JB
-        empty? Ljvar or empty? Lpval => p
+        empty?(Ljvar) or empty?(Lpval) => p
         mvar := Ljvar.first
         mvar > pv => evalSortedVarlist(p, Ljvar.rest, Lpval.rest)
         pval := Lpval.first
@@ -6982,10 +6982,10 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
     convert(ex : D) : % ==
         oe := order(ex)$D
         JV := jetVariables(ex)$D
-        empty? JV => [[ex], [1$JB], 0, 0, false]
+        empty?(JV) => [[ex], [1$JB], 0, 0, false]
 
-        resJV : L JB := empty
-        resCo : L D := empty
+        resJV : L JB := []
+        resCo : L D := []
         l := ex
         for jv in JV  while order(jv) = oe repeat
             c := differentiate(l, jv)$D
@@ -7039,7 +7039,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         zero?(q.low)$D =>
             empty?(q.hJV) => false
             (first(q.hJV) = 1$JB) and one?(first q.hCoeff)$D
-        one?(q.low)$D and empty? q.hJV
+        one?(q.low)$D and empty?(q.hJV)
 
 
     - q : % == [[-$D c  for c in q.hCoeff], q.hJV, -$D q.low, q.ord, q.nonl?]
@@ -7052,8 +7052,8 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         o1 > o2 => [q1.hCoeff, q1.hJV, q1.low +$D q2::D, o1, false]
         o2 > o1 => [q2.hCoeff, q2.hJV, q2.low +$D q1::D, o2, false]
 
-        resC : L D := empty
-        resJ : L JB := empty
+        resC : L D := []
+        resJ : L JB := []
         lc2 := copy q2.hCoeff
         lj2 := copy q2.hJV
 
@@ -7076,7 +7076,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         resC := concat!(reverse! resC, lc2)
         resJ := concat!(reverse! resJ, lj2)
 
-        empty? resJ => convert(q1.low +$D q2.low)
+        empty?(resJ) => convert(q1.low +$D q2.low)
         [resC, resJ, q1.low +$D q2.low, o1, false]
 
 
@@ -7124,7 +7124,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
     jetVariables(q : %) : L JB ==
         nonlinear? q => jetVariables(q.low)$D
         jetC : L L JB := [jetVariables(c)$D  for c in q.hCoeff]
-        res : L JB := reduce(setUnion, jetC, empty)
+        res : L JB := reduce(setUnion, jetC, [])
         one? first q.hJV => sort(">", setUnion(res, jetVariables(q.low)$D))
         sort(">", append(q.hJV, setUnion(res, jetVariables(q.low)$D)))
 
@@ -7132,14 +7132,14 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
     differentiate(q : %, s : Sy) : % ==
         dl := differentiate(q.low, s)$D
         nonlinear? q => convert dl
-        resC : L D := empty
-        resJ : L JB := empty
+        resC : L D := []
+        resJ : L JB := []
         for c in q.hCoeff  for jv in q.hJV repeat
             dc := differentiate(c, s)$D
             if not zero? dc then
                 resC := cons(dc, resC)
                 resJ := cons(jv, resJ)
-        empty? resJ => convert dl
+        empty?(resJ) => convert dl
         [reverse! resC, reverse! resJ, dl, q.ord, false]
 
 
@@ -7153,14 +7153,14 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
             pos := position(jv, q.hJV)
             pos < minIndex(q.hJV) => 0
             convert qelt(q.hCoeff, pos)
-        resC : L D := empty
-        resJ : L JB := empty
+        resC : L D := []
+        resJ : L JB := []
         for c in q.hCoeff  for j in q.hJV repeat
             dc := differentiate(c, jv)$D
             if not zero? dc then
                 resC := cons(dc, resC)
                 resJ := cons(j, resJ)
-        empty? resJ => convert dl
+        empty?(resJ) => convert dl
         [reverse! resC, reverse! resJ, dl, oq, false]
 
     SEM_to_SEMD(jm : SEM) : SEMD == error "unimplemented"
@@ -7237,7 +7237,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         -- local function; transforms a matrix into a system
         -- assumes all jet variables in jm.Ind are of the same order and
         -- that jm.Mat is in row echelon form
-        res : L % := empty
+        res : L % := []
         finished? : B := false
         minR := minRowIndex jm.Mat; maxR := maxRowIndex jm.Mat
         minC := minColIndex jm.Mat; maxC := maxColIndex jm.Mat
@@ -7246,8 +7246,8 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         col := minC
         JV := jm.Ind
         for i in minR..maxR  until finished? repeat
-            resC : L D := empty
-            resJ : L JB := empty
+            resC : L D := []
+            resJ : L JB := []
             for jv in JV  for j in col..maxC _
                     while zero? qelt(jm.Mat, i, j) repeat
                 col := col + 1
@@ -7257,7 +7257,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
                 if not zero? d then
                     resC := cons(d, resC)
                     resJ := cons(jv, resJ)
-            finished? := empty? resJ
+            finished? := empty?(resJ)
             if not finished? then
                 res := cons([reverse! resC, reverse! resJ, 0$D, o, true], res)
 
@@ -7292,12 +7292,12 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
             q := max(q, order eq)
 
         -- sort out all equations of lower order
-        fsys : L % := empty
-        fdep : L L NNI := empty
-        ssys : L % := empty
+        fsys : L % := []
+        fdep : L L NNI := []
+        ssys : L % := []
         sind : V NNI := new(#sys, 0)
-        lsjm : L L % := empty
-        lfjm : L L % := empty
+        lsjm : L L % := []
+        lfjm : L L % := []
         k : I := 0
         jmm := jm::M(%)
         for eq in reverse sys  for i in #sys..1 by -1 repeat
@@ -7340,16 +7340,16 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         maxR := maxRowIndex Trafo
         qlinSys := rewrite [RRec.R, first(jm.Ind, js::NNI), true]$MATREC
         groundSys := [ground eq  for eq in sys]
-        redGSys : L % := empty
-        redInd : L I := empty
+        redGSys : L % := []
+        redInd : L I := []
         for g in groundSys  for j in minR.. repeat
             if not zero? g then
                 redGSys := cons(g, redGSys)
                 redInd := cons(j, redInd)
-        if empty? redInd then
+        if empty?(redInd) then
             newEq := qlinSys
         else
-            newEq : L % := empty
+            newEq : L % := []
             for eq in qlinSys  for i in minR.. repeat
                 neq := eq
                 for g in redGSys  for j in redInd repeat
@@ -7373,9 +7373,9 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
 
         -- adjust Jacobi matrix for non-constant entries in trafo
         -- and build dependency list
-        dep : L L NNI := empty
+        dep : L L NNI := []
         for j in maxIndex(newEq)..minIndex(newEq) by -1 repeat
-            depj : L NNI := empty
+            depj : L NNI := []
             for k in maxR..minR by -1 repeat
                 t : % := qelt(Trafo, j, k)
                 kb := k + minIndex(sys) - minR
@@ -7388,14 +7388,14 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
                                      qelt(sys, kb)*differentiate(t, jv))
             dep := cons(depj, dep)
 
-        empty? lfjm => [newEq, [NMat, jm.Ind, true], dep]
+        empty?(lfjm) => [newEq, [NMat, jm.Ind, true], dep]
         fjm : M % := matrix lfjm
         [concat!(newEq, fsys), [vertConcat(NMat, fjm), jm.Ind, false], _
          concat!(dep, fdep)]
 
 
     simpOne(sys : L %) : L % ==
-        res : L % := empty
+        res : L % := []
         for eq in sys repeat
             if nonlinear? eq then
                 res := cons(convert first simpOne [eq.low], res)

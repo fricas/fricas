@@ -111,7 +111,7 @@ postError msg ==
   nil
 
 postMakeCons l ==
-  null l => nil
+  null l => ["empty"]
   l is [[":",a],:l'] =>
     l' => ['append,postTran a,postMakeCons l']
     postTran a
