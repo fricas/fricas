@@ -816,7 +816,7 @@ Float():
       t
 
    fixed f ==
-      d := if OUTPREC = -1 then digits::I else OUTPREC
+      d := if OUTPREC = -1 then digits()::I else OUTPREC
       zero? f =>
          OUTPREC = -1 => "0.0"
          concat("0", concat(".", padFromLeft new(d::N, zero)))
@@ -834,7 +834,7 @@ Float():
       if OUTPREC ~= -1 then
          -- round g to OUTPREC digits after the decimal point
          l := length10 m
-         if -e > OUTPREC and -e < 2*digits::I then
+         if -e > OUTPREC and -e < 2*digits()::I then
             g := normalize10(g, l+e+OUTPREC)
             m := g.mantissa; e := g.exponent
       s := convert(m)@S; n := #s; o := e+n
@@ -865,7 +865,7 @@ Float():
         s := convert(mantissa f)@S
         concat ["0.", padFromLeft s, t, convert(#s)@S]
       -- base conversion to decimal rounded to the requested precision
-      d := if OUTPREC = -1 then digits::I else OUTPREC
+      d := if OUTPREC = -1 then digits()::I else OUTPREC
       g := convert10(f, d); m := g.mantissa; e := g.exponent
       -- I'm assuming that length10 m = # s given n > 0
       s := convert(m)@S; n := #s; o := e+n
@@ -875,7 +875,7 @@ Float():
    general(f) ==
       zero? f => "0.0"
       negative? f => concat("-", general abs f)
-      d := if OUTPREC = -1 then digits::I else OUTPREC
+      d := if OUTPREC = -1 then digits()::I else OUTPREC
       zero? exponent f =>
         d := d + 1
         s := convert(mantissa f)@S
