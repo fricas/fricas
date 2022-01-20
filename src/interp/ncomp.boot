@@ -184,7 +184,7 @@ processGlobals () ==
     $globalDefs := [parseTransform postTransform x for x in $globalDefs]
     untypedDefs := []
     for def in $globalDefs repeat
-        ["DEF", form, sig, sc, body] := def
+        ["DEF", form, sig, body] := def
         cosig := CONS(nil, [categoryForm? ty for ty in rest(sig)])
         SETDATABASE(first form, 'COSIG, cosig)
         if null first(sig) then
@@ -193,17 +193,17 @@ processGlobals () ==
             handleKind(def)
 
     for def in untypedDefs repeat
-        ["DEF", form, sig, sc, body] := def
+        ["DEF", form, sig, body] := def
         nt := computeTargetMode(form, body)
         if nt then
-            handleKind(["DEF", form, [nt, :rest sig], sc, body])
+            handleKind(["DEF", form, [nt, :rest sig], body])
         else
             SAY(["unhandled target", form])
     boo_comp_cats()
 
 
-handleKind(df is ['DEF,form,sig,sc,body]) ==
-    [op,:argl] := form
+handleKind(df is ['DEF, form, sig, body]) ==
+    [op, :argl] := form
 
     null first(sig) => nil
     if sig is [["Category"], :.] then
@@ -233,7 +233,7 @@ boo_comp_cats() ==
     SAY(["boo_comp_cats"])
     hcats := []
     for def in $globalDefs repeat
-        ["DEF", form, sig, sc, body] := def
+        ["DEF", form, sig, body] := def
         if sig is [["Category"], :.] then
             SAY(["doing", form, sig])
             not("and"/[categoryForm? ty for ty in rest(sig)]) =>

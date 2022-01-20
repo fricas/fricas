@@ -344,11 +344,11 @@ augModemapsFromDomain1(name,functorForm,e) ==
   get_oplist_maker(IFCAR(functorForm)) =>
       add_builtin_modemaps(name, functorForm, e)
   atom functorForm and (catform:= getmode(functorForm,e)) =>
-    augModemapsFromCategory(name,name,functorForm,catform,e)
+    augModemapsFromCategory(name, functorForm, catform, e)
   mappingForm := getmodeOrMapping(IFCAR functorForm, e) =>
     ["Mapping",categoryForm,:functArgTypes]:= mappingForm
     catform:= substituteCategoryArguments(rest functorForm,categoryForm)
-    augModemapsFromCategory(name,name,functorForm,catform,e)
+    augModemapsFromCategory(name, functorForm, catform, e)
   stackMessage [functorForm," is an unknown mode"]
   e
 

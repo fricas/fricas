@@ -164,11 +164,10 @@ postDef [defOp,lhs,rhs] ==
   argTypeList:=
     [(x is [":",.,t] => t; nil) for x in rest form]
   typeList:= [targetType,:argTypeList]
-  specialCaseForm := [nil for x in form]
   trhs :=
       rhs is ["=>", a, b] => ['IF,postTran a, postTran b, 'noBranch]
       postTran rhs
-  ['DEF, newLhs, typeList, specialCaseForm, trhs]
+  ['DEF, newLhs, typeList, trhs]
 
 postMDef(t) ==
   [.,lhs,rhs] := t
@@ -181,7 +180,7 @@ postMDef(t) ==
     form
   newLhs:= [(x is [":",a,:.] => a; x) for x in form]
   typeList:= [targetType,:[(x is [":",.,t] => t; nil) for x in rest form]]
-  ['MDEF,newLhs,typeList,[nil for x in form],postTran rhs]
+  ['MDEF, newLhs, typeList, postTran rhs]
 
 postExit ["=>",a,b] == ['IF,postTran a,['exit,postTran b],'noBranch]
 

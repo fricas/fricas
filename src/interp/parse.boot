@@ -121,19 +121,17 @@ parseHas [x,y] ==
       y is ['SIGNATURE,:.] => [y]
       [makeNonAtomic y]
 
-parseDEF [lhs,tList,specialList,body] ==
+parseDEF [lhs, tList, body] ==
   setDefOp lhs
-  ['DEF, parseLhs lhs, parseTranList tList, parseTranList specialList,
-    parseTran(body)]
+  ['DEF, parseLhs lhs, parseTranList tList, parseTran(body)]
 
 parseLhs x ==
   atom x => parseTran x
   atom first x => [parseTran first x, :[parseTran y for y in rest x]]
   parseTran x
 
-parseMDEF [lhs,tList,specialList,body] ==
-  ['MDEF, parseTran lhs, parseTranList tList, parseTranList specialList,
-    parseTran(body)]
+parseMDEF [lhs, tList, body] ==
+  ['MDEF, parseTran lhs, parseTranList tList, parseTran(body)]
 
 parseCategory x ==
   l:= parseTranList x

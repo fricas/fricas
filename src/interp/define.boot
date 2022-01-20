@@ -41,13 +41,13 @@ compDefine(form,m,e) ==
 
 compDefine1(form,m,e) ==
   --1. decompose after macro-expanding form
-  ['DEF,lhs,signature,specialCases,rhs]:= form:= macroExpand(form,e)
+  ['DEF, lhs, signature, rhs] := form := macroExpand(form, e)
   $insideWhereIfTrue and isMacro(form,e) and (m=$EmptyMode or m=$NoValueMode)
      => [lhs,m,put(first lhs,'macro,rhs,e)]
   null signature.target and not MEMQ(IFCAR rhs, $ConstructorNames) and
     (sig:= getSignatureFromMode(lhs,e)) =>
   -- here signature of lhs is determined by a previous declaration
-      compDefine1(['DEF,lhs,[first sig,:rest signature],specialCases,rhs],m,e)
+      compDefine1(['DEF, lhs, [first sig, :rest signature], rhs], m, e)
   $insideCapsuleFunctionIfTrue =>
       compInternalFunction(form, m, e)
   if signature.target=$Category then $insideCategoryIfTrue:= true
@@ -69,7 +69,7 @@ compDefine1(form,m,e) ==
           rest signature]
     rhs:= addEmptyCapsuleIfNecessary(signature.target,rhs)
     new_prefix := getAbbreviation(first(lhs), #(rest(lhs)))
-    compDefineFunctor(['DEF, lhs, signature, specialCases, rhs], m, e,
+    compDefineFunctor(['DEF, lhs, signature, rhs], m, e,
                       new_prefix, $formalArgList)
   null($functorForm) => stackAndThrow ['"bad == form ",form]
   compDefineCapsuleFunction(form, m, e, $prefix, $formalArgList)
@@ -127,9 +127,8 @@ macroExpand(x,e) ==   --not worked out yet
           SAY(["u =", u])
           userError("macro call needs arguments")
       x
-  x is ['DEF,lhs,sig,spCases,rhs] =>
-    ['DEF,macroExpand(lhs,e),macroExpandList(sig,e),macroExpandList(spCases,e),
-      macroExpand(rhs,e)]
+  x is ['DEF, lhs, sig, rhs] =>
+    ['DEF, macroExpand(lhs, e), macroExpandList(sig, e), macroExpand(rhs, e)]
   x is [op, :args] =>
       ATOM(op) =>
           u := get(op, 'macro, e) =>
@@ -146,21 +145,21 @@ macroExpand(x,e) ==   --not worked out yet
 macroExpandList(l,e) ==
   [macroExpand(x,e) for x in l]
 
-compDefineCategory1(df is ['DEF,form,sig,sc,body],m,e,prefix,fal) ==
+compDefineCategory1(df is ['DEF, form, sig, body], m, e, prefix, fal) ==
   categoryCapsule :=
 --+
     body is ['add,cat,capsule] =>
       body := cat
       capsule
     nil
-  [d,m,e]:= compDefineCategory2(form,sig,sc,body,m,e,prefix,fal)
+  [d, m, e] := compDefineCategory2(form, sig, body, m, e, prefix, fal)
 --+ next two lines
   if categoryCapsule and not $bootStrapMode then [.,.,e] :=
     $insideCategoryPackageIfTrue: local := true  --see NRTmakeSlot1
 -->
     $categoryPredicateList: local :=
         makeCategoryPredicates(form,$lisplibCategory)
-    compDefine1(mkCategoryPackage(form, cat, categoryCapsule, e),
+    compDefine1(mkCategoryPackage(form, categoryCapsule, e),
                 $EmptyMode, e)
   [d,m,e]
 
@@ -181,7 +180,7 @@ makeCategoryPredicates(form,u) ==
           pl
 
 --+ the following function
-mkCategoryPackage(form is [op, :argl], cat, def, e) ==
+mkCategoryPackage(form is [op, :argl], def, e) ==
   packageName:= INTERN(STRCONC(PNAME op,'"&"))
   packageAbb := INTERN(STRCONC(GETDATABASE(op,'ABBREVIATION),'"-"))
   $options:local := []
@@ -195,10 +194,6 @@ mkCategoryPackage(form is [op, :argl], cat, def, e) ==
     atom x => oplist
     x is ['DEF,y,:.] => [y,:oplist]
     fn(rest x,fn(first x,oplist))
-  explicitCatPart := gn cat where gn cat ==
-    cat is ['CATEGORY,:.] => rest rest cat
-    cat is ['Join,:u] => gn last u
-    nil
   catvec := eval mkEvalableCategoryForm(form, e)
   fullCatOpList := (JoinInner([catvec])).1
   catOpList :=
@@ -214,9 +209,9 @@ mkCategoryPackage(form is [op, :argl], cat, def, e) ==
   packageSig := [packageCategory,form,:nils]
   $categoryPredicateList := SUBST(nameForDollar,'$,$categoryPredicateList)
   SUBST(nameForDollar,'$,
-      ['DEF,[packageName,:packageArgl],packageSig,[nil,:nils],def])
+      ['DEF, [packageName, :packageArgl], packageSig, def])
 
-compDefineCategory2(form,signature,specialCases,body,m,e,
+compDefineCategory2(form, signature, body, m, e,
   $prefix,$formalArgList) ==
     --1. bind global variables
     $insideCategoryIfTrue: local:= true
@@ -313,7 +308,7 @@ compDefineFunctor(df,m,e,prefix,fal) ==
   $LISPLIB => compDefineLisplib(df,m,e,prefix,fal,'compDefineFunctor1)
   compDefineFunctor1(df,m,e,prefix,fal)
 
-compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
+compDefineFunctor1(df is ['DEF, form, signature, body],
   m, e, $prefix, $formalArgList) ==
 --  1. bind global variables
     $addForm: local := nil
@@ -374,7 +369,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 
 
     if $insideCategoryPackageIfTrue~= true  then
-        e := augModemapsFromCategory('_$, '_$, '_$, target, e)
+        e := augModemapsFromCategory('_$, '_$, target, e)
     $signature:= signature'
     parSignature:= SUBLIS($pairlis,signature')
     parForm:= SUBLIS($pairlis,form)
@@ -391,7 +386,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
 --  4. compile body in environment of type declarations for arguments
     op':= $op
     rettype:= signature'.target
-    T := compFunctorBody(body, rettype, e, parForm, base_shell)
+    T := compFunctorBody(body, rettype, e, base_shell)
 
     body':= T.expr
     lamOrSlam :=
@@ -425,7 +420,6 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
       $lisplibForm:= form
       if null $bootStrapMode then
         NRTslot1Info := NRTmakeSlot1Info(form, base_shell)
-        libFn := GETDATABASE(op','ABBREVIATION)
         $lookupFunction: local :=
             NRTgetLookupFunction(form, CADAR $lisplibModemap, $NRTaddForm)
             --either lookupComplete (for forgetful guys) or lookupIncomplete
@@ -442,7 +436,7 @@ compDefineFunctor1(df is ['DEF,form,signature,$functorSpecialCases,body],
             ['MAKEPROP, ['QUOTE,op'], ['QUOTE,'NILADIC], true])
     [fun, ['Mapping, :signature'], originale]
 
-compFunctorBody(body, m, e, parForm, base_shell) ==
+compFunctorBody(body, m, e, base_shell) ==
   $bootStrapMode = true =>
     genOperationAlist(base_shell)
     [bootStrapError($functorForm, $edit_file), m, e]
@@ -521,37 +515,34 @@ makeFunctorArgumentParameters(argl, sigl, target, e) ==
         u := ASSQ('CATEGORY, ss) => BREAK()
         ['Join,:sl,['CATEGORY,'package,:ss]]
       ['Join,s,['CATEGORY,'package,:ss]]
-    fn(a,s) ==
+    fn(a, s) ==
       not(ATOM(a)) => BREAK()
       if isCategoryForm(s) then
         s is ["Join", :catlist] => genDomainViewList(a, rest s)
-        genDomainView(a, s, "getDomainView")
+        genDomainView(a, s)
   $tmp_e
 
 genDomainViewList(id, catlist) ==
   null catlist => nil
   catlist is [y] and not isCategoryForm(y) => nil
   for c in catlist repeat
-      genDomainView(id, c, "getDomainView")
+      genDomainView(id, c)
 
-genDomainView(viewName, c, viewSelector) ==
-  c is ['CATEGORY, ., :l] => genDomainOps(viewName, viewName, c)
-  $tmp_e := augModemapsFromCategory(viewName, viewName, nil, c, $tmp_e)
+genDomainView(viewName, c) ==
+  c is ['CATEGORY, ., :l] => genDomainOps(viewName, c)
+  $tmp_e := augModemapsFromCategory(viewName, nil, c, $tmp_e)
 
-genDomainOps(viewName,dom,cat) ==
-  oplist := getOperationAlist(dom, dom, cat)
-  siglist:= [sig for [sig,:.] in oplist]
-  oplist:= substNames(dom,viewName,dom,oplist)
+genDomainOps(viewName, cat) ==
+  oplist := getOperationAlist(viewName, viewName, cat)
+  oplist:= substNames(viewName, viewName, oplist)
   for [opsig,cond,:.] in oplist for i in 0.. repeat
     if opsig in $ConditionalOperators then cond:=nil
-    [op,sig]:=opsig
-    $tmp_e:= addModemap(op,dom,sig,cond,['ELT,viewName,i],$tmp_e)
+    [op, sig] := opsig
+    $tmp_e:= addModemap(op, viewName, sig, cond, ['ELT, viewName, i], $tmp_e)
 
-compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
+compDefWhereClause(['DEF, form, signature, body], m, e) ==
 -- form is lhs (f a1 ... an) of definition; body is rhs;
 -- signature is (t0 t1 ... tn) where t0= target type, ti=type of ai, i > 0;
--- specialCases is (NIL l1 ... ln) where li is list of special cases
--- which can be given for each ti
 
 -- removes declarative and assignment information from form and
 -- signature, placing it in list L, replacing form by ("where",form',:L),
@@ -606,7 +597,7 @@ compDefWhereClause(['DEF,form,signature,specialCases,body],m,e) ==
     form':=
       ["where",defform,:whereList] where
         defform:=
-          ['DEF,form'',signature',specialCases,body] where
+          ['DEF, form'', signature', body] where
             form'':= [first form,:argList]
             signature':= [first signature,:[nil for x in rest signature]]
 
@@ -626,7 +617,7 @@ orderByDependency(vl,dl) ==
     dl:= dl'
   REMDUP NREVERSE orderedVarList --ordered so ith is indep. of jth if i < j
 
-compInternalFunction(df is ['DEF,form,signature,specialCases,body], m, e) ==
+compInternalFunction(df is ['DEF, form, signature, body], m, e) ==
     [op, :argl] := form
     not(IDENTP(op)) =>
         stackAndThrow ['"Bad name for internal function:", op]
@@ -638,9 +629,8 @@ compInternalFunction(df is ['DEF,form,signature,specialCases,body], m, e) ==
     currentProplist := getProplist(op, e)
     finish_setq_single(T, fmode, op, nbody, currentProplist)
 
-compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
+compDefineCapsuleFunction(df is ['DEF, form, signature, body],
   m,oldE,$prefix,$formalArgList) ==
-    [lineNumber,:specialCases] := specialCases
     e := oldE
     --1. bind global variables
     $functionStats: local:= [0,0]
@@ -677,7 +667,7 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
     e:= giveFormalParametersValues(argl,e)
 
     $signatureOfForm:= signature' --this global is bound in compCapsuleItems
-    $functionLocations := [[[$op, signature'], :lineNumber],
+    $functionLocations := [[[$op, signature']],
       :$functionLocations]
     e:= addDomain(first signature',e)
 
@@ -716,7 +706,6 @@ compDefineCapsuleFunction(df is ['DEF,form,signature,specialCases,body],
 
 
 --  7. give operator a 'value property
-    val:= [fun,signature',e]
     [fun,['Mapping,:signature'],oldE] -- oldE:= put($op,'value,removeEnv val,e)
 
 getSignatureFromMode(form,e) ==
@@ -814,6 +803,7 @@ do_compile(u, e) ==
     $suffix:= $suffix+1
     op':=
       opexport:=nil
+      -- FIXME: Used only for side effect on opexport
       opmodes:=
         [sel
           for [[DC, :sig], [., sel]] in get(op, 'modemap, e) |
@@ -1055,7 +1045,7 @@ doIt(item, $predl, e) ==
   true => cannotDo()
 
 isMacro(x,e) ==
-  x is ['DEF,[op,:args],signature,specialCases,body] and
+  x is ['DEF, [op, :args], signature, body] and
     null get(op,'modemap,e) and null args and null get(op,'mode,e)
       and signature is [nil] => body
 

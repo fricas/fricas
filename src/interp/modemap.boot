@@ -176,8 +176,8 @@ substituteCategoryArguments(argl,catform) ==
   arglAssoc := [[INTERNL1("#", STRINGIMAGE i), :a] for i in 1.. for a in argl]
   SUBLIS(arglAssoc,catform)
 
-augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
-  [fnAlist,e]:= evalAndSub(domainName,domainView,functorForm,categoryForm,e)
+augModemapsFromCategory(domainName, functorForm, categoryForm, e) ==
+  [fnAlist,e]:= evalAndSub(domainName, functorForm, categoryForm, e)
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)
   condlist:=[]
@@ -185,14 +185,14 @@ augModemapsFromCategory(domainName,domainView,functorForm,categoryForm,e) ==
       e:= addModemapKnown(op,domainName,sig,cond,fnsel,e)
   e
 
-evalAndSub(domainName, viewName, functorForm, form, e) ==
+evalAndSub(domainName, functorForm, form, e) ==
   $tmp_e : local := e
   --next lines necessary-- see MPOLY for which $ is actual arg. --- RDJ 3/83
   if CONTAINED("$$",form) then
       e := put("$$", "mode", get("$", "mode", e), e)
   $tmp_e : local := e
   opAlist:= getOperationAlist(domainName,functorForm,form)
-  substAlist:= substNames(domainName,viewName,functorForm,opAlist)
+  substAlist:= substNames(domainName, functorForm, opAlist)
   [substAlist, $tmp_e]
 
 getOperationAlist(name,functorForm,form) ==
@@ -205,7 +205,7 @@ getOperationAlist(name,functorForm,form) ==
       ([., ., $tmp_e] := T; T.expr.(1))
   stackMessage ["not a category form: ",form]
 
-substNames(domainName,viewName,functorForm,opalist) ==
+substNames(domainName, functorForm, opalist) ==
   functorForm := SUBSTQ("$$","$", functorForm)
   nameForDollar :=
     isCategoryPackageName functorForm => CADR functorForm
@@ -214,7 +214,7 @@ substNames(domainName,viewName,functorForm,opalist) ==
        -- following calls to SUBSTQ must copy to save RPLAC's in
        -- putInLocalDomainReferences
   [[:SUBSTQ("$","$$",SUBSTQ(nameForDollar,"$",modemapform)),
-       [sel, viewName,if domainName = "$" then pos else
+       [sel, domainName, if domainName = "$" then pos else
                                          CADAR modemapform]]
      for [:modemapform,[sel,"$",pos]] in
           EQSUBSTLIST(IFCDR functorForm, $FormalMapVariableList, opalist)]

@@ -324,7 +324,7 @@ isConstantId(name,e) ==
 
 isFalse() == nil
 
-isFluid s == atom s and "$"=(PNAME s).(0)
+isFluid s == SYMBOLP(s) and #(n := PNAME(s)) > 0 and "$" = n.0
 
 isFunction(x,e) ==
   get(x,"modemap",e) or GETL(x,"SPECIAL") or x="case" or getmode(x,e) is [

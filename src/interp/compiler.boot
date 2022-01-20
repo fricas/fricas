@@ -733,7 +733,7 @@ compVector(l,m is ["Vector",mUnder],e) ==
 
 --% MACROS
 compMacro(form,m,e) ==
-  ["MDEF",lhs,signature,specialCases,rhs]:= form
+  ["MDEF", lhs, signature, rhs] := form
   prhs :=
     rhs is ['CATEGORY,:.] => ['"-- the constructor category"]
     rhs is ['Join,:.]     => ['"-- the constructor category"]
