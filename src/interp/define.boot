@@ -380,8 +380,11 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
 --  to the A1,..,An view of D
 --+
     $functorLocalParameters := argl
+    dollar :=
+        $insideCategoryPackageIfTrue => first(argl)
+        "$$"
     e := makeFunctorArgumentParameters(argl, rest signature',
-                                        first signature', e)
+                                     first signature', dollar, e)
  -- must do above to bring categories into scope --see line 5 of genDomainView
 --  4. compile body in environment of type declarations for arguments
     op':= $op
@@ -483,11 +486,12 @@ displayMissingFunctions() ==
 
 --% domain view code
 
-makeFunctorArgumentParameters(argl, sigl, target, e) ==
+makeFunctorArgumentParameters(argl, sigl, target, dollar, e) ==
   $forceAdd: local:= true
   $ConditionalOperators: local := nil
   $tmp_e := e
-  for a in argl for s in sigl repeat fn(a,augmentSig(s,findExtras(a,target)))
+  for a in argl for s in sigl repeat fn(a, dollar,
+                                   augmentSig(s,findExtras(a,target)))
           where
     findExtras(a,target) ==
       --  see if conditional information implies anything else
@@ -515,21 +519,22 @@ makeFunctorArgumentParameters(argl, sigl, target, e) ==
         u := ASSQ('CATEGORY, ss) => BREAK()
         ['Join,:sl,['CATEGORY,'package,:ss]]
       ['Join,s,['CATEGORY,'package,:ss]]
-    fn(a, s) ==
+    fn(a, dollar, s) ==
       not(ATOM(a)) => BREAK()
       if isCategoryForm(s) then
-        s is ["Join", :catlist] => genDomainViewList(a, rest s)
-        genDomainView(a, s)
+        s is ["Join", :catlist] => genDomainViewList(a, dollar, rest s)
+        genDomainView(a, dollar, s)
   $tmp_e
 
-genDomainViewList(id, catlist) ==
+genDomainViewList(id, dollar, catlist) ==
   null catlist => nil
   catlist is [y] and not isCategoryForm(y) => nil
   for c in catlist repeat
-      genDomainView(id, c)
+      genDomainView(id, dollar, c)
 
-genDomainView(viewName, c) ==
+genDomainView(viewName, dollar, c) ==
   c is ['CATEGORY, ., :l] => genDomainOps(viewName, c)
+  c := substitute(dollar, "$", c)
   $tmp_e := augModemapsFromCategory(viewName, nil, c, $tmp_e)
 
 genDomainOps(viewName, cat) ==
@@ -601,21 +606,7 @@ compDefWhereClause(['DEF, form, signature, body], m, e) ==
             form'':= [first form,:argList]
             signature':= [first signature,:[nil for x in rest signature]]
 
-orderByDependency(vl,dl) ==
-  -- vl is list of variables, dl is list of dependency-lists
-  selfDependents:= [v for v in vl for d in dl | MEMQ(v,d)]
-  for v in vl for d in dl | MEMQ(v,d) repeat
-    (SAY(v," depends on itself"); fatalError:= true)
-  fatalError => userError '"Parameter specification error"
-  until (null vl) repeat
-    newl:=
-      [v for v in vl for d in dl | null intersection(d,vl)] or return nil
-    orderedVarList:= [:newl,:orderedVarList]
-    vl':= setDifference(vl,newl)
-    dl':= [setDifference(d,newl) for x in vl for d in dl | member(x,vl')]
-    vl:= vl'
-    dl:= dl'
-  REMDUP NREVERSE orderedVarList --ordered so ith is indep. of jth if i < j
+orderByDependency(vl,dl) == vl
 
 compInternalFunction(df is ['DEF, form, signature, body], m, e) ==
     [op, :argl] := form
