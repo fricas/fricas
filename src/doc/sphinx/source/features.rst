@@ -36,14 +36,14 @@ FriCAS provides structures such as
 - Clifford algebras, exterior algebras,
 
 The type system of |FriCAS| is based on its statically typed
-programming lanuguage (SPAD_).
+programming language (SPAD_).
 
 |FriCAS| can be extend by programs written in SPAD_ that are compiled
 to machine code in the same way as the algebra library that comes with
 |FriCAS|.
 
 In a |FriCAS| session the type system is somewhat relaxed.
-Although underneath everything is computed with a distingused type,
+Although underneath everything is computed with a specific type,
 the interpreter tries to figure out in many cases what the best way is
 to convert the user input into an appropriate type. Should the
 interpreter fail to guess correctly, users can always specify the
