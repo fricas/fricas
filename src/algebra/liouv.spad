@@ -12,7 +12,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
   OP  ==> BasicOperator
   PR  ==> Polynomial R
   K   ==> Kernel F
-  SE  ==> Symbol
+  SY  ==> Symbol
   O   ==> OutputForm
   INP ==> InputForm
   INV ==> error "Invalid argument"
@@ -49,7 +49,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
       ++ fresnelS(f) denotes the Fresnel integral \spad{S}
     fresnelC : F  -> F
       ++ fresnelC(f) denotes the Fresnel integral \spad{C}
-    integral : (F, SE) -> F
+    integral : (F, SY) -> F
       ++ integral(f, x) indefinite integral of f with respect to x.
     integral : (F, SegmentBinding F) -> F
       ++ integral(f, x = a..b) denotes the definite integral of f with
@@ -70,13 +70,13 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     ili2       : F  -> F
     iint       : List F -> F
     eqint      : (K, K) -> Boolean
-    dvint      : (List F, SE) -> F
-    dviint      : (List F, SE) -> F
-    dvdint     : (List F, SE) -> F
+    dvint      : (List F, SY) -> F
+    dviint      : (List F, SY) -> F
+    dvdint     : (List F, SY) -> F
     ddint      : List F -> O
     integrand  : List F -> F
 
-    dummy := new()$SE :: F
+    dummy := new()$SY :: F
 
     opint  := operator('integral)$CommonOperators
     opiint := operator('%iint)$CommonOperators
@@ -116,7 +116,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     ifis(x : F) : F == (zero? x => 0; kernel(opfis, x))
     ific(x : F) : F == (zero? x => 0; kernel(opfic, x))
     integrand l    == eval(first l, retract(second l)@K, third l)
-    integral(f : F, x : SE) == opint [eval(f, k := kernel(x)$K, dummy), dummy, k::F]
+    integral(f : F, x : SY) == opint [eval(f, k := kernel(x)$K, dummy), dummy, k::F]
 
     iint l ==
       zero? first l => 0
@@ -148,7 +148,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
         every?(zero?, lval) => 0
         kernel(opiint, l)
 
-    dviint(l : List F, v : SE) : F ==
+    dviint(l : List F, v : SY) : F ==
         nu := #l exquo 2
         nu case "failed" => error "impossible"
         n := nu@NonNegativeInteger
@@ -159,7 +159,7 @@ LiouvillianFunction(R, F) : Exports == Implementation where
         l(n+m)
 
     dvdint(l, x) ==
-      x = retract(y := third l)@SE => 0
+      x = retract(y := third l)@SY => 0
       k := retract(d := second l)@K
       differentiate(h := third rest rest l, x) * eval(f := first l, k, h)
         - differentiate(g := third rest l, x) * eval(f, k, g)
@@ -222,9 +222,9 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     derivative(opfis, (z1 : F) : F +-> sin(pi()*z1^2/(2::F)))
     derivative(opfic, (z1 : F) : F +-> cos(pi()*z1^2/(2::F)))
     setProperty(opint, SPECIALEQUAL, eqint@((K, K) -> Boolean) pretend None)
-    setProperty(opint, SPECIALDIFF, dvint@((List F, SE) -> F) pretend None)
-    setProperty(opiint, SPECIALDIFF, dviint@((List F, SE) -> F) pretend None)
-    setProperty(opdint, SPECIALDIFF, dvdint@((List F, SE)->F) pretend None)
+    setProperty(opint, SPECIALDIFF, dvint@((List F, SY) -> F) pretend None)
+    setProperty(opiint, SPECIALDIFF, dviint@((List F, SY) -> F) pretend None)
+    setProperty(opdint, SPECIALDIFF, dvdint@((List F, SY)->F) pretend None)
     setProperty(opdint, SPECIALDISP, ddint@(List F -> O) pretend None)
 
     if R has ConvertibleTo INP then
@@ -235,12 +235,12 @@ LiouvillianFunction(R, F) : Exports == Implementation where
 
       pint l  == convert concat(convert('integral)@INP, l)
       inint l ==
-        r2 := convert([convert("::"::SE)@INP,convert(third l)@INP,convert('Symbol)@INP]@List INP)@INP
+        r2 := convert([convert("::"::SY)@INP,convert(third l)@INP,convert('Symbol)@INP]@List INP)@INP
         pint [convert(integrand l)@INP, r2]
 
       indint l ==
         pint [convert(integrand l)@INP,
-              convert concat(convert("="::SE)@INP,
+              convert concat(convert("="::SY)@INP,
                             [convert(third l)@INP,
                              convert concat(convert('SEGMENT)@INP,
                                             [convert(third rest l)@INP,

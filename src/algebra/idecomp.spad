@@ -23,7 +23,7 @@ IdealDecompositionPackage(vl) : C == T
    UP     ==>  SparseUnivariatePolynomial P
    Expon  ==>  DirectProduct(#vl, NNI)
    OV     ==>  OrderedVariableList(vl)
-   SE     ==>  Symbol
+   SY     ==>  Symbol
    SUP    ==>  SparseUnivariatePolynomial(DPoly)
 
    DPoly1 ==>  DistributedMultivariatePolynomial(vl, Q)
@@ -75,9 +75,9 @@ IdealDecompositionPackage(vl) : C == T
      pushdown            :      (DPoly, OV)        -> DPoly
      pushdterm           :     (DPoly, OV, Z)       -> DPoly
      pushup              :      (DPoly, OV)        -> DPoly
-     pushuterm           :    (DPoly, SE, OV)       -> DPoly
+     pushuterm           :    (DPoly, SY, OV)       -> DPoly
      pushucoef           :       (UP, OV)          -> DPoly
-     trueden             :        (P, SE)          -> P
+     trueden             :        (P, SY)          -> P
      rearrange           :       (List OV)        -> List OV
      deleteunit          :      List FIdeal        -> List FIdeal
      ismonic             :      (DPoly, OV)        -> Boolean
@@ -240,7 +240,7 @@ IdealDecompositionPackage(vl) : C == T
       ----  push x in the coefficient domain for a term ----
      pushdterm(t : DPoly, x : OV, i : Z) : DPoly ==
        n := degree(t, x)
-       xp := convert(x)@SE
+       xp := convert(x)@SY
        cf := monomial(1, xp, n)$P :: F
        newt := t exquo monomial(1, x, n)$DPoly
        cf * newt::DPoly
@@ -250,7 +250,7 @@ IdealDecompositionPackage(vl) : C == T
        h := 1$P
        rf : DPoly := 0$DPoly
        g := f
-       xp := convert(x)@SE
+       xp := convert(x)@SY
        while g ~= 0 repeat
          h := lcm(trueden(denom leadingCoefficient g, xp), h)
          g := reductum g
@@ -261,12 +261,12 @@ IdealDecompositionPackage(vl) : C == T
          f := g
        rf
 
-     trueden(c : P, x : SE) : P ==
+     trueden(c : P, x : SY) : P ==
        degree(c, x) = 0 => 1
        c
 
       ----  push x back from the coefficient domain for a term ----
-     pushuterm(t : DPoly, xp : SE, x : OV) : DPoly ==
+     pushuterm(t : DPoly, xp : SY, x : OV) : DPoly ==
        pushucoef((univariate(numer leadingCoefficient t, xp)$P), x)*
           monomial(inv((denom leadingCoefficient t)::F), degree t)$DPoly
 

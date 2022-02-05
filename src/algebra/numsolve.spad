@@ -94,7 +94,7 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
     CF       ==> Complex Float
     GI       ==> Complex Integer
     GRN      ==> Complex RN
-    SE       ==> Symbol
+    SY       ==> Symbol
     RFI      ==> Fraction P I
 
     Cat == with
@@ -105,26 +105,26 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
        innerSolve1   :  (P K, Par)  -> L F
           ++ innerSolve1(p, eps) returns the list of the zeros
           ++ of the polynomial p with precision eps.
-       innerSolve    : (L P K, L P K, L SE, Par) -> L L F
+       innerSolve    : (L P K, L P K, L SY, Par) -> L L F
           ++ innerSolve(lnum, lden, lvar, eps) returns a list of
           ++ solutions of the system of polynomials lnum, with
           ++ the side condition that none of the members of lden
           ++ vanish identically on any solution. Each solution
           ++ is expressed as a list corresponding to the list of
           ++ variables in lvar and with precision specified by eps.
-       makeEq        : (L F, L SE)     -> L EQ P F
+       makeEq        : (L F, L SY)     -> L EQ P F
           ++ makeEq(lsol, lvar) returns a list of equations formed
           ++ by corresponding members of lvar and lsol.
 
     Cap == add
 
                   ------  Local Functions  ------
-       isGeneric? : (L P K, L SE) -> Boolean
-       evaluate  : (P K, SE, SE, F) ->  F
+       isGeneric? : (L P K, L SY) -> Boolean
+       evaluate  : (P K, SY, SY, F) ->  F
        numeric   :     K          -> F
        oldCoord      : (L F, L I) -> L F
-       findGenZeros  : (L P K, L SE, Par) -> L L F
-       failPolSolve  : (L P K,L SE)  -> Union(L L P K,"failed")
+       findGenZeros  : (L P K, L SY, Par) -> L L F
+       failPolSolve  : (L P K,L SY)  -> Union(L L P K,"failed")
 
        numeric(r : K) : F ==
          K is I =>
@@ -139,10 +139,10 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
          error "case not handled"
 
        -- construct the equation
-       makeEq(nres : L F, lv : L SE) : L EQ P F ==
+       makeEq(nres : L F, lv : L SY) : L EQ P F ==
            [equation(x::(P F), r::(P F)) for x in lv for r in nres]
 
-       evaluate(pol : P K, xvar : SE, zvar : SE, z : F) : F ==
+       evaluate(pol : P K, xvar : SY, zvar : SY, z : F) : F ==
          rpp := map(numeric, pol)$PolynomialFunctions2(K, F)
          rpp := eval(rpp, zvar, z)
          upol := univariate(rpp, xvar)
@@ -212,7 +212,7 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
            F is GRN => complex(iF_to_RN(rx), iF_to_RN(ix))
            error "improper arguments to INFSP"
 
-       ieval0(pol : P K, xvar : SE, zvar : SE, z : CI) : UCI ==
+       ieval0(pol : P K, xvar : SY, zvar : SY, z : CI) : UCI ==
            rpp := map(K_to_CI, pol)$PolynomialFunctions2(K, CI)
            rpp := eval(rpp, zvar, z)
            upol := univariate(rpp, xvar)
@@ -220,12 +220,12 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
            iden case "failed" => "failed"
            retract(-coefficient(upol, 0))@CI*(iden@CI)
 
-       ieval(pol : P K, xvar : SE, zvar : SE, z : F, eps : Float) : UCI ==
+       ieval(pol : P K, xvar : SY, zvar : SY, z : F, eps : Float) : UCI ==
            nz := F_to_CI1(z, eps)
            ieval0(pol, xvar, zvar, nz)
 
        -- find the zeros of components in "generic" position --
-       findGenZeros(lp : L P K, rlvar : L SE, eps : Par) : L L F ==
+       findGenZeros(lp : L P K, rlvar : L SY, eps : Par) : L L F ==
            rlp := reverse lp
            f := first(rlp)
            zvar := first(rlvar)
@@ -272,7 +272,7 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
          reverse rnumres
 
        -- real zeros of a system of 2 polynomials lp (incomplete)
-       innerSolve2(lp : L P K, lv : L SE, eps : Par) : L L F ==
+       innerSolve2(lp : L P K, lv : L SY, eps : Par) : L L F ==
           mainvar := first lv
           up1 := univariate(lp.1, mainvar)
           up2 := univariate(lp.2, mainvar)
@@ -285,7 +285,7 @@ InnerNumericFloatSolvePackage(K, F, Par) : Cat == Cap where
           findGenZeros([p1, p0], reverse lv, eps)
 
        -- real zeros of the system of polynomial lp --
-       innerSolve(lp : L P K, ld : L P K, lv : L SE, eps : Par) : L L F ==
+       innerSolve(lp : L P K, ld : L P K, lv : L SY, eps : Par) : L L F ==
           -- empty?(ld) and (#lv = 2) and (# lp = 2) => innerSolve2(lp, lv, eps)
            lnp := [pToDmp(p)$PolToPol(lv, K) for p in lp]
            OV := OrderedVariableList(lv)
@@ -361,7 +361,7 @@ FloatingRealPackage(Par) : Cat == Cap where
     CF       ==> Complex Float
     GI       ==> Complex Integer
     GRN      ==> Complex RN
-    SE       ==> Symbol
+    SY       ==> Symbol
     RFI      ==> Fraction P I
     INFSP ==> InnerNumericFloatSolvePackage
 
@@ -393,7 +393,7 @@ FloatingRealPackage(Par) : Cat == Cap where
          ++ with respect to the unique variables appearing in eq,
          ++ with precision eps.
 
-       realRoots :    (L RFI, L SE, Par) -> L L Par
+       realRoots :    (L RFI, L SY, Par) -> L L Par
          ++ realRoots(lp, lv, eps) computes the list of the real
          ++ solutions of the list lp of rational functions with rational
          ++ coefficients with respect to the variables in lv,
@@ -406,7 +406,7 @@ FloatingRealPackage(Par) : Cat == Cap where
 
     Cap == add
 
-       makeEq(nres : L Par, lv : L SE) : L EQ P Par ==
+       makeEq(nres : L Par, lv : L SY) : L EQ P Par ==
            [equation(x::(P Par), r::(P Par)) for x in lv for r in nres]
 
        -- find the real zeros of an univariate rational polynomial --
@@ -414,7 +414,7 @@ FloatingRealPackage(Par) : Cat == Cap where
          innerSolve1(numer p, eps)$INFSP(I, Par, Par)
 
        -- real zeros of the system of polynomial lp --
-       realRoots(lp : L RFI, lv : L SE, eps : Par) : L L Par ==
+       realRoots(lp : L RFI, lv : L SY, eps : Par) : L L Par ==
          lnum := [numer p for p in lp]
          lden := [dp for p in lp |(dp := denom p) ~= 1]
          innerSolve(lnum, lden, lv, eps)$INFSP(I, Par, Par)
@@ -441,7 +441,7 @@ FloatingRealPackage(Par) : Cat == Cap where
        solve(p : RFI, eps : Par) :  L EQ  P Par ==
          (mvar := mainVariable numer p ) case "failed" =>
               error "no variable found"
-         x : P Par := mvar@SE::(P Par)
+         x : P Par := mvar@SY::(P Par)
          [equation(x, val::(P Par)) for val in realRoots(p, eps)]
 
        solve(eq : EQ RFI, eps : Par) :  L EQ  P Par ==
@@ -479,7 +479,7 @@ FloatingComplexPackage(Par) : Cat == Cap where
     CF       ==> Complex Float
     GI       ==> Complex Integer
     GRN      ==> Complex RN
-    SE       ==> Symbol
+    SY       ==> Symbol
     RFI      ==> Fraction P I
     INFSP ==> InnerNumericFloatSolvePackage
 
@@ -515,7 +515,7 @@ FloatingComplexPackage(Par) : Cat == Cap where
          ++ univariate rational function with rational number coefficients.
          ++ The solutions are computed to precision eps.
 
-       complexRoots : (L FPK, L SE, Par) -> L L C Par
+       complexRoots : (L FPK, L SY, Par) -> L L C Par
          ++ complexRoots(lrf, lv, eps) finds all the complex solutions of a
          ++ list of rational functions with rational number coefficients
          ++ with respect the variables appearing in lv.
@@ -530,7 +530,7 @@ FloatingComplexPackage(Par) : Cat == Cap where
          complexZeros(univariate p, eps)$ComplexRootPackage(SUP GI, Par)
 
        -- find the complex zeros of an univariate polynomial --
-       complexRoots(lp : L FPK, lv : L SE, eps : Par) : L L C Par ==
+       complexRoots(lp : L FPK, lv : L SY, eps : Par) : L L C Par ==
          lnum := [numer p for p in lp]
          lden := [dp for p in lp |(dp := denom p) ~= 1]
          innerSolve(lnum, lden, lv, eps)$INFSP(K, C Par, Par)
@@ -557,7 +557,7 @@ FloatingComplexPackage(Par) : Cat == Cap where
        complexSolve(p : FPK, eps : Par) : L EQ  P C Par ==
          (mvar := mainVariable numer p ) case "failed" =>
                  error "no variable found"
-         x : P C Par := mvar@SE::(P C Par)
+         x : P C Par := mvar@SY::(P C Par)
          [equation(x, val::(P C Par)) for val in complexRoots(p, eps)]
 
        complexSolve(eq : EQ FPK, eps : Par) : L EQ  P C Par ==

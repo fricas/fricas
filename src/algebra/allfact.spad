@@ -76,8 +76,8 @@ MPolyCatRationalFunctionFactorizer(E, OV, R, PRF) : C == T
   PRF   :   PolynomialCategory(F, E, OV)
   NNI   ==> NonNegativeInteger
   P     ==> Polynomial R
-  ISE   ==> IndexedExponents  SE
-  SE    ==> Symbol
+  ISY   ==> IndexedExponents  SY
+  SY    ==> Symbol
   UP    ==> SparseUnivariatePolynomial P
   UF    ==> SparseUnivariatePolynomial F
   UPRF  ==> SparseUnivariatePolynomial PRF
@@ -122,11 +122,11 @@ MPolyCatRationalFunctionFactorizer(E, OV, R, PRF) : C == T
        flist : Factored P
        if R is Fraction Integer then
          flist :=
-           ((factor nump)$MRationalFactorize(ISE, SE, Integer, P))
+           ((factor nump)$MRationalFactorize(ISY, SY, Integer, P))
                           pretend (Factored P)
        else
          if R has FiniteFieldCategory  then
-            flist := ((factor nump)$MultFiniteFactorize(SE, ISE, R, P))
+            flist := ((factor nump)$MultFiniteFactorize(SY, ISY, R, P))
                     pretend (Factored P)
 
          else
@@ -134,7 +134,7 @@ MPolyCatRationalFunctionFactorizer(E, OV, R, PRF) : C == T
 
             else
               if R has CharacteristicZero then
-                flist := ((factor nump)$MultivariateFactorize(SE, ISE, R, P))
+                flist := ((factor nump)$MultivariateFactorize(SY, ISY, R, P))
                                                 pretend (Factored P)
               else error "can't happen"
        ffact := [[u.factor::F::PRF, u.exponent] for u in factorList flist]
@@ -172,7 +172,7 @@ MPolyCatRationalFunctionFactorizer(E, OV, R, PRF) : C == T
 
       ----  push x back from the coefficient domain ----
      pushuconst(r : F, x : OV) : PRF ==
-       xs : SE := convert x
+       xs : SY := convert x
        degree(denom r,xs)>0 => error "bad polynomial form"
        inv((denom r)::F)*pushucoef(univariate(numer r, xs), x)
 
@@ -220,8 +220,8 @@ MPolyCatPolyFactorizer(E, OV, R, PPR) : C == T
   PR    ==> Polynomial R
   PPR   :   PolynomialCategory(PR, E, OV)
   NNI   ==> NonNegativeInteger
-  ISY   ==> IndexedExponents Symbol
-  SE    ==> Symbol
+  SY    ==> Symbol
+  ISY   ==> IndexedExponents(SY)
   UP    ==> SparseUnivariatePolynomial PR
   UPPR  ==> SparseUnivariatePolynomial PPR
 
@@ -242,7 +242,7 @@ MPolyCatPolyFactorizer(E, OV, R, PPR) : C == T
        p := (p exquo c)::PPR
        vars : List OV := variables p
        g : PR := retract pushdown(p, vars)
-       flist := factor(g)$GeneralizedMultivariateFactorize(Symbol, ISY, R, R, PR)
+       flist := factor(g)$GeneralizedMultivariateFactorize(SY, ISY, R, R, PR)
        ffact : List(Record(irr : PPR, pow : NNI))
        ffact := [[pushup(u.factor::PPR, vars), u.exponent] for u in factorList flist]
        fcont := (unit flist)::PPR

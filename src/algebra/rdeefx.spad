@@ -436,7 +436,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
   N   ==> NonNegativeInteger
   Z   ==> Integer
   Q   ==> Fraction(Z)
-  SE  ==> Symbol
+  SY  ==> Symbol
   LF  ==> List F
   K   ==> Kernel F
   LK  ==> List K
@@ -451,7 +451,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
   Exports ==> with
 
-    ei_int : (Z, F, F, SE) -> PSOL2
+    ei_int : (Z, F, F, SY) -> PSOL2
       ++ ei_int(n, f, g, x) returns \spad{[h, u, t, s]} such that
       ++ \spad{u*exp(n*f) = (h*exp(n*f))' + t'} where t involves
       ++ special functions.  When s is true then \spad{g = u}, otherwise
@@ -467,7 +467,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     ALGOP := '%alg
     PRIM := 'prim
 
-    top_kernel(f : F, g : F, x : SE) : K ==
+    top_kernel(f : F, g : F, x : SY) : K ==
         lkf := varselect(kernels(f), x)
         lk := union(varselect(kernels(g), x), lkf)
         tk := first lk
@@ -540,9 +540,9 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     INTEF ==> ElementaryIntegration(R, F)
 
-    ei_int_alg(f : F, g : F, x : SE, k : K, lk : LK) : PSOL2 ==
+    ei_int_alg(f : F, g : F, x : SY, k : K, lk : LK) : PSOL2 ==
         kx := kmax(lk)
-        not(symbolIfCan(kx) case SE) =>
+        not(symbolIfCan(kx) case SY) =>
             do_risch_DE(f, g, x, cons(k, lk))$ElementaryRischDEX2(R, F)
         (cvu := genus0_if_can(k, kx)) case "failed" =>
             do_risch_DE(f, g, x, cons(k, lk))$ElementaryRischDEX2(R, F)
@@ -568,7 +568,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     UV_REC ==> Record(u_part : F, v_part : F, exponent : Z, coeff : Z)
 
     get_uv0(tt : F, coeffs : List(Z), vlst : List(F), ulst : List(F),
-            k : K, x : SE) : UV_REC ==
+            k : K, x : SY) : UV_REC ==
         v0 := tt - reduce(_+, [ki::F*vi for vi in vlst for ki in coeffs], 0)
         ku : Z := 0
         u : F := 1
@@ -586,7 +586,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 if vi = kf then kc := ki
         [u, v0, ku, kc]
 
-    get_uv(tt : F, vlst : List(F), ulst : List(F), k : K, x : SE
+    get_uv(tt : F, vlst : List(F), ulst : List(F), k : K, x : SY
          ) : Union(UV_REC, "failed") ==
         dvvec := vector([D(vi, x) for vi in vlst])$Vector(F)
         su := particularSolutionOverQ(dvvec, D(tt, x)
@@ -602,7 +602,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     dummy := create()$SingletonAsOrderedSet
 
     handle_factor(gd : UP, nf : UP, denf : UP, f1 : UP, r0 : Z, u0 : F,
-                  vlst : LF, ulst : LF, k : K, x : SE,
+                  vlst : LF, ulst : LF, k : K, x : SY,
                   known_dividing : Boolean) : Union(EI_REC, "failed") ==
         deg1 : N := degree(f1)
         tt := -$F coefficient(f1, qcoerce(deg1 - 1)$N)$UP /$F
@@ -686,7 +686,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         [av, [bv]]$Part_REC
 
     lin_args(gd : UP, nf : UP, k : K, vlst : List(F),
-             ulst : List(F), x : SE) : List(EI_REC2) ==
+             ulst : List(F), x : SY) : List(EI_REC2) ==
         fgd := factorPolynomial(gd)$ExpressionFactorPolynomial(R, F)
         degree(nf) >$Z 1 =>
             error "lin_args only works for linear nf"
@@ -774,9 +774,9 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     FP ==> Polynomial(F)
     FRF ==> Fraction(FP)
 
-    get_rational_solutions(eq1 : Equation(FRF), s1 : SE, s2 : SE) : List(Q) ==
+    get_rational_solutions(eq1 : Equation(FRF), s1 : SY, s2 : SY) : List(Q) ==
         (rv := rhs(eq1)) ~=$FRF 0 =>
-            s1 ~= retract(lhs(eq1))@SE =>
+            s1 ~= retract(lhs(eq1))@SY =>
                 error "wrong format of solution 1"
             ru0 := retractIfCan(rv)@Union(FP, "failed")
             ru0 case "failed" => []
@@ -786,13 +786,13 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             ru2 case "failed" => []
             [ru2@Q]
         eq1p := numer(lhs(eq1))$FRF
-        member?(s2, variables(eq1p))$List(SE) =>
+        member?(s2, variables(eq1p))$List(SY) =>
                 error "wrong format of solution 2"
         k1 := kernel(s1)$K
         eq1f := retract(eval(eq1p, s1, k1::F))@F
         get_rational_roots(eq1f, k1)$FunctionSpaceRationalRoots(R, F)
 
-    F_to_FP(p : F, ls : List(SE), lk : List(K)) : FP ==
+    F_to_FP(p : F, ls : List(SY), lk : List(K)) : FP ==
         empty?(lk) => p::FP
         k1 := first(lk)
         s1 := first(ls)
@@ -801,7 +801,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                   )$SparseUnivariatePolynomialFunctions2(F, FP)
         multivariate(pu1, s1)
 
-    solve_poly_eqs(eqs : List(F), s1 : SE, s2 : SE) : List SOL_REC ==
+    solve_poly_eqs(eqs : List(F), s1 : SY, s2 : SY) : List SOL_REC ==
         k1 := kernel(s1)$K
         k2 := kernel(s2)$K
         eqs0 := [F_to_FP(numer(eqi)::F, [s1, s2], [k1, k2])
@@ -820,10 +820,10 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 res := cons([val1r, val2alg]$SOL_REC, res)
         res
 
-    ei_args3 : (UP, UP, UP, K, LF, LF, SE) -> List(EI_REC)
+    ei_args3 : (UP, UP, UP, K, LF, LF, SY) -> List(EI_REC)
 
     ei_args0(gd : UP, nf : UP, denf : UP, k : K, vlst0 : List(F),
-          ulst0 : List(F), x : SE) : List(EI_REC) ==
+          ulst0 : List(F), x : SY) : List(EI_REC) ==
         vlst : LF := []
         ulst : LF := []
         kf := k::F
@@ -894,7 +894,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                         )$ExpressionFactorPolynomial(R, F)
 
     ei_args2(gd : UP, nf : UP, denf : UP, f_res : Factored(UP),
-             k : K, vlst : List(F), ulst : List(F), x : SE
+             k : K, vlst : List(F), ulst : List(F), x : SY
             ) : List(EI_REC)  ==
         log_case := is?(k, 'log)
         n1 : Z := 0
@@ -912,13 +912,13 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         res
 
     ei_args3(gd : UP, nf : UP, denf : UP, k : K, vlst : List(F),
-          ulst : List(F), x : SE) : List(EI_REC) ==
+          ulst : List(F), x : SY) : List(EI_REC) ==
         t := kernel(new()$Symbol)$K
         f_res := ei_args1(gd, nf, denf, t)
         ei_args2(gd, nf, denf, f_res, k, vlst, ulst, x)
 
     ei_args(gd : UP, nf : UP, denf : UP, k : K, vlst : List(F),
-          ulst : List(F), x : SE) : List(EI_REC) ==
+          ulst : List(F), x : SY) : List(EI_REC) ==
         degree(gd) =$N 0 => []
         res1 : List(EI_REC) :=
             is?(k, 'log) =>
@@ -933,7 +933,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                     u_part : F, exponent : Z, shift_part : F, a_val : F)
 
     ei_candidate(nf : UP, denf : UP, vlst : List(F), ulst : List(F),
-                 k : K, x : SE, a : Z, tt : F, res : List SREC) : List SREC ==
+                 k : K, x : SY, a : Z, tt : F, res : List SREC) : List SREC ==
         tt := -tt
         nf1 := nf + tt*denf
         reductum(nf1) ~= 0 => res
@@ -945,7 +945,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                                  uv.v_part, 0]$SREC, res)
 
     special_ei_candidates(nf : UP, denf : UP, vlst : LF,
-                       ulst : LF, k : K, x : SE) : List SREC ==
+                       ulst : LF, k : K, x : SY) : List SREC ==
         tt : F := 0
         a : Z := 0
         is?(k, 'exp) =>
@@ -982,7 +982,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     gamma_candidate(fnf : Factored(UP), nf1 : UP, denf : UP,
                     gden1 : UP, gexp : Z, a : Z,
-                    tt : F, f2 : UP, vlst : LF, ulst : LF, k : K, x : SE,
+                    tt : F, f2 : UP, vlst : LF, ulst : LF, k : K, x : SY,
                     res : List SREC) : List SREC ==
         nffacs := factorList(fnf)
         lexp : List(Z) := [fac1.exponent for fac1 in nffacs]
@@ -1050,7 +1050,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     S_rec ==> Record(particular : Union(M_rec, "failed"),
                      basis : List(M_rec))
 
-    possible_sk(w0 : F, f : F, tk : K, x : SE) : List(List(Q)) ==
+    possible_sk(w0 : F, f : F, tk : K, x : SY) : List(List(Q)) ==
         has?(operator tk, ALGOP)$BasicOperator => []
         wu := univariate(w0, tk)
         nwu := numer(wu)
@@ -1124,7 +1124,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             nwu := dwu
         [[ss*dnf/dnw, 0]]
 
-    possible_w(f2 : F, w1 : F, x : SE) : List(F) ==
+    possible_w(f2 : F, w1 : F, x : SY) : List(F) ==
         tk := top_kernel(1, w1, x)
         w1u := univariate(w1, tk)
         f2u := univariate(f2, tk)
@@ -1157,7 +1157,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         [w2]
 
     gen_irr_log_cands(a : F, f : F, f2 : F, w1 : F, vlst : List(F),
-                      ulst : List(F), k : K, x : SE,
+                      ulst : List(F), k : K, x : SY,
                       res : List SREC
                      ) : List SREC ==
         lw2 := possible_w(f2, w1, x)
@@ -1222,7 +1222,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         res
 
     irrational_gamma_candidates(nf : UP, denf : UP, vlst : List(F),
-            ulst : List(F), k : K, x : SE, res : List SREC) : List SREC ==
+            ulst : List(F), k : K, x : SY, res : List SREC) : List SREC ==
         is?(k, 'log) and denf = 1 and degree(nf) =$Z 1 =>
             n1 := height(k)
             nlk := [kk for kk in kernels(coefficient(nf, 0)) |
@@ -1273,7 +1273,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     gammas1(nf : UP, a : Z, denf : UP, denf1 : UP, gexp : Z, n2 : Z,
             vlst : LF, ulst : LF,
-            k : K, x : SE, res : List SREC) : List SREC ==
+            k : K, x : SY, res : List SREC) : List SREC ==
         t := kernel(new()$Symbol)
         nfp1 := differentiate(nf)*denf1 - (gexp::F)*nf*differentiate(denf1)
         r : F := resultant(nf + (t::F)::UP*denf, nfp1)
@@ -1320,7 +1320,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         res
 
     special_candidates(nf : UP, denf : UP, denf1 : UP, gexp : Z,
-                       vlst : List(F), ulst : List(F), k : K, x : SE
+                       vlst : List(F), ulst : List(F), k : K, x : SY
                       ) : List SREC ==
         res1 : List SREC := special_ei_candidates(nf, denf, vlst, ulst, k, x)
         res1 := irrational_gamma_candidates(nf, denf, vlst, ulst, k, x, res1)
@@ -1375,7 +1375,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                     res1 := gammas1(nn, ri, denf, denf1, gexp, n2,
                                     vlst, ulst, k, x, res1)
                 res1
-            bs := new()$SE
+            bs := new()$SY
             bk := kernel(bs)
             tx_plus_b := monomial(t::F, 1)$UP + bk::F::UP
             f_res1 := resultant(nnp, nf + tx_plus_b*denf)$UP
@@ -1425,7 +1425,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     Param_Rec_QF ==> Record(logands : List F, basis : List Vector Q)
 
     exp_lower_bound(nfp : UP, eta : F, rr1 : RF, scoeffs : List(RF),
-                    x : SE, lk : List(K)) : Z ==
+                    x : SY, lk : List(K)) : Z ==
         logi := (x2 : List K, x3 : List F) : Param_Rec_QF +->
                   logextint(x, x2, x3)$ParametricIntegration(R, F)
         b := nfp::LaurentPolynomial(F, UP)
@@ -1522,7 +1522,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     quadratic_log_erf_integrate(nf : UP, nfp : UP, rr1 : RF,
           a1 : F, g : F, ansp : F, derivation : UP -> UP,
-          vlst : LF, ulst : LF, k : K, lk : List(K), x : SE) : PSOL2 ==
+          vlst : LF, ulst : LF, k : K, lk : List(K), x : SY) : PSOL2 ==
         spec1u := retractIfCan(rr1)@Union(UP, "failed")
         spec1u case "failed" => error "impossible 10"
         spec1p := spec1u@UP
@@ -1644,7 +1644,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     EI_RES ==> Record(primpart : F, logpart : RF, polypart : UP,
                       specpart : RF)
 
-    solve_factor1(nf : UP, denf : UP, nfp : UP, denfp : UP, k : K, x : SE,
+    solve_factor1(nf : UP, denf : UP, nfp : UP, denfp : UP, k : K, x : SY,
                   einum : UP, bpol : UP, er : EI_REC) : EI_RES ==
         eiden := er.factor
         r0 := er.ratpart
@@ -1724,7 +1724,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         nn
 
     solve_linear_factor(nf : UP, denf : UP, nfp : UP, denfp : UP,
-                        k : K, x : SE,
+                        k : K, x : SY,
                         einum : UP, er : EI_REC2) : EI_RES ==
         cfac := er.alg_part
         rfc : F := 0
@@ -1809,7 +1809,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         [ansp, dvr2.remainder::RF/denom(lp_cor)::RF, dvr2.quotient, 0]
 
     linear_log_case(num : UP, den : UP, nf : UP, nfp : UP, k : K,
-                    vlst : LF, ulst : LF, x : SE) : EI_RES ==
+                    vlst : LF, ulst : LF, x : SY) : EI_RES ==
         al := lin_args(den, nf, k, vlst, ulst, x)
         empty?(al) => [0, 0, 0, 0]
         eidens := [er.factor for er in al]
@@ -1832,7 +1832,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         [ansp, lp_cor, poly_cor, sp_cor]
 
     handle_nonlinear_log(num : UP, den : UP, nf : UP, denf : UP, nfp : UP,
-                         denfp : UP, k : K, x : SE, vlst : LF, ulst : LF,
+                         denfp : UP, k : K, x : SY, vlst : LF, ulst : LF,
                          lei : List(EI_REC), dbasis : Vector(UP),
                          dtrans : Matrix(Integer)) : EI_RES ==
         n := #lei
@@ -1890,7 +1890,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     handle_logpart(num : UP, den : UP, nf : UP, denf : UP,
                    nfp : UP, denfp : UP, k : K,
-                   vlst : LF, ulst : LF, x : SE) : EI_RES ==
+                   vlst : LF, ulst : LF, x : SY) : EI_RES ==
         is?(k, 'log) and denf = 1 and degree(nf) <=$Z 1 =>
             linear_log_case(num, den, nf, nfp, k, vlst, ulst, x)
         denf = 1 and degree(nf) = 0 => [0, 0, 0, 0]
@@ -1999,7 +1999,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             denr := (denr exquo hh1)::UP
             mult := mult*hh1
 
-    ei_int_log(f : F, ng : UP, x : SE, k : K) : PSOL2 ==
+    ei_int_log(f : F, ng : UP, x : SY, k : K) : PSOL2 ==
         ngu := multivariate(ng::RF, k)
         lk := varselect(union(tower(f), tower(ngu)), x)
         lk := [k1 for k1 in lk | k1 ~= k]
@@ -2029,7 +2029,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         is_sol := is_sol and res2.sol?
         [r1, rh, res2.primpart, is_sol]
 
-    ei_int_exp(f : F, ng : UP, degs : N, x : SE, k : K) : PSOL2 ==
+    ei_int_exp(f : F, ng : UP, degs : N, x : SY, k : K) : PSOL2 ==
         ngu := multivariate(ng::RF, k)
         lk := union(tower(f), tower(ngu))
         k1 := ksec(k, varselect(lk, x), x)
@@ -2173,7 +2173,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             reverse!(res)
         error "unimplemented"
 
-    ei_int_diff(f : F, g : F, gu : RF, x : SE, k : K, lk : LK) : PSOL2 ==
+    ei_int_diff(f : F, g : F, gu : RF, x : SY, k : K, lk : LK) : PSOL2 ==
         fu := univariate(f, k)
         ngu := numer(gu)
         denom(gu) ~= 1 or degree(ngu) ~= 1 or fu ~= f::UP::RF =>
@@ -2207,7 +2207,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     OPDIFF ==> '%diff
 
-    ei_int(n : Z, f : F, g : F, x : SE) : PSOL2 ==
+    ei_int(n : Z, f : F, g : F, x : SY) : PSOL2 ==
         lk := union(varselect(union(tower(f), tower(g)), x), [kernel(x)])
         f := n*f
         (fp := D(f, x)) = 0 =>

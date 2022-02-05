@@ -40,7 +40,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
 
   OP  ==> BasicOperator
   K   ==> Kernel F
-  SE  ==> Symbol
+  SY  ==> Symbol
   O   ==> OutputForm
   SMP ==> SparseMultivariatePolynomial(R, K)
   Z   ==> Integer
@@ -71,16 +71,16 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     factorials : F -> F
       ++ factorials(f) rewrites the permutations and binomials in f
       ++ in terms of factorials;
-    factorials : (F, SE) -> F
+    factorials : (F, SY) -> F
       ++ factorials(f, x) rewrites the permutations and binomials in f
       ++ involving x in terms of factorials;
-    summation  : (F, SE) -> F
+    summation  : (F, SY) -> F
       ++ summation(f(n), n) returns the formal sum S(n) which verifies
       ++ S(n+1) - S(n) = f(n);
     summation  : (F, SegmentBinding F)  -> F
       ++ summation(f(n), n = a..b) returns f(a) + ... + f(b) as a
       ++ formal sum;
-    product    : (F, SE) -> F
+    product    : (F, SY) -> F
       ++ product(f(n), n) returns the formal product P(n) which verifies
       ++ P(n+1)/P(n) = f(n);
     product    : (F, SegmentBinding  F) -> F
@@ -123,16 +123,16 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     dvpow1    : List F -> F
     dvpow2    : List F -> F
     summand   : List F -> F
-    dvsum     : (List F, SE) -> F
-    dvdsum    : (List F, SE) -> F
-    dvprod    : (List F, SE) -> F
-    dvdprod   : (List F, SE) -> F
-    facts     : (F, List SE) -> F
-    K2fact    : (K, List SE) -> F
-    smpfact   : (SMP, List SE) -> F
+    dvsum     : (List F, SY) -> F
+    dvdsum    : (List F, SY) -> F
+    dvprod    : (List F, SY) -> F
+    dvdprod   : (List F, SY) -> F
+    facts     : (F, List SY) -> F
+    K2fact    : (K, List SY) -> F
+    smpfact   : (SMP, List SY) -> F
 
     -- Must be a macro to produce fresh symbol for each use
-    dummy ==> new()$SE :: F
+    dummy ==> new()$SY :: F
 
     opfact  := operator('factorial)$CommonOperators
     opperm  := operator('permutation)$CommonOperators
@@ -169,11 +169,11 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     facts(x, l)          == smpfact(numer x, l) / smpfact(denom x, l)
     summand l            == eval(first l, retract(second l)@K, third l)
 
-    product(x : F, i : SE) ==
+    product(x : F, i : SY) ==
       dm := dummy
       opprod [eval(x, k := kernel(i)$K, dm), dm, k::F]
 
-    summation(x : F, i : SE) ==
+    summation(x : F, i : SY) ==
       dm := dummy
       opsum [eval(x, k := kernel(i)$K, dm), dm, k::F]
 
@@ -181,21 +181,21 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       opsum [differentiate(first l, x), second l, third l]
 
     dvdsum(l, x) ==
-        x = retract(y := third l)@SE => 0
+        x = retract(y := third l)@SY => 0
         f := first l
         v := second l
         g := l(4)
         h := l(5)
         r1 := opdsum [differentiate(f, x), v, y, g, h]
         member?(x, variables(h)) or member?(x, variables(g)) =>
-            dm := new()$SE :: F
+            dm := new()$SY :: F
             dg := kernel(opdiff, [opdsum [f, v, y, dm, h], dm, g])
             dh := kernel(opdiff, [opdsum [f, v, y, g, dm], dm, h])
             r1 + differentiate(g, x)*dg + differentiate(h, x)*dh
         r1
 
     dvprod(l, x) ==
-      dm := retract(dummy)@SE
+      dm := retract(dummy)@SY
       f := eval(first l, retract(second l)@K, dm::F)
       p := product(f, dm)
 
@@ -203,7 +203,7 @@ CombinatorialFunction(R, F) : Exports == Implementation where
 
 
     dvdprod(l, x) ==
-      x = retract(y := third l)@SE => 0
+      x = retract(y := third l)@SY => 0
       if member?(x, variables(h := third rest rest l)) or
          member?(x, variables(g := third rest l)) then
         error "a product cannot be differentiated with respect to a bound"
@@ -282,12 +282,12 @@ CombinatorialFunction(R, F) : Exports == Implementation where
       kernel(opsum, l)
 
     idprod l ==
-      member?(retract(second l)@SE, variables first l) =>
+      member?(retract(second l)@SY, variables first l) =>
         kernel(opdprod, l)
       first(l) ^ (fourth rest l - fourth l + 1)
 
     idsum l ==
-      member?(retract(second l)@SE, variables first l) =>
+      member?(retract(second l)@SY, variables first l) =>
         kernel(opdsum, l)
       first(l) * (fourth rest l - fourth l + 1)
 
@@ -427,10 +427,10 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     evaluate(opprod, iprod)
     evaluate(opdprod, iidprod)
     derivative(oppow, [dvpow1, dvpow2])
-    setProperty(opsum,   SPECIALDIFF, dvsum@((List F, SE) -> F) pretend None)
-    setProperty(opdsum,  SPECIALDIFF, dvdsum@((List F, SE)->F) pretend None)
-    setProperty(opprod,  SPECIALDIFF, dvprod@((List F, SE)->F) pretend None)
-    setProperty(opdprod, SPECIALDIFF, dvdprod@((List F, SE)->F) pretend None)
+    setProperty(opsum,   SPECIALDIFF, dvsum@((List F, SY) -> F) pretend None)
+    setProperty(opdsum,  SPECIALDIFF, dvdsum@((List F, SY)->F) pretend None)
+    setProperty(opprod,  SPECIALDIFF, dvprod@((List F, SY)->F) pretend None)
+    setProperty(opdprod, SPECIALDIFF, dvdprod@((List F, SY)->F) pretend None)
 
     setProperty(opsum,   SPECIALDISP, dsum@(List F -> O) pretend None)
     setProperty(opdsum,  SPECIALDISP, ddsum@(List F -> O) pretend None)
@@ -456,7 +456,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
   OP  ==> BasicOperator
   K   ==> Kernel F
-  SE  ==> Symbol
+  SY  ==> Symbol
   SPECIALDIFF  ==> '%specialDiff
 
   Exports ==> with
@@ -769,7 +769,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     import from List Kernel(F)
     opdiff := operator(operator('%diff)$CommonOperators)$F
-    dummy ==> new()$SE :: F
+    dummy ==> new()$SY :: F
 
     ahalf : F := recip(2::F)::F
     athird : F    := recip(3::F)::F
@@ -780,14 +780,14 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     -- Helpers for partially defined derivatives
 
-    grad2(l : List F, t : SE, op : OP, d2 : (F, F) -> F ) : F ==
+    grad2(l : List F, t : SY, op : OP, d2 : (F, F) -> F ) : F ==
         x1 := l(1)
         x2 := l(2)
         dm := dummy
         differentiate(x1, t)*kernel(opdiff, [op [dm, x2], dm, x1])
              + differentiate(x2, t)*d2(x1, x2)
 
-    grad3(l : List F, t : SE, op : OP, d3 : (F, F, F) -> F ) : F ==
+    grad3(l : List F, t : SY, op : OP, d3 : (F, F, F) -> F ) : F ==
         x1 := l(1)
         x2 := l(2)
         x3 := l(3)
@@ -797,7 +797,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
            + differentiate(x2, t)*kernel(opdiff, [op [x1, dm2, x3], dm2, x2])
              + differentiate(x3, t)*d3(x1, x2, x3)
 
-    grad4(l : List F, t : SE, op : OP, d4 : (F, F, F, F) -> F ) : F ==
+    grad4(l : List F, t : SY, op : OP, d4 : (F, F, F, F) -> F ) : F ==
         x1 := l(1)
         x2 := l(2)
         x3 := l(3)
@@ -871,10 +871,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         (ahalf - k/z)*whittakerM(k, m, z) +
             (ahalf + k + m)*whittakerM(k + 1, m, z)/z
 
-    dWhittakerM(l : List F, t : SE) : F ==
+    dWhittakerM(l : List F, t : SY) : F ==
         grad3(l, t, opWhittakerM, eWhittakerMGrad_z)
 
-    setProperty(opWhittakerM, SPECIALDIFF, dWhittakerM@((List F, SE)->F)
+    setProperty(opWhittakerM, SPECIALDIFF, dWhittakerM@((List F, SY)->F)
                                                  pretend None)
 
     -- handle WhittakerW
@@ -892,10 +892,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eWhittakerWGrad_z(k : F, m : F, z : F) : F ==
         (ahalf - k/z)*whittakerW(k, m, z) - whittakerW(k + 1, m, z)/z
 
-    dWhittakerW(l : List F, t : SE) : F ==
+    dWhittakerW(l : List F, t : SY) : F ==
         grad3(l, t, opWhittakerW, eWhittakerWGrad_z)
 
-    setProperty(opWhittakerW, SPECIALDIFF, dWhittakerW@((List F, SE)->F)
+    setProperty(opWhittakerW, SPECIALDIFF, dWhittakerW@((List F, SY)->F)
                                                  pretend None)
 
     -- handle AngerJ
@@ -916,10 +916,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         eAngerJGrad_z(v : F, z : F) : F ==
             -angerJ(v + 1, z) + v*angerJ(v, z)/z - sin(v*pi())/(pi()*z)
 
-        dAngerJ(l : List F, t : SE) : F ==
+        dAngerJ(l : List F, t : SY) : F ==
             grad2(l, t, opAngerJ, eAngerJGrad_z)
 
-        setProperty(opAngerJ, SPECIALDIFF, dAngerJ@((List F, SE)->F)
+        setProperty(opAngerJ, SPECIALDIFF, dAngerJ@((List F, SY)->F)
                                                  pretend None)
 
     else
@@ -945,10 +945,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         eWeberEGrad_z(v : F, z : F) : F ==
             -weberE(v + 1, z) + v*weberE(v, z)/z - (1 - cos(v*pi()))/(pi()*z)
 
-        dWeberE(l : List F, t : SE) : F ==
+        dWeberE(l : List F, t : SY) : F ==
             grad2(l, t, opWeberE, eWeberEGrad_z)
 
-        setProperty(opWeberE, SPECIALDIFF, dWeberE@((List F, SE)->F)
+        setProperty(opWeberE, SPECIALDIFF, dWeberE@((List F, SY)->F)
                                                  pretend None)
 
     else
@@ -975,10 +975,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
             -struveH(v + 1, z) + v*struveH(v, z)/z +
                (ahalf*z)^v/(sqrt(pi())*Gamma(v + threehalfs))
 
-        dStruveH(l : List F, t : SE) : F ==
+        dStruveH(l : List F, t : SY) : F ==
             grad2(l, t, opStruveH, eStruveHGrad_z)
 
-        setProperty(opStruveH, SPECIALDIFF, dStruveH@((List F, SE)->F)
+        setProperty(opStruveH, SPECIALDIFF, dStruveH@((List F, SY)->F)
                                                  pretend None)
 
     -- handle StruveL
@@ -1000,10 +1000,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
             struveL(v + 1, z) + v*struveL(v, z)/z +
                (ahalf*z)^v/(sqrt(pi())*Gamma(v + threehalfs))
 
-        dStruveL(l : List F, t : SE) : F ==
+        dStruveL(l : List F, t : SY) : F ==
             grad2(l, t, opStruveL, eStruveLGrad_z)
 
-        setProperty(opStruveL, SPECIALDIFF, dStruveL@((List F, SE)->F)
+        setProperty(opStruveL, SPECIALDIFF, dStruveL@((List F, SY)->F)
                                                  pretend None)
 
     -- handle HankelH1
@@ -1021,10 +1021,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eHankelH1Grad_z(v : F, z : F) : F ==
         -hankelH1(v + 1, z) + v*hankelH1(v, z)/z
 
-    dHankelH1(l : List F, t : SE) : F ==
+    dHankelH1(l : List F, t : SY) : F ==
         grad2(l, t, opHankelH1, eHankelH1Grad_z)
 
-    setProperty(opHankelH1, SPECIALDIFF, dHankelH1@((List F, SE)->F)
+    setProperty(opHankelH1, SPECIALDIFF, dHankelH1@((List F, SY)->F)
                                                  pretend None)
 
     -- handle HankelH2
@@ -1042,10 +1042,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eHankelH2Grad_z(v : F, z : F) : F ==
         -hankelH2(v + 1, z) + v*hankelH2(v, z)/z
 
-    dHankelH2(l : List F, t : SE) : F ==
+    dHankelH2(l : List F, t : SY) : F ==
         grad2(l, t, opHankelH2, eHankelH2Grad_z)
 
-    setProperty(opHankelH2, SPECIALDIFF, dHankelH2@((List F, SE)->F)
+    setProperty(opHankelH2, SPECIALDIFF, dHankelH2@((List F, SY)->F)
                                                  pretend None)
 
     -- handle LommelS1
@@ -1063,10 +1063,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eLommelS1Grad_z(m : F, v : F, z : F) : F ==
         -v*lommelS1(m, v, z)/z + (m + v - 1)*lommelS1(m - 1, v - 1, z)
 
-    dLommelS1(l : List F, t : SE) : F ==
+    dLommelS1(l : List F, t : SY) : F ==
         grad3(l, t, opLommelS1, eLommelS1Grad_z)
 
-    setProperty(opLommelS1, SPECIALDIFF, dLommelS1@((List F, SE)->F)
+    setProperty(opLommelS1, SPECIALDIFF, dLommelS1@((List F, SY)->F)
                                                  pretend None)
 
     -- handle LommelS2
@@ -1084,10 +1084,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eLommelS2Grad_z(m : F, v : F, z : F) : F ==
         -v*lommelS2(m, v, z)/z + (m + v - 1)*lommelS2(m - 1, v - 1, z)
 
-    dLommelS2(l : List F, t : SE) : F ==
+    dLommelS2(l : List F, t : SY) : F ==
         grad3(l, t, opLommelS2, eLommelS2Grad_z)
 
-    setProperty(opLommelS2, SPECIALDIFF, dLommelS2@((List F, SE)->F)
+    setProperty(opLommelS2, SPECIALDIFF, dLommelS2@((List F, SY)->F)
                                                  pretend None)
 
     -- handle KummerM
@@ -1106,10 +1106,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eKummerMGrad_z(a : F, b : F, z : F) : F ==
         ((z + a - b)*kummerM(a, b, z)+(b - a)*kummerM(a - 1, b, z))/z
 
-    dKummerM(l : List F, t : SE) : F ==
+    dKummerM(l : List F, t : SY) : F ==
         grad3(l, t, opKummerM, eKummerMGrad_z)
 
-    setProperty(opKummerM, SPECIALDIFF, dKummerM@((List F, SE)->F)
+    setProperty(opKummerM, SPECIALDIFF, dKummerM@((List F, SY)->F)
                                                  pretend None)
 
     -- handle KummerU
@@ -1127,10 +1127,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eKummerUGrad_z(a : F, b : F, z : F) : F ==
         ((z + a - b)*kummerU(a, b, z) - kummerU(a - 1, b, z))/z
 
-    dKummerU(l : List F, t : SE) : F ==
+    dKummerU(l : List F, t : SY) : F ==
         grad3(l, t, opKummerU, eKummerUGrad_z)
 
-    setProperty(opKummerU, SPECIALDIFF, dKummerU@((List F, SE)->F)
+    setProperty(opKummerU, SPECIALDIFF, dKummerU@((List F, SY)->F)
                                                  pretend None)
 
     -- handle LegendreP
@@ -1149,10 +1149,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         (nu - mu + 1)*legendreP(nu + 1, mu, z) -
           (nu + 1)*z*legendreP(nu, mu, z)
 
-    dLegendreP(l : List F, t : SE) : F ==
+    dLegendreP(l : List F, t : SY) : F ==
         grad3(l, t, opLegendreP, eLegendrePGrad_z)
 
-    setProperty(opLegendreP, SPECIALDIFF, dLegendreP@((List F, SE)->F)
+    setProperty(opLegendreP, SPECIALDIFF, dLegendreP@((List F, SY)->F)
                                                  pretend None)
 
     -- handle LegendreQ
@@ -1171,10 +1171,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         (nu - mu + 1)*legendreQ(nu + 1, mu, z) -
           (nu + 1)*z*legendreQ(nu, mu, z)
 
-    dLegendreQ(l : List F, t : SE) : F ==
+    dLegendreQ(l : List F, t : SY) : F ==
         grad3(l, t, opLegendreQ, eLegendreQGrad_z)
 
-    setProperty(opLegendreQ, SPECIALDIFF, dLegendreQ@((List F, SE)->F)
+    setProperty(opLegendreQ, SPECIALDIFF, dLegendreQ@((List F, SY)->F)
                                                  pretend None)
 
     -- handle KelvinBei
@@ -1195,10 +1195,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
             ahalf*sqrt(2::F)*(kelvinBei(v + 1, z) - kelvinBer(v + 1, z)) +
               v*kelvinBei(v, z)/z
 
-        dKelvinBei(l : List F, t : SE) : F ==
+        dKelvinBei(l : List F, t : SY) : F ==
             grad2(l, t, opKelvinBei, eKelvinBeiGrad_z)
 
-        setProperty(opKelvinBei, SPECIALDIFF, dKelvinBei@((List F, SE)->F)
+        setProperty(opKelvinBei, SPECIALDIFF, dKelvinBei@((List F, SY)->F)
                                                  pretend None)
 
     -- handle KelvinBer
@@ -1219,10 +1219,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
             ahalf*sqrt(2::F)*(kelvinBer(v + 1, z) + kelvinBei(v + 1, z)) +
               v*kelvinBer(v, z)/z
 
-        dKelvinBer(l : List F, t : SE) : F ==
+        dKelvinBer(l : List F, t : SY) : F ==
             grad2(l, t, opKelvinBer, eKelvinBerGrad_z)
 
-        setProperty(opKelvinBer, SPECIALDIFF, dKelvinBer@((List F, SE)->F)
+        setProperty(opKelvinBer, SPECIALDIFF, dKelvinBer@((List F, SY)->F)
                                                  pretend None)
 
     -- handle KelvinKei
@@ -1243,10 +1243,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
             ahalf*sqrt(2::F)*(kelvinKei(v + 1, z) - kelvinKer(v + 1, z)) +
               v*kelvinKei(v, z)/z
 
-        dKelvinKei(l : List F, t : SE) : F ==
+        dKelvinKei(l : List F, t : SY) : F ==
             grad2(l, t, opKelvinKei, eKelvinKeiGrad_z)
 
-        setProperty(opKelvinKei, SPECIALDIFF, dKelvinKei@((List F, SE)->F)
+        setProperty(opKelvinKei, SPECIALDIFF, dKelvinKei@((List F, SY)->F)
                                                  pretend None)
 
     -- handle KelvinKer
@@ -1267,10 +1267,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
             ahalf*sqrt(2::F)*(kelvinKer(v + 1, z) + kelvinKei(v + 1, z)) +
               v*kelvinKer(v, z)/z
 
-        dKelvinKer(l : List F, t : SE) : F ==
+        dKelvinKer(l : List F, t : SY) : F ==
             grad2(l, t, opKelvinKer, eKelvinKerGrad_z)
 
-        setProperty(opKelvinKer, SPECIALDIFF, dKelvinKer@((List F, SE)->F)
+        setProperty(opKelvinKer, SPECIALDIFF, dKelvinKer@((List F, SY)->F)
                                                  pretend None)
 
     -- handle EllipticK
@@ -1570,7 +1570,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     elLerchPhi(l : List F) : F == eLerchPhi(l(1), l(2), l(3))
     evaluate(opLerchPhi, elLerchPhi)$BasicOperatorFunctions1(F)
 
-    dLerchPhi(l : List F, t : SE) : F ==
+    dLerchPhi(l : List F, t : SY) : F ==
         z := l(1)
         s := l(2)
         a := l(3)
@@ -1581,7 +1581,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         differentiate(s, t)*kernel(opdiff, [opLerchPhi [z, dm, a], dm, s])
            + dz + da
 
-    setProperty(opLerchPhi, SPECIALDIFF, dLerchPhi@((List F, SE)->F)
+    setProperty(opLerchPhi, SPECIALDIFF, dLerchPhi@((List F, SY)->F)
                                                  pretend None)
 
     -- handle RiemannZeta
@@ -1625,10 +1625,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     eHermiteHGrad_z(n : F, z : F) : F == (2::F)*n*hermiteH(n - 1, z)
 
-    dHermiteH(l : List F, t : SE) : F ==
+    dHermiteH(l : List F, t : SY) : F ==
         grad2(l, t, opHermiteH, eHermiteHGrad_z)
 
-    setProperty(opHermiteH, SPECIALDIFF, dHermiteH@((List F, SE)->F)
+    setProperty(opHermiteH, SPECIALDIFF, dHermiteH@((List F, SY)->F)
                                                  pretend None)
 
 
@@ -1647,10 +1647,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eJacobiPGrad_z(n : F, a : F, b : F, z : F) : F ==
         ahalf*(a + b + n + 1)*jacobiP(n - 1, a + 1, b + 1, z)
 
-    dJacobiP(l : List F, t : SE) : F ==
+    dJacobiP(l : List F, t : SY) : F ==
         grad4(l, t, opJacobiP, eJacobiPGrad_z)
 
-    setProperty(opJacobiP, SPECIALDIFF, dJacobiP@((List F, SE)->F)
+    setProperty(opJacobiP, SPECIALDIFF, dJacobiP@((List F, SY)->F)
                                                  pretend None)
 
 
@@ -1669,10 +1669,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     eLaguerreLGrad_z(n : F, a : F, z : F) : F ==
         laguerreL(n - 1, a + 1, z)
 
-    dLaguerreL(l : List F, t : SE) : F ==
+    dLaguerreL(l : List F, t : SY) : F ==
         grad3(l, t, opLaguerreL, eLaguerreLGrad_z)
 
-    setProperty(opLaguerreL, SPECIALDIFF, dLaguerreL@((List F, SE)->F)
+    setProperty(opLaguerreL, SPECIALDIFF, dLaguerreL@((List F, SY)->F)
                                                  pretend None)
 
 
@@ -1991,32 +1991,32 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         dm := dummy
         kernel(opdiff, [op [dm, x], dm, n])
 
-    iBesselJ(l : List F, t : SE) : F ==
+    iBesselJ(l : List F, t : SY) : F ==
         n := first l; x := second l
         differentiate(n, t)*diff1(opBesselJ, n, x)
           + differentiate(x, t) * ahalf * (besselJ (n-1, x) - besselJ (n+1, x))
 
-    iBesselY(l : List F, t : SE) : F ==
+    iBesselY(l : List F, t : SY) : F ==
         n := first l; x := second l
         differentiate(n, t)*diff1(opBesselY, n, x)
           + differentiate(x, t) * ahalf * (besselY (n-1, x) - besselY (n+1, x))
 
-    iBesselI(l : List F, t : SE) : F ==
+    iBesselI(l : List F, t : SY) : F ==
         n := first l; x := second l
         differentiate(n, t)*diff1(opBesselI, n, x)
           + differentiate(x, t)* ahalf * (besselI (n-1, x) + besselI (n+1, x))
 
-    iBesselK(l : List F, t : SE) : F ==
+    iBesselK(l : List F, t : SY) : F ==
         n := first l; x := second l
         differentiate(n, t)*diff1(opBesselK, n, x)
           - differentiate(x, t)* ahalf * (besselK (n-1, x) + besselK (n+1, x))
 
-    dPolylog(l : List F, t : SE) : F ==
+    dPolylog(l : List F, t : SY) : F ==
         s := first l; x := second l
         differentiate(s, t)*diff1(opPolylog, s, x)
            + differentiate(x, t)*polylog(s-1, x)/x
 
-    ipolygamma(l : List F, x : SE) : F ==
+    ipolygamma(l : List F, x : SY) : F ==
         import from List(Symbol)
         member?(x, variables first l) =>
             error "cannot differentiate polygamma with respect to the first argument"
@@ -2030,11 +2030,11 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
         Beta(x, y)*(digamma y - digamma(x+y))
 
     if F has ElementaryFunctionCategory then
-      iGamma2(l : List F, t : SE) : F ==
+      iGamma2(l : List F, t : SY) : F ==
         a := first l; x := second l
         differentiate(a, t)*diff1(opGamma2, a, x)
           - differentiate(x, t)* x ^ (a - 1) * exp(-x)
-      setProperty(opGamma2, SPECIALDIFF, iGamma2@((List F, SE)->F)
+      setProperty(opGamma2, SPECIALDIFF, iGamma2@((List F, SY)->F)
                                                  pretend None)
 
     inGamma2(li : List INP) : INP ==
@@ -2428,17 +2428,17 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     derivative(opWeierstrassZeta, [iWeierstrassZetaGrad1,
                    iWeierstrassZetaGrad2, iWeierstrassZetaGrad3])
 
-    setProperty(oppolygamma, SPECIALDIFF, ipolygamma@((List F, SE)->F)
+    setProperty(oppolygamma, SPECIALDIFF, ipolygamma@((List F, SY)->F)
                                                      pretend None)
-    setProperty(opBesselJ, SPECIALDIFF, iBesselJ@((List F, SE)->F)
+    setProperty(opBesselJ, SPECIALDIFF, iBesselJ@((List F, SY)->F)
                                                  pretend None)
-    setProperty(opBesselY, SPECIALDIFF, iBesselY@((List F, SE)->F)
+    setProperty(opBesselY, SPECIALDIFF, iBesselY@((List F, SY)->F)
                                                  pretend None)
-    setProperty(opBesselI, SPECIALDIFF, iBesselI@((List F, SE)->F)
+    setProperty(opBesselI, SPECIALDIFF, iBesselI@((List F, SY)->F)
                                                  pretend None)
-    setProperty(opBesselK, SPECIALDIFF, iBesselK@((List F, SE)->F)
+    setProperty(opBesselK, SPECIALDIFF, iBesselK@((List F, SY)->F)
                                                  pretend None)
-    setProperty(opPolylog, SPECIALDIFF, dPolylog@((List F, SE)->F)
+    setProperty(opPolylog, SPECIALDIFF, dPolylog@((List F, SY)->F)
                                                  pretend None)
 )boot $tryRecompileArguments := true
 
@@ -2452,11 +2452,11 @@ FunctionSpaceSum(R, F) : Exports == Implementation where
   F : Join(FunctionSpace R, CombinatorialOpsCategory,
           AlgebraicallyClosedField, TranscendentalFunctionCategory)
 
-  SE  ==> Symbol
+  SY  ==> Symbol
   K   ==> Kernel F
 
   Exports ==> with
-    sum : (F, SE) -> F
+    sum : (F, SY) -> F
       ++ sum(a(n), n) returns A(n) such that A(n+1) - A(n) = a(n);
     sum : (F, SegmentBinding F) -> F
       ++ sum(f(n), n = a..b) returns f(a) + f(a+1) + ... + f(b);
@@ -2471,14 +2471,14 @@ FunctionSpaceSum(R, F) : Exports == Implementation where
     notRF?  : (F, K) -> Boolean
     newk    : () -> K
 
-    newk() == kernel(new()$SE)
+    newk() == kernel(new()$SY)
 
     sum(x : F, s : SegmentBinding F) ==
       k := kernel(variable s)@K
       (u := innersum(x, k)) case "failed" => summation(x, s)
       eval(u@F, k, 1 + high(segment(s))) - eval(u@F, k, low(segment(s)))
 
-    sum(x : F, v : SE) ==
+    sum(x : F, v : SY) ==
       (u := innersum(x, kernel(v)@K)) case "failed" => summation(x,v)
       u@F
 

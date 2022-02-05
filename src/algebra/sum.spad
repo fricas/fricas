@@ -269,14 +269,14 @@ RationalFunctionSum(R) : Exports == Impl where
     P   ==> Polynomial R
     RF  ==> Fraction P
     FE  ==> Expression R
-    SE  ==> Symbol
+    SY  ==> Symbol
 
     Exports ==> with
-        sum : (P, SE) -> RF
+        sum : (P, SY) -> RF
             ++ sum(a(n), n) returns \spad{A} which
             ++ is the indefinite sum of \spad{a} with respect to
             ++ upward difference on \spad{n}, i.e. \spad{A(n+1) - A(n) = a(n)}.
-        sum : (RF, SE) -> Union(RF, FE)
+        sum : (RF, SY) -> Union(RF, FE)
             ++ sum(a(n), n) returns \spad{A} which
             ++ is the indefinite sum of \spad{a} with respect to
             ++ upward difference on \spad{n}, i.e. \spad{A(n+1) - A(n) = a(n)}.
@@ -287,10 +287,10 @@ RationalFunctionSum(R) : Exports == Impl where
 
     Impl ==> add
       import from RationalFunction R
-      import from GosperSummationMethod(IndexedExponents SE, SE, R, P, RF)
+      import from GosperSummationMethod(IndexedExponents SY, SY, R, P, RF)
 
-      innersum    : (RF, SE) -> Union(RF, "failed")
-      innerpolysum : (P, SE) -> RF
+      innersum    : (RF, SY) -> Union(RF, "failed")
+      innerpolysum : (P, SY) -> RF
 
       sum(f : RF, s : SegmentBinding RF) ==
         (indef := innersum(f, v := variable s)) case "failed" =>
@@ -299,7 +299,7 @@ RationalFunctionSum(R) : Exports == Impl where
         eval(indef@RF, v, 1 + high(segment(s)))
           - eval(indef@RF, v, low(segment(s)))
 
-      sum(an : RF, n : SE) ==
+      sum(an : RF, n : SY) ==
         (u := innersum(an, n)) case "failed" => summation(an::FE, n)
         u@RF
 
@@ -311,13 +311,13 @@ RationalFunctionSum(R) : Exports == Impl where
       innersum(an, n) ==
         (r := retractIfCan(an)@Union(P, "failed")) case "failed" =>
            an1 := eval(an, n, -1 + n::RF)
-           (u := GospersMethod(an/an1, n, new$SE)) case "failed" =>
+           (u := GospersMethod(an/an1, n, new$SY)) case "failed" =>
              "failed"
            an1 * eval(u@RF, n, -1 + n::RF)
         sum(r@P, n)
 
-      sum(p : P, n : SE) ==
-        rec := sum(p, n)$InnerPolySum(IndexedExponents SE, SE, R, P)
+      sum(p : P, n : SY) ==
+        rec := sum(p, n)$InnerPolySum(IndexedExponents SY, SY, R, P)
         rec.num / (rec.den :: P)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.

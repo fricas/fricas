@@ -261,7 +261,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
   R : Join(Comparable, IntegralDomain)
   F : FunctionSpace R
 
-  SE  ==> Symbol
+  SY  ==> Symbol
   Z   ==> Integer
   Q   ==> Fraction Z
   OP  ==> BasicOperator
@@ -274,10 +274,10 @@ AlgebraicFunction(R, F) : Exports == Implementation where
   SPECIALEQUAL ==> '%specialEqual
 
   Exports ==> with
-    rootOf  : (UP, SE) -> F
+    rootOf  : (UP, SY) -> F
       ++ rootOf(p, y) returns y such that \spad{p(y) = 0}.
       ++ The object returned displays as \spad{'y}.
-    rootSum : (F, UP, SE) -> F
+    rootSum : (F, UP, SY) -> F
       ++ rootSum(expr, p, s)
     operator : OP -> OP
       ++ operator(op) returns a copy of \spad{op} with the domain-dependent
@@ -311,7 +311,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
     ALGOP       := '%alg
 
     ialg : List F -> F
-    dvalg : (List F, SE) -> F
+    dvalg : (List F, SY) -> F
     dalg : List F -> OutputForm
 
     opalg  := operator('rootOf)$CommonOperators
@@ -354,8 +354,8 @@ AlgebraicFunction(R, F) : Exports == Implementation where
 
         (d := degree q) <= 0 => error "rootOf: constant polynomial"
         (d = 1) => - leadingCoefficient(reductum q) / leadingCoefficient q
-        ((rx := retractIfCan(x)@Union(SE, "failed")) case SE) and
-          ((r := UP2R q) case UPR) => rootOf(r::UPR, rx@SE)::F
+        ((rx := retractIfCan(x)@Union(SY, "failed")) case SY) and
+          ((r := UP2R q) case UPR) => rootOf(r::UPR, rx@SY)::F
         kernel(opalg, [q x, x])
 
       UP2R p ==
@@ -391,7 +391,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
 
     evaluate(opalg, ialg)$BasicOperatorFunctions1(F)
     setProperty(opalg, SPECIALDIFF,
-                              dvalg@((List F, SE) -> F) pretend None)
+                              dvalg@((List F, SY) -> F) pretend None)
     setProperty(opalg, SPECIALDISP,
                               dalg@(List F -> OutputForm) pretend None)
     setProperty(opalg, SPECIALEQUAL, eqopalg@((K, K) -> Boolean) pretend None)
@@ -406,7 +406,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
             a := -coefficient(p, 0)/coefficient(p, 1)
             eval(expr, k, a)
         nexpr := univariate(expr, k, p)$POLYCATQ
-        xs := retract(x)@SE
+        xs := retract(x)@SY
         every?((c : F) : Boolean +-> D(c, xs) = 0, coefficients(nexpr)) =>
             res : F := 0
             for i in 0..(degree(p) - 1) repeat
@@ -416,7 +416,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
             res
         kernel(oprootsum, [nexpr(x), x, p(x)])
 
-    rootSum(expr : F, p : UP, s : SE) : F ==
+    rootSum(expr : F, p : UP, s : SY) : F ==
         k := kernel(s)$K
         root_sum1(expr, p, k::F)
 
@@ -431,11 +431,11 @@ AlgebraicFunction(R, F) : Exports == Implementation where
         sum((l.1)::OutputForm,
             outputForm(p, dv::OutputForm) = (0$Z)::OutputForm)
 
-    dvrootsum(l : List F, x : SE) : F ==
+    dvrootsum(l : List F, x : SY) : F ==
         -- print("dvrootsum"::OutputForm)
         -- print(l::OutputForm)
         dv := retract(alpha := l.2)@K
-        dvs := retract(alpha)@SE
+        dvs := retract(alpha)@SY
         p : UP := numer(univariate(l.3, dv))
         -- print(p::OutputForm)
         dalpha := - (map((s : F) : F +-> differentiate(s, x), p) alpha)
@@ -450,7 +450,7 @@ AlgebraicFunction(R, F) : Exports == Implementation where
     evaluate(oprootsum, irootsum)$BasicOperatorFunctions1(F)
 
     setProperty(oprootsum, SPECIALDIFF,
-                        dvrootsum@((List F, SE) -> F) pretend None)
+                        dvrootsum@((List F, SY) -> F) pretend None)
     setProperty(oprootsum, SPECIALDISP,
                         drootsum@(List F -> OutputForm) pretend None)
 

@@ -9,7 +9,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
   F : Join(TranscendentalFunctionCategory, PrimitiveFunctionCategory,
            AlgebraicallyClosedFunctionSpace R)
 
-  SE  ==> Symbol
+  SY  ==> Symbol
   PI  ==> PositiveInteger
   N   ==> NonNegativeInteger
   K   ==> Kernel F
@@ -19,7 +19,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
   SPECIALDIFF ==> '%specialDiff
 
   Exports ==> with
-    laplace : (F, SE, SE) -> F
+    laplace : (F, SY, SY) -> F
       ++ laplace(f, t, s) returns the Laplace transform of \spad{f(t)}
       ++ using \spad{s} as the new variable.
       ++ This is \spad{integral(exp(-s*t)*f(t), t = 0..%plusInfinity)}.
@@ -36,16 +36,16 @@ LaplaceTransform(R, F) : Exports == Implementation where
 
     ALGOP       := '%alg
 
-    locallaplace : (F, SE, F, SE, F) -> F
-    lapkernel    : (F, SE, F, F) -> Union(F, "failed")
-    intlaplace   : (F, F, F, SE, F) -> Union(F, "failed")
-    isLinear     : (F, SE) -> Union(Record(const:F, nconst:F), "failed")
+    locallaplace : (F, SY, F, SY, F) -> F
+    lapkernel    : (F, SY, F, F) -> Union(F, "failed")
+    intlaplace   : (F, F, F, SY, F) -> Union(F, "failed")
+    isLinear     : (F, SY) -> Union(Record(const:F, nconst:F), "failed")
     mkPlus       : F -> Union(List F, "failed")
-    dvlap        : (List F, SE) -> F
+    dvlap        : (List F, SY) -> F
     tdenom       : (F, F) -> Union(F, "failed")
-    atn          : (F, SE) -> Union(Record(coef:F, deg:PI), "failed")
-    aexp         : (F, SE) -> Union(Record(coef:F, coef1:F, coef0:F), "failed")
-    algebraic?   : (F, SE) -> Boolean
+    atn          : (F, SY) -> Union(Record(coef:F, deg:PI), "failed")
+    aexp         : (F, SY) -> Union(Record(coef:F, coef1:F, coef0:F), "failed")
+    algebraic?   : (F, SY) -> Boolean
 
     oplap := operator('laplace, 3)$BasicOperator
 
@@ -66,9 +66,9 @@ LaplaceTransform(R, F) : Exports == Implementation where
     dvlap(l, x) ==
       l1 := first l
       l2 := second l
-      x = (v := retract(l3 := third l)@SE) => - oplap(l2 * l1, l2, l3)
+      x = (v := retract(l3 := third l)@SY) => - oplap(l2 * l1, l2, l3)
       e := exp(- l3 * l2)
-      locallaplace(differentiate(e * l1, x) / e, retract(l2)@SE, l2, v, l3)
+      locallaplace(differentiate(e * l1, x) / e, retract(l2)@SY, l2, v, l3)
 
 -- returns [b, c] iff f = c * t + b
 -- and b and c do not involve t
@@ -85,7 +85,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
       if ((v := isExpt f) case Record(var : K, exponent : Integer)) then
         w := v@Record(var : K, exponent : Integer)
         (w.exponent > 0) and
-          ((vv := symbolIfCan(w.var)) case SE) and (vv@SE = t) =>
+          ((vv := symbolIfCan(w.var)) case SY) and (vv@SY = t) =>
             return [1, w.exponent::PI]
       (u := isTimes f) case List(F) =>
         c : F  := 1
@@ -100,7 +100,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
         [c, d::PI]
       "failed"
 
-    is_root(k : K, t : SE) : Union(F, "failed") ==
+    is_root(k : K, t : SY) : Union(F, "failed") ==
         is?(k, 'nthRoot) =>
             args := argument k
             args(2) ~= 2::F => "failed"
@@ -109,7 +109,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
         "failed"
 
     -- returns [a, n] iff f = a*t^n/sqrt(t)
-    athalf(f : F, t : SE) :
+    athalf(f : F, t : SY) :
       Union(Record(coef : F, deg : N), "failed") ==
         vkl := sort([k for k in kernels(f) | member?(t, variables(k::F))])
         nk := #vkl
@@ -206,7 +206,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
       -- laplace(f(t)/t, t, s)
       --              = integrate(laplace(f(t), t, v), v = s..%plusInfinity)
       (x := tdenom(f, tt)) case F =>
-        g := locallaplace(x@F, t, tt, vv := new()$SE, vvv := vv::F)
+        g := locallaplace(x@F, t, tt, vv := new()$SY, vvv := vv::F)
         (x := intlaplace(f, ss, g, vv, vvv)) case F => x
         oplap(f, tt, ss)
 
@@ -248,7 +248,7 @@ LaplaceTransform(R, F) : Exports == Implementation where
 --        ss * locallaplace(fint, t, tt, s, ss) - eval(fint, tt = 0)
       oplap(f, tt, ss)
 
-    setProperty(oplap, SPECIALDIFF, dvlap@((List F, SE)->F) pretend None)
+    setProperty(oplap, SPECIALDIFF, dvlap@((List F, SY)->F) pretend None)
 
 )abbrev package INVLAPLA InverseLaplaceTransform
 ++ Inverse Laplace transform
@@ -261,7 +261,7 @@ InverseLaplaceTransform(R, F) : Exports == Implementation where
   F : Join(TranscendentalFunctionCategory, PrimitiveFunctionCategory,
            SpecialFunctionCategory, AlgebraicallyClosedFunctionSpace R)
 
-  SE  ==> Symbol
+  SY  ==> Symbol
   PI  ==> PositiveInteger
   N   ==> NonNegativeInteger
   K   ==> Kernel F
@@ -269,7 +269,7 @@ InverseLaplaceTransform(R, F) : Exports == Implementation where
   RF  ==> Fraction UP
 
   Exports ==> with
-    inverseLaplace : (F, SE, SE) -> Union(F,"failed")
+    inverseLaplace : (F, SY, SY) -> Union(F,"failed")
       ++ inverseLaplace(f, s, t) returns the Inverse
       ++ Laplace transform of \spad{f(s)}
       ++ using t as the new variable or "failed" if unable to find

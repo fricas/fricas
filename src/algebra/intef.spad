@@ -15,7 +15,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
   F : Join(AlgebraicallyClosedField, TranscendentalFunctionCategory,
            FunctionSpace R)
 
-  SE  ==> Symbol
+  SY  ==> Symbol
   K   ==> Kernel F
   P   ==> SparseMultivariatePolynomial(R, K)
   UP  ==> SparseUnivariatePolynomial F
@@ -36,10 +36,10 @@ ElementaryIntegration(R, F) : Exports == Implementation where
   Param_Rec_F ==> Record(ratpart : F, coeffs : Vector F)
 
   Exports ==> with
-    lfextendedint : (F, SE, F) -> U2
+    lfextendedint : (F, SY, F) -> U2
        ++ lfextendedint(f, x, g) returns functions \spad{[h, c]} such that
        ++ \spad{dh/dx = f - cg}, if (h, c) exist, "failed" otherwise.
-    lfintegrate  : (F, SE) -> IR
+    lfintegrate  : (F, SY) -> IR
        ++ lfintegrate(f, x) = g such that \spad{dg/dx = f}.
 
   Implementation ==> add
@@ -61,19 +61,19 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     PRIM := 'prim
     ALGOP := '%alg
 
-    alglfint    : (F, K, List K, SE) -> IR
-    algprimint  : (F, K, K, SE) -> IR
-    algexpint   : (F, K, K, SE) -> IR
-    primint     : (F, SE, K) -> IR
-    expint      : (F, SE, K) -> IR
-    lambint     : (F, SE, K) -> IR
-    prim?       : (K, SE)  -> Boolean
-    isx?        : (F, SE)  -> Boolean
+    alglfint    : (F, K, List K, SY) -> IR
+    algprimint  : (F, K, K, SY) -> IR
+    algexpint   : (F, K, K, SY) -> IR
+    primint     : (F, SY, K) -> IR
+    expint      : (F, SY, K) -> IR
+    lambint     : (F, SY, K) -> IR
+    prim?       : (K, SY)  -> Boolean
+    isx?        : (F, SY)  -> Boolean
     addx        : (IR, F) -> IR
-    lfintegrate0 : (F, SE) -> IR
-    unknownint  : (F, SE) -> IR
-    diffint     : (F, SE, K) -> IR
-    tryChangeVar : (F, K, SE) -> Union(IR, "failed")
+    lfintegrate0 : (F, SY) -> IR
+    unknownint  : (F, SY) -> IR
+    diffint     : (F, SY, K) -> IR
+    tryChangeVar : (F, K, SY) -> Union(IR, "failed")
 
     prim?(k, x)      == is?(k, 'log) or has?(operator k, PRIM)
 
@@ -102,7 +102,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
 
     dummy := create()$SingletonAsOrderedSet
 
-    diffint1(f : F, x : SE, k : K) : Union(IR, "failed") ==
+    diffint1(f : F, x : SY, k : K) : Union(IR, "failed") ==
         fu := univariate(f, k)
         denom(fu) ~= 1 => "failed"
         nfu := numer(fu)
@@ -146,11 +146,11 @@ ElementaryIntegration(R, F) : Exports == Implementation where
     isx?(f, x) ==
       (k := retractIfCan(f)@Union(K, "failed")) case "failed" => false
       (r := symbolIfCan(k@K)) case "failed" => false
-      r@SE = x
+      r@SY = x
 
     alglfint(f, k, l, x) ==
       xf := x::F
-      symbolIfCan(kx := ksec(k, l, x)) case SE => addx(palgint(f, kx, k), xf)
+      symbolIfCan(kx := ksec(k, l, x)) case SY => addx(palgint(f, kx, k), xf)
       is?(kx, 'exp) => addx(algexpint(f, kx, k, x), xf)
       prim?(kx, x)       => addx(algprimint(f, kx, k, x), xf)
       has?(operator kx, ALGOP) =>
@@ -179,7 +179,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
       zero? f => 0
       xf := x::F
       empty?(l := varselect(kernels f, x)) => (xf * f)::IR
-      symbolIfCan(k := kmax l) case SE =>
+      symbolIfCan(k := kmax l) case SY =>
         map((x1 : RF) : F+->multivariate(x1, k), integrate univariate(f, k))
       is?(k, 'exp)  => addx(expint(f, x, k), xf)
       is?(k, 'lambertW) => addx(lambint(f, x, k), xf)
@@ -227,21 +227,21 @@ ElementaryIntegration(R, F) : Exports == Implementation where
 
     denint_dummy(f : RF) : DREC == [0, f, 0]
 
-    DMap ==> (RF, K, SE) -> DREC
+    DMap ==> (RF, K, SY) -> DREC
 
     denint_li : DMap :=
         R is Integer and F is Expression(Integer) =>
             (li_int$DenominatorIntegration(R, F))@DMap
         R is Complex(Integer) and F is Expression(Complex(Integer)) =>
             (li_int$DenominatorIntegration(R, F))@DMap
-        (rf : RF, k : K, x : SE) : DREC +-> denint_dummy(rf)
+        (rf : RF, k : K, x : SY) : DREC +-> denint_dummy(rf)
 
     denint_poly : DMap :=
         R is Integer and F is Expression(Integer) =>
             (poly_int$DenominatorIntegration(R, F))@DMap
         R is Complex(Integer) and F is Expression(Complex(Integer)) =>
             (poly_int$DenominatorIntegration(R, F))@DMap
-        (rf : RF, k : K, x : SE) : DREC +-> denint_dummy(rf)
+        (rf : RF, k : K, x : SY) : DREC +-> denint_dummy(rf)
 
     primint(f, x, k) ==
       lk := varselect([a for a in tower f | a ~= k], x)
@@ -257,7 +257,7 @@ ElementaryIntegration(R, F) : Exports == Implementation where
                   denint, ext)
       map((x1 : RF) : F+->multivariate(x1, k), r1.answer) + lfintegrate(r1.a0, x)
 
-    risch_de_solver(x3 : Integer, x4 : F, eta : F, x : SE) : PSOL2 ==
+    risch_de_solver(x3 : Integer, x4 : F, eta : F, x : SY) : PSOL2 ==
         risch_de_ext(x3, eta, x4, x
                     )$ElementaryRischDEX2(R, F)
 

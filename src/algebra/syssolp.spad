@@ -31,7 +31,7 @@ L        ==> List
 V        ==> Vector
 M        ==> Matrix
 UP       ==> SparseUnivariatePolynomial
-SE       ==> Symbol
+SY       ==> Symbol
 IE       ==> IndexedExponents Symbol
 SUP      ==> SparseUnivariatePolynomial
 
@@ -42,11 +42,11 @@ SystemSolvePackage(R) : Cat == Cap where
     PPR ==> Polynomial Polynomial R
 
     Cat == with
-       solve :    (L F,    L SE) -> L L EQ F
+       solve :    (L F,    L SY) -> L L EQ F
          ++ solve(lp, lv) finds the solutions of the list lp of
          ++ rational functions with respect to the list of symbols lv.
 
-       solve :    (L EQ F, L SE) -> L L EQ F
+       solve :    (L EQ F, L SY) -> L L EQ F
          ++ solve(le, lv) finds the solutions of the
          ++ list le of equations of rational functions
          ++ with respect to the list of symbols lv.
@@ -59,11 +59,11 @@ SystemSolvePackage(R) : Cat == Cap where
          ++ solve(le) finds the solutions of the list le of equations of
          ++ rational functions with respect to all symbols appearing in le.
 
-       solve :    (F, SE) ->  L EQ F
+       solve :    (F, SY) ->  L EQ F
          ++ solve(p, v) solves the equation p=0, where p is a rational function
          ++ with respect to the variable v.
 
-       solve :    (EQ F, SE) -> L EQ F
+       solve :    (EQ F, SY) -> L EQ F
          ++ solve(eq, v) finds the solutions of the equation
          ++ eq with respect to the variable v.
 
@@ -75,7 +75,7 @@ SystemSolvePackage(R) : Cat == Cap where
          ++ solve(eq) finds the solutions of the equation eq
          ++ with respect to the unique variable appearing in eq.
 
-       triangularSystems : (L F,    L SE) -> L L P R
+       triangularSystems : (L F,    L SY) -> L L P R
          ++ triangularSystems(lf, lv) solves the system of equations
          ++ defined by lf with respect to the list of symbols lv;
          ++ the system of equations is obtaining
@@ -86,10 +86,10 @@ SystemSolvePackage(R) : Cat == Cap where
 
     Cap == add
 
-       import from MPolyCatRationalFunctionFactorizer(IE, SE, R, P F)
+       import from MPolyCatRationalFunctionFactorizer(IE, SY, R, P F)
 
                      ---- Local Functions ----
-       linSolve : (L F,    L SE) -> Union(L EQ F, "failed")
+       linSolve : (L F,    L SY) -> Union(L EQ F, "failed")
        makePolys :   L EQ F     ->  L F
 
        makeR2F(r : R) : F == r :: (P R) :: F
@@ -100,7 +100,7 @@ SystemSolvePackage(R) : Cat == Cap where
          for v in lv repeat p := pushdown(p, v)
          retract p
                      ---- Local Functions ----
-       makeEq(p : P F, lv : L SE) : EQ F ==
+       makeEq(p : P F, lv : L SY) : EQ F ==
          z := last lv
          np := numer makeP2F p
          lx := variables np
@@ -110,21 +110,21 @@ SystemSolvePackage(R) : Cat == Cap where
            equation(x::P(R)::F, -coefficient(up, 0)/leadingCoefficient up)
          equation(np::F, 0$F)
 
-       varInF(v : SE) : F == v::P(R) :: F
+       varInF(v : SY) : F == v::P(R) :: F
 
-       newInF(n : Integer) : F==varInF new()$SE
+       newInF(n : Integer) : F==varInF new()$SY
 
-       testDegree(f : P R , lv : L SE) : Boolean ==
+       testDegree(f : P R , lv : L SY) : Boolean ==
          "or"/[degree(f,vv)>0 for vv in lv]
                     ---- Exported Functions ----
 
        -- solve a system of rational functions
-       triangularSystems(lf : L F, lv : L SE) : L L P R ==
+       triangularSystems(lf : L F, lv : L SY) : L L P R ==
            empty? lv => empty()
            empty? lf => empty()
            #lf = 1 =>
               p := numer(first lf)
-              fp := (factor p)$GeneralizedMultivariateFactorize(SE, IE, R, R, P R)
+              fp := (factor p)$GeneralizedMultivariateFactorize(SY, IE, R, R, P R)
               [[ff.factor] for ff in factorList fp | testDegree(ff.factor, lv)]
            dmp := DistributedMultivariatePolynomial(lv, P R)
            OV := OrderedVariableList(lv)
@@ -164,13 +164,13 @@ SystemSolvePackage(R) : Cat == Cap where
          solve(pol, first lv)
 
        -- general solver. Input in equation style  --
-       solve(eq : EQ F, var : SE)  == solve(lhs eq - rhs eq, var)
+       solve(eq : EQ F, var : SY)  == solve(lhs eq - rhs eq, var)
 
        -- general solver. Input in polynomial style  --
-       solve(pol : F, var : SE) ==
+       solve(pol : F, var : SY) ==
          if R has GcdDomain then
            p := primitivePart(numer pol, var)
-           fp := (factor p)$GeneralizedMultivariateFactorize(SE, IE, R, R, P R)
+           fp := (factor p)$GeneralizedMultivariateFactorize(SY, IE, R, R, P R)
            [makeEq(map(makeR2F, ff.factor)$PP2, [var]) for ff in factorList fp]
          else empty()
 
@@ -178,10 +178,10 @@ SystemSolvePackage(R) : Cat == Cap where
        makePolys(l : L EQ F) : L F == [lhs e - rhs e for e in l]
 
        -- linear systems solver. Input as list of polynomials  --
-       linSolve(lp : L F, lv : L SE) ==
+       linSolve(lp : L F, lv : L SY) ==
            rec:Record(particular:Union(V F,"failed"),basis:L V F)
            lr : L P R := [numer f for f in lp]
-           rec := linSolve(lr, lv)$LinearSystemPolynomialPackage(R, IE, SE, P R)
+           rec := linSolve(lr, lv)$LinearSystemPolynomialPackage(R, IE, SY, P R)
            rec.particular case "failed" => "failed"
            rhs := rec.particular :: V F
            zeron : V F := zero(#lv)
@@ -208,16 +208,16 @@ SystemSolvePackage(R) : Cat == Cap where
          solve(lr, lv)
 
        -- general solver. Input in equation style  --
-       solve(le : L EQ F, lv : L SE)  == solve(makePolys le, lv)
+       solve(le : L EQ F, lv : L SY)  == solve(makePolys le, lv)
 
-       checkLinear(lr : L F, vl : L SE) : Boolean ==
+       checkLinear(lr : L F, vl : L SY) : Boolean ==
          ld := [denom pol for pol in lr]
          for f in ld repeat
            if (or/[member?(x, vl) for x in variables f]) then return false
          and/[totalDegree(numer pol, vl) < 2 for pol in lr]
 
        -- general solver. Input in polynomial style  --
-       solve(lr : L F, vl : L SE) ==
+       solve(lr : L F, vl : L SY) ==
            empty? vl => empty()
            checkLinear(lr, vl) =>
                             -- linear system --
