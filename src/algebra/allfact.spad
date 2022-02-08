@@ -211,12 +211,9 @@ MPolyCatPolyFactorizer(E, OV, R, PPR) : C == T
  where
   R     :   EuclideanDomain
   E     :   OrderedAbelianMonoidSup
-    -- following type is required by PushVariables
   OV    :   OrderedSet  with
                  convert : % -> Symbol
                    ++ convert(x) converts x to a symbol
-                 variable : Symbol -> Union(%, "failed")
-                   ++ variable(s) makes an element from symbol s or fails.
   PR    ==> Polynomial R
   PPR   :   PolynomialCategory(PR, E, OV)
   NNI   ==> NonNegativeInteger
@@ -233,7 +230,14 @@ MPolyCatPolyFactorizer(E, OV, R, PPR) : C == T
              ---  Local Functions  ----
   T  == add
 
-     import from PushVariables(R, E, OV, PPR)
+     push_up(p : PR, nvars : List(SY), vars : List(OV)) : PPR ==
+         ground?(p) or empty?(nvars) => p::PPR
+         nv1 := first(nvars)
+         v1 := first(vars)
+         pu := univariate(p, nv1)
+         ppu := map(c +-> push_up(c, rest(nvars), rest(vars)), pu
+                   )$SparseUnivariatePolynomialFunctions2(PR, PPR)
+         multivariate(ppu, v1)
 
         ----  factorization of p ----
      factor(p : PPR) : Factored PPR ==
@@ -241,10 +245,13 @@ MPolyCatPolyFactorizer(E, OV, R, PPR) : C == T
        c := content p
        p := (p exquo c)::PPR
        vars : List OV := variables p
-       g : PR := retract pushdown(p, vars)
+       nvars : List(SY) := [convert(v) for v in vars]
+       nvals := [monomial(1, nv, 1)$PR for nv in nvars]
+       g : PR := retract(eval(p, vars, nvals))
        flist := factor(g)$GeneralizedMultivariateFactorize(SY, ISY, R, R, PR)
        ffact : List(Record(irr : PPR, pow : NNI))
-       ffact := [[pushup(u.factor::PPR, vars), u.exponent] for u in factorList flist]
+       ffact := [[push_up(u.factor, nvars, vars), u.exponent]
+                    for u in factorList(flist)]
        fcont := (unit flist)::PPR
        nilFactor(c*fcont, 1)*(_*/[primeFactor(ff.irr, ff.pow) for ff in ffact])
 
@@ -269,8 +276,6 @@ GeneralizedMultivariateFactorize(OV, E, S, R, P) : C == T
   OV    :   OrderedSet  with
                  convert : % -> Symbol
                    ++ convert(x) converts x to a symbol
-                 variable : Symbol -> Union(%, "failed")
-                   ++ variable(s) makes an element from symbol s or fails.
   E          :   OrderedAbelianMonoidSup
   P          :   PolynomialCategory(R, E, OV)
 
