@@ -223,19 +223,19 @@ MakeCachableSet(S : SetCategory) : Exports == Implementation where
            y := enterInCache(y, (x1 +-> (y::S = x1::S))@(% -> Boolean))
       position(x) = position(y)
 
-)abbrev domain KERNEL Kernel
+)abbrev category KERCAT KernelCategory
 ++ Operators applied to elements of a set
 ++ Author: Manuel Bronstein
 ++ Date Created: 22 March 1988
 ++ Description:
 ++ A kernel over a set S is an operator applied to a given list
 ++ of arguments from S.
-Kernel(S : Comparable) : Exports == Implementation where
+KernelCategory(S : Comparable) : Category == Exports where
   O  ==> OutputForm
   N  ==> NonNegativeInteger
   OP ==> BasicOperator
 
-  Exports ==> Join(CachableSet, OrderedSet, Patternable S) with
+  Exports ==> Join(OrderedSet, Patternable(S)) with
     name    : % -> Symbol
       ++ name(op(a1, ..., an)) returns the name of op.
     operator : % -> OP
@@ -258,6 +258,21 @@ Kernel(S : Comparable) : Exports == Implementation where
     is?     : (%, Symbol) -> Boolean
       ++ is?(op(a1, ..., an), s) tests if the name of op is s.
     if S has ConvertibleTo InputForm then ConvertibleTo InputForm
+
+
+)abbrev domain KERNEL Kernel
+++ Operators applied to elements of a set
+++ Author: Manuel Bronstein
+++ Date Created: 22 March 1988
+++ Description:
+++ A kernel over a set S is an operator applied to a given list
+++ of arguments from S.
+Kernel(S : Comparable) : Exports == Implementation where
+  O  ==> OutputForm
+  N  ==> NonNegativeInteger
+  OP ==> BasicOperator
+
+  Exports ==> Join(CachableSet, KernelCategory(S))
 
   Implementation ==> add
     import from SortedCache(%)
