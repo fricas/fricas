@@ -43,15 +43,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/wait.h>
 #include <signal.h>
 
-
 #include "edible.h"
-#include "bsdsignal.h"
 
+#include "e_buf.h"
 
-#include "bsdsignal.H1"
-#include "fnct_key.H1"
-#include "prt.H1"
-#include "edin.H1"
+#include "tio_funs.h"
 #include "strutil.h"
 
 
@@ -69,13 +65,15 @@ static char *defaulteditor = "clefedit";
 char editorfilename[100];
 
 
+static int get_key(int, char *);
+static int get_str(int, char *);
 
 /*
  * The following function environment variable clef editor. The command
  * should be the one that the user wishes to have execed
  */
 
-void
+static void
 set_editor_key(void)
 {
     int pid;
@@ -97,27 +95,25 @@ set_editor_key(void)
     *****/
 
 void
-define_function_keys(void)
-{
+define_function_keys(void) {
     char *HOME, path[1024], string[1024];
     int key;
     int fd;
     char type;
-    int length;
 
-    /** lets initialize the key pointers **/
-    for (key = 0; key < 13; key++)
+    /* initialize the key pointers */
+    for (key = 0; key < 13; key++) {
         (function_key[key]).str = NULL;
+    }
     /** see if the user has a .clef file       ***/
     HOME = getenv("HOME");
     sprintf(path, "%s/.clef", HOME);
     if ((fd = open(path, O_RDONLY)) == -1) {
         return;
-    }
-    else {
+    } else {
         /*** If so, then get the key bindings **/
         while ((key = get_key(fd, &type))) {
-            length = get_str(fd, string);
+            int length = get_str(fd, string);
             switch (type) {
               case 'D':
                 if (key == 12) {
@@ -125,8 +121,7 @@ define_function_keys(void)
                        "Clef Error: PF12 can only be of type E in .clef\n");
                     fprintf(stderr, "Line will be ignored\n");
                     type = -1;
-                }
-                else {
+                } else {
                     (function_key[key]).type = DELAYED;
                 }
                 break;
@@ -136,8 +131,7 @@ define_function_keys(void)
                        "Clef Error: PF12 can only be of type E in .clef\n");
                     fprintf(stderr, "Line will be ignored\n");
                     type = -1;
-                }
-                else {
+                } else {
                     (function_key[key]).type = IMMEDIATE;
                 }
                 break;
@@ -147,8 +141,7 @@ define_function_keys(void)
                        "Clef Error: PF12 can only be of type E in .clef\n");
                     fprintf(stderr, "Line will be ignored\n");
                     type = -1;
-                }
-                else {
+                } else {
                     (function_key[key]).type = SPECIAL;
                 }
                 break;
@@ -171,8 +164,7 @@ define_function_keys(void)
 #define defof(c) ((c == 'F' || c == 'D' || c == 'E')?(1):(0))
 
 int
-get_key(int fd,char * ty)
-{
+get_key(int fd,char * ty) {
 
     /*
      * Determines the key number being mapped, and whether it is immediate or
@@ -185,53 +177,44 @@ get_key(int fd,char * ty)
     if (nr != -1 && nr != 0) {
         if (!defof(keynum[0])) {
             return 0;
-        }
-        else {
+        } else {
             *ty = keynum[0];
             keynum[3] = '\0';
             return (atoi(&keynum[1]));
         }
-    }
-    else
+    } else {
         return 0;
+    }
 }
 
 int
-get_str(int fd,char * string)
-{
+get_str(int fd,char * string) {
     /** Gets the key mapping being bound **/
     char c;
     int count = 0;
     char *trace = string;
 
     read(fd, &c, 1);
-    while (c == ' ')
+    while (c == ' ') {
         read(fd, &c, 1);
+    }
     while (c != '\n') {
         count++;
         *trace++ = c;
-        if (read(fd, &c, 1) == 0)
+        if (read(fd, &c, 1) == 0) {
             break;
+        }
     }
     *trace = '\0';
     return count;
 }
 
 void
-null_fnct(int sig)
-{
-    return;
-}
-
-void
-handle_function_key(int key,int  chann)
-{
+handle_function_key(int key) {
     /** this procedure simply adds the string specified by the function key
       to the buffer                                               ****/
-    int count, fd;
+    int count;
     int amount = strlen(function_key[key].str);
-    int id;
-    int save_echo;
 
     /*** This procedure takes the character at in_buff[num_proc] and adds
       it to the buffer. It first checks to see if we should be inserting
@@ -240,112 +223,35 @@ handle_function_key(int key,int  chann)
     switch ((function_key[key]).type) {
       case IMMEDIATE:
         if (INS_MODE) {
-            forwardcopy(&buff[curr_pntr + amount],
-                        &buff[curr_pntr],
-                        buff_pntr - curr_pntr);
-            forwardflag_cpy(&buff_flag[curr_pntr + amount],
-                            &buff_flag[curr_pntr],
-                            buff_pntr - curr_pntr);
-            for (count = 0; count < amount; count++) {
-                buff[curr_pntr + count] = (function_key[key].str)[count];
-                buff_flag[curr_pntr + count] = '1';
-            }
-            ins_print(curr_pntr, amount + 1);
+            shift_buff_forward(curr_pntr, buff_pntr, amount);
             buff_pntr = buff_pntr + amount;
-        }
-        else {
+            store_buff_string(curr_pntr, amount, function_key[key].str, '1');
+            ins_print(curr_pntr, amount + 1);
+        } else {
+            store_buff_string(curr_pntr, amount, function_key[key].str, '1');
             for (count = 0; count < amount; count++) {
-                buff[curr_pntr + count] = (function_key[key].str)[count];
-                buff_flag[curr_pntr + count] = '1';
                 myputchar((function_key[key].str)[count]);
             }
         }
         num_proc = num_proc + 6;
         curr_pntr = curr_pntr + amount;
-        buff_pntr = buff_pntr + amount;
         send_function_to_child();
         break;
       case DELAYED:
         if (INS_MODE) {
-            forwardcopy(&buff[curr_pntr + amount],
-                        &buff[curr_pntr],
-                        buff_pntr - curr_pntr);
-            forwardflag_cpy(&buff_flag[curr_pntr + amount],
-                            &buff_flag[curr_pntr],
-                            buff_pntr - curr_pntr);
-            for (count = 0; count < amount; count++) {
-                buff[curr_pntr + count] = (function_key[key].str)[count];
-                buff_flag[curr_pntr + count] = '1';
-            }
+            shift_buff_forward(curr_pntr, buff_pntr, amount);
+            store_buff_string(curr_pntr, amount, function_key[key].str, '1');
             ins_print(curr_pntr, amount + 1);
             buff_pntr = buff_pntr + amount;
-        }
-        else {
+        } else {
+            store_buff_string(curr_pntr, amount, function_key[key].str, '1');
             for (count = 0; count < amount; count++) {
-                buff[curr_pntr + count] = (function_key[key].str)[count];
-                buff_flag[curr_pntr + count] = '1';
                 myputchar((function_key[key].str)[count]);
             }
         }
         num_proc = num_proc + 6;
         curr_pntr = curr_pntr + amount;
-        buff_pntr = buff_pntr + amount;
         fflush(stdout);
         break;
-      case SPECIAL:
-        /* fprintf(stderr, "Here I am \n"); */
-        if (access(editorfilename, F_OK) < 0) {
-            fd = open(editorfilename, O_RDWR | O_CREAT, 0666);
-            write(fd, buff, buff_pntr);
-            back_up(buff_pntr);
-            close(fd);
-        }
-        else {
-            if (buff_pntr > 0) {
-                fd = open(editorfilename, O_RDWR | O_TRUNC);
-                write(fd, buff, buff_pntr);
-                back_up(buff_pntr);
-                close(fd);
-            }
-        }
-        bsdSignal(SIGCHLD, null_fnct,RestartSystemCalls);
-        switch (id = fork()) {
-          case -1:
-            perror("Special key");
-            break;
-          case 0:
-            execlp((function_key[12]).str,
-                   (function_key[12]).str,
-                   editorfilename, NULL);
-            perror("Returned from exec");
-            exit(0);
-
-        }
-        while (wait((int *) 0) < 0);
-        /** now I should read that file and send all it stuff thru the
-                  reader                                            *****/
-        fd = open(editorfilename, O_RDWR);
-        if (fd == -1) {
-            perror("Opening temp file");
-            exit(-1);
-        }
-        num_proc += 6;
-
-        /** reinitialize the buffer  ***/
-        init_flag(buff_flag, buff_pntr);
-        init_buff(buff, buff_pntr);
-        /**  reinitialize my buffer pointers **/
-        buff_pntr = curr_pntr = 0;
-        /** reset the ring pointer **/
-        current = NULL;
-        save_echo = ECHOIT;
-        ECHOIT = 0;
-        while ((num_read = read(fd, in_buff, MAXLINE))) {
-            do_reading();
-        }
-        close(fd);
-        break;
     }
-    return;
-
 }

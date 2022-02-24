@@ -1,7 +1,5 @@
 fricas_c_runtime_extra = @fricas_c_runtime_extra@
 
-bin_PROGRAMS = htadd hypertex spadbuf hthits ex2ht
-
 # this is where to put the various commands
 OUTLIB=	$(fricas_target_libdir)
 
@@ -12,7 +10,6 @@ SCRIPTS=${OUTLIB}/htsearch ${OUTLIB}/presea
 
 BINFILES= $(fricas_target_bindir)/hypertex$(EXEEXT) \
 		$(fricas_target_bindir)/htadd$(EXEEXT) \
-		${OUTLIB}/spadbuf$(EXEEXT) \
 		${OUTLIB}/hthits$(EXEEXT) ${OUTLIB}/ex2ht$(EXEEXT)
 
 
@@ -23,12 +20,6 @@ HEADERS = $(addprefix $(srcdir)/, $(HEADERS_src) $(BITMAPS)) $(fricas_c_macros)
 
 
 build_libdir = $(abs_top_builddir)/src/lib
-
-bin_PROGRAMS = hypertex$(EXEEXT) \
-		htadd$(EXEEXT) \
-		spadbuf$(EXEEXT) \
-		ex2ht$(EXEEXT) \
-		hthits$(EXEEXT)
 
 hypertex_sources = addfile.c cond.c dialog.c display.c event.c extent1.c \
 		extent2.c form-ext.c group.c halloc.c hash.c hterror.c \
@@ -47,11 +38,6 @@ htadd_objects = $(htadd_sources:.c=.$(OBJEXT))
 htadd_LDADD = -L$(build_libdir) -lspad $(fricas_c_runtime_extra)
 htadd_DEPENDENCIES = $(build_libdir)/libspad.a
 
-
-spadbuf_sources = spadbuf.c
-spadbuf_objects = $(spadbuf_sources:.c=.$(OBJEXT))
-spadbuf_LDADD = -L$(build_libdir) -lspad $(fricas_c_runtime_extra)
-spadbuf_DEPENDENCIES = $(build_libdir)/libspad.a
 
 hthits_sources = hthits.c
 hthits_objects = $(hthits_sources:.c=.$(OBJEXT))
@@ -83,7 +69,6 @@ mostlyclean-local:
 	-rm -f $(hypertex_objects)
 	-rm -f $(htadd_objects)
 	-rm -f $(htsearch_objects)
-	-rm -f $(spadbuf_objects)
 	-rm -f $(hthits_objects)
 	-rm -f $(ex2ht_objects)
 	-rm -f stamp
@@ -122,6 +107,3 @@ $(fricas_target_bindir)/hypertex$(EXEEXT): $(hypertex_objects) $(hypertex_DEPEND
 	 ${CC} -g $(hypertex_objects) -o $@ $(hypertex_LDADD) \
 		$(FRICAS_X11_LDFLAGS) -lm
 
-${OUTLIB}/spadbuf$(EXEEXT): $(spadbuf_objects) $(spadbuf_DEPENDENCIES)
-	${CC} $(spadbuf_objects) -o $@ $(spadbuf_LDADD) \
-		$(FRICAS_X11_LDFLAGS) -lm

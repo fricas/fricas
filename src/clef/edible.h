@@ -31,6 +31,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#define Cursor_shape(x)
+
 extern int contNum;
 extern struct termios childbuf;   /** the childs normal operating termio   ***/
 
@@ -43,6 +45,7 @@ extern short PTY;   /* A flag which lets me know whether or not I am
                        talking to a PTY then I have to do things like echo
                       back newlines, and send interuppts with an eoln
                       */
+
 /***************************************************************************
     Here are the key mapping my routines need
 ****************************************************************************/
@@ -63,32 +66,6 @@ extern short PTY;   /* A flag which lets me know whether or not I am
 #define       _CNTRL_W 0X17    /**   cntrl-w, to back up a word       **/
 #define       _CARROT  0X5E    /** circumflex                         **/
 #define       _TAB     0X09    /** tab forward                        **/
-
-#ifndef WCT
-#define       _A       0X41    /**  A                                 **/
-#define       _B       0X42    /**  B                                 **/
-#define       _C       0X43    /**  C                                 **/
-#define       _D       0X44    /**  D                                 **/
-#define       _F       0X46    /**  F                                 **/
-#define       _Z       0X5A    /**  Z                                 **/
-#define       _H       0X48    /**  H                                 **/
-#define       _M       0X4D    /**  M                                 **/
-#define       _x       0X78    /**  x                                 **/
-#define       _z       0X7A    /*** z                                 **/
-#define       _twiddle 0X7E    /*** ~                                 **/
-#define       _P       0X50    /*** P                                 **/
-#define       _1       0X31    /*** 1                                 **/
-#define       _2       0X32    /*** 2                                 **/
-#define       _3       0X33    /*** 3                                 **/
-#define       _4       0X34    /*** 4                                 **/
-#define       _5       0X35    /*** 5                                 **/
-#define       _6       0X36    /*** 6                                 **/
-#define       _7       0X37    /*** 7                                 **/
-#define       _8       0X38    /*** 8                                 **/
-#define       _9       0X39    /*** 9                                 **/
-#define       _0       0X30    /*** 0                                 **/
-#define       _q       0X71    /*** q                                 **/
-#endif
 
 
 
@@ -126,16 +103,6 @@ extern char editorfilename[];
 
 #define flip(x)   (x?(x=0):(x=1))      /*** flip the bit                  ***/
 
-/*
-    All the previous commands will now be stored in a double linked list.
-  This way when I type a command I just have to circle through this list
-*/
-typedef struct que_struct {
-   char buff[1024];
-   int flags[1024];
-   struct que_struct *prev, *next;
-   } QueStruct;
-
 typedef struct wct {
     char *fname;
     off_t fsize;
@@ -153,48 +120,14 @@ typedef struct wix {
 } Wix;
 
 
-extern QueStruct *ring;
-extern QueStruct *current;
 extern int ring_size;
 extern int prev_check;
 extern int MAXRING;
-
-extern char buff[MAXLINE];                 /**  Buffers for collecting input and  **/
-extern int  buff_flag[MAXLINE];    /**     flags for whether buff chars
-                                           are printing
-                                           or non-printing                **/
 
 extern char in_buff[1024];   /**     buffer for characters read until they are
                                       processed                           **/
 extern int num_read;
 extern int num_proc;         /**   num chars processed after a read       **/
-extern int buff_pntr;        /**   present length of  buff                **/
-extern int curr_pntr;        /** the current position in buff             **/
-
-/** Here are a bunch of macros for edin.c. They are mostly just character
-        comparison stuff                                                  ***/
-#define back_word(x) (((*(x) == _5) && (*(x+1) == _9) && \
-                                        (*(x+2) == _q))?(1):(0))
-
-#define fore_word(x) (((*(x) == _6) && (*(x+1) == _8) && \
-                                        (*(x+2) == _q))?(1):(0))
-
-#define alt_f1(x) (((*(x) == _3) && (*(x+1) == _7) && \
-                                        (*(x+2) == _q))?(1):(0))
-
-#define cntrl_end(x) (((*(x) == _4) && (*(x+1) == _8) && \
-                                        (*(x+2) == _q))?(1):(0))
-
-#define insert_toggle(x) (((*(x) == _3) && (*(x+1) == _9) && \
-                                        (*(x+2) == _q))?(1):(0))
-
-#define end_key(x) (((*(x) == _4) && (*(x+1) == _6) && \
-                                        (*(x+2) == _q))?(1):(0))
-
-#define control_char(x) \
-     (((x >= 0x01) && (x <= 0x1a))?(1):(0))
-
-
 
 /***
    Some global defs needed for emulating a pty. This was taken from guru.h

@@ -48,6 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <bstring.h>
 #endif
 
+#include "e_buf.h"
 
 #include "edible.h"
 #include "com.h"
@@ -55,21 +56,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "bsdsignal.H1"
 #include "openpty.H1"
-#include "prt.H1"
-#include "edin.H1"
-#include "wct.H1"
-#include "edible.H1"
-#include "fnct_key.H1"
+#include "tio_funs.h"
 
 #ifdef FRICAS_UNLIKELY
 #define log 1
 #define logterm 1
 #define siglog 1
 #endif
-
-
-#define Cursor_shape(x)
-
 
 #ifdef siglog
 int sigfile;
@@ -98,10 +91,6 @@ short PTY;          /* Flag which tells me whether I should echo newlines */
 int MODE;    /* am I in cbreak, raw, or canonical */
 
 char in_buff[1024];   /* buffer for storing characters read until they are processed */
-char buff[MAXLINE];                 /**  Buffers for collecting input and  **/
-int  buff_flag[MAXLINE];      /**     flags for whether buff chars
-                                           are printing
-                                           or non-printing                **/
 
 
 char controllerPath[20];  /* path name for opening the controller side */
@@ -115,7 +104,15 @@ int logfd;
 char logpath[30];
 #endif
 
-
+static void check_flip(void);
+static void catch_signals(void);
+static void init_parent(void);
+static void set_function_chars(void);
+static void hangup_handler(int);
+static void terminate_handler(int);
+static void interrupt_handler(int);
+static void child_handler(int);
+static void alarm_handler(int);
 
 
 
@@ -125,7 +122,6 @@ main(int argc, char *argv[])
   fd_set rfds;                  /* the structure for the select call */
   int code;                    /* return code from system calls */
   char out_buff[MAXLINE];       /* from child and stdin */
-  int out_flag[MAXLINE] ; /* initialize the output flags */
   char *program;          /* a string to hold the child program invocation */
   char **pargs = 0;             /* holds parts of the command line */
   int not_command = 1;          /* a flag while parsing the command line */
@@ -145,9 +141,9 @@ main(int argc, char *argv[])
      argument -e should be last on the line. */
 
   while(*++argv && not_command) {
-    if(!strcmp(*argv, "-f"))
+    if(!strcmp(*argv, "-f")) {
       load_wct_file(*++argv);
-    else if(!strcmp(*argv, "-e")) {
+    } else if(!strcmp(*argv, "-e")) {
       not_command = 0;
       pargs = ++argv;
     }
@@ -240,7 +236,6 @@ main(int argc, char *argv[])
   ppid = getppid();
 
   /* Iinitialize some stuff for the reading and writing */
-  init_flag(out_flag, MAXLINE);
   define_function_keys();
   init_reader();
   PTY = 1;
@@ -299,11 +294,12 @@ main(int argc, char *argv[])
       if(num_read > 0) {
         /* now do the printing to the screen */
         if(MODE!= CLEFRAW) {
-          back_up(buff_pntr);
-          write(1,out_buff, num_read);
-          print_whole_buff();    /* reprint the input buffer */
+            back_up_and_blank(buff_pntr);
+            write(1,out_buff, num_read);
+            print_whole_buff();    /* reprint the input buffer */
+        } else {
+            write(1,out_buff, num_read);
         }
-        else write(1,out_buff, num_read);
       }
     } /* done the child stuff */
     /* I should read from std input */
@@ -325,7 +321,7 @@ main(int argc, char *argv[])
 }
 
 
-void
+static void
 init_parent(void)
 {
 
@@ -371,7 +367,7 @@ init_parent(void)
 }
 
 
-void
+static void
 hangup_handler(int sig)
 {
 #ifdef siglog
@@ -393,7 +389,7 @@ hangup_handler(int sig)
   exit(-1);
 }
 
-void
+static void
 terminate_handler(int sig)
 {
 #ifdef siglog
@@ -415,7 +411,7 @@ terminate_handler(int sig)
   exit(0);
 }
 
-void
+static void
 interrupt_handler(int sig)
 {
 #ifdef siglog
@@ -427,7 +423,7 @@ interrupt_handler(int sig)
   kill(child_pid, SIGINT);
 }
 
-void
+static void
 child_handler(int sig)
 {
 #ifdef siglog
@@ -449,7 +445,7 @@ child_handler(int sig)
   exit(0);
 }
 
-void
+static void
 alarm_handler(int sig)
 {
   int newppid = getppid();
@@ -479,7 +475,7 @@ alarm_handler(int sig)
 }
 
 /* a procedure which tells my parent how to catch signals from its children */
-void
+static void
 catch_signals(void)
 {
 #ifdef siglog
@@ -499,7 +495,7 @@ catch_signals(void)
 /* Here is where I check the child's termio settings, and try to copy them.
    I simply trace through the main modes (CLEFRAW,  CLEFCANONICAL) and
    try to simulate them */
-void
+static void
 check_flip(void)
 {
   return;
@@ -528,39 +524,10 @@ check_flip(void)
 #endif
 }
 
-
-
-void
-flip_raw(int chann)
-{
-
-  if(MODE == CLEFCANONICAL)
-    send_buff_to_child(chann);
-
-  if(tcsetattr(0, TCSAFLUSH, &rawbuf) == -1) {
-    perror("clef resetting parent to raw ");
-    exit(-1);
-  }
-}
-
-
-void
-flip_canonical(int chann)
-{
-  if(tcsetattr(0, TCSAFLUSH, &canonbuf) == -1) {
-    perror("clef resetting parent to canonical ");
-    exit(-1);
-  }
-  if(INS_MODE)
-    Cursor_shape(5);
-  else
-    Cursor_shape(2);
-}
-
 #define etc_whitespace(c) ((c == ' ' || c == '\t')?(1):(0))
 
 
-void
+static void
 set_function_chars(void)
 {
   /* get the special characters */

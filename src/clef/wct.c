@@ -53,19 +53,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* #define PINFO *//* A flag to suppress printing of the file info */
 
-#define WCT                     /* A flag needed because ctype.h stole some
-                                 * of my constants */
 #include "edible.h"
+
+#include "e_buf.h"
 
 #define MAX_PREFIX 1024
 #define strneql(a,b,n)  (*(a) == *(b) && !strncmp((a),(b),(n)))
-#define Delimiter(c) (! isalnum(c) && c != '%' && c != '!' && c != '?' && c != '_')
+#define Delimiter(c) (!isalnum(c) && c != '%' && c != '!' && \
+                      c != '?' && c != '_')
 
 
-#include "wct.H1"
-#include "prt.H1"
-#include "edin.H1"
-
+#include "tio_funs.h"
 
 
 static Wct *pwct = 0;
@@ -74,29 +72,49 @@ static Wix curr_wix;
 static char curr_prefix[MAX_PREFIX];
 static Wct *pHeadwct;
 
-time_t
-ftime(char *path)
-{
+static Wct * intern1Wct(char *);
+static void reintern1Wct(Wct *);
+static void burst1Wct(Wct *);
+static Wct * read1Wct(char *);
+static Wct * reread1Wct(Wct *);
+static void sfatal(char *);
+static void skimWct(Wct *);
+static Wix * rescanWct(void);
+static Wix * scanWct(Wct *, char *);
+static off_t fsize(char *);
+static void fatal(char *, char *);
+
+#ifdef PINFO
+static const int do_pinfo = 1;
+#else
+static const int do_pinfo = 0;
+#endif
+
+static void skim1Wct(Wct *);
+static void printTime(long *);
+static int skimString(char *, int, int, int);
+static int prChar(int);
+
+
+static time_t
+ftime(char *path) {
     int rc;
     struct stat stbuf;
 
-    rc = stat(path, &stbuf);
-    if (rc == -1)
+    if ((rc = stat(path, &stbuf)) == -1) {
         fatal("Cannot deterimine status of %s.", path);
-
+    }
     return stbuf.st_mtime;
 }
 
-off_t
-fsize(char *path)
-{
+static off_t
+fsize(char *path) {
     int rc;
     struct stat stbuf;
 
-    rc = stat(path, &stbuf);
-    if (rc == -1)
+    if ((rc = stat(path, &stbuf)) == -1) {
         fatal("Cannot deterimine status of %s.", path);
-
+    }
     return stbuf.st_size;
 }
 
@@ -106,9 +124,8 @@ fsize(char *path)
  */
 
 
-Wix *
-scanWct(Wct *pwct, char *prefix)
-{
+static Wix *
+scanWct(Wct *pwct, char *prefix) {
     long fmod;
     int preflen, i, wc;
     char **wv;
@@ -123,26 +140,24 @@ scanWct(Wct *pwct, char *prefix)
     for (; pwct; pwct = pwct->next) {
         curr_wix.pwct = pwct;
 
-
-
         fmod = ftime(pwct->fname);
-        if (fmod > pwct->ftime)
+        if (fmod > pwct->ftime) {
             reintern1Wct(pwct);
-
+        }
         wv = pwct->wordv;
         wc = pwct->wordc;
         for (i = 0; i < wc; i++) {
             curr_wix.word = i;
-            if (strneql(wv[i], prefix, preflen))
+            if (strneql(wv[i], prefix, preflen)) {
                 return &curr_wix;
+            }
         }
     }
     return 0;
 }
 
-Wix *
-rescanWct(void)
-{
+static Wix *
+rescanWct(void) {
   Wct *pwct, *start_pwct;
   int preflen, start_word, i, wc;
   char **wv, *prefix;
@@ -164,39 +179,42 @@ rescanWct(void)
   wv = pwct->wordv;
   wc = pwct->wordc;
   for (i = start_word + 1; i < wc; i++) {
-    curr_wix.word = i;
-    if (strneql(wv[i], prefix, preflen))
-      return &curr_wix;
+      curr_wix.word = i;
+      if (strneql(wv[i], prefix, preflen)) {
+          return &curr_wix;
+      }
   }
 
   /*
    * Finish to the end of the list, doing whole structures.
    */
   for (pwct = pwct->next; pwct; pwct = pwct->next) {
-    curr_wix.pwct = pwct;
+      curr_wix.pwct = pwct;
 
-    wv = pwct->wordv;
-    wc = pwct->wordc;
-    for (i = 0; i < wc; i++) {
-      curr_wix.word = i;
-      if (strneql(wv[i], prefix, preflen))
-        return &curr_wix;
-    }
+      wv = pwct->wordv;
+      wc = pwct->wordc;
+      for (i = 0; i < wc; i++) {
+          curr_wix.word = i;
+          if (strneql(wv[i], prefix, preflen)) {
+              return &curr_wix;
+          }
+      }
   }
 
   /*
    * Restart at beginning, doing whole structures.
    */
   for (pwct = pHeadwct; pwct != start_pwct; pwct = pwct->next) {
-    curr_wix.pwct = pwct;
+      curr_wix.pwct = pwct;
 
-    wv = pwct->wordv;
-    wc = pwct->wordc;
-    for (i = 0; i < wc; i++) {
-      curr_wix.word = i;
-      if (strneql(wv[i], prefix, preflen))
-        return &curr_wix;
-    }
+      wv = pwct->wordv;
+      wc = pwct->wordc;
+      for (i = 0; i < wc; i++) {
+          curr_wix.word = i;
+          if (strneql(wv[i], prefix, preflen)) {
+              return &curr_wix;
+          }
+      }
   }
 
   /*
@@ -206,9 +224,10 @@ rescanWct(void)
   wv = pwct->wordv;
   wc = pwct->wordc;
   for (i = 0; i <= start_word; i++) {
-    curr_wix.word = i;
-    if (strneql(wv[i], prefix, preflen))
-      return &curr_wix;
+      curr_wix.word = i;
+      if (strneql(wv[i], prefix, preflen)) {
+          return &curr_wix;
+      }
   }
 
   /* Not found? */
@@ -218,20 +237,20 @@ rescanWct(void)
 /*
  * Summarize a table.
  */
-void
-skimWct(Wct *pwct)
-{
-  while (pwct) {
-#ifdef PINFO
-    skim1Wct(pwct);
-#endif
-    pwct = pwct->next;
-  }
+static void
+skimWct(Wct *pwct) {
+    while (pwct) {
+        if (do_pinfo) {
+            skim1Wct(pwct);
+        }
+        pwct = pwct->next;
+    }
 }
 
-void
-skim1Wct(Wct *pwct)
-{
+/* Section only used for PINFO */
+
+static void
+skim1Wct(Wct *pwct) {
 #define NHEAD    13
 #define NTAIL    7
 
@@ -256,9 +275,8 @@ skim1Wct(Wct *pwct)
 #endif
 }
 
-void
-printTime(long *clock)
-{
+static void
+printTime(long *clock) {
     struct tm *tm;
 
     tm = localtime((time_t *)clock);
@@ -267,52 +285,54 @@ printTime(long *clock)
            tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
-int
-skimString(char *s, int slen,int  nhead,int  ntail)
-{
+static int
+skimString(char *s, int slen,int  nhead,int  ntail) {
     int spos, tlen, i, cc;
 
     cc = printf("\"");
-    for (spos = 0; spos < slen && cc <= nhead; spos++)
+    for (spos = 0; spos < slen && cc <= nhead; spos++) {
         cc += prChar(s[spos]);
+    }
 
     /* Assume same tail has the same multi-character format ratio. */
     tlen = ntail * ((1.0 * spos) / nhead);
 
-    if (spos + tlen >= slen)
-        for (; spos < slen; spos++)
+    if (spos + tlen >= slen) {
+        for (; spos < slen; spos++) {
             cc += prChar(s[spos]);
-    else {
+        }
+    } else {
         cc += printf("\"...\"");
-        for (i = slen - tlen; i < slen; i++)
+        for (i = slen - tlen; i < slen; i++) {
             cc += prChar(s[i]);
+        }
     }
     cc += printf("\"");
     return cc;
 }
 
-int
-prChar(int c)
-{
-    if (c == '\n')
+static int
+prChar(int c) {
+    if (c == '\n') {
         return printf("\\n");
-    if (c == '\t')
+    } else if (c == '\t') {
         return printf("\\t");
-    if (c == '\b')
+    } else if (c == '\b') {
         return printf("\\b");
-    if (c == '"')
+    } else if (c == '"') {
         return printf("\\\"");
-    if (iscntrl(c))
+    } else if (iscntrl(c)) {
         return printf("^%c", (c + 0100) % 0200);
-    if (isascii(c))
+    } else if (isascii(c)) {
         return printf("%c", c);
-
+    }
     return printf("\\%d", c);
 }
 
-Wct *
-reread1Wct(Wct *pwct)
-{
+/* End of section only used for PINFO */
+
+static Wct *
+reread1Wct(Wct *pwct) {
     int fd, rc;
 
     /* Check information about the file. */
@@ -320,34 +340,36 @@ reread1Wct(Wct *pwct)
     pwct->ftime = ftime(pwct->fname);
 
     /* Allocate space for file image */
-    if (pwct->fimage)
+    if (pwct->fimage) {
         free(pwct->fimage);
+    }
     pwct->fimage = (char *) malloc(pwct->fsize + 1);
-    if (pwct->fimage == 0)
+    if (pwct->fimage == 0) {
         sfatal("Cannot allocate new table.");
+    }
     pwct->fimage[pwct->fsize] = 0;
 
     /* Read file into buffer. */
     fd = open(pwct->fname, O_RDONLY);
-    if (fd == -1)
+    if (fd == -1) {
         fatal("Cannot read file %s.", pwct->fname);
+    }
     rc = read(fd, pwct->fimage, pwct->fsize);
-    if (rc != pwct->fsize)
+    if (rc != pwct->fsize) {
         fatal("Did not read all of file %s.", pwct->fname);
-
+    }
     return pwct;
 }
 
-Wct *
-read1Wct(char *fname)
-{
+static Wct *
+read1Wct(char *fname) {
     Wct *pwct;
 
     /* Allocate a new link for this file. */
     pwct = (Wct *) malloc(sizeof(Wct));
-    if (pwct == 0)
+    if (pwct == 0) {
         sfatal("Cannot allocate new table.");
-
+    }
     pwct->fname = fname;
     pwct->wordc = 0;
     pwct->wordv = 0;
@@ -357,59 +379,27 @@ read1Wct(char *fname)
     return reread1Wct(pwct);
 }
 
-Wct *
-nconcWct(Wct *pwct,Wct * qwct)
-{
+static Wct *
+nconcWct(Wct *pwct,Wct * qwct) {
     Wct *p0 = pwct;
 
-    if (!p0)
+    if (!p0) {
         return qwct;
-
-    while (pwct->next)
+    }
+    while (pwct->next) {
         pwct = pwct->next;
+    }
     pwct->next = qwct;
 
     return p0;
-}
-
-void
-sortWct(Wct *pwct)
-{
-    while (pwct) {
-        sort1Wct(pwct);
-        pwct = pwct->next;
-    }
-}
-
-void
-sort1Wct(Wct *pwct)
-{
-    qsort((char *) pwct->wordv, pwct->wordc,
-          sizeof(*(pwct->wordv)), mystrcmp);
-}
-
-int
-mystrcmp(const void *s1,const void * s2)
-{
-    return strcmp(*(char **)s1, *(char **)s2);
 }
 
 /*
  * Break wct struct into words.
  */
 
-void
-burstWct(Wct *pwct)
-{
-    while (pwct) {
-        burst1Wct(pwct);
-        pwct = pwct->next;
-    }
-}
-
-void
-burst1Wct(Wct *pwct)
-{
+static void
+burst1Wct(Wct *pwct) {
     char *s, **wv;
     int i, j, inword = 0;
 
@@ -418,34 +408,35 @@ burst1Wct(Wct *pwct)
         if (isspace(*s) || iscntrl(*s)) {
             *s = 0;
             inword = 0;
-        }
-        else if (!inword) {
+        } else if (!inword) {
             inword = 1;
             pwct->wordc++;
         }
     }
 
-    if (pwct->wordv)
+    if (pwct->wordv) {
         free(pwct->wordv);
+    }
     pwct->wordv = (char **) calloc(pwct->wordc + 1, sizeof(char *));
-    if (!pwct->wordv)
+    if (!pwct->wordv) {
         fatal("Could not make word list for %s.", pwct->fname);
-
+    }
     s = pwct->fimage;
     i = 0;
     for (wv = pwct->wordv, j = 0; j < pwct->wordc; wv++, j++) {
-        while (i < pwct->fsize && !s[i])
+        while (i < pwct->fsize && !s[i]) {
             i++;
+        }
         *wv = s + i;
-        while (i < pwct->fsize && s[i])
+        while (i < pwct->fsize && s[i]) {
             i++;
+        }
     }
     *wv = 0;
 }
 
-Wct *
-intern1Wct(char *fname)
-{
+static Wct *
+intern1Wct(char *fname) {
     Wct *pwct;
 
     pwct = read1Wct(fname);
@@ -453,22 +444,19 @@ intern1Wct(char *fname)
     return pwct;
 }
 
-void
-reintern1Wct(Wct *pwct)
-{
+static void
+reintern1Wct(Wct *pwct) {
     reread1Wct(pwct);
     burst1Wct(pwct);
 }
 
-void
-sfatal(char *s)
-{
+static void
+sfatal(char *s) {
     fatal("%s", s);
 }
 
-void
-fatal(char *fmt,char * s)
-{
+static void
+fatal(char *fmt,char * s) {
     static char fbuf[256];
 
     sprintf(fbuf, fmt, s);
@@ -481,15 +469,59 @@ fatal(char *fmt,char * s)
 
 /* load up the wct database */
 void
-load_wct_file(char *fname)
-{
-    pwct = nconcWct(intern1Wct(fname), pwct);
+load_wct_file(char * fn) {
+    pwct = nconcWct(intern1Wct(fn), pwct);
 }
 
 void
-skim_wct(void)
-{
+skim_wct(void) {
     skimWct(pwct);
+}
+
+
+static void
+do_replace_wct(int b, int old_len, char * new_word, int e) {
+    int new_len = strlen(new_word);
+    int diff = new_len - old_len;
+    int ncs = e + diff;
+    int i, char_cnt = 0;
+    /* Move cursor to the start of word, count characters
+       so we know difference in print length. */
+    for(i = b; i < curr_pntr; i += dist_right(i)) {
+        putchar(_BKSPC);
+        char_cnt++;
+    }
+    for(; i < b + old_len; i += dist_right(i)) {
+        char_cnt++;
+    }
+    shift_buff(curr_pntr, buff_pntr, diff);
+    buff_pntr += diff;
+    store_buff_string(b, new_len, new_word, 1);
+
+    /* Print characters to the end of line */
+    printbuff(b, buff_pntr - b);
+
+    /* Subtract number of characters in new word from old count */
+    for(i = b; i < b + new_len; i +=  dist_right(i)) {
+        char_cnt--;
+    }
+    /* now blank out the characters out on the end of this line. */
+    for(i = 0; i < char_cnt; i++) {
+            myputchar(' ');
+    }
+
+    /* move back to end of line */
+    for(i = 0; i < char_cnt; i++) {
+            myputchar(_BKSPC);
+    }
+
+    /* now move back to ncs */
+    for(i = ncs; i < buff_pntr; i += dist_right(i)) {
+            putchar(_BKSPC);
+    }
+
+    fflush(stdout);
+    curr_pntr = ncs;
 }
 
 /*
@@ -500,24 +532,20 @@ skim_wct(void)
 
 
 void
-rescan_wct(void)
-{
+rescan_wct(void) {
     int b = curr_pntr - 1;
     int old_len;
-    int new_len;
-    int diff;
-    int i;
-    int ncs = 0;
 
     /*
      * first thing I should do is find my way back to the beginning of the
      * word
      */
-    while (b && !Delimiter(buff[b]))
+    while (b && !Delimiter(get_buff(b))) {
         b--;
-    if (Delimiter(buff[b]))
+    }
+    if (Delimiter(get_buff(b))) {
         b++;
-
+    }
     old_len = curr_pntr - b;
 
     pwix = rescanWct();
@@ -525,112 +553,14 @@ rescan_wct(void)
     if (!pwix) {
         putchar(_BELL);
         fflush(stdout);
-    }
-    else {
+    } else {
         Wct *pwct = pwix->pwct;  /* start replacing it */
-
-        new_len = strlen(pwct->wordv[pwix->word]);
-        if (new_len > old_len) {
-
-            /*
-             * I have to just slide the characters forward a bit, stuff in
-             * the new characters, and then adjust curr_pntr
-             */
-            diff = new_len - old_len;
-            if (curr_pntr != buff_pntr) {
-                forwardcopy(&buff[curr_pntr + diff],
-                            &buff[curr_pntr],
-                            buff_pntr - curr_pntr);
-                forwardflag_cpy(&buff_flag[curr_pntr + diff],
-                                &buff_flag[curr_pntr],
-                                buff_pntr - curr_pntr);
-            }
-            buff_pntr += diff;
-            ncs = curr_pntr + diff;
-
-            /* Now insert the new word */
-            for (i = 0; i < new_len; i++)
-                buff[b + i] = (pwct->wordv[pwix->word])[i];
-
-            /* move cursor to the beginning of the word */
-            for (; curr_pntr != b; curr_pntr--)
-                putchar(_BKSPC);
-
-            /** now print the characters on the rest of the line **/
-            printbuff(curr_pntr, buff_pntr - curr_pntr);
-
-            /* now move bcak the number of characters I want to */
-            for (i = buff_pntr; i != ncs; i--)
-                putchar(_BKSPC);
-
-            fflush(stdout);
-
-            curr_pntr = ncs;
-        }
-        else if (new_len < old_len) {
-            /* this time I simply copy backwards and do the substituting */
-            diff = old_len - new_len;
-            strncpy(&buff[curr_pntr - diff],
-                    &buff[curr_pntr],
-                    buff_pntr - curr_pntr);
-            flagncpy(&buff_flag[curr_pntr - diff],
-                    &buff_flag[curr_pntr],
-                    buff_pntr - curr_pntr);
-            buff_pntr -= diff;
-            ncs = curr_pntr - diff;
-
-            /* Now insert the new word */
-            for (i = 0; i < new_len; i++)
-                buff[b + i] = (pwct->wordv[pwix->word])[i];
-
-            /* move cursor to the beginning of the word */
-            for (; curr_pntr != b; curr_pntr--)
-                putchar(_BKSPC);
-
-            /** now print the characters on the rest of the line **/
-            printbuff(b, buff_pntr - b);
-
-            /* now blank out the characters out on the end of this line */
-            for (i = 0; i < diff; i++)
-                myputchar(' ');
-
-            /* now move back the number of characters I want to */
-            for (i = buff_pntr + diff; i != ncs; i--)
-                putchar(_BKSPC);
-
-            fflush(stdout);
-
-            curr_pntr = ncs;
-        }
-        else {
-            diff = 0;
-            ncs = curr_pntr;
-            /* Now insert the new word */
-            for (i = 0; i < new_len; i++)
-                buff[b + i] = (pwct->wordv[pwix->word])[i];
-
-            /* move cursor to the beginning of the word */
-            for (; curr_pntr != b; curr_pntr--)
-                putchar(_BKSPC);
-
-            /** now print the characters on the rest of the line **/
-            printbuff(curr_pntr, buff_pntr - curr_pntr);
-
-            /* now move back the number of characters I want to */
-            for (i = buff_pntr; i != ncs; i--)
-                putchar(_BKSPC);
-
-            fflush(stdout);
-
-            curr_pntr = ncs;
-        }
+        do_replace_wct(b, old_len, pwct->wordv[pwix->word], curr_pntr);
     }
 }
 
 void
-find_wct(void)
-{
-
+find_wct(void) {
     char search_buff[100];
     char *filler = search_buff;
     int b = curr_pntr - 1;
@@ -639,9 +569,6 @@ find_wct(void)
     int st;
     Wix *pwix;
     int curr_len;
-    int new_len;
-    int diff;
-    int i;
 
     /*
      * First thing I do is try and construct the string to be searched for.
@@ -654,13 +581,14 @@ find_wct(void)
         return;
     }
     /* then get back to the first blank or back to the beginning */
-    while (b && !Delimiter(buff[b]))
+    while (b && !Delimiter(get_buff(b))) {
         b--;
-    if (Delimiter(buff[b]))
+    }
+    if (Delimiter(get_buff(b))) {
         b++;
-
+    }
     /* At the same time, let me find the end of the word */
-    while (e < buff_pntr && !Delimiter(buff[e])) {
+    while (e < buff_pntr && !Delimiter(get_buff(e))) {
         e++;
         ne++;
     }
@@ -669,62 +597,19 @@ find_wct(void)
     curr_len = e - b;
 
     /* now simply copy the text forward */
-    while (b < curr_pntr)
-        *filler++ = buff[b++];
+    while (st < curr_pntr) {
+        *filler++ = get_buff(st++);
+    }
 
     *filler = '\0';
 
     pwix = scanWct(pwct, search_buff);
 
-    /*
-     * else pwix = rescanWct();
-     */
-
     if (!pwix) {
         putchar(_BELL);
         fflush(stdout);
-    }
-    else {
+    } else {
         Wct *pwct = pwix->pwct;
-
-        /*
-         * printf("Found %s in file %s\n", pwct->wordv[pwix->word],
-         * pwct->fname);
-         */
-        /* copy them buffer into where it should be */
-        new_len = strlen(pwct->wordv[pwix->word]);
-        diff = new_len - curr_len;
-        if (curr_pntr != buff_pntr) {
-            forwardcopy(&buff[curr_pntr + diff],
-                        &buff[curr_pntr],
-                        buff_pntr - curr_pntr);
-            forwardflag_cpy(&buff_flag[curr_pntr + diff],
-                            &buff_flag[curr_pntr],
-                            buff_pntr - curr_pntr);
-        }
-        buff_pntr += diff;
-
-
-        /* Now insert the new characters */
-        for (i = new_len - diff; i < new_len; i++)
-            buff[st + i] = (pwct->wordv[pwix->word])[i];
-
-        /* Now move the cursor forward to the end of the word */
-        for (i = 0; i < diff; i++)
-            putchar(buff[curr_pntr++]);
-
-        /** now print the characters on the rest of the line **/
-        printbuff(curr_pntr, buff_pntr - curr_pntr);
-
-        /* now move bcak the number of characters I want to */
-        for (i = buff_pntr; i != e + diff; i--)
-            putchar(_BKSPC);
-
-        fflush(stdout);
-
-        curr_pntr = diff + e;
-
+        do_replace_wct(b, curr_len, pwct->wordv[pwix->word], e);
     }
-
-
 }

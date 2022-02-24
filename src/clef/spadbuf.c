@@ -44,16 +44,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>
 
 #include "bsdsignal.h"
+
+#include "e_buf.h"
 #include "edible.h"
 #include "com.h"
 
 #include "bsdsignal.H1"
 #include "sockio-c.H1"
-#include "edin.H1"
-#include "wct.H1"
-#include "prt.H1"
-#include "cursor.H1"
-#include "fnct_key.H1"
+
+#include "tio_funs.h"
 
 unsigned char _INTR, _QUIT, _ERASE, _KILL, _EOF, _EOL, _RES1, _RES2;
 int contNum;                    /* do reading and all the other fun stuff
@@ -75,9 +74,6 @@ int MODE;                  /* Am I in cbreak, raw, or canonical */
 
 char in_buff[1024];        /* buffer for storing characters read
                               until they are processed */
-char buff[MAXLINE];        /* Buffers for collecting input and */
-int  buff_flag[MAXLINE];   /* flags for whether buff chars
-                              are printing or non-printing */
 int (*old_handler) ();
 Sock *session_sock, *menu_sock;
 char *buff_name = NULL;    /* name for the aixterm */
@@ -127,9 +123,9 @@ interp_io(void)
         }
         if (FD_ISSET(session_sock->socket, &rd)) {
             len = sread(session_sock, buf, 1024, "stdio");
-            if (len == -1)
+            if (len == -1) {
                 return;
-            else {
+            } else {
                 write(1, buf, len);
             }
         }
@@ -196,7 +192,6 @@ init_parent(void)
     spadbuf_function_chars();
     INS_MODE = 0;
     ECHOIT = 1;
-    Cursor_shape(2);
 }
 
 int
@@ -225,10 +220,11 @@ main(int argc,char **  argv)
     }
     skim_wct();
 
-    session_sock = connect_to_local_server(SessionServer, InterpWindow, Forever);
+    session_sock = connect_to_local_server(SessionServer, InterpWindow,
+                                           Forever);
     menu_sock = connect_to_local_server(MenuServerName, InterpWindow, Forever);
 
-    bsdSignal(SIGINT, spadbuf_inter_handler,RestartSystemCalls);
+    bsdSignal(SIGINT, spadbuf_inter_handler, RestartSystemCalls);
 
     /*
      * set contNum so it is pointing down the socket to the children
