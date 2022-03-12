@@ -1354,6 +1354,17 @@ DoubleFloatSpecialFunctions2() : with
     Si : DoubleFloat -> DoubleFloat
     Chi : DoubleFloat -> DoubleFloat
     Shi : DoubleFloat -> DoubleFloat
+    airyAi : DoubleFloat -> DoubleFloat
+    airyAi : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    airyAiPrime : DoubleFloat -> DoubleFloat
+    airyAiPrime : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    airyBi : DoubleFloat -> DoubleFloat
+    airyBi : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    airyBiPrime : DoubleFloat -> DoubleFloat
+    airyBiPrime : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    hypergeometric0F1 : (DoubleFloat, DoubleFloat) -> DoubleFloat
+    hypergeometric0F1 : (Complex(DoubleFloat), Complex(DoubleFloat)) ->
+                          Complex(DoubleFloat)
 
   == add
 
@@ -1568,6 +1579,225 @@ DoubleFloatSpecialFunctions2() : with
     Shi(x : DoubleFloat) ==
         to_sf(Shi(bfx))
 
+    one_over_nine := 1$DF/(9::DF)
+    one_over_three := 1$DF/(3::DF)
+    two_over_three := (2::DF)/(3::DF)
+    four_over_three := (4::DF)/(3::DF)
+    five_over_three := (5::DF)/(3::DF)
+
+    -- 3^(-2/3)/Gamma(2/3)
+    ai_c1 := 0.3550280538_8781723926::DF
+
+    -- -3^(-1/3)/Gamma(1/3)
+    ai_c2 := -0.2588194037_9280679840::DF
+
+    -- 1/(%pi*sqrt(3))
+    ai_c3 := 0.1837762984_7393068317::DF
+
+    -- (3)^(-2/3)*(1/(2*Gamma(2/3)))
+    aip_c2 := 0.1775140269_4390861963::DF
+
+    -- 3^(-1/6)/Gamma(2/3)
+    bi_c1 := 0.6149266274_4600073515::DF
+
+    -- 3^(1/6)/Gamma(1/3)
+    bi_c2 := 0.4482883573_5382635791_48::DF
+
+    -- (3)^(-1/6)*(1/(2*Gamma(2/3)))
+    bip_c2 := 0.3074633137_2300036757_54::DF
+
+    -- 1/sqrt(3)
+    s3_inv := 0.5773502691_8962576450_91::DF
+
+    -- Luke version of Bessel asymptitics.  See:
+    --  Y. L. Luke,
+    --  Some remarks on uniform asymptotic expansions for Bessel functions,
+    --  Comp. & Maths. with Appls. Vol. I, pp. 285-290.
+    --
+    -- Formula modified so that it works also for v = 0
+    sum_cg(Fl) ==>
+        r0 := a_k3 := 1$Fl
+        r1 := a_k2 := -uv/8::Fl
+        res := a_k1 := 9*uv*uv/(128::Fl)
+        for k in 3..l repeat
+            k21 := 2*k - 1
+            ak := uv*(-k21*k21*a_k1 + k21*(k21 - 4)*u2*a_k3)/(8*k)::Fl
+            res := res + ak
+            a_k3 := a_k2
+            a_k2 := a_k1
+            a_k1 := ak
+        res := r1 + res
+        r0 + res
+
+    sum_c_DF(uv : DF, u2 :DF, l : Integer) : DF ==
+        sum_cg(DF)
+
+    sum_c_CDF(uv : CDF, u2 : CDF, l : Integer) : CDF ==
+        sum_cg(CDF)
+
+    bessKag(Fl, sum_c_Fl) ==>
+        vz := v/z
+        s : Fl := sqrt(1 + vz^2)
+        u := vz/s
+        uv := 1/(z*s)
+        vzeta := z*s + v*log(1/(s + vz))
+        sc := sum_c_Fl(uv, u*u, 30)
+        (1/zs)*sqrt(c_pi*(1/(2::Fl*s)))*exp(-vzeta)*sc
+
+    bessKa_DF(v : DF, z : DF, zs : DF) : DF ==
+        bessKag(DF, sum_c_DF)
+
+    bessKa_CDF(v : CDF, z : CDF, zs : CDF) : CDF ==
+        bessKag(CDF, sum_c_CDF)
+
+    hyp_serg(Fl) ==>
+        s := 0$Fl
+        fac := 1$Fl
+        for i in 0..n repeat
+            fac := (fac*x)/((i+1)::DF*(a+i::Fl))
+            s := s + fac
+        s + 1$Fl
+
+    hyp_ser_DF(a : DF, x : DF, n : Integer) : DF ==
+        hyp_serg(DF)
+
+    hyp_ser_CDF(a : CDF, x : CDF, n : Integer) : CDF ==
+        hyp_serg(CDF)
+
+    airyAia_CDF(x : CDF) : CDF ==
+        x2 := sqrt(x)
+        x3 := two_over_three*(x*x2)
+        x3s := x2*sqrt(two_over_three*x2)
+        c13 := complex(one_over_three, 0)
+        abs_x := real(abs(x))
+        rx := real(x)
+        -- Fuzz to force other case on opposite side of imaginaty axis
+        (-1.9::DF)*rx < abs_x =>
+            ai_c3*x2*bessKa_CDF(c13, x3, x3s)
+        bv1 := bessKa_CDF(c13, x3, -x3s)
+        bv2 := bessKa_CDF(c13, -x3, sqrt(-x3))
+        -ai_c3*x2*(bessKa_CDF(c13, x3, -x3s) - bessKa_CDF(c13, -x3, sqrt(-x3)))
+
+    airyAia_DF(x : DF) : DF ==
+        0 < x =>
+            x2 := sqrt(x)
+            x3s := x2*sqrt(two_over_three*x2)
+            ai_c3*bessKa_DF(one_over_three, two_over_three*x*x2, x3s)
+        real(airyAia_CDF(complex(x, 0)))
+
+    airyAipa_CDF(x : CDF) : CDF ==
+        x2 := sqrt(x)
+        x3 := two_over_three*(x*x2)
+        x3s := x2*sqrt(two_over_three*x2)
+        c23 := complex(two_over_three, 0)
+        abs_x := real(abs(x))
+        rx := real(x)
+        bv1 := bessKa_CDF(c23, x3, x3s)
+        ((-2.0)::DF)*rx < abs_x =>
+            -ai_c3*x*bessKa_CDF(c23, x3, x3s)
+        bv1 := bessKa_CDF(c23, x3, -x3s)
+        ai_c3*x*(bv1 + bessKa_CDF(c23, -x3, sqrt(-x3)))
+
+    airyAipa_DF(x : DF) : DF ==
+        0 < x =>
+            x2 := sqrt(x)
+            x3s := x2*sqrt(two_over_three*x2)
+            -ai_c3*x*bessKa_DF(two_over_three, two_over_three*x*x2, x3s)
+        real(airyAipa_CDF(complex(x, 0)))
+
+    import from DoubleFloatSpecialFunctions
+
+    airyAi(x : DF) : DF ==
+        abs_x := abs(x)
+        abs_x < 1::DF =>
+            xx := one_over_nine*x*x*x
+            ai_c1*hyp_ser_DF(two_over_three, xx, 14)
+              + ai_c2*x*hyp_ser_DF(four_over_three, xx, 14)
+        12.0::DF < abs_x => airyAia_DF(x)
+        x < 0 =>
+            xx := one_over_nine*x*x*x
+            ai_c1*hypergeometric0F1(two_over_three, xx)
+              + ai_c2*x*hypergeometric0F1(four_over_three, xx)
+        x2 := sqrt(x)
+        ai_c3*x2*besselK(one_over_three, two_over_three*x*x2)
+
+    airyAi(x : CDF) : CDF ==
+        abs_x := real(abs(x))
+        abs_x < 1::DF =>
+            xx := one_over_nine*x*x*x
+            ai_c1*hyp_ser_CDF(complex(two_over_three, 0), xx, 24)
+              + ai_c2*x*hyp_ser_CDF(complex(four_over_three, 0), xx, 24)
+        12.0::DF < abs_x => airyAia_CDF(x)
+        rx := real(x)
+        -- use fuzz factor to avoid besselK on negative half axis
+        (-2.0000000001::DF)*rx < abs_x =>
+            x2 := sqrt(x)
+            x3 := two_over_three*(x*x2)
+            ai_c3*x2*besselK(complex(one_over_three, 0), x3)
+        xx := complex(one_over_nine, 0)*x*x*x
+        ai_c1*hypergeometric0F1(complex(two_over_three, 0), xx)
+          + ai_c2*x*hypergeometric0F1(complex(four_over_three, 0), xx)
+
+    airyAiPrime(x : DF) : DF ==
+        abs_x := abs(x)
+        abs_x < 1.0::DF =>
+            xx := one_over_nine*x*x*x
+            ai_c2*hyp_ser_DF(one_over_three, xx, 24)
+              + aip_c2*x*x*hyp_ser_DF(five_over_three, xx, 24)
+        12.0::DF < abs_x => airyAipa_DF(x)
+        x < 0 =>
+            xx := one_over_nine*x*x*x
+            ai_c2*hypergeometric0F1(one_over_three, xx)
+              + aip_c2*x*x*hypergeometric0F1(five_over_three, xx)
+        x2 := sqrt(x)
+        -ai_c3*x*besselK(two_over_three, two_over_three*x*x2)
+
+    airyAiPrime(x : CDF) : CDF ==
+        abs_x := real(abs(x))
+        abs_x < 1::DF =>
+            xx := one_over_nine*x*x*x
+            ai_c2*hyp_ser_CDF(complex(one_over_three, 0), xx, 14)
+              + aip_c2*x*x*hyp_ser_CDF(complex(five_over_three, 0), xx, 14)
+        12.0::DF < abs_x => airyAipa_CDF(x)
+        rx := real(x)
+        -- use fuzz factor to avoid besselK on negative half axis
+        (-2.0000000001::DF)*rx < abs_x =>
+            x2 := sqrt(x)
+            -ai_c3*x*besselK(complex(two_over_three, 0),
+                             two_over_three*x*x2)
+        xx := one_over_nine*x*x*x
+        ai_c2*hypergeometric0F1(complex(one_over_three, 0), xx)
+           + aip_c2*x*x*hypergeometric0F1(complex(five_over_three, 0), xx)
+
+    airyBi(x : DF) : DF ==
+        xx := one_over_nine*x*x*x
+        bi_c1*hypergeometric0F1(two_over_three, xx)
+          + bi_c2*x*hypergeometric0F1(four_over_three, xx)
+
+    airyBi(x : CDF) : CDF ==
+        xx := one_over_nine*x*x*x
+        bi_c1*hypergeometric0F1(complex(two_over_three, 0), xx)
+          + bi_c2*x*hypergeometric0F1(complex(four_over_three, 0), xx)
+
+    airyBiPrime(x : DF) : DF ==
+        xx := one_over_nine*x*x*x
+        bi_c2*hypergeometric0F1(one_over_three, xx)
+          + bip_c2*x*x*hypergeometric0F1(five_over_three, xx)
+
+    airyBiPrime(x : CDF) : CDF ==
+        xx := one_over_nine*x*x*x
+        bi_c2*hypergeometric0F1(complex(one_over_three, 0), xx)
+          + bip_c2*x*x*hypergeometric0F1(complex(five_over_three, 0), xx)
+
+    hypergeometric0F1(a : DF, x : DF) : DF ==
+        0$DF < a and abs(x) < 1$DF =>
+            hyp_ser_DF(a, x, 14)
+        real(hypergeometric0F1(a::CDF, x::CDF))
+
+    hypergeometric0F1(a : CDF, x : CDF) : CDF ==
+        0$DF < real a and real(abs(x)) < 1$DF =>
+            hyp_ser_CDF(a, x, 14)
+        c_hyper0f1(a, x)$Lisp
 
 )abbrev package FELFUN FloatEllipticFunctions
 ++ Description:
