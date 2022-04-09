@@ -369,8 +369,7 @@ evalIsPredicate(value,pattern,mode) ==
   false
 
 evalIsntPredicate(value,pattern,mode) ==
-  evalIsPredicate(value,pattern,mode) => NIL
-  'TRUE
+    not(evalIsPredicate(value,pattern,mode))
 
 removeConstruct pat ==
   -- removes the "construct" from the beginning of patterns

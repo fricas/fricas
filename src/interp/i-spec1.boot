@@ -362,27 +362,27 @@ upcase t ==
         if d is ['_:,=rhs,.] then rhstag := i
      if NULL rhstag then error "upcase: bad Union form"
      $genValue =>
-        rhstag = first unwrap objVal triple => code := wrap 'TRUE
-        code := wrap NIL
+        rhstag = first unwrap objVal triple => code := wrap(true)
+        code := wrap(false)
      code :=
         ['COND,
           [['EQL,rhstag,['CAR,['unwrap,objVal triple]]],
-            ''TRUE],
-              [''T,NIL]]
+             true],
+              [''T, false]]
   else
     (not $genValue) and or/[CONTAINED(var,rhs) for var in $localVars] =>
         keyedMsgCompFailure("S2IC0006",[rhs])
     rhs := evaluateType unabbrev rhs
     $genValue =>
         t' := coerceUnion2Branch triple
-        rhs = objMode t' => code := wrap 'TRUE
-        code := wrap NIL
+        rhs = objMode t' => code := wrap(true)
+        code := wrap(false)
     triple' := objNewCode(['wrap,objVal triple],objMode triple)
     code :=
         ['COND,
           [['EQUAL,MKQ rhs,['objMode,['coerceUnion2Branch,triple']]],
-            ''TRUE],
-              [''T,NIL]]
+            true],
+              [''T, false]]
   putValue(op,objNew(code,$Boolean))
   putModeSet(op,[$Boolean])
 
