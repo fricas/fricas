@@ -133,11 +133,15 @@ BEGIN           {
         print "\\noindent"
         next
 }
-/^\\begin{xmpLinesPlain}/ || /^\\end{xmpLinesPlain}/{
-        if(/^\\begin/) {inXmpLines=1} else {inXmpLines=0}
-        xmpStepCounter = 0
+/^\\begin{xmpLinesPlain}/{
+        inXmpLines = 1
+        xmpStepCounter=0
         print "  "
         print "\\noindent"
+        next
+}
+/^\\end{xmpLinesPlain}/{
+        inXmpLines=0
         next
 }
 /^\\begin{xmpLines}/ || /^\\begin{figXmpLines}/ {
@@ -164,7 +168,6 @@ BEGIN           {
 /^\\end{xmpLines}/ || /^\\end{figXmpLines}/ {
         if(opts != "") {print opts}
         print "\\endImportant"
-        xmpStepCounter = 0
         inXmpLines = 0
         next
 }
