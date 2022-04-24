@@ -323,8 +323,7 @@ using \\[rename-buffer] or \\[rename-uniquely] and start a new FriCAS process.
   "Run FriCAS in the current BUFFER."
   (message "Starting FriCAS...")
   (start-process-shell-command "fricas" (current-buffer)
-                               fricas-run-command
-                               "-emacs"))
+                               (concat fricas-run-command " -emacs")))
 
 (defun fricas-check-proc (buffer)
   "Return non-nil if there is a living process associated w/buffer BUFFER.
