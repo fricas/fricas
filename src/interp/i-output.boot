@@ -1257,15 +1257,6 @@ outputDomainConstructor form ==
   atom (u:= prefix2String form) => u
   concatenateStringList([object2String(x) for x in u])
 
-outputOp x ==
-  x is [op,:args] and (GETL(op,"LED") or GETL(op,"NUD")) =>
-    n:=
-      GETL(op,"NARY") => 2
-      #args
-    newop:= INTERN STRCONC("*",STRINGIMAGE n,PNAME op)
-    [newop,:[outputOp y for y in args]]
-  x
-
 charybdis(u,start,linelength) ==
   EQ(keyp u,'EQUATNUM) and not (CDDR u) =>
     charybdis(['PAREN,u.1],start,linelength)

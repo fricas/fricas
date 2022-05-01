@@ -193,10 +193,6 @@ substituteSegmentedMsg(msg,args) ==
     c := x.0
     n := STRINGLENGTH x
 
-    -- x is a special case
-    (n > 2) and (c = char "%") and (x.1 = char "k") =>
-        l := NCONC(NREVERSE pkey SUBSTRING(x,2,NIL),l)
-
     -- x requires parameter substitution
     (x.0 = char "%") and (n > 1) and (DIGITP x.1) =>
       a := DIG2FIX x.1

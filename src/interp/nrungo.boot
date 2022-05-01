@@ -71,7 +71,6 @@ substDomainArgs(domain,object) ==
 --=======================================================
 lookupInTable(op,sig,dollar,[domain,table]) ==
   success := false
-  someMatch := false
   while not success for [sig1, :code] in QLASSQ(op, table) repeat
     success :=
       null compareSig(sig,sig1,dollar.0,domain) => false
@@ -150,6 +149,7 @@ NRTcompileEvalForm(opName,sigTail,dcVector) ==
   k := NRTgetMinivectorIndex(u,opName,sigTail,dcVector)
   ['ELT,"$$$",k]  --$$$ denotes minivector
 
+-- FIXME: get rid of this ugly hack
 NRTtypeHack t ==
   ATOM t => t
   first t = '_# => # CADR t
