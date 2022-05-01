@@ -63,7 +63,31 @@ postTran x ==
   atom x =>
     postAtom x
   op := first x
-  IDENTP(op) and (f := GET(op, 'postTran)) => FUNCALL(f, x)
+  op = "with" => postWith(x)
+  op = "/" => postSlash(x)
+  op = "construct" => postConstruct(x)
+  op = "QUOTE" => postQUOTE(x)
+  op = "COLLECT" => postCollect(x)
+  op = ":BF:" => postBigFloat(x)
+  -- the infix operator version of in
+  op = "in" => postin(x)
+  -- the iterator form of in
+  op = "IN" => postIn(x)
+  op = "REPEAT" => postRepeat(x)
+  op = "add" => postAdd(x)
+  op = "Reduce" => postReduce(x)
+  op = "," => postComma(x)
+  op = ";" => postSemiColon(x)
+  op = "where" => postWhere(x)
+  op = "if" => postIf(x)
+  op = "Join" => postJoin(x)
+  op = "Signature" => postSignature(x)
+  op = "CATEGORY" => postCategory(x)
+  op = "==" => postDef(x)
+  op = "==>" => postMDef(x)
+  op = "->" => postMapping(x)
+  op = "=>" => postExit(x)
+  op = "@Tuple" => postTuple(x)
   op is ['Sel, a, b] =>
     u:= postTran [b,:rest x]
     [postTran op,:rest u]

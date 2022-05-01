@@ -327,8 +327,8 @@ isFalse() == nil
 isFluid s == SYMBOLP(s) and #(n := PNAME(s)) > 0 and "$" = n.0
 
 isFunction(x,e) ==
-  get(x,"modemap",e) or GETL(x,"SPECIAL") or x="case" or getmode(x,e) is [
-    "Mapping",:.]
+    get(x, "modemap", e) or GETL(x, "comp_special") or x = "case"
+      or getmode(x, e) is ["Mapping", :.]
 
 isLiteral(x,e) == get(x,"isLiteral",e)
 
@@ -337,10 +337,17 @@ makeLiteral(x,e) == put(x,"isLiteral","true",e)
 isSomeDomainVariable s ==
   IDENTP s and #(x:= PNAME s)>2 and x.(0)="#" and x.(1)="#"
 
+is_integer_subset(s, t) ==
+    t = "Integer" =>
+        s = "PositiveInteger" => [">", "*", 0]
+        s = "NonNegativeInteger" => [">=", "*", 0]
+        s = "SingleInteger" => ["SINTP", "*"]
+    t = "NonNegativeInteger" and s = "PositiveInteger" => [">", "*", 0]
+    false
+
 isSubset(x,y,e) ==
-  x="$" and y="Rep" or x=y or
-    LASSOC(opOf x, GETL(opOf y,"Subsets")) or
-      LASSOC(opOf x,get(opOf y,"SubDomain",e)) or
+  x = "$" and y = "Rep" or x = y or is_integer_subset(opOf(x), opOf(y)) or
+      LASSOC(opOf(x), get(opOf(y), "SubDomain", e)) or
         opOf(y)='Type
 
 isDomainInScope(domain,e) ==

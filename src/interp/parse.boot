@@ -90,6 +90,19 @@ This does things like reverse tests so that [[(if (not x) a b)]]
 becomes [[(if x b a)]], etc.
 )endif
 
+init_parse_tran() ==
+    for opf in _
+         [["and", "parseAnd"], ["CATEGORY", "parseCategory"], _
+          ["DEF", "parseDEF"], ["exit", "parseExit"], _
+          ["has", "parseHas"], ["IF", "parseIf"], _
+          ["Join", "parseJoin"], ["leave", "parseLeave"], _
+          ["MDEF", "parseMDEF"], ["not", "parseNot"], _
+          ["or", "parseOr"], ["SEGMENT", "parseSegment"], _
+          ["SEQ", "parseSeq"]] repeat
+        MAKEPROP(first(opf), 'parseTran, first(rest(opf)))
+
+init_parse_tran()
+
 parseTran x ==
   atom x => parseAtom x
   [op, :argl] := x

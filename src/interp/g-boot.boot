@@ -479,7 +479,7 @@ COMP370(fn) ==
         FUNCALL($comp370_apply, fname, nbody)
 
 MKPF(l, op) ==
-    if GET(op, "NARY") then
+    if MEMQ(op, ["*", "+", "AND", "OR", "PROGN"]) then
         l := MKPFFLATTEN1(l, op, nil)
     MKPF1(l, op)
 

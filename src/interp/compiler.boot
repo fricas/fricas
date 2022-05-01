@@ -31,6 +31,30 @@
 
 )package "BOOT"
 
+init_compiler_properties() ==
+    for sv in [ _
+      ["|", "compSuchthat"], ["@", "compAtSign"], _
+      [":", "compColon"], ["::", "compCoerce"], _
+      ["+->", "compLambda"], ["QUOTE", "compQuote"], _
+      ["add", "compAdd"], ["CAPSULE", "compCapsule"], _
+      ["case", "compCase"], ["CATEGORY", "compCategory"], _
+      ["COLLECT", "compRepeatOrCollect"], ["COLLECTV", "compCollectV"], _
+      ["construct", "compConstruct"], ["DEF", "compDefine"], _
+      ["exit", "compExit"], ["has", "compHas"], _
+      ["IF", "compIf"], ["import", "compImport"], _
+      ["is", "compIs"], ["Join", "compJoin"], _
+      ["leave", "compLeave"], [":=", "compSetq"], _
+      ["MDEF", "compMacro"], ["pretend", "compPretend"], _
+      ["Record", "compCat"], ["REDUCE", "compReduce"], _
+      ["REPEAT", "compRepeatOrCollect"], ["return", "compReturn"], _
+      ["Sel", "compSel"], ["SEQ", "compSeq"], _
+      ["SubDomain", "compSubDomain"], ["try", "comp_try"], _
+      ["Union", "compCat"], ["Mapping", "compCat"], _
+      ["where", "compWhere"]] repeat
+        MAKEPROP(first(sv), 'comp_special, first(rest(sv)))
+
+init_compiler_properties()
+
 DEFPARAMETER($currentFunctionLevel, 0)
 DEFPARAMETER($tryRecompileArguments, true)
 DEFPARAMETER($locVarsTypes, nil)
@@ -316,7 +340,7 @@ extractCodeAndConstructTriple(u, m, oldE) ==
 
 compExpression(x,m,e) ==
   op := first x
-  SYMBOLP(op) and (fn := GET(op, "SPECIAL")) =>
+  SYMBOLP(op) and (fn := GET(op, "comp_special")) =>
     FUNCALL(fn,x,m,e)
   getmode(op, e) is ["Mapping", :ml] and (u := applyMapping(x, m, e, ml)) => u
   compForm(x,m,e)

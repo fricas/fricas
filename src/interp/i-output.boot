@@ -40,6 +40,144 @@
 
 --% Output display routines
 
+init_output_properties() ==
+    for sv in [ _
+      ["LET", '" := "], ["/", '"/"], ["*", '"*"], ["TENSOR", '" # "], _
+      ["**", '"**"], ["^", '"^"], [":", '":"], ["::", '"::"], _
+      ["@", '"@"], ["SEL", '"."], ["exquo", '" exquo "], ["div", '" div "], _
+      ["quo", '" quo "], ["rem", '" rem "], ["case", '" case "], _
+      ["and", '" and "], ["or", '" or "], ["TAG", '" -> "], _
+      ["+->", '" +-> "], ["SEGMENT", '".."], ["in", '" in "], _
+      ["~=", '"~="], ["JOIN", '" JOIN "], ["EQUATNUM", '"  "], _
+      ["=", '" = "], ["==", '" == "], [">=", '" >= "], [">", '" > "], _
+      ["<=", '" <= "], ["<", '" < "], ["|", '" | "], ["+", " + "], _
+      ["-", '" - "], ["WHERE", '" WHERE "], ["MAX", '" MAX "], _
+      ["MIN", '" MIN "]] repeat
+        MAKEPROP(first(sv), 'INFIXOP, first(rest(sv)))
+
+    for sv in [ _
+      ["=", '"="], [":", '":"], ["not", '"~ "], ["|", '" | "], _
+      ["SEGMENT", '".."]] repeat
+        MAKEPROP(first(sv), 'PREFIXOP, first(rest(sv)))
+
+    for spv in [ _
+      ["-", "APP", "appneg"], ["-", "WIDTH", "minusWidth"], _
+      ["/", "APP", "appfrac"], ["/", "SUBSPAN", "fracsub"], _
+      ["/", "SUPERSPAN", "fracsuper"], ["/", "WIDTH", "fracwidth"], _
+      ["AGGSET", "APP", "argsapp"], ["AGGSET", "SUBSPAN", "agggsub"], _
+      ["AGGSET", "SUPERSPAN", "agggsuper"], ["AGGSET", "WIDTH", "agggwidth"], _
+      ["binom", "APP", "binomApp"], ["binom", "SUBSPAN", "binomSub"], _
+      ["binom", "SUPERSPAN", "binomSuper"], ["binom", "WIDTH", "binomWidth"], _
+      ["ALTSUPERSUB", "APP", "altSuperSubApp"], _
+      ["ALTSUPERSUB", "SUBSPAN", "altSuperSubSub"], _
+      ["ALTSUPERSUB", "SUPERSPAN", "altSuperSubSuper"], _
+      ["ALTSUPERSUB", "WIDTH", "altSuperSubWidth"], _
+      ["BOX", "APP", "boxApp"], ["BOX", "SUBSPAN", "boxSub"], _
+      ["BOX", "SUPERSPAN", "boxSuper"], ["BOX", "WIDTH", "boxWidth"], _
+      ["BRACKET", "SUBSPAN", "qTSub"], ["BRACKET", "SUPERSPAN", "qTSuper"], _
+      ["BRACKET", "WIDTH", "qTWidth"], _
+      ["CENTER", "APP", "centerApp"], _
+      ["EXT", "APP", "appext"], ["EXT", "SUBSPAN", "extsub"], _
+      ["EXT", "SUPERSPAN", "extsuper"], ["EXT", "WIDTH", "extwidth"], _
+      ["MATRIX", "APP", "appmat"], ["MATRIX", "SUBSPAN", "matSub"], _
+      ["MATRIX", "SUPERSPAN", "matSuper"], ["MATRIX", "WIDTH", "matWidth"], _
+      ["NOTHING", "APP", "nothingApp"], _
+      ["NOTHING", "SUBSPAN", "nothingSub"], _
+      ["NOTHING", "SUPERSPAN", "nothingSuper"], _
+      ["NOTHING", "WIDTH", "nothingWidth"], _
+      ["OVER", "APP", "appfrac"], ["OVER", "SUBSPAN", "fracsub"], _
+      ["OVER", "SUPERSPAN", "fracsuper"], ["OVER", "WIDTH", "fracwidth"], _
+      ["OVERLABEL", "APP", "overlabelApp"], _
+      ["OVERLABEL", "SUPERSPAN", "overlabelSuper"], _
+      ["OVERLABEL", "WIDTH", "overlabelWidth"], _
+      ["OVERBAR", "APP", "overbarApp"], _
+      ["OVERBAR", "SUPERSPAN", "overbarSuper"], _
+      ["OVERBAR", "WIDTH", "overbarWidth"], _
+      ["PAREN", "APP", "appparu1"], ["PAREN", "SUBSPAN", "qTSub"], _
+      ["PAREN", "SUPERSPAN", "qTSuper"], ["PAREN", "WIDTH", "qTWidth"], _
+      ["PRIME", "APP", "primeApp"], ["PRIME", "SUBSPAN", "primeSub"], _
+      ["PRIME", "SUPERSPAN", "primeSuper"], ["PRIME", "WIDTH", "primeWidth"], _
+      ["ROOT", "APP", "rootApp"], ["ROOT", "SUBSPAN", "rootSub"], _
+      ["ROOT", "SUPERSPAN", "rootSuper"], ["ROOT", "WIDTH", "rootWidth"], _
+      ["ROW", "WIDTH", "eq0"], _
+      ["SC", "APP", "appsc"], ["SC", "SUBSPAN", "agggsub"], _
+      ["SC", "SUPERSPAN", "agggsuper"], ["SC", "WIDTH", "widthSC"], _
+      ["SETQ", "APP", "appsetq"], ["SETQ", "WIDTH", "letWidth"], _
+      ["SLASH", "APP", "slashApp"], ["SLASH", "SUBSPAN", "slashSub"], _
+      ["SLASH", "SUPERSPAN", "slashSuper"], ["SLASH", "WIDTH", "slashWidth"], _
+      ["SUB", "APP", "appsub"], ["SUB", "SUBSPAN", "subSub"], _
+      ["SUB", "SUPERSPAN", "subSuper"], ["SUB", "WIDTH", "suScWidth"], _
+      ["SUPERSUB", "APP", "superSubApp"], _
+      ["SUPERSUB", "SUBSPAN", "superSubSub"], _
+      ["SUPERSUB", "SUPERSPAN", "superSubSuper"], _
+      ["SUPERSUB", "WIDTH", "superSubWidth"], _
+      ["VCONCAT", "APP", "vconcatapp"], _
+      ["VCONCAT", "SUBSPAN", "vConcatSub"], _
+      ["VCONCAT", "SUPERSPAN", "vConcatSuper"], _
+      ["VCONCAT", "WIDTH", "vConcatWidth"], _
+      ["BINOMIAL", "APP", "binomialApp"], _
+      ["BINOMIAL", "SUBSPAN", "binomialSub"], _
+      ["BINOMIAL", "SUPERSPAN", "binomialSuper"], _
+      ["BINOMIAL", "WIDTH", "binomialWidth"], _
+      ["ZAG", "APP", "zagApp"], ["ZAG", "SUBSPAN", "zagSub"], _
+      ["ZAG", "SUPERSPAN", "zagSuper"], ["ZAG", "WIDTH", "zagWidth"], _
+      ["+", "APP", "plusApp"], ["+", "WIDTH", "sumWidth"], _
+      ["*", "APP", "timesApp"], ["*", "WIDTH", "timesWidth"], _
+      ["TENSOR", "APP", "tensorApp"], ["TENSOR", "WIDTH", "tensorWidth"], _
+      ["^", "APP", "exptApp"], ["^", "SUBSPAN", "exptSub"], _
+      ["^", "SUPERSPAN", "exptSuper"], ["^", "WIDTH", "exptWidth"], _
+      ["STEP", "APP", "stepApp"], ["STEP", "SUBSPAN", "stepSub"], _
+      ["STEP", "SUPERSPAN", "stepSuper"], ["STEP", "WIDTH", "stepWidth"], _
+      ["IN", "APP", "inApp"], ["IN", "SUBSPAN", "inSub"], _
+      ["IN", "SUPERSPAN", "inSuper"], ["IN", "WIDTH", "inWidth"], _
+      ["AGGLST", "APP", "aggApp"], ["AGGLST", "SUBSPAN", "aggSub"], _
+      ["AGGLST", "SUPERSPAN", "aggSuper"], _
+      ["CONCATB", "APP", "concatbApp"], _
+      ["CONCATB", "SUBSPAN", "concatSub"], _
+      ["CONCATB", "SUPERSPAN", "concatSuper"], _
+      ["CONCATB", "WIDTH", "concatbWidth"], _
+      ["CONCAT", "APP", "concatApp"], _
+      ["CONCAT", "SUBSPAN", "concatSub"], _
+      ["CONCAT", "SUPERSPAN", "concatSuper"], _
+      ["CONCAT", "WIDTH", "concatWidth"], _
+      ["QUOTE", "APP", "quoteApp"], _
+      ["QUOTE", "SUBSPAN", "quoteSub"], _
+      ["QUOTE", "SUPERSPAN", "quoteSub"], _
+      ["QUOTE", "WIDTH", "quoteWidth"], _
+      ["STRING", "APP", "stringApp"], _
+      ["STRING", "SUBSPAN", "eq0"], _
+      ["STRING", "SUPERSPAN", "eq0"], _
+      ["STRING", "WIDTH", "stringWidth"], _
+      ["SIGMA", "APP", "sigmaApp"], _
+      ["SIGMA", "SUBSPAN", "sigmaSub"], _
+      ["SIGMA", "SUPERSPAN", "sigmaSup"], _
+      ["SIGMA", "WIDTH", "sigmaWidth"], _
+      ["SIGMA2", "APP", "sigma2App"], _
+      ["SIGMA2", "SUBSPAN", "sigma2Sub"], _
+      ["SIGMA2", "SUPERSPAN", "sigma2Sup"], _
+      ["SIGMA2", "WIDTH", "sigma2Width"], _
+      ["SIGMA2", "SUBSPAN", "sigma2Sub"], _
+      ["SIGMA2", "SUPERSPAN", "sigma2Sup"], _
+      ["INTSIGN", "APP", "intApp"], _
+      ["INTSIGN", "SUBSPAN", "intSub"], _
+      ["INTSIGN", "SUPERSPAN", "intSup"], _
+      ["INTSIGN", "WIDTH", "intWidth"], _
+      ["PI", "APP", "piApp"], _
+      ["PI", "SUBSPAN", "piSub"], _
+      ["PI", "SUPERSPAN", "piSup"], _
+      ["PI", "WIDTH", "piWidth"], _
+      ["PI2", "APP", "pi2App"], _
+      ["PI2", "SUBSPAN", "pi2Sub"], _
+      ["PI2", "SUPERSPAN", "pi2Sup"], _
+      ["PI2", "WIDTH", "pi2Width"], _
+      ["AGGLST", "WIDTH", "aggWidth"], _
+      ["BRACKET", "APP", "bracketApp"], _
+      ["BRACE", "APP", "braceApp"], _
+      ["BRACE", "WIDTH", "qTWidth"]] repeat
+        MAKEPROP(first(spv), first(rest(spv)), first(rest(rest(spv))))
+
+init_output_properties()
+
 DEFPARAMETER($plainRTspecialCharacters, [
     '_+,      -- upper left corner   (+)
     '_+,      -- upper right corner  (+)
