@@ -1,3 +1,506 @@
+)abbrev package ODESYS SystemODESolver
+++ Author: Manuel Bronstein
+++ Date Created: 11 June 1991
+++ Description: SystemODESolver provides tools for triangulating
+++ and solving some systems of linear ordinary differential equations.
+++ Keywords: differential equation, ODE, system
+SystemODESolver(F, LO) : Exports == Implementation where
+  F : Field
+  LO : LinearOrdinaryDifferentialOperatorCategory F
+
+  N   ==> NonNegativeInteger
+  Z   ==> Integer
+  MF  ==> Matrix F
+  M   ==> Matrix LO
+  V   ==> Vector F
+  UF  ==> Union(F, "failed")
+  UV  ==> Union(V, "failed")
+  REC ==> Record(mat : M, vec : V)
+  FSL ==> Record(particular : UF, basis : List F)
+  VSL ==> Record(particular : UV, basis : List V)
+  SOL ==> Record(particular : F, basis : List F)
+  USL ==> Union(SOL, "failed")
+  ER  ==> Record(C : MF, g : V, eq : LO, rh : F)
+  ER2 ==> Record(C : MF, lg : List V, eq : LO, lrh : List F)
+  Param_Rec_F ==> Record(ratpart : F, coeffs : Vector F)
+  Param_Rec_V ==> Record(ratpart : V, coeffs : Vector F)
+  FPL ==> Record(particular : List Param_Rec_F, basis : List F)
+  VPL ==> Record(particular : List Param_Rec_V, basis : List V)
+
+  Exports ==> with
+    triangulate : (MF, V) -> Record(A : MF, eqs : List ER)
+      ++ triangulate(M, v) returns
+      ++ \spad{A, [[C_1, g_1, L_1, h_1], ..., [C_k, g_k, L_k, h_k]]}
+      ++ such that under the change of variable \spad{y = A z}, the first
+      ++ order linear system \spad{D y = M y + v} is uncoupled as
+      ++ \spad{D z_i = C_i z_i + g_i} and each \spad{C_i} is a companion
+      ++ matrix corresponding to the scalar equation \spad{L_i z_j = h_i}.
+    triangulate : (MF, List V) ->  Record(A : MF, eqs : List ER2)
+      ++ triangulate(A, lv) is a parametric version of triangulate(A, v).
+    triangulate : (M, V) -> REC
+      ++ triangulate(m, v) returns \spad{[m_0, v_0]} such that \spad{m_0}
+      ++ is upper triangular and the system \spad{m_0 x = v_0} is equivalent
+      ++ to \spad{m x = v}.
+    triangulate : (M, List V) -> Record(mat : M, vecs : List V)
+      ++ triangulate(m, [v1, ..., vn]) returns  \spad{[m_0, [w1, ..., wn]]}
+      ++ such that for any constant \spad{c1, ..., cn} the system
+      ++ \spad{m_0 x = c1*w1 + ... + cn*wn} is equivalent to
+      ++ to \spad{m x = c1*v1 + ... + cn*vn}
+    solve : (MF,V,(LO,F)->USL) -> Union(Record(particular:V, basis:MF), "failed")
+      ++ solve(m, v, solve) returns \spad{[v_p, bm]} such that
+      ++ the solutions in \spad{F} of the system \spad{D x = m x + v} are
+      ++ \spad{v_p + c_1 v_1 + ... + c_m v_m} where the \spad{c_i's} are
+      ++ constants, and the \spad{v_i's} are columns of \spad{bm} and
+      ++ form a basis for the solutions of \spad{D x = m x}.
+      ++ Argument \spad{solve} is a function for solving a single linear
+      ++ ordinary differential equation in \spad{F}.
+    solve : (MF, List V, (LO, List F) -> FPL) -> VPL
+      ++ solve(m, lv, solve) is a parametric version of
+      ++ solve(m, v, solve)
+    solveInField : (M, V, (LO, F) -> FSL) -> VSL
+      ++ solveInField(m, v, solve) returns \spad{[[v_1, ..., v_m], v_p]} such that
+      ++ the solutions in \spad{F} of the system \spad{m x = v} are
+      ++ \spad{v_p + c_1 v_1 + ... + c_m v_m} where the \spad{c_i's} are
+      ++ constants, and the \spad{v_i's} form a basis for the solutions of
+      ++ \spad{m x = 0}.
+      ++ Argument \spad{solve} is a function for solving a single linear
+      ++ ordinary differential equation in \spad{F}.
+    solveInField : (M, List V, (LO, List F) -> FPL) -> VPL
+      ++ solveInField(m, lv, solve) is a parametric version of
+      ++ solveInField(m, v, solve)
+
+  Implementation ==> add
+    import from PseudoLinearNormalForm F
+    import from LinearCombinationUtilities(F, SparseUnivariatePolynomial(F))
+
+    M2F         : M -> Union(MF, "failed")
+
+    diff := D()$LO
+
+    solve(mm : MF, lv : List V, solf : (LO, List F) -> FPL) ==
+        rec  := triangulate(mm, lv)
+        nv := #lv
+        mA := rec.A
+        n := ncols(mA)
+        k : N := 0             -- sum of sizes of visited companionblocks
+        i : N := 0             -- number of companionblocks
+        cb : List V := [new(nv, 0)$V for v in lv]
+        pl : List V := [new(n, 0)$V for v in lv]
+        base_vecs : List V := []
+        l : Integer
+        for i in 1..nv for bv in cb repeat
+            bv(i) := 1
+        for e in rec.eqs repeat
+            crh := [lin_comb(bv, e.lrh) for bv in cb]
+            u := solf(e.eq, crh)
+            np1 := u.particular
+            ncb := [lin_comb(be.coeffs, cb) for be in np1]
+            nn := nrows(e.C) -- size of active companionblock
+            for s in u.basis repeat
+                base_vec : V := new(n, 0)
+                base_vec(k + 1) := s
+                for l in 2..nn repeat
+                    base_vec(k + l) := diff base_vec(k + l - 1)
+                base_vecs := cons(base_vec, base_vecs)
+            npl := [lin_comb(be.coeffs, pl) for be in np1]
+            for be in np1 for np in npl for bv in ncb repeat
+                g1 := lin_comb(bv, e.lg)
+                np(k + 1) := be.ratpart
+                for l in 2..nn repeat
+                    np(k + l) := diff np(k + l - 1) - g1(l - 1)
+            k := k + nn
+            pl := npl
+            cb := ncb
+        base_vecs := reverse!(base_vecs)
+        [[[mA*np, bv] for np in pl for bv in cb],
+         [mA*bvec for bvec in base_vecs]]
+
+    USL_to_FPL(u : USL) : FPL ==
+        u case "failed" => [[], []]
+        us := u@SOL
+        [[[us.particular, new(1, 1)]], us.basis]
+
+    solve(mm : MF, v : V, solf : (LO,F)->USL) ==
+        res1 := solve(mm, [v], (lo, lf) +-> USL_to_FPL(solf(lo, first(lf))))
+        part := res1.particular
+        empty?(part) => "failed"
+        part1 := first(part)
+        c1inv := inv((part1.coeffs)(1))
+        s1 := c1inv*part1.ratpart
+        bm := matrix([entries(bv) for bv in res1.basis])
+        [s1, transpose(bm)]
+
+    triangulate(m : MF, lv : List V) ==
+      k : N := 0       -- sum of companion-dimensions
+      rat := normalForm(m, 1, (f1 : F) : F +-> - diff f1)
+      l   := companionBlocks(rat.R, [rat.Ainv * v for v in lv])
+      ler : List(ER2) := []
+      for er in l repeat
+        n := nrows(er.C)         -- dimension of this companion vectorspace
+        op : LO := 0               -- compute homogeneous equation
+        for j in 0..n-1 repeat op := op + monomial((er.C)(n, j + 1), j)
+        op := monomial(1, n) - op
+        lh : List F := []
+        for g in er.lg repeat
+            sum : V := new(n::N, 0)    -- compute inhomogen Vector (25)
+            for j in 1..n-1 repeat sum(j+1) := diff(sum(j)) + g(j)
+            h0 : F := 0                 -- compute inhomogeneity (26)
+            for j in 1..n repeat h0 := h0 - (er.C)(n, j) * sum j
+            h0 := h0 + diff(sum(n)) + g(n)
+            lh := cons(h0, lh)
+        lh := reverse!(lh)
+        ler := concat([er.C, er.lg, op, lh], ler)
+        k := k + n
+      [rat.A, ler]
+
+    triangulate(m : MF, v : V) ==
+        res1 := triangulate(m, [v])
+        ler : List(ER) := []
+        for er2 in res1.eqs repeat
+            ler := cons([er2.C, first(er2.lg), er2.eq, first(er2.lrh)], ler)
+        ler := reverse!(ler)
+        [res1.A, ler]
+
+    import from OrePolynomialMatrixOperations(F, LO)
+
+    solveInField(m : M, lv : List V, solf : (LO, List F) -> FPL) ==
+      ((n := nrows m) = ncols m) and
+         ((u := M2F(diagonalMatrix [diff for i in 1..n] - m)) case MF) =>
+             solve(u@MF, lv, solf)
+      rec := solve(m, 0, lv, solf)
+      rec case "failed" => error "solveInField: system is underdeterminded"
+      rec::VPL
+
+    M2F m ==
+        mf : MF := new(nrows m, ncols m, 0)
+        for i in minRowIndex m .. maxRowIndex m repeat
+            for j in minColIndex m .. maxColIndex m repeat
+                (u := retractIfCan(m(i, j))@Union(F, "failed")) case "failed" =>
+                     return "failed"
+                mf(i, j) := u@F
+        mf
+
+    triangulate(m : M, lv : List V) == rowEchelon(m, 0, lv)
+
+    triangulate(m : M, v : V) ==
+        res1 := triangulate(m, [v])
+        [res1.mat, first(res1.vecs)]
+
+)abbrev package ODERED ReduceLODE
+++ Author: Manuel Bronstein
+++ Date Created: 19 August 1991
+++ Description: Elimination of an algebraic from the coefficients
+++ of a linear ordinary differential equation.
+ReduceLODE(F, L, UP, A, LO) : Exports == Implementation where
+  F : Field
+  L : LinearOrdinaryDifferentialOperatorCategory F
+  UP : UnivariatePolynomialCategory F
+  A : MonogenicAlgebra(F, UP)
+  LO : LinearOrdinaryDifferentialOperatorCategory A
+
+  V ==> Vector F
+  M ==> Matrix L
+
+  Exports ==> with
+    reduceLODE : (LO, A) -> Record(mat : M, vec : V)
+      ++ reduceLODE(op, g) returns \spad{[m, v]} such that
+      ++ any solution in \spad{A} of \spad{op z = g}
+      ++ is of the form \spad{z = (z_1, ..., z_m) . (b_1, ..., b_m)} where
+      ++ the \spad{b_i's} are the basis of \spad{A} over \spad{F} returned
+      ++ by \spadfun{basis}() from \spad{A}, and the \spad{z_i's} satisfy the
+      ++ differential system \spad{M.z = v}.
+    reduceLODE : (LO, List A) -> Record(mat : M, vecs : List V)
+      ++ reduceLODE(op, [g1, ..., gn]) returns \spad{[m, [v1, ..., vn]]}
+      ++ such that any solution in \spad{A} of
+      ++ \spad{op z = c1*g1 + ... + cn*gn} where ci are constants
+      ++ satisfy the differential system \spad{M.z = c1*v1 + ... + cn*vn}
+
+  Implementation ==> add
+    matF2L : Matrix F -> M
+
+    diff := D()$L
+
+-- coerces a matrix of elements of F into a matrix of (order 0) L.O.D.O's
+    matF2L m ==
+      map((f1 : F) : L +-> f1::L, m)$MatrixCategoryFunctions2(F, V, V, Matrix F,
+                                                L, Vector L, Vector L, M)
+
+-- This follows the algorithm and notation of
+--  "The Risch Differential Equation on an Algebraic Curve", M. Bronstein,
+-- in 'Proceedings of ISSAC '91', Bonn, BRD, ACM Press, pp.241-246, July 1991.
+    get_sys(l : LO) : M ==
+      n := rank()$A
+-- md is the basic differential matrix (D x I + Dy)
+      md := matF2L transpose derivationCoordinates(basis(), (f1 : F) : F +-> diff f1)
+      for i in minRowIndex md .. maxRowIndex md
+        for j in minColIndex md .. maxColIndex md repeat
+          md(i, j) := diff + md(i, j)
+-- mdi will go through the successive powers of md
+      mdi := copy md
+      sys := matF2L(regularRepresentation coefficient(l, 0))
+      for i in 1..degree l repeat
+        sys := sys +
+                matF2L(regularRepresentation coefficient(l, i)) * mdi
+        mdi := md * mdi
+      sys
+
+    reduceLODE(l : LO, g : A) ==
+        [get_sys(l), coordinates g]
+
+    reduceLODE(l : LO, lg : List(A)) ==
+        [get_sys(l), [coordinates g for g in lg]]
+
+)abbrev package ODEPAL PureAlgebraicLODE
+++ Author: Manuel Bronstein
+++ Date Created: 21 August 1991
+++ Description: In-field solution of an linear ordinary differential equation,
+++ pure algebraic case.
+PureAlgebraicLODE(F, UP, UPUP, R) : Exports == Implementation where
+  F   : Join(Field, CharacteristicZero,
+             RetractableTo Integer, RetractableTo Fraction Integer)
+  UP  : UnivariatePolynomialCategory F
+  UPUP : UnivariatePolynomialCategory Fraction UP
+  R   : FunctionFieldCategory(F, UP, UPUP)
+
+  RF  ==> Fraction UP
+  V   ==> Vector RF
+  U   ==> Union(R, "failed")
+  REC ==> Record(particular: Union(RF, "failed"), basis: List RF)
+  L   ==> LinearOrdinaryDifferentialOperator1 R
+  LQ  ==> LinearOrdinaryDifferentialOperator1 RF
+  Param_Rec_R ==> Record(ratpart : R, coeffs : Vector(F))
+  L_Param_R ==> List Param_Rec_R
+
+  Exports ==> with
+    algDsolve : (L, R) -> Record(particular : U, basis : List R)
+      ++ algDsolve(op, g) returns \spad{["failed", []]} if the equation
+      ++ \spad{op y = g} has no solution in \spad{R}. Otherwise, it returns
+      ++ \spad{[f, [y1, ..., ym]]} where \spad{f} is a particular rational
+      ++ solution and the \spad{y_i's} form a basis for the solutions in
+      ++ \spad{R} of the homogeneous equation.
+    algDsolve : (L, List R) -> Record(particular : L_Param_R, basis : List R)
+      ++ algDsolve(op, lg) is a parametric version of
+      ++ algDsolve(op, g)
+
+  Implementation ==> add
+    import from RationalLODE(F, UP)
+    import from SystemODESolver(RF, LQ)
+    import from ReduceLODE(RF, LQ, UPUP, R, L)
+
+    Param_Rec_F ==> Record(ratpart : RF, coeffs : Vector RF)
+    FPL ==> Record(particular : List Param_Rec_F, basis : List RF)
+
+    rat_solve(l : LQ, lf : List RF) : FPL ==
+        sol := ratDsolve(l, lf)
+        bas := sol.basis
+        ker := nullSpace(sol.mat)
+        empty?(ker) => [[], []]
+        nn := #lf
+        nb := #bas
+        if nb ~= ncols(sol.mat) then
+            error "rat_solve: nb ~= ncols(sol.mat)"
+        m1 := matrix([entries(kv) for kv in ker]$List(List(F)))
+        nn := #lf
+        nc := ncols(m1)
+        nn1 := (nc - nn)::NonNegativeInteger
+        m3 := rowEchelon(m1)
+        nr := nrows(m3)
+        j : Integer := 1
+        i0 : Integer := nr + 1
+        sl : List Param_Rec_F := []
+        for i in 1..nr repeat
+            while j <= nn and m3(i, j) = 0 repeat j := j + 1
+            if j > nn then
+                i0 := i
+                break
+            cv := new(nn, 0)$V
+            for k in 1..nn repeat
+                cv(k) := m3(i, k)::UP::RF
+            s : RF := 0
+            for k in 1..nc for bf in bas repeat
+                s := s + m3(i, k)::UP*bf
+            sl := cons([s, cv], sl)
+        bl : List RF := []
+        for i in i0..nr repeat
+            s : RF := 0
+            for k in 1..nc for bf in bas repeat
+                s := s + m3(i, k)::UP*bf
+            bl := cons(s, bl)
+        [sl, bl]
+
+    RF_to_F(rf : RF) : F == ground(retract(rf)@UP)
+
+    V_to_VF(v : V) : Vector(F) ==
+        map(RF_to_F, v)$VectorFunctions2(RF, F)
+
+    algDsolve(l : L, lg : List R) ==
+        rec := reduceLODE(l, lg)
+        sol := solveInField(rec.mat, rec.vecs, rat_solve)
+        bas : List(R) := [represents v for v in sol.basis]
+        part : L_Param_R := [[represents(be.ratpart), V_to_VF(be.coeffs)]
+                              for be in sol.particular]
+        [part, bas]
+
+    algDsolve(l : L, g : R) ==
+        rec1 := algDsolve(l, [g])
+        bas := rec1.basis
+        empty?(rec1.particular) => ["failed", bas]
+        part1 : Param_Rec_R := first(rec1.particular)
+        c1inv := inv((part1.coeffs)(1))
+        s0 : R := part1.ratpart
+        s1 := c1inv::UP::RF*s0
+        [s1, bas]
+
+-- Compile order for the differential equation solver:
+-- oderf.spad  odealg.spad  nlode.spad  nlinsol.spad  riccati.spad  odeef.spad
+
+)abbrev package NODE1 NonLinearFirstOrderODESolver
+++ Author: Manuel Bronstein
+++ Date Created: 2 September 1991
+++ Description: NonLinearFirstOrderODESolver provides a function
+++ for finding closed form first integrals of nonlinear ordinary
+++ differential equations of order 1.
+++ Keywords: differential equation, ODE
+NonLinearFirstOrderODESolver(R, F) : Exports == Implementation where
+  R : Join(Comparable, PolynomialFactorizationExplicit, RetractableTo Integer,
+          LinearlyExplicitOver Integer, CharacteristicZero)
+  F : Join(AlgebraicallyClosedFunctionSpace R, TranscendentalFunctionCategory,
+          PrimitiveFunctionCategory)
+
+  N   ==> NonNegativeInteger
+  Q   ==> Fraction Integer
+  UQ  ==> Union(Q, "failed")
+  OP  ==> BasicOperator
+  SY  ==> Symbol
+  K   ==> Kernel F
+  U   ==> Union(F, "failed")
+  P   ==> SparseMultivariatePolynomial(R, K)
+  REC ==> Record(coef : Q, logand : F)
+  SOL ==> Record(particular : F, basis : List F)
+  BER ==> Record(coef1 : F, coefn : F, exponent : N)
+
+  Exports ==> with
+    solve : (F, F, OP, SY) -> U
+      ++ solve(M(x, y), N(x, y), y, x) returns \spad{F(x, y)} such that
+      ++ \spad{F(x, y) = c} for a constant \spad{c} is a first integral
+      ++ of the equation \spad{M(x, y) dx + N(x, y) dy  = 0}, or
+      ++ "failed" if no first-integral can be found.
+
+  Implementation ==> add
+    import from ODEIntegration(R, F)
+    import from ElementaryFunctionODESolver(R, F)    -- recursive dependency!
+
+    checkBernoulli   : (F, F, K) -> Union(BER, "failed")
+    solveBernoulli   : (BER, OP, SY, F) -> Union(F, "failed")
+    checkRiccati     : (F, F, K) -> Union(List F, "failed")
+    solveRiccati     : (List F, OP, SY, F) -> Union(F, "failed")
+    partSolRiccati   : (List F, OP, SY, F) -> Union(F, "failed")
+    integratingFactor : (F, F, F, SY, SY) -> U
+
+    unk    := new()$SY
+    kunk : K := kernel unk
+
+    solve(m, n, y, x) ==
+-- first replace the operator y(x) by a new symbol z in m(x, y) and n(x, y)
+      lk : List(K) := [retract(yx := y(x::F))@K]
+      lv : List(F) := [kunk::F]
+      mm := eval(m, lk, lv)
+      nn := eval(n, lk, lv)
+-- put over a common denominator (to balance m and n)
+      d := lcm(denom mm, denom nn)::F
+      mm := d * mm
+      nn := d * nn
+-- look for an integrating factor mu
+      (u := integratingFactor(mm, nn, d, unk, x)) case F =>
+        mu := u@F
+        mm := mm * mu
+        nn := nn * mu
+        eval(int(mm, x) + int(nn-int(differentiate(mm, unk), x), unk), [kunk], [yx])
+-- check for Bernoulli equation
+      (w := checkBernoulli(m, n, k1 := first lk)) case BER =>
+        solveBernoulli(w@BER, y, x, yx)
+-- check for Riccati equation
+      (v := checkRiccati(m, n, k1)) case List(F) =>
+        solveRiccati(v@List(F), y, x, yx)
+      "failed"
+
+-- look for an integrating factor
+    integratingFactor(m, n, den, y, x) ==
+-- check first for exactness
+      zero?(d := differentiate(m, y) - differentiate(n, x)) => 1
+      zero?(differentiate(m/den, y) - differentiate(n/den, x)) => 1/den
+-- look for an integrating factor involving x only
+      not member?(y, variables(f := d / n)) => expint(f, x)
+-- look for an integrating factor involving y only
+      not member?(x, variables(f := - d / m)) => expint(f, y)
+-- room for more techniques later on (e.g. Prelle-Singer etc...)
+      "failed"
+
+-- check whether the equation is of the form
+--    dy/dx + p(x)y + q(x)y^N = 0   with N > 1
+-- i.e. whether m/n is of the form  p(x) y + q(x) y^N
+-- returns [p, q, N] if the equation is in that form
+    checkBernoulli(m, n, ky) ==
+      r := denom(f := m / n)::F
+      (not freeOf?(r, y := ky::F))
+          or (d := degree(p := univariate(numer f, ky))) < 2
+            or degree(pp := reductum p) ~= 1 or reductum(pp) ~= 0
+              or (not freeOf?(a := (leadingCoefficient(pp)::F), y))
+                or (not freeOf?(b := (leadingCoefficient(p)::F), y)) => "failed"
+      [a / r, b / r, d]
+
+-- solves the equation dy/dx + rec.coef1 y + rec.coefn y^rec.exponent = 0
+-- the change of variable v = y^{1-n} transforms the above equation to
+--  dv/dx + (1 - n) p v + (1 - n) q = 0
+    solveBernoulli(rec, y, x, yx) ==
+      n1 := 1 - rec.exponent::Integer
+      deq := differentiate(yx, x) + n1 * rec.coef1 * yx + n1 * rec.coefn
+      sol := solve(deq, y, x)::SOL          -- can always solve for order 1
+-- if v = vp + c v0 is the general solution of the linear equation, then
+-- the general first integral for the Bernoulli equation is
+-- (y^{1-n} - vp) / v0  =   c   for any constant c
+      (yx^n1 - sol.particular) / first(sol.basis)
+
+-- check whether the equation is of the form
+--    dy/dx + q0(x) + q1(x)y + q2(x)y^2 = 0
+-- i.e. whether m/n is a quadratic polynomial in y.
+-- returns the list [q0, q1, q2] if the equation is in that form
+    checkRiccati(m, n, ky) ==
+      q := denom(f := m / n)::F
+      (not freeOf?(q, y := ky::F)) or degree(p := univariate(numer f, ky)) > 2
+         or (not freeOf?(a0 := (coefficient(p, 0)::F), y))
+           or (not freeOf?(a1 := (coefficient(p, 1)::F), y))
+             or (not freeOf?(a2 := (coefficient(p, 2)::F), y)) => "failed"
+      [a0 / q, a1 / q, a2 / q]
+
+-- solves the equation dy/dx + l.1 + l.2 y + l.3 y^2 = 0
+    solveRiccati(l, y, x, yx) ==
+-- get first a particular solution
+      (u := partSolRiccati(l, y, x, yx)) case "failed" => "failed"
+-- once a particular solution yp is known, the general solution is of the
+-- form  y = yp + 1/v  where v satisfies the linear 1st order equation
+-- v' - (l.2 + 2 l.3 yp) v = l.3
+      deq := differentiate(yx, x) - (l.2 + 2 * l.3 * u@F) * yx - l.3
+      gsol := solve(deq, y, x)::SOL         -- can always solve for order 1
+-- if v = vp + c v0 is the general solution of the above equation, then
+-- the general first integral for the Riccati equation is
+--  (1/(y - yp) - vp) / v0  =   c   for any constant c
+      (inv(yx - u::F) - gsol.particular) / first(gsol.basis)
+
+-- looks for a particular solution of dy/dx + l.1 + l.2 y + l.3 y^2 = 0
+    partSolRiccati(l, y, x, yx) ==
+-- we first do the change of variable y = z / l.3, which transforms
+-- the equation into  dz/dx + l.1 l.3 + (l.2 - l.3'/l.3) z + z^2 = 0
+      q0 := l.1 * (l3 := l.3)
+      q1 := l.2 - differentiate(l3, x) / l3
+-- the equation dz/dx + q0 + q1 z + z^2 = 0 is transformed by the change
+-- of variable z = w'/w into the linear equation w'' + q1 w' + q0 w = 0
+      lineq := differentiate(yx, x, 2) + q1 * differentiate(yx, x) + q0 * yx
+-- should be made faster by requesting a particular nonzero solution only
+      (not((gsol := solve(lineq, y, x)) case SOL))
+                              or empty?(bas := (gsol@SOL).basis) => "failed"
+      differentiate(first bas, x) / (l3 * first bas)
+
 )abbrev package REDORDER ReductionOfOrder
 ++ Author: Manuel Bronstein
 ++ Date Created: 4 November 1991
