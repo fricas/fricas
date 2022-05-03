@@ -327,12 +327,7 @@ isDomain a ==
 NRTcompiledLookup(op,sig,dom) ==
   if CONTAINED('_#,sig) then
       sig := [NRTtypeHack t for t in sig]
-  hashCode? sig =>   compiledLookupCheck(op,sig,dom)
-  (fn := compiledLookup(op,sig,dom)) => fn
-  percentHash :=
-      VECP dom => hashType(dom.0, 0)
-      getDomainHash dom
-  compiledLookupCheck(op, hashType(['Mapping,:sig], percentHash), dom)
+  compiledLookupCheck(op,sig,dom)
 
 --------------------> NEW DEFINITION (override in nrungo.boot)
 compiledLookup(op, sig, dollar) ==
