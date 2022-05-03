@@ -524,10 +524,29 @@ convert_buffer(char *target, int num) {
     return j;
 }
 
+static void
+overwrite_buff_part(int amount) {
+    /* Count inserted characters */
+    int nn = 0, count = 0;
+    while (count < amount) {
+        count += dist_right(curr_pntr + count);
+        nn++;
+    }
+    {
+        /* Delete overwritten characters */
+        int pp = curr_pntr + amount;
+        count = 0;
+        while(nn > 0 && pp + count < buff_pntr) {
+            count += dist_right(pp + count);
+            nn--;
+        }
+        shift_buff_backward(pp + count, buff_pntr, -count);
+        buff_pntr -= count;
+    }
+}
 
 static void
 insert_buff_printing(int amount) {
-    int count;
 
     /* This procedure takes the character at in_buff[num_proc] and adds
        it to the buffer. It first checks to see if we should be inserting
@@ -537,41 +556,26 @@ insert_buff_printing(int amount) {
         putchar(_BELL);
         fflush(stdout);
         num_proc += amount;
-    } else {
-
-        if (INS_MODE) {
-            shift_buff_forward(curr_pntr, buff_pntr, amount);
-            store_buff_string(curr_pntr, amount, &(in_buff[num_proc]), 1);
-            ins_print(curr_pntr, amount);
-            buff_pntr = buff_pntr + amount;
-        } else {
-            for (count = 0; count < amount; count++) {
-                if (get_flag(curr_pntr + count) == 2) {
-                    myputchar(get_buff(curr_pntr + count));
-                    curr_pntr += count + 1;
-                    delete_current_char();
-                    /** fix num_proc affected by delete **/
-                    num_proc -= 3;
-                    curr_pntr -= count + 1;
-                    myputchar(_BKSPC);
-                }
-                store_buff_char(curr_pntr + count, in_buff[num_proc + count],
-                                1);
-            }
-            myputchar(in_buff[num_proc]);
-            if (curr_pntr == buff_pntr) {
-                buff_pntr++;
-            }
-        }
-        num_proc = num_proc + amount;
-        curr_pntr = curr_pntr + amount;
-        fflush(stdout);
+        return;
     }
+    shift_buff_forward(curr_pntr, buff_pntr, amount);
+    store_buff_string(curr_pntr, amount, &(in_buff[num_proc]), 1);
+    if (INS_MODE || curr_pntr == buff_pntr) {
+        ins_print(curr_pntr, amount);
+        buff_pntr = buff_pntr + amount;
+    } else {
+        buff_pntr = buff_pntr + amount;
+        overwrite_buff_part(amount);
+        /* Print inserted characters */
+        printbuff(curr_pntr, amount);
+    }
+    num_proc = num_proc + amount;
+    curr_pntr = curr_pntr + amount;
+    fflush(stdout);
 }
 
 static void
 insert_buff_nonprinting(int amount) {
-    int count;
 
     /* This procedure takes the character at in_buff[num_proc] and adds
        it to the buffer. It first checks to see if we should be inserting
@@ -579,15 +583,13 @@ insert_buff_nonprinting(int amount) {
 
     /* it takes care of the special case, when I have an esc character */
 
-    if ((buff_pntr + amount) > 1023) {
+    if ((buff_pntr + amount + 1) > 1023) {
         myputchar(_BELL);
         fflush(stdout);
         num_proc += amount;
         return;
     }
-    if (INS_MODE) {
-       shift_buff_forward(curr_pntr, buff_pntr, amount + 1);
-    }
+    shift_buff_forward(curr_pntr, buff_pntr, amount + 1);
     /** now insert the special character **/
     switch (in_buff[num_proc]) {
       case _ESC:
@@ -608,24 +610,13 @@ insert_buff_nonprinting(int amount) {
         break;
     }
     /** Now add the normal characters **/
-    if (INS_MODE) {
-        store_buff_string(curr_pntr + 2, amount - 1,
-                          &(in_buff[num_proc + 1]), 1);
+    store_buff_string(curr_pntr + 2, amount - 1, &(in_buff[num_proc + 1]), 1);
+    if (INS_MODE || curr_pntr == buff_pntr) {
         ins_print(curr_pntr, amount + 1);
         buff_pntr = buff_pntr + amount + 1;
     } else {
-        for (count = 1; count < amount; count++) {
-            if (get_flag(curr_pntr + count) == 2) {
-                curr_pntr += count + 1;
-                delete_current_char();
-                /** fix num. processed form delete **/
-                num_proc -= 3;
-                curr_pntr -= count + 1;
-            }
-            store_buff_char(curr_pntr + count + 1, in_buff[num_proc + count],
-                            1);
-        }
-        /** now print the characters I have put in **/
+        overwrite_buff_part(amount + 1);
+        /* Print inserted characters */
         printbuff(curr_pntr, amount + 1);
     }
     num_proc = num_proc + amount;
