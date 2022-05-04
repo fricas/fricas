@@ -42,10 +42,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "spadcolors.H1"
 #include "util.H1"
 
-#if 0
-int colors[100];
-#endif
-
 static unsigned long    pixels[smoothConst+1];
 
 
@@ -302,61 +298,6 @@ makeColors(Display *dsply, int scrn, Colormap *colorMap,
     return (colorNum);
 }
 
-#ifdef OLD
-/***********************************************************************
-  KF 6/14/90
-  INPUT: display dsply, screen scrn
-  OUTPUT: a pointer to the permutation color vector (permIndex)
-  PURPOSE: when called for the first time, this procedure creates a
-       permutation vector of the color table spadColor.  It
-       returns the pointer to this vector for subsequent calls.
-
-***********************************************************************/
-
-int
-makePermVector(Display *dsply, int scrn, unsigned long **permIndex)
-{
-    static int firstTime = yes;
-    unsigned long *spadColorsToo;
-    static unsigned long *pIndex;
-    Colormap cmap;
-    int num_colors;
-    int i, ts;
-
-    if (firstTime) {
-
-        /* initialization */
-
-        cmap = DefaultColormap(dsply, scrn);    /* what are other cmaps?? */
-        pIndex = (unsigned long *) saymem("makePermVector", Colorcells, sizeof(unsigned long));
-
-        /* get spadColors table */
-
-        if ((num_colors = makeColors(dsply, scrn, &cmap, &spadColorsToo, &ts)) < 0) {
-            printf("num_colors < 0!!\n");
-            exit(-1);
-        }
-
-        /* initialize unused slots in permutation vector */
-
-        for (i = 0; i < spadColorsToo[0]; i++)
-            pIndex[i] = 0;
-        for (i = num_colors; i < Colorcells; i++)
-            pIndex[i] = 0;
-
-        /* make permutation vector */
-
-        for (i = 0; i < num_colors; i++)
-            pIndex[spadColorsToo[i]] = i;
-
-        firstTime = no;
-    }
-
-    *permIndex = pIndex;
-    return (Colorcells);
-}
-
-#endif
 
 /******************************************************
  * int makeNewColorMap(dsply,colorMap,smoothHue)      *

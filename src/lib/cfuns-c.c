@@ -65,24 +65,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #  define getegid() getgid()
 #endif
 
-int
-addtopath(char *dir)
-{
-    char *path, *newpath;
-
-    path = getenv("PATH");
-    if (path == NULL)
-        return -1;
-
-    newpath = (char *) malloc(1 + strlen(path) + strlen(dir) + strlen("PATH=:"));
-    if (newpath == NULL)
-        return -1;
-
-    sprintf(newpath, "PATH=%s;%s", path, dir); /* MSYS/MinGW ??? */
-
-    return putenv(newpath);
-}
-
 /*
  * Test whether the path is the name of a directory.  Returns 1 if so, 0 if
  * not, -1 if it doesn't exist.
@@ -117,7 +99,7 @@ makedir(char *path)
 #endif
 }
 
-int
+static int
 make_path_from_file(char *s, char *t)
 {
     char *pos = NULL;
@@ -201,58 +183,11 @@ writeablep(char *path)
 }
 
 
-int
-readablep(char *path)
-{
-    struct stat buf;
-    int code;
-
-    code = stat(path, &buf);
-    if (code == -1) {
-        return (-1);
-    }
-    else if (geteuid() == buf.st_uid) {
-        return ((buf.st_mode & S_IREAD) != 0);
-#ifdef S_IRGRP
-    }
-    else if (getegid() == buf.st_gid) {
-        return ((buf.st_mode & S_IRGRP) != 0);
-#endif
-#ifdef S_IROTH
-    }
-    else {
-     return ((buf.st_mode & S_IROTH) != 0);
-#endif
-    };
-    return ( 1 ); /* MSYS/MinGW */
-}
-
-
-long
-findString(char *file, char *string)
-{
-    int nstring, charpos;
-    FILE *fn;
-    char buffer[1024];
-
-    if ((fn = fopen(file, "r")) == NULL)
-        return -1;
-
-    for (charpos = 0, nstring = strlen(string);
-         fgets(buffer, sizeof buffer, fn) != NULL;
-         charpos += strlen(buffer)
-        )
-        if (!strncmp(buffer, string, nstring))
-            return charpos;
-    return -1;
-
-}
-
 #ifdef HOST_HAS_DIRECTORY_OPERATIONS
 
 #include <dirent.h>
 
-char * fricas_copy_string(char *str)
+static char * fricas_copy_string(char *str)
 {
     char * res = malloc(strlen(str) + 1);
     if (res) {
