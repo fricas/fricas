@@ -214,4 +214,58 @@ test_factor([x^4 + 5, x^4 + x + 7], e3)
 test_factor([a2^2 - 5, a2^2 - 3, a2^2 - 2], e3)
 test_factor([(x^2+y)^4 + 5, (x^2+y)^4 + (x^2+y) + 7], e3)
 
+testcase "xpoly"
+
+xD := XDPOLY(OVAR([r, s, t]), INT)
+fM := FreeMonoid(OVAR([r, s, t]))
+rd := monomial(1, r::fM)$xD
+sd := monomial(1, s::fM)$xD
+td := monomial(1, t::fM)$xD
+
+pd1 := sd*td*sd
+-- used to fail
+testTrue("(w1 := retract(pd1)@fM; true)")
+testEquals("pd1", "monomial(1, w1)$xD")
+uFM := Union(fM, "failed")
+testEquals("retract(pd1*pd1)@fM", "w1*w1")
+testTrue("not(retractIfCan(2*pd1)@uFM case fM)")
+testTrue("not(retractIfCan(pd1 + 1)@uFM case fM)")
+testLibraryError("retract(pd1 + rd)@fM")
+
+xR := XRPOLY(OVAR([r, s, t]), INT)
+rr := monomial(1, r::fM)$xR
+sr := monomial(1, s::fM)$xR
+tr := monomial(1, t::fM)$xR
+
+pr1 := monomial(1, w1)$xR
+testEquals("pr1", "unexpand(pd1)$xR")
+testEquals("retract(pr1)@fM", "w1")
+
+pr2 := rr*(sr+tr + 1)*(tr + rr)
+pd2 := expand(pr2)
+testEquals("pr2", "unexpand(pd2)$xR")
+pr3 := (sr+1)*(tr -1)*(rr + 3)
+testEquals("numberOfMonomials(pr3)", "8")
+pd3 := expand(pr3)
+testEquals("pr3", "unexpand(pd3)$xR")
+testEquals("leadingCoefficient(pr3)", "1")
+testEquals("leadingSupport(pr3)", "s::fM * t::fM * r::fM")
+testEquals("expand(pr2*pr3)", "pd2*pd3")
+testEquals("sh(pr2, pr3)", "unexpand(sh(pd2, pd3))$xR")
+testEquals("sh(pr1, pr3)", "sh(pr3, pr1)")
+testEquals("expand(mirror(pr3))", "mirror(expand(pr3))")
+testEquals("mirror(pr3)*pr3", "mirror(mirror(pr3)*pr3)")
+
+xDR := XRPOLY(OVAR([x, y]), xD)
+xx := monomial(1, x::FreeMonoid(OVAR([x, y])))$xDR
+yx := monomial(1, y::FreeMonoid(OVAR([x, y])))$xDR
+-- used to fail
+testEquals("(xx*sx)*tx", "xx*(sx*tx)")
+testEquals("(xx*sx)*tx", "sx*tx*xx")
+
+xRf := XRPOLY(OVAR([x, y]), PF(5))
+xr := monomial(1, x::FreeMonoid(OVAR([x, y])))$xRf
+-- used to fail
+testEquals("sh(xr*xr*xr, xr*xr*xr)", "0")
+
 statistics()

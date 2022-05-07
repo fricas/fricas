@@ -46,11 +46,11 @@ FreeModuleCategory(R, S) : Category == Exports where
    S : SetCategory
 
    Exports == Join(BiModule(R, R), IndexedDirectProductCategory(R, S)) with
-        coefficients       : % -> List R
+        coefficients : % -> List(R)
           ++ \spad{coefficients(x)} returns the list of coefficients of \spad{x}.
-        support            : % -> List S
+        support : % -> List(S)
           ++ \spad{support(x)} returns the list of basis elements with nonzero coefficients.
-        monomials          : % -> List %
+        monomials : % -> List(%)
           ++ \spad{monomials(x)} returns the list of \spad{r_i*b_i}
           ++ whose sum is \spad{x}.
         coefficient : (%, S) -> R
@@ -62,6 +62,24 @@ FreeModuleCategory(R, S) : Category == Exports where
           ++ \spad{linearExtend: (f, x)} returns the linear extension
           ++ of a map defined on the basis applied to a linear combination
       add
+
+        support(p : %) : List(S) == [t.k for t in listOfTerms(p)]
+
+        coefficients(p : %) : List(R) == [t.c for t in listOfTerms(p)]
+
+        monomials(p : %) : List(%) ==
+            [monomial(t.c, t.k) for t in listOfTerms(p)]
+
+        if S has Comparable then
+
+            leadingSupport(p : %) : S == leadingTerm(p).k
+
+            leadingCoefficient(p : %) : R == leadingTerm(p).c
+
+            leadingMonomial(p : %) : % ==
+                t := leadingTerm(p)
+                monomial(t.c, t.k)
+
         if R has Comparable and S has Comparable then
           smaller?(p : %, q : %) : Boolean ==
               repeat
