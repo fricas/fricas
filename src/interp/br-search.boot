@@ -786,7 +786,6 @@ generalSearchDo(htPage,flag) ==
     STRCONC(char '_[,acc,char '_])
   form := mkDetailedGrepPattern(kindCode,name,nargs,npat)
   lines := applyGrep(form,'libdb)
---lines := dbReadLines resultFile
   if MEMQ(which,'(ops attrs)) then lines := dbScreenForDefaultFunctions lines
   kind :=
     which = 'cons =>

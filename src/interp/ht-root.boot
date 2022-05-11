@@ -130,14 +130,9 @@ htGlossPage(htPage,pattern,tryAgain?) ==
   grepForm := mkGrepPattern(filter,'none)
   $key: local := 'none
   results := applyGrep(grepForm,'gloss)
-  --pathname := STRCONC('"/tmp/",PNAME resultFile,'".text.", getEnv '"SPADNUM")
-  --instream := MAKE_INSTREAM(pathname)
   defstream := MAKE_INSTREAM(STRCONC(getEnv '"FRICAS",
                                      '"/algebra/glossdef.text"))
   lines := gatherGlossLines(results,defstream)
-  -- OBEY STRCONC('"rm -f ", pathname)
-  --PROBE_-FILE(pathname) and DELETE_-FILE(pathname)
-  --SHUT instream
   heading :=
     pattern = '"" => '"Glossary"
     null lines => ['"No glossary items match {\em ",pattern,'"}"]
@@ -167,7 +162,6 @@ htGlossPage(htPage,pattern,tryAgain?) ==
 gatherGlossLines(results,defstream) ==
   acc := nil
   for keyline in results repeat
-    --keyline := read_line instream
     n := charPosition($tick,keyline,0)
     keyAndTick := SUBSTRING(keyline,0,n + 1)
     byteAddress := string2Integer SUBSTRING(keyline,n + 1,nil)
