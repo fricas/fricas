@@ -107,6 +107,7 @@ $trans_key := [ _
 
 $trans_key_id := [ _
                 ["break", "break"], _
+                ["ITERATE", "iterate"], _
                 ["DEFAULT", "default"], _
                 ["RULE", "rule"] _
                 ]

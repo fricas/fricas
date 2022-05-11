@@ -253,6 +253,8 @@ boo_comp1(x) ==
     $exitModeStack : local := []
     $returnMode : local := $EmptyMode
     $leaveLevelStack : local := []
+    $iterate_tag : local := []
+    $iterate_count : local := 0
     $CategoryFrame : local := [[[]]]
     $insideFunctorIfTrue : local := false
     $insideWhereIfTrue : local := false
@@ -332,9 +334,11 @@ S_process(x) ==
     $semanticErrorStack : local := nil
     $warningStack : local := nil
     $exitMode : local := $EmptyMode
-    $exitModeStack : local := nil
+    $exitModeStack : local := []
     $returnMode : local := $EmptyMode
-    $leaveLevelStack : local := nil
+    $leaveLevelStack : local := []
+    $iterate_tag : local := []
+    $iterate_count : local := 0
     $CategoryFrame : local := [[[]]]
     $insideFunctorIfTrue : local := false
     $insideWhereIfTrue : local := false

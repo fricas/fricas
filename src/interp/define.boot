@@ -634,6 +634,7 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
     $insideCapsuleFunctionIfTrue: local:= true
     $CapsuleModemapFrame: local:= e
     $CapsuleDomainsInScope: local:= get("$DomainsInScope","special",e)
+    $iterate_tag : local := []
     $returnMode:= m
     $op: local := nil
     [$op,:argl]:= form

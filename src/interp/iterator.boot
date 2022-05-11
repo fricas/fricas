@@ -90,6 +90,8 @@ compRepeatOrCollect(form,m,e) ==
   fn(form,[m,:$exitModeStack],[#$exitModeStack,:$leaveLevelStack],$formalArgList
     ,e) where
       fn(form,$exitModeStack,$leaveLevelStack,$formalArgList,e) ==
+        $iterate_tag : local := [MKQ(GENSYM())]
+        $iterate_count : local := 0
         $until: local := nil
         [repeatOrCollect,:itl,body]:= form
         itl':=
@@ -115,6 +117,8 @@ compRepeatOrCollect(form,m,e) ==
         [body',m',e']:=
           -- (m1:= listOrVectorElementMode targetMode) and comp(body,m1,e) or
             comp(body, bodyMode, e) or return nil
+        if $iterate_count > 0 then
+            body' := ['CATCH, first($iterate_tag), body']
         if $until then
           [untilCode,.,e']:= comp($until,$Boolean,e')
           itl':= substitute(["UNTIL",untilCode],'$until,itl')

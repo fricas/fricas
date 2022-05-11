@@ -370,11 +370,18 @@ primitiveType x ==
 
 DEFPARAMETER($compForModeIfTrue, false)
 
+comp_iterate(s, m, e) ==
+    $iterate_tag is [tag] =>
+        $iterate_count := $iterate_count + 1
+        [["THROW", tag, "$NoValue"], m, e]
+    userError('"iterate used outside a loop")
+
 compSymbol(s,m,e) ==
   s="$NoValue" => ["$NoValue",$NoValueMode,e]
   isFluid s => [s,getmode(s,e) or return nil,e]
   s="true" => ['(QUOTE T),$Boolean,e]
   s="false" => [false,$Boolean,e]
+  s = "iterate" => comp_iterate(s, m, e)
   s = m => [["QUOTE", s], s, e]
   v:= get(s,"value",e) =>
 --+

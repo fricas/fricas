@@ -97,7 +97,6 @@ init_parser_properties() ==
           ["=", 400, 700], _
           ["return", 202, 201, ["parse_Return"]], _
           ["from"], _
-          ["iterate"], _
           ["yield"], _
           ["if", 130, 0, ["parse_Conditional"]], _
           ["try", 130, 0, ["parse_Try"]], _
