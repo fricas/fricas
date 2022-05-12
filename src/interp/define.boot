@@ -1183,9 +1183,6 @@ DomainSubstitutionFunction(definition, parameters,body) ==
 compCategoryItem(x, predl, acc) ==
   x is nil => nil
   --1. if x is a conditional expression, recurse; otherwise, form the predicate
-  x is ["COND",[p,e]] =>
-    predl':= [p,:predl]
-    compCategoryItem(e, predl', acc)
   x is ["IF",a,b,c] =>
     predl':= [a,:predl]
     if b ~= "noBranch" then compCategoryItem(b, predl', acc)
