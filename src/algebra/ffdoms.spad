@@ -552,10 +552,11 @@ FiniteFieldPolynomialPackage(GF): Exports == Implementation where
 
     leastAffineMultiple(f) ==
     -- [LS] p.112
+      if (lcf := leadingCoefficient f) ~= 1 then f := (inv lcf) * f
       qexp := reducedQPowers(f)
       n := degree(f)$SUP
-      b : Matrix GF := transpose matrix [entries vectorise
-           (qexp.i, n) for i in 0..n-1]
+      b : Matrix GF := transpose(matrix([entries(vectorise(qexp(ii), n))
+                                          for ii in 0..n-1]))
       col1 : Matrix GF := new(n, 1, 0)
       col1(1, 1)  := 1
       ns : List Vector GF := nullSpace (horizConcat(col1, b) )
@@ -565,15 +566,13 @@ FiniteFieldPolynomialPackage(GF): Exports == Implementation where
       ----------------------------------------------------------------
       dim := n+2
       coeffVector : Vector GF
-      until empty? ns repeat
-        newCoeffVector := ns.1
+      for nse in ns repeat
         i : PI := qcoerce(n + 1)
-        while newCoeffVector(i) = 0 repeat
+        while nse(i) = 0 repeat
           i := qcoerce(i - 1)
         if i < dim then
           dim := i
-          coeffVector := newCoeffVector
-        ns := rest ns
+          coeffVector := nse
       (coeffVector(1)::SUP) +(+/[monomial(coeffVector.k, _
                sizeGF^((k-2)::NNI))$SUP for k in 2..dim])
 
