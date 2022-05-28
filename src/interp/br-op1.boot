@@ -151,7 +151,8 @@ dbShowOp1(htPage,opAlist,which,key) ==
   if u := htpProperty(page,'specialMessage) then APPLY(first u,rest u)
   htSayStandard('"\beginscroll ")
   FUNCALL(fn,page,opAlist,which,data) --apply branch function
-  dbOpsExposureMessage()
+  if $atLeastOneUnexposed then
+      htSay '"{\em *} = unexposed"
   htSayStandard("\endscroll ")
   dbPresentOps(page,which,branch)
   htShowPageNoScroll()
@@ -169,9 +170,6 @@ dbShowOpHeading(heading, branch) ==
     branch = 'conditions => '" organized by conditions"
     '""
   [:heading, suffix]
-
-dbOpsExposureMessage() ==
-  $atLeastOneUnexposed => htSay '"{\em *} = unexposed"
 
 fromHeading htPage ==
   null htPage => '""
