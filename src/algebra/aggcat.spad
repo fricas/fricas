@@ -1655,13 +1655,6 @@ StreamAggregate(S : Type) : Category ==
            error "index out of range"
        first x
 
-   elt(x : %, i : UniversalSegment(Integer)) ==
-       l := low(i) - minIndex x
-       l < 0 => error "index out of range"
-       not hasHi i => copy(rest(x, l::NonNegativeInteger))
-       (h := high(i) - minIndex x) < l => empty()
-       first(rest(x, l::NonNegativeInteger), (h - l + 1)::NonNegativeInteger)
-
    if % has shallowlyMutable then
 
        concat(x : %, y : %) == concat!(copy x, y)
@@ -2042,14 +2035,23 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
         for k in k.. for j in j..n repeat qsetelt!(r, k, elt(b, j))
         r
 
-    elt(a : %, s : UniversalSegment(Integer)) ==
-        l := low(s)
-        h := if hasHi s then high(s) else maxIndex a
-        l < minIndex a or h > maxIndex a => error "index out of range"
-        r := stupidnew(max(0, h - l + 1)::NonNegativeInteger, a, a)
-        for k in minIndex r.. for i in l..h repeat
-            qsetelt!(r, k, qelt(a, i))
-        r
+    elt(x : %, seg : UniversalSegment(Integer)) ==
+        step := incr seg
+        zero? step => error "zero step size"
+        mn := minIndex x
+        mx := maxIndex x
+        lo := low seg
+        bound := if step < 0 then mn else mx
+        hi := if hasHi seg then high seg else bound
+        -- Compute the number of entries.
+        n: Integer := sign(step)*(hi-lo)
+        n < 0 => empty()
+        n := 1 + ((hi - lo) quo step)
+        z: % := new(n::NonNegativeInteger, qelt(x, mn))
+        -- There will be out of range errors if x.i cannot be accessed.
+        for i in lo .. hi by step for j in mn .. repeat
+            qsetelt!(z, j, qelt(x, i))
+        z
 
     insert(a : %, b : %, i : Integer) ==
         m := minIndex b
@@ -2360,6 +2362,37 @@ ListAggregate(S : Type) : Category == Join(StreamAggregate S,
        r := i
        while not empty? x repeat (r := f(r, first x); x := rest x)
        r
+
+   elt(x : %, seg : UniversalSegment(Integer)) ==
+       step := incr seg
+       zero? step => error "zero step size"
+       mn := minIndex x
+       mx := maxIndex x
+       neg?: Boolean := step < 0
+       if neg? then
+           step := - step
+           lo := if hasHi seg then high seg else mn
+           hi := low seg
+           lo > hi => return empty()
+           hi > mx => error "index out of range"
+           lo := hi - step*((hi-lo) quo step) -- adapt to exact bounds
+           lo < mn => error "index out of range"
+         else
+           hi := if hasHi seg then high seg else mx
+           lo := low seg
+           lo > hi => return empty()
+           lo < mn or lo > mx => error "index out of range"
+           hi := lo + step*((hi-lo) quo step) -- adapt to exact bounds
+           hi > mx => error "index out of range"
+       l: % := empty()
+       z := rest(x, (lo-mn) :: NonNegativeInteger)
+       while lo < hi repeat
+           l := concat(first z, l)
+           z := rest(z, step :: NonNegativeInteger)
+           lo := lo + step
+       l := concat(first z, l)
+       neg? => l
+       reverse! l
 
    if S has BasicType then
        reduce(f, x, i, a) ==

@@ -9,6 +9,12 @@
 ++ cause lazy evaluation if necessary to determine if there are
 ++ entries.  Functions which call 'empty?', e.g. 'first' and 'rest',
 ++ will also cause lazy evaluation if necessary.
+++ Elements of LazyStreamAggregate are computed only when strictly
+++ needed.  Lazy computation means that potential errors are
+++ delayed, so errors are detected later than in case of normal
+++ (eager) evaluation used by other aggregates.  In some cases
+++ computation that would signal error when using eager evaluation
+++ can succeed when using lazy evaluation.
 
 LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
   remove : (S -> Boolean, %) -> %
@@ -289,17 +295,6 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
       concat(first(x, (low - MIN) :: NNI), rest(x, (high - MIN + 1) :: NNI))
     not index?(low,x) => error "delete: index out of range"
     first(x, (low - MIN) :: NNI)
-
-  elt(x : %, seg : U) ==
-    low := low(seg)
-    hasHi seg =>
-      high := high(seg)
-      high < low => empty()
-      (not index?(low, x)) or (not index?(high, x)) =>
-        error "elt: index out of range"
-      first(rest(x, (low - MIN) :: NNI), (high - low + 1) :: NNI)
-    not index?(low,x) => error "elt: index out of range"
-    rest(x, (low - MIN) :: NNI)
 
   insert(s : S, x : %, n : I) ==
     not index?(n,x) => error "insert: index out of range"
@@ -1098,6 +1093,64 @@ Stream(S : Type) : Exports == Implementation where
         p(frst x) => concat(frst x, empty())
         x
       suntill(p, x)
+
+--% STAGG functions
+
+  -- local
+    ms(m: I, n: I, s: %): % == delay
+      empty? s => empty()
+      zero? n => concat(frst s, ms(m, m-1, rst s))
+      ms(m, n-1, rst s)
+
+    -- local
+    eltPositiveStep(x : %, seg : U): % == delay
+      step := incr seg
+      lo := low seg
+      hasHi seg =>
+        hi := high seg
+        hi < lo => empty()
+        hi := lo + step*((hi-lo) quo step)
+        z := first(rest(x, (lo - MIN) :: NNI), (hi - lo + 1) :: NNI)
+        one? step => z
+        ms(step, 0, z)
+      z := rest(x, (lo - MIN) :: NNI)
+      one? step => copy z
+      ms(step, 0, z)
+
+    -- local
+    errorStream(): % == delay error "elt: no evaluation possible"
+
+    -- local
+    eltNegativeStep(x : %, seg : U): % == delay
+      step := - incr seg
+      hi := low seg
+      lo := if hasHi seg then high seg else MIN
+      lo > hi => empty()
+      lo := hi - step*((hi-lo) quo step) -- adapt to exact bounds
+      mustEventuallyFail?: Boolean := lo < MIN
+      if mustEventuallyFail? then
+        lo := hi - step*((hi-MIN) quo step) -- adapt to exact bounds
+      z := rest(x, (lo - MIN) :: NNI)
+      l: % := empty()
+      while lo < hi repeat
+        l := concat(first z, l)
+        z := rest(z, step :: NonNegativeInteger)
+        lo := lo + step
+      result := concat(first z, l)
+      -- If mustEventuallyFail? then we would eventually access a
+      -- non-existing stream element of x, so we create a finite
+      -- stream z of n elements that will give an error for
+      -- "empty?(rest(z, n)). This signals that according to the
+      -- creation that stream would not be empty, but the next element
+      -- would access x(k) for k<MIN.
+      mustEventuallyFail? => concat(result, errorStream())
+      result
+
+    elt(x : %, seg : U): % ==
+      step := incr seg
+      zero? step => error "zero step size"
+      step > 0 => eltPositiveStep(x, seg)
+      eltNegativeStep(x, seg)
 
 --  if S has SetCategory then
 --    mapp: ((S, S) -> S, %, %, S) -> %
