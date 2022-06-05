@@ -1,0 +1,66 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "Ore algebras"
+
+testcase "shift algebra"
+
+nOre := Fraction(Integer)
+nPol := Fraction(Polynomial(nOre))
+
+shiftn(p : nPol) : nPol == eval(p, 'n, n+1)
+ishiftn(p : nPol) : nPol == eval(p, 'n, n-1)
+zerod(p : nPol) : nPol == 0
+
+oRe1 := UnivariateSkewPolynomial('sn, nPol, morphism(shiftn, ishiftn), zerod)
+
+sn := monomial(1,1)$oRe1
+vn := n::(nPol)::oRe1
+
+a := n*sn + 5
+b := (n*sn)^2 + 2*sn + n^3
+
+testEquals("a*b - b*a", "-2*sn^2 + (3*n^3 + 3*n^2  + n)*sn")
+testEquals("a*b - b*a", "commutator(a, b)")
+
+c := sn + 2*n
+
+-- Only for coefficients which are not a field
+-- testEquals("content((n^2 - 1)*b)", "n^2 - 1")
+
+qr := leftDivide(b, a)
+testEquals("b", "a*qr.quotient + qr.remainder")
+testTrue("degree(qr.remainder) < degree(a)")
+
+d := (1/n)*sn^4 + sn^2
+qr := leftDivide(d, b)
+testEquals("d", "b*qr.quotient + qr.remainder")
+testTrue("degree(qr.remainder) < degree(b)")
+
+qr := rightDivide(b, a)
+testEquals("b", "qr.quotient*a + qr.remainder")
+testTrue("degree(qr.remainder) < degree(a)")
+
+qr := rightDivide(d, b)
+testEquals("d", "qr.quotient*b + qr.remainder")
+testTrue("degree(qr.remainder) < degree(b)")
+
+gr := leftExtendedGcd(c*a, c*b)
+g := gr.generator
+testEquals("g", "c*a*gr.coef1 + c*b*gr.coef2")
+testEquals("leftRemainder(c*a, g)", "0")
+testEquals("leftRemainder(c*b, g)", "0")
+
+gr := rightExtendedGcd(a*c, b*c)
+g := gr.generator
+testEquals("g", "gr.coef1*a*c + gr.coef2*b*c")
+testEquals("rightRemainder(a*c, g)", "0")
+testEquals("rightRemainder(b*c, g)", "0")
+
+gr2 := right_ext_ext_GCD(a*c, b*c)
+testEquals("g", "gr2.generator")
+testEquals("g", "gr2.coef1*a*c + gr2.coef2*b*c")
+testEquals("gr2.coefu*a*c", "-gr2.coefv*b*c")
+testEquals("-gr2.coefu*a*c", "leftLcm(a*c, b*c)")
+
+statistics()
