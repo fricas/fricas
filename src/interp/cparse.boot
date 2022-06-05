@@ -491,7 +491,7 @@ npSegment()==  npEqPeek "SEG"  and npPushId() and npFromdom()
 
 npInterval()==
   npArith() and
-   (npSegment() and ((npEqPeek("|")
+   (npSegment() and (((npEqPeek("|") or npEqPeek("by"))
       and npPush(pfApplication(npPop1(),npPop1()))) or
      (npArith() and npPush(pfInfApplication(npPop2(),npPop2(),npPop1())))
             or npPush(pfApplication(npPop1(),npPop1()))) or true)
