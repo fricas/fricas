@@ -871,9 +871,10 @@ bootStrapError(functorForm,sourceFile) ==
       ''%b,MKQ namestring sourceFile,''%d,'"needs to be compiled"]]]]
 
 compAdd(['add,$addForm,capsule],m,e) ==
+  addForm := $addForm
   $bootStrapMode = true =>
-    if $addForm is ["@Tuple", :.] then code := nil
-       else [code,m,e]:= comp($addForm,m,e)
+    if addForm is ["@Tuple", :.] then code := nil
+       else [code, m, e]:= comp(addForm, m, e)
     [['COND, _
        ['$bootStrapMode, _
            code],_
@@ -881,9 +882,8 @@ compAdd(['add,$addForm,capsule],m,e) ==
          '"from", ''%b, MKQ namestring($edit_file), ''%d, _
          '"needs to be compiled"]]]],
      m, e]
-  $addFormLhs: local:= $addForm
-  addForm := $addForm
-  if $addForm is ["SubDomain",domainForm,predicate] then
+  $addFormLhs: local:= addForm
+  if addForm is ["SubDomain", domainForm, predicate] then
 --+
     $NRTaddForm := domainForm
     NRTgetLocalIndex(domainForm, e)
@@ -892,10 +892,10 @@ compAdd(['add,$addForm,capsule],m,e) ==
     [$addForm, m1, e] := compSubDomain1(domainForm, predicate, m, e)
   else
 --+
-    $NRTaddForm := $addForm
+    $NRTaddForm := addForm
     [$addForm, m1, e]:=
-      $addForm is ["@Tuple", :.] => BREAK()
-      compOrCroak($addForm,$EmptyMode,e)
+        addForm is ["@Tuple", :.] => BREAK()
+        compOrCroak(addForm, $EmptyMode, e)
   not(isCategoryForm(m1)) or m1 = '(Category) =>
       userError(concat('"need domain before 'add', got", addForm,
                        '"of type", m1))

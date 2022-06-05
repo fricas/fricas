@@ -90,10 +90,10 @@ getConstructorAbbreviation op ==
 
 mkUserConstructorAbbreviation(c,a,type) ==
   if not atom c then c := first c  --  Existing constructors will be wrapped
-  constructorAbbreviationErrorCheck(c,a,type,'abbreviationError)
+  constructorAbbreviationErrorCheck(c, a, type)
   clearClams()
   clearConstructorCache(c)
-  installConstructor(c,type)
+  installConstructor(c)
   setAutoLoadProperty(c)
 
 abbQuery(x) ==
@@ -101,14 +101,14 @@ abbQuery(x) ==
    sayKeyedMsg("S2IZ0001",[abb,GETDATABASE(x,'CONSTRUCTORKIND),x])
   sayKeyedMsg("S2IZ0003",[x])
 
-installConstructor(cname,type) ==
+installConstructor(cname) ==
   (entry := getCDTEntry(cname,true)) => entry
   item := [cname,GETDATABASE(cname,'ABBREVIATION),nil]
   if BOUNDP '$lowerCaseConTb and $lowerCaseConTb then
     HPUT($lowerCaseConTb,cname,item)
     HPUT($lowerCaseConTb,DOWNCASE cname,item)
 
-constructorAbbreviationErrorCheck(c,a,typ,errmess) ==
+constructorAbbreviationErrorCheck(c,a,typ) ==
   siz := SIZE (s := PNAME a)
   if typ = 'category and siz > 7
     then throwKeyedErrorMsg('precompilation,"S2IL0021",NIL)
@@ -120,16 +120,6 @@ constructorAbbreviationErrorCheck(c,a,typ,errmess) ==
   a=abb and c~=name => lisplibError(c,a,typ,abb,name,type,'duplicateAbb)
   a=name and c~=name => lisplibError(c,a,typ,abb,name,type,'abbIsName)
   c=name and typ~=type => lisplibError(c,a,typ,abb,name,type,'wrongType)
-
-abbreviationError(c,a,typ,abb,name,type,error) ==
-  sayKeyedMsg("S2IL0009",[a,typ,c])
-  error='duplicateAbb =>
-    throwKeyedMsg("S2IL0010",[a,typ,name])
-  error='abbIsName =>
-    throwKeyedMsg("S2IL0011",[a,type])
-  error='wrongType =>
-    throwKeyedMsg("S2IL0012",[c,type])
-  NIL
 
 abbreviate u ==
   u is ['Union,:arglist] =>

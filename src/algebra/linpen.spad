@@ -587,7 +587,6 @@ LinearMultivariateMatrixPencil(R) : Exports == Implementation where
       lst_row
 
     qrowIndices (p:%, off:NNI, j:NNI, l:NNI) : List(NNI) ==
-      n := (p.nc + 1 - off)::NNI
       j_wrk := (off+j-1)::NNI
       A_wrk := elt(p.A, l)
       lst_col : List(NNI) := []
@@ -1039,7 +1038,7 @@ LinearMultivariateMatrixPencil(R) : Exports == Implementation where
 
       eliminationTransformations (p:%, row_P:List(NNI), col_P:List(NNI), _
           row_Q:List(NNI), col_Q:List(NNI), sol:List(EQG)) : List(Matrix(R)) ==
-        lst_trn := eliminationTransformations(p, row_P, col_P, row_Q, col_Q)
+        eliminationTransformations(p, row_P, col_P, row_Q, col_Q)
         P_wrk := new(p.nr, p.nr, 0$R)$Matrix(R)
         Q_wrk := new(p.nc, p.nc, 0$R)$Matrix(R)
         sym_P := 'a::Symbol
@@ -1152,9 +1151,7 @@ LinearMultivariateMatrixPencil(R) : Exports == Implementation where
         tmp_var := map(variables, lst_eqn)$ListFunctions2(G, List(Symbol))
         lst_var : List(Symbol) := removeDuplicates(concat(tmp_var))
         tDMP := DistributedMultivariatePolynomial(lst_var, R)
-        tOVL := OrderedVariableList(lst_var)
         tPRD := DirectProduct(#lst_var, NNI)
-        var_wrk : List(tOVL) := [variable(var)::tOVL for var in lst_var]
         eqn_wrk : List(tDMP) := [pToDmp(eqn)$PolToPol(lst_var, R) for eqn in lst_eqn]
         bas_gro := groebner(eqn_wrk)$GroebnerPackage(R, tPRD, tDMP)
         lst_gro : List(G) := [dmpToP(eqn)$PolToPol(lst_var, R) for eqn in bas_gro]

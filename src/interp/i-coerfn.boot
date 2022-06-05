@@ -611,14 +611,6 @@ Complex2Expr(u, source is [.,S], target is [., T]) ==
 
 --% Integer
 
-I2EI(n,source,target) ==
-  n = '_$fromCoerceable_$ => nil
-  if not ODDP(n) then n else coercionFailure()
-
-I2OI(n,source,target) ==
-  n = '_$fromCoerceable_$ => nil
-  if ODDP(n) then n else coercionFailure()
-
 I2PI(n,source,target) ==
   n = '_$fromCoerceable_$ => nil
   if n > 0 then n else coercionFailure()

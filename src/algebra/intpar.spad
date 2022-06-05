@@ -413,7 +413,6 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
         lden1 := [denom(g) for g in lg3]
         (mbas, m2) := gcdDecomposition(vector(lden1))$GcdBasis(UP)
         n1 := #lg3
-        n2 := #mbas
         mbasl := entries(mbas)
         mbasfl := [[frr.factor for frr in factorList(ufactor(mbasp))]
                      for mbasp in mbasl]
@@ -550,11 +549,9 @@ ParametricTranscendentalIntegration(F, UP) : Exports == Implementation where
         vg2 := vector([lg2])$Vector(GP)
         ldg : List(Z) := [degree(g2) for g2 in lg2]
         d := reduce(max, ldg)
-        cba := [0$F for bv in cb]
         j := d
         repeat
             last_iter : Boolean := true
-            n1 := #cb
             lgj : List(F) := []
             for i in 1..#vg2 repeat
                 gi := vg2(i)
@@ -821,7 +818,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
             lcr := [c::RF for c in lc]
             res1 := do_degrad(b::RF, lcr)
             [[retract(re.ratpart)@UP, re.coeffs] for re in res1]
-        n1 := #lc
         s1 := multi_SPDE(a, b, lc, d, der)$RDEaux(F)
         s1 case List(RSOL) =>
             lrs := s1@List(RSOL)
@@ -848,7 +844,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
         for kv in lkv repeat
             nlc := cons(lin_comb(kv, lc), nlc)
         nlc := reverse!(nlc)
-        n2 := #lkv
         s2 := param_SPDE(a, b, nlc, dres.dpar, der, get_rs, do_degrad, x)
         nres : L_Param_UP := []
         for be in s2 repeat
@@ -878,7 +873,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
         lba : List(RF) := [0 for bv in cb]
         cba := [0$F for bv in cb]
         for j in d..0 by -1 repeat
-            n1 := #cb
             lgj : List(F) := []
             for i in 1..n repeat
                 gi := vg2(i)
@@ -976,7 +970,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
         f0 := b/a
         repeat
             last_iter : Boolean := true
-            n1 := #cb
             lgj : List(F) := []
             for i in 1..n repeat
                 gi := vg2(i)
@@ -1083,7 +1076,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
             []
         dk := numer(dku)
         fpu := univariate(fp, k)
-        denfp := denom(fpu)
         der1 : UP -> UP := z1 +-> differentiate(z1,
                (z2 : F) : F +-> differentiate(z2, x), dk)
         rl := normalize(fpu, der1)
@@ -1157,7 +1149,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
             elca := [0 for bv in cb1]
         else
             kk3 := kmax(lk)
-            lk3 := [ki for ki in lk | ki ~= kk3]
             res2 := do_param_rde(fp0, true, nlg, x, kk3, lk1, ext, logi)
             cb1 := [be.coeffs for be in res2]
             elca := [be.ratpart for be in res2]
@@ -1261,8 +1252,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
         denom(dku) ~= 1 => []
         dk := numer(dku)
         fpu := univariate(fp, k)
-        denfp := denom(fpu)
-        nfp := numer(fpu)
         lgu := [univariate(g, k) for g in lg]
         der1 : UP -> UP := z1 +-> differentiate(z1,
                (z2 : F) : F +-> differentiate(z2, x), dk)
@@ -1282,8 +1271,6 @@ ParametricRischDE(R, F) : Exports == Implementation where
         lker := nullSpace(rs3)
         empty?(lker) => []
         lgu := [dr.poly::RF + dr.special for dr in lgd]
-        n1 := #lgu
-        n2 := #lker
         lgu1 : List(RF) := []
         for kv in lker repeat
             lgu1 := cons(lin_comb(kv, lgu), lgu1)
@@ -1483,7 +1470,6 @@ AlgebraicIntegrate2(R0, F, UP, UPUP, R) : Exports == Implementation where
           lpv : List Vector(QF) := []
           lgv : List Vector(QF) := []
           w := integralBasis()$R
-          n := #w
           for h in lh repeat
               lpv := cons(R_to_VQF(h.polypart), lpv)
               lgv := cons(R_to_VQF( h.logpart),lgv)
@@ -1734,7 +1720,6 @@ ParametricIntegration(R, F) : Exports == Implementation where
             c0 := (f*v1)/dv
             if differentiate(c0, x) = 0 then
                 res := c0*gen_polylog(d, v, k0::F)
-                cv : Vector(F) := vector([0])
                 return [ans1, 0, res]$PC_Rec
         res2 := extendedint0(f, x, l, g)
         res2 case "failed" => "failed"

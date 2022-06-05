@@ -70,9 +70,6 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
     import from List(List(Pt))
 
     point : (SF, SF) -> Pt
-    intersectWithHorizLine : (SF, SF, SF, SF, SF) -> Pt
-    intersectWithVertLine : (SF, SF, SF, SF, SF) -> Pt
-    intersectWithBdry : (SF, SF, SF, SF, Pt, Pt) -> Pt
     discardAndSplit : (L Pt, Pt -> B, SF, SF, SF, SF) -> L L Pt
     norm : Pt -> SF
     iClipParametric : (L L Pt, RN, RN) -> CLIPPED
@@ -152,31 +149,6 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
 
     point(xx, yy) == point(l : L SF := [xx, yy])
 
-    intersectWithHorizLine(x1, y1, x2, y2, yy) ==
-      x1 = x2 => point(x1, yy)
-      point(x1 + (x2 - x1)*(yy - y1)/(y2 - y1), yy)
-
-    intersectWithVertLine(x1, y1, x2, y2, xx) ==
-      y1 = y2 => point(xx, y1)
-      point(xx, y1 + (y2 - y1)*(xx - x1)/(x2 - x1))
-
-    intersectWithBdry(xMin, xMax, yMin, yMax, pt1, pt2) ==
-      -- pt1 is in rectangle, pt2 is not
-      x1 := xCoord pt1; y1 := yCoord pt1
-      x2 := xCoord pt2; y2 := yCoord pt2
-      if y2 > yMax then
-        pt2 := intersectWithHorizLine(x1, y1, x2, y2, yMax)
-        x2 := xCoord pt2; y2 := yCoord pt2
-      if y2 < yMin then
-        pt2 := intersectWithHorizLine(x1, y1, x2, y2, yMin)
-        x2 := xCoord pt2; y2 := yCoord pt2
-      if x2 > xMax then
-        pt2 := intersectWithVertLine(x1, y1, x2, y2, xMax)
-        x2 := xCoord pt2; y2 := yCoord pt2
-      if x2 < xMin then
-        pt2 := intersectWithVertLine(x1, y1, x2, y2, xMin)
-      pt2
-
     discardAndSplit(pointList, pred, xMin, xMax, yMin, yMax) ==
       ans : L L Pt := []
       list : L Pt  := []
@@ -186,15 +158,8 @@ TwoDimensionalPlotClipping() : Exports == Implementation where
         pt := first pointList
         pointList := rest pointList
         pred(pt) =>
-          if (empty? list) and lastPt? then
-            bdryPt := intersectWithBdry(xMin, xMax, yMin, yMax, pt, lastPt)
-            -- print bracket [ coerce bdryPt , coerce pt ]
-            --list := cons(bdryPt, list)
           list := cons(pt, list)
         if not empty? list then
-          bdryPt := intersectWithBdry(xMin, xMax, yMin, yMax, first list, pt)
-          -- print bracket [ coerce bdryPt, coerce first list]
-          --list := cons(bdryPt, list)
           ans := cons( list, ans)
         lastPt := pt
         lastPt? := true

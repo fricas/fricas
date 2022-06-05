@@ -524,7 +524,6 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
     greater_SI(max, k) => opvec.(add_SI(k, 2))
     maxIndex
   if greater_SI(finish, maxIndex) then systemError '"limit too large"
-  numArgs := if hashCode? sig then -1 else (#sig)-1
   success := nil
   $isDefaultingPackage: local :=
     -- use special defaulting handler when dollar non-trivial

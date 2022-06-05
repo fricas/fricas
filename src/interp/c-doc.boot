@@ -238,7 +238,6 @@ checkRewrite(name, lines) ==    --similar to checkComments from c-doc
     u := checkAddMacros u
     u := checkTexht u
 --  checkBalance u
-    okBefore := null $checkErrorFlag
     checkArguments u
     if $checkErrorFlag then u := checkFixCommonProblem u
     checkRecordHash u
@@ -502,7 +501,6 @@ checkComments(nameSig,lines) == main where
     u := checkIeEg u
     u := checkSplit2Words u
     checkBalance u
-    okBefore := null $checkErrorFlag
     checkArguments u
     if $checkErrorFlag then u := checkFixCommonProblem u
     v := checkDecorate u

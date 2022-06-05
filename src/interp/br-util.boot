@@ -381,13 +381,6 @@ bcStarConform form ==
   bcStar opOf form
   bcConform form
 
-dbSourceFile name ==
-  u:= GETDATABASE(name,'SOURCEFILE)
-  null u => '""
-  n := PATHNAME_-NAME u
-  t := PATHNAME_-TYPE u
-  STRCONC(n,'".",t)
-
 asharpConstructorName? name ==
   u:= GETDATABASE(name,'SOURCEFILE)
   u and PATHNAME_-TYPE u = '"as"
@@ -510,8 +503,6 @@ dbSayItems(countOrPrefix,singular,plural,:options) ==
   else htSayList([count, '" ", plural])
   for x in options repeat bcHt x
   if count ~= 0 then bcHt '":"
-
-dbBasicConstructor? conname == member(dbSourceFile conname,'("catdef" "coerce"))
 
 htCopyProplist htPage == [[x,:y] for [x,:y] in htpPropertyList htPage]
 

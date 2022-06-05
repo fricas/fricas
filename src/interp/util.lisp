@@ -123,6 +123,7 @@ where the [[${FRICAS}]] variable points to installed tree.
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
 ;;; to the default memory setup to run FriCAS efficiently.
 ;;; This function performs those setup commands.
+#+:GCL
 (defun init-memory-config (&key
                            (cons 500)
                            (fixnum 200)
@@ -135,7 +136,6 @@ where the [[${FRICAS}]] variable points to installed tree.
                            (rpages 1000)
                            (hole 2000) )
   ;; initialize GCL memory allocation parameters
-  #+:GCL
   (progn
     (system:allocate 'cons cons)
     (system:allocate 'fixnum fixnum)
@@ -147,7 +147,6 @@ where the [[${FRICAS}]] variable points to installed tree.
     (system:allocate-contiguous-pages cpages)
     (system:allocate-relocatable-pages rpages)
     (system:set-hole-size hole))
-  #-:GCL
   nil)
 
 #|

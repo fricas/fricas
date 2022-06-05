@@ -497,7 +497,6 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
   -- a list, one for each element of catvecListMaker
   -- indicating under what conditions this
   -- category should be present.  true => always
-  makeCatvecCode:= first catvecListMaker
   domainShell := GETREFV (6 + $NRTdeltaLength)
   for i in 0..4 repeat domainShell.i := base_shell.i
   $template := GETREFV (6 + $NRTdeltaLength)
@@ -518,7 +517,7 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
 
   storeOperationCode := DescendCode(code, true, nil, first catNames,
                                     domainShell, e)
-  outsideFunctionCode:= NRTaddDeltaCode(domainShell)
+  NRTaddDeltaCode(domainShell)
   storeOperationCode:= NRTputInLocalReferences storeOperationCode
   NRTdescendCodeTran(storeOperationCode,nil) --side effects storeOperationCode
   codePart2:=

@@ -184,14 +184,8 @@ fromHeading htPage ==
     ['" {\em from} ",:dbConformGen dnForm,'" {\em under} \ops{",upOp,'"}{",:$pn,:upFence,'"}"]
   domname  := htpProperty(htPage,'domname)
   numberOfUnderlyingDomains := #[x for x in rest GETDATABASE(opOf domname,'COSIG) | x]
---  numberOfUnderlyingDomains = 1 and
---    IFCDR domname and (dn := dbExtractUnderlyingDomain domname) =>
---      ['" {\em from} ",:pickitForm(domname,dn)]
   IFCDR domname => ['" {\em from} ", :dbConformGen domname]
   htpProperty(htPage,'fromHeading)
-
--- pickitForm(form,uarg) ==
---   conform2StringList(form,FUNCTION dbConform,FUNCTION conformString,uarg)
 
 conform2StringList(form, opFn, argFn) ==
   [op1,:args] := form
@@ -366,7 +360,6 @@ dbGatherDataImplementation(htPage,opAlist) ==
   which   := '"operation"
   [nam, :.] := domainForm
   $predicateList: local := GETDATABASE(nam,'PREDICATES)
-  predVector := dom.3
   u := getDomainOpTable2(dom, true, ASSOCLEFT opAlist)
   --u has form ((op,sig,:implementor)...)
   --sort into 4 groups: domain exports, unexports, default exports, others
@@ -877,7 +870,6 @@ mathform2HtString form == escapeString
 getDomainOpTable(dom, fromIfTrue) == getDomainOpTable2(dom, fromIfTrue, [])
 
 getDomainOpTable2(dom, fromIfTrue, ops) ==
-  $predEvalAlist : local := nil
   $returnNowhereFromGoGet: local := true
   domname := dom.0
   conname := first domname

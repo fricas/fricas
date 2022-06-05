@@ -297,25 +297,24 @@ whoUses(opSigList,conform) ==
   acc  := nil
   $conname : local := first conform
   domList := getUsersOfConstructor $conname
-  hash := MAKE_HASHTABLE('EQUAL)
-  for name in allConstructors() | MEMQ(name,domList) repeat
+  for name in domList repeat
     $infovec : local := dbInfovec name
     null $infovec => 'skip           --category
     template := $infovec . 0
-    found := false
+    numvec := getCodeVector1($infovec)
     opacc := nil
     for i in 7..MAXINDEX template repeat
       item := template . i
       item isnt [n,:op] or not MEMQ(op,opList) => 'skip
       index := n
-      numvec := getCodeVector()
       numOfArgs := numvec . index
       null member(numOfArgs,numOfArgsList) => 'skip
       whereNumber := numvec.(index := index + 1)
       template . whereNumber isnt [= $conname,:.] => 'skip
       signumList := dcSig(numvec,index + 1,numOfArgs)
-      opsig := or/[pair for (pair := [op1,:sig]) in opSigList | op1 = op and whoUsesMatch?(signumList,sig,nil)]
-        => opacc := [opsig,:opacc]
+      opsig := or/[pair for (pair := [op1,:sig]) in opSigList |
+                   op1 = op and whoUsesMatch?(signumList,sig,nil)]
+      if opsig then opacc := [opsig,:opacc]
     if opacc then acc := [[name,:opacc],:acc]
   acc
 
@@ -336,25 +335,6 @@ whoUsesMatch1?(signumList,sig,al) ==
 --=======================================================================
 --                   Get Attribute/Operation Alist
 --=======================================================================
-
-koAttrs(conform,domname) ==
-  [conname,:args] := conform
---asharpConstructorName? conname => nil  --assumed
-  'category = GETDATABASE(conname,'CONSTRUCTORKIND) =>
-      koCatAttrs(conform,domname)
-  $infovec: local := dbInfovec conname or return nil
-  $predvec: local :=
-    $domain => $domain . 3
-    GETDATABASE(conname,'PREDICATES)
-  u := [[a,:pred] for [a,:i] in $infovec . 2 | a ~= 'nil and (pred := sublisFormal(args,kTestPred i))]
-                                               ---------  CHECK for a = nil
-  listSort(function GLESSEQP,fn u) where fn u ==
-    alist := nil
-    for [a,:pred] in u repeat
-      op := opOf a
-      args := IFCDR a
-      alist := insertAlist(op,insertAlist(args,[pred],LASSOC(op,alist)),alist)
-    alist
 
 koOps(conform, domname) == main where
 --returns alist of form ((op (sig . pred) ...) ...)
@@ -491,7 +471,6 @@ koaPageFilterByCategory1(htPage,i) ==
         [sig,pred,:aux] := item
         u := dbGetDocTable(op,sig,docTable,which,aux)
         origin := IFCAR u
-        doc    := IFCDR u
         true
     for [origin,:item] in nalist | origin repeat
       member(origin,ancestorList) =>

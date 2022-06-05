@@ -605,7 +605,6 @@ bcSeriesExpansionGen htPage ==
   fun := htpLabelInputString(htPage,'function)
   var := htpLabelInputString(htPage,'variable)
   point := htpLabelInputString(htPage,'point)
-  terms := htpLabelInputString(htPage,'numberOfTerms)
   bcFinish("series",fun,STRCONC(var,'" = ",point))
 
 bcSeriesByFormula(a,b) ==

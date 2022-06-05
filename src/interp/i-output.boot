@@ -512,10 +512,6 @@ tensorApp(u,x,y,d) ==
       d:= APP(opString,x,y,d)
       x:= x + #opString
     [d,x]:= appInfixArg(arg,x,y,d,rightPrec,"left",nil) --app in a right arg
-    wasSimple := atom arg and not NUMBERP arg
-    wasQuotient:= isQuotient op
-    wasNumber:= NUMBERP arg
-    lastOp := op
     firstTime:= nil
   d
 
@@ -530,9 +526,6 @@ tensorWidth u ==
       w:= w + #opString
     if infixArgNeedsParens(arg, rightPrec, "left") then w:= w+2
     w:= w+WIDTH arg
-    wasSimple := atom arg and not NUMBERP arg
-    wasQuotient:= isQuotient op
-    wasNumber:= NUMBERP arg
     firstTime:= nil
   w
 

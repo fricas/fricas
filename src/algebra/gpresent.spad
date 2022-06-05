@@ -1276,7 +1276,6 @@ GroupPresentation() : Exports == Impl where
        if trace then print(message "inferFromRelations rels=" << rels)
        add_to : NNI := 0
        add_gen : Integer := 0
-       add_gap : Integer := 0
        pn := state.closed_point + 1
        pn > n_ind => false
        state.closed_point := pn
@@ -1486,9 +1485,6 @@ GroupPresentation() : Exports == Impl where
 
    toPermutationIfCan(a : %, sg : List(List(Integer)), trace : Boolean
                      ) : Union(PermutationGroup Integer, "failed") ==
-       numberPoints : NNI := 1
-       -- numberPoints is the number of points being permuted. This starts
-       -- at 1 and increases when required to fill in a gap in relator tables.
        gs : List(NNI) := entries(a.gens)
        rs : List(List(Integer)) := a.rels
        if #gs = 0 and #rs = 0 then
@@ -1513,7 +1509,7 @@ GroupPresentation() : Exports == Impl where
        state := [ct, et, inv_tab, 0, numGens, 1, 1, loopLimit]$TC_state
        (nsgens, nrsgens) := convert_words(sg, inv_tab)
        sgens_lens := [#word for word in nsgens]
-       dummy := inferFromRelations(state, concat(nsgens, nrels),
+       inferFromRelations(state, concat(nsgens, nrels),
                                    concat(nrsgens, nrrels),
                                    concat(sgens_lens, rel_lens),
                                    trace)
@@ -1671,7 +1667,6 @@ Homology() : Exports == Impl where
        augmented : Matrix(Integer) := vertConcat(transpose(AInt), BInt)
        --print("homologyGroup free: augmented=" << augmented)
        smitFree : SRESI := completeSmith(augmented)$SMNI
-       leftFree : Matrix(Integer) := smitFree.leftEqMat
        mFree : Matrix(Integer) := smitFree.Smith
        n_rows := nrows(mFree)
        n_cols := ncols(mFree)

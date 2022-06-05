@@ -460,7 +460,6 @@ executeInterpreterCommand command ==
 
 typeCheckInputAreas htPage ==
   -- This needs to be severely beefed up
-  inputAlist := nil
   errorCondition := false
   for entry in htpInputAreaAlist htPage
    | entry is [stringName, ., ., ., 'string, ., spadType, filter] repeat

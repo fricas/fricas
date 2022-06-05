@@ -880,7 +880,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 dega : Z :=
                     ap = 0 => 1
                     degree(ap)
-                vp := res1.v_part
                 degree(fac) = degn1*dega => "iterate"
                 res := cons([fac, ri, res1.v_part, ap, u0^ri*res1.u_part,
                              0, res1.shift_part]$EI_REC, res)
@@ -894,11 +893,8 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
     ei_args2(gd : UP, nf : UP, denf : UP, f_res : Factored(UP),
              k : K, vlst : List(F), ulst : List(F), x : SY
             ) : List(EI_REC)  ==
-        log_case := is?(k, 'log)
-        n1 : Z := 0
         rfac := factorList(f_res)$Factored(UP)
         res : List EI_REC := []
-        degg := degree(gd)
         for fac in rfac repeat
             f1 := fac.factor
             deg1 := degree(f1)
@@ -1174,7 +1170,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         d ~= 1 => res
         -- h1 := height(k)
         coeffs := cd.num
-        n := #coeffs
         a1 := a - 1
         w := -w1*w2
         tt := f + w
@@ -1260,7 +1255,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 s := retract(sq)@Z
                 km := retract(kmq)@Z
                 -- FIXME: choose nonzero element of rl
-                rls := [s*li for li in rl]
                 a := first(cl)
                 a := a/(s*first(rl)::F) + 1
                 w1 := w0^s*(tk::F)^km
@@ -1337,7 +1331,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         n3 := max(n1, n2)
         l : Z := gcd(gexp, n3)
         l = 1 => res1
-        n4 := n3 - n3 quo 2
         ts := new()$Symbol
         t := kernel(ts)$K
         nfp1 := differentiate(nf)
@@ -1353,7 +1346,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 nnp2 := nfp2*denf2 - (2*gexp)::F*denfp1*nfp1*denf1 +
                         ((gexp+1)*gexp)::F*denfp1*denfp1*nf -
                           (gexp::F)*denfp2*nf*denf1
-)endif
+)else
                 t1 := (2*gexp)::F*denfp1
                 t1 := t1*nfp1*denf1
                 ct1 := ((gexp+1)*gexp)::F
@@ -1362,6 +1355,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 t3 := (gexp::F)*denfp2
                 t3 := t3*nf*denf1
                 nnp2 := nfp2*denf2 - t1 + t2 - t3
+)endif
                 f_res1 := resultant(nnp, nnp2)
                 ratl := get_rational_roots(f_res1, t
                                           )$FunctionSpaceRationalRoots(R, F)
@@ -2001,11 +1995,9 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         ngu := multivariate(ng::RF, k)
         lk := varselect(union(tower(f), tower(ngu)), x)
         lk := [k1 for k1 in lk | k1 ~= k]
-        k1 := kmax(lk)
         kf := k::F
         dk := D(kf, x)
         r1 : F := 0
-        ansp : F := 0
         is_sol := true
         rh : F := 0
         am1 : F := 0
@@ -2028,9 +2020,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         [r1, rh, res2.primpart, is_sol]
 
     ei_int_exp(f : F, ng : UP, degs : N, x : SY, k : K) : PSOL2 ==
-        ngu := multivariate(ng::RF, k)
-        lk := union(tower(f), tower(ngu))
-        k1 := ksec(k, varselect(lk, x), x)
         ak := argument(k)(1)
         kf := k::F
         r1 : F := 0
@@ -2052,9 +2041,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     get_scoeff(scand : SREC, denf : UP, k : K,
                der : RF -> RF, res : List(RF)) : List(RF) ==
-        nn := scand.factor
         r0 := scand.ratpart
-        v0 := scand.v_part
         cfac := scand.alg_part
         u0 := scand.u_part
         nf1 := scand.new_f
@@ -2062,7 +2049,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             ak := argument(k)(1)
             u0 := u0*ak^r0
         u_exp := scand.exponent
-        vshift := scand.shift_part
         (d := scand.degree) = 0 =>
             nfp := der(nf1)
             coeff1 := u0::UP*nfp
@@ -2130,7 +2116,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     get_prims(scand : SREC, denf : UP, denf1 : UP, gexp : Z,
               k : K) : List(F) ==
-        nn := scand.factor
         cfac := scand.alg_part
         vshift := scand.shift_part
         uc := scand.coeff
@@ -2149,7 +2134,6 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             zzl : List(F) :=
                 cfac = 0 => [0]
                 zerosOf(cfac)
-            gpow := (gexp exquo d)::Z
             l1 := (d - 1)::N
             lf := d::F
             res : List F := []

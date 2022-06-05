@@ -189,7 +189,7 @@ encodeCategoryAlist(id,alist) ==
     u:= assoc(key,newAl) =>
       argl => RPLACD(u,encodeUnion(id,first newEntry,rest u))
       if newEntry ~= rest u then
-        p:= moreGeneralCategoryPredicate(id,newEntry,rest u) => RPLACD(u,p)
+        p := moreGeneralCategoryPredicate(newEntry, rest(u)) => RPLACD(u, p)
         sayMSG '"Duplicate entries:"
         PRINT [newEntry,rest u]
     newAl:= [[key,:newEntry],:newAl]
@@ -197,11 +197,11 @@ encodeCategoryAlist(id,alist) ==
 
 encodeUnion(id,new:=[a,:b],alist) ==
   u := assoc(a,alist) =>
-    RPLACD(u,moreGeneralCategoryPredicate(id,b,rest u))
+    RPLACD(u, moreGeneralCategoryPredicate(b, rest(u)))
     alist
   [new,:alist]
 
-moreGeneralCategoryPredicate(id,new,old) ==
+moreGeneralCategoryPredicate(new, old) ==
   old = 'T or new = 'T => 'T
   old is ['has,a,b] and new is ['has,=a,c] =>
     tempExtendsCat(b,c) => new
@@ -215,12 +215,11 @@ mkCategoryOr(new,old) ==
 
 simpCategoryOr(new,l) ==
   newExtendsAnOld:= false
-  anOldExtendsNew:= false
   ['has,a,b] := new
   newList:= nil
   for pred in l repeat
     pred is ['has,=a,c] =>
-      tempExtendsCat(c,b) => anOldExtendsNew:= true
+      tempExtendsCat(c,b) => "iterate"
       if tempExtendsCat(b,c) then newExtendsAnOld:= true
       newList:= [pred,:newList]
     newList:= [pred,:newList]
@@ -257,7 +256,7 @@ mkCategoryExtensionAlist cform ==
     finalList :=
       pred = 'T => newList
       [[a,:quickAnd(b,pred)] for [a,:b] in newList]
-    extendsList:= catPairUnion(extendsList,finalList,cop,cat)
+    extendsList := catPairUnion(extendsList, finalList)
   extendsList
 
 -- following code to handle Unions Records Mapping etc.
@@ -273,10 +272,10 @@ mkCategoryExtensionAlistBasic cform ==
     finalList :=
       pred = 'T => newList
       [[a,:quickAnd(b,pred)] for [a,:b] in newList]
-    extendsList:= catPairUnion(extendsList,finalList,cop,cat)
+    extendsList := catPairUnion(extendsList, finalList)
   extendsList
 
-catPairUnion(oldList,newList,op,cat) ==
+catPairUnion(oldList, newList) ==
   for pair in newList repeat
     u:= assoc(first pair,oldList) =>
       rest u = rest pair => nil

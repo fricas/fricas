@@ -606,24 +606,20 @@ isApproximate(t) ==
                 "Matrix", "Vector"]) => isApproximate(first(rest(t)))
     false
 
-mmCost(name, sig,cond,tar,args1,args2) ==
-  cost := mmCost0(name, sig,cond,tar,args1,args2)
+mmCost(sig, cond, tar, args1, args2) ==
+  cost := mmCost0(sig, cond, tar, args1, args2)
   res := CADR sig
   res = $PositiveInteger => cost - 2
   res = $NonNegativeInteger => cost - 1
   res = $DoubleFloat => cost + 1
   cost
 
-mmCost0(name, sig,cond,tar,args1,args2) ==
+mmCost0(sig, cond, tar, args1, args2) ==
   sigArgs := CDDR sig
   n:=
     null cond => 1
     not (or/cond) => 1
     0
-
-  -- try to favor homogeneous multiplication
-
---if name = "*" and 2 = #sigArgs and first sigArgs ~= first rest sigArgs then n := n + 1
 
   -- because of obscure problem in evalMm, sometimes we will have extra
   -- modemaps with the wrong number of arguments if we want to the one
@@ -657,7 +653,7 @@ orderMms(name, mmS,args1,args2,tar) ==
   for mm in MSORT mmS repeat
     [sig,.,cond]:= mm
     b:= 'T
-    p:= CONS(m := mmCost(name, sig,cond,tar,args1,args2),mm)
+    p:= CONS(m := mmCost(sig, cond, tar, args1, args2), mm)
     mS:=
       null mS => list p
       m < CAAR mS => CONS(p,mS)
@@ -807,13 +803,13 @@ findFunctionInDomain(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
         else r := [mm,:r]
       q := allOrMatchingMms(q,args1,tar,dc)
       for mm in q repeat
-        fun:= nconc(fun,findFunctionInDomain1(mm,op,tar,args1,args2,SL))
+        fun := nconc(fun, findFunctionInDomain1(mm, tar, args1, args2, SL))
       r := reverse r
     else r := rest p
     r := allOrMatchingMms(r,args1,tar,dc)
     if not fun then    -- consider remaining modemaps
       for mm in r repeat
-        fun:= nconc(fun,findFunctionInDomain1(mm,op,tar,args1,args2,SL))
+        fun := nconc(fun, findFunctionInDomain1(mm, tar, args1, args2, SL))
   if not fun and $reportBottomUpFlag then
     sayMSG concat
       ['"   -> no appropriate",:bright op,'"found in",
@@ -840,7 +836,7 @@ isHomogeneousList y ==
     "and"/[x = z for x in rest y]
   NIL
 
-findFunctionInDomain1(omm,op,tar,args1,args2,SL) ==
+findFunctionInDomain1(omm, tar, args1, args2, SL) ==
   dc := rest (dollarPair := ASSQ('$, SL))
   -- need to drop '$ from SL
   mm:= subCopy(omm, SL)
@@ -893,7 +889,7 @@ findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
   impls and
     SL:= constructSubst dc
     for mm in impls repeat
-      fun:= nconc(fun,findFunctionInDomain1(mm,op,tar,args1,args2,SL))
+      fun := nconc(fun, findFunctionInDomain1(mm, tar, args1, args2, SL))
   if not fun and $reportBottomUpFlag then
     sayMSG concat
       ['"   -> no appropriate",:bright op,'"found in",
@@ -1312,7 +1308,6 @@ mmCatComp(c1, c2) ==
 evalMmCat(op,sig,stack,SL) ==
   -- evaluates all ofCategory's of stack as soon as possible
   $hope:local:= NIL
-  numConds:= #stack
   stack:= orderMmCatStack [mmC for mmC in stack | EQCAR(mmC,'ofCategory)]
   while stack until not makingProgress repeat
     st := stack

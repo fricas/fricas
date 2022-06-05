@@ -316,7 +316,6 @@ lookupInDomainByName(op,domain,arg) ==
     predIndex := numvec.(i := inc_SI i)
     predIndex ~= 0 and null testBitVector(predvec, predIndex) => nil
     slotIndex := numvec.(i + 2 + numberOfArgs)
-    newStart := add_SI(start, add_SI(numberOfArgs, 4))
     slot := domain.slotIndex
     null atom slot and EQ(first slot, first arg) and EQ(rest slot, rest arg) =>
         return (success := true)

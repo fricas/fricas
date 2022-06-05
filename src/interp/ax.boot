@@ -488,8 +488,6 @@ getDefaultingOps catname ==
   [axFormatDefaultOpSig(op,sig,catops,catdefops) for opsig in $opList | opsig is [op,sig]]
 
 axFormatDefaultOpSig(op, sig, catops,catdefops) ==
-  defsigs := LASSOC(op, catdefops)
-  --nsig := sig -- substitute('$, '($), sig) -- dcSig listifies '$ ??
   catsigs := LASSOC(op, catops)
   nsig2 := axCatSignature(sig)
   theOp := LASSOC(nsig2, catsigs)
@@ -515,10 +513,8 @@ axFormatCond(cond, inner) ==
 
 get1defaultOp(op,index) ==
   numvec := getCodeVector()
-  segment := getOpSegment index
   numOfArgs := numvec.index
   index := index + 1
-  predNumber := numvec.index
   index := index + 1
   signumList :=
  -- following substitution fixes the problem that default packages
@@ -526,7 +522,6 @@ get1defaultOp(op,index) ==
     SUBLISLIS($FormalMapVariableList, rest $FormalMapVariableList,
              dcSig(numvec,index,numOfArgs))
   index := index + numOfArgs + 1
-  slotNumber := numvec.index
   if not([op,signumList] in $opList) then
      $opList := [[op,signumList],:$opList]
   index + 1

@@ -2307,17 +2307,12 @@ reportOpsFromUnitDirectly unitForm ==
     '%d,'"is a",'%b,kind,'%d, '"constructor.")
   if not isRecordOrUnion then
     abb := GETDATABASE(top,'ABBREVIATION)
-    sourceFile := GETDATABASE(top,'SOURCEFILE)
     sayBrightly ['" Abbreviation for",:bright top,'"is",:bright abb]
     verb :=
       isExposedConstructor top => '"is"
       '"is not"
     sayBrightly ['" This constructor",:bright verb,
       '"exposed in this frame."]
-    -- -- Disabled because the path is wrong.
-    -- sayBrightly ['" Issue",:bright STRCONC('")edit ",
-    --  namestring sourceFile),'"to see algebra source code for",
-    --    :bright abb,'%l]
 
   for [opt] in $options repeat
     opt := selectOptionLC(opt,$showOptions,'optionError)
@@ -2349,7 +2344,7 @@ reportOpsFromUnitDirectly unitForm ==
                      '" Operations in this Domain."]
 
         --new form is (<op> <signature> <slotNumber> <condition> <kind>)
-        ops := [formatOperation(x, unit) for x in sigList]
+        ops := [formatOperation(x) for x in sigList]
 
       centerAndHighlight('"Operations", $LINELENGTH, specialChar 'hbar)
       sayBrightly '""
@@ -2383,11 +2378,6 @@ reportOpsFromLisplib(op,u) ==
     '"is not"
   sayBrightly ['" This constructor",:bright verb,
     '"exposed in this frame."]
-  sourceFile := GETDATABASE(op,'SOURCEFILE)
-  -- -- Disabled because the path is wrong.
-  -- sayBrightly ['" Issue",:bright STRCONC('")edit ",
-  --  namestring sourceFile),
-  --    '"to see algebra source code for",:bright fn,'%l]
 
   for [opt] in $options repeat
     opt := selectOptionLC(opt,$showOptions,'optionError)
@@ -2400,7 +2390,6 @@ reportOpsFromLisplib(op,u) ==
 
 displayOperationsFromLisplib form ==
   [name,:argl] := form
-  kind := GETDATABASE(name,'CONSTRUCTORKIND)
   centerAndHighlight('"Operations",$LINELENGTH,specialChar 'hbar)
   sayBrightly '""
   opList:= GETDATABASE(name,'OPERATIONALIST)
@@ -2483,7 +2472,6 @@ undo(l) ==
 
 recordFrame(systemNormal) ==
   null $undoFlag => nil        --do nothing if facility is turned off
-  currentAlist := IFCAR $frameRecord
   delta := diffAlist(CAAR $InteractiveFrame,$previousBindings)
   if systemNormal = 'system then
     null delta => return nil     --do not record
@@ -2976,7 +2964,6 @@ isIntegerString tok ==
 
 splitIntoOptionBlocks str ==
   inString := false
-  optionBlocks := nil
   blockStart := 0
   parenCount := 0
   for i in 0..#str-1 repeat

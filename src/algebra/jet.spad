@@ -2784,7 +2784,6 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         num : I := retract first l
         zero? num => 0
         l := rest l
-        show : I := retract first l
         l := rest l
         args : L % := []
         for k in 1..num repeat
@@ -3306,7 +3305,6 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
                                   append(ents, reverse! rowC))
             depj : L NNI := []
             for k in maxR..minR by -1 repeat
-                kb := k+minIndex(sys)-minR
                 if not zero? qelt(Trafo, j, k) then
                     depj := cons((k-minR+minIndex(depj))::NNI, depj)
             dep := cons(depj, dep)
@@ -4508,7 +4506,6 @@ JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
         -- nu determines the repeated indices; mu the exponents
         snu := allRepeated(nu)$JB
         rmu := m2r(mu)$JB
-        q := #first(snu)
         res : D := 0
         for s in snu repeat
             prod : D := 1
@@ -4941,8 +4938,7 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
           bound(nn, (mm*binomial(qq + nn - 1, nn)$I)::NNI, 1)
 
       complete(De : DE) : Void ==
-          tmp := complete2 De
-          void
+          complete2 De
 
       complete2(De : DE) : CREC ==
           -- Completion procedure.
@@ -6154,7 +6150,6 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
             for eq in eqLD | eq ~= seq repeat
                 neweq := numerator subst(eq.Fun, cld, s::%)
                 if not zero? neweq then
-                    newld := leadingDer neweq
                     newL := merge(greaterLD, newL,
                              [[append(eq.Dep, seq.Dep), neweq]$SREC])
         else
@@ -6854,9 +6849,6 @@ JetGroebner(R, JB, LJV, P, E) : Cat == Def where
         up := univariate(p, x)
         res : DJBP := 0
         while not zero? up repeat
-            lcup := leadingCoefficient up
-            clcup := convert1 lcup
-            m := monomial(clcup, x, degree up)
             res := res + monomial(convert1 leadingCoefficient up, _
                                   x, degree up)
             up := reductum up

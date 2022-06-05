@@ -212,7 +212,7 @@ formatOperationAlistEntry (entry:= [op,:modemaps]) ==
       [concat(formatOpSignature(op,sig),formatIf pred),:ans]
   ans
 
-formatOperation([[op,sig],.,[fn,.,n]],domain) ==
+formatOperation([[op, sig], :.]) ==
     formatOpSignature(op,sig)
 
 formatOperationWithPred([[op,sig],pred,.]) ==

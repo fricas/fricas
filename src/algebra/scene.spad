@@ -1905,7 +1905,6 @@ SceneIFS(PT) : Exports == Implementation where
   smesh(ptin : List List PT, clos : Boolean) : % ==
    pt2 : List PT := []
    in2 : List List NNI := []
-   rowLength := #ptin
    colLength := #(first ptin)
    j := 0
    for lpt in ptin repeat
@@ -5042,11 +5041,11 @@ Scene(PT) : Exports == Implementation where
     stepSize : DF := (maxx-minx)/100
     gp := createSceneGroup()
     mt1 := addSceneMaterial(gp,[1::DF,"blue","blue",0.5::DF])
-    gd1 := addSceneGrid(mt1, stepSize, bb)
+    addSceneGrid(mt1, stepSize, bb)
     mt2 := addSceneMaterial(gp,[2::DF,"blue","blue",0.5::DF])
-    gd2 := addSceneGrid(mt2, stepSize*5::DF, bb)
+    addSceneGrid(mt2, stepSize*5::DF, bb)
     mt3 := addSceneMaterial(gp,[2::DF,"red","red",0.5::DF])
-    gd3 := addSceneGrid(mt3, stepSize*10::DF, bb)
+    addSceneGrid(mt3, stepSize*10::DF, bb)
     gp
 
   -- a convenience function which combines createSceneGrid with addChild!
@@ -5074,7 +5073,6 @@ Scene(PT) : Exports == Implementation where
     minx : DF := screenCoordX(getMin(bb))
     miny : DF := screenCoordY(getMin(bb))
     maxx : DF := screenCoordX(getMax(bb))
-    maxy : DF := screenCoordY(getMax(bb))
     stepSize : DF := (maxx - minx)/1200
     gp := createSceneGroup()
     mt1 := addSceneMaterial(gp,[2::DF,"blue","blue",0.5::DF])
@@ -5126,7 +5124,6 @@ Scene(PT) : Exports == Implementation where
     minx : DF := screenCoordX(getMin(bb))
     miny : DF := screenCoordY(getMin(bb))
     maxx : DF := screenCoordX(getMax(bb))
-    maxy : DF := screenCoordY(getMax(bb))
     scale : DF := (maxx - minx)/1000
     xcoords : List List NNI := [[0, 0, 500, 1000, 1000, 0], _
                 [150, 350, 350, 150, 150], _
@@ -5188,12 +5185,10 @@ Scene(PT) : Exports == Implementation where
   -- ptype= "DEBTH"::Symbol: depth axis.
   createSceneRuler(ptype : Symbol, offset : PT, bb : SBoundary(PT)) : % ==
     minPrimary : DF := screenCoordX(getMin(bb))
-    minSecondary : DF := screenCoordY(getMin(bb))
     maxPrimary : DF := screenCoordX(getMax(bb))
     maxSecondary : DF := screenCoordY(getMax(bb))
     if ptype = "VERTICAL"::Symbol then
       minPrimary := screenCoordY(getMin(bb))
-      minSecondary := screenCoordX(getMin(bb))
       maxPrimary := screenCoordY(getMax(bb))
       maxSecondary := screenCoordX(getMax(bb))
     stepSize : DF := maxPrimary - minPrimary
@@ -6039,7 +6034,6 @@ Scene(PT) : Exports == Implementation where
   pointString(pts : List PT, tran : TR, bb : SBoundary(PT)) : List String ==
     ptStr : List String := [] -- list to hold result
     pntNum : NNI -- hold current position in parameters
-    lastValid : Boolean := true -- used to detect first valid entry
     for param in pts repeat
       -- convert to SVG (always positive) coordinates
       -- param is type SPointCategory(DoubleFloat)
@@ -6212,7 +6206,6 @@ Scene(PT) : Exports == Implementation where
   -- in scenegraph all other nodes in the scenegraph will get called.
   toObj(n : %, ptLst : Reference List PT, indexLst : Reference List List NNI, _
                    indexNxt : Reference NNI, tran : TR, bb : SBoundary(PT)) : Void ==
-    nodeName : String := setX3DNodeName(n.type)
     bb2 := bb
     tran2 := tran
     if n.type = "ROOT"::Symbol then

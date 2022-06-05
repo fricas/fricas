@@ -180,7 +180,6 @@ augModemapsFromCategory(domainName, functorForm, categoryForm, e) ==
   [fnAlist,e]:= evalAndSub(domainName, functorForm, categoryForm, e)
   compilerMessage ["Adding ",domainName," modemaps"]
   e:= putDomainsInScope(domainName,e)
-  condlist:=[]
   for [[op,sig,:.],cond,fnsel] in fnAlist repeat
       e:= addModemapKnown(op,domainName,sig,cond,fnsel,e)
   e

@@ -419,15 +419,13 @@ OrientedFacet() : Exports == Impl where
    orientedFacetIfCan(boundary : List(%)) : Union(%, "failed") ==
        -- print("orientedFacet:" << boundary)
        indexLst := []$List(List(NNI))
-       multLst := []$List(Integer)
        if #boundary < 1 then return "failed"
        b : List(%) := sort(boundary)
        --print("orientedFacet b=" << b << " boundary="
        --       << boundary)
        for subFacet in b repeat
            indexLst := concat(indexLst, getIndexes(subFacet))
-       --print("orientedFacet indexLst=" << indexLst <<_
-       --      " multLst=" << multLst)
+       --print("orientedFacet indexLst=" << indexLst)
        indexes := []$List(NNI)
        for i in indexLst repeat
            indexes := concat(indexes, i)
@@ -542,7 +540,6 @@ OrientedFacet() : Exports == Impl where
        -- print("allSubsets in (" << orf << ", " <<
        --       minDim << ")")
        facet : List(NNI) := orf.fac
-       mult : Integer := orf.mul
        res := []$List(%)
        if order(orf) <= minDim then
            -- print("allSubsets out 1 orf" << orf <<
@@ -1114,7 +1111,6 @@ CubicalFacet() : Exports == Impl where
    -- Boundary operator. This is like hollowing out the facet.
    boundary(orf : %) : List(%) ==
        facet : List(Segment(Integer)) := orf.fac
-       mult : Integer := orf.mul
        -- dims will hold array of indexes of non-degenerate intervals
        dims := []$List(NNI)
        for seg in facet for segn in 1..(#facet) repeat
@@ -1159,7 +1155,6 @@ CubicalFacet() : Exports == Impl where
        -- print("allSubsets in (" << orf << ", " << minDim
        --       << ")")
        facet : List(Segment(Integer)) := orf.fac
-       mult : Integer := orf.mul
        res := []$List(%)
        if order(orf) <= minDim then
            -- print("allSubsets out 1 orf=" << orf <<
@@ -1587,7 +1582,6 @@ CoChainComplex(VS : AbelianGroup) : Exports == Impl where
            vs : Vector(Integer) := b*m
            --print(message "b=" << b << message " m=" << m << _
            --message " vs=" << vs)
-           fst: Boolean := true
            res1 : List(VS) := []
            for v in entries(vs) repeat
                val : VS := inp.p

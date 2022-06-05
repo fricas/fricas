@@ -1146,7 +1146,6 @@ upTaggedUnionConstruct(op,l,tar) ==
 upRecordConstruct(op,l,tar) ==
   -- special handler for record constructors
   tar isnt [.,:types] => nil
-  argModes := nil
   for arg in l repeat bottomUp arg
   argCode :=
     [(getArgValue(arg,type) or throwKeyedMsgCannotCoerceWithValue(
@@ -1172,7 +1171,7 @@ upDeclare t ==
   not isLegitimateMode(mode,nil,nil) => throwKeyedMsgSP("S2IE0004",[mode],op)
   categoryForm?(mode) => throwKeyedMsgSP("S2IE0011",[mode, 'category],op)
   packageForm?(mode) => throwKeyedMsgSP("S2IE0011",[mode, 'package],op)
-  junk :=
+  if true then
     lhs is ['free,['Tuple,:vars]] or lhs is ['free,['LISTOF,:vars]] or
       lhs is ['free,:vars] =>
         for var in vars repeat declare(['free,var],mode)

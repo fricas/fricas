@@ -145,7 +145,7 @@ optCall (x is ["call",:u]) ==
   fn is ["applyFun",name] =>
     (rplac(first x, "SPADCALL"); rplac(rest x, [:a, name]); x)
   fn is [q,R,n] and MEMQ(q,'(ELT QREFELT CONST)) =>
-    not $bootStrapMode and (w:= optCallSpecially(q,x,n,R)) => w
+    not $bootStrapMode and (w:= optCallSpecially(x, n, R)) => w
     q="CONST" =>
 --+
       ["spadConstant",R,n]
@@ -156,7 +156,7 @@ optCall (x is ["call",:u]) ==
     x
   systemErrorHere '"optCall"
 
-optCallSpecially(q,x,n,R) ==
+optCallSpecially(x, n, R) ==
     MEMQ(IFCAR R, $optimizableConstructorNames) => optSpecialCall(x, R, n)
     nil
 

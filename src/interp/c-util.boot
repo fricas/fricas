@@ -111,7 +111,7 @@ unErrorRef s == unStackWarning ['%b,s,'%d,'"has no value"]
 --% ENVIRONMENT FUNCTIONS
 
 consProplistOf(var,proplist,prop,val) ==
-  semchkProplist(var,proplist,prop,val)
+  semchkProplist(var, proplist, prop)
   $InteractiveMode and (u:= assoc(prop,proplist)) =>
     RPLACD(u,val)
     proplist

@@ -49,7 +49,6 @@ showImp(dom,:options) ==
   domainForm := devaluate dom
   [nam, :.] := domainForm
   $predicateList: local := GETDATABASE(nam,'PREDICATES)
-  predVector := dom.3
   u := getDomainOpTable(dom,true)
   --sort into 4 groups: domain exports, unexports, default exports, others
   for (x := [.,.,:key]) in u repeat

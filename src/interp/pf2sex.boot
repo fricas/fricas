@@ -179,7 +179,6 @@ symEqual(sym, sym2) == EQ(sym, sym2)
 SymMemQ(sy, l) == MEMQ(sy, l)
 
 pfOp2Sex pf ==
-  alreadyQuoted := pfSymbol? pf
   op := pf2Sex1 pf
   op is ["QUOTE", realOp] =>
     $insideRule = 'left => realOp

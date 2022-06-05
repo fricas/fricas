@@ -83,7 +83,6 @@ kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
   if nargs > 0 then kPageArgs(conform,signature)
   htSayStandard '"\indentrel{-2}"
   if name.(#name-1) = char "&" then name := SUBSEQ(name, 0, #name-1)
---sourceFileName := dbSourceFile INTERN name
   sourceFileName := GETDATABASE(INTERN name,'SOURCEFILE)
   filename := extractFileNameFromPath sourceFileName
   if filename ~= '"" then
@@ -554,7 +553,6 @@ conOpPage1(conform, options) ==
   conform         := mkConform(kind,name,args)
   capitalKind     := capitalize kind
   signature       := ncParseFromString sig
-  sourceFileName  := dbSourceFile INTERN name
   emString        := ['"{\sf ",constring,'"}"]
   heading := [capitalKind,'" ",:emString]
   if not isExposedConstructor conname then heading := ['"Unexposed ",:heading]
@@ -612,14 +610,6 @@ koaPageFilterByName(htPage,functionToCall) ==
 --                  Get Constructor Documentation
 --=======================================================================
 
-dbConstructorDoc(conform,$op,$sig) == fn conform where
-  fn (conform := [conname,:$args]) ==
-    or/[gn y for y in GETDATABASE(conname,'DOCUMENTATION)]
-  gn([op,:alist]) ==
-    op = $op and or/[doc or '("") for [sig,:doc] in alist | hn sig]
-  hn sig ==
-    #$sig = #sig and $sig = SUBLISLIS($args,$FormalMapVariableList,sig)
-
 dbDocTable conform ==
 --assumes $docTableHash bound --see dbExpandOpAlistIfNecessary
   table := HGET($docTableHash,conform) => table
@@ -664,11 +654,10 @@ dbGetDocTable(op, $sig, docTable, which, aux) == main where
           op := string2Integer s
     -- the above hack should be removed after 3/94 when 0 is not |0|
     aux is [[packageName,:.],:pred] =>
-      doc := dbConstructorDoc(first aux,$op,$sig)
       origin :=
         pred => ['ifp,:aux]
         first aux
-      [origin,:doc]
+      [origin]
     or/[gn x for x in HGET(docTable,op)]
   gn u ==  --u is [origin,entry1,...,:code]
     $conform := first u              --origin

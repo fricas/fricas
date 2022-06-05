@@ -77,15 +77,10 @@ loadLib cname ==
     sayKeyedMsg("S2IL0002",[namestring fullLibName,kind,cname])
   load_quietly(fullLibName)
   clearConstructorCache cname
-  updateDatabase(cname,cname,systemdir?)
-  installConstructor(cname,kind)
+  updateDatabase(cname)
+  installConstructor(cname)
   u := GETDATABASE(cname, 'CONSTRUCTORMODEMAP)
   updateCategoryTable(cname,kind)
-  coSig :=
-      u =>
-          [[.,:sig],:.] := u
-          CONS(NIL, [categoryForm?(x) for x in rest sig])
-      NIL
   -- in following, add property value false or NIL to possibly clear
   -- old value
   if null rest GETDATABASE(cname, 'CONSTRUCTORFORM) then
@@ -109,7 +104,7 @@ loadLibNoUpdate(cname, libName, fullLibName) ==
       TOPLEVEL()
     else
      clearConstructorCache cname
-     installConstructor(cname,kind)
+     installConstructor(cname)
      MAKEPROP(cname,'LOADED,fullLibName)
      if $InteractiveMode then $CategoryFrame := [[nil]]
      stopTimingProcess 'load
@@ -346,7 +341,7 @@ augModemapsFromDomain1(name,functorForm,e) ==
   atom functorForm and (catform:= getmode(functorForm,e)) =>
     augModemapsFromCategory(name, functorForm, catform, e)
   mappingForm := getmodeOrMapping(IFCAR functorForm, e) =>
-    ["Mapping",categoryForm,:functArgTypes]:= mappingForm
+    ["Mapping", categoryForm, :.] := mappingForm
     catform:= substituteCategoryArguments(rest functorForm,categoryForm)
     augModemapsFromCategory(name, functorForm, catform, e)
   stackMessage [functorForm," is an unknown mode"]

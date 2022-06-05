@@ -191,11 +191,6 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
       ['PROGN,:decomposeCode,
         ['REPEAT,['WHILE,'T],['PROGN,endTest,advanceCode,
           newValueCode,:rotateCode]]]
-  fromScratchInit:=
-    [['LET,gIndex,n],:[['LET,g,x] for g in gsList for x in initCode]]
-  continueInit:=
-    [['LET,gIndex,['ELT,stateVar,0]],
-      :[['LET,g,['ELT,stateVar,i]] for g in gsList for i in 1..]]
   mainFunction:= [nam,['LAMBDA, margl, mbody]] where
     margl:= [:argl,'envArg]
     max:= GENSYM()

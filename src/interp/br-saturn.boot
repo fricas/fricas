@@ -276,7 +276,6 @@ kPage(line, options) == --any cat, dom, package, default package
   conname         := opOf conform
   capitalKind     := capitalize kind
   signature       := ncParseFromString sig
-  sourceFileName  := dbSourceFile INTERN name
   constrings      :=
     IFCDR form => dbConformGenUnder form
     [STRCONC(name,args)]

@@ -2768,8 +2768,6 @@ DirectedGraph(S) : Exports == Implementation where
         byi : NNI := boi.posY
         x : NNI := bxi*diagramWidth(a)+axi
         y : NNI := byi*diagramHeight(a)+ayi
-        widtha : NNI := diagramWidth(a)
-        heighta : NNI := diagramHeight(a)
         sp : SPROD := construct(ai, bi)$SPROD
         ob : OBJTPROD := [sp, x, y]
         newObjs := concat(newObjs, ob)
@@ -2842,8 +2840,6 @@ DirectedGraph(S) : Exports == Implementation where
         byi : NNI := boi.posY
         x : NNI := bxi*diagramWidth(a)+axi
         y : NNI := byi*diagramHeight(a)+ayi
-        widtha : NNI := diagramWidth(a)
-        heighta : NNI := diagramHeight(a)
         sp : S := f(ai, bi)
         ob : OBJT := [sp, x, y]
         newObjs := concat(newObjs, ob)
@@ -3359,7 +3355,6 @@ FunctionGraph(S) : Exports == Implementation where
   -- given a mapping from this graph this function tries to
   -- calculate a unique reverse mapping back to this graph
   coAdjoint(s : %, m : List NNI) : AJMAP ==
-    domainSize : NNI := #(s.objects)
     codomainSize : NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret : List NNI := [0::NNI for x in 1..codomainSize]
@@ -3377,7 +3372,6 @@ FunctionGraph(S) : Exports == Implementation where
   -- given a mapping from this graph this function tries to
   -- calculate a unique reverse mapping back to this graph
   contraAdjoint(s : %, m : List NNI) : AJMAP ==
-    domainSize : NNI := #(s.objects)
     codomainSize : NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret : List NNI := [0::NNI for x in 1..codomainSize]
@@ -3825,8 +3819,6 @@ UndirectedGraph(S) : Exports == Implementation where
         byi : NNI := boi.posY
         x : NNI := bxi*diagramWidth(a)+axi
         y : NNI := byi*diagramHeight(a)+ayi
-        widtha : NNI := diagramWidth(a)
-        heighta : NNI := diagramHeight(a)
         sp : SPROD := construct(ai, bi)$SPROD
         ob : OBJTPROD := [sp, x, y]
         newObjs := concat(newObjs, ob)
@@ -3899,8 +3891,6 @@ UndirectedGraph(S) : Exports == Implementation where
         byi : NNI := boi.posY
         x : NNI := bxi*diagramWidth(a)+axi
         y : NNI := byi*diagramHeight(a)+ayi
-        widtha : NNI := diagramWidth(a)
-        heighta : NNI := diagramHeight(a)
         sp : S := f(ai, bi)
         ob : OBJT := [sp, x, y]
         newObjs := concat(newObjs, ob)
@@ -4040,9 +4030,6 @@ UndirectedGraph(S) : Exports == Implementation where
       arrs : List ARROW := getArrows(n)
       -- if no arrows then just write vertex names
       if empty?(arrs) then return void
-      -- if this is a second order graph then we need to get the inner objects
-      IOBJT ==> Record(value : DirectedGraph(String), posX : NNI, posY : NNI)
-      innerOb : List List IOBJT := []
       -- now draw lines without arrows in diagram
       for arrow in arrs for arrn in 1..#arrs repeat
           fromX : NNI := indexPointx.(arrow.fromOb)
@@ -4062,16 +4049,11 @@ UndirectedGraph(S) : Exports == Implementation where
           -- by shifting binary number one place to the left.
           midX : NNI := shift(toX + fromX, -1)
           midY : NNI := shift(toY + fromY, -1)
-          -- get information to set line colour
-          arrIndex : List NNI := arrowsToNode(n, arrow.fromOb)
-          arrNumber : Integer := position(arrn, arrIndex)
-          rema : Integer := divide(arrNumber, 8).remainder
           -- if this is a second order graph then we draw inner arrows
           fnode : Scene(PT) := indexBounds.(arrow.fromOb)
           tnode : Scene(PT) := indexBounds.(arrow.toOb)
-          offset : PT := sipnt(arrow.xOffset, arrow.yOffset)$PT
           -- next we add the lines.
-          arrNode := addSceneLine(mt, fnode, tnode,
+          addSceneLine(mt, fnode, tnode,
                                   (diagramWidth(n) + 10)::DF,deep)
           --print(vconcat([
           -- hconcat("fgraph subdiagramSvg sc="::OutputForm,
@@ -4655,7 +4637,6 @@ MultifunctionGraph(S) : Exports == Implementation where
   -- given a mapping from this graph this function tries to
   -- calculate a unique reverse mapping back to this graph
   coAdjoint(s : %, m : List NNI) : AJMAP ==
-    domainSize : NNI := #(s.objects)
     codomainSize : NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret : List NNI := [0::NNI for x in 1..codomainSize]
@@ -4673,7 +4654,6 @@ MultifunctionGraph(S) : Exports == Implementation where
   -- given a mapping from this graph this function tries to
   -- calculate a unique reverse mapping back to this graph
   contraAdjoint(s : %, m : List NNI) : AJMAP ==
-    domainSize : NNI := #(s.objects)
     codomainSize : NNI := 0
     for mi in m repeat if mi > codomainSize then codomainSize := mi
     ret : List NNI := [0::NNI for x in 1..codomainSize]
@@ -5295,8 +5275,6 @@ WeightedGraph(S, W) : Exports == Implementation where
         byi : NNI := boi.posY
         x : NNI := bxi*diagramWidth(a)+axi
         y : NNI := byi*diagramHeight(a)+ayi
-        widtha : NNI := diagramWidth(a)
-        heighta : NNI := diagramHeight(a)
         sp : SPROD := construct(ai, bi)$SPROD
         ob : OBJTPROD := [sp, x, y, 0$W]
         newObjs := concat(newObjs, ob)
@@ -5369,8 +5347,6 @@ WeightedGraph(S, W) : Exports == Implementation where
         byi : NNI := boi.posY
         x : NNI := bxi*diagramWidth(a)+axi
         y : NNI := byi*diagramHeight(a)+ayi
-        widtha : NNI := diagramWidth(a)
-        heighta : NNI := diagramHeight(a)
         sp : S := f(ai, bi)
         ob : WOBJT := [sp, x, y, 0$W]
         newObjs := concat(newObjs, ob)

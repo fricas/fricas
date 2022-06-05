@@ -360,9 +360,6 @@ HTMLFormat() : public == private where
     -- remove unnecessary '+' at end of first string
     -- when second string starts with '-'
     outputTree(t : Tree S) : Void ==
-      endWithPlus : Boolean := false -- if the last string ends with '+'
-      -- and the next string starts with '-' then the '+' needs to be
-      -- removed
       if empty?(t) then
         --if debug then sayHt "outputTree empty"
         return void()$Void
@@ -460,7 +457,6 @@ HTMLFormat() : public == private where
         concat["formatSpecial: ", "op=", string(op), " args=", _
                argsToString(args), " prec=", string(prec)]
       arg : E
-      prescript : Boolean := false
       op = 'theMap => tree("theMap(...)")
       op = 'AGGLST =>
         formatNary(",",args,prec)
@@ -526,13 +522,11 @@ HTMLFormat() : public == private where
       op : S := stringify first atomE
       op ~= "SUPERSUB" => tree("Mistake in formatSuperSub: no SUPERSUB")
       #args ~= 1 => tree("Mistake in SuperSub: #args ~= 1")
-      var : E := first args
       -- should be looking at something like {{SUPERSUB}{var}{ }{, ,..., }}
       -- for example here's the second derivative of y w.r.t. x
       -- {{{SUPERSUB}{y}{ }{, ,}}{x}}, expr is the first {} and args is the
       -- {x}
       funcS : S := stringify first rest atomE
-      bvarS : S := stringify first args
       -- count the number of commas
       commaS : S := stringify first rest rest rest atomE
       commaTest : S := ","
@@ -594,29 +588,23 @@ HTMLFormat() : public == private where
     formatPlex(op : Symbol, args : L E, prec : I) : Tree S ==
       if debug then sayHt "formatPlex: "concat["op=", string(op), " args=",_
         argsToString(args)," prec=",string(prec)$S]
-      checkarg : Boolean := false
       hold : S
       p : I := position(op, plexOps)
       p < 1 => error "unknown plex op"
       op = 'INTSIGN => formatIntSign(args,minPrec)
-      opPrec := plexPrecs.p
       n : I := #args
       (n ~= 2) and (n ~= 3) => error "wrong number of arguments for plex"
       s : Tree S :=
         op = 'SIGMA   =>
-          checkarg := true
           tree("&#x02211;")
         -- Sum
         op = 'SIGMA2   =>
-          checkarg := true
           tree("&#x02211;")
         -- Sum
         op = 'PI      =>
-          checkarg := true
           tree("&#x0220F;")
         -- Product
         op = 'PI2     =>
-          checkarg := true
           tree("&#x0220F;")
         -- Product
         op = 'INTSIGN => tree("&#x0222B;")
@@ -898,7 +886,6 @@ HTMLFormat() : public == private where
     formatNaryNoGroup(op : S, args : L E, prec : I)  : Tree S ==
       if debug then sayHt "formatNaryNoGroup: "concat["op=",op,_
         " args=",argsToString(args)," prec=",string(prec)$S]
-      checkargs : Boolean := false
       empty?(args) => empty()$Tree(S)
       p : I := position(op, naryOps)
       p < 1 => error "unknown nary op"
@@ -917,10 +904,6 @@ HTMLFormat() : public == private where
       l := empty()$Tree(S)
       empty?(args) => l
       opPrec := naryPrecs.p
-      -- if checkargs is true check each arg except last one to see if it's
-      -- a sigma or pi and if so add parentheses. Other op's may have to be
-      -- checked for in future
-      count : I := 1
       tags : (L Tree S)
       if opPrec < prec then tags := [tree("("),formatHtml(args.1,opPrec)]
       if opPrec >= prec then tags := [formatHtml(args.1, opPrec)]
@@ -939,7 +922,6 @@ HTMLFormat() : public == private where
       if debug then sayHt "formatHtml: "concat["arg=",_
         argsToString([expr])," prec=",string(prec)$S]
       i, len : Integer
-      intSplitLen : Integer := 20
       atom?(expr) =>
         if debug then sayHt "formatHtml atom: "concat["expr=",_
           stringify expr," prec=",string(prec)$S]

@@ -342,7 +342,7 @@ bottomUpIdentifier(t,id) ==
         (r := resolveTM(om,tar)) => [r]
         [om]
       bottomUpDefault(t,id,defaultType,getTarget t)
-    interpRewriteRule(t,id,expr) or
+    interpRewriteRule(t, id) or
       (isMapExpr expr and [objMode(u)]) or
         keyedSystemError("S2GE0016",
           ['"bottomUpIdentifier",'"cannot evaluate identifier"])
@@ -350,10 +350,10 @@ bottomUpIdentifier(t,id) ==
 
 bottomUpDefault(t,id,defaultMode,target) ==
   if $genValue
-    then bottomUpDefaultEval(t,id,defaultMode,target,nil)
-    else bottomUpDefaultCompile(t,id,defaultMode,target,nil)
+    then bottomUpDefaultEval(t, id, defaultMode, target)
+    else bottomUpDefaultCompile(t, id, defaultMode, target)
 
-bottomUpDefaultEval(t,id,defaultMode,target,isSub) ==
+bottomUpDefaultEval(t, id, defaultMode, target) ==
   -- try to get value case.
 
   -- 1. declared mode but no value case
@@ -366,13 +366,13 @@ bottomUpDefaultEval(t,id,defaultMode,target,isSub) ==
     -- declared mode. Like "x" in second line:
     --   x : P[x] I
     --   y : P[x] I
-    target and not isSub and
+    target and
       (val := coerceInteractive(objNewWrap(id,['Variable,id]),target))=>
         putValue(t,val)
         [target]
     -- Ok, see if we can make it into declared mode from symbolic form
     -- For example, (x : P[x] I; x + 1)
-    not target and not isSub and m and
+    not target and m and
       (val := coerceInteractive(objNewWrap(id,['Variable,id]),m)) =>
         putValue(t,val)
         [m]
@@ -405,7 +405,7 @@ bottomUpDefaultEval(t,id,defaultMode,target,isSub) ==
   putValue(t,val')
   [target]
 
-bottomUpDefaultCompile(t,id,defaultMode,target,isSub) ==
+bottomUpDefaultCompile(t, id, defaultMode, target) ==
   tmode := getMode t
   tval  := getValue t
   expr:=
@@ -433,7 +433,7 @@ bottomUpDefaultCompile(t,id,defaultMode,target,isSub) ==
   putValue(t,obj)
   [defaultMode]
 
-interpRewriteRule(t,id,expr) ==
+interpRewriteRule(t, id) ==
   null get(id,'isInterpreterRule,$e) => NIL
   (ms:= selectLocalMms(t,id,nil,nil)) and (ms:=evalForm(t,id,nil,ms)) =>
     ms
@@ -471,7 +471,7 @@ bottomUpForm2(t,op,opName,argl,argModeSetList) ==
     not (opName = "=" and argModeSetList is [[m],[=m]] and m is ['Union,:.]) and
       (u := bottomUpFormUntaggedUnionRetract(t,op,opName,argl,argModeSetList)) => u
 
-  lookForIt and (u := bottomUpFormTuple(t, op, opName, argl, argModeSetList)) => u
+  lookForIt and (u := bottomUpFormTuple(t, op, opName, argl)) => u
 
   -- opName can change in the call to selectMms
 
@@ -480,7 +480,7 @@ bottomUpForm2(t,op,opName,argl,argModeSetList) ==
       putModeSet(op,mS)
   bottomUpForm0(t,op,opName,argl,argModeSetList)
 
-bottomUpFormTuple(t, op, opName, args, argModeSetList) ==
+bottomUpFormTuple(t, op, opName, args) ==
   getAtree(op,'dollar) => NIL
   null (singles := getModemapsFromDatabase(opName, 1)) => NIL
 

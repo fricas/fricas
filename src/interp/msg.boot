@@ -73,15 +73,15 @@ ncSoftError(pos, erMsgKey, erArgL) ==
 ncHardError(pos, erMsgKey, erArgL) ==
   $newcompErrorCount := $newcompErrorCount + 1
   desiredMsg erMsgKey =>
-    erMsg := processKeyedError _
-       msgCreate('error,pos,erMsgKey, erArgL, $compErrorPrefix)
+      processKeyedError(
+          msgCreate('error, pos, erMsgKey, erArgL, $compErrorPrefix))
   ncError()
 
 -- Bug in the compiler: something which shouldn't have happened did.
 ncBug (erMsgKey, erArgL) ==
   $newcompErrorCount := $newcompErrorCount + 1
-  erMsg := processKeyedError _
-        msgCreate('bug,$nopos, erMsgKey, erArgL,$compBugPrefix)
+  processKeyedError (
+        msgCreate('bug, $nopos, erMsgKey, erArgL, $compBugPrefix))
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
   ENABLE_BACKTRACE(nil)
@@ -264,7 +264,6 @@ getLineText line == rest line
 
 queueUpErrors(globalNumOfLine,msgList)==
     thisPosMsgs  := []
-    notThisLineMsgs := []
     for msg in msgList _
       while thisPosIsLess(getMsgPos msg,globalNumOfLine) repeat
     --these are msgs that refer to positions from earlier compilations
@@ -493,7 +492,6 @@ makeLeaderMsg chPosList ==
 makeMsgFromLine line ==
     posOfLine  := getLinePos line
     textOfLine := getLineText line
-    globalNumOfLine := poGlobalLinePosn posOfLine
     localNumOfLine  :=
         i := poLinePosn posOfLine
         stNum := STRINGIMAGE i

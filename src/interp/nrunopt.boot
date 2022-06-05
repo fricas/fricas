@@ -293,7 +293,6 @@ NRTmakeCategoryAlist(et) ==
   pcAlist := [:[[x,:'T] for x in $uncondAlist],:$condAlist]
   $levelAlist: local := depthAssocList [CAAR x for x in pcAlist]
   opcAlist := NREVERSE SORTBY(function NRTcatCompare,pcAlist)
-  newPairlis := [[5 + i,:b] for [.,:b] in $pairlis for i in 1..]
   slot1 := [[a,:k] for [a,:b] in SUBLIS($pairlis,opcAlist)
                    | (k := predicateBitIndex(b, et)) ~= -1]
   slot0 := [hasDefaultPackage opOf a for [a,:b] in slot1]
@@ -408,11 +407,13 @@ getOpSegment index ==
   numOfArgs := (vec := getCodeVector()).index
   [vec.i for i in index..(index + numOfArgs + 3)]
 
-getCodeVector() ==
-  proto4 := $infovec.3
+getCodeVector1(infovec) ==
+  proto4 := infovec.3
   u := CDDR proto4
   VECP u => BREAK()
   rest u                 --new style
+
+getCodeVector() == getCodeVector1($infovec)
 
 formatSlotDomain x ==
   x = 0 => ["$"]

@@ -135,8 +135,6 @@ orderPredTran(oldList,sig,skip) ==
         (not skip and pred is ['isDomain,pvar,.] and pvar="*1")) =>
           oldList:=delete(pred,oldList)
           lastPreds:=[pred,:lastPreds]
---sayBrightlyNT "lastPreds="
---pp lastPreds
 
   --(2a) lastDependList=list of all variables that lastPred forms depend upon
   lastDependList := "UNIONQ"/[listOfPatternIds x for x in lastPreds]
@@ -160,14 +158,8 @@ orderPredTran(oldList,sig,skip) ==
       depvl := nil
     (INTERSECTIONQ(indepvl,dependList) = nil)
         and INTERSECTIONQ(indepvl,lastDependList) =>
-      somethingDone := true
       lastPreds := [:lastPreds,x]
       oldList := delete(x,oldList)
---if somethingDone then
---  sayBrightlyNT "Again lastPreds="
---  pp lastPreds
---  sayBrightlyNT "Again oldList="
---  pp oldList
 
   --(3b) newList= list of ofCat/isDom entries that don't depend on
   while oldList repeat
@@ -241,16 +233,11 @@ interactiveModemapForm mm ==
   pred := [fn x for x in pred] where fn x ==
     x is [a,b,c] and a ~= 'isFreeFunction and atom c => [a,b,[c]]
     x
---pp pred
   [mmpat, patternAlist, partial, patvars] :=
     modemapPattern(pattern,sig)
---pp [pattern, mmpat, patternAlist, partial, patvars]
   [pred,domainPredicateList] :=
     substVars(pred,patternAlist,patvars)
---pp [pred,domainPredicateList]
-  [pred,:dependList]:=
-    fixUpPredicate(pred,domainPredicateList,partial,rest mmpat)
---pp [pred,dependList]
+  pred := fixUpPredicate(pred,domainPredicateList,partial,rest mmpat)
   [cond, :.] := pred
   [mmpat, cond]
 
@@ -300,18 +287,16 @@ fixUpPredicate(predClause, domainPreds, partial, sig) ==
   if first predicate = "AND" then
     predicates := APPEND(domainPreds,rest predicate)
   else if predicate ~= MKQ "T"
---was->then predicates:= REVERSE [predicate, :domainPreds]
        then predicates:= [predicate, :domainPreds]
        else predicates := domainPreds or [predicate]
   if #predicates > 1 then
     pred := ["AND",:predicates]
-    [pred,:dependList]:=orderPredicateItems(pred,sig,skip)
+    [pred, :.] := orderPredicateItems(pred,sig,skip)
   else
     pred := orderPredicateItems(first predicates,sig,skip)
-    dependList:= if pred is ['isDomain,pvar,[.]] then [pvar] else nil
   pred := moveORsOutside pred
   if partial then pred := ["partial", :pred]
-  [[pred, fn, :skip],:dependList]
+  [pred, fn, :skip]
 
 moveORsOutside p ==
   p is ['AND,:q] =>
@@ -452,7 +437,7 @@ mkDatabasePred [a,t] ==
 formal2Pattern x ==
   SUBLIS(pairList($FormalMapVariableList,rest $PatternVariableList),x)
 
-updateDatabase(fname,cname,systemdir?) ==
+updateDatabase(cname) ==
  -- for now in NRUNTIME do database update only if forced
   not $forceDatabaseUpdate => nil
   clearClams()

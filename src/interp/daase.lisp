@@ -834,7 +834,7 @@ database.
     (values only dir noexpose)))
 
   (processDir (dirarg thisdir)
-      (let (nrlibdirs asos skipasos aos)
+      (let (nrlibdirs skipasos aos)
 
       (chdir (string dirarg))
       #-:GCL
@@ -851,7 +851,6 @@ database.
                    (directory "*.NRLIB")))
 
       (setq asys (directory "*.asy"))
-      (setq asos (directory "*.ao"))
 
       (setq skipasos (mapcan #'pathname-name asys))
 
@@ -969,8 +968,8 @@ database.
         (setq kind (database-constructorkind dbstruct))
         (if (null noexpose) (|setExposeAddConstr| (cons cname nil)))
         (unless make-database?
-         (|updateDatabase| key cname systemdir?) ;makes many hashtables???
-         (|installConstructor| cname kind)
+         (|updateDatabase| cname) ;makes many hashtables???
+         (|installConstructor| cname)
           ;; following can break category database build
          (if (eq kind '|category|)
              (setf (database-ancestors dbstruct)
@@ -1044,8 +1043,8 @@ database.
    (if (eq kind '|category|)
        (setf (database-ancestors dbstruct)
              (SUBLISLIS |$FormalMapVariableList| (cdr constructorform) (fetchdata alist in "ancestors"))))
-   (|updateDatabase| key key systemdir?) ;makes many hashtables???
-   (|installConstructor| key kind) ;used to be key cname ...
+   (|updateDatabase| key) ;makes many hashtables???
+   (|installConstructor| key) ;used to be key cname ...
    (|updateCategoryTable| key kind)
    (if |$InteractiveMode| (setq |$CategoryFrame| |$EmptyEnvironment|)))
   (setf (database-cosig dbstruct)
@@ -1316,7 +1315,7 @@ database.
 
 (defun write-browsedb ()
  "make browse.daase from hash tables"
- (let (master masterpos src formpos docpos attpos predpos (*print-pretty* t) out)
+ (let (master masterpos src formpos docpos predpos (*print-pretty* t) out)
   (print "building browse.daase")
   (setq out (open "browse.build" :direction :output :if-exists :supersede))
   (princ "                              " out)
