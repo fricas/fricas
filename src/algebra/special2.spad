@@ -1344,6 +1344,7 @@ DoubleFloatSpecialFunctions2() : with
     Gamma : Complex(DoubleFloat) -> Complex(DoubleFloat)
     logGamma : DoubleFloat -> DoubleFloat
     logGamma : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    polygamma : (NonNegativeInteger, DoubleFloat) -> DoubleFloat
     erf : DoubleFloat -> DoubleFloat
     erfi : DoubleFloat -> DoubleFloat
     fresnelC : DoubleFloat -> DoubleFloat
@@ -1532,6 +1533,119 @@ DoubleFloatSpecialFunctions2() : with
         logGamma1b(z)
 
     Beta(x : CDF, y : CDF) : CDF == Gamma(x)*Gamma(y)/Gamma(x+y)
+
+    -- m-steps of backward recurence
+    --     W2(n, x) = x^(-n - 1) + W2(n, x + 1)
+    psi_W2(x : DF, s : DF, n : NonNegativeInteger, m : Integer) : DF ==
+        nn := -1 - n
+        for i in 1..m repeat
+            xm := x + (m - i)::DF
+            s := s + xm^nn
+        s
+
+    -- bernoulli(2*k) for k in 1..21
+    -- we prepend 0 to get effect of indexing from 1
+    ber_coeff := construct([ 0,
+              0.1666666666_6666666667,       -0.0333333333_3333333333_3,
+              0.0238095238_0952380952_4,     -0.0333333333_3333333333_3,
+              0.0757575757_5757575757_6,     -0.2531135531_1355311355,
+              1.1666666666_666666667,        -7.0921568627_450980392,
+             54.9711779448_62155389,       -529.1242424242_4242424,
+           6192.1231884057_971014,       -86580.2531135531_13553,
+        1425517.1666666666_667,       -27298231.0678160919_54,
+      601580873.9006423683_9,     -1_5116315767.092156863,
+             42.9614643061_16666667e10,   -1371.1655205088_332772e10,
+          48833.2318973593_16667e10,   -1929657.9341940068_149e10,
+       84169304.7573682615e10])$DoubleFloatVector
+
+    W_stirling1(t : DF, x2_inv : DF, r_eps : DF, df_n : DF) : DF ==
+        s : DF := 0
+        df_k := 2::DF
+        for k in 2..21 repeat
+            t := t*x2_inv*(df_k + 1 + df_n)*(df_k + df_n)/
+                   ((df_k + 1)*(df_k+2::DF))
+            tk := t*ber_coeff(k)
+            abs(tk) < r_eps => break
+            s := s + tk
+            df_k := df_k + 2::DF
+        s
+
+    W_stirling(xm : DF, n : NonNegativeInteger) : DF ==
+        xm_inv := 1/xm
+        x2_inv := xm_inv*xm_inv
+        df_n := n::DF
+        t0 := 0.5::DF*xm_inv
+        t := (df_n + 1)*0.5::DF*x2_inv
+        r_eps := 1.0e-18::DF*t0
+        if n > 0 then
+            t0 := t0 + 1/df_n
+        t1 := t*ber_coeff(1)
+        s : DF :=
+            t1 < r_eps => 0
+            t1 + W_stirling1(t, xm_inv*xm_inv, r_eps, df_n)
+        t0 + s
+
+    psi_W1(x : DF, n : NonNegativeInteger, m : Integer) : DF ==
+        xm := x + m::DF
+        s := xm^(-n)*W_stirling(xm, n)
+        if n = 0 then
+            s := s - log(xm)
+        psi_W2(x, s, n, m)
+
+    -- requested accuracy in decimal digits
+    df_dig := 15::DF
+
+    -- estimate minimal x for which asymptitic expansion gives
+    -- good accuracy
+    min_asymp(n : NonNegativeInteger) : DF ==
+        slope := 0.21::DF + df_dig*(0.0006038::DF*df_dig + 0.008677::DF)
+        xm := 3.50::DF + df_dig*0.40::DF + n*slope
+
+    cot_diff(x : DF, n : NonNegativeInteger) : DF ==
+        cot_x := cot(x)
+        n = 0 => cot_x
+        nn := (n + 1) quo 2
+        v := new(nn + 1, 0)$DoubleFloatVector
+        v(0) := v(1) := 1
+        for i in 2..n repeat
+            j := (i + 1) quo 2
+            t : DF := 0
+            j1 : Integer :=
+                odd?(i) => 1
+                0
+            for k in j..j1 by -1 repeat
+                t1 := (2*k - j1)::DF*v(k - j1)
+                v(k) := t + t1
+                t := t1
+            if odd?(i) then v(0) := t
+        r0 : DF :=
+            odd?(n) => -1
+            cot_x
+        u := cot_x*cot_x
+        res : DF := 0
+        for i in nn..0 by -1 repeat
+            res := u*res + v(i)
+        r0*res
+
+    polygamma(n : NonNegativeInteger, x : DF) : DF ==
+        x <= 0 =>
+            x_int := round(x)
+            x1 := x - x_int
+            x1 = 0 =>
+                error "pole of polygamma"
+            res1 := polygamma(n, 1 - x)
+            if odd?(n) then
+               res1 := -res1
+            res1 - (c_pi)^(n+1)*cot_diff(c_pi*x1, n)
+        x_min := min_asymp(n)
+        m : Integer :=
+            x_min < x => 0
+            retract(ceiling(x_min - x))@Integer
+        res1 := Gamma(n::DF + 1)*psi_W1(x, n, m)
+        if even?(n) then
+            res1 := -res1
+        res1
+
 
     import FloatLiouvilianFunctions
 

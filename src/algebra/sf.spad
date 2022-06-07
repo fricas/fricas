@@ -484,15 +484,6 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    besselJ(x, y)     == besselJ(sfx, sfy)$SFSFUN pretend %
    besselK(x, y)     == besselK(sfx, sfy)$SFSFUN pretend %
    besselY(x, y)     == besselY(sfx, sfy)$SFSFUN pretend %
-   digamma x        == digamma(sfx)$SFSFUN pretend %
--- not implemented in SFSFUN
---   Gamma(x, y)       == Gamma(sfx, sfy)$SFSFUN pretend %
-   polygamma(x, y)   ==
-       import from DoubleFloat
-       if (n := retractIfCan(sfx)@Union(Integer, "failed")) case Integer _
-          and n >= 0
-       then polygamma(n@Integer::NonNegativeInteger, sfy)$SFSFUN pretend %
-       else error "polygamma: first argument should be a nonnegative integer"
 
    SFSFUN2 ==> DoubleFloatSpecialFunctions2
    Beta(x, y)       == Beta(sfx, sfy)$SFSFUN2 pretend %
@@ -501,6 +492,14 @@ DoubleFloat() : Join(FloatingPointSystem, DifferentialRing, OpenMath,
    airyAiPrime(x)   == airyAiPrime(sfx)$SFSFUN2 pretend %
    airyBi(x)        == airyBi(sfx)$SFSFUN2 pretend %
    airyBiPrime(x)   == airyBiPrime(sfx)$SFSFUN2 pretend %
+   digamma(x) == polygamma(0, sfx)$SFSFUN2 pretend %
+
+   polygamma(x, y)   ==
+       if (n := retractIfCan(sfx)@Union(Integer, "failed")) case Integer _
+          and n >= 0 then
+           polygamma(qcoerce(n@Integer)@NonNegativeInteger,
+                     sfy)$SFSFUN2 pretend %
+       else error "polygamma: first argument should be a nonnegative integer"
 
    FSFUN ==> FloatSpecialFunctions
 
