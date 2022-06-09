@@ -7,7 +7,7 @@
 # In fact, we only treat
 # - certain macros of the form |...|,
 # - remove the underlining of subsubsections,
-# - replace double `` by a single backquote,
+# - replace double `` by a single doublequote,
 # - remove "::" at the end of a line,
 # - remove the trailing underscore that directly follows a word.
 

@@ -334,7 +334,7 @@ means anything other than ``/usr`` or ``/usr/local``) then you can
 specify the location with
 ::
 
-   configure`--with-gmp=PATH
+   configure --with-gmp=PATH
 
 This supposes that the include file is in ``PATH/include`` and libgmp
 is in ``PATH/lib``.  If you have a different setup, then you can
@@ -435,8 +435,8 @@ Optional: If you add
    text/x-spad       spad
 
 to ``/etc/mime.types`` and in firefox associate ``text/x-spad`` with
-your editor, then clicking on a ``.spad`` file opens the `.spad` file
-in in this editor.
+your editor, then clicking on a ``.spad`` file opens the ``.spad``
+file in in this editor.
 
 
 
