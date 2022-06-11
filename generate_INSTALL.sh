@@ -1,8 +1,8 @@
-#!/usr/bin/sh
+#! /bin/sh
 
 # This script generates a plain text files from the source install.rst
-# without employing any fancy reStructuredText parser.
-# Of course, that means that markup has to be kept simple in install.rst.
+# without employing any fancy reStructuredText grammar.
+# Of course, this means the markup used in install.rst has to be simple.
 
 # In fact, we only treat
 # - certain macros of the form |...|,
@@ -15,13 +15,11 @@
 # with a weblink to its rendered form on the FriCAS homepage
 # and we add links for the |...| macros at the bottom of the file.
 
-# Usage:
-# sh $0 > INSTALL
 
 cat <<'EOF' > INSTALL
-# This file is generated vi "sh generate_INSTALL.sh > INSTALL" from
+# This file is generated via "sh generate_INSTALL.sh" from
 # "src/doc/sphinx/source/install.rst".
-# See rendered form at http://fricas.github.io/install.html.
+# See rendered form at https://fricas.github.io/install.html.
 
 EOF
 
@@ -41,7 +39,7 @@ sed -n \
     -e 'p' \
     src/doc/sphinx/source/install.rst >> INSTALL
 
-# Add links for Sphinx macros at the bottom of th file.
+# Add links for Sphinx macros at the bottom of the file.
 cat <<'EOF' >> INSTALL
 FriCAS git repository: https://github.com/fricas/fricas
 FriCAS home page: https://fricas.github.io

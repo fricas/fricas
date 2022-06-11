@@ -12,7 +12,7 @@ FriCAS now tries to support standard GNU build/installation
 conventions.  So if you have sources and all prerequisites, then
 ::
 
-   configure && make && sudo make install
+   ./configure && make && sudo make install
 
 should work.  The above will install FriCAS files into
 ``/usr/local/lib/fricas/``  and put the ``fricas`` command into
@@ -163,8 +163,8 @@ This only applies if you use Debian ECL.
 
 
 
-Detailed installations instructions
------------------------------------
+Detailed installation instructions
+----------------------------------
 
 We assume that you have installed all necessary prerequisittes.
 
@@ -336,14 +336,14 @@ specify the location with
 
    configure --with-gmp=PATH
 
-This supposes that the include file is in ``PATH/include`` and libgmp
+This means that the header files are in ``PATH/include`` and libgmp
 is in ``PATH/lib``.  If you have a different setup, then you can
 specify
 ::
 
    --with-gmp-include=INCLUDEPATH --with-gmp-lib=LIBPATH
 
-(specify the directories where the include files and libgmp are found,
+(specify the directories where the header files and libgmp are found,
 respectively).
 
 These options also implicitly set ``--enable-gmp``.  However, if
@@ -425,8 +425,8 @@ Then, checkout the ``gh-pages`` branch and put the data from
    git commit -m "$PACKAGE_VERSION"
    git push origin gh-pages
 
-Of course, leave out the ``--orphan`` switch, if you already have an
-appropriate ``gh-pages`` branch.
+You must use ``git checkout --orphan gh-pages`` if you do not yet have
+a ``gh-pages`` branch.
 
 
 Optional: If you add
@@ -436,7 +436,7 @@ Optional: If you add
 
 to ``/etc/mime.types`` and in firefox associate ``text/x-spad`` with
 your editor, then clicking on a ``.spad`` file opens the ``.spad``
-file in in this editor.
+file in this editor.
 
 
 
@@ -490,8 +490,8 @@ The program ``sieve.as`` is::
 Known problems
 --------------
 
-- currently on when using case insensitive filesystem (typically on
-  Mac OSX and Windows), the git version can be only build in a
+- currently when using case insensitive filesystem (typically on
+  macOS and Windows), the git version can only be built in a
   separate directory (in-tree build will fail).  This does not affect
   release tarball.
 
@@ -499,8 +499,8 @@ Known problems
   to hang.
 
 - 32-bit sbcl from 1.5.9 to 2.1.3 may miscompile floating point
-  comparisons.   Due to this most plots wil fail.   The problem is
-  fixed in developement version of sbcl.   Alternatively, use older
+  comparisons.   Due to this most plots will fail.   The problem is
+  fixed in newer versions of sbcl.   Alternatively, use older
   version of sbcl.   64-bit sbcl works OK.
 
 - by default sbcl 1.0.54 and newer limits memory use to 1GB, which is
