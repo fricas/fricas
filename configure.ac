@@ -279,6 +279,15 @@ else
            echo $fricas_lisp_version | grep '^1\.0.[[0-6]]$' > /dev/null ; then
              AC_MSG_ERROR([sbcl $fricas_lisp_version is too old])
         fi
+        case $(uname -m) in
+           i*86)
+             case $fricas_lisp_version in
+                1.5.9|2.0.*|2.1.[[0-3]].*)
+                  AC_MSG_ERROR([sbcl $fricas_lisp_version on $(uname -m) has a serious runtime issue. Please use different sbcl version])
+                    ;;
+             esac
+               ;;
+        esac
         case $fricas_lisp_version in
            1.0.29|1.3.1|1.3.1.*|1.3.2|1.3.3|1.3.4)
              AC_MSG_ERROR([sbcl $fricas_lisp_version has a bug which does not allow building FriCAS.
