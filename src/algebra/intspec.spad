@@ -1,0 +1,169 @@
+)abbrev package INTGEL GenerateEllipticIntegrals
+++ Integration in terms of elliptic functions
+++ Author: Waldek Hebisch
+++ Description:
+++ This package provides support functions for generating elliptic
+++ integrals.
+GenerateEllipticIntegrals(F, UP, UPUP, R) : Exports == Implementation where
+  F : Field
+  UP : UnivariatePolynomialCategory(F)
+  RF ==> Fraction(UP)
+  UPUP : UnivariatePolynomialCategory(RF)
+  R : Join(Field, MonogenicAlgebra(RF, UPUP))
+  ELL_REC ==> Record(f_form : R, e_form : R, f_var : F, f_pol : UP)
+  EF_REC ==> Record(result1 : RF, result2 : F)
+
+  Exports ==> with
+    get_elliptics : (UP -> UP, F) -> List(ELL_REC)
+      ++ get_elliptics(der, x) tries to find elliptic forms on R
+      ++ \spad{x} is expression for variable of integration in F
+    gen_ef : (F, UP, R, R) -> Union(EF_REC, "failed")
+      ++ gen_ef(f_var, f_pol, cfr, cer) produces linear
+      ++ combination
+    fsqrt : F -> F
+      ++ fsqrt(f) should be local but conditional
+
+  Implementation ==> add
+
+    R_to_F(f : R) : Union(F, "failed") ==
+        (u1 := retractIfCan(f)@Union(RF, "failed")) case "failed" => "failed"
+        f1 := u1@RF
+        (u2 := retractIfCan(f1)@Union(UP, "failed")) case "failed" => "failed"
+        f2 := u2@UP
+        retractIfCan(f2)@Union(F, "failed")
+
+    good_F := (F is Expression(Integer)) or (F is Expression(Complex(Integer)))
+
+    get_elliptics(der : UP -> UP, x : F) : List(ELL_REC) ==
+        not(good_F) => []
+        g := generator()$R
+        p := definingPolynomial()$R
+        dx := der(monomial(1,1)$UP)::RF::R
+        not(dx = 1) => []
+        degree(p) =$Integer 2 and coefficient(p, 1)$UPUP =$RF 0 =>
+            r := -coefficient(p, 0)/leadingCoefficient(p)
+            denom(r) ~= 1 =>
+              error "get_elliptics: Unexpected denominator"
+            nr : UP := numer(r)
+            not(every?((c : F) : Boolean +-> zero?(der(c::UP)),
+                       coefficients(nr))$List(F)) =>
+                print(message("nonconstant coefficients"))$OutputForm
+                []
+            degree(nr) = 4 =>
+                e_coeff := coefficient(nr, 3)/(2::F*coefficient(nr, 4))
+                e_pol := (monomial(1, 2)$UP + monomial(e_coeff, 1)$UP)::RF::R
+                ef := dx/g
+                ee := e_pol*ef
+                kx := x
+                [[ef, ee, kx, nr]$ELL_REC]
+            degree(nr) = 3 =>
+                dx := der(monomial(1,1)$UP)::RF::R
+                ef := dx/g
+                ee := (monomial(1,1)$UP)::RF::R*ef
+                kx := x
+                [[ef, ee, kx, nr]$ELL_REC]
+            []
+        []
+
+    if F is Expression(Integer) then
+
+      fsqrt(f : F) : F ==
+          ur := froot(f, 2)$PolynomialRoots(
+                IndexedExponents(Kernel(F)),
+                Kernel(F),
+                Integer,
+                SparseMultivariatePolynomial(Integer, Kernel(F)),
+                F)
+          ur.radicand = 1 => return ur.coef
+          sqrt(f)
+
+    else if F is Expression(Complex(Integer)) then
+
+      fsqrt(f : F) : F ==
+          ur := froot(f, 2)$PolynomialRoots(
+                IndexedExponents(Kernel(F)),
+                Kernel(F),
+                Complex(Integer),
+                SparseMultivariatePolynomial(Complex(Integer), Kernel(F)),
+                F)
+          ur.radicand = 1 => return ur.coef
+          sqrt(f)
+
+    else
+
+      fsqrt(f : F) : F == error "unimplemented"
+
+    if F has SpecialFunctionCategory then
+
+      gen_ef4l(f_var : F, f_pol : UP, cf : F, ce : F) : F ==
+        A := coefficient(f_pol, 0)
+        B := coefficient(f_pol, 2)/A
+        C := leadingCoefficient(f_pol)/A
+        del := B^2 - 4::F*C
+        d2 := fsqrt(del)
+        c2a := (-d2 - B)/(2::F)
+        c2 :=
+            c2a = 1 =>
+               d2 := -d2
+               c2a
+            (d2 - B)/(2::F)
+        c22 := fsqrt(c2)
+        var := c22*f_var
+        f_par := (B*d2 -(2::F)*C +B*B)/((2::F)*C)
+        ca := 1/(fsqrt(A)*c22)
+        ce := -ce/f_par
+        cf := cf - ce
+        ft := ellipticF(var, f_par)
+        et := ellipticE(var, f_par)
+        res : F := (ca*(cf*ft + ce*et))
+        res
+
+      d_var := create()$SingletonAsOrderedSet
+
+      gen_ef3(f_var : F, f_pol : UP, cf : F, ce : F) : F ==
+        A := leadingCoefficient(f_pol)
+        B := coefficient(f_pol, 2)
+        shift := B/((3::F)*A)
+        f_pol2 := eval(f_pol, d_var, monomial(1,1)$UP - shift::UP)
+        f_pol2 := (4::F/A)*f_pol2
+        g2 := -coefficient(f_pol2, 1)
+        g3 := -coefficient(f_pol2, 0)
+        ca := (2::F)/fsqrt(A)
+        p_inv := weierstrassPInverse(g2, g3, f_var+shift)
+        fi := ca*((cf - ce*shift)*p_inv - ce*weierstrassZeta(g2, g3, p_inv))
+        fi
+
+      gen_ef4(f_var : F, f_pol : UP, cf : F, ce : F
+             ) : Union(EF_REC, "failed") ==
+        c0 := coefficient(f_pol, 0)
+        c1 := coefficient(f_pol, 1)
+        c2 := coefficient(f_pol, 2)
+        c3 := coefficient(f_pol, 3)
+        c4 := coefficient(f_pol, 4)
+        c0 = 0 =>
+            f_pol1 := monomial(c1, 3)$UP + monomial(c2, 2)$UP +
+                      monomial(c3, 1)$UP + c4::UP
+            ans1 : RF := (ce/c4)::UP/monomial(1, 1)$UP
+            [ans1, -gen_ef3(1/f_var, f_pol1, cf, (ce/c4)*c1/(2::F))]
+        c1 ~= 0 or c3 ~= 0 => "failed"
+        [0, gen_ef4l(f_var, f_pol, cf, ce)]
+
+      gen_ef(f_var : F, f_pol : UP, cfr : R, cer : R
+            ) : Union(EF_REC, "failed") ==
+        cfu := R_to_F(cfr)
+        cfu case "failed" =>
+            error "gen_ef: Constant not in base field"
+        cf := cfu::F
+        ceu := R_to_F(cer)
+        ceu case "failed" =>
+            error "gen_ef: Constant not in base field"
+        ce := ceu::F
+        degree(f_pol) =$Integer 4 => gen_ef4(f_var, f_pol, cf, ce)
+        degree(f_pol) =$Integer 3 => [0, gen_ef3(f_var, f_pol, cf, ce)]
+        error "gen_ef: unsupported case"
+
+    else
+
+      gen_ef(f_var : F, f_pol : UP , cfr : R, cer : R
+            ) : Union(EF_REC, "failed") ==
+        error "gen_ef: unimplemented for F"

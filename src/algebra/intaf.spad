@@ -507,6 +507,17 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
                  prootintegrate1(leadingMonomial ff, x, y, modulus)
       prootintegrate1(ff, x, y, modulus)
 
+    ch_REC ==> Record(func : UPUP, poly : UPUP, c1 : RF, c2 : RF, deg : N)
+
+    do_curve(curve : FunctionFieldCategory(F, UP, UPUP),
+             cv : ch_REC, x : K, y : K) : IR ==
+        dcv := multivariate(differentiate(cv.c1)::RF, x)
+        cv1 := multivariate(cv.c1, x)
+        res_c := palgintegrate(reduce(cv.func), cv1, differentiate$UP)$ALG
+        ir := map(x1+->UPUP2F1(lift(x1), cv.c1, cv.c2, x, y),
+                  res_c.result1)$IR2
+        algaddx(ir, dcv, x::F) + res_c.result2::IR
+
     prootintegrate1(ff, x, y, modulus) ==
       chv : CHV
       r := radPoly(modulus)::Record(radicand : RF, deg : N)
@@ -528,9 +539,7 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
          map(x1+->UPUP2F1(RF2UPUP(x1, m), cv.c1, cv.c2, x, y),
             rationalInt(u@UPUP, r.deg, monomial(1, 1)))
       curve  := RadicalFunctionField(F, UP, UPUP, q::RF, r.deg)
-      dcv := multivariate(differentiate(cv.c1)::RF, x)
-      algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, y),
-        palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, dcv, x::F)
+      do_curve(curve, cv, x, y)
 
 -- Do the rationalizing change of variable
 -- Int(f(x, y) dx) --> Int(n u^(n-1) f((u^n - b)/a, u) / a du) where
@@ -659,10 +668,8 @@ PureAlgebraicIntegration(R, F, L) : Exports == Implementation where
       modulus := lift(p := minPoly k, x)
       cv     := chvar(univariate(f, x, k, p), modulus)
       curve  := AlgebraicFunctionField(F, UP, UPUP, cv.poly)
-      dcv := multivariate(differentiate(cv.c1)::RF, x)
       knownInfBasis(cv.deg)
-      algaddx(map(x1+->UPUP2F1(lift x1, cv.c1, cv.c2, x, k),
-        palgintegrate(reduce(cv.func), differentiate$UP)$ALG)$IR2, dcv, x::F)
+      do_curve(curve, cv, x, k)
 
     palgint(f, x, y) ==
       (v := linearInXIfCan(x, y)) case "failed" =>
