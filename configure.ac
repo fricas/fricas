@@ -282,7 +282,7 @@ else
         case $(uname -m) in
            i*86)
              case $fricas_lisp_version in
-                1.5.9|2.0.*|2.1.[[0-3]].*)
+                1.5.9|2.0.*|2.1.[[0-3]]|2.1.[[0-3]].*)
                   AC_MSG_ERROR([sbcl $fricas_lisp_version on $(uname -m) has a serious runtime issue. Please use different sbcl version])
                     ;;
              esac
