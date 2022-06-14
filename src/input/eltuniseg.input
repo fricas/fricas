@@ -1,0 +1,107 @@
+-- The discussion and design decisions concerning the implementation
+-- of x(u) for an open or closed segment u and a list, vector or stream x
+-- started with the following tread at the fricas-devel mailing list.
+-- https://groups.google.com/g/fricas-devel/c/kNnvUTqxE7A
+-- https://www.mail-archive.com/fricas-devel@googlegroups.com/msg14540.html
+-- They are encoded in this testsuite (together with eltunisegtests.input).
+
+-- The short version is:
+-- * x(a..b by c) gives the same as [x(i) for i in a..b by c] where
+--   the square brackets are here an abbreviation for constructing an
+--   element of the same type as x.
+-- * c=0 always leads to an immediate error.
+-- * If b is missing and c<0, then we assume b=minIndex(x).
+-- * If b is missing and c>0, then we assume b=maxIndex(x) where
+--   (if x is a stream) maxindex(x) should be interpreted as
+--   the last index, if x is a finite stream, or
+--   infinity, if x is an infinite stream.
+-- * If the segment has no element, an empty structure is returned.
+-- * "index out of range" errors occur immediately for "eager" structures
+--   like List or Vector, etc. that is, if x=[1,2], then x(1..0 by -1)
+--   gives an error.
+--   For lazy structures like Stream, errors are postponed until an
+--   index of x that does not exist is actually accessed. In particular,
+--   if x is the stream [1,2], then z:=x(1..0 by -1) is OK. z(1) and
+--   rest(z) are also OK. z(2) and empty?(rest z) give an error.
+
+
+)clear complete
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+-------------------------------------------------------------------
+testsuiteNoClear "elt-UniversalSegment"
+-------------------------------------------------------------------
+
+-- Expand to a list, but at most n elements and no entries below 1 or
+-- above b.
+EX(u,n,b) ==> "entries complete([v for v in [k for k in " u " while (k > 0 and k <= " string(b) ")] for m in 1.." string(n) "]::Stream(Integer))"
+
+-- Stepsize=0 is a special case and not allowed, i.e. leads to
+-- an immediate error even in the lazy case.
+TESTBY0 u ==> testLibraryError("x(" u " by 0);") -- do not print the result
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+testcaseNoClear "List"
+
+x: List Integer := [i for i in 1..29]
+TESTFIN u ==> testEquals("x(" u ")", EX(u, 29, 29))
+TESTEMPTY u ==> testEquals("x(" u ")", "[]")
+TESTEMPTYINF u ==> TESTEMPTY u
+TESTSTREAM u ==> TESTFIN u
+TESTMIN(u, i) ==> testLibraryError("x(" u ")")
+TESTMAX(u, i) ==> testLibraryError("x(" u ")")
+)read eltunisegtests
+
+-------------------------------------------------------------------
+
+testcaseNoClear "Vector"
+
+)clear prop x TESTFIN
+x: Vector Integer := vector [i for i in 1..29]
+TESTFIN u ==> testEquals("x(" u ")", "vector " EX(u, 29, 29))
+)read eltunisegtests
+
+-------------------------------------------------------------------
+
+testcaseNoClear "Stream-finite"
+
+)clear prop x TESTFIN TESTEMPTY TESTMIN TESTMAX
+x: Stream Integer := [i for i in 1..29]
+TESTFIN u ==> testEquals("entries complete x(" u ")", EX(u,29, 29))
+-- Check that creation of structure gives no error, but access does.
+TESTEMPTY u ==> testEquals("entries complete x(" u ")", "[]")
+TESTMIN(u, i) ==>
+  testTrue("x(" u "); true") -- no error
+  -- test access to all indices before the bad index
+  testTrue("t := x(" u "); (#[t.n for n in 1..(" i "-1)]=" i "-1)@Boolean")
+  -- first index that raises error
+  testLibraryError("t := x(" u "); t." i)
+TESTMAX(u, i) ==> TESTMIN(u, i)
+)read eltunisegtests
+
+-------------------------------------------------------------------
+
+testcaseNoClear "Stream-infinite"
+
+)clear prop x TESTSTREAM TESTEMPTYINF TESTMAX
+x: Stream Integer := [i for i in 1..]
+TESTSTREAM u ==> testEquals("t:=x(" u "); [t.n for n in 1..99]",
+                    "entries complete [k for k in " u " for m in 1..99]")
+TESTEMPTYINF u ==> TESTSTREAM u
+-- There is no maximal index for an infinite stream, i.e. no error.
+-- We check at most 99 coefficients and can ignore the i argument.
+TESTMAX(u, i) ==> _
+  testEquals("t:=x(" u ");"_
+             "l:=empty()$List(Integer);"_
+             "for n in 1..99 while not empty? t repeat"_
+             "  (l := cons(first t, l); t := rest t);"_
+             "reverse! l",_
+             EX(u, 99, 99))
+)read eltunisegtests
+
+-------------------------------------------------------------------
+
+statistics()
