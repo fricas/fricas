@@ -836,7 +836,7 @@
 (defmacro |atan2| (a b) `(atan ,a ,b))
 
 (defun |Halt| (n)
-  (error (cond ((= n 101) "System Error: Unfortunate use of dependant type")
+  (error (cond ((= n 101) "System Error: Unfortunate use of dependent type")
                ((= n 102) "User error: Reached a 'never'")
                ((= n 103) "User error: Bad union branch")
                ((= n 104) "User error: Assertion failed")

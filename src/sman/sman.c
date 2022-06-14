@@ -530,7 +530,7 @@ fork_FriCAS(void)
     /* group                                                        */
 
     if(setsid() < 0) {
-      perror("Dissassociating from parents group");
+      perror("Disassociating from parents group");
       exit(-1);
     }
 
