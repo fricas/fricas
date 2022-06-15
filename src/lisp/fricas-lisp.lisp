@@ -877,7 +877,11 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:clisp
 (defun makedir (fname)
-    (ext:make-dir (pad-directory-name (namestring fname))))
+  ;; ext:make-dir was deprecated in clisp-2.44-2008-02-02
+  ;; and removed in clisp-2.49.90-2018-02-11
+  (let ((sym (or (find-symbol "MAKE-DIRECTORY" "EXT")
+                 (find-symbol "MAKE-DIR" "EXT"))))
+    (funcall sym (pad-directory-name (namestring fname)))))
 
 #+:lispworks
 (defun makedir (fname)

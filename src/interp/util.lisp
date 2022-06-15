@@ -326,10 +326,18 @@ After this function is called the image is clean and can be saved.
 (DEFVAR CUROUTSTREAM *standard-output*)
 
 (defun fricas-restart ()
-  ;;; Need to reinitialize CUROUTSTREAM and |$trace_stream| because
-  ;;;  clisp closes it when dumping executable
+  ;;; Need to reinitialize various streams because
+  ;;; CLISP closes them when dumping executable
   (setf CUROUTSTREAM *standard-output*)
   (setf |$trace_stream| *standard-output*)
+  (setq |$algebraOutputStream| (|mkOutputConsoleStream|))
+  (setq |$fortranOutputStream| (|mkOutputConsoleStream|))
+  (setq |$mathmlOutputStream| (|mkOutputConsoleStream|))
+  (setq |$texmacsOutputStream| (|mkOutputConsoleStream|))
+  (setq |$htmlOutputStream| (|mkOutputConsoleStream|))
+  (setq |$openMathOutputStream| (|mkOutputConsoleStream|))
+  (setq |$texOutputStream| (|mkOutputConsoleStream|))
+  (setq |$formattedOutputStream| (|mkOutputConsoleStream|))
   (fricas-init)
   #+(or :GCL :poplog)
   (|spad|)
