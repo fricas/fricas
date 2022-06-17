@@ -61,6 +61,13 @@ TexFormat() : public == private where
       ++ components of this object.
     prologue : % -> L S
       ++ prologue(t) extracts the prologue section of a TeX form t.
+    getDialect : () -> Sy
+      ++ getDialect() return current dialect setting.
+    setDialect : Sy -> Sy
+      ++ setDialect(d) sets s as current dialect and returns previous
+      ++ setting.  Possible values are \spad{tex} meaning using
+      ++ mostly plain TeX constructs and \spad{latex} which means
+      ++ more idiomatic LaTeX.
     setEpilogue! : (%, L S) -> L S
       ++ setEpilogue!(t, strings) sets the epilogue section of a TeX form t to strings.
     setTex! :  (%, L S) -> L S
@@ -79,6 +86,17 @@ TexFormat() : public == private where
     Rep := Record(prolog : L S, TeX : L S, epilog : L S)
 
     -- local variable declarations and definitions
+
+    dialect : Sy := 'latex
+
+    getDialect() : Sy == dialect
+
+    setDialect(nd : Sy) : Sy ==
+        not(nd = 'tex or nd = 'latex) =>
+            error "TeX dialect must be one of tex or latex"
+        d := dialect
+        dialect := nd
+        d
 
     expr : E
     prec, opPrec : I
@@ -514,6 +532,8 @@ TexFormat() : public == private where
             string(op)
         s :=
             op = "^"::Sy => concat [group(s1), ops, group(s2)]
+            dialect = 'latex and (op = "/"::Sy or op = 'OVER) =>
+                concat ["\frac", group(s1), group(s2)]
             concat [s1, ops, s2]
         group
             op = "/"::Sy or op = 'OVER => s
