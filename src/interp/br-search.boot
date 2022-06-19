@@ -205,7 +205,7 @@ isFilterDelimiter? c == MEMQ(c,$pmFilterDelimiters)
 
 grepSplit(lines,doc?) ==
   if doc? then
-    instream2 := OPEN STRCONC(getEnv '"FRICAS",'"/algebra/libdb.text")
+    instream2 := OPEN STRCONC($SPADROOT,'"/algebra/libdb.text")
   cons := atts := doms := nil
   while lines is [line, :lines] repeat
     if doc? then

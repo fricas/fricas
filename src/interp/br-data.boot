@@ -197,13 +197,13 @@ dbHasExamplePage conname ==
   sname    := STRINGIMAGE conname
   abb      := constructor? conname
   ucname   := UPCASE STRINGIMAGE abb
-  pathname :=STRCONC(getEnv '"FRICAS",'"/share/hypertex/pages/",ucname,'".ht")
+  pathname :=STRCONC($SPADROOT,'"/share/hypertex/pages/",ucname,'".ht")
   isExistingFile pathname => INTERN STRCONC(sname,'"XmpPage")
   nil
 
 dbReadComments(n) ==
   n = 0 => '""
-  instream := MAKE_INSTREAM(STRCONC(getEnv('"FRICAS"), '"/algebra/comdb.text"))
+  instream := MAKE_INSTREAM(STRCONC($SPADROOT, '"/algebra/comdb.text"))
   FILE_-POSITION(instream,n)
   line := read_line instream
   k := dbTickIndex(line,1,1)

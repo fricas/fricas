@@ -307,7 +307,7 @@ database.
  "call the aldor compiler"
  (#| system::system |#
    obey
-   (concatenate 'string (|getEnv| "FRICAS") "/compiler/bin/aldor "
+   (concatenate 'string $spadroot "/compiler/bin/aldor "
     flags " " file)))
 
 (defun resethashtables ()
@@ -411,7 +411,7 @@ database.
   |Integer| |List| |OutputForm|))
  (dolist (con constr)
   (let ((c (concatenate 'string
-             (|getEnv| "FRICAS") "/algebra/"
+             $spadroot "/algebra/"
              (string (getdatabase con 'abbreviation)) "." |$lisp_bin_filetype|)))
     (format t "   preloading ~a.." c)
     (if (probe-file c)
@@ -1420,7 +1420,7 @@ database.
 
 ;; following needs to happen inside restart since $FRICAS may change
 (defun |createInitializers2| ()
- (let ((asharprootlib (strconc (|getEnv| "FRICAS") "/aldor/lib/")))
+ (let ((asharprootlib (make-absolute-filename  "/aldor/lib/")))
    (set-file-getter (strconc asharprootlib "runtime"))
    (set-file-getter (strconc asharprootlib "lang"))
    (set-file-getter (strconc asharprootlib "attrib"))

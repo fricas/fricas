@@ -704,9 +704,9 @@ withAsharpCmd args ==
 --% )copyright -- display copyright notice
 
 summary l ==
- OBEY STRCONC ('"cat ",getEnv('"FRICAS"),'"/lib/summary")
+ OBEY STRCONC ('"cat ",$SPADROOT,'"/lib/summary")
 copyright () ==
- OBEY STRCONC ('"cat ",getEnv('"FRICAS"),'"/lib/copyright")
+ OBEY STRCONC ('"cat ",$SPADROOT,'"/lib/copyright")
 
 --% )credits -- display credit list
 
