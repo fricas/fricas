@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: msys2/setup-msys2@v2
       with:
-        install: make mingw-w64-x86_64-gcc zip
+        install: make mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp gmp-devel zip
     - name: download SBCL
       run: wget https://downloads.sourceforge.net/project/sbcl/sbcl/2.2.5/sbcl-2.2.5-x86-64-windows-binary.msi
     - name: install SBCL
@@ -27,7 +27,7 @@ jobs:
         export SBCL_HOME="/c/sbcl/PFiles/Steel Bank Common Lisp/"
         export PATH="$SBCL_HOME":$PATH
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=sbcl || cat config.log
+        ../fricas/configure --with-lisp=sbcl --enable-gmp || cat config.log
         make -j2 --output-sync
     - name: make check
       run: cd ../build && make check -j2 --output-sync
