@@ -826,7 +826,10 @@
 
 (defun init-gmp(wrapper-lib)
     (if (not *gmp-multiplication-initialized*)
-        (if (ignore-errors (|quiet_load_alien| "libgmp.so") t)
+        (if (ignore-errors (|quiet_load_alien|
+                            #-:WIN32 "libgmp.so"
+                            #+:WIN32 "libgmp-10.dll"
+                            ) t)
             (if (ignore-errors
                     (|quiet_load_alien| wrapper-lib) t)
                 (progn
