@@ -12,7 +12,7 @@ Q ==> Fraction Z
 ++ IntegerLocalizedAtPrime(p) represents the Euclidean domain of
 ++ integers localized at a prime p, i.e., the set of rational numbers
 ++ whose denominator is not divisible by p.
-IntegerLocalizedAtPrime(p : P) : Join(EuclideanDomain,
+IntegerLocalizedAtPrime(p : P) : Join(EuclideanDomain, OrderedRing,
   RetractableTo Z, RetractableFrom Q, canonicalUnitNormal) with
     exponent : % -> N
         ++ Each element x can be written as x=p^n*a/b with
@@ -142,3 +142,10 @@ IntegerLocalizedAtPrime(p : P) : Join(EuclideanDomain,
         cx : % := per [qcoerce(emax::Z - ex::Z)@N, uy]
         cy : % := per [qcoerce(emax::Z - ey::Z)@N, ux]
         [per [emax, ux*uy], cx, cy]
+    ((x : %) < (y : %)) : Boolean ==
+        exponent x = exponent y => unitPart x < unitPart y
+        (x::Q) < (y::Q)
+    positive?(x : %) : Boolean == positive? unitPart x
+    negative?(x : %) : Boolean == negative? unitPart x
+    hashUpdate!(hs : HashState, x: %) : HashState ==
+        hashUpdate!(hashUpdate!(hs, exponent x), unitPart x)
