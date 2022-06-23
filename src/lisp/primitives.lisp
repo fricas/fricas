@@ -112,7 +112,7 @@
         (STR_ELT s 0)
         `(|STR_to_CHAR_fun| ,s)))
 
-;;; Vectors and matrices of of small integer 32-bit numbers
+;;; Vectors and matrices of small integer (8-bit, 16-bit and 32-bit numbers)
 
 (defmacro suffixed_name(name s)
     `(intern (concatenate 'string (symbol-name ',name)
