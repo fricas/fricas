@@ -119,7 +119,7 @@ makeCompactSigCode(sig) == [fn for x in sig] where
   fn ==
     x = '_$_$ => 2
     x = '$ => 0
-    NULL INTEGERP x => systemError ['"code vector slot is ",x,"; must be number"]
+    NULL INTEGERP x => systemError ['"code vector slot is ",x,'"; must be number"]
     x
 
 --=======================================================================
@@ -590,7 +590,7 @@ dcSizeAll() ==
     sayBrightly [s,'" : ",x]
     total := total + s
   sayBrightly '"------------total-------------"
-  sayBrightly [count," constructors; ",total," BYTES"]
+  sayBrightly [count,'" constructors; ",total,'" BYTES"]
 
 sum(:l) == +/l
 
@@ -675,7 +675,7 @@ NRTgetLookupFunction(domform,exCategory,addForm) ==
   if null extends then
     [u,msg,:v] := $why
     sayBrightly '"--------------non extending category----------------------"
-    sayBrightlyNT ['"..",:bright form2String domform,"of cat "]
+    sayBrightlyNT ['"..",:bright form2String domform,'"of cat "]
     PRINT u
     sayBrightlyNT bright msg
     if v then PRINT first v else TERPRI()

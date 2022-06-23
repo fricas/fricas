@@ -242,11 +242,11 @@ removeZeroOneDestructively t ==
 -- the key function extracts the key from an item for comparison by pred
 
 listSort(pred,list,:optional) ==
-   NOT functionp pred => error "listSort: first arg must be a function"
-   NOT LISTP list => error "listSort: second argument must be a list"
+   NOT functionp pred => error '"listSort: first arg must be a function"
+   NOT LISTP list => error '"listSort: second argument must be a list"
    NULL optional => mergeSort(pred,function Identity,list,LENGTH list)
    key := CAR optional
-   NOT functionp key => error "listSort: last arg must be a function"
+   NOT functionp key => error '"listSort: last arg must be a function"
    mergeSort(pred,key,list,LENGTH list)
 
 -- non-destructive merge sort using NOT GGREATERP as predicate
@@ -307,7 +307,7 @@ spadThrowBrightly x ==
 --% Type Formatting Without Abbreviation
 
 formatUnabbreviatedSig sig ==
-  null sig => ["() -> ()"]
+  null sig => ['"() -> ()"]
   [target,:args] := sig
   target := formatUnabbreviated target
   null args => ['"() -> ",:target]

@@ -219,7 +219,7 @@ formatOperationWithPred([[op,sig],pred,.]) ==
     concat(formatOpSignature(op, sig), formatIf pred)
 
 formatOpSignature(op,sig) ==
-  concat('%b,formatOpSymbol(op,sig),'%d,": ",formatSignature sig)
+  concat('%b,formatOpSymbol(op,sig),'%d,'": ",formatSignature sig)
 
 formatOpConstant op ==
   concat('%b,formatOpSymbol(op,'($)),'%d,'": constant")
@@ -268,21 +268,21 @@ formatSignatureArgs sml ==
   formatSignatureArgs0 sml
 
 formatSignature0 sig ==
-  null sig => "() -> ()"
+  null sig => '"() -> ()"
   INTEGERP sig => '"hashcode"
   [tm,:sml] := sig
   sourcePart:= formatSignatureArgs0 sml
   targetPart:= prefix2String0 tm
-  dollarPercentTran concat(sourcePart,concat(" -> ",targetPart))
+  dollarPercentTran concat(sourcePart,concat('" -> ",targetPart))
 
 formatSignatureArgs0(sml) ==
 -- formats the arguments of a signature
-  null sml => ["_(_)"]
+  null sml => ['"_(_)"]
   null rest sml => prefix2String0 first sml
   argList:= prefix2String0 first sml
   for m in rest sml repeat
-    argList:= concat(argList,concat(", ",prefix2String0 m))
-  concat("_(",concat(argList,"_)"))
+    argList:= concat(argList,concat('", ",prefix2String0 m))
+  concat('"_(",concat(argList,'"_)"))
 
 --% Conversions to string form
 
@@ -511,7 +511,7 @@ formJoin1(op,u) ==
     $abbreviateJoin = true => concat(formJoin2 argl,'%b,'"with",'%d,'"...")
     $permitWhere = true =>
       opList:= formatJoinKey(r,id)
-      $whereList:= concat($whereList,"%l",$declVar,": ",
+      $whereList:= concat($whereList,"%l",$declVar,'": ",
         formJoin2 argl,'%b,'"with",'%d,"%i",opList,"%u")
       formJoin2 argl
     opList:= formatJoinKey(r,id)
@@ -550,7 +550,7 @@ formJoin2String (u:=[:argl,last]) ==
   last is ["CATEGORY",.,:atsigList] =>
     postString:= concat("_(",formTuple2String atsigList,"_)")
     #argl=1 => concat(first argl,'" with ",postString)
-    concat(application2String('Join,argl, NIL)," with ",postString)
+    concat(application2String('Join,argl, NIL),'" with ",postString)
   application2String('Join,u, NIL)
 
 sub_to_string(u) ==
@@ -573,13 +573,13 @@ formCollect2String [:itl,body] ==
 formIterator2String x ==
   x is ["STEP",y,s,.,:l] =>
     tail:= (l is [f] => form2StringLocal f; nil)
-    concat("for ",y," in ",s,'"..",tail)
-  x is ["tails",y] => concat("tails ",formatIterator y)
-  x is ["reverse",y] => concat("reverse ",formatIterator y)
-  x is ["|",y,p] => concat(formatIterator y," | ",form2StringLocal p)
-  x is ["until",p] => concat("until ",form2StringLocal p)
-  x is ["while",p] => concat("while ",form2StringLocal p)
-  systemErrorHere "formatIterator"
+    concat('"for ",y,'" in ",s,'"..",tail)
+  x is ["tails",y] => concat('"tails ",formatIterator y)
+  x is ["reverse",y] => concat('"reverse ",formatIterator y)
+  x is ["|",y,p] => concat(formatIterator y,'" | ",form2StringLocal p)
+  x is ["until",p] => concat('"until ",form2StringLocal p)
+  x is ["while",p] => concat('"while ",form2StringLocal p)
+  systemErrorHere '"formatIterator"
 
 tuple2String argl ==
   fn1 argl where
@@ -662,9 +662,9 @@ app2StringWrap(string, linkInfo) == string
 record2String x ==
   argPart := NIL
   for [":",a,b] in x repeat argPart:=
-    concat(argPart,",",a,": ",form2StringLocal b)
+    concat(argPart,'",",a,'": ",form2StringLocal b)
   null argPart => '"Record()"
-  concat("Record_(",rest argPart,"_)")
+  concat('"Record_(",rest argPart,'"_)")
 
 plural(n,string) ==
   suffix:=

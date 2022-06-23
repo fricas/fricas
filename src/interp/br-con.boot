@@ -70,15 +70,15 @@ conPageConEntry entry ==
 kxPage(htPage,name) == downlink name
 
 kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
-  htSay("{\sf ",name,'"}")
-  if abbrev ~= name then bcHt [" has abbreviation ",abbrev]
+  htSay('"{\sf ",name,'"}")
+  if abbrev ~= name then bcHt ['" has abbreviation ",abbrev]
   if file? then bcHt ['" is a source file."]
   if nargs = 0 then (if abbrev ~= name then bcHt '".")
     else
       if abbrev ~= name then bcHt '" and"
       bcHt
         nargs = 1 => '" takes one argument:"
-        [" takes ",STRINGIMAGE nargs," arguments:"]
+        ['" takes ",STRINGIMAGE nargs,'" arguments:"]
   htSayStandard '"\indentrel{2}"
   if nargs > 0 then kPageArgs(conform,signature)
   htSayStandard '"\indentrel{-2}"
@@ -769,7 +769,7 @@ dbShowCons1(htPage,cAlist,key) ==
     key = 'parameters => bcConTable REMDUP ASSOCLEFT cAlist
     key = 'kinds => dbShowConsKinds cAlist
   dbConsExposureMessage()
-  htSayStandard("\endscroll ")
+  htSayStandard('"\endscroll ")
   dbPresentCons(page,kind,key)
   htShowPageNoScroll()
 

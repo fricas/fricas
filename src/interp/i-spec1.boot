@@ -360,7 +360,7 @@ upcase t ==
   if first unionDoms is ['_:,.,.] then
      for i in 0.. for d in unionDoms repeat
         if d is ['_:,=rhs,.] then rhstag := i
-     if NULL rhstag then error "upcase: bad Union form"
+     if NULL rhstag then error '"upcase: bad Union form"
      $genValue =>
         rhstag = first unwrap objVal triple => code := wrap(true)
         code := wrap(false)
@@ -539,7 +539,7 @@ upLoopIters itrl ==
       -- following is an optimization
       typeIsASmallInteger(get(index,'mode,$env)) =>
         RPLACA(iter,'ISTEP)
-    throwKeyedMsg("Malformed iterator")
+    throwKeyedMsg('"Malformed iterator")
 
 upLoopIterIN(iter,index,s) ==
   iterMs := bottomUp s
@@ -893,9 +893,9 @@ checkForFreeVariables(v,locals) ==
               $boundVariables := cons(var, $boundVariables)
           var
         ["SETF",newvar,checkForFreeVariables(form,locals)]
-      error "Non-simple variable bindings are not currently supported"
+      error '"Non-simple variable bindings are not currently supported"
     op = "PROG" =>
-      error "Non-simple variable bindings are not currently supported"
+      error '"Non-simple variable bindings are not currently supported"
     op = "LAMBDA" => v
     op = "QUOTE" => v
     op = "getValueFromEnvironment" => v

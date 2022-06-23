@@ -101,12 +101,12 @@ compOrCroak1(x,m,e,compFn) ==
       errorMessage:=
         if $compErrorMessageStack
            then first $compErrorMessageStack
-           else "unspecified error"
+           else '"unspecified error"
       $scanIfTrue =>
         stackSemanticError(errorMessage,mkErrorExpr $level)
         ["failedCompilation",m,e]
       displaySemanticErrors()
-      SAY("****** comp fails at level ",$level," with expression: ******")
+      SAY('"****** comp fails at level ",$level,'" with expression: ******")
       displayComp $level
       userError errorMessage
 
@@ -180,8 +180,8 @@ compLambda(x is ["+->", vl, body], m, e) ==
                  ress := compAtSign(["@", ["+->", arg1, body],
                                   ["Mapping", target, :sig1]], m, e)
                  ress
-             stackAndThrow ["compLambda: malformed argument list", x]
-        stackAndThrow ["compLambda: malformed argument list", x]
+             stackAndThrow ['"compLambda: malformed argument list", x]
+        stackAndThrow ['"compLambda: malformed argument list", x]
     nil
 
 getFreeList(u, bound, free, e) ==
@@ -257,11 +257,11 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
       vl :=
          IDENTP(vl) => [vl]
          LISTP(vl) and (and/[SYMBOLP(v) for v in vl])=> vl
-         stackAndThrow ["bad +-> arguments:", vl]
+         stackAndThrow ['"bad +-> arguments:", vl]
       $formalArgList := [:vl, :$formalArgList]
       #sl ~= #vl =>
          stackAndThrow [_
-           "number of arguments to +-> does not match, expected:", #sl]
+           '"number of arguments to +-> does not match, expected:", #sl]
       x := nx
   else
       vl:= take(#sl,$FormalMapVariableList)
@@ -393,13 +393,13 @@ compSymbol(s,m,e) ==
     if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
       not isFunction(s,e) and null ($compForModeIfTrue=true) then errorRef s
     [s,m',e] --s is a declared argument
-  MEMQ(s,$FormalMapVariableList) => stackMessage ["no mode found for",s]
+  MEMQ(s,$FormalMapVariableList) => stackMessage ['"no mode found for",s]
   not isFunction(s,e) => errorRef s
 
 convertOrCroak(T,m) ==
   u:= convert(T,m) => u
-  userError ["CANNOT CONVERT: ",T.expr,"%l"," OF MODE: ",T.mode,"%l",
-    " TO MODE: ",m,"%l"]
+  userError ['"CANNOT CONVERT: ",T.expr,"%l",'" OF MODE: ",T.mode,"%l",
+    '" TO MODE: ",m,"%l"]
 
 convert(T,m) ==
   coerce(T,resolve(T.mode,m) or return nil)
@@ -418,7 +418,7 @@ hasType(x,e) ==
 compForm(form,m,e) ==
   T:=
     compForm1(form,m,e) or compArgumentsAndTryAgain(form,m,e) or return
-      stackMessageIfNone ["cannot compile","%b",form,"%d"]
+      stackMessageIfNone ['"cannot compile","%b",form,"%d"]
   T
 
 compArgumentsAndTryAgain(form is [.,:argl],m,e) ==
@@ -439,7 +439,7 @@ outputComp(x,e) ==
         for x in argl]], $OutputForm, e]
   (v:= get(x,"value",e)) and (v.mode is ['Union,:l]) =>
     [['coerceUn2E, x, v.mode], $OutputForm, e]
-  SAY ["outputComp strange x ", x]
+  SAY ['"outputComp strange x ", x]
   nil
 
 compSel1(domain, op, argl, m, e) ==
@@ -485,11 +485,11 @@ compForm1(form is [op,:argl],m,e) ==
           arg := first(argl)
           u := comp(arg, $String, e) =>
               [[op, u.expr], m, e]
-          SAY ["compiling call to error ", argl]
+          SAY ['"compiling call to error ", argl]
           u := outputComp(arg, e) =>
               [[op, ['LIST, ['QUOTE, 'mathprint], u.expr]], m, e]
           nil
-      SAY ["compiling call to error ", argl]
+      SAY ['"compiling call to error ", argl]
       nil
   op is ["Sel", domain, op'] => compSel1(domain, op', argl, m, e)
 
@@ -544,14 +544,14 @@ getFormModemaps(form is [op,:argl],e) ==
   nargs:= #argl
   finalModemapList:= [mm for (mm:= [[.,.,:sig],:.]) in modemapList | #sig=nargs]
   modemapList and null finalModemapList =>
-    stackMessage ["no modemap for","%b",op,"%d","with ",nargs," arguments"]
+    stackMessage ['"no modemap for","%b",op,"%d",'"with ",nargs,'" arguments"]
   finalModemapList
 
 eltModemapFilter(name,mmList,e) ==
   isConstantId(name,e) =>
     l:= [mm for mm in mmList | mm is [[.,.,.,sel,:.],:.] and sel=name] => l
             -- setelt! has extra parameter
-    stackMessage ["selector variable: ",name," is undeclared and unbound"]
+    stackMessage ['"selector variable: ",name,'" is undeclared and unbound"]
     nil
   mmList
 
@@ -608,7 +608,7 @@ setqSingle(id,val,m,E) ==
         (T:= comp(val,$EmptyMode,E)) and getmode(T.mode,E) =>
           assignError(val,T.mode,id,m'')
   m'' = $EmptyMode and T.mode = $EmptyMode =>
-      stackMessage ["No mode in assignment to: ", id]
+      stackMessage ['"No mode in assignment to: ", id]
   finish_setq_single(T, m, id, val, currentProplist)
 
 finish_setq_single(T, m, id, val, currentProplist) ==
@@ -617,8 +617,8 @@ finish_setq_single(T, m, id, val, currentProplist) ==
   e':= (PAIRP id => e'; addBinding(id,newProplist,e'))
   if isDomainForm(val,e') then
     if isDomainInScope(id,e') then
-      stackWarning ["domain valued variable","%b",id,"%d",
-        "has been reassigned within its scope"]
+      stackWarning ['"domain valued variable","%b",id,"%d",
+        '"has been reassigned within its scope"]
     e':= augModemapsFromDomain1(id,val,e')
       --all we do now is to allocate a slot number for lhs
       --e.g. the LET form below will be changed by putInLocalDomainReferences
@@ -639,20 +639,20 @@ saveLocVarsTypeDecl(x, id, e) ==
         typeDecl := ASSOC(id, $locVarsTypes)
         null typeDecl =>
             if null t then
-                SAY("Local variable ", id, " lacks type.")
+                SAY('"Local variable ", id, '" lacks type.")
             else $locVarsTypes := ACONS(id, t, $locVarsTypes)
         t' := CDR(typeDecl)
         not EQUAL(t, t') =>
             if not null t' then
-                SAY("Local variable ", id, " type redefined: ", t, " to ", t')
+                SAY('"Local variable ", id, '" type redefined: ", t, '" to ", t')
             RPLACD(typeDecl, t)
 
 assignError(val,m',form,m) ==
   message:=
     val =>
-      ["CANNOT ASSIGN: ",val,"%l","   OF MODE: ",m',"%l","   TO: ",form,"%l",
-        "   OF MODE: ",m]
-    ["CANNOT ASSIGN: ",val,"%l","   TO: ",form,"%l","   OF MODE: ",m]
+      ['"CANNOT ASSIGN: ",val,"%l",'"   OF MODE: ",m',"%l",'"   TO: ",form,"%l",
+        '"   OF MODE: ",m]
+    ['"CANNOT ASSIGN: ",val,"%l",'"   TO: ",form,"%l",'"   OF MODE: ",m]
   stackMessage message
 
 MKPROGN(l) == MKPF(l, "PROGN")
@@ -690,9 +690,9 @@ setqMultiple(nameList,val,m,e) ==
         t is ["Record",:l] => [[name,:mode] for [":",name,mode] in l]
         comp(t,$EmptyMode,e) is [.,["RecordCategory",:l],.] =>
           [[name,:mode] for [":",name,mode] in l]
-        stackMessage ["no multiple assigns to mode: ",t]
+        stackMessage ['"no multiple assigns to mode: ",t]
   #nameList~=#selectorModePairs =>
-    stackMessage [val," must decompose into ",#nameList," components"]
+    stackMessage [val,'" must decompose into ",#nameList,'" components"]
   -- 3 generate code; return
   assignList:=
     [([.,.,e]:= compSetq1(x,["elt",g,y],z,e) or return "failed").expr
@@ -702,8 +702,8 @@ setqMultiple(nameList,val,m,e) ==
 
 setqMultipleExplicit(nameList,valList,m,e) ==
   #nameList~=#valList =>
-    stackMessage ["Multiple assignment error; # of items in: ",nameList,
-      "must = # in: ",valList]
+    stackMessage ['"Multiple assignment error; # of items in: ",nameList,
+      '"must = # in: ",valList]
   gensymList:= [genVariable() for name in nameList]
   assignList:=
              --should be fixed to declare genVar when possible
@@ -747,7 +747,7 @@ compConstruct(form is ["construct", :l], m, e) ==
 
 compQuote(expr is [QUOTE, e1], m, e) ==
   SYMBOLP(e1) => [expr, ["Symbol"], e]
-  stackAndThrow ["Strange argument to QUOTE", expr]
+  stackAndThrow ['"Strange argument to QUOTE", expr]
   -- [expr,m,e]
 
 compList(l,m is ["List",mUnder],e) ==
@@ -773,7 +773,7 @@ compMacro(form,m,e) ==
     formatUnabbreviated rhs
   sayBrightly ['"   processing macro definition",'%b,
     :formatUnabbreviated lhs,'" ==> ",:prhs,'%d]
-  ATOM(lhs) => userError("Malformed macro definition")
+  ATOM(lhs) => userError('"Malformed macro definition")
   nrhs :=
       (margs := rest(lhs)) => [rhs, :margs]
       [rhs]
@@ -828,7 +828,7 @@ replaceExitEtc(x,tag,opFlag,opMode) ==
 comp_try(["try", expr, catcher, finallizer], m, e) ==
     $exitModeStack : local := [m, :$exitModeStack]
     if catcher then
-        stackAndThrow ["comp_try: catch unimplemented"]
+        stackAndThrow ['"comp_try: catch unimplemented"]
     ([c1, m1, .] := comp(expr, m, e)) or return nil
     ([c2, ., .] := comp(finallizer, $EmptyMode, e)) or return nil
     [["finally", c1, c2], m1, e]
@@ -849,13 +849,13 @@ compExit(["exit",level,x],m,e) ==
   [x',m',e']:=
     u:=
       comp(x,m1,e) or return
-        stackMessageIfNone ["cannot compile exit expression",x,"in mode",m1]
+        stackMessageIfNone ['"cannot compile exit expression",x,'"in mode",m1]
   modifyModeStack(m',index)
   [["TAGGEDexit",index,u],m,e]
 
 modifyModeStack(m,index) ==
   $reportExitModeStack =>
-    SAY("exitModeStack: ",COPY $exitModeStack," ====> ",
+    SAY('"exitModeStack: ",COPY $exitModeStack,'" ====> ",
       ($exitModeStack.index:= resolve(m,$exitModeStack.index); $exitModeStack))
   $exitModeStack.index:= resolve(m,$exitModeStack.index)
 
@@ -870,7 +870,7 @@ compLeave(["leave",level,x],m,e) ==
 compReturn(["return", x], m, e) ==
   ns := #$exitModeStack
   ns = $currentFunctionLevel =>
-    stackSemanticError(["the return before","%b",x,"%d","is unnecessary"],nil)
+    stackSemanticError(['"the return before","%b",x,"%d",'"is unnecessary"],nil)
     nil
   index := MAX(0, ns - $currentFunctionLevel - 1)
   $returnMode:= resolve($exitModeStack.index,$returnMode)
@@ -963,7 +963,7 @@ canReturn(expr,level,exitCount,ValueFlag) ==  --SPAD: exit and friends
   op="IF" =>
     expr is [.,a,b,c]
     if not canReturn(a,0,0,true) then
-      SAY "IF statement can not cause consequents to be executed"
+      SAY '"IF statement can not cause consequents to be executed"
       pp expr
     canReturn(a,level,exitCount,nil) or canReturn(b,level,exitCount,ValueFlag)
       or canReturn(c,level,exitCount,ValueFlag)
@@ -1095,14 +1095,14 @@ unknownTypeError name ==
   name:=
     name is [op,:.] => op
     name
-  stackSemanticError(["%b",name,"%d","is not a known type"],nil)
+  stackSemanticError(["%b",name,"%d",'"is not a known type"],nil)
 
 compPretend(["pretend",x,t],m,e) ==
   e:= addDomain(t,e)
   T:= comp(x,t,e) or comp(x,$EmptyMode,e) or return nil
-  if T.mode=t then warningMessage:= ["pretend",t," -- should replace by @"]
+  if T.mode=t then warningMessage:= ['"pretend",t,'" -- should replace by @"]
   if opOf(T.mode) = 'Union and opOf(m) ~= 'Union then
-     stackWarning(["cannot pretend ",x," of mode ",T.mode," to mode ",m])
+     stackWarning(['"cannot pretend ",x,'" of mode ",T.mode,'" to mode ",m])
   T:= [T.expr,t,T.env]
   T':= coerce(T,m) => (if warningMessage then stackWarning warningMessage; T')
 
@@ -1135,8 +1135,8 @@ coerce(T,m) ==
       -- from compFormWithModemap to filter through the modemaps
   stackMessage fn(T.expr,T.mode,m) where
     fn(x,m1,m2) ==
-      ["Cannot coerce","%b",x,"%d","%l","      of mode","%b",m1,"%d","%l",
-        "      to mode","%b",m2,"%d"]
+      ['"Cannot coerce","%b",x,"%d","%l",'"      of mode","%b",m1,"%d","%l",
+        '"      to mode","%b",m2,"%d"]
 
 coerceEasy(T,m) ==
   m=$EmptyMode => T
@@ -1279,8 +1279,8 @@ autoCoerceByModemap([x,source,e],target) ==
     (y:= get(x,"condition",e)) and (or/[u is ["case",., =target] for u in y])
        => [["call",fn,x],target,e]
     x="$fromCoerceable$" => nil
-    stackMessage ["cannot coerce: ",x,"%l","      of mode: ",source,"%l",
-      "      to: ",target," without a case statement"]
+    stackMessage ['"cannot coerce: ",x,"%l",'"      of mode: ",source,"%l",
+      '"      to: ",target,'" without a case statement"]
   [["call",fn,x],target,e]
 
 --% Very old resolve
@@ -1376,7 +1376,7 @@ compileSpad2Cmd args ==
         [optname,:optargs] := opt
         fullopt := selectOptionLC(optname,optList,nil)
 
-        fullopt = 'new         => error "Internal error: compileSpad2Cmd got )new"
+        fullopt = 'new         => error '"Internal error: compileSpad2Cmd got )new"
         fullopt = 'old         => NIL     -- no opt
 
         fullopt = 'library     => fun.1 := 'lib
@@ -1394,7 +1394,7 @@ compileSpad2Cmd args ==
         fullopt = 'functions   =>
             null optargs =>
               throwKeyedMsg("S2IZ0037",['")functions"])
-            throwKeyedMsg(")functions unsupported", [])
+            throwKeyedMsg('")functions unsupported", [])
         fullopt = 'constructor =>
             null optargs =>
               throwKeyedMsg("S2IZ0037",['")constructor"])

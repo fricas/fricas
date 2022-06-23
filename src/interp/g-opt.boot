@@ -204,7 +204,7 @@ optSpecialCall(x,y,n) ==
 
 compileTimeBindingOf u ==
   NULL(name:= BPINAME u)  => keyedSystemError("S2OO0001",[u])
-  name="Undef" => MOAN "optimiser found unknown function"
+  name="Undef" => MOAN '"optimiser found unknown function"
   name
 
 optMkRecord ["mkRecord",:u] ==

@@ -285,7 +285,7 @@ kPage(line, options) == --any cat, dom, package, default package
   if name=abbrev then abbrev := asyAbbreviation(conname,nargs)
   page := htInitPageNoHeading(nil)
   htAddHeading heading
-  htSayStandard("\beginscroll ")
+  htSayStandard('"\beginscroll ")
   htpSetProperty(page,'isFile,true)
   htpSetProperty(page,'parts,parts)
   htpSetProperty(page,'heading,heading)
@@ -299,7 +299,7 @@ kPage(line, options) == --any cat, dom, package, default package
   dbShowConsDoc1(page,conform,nil)
   if kind ~= 'category and nargs > 0 then addParameterTemplates(page,conform)
   if $atLeastOneUnexposed then htSay '"\newline{}{\em *} = unexposed"
-  htSayStandard("\endscroll ")
+  htSayStandard('"\endscroll ")
   kPageContextMenu page
   htShowPageNoScroll()
 
@@ -337,7 +337,7 @@ kPageContextMenu page ==
   if kind ~= '"category" then
     htSay '"}{"
     if not asharpConstructorName? conname
-    then  htMakePage [['bcLinks,["Search Path",'"",'ksPage,nil]]]
+    then  htMakePage [['bcLinks,['"Search Path",'"",'ksPage,nil]]]
     else htSay '"{\em Search Path}"
   if kind ~= '"category" then
     htSay '"}{"
@@ -400,8 +400,8 @@ dbPresentCons(htPage,kind,:exclusions) ==
   htEndTable()
 
 htFilterPage(htPage,args) ==
-  htInitPage("Filter String",htCopyProplist htPage)
-  htSay "\centerline{Enter filter string (use {\em *} for wild card):}"
+  htInitPage('"Filter String",htCopyProplist htPage)
+  htSay '"\centerline{Enter filter string (use {\em *} for wild card):}"
   htSay '"\centerline{"
   htMakePage [['bcStrings, [50,'"",'filter,'EM]]]
   htSay '"}\vspace{1}\centerline{"
@@ -692,7 +692,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
             if IFCAR coSig and t ~= '(Type)
               then htMakePage [['bcLinks,[a,'"",'kArgPage,a]]]
               else htSayList(['"{\em ", form2HtString(a), '"}"])
-            htSay ", "
+            htSay '", "
             coSig := IFCDR coSig
             htSayValue t
             htSayIndentRel2(-15, true)
@@ -736,7 +736,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
       htSayIndentRel2(-15, true)
     for [d,key,:t] in $whereList | d ~= "$" repeat
       htSayIndentRel2(15, count > 1)
-      htSayList(["{\em ", d, "} is "])
+      htSayList(['"{\em ", d, '"} is "])
       htSayConstructor(key, sublisFormal(IFCDR conform, t))
       htSayIndentRel2(-15, count > 1)
   -----------------------------------------------------------
@@ -802,7 +802,7 @@ htEndMenu(kind) ==
   htSayStandard '"\endmenu "
 
 htSayConstructorName(nameShown, name) ==
-    htSayStandard ["\lispdownlink{",nameShown,'"}{(|conPage| '|",name,'"|)}"]
+    htSayStandard ['"\lispdownlink{",nameShown,'"}{(|conPage| '|",name,'"|)}"]
 
 --------------------> NEW DEFINITION (see ht-util.boot)
 htAddHeading(title) ==

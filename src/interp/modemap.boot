@@ -178,7 +178,7 @@ substituteCategoryArguments(argl,catform) ==
 
 augModemapsFromCategory(domainName, functorForm, categoryForm, e) ==
   [fnAlist,e]:= evalAndSub(domainName, functorForm, categoryForm, e)
-  compilerMessage ["Adding ",domainName," modemaps"]
+  compilerMessage ['"Adding ",domainName,'" modemaps"]
   e:= putDomainsInScope(domainName,e)
   for [[op,sig,:.],cond,fnsel] in fnAlist repeat
       e:= addModemapKnown(op,domainName,sig,cond,fnsel,e)
@@ -202,7 +202,7 @@ getOperationAlist(name,functorForm,form) ==
     ($domainShell => $domainShell.(1); systemError '"$ has no shell now")
   T := compMakeCategoryObject(form, $tmp_e) =>
       ([., ., $tmp_e] := T; T.expr.(1))
-  stackMessage ["not a category form: ",form]
+  stackMessage ['"not a category form: ",form]
 
 substNames(domainName, functorForm, opalist) ==
   functorForm := SUBSTQ("$$","$", functorForm)
@@ -261,7 +261,7 @@ getDomainsInScope e ==
 
 putDomainsInScope(x,e) ==
   l:= getDomainsInScope e
-  if member(x,l) then SAY("****** Domain: ",x," already in scope")
+  if member(x,l) then SAY('"****** Domain: ",x,'" already in scope")
   newValue:= [x,:delete(x,l)]
   $insideCapsuleFunctionIfTrue => ($CapsuleDomainsInScope:= newValue; e)
   put("$DomainsInScope","special",newValue,e)

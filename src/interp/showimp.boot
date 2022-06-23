@@ -71,20 +71,20 @@ showImp(dom,:options) ==
     [., ., :key] := first u
     sayBrightly
       key = 'constant =>
-        ["Constants implemented by",:bright form2String key,'":"]
-      ["Functions implemented by",:bright form2String key,'":"]
+        ['"Constants implemented by",:bright form2String key,'":"]
+      ['"Functions implemented by",:bright form2String key,'":"]
     u := showDomainsOp1(u,key)
   u := SORTBY('CDDR,defexports)
   while u repeat
     [., ., :key] := first u
     defop := INTERN(SUBSTRING((s := PNAME first key), 0, MAXINDEX s))
     domainForm := [defop,:CDDR key]
-    sayBrightly ["Default functions from",:bright form2String domainForm,'":"]
+    sayBrightly ['"Default functions from",:bright form2String domainForm,'":"]
     u := showDomainsOp1(u,key)
   u := SORTBY('CDDR,unexports)
   while u repeat
     [., ., :key] := first u
-    sayBrightly ["Not exported: "]
+    sayBrightly ['"Not exported: "]
     u := showDomainsOp1(u,key)
 
 --=======================================================================

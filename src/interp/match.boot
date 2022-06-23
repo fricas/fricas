@@ -68,7 +68,7 @@ rightCharPosition(c,t,startpos) == --startpos often equals MAXINDEX t (rightmost
 
 stringPosition(s,t,startpos) ==
   n := SIZE t
-  if startpos < 0 or startpos > n then error "index out of range"
+  if startpos < 0 or startpos > n then error '"index out of range"
   if SIZE s = 0 then return startpos -- bug in STRPOS
   r := STRPOS(s,t,startpos,NIL)
   if EQ(r,NIL) then n else r

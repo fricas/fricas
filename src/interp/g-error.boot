@@ -189,7 +189,7 @@ coerce_failure_msg(val, submode, mode) ==
     check_union_failure_msg(val, submode, mode)
 
 IdentityError(op) ==
-    error(["No identity element for reduce of empty list using operation",op])
+    error(['"No identity element for reduce of empty list using operation",op])
 
 throwMessage(:msg) ==
   if $compilingMap then clearCache $mapName
