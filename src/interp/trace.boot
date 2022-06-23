@@ -496,7 +496,7 @@ getTraceOption (x is [key,:l]) ==
 
 traceOptionError(opt,keys) ==
   null keys => stackTraceOptionError ["S2IT0007",[opt]]
-  commandAmbiguityError("trace option",opt,keys)
+  commandAmbiguityError('"trace option",opt,keys)
 
 resetTimers () ==
   for timer in $timer_list repeat
@@ -509,14 +509,14 @@ resetCounters () ==
 ptimers() ==
   null $timer_list => sayBrightly '"   no functions are timed"
   for timer in $timer_list repeat
-    sayBrightly ["  ",:bright timer,'_:,'" ",
+    sayBrightly ['"  ",:bright timer,'_:,'" ",
       EVAL(INTERN STRCONC(timer, '"_,TIMER")) /
         FLOAT($timerTicksPerSecond, 0.0), '" sec."]
 
 pcounters() ==
   null $count_list => sayBrightly '"   no functions are being counted"
   for k in $count_list repeat
-    sayBrightly ["  ",:bright k,'_:,'" ",
+    sayBrightly ['"  ",:bright k,'_:,'" ",
       EVAL INTERN STRCONC(k,'"_,COUNT"),'" times"]
 
 transOnlyOption l ==
@@ -712,9 +712,9 @@ spadTrace(domain,options) ==
               atom domain.n => nil
               functionSlot:= first domain.n
               GENSYMP functionSlot =>
-                (reportSpadTrace("Already Traced",x); nil)
+                (reportSpadTrace('"Already Traced",x); nil)
               null (BPINAME functionSlot) =>
-                (reportSpadTrace("No function for",x); nil)
+                (reportSpadTrace('"No function for",x); nil)
               true
   if listOfVariables then
     for [.,.,n] in sigSlotNumberAlist repeat
@@ -742,7 +742,7 @@ spadTrace(domain,options) ==
   if $reportSpadTrace then
     if $traceNoisely then printDashedLine()
     for x in orderBySlotNumber sigSlotNumberAlist repeat
-      reportSpadTrace("TRACING",x)
+      reportSpadTrace('"TRACING",x)
   currentEntry =>
     rplac(rest currentEntry,[:sigSlotNumberAlist,:currentAlist])
   $trace_names := [[domain, :sigSlotNumberAlist], :$trace_names]
@@ -825,7 +825,7 @@ letPrint(x,val,currentFunction) ==
     ((y:= LASSOC(currentFunction,$letAssoc)) or (y:= LASSOC("all",$letAssoc))) then
       if (y="all" or MEMQ(x,y)) and
         not (IS_GENVAR(x) or isSharpVarWithNum(x) or GENSYMP x) then
-         sayBrightlyNT [:bright x,": "]
+         sayBrightlyNT [:bright x,'": "]
          PRIN0 shortenForPrinting val
          TERPRI()
       if (y:= hasPair("BREAK",y)) and
@@ -849,7 +849,7 @@ letPrint2(x,printform,currentFunction) ==
       if (y:= hasPair("BREAK",y)) and
         (y="all" or MEMQ(x,y) and
           (not MEMQ((PNAME x).(0),'($ _#)) and not GENSYMP x)) then
-            break [:bright currentFunction,'"breaks after",:bright x,":= ",
+            break [:bright currentFunction,'"breaks after",:bright x,'":= ",
               printform]
   x
 
@@ -901,11 +901,11 @@ getOption(opt,l) ==
 
 reportSpadTrace(header,[op,sig,n,:t]) ==
   null $traceNoisely => nil
-  msg:= [header,'%b,op,":",'%d,rest sig," -> ",first sig," in slot ",n]
+  msg:= [header,'%b,op,'":",'%d,rest sig,'" -> ",first sig,'" in slot ",n]
   namePart:= nil --(t is (.,.,name,:.) => (" named ",name); NIL)
   tracePart:=
     t is [y,:.] and not null y =>
-      (y="all" => ['%b,"all",'%d,"vars"]; [" vars: ",y])
+      (y="all" => ['%b,'"all",'%d,'"vars"]; ['" vars: ",y])
     NIL
   sayBrightly [:msg,:namePart,:tracePart]
 
@@ -962,26 +962,26 @@ traceReply() ==
     for x in functionList | not isSubForRedundantMapName x]
   if functionList then
     2 = #functionList =>
-      sayMSG ["   Function traced: ",:functionList]
+      sayMSG ['"   Function traced: ",:functionList]
     (22 + sayBrightlyLength functionList) <= $LINELENGTH =>
-      sayMSG ["   Functions traced: ",:functionList]
-    sayBrightly "   Functions traced:"
+      sayMSG ['"   Functions traced: ",:functionList]
+    sayBrightly '"   Functions traced:"
     sayBrightly flowSegmentedMsg(functionList,$LINELENGTH,6)
   if $domains then
     displayList:= concat(prefix2String first $domains,
-          [:concat('",",'" ",prefix2String x) for x in rest $domains])
+          [:concat('", ",prefix2String x) for x in rest $domains])
     if atom displayList then displayList:= [displayList]
     sayBrightly '"   Domains traced: "
     sayBrightly flowSegmentedMsg(displayList,$LINELENGTH,6)
   if $packages then
     displayList:= concat(prefix2String first $packages,
-          [:concat(", ",prefix2String x) for x in rest $packages])
+          [:concat('", ",prefix2String x) for x in rest $packages])
     if atom displayList then displayList:= [displayList]
     sayBrightly '"   Packages traced: "
     sayBrightly flowSegmentedMsg(displayList,$LINELENGTH,6)
   if $constructors then
     displayList:= concat(abbreviate first $constructors,
-          [:concat(", ",abbreviate x) for x in rest $constructors])
+          [:concat('", ",abbreviate x) for x in rest $constructors])
     if atom displayList then displayList:= [displayList]
     sayBrightly '"   Parameterized constructors traced:"
     sayBrightly flowSegmentedMsg(displayList,$LINELENGTH,6)
@@ -1002,7 +1002,7 @@ _?t() ==
       isDomain d => '"domain"
       '"package"
     sayBrightly ['"   Functions traced in ",suffix,'%b,devaluate d,'%d,":"]
-    for x in orderBySlotNumber l repeat reportSpadTrace("   ",take(4,x))
+    for x in orderBySlotNumber l repeat reportSpadTrace('"   ",take(4,x))
     TERPRI()
 
 tracelet(fn, bin_def, vars) ==
@@ -1056,7 +1056,7 @@ break msg ==
     INTERRUPT()
 
 compileBoot fn ==
-  SAY("need to recompile: ", fn)
+  SAY('"need to recompile: ", fn)
 
 -- Monitor printouts
 
@@ -1111,7 +1111,7 @@ monitor_print_value(val, name) ==
             PRINC('"//", $trace_stream)
             PRIN1(val, $trace_stream)
             TERPRI($trace_stream)
-        PRINC("! ", $trace_stream)
+        PRINC('"! ", $trace_stream)
         PRIN1(EVAL(SUBST(MKQ(val), "*", first(u))), $trace_stream)
         TERPRI($trace_stream)
     PRINC('": ", $trace_stream)
@@ -1128,7 +1128,7 @@ monitor_get_value(n, fg) ==
         spadThrowBrightly('"cannot ask for value before execution")
     n = 9 => MKQ($monitor_caller)
     n <= SIZE($monitor_args) => MKQ(ELT($monitor_args, n - 1))
-    spadThrowBrightly(["FUNCTION", "%b", $monitor_name, "%d",
+    spadThrowBrightly(['"FUNCTION", "%b", $monitor_name, "%d",
                           '"does not have", "%b", n, "%d", '"arguments"])
 
 monitor_print_args(L, code, trans) ==
@@ -1216,9 +1216,9 @@ monitor_x1(TRACECODE, name, name1, V, TIMERNAM, EVAL_TIME) ==
     PRIN0($monitor_fun_depth, $trace_stream)
     sayBrightlyNT2(['">exit ", "%b", PNAME(name1), "%d"], $trace_stream)
     if TIMERNAM then
-        sayBrightlyNT2("(", $trace_stream) -- )
+        sayBrightlyNT2('"(", $trace_stream) -- )
         sayBrightlyNT2((EVAL_TIME/60.0), $trace_stream)
-        sayBrightlyNT2(" sec)", $trace_stream)
+        sayBrightlyNT2('" sec)", $trace_stream)
     if V = 1 then
         monitor_print_value(
               coerceTraceFunValue2E(name1, name, $monitor_value),

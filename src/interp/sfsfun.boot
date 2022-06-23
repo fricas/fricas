@@ -898,7 +898,7 @@ c_to_r(c) ==
     if ZEROP(i) or (ABS(i) <  1.0E-10*(ABS r)) then
         r
     else
-        error "Result is not real."
+        error '"Result is not real."
 
 c_to_rf(c) == COERCE(c_to_r(c), 'DOUBLE_-FLOAT)
 

@@ -344,7 +344,7 @@ augModemapsFromDomain1(name,functorForm,e) ==
     ["Mapping", categoryForm, :.] := mappingForm
     catform:= substituteCategoryArguments(rest functorForm,categoryForm)
     augModemapsFromCategory(name, functorForm, catform, e)
-  stackMessage [functorForm," is an unknown mode"]
+  stackMessage [functorForm,'" is an unknown mode"]
   e
 
 getSlot1FromCategoryForm ([op, :argl]) ==

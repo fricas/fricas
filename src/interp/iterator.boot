@@ -40,7 +40,7 @@ compReduce1(form is ["REDUCE",op,.,collectForm],m,e,$formalArgList) ==
   [collectOp,:itl,body]:= collectForm
   if STRINGP op then op:= INTERN op
   not MEMQ(collectOp,'(COLLECT COLLECTV COLLECTVEC)) =>
-        systemError ["illegal reduction form:",form]
+        systemError ['"illegal reduction form:",form]
   $sideEffectsList: local := nil
   $until: local := nil
   $initList: local := nil
@@ -173,7 +173,7 @@ compIterator1(it, e) ==
         [res, e]
     [mOver, mUnder] :=
       modeIsAggregateOf("List",m,e) or return
-         stackMessage ["mode: ",m," must be a list of some mode"]
+         stackMessage ['"mode: ",m,'" must be a list of some mode"]
     if null get(x,"mode",e) then [.,.,e]:=
       compMakeDeclaration([":",x,mUnder],$EmptyMode,e) or return nil
     e:= put(x,"value",[genSomeVariable(),mUnder,e],e)
@@ -184,7 +184,7 @@ compIterator1(it, e) ==
     [y',m,e]:= comp(y,$EmptyMode,e) or return nil
     [mOver,mUnder]:=
       modeIsAggregateOf("List",m,e) or return
-        stackMessage ["mode: ",m," must be a list of other modes"]
+        stackMessage ['"mode: ",m,'" must be a list of other modes"]
     if null get(x,"mode",e) then [.,.,e]:=
       compMakeDeclaration([":",x,m],$EmptyMode,e) or return nil
     e:= put(x,"value",[genSomeVariable(),m,e],e)
@@ -211,14 +211,14 @@ compIterator1(it, e) ==
             [["ISTEP",index,start'.expr,inc'.expr,:optFinal],e]
     [start,.,e]:=
       comp(start,$Integer,e) or return
-        stackMessage ["start value of index: ",start," must be an integer"]
+        stackMessage ['"start value of index: ",start,'" must be an integer"]
     [inc,.,e]:=
       comp(inc,$Integer,e) or return
-        stackMessage ["index increment:",inc," must be an integer"]
+        stackMessage ['"index increment:",inc,'" must be an integer"]
     if optFinal is [final] then
       [final,.,e]:=
         comp(final,$Integer,e) or return
-          stackMessage ["final value of index: ",final," must be an integer"]
+          stackMessage ['"final value of index: ",final,'" must be an integer"]
       optFinal:= [final]
     indexmode:=
       comp(CADDR it,$NonNegativeInteger,e) => $NonNegativeInteger
@@ -230,13 +230,13 @@ compIterator1(it, e) ==
   it is ["WHILE",p] =>
     [p',m,e]:=
       comp(p,$Boolean,e) or return
-        stackMessage ["WHILE operand: ",p," is not Boolean valued"]
+        stackMessage ['"WHILE operand: ",p,'" is not Boolean valued"]
     [["WHILE",p'],e]
   it is ["UNTIL",p] => ($until:= p; ['$until,e])
   it is ["|",x] =>
     u:=
       comp(x,$Boolean,e) or return
-        stackMessage ["SUCHTHAT operand: ",x," is not Boolean value"]
+        stackMessage ['"SUCHTHAT operand: ",x,'" is not Boolean value"]
     [["|",u.expr],u.env]
   nil
 
@@ -249,8 +249,8 @@ compIterator(it, e) ==
     it is ["INBY", i, n, inc] =>
         u := match_segment(i, n)
         u isnt ['STEP, i, a, 1, :r] =>
-            stackAndThrow ["   You cannot use", "%b", "by", "%d",
-                      "except for an explicitly indexed sequence."]
+            stackAndThrow ['"   You cannot use", "%b", '"by", "%d",
+                      '"except for an explicitly indexed sequence."]
         compIterator1(['STEP, i, a, inc, :r], e)
     it is ["IN", i, n] =>
         compIterator1(match_segment(i, n), e)

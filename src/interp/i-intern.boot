@@ -671,7 +671,7 @@ put(x,prop,val,e) ==
   null atom x => put(first x,prop,val,e)
   newProplist:= augProplistOf(x,prop,val,e)
   prop="modemap" and $insideCapsuleFunctionIfTrue=true =>
-    SAY ["**** modemap PUT on CapsuleModemapFrame: ",val]
+    SAY ['"**** modemap PUT on CapsuleModemapFrame: ",val]
     $CapsuleModemapFrame:=
       addBinding(x,augProplistOf(x,"modemap",val,$CapsuleModemapFrame),
         $CapsuleModemapFrame)

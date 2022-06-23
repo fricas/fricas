@@ -126,7 +126,7 @@ htSetLiterals(htPage,name,message,variable,values,functionToCall) ==
   bcHt '"Select one of the following: \newline\tab{3} "
   links := [[STRCONC('"",STRINGIMAGE opt), '"\newline\tab{3}", functionToCall, opt] for opt in values]
   htMakePage [['bcLispLinks, :links]]
-  bcHt ["\indent{0}\newline\vspace{1} The current setting is: {\em ",
+  bcHt ['"\indent{0}\newline\vspace{1} The current setting is: {\em ",
         translateTrueFalse2YesNo EVAL variable, '"} "]
   htShowPage()
 
@@ -343,7 +343,7 @@ htMarkTree(tree,n) ==
     branch.3 = 'TREE => htMarkTree(branch.5,n + 1)
 
 htSetHistory htPage ==
-  msg := "when the history facility is on (yes), results of computations are saved in memory"
+  msg := '"when the history facility is on (yes), results of computations are saved in memory"
   data := ['history,msg,'history,'LITERALS,'$HiFiAccess,'(on off yes no)]
   htShowLiteralsPage(htPage,data)
 
@@ -434,7 +434,7 @@ htCacheSet htPage ==
   htInitPage('"Cache Summary",nil)
   bcHt '"In general, interpreter functions "
   bcHt
-    $cacheCount = 0 => "will {\em not} be cached."
+    $cacheCount = 0 => '"will {\em not} be cached."
     bcHt '"cache "
     htAllOrNum $cacheCount
     '"} values."

@@ -25,7 +25,7 @@ expandMacros(tree) ==
         mdef =>
             repval := first(mdef)
             null(rest(mdef)) => expandMacros(repval)
-            userError("macro call needs arguments")
+            userError('"macro call needs arguments")
         tree
     -- floating point numbers
     [op, :args] := tree
@@ -42,7 +42,7 @@ expandMacros(tree) ==
                 args
             #args = #margs =>
                 expandMacros(SUBLISLIS(args, margs, repval))
-            userError("invalid macro call, #args ~= #margs")
+            userError('"invalid macro call, #args ~= #margs")
         [op, :[expandMacros(x) for x in args]]
     [expandMacros(x) for x in tree]
 
@@ -91,7 +91,7 @@ define_macro(name, def) ==
         def := [def, :args]
     else
         SAY([name, def])
-        userError("Invalid macro definition")
+        userError('"Invalid macro definition")
     prev_def := HGET($MacroTable, name)
     PUSH([name, :prev_def], $restore_list)
     HPUT($MacroTable, name, def)
@@ -149,7 +149,7 @@ walkForm(tree) ==
     tree is ["==", head, def] => expandMacros(tree)
     tree is ["where", ["==", name, def], env] =>
         walkWhereList(name, def, env)
-    userError("Parsing error: illegal toplevel form")
+    userError('"Parsing error: illegal toplevel form")
     nil
 
 --------------------------------------------------------------------
@@ -198,7 +198,7 @@ processGlobals () ==
         if nt then
             handleKind(["DEF", form, [nt, :rest sig], body])
         else
-            SAY(["unhandled target", form])
+            SAY(['"unhandled target", form])
     boo_comp_cats()
 
 
@@ -288,7 +288,7 @@ computeTargetMode(lhs, rhs) ==
             pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
             -- substitute
             SUBLIS(pairlis, sig)
-        PRETTYPRINT("strange untyped def")
+        PRETTYPRINT('"strange untyped def")
         PRETTYPRINT([lhs, rhs, modemap])
         nil
     BREAK()
@@ -365,7 +365,7 @@ S_process(x) ==
     $TranslateOnly => $Translation := x
     $postStack =>
         displayPreCompilationErrors()
-        userError "precompilation failed"
+        userError '"precompilation failed"
     $PrintOnly =>
         FORMAT(true, '"~S   =====>~%", $currentLine)
         PRETTYPRINT(x)

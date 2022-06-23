@@ -177,7 +177,7 @@ unabbrevSpecialForms(op,arglist,modeIfTrue) ==
 unabbrevRecordComponent(a,modeIfTrue) ==
   a is ["Declare",b,T] or a is [":",b,T] =>
     [":",b,unabbrev1(T,modeIfTrue)]
-  userError "wrong format for Record type"
+  userError '"wrong format for Record type"
 
 unabbrevUnionComponent(a,modeIfTrue) ==
   a is ["Declare",b,T] or a is [":",b,T] =>

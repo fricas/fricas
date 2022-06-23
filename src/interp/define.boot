@@ -124,8 +124,8 @@ macroExpand(x,e) ==   --not worked out yet
       u := get(x, 'macro, e) =>
           null(rest(u)) =>
               macroExpand(first u, e)
-          SAY(["u =", u])
-          userError("macro call needs arguments")
+          SAY(['"u =", u])
+          userError('"macro call needs arguments")
       x
   x is ['DEF, lhs, sig, rhs] =>
     ['DEF, macroExpand(lhs, e), macroExpandList(sig, e), macroExpand(rhs, e)]
@@ -137,7 +137,7 @@ macroExpand(x,e) ==   --not worked out yet
               null(margs) => [macroExpand(u, e), :macroExpandList(args, e)]
               #args = #margs =>
                   macroExpand(SUBLISLIS(args, margs, u), e)
-              userError("invalid macro call, #args ~= #margs")
+              userError('"invalid macro call, #args ~= #margs")
           [op, :macroExpandList(args, e)]
       macroExpandList(x,e)
   macroExpandList(x,e)
@@ -477,12 +477,12 @@ displayMissingFunctions() ==
     sayBrightly ['%l,:bright '"  Missing Local Functions:"]
     for [op,sig] in loc for i in 1.. repeat
       sayBrightly ['"      [",i,'"]",:bright op,
-        ": ",:formatUnabbreviatedSig sig]
+        '": ",:formatUnabbreviatedSig sig]
   if exp then
     sayBrightly ['%l,:bright '"  Missing Exported Functions:"]
     for [op,sig] in exp for i in 1.. repeat
       sayBrightly ['"      [",i,'"]",:bright op,
-        ": ",:formatUnabbreviatedSig sig]
+        '": ",:formatUnabbreviatedSig sig]
 
 --% domain view code
 
@@ -704,7 +704,7 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
 
 getSignatureFromMode(form,e) ==
   getmode(opOf form,e) is ['Mapping,:signature] =>
-    #form~=#signature => stackAndThrow ["Wrong number of arguments: ",form]
+    #form~=#signature => stackAndThrow ['"Wrong number of arguments: ",form]
     EQSUBSTLIST(rest form,take(#rest form,$FormalMapVariableList),signature)
 
 hasSigInTargetCategory(argl,form,opsig,e) ==
@@ -724,7 +724,7 @@ hasSigInTargetCategory(argl,form,opsig,e) ==
   0=c => (#(sig:= getSignatureFromMode(form,e))=#form => sig; nil)
   1<c =>
     sig:= first potentialSigList
-    stackWarning ["signature of lhs not unique:",:bright sig,"chosen"]
+    stackWarning ['"signature of lhs not unique:",:bright sig,'"chosen"]
     sig
   nil --this branch will force all arguments to be declared
 
@@ -732,7 +732,7 @@ compareMode2Arg(x,m) == null x or modeEqual(x,m)
 
 getArgumentModeOrMoan(x,form,e) ==
   getArgumentMode(x,e) or
-    stackSemanticError(["argument ",x," of ",form," is not declared"],nil)
+    stackSemanticError(['"argument ",x,'" of ",form,'" is not declared"],nil)
 
 getArgumentMode(x,e) ==
   STRINGP x => x
@@ -745,7 +745,7 @@ checkAndDeclare(argl,form,sig,e) ==
   for a in argl for m in rest sig repeat
     m1:= getArgumentMode(a,e) =>
       not modeEqual(m1,m) =>
-        stack:= ["   ",:bright a,'"must have type ",m,
+        stack:= ['"   ",:bright a,'"must have type ",m,
           '" not ",m1,'%l,:stack]
     e:= put(a,'mode,m,e)
   if stack then
@@ -763,11 +763,11 @@ getSignature(op, argModeList, e) ==
   null sigl =>
     (u := getmode(op, e)) is ['Mapping, :sig] => sig
     SAY '"************* USER ERROR **********"
-    SAY("available signatures for ",op,": ")
+    SAY('"available signatures for ",op,'": ")
     if null mmList
-       then SAY "    NONE"
-       else for [[dc,:sig],:.] in mmList repeat printSignature("     ",op,sig)
-    printSignature("NEED ",op,["?",:argModeList])
+       then SAY '"    NONE"
+       else for [[dc,:sig],:.] in mmList repeat printSignature('"     ",op,sig)
+    printSignature('"NEED ",op,['"?",:argModeList])
     nil
   for u in sigl repeat
     for v in sigl | not (u=v) repeat
@@ -777,7 +777,7 @@ getSignature(op, argModeList, e) ==
               --well as a total one.  SourceLevelSubsume (from CATEGORY BOOT)
               --should do this
   1=#sigl => first sigl
-  stackSemanticError(["duplicate signatures for ",op,": ",argModeList],nil)
+  stackSemanticError(['"duplicate signatures for ",op,'": ",argModeList],nil)
 
 
 putInLocalDomainReferences (def := [opName,[lam,varl,body]]) ==
@@ -854,7 +854,7 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
 
 constructMacro (form is [nam,[lam,vl,body]]) ==
   not (and/[atom x for x in vl]) =>
-    stackSemanticError(["illegal parameters for macro: ",vl],nil)
+    stackSemanticError(['"illegal parameters for macro: ",vl],nil)
   ["XLAM",vl':= [x for x in vl | IDENTP x],body]
 
 uncons x ==
@@ -921,8 +921,8 @@ compSubDomain1(domainForm,predicate,m,e) ==
     compMakeDeclaration([":","#1",domainForm],$EmptyMode,addDomain(domainForm,e))
   u:=
     compOrCroak(predicate,$Boolean,e) or
-      stackSemanticError(["predicate: ",predicate,
-        " cannot be interpreted with #1: ",domainForm],nil)
+      stackSemanticError(['"predicate: ",predicate,
+        '" cannot be interpreted with #1: ",domainForm],nil)
   prefixPredicate:= lispize u.expr
   $lisplibSuperDomain:=
     [domainForm,predicate]
@@ -970,17 +970,17 @@ doIt(item, $predl, e) ==
   isDomainForm(item, e) =>
      -- convert naked top level domains to import
     u:= ['import, [first item,:rest item]]
-    userError ["Use: import ", [first item,:rest item]]
+    userError ['"Use: import ", [first item,:rest item]]
     RPLACA(item,first u)
     RPLACD(item,rest u)
     doIt(item, $predl, e)
   item is [":=", lhs, rhs, :.] =>
     not (compOrCroak(item, $EmptyMode, e) is [code, ., e]) =>
-      stackSemanticError(["cannot compile assigned value to",:bright lhs],nil)
+      stackSemanticError(['"cannot compile assigned value to",:bright lhs],nil)
       e
     not (code is ['LET,lhs',rhs',:.] and atom lhs') =>
       code is ["PROGN",:.] =>
-         stackSemanticError(["multiple assignment ",item," not allowed"],nil)
+         stackSemanticError(['"multiple assignment ",item,'" not allowed"],nil)
          e
       RPLACA(item,first code)
       RPLACD(item,rest code)
@@ -1077,7 +1077,7 @@ doItWhere(item is [.,form,:exprList], $predl, eInit) ==
 
 compJoin(["Join",:argl],m,e) ==
   catList:= [(compForMode(x,$Category,e) or return 'failed).expr for x in argl]
-  catList='failed => stackSemanticError(["cannot form Join of: ",argl],nil)
+  catList='failed => stackSemanticError(['"cannot form Join of: ",argl],nil)
   catList':=
     [extract for x in catList] where
       extract() ==
@@ -1100,7 +1100,7 @@ compJoin(["Join",:argl],m,e) ==
             body
         x is ["mkCategory",:.] => x
         atom x and getmode(x,e)=$Category => x
-        stackSemanticError(["invalid argument to Join: ",x],nil)
+        stackSemanticError(['"invalid argument to Join: ",x],nil)
         x
   T:= [wrapDomainSub(parameters,["Join",:catList']),$Category,e]
   convert(T,m)

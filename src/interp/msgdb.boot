@@ -548,7 +548,7 @@ spadStartUpMsgs() ==
   --  if not $displaySetValue then sayKeyedMsg("S2GL0007",NIL)
 --  if not $HiFiAccess then sayKeyedMsg("S2GL0008",NIL)
 --  version()
-  sayMSG " "
+  sayMSG '" "
 
 HELP() == sayKeyedMsg("S2GL0019",NIL)
 

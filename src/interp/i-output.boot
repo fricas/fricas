@@ -50,7 +50,7 @@ init_output_properties() ==
       ["+->", '" +-> "], ["SEGMENT", '".."], ["in", '" in "], _
       ["~=", '"~="], ["JOIN", '" JOIN "], ["EQUATNUM", '"  "], _
       ["=", '" = "], ["==", '" == "], [">=", '" >= "], [">", '" > "], _
-      ["<=", '" <= "], ["<", '" < "], ["|", '" | "], ["+", " + "], _
+      ["<=", '" <= "], ["<", '" < "], ["|", '" | "], ["+", '" + "], _
       ["-", '" - "], ["WHERE", '" WHERE "], ["MAX", '" MAX "], _
       ["MIN", '" MIN "]] repeat
         MAKEPROP(first(sv), 'INFIXOP, first(rest(sv)))
@@ -823,7 +823,7 @@ WIDTH u ==
         l + negative
     k := INTEGER_-LENGTH(u)
     k > MOST_-POSITIVE_-DOUBLE_-FLOAT =>
-        SAY("Number too big")
+        SAY('"Number too big")
         THROW('outputFailure,'outputFailure)
 
     if (k < 61) then

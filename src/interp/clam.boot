@@ -197,31 +197,31 @@ displayHashtable x ==
 cacheStats() ==
   for [fn,kind,:u] in $clamList repeat
     not MEMQ('count,u) =>
-      sayBrightly ["%b",fn,"%d","does not keep reference counts"]
+      sayBrightly ["%b",fn,"%d",'"does not keep reference counts"]
     INTEGERP kind => reportCircularCacheStats(fn,kind)
     kind = 'hash => reportHashCacheStats fn
-    sayBrightly ["Unknown cache type for","%b",fn,"%d"]
+    sayBrightly ['"Unknown cache type for","%b",fn,"%d"]
 
 reportCircularCacheStats(fn,n) ==
   infovec := GET(fn, 'cacheInfo)
   circList:= eval infovec.cacheName
   numberUsed :=
     +/[1 for i in 1..n for x in circList while x isnt [='_$failed,:.]]
-  sayBrightly ["%b",fn,"%d","has","%b",numberUsed,"%d","/ ",n," values cached"]
+  sayBrightly ["%b",fn,"%d",'"has","%b",numberUsed,"%d",'"/ ",n,'" values cached"]
   displayCacheFrequency mkCircularCountAlist(circList,n)
   TERPRI()
 
 displayCacheFrequency al ==
   al := NREVERSE SORTBY('CAR,al)
-  sayBrightlyNT "    #hits/#occurrences: "
-  for [a,:b] in al repeat sayBrightlyNT [a,"/",b,"  "]
+  sayBrightlyNT '"    #hits/#occurrences: "
+  for [a,:b] in al repeat sayBrightlyNT [a,'"/",b,'"  "]
   TERPRI()
 
 mkCircularCountAlist(cl,len) ==
   for [x,count,:.] in cl for i in 1..len while x ~= '_$failed repeat
     u:= assoc(count,al) => RPLACD(u,1 + CDR u)
     if INTEGERP $reportFavoritesIfNumber and count >= $reportFavoritesIfNumber then
-      sayBrightlyNT ["   ",count,"  "]
+      sayBrightlyNT ['"   ",count,'"  "]
       pp x
     al:= [[count,:1],:al]
   al
@@ -305,21 +305,21 @@ assocCacheShiftCount(x,al,fn) ==
 
 clamStats() ==
   for [op,kind,:.] in $clamList repeat
-    cacheVec := GET(op, 'cacheInfo) or systemErrorHere "clamStats"
+    cacheVec := GET(op, 'cacheInfo) or systemErrorHere '"clamStats"
     prefix:=
       $reportCounts~= true => nil
       hitCounter := INTERNL1(op, '";hit")
       callCounter := INTERNL1(op, '";calls")
-      res:= ["%b",eval hitCounter,"/",eval callCounter,"%d","calls to "]
+      res:= ["%b",eval hitCounter,'"/",eval callCounter,"%d",'"calls to "]
       SET(hitCounter,0)
       SET(callCounter,0)
       res
     postString:=
       cacheValue:= eval cacheVec.cacheName
-      kind = 'hash => [" (","%b",HASH_-TABLE_-COUNT cacheValue,"%d","entries)"]
+      kind = 'hash => ['" (","%b",HASH_-TABLE_-COUNT cacheValue,"%d",'"entries)"]
       empties:= numberOfEmptySlots eval cacheVec.cacheName
       empties = 0 => nil
-      [" (","%b",kind-empties,"/",kind,"%d","slots used)"]
+      ['" (","%b",kind-empties,'"/",kind,"%d",'"slots used)"]
     sayBrightly
       [:prefix,op,:postString]
 
@@ -450,9 +450,9 @@ globalHashtableStats(x,sortFn) ==
       not INTEGERP n =>   keyedSystemError("S2GE0013",[x])
       argList1:= [constructor2ConstructorForm x for x in argList]
       reportList:= [[n,key,argList1],:reportList]
-  sayBrightly ["%b","  USE  NAME ARGS","%d"]
+  sayBrightly ["%b",'"  USE  NAME ARGS","%d"]
   for [n,fn,args] in NREVERSE SORTBY(sortFn,reportList) repeat
-    sayBrightlyNT [:rightJustifyString(n,6),"  ",fn,": "]
+    sayBrightlyNT [:rightJustifyString(n,6),'"  ",fn,'": "]
     pp args
 
 constructor2ConstructorForm x ==
