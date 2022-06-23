@@ -321,9 +321,9 @@
 
 #+:sbcl
 (defun delete-directory (dirname)
-   #-:win32 (sb-ext::run-program "/bin/rm" (list "-r" dirname) :search t)
-   #+:win32 (obey (concat "rmdir /q /s " "\"" dirname "\""))
-  )
+  (if (sb-ext:delete-directory dirname :recursive t)
+      0
+      1))
 
 #+:cmu
 (defun delete-directory (dirname)
@@ -332,7 +332,9 @@
 
 #+:openmcl
 (defun delete-directory (dirname)
-   (ccl::run-program "rm" (list "-r" dirname)))
+  (if (ccl:delete-directory dirname)
+      0
+      1))
 
 #+:clisp
 (defun delete-directory (dirname)
