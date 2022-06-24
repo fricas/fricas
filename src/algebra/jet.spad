@@ -51,7 +51,7 @@ JetBundleCategory() : Category == Def where
 
   V    ==> Vector
   B    ==> Boolean
-  Sy   ==> Symbol
+  SY   ==> Symbol
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
@@ -62,22 +62,22 @@ JetBundleCategory() : Category == Def where
   errmsg1  ==> "Improper multi-index"
   errmsg2  ==> "Improper upper index"
   errmsg3  ==> "Integration not possible"
-  Const    ==> "Const"::Sy
-  Indep    ==> "Indep"::Sy
-  Dep      ==> "Dep"::Sy
-  Deriv    ==> "Deriv"::Sy
-  Multi    ==> "Multi"::Sy
-  Repeated ==> "Repeated"::Sy
-  DerMode  ==> [Multi, Repeated]@L Sy
+  Const    ==> "Const"::SY
+  Indep    ==> "Indep"::SY
+  Dep      ==> "Dep"::SY
+  Deriv    ==> "Deriv"::SY
+  Multi    ==> "Multi"::SY
+  Repeated ==> "Repeated"::SY
+  DerMode  ==> [Multi, Repeated]@L(SY)
 
 
   Def ==> Join(OrderedSet, CoercibleTo EI) with
 
-      setNotation : Sy -> Sy
+      setNotation : SY -> SY
         ++ \spad{setNotation(s)} chooses the notation used for derivatives.
         ++ Returns the old value.
 
-      getNotation : () -> Sy
+      getNotation : () -> SY
         ++ \spad{getNotation()} shows the currently used notation.
 
       multiIndex : % -> L NNI
@@ -101,11 +101,11 @@ JetBundleCategory() : Category == Def where
       index : % -> PI
         ++ \spad{index(jv)} yields number of the jet variable \spad{jv}.
 
-      type : % -> Sy
+      type : % -> SY
         ++ \spad{type(jv)} yields the type (\spad{Const, Indep, Dep, Deriv})
         ++ of the jet variable \spad{jv}.
 
-      name : % -> Sy
+      name : % -> SY
         ++ \spad{name(jv)} yields the name of the jet variable \spad{jv}.
 
       class : L NNI -> NNI
@@ -216,7 +216,7 @@ JetBundleCategory() : Category == Def where
       --   multiIndex, index, type, name, X, U, Pm (generic case)
       --   coerce, numIndVar, numDepVar, setNotation, getNotation
 
-      import from Symbol
+      import from SY
       import from List(NNI)
 
       -- global constants for parameters of jet bundle
@@ -502,7 +502,7 @@ JetBundleCategory() : Category == Def where
 
 JetBundleFunctionCategory(JB : JBC) : Category == Def where
 
-  Sy   ==> Symbol
+  SY   ==> Symbol
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
   I    ==> Integer
@@ -518,7 +518,7 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
   errmsg ==> "cannot simplify"
 
 
-  Def ==> Join(PartialDifferentialRing Sy, _
+  Def ==> Join(PartialDifferentialRing SY, _
                GcdDomain, _
                RetractableTo JB) with
 
@@ -533,8 +533,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
       P : (PI, NNI) -> %
       P : NNI -> %
 
-      setNotation : Sy -> Void
-      getNotation : () -> Sy
+      setNotation : SY -> Void
+      getNotation : () -> SY
 
       numIndVar : () -> PI
       numDepVar : () -> PI
@@ -713,8 +713,8 @@ JetBundleFunctionCategory(JB : JBC) : Category == Def where
       P(i : PI, l : NNI) : % == P(i, l)$JB ::%
       P(i : NNI) : % == P(i)$JB ::%
 
-      setNotation(s : Sy) : Void == setNotation(s)$JB
-      getNotation() : Sy == getNotation()$JB
+      setNotation(s : SY) : Void == setNotation(s)$JB
+      getNotation() : SY == getNotation()$JB
 
       numIndVar() : PI == numIndVar()$JB
       numDepVar() : PI == numDepVar()$JB
@@ -1294,7 +1294,7 @@ JetBundleBaseFunctionCategory(JB : JBC) : Category == Def where
 
 SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
-  Sy  ==> Symbol
+  SY  ==> Symbol
   L   ==> List
   V   ==> Vector
   VD  ==> Vector D
@@ -1308,8 +1308,8 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
   ROWREC ==> Record(Indices : L C, Entries : L D)
 
-  iter ==> "iterated"::Sy
-  rand ==> "random"::Sy
+  iter ==> "iterated"::SY
+  rand ==> "random"::SY
 
   Cat ==> CoercibleTo OUT with
 
@@ -1398,7 +1398,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
     if D has GcdDomain then
 
-      setGcdMode : Sy -> Sy
+      setGcdMode : SY -> SY
         ++ \spad{setGcdMode(s)} sets a new value for the flag deciding on
         ++ the method used to compute gcd`s for lists. Possible values for
         ++ \spad{s} are \spad{iterated} and \spad{random}.
@@ -1449,7 +1449,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
     emptyRec : ROWREC := [[], []]
     noChecks? : B := D has lazyRepresentation  -- flag for lazy representation
     seed : I := 113                   -- seed for random number generation
-    GCDmode : Sy := iter              -- flag for gcd algorithm
+    GCDmode : SY := iter              -- flag for gcd algorithm
 
     greater(r1 : ROWREC, r2 : ROWREC) : B ==
         empty?(r1.Indices) => false
@@ -1825,7 +1825,7 @@ SparseEchelonMatrix(C : OrderedSet, D : Ring) : Cat == Def where
 
     if D has GcdDomain then
 
-        setGcdMode(s : Sy) : Sy ==
+        setGcdMode(s : SY) : SY ==
             tmp := GCDmode
             (s = iter) or (s = rand) =>
                 GCDmode := s
@@ -2063,25 +2063,25 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
 
   V    ==> Vector
   B    ==> Boolean
-  Sy   ==> Symbol
+  SY   ==> Symbol
   BOP  ==> BasicOperator
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
   L    ==> List
-  LS   ==> List Symbol
+  LS   ==> L(SY)
   EI   ==> Expression Integer
   OUT  ==> OutputForm
   JBC  ==> JetBundleCategory
 
   Cat ==> JBC with
 
-    coerce : Sy -> %
+    coerce : SY -> %
       ++ \spad{coerce(sy)} allows for the input of jet variables as symbols.
       ++ Yields an error, if the symbol is not contained in \spad{IVar} or
       ++ \spad{DVar}.
 
-    D : (Sy, L Sy) -> %
+    D : (SY, L(SY)) -> %
       ++ \spad{D(U, [X1, ..., Xq])} generates a derivative. \spad{U} must
       ++ be in \spad{DVar}; all other symbols in \spad{IVar}.
 
@@ -2096,8 +2096,8 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
     nn : NNI := #IVar
     mm : NNI := #DVar
 
-    nameX := construct(IVar)$V(Sy)
-    nameU := construct(DVar)$V(Sy)
+    nameX := construct(IVar)$V(SY)
+    nameU := construct(DVar)$V(SY)
 
     Rep := L NNI
       -- The list has length 2 for independent variables, length n+2 for
@@ -2106,17 +2106,17 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
       -- derivatives.  The second entry is the upper index, the rest the
       -- multi-index.
 
-    setNotation(s : Sy) : Sy ==
+    setNotation(s : SY) : SY ==
         print(message("only repeated index notation possible"))$OUT
         'Repeated
 
-    getNotation() : Sy == 'Repeated
+    getNotation() : SY == 'Repeated
 
     multiIndex(jv : %) : L NNI == copy rest rest jv::Rep
 
     index(jv : %) : PI == first(rest jv)::PI
 
-    type(jv : %) : Sy ==
+    type(jv : %) : SY ==
         t := first jv
         zero? t => 'Const
         one? t => 'Indep
@@ -2143,7 +2143,7 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
         CheckZeroIndex(lo) => U(up)
         cons(3, cons(up::NNI, lo))
 
-    coerce(s : Sy) : % ==
+    coerce(s : SY) : % ==
         pos := position(s, IVar)
         pos < minIndex(IVar) =>
             pos := position(s, DVar)
@@ -2151,7 +2151,7 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
             U(pos::PI)
         X(pos::PI)
 
-    D(u : Sy, der : L Sy) : % ==
+    D(u : SY, der : L(SY)) : % ==
         up := position(u, DVar)
         up < minIndex(DVar) => error errmsg4
         lower : L PI := []
@@ -2172,8 +2172,8 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
     -- Output Form --
     -- ----------- --
 
-    name(jv : %) : Sy ==
-        (jt := type(jv)) = 'Const => "1"::Sy
+    name(jv : %) : SY ==
+        (jt := type(jv)) = 'Const => "1"::SY
         i := index jv
         jt = 'Indep => qelt(nameX, i)
         jt = 'Dep => qelt(nameU, i)
@@ -2192,18 +2192,18 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
     opdisp(l : L OUT) : OUT == first l
 
     coerce(jv : %) : EI ==
-        -- Name of operator must be unique and the same as jv::Sy
+        -- Name of operator must be unique and the same as jv::SY
         -- to allow to differentiate and substitute in EI.
         type(jv) = 'Const => 1
-        opname : Sy := name jv
+        opname : SY := name(jv)
         jop := operator(opname)$BOP
         display(jop, opdisp)
         tmp : None := coerce(jv)$NoneFunctions1(%)
-        jop := setProperty(jop, "%symbol"::Symbol, tmp)$BOP
+        jop := setProperty(jop, "%symbol"::SY, tmp)$BOP
         tmp := coerce(weight(jv))$NoneFunctions1(NNI)
-        jop := setProperty(jop, "%weight"::Symbol, tmp)$BOP
-        tmp := coerce(type(jv))$NoneFunctions1(Sy)
-        jop := setProperty(jop, "%jet"::Symbol, tmp)$BOP
+        jop := setProperty(jop, "%weight"::SY, tmp)$BOP
+        tmp := coerce(type(jv))$NoneFunctions1(SY)
+        jop := setProperty(jop, "%jet"::SY, tmp)$BOP
         arg : L EI := concat!([opname::EI, index(jv)::EI], _
                               [i::EI  for i in repeatedIndex jv])
         kernel(jop, arg)
@@ -2216,12 +2216,12 @@ JetBundle(IVar : LS, DVar : LS) : Cat == Def where
 
 IndexedJetBundle(x, u, p, n, m) : Cat == Def where
 
-  x, u, p : Sy
+  x, u, p : SY
   m, n   : PI
 
   V    ==> Vector
   B    ==> Boolean
-  Sy   ==> Symbol
+  SY   ==> Symbol
   BOP  ==> BasicOperator
   I    ==> Integer
   PI   ==> PositiveInteger
@@ -2231,13 +2231,13 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
   OUT  ==> OutputForm
   JBC  ==> JetBundleCategory
 
-  Const    ==> "Const"::Sy
-  Indep    ==> "Indep"::Sy
-  Dep      ==> "Dep"::Sy
-  Deriv    ==> "Deriv"::Sy
-  Multi    ==> "Multi"::Sy
-  Repeated ==> "Repeated"::Sy
-  DerMode  ==> [Multi, Repeated]@L Sy
+  Const    ==> "Const"::SY
+  Indep    ==> "Indep"::SY
+  Dep      ==> "Dep"::SY
+  Deriv    ==> "Deriv"::SY
+  Multi    ==> "Multi"::SY
+  Repeated ==> "Repeated"::SY
+  DerMode  ==> [Multi, Repeated]@L(SY)
 
   Cat ==> JBC
 
@@ -2253,22 +2253,22 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
       -- derivatives.  The second entry is the upper index, the rest the
       -- multi-index.
 
-    notation : Sy := Repeated
+    notation : SY := Repeated
       -- Global variable for notation.
 
-    setNotation(s : Sy) : Sy ==
+    setNotation(s : SY) : SY ==
         not member?(s, DerMode) => error "Unknown notation"
         t := notation
         notation := s
         t
 
-    getNotation() : Sy == notation
+    getNotation() : SY == notation
 
     multiIndex(jv : %) : L NNI == copy rest rest jv::Rep
 
     index(jv : %) : PI == first(rest jv)::PI
 
-    type(jv : %) : Sy ==
+    type(jv : %) : SY ==
         t := first jv
         zero? t => Const
         one? t => Indep
@@ -2305,8 +2305,8 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
     -- Output Form --
     -- ----------- --
 
-    name(jv : %) : Sy ==
-        (jt := type(jv)) = Const => "1"::Sy
+    name(jv : %) : SY ==
+        (jt := type(jv)) = Const => "1"::SY
         jt = Indep =>
             n > 1 => superscript(x, [index(jv)::OUT])
             x
@@ -2331,18 +2331,18 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
     opdisp(l : L OUT) : OUT == first l
 
     coerce(jv : %) : EI ==
-        -- Name of operator must be unique and the same as jv::Sy
+        -- Name of operator must be unique and the same as jv::SY
         -- to allow to differentiate and substitute in EI.
         type(jv) = Const => 1
-        opname : Sy := name jv
+        opname : SY := name(jv)
         jop := operator(opname)$BOP
         display(jop, opdisp)
         tmp : None := coerce(jv)$NoneFunctions1(%)
-        jop := setProperty(jop, "%symbol"::Symbol, tmp)$BOP
+        jop := setProperty(jop, "%symbol"::SY, tmp)$BOP
         tmp := coerce(weight(jv))$NoneFunctions1(NNI)
-        jop := setProperty(jop, "%weight"::Symbol, tmp)$BOP
-        tmp := coerce(type(jv))$NoneFunctions1(Sy)
-        jop := setProperty(jop, "%jet"::Symbol, tmp)$BOP
+        jop := setProperty(jop, "%weight"::SY, tmp)$BOP
+        tmp := coerce(type(jv))$NoneFunctions1(SY)
+        jop := setProperty(jop, "%jet"::SY, tmp)$BOP
         if getNotation() = Multi then
             arg := [i::EI  for i in multiIndex jv]
         else
@@ -2361,7 +2361,7 @@ IndexedJetBundle(x, u, p, n, m) : Cat == Def where
 
 JetBundleExpression(JB : JBC) : Cat == Def where
 
-  Sy    ==> Symbol
+  SY    ==> Symbol
   PI    ==> PositiveInteger
   NNI   ==> NonNegativeInteger
   I     ==> Integer
@@ -2393,10 +2393,10 @@ JetBundleExpression(JB : JBC) : Cat == Def where
   ROWREC  ==> Record(Indices : L JB, Entries : L %)
   LDREC   ==> Record(Fun : %, JMR : ROWREC, Depend : L NNI)
 
-  Const   ==> "Const"::Sy
-  Indep   ==> "Indep"::Sy
-  Dep     ==> "Dep"::Sy
-  Deriv   ==> "Deriv"::Sy
+  Const   ==> "Const"::SY
+  Indep   ==> "Indep"::SY
+  Dep     ==> "Dep"::SY
+  Deriv   ==> "Deriv"::SY
 
   Cat ==> Join(JBFC, FS, ACFS, TFC, COC, LFC, SFC) with
 
@@ -2412,7 +2412,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
     reduce : % -> %
       ++ \spad{reduce(x)} reduces algebraics in \spad{x}.
 
-    function : (Sy, L %, NNI) -> %
+    function : (SY, L(%), NNI) -> %
       ++ \spad{function(f, arg, show)} generates a function with name \spad{f}
       ++ and arguments \spad{arg}. In the output only the first \spad{show}
       ++ arguments are shown.
@@ -2695,8 +2695,8 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         JV : L JB := []
         LKernels := tower Phi
         LOps := [operator Ke  for Ke in LKernels]
-        for Ke in LKernels  for Op in LOps | has?(Op, "%jet"::Symbol)$BOP repeat
-            typ := property(Op, "%jet"::Symbol)::None pretend Sy
+        for Ke in LKernels  for Op in LOps | has?(Op, "%jet"::SY)$BOP repeat
+            typ := property(Op, "%jet"::SY)::None pretend SY
             arg := argument Ke
             if typ = Indep then
                 xindex : I := retract(second arg)
@@ -2715,7 +2715,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         x := name jv
         differentiate(fun, x)
 
-    differentiate(fun : %, x : Sy) : % == differentiate(fun::EI, x)$Rep
+    differentiate(fun : %, x : SY) : % == differentiate(fun::EI, x)$Rep
 
     subst(f : %, jv : JB, exp : %) : % ==
         --print("subst")$OUT
@@ -2744,7 +2744,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
 
     kernel0(op : BOP, ls : L %) : % == kernel(op, ls pretend L EI)$EI
 
-    sy2jbe(s : Sy) : % == s::EI
+    sy2jbe(s : SY) : % == s::EI
 
     -- The following hacks are necessary due to the not very satisfactory
     -- treatment of differentiation in FunctionSpace. They ensure that
@@ -2756,7 +2756,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         -- l is supposed to have the following structure:
         --    l = [name, #args, #shown args, args, diff]
         -- diff is a list of integers showing previous differentiations.
-        name : Sy := retract first l
+        name : SY := retract(first(l))
         l := rest l
         num : I := retract first l
         l := rest l
@@ -2775,11 +2775,11 @@ JetBundleExpression(JB : JBC) : Cat == Def where
         empty?(args) => op
         prefix(op, args)
 
-    hidediff(l : L %, x : Sy) : % ==
+    hidediff(l : L %, x : SY) : % ==
         -- Differentiates functions generated by function.
         -- l has the same form as in hidedisp
         oldarg := copy l
-        name : Sy := retract first l
+        name : SY := retract(first(l))
         l := rest l
         num : I := retract first l
         zero? num => 0
@@ -2793,10 +2793,10 @@ JetBundleExpression(JB : JBC) : Cat == Def where
 
         oldarg := first(oldarg, (num + 3)::NNI)
         op := operator(name)$BOP
-        setProperty(op, "%specialDisp"::Symbol,
+        setProperty(op, "%specialDisp"::SY,
                     hidedisp@(L % -> OUT) pretend None)
-        setProperty(op, "%specialDiff"::Symbol,
-                    hidediff@((L %, Sy) -> %) pretend None)
+        setProperty(op, "%specialDiff"::SY,
+                    hidediff@((L(%), SY) -> %) pretend None)
         res : % := 0
         for k in num..1 by -1  for arg in args repeat
             da := differentiate(arg, x)
@@ -2805,14 +2805,14 @@ JetBundleExpression(JB : JBC) : Cat == Def where
                 res := res + kernel0(op, newarg)*da
         res
 
-    function(f : Sy, arg : L %, show : NNI) : % ==
+    function(f : SY, arg : L %, show : NNI) : % ==
         -- Special output and differentiation routines are added using the
         -- two hooks provided by FunctionSpace and BasicOperator.
         op := operator(f)$BOP
-        setProperty(op, "%specialDisp"::Symbol,
+        setProperty(op, "%specialDisp"::SY,
                     hidedisp@(L % -> OUT) pretend None)
-        setProperty(op, "%specialDiff"::Symbol,
-                    hidediff@((L %, Sy) -> %) pretend None)
+        setProperty(op, "%specialDiff"::SY,
+                    hidediff@((L(%), SY) -> %) pretend None)
         args := append([sy2jbe f, #arg::%, show::%], arg)
         kernel0(op, args)
 
@@ -2826,7 +2826,7 @@ JetBundleExpression(JB : JBC) : Cat == Def where
 
 JetBundleXExpression(JB : JBC) : Cat == Def where
 
-  Sy    ==> Symbol
+  SY    ==> Symbol
   PI    ==> PositiveInteger
   NNI   ==> NonNegativeInteger
   L     ==> List
@@ -2842,7 +2842,7 @@ JetBundleXExpression(JB : JBC) : Cat == Def where
   JBFC  ==> JetBundleFunctionCategory JB
   BFC   ==> JetBundleBaseFunctionCategory JB
 
-  Indep    ==> "Indep"::Sy
+  Indep    ==> "Indep"::SY
 
   errmsg ==> "Only functions of independent variables allowed"
 
@@ -2862,7 +2862,7 @@ JetBundleXExpression(JB : JBC) : Cat == Def where
     reduce : % -> %
       ++ \spad{reduce(x)} reduces the algebraics in \spad{x}.
 
-    function : (Sy, L %) -> %
+    function : (SY, L(%)) -> %
       ++ \spad{function(f, arg)} generates a function with name \spad{f}
       ++ and arguments \spad{arg}.
 
@@ -2893,7 +2893,7 @@ JetBundleXExpression(JB : JBC) : Cat == Def where
 
 JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
 
-  Sy    ==> Symbol
+  SY    ==> Symbol
   PI    ==> PositiveInteger
   NNI   ==> NonNegativeInteger
   I     ==> Integer
@@ -2909,8 +2909,8 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
 
   SIMPREC ==> Record(Sys : L %, JM : SEM, Depend : Union("failed", L L NNI))
 
-  Const   ==> "Const"::Sy
-  Indep   ==> "Indep"::Sy
+  Const   ==> "Const"::SY
+  Indep   ==> "Indep"::SY
 
   errmsg1 ==> "non-linear function"
   errmsg2 ==> "Substitution for 1 not allowed"
@@ -3133,7 +3133,7 @@ JetBundleLinearFunction(JB : JBC, D : BFC) : Cat == Def where
             res := append(l.JVars, res)
         res
 
-    differentiate(l : %, s : Sy) : % ==
+    differentiate(l : %, s : SY) : % ==
         -- No check whether symbol might be a jet variable!!!
         resC : L D := []
         resJ : L JB := []
@@ -3327,7 +3327,7 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
-  Sy   ==> Symbol
+  SY   ==> Symbol
   L    ==> List
   B    ==> Boolean
   M    ==> Matrix
@@ -3336,8 +3336,8 @@ JetVectorField(JB : JBC, D : JBFC JB) : Cat == Def where
   JBFC ==> JetBundleFunctionCategory
   OUT  ==> OutputForm
 
-  Indep  ==> "Indep"::Sy
-  Dep    ==> "Dep"::Sy
+  Indep  ==> "Indep"::SY
+  Dep    ==> "Dep"::SY
   errmsg ==> "not base vector field in prolong"
 
 
@@ -3771,7 +3771,7 @@ JetDifferential(JB : JBC, D : JBFC JB) : Cat == Def where
 JetDifferentialEquation(JB : JBC, D : JBFC) : Cat == Def where
 
   B    ==> Boolean
-  Sy   ==> Symbol
+  SY   ==> Symbol
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
@@ -4579,7 +4579,7 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
   V      ==>  Vector
   I      ==>  Integer
   B      ==>  Boolean
-  Sy     ==>  Symbol
+  SY     ==>  Symbol
   PI     ==>  PositiveInteger
   NNI    ==>  NonNegativeInteger
   OUT    ==>  OutputForm
@@ -5070,9 +5070,9 @@ CartanKuranishi(JB : JBC, D : JBFC) : Cat == Def where
 
 JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
-  Sy   ==> Symbol
+  SY   ==> Symbol
   L    ==> List
-  US   ==> Union(Sy, L Sy)
+  US   ==> Union(SY, L(SY))
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
@@ -5082,10 +5082,10 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
   Cat ==> JBC with
 
-    coerce : Sy -> %
+    coerce : SY -> %
       ++ \spad{coerce(s)} allows for the input of jet variables as symbols.
 
-    D : (Sy, L Sy) -> %
+    D : (SY, L(SY)) -> %
      ++ \spad{D(u, der)} generates a derivative.
 
   Def ==> add
@@ -5095,37 +5095,37 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
     vars : L JB1 := concat!([X(i::PI)$JB1  for i in 1..nn], _
                           [U(i::PI)$JB1  for i in 1..mm])
-    indVars : L(Sy) := [name(jv)  for jv in vars]
-    depVars : L(Sy) := []
-    if xi case Sy then
+    indVars : L(SY) := [name(jv)  for jv in vars]
+    depVars : L(SY) := []
+    if xi case SY then
         if nn > 1 then
-            depVars := [superscript(xi@Sy, [i::OUT])  for i in 1..nn]
+            depVars := [superscript(xi@SY, [i::OUT])  for i in 1..nn]
         else
-            depVars := [xi@Sy]
+            depVars := [xi@SY]
     else
-        depVars := xi@L(Sy)
-    if eta case Sy then
+        depVars := xi@L(SY)
+    if eta case SY then
         if mm > 1 then
             depVars := append(depVars, _
-                          [superscript(eta@Sy, [i::OUT])  for i in 1..mm])
+                          [superscript(eta@SY, [i::OUT])  for i in 1..mm])
         else
-            depVars := append(depVars, [eta@Sy])
+            depVars := append(depVars, [eta@SY])
     else
-        depVars := append(depVars, eta@L(Sy))
+        depVars := append(depVars, eta@L(SY))
 
     Rep := JetBundle(indVars, depVars)
 
-    setNotation(s : Sy) : Sy ==
+    setNotation(s : SY) : SY ==
         print(message("only repeated index notation possible"))$OUT
         'Repeated
 
-    getNotation() : Sy == 'Repeated
+    getNotation() : SY == 'Repeated
 
     multiIndex(jv : %) : L NNI == multiIndex(jv)$Rep
 
     index(jv : %) : PI == index(jv)$Rep
 
-    type(jv : %) : Sy == type(jv)$Rep
+    type(jv : %) : SY == type(jv)$Rep
 
     X(up : PI) : % == X(up)$Rep
 
@@ -5133,9 +5133,9 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
     Pm(up : PI, lo : L NNI) : % == Pm(up, lo)$Rep
 
-    coerce(s : Sy) : % == coerce(s)$Rep
+    coerce(s : SY) : % == coerce(s)$Rep
 
-    D(u : Sy, der : L Sy) : % == D(u, der)$Rep
+    D(u : SY, der : L(SY)) : % == D(u, der)$Rep
 
     1 : % == 1$Rep
 
@@ -5143,7 +5143,7 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
     numDepVar() : PI == (nn+mm)::PI
 
-    name(jv : %) : Sy == name(jv)$Rep
+    name(jv : %) : SY == name(jv)$Rep
 
     coerce(jv : %) : EI == coerce(jv)$Rep
 
@@ -5157,9 +5157,9 @@ JetBundleSymAna(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
 SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
-  Sy   ==> Symbol
+  SY   ==> Symbol
   L    ==> List
-  US   ==> Union(Sy, L Sy)
+  US   ==> Union(SY, L(SY))
   I    ==> Integer
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
@@ -5177,8 +5177,8 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
   JP1  ==> SparseMultivariatePolynomial(EI, JB1)
   VF1  ==> JetVectorField(JB1, JBE1)
 
-  Indep ==> "Indep"::Sy
-  Dep   ==> "Dep"::Sy
+  Indep ==> "Indep"::SY
+  Dep   ==> "Dep"::SY
 
 
   Cat ==> with
@@ -5247,23 +5247,23 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
     vars : L JB1 := concat!([X(i::PI)$JB1  for i in 1..nn], _
                             [U(i::PI)$JB1  for i in 1..mm])
-    indVars : L Sy := [name(jv)  for jv in vars]
-    depVars : L Sy := []
-    if xi case Sy then
+    indVars : L(SY) := [name(jv)  for jv in vars]
+    depVars : L(SY) := []
+    if xi case SY then
         if nn > 1 then
-            depVars : L Sy := [superscript(xi@Sy, [i::OUT])  for i in 1..nn]
+            depVars : L(SY) := [superscript(xi@SY, [i::OUT])  for i in 1..nn]
         else
-            depVars : L Sy := [xi@Sy]
+            depVars : L(SY) := [xi@SY]
     else
-        depVars : L Sy := xi@L Sy
-    if eta case Sy then
+        depVars : L(SY) := xi@L(SY)
+    if eta case SY then
         if mm > 1 then
             depVars := append(depVars, _
-                          [superscript(eta@Sy, [i::OUT])  for i in 1..mm])
+                          [superscript(eta@SY, [i::OUT])  for i in 1..mm])
         else
-            depVars := append(depVars, [eta@Sy])
+            depVars := append(depVars, [eta@SY])
     else
-        depVars : L Sy := append(depVars, eta@L(Sy))
+        depVars : L(SY) := append(depVars, eta@L(SY))
     JVars : L JBE1 := [jv::JBE1  for jv in vars]
 
 
@@ -5294,8 +5294,8 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
         LKernels := tower f
         LOps := [operator Ke  for Ke in LKernels]
         for Ke in LKernels  for Op in LOps repeat
-            has?(Op, "%jet"::Sy)$BOP =>
-                typ := property(Op, "%jet"::Sy)::None pretend Sy
+            has?(Op, "%jet"::SY)$BOP =>
+                typ := property(Op, "%jet"::SY)::None pretend SY
                 typ = 'Deriv =>
                     error "function contains illegal jet variables in transform"
                 ind : I := retract second argument Ke
@@ -5461,7 +5461,7 @@ SymmetryAnalysis(JB1 : JBC, xi : US, eta : US) : Cat == Def where
 
 JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
 
-  Sy   ==> Symbol
+  SY   ==> Symbol
   B    ==> Boolean
   L    ==> List
   M    ==> Matrix
@@ -5478,8 +5478,8 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
   SREC     ==> Record(Dep : L NNI, Fun : %)
   SIMPREC  ==> Record(Sys : L %, JM : SEM, Depend : Union("failed", L L NNI))
 
-  Const  ==> "Const"::Sy
-  Null   ==> "0"::Sy
+  Const  ==> "Const"::SY
+  Null   ==> "0"::SY
 
 
   Cat ==> JBFC with
@@ -5556,7 +5556,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
     -- which it is known that they occur in the expression; the ones in JV2
     -- may or may not occur.
 
-    LazyDer := Record(DEval? : B, DX : Union(JB, Sy), DFun : UDS)
+    LazyDer := Record(DEval? : B, DX : Union(JB, SY), DFun : UDS)
 
     LazyTerm := Record(LLD : JB, LSharp? : B, LEval? : B, _
                        LCoeff : UDS, LDer : REF LazyDer)
@@ -5825,7 +5825,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
             LazyEval := LazyEval + 1
             dfun : D :=
                 der.DX case JB => differentiate(fun, der.DX::JB)$D
-                differentiate(fun, der.DX::Sy)$D
+                differentiate(fun, der.DX::SY)$D
         setref(rder, [true, Null, dfun])
         rder
 
@@ -6036,7 +6036,7 @@ JetLazyFunction(JB : JBC, D : JBFC) : Cat == Def where
              [ref [ld, false, false, 1$D, ref [false, jv, exp]]]]
 
 
-    differentiate(exp : %, x : Sy) : % ==
+    differentiate(exp : %, x : SY) : % ==
         LazyDiff := LazyDiff + 1
         rec := deref exp
         ld := rec.LD
@@ -6346,7 +6346,7 @@ JetCoordinateTransformation(JB1, JB2, Y, W) : Cat == Def where
   JB1, JB2 : JBC
   Y, W     : V(E2)
 
-  Sy   ==> Symbol
+  SY   ==> Symbol
   L    ==> List
   V    ==> Vector
   M    ==> Matrix
@@ -6358,10 +6358,10 @@ JetCoordinateTransformation(JB1, JB2, Y, W) : Cat == Def where
   JBE  ==> JetBundleExpression
   LUD  ==> LUDecomposition E2
 
-  Const ==> "Const"::Sy
-  Indep ==> "Indep"::Sy
-  Dep   ==> "Dep"::Sy
-  Deriv ==> "Deriv"::Sy
+  Const ==> "Const"::SY
+  Indep ==> "Indep"::SY
+  Dep   ==> "Dep"::SY
+  Deriv ==> "Deriv"::SY
 
 
   Cat ==> with
@@ -6887,7 +6887,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
 
   V    ==> Vector
   M    ==> Matrix
-  Sy   ==> Symbol
+  SY   ==> Symbol
   PI   ==> PositiveInteger
   NNI  ==> NonNegativeInteger
   I    ==> Integer
@@ -6904,10 +6904,10 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
 
   SIMPREC ==> Record(Sys : L %, JM : SEM, Depend : Union("failed", L L NNI))
 
-  Const   ==> "Const"::Sy
-  Indep   ==> "Indep"::Sy
-  Dep     ==> "Dep"::Sy
-  Deriv   ==> "Deriv"::Sy
+  Const   ==> "Const"::SY
+  Indep   ==> "Indep"::SY
+  Dep     ==> "Dep"::SY
+  Deriv   ==> "Deriv"::SY
 
 
   JB : JBC
@@ -7121,7 +7121,7 @@ JetBundleQuasiLinearFunction(JB, D) : Cat == Def where
         sort(">", append(q.hJV, setUnion(res, jetVariables(q.low)$D)))
 
 
-    differentiate(q : %, s : Sy) : % ==
+    differentiate(q : %, s : SY) : % ==
         dl := differentiate(q.low, s)$D
         nonlinear? q => convert dl
         resC : L D := []

@@ -26,7 +26,7 @@ TexFormat() : public == private where
   I      ==> Integer
   L      ==> List
   S      ==> String
-  Sy     ==> Symbol
+  SY     ==> Symbol
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
@@ -61,9 +61,9 @@ TexFormat() : public == private where
       ++ components of this object.
     prologue : % -> L S
       ++ prologue(t) extracts the prologue section of a TeX form t.
-    getDialect : () -> Sy
+    getDialect : () -> SY
       ++ getDialect() return current dialect setting.
-    setDialect : Sy -> Sy
+    setDialect : SY -> SY
       ++ setDialect(d) sets s as current dialect and returns previous
       ++ setting.  Possible values are \spad{tex} meaning using
       ++ mostly plain TeX constructs and \spad{latex} which means
@@ -87,11 +87,11 @@ TexFormat() : public == private where
 
     -- local variable declarations and definitions
 
-    dialect : Sy := 'latex
+    dialect : SY := 'latex
 
-    getDialect() : Sy == dialect
+    getDialect() : SY == dialect
 
-    setDialect(nd : Sy) : Sy ==
+    setDialect(nd : SY) : SY ==
         not(nd = 'tex or nd = 'latex) =>
             error "TeX dialect must be one of tex or latex"
         d := dialect
@@ -106,28 +106,28 @@ TexFormat() : public == private where
     maxPrec       : I   := 1000000
     minPrec       : I   := 0
 
-    unaryOps      : L Sy := ["-"::Sy]$(L Sy)
+    unaryOps    : L(SY) := ["-"::SY]
     unaryPrecs    : L I := [710]$(L I)
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "="::Sy,
-                             "~="::Sy, "<"::Sy, "<="::Sy, ">"::Sy, ">="::Sy,
+    binaryOps   : L(SY) := ["+->"::SY, "|"::SY, "^"::SY, "/"::SY, "="::SY,
+                             "~="::SY, "<"::SY, "<="::SY, ">"::SY, ">="::SY,
                                'OVER, 'LET]
     binaryPrecs   : L I := [0, 0, 900, 700, 400,
                             400, 400, 400, 400, 400,
                               700, 125]$(L I)
 
-    naryOps       : L Sy := ["-"::Sy, "+"::Sy, "*"::Sy, ","::Sy, ";"::Sy,
+    naryOps     : L(SY) := ["-"::SY, "+"::SY, "*"::SY, ","::SY, ";"::SY,
                              'ROW, 'STRSEP, 'TENSOR]
     naryPrecs     : L I := [700, 700, 800, 110, 110,
                             0, 0, 850]$(L I)
-    naryNGOps     : L Sy := ['ROW]
+    naryNGOps   : L(SY) := ['ROW]
 
-    plexOps       : L Sy := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
+    plexOps     : L(SY) := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
     plexPrecs     : L I := [ 750, 750, 750, 750, 700]$(L I)
 
-    specialOps    : L Sy := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
+    specialOps  : L(SY) := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
                              'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
                              'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
                              'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME]
@@ -135,10 +135,10 @@ TexFormat() : public == private where
     -- the next two lists provide translations for some strings for
     -- which TeX provides special macros.
 
-    specialStrings : L Sy :=
+    specialStrings : L(SY) :=
       ['cos, 'cot, 'csc, 'log, 'sec, 'sin, 'tan,
         'cosh, 'coth, 'csch, 'sech, 'sinh, 'tanh,
-          'acos, 'asin, 'atan, 'erf, "..."::Sy, "$"::Sy, 'infinity,
+          'acos, 'asin, 'atan, 'erf, "..."::SY, "$"::SY, 'infinity,
             'Gamma]
 
     specialStringsInTeX : L S :=
@@ -152,15 +152,15 @@ TexFormat() : public == private where
     addBraces :      S -> S
     addBrackets :    S -> S
     group :          S -> S
-    formatBinary :   (Sy, L E, I) -> S
+    formatBinary :   (SY, L(E), I) -> S
     formatFunction : (E, L E, I) -> S
     formatMatrix :   L E -> S
-    formatNary :     (Sy, S, I, L E, I) -> S
-    formatNaryNoGroup : (Sy, S, I, L E, I) -> S
-    formatNullary :  Sy -> S
-    formatPlex :     (Sy, L E, I) -> S
-    formatSpecial :  (Sy, L E, I) -> S
-    formatUnary :    (Sy, E, I) -> S
+    formatNary :     (SY, S, I, L(E), I) -> S
+    formatNaryNoGroup : (SY, S, I, L(E), I) -> S
+    formatNullary :  SY -> S
+    formatPlex :     (SY, L(E), I) -> S
+    formatSpecial :  (SY, L(E), I) -> S
+    formatUnary :    (SY, E, I) -> S
     formatExpr :      (E, I) -> S
     newWithNum :     I -> %
     parenthesize :   S -> S
@@ -355,14 +355,14 @@ TexFormat() : public == private where
             arg2
         formatSpecial('SUPERSUB, [first args, empty()$E, narg2], prec)
 
-    formatSpecial(op : Sy, args : L E, prec : I) : S ==
+    formatSpecial(op : SY, args : L(E), prec : I) : S ==
         arg : E
         prescript : Boolean := false
         op = 'theMap => "\mbox{theMap(...)}"
         op = 'AGGLST =>
-            formatNary(","::Sy, "", 0, args, prec)
+            formatNary(","::SY, "", 0, args, prec)
         op = 'AGGSET =>
-            formatNary(";"::Sy, "", 0, args, prec)
+            formatNary(";"::SY, "", 0, args, prec)
         op = 'TAG =>
             group concat [formatExpr(first args, prec),
                           "\rightarrow",
@@ -454,7 +454,7 @@ TexFormat() : public == private where
                 formatExpr(first rest args, minPrec), "}"]
         concat ["not done yet for ", string(op)]
 
-    formatPlex(op : Sy, args : L E, prec : I) : S ==
+    formatPlex(op : SY, args : L(E), prec : I) : S ==
         hold : S
         p : I := position(op, plexOps)
         p < 1 => error "unknown plex op"
@@ -497,61 +497,62 @@ TexFormat() : public == private where
     formatFunction(op : E, args : L E, prec : I) : S ==
         ops := formatExpr(op, minPrec)
         group concat [ops, " ", parenthesize
-                      formatNary(","::Sy, "", 0, args, minPrec)]
+                      formatNary(","::SY, "", 0, args, minPrec)]
 
-    formatNullary(op : Sy) ==
+    formatNullary(op : SY) ==
         op = 'NOTHING => ""
         group concat [string(op), "()"]
 
-    formatUnary(op : Sy, arg : E, prec : I) ==
+    formatUnary(op : SY, arg : E, prec : I) ==
         p : I := position(op, unaryOps)
         p < 1 => error "unknown unary op"
         opPrec := unaryPrecs.p
         s : S := concat [string(op), formatExpr(arg, opPrec)]
         opPrec < prec => group parenthesize s
-        op = "-"::Sy => s
+        op = "-"::SY => s
         group s
 
-    formatBinary(op : Sy, args : L E, prec : I) : S ==
+    formatBinary(op : SY, args : L(E), prec : I) : S ==
         p : I := position(op, binaryOps)
         p < 1 => error "unknown binary op"
         opPrec := binaryPrecs.p
         s1 := formatExpr(first args, opPrec)
-        s2 := formatExpr(first rest args, (op = "^"::Sy => minPrec ; opPrec))
+        s2 := formatExpr(first(rest(args)), (op = "^"::SY => minPrec ; opPrec))
         ops : S :=
-            op = "|"::Sy     => " \mid "
-            op = "^"::Sy    => " \sp "
-            op = "/"::Sy     => " \over "
+            op = "|"::SY     => " \mid "
+            op = "^"::SY    => " \sp "
+            op = "/"::SY     => " \over "
             op = 'OVER  => " \over "
-            op = "+->"::Sy   => " \mapsto "
-            op = "~="::Sy => " \ne "
-            op = "<="::Sy => " \leq "
-            op = ">="::Sy => " \geq "
+            op = "+->"::SY   => " \mapsto "
+            op = "~="::SY => " \ne "
+            op = "<="::SY => " \leq "
+            op = ">="::SY => " \geq "
             -- FIXME how to do this properly ???
             op = 'LET   => " := "
             string(op)
         s :=
-            op = "^"::Sy => concat [group(s1), ops, group(s2)]
-            dialect = 'latex and (op = "/"::Sy or op = 'OVER) =>
+            op = "^"::SY => concat([group(s1), ops, group(s2)])
+            dialect = 'latex and (op = "/"::SY or op = 'OVER) =>
                 concat ["\frac", group(s1), group(s2)]
             concat [s1, ops, s2]
         group
-            op = "/"::Sy or op = 'OVER => s
+            op = "/"::SY or op = 'OVER => s
             opPrec < prec => parenthesize s
             s
 
-    formatNary(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+    formatNary(op : SY, sep : S, opprec : I, args : L(E), prec : I) : S ==
         group formatNaryNoGroup(op, sep, opprec, args, prec)
 
-    formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+    formatNaryNoGroup(op : SY, sep : S, opprec : I, args : L(E), prec : I
+                     ) : S ==
         empty?(args) => ""
         p : I := position(op, naryOps)
         p < 1 => error "unknown nary op"
         ops : S :=
             op = 'STRSEP => sep
-            op = ","::Sy     => ", \: "
-            op = ";"::Sy     => "; \: "
-            op = "*"::Sy     => blank
+            op = ","::SY     => ", \: "
+            op = ";"::SY     => "; \: "
+            op = "*"::SY     => blank
             op = '_     => " \ "
             op = 'ROW   => " & "
             op = 'TENSOR => " \otimes "
@@ -591,9 +592,9 @@ TexFormat() : public == private where
             else str
         if symbol?(expr) then
             es := symbol(expr)
-            es = "%pi"::Sy => return "\pi"
-            es = "%e"::Sy => return "e"
-            es = "%i"::Sy  => return "i"
+            es = "%pi"::SY => return "\pi"
+            es = "%e"::SY => return "e"
+            es = "%i"::SY  => return "i"
             str := string(es)
         else if string?(expr) then
             str := string(expr)

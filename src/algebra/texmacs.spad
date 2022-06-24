@@ -28,7 +28,7 @@ TexmacsFormat() : public == private where
   SI     ==> SingleInteger
   L      ==> List
   S      ==> String
-  Sy     ==> Symbol
+  SY     ==> Symbol
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
@@ -857,28 +857,28 @@ TexmacsFormat() : public == private where
     maxPrec       : I   := 1000000
     minPrec       : I   := 0
 
-    unaryOps      : L Sy := ["-"::Sy]$(L Sy)
+    unaryOps     : L(SY) := ["-"::SY]
     unaryPrecs    : L I := [710]$(L I)
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "="::Sy,
-                             "~="::Sy, "<"::Sy, "<="::Sy, ">"::Sy, ">="::Sy,
+    binaryOps   : L(SY) := ["+->"::SY, "|"::SY, "^"::SY, "/"::SY, "="::SY,
+                             "~="::SY, "<"::SY, "<="::SY, ">"::SY, ">="::SY,
                                'OVER, 'LET]
     binaryPrecs   : L I := [0, 0, 900, 700, 400,
                             400, 400, 400, 400, 400,
                               700, 125]$(L I)
 
-    naryOps       : L Sy := ["-"::Sy, "+"::Sy, "*"::Sy, ","::Sy, ";"::Sy,
+    naryOps     : L(SY) := ["-"::SY, "+"::SY, "*"::SY, ","::SY, ";"::SY,
                              'ROW, 'STRSEP, 'TENSOR]
     naryPrecs     : L I := [700, 700, 800, 110, 110,
                             0, 0, 850]$(L I)
-    naryNGOps     : L Sy := ['ROW]
+    naryNGOps   : L(SY) := ['ROW]
 
-    plexOps       : L Sy := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
+    plexOps     : L(SY) := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
     plexPrecs     : L I := [ 750, 750, 750, 750, 700]$(L I)
 
-    specialOps    : L Sy := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
+    specialOps  : L(SY) := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
                              'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
                              'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
                              'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME, _
@@ -887,10 +887,10 @@ TexmacsFormat() : public == private where
     -- the next two lists provide translations for some strings for
     -- which MML provides special macros.
 
-    specialStrings : L Sy :=
+    specialStrings : L(SY) :=
       ['cos, 'cot, 'csc, 'log, 'sec, 'sin, 'tan,
         'cosh, 'coth, 'csch, 'sech, 'sinh, 'tanh,
-          'acos, 'asin, 'atan, 'erf, "..."::Sy, "$"::Sy, 'infinity,
+          'acos, 'asin, 'atan, 'erf, "..."::SY, "$"::SY, 'infinity,
             'Gamma]
     specialStringsInMML : L S :=
       ["_"cos_"","_"cot_"","_"csc_"","_"log_"","_"sec_"","_"sin_"","_"tan_"",
@@ -904,16 +904,16 @@ TexmacsFormat() : public == private where
     group :          S -> S
     cork :           SI -> S
     utf2cork :       S -> S
-    formatBinary :   (Sy, L E, I) -> S
+    formatBinary :   (SY, L(E), I) -> S
     formatFunction : (E, L E, I) -> S
     formatIntBody :  (E, I) -> S
     formatMatrix :   L E -> S
-    formatNary :     (Sy, S, I, L E, I) -> S
-    formatNaryNoGroup : (Sy, S, I, L E, I) -> S
-    formatNullary :  Sy -> S
-    formatPlex :     (Sy, L E, I) -> S
-    formatSpecial :  (Sy, L E, I) -> S
-    formatUnary :    (Sy, E, I) -> S
+    formatNary :     (SY, S, I, L(E), I) -> S
+    formatNaryNoGroup : (SY, S, I, L(E), I) -> S
+    formatNullary :  SY -> S
+    formatPlex :     (SY, L(E), I) -> S
+    formatSpecial :  (SY, L(E), I) -> S
+    formatUnary :    (SY, E, I) -> S
     formatExpr :      (E, I) -> S
 
     formatZag :      L E -> S
@@ -995,13 +995,13 @@ TexmacsFormat() : public == private where
     parenthesize str ==
       concat [" _"(_" ",str," _")_" "]
 
-    formatSpecial(op : Sy, args : L E, prec : I) : S ==
+    formatSpecial(op : SY, args : L(E), prec : I) : S ==
         arg : E
         op = 'theMap => "(concat _"theMap(...)_")"
         op = 'AGGLST =>
-            formatNary(","::Sy, "", 0, args, prec)
+            formatNary(","::SY, "", 0, args, prec)
         op = 'AGGSET =>
-            formatNary(";"::Sy, "", 0, args, prec)
+            formatNary(";"::SY, "", 0, args, prec)
         op = 'TAG =>
             group concat [formatExpr(first args, prec),
                           " _"<rightarrow>_" ",
@@ -1114,7 +1114,7 @@ TexmacsFormat() : public == private where
       s := s"_") _"(_" "formatExpr(first args,minPrec)" _")_")"
 )endif
 
-    formatPlex(op : Sy, args : L E, prec : I) : S ==
+    formatPlex(op : SY, args : L(E), prec : I) : S ==
         p : I := position(op, plexOps)
         p < 1 => error "unknown plex op"
         opPrec := plexPrecs.p
@@ -1171,7 +1171,7 @@ TexmacsFormat() : public == private where
         -- {bvar or upper limit?}{{*}{integrand}{{CONCAT}{d}{fricas var}}}}
         -- the args list passed here consists of the rest of this list, i.e.
         -- starting at the NOTHING or ...
-        if has_op?(body, "*"::Sy) then
+        if has_op?(body, "*"::SY) then
             bodyL := arguments(body)
             if #bodyL = 2 and has_op?(bvar := bodyL(2), 'CONCAT) then
                 bvarL := arguments(bvar)
@@ -1193,52 +1193,53 @@ TexmacsFormat() : public == private where
     formatFunction(op : E, args : L E, prec : I) : S ==
         ops := formatExpr(op, minPrec)
         group concat [ops, " ", parenthesize
-                      formatNary(","::Sy, "", 0, args, minPrec)]
+                      formatNary(","::SY, "", 0, args, minPrec)]
 
-    formatNullary(op : Sy) ==
+    formatNullary(op : SY) ==
         op = 'NOTHING => "_"_""
         group concat ["_"", string(op), "()_""]
 
-    formatUnary(op : Sy, arg : E, prec : I) ==
+    formatUnary(op : SY, arg : E, prec : I) ==
         p : I := position(op, unaryOps)
         p < 1 => error "unknown unary op"
         opPrec := unaryPrecs.p
         s : S := concat ["(concat _"", string(op), "_" ",
                          formatExpr(arg, opPrec), ")"]
         opPrec < prec => group parenthesize s
-        op = "-"::Sy => s
+        op = "-"::SY => s
         group s
 
-    formatBinary(op : Sy, args : L E, prec : I) : S ==
+    formatBinary(op : SY, args : L(E), prec : I) : S ==
         p : I := position(op, binaryOps)
         p < 1 => error "unknown binary op"
         opPrec := binaryPrecs.p
         s1 := formatExpr(first args, opPrec)
         s2 := formatExpr(first rest args, opPrec)
         s : S :=
-            op = "^"::Sy    => concat ["(concat " s1 "(rsup " s2 "))"]
-            op = "/"::Sy     => concat ["(frac ",s1," ",s2,")"]
+            op = "^"::SY    => concat(["(concat " s1 "(rsup " s2 "))"])
+            op = "/"::SY    => concat(["(frac ",s1," ",s2,")"])
             op = 'OVER  => concat ["(frac ",s1," ",s2,")"]
             ops : S :=
-                op = "~="::Sy => "<ne>"
-                op = "<"::Sy => "<less>"
-                op = "<="::Sy => "<leq>"
-                op = ">"::Sy => "<gtr>"
-                op = ">="::Sy => "<geq>"
-                op = "+->"::Sy => "<mapsto>"
+                op = "~="::SY => "<ne>"
+                op = "<"::SY => "<less>"
+                op = "<="::SY => "<leq>"
+                op = ">"::SY => "<gtr>"
+                op = ">="::SY => "<geq>"
+                op = "+->"::SY => "<mapsto>"
                 -- FIXME how to do this properly ???
                 op = 'LET   => ":="
                 string(op)
             concat ["(concat ", s1, " _"", ops, "_" ", s2, ")"]
         group
-            op = "/"::Sy or op = 'OVER => s
+            op = "/"::SY or op = 'OVER => s
             opPrec < prec => parenthesize s
             s
 
-    formatNary(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+    formatNary(op : SY, sep : S, opprec : I, args : L(E), prec : I) : S ==
         group formatNaryNoGroup(op, sep, opprec, args, prec)
 
-    formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+    formatNaryNoGroup(op : SY, sep : S, opprec : I, args : L(E), prec : I
+                     ) : S ==
         empty?(args) => ""
         p : I := position(op, naryOps)
         p < 1 => error "unknown nary op"
@@ -1268,7 +1269,7 @@ TexmacsFormat() : public == private where
         -- to handle the whole continued fraction at once, i.e. we can't
         -- just look for, e.g., {{ZAG}{1}{6}}
         (#args > 1) and has_op?(args(2), 'ZAG) =>
-            op ~= "+"::Sy => error "ZAG in unexpected place"
+            op ~= "+"::SY => error "ZAG in unexpected place"
             has_op?(args(1), 'ZAG) => formatZag(args)
             concat [formatExpr(first args, minPrec), " _"+_" ",
                     formatZag(rest args)]
@@ -1291,7 +1292,7 @@ TexmacsFormat() : public == private where
       -- args will be a list of things like this {{ZAG}{1}{7}}, the ZAG
       -- must be there, the '1' and '7' could conceivably be more complex
       -- expressions
-      is_symbol?(first args, "..."::Symbol) => "<ldots>"
+      is_symbol?(first(args), "..."::SY) => "<ldots>"
       not(has_op?(first args, 'ZAG)) =>
           error "formatZag: Last argument in ZAG construct "
                  "has unknown operator"
@@ -1328,9 +1329,9 @@ TexmacsFormat() : public == private where
 
         if symbol?(expr) then
             es := symbol(expr)
-            es = "%pi"::Sy => return "<mathpi>"
-            es = "%e"::Sy => return "<mathe>"
-            es = "%i"::Sy  => return "<mathi>"
+            es = "%pi"::SY => return "<mathpi>"
+            es = "%e"::SY => return "<mathe>"
+            es = "%i"::SY  => return "<mathi>"
             es = 'infinity => return "<infty>"
             str := string(es)
         else if string?(expr) then

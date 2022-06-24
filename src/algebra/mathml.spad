@@ -302,7 +302,7 @@ MathMLFormat() : public == private where
   I      ==> Integer
   L      ==> List
   S      ==> String
-  Sy     ==> Symbol
+  SY     ==> Symbol
   US     ==> UniversalSegment(Integer)
 
   public == SetCategory with
@@ -338,28 +338,28 @@ MathMLFormat() : public == private where
     maxPrec       : I   := 1000000
     minPrec       : I   := 0
 
-    unaryOps      : L Sy := ["-"::Sy]$(L Sy)
+    unaryOps      : L(SY) := ["-"::SY]
     unaryPrecs    : L I := [710]$(L I)
 
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
-    binaryOps     : L Sy := ["+->"::Sy, "|"::Sy, "^"::Sy, "/"::Sy, "="::Sy,
-                             "~="::Sy, "<"::Sy, "<="::Sy, ">"::Sy, ">="::Sy,
+    binaryOps   : L(SY) := ["+->"::SY, "|"::SY, "^"::SY, "/"::SY, "="::SY,
+                             "~="::SY, "<"::SY, "<="::SY, ">"::SY, ">="::SY,
                                'OVER, 'LET]
     binaryPrecs   : L I := [0, 0, 900, 700, 400,
                             400, 400, 400, 400, 400,
                               700, 125]$(L I)
 
-    naryOps       : L Sy := ["-"::Sy, "+"::Sy, "*"::Sy, ","::Sy, ";"::Sy,
+    naryOps     : L(SY) := ["-"::SY, "+"::SY, "*"::SY, ","::SY, ";"::SY,
                              'ROW, 'STRSEP, 'TENSOR]
     naryPrecs     : L I := [700, 700, 800, 110, 110,
                             0, 0, 850]$(L I)
-    naryNGOps     : L Sy := ['ROW]
+    naryNGOps   : L(SY) := ['ROW]
 
-    plexOps       : L Sy := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
+    plexOps     : L(SY) := ['SIGMA, 'SIGMA2, 'PI, 'PI2, 'INTSIGN]
     plexPrecs     : L I := [ 750, 750, 750, 750, 700]$(L I)
 
-    specialOps    : L Sy := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
+    specialOps  : L(SY) := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
                              'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
                              'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
                              'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME, _
@@ -368,10 +368,10 @@ MathMLFormat() : public == private where
     -- the next two lists provide translations for some strings for
     -- which MML provides special macros.
 
-    specialStrings : L Sy :=
+    specialStrings : L(SY) :=
       ['cos, 'cot, 'csc, 'log, 'sec, 'sin, 'tan,
         'cosh, 'coth, 'csch, 'sech, 'sinh, 'tanh,
-          'acos, 'asin, 'atan, 'erf, "..."::Sy, "$"::Sy, 'infinity,
+          'acos, 'asin, 'atan, 'erf, "..."::SY, "$"::SY, 'infinity,
             'Gamma]
     specialStringsInMML : L S :=
       ["<mo>cos</mo>","<mo>cot</mo>","<mo>csc</mo>","<mo>log</mo>","<mo>sec</mo>","<mo>sin</mo>","<mo>tan</mo>",
@@ -392,15 +392,15 @@ MathMLFormat() : public == private where
     eltName :        (I, S) -> S
       ++ find name of mathml element starting at position i: I in string s: S
     group :          S -> S
-    formatBinary :   (Sy, L E, I) -> S
+    formatBinary :   (SY, L(E), I) -> S
     formatFunction : (E, L E, I) -> S
     formatMatrix :   L E -> S
-    formatNary :     (Sy, S, I, L E, I) -> S
-    formatNaryNoGroup : (Sy, S, I, L E, I) -> S
-    formatNullary :  Sy -> S
-    formatPlex :     (Sy, L E, I) -> S
-    formatSpecial :  (Sy, L E, I) -> S
-    formatUnary :    (Sy, E, I) -> S
+    formatNary :     (SY, S, I, L(E), I) -> S
+    formatNaryNoGroup : (SY, S, I, L(E), I) -> S
+    formatNullary :  SY -> S
+    formatPlex :     (SY, L(E), I) -> S
+    formatSpecial :  (SY, L(E), I) -> S
+    formatUnary :    (SY, E, I) -> S
     formatExpr :      (E, I) -> S
 
     formatPrime : (L E, I) -> S
@@ -587,13 +587,13 @@ MathMLFormat() : public == private where
     parenthesize str ==
       concat ["<mo>(</mo>",str,"<mo>)</mo>"]
 
-    formatSpecial(op : Sy, args : L E, prec : I) : S ==
+    formatSpecial(op : SY, args : L(E), prec : I) : S ==
         arg : E
         op = 'theMap => "<mtext>theMap(...)</mtext>"
         op = 'AGGLST =>
-            formatNary(","::Sy, "", 0, args, prec)
+            formatNary(","::SY, "", 0, args, prec)
         op = 'AGGSET =>
-            formatNary(";"::Sy, "", 0, args, prec)
+            formatNary(";"::SY, "", 0, args, prec)
         op = 'TAG =>
             group concat [formatExpr(first args, prec),
                           "<mo>&#x02192;</mo>",
@@ -705,7 +705,7 @@ MathMLFormat() : public == private where
                    arg2 := message(s)
         formatSpecial('SUPERSUB, [first args, empty()$E, arg2], prec)
 
-    formatPlex(op : Sy, args : L E, prec : I) : S ==
+    formatPlex(op : SY, args : L(E), prec : I) : S ==
         p : I := position(op, plexOps)
         p < 1 => error "unknown plex op"
         opPrec := plexPrecs.p
@@ -767,56 +767,57 @@ MathMLFormat() : public == private where
     formatFunction(op : E, args : L E, prec : I) : S ==
         ops := formatExpr(op, minPrec)
         group concat ["<mo>", ops, "</mo>",
-                      parenthesize formatNary(","::Sy, "", 0, args, minPrec)]
+                      parenthesize formatNary(","::SY, "", 0, args, minPrec)]
 
-    formatNullary(op : Sy) ==
+    formatNullary(op : SY) ==
         op = 'NOTHING => ""
         group concat ["<mo>", string(op), "</mo><mo>(</mo><mo>)</mo>"]
 
-    formatUnary(op : Sy, arg : E, prec : I) ==
+    formatUnary(op : SY, arg : E, prec : I) ==
         p : I := position(op, unaryOps)
         p < 1 => error "unknown unary op"
         opPrec := unaryPrecs.p
         s : S := concat ["<mo>", string(op), "</mo>", formatExpr(arg, opPrec)]
         opPrec < prec => group parenthesize s
-        op = "-"::Sy => s
+        op = "-"::SY => s
         group s
 
-    formatBinary(op : Sy, args : L E, prec : I) : S ==
+    formatBinary(op : SY, args : L(E), prec : I) : S ==
         p : I := position(op, binaryOps)
         p < 1 => error "unknown binary op"
         opPrec := binaryPrecs.p
         s1 := formatExpr(first args, opPrec)
         s2 := formatExpr(first rest args, opPrec)
         s : S :=
-            op = "^"::Sy => concat ["<msup><mrow>", s1, "</mrow><mrow>",
+            op = "^"::SY => concat ["<msup><mrow>", s1, "</mrow><mrow>",
                                     s2, "</mrow></msup>"]
-            op = "/"::Sy => concat ["<mfrac><mrow>", s1, "</mrow><mrow>",
+            op = "/"::SY => concat ["<mfrac><mrow>", s1, "</mrow><mrow>",
                                     s2, "</mrow></mfrac>"]
             op = 'OVER => concat ["<mfrac><mrow>", s1, "</mrow><mrow>",
                                   s2, "</mrow></mfrac>"]
             ops : S :=
                 op = 'LET => ":="
-                op = "<"::Sy => "&lt;"
-                op = "<="::Sy => "&lt;="
+                op = "<"::SY => "&lt;"
+                op = "<="::SY => "&lt;="
                 string(op)
             concat ["<mrow>", s1, "</mrow><mo>", ops, "</mo><mrow>",
                     s2, "</mrow>"]
         group
-            op = "/"::Sy or op = 'OVER => s
+            op = "/"::SY or op = 'OVER => s
             opPrec < prec => parenthesize s
             s
 
-    formatNary(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+    formatNary(op : SY, sep : S, opprec : I, args : L(E), prec : I) : S ==
         group formatNaryNoGroup(op, sep, opprec, args, prec)
 
-    formatNaryNoGroup(op : Sy, sep : S, opprec : I, args : L E, prec : I) : S ==
+    formatNaryNoGroup(op : SY, sep : S, opprec : I, args : L(E), prec : I
+                     ) : S ==
         empty?(args) => ""
         p : I := position(op, naryOps)
         p < 1 => error "unknown nary op"
         ops : S :=
             op = 'STRSEP => sep
-            op = "*"::Sy   => "<mo>&#x02062;</mo>"
+            op = "*"::SY   => "<mo>&#x02062;</mo>"
             op = 'ROW      => "</mtd><mtd>"
             op = 'TENSOR => "<mo>&#x02297;</mo>"
             concat ["<mo>", string(op), "</mo>"]
@@ -855,9 +856,9 @@ MathMLFormat() : public == private where
             else concat ["<mn>", str, "</mn>"]
         if symbol?(expr) then
             es := symbol(expr)
-            es = "%pi"::Sy => return "<mi>&#x003C0;</mi>"
-            es = "%e"::Sy => return "<mi>&#x02147;</mi>"
-            es = "%i"::Sy  => return "<mi>&#x02148;</mi>"
+            es = "%pi"::SY => return "<mi>&#x003C0;</mi>"
+            es = "%e"::SY => return "<mi>&#x02147;</mi>"
+            es = "%i"::SY  => return "<mi>&#x02148;</mi>"
             str := string(es)
         else if string?(expr) then
             str := string(expr)
