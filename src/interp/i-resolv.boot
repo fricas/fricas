@@ -193,6 +193,13 @@ resolveTTSpecial(t1,t2) ==
   t1 = '(AlgebraicNumber) and t2 is ['Complex,.] =>
     resolveTT1('(Expression (Integer)), t2)
 
+  t1 = ['AlgebraicNumber] and t2 is ['Polynomial, ['Fraction, ['Integer]]] =>
+      ['Polynomial, ['AlgebraicNumber]]
+
+  t1 = ['AlgebraicNumber] and 
+    t2 is ['Fraction, ['Polynomial, ['Fraction, ['Integer]]]] =>
+        ['Fraction, ['Polynomial, ['AlgebraicNumber]]]
+
   t1 is ['SimpleAlgebraicExtension,F,Rep,poly] =>
     t2 = Rep => t1
     t2 is ['UnivariatePolynomial,x,R] and (t3 := resolveTT(t1, R)) =>
