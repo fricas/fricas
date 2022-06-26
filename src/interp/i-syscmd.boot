@@ -485,7 +485,7 @@ compileAsharpCmd1 args ==
         fullopt := selectOptionLC(optname,optList,nil)
 
         fullopt = 'new       => nil
-        fullopt = 'old  => error "Internal error: compileAsharpCmd got )old"
+        fullopt = 'old  => error '"Internal error: compileAsharpCmd got )old"
         fullopt = 'quiet     => beQuiet := true
         fullopt = 'noquiet   => beQuiet := false
 
@@ -776,7 +776,7 @@ displayMacros names ==
             first := NIL
         displayParserMacro macro
     macro in imacs => 'iterate
-    sayBrightly (["   ",'%b, macro, '%d, " is not a known FriCAS macro."])
+    sayBrightly (['"   ",'%b, macro, '%d, '" is not a known FriCAS macro."])
 
   -- now system ones
 
@@ -817,7 +817,7 @@ displayWorkspaceNames() ==
   sayMessage '"Names of User-Defined Objects in the Workspace:"
   names := MSORT append(getWorkspaceNames(),pmacs)
   if null names
-    then sayBrightly "   * None *"
+    then sayBrightly '"   * None *"
     else sayAsManyPerLineAsPossible [object2String x for x in names]
   imacs := SETDIFFERENCE(imacs,pmacs)
   if imacs then
@@ -941,23 +941,23 @@ displayModemap(v,val,giveVariableIfNil) ==
       [[local,:signature],fn,:.]:= mm
       local='interpOnly => nil
       varPart:= (giveVariableIfNil => nil; ['" of",:bright v])
-      prefix:= ["   Compiled function type",:varPart,": "]
+      prefix:= ['"   Compiled function type",:varPart,'": "]
       sayBrightly concat(prefix,formatSignature signature)
 
 displayMode(v,mode,giveVariableIfNil) ==
   null mode => nil
-  varPart:= (giveVariableIfNil => nil; [" of",:bright fixObjectForPrinting v])
-  sayBrightly concat("   Declared type or mode",
-    varPart,":   ",prefix2String mode)
+  varPart:= (giveVariableIfNil => nil; ['" of",:bright fixObjectForPrinting v])
+  sayBrightly concat('"   Declared type or mode",
+    varPart,'":   ",prefix2String mode)
 
 displayCondition(v,condition,giveVariableIfNil) ==
-  varPart:= (giveVariableIfNil => nil; [" of",:bright v])
+  varPart:= (giveVariableIfNil => nil; ['" of",:bright v])
   condPart:= condition or 'true
-  sayBrightly concat("   condition",varPart,":  ",pred2English condPart)
+  sayBrightly concat('"   condition",varPart,'":  ",pred2English condPart)
 
 getAndSay(v,prop) ==
-  val:= getI(v,prop) => sayMSG ["    ",val,'%l]
-  sayMSG ["    none",'%l]
+  val:= getI(v,prop) => sayMSG ['"    ",val,'%l]
+  sayMSG ['"    none",'%l]
 
 displayType(op, u, omitVariableNameIfTrue) ==
   null u =>
@@ -970,7 +970,7 @@ displayType(op, u, omitVariableNameIfTrue) ==
   NIL
 
 displayValue(op, u, omitVariableNameIfTrue) ==
-  null u => sayMSG ["   Value of ", fixObjectForPrinting PNAME op,
+  null u => sayMSG ['"   Value of ", fixObjectForPrinting PNAME op,
                     '":  (none)"]
   expr := objValUnwrap(u)
   expr is [op1, :.] and (op1 = 'SPADMAP) =>
@@ -1021,15 +1021,15 @@ helpSpad2Cmd args ==
   -- try to use new stuff first
   if newHelpSpad2Cmd(args) then return nil
 
-  sayBrightly "Available help topics for system commands are:"
-  sayBrightly ""
-  sayBrightly " boot   cd     clear    close     compile   display"
-  sayBrightly " edit   fin    frame    help      history   library"
-  sayBrightly " lisp   load   ltrace   pquit     quit      read"
-  sayBrightly " set    show   spool    synonym   system    trace"
-  sayBrightly " undo   what"
-  sayBrightly ""
-  sayBrightly "Issue _")help help_" for more information about the help command."
+  sayBrightly '"Available help topics for system commands are:"
+  sayBrightly '""
+  sayBrightly '" boot   cd     clear    close     compile   display"
+  sayBrightly '" edit   fin    frame    help      history   library"
+  sayBrightly '" lisp   load   ltrace   pquit     quit      read"
+  sayBrightly '" set    show   spool    synonym   system    trace"
+  sayBrightly '" undo   what"
+  sayBrightly '""
+  sayBrightly '"Issue _")help help_" for more information about the help command."
 
   nil
 
@@ -2101,16 +2101,16 @@ loadSpad2Cmd args ==
     NIL
 
 reportCount () ==
-  centerAndHighlight(" Current Count Settings ",$LINELENGTH,specialChar 'hbar)
-  SAY " "
-  sayBrightly [:bright " cache",fillerSpaces(30,'".")," ",$cacheCount]
+  centerAndHighlight('" Current Count Settings ",$LINELENGTH,specialChar 'hbar)
+  SAY '" "
+  sayBrightly [:bright '" cache",fillerSpaces(30,'"."),'" ",$cacheCount]
   if $cacheAlist then
     for [a,:b] in $cacheAlist repeat
       aPart:= linearFormatName a
       n:= sayBrightlyLength aPart
-      sayBrightly concat("     ",aPart," ",fillerSpaces(32-n,'".")," ",b)
-  SAY " "
-  sayBrightly [:bright " stream",fillerSpaces(29,'".")," ",$streamCount]
+      sayBrightly concat('"     ",aPart,'" ",fillerSpaces(32-n,'"."),'" ",b)
+  SAY '" "
+  sayBrightly [:bright '" stream",fillerSpaces(29,'"."),'" ",$streamCount]
 
 --% )nopiles
 
@@ -2119,12 +2119,12 @@ nopiles l == nopilesSpad2Cmd l
 nopilesSpad2Cmd l ==
     null l => setNopiles ("{")
     #l > 1 =>
-       SAY "nopiles takes a single argument"
+       SAY '"nopiles takes a single argument"
     #l = 0 => setNopiles ("{")
     l is [opt] =>
        opt = 'brace => setNopiles ("{")
        opt = 'parenthesis => setNopiles ("(")
-       SAY "nopiles only takes 'brace' or 'parenthesis' as an argument"
+       SAY '"nopiles only takes 'brace' or 'parenthesis' as an argument"
 
 
 --% )quit
@@ -2241,7 +2241,7 @@ reportOperations(oldArg,u) ==
   $resolve_level : local := 15
   null u => nil
   u = $quadSymbol =>
-     sayBrightly ['"   mode denotes", :bright '"any", "type"]
+     sayBrightly ['"   mode denotes", :bright '"any", '"type"]
   u = "%" =>
     sayKeyedMsg("S2IZ0063",NIL)
     sayKeyedMsg("S2IZ0064",NIL)
@@ -2519,7 +2519,7 @@ diffAlist(new,old) ==
 
 reportUndo acc ==
   for [name,:proplist] in acc repeat
-    sayBrightly STRCONC("Properties of ",PNAME name,'" ::")
+    sayBrightly STRCONC('"Properties of ",PNAME name,'" ::")
     curproplist := LASSOC(name,CAAR $InteractiveFrame)
     for [prop,:value] in proplist repeat
       sayBrightlyNT ['"  ",prop,'" was: "]
@@ -2718,7 +2718,7 @@ apropos l ==
 
 
 printSynonyms(patterns) ==
-  centerAndHighlight("System Command Synonyms",$LINELENGTH,specialChar 'hbar)
+  centerAndHighlight('"System Command Synonyms",$LINELENGTH,specialChar 'hbar)
   ls := filterListOfStringsWithFn(patterns, [[STRINGIMAGE a,:b]
     for [a,:b] in synonymsForUserLevel $CommandSynonymAlist],
       function first)
@@ -2745,7 +2745,7 @@ printLabelledList(ls,label1,label2,prefix,patterns) ==
   sayBrightly '""
 
 whatCommands(patterns) ==
-  label := STRCONC("System Commands for User Level: ",
+  label := STRCONC('"System Commands for User Level: ",
     STRINGIMAGE $UserLevel)
   centerAndHighlight(label,$LINELENGTH,specialChar 'hbar)
   l := filterListOfStrings(patterns,
@@ -2758,7 +2758,7 @@ whatCommands(patterns) ==
       '%l,'"   ",'%b,:blankList patterns,'%d]
   if l then
     sayAsManyPerLineAsPossible l
-    SAY " "
+    SAY '" "
   patterns => nil  -- don't be so verbose
   sayKeyedMsg("S2IZ0046",NIL)
   nil

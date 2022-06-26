@@ -179,7 +179,7 @@ bcCreateVariableString(i) ==
    STRCONC('"x",STRINGIMAGE i)
 
 bcMakeUnknowns(number)==
-   concatenateStringList([STRCONC(bcCreateVariableString(i)," ")
+   concatenateStringList([STRCONC(bcCreateVariableString(i),'" ")
                             for i in 1..number])
 
 bcMakeEquations(i,number)==

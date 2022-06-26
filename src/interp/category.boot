@@ -36,23 +36,23 @@
 Category() == nil --sorry to say, this hack is needed by isCategoryType
 
 CategoryPrint(D) ==
-  SAY "--------------------------------------"
-  SAY "Name (and arguments) of category:"
+  SAY '"--------------------------------------"
+  SAY '"Name (and arguments) of category:"
   PRETTYPRINT D.(0)
-  SAY "operations:"
+  SAY '"operations:"
   PRETTYPRINT D.(1)
-  SAY "attributes:"
+  SAY '"attributes:"
   PRETTYPRINT D.2
-  SAY "This is a sub-category of"
+  SAY '"This is a sub-category of"
   PRETTYPRINT first D.4
   for u in CADR D.4 repeat
-    SAY("This has an alternate view: slot ",rest u," corresponds to ",first u)
+    SAY('"This has an alternate view: slot ",rest u,'" corresponds to ",first u)
   for u in CADDR D.4 repeat
-    SAY("This has a local domain: slot ",rest u," corresponds to ",first u)
+    SAY('"This has a local domain: slot ",rest u,'" corresponds to ",first u)
   for j in 6..MAXINDEX D repeat
     u:= D.j
-    null u => SAY "another domain"
-    atom first u => SAY("Alternate View corresponding to: ",u)
+    null u => SAY '"another domain"
+    atom first u => SAY('"Alternate View corresponding to: ",u)
     PRETTYPRINT u
 
 -- create a new category vector

@@ -36,7 +36,7 @@
 bcDrawIt2(ind,a,b) == STRCONC('"{}",ind,'"=",a,'"{}..",b,'"{}")
 
 bcIndefiniteIntegrate() ==
-  htInitPage("Indefinite Integration Basic Command",nil)
+  htInitPage('"Indefinite Integration Basic Command",nil)
   htMakePage '(
      (domainConditions
        (isDomain EM $EmptyMode)
@@ -63,7 +63,7 @@ bcIndefiniteIntegrateGen htPage ==
 
 
 bcDefiniteIntegrate() ==
-  htInitPage("Definite Integration Basic Command",nil)
+  htInitPage('"Definite Integration Basic Command",nil)
   htMakePage '(
      (domainConditions
        (isDomain EM $EmptyMode)
@@ -117,7 +117,7 @@ bcDefiniteIntegrateGen htPage ==
    STRCONC('"integrate(",integrand,'",",varpart,'")")
 
 bcSum() ==
-  htInitPage("Sum Basic Command",nil)
+  htInitPage('"Sum Basic Command",nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -154,7 +154,7 @@ bcSumGen htPage ==
   bcGen STRCONC('"sum(",mand,'",",index,'" = ",first,'"..",last,'")")
 
 bcProduct() ==
-  htInitPage("Product Basic Command",nil)
+  htInitPage('"Product Basic Command",nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -179,7 +179,7 @@ bcProductGen htPage ==
   bcGen STRCONC('"product(",mand,'",",index,'",",first,'",",last,'")")
 
 bcDifferentiate() ==
-  htInitPage("Differentiate Basic Command",nil)
+  htInitPage('"Differentiate Basic Command",nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)

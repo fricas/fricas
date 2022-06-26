@@ -166,7 +166,7 @@ optDeltaEntry(op, sig, dc, eltOrConst, e) ==
           if not STRINGP var and (n := countXLAM(var, rhs)) ~= 1 then
               -- in current code base there are no cases like "f(x, y) == x"
               -- so throw an error if such case emerges.
-              stackAndThrow [op, " can not be properly inline optimized"]
+              stackAndThrow [op, '" can not be properly inline optimized"]
               return nil
   spadreplace
 
@@ -444,7 +444,7 @@ simplify_self_preds1(catvecListMaker, condCats) ==
     sub_data1 := [false, good_preds]
     condCats := boolean_subst(condCats, catvecListMaker, sub_data1)
     if not(first(sub_data1)) then
-        userError(["simplify_self_preds1: cannot simplify", $op, self_preds])
+        userError(['"simplify_self_preds1: cannot simplify", $op, self_preds])
     [condCats, first(sub_data1)]
 
 simplify_self_preds(catvecListMaker, condCats) ==
@@ -705,7 +705,7 @@ NRTsubstDelta(initSig) ==
           t = 5 => $NRTaddForm
           u:= $NRTdeltaList.($NRTdeltaLength+5-t)
           first u = 'domain => CADR u
-          error "bad $NRTdeltaList entry"
+          error '"bad $NRTdeltaList entry"
         MEMQ(first t, '(Mapping Union Record _:)) =>
            [first t, :[replaceSlotTypes(x) for x in rest t]]
         t

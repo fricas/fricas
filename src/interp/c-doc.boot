@@ -695,7 +695,7 @@ checkDecorate u ==
         if spadflag = count then spadflag := false
       else if not mathSymbolsOk and member(x,'("+" "*" "=" "==" "->")) then
         if $checkingXmptex? then
-          checkDocError ["Symbol ",x,'" appearing outside \spad{}"]
+          checkDocError ['"Symbol ",x,'" appearing outside \spad{}"]
 
     acc :=
       x = '"\end{verbatim}" =>
@@ -945,7 +945,7 @@ checkBeginEnd u ==
           and not
             (substring?('"\radiobox",x,0) or substring?('"\inputbox",x,0))=>
              --allow 0 argument guys to pass through
-              checkDocError ["Unexpected HT command: ",x]
+              checkDocError ['"Unexpected HT command: ",x]
       x = '"\beginitems" =>
         beginEndStack := ["items",:beginEndStack]
       x = '"\begin" =>
@@ -1169,7 +1169,7 @@ checkDecorateForHt u ==
         if spadflag = count then spadflag := false
       else if not spadflag and member(x,'("+" "*" "=" "==" "->")) then
         if $checkingXmptex? then
-          checkDocError ["Symbol ",x,'" appearing outside \spad{}"]
+          checkDocError ['"Symbol ",x,'" appearing outside \spad{}"]
       x = '"$" or x = '"%" => checkDocError ['"Unescaped ",x]
     u := rest u
   u

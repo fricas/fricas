@@ -296,7 +296,7 @@ axFormatType(typeform) ==
                   ['PretendTo, axFormatType first args, axFormatType arg1type],
                      :[axFormatType a for a in rest args]]
       ['Apply, op, :[axFormatType a for a in args]]
-  error "unknown entry type"
+  error '"unknown entry type"
 
 pretendTo(a, t) == ['PretendTo, axFormatType a, axFormatType t]
 
@@ -344,7 +344,7 @@ axOpTran(name) ==
       name
    opOf name = 'Zero => '_0
    opOf name = 'One => '_1
-   error "bad op name"
+   error '"bad op name"
 
 axFormatOpSig(name, [result,:argtypes]) ==
    ['Declare, axOpTran name,
@@ -373,7 +373,7 @@ axFormatPred pred ==
    op = 'or  => ['Or,:axArglist]
    op = 'NOT => ['Not,:axArglist]
    op = 'not => ['Not,:axArglist]
-   error LIST("unknown predicate", pred)
+   error LIST('"unknown predicate", pred)
 
 
 -- This function is where we grow $augmentedType.
@@ -448,7 +448,7 @@ axFormatOp op ==
 
 addDefaults(catname, withform) ==
   withform isnt ['With, joins, ['Sequence,: oplist]] =>
-     error "bad category body"
+     error '"bad category body"
   null(defaults := getDefaultingOps catname) => withform
   defaultdefs := [decl for decl in defaults]
   ['With, joins,
@@ -456,7 +456,7 @@ addDefaults(catname, withform) ==
 
 makeDefaultDef(decl) ==
   decl isnt ['Declare, op, type] =>
-       error LIST("bad default definition", decl)
+       error LIST('"bad default definition", decl)
   $defaultFlag := true
   type is ['Apply, "->", args, result] =>
        ['Define, decl, ['Lambda, makeDefaultArgs args, result,
@@ -464,7 +464,7 @@ makeDefaultDef(decl) ==
   ['Define, ['Declare, op, type], 'dummyDefault]
 
 makeDefaultArgs args ==
-  args isnt ['Comma,:argl] => error "bad default argument list"
+  args isnt ['Comma,:argl] => error '"bad default argument list"
   ['Comma,: [['Declare,v,t] for v in $TriangleVariableList for t in argl]]
 
 getDefaultingOps catname ==

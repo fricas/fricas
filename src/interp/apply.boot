@@ -203,7 +203,7 @@ compMapCond(op, mc, bindings, fnsel, e) ==
 
 compMapCond'([cexpr,fnexpr], op, dc, bindings, e) ==
   compMapCond''(cexpr, dc, e) => compMapCondFun(fnexpr,op,dc,bindings)
-  stackMessage ["not known that",'%b,dc,'%d,"has",'%b,cexpr,'%d]
+  stackMessage ['"not known that",'%b,dc,'%d,'"has",'%b,cexpr,'%d]
 
 compMapCond''(cexpr, dc, e) ==
   cexpr=true => true

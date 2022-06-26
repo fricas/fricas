@@ -223,9 +223,9 @@ displaySetVariableSettings(setTree,label) ==
   centerAndHighlight(STRCONC('"Current Values of ",label,
     '" Variables"),$LINELENGTH," ")
   TERPRI()
-  sayBrightly ["Variable     ",
-               "Description                                ",
-                 "Current Value"]
+  sayBrightly ['"Variable     ",
+               '"Description                                ",
+                 '"Current Value"]
   SAY fillerSpaces($LINELENGTH,specialChar 'hbar)
   subtree := nil
   for setData in setTree repeat
@@ -332,7 +332,7 @@ setExpose arg ==
 
 setExposeAdd arg ==
   (null arg) =>
-    centerAndHighlight ("The add Option",$LINELENGTH,specialChar 'hbar)
+    centerAndHighlight ('"The add Option",$LINELENGTH,specialChar 'hbar)
     --  give msg about exposure groups
     displayExposedGroups()
     --  give msg about explicitly exposed constructors
@@ -349,7 +349,7 @@ setExposeAdd arg ==
 
 setExposeAddGroup arg ==
   (null arg) =>
-    centerAndHighlight("The group Option",$LINELENGTH,specialChar 'hbar)
+    centerAndHighlight('"The group Option",$LINELENGTH,specialChar 'hbar)
     --  give msg about exposure groups
     displayExposedGroups()
     sayMSG '" "
@@ -379,7 +379,7 @@ setExposeAddGroup arg ==
 
 setExposeAddConstr arg ==
   (null arg) =>
-    centerAndHighlight ("The constructor Option",$LINELENGTH,
+    centerAndHighlight ('"The constructor Option",$LINELENGTH,
       specialChar 'hbar)
     --  give msg about explicitly exposed constructors
     displayExposedConstructors()
@@ -400,7 +400,7 @@ setExposeAddConstr arg ==
 
 setExposeDrop arg ==
   (null arg) =>
-    centerAndHighlight ("The drop Option",$LINELENGTH,specialChar 'hbar)
+    centerAndHighlight ('"The drop Option",$LINELENGTH,specialChar 'hbar)
     --  give msg about explicitly hidden constructors
     displayHiddenConstructors()
     sayMSG '" "
@@ -414,7 +414,7 @@ setExposeDrop arg ==
 
 setExposeDropGroup arg ==
   (null arg) =>
-    centerAndHighlight ("The group Option",$LINELENGTH,specialChar 'hbar)
+    centerAndHighlight ('"The group Option",$LINELENGTH,specialChar 'hbar)
     sayKeyedMsg("S2IZ0049L",NIL)
     sayMSG '" "
     displayExposedGroups()
@@ -440,7 +440,7 @@ setExposeDropGroup arg ==
 
 setExposeDropConstr arg ==
   (null arg) =>
-    centerAndHighlight ("The constructor Option",$LINELENGTH,
+    centerAndHighlight ('"The constructor Option",$LINELENGTH,
       specialChar 'hbar)
     sayKeyedMsg("S2IZ0049N",NIL)
     sayMSG '" "
@@ -515,18 +515,18 @@ sayAllCacheCounts () ==
 
 sayCacheCount(fn,n) ==
   prefix:=
-    fn => ["function",:bright linearFormatName fn]
-    n = 0 => ["interpreter functions "]
-    ["In general, interpreter functions "]
+    fn => ['"function",:bright linearFormatName fn]
+    n = 0 => ['"interpreter functions "]
+    ['"In general, interpreter functions "]
   n = 0 =>
     fn =>
       sayBrightly ['"   Caching for ",:prefix,
         '"is turned off"]
     sayBrightly '" In general, functions will cache no returned values."
   phrase:=
-    n="all" => [:bright "all","values."]
-    n=1 => [" only the last value."]
-    [" the last",:bright n,"values."]
+    n="all" => [:bright '"all",'"values."]
+    n=1 => ['" only the last value."]
+    ['" the last",:bright n,'"values."]
   sayBrightly ['"   ",:prefix,'"will cache",:phrase]
 
 setHistory arg ==

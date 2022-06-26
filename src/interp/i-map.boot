@@ -369,7 +369,7 @@ clearDep1(x,toDoList,doneList,depList) ==
 
 displayRule(op,rule) ==
   null rule => nil
-  mathprint ["CONCAT", "Definition:   ", outputMapTran(op, rule)]
+  mathprint ['"CONCAT", '"Definition:   ", outputMapTran(op, rule)]
   nil
 
 outputFormat(x,m) ==

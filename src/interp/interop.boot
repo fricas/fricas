@@ -56,7 +56,7 @@ DNameTupleID  := 2
 DNameOtherID  := 3
 
 DNameToSExpr1 dname ==
-  NULL dname => error "unexpected domain name"
+  NULL dname => error '"unexpected domain name"
   first dname = DNameStringID =>
     INTERN(CompStrToString rest dname)
   name0 := DNameToSExpr1 first rest dname
@@ -355,7 +355,7 @@ basicLookup(op,sig,domain,dollar) ==
      VECP dollar => hashType(dollar.0,0)
      hashType(dollar,0)
   box := [nil]
-  not VECP(dispatch := first domain) => error "bad domain format"
+  not VECP(dispatch := first domain) => error '"bad domain format"
   lookupFun := dispatch.3
   dispatch.0 = 0 =>  -- new compiler domain object
        hashSig :=
@@ -393,7 +393,7 @@ basicLookup(op,sig,domain,dollar) ==
 
 basicLookupCheckDefaults(op,sig,domain,dollar) ==
   box := [nil]
-  not VECP(dispatch := first dollar) => error "bad domain format"
+  not VECP(dispatch := first dollar) => error '"bad domain format"
   lookupFun := dispatch.3
   dispatch.0 = 0  =>  -- new compiler domain object
        hashPercent :=
@@ -510,7 +510,7 @@ hashNewLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
   success := false
   if $monitorNewWorld then
     sayLooking(concat('"---->",form2String devaluate domain,
-      '"----> searching op table for:","%l","  "),op,sig,dollar)
+      '"----> searching op table for:","%l",'"  "),op,sig,dollar)
   someMatch := false
   numvec := getDomainByteVector domain
   predvec := domain.3

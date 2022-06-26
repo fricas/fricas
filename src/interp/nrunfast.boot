@@ -266,7 +266,7 @@ lazyMatch(source,lazyt,dollar,domain) ==
       MEMQ(op,'(Union Mapping QUOTE)) =>
          and/[lazyMatchArg(s,a,dollar,domain) for s in sargl for a in argl]
       coSig := GETDATABASE(op,'COSIG)
-      NULL coSig => error ["bad Constructor op", op]
+      NULL coSig => error ['"bad Constructor op", op]
       and/[lazyMatchArg2(s,a,dollar,domain,flag)
            for s in sargl for a in argl for flag in rest coSig]
   STRINGP source and lazyt is ['QUOTE,=source] => true
@@ -344,7 +344,7 @@ newExpandLocalTypeForm([functorName,:argl],dollar,domain) ==
           [functorName,:[newExpandLocalTypeArgs(a,dollar,domain,true) for a in argl]]
   functorName = 'QUOTE => [functorName,:argl]
   coSig := GETDATABASE(functorName,'COSIG)
-  NULL coSig => error ["bad functorName", functorName]
+  NULL coSig => error ['"bad functorName", functorName]
   [functorName,:[newExpandLocalTypeArgs(a,dollar,domain,flag)
         for a in argl for flag in rest coSig]]
 

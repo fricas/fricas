@@ -38,7 +38,7 @@ mkList u ==
 mkOperatorEntry(opSig is [op,sig,:flag],pred,count) ==
   null flag => [opSig,pred,["ELT","$",count]]
   first flag="constant" => [[op,sig],pred,["CONST","$",count]]
-  systemError ["unknown variable mode: ",flag]
+  systemError ['"unknown variable mode: ",flag]
 
 --% Code for encoding function names inside package or domain
 

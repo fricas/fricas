@@ -108,7 +108,7 @@ parseTran x ==
   [op, :argl] := x
   u := (op is ['Sel, ., x] => x; op)
   SYMBOLP(u) and (fn := GET(u, 'parseTran)) =>
-      if op ~= u then SAY(["parseTran op ~= u", op, u])
+      if op ~= u then SAY(['"parseTran op ~= u", op, u])
       FUNCALL(fn, argl)
   [parseTran op, :parseTranList argl]
 
