@@ -26,8 +26,7 @@ int main(int argc, const char *argv[]) {
 
   setenv("FRICAS_PREFIX", CFStringGetCStringPtr(path, encoding), 1);
 
-  system("open -a Terminal.app"
-         " -n --env FRICAS_PREFIX=\"${FRICAS_PREFIX}\""
+  system("open -a Terminal.app -n"
          " \"${FRICAS_PREFIX}/bin/fricas\"");
   return 0;
 }
