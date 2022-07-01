@@ -6,21 +6,20 @@ DATABASES=$(addprefix $(fricas_targetdir)/algebra/, $(DATABASES_SHORT))
 
 subdir = src/etc/
 
-.PHONY: all all-asq
+.PHONY: all
 all: all-ax
 
 # If the directory ${PREGENERATED}/target/algebra exists, there is nothing
 # to do since this directory will have been copied already.
 # Note that the value of ${PREGENERATED} must be an absolute directory.
-all-ax all-asq: stamp stamp-databases
+all-ax: stamp stamp-databases
 	@echo finished $(builddir)
 
 stamp-databases:
 	test -d ${PREGENERATED}/target/algebra && $(STAMP) stamp-databases \
           || ${MAKE} do-stamp-databases
 
-stamp: $(fricas_target_bindir)/asq$(EXEEXT) \
-		$(fricas_target_libdir)/summary \
+stamp: $(fricas_target_libdir)/summary \
 		$(fricas_target_libdir)/copyright \
 		$(fricas_target_bindir)/fricas \
                 $(fricas_target_libdir)/SPADEDIT \
@@ -51,12 +50,6 @@ do-stamp-databases: ../algebra/*.NRLIB/*.$(FASLEXT)
                    $(fricas_targetdir)/algebra/DEPENDENTS.DAASE
 	-rm -f stamp-databases
 	$(STAMP) stamp-databases
-
-bin_PROGRAMS = asq$(EXEEXT)
-
-$(fricas_target_bindir)/asq$(EXEEXT): $(srcdir)/asq.c $(fricas_c_macros)
-	@echo 4 making $@ from $<
-	${CC} ${CCF} $(fricas_includes) -o $@ $<
 
 $(fricas_target_libdir)/summary: $(srcdir)/summary
 	cp $< $@
@@ -90,7 +83,6 @@ mostlyclean-local:
 clean-local: mostlyclean-local
 	-rm -f $(fricas_target_libdir)/summary
 	-rm -f $(fricas_target_libdir)/copyright
-	-rm -f $(fricas_target_bindir)/asq$(EXEEXT)
 	-rm -f gen-cpl.in gen-cpl.$(FASLEXT)
 
 distclean-local: clean-local
