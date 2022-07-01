@@ -5089,12 +5089,13 @@ done
         fricas_c_runtime_extra="-lwsock32"
         ;;
     *)
-        for ac_header in sys/socket.h
+        for ac_header in sys/socket.h sys/un.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "sys/socket.h" "ac_cv_header_sys_socket_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_socket_h" = xyes; then :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_SYS_SOCKET_H 1
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
  fricas_host_has_socket=yes
 fi
@@ -5168,6 +5169,29 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
 $as_echo "#define HAVE_EPIPE 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/socket.h>
+#include <sys/un.h>
+
+int
+main ()
+{
+
+struct sockaddr_un uaddr;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_SOCKADDR_UN 1" >>confdefs.h
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
