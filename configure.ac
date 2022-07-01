@@ -555,7 +555,7 @@ case $host in
         fricas_c_runtime_extra="-lwsock32"
         ;;
     *)
-        AC_CHECK_HEADERS([sys/socket.h],
+        AC_CHECK_HEADERS([sys/socket.h sys/un.h],
                          [fricas_host_has_socket=yes],
                          [])
         ;;
@@ -583,6 +583,14 @@ AC_TRY_COMPILE([
 int code = EPIPE;
    ],
    [AC_DEFINE([HAVE_EPIPE], [1], [Host has EPIPE])],[])
+
+AC_TRY_COMPILE([
+#include <sys/socket.h>
+#include <sys/un.h>
+   ], [
+struct sockaddr_un uaddr;
+   ],
+   [AC_DEFINE([HAVE_SOCKADDR_UN], [1], [Host has sockaddr_un])],[])
 
 AC_TRY_COMPILE([
 #include <sys/stat.h>

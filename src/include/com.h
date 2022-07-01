@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #else
 #  include <sys/types.h>
 #  include <sys/socket.h>
+#  include <sys/un.h>
 #  include <netinet/in.h>
 #endif
 
@@ -68,9 +69,10 @@ typedef struct {
   int frame;            /* spad interpreter frame (for interpreter windows) */
   fricas_socket remote;  /* file descriptor of remote socket */
   union {
-    struct sockaddr u_addr;
+    #ifdef HAVE_SOCKADDR_UN
+    struct sockaddr_un u_addr;
+    #endif
     struct sockaddr_in i_addr;
-    char pad[32];
   } addr;
   char *host_name;      /* name of foreign host if type == AF_INET */
 } Sock;

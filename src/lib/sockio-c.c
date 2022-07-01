@@ -751,14 +751,15 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
     free(sock);
     return NULL;
   }
+#ifndef HAVE_SOCKADDR_UN
+  return NULL;
+#else
   /* connect socket using name specified in command line */
-  sock->addr.u_addr.sa_family = FRICAS_AF_LOCAL;
-  strcpy(sock->addr.pad +
-          ((char *)(&(sock->addr.u_addr.sa_data))
-           -(char *)(&(sock->addr.u_addr))), name);
+  struct sockaddr_un *uaddr = &(sock->addr.u_addr);
+  uaddr->sun_family = FRICAS_AF_LOCAL;
+  strncpy(uaddr->sun_path, name, sizeof(uaddr->sun_path) - 1);
   for(i=0; i<max_con; i++) {
-    code = connect(sock->socket, &sock->addr.u_addr,
-                   sizeof(sock->addr.pad));
+    code = connect(sock->socket, uaddr, sizeof(*uaddr));
     if (code == -1) {
       if (
         /* @@@ Why we need this */
@@ -785,6 +786,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
 /*  fprintf(stderr, "Got int form socket\n"); */
   sock->remote = get_int(sock);
   return sock;
+#endif
 }
 
 /* act as terminal session for sock connected to stdin and stdout of another
@@ -917,6 +919,10 @@ open_server(char *server_name)
     listen(server[0].socket,5);
   } */
   /* Next create the local domain socket */
+#ifndef HAVE_SOCKADDR_UN
+  server[1].socket = 0;
+  return -1;
+#else
   server[1].socket = fricas_communication_link(FRICAS_AF_LOCAL);
   if (is_invalid_socket(&server[1])) {
     perror("opening local server socket");
@@ -924,12 +930,10 @@ open_server(char *server_name)
     return -2;
   } else {
     Sock * sock = &(server[1]);
-    sock->addr.u_addr.sa_family = FRICAS_AF_LOCAL;
-    strcpy(sock->addr.pad +
-          ((char *)(&(sock->addr.u_addr.sa_data))
-           -(char *)(&(sock->addr.u_addr))), name);
-    if (bind(sock->socket, &(sock->addr.u_addr),
-             sizeof(sock->addr.pad))) {
+    struct sockaddr_un * uaddr = &(sock->addr.u_addr);
+    uaddr->sun_family = FRICAS_AF_LOCAL;
+    strncpy(uaddr->sun_path, name, sizeof(uaddr->sun_path) - 1);
+    if (bind(sock->socket, uaddr, sizeof(*uaddr))) {
       perror("binding local server socket");
       server[1].socket = 0;
       return -2;
@@ -950,6 +954,7 @@ open_server(char *server_name)
     return -1;
   }
   return 0;
+#endif
 }
 
 int
