@@ -2046,9 +2046,14 @@ OneDimensionalArrayAggregate(S : Type) : Category ==
         -- Compute the number of entries.
         n: Integer := sign(step)*(hi-lo)
         n < 0 => empty()
-        n := 1 + ((hi - lo) quo step)
+        n := 1 + (n quo abs(step))
+        if step > 0 then
+            (if lo < mn or lo + (n - 1)*step > mx then
+                error "index out of range")
+        else
+            if lo > mx or lo + (n-1)*step < mn then
+                error "index out of range"
         z: % := new(n::NonNegativeInteger, qelt(x, mn))
-        -- There will be out of range errors if x.i cannot be accessed.
         for i in lo .. hi by step for j in mn .. repeat
             qsetelt!(z, j, qelt(x, i))
         z
