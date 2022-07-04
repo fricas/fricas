@@ -64,7 +64,7 @@ echo HELP_DIR=\"${HELP_DIR}\"
 # copy sources
 cp -r $SRCDIR dist
 cd dist || exit 1
-rm -rf .git
+rm -rf .git*
 
 # copy gcl
 if [ ! -z "${GCL_DIST}" ] ; then
