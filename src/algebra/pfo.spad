@@ -277,13 +277,14 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
   Q   ==> Fraction Integer
   UPF ==> SparseUnivariatePolynomial F
   UPQ ==> SparseUnivariatePolynomial Q
+  UPZ ==> SparseUnivariatePolynomial(Z)
   QF  ==> Fraction UP
   UPUPQ ==> SparseUnivariatePolynomial Fraction UPQ
   UP2 ==> SparseUnivariatePolynomial UPQ
   UP3 ==> SparseUnivariatePolynomial UP2
   FD  ==> FiniteDivisor(F, UP, UPUP, R)
   K   ==> Kernel F
-  REC ==> Record(ncurve : UP3, disc : Z, dfpoly : UPQ)
+  REC ==> Record(ncurve : UP3, disc : UPZ, dfpoly : UPQ)
   RC0 ==> Record(ncurve : UPUPQ, disc : Z)
   ID  ==> FractionalIdeal(UP, QF, UPUP, R)
   SMP ==> SparseMultivariatePolynomial(R0, K)
@@ -393,13 +394,6 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
        cmult(l : List SMP) : SMP == lcm l
     else
        cmult(l : List SMP) : SMP == */l
-
-    doubleDisc(f : UP3) : Z ==
-      d := discriminant f
-      g := gcd(d, differentiate d)
-      d := (d exquo g)::UP2
-      zero?(e := discriminant d) => 0
-      gcd [retract(c)@Z for c in coefficients e]
 
     commonDen(p : UP) : SMP ==
       l1 : List F := coefficients p
@@ -570,22 +564,33 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
       d := divisor(ideal(va)$FractionalIdeal(UP, Fraction(UP), UPUP, R))$FD
       algcurve(d, selectIntegers first la, first la)
 
+    double_disc(f : UPUP) : F ==
+        d := retract(discriminant(f))@UP
+        g := gcd(d, differentiate(d))
+        discriminant((d exquo g)::UP)
+
     selIntegers() : RC0 ==
       f := definingPolynomial()$R
+      g := polyred(f)
+      d0 := double_disc(g)
       n : Integer := 10^6
       repeat
           newReduc(n)$q
-          d := doubleDisc(r := polyred pmod f)
-          if not(zero?(d)) then return [r, d]
+          d := retract(qmod(d0))@Z
+          if not(zero?(d)) then return [pmod(g), d]
 
     selectIntegers(k : K) : REC ==
       g := polyred(f := definingPolynomial()$R)
+      d0 := double_disc(g)
       p := minPoly k
       n : Integer := 10^6
       repeat
           newReduc(n)$q
-          d := doubleDisc(r := kpmod(g, k))
-          zero?(d) or (notIrr? fmod p) => "iterate"
+          d1 := kqmod(d0, k)
+          d := map(retract, d1)$SparseUnivariatePolynomialFunctions2(
+                                Q, Z)
+          zero?(d) => "iterate"
+          r := kpmod(g, k)
           return [r, d, splitDenominator(fmod p).num]
 
     order d ==
@@ -600,16 +605,23 @@ PointsOfFiniteOrder(R0, F, UP, UPUP, R) : Exports == Implementation where
       [p, u::UPQ]
 
     goodRed(rec, res, h, b, d, p) ==
-      zero?(rec.disc rem p) => "failed"
+      every?((c : Z) : Boolean +-> zero?(c rem p),
+             coefficients(rec.disc)) => "failed"
       gf := InnerPrimeField p
       l  := [f.factor for f in factorList factor(map((z1 : Q) : gf +-> retract(z1)@Z :: gf,
                rec.dfpoly)$SparseUnivariatePolynomialFunctions2(Q,
                  gf))$DistinctDegreeFactorize(gf,
                    SparseUnivariatePolynomial gf) | (f.exponent = 1)]
       empty? l => "failed"
+      discp := map(c +-> c::gf, rec.disc
+                  )$SparseUnivariatePolynomialFunctions2(Z, gf)
       mdg := first l
-      for ff in rest l repeat
-        if degree(ff) < degree(mdg) then mdg := ff
+      is_good := false
+      for ff in l repeat
+          discp rem ff = 0 => "iterate"
+          is_good and degree(ff) < degree(mdg) => mdg := ff
+          is_good := true
+      not(is_good) => "failed"
       md := map((z1 : gf) : Q +-> convert(z1)@Z :: Q,
                  mdg)$SparseUnivariatePolynomialFunctions2(gf, Q)
       good?(res, h, b, d, p, md) => md
