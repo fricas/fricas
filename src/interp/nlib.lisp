@@ -317,7 +317,7 @@
 
 #+:GCL
 (defun delete-directory (dirname)
-   (LISP::system (concat "rm  -r " dirname)))
+   (SI::system (concat "rm  -r " dirname)))
 
 #+:sbcl
 (defun delete-directory (dirname)
@@ -374,7 +374,7 @@
 #+:GCL
 (defun copy-lib-directory (name1 name2)
    (makedir name2)
-   (LISP::system (concat "sh -c 'cp " name1 "/* " name2 "'")))
+   (SI::system (concat "sh -c 'cp " name1 "/* " name2 "'")))
 
 #+:sbcl
 (defun copy-lib-directory (name1 name2)

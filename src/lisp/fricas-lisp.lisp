@@ -209,7 +209,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 ;;; How to exit Lisp process
 #+:GCL
-(defun exit-with-status (s) (lisp::quit s))
+(defun exit-with-status (s) (SI::quit s))
 
 #+:cmu
 (defun exit-with-status (s)
@@ -388,9 +388,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:GCL
 (eval-when (:compile-toplevel :load-toplevel :execute)
 (setf *c-type-to-ffi* '(
-    (int LISP::int)
-    (c-string LISP::string)
-    (double LISP::double)
+    (int SI::int)
+    (c-string SI::string)
+    (double SI::double)
 ))
 
 (defun c-args-to-gcl (arguments)
@@ -399,7 +399,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun gcl-foreign-call (name c-name return-type arguments)
     (let ((gcl-args (c-args-to-gcl arguments))
           (gcl-ret (c-type-to-ffi return-type)))
-    `(LISP::defentry ,name ,gcl-args (,gcl-ret ,c-name))
+    `(SI::defentry ,name ,gcl-args (,gcl-ret ,c-name))
   ))
 
 (defmacro fricas-foreign-call (name c-name return-type &rest arguments)
@@ -629,7 +629,7 @@ with this hack and will try to convince the GCL crowd to fix this.
         (val int))
 
 #+:GCL
-(LISP::clines "extern double sock_get_float();")
+(SI::clines "extern double sock_get_float();")
 
 (fricas-foreign-call |sockGetFloat| "sock_get_float" double
         (purpose int))

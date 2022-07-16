@@ -735,7 +735,7 @@
    (ext::run-program "sh" (list "-c" S) :input t :output t)))
 
 #+:GCL
-(defun OBEY (S) (LISP::SYSTEM S))
+(defun OBEY (S) (SI::SYSTEM S))
 
 #+:allegro
 (defun OBEY (S) (excl::run-shell-command s))

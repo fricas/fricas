@@ -331,7 +331,7 @@ database.
  (close |$operation_stream|)
  (close |$category_stream|)
  (close |$browse_stream|)
-#+:GCL (LISP::gbc t)
+#+:GCL (SI::gbc t)
 )
 
 (defun initial-getdatabase ()
