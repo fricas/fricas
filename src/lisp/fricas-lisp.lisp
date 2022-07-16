@@ -659,21 +659,21 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:GCL
 (progn
 
-(LISP::defentry sock_get_string_buf (LISP::int LISP::object LISP::int)
-    (LISP::int "sock_get_string_buf_wrapper"))
+(SI::defentry sock_get_string_buf (SI::int SI::object SI::int)
+    (SI::int "sock_get_string_buf_wrapper"))
 
 ;; GCL may pass strings by value.  'sock_get_string_buf' should fill
 ;; string with data read from connection, therefore needs address of
 ;; actual string buffer. We use 'sock_get_string_buf_wrapper' to
 ;; resolve the problem
-(LISP::clines "int sock_get_string_buf_wrapper(int i, object x, int j)"
+(SI::clines "int sock_get_string_buf_wrapper(int i, object x, int j)"
     "{ if (type_of(x)!=t_string) FEwrong_type_argument(sLstring,x);"
     "  if (x->st.st_fillp<j)"
     "    FEerror(\"string too small in sock_get_string_buf_wrapper\",0);"
     "  return sock_get_string_buf(i, x->st.st_self, j); }")
 
-(LISP::defentry sock_get_string_buf (LISP::int LISP::object LISP::int)
-    (LISP::int "sock_get_string_buf_wrapper"))
+(SI::defentry sock_get_string_buf (SI::int SI::object SI::int)
+    (SI::int "sock_get_string_buf_wrapper"))
 
 (defun |sockGetStringFrom| (type)
     (let ((buf (MAKE-STRING 10000)))
@@ -821,8 +821,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:GCL
 (progn
-  (LISP::defentry file_kind (LISP::string)      (LISP::int "directoryp"))
-  (LISP::defentry |makedir| (LISP::string)         (LISP::int "makedir")))
+  (SI::defentry file_kind (SI::string)      (SI::int "directoryp"))
+  (SI::defentry |makedir| (SI::string)         (SI::int "makedir")))
 
 #+:ecl
 (ffi:def-function ("directoryp" raw_file_kind)
