@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2021-03-06],
+AC_INIT([FriCAS], [2022-07-16],
         [fricas-devel@googlegroups.com],
         [fricas],
         [https://fricas.github.io])
@@ -24,7 +24,7 @@ AC_DEFUN([FRICAS_CHECK_PROG],
 fricas_src_subdirs="lib lisp boot interp algebra input etc"
 AC_SUBST(fricas_src_subdirs)
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 
 case $build in
   *mingw*|*msys*)
@@ -561,43 +561,43 @@ case $host in
         ;;
 esac
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/socket.h>
-   ], [
+   ]], [[
 int flag = MSG_NOSIGNAL;
-   ],
+   ]])],
    [AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Host has MSG_NOSIGNAL])],[])
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
-   ], [
+   ]], [[
 int flag = SO_NOSIGPIPE;
-   ],
+   ]])],
    [AC_DEFINE([HAVE_SO_NOSIGPIPE], [1], [Host has SO_NOSIGPIPE])],[])
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <errno.h>
 #include <sys/socket.h>
-   ], [
+   ]], [[
 int code = EPIPE;
-   ],
+   ]])],
    [AC_DEFINE([HAVE_EPIPE], [1], [Host has EPIPE])],[])
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/socket.h>
 #include <sys/un.h>
-   ], [
+   ]], [[
 struct sockaddr_un uaddr;
-   ],
+   ]])],
    [AC_DEFINE([HAVE_SOCKADDR_UN], [1], [Host has sockaddr_un])],[])
 
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/stat.h>
 #include <sys/types.h>
-   ], [
+   ]], [[
 int code = mkdir ("./foo", (S_IRWXU | S_IRWXO | S_IRWXG));
-   ],
+   ]])],
    [AC_DEFINE([HAVE_TWO_ARG_MKDIR], [1], [Host has two arg mkdir])], [])
 
 if test x$fricas_host_has_socket != xyes; then \
