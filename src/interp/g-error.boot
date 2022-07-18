@@ -95,6 +95,7 @@ handleLispBreakLoop($BreakMode) ==
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
   ENABLE_BACKTRACE(nil)
+  $BreakMode = 'trapSpadErrors => THROW('trapSpadErrors, $numericFailure)
   $BreakMode = 'break =>
     sayBrightly '" "
     BREAK()
@@ -114,7 +115,7 @@ handleLispBreakLoop($BreakMode) ==
       null x =>
         sayBrightly bright '"  That was not one of your choices!"
         gotIt := NIL
-      x = 'top => returnToTopLevel()
+      x = 'top => throw_to_top_level()
       x = 'break =>
         $BreakMode := 'break
         sayBrightly ['"   Enter",:bright '":C",
@@ -124,26 +125,25 @@ handleLispBreakLoop($BreakMode) ==
         BREAK()
       sayBrightly
         '"   Processing will continue where it was interrupted."
-      THROW('SPAD_READER, nil)
+      throw_to_reader()
   $BreakMode = 'resume =>
     returnToReader()
-  $BreakMode = 'throw_reader => THROW('SPAD_READER, nil)
+  $BreakMode = 'throw_reader => throw_to_reader()
   $BreakMode = 'quit =>
     EXIT_-WITH_-STATUS(1)
-  returnToTopLevel()
+  throw_to_top_level()
 
-TOP() == returnToTopLevel()
+throw_to_reader() == THROW('SPAD_READER, nil)
 
-returnToTopLevel() ==
-  TOPLEVEL()
+TOP() == throw_to_top_level()
 
-TOPLEVEL() ==
+throw_to_top_level() ==
     THROW('top_level, 'restart)
 
 returnToReader() ==
-  not $ReadingFile => returnToTopLevel()
-  sayBrightly ['"   Continuing to read the file...", '%l]
-  THROW('SPAD_READER, nil)
+    not $ReadingFile => throw_to_top_level()
+    sayBrightly ['"   Continuing to read the file...", '%l]
+    throw_to_reader()
 
 sayErrorly(errorLabel, msg) ==
   sayErrorly1(errorLabel, msg)

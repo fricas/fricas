@@ -292,8 +292,6 @@ mergeSort(f,g,p,n) ==
 
 --% Throwing with glorious highlighting (maybe)
 
-throw_to_reader() == THROW('SPAD_READER, nil)
-
 spadThrow() ==
   if $interpOnly and $mapName then
     putHist($mapName,'localModemap, nil, $e)

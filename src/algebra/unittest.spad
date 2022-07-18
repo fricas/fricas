@@ -92,6 +92,9 @@ UnittestCount() : with
        ++ statistics() prints out a summary of the outcome of the testcases so
        ++ far. Use \spad{clear completely} to reset the statistics.
 
+     incTest : () -> Void
+       ++ incTest is an internal function that steps the test number.
+
      incPass : () -> Void
        ++ incPass is an internal function that steps the number of passed
        ++ tests.
@@ -105,18 +108,9 @@ UnittestCount() : with
        ++ of tests that passed but were expected to fail and records
        ++ in- and output.
 
-     decXfPass : () -> Void
-       ++ decXfPass() is an internal function that declares that the preceding
-       ++ test did not pass unexpectedly.  This function should only be used
-       ++ for testing library errors
-
      incXfFail : () -> Void
        ++ incXfFail() is an internal function that steps the number
        ++ expected failures.
-
-     chkLibraryError : () -> Void
-       ++ chkLibraryError is an internal function that steps the number of
-       ++ tests.
 
      incLibraryError : (String, List OutputForm) -> Void
        ++ incLibraryError is an internal function that steps the number of
@@ -131,13 +125,6 @@ UnittestCount() : with
 
      incXfFatal : String -> Void
        ++ like incFatal, but for expected failures.
-
-     decFatal : () -> Void
-       ++ decFatal is an internal function that declares that the preceding
-       ++ test did not fail with a fatal error.
-
-     decXfFatal : () -> Void
-        ++ like decFatal, but for expected failures.
 
      addWarning : OutputForm -> Void
        ++ addWarning s is an internal function that adds s, together with an
@@ -203,19 +190,15 @@ UnittestCount() : with
          systemCommand("clear all")$MoreSystemCommands
          testcaseNoClear s
 
-     incPass() ==
+     incTest() ==
          cur := tests.currentTestsuite.currentTestcase
          cur.total := cur.total + 1
 
-     chkLibraryError() ==
-         cur := tests.currentTestsuite.currentTestcase
-         cur.total := cur.total + 1
+     incPass() == void()
 
      incLibraryError(inp, out) ==
          cur := tests.currentTestsuite.currentTestcase
          cur.fail := cur.fail + 1
--- because of the chkLibraryError / incLibraryError construction, the total
--- number must not be stepped
          cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
 
      incXfLibraryError(inp, out) ==
@@ -225,50 +208,26 @@ UnittestCount() : with
      incXfFail() ==
          cur := tests.currentTestsuite.currentTestcase
          cur.xfail := cur.xfail + 1
-         cur.total := cur.total + 1
 
      incFail(inp, out) ==
          cur := tests.currentTestsuite.currentTestcase
          cur.fail := cur.fail + 1
--- because of the incFatal / decFatal construction, the current index is
--- cur.total, rather than cur.total + 1
          cur.failed := cons([cur.total, inp, out]$FAILED, cur.failed)
-         cur.total := cur.total + 1
 
      incXfPass(inp, out) ==
          cur := tests.currentTestsuite.currentTestcase
          cur.xfpass := cur.xfpass + 1
          cur.xfpassed := cons([cur.total, inp, out]$FAILED,
                                   cur.xfpassed)
-         cur.total := cur.total + 1
-
-     decXfPass() ==
-         cur := tests.currentTestsuite.currentTestcase
-         cur.total := cur.total - 1
-         cur.xfpassed := rest(cur.xfpassed)
-         cur.xfpass := cur.xfpass - 1
 
      incFatal inp ==
          cur := tests.currentTestsuite.currentTestcase
-         cur.total := cur.total + 1
          cur.fail := cur.fail + 1
          cur.fatalities := cons([cur.total, inp]$FATAL, cur.fatalities)
 
-     decFatal() ==
-         cur := tests.currentTestsuite.currentTestcase
-         cur.total := cur.total - 1
-         cur.fail := cur.fail - 1
-         cur.fatalities := rest(cur.fatalities)
-
      incXfFatal inp ==
          cur := tests.currentTestsuite.currentTestcase
-         cur.total := cur.total + 1
          cur.xfail := cur.xfail + 1
-
-     decXfFatal() ==
-         cur := tests.currentTestsuite.currentTestcase
-         cur.total := cur.total - 1
-         cur.xfail := cur.xfail - 1
 
      addWarning s ==
          idx := tests.currentTestsuite.currentTestcase.total
@@ -287,11 +246,6 @@ UnittestCount() : with
                       "functions as Strings!")$O
          messagePrint("  Otherwise, the test will fail and statistics() will "_
                       "not notice!")$O
-         messagePrint("* testLibraryError does not prevent FriCAS from " _
-                      "aborting the current block.")$O
-         messagePrint("  Thus, if a block contains other test functions, they " _
-                      "will not be executed")$O
-         messagePrint("  and statistics() will not notice!")$O
 
          if # warnings > 0 then
              messagePrint(new(maxWidth, char "=")$String)$O
@@ -724,79 +678,69 @@ Unittest : with
          info_f := convert(info)@InputForm
          interpret(convert([ff, info_f, if1, if2])@InputForm)$InputForm
 
+     do_interpret1(label : String, fun : Symbol, arg : String,
+                   upd : String -> Void) : Void ==
+         incTest()$UnittestCount
+         inp := label ": (" arg ")"
+         ru := trappedSpadEval(interpretFunction1(fun, inp, arg)
+                              )$Lisp :: Union(None, "failed")
+         if ru case "failed" then upd(inp)
+
+     do_interpret2(label : String, fun : Symbol, a1 : String, a2 : String,
+                   upd : String -> Void) : Void ==
+         incTest()$UnittestCount
+         inp := label ": (" a1 ", " a2 ")"
+         ru := trappedSpadEval(interpretFunction2(fun, inp, a1, a2)
+                              )$Lisp :: Union(None, "failed")
+         if ru case "failed" then upd(inp)
+
+     do_test2(label : String, fun : Symbol, a1 : String, a2 : String
+             ) : Void ==
+         do_interpret2(label, fun, a1, a2, incFatal$UnittestCount)
+
+     do_xf_test2(label : String, fun : Symbol, a1 : String, a2 : String
+             ) : Void ==
+         do_interpret2(label, fun, a1, a2, incXfFatal$UnittestCount)
+
      testEquals(s1, s2) ==
-         inp := "EQUL: (" s1 ", " s2 ")"
-         incFatal(inp)$UnittestCount
-         interpretFunction2('testEqualsAux, inp, s1, s2)
-         decFatal()$UnittestCount
+         do_test2("EQUL", 'testEqualsAux, s1, s2)
 
      xftestEquals(s1, s2) ==
-         inp := "EQUL: (" s1 ", " s2 ")"
-         incXfFatal(inp)$UnittestCount
-         interpretFunction2('xftestEqualsAux, inp, s1, s2)
-         decXfFatal()$UnittestCount
+         do_xf_test2("EQUL", 'xftestEqualsAux, s1, s2)
 
      testRealEquals(s1, s2) ==
-         inp := "EQLR: (" s1 ", " s2 ")"
-         incFatal(inp)$UnittestCount
-         interpretFunction2('testRealEqualsAux, inp, s1, s2)
-         decFatal()$UnittestCount
+         do_test2("EQLR", 'testRealEqualsAux, s1, s2)
 
      xftestRealEquals(s1, s2) ==
-         inp := "EQLR: (" s1 ", " s2 ")"
-         incXfFatal(inp)$UnittestCount
-         interpretFunction2('xftestRealEqualsAux, inp, s1, s2)
-         decXfFatal()$UnittestCount
+         do_xf_test2("EQLR", 'xftestRealEqualsAux, s1, s2)
 
      testComplexEquals(s1, s2) ==
-         inp := "EQLC: (" s1 ", " s2 ")"
-         incFatal(inp)$UnittestCount
-         interpretFunction2('testComplexEqualsAux, inp, s1, s2)
-         decFatal()$UnittestCount
+         do_test2("EQLC", 'testComplexEqualsAux, s1, s2)
 
      xftestComplexEquals(s1, s2) ==
-         inp := "EQLC: (" s1 ", " s2 ")"
-         incXfFatal(inp)$UnittestCount
-         interpretFunction2('xftestComplexEqualsAux, inp, s1, s2)
-         decXfFatal()$UnittestCount
+         do_xf_test2("EQLC", 'xftestComplexEqualsAux, s1, s2)
 
      testNotEquals(s1, s2) ==
-         inp := "DIFF: (" s1 ", " s2 ")"
-         incFatal(inp)$UnittestCount
-         interpretFunction2('testNotEqualsAux, inp, s1, s2)
-         decFatal()$UnittestCount
+         do_test2("DIFF", 'testNotEqualsAux, s1, s2)
 
      xftestNotEquals(s1, s2) ==
-         inp := "DIFF: (" s1 ", " s2 ")"
-         incXfFatal(inp)$UnittestCount
-         interpretFunction2('xftestNotEqualsAux, inp, s1, s2)
-         decXfFatal()$UnittestCount
+         do_xf_test2("DIFF", 'xftestNotEqualsAux, s1, s2)
 
      testTrue(s) ==
-         inp := "TRUE: (" s ")"
-         incFatal(inp)$UnittestCount
-         interpretFunction1('testTrueAux, inp, s)
-         decFatal()$UnittestCount
+         do_interpret1("TRUE", 'testTrueAux, s,
+                       incFatal$UnittestCount)
 
      xftestTrue(s) ==
-         inp := "TRUE: (" s ")"
-         incXfFatal(inp)$UnittestCount
-         interpretFunction1('xftestTrueAux, inp, s)
-         decXfFatal()$UnittestCount
+         do_interpret1("TRUE", 'xftestTrueAux, s,
+                       incXfFatal$UnittestCount)
 
      testLibraryError(s) ==
-         chkLibraryError()$UnittestCount
-         inp := "ERROR: (" s ")"
-         interpretFunction1('testLibraryErrorAux, inp, s)
+         do_interpret1("ERROR", 'testLibraryErrorAux, s,
+                       dummy +-> void())
 
      xftestLibraryError(s) ==
-         inp := "ERROR: (" s ")"
-         incXfPass(inp, empty()$List(OutputForm))$UnittestCount
-         interpretFunction1('xftestLibraryErrorAux, inp, s)
-         decXfPass()$UnittestCount
--- when there was as expected no fatal error, we need only step the
--- counter for the number of tests
-         chkLibraryError()$UnittestCount
+         do_interpret1("ERROR", 'xftestLibraryErrorAux, s,
+             inp +-> incXfPass(inp, empty()$List(OutputForm))$UnittestCount)
 
 
 --Copyright (c) 2006-2007, Martin Rubey <Martin.Rubey@univie.ac.at>

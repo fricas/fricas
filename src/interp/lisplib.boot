@@ -95,19 +95,13 @@ loadLib cname ==
 loadLibNoUpdate(cname, libName, fullLibName) ==
   kind := GETDATABASE(cname,'CONSTRUCTORKIND)
   if $printLoadMsgs then
-    sayKeyedMsg("S2IL0002",[namestring fullLibName,kind,cname])
-  if CATCH('VERSIONCHECK, load_quietly(fullLibName)) = -1
-    then
-      PRINC('"   wrong library version...recompile ")
-      PRINC(fullLibName)
-      TERPRI()
-      TOPLEVEL()
-    else
-     clearConstructorCache cname
-     installConstructor(cname)
-     MAKEPROP(cname,'LOADED,fullLibName)
-     if $InteractiveMode then $CategoryFrame := [[nil]]
-     stopTimingProcess 'load
+    sayKeyedMsg("S2IL0002", [fullLibName, kind, cname])
+  load_quietly(fullLibName)
+  clearConstructorCache cname
+  installConstructor(cname)
+  MAKEPROP(cname,'LOADED,fullLibName)
+  -- if $InteractiveMode then $CategoryFrame := [[nil]]
+  stopTimingProcess 'load
   'T
 
 loadIfNecessary u == loadLibIfNecessary(u,true)

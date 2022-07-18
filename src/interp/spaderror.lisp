@@ -45,8 +45,6 @@
     (declare (special |$BreakMode|))
     (format nil "~a" c)))
 
-;;(defmacro |trappedSpadEval| (form) form) ;;nop for now
-
 #+:GCL
 (defun |resetStackLimits| () (system:reset-stack-limits))
 #-:GCL
@@ -61,12 +59,10 @@
 
 #+:GCL
 (defmacro |trapNumericErrors| (form)
-  `(let ((|$oldBreakMode| |$BreakMode|)
-         (|$BreakMode| '|trapNumerics|)
+  `(let ((|$BreakMode| '|trapNumerics|)
          (val))
-     (setq val (catch '|trapNumerics| ,form))
-     (if (eq val |$numericFailure|) val
-       (cons 0 val))))
+     (declare (special |$BreakMode|))
+     (catch '|trapNumerics| (cons 0 ,form))))
 
 #-:GCL
 (defmacro |trapNumericErrors| (form)
@@ -74,12 +70,12 @@
          (arithmetic-error () |$numericFailure|)))
 
 (defmacro |trappedSpadEval| (form)
-  `(let ((|$BreakMode| '|trapSpadErrors|))
-       (catch '|trapSpadErrors| (cons 0 ,form))))
+    `(|trappedSpadEvalUnion| (cons 0 ,form)))
 
 (defmacro |trappedSpadEvalUnion| (form)
   `(let ((|$BreakMode| '|trapSpadErrors|))
-       (catch '|trapSpadErrors| ,form)))
+        (declare (special |$BreakMode|))
+        (CATCH '|trapSpadErrors| ,form)))
 
 #+:sbcl
 (progn
@@ -102,18 +98,17 @@
 
 #-:GCL
 (defun spad-system-error-handler (c)
-  (block nil
-    (setq |$NeedToSignalSessionManager| T)
-    (if (and (boundp '|$inLispVM|) (boundp '|$BreakMode|))
-        (cond ((eq |$BreakMode| '|validate|)
-                   (|systemError| (error-format c)))
+    (block nil
+        (setq |$NeedToSignalSessionManager| T)
+        (cond
                ((and (null |$inLispVM|)
-                     (memq |$BreakMode| '(|nobreak| |query| |resume| |quit|)))
+                     (memq |$BreakMode| '(|nobreak| |query| |resume|
+                                          |quit| |trapSpadErrors|)))
                    (let ((|$inLispVM| T)) ;; turn off handler
                         (return (|systemError| (error-format c)))))
                ((eq |$BreakMode| '|letPrint2|)
                    (setq |$BreakMode| nil)
-                   (throw '|letPrint2| nil))))))
+                   (throw '|letPrint2| nil)))))
 
 
 
@@ -128,23 +123,17 @@
                (block
                 nil
                 (setq |$NeedToSignalSessionManager| T)
-                (if (and (boundp '|$inLispVM|) (boundp '|$BreakMode|))
-                    (cond ((eq |$BreakMode| '|validate|)
-                           (|systemError| (error-format error-string args)))
-                          ((and (eq |$BreakMode| '|trapNumerics|)
-                                (eq type :ERROR))
-                           (setq |$BreakMode| nil)                         (throw '|trapNumerics| |$numericFailure|))
-                          ((and (eq |$BreakMode| '|trapNumerics|)
-                                (boundp '|$oldBreakMode|)
-                                (setq |$BreakMode| |$oldBreakMode|)
-                                nil)) ;; resets error handler
+                    (cond
+                          ((eq |$BreakMode| '|trapNumerics|)
+                                (throw '|trapNumerics| |$numericFailure|))
                           ((and (null |$inLispVM|)
-                                (memq |$BreakMode| '(|nobreak| |query| |resume| |quit|)))
+                                (memq |$BreakMode| '(|nobreak| |query| |resume|
+                                                    |quit| |trapSpadErrors|)))
                            (let ((|$inLispVM| T)) ;; turn off handler
                              (return
                               (|systemError| (error-format error-string args)))))
                           ((eq |$BreakMode| '|letPrint2|)
                            (setq |$BreakMode| nil)
-                           (throw '|letPrint2| nil))))
+                           (throw '|letPrint2| nil)))
                 (apply system:universal-error-handler type correctable? op
                        continue-string error-string args )))))
