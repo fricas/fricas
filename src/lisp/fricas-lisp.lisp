@@ -385,6 +385,28 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 )
 
+(defvar *c_type_as_string* '(
+    (int "int")
+    (c-string "char *")
+    (double "double")
+))
+
+(defun c_type_as_string(c_type) (nth 1 (assoc c_type *c_type_as_string*)))
+
+(defun c_args_as_string  (arguments)
+    (cond
+        ((null arguments) "")
+        (t (let ((res (c_type_as_string (nth 1 (car arguments)))))
+              (dolist (el (rest arguments))
+                  (setf res (concatenate 'string res ", "
+                             (c_type_as_string (nth 1 el)))))
+              res)))
+)
+
+(defun make_extern (return-type c-name arguments)
+    (concatenate 'string "extern " (c_type_as_string return-type) " "
+                 c-name "(" (c_args_as_string arguments) ");"))
+
 #+:GCL
 (eval-when (:compile-toplevel :load-toplevel :execute)
 (setf *c-type-to-ffi* '(
@@ -548,7 +570,10 @@ with this hack and will try to convince the GCL crowd to fix this.
     (multiple-value-bind (fargs strs) (c-args-to-ecl arguments)
         (let ((l-ret (c-type-to-ffi return-type))
                wrapper)
-            (if strs
+          `(progn
+            ,(ext:with-backend :c/c++
+               `(FFI:clines ,(make_extern return-type c-name arguments)))
+            ,(if strs
                 (let* ((sym (gensym))
                        (wargs (mapcar #'car fargs))
                        (largs (mapcar #'car arguments))
@@ -560,7 +585,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                                 ,fargs :returning ,l-ret)
                             ,wrapper))
                 `(ffi:def-function (,c-name ,name)
-                     ,fargs :returning ,l-ret)))))
+                     ,fargs :returning ,l-ret))))))
 
 (defmacro fricas-foreign-call (name c-name return-type &rest arguments)
     (ecl-foreign-call name c-name return-type arguments))
@@ -637,10 +662,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 (fricas-foreign-call |sockSendFloat| "sock_send_float" int
        (purpose int)
        (num double))
-
-;;; (fricas-foreign-call |sockSendString| "sock_send_string" int
-;;;       (purpose int)
-;;;       (str c-string))
 
 (fricas-foreign-call sock_send_string_len "sock_send_string_len" int
        (purpose int)
@@ -788,6 +809,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:ecl
 (progn
 
+(ext:with-backend :c/c++
+   (FFI:clines "extern void sock_get_string_buf_wrapper(int purpose,"
+               "                  char * buf, int len);"))
+
 (ffi:def-function ("sock_get_string_buf" sock_get_string_buf_wrapper)
                    ((purpose :int) (buf (:array :unsigned-char 10000)) (len :int))
                    :returning :void)
@@ -819,29 +844,15 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; File and directory support
 ;;; First version contributed by Juergen Weiss.
 
-#+:GCL
+#+(or :ECL :GCL)
 (progn
-  (SI::defentry file_kind (SI::string)      (SI::int "directoryp"))
-  (SI::defentry |makedir| (SI::string)         (SI::int "makedir")))
 
-#+:ecl
-(ffi:def-function ("directoryp" raw_file_kind)
-                   ((arg :cstring))
-                   :returning :int)
-#+:ecl
-(defun file_kind (name)
-      (FFI:WITH-CSTRING (cname name)
-           (raw_file_kind cname)))
+  (fricas-foreign-call file_kind "directoryp" int
+                   (arg c-string))
 
-#+:ecl
-(ffi:def-function ("makedir" raw_makedir)
-                   ((arg :cstring))
-                   :returning :int)
-
-#+:ecl
-(defun |makedir| (name)
-      (FFI:WITH-CSTRING (cname name)
-          (raw_makedir cname)))
+  (fricas-foreign-call makedir "makedir" int
+                   (arg c-string))
+)
 
 (defun trim-directory-name (name)
     #+(or :unix :win32)
@@ -859,9 +870,6 @@ with this hack and will try to convince the GCL crowd to fix this.
     )
 
 ;;; Make directory
-
-#+(or :GCL :ecl)
-(defun makedir (fname) (|makedir| fname))
 
 #+:cmu
 (defun makedir (fname)
