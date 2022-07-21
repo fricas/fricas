@@ -563,9 +563,9 @@ parse_radioboxes(void)
 
   /* quick search for the name in the current list */
   if (already_there(newrb->name)) {
+    fprintf(stderr, "Tried to redefine radioboxes %s\n", newrb->name);
     free(newrb->name);
     free(newrb);
-    fprintf(stderr, "Tried to redefine radioboxes %s\n", newrb->name);
     print_page_and_filename();
     jump();
   }

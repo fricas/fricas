@@ -408,24 +408,6 @@ koCatOps1 alist == [x for item in alist | x := pair] where
     npred := simpHasPred pred => [sig,npred]
     false
 
-koCatAttrs(catform,domname) ==
-  $if : local := MAKE_HASHTABLE('ID)
-  catname   := opOf catform
-  koCatAttrsAdd(domname or catform,true)
-  ancestors := ancestorsOf(catform,domname)
-  for [conform,:pred] in ancestors repeat koCatAttrsAdd(conform,pred)
-  hashTable2Alist $if
-
-hashTable2Alist tb ==
-  [[op,:HGET(tb,op)] for op in listSort(function GLESSEQP,HKEYS $if)]
-
-koCatAttrsAdd(catform,pred) ==
-  for [name, argl, :p] in first getConstructorExports(catform, false) repeat
-    npred  := quickAnd(pred,p)
-    exists := HGET($if,name)
-    if existingPred := LASSOC(argl,exists) then npred := quickOr(npred,existingPred)
-    if not MEMQ(name,'(nil nothing)) then HPUT($if,name,[[argl,simpHasPred npred],:exists])
-
 --=======================================================================
 --            Filter by Category
 --=======================================================================

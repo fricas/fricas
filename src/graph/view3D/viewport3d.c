@@ -508,7 +508,6 @@ viewPoints *
 makeViewport (void)
 {
 
-  Pixmap               spadbits,spadmask;
   XSetWindowAttributes viewAttrib;
   XSizeHints           titleSizeHints;
   Window               viewTitleWindow, viewGraphWindow;

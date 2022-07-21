@@ -79,6 +79,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define arrowHead (control->buttonQueue[lightTranslucent].buttonX + 5)
 static viewTriple point0 = {0,0,0};
 
+/* text labels are currently used */
+static float labels[basicScreen][7] = {
+  {105,0,4,106,0,3,labelColor},     /* script x label - 4 segments */
+  {106,0,3,112,0,10,labelColor},
+  {112,0,10,114,0,9,labelColor},
+  {106,0,10,113,0,3,labelColor},
+  {0,106,9,0,107,10,labelColor},    /* script y label - 7 segments */
+  {0,107,10,0,107,6,labelColor},
+  {0,107,6,0,113,5,labelColor},
+  {0,113,10,0,113,-3,labelColor},
+  {0,113,-3,0,111,-5,labelColor},
+  {0,111,-5,0,110,-1,labelColor},
+  {0,110,-1,0,114,3,labelColor},
+  {0,5,114,0,6,115,labelColor},     /* script z label - 8 segments */
+  {0,6,115,0,11,116,labelColor},
+  {0,11,116,0,12,113,labelColor},
+  {0,12,113,0,10,111,labelColor},
+  {0,10,111,0,11,110,labelColor},
+  {0,11,110,0,11,103,labelColor},
+  {0,11,103,0,9,102,labelColor},
+  {0,9,102,0,9,105,labelColor}};
 
 /***************************
  * int makeLightingPanel() *

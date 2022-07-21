@@ -625,7 +625,7 @@
  "fortran support"
  (cond
   ((null filespec) (error "MAKE_APPENDSTREAM: not handled yet"))
-  ('else (open (|make_filename| filespec) :direction :output
+  (t (open (|make_filename| filespec) :direction :output
           :if-exists :append :if-does-not-exist :create))))
 
 (defun |make_append_stream| (filespec)

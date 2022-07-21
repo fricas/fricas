@@ -504,7 +504,6 @@ int
 get_filename(void)
 {
     int c, ws;
-    static int seen_white = 0; /*UNUSED */
     static char buffer[2048];
     char *buf = buffer;
 
@@ -516,8 +515,6 @@ get_filename(void)
         keyword_fpos = fpos;
         c = get_char();
         ws = whitespace(c);
-        if (ws)
-            seen_white = 1;
     } while (ws);
     switch (c) {
       case EOF:
@@ -537,7 +534,6 @@ get_filename(void)
         *buf = '\0';
         token.type = Word;
         token.id = buffer;
-        seen_white = 0;
         break;
     }
     return 1;

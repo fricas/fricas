@@ -205,7 +205,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
   Vertex            *anX10Point;
   float             jj,diffX, diffY, tickStart,oneTickUnit;
   int               i,j,k,ii,halfSize;
-  int               charlength, halfheight;
+  int               charlength;
   int               ptX,ptY,ptX1,ptY1,clipped, clipped1;
   int               xAxis,yAxis,dummyInt, ascent, descent;
   int               unitWidth,boxX,boxY,boxW,boxH;
@@ -217,7 +217,6 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
   aspectR = (float)vwInfo.width/(float)vwInfo.height;
 
   XTextExtents(unitFont,"o",1,&dummyInt,&ascent,&descent,&overall);
-  halfheight = (ascent + descent) / 2;
 
   /* Calculate various factors for use in projection. */
   /* Scale the plot, so that the scaling between the axes remains
@@ -514,7 +513,6 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
 viewPoints *
 makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
 {
-  Pixmap               spadbits,spadmask;
   XSetWindowAttributes viewAttrib;
   XSizeHints           titleSizeHints,viewSizeHints;
   Window               viewTitleWindow,viewGraphWindow;

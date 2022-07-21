@@ -82,7 +82,6 @@ int
 XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
               int *solid, int * dithered, int * shades)
 {
-    int maxDither;
     XColor BlackColor, WhiteColor;
     XColor retColor;
     int maxSolid;
@@ -109,7 +108,7 @@ XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
     /*
      * Now I check to see if I am on a monochrome display. If so then I
      * simply set totalHues to be one, and total Shades to be 2. I also have
-     * to allocate balck and white colors. This I put into the first two
+     * to allocate black and white colors. This I put into the first two
      * memory locations of spadcolors.
      *
      * was      if(DisplayPlanes(dsply, scr) < 2)  changed temporarily to < 8
@@ -119,7 +118,6 @@ XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
 
     if (DisplayPlanes(dsply, scr) < 8) {
         *dithered = totalDithered = maxGreyShade = XInitShades(dsply, scr);
-        maxDither = *dithered - 1;
         spadColors = (unsigned long *) malloc(2 * sizeof(unsigned long));
         spadColors[0] = BlackColor.pixel;
         spadColors[1] = WhiteColor.pixel;
@@ -136,7 +134,6 @@ XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
 
     *dithered = totalDithered =
         XInitDither(dsply, scr, stippleGC, black, white);
-    maxDither = *dithered - 1;
 
     if ((maxSolid = makeColors(dsply, scr, &cmap, &spadColors, &totalSolid)) > 0) {
         *solid = totalSolid + 2;
@@ -151,7 +148,6 @@ XInitSpadFill(Display *dsply, int scr, Colormap * mapOfColors, int * hues,
          * makeColors managed to fail -- switch to mono
          */
         *dithered = totalDithered = maxGreyShade = XInitShades(dsply, scr);
-        maxDither = *dithered - 1;
         spadColors = (unsigned long *) malloc(2 * sizeof(unsigned long));
         spadColors[0] = BlackColor.pixel;
         spadColors[1] = WhiteColor.pixel;

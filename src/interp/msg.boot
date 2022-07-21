@@ -123,8 +123,7 @@ processKeyedError msg ==
 ---------------------------------
 --%getting info from db.
 putDatabaseStuff msg ==
-    [text,attributes] := getMsgInfoFromKey msg
-    if attributes then setMsgUnforcedAttrList(msg,aL)
+    text := getMsgInfoFromKey msg
     setMsgText(msg,text)
 
 getMsgInfoFromKey msg ==
@@ -133,9 +132,7 @@ getMsgInfoFromKey msg ==
            getKeyedMsg msgKey
         getMsgKey msg                  --temp oldmsgs
     msgText := segmentKeyedMsg  msgText
-    [msgText,attributes] := removeAttributes msgText
-    msgText := substituteSegmentedMsg(msgText, getMsgArgL msg)
-    [msgText,attributes]
+    substituteSegmentedMsg(msgText, getMsgArgL msg)
 
 
 -----------------------
@@ -457,10 +454,6 @@ getMsgToWhere msg ==
 
 getMsgCatAttr  (msg,cat) ==
     IFCDR ASSQ(cat, ncAlist msg)
-
-setMsgUnforcedAttrList (msg,aL) ==
-    for attr in aL repeat
-        setMsgUnforcedAttr(msg,whichCat attr,attr)
 
 setMsgUnforcedAttr(msg,cat,attr) ==
     cat = 'catless => setMsgCatlessAttr(msg,attr)

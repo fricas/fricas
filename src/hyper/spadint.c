@@ -111,7 +111,7 @@ static void
 send_pile(Sock *sock,char * str)
 {
     FILE *f;
-    char name[512], command[512];
+    char name[40], command[60];
 
     sprintf(name, "/tmp/hyper%s.input", getenv("SPADNUM"));
     f = fopen(name, "w");
@@ -661,6 +661,7 @@ issue_server_command(HyperLink *link)
         break;
     }
     buf = print_to_string(command);
+    fprintf(stderr, "Sending command->%s<-\n", buf);
     send_string(spad_socket, buf);
     if (link->type == Lispcommand || link->type == Spadcall
         || link->type == Spadcallquit || link->type == Qspadcallquit

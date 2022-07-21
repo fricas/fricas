@@ -462,10 +462,8 @@ show_input(TextNode *node)
     /*Window root, child;*/
     /*int root_x, root_y, win_x, win_y, buttons;*/
     InputItem *item;
-    char *inpbuffer;
 
     item = node->link->reference.string;
-    inpbuffer = item->curr_line->buffer;
 
     wc.border_width = 0;
     wc.x = node->x;
