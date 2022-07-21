@@ -845,37 +845,3 @@
 
 ;;; end of moved fragment
 
-;;; moved from bits.lisp
-
-;;; The types "bit" and "bit vector" are implemented differently
-;;; in different variants of lisp.
-;;; These lisp macros/functions will have different implementations
-;;; on different lisp systems.
-
-;;; The operations which traverse entire vectors are given as functions
-;;; since the function calling overhead will be relatively small.
-;;; The operations which extract or set a single part of the vector are
-;;; provided as macros.
-
-;;; SMW Nov 88: Created
-
-(defun    |make_BVEC| (n x)
-    (make-array (list n) :element-type 'bit :initial-element x))
-
-(defun    |copy_BVEC|      (bv)      (copy-seq bv))
-(defun    |concat_BVEC|    (bv1 bv2) (concatenate '(vector bit) bv1 bv2))
-(defun    |equal_BVEC|     (bv1 bv2) (equal    bv1 bv2))
-(defun    |greater_BVEC|   (bv1 bv2)
-  (let ((pos (mismatch bv1 bv2)))
-    (cond ((or (null pos) (>= pos (length bv1))) nil)
-          ((< pos (length bv2)) (> (bit bv1 pos) (bit bv2 pos)))
-          ((find 1 bv1 :start pos) t)
-          (t nil))))
-(defun    |and_BVEC|       (bv1 bv2) (bit-and  bv1 bv2))
-(defun    |or_BVEC|        (bv1 bv2) (bit-ior  bv1 bv2))
-(defun    |xor_BVEC|       (bv1 bv2) (bit-xor  bv1 bv2))
-(defun    |nand_BVEC|      (bv1 bv2) (bit-nand bv1 bv2))
-(defun    |nor_BVEC|       (bv1 bv2) (bit-nor  bv1 bv2))
-(defun    |not_BVEC|       (bv)      (bit-not  bv))
-
-;;; end of moved fragment

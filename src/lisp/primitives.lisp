@@ -636,7 +636,28 @@
 
 (defmacro ELT_BVEC (bv i)    `(sbit ,bv ,i))
 (defmacro SETELT_BVEC (bv i x)  `(setf (sbit ,bv ,i) ,x))
-(defmacro |size_BVEC| (bv)  `(size ,bv))
+(defmacro |size_BVEC| (bv)  `(length (the simple-bit-vector ,bv)))
+
+(defun |make_BVEC| (n x)
+    (make-array (list n) :element-type 'bit :initial-element x))
+(defun |equal_BVEC| (bv1 bv2) (equal (the simple-bit-vector bv1)
+                                     (the simple-bit-vector bv2)))
+(defun |copy_BVEC| (bv)  (copy-seq (the simple-bit-vector bv)))
+(defun |greater_BVEC| (bv1 bv2)
+  (let ((pos (mismatch (the simple-bit-vector bv1)
+                       (the simple-bit-vector bv2))))
+    (cond ((or (null pos) (>= pos (length bv1))) nil)
+          ((< pos (length bv2)) (> (bit bv1 pos) (bit bv2 pos)))
+          ((find 1 bv1 :start pos) t)
+          (t nil))))
+
+(defun |not_BVEC| (bv) (bit-not (the simple-bit-vector bv)))
+(defun |or_BVEC| (bv1 bv2) (bit-ior  (the simple-bit-vector bv1)
+                                     (the simple-bit-vector bv2)))
+(defun |xor_BVEC| (bv1 bv2) (bit-xor (the simple-bit-vector bv1)
+                                     (the simple-bit-vector bv2)))
+(defun |and_BVEC| (bv1 bv2) (bit-and (the simple-bit-vector bv1)
+                                     (the simple-bit-vector bv2)))
 
 (defun |is_BVEC| (bv) (simple-bit-vector-p bv))
 
