@@ -571,8 +571,8 @@ with this hack and will try to convince the GCL crowd to fix this.
         (let ((l-ret (c-type-to-ffi return-type))
                wrapper)
           `(progn
-            ,(ext:with-backend :c/c++
-               `(FFI:clines ,(make_extern return-type c-name arguments)))
+            (ext:with-backend :c/c++
+               (FFI:clines ,(make_extern return-type c-name arguments)))
             ,(if strs
                 (let* ((sym (gensym))
                        (wargs (mapcar #'car fargs))
@@ -810,7 +810,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 (progn
 
 (ext:with-backend :c/c++
-   (FFI:clines "extern void sock_get_string_buf_wrapper(int purpose,"
+   (FFI:clines "extern void sock_get_string_buf(int purpose,"
                "                  char * buf, int len);"))
 
 (ffi:def-function ("sock_get_string_buf" sock_get_string_buf_wrapper)
