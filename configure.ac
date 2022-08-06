@@ -285,6 +285,10 @@ else
                 1.5.9|2.0.*|2.1.[[0-3]]|2.1.[[0-3]].*)
                   AC_MSG_ERROR([sbcl $fricas_lisp_version on $(uname -m) has a serious runtime issue. Please use different sbcl version])
                     ;;
+                2.2.[[2-7]]*)
+                  AC_MSG_ERROR([sbcl $fricas_lisp_version on $(uname -m) has a bug which does not allow building FriCAS.
+Please use different sbcl version])
+                    ;;
              esac
                ;;
         esac
