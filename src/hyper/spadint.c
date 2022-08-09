@@ -661,7 +661,6 @@ issue_server_command(HyperLink *link)
         break;
     }
     buf = print_to_string(command);
-    fprintf(stderr, "Sending command->%s<-\n", buf);
     send_string(spad_socket, buf);
     if (link->type == Lispcommand || link->type == Spadcall
         || link->type == Spadcallquit || link->type == Qspadcallquit
