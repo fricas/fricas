@@ -150,31 +150,9 @@ where the [[${FRICAS}]] variable points to installed tree.
   nil)
 
 #|
-;############################################################################
-;# autoload dependencies
-;#
-;# if you are adding a file which is to be autoloaded the following step
-;# information is useful:
-;#  there are 2 cases:
-;#   1) adding files to currently autoloaded parts
-;#      (as of 2/92: browser old parser and old compiler)
-;#   2) adding new files
-;#   case 1:
-;#     a) you have to add the file to the list of files currently there
-;#        (e.g. see BROBJS above)
-;#     b) add an autolaod rule
-;#        (e.g. ${AUTO}/parsing.${O}: ${OUT}/parsing.${O})
-;#     c) edit util.lisp to add the 'external' function (those that
-;#        should trigger the autoload
-;#   case 2:
-;#     build-interpsys (in util.lisp) needs an extra argument for the
-;#     new autoload things and several functions in util.lisp need hacking.
-;############################################################################
-
 The {\bf build-interpsys} function takes a list of files to load
-into the image ({\bf load-files}). It also takes several lists of files,
-one for each subsystem which will be autoloaded. Autoloading is explained
-below. Next it takes a set of shell variables, the most important of
+into the image ({\bf load-files}).
+Next it takes a set of shell variables, the most important of
 which is the {\bf spad} variable. This is normally set to be the same
 as the final build location. This function is called in the
 src/interp/Makefile.
