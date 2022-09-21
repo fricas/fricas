@@ -351,6 +351,10 @@
 (defun delete-directory (dirname)
     (POP11:sysobey (concat "rm -r " dirname)))
 
+#+:abcl
+(defun delete-directory (dirname)
+  (sys:run-program "rm" (list "-r" dirname)))
+
 #+:lispworks
 (defun delete-directory (dirname)
   (system:call-system (concatenate 'string "rm -r " dirname)))
@@ -402,6 +406,11 @@
 (defun copy-lib-directory (name1 name2)
     (makedir name2)
     (POP11:sysobey (concat "cp " name1 "/* " name2)))
+
+#+:abcl
+(defun copy-lib-directory (name1 name2)
+    (makedir name2)
+    (sys:run-program "cp" (list "-r" (concat name1 "/*") name2)))
 
 #+:lispworks
 (defun copy-lib-directory (name1 name2)

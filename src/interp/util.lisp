@@ -56,6 +56,7 @@ at load time.
   #+:ecl "fas"
   #+:lispworks (pathname-type (compile-file-pathname "foo.lisp"))
   #+:poplog "lsp"
+  #+:abcl "abcl"
   )
 
 ;;; The relative directory list specifies a search path for files

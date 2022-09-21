@@ -674,6 +674,8 @@
 (defun gcmsg (x))
 #+:lispworks
 (defun gcmsg (x))
+#+:abcl
+(defun gcmsg (x))
 
 #+abcl
 (defun reclaim () (ext::gc))
@@ -718,7 +720,7 @@
      (kernel::%function-name func))
     ('t func))))
 
-#+(or :sbcl :clisp :openmcl :ecl :lispworks :poplog)
+#+(or :sbcl :clisp :openmcl :ecl :lispworks :poplog :abcl)
 (defun BPINAME (func)
   (cond
       ((functionp func)
@@ -765,6 +767,9 @@
 (defun OBEY (S)
    (POP11:sysobey S))
 
+#+:abcl
+(defun OBEY (S)
+   (sys:run-program "sh" (list "-c" S) :input t :output t :error t))
 
 #+:lispworks
 (defun OBEY (S)

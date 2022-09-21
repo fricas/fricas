@@ -24,7 +24,8 @@
         #+:poplog "poplog"
         #+:cmu    "cmucl"
         #+:lispworks "lispworks"
-        #-(or :gcl :ecl :openmcl :sbcl :clisp :poplog :cmu :lispworks) "unknown"
+        #+:abcl "abcl"
+        #-(or :gcl :ecl :openmcl :sbcl :clisp :poplog :cmu :lispworks :abcl) "unknown"
     )
     #+:clisp
     (if (not (find-package "FFI"))

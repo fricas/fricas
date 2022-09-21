@@ -235,6 +235,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun exit-with-status (s)
   (lispworks:quit :status s))
 
+#+:abcl
+(defun exit-with-status (s)
+  (ext:quit :status s))
+
 #+:poplog
 (defun quit() (pop11::sysexit))
 
@@ -331,6 +335,7 @@ with this hack and will try to convince the GCL crowd to fix this.
   #+:poplog (let ((pres (POP11::systranslate var-name)))
                 (if (stringp pres) pres))
   #+:lispworks (lispworks:environment-variable var-name)
+  #+:abcl (ext:getenv var-name)
   )
 
 ;;; Command-line arguments
@@ -347,6 +352,7 @@ with this hack and will try to convince the GCL crowd to fix this.
         res)
   #+:poplog '()
   #+:lispworks system:*line-arguments-list*
+  #+:abcl ext:*command-line-argument-list*
   )
 
 ;;; Silent loading of files
@@ -592,7 +598,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 )
 
-#+:poplog
+#+(or :poplog :abcl)
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
 (defmacro fricas-foreign-call (name c-name return-type &rest arguments)
@@ -895,6 +901,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun makedir (fname)
     (system:call-system (concatenate 'string "mkdir " fname)))
 
+#+:abcl
+(defun makedir (fname)
+    (sys:run-program "mkdir" (list fname)))
+
 ;;;
 
 #+:sbcl
@@ -928,6 +938,12 @@ with this hack and will try to convince the GCL crowd to fix this.
                  (if (ignore-errors (truename fname))
                      0
                      -1)))
+   #+:abcl
+   (if filename
+       (if (ext:file-directory-p filename)
+           1
+         (if (probe-file filename) 0 -1))
+     -1)
    #+:lispworks
    (if filename
        (if (lispworks:file-directory-p filename)
@@ -940,7 +956,7 @@ with this hack and will try to convince the GCL crowd to fix this.
   (multiple-value-bind (win dir) (unix::unix-current-directory)
                        (declare (ignore win))  dir))
 
-#+(or :ecl :GCL :sbcl :clisp :openmcl)
+#+(or :ecl :GCL :sbcl :clisp :openmcl :abcl)
 (defun get-current-directory ()
     (trim-directory-name (namestring (truename ""))))
 
@@ -974,7 +990,7 @@ with this hack and will try to convince the GCL crowd to fix this.
              (t nil)))
 #+:cmu (if (unix:unix-file-kind file) (truename file))
 #+:sbcl (if (sbcl-file-kind file) (truename file))
-#+(or :openmcl :ecl :lispworks) (probe-file file)
+#+(or :openmcl :ecl :lispworks :abcl) (probe-file file)
 #+:clisp(let* ((fname (trim-directory-name (namestring file)))
                (dname (pad-directory-name fname)))
                  (or (ignore-errors (truename dname))
