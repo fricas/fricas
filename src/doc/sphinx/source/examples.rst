@@ -15,7 +15,7 @@ Examples
 * `Integration with special functions
   <http://fricas-wiki.math.uni.wroc.pl/FriCASSpecialIntegration>`_
 
-* `Polynomials over finite fields and rings <http://fricas-wiki.math.uni.wroc.pl/SandBoxPolynomialOverFiniteField>`_
+* `Polynomials over finite fields and rings <http://fricas-wiki.math.uni.wroc.pl/PolynomialOverFiniteField>`_
 
 * `Gröbner bases <http://fricas-wiki.math.uni.wroc.pl/ExampleGroebner>`_
 
