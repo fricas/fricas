@@ -325,6 +325,13 @@ esac
 AC_SUBST(LIBSPAD_SO_TARGET)
 AC_SUBST(SOLIB_FLAGS)
 
+## Configure desired SBCL_HOME
+AC_ARG_WITH([sbcl-home],
+    AS_HELP_STRING([--with-sbcl-home=PATH], [specify the path of hardcoded SBCL_HOME]),
+    sbcl_home=$withval,
+    sbcl_home="")
+AC_SUBST(sbcl_home)
+
 ## In case our underlying lisp is SBCL or Closure CL, we provide a
 ## wrapper to enable GMP bignums in lisp
 GMP_WRAP_SO_TARGET=""

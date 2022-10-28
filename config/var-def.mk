@@ -170,6 +170,8 @@ FASLEXT = @fricas_fasl_type2@
 FRICAS_LISP_FLAVOR=@fricas_lisp_flavor@
 FRICAS_LISP_VERSION=@fricas_lisp_version@
 
+SBCL_HOME=@sbcl_home@
+
 ##
 
 ##
