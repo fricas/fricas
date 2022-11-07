@@ -268,7 +268,7 @@ It is possible to use the ``xvfb-run`` program, replacing
 ``make viewports`` above by
 ::
 
-   xvfb-run -a -n 0 -s '-screen 0 1024x768x24' make viewports
+   xvfb-run -a -s '-screen 0 1024x768x24' make viewports
 
 
 Algebra optimization
