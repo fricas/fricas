@@ -83,7 +83,7 @@ interpsysInitialization() ==
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"history"])
   initHist()
   if $displayStartMsgs then spadStartUpMsgs()
-  $superHash := MAKE_HASHTABLE('UEQUAL)
+  $superHash := MAKE_HASHTABLE('EQUAL)
 
 interpsys_restart() ==
   $IOindex := 1

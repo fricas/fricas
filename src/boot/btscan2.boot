@@ -524,7 +524,7 @@ shoeSubStringMatch (l,d,i)==
 shoePunctuation c== shoePun.c =1
 
 shoeKeyTableCons()==
-   KeyTable:=MAKE_HASHTABLE("CVEC")
+   KeyTable:=MAKE_HASHTABLE("EQUAL")
    for st in shoeKeyWords repeat
       HPUT(KeyTable,CAR st,CADR st)
    KeyTable

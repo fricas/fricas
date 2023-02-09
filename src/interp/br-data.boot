@@ -457,7 +457,7 @@ getParentsFor(cname,formalParams,constructorCategory) ==
   NREVERSE acc
 
 parentsOf con == --called by kcpPage, ancestorsRecur
-  if null BOUNDP '$parentsCache then SETQ($parentsCache, MAKE_HASHTABLE('ID))
+  if null BOUNDP '$parentsCache then SETQ($parentsCache, MAKE_HASHTABLE('EQ))
   HGET($parentsCache,con) or
     parents := getParentsForDomain con
     HPUT($parentsCache,con,parents)
@@ -534,7 +534,7 @@ childArgCheck(argl, nargl) ==
 
 --computeDescendantsOf cat ==
 --dynamically generates descendants
---  hash := MAKE_HASHTABLE('UEQUAL)
+--  hash := MAKE_HASHTABLE('EQUAL)
 --  for [child,:pred] in childrenOf cat repeat
 --    childForm := getConstructorForm child
 --    HPUT(hash,childForm,pred)
@@ -562,8 +562,8 @@ ancestorsOf(conform,domform) ==  --called by kcaPage, originsInOrder,...
   computeAncestorsOf(conform,domform)
 
 computeAncestorsOf(conform,domform) ==
-  $done : local := MAKE_HASHTABLE('UEQUAL)
-  $if :   local := MAKE_HASHTABLE('ID)
+  $done : local := MAKE_HASHTABLE('EQUAL)
+  $if :   local := MAKE_HASHTABLE('EQ)
   ancestorsRecur(conform,domform,true,true)
   acc := nil
   for op in listSort(function GLESSEQP,HKEYS $if) repeat

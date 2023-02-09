@@ -779,18 +779,6 @@
 
 ;17.0 Operations on Hashtables
 
-;17.1 Creation
-
-(defun MAKE_HASHTABLE (id1)
-   (let ((test (case id1
-                     ((EQ ID) #'eq)
-                     (CVEC #'equal)
-                     (EQL #'eql)
-                     #+Lucid ((UEQUAL EQUALP) #'EQUALP)
-                     #-Lucid ((UEQUAL EQUAL) #'equal)
-                     (otherwise (error "bad arg to MAKE_HASHTABLE")))))
-      (make-hash-table :test test)))
-
 ;17.2 Accessing
 
 (defun HKEYS (table)
@@ -802,13 +790,6 @@
 (define-function 'HASHTABLE_CLASS #'hash-table-test)
 
 (define-function 'HCOUNT #'hash-table-count)
-
-;17.4 Searching and Updating
-
-(defun HREMPROP (table key property)
-  (let ((plist (gethash key table)))
-    (if plist (setf (gethash key table)
-                    (delete property plist :test #'equal :key #'car)))))
 
 ;17.6 Miscellaneous
 

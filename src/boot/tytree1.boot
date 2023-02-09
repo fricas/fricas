@@ -901,7 +901,7 @@ bfMain(auxfn,op)==
 
   cacheType:=     'hash_-table
   cacheResetCode:=   ['SETQ,cacheName,['MAKE_HASHTABLE,
-                        ["QUOTE","UEQUAL"]]]
+                        ["QUOTE","EQUAL"]]]
   cacheCountCode:= ['hashCount,cacheName]
   cacheVector:=
       [op,cacheName,cacheType,cacheResetCode,cacheCountCode]

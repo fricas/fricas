@@ -613,7 +613,7 @@ koaPageFilterByName(htPage,functionToCall) ==
 dbDocTable conform ==
 --assumes $docTableHash bound --see dbExpandOpAlistIfNecessary
   table := HGET($docTableHash,conform) => table
-  $docTable : local := MAKE_HASHTABLE('ID)
+  $docTable : local := MAKE_HASHTABLE('EQ)
   --process in reverse order so that closest cover up farthest
   for x in originsInOrder conform repeat dbAddDocTable x
   dbAddDocTable conform
