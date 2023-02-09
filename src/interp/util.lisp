@@ -102,7 +102,7 @@ where the [[${FRICAS}]] variable points to installed tree.
   (setq $library-directory-list
    (mapcar #'make-absolute-filename $relative-library-directory-list))
   (setq |$defaultMsgDatabaseName|
-        (pathname (make-absolute-filename "/share/msgs/s2-us.msgs")))
+        (make-absolute-filename "/share/msgs/s2-us.msgs"))
   )
 
 ;;; Sets up the system to use the {\bf FRICAS} shell variable if we can

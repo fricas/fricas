@@ -725,9 +725,6 @@ appInfixArg(u,x,y,d,prec,leftOrRight,string) ==
 
 getBindingPowerOf(key,x) ==
   --binding powers can be found in file NEWAUX LISP
-  x is ['REDUCE,:.] => (key='left => 130; key='right => 0)
-  x is ["REPEAT",:.] => (key="left" => 130; key="right" => 0)
-  x is ["COND",:.] => (key="left" => 130; key="right" => 0)
   x is [op,:argl] =>
     if op is [a,:.] then op:= a
     op = 'SLASH => getBindingPowerOf(key,["/",:argl]) - 1
@@ -739,7 +736,6 @@ getBindingPowerOf(key,x) ==
     n>1 =>
       key="left" and (m:= getOpBindingPower(op,"Led","left")) => m
       key="right" and (m:= getOpBindingPower(op,"Led","right")) => m
-      op="ELT" => 1002
       1000
     1000
   1002

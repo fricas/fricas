@@ -972,13 +972,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 
 (defun |fricas_probe_file| (file)
-#|
-#+:GCL (if (fboundp 'system::stat)
-           ;;; gcl-2.6.8
-           (and (system::stat file) (truename file))
-           ;;; gcl-2.6.7
-           (probe-file file))
-|#
 #+:GCL (let* ((fk (file-kind (namestring file)))
               (fname (trim-directory-name (namestring file)))
               (dname (pad-directory-name fname)))

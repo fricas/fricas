@@ -698,12 +698,6 @@ evalSlotDomain(u,dollar) ==
   u is ['spadConstant,d,n] =>
     dom := evalSlotDomain(d,dollar)
     SPADCALL(dom . n)
-  u is ['ELT,d,n] =>
-    dom := evalSlotDomain(d,dollar)
-    slot := dom . n
-    slot is [=FUNCTION newGoGet,:env] =>
-        replaceGoGetSlot env
-    slot
   u is [op,:argl] => APPLY(op,[evalSlotDomain(x,dollar) for x in argl])
   systemErrorHere '"evalSlotDomain"
 

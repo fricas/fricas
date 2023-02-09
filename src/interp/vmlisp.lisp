@@ -57,13 +57,6 @@
 
 (define-function '|get_run_time| #'get-internal-run-time)
 
-; 9.4 Vectors and Bpis
-
-(defun FBPIP (item) (or (compiled-function-p item)
-                        (and (symbolp item) (fboundp item)
-                             (not (macro-function item))
-                             (compiled-function-p (symbol-function item)))))
-
 ; 9.5 Identifiers
 
 (defun gensymp (x) (and (symbolp x) (null (symbol-package x))))
@@ -654,28 +647,17 @@
 (defun VMREAD (st) (read st nil *read-place-holder*))
 (defun |read_line| (st) (read-line st nil nil))
 
-#+(OR IBCL KCL)
-(defun gcmsg (x)
+;;; GCMSG when called with argument eqal to NIL is supposed to
+;;; supress messages from garbage collector.  Empty body is
+;;; OK if garbage collector prints no messages.
+#+:gcl
+(defun GCMSG (x)
    (prog1 system:*gbc-message* (setq system:*gbc-message* x)))
 #+:cmu
-(defun gcmsg (x)
+(defun GCMSG (x)
    (prog1 ext:*gc-verbose* (setq ext:*gc-verbose* x)))
-#+:allegro
-(defun gcmsg (x))
-#+:sbcl
-(defun gcmsg (x))
-#+:openmcl
-(defun gcmsg (x))
-#+:clisp
-(defun gcmsg (x))
-#+:ecl
-(defun gcmsg (x))
-#+:poplog
-(defun gcmsg (x))
-#+:lispworks
-(defun gcmsg (x))
-#+:abcl
-(defun gcmsg (x))
+#-(or :gcl :cmu)
+(defun GCMSG (x))
 
 #+abcl
 (defun reclaim () (ext::gc))

@@ -34,6 +34,14 @@
 
 $returnNowhereFromGoGet := false
 
+)if false
+Example usage:
+
+  )boot showSummary(Boolean())
+  )boot showSummary(FreeModule(Integer(), Symbol()))
+
+)endif
+
 showSummary dom ==
   showPredicates dom
   showAttributes dom
