@@ -1336,12 +1336,12 @@ compileSpad2Cmd args ==
     -- Assume we entered from the "compiler" function, so args ~= nil
     -- and is a file with file extension .spad.
 
-    path := pathname args
+    path := first(args)
     pathnameType path ~= '"spad" => throwKeyedMsg("S2IZ0082", nil)
-    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    not(PROBE_-FILE(path)) => throwKeyedMsg("S2IL0003", [path])
 
     $edit_file := path
-    sayKeyedMsg("S2IZ0038",[namestring args])
+    sayKeyedMsg("S2IZ0038", [path])
 
     optList :=  '( _
       break _

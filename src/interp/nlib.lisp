@@ -184,17 +184,12 @@
                           (libstream-indexstream rstream)))
   (close (libstream-indexstream rstream)))
 
-;; filespec is id or list of 1, 2 or 3 ids
-;; filearg is filespec or 1, 2 or 3 ids
-;; (RPACKFILE filearg)  -- compiles code files and converts to compressed format
-(defun rpackfile (filespec)
-  (setq filespec (|make_filename| filespec))
-  (if (string= (pathname-type filespec) "NRLIB")
-    (let ((base (pathname-name filespec)))
+;; compile_lib(libdir) -- libdir must be string naming NRLIB directory
+(defun |compile_lib| (libdir)
+    (let ((base (pathname-name libdir)))
          (|compile_lib_file|
-             (concatenate 'string (namestring filespec) "/" base ".lsp")))
-    (error "RPACKFILE only works on .NRLIB-s"))
-  filespec)
+             (concatenate 'string libdir "/" base ".lsp")))
+)
 
 #+:GCL
 (defun spad-fixed-arg (fname )
@@ -255,17 +250,13 @@
               (concatenate 'string (string filearg) "." (string ft))
               (string filearg)))))))
 
-(defun |make_filename| (filearg)
-    (cond
-        ((consp filearg)
-            (|make_filename0| (car filearg) (cadr filearg)))
-        (t (|make_filename0| filearg nil))))
+(defun |make_filename| (filearg) (|make_filename0| filearg nil))
 
 (defun |make_full_namestring| (filearg)
   (namestring (merge-pathnames (|make_filename| filearg))))
 
 (defun |get_directory_list| (ft &aux (cd (get-current-directory)))
-  (cond ((member ft '("NRLIB" "DAASE" "EXPOSED") :test #'string=)
+  (cond ((member ft '("NRLIB") :test #'string=)
            (if (eq |$UserLevel| '|development|)
                (cons cd $library-directory-list)
                $library-directory-list))
@@ -307,13 +298,14 @@
 
 ;; ($ERASE filearg) -> 0 if succeeds else 1
 (defun |erase_lib|(filearg)
-  (setq filearg (|make_full_namestring| filearg))
   (if (|fricas_probe_file| filearg)
       #+:fricas_has_remove_directory
           (|remove_directory| filearg)
       #-:fricas_has_remove_directory
           (delete-directory filearg)
       1))
+
+(defun |erase_lib0|(fn ft) (|erase_lib| (|make_filename0| fn ft)))
 
 #+:GCL
 (defun delete-directory (dirname)
@@ -360,7 +352,7 @@
   (system:call-system (concatenate 'string "rm -r " dirname)))
 
 (defun |replace_lib|(filespec2 filespec1)
-    (|erase_lib| (list (setq filespec1 (|make_full_namestring| filespec1))))
+    (|erase_lib| (setq filespec1 (|make_full_namestring| filespec1)))
     #-(or :clisp :openmcl :ecl)
     (rename-file (|make_full_namestring| filespec2) filespec1)
     #+(or :clisp :openmcl :ecl)
@@ -424,9 +416,6 @@
     (SPAD . |spad|)
     (BOOT . |boot|)
     (LISP . |lsp|)
-    (OUTPUT . |splog|)
-    (ERRORLIB . |erlib|)
-    (DATABASE . |DAASE|)
    )
 )
 
