@@ -318,9 +318,9 @@ After this function is called the image is clean and can be saved.
   (setq |$texOutputStream| (|mkOutputConsoleStream|))
   (setq |$formattedOutputStream| (|mkOutputConsoleStream|))
   (fricas-init)
-  #+(or :GCL :poplog)
+  #+:poplog
   (|spad|)
-  #-(or :GCL :poplog)
+  #-:poplog
   (let ((*debugger-hook*
             (lambda (condition previous-handler)
                 (spad-system-error-handler condition))

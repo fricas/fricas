@@ -995,7 +995,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (let ((ns (namestring name)))
          (if (and (consp (pathname-directory name))
                   (eq (car (pathname-directory name))
-                      #-:GCL :absolute #+:GCL :root))
+                      :absolute))
              ns
              (concatenate 'string (get-current-directory)  "/" ns))))
 #+:cmu
