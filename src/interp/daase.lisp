@@ -837,18 +837,18 @@ database.
       (let (nrlibdirs skipasos aos)
 
       (chdir (string dirarg))
-      #-:GCL
+;      #-:GCL
       (setq nrlibdirs (directory "*.NRLIB/index.KAF"))
 
       #| directory in GCL (at least gcl-2.6.8) on Windows is buggy,
       it can not handle pathnames having wildcards in the middle,
       so we need a workaround.  |#
-      #+:GCL
-      (setq nrlibdirs
-           (mapcar #'(lambda (f)
-                          (concatenate 'string (namestring f)
-                                         "/index.KAF"))
-                   (directory "*.NRLIB")))
+;      #+:GCL
+;      (setq nrlibdirs
+;           (mapcar #'(lambda (f)
+;                          (concatenate 'string (namestring f)
+;                                         "/index.KAF"))
+;                   (directory "*.NRLIB")))
 
       (setq asys (directory "*.asy"))
 
