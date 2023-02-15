@@ -273,12 +273,12 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
         for f in lp repeat
             rr := cons(f, rr)
             p := f.factor
-            degree(p) ~= k => "iterate"
+            degree(p) ~= k => iterate
             cp := coefficient(p, l)
-            cp = 0 => "iterate"
+            cp = 0 => iterate
             fac := cp/cp1
             facu := retractIfCan(fac)@Union(Fraction(Integer), "failed")
-            facu case "failed" => "iterate"
+            facu case "failed" => iterate
             nfac := facu@Fraction(Integer)
             nfac_ok := true
             if n > 1 then
@@ -287,8 +287,8 @@ AlgebraicIntegrate(R0, F, UP, UPUP, R) : Exports == Implementation where
                 ndu := perfectNthRoot(denom(nfac), n)$IntegerRoots(Z)
                 ndu case "failed" => nfac_ok := false
                 nfac := (nnu@Z)/(ndu@Z)
-            not(nfac_ok) => "iterate"
-            p1 ~= (nfac::F)^(-k)*elt(p, monomial(nfac::F, 1)$UP) => "iterate"
+            not(nfac_ok) => iterate
+            p1 ~= (nfac::F)^(-k)*elt(p, monomial(nfac::F, 1)$UP) => iterate
             res := cons([p, f.exponent, nfac]$PC, res)
             rr := rest(rr)
         res := reverse!(res)

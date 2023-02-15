@@ -117,7 +117,7 @@ MrvLimitPackage : Exports == Implementation where
           l_tan : List(K) := []
           l_ts : List(SY) := []
           for k in tf repeat
-              differentiate(k::FE, x) = 0 => "iterate"
+              differentiate(k::FE, x) = 0 => iterate
               op := operator(k)
               args := argument(k)
               nargs := [eval(arg, rtf, ntf) for arg in args]
@@ -127,8 +127,8 @@ MrvLimitPackage : Exports == Implementation where
               rtf := cons(k, rtf)
               ntf := cons(nk, ntf)
               nm := name(op)
-              nm = 'exp => "iterate"
-              nm = 'log => "iterate"
+              nm = 'exp => iterate
+              nm = 'log => iterate
               #args = 1 =>
                   lau := mrv_limit(arg1 := nargs(1), x, state)
                   nm = 'atan =>
@@ -140,7 +140,7 @@ MrvLimitPackage : Exports == Implementation where
                               ntf(1) := nk
                           la := lau@OFE
                           ss : Integer := whatInfinity(la)
-                          ss = 0 => "iterate"
+                          ss = 0 => iterate
                           nk :=
                               ss = 1 => pi()$FE/(2::FE) - atan(1$FE/arg1)
                               -pi()$FE/(2::FE) -atan(1$FE/arg1)
@@ -151,13 +151,13 @@ MrvLimitPackage : Exports == Implementation where
                               la := lau@OFE
                               ss : Integer := whatInfinity(la)
                               not(ss = 0)
-                          not(need_subst) => "iterate"
+                          not(need_subst) => iterate
                           ns := new()$Symbol
                           nk := ns::FE
                           l_tan := cons(kernels(nk).1, l_tan)
                           l_ts := cons(ns, l_ts)
                           ntf(1) := nk
-                  lau case "failed" => "iterate"
+                  lau case "failed" => iterate
                   la := lau@OFE
                   ss : Integer := whatInfinity(la)
                   nm = 'Gamma =>
