@@ -972,13 +972,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 
 (defun |fricas_probe_file| (file)
-#|
-#+:GCL (if (fboundp 'system::stat)
-           ;;; gcl-2.6.8
-           (and (system::stat file) (truename file))
-           ;;; gcl-2.6.7
-           (probe-file file))
-|#
 #+:GCL (let* ((fk (file-kind (namestring file)))
               (fname (trim-directory-name (namestring file)))
               (dname (pad-directory-name fname)))
@@ -990,7 +983,7 @@ with this hack and will try to convince the GCL crowd to fix this.
              (t nil)))
 #+:cmu (if (unix:unix-file-kind file) (truename file))
 #+:sbcl (if (sbcl-file-kind file) (truename file))
-#+(or :openmcl :ecl :lispworks :abcl) (probe-file file)
+#+(or :abcl :ecl :lispworks :openmcl :poplog) (probe-file file)
 #+:clisp(let* ((fname (trim-directory-name (namestring file)))
                (dname (pad-directory-name fname)))
                  (or (ignore-errors (truename dname))
@@ -1002,7 +995,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (let ((ns (namestring name)))
          (if (and (consp (pathname-directory name))
                   (eq (car (pathname-directory name))
-                      #-:GCL :absolute #+:GCL :root))
+                      :absolute))
              ns
              (concatenate 'string (get-current-directory)  "/" ns))))
 #+:cmu

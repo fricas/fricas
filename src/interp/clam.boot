@@ -40,13 +40,13 @@
 --     kind          --"hash" or number of values to be stored in
 --                     circular list
 --     eqEtc         --the equal function to be used
---                     (EQ, EQUAL, UEQUAL,..)
+--                     (EQ or EQUAL)
 --     "shift"       --(opt) for circular lists, shift most recently
 --                      used to front
 --     "count")      --(opt) use reference counts (see below)
 --
 -- Notes:
---   Functions with "hash" as kind must give EQ, CVEC, or UEQUAL
+--   Functions with "hash" as kind must give EQ or EQUAL
 --   Functions with some other <identifier> as kind hashed as property
 --   lists with eqEtc used to compare entries
 --   Functions which have 0 arguments may only be CLAMmed when kind is

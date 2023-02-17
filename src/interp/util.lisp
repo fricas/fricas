@@ -102,7 +102,7 @@ where the [[${FRICAS}]] variable points to installed tree.
   (setq $library-directory-list
    (mapcar #'make-absolute-filename $relative-library-directory-list))
   (setq |$defaultMsgDatabaseName|
-        (pathname (make-absolute-filename "/share/msgs/s2-us.msgs")))
+        (make-absolute-filename "/share/msgs/s2-us.msgs"))
   )
 
 ;;; Sets up the system to use the {\bf FRICAS} shell variable if we can
@@ -318,9 +318,9 @@ After this function is called the image is clean and can be saved.
   (setq |$texOutputStream| (|mkOutputConsoleStream|))
   (setq |$formattedOutputStream| (|mkOutputConsoleStream|))
   (fricas-init)
-  #+(or :GCL :poplog)
+  #+:poplog
   (|spad|)
-  #-(or :GCL :poplog)
+  #-:poplog
   (let ((*debugger-hook*
             (lambda (condition previous-handler)
                 (spad-system-error-handler condition))

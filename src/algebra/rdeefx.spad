@@ -204,7 +204,7 @@ ConstantLinearDependence(R, F) : Exports == Implementation where
         for i in 1..nrows(m1) repeat
             k1 := k
             while m1(i, k1) = 0 and k1 <= nc repeat k1 := k1 + 1
-            nc < k1 => "iterate"
+            nc < k1 => iterate
             k := k1
             m1(i, k) ~= 1 => error "impossible"
             lri := cons(i, lri)
@@ -303,7 +303,7 @@ PolynomialRationalRoots(F, UP) : Exports == Implementation where
         res : List(Q) := []
         for facr in facl repeat
             fac := facr.factor
-            degree(fac) ~= 1 => "iterate"
+            degree(fac) ~= 1 => iterate
             val1r : Q := -coefficient(fac, 0) /$Q leadingCoefficient(fac)
             res := cons(val1r, res)
         res
@@ -313,7 +313,7 @@ PolynomialRationalRoots(F, UP) : Exports == Implementation where
         res : Integer := 0
         for r in lr repeat
             qu := retractIfCan(r)@Union(Integer, "failed")
-            qu case "failed" => "iterate"
+            qu case "failed" => iterate
             q := qu@Integer
             if q < res then res := q
         res
@@ -477,26 +477,26 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 tk := k
                 htk := hk
                 extra_tk := not(member?(tk, lkf))
-            hk < htk => "iterate"
-            is?(tk, 'exp) and extra_tk => "iterate"
+            hk < htk => iterate
+            is?(tk, 'exp) and extra_tk => iterate
             is?(k, 'exp) and not(member?(k, lkf)) =>
                 tk := k
                 extra_tk := true
-            is?(tk, 'exp) => "iterate"
+            is?(tk, 'exp) => iterate
             is?(k, 'exp) =>
                 tk := k
                 extra_tk := false
-            is?(tk, 'log) and extra_tk => "iterate"
+            is?(tk, 'log) and extra_tk => iterate
             is?(k, 'log) and not(member?(k, lkf)) =>
                 tk := k
                 extra_tk := true
-            is?(tk, 'log) => "iterate"
+            is?(tk, 'log) => iterate
             is?(k, 'log) =>
                 tk := k
                 extra_tk := false
             if has?(operator tk, ALGOP)$BasicOperator then
                 has?(operator k, ALGOP)$BasicOperator =>
-                    extra_tk => "iterate"
+                    extra_tk => iterate
                     if not(member?(k, lkf)) then
                         tk := k
                         extra_tk := true
@@ -674,7 +674,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             (ai - ki*bi) rem di ~= 0 => return "failed"
             di1 := (da exquo gcd(bi, da))::Z
             di2 := (di1 exquo gcd(di1, di))::Z
-            di2 = 1 => "iterate"
+            di2 = 1 => iterate
             ki1 := invmod(bi, di2)$Integer
             (c1, c2, g) := extendedEuclidean(di, di2)
             di := di2*di
@@ -705,7 +705,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         for fac in factorList(fgd) repeat
             f1 := fac.factor
             deg1 : N := degree(f1)
-            deg1 = 0 => "iterate"
+            deg1 = 0 => iterate
             f1 := f1/leadingCoefficient(f1)
             tt := -$F coefficient(f1, qcoerce(deg1 - 1)$N)$UP /$F (deg1::F)
             no_sol : Boolean := false
@@ -730,7 +730,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                              dummy, monomial(1/(a1 + r0f), 1))
                 not(every?((c : F) : Boolean +-> D(c, x) = 0,
                     coefficients(f2))$LF) => no_sol := true
-            no_sol => "iterate"
+            no_sol => iterate
             dv0 := -D(a1*tt + a0, x)
             dv1 := D(tt, x)
             dvs := [D(v, x) for v in vlst1]
@@ -741,12 +741,12 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 vector(cons(dv1, dvs))$Vector(F)
             sol_rec := solveLinearlyOverQ(vecf, dv0)$IntegerLinearDependence(F)
             psolu := sol_rec.particular
-            psolu case "failed" => "iterate"
+            psolu case "failed" => iterate
             psol := psolu@Vector(Q)
             if has_r0 then
                 psol := vector(cons(r0::Q, entries(psol)))$Vector(Q)
             zbu := z_basis(psol, sol_rec.basis)
-            zbu case "failed" => "iterate"
+            zbu case "failed" => iterate
             zb := zbu@Record(particular : Vector Z, basis : List Vector Z)
             vec1 := zb.particular
             r0 := vec1(1)
@@ -854,11 +854,11 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         res : List(EI_REC) := []
         for sol in lsol repeat
             (ru := retractIfCan(sol.ratpart)@Union(Z, "failed"))
-               case "failed" => "iterate"
-            has_r_bad and ru@Z = r_bad => "iterate"
+               case "failed" => iterate
+            has_r_bad and ru@Z = r_bad => iterate
             res1 := handle_factor(gd, nf, denf, sol.alg_part, ru::Z, u,
                      vlst, ulst, k, x, true)
-            res1 case "failed" => "iterate"
+            res1 case "failed" => iterate
             res := cons(res1@EI_REC, res)
         nnp := differentiate(nf)*denf - differentiate(denf)*nf + a::F::UP
         eq1 := resultant(nnp, gd)
@@ -870,7 +870,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         degn1 := max(degn, degd + 1)
         for r0 in ratl repeat
             (ru := retractIfCan(r0)@Union(Z, "failed")) case "failed" =>
-                "iterate"
+                iterate
             ri := ru@Z
             nn := nf + monomial(ri::F, 1)$UP * denf
             res1l := ei_args3(gd, nn, denf, k, vlst, ulst, x)
@@ -880,7 +880,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                 dega : Z :=
                     ap = 0 => 1
                     degree(ap)
-                degree(fac) = degn1*dega => "iterate"
+                degree(fac) = degn1*dega => iterate
                 res := cons([fac, ri, res1.v_part, ap, u0^ri*res1.u_part,
                              0, res1.shift_part]$EI_REC, res)
         res
@@ -898,7 +898,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         for fac in rfac repeat
             f1 := fac.factor
             deg1 := degree(f1)
-            deg1 = 0 => "iterate"
+            deg1 = 0 => iterate
             resu := handle_factor(gd, nf, denf, f1, 0, 1, vlst, ulst,
                                   k, x, false)
             if resu case EI_REC then
@@ -1292,18 +1292,18 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             deg1 = 1 =>
                 tt := -coefficient(f1, 0)/coefficient(f1, 1)
                 nf1 := nf + tt::UP*denf
-                2*fac.exponent < degree(nf1) => "iterate"
+                2*fac.exponent < degree(nf1) => iterate
                 fnf := squareFree(nf1)
                 res := gamma_candidate(fnf, nf1, denf, denf1, gexp, a, tt,
                                        0, vlst, ulst, k, x, res)
             -- no cancellation in leading term possible, so
             -- n2 = deg nf1
-            fac.exponent < n2 => "iterate"
+            fac.exponent < n2 => iterate
             if deg1 = 2 then
                 tt := -coefficient(f1, 1)/(2::F*leadingCoefficient(f1))
                 f2 := eval(f1, dummy, monomial(1, 1)$UP + tt::UP)
                 not(every?((c : F) : Boolean +-> D(c, x) = 0,
-                    coefficients(f2))$LF) => "iterate"
+                    coefficients(f2))$LF) => iterate
                 cfac := rootOf(f2)
                 nf1 := nf + (tt+cfac)::UP*denf
                 fnf := squareFree(nf1)
@@ -1361,7 +1361,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
                                           )$FunctionSpaceRationalRoots(R, F)
                 for r0 in ratl repeat
                     ru := retractIfCan(r0)@Union(Z, "failed")
-                    ru case "failed" => "iterate"
+                    ru case "failed" => iterate
                     ri := ru@Z
                     nn := nf + monomial(ri::F, 1)$UP * denf
                     res1 := gammas1(nn, ri, denf, denf1, gexp, n2,
@@ -1374,7 +1374,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             lsol := solve_poly_eqs([f_res1, D(f_res1, bs)], ts, bs)
             for sol in lsol repeat
                ru := retractIfCan(sol.ratpart)@Union(Z, "failed")
-               ru case "failed" => "iterate"
+               ru case "failed" => iterate
                ri := ru@Z
                nn := nf + monomial(ri::F, 1)$UP * denf
                res1 := gammas1(nn, ri, denf, denf1, gexp, n2,

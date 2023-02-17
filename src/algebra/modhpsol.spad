@@ -211,7 +211,7 @@ NaiveBeckermannLabahnModular : with
                 pi := k
                 maxd := vd(k)
         pi = 0 =>
-             "iterate"
+             iterate
         vcinv : Integer := mulmod(p-1, invmod(vc(pi),
                                   qconvert(p)@SingleInteger), p)
         for k in 1..m repeat
@@ -229,7 +229,7 @@ NaiveBeckermannLabahnModular : with
       nc := #vn
       for j in 1..nc repeat
           nj := vn(j) - d
-          nj < 0 => "iterate"
+          nj < 0 => iterate
           pa := qelt(m, i, j)
           pa(nj) ~= 0 => return j
       error "Incorrect defect"
@@ -293,7 +293,7 @@ NaiveBeckermannLabahnModular : with
           vdj := vd(j)
           for d in 0..(mvd - vdj) repeat
               for i in 1..ns repeat
-                  i = j => "iterate"
+                  i = j => iterate
                   vdi := vd(i)
                   vdi < vdj + d => break
                   ci := civ(i)
@@ -774,7 +774,7 @@ InnerModularHermitePade : with
             ok := false
             for k in 1..100 while not(ok) repeat
                 pt := random(p)
-                member?(pt, lpt) => "iterate"
+                member?(pt, lpt) => iterate
                 lpt := cons(pt, lpt)
                 ok := true
             if positiveRemainder((npt := #lpt), 100) = 0 then
@@ -797,7 +797,7 @@ InnerModularHermitePade : with
             pprp case "failed" =>
                 bad_cnt := bad_cnt + 1
                 bad_cnt > good_cnt + 2 => return "failed"
-                "iterate"
+                iterate
             ppr := pprp@PBR
 
             -- check for bad reduction and other loosage
@@ -810,7 +810,7 @@ InnerModularHermitePade : with
             chk_ress case "failed" =>
                 bad_cnt := bad_cnt + 1
                 bad_cnt > good_cnt + 2 => return "failed"
-                "iterate"
+                iterate
             if chk_ress case "all_bad" then
                 all_bad := true
             if all_bad then
@@ -884,13 +884,13 @@ InnerModularHermitePade : with
                     n1
                 for j in lo..(hi - 1) repeat
                     coeffs(j) := Qmul(coeffs(j), invc, p)
-            not(ok) => "iterate"
+            not(ok) => iterate
             chinese_update(coeffs, pt, rstate)$VMR
 
             -- try reconstruction
             pp := reconstruct(rstate, nvars, block_offsets, _
                               offsets, exps)$VMR
-            pp case "failed" => "iterate"
+            pp case "failed" => iterate
             -- if successful return
             rr := pp@PDR
             return [va, civ, m, rr.offsetdata, _
@@ -914,7 +914,7 @@ InnerModularHermitePade : with
             for k in 1..100 while not(ok) repeat
                 p := nextPrime(random(200000) + 200000 _
                               )$IntegerPrimesPackage(Integer)
-                member?(p, lp) => "iterate"
+                member?(p, lp) => iterate
                 lp := cons(p, lp)
                 ok := true
             not(ok) => error "Run out of primes"
@@ -924,12 +924,12 @@ InnerModularHermitePade : with
 
             -- eval and solve reduced system
             ngv0p := eval3s(gvl, p)
-            ngv0p case "failed" => "iterate"
+            ngv0p case "failed" => iterate
             ngvl := ngv0p@List(PMP1)
             pprp := do_poly_modular(vars, ngvl, pss, gen)
 
             pprp case "no_solution" => return "no_solution"
-            pprp case "failed" => "iterate"
+            pprp case "failed" => iterate
             ppr := pprp@PBR
 
             -- check for bad reduction and other loosage
@@ -939,7 +939,7 @@ InnerModularHermitePade : with
             noffsets := ppr.offsetdata
             coeffs := ppr.coeffdata
             chk_ress := check_defects(va, civ, pss)
-            chk_ress case "failed" => "iterate"
+            chk_ress case "failed" => iterate
             if chk_ress case "all_bad" then
                 all_bad := true
             if all_bad then
@@ -1012,12 +1012,12 @@ InnerModularHermitePade : with
                     n1
                 for j in lo..(hi - 1) repeat
                     coeffs(j) := Qmul(coeffs(j), invc, p)
-            not(ok) => "iterate"
+            not(ok) => iterate
             chinese_update(coeffs, p, rstate)$VIR
 
             -- try reconstruction
             pp := reconstruct(rstate, block_offsets)$VIR
-            pp case "failed" => "iterate"
+            pp case "failed" => iterate
             -- if successful return
             return [va, civ, m, offsets, _
                     exps, pp@PAI]
@@ -1267,14 +1267,14 @@ ModularHermitePade() : with
            for k in 1..100 while not(ok) repeat
                prime := nextPrime(random(2000000) + 2000000_
                                      )$IntegerPrimesPackage(Integer)
-               member?(prime, lp) => "iterate"
+               member?(prime, lp) => iterate
                lp := cons(prime, lp)
                ok := true
            not(ok) => error "Run out of primes"
            nprimes := nprimes + 1
            psi := prime::K1
            gv0p := LLFI_to_LPA(list, 0, psi)
-           gv0p case "failed" => "iterate"
+           gv0p case "failed" => iterate
            gv0 := gv0p@List(PA)
            gv2 := gen(gv0, prime, 1)
 
@@ -1286,7 +1286,7 @@ ModularHermitePade() : with
            va := rblr.defects
            civ := rblr.cinds
            -- Check for bad reduction
-           #va > nsols => "iterate"
+           #va > nsols => iterate
            is_bad : Boolean := false
            all_bad : Boolean := #va < nsols
            if #va = nsols then
@@ -1303,7 +1303,7 @@ ModularHermitePade() : with
                    civ(i) > oldciv(i) =>
                        is_bad := true
                        break
-           is_bad => "iterate"
+           is_bad => iterate
            if all_bad then
                -- (Re-)initialize
                nsols := #va
@@ -1334,7 +1334,7 @@ ModularHermitePade() : with
                empty_offsets := false
            pp := reconstruct(rstate, offsets)
            pp case "failed" =>
-               "iterate"
+               iterate
            ppr := pp@PAI
            k := 0
            resv :=  new(nsols::NonNegativeInteger, _
@@ -1353,7 +1353,7 @@ ModularHermitePade() : with
                        k := k + 1
                    resvi(j) := s
                sol_okp := check(entries resvi)
-               sol_okp case "reject" => "iterate"
+               sol_okp case "reject" => iterate
                sol_okp case "no_solution" =>
                    sol_ok := false
                    break
@@ -1507,7 +1507,7 @@ ModularHermitePade() : with
                    hi := ohi - 1
                    resvi(j) := unpack_poly(vars, exps, coeffs, lo, hi)
                sol_okp  := check(entries resvi)
-               sol_okp case "reject" => "iterate"
+               sol_okp case "reject" => iterate
                sol_okp case "no_solution" =>
                    ok := false
                    break
@@ -1560,7 +1560,7 @@ ModularHermitePade() : with
                             )$SparseUnivariatePolynomial(Integer)
                 resvi(j) := s
            sol_okp  := check(entries resvi)
-           sol_okp case "reject" => "iterate"
+           sol_okp case "reject" => iterate
            sol_okp case "no_solution" =>
                error "HP_solve_M: check should never return no_solution for finite fields"
            resv(ii) := resvi
@@ -1706,7 +1706,7 @@ ModularHermitePadeSolver(F : CommutativeRing, S : CommutativeRing)_
                     if var = qvar then qval := first(lpt)
                 lpt := reverse!(lpt)
                 gv0p := LLF_to_LPA(list, n0 + delta, vars, lpt, p)
-                gv0p case "failed" => "iterate"
+                gv0p case "failed" => iterate
                 gvl := gv0p@List(PA)
                 #gvl ~= 1 =>
                    "check_sol_mod_diff: #gvl ~= 1"

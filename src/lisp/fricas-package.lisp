@@ -76,7 +76,8 @@
 
 (in-package "BOOTTRAN")
 
-(import '(BOOT::QSETVELT BOOT::SETELT_BVEC BOOT::STR_ELT))
+(import '(BOOT::MAKE_HASHTABLE BOOT::QSETVELT BOOT::SETELT_BVEC
+          BOOT::STR_ELT))
 
 ;;; Package containing support routines for code generated
 ;;; by Aldor compiler.

@@ -37,9 +37,8 @@ pathname p ==
   if SYMBOLP(p) then p := SYMBOL_-NAME(p)
   PATHNAMEP p => p
   not PAIRP p => PATHNAME p
-  p is [fn] => PATHNAME make_filename(fn)
-  p is [fn, ft] => PATHNAME make_filename0(fn, ft)
   error '"Strange argument to pathname"
+
 namestring p == NAMESTRING pathname p
 
 pathnameName p == PATHNAME_-NAME pathname p
@@ -61,10 +60,5 @@ isExistingFile f ==
     else false
 
 --% Scratchpad II File Name Functions
-
-makePathname(name,type) ==
-  -- Common Lisp version of this will have to be written
-  -- using MAKE-PATHNAME and the optional args.
-  pathname [object2String name,object2String type]
 
 isSystemDirectory dir == EVERY(function CHAR_=,$SPADROOT,dir)

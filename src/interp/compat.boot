@@ -64,5 +64,5 @@ rwrite(key,val,stream) ==
 
 editFile file ==
   MEMQ(INTERN('"WIN32",FIND_-PACKAGE("KEYWORD")),_*FEATURES_*) =>
-    OBEY STRCONC('"notepad ", namestring pathname file)
-  OBEY STRCONC('"$FRICAS/lib/SPADEDIT ",namestring pathname file)
+      OBEY STRCONC('"notepad ", file)
+  OBEY STRCONC('"$FRICAS/lib/SPADEDIT ", file)

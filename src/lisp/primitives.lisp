@@ -564,6 +564,13 @@
 
 (defmacro HREM (table key) `(remhash ,key ,table))
 
+(defun MAKE_HASHTABLE (tst)
+     (cond
+         ((MEMQ tst '(EQ EQUAL))
+             (make-hash-table :test tst))
+         (t (error "bad arg to MAKE_HASHTABLE")))
+)
+
 ; Misc operations
 
 (defmacro |qset_first|(l x) `(SETF (CAR (the cons ,l)) ,x))

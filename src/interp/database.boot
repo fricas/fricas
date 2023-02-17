@@ -86,15 +86,15 @@ augmentLisplibModemapsFromFunctor(form,opAlist,signature) ==
           :$lisplibModemapAlist]
 
 saveUsersHashTable() ==
-  erase_lib(['USERS, 'DATABASE])
-  stream:= writeLib('USERS,'DATABASE)
+  erase_lib('"USERS.DAASE")
+  stream:= writeLib('"USERS.DAASE")
   for k in MSORT HKEYS $usersTb repeat
     rwrite(k, HGET($usersTb, k), stream)
   RSHUT stream
 
 saveDependentsHashTable() ==
-  erase_lib(['DEPENDENTS, 'DATABASE])
-  stream:= writeLib('DEPENDENTS,'DATABASE)
+  erase_lib('"DEPENDENTS.DAASE")
+  stream:= writeLib('"DEPENDENTS.DAASE")
   for k in MSORT HKEYS $depTb repeat
     rwrite(k, HGET($depTb, k), stream)
   RSHUT stream
@@ -108,13 +108,13 @@ save_browser_data() ==
     saveDependentsHashTable()
 
 getUsersOfConstructor(con) ==
-  stream := readLib('USERS, 'DATABASE)
+  stream := readLib('"USERS.DAASE")
   val := rread_list(con, stream)
   RSHUT stream
   val
 
 getDependentsOfConstructor(con) ==
-  stream := readLib('DEPENDENTS, 'DATABASE)
+  stream := readLib('"DEPENDENTS.DAASE")
   val := rread_list(con, stream)
   RSHUT stream
   val

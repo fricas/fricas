@@ -33,13 +33,6 @@
 ;; this files contains basic routines for error handling
 (in-package "BOOT")
 
-#+:GCL
-(defun error-format (message args)
-  (let ((|$BreakMode| '|break|))
-    (declare (special |$BreakMode|))
-   (if (stringp message) (apply #'format nil message args) nil)))
-
-#-:GCL
 (defun error-format (c)
   (let ((|$BreakMode| '|break|))
     (declare (special |$BreakMode|))
@@ -57,14 +50,6 @@
 
 ;; following macro evaluates form returning Union(type-of form, "failed")
 
-#+:GCL
-(defmacro |trapNumericErrors| (form)
-  `(let ((|$BreakMode| '|trapNumerics|)
-         (val))
-     (declare (special |$BreakMode|))
-     (catch '|trapNumerics| (cons 0 ,form))))
-
-#-:GCL
 (defmacro |trapNumericErrors| (form)
     `(handler-case (cons 0 ,form)
          (arithmetic-error () |$numericFailure|)))
@@ -96,7 +81,6 @@
 
 (defparameter |$inLispVM| nil)
 
-#-:GCL
 (defun spad-system-error-handler (c)
     (block nil
         (setq |$NeedToSignalSessionManager| T)
@@ -110,30 +94,3 @@
                    (setq |$BreakMode| nil)
                    (throw '|letPrint2| nil)))))
 
-
-
-;; the following form embeds around the akcl error handler
-#+:GCL
-(eval-when
- (load eval)
- (UNEMBED 'system:universal-error-handler)
- (EMBED 'system:universal-error-handler
-            '(lambda (type correctable? op
-                           continue-string error-string &rest args)
-               (block
-                nil
-                (setq |$NeedToSignalSessionManager| T)
-                    (cond
-                          ((eq |$BreakMode| '|trapNumerics|)
-                                (throw '|trapNumerics| |$numericFailure|))
-                          ((and (null |$inLispVM|)
-                                (memq |$BreakMode| '(|nobreak| |query| |resume|
-                                                    |quit| |trapSpadErrors|)))
-                           (let ((|$inLispVM| T)) ;; turn off handler
-                             (return
-                              (|systemError| (error-format error-string args)))))
-                          ((eq |$BreakMode| '|letPrint2|)
-                           (setq |$BreakMode| nil)
-                           (throw '|letPrint2| nil)))
-                (apply system:universal-error-handler type correctable? op
-                       continue-string error-string args )))))

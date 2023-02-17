@@ -138,7 +138,7 @@ cacheKeyedMsg(db_name) ==
 
 getKeyedMsg(key) ==
     if not($msg_hash) then
-        $msg_hash := MAKE_HASHTABLE('ID)
+        $msg_hash := MAKE_HASHTABLE('EQ)
         cacheKeyedMsg($defaultMsgDatabaseName)
     HGET($msg_hash, key)
 
@@ -954,7 +954,7 @@ sayMSG(x) == sayBrightly1(x, get_algebra_stream())
 sayFormatted(x) == say_simple(x, get_formatted_stream())
 
 sayMSG2File(msg) ==
-    file := makePathname("spadmsg", "listing")
+    file := make_filename0('"spadmsg", '"listing")
     str := MAKE_OUTSTREAM(file)
     sayBrightly1(msg, str)
     SHUT(str)

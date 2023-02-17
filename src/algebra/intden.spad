@@ -79,16 +79,16 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             f1 := fac.factor
             f1 := inv(leadingCoefficient(f1))*f1
             deg1 := degree(f1)
-            deg1 = 0 => "iterate"
+            deg1 = 0 => iterate
             every?((c : F) : Boolean +-> D(c, x) = 0, coefficients(f1)) =>
                 (res := cons([f1, f1, u0, 0, 1], res))
-            empty?(lk) => "iterate"
+            empty?(lk) => iterate
             rsum := inv(deg1::F)*coefficient(f1, qcoerce(deg1 - 1)$NNI)
             f2 : UP
             if deg1 > 1 then
                 f2 := eval(f1, dummy, monomial(1, 1)$UP - rsum::UP)
             deg1 > 1 and not(every?((c : F) : Boolean +-> D(c, x) = 0,
-                                    coefficients(f2))) => "iterate"
+                                    coefficients(f2))) => iterate
             if empty?(vlst) then
                 vlst := [(is?(kk, 'log) => kk::F; argument(kk).1)
                                   for kk in lk]
@@ -97,7 +97,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
                                   for kk in lk]
             su := particularSolutionOverQ(dvvec, D(rsum, x)
                                     )$IntegerLinearDependence(F)
-            su case "failed" => "iterate"
+            su case "failed" => iterate
             sv := su@Vector(Q)
             -- print("Found capable complex factor"::OutputForm)
             -- print(f1::OutputForm)
@@ -109,7 +109,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             d ~= 1 =>
                 -- print("d ~= 1"::OutputForm)
                 -- print(cd::OutputForm)
-                "iterate"
+                iterate
             u1 := reduce(_*, [ui^ki for ui in ulst for ki in cd.num])
             k2 := reduce(_+, [(ki::R::F)*c for c in vlst for ki in cd.num])
             f2 := eval(f1, dummy, monomial(1, 1)$UP - k2::UP)
@@ -130,13 +130,13 @@ DenominatorIntegration(R, F) : Exports == Implementation where
         for fac in lfac repeat
             f1 := fac.factor
             deg1 := degree(f1)
-            deg1 = 0 => "iterate"
+            deg1 = 0 => iterate
             tc := coefficient(f1, 0)
-            tc = 0 => "iterate"
+            tc = 0 => iterate
             f1 := inv(tc)*f1
             every?((c : F) : Boolean +-> D(c, x) = 0, coefficients(f1)) =>
                 (res := cons([f1, f1, 1, v0, 1], res))
-            empty?(lk) => "iterate"
+            empty?(lk) => iterate
             lprod := leadingCoefficient(f1)
             if empty?(vlst) then
                 vlst := [(is?(kk, 'log) => kk::F; argument(kk).1)
@@ -146,7 +146,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
                                   for kk in lk]
             su := particularSolutionOverQ(dvvec, D(lprod, x)/(deg1::R::F*lprod)
                                     )$IntegerLinearDependence(F)
-            su case "failed" => "iterate"
+            su case "failed" => iterate
             sv := su@Vector(Q)
             -- print("Found capable complex factor"::OutputForm)
             -- print(f1::OutputForm)
@@ -158,13 +158,13 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             d ~= 1 =>
                 -- print("d ~= 1"::OutputForm)
                 -- print(cd::OutputForm)
-                "iterate"
+                iterate
             u1 := reduce(_*, [ui^ki for ui in ulst for ki in cd.num])
             k2 := reduce(_+, [(ki::R::F)*c for c in vlst for ki in cd.num])
             f2 := eval(f1, dummy, (inv(u1))*monomial(1, 1)$UP)
             -- print(f2::OutputForm)
             not(every?((c : F) : Boolean +-> D(c, x) = 0,
-                      coefficients(f2))) => "iterate"
+                      coefficients(f2))) => iterate
             res := cons([f1, f2, u1, v0 + k2, 1], res)
         res
 
@@ -433,7 +433,7 @@ DenominatorIntegration(R, F) : Exports == Implementation where
             for e in lpoly repeat
                 ii := retract(e(2))@Integer
                 ii < 0 => return "failed"
-                e(1) = 0 => "iterate"
+                e(1) = 0 => iterate
                 -- print(e(1)::OutputForm)
                 -- print(v1::OutputForm)
                 -- print(u0::OutputForm)

@@ -206,7 +206,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         for k in t repeat
            if is?(operator(k), '%iint) then
                akl := argument(k)
-               #akl ~= k0 => "iterate"
+               #akl ~= k0 => iterate
                normalize(ii - k::F) = 0 => return k
         i
 
@@ -230,7 +230,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
                             ke := kernel(op, cons(i::R::F, rest(args)))
                             l1 := cons(retract(ke)@K, l1)
             for k1 in l1 repeat
-                member?(k1, res) => "iterate"
+                member?(k1, res) => iterate
                 res := cons(k1, res)
         reverse!(res)
 
@@ -277,7 +277,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         for k in lt for e in le repeat
             ik : Kernel(FG)
             ie : FG
-            not(is?(k, 'atan) or is?(k, 'tan)) => "iterate"
+            not(is?(k, 'atan) or is?(k, 'tan)) => iterate
             if is?(k, 'atan) then
                 ik := retract(-2*im*e)@Kernel(FG)
                 ie := -2*im*(k::FG)
@@ -292,7 +292,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
                 -- invert the transform
                 iku := retractIfCan(-(e1 + 1)/(e1 - 1)
                                    )@Union(Kernel(FG), "failed")
-                iku case "failed" => "iterate"
+                iku case "failed" => iterate
                 ik := iku@Kernel(FG)
                 ie := -(k1 + 1)/(k1 - 1)
                 resk := cons(ik, resk)
@@ -303,16 +303,16 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
         resk : List Kernel(F) := []
         rese :  List(F) := []
         for k in lt repeat
-            not(is?(k, 'nthRoot)) => "iterate"
+            not(is?(k, 'nthRoot)) => iterate
             e1 := F2FG(k::F)
             ckl := kernels(e1)
-            #ckl ~= 1 => "iterate"
+            #ckl ~= 1 => iterate
             ck := ckl(1)
             ckf := ck::FG
-            e1 = ckf => "iterate"
+            e1 = ckf => iterate
             e2 := FG2F(ckf)
             ru1 := retractIfCan(e2)@Union(Kernel(F), "failed")
-            ru1 case "failed" => "iterate"
+            ru1 case "failed" => iterate
             resk := cons(ru1@Kernel(F), resk)
             rese := cons(k::F/FG2F(e1/ckf), rese)
         [reverse! resk, reverse! rese]
@@ -364,7 +364,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
       nr_lst : List(K) := []
       ir_lst : List(F) := []
       for k in tf2 repeat
-          not(is?(k, 'nthRoot)) => "iterate"
+          not(is?(k, 'nthRoot)) => iterate
           akl := argument(k)
           ak1 := eval(first(akl), r_lst, rv_lst)
           ak2 := (retract(akl(2))@Integer)::NonNegativeInteger
@@ -372,7 +372,7 @@ FunctionSpaceIntegration(R, F) : Exports == Implementation where
           nak := pr.radicand
           rnumu := retractIfCan(numer(nak))@Union(R, "failed")
           pr.exponent = ak2 and pr.coef = 1 and
-              rnumu case "failed" => "iterate"
+              rnumu case "failed" => iterate
           r_lst := cons(k, r_lst)
           nk : F
           ec := eval(pr.coef, nr_lst, ir_lst)

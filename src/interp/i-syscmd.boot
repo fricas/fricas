@@ -405,7 +405,9 @@ compile args ==
 
     haveNew and haveOld => throwKeyedMsg("S2IZ0081", nil)
 
-    af  := pathname args
+    af  := first(args)
+    if SYMBOLP(af) then af := SYMBOL_-NAME(af)
+
     aft := pathnameType af
 
     haveNew or (aft = '"as")   =>
@@ -454,10 +456,10 @@ compileAsharpCmd1 args ==
     -- Assume we entered from the "compile" function, so args ~= nil
     -- and is a file with file extension .as or .ao
 
-    path := pathname args
+    path := first(args)
     pathType := pathnameType path
     (pathType ~= '"as") and (pathType ~= '"ao") => throwKeyedMsg("S2IZ0083", nil)
-    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    not(PROBE_-FILE(path)) => throwKeyedMsg("S2IL0003", [path])
 
     $edit_file := path
 
@@ -522,11 +524,11 @@ compileAsharpCmd1 args ==
             s
         tempArgs
 
-    if not beQuiet then sayKeyedMsg("S2IZ0038A",[namestring args, asharpArgs])
+    if not beQuiet then sayKeyedMsg("S2IZ0038A", [path, asharpArgs])
 
     command :=
        STRCONC(getEnv('"ALDOR_COMPILER"),_
-                     '" ", asharpArgs, '" ", namestring args)
+                     '" ", asharpArgs, '" ", path)
     rc := OBEY command
 
     if (rc = 0) and doCompileLisp then
@@ -551,9 +553,9 @@ compileAsharpArchiveCmd args ==
     -- and is a file with file extension .al. We also assume that
     -- the name is fully qualified.
 
-    path := pathname args
-    (FILE_-KIND namestring args) ~= 1 =>
-          throwKeyedMsg("S2IL0003",[namestring args])
+    path := first(args)
+    FILE_-KIND(path) ~= 1 =>
+          throwKeyedMsg("S2IL0003", [path])
 
     -- here is the plan:
     --   1. extract the file name and try to make a directory based
@@ -567,12 +569,12 @@ compileAsharpArchiveCmd args ==
     dir  := fnameMake('".", pathnameName path, '"axldir")
     isDir := FILE_-KIND namestring dir
     isDir = 0 =>
-        throwKeyedMsg("S2IL0027",[namestring dir, namestring args])
+        throwKeyedMsg("S2IL0027",[namestring dir, path])
 
     if isDir ~= 1 then
         cmd  := STRCONC('"mkdir ", namestring dir)
         rc   := OBEY cmd
-        rc ~= 0 => throwKeyedMsg("S2IL0027",[namestring dir, namestring args])
+        rc ~= 0 => throwKeyedMsg("S2IL0027", [namestring dir, path])
 
     curDir := GET_-CURRENT_-DIRECTORY()
 
@@ -580,18 +582,18 @@ compileAsharpArchiveCmd args ==
 
     cd [ namestring dir ]
 
-    cmd := STRCONC( '"ar x ", namestring path )
+    cmd := STRCONC( '"ar x ", path)
     rc := OBEY cmd
     rc ~= 0 =>
         cd [ namestring curDir ]
-        throwKeyedMsg("S2IL0028",[namestring dir, namestring args])
+        throwKeyedMsg("S2IL0028",[namestring dir, path])
 
     -- Look for .ao files
 
     asos := DIRECTORY '"*.ao"
     null asos =>
         cd [ namestring curDir ]
-        throwKeyedMsg("S2IL0029",[namestring dir, namestring args])
+        throwKeyedMsg("S2IL0029",[namestring dir, path])
 
     -- Compile the .ao files
 
@@ -609,8 +611,8 @@ compileAsharpLispCmd args ==
     -- Assume we entered from the "compile" function, so args ~= nil
     -- and is a file with file extension .lsp
 
-    path := pathname args
-    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    path := first(args)
+    not PROBE_-FILE(path) => throwKeyedMsg("S2IL0003", [path])
 
     optList :=  '( _
       quiet _
@@ -656,8 +658,8 @@ compileSpadLispCmd args ==
 
     libname := first args
     basename := PATHNAME_-NAME(libname)
-    path := pathname fnameMake(libname, basename, '"lsp")
-    not PROBE_-FILE path => throwKeyedMsg("S2IL0003",[namestring args])
+    path := fnameMake(libname, basename, '"lsp")
+    not(PROBE_-FILE(path)) => throwKeyedMsg("S2IL0003", [libname])
 
     optList :=  '( _
       quiet _
@@ -998,7 +1000,6 @@ editSpad2Cmd l ==
   l:=
     null l => $edit_file
     first l
-  l := pathname l
   oldDir := pathnameDirectory l
   fileTypes :=
     pathnameType l => [pathnameType l]
@@ -1006,9 +1007,9 @@ editSpad2Cmd l ==
     $UserLevel = 'compiler    => '("input" "INPUT" "spad" "SPAD")
     '("input" "INPUT" "spad" "SPAD" "boot" "BOOT" "lisp" "LISP")
   ll :=
-       oldDir = '"" => pathname find_file(pathnameName l, fileTypes)
+       oldDir = '"" => find_file(pathnameName l, fileTypes)
        l
-  l := pathname ll
+  l := ll
   $edit_file := l
   rc := editFile l
   rc
@@ -1121,7 +1122,7 @@ addNewInterpreterFrame(name) ==
   $interpreterFrameRing := CONS(emptyInterpreterFrame(name),
     $interpreterFrameRing)
   updateFromCurrentInterpreterFrame()
-  erase_lib([histFileName()])
+  erase_lib(histFileName())
 
 emptyInterpreterFrame(name) ==
   LIST(name,                            -- frame name
@@ -1150,7 +1151,7 @@ closeInterpreterFrame(name) ==
       found or (name ~= frameName(f)) => ifr := CONS(f,ifr)
       found := true
     not found => throwKeyedMsg("S2IZ0022",[name])
-    erase_lib([makeHistFileName(name)])
+    erase_lib(makeHistFileName(name))
     $interpreterFrameRing := nreverse ifr
   updateFromCurrentInterpreterFrame()
 
@@ -1287,7 +1288,7 @@ history l ==
 
 
 makeHistFileName(fname) ==
-  makePathname(fname,$historyFileType)
+    make_filename0(fname, $historyFileType)
 
 oldHistFileName() ==
   makeHistFileName($oldHistoryFileName)
@@ -1300,9 +1301,9 @@ histFileName() ==
 
 
 histInputFileName(fn) ==
-  null fn =>
-    makePathname($interpreterFrameName,'INPUT)
-  makePathname(fn,'INPUT)
+    null fn =>
+        make_filename0($interpreterFrameName, 'INPUT)
+    make_filename0(fn, 'INPUT)
 
 
 initHist() ==
@@ -1478,7 +1479,7 @@ putHist(x,prop,val,e) ==
   if $HiFiAccess then recordNewValue(x,prop,val)
   putIntSymTab(x,prop,val,e)
 
-histFileErase(file) == erase_lib([file])
+histFileErase(file) == erase_lib(file)
 
 recordNewValue(x,prop,val) ==
   startTimingProcess 'history
@@ -1559,6 +1560,7 @@ saveHistory(fn) ==
           sayKeyedMsg("S2IH0022", nil)
   null fn =>
     throwKeyedMsg("S2IH0037", nil)
+  fn := first(fn)
   savefile := makeHistFileName(fn)
   inputfile := histInputFileName(fn)
   writeInputLines(fn,1)
@@ -2162,9 +2164,11 @@ readSpad2Cmd l ==
     fullopt = 'quiet   => quiet := true
 
   if null(l) and (ef := $edit_file) and pathnameTypeId(ef) ~= 'SPAD then
-      l := pathname(ef)
+      l := ef
   else
-      l := pathname l
+      l := first(l)
+  if SYMBOLP(l) then l := SYMBOL_-NAME(l)
+
   devFTs := '("input" "INPUT" "boot" "BOOT" "lisp" "LISP")
   fileTypes :=
     $UserLevel = 'interpreter => '("input" "INPUT")
@@ -2173,8 +2177,7 @@ readSpad2Cmd l ==
   ll := find_file(l, fileTypes)
   if null ll then
     ifthere => return nil    -- be quiet about it
-    throwKeyedMsg("S2IL0003",[namestring l])
-  ll := pathname ll
+    throwKeyedMsg("S2IL0003", [l])
   ft := pathnameType ll
   upft := UPCASE ft
   null member(upft,fileTypes) =>
@@ -2267,8 +2270,8 @@ reportOpsFromUnitDirectly0 D ==
   reportOpsFromUnitDirectly D
 
 reportOpsFromUnitDirectly1 D ==
-  showFile := pathname ['SHOW,'LISTING]
-  erase_lib([showFile])
+  showFile := '"SHOW.LISTING"
+  erase_lib(showFile)
   $sayBrightlyStream : fluid := MAKE_OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromUnitDirectly D
@@ -2289,8 +2292,8 @@ reportOpsFromLisplib0(unitForm,u)  ==
   reportOpsFromLisplib(unitForm,u)
 
 reportOpsFromLisplib1(unitForm,u)  ==
-  showFile := pathname ['SHOW,'LISTING]
-  erase_lib([showFile])
+  showFile := '"SHOW.LISTING"
+  erase_lib(showFile)
   $sayBrightlyStream : fluid := MAKE_OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromLisplib(unitForm,u)

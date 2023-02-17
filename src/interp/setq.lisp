@@ -242,28 +242,28 @@
 
 (SETQ |$CommandSynonymAlist| (COPY |$InitialCommandSynonymAlist|))
 
-(DEFPARAMETER |$ConstructorCache| (MAKE_HASHTABLE 'ID))
-(SETQ |$instantRecord| (MAKE_HASHTABLE 'ID))
+(DEFPARAMETER |$ConstructorCache| (MAKE_HASHTABLE 'EQ))
+(SETQ |$instantRecord| (MAKE_HASHTABLE 'EQ))
 (SETQ |$immediateDataSymbol| '|--immediateData--|)
 
 (SETQ |$useIntegerSubdomain| 'T)
 
 ;; See CLAMMED BOOT for defs of following functions
 (SETQ |$clamList| '(
-  (|canCoerce| |hash| UEQUAL |count|)
-  (|canCoerceFrom| |hash| UEQUAL |count|)
-  (|coerceConvertMmSelection| |hash| UEQUAL |count|)
-; (|getModemapsFromDatabase| |hash| UEQUAL |count|)
-; (|getOperationAlistFromLisplib| |hash| UEQUAL |count|)
-  (|isLegitimateMode| |hash| UEQUAL |count|)
-  (|isValidType| |hash| UEQUAL |count|)
-  (|resolveTT|   |hash| UEQUAL |count|)
-  (|selectMms1| |hash| UEQUAL |count|)
-  (|underDomainOf|   |hash| UEQUAL |count|)
-  (|findRetractMms| |hash| UEQUAL |count|)
-  (|getConstantFromDomain|  |hash| UEQUAL |count|)
-  (|interpLookup| |hash| UEQUAL |count|)
-;  (|isSubDomain|   |hash| UEQUAL |count|)
+  (|canCoerce| |hash| EQUAL |count|)
+  (|canCoerceFrom| |hash| EQUAL |count|)
+  (|coerceConvertMmSelection| |hash| EQUAL |count|)
+; (|getModemapsFromDatabase| |hash| EQUAL |count|)
+; (|getOperationAlistFromLisplib| |hash| EQUAL |count|)
+  (|isLegitimateMode| |hash| EQUAL |count|)
+  (|isValidType| |hash| EQUAL |count|)
+  (|resolveTT|   |hash| EQUAL |count|)
+  (|selectMms1| |hash| EQUAL |count|)
+  (|underDomainOf|   |hash| EQUAL |count|)
+  (|findRetractMms| |hash| EQUAL |count|)
+  (|getConstantFromDomain|  |hash| EQUAL |count|)
+  (|interpLookup| |hash| EQUAL |count|)
+;  (|isSubDomain|   |hash| EQUAL |count|)
 ))
 
 ;; the following symbol holds the canonical "failed" value

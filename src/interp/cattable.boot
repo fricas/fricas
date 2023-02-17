@@ -46,7 +46,7 @@ showCategoryTable con ==
 
 displayCategoryTable(:options) ==
     conList := IFCAR options
-    ct := MAKE_HASHTABLE('ID)
+    ct := MAKE_HASHTABLE('EQ)
     for (key := [a, :b]) in HKEYS $has_category_hash repeat
         HPUT(ct, a, [[b, :HGET($has_category_hash, key)], :HGET(ct, a)])
     for id in HKEYS ct | null conList or MEMQ(id,conList) repeat
@@ -54,8 +54,8 @@ displayCategoryTable(:options) ==
         PRINT HGET(ct, id)
 
 genCategoryTable() ==
-  $ancestors_hash := MAKE_HASHTABLE('ID)
-  $has_category_hash := MAKE_HASHTABLE('UEQUAL)
+  $ancestors_hash := MAKE_HASHTABLE('EQ)
+  $has_category_hash := MAKE_HASHTABLE('EQUAL)
   genTempCategoryTable()
   domainList:=
     [con for con in allConstructors()

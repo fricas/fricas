@@ -102,14 +102,6 @@
   (if length (subseq cvec start (+ start length))
     (subseq cvec start)))
 
-(defun MAKE_HASHTABLE (id1)
-  (let ((test (case id1
-                    ((EQ ID) #'eq)
-                    (CVEC #'equal)
-                    ((UEQUAL EQUAL) #'equal)
-                    (otherwise (error "bad arg to make-hashtable")))))
-    (make-hash-table :test test)))
-
 (defun HKEYS (table)
   (let (keys)
     (maphash #'(lambda (key val)
