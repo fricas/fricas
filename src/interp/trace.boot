@@ -548,13 +548,19 @@ genDomainTraceName y ==
 
 --this is now called from trace with the )off option
 untrace l ==
-  $lastUntraced:=
-    null l => COPY $trace_names
-    l
-  untraceList:= [transTraceItem x for x in l]
-  for funName in untraceList repeat
-      untrace2(lassocSub(funName, $mapSubNameAlist), [])
-  removeTracedMapSigs untraceList
+    null(l) =>
+        $lastUntraced := l := COPY($trace_names)
+        for x in l repeat
+            untrace2(get_name(x), [])
+    $lastUntraced := l
+    untraceList := [transTraceItem(x) for x in l]
+    for funName in untraceList repeat
+        untrace2(lassocSub(funName, $mapSubNameAlist), [])
+    removeTracedMapSigs untraceList
+
+get_name(x) ==
+    ATOM(x) => x
+    first(x)
 
 transTraceItem x ==
   atom x =>
