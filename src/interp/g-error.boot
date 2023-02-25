@@ -49,6 +49,18 @@ DEFPARAMETER($AlgebraError, 'AlgebraError)
 
 DEFVAR($timedNameStack)
 
+DEFPARAMETER($inLispVM, false)
+
+spad_system_error_handler (c) ==
+    $NeedToSignalSessionManager := true
+    not($inLispVM) and MEMQ($BreakMode,
+           ["nobreak", "query", "resume", "quit", "trapSpadErrors"]) =>
+        systemError(error_format(c))
+    $BreakMode = "letPrint2" =>
+        $BreakMode := nil
+        THROW("letPrint2", nil)
+    nil
+
 BUMPCOMPERRORCOUNT() == nil
 
 argumentDataError(argnum, condit, funname) ==
