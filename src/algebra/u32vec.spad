@@ -819,17 +819,19 @@ U32VectorPolynomialOperations() : Export == Implementation where
                 r
 
         differentiate(x : PA, n : NonNegativeInteger, p : Integer) : PA ==
-            zero? n => x
+            ns := qconvert(n)@SingleInteger
+            zero? ns => x
             d := #x - 1
-            if d < n then empty()$PA
+            ds := qconvert(d)@SingleInteger
+            if ds < ns then empty()$PA
             else
-                r := new(qcoerce(d-n+1)@NonNegativeInteger, 0)$PA
-                for i in n..d repeat
-                    j := i-n
+                res := new(qcoerce(ds - ns + 1)@NonNegativeInteger, 0)$PA
+                for i in ns..ds repeat
+                    j : SingleInteger := i - ns
                     f := j+1
                     for k in j+2..i repeat f := Qmul(f, k, p)
-                    r.(qcoerce(j)@NonNegativeInteger) := Qmul(f, x.i, p)
-                r
+                    res(j) := Qmul(f, x(i), p)
+                res
 
         extended_gcd(x : PA, y : PA, p : Integer) : List(PA) ==
             dr0 := qconvert(degree(x))@SingleInteger
