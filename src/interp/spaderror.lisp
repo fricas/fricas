@@ -33,7 +33,7 @@
 ;; this files contains basic routines for error handling
 (in-package "BOOT")
 
-(defun error-format (c)
+(defun |error_format| (c)
   (let ((|$BreakMode| '|break|))
     (declare (special |$BreakMode|))
     (format nil "~a" c)))
@@ -45,8 +45,6 @@
 
 ;; failed union branch --  value returned for numeric failure
 (setq |$numericFailure| (cons 1 "failed"))
-
-(defvar |$oldBreakMode|)
 
 ;; following macro evaluates form returning Union(type-of form, "failed")
 
@@ -78,19 +76,4 @@
 
 #-:sbcl
 (defun |eval_with_timeout| (f ti) (|error| "unimplemented for this Lisp"))
-
-(defparameter |$inLispVM| nil)
-
-(defun spad-system-error-handler (c)
-    (block nil
-        (setq |$NeedToSignalSessionManager| T)
-        (cond
-               ((and (null |$inLispVM|)
-                     (memq |$BreakMode| '(|nobreak| |query| |resume|
-                                          |quit| |trapSpadErrors|)))
-                   (let ((|$inLispVM| T)) ;; turn off handler
-                        (return (|systemError| (error-format c)))))
-               ((eq |$BreakMode| '|letPrint2|)
-                   (setq |$BreakMode| nil)
-                   (throw '|letPrint2| nil)))))
 

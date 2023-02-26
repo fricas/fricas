@@ -250,18 +250,20 @@ IndexedDirectProductObject(A : SetCategory, S : SetCategory
                 endcell := empty()
                 res := empty()
                 while not empty? x and not empty? y repeat
+                        tx := first x
+                        ty := first y
                         newcell := empty()
-                        if x.first.k = y.first.k then
-                                r := x.first.c + y.first.c
-                                if not zero? r then
-                                        newcell := cons([x.first.k, r], empty())
+                        if tx.k = ty.k then
+                                newcoef := tx.c + ty.c
+                                if not zero? newcoef then
+                                        newcell := cons([tx.k, newcoef], empty())
                                 x := rest x
                                 y := rest y
-                        else if smaller?(y.first.k, x.first.k) then
-                                newcell := cons(x.first, empty())
+                        else if smaller?(ty.k, tx.k) then
+                                newcell := cons(tx, empty())
                                 x := rest x
                         else
-                                newcell := cons(y.first, empty())
+                                newcell := cons(ty, empty())
                                 y := rest y
                         if not empty? newcell then
                                 if not empty? endcell then
@@ -282,18 +284,12 @@ IndexedDirectProductObject(A : SetCategory, S : SetCategory
            zero? x ==  empty?(x)
 
            add_gen(x : Rep, y : Rep) : Rep ==
-               empty?(x) => y
-               empty?(y) => x
-               endcell : Rep
-               res :  Rep
-               newcell : Rep
+               endcell, res, newcell : Rep
                PLUS_BODY
 
            if S is NonNegativeInteger then
                add_si(x : RepS, y : RepS) : RepS ==
-                   endcell : RepS
-                   res :  RepS
-                   newcell : RepS
+                   endcell, res, newcell : RepS
                    PLUS_BODY
 
                x + y ==
@@ -303,11 +299,14 @@ IndexedDirectProductObject(A : SetCategory, S : SetCategory
                    degy := (y.first.k) pretend Integer
                    msi := max()$SingleInteger
                    degx < msi and degy < msi =>
-                       return add_si(x pretend RepS, y pretend RepS) pretend %
+                       add_si(x pretend RepS, y pretend RepS) pretend %
                    add_gen(x, y)
 
            else
-               x + y == add_gen(x, y)
+               x + y ==
+                   empty?(x) => y
+                   empty?(y) => x
+                   add_gen(x, y)
 
            (n : NonNegativeInteger) * x  ==
                n = 0 => 0

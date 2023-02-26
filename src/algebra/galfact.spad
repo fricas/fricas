@@ -359,6 +359,27 @@ GaloisGroupFactorizationUtilities(R, UP, F) : Exports == Implementation where
     bombieriNorm(f : UP) : F == bombieriNorm(f, 2) -- See [1]
 
 
+)abbrev package GALFACS GaloisGroupFactorizerSeparate
+GaloisGroupFactorizerSeparate(p, UP) : Exports == Implementation where
+  p : PositiveInteger
+  Z ==> Integer
+  pF ==> PrimeField(p)
+  PA ==> PrimitiveArray(pF)
+  UP : UnivariatePolynomialCategory(Z)
+  POLVECP ==> VectorPolynomialOperationsP(p)
+  Exports ==> with
+    separate_factors: (List(() -> List(PA)), Integer) -> List(UP)
+  Implementation ==> add
+    separate_factors(sfl : List(() -> List(PA)), c : Integer
+                    ) : List(UP) ==
+        res : List UP := []
+        for sf in sfl repeat
+            vl := sf()
+            for v in vl repeat
+                res := cons(unmakeSUP(pa_to_sup(v)$POLVECP)$UP, res)
+        cons(c::UP, res)
+
+
 )abbrev package GALFACT GaloisGroupFactorizer
 ++ Author: Frederic Lehobey
 ++ Date Created: 28 June 1994
@@ -649,7 +670,14 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
             v2 := to_mod_pa(makeSUP pol2, p)$POLYVEC
             vg := gcd(v1, v2, p)$POLYVEC
             degree(vg)$POLYVEC <= 0
-        zero?(degree gcd(pol1, pol2, p)$ModularDistinctDegreeFactorizer(UP))
+        pp := p::PositiveInteger
+        pF := PrimeField(pp)
+        pV := VectorPolynomialOperationsP(pp)
+        v1 := to_mod_pa(makeSUP(pol1))$pV
+        v2 := to_mod_pa(makeSUP(pol2))$pV
+        mD := [p, 1]$Record(i_mod : Integer, deg : Integer)
+        vg := gcd(v1, v2, mD)$ModularFactorizationTools3(pF)
+        degree(vg)$pV <= 0
 
     DDres ==> Record(dd_list : List N, separate_factors : () -> List(UP))
 
@@ -679,14 +707,27 @@ GaloisGroupFactorizer(UP) : Exports == Implementation where
             ul1 := ddfact(v, p)$ModularFactorization
             sfl : List(() -> List(U32Vector)) := []
             for fr in ul1 repeat
-                degs := add_degs(degree(fr.poly)::N, fr.degree::N, degs)
+                degs := add_degs(degree(fr.poly)::N, fr.degree, degs)
                 sfl := cons(fr.separate_factors, sfl)
             [degs, () +-> do_separate(sfl, c)]
-        res1 := ddFact(pol, p)$ModularDistinctDegreeFactorizer(UP)
-        for rl in res1 repeat
-            degs := add_degs(degree(rl.factor), rl.degree::N, degs)
-        [degs, () +-> separateFactors(res1, p
-                        )$ModularDistinctDegreeFactorizer(UP)]
+        pp := p::PositiveInteger
+        pF := PrimeField(pp)
+        pV := VectorPolynomialOperationsP(pp)
+        vv := to_mod_pa(makeSUP(pol))$pV
+        dpol := degree(vv)$pV
+        c := convert(vv(dpol))@Integer
+        if c ~= 1 then
+            ci := invmod(c, p)
+            cki := ci::pF
+            mul_by_scalar(vv, dpol, cki)$ModularFactorizationTools3(pF)
+        mD := [p, 1]$Record(i_mod : Integer, deg : Integer)
+        uul1 := ddfact(vv, mD)$ModularFactorizationK(pF)
+        ssfl : List(() -> List(PrimitiveArray(pF))) := []
+        for ffr in uul1 repeat
+            degs := add_degs(degree(ffr.poly)::N, ffr.degree, degs)
+            ssfl := cons(ffr.separate_factors, ssfl)
+        [degs, () +-> separate_factors(ssfl, c
+                      )$GaloisGroupFactorizerSeparate(pp, UP)]$DDres
 
     modularFactor(p : UP, d : Set N) : MFact ==
       not (abs(content(p)) = 1) =>

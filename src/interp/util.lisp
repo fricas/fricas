@@ -323,9 +323,9 @@ After this function is called the image is clean and can be saved.
   #-:poplog
   (let ((*debugger-hook*
             (lambda (condition previous-handler)
-                (spad-system-error-handler condition))
+                (|spad_system_error_handler| condition))
        ))
-     (handler-bind ((error #'spad-system-error-handler))
+     (handler-bind ((error #'|spad_system_error_handler|))
        (|spad|)))
 )
 
