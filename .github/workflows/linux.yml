@@ -29,5 +29,5 @@ jobs:
       if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/master' && github.repository == 'fricas/fricas' }}
       run: |
         export OWNER_REPO=fricas/fricas-nightly-builds
-        export RELEASE_ID=`curl https://api.github.com/repos/${OWNER_REPO}/releases/tags/nightly | jq .id`
+        export RELEASE_ID=74905307 ## `curl https://api.github.com/repos/${OWNER_REPO}/releases/tags/nightly | jq .id`
         curl -v -X POST -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.releasetoken }}" "https://uploads.github.com/repos/${OWNER_REPO}/releases/${RELEASE_ID}/assets?name=FriCAS-$(date +%Y-%m-%dT%H.%M)-linux-x86_64-$(echo ${{ github.sha }} | cut -c 1-8).tbz2" --data-binary "@FriCAS-linux-x86_64-${{ github.sha }}.tbz2" -H "Content-Type: application/x-bzip2" || true
