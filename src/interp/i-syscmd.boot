@@ -532,12 +532,12 @@ compileAsharpCmd1 args ==
     rc := OBEY command
 
     if (rc = 0) and doCompileLisp then
-        lsp := fnameMake('".", pathnameName args, '"lsp")
+        lsp := fnameMake('".", pathnameName(path), '"lsp")
         if fnameReadable?(lsp) then
-            if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
+            if not beQuiet then sayKeyedMsg("S2IZ0089", [NAMESTRING(lsp)])
             compileFileQuietly(lsp)
         else
-            sayKeyedMsg("S2IL0003", [namestring lsp])
+            sayKeyedMsg("S2IL0003", [NAMESTRING(lsp)])
 
     if rc = 0 and doLibrary then
         -- do we need to worry about where the compilation output went?
