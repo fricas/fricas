@@ -152,13 +152,6 @@ CombinatorialFunction(R, F) : Exports == Implementation where
     import from F
     import from Kernel F
 
-    number?(x : F) : Boolean ==
-      if R has RetractableTo(Z) then
-        ground?(x) or
-         ((retractIfCan(x)@Union(Fraction(Z),"failed")) case Fraction(Z))
-      else
-        ground?(x)
-
     x ^ y == oppow [x, y]
 
     belong? op           == has?(op, COMB)
@@ -468,6 +461,18 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       ++ error if op is not a special function operator
     abs     : F -> F
       ++ abs(f) returns the absolute value operator applied to f
+    sign :    F -> F
+      ++ sign(x) returns the sign of x.
+    unitStep : F -> F
+      ++ unitStep(x) is 0 for x less than 0, 1 for x bigger or equal 0.
+    ceiling : F -> F
+      ++ ceiling(x) returns the smallest integer above or equal x.
+    floor : F -> F
+      ++ floor(x) returns the largest integer below or equal x.
+    fractionPart : F -> F
+      ++ fractionPart(x) returns the fractional part of x.
+    diracDelta : F -> F
+      ++ diracDelta(x) is unit mass at zeros of x.
     conjugate: F -> F
       ++ conjugate(f) returns the conjugate value operator applied to f
     Gamma   : F -> F
@@ -663,6 +668,10 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       ++ iiPolylog(x, s) should be local but conditional;
     iLambertW : F -> F
       ++ iLambertW(x) should be local but conditional;
+    retract_Q : F -> Union(Fraction(Integer), "failed")
+      ++ retract_Q(x) should be local but conditional
+    coerce_Q : Fraction(Integer) -> F
+      ++ coerce_Q(x) should be local but conditional
 
   Implementation ==> add
 
@@ -673,6 +682,12 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     SPECIALINPUT ==> '%specialInput
 
     iabs      : F -> F
+    isign     : F -> F
+    i_unitStep : F -> F
+    i_ceiling : F -> F
+    i_floor   : F -> F
+    i_fractionPart : F -> F
+    i_diracDelta : F -> F
     iconjugate: F -> F
     iGamma    : F -> F
     iBeta     : (F, F) -> F
@@ -697,6 +712,12 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
 
     opabs       := operator('abs)$CommonOperators
+    opsign      := operator('sign)$CommonOperators
+    op_unitStep := operator('unitStep)$CommonOperators
+    op_ceiling  := operator('ceiling)$CommonOperators
+    op_floor    := operator('floor)$CommonOperators
+    op_fractionPart := operator('fractionPart)$CommonOperators
+    op_diracDelta := operator('diracDelta)$CommonOperators
     opconjugate := operator('conjugate)$CommonOperators
     opGamma     := operator('Gamma)$CommonOperators
     opGamma2    := operator('Gamma2)$CommonOperators
@@ -730,6 +751,12 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     op_erfis := operator('%erfis)$CommonOperators
 
     abs x         == opabs x
+    sign(x)       == opsign(x)
+    unitStep(x)   == op_unitStep(x)
+    ceiling(x)    == op_ceiling(x)
+    floor(x)      == op_floor(x)
+    fractionPart(x) == op_fractionPart(x)
+    diracDelta(x) == op_diracDelta(x)
     conjugate x   == opconjugate x
     Gamma(x)      == opGamma(x)
     Gamma(a, x)    == opGamma2(a, x)
@@ -1693,6 +1720,12 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
 
     operator op ==
       is?(op, 'abs)      => opabs
+      is?(op, 'sign)     => opsign
+      is?(op, 'unitStep) => op_unitStep
+      is?(op, 'ceiling)  => op_ceiling
+      is?(op, 'floor)    => op_floor
+      is?(op, 'fractionPart) => op_fractionPart
+      is?(op, 'diracDelta) => op_diracDelta
       is?(op, 'conjugate)=> opconjugate
       is?(op, 'Gamma)    => opGamma
       is?(op, 'Gamma2)   => opGamma2
@@ -1776,6 +1809,87 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       is?(x, opconjugate) => argument(retract(x)@K)(1)
       is?(x, opabs) => x
       kernel(opconjugate, x)
+
+    if F has RetractableTo(Fraction(Integer)) then
+
+        retract_Q(x) == retractIfCan(x)
+        coerce_Q(x) == coerce(x)
+
+    else
+
+        retract_Q(x) == "failed"
+
+        -- we will not use coerce_Q, so  leave it undefined
+
+    isign x ==
+        zero? x => 0
+        (ru := retract_Q(x)) case Fraction(Integer) =>
+            r1 := sign(ru)
+            r1 = 1 => 1
+            r1 = 0 => 0
+            -1
+        -- unsafe, if x is unrecognized 0
+        -- is?(x, opabs) => 1
+        is?(x, opsign) => x
+        kernel(opsign, x)
+
+    derivative(opsign,       (x : F) : F +-> (2::F)*diracDelta(x))
+
+    evaluate(opsign, isign)$BasicOperatorFunctions1(F)
+
+    i_unitStep(x) ==
+        zero? x => 1
+        (ru := retract_Q(x)) case Fraction(Integer) =>
+            r1 := sign(ru)$Fraction(Integer)
+            r1 = 1 => 1
+            r1 = 0 => 1
+            0
+        is?(x, opabs) => 1
+        is?(x, op_unitStep) => 1
+        is?(x, op_fractionPart) => 1
+        kernel(op_unitStep, x)
+
+    derivative(op_unitStep,  (x : F) : F +-> diracDelta(x))
+
+    evaluate(op_unitStep, i_unitStep)
+
+    i_ceiling(x) ==
+        zero? x => 0
+        (ru := retract_Q(x)) case Fraction(Integer) =>
+            coerce_Q(ceiling(ru)$Fraction(Integer)::Fraction(Integer))
+        is?(x, op_ceiling) => x
+        is?(x, op_floor) => x
+        -- unsafe, if x is unrecognized 0
+        -- is?(x, op_fractionPart) => 1
+        kernel(op_ceiling, x)
+
+    evaluate(op_ceiling, i_ceiling)$BasicOperatorFunctions1(F)
+
+    i_floor(x) ==
+        zero? x => 0
+        (ru := retract_Q(x)) case Fraction(Integer) =>
+            coerce_Q(floor(ru)$Fraction(Integer)::Fraction(Integer))
+        is?(x, op_ceiling) => x
+        is?(x, op_floor) => x
+        is?(x, op_fractionPart) => 0
+        kernel(op_floor, x)
+
+    evaluate(op_floor, i_floor)$BasicOperatorFunctions1(F)
+
+    i_fractionPart(x) ==
+        zero? x => 0
+        (ru := retract_Q(x)) case Fraction(Integer) =>
+            coerce_Q(fractionPart(ru)$Fraction(Integer))
+        is?(x, op_ceiling) => 0
+        is?(x, op_floor) => 0
+        is?(x, op_fractionPart) => x
+        kernel(op_fractionPart, x)
+
+    evaluate(op_fractionPart, i_fractionPart)$BasicOperatorFunctions1(F)
+
+    i_diracDelta x == kernel(op_diracDelta, x)
+
+    evaluate(op_diracDelta, i_diracDelta)$BasicOperatorFunctions1(F)
 
     iBeta(x, y) == kernel(opBeta, [x, y])
     idigamma x == kernel(opdigamma, x)
