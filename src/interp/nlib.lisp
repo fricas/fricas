@@ -155,6 +155,11 @@
   (mapcar #'intern (mapcar #'car (getindextable
                                   (|make_input_filename| (list filearg))))))
 
+(defun |write_to_stream| (val stream)
+    (write val :stream stream :level nil :length nil
+                 :circle t :array t :escape t)
+    (terpri stream))
+
 ;; (RWRITE cvec item rstream)
 (defun |rwrite0| (key item rstream)
   (if (equal (libstream-mode rstream) 'input) (error "not output stream"))
@@ -163,9 +168,9 @@
                (cons nil item))))   ;; for small items
     (|make_entry| (string key) rstream pos)
     (when (numberp (car pos))
-          (write item :stream stream :level nil :length nil
-                 :circle t :array t :escape t)
-          (terpri stream))))
+          (|write_to_stream| item stream))
+  )
+)
 
 (defun |make_entry| (key rstream value-or-pos)
    (let ((entry (assoc key (libstream-indextable rstream) :test #'equal)))

@@ -1748,13 +1748,27 @@ writeHistModesAndValues() ==
       putHist(a,'mode,x,$InteractiveFrame)
   NIL
 
-SPADRREAD(vec, stream) ==
-    dewritify rread(vec, stream)
-
 --% Lisplib output transformations
 --  Some types of objects cannot be saved by LISP/VM in lisplibs.
 --  These functions transform an object to a writable form and back.
 --  SMW
+
+$eof_marker := GENSYM()
+
+eof_marker?(x) == EQ(x, $eof_marker)
+
+fri_read(stream) ==
+    dewritify(READ(stream, nil, $eof_marker))
+
+fri_write(item, stream) ==
+    val := safeWritify item
+    val = 'writifyFailed =>
+        throwKeyedMsg("The value cannot be saved to a file.", "nil")
+    write_to_stream(val, stream)
+
+SPADRREAD(vec, stream) ==
+    dewritify(rread(vec, stream))
+
 SPADRWRITE(vec, item, stream) ==
   val := SPADRWRITE0(vec, item, stream)
   val = 'writifyFailed =>
@@ -1871,7 +1885,7 @@ writify ob ==
                             writifyInner keys,
                               [writifyInner HGET(ob,k) for k in keys]])
                 nob
-            PLACEP ob =>
+            eof_marker?(ob) =>
                 nob := ['WRITIFIED_!_!, 'PLACE]
                 HPUT($seen, ob,  nob)
                 HPUT($seen, nob, nob)
@@ -1897,7 +1911,7 @@ unwritable? ob ==
     -- other arrays are unwritable
     ARRAYP(ob) => true
     COMPILED_-FUNCTION_-P   ob or HASHTABLEP ob => true
-    PLACEP ob or READTABLEP ob => true
+    eof_marker?(ob) or READTABLEP ob => true
     FLOATP ob => true
     false
 
@@ -2001,7 +2015,7 @@ dewritify ob ==
                     HPUT($seen, nob, nob)
                     nob
                 type = 'PLACE =>
-                    nob := get_read_placeholder()
+                    nob := $eof_marker
                     HPUT($seen, ob, nob)
                     HPUT($seen, nob, nob)
                     nob
