@@ -141,6 +141,7 @@
                    ((IDENTP V) NIL)
                    ((STRINGP U) (AND (STRINGP V) (string> V U)))
                    ((STRINGP V) NIL)
+                   ((BREAK))
                    ((AND (VECP U) (VECP V))
                     (AND (> (SIZE V) (SIZE U))
                          (DO ((I 0 (1+ I)))
@@ -172,10 +173,8 @@
       ((NULL COMPERAND-1) 'T )
       ((NULL COMPERAND-2) NIL)
       ((VECP COMPERAND-1)
-        (COND
-          ((VECP COMPERAND-2) (LEXVGREATERP COMPERAND-1 COMPERAND-2) )
-          ('else t)))
-      ((VECP COMPERAND-2) NIL)
+        (BREAK))
+      ((VECP COMPERAND-2) (BREAK))
       ((stringp COMPERAND-1)
         (COND
           ((stringp COMPERAND-2)
@@ -200,26 +199,8 @@
             (CHAR-GREATERP COMPERAND-1 COMPERAND-2) )
           ('else t)))
       ((CHARACTERP COMPERAND-2) NIL )
+      (BREAK)
       ((> (SXHASH COMPERAND-1) (SXHASH COMPERAND-2)))))
-
-(DEFUN LEXVGREATERP (VECTOR-COMPERAND-1 VECTOR-COMPERAND-2)
-  (declare (simple-vector vector-comperand-1 vector-comperand-2))
-    (PROG ((L1 (length VECTOR-COMPERAND-1))
-           (L2 (length VECTOR-COMPERAND-2))
-           (I -1)
-           T1 T2)
-     (declare (fixnum i l1 l2) )
-  LP  (setq i (1+ i))
-      (COND
-        ((EQL L1 I) (RETURN NIL))
-        ((EQL L2 I) (RETURN 'T)))
-      (COND
-        ((EQUAL
-            (SETQ T1 (svref VECTOR-COMPERAND-1 I))
-            (SETQ T2 (svref VECTOR-COMPERAND-2 I)))
-          (GO LP)))
-      (RETURN (LEXGREATERP T1 T2)) ) )
-
 
 (DEFUN GGREATERP (COMPERAND-1 COMPERAND-2)
     ;;  "Order of types: symbol pair NIL vec string num fbpi other"
@@ -245,7 +226,8 @@
       ((VECP COMPERAND-1)
         (COND
           ((VECP COMPERAND-2) (VGREATERP COMPERAND-1 COMPERAND-2) )
-          ('else t)))
+          ('else t))
+      )
       ((VECP COMPERAND-2) NIL)
       ((stringp COMPERAND-1)
         (COND
@@ -265,8 +247,10 @@
             (CHAR> COMPERAND-1 COMPERAND-2) )
           ('else t)))
       ((CHARACTERP COMPERAND-2) NIL )
+      (BREAK)
       ((> (SXHASH COMPERAND-1) (SXHASH COMPERAND-2)))))
 
+;;; Would like to remove this but is is used in PartialFraction
 (DEFUN VGREATERP (VECTOR-COMPERAND-1 VECTOR-COMPERAND-2)
   (declare (simple-vector vector-comperand-1 vector-comperand-2))
     (PROG ((L1 (length VECTOR-COMPERAND-1))
