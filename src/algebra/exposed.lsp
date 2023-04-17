@@ -181,7 +181,6 @@
   (|MatrixCommonDenominator| . MCDEN)
   (|MatrixLinearAlgebraFunctions| . MATLIN)
   (|MergeThing| . MTHING)
-  (|ModularDistinctDegreeFactorizer| . MDDFACT)
   (|ModuleOperator| . MODOP)
   (|MonoidRingFunctions2| . MRF2)
   (|MoreSystemCommands| . MSYSCMD)

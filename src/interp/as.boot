@@ -376,7 +376,7 @@ asytran fn ==
 --    <sig pred origin         exposed? comments>
   inStream := OPEN fn
   sayBrightly ['"   Reading ",fn]
-  u := VMREAD inStream
+  u := READ(inStream)
   $niladics := mkNiladics u
   for x in $niladics repeat PUT(x,'NILADIC,true)
   for d in u repeat

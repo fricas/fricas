@@ -639,12 +639,6 @@
 
 ; 99.0 Ancient Stuff We Decided To Keep
 
-(defvar *read-place-holder* (make-symbol "%.EOF")
-   "default value returned by read and read-line at end-of-file")
-
-(defun PLACEP (item) (eq item *read-place-holder*))
-(defun get_read_placeholder() *read-place-holder*)
-(defun VMREAD (st) (read st nil *read-place-holder*))
 (defun |read_line| (st) (read-line st nil nil))
 
 ;;; GCMSG when called with argument eqal to NIL is supposed to

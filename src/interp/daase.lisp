@@ -605,8 +605,6 @@ database.
   (getdatabase constructor 'niladic))
  (format t "~a: ~a~%" 'abbreviation
   (getdatabase constructor 'abbreviation))
- (format t "~a: ~a~%" 'constructor?
-  (getdatabase constructor 'constructor?))
  (format t "~a: ~a~%" 'constructor
   (getdatabase constructor 'constructor))
  (format t "~a: ~a~%" 'defaultdomain
@@ -657,8 +655,7 @@ database.
 (defun getdatabase (constructor key)
  (declare (special $spadroot) (special |$miss|))
  (when (eq |$miss| t) (format t "getdatabase call: ~20a ~a~%" constructor key))
- (let (data table stream ignore struct)
-  (declare (ignore ignore))
+ (let (data table stream struct)
   (when (or (symbolp constructor)
           (and (eq key 'hascategory) (pairp constructor)))
   (case key
@@ -713,9 +710,6 @@ database.
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
      (setq data (database-niladic struct))))
-   (constructor?
-    (when (setq struct (get constructor 'database))
-      (setq data (when (database-operationalist struct) t))))
    (superdomain ; only 2 superdomains in the world
     (case constructor
      (|NonNegativeInteger|

@@ -119,21 +119,20 @@ File(S : SetCategory) : FileCategory(FileName, S) with
         read! f ==
             f.fileIOmode ~= "input" =>
                 error "File not in read state"
-            x : None := VMREAD(f.fileState)$Lisp
-            PLACEP(x)$Lisp =>
+            x : None := fri_read(f.fileState)$Lisp
+            eof_marker?(x)$Lisp =>
                 error "End of file"
             x pretend S
         readIfCan! f ==
             f.fileIOmode ~= "input" =>
                 error "File not in read state"
-            x : None := VMREAD(f.fileState)$Lisp
-            PLACEP(x)$Lisp => "failed"
+            x : None := fri_read(f.fileState)$Lisp
+            eof_marker?(x)$Lisp => "failed"
             x pretend S
         write!(f, x) ==
             f.fileIOmode ~= "output" =>
                 error "File not in write state"
-            print_full2(x, f.fileState)$Lisp
-            TERPRI(f.fileState)$Lisp
+            fri_write(x, f.fileState)$Lisp
             x
 
         flush f ==
