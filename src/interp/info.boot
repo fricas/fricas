@@ -79,10 +79,10 @@ addInfo(u, il) == [formatInfo u, :il]
 
 formatInfo u ==
   atom u => u
-  u is ["SIGNATURE",:v] => ["SIGNATURE","$",:v]
+  u is ["SIGNATURE", :v] => ["SIGNATURE", "%", :v]
   u is ["PROGN",:l] => ["PROGN",:[formatInfo v for v in l]]
   u is ["ATTRIBUTE", v] =>
-      isCategoryForm(v) => ["has", "$", v]
+      isCategoryForm(v) => ["has", "%", v]
       BREAK()
   u is ["IF",a,b,c] =>
     c="noBranch" => ["COND",:liftCond [formatPred a,formatInfo b]]
@@ -193,7 +193,7 @@ knownInfo1 pred ==
     vmode is ["Join",:l] and member(cat,l) => true
     [vv, ., .] := get_catlist(vmode, $info_e)
     catlist := vv.4
-    --catlist := SUBST(name,'$,vv.4)
+    --catlist := SUBST(name, '%, vv.4)
     null vv => stackSemanticError(["can't make category of ",name],nil)
     member(cat,first catlist) => true  --checks princ. ancestors
     (u:= assoc(cat,CADR catlist)) and knownInfo(CADR u) => true
@@ -237,13 +237,13 @@ actOnInfo(u, e) ==
     implem:=
       (implem := assoc([name, :modemap], get(operator, 'modemap, e))) =>
           CADADR implem
-      name = "$" => ['ELT,name,-1]
-      ['ELT,name,substitute('$,name,modemap)]
+      name = "%" => ['ELT, name, -1]
+      ['ELT, name, substitute('%, name, modemap)]
     e := addModemap(operator, name, modemap, true, implem, e)
     [vval, vmode, venv] := GetValue(name, e)
     SAY("augmenting ",name,": ",u)
-    key:= if CONTAINED("$",vmode) then "domain" else name
-    cat:= ["CATEGORY",key,["SIGNATURE",operator,modemap]]
+    key := if CONTAINED("%", vmode) then "domain" else name
+    cat := ["CATEGORY", key, ["SIGNATURE", operator, modemap]]
     put(name, "value", [vval, mkJoin(cat, vmode), venv], e)
   u is ["has",name,cat] =>
     [vval, vmode, venv] := GetValue(name, e)

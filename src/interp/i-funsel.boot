@@ -779,13 +779,13 @@ findFunctionInDomain(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
     op = '_= =>
         #args1 ~= 2 or args1.0 ~= dc or args1.1 ~= dc => NIL
         tar and tar ~= '(Boolean) => NIL
-        [[[dc, '(Boolean), dc, dc], ['(Boolean),'$,'$], [NIL, NIL]]]
+        [[[dc, '(Boolean), dc, dc], ['(Boolean), '%, '%], [NIL, NIL]]]
     op = 'coerce =>
         dcName='Enumeration and (args1.0=$Symbol or tar=dc)=>
-           [[[dc, dc, $Symbol], ['$,$Symbol], [NIL, NIL]]]
+           [[[dc, dc, $Symbol], ['%, $Symbol], [NIL, NIL]]]
         args1.0 ~= dc => NIL
         tar and tar ~= $OutputForm => NIL
-        [[[dc, $OutputForm, dc], [$OutputForm, '$], [NIL, NIL]]]
+        [[[dc, $OutputForm, dc], [$OutputForm, '%], [NIL, NIL]]]
     member(dcName,'(Record Union)) =>
       findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom)
     NIL
@@ -823,7 +823,7 @@ allOrMatchingMms(mms,args1,tar,dc) ==
   x := NIL
   for mm in mms repeat
     [sig,:.] := mm
-    [res,:args] := MSUBSTQ(dc,"$",sig)
+    [res, :args] := MSUBSTQ(dc, "%", sig)
     args ~= args1 => nil
     x := CONS(mm,x)
   if x then x
@@ -837,15 +837,15 @@ isHomogeneousList y ==
   NIL
 
 findFunctionInDomain1(omm, tar, args1, args2, SL) ==
-  dc := rest (dollarPair := ASSQ('$, SL))
-  -- need to drop '$ from SL
+  dc := rest (dollarPair := ASSQ('%, SL))
+  -- need to drop '% from SL
   mm:= subCopy(omm, SL)
   -- tests whether modemap mm is appropriate for the function
   -- defined by op, target type tar and argument types args
 
   [sig,slot,cond,y] := mm
   [osig,:.]  := omm
-  osig := subCopy(osig, SUBSTQ(CONS('$,'$), dollarPair, SL))
+  osig := subCopy(osig, SUBSTQ(CONS('%, '%), dollarPair, SL))
   if CONTAINED('_#, sig) or CONTAINED('construct, sig) then
     sig := [replaceSharpCalls t for t in sig]
   rtcp := [[]]
@@ -870,7 +870,7 @@ findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
  --  cat := constructorCategory dc
   makeFunc := get_oplist_maker(dcName) or
       systemErrorHere '"findFunctionInCategory"
-  [funlist,.] := FUNCALL(makeFunc,"$",dc,$CategoryFrame)
+  [funlist, .] := FUNCALL(makeFunc, "%", dc, $CategoryFrame)
   -- get list of implementations and remove sharps
   maxargs := -1
   impls := nil
@@ -955,7 +955,7 @@ matchMmSigTar(t1,t2) ==
 constructSubst(d) ==
   -- constructs a substitution which substitutes d for $
   -- and the arguments of d for #1, #2 ..
-  SL:= list CONS('$,d)
+  SL := list(CONS('%, d))
   for x in rest d for v in $FormalMapVariableList repeat
     SL:= CONS(CONS(v,x),SL)
   SL
@@ -1486,7 +1486,7 @@ domArg(type, i, subs, y) ==
 
 domArg2(arg, SL1, SL2) ==
   isSharpVar arg => subCopy(arg, SL1)
-  arg = '_$ and $domPvar => $domPvar
+  arg = '% and $domPvar => $domPvar
   subCopy(arg, SL2)
 
 hasCaty1(cond,SL) ==

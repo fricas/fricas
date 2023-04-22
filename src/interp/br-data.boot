@@ -435,7 +435,7 @@ getImports conname == --called by mkUsersHashTable
 
         [op,:[import(y,template) for y in args]]
       INTEGERP x => import(template.x,template)
-      x = '$ => '$
+      x = '% => '%
       x = "$$" => "$$"
       STRINGP x => x
       systemError '"bad argument in template"

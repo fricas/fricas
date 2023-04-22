@@ -178,7 +178,7 @@ $oldAxiomPreCategoryDispatch :=
           [nil])
 
 oldAxiomPreCategoryParents(catform,dom) ==
-  vars := ["$",:rest GETDATABASE(opOf catform, 'CONSTRUCTORFORM)]
+  vars := ["%", :rest GETDATABASE(opOf(catform), 'CONSTRUCTORFORM)]
   vals := [dom,:rest catform]
   -- parents :=  GETDATABASE(opOf catform, 'PARENTS)
   parents := parentsOf opOf catform
@@ -449,7 +449,7 @@ lookupIncomplete(op,sig,dollar,env) ==
 
 --------------------> NEW DEFINITION (override in nrunfast.boot)
 lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
-  if s = '$ then
+  if s = '% then
 --  a = 0 => return true  --needed only if extra call in newGoGet to basicLookup
     s := devaluate dollar -- calls from HasCategory can have $s
   INTEGERP a =>
@@ -465,7 +465,7 @@ lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
         dhash =
            (if hashCode? s then s else hashType(s, dhash))
     lazyMatch(s,d,dollar,domain)                         --new style
-  a = '$ => s = devaluate dollar
+  a = '% => s = devaluate(dollar)
   a = "$$" => s = devaluate domain
   STRINGP a =>
     STRINGP s => a = s
@@ -671,10 +671,10 @@ lazyDomainSet(form, thisDomain, slot) ==
 --------------------> NEW DEFINITION (override in template.boot)
 evalSlotDomain(u,dollar) ==
   $returnNowhereFromGoGet: local := false
-  $ : fluid := dollar
+  % : fluid := dollar
   $lookupDefaults : local := nil -- new world
   isDomain u => u
-  u = '$ => dollar
+  u = '% => dollar
   u = "$$" => dollar
   FIXP u =>
     VECP (y := dollar.u) => y

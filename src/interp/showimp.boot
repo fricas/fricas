@@ -159,7 +159,7 @@ getDomainExtensionsOfDomain domain ==
   acc
 
 devaluateSlotDomain(u,dollar) ==
-  u = '$ => devaluate dollar
+  u = '% => devaluate(dollar)
   FIXP u and VECP (y := dollar.u) => devaluate y
   u is ['NRTEVAL,y] => MKQ eval y
   u is ['QUOTE,y] => u
@@ -250,7 +250,7 @@ formatLazyDomain(dom,x) ==
   systemError nil
 
 formatLazyDomainForm(dom,x) ==
-  x = 0 => ["$"]
+  x = 0 => ["%"]
   FIXP x => formatLazyDomain(dom,dom.x)
   atom x => x
   x is ['NRTEVAL,y] => (atom y => [y]; y)

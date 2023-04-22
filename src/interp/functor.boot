@@ -36,7 +36,7 @@
 mkDevaluate a ==
   null a => nil
   a is ['QUOTE,a'] => (a' => a; nil)
-  a='$ => MKQ '$
+  a = '% => MKQ('%)
   a is ['LIST] => nil
   a is ['LIST,:.] => a
   ['devaluate,a]
@@ -252,9 +252,11 @@ DescendCode(code, flag, viewAssoc, EnvToPass, kvec, e) ==
   code is ['LET,name,body,:.] =>
                     --only keep the names that are useful
     u:=member(name,$locals) =>
-        CONTAINED('$, body) and isDomainForm(body, e) =>
+        CONTAINED('%, body) and isDomainForm(body, e) =>
           --instantiate domains which depend on $ after constants are set
-          code:=[($QuickCode => 'QSETREFV; 'SETELT),[($QuickCode => 'QREFELT; 'ELT),'$,5],#$locals-#u,code]
+          code := [($QuickCode => 'QSETREFV; 'SETELT),
+                    [($QuickCode => 'QREFELT; 'ELT), '%, 5],
+                      #$locals - #u, code]
           $epilogue:=
             TruthP flag => [code,:$epilogue]
             [['COND, [ProcessCond(flag, e), code]], :$epilogue]
@@ -298,7 +300,7 @@ ProcessCond(cond, et) ==
 
 SetFunctionSlots(sig, body, flag, kvec) ==
 --+
-  v := '$
+  v := '%
   u := kvec
   if true then
     null body => return NIL
@@ -309,7 +311,7 @@ SetFunctionSlots(sig, body, flag, kvec) ==
           body:= [($QuickCode => 'QSETREFV; 'SETELT),v,index,body]
           if REFVECP $SetFunctions and TruthP flag then u.index:= true
                  --used by CheckVector to determine which ops are missing
-          if v='$ then  -- i.e. we are looking at the principal view
+          if v = '% then  -- i.e. we are looking at the principal view
             not REFVECP $SetFunctions => nil
                     --packages don't set it
             $MissingFunctionInfo.index:= flag
@@ -328,7 +330,7 @@ SetFunctionSlots(sig, body, flag, kvec) ==
 LookUpSigSlots(sig,siglist) ==
 --+ must kill any implementations below of the form (ELT $ NIL)
   if $insideCategoryPackageIfTrue then
-           sig := substitute('$,CADR($functorForm),sig)
+           sig := substitute('%, CADR($functorForm), sig)
   siglist := $lisplibOperationAlist
   REMDUP [implem for u in siglist | SigSlotsMatch(sig,first u,implem:=CADDR u)
               and IFCAR(IFCDR(IFCDR(implem)))]
@@ -338,9 +340,9 @@ SigSlotsMatch(sig,pattern,implem) ==
   not (LENGTH CADR sig=LENGTH CADR pattern) => nil
                        --CADR sig is the actual signature part
   not (first sig=first pattern) => nil
-  pat' :=SUBSTQ($definition,'$,CADR pattern)
-  sig' :=SUBSTQ($definition,'$,CADR sig)
-  sig'=pat' => true
+  pat' := SUBSTQ($definition, '%, CADR(pattern))
+  sig' := SUBSTQ($definition, '%, CADR(sig))
+  sig' = pat' => true
   --If we don't have this next test, then we'll recurse in SetFunctionSlots
   SourceLevelSubsume(sig',pat') => true
   nil
@@ -537,7 +539,7 @@ DescendCodeVarAdd(base, flag, kvec, e) ==
    [SetFunctionSlots(sig, SUBST('ELT,'CONST,implem), flag, kvec) repeat
        for i in 6..MAXINDEX princview |
          princview.i is [sig:=[op,types],:.] and
-           LASSOC([base, :SUBST(base, '$, types)], get(op, 'modemap, e)) is
+           LASSOC([base, :SUBST(base, '%, types)], get(op, 'modemap, e)) is
                   [[pred,implem]]]
 
 resolvePatternVars(p,args) ==

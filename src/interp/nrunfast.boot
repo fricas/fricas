@@ -210,7 +210,7 @@ newLookupInCategories(op, sig, dom, dollar, check_num) ==
                                               opvec.code, endPos)) => nil
             --numOfArgs := byteVector.(opvec.code)
             --numOfArgs ~= #(QCDR sig) => nil
-            packageForm := [entry, '$, :rest cat]
+            packageForm := [entry, '%, :rest(cat)]
             package := evalSlotDomain(packageForm,dom)
             packageVec.i := package
             package
@@ -289,7 +289,7 @@ lazyMatchArgDollarCheck(s,d,dollarName,domainName) ==
    fn ==
     x = arg => true
     x is ['elt,someDomain,opname] => lookupInDomainByName(opname,evalDomain someDomain,arg)
-    x = '$ and (arg = dollarName or arg = domainName) => true
+    x = '% and (arg = dollarName or arg = domainName) => true
     x = dollarName and arg = domainName => true
     ATOM x or ATOM arg => false
     xt and first x = first arg =>
@@ -349,7 +349,7 @@ newExpandLocalTypeForm([functorName,:argl],dollar,domain) ==
         for a in argl for flag in rest coSig]]
 
 newExpandLocalTypeArgs(u,dollar,domain,typeFlag) ==
-  u = '$ => u
+  u = '% => u
   INTEGERP u =>
      typeFlag => newExpandTypeSlot(u, dollar,domain)
      domain.u
@@ -360,8 +360,8 @@ newExpandLocalTypeArgs(u,dollar,domain,typeFlag) ==
   newExpandLocalTypeForm(u,dollar,domain)
 
 nrtEval(expr,dom) ==
-  $:fluid := dom
-  eval expr
+    % : fluid := dom
+    eval expr
 
 domainVal(dollar,domain,index) ==
 --returns a domain or a lazy slot
@@ -371,7 +371,7 @@ domainVal(dollar,domain,index) ==
 
 sigDomainVal(dollar,domain,index) ==
 --returns a domain or a lazy slot
-  index = 0 => "$"
+  index = 0 => "%"
   index = 2 => domain
   domain.index
 

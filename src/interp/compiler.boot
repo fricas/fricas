@@ -117,14 +117,14 @@ comp(x,m,e) ==
 
 compNoStacking(x,m,e) ==
   T:= comp2(x,m,e) =>
-    (m=$EmptyMode and T.mode=$Representation => [T.expr,"$",T.env]; T)
+    (m = $EmptyMode and T.mode = $Representation => [T.expr, "%", T.env]; T)
          --$Representation is bound in compDefineFunctor, set by doIt
-         --this hack says that when something is undeclared, $ is
+         --this hack says that when something is undeclared, % is
          --preferred to the underlying representation -- RDJ 9/12/83
   compNoStacking1(x,m,e,$compStack)
 
 compNoStacking1(x,m,e,$compStack) ==
-  u:= get(if m="$" then "Rep" else m,"value",e) =>
+  u := get(if m = "%" then "Rep" else m, "value", e) =>
     (T:= comp2(x,u.expr,e) => [T.expr,m,T.env]; nil)
   nil
 
@@ -239,9 +239,9 @@ compWithMappingMode1(x, m is ["Mapping", m', :sl], oldE, $formalArgList) ==
   e:= oldE
   isFunctor x =>
     if get(x,"modemap",$CategoryFrame) is [[[.,target,:argModeList],.],:.] and
-        (and/[extendsCategoryForm("$", s, mode, e) for mode in argModeList
+        (and/[extendsCategoryForm("%", s, mode, e) for mode in argModeList
                                                    for s in sl]
-          ) and extendsCategoryForm("$", target, m', e) then return [x, m, e]
+          ) and extendsCategoryForm("%", target, m', e) then return [x, m, e]
   if STRINGP x then x:= INTERN x
   ress := nil
   old_style := true
@@ -538,7 +538,8 @@ getFormModemaps(form is [op,:argl],e) ==
   null atom op => nil
   modemapList:= get(op,"modemap",e)
   if $insideCategoryPackageIfTrue then
-    modemapList := [x for x in modemapList | x is [[dom,:.],:.] and dom ~= '$]
+      modemapList := [x for x in modemapList |
+                        x is [[dom,:.],:.] and dom ~= '%]
   if op = "elt" and #argl = 2 or op = "setelt!" and #argl = 3 then
       modemapList := eltModemapFilter(argl.1, modemapList, e) or return nil
   nargs:= #argl
@@ -625,9 +626,9 @@ finish_setq_single(T, m, id, val, currentProplist) ==
 --+
   saveLocVarsTypeDecl(x, id, e')
 
-  if (k:=NRTassocIndex(id))
-     then form:=['SETELT,"$",k,x]
-     else form:=
+  if (k := NRTassocIndex(id)) then
+      form := ['SETELT, "%", k, x]
+  else form:=
          $QuickLet => ["LET",id,x]
          ["LET",id,x,
             (isDomainForm(x, e') => ['ELT, id, 0]; first outputComp(id, e'))]
@@ -1029,7 +1030,7 @@ getUnionMode(x,e) ==
 isUnionMode(m,e) ==
   m is ["Union",:.] => m
   (m':= getmode(m,e)) is ["Mapping",["UnionCategory",:.]] => CADR m'
-  v:= get(if m="$" then "Rep" else m,"value",e) =>
+  v := get(if m = "%" then "Rep" else m, "value", e) =>
     (v.expr is ["Union",:.] => v.expr; nil)
   nil
 
@@ -1122,10 +1123,9 @@ compIs(["is",a,b],m,e) ==
 -- Type in returned triple is m when m is not $EmptyMode,
 -- otherwise it is type from T
 coerce(T,m) ==
-  $InteractiveMode =>
-    keyedSystemError("S2GE0016",['"coerce",
+  $InteractiveMode => keyedSystemError("S2GE0016",['"coerce",
       '"function coerce called from the interpreter."])
-  rplac(CADR T,substitute("$",$Rep,CADR T))
+  rplac(CADR(T), substitute("%", $Rep, CADR(T)))
   T':= coerceEasy(T,m) => T'
   T' := constant_coerce(T, m) => T'
   T':= coerceSubset(T,m) => T'
@@ -1149,7 +1149,7 @@ coerceEasy(T,m) ==
     [T.expr,m,T.env]
 
 coerceSubset([x,m,e],m') ==
-  isSubset(m,m',e) or m="Rep" and m'="$" => [x,m',e]
+  isSubset(m, m', e) or m = "Rep" and m' = "%" => [x, m', e]
   m is ['SubDomain,=m',:.] => [x,m',e]
   INTEGERP x and (pred:= isSubset(m',maxSuperType(m,e),e)) -- again temporary
     and eval substitute(x,"*",pred) =>
@@ -1187,7 +1187,7 @@ isUnionMode2(m, e, pl) ==
   (m' := getmode_pl(m, pl)) is ["Mapping", ["UnionCategory", :.]] => CADR m'
   -- FIXME: Hardcoded assumprion about Rep
   v :=
-      m = "$" => get("Rep", "value", e)
+      m = "%" => get("Rep", "value", e)
       QLASSQ("value", pl)
   v => (v.expr is ["Union",:.] => v.expr; nil)
   nil

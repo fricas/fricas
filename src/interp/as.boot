@@ -245,8 +245,8 @@ asGetModemaps(opAlist,oform,kind,modemap) ==
 --  and generating $TriangleVariableList
   for [op,:itemlist] in SUBLISLIS(rpvl, $FormalMapVariableList,opAlist) repeat
     for [sig0, pred] in itemlist repeat
-      sig := SUBST(dc,"$",sig0)
-      pred:= SUBST(dc,"$",pred)
+      sig := SUBST(dc, "%", sig0)
+      pred := SUBST(dc, "%", pred)
       sig := SUBLISLIS(rpvl, IFCDR oform, sig)
       pred:= SUBLISLIS(rpvl, IFCDR oform, pred)
       pred := pred or 'T
@@ -349,7 +349,7 @@ asyAncestors x ==
   x is ['Apply,:r] => asyAncestorList r
   x is [op,y,:.] and MEMQ(op, '(PretendTo RestrictTo)) => asyAncestors y
   atom x =>
-    x = '_% => '_$
+    x = '_% => '_%
     MEMQ(x, $niladics)       => [x]
     GETDATABASE(x ,'NILADIC) => [x]
     x
@@ -479,7 +479,7 @@ asytranForm1(form,levels,local?) ==
     error '"DEFINE forms are not handled yet"
   if form = '_% then $hasPerCent := true
   IDENTP form =>
-    form = "%" => "$"
+    form = "%" => "%"
     GETL(form,'NILADIC) => [form]
     form
   [asytranForm(x,levels,local?) for x in form]
@@ -701,7 +701,7 @@ asyConstructorModemap con ==
   --NOTE: sig has the form (-> source target) or simply (target)
   $constructorArgs : local := IFCDR form
   signature := asySignature(sig,false)
-  formals := ['_$,:TAKE(#$constructorArgs,$FormalMapVariableList)]
+  formals := ['_%, :TAKE(#$constructorArgs, $FormalMapVariableList)]
   mm := [[[con,:$constructorArgs],:signature],['T,con]]
   SUBLISLIS(formals,['_%,:$constructorArgs],mm)
 
@@ -752,7 +752,7 @@ asySig1(u,name?,target?) ==
     x is '(_%) => '(_$)
     [fn,:[asySig(x,name?) for x in r]]
 --x = 'Type => '(Type)
-  x = '_% => '_$
+  x = '_% => '_%
   x
 
 asyMapping([a,b],name?) ==
@@ -780,7 +780,7 @@ asyType x ==
     x is '(_%) => '(_$)
     x
 --x = 'Type => '(Type)
-  x = '_% => '_$
+  x = '_% => '_%
   x
 
 asyTypeJoin r ==
@@ -849,7 +849,7 @@ asyTypeUnit x ==
     [fn,:asyTypeUnitList r]
   GETL(x,'NILADIC) => [x]
 --x = 'Type => '(Type)
-  x = '_% => '_$
+  x = '_% => '_%
   x
 
 asyTypeUnitList x == [asyTypeUnit y for y in x]
@@ -971,7 +971,7 @@ asyUnTuple x ==
 
 asyTypeItem x ==
   atom x =>
-    x = '_%         => '_$
+    x = '_%         => '_%
     x
   x is ['_-_>,a,b] =>
       ['Mapping,b,:asyUnTuple a]

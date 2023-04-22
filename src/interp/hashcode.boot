@@ -38,7 +38,6 @@ getDomainHash dom == SPADCALL(CDR dom, (CAR dom).4)
 
 hashType(type, percentHash) ==
         SYMBOLP type  =>
-           type = '$ => percentHash
            type = "%" => percentHash
            hashString SYMBOL_-NAME type
         STRINGP type  => hashCombine(hashString type,

@@ -376,7 +376,7 @@ algEqual(object1, object2, domain) ==
   -- "=" from the domain
   -- objects should not be wrapped
 --  eqfunc := getFunctionFromDomain("=",domain,[domain,domain])
-  eqfunc := compiledLookupCheck("=",[$Boolean,'$,'$],evalDomain domain)
+  eqfunc := compiledLookupCheck("=", [$Boolean, '%, '%], evalDomain(domain))
   SPADCALL(object1,object2, eqfunc)
 
 --%  main algorithms for canCoerceFrom and coerceInteractive
@@ -1352,12 +1352,12 @@ coerceByFunction(T,m2) ==
   m2 is ['Boolean,:.] and m1 is ['Equation,ud] =>
       isWrapped x =>
           dcVector := evalDomain ud
-          fun := NRTcompiledLookup("=", [$Boolean, '$, '$], dcVector)
+          fun := NRTcompiledLookup("=", [$Boolean, '%, '%], dcVector)
           [fn, :d]:= fun
           x := unwrap x
           mkObjWrap(SPADCALL(first x, rest x, fun), m2)
       dcVector := evalDomain m1
-      fun := NRTcompileEvalForm("coerce", [$Boolean, '$], dcVector)
+      fun := NRTcompileEvalForm("coerce", [$Boolean, '%], dcVector)
       code := ['SPADCALL, x, fun]
       objNew(code, $Boolean)
   -- If more than one function is found, any should suffice, I think -scm

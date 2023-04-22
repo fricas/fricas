@@ -677,7 +677,7 @@ dbShowOperationsFromConform(htPage,which,opAlist) ==  --branch in with lists
 reduceOpAlistForDomain(opAlist,domform,conform) ==
 --destructively simplify all predicates; filter out any that fail
   form1 := [domform,:rest domform]
-  form2 := ['$,:rest conform]
+  form2 := ['%, :rest(conform)]
   new_opAlist := []
   for pair in opAlist repeat
     n_items := [test for item in rest pair | test] where test ==
@@ -793,10 +793,8 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
             'skip
           u :=
             tail is [.,origin,:.] and origin =>
---  must change any % into $ otherwise we will not pick up comments properly
---  delete the SUBLISLIS when we fix on % or $
-              dbGetDocTable(op,SUBLISLIS(['$],['%],sig),dbDocTable origin,which,nil)
-            if packageSymbol then sig := substitute('_$, packageSymbol, sig)
+                dbGetDocTable(op, sig, dbDocTable(origin), which, nil)
+            if packageSymbol then sig := substitute('%, packageSymbol, sig)
             dbGetDocTable(op,sig,docTable,which,nil)
           origin := IFCAR u or origin
           docCode := IFCDR u   --> (doc . code)
@@ -895,9 +893,10 @@ getDomainOpTable2(dom, fromIfTrue, ops) ==
           f = 'nowhere => 'nowhere           --see replaceGoGetSlot
           f = function makeSpadConstant => 'constant
           f = function IDENTITY => 'constant
-          f = function newGoGet => substitute('_$, domname, devaluate first r)
+          f = function newGoGet =>
+              substitute('_%, domname, devaluate(first(r)))
           null VECP r => systemError devaluateList r
-          substitute('_$, domname, devaluate r)
+          substitute('_%, domname, devaluate(r))
         'nowhere
       [sig1,:info]
 

@@ -64,9 +64,9 @@ deltaTran(item,compItem) ==
   [op,:modemap] := item
   [dcSig,[.,[kind,:.]]] := modemap
   [dc,:sig] := dcSig
-  sig := substitute('$,dc,substitute("$$",'$,sig))
+  sig := substitute('%, dc, substitute("$$", '%,sig))
   dcCode :=
-    dc = '$ => 0
+    dc = '% => 0
     NRTassocIndex dc or keyedSystemError("S2NR0004",[dc])
   formalSig:= SUBLISLIS($FormalMapVariableList,$formalArgList,sig)
   kindFlag:= (kind = 'CONST => 'CONST; nil)
@@ -83,7 +83,7 @@ NRTencode(x,y) == encode(x,y,true, true) where
       -- the operation name should be assigned a slot
       not(firstTime) and (k := NRTassocIndex x) =>
           not(domain) and INTEGERP(k) =>
-              ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "$", k]]
+              ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "%", k]]
           k
       VECP(x) => systemErrorHere '"NRTencode"
       PAIRP(x) =>
@@ -102,15 +102,15 @@ NRTencode(x,y) == encode(x,y,true, true) where
           v := $FormalMapVariableList.(POSN1(x, $formalArgList))
           firstTime => ['local, v]
           domain => v
-          ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "$", v]]
-      x = '$ => x
+          ['NRTEVAL, [($QuickCode => 'QREFELT; 'ELT), "%", v]]
+      x = '% => x
       x = "$$" => x
       ['QUOTE, x]
 
 --------------FUNCTIONS CALLED DURING CAPSULE FUNCTION COMPILATION-------------
 listOfBoundVars(form, e) ==
 -- Only called from the function genDeltaEntry below
-  form = '$ => []
+  form = '% => []
   IDENTP form and (u := get(form, 'value, e)) =>
     u:=u.expr
     MEMQ(IFCAR u, '(Union Record)) => listOfBoundVars(u, e)
@@ -126,7 +126,7 @@ optDeltaEntry(op, sig, dc, eltOrConst, e) ==
   $bootstrapDomains = true =>
     nil
   ndc :=
-    dc = '$ => $functorForm
+    dc = '% => $functorForm
     atom dc and (dcval := get(dc, 'value, e)) => dcval.expr
     dc
   sig := substitute(ndc, dc, sig)
@@ -146,7 +146,7 @@ optDeltaEntry(op, sig, dc, eltOrConst, e) ==
        quoteSelector(x, e) ==
          not(IDENTP x) => x
          get(x, 'value, e) => x
-         x='$ => x
+         x = '% => x
          MKQ x
      fn := compiledLookup(op,nsig,dcval)
      if null fn then return nil
@@ -182,8 +182,10 @@ genDeltaEntry(opMmPair, e) ==
   [op,[dc,:sig],[.,cform:=[eltOrConst,.,nsig]]] := opMmPair
   eltOrConst = 'XLAM => cform
   if atom dc then
-    dc = "$" => nsig := sig
-    if NUMBERP nsig then nsig := substitute('$,dc,substitute("$$","$",sig))
+    dc = "%" => nsig := sig
+    if NUMBERP(nsig) then
+        nsig := substitute('%, dc, substitute("$$", "%", sig))
+
     -- following hack needed to invert Rep to $ substitution
 --  if odc = 'Rep and cform is [.,.,osig] then sig:=osig
   newimp := optDeltaEntry(op, nsig, dc, eltOrConst, e) => newimp
@@ -191,9 +193,9 @@ genDeltaEntry(opMmPair, e) ==
     ['applyFun,['compiledLookupCheck,MKQ op,
          mkList consSig(nsig, dc, e), consDomainForm(dc, nil, e)]]
   odc := dc
-  if null atom dc then dc := substitute("$$",'$,dc)
- --   sig := substitute('$,dc,sig)
- --   cform := substitute('$,dc,cform)
+  if null atom dc then dc := substitute("$$", '%, dc)
+ --   sig := substitute('%, dc, sig)
+ --   cform := substitute('%, dc, cform)
   opModemapPair :=
     -- force pred to T
     [op, [dc, :[genDeltaSig(x, e) for x in nsig]], ['T,cform]]
@@ -206,7 +208,7 @@ genDeltaEntry(opMmPair, e) ==
       compEntry := (compOrCroak(odc, $EmptyMode, e)).expr
       RPLACA(saveNRTdeltaListComp,compEntry)
   u :=
-    [eltOrConst,'$,$NRTbase+$NRTdeltaLength-index] where index ==
+    [eltOrConst, '%, $NRTbase+$NRTdeltaLength-index] where index ==
       (n:= POSN1(opModemapPair,$NRTdeltaList)) => n + 1
         --n + 1 since $NRTdeltaLength is 1 too large
       $NRTdeltaList:= [opModemapPair,:$NRTdeltaList]
@@ -229,12 +231,12 @@ NRTassocIndex x == --returns index of "domain" entry x in al
 NRTgetLocalIndex(item, e) ==
   k := NRTassocIndex item => k
   item = $NRTaddForm => 5
-  item = '$ => 0
+  item = '% => 0
   item = '_$_$ => 2
   value:=
     MEMQ(item,$formalArgList) => item
     nil
-  atom item and null MEMQ(item,'($ _$_$))
+  atom item and null MEMQ(item,'(% _$_$))
    and null value =>  --give slots to atoms
     $NRTdeltaList := [['domain, NRTaddInner(item, e), :value], :$NRTdeltaList]
     $NRTdeltaListComp:=[item,:$NRTdeltaListComp]
@@ -262,7 +264,7 @@ cheap_comp_delta_entry(item) ==
         for arg in args for tp in rest(cosig) while ok repeat
             ok :=
                 not(tp) => false
-                arg = '$ => true
+                arg = '% => true
                 MEMBER(arg, $functorLocalParameters) => true
                 cheap_comp_delta_entry(arg)
         ok
@@ -274,9 +276,9 @@ NRTassignCapsuleFunctionSlot(op, sig, base_shell, e) ==
   [., ., implementation] := NRTisExported?(opSig, base_shell) or return nil
     --if opSig is not exported, it is local and need not be assigned
   if $insideCategoryPackageIfTrue then
-      sig := substitute('$,CADR($functorForm),sig)
+      sig := substitute('%, CADR($functorForm), sig)
   sig := [genDeltaSig(x, e) for x in sig]
-  opModemapPair := [op,['_$,:sig],['T,implementation]]
+  opModemapPair := [op, ['%, :sig], ['T,implementation]]
   POSN1(opModemapPair,$NRTdeltaList) => nil   --already there
   $NRTdeltaList:= [opModemapPair,:$NRTdeltaList]
   $NRTdeltaListComp := [nil,:$NRTdeltaListComp]
@@ -292,9 +294,9 @@ maybe_cons_dn(y, dc, e, c) ==
     y
 
 consDomainName(x, dc, e) ==
-  x = dc => ''$
-  x = '$ => ''$
-  x = "$$" => ['devaluate,'$]
+  x = dc => ''%
+  x = '% => ''%
+  x = "$$" => ['devaluate, '%]
   x is [op,:argl] =>
     (op = 'Record) or (op = 'Union and argl is [[":",:.],:.])  =>
        mkList [MKQ op,
@@ -307,25 +309,25 @@ consDomainName(x, dc, e) ==
             mkList([MKQ op, :[maybe_cons_dn(y, dc, e, c) for y in argl
                               for c in rest(cosig)]])
         mkList [MKQ op, :[consDomainName(y, dc, e) for y in argl]]
-    substitute('$,"$$",x)
+    substitute('%, "$$", x)
   x = [] => x
   (y := LASSOC(x,$devaluateList)) => y
   k:=NRTassocIndex x =>
-    ['devaluate,['ELT,'$,k]]
+      ['devaluate, ['ELT, '%, k]]
   get(x, 'value, e) =>
     isDomainForm(x, e) => ['devaluate, x]
     x
   MKQ x
 
 consDomainForm(x, dc, e) ==
-  x = '$ => '$
+  x = '% => '%
   x is [op,:argl] =>
       op = ":" and argl is [tag, value] =>
           [op, tag, consDomainForm(value, dc, e)]
       [op, :[consDomainForm(y, dc, e) for y in argl]]
   x = [] => x
   (y := LASSOC(x,$devaluateList)) => y
-  k:=NRTassocIndex x => ['ELT,'$,k]
+  k := NRTassocIndex(x) => ['ELT, '%, k]
   get(x, 'value, e) or get(x, 'mode, e) => x
   MKQ x
 
@@ -337,7 +339,7 @@ get_self_preds2(p, acc) ==
     p is [op, :l] =>
         MEMQ(op, '(AND and OR or NOT not)) => get_self_preds1(l, acc)
         op is "HasCategory" =>
-            first(l) = "$" => CONS(CADR(l), acc)
+            first(l) = "%" => CONS(CADR(l), acc)
             acc
         acc
     acc
@@ -411,7 +413,7 @@ boolean_substitute_cond(cond, sub_data) ==
     boolean_substitute1(cond, sub_data)
 
 mk_has_dollar_quote(cat) ==
-    ["HasCategory", "$", ["QUOTE", cat]]
+    ["HasCategory", "%", ["QUOTE", cat]]
 
 boolean_subst(condCats, cats, sub_data1) ==
     [boolean_subst1(cond, [FUNCTION boolean_substitute_cond,
@@ -502,7 +504,7 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
   $template := GETREFV (6 + $NRTdeltaLength)
   $SetFunctions:= GETREFV SIZE domainShell
   $MissingFunctionInfo:= GETREFV SIZE domainShell
-  catNames := ['$, :[GENVAR() for u in rest catvecListMaker]]
+  catNames := ['%, :[GENVAR() for u in rest(catvecListMaker)]]
   domname:='dv_$
 
   condCats := [simpBool(cc) for cc in condCats]
@@ -522,13 +524,13 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
   NRTdescendCodeTran(storeOperationCode,nil) --side effects storeOperationCode
   codePart2:=
       argStuffCode :=
-        [['QSETREFV, '$, i, v] for i in 6.. for v in $FormalMapVariableList
+        [['QSETREFV, '%, i, v] for i in 6.. for v in $FormalMapVariableList
           for arg in rest definition]
       if MEMQ($NRTaddForm,$locals) then
          addargname := $FormalMapVariableList.(POSN1($NRTaddForm,$locals))
-         argStuffCode := [['QSETREFV, '$, 5, addargname], :argStuffCode]
-      [['stuffDomainSlots,'$],:argStuffCode,
-         :predBitVectorCode2, ['SETF, 'pv_$, ['QREFELT, '$, 3]],
+         argStuffCode := [['QSETREFV, '%, 5, addargname], :argStuffCode]
+      [['stuffDomainSlots, '%], :argStuffCode,
+         :predBitVectorCode2, ['SETF, 'pv_$, ['QREFELT, '%, 3]],
             storeOperationCode]
 
   $CheckVectorList := NRTcheckVector domainShell
@@ -541,19 +543,19 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
     createDomainCode:=
         ['LET, domname, ['LIST, MKQ first definition,
                          :ASSOCRIGHT $devaluateList]]
-    createViewCode:= ['LET,'$,['GETREFV, 6+$NRTdeltaLength]]
-    setVector0Code := ['QSETREFV, '$, 0, 'dv_$]
-    slot3Code := ['QSETREFV,'$,3,['LET,'pv_$,predBitVectorCode1]]
+    createViewCode := ['LET, '%, ['GETREFV, 6+$NRTdeltaLength]]
+    setVector0Code := ['QSETREFV, '%, 0, 'dv_$]
+    slot3Code := ['QSETREFV, '%, 3, ['LET, 'pv_$, predBitVectorCode1]]
     slamCode:=
         isCategoryPackageName(opOf(definition)) => nil
-        [NRTaddToSlam(definition, '$)]
+        [NRTaddToSlam(definition, '%)]
 
 --CODE: part 3
   $ConstantAssignments :=
       [NRTputInLocalReferences code for code in $ConstantAssignments]
   codePart3:= [:$ConstantAssignments,:$epilogue]
   ans :=
-    ['PROGN,:optFunctorPROGN [:codePart1,:codePart2,:codePart3], '$]
+    ['PROGN, :optFunctorPROGN([:codePart1, :codePart2, :codePart3]), '%]
   ans:= minimalise ans
   SAY ['"time taken in buildFunctor: ", get_run_time() - oldtime]
   --sayBrightly '"------------------functor code: -------------------"
@@ -584,7 +586,7 @@ NRTsetVector4Part1(sigs, forms, conds, base_shell, e) ==
     cond_list := nil
     for sig in reverse sigs for form in reverse forms
            for cond in reverse conds repeat
-        sig = '$ =>
+        sig = '% =>
             domainList :=
                 [optimize COPY IFCAR comp(d, $EmptyMode, e) or
                    d for d in base_shell.4.0]
@@ -621,7 +623,7 @@ NRTmakeSlot1Info(form, base_shell) ==
   pairlis :=
     $insideCategoryPackageIfTrue = true =>
       [:argl, dollarName] := rest(form)
-      [[dollarName,:'_$],:mkSlot1sublis argl]
+      [[dollarName, :'%], :mkSlot1sublis(argl)]
     mkSlot1sublis(rest(form))
   lisplibOpAlist := transformOperationAlist(SUBLIS(pairlis, base_shell.1))
   opList :=
@@ -654,7 +656,7 @@ genOperationAlist(base_shell) ==
           $NRTslot1PredicateList := insert(pred,$NRTslot1PredicateList)
         fnsel is [op,a,:.] and (op = 'ELT or op = 'CONST) =>
           if $insideCategoryPackageIfTrue then
-              opsig := substitute('$,CADR($functorForm),opsig)
+              opsig := substitute('%, CADR($functorForm), opsig)
           [opsig,pred,[op,a,vectorLocation(first opsig,CADR opsig)]]
         [opsig,pred,fnsel]
 
@@ -691,7 +693,7 @@ deepChaseInferences1(pred, e) ==
 
 vectorLocation(op,sig) ==
   u := or/[i for i in 1.. for u in $NRTdeltaList
-        | u is [=op,[='$,: xsig],:.] and sig=NRTsubstDelta(xsig) ]
+        | u is [=op, [='%, : xsig],:.] and sig = NRTsubstDelta(xsig) ]
   u => $NRTdeltaLength - u + 6
   nil    -- this signals that calls should be forwarded
 
@@ -700,7 +702,7 @@ NRTsubstDelta(initSig) ==
      replaceSlotTypes(t) ==
         atom t =>
           not INTEGERP t => t
-          t = 0 => '$
+          t = 0 => '%
           t = 2 => '_$_$
           t = 5 => $NRTaddForm
           u:= $NRTdeltaList.($NRTdeltaLength+5-t)
@@ -720,8 +722,9 @@ NRTputInHead bod ==
   bod is ['SPADCALL,:args,fn] =>
     NRTputInTail rest bod --NOTE: args = COPY of rest bod
     -- The following test allows function-returning expressions
-    fn is [elt,dom,ind] and not (dom='$) and MEMQ(elt,'(ELT QREFELT CONST)) =>
-      k:= NRTassocIndex dom => RPLACA(LASTNODE bod,[$elt,'_$,k])
+    fn is [elt, dom, ind] and not (dom = '%) and
+         MEMQ(elt,'(ELT QREFELT CONST)) =>
+      k := NRTassocIndex dom => RPLACA(LASTNODE bod, [$elt, '%, k])
       nil
     NRTputInHead fn
     bod
@@ -738,9 +741,9 @@ NRTputInHead bod ==
 NRTputInTail x ==
   for y in tails x repeat
     atom (u := first y) =>
-      EQ(u,'$) or LASSOC(u,$devaluateList) => nil
+      EQ(u, '%) or LASSOC(u, $devaluateList) => nil
       k:= NRTassocIndex u =>
-        atom u => RPLACA(y,[$elt,'_$,k])
+        atom u => RPLACA(y, [$elt, '%, k])
         -- u atomic means that the slot will always contain a vector
         BREAK()
       --this reference must check that slot is a vector
@@ -764,8 +767,8 @@ NRTdescendCodeTran(u, condList) ==
                 fn = 'IDENTITY => a
                 fn is ['dispatchFunction, fn'] => fn'
                 fn
-        a is ['CONS, 'IDENTITY, ['FUNCALL, fn, "$"]] =>
-            na := [['FUNCTION, 'makeSpadConstant], ["LIST", fn, "$", i]]
+        a is ['CONS, 'IDENTITY, ['FUNCALL, fn, "%"]] =>
+            na := [['FUNCTION, 'makeSpadConstant], ["LIST", fn, "%", i]]
             RPLACD(a, na)
             nil
         nil   --code for this will be generated by the instantiator
@@ -790,7 +793,7 @@ NRTaddInner(x, e) ==
             NRTinnerGetLocalIndex(y, e)
     x is ['SubDomain, y, :.] => NRTinnerGetLocalIndex(y, e)
     getConstructorSignature x is [., :ml] =>
-        for y in rest x for m in ml | not (y = '$) repeat
+        for y in rest x for m in ml | not (y = '%) repeat
             isCategoryForm(m) => NRTinnerGetLocalIndex(y, e)
     keyedSystemError("S2NR0003", [x])
   x

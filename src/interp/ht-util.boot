@@ -123,14 +123,8 @@ htpLabelFilteredInputString(htPage, label) ==
   props =>
     #props > 5 and ELT(props, 6) =>
       FUNCALL(SYMBOL_-FUNCTION ELT(props, 6), ELT(props, 0))
-    replacePercentByDollar ELT(props, 0)
+    ELT(props, 0)
   nil
-
-replacePercentByDollar s == fn(s,0,MAXINDEX s) where
-  fn(s,i,n) ==
-    i > n => '""
-    (m := charPosition(char "%",s,i)) > n => SUBSTRING(s,i,nil)
-    STRCONC(SUBSTRING(s,i,m - i),'"$",fn(s,m + 1,n))
 
 htpLabelSpadValue(htPage, label) ==
 -- Scratchpad value of parsed and evaled inputString, as (type . value)
@@ -211,12 +205,9 @@ mapStringize l ==
   l
 
 basicStringize s ==
-  STRINGP s =>
-    s = '"\$"      => '"\%"
-    s = '"{\em $}" => '"{\em \%}"
-    s
-  s = '_$ => '"\%"
-  PRINC_-TO_-STRING s
+    STRINGP(s) => s
+    s = '_% => '"\%"
+    PRINC_-TO_-STRING(s)
 
 stringize s ==
   STRINGP s => s

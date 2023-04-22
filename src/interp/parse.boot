@@ -54,7 +54,6 @@ In order not to have to change this everywhere we do a substitution here.
 
 parseTransform x ==
   $defOp: local:= nil
-  x := SUBST('$, '%, x) -- for new compiler compatibility
   parseTran x
 
 )if false
@@ -150,7 +149,7 @@ parseCategory x ==
   l:= parseTranList x
   -- Needed only for error messages in interpreter
   key :=
-    CONTAINED("$",l) => "domain"
+    CONTAINED("%", l) => "domain"
     'package
   ['CATEGORY,key,:l]
 

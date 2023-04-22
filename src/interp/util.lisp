@@ -360,8 +360,8 @@ After this function is called the image is clean and can be saved.
     (eval  x)
 )
 
-;;; For evaluating categories we need to bind $.
-(defun |c_eval|(u) (let (($ '$)) (declare (special $)) (|eval| u)))
+;;; For evaluating categories we need to bind %.
+(defun |c_eval|(u) (let ((% '%)) (declare (special %)) (|eval| u)))
 
 ;;; Accesed from HyperDoc
 (defun |setViewportProcess| ()

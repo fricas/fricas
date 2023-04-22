@@ -231,10 +231,10 @@ formatOpSymbol(op,sig) ==
   quad := specialChar 'quad
   n := #sig
   (op = 'elt) and (n = 3) =>
-    (CADR(sig) = '_$) =>
-      STRINGP (sel := CADDR(sig)) =>
-        [quad,".",sel]
-      [quad,".",quad]
+    -- (CADR(sig) = '_$) =>
+    --   STRINGP (sel := CADDR(sig)) =>
+    --    [quad,".",sel]
+    --  [quad,".",quad]
     op
   STRINGP op or GETL(op,"Led") or GETL(op,"Nud") =>
     n = 3 =>
@@ -251,14 +251,14 @@ formatOpSymbol(op,sig) ==
   op
 
 dollarPercentTran x ==
-    -- Translate $ to %. We actually return %% so that the message
+    -- Handle %. We actually return %% so that the message
     -- printer will display a single %
     x is [y,:z] =>
         y1 := dollarPercentTran y
         z1 := dollarPercentTran z
         EQ(y, y1) and EQ(z, z1) => x
         [y1, :z1]
-    x = "$" or x = '"$" => "%%"
+    x = "%" or x = '"%" => "%%"
     x
 
 formatSignature sig ==
@@ -722,7 +722,7 @@ pred2English x ==
       (_> . " > ") (_>_= . " >= ") (_=  . " = ") (_^_= . " _^_= ")))) =>
         concat(pred2English a,translation,pred2English b)
   x is ['ATTRIBUTE, form] => BREAK()
-  x is '$ => '"%%"
+  x is '% => '"%%"
   form2String x
 
 mathObject2String x ==

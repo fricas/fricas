@@ -128,7 +128,7 @@ convertOpAlist2compilerInfo(opalist) ==
       formatSig(op, [typelist, slot,:stuff]) ==
           pred := if stuff then first stuff else 'T
           impl := if rest stuff then CADR stuff else 'ELT -- handles 'CONST
-          [[op, typelist], pred, [impl, '$, slot]]
+          [[op, typelist], pred, [impl, '%, slot]]
 
 updateCategoryFrameForConstructor(constructor) ==
    opAlist := GETDATABASE(constructor, 'OPERATIONALIST)
