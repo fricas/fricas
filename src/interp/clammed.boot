@@ -100,7 +100,7 @@ isValidType form ==
     cl:= replaceSharps(cl,form)
     and/[isValid for x in argl for c in cl] where isValid ==
       categoryForm?(c) =>
-        evalCategory(x,MSUBSTQ(x,'_$,c)) and isValidType x
+        evalCategory(x, MSUBSTQ(x, '%, c)) and isValidType x
       not (GETDATABASE(opOf x, 'CONSTRUCTORKIND) = 'domain)
 
 selectMms1(op,tar,args1,args2,$Coerce) ==

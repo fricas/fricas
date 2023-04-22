@@ -36,15 +36,15 @@ mkList u ==
   nil
 
 mkOperatorEntry(opSig is [op,sig,:flag],pred,count) ==
-  null flag => [opSig,pred,["ELT","$",count]]
-  first flag="constant" => [[op,sig],pred,["CONST","$",count]]
+  null(flag) => [opSig, pred, ["ELT", "%", count]]
+  first(flag) = "constant" => [[op, sig], pred, ["CONST", "%", count]]
   systemError ['"unknown variable mode: ",flag]
 
 --% Code for encoding function names inside package or domain
 
 encodeFunctionName(fun,package is [packageName,:arglist],signature,sep,count)
    ==
-    signature':= substitute("$",package,signature)
+    signature' := substitute("%", package, signature)
     reducedSig:= mkRepititionAssoc [:rest signature',first signature']
     encodedSig:=
       ("STRCONC"/[encodedPair for [n,:x] in reducedSig]) where

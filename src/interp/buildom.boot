@@ -52,9 +52,9 @@ Record0 args ==
     dom.0 := ['Record, :[['_:, first a, devaluate rest a] for a in args]]
     dom.1 :=
            [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:6]],
-                ['_~_=,[[['Boolean],'_$,'_$],:10]],
-                 ['coerce, [[$OutputForm, '_$], :7]]]]
+               [['_=,[[['Boolean], '%, '%], :6]],
+                ['_~_=,[[['Boolean], '%, '%], :10]],
+                 ['coerce, [[$OutputForm, '%], :7]]]]
     dom.2 := NIL
     dom.3 := ['RecordCategory,:QCDR dom.0]
     dom.4 :=
@@ -96,7 +96,7 @@ coerceVal2E(x,m) ==
    objValUnwrap coerceByFunction(objNewWrap(x, m), $OutputForm)
 
 findEqualFun(dom) ==
-  compiledLookup('_=,[$Boolean,'$,'$],dom)
+    compiledLookup('_=, [$Boolean, '%, '%], dom)
 
 coerceRe2E(x,source) ==
   n := #rest(source)
@@ -123,9 +123,9 @@ Union(:args) ==
                           else devaluate a) for a in args]]
     dom.1 :=
             [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:6]],
-                ['_~_=, [[['Boolean],'_$,'_$],:9]],
-                 ['coerce,[[$OutputForm, '_$],:7]]]]
+               [['_=, [[['Boolean], '%, '%], :6]],
+                ['_~_=, [[['Boolean], '%, '%], :9]],
+                 ['coerce,[[$OutputForm, '%], :7]]]]
     dom.2 := NIL
     dom.3 :=
       '(SetCategory)
@@ -190,8 +190,8 @@ Mapping(:args) ==
     dom.0 := ['Mapping, :[devaluate a for a in args]]
     dom.1 :=
             [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:6]],
-                 ['coerce,[[$OutputForm, '_$],:7]]]]
+               [['_=, [[['Boolean], '%, '%], :6]],
+                 ['coerce, [[$OutputForm, '%], :7]]]]
     dom.2 := NIL
     dom.3 :=
       '(SetCategory)
@@ -229,8 +229,8 @@ Enumeration0(:args) ==
     dom.0 := ['Enumeration, :args]
     dom.1 :=
            [function lookupInTable,dom,
-               [['_=,[[['Boolean],'_$,'_$],:6]],
-                 ['coerce,[[$OutputForm, '_$],:7], [['_$, $Symbol], :8]]
+               [['_=, [[['Boolean], '%, '%], :6]],
+                 ['coerce, [[$OutputForm, '%], :7], [['%, $Symbol], :8]]
                          ]]
     dom.2 := NIL
     dom.3 := ['EnumerationCategory,:QCDR dom.0]
@@ -274,7 +274,7 @@ UnionCategory(:x) == constructorCategory ["Union",:x]
 constructorCategory (title is [op,:.]) ==
   constructorFunction := get_oplist_maker(op) or
               systemErrorHere '"constructorCategory"
-  [funlist,.]:= FUNCALL(constructorFunction,"$",title,$CategoryFrame)
+  [funlist, .] := FUNCALL(constructorFunction, "%", title, $CategoryFrame)
   oplist:= [[[a,b],true,c] for [a,b,c] in funlist]
   cat:=
       JoinInner([SetCategory(), mkCategory(oplist, nil, nil, nil)])
@@ -288,7 +288,7 @@ mkMappingFunList(nam,mapForm,e) ==
     [['_=,[['Boolean],nam ,nam],['ELT,dc,6]],
      ['_~_=, [['Boolean], nam, nam], ['ELT, dc, 9]],
        ['coerce, [$OutputForm, nam], ['ELT, dc, 7]]]
-  [substitute(nam,dc,substitute("$",'Rep,sigFunAlist)),e]
+  [substitute(nam, dc, substitute("%", 'Rep, sigFunAlist)), e]
 
 mkRecordFunList(nam,['Record,:Alist],e) ==
   len:= #Alist
@@ -313,11 +313,11 @@ mkRecordFunList(nam,['Record,:Alist],e) ==
               for i in 0.. for [.,a,A] in Alist],:
                 [['copy,[nam,nam],['XLAM,["$1"],['RECORDCOPY,
                   "$1",len]]]]]
-  [substitute(nam,dc,substitute("$",'Rep,sigFunAlist)),e]
+  [substitute(nam, dc, substitute("%", 'Rep, sigFunAlist)), e]
 
 mkNewUnionFunList(name,form is ['Union,:listOfEntries],e) ==
   dc := name
-  if name = 'Rep then name := '$
+  if name = 'Rep then name := '%
   --2. create coercions from subtypes to subUnion
   cList:=
     [['_=,[['Boolean],name ,name],['ELT,dc,6]],
@@ -388,7 +388,7 @@ mkUnionFunList(op,form is ['Union,:listOfEntries],e) ==
                   ['XLAM,["#1"],['QEQCAR,x,n]]
                 ['XLAM,["#1"],p]
   op:=
-    op='Rep => '$
+    op = 'Rep => '%
     op
   cList:= substitute(op,g,cList)
   [cList,e]

@@ -73,6 +73,9 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
   L   ==> List
   U   ==> UniversalSegment Integer
 
+  PINF ==> " potentially infinite stream, maybe use 'complete'"
+  INFC ==> " infinite (cyclic) stream"
+
   import from List(S)
 
   indexx?            : (Integer, %) -> Boolean
@@ -115,10 +118,10 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     y := x
     for i in 0.. repeat
       explicitlyEmpty? y  => return i
-      lazy? y => error "#: infinite stream"
+      lazy? y => error "#:" PINF
       y := rst y
       if odd? i then x := rst x
-      eq?(x,y) => error "#: infinite stream"
+      eq?(x,y) => error "#:" INFC
 
 --% CLAGG functions
 
@@ -130,7 +133,7 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     y := x
     for i in 0.. repeat
       explicitlyEmpty? y  => return false
-      lazy? y => error "any?: infinite stream"
+      lazy? y => error "any?:" PINF
       f frst y => return true
       y := rst y
       if odd? i then x := rst x
@@ -144,7 +147,7 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     y := x
     for i in 0.. repeat
       explicitlyEmpty? y => return true
-      lazy? y => error "every?: infinite stream"
+      lazy? y => error "every?:" PINF
       not f frst y => return false
       y := rst y
       if odd? i then x := rst x
@@ -190,11 +193,11 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     l : L S := empty()
     for i in 0.. repeat
       explicitlyEmpty? y  => return reverse! l
-      lazy? y => error "infinite stream"
+      lazy? y => error "entires:" PINF
       l := concat(frst y, l)
       y := rst y
       if odd? i then x := rst x
-      eq?(x,y) => error "infinite stream"
+      eq?(x,y) => error "entires:" INFC
 
 --% CLAGG functions
 
@@ -256,11 +259,11 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     l : L I := empty()
     for i in MIN.. repeat
       explicitlyEmpty? y  => return reverse! l
-      lazy? y => error "indices: infinite stream"
+      lazy? y => error "indices:" PINF
       l := concat(i, l)
       y := rst y
       if odd? i then x := rst x
-      eq?(x,y) => error "indices: infinite stream"
+      eq?(x,y) => error "indices:" INFC
 
   maxIndex x ==
     -- error if stream is not finite
@@ -269,10 +272,10 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     y := rst x
     for i in MIN.. repeat
       explicitlyEmpty? y  => return i
-      lazy? y => error "maxIndex: infinite stream"
+      lazy? y => error "maxIndex:" PINF
       y := rst y
       if odd? i then x := rst x
-      eq?(x,y) => error "maxIndex: infinite stream"
+      eq?(x,y) => error "maxIndex:" INFC
 
   minIndex x ==
     empty? x => error "minIndex: no minimal index for empty stream"
@@ -344,7 +347,7 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
       for i in 0.. repeat
         z = y => return true
         explicitlyEmpty? y => return false
-        lazy? y => error "node?: infinite stream"
+        lazy? y => error "node?:" PINF
         y := rst y
         if odd? i then x := rst x
         eq?(x, y) => return false
@@ -354,22 +357,22 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     l : L % := []
     for i in 0.. repeat
       explicitlyEmpty? y => return reverse! l
-      lazy? y => error "nodes: infinite stream"
+      lazy? y => error "nodes:" PINF
       l := concat(y, l)
       y := rst y
       if odd? i then x := rst x
-      eq?(x,y) => error "nodes: infinite stream"
+      eq?(x,y) => error "nodes:" INFC
     l -- @#$%^& compiler
 
   leaves x ==
       y := x
       for i in 0.. repeat
           explicitlyEmpty? y => return []
-          lazy? y => error "leaves$Stream: infinite stream"
+          lazy? y => error "leaves:" PINF
           leaf? y => return [value y]
           y := rst y -- there is only one children
           if odd? i then x := rst x
-          eq?(x, y) => error "leaves$Stream: infinite stream"
+          eq?(x, y) => error "leaves:" INFC
 
   value x == first x
 
@@ -428,15 +431,15 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     y2 := rst x
     for i in 0.. repeat
       explicitlyEmpty? y2 => return frst y1
-      lazy? y2 => error "last: infinite stream"
+      lazy? y2 => error "last:" PINF
       y1 := y2
       y2 := rst y2
       if odd? i then x := rst x
-      eq?(x,y2) => error "last: infinite stream"
+      eq?(x,y2) => error "last:" INFC
 
   if % has finiteAggregate then -- # is only defined for finiteAggregates
     last(x, n) ==
-      possiblyInfinite? x => error "last: infinite stream"
+      possiblyInfinite? x => error "last:" PINF
       m := # x
       m < n => error "last: index out of range"
       copy rest(x, (m-n)::NNI)
@@ -450,11 +453,11 @@ LazyStreamAggregate(S : Type) : Category == StreamAggregate(S) with
     y2 := rst x
     for i in 0.. repeat
       explicitlyEmpty? y2 => return y1
-      lazy? y2 => error "tail: infinite stream"
+      lazy? y2 => error "tail:" PINF
       y1 := y2
       y2 := rst y2
       if odd? i then x := rst x
-      eq?(x,y2) => error "tail: infinite stream"
+      eq?(x,y2) => error "tail:" INFC
 
 --% STAGG functions
 

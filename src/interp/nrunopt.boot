@@ -118,7 +118,7 @@ orderBySubsumption items == reverse(items)
 makeCompactSigCode(sig) == [fn for x in sig] where
   fn ==
     x = '_$_$ => 2
-    x = '$ => 0
+    x = '% => 0
     NULL INTEGERP x => systemError ['"code vector slot is ",x,'"; must be number"]
     x
 
@@ -158,7 +158,7 @@ stuffSlot(dollar,i,item) ==
     atom item => [SYMBOL_-FUNCTION item,:dollar]
     item is [n,:op] and INTEGERP n => [FUNCTION newGoGet,dollar,:item]
     item is ['CONS,.,['FUNCALL,a,b]] =>
-      b = '$ => [FUNCTION makeSpadConstant,eval a,dollar,i]
+      b = '% => [FUNCTION makeSpadConstant, eval(a), dollar, i]
       sayBrightlyNT '"Unexpected constant environment!!"
       pp devaluate b
       nil
@@ -209,7 +209,7 @@ makePredicateBitVector(pl, et) ==   --called by buildFunctor
 augmentPredCode(n,lastPl) ==
   ['LIST,:pl] := mungeAddGensyms(lastPl,$predGensymAlist)
   delta := 2^n
-  l := [(u := MKPF([x, ['augmentPredVector, '$, delta]], 'AND);
+  l := [(u := MKPF([x, ['augmentPredVector, '%, delta]], 'AND);
          delta:=2 * delta; u) for x in pl]
 
 augmentPredVector(dollar,value) ==
@@ -218,7 +218,7 @@ augmentPredVector(dollar,value) ==
 isHasDollarPred pred ==
   pred is [op,:r] =>
     MEMQ(op,'(AND and OR or NOT not)) => or/[isHasDollarPred x for x in r]
-    op is "HasCategory" => first r = '$
+    op is "HasCategory" => first(r) = '%
     false
   false
 
@@ -233,7 +233,7 @@ removeAttributePredicates pl ==
     fn p ==
       p is [op,:argl] and op in '(AND and OR or NOT not) =>
           makePrefixForm(fnl argl,op)
-      p is ['has,'$,['ATTRIBUTE,a]] => BREAK()
+      p is ['has, '%, ['ATTRIBUTE, a]] => BREAK()
       p
     fnl p == [fn x for x in p]
 
@@ -299,7 +299,7 @@ NRTmakeCategoryAlist(et) ==
   sixEtc := [5 + i for i in 1..#$pairlis]
   formals := ASSOCRIGHT $pairlis
   for x in slot1 repeat
-      RPLACA(x, EQSUBSTLIST(["$$"], ["$"], first x))
+      RPLACA(x, EQSUBSTLIST(["$$"], ["%"], first x))
   -----------code to make a new style slot4 -----------------
   predList := ASSOCRIGHT slot1  --is list of predicate indices
   maxPredList := "MAX"/predList
@@ -416,7 +416,7 @@ getCodeVector1(infovec) ==
 getCodeVector() == getCodeVector1($infovec)
 
 formatSlotDomain x ==
-  x = 0 => ["$"]
+  x = 0 => ["%"]
   x = 2 => ["$$"]
   INTEGERP x =>
     val := $infovec.0.x
@@ -776,7 +776,7 @@ expandType(lazyt,template,domform) ==
   [functorName,:[expandTypeArgs(a,template,domform) for a in argl]]
 
 expandTypeArgs(u,template,domform) ==
-  u = '$ => u --template.0      -------eliminate this as $ is rep by 0
+  u = '% => u --template.0      -------eliminate this as $ is rep by 0
   INTEGERP u => expandType(templateVal(template, domform, u), template,domform)
   u is ['NRTEVAL,y] => y  --eval  y
   u is ['QUOTE,y] => y

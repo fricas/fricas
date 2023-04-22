@@ -264,7 +264,7 @@ modeIsAggregateOf(ListOrVector,m,e) ==
     1=#mList => first mList
   name:=
     m is [fn,:.] => fn
-    m="$" => "Rep"
+    m = "%" => "Rep"
     m
   get(name,"value",e) is [[ =ListOrVector,R],:.] => [m,R]
 

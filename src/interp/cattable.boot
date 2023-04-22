@@ -144,7 +144,7 @@ hasIdent pred ==
   pred is [op,:r] =>
     op = 'QUOTE => false
     or/[hasIdent x for x in r]
-  pred = '_$ => false
+  pred = '% => false
   IDENTP pred => true
   false
 

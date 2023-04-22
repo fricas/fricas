@@ -108,7 +108,7 @@ evaluateType form ==
   form = $EmptyMode => form
   form = "?"        => $EmptyMode
   STRINGP form => form
-  form = "$" => form
+  form = "%" => form
   form is ['typeOf,.] =>
     form' := mkAtree form
     bottomUp form'
@@ -156,7 +156,7 @@ evaluateType1 form ==
     for x in argl for m in ml for argnum in 1.. repeat
       typeList := [v,:typeList] where v ==
         categoryForm?(m) =>
-          m := evaluateType MSUBSTQ(x,'_$,m)
+          m := evaluateType(MSUBSTQ(x, '%, m))
           evalCategory(x' := (evaluateType x), m) => x'
           throwEvalTypeMsg("S2IE0004",[form])
         m := evaluateType m
@@ -181,7 +181,7 @@ evaluateSignature sig ==
   -- calls evaluateType on a signature
   sig is [ ='SIGNATURE,fun,sigl] =>
     ['SIGNATURE,fun,
-      [(t = '_$ => t; evaluateType(t)) for t in sigl]]
+      [(t = '% => t; evaluateType(t)) for t in sigl]]
   sig
 
 --% Code Evaluation
@@ -236,7 +236,7 @@ evalForm(op,opName,argl,mmS) ==
         if $NRTmonitorIfTrue = true then
           sayBrightlyNT ['"Applying ",first fun0,'" to:"]
           pp [devaluateDeeply x for x in form]
-        _$:fluid := domain
+        _% : fluid := domain
         ['SPADCALL, :form, fun0]
   not form => nil
 --  not form => throwKeyedMsg("S2IE0008",[opName])

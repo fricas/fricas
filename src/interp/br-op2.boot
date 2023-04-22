@@ -105,12 +105,12 @@ htSayValue t ==
 
 htSayArgument t == --called only for operations not for constructors
   null $signature => htSay ['"{\em ",t,'"}"]
-  MEMQ(t, '(_$ _%)) =>
+  MEMQ(t, '(_%)) =>
     $conkind = '"category" and $conlength > 20 =>
       $generalSearch? => htSay '"{\em D} of the origin category"
-      addWhereList("$",'is,nil)
-      htSayStandard '"{\em $}"
-    htSayStandard '"{\em $}"
+      addWhereList("%", 'is, nil)
+      htSayStandard '"{\em %}"
+    htSayStandard '"{\em %}"
   not IDENTP t => bcConform(t,true)
   k := position(t,$conargs)
   if k > -1 then
@@ -167,7 +167,7 @@ dbChooseOperandName(typ) ==
     x
   name := opOf typ
   kind :=
-    name = "$" => 'domain
+    name = "%" => 'domain
     GETDATABASE(name,'CONSTRUCTORKIND)
   s := PNAME opOf typ
   kind ~= 'category =>
@@ -326,9 +326,10 @@ whoUsesMatch1?(signumList,sig,al) ==
     x := LASSOC(pattern,al) =>
       x = subject => whoUsesMatch1?(r,s,al)
       false
-    pattern = '_$ =>
-      subject is [= $conname,:.] => whoUsesMatch1?(r,s,[['_$,:subject],:al])
-      false
+    pattern = '_% =>
+        subject is [= $conname, :.] =>
+            whoUsesMatch1?(r, s, [['_%, :subject], :al])
+        false
     whoUsesMatch1?(r,s,[[pattern,:subject],:al])
   true
 
@@ -381,7 +382,7 @@ zeroOneConvert x ==
 
 kFormatSlotDomain x == fn formatSlotDomain x where fn x ==
   atom x => x
-  (op := first x) = '_$ => '_$
+  (op := first x) = '_% => '_%
   op = 'local => CADR x
   op = ":" => [":",CADR x,fn CADDR x]
   MEMQ(op,$Primitives) or constructor? op =>

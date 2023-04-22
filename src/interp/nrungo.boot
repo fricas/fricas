@@ -93,7 +93,7 @@ compareSig(sig,tableSig,dollar,domain) ==
               for s in rest sig for t in rest tableSig]
 
 lazyCompareSigEqual(s,tslot,dollar,domain) ==
-  tslot = '$ => s = tslot
+  tslot = '% => s = tslot
   INTEGERP tslot and PAIRP(lazyt:=domain.tslot) and PAIRP s =>
       lazyt is [.,.,.,[.,item,.]] and
         item is [., [functorName, :.]] and functorName = first s =>
@@ -106,16 +106,16 @@ compareSigEqual(s,t,dollar,domain) ==
   EQUAL(s,t) => true
   ATOM t =>
     u :=
-      EQ(t,'$) => dollar
+      EQ(t, '%) => dollar
       isSharpVar t =>
         VECP domain => ELT(rest domain.0,POSN1(t,$FormalMapVariableList))
         ELT(rest domain,POSN1(t,$FormalMapVariableList))
       STRINGP t and IDENTP s => (s := PNAME s; t)
       nil
-    s = '$ => compareSigEqual(dollar,u,dollar,domain)
+    s = '% => compareSigEqual(dollar, u, dollar, domain)
     u => compareSigEqual(s,u,dollar,domain)
     EQUAL(s,u)
-  EQ(s,'$) => compareSigEqual(dollar,t,dollar,domain)
+  EQ(s, '%) => compareSigEqual(dollar, t, dollar, domain)
   ATOM s => nil
   #s ~= #t => nil
   match := true
@@ -185,11 +185,11 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
     (CONTAINED('throwMessage,mess) or
       CONTAINED('throwKeyedMsg,mess)))]
   integer := EVAL $Integer
-  iequalSlot := compiledLookupCheck("=", '((Boolean) $ $), integer)
-  lt_slot := compiledLookupCheck("<", '((Boolean) $ $), integer)
-  le_slot := compiledLookupCheck("<=", '((Boolean) $ $), integer)
-  gt_slot := compiledLookupCheck(">", '((Boolean) $ $), integer)
-  ge_slot := compiledLookupCheck(">=", '((Boolean) $ $), integer)
+  iequalSlot := compiledLookupCheck("=", '((Boolean) % %), integer)
+  lt_slot := compiledLookupCheck("<", '((Boolean) % %), integer)
+  le_slot := compiledLookupCheck("<=", '((Boolean) % %), integer)
+  gt_slot := compiledLookupCheck(">", '((Boolean) % %), integer)
+  ge_slot := compiledLookupCheck(">=", '((Boolean) % %), integer)
   bf := '(Boolean)
   bf_vec := EVAL bf
   notpSlot := compiledLookupCheck("not", '((Boolean)(Boolean)), bf_vec)
@@ -243,7 +243,7 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
     return nil
 
   --Check general term for references to just the k previous values
-  diffCell := compiledLookupCheck("-", '($ $ $), integer)
+  diffCell := compiledLookupCheck("-", '(% % %), integer)
   --Check general term for references to just the k previous values
   sharpPosition := PARSE_-INTEGER SUBSTRING(sharpArg,1,nil)
   al:= mkDiffAssoc(op, generalTerm, k, sharpPosition, sharpArg,

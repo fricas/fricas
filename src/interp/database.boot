@@ -37,14 +37,14 @@ DEFPARAMETER($getUnexposedOperations, true)
 
 augLisplibModemapsFromCategory(form is [op,:argl], body, signature,
                                domainShell) ==
-  sl := [["$",:"*1"],:[[a,:p] for a in argl
+  sl := [["%", :"*1"], :[[a, :p] for a in argl
     for p in rest $PatternVariableList]]
   form:= SUBLIS(sl,form)
   body:= SUBLIS(sl,body)
   signature:= SUBLIS(sl,signature)
   opAlist:= SUBLIS(sl, domainShell.(1)) or return nil
   nonCategorySigAlist:=
-    mkAlistOfExplicitCategoryOps substitute("*1","$",body)
+    mkAlistOfExplicitCategoryOps(substitute("*1", "%", body))
   domainList:=
     [[a,m] for a in rest form for m in rest signature |
       isCategoryForm(m)]
@@ -66,15 +66,15 @@ augmentLisplibModemapsFromFunctor(form,opAlist,signature) ==
     or/[(sig in catSig) for catSig in
       allLASSOCs(op,nonCategorySigAlist)] repeat
         skip:=
-          argl and CONTAINED("$",rest sig) => 'SKIP
+          argl and CONTAINED("%", rest(sig)) => 'SKIP
           nil
-        sel:= substitute(form,"$",sel)
+        sel := substitute(form, "%", sel)
         patternList:= listOfPatternIds sig
         --get relevant predicates
         predList:=
           [[a,m] for a in argl for m in rest signature
             | MEMQ(a,$PatternVariableList)]
-        sig:= substitute(form,"$",sig)
+        sig := substitute(form, "%", sig)
         pred':= MKPF([pred,:[mkDatabasePred y for y in predList]],'AND)
         l:=listOfPatternIds predList
         if "OR"/[null MEMQ(u,l) for u in argl] then

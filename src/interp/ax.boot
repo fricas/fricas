@@ -205,7 +205,6 @@ optcomma [op,:args] ==
    [op,:args]
 
 axFormatDecl(sym, type) ==
-   if sym = '$ then sym := '%
    ['Declare, sym, axFormatType type]
 
 makeTypeSequence l ==
@@ -217,7 +216,6 @@ axFormatAttrib(typeform) ==
 
 axFormatType(typeform) ==
   atom typeform =>
-     typeform = '$ => '%
      STRINGP typeform =>
         ['Apply,'Enumeration, INTERN typeform]
      INTEGERP typeform =>
@@ -240,7 +238,6 @@ axFormatType(typeform) ==
                         :[axFormatType a for a in args]],
                           ['Apply, 'List, 'Symbol] ]
   typeform is [op] =>
-    op = '$ => '%
     op = 'Void => ['Comma]
     op
   typeform is ['local, val] => axFormatType val
@@ -307,7 +304,7 @@ pretendTo(a, t) == ['PretendTo, axFormatType a, axFormatType t]
 -- information for % in $augmentedArgs. But not yet.
 augmentTo(a, t) ==
   not $conditionalCast => axFormatType a
-  a = '$ => pretendTo(a, t)
+  a = '% => pretendTo(a, t)
   ax := axFormatType a -- a looks like |#i|
   not(null(kv:=ASSOC(a,$augmentedArgs))) =>
       ['PretendTo, ax, formatAugmentedType(rest kv, a, $augmentedArgs)]
@@ -360,8 +357,7 @@ axFormatPred pred ==
    op = 'IF => axFormatOp pred
    op = 'has =>
       [name,type] := args
-      if name = '$ then name := '%
-      else name := axFormatOp name
+      name := axFormatOp(name)
       ftype := axFormatOp type
       if ftype is ['Declare,:.] then
            ftype := ['With, [], ftype]
@@ -502,7 +498,7 @@ axFormatDefaultOpSig(op, sig, catops,catdefops) ==
 
 axCatSignature(sig) ==
     ATOM sig => sig
-    sig = '($) => '$
+    sig = '(%) => '%
     CAR(sig) = "local" => CADR(sig)
     CAR(sig) = "QUOTE" => CADR(sig)
     [axCatSignature elt for elt in sig]

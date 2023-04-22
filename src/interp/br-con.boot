@@ -285,13 +285,13 @@ dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
         p:=SUBLISLIS(rest conform,$FormalMapVariableList,kTestPred catpredvec.i)
         $domain => EVAL p
         p
-      if domname and CONTAINED('$,pred) then pred := SUBST(domname,'$,pred)
+      if domname and CONTAINED('%, pred) then pred := SUBST(domname, '%, pred)
       (pak := catinfo . i) and pred   --only those with default packages
     pakform ==
       pak and not IDENTP pak => devaluate pak --in case it has been instantiated
       catform := kFormatSlotDomain catvec . i
-      res := dbSubConform(rest conform,[pak,"$",:rest catform])
-      if domname then res := SUBST(domname,'$,res)
+      res := dbSubConform(rest(conform), [pak, "%", :rest(catform)])
+      if domname then res := SUBST(domname, '%, res)
       res
   [:dbAddChain conform,:catforms]
 
@@ -347,7 +347,7 @@ kcaPage1(htPage,kind,article,whichever,fn, isCatDescendants?) ==
   if whichever ~= '"ancestor" then
     ancestors := augmentHasArgs(ancestors,conform)
   ancestors := listSort(function GLESSEQP,ancestors)
---if domname then ancestors := SUBST(domname,'$,ancestors)
+  -- if domname then ancestors := SUBST(domname, '%, ancestors)
   htpSetProperty(htPage,'cAlist,ancestors)
   htpSetProperty(htPage,'thing,whichever)
   choice :=
@@ -431,7 +431,8 @@ kcnPage(htPage,junk) ==
     opOf conform
   domList := getImports pakname
   if domname then
-    domList := SUBLISLIS([domname,:rest domname],['$,:rest conform],domList)
+      domList := SUBLISLIS([domname, :rest(domname)],
+                           ['%, :rest(conform)], domList)
   cAlist := [[x,:true] for x in domList]
   htpSetProperty(htPage,'cAlist,cAlist)
   htpSetProperty(htPage,'thing,'"benefactor")
@@ -633,8 +634,8 @@ originsInOrder conform ==  --domain = nil or set to live domain
 dbAddDocTable conform ==
   conname := opOf conform
   storedArgs := rest getConstructorForm conname
-  for [op,:alist] in SUBLISLIS(["$",:rest conform],
-    ["%",:storedArgs],GETDATABASE(opOf conform,'DOCUMENTATION))
+  for [op, :alist] in SUBLISLIS(["%", :rest(conform)],
+    ["%", :storedArgs], GETDATABASE(opOf(conform), 'DOCUMENTATION))
       repeat
        op1 :=
          op = '(Zero) => 0

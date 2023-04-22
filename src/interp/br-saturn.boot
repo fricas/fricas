@@ -502,7 +502,7 @@ dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
     htSay
       thing = 'nowhere => '"implemented nowhere"
       thing = 'constant => '"constant"
-      thing = '_$ => '"by the domain"
+      thing = '_% => '"by the domain"
       INTEGERP thing => '"unexported"
       constructorIfTrue =>
         htSay word
@@ -717,7 +717,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     pred := sublisFormal(IFCDR conform, predicate)
     count := #pred
     htSayStandard('"\newline\tab{2}{\em Conditions:}")
-    for p in displayBreakIntoAnds SUBST($conform,"$",pred) repeat
+    for p in displayBreakIntoAnds(SUBST($conform, "%", pred)) repeat
       htSayIndentRel2(15, count > 1)
       bcPred(p,$conform,true)
       htSayIndentRel2(-15, count > 1)
@@ -726,15 +726,15 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
   if $whereList then
     count := #$whereList
     htSayStandard('"\newline\tab{2}{\em Where:}")
-    if assoc("$",$whereList) then
+    if assoc("%", $whereList) then
       htSayIndentRel2(15, true)
-      htSayStandard '"{\em \$} is "
+      htSayStandard '"{\em \%} is "
       htSay
         $conkind = '"category" => '"of category "
         '"the domain "
       bcConform(conform,true,true)
       htSayIndentRel2(-15, true)
-    for [d,key,:t] in $whereList | d ~= "$" repeat
+    for [d,key,:t] in $whereList | d ~= "%" repeat
       htSayIndentRel2(15, count > 1)
       htSayList(['"{\em ", d, '"} is "])
       htSayConstructor(key, sublisFormal(IFCDR conform, t))

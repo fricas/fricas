@@ -109,7 +109,7 @@ addModemap1(op,mc,sig,pred,fn,e) ==
 --     if fn is [kind,'Rep,.] and
                -- save old sig for NRUNTIME
 --       (kind = 'ELT or kind = 'CONST) then fn:=[kind,'Rep,sig]
-     sig:= substitute("$",'Rep,sig)
+     sig:= substitute("%", 'Rep, sig)
   currentProplist:= getProplist(op,e) or nil
   newModemapList:=
     mkNewModemapList(mc,sig,pred,fn,LASSOC('modemap,currentProplist),e,nil)
@@ -152,7 +152,8 @@ mergeModemap(entry is [[mc,:sig],[pred,:.],:.],modemapList,e) ==
 
 isSuperDomain(domainForm,domainForm',e) ==
   isSubset(domainForm',domainForm,e) => true
-  domainForm='Rep and domainForm'="$" => true --regard $ as a subdomain of Rep
+  domainForm = 'Rep and domainForm' = "%" =>
+      true --regard % as a subdomain of Rep
   LASSOC(opOf domainForm',get(domainForm,"SubDomain",e))
 
 addNewDomain(domain,e) ==
@@ -172,7 +173,7 @@ augModemapsFromDomain(name,functorForm,e) ==
      --see LISPLIB BOOT
 
 substituteCategoryArguments(argl,catform) ==
-  argl:= substitute("$$","$",argl)
+  argl := substitute("$$", "%", argl)
   arglAssoc := [[INTERNL1("#", STRINGIMAGE i), :a] for i in 1.. for a in argl]
   SUBLIS(arglAssoc,catform)
 
@@ -188,7 +189,7 @@ evalAndSub(domainName, functorForm, form, e) ==
   $tmp_e : local := e
   --next lines necessary-- see MPOLY for which $ is actual arg. --- RDJ 3/83
   if CONTAINED("$$",form) then
-      e := put("$$", "mode", get("$", "mode", e), e)
+      e := put("$$", "mode", get("%", "mode", e), e)
   $tmp_e : local := e
   opAlist:= getOperationAlist(domainName,functorForm,form)
   substAlist:= substNames(domainName, functorForm, opAlist)
@@ -198,24 +199,24 @@ getOperationAlist(name,functorForm,form) ==
   if atom name and GETDATABASE(name,'NILADIC) then functorForm:= [functorForm]
   (u:= isFunctor functorForm) and not
     ($insideFunctorIfTrue and first functorForm=first $functorForm) => u
-  $insideFunctorIfTrue and name="$" =>
-    ($domainShell => $domainShell.(1); systemError '"$ has no shell now")
+  $insideFunctorIfTrue and name = "%" =>
+    ($domainShell => $domainShell.(1); systemError '"% has no shell now")
   T := compMakeCategoryObject(form, $tmp_e) =>
       ([., ., $tmp_e] := T; T.expr.(1))
   stackMessage ['"not a category form: ",form]
 
 substNames(domainName, functorForm, opalist) ==
-  functorForm := SUBSTQ("$$","$", functorForm)
+  functorForm := SUBSTQ("$$", "%", functorForm)
   nameForDollar :=
     isCategoryPackageName functorForm => CADR functorForm
     domainName
 
        -- following calls to SUBSTQ must copy to save RPLAC's in
        -- putInLocalDomainReferences
-  [[:SUBSTQ("$","$$",SUBSTQ(nameForDollar,"$",modemapform)),
-       [sel, domainName, if domainName = "$" then pos else
+  [[:SUBSTQ("%", "$$", SUBSTQ(nameForDollar, "%", modemapform)),
+       [sel, domainName, if domainName = "%" then pos else
                                          CADAR modemapform]]
-     for [:modemapform,[sel,"$",pos]] in
+     for [:modemapform, [sel, "%", pos]] in
           EQSUBSTLIST(IFCDR functorForm, $FormalMapVariableList, opalist)]
 
 
@@ -246,7 +247,7 @@ add_builtin_modemaps(name,form is [functorName,:.],e) ==
   for [op,sig,opcode] in funList repeat
     if opcode is [sel,dc,n] and sel='ELT then
           nsig := substitute("$$$",name,sig)
-          nsig := substitute('$,"$$$",substitute("$$",'$,nsig))
+          nsig := substitute('%, "$$$", substitute("$$", '%, nsig))
           opcode := [sel,dc,nsig]
     e:= addModemap(op,name,sig,true,opcode,e)
   e

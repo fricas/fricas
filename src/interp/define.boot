@@ -76,7 +76,7 @@ compDefine1(form,m,e) ==
 
 compDefineAddSignature([op,:argl],signature,e) ==
   (sig:= hasFullSignature(argl,signature,e)) and
-   not assoc(['$,:sig],LASSOC('modemap,getProplist(op,e))) =>
+   not assoc(['%, :sig], LASSOC('modemap, getProplist(op, e))) =>
      declForm:=
        [":",[op,:[[":",x,m] for x in argl for m in rest sig]],first signature]
      [.,.,e]:= comp(declForm,$EmptyMode,e)
@@ -207,8 +207,8 @@ mkCategoryPackage(form is [op, :argl], def, e) ==
                      :SUBLISLIS(argl,$FormalMapVariableList,catOpList)]
   nils:= [nil for x in argl]
   packageSig := [packageCategory,form,:nils]
-  $categoryPredicateList := SUBST(nameForDollar,'$,$categoryPredicateList)
-  SUBST(nameForDollar,'$,
+  $categoryPredicateList := SUBST(nameForDollar, '%, $categoryPredicateList)
+  SUBST(nameForDollar, '%,
       ['DEF, [packageName, :packageArgl], packageSig, def])
 
 compDefineCategory2(form, signature, body, m, e,
@@ -222,7 +222,7 @@ compDefineCategory2(form, signature, body, m, e,
 --  1.1  augment e to add declaration $: <form>
     $op: local := nil
     [$op, :argl] := form
-    e := addBinding("$", [['mode, :form]],e)
+    e := addBinding("%", [['mode, :form]], e)
 
 --  2. obtain signature
     signature':=
@@ -365,11 +365,11 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     $functor_cosig1 : local := [categoryForm?(t) for t in rest(signature')]
     -- generate slots for arguments first, then for $NRTaddForm in compAdd
     for x in argl repeat NRTgetLocalIndex(x, e)
-    [., ., e] := compMakeDeclaration([":", '_$, target], m, e)
+    [., ., e] := compMakeDeclaration([":", '%, target], m, e)
 
 
     if $insideCategoryPackageIfTrue~= true  then
-        e := augModemapsFromCategory('_$, '_$, target, e)
+        e := augModemapsFromCategory('%, '%, target, e)
     $signature:= signature'
     parSignature:= SUBLIS($pairlis,signature')
     parForm:= SUBLIS($pairlis,form)
@@ -534,7 +534,7 @@ genDomainViewList(id, dollar, catlist) ==
 
 genDomainView(viewName, dollar, c) ==
   c is ['CATEGORY, ., :l] => genDomainOps(viewName, c)
-  c := substitute(dollar, "$", c)
+  c := substitute(dollar, "%", c)
   $tmp_e := augModemapsFromCategory(viewName, nil, c, $tmp_e)
 
 genDomainOps(viewName, cat) ==
@@ -695,7 +695,7 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
     fun:=
       body':= replaceExitEtc(T.expr,catchTag,"TAGGEDreturn",$returnMode)
       finalBody:= ["CATCH",catchTag,body']
-      do_compile([$op, ["LAMBDA", [:argl, '_$], finalBody]], oldE)
+      do_compile([$op, ["LAMBDA", [:argl, '%], finalBody]], oldE)
     $functorStats:= addStats($functorStats,$functionStats)
 
 
@@ -758,7 +758,7 @@ getSignature(op, argModeList, e) ==
     (sigl:=
       REMDUP
         [sig for [[dc, :sig], [pred, :.]]
-           in (mmList := get(op, 'modemap, e)) | dc='_$ and
+           in (mmList := get(op, 'modemap, e)) | dc = '% and
                rest sig=argModeList and known_in_env(pred, e)]) => first sigl
   null sigl =>
     (u := getmode(op, e)) is ['Mapping, :sig] => sig
@@ -801,7 +801,7 @@ do_compile(u, e) ==
       opmodes:=
         [sel
           for [[DC, :sig], [., sel]] in get(op, 'modemap, e) |
-            DC='_$ and (opexport:=true) and
+            DC = '% and (opexport := true) and
              (and/[modeEqual(x,y) for x in sig for y in $signatureOfForm])]
       isLocalFunction(op, e) =>
         if opexport then userError ['%b,op,'%d,'" is local and exported"]
@@ -906,7 +906,7 @@ compTuple2Record u == ['Record,:[[":",i,x] for i in 1.. for x in rest u]]
 compCapsule(['CAPSULE,:itemList],m,e) ==
   $bootStrapMode = true =>
       [bootStrapError($functorForm, $edit_file), m, e]
-  compCapsuleInner(itemList,m,addDomain('_$,e))
+  compCapsuleInner(itemList, m, addDomain('%, e))
 
 compSubDomain(["SubDomain",domainForm,predicate],m,e) ==
   $addFormLhs: local:= domainForm
@@ -1002,7 +1002,7 @@ doIt(item, $predl, e) ==
       RPLACA(item,($QuickCode => 'QSETREFV;'SETELT))
       rhsCode:=
        rhs'
-      RPLACD(item, ['$, NRTgetLocalIndex(lhs, e), rhsCode])
+      RPLACD(item, ['%, NRTgetLocalIndex(lhs, e), rhsCode])
       e
     RPLACA(item,first code)
     RPLACD(item,rest code)

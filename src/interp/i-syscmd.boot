@@ -2338,8 +2338,8 @@ reportOpsFromUnitDirectly unitForm ==
         then
           constructorFunction := get_oplist_maker(top) or
             systemErrorHere '"reportOpsFromUnitDirectly"
-          [funlist,.]:= FUNCALL(constructorFunction,"$",unitForm,
-            $CategoryFrame)
+          [funlist, .] := FUNCALL(constructorFunction, "%", unitForm,
+                                  $CategoryFrame)
           sigList := REMDUP MSORT [[[a,b],true,[c,0,1]] for
             [a,b,c] in funlist]
         else
