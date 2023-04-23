@@ -183,7 +183,7 @@ knownInfo1 pred ==
     cat is ["ATTRIBUTE",:a] => BREAK()
     cat is ["SIGNATURE",:a] => knownInfo ["SIGNATURE",name,:a]
     name is ['Union,:.] => false
-    -- FIXME: there is confusion between '$ in outer domain
+    -- FIXME: there is confusion between '% in outer domain
     -- (the one which needs info) and freshly compiled
     -- domain...
     v := compForMode(name, $EmptyMode, $info_e)
