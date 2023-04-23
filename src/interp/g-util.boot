@@ -322,6 +322,7 @@ formatUnabbreviatedTuple t ==
   [:t0,'",",:formatUnabbreviatedTuple QCDR t]
 
 formatUnabbreviated t ==
+  t = '% => ['"%%"]
   atom t =>
     [t]
   null t =>
