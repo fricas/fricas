@@ -393,6 +393,41 @@ PAdicRationalConstructor(p, PADIC) : Exports == Implementation where
     coerce(r : RN)    == (numer(r) :: %)/(denom(r) :: %)
     coerce(x : PADIC) == makeQp(0, x)
 
+    retractIfCan(x : %) : Union(PADIC, "failed") ==
+        n := getExpon(x)
+        if n < 0 then
+            x := removeZeroes(-n, x)
+            n := getExpon(x)
+        n < 0 => "failed"
+        p^(qcoerce(n)@NNI)* getZp(x)
+
+    numer(x : %) : PADIC ==
+        n := getExpon(x)
+        if n < 0 then
+            x := removeZeroes(-n, x)
+            n := getExpon(x)
+        n <= 0 => getZp(x)
+        p^(qcoerce(n)@NNI)* getZp(x)
+
+    denom(x : %) : PADIC ==
+        n := getExpon(x)
+        if n < 0 then
+            x := removeZeroes(-n, x)
+            n := getExpon(x)
+        n <= 0 => (p^(qcoerce(-n)@NNI))::PADIC
+        1
+
+    wholePart(x : %) : PADIC ==
+        n := getExpon(x)
+        if n < 0 then
+            x := removeZeroes(-n, x)
+            n := getExpon(x)
+        n >= 0 => p^(qcoerce(n)@NNI)* getZp(x)
+        ix := getZp(x)
+        for i in 1..-n repeat
+            ix := quotientByP(ix)
+        ix
+
 --% normalizations
 
     removeZeroes x ==
