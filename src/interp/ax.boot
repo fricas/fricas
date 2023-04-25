@@ -216,6 +216,7 @@ axFormatAttrib(typeform) ==
 
 axFormatType(typeform) ==
   atom typeform =>
+     typeform = '% => '%
      STRINGP typeform =>
         ['Apply,'Enumeration, INTERN typeform]
      INTEGERP typeform =>
