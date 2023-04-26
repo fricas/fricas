@@ -304,11 +304,6 @@ form2StringWithWhere u ==
   $whereList => concat(s,'%b,'"where",'%d,"%i",$whereList,"%u")
   s
 
-form2StringWithPrens form ==
-  null (argl := rest form) => [first form]
-  null rest argl => [first form,"(",first argl,")"]
-  form2String form
-
 formString u ==
   x := form2String u
   atom x => STRINGIMAGE x
@@ -349,9 +344,6 @@ form2String1 u ==
   op='Join or op= 'mkCategory => formJoin1(op,argl)
   $InteractiveMode and (u:= constructor? op) =>
     null argl => app2StringWrap(formWrapId constructorName op, u1)
-    op = "NTuple"  => [ form2String1 first argl, "*"]
-    op = "Map"     => ["(",:formatSignature0 [argl.1,argl.0],")"]
-    op = 'Record => record2String(argl)
     $justUnparseType or null(conSig := getConstructorSignature op) =>
       application2String(constructorName op,[form2String1(a) for a in argl], u1)
     ml := rest conSig
