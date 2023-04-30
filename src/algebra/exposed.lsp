@@ -351,7 +351,6 @@
   (|ViewDefaultsPackage| . VIEWDEF)
   (|Void| . VOID)
   (|WuWenTsunTriangularSet| . WUTSET)
-  (|ZeroDimensionalSolvePackage| . ZDSOLVE)
 )
 (|categories|
   (|AbelianGroup| . ABELGRP)
@@ -553,7 +552,8 @@
   (|VectorCategory| . VECTCAT)
   (|XAlgebra| . XALG)
   (|XFreeAlgebra| . XFALG)
-  (|XPolynomialsCat| . XPOLYC))
+  (|XPolynomialsCat| . XPOLYC)
+  (|ZeroDimensionalSolvePackage| . ZDSOLVE))
 (|Hidden|
   (|AlgebraicFunction| . AF)
   (|AlgebraicFunctionField| . ALGFF)
