@@ -26,4 +26,28 @@ testEquals("xu::Vector(Integer)", "x0")
 xu := solveUniquely(m, vector([1,1]))$lSMP
 testTrue("not(xu case Vector(Integer))")
 
+testcase "ALGSC over rings"
+
+-- Bug: accepted, but cause error later
+--   aL := ALGSC(Integer, 2, ['S, 'X], [[0, 1], [0, -1]])
+
+aL := ALGSC(Integer, 2, ['S, 'X], [[[0, 0], [0, 0]], [[0, 1],[-1, 0]]])
+
+testTrue("antiCommutative?()$aL")
+testTrue("jacobiIdentity?()$aL")
+testTrue("lieAdmissible?()$aL")
+testTrue("lieAlgebra?()$aL")
+testTrue("not(associative?()$aL)")
+
+bs := basis()$aL
+S := bs(1)
+X := bs(2)
+-- plain testEquals("S*S", "0") should be enough, but interpreter is
+-- too dumb to deduce this
+testEquals("S*S", "0$aL")
+testEquals("S*X", "X")
+testEquals("X*S", "-X")
+testEquals("X*X", "0$aL")
+
+
 statistics()
