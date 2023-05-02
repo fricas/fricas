@@ -278,7 +278,7 @@ After this function is called the image is clean and can be saved.
                     (format t "foreign routines found~%")
                     #+(or :sbcl :openmcl :lispworks)
                     (|quiet_load_alien| spad-lib)
-                    #+(or :sbcl :openmcl)
+                    #+(and :fricas_has_gmp (or :sbcl :openmcl))
                     (fricas-lisp::init-gmp
                         (concatenate 'string ax-dir "/lib/gmp_wrap.so"))
                     #+(and :clisp :ffi)

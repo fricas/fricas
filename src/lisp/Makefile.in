@@ -26,10 +26,10 @@ lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
 		    $(build_libdir)/libspad.a
 
 ifeq ($(lisp_flavor),sbcl)
-NUM_GMP = num_gmpx.lisp
+NUM_GMP = num_gmp.lisp
 else
 ifeq ($(lisp_flavor),openmcl)
-NUM_GMP = num_gmpx.lisp
+NUM_GMP = num_gmp.lisp
 else
 NUM_GMP =
 endif
@@ -106,6 +106,12 @@ fricas-config.lisp:
 	             '(push :fricas_has_remove_directory *features*))' \
 	       >> $@ ; \
 	fi
+	if  [ x$(GMP_WRAP_SO_TARGET) != x ] ; then \
+		echo '(if (not (member :fricas_has_gmp' \
+                          ' *features*)) ' \
+	             '(push :fricas_has_gmp *features*))' \
+	       >> $@ ; \
+	fi
 
 do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
            primitives.lisp
@@ -142,7 +148,8 @@ do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
    primitives.lisp
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \
-            '#+(or :sbcl :openmcl) (load (compile-file "num_gmpx.lisp"))' \
+	    '#+(and :fricas_has_gmp (or :sbcl :openmcl))' \
+	    '(load (compile-file "num_gmp.lisp"))' \
 	    '(load (compile-file "fricas-lisp.lisp"))' \
 	    '(load (compile-file "primitives.lisp"))' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
@@ -169,7 +176,7 @@ mostlyclean-local:
 
 clean-local: mostlyclean
 	-rm -f $(OUT)/lisp$(EXEEXT) prelisp$(EXEEXT) do_it.$(lisp_flavor)
-	-rm -f *.$(LISPOBJEXT) fricas-ecl.lisp fricas-config.lisp $(NUM_GMP)
+	-rm -f *.$(LISPOBJEXT) fricas-ecl.lisp fricas-config.lisp
 	-rm -f *.fn *.data *.lib
 
 distclean-local: clean-local
