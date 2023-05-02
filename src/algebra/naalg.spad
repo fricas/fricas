@@ -18,15 +18,13 @@
 ++  \spad{ai * aj = gammaij1 * a1 + ... + gammaijn * an}.
 ++  The symbols for the fixed basis
 ++  have to be given as a list of symbols.
-AlgebraGivenByStructuralConstants(R : Field, n : PositiveInteger, _
+AlgebraGivenByStructuralConstants(R : CommutativeRing, n : PositiveInteger, _
   ls : List Symbol, gamma : Vector Matrix R ) : public == private where
 
   V  ==> Vector
   M  ==> Matrix
   I  ==> Integer
   NNI  ==> NonNegativeInteger
-  REC  ==> Record(particular: Union(V R,"failed"),basis: List V R)
-  LSMP ==> LinearSystemMatrixPackage(R, V R, V R, M R)
 
   --public ==> FramedNonAssociativeAlgebra(R) with
   public ==> Join(FramedNonAssociativeAlgebra(R), _
@@ -58,19 +56,19 @@ AlgebraGivenByStructuralConstants(R : Field, n : PositiveInteger, _
 
     coordinates(x) == vector(entries(x :: Rep)$Rep)$Vector(R)
 
-    coordinates(x, b) ==
-      --not (maxIndex b = n) =>
-      --  error("coordinates: your 'basis' has not the right length")
-      m : NonNegativeInteger := (maxIndex b) :: NonNegativeInteger
-      transitionMatrix   : Matrix R := new(n, m, 0$R)$Matrix(R)
-      for i in 1..m repeat
-        setColumn!(transitionMatrix, i, coordinates(b.i))
-      res : REC := solve(transitionMatrix, coordinates(x))$LSMP
-      if (not empty?(res.basis)) then
-        error("coordinates: warning your 'basis' is linearly dependent")
-      (res.particular  case "failed") =>
-        error("coordinates: first argument is not in linear span of second argument")
-      (res.particular) :: (Vector R)
+    if R has IntegralDomain then
+
+        LSMP ==> LinearSystemMatrixPackage2(R)
+
+        coordinates(x, b) ==
+            m : NonNegativeInteger := (maxIndex b) :: NonNegativeInteger
+            transitionMatrix : Matrix(R) := new(n, m, 0$R)$Matrix(R)
+            for i in 1..m repeat
+                setColumn!(transitionMatrix, i, coordinates(b.i))
+            res := solveUniquely(transitionMatrix, coordinates(x))$LSMP
+            res case "failed" =>
+                error "coordinates: solveUniquely failed"
+            res@Vector(R)
 
     basis() == [unitVector(i::PositiveInteger)::% for i in 1..n]
 
@@ -376,9 +374,9 @@ AlgebraGivenByStructuralConstants(R : Field, n : PositiveInteger, _
          for r in 1..n repeat
            res := 0$R
            for s in 1..n repeat
-                 res := res +  elt(gamma.r, i, j)*elt(gamma.s, j, k) +_
-                               elt(gamma.r, j, k)*elt(gamma.s, k, i) +_
-                               elt(gamma.r, k, i)*elt(gamma.s, i, j)
+                 res := res +  elt(gamma.s, i, j)*elt(gamma.r, s, k) +_
+                               elt(gamma.s, j, k)*elt(gamma.r, s, i) +_
+                               elt(gamma.s, k, i)*elt(gamma.r, s, j)
            not zero? res =>
                  messagePrint("Jacobi identity does not hold")$OutputForm
                  return false
@@ -398,7 +396,7 @@ AlgebraGivenByStructuralConstants(R : Field, n : PositiveInteger, _
 ++  StructuralConstantsPackage provides functions creating
 ++  structural constants from a multiplication tables or a basis
 ++  of a matrix algebra and other useful functions in this context.
-StructuralConstantsPackage(R : Field) : public == private where
+StructuralConstantsPackage(R : IntegralDomain) : public == private where
 
   L  ==> List
   S  ==> Symbol
@@ -406,8 +404,6 @@ StructuralConstantsPackage(R : Field) : public == private where
   POLY ==> Polynomial
   V  ==> Vector
   M  ==> Matrix
-  REC  ==> Record(particular: Union(V R,"failed"),basis: List V R)
-  LSMP ==> LinearSystemMatrixPackage(R, V R, V R, M R)
 
   public ==>  with
       -- what we really want to have here is a matrix over
@@ -439,6 +435,8 @@ StructuralConstantsPackage(R : Field) : public == private where
 
   private ==> add
 
+      LSMP ==> LinearSystemMatrixPackage2(R)
+
       matrix2Vector : M R -> V R
       matrix2Vector m ==
         lili : L L R := listOfLists m
@@ -452,13 +450,10 @@ StructuralConstantsPackage(R : Field) : public == private where
         transitionMatrix   : Matrix R := new(n, m, 0$R)$Matrix(R)
         for i in 1..m repeat
           setColumn!(transitionMatrix, i, matrix2Vector(b.i))
-        res : REC := solve(transitionMatrix, matrix2Vector(x))$LSMP
-        if (not empty?(res.basis)) then
-          error("coordinates: the second argument is linearly dependent")
-        (res.particular  case "failed") =>
-          error("coordinates: first argument is not in linear span of _
-second argument")
-        (res.particular) :: (Vector R)
+        res:= solveUniquely(transitionMatrix, matrix2Vector(x))$LSMP
+        res case "failed" =>
+          error "coordinates: solveUniquely failed"
+        res@Vector(R)
 
       structuralConstants b ==
         --n := rank()

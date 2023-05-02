@@ -213,6 +213,59 @@ LinearSystemPolynomialPackage(R, E, OV, P) : Cat == Capsule where
             r := intoMatrix(ps, vs)
             solve(r.mat, r.vec)$LinearSystemMatrixPackage(F, V F, V F, M F)
 
+
+)abbrev package LSMP2 LinearSystemMatrixPackage2
+++ Author: W. Hebisch
+++ Description:
+++ This package solve system by passing to fraction field.
+LinearSystemMatrixPackage2(S) : Exports == Implementation where
+  S : IntegralDomain
+  M ==> Matrix(S)
+  V ==> Vector(S)
+
+  Exports ==> with
+    solveUniquely : (M, V) -> Union(V, "failed")
+      ++ solveUniquely(m, v) returns unique solution to the system
+      ++ \spad{m*x = v} or "failed" if solution is non unique or
+      ++ does not exist.
+
+  Implementation ==> add
+
+      if S has Field then
+
+          LSMP ==> LinearSystemMatrixPackage(S, V, V, M)
+
+          solveUniquely(m ,v) ==
+              res := solve(m, v)$LSMP
+              not empty?(res.basis) => "failed"
+              res.particular case "failed" => "failed"
+              res.particular
+
+      else
+
+          Q ==> Fraction(S)
+          M1 ==> Matrix(Q)
+          V1 ==> Vector(Q)
+          LSMP ==> LinearSystemMatrixPackage(Q, V1, V1, M1)
+
+          solveUniquely(m ,v) ==
+              v1 := map(c +-> c::Q, v)$VectorFunctions2(S, Q)
+              m1 := map(c +-> c::Q, m)$MatrixCategoryFunctions2(
+                                       S, V, V, M, Q, V1, V1, M1)
+              res := solve(m1, v1)$LSMP
+              not empty?(res.basis) => "failed"
+              rpu := res.particular
+              rpu case "failed" => "failed"
+              rp := rpu@V1
+              n := #rp
+              u := new(n, 0)$Vector(S)
+              for i in 1..n repeat
+                  cq : Q := rp(i)
+                  cu := retractIfCan(cq)@Union(S, "failed")
+                  cu case "failed" => return "failed"
+                  u(i) := cu@S
+              u
+
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
 --

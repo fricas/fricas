@@ -12,5 +12,42 @@ testEquals("numer(111::pR/13)", "111::pI")
 testEquals("denom(111::pR/13)", "13::pI")
 testEquals("wholePart(111::pR/13)", "8::pI")
 testEquals("fractionPart(111::pR/13)", "7::pR/13")
- 
+
+testcase "solveUniquely"
+
+m := matrix([[2, 3], [3, -1]])
+x0 := vector([2,-3])
+y := m*x0
+lSMP := LinearSystemMatrixPackage2(Integer)
+xu := solveUniquely(m, y)$lSMP
+testTrue("xu case Vector(Integer)")
+testEquals("xu::Vector(Integer)", "x0")
+
+xu := solveUniquely(m, vector([1,1]))$lSMP
+testTrue("not(xu case Vector(Integer))")
+
+testcase "ALGSC over rings"
+
+-- Bug: accepted, but cause error later
+--   aL := ALGSC(Integer, 2, ['S, 'X], [[0, 1], [0, -1]])
+
+aL := ALGSC(Integer, 2, ['S, 'X], [[[0, 0], [0, 0]], [[0, 1],[-1, 0]]])
+
+testTrue("antiCommutative?()$aL")
+testTrue("jacobiIdentity?()$aL")
+testTrue("lieAdmissible?()$aL")
+testTrue("lieAlgebra?()$aL")
+testTrue("not(associative?()$aL)")
+
+bs := basis()$aL
+S := bs(1)
+X := bs(2)
+-- plain testEquals("S*S", "0") should be enough, but interpreter is
+-- too dumb to deduce this
+testEquals("S*S", "0$aL")
+testEquals("S*X", "X")
+testEquals("X*S", "-X")
+testEquals("X*X", "0$aL")
+
+
 statistics()

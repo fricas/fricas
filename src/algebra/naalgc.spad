@@ -573,24 +573,24 @@ FiniteRankNonAssociativeAlgebra(R : CommutativeRing):
       messagePrint("this algebra is Lie admissible")$OutputForm
       true
 
-    -- conditionsForIdempotents b  ==
-    --   n := rank()
-    --   gamma : Vector Matrix R := structuralConstants b
-    --   listOfNumbers : List String :=  [convert(q) for q in 1..n]
-    --   symbolsForCoef : Vector Symbol :=
-    --     [concat("%", concat("x", i))::Symbol  for i in listOfNumbers]
-    --   conditions : List Polynomial R := []
-    --  for k in 1..n repeat
-    --    xk := symbolsForCoef.k
-    --    p : Polynomial R :=  monomial( - 1$Polynomial(R), [xk], [1] )
-    --    for i in 1..n repeat
-    --      for j in 1..n repeat
-    --        xi := symbolsForCoef.i
-    --        xj := symbolsForCoef.j
-    --        p := p + monomial(_
-    --          elt((gamma.k), i, j) :: Polynomial(R), [xi, xj], [1, 1])
-    --    conditions := cons(p, conditions)
-    --  conditions
+    conditionsForIdempotents(b) ==
+        n := rank()
+        gamma : Vector(Matrix(R)) := structuralConstants(b)
+        listOfNumbers : List String :=  [convert(q) for q in 1..n]
+        symbolsForCoef : Vector(Symbol) :=
+            [concat("%", concat("x", i))::Symbol  for i in listOfNumbers]
+        conditions : List Polynomial R := []
+        for k in 1..n repeat
+            xk := symbolsForCoef.k
+            p : Polynomial R :=  monomial( - 1$Polynomial(R), [xk], [1] )
+            for i in 1..n repeat
+                for j in 1..n repeat
+                    xi := symbolsForCoef(i)
+                    xj := symbolsForCoef(j)
+                    p := p + monomial(_
+                       qelt(gamma(k), i, j)::Polynomial(R), [xi, xj], [1, 1])
+            conditions := cons(p, conditions)
+        conditions
 
     structuralConstants b ==
       --n := rank()
@@ -987,15 +987,15 @@ FramedNonAssociativeAlgebra(R : CommutativeRing): Category ==
     M  ==> Matrix
     P  ==> Polynomial
     F  ==> Fraction
-    REC  ==> Record(particular: Union(V R,"failed"),basis: List V R)
-    LSMP ==> LinearSystemMatrixPackage(R, V R, V R, M R)
-    CVMP ==> CoerceVectorMatrixPackage(R)
 
     --GA ==> GenericNonAssociativeAlgebra(R, rank()$%, _
     -- [random()$Character :: String :: Symbol for i in 1..rank()$%], _
     -- structuralConstants()$%)
     --y : GA := generic()
     if R has Field then
+
+      LSMP ==> LinearSystemMatrixPackage(R, V R, V R, M R)
+      REC  ==> Record(particular: Union(V R,"failed"),basis: List V R)
 
       min_poly_from_matrix(mx : M P R, x : M P R)
                          : SparseUnivariatePolynomial Polynomial R ==
@@ -1111,6 +1111,10 @@ FramedNonAssociativeAlgebra(R : CommutativeRing): Category ==
         [represents(res.particular :: V R)$%, _
           map(represents, res.basis)$ListFunctions2(Vector R, %) ]
 
+    if R has IntegralDomain then
+
+      LSMP2 ==> LinearSystemMatrixPackage2(R)
+
       unit() ==
         n := rank()
         b := basis()
@@ -1131,11 +1135,12 @@ FramedNonAssociativeAlgebra(R : CommutativeRing): Category ==
            for j in 1..n repeat  -- index for the columns
              setelt!(cond, z, j, elt(gamma.k, j, i))$Matrix(R)
              setelt!(cond, u, j, elt(gamma.k, i, j))$Matrix(R)
-        res : REC := solve(cond, rhs)$LSMP
-        res.particular case "failed" =>
+        res := solveUniquely(cond, rhs)$LSMP2
+        res case "failed" =>
           messagePrint("this algebra has no unit")$OutputForm
           "failed"
-        represents (res.particular :: V R)
+        represents(res@V(R))
+
     apply(m : Matrix(R), a : %) ==
       v : Vector R := coordinates(a)
       v := m *$Matrix(R) v
