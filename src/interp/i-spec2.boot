@@ -56,6 +56,14 @@ upDEF t ==
 
 --% Handler for package calling and $ constants
 
+up_tagged_union_dollar(op, t, t2, form) ==
+    f1 := first(form)
+    not(VECP(f1)) or not(f1.0 = 'construct) => nil
+    c_arg := first(rest(form))
+    c_arg is [op1, vtag, val] and is_OPTARG(op1) and (tag := is_tag(vtag)) =>
+        up_tagged_construct1(op, tag, val, t)
+    nil
+
 upDollar t ==
   -- Puts "dollar" property in atree node, and calls bottom up
   t isnt [op,D,form] => nil
@@ -82,6 +90,9 @@ upDollar t ==
     putModeSet(op,[t])
 
   nargs := #rest form
+
+  nargs = 1 and f = 'construct and isTaggedUnion(t) and
+      (ms := up_tagged_union_dollar(op, t, t2, form)) => ms
 
   (ms := upDollarTuple(op, f, t, t2, rest form, nargs)) => ms
 

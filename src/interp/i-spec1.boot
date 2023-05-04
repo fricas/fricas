@@ -1132,13 +1132,44 @@ upNullList(op,l,tar) ==
   putValue(op,val)
   putModeSet(op,[defMode])
 
+is_OPTARG(op) ==
+    VECP(op) => op.0 = 'OPTARG
+    nil
+
+is_tag(t) ==
+    VECP(t) =>
+        t0 := t.0
+        SYMBOLP(t0) => t0
+        nil
+    nil
+
+up_tagged_construct1(op, tag, val, um) ==
+    ul := rest(um)
+    iter := true
+    n := 0
+    for u in ul while iter repeat
+        u is ['_:, =tag, tar1] => iter := false
+        n := n + 1
+    iter => nil
+    bottomUp(val)
+    obj := getValue(val)
+    (code := coerceInteractive(obj, tar1)) or
+        throwKeyedMsgCannotCoerceWithValue(objVal(obj), objMode(obj), tar1)
+    code := ["CONS", n, objVal(code)]
+    if $genValue then code := wrap(timedEVALFUN(code))
+    putValue(op, objNew(code, um))
+    putModeSet(op, [um])
+
 upTaggedUnionConstruct(op,l,tar) ==
   -- special handler for tagged union constructors
   tar isnt [.,:types] => nil
   #l ~= 1 => throwKeyedMsg("S2IS0051",[#l,tar])
-  bottomUp first l
-  obj := getValue first l
-  (code := coerceInteractive(getValue first l,tar)) or
+  a1 := first(l)
+  a1 is [op1, vtag, val] and is_OPTARG(op1) and (tag := is_tag(vtag)) =>
+      up_tagged_construct1(op, tag, val, tar)
+  bottomUp(a1)
+  obj := getValue(a1)
+  (code := coerceInteractive(getValue(a1), tar)) or
     throwKeyedMsgCannotCoerceWithValue(objVal obj, objMode obj,tar)
   putValue(op,code)
   putModeSet(op,[tar])

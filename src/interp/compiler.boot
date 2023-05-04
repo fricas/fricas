@@ -733,11 +733,25 @@ compWhere([.,form,:exprList],m,eInit) ==
     eInit
   [x,m,eFinal]
 
+comp_tagged_construct(um, tag, val, e) ==
+    ul := rest(um)
+    iter := true
+    n := 0
+    for u in ul while iter repeat
+        u is ['_:, =tag, mode] => iter := false
+        n := n + 1
+    iter => nil
+    T := comp(val, mode, e)
+    T is [cv, ., e] => [["CONS", n, cv], um, e]
+    nil
+
 comp_construct1(l, m, e) ==
     (y := modeIsAggregateOf("List", m, e)) =>
         compList(l, ["List", CADR y], e)
     (y := modeIsAggregateOf("Vector", m, e)) =>
         compVector(l,["Vector",CADR y],e)
+    isTaggedUnion(m) and (l is [["DEF", [tag], [nil], val]]) =>
+        comp_tagged_construct(m, tag, val, e)
 
 compConstruct(form is ["construct", :l], m, e) ==
     (T := comp_construct1(l, m, e)) and (T' := convert(T,m)) => T'
