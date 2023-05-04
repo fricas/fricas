@@ -646,6 +646,7 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
   DROP ==> DrawOption
 
   PPC  ==> ParametricPlaneCurve Ex
+  PCC ==> ParametricComplexCurve(Ex)
   PPCF ==> ParametricPlaneCurve(SF -> SF)
   PSC  ==> ParametricSpaceCurve Ex
   PSCF ==> ParametricSpaceCurve(SF -> SF)
@@ -691,6 +692,16 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
       ++ from \spad{min(a, b)} to \spad{max(a, b)}; the options
       ++ contained in the list l of the domain \spad{DrawOption}
       ++ are applied.
+
+    draw : (PCC, BIND, L(DROP)) -> VIEW2
+      ++ draw(c, b, l) is like version for plane curves, but
+      ++ uses complex curve.
+    draw : (PCC, BIND) -> VIEW2
+      ++ draw(c, b) is like version for plane curves, but
+      ++ uses complex curve.
+    makeObject : (PCC, BIND, L(DROP)) -> GraphImage
+      ++ makeObject(c, b, l) is like version for plane curves, but
+      ++ uses complex curve.
 
 --% Parametric Space Curves
 
@@ -832,6 +843,23 @@ TopLevelDrawFunctions(Ex : Join(ConvertibleTo InputForm, SetCategory)):
         makeViewport2D(g, l)
 
     draw(ppc : PPC, bind : BIND) == draw(ppc, bind, [])
+
+    makeObject(pcc : PCC, bind : BIND, l : L DROP) ==
+        f := get_value(pcc)
+        v := variable(bind)
+        cfr := make_real_part_function(f, v)
+        cfi := make_imaginary_part_function(f, v)
+        curve : PPCF := curve(cfr, cfi)$PPCF
+        -- use DRAWCFUN
+        makeObject(curve, segment bind, l)
+
+    draw(pcc : PCC, bind : BIND, l : L DROP) ==
+        f := get_value(pcc)
+        l := maybe_add_title2D(f, l)
+        g := makeObject(pcc, bind, l)
+        makeViewport2D(g, l)
+
+    draw(pcc : PCC, bind : BIND) == draw(pcc, bind, [])
 
 ------------------------------------------------------------------------
 --                     3D - Curves  (given by formulas)
