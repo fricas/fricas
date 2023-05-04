@@ -54,14 +54,14 @@ OutputPackage : with
 )abbrev package SPECOUT SpecialOutputPackage
 ++ Author: Stephen M. Watt
 ++ Date Created: September 1986
-++ Basic Operations: outputAsFortran, outputAsScript, outputAsTex
+++ Basic Operations: outputAsFortran, outputAsMathML, outputAsTex
 ++ Related Constructors:
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords:
 ++ References:
 ++ Description: SpecialOutputPackage allows FORTRAN, Tex and
-++   Script Formula Formatter output from programs.
+++   MathML Formatter output from programs.
 
 SpecialOutputPackage : public == private where
   public == with
@@ -70,20 +70,20 @@ SpecialOutputPackage : public == private where
       ++ to the destination defined by \spadsys{)set output fortran}.
     outputAsFortran : OutputForm          -> Void
       ++ outputAsFortran(o) sends output o in FORTRAN format.
-    outputAsScript :  OutputForm          -> Void
-      ++ outputAsScript(o) sends output o in Script Formula Formatter format
-      ++ to the destination defined by \spadsys{)set output formula}.
-    outputAsTex :     OutputForm          -> Void
-      ++ outputAsTex(o) sends output o in Tex format to the destination
-      ++ defined by \spadsys{)set output tex}.
     outputAsFortran : List OutputForm     -> Void
       ++ outputAsFortran(l) sends (for each expression in the list l)
       ++ output in FORTRAN format to the destination defined by
       ++ \spadsys{)set output fortran}.
-    outputAsScript :  List OutputForm     -> Void
-      ++ outputAsScript(l) sends (for each expression in the list l)
-      ++ output in Script Formula Formatter format to the destination defined.
-      ++ by \spadsys{)set output forumula}.
+    outputAsMathML : OutputForm -> Void
+      ++ outputAsMathML(o) sends output o in MathML format to the
+      ++ destination as defined by \spadsys{)set output mathml}.
+    outputAsMathML : List(OutputForm) -> Void
+      ++ outputAsMathML(l) sends (for each expression in the list l)
+      ++ output in MathML format to the destination as defined by
+      ++ \spadsys{)set output mathml}.
+    outputAsTex :     OutputForm          -> Void
+      ++ outputAsTex(o) sends output o in Tex format to the destination
+      ++ defined by \spadsys{)set output tex}.
     outputAsTex :     List OutputForm     -> Void
       ++ outputAsTex(l) sends (for each expression in the list l)
       ++ output in Tex format to the destination as defined by
@@ -99,8 +99,7 @@ SpecialOutputPackage : public == private where
     juxtaposeTerms l == blankSeparate l
 
     outputAsFortran e ==
-      dispfortexp$Lisp e
-      void()$Void
+        fortranFormat(e)$Lisp
 
     outputAsFortran(var, e) ==
       e := var::Symbol::OutputForm  = e
@@ -108,14 +107,13 @@ SpecialOutputPackage : public == private where
 
     outputAsFortran l == outputAsFortran(juxtaposeTerms l)
 
-    outputAsScript e ==
-      formulaFormat$Lisp e
-      void()$Void
+    outputAsMathML(e) ==
+        mathmlFormat(e)$Lisp
 
-    outputAsScript l == outputAsScript(juxtaposeTerms l)
+    outputAsMathML(l) == outputAsMathML(juxtaposeTerms(l))
 
     outputAsTex e ==
-      texFormat$Lisp e
+      texFormat(e)$Lisp
       void()$Void
 
     outputAsTex l == outputAsTex(juxtaposeTerms l)
