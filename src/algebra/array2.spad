@@ -39,6 +39,9 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ qnew(m, n) is is an m-by-n uninitilized array
     fill! : (%, R) -> %
       ++ fill!(m, r) fills m with r's
+    array2: List(List(R)) -> %
+      ++ array2(ll) constructs a 2-dimensional array, the inner list
+      ++ being the rows.
 
 --% Size inquiries
 
@@ -923,6 +926,18 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
         for j in minColIndex(m)..maxColIndex(m) repeat
           qsetelt!(m, i, j, r)
       m
+
+    array2(ll : List(List(R))) : % ==
+        empty?(ll) => qnew(0, 0)
+        m := #ll::NNI
+        n := #first(ll)::NNI
+        a2 := qnew(n, m)
+        for i in minRowIndex(a2)..maxRowIndex(a2) for l in ll repeat
+            if #l ~= n then
+                error "array2: rows of different lengths"
+            for j in minColIndex(a2)..maxColIndex(a2) for r in l repeat
+                qsetelt!(a2, i, j, r)
+        a2
 
     map(f : R -> R, m : %) : % ==
       ans := qnew(nrows m, ncols m)
