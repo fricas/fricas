@@ -624,7 +624,7 @@ Field() : Category == Join(EuclideanDomain, UniqueFactorizationDomain,
 ++   \spad{lookup(index(n)) = n}
 ++   \spad{index(lookup(s)) = s}
 Finite() : Category == Join(SetCategory, ConvertibleTo InputForm,
-                            Comparable) with
+                            Comparable, Hashable) with
     --operations
       size : () -> NonNegativeInteger
         ++ size() returns the number of elements in the set.
@@ -649,6 +649,9 @@ Finite() : Category == Join(SetCategory, ConvertibleTo InputForm,
       convert(x : %) : InputForm ==
           packageCall('index, [convert(lookup(x))@InputForm]
                      )$InputFormFunctions1(%)
+
+      hashUpdate!(s : HashState, x : %) : HashState ==
+          hashUpdate!(s, lookup(x))$Integer
 
       if not(% has OrderedSet) then
 
@@ -1428,6 +1431,21 @@ Rng() : Category == Join(NonAssociativeRng, SemiRng) with
 ++    \spad{CommutativeStar}\tab{30}\spad{ x*y = y*x }
 SemiGroup() : Category == Magma
 
+)abbrev category HASHABL Hashable
+++ Author: W. Hebisch
+++ Description: All domains for which we can compute hash function
+++  compatible with equality.
+Hashable() : Category == BasicType with
+      hash : % -> SingleInteger
+         ++ hash(s) calculates a hash code for s.
+      hashUpdate! : (HashState, %) -> HashState
+         ++ hashUpdate!(hs, s) computes new HashState from old and s
+         ++ used for incremental computation of hash values.
+         ++ hashUpdate! might destructively work on its first argument.
+  add
+      hash(s : %) : SingleInteger ==
+          value(hashUpdate!(new()$HashState, s))$HashState
+
 )abbrev category SETCAT SetCategory
 ++ Author:
 ++ Basic Functions:
@@ -1444,18 +1462,10 @@ SemiGroup() : Category == Magma
 ++    canonical\tab{15}data structure equality is the same as \spadop{=}
 SetCategory() : Category == Join(BasicType, CoercibleTo OutputForm) with
     --operations
-      hash : % -> SingleInteger
-         ++ hash(s) calculates a hash code for s.
-      hashUpdate! : (HashState, %) -> HashState
-         ++ hashUpdate!(hs, s) computes new HashState from old and s
-         ++ used for incremental computation of hash values.
-         ++ hashUpdate! might destructively work on its first argument.
       latex : % -> String
          ++ latex(s) returns a LaTeX-printable output
          ++ representation of s.
   add
-      hash(s : %) : SingleInteger ==
-          value(hashUpdate!(new()$HashState, s))$HashState
       latex(s : %) : String ==
           of := s::OutputForm
           tf := of::TexFormat

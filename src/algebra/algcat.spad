@@ -27,6 +27,7 @@ FramedModule(R : Join(SemiRng, AbelianMonoid)) : Category ==
         ++ convert([a1, .., an]) returns \spad{a1*v1 + ... + an*vn}, where
         ++ v1, ..., vn are the elements of the fixed basis.
       if R has Finite then Finite
+      if R has Hashable then Hashable
   add
 
       convert(x : %) : Vector(R)  == coordinates(x)
@@ -60,6 +61,11 @@ FramedModule(R : Join(SemiRng, AbelianMonoid)) : Category ==
           size()   == size()$R ^ rank()
 
           random() == represents [random()$R for i in 1..rank()]$Vector(R)
+
+      if R has Hashable then
+
+          hashUpdate!(s : HashState, x : %) : HashState ==
+              hashUpdate!(s, coordinates(x))$Vector(R)
 
 )abbrev category FINRALG FiniteRankAlgebra
 ++ Author: Barry Trager

@@ -29,6 +29,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
   Definition == Join(HomogeneousAggregate(R), _
       shallowlyMutable, finiteAggregate) with
 
+    if R has Hashable then Hashable
     if R has Comparable then Comparable
 
 --% Array creation
@@ -1031,6 +1032,16 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
             qsetelt!(v, k, qelt(m, i, j))
         v
 
+    if R has Hashable then
+
+        hashUpdate!(s : HashState, m : %) : HashState ==
+            i : Integer
+            j : Integer
+            for i in minRowIndex(m)..maxRowIndex(m) repeat
+                for j in minColIndex(m)..maxColIndex(m) repeat
+                    s := hashUpdate!(s, qelt(m, i, j))$R
+            s
+
     if R has CoercibleTo(OutputForm) then
 
       coerce(m : %) ==
@@ -1117,6 +1128,7 @@ InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) : _
               if j < maxColIndex(m) then s := concat(s, " & ")$String
             if i < maxRowIndex(m) then s := concat(s, " \\ ")$String
           concat(s, "\end{array} \right]")$String
+    if R has Hashable then
         hashUpdate!(s : HashState, m : %) : HashState ==
           i : Integer
           j : Integer

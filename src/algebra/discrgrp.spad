@@ -80,7 +80,7 @@ FinitelyGenerated:Category == with
 ++ Description:
 ++ A domain for finite cyclic groups.
 CyclicGroup(n: PositiveInteger, g: Symbol) : Exports == Implementation where
-  Exports ==> Join(FiniteGroup, FinitelyGenerated, Comparable,
+  Exports ==> Join(FiniteGroup, FinitelyGenerated, Comparable, Hashable,
                    CommutativeStar, ConvertibleTo SExpression) with
     generator : () -> %
     ++ \spad{generator()} returns the generator.
@@ -98,7 +98,7 @@ CyclicGroup(n: PositiveInteger, g: Symbol) : Exports == Implementation where
         one?(rep x)$Rep => return g::OutputForm
         (g::OutputForm)^coerce(rep x)
 
-    hashUpdate!(hs, s) == update!(hs, rep s pretend SingleInteger)$HashState
+    hashUpdate!(hs, s) == hashUpdate!(hs, rep(s))$Rep
 
     convert(x:%) : SExpression ==
         convert(rep x)$SExpression
@@ -155,7 +155,7 @@ CyclicGroup(n: PositiveInteger, g: Symbol) : Exports == Implementation where
 ++ Description:
 ++ Infinite cyclic groups.
 InfiniteCyclicGroup(g: Symbol) : Exports == Implementation where
-  Exports ==> Join(Group, FinitelyGenerated, OrderedMonoid,
+  Exports ==> Join(Group, FinitelyGenerated, OrderedMonoid, Hashable,
                    CommutativeStar, ConvertibleTo SExpression) with
     generator : () -> %
     ++ \spad{generator()} returns the generator.
@@ -173,7 +173,7 @@ InfiniteCyclicGroup(g: Symbol) : Exports == Implementation where
         one?(rep x)$Integer => coerce(g)$Symbol
         coerce(g)^(coerce(rep x)$Rep)
 
-    hashUpdate!(hs, s) == update!(hs, rep s pretend SingleInteger)$HashState
+    hashUpdate!(hs, s) == hashUpdate!(hs, rep(s))$Rep
 
     convert(x:%) : SExpression ==
         convert(rep x)$SExpression
