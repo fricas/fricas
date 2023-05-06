@@ -181,6 +181,10 @@ mkAtree2(x,op,argl) ==
         v := mkAtreeNode $immediateDataSymbol
         putValue(v,getBasicObject float expr)
         v
+    t = '(DecimalFloat) and expr is [['_$elt, '(Float), 'float], :args] =>
+        mkAtree1 [['_$elt, '(DecimalFloat), 'float], :args]
+    t = '(DecimalFloat) and INTEGERP expr =>
+        mkAtree1 ["::", expr, t]
     t = '(Float) and INTEGERP expr =>
         mkAtree1 ["::", expr, t]
     typeIsASmallInteger(t) and INTEGERP expr =>

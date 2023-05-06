@@ -459,6 +459,10 @@ compSel1(domain, op, argl, m, e) ==
     domain=$Float and op="float" and m=$DoubleFloat =>
         argl is [mant, exp, 10] => try_constant_DF(mant, exp, m, e)
         nil
+    domain=$Float and op="float" and m=$DecimalFloat =>
+        argl is [mant, exp, 10] =>
+            [["Sel", ["DecimalFloat"], "float"], mant, exp], m, e]
+        nil
     e :=
         domain is ['Mapping, :.] =>
             augModemapsFromDomain1(domain, domain, e)
