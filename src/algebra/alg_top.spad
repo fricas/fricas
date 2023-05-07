@@ -1407,9 +1407,8 @@ ChainComplex() : Exports == Impl where
    validate(a : %) : Boolean ==
        len : NNI := #a
        if len < 2 then return true
-       last : Matrix(Integer) := a.1
-       for x in 2..len repeat
-           m : Matrix(Integer) := a.x
+       last : Matrix(Integer) := first(a)
+       for m in rest(a::Rep) repeat
            if maxRowIndex(m) ~= maxColIndex(last) then
                print(message("validate failed nRows=") << maxRowIndex(m) <<
                    message(" not equal to nCols ") << maxColIndex(last))
@@ -1551,9 +1550,8 @@ CoChainComplex(VS : AbelianGroup) : Exports == Impl where
    validate(a : %) : Boolean ==
        len : NNI := #a
        if len < 2 then return true
-       last : Matrix(Integer) := a.1
-       for x in 2..len repeat
-           m : Matrix(Integer) := a.x
+       last : Matrix(Integer) := first(a)
+       for m in rest(a::Rep) repeat
            if maxRowIndex(m) ~= maxColIndex(last) then
                print(message("validate failed nRows=") << maxRowIndex(m) <<
                    message(" not equal to nCols ") << maxColIndex(last))
@@ -3091,8 +3089,8 @@ DeltaComplex(VS : AbelianGroup) : Exports == Impl where
                            print(message("    deltaComplex oldFaceLow=") <<
                                  oldFaceLow << message(" previousFaceList=")
                                  << previousFaceList << _
-                                 message(" allFacetsGraded.1=") <<
-                                 allFacetsGraded.1)
+                                 message(" first(allFacetsGraded) =") <<
+                                 first(allFacetsGraded))
                        i := position(oldFaceLow, previousFaceList
                                     )$OrientedFacet
                        if i = 0 then
@@ -3137,9 +3135,6 @@ DeltaComplex(VS : AbelianGroup) : Exports == Impl where
                --      " oldFacesLow=" << oldFacesLow )
                newIndexes := []$List(Integer)
                for oldFaceLow in oldFacesLow repeat
-                   --print("    deltaComplex oldFaceLow=" << oldFaceLow <<
-                   --      " previousFaceList=" << previousFaceList << _
-                   --      " allFacetsGraded.1=" << allFacetsGraded.1)
                    i := position(oldFaceLow, previousFaceList)$CubicalFacet
                    if i = 0 then
                        print(message("  deltaComplex oldFaceLow=")
@@ -3265,9 +3260,9 @@ DeltaComplex(VS : AbelianGroup) : Exports == Impl where
        --print("oneSkeleton edgeIndexes=" << edgeIndexes << " m=" << m)
        for x in edgeIndexes repeat
            --print("oneSkeleton x=" << x)
-           from1 := qcoerce(abs(x.1))@NNI
+           from1 := qcoerce(abs(first(x)))@NNI
            if from1 > m then m := from1
-           to1 := qcoerce(abs(x.2))@NNI
+           to1 := qcoerce(abs(second(x)))@NNI
            if to1 > m then m := to1
            y : ARROW := ["x", 0::NNI, from1, to1, 0::Integer, 0::Integer, []]
            edges := concat(edges, y)$List(ARROW)
@@ -3298,12 +3293,12 @@ DeltaComplex(VS : AbelianGroup) : Exports == Impl where
    containsEdge?(edge : List(Integer), edges : List(List(Integer))
                 ) :  Boolean ==
        if #edge < 2 then return false
-       s : Integer := edge.1
-       t : Integer := edge.2
+       s : Integer := first(edge)
+       t : Integer := second(edge)
        for e in edges repeat
            if #e > 1 then
-               s2 : Integer := e.1
-               t2 : Integer := e.2
+               s2 : Integer := first(e)
+               t2 : Integer := second(e)
                if (abs(s) = abs(s2)) and (abs(t) = abs(t2)) then return true
                if (abs(s) = abs(t2)) and (abs(t) = abs(s2)) then return true
        false
