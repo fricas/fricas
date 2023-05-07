@@ -18,6 +18,7 @@ Product (A : SetCategory, B : SetCategory) : C == T
                                              then OrderedAbelianMonoidSup
        if A has OrderedSet and B has OrderedSet then  OrderedSet
        if A has Comparable and B has Comparable then  Comparable
+       if A has Hashable and B has Hashable then Hashable
 
        construct     : (A, B) -> %
         ++ construct(a, b) creates element of the product with
@@ -66,8 +67,11 @@ Product (A : SetCategory, B : SetCategory) : C == T
           random() == [random()$A, random()$B]
           lookup(x) == ((lookup(x.acomp)$A::Integer-1) * size()$B::Integer +
                         lookup(x.bcomp)$B::Integer)::PositiveInteger
-          hashUpdate!(s : HashState, x : %) : HashState ==
-              hashUpdate!(hashUpdate!(s, first x), second x)
+
+       if A has Hashable and B has Hashable then
+
+           hashUpdate!(s : HashState, x : %) : HashState ==
+               hashUpdate!(hashUpdate!(s, first(x)), second(x))
 
        if A has Group and B has Group then
           inv(x) == [inv(x.acomp), inv(x.bcomp)]
