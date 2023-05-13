@@ -503,7 +503,8 @@ MatrixLinearAlgebraFunctions(R, Row, Col, M) : Exports == Implementation where
         ++ matrix m.
       fractionFreeGauss! : M -> M
         ++ \spad{fractionFreeGauss(m)} performs the fraction
-        ++ free gaussian  elimination on the matrix m.
+        ++ free gaussian  elimination on the matrix m, also known as
+        ++ Bareiss algorithm.
       invertIfCan : M -> Union(M,"failed")
         ++ \spad{invertIfCan(m)} returns the inverse of m over R
       adjoint : M -> Record(adjMat : M, detMat : R)
@@ -599,7 +600,7 @@ MatrixLinearAlgebraFunctions(R, Row, Col, M) : Exports == Implementation where
       m
 
     if R has IntegralDomain then
-      -- Fraction-Free Gaussian Elimination
+      -- Fraction-Free Gaussian Elimination, Bareiss algorithm
       fractionFreeGauss! x  ==
         (ndim := nrows x) = 1 => x
         ans := b := 1$R
@@ -629,6 +630,8 @@ MatrixLinearAlgebraFunctions(R, Row, Col, M) : Exports == Implementation where
                 qsetelt!(x, k, l, (val exquo b) :: R)
           b := c
           (i := i + 1) > maxR => break
+        -- Correct the sign of the determinant (lower left entry in
+        -- square matrix) if odd number of row swaps.
         if ans ~= 1 then
           lasti := i-1
           for j in 1..maxC repeat x(lasti, j) := -x(lasti, j)
