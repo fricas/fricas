@@ -209,41 +209,41 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 ;;; How to exit Lisp process
 #+:GCL
-(defun exit-with-status (s) (SI::quit s))
+(defun |exit_with_status| (s) (SI::quit s))
 
 #+:cmu
-(defun exit-with-status (s)
+(defun |exit_with_status| (s)
     (setf *terminal-io* *saved-terminal-io*)
     (unix:unix-exit s))
 
 #+:sbcl
-(defun exit-with-status (s)
+(defun |exit_with_status| (s)
     (setf *terminal-io* *saved-terminal-io*)
     (sb-ext::quit :UNIX-STATUS s))
 
 #+:clisp
-(defun exit-with-status (s) (ext::quit s))
+(defun |exit_with_status| (s) (ext::quit s))
 
 #+:openmcl
-(defun exit-with-status (s) (ccl::quit s))
+(defun |exit_with_status| (s) (ccl::quit s))
 
 #+:ecl
-(defun exit-with-status (s)
+(defun |exit_with_status| (s)
     (SI:quit s))
 
 #+:lispworks
-(defun exit-with-status (s)
+(defun |exit_with_status| (s)
   (lispworks:quit :status s))
 
 #+:abcl
-(defun exit-with-status (s)
+(defun |exit_with_status| (s)
   (ext:quit :status s))
 
 #+:poplog
-(defun quit() (pop11::sysexit))
+(defun |exit_with_status| (s)
+    (pop11::sysexit1 s))
 
-#-:poplog
-(defun quit() (exit-with-status 0))
+(defun quit() (|exit_with_status| 0))
 
 ;;; -----------------------------------------------------------------
 
