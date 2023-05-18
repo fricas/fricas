@@ -94,6 +94,13 @@ TensorProduct(R : CommutativeRing, B1 : OrderedSet, B2 : OrderedSet, _
              ) : TPcat == TPimp where
     TPcat == Join(TensorProductCategory(R, M1, M2), _
         FreeModuleCategory(R, Product(B1, B2))) with
+            if M1 has NonAssociativeAlgebra(R) and
+               M2 has NonAssociativeAlgebra(R) then
+                    NonAssociativeAlgebra(R)
+                    if M1 has CommutativeStar and M2 has CommutativeStar
+                    then CommutativeStar
+                    if M1 has CommutativeRing and M2 has CommutativeRing
+                    then CommutativeRing
             if M1 has Algebra(R) and M2 has Algebra(R) then Algebra(R)
 
     TERM1 ==> Record(k : B1, c : R)
@@ -118,7 +125,8 @@ TensorProduct(R : CommutativeRing, B1 : OrderedSet, B2 : OrderedSet, _
                     res := cons([[s1.k, s2.k], s1.c*s2.c]$TERM, res)
             constructOrdered res
 
-        if M1 has Algebra(R) and M2 has Algebra(R) then
+        if M1 has NonAssociativeAlgebra(R) and 
+           M2 has NonAssociativeAlgebra(R) then
             (x1 : % * x2 : %) : % ==
                 res : List TERM := empty()
                 for t1 in listOfTerms x1 repeat
@@ -133,6 +141,10 @@ TensorProduct(R : CommutativeRing, B1 : OrderedSet, B2 : OrderedSet, _
                         for t in listOfTerms tensor(t1a*t2a, t1b*t2b) repeat
                             res := cons(t, res)
                 construct res
+
+        if M1 has Algebra(R) and M2 has Algebra(R) then
+
+            1 : % == tensor(1$M1, 1$M2)
 
         coerce(x : %) : OutputForm ==
             zero? x => (0$R) ::OutputForm
