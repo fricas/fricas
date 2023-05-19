@@ -181,3 +181,34 @@ ${OUTS} ${REGRESS} : %.output: $(srcdir)/%.input
 	echo ')read "tmp'$$$$'.input"' | \
 	FRICAS_INITFILE='' ${TESTSYS} > $*.output 2>&1 ; \
 	rm tmp$$$$.input )
+
+ifeq (@BUILD_ALDOR_INTERFACE@,yes)
+top_srcdir=@top_srcdir@
+%.as: ${IN}/%.as
+	cp $< $@
+
+aldor_sieve.output: sieve.as
+
+ALDOR_REGRESS = aldor_sieve.output
+ALDOR_ARGS = -O -Fasy -Flsp -lfricas -Y ../aldor/al -I $(top_srcdir)/src/aldor/aldor
+
+aldor-regression-tests: $(ALDOR_REGRESS)
+aldor-check: aldor-regression-tests
+	awk -f $(srcdir)/check_result $(ALDOR_REGRESS)
+
+aldor-clean:
+	rm -f $(ALDOR_REGRESS)
+
+${ALDOR_REGRESS}: %.output: $(srcdir)/%.input Makefile
+	( \
+	echo running aldor test file $* ; \
+	echo ')set message test off' > tmp$$$$.input; \
+	echo ')set message auto on' >> tmp$$$$.input ; \
+	echo ')set compiler args "$(ALDOR_ARGS)"' > tmp$$$$.input ; \
+	echo 'systemCommand "read $<"' >> tmp$$$$.input ; \
+	echo ')lisp (quit)' >> tmp$$$$.input ; \
+	echo ')read "tmp'$$$$'.input"' | \
+	ALDOR_COMPILER='@ALDOR@' FRICAS_INITFILE='' ${TESTSYS} > $*.output 2>&1 ; \
+	rm tmp$$$$.input )
+
+endif
