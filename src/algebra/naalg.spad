@@ -25,10 +25,11 @@ AlgebraGivenByStructuralConstants(R : CommutativeRing, n : PositiveInteger, _
   M  ==> Matrix
   I  ==> Integer
   NNI  ==> NonNegativeInteger
+  OV ==> OrderedVariableList(ls)
 
   --public ==> FramedNonAssociativeAlgebra(R) with
-  public ==> Join(FramedNonAssociativeAlgebra(R), _
-    LeftModule(SquareMatrix(n, R)) ) with
+  public ==> Join(FramedNonAssociativeAlgebra(R), FreeModuleCategory(R, OV),
+      LeftModule(SquareMatrix(n, R)) ) with
 
     coerce : Vector R -> %
       ++ coerce(v) converts a vector to a member of the algebra
@@ -46,6 +47,80 @@ AlgebraGivenByStructuralConstants(R : CommutativeRing, n : PositiveInteger, _
     dp : DirectProduct(n, R)
     v : V R
 
+    Term ==> Record(k : OV, c : R)
+
+    -- Operation from FreeModuleCategory
+
+    listOfTerms(x : %) : List(Term) ==
+        res := []$List(Term)
+        for i in 1..n repeat
+            c := x(i)
+            if (c ~= 0) then
+                res := cons([index(qcoerce(i)@PositiveInteger), c]$Term, res)
+        reverse!(res)
+
+    numberOfMonomials(x : %) : NNI ==
+        res := 0$NNI
+        for i in 1..n repeat
+            c := x(i)
+            if (c ~= 0) then
+                res := res + 1
+        res
+
+    monomial?(X : %) : Boolean == numberOfMonomials(x) = 1
+
+    leadingTerm(x : %) : Term ==
+        for i in 1..n repeat
+            c := x(i)
+            if (c ~= 0) then
+                return [index(qcoerce(i)@PositiveInteger), c]$Term
+        error "can not take leadingTerm of zero element"
+
+    linearExtend(f : (OV -> R), x : %) : R ==
+        res := 0$R
+        for i in 1..n repeat
+            c := x(i)
+            if (c ~= 0) then
+                res := res + c*f(index(qcoerce(i)@PositiveInteger))
+        res
+
+    reductum(x : %) : % ==
+        v : Vector R :=  new(n, 0)
+        first := true
+        for i in 1..n repeat
+            c := x(i)
+            if (c ~= 0) then
+                if first then
+                    first := false
+                else
+                    v(i) := x(i)
+        directProduct(v)
+
+    construct(l : List(Term)) : % ==
+        v : Vector R :=  new(n, 0)
+        for el in l repeat
+            i := lookup(el.k)
+            v(i) := el.c
+        directProduct(v)
+
+    coefficient(x : %, v : OV) : R == x(lookup(v))
+
+    linearExtend(f : (OV -> R), x : %) : R ==
+        res := 0$R
+        for i in 1..n repeat
+            c := x(i)
+            if (c ~= 0) then
+                res := res + c*f(index(qcoerce(i)@PositiveInteger))
+        res
+
+    constructOrdered(l : List(Term)) : % == construct(l)
+
+    monomial(c : R, s : OV) : % ==
+        v : Vector R :=  new(n, 0)
+        v(lookup(s)) := c
+        directProduct(v)
+
+    -------------------
 
     recip(x) == recip(x)$FiniteRankNonAssociativeAlgebra_&(%, R)
 

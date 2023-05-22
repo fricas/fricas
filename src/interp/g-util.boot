@@ -495,8 +495,8 @@ $charDash := char '_-
 $charTab            := CODE_-CHAR(9)
 $charNewline        := CODE_-CHAR(10)
 $charFauxNewline    := CODE_-CHAR(25)
-$stringNewline      := PNAME CODE_-CHAR(10)
-$stringFauxNewline  := PNAME CODE_-CHAR(25)
+$stringNewline      := STRING($charNewline)
+$stringFauxNewline  := STRING($charFauxNewline)
 
 $charExclusions := [char 'a, char 'A]
 $charQuote := char '_'

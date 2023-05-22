@@ -42,7 +42,10 @@ Stack(S : SetCategory) : StackAggregate S with
     empty? s == empty?(deref(s))
     construct s == ref copy s
     stack s == construct s
-    hashUpdate!(st, s) == hashUpdate!(st, deref s)
+
+    if S has Hashable then
+
+        hashUpdate!(st, s) == hashUpdate!(st, deref s)
 
 )abbrev domain ASTACK ArrayStack
 ++ Author: Michael Monagan and Stephen Watt
@@ -93,7 +96,10 @@ ArrayStack(S : SetCategory) : StackAggregate(S) with
     empty() == empty()$Rep
     map(f, s) == map(f, s)$Rep
     map!(f, s) == map!(f, s)$Rep
-    hashUpdate!(hs, s) == hashUpdate!(hs, s)$Rep
+
+    if S has Hashable then
+
+        hashUpdate!(hs, s) == hashUpdate!(hs, s)$Rep
 
 )abbrev domain QUEUE Queue
 ++ Author: Michael Monagan and Stephen Watt
@@ -204,6 +210,7 @@ Heap(S : OrderedSet) : Exports == Implementation where
     heap : List S -> %
       ++ heap(ls) creates a heap of elements consisting of the
       ++ elements of ls.
+    if S has Hashable then Hashable
   Implementation == IndexedFlexibleArray(S, 0) add
     Rep := IndexedFlexibleArray(S, 0)
     empty() == empty()$Rep

@@ -19,6 +19,7 @@ SimpleAlgebraicExtension(R : CommutativeRing,
       ) : MonogenicAlgebra(R, UP) with
          if R has Field and R has PolynomialFactorizationExplicit then
             PolynomialFactorizationExplicit
+         if UP has Hashable then Hashable
   == add
 
     --degree(M) > 0 and M must be monic if R is not a field.
@@ -54,7 +55,8 @@ SimpleAlgebraicExtension(R : CommutativeRing,
     lift(x) == x pretend Rep
     reduce(p : UP) : % == (monicDivide(p, M)$Rep).remainder
     x = y == x =$Rep y
-    hashUpdate!(s : HashState, x : %) == hashUpdate!(s, x)$Rep
+    if Rep has Hashable then
+        hashUpdate!(s : HashState, x : %) == hashUpdate!(s, x)$Rep
     x + y == x +$Rep y
     - x == -$Rep x
     x * y == reduce((x *$Rep y) pretend UP)

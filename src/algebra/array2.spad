@@ -29,6 +29,7 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
   Definition == Join(HomogeneousAggregate(R), _
       shallowlyMutable, finiteAggregate) with
 
+    if R has Hashable then Hashable
     if R has Comparable then Comparable
 
 --% Array creation
@@ -39,6 +40,9 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
       ++ qnew(m, n) is is an m-by-n uninitilized array
     fill! : (%, R) -> %
       ++ fill!(m, r) fills m with r's
+    array2: List(List(R)) -> %
+      ++ array2(ll) constructs a 2-dimensional array, the inner list
+      ++ being the rows.
 
 --% Size inquiries
 
@@ -924,6 +928,18 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
           qsetelt!(m, i, j, r)
       m
 
+    array2(ll : List(List(R))) : % ==
+        empty?(ll) => qnew(0, 0)
+        m := #ll::NNI
+        n := #first(ll)::NNI
+        a2 := qnew(n, m)
+        for i in minRowIndex(a2)..maxRowIndex(a2) for l in ll repeat
+            if #l ~= n then
+                error "array2: rows of different lengths"
+            for j in minColIndex(a2)..maxColIndex(a2) for r in l repeat
+                qsetelt!(a2, i, j, r)
+        a2
+
     map(f : R -> R, m : %) : % ==
       ans := qnew(nrows m, ncols m)
       for i in minRowIndex(m)..maxRowIndex(m) repeat
@@ -1016,6 +1032,16 @@ TwoDimensionalArrayCategory(R, Row, Col) : Category == Definition where
             qsetelt!(v, k, qelt(m, i, j))
         v
 
+    if R has Hashable then
+
+        hashUpdate!(s : HashState, m : %) : HashState ==
+            i : Integer
+            j : Integer
+            for i in minRowIndex(m)..maxRowIndex(m) repeat
+                for j in minColIndex(m)..maxColIndex(m) repeat
+                    s := hashUpdate!(s, qelt(m, i, j))$R
+            s
+
     if R has CoercibleTo(OutputForm) then
 
       coerce(m : %) ==
@@ -1102,6 +1128,7 @@ InnerIndexedTwoDimensionalArray(R, mnRow, mnCol, Row, Col) : _
               if j < maxColIndex(m) then s := concat(s, " & ")$String
             if i < maxRowIndex(m) then s := concat(s, " \\ ")$String
           concat(s, "\end{array} \right]")$String
+    if R has Hashable then
         hashUpdate!(s : HashState, m : %) : HashState ==
           i : Integer
           j : Integer

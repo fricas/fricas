@@ -38,78 +38,73 @@ SubResultantPackage(R, UP) : Exports == Implementation where
          unitCanonical primitivePart map(x1+->(rec.coef1 * x1) rem q, p)
 
     subresultantVector(p1, p2) ==
-       res : PrimitiveArray(UP) := new(2+max(degree(p1), degree(p2)), 0)
-       l := chainSubResultants(p1, p2)$Lionel
-       -- this returns the chain of non null subresultants !
-       -- we rebuild subresultants from this, using Fundamental PRS Theorem.
-       empty?(l) =>
-         -- Hum it seems that Lionel returns [] when min(|p1|, |p2|) = 0
-         zero?(degree(p1)) =>
-           res.degree(p2) := p2
-           if degree(p2) > 0
-           then
-             res.((degree(p2)-1)::NonNegativeInteger) := p1
-             res.0 := (leadingCoefficient(p1)^(degree p2)) :: UP
-           else
-             -- both are of degree 0 the resultant is 1 according to Loos
-             res.0 := 1
-           res
-         zero?(degree(p2)) =>
-           if degree(p1) > 0
-           then
-             res.((degree(p1)-1)::NonNegativeInteger) := p2
-             res.0 := (leadingCoefficient(p2)^(degree p1)) :: UP
-           else
-             -- both are of degree 0 the resultant is 1 according to Loos
-             res.0 := 1
-           res
-         error "SUBRESP: strange Subresultant chain from PRS"
-       --
-       -- as of Loos definitions last subresultant should not be defective
-       --
-       F := first l
-       l := rest l
-       n := degree F
-       res.n := F
-       while (l ~= []) repeat
-         F := first(l)
-         l := rest(l)
-         -- F is potentially defective
-         if degree(F) = n
-         then
-           --
-           -- F is defective
-           --
-           empty?(l) => error "SUBRESP: strange Subresultant chain from PRS"
-           nextn := degree first l
-           n := degree F
-           res.((nextn-1)::NonNegativeInteger) := F
-         else
-           --
-           -- F is non defective
-           --
-           degree(F) < n => error "strange result !"
-           n := degree F
-           res.n := F
-       --
-       -- Lionel forgets about p1 if |p1| > |p2|
-       -- forgets about p2 if |p2| > |p1|
-       -- but he reminds p2 if |p1| = |p2|
-       -- a glance at Loos should correct this !
-       --
-       --
-       -- Loos definition
-       --
-       if degree(p1) = degree(p2)
-       then
-         res.((degree p1)+1) := p1
-       else
-         if degree(p1) > degree(p2)
-         then
-           res.(degree p1) := p1
-         else
-           res.(degree p2) := p2
-       res
+        res : PrimitiveArray(UP) := new(2+max(degree(p1), degree(p2)), 0)
+        l := chainSubResultants(p1, p2)$Lionel
+        -- this returns the chain of non null subresultants !
+        -- we rebuild subresultants from this, using Fundamental PRS Theorem.
+        empty?(l) =>
+            -- Hum it seems that Lionel returns [] when min(|p1|, |p2|) = 0
+            zero?(degree(p1)) =>
+                res(degree(p2)) := p2
+                if degree(p2) > 0 then
+                    res((degree(p2)-1)::N) := p1
+                    res(0) := (leadingCoefficient(p1)^(degree p2)) :: UP
+                else
+                    -- both of degree 0 so resultant is 1 according to Loos
+                    res(0) := 1
+                res
+            zero?(degree(p2)) =>
+                if degree(p1) > 0 then
+                    res((degree(p1)-1)::N) := p2
+                    res(0) := (leadingCoefficient(p2)^(degree p1)) :: UP
+                else
+                    -- both of degree 0 so resultant is 1 according to Loos
+                    res(0) := 1
+                res
+            error "SUBRESP: strange Subresultant chain from PRS"
+        --
+        -- as of Loos definitions last subresultant should not be defective
+        --
+        F := first(l)
+        l := rest(l)
+        n := degree(F)
+        res(n) := F
+        while l ~= [] repeat
+            F := first(l)
+            l := rest(l)
+            -- F is potentially defective
+            if degree(F) = n then
+                --
+                -- F is defective
+                --
+                empty?(l) =>
+                    error "SUBRESP: strange Subresultant chain from PRS"
+                nextn := degree(first(l))
+                n := degree(F)
+                res((nextn-1)::N) := F
+            else
+                --
+                -- F is non defective
+                --
+                degree(F) < n => error "SUBRESP: strange result !"
+                n := degree(F)
+                res(n) := F
+        --
+        -- Lionel forgets about p1 if |p1| > |p2|
+        -- forgets about p2 if |p2| > |p1|
+        -- but he reminds p2 if |p1| = |p2|
+        -- a glance at Loos should correct this !
+        --
+        --
+        -- Loos definition
+        --
+        if degree(p1) = degree(p2) then
+            res(degree(p1) + 1) := p1
+        else if degree(p1) > degree(p2) then
+            res(degree(p1)) := p1
+        else
+            res(degree(p2)) := p2
+        res
 
 )abbrev package MONOTOOL MonomialExtensionTools
 ++ Tools for handling monomial extensions

@@ -142,7 +142,7 @@ handleLispBreakLoop($BreakMode) ==
     returnToReader()
   $BreakMode = 'throw_reader => throw_to_reader()
   $BreakMode = 'quit =>
-    EXIT_-WITH_-STATUS(1)
+    exit_with_status(1)
   throw_to_top_level()
 
 throw_to_reader() == THROW('SPAD_READER, nil)

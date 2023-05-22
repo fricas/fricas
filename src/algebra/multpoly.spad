@@ -407,10 +407,12 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
 
       p ^ kp == pow_aux(p, kp)
 
-      hashUpdate!(s : HashState, p : %) : HashState ==
-          p case R => hashUpdate!(s, p::R)
-          s := hashUpdate!(s, p.v)
-          hashUpdate!(s, p.ts)
+      if R has Hashable and VarSet has Hashable then
+
+          hashUpdate!(s : HashState, p : %) : HashState ==
+              p case R => hashUpdate!(s, p::R)
+              s := hashUpdate!(s, p.v)
+              hashUpdate!(s, p.ts)
 
       if R has IntegralDomain then
          UnitCorrAssoc ==> Record(unit : %, canonical : %, associate : %)

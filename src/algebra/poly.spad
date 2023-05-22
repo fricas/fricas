@@ -1,7 +1,7 @@
 )abbrev domain SAOS SingletonAsOrderedSet
 ++ This trivial domain let us build Univariate Polynomials
 ++ in an anonymous variable.
-SingletonAsOrderedSet() : OrderedSet with
+SingletonAsOrderedSet() : Join(OrderedSet, Hashable) with
               create : () -> %
               convert : % -> Symbol
   ==  add
@@ -12,6 +12,8 @@ SingletonAsOrderedSet() : OrderedSet with
    min(a, b) == a  -- only one element
    max(a, b) == a  -- only one element
    convert a == coerce("?")
+   hashUpdate!(s : HashState, x : %) : HashState ==
+       hashUpdate!(s, qconvert(42)@SingleInteger)$SingleInteger
 
 )abbrev category FMCAT FreeModuleCategory
 ++ Author: Michel Petitot petitot@lifl.fr
@@ -125,6 +127,7 @@ FreeModule(R : Join(SemiRng, AbelianMonoid), S : SetCategory) :
         Join(BiModule(R, R), FreeModuleCategory(R, S)) with
     if R has CommutativeRing then Module(R)
     if R has SemiRing then RetractableTo S
+    if R has Hashable and S has Hashable then Hashable
     if S has OrderedSet then
         if R has OrderedAbelianMonoid then OrderedAbelianMonoid
         if R has OrderedAbelianMonoidSup then OrderedAbelianMonoidSup
@@ -336,6 +339,7 @@ PolynomialRing(R : Join(SemiRng, AbelianMonoid), E : OrderedAbelianMonoid
           ++ canonicalUnitNormal guarantees that the function
           ++ unitCanonical returns the same representative for all
           ++ associates of any particular element.
+       if R has Hashable and E has Hashable then Hashable
        if R has Comparable then Comparable
 
   C == FreeModule(R, E) add

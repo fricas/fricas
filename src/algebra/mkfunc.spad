@@ -8,7 +8,7 @@
 
 InputForm():
   Join(SExpressionCategory(String, Symbol, Integer, DoubleFloat),
-       ConvertibleTo SExpression) with
+       ConvertibleTo(SExpression), ConvertibleTo(%)) with
     interpret : % -> Any
       ++ interpret(f) passes f to the interpreter.
     convert  : SExpression -> %
@@ -65,6 +65,8 @@ InputForm():
       ++ or if the ti's are not valid types, or if the compiler fails.
  == SExpression add
     Rep := SExpression
+
+    convert(x : %) : % == x
 
     mkProperOp : Symbol -> %
     strsym    : % -> String
@@ -350,6 +352,18 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
       ++ defined by \spad{f(x, y) == expr}.
       ++ Function f is compiled and directly
       ++ applicable to objects of type (\spadtype{DoubleFloat}, \spadtype{DoubleFloat}).
+    make_real_part_function : (S, Symbol) -> (SF -> SF)
+      ++ make_real_part_function(expr, x) returns a Lisp function
+      ++ \spad{f}: \spadtype{DoubleFloat} -> \spadtype{DoubleFloat}
+      ++ defined by \spad{f(x) == real(expr)}.
+      ++ Function f is compiled and directly
+      ++ applicable to objects of type \spadtype{DoubleFloat}.
+    make_imaginary_part_function : (S, Symbol) -> (SF -> SF)
+      ++ make_imaginary_part_function(expr, x) returns a Lisp function
+      ++ \spad{f}: \spadtype{DoubleFloat} -> \spadtype{DoubleFloat}
+      ++ defined by \spad{f(x) == imag(expr)}.
+      ++ Function f is compiled and directly
+      ++ applicable to objects of type \spadtype{DoubleFloat}.
 
   Implementation ==> add
     import from MakeUnaryCompiledFunction(S, SF, SF)
@@ -409,6 +423,24 @@ MakeFloatCompiledFunction(S) : Exports == Implementation where
       spadform := mkPretend convert([mkLispCall name, ivar]$List(INF))@INF
       interpret function(spadform, [var], spadname)
       unaryFunction compile(spadname, t)
+
+    z_var := convert(new()$Symbol)@INF
+    z_decl := convert([convert(":"::Symbol), z_var,
+                       convert([convert('Complex), convert('DoubleFloat)
+                               ]$List(INF))@INF]$List(INF))@INF
+
+    make_ri_part_function(f : S, v : Symbol, s : Symbol) : (SF -> SF) ==
+        u := convert(f)@INF
+        z := convert([convert('LET), z_decl, u]$List(INF))@INF
+        rz := convert([convert(s), z_var]$List(INF))@INF
+        rf := convert([convert('SEQ), z, rz]$List(INF))@INF
+        compiledFunction(rf, v)$MakeUnaryCompiledFunction(INF, SF, SF)
+
+    make_real_part_function(f, v) ==
+        make_ri_part_function(f, v, 'real)
+
+    make_imaginary_part_function(f, v) ==
+        make_ri_part_function(f, v, 'imag)
 
     mkLispList l ==
       ans := []$List(INF)

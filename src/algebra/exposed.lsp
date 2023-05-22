@@ -226,6 +226,7 @@
   (|PartialFraction| . PFR)
   (|PartialFractionPackage| . PFRPAC)
   (|ParametricPlaneCurve| . PARPCURV)
+  (|ParametricComplexCurve| . PARCCURV)
   (|ParametricSpaceCurve| . PARSCURV)
   (|ParametricSurface| . PARSURF)
   (|ParametricPlaneCurveFunctions2| . PARPC2)

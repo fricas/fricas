@@ -293,6 +293,7 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
         Evalable %
     if R has Ring then
         PartialDifferentialRing VarSet
+    if R has Hashable and VarSet has Hashable then Hashable
     -- operations
     univariate   : (%, VarSet) -> SparseUnivariatePolynomial(%)
       ++ univariate(p, v) converts the multivariate polynomial p
@@ -708,6 +709,19 @@ PolynomialCategory(R : Join(SemiRng, AbelianMonoid),
            map(convert, convert,
                     p)$PolynomialCategoryLifting(E, VarSet, R, %, InputForm)
 
+    if R has Hashable and VarSet has Hashable then
+
+        hashUpdate!(s : HashState, x : %) : HashState ==
+            vu := mainVariable(x)
+            vu case "failed" => hashUpdate!(s, ground(x))
+            v := vu@VarSet
+            s := hashUpdate!(s, v)
+            xu := univariate(x, v)
+            while (d := degree(xu)) > 0 repeat
+                s := hashUpdate!(s, d)
+                s := hashUpdate!(s, leadingCoefficient(xu))
+                xu := reductum(xu)
+            hashUpdate!(s, ground(xu))
 
 
 )abbrev package POLYLIFT PolynomialCategoryLifting

@@ -20,6 +20,8 @@ Tree(S : SetCategory) : T==C where
        ++ tree(ls) creates a tree from a list of elements of s.
      tree : S -> %
        ++ tree(nd) creates a tree with value nd, and no children.
+     if S has Hashable then Hashable
+
  C== add
     Rep := Union(node:Record(value: S, args: List %),empty:"empty")
 
@@ -98,12 +100,15 @@ Tree(S : SetCategory) : T==C where
       u := [parts c for c in children t]
       u = empty() => [value t]
       cons(value t,"append"/u)
-    hashUpdate!(s : HashState, t : %) : HashState ==
-      t case empty => s
-      s := hashUpdate!(s, value t)
-      for subt in children t repeat
-          s := hashUpdate!(s, subt)
-      s
+
+    if S has Hashable then
+
+        hashUpdate!(s : HashState, t : %) : HashState ==
+            t case empty => s
+            s := hashUpdate!(s, value(t))
+            for ct in children(t) repeat
+                s := hashUpdate!(s, ct)
+            s
 
     t1 = t2 ==
         empty? t1 => empty? t2
@@ -141,6 +146,7 @@ BinaryTreeCategory(S : SetCategory) : Category ==
    node : (%, S, %) -> %
      ++ node(l, v, r) creates a binary tree with value \spad{v},
      ++ left subtree \spad{l}, and right subtree \spad{r}.
+   if S has Hashable then Hashable
  add
      copy t ==
        empty? t => empty()
@@ -169,11 +175,14 @@ BinaryTreeCategory(S : SetCategory) : Category ==
        n := distance1(t1, t2)
        n >= 0 => n
        distance1(t2, t1)
-     hashUpdate!(s : HashState, t : %) : HashState ==
-       empty? t => s
-       s := hashUpdate!(s, value t)
-       s := hashUpdate!(s, left t)
-       hashUpdate!(s, right t)
+
+     if S has Hashable then
+
+         hashUpdate!(s : HashState, t : %) : HashState ==
+             empty? t => s
+             s := hashUpdate!(s, value(t))
+             s := hashUpdate!(s, left(t))
+             hashUpdate!(s, right(t))
 
 )abbrev domain BTREE BinaryTree
 ++ Description: \spadtype{BinaryTree(S)} is the domain of all

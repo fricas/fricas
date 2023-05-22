@@ -222,7 +222,7 @@ InnerPrimeField(p : PositiveInteger) : Exports == Implementation where
 
     coordinates(x : %) : Vector(%) == new(1, x)$(Vector %)
 
-    represents(v)  == v.1
+    represents(v)  == v(1)
 
     retract(x) == x
 
@@ -533,21 +533,21 @@ FiniteFieldPolynomialPackage(GF): Exports == Implementation where
       e := reduce(monomial(1, 1)$SUP)$MM ^ sizeGF
       w := 1$MM
       qpow : PrimitiveArray SUP := new(m, 0)
-      qpow.0 := 1$SUP
-      for i in 1..m1 repeat  qpow.i := lift(w := w*e)$MM
+      qpow(0) := 1$SUP
+      for i in 1..m1 repeat  qpow(i) := lift(w := w*e)$MM
       qexp : PrimitiveArray SUP := new(m, 0)
       m = 1 =>
-        qexp.(0$I) := (-coefficient(f, 0$NNI)$SUP)::SUP
+        qexp(0$I) := (-coefficient(f, 0$NNI)$SUP)::SUP
         qexp
-      qexp.0$I := monomial(1, 1)$SUP
-      h := qpow.1
-      qexp.1 := h
+      qexp(0$I) := monomial(1, 1)$SUP
+      h := qpow(1)
+      qexp(1) := h
       for i in 2..m1 repeat
         g := 0$SUP
         while h ~= 0 repeat
-          g := g + leadingCoefficient(h) * qpow.degree(h)
+          g := g + leadingCoefficient(h) * qpow(degree(h))
           h := reductum(h)
-        qexp.i := (h := g)
+        qexp(i) := (h := g)
       qexp
 
     leastAffineMultiple(f) ==
@@ -2329,25 +2329,25 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
     a * b ==
       e : SI := (#a)::SI
       erg := zero(#a)$VGF
-      for t in multTable.1 repeat
+      for t in multTable(1) repeat
         for j in 1..e repeat
           y := t.value  -- didn't work without defining x and y
           x := t.index
           k : SI := addmod(x, j::SI, e)$SI +$SI 1$SI
-          erg.k := erg.k +$GF a.j *$GF b.j *$GF y
+          erg(k) := erg(k) +$GF a(j) *$GF b(j) *$GF y
       for i in 1..e-1 repeat
         for j in i+1..e repeat
-          for t in multTable.(j-i+1) repeat
+          for t in multTable(j-i+1) repeat
             y := t.value   -- didn't work without defining x and y
             x := t.index
             k : SI := addmod(x, i::SI, e)$SI +$SI 1$SI
-            erg.k : GF := erg.k +$GF (a.i *$GF b.j +$GF a.j *$GF b.i) *$GF y
+            erg(k) := erg(k) +$GF (a(i)*$GF b(j) +$GF a(j)*$GF b(i)) *$GF y
       erg
 
     lookup(x) ==
       erg : I := 0
       for j in (#x)..1 by -1 repeat
-        erg := (erg * sizeGF) + (lookup(x.j)$GF rem sizeGF)
+        erg := (erg * sizeGF) + (lookup(x(j))$GF rem sizeGF)
       erg = 0 => (sizeGF^(#x)) :: PI
       erg :: PI
 
@@ -2389,24 +2389,24 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
       m : SI := positiveRemainder(n::SI, ei)$SI
       zero?(m) => e
       e1 := zero(#e)$VGF
-      for i in m+1..ei repeat e1.i := e.(i-m)
-      for i in 1..m    repeat e1.i := e.(ei+i-m)
+      for i in m+1..ei repeat e1(i) := e(i-m)
+      for i in 1..m    repeat e1(i) := e(ei+i-m)
       e1
 
     trace(a, d) ==
       dSI := d::SI
       r := divide((#a)::SI, dSI)$SI
       not(r.remainder = 0) => error "trace: 2.arg must divide extdeg"
-      v := copy(a.(1..dSI))$VGF
+      v := copy(a(1..dSI))$VGF
       sSI : SI := r.quotient
       for i in 1..dSI repeat
         for j in 1..sSI-1 repeat
-          v.i := v.i+a.(i+j::SI*dSI)
+          v(i) := v(i) + a(i+j::SI*dSI)
       v
 
     random(n) ==
       v := zero(n)$VGF
-      for i in 1..n repeat v.i := random()$GF
+      for i in 1..n repeat v(i) := random()$GF
       v
 
 
@@ -2455,12 +2455,12 @@ InnerNormalBasisFieldFunctions(GF) : Exports == Implementation where
       m : I := n rem$I (sizeGF ^ degm)
       erg := zero(degm)$VGF
       for j in 1..degm repeat
-        erg.j := index(qcoerce(sizeGF + (m rem sizeGF)))$GF
+        erg(j) := index(qcoerce(sizeGF + (m rem sizeGF)))$GF
         m := m quo sizeGF
       erg
 
     pol(x) ==
-      +/[monomial(x.i, (i-1)::NNI)$(SUP GF) for i in 1..(#x)::I]
+        +/[monomial(x(i), (i-1)::NNI)$(SUP GF) for i in 1..(#x)::I]
 
 )abbrev domain FFNBP FiniteFieldNormalBasisExtensionByPolynomial
 ++ Authors: J.Grabmeier, A.Scheerhorn
@@ -2550,11 +2550,11 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF, uni) : Exports == _
       multTable := uni@(Vector List TERM)
       extdeg := qcoerce(#multTable)
       vv : V := new(extdeg, 0)$V
-      vv.1 := 1$GF
+      vv(1) := 1$GF
       setFieldInfo(multTable, 1$GF)$INBFF
       defpol := minimalPolynomial(vv)$INBFF
       initmult? := false
-     else
+    else
       defpol := uni :: SUP(GF)
       extdeg := qcoerce(degree(defpol)$(SUP GF))
       multTable : Vector List TERM := new(extdeg, []$(List TERM))
@@ -2650,24 +2650,24 @@ FiniteFieldNormalBasisExtensionByPolynomial(GF, uni) : Exports == _
 
     retractIfCan(x) ==
       inGroundField?(x) =>
-        x.1 *$GF traceAlpha
+        x(1) *$GF traceAlpha
       "failed"
 
     retract(x) ==
       inGroundField?(x) =>
-        x.1 *$GF traceAlpha
+        x(1) *$GF traceAlpha
       error("element not in ground field")
 
 -- to get a "normal basis like" output form
     coerce(x : %) : OUT ==
       l : List OUT := []$(List OUT)
       n : PI := extdeg
-      (n = 1) => (x.1) :: OUT
+      (n = 1) => x(1) :: OUT
       for i in 1..n for b in basisOutput repeat
-        if not zero? x.i then
+        if not zero?(x(i)) then
           mon : OUT :=
-            (x.i = 1) => b
-            ((x.i)::OUT) *$OUT b
+            (x(i) = 1) => b
+            (x(i)::OUT) *$OUT b
           l := cons(mon, l)$(List OUT)
       empty?(l)$(List OUT) => (0::OUT)
       r := reduce("+",l)$(List OUT)
@@ -2796,7 +2796,7 @@ divisor of the order of the multiplicative group"
     inGroundField?(x) ==
       erg := true
       for i in 2..extdeg repeat
-        not(x.i =$GF x.1) => erg := false
+          not(x(i) =$GF x(1)) => erg := false
       erg
 
     x : % / y : % ==
@@ -3499,39 +3499,38 @@ FiniteFieldFunctions(GF) : Exports == Implementation where
       e := reduce(monomial(1, 1)$SUP)$MM ^ sizeGF
       w := 1$MM
       qpow : PrimitiveArray(MM) := new(m, 0)
-      qpow.0 := 1$MM
+      qpow(0) := 1$MM
       for i in 1..m1 repeat
-        qpow.i := (w := w*e)
-      -- qpow.i = x^(i*q)
+          qpow(i) := (w := w*e)
       qexp : PrimitiveArray(MM) := new(m, 0)
-      qexp.0 := reduce(monomial(1, 1)$SUP)$MM
-      mat : M GF := zero(m, m)$(M GF)
-      qsetelt!(mat, 2, 1, 1$GF)$(M GF)
-      h := qpow.1
-      qexp.1 := h
+      qexp(0) := reduce(monomial(1, 1)$SUP)$MM
+      mat : M(GF) := zero(m, m)$M(GF)
+      qsetelt!(mat, 2, 1, 1$GF)$M(GF)
+      h := qpow(1)
+      qexp(1) := h
       setColumn!(mat, 2, Vectorise(h)$MM)$(M GF)
       for i in 2..m1 repeat
         g := 0$MM
         while h ~= 0 repeat
-          g := g + leadingCoefficient(h) * qpow.degree(h)$MM
+          g := g + leadingCoefficient(h) * qpow(degree(h)$MM)
           h := reductum(h)$MM
-        qexp.i := g
-        setColumn!(mat, i+1, Vectorise(h := g)$MM)$(M GF)
+        qexp(i) := g
+        setColumn!(mat, i+1, Vectorise(h := g)$MM)$M(GF)
       -- loop invariant: qexp.i = x^(q^i)
-      mat1 := inverse(mat)$(M GF)
+      mat1 := inverse(mat)$M(GF)
       mat1 = "failed" =>
         error "createMultiplicationTable: polynomial must be normal"
-      mat := mat1 :: (M GF)
+      mat := mat1 :: M(GF)
       -- initialize multiplication table
-      multtable : V L TERM := new(m, []$(L TERM))$(V L TERM)
+      multtable : V(L(TERM)) := new(m, []$L(TERM))$V(L(TERM))
       for i in 1..m repeat
-        l : L TERM := []
-        v : V GF := mat *$(M GF) Vectorise(qexp.(i-1) *$MM qexp.0)$MM
+        l : L(TERM) := []
+        v : V(GF) := mat *$M(GF) Vectorise(qexp(i-1) *$MM qexp(0))$MM
         for j in (1::SI)..(m::SI) repeat
-          if (v.j ~= 0$GF) then
-            term : TERM := [(v.j), j-(2::SI)]$TERM
-            l := cons(term, l)$(L TERM)
-        qsetelt!(multtable, i, copy l)$(V L TERM)
+          if v(j) ~= 0$GF then
+            term : TERM := [v(j), j-(2::SI)]$TERM
+            l := cons(term, l)$L(TERM)
+        qsetelt!(multtable, i, copy l)$V(L(TERM))
       multtable
 
 
@@ -3544,18 +3543,18 @@ FiniteFieldFunctions(GF) : Exports == Implementation where
       primElement := reduce(monomial(1, 1)$SUP)$SAE(GF, SUP, f)
       a := primElement
       for i in 1..qm1-1 repeat
-        helparr.(lookup(a -$SAE(GF, SUP, f) 1$SAE(GF, SUP, f)_
+        helparr(lookup(a -$SAE(GF, SUP, f) 1$SAE(GF, SUP, f)_
            )$SAE(GF, SUP, f)) := i::SI
         a := a * primElement
       characteristic() = 2 =>
         a := primElement
         for i in 1..(qm1 quo 2) repeat
-          zechlog.i := helparr.lookup(a)$SAE(GF, SUP, f)
-          a := a * primElement
+            zechlog(i) := helparr(lookup(a)$SAE(GF, SUP, f))
+            a := a * primElement
         zechlog
       a := 1$SAE(GF, SUP, f)
       for i in 0..((qm1-2) quo 2) repeat
-        zechlog.i := helparr.lookup(a)$SAE(GF, SUP, f)
+        zechlog(i) := helparr(lookup(a)$SAE(GF, SUP, f))
         a := a * primElement
       zechlog
 
