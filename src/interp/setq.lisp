@@ -414,7 +414,7 @@
 (SETQ |$Zero| '(|Zero|))
 (SETQ |$One| '(|One|))
 (SETQ |$NonMentionableDomainNames|
-      '($ |Rep| |Record| |Union| |Mapping| |Enumeration|))
+      '(% |Rep| |Record| |Union| |Mapping| |Enumeration|))
 
 ;"  modemap:==  ( <map> (p e) (p e) ... (p e) )  "
 ;"  modemaplist:= ( modemap ... )  "
