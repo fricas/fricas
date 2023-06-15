@@ -1706,7 +1706,9 @@ ParametricIntegration(R, F) : Exports == Implementation where
           nn::F*(res - s)
 
       polylog_int(f, x, k0, d, l, g) ==
-        ans1 : F := 0
+        res2 := extendedint0(f, x, l, g)
+        res2 case PC_Rec =>
+            [res2.ratpart, res2.coeff, res2.prim]
         if d > 0 and is?(k0, 'log) then
             k := kmax(l)
             ans1 : F := 0
@@ -1721,9 +1723,7 @@ ParametricIntegration(R, F) : Exports == Implementation where
             if differentiate(c0, x) = 0 then
                 res := c0*gen_polylog(d, v, k0::F)
                 return [ans1, 0, res]$PC_Rec
-        res2 := extendedint0(f, x, l, g)
-        res2 case "failed" => "failed"
-        [ans1 + res2.ratpart, res2.coeff, res2.prim]
+        "failed"
     else
       polylog_int(f, x, k0, d, l, g) == extendedint0(f, x, l, g)
 
