@@ -54,7 +54,7 @@ DefiniteIntegrationTools(R, F) : Exports == Implementation where
     import from PowerSeriesLimitPackage(R, F)
     import from UnivariatePolynomialCommonDenominator(Z, Q, UPQ)
 
-    mkLogPos    : F -> F
+    mkLogPos    : (F, K) -> F
     keeprec?    : (Q, REC) -> B
     negative    : F -> Union(B, "failed")
     mkKerPos    : K -> Union(F, "positive")
@@ -84,7 +84,7 @@ DefiniteIntegrationTools(R, F) : Exports == Implementation where
 
     computeInt(k, f, a, b, eval?) ==
       is?(f, 'integral) => "failed"
-      if not eval? then f := mkLogPos f
+      f := mkLogPos(f, k)
       ((ib := findLimit(f, k, b, "left", eval?)) case "failed") or
           ((ia := findLimit(f, k, a, "right", eval?)) case "failed") => "failed"
       infinite?(ia::OFE) and (ia::OFE = ib::OFE) => "failed"
@@ -93,20 +93,29 @@ DefiniteIntegrationTools(R, F) : Exports == Implementation where
     findLimit(f, k, a, dir, eval?) ==
       r := retractIfCan(a)@Union(F, "failed")
       r case F =>
-        eval? => mkLogPos(eval(f, k, r::F))::OFE
+        eval? => eval(f, k, r::F)::OFE
         (u := limit(f, equation(k::F, r::F), dir)) case OFE => u::OFE
         "failed"
       (u := limit(f, equation(k::F::OFE, a))) case OFE => u::OFE
       "failed"
 
-    mkLogPos f ==
-      lk := empty()$List(K)
-      lv := empty()$List(F)
-      for k in kernels f | is?(k, 'log) repeat
-        if (v := mkKerPos k) case F then
-          lk := concat(k, lk)
-          lv := concat(v::F, lv)
-      eval(f, lk, lv)
+    mkLogPos(f, xk) ==
+        (xku := symbolIfCan(xk)) case "failed" => f
+        x := xku@SY
+        lk := kernels(f)
+        res_p : F := 0
+        for k in lk | is?(k, 'log) repeat
+            fu := univariate(f, k)
+            num_f := numer(fu)
+            den_f := denom(fu)
+            degree(den_f) > 0 or degree(num_f) ~= 1 => iterate
+            c_den := leadingCoefficient(den_f)
+            c := leadingCoefficient(num_f)/c_den
+            D(c, x) ~= 0 => iterate
+            if (v := mkKerPos k) case F then
+                res_p := c*v@F + res_p
+                f := coefficient(num_f, 0)/c_den
+        f + res_p
 
     mkKerPos k ==
       (u := negative(f := first argument k)) case "failed" =>

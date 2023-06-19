@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2022-07-16],
+AC_INIT([FriCAS], [2023-06-17],
         [fricas-devel@googlegroups.com],
         [fricas],
         [https://fricas.github.io])
@@ -890,12 +890,13 @@ if test x"$BUILD_ALDOR_INTERFACE" = xyes ; then
   AC_MSG_NOTICE([Aldor interface will be built.])
   fricas_src_subdirs="$fricas_src_subdirs aldor"
   fricas_src_all="$fricas_src_all all-aldor"
+  FRICAS_MAKEFILE([src/aldor/Makefile])
+  FRICAS_MAKEFILE([src/aldor/Makefile2])
+  FRICAS_MAKEFILE([src/aldor/Makefile3])
 else
   AC_MSG_WARN([Aldor interface will not be built.])
 fi
-FRICAS_MAKEFILE([src/aldor/Makefile])
-FRICAS_MAKEFILE([src/aldor/Makefile2])
-FRICAS_MAKEFILE([src/aldor/Makefile3])
+
 ###################################################################
 
 

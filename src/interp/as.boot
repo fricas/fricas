@@ -749,7 +749,7 @@ asySig1(u,name?,target?) ==
     fn = '_-_> => asyMapping(r,name?)
     fn = 'Declare and r is [name,typ,:.] =>
         asySig1(typ, name?, target?)
-    x is '(_%) => '(_$)
+    x is '(_%) => '(_%)
     [fn,:[asySig(x,name?) for x in r]]
 --x = 'Type => '(Type)
   x = '_% => '_%
@@ -777,7 +777,7 @@ asyType x ==
     fn = '_-_> => asyTypeMapping r
     fn = 'Apply => r
 --  fn = 'Declare and r is [name,typ,:.] => typ
-    x is '(_%) => '(_$)
+    x is '(_%) => '(_%)
     x
 --x = 'Type => '(Type)
   x = '_% => '_%
@@ -845,7 +845,7 @@ asyTypeUnit x ==
     fn = '_-_> => asyTypeMapping r
     fn = 'Apply => asyTypeUnitList r
     fn = 'Declare and r is [name,typ,:.] => asyTypeUnitDeclare(name,typ)
-    x is '(_%) => '(_$)
+    x is '(_%) => '(_%)
     [fn,:asyTypeUnitList r]
   GETL(x,'NILADIC) => [x]
 --x = 'Type => '(Type)

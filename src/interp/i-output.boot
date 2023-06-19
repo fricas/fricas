@@ -1329,8 +1329,8 @@ output(expr,domain) ==
     if $htmlFormat    then htmlFormat x
     if $formattedFormat then formattedFormat x
   (FUNCTIONP(opOf domain)) and (not(SYMBOLP(opOf domain))) and
-    (printfun := compiledLookup("<<",'(TextWriter TextWriter $), evalDomain domain))
-       and (textwrit := compiledLookup("print", '($), TextWriter())) =>
+    (printfun := compiledLookup("<<",'(TextWriter TextWriter %), evalDomain domain))
+       and (textwrit := compiledLookup("print", '(%), TextWriter())) =>
      sayMSGNT [:bright '"Aldor",'"output:   "]
      SPADCALL(SPADCALL textwrit, expr, printfun)
      sayMSGNT '%l

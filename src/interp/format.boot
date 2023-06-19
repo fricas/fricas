@@ -221,9 +221,6 @@ formatOperationWithPred([[op,sig],pred,.]) ==
 formatOpSignature(op,sig) ==
   concat('%b,formatOpSymbol(op,sig),'%d,'": ",formatSignature sig)
 
-formatOpConstant op ==
-  concat('%b,formatOpSymbol(op,'($)),'%d,'": constant")
-
 formatOpSymbol(op,sig) ==
   if op = 'Zero then op := "0"
   else if op = 'One then op := "1"
@@ -758,7 +755,7 @@ form2Fence1 x ==
   x is [op,:argl] =>
     op = 'QUOTE => ['"(QUOTE ",:form2FenceQuote first argl,'")"]
     ['"(", FORMAT(NIL, '"|~a|", op),:"append"/[form2Fence1 y for y in argl],'")"]
-  x = "$" => ["%"]
+  x = "%" => ["%"]
   IDENTP x => [FORMAT(NIL, '"|~a|", x)]
 --  [x]
   ['"  ", x]

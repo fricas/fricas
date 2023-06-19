@@ -435,21 +435,8 @@ sqrt 1068303355883998767544567663620885466990173600
 
 
 -------------------------------------------------------------------
--- themos/11/05/92 fortran output bug
--------------------------------------------------------------------
+
 )clear all
---      REAL T7,T6,T5,T4,T3,T2,T1
---      T1=x*x
---      T2=2.*y^5
---      T3=4.*T1
---      T4=y^3
---      T5=2.*T7
---      T6=x^3
---      T7=x^4
---      R46=((T2+(T3+8.*x+8.)*T4+(T5+8.*T6+(-40.*T1))*y)*SIN(x)+(-T2+(-T3+
---     &16.*x)*T4+(-T5+16.*T6)*y)*COS(x))/(y^8+4.*T1*y^6+6.*T7*y^4+4.*x
---     &^6*y*y+x^8)
--- T7 is referenced before it is defined
 a1:=sin(x)/(x^2+y^2);a2:=D(a1,[x,y]);a2+D(a2,x)
 
 -------------------------------------------------------------------
@@ -560,28 +547,6 @@ J:=operator 'J
 eq := mu * D(I x,x) = - (K + S) * I(x) + S*J(x)
 solve(eq,I,x)
 --> wrong particular solution
-
--------------------------------------------------------------------
--- dewar/03/16/93
--- bug writing backslash to files
---comment:
---This is not a bug, what is written to the file is the lisp representation
---of the string "\\test" (since '\' is lisp escape character).
---The file is read and written using lisp primitives and thus the escape
---characters need to be doubled. This is consistent, since if you read the
---item back in from the file, the correct string is reconstituted.
---
---If you want to create a text file which simply contains lines of text
---instead of lines of lisp strings, use:
---ofile : TextFile := open("test","output")  ...
---then you will get a file of literal strings with no string delimiters and
---no escape characters.
--------------------------------------------------------------------
--- )clear all
--- ofile: File String := open("/tmp/test","output")
--- -- this writes "\\\\test" but should write "\\test"
--- write!(ofile,"\\test"::String)
--- close! ofile
 
 -------------------------------------------------------------------
 -- themos/04/07/93
@@ -1015,14 +980,14 @@ complexForm %
 -------------------------------------------------------------------
 -- jcf@posso.ibp.fr
 -------------------------------------------------------------------
---  normalForm est faux pour les polynomes a coef dans un anneau:
+--  normalForm over rings:
 D:=DMP([a,b],INT)
 l:List D:=[2*a-1,b-a]
 g:=groebner l
 p:D:=a
 normalForm(p,g)
 -- was  1
---   au lieu de 1/2 !!
+--   instead of 1/2 !!
 
 -------------------------------------------------------------------
 -- nagttt@vax.ox.ac.uk/6/9/93 themos tsikas
@@ -1117,68 +1082,6 @@ exp1() --> DoubleFLoat ???
 
 
 -------------------------------------------------------------------
---  quitte@knuth.univ-poitiers.fr/12/14/93 Claude Quitte
--------------------------------------------------------------------
-)clear all
---There is a bug in the function delete_! for the type List ; this function,
---has two arguments, a list L and an integer n : delete_!(L, n) returns
---a list L with the n nth-item deleted, MODIFYING its argument L.
---
---But for n = 1, the argument L is not MODIFIED !!! (exactly for n =
---minIndex(L)). An extract of the package ListAggregate (abbreviation LSAGG,
---file aggcat.spad).
---
---
-----------------------------------------------------------------------
---ListAggregate(S:Object): Category == Join(StreamAggregate S,
---   FiniteLinearAggregate S, ExtensibleLinearAggregate S) with
---      list: S -> $
---      ++ list(x) returns the list of one element x.
--- add
---   ..........
---
---   delete_!(x:$, i:I) ==
---     i < (m := minIndex x) => error "index out of range"
---     i = m => rest x                          ^^^ <- here is the error
---     y := rest(x, (i - 1 - m)::N)
---     setrest_!(y, rest(y, 2))
---     x
---
---A little session :
---
-L : List(String) := ["There is", "it seems", "a real bug", "here"]
---   (1)  ["There is","it seems","a real bug","here"]
---                                                            Type: List String
---
-L1 := delete!(L, 1)
---   (2)  ["it seems","a real bug","here"]
---                                                            Type: List String
-L
---   (3)  ["There is","it seems","a real bug","here"]
---                                                            Type: List String
---
-L2 := delete!(L, 2)
---   (4)  ["There is","a real bug","here"]
---                                                            Type: List String
-L
---   (5)  ["There is","a real bug","here"]
---
---Is there a way to fix this bug quickly ?? (I am ready to modify the source
---FriCAS aggcat.spad).
---The problem with ! functions lies in the documentation not in the code. We
---need to explain more clearly that ! functions are ALLOWED to update their
---arguments, not REQUIRED to do so.
---Whenever using ! functions you should always
---use the returned result, not try to use the updated argument. This is how
---the code is designed.
---For example if you try to do insert! into an empty list,
---the argument is not updatable and thus a new list is created. The reason for
---having ! operations is for efficiency to do less copying, not to guarantee
---that given arguments will always be updated. So the correct use is to only
---depend on the results returned by updating functions.
-
-
--------------------------------------------------------------------
 --  quitte@knuth.univ-poitiers.fr/1/13/94 Claude Quitte
 -------------------------------------------------------------------
 )clear all
@@ -1236,76 +1139,6 @@ tr := rule cos(x)^(n | integer? n and even? n)==(1-sin(x)^2)^(n/2)
 --true anymore and I'm not sure it's a good idea. If you guys don't think it's
 --a problem, it takes 2 minutes to add it to EXPR R when R has RETRACT INT
 --(don't use integer? but retractIfCan@Union(Integer, "failed")).
-
--------------------------------------------------------------------
--- copper@yktvmv.vnet.ibm.com/02/22/94 don coppersmith
--------------------------------------------------------------------
-)clear all
---Questions that came up using Axiom on Aixproj:
---
---How does one find a Pade approximation?  I tried  pade(2,2,y)
---pade(y,2,2)  Pade(2,2,y)  PadeApproximation(2,2,y)
---(where y is a series in x) to no avail.
---
---Complaint: The error message
---
---    Could not find library function "pade" with arguments
---         (integer, integer, series).
---
---is misleading.  If it can't find any "pade", then say
---
---    Could not find library function "pade".
---
---If there is such a function, but I've got the arguments wrong,
---why not say
---
---    The library function "pade" takes arguments
---          (series, integer, integer)
---
---or at least make that information available somehow.
---
--- from bob sutor:
---
---Don,
---  Try using )what op pade  to see what is available. This will give
---you all operations with "pade" in their names. You can also search for
---*pade* via the HyperDoc Browse utility. If you don't use Browse, following
---up with, say, )display op pade, will give you a more information, though
---it is badly formatted (I will look at that).
---
---Aixproj is back-level, so I'm not sure exactly what is up their
---relative to the current system.
---
---I agree we could use better messages regarding unknown functions
---and I will look at that.
---  Bob
---
--- from bob sutor:
---
---The pade operation requires a taylor series as its third object while
---"series" returns a UnivariatePuiseuxSeries. If you set
---  y := taylor(1+x)^(1/5)
---then things work. You can also do
---  pade(1,1,y :: UTS(EXPR INT, x, 0) )
---but this is more work if you really have a Taylor series.
---
---This is unintuitive and there should be a "pade" for Puiseux series that
---fails if the series is not appropriate. Barry? I will now look at adding
---a bit more coercion support to the interpreter to allow Puiseux series
---to possibly retract to Laurent series and then possibly to Taylor series.
---
---Don,
---  I added the retractions I mentioned before to the development system.
---When the system is unsuccessful in matching a UnivariatePuiseuxSeries
---to an operation, it will first try to retract it to a
---UnivariateLaurentSeries. If that fails still, it will try to retract to
---a UnivariateTaylorSeries.
---
---  Be aware that this sort of thing happens when you are evaluating
---an expression. If you are defining a function, you should add
---explicit coercions or create objects of the correct type for
---efficiency. You function may still work, but it may not run in
---a compiled form.
 
 -------------------------------------------------------------------
 -- barry@num-alg-grp.co.uk/02/24/94 Barry Trager

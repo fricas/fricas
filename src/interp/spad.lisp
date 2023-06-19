@@ -101,7 +101,7 @@
       :initial-contents initialvalue)))
 
 (defun |knownEqualPred| (dom)
-  (let ((fun (|compiledLookup| '= '((|Boolean|) $ $) dom)))
+  (let ((fun (|compiledLookup| '= '((|Boolean|) % %) dom)))
     (if fun (get (bpiname (car fun)) '|SPADreplace|)
       nil)))
 
