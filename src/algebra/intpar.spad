@@ -1,3 +1,130 @@
+)abbrev package RNORM RealNormalizationUtilities
+RealNormalizationUtilities(R, F) : Exports == Implementation where
+  R : Join(GcdDomain, Comparable, CharacteristicZero,
+           PolynomialFactorizationExplicit,
+           RetractableTo Integer, LinearlyExplicitOver Integer)
+  F : Join(TranscendentalFunctionCategory, PrimitiveFunctionCategory,
+           AlgebraicallyClosedFunctionSpace R)
+  K  ==> Kernel F
+  SY ==> Symbol
+  Exports ==> with
+    try_real : (F, SY) -> F
+
+  Implementation ==> add
+
+    if F has LiouvillianFunctionCategory then
+
+      imf := sqrt(-1)$F
+      imk := retract(imf)@Kernel(F)
+
+
+      split_expr(e : F) : List(F) ==
+          ue := univariate(e, imk)
+          u_num := numer(ue)
+          degree(u_num) > 1 => error "impossible"
+          u_den := denom(ue)
+          degree(u_den) > 1 => error "impossible"
+          r_num := coefficient(u_num, 0)
+          i_num := coefficient(u_num, 1)
+          cd := r_den := coefficient(u_den, 0)
+          if degree(u_den) > 0 then
+              i_den := leadingCoefficient(u_den)
+              cd := r_den*r_den + i_den*i_den
+              nrn := r_num*r_den + i_num*i_den
+              i_num := i_num*r_den - r_num*i_den
+              r_num := nrn
+          r_num := r_num/cd
+          i_num := i_num/cd
+          [r_num, i_num]
+
+      do_liou1(f1 : F, op : BasicOperator, a : F) : F ==
+          ll := split_expr(a)
+          ra := ll(1)
+          ia := ll(2)
+          is?(op, 'Ei) and ra = 0 =>
+              Ci(ia) + imf*Si(ia)
+          is?(op, 'erf) and ra = 0 => imf*erfi(ia)
+          is?(op, 'erf) and ra = ia =>
+              a1 := 2*ra/sqrt(pi())
+              (1 + imf)*(fresnelC(a1) - imf*fresnelS(a1))
+          is?(op, 'erf) and ra = -ia =>
+              a1 := 2*ra/sqrt(pi())
+              (1 - imf)*(fresnelC(a1) + imf*fresnelS(a1))
+          f1
+
+      real_k(k : K) : F ==
+          kf := k::F
+          op := operator(k)
+          arg := argument(k)
+          #arg = 1 and has?(op, 'prim) => do_liou1(kf, op, first(arg))
+          kf
+
+      do_c(c : F) : F ==
+          lk0 := kernels(c)
+          lk : List(K) := []
+          lv : List(F) := []
+          for k in lk0 repeat
+              op := operator(k)
+              arg := argument(k)
+              if #arg = 1 and is?(k, 'exp) then
+                  a1 := first(arg)
+                  ll := split_expr(a1)
+                  ra := ll(1)
+                  ia := ll(2)
+                  if ra = 0 then
+                      v := (cos(ia) + imf*sin(ia))
+                      lk := cons(k, lk)
+                      lv := cons(v, lv)
+          not(empty?(lk)) => subst(c, lk, lv)
+          c
+
+      try_real(f : F, x : SY) : F ==
+          lk := kernels(f)
+          res_p : F := 0
+          for k in lk repeat
+              fu := univariate(f, k)
+              num_f := numer(fu)
+              den_f := denom(fu)
+              degree(den_f) > 0 or degree(num_f) ~= 1 => iterate
+              c_den := leadingCoefficient(den_f)
+              c := leadingCoefficient(num_f)/c_den
+              D(c, x) ~= 0 => iterate
+              res_p := do_c(c)*real_k(k) + res_p
+              f := coefficient(num_f, 0)/c_den
+          lk := kernels(res_p)
+          lck : List(K) := []
+          rpp := res_p
+          for k in lk repeat
+              op := operator(k)
+              arg := argument(k)
+              not(is?(op, 'Ci) and #arg = 1) => iterate
+              fu := univariate(rpp, k)
+              num_f := numer(fu)
+              den_f := denom(fu)
+              degree(den_f) > 0 or degree(num_f) ~= 1 => iterate
+              c_den := leadingCoefficient(den_f)
+              c := leadingCoefficient(num_f)/c_den
+              D(c, x) ~= 0 => iterate
+              lck := cons(k, lck)
+              rpp := coefficient(num_f, 0)/c_den
+          lck := reverse(removeDuplicates(lck))
+          lck1 : List(F) := []
+          for k in lck repeat
+              a := first(argument(k))
+              for k1 in lck repeat
+                  k = k1 => break
+                  a1 := first(argument(k1))
+                  a = -a1 =>
+                      k := k1
+                      break
+              lck1 := cons(k::F, lck1)
+          res_p := subst(res_p, lck, reverse(lck1))
+          f + res_p
+
+    else
+
+      try_real(f : F, x : SY) : F == f
+
 )abbrev package LINCOMB LinearCombinationUtilities
 LinearCombinationUtilities(F, UP) : Exports == Implementation where
   F  : Field
