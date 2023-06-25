@@ -261,7 +261,7 @@
   (namestring (merge-pathnames (|make_filename| filearg))))
 
 (defun |get_directory_list| (ft &aux (cd (get-current-directory)))
-  (cond ((member ft '("NRLIB") :test #'string=)
+  (cond ((member ft '("NRLIB" "DAASE") :test #'string=)
            (if (eq |$UserLevel| '|development|)
                (cons cd $library-directory-list)
                $library-directory-list))
