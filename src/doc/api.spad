@@ -155,7 +155,7 @@ SExpressionOperations: with
 
 )abbrev domain LITFORM LiteralForm
 ++ LiteralForm(S) represents a domain of positive and negative literals.
-LiteralForm(S: SetCategory): SetCategory with
+LiteralForm(S: Join(SetCategory, Hashable)): Join(SetCategory, Hashable) with
     positive: S -> %
       ++ positive(s) returns s as a positive literal.
     negative: S -> %
@@ -196,7 +196,9 @@ LiteralForm(S: SetCategory): SetCategory with
 ++ Therefore, if for two forms x~=y holds, it does not mean that also their
 ++ respective truth tables are different. However, if x=y then x represents
 ++ the same DNF as y and therefore, their truth tables are equal.
-DisjunctiveNormalForm(S: SetCategory): Join(Logic, SetCategory) with
+DisjunctiveNormalForm(S): Exports == Implementation where
+  S: Join(SetCategory, Hashable)
+  Exports ==> Join(Logic, SetCategory) with
     true: %
       ++ true is a logical constant.
     false: %
@@ -214,7 +216,7 @@ DisjunctiveNormalForm(S: SetCategory): Join(Logic, SetCategory) with
       ++ [[a1 a2 ... an], [b1 b2 ... bm], ..., [z1 ... zk]] stands for
       ++ (a1 and ... and an) or ... or (z1 and ... and zk)
       ++ and [] represents false and [[]] represents true.
-  == add
+  Implementation ==> add
     import from SExpressionOperations
     L ==> LiteralForm S
     H ==> XHashTable(S, Boolean)
@@ -228,7 +230,6 @@ DisjunctiveNormalForm(S: SetCategory): Join(Logic, SetCategory) with
     ((x: %) = (y: %)): Boolean ==
         asSet z ==> set(rep z) $ Set(H)
         asSet x = asSet y
-    hashUpdate!(hs: HashState, x: %): HashState == hashUpdate!(hs, rep x)
     coerce(x: %): OutputForm ==
         s(z) ==> z :: Symbol :: OutputForm
         o(z) ==> z :: OutputForm
