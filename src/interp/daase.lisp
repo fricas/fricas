@@ -310,23 +310,24 @@ database.
    (concatenate 'string (|getEnv| "FRICAS") "/compiler/bin/aldor "
     flags " " file)))
 
-(defun resethashtables ()
+(defun resethashtables (display_messages)
  "set all *_hash to clean values. used to clean up core before saving system"
  (setq |$has_category_hash| (make-hash-table :test #'equal))
  (setq |$operation_hash| (make-hash-table))
  (setq |$all_constructors| nil)
  (setq |$compress_vector| nil)
  (setq |$compress_stream_stamp| '(0 . 0))
- (|compressOpen|)
+ (|compressOpen| display_messages)
  (setq |$interp_stream_stamp| '(0 . 0))
- (|interpOpen|)
+ (|interpOpen| display_messages)
  (setq |$operation_stream_stamp| '(0 . 0))
- (|operationOpen|)
+ (|operationOpen| display_messages)
  (setq |$browse_stream_stamp| '(0 . 0))
- (|browseOpen|)
+ (|browseOpen| display_messages)
  (setq |$category_stream_stamp| '(0 . 0))
- (|categoryOpen|) ;note: this depends on constructorform in browse.daase
- (initial-getdatabase)
+ ;note: this depends on constructorform in browse.daase
+ (|categoryOpen| display_messages)
+ (initial-getdatabase display_messages)
  (close |$interp_stream|)
  (close |$operation_stream|)
  (close |$category_stream|)
@@ -334,7 +335,7 @@ database.
 #+:GCL (SI::gbc t)
 )
 
-(defun initial-getdatabase ()
+(defun initial-getdatabase (display_messages)
  "fetch data we want in the saved system"
  (let (hascategory constructormodemapAndoperationalist operation constr)
  (format t "Initial getdatabase~%")
@@ -413,14 +414,19 @@ database.
   (let ((c (concatenate 'string
              (|getEnv| "FRICAS") "/algebra/"
              (string (getdatabase con 'abbreviation)) "." |$lisp_bin_filetype|)))
-    (format t "   preloading ~a.." c)
+    (if display_messages
+        (format t "   preloading ~a.." c))
     (if (probe-file c)
-     (progn
-      (put con 'loaded c)
-      (load c)
-      (format t "loaded.~%"))
-     (format t "skipped.~%"))))
- (format t "~%")))
+        (progn
+            (put con 'loaded c)
+            (load c)
+            (if display_messages
+                (format t "loaded.~%")))
+      (if display_messages
+          (format t "skipped.~%")))))
+ (if display_messages
+     (format t "~%")))
+)
 
 ; format of an entry in interp.daase:
 ;  (constructor-name
@@ -438,13 +444,14 @@ database.
 ;    defaultdomain       -- a short list, for %i
 ;    ancestors           -- used to compute new category updates
 ;  )
-(defun |interpOpen| ()
+(defun |interpOpen| (display_messages)
  "open the interpreter database and hash the keys"
  (let (constructors pos stamp dbstruct)
   (setq |$interp_stream| (open (DaaseName "interp.daase")))
   (setq stamp (read |$interp_stream|))
   (unless (equal stamp |$interp_stream_stamp|)
-   (format t "   Re-reading interp.daase")
+   (if display_messages
+       (format t "   Re-reading interp.daase"))
 
    ; Clean old data
    (do-symbols (symbol)
@@ -501,13 +508,14 @@ database.
 ;     predicates
 ; )
 
-(defun |browseOpen| ()
+(defun |browseOpen| (display_messages)
  "open the constructor database and hash the keys"
  (let (constructors pos stamp dbstruct)
   (setq |$browse_stream| (open (DaaseName "browse.daase")))
   (setq stamp (read |$browse_stream|))
   (unless (equal stamp |$browse_stream_stamp|)
-   (format t "   Re-reading browse.daase")
+   (if display_messages
+       (format t "   Re-reading browse.daase"))
    (setq |$browse_stream_stamp| stamp)
    (setq pos (car stamp))
    (file-position |$browse_stream| pos)
@@ -529,13 +537,14 @@ database.
     (setf (database-parents dbstruct) (sixth item))))
   (format t "~&")))
 
-(defun |categoryOpen| ()
+(defun |categoryOpen| (display_messages)
  "open category.daase and hash the keys"
  (let (pos keys stamp)
   (setq |$category_stream| (open (DaaseName "category.daase")))
   (setq stamp (read |$category_stream|))
   (unless (equal stamp |$category_stream_stamp|)
-   (format t "   Re-reading category.daase")
+   (if display_messages
+       (format t "   Re-reading category.daase"))
    (setq |$category_stream_stamp| stamp)
    (setq pos (car stamp))
    (file-position |$category_stream| pos)
@@ -546,13 +555,14 @@ database.
     (setf (gethash (first item) |$has_category_hash|) (second item))))
   (format t "~&")))
 
-(defun |operationOpen| ()
+(defun |operationOpen| (display_messages)
  "read operation database and hash the keys"
  (let (operations pos stamp)
   (setq |$operation_stream| (open (DaaseName "operation.daase")))
   (setq stamp (read |$operation_stream|))
   (unless (equal stamp |$operation_stream_stamp|)
-   (format t "   Re-reading operation.daase")
+   (if display_messages
+       (format t "   Re-reading operation.daase"))
    (setq |$operation_stream_stamp| stamp)
    (setq pos (car stamp))
    (file-position |$operation_stream| pos)
@@ -1185,13 +1195,14 @@ database.
 ;; into the compress database. In this way long symbol names become
 ;; short negative numbers.
 
-(defun |compressOpen| ()
+(defun |compressOpen| (display_messages)
  (let (lst stamp pos)
   (setq |$compress_stream|
     (open (DaaseName "compress.daase") :direction :input))
   (setq stamp (read |$compress_stream|))
   (unless (equal stamp |$compress_stream_stamp|)
-   (format t "   Re-reading compress.daase")
+   (if display_messages
+       (format t "   Re-reading compress.daase"))
    (setq |$compress_stream_stamp| stamp)
    (setq pos (car stamp))
    (file-position |$compress_stream| pos)
