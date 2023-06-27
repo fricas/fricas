@@ -168,7 +168,7 @@ After this function is called the image is clean and can be saved.
   #-:ecl
   (progn
       (mapcar #'load load-files)
-      (interpsys-image-init spad))
+      (interpsys-image-init spad t))
   (if (and (boundp 'FRICAS-LISP::*building-fricassys*)
                 FRICAS-LISP::*building-fricassys*)
        (progn
@@ -211,12 +211,12 @@ After this function is called the image is clean and can be saved.
      (setf spad $spadroot)
      (format *standard-output* "spad = ~s~%" spad)
      (force-output  *standard-output*)
-     (interpsys-image-init spad)
+     (interpsys-image-init spad nil)
      (format *standard-output* "before fricas-restart~%")
      (force-output  *standard-output*)
 )
 
-(defun interpsys-image-init (spad)
+(defun interpsys-image-init (spad display_messages)
   (setf *package* (find-package "BOOT"))
   (initroot spad)
   #+:GCL
@@ -225,10 +225,11 @@ After this function is called the image is clean and can be saved.
                       :rpages 1000 :hole 2000)
   #+:GCL
   (setq compiler::*suppress-compiler-notes* t)
-  (|interpsysInitialization|)
-  (setq *load-verbose* nil)
-  (resethashtables) ; the databases into core, then close the streams
- )
+    (|interpsysInitialization| display_messages)
+    (setq *load-verbose* nil)
+    ; the databases into core, then close the streams
+    (resethashtables display_messages)
+)
 
 ;; the following are for conditional reading
 (setq |$opSysName| '"shell")

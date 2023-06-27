@@ -102,13 +102,13 @@ mostlyclean-local:
 clean-local: mostlyclean-local
 	rm -f *.clisp \
 	  makedep.lisp makedep2.lisp makedep2.lst makeint.lisp \
-	  exposed.lsp database.date
+	  exposed.lsp
 
 distclean-local: clean-local
 
 ${SAVESYS} ${FRICASSYS}: makeint.lisp \
     ${ALL_OBJS} util.$(LISPOBJEXT) \
-    database.date ${LOADSYS} \
+    ${LOADSYS} \
     $(fricas_targetdir)/algebra/exposed.$(FASLEXT) \
     $(fricas_src_datadir)/doc/msgs/s2-us.msgs
 
@@ -172,10 +172,6 @@ $(fricas_targetdir)/algebra/exposed.$(FASLEXT) : exposed.lsp
 	echo '(progn  (compile-file "exposed.lsp" :output-file' \
 	      ' "$(BASE)$(fricas_targetdir)/algebra/exposed.$(FASLEXT)") (${BYE}))' \
 		| ${LOADSYS}
-
-database.date:
-	@ echo 617 the database was updated...remaking interpsys
-	touch database.date
 
 clammed.clisp: $(srcdir)/clammed.boot
 	echo '(progn (boottran::bootclam "$<" "$@") (${BYE}))' | ${BOOTSYS}

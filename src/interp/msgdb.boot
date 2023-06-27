@@ -43,7 +43,7 @@ S2IL0001 which means:
    L           originally from LISPLIB BOOT
    0001        a sequence number
 
-Each message may contain formatting codes and and parameter codes.
+Each message may contain formatting codes and parameter codes.
 The formatting codes are:
    %b          turn on bright printing
    %ceoff      turn off centering

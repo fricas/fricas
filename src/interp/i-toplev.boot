@@ -55,15 +55,18 @@ intUnsetQuiet() ==
 
 --% Starting the interpreter from LISP
 
-interpsysInitialization() ==
+interpsysInitialization(display_messages) ==
   -- The function  start  begins the interpreter process, reading in
   -- the profile and printing start-up messages.
   $PrintCompilerMessageIfTrue: local := nil
   resetWorkspaceVariables()
+  save_displayStartMsgs := $displayStartMsgs
+  if not(display_messages) then
+      $displayStartMsgs := display_messages
   initHist()
   initNewWorld()
-  compressOpen()
-  interpOpen()
+  compressOpen(display_messages)
+  interpOpen(display_messages)
   createInitializers()
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"interpreter"])
   initializeTimedNames($interpreterTimedNames,$interpreterTimedClasses)
@@ -84,6 +87,7 @@ interpsysInitialization() ==
   initHist()
   if $displayStartMsgs then spadStartUpMsgs()
   $superHash := MAKE_HASHTABLE('EQUAL)
+  $displayStartMsgs := save_displayStartMsgs
 
 interpsys_restart() ==
   $IOindex := 1
@@ -95,11 +99,11 @@ interpsys_restart() ==
 
   if $displayStartMsgs then spadStartUpMsgs()
   $currentLine := nil
-  compressOpen() -- set up the compression tables
-  interpOpen() -- open up the interpreter database
-  operationOpen() -- all of the operations known to the system
-  categoryOpen() -- answer hasCategory question
-  browseOpen()
+  compressOpen(true) -- set up the compression tables
+  interpOpen(true) -- open up the interpreter database
+  operationOpen(true) -- all of the operations known to the system
+  categoryOpen(true) -- answer hasCategory question
+  browseOpen(true)
   makeConstructorsAutoLoad()
   createInitializers2()
 
