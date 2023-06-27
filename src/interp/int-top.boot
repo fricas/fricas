@@ -162,6 +162,16 @@ SpadInterpretStream(step_num, source, interactive?) ==
     intloopInclude (source,0)
     []
 
+interpret_block(code) ==
+    $newcompErrorCount : local := 0
+    $inclAssertions : local := []
+    $ncMsgList : local := []
+    $erMsgToss : local := false
+    $lastPos : local := $nopos
+    $EchoLines : local := false
+    st := MAKE_-STRING_-INPUT_-STREAM(code)
+    intloopInclude0(st, 'webspad, 0)
+
     -----------------------------------------------------------------
 
 ncINTERPFILE(file, echo) ==
