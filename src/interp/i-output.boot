@@ -256,6 +256,7 @@ DEFPARAMETER($specialCharacterAlist, '(
   (bslash . 16)_
   ))
 
+DEFVAR($print_equatnum, true)
 $collectOutput := nil
 
 get_lisp_stream(fs) == REST(fs)
@@ -340,7 +341,7 @@ mathprintWithNumber x ==
   ioHook("startAlgebraOutput")
   x:= outputTran2 x
   maprin
-    $IOindex => ['EQUATNUM,$IOindex,x]
+    $IOindex and $print_equatnum => ['EQUATNUM,$IOindex,x]
     x
   ioHook("endOfAlgebraOutput")
 
