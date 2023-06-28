@@ -718,11 +718,17 @@
 #+:allegro
 (defun OBEY (S) (excl::run-shell-command s))
 
+(defvar *OBEY-STDOUT* nil "if T use *standard output*")
 #+:sbcl
 (defun OBEY (S)
-   #-:win32 (sb-ext::process-exit-code
-             (sb-ext::run-program "/bin/sh"
-                    (list "-c" S) :input t :output t :error t))
+   #-:win32 (if *OBEY-STDOUT*
+               (sb-ext::process-exit-code
+                (sb-ext::run-program "/bin/sh" (list "-c" S) :input t
+                     :output *standard-output* :error *standard-output*))
+
+               (sb-ext::process-exit-code
+                (sb-ext::run-program "/bin/sh"
+                    (list "-c" S) :input t :output t :error t)))
    #+:win32 (sb-ext::process-exit-code
              (sb-ext::run-program "sh"
                     (list "-c" S) :input t :output t :error t :search t)))

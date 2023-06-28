@@ -3,8 +3,8 @@ Help
 
 If you run into any problems with |FriCAS| do not hesitate to send
 your problem to |PACKAGE_BUGREPORT|, i.e., the |mailing list|. Since
-we do not want spam, you have to subscribe to the |mailing list| in
-order to post something there.
+we do not want spam, the list is moderated. You might want to
+subscribe to the |mailing list|.
 
 There is also a
 `read-only mirror

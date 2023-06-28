@@ -676,6 +676,32 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
             lpol := monomial(-1, 2)$UTS*differentiate(lpol)$UTS
         [apply_taylor(lpol, iups)$TEXP]
 
+    gen_plgi(i : Integer, s : Integer) : FE ==
+        i = 0 => 0
+        i = 1 => 1
+        (i::FE)^(-s)
+
+    gen_plgf(i : Integer, s : FE) : FE ==
+        i = 0 => 0
+        i = 1 => 1
+        exp(-s*log(i::FE))
+
+    do_polylog0(losers : L(UPS), lsers : L(UPS), lsere : L(FE),
+                lser0 : L(FE)) : Result ==
+        s0 := lser0(1)
+        lsere(1) = 0 =>
+            su := retractIfCan(s0)@Union(Integer, "failed")
+            su case Integer =>
+                si := su@Integer
+                its := make_taylor(i +-> gen_plgi(i, si))
+                [apply_taylor(its, lsers(2))]
+            fts := make_taylor(i +-> gen_plgf(i, s0))
+            [apply_taylor(fts, lsers(2))]
+        cargs := convert_args([lsers(1)], [lsere(1)], [s0])
+        fts := make_taylor(i +-> gen_plgf(i, (cargs.nargs0)(1)))
+        nres := apply_taylor(fts, lsers(2))
+        do_taylor_via_deriv(nres, cargs.syms, cargs.sers)
+
     spec_to_UPS(ker : K, args : L(FE), opt_rec : OPT_REC) : Result ==
         nm := name(ker)
         nn : Integer
@@ -734,6 +760,12 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
                                  ups, ups1, iups)
                 polygamma_n =>
                     do_polygamma_n(nn, iups)
+            else if ord = 0 and nm = 'dilog then
+                lc := coefficient(ups, ord)
+                if lc = 1 then return
+                    ups := 1$UPS - ups
+                    do_polylog0([2::FE::UPS, ups], [0$UPS, ups],
+                                [0$FE, 1$FE], [2::FE, 0$FE])
         (aresu := handle_args(args, opt_rec)) case Result =>
              aresu
         ares := aresu@ARES
@@ -796,6 +828,8 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         nm = 'weierstrassSigma and lser0(3) = 0 =>
             do_weierstrass(losers, lsers, lsere, lser0,
                            weierstrassSigma0$SPFUTS, 0, 0, opt_rec)
+        nm = 'polylog and lser0(2) = 0 =>
+            do_polylog0(losers, lsers, lsere, lser0)
         if nm = 'Gamma then
             if (ir := retractIfCan(lser0(1))@Union(R, "failed")) case R and
                (ii := retractIfCan(ir)@Union(Integer, "failed")) case Integer
