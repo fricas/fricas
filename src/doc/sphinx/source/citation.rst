@@ -12,8 +12,8 @@ following BibTeX entry to refer to |PACKAGE_NAME| in any publication.
     @Misc{FriCAS,
       key =          {FriCAS},
       author =       {{FriCAS team}},
-      year =         {2021},
-      title =        {{FriCAS---an advanced computer algebra system}},
+      year =         {2023},
+      title =        {{FriCAS} 1.3.9---an advanced computer algebra system},
       note =         {Available at \url{http://fricas.github.io}}
     }
 
