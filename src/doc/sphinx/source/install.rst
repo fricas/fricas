@@ -242,8 +242,8 @@ We assume that you have installed all necessary prerequisites.
 
       ../fricas/configure --with-lisp="sbcl --dynamic-space-size 4096" --prefix=/tmp/usr --enable-gmp --enable-aldor
 
-   to build with SBCL and 4 GiB dynamic space, use GMP, and enable the
-   build of the Aldor library ``libfricas.al``.
+   to build with SBCL_ and 4 GiB dynamic space, use GMP_, and enable the
+   build of the Aldor_ library ``libfricas.al``.
 
    Use
    ::
@@ -420,10 +420,10 @@ After a build of FriCAS, (suppose your build directory is under
 ``$BUILD``), you can build the documentation provided at
 the |home page| on your local installation.
 
-To build the extra documentation you need working ``convert`` program
+To build the extra documentation you need a working ``convert`` program
 from ImageMagick_.  Note that several Linux distribution currently disable
-ability to create ``.ps`` files via ``convert``.  If your distribution
-is doing this build of extra documentation will fail.
+the ability to create ``.ps`` files via ``convert``.  If your distribution
+is doing this, then the build of extra documentation will fail.
 
 In Ubuntu you can allow the creation of ``.ps`` files by editing
 ``/etc/ImageMagick-6/policy.xml`` as ``root`` and changing the
@@ -819,10 +819,10 @@ To start a FriCAS_ session use
 Creation of distribution tarballs
 ---------------------------------
 
-The source distribution could be created as follows.  Fetch and
+The source distribution can be created as follows.  Fetch and
 build sources, taking care to build Hyperdoc pages and graphic
 examples.  Make sure that text of help pages is available in some
-directory (they are _not_ part of source tree, some are generated,
+directory (they are **not** part of source tree, some are generated,
 but the rest is copied to tarball).  Assuming that you build FriCAS
 in ``fr-build`` and ``$SRC`` point to FriCAS source tree do
 ::
@@ -832,25 +832,26 @@ in ``fr-build`` and ``$SRC`` point to FriCAS source tree do
      --copy_help=/full/path/to/help/files
    mv dist ../fricas-X.Y.Z
    cd ..
-   tar -xjf fricas-X.Y.Z.tar.bz2 fricas-X.Y.Z
+   tar -cjf fricas-X.Y.Z.tar.bz2 fricas-X.Y.Z
 
 Note: FriCAS source distributions are created from a branch which
 differs from trunk, namely release branch has version number, trunk
 instead gives date of last update to ``configure.ac``.  If you
 wish you can create distribution tarballs from trunk.
 
-Binary distribution could be created as follows.  First fetch and
+The binary distribution can be created as follows.  First fetch and
 unpack source tarball in work directory.  Then in work directory
 ::
    mkdir fr-build
    ../fricas-X.Y.Z/configure --enable--gmp --with-lisp=/path/to/hsbcl
    make -j 7 > makelog 2>&1
-   make DESTDIR=/full/path/to/auxilary/dir install
-   cd /full/path/to/auxilary/dir
+   make DESTDIR=/full/path/to/auxiliary/dir install
+   cd /full/path/to/auxiliary/dir
    tar -cjf fricas-x.y.z.amd64.tar.bz2 usr
 
+
 Installation from binary distribution
------------------------------------
+-------------------------------------
 
 You can download the latest release as a ``.tar.bz2`` from
 https://github.com/fricas/fricas/releases and install as follows (of
@@ -862,10 +863,10 @@ course, you can set ``FDIR`` to anything you like).
    cd $FDIR
    tar xjf fricas-x.y.z.amd64.tar.bz2
 
-If before running ``tar`` you change to root directory and do this
-command as root, then you will get ready to run FriCAS in
-``/usr/local`` subtree of filesystem.  This put FriCAS files in
-the same places as running ``install`` after build from source
+If before running ``tar`` you change to the root directory and do
+this command as ``root``, then you will get ready to run FriCAS in
+the ``/usr/local`` subtree of the filesystem.  This puts FriCAS files
+in the same places as running ``install`` after build from source
 using default settings.
 
 Alternatively, you can put FriCAS files anywhere in your file system,

@@ -26,6 +26,7 @@ EOF
 sed -n \
     -e '/^.. contents/d' \
     -e '/^   :local:/d' \
+    -e '/^   :depth:/d' \
     -e '/^[\^][\^]*$/d' \
     -e '/^ *::$/d' \
     -e 's/::$//' \
