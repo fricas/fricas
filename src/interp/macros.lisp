@@ -247,7 +247,6 @@
             (CHAR> COMPERAND-1 COMPERAND-2) )
           ('else t)))
       ((CHARACTERP COMPERAND-2) NIL )
-      (BREAK)
       ((> (SXHASH COMPERAND-1) (SXHASH COMPERAND-2)))))
 
 ;;; Would like to remove this but is is used in PartialFraction
