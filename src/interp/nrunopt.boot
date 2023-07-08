@@ -374,25 +374,25 @@ dc(:r) ==
 
 dcSlots con ==
   name := abbreviation? con or con
-  $infovec: local := getInfovec name
-  template := $infovec.0
+  infovec := getInfovec name
+  template := infovec.0
   for i in 5..MAXINDEX template repeat
     sayBrightlyNT bright i
     item := template.i
-    item is [n,:op] and INTEGERP n => dcOpLatchPrint(op,n)
+    item is [n, :op] and INTEGERP n => dcOpLatchPrint(op, n, infovec)
     null item and i > 5 => sayBrightly ['"arg  ",STRCONC('"#",STRINGIMAGE(i - 5))]
     atom item => sayBrightly ['"fun  ",item]
     item is ['CONS,.,['FUNCALL,[.,a],b]] => sayBrightly ['"constant ",a]
-    sayBrightly concat('"lazy ",form2String formatSlotDomain i)
+    sayBrightly concat('"lazy ", form2String(formatSlotDomain1(i, infovec)))
 
-dcOpLatchPrint(op,index) ==
-  numvec := getCodeVector()
+dcOpLatchPrint(op, index, infovec) ==
+  numvec := getCodeVector1(infovec)
   numOfArgs := numvec.index
   whereNumber := numvec.(index := index + 1)
-  signumList := dcSig(numvec,index + 1,numOfArgs)
+  signumList := dcSig1(numvec, index + 1, numOfArgs, infovec)
   index := index + numOfArgs + 1
   namePart := concat(bright "from",
-    dollarPercentTran form2String formatSlotDomain whereNumber)
+    dollarPercentTran(form2String(formatSlotDomain1(whereNumber, infovec))))
   sayBrightly ['"latch",:formatOpSignature(op,signumList),:namePart]
 
 getInfovec name ==
@@ -403,8 +403,8 @@ getInfovec name ==
   loadLibNoUpdate(name, name, fullLibName)
   GET(name, 'infovec)
 
-getOpSegment index ==
-  numOfArgs := (vec := getCodeVector()).index
+getOpSegment(index, vec) ==
+  numOfArgs := vec.index
   [vec.i for i in index..(index + numOfArgs + 3)]
 
 getCodeVector1(infovec) ==
@@ -413,48 +413,46 @@ getCodeVector1(infovec) ==
   VECP u => BREAK()
   rest u                 --new style
 
-getCodeVector() == getCodeVector1($infovec)
-
-formatSlotDomain x ==
+formatSlotDomain1(x, infovec) ==
   x = 0 => ["%"]
   x = 2 => ["$$"]
   INTEGERP x =>
-    val := $infovec.0.x
+    val := infovec.0.x
     null val => [STRCONC('"#",STRINGIMAGE (x  - 5))]
-    formatSlotDomain val
+    formatSlotDomain1(val, infovec)
   atom x => x
   x is ['NRTEVAL,y] => (atom y => [y]; y)
   x is ['QUOTE, .] => x
-  [first x,:[formatSlotDomain y for y in rest x]]
+  [first x,:[formatSlotDomain1(y, infovec) for y in rest x]]
 
 --=======================================================================
 --                     Display OpTable
 --=======================================================================
 dcOpTable con ==
   name := abbreviation? con or con
-  $infovec: local := getInfovec name
-  template := $infovec.0
+  infovec := getInfovec(name)
+  template := infovec.0
   $predvec: local := GETDATABASE(name, 'PREDICATES)
-  opTable := $infovec.1
+  opTable := infovec.1
   for i in 0..MAXINDEX opTable repeat
     op := opTable.i
     i := i + 1
     startIndex := opTable.i
     stopIndex :=
-      i + 1 > MAXINDEX opTable => MAXINDEX getCodeVector()
+      i + 1 > MAXINDEX opTable => MAXINDEX getCodeVector1(infovec)
       opTable.(i + 2)
     curIndex := startIndex
     while curIndex < stopIndex repeat
-      curIndex := dcOpPrint(op,curIndex)
+        curIndex := dcOpPrint(op, curIndex, infovec)
 
-dcOpPrint(op,index) ==
-  numvec := getCodeVector()
-  segment := getOpSegment index
+dcOpPrint(op, index, infovec) ==
+  numvec := getCodeVector1(infovec)
+  segment := getOpSegment(index, numvec)
   numOfArgs := numvec.index
   index := index + 1
   predNumber := numvec.index
   index := index + 1
-  signumList := dcSig(numvec,index,numOfArgs)
+  signumList := dcSig1(numvec, index, numOfArgs, infovec)
   index := index + numOfArgs + 1
   slotNumber := numvec.index
   suffix :=
@@ -463,18 +461,17 @@ dcOpPrint(op,index) ==
   namePart := bright
     slotNumber = 0 => '"subsumed by next entry"
     slotNumber = 1 => '"missing"
-    name := $infovec.0.slotNumber
+    name := infovec.0.slotNumber
     atom name => name
     '"looked up"
   sayBrightly [:formatOpSignature(op,signumList),:namePart, :suffix]
   index + 1
 
-dcSig(numvec,index,numOfArgs) ==
-  [formatSlotDomain numvec.(index + i) for i in 0..numOfArgs]
+dcSig1(numvec,index, numOfArgs, infovec) ==
+  [formatSlotDomain1(numvec.(index + i), infovec) for i in 0..numOfArgs]
 
 dcPreds con ==
   name := abbreviation? con or con
-  $infovec: local := getInfovec name
   $predvec:= GETDATABASE(name, 'PREDICATES)
   for i in 0..MAXINDEX $predvec repeat
     sayBrightlyNT bright (i + 1)
@@ -482,8 +479,8 @@ dcPreds con ==
 
 dcCats con ==
   name := abbreviation? con or con
-  $infovec: local := getInfovec name
-  u := $infovec.3
+  infovec := getInfovec name
+  u := infovec.3
   VECP CDDR u => BREAK()
   $predvec:= GETDATABASE(name, 'PREDICATES)
   catpredvec := first u
@@ -500,14 +497,15 @@ dcCats con ==
       null (info := catinfo.i) => nil
       IDENTP info => bright '"package"
       bright '"instantiated"
-    sayBrightly concat(form2String formatSlotDomain form,suffix,extra)
+    sayBrightly concat(form2String(formatSlotDomain1(form, infovec)),
+                       suffix, extra)
 
 dcData con ==
   name := abbreviation? con or con
-  $infovec: local := getInfovec name
+  infovec := getInfovec(name)
   sayBrightly '"Operation data from slot 1"
-  print_full1 $infovec.1
-  vec := getCodeVector()
+  print_full1(infovec.1)
+  vec := getCodeVector1(infovec)
   vec := (PAIRP vec => rest vec; vec)
   sayBrightly ['"Information vector has ",SIZE vec,'" entries"]
   dcData1 vec
@@ -635,10 +633,10 @@ infovec con ==
 
 dcAll con ==
   con := abbreviation? con or con
-  $infovec : local := getInfovec con
+  infovec := getInfovec con
   complete? :=
-    #$infovec = 4 => false
-    $infovec.4 = 'lookupComplete
+    #infovec = 4 => false
+    infovec.4 = 'lookupComplete
   sayBrightly '"----------------Template-----------------"
   dcSlots con
   sayBrightly

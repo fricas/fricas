@@ -271,8 +271,8 @@ ksPage(htPage,junk) ==
 dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
   conform := domname or conform
   name:= opOf conform
-  $infovec: local := dbInfovec name or return nil  --exit for categories
-  u := $infovec.3
+  infovec := dbInfovec name or return nil  --exit for categories
+  u := infovec.3
   $predvec:=
     $domain => $domain . 3
     GETDATABASE(name,'PREDICATES)
@@ -289,7 +289,7 @@ dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
       (pak := catinfo . i) and pred   --only those with default packages
     pakform ==
       pak and not IDENTP pak => devaluate pak --in case it has been instantiated
-      catform := kFormatSlotDomain catvec . i
+      catform := kFormatSlotDomain1(catvec.i, infovec)
       res := dbSubConform(rest(conform), [pak, "%", :rest(catform)])
       if domname then res := SUBST(domname, '%, res)
       res
@@ -684,10 +684,10 @@ kTestPred n ==
 
 dbAddChainDomain conform ==
   [name,:args] := conform
-  $infovec := dbInfovec name or return nil  --exit for categories
-  template := $infovec . 0
+  infovec := dbInfovec(name) or return nil  --exit for categories
+  template := infovec.0
   null (form := template . 5) => nil
-  dbSubConform(args,kFormatSlotDomain devaluate form)
+  dbSubConform(args, kFormatSlotDomain1(devaluate(form), infovec))
 
 dbSubConform(args,u) ==
   atom u =>

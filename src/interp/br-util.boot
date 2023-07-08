@@ -62,7 +62,6 @@ $conformsAreDomains  := false     --are all arguments of a constructor given?
 $returnNowhereFromGoGet := false  --special branch out for goget for browser
 $dbDataFunctionAlist := nil       --set by dbGatherData
 $domain   := nil             --bound in koOps
-$infovec  := nil             --bound in koOps
 $predvec  := nil             --bound in koOps
 $exposedOnlyIfTrue := nil    --see repeatSearch, dbShowOps, dbShowCon
 $bcMultipleNames := nil      --see bcNameConTable

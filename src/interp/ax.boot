@@ -466,19 +466,19 @@ makeDefaultArgs args ==
 
 getDefaultingOps catname ==
   not(name:=hasDefaultPackage catname) => nil
-  $infovec: local := getInfovec name
-  opTable := $infovec.1
+  infovec := getInfovec name
+  opTable := infovec.1
   $opList:local  := nil
   for i in 0..MAXINDEX opTable repeat
     op := opTable.i
     i := i + 1
     startIndex := opTable.i
     stopIndex :=
-      i + 1 > MAXINDEX opTable => MAXINDEX getCodeVector()
+      i + 1 > MAXINDEX opTable => MAXINDEX getCodeVector1(infovec)
       opTable.(i + 2)
     curIndex := startIndex
     while curIndex < stopIndex repeat
-      curIndex := get1defaultOp(op,curIndex)
+      curIndex := get1defaultOp(op, curIndex, infovec)
   $pretendFlag : local := true
   catops := GETDATABASE(catname, 'OPERATIONALIST)
   catdefops := GETDATABASE(name, 'OPERATIONALIST)
@@ -508,8 +508,8 @@ axFormatCond(cond, inner) ==
   NOT cond => inner
   ['If, cond, inner, []]
 
-get1defaultOp(op,index) ==
-  numvec := getCodeVector()
+get1defaultOp(op,index, infovec) ==
+  numvec := getCodeVector1(infovec)
   numOfArgs := numvec.index
   index := index + 1
   index := index + 1
@@ -517,7 +517,7 @@ get1defaultOp(op,index) ==
  -- following substitution fixes the problem that default packages
  -- have $ added as a first arg, thus other arg counts are off by 1.
     SUBLISLIS($FormalMapVariableList, rest $FormalMapVariableList,
-             dcSig(numvec,index,numOfArgs))
+             dcSig1(numvec, index, numOfArgs, infovec))
   index := index + numOfArgs + 1
   if not([op,signumList] in $opList) then
      $opList := [[op,signumList],:$opList]

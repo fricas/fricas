@@ -298,10 +298,10 @@ whoUses(opSigList,conform) ==
   $conname : local := first conform
   domList := getUsersOfConstructor $conname
   for name in domList repeat
-    $infovec : local := dbInfovec name
-    null $infovec => 'skip           --category
-    template := $infovec . 0
-    numvec := getCodeVector1($infovec)
+    infovec := dbInfovec(name)
+    null infovec => 'skip           --category
+    template := infovec.0
+    numvec := getCodeVector1(infovec)
     opacc := nil
     for i in 7..MAXINDEX template repeat
       item := template . i
@@ -311,7 +311,7 @@ whoUses(opSigList,conform) ==
       null member(numOfArgs,numOfArgsList) => 'skip
       whereNumber := numvec.(index := index + 1)
       template . whereNumber isnt [= $conname,:.] => 'skip
-      signumList := dcSig(numvec,index + 1,numOfArgs)
+      signumList := dcSig1(numvec, index + 1, numOfArgs, infovec)
       opsig := or/[pair for (pair := [op1,:sig]) in opSigList |
                    op1 = op and whoUsesMatch?(signumList,sig,nil)]
       if opsig then opacc := [opsig,:opacc]
@@ -354,7 +354,6 @@ koOps(conform, domname) == main where
 --        koCatOps(conform,domname)
     asharpConstructorName? opOf conform => nil
     ----------> new <------------------
-    $infovec: local := dbInfovec conname--------> removed 94/10/24
     exposureTail :=
       null $packageItem => '(NIL NIL)
       isExposedConstructor opOf conform => [conform,:'(T)]
@@ -380,7 +379,8 @@ zeroOneConvert x ==
   x = 'One  => 1
   x
 
-kFormatSlotDomain x == fn formatSlotDomain x where fn x ==
+kFormatSlotDomain1(x, infovec) == 
+              fn formatSlotDomain1(x, infovec) where fn x ==
   atom x => x
   (op := first x) = '_% => '_%
   op = 'local => CADR x
