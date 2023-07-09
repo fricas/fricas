@@ -379,7 +379,7 @@ zeroOneConvert x ==
   x = 'One  => 1
   x
 
-kFormatSlotDomain1(x, infovec) == 
+kFormatSlotDomain1(x, infovec) ==
               fn formatSlotDomain1(x, infovec) where fn x ==
   atom x => x
   (op := first x) = '_% => '_%
