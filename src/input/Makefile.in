@@ -136,7 +136,7 @@ OUTS= algaggr.output   algfacob.output  \
       view2d.output    viewdef.output   \
       zimmer.output
 
-REGRESS = agcd.output array.output bezout.output bugs2007.output \
+REGRESS0 = agcd.output array.output bezout.output bugs2007.output \
       bugs2008.output  bugs2009.output  bugs2010.output \
       bugs2011.output  bugs2012.output  bugs2013.output  bugs2014.output \
       bugs2015.output  bugs2016.output  bugs2017.output  bugs2018.output \
@@ -155,6 +155,18 @@ REGRESS = agcd.output array.output bezout.output bugs2007.output \
       series3.output ssolve.output \
       table.output tensor.output vsbasis.output
 
+ifeq (@BUILD_ALDOR_INTERFACE@,yes)
+
+ALDOR_REGRESS = aldor1.output
+
+else
+
+ALDOR_REGRESS =
+
+endif
+
+REGRESS = $(REGRESS0) $(ALDOR_REGRESS)
+
 check: regression-tests
 	awk -f $(srcdir)/check_result $(REGRESS)
 
@@ -171,7 +183,7 @@ regression-tests: ${REGRESS}
 
 outs : ${OUTS}
 
-${OUTS} ${REGRESS} : %.output: $(srcdir)/%.input
+${OUTS} ${REGRESS0} : %.output: $(srcdir)/%.input
 	( \
 	echo running test file $* ; \
 	echo ')set message test on' > tmp$$$$.input; \
@@ -181,3 +193,27 @@ ${OUTS} ${REGRESS} : %.output: $(srcdir)/%.input
 	echo ')read "tmp'$$$$'.input"' | \
 	FRICAS_INITFILE='' ${TESTSYS} > $*.output 2>&1 ; \
 	rm tmp$$$$.input )
+
+ifeq (@BUILD_ALDOR_INTERFACE@,yes)
+
+%.as: ${IN}/%.as
+	cp $< $@
+
+aldor1.output: sieve.as
+
+ALDOR_ARGS = -O -Fasy -Flsp -lfricas -Y ../aldor/al \
+             -I $(fricas_top_srcdir)/src/aldor/aldor
+
+${ALDOR_REGRESS}: %.output: $(srcdir)/%.input Makefile
+	( \
+	echo running aldor test file $* ; \
+	echo ')set message test off' > tmp$$$$.input; \
+	echo ')set message auto on' >> tmp$$$$.input ; \
+	echo ')set compiler args "$(ALDOR_ARGS)"' > tmp$$$$.input ; \
+	echo 'systemCommand "read $<"' >> tmp$$$$.input ; \
+	echo ')lisp (quit)' >> tmp$$$$.input ; \
+	echo ')read "tmp'$$$$'.input"' | \
+	ALDOR_COMPILER='@ALDOR@' FRICAS_INITFILE='' ${TESTSYS} > $*.output 2>&1 ; \
+	rm tmp$$$$.input )
+
+endif

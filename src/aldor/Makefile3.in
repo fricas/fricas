@@ -33,11 +33,18 @@ $(runtime_files): lib/%.$(FASLEXT): tmp/mko_%.lsp lsp/%.lsp lib/.dir
 	$(INTERPSYS) < $< > tmp/mko_$*.log
 	test -f $@
 
+build_runtime_files := $(foreach i,$(runtime_files), \
+                                 $(fricas_targetdir)/aldor/$(i))
+
+$(build_runtime_files): $(fricas_targetdir)/aldor/% : %
+	mkdir -p $$(dirname $@)
+	cp $< $@
+
 tmp/mko_%.lsp: tmp/.dir
 	echo ')lisp (compile-file "$(abs_builddir)/lsp/$*.lsp" :output-file "$(abs_builddir)/lib/$*.$(FASLEXT)")' > $@
 	echo ')lisp (quit)' >> $@
 
-runtimefiles: $(runtime_files)
+runtimefiles: $(runtime_files) $(build_runtime_files)
 
 
 #
