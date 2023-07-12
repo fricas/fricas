@@ -589,7 +589,6 @@
   (|ComplexRootFindingPackage| . CRFP)
   (|ConstantLODE| . ODECONST)
   (|CyclicStreamTools| . CSTTOOLS)
-  (|CyclotomicPolynomialPackage| . CYCLOTOM)
   (|DefiniteIntegrationTools| . DFINTTLS)
   (|DegreeReductionPackage| . DEGRED)
   (|DeRhamComplex| . DERHAM)
