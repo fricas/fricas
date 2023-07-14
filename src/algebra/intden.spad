@@ -11,22 +11,17 @@ PartialFractionUtilities(F, UP) : Exports == Implementation where
 
   Implementation ==> add
 
-    FUP ==> Factored(UP)
-    PFUP ==> PartialFraction(UP)
-
     decompose(nn : UP, dens : List(UP)) : List(UP) ==
-        fdens := [nilFactor(nden, 1)$FUP for nden in dens]
-        nd := reduce(_*, fdens, 1)
-        pfr := partialFraction(nn, nd)$PFUP
-        wholePart(pfr) ~= 0 =>
-            error "decompose: wholePart(pfr) ~= 0"
-        res : List(UP) := []
-        for fden in fdens repeat
-            for c in fractionalTerms(pfr) repeat
-                if c.den = fden then
-                    res := cons(c.num, res)
-                    break
-        reverse!(res)
+        empty?(dens) and nn = 0 => []
+        sdeg : Integer := 0
+        for den in dens repeat
+            sdeg := sdeg + degree(den)
+        not(degree(nn) < sdeg) =>
+            error "decompose: has whole part"
+        ru := multiEuclidean(dens, nn)
+        ru case "failed" =>
+            error "decompose: multiEuclidean failed"
+        ru
 
 
 
