@@ -54,10 +54,11 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
   SIGNEF  ==> ElementaryFunctionSign(R, FE)
   U1      ==> Union("invertible", "zero", "bad")
   OPT_MAP ==> Union(FE -> Boolean, "none")
+  Cache_REC ==> Record(ker : K, ser : Result)
   OPT_REC ==> Record(pos_Check? : Boolean, atan_Flag : ATANFLAG,
                      coeff_check? : OPT_MAP, inv_check? : OPT_MAP,
                        zero_check? : OPT_MAP, log_x_replace : Boolean,
-                        log_x_val : FE)
+                        log_x_val : FE, cache : List(Cache_REC))
 
   Exports ==> with
     exprToUPS : (FE, B, ATANFLAG) -> Result
@@ -256,16 +257,16 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
 
     exprToUPS(fcn, posCheck?, atanFlag) ==
         i_expr_to_PS(fcn, [posCheck?, atanFlag, "none", "none",
-                           "none", false, 0]$OPT_REC)
+                           "none", false, 0, []]$OPT_REC)
 
     exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val) ==
         i_expr_to_PS(fcn, [posCheck?, atanFlag, "none", "none", "none",
-                           log_flag, log_val]$OPT_REC)
+                           log_flag, log_val, []]$OPT_REC)
 
     exprToPS(fcn, posCheck?, atanFlag, log_flag, log_val,
              coef_chk, inv_chk, zero_chk) ==
        i_expr_to_PS(fcn, [posCheck?, atanFlag, coef_chk, inv_chk, zero_chk,
-                           log_flag, log_val]$OPT_REC)
+                           log_flag, log_val, []]$OPT_REC)
 
     i_expr_to_PS(fcn, opt_rec) ==
       -- converts a functional expression to a power series
@@ -918,13 +919,9 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         nker : FE := kernel(operator(ker), nargs)
         do_taylor_via_deriv2(nker, cargs.syms, cargs.sers)
 
-    kernelToUPS(ker, opt_rec) ==
+    kernel1_to_UPS(ker : K, opt_rec : OPT_REC) : Result ==
       -- converts a kernel to a power series
-      (sym := symbolIfCan(ker)) case Symbol =>
-        (sym@Symbol) = x => [monomial(1, 1)]
-        [monomial(ker :: FE, 0)]
-      empty?(args := argument ker) => [monomial(ker :: FE, 0)]
-      not member?(x, variables(ker :: FE)) => [monomial(ker :: FE, 0)]
+      args := argument(ker)
       op := operator(ker)
       has?(op, 'special) =>
           spec_to_UPS(ker, args, opt_rec)
@@ -944,6 +941,20 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         n := retract(second args)@I
         nthRootToUPS(first args, n::NNI, opt_rec)
       unknown_to_UPS(ker, args, opt_rec)
+
+    kernelToUPS(ker, opt_rec) ==
+        -- converts a kernel to a power series
+        (sym := symbolIfCan(ker)) case Symbol =>
+            (sym@Symbol) = x => [monomial(1, 1)]
+            [monomial(ker::FE, 0)]
+        empty?(args := argument ker) => [monomial(ker::FE, 0)]
+        not member?(x, variables(ker::FE)) => [monomial(ker::FE, 0)]
+        for cr in opt_rec.cache repeat
+            if ker = cr.ker then return cr.ser
+        res1 := kernel1_to_UPS(ker, opt_rec)
+        opt_rec.cache := cons([ker, res1], opt_rec.cache)
+        res1
+
 
     nthRootToUPS(arg, n, opt_rec) ==
       -- converts an nth root to a power series
@@ -1183,7 +1194,7 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       -- series; "generalized" means that log(x) and bounded functions
       -- of x are allowed to appear in the coefficients of the series
       iExprToGenUPS(newElem fcn, [posCheck?, atanFlag, "none", "none",
-                                  "none", false, 0]$OPT_REC)
+                                  "none", false, 0, []]$OPT_REC)
 
     iExprToGenUPS(fcn, opt_rec) ==
       -- converts a functional expression to a generalized power
@@ -1260,12 +1271,9 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
       productOfNonZeroes? coef => [ups ^ n]
       stateProblem("inv","lowest order coefficient involves x")
 
-    kernelToGenUPS(ker, opt_rec) ==
+    kernel1_to_GenUPS(ker : K, opt_rec : OPT_REC) : Result ==
       -- converts a kernel to a generalized power series
-      (sym := symbolIfCan(ker)) case Symbol =>
-        (sym@Symbol) = x => [monomial(1, 1)]
-        [monomial(ker :: FE, 0)]
-      empty?(args := argument ker) => [monomial(ker :: FE, 0)]
+      args := argument(ker)
       empty? rest args =>
           arg := first args
           is?(ker, 'abs) =>
@@ -1279,6 +1287,18 @@ FunctionSpaceToUnivariatePowerSeries2(R, FE, Expon, UPS, TRAN, UTS, TEXP,
         n := retract(second args)@I
         nthRootToGenUPS(first args, n::NNI, opt_rec)
       stateProblem(string name ker,"unknown kernel")
+
+    kernelToGenUPS(ker, opt_rec) ==
+        -- converts a kernel to a generalized power series
+        (sym := symbolIfCan(ker)) case Symbol =>
+            (sym@Symbol) = x => [monomial(1, 1)]
+            [monomial(ker::FE, 0)]
+        empty?(args := argument ker) => [monomial(ker::FE, 0)]
+        for cr in opt_rec.cache repeat
+            if ker = cr.ker then return cr.ser
+        res1 := kernel1_to_GenUPS(ker, opt_rec)
+        opt_rec.cache := cons([ker, res1], opt_rec.cache)
+        res1
 
     nthRootToGenUPS(arg, n, opt_rec) ==
       -- convert an nth root to a power series
