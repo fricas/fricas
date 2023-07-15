@@ -480,12 +480,16 @@ ModularFactorizationGeneral(PA : Type, MMT : Type, MD : Type, PMD : Type,
 
     do_ddfact(pol : PA, p : MD, do_eqfact? : Boolean
              ) : LDD ==
+        n := qcoerce(degree(pol))@NNI
+        n = 0 => []
+        n = 1 =>
+            pol := copy_poly(pol, 2, p)
+            [[pol, 1, () +-> [pol]]$DDRec]
         rdata : PMD := ini_rdata(pol, p)
         x1 := monomial1(p)
         -- FIXME: use better algorithm for higher extension degree
         pp := get_char(p)^(qcoerce(get_extension_degree(p))@NNI)
         xp := mod_exp(x1, pp, rdata)
-        n := qcoerce(degree(pol))@NNI
         n0 := n
         l2 :=
             n < 120 => 1@NNI
@@ -972,3 +976,143 @@ ModularFactorizationK(K : FiniteFieldCategory) == Definition where
   Definition ==>
     ModularFactorizationGeneral(PT, MMT, MD, PMD,
         ModularFactorizationTools3(K))
+
+
+)abbrev package UFFACT UnivariateFiniteFieldFactorize
+UnivariateFiniteFieldFactorize(K, UP) : Exports == Implementation where
+  F : FiniteFieldCategory
+  UP : UnivariatePolynomialCategory(F)
+  SUP ==> SparseUnivariatePolynomial(F)
+  fUnion ==> Union("nil", "sqfr", "irred", "prime")
+  NNI  ==> NonNegativeInteger
+  cFr1 ==> Record(factor : UP, exponent : NNI)
+  cFr  ==> Record(cont : F, factors : List(cFr1))
+  uFr1 ==> Record(factor : SUP, exponent : NNI)
+  uFr  ==> Record(cont : F, factors : List(uFr1))
+
+  Exports ==> with
+
+    factor : UP -> Factored(UP)
+    factorSquareFree : UP -> Factored(UP)
+    mfactor : UP -> cFr
+    sufactor : SUP -> uFr
+    sufactor_square_free : SUP -> List(SUP)
+
+  Implementation ==> add
+
+    ch_prime := qcoerce(characteristic()$F)$PositiveInteger
+
+    pV := VectorPolynomialOperationsF(F)
+
+    deg_GF : NNI := 0
+
+    get_deg_GF() : PositiveInteger ==
+        if deg_GF = 0 then
+            n : PositiveInteger := 1;
+            ss : NNI := size()$F;
+            while ss > ch_prime repeat
+                ss := (ss exquo$NNI ch_prime)::NNI
+                n := n + 1
+            deg_GF := n
+        deg_GF::PositiveInteger
+
+    mD := [ch_prime, get_deg_GF()]$Record(i_mod : Integer, deg : Integer)
+
+    sufactor2(m : SUP) : List(SUP) ==
+        pa := to_mod_pa(m)$pV
+        lfp := mfactor(pa, mD)$ModularFactorizationK(F)
+        res : List(SUP) := []
+        for f1 in lfp repeat
+            mf1 := pa_to_sup(f1)$pV
+            res := cons(mf1, res)
+        res
+
+    sufact_gen(m : SUP) : uFr ==
+        if (lc := leadingCoefficient(m)) ~= 1 then
+            m := inv(lc)*m
+        facs : List(uFr1) := []
+        lsf := factorList(squareFree(m))
+        for sf in lsf repeat
+            m1 := sf.factor
+            if (lc1 := leadingCoefficient(m1)) ~= 1 then
+                m1 := inv(lc1)*m1
+            lf1 := sufactor2(m1)
+            e1 : NonNegativeInteger := sf.exponent
+            for f1 in lf1 repeat
+                facs := cons([f1, e1]$uFr1, facs)
+        [lc, facs]
+
+    if F is PrimeField(ch_prime) and F has convert : F -> Integer then
+
+        sufactor1(m : SUP) : List(SUP) ==
+            mi := map((c : F) : Integer +-> convert(c)@Integer, m
+                     )$SparseUnivariatePolynomialFunctions2(F, Integer)
+            pa := to_mod_pa(mi, ch_prime)$U32VectorPolynomialOperations
+            lfp := mfactor(pa, ch_prime)$ModularFactorization
+            res : List(SUP) := []
+            for f1 in lfp repeat
+                if1 := pa_to_sup(f1)$U32VectorPolynomialOperations
+                mf1 := map((c : Integer) : F +-> c::F, if1
+                          )$SparseUnivariatePolynomialFunctions2(Integer, F)
+                res := cons(mf1, res)
+            res
+
+        sufact_small(m : SUP) : uFr ==
+            if (lc := leadingCoefficient(m)) ~= 1 then
+                m := inv(lc)*m
+            facs : List(uFr1) := []
+            lsf := factorList(squareFree(m))
+            for sf in lsf repeat
+                m1 := sf.factor
+                if (lc1 := leadingCoefficient(m1)) ~= 1 then
+                    m1 := inv(lc1)*m1
+                lf1 := sufactor1(m1)
+                e1 : NonNegativeInteger := sf.exponent
+                for f1 in lf1 repeat
+                    facs := cons([f1, e1]$uFr1, facs)
+            [lc, facs]
+
+        sufactor(m : SUP) : uFr ==
+            if degree(m)*ch_prime^2 < max()$SingleInteger then
+                sufact_small(m)
+            else
+                sufact_gen(m)
+
+        sufactor_square_free(m : SUP) : List(SUP) ==
+            if degree(m)*ch_prime^2 < max()$SingleInteger then
+                sufactor1(m)
+            else
+                sufactor2(m)
+
+    else
+
+        sufactor(m : SUP) : uFr ==
+            sufact_gen(m)
+
+        sufactor_square_free(m : SUP) : List(SUP) ==
+            sufactor2(m)
+
+    fFr1 ==> Record(flag : fUnion, factor : UP, exponent : NNI)
+
+    factor(pol : UP) : Factored(UP) ==
+        pol = 0 => 0
+        upol := makeSUP(pol)
+        ru := sufactor(upol)
+        rl : List(fFr1) := []
+        for f1 in ru factors repeat
+            rl := cons(["prime", unmakeSUP(f1.factor), f1.exponent]$fFr1, rl)
+        makeFR(ru.cont::UP, rl)
+
+    factorSquareFree(pol : UP) : Factored(UP) ==
+        pol = 0 => 0
+        upol := makeSUP(pol)
+        lc := leadingCoefficient(upol)
+        upol := inv(lc)*upol
+        rlu := sufactor_square_free(upol)
+        rl : List(fFr1) := []
+        for f1 in rlu repeat
+            lc1 := leadingCoefficient(f1)
+            f1 := inv(lc1)*f1
+            rl := cons(["sqfr", unmakeSUP(f1), 1]$fFr1, rl)
+        makeFR(lc::UP, rl)
+

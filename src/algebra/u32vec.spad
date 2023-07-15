@@ -983,3 +983,46 @@ VectorPolynomialOperationsP(p : PositiveInteger
                                )$SparseUnivariatePolynomial(Integer)
                        + res
             res
+
+
+)abbrev package POLVECF VectorPolynomialOperationsF
+VectorPolynomialOperationsF(K : FiniteFieldCategory
+                           ) : Export == Implementation where
+    PA ==> PrimitiveArray(K)
+    Export ==> with
+        degree : PA -> Integer
+          ++ degree(v) is degree of v treated as polynomial
+        to_mod_pa : SparseUnivariatePolynomial(K) -> PA
+          ++ to_mod_pa(s) converts polynomial to vector
+        pa_to_sup : PA -> SparseUnivariatePolynomial(K)
+          ++ pa_to_sup(v) converts vector of coefficients to
+          ++ a polynomial
+
+    Implementation ==> add
+
+        degree(v : PA) : Integer ==
+            n := #v
+            for i in (n - 1)..0 by -1 repeat
+                not(v(i) = 0) => return i
+            -1
+
+        to_mod_pa(s : SparseUnivariatePolynomial(K)) : PA ==
+            zero?(s) => new(1, 0)$PA
+            n0 := qconvert(degree(s))@SingleInteger
+            ncoeffs := new(qcoerce(n0+1)@NonNegativeInteger, 0)$PA
+            while not(zero?(s)) repeat
+                n := degree(s)
+                ncoeffs(n) := leadingCoefficient(s)
+                s := reductum(s)
+            ncoeffs
+
+        pa_to_sup(v : PA) : SparseUnivariatePolynomial(K) ==
+            n := #v
+            res : SparseUnivariatePolynomial(K) := 0
+            for i in 0..(n - 1) repeat
+                res := monomial(v(i), i
+                               )$SparseUnivariatePolynomial(K)
+                       + res
+            res
+
+
