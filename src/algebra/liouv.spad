@@ -160,9 +160,22 @@ LiouvillianFunction(R, F) : Exports == Implementation where
     dvdint(l, x) ==
       x = retract(y := third l)@SY => 0
       k := retract(d := second l)@K
-      differentiate(h := third rest rest l, x) * eval(f := first l, k, h)
-        - differentiate(g := third rest l, x) * eval(f, k, g)
-             + opdint [differentiate(f, x), d, y, g, h]
+      f := first l
+      h := third rest rest l
+      g := third rest l
+      dh := differentiate(h, x)
+      -- divide into 3 parts, so we skip unneeded evals (which could
+      -- fail otherwise) and avoid trivial third term
+      p1 : F :=
+          (dh := differentiate(h, x)) = 0 => 0
+          dh*eval(f, k, h)
+      p2 : F :=
+          (dg := differentiate(g, x)) = 0 => 0
+          dg*eval(f, k, g)
+      p3 : F :=
+          (df := differentiate(f, x)) = 0 => 0
+          opdint([df, d, y, g, h])
+      p1 + p2 + p3
 
     integral(f : F, s : SegmentBinding F) ==
       x := kernel(variable s)$K
