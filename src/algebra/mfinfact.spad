@@ -134,12 +134,18 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
         [(leadingCoefficient leadingCoefficient(um) exquo lcfacs)::R,
                        factorlist]$SUPFinalFact
 
+    fUnion ==> Union("nil", "sqfr", "irred", "prime")
+    supFF ==> Record(flag : fUnion, factor : SUP PG, exponent : NNI)
+
+    sup_prime_factor(pol : SUP PG, pow : NNI) : supFF ==
+        ["prime", pol, pow]$supFF
+
     factor_sup(m : R) : Factored SUP PG ==
         fm := sufactor(m)$UnivariateFiniteFieldFactorize(F, R)
-        fr1 := */[primeFactor(map(c +-> c::PG, p.factor
+        fr1 := [sup_prime_factor(map(c +-> c::PG, p.factor
                                  )$UPCF2(F, R, PG, SUP PG), p.exponent)
                         for p in fm.factors]
-        makeFR(fm.cont::PG::SUP(PG), [])*fr1
+        makeFR(fm.cont::PG::SUP(PG), fr1)
 
     factor(um : SUP PG) : Factored SUP PG ==
         lv : List OV := variables um
@@ -152,10 +158,10 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
         cm := map((p1 : PG) : P +-> pushdown(p1, var), um
                  )$UPCF2(PG, SUP PG, P, SUP P)
         flist := supFactor(cm, var, dx)
-        pushupconst(flist.contp, var)::SUP(PG) *
-          (*/[primeFactor(map((p1 : P) : PG +-> pushup(p1, var), u.irr
-                             )$UPCF2(P, SUP P, PG, SUP PG),
-                          u.pow) for u in flist.factors])
+        fr1 := [sup_prime_factor(map((p1 : P) : PG +-> pushup(p1, var), u.irr
+                                )$UPCF2(P, SUP P, PG, SUP PG),
+                          u.pow) for u in flist.factors]
+        makeFR(pushupconst(flist.contp, var)::SUP(PG), fr1)
 
 
 
@@ -489,6 +495,8 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
       tleadpol := mFactor(leadingCoefficient um, var, dm)
       intfact(um, lvar, ldeg, tleadpol, empty())
 
+    pFF ==> Record(flag : fUnion, factor : PG, exponent : NonNegativeInteger)
+
     factor(m : PG) : Factored PG ==
        lv := variables m
        lv = empty() => makeFR(m, empty() )
@@ -498,8 +506,8 @@ MultFiniteFactorize(OV, E, F, PG) : C == T where
        var := lv(position(dx, ld))
        cm := pushdown(m, var)
        flist := mFactor(cm, var, dx)
-       pushupconst(flist.contp, var) *
-          (*/[primeFactor(pushup(u.irr, var), u.pow)
+       makeFR(pushupconst(flist.contp, var), [
+           ["prime", pushup(u.irr, var), u.pow]$pFF
                                                  for u in flist.factors])
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
