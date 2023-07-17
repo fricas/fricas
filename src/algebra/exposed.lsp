@@ -51,7 +51,6 @@
   (|DiophantineSolutionPackage| . DIOSP)
   (|DirectProductFunctions2| . DIRPROD2)
   (|DisplayPackage| . DISPLAY)
-  (|DistinctDegreeFactorize| . DDFACT)
   (|Distribution| . DISTRO)
   (|DistributionContinuedFractionPackage| . DSTCFPG)
   (|DistributionFunctions2| . DISTRO2)
