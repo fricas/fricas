@@ -481,6 +481,8 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       ++ Gamma(a, x) returns the incomplete Gamma function applied to a and x.
     Beta :      (F, F) -> F
       ++ Beta(x, y) returns the beta function applied to x and y.
+    Beta : (F, F, F) -> F
+      ++ Beta(x, a, b) is incomplete Beta function applied to x, a and b.
     digamma : F -> F
       ++ digamma(x) returns the digamma function applied to x.
     polygamma : (F, F) ->F
@@ -694,6 +696,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     iconjugate: F -> F
     iGamma    : F -> F
     iBeta     : (F, F) -> F
+    iBeta3    : (F, F, F) -> F
     idigamma  : F -> F
     iiipolygamma : (F, F) -> F
     iiiBesselJ  : (F, F) -> F
@@ -725,6 +728,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     opGamma     := operator('Gamma)$CommonOperators
     opGamma2    := operator('Gamma2)$CommonOperators
     opBeta      := operator('Beta)$CommonOperators
+    opBeta3     := operator('Beta3)$CommonOperators
     opdigamma   := operator('digamma)$CommonOperators
     oppolygamma := operator('polygamma)$CommonOperators
     opBesselJ   := operator('besselJ)$CommonOperators
@@ -764,6 +768,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     Gamma(x)      == opGamma(x)
     Gamma(a, x)    == opGamma2(a, x)
     Beta(x, y)     == opBeta(x, y)
+    Beta(x, a, b) == opBeta3(x, a, b)
     digamma x     == opdigamma(x)
     polygamma(k, x)== oppolygamma(k, x)
     besselJ(a, x)  == opBesselJ(a, x)
@@ -1733,6 +1738,7 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
       is?(op, 'Gamma)    => opGamma
       is?(op, 'Gamma2)   => opGamma2
       is?(op, 'Beta)     => opBeta
+      is?(op, 'Beta3)    => opBeta3
       is?(op, 'digamma)  => opdigamma
       is?(op, 'polygamma)=> oppolygamma
       is?(op, 'besselJ)  => opBesselJ
@@ -2149,6 +2155,48 @@ FunctionalSpecialFunction(R, F) : Exports == Implementation where
     iBetaGrad2(l : List F) : F ==
         x := first l; y := second l
         Beta(x, y)*(digamma y - digamma(x+y))
+
+    elBeta3(l : List F) : F ==
+        (x := l(1)) = 0 => 0
+        kernel(opBeta3, l)
+
+    evaluate(opBeta3, elBeta3)$BasicOperatorFunctions1(F)
+
+    if F has ElementaryFunctionCategory and
+         F has PrimitiveFunctionCategory then
+
+      eBeta3Grad1(l : List(F)) : F ==
+          x := l(1)
+          a := l(2)
+          b := l(3)
+          x^(a-1)*(1 - x)^(b-1)
+
+      eBeta3Grad2(l : List(F)) : F ==
+          x := l(1)
+          a := l(2)
+          b := l(3)
+          dummy_s := new()$Symbol
+          xd := dummy_s::F
+          ss := segment(0, x)$Segment(F)
+          sb := equation(dummy_s, ss)$SegmentBinding(F)
+          integral(log(xd)*(xd)^(a - 1)*(1 - xd)^(b - 1), sb)
+
+      eBeta3Grad3(l : List(F)) : F ==
+          x := l(1)
+          a := l(2)
+          b := l(3)
+          dummy_s := new()$Symbol
+          xd := dummy_s::F
+          ss := segment(0, x)$Segment(F)
+          sb := equation(dummy_s, ss)$SegmentBinding(F)
+          integral(log(1 - xd)*(xd)^(a - 1)*(1 - xd)^(b - 1), sb)
+
+      derivative(opBeta3, [eBeta3Grad1, eBeta3Grad2, eBeta3Grad3])
+
+    inBeta3(li : List INP) : INP ==
+        convert cons(convert('Beta), li)
+
+    input(opBeta3, inBeta3@((List INP) -> INP))
 
     if F has ElementaryFunctionCategory then
       iGamma2(l : List F, t : SY) : F ==
