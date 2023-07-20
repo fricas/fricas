@@ -414,6 +414,50 @@ SparseMultivariatePolynomial(R : Join(SemiRng, AbelianMonoid),
               s := hashUpdate!(s, p.v)
               hashUpdate!(s, p.ts)
 
+      if R has Comparable then
+
+          triage(p : %, q : %) : SingleInteger ==
+              p case R =>
+                  q case R =>
+                      p =$R q => 0
+                      smaller?(p, q)$R => 1
+                      -1
+                  smaller?(0$R, leadingCoefficient(q))$R => 1
+                  -1
+              q case R =>
+                  smaller?(leadingCoefficient(p), 0$R)$R => 1
+                  -1
+              pv := p@VPoly
+              qv := q@VPoly
+              pv.v < qv.v =>
+                  smaller?(0$R, leadingCoefficient(q))$R => 1
+                  -1
+              not(pv.v = qv.v) =>
+                  smaller?(leadingCoefficient(p), 0$R)$R => 1
+                  -1
+              -- pv.v = qv.v
+              pu := pv.ts
+              qu := qv.ts
+              repeat
+                  (dp := degree(pu)) < (dq := degree(qu)) => return
+                      lcq := leadingCoefficient(qu)
+                      smaller?(0$R, leadingCoefficient(lcq))$R => 1
+                      -1
+                  dq < dp => return
+                      lcp := leadingCoefficient(pu)
+                      smaller?(leadingCoefficient(lcp), 0$R)$R => 1
+                      -1
+                  lcp := leadingCoefficient(pu)
+                  lcq := leadingCoefficient(qu)
+                  tr1 := triage(lcp, lcq)
+                  not(tr1 = 0) or dp = 0 => return tr1
+                  pu := reductum(pu)
+                  qu := reductum(qu)
+
+          smaller?(p : %, q : %) : Boolean ==
+              triage(p, q) = 1
+
+
       if R has IntegralDomain then
          UnitCorrAssoc ==> Record(unit : %, canonical : %, associate : %)
          unitNormal(p) ==
