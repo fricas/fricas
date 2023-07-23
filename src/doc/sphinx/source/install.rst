@@ -347,7 +347,8 @@ safety.  However, some FriCAS users want different tradeoff.  The
 
 option to configure allows changing this setting: S is a Lisp
 expression specifying speed/safety tradeoff used by Lisp compiler.  For
-example::
+example
+::
 
   --enable-algebra-optimization="((speed 3) (safety 0))"
 
@@ -410,7 +411,7 @@ Post-compilation steps (optional)
 
 
 Build extra documentation (book and website)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 After a build of FriCAS, (suppose your build directory is under
@@ -545,7 +546,8 @@ a FriCAS session via
    )compile sieve.as
    sieve 10
 
-The program ``sieve.as`` is::
+The program ``sieve.as`` is
+::
 
   --
   -- sieve.as: A prime number sieve to count primes <= n.
@@ -578,15 +580,26 @@ There are a couple of things to install.
 #. Jupyter
 #. jFriCAS
 
+The simplest way to install jFriCAS_ is via `pip` as follows
+::
+
+   sudo apt install python3-pip
+   pip3 install jupyter
+   pip3 install jfricas
+
+You can also install jFriCAS_ into a python virtual environment from
+`jfricas at PyPI <https://pypi.org/project/jfricas/>`_ or from the
+git repository.
+
+Below, we describe the installation from the git repository.
+
 Except for the file ``$HOME/.jupyter/jupyter_notebook_config.py`` that
 maybe necessary to create, the following description will put most of
 the things (in particular the git repositories) under the directory
 ``$FDIR``.
 We assume that FriCAS will be installed into ``$FRICASINSTALL``.
 jFriCAS_ and Jupyter_ will go into ``$JFRICASINSTALL``
-You can change any of these paths or even install without a python
-virtual environment, but there is no description (yet) for an
-installation without venv.
+You can change any of these paths.
 ::
 
    FDIR=$HOME/fricas
@@ -624,7 +637,7 @@ not work. If you have it installed, then uninstall it first.
 
    python3 -m venv $JFRICASINSTALL
    source $JFRICASINSTALL/bin/activate
-   pip3 install wheel jupyter
+   pip3 install jupyter
    cd $GITREPOS/jfricas
    pip3 install .
    jupyter kernelspec list
@@ -839,6 +852,7 @@ wish you can create distribution tarballs from trunk.
 The binary distribution can be created as follows.  First fetch and
 unpack source tarball in work directory.  Then in work directory
 ::
+
    mkdir fr-build
    ../fricas-X.Y.Z/configure --enable--gmp --with-lisp=/path/to/hsbcl
    make -j 7 > makelog 2>&1
