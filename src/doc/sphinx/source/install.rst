@@ -186,10 +186,7 @@ The documentation is built via Sphinx_.
 ::
 
    sudo apt install python3 python3-pip
-   pip3 install -U Sphinx==5.3.0
-
-**WARNING**: Currently, Sphinx_ 6 and higher will fail building the
-``.html`` pages.
+   pip3 install -U Sphinx
 
 
 Aldor (optional)
