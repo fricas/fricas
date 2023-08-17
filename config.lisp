@@ -16,16 +16,10 @@
         (pathname-type (compile-file-pathname "foo.lisp")))
 
     (format out "fricas_lisp_flavor=~a~&"
-        #+:gcl "gcl"
-        #+:ecl "ecl"
-        #+:openmcl "openmcl"
-        #+:sbcl "sbcl"
-        #+:clisp "clisp"
-        #+:poplog "poplog"
-        #+:cmu    "cmucl"
         #+:lispworks "lispworks"
-        #+:abcl "abcl"
-        #-(or :gcl :ecl :openmcl :sbcl :clisp :poplog :cmu :lispworks :abcl) "unknown"
+        #+:poplog "poplog"
+        #+(or :gcl :ecl :openmcl :sbcl :clisp :cmu :abcl) (lisp-implementation-type)
+        #-(or :gcl :ecl :openmcl :sbcl :clisp :cmu :abcl :lispworks :poplog) "unknown"
     )
     #+:clisp
     (if (not (find-package "FFI"))

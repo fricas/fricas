@@ -230,54 +230,54 @@ if test -z "$fricas_lisp_version" ; then
     AC_MSG_WARN([Unable to determine Lisp version.])
 else
    case $fricas_lisp_flavor in
-     clisp)
+     CLISP)
         if echo $fricas_lisp_version | grep '^[[0-1]]\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^2\.[[0-3]]' > /dev/null ; then
-             AC_MSG_ERROR([clisp $fricas_lisp_version is too old])
+             AC_MSG_ERROR([CLISP $fricas_lisp_version is too old])
         fi
         ;;
-     ecl)
+     ECL)
         case $fricas_lisp_version in
            0.*)
               case $fricas_lisp_version in
                  0.9j)
-                    AC_MSG_WARN([You use old ecl, please consider upgrade])
+                    AC_MSG_WARN([You use old ECL, please consider upgrade])
                    ;;
                  0.9l)
                    ;;
                  *)
-                    AC_MSG_ERROR([ecl $fricas_lisp_version is too old])
+                    AC_MSG_ERROR([ECL $fricas_lisp_version is too old])
                    ;;
                esac
              ;;
          esac
         ;;
-     gcl)
+     'GNU Common Lisp (GCL)')
         case $fricas_lisp_version in
            2.6.7|2.6.8|2.6.9|2.6.1[[0-9]])
              ;;
            2.7.0)
-             AC_MSG_WARN([FriCAS needs porting to gcl $fricas_lisp_version
+             AC_MSG_WARN([FriCAS needs porting to GNU Common Lisp (GCL) $fricas_lisp_version
                           please proceed with caution])
              ;;
            *)
-             AC_MSG_ERROR([gcl $fricas_lisp_version is too old])
+             AC_MSG_ERROR([GNU Common Lisp (GCL) $fricas_lisp_version is too old])
              ;;
         esac
         ;;
-     openmcl)
+     'Clozure Common Lisp')
         if echo $fricas_lisp_version | grep '^1\.1[[0-9]]' > /dev/null ; then
             true
         else if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^1\.[[01]]' > /dev/null ; then
-             AC_MSG_ERROR([openmcl $fricas_lisp_version is too old])
+             AC_MSG_ERROR([Clozure Common Lisp $fricas_lisp_version is too old])
              fi
         fi
         ;;
-     sbcl)
+     SBCL)
         if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^1\.0.[[0-6]]$' > /dev/null ; then
-             AC_MSG_ERROR([sbcl $fricas_lisp_version is too old])
+             AC_MSG_ERROR([SBCL $fricas_lisp_version is too old])
         fi
         case $(uname -m) in
            i*86)
@@ -307,7 +307,7 @@ AC_SUBST(fricas_lisp_version)
 
 ## Check if we need shared libspad library.
 case $fricas_lisp_flavor in
-    sbcl|cmucl|clisp|openmcl|lispworks)
+    SBCL|'CMU Common Lisp'|CLISP|'Clozure Common Lisp'|lispworks)
        LIBSPAD_SO_TARGET="libspad_so"
         ;;
     *)
@@ -368,9 +368,9 @@ AC_ARG_ENABLE([gmp],
              esac])
 ## Check if GMP is really compatible with the Lisp flavour
 if test -n "$GMP_WRAP_SO_TARGET" ; then
-   if test $fricas_lisp_flavor = sbcl ; then
+   if test "$fricas_lisp_flavor" = SBCL ; then
       true
-   elif test $fricas_lisp_flavor = openmcl ; then
+   elif test "$fricas_lisp_flavor" = 'Clozure Common Lisp'  ; then
       case $(uname -m) in
         arm*|i386|i486|i586|i686|x86_64)
          GMP_WRAP_SO_TARGET=gmp_wrap_so
@@ -380,7 +380,7 @@ if test -n "$GMP_WRAP_SO_TARGET" ; then
                        or ARM processors])
       esac
    else
-      AC_MSG_ERROR([GMP is valid only when using sbcl or Clozure CL])
+      AC_MSG_ERROR([GMP is valid only when using SBCL or Clozure CL])
    fi
 fi
 AC_SUBST(GMP_WRAP_SO_TARGET)
@@ -416,7 +416,7 @@ AC_SUBST(GMP_EXT)
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
 case $fricas_lisp_flavor,$target in
-    gcl,*mingw*)
+    'GNU Common Lisp (GCL)',*mingw*)
         fricas_gcl_rsym_hack='d=`echo "(format nil \"~a\" si::*system-directory*)" | $(FRICAS_LISP) | grep "/gcl.*/" | sed -e "s,\",,g"`; cp $$d/rsym$(EXEEXT) .'
         ;;
     *)
@@ -427,27 +427,27 @@ AC_SUBST(fricas_gcl_rsym_hack)
 ## How are we supposed to tell the Lisp system to eval an expression
 ## in batch mode?  What is the extension of a compiled Lisp file?
 case $fricas_lisp_flavor in
-    gcl)
+    'GNU Common Lisp (GCL)')
        fricas_quiet_flags='-batch'
        fricas_eval_flags='-eval'
        ;;
-    ecl)
+    ECL)
        fricas_quiet_flags='-norc'
        fricas_eval_flags='-eval'
        ;;
-    sbcl)
+    SBCL)
        fricas_quiet_flags='--noinform --noprint --no-sysinit --no-userinit'
        fricas_eval_flags='--eval'
        ;;
-    cmucl)
+    'CMU Common Lisp')
        fricas_quiet_flags='-batch -nositeinit -noinit'
        fricas_eval_flags='-eval'
        ;;
-    clisp)
+    CLISP)
        fricas_quiet_flags='--quiet -norc'
        fricas_eval_flags='-x'
        ;;
-    openmcl)
+    'Clozure Common Lisp')
        fricas_quiet_flags='--no-init'
        fricas_eval_flags='--eval'
        ;;
@@ -466,7 +466,7 @@ AC_MSG_RESULT([$fricas_fasl_type])
 
 fricas_fasl_type2=$fricas_fasl_type
 case $fricas_lisp_flavor in
-    ecl)
+    ECL)
        fricas_fasl_type="o"
      ;;
     *)

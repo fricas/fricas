@@ -4,7 +4,7 @@
 # of Lisp, which is used during the rest of build process
 
 fricas_quiet_flags = @fricas_quiet_flags@
-lisp_flavor=@fricas_lisp_flavor@
+lisp_flavor = $(word 1, @fricas_lisp_flavor@)
 fricas_gcl_rsym_hack = @fricas_gcl_rsym_hack@
 fricas_c_runtime_extra = @fricas_c_runtime_extra@
 fricas_algebra_optimization = @fricas_algebra_optimization@
@@ -25,10 +25,10 @@ lisp_DEPENDENCIES = $(build_libdir)/cfuns-c.o \
 		    $(build_libdir)/sockio-c.o \
 		    $(build_libdir)/libspad.a
 
-ifeq ($(lisp_flavor),sbcl)
+ifeq ($(lisp_flavor),SBCL)
 NUM_GMP = num_gmpx.lisp
 else
-ifeq ($(lisp_flavor),openmcl)
+ifeq ($(lisp_flavor),Clozure)
 NUM_GMP = num_gmpx.lisp
 else
 NUM_GMP =
@@ -53,7 +53,7 @@ lisp_c_objects = \
 
 $(OUT)/lisp$(EXEEXT): do_it.$(lisp_flavor)
 
-do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
+do_it.GNU: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
            primitives.lisp
 	$(fricas_gcl_rsym_hack)
 	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
@@ -107,7 +107,7 @@ fricas-config.lisp:
 	       >> $@ ; \
 	fi
 
-do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
+do_it.ECL: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
            primitives.lisp
 	echo "(in-package \"FRICAS-LISP\")" > fricas-ecl.lisp
 	echo "(defvar *fricas-extra-c-files* (quote (" \
@@ -137,7 +137,7 @@ do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
 	     '(make-program "${OUT}/lisp$(EXEEXT)" nil)' | $(FRICAS_LISP)
 	$(STAMP) $@
 
-do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
+do_it.SBCL do_it.CLISP do_it.Clozure do_it.lispworks: \
    fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_GMP) \
    primitives.lisp
 	echo '(load "fricas-package.lisp")' \
@@ -149,7 +149,7 @@ do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
          | $(LISP_CMD)
 	 $(STAMP) $@
 
-do_it.cmucl: fricas-lisp.lisp fricas-package.lisp \
+do_it.CMU: fricas-lisp.lisp fricas-package.lisp \
            fricas-config.lisp primitives.lisp
 	echo '(load "fricas-package.lisp")' \
 	    '(load "fricas-config.lisp")' \

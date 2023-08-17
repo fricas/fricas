@@ -128,17 +128,6 @@ wsname=FRICASsys
 
 otheropts=""
 
-if [ ! -f $FRICAS/lib/viewman ] ; then
-    echo "viewman not present, disabling graphics"
-    otheropts="-nogr"
-fi
-
-if [ ! -f $FRICAS/bin/hypertex ]; then
-    echo "hypertex  not present, disabling"
-    otheropts="$otheropts -noht"
-fi
-
-
 while [ "$*" != "" ] ; do
     opt=$1
     case $1 in
@@ -226,7 +215,15 @@ if [ ! -f $serverws ] ; then
         ciao
 fi
 
-# 6. Start processes
+if [ ! -f $FRICAS/lib/viewman ] ; then
+    echo "viewman not present, disabling graphics"
+    otheropts="-nogr $otheropts"
+fi
+
+if [ ! -f $FRICAS/bin/hypertex ]; then
+    echo "hypertex  not present, disabling"
+    otheropts="-noht $otheropts"
+fi
 
 if [ $go = no ] ; then
     echo "Would now execute the following."
@@ -235,5 +232,7 @@ if [ $go = no ] ; then
     echo "$FRICAS/bin/sman $otheropts -ws $serverws"
     exit 0
 fi
+
+# 6. Start processes
 
 eval "exec $FRICAS/bin/sman $otheropts -ws $serverws"
