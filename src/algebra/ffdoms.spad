@@ -455,7 +455,6 @@ FiniteFieldPolynomialPackage(GF): Exports == Implementation where
   Implementation ==> add
 
     import from IntegerNumberTheoryFunctions
-    import from DistinctDegreeFactorize(GF, SUP)
 
     sizeGF : PI := size()$GF :: PI
 
@@ -653,7 +652,7 @@ FiniteFieldPolynomialPackage(GF): Exports == Implementation where
         leadingCoefficient f ~= 1 => false
         coefficient(f, 0) = 0 => false
         -- cheaper and prunes better than computation of x^(q^n - 1)
-        not(irreducible?(f)) => false
+        not(irreducible?(f)$UnivariateFiniteFieldFactorize(GF, SUP)) => false
         primitive_i?(f)
 
     normal? f ==
@@ -665,7 +664,7 @@ FiniteFieldPolynomialPackage(GF): Exports == Implementation where
       leadingCoefficient f ~= 1 => false
       coefficient(f, 0) = 0 => false
       n = 1 => true
-      not irreducible? f => false
+      not irreducible?(f)$UnivariateFiniteFieldFactorize(GF, SUP) => false
       g := reducedQPowers(f)
       l := [entries vectorise(g.i, n)$SUP for i in 0..(n-1)::NNI]
       rank(matrix(l)$Matrix(GF)) = n => true
@@ -883,7 +882,8 @@ FiniteFieldPolynomialPackage(GF): Exports == Implementation where
             exp_v(1) := 1
             coeff_v(1) := elem1
             ind_v(1) := 1
-        do_weights(exp_v, ind_v, coeff_v, 0, w, w, irreducible?)
+        do_weights(exp_v, ind_v, coeff_v, 0, w, w,
+                   irreducible?$UnivariateFiniteFieldFactorize(GF, SUP))
 
     lc_Rec ==> Record(nl : PI, nc : GF)
 

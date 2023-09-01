@@ -410,6 +410,10 @@ ModularFactorizationGeneral(PA : Type, MMT : Type, MD : Type, PMD : Type,
       ++ ddfact(pv, md) computes distint degree factorization of
       ++ pv.  pv is assumed square-free and monic, md is info representing
       ++ finite field.
+    irreducible? : (PA, MD) -> Boolean
+      ++ irreducible?(pv, md) checks if pv is irreducible.  pv is
+      ++ assumed square-free and monic, md is info representing
+      ++ finite field.
   Implementation ==> add
 
     floor_sqrt(n : Integer) : Integer ==
@@ -604,6 +608,13 @@ ModularFactorizationGeneral(PA : Type, MMT : Type, MD : Type, PMD : Type,
     mfactor(pol, prime) ==
         rl1 := do_ddfact(pol, prime, true)
         [el.poly for el in rl1]
+
+    irreducible?(pol, prime) ==
+        rl1 := do_ddfact(pol, prime, false)
+        #rl1 = 1 =>
+            r1 := first(rl1)
+            degree(r1.poly) = r1.degree
+        false
 
 )abbrev package MODFACT ModularFactorization
 ModularFactorization == Definition where
@@ -1000,7 +1011,11 @@ UnivariateFiniteFieldFactorize(K, UP) : Exports == Implementation where
     sufactor_square_free : SUP -> List(SUP)
       ++ sufactor_square_free(p) factorizes p into prime factors.
       ++ p must be square free.
-
+    su_irreducible? : SUP -> Boolean
+      ++ irreducible?(p) tests if p is irreducible.
+      ++ p must be monic and square free.
+    irreducible? : UP -> Boolean
+      ++ irreducible?(p) tests if p is irreducible.
   Implementation ==> add
 
     ch_prime := qcoerce(characteristic()$F)$PositiveInteger
@@ -1029,6 +1044,10 @@ UnivariateFiniteFieldFactorize(K, UP) : Exports == Implementation where
             mf1 := pa_to_sup(f1)$pV
             res := cons(mf1, res)
         res
+
+    irreducible2?(m : SUP) : Boolean ==
+        pa := to_mod_pa(m)$pV
+        irreducible?(pa, mD)$ModularFactorizationK(F)
 
     sufact_gen(m : SUP) : uFr ==
         if (lc := leadingCoefficient(m)) ~= 1 then
@@ -1060,6 +1079,12 @@ UnivariateFiniteFieldFactorize(K, UP) : Exports == Implementation where
                 res := cons(mf1, res)
             res
 
+        irreducible1?(m : SUP) : Boolean ==
+            mi := map((c : F) : Integer +-> convert(c)@Integer, m
+                     )$SparseUnivariatePolynomialFunctions2(F, Integer)
+            pa := to_mod_pa(mi, ch_prime)$U32VectorPolynomialOperations
+            irreducible?(pa, ch_prime)$ModularFactorization
+
         sufact_small(m : SUP) : uFr ==
             if (lc := leadingCoefficient(m)) ~= 1 then
                 m := inv(lc)*m
@@ -1087,6 +1112,12 @@ UnivariateFiniteFieldFactorize(K, UP) : Exports == Implementation where
             else
                 sufactor2(m)
 
+        su_irreducible?(m : SUP) : Boolean ==
+            if degree(m)*ch_prime^2 < max()$SingleInteger then
+                irreducible1?(m)
+            else
+                irreducible2?(m)
+
     else
 
         sufactor(m : SUP) : uFr ==
@@ -1094,6 +1125,9 @@ UnivariateFiniteFieldFactorize(K, UP) : Exports == Implementation where
 
         sufactor_square_free(m : SUP) : List(SUP) ==
             sufactor2(m)
+
+        su_irreducible?(m : SUP) : Boolean ==
+            irreducible2?(m)
 
     fFr1 ==> Record(flag : fUnion, factor : UP, exponent : NNI)
 
@@ -1119,3 +1153,10 @@ UnivariateFiniteFieldFactorize(K, UP) : Exports == Implementation where
             rl := cons(["sqfr", unmakeSUP(f1), 1]$fFr1, rl)
         makeFR(lc::UP, rl)
 
+    irreducible?(pol : UP) : Boolean ==
+        pol = 0 => false
+        upol := makeSUP(pol)
+        degree(gcd(upol, differentiate(upol))) > 0 => false
+        lc := leadingCoefficient(upol)
+        upol := inv(lc)*upol
+        su_irreducible?(upol)
