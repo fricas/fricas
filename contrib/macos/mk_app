@@ -77,12 +77,34 @@ if [ "${action}" == "build" ]; then
 fi
 
 if [ "${action}" == "dist" ]; then
-  tar cvJf FriCAS-${FRICASVER}-${ARCH}-macos${MACOSXVER}.tar.xz FriCAS.app
+
+  [ -d FriCAS.app ] || fail "Build the app first with $0 build"
+  [ -f FriCAS.dmg ] && rm FriCAS.dmg
+
+  mkdir -p dmg
+  mv FriCAS.app dmg
+  chmod +x create_dmg 2>/dev/null
+  ./create_dmg \
+	  --no-internet-enable \
+	  --volname FriCAS \
+	  --background fricas_dmg_background.png \
+	  --volicon appIcon.icns \
+	  --window-pos 200 120 \
+	  --window-size 500 320 \
+	  --icon-size 80 \
+	  --icon FriCAS.app 130 155 \
+	  --hide-extension FriCAS.app \
+	  --app-drop-link 375 155 \
+	  FriCAS.dmg dmg \
+	  || fail "Error building DMG - manual cleanup is probably necessary"
+  mv dmg/FriCAS.app .
+  rmdir dmg
 fi
 
 if [ "${action}" == "clean" ]; then
   rm -vrf ${SBCLDIR}
   rm -vrf FriCAS.app
+  rm -vrf FriCAS.dmg
   rm -vrf build
   rm -vf *~
 fi
