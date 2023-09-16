@@ -151,6 +151,7 @@
    (|trace|                          . |interpreter|)
    (|undo|                           . |interpreter|)
    (|what|                           . |interpreter|)
+   (|version|                        . |interpreter|)
  ))
 
 (SETQ |$noParseCommands| '(
@@ -165,6 +166,7 @@
     |suspend|
     |synonym|
     |system|
+    |version|
     ))
 
 (SETQ |$tokenCommands| '(
@@ -233,7 +235,6 @@
        (|time|       . "set message time")
        (|type|       . "set message type")
        (|unexpose|   . "set expose drop constructor")
-       (|version|    . "lisp (concat |$build_version| \" compiled at \" |$build_date|)")
        (|wc|         . "what categories")
        (|wd|         . "what domains")
        (|wp|         . "what packages")

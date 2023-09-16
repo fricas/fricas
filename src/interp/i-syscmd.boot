@@ -2162,6 +2162,10 @@ quitSpad2Cmd() ==
 
 leaveScratchpad () == QUIT()
 
+--% )version
+version() == FORMAT(true, '"~S~%",
+                    CONCAT($build_version, '" compiled at ", $build_date))
+
 --% )read
 
 DEFVAR($nopiles, false)
