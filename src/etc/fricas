@@ -128,16 +128,8 @@ wsname=FRICASsys
 
 otheropts=""
 
-if [ ! -f $FRICAS/lib/viewman ] ; then
-    echo "viewman not present, disabling graphics"
-    otheropts="-nogr"
-fi
-
-if [ ! -f $FRICAS/bin/hypertex ]; then
-    echo "hypertex  not present, disabling"
-    otheropts="$otheropts -noht"
-fi
-
+had_nogr=false
+had_noht=false
 
 while [ "$*" != "" ] ; do
     opt=$1
@@ -171,7 +163,20 @@ while [ "$*" != "" ] ; do
             otheropts="$otheropts $1 $2"
             shift
             ;;
-        -clef|-noclef|-gr|-nogr|-ht|-noht|-iw|-noiw|-ihere|-noihere|-nox)
+        -nogr)
+            had_nogr=true
+            otheropts="$otheropts $1"
+            ;;
+        -noht)
+            had_noht=true
+            otheropts="$otheropts $1"
+            ;;
+        -nox)
+            had_nogr=true
+            had_noht=true
+            otheropts="$otheropts $1"
+            ;;
+        -clef|-noclef|-gr|-ht|-iw|-noiw|-ihere|-noihere)
             otheropts="$otheropts $1"
             ;;
         -rl)
@@ -199,6 +204,16 @@ while [ "$*" != "" ] ; do
         esac
         shift
 done
+
+if [ $had_nogr != true -a ! -f $FRICAS/lib/viewman ] ; then
+    echo "viewman not present, disabling graphics"
+    otheropts="$otheropts -nogr"
+fi
+
+if [ $had_noht != true -a ! -f $FRICAS/bin/hypertex ]; then
+    echo "hypertex  not present, disabling"
+    otheropts="$otheropts -noht"
+fi
 
 # 3. List the available workspaces, if asked
 
