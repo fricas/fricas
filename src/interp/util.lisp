@@ -77,7 +77,7 @@ at load time.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
-;;; Prefix a filename with the {\bf FRICAS} shell variable.
+;;; Prefix a filename with the {\bf $spadroot} variable.
 (defun make-absolute-filename (name)
  (concatenate 'string $spadroot name))
 
@@ -88,13 +88,10 @@ the system. In particular, these variables are sensitive to the
 be {\bf \$spadroot}. The {\bf reroot} function will change the
 system to use a new root directory and will have the same effect
 as changing the {\bf FRICAS} shell variable and rerunning the system
-from scratch.  A correct call looks like:
-\begin{verbatim}
-(in-package "BOOT")
-(reroot "${FRICAS}")
-\end{verbatim}
-where the [[${FRICAS}]] variable points to installed tree.
+from scratch.
 |#
+(defvar $spadroot "")
+
 (defun reroot (dir)
   (setq $spadroot dir)
   (setq $directory-list
@@ -268,10 +265,9 @@ After this function is called the image is clean and can be saved.
 #+:GCL (system:gbc-time 0)
     #+(or :sbcl :clisp :openmcl :lispworks)
     (if *fricas-load-libspad*
-        (let* ((ax-dir (|getEnv| "FRICAS"))
-               (spad-lib (concatenate 'string ax-dir "/lib/libspad.so")))
+        (let ((spad-lib (make-absolute-filename "/lib/libspad.so")))
             (format t "Checking for foreign routines~%")
-            (format t "FRICAS=~S~%" ax-dir)
+            (format t "FRICAS=~S~%" $spadroot)
             (format t "spad-lib=~S~%" spad-lib)
             (if (|fricas_probe_file| spad-lib)
                 (progn
@@ -281,7 +277,7 @@ After this function is called the image is clean and can be saved.
                     (|quiet_load_alien| spad-lib)
                     #+(or :sbcl :openmcl)
                     (fricas-lisp::init-gmp
-                        (concatenate 'string ax-dir "/lib/gmp_wrap.so"))
+                        (make-absolute-filename "/lib/gmp_wrap.so"))
                     #+(and :clisp :ffi)
                     (progn
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
