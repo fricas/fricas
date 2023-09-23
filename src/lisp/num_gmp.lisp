@@ -824,12 +824,16 @@
           (symbol-function 'orig-isqrt))
     (sb-ext:lock-package "COMMON-LISP")))
 
+(defun load-gmp-lib ()
+    #-:WIN32 (ignore-errors (|quiet_load_alien| "libgmp.so") t)
+    #+:WIN32 (if (ignore-errors (|quiet_load_alien| "libgmp-10.dll") t)
+                 t
+                 (ignore-errors (|quiet_load_alien|
+                     (BOOT::make-absolute-filename "/lib/libgmp-10.dll")) t)))
+
 (defun init-gmp(wrapper-lib)
     (if (not *gmp-multiplication-initialized*)
-        (if (ignore-errors (|quiet_load_alien|
-                            #-:WIN32 "libgmp.so"
-                            #+:WIN32 "libgmp-10.dll"
-                            ) t)
+        (if (load-gmp-lib)
             (if (ignore-errors
                     (|quiet_load_alien| wrapper-lib) t)
                 (progn
