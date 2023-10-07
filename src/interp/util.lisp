@@ -103,12 +103,9 @@ from scratch.
   )
 
 ;;; Sets up the system to use the {\bf FRICAS} shell variable if we can
-;;; and default to the {\bf \$spadroot} variable (which was the value
-;;; of the {\bf FRICAS} shell variable at build time) if we can't.
-;;; Use the parent directory of FRICASsys binary as fallback.
-(defun initroot (&optional (newroot nil))
-  (reroot (or (|getEnv| "FRICAS") newroot
-              (if (|fricas_probe_file| $spadroot) $spadroot)
+;;; otherwise use the parent directory of FRICASsys binary as fallback.
+(defun initroot ()
+  (reroot (or (|getEnv| "FRICAS")
               (let ((bin-parent-dir
                      (concatenate 'string
                                   (directory-namestring (car (|getCLArgs|)))
@@ -116,7 +113,7 @@ from scratch.
                 (if (|fricas_probe_file| (concatenate 'string bin-parent-dir
                                                       "algebra/interp.daase"))
                     bin-parent-dir))
-              (error "setenv FRICAS or (setq $spadroot)"))))
+              (error "Environment variable FRICAS is not set!"))))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
 ;;; to the default memory setup to run FriCAS efficiently.
@@ -161,11 +158,11 @@ it loads all of the named files, resets a few global state variables,
 loads the databases, sets up autoload triggers and clears out hash tables.
 After this function is called the image is clean and can be saved.
 |#
-(defun build-interpsys (load-files spad)
+(defun build-interpsys (load-files)
   #-:ecl
   (progn
       (mapcar #'load load-files)
-      (interpsys-image-init spad t))
+      (interpsys-image-init t))
   (if (and (boundp 'FRICAS-LISP::*building-fricassys*)
                 FRICAS-LISP::*building-fricassys*)
        (progn
@@ -186,7 +183,7 @@ After this function is called the image is clean and can be saved.
               (if (boundp el)
                   (push (list 'defparameter el (symbol-value el))
                         initforms)))
-          (push `(interpsys-ecl-image-init ,spad) initforms)
+          (push `(interpsys-ecl-image-init) initforms)
           (push `(fricas-restart) initforms)
           (setf initforms (reverse initforms))
           (push `progn initforms)
@@ -195,7 +192,7 @@ After this function is called the image is clean and can be saved.
   )
 )
 
-(defun interpsys-ecl-image-init (spad)
+(defun interpsys-ecl-image-init ()
      (format *standard-output* "Starting interpsys~%")
      #+:ecl (let ((sym (or (find-symbol "TRAP-FPE" "EXT")
                            (find-symbol "TRAP-FPE" "SI"))))
@@ -204,18 +201,16 @@ After this function is called the image is clean and can be saved.
      #+:ecl (let ((sym (find-symbol "*BREAK-ENABLE*" "SI")))
                 (if (and sym (boundp sym))
                     (setf (symbol-value sym) t)))
-     (initroot spad)
-     (setf spad $spadroot)
-     (format *standard-output* "spad = ~s~%" spad)
+     (interpsys-image-init nil)
+     (format *standard-output* "spad = ~s~%" $spadroot)
      (force-output  *standard-output*)
-     (interpsys-image-init spad nil)
      (format *standard-output* "before fricas-restart~%")
      (force-output  *standard-output*)
 )
 
-(defun interpsys-image-init (spad display_messages)
+(defun interpsys-image-init (display_messages)
   (setf *package* (find-package "BOOT"))
-  (initroot spad)
+  (initroot)
   #+:GCL
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
                       :array 400 :string 500 :cfun 100 :cpages 1000
