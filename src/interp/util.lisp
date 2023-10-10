@@ -105,7 +105,7 @@ from scratch.
 ;;; Sets up the system to use the {\bf FRICAS} shell variable if we can
 ;;; otherwise use the parent directory of FRICASsys binary as fallback.
 (defun initroot ()
-  (reroot (or (|getEnv| "FRICAS")
+  (setq spadroot (or (|getEnv| "FRICAS")
               (let ((bin-parent-dir
                      (concatenate 'string
                                   (directory-namestring (car (|getCLArgs|)))
@@ -113,7 +113,10 @@ from scratch.
                 (if (|fricas_probe_file| (concatenate 'string bin-parent-dir
                                                       "algebra/interp.daase"))
                     bin-parent-dir))
-              (error "Environment variable FRICAS is not set!"))))
+              (error "Environment variable FRICAS is not set!")))
+  (if (|fricas_probe_file| spadroot)
+      (reroot (trim-directory-name (namestring (truename spadroot))))
+      (error "Environment variable FRICAS is not valid!")))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
 ;;; to the default memory setup to run FriCAS efficiently.
