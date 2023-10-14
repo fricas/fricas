@@ -226,6 +226,23 @@ AC_MSG_RESULT([$fricas_lisp_flavor])
 fricas_fasl_type=`sed -n -e 's/fricas_fasl_type=//p' config_cl.out`
 fricas_lisp_version=`sed -n -e 's/fricas_lisp_version=//p' config_cl.out`
 
+AC_MSG_CHECKING([for suffix of compiled Lisp files])
+if test -z $fricas_fasl_type; then
+   AC_MSG_ERROR([Could not determine extension for compiled Lisp files])
+fi
+AC_MSG_RESULT([$fricas_fasl_type])
+
+fricas_fasl_type2=$fricas_fasl_type
+case $fricas_lisp_flavor in
+    ecl)
+       fricas_fasl_type="o"
+     ;;
+    *)
+     ;;
+esac
+AC_SUBST(fricas_fasl_type)
+AC_SUBST(fricas_fasl_type2)
+
 if test -z "$fricas_lisp_version" ; then
     AC_MSG_WARN([Unable to determine Lisp version.])
 else
@@ -412,7 +429,8 @@ AS_IF([test -n "$GMP_WRAP_SO_TARGET"],[
 ])
 AC_SUBST(GMP_LIB)
 AC_SUBST(GMP_EXT)
-## The following is a horrible to arrange for GCL to successfully
+
+## The following is a horrible hack to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
 case $fricas_lisp_flavor,$target in
@@ -424,8 +442,9 @@ case $fricas_lisp_flavor,$target in
         ;;
 esac
 AC_SUBST(fricas_gcl_rsym_hack)
+
 ## How are we supposed to tell the Lisp system to eval an expression
-## in batch mode?  What is the extension of a compiled Lisp file?
+## in batch mode?
 case $fricas_lisp_flavor in
     gcl)
        fricas_quiet_flags='-batch'
@@ -455,25 +474,9 @@ case $fricas_lisp_flavor in
        fricas_quiet_flags=
        fricas_eval_flags='-init - -siteinit - -eval'
        ;;
-    *) AC_MSG_ERROR([We do not know how to build FriCAS this $fricas_lisp]) ;;
+    *) AC_MSG_ERROR([We do not know how to build FriCAS with this Lisp: $fricas_lisp]) ;;
 esac
 AC_SUBST(fricas_quiet_flags)
-
-if test -z $fricas_fasl_type; then
-   AC_MSG_ERROR([Could not determine extension for compiled Lisp files])
-fi
-AC_MSG_RESULT([$fricas_fasl_type])
-
-fricas_fasl_type2=$fricas_fasl_type
-case $fricas_lisp_flavor in
-    ecl)
-       fricas_fasl_type="o"
-     ;;
-    *)
-     ;;
-esac
-AC_SUBST(fricas_fasl_type)
-AC_SUBST(fricas_fasl_type2)
 
 fricas_debug_compiler='no'
 

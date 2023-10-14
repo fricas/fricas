@@ -650,8 +650,6 @@ fricas_has_directory_operations
 fricas_all_prerequisites
 fricas_algebra_optimization
 fricas_debug_compiler
-fricas_fasl_type2
-fricas_fasl_type
 fricas_quiet_flags
 fricas_gcl_rsym_hack
 GMP_EXT
@@ -667,6 +665,8 @@ SOLIB_FLAGS
 LIBSPAD_SO_TARGET
 fricas_lisp_version
 fricas_lisp_flavor
+fricas_fasl_type2
+fricas_fasl_type
 FRICAS_LISP
 PREGENERATED
 AWK_FOR_TARGET
@@ -4099,6 +4099,25 @@ $as_echo "$fricas_lisp_flavor" >&6; }
 fricas_fasl_type=`sed -n -e 's/fricas_fasl_type=//p' config_cl.out`
 fricas_lisp_version=`sed -n -e 's/fricas_lisp_version=//p' config_cl.out`
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for suffix of compiled Lisp files" >&5
+$as_echo_n "checking for suffix of compiled Lisp files... " >&6; }
+if test -z $fricas_fasl_type; then
+   as_fn_error $? "Could not determine extension for compiled Lisp files" "$LINENO" 5
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $fricas_fasl_type" >&5
+$as_echo "$fricas_fasl_type" >&6; }
+
+fricas_fasl_type2=$fricas_fasl_type
+case $fricas_lisp_flavor in
+    ecl)
+       fricas_fasl_type="o"
+     ;;
+    *)
+     ;;
+esac
+
+
+
 if test -z "$fricas_lisp_version" ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Unable to determine Lisp version." >&5
 $as_echo "$as_me: WARNING: Unable to determine Lisp version." >&2;}
@@ -4746,7 +4765,8 @@ done
 fi
 
 
-## The following is a horrible to arrange for GCL to successfully
+
+## The following is a horrible hack to arrange for GCL to successfully
 ## rebuild symbol tables with "rsym" on Windows platform.  It should
 ## go away as soon as GCL upstream is fixed.
 case $fricas_lisp_flavor,$target in
@@ -4758,8 +4778,9 @@ case $fricas_lisp_flavor,$target in
         ;;
 esac
 
+
 ## How are we supposed to tell the Lisp system to eval an expression
-## in batch mode?  What is the extension of a compiled Lisp file?
+## in batch mode?
 case $fricas_lisp_flavor in
     gcl)
        fricas_quiet_flags='-batch'
@@ -4789,25 +4810,8 @@ case $fricas_lisp_flavor in
        fricas_quiet_flags=
        fricas_eval_flags='-init - -siteinit - -eval'
        ;;
-    *) as_fn_error $? "We do not know how to build FriCAS this $fricas_lisp" "$LINENO" 5 ;;
+    *) as_fn_error $? "We do not know how to build FriCAS with this Lisp: $fricas_lisp" "$LINENO" 5 ;;
 esac
-
-
-if test -z $fricas_fasl_type; then
-   as_fn_error $? "Could not determine extension for compiled Lisp files" "$LINENO" 5
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $fricas_fasl_type" >&5
-$as_echo "$fricas_fasl_type" >&6; }
-
-fricas_fasl_type2=$fricas_fasl_type
-case $fricas_lisp_flavor in
-    ecl)
-       fricas_fasl_type="o"
-     ;;
-    *)
-     ;;
-esac
-
 
 
 fricas_debug_compiler='no'
