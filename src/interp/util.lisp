@@ -293,6 +293,7 @@ After this function is called the image is clean and can be saved.
                       (if (fboundp 'si::readline-off)
                           (si::readline-off))
                       (setq |$SpadServer| t)))))
+  (setq *GENSYM-COUNTER* 0)
   (|interpsys_restart|)
 )
 
