@@ -406,7 +406,7 @@ database.
   |UnaryRecursiveAggregate&| |OrderedSet&| |AbelianGroup&| |Algebra&|
   |Module&| |Ring&| |StringAggregate&| |AbelianMonoid&|
   |ExtensibleLinearAggregate&| |PositiveInteger| |StreamAggregate&|
-  |IndexedString| |IndexedList| |ListAggregate&| |LinearAggregate&|
+  |IndexedString| |ListAggregate&| |LinearAggregate&|
   |Character| |String| |NonNegativeInteger| |SingleInteger|
   |OneDimensionalArrayAggregate&| |FiniteLinearAggregate&| |PrimitiveArray|
   |Integer| |List| |OutputForm|))
