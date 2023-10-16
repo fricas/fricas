@@ -344,7 +344,7 @@ with this hack and will try to convince the GCL crowd to fix this.
   #+:GCL si::*command-args*
   #+:cmu extensions:*command-line-words*
   #+:sbcl sb-ext::*posix-argv*
-  #+:clisp ext:*args*
+  #+:clisp (coerce (ext:argv) 'list)
   #+:openmcl ccl::*COMMAND-LINE-ARGUMENT-LIST*
   #+:ecl
     (let ((n (SI:ARGC)) (res nil))

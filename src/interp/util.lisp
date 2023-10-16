@@ -114,6 +114,7 @@ from scratch.
                                                       "algebra/interp.daase"))
                     bin-parent-dir))
               (error "Environment variable FRICAS is not set!")))
+  (setq spadroot (pad-directory-name spadroot))
   (if (|fricas_probe_file| spadroot)
       (reroot (trim-directory-name (namestring (truename spadroot))))
       (error "Environment variable FRICAS is not valid!")))
