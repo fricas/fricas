@@ -342,7 +342,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun |getCLArgs| ()
   #+:GCL si::*command-args*
-  #+:cmu extensions:*command-line-words*
+  #+:cmu extensions:*command-line-strings*
   #+:sbcl sb-ext::*posix-argv*
   #+:clisp (coerce (ext:argv) 'list)
   #+:openmcl ccl::*COMMAND-LINE-ARGUMENT-LIST*
