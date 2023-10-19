@@ -28,6 +28,7 @@
 (defun set-initial-parameters()
   (setq debug:*debug-print-length* 1024)
   (setq debug:*debug-print-level* 1024)
+  (setq extensions:*intexp-maximum-exponent* most-positive-fixnum)
   (setf *read-default-float-format* 'double-float))
 
 #-:sbcl
