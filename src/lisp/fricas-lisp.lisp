@@ -1151,10 +1151,15 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defmacro |replaceString| (result part start)
     `(replace ,result ,part :start1 ,start))
 
-#+:GCL
-(defmacro |elapsedGcTime| () '(system:gbc-time))
-#-:GCL
-(defmacro |elapsedGcTime| () '0)
+(defun |elapsedGcTime| ()
+  #+:clisp
+  (multiple-value-bind (used room static gc-count gc-space gc-time) (sys::%room)
+    gc-time)
+  #+:cmu ext:*gc-run-time*
+  #+:gcl (system:gbc-time)
+  #+:openmcl (ccl:gctime)
+  #+:sbcl sb-ext:*gc-run-time*
+  #-(or :clisp :cmu :gcl :openmcl :sbcl) 0)
 
 (defmacro |char| (arg)
   (cond ((stringp arg) (character arg))
