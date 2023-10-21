@@ -381,6 +381,13 @@ DEFPARAMETER($setOptions, '(
       $displayStartMsgs
       (on off)
       on)
+     (storage
+      "print memory usage after computation"
+      interpreter
+      LITERALS
+      $printStorageIfTrue
+      (on off)
+      off)
      (testing
       "print system testing header"
       development

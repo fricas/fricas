@@ -317,7 +317,7 @@
    |UnionCategory|
       ))
 
-(SETQ |$printStorageIfTrue| NIL) ;; storage info disabled in common lisp
+(SETQ |$printStorageIfTrue| NIL)
 (SETQ |$noEnv| NIL)
 
 (SETQ |$SideEffectFreeFunctionList| '(
