@@ -66,7 +66,7 @@ makeLongStatStringByProperty _
     str := '""
     for [class,name,:ab] in listofclasses repeat
       n := GET(name, classproperty)
-      n = 0.0 => 'iterate
+      n = 0.0 or n = 0 => 'iterate
       total := total + n
       timestr := normalizeStatAndStringify n
       str := makeStatString(str,timestr,ab,flag)
@@ -79,18 +79,8 @@ normalizeStatAndStringify t ==
       t := roundStat t
       t = 0.0 => '"0"
       FORMAT(nil,'"~,2F",t)
-  INTEGERP t =>
-      K := 1024
-      M := K*K
-      t > 9*M => CONCAT(STRINGIMAGE((t + 512*K)/M), '"M")
-      t > 9*K => CONCAT(STRINGIMAGE((t + 512)/K),   '"K")
-      STRINGIMAGE t
+  INTEGERP t => FORMAT(nil, '"~:d", t)
   STRINGIMAGE t
-
-significantStat t ==
-   FLOATP t => (t > 0.01)
-   INTEGERP  t => (t > 100)
-   true
 
 roundStat t ==
   not FLOATP t => t
@@ -170,6 +160,7 @@ initializeTimedNames(listofnames,listofclasses) ==
     PUT( name, 'ClassSpaceTotal,  0)
   $timedNameStack := '(other)
   computeElapsedTime()
+  computeElapsedSpace()
   PUT('gc, 'TimeTotal, 0.0)
   PUT('gc, 'SpaceTotal,  0)
   NIL
@@ -177,6 +168,8 @@ initializeTimedNames(listofnames,listofclasses) ==
 updateTimedName name ==
   count := (GET(name, 'TimeTotal) or 0) + computeElapsedTime()
   PUT(name, 'TimeTotal, count)
+  count := (GET(name, 'SpaceTotal) or 0) + computeElapsedSpace()
+  PUT(name, 'SpaceTotal, count)
 
 makeLongTimeString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,  _
@@ -234,6 +227,3 @@ timedEvaluate code ==
   code is ["LIST",:a] and #a > 200 =>
     "append"/[eval ["LIST",:x] for x in splitIntoBlocksOf200 a]
   eval code
-
-displayHeapStatsIfWanted() ==
-   $printStorageIfTrue => sayBrightly OLDHEAPSTATS()

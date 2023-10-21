@@ -675,7 +675,15 @@ This function respects intermediate #\Newline characters and drops
 
 (defun WHOCALLED(n) nil) ;; no way to look n frames up the stack
 
-(defun heapelapsed () 0)
+(defun heapelapsed ()
+  #+:clisp
+  (multiple-value-bind (used room static gc-count gc-space gc-time) (sys::%room)
+    (+ used gc-space))
+  #+:cmu (ext:get-bytes-consed)
+  #+:ecl (si:gc-stats t)
+  #+:openmcl (ccl::total-bytes-allocated)
+  #+:sbcl (sb-ext:get-bytes-consed)
+  #-(or :clisp :cmu :ecl :openmcl :sbcl) 0)
 
 (defun |goGetTracerHelper| (dn f oname alias options modemap)
     (lambda(&rest l)
