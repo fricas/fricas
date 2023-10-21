@@ -53,12 +53,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Note: The scanner reads from three separate input locations depending on the
  * value of the variable "input_type".  If this variable is:
  *
- * FromFile       -- it read from the file pointed to by "cfile".
+ * FromFile       -- it reads from the file pointed to by "cfile".
  * FromString     -- It reads from the string "input_string".
  * FromSpadSocket -- It reads from the socket pointed to by spad_socket
  * FromFD         -- It reads from a file descriptor
  *
- * New variable useAscii -- tells us if we we should translate
+ * New variable useAscii -- tells us if we should translate
  * graphics characters on the fly
  * initialised in init_scanner
  *

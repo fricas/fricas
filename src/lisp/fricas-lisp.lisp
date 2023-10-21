@@ -1151,8 +1151,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defmacro |replaceString| (result part start)
     `(replace ,result ,part :start1 ,start))
 
-(defmacro |elapsedUserTime| () '(get-internal-run-time))
-
 #+:GCL
 (defmacro |elapsedGcTime| () '(system:gbc-time))
 #-:GCL

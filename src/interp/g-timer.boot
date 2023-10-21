@@ -193,7 +193,7 @@ DEFPARAMETER($inverseTimerTicksPerSecond, 1.0/$timerTicksPerSecond)
 
 computeElapsedTime() ==
   -- in total time lists, CAR is VIRTCPU and CADR is TOTCPU
-  currentTime:= elapsedUserTime()
+  currentTime:= get_run_time()
   currentGCTime:= elapsedGcTime()
   gcDelta := currentGCTime - $oldElapsedGCTime
   elapsedSeconds:= $inverseTimerTicksPerSecond *

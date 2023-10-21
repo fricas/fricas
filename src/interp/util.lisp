@@ -114,9 +114,9 @@ from scratch.
                                                       "algebra/interp.daase"))
                     bin-parent-dir))
               (error "Environment variable FRICAS is not set!")))
-  (setq spadroot (pad-directory-name spadroot))
-  (if (|fricas_probe_file| spadroot)
-      (reroot (trim-directory-name (namestring (truename spadroot))))
+  (setq spadroot (|fricas_probe_file| spadroot))
+  (if spadroot
+      (reroot (trim-directory-name (namestring spadroot)))
       (error "Environment variable FRICAS is not valid!")))
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes

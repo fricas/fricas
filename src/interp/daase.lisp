@@ -1209,7 +1209,8 @@ database.
    (setq lst (read |$compress_stream|))
    (setq |$compress_vector_length| (car lst))
    (setq |$compress_vector|
-     (make-array (car lst) :initial-contents (cdr lst))))))
+     (make-array (car lst) :initial-contents (cdr lst)))))
+   (format t "~&"))
 
 (defun write-compress ()
  (let (compresslist masterpos out)
