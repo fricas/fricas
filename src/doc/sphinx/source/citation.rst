@@ -168,4 +168,4 @@ In the following we list publications mentioning FriCAS.
   <http://www.12000.org/my_notes/CAS_integration_tests/index.htm>`_
 
 * `Old collection of online articles connected to FriCAS and Axiom
-  <http://fricas-wiki.math.uni.wroc.pl/public/refs/articles.html>`_
+  <http://wiki.fricas.org/public/refs/articles.html>`_

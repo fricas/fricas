@@ -63,7 +63,7 @@ it |PACKAGE_BOOK|. Its content is shown by the integrated HyperDoc
 help system. You can also access the book in .pdf form at
 http://fricas.github.io/book.pdf.
 An older version is available in in .xhtml form at
-http://fricas-wiki.math.uni.wroc.pl/JenksSutorInXhtml.
+http://wiki.fricas.org/JenksSutorInXhtml.
 
 
 Where should I report bugs?
@@ -75,7 +75,7 @@ https://github.com/fricas/fricas/issues.
 The older bugtrackers at
 `SourceForge <http://sourceforge.net/tracker/?atid=972421&group_id=200168>`_
 and
-the `FriCAS wiki <`http://fricas-wiki.math.uni.wroc.pl/IssueTracker>`_
+the `FriCAS wiki <`http://wiki.fricas.org/IssueTracker>`_
 should not be used anymore.
 
 

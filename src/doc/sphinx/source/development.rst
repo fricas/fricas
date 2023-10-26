@@ -54,9 +54,9 @@ Other resources
    spadstyleguide
    contributors
 
-* `Debugging FriCAS <http://fricas-wiki.math.uni.wroc.pl/DebuggingFriCAS>`_
+* `Debugging FriCAS <http://wiki.fricas.org/DebuggingFriCAS>`_
 
-* `Lanuage Differences <http://fricas-wiki.math.uni.wroc.pl/LanguageDifferences>`_
+* `Lanuage Differences <http://wiki.fricas.org/LanguageDifferences>`_
 
 * `The )set command <fricas-notebooks/system-command-set.html>`_
 
