@@ -181,61 +181,6 @@ Symbol() : Exports == Implementation where
       not scripted? e => PNAME(e)$Lisp
       error "Cannot form string from non-atomic symbols."
 
--- Scripts ==> Record(sub: L, sup: L, presup: L, presub: L, args: L)
-    latex e ==
-      s : String := (PNAME(name e)$Lisp) pretend String
-      if #s > 1 and s.1 ~= char "\" then
-        s := concat("\mbox{\it ", concat(s, "}")$String)$String
-      not scripted? e => s
-      ss : Scripts := scripts e
-      lo : List OutputForm := ss.sub
-      sc : String
-      if not empty? lo then
-        sc := "__{"
-        while not empty? lo repeat
-            sc := concat(sc, latex first lo)$String
-            lo := rest lo
-            if not empty? lo then sc := concat(sc, ", ")$String
-        sc := concat(sc, "}")$String
-        s := concat(s, sc)$String
-      lo := ss.sup
-      if not empty? lo then
-        sc := "^{"
-        while not empty? lo repeat
-            sc := concat(sc, latex first lo)$String
-            lo := rest lo
-            if not empty? lo then sc := concat(sc, ", ")$String
-        sc := concat(sc, "}")$String
-        s := concat(s, sc)$String
-      lo := ss.presup
-      if not empty? lo then
-        sc := "{}^{"
-        while not empty? lo repeat
-            sc := concat(sc, latex first lo)$String
-            lo := rest lo
-            if not empty? lo then sc := concat(sc, ", ")$String
-        sc := concat(sc, "}")$String
-        s := concat(sc, s)$String
-      lo := ss.presub
-      if not empty? lo then
-        sc := "{}__{"
-        while not empty? lo repeat
-            sc := concat(sc, latex first lo)$String
-            lo := rest lo
-            if not empty? lo then sc := concat(sc, ", ")$String
-        sc := concat(sc, "}")$String
-        s := concat(sc, s)$String
-      lo := ss.args
-      if not empty? lo then
-        sc := "\left( {"
-        while not empty? lo repeat
-            sc := concat(sc, latex first lo)$String
-            lo := rest lo
-            if not empty? lo then sc := concat(sc, ", ")$String
-        sc := concat(sc, "} \right)")$String
-        s := concat(s, sc)$String
-      s
-
     anyRadix(n : Integer, s : String) : String ==
       ns:String := ""
       repeat
