@@ -470,4 +470,4 @@ domainEqualList(argl1, argl2) == EQUAL(argl1, argl2)
 removeAllClams() ==
   for [fun,:.] in $clamList repeat
     sayBrightly ['"Un-clamming function",'%b,fun,'%d]
-    SET(fun,eval INTERN STRCONC(STRINGIMAGE fun,'";"))
+    SETF(SYMBOL_-FUNCTION fun, SYMBOL_-FUNCTION INTERN STRCONC(STRINGIMAGE fun,'";"))
