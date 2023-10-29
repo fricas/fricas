@@ -272,7 +272,7 @@ will tell you the signatures that the interpreter is trying to use.
 Another method is to do
 ::
 
-   )lisp (setq |$monitorNewWorld| t)
+   )boot $monitorNewWorld := t
 
 and you can view database calls with
 ::
@@ -302,7 +302,7 @@ Graphics doesn't work or sman fails to start ?
 First try running ``sman`` as
 ::
 
-   sman -debug -noclef -nonag -noht
+   sman -debug -noclef -noht
 
 If graphics still doesn't work or sman fails to start then look at the
 error messages.
@@ -597,7 +597,7 @@ to disable it do
 
    --> (setq $dalymode nil)
 
-I wrote this change to the interpreter because I tend to use lisp a lot
+Tim Daly wrote this change to the interpreter because he used lisp a lot
 during maintenance. It breaks some syntax but you can work around that.
 
 If you really want to "drop" into lisp do
@@ -611,3 +611,6 @@ the BOOT package. To restart FriCAS type
 ::
 
    BOOT>(restart)
+
+Note: ')fin' does not work when using Clozure CL or ECL.  Due to
+this do not use it in partable scripts.
