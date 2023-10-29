@@ -381,13 +381,6 @@ DEFPARAMETER($setOptions, '(
       $displayStartMsgs
       (on off)
       on)
-     (summary
-      "print statistics after computation"
-      interpreter
-      LITERALS
-      $printStatisticsSummaryIfTrue
-      (on off)
-      off)
      (testing
       "print system testing header"
       development

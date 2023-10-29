@@ -115,7 +115,6 @@ pushTimedName name ==
 startTimingProcess name ==
   updateTimedName peekTimedName()
   pushTimedName name
-  if EQ(name, 'load) then          statRecordLoadEvent()
 
 stopTimingProcess name ==
   (name ~= peekTimedName()) and null $InteractiveMode =>
@@ -238,9 +237,3 @@ timedEvaluate code ==
 
 displayHeapStatsIfWanted() ==
    $printStorageIfTrue => sayBrightly OLDHEAPSTATS()
-
---% stubs for the stats summary fns
-statRecordInstantiationEvent() == nil
-statRecordLoadEvent()          == nil
-
-statisticsSummary()  == '"No statistics available."

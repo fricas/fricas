@@ -70,7 +70,6 @@ interpsysInitialization(display_messages) ==
   createInitializers()
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"interpreter"])
   initializeTimedNames($interpreterTimedNames,$interpreterTimedClasses)
-  statisticsInitialization()
   $InteractiveFrame := makeInitialModemapFrame()
   initializeSystemCommands()
   initializeInterpreterFrameRing()
@@ -93,7 +92,6 @@ interpsys_restart() ==
   $IOindex := 1
   $InteractiveFrame := makeInitialModemapFrame()
   loadExposureGroupData()
-  statisticsInitialization()
   initHist()
   initializeInterpreterFrameRing()
 
@@ -203,7 +201,6 @@ recordAndPrint(x,md) ==
   putHist('%,'value,objNewWrap(x,md),$e)
   if $printTimeIfTrue or $printTypeIfTrue then printTypeAndTime(x',md')
   if $printStorageIfTrue then printStorage()
-  if $printStatisticsSummaryIfTrue then printStatisticsSummary()
   'done
 
 printTypeAndTime(x,m) ==  --m is the mode/type of the result
@@ -257,11 +254,6 @@ printStorage() ==
   storeString :=
     makeLongSpaceString($interpreterTimedNames, $interpreterTimedClasses)
   sayKeyedMsg("S2GL0016",[storeString])
-
-printStatisticsSummary() ==
-  $collectOutput => nil
-  summary := statisticsSummary()
-  sayKeyedMsg("S2GL0017",[summary])
 
 --%  Interpreter Middle-Level Driver + Utilities
 

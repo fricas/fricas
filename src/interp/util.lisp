@@ -334,11 +334,6 @@ After this function is called the image is clean and can be saved.
          (if do-restart #'boot::fricas-restart nil))
 )
 
-(defun |statisticsInitialization| ()
- "initialize the garbage collection timer"
- #+:GCL (system:gbc-time 0)
- nil)
-
 (defun |mkAutoLoad| (fn cname)
    (function (lambda (&rest args)
                  #+:sbcl
