@@ -7,15 +7,19 @@ jobs:
 
     runs-on: macos-12
     timeout-minutes: 30
+    env:
+      SBCL_VER: 2.2.9
 
     steps:
     - uses: actions/checkout@v3
-    - name: install dependencies
-      run: brew install sbcl gmp libx11 libxpm libice libsm
+    - name: download and unpack SBCL
+      run: |
+        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-x86-64-darwin-binary.tar.bz2
+        tar xvf sbcl-${SBCL_VER}-x86-64-darwin-binary.tar.bz2
     - name: configure
       run: |
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=sbcl --with-gmp --with-x=no || cat config.log
+        ../fricas/configure --with-lisp=${GITHUB_WORKSPACE}/sbcl-${SBCL_VER}-x86-64-darwin/run-sbcl.sh || cat config.log
     - name: make
       run: cd ../build && make -j3
     - name: make check
