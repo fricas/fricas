@@ -386,7 +386,7 @@ DEFPARAMETER($setOptions, '(
       interpreter
       LITERALS
       $printStorageIfTrue
-      (on off)
+      (on off long)
       off)
      (testing
       "print system testing header"

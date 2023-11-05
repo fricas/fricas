@@ -52,11 +52,11 @@ makeLongStatStringByProperty _
       else
         timestr := '""
         otherStatTotal := otherStatTotal + n
-    str := makeStatString(str,timestr,ab,flag)
-  otherStatTotal := otherStatTotal
+    str := makeStatString(str, timestr, name, flag)
   PUT('other, property, otherStatTotal)
   if otherStatTotal > 0 then
-    str := makeStatString(str,normalizeStatAndStringify otherStatTotal,'O,flag)
+    timestr := normalizeStatAndStringify otherStatTotal
+    str := makeStatString(str, timestr, 'other, flag)
     total := total + otherStatTotal
     cl := first LASSOC('other, listofnames)
     cl := first LASSOC(cl, listofclasses)
@@ -141,6 +141,7 @@ DEFPARAMETER($interpreterTimedNames, '(
   (other          3 .   O) _
   (diskread       3 .   K) _
   (resolve        1 .   R) _
+  (print          3 .   P) _
   ))
 
 DEFPARAMETER($interpreterTimedClasses, '(
@@ -184,7 +185,6 @@ makeLongSpaceString(listofnames,listofclasses) ==
 DEFPARAMETER($inverseTimerTicksPerSecond, 1.0/$timerTicksPerSecond)
 
 computeElapsedTime() ==
-  -- in total time lists, CAR is VIRTCPU and CADR is TOTCPU
   currentTime:= get_run_time()
   currentGCTime:= elapsedGcTime()
   gcDelta := currentGCTime - $oldElapsedGCTime
