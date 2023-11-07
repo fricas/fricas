@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #  include <winsock2.h>
 #else
 #  include <sys/types.h>
+#  include <sys/select.h>
 #  include <sys/socket.h>
 #  include <sys/un.h>
 #  include <netinet/in.h>
