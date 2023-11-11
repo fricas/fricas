@@ -28,7 +28,10 @@
 (defun set-initial-parameters()
   (setq debug:*debug-print-length* 1024)
   (setq debug:*debug-print-level* 1024)
-  (setq extensions:*intexp-maximum-exponent* most-positive-fixnum)
+  ;; prevent error when computing small exponentials, but also prevent
+  ;; computing very large exponentials during compiler optimization
+  ;; (see function "safe-expt" in "cmucl/src/compiler/float-tran.lisp")
+  (setq extensions:*intexp-maximum-exponent* (- most-positive-fixnum 64))
   (setf *read-default-float-format* 'double-float))
 
 #-:sbcl
