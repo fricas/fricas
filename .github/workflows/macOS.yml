@@ -19,14 +19,17 @@ jobs:
     - name: configure
       run: |
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=${GITHUB_WORKSPACE}/sbcl-${SBCL_VER}-x86-64-darwin/run-sbcl.sh || cat config.log
+        ../fricas/configure --with-lisp=${GITHUB_WORKSPACE}/sbcl-${SBCL_VER}-x86-64-darwin/run-sbcl.sh --enable-gmp || cat config.log
     - name: make
       run: cd ../build && make -j3
     - name: make check
       run: cd ../build && make check -j3
     - name: Create artifact archives
       run: |
-        cd ../build && make dist-osx-dmg
+        cd ../build
+        make dist-macos
+        cp -v `brew list gmp | grep libgmp.10.dylib` FriCAS.app/Contents/Resources/usr/local/lib/fricas/target/*/lib/
+        make dist-macos-dmg
         mv FriCAS.dmg ../fricas/FriCAS-macOS-x86_64-${{ github.sha }}.dmg
     - name: Upload macOS binary
       uses: actions/upload-artifact@v3

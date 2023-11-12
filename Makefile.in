@@ -247,14 +247,17 @@ ${DIST_TARBALL}: out-of-source-check lastBuildDate dist-help dist-lisp dist-doc
 
 dist: ${DIST_TARBALL}
 
-dist-osx-dmg: out-of-source-check
-	-rm -rf FriCAS.app FriCAS.dmg
+dist-macos: out-of-source-check
+	-rm -rf FriCAS.app
 	${MKDIR_P} FriCAS.app/Contents/{MacOS,Resources}
 	${MAKE} DESTDIR=./FriCAS.app/Contents/Resources install-src
 	sed -e 's|/usr/local|`dirname $$0`/..|' -i .bak FriCAS.app/Contents/Resources/usr/local/bin/fricas
 	cp $(fricas_top_srcdir)/contrib/macos/Info.plist ./FriCAS.app/Contents/
 	cp $(fricas_top_srcdir)/contrib/macos/appIcon.icns ./FriCAS.app/Contents/Resources/
 	cc -framework CoreFoundation $(fricas_top_srcdir)/contrib/macos/FriCAS.c -o ./FriCAS.app/Contents/MacOS/FriCAS
+
+dist-macos-dmg:
+	-rm -rf FriCAS.dmg
 	hdiutil create -srcfolder FriCAS.app FriCAS.dmg
 
 clean-distdir:

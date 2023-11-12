@@ -838,11 +838,16 @@
     (sb-ext:lock-package "COMMON-LISP")))
 
 (defun load-gmp-lib ()
-    #-:WIN32 (ignore-errors (|quiet_load_alien| "libgmp.so") t)
-    #+:WIN32 (if (ignore-errors (|quiet_load_alien| "libgmp-10.dll") t)
-                 t
-                 (ignore-errors (|quiet_load_alien|
-                     (BOOT::make-absolute-filename "/lib/libgmp-10.dll")) t)))
+    (setq system-gmp-name #+:WIN32 "libgmp-10.dll"
+                          #-:WIN32 "libgmp.so")
+    (setq bundled-gmp-name #+:WIN32 "/lib/libgmp-10.dll"
+                           #+:DARWIN "/lib/libgmp.10.dylib"
+                           #-(or :WIN32 :DARWIN) nil)
+    (if (ignore-errors (|quiet_load_alien| system-gmp-name) t)
+        t
+        (and bundled-gmp-name
+             (ignore-errors (|quiet_load_alien|
+                 (BOOT::make-absolute-filename bundled-gmp-name)) t))))
 
 (defun init-gmp(wrapper-lib)
     (if (not *gmp-multiplication-initialized*)
