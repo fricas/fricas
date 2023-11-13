@@ -741,7 +741,7 @@ typeIsASmallInteger x == (x = $SingleInteger)
 
 typeToInputForm(t) == typeToForm(t, '(InputForm))
 
-typeToOutputForm(t) == typeToForm(t, $OutputForm)
+typeToOutputForm(t) == constructor_to_OutputForm(t)
 
 typeToForm(t, toForm) ==
     t0 := devaluate(t)

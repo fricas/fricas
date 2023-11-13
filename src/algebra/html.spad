@@ -217,8 +217,8 @@ HTMLFormat() : public == private where
     -- the precedence of / in the following is relatively low because
     -- the bar obviates the need for parentheses.
     binaryOps     : L Symbol := ["+->"::Symbol, '|, '^, '/, '<, '>, _
-        '=, 'OVER]
-    binaryPrecs   : L I := [0, 0, 900, 700, 400, 400, 400, 700]$(L I)
+        '=, 'OVER, "->"::Symbol]
+    binaryPrecs   : L I := [0, 0, 900, 700, 400, 400, 400, 700, 1001]$(L I)
     naryOps       : L S := ["-","+","*",blank,",",";"," ","ROW","",
        " \cr ","&","/\","\/"]$(L S)
     naryPrecs     : L I := [700, 700, 800, 800, 110, 110, 0, 0, 0, 0, 0, 600, 600]$(L I)
@@ -227,7 +227,7 @@ HTMLFormat() : public == private where
     plexPrecs     : L I := [700, 800, 700, 800, 700]$(L I)
     specialOps    : L Symbol := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, _
                      'VCONCAT, 'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, _
-                     'TAG, 'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN,_
+                     "~>"::Symbol, 'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN,_
                      'SEGMENT, 'QUOTE, 'theMap, 'SLASH]
 
     -- the next two lists provide translations for some strings for
@@ -448,7 +448,7 @@ HTMLFormat() : public == private where
       row:Tree S := newNodes("tr id='nroot'",[cell1,cell2])
       newNode("table border='0' id='nroot'",row)
 
-    -- formatSpecial handles "theMap","AGGLST","AGGSET","TAG","SLASH",
+    -- formatSpecial handles "theMap","AGGLST","AGGSET","~>","SLASH",
     -- "VCONCAT", "CONCATB","CONCAT","QUOTE","BRACKET","BRACE","PAREN",
     -- "OVERBAR","ROOT", "SEGMENT","SC","MATRIX","ZAG"
     -- note "SUB" and "SUPERSUB" are handled directly by formatHtml
@@ -462,8 +462,8 @@ HTMLFormat() : public == private where
         formatNary(",",args,prec)
       op = 'AGGSET =>
         formatNary(";",args,prec)
-      op = 'TAG =>
-        newNodes("",[formatHtml(first args,prec),tree("&#x02192;"),_
+      op = "~>"::Symbol =>
+        newNodes("",[formatHtml(first args,prec),tree("&#x021DD;"),_
           formatHtml(second args, prec)])
         --RightArrow
       op = 'SLASH =>
@@ -790,6 +790,9 @@ HTMLFormat() : public == private where
           op = '^ => buildSuperscript(s1, s2)
           op = '/ => newNodes("", [s1, tree(string(op)), s2])
           op = 'OVER => buildOver(s1, s2)
+          op = "->"::Symbol =>
+              newNodes("",[formatHtml(first args,prec),tree("&#x02192;"), _
+              formatHtml(second args, prec)])
           op = "+->"::Symbol =>
               newNodes("", [s1, tree("|&mdash;&rsaquo;"), s2])
           newNodes("", [s1, tree(string(op)), s2])
@@ -946,7 +949,7 @@ HTMLFormat() : public == private where
           -- special cases
           -- specialOps are:
           -- MATRIX, BRACKET, BRACE, CONCATB, VCONCAT
-          -- AGGLST, CONCAT, OVERBAR, ROOT, SUB, TAG
+          -- AGGLST, CONCAT, OVERBAR, ROOT, SUB, "~>"
           -- SUPERSUB, ZAG, AGGSET, SC, PAREN
           -- SEGMENT, QUOTE, theMap, SLASH
           member?(op, specialOps) => formatSpecial(op, args, prec)

@@ -46,7 +46,8 @@ init_output_properties() ==
       ["**", '"**"], ["^", '"^"], [":", '":"], ["::", '"::"], _
       ["@", '"@"], ["SEL", '"."], ["exquo", '" exquo "], ["div", '" div "], _
       ["quo", '" quo "], ["rem", '" rem "], ["case", '" case "], _
-      ["and", '" and "], ["or", '" or "], ["TAG", '" -> "], _
+      ["and", '" and "], ["or", '" or "], ["~>", '" ~> "], _
+      ["->", '"->"], _
       ["+->", '" +-> "], ["SEGMENT", '".."], ["in", '" in "], _
       ["~=", '"~="], ["JOIN", '" JOIN "], ["EQUATNUM", '"  "], _
       ["=", '" = "], ["==", '" == "], [">=", '" >= "], [">", '" > "], _
@@ -1310,25 +1311,24 @@ formattedFormat expr ==
   FORCE_-OUTPUT(get_formatted_stream())
   NIL
 
+do_formatters(x, was_type) ==
+    if $fortranFormat and not(was_type) then fortranFormat(x)
+    if $algebraFormat then mathprintWithNumber(x)
+    if $texFormat     then texFormat(x)
+    if $mathmlFormat  then mathmlFormat(x)
+    if $texmacsFormat then texmacsFormat(x)
+    if $htmlFormat    then htmlFormat(x)
+    if $formattedFormat then formattedFormat(x)
+
 output(expr,domain) ==
   $resolve_level : local := 0
   if isWrapped expr then expr := unwrap expr
   isMapExpr expr and not(domain is ["FunctionCalled", .]) => BREAK()
-  categoryForm? domain or domain = ["Mode"] =>
-    if $algebraFormat then
-      mathprintWithNumber outputDomainConstructor expr
-    if $texFormat     then
-      texFormat outputDomainConstructor expr
+  categoryForm?(domain) or domain = ["Mode"] =>
+      do_formatters(constructor_to_OutputForm(expr), true)
   T := coerceInteractive(objNewWrap(expr,domain),$OutputForm) =>
-    x := objValUnwrap T
-    if $fortranFormat then fortranFormat x
-    if $algebraFormat then
-      mathprintWithNumber x
-    if $texFormat     then texFormat x
-    if $mathmlFormat  then mathmlFormat x
-    if $texmacsFormat then texmacsFormat x
-    if $htmlFormat    then htmlFormat x
-    if $formattedFormat then formattedFormat x
+      x := objValUnwrap T
+      do_formatters(x, false)
   (FUNCTIONP(opOf domain)) and (not(SYMBOLP(opOf domain))) and
     (printfun := compiledLookup("<<",'(TextWriter TextWriter %), evalDomain domain))
        and (textwrit := compiledLookup("print", '(%), TextWriter())) =>

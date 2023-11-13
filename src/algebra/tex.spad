@@ -113,10 +113,10 @@ TexFormat() : public == private where
     -- the bar obviates the need for parentheses.
     binaryOps   : L(SY) := ["+->"::SY, "|"::SY, "^"::SY, "/"::SY, "="::SY,
                              "~="::SY, "<"::SY, "<="::SY, ">"::SY, ">="::SY,
-                               'OVER, 'LET]
+                               'OVER, 'LET, "->"::SY]
     binaryPrecs   : L I := [0, 0, 900, 700, 400,
                             400, 400, 400, 400, 400,
-                              700, 125]$(L I)
+                              700, 125, 1001]$(L I)
 
     naryOps     : L(SY) := ["-"::SY, "+"::SY, "*"::SY, ","::SY, ";"::SY,
                              'ROW, 'STRSEP, 'TENSOR]
@@ -128,7 +128,8 @@ TexFormat() : public == private where
     plexPrecs     : L I := [ 750, 750, 750, 750, 700]$(L I)
 
     specialOps  : L(SY) := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
-                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
+                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, _
+                             "~>"::SY, _
                              'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
                              'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME]
 
@@ -363,9 +364,9 @@ TexFormat() : public == private where
             formatNary(","::SY, "", 0, args, prec)
         op = 'AGGSET =>
             formatNary(";"::SY, "", 0, args, prec)
-        op = 'TAG =>
+        op = "~>"::SY =>
             group concat [formatExpr(first args, prec),
-                          "\rightarrow",
+                          "\rightsquigarrow",
                             formatExpr(second args, prec)]
         op = 'SLASH =>
             group concat [formatExpr(first args, prec),
@@ -523,6 +524,7 @@ TexFormat() : public == private where
             op = "^"::SY    => " \sp "
             op = "/"::SY     => " \over "
             op = 'OVER  => " \over "
+            op = "->"::SY => " \to "
             op = "+->"::SY   => " \mapsto "
             op = "~="::SY => " \ne "
             op = "<="::SY => " \leq "

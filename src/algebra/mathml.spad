@@ -360,7 +360,8 @@ MathMLFormat() : public == private where
     plexPrecs     : L I := [ 750, 750, 750, 750, 700]$(L I)
 
     specialOps  : L(SY) := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
-                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
+                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, _
+                             "~>"::Symbol, _
                              'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
                              'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME, _
                              'BOX, 'EQUATNUM, 'BINOMIAL, 'NOTHING]
@@ -594,9 +595,9 @@ MathMLFormat() : public == private where
             formatNary(","::SY, "", 0, args, prec)
         op = 'AGGSET =>
             formatNary(";"::SY, "", 0, args, prec)
-        op = 'TAG =>
+        op = "~>"::Symbol =>
             group concat [formatExpr(first args, prec),
-                          "<mo>&#x02192;</mo>",
+                          "<mo>&#x021DD;</mo>",
                             formatExpr(second args, prec)]
                          --RightArrow
         op = 'SLASH =>
@@ -795,6 +796,7 @@ MathMLFormat() : public == private where
                                     s2, "</mrow></mfrac>"]
             op = 'OVER => concat ["<mfrac><mrow>", s1, "</mrow><mrow>",
                                   s2, "</mrow></mfrac>"]
+            op = "->"::SY => concat [s1, "<mo>&#x02192;</mo>", s2]
             ops : S :=
                 op = 'LET => ":="
                 op = "<"::SY => "&lt;"

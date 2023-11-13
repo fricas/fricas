@@ -864,10 +864,10 @@ TexmacsFormat() : public == private where
     -- the bar obviates the need for parentheses.
     binaryOps   : L(SY) := ["+->"::SY, "|"::SY, "^"::SY, "/"::SY, "="::SY,
                              "~="::SY, "<"::SY, "<="::SY, ">"::SY, ">="::SY,
-                               'OVER, 'LET]
+                               'OVER, 'LET, "->"::SY]
     binaryPrecs   : L I := [0, 0, 900, 700, 400,
                             400, 400, 400, 400, 400,
-                              700, 125]$(L I)
+                              700, 125, 1001]$(L I)
 
     naryOps     : L(SY) := ["-"::SY, "+"::SY, "*"::SY, ","::SY, ";"::SY,
                              'ROW, 'STRSEP, 'TENSOR]
@@ -879,7 +879,8 @@ TexmacsFormat() : public == private where
     plexPrecs     : L I := [ 750, 750, 750, 750, 700]$(L I)
 
     specialOps  : L(SY) := ['MATRIX, 'BRACKET, 'BRACE, 'CONCATB, 'VCONCAT,  _
-                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, 'TAG, _
+                             'AGGLST, 'CONCAT, 'OVERBAR, 'ROOT, 'SUB, _
+                             "~>"::SY, _
                              'SUPERSUB, 'ZAG, 'AGGSET, 'SC, 'PAREN, _
                              'SEGMENT, 'QUOTE, 'theMap, 'SLASH, 'PRIME, _
                              'BOX, 'EQUATNUM, 'BINOMIAL, 'NOTHING]
@@ -1002,11 +1003,12 @@ TexmacsFormat() : public == private where
             formatNary(","::SY, "", 0, args, prec)
         op = 'AGGSET =>
             formatNary(";"::SY, "", 0, args, prec)
-        op = 'TAG =>
+        op = "~>"::SY =>
+            -- FIXME: Check for correctness
             group concat [formatExpr(first args, prec),
-                          " _"<rightarrow>_" ",
+                          " _"<rightsquigarrow>_" ",
                             formatExpr(second args, prec)]
-                         --RightArrow
+                         --right squiggy arrow
         op = 'SLASH =>
             group concat [formatExpr(first args, prec),
                           " _"/_" ", formatExpr(second args, prec)]
@@ -1226,6 +1228,7 @@ TexmacsFormat() : public == private where
                 op = ">"::SY => "<gtr>"
                 op = ">="::SY => "<geq>"
                 op = "+->"::SY => "<mapsto>"
+                op = "->"::SY => "<rightarrow>"
                 -- FIXME how to do this properly ???
                 op = 'LET   => ":="
                 string(op)

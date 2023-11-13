@@ -85,7 +85,7 @@
 
 ; **** X. Random tables
 
-(MAKEPROP 'TAG '|Led| '(TAG TAG 122 121))
+(MAKEPROP '|~>| '|Led| '(|~>| |~>| 122 121))
 (MAKEPROP 'EQUATNUM '|Nud| '(|dummy| |dummy| 0 0))
 (MAKEPROP 'EQUATNUM '|Led| '(|dummy| |dummy| 10000 0))
 (MAKEPROP 'LET '|Led| '(|:=| LET 125 124))
