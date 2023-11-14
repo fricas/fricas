@@ -168,7 +168,12 @@ After this function is called the image is clean and can be saved.
   #-:ecl
   (progn
       (mapcar #'load load-files)
-      (interpsys-image-init t))
+      ;; for CMUCL, do not load libspad.so before dumping image,
+      ;; the dumped image will load libspad.so instead.
+      #+:cmu (setq *fricas-load-libspad* nil $openServerIfTrue nil)
+      (interpsys-image-init t)
+      #+:cmu (setq *fricas-load-libspad* t $openServerIfTrue t)
+      )
   (if (and (boundp 'FRICAS-LISP::*building-fricassys*)
                 FRICAS-LISP::*building-fricassys*)
        (progn
@@ -264,7 +269,7 @@ After this function is called the image is clean and can be saved.
   (initroot)
 #+:poplog (setf POPLOG:*READ-PROMPT* "") ;; Turn off Poplog read prompts
 #+:GCL (system:gbc-time 0)
-    #+(or :sbcl :clisp :openmcl :lispworks)
+    #+(or :sbcl :clisp :openmcl :lispworks :cmu)
     (if *fricas-load-libspad*
         (let ((spad-lib (make-absolute-filename "/lib/libspad.so")))
             (format t "Checking for foreign routines~%")
@@ -274,7 +279,7 @@ After this function is called the image is clean and can be saved.
                 (progn
                     (setf *fricas-load-libspad* nil)
                     (format t "foreign routines found~%")
-                    #+(or :sbcl :openmcl :lispworks)
+                    #+(or :sbcl :openmcl :lispworks :cmu)
                     (|quiet_load_alien| spad-lib)
                     #+(or :sbcl :openmcl)
                     (fricas-lisp::init-gmp
@@ -283,6 +288,8 @@ After this function is called the image is clean and can be saved.
                     (progn
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
                         (FRICAS-LISP::clisp-init-foreign-calls))
+                    #+:cmu
+                    (FRICAS-LISP::cmu-init-foreign-calls)
                 )
                 (setf $openServerIfTrue nil))))
     #+(or :GCL (and :clisp :ffi) :sbcl :cmu :openmcl :ecl :lispworks)

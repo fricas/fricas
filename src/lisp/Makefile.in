@@ -138,7 +138,7 @@ do_it.ecl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
 	     '(make-program "${OUT}/lisp$(EXEEXT)" nil)' | $(FRICAS_LISP)
 	$(STAMP) $@
 
-do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
+do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks do_it.cmucl: \
    fricas-lisp.lisp fricas-package.lisp fricas-config.lisp $(NUM_GMP) \
    primitives.lisp
 	echo '(load "fricas-package.lisp")' \
@@ -148,20 +148,6 @@ do_it.sbcl do_it.clisp do_it.openmcl do_it.lispworks: \
 	    '(load (compile-file "primitives.lisp"))' \
             '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
          | $(LISP_CMD)
-	 $(STAMP) $@
-
-do_it.cmucl: fricas-lisp.lisp fricas-package.lisp \
-           fricas-config.lisp primitives.lisp
-	echo '(load "fricas-package.lisp")' \
-	    '(load "fricas-config.lisp")' \
-	    '(setf (ext:search-list "libspad:")' \
-	    '(quote ("${fricas_target_libdir}/")))' \
-	    '(ext:load-foreign "libspad:libspad.so")' \
-	    '(load (compile-file "fricas-lisp.lisp"))' \
-	    '(load (compile-file "primitives.lisp"))' \
-	    '(defswitch "-")' \
-            '(in-package "FRICAS-LISP") (save-core "${OUT}/lisp$(EXEEXT)")' \
-         | $(FRICAS_LISP)
 	 $(STAMP) $@
 
 # Build GCL takes quite a while, so we don't clean the

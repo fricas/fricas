@@ -379,6 +379,8 @@ with this hack and will try to convince the GCL crowd to fix this.
     (ccl::open-shared-library s)
     #+:lispworks
     (fli:register-module s)
+    #+:cmu
+    (ext:load-foreign s)
 )
 
 ;;; -------------------------------------------------------
@@ -648,8 +650,12 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;;
 
 (defmacro foreign-defs (&rest arguments)
-    #-:clisp `(progn ,@arguments)
-    #+(and :clisp :ffi) `(defun clisp-init-foreign-calls () ,@arguments)
+    #-(or :clisp :cmu) `(progn ,@arguments)
+    #+(and :clisp :ffi)
+    `(defun clisp-init-foreign-calls () ,@arguments)
+    #+:cmu
+    `(defun cmu-init-foreign-calls ()
+        (eval (quote (progn ,@arguments))))
 )
 
 (foreign-defs
