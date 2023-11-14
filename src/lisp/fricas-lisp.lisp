@@ -399,6 +399,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (int "int")
     (c-string "char *")
     (double "double")
+    (char-* "char *")
 ))
 
 (defun c_type_as_string(c_type) (nth 1 (assoc c_type *c_type_as_string*)))
@@ -446,6 +447,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (int ffi:int)
     (c-string  ffi:c-string)
     (double ffi:double-float)
+    (char-* ffi:c-pointer)
 ))
 
 (defun c-args-to-clisp (arguments)
@@ -474,6 +476,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (int c-call:int)
     (c-string c-call:c-string)
     (double c-call:double)
+    (char-* (alien:* c-call:char))
 ))
 
 (defun c-args-to-cmucl (arguments)
@@ -498,6 +501,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (int SB-ALIEN::int)
     (c-string SB-ALIEN::c-string)
     (double SB-ALIEN::double)
+    (char-* (sb-alien:* sb-alien:char))
 ))
 
 (defun c-args-to-sbcl (arguments)
@@ -522,6 +526,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (int :int)
     (c-string :address)
     (double :double-float)
+    (char-* :address)
 ))
 
 (defun c-args-to-openmcl (arguments)
@@ -562,6 +567,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                  (int :int)
                  (c-string  :cstring )
                  (double :double)
+                 (char-* :pointer-void)
                  ))
 
 (defun c-args-to-ecl (arguments)
@@ -617,7 +623,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 (setf *c-type-to-ffi*
       '((int      :int)
         (c-string (:reference-pass :ef-mb-string))
-        (double   :double)))
+        (double   :double)
+        (char-*   :pointer)
+        ))
 
 (defun c-args-to-lispworks (arguments)
   (mapcar (lambda (x) (list (nth 0 x) (c-type-to-ffi (nth 1 x))))
@@ -687,6 +695,14 @@ with this hack and will try to convince the GCL crowd to fix this.
        (purpose int)
        (sig int))
 
+#-:gcl
+(fricas-foreign-call sock_get_string_buf "sock_get_string_buf" char-*
+       (purpose int)
+       (buf char-*)
+       (len int))
+
+)
+
 #+:GCL
 (progn
 
@@ -709,16 +725,6 @@ with this hack and will try to convince the GCL crowd to fix this.
             buf))
 
 )
-#+(and :clisp :ffi)
-(eval '(FFI:DEF-CALL-OUT sock_get_string_buf
-    (:NAME "sock_get_string_buf")
-    (:arguments (purpose ffi:int)
-    (buf ffi:c-pointer)
-    (len ffi:int))
-    (:return-type ffi:int)
-    (:language :stdc)))
-
-)
 
 #+(and :clisp :ffi)
 (defun |sockGetStringFrom| (purpose)
@@ -728,80 +734,34 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:openmcl
 (defun |sockGetStringFrom| (purpose)
-    (ccl::%stack-block ((tmp-buf 10000))
-        (ccl::external-call "sock_get_string_buf"
-            :int purpose :address tmp-buf :int 10000)
-        (ccl::%get-cstring tmp-buf)))
+    (ccl:%stack-block ((buf 10000))
+        (sock_get_string_buf purpose buf 10000)
+        (ccl:%get-cstring buf)))
 
 #+:cmu
 (defun |sockGetStringFrom| (purpose)
-        (alien:with-alien ((tmp-buf (alien:array
-                                         c-call:char 10000)))
-            (alien:alien-funcall
-                (alien:extern-alien
-                    "sock_get_string_buf"
-                        (alien:function c-call:void
-                            c-call:int
-                            (alien:* c-call:char)
-                            c-call:int))
-                purpose
-                (alien:addr (alien:deref tmp-buf 0))
-                10000)
-            (alien:cast tmp-buf c-call:c-string)
-        )
-)
+    (alien:with-alien ((buf (alien:array c-call:char 10000)))
+        (sock_get_string_buf purpose (alien:addr (alien:deref buf 0)) 10000)
+        (alien:cast buf c-call:c-string)))
 
 #+:sbcl
 (defun |sockGetStringFrom| (purpose)
-        (SB-ALIEN::with-alien ((tmp-buf (SB-ALIEN::array
-                                         SB-ALIEN::char 10000)))
-            (SB-ALIEN::alien-funcall
-                (SB-ALIEN::extern-alien
-                    "sock_get_string_buf"
-                        (SB-ALIEN::function SB-ALIEN::void
-                            SB-ALIEN::int
-                            (SB-ALIEN::* SB-ALIEN::char)
-                            SB-ALIEN::int))
-                purpose
-                (SB-ALIEN::addr (SB-ALIEN::deref tmp-buf 0))
-                10000)
-            (sb-alien:cast tmp-buf sb-alien:c-string)
-        )
-)
+  (sb-alien:with-alien ((buf (sb-alien:array sb-alien:char 10000)))
+    (sock_get_string_buf purpose (sb-alien:addr (sb-alien:deref buf 0)) 10000)
+    (sb-alien:cast buf sb-alien:c-string)))
 
 #+:ecl
-(progn
-
-(ext:with-backend :c/c++
-   (FFI:clines "extern void sock_get_string_buf(int purpose,"
-               "                  char * buf, int len);"))
-
-(ffi:def-function ("sock_get_string_buf" sock_get_string_buf_wrapper)
-                   ((purpose :int) (buf (* :unsigned-char)) (len :int))
-                   :returning :void)
-
 (defun |sockGetStringFrom| (purpose)
     (ffi:with-foreign-object (buf '(:array :unsigned-char 10000))
-        (sock_get_string_buf_wrapper purpose buf 10000)
+        (sock_get_string_buf purpose buf 10000)
         (ffi:convert-from-foreign-string buf)))
 
-)
-
 #+:lispworks
-(progn
-
-(fli:define-foreign-function (sock_get_string_buf_wrapper "sock_get_string_buf")
-    ((purpose :int)
-     (buf :pointer)
-     (len :int))
-  :result-type :void)
-
 (defun |sockGetStringFrom| (purpose)
-  (fli:with-dynamic-foreign-objects
-      ((buf (:ef-mb-string :limit 10000)))
-    (sock_get_string_buf_wrapper purpose buf 10000)
-    (fli:convert-from-foreign-string buf)))
-)
+    (fli:with-dynamic-foreign-objects ((buf (:ef-mb-string :limit 10000)))
+        (sock_get_string_buf purpose buf 10000)
+        (fli:convert-from-foreign-string buf)))
+
 
 ;;; -------------------------------------------------------
 ;;; File and directory support
