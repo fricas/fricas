@@ -690,9 +690,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:GCL
 (progn
 
-(SI::defentry sock_get_string_buf (SI::int SI::object SI::int)
-    (SI::int "sock_get_string_buf_wrapper"))
-
 ;; GCL may pass strings by value.  'sock_get_string_buf' should fill
 ;; string with data read from connection, therefore needs address of
 ;; actual string buffer. We use 'sock_get_string_buf_wrapper' to
@@ -716,7 +713,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 (eval '(FFI:DEF-CALL-OUT sock_get_string_buf
     (:NAME "sock_get_string_buf")
     (:arguments (purpose ffi:int)
-    (buf (FFI:C-POINTER (FFI:C-ARRAY FFI::char 10000)))
+    (buf ffi:c-pointer)
     (len ffi:int))
     (:return-type ffi:int)
     (:language :stdc)))
@@ -725,25 +722,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+(and :clisp :ffi)
 (defun |sockGetStringFrom| (purpose)
-    (let ((buf nil))
-        (FFI:WITH-C-VAR (tmp-buf '(FFI:C-ARRAY
-                                   FFI::char 10000))
-            (sock_get_string_buf purpose (FFI:C-VAR-ADDRESS tmp-buf) 10000)
-            (prog ((len2 10000))
-                (dotimes (i 10000)
-                    (if (eql 0 (FFI:ELEMENT tmp-buf i))
-                        (progn
-                            (setf len2 i)
-                            (go nn1))))
-              nn1
-                (setf buf (make-string len2))
-                (dotimes (i len2)
-                    (setf (aref buf i)
-                          (code-char (FFI:ELEMENT tmp-buf i)))))
-        )
-        buf
-    )
-)
+    (ffi:with-foreign-object (buf '(ffi:c-array-max ffi:character 10000))
+        (sock_get_string_buf purpose buf 10000)
+        (ffi:foreign-value buf)))
 
 #+:openmcl
 (defun |sockGetStringFrom| (purpose)
@@ -754,7 +735,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:cmu
 (defun |sockGetStringFrom| (purpose)
-    (let ((buf nil))
         (alien:with-alien ((tmp-buf (alien:array
                                          c-call:char 10000)))
             (alien:alien-funcall
@@ -767,26 +747,12 @@ with this hack and will try to convince the GCL crowd to fix this.
                 purpose
                 (alien:addr (alien:deref tmp-buf 0))
                 10000)
-            (prog ((len2 10000))
-                (dotimes (i 10000)
-                    (if (eql 0 (alien:deref tmp-buf i))
-                        (progn
-                            (setf len2 i)
-                            (go nn1))))
-              nn1
-                (setf buf (make-string len2))
-                (dotimes (i len2)
-                    (setf (aref buf i)
-                        (code-char (alien:deref tmp-buf i))))
-            )
+            (alien:cast tmp-buf c-call:c-string)
         )
-        buf
-    )
 )
 
 #+:sbcl
 (defun |sockGetStringFrom| (purpose)
-    (let ((buf nil))
         (SB-ALIEN::with-alien ((tmp-buf (SB-ALIEN::array
                                          SB-ALIEN::char 10000)))
             (SB-ALIEN::alien-funcall
@@ -799,21 +765,8 @@ with this hack and will try to convince the GCL crowd to fix this.
                 purpose
                 (SB-ALIEN::addr (SB-ALIEN::deref tmp-buf 0))
                 10000)
-            (prog ((len2 10000))
-                (dotimes (i 10000)
-                    (if (eql 0 (SB-ALIEN::deref tmp-buf i))
-                        (progn
-                            (setf len2 i)
-                            (go nn1))))
-              nn1
-                (setf buf (make-string len2))
-                (dotimes (i len2)
-                    (setf (aref buf i)
-                        (code-char (SB-ALIEN::deref tmp-buf i))))
-            )
+            (sb-alien:cast tmp-buf sb-alien:c-string)
         )
-        buf
-    )
 )
 
 #+:ecl
@@ -824,7 +777,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                "                  char * buf, int len);"))
 
 (ffi:def-function ("sock_get_string_buf" sock_get_string_buf_wrapper)
-                   ((purpose :int) (buf (:array :unsigned-char 10000)) (len :int))
+                   ((purpose :int) (buf (* :unsigned-char)) (len :int))
                    :returning :void)
 
 (defun |sockGetStringFrom| (purpose)
