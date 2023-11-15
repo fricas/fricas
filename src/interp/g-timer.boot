@@ -41,56 +41,40 @@ makeLongStatStringByProperty _
   total := 0
   str := '""
   otherStatTotal := GET('other, property)
+  insignificantStat := 0
   for [name,class,:ab] in listofnames repeat
-    name = 'other => 'iterate
     cl := first LASSOC(class, listofclasses)
     n := GET(name, property)
     PUT(cl, classproperty, n + GET(cl, classproperty))
     total := total + n
-    if n >= 0.01
-      then timestr := normalizeStatAndStringify n
-      else
-        timestr := '""
-        otherStatTotal := otherStatTotal + n
-    str := makeStatString(str, timestr, name, flag)
-  PUT('other, property, otherStatTotal)
-  if otherStatTotal > 0 then
-    timestr := normalizeStatAndStringify otherStatTotal
-    str := makeStatString(str, timestr, 'other, flag)
-    total := total + otherStatTotal
-    cl := first LASSOC('other, listofnames)
-    cl := first LASSOC(cl, listofclasses)
-    PUT(cl, classproperty, otherStatTotal + GET(cl, classproperty))
-  if flag ~= 'long then
-    total := 0
-    str := '""
+    name = 'other or flag ~= 'long => 'iterate
+    if n >= 0.01 then
+        str := makeStatString(str, n, name, flag)
+    else
+        insignificantStat := insignificantStat + n
+  if flag = 'long then
+    str := makeStatString(str, otherStatTotal + insignificantStat, 'other, flag)
+  else
     for [class,name,:ab] in listofclasses repeat
       n := GET(name, classproperty)
-      n = 0.0 or n = 0 => 'iterate
-      total := total + n
-      timestr := normalizeStatAndStringify n
-      str := makeStatString(str,timestr,ab,flag)
+      str := makeStatString(str, n, ab, flag)
   total := STRCONC(normalizeStatAndStringify total,'" ", units)
   str = '"" =>  total
   STRCONC(str, '" = ", total)
 
 normalizeStatAndStringify t ==
   FLOATP t =>
-      t := roundStat t
-      t = 0.0 => '"0"
+      t < 0.01 => '"0"
       FORMAT(nil,'"~,2F",t)
   INTEGERP t => FORMAT(nil, '"~:d", t)
   STRINGIMAGE t
 
-roundStat t ==
-  not FLOATP t => t
-  (TRUNCATE (0.5 + t * 1000.0)) / 1000.0
-
 makeStatString(oldstr,time,abb,flag) ==
-  time = '"" => oldstr
+  time < 0.01 => oldstr
   opening := (flag = 'long => '"("; '" (")
-  oldstr = '"" => STRCONC(time,opening,abb,'")")
-  STRCONC(oldstr,'" + ",time,opening,abb,'")")
+  timestr := normalizeStatAndStringify time
+  oldstr = '"" => STRCONC(timestr, opening, abb, '")")
+  STRCONC(oldstr, '" + ", timestr, opening, abb, '")")
 
 peekTimedName() == IFCAR $timedNameStack
 
