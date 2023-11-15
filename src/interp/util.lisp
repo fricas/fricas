@@ -170,10 +170,9 @@ After this function is called the image is clean and can be saved.
       (mapcar #'load load-files)
       ;; for CMUCL, do not load libspad.so before dumping image,
       ;; the dumped image will load libspad.so instead.
-      #+:cmu (setq *fricas-load-libspad* nil $openServerIfTrue nil)
-      (interpsys-image-init t)
-      #+:cmu (setq *fricas-load-libspad* t $openServerIfTrue t)
-      )
+      (let (#+:cmu(*fricas-load-libspad* nil)
+            #+:cmu($openServerIfTrue nil))
+          (interpsys-image-init t)))
   (if (and (boundp 'FRICAS-LISP::*building-fricassys*)
                 FRICAS-LISP::*building-fricassys*)
        (progn
