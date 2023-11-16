@@ -586,22 +586,19 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun ecl-foreign-call (name c-name return-type arguments)
     (multiple-value-bind (fargs strs) (c-args-to-ecl arguments)
-        (let ((l-ret (c-type-to-ffi return-type))
-               wrapper)
+        (let ((l-ret (c-type-to-ffi return-type)))
           `(progn
             (ext:with-backend :c/c++
                (FFI:clines ,(make_extern return-type c-name arguments)))
             ,(if strs
-                (let* ((sym (gensym))
-                       (wargs (mapcar #'car fargs))
-                       (largs (mapcar #'car arguments))
-                       (wrapper `(,sym ,@wargs)))
-                    (dolist (el strs)
-                        (setf wrapper `(FFI:WITH-CSTRING ,el ,wrapper)))
-                    (setf wrapper `(defun ,name ,largs ,wrapper))
+                (let ((sym (gensym))
+                      (wargs (mapcar #'car fargs))
+                      (largs (mapcar #'car arguments)))
                     `(progn (ffi:def-function (,c-name ,sym)
                                 ,fargs :returning ,l-ret)
-                            ,wrapper))
+                            (defun ,name ,largs
+                                (ffi:with-cstrings ,strs
+                                    (,sym ,@wargs)))))
                 `(ffi:def-function (,c-name ,name)
                      ,fargs :returning ,l-ret))))))
 
