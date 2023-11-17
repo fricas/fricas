@@ -666,13 +666,13 @@
 
 ;;; Boot macros
 (defmacro file-exports (lst)
-  `(eval-when (load eval)
+  `(eval-when (:execute :load-toplevel)
               (when (fboundp 'process-export-entry)
                     (mapcar #'process-export-entry ,lst))
         nil))
 
 (defmacro file-imports (lst)
-  `(eval-when (load eval)
+  `(eval-when (:execute :load-toplevel)
               (when (fboundp 'process-import-entry)
                     (mapcar #'process-import-entry ,lst))
         nil))

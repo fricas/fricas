@@ -336,8 +336,6 @@ bpOutItem()==
     b:=shoeCompTran ["LAMBDA",["x"],b]
     bpPush [shoeEVALANDFILEACTQ CADDR b]
 
-shoeEVALANDFILEACTQ x==  ["EVAL-WHEN", ["EVAL","LOAD"], x]
-
 SoftShoeError(posn,key)==
     shoeConsole CONCAT('"ERROR IN LINE ",STRINGIMAGE lineNo posn)
     shoeConsole lineString posn

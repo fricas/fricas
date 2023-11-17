@@ -1141,3 +1141,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defmacro |doInBoottranPackage| (expr)
     `(let ((*PACKAGE* (find-package "BOOTTRAN")))
          ,expr))
+
+(defun |shoeEVALANDFILEACTQ| (expr)
+    `(eval-when (:execute :load-toplevel)
+         ,expr))
