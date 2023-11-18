@@ -179,7 +179,7 @@ fricas_close_socket(fricas_socket s)
 #endif
 }
 
-/* Return 1 is the last call was cancelled. */
+/* Return 1 if the last call was cancelled. */
 
 static inline int
 fricas_call_was_cancelled(void)
@@ -191,7 +191,7 @@ fricas_call_was_cancelled(void)
 #endif
 }
 
-/* Return 1 is last connect() was refused.  */
+/* Return 1 if last connect() was refused.  */
 
 static inline int
 fricas_connection_refused(void)

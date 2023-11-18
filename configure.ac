@@ -342,7 +342,7 @@ esac
 AC_SUBST(LIBSPAD_SO_TARGET)
 AC_SUBST(SOLIB_FLAGS)
 
-## In case our underlying lisp is SBCL or Closure CL, we provide a
+## In case our underlying lisp is SBCL or Clozure CL, we provide a
 ## wrapper to enable GMP bignums in lisp
 GMP_WRAP_SO_TARGET=""
 GMP_CPPFLAGS=""
@@ -414,10 +414,10 @@ AS_IF([test -n "$GMP_WRAP_SO_TARGET"],[
   # ask for shared library in AC_CHECK_LIB
   LDFLAGS="$LDFLAGS $GMP_LDFLAGS -fPIC $SOLIB_FLAGS"
   AC_CHECK_LIB(gmp, __gmpz_init, [true], [AC_MSG_ERROR(
-    [GNU MP not found, see http://swox.com/gmp])])
+    [GNU MP not found])])
   CPPFLAGS="$CPPFLAGS $GMP_CPPFLAGS"
   AC_CHECK_HEADERS([gmp.h], [], [AC_MSG_ERROR(
-    [gmp.h not found, see http://swox.com/gmp])])
+    [gmp.h not found])])
   # reset CPPFLAGS and LDFLAGS
   CPPFLAGS=$fricas_save_CPPFLAGS
   LDFLAGS=$fricas_save_LDFLAGS

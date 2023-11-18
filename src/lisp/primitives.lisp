@@ -290,7 +290,7 @@
 
 ;;; Floating point macros
 
-;; Before version 1.8 Closure CL had buggy floating point optimizer, so
+;; Before version 1.8 Clozure CL had buggy floating point optimizer, so
 ;; for it we need to omit type declarations to disable optimization
 #-(and :openmcl (not :CCL-1.8))
 (defmacro DEF_DF_BINOP (name op)

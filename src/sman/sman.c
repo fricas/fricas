@@ -567,7 +567,7 @@ fork_FriCAS(void)
     augmented_ws_path = (char *)malloc(2 * strlen(ws_path) + strlen(eval_code) + strlen(" -- ") + strlen(" ") + 1);
     strcpy(augmented_ws_path,ws_path);          /* write the name    */
     /* Pass '--' to make sure that argument(s) passed to FRICASsys
-       do not cause trouble from host Lisp (Closure CL would
+       do not cause trouble from host Lisp (Clozure CL would
        treat argument as Lisp kernel name, Clisp signals error
        if it can not recognize the option. */
     strcat(augmented_ws_path," -- ");

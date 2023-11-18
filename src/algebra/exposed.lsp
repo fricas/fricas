@@ -1,7 +1,7 @@
 (in-package "BOOT")
 (setq |$globalExposureGroupAlist|
 '(
-;;define the groups |basic| |naglink| |anna| |categories| |Hidden| |defaults|
+;;define the groups |basic| |categories| |Hidden| |defaults|
 (|basic|
   (|AlgebraicManipulations| . ALGMANIP)
   (|AlgebraicNumber| . AN)

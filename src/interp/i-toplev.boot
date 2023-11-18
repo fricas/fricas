@@ -246,7 +246,6 @@ justifyMyType(t) ==
   CONCAT(fillerSpaces($LINELENGTH-len, '" "), t)
 
 typeTimePrin x ==
-  $highlightDelta: local:= 0
   maprinSpecial(x,0,79)
 
 printStorage() ==

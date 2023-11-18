@@ -167,40 +167,6 @@ with this hack and will try to convince the GCL crowd to fix this.
     (if restart
         (hcl:save-image core-image :restart-function restart)
       (hcl:save-image core-image)))
-#|
-  (let ((ccl-dir (|getEnv| "CCL_DEFAULT_DIRECTORY"))
-        (core-fname (concatenate 'string core-image ".image"))
-        (eval-arg (if restart
-                      (format nil " --eval '(~A)'" restart)
-                      ""))
-        core-path exe-path)
-        ;;; truename works only on existing files, so we
-        ;;; create one just to get absolute path
-        (with-open-file (ims core-fname
-                          :direction :output :if-exists :supersede)
-            (declare (ignore ims))
-            (setf core-path (namestring (truename core-fname))))
-        (delete-file core-path)
-        (with-open-file (ims core-image
-                        :direction :output :if-exists :supersede)
-                (setf exe-path (namestring (truename core-image)))
-                (format ims "#!/bin/sh~2%")
-                (format ims "CCL_DEFAULT_DIRECTORY=~A~%" ccl-dir)
-                (format ims "export CCL_DEFAULT_DIRECTORY~%")
-                (format ims "exec ~A/~A -I ~A~A~%"
-                            ccl-dir (ccl::standard-kernel-name)
-                            core-path eval-arg))
-        (ccl::run-program "chmod" (list "a+x" exe-path))
-        #|
-        ;;; We would prefer this version, but due to openmcl bug
-        ;;; it does not work
-        (if restart
-          (ccl::save-application core-path :toplevel-function restart)
-          (ccl::save-application core-path))
-        |#
-        (ccl::save-application core-path)
-        )
-  |#
 )
 
 (defun save-core (core-image)
@@ -955,7 +921,7 @@ with this hack and will try to convince the GCL crowd to fix this.
   (declare (inline member))
   (when (and testp notp)
     (error ":TEST and :TEST-NOT were both supplied."))
-  ;; We have to possibilities here: for shortish lists we pick up the
+  ;; We have two possibilities here: for shortish lists we pick up the
   ;; shorter one as the result, and add the other one to it. For long
   ;; lists we use a hash-table when possible.
   (let ((n1 (length list1))
@@ -995,7 +961,7 @@ with this hack and will try to convince the GCL crowd to fix this.
   (declare (inline member))
   (when (and testp notp)
     (error ":TEST and :TEST-NOT were both supplied."))
-  ;; We have to possibilities here: for shortish lists we pick up the
+  ;; We have two possibilities here: for shortish lists we pick up the
   ;; shorter one as the result, and add the other one to it. For long
   ;; lists we use a hash-table when possible.
   (let ((n1 (length list1))

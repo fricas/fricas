@@ -18,7 +18,6 @@ fi
 copy_lisp=""
 copy_gphts=""
 copy_phts=""
-GCL_DIST=""
 
 while test $# -gt 0 ; do
    opt=$1
@@ -32,13 +31,6 @@ while test $# -gt 0 ; do
       --copy_phts)
         copy_phts=y
         copy_gphts=y
-        ;;
-      --copy_gcl=*)
-        GCL_DIST=`echo ${opt} | sed 's,--copy_gcl=,,'`
-        if [ ! -d "${GCL_DIST}" ] ; then
-           echo The directory "${GCL_DIST}" does not exist
-           exit 1
-        fi
         ;;
       --copy_help=*)
         HELP_DIR=`echo ${opt} | sed 's,--copy_help=,,'`
@@ -58,19 +50,12 @@ done
 echo copy_lisp=\"${copy_lisp}\"
 echo copy_gphts=\"${copy_gphts}\"
 echo copy_phts=\"${copy_phts}\"
-echo GCL_DIST=\"${GCL_DIST}\"
 echo HELP_DIR=\"${HELP_DIR}\"
 
 # copy sources
 cp -r $SRCDIR dist
 cd dist || exit 1
 rm -rf .git*
-
-# copy gcl
-if [ ! -z "${GCL_DIST}" ] ; then
-   cp -r "${GCL_DIST}" gcl
-   clean_svn gcl
-fi
 
 # copy help files
 if [ ! -z "${HELP_DIR}" ] ; then
