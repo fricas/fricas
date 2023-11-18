@@ -39,7 +39,7 @@ functions we need to define here so they work and are available
 at load time.
 |#
 (in-package "BOOT")
-(export '($spadroot $directory-list reroot
+(export '(|$spadroot| $directory-list reroot
           make-absolute-filename |$defaultMsgDatabaseName|))
 
 ;;; Various lisps use different ``extensions'' on the filename to indicate
@@ -77,23 +77,23 @@ at load time.
 ;;; It is set up in the {\bf reroot} function.
 (defvar $library-directory-list ())
 
-;;; Prefix a filename with the {\bf $spadroot} variable.
+;;; Prefix a filename with the {\bf |$spadroot|} variable.
 (defun make-absolute-filename (name)
- (concatenate 'string $spadroot name))
+ (concatenate 'string |$spadroot| name))
 
 #|
 The reroot function is used to reset the important variables used by
 the system. In particular, these variables are sensitive to the
 {\bf FRICAS} shell variable. That variable is renamed internally to
-be {\bf \$spadroot}. The {\bf reroot} function will change the
+be {\bf |$spadroot|}. The {\bf reroot} function will change the
 system to use a new root directory and will have the same effect
 as changing the {\bf FRICAS} shell variable and rerunning the system
 from scratch.
 |#
-(defvar $spadroot "")
+(defvar |$spadroot| "")
 
 (defun reroot (dir)
-  (setq $spadroot dir)
+  (setq |$spadroot| dir)
   (setq $directory-list
    (mapcar #'make-absolute-filename $relative-directory-list))
   (setq $library-directory-list
@@ -212,7 +212,7 @@ After this function is called the image is clean and can be saved.
                 (if (and sym (boundp sym))
                     (setf (symbol-value sym) t)))
      (interpsys-image-init nil)
-     (format *standard-output* "spad = ~s~%" $spadroot)
+     (format *standard-output* "spad = ~s~%" |$spadroot|)
      (force-output  *standard-output*)
      (format *standard-output* "before fricas-restart~%")
      (force-output  *standard-output*)
@@ -250,7 +250,7 @@ After this function is called the image is clean and can be saved.
  (cond
   ((load "./exposed" :verbose nil :if-does-not-exist nil)
     '|done|)
-  ((load (concat (|getEnv| "FRICAS") "/algebra/exposed")
+  ((load (make-absolute-filename "/algebra/exposed")
      :verbose nil :if-does-not-exist nil)
    '|done|)
   (t '|failed|) ))
@@ -272,7 +272,7 @@ After this function is called the image is clean and can be saved.
     (if *fricas-load-libspad*
         (let ((spad-lib (make-absolute-filename "/lib/libspad.so")))
             (format t "Checking for foreign routines~%")
-            (format t "FRICAS=~S~%" $spadroot)
+            (format t "FRICAS=~S~%" |$spadroot|)
             (format t "spad-lib=~S~%" spad-lib)
             (if (|fricas_probe_file| spad-lib)
                 (progn

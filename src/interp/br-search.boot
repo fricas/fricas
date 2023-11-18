@@ -205,7 +205,7 @@ isFilterDelimiter? c == MEMQ(c,$pmFilterDelimiters)
 
 grepSplit(lines,doc?) ==
   if doc? then
-    instream2 := OPEN STRCONC(getEnv '"FRICAS",'"/algebra/libdb.text")
+    instream2 := OPEN STRCONC($spadroot, '"/algebra/libdb.text")
   cons := atts := doms := nil
   while lines is [line, :lines] repeat
     if doc? then
@@ -879,14 +879,14 @@ dbGetCommentOrigin line ==
   line
 
 grepSource key ==
-  key = 'libdb   => STRCONC($SPADROOT,'"/algebra/libdb.text")
-  key = 'gloss   => STRCONC($SPADROOT,'"/algebra/glosskey.text")
+  key = 'libdb   => STRCONC($spadroot,'"/algebra/libdb.text")
+  key = 'gloss   => STRCONC($spadroot,'"/algebra/glosskey.text")
   key = $localLibdb => $localLibdb
   mkGrepTextfile
     MEMQ(key, '(_. a c d k o p x)) => 'libdb
     'comdb
 
-mkGrepTextfile s == STRCONC($SPADROOT,"/algebra/", STRINGIMAGE s, '".text")
+mkGrepTextfile s == STRCONC($spadroot,"/algebra/", STRINGIMAGE s, '".text")
 
 mkGrepFile s ==  --called to generate a path name for a temporary grep file
   prefix := '"/tmp/"

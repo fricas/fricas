@@ -61,4 +61,4 @@ isExistingFile f ==
 
 --% Scratchpad II File Name Functions
 
-isSystemDirectory dir == EVERY(function CHAR_=,$SPADROOT,dir)
+isSystemDirectory dir == EVERY(function CHAR_=,$spadroot,dir)

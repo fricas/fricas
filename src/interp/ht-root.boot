@@ -130,7 +130,7 @@ htGlossPage(htPage,pattern,tryAgain?) ==
   grepForm := mkGrepPattern(filter,'none)
   $key: local := 'none
   results := applyGrep(grepForm,'gloss)
-  defstream := MAKE_INSTREAM(STRCONC(getEnv '"FRICAS",
+  defstream := MAKE_INSTREAM(STRCONC($spadroot,
                                      '"/algebra/glossdef.text"))
   lines := gatherGlossLines(results,defstream)
   heading :=
