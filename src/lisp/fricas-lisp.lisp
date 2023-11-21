@@ -1044,7 +1044,12 @@ with this hack and will try to convince the GCL crowd to fix this.
   #+:gcl (system:gbc-time)
   #+:openmcl (ccl:gctime)
   #+:sbcl sb-ext:*gc-run-time*
-  #-(or :clisp :cmu :gcl :openmcl :sbcl) 0)
+  #+:lispworks
+  (progn
+    (hcl:start-gc-timing :initialize nil)
+    (* (getf (hcl:get-gc-timing) :total) |$timerTicksPerSecond|))
+  #-(or :clisp :cmu :gcl :openmcl :sbcl :lispworks)
+  0)
 
 (defmacro |char| (arg)
   (cond ((stringp arg) (character arg))

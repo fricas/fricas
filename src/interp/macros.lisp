@@ -683,7 +683,9 @@ This function respects intermediate #\Newline characters and drops
   #+:ecl (si:gc-stats t)
   #+:openmcl (ccl::total-bytes-allocated)
   #+:sbcl (sb-ext:get-bytes-consed)
-  #-(or :clisp :cmu :ecl :openmcl :sbcl) 0)
+  #+:lispworks (hcl:total-allocation)
+  #-(or :clisp :cmu :ecl :openmcl :sbcl :lispworks)
+  0)
 
 (defun |goGetTracerHelper| (dn f oname alias options modemap)
     (lambda(&rest l)

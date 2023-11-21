@@ -666,7 +666,7 @@
 #+:GCL
 (defun reclaim () (si::gbc t))
 #+lispworks
-(defun reclaim () )
+(defun reclaim () (hcl:gc-generation t))
 #+sbcl
 (defun reclaim () (sb-ext::gc))
 #+openmcl
