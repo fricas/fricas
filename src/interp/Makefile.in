@@ -5,6 +5,8 @@ DOC=$(fricas_target_docdir)/src/interp
 
 fricas_debug_compiler=@fricas_debug_compiler@
 
+LISP_ID_STRING=$(FRICAS_LISP_FLAVOR) $(FRICAS_LISP_VERSION)
+
 # Command to translate Boot to Common Lisp
 BOOT_TO_LISP = $(fricas_build_helper) \
 	       --translate_boot --debug=$(fricas_debug_compiler) \
@@ -122,7 +124,8 @@ makeint.lisp: ../boot/lobj_lst
 	echo '(load #-:ecl "util" #+:ecl "$(srcdir)/util.lisp")' >> makeint.lisp
 	@ echo '(in-package "BOOT")' >> makeint.lisp
 	@ echo '(progn (setq boot::|$$build_date|    "${BUILD_DATE}")' \
-	       '       (setq boot::|$$build_version| "${VERSION}"))' \
+	       '       (setq boot::|$$build_version| "${VERSION}")' \
+	       '       (setq boot::|$$lisp_id_string| "${LISP_ID_STRING}"))' \
 	     >> makeint.lisp
 	echo '#+:ecl(setf fricas-lisp::*fricas-initial-lisp-objects*' \
              '(append fricas-lisp::*fricas-initial-lisp-objects*' \
