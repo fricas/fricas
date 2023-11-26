@@ -100,7 +100,6 @@ stopTimingProcess name ==
 DEFPARAMETER($oldElapsedSpace, 0)
 DEFPARAMETER($oldElapsedGCTime, 0.0)
 DEFPARAMETER($oldElapsedTime, 0.0)
-DEFPARAMETER($gcTimeTotal, 0.0)
 
 -- $timedNameStack is used to hold the names of sections of the
 -- code being timed.

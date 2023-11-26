@@ -73,8 +73,6 @@ DEFPARAMETER($displayOptions, '( _
   values _
   ))
 
-DEFPARAMETER($countAssoc, '( (cache countCache) ))
-
 --% Top level system command
 
 initializeSystemCommands() ==

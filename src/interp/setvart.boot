@@ -658,7 +658,7 @@ DEFPARAMETER($setOptions, '(
       "prettyprint BOOT func's as they compile"
       development
       LITERALS
-      $PRETTYPRINT
+      $PrettyPrint
       (on off)
       off)
    ))

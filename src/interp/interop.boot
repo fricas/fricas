@@ -277,7 +277,6 @@ $hashOp0 := hashString '"0"
 $hashOpApply := hashString '"apply"
 $hashOpSet := hashString '"set!"
 $hashSeg := hashString '".."
-$hashPercent := hashString '"%"
 
 oldAxiomDomainLookupExport _
   (domenv, self, op, sig, box, skipdefaults, env) ==

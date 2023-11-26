@@ -484,7 +484,6 @@ $recheckingFlag    := false     --see transformAndRecheckComments
 $exposeFlag        := false     --if true, messages go to $outStream
 $exposeFlagHeading := false     --see htcheck.boot
 $checkingXmptex? := false       --see htcheck.boot
-$exposeDocHeading:= nil         --see htcheck.boot
 $charPlus := char '_+
 $charBlank:= (char '_ )
 $charLbrace:= char '_{
@@ -492,7 +491,6 @@ $charRbrace:= char '_}
 $charBack := char '_\
 $charDash := char '_-
 
-$charTab            := CODE_-CHAR(9)
 $charNewline        := CODE_-CHAR(10)
 $charFauxNewline    := CODE_-CHAR(25)
 $stringNewline      := STRING($charNewline)

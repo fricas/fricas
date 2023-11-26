@@ -270,8 +270,6 @@
 ;; the following symbol holds the canonical "failed" value
 (SETQ |$failed| "failed")
 
-(SETQ |$constructorDataTable| NIL)
-
 (SETQ |$univariateDomains| '(
     |UnivariatePolynomial|
     |UnivariateTaylorSeries|

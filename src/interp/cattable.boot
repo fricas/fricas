@@ -32,7 +32,7 @@
 )package "BOOT"
 
 DEFVAR($has_category_hash, nil)
-DEFVAR($ancestor_hash, nil)
+DEFVAR($ancestors_hash, nil)
 
 compressHashTable(ht) == ht
 

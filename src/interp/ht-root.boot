@@ -32,7 +32,6 @@
 )package "BOOT"
 
 $historyDisplayWidth := 120
-$newline := char 10
 
 downlink page ==
   htInitPage('"Bridge",nil)

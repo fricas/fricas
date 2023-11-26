@@ -78,7 +78,6 @@ above for examples.
 
 --% Message Database Code and Message Utility Functions
 
-DEFPARAMETER($cacheMessages, 'T)  -- for debugging purposes
 DEFPARAMETER($testingErrorPrefix, '"Daly Bug")
 
 DEFPARAMETER($texFormatting, false)

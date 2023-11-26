@@ -258,8 +258,6 @@ database.
 
 (defvar |$miss| nil "print out cache misses on getdatabase calls")
 
-(defvar |$do_not_compress_databases| t)
-
    ; note that constructorcategory information need only be kept for
    ; items of type category. this will be fixed in the next iteration
    ; when the need for the various caches are reviewed

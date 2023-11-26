@@ -1,8 +1,6 @@
 )package "BOOT"
 
 DEFPARAMETER($ParseMode, NIL)
-DEFPARAMETER($LABLASOC, NIL)
-DEFVAR($NONBLANK, nil)
 
 
 -- PURPOSE: This file sets up properties which are used by the Boot lexical
