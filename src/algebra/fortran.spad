@@ -1584,13 +1584,6 @@ FortranExpression(basicSymbols, subscriptedSymbols, R):
       ++  an approximation to the value of pi
     variables : % -> L S
       ++ variables(e) return a list of all the variables in \spad{e}.
-    useNagFunctions : () -> Boolean
-      ++ useNagFunctions() indicates whether NAG functions are being used
-      ++  for mathematical and machine constants.
-    useNagFunctions : Boolean -> Boolean
-      ++ useNagFunctions(v) sets the flag which controls whether NAG functions
-      ++  are being used for mathematical and machine constants.  The previous
-      ++  value is returned.
 
   Implementation ==> EXPR R add
 
@@ -1599,8 +1592,6 @@ FortranExpression(basicSymbols, subscriptedSymbols, R):
     f77Functions : L S := ['abs, 'sqrt, 'exp, 'log, 'log10, 'sin, 'cos,
                            'tan, 'asin, 'acos, 'atan, 'sinh, 'cosh, 'tanh,
                              'nthRoot, '%power]
-    nagFunctions : L S := ['pi, 'X01AAF]
-    useNagFunctionsFlag : Boolean := true
 
     -- Local functions to check for "unassigned" symbols etc.
 
@@ -1648,34 +1639,18 @@ FortranExpression(basicSymbols, subscriptedSymbols, R):
 
     extraOperators?(u : EXPR R) : Boolean ==
       ops    : L S := [name v for v in operators(u) | notSymbol?(v)]
-      if useNagFunctionsFlag then
-        fortranFunctions : L S := append(f77Functions, nagFunctions)
-      else
-        fortranFunctions : L S := f77Functions
+      fortranFunctions : L S := f77Functions
       extras : L S := setDifference(ops, fortranFunctions)
       not empty? extras
 
     checkOperators(u : EXPR R) : Void ==
       ops    : L S := [name v for v in operators(u) | notSymbol?(v)]
-      if useNagFunctionsFlag then
-        fortranFunctions : L S := append(f77Functions, nagFunctions)
-      else
-        fortranFunctions : L S := f77Functions
+      fortranFunctions : L S := f77Functions
       extras : L S := setDifference(ops, fortranFunctions)
       not empty? extras =>
         error ["Non FORTRAN-77 functions detected:",
                [string(v) for v in extras]]
       void()
-
-    checkForNagOperators(u : EXPR R) : % ==
-      useNagFunctionsFlag =>
-        import from Pi
-        import from PiCoercions(R)
-        piOp : BasicOperator := operator 'X01AAF
-        piSub : Equation EXPR R :=
-          equation(pi()$Pi::EXPR(R), kernel(piOp, 0::EXPR(R))$EXPR(R))
-        subst(u, piSub) pretend %
-      u pretend %
 
     -- Conditional retractions:
 
@@ -1725,12 +1700,6 @@ FortranExpression(basicSymbols, subscriptedSymbols, R):
 
     -- Exported Functions
 
-    useNagFunctions() : Boolean == useNagFunctionsFlag
-    useNagFunctions(v : Boolean) : Boolean ==
-      old := useNagFunctionsFlag
-      useNagFunctionsFlag := v
-      old
-
     log10(x : %) : % ==
       kernel(operator 'log10, x)
 
@@ -1744,12 +1713,12 @@ FortranExpression(basicSymbols, subscriptedSymbols, R):
         m case "failed" => return "failed"
         u := m@EXPR(R)
       extraOperators? u => "failed"
-      checkForNagOperators(u)
+      u pretend %
 
     retract(u : EXPR R) : % ==
       u := checkSymbols(u)
       checkOperators(u)
-      checkForNagOperators(u)
+      u pretend %
 
     retractIfCan(u:Symbol):Union(%,"failed") ==
       not (member?(u, basicSymbols) or
