@@ -272,7 +272,7 @@ defaultTarget(opNode,op,nargs,args) ==
       putTarget(opNode, target := $Boolean)
       target
     op = 'pi =>
-      putTarget(opNode, target := ['Pi])
+      putTarget(opNode, target := ['PiDomain])
       target
     op = 'infinity =>
       putTarget(opNode, target := ['OnePointCompletion, $Integer])
@@ -450,7 +450,7 @@ mkRationalFunction D ==  ['Fraction, ['Polynomial, D]]
 defaultTargetFE(a,:options) ==
   a is ['Variable,.] or a = $RationalNumber or MEMQ(QCAR a,
     [QCAR $Symbol,
-     'Pi]) or typeIsASmallInteger(a) or isEqualOrSubDomain(a, $Integer) or
+     'PiDomain]) or typeIsASmallInteger(a) or isEqualOrSubDomain(a, $Integer) or
        a = '(AlgebraicNumber) =>
           IFCAR options => [$FunctionalExpression, ['Complex, $Integer]]
           [$FunctionalExpression, $Integer]
@@ -673,9 +673,9 @@ domainDepth(d) ==
 hitListOfTarget(t) ==
   -- assigns a number between 1 and 998 to a type t
 
-  -- want to make it hard to go to Polynomial Pi
+  -- want to make it hard to go to Polynomial PiDomain
 
-  t = '(Polynomial (Pi)) => 90000
+  t = '(Polynomial (PiDomain)) => 90000
 
   EQ(first t, 'Polynomial) => 300
   EQ(first t, 'List) => 400

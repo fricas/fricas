@@ -241,7 +241,7 @@
   (|PermutationGroupExamples| . PGE)
   (|PermutationGroup| . PERMGRP)
   (|Permutation| . PERM)
-  (|Pi| . HACKPI)
+  (|PiDomain| . HACKPI)
   (|PiCoercions| . PICOERCE)
   (|PointFunctions2| . PTFUNC2)
   (|PolyGroebner| . PGROEB)

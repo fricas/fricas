@@ -247,7 +247,7 @@ resolveTTSpecial(t1,t2) ==
     t2 is ['UnivariatePolynomial,y,T] =>
       (x = y) and (U := resolveTT1(S,T)) and ['UnivariatePolynomial,x,U]
     nil
-  t1 = '(Pi) =>
+  t1 = '(PiDomain) =>
     t2 is ['Complex,d] => defaultTargetFE t2
     t2 is ['AlgebraicNumber] => defaultTargetFE t2
     EQCAR(t2, 'Variable) or t2 = $Symbol =>
