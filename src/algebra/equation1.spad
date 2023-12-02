@@ -153,6 +153,7 @@ Equation(S : Type) : public == private where
         subst : (%, %) -> %
              ++ subst(eq1, eq2) substitutes eq2 into both sides of eq1
              ++ the lhs of eq2 should be a kernel
+    if S has ConvertibleTo(InputForm) then ConvertibleTo(InputForm)
 
   private ==> add
     Rep := Record(lhs : S, rhs : S)
@@ -252,6 +253,12 @@ Equation(S : Type) : public == private where
         subst(eq1, eq2) ==
             eq3 := eq2 pretend Equation S
             [subst(lhs eq1, eq3), subst(rhs eq1, eq3)]
+    if S has ConvertibleTo(InputForm) then
+        convert(eq : %) : InputForm ==
+            lf := convert(lhs(eq))@InputForm
+            rf := convert(rhs(eq))@InputForm
+            l_form := [convert('equation)@InputForm, lf, rf]$List(InputForm)
+            convert(l_form)@InputForm
 
 )abbrev package EQ2 EquationFunctions2
 ++ Author:
