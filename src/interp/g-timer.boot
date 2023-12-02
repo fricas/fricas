@@ -48,7 +48,7 @@ makeLongStatStringByProperty _
     PUT(cl, classproperty, n + GET(cl, classproperty))
     total := total + n
     name = 'other or flag ~= 'long => 'iterate
-    if n >= 0.01 then
+    if significantStat? n then
         str := makeStatString(str, n, name, flag)
     else
         insignificantStat := insignificantStat + n
@@ -64,17 +64,20 @@ makeLongStatStringByProperty _
 
 normalizeStatAndStringify t ==
   FLOATP t =>
-      t < 0.01 => '"0"
-      FORMAT(nil,'"~,2F",t)
+      not significantStat? t => '"0"
+      fmtStr := STRCONC('"~,", STRINGIMAGE $timePrintDigits, '"F")
+      FORMAT(nil, fmtStr, t)
   INTEGERP t => FORMAT(nil, '"~:d", t)
   STRINGIMAGE t
 
 makeStatString(oldstr,time,abb,flag) ==
-  time < 0.01 => oldstr
+  not significantStat? time => oldstr
   opening := (flag = 'long => '"("; '" (")
   timestr := normalizeStatAndStringify time
   oldstr = '"" => STRCONC(timestr, opening, abb, '")")
   STRCONC(oldstr, '" + ", timestr, opening, abb, '")")
+
+significantStat? t == INTEGERP t or t >= 0.1^$timePrintDigits
 
 peekTimedName() == IFCAR $timedNameStack
 
@@ -100,6 +103,7 @@ stopTimingProcess name ==
 DEFPARAMETER($oldElapsedSpace, 0)
 DEFPARAMETER($oldElapsedGCTime, 0.0)
 DEFPARAMETER($oldElapsedTime, 0.0)
+DEFPARAMETER($timePrintDigits, 2)
 
 -- $timedNameStack is used to hold the names of sections of the
 -- code being timed.
