@@ -310,9 +310,8 @@ retractByFunction(object,u) ==
     sayFunctionSelectionResult(funName,[t],mms)
   null mms => NIL
 
-  -- [[dc, :.], slot, .] := first mms
+  -- [[dc, :.], ., .] := first mms
   dc := CAAAR mms
-  slot := CADAR mms
   fun := interpLookup(funName, [target,t], dc)
 --+
   NULL fun => NIL
@@ -1086,7 +1085,7 @@ coerceIntByMap(triple,t2) ==
     sayFunctionSelectionResult('map,args,mms)
   null mms => NIL
 
-  [[dc, :sig], slot, .] := first mms
+  [[dc, :sig], ., .] := first mms
   fun := compiledLookup('map,sig,evalDomain(dc))
   NULL fun => NIL
   [fn,:d]:= fun

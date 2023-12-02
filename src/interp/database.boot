@@ -100,7 +100,7 @@ saveDependentsHashTable() ==
   RSHUT stream
 
 save_browser_data() ==
-    buildLibdb(false)
+    buildLibdb([])
     dbSplitLibdb()
     mkUsersHashTable()
     saveUsersHashTable()
