@@ -154,7 +154,7 @@ In the following we list publications mentioning FriCAS.
   `Free (rational) derivations
   <https://arxiv.org/abs/1809.05425>`_
   (DOI: `10.17398/2605-5686.36.1.25
-  <https://doi.org/10.17398/2605-5686.36.1.25>`_
+  <https://doi.org/10.17398/2605-5686.36.1.25>`_)
 
 * `Sage <http://www.sagemath.org>`_ provides an
   `interface to FriCAS
