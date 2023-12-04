@@ -85,6 +85,25 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
       s := nthRoot(squareFree x, n)
       [s.exponent, s.coef, */s.radicand]
 
+    -- returns [d, b] suchj that d divides n and b^(n/d) = x
+    -- with d as small as possible
+    iroot(x : Z, n : N) : Record(exponent : N, coef : Z) ==
+        x = 1 => [1, 1]
+        e : Z := 1
+        nn : Z := n
+        p : Z := 2
+        while p <= nn repeat
+            not ((nn rem p) = 0) =>
+                p := nextPrime(p)$IntegerPrimesPackage(Z)
+            if (ru := perfectNthRoot(x,
+                             qcoerce(p)@N)$IntegerRoots(Z)) case Z then
+                x := ru::Z
+                e := e*p
+                nn := nn rem p
+            else
+                p := nextPrime(p)$IntegerPrimesPackage(Z)
+        [(n quo e)::N, x]
+
     if R has imaginary : () -> R then
       czroot : (Z, N) -> REC
 
@@ -137,10 +156,27 @@ PolynomialRoots(E, V, R, P, F) : Exports == Implementation where
     if R has GcdDomain then
       if R has RetractableTo Z then
         nthr(x, n) ==
-          (r := retractIfCan(x)@Union(Z,"failed")) case "failed"
-             => nthRoot(squareFree x, n)
-          rec := zroot(r@Z, n)
-          [rec.exponent, rec.coef::P, [rec.radicand::P]]
+            (r := retractIfCan(x)@Union(Z,"failed")) case Z =>
+                rec := zroot(r@Z, n)
+                [rec.exponent, rec.coef::P, [rec.radicand::P]]
+            c := content(x)
+            (r := retractIfCan(c)@Union(Z,"failed")) case Z =>
+                rec := iroot(r@Z, n)
+                rec.exponent = n => nthRoot(squareFree(x), n)
+                cp := c::P
+                xu := x exquo cp
+                rec2 := nthRoot(squareFree(xu::P), n)
+                rec.exponent = 1 =>
+                    [rec2.exponent, rec.coef::P*rec2.coef,
+                       rec2.radicand]
+                l := lcm(rec.exponent, rec2.exponent)
+                e := qcoerce(l quo rec.exponent)@N
+                e2 := qcoerce(l quo rec2.exponent)@N
+                rad2 := [ri^e2 for ri in rec2.radicand]
+                [qcoerce(l)@N, rec2.coef,
+                      cons((rec.coef::P)^e, rad2)]
+            nthRoot(squareFree(x), n)
+
       else nthr(x, n) == nthRoot(squareFree x, n)
 
       froot(x, n) ==
