@@ -133,7 +133,7 @@ parseAndInterpret str ==
 
 executeQuietCommand() ==
   $QuietCommand: fluid := true
-  sockGetStringFrom($MenuServer)
+  stringBuf := sockGetStringFrom($MenuServer)
   CATCH('coerceFailure, CATCH('top_level, CATCH('SPAD_READER,
     parseAndInterpret stringBuf)))
 

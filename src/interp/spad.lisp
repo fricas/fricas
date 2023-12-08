@@ -107,6 +107,4 @@
 
 (defun |hashable| (dom)
   (memq (|knownEqualPred| dom)
-        #-Lucid '(EQ EQL EQUAL)
-        #+Lucid '(EQ EQL EQUAL EQUALP)
-        ))
+        '(EQ EQL EQUAL)))

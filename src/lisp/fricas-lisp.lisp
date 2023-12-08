@@ -99,10 +99,6 @@ with this hack and will try to convince the GCL crowd to fix this.
   (if restart
    (excl::dumplisp :name core-image :restart-function restart)
    (excl::dumplisp :name core-image))
-#+Lucid
-  (if restart
-   (sys::disksave core-image :restart-function restart)
-   (sys::disksave core-image))
 #+:cmu
   (let* ((restart-fun
                (if restart
@@ -328,7 +324,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; Silent loading of files
 
 (defun |load_quietly| (f)
-    ;;; (format *error-output* "entred load_quietly ~&")
+    ;;; (format *error-output* "entered load_quietly ~&")
     #-:GCL
     (handler-bind ((warning #'muffle-warning))
                   (load f))

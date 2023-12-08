@@ -47,8 +47,6 @@ at load time.
 ;;; on the system we are using.
 (defvar |$lisp_bin_filetype|
   #+:GCL "o"
-  #+lucid "bbin"
-  #+symbolics "bin"
   #+:cmu (c:backend-fasl-file-type c:*target-backend*)
   #+:sbcl "fasl"
   #+:clisp "fas"
