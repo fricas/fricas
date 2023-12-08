@@ -86,7 +86,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 ;;; Disable argument processing in GCL
 #+:gcl
-(defun system::process-some-args (args) nil)
+(defun system::process-some-args (&rest args) nil)
 
 ;; Save current image on disk as executable and quit.
 (defun save-core-restart (core-image restart)
@@ -635,9 +635,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 (fricas-foreign-call |sockSendInt| "sock_send_int" int
         (purpose int)
         (val int))
-
-#+:GCL
-(SI::clines "extern double sock_get_float();")
 
 (fricas-foreign-call |sockGetFloat| "sock_get_float" double
         (purpose int))
