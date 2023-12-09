@@ -233,6 +233,7 @@
        (|startGraphics|    .  "system $FRICAS/lib/viewman &")
        (|stopGraphics|     .  "lisp (|sockSendSignal| 2 15)")
        (|time|       . "set message time")
+       (|storage|    . "set message storage")
        (|type|       . "set message type")
        (|unexpose|   . "set expose drop constructor")
        (|wc|         . "what categories")

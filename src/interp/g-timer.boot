@@ -77,7 +77,9 @@ makeStatString(oldstr,time,abb,flag) ==
   oldstr = '"" => STRCONC(timestr, opening, abb, '")")
   STRCONC(oldstr, '" + ", timestr, opening, abb, '")")
 
-significantStat? t == INTEGERP t or t >= 0.1^$timePrintDigits
+significantStat? s ==
+  INTEGERP s => s ~= 0
+  s >= 0.1^$timePrintDigits
 
 peekTimedName() == IFCAR $timedNameStack
 
