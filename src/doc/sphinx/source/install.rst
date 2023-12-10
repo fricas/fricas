@@ -70,10 +70,11 @@ CMU CL port should be considered experimental, it received only little
 testing.  Also CMU CL seem to have problems on some machines.  By
 default FriCAS tries to use SBCL, since it is fast and reliable.  On
 64-bit AMD64 on average SBCL is the fastest one (9 times faster than
-CLISP), Clozure CL the second (about 1.5 times slower than SBCL), than
-GCL and ECL (about 3 times slower than SBCL) and CLISP is the slowest
-one.  Note: very old versions of ECL were much (about 4 times) slower, you
-should use reasonably new version if you care about speed.
+CLISP), Clozure CL and GCL the second (about 3 times slower than
+SBCL), then ECL (about 7 times slower than SBCL) and CLISP is the
+slowest one.  Note: very old versions of ECL were much (about 4 times)
+slower, versions from about 7-10 years ago gave best performance and
+newest ECL versions are progressively slower.
 
 Some computation work much faster on 64-bit machines, especially
 when using SBCL.
@@ -104,9 +105,9 @@ tarball from FriCAS distribution area.  Then do
     ./build_hsbcl > build_hsbcl.log 2>&1
 
 This assumes that the base Lisp to use is SBCL_ and creates executable
-binary ``hsbcl`` which contains Hunchentoot_. If your SBCL_ is started
+binary ``hsbcl`` which contains Hunchentoot_.  If your SBCL_ is started
 in different way (say via full pathname), then edit ``build_hsbcl`` to
-match. After creating ``hsbcl`` one can then configure FriCAS like
+match.  After creating ``hsbcl`` one can then configure FriCAS like
 ::
 
     ../fricas-1.3.9/configure --with-lisp=/path/to/hsbcl --enable-gmp
@@ -192,9 +193,34 @@ The documentation is built via Sphinx_.
 Aldor (optional)
 ^^^^^^^^^^^^^^^^
 
-If you want to use Aldor_ to extend the FriCAS library, you must, of
-course, have Aldor_ installed, and add ``--enable-aldor`` to your
-configure options when you compile FriCAS.
+Aldor_ was originally invented to be the next generation compiler for
+Axiom_ (the system that FriCAS_ forked from).  If you want to use
+Aldor_ to extend the FriCAS_ library, you must, of course, have Aldor_
+installed, and add ``--enable-aldor`` to your configure options when
+you compile FriCAS.
+
+The commands below download the Aldor_ git repository into
+``$ALDORDIR`` and install it into ``$ALDORINSTALLDIR``.  Adapt the
+directories to whatever you like.
+::
+
+   ALDORDIR=$HOME/aldor
+   ALDORINSTALLDIR=$ALDORDIR/install
+   mkdir -p $ALDORDIR
+   cd $ALDORDIR
+   git clone https://github.com/aldorlang/aldor.git
+   mkdir $ALDORDIR/build
+   cd $ALDORDIR/build
+   $ALDORDIR/aldor/aldor/configure --prefix=$ALDORINSTALLDIR --disable-maintainer-mode
+   make -j8
+   make install
+
+Then make the aldor executable available in your ``PATH`` by adding
+the following lines to your ``.bashrc``.
+::
+
+   ALDORINSTALLDIR=/absolute/path/to/aldor/install
+   export PATH=$ALDORINSTALLDIR/bin:$PATH
 
 
 Extra libraries needed by ECL
@@ -531,16 +557,25 @@ You can not only extend the FriCAS library by ``.spad`` files (SPAD
 programs), but also by ``.as`` files (Aldor_ programs).  For the latter
 to work FriCAS needs a library ``libfricas.al``.
 
-This library can be build as follows.
-(An Aldor compiler is of course a prerequisite.)
-::
+Note that building the interface temporarily needs about 2 GB extra
+disk space.  Since currently, building the Aldor interface accesses the
+build files of a previous FriCAS_ build, you need about 3 GB disk
+space.
 
-   configure --enable-aldor --prefix=/tmp/usr
-   ( cd src/aldor &&  make )
-   make install
+If you configured FriCAS using ``--enable-aldor`` option, then
+``make`` will also build ``libfricas.al`` and ``make install``
+will install it together with FriCAS.
 
-After that you should be able to compile and use the program below in
-a FriCAS session via
+If the ``aldor`` binary is not reachable during build via your
+``PATH``, you can add ``--with-aldor-binary=/path/to/aldor`` to the
+configure command line.
+
+Note: at runtime, the Aldor binary is taken as specified by the
+``ALDOR_COMPILER`` environment variable or (if not set) must be
+available through the ``PATH``.
+
+After installation you should be able to compile and use the program
+below in a FriCAS session via
 ::
 
    )compile sieve.as
@@ -614,7 +649,7 @@ You can change any of these paths.
 jFriCAS installation
 """"""""""""""""""""
 
-jFriCAS_ is the Jupyter_ notebook interface to FriCAS_. Of course,
+jFriCAS_ is the Jupyter_ notebook interface to FriCAS_.  Of course,
 jFriCAS_ needs Jupyter_ in a reasonably recent version (at least 4).
 
 Install prerequisites if not yet available (needs root access, but it
@@ -632,7 +667,7 @@ Prepare directories and download jFriCAS_.
 Install prerequisites, Jupyter_ and jFriCAS_.
 
 **WARNING**: Do not install jfricas 1.0.0 from PyPI, as that will
-not work. If you have it installed, then uninstall it first.
+not work.  If you have it installed, then uninstall it first.
 ::
 
    python3 -m venv $JFRICASINSTALL
@@ -690,13 +725,13 @@ You can go back to standard 2D ASCII output as follows.
 """""""""""""""""""""""""""
 
 Ordinary Jupyter notebooks use a special format in order to store
-their content. They have the file extension ``.ipynb``. It is an
+their content.  They have the file extension ``.ipynb``.  It is an
 incredible feature to be able to load and store notebooks as ordinary
-FriCAS ``.input`` files. You can even synchronize between the
+FriCAS ``.input`` files.  You can even synchronize between the
 ``.ipynb`` and ``.input`` formats.
 
 There are two types of cells in Jupyter_: Markdown documentation
-cells and execution cells. With the help of JupyText_, Markdown
+cells and execution cells.  With the help of JupyText_, Markdown
 cells will appear inside an ``.input`` file as FriCAS_
 comments and execution cells appear without the ``"-- "``
 comment prefix.
@@ -731,9 +766,9 @@ Edit the file ``$J/languages.py`` and change appropriately.
 Make Jupytext available
 """""""""""""""""""""""
 
-In Ubuntu 22.04 you need not do run the commands from this section.
+In Ubuntu 22.04 you need not run the commands from this section.
 It seemingly works without having to change something in the
-configuration file. There were even reports that jFriCAS_ stopped
+configuration file.  There were even reports that jFriCAS_ stopped
 working if ``c.NotebookApp.contents_manager_class`` was set.  However,
 for older versions of JupyText_ and/or Jupyter_, the following had to be
 configured.
@@ -1050,6 +1085,7 @@ Known problems
 
 
 .. _Aldor: https://github.com/aldorlang/aldor
+.. _Axiom: http://axiom-developer.org/
 .. _CLISP: http://clisp.cons.org
 .. _Clozure CL: http://ccl.clozure.com/manual/chapter2.2.html
 .. _CMUCL: https://www.cons.org/cmucl/
