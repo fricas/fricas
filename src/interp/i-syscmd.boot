@@ -703,10 +703,16 @@ withAsharpCmd args ==
 
 --% )copyright -- display copyright notice
 
-summary l ==
- OBEY STRCONC ('"cat ", $spadroot, '"/lib/summary")
-copyright () ==
- OBEY STRCONC ('"cat ", $spadroot, '"/lib/copyright")
+print_text_stream stream ==
+    if stream then
+        while (str := read_line stream) repeat
+            SAY str
+
+print_text_file filename ==
+    handle_input_file(filename, function print_text_stream, [])
+
+summary l == print_text_file STRCONC($spadroot, '"/lib/summary")
+copyright() == print_text_file STRCONC($spadroot, '"/lib/copyright")
 
 --% )credits -- display credit list
 
