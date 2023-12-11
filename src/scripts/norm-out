@@ -76,13 +76,19 @@ trap "rm -f /tmp/tcmp1.$$ /tmp/tcmp2.$$" 0 2 3 15
 # Do the real work
 
 cd $IDIR1
+if grep '^systemCommand' bugs2007.output > /dev/null 2>&1; then
+    A_CMD="1,/^systemCommand/d;/^ *Time: /d;s,$AX1,FRICAS,g;/)lisp (quit)/,\$d"
+else
+    A_CMD="1,/^)read/d;/^ *Time: /d;s,$AX1,FRICAS,g;/)quit/,\$d"
+fi
+
 for A in *.output; do
   echo Diffing $A
   if ! [ -f $IDIR2/$A ] ; then
      echo $A: only in $IDIR1
   else
-     sed "1,/^systemCommand/d;/^ *Time: /d;s,$AX1,FRICAS,g;/)lisp (quit)/,\$d" $A > /tmp/tcmp1.$$
-     sed "1,/^systemCommand/d;/^ *Time: /d;s,$AX2,FRICAS,g;/)lisp (quit)/,\$d" $IDIR2/$A > /tmp/tcmp2.$$
+     sed "$A_CMD" $A > /tmp/tcmp1.$$
+     sed "1,/^)read/d;/^ *Time: /d;s,$AX2,FRICAS,g;/)quit/,\$d" $IDIR2/$A > /tmp/tcmp2.$$
      diff -u /tmp/tcmp1.$$ /tmp/tcmp2.$$
   fi
 done
