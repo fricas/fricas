@@ -150,10 +150,39 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
       bb := -(r.coef1) k
       tantrick(aa * a + bb * b, g) + ilog0(aa, bb, r.coef2, -r.coef1, k)
 
+    -- Computes (a + b*%i)log(lg(a + b*%i)) + (a - b*%i)log(lg(a - b*%i))
+    -- using Rioboo transformation.
+    root_pair(lg : UP, a : F, b : F, x : Symbol) : F ==
+        lge := quadeval(lg, a, b, -1)
+        f := lge.ans1
+        g := lge.ans2
+        a*log(f*f + g*g) + b*ilog(f, g, x)
+
+    lg2cfunc2 : (UP, UP) -> F
+
+    C_rec ==> Record(real : F, imag : F)
+    r_rec ==> Record(reals : List(F), complexes : List(C_rec))
+
+    do_rr(rr : r_rec, lg : UP, x : Symbol) : List(F) ==
+        rl := rr.reals
+        cl := rr.complexes
+        res := 0$F
+        for r1 in rl repeat
+            res := res + cmplex(r1, lg)
+        for cp1 in cl repeat
+            res := res + root_pair(lg, cp1.real, cp1.imag, x)
+        [res]
+
+    quartic(p : UP, lg : UP, x : Symbol) : List(F) ==
+        rru := complex_roots(p)$RootUtilities(R, F)
+        (rru case "failed") => [lg2cfunc2(p, lg)]
+        do_rr(rru, lg, x)
+
     lg2func(lg, x) ==
       zero?(d := degree(p := lg.coeff)) => error "poly has degree 0"
       (d = 1) => [linear(p, lg.logand)]
       d = 2  => quadratic(p, lg.logand, x)
+      d = 4 => quartic(p, lg.logand, x)
       odd? d and
         ((r := retractIfCan(reductum p)@Union(F, "failed")) case F) =>
             pairsum([cmplex(alpha := rootSimp zeroOf p, lg.logand)],
@@ -162,8 +191,10 @@ IntegrationResultToFunction(R, F) : Exports == Implementation where
                       lg.logand], x))
       [lg2cfunc lg]
 
-    lg2cfunc lg ==
-      +/[cmplex(alpha, lg.logand) for alpha in zerosOf(lg.coeff)]
+    lg2cfunc(lg) == lg2cfunc2(lg.coeff, lg.logand)
+
+    lg2cfunc2(p : UP, lg : UP) ==
+        +/[cmplex(alpha, lg) for alpha in zerosOf(p)]
 
     mkRealFunc(l, x) ==
       ans := empty()$List(F)

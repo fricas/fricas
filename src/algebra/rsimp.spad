@@ -1,0 +1,180 @@
+)abbrev package ROOTUT RootUtilities
+RootUtilities(R, F) : Exports == Implementation where
+  R : Join(GcdDomain, RetractableTo Integer, Comparable,
+          LinearlyExplicitOver Integer)
+  F : Join(AlgebraicallyClosedFunctionSpace R,
+          TranscendentalFunctionCategory)
+  C_rec ==> Record(real : F, imag : F)
+  r_rec ==> Record(reals : List(F), complexes : List(C_rec))
+  SUP ==> SparseUnivariatePolynomial
+  UP ==> SUP(F)
+  Exports ==> with
+    complex_roots : UP -> Union(r_rec, "failed")
+    quartic2 : UP -> List(C_rec)
+      ++ quartic2(p) should be local but conditional
+    my_root3 : F -> F
+      ++ my_root3(a) should be local but conditional
+
+  Implementation ==> add
+
+    import from AlgebraicManipulations(R, F)
+    import from ElementaryFunctionSign(R, F)
+
+    K ==> Kernel F
+    P ==> SparseMultivariatePolynomial(R, K)
+
+    dummy := create()$SingletonAsOrderedSet
+ 
+    root_pair(a : F, b : F) : C_rec == [a, b]
+
+    root4(a : F) : F ==
+        rec := froot(a, 4)$PolynomialRoots(IndexedExponents(K), K, R, P, F)
+        p1 := monomial(1, rec.exponent)$UP - rec.radicand::UP
+        rec.coef*zeroOf(p1)
+
+    if F has PolynomialFactorizationExplicit then
+
+        my_sqrt(a : F) : F ==
+            p := monomial(1, 2)$UP - a::UP
+            fr := factor(p)
+            fl := factorList(fr)
+            #fl = 1 => sqrt(a)
+            fr1 := fl(1).factor
+            degree(fr1) ~= 1 => error "impossible"
+            -coefficient(fr1, 0)/coefficient(fr1, 1)
+
+        my_root3(a : F) : F ==
+            p := monomial(1, 2)$UP - a::UP
+            fr := factor(p)
+            fl := factorList(fr)
+            #fl = 1 => a^(1/3)
+            fr1 := fl(1).factor
+            if degree(fr1) ~= 1 then
+                fr1 := fl(2).factor
+            degree(fr1) ~= 1 => error "impossible"
+            -coefficient(fr1, 0)/coefficient(fr1, 1)
+
+        -- Q = (-4)*u*v^2+(4*u^3+2*a*u+b)
+        quartic3(r1 : F, a0 : F, a : F, b : F) : List(C_rec) ==
+            rr := my_sqrt(r1)
+            qq := r1 + (1/2::F)*a
+            q1 := qq + b*rr/(4*r1)
+            q2 := qq - b*rr/(4*r1)
+            [root_pair(rr - a0/(4::F), my_sqrt(q1)),
+                root_pair(-rr - a0/(4::F), my_sqrt(q2))]
+
+        do_f2(del : F, a2 : F, b2 : F, a0 : F, a : F, b : F) : List(C_rec) ==
+            d2 := my_sqrt(del)
+            (su := sign(d2)) case "failed" => []
+            if su@Integer < 0 then
+                d2 := -d2
+            quartic3((-b2 + d2)/(2*a2), a0, a, b)
+            
+        quartic2(p : UP) : List(C_rec) ==
+            lc := leadingCoefficient(p)
+            p := (1/lc)*p
+            a0 := coefficient(p, 3)
+            p := eval(p, dummy, monomial(1, 1)$UP - (a0/4::F)::UP)
+            a := coefficient(p, 2)
+            b := coefficient(p, 1)
+            c := coefficient(p, 0)
+            xx := monomial(1, 1)$UP
+            r := 64*xx^3 + 32*a*xx^2 
+            r := r + (-16*c+4*a^2)*xx
+            r := r - (b^2)::UP
+            fr := factor(r)
+            fl := factorList(fr)
+            #fl = 1 => []
+            #fl = 3 =>
+                r1 : F
+                cnt : Integer := 0
+                for fac in fl repeat
+                    f1 := fac.factor
+                    cc := coefficient(f1, 0)/coefficient(f1, 1)
+                    (su := sign(cc)) case "failed" => return []
+                    if su@Integer < 0 then
+                        cnt > 0 => return []
+                        cnt := 1
+                        r1 := cc
+                cnt = 0 => error "impossible"
+                quartic3(-r1, a0, a, b)
+            #fl = 2 =>
+                r1 : F
+                f1 := first(fl).factor
+                f2 := second(fl).factor
+                if (degree(f2) = 1) then
+                    (f1, f2) := (f2, f1)
+                r1 := -coefficient(f1, 0)/coefficient(f1, 1)
+                (su := sign(r1)) case "failed" => return []
+                s1 := su@Integer
+                a2 := coefficient(f2, 2)
+                b2 := coefficient(f2, 1)
+                del := b2^2 - 4*a2*coefficient(f2, 0)
+                if not(su := sign(del)) case "failed" then
+                    if su@Integer < 0 then return
+                        0 < s1 => quartic3(r1, a0, a, b)
+                        error "impossible"
+                    not(0 < s1) => return do_f2(del, a2, b2, a0, a, b)
+                    t1 := r1 + b2/(2*a2)
+                    t2 := del/(4*a2*a2) - t1*t1
+                    if not(su := sign(t2)) case "failed" then
+                        (0 < su@Integer) =>
+                            return do_f2(del, a2, b2, a0, a, b)
+                        return quartic3(r1, a0, a, b)
+                su := sign(b2)
+                su case "failed" or not(0 < su@Integer) => return []
+                su := sign(a2*coefficient(f2, 0))
+                if su case "failed" or not(0 < su@Integer) then
+                    return []
+                quartic3(r1, a0, a, b)
+            error "impossible"
+
+    else
+
+        quartic2(p : UP) : List(C_rec) == []
+ 
+        my_root3(a : F) : F ==
+            rec := froot(a, 3)$PolynomialRoots(IndexedExponents(K), K, R, P, F)
+            rec.exponent = 3 => a^(1/3)
+            rec.coef*rec.radicand
+
+    qubic(p : UP) : Union(r_rec, "failed") ==
+        p := (1/leadingCoefficient(p))*p
+        a0 := -coefficient(p, 2)/3::F
+        p := eval(p, dummy, monomial(1, 1)$UP + a0::UP)
+        ground?(rp := reductum(p)) =>
+            a := ground(rp)
+            a = 0 => [[a0, a0, a0], []]
+            (su := sign(a)) case "failed" => "failed"
+            (su@Integer < 0) =>
+                r1 := my_root3(-a)
+                (su := sign(r1)) case "failed" => "failed"
+                [[r1 + a0], [root_pair(-r1/(2::F) + a0,
+                                       sqrt(3::F)*r1/(2::F))]]
+            r1 := my_root3(a)
+            (su := sign(r1)) case "failed" => "failed"
+            [[-r1 + a0], [root_pair(r1/(2::F) + a0, sqrt(3::F)*r1/(2::F))]]
+        "failed"
+
+    quartic(p : UP) : Union(r_rec, "failed") ==
+        ground?(rp := reductum(p)) =>
+            a := ground(rp)
+            s := sign(a)
+            s case "failed" => "failed"
+            si := s@Integer
+            si = 1 =>
+                r1 := root4(a/(4::F*leadingCoefficient(p)))
+                [[], [root_pair(r1, r1), root_pair(-r1, r1)]]
+            si = -1 =>
+                r1 := rootSimp(zeroOf(p))
+                [[r1, -r1], [root_pair(0, r1)]]
+            error "impossible"
+        res1 := quartic2(p)
+        not(empty?(res1)) => [[], res1]
+        "failed"
+
+    complex_roots(p : UP) : Union(r_rec, "failed") ==
+        d := degree(p)
+        (d = 3) => qubic(p)
+        (d = 4) => quartic(p)
+        "failed"
