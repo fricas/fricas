@@ -16,14 +16,6 @@ series(x/(x+log(x)))
 integrate(%)
 
 -------------------------------------------------------------------
--- bmt/10/19/92 integrate problem -- serious, wrong answer
--------------------------------------------------------------------
-)clear all
-2*sin(t)*sqrt(1+cos(t))
---correct answer is -4*(1+cos(t))^(3/2)/3
-integrate(%,t)
-
--------------------------------------------------------------------
 -- bmt/10/20/92 multiple complex in type tower
 -------------------------------------------------------------------
 )clear all
@@ -42,46 +34,6 @@ n:=x/y+%i
 f:=(a-b-c-d)^2::EXPR INT
 f::DMP(['a,'b],EXPR INT)
 degree %
-
--------------------------------------------------------------------
--- bmt/10/26/92 wrong answer
--- comment:I believe this problem simplifies to
--- lfintegrate(sqrt(u^3+u^2),u) which returns the
--- wrong answer due to some confusion in prootintegrate in INTPAF.
--- I think the confusion happens with the use of radPoly and rootPoly.
--- The answer is computed with respect to the result returned by rootPoly
--- but the kernel which is substituted for "y" corresponds to radPoly.
--------------------------------------------------------------------
-)clear all
--- should be 2*sin(t)/sqrt(1+cos(t))
-integrate(sqrt(1+cos(x)),x)
-
-)clear all
-f:=log(1-(b*x/(a+c*x^2)))/x
---               2
---            c x  - b x + a
---        log(--------------)
---                  2
---               c x  + a
---   (1)  -------------------
---                 x
-integrate(%,x)
---                   2
---                 %J c - %J b + a
---             log(---------------)
---           x          2
---         ++         %J c + a
---   (2)   |   -------------------- d%J
---        ++            %J
-expand f
---                 2               2
---        - log(c x  + a) + log(c x  - b x + a)
---   (3)  -------------------------------------
---                          x
-integrate(%,x)
---   >> Error detected within library code:
---   No identity element for reduce of empty list using operation
---   max
 
 -------------------------------------------------------------------
 -- bmt/11/17/92 interpreter resolve problem
@@ -242,16 +194,6 @@ myNextPrime(x,n)==nextPrime(x)$PRIMES(INT)
 modularGcdPrimitive([p,q])$InnerModularGcd(INT,UP(x,INT),67108859,myNextPrime)
 
 -------------------------------------------------------------------
--- dewar/10/02/92
--- actually, this was never wrong
--------------------------------------------------------------------
-numeric(%e ^ %pi)
---gives
-
---  23.1406926327 7926900563 5493084578 4861294789 0532254433 2912200665
--- 6744971913 2534837468 7163222983 2730035
-
--------------------------------------------------------------------
 -- themos/10/07/92
 -------------------------------------------------------------------
 )clear all
@@ -290,14 +232,6 @@ y:=operator 'y
 x^2 * D(y x, x) + 2*x*(y x) - (y x)^3 = 0
 solve(%,y,x)
 
-
--------------------------------------------------------------------
--- sit/10/08/92 factor bug
--------------------------------------------------------------------
-p:POLY FRAC INT := 3*(x+1)
--- is wrong (missing factor of 3).
-factor(p)^2
-
 -------------------------------------------------------------------
 -- henderson/10/08/92
 -------------------------------------------------------------------
@@ -327,15 +261,6 @@ a | a^2+1
 factor %
 
 -------------------------------------------------------------------
--- miller/10/09/92 local vars in types
--------------------------------------------------------------------
-)clear all
---Fixed (Victor's) bug with using local variables in type expressions
---assigned to local variables.  It now gives a message and correctly uses
---interpret-only mode.
---The function changed was getAndEvalConstructorArgument from i-spec1.boot.
-
--------------------------------------------------------------------
 -- themos/10/19/92
 -------------------------------------------------------------------
 )clear all
@@ -356,12 +281,6 @@ A: SquareMatrix(m, S2) := diagonalMatrix(l)
 
 -- A: SquareMatrix(m, S2) := diagonalMatrix(l)
 --now , can print.
-
--------------------------------------------------------------------
--- bmt/10/19/92 squareFree bug
--------------------------------------------------------------------
--- has an extra factor of 2.
-squareFree((2*x*y+1)*(x*y+1)^2)
 
 -------------------------------------------------------------------
 -- grabmeier/10/19/92 unable to compute the determinant of an 8x8
@@ -425,21 +344,6 @@ E 15
 g::ROMAN
 
 -------------------------------------------------------------------
--- grabm/10/28/92 runs forever
--------------------------------------------------------------------
-)clear all
--- this is quick
-factor 1068303355883998767544567663620885466990173600
--- but this runs forever
-sqrt 1068303355883998767544567663620885466990173600
-
-
--------------------------------------------------------------------
-
-)clear all
-a1:=sin(x)/(x^2+y^2);a2:=D(a1,[x,y]);a2+D(a2,x)
-
--------------------------------------------------------------------
 -- grabm/11/05/92
 -- comment:
 --I believe the "bug" is that the interpreter is converting gb which is
@@ -489,31 +393,6 @@ normalForm(x1^2+x2^2+x3^2,gb)
 --            2                      2              2
 --   (11)  2x2  + (2x1 - 2e1)x2 + 2x1  - 2e1 x1 + e1
 
-
-
-
--------------------------------------------------------------------
--- bmt/11/17/92 Ifintegrate
--------------------------------------------------------------------
---It seems that one cannot simply parametrize reducible curves.
---Any attempt at parametrization can only follow one branch.
---For curves of the form y^2=a^2*x^2+b*x+c, these are only reducible
---if a^2*x^2+b*x+c is a perfect square. Basically I think we need to
---choose 1 branch in this case. Under some circumstances we could
---try to proceed down both branches and then unify the result, but for
---the time being, perhaps we should just perform the substitution
---y=sqrt(a^2*x^2+b*x+c) whenever that is a perfect square.
---(then we don't even need to do any back substitution or change to dx).
---
---For another example, perhaps due to the same essential difficulty try
-integrate(normalize(sqrt(1+cos(x)),x),x)
--- this gets a non-invertible error
-
---I have fixed integrate(sqrt(1+cos(x)),x) and
---integrate(normalize(sqrt(1+cos(x)),x),x)
---fix was to function prootintegrate in INTPAF in intaf.spad
-
-
 -------------------------------------------------------------------
 -- dewar/02/15/93
 -------------------------------------------------------------------
@@ -527,16 +406,6 @@ integrate(normalize(sqrt(1+cos(x)),x),x)
 i::POLY INT
 %::Union(s:Symbol, p:POLY INT)
 list % -- works
-
--------------------------------------------------------------------
--- grabm/03/04/93
--- parser bug? not for system commands
--------------------------------------------------------------------
--- )clear all
--- gives error: Sorry, but no option begins with upd;
--- )load /spad/mnt/rios/algebra/EQ )upd; a:=1
--- works
--- )load /spad/mnt/rios/algebra/EQ )upd ; a:=1
 
 -------------------------------------------------------------------
 -- bronstein/03/08/93
@@ -601,65 +470,6 @@ r x
 )clear all
 factor(-12)
 %^2
-
--------------------------------------------------------------------
--- bronstei@inf.ethz.ch (manuel bronstein)
--- >> Error: cannot retract nonconstant polynomial
--------------------------------------------------------------------
-)clear all
-complexNumeric(log(sqrt(-3)))
-
--------------------------------------------------------------------
--- quitte@knuth.univ-poitiers.fr/8/15/93 (Claude Quitte)
--------------------------------------------------------------------
-)clear all
---)abbreviation package TEST Test
---
---Test() : with
---
---   leftProductBy : Integer -> (Integer -> Integer)
---   rightProductBy : Integer -> Mapping(Integer, Integer)
---
--- == add
---
---   leftProductBy(n) == n * #1
---
---   rightProductBy(n : Integer) : Mapping(Integer, Integer) == #1 * n
---------------------------------------------------------------------------
---
---Why is it impossible to specify the target/cible types for the
---functions leftProductBy and rightProductBy in the body of the package ???
---
---The code for leftProductBy is correct but the code for rightProductBy
---troubles the compiler !!!! It seems to compile a LOCAL function with
---ANOTHER signature.
---
---------------------------------------------------------------------------
---   initializing NRLIB TEST for Test
---   compiling into NRLIB TEST
---   compiling exported leftProductBy : Integer -> Integer -> Integer
---Time: 0.35 SEC.
---
---   compiling local rightProductBy : Integer -> Integer
---^^^ comp fails at level 2 with expression: ^^^
---error in function rightProductBy
---
---^^^ level 2  ^^^
---$x:= #1
---$m:= $EmptyMode
---$f:=
---((((|n| # #) (|rightProductBy| # # #) (|n| #) (|rightProductBy| # # #) ...)))
---
---   >> Apparent user error:
---   no mode found for
---   #1
---   You are being returned to the top level of the interpreter.
-------------------------------------------------------------------------
--- answer (barry):
---
---Your problem in TEST about specifying target types which are Mapping's
---was a bug in the compiler and has been fixed for Axiom release 2.0.
---
 
 -------------------------------------------------------------------
 -- bronstei@inf.ethz.ch/10/6/93 (Manuel Bronstein)
@@ -832,98 +642,10 @@ nthRoot(-2::EXPR FLOAT, 4)
 -- (which was instantiating sqrt(-1)$EXPR(FLOAT)).
 
 -------------------------------------------------------------------
--- jhd@maths.bath.ac.uk/8/15/93 James Davenport
--------------------------------------------------------------------
-)clear all
-integrate(1/(x*(log(x)^2+a^2-1)),x)
---   (1)
---   VCONCAT
---                             log(x)
---                       atan(---------)
---                             +------+
---                             | 2
---           2                \|a  - 1
---      ((- a  + 1<0) -> ---------------)
---                           +------+
---                           | 2
---                          \|a  - 1
---  ,
---      PAREN
---               2
---           (- a  + 1>0)
---         ->
---                                      +--------+
---                          2    2      |   2           2
---               log((log(x)  - a  + 1)\|- a  + 1  + (2a  - 2)log(x))
---             +
---                           2    2
---               - log(log(x)  + a  - 1)
---          /
---               +--------+
---               |   2
---             2\|- a  + 1
---  ,
---                            1
---      ( Or (a - 1=0) -> - ------)
---           (a + 1=0)      log(x)
---                                          Type: ConditionalExpression Integer
---
---is still fairly ugly.
-
--------------------------------------------------------------------
--- bronstei@inf.ethz.ch/8/9/93 (manuel bronstein)
--------------------------------------------------------------------
-)clear all
---Here is efstruc.spad with a change to normalize so that
-normalize(2^(1/2) + 2^(1/4)) -- now returns  2^(1/4) ^ 2 + 2^(1/4).
-
-
--------------------------------------------------------------------
--- satoshi@yktvmv.vnet.ibm.com/8/7/93 satoshi hamaguchi
--------------------------------------------------------------------
-)clear all
--- In axiom, both
-integrate(%e^x,x=0..1)
---and
-integrate(log(x),x=1..2)
---yield a warning  potentialPole    .
---If I use "noPole", they give right answers. Isn't this a bug?
---... Satoshi
-
--------------------------------------------------------------------
 -- bronstei@inf.ethz.ch/8/5/93 (manuel bronstein)
 -------------------------------------------------------------------
 )clear all
 simplify(2^(1/3)*2^(1/2)) -- will return 2^(5/6).
-
--------------------------------------------------------------------
--- bronstei@inf.ethz.ch/8/4/93 (manuel bronstein)
--------------------------------------------------------------------
-)clear all
-integrate(1/sqrt(1+cos(x)), x)
-
--------------------------------------------------------------------
--- bronstei@inf.ethz.ch/8/4/93 (manuel bronstein)
--------------------------------------------------------------------
-)clear all
-normalize atan(cos(x)/sin(x))  -- used to be division by 0 error
-
--------------------------------------------------------------------
--- bronstei@inf.ethz.ch/8/4/93 (manuel bronstein)
--------------------------------------------------------------------
-)clear all
-a := 2^(1/6)
-[a^n for n in 2..13]
-
--------------------------------------------------------------------
--- bronstei@inf.ethz.ch/8/4/93 (manuel bronstein)
--------------------------------------------------------------------
-)clear all
-int:=sqrt(a*(1-u^2)/(1+u^2))/u
-integrate(eval(int,a=1),u) -- works
-integrate(eval(int,a=sqrt(-1)),u) -- seems to run forever
-integrate(eval(int,a=1)*(-1)^(1/4),u) -- dies after a long time
- -- with an elt index error.
 
 -------------------------------------------------------------------
 -- bronstei@inf.ethz.ch/7/26/93 (manuel bronstein)
@@ -1004,13 +726,6 @@ g:=subst(f,x=1)
 imag g
 
 -------------------------------------------------------------------
--- daly
--------------------------------------------------------------------
-)clear all
--- not wrong but the order is obscure...
-primes(1,10)
-
--------------------------------------------------------------------
 -- nagttt@vax.ox.ac.uk/1/11/93 themos tsikas
 -------------------------------------------------------------------
 )clear all
@@ -1060,26 +775,6 @@ X := log(0.7*%i*x)
 -->
 --> Mike
 -->
-
-
--------------------------------------------------------------------
---  sutor@yktpub.watson.ibm.com/12/15/93 (Robert S. Sutor)
--------------------------------------------------------------------
-)clear all
---enter Integer in input box
---choose domains
---choose Description
---click on Convertible(String)
---
---page cannot be formatted
-
--------------------------------------------------------------------
--- bmt@posso.dm.unipi.it12/15/93 (barry trager)
--------------------------------------------------------------------
-)clear all
-log2() --> Float
-exp1() --> DoubleFLoat ???
-
 
 -------------------------------------------------------------------
 --  quitte@knuth.univ-poitiers.fr/1/13/94 Claude Quitte
@@ -1181,20 +876,3 @@ computeInt(first tower f, f, 0, %plusInfinity, false)$DFINTTLS(INT, EXPR INT)
 -- used to give a lisp error
 x^10+1::Polynomial PrimeField 2
 
--------------------------------------------------------------------
--- themos@num-alg-grp.co.uk/03/11/94 Themos Tsikas
--------------------------------------------------------------------
-)clear all
-f(x)==x^2
-draw(f,-1..1)
-
--------------------------------------------------------------------
--- themos@num-alg-grp.co.uk/03/16/94 Themos Tsikas
--------------------------------------------------------------------
-)clear all
---The problem was that nobody was around to catch the coerceOrCroaker.
---Just comment out the first line of intCodeGenCoerce1 in i-code.boot
---(the one with the explicit THROW). Bothe the riemannSphereDraw and JHD's
---original example will then work. -- bob sutor
-)read conformal
-riemannSphereDraw(1..2,0..%pi,4,4,"polar")
