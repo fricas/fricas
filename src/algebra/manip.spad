@@ -773,8 +773,8 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
           exponent := exponent + d * first argument k
         else if not is?(k, POWER) then
           -- Expand arguments to functions as well ... MCD 23/1/97
-          --coef := coef * monomial(1, k, d)
-          coef := coef * monomial(1, kernel(operator k, [simplifyExp u for u in argument k], height k), d)
+          newK : F := kernel(operator k, [simplifyExp u for u in argument k])
+          coef := coef * monomial(1, retract(newK)@K, d)
       coef::F * exp simplifyExp exponent * powersimp(p, lpow)
 
     expandPower f ==
@@ -790,7 +790,7 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       lk := select((z1 : K) : Boolean +-> a = first argument z1, rest l)
       for k0 in lk repeat
           exponent := exponent + degree(p, k0) * second argument k0
-      (a ^ simplifyExp exponent) * powersimp(p, setDifference(rest l, lk))
+      (simplifyExp a ^ simplifyExp exponent) * powersimp(p, setDifference(rest l, lk))
 
     t2t x         == sin(x) / cos(x)
     c2t x         == cos(x) / sin(x)
