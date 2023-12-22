@@ -831,30 +831,30 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     smp2htrigs p  == map((k1 : K) : F +-> htrigs(k1::F), (r1 : R) : F +-> r1::F, p)
 
     simplifyExp x ==
-        p := smpexp numer x
-        q := smpexp denom x
-        not (monomial?(p1 := numer p) and monomial?(q1 := numer q)) => p/q
+        f := smpexp numer x / smpexp denom x
+        p := numer f
+        q := denom f
+        not (monomial? p and monomial? q) => f
         -- currently only fraction of monomials are simplified, e.g:
         -- (exp(a)*b^c*d^e*...)/(exp(f)*b^g*h^i*...)
-        lk1 := variables p1
-        lk2 := variables q1
-        term : F := 1
+        lk1 := variables p
+        lk2 := variables q
+        term : P := 1
         for k2 in lk2 repeat
-            -- assert!(degree(q1, k) = 1)
             op := operator k2
             args := argument k2
             h := height k2
             if op = opexp then
                 for k1 in lk1 repeat
                     if is?(k1, opexp) then
-                        term := term * kernel(op, [-(args.1)], h)::F
+                        term := term * kernel(op, [-(args.1)], h)::P
                         break
             if is?(op, POWER) then
                 for k1 in lk1 repeat
                     if is?(k1, POWER) and args.1 = first argument k1 then
-                        term := term * kernel(op, [args.1, -(args.2)], h)::F
+                        term := term * kernel(op, [args.1, -(args.2)], h)::P
                         break
-        termexp(numer(p*term))/termexp(numer(q*term))
+        termexp(p*term)/termexp(q*term)
 
     htrigs f ==
       (m := mainKernel f) case "failed" => f
