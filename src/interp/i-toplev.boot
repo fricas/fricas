@@ -94,6 +94,7 @@ interpsys_restart() ==
   loadExposureGroupData()
   initHist()
   initializeInterpreterFrameRing()
+  buildHtMacroTable()
 
   if $displayStartMsgs then spadStartUpMsgs()
   $currentLine := nil

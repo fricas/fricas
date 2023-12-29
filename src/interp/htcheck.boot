@@ -125,5 +125,3 @@ spadSysBranch(tree,arg) ==  --tree is (msg kind TREEorSomethingElse ...)
   kind = 'INTEGER  => INTEGERP arg
   kind = 'FUNCTION => atom arg
   systemError '"unknown tree branch"
-
-buildHtMacroTable()
