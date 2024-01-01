@@ -284,6 +284,7 @@ clearCmdCompletely() ==
 clearCmdAll() ==
   clear_sorted_caches()
   ------undo special variables------
+  $prevCarrier := ($currentCarrier := ['carrier])
   $frameRecord := nil
   $previousBindings := nil
   untraceMapSubNames $trace_names
