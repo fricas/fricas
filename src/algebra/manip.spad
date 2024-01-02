@@ -778,19 +778,14 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       f := base ^ expt
       uk : Union(K, "failed") := retractIfCan f
       ub : Union(K, "failed") := retractIfCan base
-      if ub case K and is?(ub::K, opexp) then
-        if uk case K and is?(uk::K, POWER) then
-          return [1, f, base, expt]
-        else
-          newExpt := expt * first argument(ub::K)
-          return [1, exp newExpt, exp(1), newExpt]
-      if uk case K then
-        k := uk::K
-        args := argument k
-        if is?(k, POWER) then
-          return [1, f, first args, second args]
-        if is?(k, opexp) then
-          return [1, f, exp(1), first args]
+      ub case K and is?(ub::K, opexp) =>
+        uk case K and is?(uk::K, POWER) =>
+          [1, f, base, expt]
+        newExpt := expt * first argument(ub::K)
+        [1, exp newExpt, exp(1), newExpt]
+      uk case K and is?(uk::K, POWER) =>
+        args := argument(uk::K)
+        [1, f, first args, second args]
       [1, f, f, 1]
 
     termexp p ==
