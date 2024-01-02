@@ -767,6 +767,31 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     TERM ==> Record(degree : NonNegativeInteger, f : F, base : F, expt : F)
     powersimp : (List TERM) -> List TERM
     powersimpAux : (List TERM, List F) -> List TERM
+    rewritePower : (F, F) -> TERM
+
+    -- for a power "base ^ expt", after simplification,
+    --     f := (simplifyExp base)^(simplifyExp expt)
+    -- 'f' may no longer be a power:
+    -- 'expt' may simplify to integer or
+    -- 'base' may be a 'exp' kernel
+    rewritePower(base, expt) ==
+      f := base ^ expt
+      uk : Union(K, "failed") := retractIfCan f
+      ub : Union(K, "failed") := retractIfCan base
+      if ub case K and is?(ub::K, opexp) then
+        if uk case K and is?(uk::K, POWER) then
+          return [1, f, base, expt]
+        else
+          newExpt := expt * first argument(ub::K)
+          return [1, exp newExpt, exp(1), newExpt]
+      if uk case K then
+        k := uk::K
+        args := argument k
+        if is?(k, POWER) then
+          return [1, f, first args, second args]
+        if is?(k, opexp) then
+          return [1, f, exp(1), first args]
+      [1, f, f, 1]
 
     termexp p ==
       lk := variables p
@@ -782,8 +807,12 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
           f := exp expt
         else if is?(k, POWER) then
           base := simplifyExp first args
-          expt := simplifyExp second args
-          f := base^expt
+          expt := simplifyExp(d * second args)
+          d := 1
+          newTerm := rewritePower(base, expt)
+          base := newTerm.base
+          expt := newTerm.expt
+          f := newTerm.f
         else
           base := kernel(operator k, [simplifyExp u for u in args])
           expt := 1::F
@@ -820,11 +849,14 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
           expt := expt + item.degree * item.expt
         item.f = base =>
           expt := expt + (item.degree)::F
+        -- the possibility that    (item.f)^(item.degree) = base ^ n
+        -- for a certain integer 'n' is not considered yet.
         (item.f)^(item.degree) = base =>
           expt := expt + 1::F
         lrest := cons(item, lrest)
       expt := simplifyExp expt
-      cons([1, base^expt, base, expt], powersimpAux(lrest, rest lbase))
+      newTerm := rewritePower(base, expt)
+      cons(newTerm, powersimpAux(lrest, rest lbase))
 
     t2t x         == sin(x) / cos(x)
     c2t x         == cos(x) / sin(x)
