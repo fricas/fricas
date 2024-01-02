@@ -69,11 +69,18 @@ InnerAlgFactor(F, UP, AlExt, AlPol) : Exports == Implementation where
           append(perturbfactor(g, k + 1, fact), listerm)
       listerm
 
+    fUnion ==> Union("nil", "sqfr", "irred", "prime")
+    fFr ==> Record(flag : fUnion, factor : AlPol,
+                   exponent : NonNegativeInteger)
+
     factor(f, fact) ==
-      sqf := squareFree f
-      unit(sqf) * _*/[_*/[primeFactor(pol, sqterm.exponent)
-                          for pol in irrfactor(sqterm.factor, 0, fact)]
-                                            for sqterm in factorList sqf]
+        sqf := squareFree f
+        fl : List(fFr) := []
+        for sq1 in factorList(sqf) repeat
+            e1 := sq1.exponent
+            for f1 in irrfactor(sq1.factor, 0, fact) repeat
+                fl := cons(["prime", f1, e1]$fFr, fl)
+        makeFR(unit(sqf), fl)
 
     p := definingPolynomial()$AlExt
     newp : NUP := map(x +-> x::UP, p)$UPCF2(F, UP, UP, NUP)
