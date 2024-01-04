@@ -187,7 +187,8 @@ After this function is called the image is clean and can be saved.
                    '("util.o")
                    load-files))
       (let ((initforms nil))
-          (dolist (el '(|$build_date| |$build_version| |$createLocalLibDb|))
+          (dolist (el '(|$build_date| |$build_version|
+                        |$lisp_id_string| |$createLocalLibDb|))
               (if (boundp el)
                   (push (list 'defparameter el (symbol-value el))
                         initforms)))
