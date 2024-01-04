@@ -42,7 +42,7 @@ Notes:
 - the simplest interface is |parseAndInterpret| which takes a string
   as input and produces a Lisp form representing printed output.  As
   side effect |parseAndInterpret| prints the result.
-- at deeper lever FriCAS functions are overloaded, so to call correct
+- at deeper level FriCAS functions are overloaded, so to call correct
   function one has to first use |getFunctionFromDomain| to get
   function which matches to given argument types.  Above I want to
   multiply two sparse univariate polynomials with integer coefficients.

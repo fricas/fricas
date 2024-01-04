@@ -742,8 +742,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun trim-directory-name (name)
     #+(or :unix :win32)
     (if (char= (char name (1- (length name))) #\/)
-        (setf name (subseq name 0 (1- (length name)))))
-    name)
+        (subseq name 0 (1- (length name)))
+        name))
 
 (defun pad-directory-name (name)
    #+(or :unix :win32)
@@ -818,17 +818,14 @@ with this hack and will try to convince the GCL crowd to fix this.
                      0
                      -1)))
    #+:abcl
-   (if filename
        (if (ext:file-directory-p filename)
            1
          (if (probe-file filename) 0 -1))
-     -1)
    #+:lispworks
-   (if filename
        (if (lispworks:file-directory-p filename)
            1
          (if (probe-file filename) 0 -1))
-     -1))
+)
 
 #+:cmu
 (defun get-current-directory ()

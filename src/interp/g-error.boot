@@ -49,19 +49,15 @@ DEFPARAMETER($AlgebraError, 'AlgebraError)
 
 DEFVAR($timedNameStack)
 
-DEFPARAMETER($inLispVM, false)
-
 spad_system_error_handler (c) ==
     $NeedToSignalSessionManager := true
-    not($inLispVM) and MEMQ($BreakMode,
+    MEMQ($BreakMode,
            ["nobreak", "query", "resume", "quit", "trapSpadErrors"]) =>
         systemError(error_format(c))
     $BreakMode = "letPrint2" =>
         $BreakMode := nil
         THROW("letPrint2", nil)
     nil
-
-BUMPCOMPERRORCOUNT() == nil
 
 argumentDataError(argnum, condit, funname) ==
   msg := ['"The test",:bright pred2English condit,'"evaluates to",
@@ -82,7 +78,6 @@ errorSupervisor(errorType,errorMsg) ==
   errorSupervisor1(errorType,errorMsg,$BreakMode)
 
 errorSupervisor1(errorType,errorMsg,$BreakMode) ==
-  BUMPCOMPERRORCOUNT()
   errorLabel :=
       errorType = $SystemError  => '"System error"
       errorType = $UserError    => '"Apparent user error"

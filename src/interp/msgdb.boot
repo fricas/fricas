@@ -389,7 +389,6 @@ throwListOfKeyedMsgs(descKey,descArgs,l) ==
 --  a chance to play around in a break loop if $BreakMode is not 'nobreak
 
 breakKeyedMsg(key,args) ==
-  BUMPCOMPERRORCOUNT()
   sayKeyedMsg(key,args)
   handleLispBreakLoop($BreakMode)
 
