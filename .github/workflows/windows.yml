@@ -33,13 +33,13 @@ jobs:
       run: cd ../build && make check -j2 --output-sync
     - name: Create artifact archives
       run: |
-        rm -r ../build/target/*/src
+        test "$GITHUB_REF_TYPE" != "tag" && rm -r ../build/target/*/src
         rm ../build/target/x86_64-w64-mingw32/bin/fricas
         mv ../build/target/x86_64-w64-mingw32 FriCAS-windows-x86_64
         cp /mingw64/bin/libgmp-10.dll FriCAS-windows-x86_64/lib/
         zip -r FriCAS-windows-x86_64-${{ github.sha }}.zip FriCAS-windows-x86_64
     - name: Upload Windows binary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: FriCAS-windows-x86_64-binary
         path: FriCAS-windows-x86_64-${{ github.sha }}.zip
