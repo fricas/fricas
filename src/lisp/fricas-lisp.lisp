@@ -236,6 +236,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; For ECL assume :unix, when :netbsd or :darwin
 #+(and :ecl (or :darwin :netbsd)) (push :unix *features*)
 
+;;; For Clozure CL assume :win32, when :windows
+#+(and :openmcl :windows) (push :win32 *features*)
+
 ;;; -----------------------------------------------------------------
 
 ;;; Deleting files ignoring errors
@@ -743,7 +746,9 @@ with this hack and will try to convince the GCL crowd to fix this.
     #+(or :unix :win32)
     (if (char= (char name (1- (length name))) #\/)
         (subseq name 0 (1- (length name)))
-        name))
+        name)
+    #-(or :unix :win32)
+    (error "Not Unix and not Windows, what system it is?"))
 
 (defun pad-directory-name (name)
    #+(or :unix :win32)
