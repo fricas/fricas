@@ -1,0 +1,153 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+)expose RSIMP
+
+testsuite "rsimp"
+
+testcase "root densting"
+
+eI := Expression(Integer)
+w1 := -72*sqrt(2) + 158*sqrt(5) + 498
+rs1 := rsimp(sqrt(w1))
+rs1a := ratDenom(rs1)
+testEquals("w1 - rs1^2", "0")
+testEquals("rs1", "(79*sqrt(5)::eI + 18*sqrt(2) + 83)/(sqrt(2)  + 9)")
+testEquals("rs1a", "(9 -sqrt(2))*sqrt(5) + sqrt(2) + 9")
+
+
+w2 := -6*sqrt(11)*sqrt(5) - 6*sqrt(7)*sqrt(5) - 2*sqrt(2)*sqrt(11) - _
+         2*sqrt(2)*sqrt(7) + 2*sqrt(7)*sqrt(11) + 6*sqrt(5)*sqrt(2) + 65;
+rs2 := rsimp(sqrt(w2));
+rs2a := ratDenom(%)
+testEquals("w2 - rs2^2", "0")
+testEquals("rs2",
+   "(((1928200344495084*5^(1/2)+3048784068900743*2^(1/2))*7^(1/2)::eI+"
+    "((-11074552551197313)*2^(1/2)*5^(1/2)+(-35020573305227746)))*11^(1/2)+"
+     "(((-22149105102394626)*2^(1/2)*5^(1/2)+(-70041146610455492))*7^(1/2)+"
+  "(140708227429543452*5^(1/2)+222480350055492642*2^(1/2))))/"
+   "((1928200344495084*5^(1/2)+3048784068900743*2^(1/2))*7^(1/2)+"
+    "((-11074552551197313)*2^(1/2)*5^(1/2)+(-35020573305227746)))")
+testEquals("rs2a", "sqrt(11)  + sqrt(7) - 3*sqrt(5) - sqrt(2)")
+
+-- Borodin case
+w3 := 5+2*sqrt(6)
+rs3 := rsimp(sqrt(w3))
+rs3a := ratDenom(rs3)
+testEquals("w3 - rs3^2", "0")
+testEquals("rs3", "(sqrt(6)::eI  + 3)/sqrt(3)")
+testEquals("rs3a", "sqrt(3)::eI*(sqrt(6) + 3)/3")
+
+w4 := 28*11^(1/2)*15^(1/2)+497
+-- Need subst, otherwise square root would mangle the argument
+a7715 := subst(a^(1/2), [a = 77/15])
+rs4 := ratDenom(rsimp(sqrt(w4)))
+testEquals("w4 - rs4^2", "0")
+testEquals("rs4", "(30*sqrt(11)::eI + 11*sqrt(15))*a7715/11")
+
+w5 := 16 - 2*sqrt(29) + 2*sqrt(55 - 10*sqrt(29));
+rs5 := rsimp(sqrt(w5))
+testEquals("w5 - rs5^2", "0")
+testEquals("rs5", "(sqrt(-10*sqrt(29)::eI  + 55) + 5)/sqrt(5)")
+
+w6 := x + sqrt(x^2 - 1)
+rs6 := rsimp(sqrt(w6))
+testEquals("w6 - rs6^2", "0")
+testEquals("rs6", "(1/sqrt(2*x+2))*(sqrt(x^2 - 1) + x + 1)")
+
+w7 := 12 + 2*sqrt(6) + 2*sqrt(14) + sqrt(6)*sqrt(14)
+rs7 := rsimp(sqrt(w7))
+testEquals("w7 - rs7^2", "0")
+testEquals("rs7", "((sqrt(6)::eI + 3)*sqrt(14) + 7*sqrt(6))/sqrt(42)")
+
+-- Tricky to input, because FriCAS wants to separate roots
+-- w8 := (5/4)^(1/3) - 1
+a54 := subst(a^(1/3), [a = 5/4])
+w8 := a54 - 1
+rs8 := rsimp(sqrt(w8))
+testEquals("w8 - rs8^2", "0")
+testEquals("rs8", "(2*a54^2 - 2*a54 - 1)/3")
+
+w9 := 5^(1/3) - 4^(1/3)
+rs9 := rsimp(sqrt(w9))
+testEquals("w9 - rs9^2", "0")
+testEquals("rs9", "(2*5^(2/3) - 2*4^(1/3)*5^(1/3) - 4^(2/3))/6")
+
+w10 := 88*sqrt(5) + 176
+rs10 := rsimp(w10^(1/3))
+testEquals("w10 - rs10^3", "0")
+testEquals("rs10", "(sqrt(5)  + 1)*11^(1/3)")
+
+w11 := 11*(2*sqrt(5) + sqrt(2))^4
+rs11 := rsimp(w11^(1/4))
+a4425 := subst(a^(1/4), [a = 44/25])
+testEquals("w11 - rs11^4", "0")
+testEquals("rs11", "(sqrt(5) + 5*sqrt(2))*a4425")
+
+w12 := 17*(3*sqrt(2) + 2*sqrt(3))^5
+a544 := subst(a^(1/5), [a = 544])
+rs12 := rsimp(w12^(1/5))
+testEquals("w12 - rs12^5", "0")
+testEquals("rs12", "(3*sqrt(2) + 2*sqrt(3))*a544/2")
+
+w13 := 7*(2*sqrt(3) - sqrt(11))^6
+a12096_1331 := subst(a^(1/6), [a = 12096/1331])
+rs13 := rsimp(w13^(1/6))
+testEquals("w13 - rs13^6", "0")
+testEquals("rs13", "(6*sqrt(11) - 11*sqrt(3))*a12096_1331/6")
+
+w14 := 19*(5*sqrt(2) - sqrt(7))^7
+rs14 := rsimp(w14^(1/7))
+testEquals("w14 - rs14^7", "0")
+testEquals("rs14", "(-19)^(1/7)*(sqrt(7) - 5*sqrt(2))")
+
+w15 := 5*(3*sqrt(2) - sqrt(11))^8
+rs15a := rsimp(w15^(1/4))
+testEquals("w15 - rs15a^4", "0")
+rs15b := rsimp(w15^(1/8))
+testEquals("w15 - rs15b^8", "0")
+w15c := w15^3
+rs15c := rsimp(w15c^(1/12))
+testEquals("w15c - rs15c^12", "0")
+
+w16 := 5*(3*sqrt(11) - 2*sqrt(7))^9
+rs16 := rsimp(w16^(1/9))
+a98415 := subst(a^(1/9), [a = 98415])
+testEquals("w16 - rs16^9", "0")
+testEquals("rs16", "(3*sqrt(11) - 2*sqrt(7))*a98415/3")
+
+do_rsimp(ww, kk) ==
+    rs := rsimp(ww^(1/kk))
+    if rs case "failed" then
+        print(message("rs case _"failed_"")$OutputForm)
+        print(kk::OutputForm)
+        print(ww::OutputForm)
+        testTrue("false")
+    else if ww - rs^kk ~= 0 then
+        print(message("ww - rs^kk ~= 0")$OutputForm)
+        print(kk::OutputForm)
+        print(ww::OutputForm)
+        testTrue("false")
+    else
+        testTrue("true")
+
+-- Root of degree 3 in base field
+for k in [2, 3, 4, 6, 8, 9, 12] repeat
+    w31a :=  11*(4 + 3^(1/3) + 3^(2/3))^k
+    do_rsimp(w31a, k)
+    w31b := 7*(3 + 5^(1/3) + 5^(2/3))^k
+    do_rsimp(w31b, k)
+    w31c := 5*(4 + 3*7^(1/3))^k
+    do_rsimp(w31c, k)
+
+-- Root of degree 4 in base field
+for k in 2..12 repeat
+    kk := k
+    aa := 3^(1/4)
+    w41a :=  11*(4 + 2*aa + aa^2 - aa^3)^k
+    do_rsimp(w41a, kk)
+    aa := 5^(1/4)
+    w41b := 7*(3 + 4*aa -2*aa^2 + aa^3)^k
+    do_rsimp(w41b, k)
+
+statistics()
+
