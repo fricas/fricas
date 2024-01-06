@@ -160,6 +160,8 @@ processInteractive(form, posnForm) ==
       CLRHASH $instantRecord
     writeHistModesAndValues()
     updateHist()
+  if $printTimeIfTrue then printTime()
+  if $printStorageIfTrue then printStorage()
   object
 
 processInteractive1(form, posnForm) ==
@@ -200,32 +202,16 @@ recordAndPrint(x,md) ==
     if $QuietCommand = false then
       output(x',md')
   putHist('%,'value,objNewWrap(x,md),$e)
-  if $printTimeIfTrue or $printTypeIfTrue then printTypeAndTime(x',md')
-  if $printStorageIfTrue then printStorage()
+  if $printTypeIfTrue then printType(x', md')
   'done
 
-printTypeAndTime(x,m) ==  --m is the mode/type of the result
-  printTypeAndTimeNormal(x, m)
-
-printTypeAndTimeNormal(x,m) ==
-  -- called only if either type or time is to be displayed
+printType(x, m) ==  -- m is the mode/type of the result
   if m is ['Union, :argl] then
     x' := retract(objNewWrap(x,m))
     m' := objMode x'
     m := ['Union, :[arg for arg in argl | sameUnionBranch(arg, m')], '"..."]
-  if $printTimeIfTrue then
-    timeString := makeLongTimeString($interpreterTimedNames,
-      $interpreterTimedClasses)
   if $printTypeIfTrue then
-      type_string := outputDomainConstructor(m)
-  $printTimeIfTrue and $printTypeIfTrue =>
-    $collectOutput =>
-      $outputLines := [msgText("S2GL0012", [type_string]), :$outputLines]
-    sayKeyedMsg("S2GL0014", [type_string, timeString])
-  $printTimeIfTrue =>
-    $collectOutput => nil
-    sayKeyedMsg("S2GL0013",[timeString])
-  $printTypeIfTrue =>
+    type_string := outputDomainConstructor(m)
     $collectOutput =>
         $outputLines :=
             [justifyMyType msgText("S2GL0012", [type_string]), :$outputLines]
@@ -248,6 +234,11 @@ justifyMyType(t) ==
 
 typeTimePrin x ==
   maprinSpecial(x,0,79)
+
+printTime() ==
+  $collectOutput => nil
+  s := makeLongTimeString($interpreterTimedNames, $interpreterTimedClasses)
+  sayKeyedMsg("S2GL0013", [s])
 
 printStorage() ==
   $collectOutput => nil
