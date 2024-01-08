@@ -31,7 +31,8 @@ jobs:
         test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
         make dist-macos
         cp -v `brew list gmp | grep libgmp.10.dylib` FriCAS.app/Contents/Resources/usr/local/lib/fricas/target/*/lib/
-        make dist-macos-dmg
+        ## reduce chance of error caused by "hdiutil: Resource busy"
+        make dist-macos-dmg || make dist-macos-dmg
         mv FriCAS.dmg ../fricas/FriCAS-macOS-x86_64-${{ github.sha }}.dmg
     - name: Upload macOS binary
       uses: actions/upload-artifact@v4
