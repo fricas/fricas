@@ -2861,7 +2861,7 @@ processSynonyms() ==
 -- functions for interfacing to system commands from algebra code
 -- common lisp dependent
 
-doSystemCommand string ==
+doSystemCommand1(string) ==
    string := CONCAT('")", string)
    LINE: fluid := string
    processSynonyms()
@@ -2879,6 +2879,9 @@ doSystemCommand string ==
         handleParsedSystemCommands(unab, optionList)
         nil
    nil
+
+doSystemCommand(string) ==
+    CATCH('SPAD_READER, doSystemCommand1(string))
 
 )if false
 The system commands given by the global variable

@@ -127,11 +127,17 @@ readSpadProfileIfThere() ==
 DEFPARAMETER($inRetract, nil)
 
 processInteractive(form, posnForm) ==
+    $timedNameStack : local := NIL
+    initializeTimedNames($interpreterTimedNames,$interpreterTimedClasses);
+    finally(
+        object := processInteractive0(form, posnForm),
+          while $timedNameStack repeat stopTimingProcess peekTimedName())
+    object
+
+processInteractive0(form, posnForm) ==
   --  Top-level dispatcher for the interpreter.  It sets local variables
   --  and then calls processInteractive1 to do most of the work.
   --  This function receives the output from the parser.
-
-  initializeTimedNames($interpreterTimedNames,$interpreterTimedClasses)
 
   $op: local:= (form is [op,:.] => op; form) --name of operator
   $Coerce: local := NIL
