@@ -44,7 +44,7 @@ PACKAGE_SOURCE_EDIT = os.environ.get(
 PACKAGE_BOOK = os.environ.get('PACKAGE_BOOK', FRICAS_URL + '/book.pdf')
 
 ###################################################################
-copyright = '2007-2023, FriCAS Team'
+copyright = '2007-2024, FriCAS Team'
 author = 'FriCAS Team'
 project = PACKAGE_TARNAME
 release = PACKAGE_VERSION
