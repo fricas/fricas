@@ -457,14 +457,6 @@ respective line to
    <policy domain="coder" rights="read|write" pattern="PS" />
 
 
-Currently building ``.html`` pages does not work with Sphinx 6.
-You must install Sphinx 5.3.0 (or smaller) or only build the
-|PACKAGE_BOOK| via
-::
-
-   cd $BUILD/src/doc
-   make book.pdf
-
 The |home page| can be built via
 ::
 
