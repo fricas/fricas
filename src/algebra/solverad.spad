@@ -433,7 +433,6 @@ RadicalSolvePackage(R) : Cat == Capsule where
         makeEq : (List RE, L SY) -> L EQ RE
         select :    L L RE      -> L L RE
         isGeneric? :  (L PR, L SY)  ->  Boolean
-        findGenZeros :  (L PR, L SY) -> L L RE
         findZeros   :   (L PR, L SY) -> L L RE
 
 
@@ -453,19 +452,26 @@ RadicalSolvePackage(R) : Cat == Capsule where
 
         ---- Exported Functions ----
 
+        sol_lin1(p : PR, vv : SY) : RE ==
+            (-coefficient(univariate(p, vv), 0)::RE)/
+              (leadingCoefficient univariate(p, vv))::RE
 
-       -- find the zeros of components in "generic" position --
-        findGenZeros(rlp : L PR, rlv : L SY) : L L RE ==
-         pp := rlp.first
-         v := first rlv
-         rlv := rest rlv
-         res : L L RE := []
-         res := append([reverse cons(r, [eval(
-           (-coefficient(univariate(p, vv), 0)::RE)/(leadingCoefficient univariate(p, vv))::RE,
-              kernel(v)@Kernel(RE), r) for vv in rlv for p in rlp.rest])
-                for r in radicalRoots(pp::RF, v)], res)
-         res
+        -- find the zeros of components in "generic" position --
+        find_gen_zeros(rlp : L PR, rlv : L SY, res : L L RE) : L L RE ==
+            pp := first(rlp)
+            rlp := rest(rlp)
+            v := first(rlv)
+            rlv := rest(rlv)
+            for r in reverse(radicalRoots(pp::RF, v)) repeat
+                res1 := [eval(sol_lin1(p, vv), kernel(v)@Kernel(RE), r)
+                           for vv in rlv for p in rlp]
+                res := cons(reverse(cons(r, res1)), res)
+            res
 
+        find_ngen_zeros(rlp : L PR, rlv : L SY, res : L L RE) : L L RE ==
+            for res1 in findZeros(rlp, rlv) repeat
+                cons(res1, res)
+            res
 
         findZeros(rlp : L PR, rlv : L SY) : L L RE ==
          parRes := [radicalRoots(p::RF, v) for p in rlp for v in rlv]
@@ -504,22 +510,20 @@ RadicalSolvePackage(R) : Cat == Capsule where
            radicalSolve(lhs eq - rhs eq, v)
 
         radicalRoots(lp : L RF, lv : L SY) ==
-          #lp = 1 and #lv > 1 =>
-              error "system does not have a finite number of solutions"
-          parRes := triangularSystems(lp, lv)$SystemSolvePackage(R)
-           -- select the components in "generic" form
-          rlv := reverse lv
-          rpRes := [reverse res for res in parRes]
-          listGen := [res for res in rpRes|isGeneric?(res, rlv)]
-          result : L L RE := []
-          if listGen ~= [] then
-            result := "append"/[findGenZeros(res,rlv) for res in listGen]
-            for res in listGen repeat
-                rpRes := delete(rpRes, position(res, rpRes))
-           --  non-generic components
-          rpRes = [] => result
-          append("append"/[findZeros(res,rlv) for res in rpRes],
-                         result)
+            -- Would be better to find solution
+            #lp = 1 and #lv > 1 =>
+                error "system does not have a finite number of solutions"
+            parRes := triangularSystems(lp, lv)$SystemSolvePackage(R)
+            rlv := reverse lv
+            gen_res : L L RE := []
+            ngen_res : L L RE := []
+            rpRes := [reverse res for res in parRes]
+            for pres in rpRes repeat
+                if isGeneric?(pres, rlv) then
+                    gen_res := find_gen_zeros(pres, rlv, gen_res)
+                else
+                    ngen_res := find_ngen_zeros(pres, rlv, gen_res)
+            append(reverse(ngen_res), reverse(gen_res))
 
         radicalSolve(lp : L RF, lv : L SY) ==
           [makeEq(lres, lv) for lres in radicalRoots(lp, lv)]
