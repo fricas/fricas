@@ -871,7 +871,7 @@ makeControlPanel (void)
 {
 
   Window                cw;
-  int                   i, num;
+  int                   i;
   controlPanelStruct    *control;
   buttonStruct          *buttons;
   controlXY             cXY;
@@ -922,7 +922,7 @@ makeControlPanel (void)
   /* Define and assign a mouse cursor */
   control->controlWindow = cw;
 
-  num = initButtons(control->buttonQueue);
+  initButtons(control->buttonQueue);
   buttons = control->buttonQueue;
   for (i=controlButtonsStart3D; i<(controlButtonsEnd3D); i++) {
     controlAttrib.event_mask = (control->buttonQueue[i]).mask;

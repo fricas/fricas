@@ -1307,12 +1307,10 @@ compute_header_extent(HyperDocPage *page)
      * for the header here
      */
 
-    int ty; /* UNUSED */
-
     gExtentRegion = Header;
     right_margin_space = non_scroll_right_margin_space;
     init_extents();
-    ty = text_y = 3 * top_margin + line_height + max(page->title->height, twheight);
+    text_y = 3 * top_margin + line_height + max(page->title->height, twheight);
     gLineNode = page->header->next;
     compute_text_extent(page->header->next);
     page->header->height = text_height(page->header->next, Endheader);

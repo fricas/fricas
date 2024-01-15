@@ -113,7 +113,7 @@ define_function_keys(void) {
     } else {
         /*** If so, then get the key bindings **/
         while ((key = get_key(fd, &type))) {
-            int length = get_str(fd, string);
+            get_str(fd, string);
             switch (type) {
               case 'D':
                 if (key == 12) {

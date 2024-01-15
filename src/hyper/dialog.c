@@ -189,7 +189,7 @@ move_sym_forward(LineStruct *line, int num, int size, InputItem *sym)
         nl = move_sym_forward(line->next, num, size, sym);
         strncpy(line->next->buffer,
                 &line->buffer[sym->size - num], line->len);
-        strncpy(&line->buffer[num],
+        memmove(&line->buffer[num],
                 line->buffer, num);
         line->changed = 1;
         return nl;
@@ -208,14 +208,14 @@ move_sym_forward(LineStruct *line, int num, int size, InputItem *sym)
                 line->next->prev = newline;
             line->next = newline;
             strncpy(newline->buffer, &line->buffer[size - diff], diff);
-            strncpy(&line->buffer[num], line->buffer, num);
+            memmove(&line->buffer[num], line->buffer, num);
             line->buffer[size] = '_';
             line->buffer[size + 1] = 0;
             line->len = size + 1;
             return 1;
         }
         else {
-            strncpy(&line->buffer[num], line->buffer, line->len);
+            memmove(&line->buffer[num], line->buffer, line->len);
             line->len += num;
             line->changed = 1;
             return 0;
@@ -277,7 +277,7 @@ insert_buffer(char *buffer, InputItem *sym)
         else {
             line->next->buffer[0] = line->buffer[size - 1];
             line->changed = 1;
-            strncpy(&line->buffer[line->buff_pntr + 1],
+            memmove(&line->buffer[line->buff_pntr + 1],
                 &line->buffer[line->buff_pntr], size - line->buff_pntr - 1);
             line->buffer[line->buff_pntr++] = buffer[0];
             line->changed = 1;
@@ -313,7 +313,7 @@ insert_buffer(char *buffer, InputItem *sym)
             /* we are not the leaders */
             newline->buffer[0] = line->buffer[size - 1];
             newline->len = 1;
-            strncpy(&line->buffer[line->buff_pntr + 1],
+            memmove(&line->buffer[line->buff_pntr + 1],
                     &line->buffer[line->buff_pntr], size - line->buff_pntr);
             if (line->buff_pntr < size - 1) {
                 line->buffer[line->buff_pntr++] = buffer[0];
@@ -639,7 +639,7 @@ move_rest_back(LineStruct *line, int size)
         return c;
 
     while (line->next != NULL && line->len > size) {
-        strncpy(line->buffer, &(line->buffer[1]), size - 1);
+        memmove(line->buffer, &(line->buffer[1]), size - 1);
         line->buffer[size - 1] = line->next->buffer[0];
         line->changed = 1;
         line = line->next;
@@ -652,7 +652,7 @@ move_rest_back(LineStruct *line, int size)
     if (line->len > 0) {
         line->changed = 1;
         if (line->len > 1)
-            strncpy(line->buffer, &(line->buffer[1]), line->len - 1);
+            memmove(line->buffer, &(line->buffer[1]), line->len - 1);
         line->buffer[--line->len] = 0;
         if (line->len == 0) {
             /* I have to fix the previous line */
@@ -834,7 +834,7 @@ move_back_one_char(InputItem *sym)
         else if (line->len > 0) {
             d = line->buffer[0];
             if (line->len <= sym->size) {
-                strncpy(line->buffer, &(line->buffer[1]), line->len - 1);
+                memmove(line->buffer, &(line->buffer[1]), line->len - 1);
                 if (c == 0) {
                     line->len--;
                     line->buffer[line->len] = 0;
@@ -843,7 +843,7 @@ move_back_one_char(InputItem *sym)
                     line->buffer[line->len - 1] = c;
             }
             else {
-                strncpy(line->buffer, &(line->buffer[1]), sym->size - 2);
+                memmove(line->buffer, &(line->buffer[1]), sym->size - 2);
                 if (c == 0) {
                     line->buffer[sym->size - 1] = 0;
                     line->len--;
@@ -872,7 +872,7 @@ move_back_one_char(InputItem *sym)
 
 
     if (line->len <= sym->size) {
-        strncpy(&line->buffer[line->buff_pntr - 1],
+        memmove(&line->buffer[line->buff_pntr - 1],
                 &(line->buffer[line->buff_pntr]),
                 line->len - line->buff_pntr);
         if (c == 0)
@@ -881,7 +881,7 @@ move_back_one_char(InputItem *sym)
             line->buffer[line->len - 1] = c;
     }
     else {
-        strncpy(&(line->buffer[line->buff_pntr - 1]),
+        memmove(&(line->buffer[line->buff_pntr - 1]),
                 &(line->buffer[line->buff_pntr]),
                 sym->size - line->buff_pntr);
         if (c == 0) {
@@ -1007,7 +1007,7 @@ delete_one_char(InputItem *sym)
      * exists at the end
      */
     if (line->len <= sym->size) {
-        strncpy(&line->buffer[line->buff_pntr],
+        memmove(&line->buffer[line->buff_pntr],
                 &(line->buffer[line->buff_pntr + 1]),
                 line->len - line->buff_pntr);
         if (c == 0)
@@ -1016,7 +1016,7 @@ delete_one_char(InputItem *sym)
             line->buffer[line->len - 1] = c;
     }
     else {
-        strncpy(&(line->buffer[line->buff_pntr]),
+        memmove(&(line->buffer[line->buff_pntr]),
                 &(line->buffer[line->buff_pntr + 1]),
                 sym->size - line->buff_pntr);
         if (c == 0) {
