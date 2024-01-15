@@ -283,7 +283,7 @@ computeTargetMode(lhs, rhs) ==
     rhs is ['Vector,:l] => ['VectorCategory,:l]
 
     rhs is [op, :argl] =>
-        modemap := GETDATABASE(op, 'CONSTRUCTORMODEMAP)
+        modemap := get_database(op, 'CONSTRUCTORMODEMAP)
         modemap is [[form, sig, :.], [=true,.]] =>
             pairlis:= [[v,:a] for a in argl for v in $FormalMapVariableList]
             -- substitute
@@ -304,7 +304,7 @@ computeTargetMode(lhs, rhs) ==
  cosig                      ; +
  defaultdomain              ; + used only in interpreter, values is
                               computed in daase.lisp, but is unused
-                              (getdatabase returns value from hardcoded list)
+                              (get_database returns value from hardcoded list)
  modemaps                   ; almost unused in the compiler -- used to
                               invalidate old modemaps when updating
                               *operation-hash* (which in turn is used

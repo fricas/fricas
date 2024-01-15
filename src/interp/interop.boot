@@ -97,7 +97,7 @@ SExprToDName(sexpr, cosigVal) ==
   first sexpr = 'Union or first sexpr = 'Record =>
     [DNameApplyID, name0,
         [DNameTupleID, :[ SExprToDName(sx, 'T) for sx in rest sexpr]]]
-  newCosig := rest GETDATABASE(first sexpr, QUOTE COSIG)
+  newCosig := rest(get_database(first(sexpr), 'COSIG))
   [DNameApplyID, name0,
     :MAPCAR(function SExprToDName, rest sexpr, newCosig)]
 
@@ -111,13 +111,13 @@ CompStrToString(str) ==
 
 runOldAxiomFunctor(:allArgs) ==
   [:args,env] := allArgs
-  GETDATABASE(env, 'CONSTRUCTORKIND) = 'category =>
+  get_database(env, 'CONSTRUCTORKIND) = 'category =>
       [$oldAxiomPreCategoryDispatch,: [env, :args]]
   dom:=APPLY(env, args)
   makeOldAxiomDispatchDomain dom
 
 makeLazyOldAxiomDispatchDomain domform ==
-  GETDATABASE(opOf domform, 'CONSTRUCTORKIND) = 'category =>
+  get_database(opOf(domform), 'CONSTRUCTORKIND) = 'category =>
       [$oldAxiomPreCategoryDispatch,: domform]
   dd := [$lazyOldAxiomDomainDispatch, hashTypeForm(domform,0), domform]
   NCONC(dd,dd) -- installs back pointer to head of domain.
@@ -178,9 +178,9 @@ $oldAxiomPreCategoryDispatch :=
           [nil])
 
 oldAxiomPreCategoryParents(catform,dom) ==
-  vars := ["%", :rest GETDATABASE(opOf(catform), 'CONSTRUCTORFORM)]
+  vars := ["%", :rest(get_database(opOf(catform), 'CONSTRUCTORFORM))]
   vals := [dom,:rest catform]
-  -- parents :=  GETDATABASE(opOf catform, 'PARENTS)
+  -- parents :=  get_database(opOf(catform), 'PARENTS)
   parents := parentsOf opOf catform
   -- strip out forms listed both conditionally and unconditionally
   unconditionalParents := []

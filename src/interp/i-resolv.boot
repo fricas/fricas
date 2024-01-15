@@ -385,7 +385,7 @@ resolveTTRed3(t) ==
     (and/[member(x,a) for x in b] and and/[member(x,b) for x in a]) and a
   [( atom x and x ) or ((not cs and x and not interpOp? x and x)
     or resolveTTRed3 x) or return NIL
-      for x in t for cs in GETDATABASE(first t, 'COSIG)]
+            for x in t for cs in get_database(first(t), 'COSIG)]
 
 interpOp?(op) ==
   PAIRP(op) and
@@ -453,7 +453,7 @@ getConditionsForCategoryOnType(t,cat) ==
 getConditionalCategoryOfType(t,conditions,match) ==
   if PAIRP t then t := first t
   t in '(Union Mapping Record) => NIL
-  conCat := GETDATABASE(t,'CONSTRUCTORCATEGORY)
+  conCat := get_database(t, 'CONSTRUCTORCATEGORY)
   REMDUP rest getConditionalCategoryOfType1(conCat, conditions, match, [[]])
 
 getConditionalCategoryOfType1(cat,conditions,match,seen) ==
@@ -467,10 +467,11 @@ getConditionalCategoryOfType1(cat,conditions,match,seen) ==
       RPLACD(conditions, CONS(cat, rest conditions))
       conditions
     conditions
-  cat is [catName,:.] and (GETDATABASE(catName,'CONSTRUCTORKIND) = 'category) =>
+  cat is [catName, :.] and
+            (get_database(catName, 'CONSTRUCTORKIND) = 'category) =>
     cat in rest seen => conditions
     RPLACD(seen, [cat, :rest seen])
-    subCat := GETDATABASE(catName,'CONSTRUCTORCATEGORY)
+    subCat := get_database(catName, 'CONSTRUCTORCATEGORY)
     -- substitute vars of cat into category
     for v in rest cat for vv in $TriangleVariableList repeat
       subCat := SUBST(v,vv,subCat)
@@ -785,14 +786,14 @@ replaceLast(A,t) ==
   nreverse RPLACA(reverse A,t)
 
 nontrivialCosig(x) ==
-   cs := GETDATABASE(x, "COSIG")
+   cs := get_database(x, "COSIG")
    sig := getConstructorSignature x
    not("and"/[c or freeOfSharpVars s for c in rest cs for s in rest sig])
 
 destructT(functor)==
   -- provides a list of booleans, which indicate whether the arguments
   -- to the functor are category forms or not
-  GETDATABASE(opOf functor,'COSIG)
+    get_database(opOf(functor), 'COSIG)
 
 constructTowerT(t,TL) ==
   -- t is a type, TL a list of constructors and argument lists

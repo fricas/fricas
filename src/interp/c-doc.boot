@@ -337,7 +337,7 @@ removeBackslashes s ==
 checkNumOfArgs conform ==
   conname := opOf conform
   constructor? conname or (conname := abbreviation? conname) =>
-    #GETDATABASE(conname,'CONSTRUCTORARGS)
+        #get_database(conname, 'CONSTRUCTORARGS)
   nil  --signals error
 
 checkIsValidType form == main where
@@ -347,7 +347,7 @@ checkIsValidType form == main where
     [op,:args] := form
     conname := (constructor? op => op; abbreviation? op)
     null conname => nil
-    fn(form,GETDATABASE(conname,'COSIG))
+    fn(form, get_database(conname, 'COSIG))
   fn(form,coSig) ==
     #form ~= #coSig => form
     or/[null checkIsValidType x for x in rest form for flag in rest coSig | flag]
@@ -1146,7 +1146,7 @@ checkDocError u ==
   --if called by checkDocFile (see file checkdoc.boot)
 
 checkDocMessage u ==
-  sourcefile := GETDATABASE($constructorName,'SOURCEFILE)
+  sourcefile := get_database($constructorName, 'SOURCEFILE)
   person := '"---"
   middle :=
     BOUNDP '$x => ['"(",$x,'"): "]

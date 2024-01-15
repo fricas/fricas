@@ -973,7 +973,7 @@ filterModemapsFromPackages(mms, names, op) ==
     type := getDomainFromMm mm
     null type => bad := cons(mm,bad)
     if PAIRP type then type := first type
-    GETDATABASE(type,'CONSTRUCTORKIND) = 'category => bad := cons(mm,bad)
+    get_database(type, 'CONSTRUCTORKIND) = 'category => bad := cons(mm, bad)
     name := object2String type
     found := nil
     for n in names while not found repeat
@@ -1235,7 +1235,7 @@ coerceTypeArgs(t1, t2, SL) ==
   -- if needed.
   t1 isnt [con1, :args1] or t2 isnt [con2, :args2] => t2
   con1 ~= con2 => t2
-  coSig := rest GETDATABASE(first t1, 'COSIG)
+  coSig := rest(get_database(first(t1), 'COSIG))
   and/coSig => t2
   csub1 := constructSubst t1
   csub2 := constructSubst t2
@@ -1715,7 +1715,7 @@ defaultTypeForCategory(cat, SL) ==
   -- calls this and should possibly fail in some cases.
   cat := subCopy(cat, SL)
   c := first cat
-  d := GETDATABASE(c, 'DEFAULTDOMAIN)
+  d := get_database(c, 'DEFAULTDOMAIN)
   d => [d, :rest cat]
   cat is [c] =>
     c = 'Field => $RationalNumber

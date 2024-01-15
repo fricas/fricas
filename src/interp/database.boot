@@ -384,7 +384,7 @@ getModemapsFromDatabase(op,nargs) ==
   ans
 
 getSystemModemaps(op,nargs) ==
-  mml:= GETDATABASE(op,'OPERATION) =>
+  mml:= get_database(op, 'OPERATION) =>
     mms := NIL
     for (x := [[.,:sig],.]) in mml repeat
       (NUMBERP nargs) and (nargs ~= #QCDR sig) => 'iterate
@@ -553,7 +553,7 @@ displayHiddenConstructors() ==
       centerAndHighlight c
 
 getOperationAlistFromLisplib x ==
-    u := GETDATABASE(x, 'OPERATIONALIST)
+    u := get_database(x, 'OPERATIONALIST)
     --  u := removeZeroOneDestructively u
     null u => u          -- this can happen for Object
     CAAR u = '_$unique => rest u

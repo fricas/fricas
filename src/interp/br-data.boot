@@ -87,18 +87,19 @@ buildLibdb(domainList) ==  --called by make-databases (daase.lisp)
   deleteFile '"temp.text"
 
 buildLibdbConEntry conname ==
-    NULL GETDATABASE(conname, 'CONSTRUCTORMODEMAP) => nil
-    abb:=GETDATABASE(conname,'ABBREVIATION)
+    NULL(get_database(conname, 'CONSTRUCTORMODEMAP)) => nil
+    abb := get_database(conname, 'ABBREVIATION)
     $conname := conname
-    conform := GETDATABASE(conname,'CONSTRUCTORFORM) or [conname] --hack for Category,..
+    -- hack for Category,..
+    conform := get_database(conname, 'CONSTRUCTORFORM) or [conname]
     $conform := dbMkForm SUBST('T,"T$",conform)
     null $conform => nil
     $exposed? := (isExposedConstructor conname => '"x"; '"n")
-    $doc      := GETDATABASE(conname, 'DOCUMENTATION)
+    $doc      := get_database(conname, 'DOCUMENTATION)
     pname := PNAME conname
-    kind  := GETDATABASE(conname,'CONSTRUCTORKIND)
+    kind  := get_database(conname, 'CONSTRUCTORKIND)
     if kind = 'domain
-      and GETDATABASE(conname,'CONSTRUCTORMODEMAP) is [[.,t,:.],:.]
+      and get_database(conname, 'CONSTRUCTORMODEMAP) is [[., t, :.], :.]
        and t is ['CATEGORY,'package,:.] then kind := 'package
     $kind :=
       pname.(MAXINDEX pname) = char '_& => 'x
@@ -118,7 +119,7 @@ buildLibdbString [x,:u] ==
   STRCONC(STRINGIMAGE x,"STRCONC"/[STRCONC('"`",STRINGIMAGE y) for y in u])
 
 libConstructorSig [conname,:argl] ==
-  [[.,:sig],:.] := GETDATABASE(conname,'CONSTRUCTORMODEMAP)
+  [[., :sig], :.] := get_database(conname, 'CONSTRUCTORMODEMAP)
   formals := TAKE(#argl,$FormalMapVariableList)
   sig := SUBLISLIS(formals,$TriangleVariableList,sig)
   keys := [g(f,sig,i) for f in formals for i in 1..] where
@@ -412,7 +413,7 @@ getArgumentConstructors con == --called by mkDependentsHashTable
       fn rest x
 
 getImports conname == --called by mkUsersHashTable
-  conform := GETDATABASE(conname,'CONSTRUCTORFORM)
+  conform := get_database(conname, 'CONSTRUCTORFORM)
   infovec := dbInfovec conname or return nil
   template := infovec.0
   u := [import(i,template)
@@ -449,7 +450,7 @@ getParentsFor(cname,formalParams,constructorCategory) ==
 --called by compDefineFunctor1
   acc := nil
   formals := TAKE(#formalParams,$TriangleVariableList)
-  constructorForm := GETDATABASE(cname, 'CONSTRUCTORFORM)
+  constructorForm := get_database(cname, 'CONSTRUCTORFORM)
   for x in folks constructorCategory repeat
     x := SUBLISLIS(formalParams,formals,x)
     x := SUBLISLIS(IFCDR constructorForm,formalParams,x)
@@ -465,15 +466,15 @@ parentsOf con == --called by kcpPage, ancestorsRecur
 
 parentsOfForm [op,:argl] ==
   parents := parentsOf op
-  null argl or argl = (newArgl := rest GETDATABASE(op,'CONSTRUCTORFORM)) =>
+  null argl or argl = (newArgl := rest get_database(op, 'CONSTRUCTORFORM)) =>
     parents
   SUBLISLIS(argl, newArgl, parents)
 
 getParentsForDomain domname  == --called by parentsOf
   acc := nil
-  for x in folks GETDATABASE(domname,'CONSTRUCTORCATEGORY) repeat
+  for x in folks(get_database(domname, 'CONSTRUCTORCATEGORY)) repeat
     x :=
-      GETDATABASE(domname,'CONSTRUCTORKIND) = 'category =>
+      get_database(domname,'CONSTRUCTORKIND) = 'category =>
         sublisFormal(IFCDR getConstructorForm domname,x,$TriangleVariableList)
       sublisFormal(IFCDR getConstructorForm domname,x)
     acc := [:explodeIfs x,:acc]
@@ -506,10 +507,10 @@ folks u == --called by getParents and getParentsForDomain
   [u]
 
 descendantsOf(conform,domform) ==  --called by kcdPage
-  'category = GETDATABASE((conname := opOf conform),'CONSTRUCTORKIND) =>
+  'category = get_database((conname := opOf conform), 'CONSTRUCTORKIND) =>
     cats := catsOf(conform,domform)
     [op,:argl] := conform
-    null argl or argl = (newArgl := rest (GETDATABASE(op,'CONSTRUCTORFORM)))
+    null argl or argl = (newArgl := rest(get_database(op, 'CONSTRUCTORFORM)))
         => cats
     SUBLISLIS(argl, newArgl, cats)
   'notAvailable
@@ -547,7 +548,7 @@ childArgCheck(argl, nargl) ==
 
 ancestors_of_cat(conform, domform) ==
        conname := opOf(conform)
-       alist := GETDATABASE(conname,'ANCESTORS)
+       alist := get_database(conname, 'ANCESTORS)
        argl := IFCDR domform or IFCDR conform
        [pair for [a,:b] in alist | pair] where pair ==
          left :=  sublisFormal(argl,a)
@@ -557,7 +558,7 @@ ancestors_of_cat(conform, domform) ==
          [left,:right]
 
 ancestorsOf(conform,domform) ==  --called by kcaPage, originsInOrder,...
-  'category = GETDATABASE((conname := opOf(conform)), 'CONSTRUCTORKIND) =>
+  'category = get_database((conname := opOf(conform)), 'CONSTRUCTORKIND) =>
        ancestors_of_cat(conform, domform)
   computeAncestorsOf(conform,domform)
 
@@ -607,14 +608,14 @@ domainsOf(conform, domname) ==
   --u is list of pairs (a . b) where b = conname
   --we sort u then replace each b by the predicate for which this is true
   s := listSort(function GLESSEQP,COPY u)
-  s := [[first pair, :GETDATABASE(pair, 'HASCATEGORY)] for pair in s]
+  s := [[first pair, :get_database(pair, 'HASCATEGORY)] for pair in s]
   transKCatAlist(conform,domname,listSort(function GLESSEQP,s))
 
 catsOf(conform, domname) ==
   conname := opOf conform
   alist := nil
   for key in allConstructors() repeat
-    for item in GETDATABASE(key,'ANCESTORS) | conname = CAAR item repeat
+    for item in get_database(key, 'ANCESTORS) | conname = CAAR item repeat
       [[op,:args],:pred] := item
       newItem :=
         args => [[args,:pred],:LASSOC(key,alist)]

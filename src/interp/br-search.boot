@@ -96,10 +96,10 @@ grepForAbbrev(s,key) ==
     UPPER_-CASE_-P c => someUpperCaseChar := true
   someLowerCaseChar or not someUpperCaseChar => false
   pattern := DOWNCASE s
-  ['Abbreviations ,:[GETDATABASE(x,'CONSTRUCTORFORM)
+  ['Abbreviations, :[get_database(x, 'CONSTRUCTORFORM)
     for x in allConstructors() | test]] where test ==
          not $includeUnexposed? and not isExposedConstructor x => false
-         a := GETDATABASE(x,'ABBREVIATION)
+         a := get_database(x, 'ABBREVIATION)
          match?(pattern,PNAME a) and not HGET($defaultPackageNamesHT,x)
 
 applyGrep(x,filename) ==
@@ -318,7 +318,8 @@ oPage(a,:b) == --called by \spadfun{opname}
 oPageFrom(opname,conname) == --called by \spadfunFrom{opname}{conname}
   htPage := htInitPage(nil,nil) --create empty page and fill in needed properties
   htpSetProperty(htPage,'conform,conform := getConstructorForm conname)
-  htpSetProperty(htPage,'kind,STRINGIMAGE GETDATABASE(conname,'CONSTRUCTORKIND))
+  htpSetProperty(htPage, 'kind,
+                 STRINGIMAGE(get_database(conname, 'CONSTRUCTORKIND)))
   itemlist := assoc(opname,koOps(conform,nil)) --all operations name "opname"
   null itemlist => systemError [conform,'" has no operation named ",opname]
   opAlist := [itemlist]

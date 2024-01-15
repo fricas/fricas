@@ -991,7 +991,7 @@ displayValue(op, u, omitVariableNameIfTrue) ==
     STRCONC('"Value of ", PNAME op, '": ")
   labmode := prefix2String objMode(u)
   if ATOM labmode then labmode := [labmode]
-  GETDATABASE(expr,'CONSTRUCTORKIND) = 'domain =>
+  get_database(expr, 'CONSTRUCTORKIND) = 'domain =>
     sayMSG concat('"   ",label,labmode,rhs,form2String expr)
   mathprint ['CONCAT,label,:labmode,rhs,
     outputFormat(expr,objMode(u))]
@@ -2327,12 +2327,12 @@ reportOpsFromUnitDirectly unitForm ==
   isRecordOrUnion := unitForm is [a,:.] and a in '(Record Union)
   unit:= evalDomain unitForm
   [top, :argl] := unitForm
-  kind:= GETDATABASE(top,'CONSTRUCTORKIND)
+  kind := get_database(top, 'CONSTRUCTORKIND)
 
   sayBrightly concat('%b,formatOpType unitForm,
     '%d,'"is a",'%b,kind,'%d, '"constructor.")
   if not isRecordOrUnion then
-    abb := GETDATABASE(top,'ABBREVIATION)
+    abb := get_database(top, 'ABBREVIATION)
     sayBrightly ['" Abbreviation for",:bright top,'"is",:bright abb]
     verb :=
       isExposedConstructor top => '"is"
@@ -2361,7 +2361,7 @@ reportOpsFromUnitDirectly unitForm ==
         sigList := EQSUBSTLIST(argl,$FormalMapVariableList, sigList)
         ops := [formatOperationWithPred(x) for x in sigList]
       else
-        $predicateList: local := GETDATABASE(top, 'PREDICATES)
+        $predicateList : local := get_database(top, 'PREDICATES)
         -- x.1 is the type predicate of operation x
         sigList := [x for x in sigList | evalDomainOpPred(unit, x.1)]
         -- first(first(x)) is the name of operation x
@@ -2388,11 +2388,11 @@ reportOpsFromLisplib(op,u) ==
   argml :=
     (s := getConstructorSignature op) => IFCDR s
     NIL
-  typ:= GETDATABASE(op,'CONSTRUCTORKIND)
+  typ := get_database(op, 'CONSTRUCTORKIND)
   nArgs:= #argml
   nArgs = 0 and typ = 'domain =>
       reportOpsFromUnitDirectly0 isType mkAtree evaluateType [op]
-  argList := IFCDR GETDATABASE(op, 'CONSTRUCTORFORM)
+  argList := IFCDR(get_database(op, 'CONSTRUCTORFORM))
   functorForm:= [op,:argList]
   argml:= EQSUBSTLIST(argList,$FormalMapVariableList,argml)
   functorFormWithDecl:= [op,:[[":",a,m] for a in argList for m in argml]]
@@ -2418,7 +2418,7 @@ displayOperationsFromLisplib form ==
   [name,:argl] := form
   centerAndHighlight('"Operations",$LINELENGTH,specialChar 'hbar)
   sayBrightly '""
-  opList:= GETDATABASE(name,'OPERATIONALIST)
+  opList := get_database(name, 'OPERATIONALIST)
   null opList => nil
   opl:=REMDUP MSORT EQSUBSTLIST(argl,$FormalMapVariableList,opList)
   ops:= nil
@@ -2725,9 +2725,9 @@ filterAndFormatConstructors(constrType,label,patterns) ==
 
 whatConstructors constrType ==
   -- here constrType should be one of 'category, 'domain, 'package
-  MSORT [CONS(GETDATABASE(con,'ABBREVIATION), STRING(con))
+  MSORT [CONS(get_database(con, 'ABBREVIATION), STRING(con))
     for con in allConstructors()
-      | GETDATABASE(con,'CONSTRUCTORKIND) = constrType]
+            | get_database(con, 'CONSTRUCTORKIND) = constrType]
 
 apropos l ==
   -- l is a list of operation name fragments

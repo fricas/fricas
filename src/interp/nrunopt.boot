@@ -398,7 +398,7 @@ dcOpLatchPrint(op, index, infovec) ==
 getInfovec name ==
   u := GET(name, 'infovec) => u
   GET(name, 'LOADED) => nil
-  fullLibName := GETDATABASE(name,'OBJECT) or return nil
+  fullLibName := get_database(name, 'OBJECT) or return nil
   startTimingProcess 'load
   loadLibNoUpdate(name, name, fullLibName)
   GET(name, 'infovec)
@@ -432,7 +432,7 @@ dcOpTable con ==
   name := abbreviation? con or con
   infovec := getInfovec(name)
   template := infovec.0
-  $predvec: local := GETDATABASE(name, 'PREDICATES)
+  $predvec : local := get_database(name, 'PREDICATES)
   opTable := infovec.1
   for i in 0..MAXINDEX opTable repeat
     op := opTable.i
@@ -472,7 +472,7 @@ dcSig1(numvec,index, numOfArgs, infovec) ==
 
 dcPreds con ==
   name := abbreviation? con or con
-  $predvec:= GETDATABASE(name, 'PREDICATES)
+  $predvec := get_database(name, 'PREDICATES)
   for i in 0..MAXINDEX $predvec repeat
     sayBrightlyNT bright (i + 1)
     sayBrightly pred2English $predvec.i
@@ -482,7 +482,7 @@ dcCats con ==
   infovec := getInfovec name
   u := infovec.3
   VECP CDDR u => BREAK()
-  $predvec:= GETDATABASE(name, 'PREDICATES)
+  $predvec := get_database(name, 'PREDICATES)
   catpredvec := first u
   catinfo := CADR u
   catvec := CADDR u
@@ -684,7 +684,7 @@ getExportCategory form ==
   [op,:argl] := form
   op = 'Record => ['RecordCategory,:argl]
   op = 'Union => ['UnionCategory,:argl]
-  functorModemap := GETDATABASE(op,'CONSTRUCTORMODEMAP)
+  functorModemap := get_database(op, 'CONSTRUCTORMODEMAP)
   [[.,target,:tl],:.] := functorModemap
   EQSUBSTLIST(argl,$FormalMapVariableList,target)
 

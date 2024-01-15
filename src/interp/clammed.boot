@@ -88,7 +88,7 @@ isValidType form ==
   form is ['Expression, ['Kernel, . ]] => NIL
   form is [op,:argl] =>
     null constructor? op => nil
-    cosig := GETDATABASE(op, 'COSIG)
+    cosig := get_database(op, 'COSIG)
     cosig and null rest cosig => -- niladic constructor
         null argl => true
         false
@@ -101,7 +101,7 @@ isValidType form ==
     and/[isValid for x in argl for c in cl] where isValid ==
       categoryForm?(c) =>
         evalCategory(x, MSUBSTQ(x, '%, c)) and isValidType x
-      not (GETDATABASE(opOf x, 'CONSTRUCTORKIND) = 'domain)
+      not(get_database(opOf(x), 'CONSTRUCTORKIND) = 'domain)
 
 selectMms1(op,tar,args1,args2,$Coerce) ==
     selectMms2(op,tar,args1,args2,$Coerce)

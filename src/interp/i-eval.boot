@@ -43,7 +43,7 @@ quoteNontypeArgs(t) ==
     op := opOf t
     loadIfNecessary op
     args := rest t
-    cs := rest GETDATABASE(op, 'COSIG)
+    cs := rest(get_database(op, 'COSIG))
     nargs := [if c then quoteNontypeArgs(a) else ["QUOTE", a]
                 for a in args for c in cs]
     [op, :nargs]
@@ -72,8 +72,8 @@ mkEvalable form ==
     op="Mapping"=> mkEvalableMapping form
     op="Enumeration" => form
     loadIfNecessary op
-    kind:= GETDATABASE(op,'CONSTRUCTORKIND)
-    cosig := GETDATABASE(op, 'COSIG) =>
+    kind := get_database(op, 'CONSTRUCTORKIND)
+    cosig := get_database(op, 'COSIG) =>
       [op,:[val for x in argl for typeFlag in rest cosig]] where val ==
         typeFlag =>
           kind = 'category => MKQ x
@@ -160,7 +160,7 @@ evaluateType1 form ==
           evalCategory(x' := (evaluateType x), m) => x'
           throwEvalTypeMsg("S2IE0004",[form])
         m := evaluateType m
-        GETDATABASE(opOf m,'CONSTRUCTORKIND) = 'domain and
+        get_database(opOf(m), 'CONSTRUCTORKIND) = 'domain and
             (tree := mkAtree x) and  putTarget(tree,m) and ((bottomUp tree) is [m1]) =>
                 [zt,:zv]:= z1:= getAndEvalConstructorArgument tree
                 (v1 := coerceOrRetract(z1, m)) => objValUnwrap v1

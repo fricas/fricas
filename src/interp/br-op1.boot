@@ -183,7 +183,8 @@ fromHeading htPage ==
     upOp    := PNAME opOf  updomain
     ['" {\em from} ",:dbConformGen dnForm,'" {\em under} \ops{",upOp,'"}{",:$pn,:upFence,'"}"]
   domname  := htpProperty(htPage,'domname)
-  numberOfUnderlyingDomains := #[x for x in rest GETDATABASE(opOf domname,'COSIG) | x]
+  numberOfUnderlyingDomains :=
+        #[x for x in rest(get_database(opOf(domname), 'COSIG)) | x]
   IFCDR domname => ['" {\em from} ", :dbConformGen domname]
   htpProperty(htPage,'fromHeading)
 
@@ -194,10 +195,10 @@ conform2StringList(form, opFn, argFn) ==
   special := MEMQ(op,'(Union Record Mapping))
   cosig :=
     special => ['T for x in args]
-    rest GETDATABASE(op,'COSIG)
+    rest(get_database(op, 'COSIG))
   atypes :=
     special => cosig
-    rest CDAR GETDATABASE(op,'CONSTRUCTORMODEMAP)
+    rest(CDAR(get_database(op, 'CONSTRUCTORMODEMAP)))
   sargl := [fn for x in args for atype in atypes for pred in cosig] where fn ==
     keyword :=
       special and x is [":",y,t] =>
@@ -239,8 +240,8 @@ dbOuttran form ==
   else
     op := form
     args := nil
-  cosig := rest GETDATABASE(op,'COSIG)
-  atypes := rest CDAR GETDATABASE(op,'CONSTRUCTORMODEMAP)
+  cosig := rest(get_database(op, 'COSIG))
+  atypes := rest(CDAR(get_database(op, 'CONSTRUCTORMODEMAP)))
   argl := [fn for x in args for atype in atypes for pred in cosig] where fn ==
     pred => x
     typ := sublisFormal(args,atype)
@@ -359,7 +360,7 @@ dbGatherDataImplementation(htPage,opAlist) ==
   dom     := EVAL domainForm
   which   := '"operation"
   [nam, :.] := domainForm
-  $predicateList: local := GETDATABASE(nam,'PREDICATES)
+  $predicateList: local := get_database(nam, 'PREDICATES)
   u := getDomainOpTable2(dom, true, ASSOCLEFT opAlist)
   --u has form ((op,sig,:implementor)...)
   --sort into 4 groups: domain exports, unexports, default exports, others
@@ -482,7 +483,7 @@ dbShowOpAllDomains(htPage,opAlist,which) ==
   for [op,:items] in opAlist repeat
     for [.,predicate,origin,:.] in items repeat
       conname := first origin
-      GETDATABASE(conname,'CONSTRUCTORKIND) = 'category =>
+      get_database(conname, 'CONSTRUCTORKIND) = 'category =>
         pred := simpOrDumb(predicate, QLASSQ(conname, catOriginAlist) or true)
         catOriginAlist := insertAlist(conname,pred,catOriginAlist)
       pred := simpOrDumb(predicate, QLASSQ(conname, domOriginAlist) or true)
@@ -493,7 +494,7 @@ dbShowOpAllDomains(htPage,opAlist,which) ==
   for pair in u repeat
     [dom,:cat] := pair
     QLASSQ(cat, catOriginAlist) = 'etc => RPLACD(pair, 'etc)
-    RPLACD(pair,simpOrDumb(GETDATABASE(pair,'HASCATEGORY),true))
+    RPLACD(pair, simpOrDumb(get_database(pair, 'HASCATEGORY), true))
   --now add all of the domains
   for [dom,:pred] in domOriginAlist repeat
     u := insertAlist(dom, simpOrDumb(pred, QLASSQ(dom, u) or true), u)
@@ -522,7 +523,7 @@ dbShowOpConditions(htPage,opAlist,which,data) ==
 
 dbShowKind conform ==
   conname := first conform
-  kind := GETDATABASE(conname,'CONSTRUCTORKIND)
+  kind := get_database(conname, 'CONSTRUCTORKIND)
   kind = 'domain =>
     (s := PNAME conname).(MAXINDEX s) = '_& => '"default package"
     '"domain"
@@ -807,7 +808,7 @@ dbExpandOpAlistIfNecessary(htPage,opAlist,which,needOrigins?,condition?) ==
     'done
 
 getRegistry(op,sig) ==
-  u := GETDATABASE('AttributeRegistry,'DOCUMENTATION)
+  u := get_database('AttributeRegistry, 'DOCUMENTATION)
   v := LASSOC(op,u)
   match := or/[y for y in v | y is [['attribute,: =sig],:.]] => CADR match
   '""
@@ -815,7 +816,7 @@ getRegistry(op,sig) ==
 evalableConstructor2HtString domform ==
   if VECP domform then domform := devaluate domform
   conname := first domform
-  coSig   := rest GETDATABASE(conname,'COSIG)
+  coSig   := rest(get_database(conname, 'COSIG))
   --entries are T for arguments which are domains; NIL for computational objects
   and/[x for x in coSig] => form2HtString(domform,nil,true)
   arglist := [unquote x for x in rest domform] where
@@ -824,7 +825,7 @@ evalableConstructor2HtString domform ==
         f = 'QUOTE => first args
         [f,:[unquote x for x in args]]
       arg
-  fargtypes:=CDDAR GETDATABASE(conname,'CONSTRUCTORMODEMAP)
+  fargtypes := CDDAR(get_database(conname, 'CONSTRUCTORMODEMAP))
 --argtypes:= sublisFormal(arglist,fargtypes)
   form2HtString([conname,:[fn for arg in arglist for x in coSig
                    for ftype in fargtypes]],nil,true) where
@@ -901,7 +902,7 @@ getDomainOpTable2(dom, fromIfTrue, ops) ==
       [sig1,:info]
 
 evalDomainOpPred2(dom, pred) ==
-    $predicateList : local := GETDATABASE(first(dom.0), 'PREDICATES)
+    $predicateList : local := get_database(first(dom.0), 'PREDICATES)
     evalDomainOpPred(dom,pred)
 
 evalDomainOpPred(dom,pred) == process(dom,pred) where

@@ -7,7 +7,7 @@
          (if (not (|isDefaultPackageForm?| (list el)))
               (progn
                   (format f "~S~&" (symbol-name el))
-                  (let ((al (getdatabase el 'ABBREVIATION)))
+                  (let ((al (|get_database| el 'ABBREVIATION)))
                        (if al
                            (format f "~S~&"
                                 (symbol-name al))

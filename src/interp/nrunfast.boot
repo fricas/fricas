@@ -265,7 +265,7 @@ lazyMatch(source,lazyt,dollar,domain) ==
               for [.,stag,s] in sargl for [.,atag,a] in argl]
       MEMQ(op,'(Union Mapping QUOTE)) =>
          and/[lazyMatchArg(s,a,dollar,domain) for s in sargl for a in argl]
-      coSig := GETDATABASE(op,'COSIG)
+      coSig := get_database(op, 'COSIG)
       NULL coSig => error ['"bad Constructor op", op]
       and/[lazyMatchArg2(s,a,dollar,domain,flag)
            for s in sargl for a in argl for flag in rest coSig]
@@ -282,7 +282,7 @@ lazyMatch(source,lazyt,dollar,domain) ==
 
 lazyMatchArgDollarCheck(s,d,dollarName,domainName) ==
   #s ~= #d => nil
-  scoSig := GETDATABASE(opOf s,'COSIG) or return nil
+  scoSig := get_database(opOf(s), 'COSIG) or return nil
   if MEMQ(opOf s, '(Union Mapping Record)) then
      scoSig := [true for x in s]
   and/[fn for x in rest s for arg in rest d for xt in rest scoSig] where
@@ -343,7 +343,7 @@ newExpandLocalTypeForm([functorName,:argl],dollar,domain) ==
   MEMQ(functorName, '(Union Mapping)) =>
           [functorName,:[newExpandLocalTypeArgs(a,dollar,domain,true) for a in argl]]
   functorName = 'QUOTE => [functorName,:argl]
-  coSig := GETDATABASE(functorName,'COSIG)
+  coSig := get_database(functorName, 'COSIG)
   NULL coSig => error ['"bad functorName", functorName]
   [functorName,:[newExpandLocalTypeArgs(a,dollar,domain,flag)
         for a in argl for flag in rest coSig]]
@@ -388,7 +388,7 @@ newHasTest(domform,catOrAtt) ==
   domform is [dom,:.] and dom in '(Union Record Mapping Enumeration) =>
     ofCategory(domform, catOrAtt)
   catOrAtt = '(Type) => true
-  GETDATABASE(opOf domform, 'ASHARP?) => fn(domform,catOrAtt) where
+  get_database(opOf(domform), 'ASHARP?) => fn(domform, catOrAtt) where
   -- atom (infovec := getInfovec opOf domform) => fn(domform,catOrAtt) where
     fn(a,b) ==
       categoryForm?(a) => assoc(b, ancestors_of_cat(a, nil))
@@ -404,13 +404,13 @@ newHasTest(domform,catOrAtt) ==
   null isAtom and op = 'Join =>
     and/[newHasTest(domform,x) for x in rest catOrAtt]
 -- we will refuse to say yes for 'Cat has Cat'
---GETDATABASE(opOf domform,'CONSTRUCTORKIND) = 'category => throwKeyedMsg("S2IS0025",NIL)
+--get_database(opOf domform,'CONSTRUCTORKIND) = 'category => throwKeyedMsg("S2IS0025",NIL)
 -- on second thoughts we won't!
   catOrAtt is [":", fun, ["Mapping", :sig1]] =>
       evaluateType ["Mapping", :sig1] is ["Mapping", :sig2]  =>
          not(null(HasSignature(domform, [fun, sig2])))
       systemError '"strange Mapping type in newHasTest"
-  GETDATABASE(opOf domform,'CONSTRUCTORKIND) = 'category =>
+  get_database(opOf(domform), 'CONSTRUCTORKIND) = 'category =>
       domform = catOrAtt => 'T
       for [aCat, :cond] in ancestors_of_cat(domform, NIL)
            | aCat = catOrAtt  repeat

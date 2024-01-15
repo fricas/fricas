@@ -83,7 +83,7 @@ kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
   if nargs > 0 then kPageArgs(conform,signature)
   htSayStandard '"\indentrel{-2}"
   if name.(#name-1) = char "&" then name := SUBSEQ(name, 0, #name-1)
-  sourceFileName := GETDATABASE(INTERN name,'SOURCEFILE)
+  sourceFileName := get_database(INTERN(name), 'SOURCEFILE)
   filename := extractFileNameFromPath sourceFileName
   if filename ~= '"" then
     htSayStandard '"\newline{}"
@@ -274,8 +274,8 @@ dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
   infovec := dbInfovec name or return nil  --exit for categories
   u := infovec.3
   $predvec:=
-    $domain => $domain . 3
-    GETDATABASE(name,'PREDICATES)
+        $domain => $domain.3
+        get_database(name, 'PREDICATES)
   catpredvec := first u
   catinfo    := CADR u
   catvec     := CADDR u
@@ -449,7 +449,7 @@ kDomainName(htPage,kind,name,nargs) ==
   htpSetProperty(htPage,'inputAreaList,inputAreaList)
   conname := INTERN name
   args := [kArgumentCheck(domain?,x) or nil for x in inputAreaList
-              for domain? in rest GETDATABASE(conname,'COSIG)]
+              for domain? in rest(get_database(conname, 'COSIG))]
   or/[null x for x in args] =>
     (n := +/[1 for x in args | x]) > 0 =>
       ['error,nil,'"\centerline{You gave values for only {\em ",n,'" } of the {\em ",#args,'"}}",'"\centerline{parameters of {\sf ",name,'"}}\vspace{1}\centerline{Please enter either {\em all} or {\em none} of the type parameters}"]
@@ -476,7 +476,7 @@ dbMkEvalable form ==
 --like mkEvalable except that it does NOT quote domains
 --does not do "loadIfNecessary"
   [op,:.] := form
-  kind := GETDATABASE(op,'CONSTRUCTORKIND)
+  kind := get_database(op, 'CONSTRUCTORKIND)
   kind = 'category => form
   mkEvalable form
 
@@ -624,7 +624,7 @@ dbDocTable conform ==
 originsInOrder conform ==  --domain = nil or set to live domain
 --from dcCats
   [con,:argl] := conform
-  GETDATABASE(con,'CONSTRUCTORKIND) = 'category =>
+  get_database(con, 'CONSTRUCTORKIND) = 'category =>
       ASSOCLEFT ancestorsOf(conform,nil)
   acc := ASSOCLEFT parentsOf con
   for x in acc repeat
@@ -635,7 +635,7 @@ dbAddDocTable conform ==
   conname := opOf conform
   storedArgs := rest getConstructorForm conname
   for [op, :alist] in SUBLISLIS(["%", :rest(conform)],
-    ["%", :storedArgs], GETDATABASE(opOf(conform), 'DOCUMENTATION))
+    ["%", :storedArgs], get_database(opOf(conform), 'DOCUMENTATION))
       repeat
        op1 :=
          op = '(Zero) => 0
@@ -761,7 +761,7 @@ dbShowCons1(htPage,cAlist,key) ==
     key = 'files =>
       flist :=
         [y for con in conlist |
-          y := (fn := GETDATABASE(con,'SOURCEFILE))]
+          y := (fn := get_database(con, 'SOURCEFILE))]
       bcUnixTable(listSort(function GLESSEQP,REMDUP flist))
     key = 'documentation   => dbShowConsDoc(page,conlist)
     if $exposedOnlyIfTrue then
@@ -809,14 +809,14 @@ dbShowConsDoc1(htPage,conform,indexOrNil) ==
   doc := [getConstructorDocumentation conname]
   signature := getConstructorSignature conname
   sig :=
-    GETDATABASE(conname,'CONSTRUCTORKIND) = 'category =>
+    get_database(conname, 'CONSTRUCTORKIND) = 'category =>
       SUBLISLIS(conargs,$TriangleVariableList,signature)
     sublisFormal(conargs,signature)
   displayDomainOp(htPage,'"constructor",conform,conname,sig,true,doc,indexOrNil,'dbSelectCon,null exposeFlag,nil)
   --NOTE that we pass conform is as "origin"
 
 getConstructorDocumentation conname ==
-  LASSOC('constructor,GETDATABASE(conname,'DOCUMENTATION))
+  LASSOC('constructor, get_database(conname, 'DOCUMENTATION))
     is [[nil,line,:.],:.] and line or '""
 
 dbSelectCon(htPage,which,index) ==

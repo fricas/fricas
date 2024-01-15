@@ -479,7 +479,7 @@ formArguments2String(argl,ml) == [fn(x,m) for x in argl for m in ml] where
         m = $Symbol and SYMBOLP(y) => y
         form2String1 x
     isValidType(m) and PAIRP(m) and
-      (GETDATABASE(first(m),'CONSTRUCTORKIND) = 'domain) =>
+      (get_database(first(m), 'CONSTRUCTORKIND) = 'domain) =>
         (x' := coerceInteractive(objNewWrap(x,m),$OutputForm)) =>
           form2String1 objValUnwrap x'
         form2String1 x
@@ -747,7 +747,7 @@ string2Float s ==
 form2Fence form ==
   -- body of dbMkEvalable
   [op, :.] := form
-  kind := GETDATABASE(op,'CONSTRUCTORKIND)
+  kind := get_database(op, 'CONSTRUCTORKIND)
   kind = 'category => form2Fence1 form
   form2Fence1 mkEvalable form
 

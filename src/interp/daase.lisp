@@ -68,7 +68,7 @@ symbol then the nth-entry-byte-address is replaced by immediate data.
 Another existing one is a compression algorithm applied to the
 data so that the very long names don't take up so much space.
 We could probably remove the compression algorithm as 64k is no
-longer considered 'huge'. The database-abbreviation routine
+longer considered 'huge'. The |database-abbreviation| routine
 handles this on read and write-compress handles this on write.
 The squeeze routine is used to compress the keys, the unsqueeze
 routine uncompresses them. Making these two routines disappear
@@ -185,7 +185,7 @@ database.
 ; an assoc but leaves one open to breaking the system if someone
 ; adds something to the property list. this was not done because
 ; of the danger mentioned.
-;  a third speedup is to make the getdatabase call go away, either
+;  a third speedup is to make the get_database call go away, either
 ; by making it a macro or eliding it entirely. this was not done
 ; because we want to keep the flexibility of changing the database
 ; forms.
@@ -205,27 +205,27 @@ database.
 
 (in-package "BOOT")
 
-(defstruct database
- abbreviation               ; interp.
- ancestors                  ; interp.
- constructor                ; interp.
- constructorcategory        ; interp.
- constructorkind            ; interp.
- constructormodemap         ; interp.
- cosig                      ; interp.
- defaultdomain              ; interp.
- modemaps                   ; interp.
- niladic                    ; interp.
- object                     ; interp.
- operationalist             ; interp.
- documentation              ; browse.
- constructorform            ; browse.
- predicates                 ; browse.
- sourcefile                 ; browse.
- parents                    ; browse.
- users                      ; browse.
- dependents                 ; browse.
- spare                      ; superstition
+(defstruct |database|
+    |abbreviation|                ; interp.
+    |ancestors|                   ; interp.
+    |constructor|                 ; interp.
+    |constructorcategory|         ; interp.
+    |constructorkind|             ; interp.
+    |constructormodemap|          ; interp.
+    |cosig|                       ; interp.
+    |defaultdomain|               ; interp.
+    |modemaps|                    ; interp.
+    |niladic|                     ; interp.
+    |object|                      ; interp.
+    |operationalist|              ; interp.
+    |documentation|               ; browse.
+    |constructorform|             ; browse.
+    |predicates|                  ; browse.
+    |sourcefile|                  ; browse.
+    |parents|                     ; browse.
+    |users|                       ; browse.
+    |dependents|                  ; browse.
+    |spare|                       ; superstition
  ) ; database structure
 
 ; there are only a small number of categories that have default domains.
@@ -256,7 +256,7 @@ database.
 (defvar |$operation_hash| nil "given an operation name, what are its modemaps?")
 (defvar |$has_category_hash| nil "answers x has y category questions")
 
-(defvar |$miss| nil "print out cache misses on getdatabase calls")
+(defvar |$miss| nil "print out cache misses on get_database calls")
 
    ; note that constructorcategory information need only be kept for
    ; items of type category. this will be fixed in the next iteration
@@ -354,7 +354,7 @@ database.
   (|Polynomial| . |RetractableTo|)
   (|Symbol| . |CoercibleTo|) (|Symbol| . |ConvertibleTo|)
   (|Variable| . |CoercibleTo|)))
- (dolist (pair hascategory) (getdatabase pair 'hascategory))
+ (dolist (pair hascategory) (|get_database| pair 'hascategory))
  (setq constructormodemapAndoperationalist '(
   |BasicOperator|  |Boolean|
   |CardinalNumber| |Color|  |Complex|
@@ -376,12 +376,12 @@ database.
   |UniversalSegment|
   |Variable|  |Vector|))
  (dolist (con constructormodemapAndoperationalist)
-  (getdatabase con 'constructormodemap)
-  (getdatabase con 'operationalist))
+  (|get_database| con 'constructormodemap)
+  (|get_database| con 'operationalist))
  (setq operation '(
   |+| |-| |*| |/| |**| |coerce| |convert| |elt| |equation|
   |float| |sin| |cos| |map| |SEGMENT|))
- (dolist (op operation) (getdatabase op 'operation))
+ (dolist (op operation) (|get_database| op 'operation))
  (setq constr '( ;these are sorted least-to-most freq. delete early ones first
   |Factored| |SparseUnivariatePolynomialFunctions2| |TableAggregate&|
   |RetractableTo&| |RecursiveAggregate&| |UserDefinedPartialOrdering|
@@ -411,7 +411,7 @@ database.
  (dolist (con constr)
   (let ((c (concatenate 'string
              |$spadroot| "/algebra/"
-             (string (getdatabase con 'abbreviation)) "." |$lisp_bin_filetype|)))
+             (string (|get_database| con 'abbreviation)) "." |$lisp_bin_filetype|)))
     (if display_messages
         (format t "   preloading ~a.." c))
     (if (probe-file c)
@@ -466,19 +466,19 @@ database.
    (dolist (item constructors)
     (setq item (unsqueeze item))
     (setq |$all_constructors| (adjoin (first item) |$all_constructors|))
-    (setq dbstruct (make-database))
+    (setq dbstruct (|MAKE-database|))
     (setf (get (car item) 'database) dbstruct)
-    (setf (database-operationalist dbstruct) (second item))
-    (setf (database-constructormodemap dbstruct) (third item))
-    (setf (database-modemaps dbstruct) (fourth item))
-    (setf (database-object dbstruct) (fifth item))
-    (setf (database-constructorcategory dbstruct) (sixth item))
-    (setf (database-niladic dbstruct) (seventh item))
-    (setf (database-abbreviation dbstruct) (eighth item))
+    (setf (|database-operationalist| dbstruct) (second item))
+    (setf (|database-constructormodemap| dbstruct) (third item))
+    (setf (|database-modemaps| dbstruct) (fourth item))
+    (setf (|database-object| dbstruct) (fifth item))
+    (setf (|database-constructorcategory| dbstruct) (sixth item))
+    (setf (|database-niladic| dbstruct) (seventh item))
+    (setf (|database-abbreviation| dbstruct) (eighth item))
     (setf (get (eighth item) 'abbreviationfor) (first item)) ;invert
-    (setf (database-cosig dbstruct) (ninth item))
-    (setf (database-constructorkind dbstruct) (tenth item))
-    (setf (database-ancestors dbstruct) (nth 11 item))))
+    (setf (|database-cosig| dbstruct) (ninth item))
+    (setf (|database-constructorkind| dbstruct) (tenth item))
+    (setf (|database-ancestors| dbstruct) (nth 11 item))))
   (format t "~&")))
 
 ; this is an initialization function for the constructor database
@@ -526,13 +526,13 @@ database.
      (format t "that is not in the interp.daase file. we cannot~%")
      (format t "get the database structure for this constructor and~%")
      (warn "will create a new one~%")
-     (setf (get (car item) 'database) (setq dbstruct (make-database)))
+     (setf (get (car item) 'database) (setq dbstruct (|MAKE-database|)))
      (setq |$all_constructors| (adjoin item |$all_constructors|)))
-    (setf (database-sourcefile dbstruct) (second item))
-    (setf (database-constructorform dbstruct) (third item))
-    (setf (database-documentation dbstruct) (fourth item))
-    (setf (database-predicates dbstruct) (fifth item))
-    (setf (database-parents dbstruct) (sixth item))))
+    (setf (|database-sourcefile| dbstruct) (second item))
+    (setf (|database-constructorform| dbstruct) (third item))
+    (setf (|database-documentation| dbstruct) (fourth item))
+    (setf (|database-predicates| dbstruct) (fifth item))
+    (setf (|database-parents| dbstruct) (sixth item))))
   (format t "~&")))
 
 (defun |categoryOpen| (display_messages)
@@ -581,78 +581,78 @@ database.
  (dolist (map oldmaps) ; out with the old
   (let (oldop op)
    (setq op (car map))
-   (setq oldop (getdatabase op 'operation))
+   (setq oldop (|get_database| op 'operation))
    (setq oldop (delete (cdr map) oldop :test #'equal))
    (setf (gethash op |$operation_hash|) oldop)))
- (dolist (map (getdatabase constructor 'modemaps)) ; in with the new
+ (dolist (map (|get_database| constructor 'modemaps)) ; in with the new
   (let (op newmap)
    (setq op (car map))
-   (setq newmap (getdatabase op 'operation))
+   (setq newmap (|get_database| op 'operation))
    (setf (gethash op |$operation_hash|) (cons (cdr map) newmap)))))
 
 (defun showdatabase (constructor)
  (format t "~&~a: ~a~%" 'constructorkind
-  (getdatabase constructor 'constructorkind))
+  (|get_database| constructor 'constructorkind))
  (format t "~a: ~a~%" 'cosig
-  (getdatabase constructor 'cosig))
+  (|get_database| constructor 'cosig))
  (format t "~a: ~a~%" 'operation
-  (getdatabase constructor 'operation))
+  (|get_database| constructor 'operation))
  (format t "~a: " 'constructormodemap)
-  (pprint (getdatabase constructor 'constructormodemap))
+  (pprint (|get_database| constructor 'constructormodemap))
  (format t "~&~a: " 'constructorcategory)
-  (pprint (getdatabase constructor 'constructorcategory))
+  (pprint (|get_database| constructor 'constructorcategory))
  (format t "~&~a: " 'operationalist)
-  (pprint (getdatabase constructor 'operationalist))
+  (pprint (|get_database| constructor 'operationalist))
  (format t "~&~a: " 'modemaps)
-  (pprint (getdatabase constructor 'modemaps))
+  (pprint (|get_database| constructor 'modemaps))
  (format t "~&~a: ~a~%" 'hascategory
-  (getdatabase constructor 'hascategory))
+  (|get_database| constructor 'hascategory))
  (format t "~a: ~a~%" 'object
-  (getdatabase constructor 'object))
+  (|get_database| constructor 'object))
  (format t "~a: ~a~%" 'niladic
-  (getdatabase constructor 'niladic))
+  (|get_database| constructor 'niladic))
  (format t "~a: ~a~%" 'abbreviation
-  (getdatabase constructor 'abbreviation))
+  (|get_database| constructor 'abbreviation))
  (format t "~a: ~a~%" 'constructor
-  (getdatabase constructor 'constructor))
+  (|get_database| constructor 'constructor))
  (format t "~a: ~a~%" 'defaultdomain
-  (getdatabase constructor 'defaultdomain))
+  (|get_database| constructor 'defaultdomain))
  (format t "~a: ~a~%" 'ancestors
-  (getdatabase constructor 'ancestors))
+  (|get_database| constructor 'ancestors))
  (format t "~a: ~a~%" 'sourcefile
-  (getdatabase constructor 'sourcefile))
+  (|get_database| constructor 'sourcefile))
  (format t "~a: ~a~%" 'constructorform
-  (getdatabase constructor 'constructorform))
+  (|get_database| constructor 'constructorform))
  (format t "~a: ~a~%" 'constructorargs
-  (getdatabase constructor 'constructorargs))
+  (|get_database| constructor 'constructorargs))
  (format t "~a: " 'predicates)
-  (pprint (getdatabase constructor 'predicates))
+  (pprint (|get_database| constructor 'predicates))
  (format t "~&~a: ~a~%" 'documentation
-  (getdatabase constructor 'documentation))
+  (|get_database| constructor 'documentation))
  (format t "~a: ~a~%" 'parents
-  (getdatabase constructor 'parents)))
+  (|get_database| constructor 'parents)))
 
 (defun setdatabase (constructor key value)
  (let (struct)
   (when (symbolp constructor)
    (unless (setq struct (get constructor 'database))
-    (setq struct (make-database))
+    (setq struct (|MAKE-database|))
     (setf (get constructor 'database) struct))
    (case key
     (abbreviation
-     (setf (database-abbreviation struct) value)
+     (setf (|database-abbreviation| struct) value)
      (when (symbolp value)
       (setf (get value 'abbreviationfor) constructor)))
     (niladic
-     (setf (database-niladic struct) value))
+     (setf (|database-niladic| struct) value))
     (cosig
-     (setf (database-cosig struct) value))
+     (setf (|database-cosig| struct) value))
     (constructormodemap
-     (setf (database-constructormodemap struct) value))
+     (setf (|database-constructormodemap| struct) value))
     (constructorcategory
-     (setf (database-constructorcategory struct) value))
+     (setf (|database-constructorcategory| struct) value))
     (constructorkind
-     (setf (database-constructorkind struct) value))))))
+     (setf (|database-constructorkind| struct) value))))))
 
 (defun deldatabase (constructor key)
   (when (symbolp constructor)
@@ -660,9 +660,9 @@ database.
     (abbreviation
      (setf (get constructor 'abbreviationfor) nil)))))
 
-(defun getdatabase (constructor key)
+(defun |get_database| (constructor key)
  (declare (special |$spadroot|) (special |$miss|))
- (when (eq |$miss| t) (format t "getdatabase call: ~20a ~a~%" constructor key))
+ (when (eq |$miss| t) (format t "get_database call: ~20a ~a~%" constructor key))
  (let (data table stream struct)
   (when (or (symbolp constructor)
           (and (eq key 'hascategory) (pairp constructor)))
@@ -672,36 +672,36 @@ database.
    (abbreviation
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-      (setq data (database-abbreviation struct))))
+      (setq data (|database-abbreviation| struct))))
    (constructorkind
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-constructorkind struct))))
+     (setq data (|database-constructorkind| struct))))
    (cosig
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-cosig struct))))
+     (setq data (|database-cosig| struct))))
    (operation
     (setq stream |$operation_stream|)
     (setq data (gethash constructor |$operation_hash|)))
    (constructormodemap
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-constructormodemap struct))))
+     (setq data (|database-constructormodemap| struct))))
    (constructorcategory
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-constructorcategory struct))
+     (setq data (|database-constructorcategory| struct))
      (when (null data) ;domain or package then subfield of constructormodemap
-      (setq data (cadar (getdatabase constructor 'constructormodemap))))))
+      (setq data (cadar (|get_database| constructor 'constructormodemap))))))
    (operationalist
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-operationalist struct))))
+     (setq data (|database-operationalist| struct))))
    (modemaps
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-modemaps struct))))
+     (setq data (|database-modemaps| struct))))
    (hascategory
     (setq table  |$has_category_hash|)
     (setq stream |$category_stream|)
@@ -709,15 +709,15 @@ database.
    (object
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-object struct))))
+     (setq data (|database-object| struct))))
    (asharp?
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-object struct))))
+     (setq data (|database-object| struct))))
    (niladic
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-niladic struct))))
+     (setq data (|database-niladic| struct))))
    (superdomain ; only 2 superdomains in the world
     (case constructor
      (|NonNegativeInteger|
@@ -731,63 +731,63 @@ database.
    (ancestors
     (setq stream |$interp_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-ancestors struct))))
+     (setq data (|database-ancestors| struct))))
    (sourcefile
     (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-sourcefile struct))))
+     (setq data (|database-sourcefile| struct))))
    (constructorform
     (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-constructorform struct))))
+     (setq data (|database-constructorform| struct))))
    (constructorargs
-    (setq data (cdr (getdatabase constructor 'constructorform))))
+    (setq data (cdr (|get_database| constructor 'constructorform))))
    (predicates
     (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-predicates struct))))
+     (setq data (|database-predicates| struct))))
    (documentation
     (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-documentation struct))))
+     (setq data (|database-documentation| struct))))
    (parents
     (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-parents struct))))
+     (setq data (|database-parents| struct))))
    (users
     (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-users struct))))
+     (setq data (|database-users| struct))))
    (dependents
     (setq stream |$browse_stream|)
     (when (setq struct (get constructor 'database))
-     (setq data (database-dependents struct))))
-   (otherwise  (warn "~%(GETDATABASE ~a ~a) failed~%" constructor key)))
+     (setq data (|database-dependents| struct))))
+   (otherwise  (warn "~%(get_database ~a ~a) failed~%" constructor key)))
   (when (numberp data)                 ;fetch the real data
-   (when |$miss| (format t "getdatabase miss: ~20a ~a~%" constructor key))
+   (when |$miss| (format t "get_database miss: ~20a ~a~%" constructor key))
    (file-position stream data)
    (setq data (unsqueeze (read stream)))
    (case key ; cache the result of the database read
     (operation           (setf (gethash constructor |$operation_hash|) data))
     (hascategory         (setf (gethash constructor |$has_category_hash|) data))
-    (constructorkind     (setf (database-constructorkind struct) data))
-    (cosig               (setf (database-cosig struct) data))
-    (constructormodemap  (setf (database-constructormodemap struct) data))
-    (constructorcategory (setf (database-constructorcategory struct) data))
-    (operationalist      (setf (database-operationalist struct) data))
-    (modemaps            (setf (database-modemaps struct) data))
-    (object              (setf (database-object struct) data))
-    (niladic             (setf (database-niladic struct) data))
-    (abbreviation        (setf (database-abbreviation struct) data))
-    (constructor         (setf (database-constructor struct) data))
-    (ancestors           (setf (database-ancestors struct) data))
-    (constructorform     (setf (database-constructorform struct) data))
-    (predicates          (setf (database-predicates struct) data))
-    (documentation       (setf (database-documentation struct) data))
-    (parents             (setf (database-parents struct) data))
-    (users               (setf (database-users struct) data))
-    (dependents          (setf (database-dependents struct) data))
-    (sourcefile          (setf (database-sourcefile struct) data))))
+    (constructorkind     (setf (|database-constructorkind| struct) data))
+    (cosig               (setf (|database-cosig| struct) data))
+    (constructormodemap  (setf (|database-constructormodemap| struct) data))
+    (constructorcategory (setf (|database-constructorcategory| struct) data))
+    (operationalist      (setf (|database-operationalist| struct) data))
+    (modemaps            (setf (|database-modemaps| struct) data))
+    (object              (setf (|database-object| struct) data))
+    (niladic             (setf (|database-niladic| struct) data))
+    (abbreviation        (setf (|database-abbreviation| struct) data))
+    (constructor         (setf (|database-constructor| struct) data))
+    (ancestors           (setf (|database-ancestors| struct) data))
+    (constructorform     (setf (|database-constructorform| struct) data))
+    (predicates          (setf (|database-predicates| struct) data))
+    (documentation       (setf (|database-documentation| struct) data))
+    (parents             (setf (|database-parents| struct) data))
+    (users               (setf (|database-users| struct) data))
+    (dependents          (setf (|database-dependents| struct) data))
+    (sourcefile          (setf (|database-sourcefile| struct) data))))
    (case key ; fixup the special cases
     (sourcefile
      (when (and data (string= (directory-namestring data) "")
@@ -929,67 +929,67 @@ database.
      (if (< (length alist) 4) ;we have a naked function object
          (let ((opname key)
                (modemap (car (LASSOC '|modemaps| alist))) )
-           (setq oldmaps (getdatabase opname 'operation))
+           (setq oldmaps (|get_database| opname 'operation))
            (setf (gethash opname |$operation_hash|)
                  (adjoin (subst asharp-name opname (cdr modemap))
                          oldmaps :test #'equal))
            (asharpMkAutoloadFunction object asharp-name))
        (when (if (null only) (not (eq key '%%)) (member key only))
         (setq |$all_operations| nil)        ; force this to recompute
-        (setq oldmaps (getdatabase key 'modemaps))
-        (setq dbstruct (make-database))
+        (setq oldmaps (|get_database| key 'modemaps))
+        (setq dbstruct (|MAKE-database|))
         (setf (get key 'database) dbstruct)
         (setq |$all_constructors| (adjoin key |$all_constructors|))
-        (setf (database-constructorform dbstruct)
+        (setf (|database-constructorform| dbstruct)
          (fetchdata alist "constructorForm"))
-        (setf (database-constructorkind dbstruct)
+        (setf (|database-constructorkind| dbstruct)
          (fetchdata alist "constructorKind"))
-        (setf (database-constructormodemap dbstruct)
+        (setf (|database-constructormodemap| dbstruct)
          (fetchdata alist "constructorModemap"))
-        (unless (setf (database-abbreviation dbstruct)
+        (unless (setf (|database-abbreviation| dbstruct)
                       (fetchdata alist "abbreviation"))
-                (setf (database-abbreviation dbstruct) key)) ; default
-        (setq abbrev (database-abbreviation dbstruct))
+                (setf (|database-abbreviation| dbstruct) key)) ; default
+        (setq abbrev (|database-abbreviation| dbstruct))
         (setf (get abbrev 'abbreviationfor) key)
-        (setf (database-constructorcategory dbstruct)
+        (setf (|database-constructorcategory| dbstruct)
          (fetchdata alist "constructorCategory"))
-        (setf (database-sourcefile dbstruct)
+        (setf (|database-sourcefile| dbstruct)
          (fetchdata alist "sourceFile"))
-        (setf (database-operationalist dbstruct)
+        (setf (|database-operationalist| dbstruct)
          (fetchdata alist "operationAlist"))
-        (setf (database-modemaps dbstruct)
+        (setf (|database-modemaps| dbstruct)
          (fetchdata alist "modemaps"))
-        (setf (database-documentation dbstruct)
+        (setf (|database-documentation| dbstruct)
          (fetchdata alist "documentation"))
-        (setf (database-predicates dbstruct)
+        (setf (|database-predicates| dbstruct)
          (fetchdata alist "predicates"))
-        (setf (database-niladic dbstruct)
+        (setf (|database-niladic| dbstruct)
          (fetchdata alist "NILADIC"))
         (addoperations key oldmaps)
-        (setq cname  (|opOf| (database-constructorform dbstruct)))
-        (setq kind (database-constructorkind dbstruct))
+        (setq cname  (|opOf| (|database-constructorform| dbstruct)))
+        (setq kind (|database-constructorkind| dbstruct))
         (if (null noexpose) (|setExposeAddConstr| (cons cname nil)))
         (unless make-database?
          (|updateDatabase| cname) ;makes many hashtables???
          (|installConstructor| cname)
           ;; following can break category database build
          (if (eq kind '|category|)
-             (setf (database-ancestors dbstruct)
+             (setf (|database-ancestors| dbstruct)
                    (fetchdata alist "ancestors")))
          (if (eq kind '|domain|)
              (dolist (pair (cdr (assoc "ancestors" alist :test #'string=)))
                      (setf (gethash (cons cname (caar pair)) |$has_category_hash|)
                            (cdr pair))))
          (if |$InteractiveMode| (setq |$CategoryFrame| |$EmptyEnvironment|)))
-        (setf (database-cosig dbstruct)
+        (setf (|database-cosig| dbstruct)
          (cons nil (mapcar #'|categoryForm?|
-          (cddar (database-constructormodemap dbstruct)))))
-        (setf (database-object dbstruct) (cons object asharp-name))
+          (cddar (|database-constructormodemap| dbstruct)))))
+        (setf (|database-object| dbstruct) (cons object asharp-name))
         (if (eq kind '|category|)
          (asharpMkAutoLoadCategory object cname asharp-name
-          (database-cosig dbstruct))
+          (|database-cosig| dbstruct))
          (asharpMkAutoLoadFunctor object cname asharp-name
-          (database-cosig dbstruct)))
+          (|database-cosig| dbstruct)))
         (|sayKeyedMsg| 'S2IU0001 (list cname object))))))))
 
 (defun localnrlib (key nrlib object make-database? noexpose)
@@ -1009,49 +1009,49 @@ database.
    (file-position in pos)
    (setq constructorform (read in))
    (setq key (car constructorform))
-   (setq oldmaps (getdatabase key 'modemaps))
-   (setq dbstruct (make-database))
+   (setq oldmaps (|get_database| key 'modemaps))
+   (setq dbstruct (|MAKE-database|))
    (setq |$all_constructors| (adjoin key |$all_constructors|))
    (setf (get key 'database) dbstruct) ; store the struct, side-effect it...
-   (setf (database-constructorform dbstruct) constructorform)
+   (setf (|database-constructorform| dbstruct) constructorform)
    (setq |$all_operations| nil)   ; force this to recompute
-   (setf (database-object dbstruct) object)
+   (setf (|database-object| dbstruct) object)
    (setq abbrev
      (intern (pathname-name (first (last (pathname-directory object))))))
-   (setf (database-abbreviation dbstruct) abbrev)
+   (setf (|database-abbreviation| dbstruct) abbrev)
    (setf (get abbrev 'abbreviationfor) key)
-   (setf (database-operationalist dbstruct) nil)
-   (setf (database-operationalist dbstruct)
+   (setf (|database-operationalist| dbstruct) nil)
+   (setf (|database-operationalist| dbstruct)
     (fetchdata alist in "operationAlist"))
-   (setf (database-constructormodemap dbstruct)
+   (setf (|database-constructormodemap| dbstruct)
     (fetchdata alist in "constructorModemap"))
-   (setf (database-modemaps dbstruct) (fetchdata alist in "modemaps"))
-   (setf (database-sourcefile dbstruct) (fetchdata alist in "sourceFile"))
+   (setf (|database-modemaps| dbstruct) (fetchdata alist in "modemaps"))
+   (setf (|database-sourcefile| dbstruct) (fetchdata alist in "sourceFile"))
    (when make-database?
-    (setf (database-sourcefile dbstruct)
-     (file-namestring  (database-sourcefile dbstruct))))
-   (setf (database-constructorkind dbstruct)
+    (setf (|database-sourcefile| dbstruct)
+     (file-namestring  (|database-sourcefile| dbstruct))))
+   (setf (|database-constructorkind| dbstruct)
     (setq kind (fetchdata alist in "constructorKind")))
-   (setf (database-constructorcategory dbstruct)
+   (setf (|database-constructorcategory| dbstruct)
     (fetchdata alist in "constructorCategory"))
-   (setf (database-documentation dbstruct)
+   (setf (|database-documentation| dbstruct)
     (fetchdata alist in "documentation"))
-   (setf (database-predicates dbstruct)
+   (setf (|database-predicates| dbstruct)
     (fetchdata alist in "predicates"))
-   (setf (database-niladic dbstruct)
+   (setf (|database-niladic| dbstruct)
     (when (fetchdata alist in "NILADIC") t))
   (addoperations key oldmaps)
   (unless make-database?
    (if (eq kind '|category|)
-       (setf (database-ancestors dbstruct)
+       (setf (|database-ancestors| dbstruct)
              (SUBLISLIS |$FormalMapVariableList| (cdr constructorform) (fetchdata alist in "ancestors"))))
    (|updateDatabase| key) ;makes many hashtables???
    (|installConstructor| key) ;used to be key cname ...
    (|updateCategoryTable| key kind)
    (if |$InteractiveMode| (setq |$CategoryFrame| |$EmptyEnvironment|)))
-  (setf (database-cosig dbstruct)
+  (setf (|database-cosig| dbstruct)
     (cons nil (mapcar #'|categoryForm?|
-     (cddar (database-constructormodemap dbstruct)))))
+     (cddar (|database-constructormodemap| dbstruct)))))
   (remprop key 'loaded)
   (if (null noexpose) (|setExposeAddConstr| (cons key nil)))
   (setf (symbol-function key) ; sets the autoload property for cname
@@ -1089,23 +1089,23 @@ database.
   (withSpecialConstructors ()
    ; Category
    (setf (get '|Category| 'database)
-     (make-database :operationalist nil :niladic t))
+     (|MAKE-database| :|operationalist| nil :|niladic| t))
    (push '|Category| |$all_constructors|)
    ; UNION
    (setf (get '|Union| 'database)
-     (make-database :operationalist nil :constructorkind '|domain|))
+     (|MAKE-database| :|operationalist| nil :|constructorkind| '|domain|))
    (push '|Union| |$all_constructors|)
    ; RECORD
    (setf (get '|Record| 'database)
-    (make-database :operationalist nil :constructorkind '|domain|))
+    (|MAKE-database| :|operationalist| nil :|constructorkind| '|domain|))
    (push '|Record| |$all_constructors|)
    ; MAPPING
    (setf (get '|Mapping| 'database)
-    (make-database :operationalist nil :constructorkind '|domain|))
+    (|MAKE-database| :|operationalist| nil :|constructorkind| '|domain|))
    (push '|Mapping| |$all_constructors|)
    ; ENUMERATION
    (setf (get '|Enumeration| 'database)
-    (make-database :operationalist nil :constructorkind '|domain|))
+    (|MAKE-database| :|operationalist| nil :|constructorkind| '|domain|))
    (push '|Enumeration| |$all_constructors|)
    )
   (final-name (root)
@@ -1123,14 +1123,14 @@ database.
   (withSpecialConstructors)
   (localdatabase nil
      (list (list '|dir| (namestring (truename "./")) ))
-     'make-database)
+     '|make-database|)
   (dolist (dir dirlist)
           (localdatabase nil
                          (list (list '|dir|
                                      (namestring (truename
                                                   (format nil "./~a"
                                                           dir)))))
-                         'make-database))
+                         '|make-database|))
 ;browse.daase
   (if br_data
       (|save_browser_data|))
@@ -1140,22 +1140,22 @@ database.
   (write-operationdb)
  ; note: genCategoryTable creates a new |$has_category_hash| table
  ; this smashes the existing table and regenerates it.
- ; write-categorydb does getdatabase calls to write the new information
+ ; write-categorydb does get_database calls to write the new information
   (write-categorydb)
   (dolist (con (|allConstructors|))
    (let (dbstruct)
      (when (setq dbstruct (get con 'database))
-           (setf (database-cosig dbstruct)
+           (setf (|database-cosig| dbstruct)
                  (cons nil (mapcar #'|categoryForm?|
-                                   (cddar (database-constructormodemap dbstruct)))))
+                                   (cddar (|database-constructormodemap| dbstruct)))))
            (when (and (|categoryForm?| con)
                       (= (length (setq d (|domainsOf| (list con) NIL))) 1))
                  (setq d (caar d))
                  (when (= (length d) (length (|getConstructorForm| con)))
                        (format t "   ~a has a default domain of ~a~%" con (car d))
-                       (setf (database-defaultdomain dbstruct) (car d)))))))
+                       (setf (|database-defaultdomain| dbstruct) (car d)))))))
           ; note: genCategoryTable creates |$ancestors_hash|. write-interpdb
-          ; does gethash calls into it rather than doing a getdatabase call.
+          ; does gethash calls into it rather than doing a get_database call.
   (write-interpdb)
   (|createInitializers|)
   (when (probe-file (final-name "compress"))
@@ -1269,12 +1269,12 @@ database.
    (let (struct)
     (setq struct (get constructor 'database))
     (setq opalistpos (file-position out))
-    (print (squeeze (database-operationalist struct)) out)
+    (print (squeeze (|database-operationalist| struct)) out)
     (setq cmodemappos (file-position out))
-    (print (squeeze (database-constructormodemap struct)) out)
+    (print (squeeze (|database-constructormodemap| struct)) out)
     (setq modemapspos (file-position out))
-    (print (squeeze (database-modemaps struct)) out)
-    (let ((dob (database-object struct)))
+    (print (squeeze (|database-modemaps| struct)) out)
+    (let ((dob (|database-object| struct)))
        (setq obj
              (cond
                  ((consp dob) ; if asharp code
@@ -1285,17 +1285,17 @@ database.
                           (first (last (pathname-directory dob)))))
                  (t "NIL")))
     )
-    (setq concategory (squeeze (database-constructorcategory struct)))
+    (setq concategory (squeeze (|database-constructorcategory| struct)))
     (if concategory  ; if category then write data else write nil
      (progn
       (setq categorypos (file-position out))
       (print concategory out))
      (setq categorypos nil))
-    (setq niladic (database-niladic struct))
-    (setq abbrev (database-abbreviation struct))
-    (setq cosig (database-cosig struct))
-    (setq kind (database-constructorkind struct))
-    (setq defaultdomain (database-defaultdomain struct))
+    (setq niladic (|database-niladic| struct))
+    (setq abbrev (|database-abbreviation| struct))
+    (setq cosig (|database-cosig| struct))
+    (setq kind (|database-constructorkind| struct))
+    (setq defaultdomain (|database-defaultdomain| struct))
     (setq ancestors (squeeze (gethash constructor |$ancestors_hash|)))
     (if ancestors
      (progn
@@ -1328,13 +1328,13 @@ database.
    (let (struct)
     (setq struct (get constructor 'database))
      ; sourcefile is small. store the string directly
-    (setq src (database-sourcefile struct))
+    (setq src (|database-sourcefile| struct))
     (setq formpos (file-position out))
-    (print (squeeze (database-constructorform struct)) out)
+    (print (squeeze (|database-constructorform| struct)) out)
     (setq docpos (file-position out))
-    (print (database-documentation struct) out)
+    (print (|database-documentation| struct) out)
     (setq predpos (file-position out))
-    (print (squeeze (database-predicates struct)) out)
+    (print (squeeze (|database-predicates| struct)) out)
     (push (list constructor src formpos docpos predpos) master)))
   #+:GCL (force-output out)
   (setq masterpos (file-position out))
@@ -1412,7 +1412,7 @@ database.
 (defun |createInitializers| ()
 ;; since libfricas is now built with -name=fricas following unnecessary
 ;; (dolist (con (|allConstructors|))
-;;   (let ((sourcefile (getdatabase con 'sourcefile)))
+;;   (let ((sourcefile (|get_database| con 'sourcefile)))
 ;;     (if sourcefile
 ;;       (set (foam::axiomxl-file-init-name (pathname-name sourcefile))
 ;;             NOPfuncall))))
@@ -1562,7 +1562,7 @@ database.
 (defun init-lib-file-getter (env)
   (let* ((getter-name (car env))
          (cname (cdr env))
-         (filename (getdatabase cname 'object)))
+         (filename (|get_database| cname 'object)))
     (load filename)
     (|CCall| (eval getter-name))))
 
@@ -1579,7 +1579,7 @@ database.
     (unless (or (not (numberp hcode)) (zerop hcode) (boundp asharpname))
           (when (|constructor?| bootname)
                 (set asharpname
-                     (if (getdatabase bootname 'niladic)
+                     (if (|get_database| bootname 'niladic)
                          (|makeLazyOldAxiomDispatchDomain| (list bootname))
                        (cons '|runOldAxiomFunctor|  bootname)))))))
 

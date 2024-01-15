@@ -168,7 +168,7 @@ clearConstructorCaches() ==
   CLRHASH $ConstructorCache
 
 clearConstructorCache(cname) ==
-  (kind := GETDATABASE(cname,'CONSTRUCTORKIND)) =>
+  (kind := get_database(cname, 'CONSTRUCTORKIND)) =>
     kind = 'category => clearCategoryCache cname
     HREM($ConstructorCache,cname)
 
@@ -178,7 +178,7 @@ clearConstructorAndLisplibCaches() ==
 
 clearCategoryCaches() ==
   for name in allConstructors() repeat
-    if GETDATABASE(name,'CONSTRUCTORKIND) = 'category then
+    if get_database(name, 'CONSTRUCTORKIND) = 'category then
       if BOUNDP(cacheName := INTERNL1(PNAME(name), '";AL"))
             then SET(cacheName,nil)
     if BOUNDP(cacheName := INTERNL1(PNAME(name), '";CAT"))

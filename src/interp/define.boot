@@ -182,7 +182,7 @@ makeCategoryPredicates(form,u) ==
 --+ the following function
 mkCategoryPackage(form is [op, :argl], def, e) ==
   packageName:= INTERN(STRCONC(PNAME op,'"&"))
-  packageAbb := INTERN(STRCONC(GETDATABASE(op,'ABBREVIATION),'"-"))
+  packageAbb := INTERN(STRCONC(get_database(op, 'ABBREVIATION), '"-"))
   $options:local := []
   -- This stops the next line from becoming confused
   abbreviationsSpad2Cmd ['domain,packageAbb,packageName]
@@ -417,7 +417,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
     if $LISPLIB then
       $lisplibKind:=
 ------->This next line prohibits changing the KIND once given
---------kk:=GETDATABASE($op,'CONSTRUCTORKIND) => kk
+--------kk := get_database($op, 'CONSTRUCTORKIND) => kk
         target is ["CATEGORY",key,:.] and key~="domain" => 'package
         'domain
       $lisplibForm:= form

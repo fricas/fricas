@@ -194,7 +194,7 @@ displayDatabase x == main where
        DOCUMENTATION) repeat fn(x,y)
   fn(x,y) ==
     sayBrightly ['"----------------- ",y,'" --------------------"]
-    pp GETDATABASE(x,y)
+    pp(get_database(x, y))
 
 -- For some reason Dick has modified as.boot to convert the
 -- identifier |0| or |1| to an integer in the list of operations.
@@ -260,7 +260,7 @@ asGetModemaps(opAlist,oform,kind,modemap) ==
   NREVERSE acc
 
 asIsCategoryForm m ==
-  m = 'BasicType or GETDATABASE(opOf m,'CONSTRUCTORKIND) = 'category
+    m = 'BasicType or get_database(opOf(m), 'CONSTRUCTORKIND) = 'category
 
 asyDocumentation con ==
   docHash := HGET($docHash,con)
@@ -351,7 +351,7 @@ asyAncestors x ==
   atom x =>
     x = '_% => '_%
     MEMQ(x, $niladics)       => [x]
-    GETDATABASE(x ,'NILADIC) => [x]
+    get_database(x, 'NILADIC) => [x]
     x
   asyAncestorList x
 
@@ -412,7 +412,7 @@ asytranDeclaration(dform,levels,predlist,local?) ==
       asyLooksLikeCatForm? form => 'category
       form is ['Apply, '_-_>,.,u] =>
         if u is ['Apply, construc,:.] then u:= construc
-        GETDATABASE(opOf u,'CONSTRUCTORKIND) = 'domain  => 'function
+        get_database(opOf(u), 'CONSTRUCTORKIND) = 'domain  => 'function
         asyLooksLikeCatForm? u => 'category
         'domain
       'domain

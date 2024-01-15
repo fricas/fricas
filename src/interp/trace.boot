@@ -535,7 +535,8 @@ removeOption(op,options) ==
   [optEntry for (optEntry:=[opt,:.]) in options | opt ~= op]
 
 domainToGenvar x ==
-  (y:= unabbrevAndLoad x) and GETDATABASE(opOf y,'CONSTRUCTORKIND) = 'domain =>
+  (y := unabbrevAndLoad(x)) and
+            get_database(opOf(y), 'CONSTRUCTORKIND) = 'domain =>
     g:= genDomainTraceName y
     SET(g,evalDomain y)
     g

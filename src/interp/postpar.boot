@@ -145,7 +145,7 @@ postAtom x ==
   x=0 => '(Zero)
   x=1 => '(One)
   EQ(x,'T) => 'T_$ -- rename T in spad code to T$
-  IDENTP x and GETDATABASE(x,'NILADIC) => LIST x
+  IDENTP x and get_database(x, 'NILADIC) => LIST x
   x
 
 postBlockItemList l == [postBlockItem x for x in l]

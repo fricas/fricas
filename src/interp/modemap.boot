@@ -163,7 +163,7 @@ augModemapsFromDomain(name,functorForm,e) ==
   member(IFCAR name or name, $DummyFunctorNames) => e
   name = $Category or isCategoryForm(name) => e
   member(name, getDomainsInScope e) => e
-  if u:= GETDATABASE(opOf functorForm,'SUPERDOMAIN) then
+  if u := get_database(opOf(functorForm), 'SUPERDOMAIN) then
     e:= addNewDomain(first u,e)
     --need code to handle parameterized SuperDomains
   if innerDom:= listOrVectorElementMode name then e:= addDomain(innerDom,e)
@@ -196,7 +196,8 @@ evalAndSub(domainName, functorForm, form, e) ==
   [substAlist, $tmp_e]
 
 getOperationAlist(name,functorForm,form) ==
-  if atom name and GETDATABASE(name,'NILADIC) then functorForm:= [functorForm]
+  if atom name and get_database(name, 'NILADIC) then
+        functorForm := [functorForm]
   (u:= isFunctor functorForm) and not
     ($insideFunctorIfTrue and first functorForm=first $functorForm) => u
   $insideFunctorIfTrue and name = "%" =>

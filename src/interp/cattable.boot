@@ -37,8 +37,8 @@ DEFVAR($ancestors_hash, nil)
 compressHashTable(ht) == ht
 
 hasCat(domainOrCatName,catName) ==
-  catName='Type  -- every domain is a Type
-   or GETDATABASE([domainOrCatName,:catName],'HASCATEGORY)
+    catName='Type  -- every domain is a Type
+        or get_database([domainOrCatName, :catName], 'HASCATEGORY)
 
 showCategoryTable con ==
   [[b,:val] for (key :=[a,:b]) in HKEYS $has_category_hash
@@ -59,9 +59,9 @@ genCategoryTable() ==
   genTempCategoryTable()
   domainList:=
     [con for con in allConstructors()
-      | GETDATABASE(con,'CONSTRUCTORKIND) = 'domain]
+        | get_database(con, 'CONSTRUCTORKIND) = 'domain]
   domainTable:= [addDomainToTable(con,getConstrCat catl) for con
-    in domainList | catl := GETDATABASE(con,'CONSTRUCTORCATEGORY)]
+        in domainList | catl := get_database(con, 'CONSTRUCTORCATEGORY)]
   -- $nonLisplibDomains, $noCategoryDomains are set in BUILDOM BOOT
   specialDs := SETDIFFERENCE($nonLisplibDomains,$noCategoryDomains)
   domainTable:= [:[addDomainToTable(id, getConstrCat (eval [id]).3)
@@ -76,7 +76,7 @@ genCategoryTable() ==
 
 simpTempCategoryTable() ==
   for id in HKEYS $ancestors_hash repeat
-    for (u:=[a,:b]) in GETDATABASE(id,'ANCESTORS) repeat
+    for (u := [a, :b]) in get_database(id, 'ANCESTORS) repeat
       RPLACD(u,simpHasPred b)
 
 simpCategoryTable() == main where
@@ -134,7 +134,7 @@ simpHasSignature(pred,conform,op,sig) == --eval w/o loading
   IDENTP conform => pred
   [conname,:args] := conform
   n := #sig
-  u := LASSOC(op,GETDATABASE(conname,'OPERATIONALIST))
+  u := LASSOC(op, get_database(conname, 'OPERATIONALIST))
   candidates := [x for (x := [sig1,:.]) in u | #sig1 = #sig]  or return false
   match := or/[x for (x := [sig1,:.]) in candidates
                 | sig = sublisFormal(args,sig1)] or return false
@@ -165,8 +165,8 @@ genTempCategoryTable() ==
   --           "IF pred THEN ofCategory(key,form)"
   --  where form can involve #1, #2, ... the parameters of key
   for con in allConstructors()  repeat
-    GETDATABASE(con,'CONSTRUCTORKIND) = 'category =>
-      addToCategoryTable con
+        get_database(con, 'CONSTRUCTORKIND) = 'category =>
+            addToCategoryTable con
   for id in HKEYS $ancestors_hash repeat
     item := HGET($ancestors_hash, id)
     for (u:=[.,:b]) in item repeat
@@ -174,7 +174,7 @@ genTempCategoryTable() ==
     HPUT($ancestors_hash, id, listSort(function GLESSEQP, item))
 
 addToCategoryTable con ==
-  u := CAAR GETDATABASE(con,'CONSTRUCTORMODEMAP) --domain
+  u := CAAR(get_database(con, 'CONSTRUCTORMODEMAP)) --domain
   alist := getCategoryExtensionAlist u
   HPUT($ancestors_hash, first u, alist)
   alist
@@ -228,15 +228,15 @@ simpCategoryOr(new,l) ==
   ['OR,:newList]
 
 tempExtendsCat(b,c) ==
-  or/[first c = a for [[a,:.],:.] in GETDATABASE(first b,'ANCESTORS)]
+    or/[first c = a for [[a, :.], :.] in get_database(first(b), 'ANCESTORS)]
 
 getCategoryExtensionAlist0 cform ==
   [[cform,:'T],:getCategoryExtensionAlist cform]
 
-getCategoryExtensionAlist cform ==
-  --avoids substitution as much as possible
-  u:= GETDATABASE(first cform,'ANCESTORS) => formalSubstitute(cform,u)
-  mkCategoryExtensionAlist cform
+getCategoryExtensionAlist(cform) ==
+    --avoids substitution as much as possible
+    u := get_database(first(cform), 'ANCESTORS) => formalSubstitute(cform, u)
+    mkCategoryExtensionAlist(cform)
 
 formalSubstitute(form:=[.,:argl],u) ==
   isFormalArgumentList argl => u
@@ -307,7 +307,7 @@ mergeOr(x,y) ==
   nil
 
 testExtend(a:=[op,:argl],b) ==
-  (u:= GETDATABASE(op,'ANCESTORS)) and (val:= LASSOC(b,u)) =>
+  (u := get_database(op, 'ANCESTORS)) and (val := LASSOC(b, u)) =>
     formalSubstitute(a,val)
   nil
 
@@ -338,13 +338,13 @@ makeCatPred(zz, cats, thePred) ==
   cats
 
 getConstructorExports(conform, do_constr) == categoryParts(conform,
-  GETDATABASE(opOf conform, 'CONSTRUCTORCATEGORY), do_constr)
+    get_database(opOf(conform), 'CONSTRUCTORCATEGORY), do_constr)
 
 DEFVAR($oplist)
 DEFVAR($conslist)
 
 categoryParts(conform, category, do_constr) ==
-    kind := GETDATABASE(opOf(conform), 'CONSTRUCTORKIND)
+    kind := get_database(opOf(conform), 'CONSTRUCTORKIND)
     categoryParts1(kind, conform, category, do_constr)
 
 categoryParts1(kind, conform, category, do_constr) == main where
@@ -391,7 +391,7 @@ categoryParts1(kind, conform, category, do_constr) == main where
 updateCategoryTable(cname,kind) ==
   kind = 'domain =>
     updateCategoryTableForDomain(cname,getConstrCat(
-      GETDATABASE(cname,'CONSTRUCTORCATEGORY)))
+            get_database(cname, 'CONSTRUCTORCATEGORY)))
 
 updateCategoryTableForDomain(cname,category) ==
   clearCategoryTable(cname)
@@ -412,7 +412,7 @@ clearTempCategoryTable(catNames) ==
   for key in HKEYS($ancestors_hash) repeat
     MEMQ(key,catNames) => nil
     extensions:= nil
-    for (extension:= [catForm,:.]) in GETDATABASE(key,'ANCESTORS)
+    for (extension := [catForm, :.]) in get_database(key, 'ANCESTORS)
       repeat
         MEMQ(first catForm, catNames) => nil
         extensions:= [extension,:extensions]

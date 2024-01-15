@@ -46,7 +46,7 @@ htSayConstructor(key, u) ==
     bcConform(u,true)
   htSay
     key = 'is => '"the domain "
-    kind := GETDATABASE(opOf u,'CONSTRUCTORKIND)
+    kind := get_database(opOf(u), 'CONSTRUCTORKIND)
     kind = 'domain => '"an element of "
     '"a domain of "
   u is ['Join,:middle,r] =>
@@ -167,8 +167,8 @@ dbChooseOperandName(typ) ==
     x
   name := opOf typ
   kind :=
-    name = "%" => 'domain
-    GETDATABASE(name,'CONSTRUCTORKIND)
+        name = "%" => 'domain
+        get_database(name, 'CONSTRUCTORKIND)
   s := PNAME opOf typ
   kind ~= 'category =>
     anySubstring?('"Integer",s,0) or anySubstring?('"Number",s,0) =>
@@ -350,7 +350,7 @@ koOps(conform, domname) == main where
     subargs: local := args
     ----------> new <------------------
     u := koCatOps(conform,domname) => u
---    'category = GETDATABASE(conname,'CONSTRUCTORKIND) =>
+--    'category = get_database(conname, 'CONSTRUCTORKIND) =>
 --        koCatOps(conform,domname)
     asharpConstructorName? opOf conform => nil
     ----------> new <------------------
@@ -393,7 +393,7 @@ kFormatSlotDomain1(x, infovec) ==
 
 koCatOps(conform,domname) ==
   conname := opOf conform
-  oplist := REVERSE GETDATABASE(conname,'OPERATIONALIST)
+  oplist := REVERSE(get_database(conname, 'OPERATIONALIST))
   oplist := sublisFormal(IFCDR domname or IFCDR conform ,oplist)
   --check below for INTEGERP key to avoid subsumed signatures
   [[zeroOneConvert op,:nalist] for [op,:alist] in oplist | nalist := koCatOps1(alist)]
@@ -535,7 +535,7 @@ getDcForm(dc, condlist) ==
   null(candidates) => nil
   [ofWord,id,cform] := first(candidates)
   if #candidates > 1 and ofWord = 'ofCategory and _
-       null(GETDATABASE(opOf cform, 'MODEMAPS)) then
+       null(get_database(opOf(cform), 'MODEMAPS)) then
      [ofWord,id,cform] := first(rest(candidates))
   conform := getConstructorForm opOf cform
   ofWord = 'ofCategory =>

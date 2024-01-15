@@ -91,7 +91,7 @@ NRTencode(x,y) == encode(x,y,true, true) where
               [QCAR(x), :[['_:, a, encode(b, c, false, true)]
                for [., a, b] in QCDR(x) for [., =a, c] in rest compForm]]
           constructor?(QCAR(x)) or MEMQ(QCAR x, '(Union Mapping)) =>
-              cosig := rest GETDATABASE(QCAR(x), 'COSIG)
+              cosig := rest(get_database(QCAR(x), 'COSIG))
               if NULL(cosig) then
                   cosig := [true for y in QCDR(x)]
               [QCAR x, :[encode(y, z, false, cdom) for y in QCDR(x)
@@ -259,7 +259,7 @@ comp_delta_entry(item, e) ==
 cheap_comp_delta_entry(item) ==
     item is [op, :args] =>
         not(ATOM(op)) => false
-        null(cosig := GETDATABASE(op, 'COSIG)) => false
+        null(cosig := get_database(op, 'COSIG)) => false
         ok := true
         for arg in args for tp in rest(cosig) while ok repeat
             ok :=
@@ -305,7 +305,7 @@ consDomainName(x, dc, e) ==
     isFunctor op or op = 'Mapping or constructor? op =>
          -- call to constructor? needed if op was compiled in $bootStrapMode
         not(op = 'Mapping or op = 'Union) and
-          (cosig := GETDATABASE(op, 'COSIG)) =>
+          (cosig := get_database(op, 'COSIG)) =>
             mkList([MKQ op, :[maybe_cons_dn(y, dc, e, c) for y in argl
                               for c in rest(cosig)]])
         mkList [MKQ op, :[consDomainName(y, dc, e) for y in argl]]

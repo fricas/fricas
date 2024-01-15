@@ -458,7 +458,7 @@ addParameterTemplates(page, conform) ==
 --------------------> NEW DEFINITION (see br-con.boot)
 kPageArgs([op,:args],[.,.,:source]) ==
   firstTime := true
-  coSig := rest GETDATABASE(op,'COSIG)
+  coSig := rest(get_database(op, 'COSIG))
   for x in args for t in source for pred in coSig repeat
     if firstTime then firstTime := false
                  else
@@ -563,7 +563,7 @@ dbPresentOps(htPage, which, exclusion) ==
     which = '"attribute" => BREAK()
     if not(implementation?) or member('implementation, exclusions) or
       ((conname := opOf htpProperty(htPage,'conform))
-        and GETDATABASE(conname,'CONSTRUCTORKIND) = 'category)
+        and get_database(conname, 'CONSTRUCTORKIND) = 'category)
     then htSay '"{\em Implementations}"
     else htMakePage
       [['bcLispLinks,['"Implementations",'"",'dbShowOps,which,'implementation]]]
@@ -647,7 +647,8 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     if unexposed? and $includeUnexposed? then
       htSayUnexposed()
     htSay(ops)
-    predicate='ASCONST or GETDATABASE(op,'NILADIC) or member(op,'(0 1)) => 'skip
+    predicate = 'ASCONST or get_database(op, 'NILADIC)
+            or member(op,'(0 1)) => 'skip
     which = '"attribute" => BREAK()
     htSay('"(")
     if IFCAR args then
@@ -659,7 +660,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
   constring := form2HtString conform
   conname   := first conform
   $conkind   : local := htpProperty(htPage,'kind) -- a string e.g. "category"
-                          or STRINGIMAGE GETDATABASE(conname,'CONSTRUCTORKIND)
+                      or STRINGIMAGE(get_database(conname, 'CONSTRUCTORKIND))
   $conlength : local := #constring
   $conform   : local := conform
   $conargs   : local := rest conform
@@ -684,7 +685,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     $displayReturnValue: local := nil
     if args then
       htSayStandard('"\newline\tab{2}{\em Arguments:}")
-      coSig := IFCDR GETDATABASE(op, 'COSIG)  --check if op is constructor
+      coSig := IFCDR(get_database(op, 'COSIG))  --check if op is constructor
       for a in args for t in rest $sig repeat
             htSayIndentRel2(15, true)
             position := IFCAR relatives
@@ -753,7 +754,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     htSayIndentRel(-15)
   --------> print abbr and source file for constructors <---------
   if which = '"constructor" then
-    if (abbr := GETDATABASE(conname,'ABBREVIATION)) then
+    if (abbr := get_database(conname, 'ABBREVIATION)) then
       htSayStandard('"\tab{2}{\em Abbreviation:}")
       htSayIndentRel(15)
       htSay abbr
@@ -765,7 +766,7 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     htSayIndentRel(-15)
 
 htSaySourceFile conname ==
-  sourceFileName := (GETDATABASE(conname,'SOURCEFILE) or '"none")
+  sourceFileName := (get_database(conname, 'SOURCEFILE) or '"none")
   filename :=  extractFileNameFromPath sourceFileName
   htMakePage [['text,'"\unixcommand{",filename,'"}{_\$FRICAS/lib/SPADEDIT ",
               sourceFileName, '" ", conname, '"}"]]

@@ -65,23 +65,23 @@ loadLibIfNotLoaded libName ==
 
 loadLib cname ==
   startTimingProcess 'load
-  fullLibName := GETDATABASE(cname,'OBJECT) or return nil
+  fullLibName := get_database(cname, 'OBJECT) or return nil
   systemdir? := isSystemDirectory(pathnameDirectory fullLibName)
   update? := $forceDatabaseUpdate or not systemdir?
   not update? =>
      loadLibNoUpdate(cname, cname, fullLibName)
-  kind := GETDATABASE(cname,'CONSTRUCTORKIND)
+  kind := get_database(cname, 'CONSTRUCTORKIND)
   if $printLoadMsgs then
     sayKeyedMsg("S2IL0002", [fullLibName, kind, cname])
   load_quietly(fullLibName)
   clearConstructorCache cname
   updateDatabase(cname)
   installConstructor(cname)
-  u := GETDATABASE(cname, 'CONSTRUCTORMODEMAP)
+  u := get_database(cname, 'CONSTRUCTORMODEMAP)
   updateCategoryTable(cname,kind)
   -- in following, add property value false or NIL to possibly clear
   -- old value
-  if null rest GETDATABASE(cname, 'CONSTRUCTORFORM) then
+  if null(rest(get_database(cname, 'CONSTRUCTORFORM))) then
       MAKEPROP(cname,'NILADIC,'T)
     else
       REMPROP(cname,'NILADIC)
@@ -91,7 +91,7 @@ loadLib cname ==
   'T
 
 loadLibNoUpdate(cname, libName, fullLibName) ==
-  kind := GETDATABASE(cname,'CONSTRUCTORKIND)
+  kind := get_database(cname, 'CONSTRUCTORKIND)
   if $printLoadMsgs then
     sayKeyedMsg("S2IL0002", [fullLibName, kind, cname])
   load_quietly(fullLibName)
@@ -115,7 +115,7 @@ loadLibIfNecessary(u,mustExist) ==
     loadLib u => u
   null $InteractiveMode and ((null (y:= getProplist(u,$CategoryFrame)))
     or (null LASSOC('isFunctor,y)) and (null LASSOC('isCategory,y))) =>
-      y:= GETDATABASE(u,'CONSTRUCTORKIND) =>
+      y:= get_database(u, 'CONSTRUCTORKIND) =>
          y = 'category =>
             updateCategoryFrameForCategory u
          updateCategoryFrameForConstructor u
@@ -131,15 +131,16 @@ convertOpAlist2compilerInfo(opalist) ==
           [[op, typelist], pred, [impl, '%, slot]]
 
 updateCategoryFrameForConstructor(constructor) ==
-   opAlist := GETDATABASE(constructor, 'OPERATIONALIST)
-   [[dc,:sig],[pred,impl]] := GETDATABASE(constructor, 'CONSTRUCTORMODEMAP)
+   opAlist := get_database(constructor, 'OPERATIONALIST)
+   [[dc, :sig], [pred, impl]] :=
+        get_database(constructor, 'CONSTRUCTORMODEMAP)
    $CategoryFrame := put(constructor,'isFunctor,
        convertOpAlist2compilerInfo(opAlist),
        addModemap(constructor, dc, sig, pred, impl,
            put(constructor, 'mode, ['Mapping,:sig], $CategoryFrame)))
 
 updateCategoryFrameForCategory(category) ==
-   di := GETDATABASE(category, 'CONSTRUCTORMODEMAP)
+   di := get_database(category, 'CONSTRUCTORMODEMAP)
    if di then
        [[dc,:sig],[pred,impl]] := di
        $CategoryFrame :=
@@ -154,17 +155,17 @@ loadFunctor u ==
 makeConstructorsAutoLoad() ==
   for cnam in allConstructors() repeat
     REMPROP(cnam,'LOADED)
-    if GETDATABASE(cnam,'NILADIC)
+    if get_database(cnam, 'NILADIC)
      then PUT(cnam,'NILADIC,'T)
      else REMPROP(cnam,'NILADIC)
     systemDependentMkAutoload(cnam,cnam)
 
 systemDependentMkAutoload(fn,cnam) ==
     FBOUNDP(cnam) => "next"
-    asharpName := GETDATABASE(cnam, 'ASHARP?) =>
-         kind := GETDATABASE(cnam, 'CONSTRUCTORKIND)
-         cosig := GETDATABASE(cnam, 'COSIG)
-         file := GETDATABASE(cnam, 'OBJECT)
+    asharpName := get_database(cnam, 'ASHARP?) =>
+         kind := get_database(cnam, 'CONSTRUCTORKIND)
+         cosig := get_database(cnam, 'COSIG)
+         file := get_database(cnam, 'OBJECT)
          SET_-LIB_-FILE_-GETTER(file, cnam)
          kind = 'category =>
               ASHARPMKAUTOLOADCATEGORY(file, cnam, asharpName, cosig)
@@ -225,7 +226,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   FRESH_-LINE(get_algebra_stream())
   sayMSG fillerSpaces(72,'"-")
   unloadOneConstructor(op,libName)
-  LOCALDATABASE(LIST GETDATABASE(op,'ABBREVIATION),NIL)
+  LOCALDATABASE(LIST(get_database(op, 'ABBREVIATION)), NIL)
   $newConlist := [op, :$newConlist]  ---------->  bound in function "compiler"
   if $lisplibKind = 'category
     then updateCategoryFrameForCategory op
@@ -317,10 +318,10 @@ transformOperationAlist operationAlist ==
   newAlist
 
 getConstructorModemap form ==
-  GETDATABASE(opOf form, 'CONSTRUCTORMODEMAP)
+    get_database(opOf(form), 'CONSTRUCTORMODEMAP)
 
 getConstructorSignature form ==
-  (mm := GETDATABASE(opOf(form),'CONSTRUCTORMODEMAP)) =>
+  (mm := get_database(opOf(form), 'CONSTRUCTORMODEMAP)) =>
     [[.,:sig],:.] := mm
     sig
   NIL
@@ -361,7 +362,7 @@ mkEvalableCategoryForm(c, e) ==       --from DEFINE
     MEMQ(op,$CategoryNames) =>
         [x, m, e] := compOrCroak(c, $EmptyMode, e)
         m=$Category => optFunctorBody x
-    GETDATABASE(op,'CONSTRUCTORKIND) = 'category or
+    get_database(op, 'CONSTRUCTORKIND) = 'category or
       get(op,"isCategory",$CategoryFrame) =>
         [op,:[quotifyCategoryArgument x for x in argl]]
     [x, m, e] := compOrCroak(c, $EmptyMode, e)
@@ -385,12 +386,12 @@ isFunctor x ==
   not IDENTP op => false
   $InteractiveMode =>
     MEMQ(op,'(Union SubDomain Mapping Record)) => true
-    MEMQ(GETDATABASE(op,'CONSTRUCTORKIND),'(domain package))
+    MEMQ(get_database(op, 'CONSTRUCTORKIND),'(domain package))
   u:= get(op,'isFunctor,$CategoryFrame)
     or MEMQ(op,'(SubDomain Union Record)) => u
   constructor? op =>
     prop := get(op,'isFunctor,$CategoryFrame) => prop
-    if GETDATABASE(op,'CONSTRUCTORKIND) = 'category
+    if get_database(op, 'CONSTRUCTORKIND) = 'category
       then updateCategoryFrameForCategory op
       else updateCategoryFrameForConstructor op
     get(op,'isFunctor,$CategoryFrame)

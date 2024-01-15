@@ -239,7 +239,7 @@ args2LispString x ==
       STRCONC('",",form2LispString first x,fnTailTail rest x)
 
 dbConstructorKind x ==
-  target := CADAR GETDATABASE(x,'CONSTRUCTORMODEMAP)
+  target := CADAR(get_database(x, 'CONSTRUCTORMODEMAP))
   target = '(Category) => 'category
   target is ['CATEGORY,'package,:.] => 'package
   HGET($defaultPackageNamesHT,x) => 'default_ package
@@ -251,7 +251,7 @@ getConstructorForm name ==
   name = 'Record  => '(Record (_: a A) (_: b B))
   name = 'Mapping => '(Mapping T S)
   name = 'Enumeration => '(Enumeration a b)
-  GETDATABASE(name,'CONSTRUCTORFORM)
+  get_database(name, 'CONSTRUCTORFORM)
 
 getConstructorArgs conname == rest getConstructorForm conname
 
@@ -334,7 +334,7 @@ $from_show_implementations := false
 
 dbEvalableConstructor? form ==
     form is [op,:argl] =>
-        null(cosig := GETDATABASE(op, 'COSIG)) => false
+        null(cosig := get_database(op, 'COSIG)) => false
         cosig := rest cosig
         #cosig ~= #argl => false
         res := true
@@ -380,9 +380,9 @@ bcStarConform form ==
   bcStar opOf form
   bcConform form
 
-asharpConstructorName? name ==
-  u:= GETDATABASE(name,'SOURCEFILE)
-  u and PATHNAME_-TYPE u = '"as"
+asharpConstructorName?(name) ==
+    u:= get_database(name, 'SOURCEFILE)
+    u and PATHNAME_-TYPE u = '"as"
 
 asharpConstructors() ==
   [x for x in allConstructors() | not asharpConstructorName? x]
@@ -506,8 +506,8 @@ dbSayItems(countOrPrefix,singular,plural,:options) ==
 htCopyProplist htPage == [[x,:y] for [x,:y] in htpPropertyList htPage]
 
 dbInfovec name ==
-  'category = GETDATABASE(name,'CONSTRUCTORKIND) => nil
-  GETDATABASE(name, 'ASHARP?) => nil
+  'category = get_database(name, 'CONSTRUCTORKIND) => nil
+  get_database(name, 'ASHARP?) => nil
   loadLibIfNotLoaded(name)
   u := GET(name, 'infovec) => u
 
