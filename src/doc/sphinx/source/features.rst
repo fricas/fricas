@@ -6,7 +6,7 @@ The capabilities of |FriCAS| cover areas such as
 - linear, polynomial and differential system solving
 - integration (most complete implementation of the
   `Risch algorithm <https://en.wikipedia.org/wiki/Risch_algorithm>`_)
-- vector, matrix, and tensor calculus, eigenvalus, eigenvectors,
+- vector, matrix, and tensor calculus, eigenvalues, eigenvectors,
 - symbolic expression manipulation,
 - non-commutative polynomials
 - limit calculation,

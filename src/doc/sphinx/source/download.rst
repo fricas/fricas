@@ -15,8 +15,8 @@ Binary distribution
 ^^^^^^^^^^^^^^^^^^^
 - ``fricas-x.y.z.amd64.tar.bz2`` (64-bit binary for amd64 (x86_64) Linux)
 - ``fricas-x.y.z.i386.tar.bz2`` (32-bit binary for i386 Linux)
-- ``fricas-x.y.z-macOS-x64.dmg`` ((beta) 64 binary for macOS)
-- ``fricas-x.y.z-windows-x64.zip`` ((beta) 64 binary for Windows)
+- ``fricas-x.y.z-macOS-x64.dmg`` ((beta) 64-bit binary for macOS)
+- ``fricas-x.y.z-windows-x64.zip`` ((beta) 64-bit binary for Windows)
 
 
 Source distribution
@@ -66,13 +66,6 @@ Nightly builds
 --------------
 
 https://github.com/fricas/fricas-nightly-builds/releases/tag/nightly
-
-A few downsides:
-
-#. It only exists for a short period. (90 days?)
-#. The packaging is very crude for now, not out-of-box user experience.
-   (You have to "cd" in the shell and set "FRICAS" env variable.)
-
 
 Installation Guide
 ------------------

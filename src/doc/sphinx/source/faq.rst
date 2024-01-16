@@ -613,4 +613,4 @@ the BOOT package. To restart FriCAS type
    BOOT>(restart)
 
 Note: ')fin' does not work when using Clozure CL or ECL.  Due to
-this do not use it in partable scripts.
+this do not use it in portable scripts.

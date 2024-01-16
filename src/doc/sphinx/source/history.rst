@@ -21,7 +21,7 @@ system development stopped and in 2001 Axiom was withdrawn from the
 market. Fortunately NAG decided to release Axiom to the public under
 open source licence. In 2002 Tim Daly received Axiom sources from NAG
 and started open-source Axiom project. Development of Axiom moved
-slowely, concentrating on build system. Build system was a nontrivial
+slowly, concentrating on build system. Build system was a nontrivial
 problem as during commercial times Axiom/Scratchpad II required having
 running system for recompilation -- open source version dropped this
 requirement.

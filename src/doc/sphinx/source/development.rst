@@ -36,11 +36,11 @@ update documentation when appropriate, contain tests for changes).
 Patches should be logical unit of change. Do not join unrelated things
 unless it is a cleanup type patch that functionally should be a no-op.
 
-Do not split patches that implement some functionalty into small
+Do not split patches that implement some functionality into small
 steps---if several patches have a common purpose and there are
 dependencies between them, then they probably should go in as one
-patch. This is not a hard rule, it make sense to split really large
-patches (say more than thousend lines) and sometimes part of the
+patch. This is not a hard rule, it makes sense to split really large
+patches (say more than one thousand lines) and sometimes part of the
 functionality is ready and may be committed before the feature is
 complete.
 
@@ -56,7 +56,7 @@ Other resources
 
 * `Debugging FriCAS <http://wiki.fricas.org/DebuggingFriCAS>`_
 
-* `Lanuage Differences <http://wiki.fricas.org/LanguageDifferences>`_
+* `Language Differences <http://wiki.fricas.org/LanguageDifferences>`_
 
 * `The )set command <fricas-notebooks/system-command-set.html>`_
 
