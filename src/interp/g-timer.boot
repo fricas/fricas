@@ -34,18 +34,20 @@
 --% Code instrumentation facilities
 --  These functions can be used with arbitrary lists of
 --  named stats (listofnames) grouped in classes (listofclasses)
---  and with measurement types (property, classproperty).
+--  and with measurement types (property).
 
 makeLongStatStringByProperty _
- (listofnames, listofclasses, property, classproperty, units, flag) ==
+ (listofnames, listofclasses, property, units, flag) ==
   total := 0
   str := '""
-  otherStatTotal := GET('other, property)
+  if property = 'TimeTotal then statsVec := $statsInfo.0
+  if property = 'SpaceTotal then statsVec := $statsInfo.1
+  otherStatTotal := statsVec.(GET('other, 'index))
   insignificantStat := 0
+  classStats := GETZEROVEC(1 + # listofclasses)
   for [name,class,:ab] in listofnames repeat
-    cl := first LASSOC(class, listofclasses)
-    n := GET(name, property)
-    PUT(cl, classproperty, n + GET(cl, classproperty))
+    n := statsVec.(GET(name, 'index))
+    classStats.class := classStats.class + n
     total := total + n
     name = 'other or flag ~= 'long => 'iterate
     if significantStat? n then
@@ -56,7 +58,7 @@ makeLongStatStringByProperty _
     str := makeStatString(str, otherStatTotal + insignificantStat, 'other, flag)
   else
     for [class,name,:ab] in listofclasses repeat
-      n := GET(name, classproperty)
+      n := classStats.class
       str := makeStatString(str, n, ab, flag)
   total := STRCONC(normalizeStatAndStringify total,'" ", units)
   str = '"" =>  total
@@ -141,34 +143,41 @@ DEFPARAMETER($interpreterTimedClasses, '(
   ( 4    reclaim         .  GC) _
   ))
 
-initializeTimedNames(listofnames,listofclasses) ==
-  for [name,:.] in listofnames repeat
-    PUT(name, 'TimeTotal, 0.0)
-    PUT(name, 'SpaceTotal,  0)
-  for [.,name,:.] in listofclasses repeat
-    PUT( name, 'ClassTimeTotal, 0.0)
-    PUT( name, 'ClassSpaceTotal,  0)
+-- $statsInfo contains stats numbers. It is a vector,
+-- $statsInfo.0 is for TimeTotal, $statsInfo.1 is for SpaceTotal.
+DEFVAR($statsInfo)
+
+initializeTimedNames() ==
+  len := # $interpreterTimedNames
+  $statsInfo := VECTOR(GETZEROVEC len, GETZEROVEC len)
+  for [name, :.] in $interpreterTimedNames for i in 0.. repeat
+    PUT(name, 'index, i)
+  initializeTimedStack()
+
+initializeTimedStack() ==
   $timedNameStack := '(other)
   computeElapsedTime()
   computeElapsedSpace()
-  PUT('gc, 'TimeTotal, 0.0)
-  PUT('gc, 'SpaceTotal,  0)
   NIL
 
 updateTimedName name ==
-  count := (GET(name, 'TimeTotal) or 0) + computeElapsedTime()
-  PUT(name, 'TimeTotal, count)
-  count := (GET(name, 'SpaceTotal) or 0) + computeElapsedSpace()
-  PUT(name, 'SpaceTotal, count)
+  i := GET(name, 'index)
+  timeVec := $statsInfo.0
+  spaceVec := $statsInfo.1
+  [time, gcTime] := computeElapsedTime()
+  timeVec.i := timeVec.i + time
+  i2 := GET('gc, 'index)
+  timeVec.i2 := timeVec.i2 + gcTime
+  spaceVec.i := spaceVec.i + computeElapsedSpace()
 
 makeLongTimeString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,  _
-                               'TimeTotal, 'ClassTimeTotal, _
+                               'TimeTotal, _
                                '"sec", $printTimeIfTrue)
 
 makeLongSpaceString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,    _
-                               'SpaceTotal, 'ClassSpaceTotal, _
+                               'SpaceTotal, _
                                '"bytes", $printStorageIfTrue)
 
 DEFPARAMETER($inverseTimerTicksPerSecond, 1.0/$timerTicksPerSecond)
@@ -179,11 +188,9 @@ computeElapsedTime() ==
   gcDelta := currentGCTime - $oldElapsedGCTime
   elapsedSeconds:= $inverseTimerTicksPerSecond *
      (currentTime-$oldElapsedTime-gcDelta)
-  PUT('gc, 'TimeTotal, GET('gc, 'TimeTotal) +
-                   $inverseTimerTicksPerSecond*gcDelta)
   $oldElapsedTime := currentTime
   $oldElapsedGCTime := currentGCTime
-  elapsedSeconds
+  [elapsedSeconds, $inverseTimerTicksPerSecond * gcDelta]
 
 computeElapsedSpace() ==
   currentElapsedSpace := HEAPELAPSED()

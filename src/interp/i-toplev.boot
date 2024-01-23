@@ -69,7 +69,7 @@ interpsysInitialization(display_messages) ==
   interpOpen(display_messages)
   createInitializers()
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"interpreter"])
-  initializeTimedNames($interpreterTimedNames,$interpreterTimedClasses)
+  initializeTimedNames()
   $InteractiveFrame := makeInitialModemapFrame()
   initializeSystemCommands()
   initializeInterpreterFrameRing()
@@ -128,7 +128,7 @@ DEFPARAMETER($inRetract, nil)
 
 processInteractive(form, posnForm) ==
     $timedNameStack : local := NIL
-    initializeTimedNames($interpreterTimedNames,$interpreterTimedClasses);
+    initializeTimedStack()
     finally(
         object := processInteractive0(form, posnForm),
           while $timedNameStack repeat stopTimingProcess peekTimedName())
