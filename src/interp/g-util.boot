@@ -170,18 +170,6 @@ stringPrefix?(pref,str) ==
     i := i + 1
   ok
 
-dropLeadingBlanks str ==
-  str := object2String str
-  l := QCSIZE str
-  nb := NIL
-  i := 0
-  while (i < l) and not nb repeat
-    if SCHAR(str,i) ~= SCHAR('" ",0) then nb := i
-    else i := i + 1
-  nb = 0 => str
-  nb => SUBSTRING(str,nb,NIL)
-  '""
-
 concat(:l) == concatList l
 
 concatList [x,:y] ==

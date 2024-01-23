@@ -2457,15 +2457,10 @@ synonymSpad2Cmd() ==
   terminateSystemCommand()
 
 processSynonymLine line ==
+  line := STRING_-LEFT_-TRIM('" ", line)
   key := STRING2ID_N (line, 1)
-  value := removeKeyFromLine line where
-    removeKeyFromLine line ==
-      line := dropLeadingBlanks line
-      mx := MAXINDEX line
-      for i in 0..mx repeat
-        line.i = " " =>
-          return (for j in (i+1)..mx repeat
-            line.j ~= " " => return (SUBSTRING (line, j, nil)))
+  value := SUBSTRING(line, # STRINGIMAGE key, nil)
+  value := STRING_-LEFT_-TRIM('" ", value)
   [key, :value]
 
 
