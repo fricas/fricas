@@ -637,6 +637,7 @@ RootSimplification() : Exports == Implementation where
 
     rsimp_gen_3(av : eI, bv : eI, cv : eI, rv : eI, k : Integer
                ) : Union(List(eI), "failed") ==
+        bv = 0 and cv = 0 => [av, 1, 0, 0]
         k = 2 => rsimp1_gen_32(av, bv, cv, rv)
         k = 3 => rsimp1_gen_3(av, bv, cv, rv, rp3u, rp3d, rp3s)
         k = 4 =>
@@ -699,17 +700,41 @@ RootSimplification() : Exports == Implementation where
     iE := IndexedExponents(K)
     sMp := SparseMultivariatePolynomial(Integer, K)
     pQf := PolynomialCategoryQuotientFunctions(iE, K, Integer, sMp, eI)
+    uPe := SUP(eI)
 
-    rsimp_gen_4(av : eI, bv : eI, cv : eI, dv : eI, rv : eI, k : Integer
+    split_eval(la : List(eI), kf : eI, l : Integer, m : Integer
+              ) : List(eI) ==
+        r_vec := new(qcoerce(l), 0)$Vector(eI)
+        for ll in 1..l repeat
+            r_vec(ll) := first(la)
+            la := rest(la)
+        ki := 1; mm := l
+        while mm < m repeat
+            ki := ki*kf; mm := mm + l
+            for ll in 1..l repeat
+                r_vec(ll) := r_vec(ll) + first(la)*ki
+                la := rest(la)
+        entries(r_vec)
+
+    -- give all coefficients (including zero coefficients)
+    my_coeffs(p : uPe, k : Integer) : List(eI) ==
+        res : List(eI) := []
+        for i in k..0 by -1 repeat
+            d := degree(p)
+            if d < i then
+                res := cons(0, res)
+            else
+                res := cons(leadingCoefficient(p), res)
+                p := reductum(p)
+        res
+
+    rsimp_gen_4(cl : List(eI), rv : eI, k : Integer
                ) : Union(List(eI), "failed") ==
         rr := sqrt(rv)
         krr := retract(rr)@K
-        a1 := av + cv*rr
-        b1 := bv + dv*rr
+        (a1, b1) := split_eval(cl, rr, 2, 4)
         res1 := rsimp_gen_2(a1, b1, rr, k)
-        (res1 case "failed") =>
-            -- print(message("res1 failed")$OutputForm)
-            return "failed"
+        (res1 case "failed") => return "failed"
         r1l := res1@List(eI)
         s1 := r1l(1); c1 := r1l(2); d1 := r1l(3)
         su := univariate(s1, krr, minPoly(krr))$pQf
@@ -717,7 +742,6 @@ RootSimplification() : Exports == Implementation where
         b2 := coefficient(su, 1)
         res2 := rsimp_gen_2(a2, b2, rv, k)
         if res2 case "failed" and k rem 2 = 0  then
-            -- print(message("res2 failed first time")$OutputForm)
             kk := k quo 2
             for i in 1..kk repeat
                 tmp := b2
@@ -725,7 +749,6 @@ RootSimplification() : Exports == Implementation where
                 a2 := tmp*rv
             res2 := rsimp_gen_2(a2, b2, rv, k)
             res2 case "failed" => return "failed"
-            -- print(message("res2 OK second time")$OutputForm)
             tmp := d1
             d1 := c1/rr
             c1 := tmp
@@ -739,7 +762,183 @@ RootSimplification() : Exports == Implementation where
         [r2l(1), coefficient(cu, 0), coefficient(du, 0),
                  coefficient(cu, 1), coefficient(du, 1)]
 
-    uPe := SUP(eI)
+    rsimp_gen_6(cl : List(eI), rv : eI, k : Integer
+               ) : Union(List(eI), "failed") ==
+        rr := rv^(1/3)
+        krr := retract(rr)@K
+        (a1, b1) := split_eval(cl, rr, 2, 6)
+        res1 := rsimp_gen_2(a1, b1, rr, k)
+        (res1 case "failed") => return "failed"
+        r1l := res1@List(eI)
+        s1 := r1l(1); c1 := r1l(2); d1 := r1l(3)
+        su := univariate(s1, krr, minPoly(krr))$pQf
+        a2 := coefficient(su, 0)
+        b2 := coefficient(su, 1)
+        c2 := coefficient(su, 2)
+        res2 := rsimp_gen_3(a2, b2, c2, rv, k)
+        res2 case "failed" => "failed"
+        r2l := res2@List(eI)
+        s2 := r2l(2) + r2l(3)*rr + r2l(4)*rr^2
+        c1 := s2*c1
+        d1 := s2*d1
+        cu := univariate(c1, krr, minPoly(krr))$pQf
+        du := univariate(d1, krr, minPoly(krr))$pQf
+        [r2l(1), coefficient(cu, 0), coefficient(du, 0),
+                 coefficient(cu, 1), coefficient(du, 1),
+             coefficient(cu, 2), coefficient(du, 2)]
+
+    rsimp_gen_8(cl : List(eI), rv : eI, k : Integer
+               ) : Union(List(eI), "failed") ==
+        rr := rv^(1/4)
+        krr := retract(rr)@K
+        (a1, b1) := split_eval(cl, rr, 2, 8)
+        res1 := rsimp_gen_2(a1, b1, rr, k)
+        (res1 case "failed") => return "failed"
+        r1l := res1@List(eI)
+        s1 := r1l(1); c1 := r1l(2); d1 := r1l(3)
+        su := univariate(s1, krr, minPoly(krr))$pQf
+        a2 := coefficient(su, 0) + coefficient(su, 2)*rr^2
+        b2 := coefficient(su, 1) + coefficient(su, 3)*rr^2
+        res2 := rsimp_gen_2(a2, b2, rr^2, k)
+        if res2 case "failed" and k rem 2 = 0  then
+            kk := k quo 2
+            for i in 1..kk repeat
+                tmp := b2
+                b2 := a2
+                a2 := tmp*rr^2
+            res2 := rsimp_gen_2(a2, b2, rr^2, k)
+            res2 case "failed" => return "failed"
+            tmp := d1
+            d1 := c1/rr
+            c1 := tmp
+        res2 case "failed" => "failed"
+        r2l := res2@List(eI)
+        s2 := r2l(1); c2 := r2l(2); d2 := r2l(3)
+        su2 := univariate(s2, krr, minPoly(krr))$pQf
+        a3 := coefficient(su2, 0)
+        b3 := coefficient(su2, 2)
+        res3 := rsimp_gen_2(a3, b3, rv, k)
+        if res3 case "failed" and k rem 2 = 0  then
+            kk := k quo 2
+            for i in 1..kk repeat
+                tmp := b3
+                b3 := a3
+                a3 := tmp*rv
+            res3 := rsimp_gen_2(a3, b3, rv, k)
+            res3 case "failed" => return "failed"
+            tmp := d2
+            d2 := c2/rr^2
+            c2 := tmp
+        res3 case "failed" => "failed"
+        r3l := res3@List(eI)
+        ss := r3l(2) + r3l(3)*rr^2
+        ss := ss*(c2 + d2*rr)
+        c1 := ss*c1
+        d1 := ss*d1
+        cu := univariate(c1, krr, minPoly(krr))$pQf
+        du := univariate(d1, krr, minPoly(krr))$pQf
+        [r3l(1), coefficient(cu, 0), coefficient(du, 0),
+                 coefficient(cu, 1), coefficient(du, 1),
+               coefficient(cu, 2), coefficient(du, 2),
+                 coefficient(cu, 3), coefficient(du, 3)]
+
+    rsimp_gen_9(cl : List(eI), rv : eI, k : Integer
+               ) : Union(List(eI), "failed") ==
+        rr := rv^(1/3)
+        krr := retract(rr)@K
+        (a1, b1, c1) := split_eval(cl, rr, 3, 9)
+        res1 := rsimp_gen_3(a1, b1, c1, rr, k)
+        (res1 case "failed") => return "failed"
+        r1l := res1@List(eI)
+        s1 := r1l(1); d1 := r1l(2); e1 := r1l(3); f1 := r1l(4)
+        su := univariate(s1, krr, minPoly(krr))$pQf
+        a2 := coefficient(su, 0)
+        b2 := coefficient(su, 1)
+        c2 := coefficient(su, 2)
+        res2 := rsimp_gen_3(a2, b2, c2, rv, k)
+        if res2 case "failed" and k rem 3 = 0 then
+            -- second try
+            kk := k quo 3
+            for i in 1..kk repeat
+                tmp := c2
+                c2 := b2
+                b2 := a2
+                a2 := tmp*rv
+            res2 := rsimp_gen_3(a2, b2, c2, rv, k)
+            tmp := d1
+            d1 := e1
+            e1 := f1
+            f1 := tmp/rr
+        if res2 case "failed" and k rem 3 = 0 then
+            -- third try
+            kk := k quo 3
+            for i in 1..kk repeat
+                tmp := c2
+                c2 := b2
+                b2 := a2
+                a2 := tmp*rv
+            res2 := rsimp_gen_3(a2, b2, c2, rv, k)
+            res2 case "failed" => return "failed"
+            tmp := d1
+            d1 := e1
+            e1 := f1
+            f1 := tmp/rr
+        res2 case "failed" => "failed"
+        r2l := res2@List(eI)
+        s2 := r2l(2) + r2l(3)*rr + r2l(4)*rr^2
+        d1 := s2*d1
+        e1 := s2*e1
+        f1 := s2*f1
+        du := univariate(d1, krr, minPoly(krr))$pQf
+        eu := univariate(e1, krr, minPoly(krr))$pQf
+        fu := univariate(f1, krr, minPoly(krr))$pQf
+        [r2l(1), coefficient(du, 0), coefficient(eu, 0), coefficient(fu, 0),
+                 coefficient(du, 1), coefficient(eu, 1), coefficient(fu, 1),
+              coefficient(du, 2), coefficient(eu, 2), coefficient(fu, 2)]
+
+    rsimp_gen_12(cl : List(eI), rv : eI, k : Integer
+               ) : Union(List(eI), "failed") ==
+        rr := rv^(1/6)
+        krr := retract(rr)@K
+        (a1, b1) := split_eval(cl, rr, 2, 12)
+        res1 := rsimp_gen_2(a1, b1, rr, k)
+        (res1 case "failed") => "failed"
+        r1l := res1@List(eI)
+        s1 := r1l(1); c1 := r1l(2); d1 := r1l(3)
+        su := univariate(s1, krr, minPoly(krr))$pQf
+        cl2 := my_coeffs(su, 5)
+        (a2, b2) := split_eval(cl2, rr^2, 2, 6)
+        res2 := rsimp_gen_2(a2, b2, rr^2, k)
+        if res2 case "failed" and k rem 2 = 0  then
+            kk := k quo 2
+            for i in 1..kk repeat
+                tmp := b2
+                b2 := a2
+                a2 := tmp*rr^2
+            res2 := rsimp_gen_2(a2, b2, rr^2, k)
+            res2 case "failed" => return "failed"
+            tmp := d1
+            d1 := c1/rr
+            c1 := tmp
+        res2 case "failed" => "failed"
+        r2l := res2@List(eI)
+        s2 := r2l(1); c2 := r2l(2); d2 := r2l(3)
+        su2 := univariate(s2, krr, minPoly(krr))$pQf
+        a3 := coefficient(su2, 0)
+        b3 := coefficient(su2, 2)
+        c3 := coefficient(su2, 4)
+        res3 := rsimp_gen_3(a3, b3, c3, rv, k)
+        res3 case "failed" => "failed"
+        r3l := res3@List(eI)
+        ss := r3l(2) + r3l(3)*rr^2 + r3l(4)*rr^4
+        ss := ss*(c2 + d2*rr)
+        cu := univariate(ss*c1, krr, minPoly(krr))$pQf
+        du := univariate(ss*d1, krr, minPoly(krr))$pQf
+        rl : List(eI) := []
+        for ci in my_coeffs(cu, 5) for di in my_coeffs(du, 5) repeat
+             rl := cons(ci, rl)
+             rl := cons(di, rl)
+        cons(r3l(1), reverse!(rl))
 
     -- Simple check for exact power
     rsimp1(av : eI, k : Integer) : Union(eI, "failed") ==
@@ -754,6 +953,14 @@ RootSimplification() : Exports == Implementation where
     my_root(s1 : eI, k : Integer, opr : BasicOperator) : eI ==
         numer(s1) = 1 => 1/kernel(opr, [1/s1, k::eI])
         kernel(opr, [s1, k::eI])
+
+    eval_rl(rl : List(eI), kf : eI, k : Integer) : eI ==
+        res := first(rl)
+        ki : eI := 1
+        for i in 1..(k - 1) for ci in rest(rl) repeat
+            ki := ki*kf
+            res := ci*ki + res
+        res
 
     rsimp2_gen(arg : eI, lk : List(K), k : Integer,
                opr : BasicOperator) : Union(eI, "failed") ==
@@ -772,26 +979,28 @@ RootSimplification() : Exports == Implementation where
                 res1 := rsimp_gen_2(av, bv, rv, k)
                 (res1 case "failed") => return "failed"
                 r1l := res1@List(eI)
-                res := res*(r1l(2) + r1l(3)*ker::eI)
+                res := res*eval_rl(rest(r1l), ker::eI, 2)
                 s1 := r1l(1)
-            cv := coefficient(su, 2)
             deg_k = 3 =>
-                res1 := rsimp_gen_3(av, bv, cv, rv, k)
+                res1 := rsimp_gen_3(av, bv, coefficient(su, 2), rv, k)
                 -- print(message("rsimp_gen_3 returned")$OutputForm)$OutputForm
                 (res1 case "failed") => return "failed"
                 r1l := res1@List(eI)
-                kf := ker::eI
-                res := res*(r1l(2) + r1l(3)*kf + r1l(4)*kf^2)
+                res := res*eval_rl(rest(r1l), ker::eI, 3)
                 s1 := r1l(1)
-            dv := coefficient(su, 3)
-            deg_k = 4 =>
-                res1 := rsimp_gen_4(av, bv, cv, dv, rv, k)
-                (res1 case "failed") => return "failed"
-                r1l := res1@List(eI)
-                kf := ker::eI
-                res := res*(r1l(2) + r1l(3)*kf + r1l(4)*kf^2 + r1l(5)*kf^3)
-                s1 := r1l(1)
-            return "failed"
+            if 12 < deg_k then return "failed"
+            cl := my_coeffs(su, deg_k - 1)
+            res1 :=
+                deg_k = 4 => rsimp_gen_4(cl, rv, k)
+                deg_k = 6 => rsimp_gen_6(cl, rv, k)
+                deg_k = 8 => rsimp_gen_8(cl, rv, k)
+                deg_k = 9 => rsimp_gen_9(cl, rv, k)
+                deg_k = 12 => rsimp_gen_12(cl, rv, k)
+                "failed"
+            (res1 case "failed") => return "failed"
+            r1l := res1@List(eI)
+            res := res*eval_rl(rest(r1l), ker::eI, deg_k)
+            s1 := r1l(1)
         su := rsimp1(s1, k)
         su case eI => res*su@eI
         res*my_root(s1, k, opr)
