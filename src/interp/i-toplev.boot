@@ -128,6 +128,7 @@ DEFPARAMETER($inRetract, nil)
 
 processInteractive(form, posnForm) ==
     $timedNameStack : local := NIL
+    $statsInfo : local := NIL
     initializeTimedStack()
     finally(
         object := processInteractive0(form, posnForm),

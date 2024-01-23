@@ -104,9 +104,6 @@ stopTimingProcess name ==
   popTimedName()
 
 --% Instrumentation specific to the interpreter
-DEFPARAMETER($oldElapsedSpace, 0)
-DEFPARAMETER($oldElapsedGCTime, 0.0)
-DEFPARAMETER($oldElapsedTime, 0.0)
 DEFPARAMETER($timePrintDigits, 2)
 
 -- $timedNameStack is used to hold the names of sections of the
@@ -145,30 +142,37 @@ DEFPARAMETER($interpreterTimedClasses, '(
 
 -- $statsInfo contains stats numbers. It is a vector,
 -- $statsInfo.0 is for TimeTotal, $statsInfo.1 is for SpaceTotal.
+-- the rest slots contains oldElapsedTime, oldElapsedGCTime, oldElapsedSpace.
 DEFVAR($statsInfo)
 
 initializeTimedNames() ==
-  len := # $interpreterTimedNames
-  $statsInfo := VECTOR(GETZEROVEC len, GETZEROVEC len)
   for [name, :.] in $interpreterTimedNames for i in 0.. repeat
     PUT(name, 'index, i)
   initializeTimedStack()
 
 initializeTimedStack() ==
   $timedNameStack := '(other)
-  computeElapsedTime()
-  computeElapsedSpace()
+  len := # $interpreterTimedNames
+  $statsInfo := VECTOR(GETZEROVEC len, GETZEROVEC len, get_run_time(), _
+                       elapsedGcTime(), HEAPELAPSED())
   NIL
 
 updateTimedName name ==
+  oldTime := $statsInfo.2
+  oldGCTime := $statsInfo.3
+  oldSpace := $statsInfo.4
+  newTime := $statsInfo.2 := get_run_time()
+  newGCTime := $statsInfo.3 := elapsedGcTime()
+  newSpace := $statsInfo.4 := HEAPELAPSED()
+
   i := GET(name, 'index)
   timeVec := $statsInfo.0
   spaceVec := $statsInfo.1
-  [time, gcTime] := computeElapsedTime()
-  timeVec.i := timeVec.i + time
+  gcDelta := newGCTime - oldGCTime
+  timeVec.i := timeVec.i + (newTime - oldTime - gcDelta)*$inverseTimerTicksPerSecond
   i2 := GET('gc, 'index)
-  timeVec.i2 := timeVec.i2 + gcTime
-  spaceVec.i := spaceVec.i + computeElapsedSpace()
+  timeVec.i2 := timeVec.i2 + gcDelta * $inverseTimerTicksPerSecond
+  spaceVec.i := spaceVec.i + newSpace - oldSpace
 
 makeLongTimeString(listofnames,listofclasses) ==
   makeLongStatStringByProperty(listofnames, listofclasses,  _
@@ -181,22 +185,6 @@ makeLongSpaceString(listofnames,listofclasses) ==
                                '"bytes", $printStorageIfTrue)
 
 DEFPARAMETER($inverseTimerTicksPerSecond, 1.0/$timerTicksPerSecond)
-
-computeElapsedTime() ==
-  currentTime:= get_run_time()
-  currentGCTime:= elapsedGcTime()
-  gcDelta := currentGCTime - $oldElapsedGCTime
-  elapsedSeconds:= $inverseTimerTicksPerSecond *
-     (currentTime-$oldElapsedTime-gcDelta)
-  $oldElapsedTime := currentTime
-  $oldElapsedGCTime := currentGCTime
-  [elapsedSeconds, $inverseTimerTicksPerSecond * gcDelta]
-
-computeElapsedSpace() ==
-  currentElapsedSpace := HEAPELAPSED()
-  elapsedBytes := currentElapsedSpace - $oldElapsedSpace
-  $oldElapsedSpace := currentElapsedSpace
-  elapsedBytes
 
 timedAlgebraEvaluation(code) ==
   startTimingProcess 'algebra
