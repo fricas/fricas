@@ -39,7 +39,7 @@ $asyPrint := false
 
 asList() ==
   maybe_delete_file('"temp.text")
-  OBEY '"ls as/*.asy > temp.text"
+  run_shell_command '"ls as/*.asy > temp.text"
   instream := OPEN '"temp.text"
   lines := [read_line instream while not EOFP instream]
   CLOSE instream

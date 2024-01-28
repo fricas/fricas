@@ -799,8 +799,8 @@
     (if (null type)
         (setq path (make-pathname :directory dir :name name :type "as")))
     (if opts
-        (OBEY (format nil "aldor ~A -Flsp ~A" opts (namestring path)))
-        (OBEY (format nil "aldor -Flsp ~A" (namestring path))))
+        (|run_shell_command| (format nil "aldor ~A -Flsp ~A" opts (namestring path)))
+        (|run_shell_command| (format nil "aldor -Flsp ~A" (namestring path))))
     (compile-file (namestring lpath))
     (load (namestring cpath))))
 

@@ -312,9 +312,9 @@
 
 (defun |erase_lib0|(fn ft) (|erase_lib| (|make_filename0| fn ft)))
 
-#+:GCL
+#+(or :abcl :clisp :cmu :ecl :gcl :lispworks :poplog)
 (defun delete-directory (dirname)
-   (SI::system (concat "rm  -r " dirname)))
+   (|run_program| "rm" (list "-r" dirname)))
 
 #+:sbcl
 (defun delete-directory (dirname)
@@ -322,46 +322,18 @@
       0
       1))
 
-#+:cmu
-(defun delete-directory (dirname)
-   (ext::run-program "rm" (list "-r" dirname))
-  )
-
 #+:openmcl
 (defun delete-directory (dirname)
   (if (ccl:delete-directory dirname)
       0
       1))
 
-#+:clisp
-(defun delete-directory (dirname)
-    #-:win32
-    (obey (concat "rm -r " dirname))
-    #+:win32
-    (obey (concat "rmdir /q /s " "\"" dirname "\"")))
-
-#+:ecl
-(defun delete-directory (dirname)
-  (ext:system (concat "rm -r " dirname)))
-
-#+:poplog
-(defun delete-directory (dirname)
-    (POP11:sysobey (concat "rm -r " dirname)))
-
-#+:abcl
-(defun delete-directory (dirname)
-  (sys:run-program "rm" (list "-r" dirname)))
-
-#+:lispworks
-(defun delete-directory (dirname)
-  (system:call-system (concatenate 'string "rm -r " dirname)))
-
 (defun |replace_lib|(filespec2 filespec1)
     (|erase_lib| (setq filespec1 (|make_full_namestring| filespec1)))
     #-(or :clisp :openmcl :ecl)
     (rename-file (|make_full_namestring| filespec2) filespec1)
     #+(or :clisp :openmcl :ecl)
-    (obey (concat "mv " (|make_full_namestring| filespec2) " " filespec1))
+    (|run_program| "mv" (list (|make_full_namestring| filespec2) filespec1))
  )
 
 
@@ -371,48 +343,8 @@
         (copy-lib-directory name1 name2)
 ))
 
-
-#+:GCL
 (defun copy-lib-directory (name1 name2)
-   (makedir name2)
-   (SI::system (concat "sh -c 'cp " name1 "/* " name2 "'")))
-
-#+:sbcl
-(defun copy-lib-directory (name1 name2)
-   (makedir name2)
-   (sb-ext::run-program "/bin/sh" (list "-c" (concat "cp " name1 "/* " name2)))
- )
-
-#+:cmu
-(defun copy-lib-directory (name1 name2)
-   (makedir name2)
-   (ext::run-program "sh" (list "-c" (concat "cp " name1 "/* " name2)))
- )
-
-#+:openmcl
-(defun copy-lib-directory (name1 name2)
-   (makedir name2)
-   (ccl::run-program "sh" (list "-c" (concat "cp " name1 "/* " name2))))
-
-#+(or :clisp :ecl)
-(defun copy-lib-directory (name1 name2)
-   (makedir name2)
-   (OBEY (concat "sh -c 'cp " name1 "/* " name2 "'")))
-
-#+:poplog
-(defun copy-lib-directory (name1 name2)
-    (makedir name2)
-    (POP11:sysobey (concat "cp " name1 "/* " name2)))
-
-#+:abcl
-(defun copy-lib-directory (name1 name2)
-    (makedir name2)
-    (sys:run-program "cp" (list "-r" (concat name1 "/*") name2)))
-
-#+:lispworks
-(defun copy-lib-directory (name1 name2)
-   (makedir name2)
-   (system:call-system (concat "cp " (concat name1 "/*") " " name2)))
+   (|run_program| "cp" (list "-r" name1 name2)))
 
 (defvar |$filetype_table|
   '(

@@ -707,56 +707,6 @@
                  func)))
       ((symbolp func) func)))
 
-#+:cmu
-(defun OBEY (S)
-  (ext::process-exit-code
-   (ext::run-program "sh" (list "-c" S) :input t :output t)))
-
-#+:GCL
-(defun OBEY (S) (SI::SYSTEM S))
-
-#+:allegro
-(defun OBEY (S) (excl::run-shell-command s))
-
-(defvar *OBEY-STDOUT* nil "if T use *standard output*")
-#+:sbcl
-(defun OBEY (S)
-   #-:win32 (if *OBEY-STDOUT*
-               (sb-ext::process-exit-code
-                (sb-ext::run-program "/bin/sh" (list "-c" S) :input t
-                     :output *standard-output* :error *standard-output*))
-
-               (sb-ext::process-exit-code
-                (sb-ext::run-program "/bin/sh"
-                    (list "-c" S) :input t :output t :error t)))
-   #+:win32 (sb-ext::process-exit-code
-             (sb-ext::run-program "sh"
-                    (list "-c" S) :input t :output t :error t :search t)))
-
-#+:openmcl
-(defun OBEY (S)
-  (ccl::run-program "sh" (list "-c" S) :input t :output t :error t))
-
-#+(and :clisp (or :win32 :unix))
-(defun OBEY (S)
-   (ext:run-shell-command S))
-
-#+:ecl
-(defun OBEY (S)
-   (ext:system S))
-
-#+:poplog
-(defun OBEY (S)
-   (POP11:sysobey S))
-
-#+:abcl
-(defun OBEY (S)
-   (sys:run-program "sh" (list "-c" S) :input t :output t :error t))
-
-#+:lispworks
-(defun OBEY (S)
-   (system:call-system S))
-
 ;;; moved from hash.lisp
 
 ;17.0 Operations on Hashtables

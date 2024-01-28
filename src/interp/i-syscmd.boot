@@ -520,7 +520,7 @@ compileAsharpCmd1 args ==
     command :=
        STRCONC(getEnv('"ALDOR_COMPILER"),_
                      '" ", asharpArgs, '" ", path)
-    rc := OBEY command
+    rc := run_shell_command command
 
     if (rc = 0) and doCompileLisp then
         lsp := fnameMake('".", pathnameName(path), '"lsp")
@@ -572,8 +572,7 @@ compileAsharpArchiveCmd args ==
 
     cd [ namestring dir ]
 
-    cmd := STRCONC( '"ar x ", path)
-    rc := OBEY cmd
+    rc := run_command('"ar", ['"x", path])
     rc ~= 0 =>
         cd [ namestring curDir ]
         throwKeyedMsg("S2IL0028",[namestring dir, path])
@@ -2948,7 +2947,7 @@ npsystem(unab, str) ==
   null SEARCH(sysPart, STRING unab) =>
     sayKeyedMsg("S2IZ0080", [sysPart])
   command := SUBSEQ(str, spaceIndex+1)
-  OBEY command
+  run_shell_command command
 
 npsynonym(unab, str) ==
   npProcessSynonym(str)

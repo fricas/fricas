@@ -761,17 +761,13 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 ;;; Make directory
 
-#+:cmu
+#+(or :abcl :cmu :lispworks :openmcl)
 (defun makedir (fname)
-    (ext::run-program "mkdir" (list fname)))
+    (|run_program| "mkdir" (list fname)))
 
 #+:sbcl
 (defun makedir (fname)
     (sb-unix:unix-mkdir fname #o777))
-
-#+:openmcl
-(defun makedir (fname)
-    (ccl::run-program "mkdir" (list fname)))
 
 #+:clisp
 (defun makedir (fname)
@@ -780,14 +776,6 @@ with this hack and will try to convince the GCL crowd to fix this.
   (let ((sym (or (find-symbol "MAKE-DIRECTORY" "EXT")
                  (find-symbol "MAKE-DIR" "EXT"))))
     (funcall sym (pad-directory-name (namestring fname)))))
-
-#+:lispworks
-(defun makedir (fname)
-    (system:call-system (concatenate 'string "mkdir " fname)))
-
-#+:abcl
-(defun makedir (fname)
-    (sys:run-program "mkdir" (list fname)))
 
 ;;;
 
@@ -891,7 +879,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #+:poplog
 (defun fricas_compile_file (f output-file)
-    (POP11::sysobey (concatenate 'string "cp " f " " output-file)))
+    (|run_program| "cp" (list f output-file)))
 
 #-(or :ecl :poplog)
 (defun fricas_compile_file (f output-file)
@@ -903,6 +891,43 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:ecl
     (compile-file f :output-file (relative-to-absolute output-file))
 )
+
+;;; |run_program| and |run_shell_command|
+
+(defun |run_program| (command arguments)
+  ;; Execute "command" with a list of "arguments" synchronously.
+  ;; Output to the standard output stream.
+  ;; The return value is the exit code of "command".
+  #+:abcl
+  (sys:process-exit-code (sys:run-program command arguments :output t))
+  #+:clisp
+  (let ((exit-code (ext:run-program command :arguments arguments)))
+    (if exit-code exit-code 0))
+  #+:cmu
+  (ext:process-exit-code (ext:run-program command arguments :output t))
+  #+:ecl
+  (cadr (multiple-value-list (ext:run-program command arguments :output t)))
+  ;; #+:gcl ;; run-process is asynchronous
+  ;; (si:run-process command arguments)
+  #+:lispworks ;; call-system requires absolute path for "command"
+  (system:call-system-showing-output `("/usr/bin/env" ,command ,@arguments))
+  #+:openmcl
+  (cadr (multiple-value-list (ccl:external-process-status
+                              (ccl:run-program command arguments :output t))))
+  #+:poplog
+  (pop11:sysobey "/usr/bin/env" (cons command arguments))
+  #+:sbcl
+  (sb-ext:process-exit-code
+    (sb-ext:run-program command arguments :search t :output *standard-output*))
+  #+:gcl
+  (si:system (format nil "~{~a~^ ~}" (cons command arguments)))
+)
+
+(defun |run_shell_command| (s)
+  #+:gcl
+  (si:system s)
+  #-:gcl
+  (|run_program| "sh" (list "-c" s)))
 
 (defmacro DEFCONST (name value)
    `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
