@@ -563,8 +563,7 @@ compileAsharpArchiveCmd args ==
         throwKeyedMsg("S2IL0027",[namestring dir, path])
 
     if isDir ~= 1 then
-        cmd  := STRCONC('"mkdir ", namestring dir)
-        rc   := OBEY cmd
+        rc := makedir namestring dir
         rc ~= 0 => throwKeyedMsg("S2IL0027", [namestring dir, path])
 
     curDir := GET_-CURRENT_-DIRECTORY()
@@ -996,7 +995,7 @@ edit l == editSpad2Cmd l
 editSpad2Cmd l ==
   l:=
     null l => $edit_file
-    first l
+    PNAME first l
   oldDir := pathnameDirectory l
   fileTypes :=
     pathnameType l => [pathnameType l]
@@ -1049,16 +1048,10 @@ newHelpSpad2Cmd args ==
   null(helpFile := make_input_filename([narg, 'HELPSPAD])) => nil
 
   $useFullScreenHelp =>
-    OBEY STRCONC('"$FRICAS/lib/SPADEDIT ",namestring helpFile)
+    editFile helpFile
     true
 
-  filestream := MAKE_INSTREAM(helpFile)
-  repeat
-    line := read_line(filestream)
-    NULL line =>
-      SHUT filestream
-      return true
-    SAY line
+  print_text_file helpFile
   true
 
 --%

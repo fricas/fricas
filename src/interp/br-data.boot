@@ -82,8 +82,7 @@ buildLibdb(domainList) ==  --called by make-databases (daase.lisp)
   domainList => 'done         --leave new database in temp.text
   -- FIXME: This is confusing: result is in olibdb.text,
   -- but this is expected by save_browser_data
-  OBEY '"sort  _"temp.text_"  > _"libdb.text_""
-  RENAME_-FILE('"libdb.text", '"olibdb.text")
+  OBEY '"sort temp.text -o olibdb.text"
   deleteFile '"temp.text"
 
 buildLibdbConEntry conname ==
