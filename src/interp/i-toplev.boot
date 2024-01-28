@@ -71,7 +71,6 @@ interpsysInitialization(display_messages) ==
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"interpreter"])
   initializeTimedNames()
   $InteractiveFrame := makeInitialModemapFrame()
-  initializeSystemCommands()
   initializeInterpreterFrameRing()
   setOutputAlgebra "%initialize%"
   loadExposureGroupData()

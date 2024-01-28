@@ -75,14 +75,6 @@ DEFPARAMETER($displayOptions, '( _
 
 --% Top level system command
 
-initializeSystemCommands() ==
-  l := $systemCommands
-  $SYSCOMMANDS := NIL
-  while l repeat
-    $SYSCOMMANDS := CONS(CAAR l, $SYSCOMMANDS)
-    l := rest l
-  $SYSCOMMANDS := NREVERSE $SYSCOMMANDS
-
 systemCommand [[op,:argl],:options] ==
   $options: local:= options
   $e:local := $CategoryFrame
@@ -2991,13 +2983,13 @@ splitIntoOptionBlocks str ==
   blockStart := 0
   parenCount := 0
   for i in 0..#str-1 repeat
-    STRING str.i = '"_"" =>
+    str.i = char '"_"" =>
       inString := not inString
-    if STRING str.i = '"(" and not inString
+    if str.i = char '"(" and not inString
     then parenCount := parenCount + 1
-    if STRING str.i = '")" and not inString
+    if str.i = char '")" and not inString
     then parenCount := parenCount - 1
-    STRING str.i = '")" and not inString and parenCount = -1 =>
+    str.i = char '")" and not inString and parenCount = -1 =>
       block := stripSpaces SUBSEQ(str, blockStart, i)
       blockList := [block, :blockList]
       blockStart := i+1
@@ -3055,7 +3047,7 @@ ltrace l == trace l
 
 --------------------> NEW DEFINITION (see intint.lisp)
 stripSpaces str ==
-  STRING_-TRIM([char '" "], str)
+  STRING_-TRIM('" ", str)
 
 npProcessSynonym(str) ==
   if str = '"" then printSynonyms(NIL)
