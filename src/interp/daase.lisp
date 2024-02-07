@@ -470,7 +470,7 @@ database.
 ; system files is only the filename and extension. for user files it
 ; contains the full pathname. when the database is first opened the
 ; sourcefile slot contains system names. the lookup function
-; has to prefix the |$spadroot| information if the directory-namestring is
+; has to prefix the |$spadroot| information if the pathname-directory is
 ; null (we don't know the real root at database build time).
 ; a object-hash table is set up to look up nrlib and ao information.
 ; this slot is empty until a user does a )library call. we remember
@@ -772,7 +772,7 @@ database.
     (sourcefile          (setf (|database-sourcefile| struct) data))))
    (case key ; fixup the special cases
     (sourcefile
-     (when (and data (string= (directory-namestring data) "")
+     (when (and data (null (pathname-directory data))
              (string= (pathname-type data) "spad"))
       (setq data
        (concatenate 'string |$spadroot| "/../../src/algebra/" data))))
@@ -783,11 +783,11 @@ database.
     (object                                ; fix up system object pathname
      (if (consp data)
        (setq data
-             (if (string= (directory-namestring (car data)) "")
+             (if (null (pathname-directory (car data)))
                  (concatenate 'string |$spadroot| "/algebra/" (car data)
                                         "." |$lisp_bin_filetype|)
                (car data)))
-      (when (and data (string= (directory-namestring data) ""))
+      (when (and data (null (pathname-directory data)))
        (setq data (concatenate 'string |$spadroot| "/algebra/" data
                                           "." |$lisp_bin_filetype|)))))))
   data))
