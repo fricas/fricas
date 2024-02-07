@@ -172,17 +172,6 @@ commandAmbiguityError(kind,x,u) ==
   for a in u repeat sayMSG ['"     ",:bright a]
   terminateSystemCommand()
 
---% Utility for access to original command line
-
-getSystemCommandLine() ==
-  p := STRPOS('")",$currentLine,0,NIL)
-  line := if p then SUBSTRING($currentLine,p,NIL) else $currentLine
-  maxIndex:= MAXINDEX line
-  for i in 0..maxIndex while (line.i~=" ") repeat index:= i
-  if index=maxIndex then line := '""
-  else line := SUBSTRING(line,index+2,nil)
-  line
-
 ------------ start of commands ------------------------------------------
 
 --% )abbreviations
@@ -2427,18 +2416,6 @@ spool(filename) ==
     clear_highlight()
 
 --% )synonym
-
-synonym(:l) == synonymSpad2Cmd()  -- always passed a null list
-
-synonymSpad2Cmd() ==
-  line := getSystemCommandLine()
-  if line = '"" then printSynonyms(NIL)
-  else
-    pair := processSynonymLine line
-    if $CommandSynonymAlist then
-      PUTALIST($CommandSynonymAlist, first pair, rest pair)
-    else $CommandSynonymAlist := [pair]
-  terminateSystemCommand()
 
 processSynonymLine line ==
   line := STRING_-LEFT_-TRIM('" ", line)
