@@ -39,6 +39,7 @@ DEFPARAMETER($mapName, 'noMapName)
 DEFPARAMETER($mapThrowCount, 0) -- times a "return" occurs in map
 DEFPARAMETER($compilingMap, NIL)
 DEFPARAMETER($definingMap, NIL)
+DEFPARAMETER($ClearBodyToken, GENSYM('"ClearBodyToken"))
 
 --% Generating internal names for functions
 
@@ -176,7 +177,7 @@ addMap(lhs,rhs,pred) ==
   null newMap =>
     sayRemoveFunctionOrValue op
     putHist(op,'alias,nil,$e)
-    ""      -- clears value--- see return from addDefMap in tree2Atree1
+    $ClearBodyToken      -- see return from addDefMap in tree2Atree1
   if get(op,'isInterpreterRule,$e) then type := ['RuleCalled,op]
   else type := ['FunctionCalled,op]
   recursive :=
@@ -188,10 +189,10 @@ addMap(lhs,rhs,pred) ==
 augmentMap(op,args,pred,body,oldMap) ==
   pattern:= makePattern(args,pred)
   newMap:=deleteMap(op,pattern,oldMap)
-  body="" =>
+  body = $ClearBodyToken =>
     if newMap=oldMap then
       sayMSG ['"   Cannot find part of",:bright op,'"to delete."]
-    newMap  --just delete rule if body is 
+    newMap  --just delete rule if body is $ClearBodyToken
   entry:= [pattern,:body]
   resultMap:=
     newMap is ["SPADMAP", :tail] => ["SPADMAP", :tail, entry]
@@ -211,7 +212,7 @@ getUserIdentifiersIn body ==
   null body => nil
   IDENTP body =>
     isSharpVarWithNum body => nil
-    body="" => nil
+    body = $ClearBodyToken => nil
     [body]
   body is ["WRAPPED",:.] => nil
   (body is ["COLLECT",:itl,body1]) or (body is ['REPEAT,:itl,body1]) =>

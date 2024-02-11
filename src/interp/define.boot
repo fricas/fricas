@@ -683,7 +683,7 @@ compDefineCapsuleFunction(df is ['DEF, form, signature, body],
       :bright $op,'": ",:formattedSig]
 
     T := CATCH('compCapsuleBody, compOrCroak(body,rettype,e))
-           or ["",rettype,e]
+           or [$ClearBodyToken, rettype, e]
 --+
     NRTassignCapsuleFunctionSlot($op, signature', $domainShell, e)
     if $newCompCompare=true then
@@ -823,7 +823,8 @@ do_compile(u, e) ==
 spadCompileOrSetq (form is [nam,[lam,vl,body]]) ==
         --bizarre hack to take account of the existence of "known" functions
         --good for performance (LISPLLIB size, BPI size, NILSEC)
-  CONTAINED("",body) => sayBrightly ['"  ",:bright nam,'" not compiled"]
+  CONTAINED($ClearBodyToken, body) =>
+      sayBrightly ['"  ", :bright nam, '" not compiled"]
   if vl is [:vl',E] and body is [nam',: =vl'] then
       output_lisp_form(['PUT,MKQ nam,MKQ 'SPADreplace,MKQ nam'])
       sayBrightly ['"     ",:bright nam,'"is replaced by",:bright nam']
