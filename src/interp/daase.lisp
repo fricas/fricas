@@ -797,7 +797,7 @@ database.
 ;  .asy
 ;  .ao, then asharp to .asy
 
-(defun localdatabase (filelist options &optional (make-database? nil))
+(defun LOCALDATABASE (filelist options make-database?)
  "read a local filename and update the hash tables"
  (labels (
   (processOptions (options)
@@ -818,7 +818,7 @@ database.
     (values only dir noexpose)))
 
   (processDir (dirarg thisdir)
-      (let (nrlibdirs skipasos aos)
+      (let (nrlibdirs skipasos aos asys)
 
       (chdir (string dirarg))
 ;      #-:GCL
@@ -848,10 +848,9 @@ database.
                                        skipasos :test #'string=)))
                     (list (namestring f))))
            aos)
-          nil
     ))))
 
- (let (thisdir nrlibs asos asys libs object only dir key
+ (let (thisdir nrlibs asos asys object only dir key
       (|$forceDatabaseUpdate| t) noexpose)
   (declare (special |$forceDatabaseUpdate|))
   ;;; FIXME: make this _really_ portable
@@ -860,7 +859,7 @@ database.
   (multiple-value-setq (only dir noexpose) (processOptions options))
      ;don't force exposure during database build
   (if make-database? (setq noexpose t))
-  (when dir (multiple-value-setq (nrlibs asys asos libs) (processDir dir thisdir)))
+  (when dir (multiple-value-setq (nrlibs asys asos) (processDir dir thisdir)))
   (dolist (file filelist)
    (let ((filename (pathname-name (string file)))
          (namedir (directory-namestring (string file))))
@@ -881,169 +880,74 @@ database.
   (dolist (file (nreverse nrlibs))
    (setq key (pathname-name (first (last (pathname-directory file)))))
    (setq object (concatenate 'string (directory-namestring file) key))
-   (localnrlib key file object make-database? noexpose))
+   (|localnrlib| key file object make-database? noexpose))
   (dolist (file (nreverse asys))
    (setq object
     (concatenate 'string (directory-namestring file) (pathname-name file)))
-   (localasy (|astran| file) object only make-database? noexpose))
+   (|localasy| (|astran| file) object only make-database? noexpose))
   (dolist (file (nreverse asos))
    (setq object
     (concatenate 'string (directory-namestring file) (pathname-name file)))
    (asharp file)
    (setq file (|astran| (concatenate 'string (pathname-name file) ".asy")))
-   (localasy file object only make-database? noexpose))
+   (|localasy| file object only make-database? noexpose))
   (|clearConstructorCaches|))
 ))
 
-(defun localasy (asy object only make-database? noexpose)
- "given an alist from the asyfile and the objectfile update the database"
- (labels (
-  (fetchdata (alist index)
-     (cdr (assoc index alist :test #'string=))))
-  (let (cname kind key alist (systemdir? nil) oldmaps asharp-name dbstruct abbrev)
-   (set-file-getter object)  ; sets the autoload property for G-object
-   (dolist (domain asy)
-     (setq key (first domain))
-     (setq alist (rest domain))
-     (setq asharp-name
-           (foam::axiomxl-global-name (pathname-name object) key
-                                     (lassoc '|typeCode| alist)))
-     (if (< (length alist) 4) ;we have a naked function object
-         (let ((opname key)
-               (modemap (car (LASSOC '|modemaps| alist))) )
-           (setq oldmaps (|get_database| opname 'operation))
-           (setf (gethash opname |$operation_hash|)
-                 (adjoin (subst asharp-name opname (cdr modemap))
-                         oldmaps :test #'equal))
-           (asharpMkAutoloadFunction object asharp-name))
-       (when (if (null only) (not (eq key '%%)) (member key only))
-        (setq |$all_operations| nil)        ; force this to recompute
-        (setq oldmaps (|get_database| key 'modemaps))
-        (setq dbstruct (|MAKE-database|))
-        (setf (get key 'database) dbstruct)
-        (setq |$all_constructors| (adjoin key |$all_constructors|))
-        (setf (|database-constructorform| dbstruct)
-         (fetchdata alist "constructorForm"))
-        (setf (|database-constructorkind| dbstruct)
-         (fetchdata alist "constructorKind"))
-        (setf (|database-constructormodemap| dbstruct)
-         (fetchdata alist "constructorModemap"))
-        (unless (setf (|database-abbreviation| dbstruct)
-                      (fetchdata alist "abbreviation"))
-                (setf (|database-abbreviation| dbstruct) key)) ; default
-        (setq abbrev (|database-abbreviation| dbstruct))
-        (setf (get abbrev 'abbreviationfor) key)
-        (setf (|database-constructorcategory| dbstruct)
-         (fetchdata alist "constructorCategory"))
-        (setf (|database-sourcefile| dbstruct)
-         (fetchdata alist "sourceFile"))
+(defun |asharp_global_name| (name key code)
+    (foam::axiomxl-global-name name key code))
+
+(defun |fetch_data_from_alist| (alist index)
+    (cdr (assoc index alist :test #'string=)))
+
+(defun |set_dbstruct| (dbstruct fetch_data ds strip_path? constructorform
+                     abbrev object)
+    (let (kind source_file)
+        (setf (|database-constructorform| dbstruct) constructorform)
+        (setf (|database-abbreviation| dbstruct) abbrev)
         (setf (|database-operationalist| dbstruct)
-         (fetchdata alist "operationAlist"))
+            (FUNCALL fetch_data ds "operationAlist"))
+        (setf (|database-constructormodemap| dbstruct)
+            (FUNCALL fetch_data ds "constructorModemap"))
         (setf (|database-modemaps| dbstruct)
-         (fetchdata alist "modemaps"))
+            (FUNCALL fetch_data ds "modemaps"))
+        (setf source_file (FUNCALL fetch_data ds "sourceFile"))
+        (when strip_path?
+            (setf source_file (file-namestring source_file)))
+        (setf (|database-sourcefile| dbstruct) source_file)
+        (setf (|database-constructorkind| dbstruct)
+            (setf kind (FUNCALL fetch_data ds "constructorKind")))
+        (setf (|database-constructorcategory| dbstruct)
+            (FUNCALL fetch_data ds "constructorCategory"))
         (setf (|database-documentation| dbstruct)
-         (fetchdata alist "documentation"))
+            (FUNCALL fetch_data ds "documentation"))
         (setf (|database-predicates| dbstruct)
-         (fetchdata alist "predicates"))
+            (FUNCALL fetch_data ds "predicates"))
         (setf (|database-niladic| dbstruct)
-         (fetchdata alist "NILADIC"))
-        (addoperations key oldmaps)
-        (setq cname  (|opOf| (|database-constructorform| dbstruct)))
-        (setq kind (|database-constructorkind| dbstruct))
-        (if (null noexpose) (|setExposeAddConstr| (cons cname nil)))
-        (unless make-database?
-         (|updateDatabase| cname) ;makes many hashtables???
-         (|installConstructor| cname)
-          ;; following can break category database build
-         (if (eq kind '|category|)
-             (setf (|database-ancestors| dbstruct)
-                   (fetchdata alist "ancestors")))
-         (if (eq kind '|domain|)
-             (dolist (pair (cdr (assoc "ancestors" alist :test #'string=)))
-                     (setf (gethash (cons cname (caar pair)) |$has_category_hash|)
-                           (cdr pair))))
-         (if |$InteractiveMode| (setq |$CategoryFrame| |$EmptyEnvironment|)))
+            (FUNCALL fetch_data ds "NILADIC"))
         (setf (|database-cosig| dbstruct)
-         (cons nil (mapcar #'|categoryForm?|
-          (cddar (|database-constructormodemap| dbstruct)))))
-        (setf (|database-object| dbstruct) (cons object asharp-name))
-        (if (eq kind '|category|)
-         (asharpMkAutoLoadCategory object cname asharp-name
-          (|database-cosig| dbstruct))
-         (asharpMkAutoLoadFunctor object cname asharp-name
-          (|database-cosig| dbstruct)))
-        (|sayKeyedMsg| 'S2IU0001 (list cname object))))))))
+            (cons nil (mapcar #'|categoryForm?|
+                      (cddar (|database-constructormodemap| dbstruct)))))
+        (setf (|database-object| dbstruct) object)
+        kind)
+)
 
-(defun localnrlib (key nrlib object make-database? noexpose)
- "given a string pathname of an index.KAF and the object update the database"
- (labels (
-  (fetchdata (alist in index)
-   (let (pos)
-    (setq pos (third (assoc index alist :test #'string=)))
-    (when pos
-     (file-position in pos)
-     (read in)))))
- (let (alist kind (systemdir? nil) pos constructorform oldmaps abbrev dbstruct)
-  (with-open-file (in nrlib)
-   (file-position in (read in))
-   (setq alist (read in))
-   (setq pos (third (assoc "constructorForm" alist :test #'string=)))
-   (file-position in pos)
-   (setq constructorform (read in))
-   (setq key (car constructorform))
-   (setq oldmaps (|get_database| key 'modemaps))
-   (setq dbstruct (|MAKE-database|))
-   (setq |$all_constructors| (adjoin key |$all_constructors|))
-   (setf (get key 'database) dbstruct) ; store the struct, side-effect it...
-   (setf (|database-constructorform| dbstruct) constructorform)
-   (setq |$all_operations| nil)   ; force this to recompute
-   (setf (|database-object| dbstruct) object)
-   (setq abbrev
-     (intern (pathname-name (first (last (pathname-directory object))))))
-   (setf (|database-abbreviation| dbstruct) abbrev)
-   (setf (get abbrev 'abbreviationfor) key)
-   (setf (|database-operationalist| dbstruct) nil)
-   (setf (|database-operationalist| dbstruct)
-    (fetchdata alist in "operationAlist"))
-   (setf (|database-constructormodemap| dbstruct)
-    (fetchdata alist in "constructorModemap"))
-   (setf (|database-modemaps| dbstruct) (fetchdata alist in "modemaps"))
-   (setf (|database-sourcefile| dbstruct) (fetchdata alist in "sourceFile"))
-   (when make-database?
-    (setf (|database-sourcefile| dbstruct)
-     (file-namestring  (|database-sourcefile| dbstruct))))
-   (setf (|database-constructorkind| dbstruct)
-    (setq kind (fetchdata alist in "constructorKind")))
-   (setf (|database-constructorcategory| dbstruct)
-    (fetchdata alist in "constructorCategory"))
-   (setf (|database-documentation| dbstruct)
-    (fetchdata alist in "documentation"))
-   (setf (|database-predicates| dbstruct)
-    (fetchdata alist in "predicates"))
-   (setf (|database-niladic| dbstruct)
-    (when (fetchdata alist in "NILADIC") t))
-  (addoperations key oldmaps)
-  (unless make-database?
-   (if (eq kind '|category|)
-       (setf (|database-ancestors| dbstruct)
-             (SUBLISLIS |$FormalMapVariableList| (cdr constructorform) (fetchdata alist in "ancestors"))))
-   (|updateDatabase| key) ;makes many hashtables???
-   (|installConstructor| key) ;used to be key cname ...
-   (|updateCategoryTable| key kind)
-   (if |$InteractiveMode| (setq |$CategoryFrame| |$EmptyEnvironment|)))
-  (setf (|database-cosig| dbstruct)
-    (cons nil (mapcar #'|categoryForm?|
-     (cddar (|database-constructormodemap| dbstruct)))))
-  (remprop key 'loaded)
-  (if (null noexpose) (|setExposeAddConstr| (cons key nil)))
-  (setf (symbol-function key) ; sets the autoload property for cname
-    #'(lambda (&rest args)
-     (unless (get key 'loaded)
-      (|startTimingProcess| '|load|)
-      (|loadLibNoUpdate| key key object)) ; used to be cname key
-     (apply key args)))
-  (|sayKeyedMsg| 'S2IU0001 (list key object))))))
+(defun |spad_set_autoload| (key object)
+    (setf (symbol-function key) ; sets the autoload property for cname
+        #'(lambda (&rest args)
+            (unless (get key 'loaded)
+                (|startTimingProcess| '|load|)
+                (|loadLibNoUpdate| key key object)) ; used to be cname key
+            (apply key args)))
+)
 
+(defun |fetch_data_from_file| (ds index)
+    (let (pos (alist (first ds)) (in (second ds)))
+        (setf pos (third (assoc index alist :test #'string=)))
+        (when pos
+            (file-position in pos)
+            (read in)))
+)
 
 ; making new databases consists of:
 ;  1) reset all of the system hash tables
@@ -1406,7 +1310,7 @@ database.
   (cond ((not type?) obj)
         (t (|makeOldAxiomDispatchDomain| obj))))
 
-(defun asharpMkAutoLoadFunctor (file cname asharp-name cosig)
+(defun |set_asharp_autoload_functor| (file cname asharp-name cosig)
   (setf (symbol-function cname)
   #'(lambda (&rest args)
      (let ((func (getconstructor (eval (file-getter-name file)) asharp-name)))
@@ -1421,7 +1325,7 @@ database.
       (apply cname args)))))
 
 
-(defun asharpMkAutoLoadCategory (file cname asharp-name cosig)
+(defun |set_asharp_autoload_category| (file cname asharp-name cosig)
   (asharpMkAutoLoadFunctor file cname asharp-name cosig)
   (let ((packname (INTERN (STRCONC cname '"&"))))
     (setf (symbol-function packname)
@@ -1440,7 +1344,7 @@ database.
               (|CCall| (elt (car precat) 5) (cdr precat) (wrapDomArgs self t))))))
       (apply packname self args))))))
 
-(defun asharpMkAutoLoadFunction (file asharpname)
+(defun |set_asharp_autoload_function| (file asharpname)
   (set asharpname
    (cons
     #'(lambda (&rest l)
