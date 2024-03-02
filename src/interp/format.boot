@@ -478,6 +478,9 @@ formArguments2String(argl,ml) == [fn(x,m) for x in argl for m in ml] where
     x is ["QUOTE", y] =>
         m = $Symbol and SYMBOLP(y) => y
         form2String1 x
+    -- catch things like # D
+    (m = ["NonNegativeInteger"] or m = ["Integer"]) and not INTEGERP(x) =>
+        form2String1 x
     isValidType(m) and PAIRP(m) and
       (get_database(first(m), 'CONSTRUCTORKIND) = 'domain) =>
         (x' := coerceInteractive(objNewWrap(x,m),$OutputForm)) =>
