@@ -5,22 +5,26 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: macos-12
+    strategy:
+      matrix:
+        os: [macos-12, macos-14]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
-      SBCL_VER: 2.2.9
+      SBCL_VER: ${{ matrix.os == 'macos-12' && '2.2.9' || '2.4.0' }}
+      ARCH: ${{ matrix.os == 'macos-12' && 'x86-64' || 'arm64' }}
 
     steps:
     - uses: actions/checkout@v4
     - name: download and install SBCL
       run: |
-        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-x86-64-darwin-binary.tar.bz2
-        tar xvf sbcl-${SBCL_VER}-x86-64-darwin-binary.tar.bz2
-        cd sbcl-${SBCL_VER}-x86-64-darwin && ./install.sh
+        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-${ARCH}-darwin-binary.tar.bz2
+        tar xvf sbcl-${SBCL_VER}-${ARCH}-darwin-binary.tar.bz2
+        cd sbcl-${SBCL_VER}-${ARCH}-darwin && sudo ./install.sh
     - name: configure
       run: |
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp="sbcl --dynamic-space-size 2048" --enable-gmp || cat config.log
+        ../fricas/configure --with-lisp="sbcl --dynamic-space-size 2048" --with-gmp=`brew --prefix` || cat config.log
     - name: make
       run: cd ../build && make -j3
     - name: make check
@@ -33,12 +37,12 @@ jobs:
         cp -v `brew list gmp | grep libgmp.10.dylib` FriCAS.app/Contents/Resources/usr/local/lib/fricas/target/*/lib/
         ## reduce chance of error caused by "hdiutil: Resource busy"
         make dist-macos-dmg || make dist-macos-dmg
-        mv FriCAS.dmg ../fricas/FriCAS-macOS-x86_64-${{ github.sha }}.dmg
+        mv FriCAS.dmg ../fricas/FriCAS-macOS-${ARCH}-${{ github.sha }}.dmg
     - name: Upload macOS binary
       uses: actions/upload-artifact@v4
       with:
-        name: FriCAS-macOS-x86_64-binary
-        path: FriCAS-macOS-x86_64-${{ github.sha }}.dmg
+        name: FriCAS-macOS-${{ env.ARCH }}-binary
+        path: FriCAS-macOS-${{ env.ARCH }}-${{ github.sha }}.dmg
     - name: Upload to nightly release
       if: ${{ github.event_name == 'push' && ( github.event.ref == 'refs/heads/master' || github.ref_type == 'tag' ) && github.repository == 'fricas/fricas' }}
       ## RELEASE_ID is:
@@ -48,10 +52,10 @@ jobs:
         export RELEASE_ID=74905307
         export TIMESTAMP=$(date +%Y-%m-%dT%H.%M)
         export SHA=$(echo ${{ github.sha }} | cut -c 1-8)
-        export FILENAME=FriCAS-${TIMESTAMP}-macOS-x86_64-${SHA}.dmg
+        export FILENAME=FriCAS-${TIMESTAMP}-macOS-${ARCH}-${SHA}.dmg
         export URL=https://uploads.github.com/${REPO_URL}/${RELEASE_ID}/assets
         curl -v -X POST -H "Accept: application/vnd.github+json" \
         -H "Authorization: token ${{ secrets.releasetoken }}" \
         "${URL}?name=${FILENAME}" \
-        --data-binary "@FriCAS-macOS-x86_64-${{ github.sha }}.dmg" \
+        --data-binary "@FriCAS-macOS-${ARCH}-${{ github.sha }}.dmg" \
         -H "Content-Type: application/x-apple-diskimage" || true
