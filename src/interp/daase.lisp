@@ -900,6 +900,10 @@ database.
 (defun |fetch_data_from_alist| (alist index)
     (cdr (assoc index alist :test #'string=)))
 
+(defun |set_dbstruct_ancestors|(dbstruct val)
+    (SETF (|database-ancestors| dbstruct) val)
+)
+
 (defun |set_dbstruct| (dbstruct fetch_data ds strip_path? constructorform
                      abbrev object)
     (let (kind source_file)
