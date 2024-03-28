@@ -958,7 +958,7 @@ TexmacsFormat() : public == private where
       if pos > 0 then
         ustart : US := segment(1, pos-1)$US
         uend : US := segment(pos+15, len)$US
-        str := concat [str.ustart,"(concat _"-_"",str.uend]
+        str := concat [str(ustart), "(concat _"-_"", str(uend)]
         if pos < len-13 then
           str := postcondition(str)
       str
@@ -1343,13 +1343,13 @@ TexmacsFormat() : public == private where
             error "Unrecognized atom in OutputForm"
         len := #str
 
-        len > 0 and str.1 = char "%" => concat [" _"", str, "_" "]
+        len > 0 and str(1) = char("%") => concat [" _"", str, "_" "]
         -- presumably this is a literal string
         -- WSP: preserve "..." and encode <less> symbols
-        len > 0 and str.1 = char "_"" =>
+        len > 0 and str(1) = char("_"") =>
           --concat ["(concat ", str, ")"]
           concat ["(text (concat ", "_"_\_"_" ",concat ["(math ",utf2cork str, ")"], " _"_\_"_") )"]
-        len = 1 and str.1 = char " " => " "
+        len = 1 and str(1) = char(" ") => " "
         if symbol?(expr) then
             op := symbol(expr)
             (i := position(op, specialStrings)) > 0 =>

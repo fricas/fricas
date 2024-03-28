@@ -234,9 +234,9 @@ TexFormat() : public == private where
       lbrace : Character := char "{"
       rbrace : Character := char "}"
       -- drop leading and trailing braces
-      if (str.1 =$Character lbrace) and (str.len =$Character rbrace) then
+      if (str(1) =$Character lbrace) and (str(len) =$Character rbrace) then
         u : US := segment(2, len-1)$US
-        str := str.u
+        str := str(u)
       str
 
     postcondition(str : S) : S ==
@@ -246,11 +246,11 @@ TexFormat() : public == private where
       minus : Character := char "-"
       len < 4 => str
       for i in 1..(len-1) repeat
-        if (str.i =$Character plus) and (str.(i+1) =$Character minus)
+        if (str(i) =$Character plus) and (str(i + 1) =$Character minus)
           then setelt!(str, i, char " ")$S
       str
 
-    lineConcat( line : S, lines : L S ) : L S ==
+    lineConcat(line : S, lines : L S ) : L S ==
       length := #line
 
       if ( length > 0 ) then
@@ -603,30 +603,31 @@ TexFormat() : public == private where
         else
             error "Unrecognized atom in OutputForm"
         len := #str
-        len > 1 and str.1 = char "%" and str.2 = char "%" =>
+        len > 1 and str(1) = char("%") and str(2) = char("%") =>
           u : US := segment(3, len)$US
           concat(" \%\%", str.u)
-        len > 0 and str.1 = char "%" => concat(" \", str)
-        len > 0 and str.1 = char "_"" =>
+        len > 0 and str(1) = char("%") => concat(" \", str)
+        len > 0 and str(1) = char("_"") =>
           s := "\verb#"
           for i in 1..len repeat
-            if str.i = char "#" then
+            if str(i) = char("#") then
               s := concat(s, "#\verb-#-\verb#")
             else
-              s := concat(s, (str.i)::S)
+              s := concat(s, (str(i))::S)
           concat(s, "#")
-        len = 1 and str.1 = char " " => "{\ }"
+        len = 1 and str(1) = char(" ") => "{\ }"
         -- escape the underscore character
         s := ""
         for i in 1..len repeat
-            s := concat(s, (if str.i = char "__" then "\__" else (str.i)::S))
+            s := concat(s, (if str(i) = char("__") then "\__"
+                                                   else (str(i))::S))
         str := s
-        len > 1 and digit? str.1 => group str -- should handle floats
+        len > 1 and digit?(str(1)) => group(str) -- should handle floats
         if symbol?(expr) then
             op := symbol(expr)
             (i := position(op, specialStrings)) > 0 =>
                 str := specialStringsInTeX.i
-        (i := position(char " ", str)) > 0 =>
+        (i := position(char(" "), str)) > 0 =>
           -- We want to preserve spacing, so use a roman font.
           concat [" \mbox{\rm ", str, "} "]
         str
