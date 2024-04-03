@@ -1340,7 +1340,7 @@ historySpad2Cmd() ==
     opt = 'show    => showHistory optargs
     opt = 'change  => changeHistListLen first optargs
     opt = 'restore => restoreHistory optargs
-    opt = 'write   => writeInputLines(optargs,1)
+    opt = 'write   => writeInputLines(first optargs, 1)
   'done
 
 
