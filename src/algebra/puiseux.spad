@@ -367,6 +367,19 @@ UnivariatePuiseuxSeriesConstructor(Coef, ULS) : _
       applyUnary(fcn, upxs) ==
         puiseux(rationalPower upxs, fcn laurentRep upxs)
 
+      app_with_sqrt(fn : ULS -> ULS, xs : %, cc : Coef) : % ==
+          lr := laurentRep(xs)
+          rp := rationalPower(xs)
+          deg := order(lr, 1)
+          deg ~= 0 => puiseux(rp, fn(lr))
+          c0 := coefficient(lr, 0)
+          c0*c0 = cc =>
+              deg1 := order(lr - monomial(c0, 0)$ULS, 101)
+              odd?(deg1) =>
+                  puiseux(rp/(2::RN), fn(multiplyExponents(lr, 2)))
+              puiseux(rp, fn(lr))
+          puiseux(rp, fn(lr))
+
       exp upxs   == applyUnary(exp, upxs)
       log upxs   == applyUnary(log, upxs)
       sin upxs   == applyUnary(sin, upxs)
@@ -375,24 +388,24 @@ UnivariatePuiseuxSeriesConstructor(Coef, ULS) : _
       cot upxs   == applyUnary(cot, upxs)
       sec upxs   == applyUnary(sec, upxs)
       csc upxs   == applyUnary(csc, upxs)
-      asin upxs  == applyUnary(asin, upxs)
-      acos upxs  == applyUnary(acos, upxs)
+      asin upxs  == app_with_sqrt(asin, upxs, 1)
+      acos upxs  == app_with_sqrt(acos, upxs, 1)
       atan upxs  == applyUnary(atan, upxs)
       acot upxs  == applyUnary(acot, upxs)
-      asec upxs  == applyUnary(asec, upxs)
-      acsc upxs  == applyUnary(acsc, upxs)
+      asec upxs  == app_with_sqrt(asec, upxs, 1)
+      acsc upxs  == app_with_sqrt(acsc, upxs, 1)
       sinh upxs  == applyUnary(sinh, upxs)
       cosh upxs  == applyUnary(cosh, upxs)
       tanh upxs  == applyUnary(tanh, upxs)
       coth upxs  == applyUnary(coth, upxs)
       sech upxs  == applyUnary(sech, upxs)
       csch upxs  == applyUnary(csch, upxs)
-      asinh upxs == applyUnary(asinh, upxs)
-      acosh upxs == applyUnary(acosh, upxs)
+      asinh upxs == app_with_sqrt(asinh, upxs, -1)
+      acosh upxs == app_with_sqrt(acosh, upxs, 1)
       atanh upxs == applyUnary(atanh, upxs)
       acoth upxs == applyUnary(acoth, upxs)
-      asech upxs == applyUnary(asech, upxs)
-      acsch upxs == applyUnary(acsch, upxs)
+      asech upxs == app_with_sqrt(asech, upxs, 1)
+      acsch upxs == app_with_sqrt(acsch, upxs, -1)
 
 )abbrev domain UPXS UnivariatePuiseuxSeries
 ++ Author: Clifton J. Williamson
