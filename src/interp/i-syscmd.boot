@@ -1380,7 +1380,7 @@ writeInputLines(fn,initial) ==
   null fn =>
     throwKeyedMsg("S2IH0038", nil)          -- missing file name
   maxn := 72
-  breakChars := [" ","+"]
+  breakChars := [char '" ", char '"+"]
   for i in initial..$IOindex - 1 repeat
     vecl := first readHiFi i
     if STRINGP vecl then vecl := [vecl]
