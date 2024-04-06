@@ -37,14 +37,6 @@ $conHash  := MAKE_HASHTABLE('EQUAL)
 $opHash   := MAKE_HASHTABLE('EQUAL)
 $asyPrint := false
 
-asList() ==
-  maybe_delete_file('"temp.text")
-  run_shell_command '"ls as/*.asy > temp.text"
-  instream := OPEN '"temp.text"
-  lines := [read_line instream while not EOFP instream]
-  CLOSE instream
-  lines
-
 astran asyFile ==
 --global hash tables for new compiler
   $docHash  := MAKE_HASHTABLE('EQUAL)
