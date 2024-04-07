@@ -929,15 +929,16 @@ dbSpecialExpandIfNecessary(conform,opAlist) ==
       RPLACD(pair,['T,conform,'T,comments]) --[sig,pred,origin,exposeFg,doc]
   opAlist
 
-X := '"{\sf Record(a:A,b:B)} is used to create the class of pairs of objects made up of a value of type {\em A} selected by the symbol {\em a} and a value of type {\em B} selected by the symbol {\em b}. "
+init_special_db_data() ==
+  X := '"{\sf Record(a:A,b:B)} is used to create the class of pairs of objects made up of a value of type {\em A} selected by the symbol {\em a} and a value of type {\em B} selected by the symbol {\em b}. "
 
-Y := '"In general, the {\sf Record} constructor can take any number of arguments and thus can be used to create aggregates of heterogeneous components of arbitrary size selectable by name. "
+  Y := '"In general, the {\sf Record} constructor can take any number of arguments and thus can be used to create aggregates of heterogeneous components of arbitrary size selectable by name. "
 
-Z := '"{\sf Record} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
+  Z := '"{\sf Record} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
 
-MESSAGE := STRCONC(X,Y,Z)
+  MESSAGE := STRCONC(X,Y,Z)
 
-PUT('Record,'documentation,SUBST(MESSAGE,'MESSAGE,'(
+  PUT('Record,'documentation,SUBST(MESSAGE,'MESSAGE,'(
   (constructor (NIL MESSAGE))
  (_=  (((Boolean) _% _%)
    "\spad{r = s} tests for equality of two records \spad{r} and \spad{s}"))
@@ -957,13 +958,13 @@ PUT('Record,'documentation,SUBST(MESSAGE,'MESSAGE,'(
    "\spad{r . b := y} destructively replaces the value stored in record \spad{r} under selector \spad{b} by the value of \spad{y}. Error: if \spad{r} has not been previously assigned a value."))
    )))
 
-X := '"{\sf Union(A,B)} denotes the class of objects which are which are either members of domain {\em A} or of domain {\em B}. The {\sf Union} constructor can take any number of arguments. "
+  X := '"{\sf Union(A,B)} denotes the class of objects which are which are either members of domain {\em A} or of domain {\em B}. The {\sf Union} constructor can take any number of arguments. "
 
-Y := '"For an alternate form of {\sf Union} with _"tags_", see \downlink{Union(a:A,b:B)}{DomainUnion}. {\sf Union} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
+  Y := '"For an alternate form of {\sf Union} with _"tags_", see \downlink{Union(a:A,b:B)}{DomainUnion}. {\sf Union} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
 
-MESSAGE := STRCONC(X,Y)
+  MESSAGE := STRCONC(X,Y)
 
-PUT('UntaggedUnion,'documentation,SUBST(MESSAGE,'MESSAGE,'(
+  PUT('UntaggedUnion,'documentation,SUBST(MESSAGE,'MESSAGE,'(
   (constructor (NIL MESSAGE))
   (_=  (((Boolean) % %)
     "\spad{u = v} tests if two objects of the union are equal, that is, u and v are hold objects of same branch which are equal."))
@@ -981,19 +982,19 @@ PUT('UntaggedUnion,'documentation,SUBST(MESSAGE,'MESSAGE,'(
     "\spad{coerce(y)}, where \spad{y} has type \spad{B}, returns \spad{y} as a union type."))
   )))
 
-X := '"{\sf Union(a:A,b:B)} denotes the class of objects which are either members of domain {\em A} or of domain {\em B}. "
+  X := '"{\sf Union(a:A,b:B)} denotes the class of objects which are either members of domain {\em A} or of domain {\em B}. "
 
-Y := '"The symbols {\em a} and {\em b} are called _"tags_" and are used to identify the two _"branches_" of the union. "
+  Y := '"The symbols {\em a} and {\em b} are called _"tags_" and are used to identify the two _"branches_" of the union. "
 
-Z := '"The {\sf Union} constructor can take any number of arguments and has an alternate form without {\em tags} (see \downlink{Union(A,B)}{UntaggedUnion}). "
+  Z := '"The {\sf Union} constructor can take any number of arguments and has an alternate form without {\em tags} (see \downlink{Union(A,B)}{UntaggedUnion}). "
 
-W := '"This tagged {\sf Union} type is necessary, for example, to disambiguate two branches of a union where {\em A} and {\em B} denote the same type. "
+  W := '"This tagged {\sf Union} type is necessary, for example, to disambiguate two branches of a union where {\em A} and {\em B} denote the same type. "
 
-A := '"{\sf Union} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
+  A := '"{\sf Union} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
 
-MESSAGE := STRCONC(X,Y,Z,W,A)
+  MESSAGE := STRCONC(X,Y,Z,W,A)
 
-PUT('Union,'documentation,SUBST(MESSAGE,'MESSAGE,'(
+  PUT('Union,'documentation,SUBST(MESSAGE,'MESSAGE,'(
   (constructor (NIL MESSAGE))
   (_=  (((Boolean) % %)
     "\spad{u = v} tests if two objects of the union are equal, that is, \spad{u} and \spad{v} are objects of same branch which are equal."))
@@ -1011,28 +1012,28 @@ PUT('Union,'documentation,SUBST(MESSAGE,'MESSAGE,'(
     "\spad{coerce(y)}, where \spad{y} has type \spad{B}, returns \spad{y} as a union type."))
   )))
 
-X := '"{\sf Mapping(T,S,...)} denotes the class of objects which are mappings from a source domain ({\em S,...}) into a target domain {\em T}. The {\sf Mapping} constructor can take any number of arguments."
+  X := '"{\sf Mapping(T,S,...)} denotes the class of objects which are mappings from a source domain ({\em S,...}) into a target domain {\em T}. The {\sf Mapping} constructor can take any number of arguments."
 
-Y := '" All but the first argument is regarded as part of a source tuple for the mapping. For example, {\sf Mapping(T,A,B)} denotes the class of mappings from {\em (A,B)} into {\em T}. "
+  Y := '" All but the first argument is regarded as part of a source tuple for the mapping. For example, {\sf Mapping(T,A,B)} denotes the class of mappings from {\em (A,B)} into {\em T}. "
 
-Z := '"{\sf Mapping} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
+  Z := '"{\sf Mapping} is a primitive domain of \Language{} which cannot be defined in the \Language{} language."
 
-MESSAGE := STRCONC(X,Y,Z)
+  MESSAGE := STRCONC(X,Y,Z)
 
-PUT('Mapping,'documentation, SUBST(MESSAGE,'MESSAGE,'(
+  PUT('Mapping,'documentation, SUBST(MESSAGE,'MESSAGE,'(
   (constructor (NIL MESSAGE))
   (_=  (((Boolean) % %)
     "\spad{u = v} tests if mapping objects are equal."))
    )))
 
-X := '"{\em Enumeration(a1, a2 ,..., aN)} creates an object which is exactly one of the N symbols {\em a1}, {\em a2}, ..., or {\em aN}, N > 0. "
+  X := '"{\em Enumeration(a1, a2 ,..., aN)} creates an object which is exactly one of the N symbols {\em a1}, {\em a2}, ..., or {\em aN}, N > 0. "
 
-Y := '" The {\em Enumeration} can constructor can take any number of symbols as arguments."
+  Y := '" The {\em Enumeration} can constructor can take any number of symbols as arguments."
 
-MESSAGE := STRCONC(X, Y)
+  MESSAGE := STRCONC(X, Y)
 
-PUT('Enumeration, 'documentation, SUBST(MESSAGE, 'MESSAGE, '(
-  (constructor (NIL MESSAGE))
+  PUT('Enumeration, 'documentation, SUBST(MESSAGE, 'MESSAGE, '(
+        (constructor (NIL MESSAGE))
   (_= (((Boolean) _% _%)
     "\spad{e = f} tests for equality of two enumerations \spad{e} and \spad{f}"))
   (_^_= (((Boolean) _% _%)

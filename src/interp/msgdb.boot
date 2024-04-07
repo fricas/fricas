@@ -896,7 +896,7 @@ splitListSayBrightly u ==
 -- Output to Character Streams
 
 sayBrightlyNT2(x, str) ==
-    NULL(X) => nil
+    NULL(x) => nil
     $sayBrightlyStream => sayBrightlyNT1(x, $sayBrightlyStream)
     sayBrightlyNT1(x, str)
 
