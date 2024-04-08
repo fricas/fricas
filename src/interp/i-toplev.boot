@@ -108,11 +108,11 @@ readSpadProfileIfThere() ==
   file := getEnv('"FRICAS_INITFILE")
   file = '"" => nil
   efile :=
-    make_input_filename(file) => file
+    fn := make_input_filename(file) => fn
     file := ['_.fricas, 'input]
-    make_input_filename(file) => file
+    fn := make_input_filename(file) => fn
     file := ['_.axiom, 'input]
-    make_input_filename(file) => file
+    fn := make_input_filename(file) => fn
     NIL
   efile =>
     $edit_file := efile
