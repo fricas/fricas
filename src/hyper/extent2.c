@@ -554,7 +554,7 @@ text_height1(TextNode * node, int Ender)
 {
     for (; node != NULL; node = node->next) {
         if (Ender == Endtokens) {
-            if (node->type > -Endtokens)
+            if (node->type >= Endtokens)
                 return cur_height;
         }
         else if (node->type == Ender)
