@@ -1086,6 +1086,7 @@ compColon([":",f,t],m,e) ==
       (if not member(t,getDomainsInScope e) then e:= addDomain(t,e); t)
     isDomainForm(t, e) or isCategoryForm(t) => t
     t is ["Mapping",m',:r] => t
+    STRINGP(t) => t
     unknownTypeError t
     t
   f is ["LISTOF",:l] =>
