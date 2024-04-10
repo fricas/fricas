@@ -65,7 +65,7 @@ interpsysInitialization(display_messages) ==
       $displayStartMsgs := display_messages
   initHist()
   initNewWorld()
-  interpOpen(display_messages)
+  open_interp_db(display_messages)
   createInitializers()
   if $displayStartMsgs then sayKeyedMsg("S2IZ0053",['"interpreter"])
   initializeTimedNames()
@@ -96,10 +96,11 @@ interpsys_restart() ==
 
   if $displayStartMsgs then spadStartUpMsgs()
   $currentLine := nil
-  interpOpen(true) -- open up the interpreter database
-  operationOpen(true) -- all of the operations known to the system
-  categoryOpen(true) -- answer hasCategory question
-  browseOpen(true)
+  -- open databases
+  open_interp_db(true)
+  open_operation_db(true)
+  open_category_db(true)
+  open_browse_db(true)
   makeConstructorsAutoLoad()
   createInitializers2()
 

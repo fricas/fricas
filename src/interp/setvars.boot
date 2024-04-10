@@ -377,7 +377,7 @@ setExposeAddGroup arg ==
     sayKeyedMsg("S2IZ0049R",[x,$interpreterFrameName])
     clearClams()
 
-setExposeAddConstr arg ==
+setExposeAddConstr2(arg, noquiet) ==
   (null arg) =>
     centerAndHighlight ('"The constructor Option",$LINELENGTH,
       specialChar 'hbar)
@@ -390,13 +390,18 @@ setExposeAddConstr arg ==
     null(get_database(x, 'CONSTRUCTORKIND)) =>
       sayKeyedMsg("S2IZ0049J",[x])
     member(x,$localExposureData.1) =>
-      sayKeyedMsg("S2IZ0049K",[x,$interpreterFrameName])
+        if noquiet then
+            sayKeyedMsg("S2IZ0049K", [x, $interpreterFrameName])
     -- if the constructor is explicitly hidden, then remove that
     if member(x,$localExposureData.2) then
       $localExposureData.2 := delete(x,$localExposureData.2)
     $localExposureData.1 := MSORT cons(x,$localExposureData.1)
     clearClams()
-    sayKeyedMsg("S2IZ0049P",[x,$interpreterFrameName])
+    if noquiet then
+        sayKeyedMsg("S2IZ0049P", [x, $interpreterFrameName])
+
+setExposeAddConstr(arg) ==
+    setExposeAddConstr2(arg, true)
 
 setExposeDrop arg ==
   (null arg) =>

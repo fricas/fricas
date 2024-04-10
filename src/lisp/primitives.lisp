@@ -566,7 +566,7 @@
 
 (defun MAKE_HASHTABLE (tst)
      (cond
-         ((MEMQ tst '(EQ EQUAL))
+         ((MEMQ tst '(EQ EQL EQUAL))
              (make-hash-table :test tst))
          (t (error "bad arg to MAKE_HASHTABLE")))
 )

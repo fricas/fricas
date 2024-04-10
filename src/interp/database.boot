@@ -438,8 +438,6 @@ formal2Pattern x ==
   SUBLIS(pairList($FormalMapVariableList,rest $PatternVariableList),x)
 
 updateDatabase(cname) ==
- -- for now in NRUNTIME do database update only if forced
-  not $forceDatabaseUpdate => nil
   clearClams()
   clearAllSlams []
   if constructor? cname then

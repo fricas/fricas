@@ -45,11 +45,6 @@ lisplibWrite(prop,val,filename) ==
   if $LISPLIB then
      rwrite(prop,val,filename)
 
-
-evalAndRwriteLispForm(key,form) ==
-  eval form
-  rwriteLispForm(key,form)
-
 rwriteLispForm(key,form) ==
   if $LISPLIB then
     rwrite( key,form,$libFile)
@@ -67,40 +62,25 @@ loadLib cname ==
   startTimingProcess 'load
   fullLibName := get_database(cname, 'OBJECT) or return nil
   systemdir? := isSystemDirectory(pathnameDirectory fullLibName)
-  update? := $forceDatabaseUpdate or not systemdir?
-  not update? =>
-     loadLibNoUpdate(cname, cname, fullLibName)
+  update? := not systemdir?
+  loadLibNoUpdate1(cname, fullLibName)
   kind := get_database(cname, 'CONSTRUCTORKIND)
-  if $printLoadMsgs then
-    sayKeyedMsg("S2IL0002", [fullLibName, kind, cname])
-  load_quietly(fullLibName)
-  clearConstructorCache cname
-  updateDatabase(cname)
-  installConstructor(cname)
-  u := get_database(cname, 'CONSTRUCTORMODEMAP)
-  updateCategoryTable(cname,kind)
-  -- in following, add property value false or NIL to possibly clear
-  -- old value
-  if null(rest(get_database(cname, 'CONSTRUCTORFORM))) then
-      MAKEPROP(cname,'NILADIC,'T)
-    else
-      REMPROP(cname,'NILADIC)
-  MAKEPROP(cname,'LOADED,fullLibName)
-  if $InteractiveMode then $CategoryFrame := [[nil]]
+  if update? then
+      updateCategoryTable(cname, kind)
   stopTimingProcess 'load
-  'T
 
-loadLibNoUpdate(cname, libName, fullLibName) ==
-  kind := get_database(cname, 'CONSTRUCTORKIND)
+loadLibNoUpdate1(cname, fullLibName) ==
   if $printLoadMsgs then
     sayKeyedMsg("S2IL0002", [fullLibName, kind, cname])
   load_quietly(fullLibName)
   clearConstructorCache cname
   installConstructor(cname)
   MAKEPROP(cname,'LOADED,fullLibName)
-  -- if $InteractiveMode then $CategoryFrame := [[nil]]
-  stopTimingProcess 'load
-  'T
+
+loadLibNoUpdate(cname, fullLibName) ==
+    startTimingProcess 'load
+    loadLibNoUpdate1(cname, fullLibName)
+    stopTimingProcess 'load
 
 loadIfNecessary u == loadLibIfNecessary(u,true)
 
@@ -155,9 +135,6 @@ loadFunctor u ==
 makeConstructorsAutoLoad() ==
   for cnam in allConstructors() repeat
     REMPROP(cnam,'LOADED)
-    if get_database(cnam, 'NILADIC)
-     then PUT(cnam,'NILADIC,'T)
-     else REMPROP(cnam,'NILADIC)
     systemDependentMkAutoload(cnam,cnam)
 
 systemDependentMkAutoload(fn,cnam) ==
@@ -170,21 +147,12 @@ systemDependentMkAutoload(fn,cnam) ==
          kind = 'category =>
               ASHARPMKAUTOLOADCATEGORY(file, cnam, asharpName, cosig)
          ASHARPMKAUTOLOADFUNCTOR(file, cnam, asharpName, cosig)
-    SETF(SYMBOL_-FUNCTION cnam,mkAutoLoad(fn, cnam))
+    spad_set_autoload(cnam)
 
-autoLoad(abb,cname) ==
+autoLoad(cname) ==
   if not GET(cname, 'LOADED) then
       FMAKUNBOUND cname
       loadLib cname
-  SYMBOL_-FUNCTION cname
-
-setAutoLoadProperty(name) ==
-  REMPROP(name,'LOADED)
-  SETF(SYMBOL_-FUNCTION name,mkAutoLoad(name, name))
-
-unloadOneConstructor(cnam,fn) ==
-    REMPROP(cnam,'LOADED)
-    SETF(SYMBOL_-FUNCTION cnam,mkAutoLoad(fn, cnam))
 
 --% Compilation
 
@@ -225,8 +193,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   compile_lib(make_full_namestring(make_filename0(libName, $spadLibFT)))
   FRESH_-LINE(get_algebra_stream())
   sayMSG fillerSpaces(72,'"-")
-  unloadOneConstructor(op,libName)
-  LOCALDATABASE(LIST(get_database(op, 'ABBREVIATION)), [], false)
+  merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)
   $newConlist := [op, :$newConlist]  ---------->  bound in function "compiler"
   if $lisplibKind = 'category
     then updateCategoryFrameForCategory op
@@ -256,8 +223,6 @@ finalizeLisplib libName ==
   lisplibWrite('"parents",removeZeroOne $lisplibParents,$libFile)
   lisplibWrite('"ancestors",removeZeroOne $lisplibAncestors,$libFile)
   lisplibWrite('"documentation",finalizeDocumentation(),$libFile)
-  if $lisplibForm and null rest $lisplibForm then
-    MAKEPROP(first $lisplibForm, 'NILADIC, 'T)
 
 lisplibDoRename(libName) ==
     replace_lib(make_filename0(libName, '"erlib"),

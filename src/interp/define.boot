@@ -923,13 +923,7 @@ compSubDomain1(domainForm,predicate,m,e) ==
       stackSemanticError(['"predicate: ",predicate,
         '" cannot be interpreted with #1: ",domainForm],nil)
   prefixPredicate:= lispize u.expr
-  $lisplibSuperDomain:=
-    [domainForm,predicate]
-  evalAndRwriteLispForm('evalOnLoad2,
-    ['SETQ,'$CategoryFrame,['put,op':= ['QUOTE,$op],'
-     (QUOTE SuperDomain),dF':= ['QUOTE,domainForm],['put,dF','(QUOTE SubDomain),[
-       'CONS,['QUOTE,[$op,:prefixPredicate]],['DELASC,op',['get,dF','
-         (QUOTE SubDomain),'$CategoryFrame]]],'$CategoryFrame]]])
+  $lisplibSuperDomain := [domainForm, predicate]
   [domainForm,m,e]
 
 compCapsuleInner(itemList,m,e) ==

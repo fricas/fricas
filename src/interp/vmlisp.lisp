@@ -264,10 +264,8 @@
                (GO A)))))
 ; 14.5 Updating
 
-(defun NREMOVE (list item &optional (count 1))
-  (if (integerp count)
-      (delete item list :count count :test #'equal)
-      (delete item list :test #'equal)))
+(defun NREMOVE (list item)
+    (delete item list :test #'equal))
 
 (defun EFFACE (item list) (delete item list :count 1 :test #'equal))
 
@@ -431,7 +429,7 @@
 
 
 #-AKCL
-(defun concat (a b &rest l)
+(defun CONCAT (a b &rest l)
    (let ((type (cond ((bit-vector-p a) 'bit-vector) (t 'string))))
       (cond ((eq type 'string)
              (setq a (string a) b (string b))
@@ -439,14 +437,14 @@
       (if l (apply #'concatenate type a b l)
         (concatenate type a b))) )
 #+AKCL
-(defun concat (a b &rest l)
+(defun CONCAT (a b &rest l)
   (if (bit-vector-p a)
       (if l (apply #'concatenate 'bit-vector a b l)
         (concatenate 'bit-vector a b))
     (if l (apply #'system:string-concatenate a b l)
       (system:string-concatenate a b))))
 
-(define-function 'strconc #'concat)
+(define-function 'STRCONC #'CONCAT)
 
 (defun |make_full_CVEC2|(sint char)
   (make-string sint :initial-element (if (integerp char)

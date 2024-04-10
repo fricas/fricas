@@ -210,7 +210,6 @@
 
 ;; These were originally in INIT LISP
 
-(SETQ |$forceDatabaseUpdate| NIL)  ;; see "load" function
 (DEFPARAMETER |$functorForm| NIL)
 
 (SETQ |$InitialCommandSynonymAlist| '(

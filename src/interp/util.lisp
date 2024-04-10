@@ -229,7 +229,7 @@ After this function is called the image is clean and can be saved.
     (|interpsysInitialization| display_messages)
     (setq *load-verbose* nil)
     ; the databases into core, then close the streams
-    (resethashtables display_messages)
+    (|reset_hash_tables| display_messages)
 )
 
 ;; the following are for conditional reading
@@ -341,13 +341,13 @@ After this function is called the image is clean and can be saved.
          (if do-restart #'boot::fricas-restart nil))
 )
 
-(defun |mkAutoLoad| (fn cname)
+(defun |mkAutoLoad| (cname)
    (function (lambda (&rest args)
                  #+:sbcl
                  (handler-bind ((style-warning #'muffle-warning))
-                     (|autoLoad| fn cname))
+                     (|autoLoad| cname))
                  #-:sbcl
-                 (|autoLoad| fn cname)
+                 (|autoLoad| cname)
                  (apply cname args))))
 
 (defun |eval|(x)

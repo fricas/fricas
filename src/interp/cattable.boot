@@ -34,8 +34,6 @@
 DEFVAR($has_category_hash, nil)
 DEFVAR($ancestors_hash, nil)
 
-compressHashTable(ht) == ht
-
 hasCat(domainOrCatName,catName) ==
     catName='Type  -- every domain is a Type
         or get_database([domainOrCatName, :catName], 'HASCATEGORY)
@@ -70,9 +68,7 @@ genCategoryTable() ==
     for [a,:b] in encodeCategoryAlist(id,entry) repeat
       HPUT($has_category_hash, [id, :a], b)
   simpTempCategoryTable()
-  compressHashTable $ancestors_hash
   simpCategoryTable()
-  compressHashTable $has_category_hash
 
 simpTempCategoryTable() ==
   for id in HKEYS $ancestors_hash repeat
@@ -368,6 +364,7 @@ categoryParts1(kind, conform, category, do_constr) == main where
       constructor? opOf attr =>
         $conslist := [[attr,:pred],:$conslist]
         nil
+      -- FIXME: Just signal user error
       BREAK()
     item is ['TYPE,op,type] =>
         BREAK()
@@ -398,8 +395,6 @@ updateCategoryTableForDomain(cname,category) ==
   [cname,:domainEntry]:= addDomainToTable(cname,category)
   for [a,:b] in encodeCategoryAlist(cname,domainEntry) repeat
     HPUT($has_category_hash, [cname, :a], b)
-  $doNotCompressHashTableIfTrue = true => $has_category_hash
-  compressHashTable $has_category_hash
 
 clearCategoryTable($cname) ==
   MAPHASH('clearCategoryTable1, $has_category_hash)

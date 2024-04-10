@@ -94,7 +94,6 @@ mkUserConstructorAbbreviation(c,a,type) ==
   clearClams()
   clearConstructorCache(c)
   installConstructor(c)
-  setAutoLoadProperty(c)
 
 abbQuery(x) ==
     abb := get_database(x, 'ABBREVIATION) =>

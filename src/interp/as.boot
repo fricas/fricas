@@ -99,7 +99,6 @@ asMakeAlist con ==
   if ATOM(form) then form:=[form]
   kind = 'function => asMakeAlistForFunction con
   abb := asyAbbreviation(con, #(IFCDR sig))
-  if null IFCDR form then PUT(opOf form, 'NILADIC, 'T)
   modemap := asySubstMapping LASSOC(con,$mmAlist)
   $constructorCategory :local := CADAR modemap
   parents := mySort HGET($parentsHash,con)
@@ -370,7 +369,6 @@ asytran fn ==
   sayBrightly ['"   Reading ",fn]
   u := READ(inStream)
   $niladics := mkNiladics u
-  for x in $niladics repeat PUT(x,'NILADIC,true)
   for d in u repeat
     ['Declare,name,:.] := d
     name = "%%" => 'skip       --skip over top-level properties
@@ -472,7 +470,7 @@ asytranForm1(form,levels,local?) ==
   if form = '_% then $hasPerCent := true
   IDENTP form =>
     form = "%" => "%"
-    GETL(form,'NILADIC) => [form]
+    get_database(form, 'NILADIC) => [form]
     form
   [asytranForm(x,levels,local?) for x in form]
 
@@ -839,7 +837,7 @@ asyTypeUnit x ==
     fn = 'Declare and r is [name,typ,:.] => asyTypeUnitDeclare(name,typ)
     x is '(_%) => '(_%)
     [fn,:asyTypeUnitList r]
-  GETL(x,'NILADIC) => [x]
+  get_database(x, 'NILADIC) => [x]
 --x = 'Type => '(Type)
   x = '_% => '_%
   x

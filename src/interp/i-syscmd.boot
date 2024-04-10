@@ -671,7 +671,7 @@ compileSpadLispCmd args ==
     if doLibrary then
         -- do we need to worry about where the compilation output went?
         if not beQuiet then sayKeyedMsg("S2IZ0090", [ pathnameName path ])
-        LOCALDATABASE([pathnameName(libname)], [], false)
+        merge_info_from_objects([pathnameName(libname)], [], false)
     else if not beQuiet then
         sayKeyedMsg("S2IZ0084", nil)
     terminateSystemCommand()
@@ -679,7 +679,7 @@ compileSpadLispCmd args ==
 
 withAsharpCmd args ==
     $options: local := nil
-    LOCALDATABASE(args, $options, false)
+    merge_info_from_objects(args, $options, false)
 
 --% )copyright -- display copyright notice
 
@@ -2080,7 +2080,7 @@ ScanOrPairVec(f, ob) ==
 library(args) ==
    $newConlist : local := []
    original_directory := GET_-CURRENT_-DIRECTORY()
-   LOCALDATABASE(args, $options, false)
+   merge_info_from_objects(args, $options, false)
    extendLocalLibdb($newConlist)
    CHDIR(original_directory)
    terminateSystemCommand()
