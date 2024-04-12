@@ -672,7 +672,7 @@ merge_info_from_asy(asy, object, only, make_database?, expose,
                           abbrev, CONS(object, asharp_name))
             PUT(abbrev, 'ABBREVIATIONFOR, key)
             add_operations(key, oldmaps)
-            cname := opOf(database_-constructorform(dbstruct))
+            cname := opOf(dbstruct.$constructorform_ind)
             if expose then setExposeAddConstr2([cname], noquiet)
             if not(make_database?) then
                 installConstructor(cname)
@@ -689,10 +689,10 @@ merge_info_from_asy(asy, object, only, make_database?, expose,
                 if $InteractiveMode then $CategoryFrame := $EmptyEnvironment
             if kind = 'category then
                 set_asharp_autoload_category(object, cname, asharp_name,
-                                         database_-cosig(dbstruct))
+                                             dbstruct.$cosig_ind)
             else
                 set_asharp_autoload_functor(object, cname, asharp_name,
-                                            database_-cosig(dbstruct))
+                                            dbstruct.$cosig_ind)
             if noquiet then
                 sayKeyedMsg('S2IU0001i, [cname, object])
 
