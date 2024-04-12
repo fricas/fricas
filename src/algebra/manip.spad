@@ -646,7 +646,6 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
     supexp    : (UP, F, F, Z) -> F
     ueval     : (F, Symbol, F -> F) -> F
     ueval2    : (F, Symbol, F -> F) -> F
-    powersimp : (P, List K) -> F
     t2t       : F -> F
     c2t       : F -> F
     c2s       : F -> F
@@ -761,36 +760,77 @@ TranscendentalManipulations(R, F) : Exports == Implementation where
       de : F := (((denom a) = 1) => 1; denom(a)::F ^ (-b))
       ne * de
 
+    TERM ==> Record(degree : NonNegativeInteger, f : F, base : F, expt : F)
+    powersimp : (List TERM) -> List TERM
+    powersimpAux : (List TERM, List F) -> List TERM
+
     termexp p ==
       lk := variables p
       empty? lk => p::F
-      exponent : F := 0
-      coef := (leadingCoefficient p)::P
-      lpow := select((z1 : K) : Boolean +-> is?(z1, POWER), lk)
+      l : List TERM := []
       for k in lk repeat
         d := degree(p, k)
+        args := argument k
         if is?(k, opexp) then
-          exponent := exponent + d * first argument k
-        else if not is?(k, POWER) then
-          -- Expand arguments to functions as well ... MCD 23/1/97
-          newK : F := kernel(operator k, [simplifyExp u for u in argument k])
-          coef := coef * monomial(1, retract(newK)@K, d)
-      coef::F * exp simplifyExp exponent * powersimp(p, lpow)
+          base := exp(1)
+          expt := simplifyExp(d * first args)
+          d := 1
+          f := exp expt
+        else if is?(k, POWER) then
+          base := simplifyExp first args
+          expt := simplifyExp(d * second args)
+          d := 1
+          f := base^expt
+        else
+          base := kernel(operator k, [simplifyExp u for u in args])
+          expt := 1::F
+          f := base
+        l := cons([d, f, base, expt], l)
+      coef := leadingCoefficient(p)::F
+      l := cons([1, coef, coef, 1::F], l)
+      l := powersimp l
+      -- powersimp might produce new power kernels, opening new simplification
+      -- opportunities, so run it in a loop until no new kernels occour.
+      repeat
+        lnew := powersimp l
+        # l = # lnew => break
+        l := lnew
+      res : F := 1
+      for item in lnew repeat
+        res := res * (item.f)^(item.degree)
+      res
 
     expandPower f ==
       l := select((z1 : K) : Boolean +-> is?(z1, POWER)$K, kernels f)$List(K)
       eval(f, l, [expandpow(k, expandPower) for k in l])
 
--- l is a list of pure powers appearing as kernels in p
-    powersimp(p, l) ==
-      empty? l => 1
-      k := first l                           -- k = a^b
-      a := first(arg := argument k)
-      exponent := degree(p, k) * second arg
-      lk := select((z1 : K) : Boolean +-> a = first argument z1, rest l)
-      for k0 in lk repeat
-          exponent := exponent + degree(p, k0) * second argument k0
-      (simplifyExp a ^ simplifyExp exponent) * powersimp(p, setDifference(rest l, lk))
+    powersimp(l : List TERM) : List TERM ==
+      -- lbase is the list of bases of pure powers in l, powersimpAux
+      -- will recurse on it, starting with the most complicated one,
+      -- because complex kernel can "absorb" simpler kernel, for example
+      -- (a^b)^c * (a^b) => (a^b)^(c+1)
+      lbase := removeDuplicates! [x.base for x in l | not one? x.expt]
+      lbase := sort!((a, b) +-> height a >= height b, lbase)
+      powersimpAux(l, lbase)
+
+    powersimpAux(l : List TERM, lbase : List F) : List TERM ==
+      empty? lbase => l
+      base := first lbase
+      expt : F := 0
+      lrest : List TERM := []
+      for item in l repeat
+        item.base = base =>
+          expt := expt + item.degree * item.expt
+        item.f = base =>
+          expt := expt + (item.degree)::F
+        -- the possibility that    (item.f)^(item.degree) = base ^ n
+        -- for a certain integer 'n' is not considered yet,
+        -- for example a^4 * (a^2)^b will not simplify to (a^2)^(b+2)
+        (item.f)^(item.degree) = base =>
+          expt := expt + 1::F
+        lrest := cons(item, lrest)
+      expt := simplifyExp expt
+      cons([1, base^expt, base, expt], powersimpAux(lrest, rest lbase))
 
     t2t x         == sin(x) / cos(x)
     c2t x         == cos(x) / sin(x)
