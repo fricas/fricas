@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "Gdraws0.h"
 #include "G.h"
@@ -61,6 +62,32 @@ filecopy(FILE * ifp, FILE * ofp)
     putc(c, ofp);
 }
 
+/*
+ * Gdraws_computeScale calculates a scale factor based on the
+ * dimensions of the picture and page size.
+ */
+
+float Gdraws_computeScale(Window vw, Window tw) {
+  XWindowAttributes vwInfo;
+  float pageWidth, pageHeight, scale;
+
+  XGetWindowAttributes(dsply, vw, &vwInfo);
+  pageWidth = 575.0;
+  pageHeight = 750.0;
+#if 0
+  pageWidth = (float) (DisplayWidth(dsply, scrn) / DisplayWidthMM(dsply, scrn));
+  pageWidth *= 160.0;
+  pageHeight = (float) (DisplayHeight(dsply, scrn) / DisplayHeightMM(dsply, scrn));
+  pageHeight *= 210.0;
+  fprintf(stderr, "%f, %f\n", pageWidth, pageHeight);
+#endif
+  if ((vwInfo.width > pageWidth) || (vwInfo.height > pageHeight)) {
+    scale = fminf(pageWidth / vwInfo.width, pageHeight / vwInfo.height);
+  } else {
+    scale = 1.0;
+  }
+  return scale;
+}
 
 /*
  * PSCreateFile generates the output file by using the order of defined
@@ -98,6 +125,16 @@ PSCreateFile(
     return (psError);
   }
   else {
+    fprintf(ofp, "%%!PS-Adobe-2.0\n");
+
+    /* Write a Bounding Box for psfig etc. */
+    XWindowAttributes vwInfo;
+    XGetWindowAttributes(dsply, vw, &vwInfo);
+    float scale = Gdraws_computeScale(vw, tw);
+    fprintf(fp, "%%%%BoundingBox: 0 0 %d %d\n",
+            (int) ceilf(scale * vwInfo.width),
+            (int) ceilf(scale * vwInfo.height));
+
     i = 1;
     while (i < psDrawNo) {  /* loops through each file/procedure */
       if (psData[i].flag) { /* if set, procedure/file is used */
@@ -189,46 +226,19 @@ Gdraws_setDimension(
 {
   FILE *fp;
   XWindowAttributes vwInfo, twInfo;
-  float pageWidth, pageHeight, width;
 
   fp = fopen(psData[scriptps].filename, "w");
 
   XGetWindowAttributes(dsply, titleWindow, &twInfo);
   XGetWindowAttributes(dsply, viewWindow, &vwInfo);
-  pageWidth = 575.0;
-  pageHeight = 750.0;
-
-#if 0
-  pageWidth = (float) (DisplayWidth(dsply, scrn) / DisplayWidthMM(dsply, scrn));
-  pageWidth *= 160.0;
-  pageHeight = (float) (DisplayHeight(dsply, scrn) / DisplayHeightMM(dsply, scrn));
-  pageHeight *= 210.0;
-  fprintf(stderr, "%f, %f\n", pageWidth, pageHeight);
-#endif
 
   fprintf(fp, "\n    gsave\t%% save graphics state for clipping path\n\n");
-  if ((vwInfo.height > pageWidth) || (vwInfo.height > pageHeight)) {
-    width = (float) vwInfo.width;
-    if (vwInfo.height > pageWidth) {
-      width = pageWidth / width;
-      fprintf(fp, "\t%f\t%f", width, width);
-    }
-    else {
-      if (vwInfo.height > pageHeight)
-        fprintf(fp, "\t%f\t%f", width, pageHeight / width);
-    }
-  }
-  else {
-    fprintf(fp, "\t%f\t%f", 1.0, 1.0);
-  }
-  fprintf(fp, "\tscale\n\n");
+
+  float scale = Gdraws_computeScale(viewWindow, titleWindow);
+  fprintf(fp, "\t%f\t%f\tscale\n\n", scale, scale);
 
   fprintf(fp, "\t%d\t%d\t%d\tsetDim\n", twInfo.height - vwInfo.height,
           vwInfo.height, vwInfo.width);
-
-  /* Write a Bounding Box for psfig etc. */
-
-  fprintf(fp, "%%%%BoundingBox: 0 0 %d %d\n", vwInfo.height, vwInfo.width);
 
   fprintf(fp, "\tmaxX maxY\t0 0\trectangle\tclip\t%% set clip path\n\n");
   return (fclose(fp));
