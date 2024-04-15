@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2023-06-17],
+AC_INIT([FriCAS], [2024-04-15],
         [fricas-devel@googlegroups.com],
         [fricas],
         [https://fricas.github.io])
@@ -452,6 +452,8 @@ case $fricas_lisp_flavor in
     sbcl)
        fricas_quiet_flags='--noinform --noprint --no-sysinit --no-userinit'
        fricas_eval_flags='--eval'
+       sbcl_memory_size=`echo "(princ (sb-ext:dynamic-space-size))" | $fricas_lisp $fricas_quiet_flags`
+       test $sbcl_memory_size -gt 3221225471 || fricas_quiet_flags="--dynamic-space-size 3072 $fricas_quiet_flags"
        ;;
     cmucl)
        fricas_quiet_flags='-batch -nositeinit -noinit'
