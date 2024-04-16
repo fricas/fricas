@@ -79,7 +79,13 @@ xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
     gsub(/\\bound{.*/, "")
     print "-- " $0
     print "-- \\end{spadsrc}"
+    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+        print "-- \\begin{xtcnooutput}"
+    }
     if (xtcname=="xtc" || xtcname=="noOutputXtc") {print $0}
+    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+        print "-- \\end{xtcnooutput}"
+    }
     next
 }
 
@@ -94,7 +100,17 @@ xtc==2 && /^\\begin{spadsrc}/ {
         getline
     }
     print "-- " $0
-    for (i = 1; i < n; i++) {print arr[i]}
+    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+        print "-- \\begin{xtcnooutput}"
+    }
+    if (xtcname=="xtc" || xtcname=="noOutputXtc") {
+        if (xtcname!="nullXtc") {
+            for (i = 1; i < n; i++) {print arr[i]}
+        }
+    }
+    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
+        print "-- \\end{xtcnooutput}"
+    }
     next
 }
 
