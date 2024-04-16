@@ -11,6 +11,9 @@ InputForm():
        ConvertibleTo(SExpression), ConvertibleTo(%)) with
     interpret : % -> Any
       ++ interpret(f) passes f to the interpreter.
+    interpret_in_new_env : % -> Any
+      ++ interpret_in_new_env(f) evaluates f in the interpreter
+      ++ using fresh environment which is discared after evaluation
     convert  : SExpression -> %
       ++ convert(s) makes s into an input form.
     binary   : (%, List %) -> %
@@ -85,9 +88,14 @@ InputForm():
 
     lambda(f,l) == conv([convert("+->"::Symbol),tuplify l,f]$List(%))
 
-    interpret x ==
-      v : None := interpret(x, NIL$Lisp)$Lisp
-      mkObj(unwrap(objVal(v)$Lisp)$Lisp, objMode(v)$Lisp)$Lisp
+    unwrap_obj(v : None) : Any ==
+        any(objMode(v)$Lisp, unwrap(objVal(v)$Lisp)$Lisp)
+
+    interpret_in_new_env(x : %) : Any ==
+        unwrap_obj(interpret_in_new_env(x)$Lisp)
+
+    interpret(x : %) : Any ==
+        unwrap_obj(interpret(x, []$Lisp)$Lisp)
 
     convert(x : DoubleFloat) : % ==
       zero? x => 0

@@ -263,6 +263,11 @@ interpretTopLevel(x, posnForm) ==
   c = 'tryAgain => interpretTopLevel(x, posnForm)
   c
 
+interpret_in_new_env(x) ==
+    $e : local := [[[]]]
+    $localExposureData : local := COPY_-SEQ($localExposureDataDefault)
+    interpret(x, nil)
+
 interpret(x, posnForm) ==
   --type analyzes and evaluates expression x, returns object
   $env:local := [[NIL]]
