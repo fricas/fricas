@@ -31,10 +31,6 @@
 
 )package "BOOT"
 
-htsv() ==
-  startHTPage(50)
-  htSetVars()
-
 htSetVars() ==
   $path := nil
   $lastTree := nil

@@ -92,6 +92,12 @@ htShowPageNoScroll() ==
   issueHTStandard line
   endHTPage()
 
+DEFCONSTANT($SendLine, 98)
+DEFCONSTANT($EndOfPage, 99)
+DEFCONSTANT($SpadError, 90)
+
+sendHTErrorSignal() ==
+    sockSendInt($MenuServer, $SpadError)
 
 issueHTStandard line == --called by htMakePageNoScroll and htMakeErrorPage
     sockSendInt($MenuServer, $SendLine)
@@ -104,7 +110,7 @@ htMakeErrorPage htPage ==
   $curPage := htPage
   htMakePage htpPageDescription htPage
   line := concatenateStringList(nreverse $htLineList)
-  issueHT line
+  issueHTStandard(line)
   endHTPage()
 
 --=======================================================================
