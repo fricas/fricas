@@ -376,6 +376,8 @@ comp_iterate(s, m, e) ==
         [["THROW", tag, "$NoValue"], m, e]
     userError('"iterate used outside a loop")
 
+$allow_undef := nil
+
 compSymbol(s,m,e) ==
   s="$NoValue" => ["$NoValue",$NoValueMode,e]
   isFluid s => [s,getmode(s,e) or return nil,e]
@@ -391,10 +393,14 @@ compSymbol(s,m,e) ==
     [s,v.mode,e] --s has been SETQd
   m':= getmode(s,e) =>
     if not member(s,$formalArgList) and not MEMQ(s,$FormalMapVariableList) and
-      not isFunction(s,e) and null ($compForModeIfTrue=true) then errorRef s
+      not isFunction(s,e) and null ($compForModeIfTrue=true) then
+          $allow_undef => nil
+          errorRef s
     [s,m',e] --s is a declared argument
   MEMQ(s,$FormalMapVariableList) => stackMessage ['"no mode found for",s]
-  not isFunction(s,e) => errorRef s
+  not isFunction(s,e) =>
+      $allow_undef => nil
+      errorRef s
 
 convertOrCroak(T,m) ==
   u:= convert(T,m) => u
@@ -497,13 +503,17 @@ compForm1(form is [op,:argl],m,e) ==
   (mmList:= getFormModemaps(form,e)) and (T:= compForm2(form,m,e,mmList)) => T
   compToApply(op,argl,m,e)
 
+comp_uniquely_no_warn(x, m, e) ==
+    $allow_undef : local := true
+    compUniquely(x, $EmptyMode, e)
+
 compForm2(form is [op,:argl],m,e,modemapList) ==
   sargl:= TAKE(# argl, $TriangleVariableList)
   aList:= [[sa,:a] for a in argl for sa in sargl]
   modemapList:= SUBLIS(aList,modemapList)
   Tl:=
-    [[.,.,e]:= T
-      for x in argl while (isSimple x and (T:= compUniquely(x,$EmptyMode,e)))]
+    [[., ., e] := T for x in argl while
+           (isSimple(x) and (T := comp_uniquely_no_warn(x, $EmptyMode, e)))]
   or/[x for x in Tl] =>
     partialModeList:= [(x => x.mode; nil) for x in Tl]
     compFormPartiallyBottomUp(form,m,e,modemapList,partialModeList) or
