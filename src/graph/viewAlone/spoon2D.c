@@ -82,7 +82,6 @@ spoonView2D(void)
     close(pipe0[1]);
     close(pipe1[0]);
     close(pipe1[1]);
-    printf("(spoon2D child) start the TwoDimensionalViewport process\n");
     fricas_sprintf_to_buf1(errorStr, "%s",
         "(viewAlone) execution of the TwoDimensionalViewport process");
     env_fricas = getenv("FRICAS");
@@ -150,7 +149,7 @@ spoonView2D(void)
     /*** get acknowledge from viewport */
 
     code = read(viewP.viewIn,&(viewP.viewWindow),sizeof(Window));
-    sleep(1);  /* wait a second...*/
+    fricas_sleep(50);
     exit(0);
 
   }   /* switch */

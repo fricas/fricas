@@ -294,7 +294,7 @@ forkView2D(void)
          /*** get acknowledge from viewport */
 
     code = readViewport(viewport,&(viewport->viewWindow),sizeof(Window));
-    sleep(1);  /* wait a second...*/
+    fricas_sleep(50);
     send_int(spadSock,viewport->PID);  /* acknowledge to spad */
 
   }   /* switch */

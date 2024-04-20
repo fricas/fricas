@@ -169,7 +169,7 @@ spoonView3D(int type)
 
     /*** get acknowledge from viewport */
     code = read(viewP.viewIn,&(viewP.viewWindow),sizeof(Window));
-    sleep(1);  /* wait a second...*/
+    fricas_sleep(50);
     exit(0);
 
   }   /* switch */
