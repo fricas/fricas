@@ -722,7 +722,7 @@ drawPolygons(int dFlag)
  * place in a thousand.   *
  * returns                *
  *    1 if true           *
- *    o otherwise         *
+ *    0 otherwise         *
  **************************/
 
 int

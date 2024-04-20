@@ -834,7 +834,7 @@ mkDetailedGrepPattern(kind,name,nargs,argOrSig) == main where
     a
 
 replaceGrepStar s ==
-  s = "" => s
+  s = '"" => s
   final := MAXINDEX s
   i := charPosition(char '_*,s,0)
   i > final => s
@@ -891,7 +891,7 @@ grepSource key ==
     MEMQ(key, '(_. a c d k o p x)) => 'libdb
     'comdb
 
-mkGrepTextfile s == STRCONC($spadroot,"/algebra/", STRINGIMAGE s, '".text")
+mkGrepTextfile s == STRCONC($spadroot, '"/algebra/", STRINGIMAGE s, '".text")
 
 mkGrepFile s ==  --called to generate a path name for a temporary grep file
   prefix := '"/tmp/"

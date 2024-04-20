@@ -71,7 +71,7 @@ DEFPARAMETER($EndServerSession, false)
 DEFPARAMETER($NeedToSignalSessionManager, false)
 
 serverReadLine(stream) ==
--- used in place of read_-line in a scratchpad server system.
+-- used in place of read_line in a scratchpad server system.
   FORCE_-OUTPUT()
   not $SpadServer =>
       read_line(stream)

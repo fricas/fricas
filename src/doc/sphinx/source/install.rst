@@ -758,7 +758,7 @@ Edit the file ``$J/languages.py`` and change appropriately.
 Make Jupytext available
 """""""""""""""""""""""
 
-In Ubuntu 22.04 you need not run the commands from this section.
+In Ubuntu 22.04 you do not need to run the commands from this section.
 It seemingly works without having to change something in the
 configuration file.  There were even reports that jFriCAS_ stopped
 working if ``c.NotebookApp.contents_manager_class`` was set.  However,
