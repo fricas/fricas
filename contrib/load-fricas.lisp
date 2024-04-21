@@ -1,7 +1,9 @@
 #|
 To use FriCAS as a Lisp library build FriCAS as usual and
 keep the build tree.  Change path below to point to build
-tree.  After that doing:
+tree.  Set FRICAS environment variable to point to target/platform
+subdirectory of the build tree (where 'platform' is name of
+your platform, for example 'x86_64-linux-gnu').  After that doing:
 
  (load "load-fricas.lisp")
 
@@ -64,6 +66,7 @@ FriCAS settings may interfere with other programs.
      (load "../lisp/fricas-package.lisp")
      (load "../lisp/fricas-config.lisp")
      (load "../lisp/fricas-lisp")
+     #+(or :sbcl :openmcl)(load "../lisp/num_gmpx.lisp")
      (load "../lisp/primitives.lisp")
      (load "makeint.lisp"))
 (in-package "BOOT")

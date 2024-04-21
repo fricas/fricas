@@ -1,7 +1,14 @@
 ;;; Lisp file which creates shared library containing FriCAS.
-;;; Works with ECL.
+;;; Works only with ECL.
+;;; 
+;;; To use this you need to correctly set FRICAS environment
+;;; variable.  During cration of the library FRICAS should point to
+;;; target/platform subdirectory of the build tree (where 'platform'
+;;; is name of your platform, for example 'x86_64-linux-gnu').
 ;;;
-;;; After creating the shared library you can load it:
+;;; After creating the shared library you can load it (this
+;;; time FRICAS should point to target/platform subdirectory
+;;; of place where you installed FriCAS files):
 #|
 (load "src/interp/fricas_lib.fas")
 (in-package "BOOT")
