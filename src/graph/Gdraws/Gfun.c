@@ -363,6 +363,47 @@ GDrawLine(
   return (s);
 }
 
+/*
+ * GColorLine draws a colored line, see GDrawLine
+ */
+
+int
+GColorLine(
+          GC gc,                /* graphics context */
+          Window wid,           /* window id */
+          int x0, int y0, int x1, int y1, int color, int dFlag)
+{
+  int s = 0;
+
+  switch (dFlag) {
+  case Xoption:
+    XSetForeground(dsply, gc, (unsigned long) color);
+    XDrawLine(dsply, wid, gc, x0, y0, x1, y1);
+    break;
+  case PSoption:
+    {
+      PSsetrgbcolor(color);
+      FILE *fp;
+
+      if ((fp = fopen(psData[scriptps].filename, "a")) == NULL) {
+        fprintf(stderr, "GColorLine cannot open %s\n",
+                psData[scriptps].filename);
+        return (psError);
+      }
+
+      psData[drawlineps].flag = yes;      /* sets procedure flag */
+      fprintf(fp, "\t%d\t%d\t%d\t%d\tpsColorLine\n",
+              x1, y1, x0, y0);
+      s = fclose(fp);
+    }
+    break;
+  default:
+    fprintf(stderr, "GColorLine request (%d) not implemented yet.\n",
+            dFlag);
+    return (psError);
+  }
+  return (s);
+}
 
 
 
@@ -677,6 +718,52 @@ GFillArc(
     break;
   default:
     fprintf(stderr, "GFillArc request (%d) not implemented yet\n",
+            dFlag);
+    return (psError);
+  }
+  return (s);
+}
+
+/*
+ * Draws and fills an arc with color; see GFillArc
+ */
+
+int
+GColorFillArc(
+         GC gc,                 /* graphics context */
+         Window wid,            /* window id */
+         int x, int y,
+         unsigned int wdth, unsigned int hght,
+         int ang1, int ang2, int color, int dFlag)
+{
+  int s = 0;
+
+  switch (dFlag) {
+  case Xoption:                   /* angle: times 64 already */
+    XSetForeground(dsply, gc, (unsigned long) color);
+    XFillArc(dsply, wid, gc, x, y, wdth, hght, ang1, ang2);
+    break;
+  case PSoption:
+    {
+      PSsetrgbcolor(color);
+
+      FILE *fp;
+
+      if ((fp = fopen(psData[scriptps].filename, "a")) == NULL) {
+        fprintf(stderr, "GColorFillArc cannot open %s\n",
+                psData[scriptps].filename);
+        return (psError);
+      }
+
+      psData[fillarcps].flag = yes;       /* sets procedure flag */
+      fprintf(fp, "\t%d %d\t%d %d\t%d %d\t%d %d\tpsColorFillArc\n",
+              x, y, hght, wdth, ang1 / 64, ang2 / 64,
+              x + wdth / 2, y + hght / 2);
+      s = fclose(fp);
+    }
+    break;
+  default:
+    fprintf(stderr, "GColorFillArc request (%d) not implemented yet\n",
             dFlag);
     return (psError);
   }

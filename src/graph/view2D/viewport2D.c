@@ -210,6 +210,7 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
   int               xAxis,yAxis,dummyInt, ascent, descent;
   int               unitWidth,boxX,boxY,boxW,boxH;
   XCharStruct       overall;
+  int               color;
 
   drawMore = yes;
   vw = viewport->viewWindow;
@@ -344,22 +345,15 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
           clipped = ptX > vwInfo.x && ptX < vwInfo.width &&
             ptY > 0 && ptY < vwInfo.height;
           if (graphStateArray[i].pointsOn) {
-            if (dFlag==Xoption) {
-              if (mono) {
-                GSetForeground(globalGC1,
-                               (float)monoColor((int)(aPoint->hue)),
-                               dFlag);
-              } else {
-                GSetForeground(globalGC1,
-                               (float)XSolidColor((int)(aPoint->hue),
-                                                  (int)(aPoint->shade)),
-                               dFlag);
-              }
+            if (mono) {
+              color = monoColor((int)(aPoint->hue));
+            } else {
+              color = XSolidColor((int)(aPoint->hue), (int)(aPoint->shade));
             }
             if (clipped && !eqNANQ(ptX) && !eqNANQ(ptY))
-              GFillArc(globalGC1,vw,ptX-halfSize,
-                       ptY-halfSize,aList->pointSize,aList->pointSize,
-                       0,360*64, dFlag);
+              GColorFillArc(globalGC1, vw, ptX-halfSize, ptY-halfSize,
+                            aList->pointSize, aList->pointSize,
+                            0, 360*64, color, dFlag);
 
           } /* if points on */
           for (ii=0, aPoint=aList->listOfPoints;
@@ -370,41 +364,28 @@ drawTheViewport(int dFlag) /* display flag: X, PS,... */
             clipped1 = ptX1 > vwInfo.x && ptX1 < vwInfo.width &&
               ptY1 > 0 && ptY1 < vwInfo.height;
             if (graphStateArray[i].connectOn) {
-              if (dFlag==Xoption) {
-                if (mono) {
-                  GSetForeground(globalGC1,
-                         (float)monoColor((int)(aList->lineColor-1)/5),
-                         dFlag);
+              if (mono) {
+                color = monoColor((int)(aList->lineColor-1)/5);
                 } else {
-                  GSetForeground(globalGC1,
-                         (float)XSolidColor((int)(aList->lineColor-1)/5,
-                                            (int)((aList->lineColor-1)%5)/2),
-                                 dFlag);
+                color = XSolidColor((int)(aList->lineColor-1)/5,
+                                    (int)((aList->lineColor-1)%5)/2);
                 }
-              } /* if X */
               if ((clipped || clipped1) && !eqNANQ(ptX) && !eqNANQ(ptY) &&
                   !eqNANQ(ptX1) && !eqNANQ(ptY1))
-                GDrawLine(globalGC1,vw,
-                          ptX,ptY,ptX1,ptY1,
-                          dFlag);
+                GColorLine(globalGC1, vw, ptX, ptY, ptX1, ptY1,
+                           color, dFlag);
             } /* if lines on */
             if (graphStateArray[i].pointsOn) {
-              if (dFlag==Xoption) {
                 if (mono) {
-                  GSetForeground(globalGC1,
-                                 (float)monoColor((int)(aPoint->hue)),
-                                 dFlag);
+                  color = monoColor((int)(aPoint->hue));
                 } else {
-                  GSetForeground(globalGC1,
-                                 (float)XSolidColor((int)(aPoint->hue),
-                                                    (int)(aPoint->shade)),
-                                 dFlag);
+                  color = XSolidColor((int)(aPoint->hue),
+                                      (int)(aPoint->shade));
                 }
-              }
               if (clipped1 && !eqNANQ(ptX1) && !eqNANQ(ptY1))
-                GFillArc(globalGC1,vw,ptX1-halfSize,
-                         ptY1-halfSize,aList->pointSize,aList->pointSize,
-                         0,360*64, dFlag);
+                GColorFillArc(globalGC1, vw, ptX1-halfSize, ptY1-halfSize,
+                              aList->pointSize, aList->pointSize,
+                              0, 360*64, color, dFlag);
             } /* if points on */
             ptX = ptX1;  ptY = ptY1;  clipped = clipped1;
           } /* for all points */
