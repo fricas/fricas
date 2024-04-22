@@ -184,15 +184,15 @@ writeViewport(int thingsToWrite)
           break;
 
         case Postscript:
-            /*** Create postscript output for viewport (in fricas2D.ps) ***/
+            /*** Create postscript output for viewport (in image.ps) ***/
          fricas_sprintf_to_buf2(PSfilename, "%s%s", viewDirName,
-                                "/fricas2D.ps");
+                                "/image.ps");
          if (PSInit(viewport->viewWindow,viewport->titleWindow) == psError)
            return (-1);
          drawViewport(PSoption);  /* write new script file in /tmp */
          if (PSCreateFile(viewBorderWidth,viewport->viewWindow,
                           viewport->titleWindow, viewport->title) == psError)
-           return(-1);          /* concat script & proc into fricas2D.ps */
+           return(-1);          /* concat script & proc into image.ps */
           break;
 
         } /* switch on ii */

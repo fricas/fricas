@@ -133,7 +133,7 @@ drawPhongSpan(triple pt,float N[3],int dFlag)
       put_cBuffer_axes(xpixel,'0');
       put_zBuffer(xpixel,zC);
       /* if mono (bw dsply) do black and white semi-random dithering */
-      if (mono || (dFlag == PSoption) || viewport->monoOn) {
+      if (mono || viewport->monoOn) {
         if (get_random() < 100.0*exp((double)-1.3*(pi_sq*(col-.2)*(col-.2))))  {
           put_cBuffer_indx(xpixel,black);
         } else {
@@ -567,8 +567,12 @@ scanLines(int dFlag)
     XFillRectangle(dsply,viewport->viewWindow,trashGC,0,0,
                    vwInfo.width,vwInfo.height);
   } else {
-    GSetForeground(GC9991,
+    if (mono || viewport->monoOn) {
+      GSetForeground(GC9991,
                    1.0-(float)((int)(psShadeMax-0.3*psShadeMax)-1)*psShadeMul,dFlag);
+    } else {
+      GSetForeground(GC9991, psWhite, dFlag);
+    }
     quadMesh[0].x = 0;  quadMesh[0].y = 0;
     quadMesh[1].x = graphWindowAttrib.width+2;
     quadMesh[1].y = 0;
@@ -649,8 +653,8 @@ scanLines(int dFlag)
             else pixColor = boxInline;
             if (i >=0 && i<vwInfo.width) XPutPixel(imageX,i,0,pixColor);
           } else {
-            GSetForeground(GC9991, psBlack, dFlag );
-            GDrawPoint(viewport->viewWindow, GC9991, i,scanline,dFlag);
+            GDrawPoint(viewport->viewWindow, GC9991,
+                       (int) psBlack, i, scanline, dFlag);
           }
         }
       }
@@ -662,8 +666,8 @@ scanLines(int dFlag)
             else pixColor = clipBoxInline;
             if (i >=0 && i<vwInfo.width) XPutPixel(imageX,i,0,pixColor);
           } else {
-            GSetForeground(GC9991, psBlack, dFlag );
-            GDrawPoint(viewport->viewWindow, GC9991, i,scanline,dFlag);
+            GDrawPoint(viewport->viewWindow, GC9991,
+                       (int) psBlack, i, scanline, dFlag);
           }
         }
       }
@@ -675,8 +679,8 @@ scanLines(int dFlag)
             else pixColor = monoColor(axesColor);
             if (i >=0 && i<vwInfo.width)  XPutPixel(imageX,i,0,pixColor);
           } else {
-            GSetForeground(GC9991,psBlack,dFlag);
-            GDrawPoint(viewport->viewWindow, GC9991, i,scanline,dFlag);
+            GDrawPoint(viewport->viewWindow, GC9991,
+                       (int) psBlack, i, scanline, dFlag);
           }
         } /* if buffer slot is an axes point */
         tempA = get_cBuffer_axes(i);
@@ -689,8 +693,8 @@ scanLines(int dFlag)
           if (i >=0 && i<vwInfo.width) XPutPixel(imageX,i,0,pixColor);
         }
         else {
-          GSetForeground(GC9991,(float)get_cBuffer_indx(i),dFlag);
-          GDrawPoint(viewport->viewWindow, GC9991, i,scanline,dFlag);
+          GDrawPoint(viewport->viewWindow, GC9991,
+                     get_cBuffer_indx(i), i, scanline, dFlag);
         }
       }
     } /* for each pixel in scanline */

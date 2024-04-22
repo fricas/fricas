@@ -425,6 +425,7 @@ int
 GDrawPoint(
            Window wid,          /* window id */
            GC gc,               /* graphics context */
+           int color,           /* color is represented as 0xRRGGBB */
            int x0, int y0, int dFlag)
 {
   int s = 0;
@@ -435,6 +436,8 @@ GDrawPoint(
     break;
   case PSoption:
     {
+      PSsetrgbcolor(color);
+
       FILE *fp;
 
       if ((fp = fopen(psData[scriptps].filename, "a")) == NULL) {
@@ -444,8 +447,8 @@ GDrawPoint(
       }
 
       psData[drawpointps].flag = yes;     /* sets procedure flag */
-      fprintf(fp, "\t%s\t%d\t%d\t%d\t%d\tpsDrawPoint\n",
-              PSfindGC(gc), x0, y0, x0 + 1, y0 + 1);
+      fprintf(fp, "\t%d\t%d\t%d\t%d\tpsDrawPoint\n",
+              x0, y0, x0 + 1, y0 + 1);
       s = fclose(fp);
     }
     break;
@@ -896,6 +899,30 @@ PSfindGC(GC gc)
   }
   else
     return (curGC->GCchar);
+}
+
+
+/* Set a RGB color in postscript, the color is represented as 0xRRGGBB */
+
+int
+PSsetrgbcolor(int color)
+{
+  int s = 0;
+  FILE *fp;
+
+  if ((fp = fopen(psData[scriptps].filename, "a")) == NULL) {
+    fprintf(stderr, "PSsetrgbcolor cannot open %s\n",
+            psData[scriptps].filename);
+    return (psError);
+  }
+
+  float r = ((color & 0xFF0000) >> 16) / 255.0;
+  float g = ((color & 0x00FF00) >> 8) / 255.0;
+  float b = (color & 0x0000FF) / 255.0;
+  fprintf(fp, "\t%f\t%f\t%f\tsetrgbcolor\n", r, g, b);
+
+  s = fclose(fp);
+  return (s);
 }
 
 /*
