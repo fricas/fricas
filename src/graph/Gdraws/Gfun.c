@@ -131,7 +131,7 @@ PSCreateFile(
     XWindowAttributes vwInfo;
     XGetWindowAttributes(dsply, vw, &vwInfo);
     float scale = Gdraws_computeScale(vw, tw);
-    fprintf(fp, "%%%%BoundingBox: 0 0 %d %d\n",
+    fprintf(ofp, "%%%%BoundingBox: 0 0 %d %d\n",
             (int) ceilf(scale * vwInfo.width),
             (int) ceilf(scale * vwInfo.height));
 
