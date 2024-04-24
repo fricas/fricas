@@ -68,10 +68,10 @@ filecopy(FILE * ifp, FILE * ofp)
  */
 
 float Gdraws_computeScale(Window vw, Window tw) {
-  XWindowAttributes vwInfo;
+  XWindowAttributes twInfo;
   float pageWidth, pageHeight, scale;
 
-  XGetWindowAttributes(dsply, vw, &vwInfo);
+  XGetWindowAttributes(dsply, tw, &twInfo);
   pageWidth = 575.0;
   pageHeight = 750.0;
 #if 0
@@ -81,8 +81,8 @@ float Gdraws_computeScale(Window vw, Window tw) {
   pageHeight *= 210.0;
   fprintf(stderr, "%f, %f\n", pageWidth, pageHeight);
 #endif
-  if ((vwInfo.width > pageWidth) || (vwInfo.height > pageHeight)) {
-    scale = fminf(pageWidth / vwInfo.width, pageHeight / vwInfo.height);
+  if ((twInfo.width > pageWidth) || (twInfo.height > pageHeight)) {
+    scale = fminf(pageWidth / twInfo.width, pageHeight / twInfo.height);
   } else {
     scale = 1.0;
   }
@@ -112,11 +112,7 @@ PSCreateFile(
   fprintf(fp, "\n    grestore\t%% restore graphics state\n\n");
   fclose(fp);
 
-#if 0
-  /* Make frame drawing optional. */
-
   Gdraws_drawFrame(bWidth, vw, tw, title);
-#endif
 
   /* put procedures and script together into OUTPUT.ps */
 
@@ -128,12 +124,12 @@ PSCreateFile(
     fprintf(ofp, "%%!PS-Adobe-2.0\n");
 
     /* Write a Bounding Box for psfig etc. */
-    XWindowAttributes vwInfo;
-    XGetWindowAttributes(dsply, vw, &vwInfo);
+    XWindowAttributes twInfo;
+    XGetWindowAttributes(dsply, tw, &twInfo);
     float scale = Gdraws_computeScale(vw, tw);
     fprintf(ofp, "%%%%BoundingBox: 0 0 %d %d\n",
-            (int) ceilf(scale * vwInfo.width),
-            (int) ceilf(scale * vwInfo.height));
+            (int) ceilf(scale * twInfo.width),
+            (int) ceilf(scale * twInfo.height));
 
     i = 1;
     while (i < psDrawNo) {  /* loops through each file/procedure */
@@ -195,16 +191,20 @@ Gdraws_drawFrame(
   fp = fopen(psData[scriptps].filename, "a");
 
   XGetWindowAttributes(dsply, viewWindow, &vwInfo);
+  XGetWindowAttributes(dsply, titleWindow, &twInfo);
+
+  /* Make frame drawing optional. */
+#if 0
 
   /* draw title window */
 
-  XGetWindowAttributes(dsply, titleWindow, &twInfo);
   fprintf(fp, "\t%s\t%d\t%d\t%d\t%d\ttitle\n", "frameDict",
           twInfo.height - vwInfo.height, twInfo.width, 0, vwInfo.height);
 
   /* draw viewport window */
 
   fprintf(fp, "\t%s\tdrawFrame\n", "frameDict");      /* using Gdraws_setDimension() */
+#endif
 
   /* draw title text */
 
