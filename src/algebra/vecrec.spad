@@ -26,22 +26,25 @@ VectorModularReconstructor() : Export == Implementation where
           ++ empty(n, p) initializes reconstructor with n slots
           ++ working modulo p
         add_slots : (List Integer, %) -> Void
-          ++ extend reconstructor adding zeros at specified
-          ++ positions.
+          ++ add_slots(li) extend reconstructor adding zeros at
+          ++ positions in li.
         chinese_update : (PA, Integer, %) -> Void
           ++ chinese_update(v, pt, r) informs r that
           ++ evaluation at pt gave vector of values v
         rational_reconstruction : % -> Union(RR, "failed")
-          ++ reconstruct vector of rational functions based on
-          ++ information stored in reconstructor.
+          ++ rational_reconstruction(r) reconstructs vector of rational
+          ++ functions based on information stored in reconstructor.
         rational_reconstruction : (PA, PA, Integer, Integer) _
                             -> Union(RatRec, "failed")
-          ++ reconstruct rational function
+          ++ rational_reconstruction(x, y, i, j) finds rational function
+          ++ \spad{r/s} such that \spad{r/s = y} modulo x,
+          ++ \spad{degre(r) <= i}, \spad{degree(s) \leq j}.
+          ++ Returs "failed" when such \spad{r/s} does not exist.
         repack_polys : (Integer, VI, SortedExponentVector, PPA) -> PDR
-          ++ convert polynomials represented as parallel vector
-          ++ of exponents in k variables and vector of univariate
-          ++ polynomials to parallel vector of exponents in k+1
-          ++ variables and coefficients
+          ++ repack_polys(k, offsets, exponents, coefficients) converts
+          ++ polynomials represented as parallel vector of exponents in
+          ++ k variables and vector of univariate polynomials to parallel
+          ++ vector of exponents in k+1 variables and coefficients.
         remove_denoms : (VI, PPA, PPA, Integer) -> PPA
           ++ remove_denoms(offsets, nums, denoms, p) removes common
           ++ denominator from vectors of rational functions.  Several
@@ -51,11 +54,13 @@ VectorModularReconstructor() : Export == Implementation where
           ++ are done modulo p.
         reconstruct : (Integer, VI, VI, SortedExponentVector, _
                        PPA, PPA, Integer) -> PDR
-          ++ reconstruct polynomials in n + 1 variables from
-          ++ result of rational reconstruction
+          ++ reconstruct(n, bo, po, ev, nums, dens, p) reconstructs
+          ++ polynomials in n + 1 variables from result of rational
+          ++ reconstruction.
         reconstruct : (%, Integer, VI, VI, SortedExponentVector) _
                        -> Union(PDR, "failed")
-          ++ reconstruct polynomials in n + 1 variables
+          ++ reconstruct(r, n, bo, po, ev) reconstructs polynomials in
+          ++ \spad{n + 1} variables using information stored in r.
 
     Implementation ==> add
         Rep := Record(prime : Integer, lpol : PA, curj : Integer, _
@@ -394,19 +399,28 @@ VectorIntegerReconstructor() : Export == Implementation where
    VI ==> Vector Integer
    Export ==> with
        empty : (Integer) -> %
-         ++ empty(n) produces reconstructor with n slots
+          ++ empty(n) produces reconstructor with n slots
        chinese_update : (U32Vector, Integer, %) -> Void
-         ++ chinese_update(v, p, r) informs r about evaluation at p
+          ++ chinese_update(v, p, r) informs r about evaluation at p
        hensel_update : (U32Vector, Integer, %) -> Void
-         ++ one step of Hensel lifting
+          ++ hensel_update(v, p, r) performs one step of Hensel lifting
        rational_reconstruction : (Integer, Integer, Integer, Integer) -> _
            Union(RatRec, "failed")
+          ++ rational_reconstruction(x, y, i, j) finds rational
+          ++ number \spad{r/s} such that \spad{r/s = x} modulo \spad{y},
+          ++ \spad{|r| <= i} and \spad{q <= j}.
+          ++ Returs "failed" when such \spad{r/s} does not exist.
        rational_reconstruction : % -> Union(RR, "failed")
+          ++ rational_reconstruction(r) reconstructs vector of rational
+          ++ functions based on information stored in reconstructor.
        remove_denoms : (VI, PAI, PAI) -> PAI
-         ++ remove common denominators in blocks
+          ++ remove_denoms(bo, n, d) remove common denominators in blocks.
+          ++ n is vector of numerators, d is vector of denomiantors,
+          ++ \spad{bo(i)} contains starting index of block number
+          ++ \spad{i}.
        reconstruct : (%, VI) -> Union(PAI, "failed")
-         ++ combines rational reconstruction with removal of
-         ++ common denominators in blocks.
+          ++ reconstruct(r, bo) combines rational reconstruction with removal
+          ++ of common denominators in blocks.
 
    Implementation ==> add
        Rep := Record(cmod : Integer, curj : Integer,  _

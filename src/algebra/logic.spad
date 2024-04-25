@@ -604,11 +604,11 @@ Preorder(S) : Category == Definition where
  NNI ==> NonNegativeInteger
  Definition ==> FiniteGraph(S) with
     le : (s : %, NNI, NNI) -> Boolean
-      ++ less than or equal
+      ++ le(s, x, y) checs if x is less than or equal to y.
       ++ I would have liked to have used: "<=" instead of "le"
       ++ "<=" compiles but when called gives:
       ++ Internal Error: The function <= with signature hashcode is
-      ++ missing from domain
+      ++ missing from domain.
 
 )abbrev category POSET Poset
 ++ Author: Martin Baker
@@ -642,11 +642,13 @@ Poset(S) : Category == Definition where
  Definition ==> Preorder(S) with
 
      finitePoset : (carrier : List S, struct1 : List List Boolean) -> %
-       ++ constructor where the set and structure is supplied.
+       ++ finitePoset(c, s) constructs a finite poset where the set and
+       ++ structure is supplied.
 
      finitePoset : (carrier : List S, pred : ((S, S) -> Boolean)) -> %
-       ++ constructor where the set and structure is supplied.
-       ++ The structure is supplied as a predicate function.
+       ++ finitePoset(c, p) constructs a finite poset where the set and
+       ++ structure is supplied.  The structure is supplied as a predicate
+       ++ function.
 
      getVert : (s : %) -> List S
        ++ getVert(s) returns a list of all the vertices (or objects)
@@ -659,10 +661,10 @@ Poset(S) : Category == Definition where
        ++ FiniteGraph(S)
 
      setVert : (s : %, v : List S) -> Void
-       ++ sets the list of all vertices (or objects)
+       ++ setVert(s, lv) sets the list of all vertices (or objects)
 
      setArr : (s : %, v : List List Boolean) -> Void
-       ++ sets the list of all arrows (or edges)
+       ++ setArr(s, la) sets the list of all arrows (or edges)
 
      addObject! : (s : %, n : S) -> %
        ++ addObject!(s, n) adds object with coordinates n to the
@@ -677,8 +679,8 @@ Poset(S) : Category == Definition where
        ++ poset is not changed instead a new one is constructed.
 
      opposite : (s : %) -> %
-       ++ constructs the opposite in the category theory sense of reversing
-       ++ all the arrows
+       ++ opposite(s) constructs the opposite in the category theory sense
+       ++ of reversing all the arrows.
 
      powerSetStructure : (objs : S) -> %
        ++ powerSetStructure(set) is a constructor for a Poset
@@ -689,31 +691,33 @@ Poset(S) : Category == Definition where
      implies : (s : %, NNI, NNI) -> Boolean
 
      meetIfCan : (s : %, a : NNI, b : NNI) -> Union(NNI, "failed")
-       ++ returns the meet of 'a' and 'b'
+       ++ meetIfCan(s, a, b) returns the meet of 'a' and 'b'
        ++ In this version of meet nodes are represented as index values.
        ++ In the general case, not every poset will have a meet in which case
        ++ "failed" will be returned as an error indication.
 
      joinIfCan : (s : %, a : NNI, b : NNI) -> Union(NNI, "failed")
-       ++ returns the join of 'a' and 'b'
+       ++ joinIfCan(s, a, b) returns the join of 'a' and 'b'
        ++ In this version of join nodes are represented as index values.
        ++ In the general case, not every poset will have a join in which case
        ++ "failed" will be returned as an error indication.
 
      meetIfCan : (s : %, elements : List(NNI)) -> Union(NNI, "failed")
-       ++ returns the meet of a subset of lattice given by list of elements
+       ++ meetIfCan returns the meet of a subset of lattice given by list
+       ++ of elements.
 
      joinIfCan : (s : %, elements : List(NNI)) -> Union(NNI, "failed")
-       ++ returns the join of a subset of lattice given by list of elements
+       ++ joinIfCan returns the join of a subset of lattice given by list
+       ++ of elements.
 
      glb : (s : %, a : List NNI) -> Union(NNI, "failed")
-       ++ 'greatest lower bound' or 'infimum'
+       ++ glb(s, l) 'greatest lower bound' or 'infimum' of l.
        ++ In this version of glb nodes are represented as index values.
        ++ Not every subset of a poset will have a glb in which case
        ++ "failed" will be returned as an error indication.
 
      lub : (s : %, a : List NNI) -> Union(NNI, "failed")
-       ++ 'least upper bound' or 'supremum'
+       ++ lub(s, l) is 'least upper bound' or 'supremum' of l.
        ++ In this version of lub nodes are represented as index values.
        ++ Not every subset of a poset will have a lub in which case
        ++ "failed" will be returned as an error indication.
@@ -727,10 +731,10 @@ Poset(S) : Category == Definition where
        ++ then y is in U
 
      indexToObject : (s : %, index : NNI) -> S
-       ++ returns the object at a given index
+       ++ indexToObject returns the object at a given index.
 
      objectToIndex : (s : %, obj : S) -> NNI
-       ++ returns the index of a given object
+       ++ objectToIndex returns the index of a given object.
 
      completeReflexivity : (s : %) -> %
        ++ Reflexivity requires forall(x): x<=x
@@ -747,12 +751,12 @@ Poset(S) : Category == Definition where
        ++ Returns true if this is the case for every element.
 
      isChain? : (s : %) -> Boolean
-       ++ is a subset of a partially ordered set such that any two elements
-       ++ in the subset are comparable
+       ++ isChain?(s) checks if s is a chain, that is any two elements
+       ++ in s are comparable.
 
      isAntiChain? : (s : %) -> Boolean
-       ++ is a subset of a partially ordered set such that any two elements
-       ++ in the subset are incomparable
+       ++ isAntiChain?(s) checks if s is an antichain, that is any two
+       ++ elements in s are incomparable.
 
      moebius : (s : %) -> IncidenceAlgebra(Integer, S)
        ++ moebius incidence matrix for this poset
