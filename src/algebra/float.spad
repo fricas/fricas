@@ -129,9 +129,14 @@ Float():
    outputGeneral : N -> Void
       ++ outputGeneral(n) sets the output mode to general notation
       ++ with n significant digits displayed.
-   outputSpacing : N -> Void
-      ++ outputSpacing(n) inserts a space after n (default 10) digits on output;
-      ++ outputSpacing(0) means no spaces are inserted.
+   outputSpacing : N -> N
+      ++ outputSpacing(n) inserts an underscore after n (default 10) digits
+      ++ on output; outputSpacing(0) means no underscores are inserted.
+      ++ Returns old setting.
+   get_output_mode : () -> Record(mode : String, prec : Integer)
+      ++ get_output_mode() returns current output mode and precision
+   set_output_mode : (String, Integer) -> Void
+      ++ set_output_mode(mode, precision) sets output mode and precision.
   == add
    BASE ==> 2
    BITS : PI := 68 -- 20 digits
@@ -882,7 +887,7 @@ Float():
         OUTPREC ~= -1 and (e := #s) > d =>
           t:S := if zero? SPACING then "E" else " E "
           concat ["0.", padFromLeft s, t, convert(e)@S]
-        padFromRight concat(s, ".0")
+        concat(padFromRight(s), ".0")
       -- base conversion to decimal rounded to the requested precision
       g := convert10(f, d); m := g.mantissa; e := g.exponent
       -- I'm assuming that length10 m = # s given n > 0
@@ -905,13 +910,30 @@ Float():
          s := if zero? SPACING then "E" else " E "
          concat ["0.", t, s, convert(e+n)@S]
 
-   outputSpacing n == SPACING := n
+   outputSpacing n ==
+       old_val := SPACING
+       SPACING := n
+       old_val
+
    outputFixed() == (OUTMODE := "fixed"; OUTPREC := -1)
    outputFixed n == (OUTMODE := "fixed"; OUTPREC := n::I)
    outputGeneral() == (OUTMODE := "general"; OUTPREC := -1)
    outputGeneral n == (OUTMODE := "general"; OUTPREC := n::I)
    outputFloating() == (OUTMODE := "floating"; OUTPREC := -1)
    outputFloating n == (OUTMODE := "floating"; OUTPREC := n::I)
+
+   get_output_mode() : Record(mode : String, prec : Integer) ==
+       [OUTMODE, OUTPREC]
+
+   valid_modes : List(String) := ["fixed", "general", "floating"]
+
+   set_output_mode(mode : String, prec : Integer) : Void ==
+       prec < 0 and prec ~= -1 =>
+           error "set_output_mode: invalid precision"
+       not(member?(mode, valid_modes)) =>
+           error "set_output_mode: invalid mode"
+       OUTMODE := mode
+       OUTPREC := prec
 
    convert(f) : S ==
       b : Integer :=
