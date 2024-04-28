@@ -414,19 +414,19 @@ newHasTest(domform,catOrAtt) ==
       domform = catOrAtt => 'T
       for [aCat, :cond] in ancestors_of_cat(domform, NIL)
            | aCat = catOrAtt  repeat
-         return evalCond cond where
-           evalCond x ==
+         return evalCond(cond, domform, catOrAtt) where
+           evalCond(x, domform, catOrAtt) ==
              ATOM x => x
              [pred,:l] := x
              pred = 'has =>
-                  l is [ w1,['ATTRIBUTE,w2]] =>
-                       BREAK()
-                       newHasTest(w1,w2)
                   l is [ w1, ['SIGNATURE, :w2]] =>
                       compiledLookup(first w2, CADR w2, eval mkEvalable w1)
-                  newHasTest(first  l ,first rest l)
-             pred = 'OR => or/[evalCond i for i in l]
-             pred = 'AND => and/[evalCond i for i in l]
+                  l is ['%, new_cat] =>
+                      new_cat = catOrAtt => nil
+                      newHasTest(domform, new_cat)
+                  newHasTest(first  l, first rest l)
+             pred = 'OR => or/[evalCond(i, domform, catOrAtt) for i in l]
+             pred = 'AND => and/[evalCond(i, domform, catOrAtt) for i in l]
              x
   null isAtom and constructor? op  =>
     domain := eval mkEvalable domform
@@ -450,7 +450,7 @@ sayLooking1(prefix,dom) ==
   dollar :=
     VECP dom => devaluate dom
     devaluateList dom
-  sayBrightly concat(prefix,form2String dollar)
+  sayBrightly concat(prefix, '" ", form2String dollar)
   $monitorNewWorld := true
 
 cc() == -- don't remove this function
