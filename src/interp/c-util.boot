@@ -118,8 +118,7 @@ consProplistOf(var,proplist,prop,val) ==
   [[prop,:val],:proplist]
 
 warnLiteral x ==
-  stackSemanticError(['%b,x,'%d,
-    '"is BOTH a variable and a literal"],nil)
+    stackWarning(['%b,x,'%d, '"is BOTH a variable and a literal"])
 
 intersectionEnvironment(e,e') ==
   ce:= makeCommonEnvironment(e,e')
@@ -190,7 +189,7 @@ intersectionContour(c, c', ce) ==
       pair:= assoc("mode",p) =>
         pair':= assoc("mode",p') =>
           m'' := unifiable(rest pair, rest pair', ce) => LIST ["mode", :m'']
-          stackSemanticError(['%b,$var,'%d,'"has two modes: "],nil)
+          stackWarning(['%b,$var,'%d,'"has two modes: "])
        --stackWarning ("mode for",'%b,$var,'%d,"introduced conditionally")
         LIST ["conditionalmode",:rest pair]
         --LIST pair
