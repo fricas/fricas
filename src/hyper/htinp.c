@@ -439,7 +439,11 @@ print_graph_paste(FILE *pfile,char *realcom,char *command,char *pagename,int com
     fprintf(pfile, "\\tab{5}\\spadgraph{");
     print_paste_line(pfile, command);
     fprintf(pfile, "}\n");
-    fprintf(pfile, "\\center{\\unixcommand{\\inputimage{\\env{FRICAS}/share/viewports/%s%d.VIEW/image}}{\\env{FRICAS}/bin/viewAlone\\space{1} \\env{FRICAS}/share/viewports/%s%d}}\n", pagename, example_number, pagename, example_number);
+    fprintf(pfile, "\\centerline{\\unixcommand{\\inputimage"
+                   "{\\env{FRICAS}/share/viewports/%s%d.VIEW/image}}"
+                   "{\\env{FRICAS}/bin/viewAlone\\space{1} "
+                   "\\env{FRICAS}/share/viewports/%s%d}}\n",
+            pagename, example_number, pagename, example_number);
     get_graph_output(realcom, pagename, com_type);
     fprintf(pfile, "\\end{paste}\\end{patch}\n\n");
 

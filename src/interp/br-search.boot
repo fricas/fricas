@@ -758,7 +758,7 @@ detailedSearch(filter) ==
 --           (bcStrings (28 "*" docfilter EM)))
 --          doc)
                 )
-    (text . "\vspace{1}\newline\center{ ")
+    (text . "\vspace{1}\newline\centerline{ ")
     (bcLinks ("\box{Search}" "" generalSearchDo NIL))
     (text . "}"))
   htShowPage()
