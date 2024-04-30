@@ -36,6 +36,12 @@
 -- TRACE BOOT.  The list of system commands is $SYSCOMMANDS which is
 -- initialized in SETQ LISP.
 
+$newConlist := []
+$edit_file := nil
+$currentLine := '""
+$HiFiAccess := true
+$reportUndo := false
+
 --% Utility Variable Initializations
 
 DEFPARAMETER($compileRecurrence, true)
@@ -224,11 +230,11 @@ listConstructorAbbreviations() ==
 cd(args) ==
     dname :=
         null(args) =>
-            TRIM_-DIRECTORY_-NAME(NAMESTRING(USER_-HOMEDIR_-PATHNAME()))
+            trim_directory_name(NAMESTRING(USER_-HOMEDIR_-PATHNAME()))
         first(args)
     if SYMBOLP(dname) then dname := SYMBOL_-NAME(dname)
     CHDIR(dname)
-    sayKeyedMsg("S2IZ0070", [GET_-CURRENT_-DIRECTORY()])
+    sayKeyedMsg("S2IZ0070", [get_current_directory()])
 
 --% )clear
 
@@ -534,7 +540,7 @@ compileAsharpArchiveCmd args ==
     -- the name is fully qualified.
 
     path := first(args)
-    FILE_-KIND(path) ~= 1 =>
+    file_kind(path) ~= 1 =>
           throwKeyedMsg("S2IL0003", [path])
 
     -- here is the plan:
@@ -547,7 +553,7 @@ compileAsharpArchiveCmd args ==
     -- First try to make the directory in the current directory
 
     dir  := fnameMake('".", pathnameName path, '"axldir")
-    isDir := FILE_-KIND namestring dir
+    isDir := file_kind(namestring(dir))
     isDir = 0 =>
         throwKeyedMsg("S2IL0027",[namestring dir, path])
 
@@ -555,7 +561,7 @@ compileAsharpArchiveCmd args ==
         rc := makedir namestring dir
         rc ~= 0 => throwKeyedMsg("S2IL0027", [namestring dir, path])
 
-    curDir := GET_-CURRENT_-DIRECTORY()
+    curDir := get_current_directory()
 
     -- cd to that directory and try to unarchive the .al file
 
@@ -2079,7 +2085,7 @@ ScanOrPairVec(f, ob) ==
 
 library(args) ==
    $newConlist : local := []
-   original_directory := GET_-CURRENT_-DIRECTORY()
+   original_directory := get_current_directory()
    merge_info_from_objects(args, $options, false)
    extendLocalLibdb($newConlist)
    CHDIR(original_directory)
@@ -2185,15 +2191,14 @@ readSpad2Cmd l ==
 do_read(ll, quiet, pile_mode) ==
     $nopiles : local := pile_mode
     $edit_file := ll
-    read_or_compile(quiet, false)
+    read_or_compile(quiet, ll)
     terminateSystemCommand()
     spadPrompt()
 
 basename(x) == NAMESTRING(PATHNAME_-NAME(x))
 
-read_or_compile(quiet, lib) ==
-    $LISPLIB : local := lib
-    input_file := make_input_filename($edit_file)
+read_or_compile(quiet, i_name) ==
+    input_file := make_input_filename(i_name)
     type := PATHNAME_-TYPE(input_file)
     type = '"boot" =>
         lfile := CONCAT(basename(input_file), '".clisp")
@@ -2201,10 +2206,9 @@ read_or_compile(quiet, lib) ==
         LOAD(COMPILE_-FILE(lfile))
     type = '"lisp" =>
         ffile := CONCAT(basename(input_file), ".", $lisp_bin_filetype)
-        LOAD(FRICAS_COMPILE_FASL(input_file, ffile))
+        LOAD(fricas_compile_fasl(input_file, ffile))
     type = '"bbin" => LOAD(input_file)
     type = '"input" => ncINTERPFILE(input_file, not(quiet))
-    spadCompile(input_file)
 
 --% )show
 

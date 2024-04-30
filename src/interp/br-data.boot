@@ -380,7 +380,7 @@ getDefaultPackageClients con ==  --called by mkUsersHashTable
   catname := INTERN SUBSTRING(s := PNAME con,0,MAXINDEX s)
   for [catAncestor,:.] in childrenOf([catname]) repeat
     pakname := INTERN STRCONC(PNAME catAncestor,'"&")
-    if getCDTEntry(pakname,true) then acc := [pakname,:acc]
+    if get_database(pakname, 'ABBREVIATION) then acc := [pakname,:acc]
     acc := union([CAAR x for x in domainsOf([catAncestor],nil)],acc)
   listSort(function GLESSEQP,acc)
 
@@ -712,7 +712,8 @@ $defaultPackageNamesHT := buildDefaultPackageNamesHT()
 --=======================================================================
 --            Code for Private Libdbs
 --=======================================================================
--- $createLocalLibDb := false
+$createLocalLibDb := false
+$newConstructorList := []
 
 extendLocalLibdb conlist ==   --  called by astran
   not $createLocalLibDb => nil

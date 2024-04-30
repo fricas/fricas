@@ -213,25 +213,6 @@ stringize s ==
   STRINGP s => s
   PRINC_-TO_-STRING s
 
-
-htQuote s ==
--- wrap quotes around a piece of hyperTeX
-  iht '"_""
-  iht s
-  iht '"_""
-
-htProcessToggleButtons buttons ==
-  iht '"\newline\indent{5}\beginitems "
-  for [message, info, defaultValue, buttonName] in buttons repeat
-    if NULL LASSOC(buttonName, htpInputAreaAlist $curPage) then
-      setUpDefault(buttonName, ['button, defaultValue])
-    iht ['"\item{\em\inputbox[", htpLabelDefault($curPage, buttonName), '"]{",
-         buttonName, '"}{\htbmfile{pick}}{\htbmfile{unpick}}\space{}"]
-    bcIssueHt message
-    iht '"\space{}}"
-    bcIssueHt info
-  iht '"\enditems\indent{0} "
-
 htProcessBcButtons buttons ==
   for [defaultValue, buttonName] in buttons repeat
     if NULL LASSOC(buttonName, htpInputAreaAlist $curPage) then
@@ -368,20 +349,6 @@ pvarCondList1(pvarList, activeConds, condList) ==
 pvarsOfPattern pattern ==
   NULL LISTP pattern => nil
   [pvar for pvar in rest pattern | pvar in $PatternVariableList]
-
-htMakeTemplates(templateList, numLabels) ==
-  templateList := [templateParts template for template in templateList]
-  [[substLabel(i, template) for template in templateList]
-    for i in 1..numLabels] where substLabel(i, template) ==
-      PAIRP template =>
-        INTERN CONCAT(first template, PRINC_-TO_-STRING i, rest template)
-      template
-
-templateParts template ==
-  NULL STRINGP template => template
-  i := SEARCH('"%l", template)
-  null i => template
-  [SUBSEQ(template, 0, i), : SUBSEQ(template, i+2)]
 
 htMakeDoneButton(message, func) ==
   bcHt '"\newline\vspace{1}\centerline{"

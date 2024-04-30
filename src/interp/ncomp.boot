@@ -249,7 +249,6 @@ boo_comp1(x) ==
     $topOp : local := nil
     $semanticErrorStack : local := []
     $warningStack : local := []
-    $exitMode : local := $EmptyMode
     $exitModeStack : local := []
     $returnMode : local := $EmptyMode
     $leaveLevelStack : local := []
@@ -333,7 +332,6 @@ S_process(x) ==
     $topOp : local := nil
     $semanticErrorStack : local := nil
     $warningStack : local := nil
-    $exitMode : local := $EmptyMode
     $exitModeStack : local := []
     $returnMode : local := $EmptyMode
     $leaveLevelStack : local := []
@@ -349,7 +347,6 @@ S_process(x) ==
     $previousTime : local := get_run_time()
     $s : local := nil
     $x : local := nil
-    $m : local := nil
     null(x) => nil
     $SaveParseOnly =>
         x := walkForm(x)

@@ -45,11 +45,6 @@ page() == $curPage
 htSay(x) ==
     bcHt(x)
 
-htSayCold x ==
-  htSay '"\lispLink{}{"
-  htSay x
-  htSay '"}"
-
 htSayStandard(x) ==  --do AT MOST for $standard
     bcHt(x)
 
@@ -145,7 +140,6 @@ htMakePage1 itemList ==
     itemType = 'inputStrings      => htInputStrings items
     itemType = 'domainConditions  => htProcessDomainConditions items
     itemType = 'bcStrings         => htProcessBcStrings items
-    itemType = 'toggleButtons     => htProcessToggleButtons items
     itemType = 'bcButtons         => htProcessBcButtons items
     itemType = 'doneButton        => htProcessDoneButton items
     itemType = 'doitButton        => htProcessDoitButton items
@@ -877,7 +871,3 @@ screenLocalLine(line, conlist) ==
     dbName line
   MEMQ(con, conlist)
 
---------------> NEW DEFINITION (see br-data.boot)
-purgeLocalLibdb() ==   --called by the user through a clear command?
-  $newConstructorList := nil
-  deleteFile '"libdb.text"

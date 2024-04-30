@@ -55,8 +55,8 @@
     (let ((stream nil)
           (indextable nil)
           (fullname (|make_full_namestring| file)))
-        (case (file-kind fullname)
-            (-1 (makedir fullname))
+        (case (|file_kind| fullname)
+            (-1 (|makedir| fullname))
             (0 (error (format nil "~s is an existing file, not a library"
                               fullname)))
             (1 nil)
@@ -183,7 +183,7 @@
      entry))
 
 
-(defun rshut (rstream)
+(defun RSHUT (rstream)
   (if (eq (libstream-mode rstream) 'output)
       (|write_indextable| (libstream-indextable rstream)
                           (libstream-indexstream rstream)))
@@ -260,13 +260,13 @@
 (defun |make_full_namestring| (filearg)
   (namestring (merge-pathnames (|make_filename| filearg))))
 
-(defun |get_directory_list| (ft &aux (cd (get-current-directory)))
+(defun |get_directory_list| (ft &aux (cd (|get_current_directory|)))
   (cond ((member ft '("NRLIB" "DAASE") :test #'string=)
            (if (eq |$UserLevel| '|development|)
-               (cons cd $library-directory-list)
-               $library-directory-list))
+               (cons cd |$library_directory_list|)
+               |$library_directory_list|))
         (t (adjoin cd
-              (adjoin (namestring (user-homedir-pathname)) $directory-list
+              (adjoin (namestring (user-homedir-pathname)) |$directory_list|
                       :test #'string=)
               :test #'string=))))
 

@@ -36,6 +36,13 @@
 -- This code supports the )trace system command and allows the
 -- tracing of LISP, BOOT and SPAD functions and interpreter maps.
 
+$fromSpadTrace := false
+$mapSubNameAlist := []
+$mathTrace := false
+$mathTraceList := []
+$tracedSpadModemap := nil
+$traceletFunctions := []
+
 DEFPARAMETER($traceNoisely, NIL)  -- give trace and untrace messages
 
 DEFVAR($traceDomains, true)

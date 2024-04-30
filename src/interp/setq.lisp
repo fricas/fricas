@@ -33,14 +33,6 @@
 
 (setq |$printTimeIfTrue| nil)
 
-(setq |nullstream| '|nullstream|)
-(setq |nonnullstream| '|nonnullstream|)
-(setq *print-escape* nil) ;; so stringimage doesn't escape idents?
-
-;;; FIXME: do we need this?
-#+(and :GCL :IEEE-FLOATING-POINT)
-  (setq system:*print-nans* T)
-
 ;;; In case 'setvart.boot' does not work...
 (setq |$algebraOutputStream| (|mkOutputConsoleStream|))
 
@@ -49,56 +41,30 @@
 
 (setq |$localVars| ())  ;checked by isType
 
-;; For the browser, used for building local databases when a user compiles
-;; their own code.
-(SETQ |$newConstructorList| nil)
-(SETQ |$newConlist| nil)
-(SETQ |$createLocalLibDb| nil)
-
 
 ;; These were originally in SPAD LISP
 
-(setq |$interpOnly| nil)
-(SETQ |$testingSystem| NIL)
-(SETQ |$permitWhere| NIL)
-(DEFPARAMETER |$bootStrapMode| NIL) ;; if true skip functor bodies
-(SETQ |$bootstrapDomains| NIL)
-(SETQ |$compileDontDefineFunctions| 'T)
-(SETQ |$devaluateList| NIL)
-(SETQ |$doNotCompressHashTableIfTrue| T)
 (SETQ |$mutableDomains| NIL)     ; checked in DEFINE BOOT
 (SETQ |$maxSignatureLineNumber| 0)
 (SETQ |$functionLocations| NIL)
-(SETQ |$functorLocalParameters| NIL) ; used in compSymbol
-(SETQ |$insideCategoryPackageIfTrue| NIL)
-(SETQ |$insideCompileBodyIfTrue| NIL)
 (SETQ |$globalExposureGroupAlist| NIL)
 (SETQ |$localExposureDataDefault|
   (VECTOR (LIST '|basic| '|categories|) NIL NIL))
 (SETQ |$localExposureData|
   (VECTOR (LIST '|basic| '|categories|) NIL NIL))
 (setq |$ReadingFile| NIL)
+;; Used by Spad stream machinery
 (setq |$NonNullStream| "NonNullStream")
 (setq |$NullStream| "NullStream")
 (setq |$UninitializedStream| "UninitializedStream")
-(setq |$domPvar| nil)
-(defvar $dalymode nil "if true then leading paren implies lisp cmd")
+
 (setq |$Newline| #\Newline)
 
 
 (SETQ $SPAD_ERRORS (VECTOR 0 0 0))
-(SETQ |$edit_file| NIL)
 (DEFPARAMETER |$InteractiveMode| T)
 
 (SETQ |$ruleSetsInitialized| NIL)
-
-(SETQ |$returnNowhereFromGoGet| NIL)
-
-(SETQ |$insideCanCoerceFrom| NIL)
-
-(SETQ |$useCoerceOrCroak| T)
-
-(SETQ |$abbreviateJoin| NIL)
 
 (SETQ |$InterpreterMacroAlist|
       '((|%i| . (|complex| 0 1))
@@ -110,11 +76,13 @@
         (|%minusInfinity| . (|minusInfinity|))))
 
 ;; Common lisp control variables
-;;(setq *load-verbose* nil)
 (setq *print-array* nil)
 (setq *print-pretty* t)
 (setq *print-circle* nil)
-
+(setq *print-escape* nil) ;; so stringimage doesn't escape idents
+;;; FIXME: do we need this?
+#+(and :GCL :IEEE-FLOATING-POINT)
+  (setq system:*print-nans* T)
 
 (SETQ |$systemCommands| '(
 ;;  COMMAND              USER LEVEL   - )set userlevel
@@ -195,22 +163,7 @@
     |with|
     ))
 
-;; following 2 variables are referenced by PREPARSE1
-
-(defvar |$byConstructors| () "list of constructors to be compiled")
-(defvar |$constructorsSeen| () "list of constructors found")
-
-;; These are for the output routines in OUT BOOT
-
-(SETQ $LINELENGTH 77)
-(DEFPARAMETER $MARGIN 3)
-(DEFCONST BLANK " ")
-(DEFCONST UNDERBAR "_")
-(SETQ |$fortranArrayStartingIndex| 0)
-
 ;; These were originally in INIT LISP
-
-(DEFPARAMETER |$functorForm| NIL)
 
 (SETQ |$InitialCommandSynonymAlist| '(
        (|?|          . "what commands")
@@ -245,7 +198,6 @@
 
 (DEFPARAMETER |$ConstructorCache| (MAKE_HASHTABLE 'EQ))
 (SETQ |$instantRecord| (MAKE_HASHTABLE 'EQ))
-(SETQ |$immediateDataSymbol| '|--immediateData--|)
 
 (SETQ |$useIntegerSubdomain| 'T)
 
@@ -286,7 +238,7 @@
 (SETQ |$Primitives| '(|Union| |Mapping| |Record| |Enumeration|))
 
 (SETQ |$DomainsWithoutLisplibs| '(
-  CAPSULE |Union| |Record| |SubDomain| |Mapping| |Enumeration| |Domain| |Mode|))
+  CAPSULE |Union| |Record| |SubDomain| |Mapping| |Enumeration| |Mode|))
 
 (SETQ |$letAssoc| NIL)
         ;" used for trace of assignments in SPAD code -- see macro LETT"
@@ -431,9 +383,6 @@
 (SETQ |$NRTbase| 0)
 (SETQ |$NRTdeltaLength| 0)
 (SETQ |$NRTmonitorIfTrue| NIL)
-
-(SETQ |$useConvertForCoercions| NIL)
-
 
 
 (setq credits '(

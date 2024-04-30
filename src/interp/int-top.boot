@@ -190,6 +190,8 @@ setCurrentLine s ==
      RPLACD(LASTNODE(v), u)
      v
 
+$DALYMODE := false
+
 intloopReadConsole(b, n)==
     repeat
         ioHook("startReadLine")

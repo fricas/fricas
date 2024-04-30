@@ -59,6 +59,7 @@ DEFPARAMETER($useParserSrcPos, NIL)
 DEFPARAMETER($transferParserSrcPos, NIL)
 
 DEFCONST($failure, GENSYM())
+DEFCONSTANT($immediateDataSymbol, "--immediateData--")
 
 --  Making Trees
 
@@ -551,10 +552,6 @@ getModeSetUseSubdomain x ==
 
 --% Environment Utilities
 
--- getValueFromEnvironment(x,mode) ==
---   $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$env)) => v
---   $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$e))   => v
---   throwKeyedMsg("S2IE0001",[x])
 getValueFromEnvironment(x,mode) ==
   $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$env)) => v
   $failure ~= (v := getValueFromSpecificEnvironment(x,mode,$e))   => v

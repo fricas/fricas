@@ -39,6 +39,8 @@
 
 --% Top Level Interpreter Code
 
+$interpOnly := false
+
 -- When $QuiteCommand is true Spad will not produce any output from
 --  a top level command
 DEFPARAMETER($QuietCommand, NIL)
@@ -54,6 +56,79 @@ intUnsetQuiet() ==
   $QuietCommand_tmp := nil
 
 --% Starting the interpreter from LISP
+
+-- The relative directory list specifies a search path for files
+-- for the current directory structure.
+
+$relative_directory_list := '("share/msgs/" "share/spadhelp/")
+-- The relative directory list specifies how to find the algebra
+-- directory from the current {\bf FRICAS} shell variable.
+$relative_library_directory_list := '("algebra/")
+
+-- This is the system-wide list of directories to search.
+-- It is set up in the {\bf reroot} function.
+$directory_list := []
+
+-- This is the system-wide search path for library files.
+-- It is set up in the {\bf reroot} function.
+$library_directory_list := []
+
+)if false
+The reroot function is used to reset the important variables used by
+the system. In particular, these variables are sensitive to the
+{\bf FRICAS} shell variable. That variable is renamed internally to
+be {\bf |$spadroot|}. The {\bf reroot} function will change the
+system to use a new root directory and will have the same effect
+as changing the {\bf FRICAS} shell variable and rerunning the system
+from scratch.
+)endif
+
+$spadroot := '""
+
+-- Prefix a filename with the {\bf |$spadroot|} variable.
+make_absolute_filename(name) == STRCONC($spadroot, '"/", name)
+
+reroot(dir) ==
+    $spadroot := dir
+    $directory_list := MAPCAR(function make_absolute_filename,
+                              $relative_directory_list)
+    $library_directory_list := MAPCAR(function make_absolute_filename,
+                                      $relative_library_directory_list)
+    $defaultMsgDatabaseName :=
+        make_absolute_filename('"share/msgs/s2-us.msgs")
+
+initroot() ==
+    spadroot := getEnv('"FRICAS")
+    if not(spadroot) then
+        bin_parent_dir := STRCONC(DIRECTORY_-NAMESTRING(first(getCLArgs())),
+                                  '"/../")
+        if fricas_probe_file(STRCONC(binparent_dir, '"algebra/interp.daase"))
+        then spadroot := bin_parent_dir
+        else ERROR("Environment variable FRICAS is not set!")
+    spadroot := fricas_probe_file(spadroot)
+    if spadroot then
+        reroot(trim_directory_name(NAMESTRING(spadroot)))
+    else
+        ERROR('"Environment variable FRICAS is not valid!")
+
+$trace_stream := nil
+CUROUTSTREAM := nil
+
+fricas_restart() ==
+    -- Need to reinitialize various streams because
+    -- CLISP closes them when dumping executable
+    CUROUTSTREAM := $trace_stream := get_lisp_std_out()
+    $algebraOutputStream := mkOutputConsoleStream()
+    $fortranOutputStream := mkOutputConsoleStream()
+    $mathmlOutputStream := mkOutputConsoleStream()
+    $texmacsOutputStream := mkOutputConsoleStream()
+    $htmlOutputStream := mkOutputConsoleStream()
+    $openMathOutputStream := mkOutputConsoleStream()
+    $texOutputStream := mkOutputConsoleStream()
+    $formattedOutputStream := mkOutputConsoleStream()
+    fricas_init()
+    fricas_restart2()
+
 
 interpsysInitialization(display_messages) ==
   -- The function  start  begins the interpreter process, reading in
@@ -117,7 +192,7 @@ readSpadProfileIfThere() ==
     NIL
   efile =>
     $edit_file := efile
-    read_or_compile(true, false)
+    read_or_compile(true, efile)
   NIL
 
 --% Parser Output --> Interpreter

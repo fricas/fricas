@@ -244,7 +244,6 @@ skip_whitespace(ln, n) ==
         n := n + 1
     n
 
-DEFVAR($f)
 DEFVAR($floatok)
 DEFVAR($linepos)
 DEFVAR($ln)
@@ -286,17 +285,16 @@ nextline(s)==
      if npNull s
      then false
      else
-       $f:= first s
+       f := first s
        $r:= rest s
-       $ln := rest $f
-       $linepos:=CAAR $f
+       $ln := rest(f)
+       $linepos := CAAR(f)
        $n := skip_whitespace($ln, 0) -- spaces at beginning
        $sz :=# $ln
        true
 
 
 lineoftoks(s)==
-   $f: local:=nil
    $r:local :=nil
    $ln:local :=nil
    $linepos:local:=nil

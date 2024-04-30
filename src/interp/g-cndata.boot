@@ -49,15 +49,6 @@ augmentLowerCaseConTable x ==
   HPUT($lowerCaseConTb,DOWNCASE x,item)
   HPUT($lowerCaseConTb,y,item)
 
-getCDTEntry(info,isName) ==
-  not IDENTP info => NIL
-  (entry := HGET($lowerCaseConTb,info)) =>
-    [name,abb,:.] := entry
-    isName and EQ(name,info) => entry
-    not isName and EQ(abb,info) => entry
-    NIL
-  entry
-
 abbreviation? abb ==
   -- if it is an abbreviation, return the corresponding name
   get_database(abb, 'CONSTRUCTOR)
@@ -101,7 +92,6 @@ abbQuery(x) ==
     sayKeyedMsg("S2IZ0003",[x])
 
 installConstructor(cname) ==
-  (entry := getCDTEntry(cname,true)) => entry
   item := [cname, get_database(cname, 'ABBREVIATION), nil]
   if BOUNDP '$lowerCaseConTb and $lowerCaseConTb then
     HPUT($lowerCaseConTb,cname,item)

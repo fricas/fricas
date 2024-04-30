@@ -149,7 +149,7 @@ with this hack and will try to convince the GCL crowd to fix this.
         (CCL::save-application core-image
                                        :PREPEND-KERNEL t
                                        :application-class 'fricas-application)
-        (quit))
+        (QUIT))
 #+:lispworks
   (progn
     ; LispWorks by default loads a siteinit and an init file.
@@ -209,7 +209,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun |exit_with_status| (s)
     (pop11::sysexit1 s))
 
-(defun quit() (|exit_with_status| 0))
+(defun QUIT() (|exit_with_status| 0))
 
 ;;; -----------------------------------------------------------------
 
@@ -230,7 +230,7 @@ with this hack and will try to convince the GCL crowd to fix this.
         (c:build-program core-image
              :lisp-files (append *fricas-initial-lisp-objects* lisp-files)
              :ld-flags *fricas-extra-c-files*))
-    (quit))
+    (QUIT))
 
 ;;; -----------------------------------------------------------------
 ;;; For ECL assume :unix, when :netbsd or :darwin
@@ -252,11 +252,11 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; Chdir function
 
 #+:GCL
-(defun chdir (dir)
+(defun CHDIR (dir)
  (system::chdir dir))
 
 #+:cmu
-(defun chdir (dir)
+(defun CHDIR (dir)
  (let ((tdir (probe-file dir)))
   (cond
     (tdir
@@ -268,7 +268,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 (eval-when (:execute :compile-toplevel :load-toplevel)
     (require :sb-posix))
 #+:sbcl
-(defun chdir (dir)
+(defun CHDIR (dir)
  (let ((tdir (probe-file dir)))
   (cond
     (tdir
@@ -277,19 +277,19 @@ with this hack and will try to convince the GCL crowd to fix this.
      (t nil))))
 
 #+(and :clisp (or :unix :win32))
-(defun chdir (dir)
+(defun CHDIR (dir)
  (ext::cd dir))
 
 #+:openmcl
-(defun chdir (dir)
+(defun CHDIR (dir)
   (ccl::%chdir dir))
 
 #+:ecl
-(defun chdir (dir)
-   (SI:CHDIR (pad-directory-name dir) t))
+(defun CHDIR (dir)
+   (SI:CHDIR (|pad_directory_name| dir) t))
 
 #+:lispworks
-(defun chdir (dir)
+(defun CHDIR (dir)
   (hcl:change-directory dir))
 
 ;;; Environment access
@@ -738,11 +738,11 @@ with this hack and will try to convince the GCL crowd to fix this.
   (fricas-foreign-call file_kind "directoryp" int
                    (arg c-string))
 
-  (fricas-foreign-call makedir "makedir" int
+  (fricas-foreign-call |makedir| "makedir" int
                    (arg c-string))
 )
 
-(defun trim-directory-name (name)
+(defun |trim_directory_name| (name)
     #+(or :unix :win32)
     (if (char= (char name (1- (length name))) #\/)
         (subseq name 0 (1- (length name)))
@@ -750,7 +750,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     #-(or :unix :win32)
     (error "Not Unix and not Windows, what system it is?"))
 
-(defun pad-directory-name (name)
+(defun |pad_directory_name| (name)
    #+(or :unix :win32)
    (if (char= (char name (1- (length name))) #\/)
        name
@@ -762,20 +762,20 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; Make directory
 
 #+(or :abcl :cmu :lispworks :openmcl)
-(defun makedir (fname)
+(defun |makedir| (fname)
     (|run_program| "mkdir" (list fname)))
 
 #+:sbcl
-(defun makedir (fname)
+(defun |makedir| (fname)
     (sb-unix:unix-mkdir fname #o777))
 
 #+:clisp
-(defun makedir (fname)
+(defun |makedir| (fname)
   ;; ext:make-dir was deprecated in clisp-2.44-2008-02-02
   ;; and removed in clisp-2.49.90-2018-02-11
   (let ((sym (or (find-symbol "MAKE-DIRECTORY" "EXT")
                  (find-symbol "MAKE-DIR" "EXT"))))
-    (funcall sym (pad-directory-name (namestring fname)))))
+    (funcall sym (|pad_directory_name| (namestring fname)))))
 
 ;;;
 
@@ -786,7 +786,7 @@ with this hack and will try to convince the GCL crowd to fix this.
                 (find-symbol "UNIX-FILE-KIND" :sb-unix))))
          `(,file-kind-fun ,x)))
 
-(defun file-kind (filename)
+(defun |file_kind| (filename)
    #+(or :GCL :ecl) (file_kind filename)
    #+:cmu
            (case (unix:unix-file-kind filename)
@@ -803,8 +803,8 @@ with this hack and will try to convince the GCL crowd to fix this.
                   (if (probe-file filename)
                       0
                      -1))
-   #+:clisp (let* ((fname (trim-directory-name (namestring filename)))
-                   (dname (pad-directory-name fname)))
+   #+:clisp (let* ((fname (|trim_directory_name| (namestring filename)))
+                   (dname (|pad_directory_name| fname)))
              (if (ignore-errors (truename dname))
                  1
                  (if (ignore-errors (truename fname))
@@ -821,29 +821,29 @@ with this hack and will try to convince the GCL crowd to fix this.
 )
 
 #+:cmu
-(defun get-current-directory ()
+(defun |get_current_directory| ()
   (multiple-value-bind (win dir) (unix::unix-current-directory)
                        (declare (ignore win))  dir))
 
 #+(or :ecl :GCL :sbcl :clisp :openmcl :abcl)
-(defun get-current-directory ()
-    (trim-directory-name (namestring (truename ""))))
+(defun |get_current_directory| ()
+    (|trim_directory_name| (namestring (truename ""))))
 
 #+:poplog
-(defun get-current-directory ()
+(defun |get_current_directory| ()
    (let ((name (namestring (truename "."))))
-        (trim-directory-name (subseq name 0 (1- (length name))))))
+        (|trim_directory_name| (subseq name 0 (1- (length name))))))
 
 #+lispworks
-(defun get-current-directory ()
+(defun |get_current_directory| ()
   (let ((directory (namestring (system:current-directory))))
-    (trim-directory-name directory)))
+    (|trim_directory_name| directory)))
 
 
 (defun |fricas_probe_file| (file)
-#+:GCL (let* ((fk (file-kind (namestring file)))
-              (fname (trim-directory-name (namestring file)))
-              (dname (pad-directory-name fname)))
+#+:GCL (let* ((fk (file_kind (namestring file)))
+              (fname (|trim_directory_name| (namestring file)))
+              (dname (|pad_directory_name| fname)))
            (cond
              ((equal fk 1)
                 (truename dname))
@@ -853,8 +853,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:cmu (if (unix:unix-file-kind file) (truename file))
 #+:sbcl (if (sbcl-file-kind file) (truename file))
 #+(or :abcl :ecl :lispworks :openmcl :poplog) (probe-file file)
-#+:clisp(let* ((fname (trim-directory-name (namestring file)))
-               (dname (pad-directory-name fname)))
+#+:clisp(let* ((fname (|trim_directory_name| (namestring file)))
+               (dname (|pad_directory_name| fname)))
                  (or (ignore-errors (truename dname))
                      (ignore-errors (truename fname))))
          )
@@ -866,28 +866,28 @@ with this hack and will try to convince the GCL crowd to fix this.
                   (eq (car (pathname-directory name))
                       :absolute))
              ns
-             (concatenate 'string (get-current-directory)  "/" ns))))
+             (concatenate 'string (|get_current_directory|)  "/" ns))))
 #+:cmu
 (defun relative-to-absolute (name)
   (unix::unix-maybe-prepend-current-directory name))
 
 ;;; Saner version of compile-file
 #+:ecl
-(defun fricas_compile_file (f output-file)
+(defun |fricas_compile_file| (f output-file)
     (compile-file f :output-file (relative-to-absolute output-file)
                     :system-p t))
 
 #+:poplog
-(defun fricas_compile_file (f output-file)
+(defun |fricas_compile_file| (f output-file)
     (|run_program| "cp" (list f output-file)))
 
 #-(or :ecl :poplog)
-(defun fricas_compile_file (f output-file)
+(defun |fricas_compile_file| (f output-file)
     (compile-file f :output-file (relative-to-absolute output-file)))
 
-(defun fricas_compile_fasl (f output-file)
+(defun |fricas_compile_fasl| (f output-file)
 #-:ecl
-    (fricas_compile_file f output-file)
+    (|fricas_compile_file| f output-file)
 #+:ecl
     (compile-file f :output-file (relative-to-absolute output-file))
 )
@@ -1034,6 +1034,21 @@ with this hack and will try to convince the GCL crowd to fix this.
        (APPLY fun (cons stream args))))
 
 (in-package "BOOT")
+
+;;; Various lisps use different ``extensions'' on the filename to indicate
+;;; that a file has been compiled. We set this variable correctly depending
+;;; on the system we are using.
+(defvar |$lisp_bin_filetype|
+  #+:GCL "o"
+  #+:cmu (c:backend-fasl-file-type c:*target-backend*)
+  #+:sbcl "fasl"
+  #+:clisp "fas"
+  #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
+  #+:ecl "fas"
+  #+:lispworks (pathname-type (compile-file-pathname "foo.lisp"))
+  #+:poplog "lsp"
+  #+:abcl "abcl"
+)
 
 ;;; Macros used in Boot code
 

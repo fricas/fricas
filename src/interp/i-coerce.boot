@@ -59,6 +59,10 @@ The special routines that  do the coercions typically  involve a "2"
    Note that the special routines are in the file COERCEFN BOOT.
 )endif
 
+$useCoerceOrCroak := true
+$insideCanCoerceFrom := false
+$useConvertForCoercions := false
+
 --%  Algebraic coercions using interactive code
 
 algCoerceInteractive(p,source,target) ==

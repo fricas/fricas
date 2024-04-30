@@ -155,28 +155,6 @@ transDoc(conname,doclist) ==
       checkDocError1 ['"Not documented!!!!"]
     u := checkTrim($x,(STRINGP lines => [lines]; $x = 'constructor => first lines; lines))
     $argl : local := nil    --set by checkGetArgs
--- tpd: related domain information doesn't exist
---    if v := checkExtract('"Related Domains:",u) then
---      $lisplibRelatedDomains:=[w for x in gn(v) | w := fn(x)] where
---        gn(v) ==  --note: unabbrev checks for correct number of arguments
---          s := checkExtractItemList v
---          parse := ncParseFromString s  --is a single conform or a tuple
---          null parse => nil
---          parse is ['Tuple,:r] => r
---          [parse]
---        fn(x) ==
---          expectedNumOfArgs := checkNumOfArgs x
---          null expectedNumOfArgs =>
---            checkDocError ['"Unknown constructor name?: ",opOf x]
---            x
---          expectedNumOfArgs ~= (n := #(IFCDR x)) =>
---            n = 0 => checkDocError1
---              ['"You must give arguments to the _"Related Domain_": ",x]
---            checkDocError
---              ['"_"Related Domain_" has wrong number of arguments: ",x]
---            nil
---          n=0 and atom x => [x]
---          x
     longline :=
       $x = 'constructor =>
         v :=checkExtract('"Description:",u) or u and
@@ -478,8 +456,7 @@ checkComments(nameSig,lines) == main where
   main ==
     $checkErrorFlag: local := false
     margin := checkGetMargin lines
-    if (null BOUNDP '$attribute? or null $attribute?)
-      and nameSig ~= 'constructor then lines :=
+    if not($attribute?) and nameSig ~= 'constructor then lines :=
         [checkTransformFirsts(first nameSig,first lines,margin),:rest lines]
     u := checkIndentedLines(lines, margin)
     $argl := checkGetArgs first u      --set $argl

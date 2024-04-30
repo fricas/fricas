@@ -52,8 +52,6 @@
 
 (defmacro def-boot-val (p val where) `(defparameter ,p ,val ,where))
 
-(def-boot-val |$timerTicksPerSecond| INTERNAL-TIME-UNITS-PER-SECOND
-    "scale for get_run_time")
 (def-boot-val $boxString
   (concatenate 'string (list (code-char #x1d) (code-char #xe2)))
   "this string of 2 chars displays as a box")
@@ -66,49 +64,8 @@
   "switch back into normal font")
 (def-boot-val |$BreakMode| '|query|                 "error.boot")
 
-
-(def-boot-var |$compUniquelyIfTrue|                 "Compiler>Compiler.boot")
-(def-boot-val |$currentLine|    ""          "current input line for history")
-
-(def-boot-var |$exitMode|                           "???")
-(def-boot-var |$exitModeStack|                      "???")
-
-(def-boot-var |$fromSpadTrace|                      "Interpreter>Trace.boot")
-
-(def-boot-val |$genSDVar| 0         "counter for genSomeVariable" )
-
-(def-boot-var |$insideCapsuleFunctionIfTrue|        "???")
-(def-boot-var |$insideCategoryIfTrue|               "???")
-(def-boot-var |$insideFunctorIfTrue|                "???")
-(def-boot-var |$insideWhereIfTrue|                  "???")
-
-(def-boot-var |$leaveLevelStack|                    "???")
-(def-boot-var |$libFile|                            "Compiler>LispLib.boot")
-(def-boot-val $LISPLIB nil                  "whether to produce a lisplib or not")
-(def-boot-var |$lisplibForm|                        "Compiler>LispLib.boot")
-(def-boot-var |$lisplibKind|                        "Compiler>LispLib.boot")
-(def-boot-var |$lisplibModemapAlist|                "Compiler>LispLib.boot")
-(def-boot-var |$lisplibModemap|                     "Compiler>LispLib.boot")
-(def-boot-var |$lisplibOperationAlist|              "Compiler>LispLib.boot")
-
-(def-boot-var |$mapSubNameAlist|                    "Interpreter>Trace.boot")
-(def-boot-var |$mathTrace|                          "Interpreter>Trace.boot")
-(def-boot-var |$mathTraceList|              "Controls mathprint output for )trace.")
-
-(def-boot-var |$postStack|                          "???")
-(def-boot-var |$previousTime|                       "???")
-(def-boot-val |$printLoadMsgs|  nil          "Interpreter>SetVarT.boot")
 (def-boot-var |$reportBottomUpFlag|                 "Interpreter>SetVarT.boot")
-(def-boot-var |$returnMode|                         "???")
-(def-boot-var |$semanticErrorStack|                 "???")
 (def-boot-val |$SetFunctions| nil  "checked in SetFunctionSlots")
-
-(def-boot-var |$topOp|                             "See displayPreCompilationErrors")
-(def-boot-var |$tracedSpadModemap|                  "Interpreter>Trace.boot")
-(def-boot-var |$traceletFunctions|                  "???")
-
-(def-boot-var |$warningStack|                       "???")
-(def-boot-val |$whereList| () "referenced in format boot formDecl2String")
 
 (def-boot-val |$inputPromptType| '|step|  "checked in MKPROMPT")
 (def-boot-val |$IOindex| 0                 "step counter")
@@ -297,20 +254,6 @@
 
 (DEFUN LASTATOM (L) (if (ATOM L) L (LASTATOM (CDR L))))
 
-(defun DROP (N X &aux m)
-  "Return a pointer to the Nth cons of X, counting 0 as the first cons."
-  (COND ((EQL N 0) X)
-        ((> N 0) (DROP (1- N) (CDR X)))
-        ((>= (setq m (+ (length x) N)) 0) (take m x))
-        ((CROAK (list "Bad args to DROP" N X)))))
-
-(DEFUN TAKE (N X &aux m)
-  "Returns a list of the first N elements of list X."
-  (COND ((EQL N 0) NIL)
-        ((> N 0) (CONS (CAR X) (TAKE (1- N) (CDR X))))
-        ((>= (setq m (+ (length x) N)) 0) (DROP m x))
-        ((CROAK (list "Bad args to DROP" N X)))))
-
 ; 15.4 Substitution of Expressions
 
 ;; needed for substNames (always copy)
@@ -341,13 +284,6 @@
         ((|set_sum| (CDR X) (CONS (CAR X) Y)))))
 
 (defun |set_difference| (l1 l2) (set-difference l1 l2 :test #'equal))
-
-
-(DEFUN PREDECESSOR (TL L)
-  "Returns the sublist of L whose CDR is EQ to TL."
-  (COND ((ATOM L) NIL)
-        ((EQ TL (CDR L)) L)
-        ((PREDECESSOR TL (CDR L)))))
 
 (defun remdup (l) (remove-duplicates l :test #'equalp))
 
@@ -423,15 +359,9 @@
 
 ; 22.3.1 Output to Character Streams
 
-(defvar |$sayBrightlyStream| nil "if not nil, gives stream for sayBrightly output")
-
 (defun |get_lisp_std_out| () *standard-output*)
 
 (defun |get_lisp_error_out| () *error-output*)
-
-(defvar |$fortranOutputStream|)
-
-(defvar |$highlightAllowed| nil "Used in BRIGHTPRINT and is a )set variable.")
 
 (defvar |$highlightFontOn| (concat " " |$boldString|)
                      "switch to highlight font")

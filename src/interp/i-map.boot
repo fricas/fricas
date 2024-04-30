@@ -33,6 +33,7 @@
 
 --% User Function Creation and Analysis Code
 
+$insideCompileBodyIfTrue := false
 DEFPARAMETER($mapTarget, nil)
 DEFPARAMETER($mapReturnTypes, nil)
 DEFPARAMETER($mapName, 'noMapName)

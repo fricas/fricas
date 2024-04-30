@@ -78,6 +78,10 @@ above for examples.
 
 --% Message Database Code and Message Utility Functions
 
+$testingSystem := false
+$sayBrightlyStream := nil
+$highlightAllowed := false
+
 DEFPARAMETER($testingErrorPrefix, '"Daly Bug")
 
 DEFPARAMETER($texFormatting, false)

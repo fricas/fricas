@@ -31,18 +31,23 @@
 
 )package "BOOT"
 
---% Debugging Functions
+$genSDVar := 0
 
-level(:l) ==
-  null l => same()
-  l is [n] and INTEGERP n => displayComp ($level:= n)
-  SAY '"Correct format: (level n) where n is the level you want to go to"
+$previousTime := 0
 
-up() == displayComp ($level:= $level-1)
+$warningStack := []
+$semanticErrorStack := []
 
-same() == displayComp $level
+DROP(n, l) ==
+    n >= 0 =>
+        while n > 0 repeat
+            l := rest(l)
+        l
+    TAKE(#l + n, l)
 
-down() == displayComp ($level:= $level+1)
+TAKE(n, l) ==
+    n >= 0 => [x for x in l for i in 1..n]
+    DROP(#l + n, l)
 
 displaySemanticErrors() ==
   n:= #($semanticErrorStack:= REMDUP $semanticErrorStack)
@@ -79,12 +84,11 @@ displayComp level ==
   --mathprint removeZeroOne mkErrorExpr level
   pp removeZeroOne mkErrorExpr level
   sayBrightly ['"****** level",'%b,level,'%d,'" ******"]
-  [$x, $m, $f, $exitModeStack] := $s.(level - 1)
-  ($X:=$x;$M:=$m;$F:=$f)
-  SAY('"$x:= ",$x)
-  SAY('"$m:= ",$m)
-  SAY '"$f:="
-  limited_print1_stdout($f)
+  [x, m, f, $exitModeStack] := $s.(level - 1)
+  SAY('"x:= ", x)
+  SAY('"m:= ", m)
+  SAY '"f:="
+  limited_print1_stdout(f)
   nil
 
 mkErrorExpr level ==
@@ -605,66 +609,10 @@ subst_in_cat(fp, ap, cv) ==
     pp := MAPCAR(FUNCTION CONS, fp, ap)
     sublis_vec(pp, cv)
 
---% DEBUGGING PRINT ROUTINES used in breaks
-
-_?MODEMAPS x == _?modemaps x
-_?modemaps x ==
-  env:=
-    $insideCapsuleFunctionIfTrue=true => $CapsuleModemapFrame
-    $f
-  x="all" => displayModemaps env
-  -- displayOpModemaps(x,old2NewModemaps get(x,"modemap",env))
-  displayOpModemaps(x,get(x,"modemap",env))
-
-
 old2NewModemaps x ==
 --  [[dcSig,pred] for [dcSig,[pred,:.],:.] in x]
   x is [dcSig,[pred,:.],:.]  =>  [dcSig,pred]
   x
-
-traceUp() ==
-  atom $x => sayBrightly '"$x is an atom"
-  for y in rest $x repeat
-    u:= comp(y,$EmptyMode,$f) =>
-      sayBrightly [y,'" ==> mode",'%b,u.mode,'%d]
-    sayBrightly [y,'" does not compile"]
-
-_?m x ==
-  u:= comp(x,$EmptyMode,$f) => u.mode
-  nil
-
-traceDown() ==
-  mmList:= getFormModemaps($x,$f) =>
-    for mm in mmList repeat if u:= qModemap mm then return u
-  sayBrightly '"no modemaps for $x"
-
-qModemap mm ==
-  sayBrightly ['%b,"modemap",'%d,:formatModemap mm]
-  [[dc,target,:sl],[pred,:.]]:= mm
-  and/[qArg(a,m) for a in rest $x for m in sl] => target
-  sayBrightly ['%b,'"fails",'%d,'%l]
-
-qArg(a,m) ==
-  yesOrNo:=
-    u:= comp(a,m,$f) => "yes"
-    "no"
-  sayBrightly [a,'" --> ",m,'%b,yesOrNo,'%d]
-  yesOrNo="yes"
-
-_?comp x ==
-  msg:=
-    u:= comp(x,$EmptyMode,$f) =>
-      [MAKESTRING '"compiles to mode",'%b,u.mode,'%d]
-    nil
-  sayBrightly msg
-
-_?domains() == pp getDomainsInScope $f
-
-_?mode x == displayProplist(x,[["mode",:getmode(x,$f)]])
-
-_?properties x == displayProplist(x,getProplist(x,$f))
-
-_?value x == displayProplist(x,[["value",:get(x,"value",$f)]])
 
 displayProplist(x,alist) ==
   sayBrightly ['"properties of",'%b,x,'%d,'":"]

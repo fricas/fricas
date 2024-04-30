@@ -84,24 +84,6 @@ dbScreenForDefaultFunctions lines == [x for x in lines | not isDefaultOpAtt x]
 
 isDefaultOpAtt x == x.(1 + dbTickIndex(x,4,0)) = char 'x
 
-grepForAbbrev(s,key) ==
---checks that filter s is not * and is all uppercase; if so, look for abbrevs
-  u := HGET($lowerCaseConTb,s) => ['Abbreviations,u]    --try cheap test first
-  s := STRINGIMAGE s
-  someLowerCaseChar := false
-  someUpperCaseChar := false
-  for i in 0..MAXINDEX s repeat
-    c := s . i
-    LOWER_-CASE_-P c => return (someLowerCaseChar := true)
-    UPPER_-CASE_-P c => someUpperCaseChar := true
-  someLowerCaseChar or not someUpperCaseChar => false
-  pattern := DOWNCASE s
-  ['Abbreviations, :[get_database(x, 'CONSTRUCTORFORM)
-    for x in allConstructors() | test]] where test ==
-         not $includeUnexposed? and not isExposedConstructor x => false
-         a := get_database(x, 'ABBREVIATION)
-         match?(pattern,PNAME a) and not HGET($defaultPackageNamesHT,x)
-
 applyGrep(x,filename) ==
   atom x => grepFile(x,filename,'i)
   $localLibdb =>
@@ -537,18 +519,6 @@ removeSurroundingStars filter ==
 showNamedDoc([kind,:lines],index) ==
   dbGather(kind,lines,index - 1,true)
 
-sayDocMessage message ==
-  htSay('"{\em ")
-  if message is [leftEnd,left,middle,right,rightEnd] then
-    htSayList([leftEnd, left, '"}"])
-    if left ~= '"" and left.(MAXINDEX left) = $blank then htBlank()
-    htSay middle
-    if right ~= '"" and right.0 = $blank then htBlank()
-    htSayList(['"{\em ", right, rightEnd])
-  else
-    htSay message
-  htSay ('"}")
-
 stripOffSegments(s,n) ==
   progress := true
   while n > 0 and progress = true repeat
@@ -759,7 +729,7 @@ detailedSearch(filter) ==
 --          doc)
                 )
     (text . "\vspace{1}\newline\centerline{ ")
-    (bcLinks ("\box{Search}" "" generalSearchDo NIL))
+    (bcLinks ("\fbox{Search}" "" generalSearchDo NIL))
     (text . "}"))
   htShowPage()
 

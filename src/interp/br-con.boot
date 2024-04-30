@@ -69,29 +69,6 @@ conPageConEntry entry ==
 
 kxPage(htPage,name) == downlink name
 
-kdPageInfo(name,abbrev,nargs,conform,signature,file?) ==
-  htSay('"{\sf ",name,'"}")
-  if abbrev ~= name then bcHt ['" has abbreviation ",abbrev]
-  if file? then bcHt ['" is a source file."]
-  if nargs = 0 then (if abbrev ~= name then bcHt '".")
-    else
-      if abbrev ~= name then bcHt '" and"
-      bcHt
-        nargs = 1 => '" takes one argument:"
-        ['" takes ",STRINGIMAGE nargs,'" arguments:"]
-  htSayStandard '"\indentrel{2}"
-  if nargs > 0 then kPageArgs(conform,signature)
-  htSayStandard '"\indentrel{-2}"
-  if name.(#name-1) = char "&" then name := SUBSEQ(name, 0, #name-1)
-  sourceFileName := get_database(INTERN(name), 'SOURCEFILE)
-  filename := extractFileNameFromPath sourceFileName
-  if filename ~= '"" then
-    htSayStandard '"\newline{}"
-    htSay('"The source code for the constructor is found in ")
-  htMakePage [['text,'"\unixcommand{",filename,'"}{_\$FRICAS/lib/SPADEDIT ",
-              sourceFileName, '" ", name, '"}"]]
-  if nargs ~= 0 then htSay '"."
-
 kArgPage(htPage,arg) ==
   [op,:args] := conform := htpProperty(htPage,'conform)
   domname := htpProperty(htPage,'domname)
@@ -107,39 +84,7 @@ kArgPage(htPage,arg) ==
     ('(First Second Third Fourth Fifth)).n
   htpSetProperty(htPage,'rank,rank)
   htpSetProperty(htPage,'thing,'"argument")
---htpSetProperty(htPage,'specialMessage,['reportCategory,conform,typeForm,arg])
   dbShowCons(htPage,'names)
-
-reportCategory(conform,typeForm,arg) ==
-  htSay('"Argument {\em ",arg,'"}")
-  [conlist, :oplist] := categoryParts(conform,typeForm,true)
-  htSay '" must "
-  if conlist then
-    htSay '"belong to "
-    if conlist is [u] then
-       htSay('"category ")
-       bcConform first u
-       bcPred rest u
-    else
-       htSay('"categories:")
-       bcConPredTable(conlist,opOf conform)
-       htSay '"\newline "
-  if oplist then
-    if conlist then htSay '" and "
-    report_ops(oplist)
-
-report_ops(oplist) ==
-  htSayList(['"have ", '"operation", '":"])
-  for [op,sig,:pred] in oplist repeat
-      htSay('"\newline ")
-      if #oplist = 1 then htSay('"\centerline{")
-      ops  := escapeSpecialChars STRINGIMAGE op
-      sigs := form2HtString ['Mapping,:sig]
-      satDownLink(ops,['"(|opPage| '|",ops,'"| |",sigs,'"|)"])
-      htSay('": ")
-      bcConform ['Mapping,:sig]
-      if #oplist = 1 then htSay('"}")
-  htSay '"\newline "
 
 mkDomTypeForm(typeForm,conform,domname) == --called by kargPage
   domname => SUBLISLIS(rest domname,rest conform,typeForm)
@@ -176,17 +121,6 @@ domainDescendantsOf(conform,domform) == main where --called by kargPage
 --=======================================================================
 --                   Branches of Constructor Page
 --=======================================================================
-
-kiPage(htPage,junk) ==
-  [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
-  conform         := mkConform(kind,name,args)
-  domname         := kDomainName(htPage,kind,name,nargs)
-  domname is ['error,:.] => errorPage(htPage,domname)
-  heading := ['"Description of ", capitalize kind,'" {\sf ",name,args,'"}"]
-  page := htInitPage(heading,htCopyProplist htPage)
-  $conformsAreDomains := domname
-  dbShowConsDoc1(htPage,conform,nil)
-  htShowPage()
 
 kePage(htPage,junk) ==
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
@@ -757,12 +691,9 @@ dbShowCons1(htPage,cAlist,key) ==
   --key = 'catfilter => dbShowCatFilter(page,key)
     key = 'names => bcNameConTable conlist
     key = 'abbrs =>
-      bcAbbTable [getCDTEntry(con,true) for con in conlist]
-    key = 'files =>
-      flist :=
-        [y for con in conlist |
-          y := (fn := get_database(con, 'SOURCEFILE))]
-      bcUnixTable(listSort(function GLESSEQP,REMDUP flist))
+        bcAbbTable(page, [[con ,get_database(con, 'ABBREVIATION)]
+                          for con in conlist])
+    key = 'files => BREAK()
     key = 'documentation   => dbShowConsDoc(page,conlist)
     if $exposedOnlyIfTrue then
       cAlist := [x for x in cAlist | isExposedConstructor opOf first x]
@@ -876,19 +807,6 @@ dbConsHeading(htPage,conlist,view,kind) ==
 dbShowConstructorLines lines ==
   cAlist := [[getConstructorForm intern dbName line,:true] for line in lines]
   dbShowCons1(nil,listSort(function GLESSEQP,cAlist),'names)
-
-bcUnixTable(u) ==
-  htSay '"\newline"
-  htBeginTable()
-  for x in u repeat
-    htSay '"{"
-    ft :=
-      isAsharpFileName? x => '("AS")
-      '("SPAD")
-    filename := NAMESTRING find_file(STRINGIMAGE x, ft)
-    htMakePage [['text, '"\unixcommand{",PATHNAME_-NAME x, '"}{$FRICAS/lib/SPADEDIT ", filename, '"} "]]
-    htSay '"}"
-  htEndTable()
 
 isAsharpFileName? con == false
 

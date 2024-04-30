@@ -51,6 +51,8 @@ the following flags are used:
  if $SubDom is true, then runtime checks have to be compiled
 )endif
 
+$domPvar := nil
+
 sayFunctionSelection(op,args,target,dc,func) ==
   $abbreviateTypes : local := true
   startTimingProcess 'debug

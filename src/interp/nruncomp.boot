@@ -31,6 +31,8 @@
 
 )package "BOOT"
 
+$bootstrapDomains := false
+
 -----------------------------NEW buildFunctor CODE-----------------------------
 NRTaddDeltaCode(kvec) ==
 --NOTES: This function is called from buildFunctor to initially
@@ -72,6 +74,8 @@ deltaTran(item,compItem) ==
   kindFlag:= (kind = 'CONST => 'CONST; nil)
   newSig := [NRTassocIndex x or x for x in formalSig]
   [newSig,dcCode,op,:kindFlag]
+
+$devaluateList := []
 
 NRTreplaceAllLocalReferences(form) ==
   $devaluateList :local := []

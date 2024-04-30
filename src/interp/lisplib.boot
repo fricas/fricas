@@ -31,7 +31,17 @@
 
 )package "BOOT"
 
+$printLoadMsgs := false
+
 $spadLibFT := 'NRLIB
+$LISPLIB := false
+$libFile := nil
+
+$lisplibForm := nil
+$lisplibKind := nil
+$lisplibModemapAlist := []
+$lisplibModemap := nil
+$lisplibOperationAlist := []
 
 --% Standard Library Creation Functions
 

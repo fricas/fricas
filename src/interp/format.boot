@@ -33,6 +33,9 @@
 
 --% Functions for display formatting system objects
 
+$abbreviateJoin := false
+$whereList := nil
+
 --% Formatting modemaps
 
 sayModemap m ==
@@ -293,6 +296,8 @@ prefix2String form ==
 -- local version
 prefix2String0 form ==
   form2StringLocal form
+
+$permitWhere := false
 
 form2StringWithWhere u ==
   $permitWhere : local := true

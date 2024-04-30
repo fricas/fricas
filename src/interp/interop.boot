@@ -31,6 +31,9 @@
 
 )package "BOOT"
 
+-- true signals special case for browser
+$returnNowhereFromGoGet := false
+
 -- note domainObjects are now (dispatchVector hashCode . domainVector)
 -- lazy oldAxiomDomainObjects are (dispatchVector hashCode  (Call form) . backptr),
 -- pre oldAxiomCategory is (dispatchVector . (cat form))

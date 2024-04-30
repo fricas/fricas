@@ -32,6 +32,13 @@
 )package "BOOT"
 
 DEFPARAMETER($newCompCompare, false)
+$insideCategoryPackageIfTrue := false
+$insideCapsuleFunctionIfTrue := false
+$insideCategoryIfTrue := false
+$insideWhereIfTrue := false
+
+$functorLocalParameters := []
+$functorForm := nil
 
 --% FUNCTIONS WHICH MUNCH ON == STATEMENTS
 
@@ -1184,7 +1191,7 @@ compCategoryItem(x, predl, acc) ==
     compCategoryItem(c, predl', acc)
   pred:= (predl => MKPF(predl,"AND"); true)
 
-  --2. if attribute, push it and return
+  --2. if conditional category, push it and return
   x is ["ATTRIBUTE", 'nil] => BREAK()
   x is ["ATTRIBUTE", y] =>
        -- should generate something else for conditional categories

@@ -31,6 +31,9 @@
 
 )package "BOOT"
 
+$compileDontDefineFunctions := true
+$fortranArrayStartingIndex := 0
+
 )if false
 This file contains functions to initialize the {\bf )set} command
 in the interpreter.

@@ -32,8 +32,6 @@
 
 )package "BOOT"
 
-$returnNowhereFromGoGet := false
-
 )if false
 Example usage:
 

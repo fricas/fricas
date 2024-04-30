@@ -38,86 +38,8 @@ A fifth group of related functions are some translated boot
 functions we need to define here so they work and are available
 at load time.
 |#
+
 (in-package "BOOT")
-(export '(|$spadroot| $directory-list reroot
-          make-absolute-filename |$defaultMsgDatabaseName|))
-
-;;; Various lisps use different ``extensions'' on the filename to indicate
-;;; that a file has been compiled. We set this variable correctly depending
-;;; on the system we are using.
-(defvar |$lisp_bin_filetype|
-  #+:GCL "o"
-  #+:cmu (c:backend-fasl-file-type c:*target-backend*)
-  #+:sbcl "fasl"
-  #+:clisp "fas"
-  #+:openmcl (subseq (namestring CCL:*.FASL-PATHNAME*) 1)
-  #+:ecl "fas"
-  #+:lispworks (pathname-type (compile-file-pathname "foo.lisp"))
-  #+:poplog "lsp"
-  #+:abcl "abcl"
-  )
-
-;;; The relative directory list specifies a search path for files
-;;; for the current directory structure.
-(defvar $relative-directory-list
-  '("/share/msgs/"
-    "/share/spadhelp/" ))
-
-;;; The relative directory list specifies how to find the algebra
-;;; directory from the current {\bf FRICAS} shell variable.
-(defvar $relative-library-directory-list '("/algebra/"))
-
-;;; This is the system-wide list of directories to search.
-;;; It is set up in the {\bf reroot} function.
-(defvar $directory-list ())
-
-;;; This is the system-wide search path for library files.
-;;; It is set up in the {\bf reroot} function.
-(defvar $library-directory-list ())
-
-;;; Prefix a filename with the {\bf |$spadroot|} variable.
-(defun make-absolute-filename (name)
- (concatenate 'string |$spadroot| name))
-
-#|
-The reroot function is used to reset the important variables used by
-the system. In particular, these variables are sensitive to the
-{\bf FRICAS} shell variable. That variable is renamed internally to
-be {\bf |$spadroot|}. The {\bf reroot} function will change the
-system to use a new root directory and will have the same effect
-as changing the {\bf FRICAS} shell variable and rerunning the system
-from scratch.
-|#
-(defvar |$spadroot| "")
-
-(defun reroot (dir)
-  (setq |$spadroot| dir)
-  (setq $directory-list
-   (mapcar #'make-absolute-filename $relative-directory-list))
-  (setq $library-directory-list
-   (mapcar #'make-absolute-filename $relative-library-directory-list))
-  (setq |$defaultMsgDatabaseName|
-        (make-absolute-filename "/share/msgs/s2-us.msgs"))
-  )
-
-;;; Sets up the system to use the {\bf FRICAS} shell variable if we can
-;;; otherwise use the parent directory of FRICASsys binary as fallback.
-(defun initroot ()
- (let (spadroot)
-  (setq spadroot (or (|getEnv| "FRICAS")
-              (let ((bin-parent-dir
-                     (concatenate 'string
-                                  (directory-namestring (car (|getCLArgs|)))
-                                  "/../")))
-                (if (|fricas_probe_file| (concatenate 'string bin-parent-dir
-                                                      "algebra/interp.daase"))
-                    bin-parent-dir))
-              (error "Environment variable FRICAS is not set!")))
-  (setq spadroot (|fricas_probe_file| spadroot))
-  (if spadroot
-      (reroot (trim-directory-name (namestring spadroot)))
-      (error "Environment variable FRICAS is not valid!")))
-)
 
 ;;; Gnu Common Lisp (GCL) (at least 2.6.[78]) requires some changes
 ;;; to the default memory setup to run FriCAS efficiently.
@@ -193,7 +115,7 @@ After this function is called the image is clean and can be saved.
                   (push (list 'defparameter el (symbol-value el))
                         initforms)))
           (push `(interpsys-ecl-image-init) initforms)
-          (push `(fricas-restart) initforms)
+          (push `(|fricas_restart|) initforms)
           (setf initforms (reverse initforms))
           (push `progn initforms)
           (setf FRICAS-LISP::*fricas-initial-lisp-forms* initforms)
@@ -213,13 +135,13 @@ After this function is called the image is clean and can be saved.
      (interpsys-image-init nil)
      (format *standard-output* "spad = ~s~%" |$spadroot|)
      (force-output  *standard-output*)
-     (format *standard-output* "before fricas-restart~%")
+     (format *standard-output* "before fricas_restart~%")
      (force-output  *standard-output*)
 )
 
 (defun interpsys-image-init (display_messages)
   (setf *package* (find-package "BOOT"))
-  (initroot)
+  (|initroot|)
   #+:GCL
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
                       :array 400 :string 500 :cfun 100 :cpages 1000
@@ -235,11 +157,6 @@ After this function is called the image is clean and can be saved.
 ;; the following are for conditional reading
 (setq |$opSysName| '"shell")
 
-;;; moved from bookvol5
-
-(defvar |$HiFiAccess| t               "t means turn on history mechanism")
-
-(defvar |$reportUndo| nil "t means we report the steps undo takes")
 (defvar $openServerIfTrue t "t means try starting an open server")
 (defparameter $SpadServerName "/tmp/.d" "the name of the spad server socket")
 (defvar |$SpadServer| nil "t means Scratchpad acts as a remote server")
@@ -249,14 +166,14 @@ After this function is called the image is clean and can be saved.
  (cond
   ((load "./exposed" :verbose nil :if-does-not-exist nil)
     '|done|)
-  ((load (make-absolute-filename "/algebra/exposed")
+  ((load (|make_absolute_filename| "/algebra/exposed")
      :verbose nil :if-does-not-exist nil)
    '|done|)
   (t '|failed|) ))
 
 (defvar *fricas-load-libspad* t)
 
-(defun fricas-init ()
+(defun |fricas_init| ()
 #+:GCL
   (init-memory-config :cons 500 :fixnum 200 :symbol 500 :package 8
     :array 400 :string 500 :cfun 100 :cpages 3000 :rpages 1000 :hole 2000)
@@ -264,12 +181,12 @@ After this function is called the image is clean and can be saved.
 #+:GCL (setq compiler::*suppress-compiler-warnings* t)
 #+:GCL (setq compiler::*suppress-compiler-notes* t)
   (in-package "BOOT")
-  (initroot)
+  (|initroot|)
 #+:poplog (setf POPLOG:*READ-PROMPT* "") ;; Turn off Poplog read prompts
 #+:GCL (system:gbc-time 0)
     #+(or :sbcl :clisp :openmcl :lispworks :cmu)
     (if *fricas-load-libspad*
-        (let ((spad-lib (make-absolute-filename "/lib/libspad.so")))
+        (let ((spad-lib (|make_absolute_filename| "/lib/libspad.so")))
             (format t "Checking for foreign routines~%")
             (format t "FRICAS=~S~%" |$spadroot|)
             (format t "spad-lib=~S~%" spad-lib)
@@ -281,7 +198,7 @@ After this function is called the image is clean and can be saved.
                     (|quiet_load_alien| spad-lib)
                     #+(or :sbcl :openmcl)
                     (fricas-lisp::init-gmp
-                        (make-absolute-filename "/lib/gmp_wrap.so"))
+                        (|make_absolute_filename| "/lib/gmp_wrap.so"))
                     #+(and :clisp :ffi)
                     (progn
                         (eval `(FFI:DEFAULT-FOREIGN-LIBRARY ,spad-lib))
@@ -305,23 +222,7 @@ After this function is called the image is clean and can be saved.
   (|interpsys_restart|)
 )
 
-(DEFVAR |$trace_stream| *standard-output*)
-(DEFVAR CUROUTSTREAM *standard-output*)
-
-(defun fricas-restart ()
-  ;;; Need to reinitialize various streams because
-  ;;; CLISP closes them when dumping executable
-  (setf CUROUTSTREAM *standard-output*)
-  (setf |$trace_stream| *standard-output*)
-  (setq |$algebraOutputStream| (|mkOutputConsoleStream|))
-  (setq |$fortranOutputStream| (|mkOutputConsoleStream|))
-  (setq |$mathmlOutputStream| (|mkOutputConsoleStream|))
-  (setq |$texmacsOutputStream| (|mkOutputConsoleStream|))
-  (setq |$htmlOutputStream| (|mkOutputConsoleStream|))
-  (setq |$openMathOutputStream| (|mkOutputConsoleStream|))
-  (setq |$texOutputStream| (|mkOutputConsoleStream|))
-  (setq |$formattedOutputStream| (|mkOutputConsoleStream|))
-  (fricas-init)
+(defun |fricas_restart2| ()
   #+:poplog
   (|spad|)
   #-:poplog
@@ -338,7 +239,7 @@ After this function is called the image is clean and can be saved.
   (setq |$SpadServer| nil)
   (setq $openServerIfTrue t)
   (FRICAS-LISP::save-core-restart save-file
-         (if do-restart #'boot::fricas-restart nil))
+         (if do-restart #'boot::|fricas_restart| nil))
 )
 
 (defun |mkAutoLoad| (cname)

@@ -35,6 +35,9 @@
 -- Yet Another Parser Transformation File
 -- These functions are used by for SPAD code
 
+$postStack := []
+$topOp := nil
+
 postTransform y ==
   $insidePostCategoryIfTrue : local := nil
   x:= y

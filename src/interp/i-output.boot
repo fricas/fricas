@@ -212,6 +212,11 @@ DEFVAR($texFormat, false) -- if true produce tex output
 DEFVAR($texmacsFormat, false) -- if true produce Texmacs output
 DEFVAR($formattedFormat, false) -- if true produce formatted output
 
+$LINELENGTH := 77
+$MARGIN := 3
+DEFCONST(BLANK, '" ")
+DEFCONST(UNDERBAR, '"__")
+
 makeCharacter n == INTERN(NUM2USTR(n))
 
 DEFPARAMETER($RTspecialCharacters, [
@@ -1986,14 +1991,17 @@ bracketagglist(u, start, linelength, tchr, open, close) ==
             [LIST('CONCAT, '" ", y) for y in rest u] )
   repeat
     s := 0
+    prev_x := nil
+    last_x := nil
     for x in tails u repeat
-             lastx := x
+             prev_x := last_x
+             last_x := x
              ((s := s + WIDTH first x + 1) >= linelength) => return(s)
              null rest x => return(s := -1)
     nil or
        EQ(s, -1) => (nextu := nil)
-       EQ(lastx, u) => ((nextu := rest u); RPLACD(u, nil) )
-       true => ((nextu := lastx); RPLACD(PREDECESSOR(lastx, u), nil))
+       EQ(last_x, u) => ((nextu := rest u); RPLACD(u, nil) )
+       true => ((nextu := last_x); RPLACD(prev_x, nil))
     for x in tails u repeat
            RPLACA(x, LIST('CONCAT, first x, tchr))
     if null nextu then RPLACA(CDDR last u, close)

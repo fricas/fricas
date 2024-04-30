@@ -31,6 +31,14 @@
 
 )package "BOOT"
 
+$bootStrapMode := false
+$compUniquelyIfTrue := false
+$exitMode := $EmptyMode
+$exitModeStack := []
+$leaveLevelStack := []
+
+$returnMode := $EmptyMode
+
 init_compiler_properties() ==
     for sv in [ _
       ["|", "compSuchthat"], ["@", "compAtSign"], _
@@ -1387,15 +1395,12 @@ compileSpad2Cmd args ==
     -- should be unhooked
 
     $scanIfTrue              : local := nil
-    $f                       : local := nil  -- compiler
-    $m                       : local := nil  --   variables
 
     -- following are for )quick option for code generation
     $QuickLet   : local := true
     $QuickCode  : local := true
 
-    fun         := ['rq, 'lib]
-    constructor := nil
+    lib := true
 
     for opt in $options repeat
         [optname,:optargs] := opt
@@ -1404,46 +1409,24 @@ compileSpad2Cmd args ==
         fullopt = 'new         => error '"Internal error: compileSpad2Cmd got )new"
         fullopt = 'old         => NIL     -- no opt
 
-        fullopt = 'library     => fun.1 := 'lib
-        fullopt = 'nolibrary   => fun.1 := 'nolib
+        fullopt = 'library     => lib := true
+        fullopt = 'nolibrary   => lib := false
 
         -- Ignore quiet/nonquiet if "constructor" is given.
-        fullopt = 'quiet       => if fun.0 ~= 'c then fun.0 := 'rq
-        fullopt = 'noquiet     => if fun.0 ~= 'c then fun.0 := 'rf
+        fullopt = 'quiet       => "ignored now"
+        fullopt = 'noquiet     => "ignored now"
         fullopt = 'nobreak     => $scanIfTrue := true
         fullopt = 'break       => $scanIfTrue := nil
         fullopt = 'vartrace      =>
           $QuickLet  := false
-        fullopt = 'lisp        =>
-          throwKeyedMsg("S2IZ0036",['")lisp"])
-        fullopt = 'functions   =>
-            null optargs =>
-              throwKeyedMsg("S2IZ0037",['")functions"])
-            throwKeyedMsg('")functions unsupported", [])
-        fullopt = 'constructor =>
-            null optargs =>
-              throwKeyedMsg("S2IZ0037",['")constructor"])
-            fun.0       := 'c
-            constructor := [unabbrev o for o in optargs]
         throwKeyedMsg("S2IZ0036",[STRCONC('")",object2String optname)])
 
-    $InteractiveMode : local := nil
-    compilerDoit(constructor, fun)
+    compilerDoit(lib, path)
     extendLocalLibdb $newConlist
     terminateSystemCommand()
     spadPrompt()
 
-compilerDoit(constructor, fun) ==
-    $byConstructors : local := []
-    $constructorsSeen : local := []
-    fun = ['rf, 'lib]   => read_or_compile(true, true)    -- Ignore "noquiet".
-    fun = ['rf, 'nolib] => read_or_compile(false, false)
-    fun = ['rq, 'lib]   => read_or_compile(true, true)
-    fun = ['rq, 'nolib] => read_or_compile(true, false)
-    fun = ['c,  'lib]   =>
-      $byConstructors := [opOf x for x in constructor]
-      read_or_compile(true, true)
-      for ii in $byConstructors repeat
-        null member(ii,$constructorsSeen) =>
-          sayBrightly ['">>> Warning ",'%b,ii,'%d,'" was not found"]
-
+compilerDoit(lib, path) ==
+    $InteractiveMode : local := nil
+    $LISPLIB : local := lib
+    spadCompile(path)

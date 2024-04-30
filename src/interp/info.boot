@@ -37,8 +37,6 @@ This code adds various items to the special value of $Information,
 in order to keep track of all the compiler's information about
 various categories and similar objects
 An actual piece of (unconditional) information can have one of 3 forms:
- (ATTRIBUTE domainname attribute)
-             --These are only stored here, should be unused
  (SIGNATURE domainname operator signature)
              --These are also stored as 'modemap' properties
  (has domainname categoryexpression)
@@ -50,7 +48,6 @@ Conditional attributes are of the form
 where the condition looks like a 'has' clause, or the 'and' of several
 'has' clauses:
   (has name categoryexpression)
-  (has name (ATTRIBUTE attribute))
   (has name (SIGNATURE operator signature))
 The use of two representations is admitted to be clumsy
 )endif

@@ -36,6 +36,8 @@
 --  named stats (listofnames) grouped in classes (listofclasses)
 --  and with measurement types (property).
 
+$timerTicksPerSecond := INTERNAL_-TIME_-UNITS_-PER_-SECOND
+
 makeLongStatStringByProperty _
  (listofnames, listofclasses, property, units, flag) ==
   total := 0

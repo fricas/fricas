@@ -59,7 +59,6 @@ $docTable := nil             --cache for documentation table
 $conArgstrings := nil        --bound by conPage so that kPage
                              --will display arguments if given
 $conformsAreDomains  := false     --are all arguments of a constructor given?
-$returnNowhereFromGoGet := false  --special branch out for goget for browser
 $dbDataFunctionAlist := nil       --set by dbGatherData
 $domain   := nil             --bound in koOps
 $predvec  := nil             --bound in koOps
@@ -393,14 +392,6 @@ extractFileNameFromPath s == fn(s,0,#s) where
     k = m => SUBSTRING(s,i,nil)
     fn(s,k + 1,m)
 
-bcOpTable(u,fn) ==
-  htBeginTable()
-  for op in u for i in 0.. repeat
-    htSay '"{"
-    htMakePage [['bcLinks,[escapeSpecialChars STRINGIMAGE opOf op,'"",fn,i]]]
-    htSay '"}"
-  htEndTable()
-
 bcNameConTable u ==
   $bcMultipleNames: local := (#u ~= 1)
   bcConTable REMDUP u
@@ -465,16 +456,6 @@ splitConTable cons ==
     cond := [pair,:cond]
   [NREVERSE uncond,:NREVERSE cond]
 
-bcNameTable(u,fn,:option) ==   --option if * prefix
-  htSay '"\newline"
-  htBeginTable()
-  for x in u repeat
-    htSay '"{"
-    if IFCAR option then bcStar x
-    htMakePage [['bcLinks,[s := escapeSpecialChars STRINGIMAGE x,'"",fn,s]]]
-    htSay '"}"
-  htEndTable()
-
 bcNameCountTable(u, fn, gn) ==
   linkFunction := 'bcLispLinks
   htSay '"\newline"
@@ -484,11 +465,6 @@ bcNameCountTable(u, fn, gn) ==
     htMakePage [[linkFunction,[FUNCALL(fn,x),'"",gn,i]]]
     htSay '"}"
   htEndTable()
-
-dbSayItemsItalics(:u) ==
-  htSay '"{\em "
-  APPLY(function dbSayItems,u)
-  htSay '"}"
 
 dbSayItems(countOrPrefix,singular,plural,:options) ==
   bcHt '"\newline "
@@ -555,12 +531,6 @@ errorPage(htPage,[heading,kind,:info]) ==
 
 htErrorStar() ==
   errorPage(nil,['"{\em *} not a valid search string",nil,'"\vspace{3}\centerline{{\em *} is not a valid search string for a general search}\centerline{\em {it would match everything!}}"])
-
-htQueryPage(htPage,heading,message,query,fn) ==
-  htInitPage(heading,nil)
-  htSay message
-  htQuery(query, fn, false)
-  htShowPage()
 
 htQuery(question, fn, upLink?) ==
   if question then
@@ -650,8 +620,6 @@ bcGen command ==
 bcOptional s ==
   s = '"" => '"2"
   s
-
-bcvspace() == bcHt '"\vspace{1}\newline "
 
 bcString2WordList s == fn(s,0,MAXINDEX s) where
   fn(s,i,n) ==

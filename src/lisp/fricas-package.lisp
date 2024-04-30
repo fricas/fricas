@@ -41,9 +41,10 @@
     (mapcar (lambda (#3=#:x) (export (list #3#))) #1#)
 )
 
-(export '(quit chdir |getEnv| |getCLArgs| |load_quietly| get-current-directory
-          trim-directory-name pad-directory-name
-          file-kind makedir fricas_compile_file fricas_compile_fasl
+(export '(QUIT CHDIR |getEnv| |getCLArgs| |load_quietly|
+          |get_current_directory|
+          |trim_directory_name| |pad_directory_name|
+          |file_kind| |makedir| |fricas_compile_file| |fricas_compile_fasl|
           |fricas_probe_file| |run_program| |run_shell_command|
           DEFCONST |exit_with_status| MEMQ |quiet_load_alien|
           |handle_input_file| |handle_output_file| |maybe_delete_file|
