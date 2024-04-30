@@ -123,7 +123,7 @@ parseHas [x,y] ==
   mkand [['has,x,u] for u in fn y] where
     mkand x ==
       x is [a] => a
-      ["and",:x]
+      parseAnd(x)
     fn y ==
       y is [":" ,op,['Mapping,:map]] =>
          op:= (STRINGP op => INTERN op; op)
