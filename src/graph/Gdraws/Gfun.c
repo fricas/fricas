@@ -211,7 +211,7 @@ Gdraws_drawFrame(
   /* draw title text */
 
   psData[drawIstrps].flag = yes;
-  fprintf(fp, "\t%s\tloadFont\n\t%d\t(%s) stringwidth pop sub 2 div\n",
+  fprintf(fp, "\t%s\tloadTitleFont\n\t%d\t(%s) stringwidth pop sub 2 div\n",
           "frameDict", twInfo.width, title);
   fprintf(fp, "\t%d\t(%s)\t(%s)\tpsDrawIStr\n", 15, title, "title");
 
