@@ -273,11 +273,11 @@ After this function is called the image is clean and can be saved.
 (defun |waitForViewport| ()
   (progn
    (do ()
-       ((not (zerop (obey
+       ((not (zerop (|run_shell_command|
         (concat
          "ps "
          |$ViewportProcessToWatch|
-         " > /dev/null")))))
+         " > /dev/null && sleep 0.1")))))
        ())
    (|sockSendInt| |$MenuServer| 1)
    (|setIOindex| (- |$IOindex| 3))

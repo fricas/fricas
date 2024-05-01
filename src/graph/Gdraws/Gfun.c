@@ -52,14 +52,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Given 2 file pointers, this function copies file ifp to file ofp
  */
 
+#define BUFFER_SIZE 4096
+
 static void
 filecopy(FILE * ifp, FILE * ofp)
 {
-
-  int c;
-
-  while ((c = getc(ifp)) != EOF)
-    putc(c, ofp);
+  size_t bytesRead;
+  char buffer[BUFFER_SIZE];
+  while ((bytesRead = fread(buffer, 1, BUFFER_SIZE, ifp)) > 0) {
+      fwrite(buffer, 1, bytesRead, ofp);
+  }
 }
 
 /*
