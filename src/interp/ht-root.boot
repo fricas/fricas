@@ -128,6 +128,7 @@ htGlossPage(htPage,pattern,tryAgain?) ==
   filter := pmTransFilter pattern
   grepForm := mkGrepPattern(filter,'none)
   $key: local := 'none
+  $localLibdb : local := []
   results := applyGrep(grepForm,'gloss)
   defstream := MAKE_INSTREAM(STRCONC($spadroot,
                                      '"/algebra/glossdef.text"))

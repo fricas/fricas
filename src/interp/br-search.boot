@@ -854,6 +854,7 @@ dbGetCommentOrigin line ==
   line
 
 grepSource key ==
+  STRINGP(key) => key
   key = 'libdb   => STRCONC($spadroot,'"/algebra/libdb.text")
   key = 'gloss   => STRCONC($spadroot,'"/algebra/glosskey.text")
   key = $localLibdb => $localLibdb
