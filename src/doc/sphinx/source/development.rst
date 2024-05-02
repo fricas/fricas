@@ -12,7 +12,7 @@ In fact, almost all public discussion currently happens on that list.
 
 You can get the sources from the |git repository|::
 
-  git clone http://github.com/fricas/fricas.git
+  git clone https://github.com/fricas/fricas.git
 
 Better, press the fork button on the |git repository| and send
 an ordinary `Github pull request`_.

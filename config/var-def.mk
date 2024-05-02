@@ -71,7 +71,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 ##         that "ln -s" is unusable on msys, and therefore defaults to
 ##         "cp -p", but that default is unusable for us.  For our
 ##         purpose "ln -s" is just fine on that platform.  Consequently
-##         we are explicitly overrding that value here.
+##         we are explicitly overriding that value here.
 LN_S = ln -s
 mkinstalldirs = $(top_srcdir)/config/mkinstalldirs
 PATCH = @PATCH@
@@ -171,9 +171,6 @@ FRICAS_LISP_FLAVOR=@fricas_lisp_flavor@
 FRICAS_LISP_VERSION=@fricas_lisp_version@
 
 ##
-
-##
-AXIOMXLROOT=${FRICAS}/compiler
 
 ## GCL command to end a session.
 BYE=quit

@@ -54,7 +54,6 @@ BEGIN           {
         inEnum = 0
         subSecNum = 0
         comsep = "% ====================================================================="
-        print "% Copyright The Numerical Algorithms Group Limited 1992-94. All rights reserved."
         print "% !! DO NOT MODIFY THIS FILE BY HAND !! Created by ht.awk."
         if (example) {
                 num = chapNum"."secNum
