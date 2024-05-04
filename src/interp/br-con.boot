@@ -422,6 +422,8 @@ topLevelInterpEval x ==
 kisValidType typeForm ==
   $ProcessInteractiveValue: fluid := true
   $noEvalTypeMsg: fluid := true
+  $printTimeIfTrue : local := false
+  $printStorageIfTrue : local := false
   $BreakMode : local := 'throw_reader
   CATCH('SPAD_READER, processInteractive(typeForm, nil))
     is [[h,:.],:t] and member(h,'(Type Category)) => t
