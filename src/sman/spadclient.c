@@ -56,6 +56,8 @@ main(void)
 {
   sock = connect_to_local_server(SessionServer, InterpWindow, Forever);
   bsdSignal(SIGINT, inter_handler,RestartSystemCalls);
+  /* wait for '$CreateFrame' in 'serverReadLine' to finish */
+  fricas_sleep(60);
   remote_stdio(sock);
   return(0);
 }

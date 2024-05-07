@@ -773,9 +773,10 @@ monitor_children(void)
     }
     switch(proc->death_action) {
     case Die:
+      fricas_sleep(100); /* wait a bit for socket buffer to be processed */
       kill_all_children();
       clean_up_sockets();
-      fricas_sleep(200);
+      fricas_sleep(100);
       exit(0);
     case NadaDelShitsky:
       break;
