@@ -24,10 +24,9 @@
 PartialFraction(R : EuclideanDomain) : Cat == Capsule where
   FRR  ==> Factored R
   SUPR ==> SparseUnivariatePolynomial R
-  fTerm ==> Record(num : R, den : FRR)  -- den should have unit = 1
-                                        -- and only 1 factor
-  LfTerm ==> List fTerm
   NNI ==> NonNegativeInteger
+  fTerm ==> Record(num : R, d_fact : R, d_exp : NNI)
+  LfTerm ==> List fTerm
 
   Cat == Join(Field, Algebra R) with
     coerce : % -> Fraction R
@@ -81,6 +80,8 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         partialFraction : Fraction R -> %
           ++ partialFraction(f) is a user friendly interface for partial
           ++ fractions when f is a fraction of UniqueFactorizationDomain.
+    group_terms : LfTerm -> LfTerm
+      ++ Should be local but conditional.
 
   Capsule == add
 
@@ -94,72 +95,98 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
     -- private function signatures
 
     copypf : % -> %
-    LessThan : (fTerm, fTerm) -> Boolean
     multiplyFracTerms : (fTerm, fTerm) -> %
     normalizeFracTerm : fTerm -> %
     partialFractionNormalized : (R, FRR) -> %
 
     -- private function definitions
 
-    -- define firstFactor/firstExponent because den of fTerm has only 1 factor
-    firstFactor(x : FRR) : R == first(factorList(x)).factor
-    firstExponent(x : FRR) : NNI == first(factorList(x)).exponent
-
     copypf(a : %) : % == [a.whole, copy a.fract]$Rep
 
-    LessThan(s : fTerm, t : fTerm) ==
-      -- have to wait until FR has < operation
-      if (GGREATERP(s.den, t.den)$Lisp pretend Boolean) then false
-      else true
+    if R has OrderedSet then
+
+        compare(s : fTerm, t : fTerm) : Boolean ==
+            s.d_fact = t.d_fact => s.d_exp < t.d_exp
+            s.d_fact < t.d_fact
+
+        group_terms(l : LfTerm) : LfTerm ==
+            sort(compare, l)
+
+    else
+
+        exp_compare(s : fTerm, t : fTerm) : Boolean ==
+            s.d_exp > t.d_exp
+
+        group_terms(l : LfTerm) : LfTerm ==
+            res := []$LfTerm
+            while not(empty?(l)) repeat
+                t0 := first(l)
+                f0 := t0.d_fact
+                el0 := [t for t in l | t.d_fact = f0]
+                l := [t for t in l | t.d_fact ~= f0]
+                el0 := sort(exp_compare, el0)
+                res := concat(el0, res)
+            reverse!(res)
 
     multiplyFracTerms(s : fTerm, t : fTerm) ==
-      firstFactor(s.den) = firstFactor(t.den) =>
-        normalizeFracTerm([s.num * t.num, s.den * t.den]$fTerm) :: Rep
-      i : Union(Record(coef1 : R, coef2 : R),"failed")
-      coefs : Record(coef1 : R, coef2 : R)
-      i := extendedEuclidean(expand t.den, expand s.den, s.num * t.num)
-      i case "failed" => error "PartialFraction: not in ideal"
-      coefs := (i@Record(coef1 : R, coef2 : R))
-      c : % := copypf 0$%
-      d : %
-      if coefs.coef2 ~= 0$R then
-        c := normalizeFracTerm ([coefs.coef2, t.den]$fTerm)
-      if coefs.coef1 ~= 0$R then
-        d := normalizeFracTerm ([coefs.coef1, s.den]$fTerm)
-        c.whole := c.whole + d.whole
-        not(empty?(d.fract)) => c.fract := append(d.fract, c.fract)
-      c
+        sf := s.d_fact
+        se := s.d_exp
+        tf := t.d_fact
+        te := t.d_exp
+        sf = tf =>
+            normalizeFracTerm([s.num * t.num, sf, se + te]$fTerm)
+        i := extendedEuclidean(tf^te, sf^se, s.num * t.num)
+        i case "failed" => error "PartialFraction: not in ideal"
+        coefs := i@Record(coef1 : R, coef2 : R)
+        c : % := copypf(0$%)
+        if coefs.coef2 ~= 0$R then
+            c := normalizeFracTerm ([coefs.coef2, tf, te]$fTerm)
+        if coefs.coef1 ~= 0$R then
+            d := normalizeFracTerm ([coefs.coef1, sf, se]$fTerm)
+            c.whole := c.whole + d.whole
+            not(empty?(d.fract)) => c.fract := append(d.fract, c.fract)
+        c
 
     normalizeFracTerm(s : fTerm) ==
-      -- makes sure num is "less than" den, whole may be non-zero
-      qr : QR := divide(s.num, (expand s.den))
-      qr.remainder = 0$R => [qr.quotient, []$LfTerm]
-      -- now verify num and den are coprime
-      f : R := firstFactor(s.den)
-      nexpon : NNI := firstExponent(s.den)
-      expon  : NNI := 0
-      q : QR := divide(qr.remainder, f)
-      while (q.remainder = 0$R) and (expon < nexpon) repeat
-        expon := expon + 1
-        qr.remainder := q.quotient
+        qr : QR := divide(s.num, s.d_fact^s.d_exp)
+        qr.remainder = 0$R => [qr.quotient, []$LfTerm]
+        -- now make sure d_fact and num are coprime
+        f : R := s.d_fact
+        o_exp : NNI := s.d_exp
+        c_exp  : NNI := 0
         q := divide(qr.remainder, f)
-      expon = 0 => [qr.quotient, [[qr.remainder, s.den]$fTerm]$LfTerm]
-      expon = nexpon => (qr.quotient + qr.remainder) :: %
-      [qr.quotient, [[qr.remainder, nilFactor(f, (nexpon-expon)::NNI)]$fTerm]$LfTerm]
+        while q.remainder = 0$R and c_exp < o_exp repeat
+            c_exp := c_exp + 1
+            qr.remainder := q.quotient
+            q := divide(qr.remainder, f)
+        c_exp = o_exp => (qr.quotient + qr.remainder) :: %
+        [qr.quotient, [[qr.remainder, f, (o_exp - c_exp)::NNI]$fTerm]$LfTerm]
+
+    ordered_R? := R has OrderedSet
+
+    normalize_terms(wp : R, l : LfTerm) : % ==
+        pl := [normalizeFracTerm(el) for el in l]
+        frl := []$LfTerm
+        for pn in pl repeat
+            wp := wp + pn.whole
+            if not(empty?(pn.fract)) then
+                frl := cons(first(pn.fract), frl)
+        frl :=
+            ordered_R? => group_terms(reverse!(frl))
+            reverse!(frl)
+        [wp, frl]
 
     partialFractionNormalized(nm : R, dn : FRR) ==
-      -- assume unit dn = 1
-      nm = 0$R   => 0$%
-      dn = 1$FRR => nm :: %
-      qr : QR := divide(nm, expand dn)
-      c : % := [0$R, [[qr.remainder,
-        nilFactor(firstFactor(dn), firstExponent(dn))]$fTerm]$LfTerm]
-      d : %
-      for i in rest factorList dn repeat
-        d :=
-          [0$R, [[1$R, nilFactor(i.factor, i.exponent)]$fTerm]$LfTerm]
-        c := c * d
-      (qr.quotient :: %) + c
+        -- assume unit dn = 1
+        nm = 0$R   => 0$%
+        dn = 1$FRR => nm :: %
+        fl := factorList(dn)
+        dens := [i.factor^i.exponent for i in fl]
+        nu := multiEuclidean(dens, nm)
+        nu case "failed" =>
+            error "partialFractionNormalized: multiEuclidean failed"
+        normalize_terms(0, [[nn, i.factor, i.exponent] for nn in nu@List(R)
+                            for i in fl])
 
     -- public function definitions
 
@@ -167,18 +194,16 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       b : % := compactFraction a
       empty?(b.fract) => b
       l : LfTerm := []
-      s : fTerm
-      f : R
       e, d : Integer
       for s in b.fract repeat
-        e := firstExponent(s.den)
-        e = 1 => l := cons(s, l)
-        f := firstFactor(s.den)
-        d := degree(sp := padicallyExpand(f, s.num))
-        while (sp ~= 0$SUPR) repeat
-          l := cons([leadingCoefficient sp, nilFactor(f, (e-d)::NNI)]$fTerm, l)
-          d := degree(sp := reductum sp)
-      [b.whole, sort(LessThan, l)]$Rep
+          e := s.d_exp
+          e = 1 => l := cons(s, l)
+          f := s.d_fact
+          d := degree(sp := padicallyExpand(f, s.num))
+          while (sp ~= 0$SUPR) repeat
+              l := cons([leadingCoefficient sp, f, (e - d)::NNI]$fTerm, l)
+              d := degree(sp := reductum sp)
+      [b.whole, group_terms(l)]$Rep
 
     compactFraction(a : %) ==
       -- only one power for each distinct denom will remain
@@ -186,21 +211,19 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       af : LfTerm := reverse a.fract
       bf : LfTerm := []
       bw : R := a.whole
-      b : %
-      s : fTerm := [(first af).num, (first af).den]$fTerm
-      f : R := firstFactor(s.den)
-      e : Integer := firstExponent(s.den)
-      t : fTerm
+      f := (first af).d_fact
+      e := (first af).d_exp
+      s : fTerm := [(first af).num, f, e]$fTerm
       for t in rest af repeat
-        f = firstFactor(t.den) =>
-          s.num := s.num + (t.num *
-            (f ^$R ((e - firstExponent(t.den)) :: NNI)))
-        b := normalizeFracTerm s
-        bw := bw + b.whole
-        if not(empty?(b.fract)) then bf := cons(first b.fract, bf)
-        s := [t.num, t.den]$fTerm
-        f := firstFactor(s.den)
-        e := firstExponent(s.den)
+          f = t.d_fact =>
+              s.num := s.num + (t.num *
+                  (f ^$R (e - t.d_exp)::NNI))
+          b := normalizeFracTerm s
+          bw := bw + b.whole
+          if not(empty?(b.fract)) then bf := cons(first b.fract, bf)
+          f := t.d_fact
+          e := t.d_exp
+          s := [t.num, f, e]$fTerm
       b := normalizeFracTerm s
       [bw + b.whole, append(b.fract, bf)]$Rep
 
@@ -214,7 +237,7 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       q : Fraction R := (a.whole :: Fraction R)
       s : fTerm
       for s in a.fract repeat
-        q := q + (s.num / (expand s.den))
+        q := q + (s.num / (s.d_fact^s.d_exp))
       q
     coerce(q : Fraction FRR) : % ==
       u : R := (recip unit denom q):: R
@@ -249,38 +272,30 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
         padicallyExpand(p, qr.quotient)
 
     a = b ==
-      a.whole ~= b.whole => false  -- must verify this
       empty?(a.fract) =>
         empty?(b.fract) => a.whole = b.whole
         false
       empty?(b.fract) => false
-      -- oh, no! following is temporary
       (a :: Fraction R) = (b :: Fraction R)
 
     - a ==
       s : fTerm
       l : LfTerm := []
-      for s in reverse a.fract repeat l := cons([- s.num, s.den]$fTerm, l)
+      for s in reverse a.fract repeat
+           l := cons([- s.num, s.d_fact, s.d_exp]$fTerm, l)
       [- a.whole, l]
 
     r : R * a : % ==
       r = 0$R => 0$%
       r = 1$R => a
-      b : % := (r * a.whole) :: %
-      c : %
-      s : fTerm
-      for s in reverse a.fract repeat
-        c := normalizeFracTerm [r * s.num, s.den]$fTerm
-        b.whole := b.whole + c.whole
-        not(empty?(c.fract)) => b.fract := append(c.fract, b.fract)
-      b
+      normalize_terms(r * a.whole, [[r * s.num, s.d_fact, s.d_exp]
+                                    for s in a.fract])
 
     n : Integer * a : % == (n :: R) * a
 
     a + b ==
       compactFraction
-        [a.whole + b.whole,
-          sort(LessThan, append(a.fract, copy b.fract))]$Rep
+          [a.whole + b.whole, group_terms(append(a.fract, copy b.fract))]$Rep
 
     a : % * b : % ==
       empty?(a.fract) => a.whole * b
@@ -299,8 +314,10 @@ PartialFraction(R : EuclideanDomain) : Cat == Capsule where
       l : List Ex
       if a.whole = 0 then l := [] else l := [a.whole :: Ex]
       for s in a.fract repeat
-        s.den = 1$FRR => l := cons(s.num :: Ex, l)
-        l := cons(s.num :: Ex /  s.den :: Ex, l)
+          den :=
+              s.d_exp = 1 => s.d_fact :: Ex
+              (s.d_fact :: Ex) ^ (s.d_exp ::Ex)
+          l := cons(s.num :: Ex / den, l)
       # l = 1 => first l
       reduce("+", reverse l)
 
