@@ -243,8 +243,8 @@ MSORT list == listSort(function GLESSEQP, COPY_-LIST list)
 -- destructive merge sort using NOT GGREATERP as predicate
 NMSORT list == listSort(function GLESSEQP, list)
 
--- non-destructive merge sort using ?ORDER as predicate
-orderList l == listSort(function _?ORDER, COPY_-LIST l)
+-- non-destructive merge sort using lt_sexp as predicate
+orderList l == listSort(function lt_sexp, COPY_-LIST l)
 
 mergeInPlace(f,g,p,q) ==
    -- merge the two sorted lists p and q

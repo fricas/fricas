@@ -84,34 +84,30 @@
 
 ; Ordering
 
-(DEFUN ?ORDER (U V)
+(DEFUN |lt_sexp| (U V)
   "Multiple-type ordering relation."
 ;;; Result negated compared to LEXGREATERP and GGREATERP
 ;;;   Order of types: nil number symbol string vector cons"
-  (COND ((NULL U))
+  (COND ((EQ U V) NIL)
+        ((NULL U) T)
         ((NULL V) NIL)
         ((ATOM U)
          (if (ATOM V)
              (COND ((NUMBERP U) (if (NUMBERP V) (> V U) T))
                    ((NUMBERP V) NIL)
-                   ((IDENTP U) (AND (IDENTP V) (string> (SYMBOL-NAME V) (SYMBOL-NAME U))))
+                   ((IDENTP U) (AND (IDENTP V)
+                                    (string> (SYMBOL-NAME V) (SYMBOL-NAME U))
+                                    T))
                    ((IDENTP V) NIL)
-                   ((STRINGP U) (AND (STRINGP V) (string> V U)))
+                   ((STRINGP U) (AND (STRINGP V) (string> V U) T))
                    ((STRINGP V) NIL)
                    ((BREAK))
-                   ((AND (VECP U) (VECP V))
-                    (AND (> (SIZE V) (SIZE U))
-                         (DO ((I 0 (1+ I)))
-                             ((> I (MAXINDEX U)) 'T)
-                           (COND ((NOT (EQUAL (ELT U I) (ELT V I)))
-                                  (RETURN (?ORDER (ELT U I) (ELT V I))))))))
                    ((croak "Do not understand")))
                T))
         ((ATOM V) NIL)
-        ((EQUAL U V))
         ((EQUAL (CAR U) (CAR V))
-           (?ORDER (CDR U) (CDR V)))
-        ((?ORDER (CAR U) (CAR V)))
+           (|lt_sexp| (CDR U) (CDR V)))
+        ((|lt_sexp| (CAR U) (CAR V)))
 ))
 
 (DEFUN LEXGREATERP (COMPERAND-1 COMPERAND-2)
@@ -225,11 +221,9 @@
           (GO LP)))
       (RETURN (GGREATERP T1 T2)) ) )
 
-(defvar SORTGREATERP #'GGREATERP "default sorting predicate")
+(defun GLESSEQP (X Y) (|lt_sexp| X Y))
 
-(defun GLESSEQP (X Y) (NOT (GGREATERP X Y)))
-
-(defun LEXLESSEQP (X Y) (NOT (LEXGREATERP X Y)))
+(defun LEXLESSEQP (X Y) (|lt_sexp| X Y))
 
 
 ; 10.3 Creating Symbols

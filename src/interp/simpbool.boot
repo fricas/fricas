@@ -140,7 +140,7 @@ ordUnion(a,b) ==
   a isnt [c,:r] => b
   b isnt [d,:s] => a
   c=d => [c,:ordUnion(r,s)]
-  ?ORDER(c, d) => [c, :ordUnion(r, b)]
+  lt_sexp(c, d) => [c, :ordUnion(r, b)]
   [d,:ordUnion(s,a)]
 ordIntersection(a,b) ==
   a isnt [h,:t] => nil

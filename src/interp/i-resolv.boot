@@ -294,7 +294,7 @@ resolveTTSpecial(t1,t2) ==
 resolveTTCC(t1,t2) ==
   -- tries to use canCoerceFrom information to see if types can be
   -- coerced to one another
-  gt21 := GGREATERP(t2,t1)
+  gt21 := lt_sexp(t1, t2)
   (c12 := canCoerceFrom(t1,t2)) and gt21 => t2
   c21 := canCoerceFrom(t2,t1)
   null (c12 or c21) => NIL

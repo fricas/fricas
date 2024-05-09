@@ -112,7 +112,12 @@ Symbol() : Exports == Implementation where
     coerce(s : String) : %     == VALUES(INTERN(s)$Lisp)$Lisp
     x = y                  == EQUAL(x, y)$Lisp
     hashUpdate!(hs, s)     == update!(hs, SXHASH(s)$Lisp)$HashState
-    x < y                  == GGREATERP(y, x)$Lisp
+    x < y                  ==
+        scripted?(x) =>
+            scripted?(y) => lt_sexp(x, y)$Lisp
+            true
+        scripted?(y) => false
+        lt_sexp(x, y)$Lisp
 
     coerce(x : %) : OutputForm ==
         not(scripted? x) => outputForm(x pretend Symbol)

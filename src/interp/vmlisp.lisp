@@ -274,8 +274,7 @@
 ; 14.6 Miscellaneous
 
 (defun SORTBY (keyfn l)
- (declare (special sortgreaterp))
-  (nreverse (sort (copy-seq l) SORTGREATERP :key keyfn)))
+    (sort (copy-seq l) #'|lt_sexp| :key keyfn))
 
 ; 16.0 Operations on Vectors
 
