@@ -104,7 +104,7 @@ initroot() ==
                                   '"/../")
         if fricas_probe_file(STRCONC(bin_parent_dir, '"algebra/interp.daase"))
         then spadroot := bin_parent_dir
-        else ERROR("Environment variable FRICAS is not set!")
+        else ERROR('"Environment variable FRICAS is not set!")
     spadroot := fricas_probe_file(spadroot)
     if spadroot then
         reroot(trim_directory_name(NAMESTRING(spadroot)))
