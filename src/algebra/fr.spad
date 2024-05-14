@@ -17,8 +17,8 @@
 ++   domain provides a factor function, the result may not be
 ++   completely factored.  Each object consists of a unit and a list of
 ++   factors, where a factor has a member of R (the "base"), and
-++   exponent and a flag indicating what is known about the base.  A
-++   flag may be one of "nil", "sqfr", "irred" or "prime", which respectively mean
+++   exponent and a flag indicating what is known about the base.  A flag
+++   may be one of "nil", "sqfr", "irred" or "prime", which respectively mean
 ++   that nothing is known about the base, it is square-free, it is
 ++   irreducible, or it is prime.  The current
 ++   restriction to integral domains allows simplification to be
@@ -32,8 +32,9 @@ Factored(R : IntegralDomain) : Exports == Implementation where
                    FullyEvalableOver R, FullyRetractableTo R) with
     expand : % -> R
       ++ expand(f) multiplies the unit and factors together, yielding an
-      ++ "unfactored" object. Note: this is purposely not called \spadfun{coerce} which would
-      ++ cause the interpreter to do this automatically.
+      ++ "unfactored" object. Note: this is purposely not called
+      ++ \spadfun{coerce} which would cause the interpreter to do this
+      ++ automatically.
 
     makeFR  : (R, List FF) -> %
       ++ makeFR(unit, listOfFactors) creates a factored object (for
@@ -125,11 +126,15 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 
   Implementation ==> add
 
-    -- FIXME: we can not assume Canonical
-    -- in Rep, the fct part is a sorted list, see LispLessP.
-    -- this implies that if R is not Comparable, then it must be Canonical,
-    -- (because LispLessP will compare the hash of underlying structure)
-    -- otherwise the result will be wrong.
+    -- For ordered R, the fct part is a sorted list.  Othewise we
+    -- use quadratic loops to match factors.  Code assumes that
+    -- factors either are equal or coprime, this may fail if
+    -- factors of two different kinds meet in an operation.
+    -- Also, if R does not have unitNormalCanonical, then even
+    -- prime factors may be equivalent but unequal.
+    -- In principle for GcdDomain-s we could do gcd decomposition
+    -- to match and refine factors, but this is more expensive
+    -- than current implementation and not done.
     Rep := Record(unt : R, fct : List FF)
 
     if R has ConvertibleTo InputForm then
@@ -162,11 +167,37 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         empty? rest l => first l
         binary(convert("*"::Symbol)@InputForm, l)@InputForm
 
-    orderedR? := R has OrderedSet
-    comparableR? := R has Comparable
+    ordered_R? := R has OrderedSet
+    comparable_R? := R has Comparable
+
+    has_order? := ordered_R? or (comparable_R? and R has Canonical)
+
+    compare(f1 : FF, f2 : FF) : Boolean ==
+        ordered_R? => f1.factor < f2.factor
+        comparable_R? => smaller?(f1.factor, f2.factor)
+        error "unimplemented"
+
+    group_terms!(l : List(FF)) : List(FF) ==
+        if comparable_R? then
+            l := sort!(compare, l)
+        has_order? => l
+        res : List(FF) := []
+        while not(empty?(l)) repeat
+            t1 := first(l)
+            res := cons(t1, res)
+            f1 := t1.factor
+            l := rest(l)
+            l1 : List(FF) := []
+            while not(empty?(l)) repeat
+                s1 := first(l)
+                l := rest(l)
+                s1.factor = f1 =>
+                    res := cons(s1, res)
+                l1 := cons(s1, l1)
+            l := reverse!(l1)
+        reverse!(res)
 
   -- Private function signatures:
-    LispLessP               : (FF, FF) -> Boolean
     mkFF                    : (R, List FF) -> %
     stricterFlag            : (fUnion, fUnion) -> fUnion
 
@@ -201,7 +232,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
 --            u := 1
         u = 0 => 0
         empty? x => mkFF(u, empty())
-        x := sort!(LispLessP, x)
+        x := group_terms!(x)
         while not empty? x and x.first.exponent = 0 repeat x := rest x
         empty? x => mkFF(u, empty())
         o := x -- o is the constant pointer that holds the list
@@ -211,7 +242,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         x := rest x  -- x is the pointer that iterates through the list
         while not empty? x repeat
             f1 := first x
-            f1.exponent = 0 =>
+            f1.exponent = 0 or f1.factor = 1 =>
                 setrest!(p, rest x)
                 x := rest x
             f1.factor = 0 => return 0
@@ -265,24 +296,50 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         convert(unit x)@DoubleFloat *
           _*/[convert(f.factor)@DoubleFloat ^ f.exponent for f in factorList x]
 
+    ordered_mul(lu : List(FF), lv : List(FF)) : List(FF) ==
+        res : List FF := []
+        while not(empty?(lu)) and not(empty?(lv)) repeat
+            u1 := first lu; v1 := first lv
+            u1.factor = v1.factor =>
+                res := cons([stricterFlag(u1.flag, v1.flag),
+                             u1.factor, u1.exponent + v1.exponent], res)
+                lu := rest lu; lv := rest lv
+            compare(u1, v1) =>
+                res := cons(u1, res)
+                lu := rest(lu)
+            res := cons(v1, res)
+            lv := rest(lv)
+        concat!(reverse!(res), if empty? lu then lv else lu)
+
+    unordered_mul(lu : List(FF), lv : List(FF)) : List(FF) ==
+        res : List FF := []
+        for u1 in lu repeat
+            f1 := u1.factor
+            lv1 : List FF := []
+            factor_done := false
+            while not empty? lv repeat
+                v1 := first(lv)
+                lv := rest(lv)
+                f1 = v1.factor =>
+                    res := cons([stricterFlag(u1.flag, v1.flag),
+                                 u1.factor, u1.exponent + v1.exponent], res)
+                    factor_done := true
+                    break
+                lv1 := cons(v1, lv1)
+            if not(factor_done) then
+                res := cons(u1, res)
+            for v1 in lv1 repeat
+                lv := cons(v1, lv)
+        concat!(reverse!(res), lv)
+
     u : % * v : % ==
         zero? u or zero? v => 0
         one? u => v
         one? v => u
-        lu := factorList u; lv := factorList v
-        res : List FF := []
-        while not empty? lu and not empty? lv repeat
-            u1 := first lu; v1 := first lv
-            u1.factor = v1.factor =>
-                res := concat([stricterFlag(u1.flag, v1.flag), _
-                               u1.factor, u1.exponent + v1.exponent], res)
-                lu := rest lu; lv := rest lv
-            LispLessP(u1, v1) =>
-                res := concat(u1, res)
-                lu := rest lu
-            res := concat(v1, res)
-            lv := rest lv
-        res := concat!(reverse! res, if empty? lu then lv else lu)
+        lu := copy(factorList(u)); lv := copy(factorList(v))
+        res : List FF :=
+            has_order? => ordered_mul(lu, lv)
+            unordered_mul(lu, lv)
         mkFF(unit u * unit v, res)
 
     u : % ^ n : NonNegativeInteger ==
@@ -308,12 +365,6 @@ Factored(R : IntegralDomain) : Exports == Implementation where
     retract(u : %) : R == expand u
     retractIfCan(u : %) : Union(R, "failed") == expand(u)
 
-    LispLessP(y, y1) ==
-      orderedR? => y.factor < y1.factor
-      comparableR? => smaller?(y.factor, y1.factor)
-      GGREATERP(y.factor, y1.factor)$Lisp => false
-      true
-
     stricterFlag(fl1, fl2) ==
       fl1 case "prime"   => fl1
       fl1 case "irred"   =>
@@ -324,32 +375,37 @@ Factored(R : IntegralDomain) : Exports == Implementation where
         fl2
       fl2
 
-    if R has IntegerNumberSystem
-      then
+
+    if R has IntegerNumberSystem then
+
         coerce(r : R) : % ==
           factor(r)$IntegerFactorizationPackage(R) pretend %
-      else
-        if R has UniqueFactorizationDomain
-          then
-            coerce(r : R) : % ==
-              zero? r => 0
-              unit? r => mkFF(r, empty())
-              R has Field => error "zero divisor in a field"
-              unitNormalize(squareFree(r) pretend %)
-          else
-            coerce(r : R) : % ==
-              (r = 1) => 1
-              unitNormalize mkFF(1, [["nil", r, 1]$FF])
+
+    else if R has UniqueFactorizationDomain then
+
+        coerce(r : R) : % ==
+            zero? r => 0
+            unit? r => mkFF(r, empty())
+            R has Field => error "zero divisor in a field"
+            unitNormalize(squareFree(r) pretend %)
+
+    else
+
+        coerce(r : R) : % ==
+            (r = 1) => 1
+            unitNormalize mkFF(1, [["nil", r, 1]$FF])
 
     u = v ==
-        unit u ~= unit v => false
-        lu := factorList u; lv := factorList v
-        while not empty? lu and not empty? lv repeat
-            u1 := first lu; v1 := first lv
-            u1.exponent ~= v1.exponent => return false
-            u1.factor ~= v1.factor => return false
-            lu := rest lu; lv := rest lv
-        empty? lu and empty? lv
+        has_order? =>
+            unit u ~= unit v => false
+            lu := factorList u; lv := factorList v
+            while not empty? lu and not empty? lv repeat
+                u1 := first lu; v1 := first lv
+                u1.exponent ~= v1.exponent => return false
+                u1.factor ~= v1.factor => return false
+                lu := rest lu; lv := rest lv
+            empty? lu and empty? lv
+        expand(u) = expand(v)
 
     - u ==
       zero? u => u
@@ -375,13 +431,18 @@ Factored(R : IntegralDomain) : Exports == Implementation where
                    [["nil", fn(f.factor), f.exponent]$FF for f in factorList u])
         makeFR(1, l)
 
-    mergeFactors(f, g) ==
-        mkFF(unit(f)*unit(g), merge(LispLessP, factorList f, factorList g))
+    if R has OrderedSet then
 
-    u exquo v ==
-        newunit := (unit(u) exquo unit(v))::R
-        lu := factorList u; lv := factorList v
-        empty? lv => mkFF(newunit, lu)
+        mergeFactors(f, g) ==
+            mkFF(unit(f)*unit(g), merge(compare, factorList(f), factorList(g)))
+
+    else
+
+        mergeFactors(f, g) ==
+            mkFF(unit(f)*unit(g), append(factorList(f), factorList(g)))
+
+    do_ordered_exquo(lu : List(FF), lv : List(FF)
+                    ) : Union(List(FF), "failed") ==
         res : List FF := []
         while not empty? lu and not empty? lv repeat
             u1 := first lu; v1 := first lv
@@ -389,15 +450,45 @@ Factored(R : IntegralDomain) : Exports == Implementation where
                 expn := u1.exponent - v1.exponent
                 expn < 0 => return "failed"
                 if expn > 0 then
-                    newfactor : FF := [stricterFlag(u1.flag, v1.flag), _
-                                       u1.factor, expn::NonNegativeInteger]
-                    res := concat(newfactor, res)
+                    nf : FF := [stricterFlag(u1.flag, v1.flag),
+                                     u1.factor, expn::NonNegativeInteger]
+                    res := cons(nf, res)
                 lu := rest lu; lv := rest lv
-            LispLessP(u1, v1) =>
-                res := concat(u1, res)
+            compare(u1, v1) =>
+                res := cons(u1, res)
                 lu := rest lu
             return "failed"
         not empty? lv => "failed"
+        concat!(reverse!(res), lu)
+
+    u exquo v ==
+        newunit := (unit(u) exquo unit(v))::R
+        lu := copy(factorList(u)); lv := factorList(v)
+        empty? lv => mkFF(newunit, lu)
+        has_order? =>
+            new_ff := do_ordered_exquo(lu, lv)
+            new_ff case "failed" => "failed"
+            mkFF(newunit, new_ff)
+        res : List FF := []
+        for v1 in lv repeat
+            factor_done := false
+            lu1 : List FF := []
+            while not empty? lu repeat
+                u1 := first lu
+                lu := rest(lu)
+                u1.factor = v1.factor =>
+                    expn := u1.exponent - v1.exponent
+                    expn < 0 => return "failed"
+                    if expn > 0 then
+                        nf : FF := [stricterFlag(u1.flag, v1.flag),
+                                         u1.factor, expn::NonNegativeInteger]
+                        res := concat(nf, res)
+                    factor_done := true
+                    break
+                lu1 := cons(u1, lu1)
+            not(factor_done) => return "failed"
+            for u1 in lu1 repeat
+                lu := cons(u1, lu)
         mkFF(newunit, concat!(reverse! res, lu))
 
     unitNormal u == -- does a bunch of work, but more canonical
@@ -465,7 +556,9 @@ Factored(R : IntegralDomain) : Exports == Implementation where
                   ev := ev + f.exponent*qcoerce(tr(j, i))
               ev = 0 => iterate
               res := cons([fg, nf, min(eu, ev)]$FF, res)
-          res := sort!(LispLessP, res)
+          res :=
+              has_order? => group_terms!(res)
+              res
           mkFF(1, res)
 
       gcd(u, v) ==
@@ -491,7 +584,7 @@ Factored(R : IntegralDomain) : Exports == Implementation where
       u + v ==
         zero? u => v
         zero? v => u
-        irreducibleFactor(expand u + expand v, 1)
+        nilFactor(expand u + expand v, 1)
 
     if R has UniqueFactorizationDomain then
       prime? u ==
