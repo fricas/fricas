@@ -61,4 +61,6 @@ isExistingFile f ==
 
 --% Scratchpad II File Name Functions
 
-isSystemDirectory dir == EVERY(function CHAR_=,$spadroot,dir)
+isSystemDirectory path ==
+  -- check if $spadroot is the prefix of 'path'
+  # path >= # $spadroot and EVERY(function CHAR_=, $spadroot, path)

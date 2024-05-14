@@ -71,7 +71,7 @@ loadLibIfNotLoaded libName ==
 loadLib cname ==
   startTimingProcess 'load
   fullLibName := get_database(cname, 'OBJECT) or return nil
-  systemdir? := isSystemDirectory(pathnameDirectory fullLibName)
+  systemdir? := isSystemDirectory(fullLibName)
   update? := not systemdir?
   loadLibNoUpdate1(cname, fullLibName)
   kind := get_database(cname, 'CONSTRUCTORKIND)
