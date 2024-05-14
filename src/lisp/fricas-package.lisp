@@ -65,6 +65,8 @@
 )
 #+:openmcl
 (eval-when (:execute :compile-toplevel :load-toplevel)
+      ;;; For Clozure CL assume :win32, when :windows
+      #+:windows (push :win32 *features*)
       (setf *features* (delete :CCL *features*)))
 
 ;;; Package containing Shoe to Lisp translator

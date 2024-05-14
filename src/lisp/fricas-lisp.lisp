@@ -236,9 +236,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; For ECL assume :unix, when :netbsd or :darwin
 #+(and :ecl (or :darwin :netbsd)) (push :unix *features*)
 
-;;; For Clozure CL assume :win32, when :windows
-#+(and :openmcl :windows) (push :win32 *features*)
-
 ;;; -----------------------------------------------------------------
 
 ;;; Deleting files ignoring errors
