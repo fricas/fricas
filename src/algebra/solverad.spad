@@ -414,6 +414,8 @@ RadicalSolvePackage(R) : Cat == Capsule where
           ++ size of the output.
         cyclotomic_case? :  UP -> Union(Integer, "failed")
           ++ cyclotomic_case?(u) should be local but conditional
+        radical_solve : UP -> Union(List(RE), "failed")
+          ++ radical_solve(p) should be local but conditional
     Capsule ==> add
         import from DegreeReductionPackage(PR, R)
         import from SOLVEFOR
@@ -583,6 +585,16 @@ RadicalSolvePackage(R) : Cat == Capsule where
 
             cyclotomic_case?(u : UP) : Union(Integer, "failed") == "failed"
 
+        if R has GcdDomain and R has RetractableTo(Integer) and
+           R has LinearlyExplicitOver(Integer) then
+
+            radical_solve(p : UP) : Union(List(RE), "failed") ==
+                radical_solve(map(coerce, p)$UPF2)$RootUtilities(R, RE)
+
+        else
+
+            radical_solve(p : UP) : Union(List(RE), "failed") == "failed"
+
         solveInner(pq : PR, v : SY, contractFlag : B) ==
             SideEquations := []
             ContractSoln  := contractFlag
@@ -618,6 +630,7 @@ RadicalSolvePackage(R) : Cat == Capsule where
                         for i in 1..f.exponent repeat
                             solutions := append(T0, solutions)
                         []
+                    (lu := radical_solve(u)) case List(RE) => lu@List(RE)
                     n = 3 => cubic u
                     n = 4 => quartic u
                     unsolved := cons(ff, unsolved)

@@ -2,7 +2,7 @@
 ++ Description: This package implments 'complex_roots'.
 RootUtilities(R, F) : Exports == Implementation where
   R : Join(GcdDomain, RetractableTo Integer, Comparable,
-          LinearlyExplicitOver Integer)
+           LinearlyExplicitOver Integer)
   F : Join(AlgebraicallyClosedFunctionSpace R,
           TranscendentalFunctionCategory)
   C_rec ==> Record(real : F, imag : F)
@@ -13,6 +13,10 @@ RootUtilities(R, F) : Exports == Implementation where
     complex_roots : UP -> Union(r_rec, "failed")
       ++ complex_roots(p) computes roots of p in terms of radicals
       ++ separating real and complex roots.
+      ++ Returns "failed" when unsuccessful.
+    radical_solve : UP -> Union(List(F), "failed")
+      ++ radical_solve(p) tries to solve polynomial p in terms
+      ++ of radicals.
       ++ Returns "failed" when unsuccessful.
     quartic2 : (UP, F) -> Union(r_rec, "failed")
       ++ quartic2(p) should be local but conditional
@@ -32,6 +36,8 @@ RootUtilities(R, F) : Exports == Implementation where
     dummy := create()$SingletonAsOrderedSet
 
     root_pair(a : F, b : F) : C_rec == [a, b]
+
+    my_imag := sqrt(-1)
 
     root4(a : F) : F ==
         rec := froot(a, 4)$PolynomialRoots(IndexedExponents(K), K, R, P, F)
@@ -105,13 +111,12 @@ RootUtilities(R, F) : Exports == Implementation where
             r := r - (b^2)::UP
             fr := factor(r)
             fl := factorList(fr)
-            #fl = 1 => "failed"
             flf : List(UP) := []
             for fac in fl repeat
                 f1 := fac.factor
-                fac.exponent = 2 =>
-                    flf := cons(f1, cons(f1, flf))
-                flf := cons(f1, flf)
+                for i in 1..fac.exponent repeat
+                    flf := cons(f1, flf)
+            #flf = 1 => "failed"
             #flf = 3 =>
                 r1 : F
                 cnt : Integer := 0
@@ -248,6 +253,16 @@ RootUtilities(R, F) : Exports == Implementation where
         (d = 3) => qubic(p)
         (d = 4) => quartic(p)
         "failed"
+
+    radical_solve(p : UP) : Union(List(F), "failed") ==
+        r1u := complex_roots(p)
+        r1u case "failed" => "failed"
+        r1 := r1u@r_rec
+        res := reverse!(r1.reals)
+        for c1 in r1.complexes repeat
+            res := cons(c1.real + my_imag*c1.imag, res)
+            res := cons(c1.real - my_imag*c1.imag, res)
+        reverse!(res)
 
 
 )abbrev package RSIMP RootSimplification
