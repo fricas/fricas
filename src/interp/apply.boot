@@ -206,6 +206,7 @@ compMapCond'([cexpr,fnexpr], op, dc, bindings, e) ==
   stackMessage ['"not known that",'%b,dc,'%d,'"has",'%b,cexpr,'%d]
 
 compMapCond''(cexpr, dc, e) ==
+  cexpr = false => false
   cexpr=true => true
   cexpr is ["AND", :l] or cexpr is ["and", :l] =>
       and/[compMapCond''(u, dc, e) for u in l]
