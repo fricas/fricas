@@ -1477,7 +1477,7 @@ recordNewValue0(x,prop,val) ==
     p2 := ASSQ(prop, rest p1) =>
       RPLACD(p2,val)
     RPLACD(p1, CONS(CONS(prop, val), rest p1))
-  p:= CONS(x,list CONS(prop,val))
+  p:= CONS(x, [CONS(prop,val)])
   $HistRecord:= CONS(p,$HistRecord)
 
 recordOldValue(x,prop,val) ==
@@ -1490,7 +1490,7 @@ recordOldValue0(x,prop,val) ==
   p1 := ASSQ(x, first $HistList) =>
     not ASSQ(prop, rest p1) =>
       RPLACD(p1, CONS(CONS(prop, val), rest p1))
-  p:= CONS(x,list CONS(prop,val))
+  p:= CONS(x, [CONS(prop,val)])
   RPLACA($HistList, CONS(p, first $HistList))
 
 undoInCore(n) ==

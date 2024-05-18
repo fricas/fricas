@@ -174,19 +174,13 @@ for i in [ _
   ["cdr",          "CDR"]  , _
   ["cons",        "CONS"]  , _
   ["copy",        "COPY"]  , _
-  ["croak",      "CROAK"]  , _
   ["exit",        "EXIT"]  , _
   ["false",        'NIL]   , _
   ["first",        "CAR"]  , _
   ["function","FUNCTION"] , _
-  ["genvar",    "GENVAR"]  , _
   ["IN",        "member"]  , _
   ["is",            "IS"]  , _
   ["isnt",        "ISNT"]  , _
-  ["lastNode",    "LAST"]  , _
-  ["LAST",        "last"] , _
-  ["list",        "LIST"]  , _
-  ["mkpf",        "MKPF"]  , _
   ["nconc",      "NCONC"]  , _
   ["nil"           ,NIL ]  , _
   ["not",         "NULL"]  , _
@@ -201,7 +195,6 @@ for i in [ _
   ["reverse",  "REVERSE"]  , _
   ["setDifference", "SETDIFFERENCE"]  , _
   ["setIntersection", "INTERSECTION"]  , _
-  ["setPart",   "SETELT"]  , _
   ["setUnion",   "UNION"]  , _
   ["size",        "SIZE"]  , _
   ["strconc",  "CONCAT"]  , _
