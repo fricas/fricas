@@ -231,11 +231,7 @@ actOnInfo(u, e) ==
     e
   u is ["ATTRIBUTE",name,att] => BREAK()
   u is ["SIGNATURE",name,operator,modemap] =>
-    implem:=
-      (implem := assoc([name, :modemap], get(operator, 'modemap, e))) =>
-          CADADR implem
-      name = "%" => ['ELT, name, -1]
-      ['ELT, name, substitute('%, name, modemap)]
+    implem := ['ELT, name, 0]
     e := addModemap(operator, name, modemap, true, implem, e)
     [vval, vmode, venv] := GetValue(name, e)
     SAY("augmenting ",name,": ",u)

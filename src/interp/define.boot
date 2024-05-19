@@ -493,39 +493,8 @@ displayMissingFunctions() ==
 
 makeFunctorArgumentParameters(argl, sigl, target, dollar, e) ==
   $forceAdd: local:= true
-  $ConditionalOperators: local := nil
   $tmp_e := e
-  for a in argl for s in sigl repeat fn(a, dollar,
-                                   augmentSig(s,findExtras(a,target)))
-          where
-    findExtras(a,target) ==
-      --  see if conditional information implies anything else
-      --  in the signature of a
-      target is ['Join,:l] => "union"/[findExtras(a,x) for x in l]
-      target is ['CATEGORY,.,:l] => "union"/[findExtras1(a,x) for x in l] where
-        findExtras1(a,x) ==
-          x is ['AND,:l] => "union"/[findExtras1(a,y) for y in l]
-          x is ['OR,:l] => "union"/[findExtras1(a,y) for y in l]
-          x is ['IF,c,p,q] =>
-            union(findExtrasP(a,c),
-                  union(findExtras1(a,p),findExtras1(a,q))) where
-              findExtrasP(a,x) ==
-                x is ['AND,:l] => "union"/[findExtrasP(a,y) for y in l]
-                x is ['OR,:l] => "union"/[findExtrasP(a,y) for y in l]
-                x is ['has,=a,y] and y is ['SIGNATURE,:.] => [y]
-                nil
-        nil
-    augmentSig(s,ss) ==
-       -- if we find something extra, add it to the signature
-      null ss => s
-      for u in ss repeat
-        $ConditionalOperators:=[CDR u,:$ConditionalOperators]
-      s is ['Join,:sl] =>
-        u := ASSQ('CATEGORY, ss) => BREAK()
-        ['Join,:sl,['CATEGORY,'package,:ss]]
-      ['Join,s,['CATEGORY,'package,:ss]]
-    fn(a, dollar, s) ==
-      not(ATOM(a)) => BREAK()
+  for a in argl for s in sigl repeat
       if isCategoryForm(s) then
         s is ["Join", :catlist] => genDomainViewList(a, dollar, rest s)
         genDomainView(a, dollar, s)
@@ -545,10 +514,9 @@ genDomainView(viewName, dollar, c) ==
 genDomainOps(viewName, cat) ==
   oplist := getOperationAlist(viewName, viewName, cat)
   oplist:= substNames(viewName, viewName, oplist)
-  for [opsig,cond,:.] in oplist for i in 0.. repeat
-    if opsig in $ConditionalOperators then cond:=nil
+  for [opsig,cond,:.] in oplist repeat
     [op, sig] := opsig
-    $tmp_e:= addModemap(op, viewName, sig, cond, ['ELT, viewName, i], $tmp_e)
+    $tmp_e:= addModemap(op, viewName, sig, cond, ['ELT, viewName, 0], $tmp_e)
 
 compDefWhereClause(['DEF, form, signature, body], m, e) ==
 -- form is lhs (f a1 ... an) of definition; body is rhs;
