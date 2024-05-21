@@ -444,7 +444,7 @@ outputMapTran(op, x) ==
   $linearFormatScripts : local := true
 
   -- get the real names of the parameters
-  alias := get(op, 'alias, $InteractiveFrame)
+  alias := getI(op, 'alias)
 
   rest l =>             -- if multiple forms, call repeatedly
       ['SC, :[outputMapTran0(op, ll, alias) for ll in l]]

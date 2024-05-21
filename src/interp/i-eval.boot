@@ -283,7 +283,7 @@ getArgValueOrThrow(x, type) ==
 getMappingArgValue(a,t,m is ['Mapping,:ml]) ==
   (una := getUnname a) in $localVars =>
     $genValue =>
-      name := get(una,'name,$env)
+      name := get0(una, 'name, $env)
       a.0 := name
       mmS := selectLocalMms(a,name,rest ml, nil)
       or/[mm for mm in mmS |
@@ -312,7 +312,7 @@ getArgValueComp(arg,type,cond) ==
   n := getUnnameIfCan arg
   if num := isSharpVarWithNum n then
     not $compilingMap => n := 'unknownVar
-    alias := get($mapName,'alias,$e)
+    alias := get0($mapName, 'alias, $e)
     n := alias.(num - 1)
   keyedMsgCompFailure("S2IE0010",[n])
 

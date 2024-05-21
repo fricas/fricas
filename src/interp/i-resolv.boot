@@ -235,8 +235,8 @@ resolveTTSpecial(t1,t2) ==
     ofCategory(t2, '(IntegerNumberSystem)) => resolveTT(['Polynomial, t2], t2)
     resolveTT(['Polynomial,'(Integer)],t2)
   t1 is ['FunctionCalled,f] and t2 is ['FunctionCalled,g] =>
-    null (mf := get(f,'mode,$e)) => NIL
-    null (mg := get(g,'mode,$e)) => NIL
+    null (mf := get0(f, 'mode, $e)) => NIL
+    null (mg := get0(g, 'mode, $e)) => NIL
     mf ~= mg => NIL
     mf
   t1 is ['UnivariatePolynomial,x,S] =>

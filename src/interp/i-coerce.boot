@@ -255,7 +255,7 @@ retract2Specialization object ==
     coerceInt(object, ['UnivariateTaylorSeries, coef, var, cen])
 
   type is ['FunctionCalled,name] =>
-    null (m := get(name,'mode,$e)) => NIL
+    null (m := get0(name, 'mode, $e)) => NIL
     isPartialMode m => NIL
     objNew(val,m)
   NIL
@@ -912,7 +912,7 @@ coerceInt1(triple,t2) ==
     objNewWrap(intName,t2)
   (t1 is ['FunctionCalled,sym]) =>
     t2 = $OutputForm => coerceByFunction(objNewWrap(val, t1), t2)
-    (t3 := get(sym,'mode,$e)) and t3 is ['Mapping,:.] =>
+    (t3 := get0(sym, 'mode, $e)) and t3 is ['Mapping, :.] =>
       (triple' := coerceInt(triple,t3)) => coerceInt(triple',t2)
       NIL
     NIL

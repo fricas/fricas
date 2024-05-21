@@ -229,7 +229,7 @@ selectMms2(op,tar,args1,args2,$Coerce) ==
       x is ['Record,:l] =>
         a' := append(reverse [CADDR s for s in l],a')
       x is ['FunctionCalled,name] =>
-        (xm := get(name,'mode,$e)) and not isPartialMode xm =>
+        (xm := get0(name, 'mode, $e)) and not(isPartialMode(xm)) =>
           a' := cons(xm,a')
     a := append(a,REMDUP a')
     a := [x for x in a | PAIRP(x)]
@@ -481,7 +481,7 @@ getOpArgTypes(opname, args) ==
   [f(a,opname) for a in l] where
     f(x,op) ==
       x is ['FunctionCalled,g] and op ~= 'name =>
-        m := get(g,'mode,$e) =>
+        m := get0(g, 'mode, $e) =>
           m is ['Mapping,:.] => m
           x
         x
@@ -575,14 +575,14 @@ selectLocalMms(op,name,types,tar) ==
 getLocalMms(name,types,tar) ==
   -- looks for exact or subsumed local modemap in $e
   mmS := NIL
-  for  (mm:=[dcSig,:.]) in get(name,'localModemap,$e) repeat
+  for  (mm := [dcSig, : .]) in get0(name, 'localModemap, $e) repeat
     -- check format and destructure
     dcSig isnt [dc,result,:args] => NIL
     -- make number of args is correct
     #types ~= #args => NIL
     -- check for equal or subsumed arguments
     subsume := (not $useIntegerSubdomain) or (tar = result) or
-      get(name,'recursive,$e)
+      get0(name, 'recursive, $e)
     acceptableArgs :=
       and/[f(b,a,subsume) for a in args for b in types] where
         f(x,y,subsume) ==

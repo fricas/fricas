@@ -93,7 +93,7 @@ reportFunctionCompilation(op,nam,argl,body,isRecursive) ==
   cacheCountCode:= ['countCircularAlist,cacheName,cacheCount]
   cacheVector:=
     mkCacheVec(op,cacheName,cacheType,cacheResetCode,cacheCountCode)
-  $e:= put(nam,'cacheInfo, cacheVector,$e)
+  $e := putIntSymTab(nam, 'cacheInfo, cacheVector, $e)
   eval cacheResetCode
   SET(cacheName,mkCircularAlist cacheCount)
   nam
@@ -126,7 +126,7 @@ reportFunctionCacheAll(op,nam,argl,body) ==
   cacheCountCode:= ['hashCount,cacheName]
   cacheVector:=
     mkCacheVec(op,cacheName,cacheType,cacheResetCode,cacheCountCode)
-  $e:= put(nam,'cacheInfo, cacheVector,$e)
+  $e := putIntSymTab(nam, 'cacheInfo, cacheVector, $e)
   eval cacheResetCode
   nam
 
@@ -234,7 +234,7 @@ compileRecurrenceRelation(op,nam,argl,junk,[body,sharpArg,n,:initCode]) ==
   cacheType:= 'recurrence
   cacheCountCode:= ['nodeCount,stateNam]
   cacheVector:= mkCacheVec(op,stateNam,cacheType,cacheResetCode,cacheCountCode)
-  $e:= put(nam,'cacheInfo, cacheVector,$e)
+  $e := putIntSymTab(nam, 'cacheInfo, cacheVector, $e)
   nam
 
 NUMOFNODES(x) ==
@@ -278,7 +278,7 @@ mkCacheVec(op,nam,kind,resetCode,countCode) ==
 --   nil
 
 clearCache x ==
-  get(x,'localModemap,$e) or get(x,'mapBody,$e) =>
+  get0(x, 'localModemap, $e) or get0(x, 'mapBody, $e) =>
     for [map,:sub] in $mapSubNameAlist repeat
       map=x => untrace2(sub,[])
     $e:= putHist(x,'localModemap,nil,$e)

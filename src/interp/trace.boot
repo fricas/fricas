@@ -447,7 +447,7 @@ saveMapSig(funNames) ==
         $tracedMapSignatures)
 
 getMapSig(mapName,subName) ==
-  lmms:= get(mapName,'localModemap,$InteractiveFrame) =>
+  lmms := getI(mapName, 'localModemap) =>
     for mm in lmms until sig repeat
       CADR mm = subName => sig:= CDAR mm
     sig
@@ -572,7 +572,7 @@ get_name(x) ==
 
 transTraceItem x ==
   atom x =>
-    (value:=get(x,"value",$InteractiveFrame)) and
+    (value := getI(x, "value")) and
       (objMode value in '((Mode) (Type) (Category))) =>
         x := objVal value
         (y:= domainToGenvar x) => y
@@ -637,7 +637,7 @@ isListOfIdentifiersOrStrings l == and/[IDENTP x or STRINGP x for x in l]
 getMapSubNames(l) ==
   subs:= nil
   for mapName in l repeat
-    lmm:= get(mapName,'localModemap,$InteractiveFrame) =>
+    lmm := getI(mapName, 'localModemap) =>
       subs:= APPEND([[mapName,:CADR mm] for mm in lmm],subs)
   union(subs, getPreviousMapSubNames UNIONQ($trace_names,
     $lastUntraced))
@@ -645,7 +645,7 @@ getMapSubNames(l) ==
 getPreviousMapSubNames(traceNames) ==
   subs:= nil
   for mapName in ASSOCLEFT CAAR $InteractiveFrame repeat
-    lmm:= get(mapName,'localModemap,$InteractiveFrame) =>
+    lmm := getI(mapName, 'localModemap) =>
       MEMQ(CADAR lmm,traceNames) =>
         for mm in lmm repeat
           subs:= [[mapName,:CADR mm],:subs]
@@ -660,17 +660,17 @@ rassocSub(x,subs) ==
   x
 
 isUncompiledMap(x) ==
-  y:= get(x,'value,$InteractiveFrame) =>
-    (CAAR y) = 'SPADMAP and null get(x,'localModemap,$InteractiveFrame)
+  y := getI(x, 'value) =>
+    (CAAR y) = 'SPADMAP and null getI(x, 'localModemap)
 
 isInterpOnlyMap(map) ==
-  x:= get(map,'localModemap,$InteractiveFrame) =>
+  x := getI(map, 'localModemap) =>
     (CAAAR x) = 'interpOnly
 
 augmentTraceNames(l,mapSubNames) ==
   res:= nil
   for traceName in l repeat
-    mml:= get(traceName,'localModemap,$InteractiveFrame) =>
+    mml := getI(traceName, 'localModemap) =>
       res:= APPEND([CADR mm for mm in mml],res)
     res:= [traceName,:res]
   res
@@ -889,12 +889,12 @@ letPrint3(x,xval,printfn,currentFunction) ==
 
 getAliasIfTracedMapParameter(x,currentFunction) ==
   isSharpVarWithNum x =>
-    aliasList:= get(currentFunction,'alias,$InteractiveFrame) =>
+    aliasList := getI(currentFunction, 'alias) =>
       aliasList.(STRING2PINT_-N(SUBSTRING(PNAME x,1,NIL),1)-1)
   x
 
 getBpiNameIfTracedMap(name) ==
-  lmm:= get(name,'localModemap,$InteractiveFrame) =>
+  lmm := getI(name, 'localModemap) =>
       MEMQ(bpiName := CADAR lmm, $trace_names) => bpiName
   name
 
@@ -1008,7 +1008,7 @@ addTraceItem d ==
 _?t() ==
   null $trace_names => sayMSG bright '"nothing is traced"
   for x in $trace_names | atom x and not IS_GENVAR x repeat
-    if llm:= get(x,'localModemap,$InteractiveFrame) then
+    if llm := getI(x, 'localModemap) then
       x:= (LIST (CADAR llm))
     sayMSG ['"Function",:bright rassocSub(x,$mapSubNameAlist),'"traced"]
   for x in $trace_names | x is [d, :l] and isDomainOrPackage d repeat

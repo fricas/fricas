@@ -324,7 +324,7 @@ clearCmdParts(l is [opt,:vl]) ==
     p1 := assoc(x,CAAR $InteractiveFrame) =>
       option='properties =>
         if isMap x then
-          (lm := get(x,'localModemap,$InteractiveFrame)) =>
+          (lm := getI(x, 'localModemap)) =>
             PAIRP lm => untraceMapSubNames [CADAR lm]
           NIL
         for p2 in rest p1 repeat
@@ -1459,7 +1459,7 @@ updateInCoreHist() ==
 putHist(x,prop,val,e) ==
   -- records new value to $HistRecord and old value to $HistList
   -- then put is called with e
-  if not (x='%) then recordOldValue(x,prop,get(x,prop,e))
+  if not(x = '%) then recordOldValue(x, prop, get0(x, prop, e))
   if $HiFiAccess then recordNewValue(x,prop,val)
   putIntSymTab(x,prop,val,e)
 
@@ -1605,7 +1605,7 @@ restoreHistory2(oldInternal, restfile, fn) ==
     updateInCoreHist()
   $e := $InteractiveFrame
   for [a,:.] in CAAR $InteractiveFrame repeat
-    get(a,'localModemap,$InteractiveFrame) =>
+    getI(a, 'localModemap) =>
       rempropI(a,'localModemap)
       rempropI(a,'localVars)
       rempropI(a,'mapBody)
@@ -1726,9 +1726,9 @@ disableHist() ==
 
 writeHistModesAndValues() ==
   for [a,:.] in CAAR $InteractiveFrame repeat
-    x := get(a,'value,$InteractiveFrame) =>
+    x := getI(a, 'value) =>
       putHist(a,'value,x,$InteractiveFrame)
-    x := get(a,'mode,$InteractiveFrame) =>
+    x := getI(a, 'mode) =>
       putHist(a,'mode,x,$InteractiveFrame)
   NIL
 

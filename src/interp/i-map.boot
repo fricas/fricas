@@ -75,7 +75,7 @@ mkAuxiliaryName(name) == INTERNL1(STRINGIMAGE(name), '";AUX")
 isMapExpr x == x is ['SPADMAP, :.]
 
 isMap x ==
-  y := get(x,'value,$InteractiveFrame) =>
+  y := getI(x, 'value) =>
     objVal y is ['SPADMAP, :.] => x
 
 addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
@@ -93,7 +93,7 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
     -- this is a function definition. If it has been declared
     -- previously, make sure it is Mapping.
     op := first lhs
-    (oldMode := get(op,'mode,$e)) and oldMode isnt ['Mapping,:.] =>
+    (oldMode := get0(op, 'mode, $e)) and oldMode isnt ['Mapping, :.] =>
       throwKeyedMsg("S2IM0001",[op,oldMode])
     putHist(op,'isInterpreterRule,false,$e)
     putHist(op,'isInterpreterFunction,true,$e)
@@ -132,7 +132,7 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
 
   -- if map is declared, check that signature arg count is the
   -- same as what is given.
-  if get(op,'mode,$e) is ['Mapping,.,:mapargs] then
+  if get0(op, 'mode, $e) is ['Mapping, ., :mapargs] then
     EQCAR(rhs,'rules) =>
       0 ~= (numargs := # rest lhs) =>
         throwKeyedMsg("S2IM0027",[numargs,op])
@@ -172,14 +172,14 @@ addMap(lhs,rhs,pred) ==
             [:argPredList, sublisNQ($sl, pred)]; argPredList), "and")
   body := sublisNQ($sl, rhs)
   oldMap :=
-    (obj := get(op,'value,$InteractiveFrame)) => objVal obj
+    (obj := getI(op, 'value)) => objVal(obj)
     NIL
   newMap := augmentMap(op,argList,finalPred,body,oldMap)
   null newMap =>
     sayRemoveFunctionOrValue op
     putHist(op,'alias,nil,$e)
     $ClearBodyToken      -- see return from addDefMap in tree2Atree1
-  if get(op,'isInterpreterRule,$e) then type := ['RuleCalled,op]
+  if get0(op, 'isInterpreterRule, $e) then type := ['RuleCalled, op]
   else type := ['FunctionCalled,op]
   recursive :=
     depthOfRecursion(op,newMap) = 0 => false
@@ -258,8 +258,8 @@ makeArgumentIntoNumber x ==
 mkMapAlias(op,argl) ==
   u:= mkAliasList argl
   newAlias :=
-    alias:= get(op,"alias",$e) => [(y => y; x) for x in alias for y in u]
-    u
+      alias := get0(op, "alias", $e) => [(y => y; x) for x in alias for y in u]
+      u
   $e:= putHist(op,"alias",newAlias,$e)
 
 mkAliasList l == fn(l,nil) where fn(l,acc) ==
@@ -472,7 +472,7 @@ analyzeMap(op,argTypes,mapDef, tar) ==
   $mapTarget      : local := tar
   $interpOnly: local := NIL
   $mapName : local := op.0
-  if get($mapName,'recursive,$e) then
+  if get0($mapName, 'recursive, $e) then
     argTypes := [f t for t in argTypes] where
       f x ==
         isEqualOrSubDomain(x,$Integer) => $Integer
@@ -537,7 +537,7 @@ rewriteMap(op,opName,argl) ==
   -- interpret-code handler for maps.  Recursively calls the interpreter
   --   on the body of the map.
   not $genValue =>
-    get(opName,'mode,$e) isnt ['Mapping,:sig] =>
+    get0(opName, 'mode, $e) isnt ['Mapping, :sig] =>
       compFailure  ['"   Cannot compile map:",:bright opName]
     arglCode := ['LIST,:[argCode for arg in argl for argName in
       $FormalMapVariableList]] where argCode ==
@@ -551,7 +551,7 @@ rewriteMap(op,opName,argl) ==
   rewriteMap0(op,opName,argl)
 
 putBodyInEnv(opName, numArgs) ==
-  val := get(opName, 'value, $e)
+  val := get0(opName, 'value, $e)
   val is [., 'SPADMAP, :bod] =>
     $e := putHist(opName, 'mapBody, combineMapParts
       mapDefsWithCorrectArgCount(numArgs, bod), $e)
@@ -564,13 +564,13 @@ removeBodyFromEnv(opName) ==
 rewriteMap0(op,opName,argl) ==
   -- $genValue case of map rewriting
   putBodyInEnv(opName, #argl)
-  if (s := get(opName,'mode,$e)) then
+  if (s := get0(opName, 'mode, $e)) then
     tar := CADR s
     argTypes := CDDR s
   else
     tar:= nil
     argTypes:= nil
-  get(opName,'mode,$e) is ['Mapping,tar,:argTypes]
+  get0(opName, 'mode, $e) is ['Mapping, tar, :argTypes]
   $env: local := [[NIL]]
   for arg in argl
     for var in $FormalMapVariableList repeat
@@ -582,9 +582,9 @@ rewriteMap0(op,opName,argl) ==
           coerceInteractive(getValue arg,t)
       else
         val:= getValue arg
-      $env:=put(var,'value,val,$env)
-      if VECP arg then $env := put(var,'name,getUnname arg,$env)
-      (m := getMode arg) => $env := put(var,'mode,m,$env)
+      $env := putIntSymTab(var, 'value, val, $env)
+      if VECP(arg) then $env := putIntSymTab(var, 'name, getUnname(arg), $env)
+      (m := getMode(arg)) => $env := putIntSymTab(var, 'mode, m, $env)
   null (val:= interpMap(opName,tar)) =>
     throwKeyedMsg("S2IM0010",[opName])
   putValue(op,val)
@@ -615,9 +615,9 @@ rewriteMap1(opName,argl,sig) ==
           coerceInteractive(evArg,t)
       else
         val:= evArg
-      $env:=put(var,'value,val,$env)
-      if VECP arg then $env := put(var,'name,getUnname arg,$env)
-      (m := getMode arg) => $env := put(var,'mode,m,$env)
+      $env := putIntSymTab(var, 'value, val, $env)
+      if VECP(arg) then $env := putIntSymTab(var, 'name, getUnname(arg), $env)
+      (m := getMode arg) => $env := putIntSymTab(var, 'mode, m, $env)
   val:= interpMap(opName,tar)
   removeBodyFromEnv(opName)
   objValUnwrap(val)
@@ -628,10 +628,10 @@ interpMap(opName,tar) ==
   $interpMapTag : local := nil
   $interpOnly : local := true
   $localVars : local := NIL
-  for lvar in get(opName,'localVars,$e) repeat mkLocalVar(opName,lvar)
+  for lvar in get0(opName, 'localVars, $e) repeat mkLocalVar(opName, lvar)
   $mapName : local := opName
   $mapTarget : local := tar
-  body:= get(opName,'mapBody,$e)
+  body:= get0(opName, 'mapBody, $e)
   savedTimerStack := COPY $timedNameStack
   catchName := mapCatchName $mapName
   c := CATCH(catchName, interpret1(body,tar,nil))
@@ -648,7 +648,7 @@ analyzeDeclaredMap(op,argTypes,sig,mapDef,$mapList) ==
   opName := getUnname op
   $mapList:=[opName,:$mapList]
   $mapTarget := first sig
-  (mmS:= get(opName,'localModemap,$e)) and
+  (mmS := get0(opName, 'localModemap, $e)) and
     (mm:= or/[mm for (mm:=[[.,:mmSig],:.]) in mmS | mmSig=sig]) =>
       compileCoerceMap(opName,argTypes,mm)
   -- The declared map needs to be compiled
@@ -665,7 +665,7 @@ compileDeclaredMap(op,sig,mapDef) ==
   $env:local:= [[NIL]]
   parms := [var for var in $FormalMapVariableList for m in rest sig]
   for m in rest sig for var in parms repeat
-    $env:= put(var,'mode,m,$env)
+      $env := putIntSymTab(var, 'mode, m, $env)
   body:= getMapBody(op,mapDef)
   for lvar in parms repeat mkLocalVar($mapName,lvar)
   for lvar in getLocalVars(op,body) repeat mkLocalVar($mapName,lvar)
@@ -680,13 +680,13 @@ putMapCode(op,code,sig,name,parms,isRecursive) ==
   -- saves the generated code and some other information about the
   -- function
   codeInfo := VECTOR(op,code,sig,name,parms,isRecursive)
-  allCode := [codeInfo,:get(op,'generatedCode,$e)]
+  allCode := [codeInfo, :get0(op, 'generatedCode, $e)]
   $e := putHist(op,'generatedCode,allCode,$e)
   op
 
 makeLocalModemap(op,sig) ==
   -- create a local modemap for op with sig, and put it into $e
-  if (currentMms := get(op,'localModemap,$e)) then
+  if (currentMms := get0(op, 'localModemap, $e)) then
     untraceMapSubNames [CADAR currentMms]
   newName := makeInternalMapName(op,#sig-1,1+#currentMms,NIL)
   newMm := [['local,:sig],newName,nil]
@@ -696,13 +696,13 @@ makeLocalModemap(op,sig) ==
 
 genMapCode(op,body,sig,fnName,parms,isRecursive) ==
   -- calls the lisp compiler on the body of a map
-  if lmm:= get(op,'localModemap,$InteractiveFrame) then
+  if lmm := getI(op, 'localModemap) then
     untraceMapSubNames [CADAR lmm]
   op0 :=
     (n := isSharpVarWithNum op) =>
         STRCONC('"<argument ",object2String n,'">")
     op
-  if get(op,'isInterpreterRule,$e) then
+  if get0(op, 'isInterpreterRule, $e) then
     sayKeyedMsg("S2IM0014", [op0, (PAIRP sig => prefix2String first sig;
                                    '"?")])
   else sayKeyedMsg("S2IM0015",[op0,formatSignature sig])
@@ -765,7 +765,7 @@ mapRecurDepth(opName,opList,body) ==
       0
     op in first(opList) => argc
     op=opName => 1 + argc
-    (obj := get(op, 'value, $e)) and objVal obj is ['SPADMAP, :mapDef] =>
+    (obj := get0(op, 'value, $e)) and objVal(obj) is ['SPADMAP, :mapDef] =>
       opList.0 := [op, :first(opList)]
       mapRecurDepth(opName, opList, getMapBody(op, mapDef))
         + argc
@@ -781,8 +781,8 @@ analyzeUndeclaredMap(op,argTypes,mapDef,$mapList) ==
   $mapList := [op,:$mapList]
   parms:=[var for var in $FormalMapVariableList for m in argTypes]
   for m in argTypes for var in parms repeat
-    put(var,'autoDeclare,'T,$env)
-    put(var,'mode,m,$env)
+      putIntSymTab(var, 'autoDeclare, 'T, $env)
+      putIntSymTab(var, 'mode, m, $env)
   body:= getMapBody(op,mapDef)
   for lvar in parms repeat mkLocalVar($mapName,lvar)
   for lvar in getLocalVars(op,body) repeat mkLocalVar($mapName,lvar)
@@ -827,8 +827,8 @@ analyzeRecursiveMap(op,argTypes,body,parms,n) ==
 
 saveDependentMapInfo(op,opList) ==
   not (op in opList) =>
-    lmml := [[op, :get(op, 'localModemap, $e)]]
-    gcl := [[op, :get(op, 'generatedCode, $e)]]
+    lmml := [[op, :get0(op, 'localModemap, $e)]]
+    gcl := [[op, :get0(op, 'generatedCode, $e)]]
     for [dep1,dep2] in getFlag("$dependencies") | dep1=op repeat
       [lmml', :gcl'] := saveDependentMapInfo(dep2, [op, :opList])
       lmms := nconc(lmml', lmml)
@@ -869,12 +869,12 @@ nonRecursivePart(opName, funBody) ==
 expandRecursiveBody(alreadyExpanded, body) ==
   -- replaces calls to other maps with their bodies
   atom body =>
-    (obj := get(body, 'value, $e)) and objVal obj is ['SPADMAP, :mapDef] and
+    (obj := get0(body, 'value, $e)) and objVal(obj) is ['SPADMAP, :mapDef] and
       ((numMapArgs mapDef) = 0) => getMapBody(body,mapDef)
     body
   body is [op,:argl] =>
     not (op in alreadyExpanded) =>
-      (obj := get(op, 'value, $e)) and objVal obj is ['SPADMAP, :mapDef] =>
+      (obj := get0(op, 'value, $e)) and objVal(obj) is ['SPADMAP, :mapDef] =>
         newBody:= getMapBody(op,mapDef)
         for arg in argl for var in $FormalMapVariableList repeat
             newBody := substitute(arg, var, newBody)
@@ -1055,14 +1055,14 @@ listOfVariables pat ==
 
 getMapBody(op,mapDef) ==
   -- looks in $e for a map body; if not found it computes then stores it
-  get(op,'mapBody,$e) or
+  get0(op, 'mapBody, $e) or
     combineMapParts mapDef
 --    $e:= putHist(op,'mapBody,body:= combineMapParts mapDef,$e)
 --    body
 
 getLocalVars(op,body) ==
   -- looks in $e for local vars; if not found, computes then stores them
-  get(op,'localVars,$e) or
+  get0(op, 'localVars, $e) or
     $e:= putHist(op,'localVars,lv:=findLocalVars(op,body),$e)
     lv
 

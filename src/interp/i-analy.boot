@@ -434,7 +434,7 @@ bottomUpDefaultCompile(t, id, defaultMode, target) ==
   [defaultMode]
 
 interpRewriteRule(t, id) ==
-  null get(id,'isInterpreterRule,$e) => NIL
+  null get0(id, 'isInterpreterRule, $e) => NIL
   (ms:= selectLocalMms(t,id,nil,nil)) and (ms:=evalForm(t,id,nil,ms)) =>
     ms
   nil

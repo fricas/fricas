@@ -50,7 +50,7 @@ upDEF t ==
     null mapOp =>
       keyedSystemError("S2GE0016",['"upDEF",'"bad map definition"])
     mapOp := first mapOp
-  put(mapOp,'value,v,$e)
+  putIntSymTab(mapOp, 'value, v, $e)
   putValue(op,objNew(voidValue(), $Void))
   putModeSet(op,[$Void])
 
@@ -325,9 +325,9 @@ putPvarModes(pattern,m) ==
   -- Puts the modes for the pattern variables into $env
   m isnt ['List,um] => throwKeyedMsg("S2IS0030",NIL)
   for pvar in pattern repeat
-      IDENTP pvar => put(pvar, 'mode, um, $env)
-      pvar is ['_:, var] => put(var, 'mode, m, $env)
-      pvar is ['_=, var] => put(var, 'mode, um, $env)
+      IDENTP(pvar) => putIntSymTab(pvar, 'mode, um, $env)
+      pvar is ['_:, var] => putIntSymTab(var, 'mode, m, $env)
+      pvar is ['_=, var] => putIntSymTab(var, 'mode, um, $env)
       putPvarModes(pvar, um)
 
 evalis(op,[a,pattern],mode) ==
@@ -375,7 +375,7 @@ evalIsPredicate(value,pattern,mode) ==
   pattern:= removeConstruct pattern
   not ((valueAlist:=isPatternMatch(value,pattern))='failed) =>
     for [id,:value] in valueAlist repeat
-      evalLETchangeValue(id,objNewWrap(value,get(id,'mode,$env)))
+      evalLETchangeValue(id, objNewWrap(value, get0(id, 'mode, $env)))
     true
   false
 
@@ -471,10 +471,10 @@ upLET t ==
   (IDENTP var) and not (var in '(true false elt QUOTE)) =>
     var ~= (var' := unabbrev(var)) =>  -- constructor abbreviation
       throwKeyedMsg("S2IS0028",[var,var'])
-    if get(var,'isInterpreterFunction,$e) then
+    if get0(var, 'isInterpreterFunction, $e) then
       putHist(var,'isInterpreterFunction,false,$e)
       sayKeyedMsg("S2IS0049",['"Function",var])
-    else if get(var,'isInterpreterRule,$e) then
+    else if get0(var, 'isInterpreterRule, $e) then
       putHist(var,'isInterpreterRule,false,$e)
       sayKeyedMsg("S2IS0049",['"Rule",var])
     not isTupleForm(rhs) and (m := isType rhs) => upLETtype(op,lhs,m)
@@ -507,7 +507,7 @@ evalLET(lhs,rhs) ==
   $useConvertForCoercions: local := true
   v' := (v:= getValue rhs)
   ((not getMode lhs) and (getModeSet rhs is [.])) or
-    get(getUnname lhs,'autoDeclare,$env) =>
+    get0(getUnname(lhs), 'autoDeclare, $env) =>
       v:=
         $genValue => v
         objNew(wrapped2Quote objVal v,objMode v)
@@ -540,25 +540,27 @@ evalLETput(lhs,value) ==
     code:=
       isLocalVar(name) =>
         om := objMode(value)
-        dm := get(name,'mode,$env)
+        dm := get0(name, 'mode, $env)
         dm and not ((om = dm) or isSubDomain(om,dm) or
           isSubDomain(dm,om)) =>
             compFailure ['"   The type of the local variable",
               :bright name,'"has changed in the computation."]
-        if dm and isSubDomain(dm,om) then put(name,'mode,om,$env)
+        if dm and isSubDomain(dm, om) then
+            putIntSymTab(name, 'mode, om, $env)
         ['LET,name,objVal value,$mapName]
                -- $mapName is set in analyzeMap
       om := objMode value
-      dm := get(name, 'mode, $env) or objMode(get(name, 'value, $e))
+      dm := get0(name, 'mode, $env) or objMode(get0(name, 'value, $e))
       dm and (null $compilingMap) and not(om = dm) and not(isSubDomain(om, dm)) =>
         THROW('loopCompiler,'tryInterpOnly)
       ['unwrap,['evalLETchangeValue,MKQ name,
         objNewCode(['wrap,objVal value],objMode value)]]
     value:= objNew(code,objMode value)
     isLocalVar(name) =>
-      if not get(name,'mode,$env) then put(name,'autoDeclare,'T,$env)
-      put(name,'mode,objMode(value),$env)
-    put(name,'automode,objMode(value),$env)
+        if not(get0(name, 'mode, $env)) then
+            putIntSymTab(name, 'autoDeclare, 'T, $env)
+        putIntSymTab(name, 'mode, objMode(value), $env)
+    putIntSymTab(name, 'automode, objMode(value), $env)
   $genValue and evalLETchangeValue(name,value)
   putValue(lhs,value)
 
@@ -586,9 +588,9 @@ evalLETchangeValue(name,value) ==
   --  maps if its type changes from its last value
   localEnv := PAIRP $env
   clearCompilationsFlag :=
-    val:= (localEnv and get(name,'value,$env)) or get(name,'value,$e)
+    val := (localEnv and get0(name, 'value, $env)) or get0(name, 'value, $e)
     null val =>
-      not ((localEnv and get(name,'mode,$env)) or get(name,'mode,$e))
+        not ((localEnv and get0(name, 'mode, $env)) or get0(name, 'mode, $e))
     objMode val ~= objMode(value)
   if clearCompilationsFlag then
     clearDependencies(name)
@@ -721,7 +723,7 @@ upLETtype(op,lhs,type) ==
     else if categoryForm?(type) then '(Category)
          else '(Type)
   val:= objNew(type,mode)
-  if isLocalVar(opName) then put(opName,'value,val,$env)
+  if isLocalVar(opName) then putIntSymTab(opName, 'value, val, $env)
   else putHist(opName,'value,val,$e)
   putValue(op,val)
   -- have to fix the following
@@ -731,9 +733,9 @@ assignSymbol(symbol, value, domain) ==
 -- Special function for binding an interpreter variable from within algebra
 -- code.  Does not do the assignment and returns nil, if the variable is
 -- already assigned
-  val := get(symbol, 'value, $e) => nil
+  val := get0(symbol, 'value, $e) => nil
   obj := objNew(wrap value, devaluate domain)
-  put(symbol, 'value, obj, $e)
+  putIntSymTab(symbol, 'value, obj, $e)
   true
 
 --% Handler for Interpreter Macros
@@ -748,9 +750,9 @@ isInterpMacro name ==
   -- look in local and then global environment for a macro
   null IDENTP name => NIL
   name in $specialOps => NIL
-  (m := get("--macros--",name,$env)) => m
-  (m := get("--macros--",name,$e))   => m
-  (m := get("--macros--",name,$InteractiveFrame))   => m
+  (m := get0("--macros--", name, $env)) => m
+  (m := get0("--macros--", name, $e))   => m
+  (m := getI("--macros--", name))   => m
   -- $InterpreterMacroAlist will probably be phased out soon
   (sv := assoc(name, $InterpreterMacroAlist)) => CONS(NIL, rest sv)
   NIL
@@ -944,7 +946,7 @@ interpLoopIter(exp,indexList,indexVals,indexTypes,requiredType) ==
   --  to indicate the required type of the result
   emptyAtree exp
   for i in indexList for val in indexVals for type in indexTypes repeat
-    put(i,'value,objNewWrap(val,type),$env)
+      putIntSymTab(i, 'value, objNewWrap(val, type), $env)
   bottomUp exp
   v:= getValue exp
   val :=

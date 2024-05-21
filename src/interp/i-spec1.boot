@@ -159,8 +159,8 @@ evalTargetedADEF1(t, vars, types, body, $env, $localVars, $freeVars) ==
   $env := [[new_contour1, :first($env)]]
 
   for m in rest types for var in vars repeat
-    $env:= put(var,'mode,m,$env)
-    mkLocalVar($mapName,var)
+      $env := putIntSymTab(var, 'mode, m, $env)
+      mkLocalVar($mapName, var)
   old_locals := $localVars
   new_contour2 := []
   for lvar in getLocalVars($mapName,body) repeat
@@ -180,7 +180,7 @@ mkInterpTargetedADEF(t,vars,types,oldBody) ==
   arglCode := ['LIST,:[argCode for type in rest types for var in vars]]
     where argCode == ['putValueValue,['mkAtreeNode,MKQ var],
       objNewCode(['wrap,var],type)]
-  put($mapName,'mapBody,oldBody,$e)
+  putIntSymTab($mapName, 'mapBody, oldBody, $e)
   body := ['rewriteMap1,MKQ $mapName,arglCode,MKQ types]
   compileADEFBody(t,vars,types,body,first types)
 
@@ -537,7 +537,7 @@ upLoopIters itrl ==
     iter is ['STEP,index,lower,step,:upperList] =>
       upLoopIterSTEP(index,lower,step,upperList)
       -- following is an optimization
-      typeIsASmallInteger(get(index,'mode,$env)) =>
+      typeIsASmallInteger(get0(index, 'mode, $env)) =>
         RPLACA(iter,'ISTEP)
     throwKeyedMsg('"Malformed iterator")
 
@@ -567,7 +567,7 @@ upLoopIterIN(iter,index,s) ==
     RPLACD(iter, rest newIter)
 
   iterMs isnt [['List,ud]] => throwKeyedMsg("S2IS0006",[index])
-  put(index,'mode,ud,$env)
+  putIntSymTab(index, 'mode, ud, $env)
   mkLocalVar('"the iterator expression",index)
 
 upLoopIterSTEP(index,lower,step,upperList) ==
@@ -587,7 +587,7 @@ upLoopIterSTEP(index,lower,step,upperList) ==
   if utype then types := [utype, :types]
   else types := [stype, :types]
   type := resolveTypeListAny REMDUP types
-  put(index,'mode,type,$env)
+  putIntSymTab(index, 'mode, type, $env)
   mkLocalVar('"the iterator expression",index)
 
 evalCOLLECT(op,[:itrl,body],m) ==
@@ -611,7 +611,8 @@ evalLoopIter itr ==
       getArgValue(step, $SingleInteger),
         :[getArgValue(upper, $SingleInteger) for upper in upperList]]
   itr is ['IN,index,s] =>
-    ['IN,getUnname index,getArgValue(s,['List,get(index,'mode,$env)])]
+      ['IN, getUnname(index),
+       getArgValue(s, ['List, get0(index, 'mode, $env)])]
   (itr is [x,pred]) and (x in '(WHILE UNTIL SUCHTHAT)) =>
     [x,getArgValue(pred,$Boolean)]
 
@@ -678,7 +679,7 @@ interpCOLLECTbodyIter(exp,indexList,indexVals,indexTypes) ==
   --  elements in list in $collectTypeList.
   emptyAtree exp
   for i in indexList for val in indexVals for type in indexTypes repeat
-    put(i,'value,objNewWrap(val,type),$env)
+      putIntSymTab(i, 'value, objNewWrap(val, type), $env)
   [m]:=bottomUp exp
   $collectTypeList:=
     null $collectTypeList => [rm:=m]
@@ -742,7 +743,7 @@ upStreamIterIN(iter,index,s) ==
   (iterMs isnt [['List,ud]]) and (iterMs isnt [['Stream,ud]])
     and (iterMs isnt [['InfinitTuple, ud]]) =>
       throwKeyedMsg("S2IS0006",[index])
-  put(index,'mode,ud,$env)
+  putIntSymTab(index, 'mode, ud, $env)
   mkLocalVar('"the iterator expression",index)
   s :=
     iterMs is [['List,ud],:.] =>
@@ -762,7 +763,7 @@ upStreamIterSTEP(index,lower,step,upperList) ==
     null isEqualOrSubDomain(IFCAR bottomUpUseSubdomain(upper),
       $Integer) => throwKeyedMsg("S2IS0007",['"upper"])
 
-  put(index,'mode,type := resolveTT(ltype,stype),$env)
+  putIntSymTab(index, 'mode, type := resolveTT(ltype, stype), $env)
   null type => throwKeyedMsg("S2IS0010", nil)
   mkLocalVar('"the iterator expression",index)
 
@@ -827,7 +828,7 @@ mkIterFun([index,:s],funBody,$localVars) ==
   mode := objMode getValue s
   mode isnt ['Stream, indMode] and mode isnt ['InfiniteTuple, indMode] =>
     keyedSystemError('"S2GE0016", '("mkIterFun" "bad stream index type"))
-  put(index,'mode,indMode,$env)
+  putIntSymTab(index, 'mode, indMode, $env)
   mkLocalVar($mapName,index)
   [m]:=bottomUpCompile funBody
   mapMode := ['Mapping,m,indMode]
@@ -978,7 +979,7 @@ mkIterZippedFun(indexList,funBody,zipType,$localVars) ==
   numVars:= #$indexVars
   for [var,:.] in $indexVars repeat
     funBody := subVecNodes(mkIterVarSub(var,numVars),var,funBody)
-  put($index,'mode,zipType,$env)
+  putIntSymTab($index, 'mode, zipType, $env)
   mkLocalVar($mapName,$index)
   [m]:=bottomUpCompile funBody
   mapMode := ['Mapping,m,zipType]
@@ -1227,11 +1228,11 @@ declare(var,mode) ==
   not IDENTP(var) =>
     throwKeyedMsg("S2IS0016",[STRINGIMAGE var])
   var in '(% %%) => throwKeyedMsg("S2IS0050",[var])
-  if get(var,'isInterpreterFunction,$e) then
+  if get0(var, 'isInterpreterFunction, $e) then
     mode isnt ['Mapping,.,:args] =>
       throwKeyedMsg("S2IS0017",[var,mode])
     -- validate that the new declaration has the defined # of args
-    mapval := objVal get(var,'value,$e)
+    mapval := objVal(get0(var, 'value, $e))
     -- mapval looks like '(SPADMAP (args . defn))
     margs := CAADR mapval
     -- if one args, margs is not a pair, just #1 or NIL
@@ -1243,22 +1244,22 @@ declare(var,mode) ==
     nargs ~= #args => throwKeyedMsg("S2IM0008",[var])
   if $compilingMap then mkLocalVar($mapName,var)
   else clearDependencies(var)
-  isLocalVar(var) => put(var,'mode,mode,$env)
+  isLocalVar(var) => putIntSymTab(var, 'mode, mode, $env)
   mode is ['Mapping,:.] => declareMap(var,mode)
-  v := get(var,'value,$e) =>
+  v := get0(var, 'value, $e) =>
     -- only allow this if either
     --   - value already has given type
     --   - new mode is same as old declared mode
     objMode(v) = mode => putHist(var,'mode,mode,$e)
-    mode = get(var,'mode,$e) => NIL   -- nothing to do
+    mode = get0(var, 'mode, $e) => NIL   -- nothing to do
     throwKeyedMsg("S2IS0052",[var,mode])
   putHist(var,'mode,mode,$e)
 
 declareMap(var,mode) ==
   -- declare a Mapping property
-  (v := get(var, 'value, $e)) and objVal(v) isnt ['SPADMAP, :.] =>
+  (v := get0(var, 'value, $e)) and objVal(v) isnt ['SPADMAP, :.] =>
       objMode(v) = mode => putHist(var, 'mode, mode, $e)
-      mode = get(var, 'mode, $e) => nil
+      mode = get0(var, 'mode, $e) => nil
       throwKeyedMsg("S2IS0019", [var])
   isPartialMode mode => throwKeyedMsg("S2IM0004",NIL)
   putHist(var,'mode,mode,$e)
@@ -1290,11 +1291,11 @@ replaceSharps(x,d) ==
 isDomainValuedVariable form ==
   -- returns the value of form if form is a variable with a type value
   IDENTP form and (val := (
-    get(form,'value,$InteractiveFrame) or _
-    (PAIRP($env) and get(form,'value,$env)) or _
-    (PAIRP($e) and get(form,'value,$e)))) and _
+      getI(form, 'value) or _
+      (PAIRP($env) and get0(form,'value,$env)) or _
+      (PAIRP($e) and get0(form,'value,$e)))) and _
       categoryForm?(objMode(val)) =>
-        objValUnwrap(val)
+          objValUnwrap(val)
   nil
 
 evalCategory(d,c) ==

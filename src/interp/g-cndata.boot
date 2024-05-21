@@ -124,7 +124,7 @@ unabbrev u == unabbrev1(u,nil)
 unabbrevAndLoad u == unabbrev1(u,true)
 
 isNameOfType x ==
-  (val := get(x,'value,$InteractiveFrame)) and
+  (val := getI(x, 'value)) and
     (domain := objMode val) and
       domain in '((Mode) (Type) (Category)) => true
   y := opOf unabbrev x
