@@ -64,24 +64,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;
 #+:openmcl
 (progn
-
-(defclass fricas-application (ccl::application) ())
-
-(defvar *my-toplevel-function* nil)
-
 (defvar *ccl-default-directory* nil)
-
-(defmethod ccl::toplevel-function ((app fricas-application) init-file)
-    (declare (ignore init-file))
-        (call-next-method) ; this is critical, but shouldn't be.
-        (funcall *my-toplevel-function*)
-        (let ((ap (make-instance 'ccl::lisp-development-system)))
-            (ccl::toplevel-function ap init-file)))
-
 ;;; Disable default argument processing
 (defmethod ccl::process-application-arguments
-           ((app fricas-application) error-flag opts args) nil)
-
+    ((app ccl::application) error-flag opts args) nil)
 )
 
 ;;; Disable argument processing in GCL
@@ -143,12 +129,11 @@ with this hack and will try to convince the GCL crowd to fix this.
                    #'(lambda () nil)))
          (top-fun #'(lambda ()
                        (set-initial-parameters)
-                       (funcall restart-fun))))
+                       (funcall restart-fun)
+                       (ccl::toplevel-loop))))
         (setf *ccl-default-directory* ccl-dir)
-        (setf *my-toplevel-function* top-fun)
-        (CCL::save-application core-image
-                                       :PREPEND-KERNEL t
-                                       :application-class 'fricas-application)
+        (CCL::save-application core-image :toplevel-function top-fun
+                                       :PREPEND-KERNEL t)
         (QUIT))
 #+:lispworks
   (progn
