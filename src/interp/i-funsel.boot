@@ -1127,17 +1127,22 @@ evalMm(op,tar,sig,mmC) ==
   --if $Coerce is NIL, tar has to be the same as the computed target type
   mS:= NIL
   for st in evalMmStack mmC repeat
-    SL:= evalMmCond(op,sig,st)
-    not EQ(SL,'failed) =>
-      SL := fixUpTypeArgs SL
-      sig:= [subCopy(deepSubCopy(x,SL),$Subst) for x in sig]
-      not containsVars sig =>
-        isFreeFunctionFromMmCond mmC and (m := evalMmFreeFunction(op,tar,sig,mmC)) =>
-           mS:= nconc(m,mS)
-        "or"/[not isValidType(arg) for arg in sig] => nil
-        [dc,t,:args]:= sig
-        $Coerce or null tar or tar=t =>
-          mS:= nconc(findFunctionInDomain(op,dc,t,args,args,NIL,'T),mS)
+      SL := evalMmCond(op, sig, st)
+      not EQ(SL, 'failed) =>
+          SL := fixUpTypeArgs SL
+          nsig := [subCopy(deepSubCopy(x, SL), $Subst) for x in sig]
+          not(containsVars(nsig)) =>
+              isFreeFunctionFromMmCond(mmC) and
+                (m := evalMmFreeFunction(op, tar, nsig, mmC)) =>
+                  mS:= nconc(m,mS)
+              "or"/[not isValidType(arg) for arg in nsig] => nil
+              [dc, t, :args] := nsig
+              $Coerce or null(tar) or tar = t =>
+                  mS := nconc(findFunctionInDomain(op, dc, t, args,
+                                                   args, false, 'T), mS)
+  if $reportBottomUpFlag and mS then
+      sayMSG(['"found good modemap for: ",op])
+      sayNewModemap([sig, mmC])
   mS
 
 evalMmFreeFunction(op,tar,sig,mmC) ==

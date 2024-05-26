@@ -42,6 +42,11 @@ sayModemap m ==
   -- sayMSG formatModemap displayTranModemap m
   sayMSG formatModemap old2NewModemaps displayTranModemap m
 
+sayNewModemap(m) ==
+    msg := formatModemap(displayTranModemap(m))
+    msg := cleanUpSegmentedMsg(reverse(msg))
+    sayMSG(flowSegmentedMsg(msg, $LINELENGTH, 3))
+
 sayModemapWithNumber(m,n) ==
   msg := reverse cleanUpSegmentedMsg reverse ["%i","%i",'" ",
     STRCONC(lbrkSch(),object2String n,rbrkSch()),
