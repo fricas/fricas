@@ -514,7 +514,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (setf *c-type-to-ffi* '(
                  (int :int)
-                 (c-string  :cstring )
+                 (c-string  :cstring)
                  (double :double)
                  (char-* :pointer-void)
                  ))
