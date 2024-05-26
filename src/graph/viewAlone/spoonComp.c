@@ -46,6 +46,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.H1"
 #include "all_alone.H1"
 #include "strutil.h"
+#include "com.h"
+#include "sockio-c.H1"
 
 
 /* This file forks a child process and exits the parent. It
