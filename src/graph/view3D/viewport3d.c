@@ -545,7 +545,7 @@ makeViewport (void)
   viewport->thetaObj = 0.0;
   viewport->phiObj   = 0.0;
 
-  strcpy(viewport->title,viewData.title);
+  strncpy(viewport->title, viewData.title, sizeof(viewport->title) - 1);
 
   viewport->axesOn       = yes;
   viewport->regionOn     = no;

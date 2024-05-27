@@ -217,6 +217,7 @@ funView3D(int viewCommand)
       i1 = strlen(s1);
       code = write(viewport->viewOut,&i1,intSize);
       code = write(viewport->viewOut,s1,i1);
+      free(s1);
       break;
 
     case writeView:
@@ -231,6 +232,7 @@ funView3D(int viewCommand)
         i2 = get_int(spadSock);
         code = write(viewport->viewOut,&i2,intSize);
       }
+      free(s1);
       break;
 
     case diagOnOff:

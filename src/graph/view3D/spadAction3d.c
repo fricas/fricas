@@ -46,17 +46,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "all_3d.H1"
 #include "strutil.h"
 
-int
-readViewman (void *info,int size)
-{
-  int m = 0;
-
-  fricas_sprintf_to_buf1(errorStr, "%s", "read from viewport manager\n");
-  m = check(read( 0, info, size));
-
-  return(m);
-
-}
 void
 scalePoint (viewTriple *p)
 {
@@ -398,8 +387,7 @@ spadAction (void)
 
   case changeTitle:
     readViewman(&i1,intSize);
-    readViewman(viewport->title,i1);
-    viewport->title[i1] = '\0';
+    readViewmanStr(viewport->title, i1, sizeof(viewport->title));
     writeTitle();
     switch (doingPanel) {
     case CONTROLpanel:
@@ -418,9 +406,7 @@ spadAction (void)
 
   case writeView:
     readViewman(&i1,intSize);
-    readViewman(filename,i1);
-    filename[i1] = '\0';
-    fricas_sprintf_to_buf1(errorStr, "%s", "writing of viewport data");
+    readViewmanStr(filename, i1, sizeof(filename));
     i3 = 0;
     readViewman(&i2,intSize);
     while (i2) {

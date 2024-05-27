@@ -41,6 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include "view.h"
+#include "strutil.h"
 
 
 #include "util.H1"
@@ -149,4 +150,42 @@ getWindowSizeXY(Display *display,Window w)
   size.y = (short) windowAttrib.height;
 
   return (size);
+}
+
+int
+readViewman(void *info, int size)
+{
+  int m = 0;
+  char errorStr[80];
+
+  fricas_sprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
+                         " bytes from viewport manager\n");
+  m = check(read(0, info, size));
+
+  return(m);
+}
+
+/*
+  Read 'size' bytes from stdin, and store it into 'buf' with size 'buf_size'.
+  If 'buf' is not large enough to hold the string, the result is truncated.
+*/
+
+int
+readViewmanStr(char *buf, int size, int buf_size)
+{
+  int m = 0;
+  char errorStr[80];
+
+  fricas_sprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
+                         " bytes from viewport manager\n");
+  if (size < buf_size) {
+    m = check(read(0, buf, size));
+  } else {
+    char *tmp = malloc(size * sizeof(char));
+    m = check(read(0, tmp, size));
+    strncpy(buf, tmp, buf_size - 1);
+    free(tmp);
+  }
+
+  return(m);
 }

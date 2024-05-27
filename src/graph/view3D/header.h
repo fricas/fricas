@@ -269,7 +269,7 @@ typedef struct _buttonStruct {
 
 typedef struct _controlPanelStruct {
   Window        controlWindow, messageWindow, colormapWindow;
-  char          message[40];
+  char          message[80];
   buttonStruct  buttonQueue[maxButtons3D];
 } controlPanelStruct;
 

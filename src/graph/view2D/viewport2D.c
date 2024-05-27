@@ -514,7 +514,7 @@ makeViewport(char *title,int vX,int vY,int vW,int vH,int showCP)
   fprintf(stderr,"view2D: Made a viewport\n");
 #endif
 
-  strcpy(viewport->title,title);
+  strncpy(viewport->title, title, sizeof(viewport->title) - 1);
 
   viewport->closing      = no;
   viewport->allowDraw    = yes;   /* just draw axes the first time around */

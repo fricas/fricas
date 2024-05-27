@@ -44,22 +44,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.H1"
 #include "strutil.h"
 
-/******************************
- * int readViewman(info,size) *
- ******************************/
-
-int
-readViewman(void * info,int size)
-{
-  int mold = 0;
-
-  fricas_sprintf_to_buf3(errorStr, "%s %d %s", "read of ", size,
-          " bytes from viewport manager\n");
-  mold = check(read(0,info,size));
-  return(mold);
-
-}
-
 /********************
  * int spadAction() *
  ********************/
@@ -95,8 +79,7 @@ spadAction(void)
 
   case changeTitle:
     readViewman(&i1,intSize);
-    readViewman(viewport->title,i1);
-    viewport->title[i1] = '\0';
+    readViewmanStr(viewport->title, i1, sizeof(viewport->title));
     writeTitle();
     writeControlTitle();
     XFlush(dsply);
@@ -105,9 +88,7 @@ spadAction(void)
 
   case writeView:
     readViewman(&i1,intSize);
-    readViewman(filename,i1);
-    filename[i1] = '\0';
-    fricas_sprintf_to_buf1(errorStr, "%s", "writing of viewport data");
+    readViewmanStr(filename, i1, sizeof(filename));
     i3 = 0;
     readViewman(&i2,intSize);
     while (i2) {
