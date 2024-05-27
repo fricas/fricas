@@ -35,6 +35,7 @@ DEFPARAMETER($newCompCompare, false)
 $insideCategoryPackageIfTrue := false
 $insideCapsuleFunctionIfTrue := false
 $insideCategoryIfTrue := false
+$insideFunctorIfTrue := false
 $insideWhereIfTrue := false
 
 $functorLocalParameters := []
