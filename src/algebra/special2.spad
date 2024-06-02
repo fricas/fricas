@@ -77,120 +77,125 @@ FloatSpecialFunctions() : Exports == Implementation where
 
   Implementation ==> add
 
-    bernoulli_gamma_series(z : Complex Float, n : Integer) : Complex Float ==
+    I ==> Integer
+    PI ==> PositiveInteger
+    RF ==> Float
+    CF ==> Complex(Float)
+    DF ==> DoubleFloat
+    RN ==> Fraction(Integer)
+
+    bernoulli_gamma_series(z : CF, n : I) : CF ==
        zinv := 1/z
        zk := zinv
        z2inv := zinv*zinv
-       s := zk*((1/12)::(Complex Float))
+       s := zk*(1/12::CF)
        for k in 1..n repeat
            zk := zk*z2inv
-           kinv := (1::Float)/(((2*k +2)*(2*k+1))::Float)
-           bk := (bernoulli(2*k+2)$IntegerNumberTheoryFunctions)::Float
-           s := s + ((bk*kinv)::(Complex Float))*zk
+           kinv := (1::RF)/(((2*k +2)*(2*k+1))::RF)
+           bk := (bernoulli(2*k+2)$IntegerNumberTheoryFunctions)::RF
+           s := s + ((bk*kinv)::CF)*zk
        s
 
-    logGamma_a1(z : Complex Float) : Complex Float ==
-       (z - ((1/2)::(Complex Float)))*log(z) - z _
-           + ((1/2)::(Complex Float))_
-             *((log((2 :: Float)*pi()))::(Complex Float))
+    logGamma_a1(z : CF) : CF ==
+       (z - (1/2::CF))*log(z) - z + (1/2::RF)*((log((2::RF)*pi()))::CF)
 
-    logGamma_asymptotic(z : Complex Float, n : Integer) : Complex Float ==
+    logGamma_asymptotic(z : CF, n : I) : CF ==
        lg1 := logGamma_a1(z)
        lg1 + bernoulli_gamma_series(z, n)
 
-    gamma_series(z : Complex Float, l : Float, n : Integer) : Complex Float ==
-       tk := exp(z*(log(l)::(Complex Float)))/z
+    gamma_series(z : CF, l : RF, n : I) : CF ==
+       tk := exp(z*(log(l)::CF))/z
        s := tk
        for k in 1..n repeat
-          tk := tk*(l::(Complex Float))/(z + (k::(Complex Float)))
+          tk := tk*(l::CF)/(z + (k::CF))
           s := s + tk
-       s*(exp(-l)::(Complex Float))
+       s*(exp(-l)::CF)
 
-    Gamma(z : Complex Float) : Complex Float ==
-        not(base()$Float =$Integer 2) =>
+    Gamma(z : CF) : CF ==
+        not(base()$RF =$I 2) =>
             error "Gamma can only handle base 2 Float-s"
         l0 := bits()
         l := max(l0 + 5, 20)
         re_z := real(z)
-        re_z < (1/2)::Float =>
+        re_z < (1/2)::RF =>
             bits (l + 5)
             re_zint := round(re_z)
-            z1 := z - re_zint::Complex Float
-            sign : Float :=
-                odd?(retract(re_zint)@Integer) => -1
+            z1 := z - re_zint::CF
+            sign : RF :=
+                odd?(retract(re_zint)@I) => -1
                 1
             z1 = 0 =>
                 bits(l0)
                 error "Pole of Gamma"
-            c_pi := (pi())::(Complex Float)
-            one := 1::(Complex Float)
-            result := (sign::Float)*c_pi/(Gamma(one - z)*sin(c_pi * z1))
+            c_pi := (pi())::CF
+            one := 1::CF
+            result := (sign::RF)*c_pi/(Gamma(one - z)*sin(c_pi * z1))
             bits(l0)
             result
         abs_z := real(abs(z))
-        l :: Float > 6*abs_z =>
-            oz := max(order(abs_z), 5) :: PositiveInteger
-            lz := length(oz) :: PositiveInteger
-            bits(oz+lz+30)
-            loss := real(logGamma_a1(real(z)::(Complex Float))) - _
+        l :: RF > 6*abs_z =>
+            oz := max(order(abs_z), 5)::PI
+            lz := length(oz)::PI
+            bits(oz + lz + 30)
+            loss := real(logGamma_a1(real(z)::CF)) - _
                     real(logGamma_a1(z))
-            len : Float := 2*real(z) + 2*(loss + log2() * (l :: Float)) + 3::Float
+            len : RF := 2*real(z) + 2*(loss + log2() * (l::RF)) + 3::RF
             l1a := (l + order(len) + wholePart(loss/log2()) + 12)
             l1 := max(l1a, wholePart(abs_z*log(len)/log2()) +
-                           10)::PositiveInteger
+                           10)::PI
             bits(l1)
             result := gamma_series(z, len, 3*wholePart(len) + 6)
             bits(l0)
             result
-        llog := max(order(real(abs(logGamma_a1(z)))), 5) :: PositiveInteger
+        llog := max(order(real(abs(logGamma_a1(z)))), 5)::PI
         -- we sum l term, so need length(l) extra bits to
         -- compensate roundoff error
         -- we need llog extra bits in logGamma to avoid loss of
         -- accuracy due to exponential
         -- 12 extra bits to compensate for constant factor
         -- and inaccuracy in computing number of bits
-        l1 := l + llog + (length(l)::PositiveInteger) + 12
+        l1 := l + llog + (length(l)::PI) + 12
         bits(l1)
         result := exp(logGamma_asymptotic(z, l quo 6 + 1 ))
         bits(l0)
         result
 
     -- in exact arithmetic |imag(logGamma_a1(z) - logGamma(z))| < pi/2
-    logGamma_lift(z : Complex Float, lg2 : Complex Float) : Complex Float ==
+    logGamma_lift(z : CF, lg2 : CF) : CF ==
         lg2i := imag(lg2)
         k := round((imag(logGamma_a1(z)) - lg2i)/(2*pi()))
-        lg2 + (imaginary()$(Complex Float))*((k*(2::Float)*pi())::(Complex Float))
+        lg2 + (imaginary()$CF)*((k*(2::RF)*pi())::CF)
 
 
-    logGamma(z : Complex Float) : Complex Float ==
-        not(base()$Float =$Integer 2) =>
+    logGamma(z : CF) : CF ==
+        not(base()$RF =$I 2) =>
             error "Gamma can only handle base 2 Float-s"
         l0 := bits()
         l := max(l0 + 5, 20)
         re_z := real(z)
-        one := 1::(Complex Float)
-        re_z < (1/2)::Float =>
+        one := 1::CF
+        re_z < (1/2)::RF =>
             bits (l + 5)
             re_zint := round(re_z)
-            z1 := z - re_zint::Complex Float
-            lsign : Float :=
+            z1 := z - re_zint::CF
+            lsign : RF :=
                 odd?(retract(re_zint)@Integer) => 1
                 0
             z1 = 0 =>
                 bits(l0)
                 error "Pole of Gamma"
             bits (l + 5)
-            c_pi := (pi())::(Complex Float)
+            c_pi := (pi())::CF
             result := log(c_pi) + complex(0, lsign)*c_pi
                        - logGamma(one - z) - log(sin(c_pi * z1))
             result := logGamma_lift(z, result)
             bits(l0)
             result
         abs_z := real(abs(z))
-        l :: Float > 6*abs_z =>
+        l :: RF > 6*abs_z =>
             l := l + 5
-            if real(abs(z - one)) < ((1/4)::Float) or _
-               real(abs(z - one - one)) < ((1/4)::Float) then
+            if real(abs(z - one)) < ((1/4)::RF) or _
+               real(abs(z - one - one)) < ((1/4)::RF) then
                 l := 2*l
             bits(l)
             result := logGamma_lift(z, log(Gamma(z)))
@@ -200,22 +205,22 @@ FloatSpecialFunctions() : Exports == Implementation where
         -- compensate roundoff error
         -- 12 extra bits to compensate for inaccuracy in computing
         -- number of bits and constant factor
-        l1 := l + length(l)::PositiveInteger + 12
+        l1 := l + length(l)::PI + 12
         bits(l1)
         result := logGamma_asymptotic(z, l quo 6 + 1 )
         bits(l0)
         result
 
-    Gamma(x : Float) : Float ==
-        real(Gamma(x :: (Complex Float)))
+    Gamma(x : RF) : RF ==
+        real(Gamma(x::CF))
 
-    logGamma(x : Float) : Float ==
+    logGamma(x : RF) : RF ==
         x <= 0 =>
             error "Argument to logGamma <= 0"
-        real(logGamma(x :: (Complex Float)))
+        real(logGamma(x::CF))
 
-    Beta(x : Complex Float, y : Complex Float) : Complex Float ==
-        not(base()$Float =$Integer 2) =>
+    Beta(x : CF, y : CF) : CF ==
+        not(base()$RF =$I 2) =>
             error "Beta can only handle base 2 Float-s"
         l0 := bits()
         l1 := max(30, l0 + 10)
@@ -225,23 +230,16 @@ FloatSpecialFunctions() : Exports == Implementation where
         bits(l0)
         res
 
-    Beta(x : Float, y : Float) : Float ==
-        real(Beta(x::(Complex Float), y::(Complex Float)))
+    Beta(x : RF, y : RF) : RF ==
+        real(Beta(x::CF, y::CF))
 
-    rabs(r : Float) : Float == abs(r)
+    rabs(r : RF) : RF == abs(r)
 
-    rabs(r : Complex(Float)) : Float == real(abs(r))
+    rabs(r : CF) : RF == real(abs(r))
 
     rabs(r : DoubleFloat) : DoubleFloat == abs(r)
 
     rabs(r : Complex(DoubleFloat)) : DoubleFloat == real(abs(r))
-
-    I ==> Integer
-    PI ==> PositiveInteger
-    RF ==> Float
-    CF ==> Complex(Float)
-    DF ==> DoubleFloat
-    RN ==> Fraction(Integer)
 
     digamma_euler_maclaurin(a : CF, n : I, m : I) : CF ==
         res : CF := 0
@@ -263,22 +261,24 @@ FloatSpecialFunctions() : Exports == Implementation where
 
     digamma_aux(a : CF, l : I) : CF ==
         abs_a := sqrt(norm(a))
-        l::Float > 6*abs_a =>
+        l::RF > 6*abs_a =>
             digamma_euler_maclaurin(a, l quo 6 + 1, l quo 6 + 1)
         digamma_euler_maclaurin(a, -1, l quo 6 + 1)
 
     digamma(a : CF) : CF ==
+        not(base()$RF =$I 2) =>
+            error "digamma can only handle base 2 Float-s"
         l0 := bits()$RF
         l := max(l0 + 10, 61)
         try
             re_a := real(a)
-            re_a < (1/2)::Float =>
+            re_a < (1/2)::RF =>
                 l := l + 5
                 bits(qcoerce(l + 3*length(l)$I + 10)@PI)$RF
                 re_aint := round(re_a)
                 a1 := a - complex(re_aint, 0)
                 a1 = 0 => error "Pole of Gamma"
-                r_pi := pi()$Float
+                r_pi := pi()$RF
                 ap := r_pi*a1
                 -r_pi*cos(ap)/sin(ap) + digamma_aux(1 - a, l)
             bits(qcoerce(l + 3*length(l)$I + 10)@PI)$RF
@@ -287,6 +287,10 @@ FloatSpecialFunctions() : Exports == Implementation where
             bits(l0)$RF
 
     digamma(z : RF) : RF == real(digamma(complex(z, 0)))
+
+    -- Computation of polylogartitm, currently only order 2.
+    -- We use series for |z| < 1.  Transformations reduce other
+    -- case to case when |z| < 1.
 
     li2_series(z : CF, prec : I) : CF ==
         nz := norm(z)
@@ -340,6 +344,8 @@ FloatSpecialFunctions() : Exports == Implementation where
         li2_series(z, prec)
 
     li2(z : CF) : CF ==
+        not(base()$RF =$I 2) =>
+            error "li2 can only handle base 2 Float-s"
         obits := bits()$RF
         prec := obits + 5
         try
@@ -361,6 +367,8 @@ FloatSpecialFunctions() : Exports == Implementation where
         li2_aux(1 - z, prec)
 
     dilog(z : CF) : CF ==
+        not(base()$RF =$I 2) =>
+            error "dilog can only handle base 2 Float-s"
         obits := bits()$RF
         prec := obits + 5
         try
@@ -368,6 +376,8 @@ FloatSpecialFunctions() : Exports == Implementation where
             dilog_aux(z, prec)
         finally
             bits(obits)
+
+    -- Lambert W
 
     Funs ==>
         lambert_via_newton1(x : NT, w : NT, eps : RNT) : NT ==
@@ -468,7 +478,9 @@ FloatSpecialFunctions() : Exports == Implementation where
             eps := ax*eps
         lambert_via_newton1(x, w, eps)
 
-    lambertW(x : Float) : Float ==
+    lambertW(x : RF) : RF ==
+        not(base()$RF =$I 2) =>
+            error "lambertW can only handle base 2 Float-s"
         x = 0 => x
         cbit := bits()
         eps := float(1, -2*cbit quo 3)
@@ -478,11 +490,11 @@ FloatSpecialFunctions() : Exports == Implementation where
         ox > 200 and x > 0 =>
             lx := log(x)
             lambert_via_newton2(lx, lx, eps)
-        x < (-190436/$RN 517656)::Float => error "x < -exp(-1)"
-        x < (-190434/$RN 517656)::Float =>
+        x < (-190436/$RN 517656)::RF => error "x < -exp(-1)"
+        x < (-190434/$RN 517656)::RF =>
             cbit2 := cbit quo 2
-            bits(qcoerce(cbit + cbit2)@PositiveInteger)$Float
-            e1 := exp(-1::Float)
+            bits(qcoerce(cbit + cbit2)@PI)$RF
+            e1 := exp(-1::RF)
             h2 := x + e1
             h := sqrt(h2)
             bits(cbit)
@@ -490,18 +502,20 @@ FloatSpecialFunctions() : Exports == Implementation where
             w1 := lambert_inverse_series(h, h2)
             order(w1) < -cbit2 => w1 - 1
             lambert_via_newton1(x, w1 - 1, eps)
-        w : Float :=
-             x > 2::Float =>
+        w : RF :=
+             x > 2::RF =>
                  y := log(x)
                  y - log(y)
              0.5*x
-        if abs(x) < (1/$RN 2)::Float then
+        if abs(x) < (1/$RN 2)::RF then
             eps := ax*eps
         lambert_via_newton1(x, w, eps)
 
-    lambertW(z : Complex(Float)) : Complex(Float) ==
+    lambertW(z : CF) : CF ==
+        not(base()$RF =$I 2) =>
+            error "lambertW can only handle base 2 Float-s"
         z = 0 => z
-        cbit := bits()$Float
+        cbit := bits()$RF
         eps := float(1, -2*cbit quo 3)
         abs_z := rabs(z)
         oz := order(abs_z)
@@ -514,14 +528,13 @@ FloatSpecialFunctions() : Exports == Implementation where
           or (rzd > (-190434 /$RN 517656)::DoubleFloat) =>
             izd := imag(z)::DoubleFloat
             wd : Complex(DoubleFloat) := lambertW(complex(rzd, izd))
-            w : Complex(Float) := complex(convert(real(wd))@Float,
-                                          convert(imag(wd))@Float)
-            if abs_z < (1/2)::Float then
+            w : CF := complex(convert(real(wd))@RF, convert(imag(wd))@RF)
+            if abs_z < (1/2)::RF then
                 eps := abs_z*eps
             lambert_via_newton1(z, w, eps)
         cbit2 := cbit quo 2
-        bits(qcoerce(cbit + cbit2)@PositiveInteger)
-        e1 := exp(-1$Float)
+        bits(qcoerce(cbit + cbit2)@PI)
+        e1 := exp(-1$RF)
         h2 := z + complex(e1, 0)
         h := sqrt(h2)
         bits(cbit)
