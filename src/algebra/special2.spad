@@ -33,6 +33,8 @@ FloatSpecialFunctions() : Exports == Implementation where
       ++ dilog(z) is the dilogarithm
     li2 : Complex(Float) -> Complex(Float)
       ++ li2(z) is polylog(2, z)
+    riemannZeta : Complex(Float) -> Complex(Float)
+      ++ riemannZeta(z) is the Riemann Zeta function.
     -- Functions below should be local, but conditional
     rabs :  Float -> Float
       ++ Undocumented
@@ -374,6 +376,99 @@ FloatSpecialFunctions() : Exports == Implementation where
         try
             bits(obits+20)
             dilog_aux(z, prec)
+        finally
+            bits(obits)
+
+    -- Riemann Zeta. When Re(s) >= 1/2 we use algoritm 2 from
+    -- P. Borwein, An efficient algorithm for the Riemann Zeta function
+    -- conference proceedings
+    --
+    -- For Re(s) < 1/2 we use reflection formula.
+    -- We need some extra twists to maintain accuracy in badly conditioned
+    -- cases.
+
+    zeta_borwein(s : CF, n : I) : CF ==
+        res1 : CF := 1
+        res2 : CF := 1
+        sign : I := -1
+        dk : RF := 1
+        ck : RF := 1
+        for k in 1..(n-1) repeat
+            dkd := (2::I*k - 1)*k
+            -- The following would need long compile time, so we split it
+            -- dk := ((2::I)*(n + k - 1)*(n - k + 1))::RF*(1/dkd::RF)*dk
+            dk := (1/dkd::RF)*dk
+            dk := ((2::I)*(n + k - 1)*(n - k + 1))::RF*dk
+            ck := ck + dk
+            lk := log((k+1)::RF)
+            ks := exp(-lk*s)
+            res1 := res1 + (sign::RF)*ks
+            res2 := res2 + (sign::RF)*ck*ks
+            sign := - sign
+        dn := (2::I)::RF*(1/n::RF)*dk
+        cn := ck + dn
+        res := (res1 - (1/cn)*res2)
+
+    zeta_aux1(s : CF, prec : I) : CF ==
+        s2 := (2::CF)^s
+        nt : I := retract(round(abs(imag(s))))@I
+        n := (4*prec + 9*nt + 9) quo 10 + 5
+        s21 := 1 - (2::CF)/s2
+        zeta_borwein(s, n)/s21
+
+    zeta_aux2(s : CF, prec : I) : CF ==
+        (1/4::RF) < rabs(real(s - 1)) => zeta_aux1(s, prec)
+        bits(qcoerce(2*prec + 15))
+        s1 := 1 - s
+        ns1 := norm(s1)
+        ns1 < (1/2::RF) =>
+            lb := retract(round(-log(ns1)/log(2::RF)))@Integer
+            lb < (prec quo 2) + 5 =>
+                nprec := prec + lb + 10
+                bits(qcoerce(nprec + 15))
+                zeta_aux1(s, nprec)
+            bits(qcoerce(prec + 15))
+            -1/s1 + gamma()$FloatLiouvilianFunctions
+        pi1 := pi()$RF
+        l2pi := log(2::RF)/(2::RF*pi1)
+        is1 := retract(round(imag(s1*l2pi)))@I
+        s1 := s1 - complex(0, (is1::RF/l2pi))
+        ns1 := norm(s1)
+        (1/4::RF) < ns1 =>
+            bits(qcoerce(prec + 15))
+            zeta_aux1(s, prec)
+        lb := retract(round(-log(ns1)/log(2::RF)))@I
+        lb < prec + 5 =>
+            nprec := prec + lb + 5
+            bits(qcoerce(nprec + 15))
+            zeta_aux1(s, nprec)
+        nprec := (3*prec + 20) quo 2
+        bits(qcoerce(nprec + 15))
+        h := (1/2::RF)^((2*prec - 5) quo 3)
+        (1/2::RF)*(zeta_aux1(s + h::CF, nprec) + zeta_aux1(s - h::CF, nprec))
+
+    zeta_aux(s : CF, prec : I) : CF ==
+        re_s := real(s)
+        re_s >= (1/2)::RF => zeta_aux2(s, prec)
+        s1 := 1 - s
+        s = 0 => -(1/2::RF)::CF
+        ns := norm(s)
+        pi1 := pi()$RF
+        lb := retract(round(-log(ns)/log(2::RF)))@I
+        prec quo 2 < lb - 15 =>
+            (-1/2)::RF*(1 + log(2::RF*pi1)*s)
+        s2 := (2::CF)^s
+        coef := (pi1::CF)^(-s1)*(s2*Gamma(s1))
+        coef*sin(((1/2::RF)*pi1)*s)*zeta_aux2(s1, prec)
+
+    riemannZeta(z : CF) : CF ==
+        not(base()$RF =$I 2) =>
+            error "riemannZeta can only handle base 2 Float-s"
+        obits := bits()$RF
+        prec := obits + 5
+        try
+            bits(obits+20)
+            zeta_aux(z, prec)
         finally
             bits(obits)
 
