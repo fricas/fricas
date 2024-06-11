@@ -114,7 +114,11 @@ mainEventLoop(void)
                 handle_event(&event);
             }
             else {
-              select(FD_SETSIZE,(void *)&rd,(void *)&dum1,(void *)&dum2,NULL);
+              int ret_val = sselect(FD_SETSIZE, &rd, &dum1, &dum2, NULL);
+              if (ret_val == -1) {
+                exitHyperDoc();
+                exit(1);
+              }
               if (FD_ISSET(Xcon, &rd) ||
                   XEventsQueued(gXDisplay, QueuedAfterFlush)) {
                     XNextEvent(gXDisplay, &event);
@@ -127,10 +131,18 @@ mainEventLoop(void)
                      * $PageStuff in hypertex.boot
                      */
                 {
-                    if (100 == get_int(spad_socket)) {
+                    int cmd = get_int(spad_socket);
+                    if (100 == cmd) {
                         set_window(gParentWindow->fMainWindow);
                         make_busy_cursors();
                         get_new_window();
+                    } else if (-1 == cmd) {
+                        /*
+                         * When we detect SpadServer shutdown,
+                         * exit HyperDoc properly.
+                         */
+                        exitHyperDoc();
+                        exit(0);
                     }
                 }
                 /*
