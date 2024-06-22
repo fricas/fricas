@@ -1411,7 +1411,6 @@ hasCateSpecialNew(v,dom,cat,SL) ==
          PrimitiveFunctionCategory SpecialFunctionCategory Evalable
           CombinatorialOpsCategory TranscendentalFunctionCategory
            AlgebraicallyClosedFunctionSpace ExpressionSpace
-               ExpressionSpace2
              LiouvillianFunctionCategory FunctionSpace))
   alg := member(QCAR cat, '(RadicalCategory AlgebraicallyClosedField))
   fefull := fe or alg or EQCAR(cat, 'CombinatorialFunctionCategory)
