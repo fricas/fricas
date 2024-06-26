@@ -2,11 +2,21 @@ BEGIN {
     print ")set message autoload off"
     print "-- \\begin{inputonly}"
     print ")set break resume"
-    print ")lisp (setf |$ioHook| (lambda (x &optional args) (cond ((eq x '|startKeyedMsg|) (SAY \"-- \\\\begin{MessageOutput}\")) ((eq x '|endOfKeyedMsg|) (SAY \"-- \\\\end{MessageOutput}\")) ((eq x '|startSysCmd|) (SAY \"-- \\\\begin{SysCmdOutput}\")) ((eq x '|endSysCmd|) (SAY \"-- \\\\end{SysCmdOutput}\")) ((eq x '|startPatternMsg|) (SAY \"-- \\\\begin{MessageOutput}\")) ((eq x '|endPatternMsg|) (SAY \"-- \\\\end{MessageOutput}\")))))"
+    print ")lisp (setf |$ioHook| \
+(lambda (x &optional args) \
+  (cond ((eq x '|startKeyedMsg|) (SAY \"-- \\\\begin{MessageOutput}\")) \
+        ((eq x '|endOfKeyedMsg|) (SAY \"-- \\\\end{MessageOutput}\")) \
+        ((eq x '|startSysCmd|) (SAY \"-- \\\\begin{SysCmdOutput}\")) \
+        ((eq x '|endSysCmd|) (SAY \"-- \\\\end{SysCmdOutput}\")) \
+        ((eq x '|startPatternMsg|) (SAY \"-- \\\\begin{MessageOutput}\")) \
+        ((eq x '|endPatternMsg|) (SAY \"-- \\\\end{MessageOutput}\")) \
+        ((eq x '|startAlgebraOutput|) (SAY \"-- \\\\begin{AlgebraOutput}\")) \
+        ((eq x '|endOfAlgebraOutput|) (SAY \"-- \\\\end{AlgebraOutput}\")))))"
     print "setDefault!((label: String): OutputBox +-> vconcat([box \"-- \\begin{TeXOutput}\",defaultPrologue(label)$FormatLaTeX],1,-1)$OutputBox, (label: String): OutputBox +-> vconcat([defaultEpilogue(label)$FormatLaTeX, box \"-- \\end{TeXOutput}\"],1,-1)$OutputBox)$Formatter(FormatLaTeX);"
     print "setFormats!([Formatter(FormatLaTeX)] pretend List(OutputFormatterCategory))$FormattedOutput;"
     print ")set output formatted on"
     print ")set output algebra off"
+    print ")set output length 88"
     print ")set message time off"
     print ")set streams calculate 7"
     print "outputSpacing(0)"
