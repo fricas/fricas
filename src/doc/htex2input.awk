@@ -11,9 +11,11 @@ BEGIN {
     print ")set streams calculate 7"
     print "outputSpacing(0)"
     print "-- \\end{inputonly}"
+    spadgraph=0
 }
 
 END {
+    maybeCloseViewport()
     print ")set quit unprotected"
     print ")quit"
 }
@@ -67,7 +69,7 @@ END {
 }
 
 xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
-    print "-- \\begin{spadsrc}"
+    posspadgraph=match($0, /^\\spadgraph{/)
     gsub(/^\\spadcommand{/, "")
     gsub(/^\\spadgraph{/, "")
     gsub(/}$/, "")
@@ -77,14 +79,34 @@ xtc==2 && (/^\\spadcommand{/ || /^\\spadgraph{/) {
     gsub(/\\_/, "_")
     gsub(/\\free{.*/, "")
     gsub(/\\bound{.*/, "")
+    gsub(/  *$/, "")
+
+    # ")clear all" commands need special treatment
+    if ($0 == ")clear all") {maybeCloseViewport()}
+    print "-- \\begin{spadsrc}"
     print "-- " $0
     print "-- \\end{spadsrc}"
-    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
-        print "-- \\begin{xtcnooutput}"
+
+    if (xtcname=="psXtc") {
+        if (posspadgraph>0) {maybeCloseViewport()}
+        print "-- \\begin{inputonly}"
+        print ")if CreateGraphics"
+        if (posspadgraph>0) {
+            spadgraph=1
+            print "spadgraphViewport:=" $0
+        } else {
+            print $0
+        }
+        print ")endif"
+        print "-- \\end{inputonly}"
     }
-    if (xtcname=="xtc" || xtcname=="noOutputXtc") {print $0}
-    if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
-        print "-- \\end{xtcnooutput}"
+    if (xtcname=="noOutputXtc") {
+        print "-- \\begin{inputonly}"
+        print $0
+        print "-- \\end{inputonly}"
+    }
+    if (xtcname=="xtc") {
+        print $0
     }
     next
 }
@@ -101,7 +123,7 @@ xtc==2 && /^\\begin{spadsrc}/ {
     }
     print "-- " $0
     if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
-        print "-- \\begin{xtcnooutput}"
+        print "-- \\begin{inputonly}"
     }
     if (xtcname=="xtc" || xtcname=="noOutputXtc") {
         if (xtcname!="nullXtc") {
@@ -109,7 +131,7 @@ xtc==2 && /^\\begin{spadsrc}/ {
         }
     }
     if (xtcname=="psXtc" || xtcname=="noOutputXtc") {
-        print "-- \\end{xtcnooutput}"
+        print "-- \\end{inputonly}"
     }
     next
 }
@@ -130,15 +152,42 @@ xtc==2 && /^\\begin{spadsrc}/ {
     next
 }
 
-/^}{/ && xtc==2 {next}
+/^}{/ && xtc==2 {
+    xtc=3
+    next
+}
+
+xtc==3 && xtcname == "psXtc" {
+    print "-- \\begin{center}"
+    print "-- \\includegraphics[height=.25\\textheight]{" $0 "}"
+    print "-- \\end{center}"
+    print "-- \\begin{inputonly}"
+    print ")if CreateGraphics"
+    print "write(spadgraphViewport, \"tmp/" $0 "\", \"postscript\");"
+    print ")endif"
+    print "-- \\end{inputonly}"
+    next
+}
 
 {
     print "-- " $0
     if (match($0,/^\\head/)) {
+        maybeCloseViewport()
         print "-- \\begin{inputonly}"
         print ")clear all"
         print "-- \\end{inputonly}"
     }
+}
+
+function maybeCloseViewport() {
+    if (spadgraph>0) {
+        print "-- \\begin{inputonly}"
+        print ")if CreateGraphics"
+        print "close(spadgraphViewport);"
+        print ")endif"
+        print "-- \\end{inputonly}"
+    }
+    spadgraph=0
 }
 
 function endMacroIndex(line,parms,    pp,x,bc,cc,len,found) {

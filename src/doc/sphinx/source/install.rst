@@ -170,7 +170,7 @@ LaTeX packages (available from CTAN_).
    breqn
    tensor
    mleftright
-   epsf
+   graphicx
    verbatim
    hyperref
    color
@@ -443,19 +443,6 @@ Build extra documentation (book and website)
 After a build of FriCAS, (suppose your build directory is under
 ``$BUILD``), you can build the documentation provided at
 the |home page| on your local installation.
-
-To build the extra documentation you need a working ``convert`` program
-from ImageMagick_.  Note that several Linux distribution currently disable
-the ability to create ``.ps`` files via ``convert``.  If your distribution
-is doing this, then the build of extra documentation will fail.
-
-In Ubuntu you can allow the creation of ``.ps`` files by editing
-``/etc/ImageMagick-6/policy.xml`` as ``root`` and changing the
-respective line to
-::
-
-   <policy domain="coder" rights="read|write" pattern="PS" />
-
 
 The |home page| can be built via
 ::
@@ -1088,7 +1075,6 @@ Known problems
 .. _GCL: https://www.gnu.org/software/gcl
 .. _GMP: https://gmplib.org
 .. _Hunchentoot: https://edicl.github.io/hunchentoot/
-.. _ImageMagick: https://imagemagick.org/
 .. _jFriCAS: https://jfricas.readthedocs.io
 .. _Jupyter: https://jupyter.org
 .. _JupyText: https://jupytext.readthedocs.io

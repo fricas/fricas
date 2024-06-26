@@ -35,9 +35,6 @@ BEGIN {
 # Discard \begin{inputonly} ... \end{inputonly}.
 /^-- \\begin{inputonly}/,/^-- \\end{inputonly}/ {next}
 
-# Discard \begin{xtcnooutput} ... \end{xtcnooutput}.
-/^-- \\begin{xtcnooutput}/,/^-- \\end{xtcnooutput}/ {next}
-
 # start of xtc
 /^-- \\begin{xtc}/ || /^-- \\begin{noOutputXtc}/ {
     inxtc=1
