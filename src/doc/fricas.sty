@@ -44,8 +44,9 @@
 \DeclareRobustCommand\cs[1]{\texttt{\char`\\#1}}
 
 \newenvironment{TeXOutput}%
-  {\begin{ColoredBackground}{bgmathoutput}\small}%
-  {\end{ColoredBackground}}
+  {\begingroup\vspace{-0.55ex}\topsep=0pt\partopsep=0pt
+   \begin{ColoredBackground}{0.95,0.95,1}\small}%
+  {\end{ColoredBackground}\endgroup}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,8 +244,8 @@
 % ------------------------------------------------------------------------
 
 % for some reason morekeywords swallows a space, so we reintroduce it here
-\def\formatResultType#1{\begingroup
-  \begin{ColoredBackground}{bgresulttype}
+\def\formatResultType#1{\begingroup\vspace{-1ex}\topsep=0pt\partopsep=0pt
+  \begin{ColoredBackground}{0.98,0.98,1}
     \hfill
     \lstinline[%
       basicstyle=\footnotesize\sffamily\color{blue},%
@@ -263,13 +264,16 @@
       breaklines=true,breakatwhitespace=true,prebreak={\_}}}%
   {}
 \lstnewenvironment{SysCmdOutput}%
-  {\lstset{backgroundcolor=\color{bgmessagecolor}}}%
+  {\lstset{backgroundcolor=\color{bgmessagecolor},%
+           basicstyle=\footnotesize\ttfamily,aboveskip=0pt,belowskip=0pt}}%
   {}
 \lstnewenvironment{MessageOutput}%
-  {\lstset{backgroundcolor=\color{bgmessagecolor},aboveskip=0pt,belowskip=0pt}}%
+  {\lstset{backgroundcolor=\color{bgmessagecolor},%
+           basicstyle=\footnotesize\ttfamily,aboveskip=0pt,belowskip=0pt}}%
   {}
 \lstnewenvironment{AlgebraOutput}%
-  {\lstset{backgroundcolor=\color{bgalgebracolor},aboveskip=0pt,belowskip=0pt}}%
+  {\lstset{backgroundcolor=\color{bgalgebracolor},%
+           basicstyle=\footnotesize\ttfamily,aboveskip=0pt,belowskip=0pt}}%
   {}
 
 %% This one does not reset the line numbers. Does have horizontal rules.
@@ -304,27 +308,10 @@
     \def\spad{\textspadexpr}}
   {}
 
-
-
-
-
-\def\MakeFramed{\begingroup}
-\def\endMakeFramed{\endgroup}%
-\IfFileExists{framed.sty}{%
-  \usepackage{framed}[2003/07/21 v 0.8a]%
-}{%
-  \PackageWarning{fricas.sty}{framed.sty not found}%
-}
+\usepackage{framed}[2003/07/21 v 0.8a]%
 \newenvironment{ColoredBackground}[1]%
-  {\@ifundefined{background#1}%
-     {\def\FrameCommand{}}%
-     {\def\FrameCommand{\csname background#1\endcsname}}%
-   \trivlist\item\MakeFramed{}}%
-  {\endMakeFramed\endtrivlist}
-\def\backgroundColor#1#2#{\background@Color{#1}{#2}}
-\def\background@Color#1#2#3{%
-  \expandafter\gdef\csname background#1\endcsname{\@backgroundColor{#1}#2{#3}}}
-\def\@backgroundColor#1{\colorbox}%
+  {\definecolor{shadecolor}{rgb}{#1}\setlength{\FrameSep}{0pt}\begin{shaded}}%
+  {\end{shaded}}%
 \renewcommand{\theequation}{\arabic{equation}}
 
 %--rhx: TODO: The xtc stuff must be simplified. There is no real need
@@ -409,5 +396,3 @@ Uni-var-iate-Poly-nomial
 \definecolor{bgmessagecolor}{rgb}{1,0.95,0.95}   % (rose)   output messages
 \definecolor{bgalgebracolor}{rgb}{0.95,0.95,1}   % (blue)   algebra output
 \definecolor{bgcode}{rgb}{1,1,0.7}               % (yellow) spad source code
-\backgroundColor{bgmathoutput}[rgb]{0.95,0.95,1} % (blue)   spad output
-\backgroundColor{bgresulttype}[rgb]{0.98,0.98,1} % (gray)   result type

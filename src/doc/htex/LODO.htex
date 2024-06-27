@@ -71,57 +71,29 @@ Now define the differential operator \spad{Dop}.
 \spadcommand{Dop:= Dx^3 + G/x^2*Dx + H/x^3 - 1 \free{Dx}\bound{Dop}}
 }
 \xtc{
+The first $n$ coefficients can be obtained in the following way.
 }{
-\spadcommand{n == 3 \bound{n3}}
+\begin{spadsrc}
+firstCoefficients(n) ==
+  phi := reduce(+, [subscript(s,[i])*exp(x)/x^i for i in 0..n])
+  phi1 := retract((Dop(phi) * x^(n+3) / exp x))@Polynomial(Integer)
+  phi2 := phi1 :: UnivariatePolynomial(x, Polynomial Integer)
+  sys := [coefficient(phi2, (n+3-i)::NNI) for i in 2..n+1]
+  solve(sys, [subscript(s,[i]) for i in 1..n])
+\end{spadsrc}
+}
+\xtc{
+Evaluate this function for several values of \spad{n}.
+}{
+\spadcommand{firstCoefficients(3)}
 }
 \xtc{
 }{
-\spadcommand{phi == reduce(+,[subscript(s,[i])*exp(x)/x^i for i in 0..n]) \bound{phi}}
+\spadcommand{firstCoefficients(4)}
 }
 \xtc{
 }{
-\spadcommand{phi1 ==  Dop(phi) / exp x \bound{phi1}\free{Dop phi}}
-}
-\xtc{
-}{
-\spadcommand{phi2 == phi1 *x^(n+3) \bound{phi2}\free{phi1}}
-}
-\xtc{
-}{
-\spadcommand{phi3 == retract(phi2)@(POLY INT) \bound{phi3}\free{phi2}}
-}
-\xtc{
-}{
-\spadcommand{pans == phi3 ::UP(x,POLY INT) \free{phi3}\bound{pans}}
-}
-\xtc{
-}{
-\spadcommand{pans1 == [coefficient(pans, (n+3-i) :: NNI) for i in 2..n+1] \bound{pans1}\free{pans}}
-}
-\xtc{
-}{
-\spadcommand{leq == solve(pans1,[subscript(s,[i]) for i in 1..n]) \bound{leq}\free{pans1}}
-}
-\xtc{
-Evaluate this for several values of \spad{n}.
-}{
-\spadcommand{leq \free{n3 leq}}
-}
-\xtc{
-}{
-\spadcommand{n==4 \bound{n4}}
-}
-\xtc{
-}{
-\spadcommand{leq \free{n4 leq}}
-}
-\xtc{
-}{
-\spadcommand{n==7 \bound{n7}}
-}
-\xtc{
-}{
-\spadcommand{leq \free{n7 leq}}
+\spadcommand{firstCoefficients(7)}
 }
 
 % ----------------------------------------------------------------------
