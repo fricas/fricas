@@ -167,17 +167,19 @@ LaTeX packages (available from CTAN_).
 ::
 
    amsmath
+   amssymb
    breqn
-   tensor
-   mleftright
-   graphicx
-   verbatim
-   hyperref
    color
+   epstopdf
+   framed
+   graphicx
+   hyperref
    listings
    makeidx
-   xparse
+   tensor
    tikz
+   verbatim
+   xparse
 
 
 SphinxDoc (optional)
