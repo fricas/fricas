@@ -505,6 +505,17 @@ decimal expansion. In the default implementation of
 
 )if LiterateDoc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Formatting a function might need special treatment.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+)endif
+
+    formatFunction: (BOX, List BOX) -> BOX
+      ++ formatFunction(b, args) is supposed to create a box for
+      ++ "b(args)", i.e. format the list of arguments given by args an
+      ++ put it into a format that represents a function application.
+
+)if LiterateDoc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 The following functions are only exported to aid with changing
 a formatting domain during a session.
 
@@ -589,6 +600,10 @@ argument in a context with precedence \spad{p}.
       ++ \spad{h(prec, args)} formats args according to \spad{hh} and
       ++ then prefixes this box by \spad{box s}.
       ++ Outer parentheses are added if \spad{p < prec}.
+
+    function: (S, Z, H) -> H -- has default
+      ++ \spad{function(s, p, hh)} is meant to typeset function
+      ++ applications. It defaults to prefix(s,p,bracket("(",")",hh)).
 
     binary: (H, H) -> H --has default
       ++ \spad{binary(h1, h2)} returns a handler \spad{h} such that
@@ -1377,10 +1392,12 @@ of a \spad{ROW} operator without the wrapping \spad{MATRIX} operator.
     formatString(s: S): BOX == box s
     formatSymbol(s: S): BOX == box s
     formatFunctionSymbol(s: S): BOX == box s
-    formatFunction(b: BOX, args: LE): BOX ==
-        m: Z := minPrecedence()
-        a: BOX := nary(", ", maxPrecedence(), formatExpression m)(m, args)
-        hconcat [b, parenthesize("(", ")", a)]
+    formatFunction(b: BOX, lb: List BOX): BOX ==
+        import from OutputFormTools
+        empty? lb => hconcat [b, parenthesize("(", ")", empty()$BOX)]
+        bx: BOX := first lb
+        for b in rest lb repeat bx := hconcat [bx, box ", ", b]
+        hconcat [b, parenthesize("(", ")", bx)]
 
     parenthesizeIf(needParen?: Boolean, bx: BOX): BOX ==
         needParen? => parenthesize("(", ")", bx)
@@ -1407,7 +1424,8 @@ of a \spad{ROW} operator without the wrapping \spad{MATRIX} operator.
         opex: E := operator expr
         args: LE := arguments expr
         not symbol? opex =>
-            formatFunction(formatExpression(opex, minPrecedence()), args)
+            bargs: List BOX := [formatExpression a for a in args]
+            formatFunction(formatExpression(opex, minPrecedence()), bargs)
 
         nargs: Z := #args
         op: S := string symbol opex
@@ -1421,7 +1439,8 @@ of a \spad{ROW} operator without the wrapping \spad{MATRIX} operator.
 
         -- We format as a function with function name op and argument
         -- give by args.
-        formatFunction(formatFunctionSymbol op, args)
+        bargs: List BOX := [formatExpression a for a in args]
+        formatFunction(formatFunctionSymbol op, bargs)
 
     formatExpression(expr: E): BOX == formatExpression(expr, minPrecedence())
 
@@ -1439,6 +1458,8 @@ of a \spad{ROW} operator without the wrapping \spad{MATRIX} operator.
 
     prefix(op: S, p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
         parenthesizeIf(p < prec, hconcat [box op, hh(prec, args)])
+
+    function(op: S, p: Z, hh: H): H == prefix(op, p, bracket("(", ")", hh))
 
     infix(op: S, p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
         b1: BOX := h1(prec, [args.1])

@@ -58,7 +58,9 @@ setDefault!(_
 
 E ==> Expression Integer
 OF ==> OutputForm
-macro R == Record(OUTPUTFORM:OF, SEXPRESSION: SExpression)
+macro R == Record(OUTPUTFORM: OF, SEXPRESSION: SExpression)
+flt x ==> (empty?(rhxl:=lines(format(format(x::OF)$FLT)))=>"";rhxl.1)
+
 macro e x == (_
     o:=x::OF;_
     print(message("\begin{verbcode}")$OF);_
@@ -67,6 +69,10 @@ macro e x == (_
     print(message("TexFormat\hrulefill")$OF);_
     print(message("\begin{verbcode}")$OF);_
     print(o::TexFormat);_
+    print(message("\end{verbcode}")$OF);_
+    print(message("FormatLaTeX (verbatim)\hrulefill")$OF);_
+    print(message("\begin{verbcode}")$OF);_
+    print(message(flt x)$OF);_
     print(message("\end{verbcode}")$OF);_
     display(o::FLT);_
     display(o::FMJ);_
@@ -493,6 +499,8 @@ e integral(x^x, x=u..v)
 
 e integral(sin x, x=u..v)
 
+e integral(sin x, x=log u..exp v)
+
 e integral(sin x / cos x, x=u..v)
 
 e integral(sin x, x)
@@ -504,6 +512,8 @@ e sum(x^x, x)
 
 e sum(x^x, x=u..v)
 
+e sum(x^x, x=sinh(u)..1/tan(v))
+
 
 e prod(a)
 
@@ -512,6 +522,8 @@ e product(x^x, x)
 e(product(x^x, x=u..v)^2)
 
 e product(x^x, x=1..u/v)
+
+e product(x^x, x=sin(1)..u/cos(v))
 
 e(product(x^x, x=1..u/v)^(r+s))
 
@@ -721,8 +733,14 @@ e (a * (-b))
 
 e (a ^ (-b))
 
+e (sin(x) ^ sin(-y))
+
+e (sin(x) ^ (- csc(-y^cos(x))))
+
 
 e subscript(v, [1,n,t])
+
+e subscript(v, [1,sinh(n*%pi),t])
 
 e superscript(v, [1,n,t])
 
@@ -754,3 +772,18 @@ e(a^p)
 e(a/p)
 
 )clear prop p
+
+function(cos(x), 'f, 'x)
+e f
+function(cos(x+y), 'g, 'x, 'y)
+e g
+
+)clear prop f g
+
+f(n|n>1 and odd? n) == n+6
+e f
+
+g(n|n>1 and odd? n, t | t > 9) == tanh n + t
+e g
+
+)clear prop f g

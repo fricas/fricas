@@ -176,13 +176,6 @@ i.e., an underscore character.
     parenthesize(left: S, right: S, b: BOX): BOX ==
         hconcat [box left, b, box right]
 
-    -- local funnction
-    formatFunction(s: S, lb: List BOX): BOX ==
-        empty? lb => box concat(s,"()")
-        bx: BOX := first lb
-        for b in rest lb repeat bx := hconcat [bx, box ", ", b]
-        hconcat [box s, parenthesize("(", ")", bx)]
-
     -- Replace x by y in expression z.
     substitute(x: E, y: E, z: E): E ==
         import from OutputFormTools
@@ -214,7 +207,7 @@ i.e., an underscore character.
         empty? bu =>
             lb: List BOX := [formatExpression(args.3, MIN)]
             if not empty? bl then lb := concat(lb, bl)
-            return formatFunction("int", lb) -- int operator form OutputForm
+            return formatFunction(box "int", lb) -- int operator form OutputForm
 
         --assert(not empty? bu)
         b2: BOX := bu
@@ -234,7 +227,7 @@ i.e., an underscore character.
                 -- limits are given by x=bl..bu
                 ba := formatExpression(a, MIN)
                 b2 := hconcat [bx, box "=", bl, box "..", bu]
-        formatFunction("integral", [ba, b2])
+        formatFunction(box "integral", [ba, b2])
 
     -- local
     operatorWithLimits(s: S, p: Z): H == (prec: Z, args: LE): BOX +->
@@ -242,12 +235,12 @@ i.e., an underscore character.
         bl: BOX := formatExpression(args.1, MIN) -- lower limit
         ba: BOX := formatExpression(args.2, MIN) -- upper limit or arg
         #args = 2 =>
-            empty? bl => formatFunction(s, [ba])
-            formatFunction(s, [ba, bl])
+            empty? bl => formatFunction(box s, [ba])
+            formatFunction(box s, [ba, bl])
         bu: BOX := ba -- upper limit
         ba := formatExpression(args.3, MIN) -- arg (no parens needed)
         b2: BOX := hconcat [bl, box " .. ", bu]
-        formatFunction(s, [ba, b2])
+        formatFunction(box s, [ba, b2])
 
     sum(p: Z): H == operatorWithLimits("sum", p)
     product(p: Z): H == operatorWithLimits("product", p)
@@ -264,16 +257,16 @@ i.e., an underscore character.
         parenthesize("theMap(", ")", box s(p1+1..p2-1))
 
     overbar(p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
-        formatFunction("overbar", [hh(p, args)])
+        formatFunction(box "overbar", [hh(p, args)])
 
     box(hh: H): H == (prec: Z, args: LE): BOX +->
-        formatFunction("box", [hh(prec, [args.1])])
+        formatFunction(box "box", [hh(prec, [args.1])])
 
     -- \sqrt[n]{x}
     nthRoot(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
         bx: BOX := h1(p, [args.1])
-        one?(# args) => formatFunction("sqrt", [bx])
-        formatFunction("nthRoot", [bx, h2(p, [args.2])])
+        one?(# args) => formatFunction(box "sqrt", [bx])
+        formatFunction(box "nthRoot", [bx, h2(p, [args.2])])
 
     emptyArgument?(a: E): Boolean ==
         import from OutputFormTools
@@ -290,12 +283,12 @@ i.e., an underscore character.
                 bx := hconcat [bx, box ", empty()$OutputForm"]
               else
                 bx := hconcat [bx, box ", ", formatExpression(a, MIN)]
-        formatFunction("scripts", [b1, parenthesize("[", "]", bx)])
+        formatFunction(box "scripts", [b1, parenthesize("[", "]", bx)])
 
     subscript(p: Z): H == (prec: Z, args: LE): BOX +->
         b1: BOX := formatExpression(args.1, MIN)
         b2: BOX := formatExpression(args.2, MIN)
-        formatFunction("subscript", [b1, parenthesize("[", "]", b2)])
+        formatFunction(box "subscript", [b1, parenthesize("[", "]", b2)])
 
 
 )if LiterateDoc
@@ -320,7 +313,7 @@ representation in \spadtype{OutputForm} back into the above form.
                 bx := hconcat [bx, box ", empty()$OutputForm"] --$
               else
                 bx := hconcat [bx, box ", ", formatExpression(a, MIN)]
-        formatFunction("supersub", [b1, parenthesize("[", "]", bx)])
+        formatFunction(box "supersub", [b1, parenthesize("[", "]", bx)])
 
     -- we must treat the special format of a prime expression
     prime(p: Z): H == (prec: Z, args: LE): BOX +->
@@ -328,7 +321,7 @@ representation in \spadtype{OutputForm} back into the above form.
         n: Z := numberOfPrimes(args.2)
         n < 0 => error "error in PRIME expression"
         b2: BOX := box(convert(n)@String)
-        formatFunction("prime", [b1, b2])
+        formatFunction(box "prime", [b1, b2])
 
     power(p: Z, h1: H, h2: H): H == (prec: Z, args: LE): BOX +->
         b1: BOX := h1(p+1, [args.1])
@@ -345,12 +338,12 @@ representation in \spadtype{OutputForm} back into the above form.
     binomial(prec: Z, args: LE): BOX ==
         b1: BOX := formatExpression(args.1, MIN)
         b2: BOX := formatExpression(args.2, MIN)
-        formatFunction("binomial", [b1, b2])
+        formatFunction(box "binomial", [b1, b2])
 
     zag(prec: Z, args: LE): BOX ==
         b1: BOX := formatExpression(args.1, MIN)
         b2: BOX := formatExpression(args.2, MIN)
-        formatFunction("zag", [b1, b2])
+        formatFunction(box "zag", [b1, b2])
 
     vconcat(h: H): H == bracket("vconcat[", "]", nary(", ", MAX, FE MIN))
     pile(h: H): H == bracket("pile[", "]", nary(", ", MAX, FE MIN))
@@ -370,6 +363,7 @@ data structure.
         NARY ==> -1 -- means n-ary.
         PAREN p ==> bracket("(", ")", FE p)
         PAREN2(p1, p2) ==> bracket("(", ")", infix(", ", MAX, FE MIN, FE MIN))
+        FUNCTION s ==> function(s, MAX, FE MIN)
 
         o(n, op, hdl) ==> setHandler!(oh, n, op, hdl)
 
@@ -404,24 +398,24 @@ Here we (wrongly) return \verb|+%Infinity| and \verb|-%Infinity| for
 
         o(0, "...",         formatConstant "...")
 
-        o(1, "cos",         prefix("cos",    MAX, PAREN MIN))
-        o(1, "cot",         prefix("cot",    MAX, PAREN MIN))
-        o(1, "csc",         prefix("csc",    MAX, PAREN MIN))
-        o(1, "log",         prefix("log",    MAX, PAREN MIN))
-        o(1, "sec",         prefix("sec",    MAX, PAREN MIN))
-        o(1, "sin",         prefix("sin",    MAX, PAREN MIN))
-        o(1, "tan",         prefix("tan",    MAX, PAREN MIN))
-        o(1, "cosh",        prefix("cosh",   MAX, PAREN MIN))
-        o(1, "coth",        prefix("coth",   MAX, PAREN MIN))
-        o(1, "csch",        prefix("csch",   MAX, PAREN MIN))
-        o(1, "sech",        prefix("sech",   MAX, PAREN MIN))
-        o(1, "sinh",        prefix("sinh",   MAX, PAREN MIN))
-        o(1, "tanh",        prefix("tanh",   MAX, PAREN MIN))
-        o(1, "acos",        prefix("acos",   MAX, PAREN MIN))
-        o(1, "asin",        prefix("asin",   MAX, PAREN MIN))
-        o(1, "atan",        prefix("atan",   MAX, PAREN MIN))
-        o(1, "erf",         prefix("erf",    MAX, PAREN MIN))
-        o(1, "Gamma",       prefix("Gamma",  MAX, PAREN MIN))
+        o(1, "cos",         FUNCTION "cos")
+        o(1, "cot",         FUNCTION "cot")
+        o(1, "csc",         FUNCTION "csc")
+        o(1, "log",         FUNCTION "log")
+        o(1, "sec",         FUNCTION "sec")
+        o(1, "sin",         FUNCTION "sin")
+        o(1, "tan",         FUNCTION "tan")
+        o(1, "cosh",        FUNCTION "cosh")
+        o(1, "coth",        FUNCTION "coth")
+        o(1, "csch",        FUNCTION "csch")
+        o(1, "sech",        FUNCTION "sech")
+        o(1, "sinh",        FUNCTION "sinh")
+        o(1, "tanh",        FUNCTION "tanh")
+        o(1, "acos",        FUNCTION "acos")
+        o(1, "asin",        FUNCTION "asin")
+        o(1, "atan",        FUNCTION "atan")
+        o(1, "erf",         FUNCTION "erf")
+        o(1, "Gamma",       FUNCTION "Gamma")
 
         o(1, "-",           prefix("-",      710, FE 715))
         o(1, "not",         prefix("not ",   710, FE 715))

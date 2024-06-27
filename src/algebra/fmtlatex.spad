@@ -187,6 +187,17 @@ In order to keep spaces, we also escape spaces by a backslash.
     formatString(s: S): BOX == tex1Escape("\STRING", s)
     formatSymbol(s: S): BOX == tex1Escape("\SYMBOL", s)
     formatFunctionSymbol(s: S): BOX == tex1Escape("\FUN", s)
+    formatFunction(b: BOX, lb: List BOX): BOX ==
+        import from OutputFormTools
+        empty? lb => hconcat [b, parenthesize("(", ")", empty()$BOX)]
+        bx: BOX := first lb
+        for a in rest lb repeat bx := hconcat [bx, box ", ", a]
+        hconcat [box "\FUNCTION{", b, box "}{", bx, box "}"]
+
+    -- a special handler for functions
+    function(op: S, p: Z, hh: H): H == (prec: Z, args: LE): BOX +->
+        bargs: List BOX := [formatExpression a for a in args]
+        parenthesizeIf(p < prec, formatFunction(box op, bargs))
 
     -- If a is of the form (* x (CONCAT d y)) then replace it
     -- by (INTSEP x (CONCAT d y)).
@@ -387,6 +398,7 @@ The operators have been mainly extracted from the definitions of
         PAREN p ==> bracket("\PAREN{", "}", FE p)
         BRACE p ==> bracket("{", "}", FE p)
         BRACE2(p1, p2) ==> binary(BRACE p1, BRACE p2)
+        FUNCTION s ==> function(s, MAX, FE MIN)
 
         o(n, op, hdl) ==> setHandler!(oh, n, op, hdl)
 
@@ -398,24 +410,24 @@ The operators have been mainly extracted from the definitions of
         o(0, "infinity",    formatConstant "\infty ") -- for %minusInfinity
         o(0, "...",         formatConstant "\ldots ")
 
-        o(1, "cos",         prefix("\cos",    900, PAREN MIN))
-        o(1, "cot",         prefix("\cot",    900, PAREN MIN))
-        o(1, "csc",         prefix("\csc",    900, PAREN MIN))
-        o(1, "log",         prefix("\log",    900, PAREN MIN))
-        o(1, "sec",         prefix("\sec",    900, PAREN MIN))
-        o(1, "sin",         prefix("\sin",    900, PAREN MIN))
-        o(1, "tan",         prefix("\tan",    900, PAREN MIN))
-        o(1, "cosh",        prefix("\cosh",   900, PAREN MIN))
-        o(1, "coth",        prefix("\coth",   900, PAREN MIN))
-        o(1, "csch",        prefix("\csch",   900, PAREN MIN))
-        o(1, "sech",        prefix("\sech",   900, PAREN MIN))
-        o(1, "sinh",        prefix("\sinh",   900, PAREN MIN))
-        o(1, "tanh",        prefix("\tanh",   900, PAREN MIN))
-        o(1, "acos",        prefix("\arccos", 900, PAREN MIN))
-        o(1, "asin",        prefix("\arcsin", 900, PAREN MIN))
-        o(1, "atan",        prefix("\arctan", 900, PAREN MIN))
-        o(1, "erf",         prefix("\erf",    900, PAREN MIN))
-        o(1, "Gamma",       prefix("\Gamma",  900, PAREN MIN))
+        o(1, "cos",         FUNCTION "\cos")
+        o(1, "cot",         FUNCTION "\cot")
+        o(1, "csc",         FUNCTION "\csc")
+        o(1, "log",         FUNCTION "\log")
+        o(1, "sec",         FUNCTION "\sec")
+        o(1, "sin",         FUNCTION "\sin")
+        o(1, "tan",         FUNCTION "\tan")
+        o(1, "cosh",        FUNCTION "\cosh")
+        o(1, "coth",        FUNCTION "\coth")
+        o(1, "csch",        FUNCTION "\csch")
+        o(1, "sech",        FUNCTION "\sech")
+        o(1, "sinh",        FUNCTION "\sinh")
+        o(1, "tanh",        FUNCTION "\tanh")
+        o(1, "acos",        FUNCTION "\arccos")
+        o(1, "asin",        FUNCTION "\arcsin")
+        o(1, "atan",        FUNCTION "\arctan")
+        o(1, "erf",         FUNCTION "\erf")
+        o(1, "Gamma",       FUNCTION "\Gamma")
 
         o(1, "-",           prefix("-",       710, FE 715))
         o(1, "not",         prefix("\lnot ",  710, FE 715))
@@ -552,7 +564,6 @@ The operators have been mainly extracted from the definitions of
 \usepackage{amsmath,amssymb}
 \usepackage[mathstyleoff]{breqn}
 \usepackage{tensor}
-\usepackage{mleftright}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newenvironment{fricasmath}[1]%
   {\def\arg{#1}%
@@ -562,6 +573,7 @@ The operators have been mainly extracted from the definitions of
                   \def\END{\end{dmath}}%
 
    \fi
+   \def\FUNCTION##1##2{##1\mathopen{}\PAREN{##2}\mathclose{}}%
    \def\EulerE{e}% %e
    \def\ImaginaryI{i}% %i
    \def\csch{\operatorname{csch}}%
@@ -570,7 +582,7 @@ The operators have been mainly extracted from the definitions of
    \def\embrace##1##2##3{\left##1\relax##3\right##2\relax}%
    \def\BRACE{\embrace{\{}{\}}}%
    \def\BRACKET{\embrace{[}{]}}%
-   \def\PAREN##1{\mleft(##1\mright)}%
+   \def\PAREN{\embrace{(}{)}}%
    \def\ZAG##1##2{\frac{\left.{##1}\right|}{\left|{##2}\right.}}%
    \def\QUOTE##1{\texttt{'}##1}%
    \def\BOX##1{\boxed{##1}}%
