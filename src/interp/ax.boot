@@ -157,7 +157,7 @@ modemapToAx(modemap) ==
       argtypes
   $modemapArgs : local := [cons(a,t) for a in args for t in atypes]
 
-  argdecls:=['Comma, : [axFormatDecl(a, stripType t) for a in args for t in argtypes]]
+  argdecls:=['Comma, : [axFormatDecl(a, stripType t, true) for a in args for t in argtypes]]
   resultType :=  axFormatType stripType target
   categoryForm? constructor =>
       categoryInfo := get_database(constructor, 'CONSTRUCTORCATEGORY)
@@ -204,8 +204,17 @@ optcomma [op,:args] ==
    # args = 1 => first args
    [op,:args]
 
-axFormatDecl(sym, type) ==
+-- flg indicates that the call is from constructor context
+axFormatDecl(sym, type, flg) ==
+   type is ['Join, :.] => ['Declare, sym, axFormatType type]
+   type is ['CATEGORY, :.] => ['Declare, sym, axFormatType type]
+   flg and containsSelf? type =>
+       ['Declare, sym, ['With, [], axFormatType type]]
    ['Declare, sym, axFormatType type]
+
+containsSelf? type ==
+    type is [op, :args] => or/[containsSelf? arg for arg in args]
+    type is '%
 
 makeTypeSequence l ==
    ['Sequence,: delete('Type, l)]
@@ -256,7 +265,7 @@ axFormatType(typeform) ==
       ['Apply, "->",
                ['Comma, :[axFormatType t for t in argtypes]],
                 axFormatType target]
-  typeform is ['_:, name, type] => axFormatDecl(name,type)
+  typeform is ['_:, name, type] => axFormatDecl(name,type,false)
   typeform is ['Union, :args] =>
       first args is ['_:,.,.] =>
          ['Apply, 'Union, :[axFormatType a for a in args]]
@@ -269,7 +278,7 @@ axFormatType(typeform) ==
             valueCount := valueCount + 1
             INTERNL1("value", STRINGIMAGE(valueCount))
           taglist := [tag ,: taglist]
-      ['Apply, 'Union, :[axFormatDecl(name,type) for name in reverse taglist
+      ['Apply, 'Union, :[axFormatDecl(name,type,false) for name in reverse taglist
                                 for type in args]]
   typeform is ['Dictionary,['Record,:args]] =>
       ['Apply, 'Dictionary,
