@@ -401,6 +401,7 @@
   (|EuclideanDomain| . EUCDOM)
   (|Evalable| . EVALAB)
   (|ExpressionSpace| . ES)
+  (|ExpressionSpace2| . ESC2)
   (|ExtensibleLinearAggregate| . ELAGG)
   (|ExtensionField| . XF)
   (|Field| . FIELD)

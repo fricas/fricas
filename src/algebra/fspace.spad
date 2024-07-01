@@ -1,13 +1,12 @@
-)abbrev category ES ExpressionSpace
+)abbrev category ESC2 ExpressionSpace2
 ++ Category for domains on which operators can be applied
 ++ Author: Manuel Bronstein
 ++ Date Created: 22 March 1988
 ++ Description:
 ++ An expression space is a set which is closed under certain operators;
 ++ Keywords: operator, kernel, expression, space.
-ExpressionSpace() : Category == Defn where
+ExpressionSpace2(K : KernelCategory(%)) : Category == Defn where
   N   ==> NonNegativeInteger
-  K   ==> Kernel %
   OP  ==> BasicOperator
   SY  ==> Symbol
   PAREN  ==> '%paren
@@ -345,6 +344,8 @@ ExpressionSpace() : Category == Defn where
            (u := retractIfCan(x)@Union(Integer, "failed")) case Integer
                   and pred?(u@Integer)
 
+)abbrev category ES ExpressionSpace
+ExpressionSpace() : Category == ExpressionSpace2(Kernel(%))
 
 )abbrev package ES1 ExpressionSpaceFunctions1
 ++ Lifting of maps from expression spaces to kernels over them
@@ -385,7 +386,7 @@ ExpressionSpaceFunctions2(E : ExpressionSpace, F : ExpressionSpace) : with
     map(f, k) ==
       (operator(operator k)$F) [f x for x in argument k]$List(F)
 
-)abbrev category FS FunctionSpace
+)abbrev category FSC2 FunctionSpace2
 ++ Category for formal functions
 ++ Author: Manuel Bronstein
 ++ Date Created: 22 March 1988
@@ -393,13 +394,13 @@ ExpressionSpaceFunctions2(E : ExpressionSpace, F : ExpressionSpace) : with
 ++   A space of formal functions with arguments in an arbitrary
 ++   ordered set.
 ++ Keywords: operator, kernel, function.
-FunctionSpace(R : Comparable) : Category == Definition where
+FunctionSpace2(R : Comparable, K : KernelCategory(%)) : Category ==
+                                                   Definition where
   OP ==> BasicOperator
   O  ==> OutputForm
   SY ==> Symbol
   N  ==> NonNegativeInteger
   Z  ==> Integer
-  K  ==> Kernel %
   Q  ==> Fraction R
   PR ==> Polynomial R
   MP ==> SparseMultivariatePolynomial(R, K)
@@ -409,7 +410,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
   SPECIALEQUAL ==> '%specialEqual
   SPECIALINPUT ==> '%specialInput
 
-  Definition ==> Join(ExpressionSpace, RetractableTo SY, Patternable R,
+  Definition ==> Join(ExpressionSpace2(K), RetractableTo SY, Patternable R,
                      FullyPatternMatchable R, FullyRetractableTo R) with
        ground?   : % -> Boolean
          ++ ground?(f) tests if f is an element of R.
@@ -666,7 +667,7 @@ FunctionSpace(R : Comparable) : Category == Definition where
             x := op(- first args)
             od? => -x
             x
-        elt(op, args)$ExpressionSpace_&(%)
+        elt(op, args)$ExpressionSpace2_&(%, K)
 
       eval(x : %, s : List SY, n : List N, l : List(% -> %)) ==
         eval(x, s, n, [y +-> f(first(y)) for f in l]$List(List % -> %))
@@ -1153,6 +1154,10 @@ FunctionSpace(R : Comparable) : Category == Definition where
       if MP has ConvertibleTo Pattern Float then
         convert(x : %) : Pattern(Float) ==
           convert(numer x) / convert(denom x)
+
+)abbrev category FS FunctionSpace
+FunctionSpace(R : Comparable) : Category ==
+    Join(FunctionSpace2(R, Kernel(%)), ExpressionSpace)
 
 )abbrev package FS2 FunctionSpaceFunctions2
 ++ Lifting of maps to function spaces
