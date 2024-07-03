@@ -456,12 +456,11 @@ outputMapTran(op, x) ==
   outputMapTran0(op, first l, alias)
 
 outputMapTran0(op, argDef, alias) ==
-  arg := first argDef
-  def := rest  argDef
-  [arg',:def'] := simplifyMapPattern(argDef,alias)
-  arg' := outputTran arg'
-  if null arg' then arg' := '"()"
-  ['CONCATB, op, outputTran arg', "==", outputTran def']
+  [arg, :def] := simplifyMapPattern(argDef,alias)
+  arg := outputTran(arg)
+  if null(arg) then arg := '"()"
+  else if SYMBOLP(arg) then arg := ['PAREN, arg]
+  ['CONCATB, ['CONCAT, op, arg], "==", outputTran(def)]
 
 outputTranReduce ['REDUCE,op,.,body] ==
   ['CONCAT,op,"/",outputTran body]
