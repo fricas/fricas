@@ -2271,12 +2271,13 @@ reportOpsFromUnitDirectly0 D ==
 
 reportOpsFromUnitDirectly1 D ==
   showFile := '"SHOW.LISTING"
-  erase_lib(showFile)
+  maybe_delete_file(showFile)
   $sayBrightlyStream : fluid := MAKE_OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromUnitDirectly D
   SHUT $sayBrightlyStream
   editFile showFile
+  deleteFile(showFile)
 
 sayShowWarning() ==
   sayBrightly
@@ -2292,13 +2293,15 @@ reportOpsFromLisplib0(unitForm,u)  ==
   reportOpsFromLisplib(unitForm,u)
 
 reportOpsFromLisplib1(unitForm,u)  ==
+  $useEditorForShowOutput : local := false
   showFile := '"SHOW.LISTING"
-  erase_lib(showFile)
+  maybe_delete_file(showFile)
   $sayBrightlyStream : fluid := MAKE_OUTSTREAM(showFile)
   sayShowWarning()
   reportOpsFromLisplib(unitForm,u)
   SHUT $sayBrightlyStream
   editFile showFile
+  deleteFile(showFile)
 
 reportOpsFromUnitDirectly unitForm ==
   isRecordOrUnion := unitForm is [a,:.] and a in '(Record Union)
