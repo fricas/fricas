@@ -280,7 +280,7 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
     ALGOP := '%alg
 
     innerRF    : (F, List K) -> F
-    rootExpand : K -> F
+    rootExpand : (List(K), List(F), K) -> F
     algkernels : List K -> List K
     rootkernels : List K -> List K
 
@@ -299,13 +299,20 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
       numer univariate(denom(ratDenom inv(dummy::P::F - x))::F, dummy)
 
     rootSplit x ==
-      lk := rootkernels tower x
-      eval(x, lk, [rootExpand k for k in lk])
+        lk0 := rootkernels(tower(x))
+        lk : List(K) := []
+        lv : List(F) := []
+        for k in lk0 repeat
+            v := rootExpand(lk, lv, k)
+            lk := cons(k, lk)
+            lv := cons(v, lv)
+        eval(x, lk, lv)
 
-    rootExpand k ==
+    rootExpand(lk : List(K), lv : List(F), k : K) : F ==
       x  := first argument k
       n  := second argument k
       op := operator k
+      x := eval(x, lk, lv)
       op(numer(x)::F, n) / op(denom(x)::F, n)
 
 -- all the kernels in ll must be algebraic
@@ -359,16 +366,23 @@ AlgebraicManipulations(R, F) : Exports == Implementation where
                 *fp_root(map(x +-> x::P, factor(cp)
                             )$FactoredFunctions2(R, P), op, n)
 
-          root_factor_k(k : K) : F ==
+          root_factor_k(lk : List(K), lv : List(F), k : K) : F ==
               x  := first argument k
               nf  := second argument k
               n := (retract(nf)@Z)::N
               op := operator k
+              x := eval(x, lk, lv)
               pol_root(numer(x), op, n)/pol_root(denom(x), op, n)
 
           rootFactor x ==
-              lk := rootkernels tower x
-              eval(x, lk, [root_factor_k k for k in lk])
+              lk0 := rootkernels(tower(x))
+              lk : List(K) := []
+              lv : List(F) := []
+              for k in lk0 repeat
+                  v := root_factor_k(lk, lv, k)
+                  lk := cons(k, lk)
+                  lv := cons(v, lv)
+              eval(x, lk, lv)
 
       if R has RadicalCategory then
         rootKerSimp(op, x, n) ==
