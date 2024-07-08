@@ -1507,17 +1507,11 @@ hasCaty1(cond,SL) ==
   cond is ['AND,:args] =>
     for x in args while not (S='failed) repeat S:=
       x is ['has,a,b] => hasCate(a,b, SL)
-      -- next line is for an obscure bug in the table
-      x is [['has,a,b]] => hasCate(a,b, SL)
-      --'failed
       hasCaty1(x, SL)
     S
   cond is ['OR,:args] =>
     for x in args until not (S='failed) repeat S:=
       x is ['has,a,b] => hasCate(a,b,copy SL)
-      -- next line is for an obscure bug in the table
-      x is [['has,a,b]] => hasCate(a,b,copy SL)
-      --'failed
       hasCaty1(x, copy SL)
     S
   keyedSystemError("S2GE0016",
