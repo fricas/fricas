@@ -81,6 +81,7 @@ loadLib cname ==
 
 loadLibNoUpdate1(cname, fullLibName) ==
   if $printLoadMsgs then
+    kind := get_database(cname, 'CONSTRUCTORKIND)
     sayKeyedMsg("S2IL0002", [fullLibName, kind, cname])
   load_quietly(fullLibName)
   clearConstructorCache cname
