@@ -18,7 +18,7 @@ on 'Integer'.
 2) ... and its solution
 
 In the past (in Axiom era) significant part of bootstrap problem
-was avoided simply by using type information collected in the earlier
+was avoided simply by using type information collected earlier
 and stored in databases 'interp.daase' and 'category.daase'.
 This solution meant that any attempt to change the signature of an
 exported operation was likely to cause build failure.
@@ -53,8 +53,8 @@ which causes relaxed type checking and skips executable parts
 of categories.
 
 First three stages of bootstrap are done by 'boo_db.input'
-input file.  In first stage FriCAS parses all of algebra
-and saves resulting parse tree (using special '$SaveParseOnly'
+input file.  In first stage FriCAS parses all of algebra and
+keeps in memory resulting parse tree (using special '$SaveParseOnly'
 flag to delay processing).  Next, the 'processGlobals' function
 from 'src/interp/ncomp.boot' is run.  This function examines
 (via 'processGlobals1') all constructor definitions and
@@ -90,8 +90,10 @@ In the next stage we compile categories and core domains in
 normal mode (this is done by the 'oboo3.input' input file
 generated from the makefile).
 
-The first four stages are purely sequential.  After that
-we a ready to compile the rest of algebra in arbitrary
+The first four stages are purely sequential.  In stage 3
+and 4 categories and core domains are compiled in order, so          
+that dependencies came before constructors needing them.  After
+that we a ready to compile the rest of algebra in arbitrary
 order.  In fact, since all constructors which we need to
 load were compiled earlier and all type information
 needed for compilation is in databases there are no
