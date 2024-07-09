@@ -1461,9 +1461,13 @@ DoubleFloatSpecialFunctions2() : with
     Beta : (Complex(DoubleFloat), Complex(DoubleFloat)) -> Complex(DoubleFloat)
     Gamma : DoubleFloat -> DoubleFloat
     Gamma : Complex(DoubleFloat) -> Complex(DoubleFloat)
+    digamma : DoubleFloat -> DoubleFloat
+    digamma : Complex(DoubleFloat) -> Complex(DoubleFloat)
     logGamma : DoubleFloat -> DoubleFloat
     logGamma : Complex(DoubleFloat) -> Complex(DoubleFloat)
     polygamma : (NonNegativeInteger, DoubleFloat) -> DoubleFloat
+    polygamma : (NonNegativeInteger, Complex(DoubleFloat)) ->
+                 Complex(DoubleFloat)
     erf : DoubleFloat -> DoubleFloat
     erfi : DoubleFloat -> DoubleFloat
     fresnelC : DoubleFloat -> DoubleFloat
@@ -1653,15 +1657,6 @@ DoubleFloatSpecialFunctions2() : with
 
     Beta(x : CDF, y : CDF) : CDF == Gamma(x)*Gamma(y)/Gamma(x+y)
 
-    -- m-steps of backward recurence
-    --     W2(n, x) = x^(-n - 1) + W2(n, x + 1)
-    psi_W2(x : DF, s : DF, n : NonNegativeInteger, m : Integer) : DF ==
-        nn := -1 - n
-        for i in 1..m repeat
-            xm := x + (m - i)::DF
-            s := s + xm^nn
-        s
-
     -- bernoulli(2*k) for k in 1..21
     -- we prepend 0 to get effect of indexing from 1
     ber_coeff := construct([ 0,
@@ -1677,45 +1672,68 @@ DoubleFloatSpecialFunctions2() : with
           48833.2318973593_16667e10,   -1929657.9341940068_149e10,
        84169304.7573682615e10])$DoubleFloatVector
 
-    W_stirling1(t : DF, x2_inv : DF, r_eps : DF, df_n : DF) : DF ==
-        s : DF := 0
-        df_k := 2::DF
-        for k in 2..21 repeat
-            t := t*x2_inv*(df_k + 1 + df_n)*(df_k + df_n)/
-                   ((df_k + 1)*(df_k+2::DF))
-            tk := t*ber_coeff(k)
-            abs(tk) < r_eps => break
-            s := s + tk
-            df_k := df_k + 2::DF
-        s
+    psi_funs(fF, fabs, psi_W1, psi_W2, W_stirling1, W_stirling) ==>
 
-    W_stirling(xm : DF, n : NonNegativeInteger) : DF ==
-        xm_inv := 1/xm
-        x2_inv := xm_inv*xm_inv
-        df_n := n::DF
-        t0 := 0.5::DF*xm_inv
-        t := (df_n + 1)*0.5::DF*x2_inv
-        r_eps := 1.0e-18::DF*t0
-        if n > 0 then
-            t0 := t0 + 1/df_n
-        t1 := t*ber_coeff(1)
-        s : DF :=
-            t1 < r_eps => 0
-            t1 + W_stirling1(t, xm_inv*xm_inv, r_eps, df_n)
-        t0 + s
+        -- m-steps of backward recurence
+        --     W2(n, x) = x^(-n - 1) + W2(n, x + 1)
+        psi_W2(x : fF, s : fF, n : NonNegativeInteger, m : Integer) : fF ==
+            nn := -1 - n
+            for i in 1..m repeat
+                xm := x + (m - i)::DF::fF
+                s := s + xm^nn
+            s
 
-    psi_W1(x : DF, n : NonNegativeInteger, m : Integer) : DF ==
-        xm := x + m::DF
-        s := xm^(-n)*W_stirling(xm, n)
-        if n = 0 then
-            s := s - log(xm)
-        psi_W2(x, s, n, m)
+        W_stirling1(t : fF, x2_inv : fF, r_eps : DF, df_n : DF) : fF ==
+            s : fF := 0
+            df_k := 2::DF
+            for k in 2..21 repeat
+                ccn := (df_k + 1 + df_n)*(df_k + df_n)/
+                       ((df_k + 1)*(df_k+2::DF))
+                t := ccn*t*x2_inv
+                tk := ber_coeff(k)*t
+                fabs(tk) < r_eps => break
+                s := s + tk
+                df_k := df_k + 2::DF
+            s
+
+        W_stirling(xm : fF, n : NonNegativeInteger) : fF ==
+            xm_inv := 1/xm
+            x2_inv := xm_inv*xm_inv
+            df_n := n::DF
+            t0 := 0.5::DF*xm_inv
+            t := (df_n + 1)*0.5::DF*x2_inv
+            r_eps := 1.0e-18::DF*fabs(t0)
+            if n > 0 then
+                t0 := t0 + (1/df_n)::fF
+            t1 := ber_coeff(1)*t
+            s : fF :=
+                fabs(t1) < r_eps => 0
+                t1 + W_stirling1(t, x2_inv, r_eps, df_n)
+            t0 + s
+
+        psi_W1(x : fF, n : NonNegativeInteger, m : Integer) : fF ==
+            xm := x + m::DF::fF
+            s := xm^(-n)*W_stirling(xm, n)
+            if n = 0 then
+                s := s - log(xm)
+            psi_W2(x, s, n, m)
+
+    psi_funs(DF, abs, psi_W1_DF, psi_W2_DF, W_stirling1_DF, W_stirling_DF)
+
+    cabs(z : CDF) : DF == sqrt(norm(z))
+
+    psi_funs(CDF, cabs, psi_W1_CDF, psi_W2_CDF, W_stirling1_CDF,
+             W_stirling_CDF)
 
     -- requested accuracy in decimal digits
     df_dig := 15::DF
 
     -- estimate minimal x for which asymptitic expansion gives
-    -- good accuracy
+    -- good accuracy.  See formula (2.3):
+    -- D. E. Amos, Algorithm 610, A portable FORTRAN subroutine
+    -- for derivatives of the Psi function,
+    -- ACM Transactions on Mathematical Software, Vol. 9,
+    -- No. 4, December 1983, Pages 494-502.
     min_asymp(n : NonNegativeInteger) : DF ==
         slope := 0.21::DF + df_dig*(0.0006038::DF*df_dig + 0.008677::DF)
         xm := 3.50::DF + df_dig*0.40::DF + n*slope
@@ -1760,11 +1778,40 @@ DoubleFloatSpecialFunctions2() : with
         m : Integer :=
             x_min < x => 0
             retract(ceiling(x_min - x))@Integer
-        res1 := Gamma(n::DF + 1)*psi_W1(x, n, m)
+        res1 := Gamma(n::DF + 1)*psi_W1_DF(x, n, m)
         if even?(n) then
             res1 := -res1
         res1
 
+    digamma(x : DF) : DF == polygamma(0, x)
+
+    polygamma(n : NonNegativeInteger, x : CDF) : CDF ==
+        (ix := imag(x)) = 0 => complex(polygamma(n, real(x)), 0)
+        (rx := real(x)) < -1 =>
+            error "polygamma not implemented for x with real(x) < -1"
+        x_min := min_asymp(n)
+        m : Integer :=
+            ax := cabs(x)
+            x_min < ax => 0
+            nrx := sqrt(x_min*x_min + 0.5 - ix*ix)
+            retract(ceiling(nrx - rx))@Integer
+        res1 := Gamma(n::DF + 1)*psi_W1_CDF(x, n, m)
+        if even?(n) then
+            res1 := -res1
+        res1
+
+    to_cdf(x) ==>
+        obits := bits()$Float
+        try
+            bits(68)
+            convert(x)@CDF
+        finally
+            bits(obits)
+
+    digamma(x : CDF) : CDF ==
+        real(x) < 0 =>
+            to_cdf(digamma(convert(x)@Complex(Float))$FloatSpecialFunctions)
+        polygamma(0, x)
 
     import FloatLiouvilianFunctions
 
