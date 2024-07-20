@@ -224,7 +224,7 @@ init_top_window(char *name)
         /* Try to find the page in the page hash table */
         page = (HyperDocPage *) hash_find(gWindow->fPageHashTable, name);
         if (page == NULL) {
-            fprintf(stderr, "(HyperDoc)  Couldn\'t find page %s in page hash table \n",
+            fprintf(stderr, "(HyperDoc)  Could not find page %s in page hash table \n",
                     name);
             if (gParentWindow == NULL)
                 /* Gaak, This is a start up error */

@@ -498,7 +498,7 @@ convert_buffer(char *target, int num) {
     char c;
 
     /*
-     * Until I get something wierd, just keep copying
+     * Until I get something weird, just keep copying
      */
     for (i = 0, j = 0; i < num; i++, j++) {
         switch (c = get_buff(i)) {

@@ -525,7 +525,7 @@ fork_FriCAS(void)
     fprintf(stderr, "Can't create a new process \n");
     exit(0);
   case 0:
-    /* Dissasociate from my parents group so all my child processes */
+    /* Disassociate from my parents group so all my child processes */
     /* look at my terminal as the controlling terminal for the      */
     /* group                                                        */
 

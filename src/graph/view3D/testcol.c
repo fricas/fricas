@@ -198,7 +198,7 @@ int             viewAloned;
 viewTriple      corners[8], clipCorners[8];
 boxSideStruct   box[6], clipBox[6];
 
-                /** for freeing up points created frrom split polygons **/
+                /** for freeing up points created from split polygons **/
 int             resMax=0;  /* number of points in the split point reservoir */
 
                 /** view volume stuff **/

@@ -41,7 +41,7 @@ with two additional arguments which choose the shade and the hue.
 The file will maintain twoGC's: stippleGC - will be used when stippling the
 backgrounds. solidGC - will be used when the background should be solid
 
-The user should call XSpadInit to get everthing going. This routine has the
+The user should call XSpadInit to get everything going. This routine has the
 job of Initializing the dithering routines, and getting the colors all
 into place.
 

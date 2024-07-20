@@ -140,7 +140,7 @@ void
 bf_top_group(void)
 {
     /*
-     * Just in case the person is tryin a \em without a grouping
+     * Just in case the person is trying a \em without a grouping
      */
 
     if (! gTopOfGroupStack->next)

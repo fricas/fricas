@@ -93,7 +93,7 @@ There several ways to let FriCAS process commands from a file.
    cat tst.input | fricas -nosman > tst.output
    echo ')read tst.input' | fricas -nosman > tst.output
 
-Whereas the first two versions do not show the input in ``tst.ouput``,
+Whereas the first two versions do not show the input in ``tst.output``,
 the last command does. However, in the latter case it is hard to
 distinguish input from output.
 

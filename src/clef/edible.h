@@ -43,7 +43,7 @@ extern short ECHOIT;         /** Flag for echoing **/
 extern short PTY;   /* A flag which lets me know whether or not I am
                        talking to a socket or a pty. If I am not
                        talking to a PTY then I have to do things like echo
-                      back newlines, and send interuppts with an eoln
+                      back newlines, and send interrupts with an eoln
                       */
 
 /***************************************************************************

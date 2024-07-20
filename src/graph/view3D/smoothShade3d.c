@@ -145,7 +145,7 @@ drawPhongSpan(triple pt,float N[3],int dFlag)
           colorindx = (float)(smoothConst+1) * col;
           if (colorindx > (smoothConst+1)) colorindx = smoothConst+1;
           put_cBuffer_indx(xpixel,XPixelColor((int)colorindx-1));
-        } else { /* probabalistic multi-hued dithering */
+        } else { /* probabilistic multi-hued dithering */
           hs = norm_dist();
           hue = (int)(intersectColor[0]+hs.x/20.0);
           /* cannot dither out of color map range */
