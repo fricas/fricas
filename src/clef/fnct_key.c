@@ -51,7 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "strutil.h"
 
 
-/** Some constants for functio key defs ****/
+/** Some constants for function key defs ****/
 #define DELAYED 0
 #define IMMEDIATE 1
 #define SPECIAL   2

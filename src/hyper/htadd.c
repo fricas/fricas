@@ -180,7 +180,7 @@ writable(struct stat buff)
 #endif
 
     /*
-     * Checks the status structure sent against the user id, and goup id
+     * Checks the status structure sent against the user id, and group id
      */
     if ((buff.st_uid == geteuid()) && (buff.st_mode & S_IWUSR))
         return 1;

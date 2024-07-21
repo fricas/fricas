@@ -55,7 +55,7 @@ void
 clear_buff(void) {
     int cp, char_cnt = 0;
 
-    /*** called when spadbuf gives me a line incase there is something already
+    /*** called when spadbuf gives me a line in case there is something already
       on the line ****/
     if (buff_pntr > 0) {
         /*** backup to the beginning of the line ***/

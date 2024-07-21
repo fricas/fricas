@@ -360,7 +360,7 @@
 
 ; (Assign I V)
 ;   syntax: I := V
-;   I == an idenitfier or a declaration
+;   I == an identifier or a declaration
 ;   V == an expression
 (defun find-deps-assign (env args)
   (map-find-deps env args))

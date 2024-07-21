@@ -102,7 +102,7 @@ ftime(char *path) {
     struct stat stbuf;
 
     if ((rc = stat(path, &stbuf)) == -1) {
-        fatal("Cannot deterimine status of %s.", path);
+        fatal("Cannot determine status of %s.", path);
     }
     return stbuf.st_mtime;
 }
@@ -113,7 +113,7 @@ fsize(char *path) {
     struct stat stbuf;
 
     if ((rc = stat(path, &stbuf)) == -1) {
-        fatal("Cannot deterimine status of %s.", path);
+        fatal("Cannot determine status of %s.", path);
     }
     return stbuf.st_size;
 }

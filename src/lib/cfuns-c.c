@@ -124,7 +124,7 @@ make_path_from_file(char *s, char *t)
    read access of a file designated by its name.
 
    The access is determined based on the POSIX semantics; see
-   "Advanced Programming in the UNIX Environement", section 4.5.
+   "Advanced Programming in the UNIX Environment", section 4.5.
 
    1. If the effective user ID of the process is 0 (the superuser),
       access is allowed.  This gives the superuser free rein throughout
@@ -145,7 +145,7 @@ make_path_from_file(char *s, char *t)
 
 /* Return
      -1 if the file designated by PATH is inexistent.
-      0 if the file exists but wirte access is denied.
+      0 if the file exists but write access is denied.
       1 if the file exists and process has write access.
       2 if the file does not exists but process has write
         has write access to the dirname of path.  */
