@@ -1788,7 +1788,23 @@ DoubleFloatSpecialFunctions2() : with
     polygamma(n : NonNegativeInteger, x : CDF) : CDF ==
         (ix := imag(x)) = 0 => complex(polygamma(n, real(x)), 0)
         (rx := real(x)) < -1 =>
-            error "polygamma not implemented for x with real(x) < -1"
+            2 < n =>
+                error "polygamma not implemented for x with real(x) < -1"
+            rx_int := round(rx)
+            x1 := x - complex(rx_int, 0)
+            x1 = 0 =>
+                error "pole of polygamma"
+            res1 := polygamma(n, 1 - x)
+            if odd?(n) then
+               res1 := -res1
+            cot_d :=
+                cv := cot(c_pi*x1)
+                n = 0 => c_pi*cv
+                cv1 := c_pi*(1 + cv*cv)
+                n = 1 => -c_pi*cv1
+                n = 2 => 2*c_pi*c_pi*cv*cv1
+                error "unimplemented"
+            res1 - cot_d
         x_min := min_asymp(n)
         m : Integer :=
             ax := cabs(x)
@@ -1800,18 +1816,7 @@ DoubleFloatSpecialFunctions2() : with
             res1 := -res1
         res1
 
-    to_cdf(x) ==>
-        obits := bits()$Float
-        try
-            bits(68)
-            convert(x)@CDF
-        finally
-            bits(obits)
-
-    digamma(x : CDF) : CDF ==
-        real(x) < 0 =>
-            to_cdf(digamma(convert(x)@Complex(Float))$FloatSpecialFunctions)
-        polygamma(0, x)
+    digamma(x : CDF) : CDF == polygamma(0, x)
 
     import FloatLiouvilianFunctions
 
