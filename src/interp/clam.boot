@@ -96,7 +96,7 @@ compHash(op, argl, body, cacheName, eqEtc) ==
   g2:= GENSYM()  --value computed by calling function
   returnFoundValue:=
     null argl =>
-    --  if we have a global hastable, functions with no arguments are
+    --  if we have a global hashtable, functions with no arguments are
     --  stored in the same format as those with several arguments, e.g.
     --  to cache the value <val> given by f(), the structure
     --  ((nil <count> <val>)) is stored in the cache

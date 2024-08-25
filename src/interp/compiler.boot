@@ -1302,7 +1302,7 @@ coerceByModemap([x,m,e],m') ==
            and (modeEqual(s,m) or isSubset(m,s,e))] or return nil
 
   --mm:= (or/[mm for (mm:=[.,[cond,.]]) in u | cond=true]) or return nil
-  mm:=first u  -- patch for non-trival conditions
+  mm:=first u  -- patch for non-trivial conditions
   fn :=
       genDeltaEntry(['coerce, :mm], e)
   [["call",fn,x],m',e]

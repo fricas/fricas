@@ -626,7 +626,7 @@ checkExtract(header,lines) ==
     do
       m := #line
       (k := firstNonBlankPosition line) = -1     => 'skip  --include if blank
-      k > margin                                 => 'skip  --include if idented
+      k > margin                                 => 'skip  --include if indented
       not UPPER_-CASE_-P line.k                  => 'skip  --also if not upcased
       (j := charPosition(char '_:,line,k)) = m   => 'skip  --or if not colon, or
       (i := charPosition(char '_ ,line,k+1)) < j => 'skip  --blank before colon

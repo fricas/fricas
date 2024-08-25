@@ -51,7 +51,7 @@ $operation_stream := nil
 -- timestamps, when timestamp in the file is the same as
 -- in core timestamp we use cached data in core, otherwise
 -- we need to re-read all data.  Stamp has form (position . time)
--- where postion is byte offset of main directory and time is
+-- where position is byte offset of main directory and time is
 -- timestamp proper.  We initialise to nil to avoid confusion
 -- with valid stamp
 $browse_stream_stamp := nil
