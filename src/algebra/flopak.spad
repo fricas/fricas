@@ -1,0 +1,558 @@
+)abbrev package FLOOPS FloatingPointOperations
+FloatingPointOperations : Exports == Implementation where
+  I ==> Integer
+  F ==> Record(mantissa : I, exponent : I)
+  Exports ==> with
+    plus : (F, F) -> F
+      ++ plus(x, y) computes \spad{x + y} with no rounding.
+    minus : (F, F) -> F
+      ++ minus(x, y) computes \spad{x - y} with no rounding.
+    times : (F, F) -> F
+      ++ times(x, y, b) computes \spad{x*y} with no rounding.
+
+  Implementation ==> add
+
+    shift(x, y) ==> ASH(x, y)$Lisp
+
+    plus(x, y) ==
+        (xm, xe) := x
+        (ym, ye) := y
+        xm = 0 => y
+        ym = 0 => x
+        xe = ye => [xm + ym, ye]
+        de := xe - ye
+        de > 0 => [shift(xm, de) + ym, ye]
+        [xm + shift(ym, -de), xe]
+
+    minus(x, y) ==
+        (ym, ye) := y
+        plus(x, [-ym, ye])
+
+    times(x, y) ==
+        (xm, xe) := x
+        (ym, ye) := y
+        [xm*ym, xe + ye]
+
+)abbrev package FELEM FloatElementaryFunctions
+FloatElementaryFunctions : Exports == Implementation where
+  I ==> Integer
+  PI ==> PositiveInteger
+  N ==> NonNegativeInteger
+  F ==> Record(mantissa : I, exponent : I)
+  DF ==> DoubleFloat
+  Exports ==> with
+    log2 : PI -> F
+      ++ log2(b) computes approximation to log(2) accurate to at least
+      ++ b bits.
+    log10 : PI -> F
+      ++ log10(b) computes approximation to log(10) accurate to at least
+      ++ b bits.
+    exp : (F, PI) -> F
+      ++ exp(x, b) computes approximation to exp(x) accurate to at least
+      ++ b bits.
+    exp1 : (PI) -> F
+      ++ exp1(b) computes approximation to exp(1) accurate to at least
+      ++ b bits.
+    log : (F, PI) -> F
+      ++ log(x, b) computes approximation to exp(x) accurate to at least
+      ++ b bits.
+    plus : (F, F, PI) -> F
+      ++ plus(x, y, b) computes approximation to \spad{x + y} accurate
+      ++ to at least b bits.
+    minus : (F, F, PI) -> F
+      ++ minus(x, y, b) computes approximation to \spad{x - y} accurate
+      ++ to at least b bits.
+    times : (F, F, PI) -> F
+      ++ times(x, y, b) computes approximation to \spad{x*y} accurate
+      ++ to at least b bits.
+    quotient : (F, F, PI) -> F
+      ++ quotient(x, y, b) computes approximation to \spad{x/y} accurate
+      ++ to at least b bits.
+    round : F -> I
+      ++ round(x) returns integer closest to \spad{x}.
+    exp_frac : (I, I, PI) -> F
+    exp_series : (F, PI) -> F
+    log_series : (F, PI) -> F
+  Implementation ==> add
+
+    shift(x, y) ==> ASH(x, y)$Lisp
+
+    chop(x : F, b : PI) : F ==
+        (xm, xe) := x
+        l1 := length(xm)
+        l1 < b + 4 => x
+        db := l1 - b - 3
+        [shift(xm, -db), xe + db]
+
+    round(x : F) : I ==
+        (xm, xe) := x
+        xm = 0 => 0
+        not(xe < 0) => shift(xm, xe)
+        v0 : I := shift(xm, xe + 1)
+        odd?(v0) => shift(v0 + 1, -1)
+        shift(v0, -1)
+
+    plus(x : F, y : F, b : PI) : F ==
+        (xm, xe) := x
+        (ym, ye) := y
+        de := xe - ye
+        dl := length(xm) - length(ym)
+        de + dl > b + 4 => x
+        de + dl < -b - 4 => y
+        chop(plus(x, y)$FloatingPointOperations, b)
+
+    minus(x : F, y : F, b : PI) : F ==
+        plus(x, [-y.mantissa, y.exponent], b)
+
+    times(x : F, y : F, b : PI) : F ==
+        chop(times(x, y)$FloatingPointOperations, b)
+
+    quotient(x : F, y : F, b : PI) : F ==
+        (xm, xe) := x
+        (ym, ye) := y
+        lx := length(xm)
+        ly := length(ym)
+        k := ly - lx + b + 5
+        z := shift(xm, k) quo ym
+        chop([z, xe - ye - k], b)
+
+    pow2k(x : F, k : I, b : PI) : F ==
+        for i in 1..k repeat
+            x := times(x, x, b)
+        x
+
+    Ress ==> Record(highn : I, matr : Matrix(I))
+
+    -- We use continued fraction for exp.  Numerators p_n and
+    -- denominators q_n statify the following recurrence:
+    --   p_i = (1/x)*(4*i + 2)*p_{i - 1} + p_{i - 2}
+    --   q_i = (1/x)*(4*i + 2)*q_{i - 1} + q_{i - 2}
+    -- with p_0 = (1/x)*2 + 1, p_1 = (1/x)*6*p_0 + 1,
+    -- q_0 = (1/x)*2 - 1, q_1 = (1/x)*6*q_0 + 1.
+    --
+    -- We rewrite this in matrix form:
+    --   (p_i, p_{i - 1}) =  A_i A_{i - 1} \dots A_2 (p_1, p_0)
+    -- with A_i = matrix([[(1/x)*(4*i + 2), 1], [1, 0]])
+    -- and similarly for q_i.  We modify the reccurence to
+    -- avoid fractions and use binary splitting to efficiently
+    -- compute matrix product.
+
+    mat0(n0 : I, bl : I, ki : I, d : I, ld : DF) : Ress ==
+        m11 : I := 1; m12 : I := 0;
+        m21 : I := 0; m22 : I := 1;
+        i : I := n0
+        blf := bl::DF
+        ld5 := 5::DF*ld
+        while length(m12)::DF < blf repeat
+            for j in 1..5 repeat
+                (m11, m12, m21, m22) := (i*m11 + d*m21,
+                    i*m12 + d*m22, m11, m12)
+                i := i + ki
+            blf := blf + ld5
+        [i, matrix [[m11, m12], [m21, m22]]]
+
+    mat1(n0 : I, bl : I, ki : I, d : I, ld : DF) : Ress ==
+        bl <= 300 => mat0(n0, bl, ki, d, ld)
+        bl1 := bl quo 2
+        r1 :=  mat1(n0, bl1, ki, d, ld)
+        m1 := r1.matr
+        bl1 := bl - length(m1(1, 1))
+        r2 := mat1(r1.highn, bl1, ki, d, ld)
+        [r2.highn, r2.matr*m1]
+
+    do_quo(n : I, d : I, b : PI) : F ==
+        n1 : I := shift(n, b + 3)
+        [n1 quo d, -b - 3]
+
+    exp_frac(k : I, n : I, b : PI) : F ==
+        -- computes exp(n/k) via continued fraction
+        n2 := n*n
+        p1 : I := 2*k + n; p0 : I := 1
+        q1 : I := 2*k - n; q0 : I := 1
+        k0 : I := 6*k
+        ki : I := 4*k
+        ln2 := length(n2)
+        ld : DF :=
+            ln2 < 100 => log(n2::DF)/log(2::DF)
+            (ln2 - 60)::DF + log((shift(n2, 60 - ln2)@I)::DF)/log(2::DF)
+        l := (b + 1) quo 2
+        mm0 := matrix([[p1, q1], [p0, q0]])$Matrix(I)
+        mm0 := mat1(k0, l, ki, n2, ld).matr*mm0
+        p1 := mm0(1, 1)
+        q1 := mm0(1, 2)
+        do_quo(p1, q1, b)
+
+    -- compute exp(f) using Taylor series
+    exp_series(f : F, b : PI) : F ==
+        (m, e) := f
+        b1 := b + length(b) + 3
+        m := shift(m, e + b1)
+        -- start with f, we will add 1 at the end
+        s := tk := m
+        k := 2
+        repeat
+            tk := (m*tk) quo k
+            tk := shift(tk, -b1)
+            tk = 0 or tk = -1 => break
+            s := s + tk
+            k := k + 1
+        [shift(s + shift(1, b1), b - b1 + 3), -b - 3]
+
+    exp_normal(x : F, b : PI) : F ==
+        b < 80 => exp_series(x, b)
+        (m, e) := x
+        lm := length(m)
+        de := lm + e
+        lb := length(b)
+        lb2 := (lb + 1) quo 2
+        k : PI := shift(b, -lb2)
+        k1 := de - k
+        k1 < 0 => exp_series(x, b)
+        b1 := (b + k1 + 5)::PI
+        e1 := exp_series([m, e - k1], b1::PI)
+        chop(pow2k(e1, k1, b1), b)
+
+    exp(x : F, b : PI) : F ==
+        (m, e) := x
+        lm := length(m)
+        de := lm + e
+        de < -3 => exp_normal(x, b)
+        k := de + 4
+        k < 8 =>
+            e1 := exp_normal([m, e - k], b + k::PI)
+            chop(pow2k(e1, k, b + 7), b)
+        b1 := b + k::PI + 5
+        lg2 := log2(b1)
+        q := quotient(x, lg2, b1)
+        qi := round(q)
+        x1 := minus(x, times(lg2, [qi, 0], b1), b1)
+        (ym, ye) := exp_normal(x1, b + 3)
+        [ym, ye + qi]
+
+    val_Rec ==> Record(val : F, prec : PI)
+
+    exp1_val : val_Rec := [[924983374546220337150911035843336795079, -128],
+                           128]
+
+    exp1(b : PI) : F ==
+        p1 := exp1_val.prec
+        v0 := exp1_val.val
+        p1 = b => v0
+        b < p1 =>
+            p1 < b + 10 => v0
+            (m, e) := v0
+            de := p1 - b - 1
+            [shift(m, -de), e + de]
+        v0 := exp_frac(1, 1, b)
+        exp1_val.val := v0
+        exp1_val.prec := b
+        v0
+
+    log2_val : val_Rec := [[235865763225513294137944142764154484399, -128],
+                           128]
+
+    log10_val : val_Rec := [[195882276370220766701334620675861842472, -126],
+                           125]
+
+    log_series(x : F, b : PI) : F ==
+        (m, e) := x
+        m := shift(m, b + e)
+        s := tk := m
+        k := 2
+        repeat
+            tk := (m*tk)
+            tk := shift(-tk, -b)
+            tk = 0 or tk = -1 => return [s, -b]
+            s := s + (tk quo k)
+            k := k + 1
+
+    log_newton2(y : F, x0 : F, b0 : PI, b : PI) : F ==
+        repeat
+            b1 : PI :=
+                b < 5*b0 => b
+                3*b0
+            (x0m, x0e) := x0
+            y1 := exp([-x0m, x0e], b1 + 10)
+            yd := minus(times(y, y1, b1 + 10), [1, 0], b1 + 10)
+            xd := log_series(yd, b1 + 10)
+            x0 := plus(x0, xd, b1 + 2)
+            not(b1 < b) => return x0
+            b0 := b1
+
+    log2(b : PI) : F ==
+        p1 := log2_val.prec
+        v0 := log2_val.val
+        p1 = b => v0
+        b < p1 =>
+            p1 < b + 10 => v0
+            (m, e) := v0
+            de := p1 - b - 1
+            [shift(m, -de), e + de]
+        v0 := log_newton2([2, 0], v0, p1, b)
+        log2_val.val := v0
+        log2_val.prec := b
+        v0
+
+    log10(b : PI) : F ==
+        p1 := log10_val.prec
+        v0 := log10_val.val
+        p1 = b => v0
+        b < p1 =>
+            p1 < b + 10 => v0
+            (m, e) := v0
+            de := p1 - b - 1
+            [shift(m, -de), e + de]
+        v0 := log_newton2([10, 0], v0, p1, b)
+        log10_val.val := v0
+        log10_val.prec := b
+        v0
+
+    log_newton(x : F, b : PI) : F ==
+        (m, e) := x
+        m1 := m
+        e1 := e
+        if 50 < -e then
+            e1 := -50
+            m1 := shift(m, e - e1)
+        l0 := log(float(m1, e1, 2)$DF)$DF
+        m0 := mantissa(l0)
+        e0 := exponent(l0)
+        log_newton2(x, [m0, e0], 40, b)
+
+    log(x : F, b : PI) : F ==
+        (m, e) := x
+        not(0 < m) => error "argument to log must be positive"
+        lm := length(m)
+        m1 : I := shift(m, 6 - lm)
+        if m1 < 42 then lm := lm - 1
+        e1 := lm + e
+        e1 = 0 => log_newton(x, b)
+        l1 := log_newton([m, -lm], b + 3)
+        plus(l1, times([e1, 0], log2(b + 3), b + 3), b + 2)
+
+)abbrev package FOUT FloatingPointConvertion
+FloatingPointConvertion : Exports == Implementation where
+  B ==> Boolean
+  I ==> Integer
+  S ==> String
+  PI ==> PositiveInteger
+  RN ==> Fraction Integer
+  SF ==> DoubleFloat
+  N ==> NonNegativeInteger
+  F ==> Record(mantissa : I, exponent : I)
+  mode_Rec ==> Record(default? : B, trim_trailing_zeros? : B,
+                      out_mode : S, spacing : I, separator : Character)
+  Exports ==> with
+      fixed_mr : (F, I, mode_Rec) -> S
+      floating_mr : (F, I, mode_Rec) -> S
+      general_mr : (F, I, mode_Rec) -> S
+
+      convert_mr : (F, I, mode_Rec) -> S
+
+      convert_to_decimal :(F, I) -> F
+
+  Implementation ==> add
+
+    convert_mr(f : F, d : I, mr : mode_Rec) : S ==
+        mr.out_mode = "fixed" => fixed_mr(f, d, mr)
+        mr.out_mode = "floating" => floating_mr(f, d, mr)
+        mr.out_mode = "general" => general_mr(f, d, mr)
+        error "convert_mr: bad output mode"
+
+    convert_to_decimal(f : F, d : I) : F ==
+        ba0 := d*70777 quo 21306 + 1
+        m := f.mantissa
+        e := f.exponent
+        ea := abs(length(m) + e)
+        ba1 := (ba0 + length(ea) + 25)::PI
+        if length(m) > ba1 then
+            ed := length(m) - ba1
+            m := m quo 2^(ed::N)
+            e := e + ed
+        lm := log([m, 0], ba1)$FloatElementaryFunctions
+        le := times([e, 0], log2(ba1)$FloatElementaryFunctions, ba1
+                   )$FloatElementaryFunctions
+        lf := plus(lm, le, ba1)$FloatElementaryFunctions
+        l10 := log10(ba1)$FloatElementaryFunctions
+        ed := lf.exponent - l10.exponent
+        n10 := lf.mantissa
+        d10 := l10.mantissa
+        if ed < 0 then
+            ed := -ed
+            d10 := d10*2^(ed::N)
+        else
+            n10 := n10*2^(ed::N)
+        e10 := n10 quo d10 - d
+        le10 := times([e10, 0], l10, ba1)$FloatElementaryFunctions
+        ldm := minus(lf, le10, ba1)$FloatElementaryFunctions
+        dm := exp(ldm, ba1)$FloatElementaryFunctions
+        dm.exponent >= 0 =>
+            error "impossible"
+        (q, r) := divide(dm.mantissa, 2^((-dm.exponent - 1)::N))
+        dfm1 := q quo 2
+        if odd?(q) and r > 0 then dfm1 := dfm1 + 1
+        if dfm1 >= 10^(d::N) then
+            e10 := e10 + 1
+            (q1, r1) := divide(q, 10)
+            dfm1 := q1 quo 2
+            if odd?(q1) and (r1 > 0 or r > 0) then dfm1 := dfm1 + 1
+        [dfm1, e10]
+
+    --------------------------------
+    -- Output routines for Floats --
+    --------------------------------
+    zero ==> char("0")
+
+    insert_separators_from_left(s : S, mr : mode_Rec) : S ==
+        sp := mr.spacing
+        zero?(sp) => s
+        n : I := #s
+        t := new((n + (n - 1) quo sp)::N, mr.separator)
+        j : I := 1
+        for i in 1..n repeat
+            t(j) := s(i)
+            if i rem sp = 0 then j := j + 1
+            j := j + 1
+        t
+
+    insert_separators_from_right(s : S, mr : mode_Rec) : S ==
+        sp := mr.spacing
+        zero?(sp) => s
+        n : I := #s
+        t := new((n + (n - 1) quo sp)::N, mr.separator)
+        j : I := #t
+        for i in n..1 by -1 repeat
+            t(j) := s(i)
+            if (n - i + 1) rem sp = 0 then j := j - 1
+            j := j - 1
+        t
+
+    split_digits(s : S, top_digit : I) : List(S) ==
+        s2 := s
+        n1 := #s
+        s1 :=
+            top_digit > 0 =>
+                not(top_digit < n1) =>
+                    s2 := "0"
+                    concat(s, new((top_digit - n1)::N, zero))
+                s2 := s(top_digit + 1..n1)
+                s(1..top_digit)
+            "0"
+        if top_digit < 0 then
+            s2 := concat(new((-top_digit)::N, zero), s2)
+        [s1, s2]
+
+    fixed_default(f : F, d : I, mr : mode_Rec) : S ==
+        df := convert_to_decimal(f, d)
+        (dm, de) := df
+        s := convert(dm)@S
+        n0 := #s
+        top_digit := de + n0
+        if mr.trim_trailing_zeros? then
+            s := rightTrim(s, zero)
+        (s1, s2) := split_digits(s, top_digit)
+        s1 := concat(insert_separators_from_right(s1, mr), ".")
+        s2 := insert_separators_from_left(s2, mr)
+        concat(s1, s2)
+
+    fixed_mr(f : F, d : I, mr : mode_Rec) : S ==
+        (m, e) := f
+        m = 0 =>
+            mr.trim_trailing_zeros? => "0.0"
+            concat("0", concat(".",
+                   insert_separators_from_left(new(d::N, zero), mr)))
+        m < 0 => concat("-", fixed_mr([-m, e], d, mr))
+        even?(m) and e < 0 =>
+            lb := length(m)
+            if -e < lb then
+                lb := -e
+            i : I := 0
+            while i <= lb and not(bit?(m, i)) repeat
+                i := i + 1
+            m := shift(m, -i)
+            fixed_mr([m, e + i], d, mr)
+        not(e < 0) =>
+            nm :=
+                e = 0 => m
+                shift(m::N, e)
+            s1 := insert_separators_from_right(convert(nm)@S, mr)
+            s2 : S :=
+                mr.default? => ".0"
+                concat(".", insert_separators_from_left(new(d::N, zero), mr))
+            concat(s1, s2)
+        mr.default? => fixed_default(f, d, mr)
+        e := -e
+        top_bit := length(m) - e
+        (top_bit + 2)*12655 < -d*42039 =>
+            fixed_mr([0, 0], d, mr)
+        m := m*5^(e::N)
+        if e > d then
+            d10 := 10^((e - d)::N)
+            (q, r) := divide(m, d10)
+            d10h := d10 quo 2
+            m :=
+                r < d10h => q
+                r > d10h => q + 1
+                even?(q) => q
+                q + 1
+            e := d
+        s := convert(m)@S
+        n0 := #s
+        top_digit := n0 - e
+        if mr.trim_trailing_zeros? then
+            s := rightTrim(s, zero)
+        (s1, s2) := split_digits(s, top_digit)
+        if d = 0 then
+            s2 := ""
+        s1 := concat(insert_separators_from_right(s1, mr), ".")
+        if e < d then
+            s2 := concat(s2, new((d - e)::N, zero))
+        s2 := insert_separators_from_left(s2, mr)
+        concat(s1, s2)
+
+    floating_mr(f : F, d : I, mr : mode_Rec) : S ==
+        f.mantissa = 0 => "0.0"
+        f.mantissa < 0 => concat("-", floating_mr([-f.mantissa,
+                                                   f.exponent], d, mr))
+        es : S := if zero?(mr.spacing) then "E" else " E "
+        zero? f.exponent =>
+            s := convert(f.mantissa)@S
+            concat(["0.", insert_separators_from_left(s, mr), es,
+                    convert(#s)@S])
+        (m, e) := convert_to_decimal(f, d)
+        s := convert(m)@S
+        n0 := #s
+        if mr.trim_trailing_zeros? then
+            s := rightTrim(s, zero)
+        s := concat("0.", insert_separators_from_left(s, mr))
+        concat(s, concat(es, convert(e + n0)@S))
+
+    general_mr(f : F, d : I, mr : mode_Rec) : S ==
+        (m, e) := f
+        m = 0 => "0.0"
+        m < 0 =>
+            concat("-", general_mr([-m, e], d, mr))
+        e = 0 =>
+            s := convert(m)@S
+            top_digit := #s
+            mr.default? or top_digit < d + 3 =>
+                concat(insert_separators_from_right(s, mr), ".0")
+            s1 := concat("0.", insert_separators_from_left(s(1..d), mr))
+            es : S := if zero?(mr.spacing) then "E" else " E "
+            concat(s1, concat(es, convert(top_digit - d)@S))
+        (m, e) := convert_to_decimal(f, d)
+        s := convert(m)@S
+        n0 := #s
+        top_digit := e + n0
+        if mr.trim_trailing_zeros? then
+            s := rightTrim(s, zero)
+        if -6 < top_digit and top_digit < d + 2 then
+            (s1, s2) := split_digits(s, top_digit)
+            s1 := concat(insert_separators_from_right(s1, mr), ".")
+            s2 := insert_separators_from_left(s2, mr)
+            concat(s1, s2)
+        else
+            es : S := if zero?(mr.spacing) then "E" else " E "
+            s1 := concat("0.", insert_separators_from_left(s, mr))
+            s2 := concat(es, convert(top_digit)@S)
+            concat(s1, s2)

@@ -165,9 +165,6 @@ Float():
 
    atanSeries : % -> %            -- atan(x) by taylor series |x| < 1/2
    atanInverse : I -> %           -- atan(1/n) for n an integer > 1
-   expInverse : I -> %            -- exp(1/n) for n an integer
-   expSeries : % -> %             -- exp(x) by taylor series  |x| < 1/2
-   logSeries : % -> %             -- log(x) by taylor series 1/2 < x < 2
    sinSeries : % -> %             -- sin(x) by taylor series |x| < 1/2
    cosSeries : % -> %             -- cos(x) by taylor series |x| < 1/2
    piRamanujan : () -> %          -- pi using Ramanujans series
@@ -394,143 +391,29 @@ Float():
       inc(5-p); r := log((x+1)/(1-x))/2; dec(5-p)
       normalize r
 
-   log x ==
-      negative? x => error1("log: negative argument", x)
-      zero? x => error "log 0 generated"
-      p := bits(); inc 5
-      -- apply  log(x) = n log 2 + log(x/2^n)  so that  1/2 < x < 2
-      if (n := order x) < 0 then n := n+1
-      l := if n = 0 then 0 else (x := shift(x, -n); n * log2)
-      -- speed the series convergence by finding m and k such that
-      -- | exp(m/2^k) x - 1 |  <  1 / 2 ^ O(sqrt p)
-      -- write  log(exp(m/2^k) x) as m/2^k + log x
-      k := ISQRT (p-100)::I quo 3
-      if k > 1 then
-         k := max(1, k+order(x-1))
-         inc k
-         ek := expInverse (2^k::N)
-         dec(p quo 2); m := order square(x, k); inc(p quo 2)
-         m := (6847196937 * m) quo 9878417065   -- m := m log 2
-         x := x * ek ^ (-m)
-         l := l + [m, -k]
-      l := l + logSeries x
-      bits p
-      normalize l
+   log(x) == normalize(log(x::Rep, bits())$FloatElementaryFunctions)
 
-   logSeries x ==
-      -- log(x) = 2 y (1 + y^2/3 + y^4/5 ...)  for  y = (x-1) / (x+1)
-      -- given 1/2 < x < 2 on input we have -1/3 < y < 1/3
-      p := bits() + (g := LENGTH bits() + 3)
-      inc g; y := (x-1)/(x+1); dec g
-      s : I := d : I := shift(1, p)
-      z := times(y, y)
-      t := m := shift2(z.mantissa, z.exponent+p)
-      for i in 3.. by 2 while t ~= 0 repeat
-         s := s + t quo i
-         t := m * t quo d
-      y * [s, 1-p]
+   log2() == normalize(log2(bits())$FloatElementaryFunctions)
 
-   L2 : StoredConstant := [1, 1]
-   log2() ==
-      --  log x  =  2 * sum( ((x-1)/(x+1))^(2*k+1)/(2*k+1), k=1.. )
-      --  log 2  =  2 * sum( 1/9^k / (2*k+1), k=0..n ) / 3
-      n := bits() :: N
-      n <= L2.precision => normalize L2.value
-      n := n + LENGTH n + 3  -- guard bits
-      s : I := shift(1, n+1) quo 3
-      t : I := s quo 9
-      for k in 3.. by 2 while t ~= 0 repeat
-         s := s + t quo k
-         t := t quo 9
-      L2 := [bits(), [s, -n]]
-      normalize L2.value
+   log10() == normalize(log10(bits())$FloatElementaryFunctions)
 
-   L10 : StoredConstant := [1, [1, 1]]
-   log10() ==
-      --  log x  =  2 * sum( ((x-1)/(x+1))^(2*k+1)/(2*k+1), k=0.. )
-      --  log 5/4  =  2 * sum( 1/81^k / (2*k+1), k=0.. ) / 9
-      n := bits() :: N
-      n <= L10.precision => normalize L10.value
-      n := n + LENGTH n + 5  -- guard bits
-      s : I := shift(1, n+1) quo 9
-      t : I := s quo 81
-      for k in 3.. by 2 while t ~= 0 repeat
-         s := s + t quo k
-         t := t quo 81
-      -- We have log 10 = log 5 + log 2 and log 5/4 = log 5 - 2 log 2
-      inc 2; L10 := [bits(), [s, -n] + 3*log2]; dec 2
-      normalize L10.value
+   log2(x) ==
+       b := bits() + 3
+       r := quotient(log(x::Rep, b)$FloatElementaryFunctions,
+                     log2(b)$FloatElementaryFunctions, b
+                    )$FloatElementaryFunctions
+       normalize(r)
 
-   log2(x) == (inc 2; r := log(x)/log2; dec 2; normalize r)
-   log10(x) == (inc 2; r := log(x)/log10; dec 2; normalize r)
+   log10(x) ==
+       b := bits() + 3
+       r := quotient(log(x::Rep, b)$FloatElementaryFunctions,
+                     log10(b)$FloatElementaryFunctions, b
+                    )$FloatElementaryFunctions
+       normalize(r)
 
-   exp(x) ==
-      -- exp(n+x) = exp(1)^n exp(x) for n such that |x| < 1
-      p := bits(); inc 5; e1 : % := 1
-      if (n := wholePart x) ~= 0 then
-         inc LENGTH n; e1 := exp1 ^ n; dec LENGTH n
-         x := fractionPart x
-      if zero? x then (bits p; return normalize e1)
-      -- make |x| < O( 2^(-sqrt p) ) < 1/2 to speed series convergence
-      -- by repeated use of the formula exp(2*x/2) = exp(x/2)^2
-      -- results in an overall running time of O( sqrt p M(p) )
-      k := ISQRT (p-100)::I quo 3
-      k := max(0, 2 + k + order x)
-      if k > 0 then (inc k; x := shift(x, -k))
-      e := expSeries x
-      if k > 0 then e := square(e, k)
-      bits p
-      e * e1
+   exp(x) == normalize(exp(x::Rep, bits())$FloatElementaryFunctions)
 
-   expSeries x ==
-      -- exp(x) = 1 + x + x^2/2 + ... + x^i/i!  valid for all x
-      p := bits() + LENGTH bits() + 1
-      s : I := d : I := shift(1, p)
-      t : I := n : I := shift2(x.mantissa, x.exponent+p)
-      for i in 2.. while t ~= 0 repeat
-         s := s + t
-         t := (n * t) quo i
-         t := t quo d
-      normalize [s, -p]
-
-
-   Ress ==> Record(highn : I, matr : Matrix(I))
-
-   mat0(n0 : I, bl : I, ki : I) : Ress ==
-        m11 : I := 1; m12 : I := 0;
-        m21 : I := 0; m22 : I := 1;
-        i : I := n0
-        while length(m11) < bl repeat
-            (m11, m12, m21, m22) := (m21, m22, m11 + i*m21, m12 + i*m22)
-            i := i + ki
-        [i, matrix [[m11, m12], [m21, m22]]]
-
-   mat1(n0 : I, bl : I, ki : I) : Ress ==
-        bl <= 300 => mat0(n0, bl, ki)
-        bl1 := bl quo 2
-        r1 :=  mat1(n0, bl1, ki)
-        m1 := r1.matr
-        bl1 := bl - length(m1(1, 1))
-        r2 := mat1(r1.highn, bl1, ki)
-        [r2.highn, r2.matr*m1]
-
-   expInverse k ==
-        -- computes exp(1/k) via continued fraction
-        p1 : I := 2*k + 1; p0 : I := 1
-        q1 : I := 2*k - 1; q0 : I := 1
-        k0 : I := 6*k
-        ki : I := 4*k
-        l := (bits() + 1) quo 2
-        mm0 := matrix([[p0, q0], [p1, q1]])$Matrix(I)
-        mm0 := mat1(k0, l, ki).matr*mm0
-        p1 := mm0(2, 1)
-        q1 := mm0(2, 2)
-        dvide([p1, 0], [q1, 0])
-
-   E : StoredConstant := [1, [1, 1]]
-   exp1() ==
-      if bits() > E.precision then E := [bits(), expInverse 1]
-      normalize E.value
+   exp1() == normalize(exp1(bits())$FloatElementaryFunctions)
 
    sqrt x ==
       negative? x => error1("sqrt: negative argument", x)
@@ -717,198 +600,16 @@ Float():
       bits p
       normalize y
 
-   -- Utility routines for conversion to decimal
-   ceilLength10 : I -> I
-   chop10 : (%, I) -> %
-   convert10 : (%, I) -> %
-   floorLength10 : I -> I
-   length10 : I -> I
-   normalize10 : (%, I) -> %
-   quotient10 : (%, %, I) -> %
-   power10 : (%, I, I) -> %
-   times10 : (%, %, I) -> %
-
-   convert10(x, d) ==
-      m := x.mantissa; e := x.exponent
-      --!! deal with bits here
-      b := bits(); (q, r) := divide(abs e, b)
-      b := 2^b::N; r := 2^r::N
-      -- compute 2^e = b^q * r
-      h := power10([b, 0], q, d+5)
-      h := chop10([r*h.mantissa, h.exponent], d+5)
-      if e < 0 then h := quotient10([m, 0], h, d)
-      else times10([m, 0], h, d)
-
-   ceilLength10 n == 146::I * length(n) quo 485 + 1
-   floorLength10 n == 643::I * length(n) quo 2136
-   length10 n ==
-      ln : Integer := LENGTH(n := abs n)
-      upper := 76573 * ln quo 254370
-      lower := 21306 * (ln-1) quo 70777
-      upper = lower => upper + 1
-      n := n quo (10^lower::N)
-      while n >= 10 repeat
-         n := n quo 10
-         lower := lower + 1
-      lower + 1
-
-   chop10(x, p) ==
-      e : I := floorLength10 x.mantissa - p
-      if e > 0 then x := [x.mantissa quo 10^e::N, x.exponent+e]
-      x
-   normalize10(x, p) ==
-      ma := x.mantissa
-      ex := x.exponent
-      e : I := length10 ma - p
-      if e > 0 then
-         ma := ma quo 10^(e-1)::N
-         ex := ex + e
-         (ma, r) := divide(ma, 10)
-         if r > 4 then
-            ma := ma + 1
-            if ma = 10^p::N then (ma := 1; ex := ex + p)
-      [ma, ex]
-   times10(x, y, p) == normalize10(times(x, y), p)
-   quotient10(x, y, p) ==
-      ew := floorLength10 y.mantissa - ceilLength10 x.mantissa + p + 2
-      if ew < 0 then ew := 0
-      mw := (x.mantissa * 10^ew::N) quo y.mantissa
-      ew := x.exponent - y.exponent - ew
-      normalize10([mw, ew], p)
-   power10(x, n, d) ==
-      x = 0 => 0
-      n = 0 => 1
-      n = 1 => x
-      x = 1 => 1
-      p : I := d + LENGTH n + 1
-      e : I := n
-      y : % := 1
-      z : % := x
-      repeat
-         if odd? e then y := chop10(times(y, z), p)
-         if (e := e quo 2) = 0 then return y
-         z := chop10(times(z, z), p)
-
    --------------------------------
    -- Output routines for Floats --
    --------------------------------
-   zero ==> char("0")
-   separator ==> underscore()$Character
 
    SPACING : N := 10
    OUTMODE : S := "general"
    OUTPREC : I := -1
 
-   fixed : % -> S
-   floating : % -> S
-   general : % -> S
-
-   padFromLeft(s : S) : S ==
-      zero? SPACING => s
-      n : I := #s - 1
-      t := new( (n + 1 + n quo SPACING) :: N , separator )
-      for i in 0..n for j in minIndex t .. repeat
-         t.j := s.(i + minIndex s)
-         if (i+1) rem SPACING = 0 then j := j+1
-      t
-   padFromRight(s : S) : S ==
-      SPACING = 0 => s
-      n : I := #s - 1
-      t := new( (n + 1 + n quo SPACING) :: N , separator )
-      for i in n..0 by -1 for j in maxIndex t .. by -1 repeat
-         t.j := s.(i + minIndex s)
-         if (n-i+1) rem SPACING = 0 then j := j-1
-      t
-
-   fixed f ==
-      d := if OUTPREC = -1 then digits()::I else OUTPREC
-      zero? f =>
-         OUTPREC = -1 => "0.0"
-         concat("0", concat(".", padFromLeft new(d::N, zero)))
-      zero? exponent f =>
-        concat(padFromRight convert(mantissa f)@S,
-               concat(".", padFromLeft new(d::N, zero)))
-      negative? f => concat("-", fixed abs f)
-      bl := LENGTH(f.mantissa) + f.exponent
-      dd :=
-          OUTPREC = -1 => d
-          bl > 0 => (146*bl) quo 485 + 1 + d
-          d
-      g := convert10(abs f, dd)
-      m := g.mantissa; e := g.exponent
-      if OUTPREC ~= -1 then
-         -- round g to OUTPREC digits after the decimal point
-         l := length10 m
-         if -e > OUTPREC and -e < 2*digits()::I then
-            g := normalize10(g, l+e+OUTPREC)
-            m := g.mantissa; e := g.exponent
-      s := convert(m)@S; n := #s; o := e+n
-      p := if OUTPREC = -1 then n::I else OUTPREC
-      t : S
-      if e >= 0 then
-         s := concat(s, new(e::N, zero))
-         t := ""
-      else if o <= 0 then
-         t := concat(new((-o)::N, zero), s)
-         s := "0"
-      else
-         t := s(o + minIndex s .. n + minIndex s - 1)
-         s := s(minIndex s .. o + minIndex s - 1)
-      n := #t
-      if OUTPREC = -1 then
-         t := rightTrim(t, zero)
-         if t = "" then t := "0"
-      else if n > p then t := t(minIndex t .. p + minIndex t- 1)
-                    else t := concat(t, new((p-n)::N, zero))
-      concat(padFromRight s, concat(".", padFromLeft t))
-
-   floating f ==
-      zero? f => "0.0"
-      negative? f => concat("-", floating abs f)
-      t:S := if zero? SPACING then "E" else " E "
-      zero? exponent f =>
-        s := convert(mantissa f)@S
-        concat ["0.", padFromLeft s, t, convert(#s)@S]
-      -- base conversion to decimal rounded to the requested precision
-      d := if OUTPREC = -1 then digits()::I else OUTPREC
-      g := convert10(f, d); m := g.mantissa; e := g.exponent
-      -- I'm assuming that length10 m = # s given n > 0
-      s := convert(m)@S; n := #s; o := e+n
-      s := padFromLeft s
-      concat ["0.", s, t, convert(o)@S]
-
-   general(f) ==
-      zero? f => "0.0"
-      negative? f => concat("-", general abs f)
-      d := if OUTPREC = -1 then digits()::I else OUTPREC
-      zero? exponent f =>
-        d := d + 1
-        s := convert(mantissa f)@S
-        OUTPREC ~= -1 and (e := #s) > d =>
-          t:S := if zero? SPACING then "E" else " E "
-          concat ["0.", padFromLeft s, t, convert(e)@S]
-        concat(padFromRight(s), ".0")
-      -- base conversion to decimal rounded to the requested precision
-      g := convert10(f, d); m := g.mantissa; e := g.exponent
-      -- I'm assuming that length10 m = # s given n > 0
-      s := convert(m)@S; n := #s; o := n + e
-      -- Note: at least one digit is displayed after the decimal point
-      -- and trailing zeroes after the decimal point are dropped
-      if o > 0 and o <= max(n, d) then
-         -- fixed format: add trailing zeroes before the decimal point
-         if o > n then s := concat(s, new((o-n)::N, zero))
-         t := rightTrim(s(o + minIndex s .. n + minIndex s - 1), zero)
-         if t = "" then t := "0" else t := padFromLeft t
-         s := padFromRight s(minIndex s .. o + minIndex s - 1)
-         concat(s, concat(".", t))
-      else if o <= 0 and o >= -5 then
-         -- fixed format: up to 5 leading zeroes after the decimal point
-         concat("0.",padFromLeft concat(new((-o)::N,zero),rightTrim(s,zero)))
-      else
-         -- print using E format written  0.mantissa E exponent
-         t := padFromLeft rightTrim(s, zero)
-         s := if zero? SPACING then "E" else " E "
-         concat ["0.", t, s, convert(e+n)@S]
+   mode_Rec ==> Record(default? : B, trim_trailing_zeros? : B,
+                       out_mode : S, spacing : I, separator : Character)
 
    outputSpacing n ==
        old_val := SPACING
@@ -936,18 +637,13 @@ Float():
        OUTPREC := prec
 
    convert(f) : S ==
-      b : Integer :=
-        OUTPREC = -1 and not zero? f =>
-          bits(length(abs mantissa f)::PositiveInteger)
-        0
-      s :=
-        OUTMODE = "fixed" => fixed f
-        OUTMODE = "floating" => floating f
-        OUTMODE = "general" => general f
-        empty()$String
-      if b > 0 then bits(b::PositiveInteger)
-      s = empty()$String => error "bad output mode"
-      s
+       d : Integer :=
+           OUTPREC = -1 and not zero? f =>
+               max(1, 4004*(length(abs(mantissa(f))) - 1) quo 13301)
+           OUTPREC
+       mr := [OUTPREC = -1, OUTPREC = -1, OUTMODE, SPACING,
+              underscore()$Character]$mode_Rec
+       convert_mr(f::Rep, d, mr)$FloatingPointConvertion
 
    coerce(f) : OutputForm ==
      f >= 0 => message(convert(f)@S)
