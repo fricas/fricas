@@ -499,7 +499,7 @@ DEFPARAMETER($setOptions, '(
         (off on)
         off)
        (break $openMathFormat)
-       ("where TeX output goes (enter {\em console} or a pathname)"
+       ("where OpenMath output goes (enter {\em console} or a pathname)"
         FILENAME
         $openMathOutputFile
         chkOutputFileName
