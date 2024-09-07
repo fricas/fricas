@@ -53,6 +53,7 @@ datadir = @datadir@
 AR = @AR@
 CC = @CC@
 CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
 OBJEXT = @OBJEXT@
 EXEEXT = @EXEEXT@
 
