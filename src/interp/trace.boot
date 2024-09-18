@@ -1196,7 +1196,7 @@ monitor_print(x, trace_str) ==
     PRINMATHOR0(x, trace_str)
 
 PRINMATHOR0(x, trace_str) ==
-    $mathTrace => maprinSpecial(outputTran2(x), $monitor_depth, 80)
+    $mathTrace => maprinSpecial(outputTran2(x), $monitor_depth, $LINELENGTH)
     PRIN0(x, trace_str)
 
 _/TRACELET_-PRINT(X, Y) ==
