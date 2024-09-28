@@ -522,12 +522,12 @@ get_string_buf(Sock *sock, char *buf, int buf_len)
     }
 }
 
-char *
+int
 sock_get_string_buf(int purpose, char * buf, int buf_len)
 {
   if (accept_if_needed(purpose) != -1)
-    return get_string_buf(purpose_table[purpose], buf, buf_len);
-  return NULL;
+    return NULL != get_string_buf(purpose_table[purpose], buf, buf_len);
+  return 0;
 }
 
 int

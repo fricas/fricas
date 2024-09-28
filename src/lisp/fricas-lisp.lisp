@@ -643,7 +643,7 @@ with this hack and will try to convince the GCL crowd to fix this.
        (sig int))
 
 #-:gcl
-(fricas-foreign-call sock_get_string_buf "sock_get_string_buf" char-*
+(fricas-foreign-call sock_get_string_buf "sock_get_string_buf" int
        (purpose int)
        (buf char-*)
        (len int))
@@ -657,7 +657,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;; string with data read from connection, therefore needs address of
 ;; actual string buffer. We use 'sock_get_string_buf_wrapper' to
 ;; resolve the problem
-(SI::clines "int sock_get_string_buf_wrapper(int i, object x, int j)"
+(SI::clines
+    "int sock_get_string_buf(int, char *, int);"
+    "int sock_get_string_buf_wrapper(int i, object x, int j)"
     "{ if (type_of(x)!=t_string) FEwrong_type_argument(sLstring,x);"
     "  if (x->st.st_fillp<j)"
     "    FEerror(\"string too small in sock_get_string_buf_wrapper\",0);"
