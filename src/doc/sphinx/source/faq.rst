@@ -97,7 +97,7 @@ Whereas the first two versions do not show the input in ``tst.output``,
 the last command does. However, in the latter case it is hard to
 distinguish input from output.
 
-Note: Similarly to the commandline, pipe mode requires each function
+Note: Similarly to the command line, pipe mode requires each function
 to be defined in a single line.
 
 

@@ -131,8 +131,8 @@ fricas_restart() ==
 
 
 interpsysInitialization(display_messages) ==
-  -- The function  start  begins the interpreter process, reading in
-  -- the profile and printing start-up messages.
+  -- The function "interpsysInitialization" begins the interpreter process,
+  -- reads in the profile and prints start-up messages.
   $PrintCompilerMessageIfTrue: local := nil
   resetWorkspaceVariables()
   save_displayStartMsgs := $displayStartMsgs

@@ -785,7 +785,7 @@ case $target in
         LDF="-L/usr/local/lib"
         ;;
     *darwin*)
-        AC_DEFINE([MACOSXplatform], [], [MACOX flavour])
+        AC_DEFINE([MACOSXplatform], [], [MACOS flavour])
         CCF="-O2 -Wall -D_GNU_SOURCE"
         ;;
 esac
