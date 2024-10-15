@@ -610,7 +610,6 @@ and now you are talking only to lisp at a lisp command prompt in
 the BOOT package. To restart FriCAS type
 ::
 
-   BOOT>(restart)
+   BOOT> (|runspad|)
 
-Note: ')fin' does not work when using Clozure CL or ECL.  Due to
-this do not use it in portable scripts.
+Note: for ECL you need to type ``(in-package "BOOT")`` before ``(|runspad|)``.

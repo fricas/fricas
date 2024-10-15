@@ -50,7 +50,7 @@ are doing a lot of debugging. Commands can also be executed in the
 underlying common lisp by using the [[)lisp]] command.
 
 If the user typed [[)fin]] then we exit the loop and drop into the
-underlying common lisp. You can use the "(|fricas_restart|)" function call
+underlying common lisp. You can use the "(BOOT::|runspad|)" function call
 to return to the top level loop.
 
 If the input line starts with a close parenthesis we parse the
