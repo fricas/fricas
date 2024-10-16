@@ -79,7 +79,7 @@ the `FriCAS wiki <`http://wiki.fricas.org/IssueTracker>`_
 should not be used anymore.
 
 
-How one can use FriCAS in a pipe or in batch mode?
+How can one use FriCAS in a pipe or in batch mode?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Currently trying to run plain ``fricas`` command in a pipe hangs
@@ -272,12 +272,12 @@ will tell you the signatures that the interpreter is trying to use.
 Another method is to do
 ::
 
-   )boot $monitorNewWorld := t
+   )boot $monitorNewWorld := true
 
 and you can view database calls with
 ::
 
-   )lisp (setq *miss* t)
+   )boot $miss := true
 
 
 How can I record console output?
@@ -296,8 +296,8 @@ starts sending output to the file called ``filename`` and
 stops sending output to the file.
 
 
-Graphics doesn't work or sman fails to start ?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Graphics doesn't work or sman fails to start?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 First try running ``sman`` as
 ::
@@ -336,7 +336,7 @@ Why do .fricas.input defined functions fail in fricas?
 You write this in your ``.fricas.input`` file:
 ::
 
-   mrd(x:Integer,v:Integer):Integer == x+y
+   mrandom(x:Integer,y:Integer,z:Integer):Integer == x+y+z
 
 You can't see this function even though it appears to be defined. That's
 because FriCAS is working in a new frame.
