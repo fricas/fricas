@@ -8,12 +8,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12, macos-14]
+        os: [macos-13, macos-14]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
-      SBCL_VER: ${{ matrix.os == 'macos-12' && '2.2.9' || '2.4.0' }}
-      ARCH: ${{ matrix.os == 'macos-12' && 'x86-64' || 'arm64' }}
+      SBCL_VER: ${{ matrix.os == 'macos-13' && '2.2.9' || '2.4.0' }}
+      ARCH: ${{ matrix.os == 'macos-13' && 'x86-64' || 'arm64' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -29,10 +29,10 @@ jobs:
         ../fricas/configure --with-lisp=sbcl --with-gmp=`brew --prefix` || cat config.log
 
     - name: make
-      run: cd ../build && make -j3
+      run: cd ../build && make -j4
 
     - name: make check
-      run: cd ../build && make check -j3
+      run: cd ../build && make check -j4
 
     - name: Create artifact archives
       run: |
