@@ -165,7 +165,7 @@ gmp_wrap_gcd(mp_limb_t * rp, mp_limb_t *s1p,
         rp[res] = rc;
         res++;
     }
-    if (rp[res - 1] & (1ul << (BIT_CNT - 1))) {
+    if (rp[res - 1] & (1ull << (BIT_CNT - 1))) {
         rp[res] = 0;
         res++;
     }
