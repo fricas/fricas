@@ -16,7 +16,8 @@ jobs:
     steps:
     - uses: msys2/setup-msys2@v2
       with:
-        install: make mingw-w64-x86_64-gcc mingw-w64-x86_64-gmp gmp-devel zip
+        msystem: UCRT64
+        install: make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gmp gmp-devel zip
     - name: download and install SBCL
       run: |
         wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-x86-64-windows-binary.msi
@@ -39,7 +40,7 @@ jobs:
         test "$GITHUB_REF_TYPE" != "tag" && rm -r ../build/target/*/src
         rm ../build/target/x86_64-w64-mingw32/bin/{fricas,fricas-readline}
         mv ../build/target/x86_64-w64-mingw32 FriCAS-windows-x86_64
-        cp /mingw64/bin/libgmp-10.dll FriCAS-windows-x86_64/lib/
+        cp /ucrt64/bin/libgmp-10.dll FriCAS-windows-x86_64/lib/
         zip -r FriCAS-windows-x86_64-${{ github.sha }}.zip FriCAS-windows-x86_64
 
     - name: Upload Windows binary
