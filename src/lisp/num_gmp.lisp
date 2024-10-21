@@ -462,7 +462,7 @@
          (rl (if (< xl yl) xl yl))
          (xlb (words_to_bytes xl))
          (ylb (words_to_bytes yl))
-         (rlb (+ xlb ylb))
+         (rlb (if (< xlb ylb) xlb ylb))
         )
         (declare (type fixnum xl yl rl xlb ylb rlb))
         ;;; XXX Does not work
