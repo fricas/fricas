@@ -789,9 +789,9 @@ with this hack and will try to convince the GCL crowd to fix this.
                      -1))
    #+:clisp (let* ((fname (|trim_directory_name| (namestring filename)))
                    (dname (|pad_directory_name| fname)))
-             (if (ignore-errors (truename dname))
+             (if (ignore-errors (ext:probe-directory dname))
                  1
-                 (if (ignore-errors (truename fname))
+                 (if (ignore-errors (probe-file fname))
                      0
                      -1)))
    #+:abcl
@@ -825,7 +825,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 
 (defun |fricas_probe_file| (file)
-#+:GCL (let* ((fk (file_kind (namestring file)))
+#+(or :GCL :clisp)
+       (let* ((fk (|file_kind| (namestring file)))
               (fname (|trim_directory_name| (namestring file)))
               (dname (|pad_directory_name| fname)))
            (cond
@@ -837,10 +838,6 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:cmu (if (unix:unix-file-kind file) (truename file))
 #+:sbcl (if (sbcl-file-kind file) (truename file))
 #+(or :abcl :ecl :lispworks :openmcl :poplog) (probe-file file)
-#+:clisp(let* ((fname (|trim_directory_name| (namestring file)))
-               (dname (|pad_directory_name| fname)))
-                 (or (ignore-errors (truename dname))
-                     (ignore-errors (truename fname))))
          )
 
 #-:cmu
