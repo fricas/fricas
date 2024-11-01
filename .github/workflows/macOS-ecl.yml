@@ -1,0 +1,47 @@
+name: FriCAS CI on macOS on ECL
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      ARCH: ${{ matrix.os == 'macos-13' && 'x86_64' || 'arm64' }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: download and install ECL
+      run: brew install ecl
+
+    - name: configure
+      run: |
+        mkdir ../build && cd ../build
+        ../fricas/configure --with-lisp=ecl || cat config.log
+
+    - name: make
+      run: cd ../build && make -j4
+
+    - name: make check
+      run: cd ../build && make check -j4
+
+    - name: Create artifact archives
+      run: |
+        cd ../build
+        test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
+        make dist-macos
+        cp -v `brew list gmp | grep libgmp.10.dylib` FriCAS.app/Contents/Resources/usr/local/lib/fricas/target/*/lib/
+        ## reduce chance of error caused by "hdiutil: Resource busy"
+        make dist-macos-dmg || make dist-macos-dmg
+        mv FriCAS.dmg ../fricas/FriCAS-macOS-ECL-${ARCH}-${{ github.sha }}.dmg
+
+    - name: Upload macOS binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: FriCAS-macOS-ECL-${{ env.ARCH }}-binary
+        path: FriCAS-macOS-ECL-${{ env.ARCH }}-${{ github.sha }}.dmg

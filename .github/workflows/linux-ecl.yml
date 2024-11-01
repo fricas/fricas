@@ -1,0 +1,36 @@
+name: FriCAS CI on Linux on ECL
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+    timeout-minutes: 40
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install ecl libxpm-dev
+
+    - name: configure
+      run: ./configure --with-lisp=ecl --with-x || cat config.log
+
+    - name: make
+      run: make -j4 --output-sync
+
+    - name: make check
+      run: make check -j4 --output-sync
+
+    - name: Create artifact archives
+      run: |
+        test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
+        tar -cjf FriCAS-linux-ECL-x86_64-${{ github.sha }}.tar.bz2 target/
+
+    - name: Upload Linux binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: FriCAS-linux-ECL-x86_64-binary
+        path: FriCAS-linux-ECL-x86_64-${{ github.sha }}.tar.bz2
