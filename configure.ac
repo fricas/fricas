@@ -809,18 +809,13 @@ AC_SUBST(LDF)
 ## hunchentoot into FriCASsys, --with-quicklisp specifies that
 ## hunchentoot should be loaded via quicklisp.
 
-## Since by default hunchentoot (apt install cl-hunchentoot) comes
-## with ssl support, which might cause problems loading the right
-## version of libssl.so, namely
-##: Error opening shared object "libssl.so.1.0.0":
-##: libssl.so.1.0.0: cannot open shared object file: No such file or directory.
-## and the local FriCAS-Jupyter connection does not need ssl,
-## we prefer that hunchentoot is installed via quicklisp into
-## a distinguished path via
+## Since hunchentoot is not always available or not compatible
+## we give another way to install it using quicklisp:
+##   curl -O https://beta.quicklisp.org/quicklisp.lisp
 ##   sbcl --load quicklisp.lisp
-##   (quicklisp-quickstart:install :path "/absolute/path-to-quicklisp/")
-##   (push :hunchentoot-no-ssl *features*)
+##   (quicklisp-quickstart:install)
 ##   (ql:quickload "hunchentoot")
+##   (quit)
 AC_ARG_WITH([quicklisp],
     [AS_HELP_STRING([--with-quicklisp=PATH],
         [use quicklisp installation path (default "~/quicklisp")])],
