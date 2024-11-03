@@ -12,7 +12,8 @@
 ++ References:
 ++ Description:
 ++   StreamTaylorSeriesOperations implements Taylor series arithmetic,
-++   where a Taylor series is represented by a stream of its coefficients.
+++   where a Taylor series is represented by a stream of its coefficients,
+++   see corresponding operations in the category Ring.
 StreamTaylorSeriesOperations(A) : Exports == Implementation where
   A :        Ring
   RN     ==> Fraction Integer
@@ -194,51 +195,122 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       zero? s => zro()
       map(z +-> z*s, x)
 
-    iDiv : (ST A, ST A, A) -> ST A
-    iDiv(x, rst_y, ry0) == delay
-      empty? x => empty()
-      c0 := frst x * ry0
-      concat(c0, iDiv(rst x - c0*rst_y, rst_y, ry0))
+-------------------------------------------------------------------
 
-    i_div1 : (ST A, ST A, A, A) -> ST A
-    i_div1(rst_x, rst_y, ry0, c0) == delay
-        empty?(rst_y) => map(z +-> z*ry0, rst_x)
-        iDiv(rst_x - c0*rst_y, rst_y, ry0)
+    -- We use
+    -- https://en.wikipedia.org/wiki/Formal_power_series#Multiplicative_inverse.
+    -- For the actual computation formula (non-commutative case) see
+    -- explanation for / below with f=1.
+    -- recip computes the zeroth coefficient and computes arguments
+    -- for restRecip to compute the remaining coefficients.
+    -- restRecip avoids zero multiplication if the tail of the yet computed
+    -- partial stream ends in zeros.
+    -- Assume that x = (a0,a1,a2,...)
+    -- Arguments for restRecip:
+    -- a = (a1, a2, a3,...)
+    -- u = - 1/a0
+    -- n = in this invocation we compute (cn, c(n+1), ...)
+    -- k = the resulting coefficients ck, c(k+1), ..., c(n-1) are equal to 0
+    -- ra = (ak,a(k+1),a(k+2),...) substream of x starting at k
+    -- revc = [c(k-1),c(k-2),...,c(0)] the first k coefficients of the result
+    --        in reverse order, c(k-1)~=0.
 
-    x exquo y ==
-      y0 : A
-      for n in 1.. repeat
-        n > 1000 => return "failed"
-        empty? y => return "failed"
-        empty? x => return empty()
-        (y0 := frst y) = 0 =>
-          frst x = 0 => (x := rst x; y := rst y)
-          return "failed"
-        -- first entry in y is non-zero
-        break
-      (ry0u := recip y0) case "failed" => "failed"
-      ry0 := ry0u@A
-      x0 := frst x
-      c0 := x0*ry0
-      concat(c0, i_div1(rst x, rst y, ry0, c0))
+    -- local
+    revSum(ra : ST A, rvc : List A) : A ==
+        cc : A := 0
+        for c in rvc while not empty? ra repeat
+            cc := cc + c * frst(ra)
+            ra := rst ra
+        cc
 
-    (x : ST A) / (y : ST A) == delay
-      empty? y => error "/: division by zero"
-      empty? x => empty()
-      (ry0u := recip frst y) case "failed" =>
-        error "/: second argument is not invertible"
-      ry0 := ry0u@A
-      x0 := frst x
-      c0 := x0*ry0
-      concat(c0, i_div1(rst x, rst y, ry0, c0))
-
-    recip x ==
-      empty? x => "failed"
-      rh1 := recip frst x
-      rh1 case "failed" => "failed"
-      rh := rh1@A
+    -- local
+    restRecip(a : ST A, u : A, n : I, k : I, ra : ST A, revc : List A): ST A ==
       delay
-        concat(rh, iDiv(- rh * rst x, rst x, rh))
+        --assert(k=#revc)
+        --assert(for i in k .. n-1 while not empty? a repeat a := rst a; a=ra)
+        --assert(#revc>0)
+        empty? ra => empty()
+        rvc : List A := revc -- create a local variable inside 'delay'
+        cn : A := u * revSum(ra, rvc) -- u = -1/a(0)
+        zero? cn => concat(cn, restRecip(a, u, n+1, k, rst ra, rvc))
+        for i in k..n-1 repeat rvc := cons(0, rvc) -- fill rvc with zeros
+        concat(cn, restRecip(a, u, n+1, n+1, a, cons(cn, rvc)))
+
+    recip(x : ST A) : UN ==
+        empty? x => "failed"
+        ua : Union(A, "failed") := recip frst x
+        ua case "failed" => "failed"
+        c0 : A := ua @ A
+        concat(c0, restRecip(rst x, -c0, 1, 1, rst x, [c0])) :: UN
+
+-------------------------------------------------------------------
+
+    -- We use
+    -- https://en.wikipedia.org/wiki/Formal_power_series#Division.
+    -- In fact, the Wikipedia formula is for the commutative case.
+    -- We allow / also for the non-commutative case to mean "right-division",
+    -- i.e. if h=f/g then h*g=f. Thus,
+    -- $f=\sum_{n=0}^\infty b_n x^n$,
+    -- $g=\sum_{n=0}^\infty a_n x^n$,
+    -- $h=\sum_{n=0}^\infty c_n x^n$ as in the Wikipedia article, we get:
+    -- $\sum_{n=0}^\infty c_n x^n \sum_{n=0}^\infty a_n x^n
+    -- = \sum_{n-0}^\infty b_n x^n$ and by equating coefficients we get
+    -- for any $n\ge0$ that $b_n = \sum_{i=0}^n c_{n-i} a_i$.
+    -- Therefore $c_0 = b_0 / a_0 = b_0 a_0^{-1}$ and
+    -- $c_n = (b_n - \sum_{i=1}^n c_{n-i} a_i) / a_0$.
+
+    -- / computes the zeroth coefficient and computes arguments
+    -- for restDiv to compute the remaining coefficients.
+    -- restDiv avoids zero multiplication if the tail of the yet computed
+    -- partial stream ends in zeros.
+    -- Assume that x = (b0,b1,b2,...), y = (a0,a1,a2,...).
+    -- Arguments for restDiv:
+    -- a = (a1, a2, a3,...)
+    -- u = - 1/a0
+    -- n = in this invocation we compute (cn, c(n+1), ...)
+    -- k = the resulting coefficients ck, c(k+1), ..., c(n-1) are equal to 0
+    -- ra = (ak,a(k+1),a(k+2),...) substream of x starting at k
+    -- b = (bn, b(n+1), b(n+2),...)
+    -- revc = [c(k-1),c(k-2),...,c(0)] the first k coefficients of the result
+    --        in reverse order, c(k-1)~=0.
+
+    -- local
+    restDiv(a : ST A, u : A, n : I, k : I, ra : ST A, b : ST A,_
+            revc : List A) : ST A == delay
+        --assert(k=#revc)
+        --assert(for i in k .. n-1 while not empty? a repeat a := rst a; a=ra)
+        --assert(#revc>0)
+        empty? b => restRecip(a, u, n, k, ra, revc)
+        rvc : List A := revc -- create a local variable inside 'delay'
+        cn : A := (revSum(ra, rvc) - frst b) * u -- u = -1/a(0)
+        zero? cn => concat(cn, restDiv(a, u, n+1, k, rst ra, rst b, rvc))
+        for i in k..n-1 repeat rvc := cons(0, rvc) -- fill rvc with zeros
+        concat(cn, restDiv(a, u, n+1, n+1, a, rst b, cons(cn, rvc)))
+
+    ((x : ST A) exquo (y : ST A)) : UN ==
+        for n in 1..1000 repeat
+            empty? y => return "failed"
+            empty? x => return empty()
+            not zero? frst y => break
+            not zero? frst x => return "failed"
+            x := rst x
+            y := rst y
+        ua : Union(A, "failed") := recip frst y
+        ua case "failed" => "failed"
+        u : A := ua @ A
+        c0 := frst(x) * u
+        concat(c0, restDiv(rst y, -u, 1, 1, rst y, rst x, [c0]))
+
+    ((x : ST A) / (y : ST A)) : ST A == delay
+        empty? y => error "/: division by zero"
+        empty? x => empty()
+        ua : Union(A, "failed") := recip frst y
+        ua case "failed" => error "/: second argument is not invertible"
+        u : A := ua @ A
+        c0 := frst(x) * u
+        concat(c0, restDiv(rst y, -u, 1, 1, rst y, rst x, [c0]))
+
+-------------------------------------------------------------------
 
 --% coefficients
 
