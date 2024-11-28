@@ -2343,7 +2343,17 @@ case $vendor in
 		;;
 esac
 
-echo "$cpu-$vendor${kernel:+-$kernel}${os:+-$os}${obj:+-$obj}"
+case "$cpu-$vendor${kernel:+-$kernel}${os:+-$os}${obj:+-$obj}" in
+    *-unknown-*-*|*-pc-*-*|*-unknown-*-*-*|*-pc-*-*-*)
+        echo "$cpu${kernel:+-$kernel}${os:+-$os}${obj:+-$obj}"
+        ;;
+    *-unknown-*)
+        echo "$cpu-x{kernel:+-$kernel}${os:+-$os}${obj:+-$obj}"
+        ;;
+    *)
+        echo "$cpu-$vendor${kernel:+-$kernel}${os:+-$os}${obj:+-$obj}"
+        ;;
+esac
 exit
 
 # Local variables:
