@@ -758,7 +758,7 @@ connect_to_local_server(char *server_name, int purpose, int time_out)
   uaddr->sun_family = FRICAS_AF_LOCAL;
   strncpy(uaddr->sun_path, name, sizeof(uaddr->sun_path) - 1);
   for(i=0; i<max_con; i++) {
-    code = connect(sock->socket, uaddr, sizeof(*uaddr));
+    code = connect(sock->socket, (struct sockaddr *)uaddr, sizeof(*uaddr));
     if (code == -1) {
       if (
         /* @@@ Why we need this */
@@ -932,7 +932,7 @@ open_server(char *server_name)
     struct sockaddr_un * uaddr = &(sock->addr.u_addr);
     uaddr->sun_family = FRICAS_AF_LOCAL;
     strncpy(uaddr->sun_path, name, sizeof(uaddr->sun_path) - 1);
-    if (bind(sock->socket, uaddr, sizeof(*uaddr))) {
+    if (bind(sock->socket, (struct sockaddr *)uaddr, sizeof(*uaddr))) {
       perror("binding local server socket");
       server[1].socket = 0;
       return -2;
