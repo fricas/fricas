@@ -281,7 +281,7 @@ compDefineCategory2(form, signature, body, m, e,
     parForm:= SUBLIS(pairlis,form)
     --Equivalent to the following two lines, we hope
     if null sargl then
-        lisplibWrite('NILADIC, true, $libFile)
+        lisplibWrite('"NILADIC", true, $libFile)
 
 --   6. put modemaps into InteractiveModemapFrame
     $lisplibCategory:= formalBody
@@ -442,7 +442,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
       $lisplibOperationAlist:= operationAlist
       $lisplibMissingFunctions:= $CheckVectorList
     if null argl then
-        lisplibWrite('NILADIC, true, $libFile)
+        lisplibWrite('"NILADIC", true, $libFile)
     [fun, ['Mapping, :signature'], originale]
 
 compFunctorBody(body, m, e, base_shell) ==

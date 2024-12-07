@@ -34,21 +34,6 @@
 -- some functions that may need to be changed on different lisp
 -- systems.
 
--- tests if x is an identifier beginning with #
-
-isSharpVar x ==
-  IDENTP x and SCHAR(SYMBOL_-NAME x,0) = char "#"
-
-isSharpVarWithNum x ==
-  null isSharpVar x => nil
-  (n := QCSIZE(p := PNAME x)) < 2 => nil
-  ok := true
-  c := 0
-  for i in 1..(n-1) while ok repeat
-    d := ELT(p,i)
-    ok := DIGITP d => c := 10*c + DIG2FIX d
-  if ok then c else nil
-
 rread(key, rstream) ==
   if IDENTP key then key := PNAME key
   rread0(key, rstream)
@@ -61,8 +46,3 @@ rwrite(key,val,stream) ==
   if IDENTP key then key := PNAME key
   rwrite0(key,val,stream)
 
-
-editFile file ==
-  MEMQ(INTERN('"WIN32",FIND_-PACKAGE("KEYWORD")),_*FEATURES_*) =>
-      run_program('"notepad", [file])
-  run_program(CONCAT($spadroot, '"/lib/SPADEDIT"), [file])

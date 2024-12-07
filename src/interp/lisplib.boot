@@ -197,7 +197,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
             sayMSG ['"   compiling into ", $spadLibFT, :bright libName],
             res := FUNCALL(fn, df, m, e, prefix, fal),
             sayMSG ['"   finalizing ",$spadLibFT,:bright libName],
-            finalizeLisplib libName),
+            finalizeLisplib(libName, $libFile)),
       PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
             RSHUT $libFile))
   lisplibDoRename(libName)
@@ -216,24 +216,24 @@ initializeLisplib libName ==
   $libFile:= writeLib0(libName,'"erlib")
   $compiler_output_stream := make_compiler_output_stream($libFile, libName)
 
-finalizeLisplib libName ==
-  lisplibWrite('"constructorForm",removeZeroOne $lisplibForm,$libFile)
-  lisplibWrite('"constructorKind",kind:=removeZeroOne $lisplibKind,$libFile)
-  lisplibWrite('"constructorModemap",removeZeroOne $lisplibModemap,$libFile)
+finalizeLisplib(libName, libFile) ==
+  lisplibWrite('"constructorForm", removeZeroOne($lisplibForm), libFile)
+  lisplibWrite('"constructorKind", kind:=removeZeroOne $lisplibKind, libFile)
+  lisplibWrite('"constructorModemap", removeZeroOne($lisplibModemap), libFile)
   $lisplibCategory:= $lisplibCategory or $lisplibModemap.mmTarget
   -- set to target of modemap for package/domain constructors;
   -- to the right-hand sides (the definition) for category constructors
-  lisplibWrite('"constructorCategory",$lisplibCategory,$libFile)
-  lisplibWrite('"sourceFile", $edit_file, $libFile)
-  lisplibWrite('"modemaps",removeZeroOne $lisplibModemapAlist,$libFile)
+  lisplibWrite('"constructorCategory", $lisplibCategory, libFile)
+  lisplibWrite('"sourceFile", $edit_file, libFile)
+  lisplibWrite('"modemaps",removeZeroOne $lisplibModemapAlist, libFile)
   ops := getConstructorOps($lisplibForm, kind)
-  lisplibWrite('"operationAlist", removeZeroOne ops, $libFile)
-  lisplibWrite('"superDomain",removeZeroOne $lisplibSuperDomain,$libFile)
-  lisplibWrite('"predicates",removeZeroOne  $lisplibPredicates,$libFile)
-  lisplibWrite('"abbreviation",$lisplibAbbreviation,$libFile)
-  lisplibWrite('"parents",removeZeroOne $lisplibParents,$libFile)
-  lisplibWrite('"ancestors",removeZeroOne $lisplibAncestors,$libFile)
-  lisplibWrite('"documentation",finalizeDocumentation(),$libFile)
+  lisplibWrite('"operationAlist", removeZeroOne(ops), libFile)
+  lisplibWrite('"superDomain", removeZeroOne($lisplibSuperDomain), libFile)
+  lisplibWrite('"predicates", removeZeroOne($lisplibPredicates), libFile)
+  lisplibWrite('"abbreviation", $lisplibAbbreviation, libFile)
+  lisplibWrite('"parents", removeZeroOne($lisplibParents), libFile)
+  lisplibWrite('"ancestors", removeZeroOne($lisplibAncestors), libFile)
+  lisplibWrite('"documentation", finalizeDocumentation(), libFile)
 
 lisplibDoRename(libName) ==
     replace_lib(make_filename0(libName, '"erlib"),

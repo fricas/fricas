@@ -984,6 +984,12 @@ displayValue(op, u, omitVariableNameIfTrue) ==
 
 --% )edit
 
+editFile(file) ==
+    (sym := FIND_SYMBOL("WIN32", "KEYWORD")) and
+            MEMQ(sym, _*FEATURES_*) =>
+        run_program('"notepad", [file])
+    run_program(CONCAT($spadroot, '"/lib/SPADEDIT"), [file])
+
 edit l == editSpad2Cmd l
 
 editSpad2Cmd l ==
@@ -2165,7 +2171,7 @@ readSpad2Cmd l ==
     fullopt = 'ifthere => ifthere  := true
     fullopt = 'quiet   => quiet := true
 
-  if null(l) and (ef := $edit_file) and pathnameTypeId(ef) ~= 'SPAD then
+  if null(l) and (ef := $edit_file) and pathnameType(ef) ~= '"spad" then
       l := ef
   else
       l := first(l)
