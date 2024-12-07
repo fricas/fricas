@@ -89,15 +89,15 @@ saveUsersHashTable() ==
   erase_lib('"USERS.DAASE")
   stream:= writeLib('"USERS.DAASE")
   for k in MSORT HKEYS $usersTb repeat
-    rwrite(k, HGET($usersTb, k), stream)
-  RSHUT stream
+      kaf_write0(stream, k, HGET($usersTb, k))
+  kaf_close(stream)
 
 saveDependentsHashTable() ==
   erase_lib('"DEPENDENTS.DAASE")
   stream:= writeLib('"DEPENDENTS.DAASE")
   for k in MSORT HKEYS $depTb repeat
-    rwrite(k, HGET($depTb, k), stream)
-  RSHUT stream
+      kaf_write0(stream, k, HGET($depTb, k))
+  kaf_close(stream)
 
 save_browser_data() ==
     buildLibdb([])
@@ -109,14 +109,14 @@ save_browser_data() ==
 
 getUsersOfConstructor(con) ==
   stream := readLib('"USERS.DAASE")
-  val := rread_list(con, stream)
-  RSHUT stream
+  val := kaf_read_list(stream, con)
+  kaf_close(stream)
   val
 
 getDependentsOfConstructor(con) ==
   stream := readLib('"DEPENDENTS.DAASE")
-  val := rread_list(con, stream)
-  RSHUT stream
+  val := rkaf_read_list(stream, con)
+  kaf_close(stream)
   val
 
 orderPredicateItems(pred1,sig,skip) ==

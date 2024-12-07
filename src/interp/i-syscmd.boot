@@ -1367,7 +1367,7 @@ setHistoryCore inCore ==
     $internalHistoryTable := NIL
     if $IOindex ~= 0 then
       -- actually put something in there
-      l := LENGTH RKEYIDS histFileName()
+      l := LENGTH(rkeys(histFileName()))
       for i in 1..l repeat
         vec:= UNWIND_-PROTECT(readHiFi(i),disableHist())
         $internalHistoryTable := CONS([i,:vec],$internalHistoryTable)
@@ -1376,10 +1376,10 @@ setHistoryCore inCore ==
     sayKeyedMsg("S2IH0032",NIL)
   $HiFiAccess:= 'NIL
   histFileErase histFileName()
-  str := rMkOstream(histFileName())
+  str := kaf_open(histFileName(), false)
   for [n,:rec] in reverse $internalHistoryTable repeat
-    SPADRWRITE(object2Identifier n,rec,str)
-  RSHUT str
+      SPADRWRITE(str, object2String2(n), rec)
+  kaf_close(str)
   $HiFiAccess:= 'T
   $internalHistoryTable := NIL
   $useInternalHistoryTable := NIL
@@ -1543,7 +1543,6 @@ undoFromFile(n) ==
   updateHist()
 
 saveHistory(fn) ==
-  $seen : local := MAKE_HASHTABLE('EQ)
   not $HiFiAccess => sayKeyedMsg("S2IH0016",NIL)
   not $useInternalHistoryTable and
       null(make_input_filename(histFileName())) =>
@@ -1556,14 +1555,13 @@ saveHistory(fn) ==
   writeInputLines(fn,1)
   histFileErase savefile
 
-  if $useInternalHistoryTable
-    then
-      saveStr := rMkOstream(savefile)
+  if $useInternalHistoryTable then
+      saveStr := kaf_open(savefile, true)
       for [n,:rec] in reverse $internalHistoryTable repeat
-        val := SPADRWRITE0(object2Identifier n,rec,saveStr)
-        val = 'writifyFailed =>
-          sayKeyedMsg("S2IH0035", [n, inputfile]) -- unable to save step
-      RSHUT saveStr
+          val_u := SPADRWRITE0(saveStr, object2String2(n), rec)
+          first(val_u) = 1 => -- "failed"
+              sayKeyedMsg("S2IH0035", [n, inputfile]) -- unable to save step
+      kaf_close(saveStr)
   sayKeyedMsg("S2IH0018",[namestring(savefile)])  -- saved hist file named
   nil
 
@@ -1596,7 +1594,7 @@ restoreHistory2(oldInternal, restfile, fn) ==
      $curHistFileName := nil
      restfile := curfile
 
-  l:= LENGTH RKEYIDS restfile
+  l := LENGTH(rkeys(restfile))
   $HiFiAccess:= 'T
   if oldInternal then $internalHistoryTable := NIL
   for i in 1..l repeat
@@ -1708,9 +1706,9 @@ readHiFi(n) ==
     ATOM pair => keyedSystemError("S2IH0034",NIL)
     vec := QCDR pair
   else
-    HiFi:= rMkIstream(histFileName())
-    vec:= SPADRREAD(object2Identifier n,HiFi)
-    RSHUT HiFi
+    HiFi:= kaf_open(histFileName(), false)
+    vec := SPADRREAD(HiFi, object2String2(n))
+    kaf_close(HiFi)
   vec
 
 writeHiFi() ==
@@ -1720,9 +1718,9 @@ writeHiFi() ==
     $internalHistoryTable := CONS([$IOindex,$currentLine,:$HistRecord],
       $internalHistoryTable)
   else
-    HiFi:= rMkOstream(histFileName())
-    SPADRWRITE(object2Identifier $IOindex, CONS($currentLine,$HistRecord),HiFi)
-    RSHUT HiFi
+    HiFi := kaf_open(histFileName(), true)
+    SPADRWRITE(HiFi, object2String2($IOindex), CONS($currentLine, $HistRecord))
+    kaf_close(HiFi)
 
 disableHist() ==
   -- disables the history mechanism if an error occurred in the protected
@@ -1747,150 +1745,34 @@ $eof_marker := GENSYM()
 
 eof_marker?(x) == EQ(x, $eof_marker)
 
-fri_read(stream) ==
-    dewritify(READ(stream, nil, $eof_marker))
+$SPADRREAD_fun := [0, nil]
+SPADRREAD(stream, key) ==
+    cnt := first($SPADRREAD_fun)
+    fun :=
+        cnt < 2 =>
+            fun1 := getFunctionFromDomain1("read", '(BasicKeyedAccessFile),
+                '(None), '((BasicKeyedAccessFile) (String)))
+            $SPADRREAD_fun := [cnt + 1, fun1]
+            fun1
+        first(rest($SPADRREAD_fun))
+    SPADCALL(stream, key, fun)
 
-fri_write(item, stream) ==
-    val := safeWritify item
-    val = 'writifyFailed =>
-        throwKeyedMsg("The value cannot be saved to a file.", "nil")
-    write_to_stream(val, stream)
+$SPADRWRITE_fun := [0, nil]
+SPADRWRITE(stream, key, val) ==
+    cnt := first($SPADRWRITE_fun)
+    fun :=
+        cnt < 2 =>
+            fun1 := getFunctionFromDomain1("write!", '(BasicKeyedAccessFile),
+                $Void, '((BasicKeyedAccessFile) (String) (None)))
+            $SPADRWRITE_fun := [cnt + 1, fun1]
+            fun1
+        first(rest($SPADRWRITE_fun))
+    SPADCALL(stream, key, val, fun)
 
-SPADRREAD(vec, stream) ==
-    dewritify(rread(vec, stream))
+SPADRWRITE0(stream, key, val) ==
+    trappedSpadEval(SPADRWRITE(stream, key, val))
 
-SPADRWRITE(vec, item, stream) ==
-  val := SPADRWRITE0(vec, item, stream)
-  val = 'writifyFailed =>
-    throwKeyedMsg("S2IH0036", nil) -- cannot save value to file
-  item
-
-SPADRWRITE0(vec, item, stream) ==
-    val := safeWritify item
-    val = 'writifyFailed => val
-    rwrite(vec, val, stream)
-    item
-
-safeWritify ob ==
-  CATCH('writifyTag,  writify ob)
-
-writify ob ==
-    not ScanOrPairVec(function(unwritable?), ob) => ob
-    $seen : local := MAKE_HASHTABLE('EQ)
-    $writifyComplained: local := false
-
-    writifyInner ob where
-        writifyInner ob ==
-            null ob                => nil
-            (e := HGET($seen, ob)) => e
-
-            PAIRP ob =>
-                qcar := QCAR ob
-                qcdr := QCDR ob
-                (qcar = function newGoGet) =>
-                    writifyInner replaceGoGetSlot qcdr
-                (name := spadClosure? ob) =>
-                   d := writifyInner qcdr
-                   nob := ['WRITIFIED_!_!, 'SPADCLOSURE, d, name]
-                   HPUT($seen, ob, nob)
-                   HPUT($seen, nob, nob)
-                   nob
-                (ob is ['LAMBDA_-CLOSURE, ., ., x, :.]) and x =>
-                  THROW('writifyTag, 'writifyFailed)
-                nob := CONS(qcar, qcdr)
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                qcar := writifyInner qcar
-                qcdr := writifyInner qcdr
-                QRPLACA(nob, qcar)
-                QRPLACD(nob, qcdr)
-                nob
-            VECP ob =>
-                isDomainOrPackage ob =>
-                    d := mkEvalable devaluate ob
-                    nob := ['WRITIFIED_!_!, 'DEVALUATED, writifyInner d]
-                    HPUT($seen, ob, nob)
-                    HPUT($seen, nob, nob)
-                    nob
-                n   := QVMAXINDEX ob
-                nob := MAKE_VEC(n + 1)
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                for i in 0..n repeat
-                    QSETVELT(nob, i, writifyInner QVELT(ob,i))
-                nob
-            GENERAL_ARRAY?(ob) =>
-                dims := ARRAY_-DIMENSIONS(ob)
-                nob := MAKE_-ARRAY(dims)
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                n := ARRAY_-TOTAL_-SIZE(ob)
-                for i in 0..(n - 1) repeat
-                    SETF(ROW_-MAJOR_-AREF(nob, i),
-                         writifyInner(ROW_-MAJOR_-AREF(ob, i)))
-                nob
-            is_BVEC(ob) => ob
-            STRINGP ob =>
-                EQ(ob, $NullStream) => ['WRITIFIED_!_!, 'NULLSTREAM]
-                EQ(ob, $NonNullStream) => ['WRITIFIED_!_!, 'NONNULLSTREAM]
-                ob
-            ARRAYP(ob) =>
-                tt := get_type_tag(ARRAY_-ELEMENT_-TYPE(ob))
-                tt =>
-                    dims := ARRAY_-DIMENSIONS(ob)
-                    n := ARRAY_-TOTAL_-SIZE(ob)
-                    nv := MAKE_VEC(n)
-                    nob := ['WRITIFIED_!_!, 'TYARR, tt, dims, nv]
-                    HPUT($seen, ob, nob)
-                    HPUT($seen, nob, nob)
-                    for i in 0..(n - 1) repeat
-                        QSETVELT(nv, i,
-                            writifyInner(ROW_-MAJOR_-AREF(ob, i)))
-                    nob
-                THROW('writifyTag, 'writifyFailed)
-            SPAD_KERNEL_-P ob =>
-                nob := makeSpadKernel(NIL, NIL, SPAD_KERNEL_-NEST(ob))
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                SETF(SPAD_KERNEL_-OP(nob), _
-                     writifyInner SPAD_KERNEL_-OP(ob))
-                SETF(SPAD_KERNEL_-ARG(nob), _
-                     writifyInner SPAD_KERNEL_-ARG(ob))
-                nob
-            ob = 'WRITIFIED_!_! =>
-                ['WRITIFIED_!_!, 'SELF]
-            -- In CCL constructors are also compiled functions, so we
-            -- need this line:
-            constructor? ob => ob
-            COMPILED_-FUNCTION_-P ob =>
-                THROW('writifyTag, 'writifyFailed)
-            HASHTABLEP ob =>
-                nob := ['WRITIFIED_!_!]
-                HPUT($seen, ob,  nob)
-                HPUT($seen, nob, nob)
-                keys := HKEYS ob
-                QRPLACD(nob,
-                        ['HASHTABLE,
-                          HASHTABLE_CLASS(ob),
-                            writifyInner keys,
-                              [writifyInner HGET(ob,k) for k in keys]])
-                nob
-            eof_marker?(ob) =>
-                nob := ['WRITIFIED_!_!, 'PLACE]
-                HPUT($seen, ob,  nob)
-                HPUT($seen, nob, nob)
-                nob
-            -- The next three types cause an error on de-writifying.
-            -- Create an object of the right shape, nonetheless.
-            READTABLEP ob =>
-                THROW('writifyTag, 'writifyFailed)
-            FLOATP ob =>
-                ob = READ_-FROM_-STRING STRINGIMAGE ob => ob
-                ['WRITIFIED_!_!, 'FLOAT, ob,:
-                   MULTIPLE_-VALUE_-LIST INTEGER_-DECODE_-FLOAT ob]
-            -- Default case: return the object itself.
-            ob
-
+scan_for_unwritable(ob) == ScanOrPairVec(function(unwritable?), ob)
 
 unwritable? ob ==
     -- first for speed
@@ -1900,189 +1782,39 @@ unwritable? ob ==
     VECP(ob) or GENERAL_ARRAY?(ob) or STRINGP(ob) or is_BVEC(ob) => false
     -- other arrays are unwritable
     ARRAYP(ob) => true
-    COMPILED_-FUNCTION_-P   ob or HASHTABLEP ob => true
-    eof_marker?(ob) or READTABLEP ob => true
+    COMPILED_-FUNCTION_-P(ob) or HASHTABLEP(ob) => true
+    eof_marker?(ob) or READTABLEP(ob) => true
     FLOATP ob => true
     false
 
-$type_tags := [
-   ["U8",     ['UNSIGNED_-BYTE, 8]],
-    ["U16",   ['UNSIGNED_-BYTE, 16]],
-     ["U32",  ['UNSIGNED_-BYTE, 32]],
-      ["DF",  'DOUBLE_-FLOAT]]
-
-get_type_tag(lt) ==
-    res := false
-    for tp in $type_tags while not(res) repeat
-        ct := tp.1
-        if SUBTYPEP(lt, ct) and SUBTYPEP(ct, lt) then
-            res := tp.0
-    res
-
-get_lisp_type(tt) ==
-    res := false
-    for tp in $type_tags while not(res) repeat
-        if tt = tp.0 then
-            res := tp.1
-    res
-
--- Create a full isomorphic object which can be saved in a lisplib.
--- Note that  dewritify(writify(x))  preserves UEQUALity of hashtables.
--- HASHTABLEs go both ways.
--- READTABLEs cannot presently be transformed back.
-
-writifyComplain s ==
-   $writifyComplained  = true => nil
-   $writifyComplained := true
-   sayKeyedMsg("S2IH0027",[s])
-
-spadClosure? ob ==
-  fun := QCAR ob
-  not (FUNCTIONP fun) => nil
-  not (name := BPINAME fun) => nil
-  name = "WRAPPED" => nil
-  vec := QCDR ob
-  not VECP vec => nil
-  name
-
-dewritify ob ==
-    (not ScanOrPairVec(function is?, ob)
-            where  is? a == a = 'WRITIFIED_!_!) => ob
-
-    $seen : local := MAKE_HASHTABLE('EQ)
-
-    dewritifyInner ob where
-        dewritifyInner ob ==
-            null ob => nil
-            e := HGET($seen, ob) => e
-
-            PAIRP ob and first ob = 'WRITIFIED_!_! =>
-                type := ob.1
-                type = 'SELF =>
-                    'WRITIFIED_!_!
-                type = 'BPI =>
-                    oname := ob.2
-                    f :=
-                        -- FIXME: GENSYMMER is nowhere defined
-                        INTEGERP oname => EVAL GENSYMMER oname
-                        SYMBOL_-FUNCTION oname
-                    not COMPILED_-FUNCTION_-P f =>
-                        error '"A required BPI does not exist."
-                    #ob > 3 and HASHEQ f ~= ob.3 =>
-                        error '"A required BPI has been redefined."
-                    HPUT($seen, ob, f)
-                    f
-                type = 'TYARR =>
-                    lt := get_lisp_type(ob.2)
-                    nob := MAKE_TYPED_ARRAY(ob.3, lt)
-                    HPUT($seen, ob, nob)
-                    HPUT($seen, nob, nob)
-                    ov := ob.4
-                    n := ARRAY_-TOTAL_-SIZE(nob)
-                    for i in 0..(n - 1) repeat
-                        SETF(ROW_-MAJOR_-AREF(nob, i),
-                             dewritifyInner(QVELT(ov, i)))
-                    nob
-                type = 'HASHTABLE =>
-                    nob := MAKE_HASHTABLE(ob.2)
-                    HPUT($seen, ob, nob)
-                    HPUT($seen, nob, nob)
-                    for k in ob.3 for e in ob.4 repeat
-                        HPUT(nob, dewritifyInner k, dewritifyInner e)
-                    nob
-                type = 'DEVALUATED =>
-                    nob := EVAL dewritifyInner ob.2
-                    HPUT($seen, ob, nob)
-                    HPUT($seen, nob, nob)
-                    nob
-                type = 'SPADCLOSURE =>
-                    vec := dewritifyInner ob.2
-                    name := ob.3
-                    not FBOUNDP name =>
-                       error STRCONC('"undefined function: ", SYMBOL_-NAME name)
-                    nob := CONS(SYMBOL_-FUNCTION name, vec)
-                    HPUT($seen, ob, nob)
-                    HPUT($seen, nob, nob)
-                    nob
-                type = 'PLACE =>
-                    nob := $eof_marker
-                    HPUT($seen, ob, nob)
-                    HPUT($seen, nob, nob)
-                    nob
-                type = 'READTABLE =>
-                    error '"Cannot de-writify a read table."
-                type = 'NULLSTREAM => $NullStream
-                type = 'NONNULLSTREAM => $NonNullStream
-                type = 'FLOAT =>
-                   [fval, signif, expon, sign] := CDDR ob
-                   fval := SCALE_-FLOAT( FLOAT(signif, fval), expon)
-                   sign<0 => -fval
-                   fval
-                error '"Unknown type to de-writify."
-
-            PAIRP ob =>
-                qcar := QCAR ob
-                qcdr := QCDR ob
-                nob  := CONS(qcar, qcdr)
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                QRPLACA(nob, dewritifyInner qcar)
-                QRPLACD(nob, dewritifyInner qcdr)
-                nob
-            VECP ob =>
-                n   := QVMAXINDEX ob
-                nob := MAKE_VEC(n + 1)
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                for i in 0..n repeat
-                    QSETVELT(nob, i, dewritifyInner QVELT(ob,i))
-                nob
-            GENERAL_ARRAY?(ob) =>
-                dims := ARRAY_-DIMENSIONS(ob)
-                nob := MAKE_-ARRAY(dims)
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                n := ARRAY_-TOTAL_-SIZE(ob)
-                for i in 0..(n - 1) repeat
-                    SETF(ROW_-MAJOR_-AREF(nob, i),
-                         dewritifyInner(ROW_-MAJOR_-AREF(ob, i)))
-                nob
-            SPAD_KERNEL_-P(ob) =>
-                nob := makeSpadKernel(NIL, NIL, SPAD_KERNEL_-NEST(ob))
-                HPUT($seen, ob, nob)
-                HPUT($seen, nob, nob)
-                SETF(SPAD_KERNEL_-OP(nob), _
-                     dewritifyInner SPAD_KERNEL_-OP(ob))
-                SETF(SPAD_KERNEL_-ARG(nob), _
-                     dewritifyInner SPAD_KERNEL_-ARG(ob))
-                nob
-            -- Default case: return the object itself.
-            ob
+scan_for_writified(ob) ==
+    ScanOrPairVec(function is?, ob) where
+       is?(a) == a = 'WRITIFIED_!_!
 
 ScanOrPairVec(f, ob) ==
-    $seen : local := MAKE_HASHTABLE('EQ)
+    seen := MAKE_HASHTABLE('EQ)
 
-    CATCH('ScanOrPairVecAnswer, ScanOrInner(f, ob)) where
-        ScanOrInner(f, ob) ==
-            HGET($seen, ob) => nil
-            PAIRP ob =>
-                HPUT($seen, ob, true)
-                ScanOrInner(f, QCAR ob)
-                ScanOrInner(f, QCDR ob)
+    CATCH('ScanOrPairVecAnswer, ScanOrInner(f, ob, seen)) where
+        ScanOrInner(f, ob, seen) ==
+            HGET(seen, ob) => nil
+            PAIRP(ob) =>
+                HPUT(seen, ob, true)
+                ScanOrInner(f, QCAR(ob), seen)
+                ScanOrInner(f, QCDR(ob), seen)
                 nil
-            VECP ob =>
-                HPUT($seen, ob, true)
-                for i in 0..#ob-1 repeat ScanOrInner(f, ob.i)
+            VECP(ob) =>
+                HPUT(seen, ob, true)
+                for i in 0..#ob-1 repeat ScanOrInner(f, ob.i, seen)
                 nil
             GENERAL_ARRAY?(ob) =>
-                HPUT($seen, ob, true)
+                HPUT(seen, ob, true)
                 n := ARRAY_-TOTAL_-SIZE(ob)
                 for i in 0..(n - 1) repeat
-                    ScanOrInner(f, ROW_-MAJOR_-AREF(ob, i))
+                    ScanOrInner(f, ROW_-MAJOR_-AREF(ob, i), seen)
                 nil
             SPAD_KERNEL_-P(ob) =>
-                ScanOrInner(f, SPAD_KERNEL_-OP(ob))
-                ScanOrInner(f, SPAD_KERNEL_-ARG(ob))
+                ScanOrInner(f, SPAD_KERNEL_-OP(ob), seen)
+                ScanOrInner(f, SPAD_KERNEL_-ARG(ob), seen)
             FUNCALL(f, ob) =>
                 THROW('ScanOrPairVecAnswer, true)
             nil

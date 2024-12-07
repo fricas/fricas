@@ -1,0 +1,89 @@
+)set break resume
+)expose UnittestCount UnittestAux Unittest
+
+testsuite "files"
+
+testcase "reading back"
+
+a1 : Integer := 123
+a2 : DoubleFloat := convert(12.34)
+a3a : POLY(INT) := x - 1
+a3 : EXPR(INT) := exp(x) - 1
+a4 := taylor(sin(x), x = 0);
+a5 := construct([2, 1, 137567])$U32Vector
+a6 := construct([1, 293])$U16Vector
+a7 := construct([3, 2, 5])$U8Vector
+a8 := construct([-2, 1, -17])$I16Vector
+a9 := matrix([[1, 2, 3], [-1, 124001, -19]])$I32Matrix
+a10 := new(3, 1)$DoubleFloatVector
+a11 := matrix([[0, 1], [-1.5, 3.15]])$DoubleFloatMatrix
+
+)system rm /tmp/ts_file.dat
+f := open("/tmp/ts_file.dat", "output")$File(None)
+write!(f, a1 pretend None)
+write!(f, a2 pretend None)
+write!(f, a3a pretend None)
+write!(f, a3 pretend None)
+write!(f, a4 pretend None)
+write!(f, a5 pretend None)
+write!(f, a6 pretend None)
+write!(f, a7 pretend None)
+write!(f, a8 pretend None)
+write!(f, a9 pretend None)
+write!(f, a10 pretend None)
+write!(f, a11 pretend None)
+
+)system rm -r /tmp/ts_kaf
+kf := open("/tmp/ts_kaf", "output")$KeyedAccessFile(None)
+write!(kf, ["a5", a5 pretend None]$Record(key : String, entry : None))
+write!(kf, ["a3a", a3a pretend None]$Record(key : String, entry : None))
+kf("a3") := a3 pretend None
+kr5 := kf("a5") pretend U32Vector
+testEquals("kr5", "a5")
+kf("a10") := a10 pretend None
+kr3a := elt(kf, "a3a") pretend POLY(INT)
+testEquals("a3a", "kr3a")
+kr10 := kf("a10") pretend DoubleFloatVector
+testEquals("a10", "kr10")
+kr3 := kf("a3") pretend EXPR(INT)
+testEquals("a3", "kr3")
+remove!("a3", kf)
+skf := set(["a3a", "a5", "a10"]);
+testEquals("skf", "set(keys(kf))")
+
+-- sanity check after removal
+kr5 := kf("a5") pretend U32Vector
+testEquals("kr5", "a5")
+
+f := reopen!(f, "input")
+r1 := read!(f) pretend Integer
+testEquals("a1", "r1")
+r2 := read!(f) pretend DoubleFloat
+testEquals("a2", "r2")
+r3a := read!(f) pretend POLY(INT)
+testEquals("a3a", "r3a")
+r3 := read!(f) pretend EXPR(INT)
+testEquals("a3", "r3")
+r4 := read!(f) pretend Any
+as4 := a4::UnivariateTaylorSeries(Expression(Integer),x,0);
+rs4 := r4::UnivariateTaylorSeries(Expression(Integer),x,0);
+ok := true
+for i in 1..50 repeat
+    ok := ok and coefficient(as4, i) = coefficient(rs4, i)
+testTrue("ok")
+r5 := read!(f) pretend U32Vector
+testEquals("a5", "r5")
+r6 := read!(f) pretend U16Vector
+testEquals("a6", "r6")
+r7 := read!(f) pretend U8Vector
+testEquals("a7", "r7")
+r8 := read!(f) pretend I16Vector
+testEquals("a8", "r8")
+r9 := read!(f) pretend I32Matrix
+testEquals("a9", "r9")
+r10 := read!(f) pretend DoubleFloatVector
+testEquals("a10", "r10")
+r11 := read!(f) pretend DoubleFloatMatrix
+testEquals("a11", "r11")
+
+statistics()

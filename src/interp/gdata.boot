@@ -701,7 +701,7 @@ merge_info_from_nrlib1(in_f, key, object, make_database?, expose,
     FILE_-POSITION(in_f, READ(in_f))
     alist := READ(in_f)
     -- (setq pos (third (assoc "constructorForm" alist :test #'string=)))
-    pos := first(rest(fetch_data_from_alist(alist, '"constructorForm")))
+    pos := first(fetch_data_from_alist(alist, '"constructorForm"))
     FILE_-POSITION(in_f, pos)
     constructorform := READ(in_f)
     key := first(constructorform)

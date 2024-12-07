@@ -45,20 +45,15 @@ $lisplibOperationAlist := []
 
 --% Standard Library Creation Functions
 
-readLib(fn) == rMkIstream(make_filename(fn))
+readLib(fn) == kaf_open(make_filename(fn), false)
 
-writeLib(fn) == rMkOstream(make_filename(fn))
-writeLib0(fn, ft) == rMkOstream(make_filename0(fn, ft))
+writeLib(fn) == kaf_open(make_filename(fn), true)
+writeLib0(fn, ft) == kaf_open(make_filename0(fn, ft), true)
 
-lisplibWrite(prop,val,filename) ==
+lisplibWrite(prop, val, lib_file) ==
   -- this may someday not write NIL keys, but it will now
   if $LISPLIB then
-     rwrite(prop,val,filename)
-
-rwriteLispForm(key,form) ==
-  if $LISPLIB then
-    rwrite( key,form,$libFile)
-    output_lisp_form(form)
+     kaf_write(lib_file, prop, val)
 
 --% Loading
 
@@ -199,7 +194,7 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
             sayMSG ['"   finalizing ",$spadLibFT,:bright libName],
             finalizeLisplib(libName, $libFile)),
       PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
-            RSHUT $libFile))
+            kaf_close($libFile)))
   lisplibDoRename(libName)
   compile_lib(make_full_namestring(make_filename0(libName, $spadLibFT)))
   FRESH_-LINE(get_algebra_stream())

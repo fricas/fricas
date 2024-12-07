@@ -1,5 +1,13 @@
 (in-package "BOOT")
 
+; delete key from association list
+(defun |assoc_delete_equal|(al key)
+    (delete key al :key #'car :test #'equal))
+
+; find key in association list
+(defun |find_key| (itable key)
+    (assoc key itable :test #'string=))
+
 ; Clean old data
 (defun |clean_symbols|()
     (do-symbols (symbol)
@@ -22,7 +30,7 @@
 
 (defun |fetch_data_from_file| (ds index)
     (let (pos (alist (first ds)) (in (second ds)))
-        (setf pos (third (assoc index alist :test #'string=)))
+        (setf pos (second (assoc index alist :test #'string=)))
         (when pos
             (file-position in pos)
             (read in)))

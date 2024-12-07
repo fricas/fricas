@@ -76,21 +76,12 @@ File(S : SetCategory) : FileCategory(FileName, S) with
             ++ If f is not open for reading, or if f is at the end of file
             ++ then \spad{"failed"} is the result.
     == add
-        FileState ==> SExpression
+        FileState ==> BasicFile
         IOMode    ==> String
 
         Rep := Record(fileName :    FileName,   _
                     fileState :   FileState,  _
                     fileIOmode :  IOMode)
-
-        defstream(fn : FileName, mode : IOMode) : FileState ==
-            mode = "input"  =>
-              not readable? fn => error ["File is not readable", fn]
-              MAKE_INSTREAM(fn::String)$Lisp
-            mode = "output" =>
-              not writable? fn => error ["File is not writable", fn]
-              MAKE_OUTSTREAM(fn::String)$Lisp
-            error ["IO mode must be input or output", mode]
 
         f1 = f2 ==
             f1.fileName = f2.fileName
@@ -100,16 +91,16 @@ File(S : SetCategory) : FileCategory(FileName, S) with
         open fname ==
             open(fname, "input")
         open(fname, mode) ==
-            fstream := defstream(fname, mode)
+            fstream := open(fname, mode)$BasicFile
             [fname, fstream, mode]
         reopen!(f, mode) ==
             if f.fileIOmode = "output" then flush(f)
             fname := f.fileName
-            f.fileState := defstream(fname, mode)
+            f.fileState := open(fname, mode)$BasicFile
             f.fileIOmode := mode
             f
         close! f ==
-            SHUT(f.fileState)$Lisp
+            close!(f.fileState)$BasicFile
             f.fileIOmode := "closed"
             f
         name f ==
@@ -119,25 +110,22 @@ File(S : SetCategory) : FileCategory(FileName, S) with
         read! f ==
             f.fileIOmode ~= "input" =>
                 error "File not in read state"
-            x : None := fri_read(f.fileState)$Lisp
-            eof_marker?(x)$Lisp =>
-                error "End of file"
-            x pretend S
+            read(f.fileState)$BasicFile pretend S
         readIfCan! f ==
             f.fileIOmode ~= "input" =>
                 error "File not in read state"
-            x : None := fri_read(f.fileState)$Lisp
-            eof_marker?(x)$Lisp => "failed"
-            x pretend S
+            res1 : Union(None, "failed") := readIfCan(f.fileState)$BasicFile
+            res1 case "failed" => "failed"
+            (res1::None) pretend S
         write!(f, x) ==
             f.fileIOmode ~= "output" =>
                 error "File not in write state"
-            fri_write(x, f.fileState)$Lisp
+            write!(f.fileState, x pretend None)$BasicFile
             x
 
         flush f ==
             f.fileIOmode ~= "output" => error "File not in write state"
-            FORCE_-OUTPUT(f.fileState)$Lisp
+            flush(f.fileState)$BasicFile
 
 
 )abbrev domain TEXTFILE TextFile
@@ -254,21 +242,14 @@ KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
 
     KAFcapsule == add
 
-        FileState ==> SExpression
+        FileState ==> BasicKeyedAccessFile
         IOMode    ==> String
 
 
         Cons := Record(car : SExpression, cdr : SExpression)
         Rep := Record(fileName :    Name,     _
                       fileState :   FileState,   _
-                      fileIOmode :  IOMode)
-
-        defstream(fn : Name, mode : IOMode) : FileState ==
-            mode = "input"  =>
-                rMkIstream(fn::String)$Lisp
-            mode = "output" =>
-                rMkOstream(fn::String)$Lisp
-            error ["IO mode must be input or output", mode]
+                      fileIOmode :  IOMode, rpos : Integer)
 
         ---- From Set ----
         f1 = f2 ==
@@ -284,28 +265,30 @@ KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
                 exists? fname =>
                     open(fname, "input")
                 reopen!(open(fname, "output"), "input")
-            [fname, defstream(fname, mode), mode]
+            [fname, open(fname, mode)$BasicKeyedAccessFile, mode, 0]
+
         reopen!(f, mode) ==
             close! f
             if mode ~= "closed" then
-                f.fileState := defstream(f.fileName, mode)
+                f.fileState := open(f.fileName, mode)$BasicKeyedAccessFile
                 f.fileIOmode  := mode
             f
         close! f  ==
             if f.fileIOmode ~= "closed" then
-                RSHUT(f.fileState)$Lisp
+                close!(f.fileState)$BasicKeyedAccessFile
                 f.fileIOmode  := "closed"
             f
         read! f ==
             f.fileIOmode ~= "input" => error ["File not in read state",f]
-            ks : List Symbol := RKEYIDS(f.fileName)$Lisp
-            empty?(ks) => error ["Attempt to read empty file", f]
-            ix := random(#ks)$Integer
-            k : String := PNAME(ks.ix)$Lisp
-            [k, SPADRREAD(k, f.fileState)$Lisp]
+            ks : List(String) := keys(f.fileState)$BasicKeyedAccessFile
+            #ks < f.rpos => error ["Attempt to read beyond end of file", f]
+            k : String := ks(f.rpos)
+            f.rpos := f.rpos + 1
+            [k, read(f.fileState, k)$BasicKeyedAccessFile pretend Entry]
         write!(f, pr) ==
             f.fileIOmode ~= "output" => error ["File not in write state",f]
-            SPADRWRITE(pr.key, pr.entry, f.fileState)$Lisp
+            write!(f.fileState, pr.key, pr.entry pretend None
+                  )$BasicKeyedAccessFile
             pr
         name f ==
             f.fileName
@@ -317,14 +300,13 @@ KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
             fn := new("", "kaf", "sdata")$Name
             open fn
         keys f ==
-            close! f
-            l : List SExpression := RKEYIDS(f.fileName)$Lisp
-            [PNAME(n)$Lisp for n in l]
+            reopen!(f, "input")
+            keys(f.fileState)$BasicKeyedAccessFile
         # f ==
             # keys f
         elt(f, k) ==
             reopen!(f, "input")
-            SPADRREAD(k, f.fileState)$Lisp
+            read(f.fileState, k)$BasicKeyedAccessFile pretend Entry
         setelt!(f, k, e) ==
             -- Leaves f in a safe, closed state.  For speed use "write".
             reopen!(f, "output")
@@ -334,12 +316,13 @@ KeyedAccessFile(Entry) : KAFcategory == KAFcapsule where
         search(k, f) ==
             not member?(k, keys f) => "failed"   -- can't trap RREAD error
             reopen!(f, "input")
-            (SPADRREAD(k, f.fileState)$Lisp)@Entry
+            read(f.fileState, k)$BasicKeyedAccessFile pretend Entry
         remove!(k : String, f : %)  ==
             result := search(k, f)
             result case "failed" => result
-            close! f
-            RDROPITEMS(NAMESTRING(f.fileName)$Lisp, LIST(k)$Lisp)$Lisp
+            reopen!(f, "output")
+            remove!(f.fileState, k)$BasicKeyedAccessFile
+            close!(f)
             result
         pack! f ==
             close! f

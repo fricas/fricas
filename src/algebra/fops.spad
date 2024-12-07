@@ -1,0 +1,350 @@
+)abbrev package FILSER FileSerialization
+++ Description: This package converts Spad data to form which can
+++ be written to files and back.
+FileSerialization : Exports == Implementation where
+  Exports ==> with
+    serialize : None -> None
+      ++ serialize(d) returns copy of d transformed for writing
+      ++ to files.
+    deserialize : None -> None
+      ++ deserialize(d) reconstructs o from \spad{d := serialize(o)}.
+  Implementation ==> add
+
+    SEX ==> SExpression
+    Hget ==> HGET$Lisp
+    Qcar ==> QCAR$Lisp
+    Qcdr ==> QCDR$Lisp
+    null? ==> NULL$Lisp
+    pair? ==> PAIRP$Lisp
+    vec? ==> VECP$Lisp
+    nil ==> NIL$Lisp
+    kernel? ==> SPAD_KERNEL_-P$Lisp
+    kernel_arg ==> SPAD_KERNEL_-ARG$Lisp
+    kernel_nest ==> SPAD_KERNEL_-NEST$Lisp
+    kernel_op ==> SPAD_KERNEL_-OP$Lisp
+    array_size ==> ARRAY_-TOTAL_-SIZE$Lisp
+    row_major_aref ==> ROW_-MAJOR_-AREF$Lisp
+
+    HT ==> HashTable(None, None, "EQ")
+
+    to_n(x) ==> x pretend None
+    l_to_s(l : List(SEX)) : SEX == l pretend SEX
+
+    spadClosure?(d : None) : None ==
+        fun : None := Qcar(d)
+        not(FUNCTIONP(fun)$Lisp) => nil
+        null?(name : None := BPINAME(fun)$Lisp) => nil
+        not(vec?(Qcdr(d))) => nil
+        name
+
+    tT ==> Record(tag : Symbol, type : SEX)
+    type_tags := [
+       ['U8,       l_to_s([convert('UNSIGNED_-BYTE), convert(8)])]$tT,
+         ['U16,    l_to_s([convert('UNSIGNED_-BYTE), convert(16)])]$tT,
+           ['U32,  l_to_s([convert('UNSIGNED_-BYTE), convert(32)])]$tT,
+        ['I8,      l_to_s([convert('SIGNED_-BYTE), convert(8)])]$tT,
+          ['I16,   l_to_s([convert('SIGNED_-BYTE), convert(16)])]$tT,
+            ['I32, l_to_s([convert('SIGNED_-BYTE), convert(32)])]$tT,
+              ['DF,  convert('DOUBLE_-FLOAT)]]$List(tT)
+
+    get_type_tag(lt : SEX) : SEX ==
+        res : SEX := nil
+        for tp in type_tags while null?(res) repeat
+            ct := tp.type
+            if SUBTYPEP(lt, ct)$Lisp and SUBTYPEP(ct, lt)$Lisp then
+                res := convert(tp.tag)
+        res
+
+    get_lisp_type(tt : Symbol) : SEX ==
+        res := (false$Boolean) pretend SEX
+        for tp in type_tags while null?(res) repeat
+            if tt = tp.tag then
+               res := tp.type
+        res
+
+    do_serialize(d : None, seen : HT) : None ==
+            nd : None
+            null?(d) => nil
+            -- Needed to preserve EQ between data parts
+            not(null?(e : None := Hget(seen, d))) => e
+
+            pair?(d) =>
+                qcar : None := Qcar(d)
+                qcdr : None := Qcdr(d)
+                EQUAL(qcar, function(newGoGet$Lisp)$Lisp)$Lisp =>
+                    do_serialize(replaceGoGetSlot(qcdr)$Lisp, seen)
+                not(null?((name := spadClosure?(d)))) =>
+                   d1 := do_serialize(qcdr, seen)
+                   nd := to_n([to_n('WRITIFIED!!), to_n('SPADCLOSURE),
+                                d1, name]$List(None))
+                   setelt!(seen, d, nd)
+                   nd
+                nd := CONS(qcar, qcdr)$Lisp
+                setelt!(seen, d, nd)
+                qcar := do_serialize(qcar, seen)
+                qcdr := do_serialize(qcdr, seen)
+                QRPLACA(nd, qcar)$Lisp
+                QRPLACD(nd, qcdr)$Lisp
+                nd
+            vec?(d) =>
+                isDomainOrPackage(d)$Lisp =>
+                    d1 : None := mkEvalable(devaluate(d)$Lisp)$Lisp
+                    nd := to_n([to_n('WRITIFIED!!), to_n('DEVALUATED),
+                                do_serialize(d1, seen)]$List(None))
+                    setelt!(seen, d, nd)
+                    nd
+                oa := d pretend PrimitiveArray(None)
+                empty?(oa) =>
+                    qsetelt!(seen, d, d)
+                    d
+                n := #oa
+                noa := new(n, qelt(oa, 0))$PrimitiveArray(None)
+                nd := to_n(noa)
+                setelt!(seen, d, nd)
+                for i in 0..(n - 1) repeat
+                    qsetelt!(noa, i, do_serialize(qelt(oa, i), seen))
+                nd
+            GENERAL_ARRAY?(d)$Lisp =>
+                nd := MAKE_-ARRAY(ARRAY_-DIMENSIONS(d)$Lisp)$Lisp
+                setelt!(seen, d, nd)
+                n : Integer := array_size(d)
+                for i in 0..(n - 1) repeat
+                    SETF(row_major_aref(nd, i),
+                         do_serialize(row_major_aref(d, i), seen))$Lisp
+                nd
+            is_BVEC(d)$Lisp => d
+            STRINGP(d)$Lisp =>
+                EQ(d, _$NullStream$Lisp)$Lisp =>
+                    to_n([to_n('WRITIFIED!!), to_n('NULLSTREAM)]$List(None))
+                EQ(d, _$NonNullStream$Lisp)$Lisp =>
+                    to_n([to_n('WRITIFIED!!), to_n('NONNULLSTREAM)
+                         ]$List(None))
+                d
+            ARRAYP(d)$Lisp =>
+                tt := get_type_tag(ARRAY_-ELEMENT_-TYPE(d)$Lisp)
+                not(null?(tt)) =>
+                    dims : None := ARRAY_-DIMENSIONS(d)$Lisp
+                    n : NonNegativeInteger := array_size(d)
+                    nv := new(n, nil)$PrimitiveArray(None)
+                    nd := to_n([to_n('WRITIFIED!!), to_n('TYARR), to_n(tt),
+                                 dims, to_n(nv)]$List(None))
+                    setelt!(seen, d, nd)
+                    for i in 0..(n - 1) repeat
+                        setelt!(nv, i,
+                                do_serialize(row_major_aref(d, i), seen))
+                    nd
+                error "serialize: failed uknown ARRAY"
+            kernel?(d) =>
+                nd := makeSpadKernel(nil, nil, kernel_nest(d))$Lisp
+                setelt!(seen, d, nd)
+                SETF(kernel_op(nd), do_serialize(kernel_op(d), seen))$Lisp
+                SETF(kernel_arg(nd), do_serialize(kernel_arg(d), seen))$Lisp
+                nd
+            EQ(d, 'WRITIFIED!!)$Lisp =>
+                to_n([to_n('WRITIFIED!!), to_n('SELF)]$List(None))
+            COMPILED_-FUNCTION_-P(d)$Lisp =>
+                error "serialize: failed COMPILED-FUNCTION"
+            HASHTABLEP(d)$Lisp =>
+                nd := to_n([to_n('WRITIFIED!!)]$List(None))
+                setelt!(seen, d,  nd)
+                keys : List(None) := HKEYS(d)$Lisp
+                QRPLACD(nd,
+                        to_n([to_n('HASHTABLE), HASHTABLE_CLASS(d)$Lisp,
+                              do_serialize(to_n(keys), seen),
+                              to_n([do_serialize(HGET(d, k)$Lisp, seen)
+                                    for k in keys]$List(None))
+                             ]$List(None)))$Lisp
+                nd
+            FLOATP(d)$Lisp =>
+                EQUAL(d, READ_-FROM_-STRING(STRINGIMAGE(d)$Lisp)$Lisp
+                     )$Lisp => d
+                error "serialize: failed FLOAT"
+            d
+
+    serialize(d : None) : None ==
+        not(scan_for_unwritable(d)$Lisp) => d
+        seen := empty()$HT
+        do_serialize(d, seen)
+
+    do_deserialize(d : None, seen : HT) : None ==
+            nd : None
+            null?(d) => nil
+            -- Needed to preserve EQ between data parts
+            not(null?(e : None := Hget(seen, d))) => e
+
+            pair?(d) and EQ(first(d pretend List(SEX)), 'WRITIFIED!!)$Lisp =>
+                dl := d pretend List(SEX)
+                type := symbol(dl(2))
+                type = 'SELF => to_n('WRITIFIED!!)
+                type = 'TYARR =>
+                    lt := get_lisp_type(symbol(dl(3)))
+                    nd := MAKE_TYPED_ARRAY(dl(4), lt)$Lisp
+                    setelt!(seen, d, nd)
+                    ov := dl(5) pretend PrimitiveArray(None)
+                    n : Integer := array_size(nd)
+                    for i in 0..(n - 1) repeat
+                        SETF(row_major_aref(nd, i),
+                             do_deserialize(qelt(ov, i), seen))$Lisp
+                    nd
+                type = 'HASHTABLE =>
+                    nd := MAKE_HASHTABLE(dl(3))$Lisp
+                    setelt!(seen, d, nd)
+                    for k in destruct(dl(4)) for e in destruct(dl(5)) repeat
+                        HPUT(nd, do_deserialize(k pretend None, seen),
+                                  do_deserialize(e pretend None, seen))$Lisp
+                    nd
+                type = 'DEVALUATED =>
+                    nd := EVAL(do_deserialize(dl(3) pretend None, seen))$Lisp
+                    setelt!(seen, d, nd)
+                    nd
+                type = 'SPADCLOSURE =>
+                    vec := do_deserialize(dl(3) pretend None, seen)
+                    name := symbol(dl(4))
+                    not(FBOUNDP(name)$Lisp) =>
+                       error ["undefined function: ", string(name)]
+                    nd := CONS(SYMBOL_-FUNCTION(name)$Lisp, vec)$Lisp
+                    setelt!(seen, d, nd)
+                    nd
+                type = 'NULLSTREAM => _$NullStream$Lisp
+                type = 'NONNULLSTREAM => _$NonNullStream$Lisp
+                error "Unknown type to deserialize."
+            pair?(d) =>
+                qcar : None := Qcar(d)
+                qcdr : None := Qcdr(d)
+                nd  := CONS(qcar, qcdr)$Lisp
+                setelt!(seen, d, nd)
+                QRPLACA(nd, do_deserialize(qcar, seen))$Lisp
+                QRPLACD(nd, do_deserialize(qcdr, seen))$Lisp
+                nd
+            vec?(d) =>
+                oa := d pretend PrimitiveArray(None)
+                empty?(oa) =>
+                    qsetelt!(seen, d, d)
+                    d
+                n := #oa
+                noa := new(n, qelt(oa, 0))$PrimitiveArray(None)
+                nd := to_n(noa)
+                setelt!(seen, d, nd)
+                for i in 0..(n - 1) repeat
+                    qsetelt!(noa, i, do_deserialize(qelt(oa, i), seen))
+                nd
+            GENERAL_ARRAY?(d)$Lisp =>
+                nd := MAKE_-ARRAY(ARRAY_-DIMENSIONS(d)$Lisp)$Lisp
+                setelt!(seen, d, nd)
+                n : Integer := array_size(d)
+                for i in 0..(n - 1) repeat
+                    SETF(row_major_aref(nd, i),
+                         do_deserialize(row_major_aref(d, i), seen))$Lisp
+                nd
+            kernel?(d) =>
+                nd := makeSpadKernel(nil, nil, kernel_nest(d))$Lisp
+                setelt!(seen, d, nd)
+                SETF(kernel_op(nd), do_deserialize(kernel_op(d), seen))$Lisp
+                SETF(kernel_arg(nd),
+                     do_deserialize(kernel_arg(d), seen))$Lisp
+                nd
+            d
+
+    deserialize(d : None) : None ==
+        not(scan_for_writified(d)$Lisp) => d
+        seen := empty()$HT
+        do_deserialize(d, seen)
+
+
+)abbrev domain BASFILE BasicFile
+++ Description: This is domain for storing and reading Spad values in
+++ files.
+BasicFile : Exports == Implementation where
+  IOMode ==> String
+  Exports ==> with
+    open : (FileName, IOMode) -> %
+      ++ open opens the file.
+    close! : % -> Void
+      ++ clos! closes the file.
+    read : % -> None
+      ++ read sequentially reads one item from the file.
+    readIfCan : % -> Union(None, "failed")
+      ++ readIfCan read one item from the file. otherwise returns
+      ++ \spad{"failed"}
+    write! : (%, None) -> Void
+      ++ write writes one item to the file.
+    flush : % -> Void
+      ++ flush passes all buffered data to the operating system.
+  Implementation ==> add
+
+    import FileSerialization
+
+    nil ==> NIL$Lisp
+
+    open(fn : FileName, mode : IOMode) : % ==
+        mode = "input"  =>
+            not(readable?(fn)) => error ["File is not readable", fn]
+            MAKE_INSTREAM(fn::String)$Lisp
+        mode = "output" =>
+            not(writable?(fn)) => error ["File is not writable", fn]
+            MAKE_OUTSTREAM(fn::String)$Lisp
+        error ["IO mode must be input or output", mode]
+
+    close!(f : %) : Void == SHUT(f)$Lisp
+
+    readIfCan(f : %) : Union(None, "failed") ==
+        res1 : None := READ(f, nil, _$eof_marker$Lisp)$Lisp
+        eof_marker?(res1)$Lisp => "failed"
+        deserialize(res1) pretend None
+
+    read(f : %) : None ==
+        res1 : None := READ(f, nil, _$eof_marker$Lisp)$Lisp
+        eof_marker?(res1)$Lisp => error "End of file"
+        deserialize(res1) pretend None
+
+    write!(f : %, d : None) : Void ==
+        res1 : Union(None, "failed") := trappedSpadEval(serialize(d))$Lisp
+        res1 case "failed" => error "The value cannot be saved to a file."
+        write_to_stream(res1::None, f)$Lisp
+
+    flush(f : %) : Void ==
+        FORCE_-OUTPUT(f)$Lisp
+
+)abbrev domain BKAFILE BasicKeyedAccessFile
+BasicKeyedAccessFile : Exports == Implementation where
+  IOMode ==> String
+  Exports ==> with
+    open : (FileName, IOMode) -> %
+      ++ open opens the keyed access file.
+    close! : % -> Void
+      ++ close! closes the keyed access file.
+    read : (%, String) -> None
+      ++ read(f, key) reads item with the key \pad{key} from \spad{f}.
+    write! : (%, String, None) -> Void
+      ++ write! writes one item to the keyed access file.
+    remove! : (%, String) -> Void
+      ++ remove!(f, key) removes item with the key \spad{key} from \spad{f}.
+    keys : % -> List(String)
+      ++ keys(f) gives the list of keys of \spad{f}.
+
+  Implementation ==> add
+
+    import FileSerialization
+
+    open(fn : FileName, mode : IOMode) : % ==
+        mode = "input" or mode = "output" =>
+            kaf_open(fn::String, mode = "output")$Lisp
+        error ["IO mode must be input or output", mode]
+
+    close!(f : %) : Void ==
+        kaf_close(f)$Lisp
+
+    read(f : %, key : String) : None ==
+        deserialize(kaf_read(f, key, _$error_mark$Lisp)$Lisp)
+
+    write!(f : %, key : String, val : None) : Void ==
+        res1 : Union(None, "failed") := trappedSpadEval(serialize(val))$Lisp
+        res1 case "failed" =>
+            error "can not save value to file"
+        kaf_write(f, key, res1::None)$Lisp
+
+    remove!(f : %, key : String) : Void ==
+        kaf_remove(f, key)$Lisp
+
+    keys(f : %) : List(String) == rkeys2(f)$Lisp
+

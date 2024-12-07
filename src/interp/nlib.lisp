@@ -36,78 +36,31 @@
 ;indextable is a list of entries (key class <location or filename>)
 ;filename is of the form filenumber.lsp or filenumber.o
 
+(defun |make_kaf| (mode dirname indextable indexstream)
+    (make-libstream :mode mode :dirname dirname :indextable indextable
+                    :indexstream indexstream))
+
 (defun |make_compiler_output_stream|(lib basename)
    (open (concat (libstream-dirname lib) "/" basename ".lsp")
          :direction :output :if-exists :supersede))
 
-(defun |rMkIstream| (file)
-  (let ((stream nil)
-        (fullname (|make_input_filename| file)))
-               (setq stream (|get_input_index_stream| fullname))
-               (if (null stream)
-                   (ERROR (format nil "Library ~s doesn't exist"
-                              (|make_filename| file))))
-               (make-libstream :mode 'input  :dirname fullname
-                      :indextable (|get_index_table_from_stream| stream)
-                               :indexstream stream)))
-
-(defun |rMkOstream| (file)
-    (let ((stream nil)
-          (indextable nil)
-          (fullname (|make_full_namestring| file)))
-        (case (|file_kind| fullname)
-            (-1 (|makedir| fullname))
-            (0 (error (format nil "~s is an existing file, not a library"
-                              fullname)))
-            (1 nil)
-            (otherwise (error "Bad value from directory?")))
-        (multiple-value-setq (stream indextable)
-            (|get_io_index_stream| fullname))
-        (make-libstream :mode 'output  :dirname fullname
-                        :indextable indextable
-                        :indexstream stream )))
-
 (defvar |$index_filename| "index.KAF")
 
-;get the index table of the lisplib in dirname
-(defun getindextable (dirname)
-  (let ((index-file (concat dirname "/" |$index_filename|)))
-     (if (probe-file index-file)
-         (with-open-file (stream index-file)
-             (|get_index_table_from_stream| stream))
-            ;; create empty index file to mark directory as lisplib
-         (with-open-file (stream index-file :direction :output) nil))))
-
 ;get the index stream of the lisplib in dirname
-(defun |get_input_index_stream| (dirname)
-  (let ((index-file (concat dirname "/" |$index_filename|)))
-    (open index-file :direction :input :if-does-not-exist nil)))
+(defun |get_io_index_stream| (dirname io?)
+    (let ((index_file (concat dirname "/" |$index_filename|)))
+        (if io?
+            (open index_file :direction :io :if-exists :overwrite
+                             :if-does-not-exist :create)
+            (open index_file :direction :input :if-does-not-exist nil)
+        )
+    )
+)
 
-(defun |get_index_table_from_stream| (stream)
-  (let ((pos (read  stream)))
-    (cond ((numberp pos)
-           (file-position stream pos)
-           (read stream))
-          (t pos))))
-
-(defun |get_io_index_stream| (dirname)
-  (let* ((index-file (concat dirname "/" |$index_filename|))
-         (stream (open index-file :direction :io :if-exists :overwrite
-                       :if-does-not-exist :create))
-         (indextable ())
-         (pos (read stream nil nil)))
-    (cond ((numberp pos)
-           (file-position stream pos)
-           (setq indextable (read stream))
-           (file-position stream pos))
-          (t (file-position stream 0)
-             (princ "                    " stream)
-             (setq indextable pos)))
-    (values stream indextable)))
-
-;substitute indextable in dirname
-
-(defun |write_indextable| (indextable stream)
+; Assumes that file is postioned after end of actual data, so that
+; new indextable should overwrite old indextable (or part of it),
+; but should not overwrite data.
+(defun |write_indextable| (stream indextable)
   (let ((pos (file-position stream)))
     (write indextable :stream stream :level nil :length nil :escape t)
     #+:GCL (force-output stream)
@@ -115,79 +68,10 @@
     (princ pos stream)
     #+:GCL (force-output stream)))
 
-(defun putindextable (indextable dirname)
-  (with-open-file
-    (stream (concat dirname "/" |$index_filename|)
-             :direction :io :if-exists :overwrite
-             :if-does-not-exist :create)
-    (file-position stream :end)
-    (|write_indextable| indextable stream)))
-
-(defparameter |$error_mark| (GENSYM))
-
-;; (RREAD key rstream)
-(defun |rread1| (key rstream sv)
-  (if (equal (libstream-mode rstream) 'output) (error "not input stream"))
-  (let* ((entry
-         (and (stringp key)
-              (assoc key (libstream-indextable rstream) :test #'string=)))
-         (file-or-pos (and entry (caddr entry))))
-    (cond ((null entry)
-              (cond
-                 ((eq sv |$error_mark|)
-                    (error (format nil "key ~a not found" key)))
-                 (t (return-from |rread1| sv))))
-          ((null (caddr entry)) (cdddr entry))  ;; for small items
-          ((numberp file-or-pos)
-           (file-position (libstream-indexstream rstream) file-or-pos)
-           (read (libstream-indexstream rstream)))
-          (t
-           (with-open-file
-            (stream (concat (libstream-dirname rstream) "/" file-or-pos))
-            (read  stream))) )))
-
-;; (RREAD key rstream)
-(defun |rread0| (key rstream)
-    (|rread1| key rstream |$error_mark|))
-
-;; (RKEYIDS filearg) -- interned version of keys
-(defun RKEYIDS (filearg)
-  (mapcar #'intern (mapcar #'car (getindextable
-                                  (|make_input_filename| (list filearg))))))
-
 (defun |write_to_stream| (val stream)
     (write val :stream stream :level nil :length nil
                  :circle t :array t :escape t)
     (terpri stream))
-
-;; (RWRITE cvec item rstream)
-(defun |rwrite0| (key item rstream)
-  (if (equal (libstream-mode rstream) 'input) (error "not output stream"))
-  (let ((stream (libstream-indexstream rstream))
-        (pos (if item (cons (file-position (libstream-indexstream rstream)) nil)
-               (cons nil item))))   ;; for small items
-    (|make_entry| (string key) rstream pos)
-    (when (numberp (car pos))
-          (|write_to_stream| item stream))
-  )
-)
-
-(defun |make_entry| (key rstream value-or-pos)
-   (let ((entry (assoc key (libstream-indextable rstream) :test #'equal)))
-     (if (null entry)
-         (push (setq entry (cons key (cons 0 value-or-pos)))
-               (libstream-indextable rstream))
-       (progn
-         (if (stringp (caddr entry)) (BREAK))
-         (setf (cddr entry) value-or-pos)))
-     entry))
-
-
-(defun RSHUT (rstream)
-  (if (eq (libstream-mode rstream) 'output)
-      (|write_indextable| (libstream-indextable rstream)
-                          (libstream-indexstream rstream)))
-  (close (libstream-indexstream rstream)))
 
 ;; compile_lib(libdir) -- libdir must be string naming NRLIB directory
 (defun |compile_lib| (libdir)
@@ -221,14 +105,6 @@
   (if FRICAS-LISP::algebra-optimization
       (proclaim (cons 'optimize FRICAS-LISP::algebra-optimization)))
   (compile-file fn))
-
-
-;; (RDROPITEMS filearg keys) don't delete, used in files.spad
-(defun RDROPITEMS (filearg keys &aux (ctable (getindextable filearg)))
-  (mapc #'(lambda(x)
-           (setq ctable (delete x ctable :key #'car :test #'equal)) )
-           (mapcar #'string keys))
-  (putindextable ctable filearg))
 
 ;; cms file operations
 (defun |make_filename0|(filearg filetype)
