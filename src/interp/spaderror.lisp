@@ -43,22 +43,11 @@
 #-:GCL
 (defun |resetStackLimits| () nil)
 
-;; failed union branch --  value returned for numeric failure
-(setq |$numericFailure| (cons 1 "failed"))
-
 ;; following macro evaluates form returning Union(type-of form, "failed")
 
 (defmacro |trapNumericErrors| (form)
     `(handler-case (cons 0 ,form)
-         (arithmetic-error () |$numericFailure|)))
-
-(defmacro |trappedSpadEval| (form)
-    `(|trappedSpadEvalUnion| (cons 0 ,form)))
-
-(defmacro |trappedSpadEvalUnion| (form)
-  `(let ((|$BreakMode| '|trapSpadErrors|))
-        (declare (special |$BreakMode|))
-        (CATCH '|trapSpadErrors| ,form)))
+         (arithmetic-error () |$spad_failure|)))
 
 #+:sbcl
 (progn
@@ -66,7 +55,7 @@
    (handler-case
           (sb-ext:with-timeout ti (SPADCALL f))
        (sb-ext:timeout (e)
-          (THROW '|trapSpadErrors| |$numericFailure|))
+          (THROW '|trapSpadErrors| |$spad_failure|))
    )
 )
 

@@ -74,7 +74,7 @@ queryUser msg ==
 -- errorSupervisor is the old style error message trapper
 
 errorSupervisor(errorType,errorMsg) ==
-  $BreakMode = 'trapSpadErrors => THROW('trapSpadErrors, $numericFailure)
+  $BreakMode = 'trapSpadErrors => THROW('trapSpadErrors, $spad_failure)
   errorSupervisor1(errorType,errorMsg,$BreakMode)
 
 errorSupervisor1(errorType,errorMsg,$BreakMode) ==
@@ -102,7 +102,7 @@ handleLispBreakLoop($BreakMode) ==
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
   ENABLE_BACKTRACE(nil)
-  $BreakMode = 'trapSpadErrors => THROW('trapSpadErrors, $numericFailure)
+  $BreakMode = 'trapSpadErrors => THROW('trapSpadErrors, $spad_failure)
   $BreakMode = 'break =>
     sayBrightly '" "
     BREAK()
