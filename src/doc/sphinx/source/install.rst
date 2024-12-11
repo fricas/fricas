@@ -60,7 +60,7 @@ To *build* FriCAS you need *one* of the following Lisp variants:
 - FriCAS builds also using GCL_, at least build using released version
   2.6.14 works.  Build using older GCL versions no longer works.
   Note that with default setting build is likely to fail.
-  Look at GCL_MEM_MULTIPLE note in Known problems section
+  Look at GCL_MEM_MULTIPLE note in `Known problems`_ section
   for possible workaround.
 
 
@@ -73,8 +73,7 @@ default FriCAS tries to use SBCL, since it is fast and reliable.  On
 CLISP), Clozure CL and GCL the second (about 3 times slower than
 SBCL), then ECL (about 7 times slower than SBCL) and CLISP is the
 slowest one.  Note: very old versions of ECL were much (about 4 times)
-slower, versions from about 7-10 years ago gave best performance and
-newest ECL versions are progressively slower.
+slower.
 
 Some computation work much faster on 64-bit machines, especially
 when using SBCL.
@@ -140,7 +139,7 @@ not be built.  See Section `HyperDoc and graphics`_ for more detail.
 GMP (optional)
 ^^^^^^^^^^^^^^
 
-You you use SBCL or Clozure CL the ``--enable-gmp`` configure option
+When you use SBCL or Clozure CL the ``--enable-gmp`` configure option
 is available only if the development version of GMP is installed.
 Note: using GMP should work on all SBCL and Clozure CL platforms
 except for Clozure CL on Power PC.

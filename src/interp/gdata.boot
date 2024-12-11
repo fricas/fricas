@@ -563,7 +563,7 @@ merge_info_from_objects(files, options, make_database?) ==
             noquiet := false
         FORMAT(true, '"   Ignoring unknown )library option: ~a~%", opt)
 
-    -- IXME: make this _really_ portable
+    -- FIXME: make this _really_ portable
     thisdir := true_name('"./")
     if make_database? then
         expose := false
