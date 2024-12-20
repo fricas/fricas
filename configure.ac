@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2024-04-15],
+AC_INIT([FriCAS], [2024-12-20],
         [fricas-devel@googlegroups.com],
         [fricas],
         [https://fricas.github.io])
@@ -82,11 +82,9 @@ case $build in
         ;;
 esac
 
-## Make sure the C compiler is from GCC
+## Check the C compiler
 AC_PROG_CC
-if test x$GCC != xyes; then
-    AC_MSG_ERROR([We need a C compiler from GCC])
-fi
+
 # fricas_cflags="-O2 -Wall -D_GNU_SOURCE"
 # AC_SUBST(fricas_cflags)
 
