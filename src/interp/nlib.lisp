@@ -40,6 +40,9 @@
     (make-libstream :mode mode :dirname dirname :indextable indextable
                     :indexstream indexstream))
 
+(defun |kaf_set_indextable| (kaf indextable)
+    (setf (libstream-indextable kaf) indextable))
+
 (defun |make_compiler_output_stream|(lib basename)
    (open (concat (libstream-dirname lib) "/" basename ".lsp")
          :direction :output :if-exists :supersede))

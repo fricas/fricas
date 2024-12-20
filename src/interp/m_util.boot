@@ -58,7 +58,8 @@ kaf_read_list(kaf, key) ==
 make_entry(kaf, key, pos) ==
     entry := find_key(LIBSTREAM_-INDEXTABLE(kaf), key)
     NULL(entry) =>
-        PUSH([key, :pos], LIBSTREAM_-INDEXTABLE(kaf))
+        kaf_set_indextable(kaf,
+                           CONS([key, :pos], LIBSTREAM_-INDEXTABLE(kaf)))
     SETF(CDR(entry), pos)
 
 kaf_write(kaf, key, val) ==
@@ -78,7 +79,7 @@ kaf_write0(kaf, key, val) ==
 kaf_remove(kaf, key) ==
     itable := LIBSTREAM_-INDEXTABLE(kaf)
     itable := assoc_delete_equal(itable, key)
-    SETF(LIBSTREAM_-INDEXTABLE(kaf), itable)
+    kaf_set_indextable(kaf, itable)
 
 rkeys2(kaf) ==
     MAPCAR(function CAR, LIBSTREAM_-INDEXTABLE(kaf))
