@@ -73,7 +73,8 @@ default FriCAS tries to use SBCL, since it is fast and reliable.  On
 CLISP), Clozure CL and GCL the second (about 3 times slower than
 SBCL), then ECL (about 7 times slower than SBCL) and CLISP is the
 slowest one.  Note: very old versions of ECL were much (about 4 times)
-slower.
+slower, versions between 13.5.1 and 16.1.3 gave best performance and
+newest ECL versions are progressively slower.
 
 Some computation work much faster on 64-bit machines, especially
 when using SBCL.
