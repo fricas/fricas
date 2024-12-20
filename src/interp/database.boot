@@ -115,7 +115,7 @@ getUsersOfConstructor(con) ==
 
 getDependentsOfConstructor(con) ==
   stream := readLib('"DEPENDENTS.DAASE")
-  val := rkaf_read_list(stream, con)
+  val := kaf_read_list(stream, con)
   kaf_close(stream)
   val
 

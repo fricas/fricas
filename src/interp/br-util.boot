@@ -406,7 +406,7 @@ bcConTable u ==
     htSay '"}"
   htEndTable()
 
-bcAbbTable u ==
+bcAbbTable(page, u) ==
   htBeginTable()
   for x in REMDUP u repeat        --allow x to be NIL meaning "no abbreviation"
   -- for x in u repeat    --allow x to be NIL meaning "no abbreviation"
