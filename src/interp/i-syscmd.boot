@@ -985,7 +985,7 @@ displayValue(op, u, omitVariableNameIfTrue) ==
 --% )edit
 
 editFile(file) ==
-    (sym := FIND_SYMBOL("WIN32", "KEYWORD")) and
+    (sym := FIND_-SYMBOL('"WIN32", '"KEYWORD")) and
             MEMQ(sym, _*FEATURES_*) =>
         run_program('"notepad", [file])
     run_program(CONCAT($spadroot, '"/lib/SPADEDIT"), [file])
