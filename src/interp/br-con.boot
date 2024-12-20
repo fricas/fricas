@@ -122,7 +122,7 @@ domainDescendantsOf(conform,domform) == main where --called by kargPage
 --                   Branches of Constructor Page
 --=======================================================================
 
-kePage(htPage,junk) ==
+kePage(htPage) ==
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   constring       := STRCONC(name,args)
   domname         := kDomainName(htPage,kind,name,nargs)
@@ -168,7 +168,7 @@ kePageDisplay(htPage, opAlist) ==
   htpSetProperty(htPage, 'opAlist, opAlist)
   htpSetProperty(htPage, 'expandOperations, 'lists)  --mark as unexpanded
   which := '"operation"
-  htMakePage [['bcLinks,[menuButton(),'"",'dbShowOps,which,'names]]]
+  htMakePage [['bcLinks, [menuButton(), '"", 'dbShowOps, 'names]]]
   htSayStandard '"\tab{2}"
   if count ~= total then
     if count = 1
@@ -178,10 +178,10 @@ kePageDisplay(htPage, opAlist) ==
     then htSayList([STRINGIMAGE total, '" ", pluralize which,
                    '" are explicitly exported:"])
     else htSayList(['"1 ", which, '" is explicitly exported:"])
-  data := dbGatherData(htPage, opAlist, '"operation", 'names)
-  dbShowOpItems(which,data,false)
+  data := dbGatherData(htPage, opAlist, 'names)
+  dbShowOpItems(data, false)
 
-ksPage(htPage,junk) ==
+ksPage(htPage) ==
   [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   domname         := kDomainName(htPage,kind,name,nargs)
   domname is ['error,:.] => errorPage(htPage,domname)
@@ -229,7 +229,7 @@ dbSearchOrder(conform,domname,$domain) ==  --domain = nil or set to live domain
       res
   [:dbAddChain conform,:catforms]
 
-kcpPage(htPage,junk) ==
+kcpPage(htPage) ==
   [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   domname         := kDomainName(htPage,kind,name,nargs)
   domname is ['error,:.] => errorPage(htPage,domname)
@@ -256,14 +256,17 @@ reduceAlistForDomain(alist,domform,conform) == --called from kccPage
   for pair in alist repeat RPLACD(pair, simpHasPred2(rest pair, domform))
   [pair for (pair := [.,:pred]) in alist | pred]
 
-kcaPage(htPage,junk) ==
-  kcaPage1(htPage,'"category",'" an ",'"ancestor",function ancestorsOf, false)
+kcaPage(htPage) ==
+    kcaPage1(htPage, '"category", '" an ", '"ancestor",
+             function ancestorsOf, false)
 
-kcdPage(htPage,junk) ==
-  kcaPage1(htPage,'"category",'" a ",'"descendant",function descendantsOf,true)
+kcdPage(htPage) ==
+    kcaPage1(htPage, '"category", '" a ", '"descendant",
+             function descendantsOf, true)
 
-kcdoPage(htPage,junk)==
-  kcaPage1(htPage,'"domain",'" a ",'"descendant",function domainsOf, false)
+kcdoPage(htPage)==
+    kcaPage1(htPage, '"domain", '" a ", '"descendant",
+             function domainsOf, false)
 
 kcaPage1(htPage,kind,article,whichever,fn, isCatDescendants?) ==
   [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
@@ -289,7 +292,7 @@ kcaPage1(htPage,kind,article,whichever,fn, isCatDescendants?) ==
     'names
   dbShowCons(htPage,choice)
 
-kccPage(htPage,junk) ==
+kccPage(htPage) ==
   [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   domname         := kDomainName(htPage,kind,name,nargs)
   domname is ['error,:.] => errorPage(htPage,domname)
@@ -316,7 +319,7 @@ augmentHasArgs(alist,conform) ==
      extractHasArgs p is [a,:b] => p
      quickAnd(p, ['hasArgs, :TAKE(n, IFCDR getConstructorForm opOf name)])
 
-kcdePage(htPage,junk) ==
+kcdePage(htPage) ==
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   conname         := INTERN name
   constring       := STRCONC(name,args)
@@ -332,7 +335,7 @@ kcdePage(htPage,junk) ==
   htpSetProperty(htPage,'thing,'"dependent")
   dbShowCons(htPage,'names)
 
-kcuPage(htPage,junk) ==
+kcuPage(htPage) ==
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   conname         := INTERN name
   constring       := STRCONC(name,args)
@@ -348,7 +351,7 @@ kcuPage(htPage,junk) ==
   htpSetProperty(htPage,'thing,'"user")
   dbShowCons(htPage,'names)
 
-kcnPage(htPage,junk) ==
+kcnPage(htPage) ==
 --if reached by a category, that category has a default package
   [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   domname         := kDomainName(htPage,kind,name,nargs)
@@ -413,11 +416,6 @@ dbMkEvalable form ==
   kind := get_database(op, 'CONSTRUCTORKIND)
   kind = 'category => form
   mkEvalable form
-
-topLevelInterpEval x ==
-  $ProcessInteractiveValue: fluid := true
-  $noEvalTypeMsg: fluid := true
-  processInteractive(x,nil)
 
 kisValidType typeForm ==
   $ProcessInteractiveValue: fluid := true
@@ -503,13 +501,12 @@ conOpPage1(conform, options) ==
   htpSetProperty(page,'conform,conform)
   htpSetProperty(page,'signature,signature)
   for [a,:b] in bindingsAlist repeat htpSetProperty(page,a,b)
-  koPage(page,'"operation")
+  koPage(page)
 
 --=======================================================================
 --           Operation Page from Main Page
 --=======================================================================
-koPage(htPage,which) ==
-  which = '"attribute" => BREAK()
+koPage(htPage) ==
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := htpProperty(htPage,'parts)
   constring       := STRCONC(name,args)
   conname         := INTERN name
@@ -524,20 +521,18 @@ koPage(htPage,which) ==
     domname => form2HtString(domname,nil,true)
     constring
   heading := [capitalize kind,'" {\sf ",headingString,'"}"]
-  htpSetProperty(htPage,'which,which)
   htpSetProperty(htPage,'heading,heading)
   conform := htpProperty(htPage,'conform)
   opAlist := koOps(conform, domname)
   if selectedOperation := htpProperty(htPage,'selectedOperation) then
     opAlist := [assoc(selectedOperation,opAlist) or systemError()]
-  dbShowOperationsFromConform(htPage,which,opAlist)
+  dbShowOperationsFromConform(htPage, opAlist)
 
 koaPageFilterByName(htPage,functionToCall) ==
   htpLabelInputString(htPage,'filter) = '"" =>
     koaPageFilterByCategory(htPage,functionToCall)
   filter := pmTransFilter(dbGetInputString htPage)
 --WARNING: this call should check for ['error,:.] returned
-  which   := htpProperty(htPage,'which)
   opAlist :=
       [x for x in htpProperty(htPage,'opAlist) | superMatch?(filter,DOWNCASE STRINGIMAGE first x)]
   htpSetProperty(htPage,'opAlist,opAlist)
@@ -581,11 +576,10 @@ dbAddDocTable conform ==
          HPUT($docTable,op1,[[conform,:alist],:HGET($docTable,op1)])
     --note opOf is needed!!! for some reason, One and Zero appear within prens
 
-dbGetDocTable(op, $sig, docTable, which, aux) == main where
+dbGetDocTable(op, $sig, docTable, aux) == main where
 --docTable is [[origin,entry1,...,:code] ...] where
 --  each entry is [sig,doc] and code is NIL or else a topic code for op
   main ==
-    which = '"attribute" => BREAK()
     if null FIXP op and DIGITP (s := STRINGIMAGE op).0 then
           BREAK()
           op := string2Integer s
@@ -755,7 +749,7 @@ getConstructorDocumentation conname ==
   LASSOC('constructor, get_database(conname, 'DOCUMENTATION))
     is [[nil,line,:.],:.] and line or '""
 
-dbSelectCon(htPage,which,index) ==
+dbSelectCon(htPage, index) ==
   conPage opOf first (htpProperty(htPage, 'cAlist)) . index
 
 dbShowConditions(htPage,cAlist,kind) ==
@@ -826,7 +820,7 @@ dbSpecialOperations(conname) ==
   htpSetProperty(page,'opAlist,opAlist)
   htpSetProperty(page,'noUsage,true)
   htpSetProperty(page,'condition?,'no)
-  dbShowOp1(page,opAlist,'"operation",'names)
+  dbShowOp1(page, opAlist, 'names)
 
 dbSpecialExpandIfNecessary(conform,opAlist) ==
   opAlist is [[op,[sig,:r],:.],:.] and rest r => opAlist

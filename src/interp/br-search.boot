@@ -309,7 +309,7 @@ oPageFrom(opname,conname) == --called by \spadfunFrom{opname}{conname}
   itemlist := assoc(opname,koOps(conform,nil)) --all operations name "opname"
   null itemlist => systemError [conform,'" has no operation named ",opname]
   opAlist := [itemlist]
-  dbShowOperationsFromConform(htPage,'"operation",opAlist)
+  dbShowOperationsFromConform(htPage, opAlist)
 
 spadType(x) ==  --called by \spadtype{x} from HyperDoc
   s := PNAME x
@@ -666,7 +666,7 @@ dbSearch(lines,kind,filter) == --called by attribute, operation, constructor sea
     lines := dbScreenForDefaultFunctions lines
   count := #lines
   count = 0 => emptySearchPage(kind, filter, false)
-  kind = '"operation" => dbShowOperationLines(kind, lines)
+  kind = '"operation" => dbShowOperationLines(lines)
   dbShowConstructorLines lines
 
 dbSearchAbbrev([.,:conlist],kind,filter) ==

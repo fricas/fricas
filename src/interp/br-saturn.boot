@@ -309,41 +309,41 @@ kPageContextMenu page ==
   conname := opOf conform
   htBeginTable()
   htSay '"{"
-  htMakePage [['bcLinks,['Ancestors,'"",'kcaPage,nil]]]
+  htMakePage [['bcLinks, ['Ancestors, '"", 'kcaPage]]]
   if kind = '"category" then
     htSay '"}{"
-    htMakePage [['bcLinks,['Children,'"",'kccPage,nil]]]
+    htMakePage [['bcLinks, ['Children, '"", 'kccPage]]]
   if not asharpConstructorName? conname then
     htSay '"}{"
-    htMakePage [['bcLinks,['Dependents,'"",'kcdePage,nil]]]
+    htMakePage [['bcLinks, ['Dependents, '"", 'kcdePage]]]
   if kind = '"category" then
     htSay '"}{"
-    htMakePage [['bcLinks,['Descendents,'"",'kcdPage,nil]]]
+    htMakePage [['bcLinks, ['Descendents, '"", 'kcdPage]]]
   if kind = '"category" then
     htSay '"}{"
     if not asharpConstructorName? conname then
-      htMakePage [['bcLinks,['Domains,'"",'kcdoPage,nil]]]
+      htMakePage [['bcLinks, ['Domains, '"", 'kcdoPage]]]
     else htSay '"{\em Domains}"
   htSay '"}{"
   if kind ~= '"category" and (pathname := dbHasExamplePage conname)
     then htMakePage [['bcLinks,['Examples,'"",'kxPage,pathname]]]
     else htSay '"{\em Examples}"
   htSay '"}{"
-  htMakePage [['bcLinks,['Exports,'"",'kePage,nil]]]
+  htMakePage [['bcLinks, ['Exports, '"", 'kePage]]]
   htSay '"}{"
-  htMakePage [['bcLinks,['Operations,'"",'koPage,'"operation"]]]
+  htMakePage [['bcLinks, ['Operations,'"", 'koPage]]]
   htSay '"}{"
-  htMakePage [['bcLinks,['Parents,'"",'kcpPage,'"operation"]]]
+  htMakePage [['bcLinks,['Parents,'"", 'kcpPage]]]
   if kind ~= '"category" then
     htSay '"}{"
     if not asharpConstructorName? conname
-    then  htMakePage [['bcLinks,['"Search Path",'"",'ksPage,nil]]]
+    then  htMakePage [['bcLinks, ['"Search Path", '"", 'ksPage]]]
     else htSay '"{\em Search Path}"
   if kind ~= '"category" then
     htSay '"}{"
-    htMakePage [['bcLinks,['Users,'"",'kcuPage,nil]]]
+    htMakePage [['bcLinks, ['Users, '"", 'kcuPage]]]
     htSay '"}{"
-    htMakePage [['bcLinks,['Uses,'"",'kcnPage,nil]]]
+    htMakePage [['bcLinks, ['Uses, '"", 'kcnPage]]]
   htSay '"}"
   htEndTable()
 
@@ -455,25 +455,6 @@ addParameterTemplates(page, conform) ==
     htMakePage [['text,'"{\em ",par,'"} = "],
         ['bcStrings,[w - #STRINGIMAGE par,argstring,parname,'EM]]]
 
---------------------> NEW DEFINITION (see br-con.boot)
-kPageArgs([op,:args],[.,.,:source]) ==
-  firstTime := true
-  coSig := rest(get_database(op, 'COSIG))
-  for x in args for t in source for pred in coSig repeat
-    if firstTime then firstTime := false
-                 else
-                   htSayStandard '", and"
-    htSayStandard '"\newline "
-    typeForm := (t is [":",.,t1] => t1; t)
-    if pred = true
-      then htMakePage [['bcLinks,[x,'"",'kArgPage,x]]]
-      else htSayList(['"{\em ", x, '"}"])
-    htSayStandardList(['"\tab{", STRINGIMAGE( # PNAME x), '"}, "])
-    htSay
-      pred => '"a domain of category "
-      '"an element of the domain "
-    bcConform(typeForm,true)
-
 --=======================================================================
 --              Redefinitions from br-op1.boot
 --=======================================================================
@@ -486,8 +467,7 @@ dbConform form ==
 htTab s == htSayStandardList(['"\tab{", s, '"}"])
 
 --------------------> NEW DEFINITION (see br-op1.boot)
-dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
-  which ~= '"operation" => BREAK()
+dbGatherThenShow(htPage, opAlist, data, constructorIfTrue, word, fn) ==
   single? := null rest data
   htBeginMenu 'description
   bincount := 0
@@ -496,7 +476,7 @@ dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
     if single? then htSay(menuButton())
     else
       htMakePage
-        [['bcLinks,[menuButton(),'"",'dbShowOps,which,bincount]]]
+        [['bcLinks,[menuButton(), '"", 'dbShowOps, bincount]]]
       button := mkButtonBox (1 + bincount)
     htSay '"{\em "
     htSay
@@ -517,26 +497,23 @@ dbGatherThenShow(htPage,opAlist,which,data,constructorIfTrue,word,fn) ==
       htSay '" "
       FUNCALL(fn,thing)
     htSay('":\newline ")
-    dbShowOpSigList(which,items,(1 + bincount) * 8192)
+    dbShowOpSigList(items, (1 + bincount) * 8192)
     bincount := bincount + 1
   htEndMenu 'description
 
 --------------------> NEW DEFINITION (see br-op1.boot)
-dbPresentOps(htPage, which, exclusion) ==
-  which ~= '"operation" => BREAK()
+dbPresentOps(htPage, exclusion) ==
   exclusions := [exclusion]
   asharp? := htpProperty(htPage,'isAsharpConstructor)
   fromConPage? := (conname := opOf htpProperty(htPage,'conform))
   usage? := nil
-  star? := not fromConPage? or which = '"package operation"
+  star? := not(fromConPage?)
   implementation? := not asharp? and
     $UserLevel = 'development and $conformsAreDomains --and not $includeUnexposed?
   rightmost? := star? or (implementation? and not $includeUnexposed?)
   if INTEGERP first exclusions then exclusions := ['documentation]
   htpSetProperty(htPage,'exclusion,first exclusions)
-  opAlist :=
-    which = '"operation" => htpProperty(htPage,'opAlist)
-    htpProperty(htPage,'attrAlist)
+  opAlist := htpProperty(htPage, 'opAlist)
   empty? := null opAlist
   one?   := opAlist is [entry] and 2 = #entry
   one? := empty? or one?
@@ -545,52 +522,50 @@ dbPresentOps(htPage, which, exclusion) ==
   if one? or member('conditions,exclusions)
                  or (htpProperty(htPage,'condition?) = 'no)
       then htSay '"{\em Conditions}"
-      else htMakePage [['bcLispLinks,['"Conditions",'"",'dbShowOps,which,'conditions]]]
+      else htMakePage [['bcLispLinks, ['"Conditions", '"", 'dbShowOps, 'conditions]]]
   htSay '"}{"
   if empty? or member('documentation,exclusions)
     then htSay '"{\em Descriptions}"
-    else htMakePage [['bcLispLinks,['"Descriptions",'"",'dbShowOps,which,'documentation]]]
+    else htMakePage [['bcLispLinks, ['"Descriptions", '"", 'dbShowOps, 'documentation]]]
   htSay '"}{"
   if null IFCDR opAlist
     then htSay '"{\em Filter}"
-    else htMakePage [['bcLinks,['"Filter ",'"",'htFilterPage,['dbShowOps,which,'filter]]]]
+    else htMakePage [['bcLinks, ['"Filter ", '"", 'htFilterPage, ['dbShowOps, 'filter]]]]
   htSay '"}{"
   if one? or member('names,exclusions) or null IFCDR opAlist
     then htSay '"{\em Names}"
-    else htMakePage [['bcLispLinks,['"Names",'"",'dbShowOps,which,'names]]]
+    else htMakePage [['bcLispLinks, ['"Names", '"", 'dbShowOps, 'names]]]
   if not star? then
     htSay '"}{"
-    which = '"attribute" => BREAK()
     if not(implementation?) or member('implementation, exclusions) or
       ((conname := opOf htpProperty(htPage,'conform))
         and get_database(conname, 'CONSTRUCTORKIND) = 'category)
     then htSay '"{\em Implementations}"
     else htMakePage
-      [['bcLispLinks,['"Implementations",'"",'dbShowOps,which,'implementation]]]
+      [['bcLispLinks, ['"Implementations",'"", 'dbShowOps, 'implementation]]]
   htSay '"}{"
   if one? or member('origins,exclusions)
     then htSay '"{\em Origins}"
-    else htMakePage [['bcLispLinks,['"Origins",'"",'dbShowOps,which,'origins]]]
+    else htMakePage [['bcLispLinks, ['"Origins",'"", 'dbShowOps, 'origins]]]
   htSay '"}{"
   if one? or member('parameters,exclusions) --also test for some parameter
       or not dbDoesOneOpHaveParameters? opAlist
     then htSay '"{\em Parameters}"
-    else htMakePage [['bcLispLinks,['"Parameters",'"",'dbShowOps,which,'parameters]]]
+    else htMakePage [['bcLispLinks, ['"Parameters", '"", 'dbShowOps, 'parameters]]]
   htSay '"}{"
-  which = '"attribute" => BREAK()
   if one? or member('signatures, exclusions)
       then htSay '"{\em Signatures}"
-      else htMakePage [['bcLispLinks,['"Signatures",'"",'dbShowOps,which,'signatures]]]
+      else htMakePage [['bcLispLinks, ['"Signatures",'"", 'dbShowOps, 'signatures]]]
   htSay '"}"
   if star? then
     htSay '"{"
     if $exposedOnlyIfTrue
     then
          htMakePage([['bcLinks, ['"Unexposed Also", '"", 'dbShowOps,
-                                 which, 'exposureOff]]])
+                                 'exposureOff]]])
     else if one?
          then htSay '"{\em Exposed Only}"
-         else htMakePage [['bcLinks,['"Exposed Only",'"",'dbShowOps, which,'exposureOn]]]
+         else htMakePage [['bcLinks,['"Exposed Only",'"",'dbShowOps, 'exposureOn]]]
     htSay '"}"
   htEndTable()
 
@@ -611,8 +586,8 @@ htShowPageStar() ==
 --=======================================================================
 
 --------------> NEW DEFINITION (see br-op2.boot)
-displayDomainOp(htPage,which,origin,op,sig,predicate,
-                doc,index,chooseFn,unexposed?,$generalSearch?) ==
+displayDomainOp(htPage, which, origin, op, sig, predicate,
+                doc, index, chooseFn, unexposed?, $generalSearch?) ==
   $chooseDownCaseOfType : local := true   --see dbGetContrivedForm
   $whereList  : local := nil
   $NumberList : local := '(i j k l m n i1 j1 k1 l1 m1 n1 i2 j2 k2 l2 m2 n2 i3 j3 k3 l3 m3 n3 i4 j4 k4 l4 m4 n4 )
@@ -624,15 +599,14 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
                  or origin
   if $generalSearch? then $DomainList := rest $DomainList
   opform :=
-    which = '"attribute" => BREAK()
     which = '"constructor" => origin
     dbGetDisplayFormForOp(op,sig,doc)
   htSayStandard('"\newline")
   -----------------------------------------------------------
-  if exactlyOneOpSig
-    then htSay menuButton()
-    else htMakePage
-      [['bcLinks,[menuButton(),'"",chooseFn,which,index]]]
+  if exactlyOneOpSig then
+      htSay menuButton()
+  else
+      htMakePage [['bcLinks, [menuButton(), '"", chooseFn, index]]]
   htSayStandard '"\tab{2}"
   op   := IFCAR opform
   args := IFCDR opform
@@ -649,7 +623,6 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     htSay(ops)
     predicate = 'ASCONST or get_database(op, 'NILADIC)
             or member(op,'(0 1)) => 'skip
-    which = '"attribute" => BREAK()
     htSay('"(")
     if IFCAR args then
         htSayList(['"{\em ", quickForm2HtString IFCAR args, '"}"])
@@ -673,7 +646,6 @@ displayDomainOp(htPage,which,origin,op,sig,predicate,
     --check the signature for SegmentExpansionCategory, e.g.
     tvarlist := TAKE(# $conargs,$TriangleVariableList)
     $signature := SUBLISLIS($FormalMapVariableList,tvarlist,$signature)
-  which = '"attribute" => BREAK()
   $sig :=
     which = '"constructor" => sig
     $conkind ~= '"package" => sig

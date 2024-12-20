@@ -351,17 +351,8 @@ htSetInputLibrary htPage ==
 htSetExpose htPage ==
   htSetNotAvailable(htPage,'")set expose")
 
-htSetKernelProtect htPage ==
- htSetNotAvailable(htPage,'")set kernel protect")
-
-htSetKernelWarn htPage ==
- htSetNotAvailable(htPage,'")set kernel warn")
-
 htSetOutputCharacters htPage ==
   htSetNotAvailable(htPage,'")set output characters")
-
-htSetLinkerArgs htPage ==
-  htSetNotAvailable(htPage,'")set fortran calling linker")
 
 htSetCache(htPage,:options) ==
   $path := '(functions cache)
@@ -445,10 +436,12 @@ htCacheSet htPage ==
   htProcessDoitButton ['"Press to Remove Page",'"",'htDoNothing]
   htShowPage()
 
-htAllOrNum val == bcHt
-  val = 'all => '"{\em all"
-  val = 0 => '"{\em no"
-  STRCONC('"the last {\em ",stringize val)
+htAllOrNum(page, val) ==
+    str :=
+        val = 'all => '"{\em all"
+        val = 0 => '"{\em no"
+        STRCONC('"the last {\em ",stringize val)
+    bcHt(str)
 
 htCacheOne names ==
   page := htInitPage(mkSetTitle(),nil)

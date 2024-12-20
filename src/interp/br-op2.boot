@@ -246,7 +246,7 @@ getSubstInsert(x,candidates) ==
 --=======================================================================
 --                      Who Uses
 --=======================================================================
-whoUsesOperation(htPage,which,key) ==  --see dbPresentOps
+whoUsesOperation(htPage, key) ==  --see dbPresentOps
   key = 'filter => koaPageFilterByName(htPage,'whoUsesOperation)
   opAlist := htpProperty(htPage,'opAlist)
   conform := htpProperty(htPage,'conform)
@@ -288,7 +288,7 @@ whoUsesOperation(htPage,which,key) ==  --see dbPresentOps
       bcConform ['Mapping,:sublisFormal(conargs,sig)]
       htSay('"}\newline")
   htSayStandard '"\endscroll "
-  dbPresentOps(page,which,'usage)
+  dbPresentOps(page, 'usage)
   htShowPageNoScroll()
 
 whoUses(opSigList,conform) ==
@@ -415,9 +415,8 @@ koCatOps1 alist == [x for item in alist | x := pair] where
 
 koaPageFilterByCategory(htPage,calledFrom) ==
   opAlist := htpProperty(htPage,'opAlist)
-  which   := htpProperty(htPage,'which)
   page := htInitPageNoScroll(htCopyProplist htPage,
-             dbHeading(opAlist,which,htpProperty(htPage,'heading)))
+             dbHeading(opAlist, '"operation" ,htpProperty(htPage,'heading)))
   htSay('"Select a category ancestor below or ")
   htMakePage [['bcLispLinks,['"filter",'"on:",calledFrom,'filter]]]
   htMakePage [['bcStrings, [13,'"",'filter,'EM]]]
@@ -442,7 +441,6 @@ koaPageFilterByCategory1(htPage,i) ==
   ancestor := (htpProperty(htPage, 'ancestors)) . i
   ancestorList := [ancestor,:ASSOCLEFT ancestorsOf(ancestor,nil)]
   newOpAlist := nil
-  which    := htpProperty(htPage,'which)
   opAlist  := htpProperty(htPage,'opAlist)
   domname  := htpProperty(htPage,'domname)
   conform  := htpProperty(htPage,'conform)
@@ -452,7 +450,7 @@ koaPageFilterByCategory1(htPage,i) ==
     nalist := [[origin,:item] for item in alist | split]
       where split ==
         [sig,pred,:aux] := item
-        u := dbGetDocTable(op,sig,docTable,which,aux)
+        u := dbGetDocTable(op, sig, docTable, aux)
         origin := IFCAR u
         true
     for [origin,:item] in nalist | origin repeat
@@ -463,7 +461,7 @@ koaPageFilterByCategory1(htPage,i) ==
   for [op,:alist] in newOpAlist repeat
     falist := [[op,:NREVERSE alist],:falist]
   htpSetProperty(htPage,'fromcat,['" from category {\sf ",form2HtString ancestor,'"}"])
-  dbShowOperationsFromConform(htPage,which,falist)
+  dbShowOperationsFromConform(htPage, falist)
 
 --=======================================================================
 --           New code for search operation alist for exact matches
@@ -473,8 +471,7 @@ opPageFast opAlist == --called by oSearch
   htPage := htInitPage(nil,nil)
   htpSetProperty(htPage,'opAlist,opAlist)
   htpSetProperty(htPage,'expandOperations,'lists)
-  which := '"operation"
-  dbShowOp1(htPage,opAlist,which,'names)
+  dbShowOp1(htPage, opAlist, 'names)
 
 opPageFastPath opstring ==
 --return nil
