@@ -95,7 +95,7 @@ listOfStrings2String u ==
 
 htShowSetPage(htPage, branch) ==
   setTree := htpProperty(htPage, 'setTree)
-  $path := [branch,:TAKE(- LASTATOM setTree,$path)]
+  $path := [branch, :TAKE(- LASTATOM(setTree), $path)]
   setData := assoc(branch, setTree)
   null setData =>
     systemError('"No Set Data")
@@ -138,18 +138,17 @@ htShowIntegerPage(htPage, setData) ==
   message := setData.setLabel
   bcHt ['"{\em Description: } ", message, '"\newline\vspace{1} "]
   [$htInitial,$htFinal] := setData.setLeaf
-  if $htFinal = $htInitial + 1
-    then
+  if $htFinal = $htInitial + 1 then
       bcHt '"Enter the integer {\em "
       bcHt stringize $htInitial
       bcHt '"} or {\em "
       bcHt stringize $htFinal
       bcHt '"}:"
-    else if null $htFinal then
+  else if null $htFinal then
       bcHt '"Enter an integer greater than {\em "
       bcHt stringize ($htInitial - 1)
       bcHt '"}:"
-    else
+  else
       bcHt '"Enter an integer between {\em "
       bcHt stringize $htInitial
       bcHt '"} and {\em "

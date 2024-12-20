@@ -219,7 +219,8 @@ bcSolveEquationsNumerically(htPage,p) ==
       ("Complex roots expressed as floats" "" cf))
       (text . "\vspace{1}\newline")
       (inputStrings
-        ("Enter the number of desired {\em digits} of accuracy" "" 5 20 acc PI)))
+        ("Enter the number of desired {\em digits} of accuracy" ""
+          5 20 acc PI)))
   htMakeDoneButton('"Continue", 'bcSolveNumerically1)
   htShowPage()
 
@@ -262,7 +263,8 @@ bcLinearSolveMatrix1 htPage ==
     (text . "The right side vector B is:")
     (lispLinks
       ("Zero:" "the system is homogeneous" bcLinearSolveMatrixHomo homo)
-      ("Not zero:" "the system is not homogeneous" bcLinearSolveMatrixInhomo nothomo)))
+      ("Not zero:" "the system is not homogeneous" bcLinearSolveMatrixInhomo
+        nothomo)))
   htShowPage()
 
 bcLinearExtractMatrix htPage == REVERSE htpInputAreaAlist htPage
@@ -273,11 +275,11 @@ bcLinearSolveMatrixInhomo(htPage,junk) ==
   labelList :=
     [f(i) for i in 1..ncols] where f(i) ==
       spacer := (i > 99 => 0; i > 9 => 1; 2)
-      prefix := STRCONC('"{\em Coefficient ",STRINGIMAGE i,'":}")
+      prefix := STRCONC('"{\em Coefficient ", STRINGIMAGE(i), '":}")
       if spacer ~= 0 then
-        prefix := STRCONC(prefix,'"\space{",STRINGIMAGE spacer,'"}")
-      name := INTERN STRCONC('"c",STRINGIMAGE i)
-      [prefix,"",30, 0,name, 'P]
+          prefix := STRCONC(prefix, '"\space{", STRINGIMAGE(spacer), '"}")
+      name := INTERN(STRCONC('"c", STRINGIMAGE(i)))
+      [prefix, '"", 30, 0, name, 'P]
   page := htInitPage('"Linear Solve Basic Command",htpPropertyList htPage)
   htpSetProperty(page,'matrix,htpProperty(htPage,'matrix))
   htpSetProperty(page,'nrows,nrows)
@@ -289,7 +291,8 @@ bcLinearSolveMatrixInhomo(htPage,junk) ==
           '(text . "\vspace{1}\newline Do you want:" ),
              '(lispLinks
                  ("All the solutions?" "" bcLinearSolveMatrixInhomoGen all)
-                  ("A particular solution?" "" bcLinearSolveMatrixInhomoGen particular))]
+                  ("A particular solution?" "" bcLinearSolveMatrixInhomoGeni
+                    particular))]
   htShowPage()
 
 bcLinearSolveMatrixInhomoGen(htPage,key) ==  bcLinearMatrixGen(htPage,key)

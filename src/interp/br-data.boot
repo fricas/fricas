@@ -564,15 +564,15 @@ ancestorsOf(conform,domform) ==  --called by kcaPage, originsInOrder,...
 computeAncestorsOf(conform,domform) ==
   $done : local := MAKE_HASHTABLE('EQUAL)
   $if :   local := MAKE_HASHTABLE('EQ)
-  ancestorsRecur(conform,domform,true,true)
+  ancestorsRecur(conform, domform, true, true)
   acc := nil
   for op in listSort(function GLESSEQP,HKEYS $if) repeat
     for pair in HGET($if,op) repeat acc := [pair,:acc]
   NREVERSE acc
 
-ancestorsRecur(conform,domform,pred,firstTime?) == --called by ancestorsOf
+ancestorsRecur(conform, domform, pred, firstTime?) ==
   op      := opOf conform
-  pred = HGET($done,conform) => nil   --skip if already processed
+  pred = HGET($done, conform) => nil   --skip if already processed
   parents :=
     firstTime? and ($insideCategoryIfTrue or $insideFunctorIfTrue) =>
       $lisplibParents
@@ -590,7 +590,7 @@ ancestorsRecur(conform,domform,pred,firstTime?) == --called by ancestorsOf
     newPred := quickAnd(pred,p)
     ancestorsAdd(simpHasPred newPred,newdomform or newform)
     ancestorsRecur(newform,newdomform,newPred,false)
-  HPUT($done,conform,pred)                  --mark as already processed
+  HPUT($done, conform, pred)                  --mark as already processed
 
 ancestorsAdd(pred,form) == --called by ancestorsRecur
   null pred => nil
