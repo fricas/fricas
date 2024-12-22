@@ -1,16 +1,7 @@
 )abbrev domain XHASHTBL XHashTable
 )if LiterateDoc
 \documentclass{article}
-\usepackage{url}
-\usepackage{color}
-\definecolor{bgcode}{rgb}{1,1,0.7}
-
-\usepackage{listings}
-\lstdefinelanguage{spad}{basicstyle=\footnotesize\ttfamily,%
-  numbers=left,firstnumber=last,backgroundcolor=\color{bgcode}}
-\parindent0pt
-\parskip\medskipamount
-
+\usepackage{literatedoc}
 \begin{document}
 \title{A hash table implementation via double hashing}
 \author{Ralf Hemmecke}
@@ -45,7 +36,7 @@ respectively. \texttt{VACANT} and \texttt{DELETED} should not be part
 of the key space.
 
 Let's assume that the type of the marker values is \texttt{Marker}.
-Naively, and type correctly, we would have to use as representation
+Naively, and type correctly, we would have to use a representation
 like the following.
 \begin{verbatim}
 Union(Marker, Record(key: Key, entry: Entry))
@@ -111,6 +102,8 @@ XHashTable(Key: Hashable, Entry: Type):
       ++ the sense that from k1=k2 follows h(k1)=h(k2). If that is not
       ++ the case, k1 and k2 will internally be considered as being
       ++ different keys.
+      ++ For XHashTable to work correctly, the function h must only
+      ++ yield non-negative values.
  == add
     KE ==> Record(key: Key, entry: Entry)
     UE ==> Union(Entry, "failed")
@@ -341,9 +334,9 @@ stored and thus the loops eventually terminate.
             mk := getMKey(a, p)
 
         n: Z := numOfBuckets a
-        h1: Z := (h k)::Z
-        p: Z := positiveRemainder(h1, n) -- position in array
-        h2: Z := 1 + positiveRemainder(h1, n-2)
+        h1: Z := (h k)::Z -- h1>=0
+        p: Z := h1 rem n -- position in array (p>=0)
+        h2: Z := 1 + (h1 rem (n-2)) -- h2>=0
         mk: MKey := getMKey(a, p)
         deletedPosition?: Boolean := false
         while not vacant? mk repeat
