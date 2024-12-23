@@ -436,7 +436,7 @@ htCacheSet htPage ==
   htProcessDoitButton ['"Press to Remove Page",'"",'htDoNothing]
   htShowPage()
 
-htAllOrNum(page, val) ==
+htAllOrNum(val) ==
     str :=
         val = 'all => '"{\em all"
         val = 0 => '"{\em no"
