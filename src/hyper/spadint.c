@@ -183,15 +183,18 @@ static void
 start_user_buffer(HyperDocPage *page)
 {
     char buf[1024], *title;
-    char *SPAD;
     char spadbuf[250];
     char complfile[250];
     int ret_val;
 
-    SPAD = (char *) getenv("FRICAS");
+    char *TERM = getenv("FRICASTERM");
+    char *SPAD = getenv("FRICAS");
     if (SPAD == NULL) {
         fprintf(stderr, "start_user_buffer: $FRICAS is empty\n");
         exit(-1);
+    }
+    if (TERM == NULL) {
+        TERM = "xterm";
     }
     sprintf(spadbuf, "%s/lib/spadbuf", SPAD);
     sprintf(complfile, "%s/lib/command.list", SPAD);
@@ -203,12 +206,12 @@ start_user_buffer(HyperDocPage *page)
          * defaults in the usual way
          */
         sprintf(buf,
-        "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
-                title, title, spadbuf, page->name, complfile);
+        "%s -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
+                TERM, title, title, spadbuf, page->name, complfile);
     else
         sprintf(buf,
-         "xterm -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s '%s'&",
-                title, title, spadbuf, page->name);
+         "%s -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s '%s'&",
+                TERM, title, title, spadbuf, page->name);
     ret_val = system(buf);
     if (ret_val == -1 || ret_val == 127) {
 

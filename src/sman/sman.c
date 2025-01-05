@@ -451,14 +451,18 @@ static void
 start_the_spadclient(void)
 {
   char command[256];
+  char *TERM = getenv("FRICASTERM");
+  if (TERM == NULL) {
+      TERM = "xterm";
+  }
   if (start_clef)
     sprintf(command,
-          "xterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
-          ClefProgram, SpadClientProgram);
+          "%s -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s %s",
+          TERM, ClefProgram, SpadClientProgram);
   else
     sprintf(command,
-          "xterm -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
-          SpadClientProgram);
+          "%s -sb -sl 500 -name fricasclient -n FriCAS -T FriCAS -e %s",
+          TERM, SpadClientProgram);
   if (tpd == 1)
     fprintf(stderr,"sman:start_the_spadclient: %s\n",command);
   spawn_of_hell(command, NadaDelShitsky);
