@@ -264,7 +264,7 @@ bcLinearSolveMatrix1 htPage ==
     (lispLinks
       ("Zero:" "the system is homogeneous" bcLinearSolveMatrixHomo homo)
       ("Not zero:" "the system is not homogeneous" bcLinearSolveMatrixInhomo
-        nothomo)))
+       nothomo)))
   htShowPage()
 
 bcLinearExtractMatrix htPage == REVERSE htpInputAreaAlist htPage
@@ -280,10 +280,10 @@ bcLinearSolveMatrixInhomo(htPage,junk) ==
           prefix := STRCONC(prefix, '"\space{", STRINGIMAGE(spacer), '"}")
       name := INTERN(STRCONC('"c", STRINGIMAGE(i)))
       [prefix, '"", 30, 0, name, 'P]
-  page := htInitPage('"Linear Solve Basic Command",htpPropertyList htPage)
-  htpSetProperty(page,'matrix,htpProperty(htPage,'matrix))
-  htpSetProperty(page,'nrows,nrows)
-  htpSetProperty(page,'ncols,ncols)
+  page := htInitPage('"Linear Solve Basic Command", htpPropertyList(htPage))
+  htpSetProperty(page, 'matrix, htpProperty(htPage, 'matrix))
+  htpSetProperty(page, 'nrows, nrows)
+  htpSetProperty(page, 'ncols, ncols)
   htMakePage [
    '(domainConditions (isDomain P (Polynomial $EmptyMode))),
     '(text . "Enter the right side vector B:"),

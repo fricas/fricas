@@ -427,6 +427,9 @@ typeCheckInputAreas htPage ==
     string := htpLabelFilteredInputString(htPage, stringName)
     $bcParseOnly =>
       null ncParseFromString string =>
+        -- FIXME: this effectively ignores errors, but otherwise
+        -- search without parameters does not work
+        -- errorCondition := true
         htpSetLabelErrorMsg(htPage, '"Syntax Error", '"Syntax Error")
       nil
     val := checkCondition(htpLabelInputString(htPage, stringName),

@@ -247,7 +247,7 @@ htInitPageNoScroll(propList, title) ==
 --------------------> NEW DEFINITION <--------------------------
 htInitPageNoHeading(propList) ==
 --start defining a hyperTeX page
-  $atLeastOneUnexposed := nil
+  $atLeastOneUnexposed := false
   page := htpMakeEmptyPage(propList)
   $curPage := page
   $newPage := true
@@ -300,12 +300,12 @@ kPage(line, options) == --any cat, dom, package, default package
   if kind ~= 'category and nargs > 0 then addParameterTemplates(page,conform)
   if $atLeastOneUnexposed then htSay '"\newline{}{\em *} = unexposed"
   htSayStandard('"\endscroll ")
-  kPageContextMenu page
+  kPageContextMenu(page)
   htShowPageNoScroll()
 
-kPageContextMenu page ==
+kPageContextMenu(page) ==
   [kind,name,nargs,xpart,sig,args,abbrev,comments] := htpProperty(page,'parts)
-  conform := htpProperty(page,'conform)
+  conform := htpProperty(page, 'conform)
   conname := opOf conform
   htBeginTable()
   htSay '"{"
@@ -348,9 +348,9 @@ kPageContextMenu page ==
   htEndTable()
 
 --------------------> NEW DEFINITION (see br-con.boot)
-dbPresentCons(htPage,kind,:exclusions) ==
-  htpSetProperty(htPage,'exclusion,first exclusions)
-  cAlist := htpProperty(htPage,'cAlist)
+dbPresentCons(htPage, kind, :exclusions) ==
+  htpSetProperty(htPage, 'exclusion, first(exclusions))
+  cAlist := htpProperty(htPage, 'cAlist)
   empty? := null cAlist
   one?   := null rest cAlist
   one? := empty? or one?
@@ -424,9 +424,10 @@ dbShowConsKinds cAlist ==
   kinds := +/[1 for x in lists | #x > 0]
   for kind in '("category" "domain" "package" "default package") for x in lists | #x > 0 repeat
     htSayStandard '"\item"
-    if kinds = 1
-       then htSay menuButton()
-       else htMakePage
+    if kinds = 1 then
+        htSay menuButton()
+    else
+        htMakePage
          [['bcLinks,[menuButton(),'"",'dbShowConsKindsFilter,[kind,x]]]]
     htSayStandard '"\tab{1}"
     htSayList(['"{\em ", c := #x, '" "])
@@ -502,70 +503,82 @@ dbGatherThenShow(htPage, opAlist, data, constructorIfTrue, word, fn) ==
   htEndMenu 'description
 
 --------------------> NEW DEFINITION (see br-op1.boot)
-dbPresentOps(htPage, exclusion) ==
+dbPresentOps(page, exclusion) ==
   exclusions := [exclusion]
-  asharp? := htpProperty(htPage,'isAsharpConstructor)
-  fromConPage? := (conname := opOf htpProperty(htPage,'conform))
+  asharp? := htpProperty(page, 'isAsharpConstructor)
+  fromConPage? := (conname := opOf htpProperty(page, 'conform))
   usage? := nil
   star? := not(fromConPage?)
   implementation? := not asharp? and
     $UserLevel = 'development and $conformsAreDomains --and not $includeUnexposed?
   rightmost? := star? or (implementation? and not $includeUnexposed?)
   if INTEGERP first exclusions then exclusions := ['documentation]
-  htpSetProperty(htPage,'exclusion,first exclusions)
-  opAlist := htpProperty(htPage, 'opAlist)
+  htpSetProperty(page, 'exclusion, first(exclusions))
+  opAlist := htpProperty(page, 'opAlist)
   empty? := null opAlist
   one?   := opAlist is [entry] and 2 = #entry
   one? := empty? or one?
   htBeginTable()
   htSay '"{"
-  if one? or member('conditions,exclusions)
-                 or (htpProperty(htPage,'condition?) = 'no)
-      then htSay '"{\em Conditions}"
-      else htMakePage [['bcLispLinks, ['"Conditions", '"", 'dbShowOps, 'conditions]]]
+  if one? or member('conditions, exclusions)
+                 or (htpProperty(page, 'condition?) = 'no) then
+      htSay '"{\em Conditions}"
+  else
+      htMakePage [['bcLispLinks, ['"Conditions", '"",
+                                  'dbShowOps, 'conditions]]]
   htSay '"}{"
-  if empty? or member('documentation,exclusions)
-    then htSay '"{\em Descriptions}"
-    else htMakePage [['bcLispLinks, ['"Descriptions", '"", 'dbShowOps, 'documentation]]]
+  if empty? or member('documentation, exclusions) then
+      htSay '"{\em Descriptions}"
+  else
+      htMakePage [['bcLispLinks, ['"Descriptions", '"", 'dbShowOps,
+                                  'documentation]]]
   htSay '"}{"
-  if null IFCDR opAlist
-    then htSay '"{\em Filter}"
-    else htMakePage [['bcLinks, ['"Filter ", '"", 'htFilterPage, ['dbShowOps, 'filter]]]]
+  if null(IFCDR(opAlist)) then
+      htSay '"{\em Filter}"
+  else
+      htMakePage [['bcLinks, ['"Filter ", '"", 'htFilterPage,
+                              ['dbShowOps, 'filter]]]]
   htSay '"}{"
-  if one? or member('names,exclusions) or null IFCDR opAlist
-    then htSay '"{\em Names}"
-    else htMakePage [['bcLispLinks, ['"Names", '"", 'dbShowOps, 'names]]]
+  if one? or member('names, exclusions) or null(IFCDR(opAlist)) then
+      htSay '"{\em Names}"
+  else
+      htMakePage [['bcLispLinks, ['"Names", '"", 'dbShowOps, 'names]]]
   if not star? then
     htSay '"}{"
     if not(implementation?) or member('implementation, exclusions) or
-      ((conname := opOf htpProperty(htPage,'conform))
+      ((conname := opOf htpProperty(page, 'conform))
         and get_database(conname, 'CONSTRUCTORKIND) = 'category)
     then htSay '"{\em Implementations}"
     else htMakePage
       [['bcLispLinks, ['"Implementations",'"", 'dbShowOps, 'implementation]]]
   htSay '"}{"
-  if one? or member('origins,exclusions)
-    then htSay '"{\em Origins}"
-    else htMakePage [['bcLispLinks, ['"Origins",'"", 'dbShowOps, 'origins]]]
+  if one? or member('origins, exclusions) then
+      htSay '"{\em Origins}"
+  else
+      htMakePage [['bcLispLinks, ['"Origins",'"", 'dbShowOps, 'origins]]]
   htSay '"}{"
-  if one? or member('parameters,exclusions) --also test for some parameter
-      or not dbDoesOneOpHaveParameters? opAlist
-    then htSay '"{\em Parameters}"
-    else htMakePage [['bcLispLinks, ['"Parameters", '"", 'dbShowOps, 'parameters]]]
+  if one? or member('parameters, exclusions) --also test for some parameter
+          or not(dbDoesOneOpHaveParameters?(opAlist)) then
+      htSay '"{\em Parameters}"
+  else
+      htMakePage [['bcLispLinks, ['"Parameters", '"", 'dbShowOps,
+                                  'parameters]]]
   htSay '"}{"
-  if one? or member('signatures, exclusions)
-      then htSay '"{\em Signatures}"
-      else htMakePage [['bcLispLinks, ['"Signatures",'"", 'dbShowOps, 'signatures]]]
+  if one? or member('signatures, exclusions) then
+      htSay '"{\em Signatures}"
+  else
+      htMakePage [['bcLispLinks, ['"Signatures",'"", 'dbShowOps,
+                                  'signatures]]]
   htSay '"}"
   if star? then
     htSay '"{"
-    if $exposedOnlyIfTrue
-    then
+    if $exposedOnlyIfTrue then
          htMakePage([['bcLinks, ['"Unexposed Also", '"", 'dbShowOps,
                                  'exposureOff]]])
-    else if one?
-         then htSay '"{\em Exposed Only}"
-         else htMakePage [['bcLinks,['"Exposed Only",'"",'dbShowOps, 'exposureOn]]]
+    else if one? then
+        htSay '"{\em Exposed Only}"
+    else
+        htMakePage [['bcLinks,['"Exposed Only",'"",'dbShowOps, 'exposureOn]]]
     htSay '"}"
   htEndTable()
 

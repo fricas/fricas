@@ -1469,7 +1469,7 @@ hasCaty(d,cat,SL) ==
                            for arg in rest d]]
           SL := augmentSub($domPvar, dom, copy SL)
         z' := [domArg2(a, S, S') for a in z]
-        S1:= unifyStruct(y,z',copy SL)
+        S1 := unifyStruct(y, z', copy(SL))
         if not (S1='failed) then S1:=
           atom cond => S1
           ncond := subCopy(cond, S)

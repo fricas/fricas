@@ -322,8 +322,8 @@ spadType(x) ==  --called by \spadtype{x} from HyperDoc
 --=======================================================================
 --                   Name and General Search
 --=======================================================================
-aokSearch filter ==  genSearch(filter,true)  --"General" from HD (see man0.ht)
---General search for constructs but NOT documentation
+-- "General" search for constructs but NOT documentation from HD
+aokSearch(filter) ==  genSearch(filter, true)
 
 genSearch(filter,:options) == --"Complete" from HD (see man0.ht) and aokSearch
 --General + documentation search

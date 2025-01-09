@@ -33,10 +33,10 @@
 
 --Hypertex commands other than solve and matrix
 
-bcDrawIt2(ind,a,b) == STRCONC('"{}",ind,'"=",a,'"{}..",b,'"{}")
+bcDrawIt2(ind, a, b) == STRCONC('"{}", ind, '"=", a, '"{}..", b, '"{}")
 
 bcIndefiniteIntegrate() ==
-  htInitPage('"Indefinite Integration Basic Command",nil)
+  htInitPage('"Indefinite Integration Basic Command", nil)
   htMakePage '(
      (domainConditions
        (isDomain EM $EmptyMode)
@@ -56,14 +56,14 @@ bcIndefiniteIntegrate() ==
      (doneButton "Continue" bcIndefiniteIntegrateGen))
   htShowPage()
 
-bcIndefiniteIntegrateGen htPage ==
-  integrand := htpLabelInputString(htPage,'integrand)
-  var := htpLabelInputString(htPage,'symbol)
-  bcGen STRCONC('"integrate(",integrand,'",",var,")")
+bcIndefiniteIntegrateGen(htPage) ==
+    integrand := htpLabelInputString(htPage, 'integrand)
+    var := htpLabelInputString(htPage, 'symbol)
+    bcGen(STRCONC('"integrate(", integrand, '",", var, ")"))
 
 
 bcDefiniteIntegrate() ==
-  htInitPage('"Definite Integration Basic Command",nil)
+  htInitPage('"Definite Integration Basic Command", nil)
   htMakePage '(
      (domainConditions
        (isDomain EM $EmptyMode)
@@ -101,23 +101,22 @@ bcDefiniteIntegrate() ==
      (doneButton "Continue" bcDefiniteIntegrateGen))
   htShowPage()
 
-bcDefiniteIntegrateGen htPage ==
-  integrand := htpLabelInputString(htPage,'integrand)
-  var := htpLabelInputString(htPage,'symbol)
-  lowerLimit :=
-    htpButtonValue(htPage,'fromButton) = 'fromPoint =>
-      htpLabelInputString(htPage,'from)
-    '"%minusInfinity"
-  upperLimit :=
-    htpButtonValue(htPage,'toButton) = 'toPoint =>
-      htpLabelInputString(htPage,'to)
-    '"%plusInfinity"
-  varpart := STRCONC(var,'" = ",lowerLimit,'"..",upperLimit)
-  bcGen
-   STRCONC('"integrate(",integrand,'",",varpart,'")")
+bcDefiniteIntegrateGen(htPage) ==
+    integrand := htpLabelInputString(htPage, 'integrand)
+    var := htpLabelInputString(htPage, 'symbol)
+    lowerLimit :=
+        htpButtonValue(htPage,'fromButton) = 'fromPoint =>
+            htpLabelInputString(htPage, 'from)
+        '"%minusInfinity"
+    upperLimit :=
+        htpButtonValue(htPage, 'toButton) = 'toPoint =>
+            htpLabelInputString(htPage, 'to)
+        '"%plusInfinity"
+    varpart := STRCONC(var, '" = ", lowerLimit, '"..", upperLimit)
+    bcGen(STRCONC('"integrate(", integrand, '",", varpart, '")"))
 
 bcSum() ==
-  htInitPage('"Sum Basic Command",nil)
+  htInitPage('"Sum Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -146,15 +145,16 @@ bcSum() ==
     (doneButton "Continue" bcSumGen))
   htShowPage()
 
-bcSumGen htPage ==
-  mand := htpLabelInputString(htPage,'summand)
-  index := htpLabelInputString(htPage,'index)
-  first := htpLabelInputString(htPage,'first)
-  last := htpLabelInputString(htPage,'last)
-  bcGen STRCONC('"sum(",mand,'",",index,'" = ",first,'"..",last,'")")
+bcSumGen(htPage) ==
+    mand := htpLabelInputString(htPage, 'summand)
+    index := htpLabelInputString(htPage, 'index)
+    first := htpLabelInputString(htPage, 'first)
+    last := htpLabelInputString(htPage, 'last)
+    bcGen(STRCONC('"sum(", mand, '",", index, '" = ", first, '"..", last,
+                  '")"))
 
 bcProduct() ==
-  htInitPage('"Product Basic Command",nil)
+  htInitPage('"Product Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -171,15 +171,16 @@ bcProduct() ==
     (doneButton "Continue" bcProductGen))
   htShowPage()
 
-bcProductGen htPage ==
-  mand := htpLabelInputString(htPage,'mand)
-  index := htpLabelInputString(htPage,'index)
-  first := htpLabelInputString(htPage,'first)
-  last := htpLabelInputString(htPage,'last)
-  bcGen STRCONC('"product(",mand,'",",index,'",",first,'",",last,'")")
+bcProductGen(htPage) ==
+    mand := htpLabelInputString(htPage, 'mand)
+    index := htpLabelInputString(htPage, 'index)
+    first := htpLabelInputString(htPage, 'first)
+    last := htpLabelInputString(htPage, 'last)
+    bcGen(STRCONC('"product(", mand, '",", index, '",", first, '",", last,
+                  '")"))
 
 bcDifferentiate() ==
-  htInitPage('"Differentiate Basic Command",nil)
+  htInitPage('"Differentiate Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -205,25 +206,25 @@ bcDifferentiate() ==
   htMakeDoneButton('"Continue", 'bcDifferentiateGen)
   htShowPage()
 
-bcDifferentiateGen htPage ==
-  mand := htpLabelInputString(htPage,'diffand)
-  varlist := bcString2WordList htpLabelInputString(htPage,'variables)
-  indexList := bcString2WordList htpLabelInputString(htPage,'times)
-  varpart :=
-    #varlist > 1 => bcwords2liststring varlist
-    first varlist
-  indexpart :=
-    null indexList => nil
-    null rest indexList => first indexList
-    #indexList = #varlist => bcwords2liststring indexList
-    bcError '"You must say how many times you want to differentiate with respect to each variable---or leave that entry blank"
-  lastPart :=
-    indexpart => STRCONC('",",indexpart,'")")
-    '")"
-  bcGen STRCONC('"differentiate(",mand,'",",varpart,lastPart)
+bcDifferentiateGen(htPage) ==
+    mand := htpLabelInputString(htPage, 'diffand)
+    varlist := bcString2WordList(htpLabelInputString(htPage, 'variables))
+    indexList := bcString2WordList(htpLabelInputString(htPage, 'times))
+    varpart :=
+        #varlist > 1 => bcwords2liststring(varlist)
+        first(varlist)
+    indexpart :=
+        null(indexList) => nil
+        null(rest(indexList)) => first(indexList)
+        #indexList = #varlist => bcwords2liststring(indexList)
+        bcError '"You must say how many times you want to differentiate with respect to each variable---or leave that entry blank"
+    lastPart :=
+        indexpart => STRCONC('",", indexpart, '")")
+        '")"
+    bcGen(STRCONC('"differentiate(", mand, '",", varpart, lastPart)
 
 bcDraw() ==
-  htInitPage('"Draw Basic Command",nil)
+  htInitPage('"Draw Basic Command", nil)
   bcHt '"What would you like to draw?"
   bcHt '"\newline\centerline{{\em Two Dimensional Plots}}\newline"
   bcHt '"\lispdownlink{A function of one variable}{(|bcDraw2Dfun|)}"
@@ -242,9 +243,8 @@ bcDraw() ==
   bcHt '"\space{2}(x(u,v), y(u,v), z(u,v))\newline"
   htShowPage()
 
-
 bcDraw2Dfun() ==
-  htInitPage('"Draw Basic Command",nil)
+  htInitPage('"Draw Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -276,22 +276,21 @@ bcDraw2Dfun() ==
     (text . "{}"))
   htShowPage()
 
-bcDraw2DfunGen htPage ==
-  fun := htpLabelInputString(htPage,'function)
-  dep := htpLabelInputString(htPage,'dependent)
-  ind := htpLabelInputString(htPage,'ind)
-  from1 := htpLabelInputString(htPage,'from1)
-  to1 := htpLabelInputString(htPage,'to1)
-  title := htpLabelInputString(htPage,'title)
-  if (title ~= '"") then
-    titlePart := STRCONC('"{}",'"title ==_"",title,'"_"")
-    bcFinish('"draw",fun,bcDrawIt2(ind,from1,to1),titlePart)
-  else
-    bcFinish('"draw",fun,bcDrawIt2(ind,from1,to1))
-
+bcDraw2DfunGen(htPage) ==
+    fun := htpLabelInputString(htPage, 'function)
+    dep := htpLabelInputString(htPage, 'dependent)
+    ind := htpLabelInputString(htPage, 'ind)
+    from1 := htpLabelInputString(htPage, 'from1)
+    to1 := htpLabelInputString(htPage, 'to1)
+    title := htpLabelInputString(htPage, 'title)
+    if title ~= '"" then
+        titlePart := STRCONC('"{}", '"title ==_"", title, '"_"")
+        bcFinish('"draw", fun, bcDrawIt2(ind, from1, to1), titlePart)
+    else
+        bcFinish('"draw", fun, bcDrawIt2(ind, from1, to1))
 
 bcDraw2Dpar() ==
-  htInitPage('"Draw Basic Command",nil)
+  htInitPage('"Draw Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -322,22 +321,22 @@ bcDraw2Dpar() ==
     (doneButton "Continue" bcDraw2DparGen))
   htShowPage()
 
-bcDraw2DparGen htPage ==
-  fun1 := htpLabelInputString(htPage,'function1)
-  fun2 := htpLabelInputString(htPage,'function2)
-  ind := htpLabelInputString(htPage,'ind)
-  from1 := htpLabelInputString(htPage,'from1)
-  to1 := htpLabelInputString(htPage,'to1)
-  title := htpLabelInputString(htPage,'title)
-  curvePart := STRCONC('"curve(",'"{}",fun1,'",{}",fun2,'")")
-  if (title ~= '"") then
-    titlePart := (title = '"" => nil; STRCONC('"{}",'"title ==_"",title,'"_""))
-    bcFinish('"draw",curvePart,bcDrawIt2(ind,from1,to1),titlePart)
-  else
-    bcFinish('"draw",curvePart,bcDrawIt2(ind,from1,to1))
+bcDraw2DparGen(htPage) ==
+    fun1 := htpLabelInputString(htPage, 'function1)
+    fun2 := htpLabelInputString(htPage, 'function2)
+    ind := htpLabelInputString(htPage, 'ind)
+    from1 := htpLabelInputString(htPage, 'from1)
+    to1 := htpLabelInputString(htPage, 'to1)
+    title := htpLabelInputString(htPage, 'title)
+    curvePart := STRCONC('"curve(", '"{}", fun1, '",{}", fun2, '")")
+    if title ~= '"" then
+        titlePart := STRCONC('"{}", '"title ==_"", title, '"_"")
+        bcFinish('"draw", curvePart, bcDrawIt2(ind, from1, to1), titlePart)
+    else
+        bcFinish('"draw", curvePart, bcDrawIt2(ind, from1, to1))
 
 bcDraw2DSolve() ==
-  htInitPage('"Draw Basic Command",nil)
+  htInitPage('"Draw Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -367,27 +366,29 @@ bcDraw2DSolve() ==
       "Optionally enter a {\em title} for your curve:")
     (bcStrings (15 "" title S))
     (text . "\indent{0}"))
-  htMakeDoneButton('"Continue",'bcDraw2DSolveGen)
+  htMakeDoneButton('"Continue", 'bcDraw2DSolveGen)
   htShowPage()
 
-bcDraw2DSolveGen htPage ==
-  fun := htpLabelInputString(htPage,'function)
-  ind1 := htpLabelInputString(htPage,'independent1)
-  from1 := htpLabelInputString(htPage,'from1)
-  to1 := htpLabelInputString(htPage,'to1)
-  ind2 := htpLabelInputString(htPage,'independent2)
-  from2 := htpLabelInputString(htPage,'from2)
-  to2 := htpLabelInputString(htPage,'to2)
-  title := htpLabelInputString(htPage,'title)
-  clipPart := STRCONC('"{}",'"range==[{}",from1,'"..",to1,",{}",from2,'"..",to2,'"]")
-  if (title ~= '"") then
-    titlePart := (title = '"" => nil; STRCONC('"{}",'"title ==_"",title,'"_""))
-    bcFinish('"draw",STRCONC(fun,'" = 0 "),ind1,ind2,clipPart,titlePart)
-  else
-    bcFinish('"draw",STRCONC(fun,'" = 0 "),ind1,ind2,clipPart)
+bcDraw2DSolveGen(htPage) ==
+    fun := htpLabelInputString(htPage, 'function)
+    ind1 := htpLabelInputString(htPage, 'independent1)
+    from1 := htpLabelInputString(htPage, 'from1)
+    to1 := htpLabelInputString(htPage, 'to1)
+    ind2 := htpLabelInputString(htPage, 'independent2)
+    from2 := htpLabelInputString(htPage, 'from2)
+    to2 := htpLabelInputString(htPage, 'to2)
+    title := htpLabelInputString(htPage, 'title)
+    clipPart := STRCONC('"{}", '"range==[{}", from1, '"..", to1, ",{}",
+                        from2, '"..", to2, '"]")
+    if title ~= '"" then
+        titlePart := STRCONC('"{}", '"title ==_"", title, '"_"")
+        bcFinish('"draw", STRCONC(fun, '" = 0 "), ind1, ind2, clipPart,
+               titlePart)
+    else
+        bcFinish('"draw", STRCONC(fun, '" = 0 "), ind1, ind2, clipPart)
 
 bcDraw3Dfun() ==
-  htInitPage('"Three Dimensional Draw Basic Command",nil)
+  htInitPage('"Three Dimensional Draw Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -424,24 +425,26 @@ bcDraw3Dfun() ==
     (doneButton "Continue" bcDraw3DfunGen))
   htShowPage()
 
-bcDraw3DfunGen htPage ==
-  fun := htpLabelInputString(htPage,'function)
-  dep := htpLabelInputString(htPage,'dependent)
-  ind1 := htpLabelInputString(htPage,'independent1)
-  from1 := htpLabelInputString(htPage,'from1)
-  to1 := htpLabelInputString(htPage,'to1)
-  ind2 := htpLabelInputString(htPage,'independent2)
-  from2 := htpLabelInputString(htPage,'from2)
-  to2 := htpLabelInputString(htPage,'to2)
-  title := htpLabelInputString(htPage,'title)
-  if (title ~= '"") then
-    titlePart := (title = '"" => nil;STRCONC('"{}",'"title ==_"",title,'"_""))
-    bcFinish('"draw",fun,bcDrawIt2(ind1,from1,to1),bcDrawIt2(ind2,from2,to2),titlePart)
-  else
-    bcFinish('"draw",fun,bcDrawIt2(ind1,from1,to1),bcDrawIt2(ind2,from2,to2))
+bcDraw3DfunGen(htPage) ==
+    fun := htpLabelInputString(htPage, 'function)
+    dep := htpLabelInputString(htPage, 'dependent)
+    ind1 := htpLabelInputString(htPage, 'independent1)
+    from1 := htpLabelInputString(htPage, 'from1)
+    to1 := htpLabelInputString(htPage, 'to1)
+    ind2 := htpLabelInputString(htPage, 'independent2)
+    from2 := htpLabelInputString(htPage, 'from2)
+    to2 := htpLabelInputString(htPage, 'to2)
+    title := htpLabelInputString(htPage, 'title)
+    if title ~= '"" then
+        titlePart := STRCONC('"{}", '"title ==_"", title, '"_"")
+        bcFinish('"draw", fun, bcDrawIt2(ind1, from1, to1),
+                 bcDrawIt2(ind2, from2, to2), titlePart)
+    else
+        bcFinish('"draw", fun, bcDrawIt2(ind1, from1, to1),
+                 bcDrawIt2(ind2, from2, to2))
 
 bcDraw3Dpar() ==
-  htInitPage('"Draw Basic Command",nil)
+  htInitPage('"Draw Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -474,24 +477,26 @@ bcDraw3Dpar() ==
     (doneButton "Continue" bcDraw3DparGen))
   htShowPage()
 
-bcDraw3DparGen htPage ==
-  fun1 := htpLabelInputString(htPage,'function1)
-  fun2 := htpLabelInputString(htPage,'function2)
-  fun3 := htpLabelInputString(htPage,'function3)
-  ind := htpLabelInputString(htPage,'ind)
-  from1 := htpLabelInputString(htPage,'from1)
-  to1 := htpLabelInputString(htPage,'to1)
-  title := htpLabelInputString(htPage,'title)
-  curvePart := STRCONC('"curve(",'"{}",fun1,'",{}",fun2,'",{}",fun3,'")")
-  tubePart := '"{}tubeRadius==.25,{}tubePoints==16"
-  if (title ~= '"") then
-    titlePart := (title = '"" => nil; STRCONC('"{}",'"title ==_"",title,'"_""))
-    bcFinish('"draw",curvePart,bcDrawIt2(ind,from1,to1),tubePart,titlePart)
-  else
-    bcFinish('"draw",curvePart,bcDrawIt2(ind,from1,to1),tubePart)
+bcDraw3DparGen(htPage) ==
+    fun1 := htpLabelInputString(htPage, 'function1)
+    fun2 := htpLabelInputString(htPage, 'function2)
+    fun3 := htpLabelInputString(htPage, 'function3)
+    ind := htpLabelInputString(htPage, 'ind)
+    from1 := htpLabelInputString(htPage, 'from1)
+    to1 := htpLabelInputString(htPage, 'to1)
+    title := htpLabelInputString(htPage, 'title)
+    curvePart := STRCONC('"curve(", '"{}", fun1, '",{}", fun2, '",{}",
+                         fun3, '")")
+    tubePart := '"{}tubeRadius==.25,{}tubePoints==16"
+    if title ~= '"" then
+        titlePart := STRCONC('"{}", '"title ==_"", title, '"_"")
+        bcFinish('"draw", curvePart, bcDrawIt2(ind, from1, to1), tubePart,
+                 titlePart)
+    else
+        bcFinish('"draw", curvePart, bcDrawIt2(ind, from1, to1), tubePart)
 
 bcDraw3Dpar1() ==
-  htInitPage('"Draw Basic Command",nil)
+  htInitPage('"Draw Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -532,31 +537,32 @@ bcDraw3Dpar1() ==
       "Optionally enter a {\em title} for your surface:")
     (bcStrings (15 "surface" title S))
     (text . "\indent{0}"))
-  htMakeDoneButton ('"Continue",'bcDraw3Dpar1Gen)
+  htMakeDoneButton('"Continue", 'bcDraw3Dpar1Gen)
   htShowPage()
 
-bcDraw3Dpar1Gen htPage ==
-  fun1 := htpLabelInputString(htPage,'function1)
-  fun2 := htpLabelInputString(htPage,'function2)
-  fun3 := htpLabelInputString(htPage,'function3)
-  ind1 := htpLabelInputString(htPage,'ind1)
-  from1 := htpLabelInputString(htPage,'from1)
-  to1 := htpLabelInputString(htPage,'to1)
-  ind2 := htpLabelInputString(htPage,'ind2)
-  from2 := htpLabelInputString(htPage,'from2)
-  to2 := htpLabelInputString(htPage,'to2)
-  title := htpLabelInputString(htPage,'title)
-  r1 := bcDrawIt2(ind1,from1,to1)
-  r2 := bcDrawIt2(ind2,from2,to2)
-  surfacePart := STRCONC('"surface(",'"{}",fun1,'",{}",fun2,'",{}",fun3,'")")
-  if (title ~= '"") then
-    titlePart := (title = '"" => nil; STRCONC('"{}",'"title ==_"",title,'"_""))
-    bcFinish('"draw",surfacePart,r1,r2,titlePart)
-  else
-    bcFinish('"draw",surfacePart,r1,r2)
+bcDraw3Dpar1Gen(htPage) ==
+    fun1 := htpLabelInputString(htPage, 'function1)
+    fun2 := htpLabelInputString(htPage, 'function2)
+    fun3 := htpLabelInputString(htPage, 'function3)
+    ind1 := htpLabelInputString(htPage, 'ind1)
+    from1 := htpLabelInputString(htPage, 'from1)
+    to1 := htpLabelInputString(htPage, 'to1)
+    ind2 := htpLabelInputString(htPage, 'ind2)
+    from2 := htpLabelInputString(htPage, 'from2)
+    to2 := htpLabelInputString(htPage, 'to2)
+    title := htpLabelInputString(htPage, 'title)
+    r1 := bcDrawIt2(ind1, from1, to1)
+    r2 := bcDrawIt2(ind2, from2, to2)
+    surfacePart := STRCONC('"surface(", '"{}", fun1, '",{}", fun2,
+                           '",{}", fun3, '")")
+    if title ~= '"" then
+        titlePart := STRCONC('"{}", '"title ==_"", title, '"_"")
+        bcFinish('"draw", surfacePart, r1, r2, titlePart)
+    else
+        bcFinish('"draw", surfacePart, r1, r2)
 
 bcSeries() ==
-  htInitPage('"Series Basic Command",nil)
+  htInitPage('"Series Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -573,8 +579,8 @@ bcSeries() ==
    (text . "\endmenu"))
   htShowPage()
 
-bcSeriesExpansion(a,b) ==
-  htInitPage('"Series Expansion Basic Command",nil)
+bcSeriesExpansion(a, b) ==
+  htInitPage('"Series Expansion Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -598,17 +604,17 @@ bcSeriesExpansion(a,b) ==
     (text . "Enter the {\em point} about which you want to expand")
     (text . "\tab{49}")
     (bcStrings (8 "\%pi/2" point EM)))
-  htMakeDoneButton('"Continue",'bcSeriesExpansionGen)
+  htMakeDoneButton('"Continue", 'bcSeriesExpansionGen)
   htShowPage()
 
-bcSeriesExpansionGen htPage ==
-  fun := htpLabelInputString(htPage,'function)
-  var := htpLabelInputString(htPage,'variable)
-  point := htpLabelInputString(htPage,'point)
-  bcFinish("series",fun,STRCONC(var,'" = ",point))
+bcSeriesExpansionGen(htPage) ==
+    fun := htpLabelInputString(htPage, 'function)
+    var := htpLabelInputString(htPage, 'variable)
+    point := htpLabelInputString(htPage, 'point)
+    bcFinish("series", fun, STRCONC(var, '" = ", point))
 
-bcSeriesByFormula(a,b) ==
-  htInitPage('"Power Series Basic Command",nil)
+bcSeriesByFormula(a, b) ==
+  htInitPage('"Power Series Basic Command", nil)
   htMakePage '(
     (text . "Select the kind of power series you want to create:")
     (text . "\beginmenu")
@@ -624,8 +630,8 @@ bcSeriesByFormula(a,b) ==
     (text . "\endmenu"))
   htShowPage()
 
-bcTaylorSeries(a,b) ==
-  htInitPage('"Taylor Series Basic Command",nil)
+bcTaylorSeries(a, b) ==
+  htInitPage('"Taylor Series Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -667,10 +673,10 @@ bcTaylorSeries(a,b) ==
     (doneButton "Continue" bcTaylorSeriesGen))
   htShowPage()
 
-bcSeriesByFormulaGen htPage == bcNotReady()
+bcSeriesByFormulaGen(htPage) == bcNotReady()
 
-bcLaurentSeries(a,b) ==
-  htInitPage('"Laurent Series Basic Command",nil)
+bcLaurentSeries(a, b) ==
+  htInitPage('"Laurent Series Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -714,8 +720,8 @@ bcLaurentSeries(a,b) ==
     (doneButton "Continue" bcLaurentSeriesGen))
   htShowPage()
 
-bcPuiseuxSeries(a,b) ==
-  htInitPage('"Puiseux Series Basic Command",nil)
+bcPuiseuxSeries(a, b) ==
+  htInitPage('"Puiseux Series Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -761,27 +767,26 @@ bcPuiseuxSeries(a,b) ==
     (doneButton "Continue" bcPuiseuxSeriesGen))
   htShowPage()
 
-bcTaylorSeriesGen htPage == bcSeriesGen(htPage)
+bcTaylorSeriesGen(htPage) == bcSeriesGen(htPage)
 
-bcLaurentSeriesGen htPage ==
-  bcSeriesGen(htPage)
+bcLaurentSeriesGen(htPage) == bcSeriesGen(htPage)
 
-bcPuiseuxSeriesGen htPage ==
-  bcSeriesGen(htPage)
+bcPuiseuxSeriesGen(htPage) == bcSeriesGen(htPage)
 
 bcSeriesGen(htPage) ==
-  step:= htpLabelInputString(htPage,'step)
-  min := htpLabelInputString(htPage,'min)
-  formula := htpLabelInputString(htPage,'formula)
-  index   := htpLabelInputString(htPage,'index)
-  var := htpLabelInputString(htPage,'variable)
-  point := htpLabelInputString(htPage,'point)
-  varPart := STRCONC(var,'" = ",point)
-  minPart := STRCONC(min,'"..")
-  bcFinish('"series",STRCONC(index,'" +-> ",formula),varPart,minPart,step)
+    step:= htpLabelInputString(htPage, 'step)
+    min := htpLabelInputString(htPage, 'min)
+    formula := htpLabelInputString(htPage, 'formula)
+    index   := htpLabelInputString(htPage, 'index)
+    var := htpLabelInputString(htPage, 'variable)
+    point := htpLabelInputString(htPage, 'point)
+    varPart := STRCONC(var, '" = ", point)
+    minPart := STRCONC(min, '"..")
+    bcFinish('"series", STRCONC(index, '" +-> ", formula), varPart,
+             minPart, step)
 
 bcLimit() ==
-  htInitPage('"Limit Basic Command",nil)
+  htInitPage('"Limit Basic Command", nil)
   htMakePage '(
    (domainConditions
        (isDomain EM $EmptyMode)
@@ -805,8 +810,8 @@ bcLimit() ==
     )
   htShowPage()
 
-bcRealLimit(a,b) ==
-  htInitPage('"Real Limit Basic Command",nil)
+bcRealLimit(a, b) ==
+  htInitPage('"Real Limit Basic Command", nil)
   htMakePage '(
     (domainConditions
        (isDomain EM $EmptyMode)
@@ -837,15 +842,15 @@ bcRealLimit(a,b) ==
     (doneButton "Continue" bcRealLimitGen))
   htShowPage()
 
-bcRealLimitGen htPage ==
-  (p := htpButtonValue(htPage,'location)) ~= 'finitePoint =>
-    fun := htpLabelInputString(htPage,'expression)
-    var := htpLabelInputString(htPage,'variable)
+bcRealLimitGen(htPage) ==
+  (p := htpButtonValue(htPage, 'location)) ~= 'finitePoint =>
+    fun := htpLabelInputString(htPage, 'expression)
+    var := htpLabelInputString(htPage, 'variable)
     loc :=
       p = 'plusInfinity => '"%plusInfinity"
       '"%minusInfinity"
-    bcFinish('"limit",fun,STRCONC(var,'" = ",loc))
-  page := htInitPage('"Real Limit Basic Command",nil)
+    bcFinish('"limit", fun, STRCONC(var, '" = ", loc))
+  page := htInitPage('"Real Limit Basic Command", nil)
   htMakePage '(
     (text . "Compute the limit")
     (lispLinks
@@ -857,20 +862,20 @@ bcRealLimitGen htPage ==
   htpSetProperty(page,'loc,htpLabelInputString(htPage,'point))
   htShowPage()
 
-bcRealLimitGen1(htPage,key) ==
-  direction :=
-    key = 'right => '"_"right_""
-    key = 'left => '"_"left_""
-    nil
-  fun := htpProperty(htPage,'fun)
-  var := htpProperty(htPage,'var)
-  loc := htpProperty(htPage,'loc)
-  varPart := STRCONC(var,'" = ",loc)
-  bcFinish('"limit",fun,varPart,direction)
+bcRealLimitGen1(htPage, key) ==
+    direction :=
+        key = 'right => '"_"right_""
+        key = 'left => '"_"left_""
+        nil
+    fun := htpProperty(htPage, 'fun)
+    var := htpProperty(htPage, 'var)
+    loc := htpProperty(htPage, 'loc)
+    varPart := STRCONC(var, '" = ", loc)
+    bcFinish('"limit", fun, varPart, direction)
 
-bcComplexLimit(a,b) ==
-  htInitPage('"Complex Limit Basic Command",nil)
-  htMakePage '(
+bcComplexLimit(a, b) ==
+  htInitPage('"Complex Limit Basic Command", nil)
+  htMakePage('(
     (domainConditions
         (isDomain EM $EmptyMode)
        (isDomain S (String))
@@ -898,25 +903,25 @@ bcComplexLimit(a,b) ==
        (text . "\newline Complex part:")
        (bcStrings (20 0 complex F))) finitePoint)
       ("Complex infinity" "" complexInfinity))
-     (doneButton "Continue" bcComplexLimitGen))
+     (doneButton "Continue" bcComplexLimitGen)))
   htShowPage()
 
-bcComplexLimitGen htPage ==
-  fun := htpLabelInputString(htPage,'expression)
-  var := htpLabelInputString(htPage,'variable)
-  loc :=
-    (p := htpButtonValue(htPage,'location)) = 'finitePoint =>
-      real := htpLabelInputString(htPage,'real)
-      comp := htpLabelInputString(htPage,'complex)
-      complexPart :=
-        comp = '"0" => '""
-        comp = '"1" => '"%i"
-        STRCONC(comp,'"*%i")
-      real = '"0" =>
-        complexPart = '"" => "0"
-        complexPart
-      complexPart = '"" => real
-      STRCONC(real,'" + ",complexPart)
-    '"%infinity"
-  varPart := STRCONC(var,'" = ",loc)
-  bcFinish('"complexLimit",fun,varPart)
+bcComplexLimitGen(htPage) ==
+    fun := htpLabelInputString(htPage, 'expression)
+    var := htpLabelInputString(htPage, 'variable)
+    loc :=
+        (p := htpButtonValue(htPage, 'location)) = 'finitePoint =>
+            real := htpLabelInputString(htPage, 'real)
+            comp := htpLabelInputString(htPage, 'complex)
+            complexPart :=
+                comp = '"0" => '""
+                comp = '"1" => '"%i"
+                STRCONC(comp, '"*%i")
+            real = '"0" =>
+                complexPart = '"" => "0"
+                complexPart
+            complexPart = '"" => real
+            STRCONC(real, '" + ", complexPart)
+        '"%infinity"
+    varPart := STRCONC(var, '" = ", loc)
+    bcFinish('"complexLimit", fun, varPart)
