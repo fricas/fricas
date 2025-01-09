@@ -5,6 +5,7 @@ FriCAS_ is a general purpose computer algebra system (CAS).
 
 For installation instructions see INSTALL.
 For general documentation consult https://fricas.github.io.
+See also project page https://fricas.sourceforge.net.
 
 The basic goal of FriCAS_ is to create a free advanced world-class
 CAS.  In 2007 FriCAS_ forked from Axiom_. Currently the FriCAS_ algebra
