@@ -257,7 +257,7 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
         -- vectors without linear relationship is a basis of the subspace
         -- spanned by theses vectors.
 
-        isBasis? Lv == (rank Lv = # Lv)
+        isBasis?(Lv) == rank(basis(Lv)) = #Lv
 
         -- dimension theory justifies these tests for inclusion
         -- and equality of spaces.
@@ -284,18 +284,18 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
         -- and looks for vectors to complete a basis of the vector space.
         -- The last reverse call makes order the result in the order of bc.
 
-        complementSpace (Lv : List Vector R) : % ==
-          Lv = [] =>
-            error
-              "Can't get vector length of an empty family for complementSpace"
-          dim := #(Lv.1)
+        do_complement(lv : List(Vector(R)), dim : NonNegativeInteger,
+                      is_basis? : Boolean) : % ==
           bc : List Vector R := (canonicalBasis dim)::List Vector R
-          Lw : List Vector R := concat (Lv, bc)
+          Lw : List(Vector(R)) := concat(lv, bc)
           M := rowEchelon column2matrix Lw
-          n := #Lv
+          n := #lv
           ind : NonNegativeInteger := 1
-          for k in 1..n for v in Lw repeat
-            if ind <= dim and M.(ind, k) ~= 0 then ind := ind+1
+          if is_basis? then
+              ind := n + 1
+          else
+              for k in 1..n for v in Lw repeat
+                  if ind <= dim and M.(ind, k) ~= 0 then ind := ind + 1
           RES := []
           for k in n+1..n+dim for v in bc repeat
             if ind <= dim and M.(ind, k)~=0
@@ -304,10 +304,16 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
                 ind := ind+1
           reverse! RES
 
+        complementSpace (Lv : List Vector R) : % ==
+          Lv = [] => error
+              "Can't get vector length of an empty family for complementSpace"
+          do_complement(Lv, #(Lv.1), false)
+
         complementSpace (Lv : List Vector R, n : NonNegativeInteger) : % ==
-          Lv = [] => canonicalBasis n
-          n ~= #(Lv.1) => error "Inconsistant vector length in complementSpace"
-          complementSpace Lv
+            Lv = [] => canonicalBasis n
+            n ~= #(Lv.1) => error
+                              "Inconsistant vector length in complementSpace"
+            do_complement(Lv, n, false)
 
         -- the argument B is a basis, computation is a little easier.
 
@@ -316,23 +322,12 @@ VectorSpaceBasis(R : Field) : Exports == Implementation where
             error
               "Can't get vector length of an empty basis for complement Space"
           dim := #(B.1)
-          bc : List Vector R := (canonicalBasis dim)::List Vector R
-          Lw : List Vector R := concat (B::List Vector R, bc)
-          M := rowEchelon column2matrix Lw
-          n := #B
-          ind : NonNegativeInteger := n+1
-          RES := []
-          for k in n+1..n+dim for v in bc repeat
-            if ind <= dim and M.(ind, k) ~= 0
-              then
-                RES := cons (v, RES)
-                ind := ind+1
-          reverse! RES
+          do_complement(B::Rep, #(B.1), true)
 
         complementSpace (B : %, n : NonNegativeInteger) : % ==
           B = [] => canonicalBasis n
           n ~= #(B.1) => error "Inconsistant vector length in complementSpace"
-          complementSpace B
+          do_complement(B::Rep, n, true)
 
         -- member?, coordinatesIfCan and coordinates test if a vector is
         -- in a subspace and consider it.
