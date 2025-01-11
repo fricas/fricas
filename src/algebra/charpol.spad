@@ -165,3 +165,90 @@ CharacteristicPolynomial3(R : IntegralDomain) : Exports == Implementation where
             res1 := char_pol_via_interpolation0(B, lg)
             d := reduce(_*, lg, 1)::F
             map(c +-> c/d, res1)
+
+)abbrev package CHARPOL4 CharacteristicPolynomial4
+++ References: J. Abdeljaoued, The Berkovitz algorithm, Maple and computing
+++  the characteristic polynomial in an arbitrary commutative ring,
+++  MapleTech, Vol. 4, No. 3, pp. 21--32.
+++ Description: This package computes characteristic polynomial
+++  via Berkovitz-Samuelson formula.
+CharacteristicPolynomial4(R : Ring) : Exports == Implementation where
+  Mat ==> Matrix(R)
+  Up ==> SparseUnivariatePolynomial(R)
+  Exports ==> with
+    char_pol_via_berkovitz : Mat -> Up
+      ++ char_pol_via_berkovitz(m) computes characteristic
+      ++ polynomial of m.
+  Implementation ==> add
+
+    VR ==> Vector(R)
+
+    dot_col_vec(m : Mat, k : Integer, v : VR, l : Integer) : R ==
+        ss : R := 0
+        for j in 1..l repeat
+            ss := ss + m(k, j)*v(j)
+        ss
+
+    char_pol_via_berkovitz(m : Mat) : Up ==
+        n := ncols(m)
+        n ~= nrows(m) => error "matrix not square"
+        x := monomial(1, 1)$Up
+        n = 0 => 1
+        n = 1 => m(1, 1)::Up - x
+        n = 2 => (m(1, 1)::Up - x)*(m(2, 2)::Up - x) - (m(2, 1)*m(1, 2))::Up
+        -- vector representing characteristic polynomial
+        pv := zero(n + 1)$VR
+        -- work vectors
+        q := zero(n + 1)$VR
+        c := zero(n + 1)$VR
+        s := zero(qcoerce(n - 1))$VR
+        q(1) := -1
+        q(2) := m(1, 1)
+        c(1) := -1
+        for r in 2..n repeat
+            for i in 1..r repeat
+                pv(i) := q(i)
+            for i in 1..(r - 1) repeat
+                s(i) := m(i, r)
+            c(2) := m(r, r)
+            for i in 1..(r - 2) repeat
+                c(i + 2) := dot_col_vec(m, r, s, r - 1)
+                for j in 1..(r - 1) repeat
+                    q(j) := dot_col_vec(m, j, s, r - 1)
+                for j in 1..(r - 1) repeat
+                    s(j) := q(j)
+            c(r + 1) := dot_col_vec(m, r, s, r - 1)
+            for i in 1..(r + 1) repeat
+                ss : R := 0
+                for j in 1..min(r, i) repeat
+                    ss := ss + c(i + 1 - j)*pv(j)
+                q(i) := ss
+        for i in 1..(n + 1) repeat
+            pv(n + 2 - i) := q(i)
+        unvectorise(pv)$Up
+
+)abbrev package CHARPOL0 CharacteristicPolynomial
+CharacteristicPolynomial(R : CommutativeRing) : Exports == Implementation where
+    Mat ==> Matrix(R)
+    Up ==> SparseUnivariatePolynomial(R)
+    Exports ==> with
+      characteristicPolynomial : Mat -> Up
+        ++ characteristicPolynomial(m) computes the characteristic
+        ++ polynomial of the matrix m.
+      characteristicPolynomial : (Mat, R) -> R
+        ++ characteristicPolynomial(m, r) computes the characteristic
+        ++ polynomial of the matrix m evaluated at the point r.
+        ++ In particular, if r is the polynomial 'x, then it returns
+        ++ the characteristic polynomial expressed as a polynomial in 'x.
+    Implementation ==> add
+
+        if R has FiniteFieldCategory then
+            characteristicPolynomial(m) ==
+                char_pol(m)$CharacteristicPolynomial2(R)
+        else
+            characteristicPolynomial(m) ==
+                char_pol_via_berkovitz(m)$CharacteristicPolynomial4(R)
+
+        characteristicPolynomial(m, x) ==
+            characteristicPolynomial(m)(x)
+

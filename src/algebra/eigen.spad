@@ -124,14 +124,7 @@ InnerEigenPackage(F : Field) : Exports == Implementation
      else
 
          characteristicPolynomial(A : M) : UP ==
-              dimA := nrows A
-              dimA ~= ncols A => error " The matrix is not square"
-              dimA = 0 => 1$UP
-              B : Matrix(UP) := zero(dimA, dimA)
-              for i in 1..dimA repeat
-                  for j in 1..dimA repeat  B(i, j) := A(i, j)::UP
-                  B(i, i) := B(i, i) - monomial(1, 1)$UP
-              determinant B
+              char_pol_via_berkovitz(A)$CharacteristicPolynomial4(F)
 
      eigenvalues(A : M, fac : UP -> Factored(UP)) : List Eigenvalue ==
          pol := characteristicPolynomial(A)
@@ -312,7 +305,8 @@ EigenPackage(R) : Exports == Implementation where
           matrix([[UP_to_F(v(i), x)] for i in 1..#v])
 
       characteristicPolynomial(m : M, x : SY) ==
-          numer((characteristicPolynomial(m)$IEP)(x::P::F))
+          up := char_pol_via_berkovitz(m)$CharacteristicPolynomial4(F)
+          numer(up(x::P::F))
 
       characteristicPolynomial(m : M) : P ==
           characteristicPolynomial(m, new()$SY)
@@ -381,14 +375,8 @@ CharacteristicPolynomialPackage(R : CommutativeRing) : C == T where
 
            ---- characteristic polynomial  ----
      characteristicPolynomial(A : M, v : R) : R ==
-       dimA := nrows A
-       dimA ~= ncols A => error " The matrix is not square"
-       dimA = 0 => 1$R
-       B : M := zero(dimA, dimA)
-       for i in 1..dimA repeat
-         for j in 1..dimA repeat  B(i, j) := A(i, j)
-         B(i, i) := B(i, i) - v
-       determinant B
+         up := char_pol_via_berkovitz(A)$CharacteristicPolynomial4(R)
+         up(v)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
