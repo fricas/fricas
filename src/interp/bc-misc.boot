@@ -221,7 +221,7 @@ bcDifferentiateGen(htPage) ==
     lastPart :=
         indexpart => STRCONC('",", indexpart, '")")
         '")"
-    bcGen(STRCONC('"differentiate(", mand, '",", varpart, lastPart)
+    bcGen(STRCONC('"differentiate(", mand, '",", varpart, lastPart))
 
 bcDraw() ==
   htInitPage('"Draw Basic Command", nil)
