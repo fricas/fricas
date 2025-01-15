@@ -967,7 +967,13 @@ RootSimplification() : Exports == Implementation where
         "failed"
 
     my_root(s1 : eI, k : Integer, opr : BasicOperator) : eI ==
-        numer(s1) = 1 => 1/kernel(opr, [1/s1, k::eI])
+        n1 := numer(s1)::eI
+        n1 = 1 => 1/kernel(opr, [1/s1, k::eI])
+        d1 := denom(s1)::eI
+        (nu1 := rsimp1(n1, k)) case eI =>
+            nu1::eI/kernel(opr, [d1, k::eI])
+        (du1 := rsimp1(d1, k)) case eI =>
+            kernel(opr, [n1, k::eI])/du1::eI
         kernel(opr, [s1, k::eI])
 
     eval_rl(rl : List(eI), kf : eI, k : Integer) : eI ==
