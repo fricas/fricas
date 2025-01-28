@@ -5,8 +5,14 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    env:
+      ARCH: ${{ matrix.os == 'ubuntu-20.04' && 'x86-64' || 'arm64' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -27,13 +33,13 @@ jobs:
     - name: Create artifact archives
       run: |
         test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
-        tar -cjf FriCAS-linux-x86_64-${{ github.sha }}.tar.bz2 target/
+        tar -cjf FriCAS-linux-${ARCH}-${{ github.sha }}.tar.bz2 target/
 
     - name: Upload Linux binary
       uses: actions/upload-artifact@v4
       with:
-        name: FriCAS-linux-x86_64-binary
-        path: FriCAS-linux-x86_64-${{ github.sha }}.tar.bz2
+        name: FriCAS-linux-${{ env.ARCH }}-binary
+        path: FriCAS-linux-${{ env.ARCH }}-${{ github.sha }}.tar.bz2
 
     - name: Upload to nightly release
       if: ${{ github.event_name == 'push' && ( github.event.ref == 'refs/heads/master' || github.ref_type == 'tag' ) && github.repository == 'fricas/fricas' }}
@@ -44,12 +50,12 @@ jobs:
         export RELEASE_ID=74905307
         export TIMESTAMP=$(date +%Y-%m-%dT%H.%M)
         export SHA=$(echo ${{ github.sha }} | cut -c 1-8)
-        export FILENAME1=FriCAS-${TIMESTAMP}-linux-x86_64-${SHA}.tar.bz2
-        export FILENAME2=fricas-${GITHUB_REF_NAME}-linux-x86_64.tar.bz2
+        export FILENAME1=FriCAS-${TIMESTAMP}-linux-${ARCH}-${SHA}.tar.bz2
+        export FILENAME2=fricas-${GITHUB_REF_NAME}-linux-${ARCH}.tar.bz2
         export FILENAME=$(test "$GITHUB_REF_TYPE" != "tag" && echo $FILENAME1 || echo $FILENAME2)
         export URL=https://uploads.github.com/${REPO_URL}/${RELEASE_ID}/assets
         curl -v -X POST -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.releasetoken }}" \
             "${URL}?name=${FILENAME}" \
-            --data-binary "@FriCAS-linux-x86_64-${{ github.sha }}.tar.bz2" \
+            --data-binary "@FriCAS-linux-${ARCH}-${{ github.sha }}.tar.bz2" \
             -H "Content-Type: application/x-bzip2" || true
