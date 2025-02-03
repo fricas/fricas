@@ -1136,3 +1136,14 @@ with this hack and will try to convince the GCL crowd to fix this.
 (defun |shoeEVALANDFILEACTQ| (expr)
     `(eval-when (:execute :load-toplevel)
          ,expr))
+
+#+gcl
+(in-package "BOOT")
+#+gcl
+(shadow "LIST")
+#+gcl
+(defmacro list (&rest r &aux (l (length r)))
+  (let ((x (nthcdr (1- call-arguments-limit) r)))
+    (if x `(nconc (cl::list ,@(ldiff r x)) (list ,@x)) `(cl::list ,@r))))
+#+gcl
+(deftype list nil 'cl::list)

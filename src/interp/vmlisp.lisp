@@ -142,7 +142,8 @@
 ; 14.1 Creation
 
 ;;; needed for SPAD compiler output
-(define-function '|construct| #'list)
+#-gcl(define-function '|construct| #'list)
+#+gcl(define-function '|construct| #'cl::list)
 
 (defun VEC2LIST (vec) (coerce vec 'list))
 

@@ -326,7 +326,7 @@ mkEvalableCategoryForm(c, e) ==       --from DEFINE
   c is [op,:argl] =>
     op="Join" =>
         nargs := [mkEvalableCategoryForm(x, e) or return nil for x in argl]
-        nargs => ["Join", :nargs]
+        nargs => ["JoinInner", ["LIST", :nargs]]
     op is "DomainSubstitutionMacro" =>
         mkEvalableCategoryForm(CADR argl, e)
     op is "mkCategory" => c
