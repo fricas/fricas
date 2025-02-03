@@ -716,7 +716,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; File and directory support
 ;;; First version contributed by Juergen Weiss.
 
-#+(or :ECL :GCL)
+#+ecl
 (progn
 
   (fricas-foreign-call file_kind "directoryp" int
@@ -749,6 +749,9 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 ;;; Make directory
 
+#+gcl
+(defun |makedir| (fname) (si::mkdir fname))
+
 #+(or :abcl :cmu :lispworks :openmcl)
 (defun |makedir| (fname)
     (|run_program| "mkdir" (list fname)))
@@ -773,6 +776,9 @@ with this hack and will try to convince the GCL crowd to fix this.
             (or (find-symbol "NATIVE-FILE-KIND" :sb-impl)
                 (find-symbol "UNIX-FILE-KIND" :sb-unix))))
          `(,file-kind-fun ,x)))
+
+#+gcl
+(defun file_kind (fname) (case (si::stat fname) (:directory 1) ((nil) -1) (otherwise 0)))
 
 (defun |file_kind| (filename)
    #+(or :GCL :ecl) (file_kind filename)
