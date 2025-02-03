@@ -247,13 +247,13 @@
 ;; E.g.  "/"  "/u/smwatt"  "../src"
 (defun |DirToString| (d)
   (cond
-    ((equal d '(:root)) "/")
+    ((equal d '(:absolute)) "/")
     ((null d) "")
     ('t (string-right-trim "/" (namestring (make-pathname :directory d)))) ))
 
 (defun |StringToDir| (s)
   (cond
-    ((string= s "/") '(:root))
+    ((string= s "/") '(:absolute))
     ((string= s "")  nil)
     ('t
       (let ((lastc (aref s (- (length s) 1))))
