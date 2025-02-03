@@ -664,8 +664,20 @@
 #+:poplog
 (defun reclaim () nil)
 
+#+gcl
+(defun BPINAME (func)
+  (typecase func
+    (symbol func)
+    ((cons (eql lambda-block) t) (cadr func))
+    (function
+     (cond (#.(fboundp 'function-lambda-expression)
+	    (multiple-value-bind (x y z) (function-lambda-expression func)
+	      (or (and (symbolp z) (fboundp z) z) func)))
+	   ((compiled-function-p func)
+            (system:compiled-function-name func))
+           (func)))))
 
-#+(OR IBCL KCL)
+#+(OR IBCL)
 (defun BPINAME (func)
   (if (functionp func)
       (cond ((symbolp func) func)
