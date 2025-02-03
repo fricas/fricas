@@ -290,19 +290,9 @@
 
 (defun GETZEROVEC (n) (MAKE-ARRAY n :initial-element 0))
 
-#-:GCL
 (defun LIST2VEC (list) (coerce list 'vector))
 
 ;;; At least in gcl 2.6.8 coerce is slow, so we roll our own version
-#+:GCL
-(defun LIST2VEC (list)
-    (if (consp list)
-        (let* ((len (length list))
-               (vec (make-array len)))
-             (dotimes (i len)
-                  (setf (aref vec i) (pop list)))
-             vec)
-        (coerce list 'vector)))
 
 
 (define-function 'LIST2REFVEC #'LIST2VEC)
