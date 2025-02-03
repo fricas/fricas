@@ -659,16 +659,14 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;; string with data read from connection, therefore needs address of
 ;; actual string buffer. We use 'sock_get_string_buf_wrapper' to
 ;; resolve the problem
-(SI::clines
-    "int sock_get_string_buf(int, char *, int);"
-    "int sock_get_string_buf_wrapper(int i, object x, int j)"
-    "{ if (type_of(x)!=t_string) FEwrong_type_argument(sLstring,x);"
-    "  if (x->st.st_fillp<j)"
-    "    FEerror(\"string too small in sock_get_string_buf_wrapper\",0);"
-    "  return sock_get_string_buf(i, x->st.st_self, j); }")
+(SI::clines "fixnum sock_get_string_buf_wrapper(fixnum i, object x, fixnum j)"
+    "{ if (!vectorp(x)) FEerror(\"not a string ->~s<-\",1,x);/*FIXME no stringp, and 2.7.0 only has simple_string*/"
+    "  if (length(x)<j)"
+    "    FEerror(\"string too small in sock_get_string_buf_wrapper ~s\",1,list(3,x,make_fixnum((fixnum)x),make_fixnum(j)));"
+    "  return (fixnum)sock_get_string_buf(i, x->st.st_self, j); }")
 
-(SI::defentry sock_get_string_buf (SI::int SI::object SI::int)
-    (SI::int "sock_get_string_buf_wrapper"))
+(SI::defentry sock_get_string_buf (SI::fixnum SI::object SI::fixnum)
+    (SI::fixnum "sock_get_string_buf_wrapper"))
 
 (defun |sockGetStringFrom| (type)
     (let ((buf (MAKE-STRING 10000)))
