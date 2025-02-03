@@ -207,8 +207,10 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 #-:ecl
 (defun make-program (core-image lisp-files)
-    (load-lisp-files lisp-files)
-    (save-core core-image))
+  #+gcl(setq si::*optimize-maximum-pages* nil)
+  (load-lisp-files lisp-files)
+  #+:gcl(progn (setq si::*code-block-reserve* "")(si::gbc t)(setq si::*code-block-reserve* (make-array 10000000 :element-type (quote character) :static t) si::*optimize-maximum-pages* t))
+  (save-core core-image))
 
 #+:ecl
 (defun make-program (core-image lisp-files)
