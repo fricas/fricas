@@ -68,7 +68,7 @@ on this message after the fact. The cmpnote function is used nowhere
 else in GCL so stepping on the function call seems best. We're unhappy
 with this hack and will try to convince the GCL crowd to fix this.
 |#
-#+:gcl (defun compiler::cmpnote (&rest x))
+#+gcl(setq compiler::*suppress-compiler-notes* t)
 
 ;;
 #+:openmcl
