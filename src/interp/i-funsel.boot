@@ -1304,7 +1304,7 @@ orderMmCatStack st ==
     if not mem then haventvars := cons(s,haventvars)
   null havevars => st
   st := nreverse nconc(haventvars,havevars)
-  SORT(st, function mmCatComp)
+  STABLE_-SORT(st, function mmCatComp)
 
 mmCatComp(c1, c2) ==
   b1 := ASSQ(CADR c1, $Subst)
