@@ -56,27 +56,14 @@ $(OUT)/lisp$(EXEEXT): do_it.$(lisp_flavor)
 do_it.gcl: fricas-lisp.lisp fricas-package.lisp fricas-config.lisp \
            primitives.lisp
 	$(fricas_gcl_rsym_hack)
-	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
+	echo '(setq si::*optimize-maximum-pages* nil)' \
+	     '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
 	     '(load "fricas-lisp.lisp")' \
 	     '(setq compiler::*default-system-p* t)' \
-	     '(compile-file "fricas-lisp.lisp")' \
-             '(compile-file "primitives.lisp")' | $(FRICAS_LISP)
-	echo '(compiler::link nil "prelisp" ' \
-              ' (format nil "(progn (let ((SI::*load-path*' \
-                                            ' (cons ~S SI::*load-path*))' \
-                                        ' (si::*load-types* ~S))' \
-                                       ' (compiler::emit-fn t))' \
-                                  ' (when (fboundp (quote si::sgc-on))' \
-                                        ' (si::sgc-on nil))' \
-                                  ' (setq compiler::*default-system-p* t))' \
-                     ' (setq compiler::*default-large-memory-model-p* t))"' \
-                      ' si::*system-directory* (quote (list ".lsp")))' \
-               '  "$(lisp_c_objects) $(fricas_c_runtime_extra)")' \
-            | $(FRICAS_LISP)
-	echo '(load "fricas-package.lisp") (load "fricas-config.lisp")' \
-	     '(load "fricas-lisp.$(OBJEXT)")' '(load "primitives.$(OBJEXT)")' \
-	     '(in-package "FRICAS-LISP") (save-core "$(OUT)/lisp$(EXEEXT)")' \
-	    | ./prelisp$(EXEEXT)
+	     '(let ((compiler::*cc* (concatenate (quote string) compiler::*cc* " -I../../config -I../include")))(load (compile-file "fricas-lisp.lisp")))' \
+             '(load (compile-file "primitives.lisp"))' \
+             '(progn (setq si::*code-block-reserve* "")(si::gbc t)(setq si::*code-block-reserve* (make-array 10000000 :element-type (quote character) :static t) si::*optimize-maximum-pages* t))' \
+	     '(in-package "FRICAS-LISP")(save-core "$(OUT)/lisp$(EXEEXT)")' | GCL_ANSI=t $(FRICAS_LISP)
 	$(STAMP) $@
 
 fricas-lisp.lisp: $(srcdir)/fricas-lisp.lisp

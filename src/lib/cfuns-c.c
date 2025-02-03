@@ -44,6 +44,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "cfuns-c.H1"
 
+#ifdef GCL_SOURCE
+#undef HOST_HAS_DIRFD_FCHDIR
+#endif
+
 /* Most versions of Windows don't have the POSIX functions getuid(),
    geteuid(), getgid(), and getegid().  The following definitions are
    approximations, to patch for the deficiencies of Windows
@@ -193,7 +197,7 @@ static char * fricas_copy_string(char *str)
     if (res) {
         strcpy(res, str);
     } else {
-        fprintf(stderr, "Malloc failed (fricas_copy_string)\n");
+        perror("Malloc failed (fricas_copy_string)\n");
     }
     return res;
 }
@@ -217,25 +221,25 @@ remove_directory(char * name)
     struct file_list * flst = 0;
 #ifdef HOST_HAS_DIRFD_FCHDIR
     if (!cur_dir) {
-        fprintf(stderr, "Unable to open current directory\n");
+        perror("Unable to open current directory\n");
         return -1;
     }
 #else
     if (name_len > INT_MAX/5) {
-        fprintf(stderr, "directory name too long\n");
+        perror("directory name too long\n");
         return -1;
     }
 #endif
     dir = opendir(name);
     if (!dir) {
-        fprintf(stderr, "Unable to open directory to be removed\n");
+        perror("Unable to open directory to be removed\n");
         goto err1;
     }
 #ifdef HOST_HAS_DIRFD_FCHDIR
     cur_dir_fd = dirfd(cur_dir);
     dir_fd = dirfd(dir);
     if (cur_dir_fd == -1 || dir_fd == -1) {
-        fprintf(stderr, "dirfd failed\n");
+        perror("dirfd failed\n");
         goto err2;
     }
 #endif
@@ -251,7 +255,7 @@ remove_directory(char * name)
         } else {
             struct file_list * npos = malloc(sizeof(*npos));
             if (!npos) {
-                fprintf(stderr, "Malloc failed (npos)\n");
+                perror("Malloc failed (npos)\n");
                 break;
             }
             npos->file = fricas_copy_string(fname);
@@ -284,14 +288,12 @@ remove_directory(char * name)
 #else
         char pathbuf[PATH_MAX];
         if (strlen(flst->file) + name_len + 1 < PATH_MAX) {
-            strcpy(pathbuf, name);
-            strcat(pathbuf, "/");
-            strcat(pathbuf, flst->file);
-            if (unlink(pathbuf)) {
-                perror("Unlink failed");
-            }
+	  snprintf(pathbuf,sizeof(pathbuf),"%s/%s",name,flst->file);
+	  if (unlink(pathbuf)) {
+	    perror("Unlink failed");
+	  }
         } else {
-            fprintf(stderr, "panthname too long\n");
+            perror("pathname too long\n");
         }
 #endif
         free(flst->file);

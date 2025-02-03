@@ -1,7 +1,16 @@
 ;;; This file contains portablity and support routines which abstract away
 ;;; differences between Lisp dialects.
 
+#+gcl
+(si::clines "
+#define GCL_SOURCE
+#include \"../lib/bsdsignal.c\"
+#include \"../lib/cfuns-c.c\"
+#include \"../lib/sockio-c.c\"
+")
+
 (in-package "FRICAS-LISP")
+
 #+:cmu
 (progn
      (defvar *saved-terminal-io* *terminal-io*)

@@ -114,11 +114,16 @@ typedef struct {
 
 /* table of dedicated socket types */
 
+#ifndef GCL_SOURCE
+#define STATIC
 extern Sock *purpose_table[];
 extern Sock server[];
 extern Sock clients[];
 extern fd_set socket_mask;
 extern fd_set server_mask;
+#else
+#define STATIC static
+#endif
 
 /* Commands sent over the FRICAS session manager or menu socket */
 
@@ -160,7 +165,11 @@ fricas_write(Sock* s, const char* buf, size_t n)
 static inline int
 fricas_read(Sock* s, char* buf, size_t n)
 {
-   return recv(s->socket, buf, n, 0);
+#ifdef GCL_SOURCE
+  return read(s->socket, buf, n);
+#else
+  return recv(s->socket, buf, n, 0);
+#endif
 }
 
 #endif

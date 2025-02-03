@@ -68,15 +68,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_NOSIGNAL 0
 #endif
 
-Sock clients[MaxClients];       /* socket description of spad clients */
-Sock server[2];                 /* AF_LOCAL and AF_INET sockets for server */
-Sock *purpose_table[TotalMaxPurposes]; /* table of dedicated socket types */
-fd_set socket_mask;             /* bit mask of active sockets */
-fd_set server_mask;             /* bit mask of server sockets */
-int socket_closed;              /* used to identify closed socket on SIGPIPE */
-int spad_server_number = -1;    /* spad server number used in sman */
-int str_len = 0;
-int still_reading  = 0;
+STATIC Sock clients[MaxClients];       /* socket description of spad clients */
+STATIC Sock server[2];                 /* AF_LOCAL and AF_INET sockets for server */
+STATIC Sock *purpose_table[TotalMaxPurposes]; /* table of dedicated socket types */
+STATIC fd_set socket_mask;             /* bit mask of active sockets */
+STATIC fd_set server_mask;             /* bit mask of server sockets */
+STATIC int socket_closed;              /* used to identify closed socket on SIGPIPE */
+STATIC int spad_server_number = -1;    /* spad server number used in sman */
+STATIC int str_len = 0;
+#ifndef GCL_SOURCE
+STATIC int still_reading  = 0;
+#endif
 
 
 
@@ -261,7 +263,7 @@ sread(Sock *sock, char *buf, int buf_size, char *msg)
   }
   if (ret_val == -1) {
     if (msg) {
-      sprintf(err_msg, "reading: %s", msg);
+      snprintf(err_msg, sizeof(err_msg),"reading: %s", msg);
       perror(err_msg);
     }
     return -1;
@@ -291,7 +293,7 @@ swrite(Sock *sock,char *buf,int buf_size,char *msg)
       return wait_for_client_write(sock, buf, buf_size, msg);
     } else {
       if (msg) {
-        sprintf(err_msg, "writing: %s", msg);
+        snprintf(err_msg,sizeof(err_msg), "writing: %s", msg);
         perror(err_msg);
       }
       return -1;
@@ -823,8 +825,12 @@ remote_stdio(Sock *sock)
         return;
       else {
         *(buf + len) = '\0';
+#ifdef GCL_SOURCE
+	gcl_puts(buf);
+#else
         fputs(buf, stdout);
         fflush(stdout);
+#endif
       }
     }
   }
@@ -860,7 +866,7 @@ make_server_name(char *name,char * base)
 {
   char *num;
   if (spad_server_number != -1) {
-    sprintf(name, "%s%d", base, spad_server_number);
+    snprintf(name, 256, "%s%d", base, spad_server_number);
     return 0;
   }
   num = getenv("SPADNUM");
@@ -870,7 +876,7 @@ make_server_name(char *name,char * base)
 */
     return -1;
   }
-  sprintf(name, "%s%s", base, num);
+  snprintf(name, 256, "%s%s", base, num);
   return 0;
 }
 
@@ -1030,15 +1036,15 @@ redirect_stdio(Sock *sock)
 /*  setbuf(stdout, NULL);  */
   fd = dup2(sock->socket, 1);
   if (fd != 1) {
-    fprintf(stderr, "Error connecting stdout to socket\n");
+    perror("Error connecting stdout to socket\n");
     return;
   }
   fd = dup2(sock->socket, 0);
   if (fd != 0) {
-    fprintf(stderr, "Error connecting stdin to socket\n");
+    perror("Error connecting stdin to socket\n");
     return;
   }
-  fprintf(stderr, "Redirected standard IO\n");
+  perror("Redirected standard IO\n");
   FD_CLR(sock->socket, &socket_mask);
 }
 
