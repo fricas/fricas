@@ -86,7 +86,7 @@ from scratch.
 $spadroot := '""
 
 -- Prefix a filename with the {\bf |$spadroot|} variable.
-make_absolute_filename(name) == STRCONC($spadroot, '"/", name)
+make_absolute_filename(name) == append_directory_name($spadroot,name)
 
 reroot(dir) ==
     $spadroot := dir

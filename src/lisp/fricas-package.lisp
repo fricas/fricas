@@ -43,7 +43,7 @@
 
 (export '(QUIT CHDIR |getEnv| |getCLArgs| |load_quietly|
           |get_current_directory|
-          |trim_directory_name| |pad_directory_name|
+          |trim_directory_name| |append_directory_name| |pad_directory_name|
           |file_kind| |makedir| |fricas_compile_file| |fricas_compile_fasl|
           |fricas_probe_file| |run_program| |run_shell_command|
           DEFCONST |exit_with_status| MEMQ |quiet_load_alien|
