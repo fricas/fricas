@@ -253,12 +253,9 @@ After this function is called the image is clean and can be saved.
                  (apply cname args))))
 
 (defun |eval|(x)
-    #-:GCL
     (handler-bind ((warning #'muffle-warning)
                    #+:sbcl (sb-ext::compiler-note #'muffle-warning))
             (eval  x))
-    #+:GCL
-    (eval  x)
 )
 
 ;;; For evaluating categories we need to bind %.

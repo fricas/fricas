@@ -161,16 +161,10 @@
 (deftype |HInt| () '(integer #.(- (expt 2 15)) #.(1- (expt 2 15))))
 (deftype |SInt| () '(integer #.(- (expt 2 31)) #.(1- (expt 2 31))))
 
-#+:GCL
-(deftype |BInt| () t)
-#-:GCL
 (deftype |BInt| () 'integer)
 
 (deftype |SFlo| () 'short-float)
 
-#+:GCL
-(deftype |DFlo| () t)
-#-:GCL
 (deftype |DFlo| () 'double-float)
 
 (deftype |Level| () t) ;; structure??

@@ -607,8 +607,8 @@
           (t (BREAK))))
 
 (defmacro qcsize (x)
- `(the fixnum (length (the #-(or :ecl :gcl)simple-string
-                           #+(or :ecl :gcl)string ,x))))
+  `(the fixnum (length (the #-ecl simple-string
+                            #+ecl string ,x))))
 
 (defmacro qrefelt (vec ind) `(svref ,vec ,ind))
 

@@ -79,10 +79,6 @@ with this hack and will try to convince the GCL crowd to fix this.
     ((app ccl::application) error-flag opts args) nil)
 )
 
-;;; Disable argument processing in GCL
-#+:gcl
-(defun system::process-some-args (&rest args) nil)
-
 ;; Save current image on disk as executable and quit.
 (defun save-core-restart (core-image restart)
 #+:GCL
@@ -235,9 +231,7 @@ with this hack and will try to convince the GCL crowd to fix this.
 ;;; Deleting files ignoring errors
 
 (defun |maybe_delete_file| (file)
-    #-gcl (ignore-errors (delete-file file))
-    ;;; broken, but using gcl it is hard to do better
-    #+gcl (and (probe-file file) (delete-file file))
+  (ignore-errors (delete-file file))
 )
 
 ;;; Chdir function
@@ -319,11 +313,8 @@ with this hack and will try to convince the GCL crowd to fix this.
 
 (defun |load_quietly| (f)
     ;;; (format *error-output* "entered load_quietly ~&")
-    #-:GCL
     (handler-bind ((warning #'muffle-warning))
                   (load f))
-    #+:GCL
-    (load f)
     ;;; (format *error-output* "finished load_quietly ~&")
 )
 

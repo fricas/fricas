@@ -288,10 +288,7 @@
 
 (defun |fnameReadable?| (f)
   (let ((s
-          #-:GCL
           (ignore-errors (open f :direction :input :if-does-not-exist nil))
-          #+:GCL
-          (open f :direction :input :if-does-not-exist nil)
         ))
     (cond (s (close s) 't) ('t nil)) )
   )

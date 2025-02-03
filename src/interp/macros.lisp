@@ -452,13 +452,10 @@ This function respects intermediate #\Newline characters and drops
            *standard-output*))
         (*compile-verbose* nil))
     (declare (special |$comp370_apply|))
-    #-:GCL
     (handler-bind ((warning #'muffle-warning)
                    #+:sbcl (sb-ext::compiler-note #'muffle-warning))
       (funcall driver fn)
       )
-    #+:GCL
-      (funcall driver fn)
 ))
 
 (defun |compQuietly| (fn)
