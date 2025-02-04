@@ -716,7 +716,10 @@ genMapCode(op,body,sig,fnName,parms,isRecursive) ==
 
   locals := SETDIFFERENCE(COPY $localVars, parms)
   if locals then
-    lets := [['LET, l, ''UNINITIALIZED__VARIABLE, op] for l in locals]
+    -- we should have more sensible $localVars, but ATM just skip
+    -- non-symbols
+    lets := [['LET, l, ''UNINITIALIZED__VARIABLE, op] for l in locals
+               | SYMBOLP(l)]
     body := ['PROGN, :lets, body]
 
   reportFunctionCompilation(op,fnName,parms,
