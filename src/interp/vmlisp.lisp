@@ -145,7 +145,7 @@
 #-gcl(define-function '|construct| #'list)
 #+gcl(define-function '|construct| #'cl::list)
 
-(defun VEC2LIST (vec) (coerce vec 'list))
+(defun VEC2LIST (vec) (coerce vec 'cl::list))
 
 (defun |makeList| (size el) (make-list size :initial-element el) )
 
