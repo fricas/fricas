@@ -4,9 +4,9 @@
 #+gcl
 (si::clines "
 #define GCL_SOURCE
-#include \"../lib/bsdsignal.c\"
-#include \"../lib/cfuns-c.c\"
-#include \"../lib/sockio-c.c\"
+#include \"bsdsignal.c\"
+#include \"cfuns-c.c\"
+#include \"sockio-c.c\"
 ")
 
 (in-package "FRICAS-LISP")
