@@ -602,12 +602,10 @@ Preorder(S) : Category == Definition where
  S : SetCategory
  NNI ==> NonNegativeInteger
  Definition ==> FiniteGraph(S) with
-    le : (s : %, NNI, NNI) -> Boolean
-      ++ le(s, x, y) checs if x is less than or equal to y.
-      ++ I would have liked to have used: "<=" instead of "le"
-      ++ "<=" compiles but when called gives:
-      ++ Internal Error: The function <= with signature hashcode is
-      ++ missing from domain.
+    le : (s : %, S, S) -> Boolean
+      ++ le(s, x, y) returns true if and only if x is less than or equal
+      ++ to y.  Note: at first glance we would like to use '<='.
+      ++ But le needs 3 arguments while '<=' has only 2.
 
 )abbrev category POSET Poset
 ++ Author: Martin Baker
@@ -659,33 +657,16 @@ Poset(S) : Category == Definition where
        ++ Note: different from getArrows(s) which is inherited from
        ++ FiniteGraph(S)
 
-     setVert : (s : %, v : List S) -> Void
-       ++ setVert(s, lv) sets the list of all vertices (or objects)
-
-     setArr : (s : %, v : List List Boolean) -> Void
-       ++ setArr(s, la) sets the list of all arrows (or edges)
-
-     addObject! : (s : %, n : S) -> %
-       ++ addObject!(s, n) adds object with coordinates n to the
-       ++ graph s.
-       ++ This is done in a non-mutable way, that is, the original
-       ++ poset is not changed instead a new one is constructed.
-     addArrow! : (s : %, n1 : NNI, n2 : NNI) -> %
-       ++ addArrow!(s, nm, n1, n2) adds an arrow to the graph s, where:
-       ++ n1 is the index of the start object
-       ++ n2 is the index of the end object
-       ++ This is done in a non-mutable way, that is, the original
-       ++ poset is not changed instead a new one is constructed.
+     addObject : (s : %, n : S) -> %
+       ++ addObject(s, n) constructs new poset by adding object n
+       ++ to the poset s.
+     addArrow : (s : %, n1 : S, n2 : S) -> %
+       ++ addArrow(s, nm, n1, n2) constructs new poset by adding
+       ++ to the poset s arrow from n1 to n2.
 
      opposite : (s : %) -> %
        ++ opposite(s) constructs the opposite in the category theory sense
        ++ of reversing all the arrows.
-
-     powerSetStructure : (objs : S) -> %
-       ++ powerSetStructure(set) is a constructor for a Poset
-       ++ where each element is a set (implemented as a list)
-       ++ and with a subset structure.
-       ++ requires S to be a list.
 
      implies : (s : %, NNI, NNI) -> Boolean
 
@@ -735,20 +716,6 @@ Poset(S) : Category == Definition where
      objectToIndex : (s : %, obj : S) -> NNI
        ++ objectToIndex returns the index of a given object.
 
-     completeReflexivity : (s : %) -> %
-       ++ Reflexivity requires forall(x): x<=x
-       ++ This function enforces this by making sure that every element has
-       ++ arrow to itself. That is, the leading diagonal is true.
-
-     completeTransitivity : (s : %) -> %
-       ++ Transitivity requires forall(x, y, z): x<=y and y<=z implies x<=z
-       ++ This function enforces this by making sure that the composition
-       ++ of any two arrows is also an arrow.
-
-     isAntisymmetric? : (s : %) -> Boolean
-       ++ Antisymmetric requires forall(x, y): x<=y and y<=x iff x=y
-       ++ Returns true if this is the case for every element.
-
      isChain? : (s : %) -> Boolean
        ++ isChain?(s) checks if s is a chain, that is any two elements
        ++ in s are comparable.
@@ -782,83 +749,78 @@ Poset(S) : Category == Definition where
       import from List(List(Boolean))
 
       -- adds an object to this poset
-      addObject!(s : %, n : S) : % ==
-          dim : NNI := #(getVert(s)) + 1
-          obs : List S := concat(getVert(s), n)
+      addObject(s : %, n : S) : % ==
+          verts := getVert(s)
+          member?(n, verts) => s
+          dim : NNI := #verts + 1
+          verts := concat(verts, n)
           arrows := []$List(List(Boolean))
-          for a in getArr(s) repeat
-              width : NNI := #a
-              padding : Union(NNI, "failed") := subtractIfCan(dim, width)
-              if padding ~= "failed" then
-                  diff : NNI := padding::NNI
-                  --print(("addObject diff=", string(diff))$String)])
-                  for x in 1..diff repeat
-                      a := concat(a, false)
-              if empty?(arrows)
-                  then arrows := [a]
-                  else arrows := concat(arrows, a)
-          emptyRow : List Boolean := [false for x in 1..dim]
-          arrows := concat(arrows, emptyRow)
-          finitePoset(obs, arrows)
+          for row in getArr(s) repeat
+              row2 := concat(row, false)
+              arrows := cons(row2, arrows)
+          emptyRow : List Boolean := [i = dim for i in 1..dim]
+          arrows := cons(emptyRow, arrows)
+          finitePoset(verts, reverse!(arrows))
 
-      -- TODO - make this non-mutable
+      bll_to_mat(dim : NNI, arr : List(List(Boolean))
+                ) : TwoDimensionalArray(Boolean) ==
+          mat := new(dim, dim, false)$TwoDimensionalArray(Boolean)
+          for row in arr for i in 1..dim repeat
+              for y in row for j in 1..dim repeat
+                  mat(i, j) := y
+          mat
+
+      mat_to_bll(mat : TwoDimensionalArray(Boolean)
+                ) : List(List(Boolean)) ==
+          dim : NNI := nrows(mat)
+          arr : List(List(Boolean)) := []
+          for i in dim..1 by -1 repeat
+              row : List Boolean := []
+              for j in 1..dim repeat
+                  row := cons(mat(i, j), row)
+              arr := cons(reverse!(row), arr)
+          arr
+
+      transitive_closure!(mat : TwoDimensionalArray(Boolean)) :  Void ==
+          dim : NNI := nrows(mat)
+          for j in 1..dim repeat
+              for i in 1..dim repeat
+                  if mat(i, j) then
+                      for k in 1..dim repeat
+                          mat(i, k) := mat(i, k) or mat(j, k)
+
+      anitsymmetric?(mat : TwoDimensionalArray(Boolean)) :  Boolean ==
+          dim : NNI := nrows(mat)
+          for i in 1..dim repeat
+              for j in 1..dim repeat
+                  i = j => iterate
+                  if mat(i, j) and mat(j, i) then return false
+          true
+
       -- adds an arrow to this graph, where:
       -- s is the graph where the arrow is to be added
       -- n1 is the index of the start object
       -- n2 is the index of the end object
-      addArrow!(s : %, n1 : NNI, n2 : NNI) : % ==
-          a : List Boolean := qelt(getArr(s), n1)
-          setelt!(a, n2, true)
-          setelt!(getArr(s), n1, a)
-          finitePoset(getVert(s), getArr(s))
+      add_arrow(s : %, n1 : NNI, n2 : NNI) : % ==
+          dim : NNI := #(getVert(s))
+          mat := bll_to_mat(dim, getArr(s))
+          mat(n1, n2) := true
+          transitive_closure!(mat)
+          not(anitsymmetric?(mat)) =>
+              error "add_arrow: incompatible arrow"
+          finitePoset(getVert(s), mat_to_bll(mat))
+
+      addArrow(s : %, n1 : S, n2 : S) : % ==
+          add_arrow(s, objectToIndex(s, n1), objectToIndex(s, n2))
 
       -- local function to test a single value in the arrow matrix
       isArrow?(arr : List(List(Boolean)), a : NNI, b : NNI) : Boolean ==
-          row : NNI := 1
-          for x in arr repeat
-              if row = a then
-                  val : Boolean := qelt(x, b)
-                  return val
-              row = row + 1
-          false
+          qelt(qelt(arr, a), b)
 
-      le(s : %, a : NNI, b : NNI) : Boolean == isArrow?(getArr(s), a, b)
-
-      -- local function to set a single value in the arrow matrix
-      setArrow!(arr : List(List(Boolean)), a : NNI, b : NNI, c : Boolean
-               ) : Void ==
-          row : NNI := 1
-          for x in arr repeat
-              if row = a then
-                  setelt!(x, b, c)
-                  return void
-              row = row + 1
-          void
+      le(s : %, a : S, b : S) : Boolean ==
+          isArrow?(getArr(s), objectToIndex(s, a), objectToIndex(s, b))
 
       -- start of FiniteGraph implementation
-
-      -- addObject!(s, n) adds object n to the graph s.
-      -- mutable version of addObject.
-      addObject!(s : %, n : S) : % ==
-          dim : NNI := #(getVert(s)) + 1
-          obs : List S := concat(getVert(s), n)
-          arrows := []$List(List(Boolean))
-          for a in getArr(s) repeat
-              width : NNI := #a
-              padding : Union(NNI, "failed") := subtractIfCan(dim, width)
-              if padding ~= "failed" then
-                  diff : NNI := padding::NNI
-                  --print("addObject! diff="::Symbol << string(diff))
-                  for x in 1..diff repeat
-                      a := concat(a, false)
-              if empty?(arrows)
-                  then arrows := [a]
-                  else arrows := concat(arrows, a)
-          emptyRow : List Boolean := [false for x in 1..dim]
-          arrows := concat(arrows, emptyRow)
-          setVert(s, obs)
-          setArr(s, arrows)
-          s
 
       -- addObject!(s, n) adds object with coordinates n to the
       -- graph s.
@@ -871,10 +833,7 @@ Poset(S) : Category == Definition where
       -- n1 is the index of the start object
       -- n2 is the index of the end object
       addArrow!(s : %, name : String, n1 : NNI, n2 : NNI) : % ==
-          a : List Boolean := qelt(getArr(s), n1)
-          setelt!(a, n2, true)
-          setelt!(getArr(s), n1, a)
-          finitePoset(getVert(s), getArr(s))
+          add_arrow(s, n1, n2)
 
       -- addArrow!(s, nm, n1, n2, mp) adds an arrow to the graph s, where:
       -- nm is the name of the arrow
@@ -899,8 +858,8 @@ Poset(S) : Category == Definition where
                       arr : ARROW := ["x", 0::NNI, x pretend NNI,
                                        y pretend NNI, 0::Integer, 0::Integer,
                                          []$List(NNI)]
-                      res := concat(res, arr)
-          res
+                      res := cons(arr, res)
+          reverse!(res)
 
       -- flatten(n) takes a second order graph, we don't really need
       -- this here so return an empty poset.
@@ -942,12 +901,9 @@ Poset(S) : Category == Definition where
       unit(objs : List(S), arrowName : String) : % ==
           dim : NNI := #objs
           arrs : List(List(Boolean)) := [[]$List(Boolean)]
-          for x in 1..dim repeat
-              row : List Boolean := []
-              for y in 1..dim repeat
-                  val : Boolean := (x = y)
-                  row := concat(row, val)
-              arrs := concat(arrs, row)
+          for i in dim..1 by -1 repeat
+              row : List(Boolean) := [i = j for j in 1..dim]
+              arrs := cons(row, arrs)
           finitePoset(objs, arrs)
 
       -- kgraph(objs, arrowName)
@@ -1172,15 +1128,12 @@ Poset(S) : Category == Definition where
       -- all the arrows
       opposite(s : %) : % ==
           arr2 : List List Boolean := [[]]
-          for x in getArr(s) repeat
-              row : List Boolean := []
-              for y in x repeat
-                  row := concat(row, false)
-              arr2 := concat(arr2, row)
-          for a in 1..#(getArr(s)) repeat
-              for b in 1..#(getArr(s)) repeat
-                  if isArrow?(getArr(s), a, b) then setArrow!(arr2, b, a, true)
-          finitePoset(getVert(s), arr2)
+          dim : NNI := #getVert(s)
+          mat := new(dim, dim, false)$TwoDimensionalArray(Boolean)
+          for row in getArr(s) for i in 1.. repeat
+              for y in row for j in 1.. repeat
+                  mat(j, i) := y
+          finitePoset(getVert(s), mat_to_bll(mat))
 
       implies(s : %, left : NNI, right : NNI) : Boolean ==
           a : List Boolean := qelt(getArr(s), left)
@@ -1334,42 +1287,6 @@ Poset(S) : Category == Definition where
       -- returns the index of a given object
       objectToIndex(s : %, obj : S) : NNI ==
           position(obj, getVert(s))$List(S) pretend NNI
-
-      -- Reflexivity requires forall(x): x<=x
-      -- This function enforces this by making sure that every element has
-      -- arrow to itself. That is, the leading diagonal is true.
-      completeReflexivity(s : %) : % ==
-          set2 : List S := getVert(s)
-          struct2 : List(List(Boolean)) := copy(getArr(s))
-          for a in 1..(#set2) repeat
-              setArrow!(struct2, a, a, true)
-          finitePoset(set2, struct2)
-
-      -- Transitivity requires forall(x, y, z): x<=y and y<=z implies x<=z
-      -- This function enforces this by making sure that the composition
-      -- of any two arrows is also an arrow.
-      completeTransitivity(s : %) : % ==
-          set2 : List S := getVert(s)
-          dim : NNI := #set2
-          struct2 : List(List(Boolean)) := copy(getArr(s))
-          for a in 1..dim repeat
-              for b in 1..dim repeat
-                  for c in 1..dim repeat
-                      if isArrow?(struct2, a, b) and isArrow?(struct2, b, c)
-                           and not(isArrow?(struct2, a, c)) then
-                          setArrow!(struct2, a, c, true)
-          finitePoset(set2, struct2)
-
-      -- Antisymmetric requires forall(x, y): x<=y and y<=x iff x=y
-      -- Returns true if this is the case for every element.
-      isAntisymmetric?(s : %) : Boolean ==
-          dim : NNI := #(getVert(s))
-          struct2 : List(List(Boolean)) := copy(getArr(s))
-          for a in 1..dim repeat
-              for b in 1..dim repeat
-                  if isArrow?(struct2, a, b) and isArrow?(struct2, b, a) then
-                      if a ~= b then return false
-          true
 
       -- \spad{zetaMatrix(P)} returns the matrix of the zeta function
       -- This function is based on code by Franz Lehner.
