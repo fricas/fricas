@@ -344,11 +344,6 @@ accept_session_connection(Sock *server_sock)
       }
       plSock->Socket.frame = get_int(spad_server);
       active_session = (Sock *)plSock;
-      get_string_buf(spad_server, big_bad_buf, BufSize);
-      ret_code = swrite((Sock *)plSock, big_bad_buf, strlen(big_bad_buf)+1,
-                        "session: writing to InterpWindow");
-      if (ret_code == -1)
-        return -1;
       num_active_clients++;
 #ifdef DEBUG
 pr();
