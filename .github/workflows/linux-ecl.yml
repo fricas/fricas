@@ -5,8 +5,14 @@ on: workflow_dispatch
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 40
+    env:
+      ARCH: ${{ matrix.os == 'ubuntu-22.04' && 'x86-64' || 'arm64' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -27,10 +33,10 @@ jobs:
     - name: Create artifact archives
       run: |
         test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
-        tar -cjf FriCAS-linux-ECL-x86_64-${{ github.sha }}.tar.bz2 target/
+        tar -cjf FriCAS-linux-ECL-${{ env.ARCH }}-${{ github.sha }}.tar.bz2 target/
 
     - name: Upload Linux binary
       uses: actions/upload-artifact@v4
       with:
-        name: FriCAS-linux-ECL-x86_64-binary
-        path: FriCAS-linux-ECL-x86_64-${{ github.sha }}.tar.bz2
+        name: FriCAS-linux-ECL-${{ env.ARCH }}-binary
+        path: FriCAS-linux-ECL-${{ env.ARCH }}-${{ github.sha }}.tar.bz2
