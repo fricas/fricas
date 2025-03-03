@@ -1,0 +1,42 @@
+name: FriCAS CI on Linux on CLISP
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    env:
+      ARCH: ${{ matrix.os == 'ubuntu-22.04' && 'x86-64' || 'arm64' }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install clisp libxpm-dev
+
+    - name: configure
+      run: ./configure --with-lisp=clisp --with-x || cat config.log
+
+    - name: make
+      run: make -j4 --output-sync
+
+    - name: make check
+      run: make check -j4 --output-sync
+
+    - name: Create artifact archives
+      run: |
+        test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
+        tar -cjf FriCAS-linux-CLISP-${{ env.ARCH }}-${{ github.sha }}.tar.bz2 target/
+
+    - name: Upload Linux binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: FriCAS-linux-CLISP-${{ env.ARCH }}-binary
+        path: FriCAS-linux-CLISP-${{ env.ARCH }}-${{ github.sha }}.tar.bz2
