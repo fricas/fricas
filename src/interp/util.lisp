@@ -73,15 +73,11 @@ at load time.
 #|
 The {\bf build-interpsys} function takes a list of files to load
 into the image ({\bf load-files}).
-Next it takes a set of shell variables, the most important of
-which is the {\bf spad} variable. This is normally set to be the same
-as the final build location. This function is called in the
-src/interp/Makefile.
 
 This function calls {\bf initroot} to set up pathnames we need. Next
 it sets up the lisp system memory (at present only for GCL). Next
 it loads all of the named files, resets a few global state variables,
-loads the databases, sets up autoload triggers and clears out hash tables.
+loads the databases and clears out hash tables.
 After this function is called the image is clean and can be saved.
 |#
 (defun build-interpsys (load-files)
