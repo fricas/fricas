@@ -13,7 +13,6 @@ Expression(R : Comparable) : Exports == Implementation where
   CF  ==> CombinatorialFunction(R, %)
   LF  ==> LiouvillianFunction(R, %)
   AN  ==> AlgebraicNumber
-  KAN ==> Kernel AN
   FSF ==> FunctionalSpecialFunction(R, %)
   ESD ==> ExpressionSpace2_&(%, K)
   FSD ==> FunctionSpace2_&(%, R, K)
@@ -604,21 +603,20 @@ Expression(R : Comparable) : Exports == Implementation where
                 retractIfCan(x : %) : Union(Q, "failed") == retractIfCan(x)$Rep
 
                 if not(R is AN) then
-                    k2expr  : KAN -> %
-                    smp2expr : SparseMultivariatePolynomial(Integer, KAN) -> %
+                    EI ==> Expression(Integer)
+                    ER ==> Expression(R)
                     R2AN    : R  -> Union(AN, "failed")
                     k2an    : K  -> Union(AN, "failed")
                     smp2an  : MP -> Union(AN, "failed")
 
-                    coerce(x : AN) : % == smp2expr(numer x) / smp2expr(denom x)
-                    k2expr k ==
-                        map(x +-> x::%, k)$ExpressionSpaceFunctions2(AN, %)
+                    cor1(c : Integer) : R == c::R
 
-                    smp2expr p ==
-                        map(k2expr, x +-> x::%, p
-                           )$PolynomialCategoryLifting(IndexedExponents KAN,
-                             KAN, Integer, SparseMultivariatePolynomial(
-                               Integer, KAN), %)
+                    corR(xe : EI) : ER ==
+                        map(cor1, xe)$FunctionSpaceFunctions2(
+                            Integer, EI, R, ER)
+
+                    coerce(x : AN) : % ==
+                        corR(x pretend EI) pretend %
 
                     retractIfCan(x : %) : Union(AN, "failed") ==
                         ((n := smp2an numer x) case AN) and
@@ -631,8 +629,11 @@ Expression(R : Comparable) : Exports == Implementation where
                              u@Q::AN
                         "failed"
 
+                    AN_op?(op : BasicOperator) : Boolean ==
+                        has?(op, ALGOP) or belong?(op)$ExpressionSpace2_&(%, K)
+
                     k2an k ==
-                        not(belong?(op := operator k)$AN) => "failed"
+                        not(AN_op?(op := operator k)) => "failed"
                         is?(op, 'rootOf) =>
                             args := argument(k)
                             a2 := args.2
@@ -657,13 +658,14 @@ Expression(R : Comparable) : Exports == Implementation where
                                 eqa := eqa + monomial(ccu@AN/den1, degree eq)
                                 eq := reductum eq
                             rootOf(eqa, s1)$AN
-                        arg : List(AN) := empty()
+                        arg : List(AN) := []
                         for x in argument k repeat
                             if (a := retractIfCan(x)@Union(AN, "failed"))
                               case "failed" then
                                 return "failed"
                             else arg := concat(a@AN, arg)
-                        (operator(op)$AN) reverse!(arg)
+                        (operator(op)$EI)(reverse!(arg) pretend List(EI))
+                            pretend(AN)
 
                     smp2an p ==
                         (x1 := mainVariable p) case "failed" =>

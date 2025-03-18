@@ -142,7 +142,6 @@ AlgFactor(UP) : Exports == Implementation where
   Z   ==> Integer
   Q   ==> Fraction Integer
   AN  ==> AlgebraicNumber
-  K   ==> Kernel AN
   UPQ ==> SparseUnivariatePolynomial Q
   SUP ==> SparseUnivariatePolynomial AN
   FR  ==> Factored UP
@@ -165,8 +164,11 @@ AlgFactor(UP) : Exports == Implementation where
 
   Implementation ==> add
 
+    EI ==> Expression(Integer)
+    K ==> Kernel(EI)
+
     import from PolynomialCategoryQuotientFunctions(IndexedExponents K,
-                           K, Z, SparseMultivariatePolynomial(Z, K), AN)
+                           K, Z, SparseMultivariatePolynomial(Z, K), EI)
     import from Integer
 
     UPCF2 ==> UnivariatePolynomialCategoryFunctions2
@@ -181,13 +183,16 @@ AlgFactor(UP) : Exports == Implementation where
     import from List(AN)
     import from Factored(UP)
 
+    ker_lst(la : List(AN)) : List(K) ==
+        tower([c::EI for c in la]$List(EI))
+
     liftpoly p   == map(x +-> x::AN,  p)$UPCF2(Q, UPQ, AN, UP)
     downpoly p   == map(x +-> retract(x)@Q, p)$UPCF2(AN, UP , Q, UPQ)
     ifactor(p, l) == (fact(p pretend UP, l)) pretend Factored(SUP)
-    factor p     == fact(p, tower coefficients p)
+    factor p     == fact(p, ker_lst(coefficients(p)))
 
     factor(p, l) ==
-      fact(p, tower removeDuplicates concat(l, coefficients p))
+      fact(p, ker_lst(removeDuplicates(concat(l, coefficients p))))
 
     split p ==
       fp := factor p
@@ -207,6 +212,12 @@ AlgFactor(UP) : Exports == Implementation where
       fp := factorList factor p
       size?(fp, 1) and first(fp).exponent = 1
 
+    SUPEI_to_SUP(pe : SparseUnivariatePolynomial(EI)) : SUP ==
+        map(retract, pe)$SparseUnivariatePolynomialFunctions2(EI, AN)
+
+    red_AN(x : AN, alpha : K, q : SparseUnivariatePolynomial(EI)) : SUP ==
+        SUPEI_to_SUP(univariate(x::EI, alpha, q))
+
     fact(p, l) ==
       (degree p = 1) => primeFactor(p, 1)
       empty? l =>
@@ -214,14 +225,14 @@ AlgFactor(UP) : Exports == Implementation where
         (liftpoly unit dr) *
           _*/[primeFactor(liftpoly dc.factor, dc.exponent)
             for dc in factorList dr]
-      q   := minPoly(alpha := "max"/l)$AN
+      q   := SUPEI_to_SUP(qe := minPoly(alpha := "max"/l)$EI)
       newl  := remove((x : K) : Boolean +-> alpha = x, l)
       sae := SimpleAlgebraicExtension(AN, SUP, q)
       ups := SparseUnivariatePolynomial sae
-      fr  := factor(map(x +-> reduce univariate(x, alpha, q),
+      fr  := factor(map(x +-> reduce(red_AN(x, alpha, qe)),
                      p)$UPCF2(AN, UP, sae, ups),
                     x +-> ifactor(x, newl))$InnerAlgFactor(AN, SUP, sae, ups)
-      newalpha := alpha::AN
+      newalpha := retract((alpha::EI))@AN
       map((x : sae) : AN +-> (lift(x)$sae) newalpha, unit fr)$UPCF2(sae,
                                 ups, AN, UP) *
             _*/[primeFactor(map((x : sae) : AN +-> (lift(x)$sae) newalpha,
