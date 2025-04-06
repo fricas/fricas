@@ -10,33 +10,13 @@
 +++ Description: This category implements of interval arithmetic and
 +++ transcendental functions over intervals.
 IntervalCategory(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)):
- Category == Join(GcdDomain, OrderedSet, TranscendentalFunctionCategory,
-                  RadicalCategory, RetractableTo(Integer), Approximate) with
-  interval : (R, R) -> %
-    ++ interval(inf, sup) creates a new interval, either \spad{[inf, sup]} if
-    ++ \spad{inf <= sup} or \spad{[sup, inf]} otherwise.
-  qinterval : (R, R) -> %
-    ++ qinterval(inf, sup) creates a new interval \spad{[inf, sup]}, without
-    ++ checking the ordering on the elements.
+ Category == Join(AIntervalCategory R, GcdDomain, OrderedSet,
+                  TranscendentalFunctionCategory, RadicalCategory,
+                      RetractableTo(Integer), Approximate) with
   interval : R -> %
     ++ interval(f) creates a new interval around f.
   interval : Fraction Integer -> %
     ++ interval(f) creates a new interval around f.
-  inf : % -> R
-    ++ inf(u) returns the infinum of \spad{u}.
-  sup : % -> R
-    ++ sup(u) returns the supremum of \spad{u}.
-  width : % -> R
-    ++ width(u) returns \spad{sup(u) - inf(u)}.
-  positive? : % -> Boolean
-    ++ positive?(u) returns \spad{true} if every element of u is positive,
-    ++ \spad{false} otherwise.
-  negative? : % -> Boolean
-    ++ negative?(u) returns \spad{true} if every element of u is negative,
-    ++ \spad{false} otherwise.
-  contains? : (%, R) -> Boolean
-    ++ contains?(i, f) returns true if \spad{f} is contained within the interval
-    ++ \spad{i}, false otherwise.
 
 )abbrev domain INTRVL Interval
 +++ Author: Mike Dewar
@@ -50,10 +30,13 @@ IntervalCategory(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)):
 +++ Description:
 +++ This domain is an implementation of interval arithmetic and transcendental
 +++ functions over intervals.
-Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : IntervalCategory(R) == add
+Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) :
+    IntervalCategory(R) == add
+
+  -- Because of SPAD semantics, Interval deliberately does not inherit
+  -- from AInterval, since the implementation of qinterval is different.
 
   import from Integer
---  import from R
 
   Rep := Record(Inf : R, Sup : R)
 
@@ -97,10 +80,6 @@ Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : Interv
     else
       u
 
-  interval(i : R, s : R) : % ==
-    i > s =>  [roundDown s, roundUp i]
-    [roundDown i, roundUp s]
-
   interval(f : R) : % ==
     zero?(f) => 0
     one?(f)  => 1
@@ -120,12 +99,6 @@ Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : Interv
 
   inf(u : %) : R == u.Inf
   sup(u : %) : R == u.Sup
-  width(u : %) : R == u.Sup - u.Inf
-
-  contains?(u : %, f : R) : Boolean == (f > inf(u)) and (f < sup(u))
-
-  positive?(u : %) : Boolean == inf(u) > 0
-  negative?(u : %) : Boolean == sup(u) < 0
 
   _< (a : %, b : %) : Boolean ==
     if inf(a) < inf(b) then
@@ -134,42 +107,6 @@ Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : Interv
       false
     else
       sup(a) < sup(b)
-
-  _+ (a : %, b : %) : % ==
-    -- A couple of blatant hacks to preserve the Ring Axioms!
-    if zero?(a) then return(b) else if zero?(b) then return(a)
-    if a = b then return qinterval(2*inf(a), 2*sup(a))
-    qinterval(inf(a) + inf(b), sup(a) + sup(b))
-
-
-  _- (a : %, b : %) : % ==
-    if zero?(a) then return(-b) else if zero?(b) then return(a)
-    qinterval(inf(a) - sup(b), sup(a) - inf(b))
-
-
-  _* (a : %, b : %) : % ==
-    -- A couple of blatant hacks to preserve the Ring Axioms!
-    if one?(a) then return(b) else if one?(b) then return(a)
-    if zero?(a) then return(0) else if zero?(b) then return(0)
-    prods : List R :=  sort [inf(a)*inf(b), sup(a)*sup(b),
-                             inf(a)*sup(b), sup(a)*inf(b)]
-    qinterval(first prods, last prods)
-
-
-  _* (a : Integer, b : %) : % ==
-    if (a > 0) then
-      qinterval(a*inf(b), a*sup(b))
-    else if (a < 0) then
-      qinterval(a*sup(b), a*inf(b))
-    else
-      0
-
-  _* (a : PositiveInteger, b : %) : % == qinterval(a*inf(b), a*sup(b))
-
-  _^ (a : %, n : PositiveInteger) : % ==
-    contains?(a, 0) and zero?((n@Integer) rem 2) =>
-      interval(0, max(inf(a)^n, sup(a)^n))
-    interval(inf(a)^n, sup(a)^n)
 
   _- (a : %) : % == exactInterval(-sup(a), -inf(a))
 
@@ -187,8 +124,6 @@ Interval(R : Join(FloatingPointSystem, TranscendentalFunctionCategory)) : Interv
    vals : List R := sort [1/inf(u), 1/sup(u)]$List(R)
    qinterval(first vals, last vals)
 
-
-  unit?(u : %) : Boolean == not contains?(u, 0)
 
   _exquo(u:%,v:%):Union(%,"failed") ==
    contains?(v,0) => "failed"

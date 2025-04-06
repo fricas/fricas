@@ -1,0 +1,198 @@
+-------------------------------------------------------------------
+---
+--- FriCAS QEta
+--- Copyright (C) 2025,  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------
+
+)abbrev category AINTCAT AIntervalCategory
+++ Author: Ralf Hemmecke
+++ Description:
+++ AIntervalCategory(R) exports operations that can be done with
+++ intervals. Although these operations should be similar to the
+++ arithmetic operations of a Ring, we do not export Ring, since the
+++ ring axioms are not fulfilled.
+AIntervalCategory(R: OrderedRing): Category == SetCategory with
+    interval: (R, R) -> %
+      ++ interval(x,y) creates a new interval \spad{[x,y]}, if
+      ++ \spad{x<=y} and $\spad{[y,x]}, if \spad{y<x}.
+    qinterval: (R, R) -> %
+      ++ qinterval(inf,sup) creates a new interval without checking the
+      ++ ordering on the elements.
+    inf: % -> R
+      ++ inf(x) returns the infinum of \spad{x}.
+    sup: % -> R
+      ++ sup(x) returns the supremum of \spad{x}.
+    coerce: % -> List R
+      ++ coerce(x) returns [inf(x),sup(x)].
+    width: % -> R
+      ++ width(x) returns \spad{sup(x) - inf(x)}.
+    error?: % -> Boolean
+      ++ error?(x) returns true if the lower bound is bigger than the
+      ++ upper bound. That can happen it such an interval is created
+      ++ by the qinterval function.
+    positive?: % -> Boolean
+      ++ positive?(x) returns \spad{true} if every element of u is
+      ++ positive, \spad{false} otherwise.
+    negative?: % -> Boolean
+      ++ negative?(u) returns \spad{true} if every element of u is
+      ++ negative, \spad{false} otherwise.
+    contains?: (%, R) -> Boolean
+      ++ contains?(x,r) returns true if \spad{inf(x)<=r<=sup(x)} and
+      ++ false otherwise.
+    contains?: (%, %) -> Boolean
+      ++ contains?(x,y) returns true if \spad{inf(x)<=inf(y)} and
+      ++ \spad{sup(y)<=sup(x)} and false otherwise.
+    0: %
+      ++ 0 is interval(0,0).
+    1: %
+      ++ 1 is interval(1,1).
+    zero?: % -> Boolean
+      ++ zero?(x) returns true if x=interval(0,0).
+    one?: % -> Boolean
+      ++ one?(x) returns true if x=interval(1,1).
+    _=: (%, %) -> %
+      ++ x=y returns true iff inf(x)=inf(y) and sup(x)=sup(y).
+    _+: (%, R) -> %
+      ++ x+r creates the interval \spad{[inf x + r, sup x + x]}.
+    _-: % -> %
+      ++ -x creates the interval \spad{[- sup x, - inf x]}.
+    _+: (%, %) -> %
+      ++ x+y creates the interval \spad{[inf x + inf y, sup x + sup y]}.
+      ++ x+y creates an interval such that for any u and v with
+      ++ contains?(x,u) and contains?(y,v) it holds
+      ++ contains?(x+y,u+v).
+    _-: (%, %) -> %
+      ++ x-y creates the interval \spad{x+(-y)}.
+    _*: (PositiveInteger, %) -> %
+      ++ z*x creates the interval \spad{[z * inf x, z * sup x]}.
+    _*: (Integer, %) -> %
+      ++ z*x creates the interval \spad{[z * inf x, z * sup x]}.
+    _*: (R, %) -> %
+      ++ r*x creates the interval \spad{[r * inf x, r * sup x]}.
+    _*: (%, %) -> %
+      ++ x*y creates an interval such that for any u and v with
+      ++ contains?(x,u) and contains?(y,v) it holds
+      ++ contains?(x*y,u*v).
+    _^: (%, PositiveInteger) -> %
+      ++ x^n creates an interval such that for any u and v with
+      ++ contains?(x,u) it holds contains?(x^n,u^n).
+    _^: (%, NonNegativeInteger) -> %
+      ++ x^n returns interval(1,1) if x is not zero and n=0.
+      ++ Otherwise it creates an interval such that for any u and v
+      ++ with contains?(x,u) it holds contains?(x^n,u^n).
+    abs: % -> %
+      ++ abs(x) returns the tightest interval such that for all r with
+      ++ contains?(x,r) it holds contains?(abs(x),abs(r)).
+
+    if R has Field then
+      unit?: % -> Boolean
+        ++ unit?(x) returns true if every element in x can be
+        ++ inverted, i.e. if not contains?(x,0).
+      inv: % -> %
+        ++ inv(x) returns interval(1/sup(x),1/inf(x))
+        ++ if not contains?(x,0).
+        ++ It is an error, if the interval contains 0.
+      _/: (%, %) -> %
+        ++ x/y returns x*inv(y). If positive?(x) and positive?(y),
+        ++ then this is equal to
+        ++ interval(inf(x)/sup(y),sup(x)/inf(y)).
+
+  add -- default implementation
+
+    zero?(x: %): Boolean == zero? inf x and zero? sup x
+    one?(x: %): Boolean == one? inf x and one? sup x
+    interval(i: R, s: R): % ==
+        s < i => qinterval(s, i)
+        qinterval(i, s)
+    width(x: %): R == sup x - inf x
+    error?(x: %): Boolean == sup x < inf x
+    positive?(x: %): Boolean == 0 < inf x
+    negative?(x: %): Boolean == sup x < 0
+    contains?(x: %, r: R): Boolean == inf x <= r and r <= sup x
+    contains?(x: %, y: %): Boolean == inf x <= inf y and sup y <= sup x
+    ((x: %) = (y: %)): Boolean == inf x = inf y and sup x = sup y
+    (-(x: %)): % == qinterval(- sup x, - inf x)
+    ((x: %) + (r: R)): % ==
+        zero? r => x
+        qinterval(inf x + r, sup x + r)
+    ((x: %) + (y: %)): % ==
+        zero? x => y
+        zero? y => x
+        x = y => qinterval(2 * inf x, 2 * sup x)
+        qinterval(inf x + inf y, sup x + sup y)
+    ((x: %) - (y: %)): % ==
+        zero? x => - y
+        zero? y => x
+        qinterval(inf  x - sup y, sup x - inf y)
+    ((z: PositiveInteger) * (x: %)): % == qinterval(z * inf x, z * sup x)
+    ((z: Integer) * (x: %)): % ==
+        zero? z => 0
+        one? z or zero? x => x
+        z > 0 => qinterval(z * inf x, z * sup x)
+        qinterval(z * sup x, z * inf x)
+    ((r: R) * (x: %)): % ==
+        zero? r => 0
+        one? r or zero? x => x
+        r > 0 => qinterval(r * inf x, r * sup x)
+        qinterval(r * sup x, r * inf x)
+    ((x: %) * (y: %)): % ==
+        one? x => y
+        one? y => x
+        zero? x or zero? y => 0
+        ix := inf x; sx := sup x; iy := inf y; sy := sup y
+        products: List R := sort [ix * iy, ix * sy, sx * iy, sx * sy]
+        qinterval(first products, last products)
+    ((x: %) ^ (n: PositiveInteger)): % ==
+        one? n => x
+        contains?(x, 0) and even? n => qinterval(0, max(- inf x, sup x)^n)
+        interval(inf(x)^n, sup(x)^n) -- will sort so that lower < upper
+    ((x: %) ^ (n: NonNegativeInteger)): % ==
+        zero? n =>
+            zero? x => error "cannot compute 0^0"
+            qinterval(1, 1)
+        x^(n::PositiveInteger)
+    abs(x: %): % ==
+        positive? x => x
+        negative? x => -x
+        qinterval(0, max(- inf x, sup x))
+
+    coerce(x: %): List R == [inf x, sup x]
+    coerce(x: %): OutputForm == x :: List(R) :: OutputForm
+
+    if R has Field then
+        unit?(x: %): Boolean == not contains?(x, 0)
+        inv(x: %): % ==
+            contains?(x, 0) => error "inv: interval contains 0"
+            interval(inv sup x, inv inf x)
+        ((x: %) / (y: %)): % == x * inv(y)
+
+
+
+)abbrev domain AINTRVL AInterval
+++ Author: Ralf Hemmecke
+++ Description:
+++ AInterval(R) implements ring operations on intervals.
+AInterval(R: Join(OrderedRing, CommutativeRing)): AIntervalCategory R == add
+    Rep ==> Record(Inf: R, Sup: R)
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    0: % == per [0, 0]
+    1: % == per [1, 1]
+    inf(x: %): R == rep(x).Inf
+    sup(x: %): R == rep(x).Sup
+    qinterval(i: R, s: R): % == per [i,s]
