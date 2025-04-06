@@ -197,9 +197,6 @@ init_parent(void)
 int
 main(int argc,char **  argv)
 {
-    /*int name_found;*/
-    /*FILE *junk;*/
-    FILE *fopen();
 
     /*
      * Modified on 6/13/90 for the command line completion abiltities of
