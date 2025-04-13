@@ -374,6 +374,20 @@ IndexedString(mn : Integer) : Export == Implementation where
         RPLACSTR(y, s, m, x, 0, m)$Lisp
         y
 
+    join(l: List % ,sep: %): % ==
+        empty? l => empty()
+        len1 := #first(l)
+        lensep := #sep
+        len := #rest(l) * lensep + len1
+        for s in rest l repeat len := len + #s
+        t := new(len, space$C)
+        RPLACSTR(t, 0, len1, first l, 0, len1)$Lisp
+        i := len1
+        for s in rest l repeat
+            RPLACSTR(t, i, lensep, sep, 0, lensep)$Lisp; i := i + lensep
+            RPLACSTR(t, i, m:=#s,  s  , 0, m     )$Lisp; i := i + m
+        t
+
     qelt(s : %, i : I) == Qelt(s, i - mn)
 
     elt(s : %, i : I) ==
