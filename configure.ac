@@ -1,5 +1,5 @@
 sinclude(config/fricas.m4)
-AC_INIT([FriCAS], [2024-12-20],
+AC_INIT([FriCAS], [2025-04-14],
         [fricas-devel@googlegroups.com],
         [fricas],
         [https://fricas.github.io])
@@ -264,7 +264,7 @@ else
         ;;
      gcl)
         case $fricas_lisp_version in
-           2.6.1[[4-9]])
+           2.6.1[[4-9]]|2.7.[[1-9]])
              ;;
            2.7.0)
              AC_MSG_WARN([FriCAS needs porting to gcl $fricas_lisp_version
