@@ -27,6 +27,11 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
        ++ is of minimal possible degree and homogeneous part of
        ++ of r of maximal degree contains no terms divisible from
        ++ left by leading term of b.
+    rdivide : (XDP, XDP) -> d_rec
+       ++ ldivide(a, b) returns [c, r] such that a = c*b + r, r is
+       ++ is of minimal possible degree and homogeneous part of
+       ++ of r of maximal degree contains no terms divisible from
+       ++ right by leading term of b.
     if F has PolynomialFactorizationExplicit then
         factor : XDP -> List(XDP)
            ++ factor(p) returns a factorization of p into irreducible
@@ -72,6 +77,22 @@ XPolynomialFactor(vl : OrderedSet, F : Field) : Exports == Implementation where
             tx := top_split(x)
             q1 := ilc*lquo(first(tx), w)
             x := x - y*q1
+            qq := qq + q1
+            ndx := my_degree(x)
+            ndx = dx or ndx < dy => return [qq, x]
+            dx := ndx
+
+    rdivide(x : XDP, y : XDP) : d_rec ==
+        w := maxdeg(y)
+        ilc := 1/leadingCoefficient(y)
+        dy := degree(y)
+        dx := my_degree(x)
+        dx < dy => [0, x]
+        qq := 0$XDP
+        repeat
+            tx := top_split(x)
+            q1 := ilc*rquo(first(tx), w)
+            x := x - q1*y
             qq := qq + q1
             ndx := my_degree(x)
             ndx = dx or ndx < dy => return [qq, x]
