@@ -208,12 +208,8 @@ dbReadComments(n) ==
   line := read_line instream
   k := dbTickIndex(line,1,1)
   line := SUBSTRING(line,k + 1,nil)
-  while not EOFP instream and (x := read_line instream) and
-    (k := MAXINDEX x) and (j := dbTickIndex(x,1,1)) and (j < k) and
-      x.(j := j + 1) = char '_- and x.(j := j + 1) = char '_- repeat
-        xtralines := [SUBSTRING(x,j + 1,nil),:xtralines]
   SHUT instream
-  STRCONC(line, "STRCONC"/NREVERSE xtralines)
+  line
 
 dbSplitLibdb() ==
   instream := MAKE_INSTREAM('"olibdb.text")
@@ -227,23 +223,18 @@ dbSplitLibdb() ==
     line := read_line instream
     outP := FILE_-POSITION outstream
     comP := FILE_-POSITION comstream
-    [prefix,:comments] := dbSplit(line,6,1)
+    [prefix, comments] := dbSplit(line, 6, 1)
     PRINTEXP(prefix,outstream)
     PRINTEXP($tick ,outstream)
-    null comments =>
+    comments = '"" =>
       PRINTEXP(0,outstream)
       TERPRI(outstream)
     PRINTEXP(comP,outstream)
     TERPRI(outstream)
     PRINTEXP(outP  ,comstream)
     PRINTEXP($tick ,comstream)
-    PRINTEXP(first comments,comstream)
+    PRINTEXP(comments, comstream)
     TERPRI(comstream)
-    for c in rest comments repeat
-      PRINTEXP(outP  ,comstream)
-      PRINTEXP($tick ,comstream)
-      PRINTEXP(c, comstream)
-      TERPRI(comstream)
   SHUT instream
   SHUT outstream
   SHUT comstream
@@ -251,17 +242,8 @@ dbSplitLibdb() ==
 
 dbSplit(line,n,k) ==
   k := charPosition($tick,line,k + 1)
-  n = 1 => [SUBSTRING(line,0,k),:dbSpreadComments(SUBSTRING(line,k + 1,nil),0)]
+  n = 1 => [SUBSTRING(line,0,k), SUBSTRING(line, k + 1, nil)]
   dbSplit(line,n - 1,k)
-
-dbSpreadComments(line,n) ==
-  line = '"" => nil
-  k := charPosition(char '_-,line,n + 2)
-  k >= MAXINDEX line => [SUBSTRING(line,n,nil)]
-  line.(k + 1) ~= char '_- =>
-    u := dbSpreadComments(line,k)
-    [STRCONC(SUBSTRING(line,n,k - n),first u),:rest u]
-  [SUBSTRING(line,n,k - n),:dbSpreadComments(SUBSTRING(line,k,nil),0)]
 
 --============================================================================
 --                  Build Glossary
