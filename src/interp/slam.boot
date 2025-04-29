@@ -119,8 +119,8 @@ reportFunctionCacheAll(op,nam,argl,body) ==
   lamex:= ['LAMBDA, arg, codeBody]
   mainFunction:= [nam,lamex]
   computeFunction:= [auxfn,['LAMBDA,[:argl, 'envArg],body]]
-  compileInteractive mainFunction
   compileInteractive computeFunction
+  compileInteractive mainFunction
   cacheType:= 'hash_-table
   cacheResetCode := ['SETQ, cacheName, ['MAKE_HASHTABLE, ''EQUAL]]
   cacheCountCode:= ['hashCount,cacheName]
