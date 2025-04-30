@@ -105,7 +105,7 @@ formatPred u ==
     b is ["ATTRIBUTE",.] => BREAK()
     b is ["SIGNATURE",:.] => u
     BREAK()
-  atom u => u
+  atom u => BREAK()
   u is ["and",:v] => ["and",:[formatPred w for w in v]]
   systemError '"formatPred"
 
@@ -216,18 +216,10 @@ knownInfo1 pred ==
 
 actOnInfo(u, e) ==
   null u => e
-  u is ["PROGN", :l] =>
-      for v in l repeat
-          e := actOnInfo(v, e)
-      e
+  u is ["PROGN", :l] => BREAK()
   Info := [u, :get("$Information", "special", e)]
   e := put("$Information", "special", Info, e)
-  u is ["COND",:l] =>
-      -- there is nowhere else that this sort of thing exists
-    for [ante,:conseq] in l repeat
-      if member(hasToInfo ante,Info) then for v in conseq repeat
-        e := actOnInfo(v, e)
-    e
+  u is ["COND",:l] => BREAK()
   u is ["ATTRIBUTE",name,att] => BREAK()
   u is ["SIGNATURE",name,operator,modemap] =>
     implem := ['ELT, name, 0]

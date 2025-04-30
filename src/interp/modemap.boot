@@ -170,7 +170,18 @@ augModemapsFromDomain(name,functorForm,e) ==
   if name is ["Union",:dl] then for d in stripUnionTags dl
                          repeat e:= addDomain(d,e)
   augModemapsFromDomain1(name,functorForm,e)
-     --see LISPLIB BOOT
+
+augModemapsFromDomain1(name, functorForm, e) ==
+    get_oplist_maker(IFCAR(functorForm)) =>
+        add_builtin_modemaps(name, functorForm, e)
+    atom(functorForm) and (catform := getmode(functorForm, e)) =>
+        augModemapsFromCategory(name, functorForm, catform, e)
+    mappingForm := getmodeOrMapping(IFCAR(functorForm), e) =>
+        ["Mapping", categoryForm, :.] := mappingForm
+        catform := substituteCategoryArguments(rest(functorForm), categoryForm)
+        augModemapsFromCategory(name, functorForm, catform, e)
+    stackMessage([functorForm, '" is an unknown mode"])
+    e
 
 substituteCategoryArguments(argl,catform) ==
   argl := substitute("$$", "%", argl)

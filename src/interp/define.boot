@@ -311,7 +311,6 @@ compDefineCategory(df,m,e,prefix,fal) ==
   compDefineCategory1(df,m,e,prefix,fal)
 
 compDefineFunctor(df,m,e,prefix,fal) ==
-  $domainShell: local -- holds the category of the object being compiled
   $LISPLIB => compDefineLisplib(df,m,e,prefix,fal,'compDefineFunctor1)
   compDefineFunctor1(df,m,e,prefix,fal)
 
@@ -352,7 +351,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
       userError '"cannot produce category object"
 --+ copy needed since slot1 is reset; compMake.. can return a cached vector
     base_shell := COPY_-SEQ ds
-    $domainShell := base_shell
+    $domainShell : local := base_shell
 --+ 7 lines for $NRT follow
 -->--these globals used by NRTmakeCategoryAlist, set by NRTsetVector4Part1
     $condAlist: local := nil
@@ -360,7 +359,7 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
 -->>-- next global initialized here, reset by NRTbuildFunctor
     $NRTslot1PredicateList: local := nil
        --this is used below to set $lisplibSlot1 global
-    $NRTbase: local := 6 -- equals length of $domainShell
+    $NRTbase: local := 6 -- equals length of domainShell
     $NRTaddForm: local := nil   -- see compAdd; NRTmakeSlot1
     $NRTdeltaLength: local := 0 -- length of $NRTdeltaList
     $NRTdeltaList: local := nil --list of misc. elts used in compiled fncts
@@ -911,13 +910,10 @@ compCapsuleInner(itemList,m,e) ==
   localParList:= $functorLocalParameters
   code:=
     $insideCategoryIfTrue and not $insideCategoryPackageIfTrue => BREAK()
-    processFunctor($functorForm, $signature, data, localParList, e)
+    buildFunctor($functorForm, $signature, data, localParList, $domainShell, e)
   [MKPF([code],"PROGN"),m,e]
 
 --% PROCESS FUNCTOR CODE
-
-processFunctor(form,signature,data,localParList,e) ==
-  buildFunctor(form, signature, data, localParList, $domainShell, e)
 
 compCapsuleItems(itemlist, $predl, e) ==
   $signatureOfForm: local := nil

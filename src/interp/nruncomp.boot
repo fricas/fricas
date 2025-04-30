@@ -475,8 +475,6 @@ buildFunctor(definition is [name, :args], sig, code, $locals,
 --GLOBAL VARIABLES REFERENCED:
 --  $QuickCode: compilation flag
 
-  $definition : local := definition
-
   changeDirectoryInSlot1(base_shell, e)  --this extends $NRTslot1PredicateList
 
   --pp '"=================="
