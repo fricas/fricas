@@ -183,7 +183,6 @@ $oldAxiomPreCategoryDispatch :=
 oldAxiomPreCategoryParents(catform,dom) ==
   vars := ["%", :rest(get_database(opOf(catform), 'CONSTRUCTORFORM))]
   vals := [dom,:rest catform]
-  -- parents :=  get_database(opOf(catform), 'PARENTS)
   parents := parentsOf opOf catform
   -- strip out forms listed both conditionally and unconditionally
   unconditionalParents := []

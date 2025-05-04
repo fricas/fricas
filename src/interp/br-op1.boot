@@ -734,9 +734,9 @@ dbExpandOpAlistIfNecessary(htPage, opAlist, condition?) ==
             'skip
           u :=
             tail is [.,origin,:.] and origin =>
-                dbGetDocTable(op, sig, dbDocTable(origin), nil)
+                dbGetDocTable(op, sig, dbDocTable(origin))
             if packageSymbol then sig := substitute('%, packageSymbol, sig)
-            dbGetDocTable(op, sig, docTable, nil)
+            dbGetDocTable(op, sig, docTable)
           origin := IFCAR u or origin
           docCode := IFCDR u   --> (doc . code)
           RPLACD(tail,[origin,isExposedConstructor opOf origin,:docCode])

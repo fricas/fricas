@@ -290,8 +290,6 @@ compDefineCategory2(form, signature, body, m, e,
       $lisplibKind:= 'category
       modemap:= [[parForm,:parSignature],[true,op']]
       $lisplibModemap:= modemap
-      $lisplibParents  :=
-        getParentsFor($op,$FormalMapVariableList,$lisplibCategory)
       $lisplibAncestors := computeAncestorsOf(sform, nil)
       $lisplibAbbreviation := constructor? $op
       domainShell := eval [op', :MAPCAR('MKQ, sargl)]
@@ -415,9 +413,6 @@ compDefineFunctor1(df is ['DEF, form, signature, body],
       modemap:= [[parForm,:parSignature],[true,op']]
       $lisplibModemap:= modemap
       $lisplibCategory := modemap.mmTarget
-      $lisplibParents  :=
-        getParentsFor($op,$FormalMapVariableList,$lisplibCategory)
-      $lisplibAncestors := computeAncestorsOf(form, nil)
       $lisplibAbbreviation := constructor? $op
     $insideFunctorIfTrue:= false
     if $LISPLIB then

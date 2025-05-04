@@ -169,24 +169,6 @@ getAttributesFromCATEGORY catform ==
   catform is ['Join,:m,x]     => getAttributesFromCATEGORY x
   nil
 
-displayDatabase x == main where
-  main ==
-    for y in
-     '(CONSTRUCTORFORM CONSTRUCTORKIND _
-       CONSTRUCTORMODEMAP _
-       ABBREVIATION _
-       CONSTRUCTORCATEGORY _
-       PARENTS _
-       ANCESTORS _
-       SOURCEFILE _
-       OPERATIONALIST _
-       MODEMAPS _
-       SOURCEFILE _
-       DOCUMENTATION) repeat fn(x,y)
-  fn(x,y) ==
-    sayBrightly ['"----------------- ",y,'" --------------------"]
-    pp(get_database(x, y))
-
 -- For some reason Dick has modified as.boot to convert the
 -- identifier |0| or |1| to an integer in the list of operations.
 -- This is WRONG, all existing code assumes that operation names

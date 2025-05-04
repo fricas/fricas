@@ -514,19 +514,6 @@ childArgCheck(argl, nargl) ==
       isSharpVar y => i = POSN1(y, $FormalMapVariableList)
       false
 
---computeDescendantsOf cat ==
---dynamically generates descendants
---  hash := MAKE_HASHTABLE('EQUAL)
---  for [child,:pred] in childrenOf cat repeat
---    childForm := getConstructorForm child
---    HPUT(hash,childForm,pred)
---    for [form,:pred] in descendantsOf(childForm,nil) repeat
---      newPred :=
---        oldPred := HGET(hash,form) => quickOr(oldPred,pred)
---        pred
---      HPUT(hash,form,newPred)
---  mySort [[key,:HGET(hash,key)] for key in HKEYS hash]
-
 ancestors_of_cat(conform, domform) ==
        conname := opOf(conform)
        alist := get_database(conname, 'ANCESTORS)
@@ -557,7 +544,7 @@ ancestorsRecur(conform, domform, pred, firstTime?) ==
   pred = HGET($done, conform) => nil   --skip if already processed
   parents :=
     firstTime? and ($insideCategoryIfTrue or $insideFunctorIfTrue) =>
-      $lisplibParents
+        getParentsFor($op, $FormalMapVariableList, $lisplibCategory)
     parentsOf op
   originalConform :=
     firstTime? and ($insideCategoryIfTrue or $insideFunctorIfTrue) =>

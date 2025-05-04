@@ -171,7 +171,6 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   $lisplibForm: local := NIL
   $lisplibKind: local := NIL
   $lisplibAbbreviation: local := NIL
-  $lisplibParents: local := NIL
   $lisplibAncestors: local := NIL
   $lisplibModemap: local := NIL
   $lisplibModemapAlist: local := NIL
@@ -226,7 +225,6 @@ finalizeLisplib(libName, libFile) ==
   lisplibWrite('"superDomain", removeZeroOne($lisplibSuperDomain), libFile)
   lisplibWrite('"predicates", removeZeroOne($lisplibPredicates), libFile)
   lisplibWrite('"abbreviation", $lisplibAbbreviation, libFile)
-  lisplibWrite('"parents", removeZeroOne($lisplibParents), libFile)
   lisplibWrite('"ancestors", removeZeroOne($lisplibAncestors), libFile)
   lisplibWrite('"documentation", finalizeDocumentation(), libFile)
 

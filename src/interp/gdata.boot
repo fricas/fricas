@@ -143,7 +143,6 @@ $documentation_ind := 12
 $constructorform_ind := 13
 $predicates_ind := 14
 $sourcefile_ind := 15
-$parents_ind := 16
 
 make_dbstruct() == GETREFV(17)
 
@@ -185,7 +184,7 @@ open_interp_db(display_messages) ==
 
 -- Order of assignment below defines structure of browse.daase:
 -- (constructor, sourcefile, constructorform, documentation,
---  predicates, parents)
+--  predicates)
 init_dbstruct2(db_data) ==
     con := first(db_data)
     dbstruct := GET(con, 'DATABASE)
@@ -202,7 +201,6 @@ init_dbstruct2(db_data) ==
     dbstruct.$constructorform_ind := POP(db_data)
     dbstruct.$documentation_ind := POP(db_data)
     dbstruct.$predicates_ind := POP(db_data)
-    dbstruct.$parents_ind := POP(db_data)
 
 browse_open2(stream) ==
     constructors := READ(stream)
@@ -254,7 +252,7 @@ SHOWDATABASE(con) ==
                 ['n, 'DEFAULTDOMAIN], ['n, 'ANCESTORS], _
                 ['n, 'SOURCEFILE], ['n, 'CONSTRUCTORFORM], _
                 ['n, 'CONSTRUCTORARGS], ['p, 'PREDICATES], _
-                ['n, 'DOCUMENTATION], ['n, 'PARENTS]]
+                ['n, 'DOCUMENTATION]]
     for f_desc in f_descs repeat
         ft := first(f_desc)
         fn := first(rest(f_desc))
@@ -388,8 +386,6 @@ get_database(con, key) ==
         get_database2(con, key, $predicates_ind, $browse_stream)
     key = 'DOCUMENTATION =>
         get_database2(con, key, $documentation_ind, $browse_stream)
-    key = 'PARENTS =>
-        get_database2(con, key, $parents_ind, $browse_stream)
     key = 'USERS =>
         get_database2(con, key, $users_ind, $browse_stream)
     key = 'DEPENDENTS =>

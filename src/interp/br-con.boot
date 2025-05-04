@@ -528,16 +528,6 @@ koPage(htPage) ==
     opAlist := [assoc(selectedOperation,opAlist) or systemError()]
   dbShowOperationsFromConform(htPage, opAlist)
 
-koaPageFilterByName(htPage,functionToCall) ==
-  htpLabelInputString(htPage,'filter) = '"" =>
-    koaPageFilterByCategory(htPage,functionToCall)
-  filter := pmTransFilter(dbGetInputString htPage)
---WARNING: this call should check for ['error,:.] returned
-  opAlist :=
-      [x for x in htpProperty(htPage,'opAlist) | superMatch?(filter,DOWNCASE STRINGIMAGE first x)]
-  htpSetProperty(htPage,'opAlist,opAlist)
-  FUNCALL(functionToCall,htPage,nil)
-
 --=======================================================================
 --                  Get Constructor Documentation
 --=======================================================================
@@ -576,20 +566,10 @@ dbAddDocTable conform ==
          HPUT($docTable,op1,[[conform,:alist],:HGET($docTable,op1)])
     --note opOf is needed!!! for some reason, One and Zero appear within prens
 
-dbGetDocTable(op, $sig, docTable, aux) == main where
+dbGetDocTable(op, $sig, docTable) == main where
 --docTable is [[origin,entry1,...,:code] ...] where
 --  each entry is [sig,doc] and code is NIL or else a topic code for op
-  main ==
-    if null FIXP op and DIGITP (s := STRINGIMAGE op).0 then
-          BREAK()
-          op := string2Integer s
-    -- the above hack should be removed after 3/94 when 0 is not |0|
-    aux is [[packageName,:.],:pred] =>
-      origin :=
-        pred => ['ifp,:aux]
-        first aux
-      [origin]
-    or/[gn x for x in HGET(docTable,op)]
+  main == or/[gn(x) for x in HGET(docTable, op)]
   gn u ==  --u is [origin,entry1,...,:code]
     $conform := first u              --origin
     if ATOM $conform then $conform := [$conform]
