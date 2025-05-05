@@ -242,13 +242,6 @@ instantiate domenv ==
   callForm := CADR domenv
   oldDom := CDDR domenv
   [functor,:args] := callForm
---  if null(fn := GETL(functor,'instantiate)) then
---     ofn := SYMBOL_-FUNCTION functor
---     loadFunctor functor
---     fn := SYMBOL_-FUNCTION functor
---     SETF(SYMBOL_-FUNCTION functor, ofn)
---     PUT(functor, 'instantiate, fn)
---  domvec := APPLY(fn, args)
   domvec := APPLY(functor, args)
   RPLACA(oldDom, $oldAxiomDomainDispatch)
   RPLACD(oldDom, [CADR oldDom,: domvec])

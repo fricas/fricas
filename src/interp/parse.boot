@@ -45,11 +45,7 @@ This gets translated by [[|postTransform|]]\cite{1} into
 
 [[(MDEF P NIL NIL (|PositiveInteger|))]]
 
-[[|parseTranform|]] is called with this expression. The [[%]] symbol,
-which represents the current domain, is replaced with the [[$]] symbol
-internally. This hack was introduced because the Aldor compiler wanted
-to use [[%]] for the [[current domain]]. The Spad compiler used [[$]].
-In order not to have to change this everywhere we do a substitution here.
+[[|parseTranform|]] is called with this expression.
 )endif
 
 parseTransform x ==

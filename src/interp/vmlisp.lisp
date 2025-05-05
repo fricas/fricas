@@ -671,9 +671,9 @@
     ((cons (eql lambda-block) t) (cadr func))
     (function
      (cond (#.(fboundp 'function-lambda-expression)
-	    (multiple-value-bind (x y z) (function-lambda-expression func)
-	      (or (and (symbolp z) (fboundp z) z) func)))
-	   ((compiled-function-p func)
+            (multiple-value-bind (x y z) (function-lambda-expression func)
+              (or (and (symbolp z) (fboundp z) z) func)))
+           ((compiled-function-p func)
             (system:compiled-function-name func))
            (func)))))
 

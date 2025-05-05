@@ -509,9 +509,9 @@ genDomainView(viewName, dollar, c) ==
 genDomainOps(viewName, cat) ==
   oplist := getOperationAlist(viewName, viewName, cat)
   oplist:= substNames(viewName, viewName, oplist)
-  for [opsig,cond,:.] in oplist repeat
+  for [opsig, cond, :.] in oplist repeat
     [op, sig] := opsig
-    $tmp_e:= addModemap(op, viewName, sig, cond, ['ELT, viewName, 0], $tmp_e)
+    $tmp_e := addModemap(op, viewName, sig, cond, ['ELT, viewName, 0], $tmp_e)
 
 compDefWhereClause(['DEF, form, signature, body], m, e) ==
 -- form is lhs (f a1 ... an) of definition; body is rhs;
@@ -896,7 +896,7 @@ compSubDomain1(domainForm,predicate,m,e) ==
   $lisplibSuperDomain := [domainForm, predicate]
   [domainForm,m,e]
 
-compCapsuleInner(itemList,m,e) ==
+compCapsuleInner(itemList, m, e) ==
   e:= addInformation(m,e)
            --puts a new 'special' property of $Information
   data:= ["PROGN",:itemList]

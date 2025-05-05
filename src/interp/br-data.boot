@@ -220,21 +220,21 @@ dbSplitLibdb() ==
   PRINTEXP('"",  comstream)
   TERPRI(comstream)
   while not EOFP instream repeat
-    line := read_line instream
-    outP := FILE_-POSITION outstream
-    comP := FILE_-POSITION comstream
-    [prefix, comments] := dbSplit(line, 6, 1)
-    PRINTEXP(prefix,outstream)
-    PRINTEXP($tick ,outstream)
-    comments = '"" =>
-      PRINTEXP(0,outstream)
-      TERPRI(outstream)
-    PRINTEXP(comP,outstream)
-    TERPRI(outstream)
-    PRINTEXP(outP  ,comstream)
-    PRINTEXP($tick ,comstream)
-    PRINTEXP(comments, comstream)
-    TERPRI(comstream)
+        line := read_line(instream)
+        outP := FILE_-POSITION(outstream)
+        comP := FILE_-POSITION(comstream)
+        [prefix, comments] := dbSplit(line, 6, 1)
+        PRINTEXP(prefix, outstream)
+        PRINTEXP($tick, outstream)
+        comments = '"" =>
+            PRINTEXP(0, outstream)
+            TERPRI(outstream)
+        PRINTEXP(comP, outstream)
+        TERPRI(outstream)
+        PRINTEXP(outP, comstream)
+        PRINTEXP($tick, comstream)
+        PRINTEXP(comments, comstream)
+        TERPRI(comstream)
   SHUT instream
   SHUT outstream
   SHUT comstream
@@ -242,7 +242,7 @@ dbSplitLibdb() ==
 
 dbSplit(line,n,k) ==
   k := charPosition($tick,line,k + 1)
-  n = 1 => [SUBSTRING(line,0,k), SUBSTRING(line, k + 1, nil)]
+  n = 1 => [SUBSTRING(line, 0, k), SUBSTRING(line, k + 1, nil)]
   dbSplit(line,n - 1,k)
 
 --============================================================================
