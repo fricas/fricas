@@ -212,10 +212,9 @@ MappingUnEqual(x, y, dom) == not(EQ(x,y))
 MappingPrint(x, dom) == coerceMap2E(x)
 
 coerceMap2E(x) ==
-  -- nrlib domain
-  ARRAYP rest x => ['theMap, BPINAME first x,
-    if $testingSystem then 0 else REMAINDER(HASHEQ rest x, 1000)]
-  -- aldor
+  -- closure, Spad
+  ARRAYP(rest(x)) => ['theMap, BPINAME(first(x)), #rest(x)]
+  -- other
   ['theMap, BPINAME first x]
 
 --% Enumeration

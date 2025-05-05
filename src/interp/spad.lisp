@@ -56,7 +56,6 @@
 ;************************************************************************
 
 (defun |fin| ()
-  (SETQ *EOF* 'T)
   (THROW 'SPAD_READER NIL))
 
 (defun QUOTIENT2 (X Y) (values (TRUNCATE X Y)))

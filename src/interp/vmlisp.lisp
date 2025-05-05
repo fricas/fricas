@@ -418,7 +418,7 @@
 ; 17.1 Creation
 
 
-#-AKCL
+#-GCL
 (defun CONCAT (a b &rest l)
    (let ((type (cond ((bit-vector-p a) 'bit-vector) (t 'string))))
       (cond ((eq type 'string)
@@ -426,7 +426,7 @@
              (if l (setq l (mapcar #'string l)))))
       (if l (apply #'concatenate type a b l)
         (concatenate type a b))) )
-#+AKCL
+#+GCL
 (defun CONCAT (a b &rest l)
   (if (bit-vector-p a)
       (if l (apply #'concatenate 'bit-vector a b l)
@@ -726,8 +726,6 @@
 ;17.6 Miscellaneous
 
 (define-function 'HASHTABLEP #'hash-table-p)
-
-(define-function 'HASHEQ #'sxhash)
 
 ;;; end of moved fragment
 

@@ -521,7 +521,7 @@ compileAsharpCmd1 args ==
         lsp := fnameMake('".", pathnameName(path), '"lsp")
         if fnameReadable?(lsp) then
             if not beQuiet then sayKeyedMsg("S2IZ0089", [NAMESTRING(lsp)])
-            compileFileQuietly(lsp)
+            compile_file_quietly(lsp)
         else
             sayKeyedMsg("S2IL0003", [NAMESTRING(lsp)])
 
@@ -623,7 +623,7 @@ compileAsharpLispCmd args ==
     lsp := fnameMake(pathnameDirectory path, pathnameName path, pathnameType path)
     if fnameReadable?(lsp) then
         if not beQuiet then sayKeyedMsg("S2IZ0089", [namestring lsp])
-        compileFileQuietly(lsp)
+        compile_file_quietly(lsp)
     else
         sayKeyedMsg("S2IL0003", [namestring lsp])
 
@@ -1981,8 +1981,6 @@ reportOperations(oldArg,u) ==
   $genValue:local := true       --evaluate all generated code
   $resolve_level : local := 15
   null u => nil
-  u = $quadSymbol =>
-     sayBrightly ['"   mode denotes", :bright '"any", '"type"]
   u = "%" =>
     sayKeyedMsg("S2IZ0063",NIL)
     sayKeyedMsg("S2IZ0064",NIL)
@@ -2635,10 +2633,10 @@ handleNoParseCommands(unab, string) ==
 string2BootTree(str) == STTOSEX(str)
 
 npboot str ==
-  sex := string2BootTree str
-  FORMAT(true, '"~&~S~%", sex)
-  $ans := EVAL sex
-  FORMAT(true, '"~&Value = ~S~%", $ans)
+    sex := string2BootTree(str)
+    FORMAT(true, '"~&~S~%", sex)
+    ans := EVAL(sex)
+    FORMAT(true, '"~&Value = ~S~%", ans)
 
 stripLisp str ==
   found := false
@@ -2652,12 +2650,8 @@ stripLisp str ==
 
 
 nplisp str ==
-  $ans := EVAL READ_-FROM_-STRING str
-  FORMAT(true, '"~&Value = ~S~%", $ans)
-
-intnplisp s ==
-  $currentLine := s
-  nplisp $currentLine
+    ans := EVAL(READ_-FROM_-STRING(str))
+    FORMAT(true, '"~&Value = ~S~%", ans)
 
 npsystem(unab, str) ==
   spaceIndex := SEARCH('" ", str)

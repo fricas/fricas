@@ -45,17 +45,8 @@ at load time.
 ;;; to the default memory setup to run FriCAS efficiently.
 ;;; This function performs those setup commands.
 #+:GCL
-(defun init-memory-config (&key
-                           (cons 500)
-                           (fixnum 200)
-                           (symbol 500)
-                           (package 8)
-                           (array 400)
-                           (string 500)
-                           (cfun 100)
-                           (cpages 3000)
-                           (rpages 1000)
-                           (hole 2000) )
+(defun init-memory-config (&key cons fixnum symbol package array string
+                            cfun cpages rpages hole)
   ;; initialize GCL memory allocation parameters
   (progn
     (system:allocate 'cons cons)

@@ -201,7 +201,7 @@ intloopReadConsole(b, n)==
         b = [] and #a=0 =>
              princPrompt()
         $DALYMODE and intloopPrefix?('"(",a) =>
-            intnplisp(a)
+            nplisp(a)
             princPrompt()
         pfx := stripSpaces intloopPrefix?('")fi",a)
         pfx and ((pfx = '")fi") or (pfx = '")fin")) => return []

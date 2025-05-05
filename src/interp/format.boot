@@ -338,7 +338,7 @@ DEFPARAMETER($justUnparseType, false)
 
 form2String1 u ==
   ATOM u =>
-    u=$EmptyMode or u=$quadSymbol => formWrapId specialChar 'quad
+    u=$EmptyMode => formWrapId specialChar 'quad
     IDENTP u =>
       constructor? u => app2StringWrap(formWrapId u, [u])
       u
@@ -482,7 +482,7 @@ formWrapId id == id
 
 formArguments2String(argl,ml) == [fn(x,m) for x in argl for m in ml] where
   fn(x,m) ==
-    x=$EmptyMode or x=$quadSymbol => specialChar 'quad
+    x = $EmptyMode => specialChar 'quad
     STRINGP(x) or IDENTP(x) => x
     x is [ ='_:,:.] => form2String1 x
     x is ["QUOTE", y] =>

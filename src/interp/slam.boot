@@ -294,7 +294,7 @@ compileInteractive fn ==
   optfn :=
      $InteractiveMode => timedOptimization fn
      fn
-  result := compQuietly optfn
+  result := comp_quietly(optfn)
   if $InteractiveMode then stopTimingProcess 'compilation
   result
 

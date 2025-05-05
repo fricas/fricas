@@ -76,6 +76,28 @@ PURPOSE: Comp is a modified version of Compile which is a preprocessor for
          of Spad and interpreter compilers.
 )endif
 
+print_and_eval_defun(name, body) ==
+   EVAL(body)
+   print_defun(name, body)
+
+compile_defun(name, body) ==
+   EVAL(body)
+   COMPILE(name)
+
+comp_and_define(form) ==
+   COMP0(form, FUNCTION print_and_eval_defun)
+
+compile_file2(fn, dummy) == COMPILE_-FILE(fn)
+
+comp_quietly(fn) ==
+    comp_quietly_using_driver(FUNCTION COMP0, fn)
+
+compile_file_quietly(fn) ==
+    comp_quietly_using_driver(FUNCTION compile_file2, fn)
+
+compile_quietly(fn) ==
+    comp_quietly_using_driver(FUNCTION COMP370, fn)
+
 COMP_1(x) ==
   [fname, lamex, :.] := x
   $FUNNAME : local := fname
@@ -86,14 +108,15 @@ COMP_1(x) ==
       FORMAT(true, '"~&~%;;;     ***       ~S REDEFINED~%", fname)
   [[fname, lamex], :$CLOSEDFNS]
 
-COMP_2(args) ==
+COMP_2(args, comp370_apply) ==
     [name, [type, argl, :bodyl], :junk] := args
     junk => MOAN (FORMAT(nil, '"******pren error in (~S (~S ...) ...)",_
                          name, type))
     type is "SLAM" => BREAK()
     type is 'domain_functor =>
         compHash(name, argl, bodyl, "$ConstructorCache", 'domainEqualList)
-    type is 'category_functor => compSPADSLAM(name, argl, bodyl)
+    type is 'category_functor =>
+        compSPADSLAM(name, argl, bodyl, comp370_apply)
     if type = 'mutable_domain_functor then
         type := 'LAMBDA
     bodyl := [name, [type, argl, :bodyl]]
@@ -101,16 +124,18 @@ COMP_2(args) ==
     if NULL($COMPILE) then
       SAY '"No Compilation"
     else
-      COMP370(bodyl)
+      COMP370(bodyl, comp370_apply)
     name
 
-COMP(fun) == [COMP_2 nf for nf in COMP_1(fun)]
+COMP0(fun, comp370_apply) == [COMP_2(nf, comp370_apply) for nf in COMP_1(fun)]
+
+COMP(fun) == COMP0(fun, $comp370_apply)
 
 maybe_devaluate(a, ca) ==
     ca => ["devaluate", a]
     a
 
-compSPADSLAM(name, argl, bodyl) ==
+compSPADSLAM(name, argl, bodyl, comp370_apply) ==
     al := INTERNL1(name, '";AL")
     auxfn := INTERNL1(name, '";")
     if argl then
@@ -140,10 +165,10 @@ compSPADSLAM(name, argl, bodyl) ==
     output_lisp_defparameter(al, nil)
     u := [name,lamex]
     if $PrettyPrint then PRETTYPRINT(u)
-    COMP370(u)
+    COMP370(u, comp370_apply)
     u := [auxfn, ["LAMBDA", argl, :bodyl]]
     if $PrettyPrint then PRETTYPRINT(u)
-    COMP370(u)
+    COMP370(u, comp370_apply)
     name
 
 makeClosedfnName() ==
@@ -460,7 +485,7 @@ expandCOLLECTV(l) ==
 
 DEFPARAMETER($comp370_apply, nil)
 
-COMP370(fn) ==
+COMP370(fn, comp370_apply) ==
     not(fn is [fname, [ltype, args, :body]]) => BREAK()
     args :=
         NULL(args) => args
@@ -475,8 +500,8 @@ COMP370(fn) ==
             for arg in args]
     defun := if $insideCapsuleFunctionIfTrue then "SDEFUN" else "DEFUN"
     nbody := [defun, fname, args, :body]
-    if $comp370_apply then
-        FUNCALL($comp370_apply, fname, nbody)
+    if comp370_apply then
+        FUNCALL(comp370_apply, fname, nbody)
 
 MKPF(l, op) ==
     if MEMQ(op, ["*", "+", "AND", "OR", "PROGN"]) then

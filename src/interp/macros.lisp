@@ -52,10 +52,6 @@
 
 (defmacro def-boot-val (p val where) `(defparameter ,p ,val ,where))
 
-(def-boot-val $boxString
-  (concatenate 'string (list (code-char #x1d) (code-char #xe2)))
-  "this string of 2 chars displays as a box")
-(def-boot-val |$quadSymbol| $boxString "displays an APL quad")
 (def-boot-val $escapeString  (string (code-char 27))
    "string for single escape character")
 (def-boot-val |$boldString| (concatenate 'string $escapeString "[1m")
@@ -101,8 +97,7 @@
                    ((IDENTP V) NIL)
                    ((STRINGP U) (AND (STRINGP V) (string> V U) T))
                    ((STRINGP V) NIL)
-                   ((BREAK))
-                   ((croak "Do not understand")))
+                   ((BREAK)))
                T))
         ((ATOM V) NIL)
         ((EQUAL (CAR U) (CAR V))
@@ -235,9 +230,6 @@
 
 ; 22.2.1 Input from Character Streams
 
-(defvar *EOF* NIL)
-
-
 ; 22.3 Output Functions
 
 ; 22.3.1 Output to Character Streams
@@ -280,8 +272,6 @@
 
 (DEFUN FAIL () (|systemError| '"Antique error (FAIL ENTERED)"))
 
-(defun CROAK (&rest x) (|systemError| x))
-
 ; 25 MISCELLANEOUS FEATURES
 
 (defun MAKE_REASONABLE (Z)
@@ -293,11 +283,6 @@
                   (char= (char LINE (1- l)) #\ ))
              (string-right-trim " " LINE)
              LINE)))
-
-(defun print-and-eval-defun (name body)
-   (eval body)
-   (|print_defun| name body)
-   )
 
 (defun eval-defun (name body) (eval (macroexpandall body)))
 
@@ -348,8 +333,6 @@
   ('else
     (mapcar #'macroexpandall sexpr))))
 
-
-(defun compile-defun (name body) (eval body) (compile name))
 
 (DEFUN |leftBindingPowerOf| (X IND &AUX (Y (GET X IND)))
    (IF Y (ELEMN Y 3 0) 0))
@@ -436,36 +419,21 @@ This function respects intermediate #\Newline characters and drops
 
 ;;; Common Block section
 
-(defun |compAndDefine| (L)
-  (let ((|$comp370_apply| (function print-and-eval-defun)))
-    (declare (special |$comp370_apply|))
-    (COMP L)))
-
-(defun comp_quietly_using_driver (driver fn)
-  (let ((|$comp370_apply|
+(defun |comp_quietly_using_driver| (driver fn)
+  (let ((|comp370_apply|
          (if |$InteractiveMode|
-             (if |$compileDontDefineFunctions| #'compile-defun #'eval-defun)
+             (if |$compileDontDefineFunctions| #'|compile_defun| #'eval-defun)
            #'|print_defun|))
      ;; following creates a null outputstream if $InteractiveMode
         (*standard-output*
          (if |$InteractiveMode| (make-broadcast-stream)
            *standard-output*))
         (*compile-verbose* nil))
-    (declare (special |$comp370_apply|))
     (handler-bind ((warning #'muffle-warning)
                    #+:sbcl (sb-ext::compiler-note #'muffle-warning))
-      (funcall driver fn)
-      )
+      (funcall driver fn |comp370_apply|)
+    )
 ))
-
-(defun |compQuietly| (fn)
-    (comp_quietly_using_driver #'COMP fn))
-
-(defun |compileFileQuietly| (fn)
-    (comp_quietly_using_driver #'COMPILE-FILE fn))
-
-(defun |compileQuietly| (fn)
-    (comp_quietly_using_driver #'COMP370 fn))
 
 ;; used to be called POSN - but that interfered with a CCL function
 (DEFUN POSN1 (X L) (position x l :test #'equal))

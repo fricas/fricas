@@ -816,7 +816,7 @@ compileConstructor1 (form:=[fn,[key,vl,:bodyl]]) ==
   auxfn := INTERNL1(fn, '";")
   output_lisp_form(["DECLAIM", ["NOTINLINE", auxfn]])
   if key = 'category_functor
-      then u := compAndDefine form
+      then u := comp_and_define(form)
       else u := COMP form
   clearConstructorCache fn      --clear cache for constructor
   first u

@@ -809,7 +809,7 @@ say2PerLineThatFit l ==
 sayDisplayWidth x ==
   PAIRP x =>
     +/[fn y for y in x] where fn y ==
-      y in '(%b %d "%b" "%d") or y=$quadSymbol => 1
+      y in '(%b %d "%b" "%d") => 1
       k := blankIndicator y => k
       sayDisplayWidth y
   x = "%%" or x = '"%%" => 1
