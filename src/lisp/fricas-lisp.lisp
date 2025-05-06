@@ -921,7 +921,8 @@ with this hack and will try to convince the GCL crowd to fix this.
   (|run_program| "sh" (list "-c" s)))
 
 (defmacro DEFCONST (name value)
-   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)))
+    (if (not (boundp name))
+        `(DEFCONSTANT ,name ,value)))
 
 #+:cmu
 (defconstant +list-based-union-limit+ 80)
