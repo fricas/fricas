@@ -170,6 +170,7 @@ STTOSEX1 string ==
 
 STTOSEX string ==
     $bfClamming : local := false
+    $GenVarCounter : local := 0
     a := STTOSEX1 string
     bStreamPackageNull a => nil
     stripm(CAR a, _*PACKAGE_*, FIND_-PACKAGE '"BOOTTRAN")
