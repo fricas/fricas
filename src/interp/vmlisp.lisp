@@ -436,24 +436,17 @@
 
 (define-function 'STRCONC #'CONCAT)
 
-(defun |make_full_CVEC2|(sint char)
-  (make-string sint :initial-element (if (integerp char)
-                                       (code-char char)
-                                       (character char))))
-
-(defun |make_full_CVEC|(sint) (|make_full_CVEC2| sint #\space))
-
 ; 17.2 Accessing
 
-(defun STRING2ID_N (cvec sint)
-  (if (< sint 1)
+(defun STRING2ID_N (cvec n)
+  (if (< n 1)
       nil
       (let ((start (position-if-not #'(lambda (x) (char= x #\Space)) cvec)))
         (if start
             (let ((end (or (position #\Space cvec :start start) (length cvec))))
-              (if (= sint 1)
+              (if (= n 1)
                   (intern (subseq cvec start end))
-                  (STRING2ID_N (subseq cvec end) (1- sint))))
+                  (STRING2ID_N (subseq cvec end) (1- n))))
             0))))
 
 (defun substring (cvec start length)
@@ -475,7 +468,7 @@
 
 ; In the following, table should be a string:
 
-(defun strposl (table cvec sint item)
+(defun STRPOSL (table cvec sint item)
   (setq cvec (string cvec))
   (if (not item)
       (position table cvec :test #'(lambda (x y) (position y x)) :start sint)
@@ -506,7 +499,7 @@
 ; copying shown here, but would also need to cope with generic sorts
 ; of sequences and unwarranted keyword generality
 
-(defun rplacstr (cvec1 start1 length1 cvec2
+(defun RPLACSTR (cvec1 start1 length1 cvec2
                        &optional start2 length2
                        &aux end1 end2)
   (setq cvec2 (string cvec2))
@@ -546,8 +539,6 @@
 
 (defun |substitute| (new old tree) (subst new old tree :test #'equal))
 
-(define-function 'MSUBSTQ #'subst) ;default test is eql
-
 (defun copy (x) (copy-tree x)) ; not right since should descend vectors
 
 (defun eqsubstlist (new old list) (sublis (mapcar #'cons old new) list))
@@ -555,9 +546,8 @@
 
 ; 24.0 Printing
 
-;(define-function 'prin2cvec #'write-to-string)
 (define-function 'prin2cvec #'princ-to-string)
-;(define-function 'stringimage #'write-to-string)
+
 (define-function 'stringimage #'princ-to-string)
 
 (define-function 'printexp #'princ)
@@ -620,10 +610,9 @@
 
 ; 48.0 Miscellaneous CMS Interactions
 
-(defun CurrentTime ()
-  (multiple-value-bind (sec min hour day month year) (get-decoded-time)
-    (format nil "~2,'0D/~2,'0D/~2,'0D~2,'0D:~2,'0D:~2,'0D"
-            month day (rem year 100) hour min sec)))
+(defun CURRENTTIME ()
+  (multiple-value-bind (sec min hour) (get-decoded-time)
+    (format nil "~2,'0D:~2,'0D:~2,'0D" hour min sec)))
 
 ; 99.0 Ancient Stuff We Decided To Keep
 

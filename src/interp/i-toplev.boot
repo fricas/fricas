@@ -310,7 +310,7 @@ msgText(key, args) ==
 justifyMyType(t) ==
   len := #t
   len > $LINELENGTH => t
-  CONCAT(fillerSpaces($LINELENGTH-len, '" "), t)
+  CONCAT(filler_spaces($LINELENGTH - len), t)
 
 typeTimePrin x ==
   maprinSpecial(x,0,79)

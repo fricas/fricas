@@ -58,3 +58,12 @@
     nil
 #+:GCL (SI::gbc t)
 )
+
+;------
+
+(defun |make_string0|(n char)
+    (if (not(CHARACTERP char)) (BREAK))
+    (make-string n :initial-element char))
+
+(defun |make_string_code| (n code)
+    (|make_string0| n (code-char code)))

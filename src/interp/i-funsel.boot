@@ -825,7 +825,7 @@ allOrMatchingMms(mms,args1,tar,dc) ==
   x := NIL
   for mm in mms repeat
     [sig,:.] := mm
-    [res, :args] := MSUBSTQ(dc, "%", sig)
+    [res, :args] := SUBST(dc, "%", sig)
     args ~= args1 => nil
     x := CONS(mm,x)
   if x then x

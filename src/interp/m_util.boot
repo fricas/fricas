@@ -95,3 +95,9 @@ object2String2(x) ==
     IDENTP(x)  => x
     WRITE_-TO_-STRING(x)
 
+filler_chars(n, char_str) ==
+    not(STRINGP(char_str)) => BREAK()
+    n <= 0 => '""
+    make_string0(n, char_str.0)
+
+filler_spaces(n) == filler_chars(n, '" ")

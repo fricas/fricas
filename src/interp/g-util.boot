@@ -142,10 +142,6 @@ insertWOC(x,y) ==
 
 --% Miscellaneous Functions for Working with Strings
 
-fillerSpaces(n, charPart) ==
-  n <= 0 => '""
-  make_full_CVEC2(n, charPart)
-
 centerString(text,width,fillchar) ==
   wid := entryWidth text
   wid >= width => text
@@ -580,7 +576,7 @@ MKPROMPT() ==
     STRCONC(STRINGIMAGE $interpreterFrameName,
       '" (",STRINGIMAGE $IOindex,'") -> ")
   STRCONC(STRINGIMAGE $interpreterFrameName,
-   '" [", SUBSTRING(CURRENTTIME(),8,NIL),'"] [",
+   '" [", CURRENTTIME(), '"] [",
     STRINGIMAGE $IOindex, '"] -> ")
 
 --% Miscellaneous

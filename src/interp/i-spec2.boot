@@ -740,7 +740,7 @@ assignSymbol(symbol, value, domain) ==
 
 --% Handler for Interpreter Macros
 
-getInterpMacroNames() ==
+get_builtin_macro_names() ==
   names := [n for [n,:.] in $InterpreterMacroAlist]
   if (e := CAAR $InteractiveFrame) and (m := assoc("--macros--",e)) then
     names := append(names, [n for [n, :.] in rest m])

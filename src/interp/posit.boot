@@ -38,13 +38,6 @@ pfNoPosition() == poNoPosition()
 poNoPosition? pos == EQCAR(pos,'noposition)
 pfNoPosition? pos == poNoPosition? pos
 
-pfSourceText pf ==
-    lnString poGetLineObject pfPosn pf
-
-pfPosOrNopos pf ==
-    poIsPos? (pos := pfSourcePosition pf) => pos
-    poNoPosition()
-
 poIsPos? pos ==
     PAIRP pos and PAIRP first pos and LENGTH first pos = 5
 

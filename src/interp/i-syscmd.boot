@@ -309,16 +309,17 @@ clearCmdParts(l is [opt,:vl]) ==
     option
 
   null vl => sayKeyedMsg("S2IZ0055",NIL)
-  pmacs := getParserMacroNames()
-  imacs := getInterpMacroNames()
+  umacs := get_user_macro_names()
+  bmacs := get_builtin_macro_names()
   if vl='(all) then
     vl := ASSOCLEFT CAAR $InteractiveFrame
-    vl := REMDUP(append(vl, pmacs))
+    vl := REMDUP(append(vl, umacs))
   $e : local := $InteractiveFrame
   for x in vl repeat
     clearDependencies(x)
-    if option='properties and x in pmacs then clearParserMacro(x)
-    if option='properties and x in imacs and not (x in pmacs) then
+    if option='properties and x in umacs then
+        clear_user_macro(x)
+    else if option='properties and x in bmacs then
         sayMessage ['"   You cannot clear the definition of the system-defined macro ",
             fixObjectForPrinting x,"."]
     p1 := assoc(x,CAAR $InteractiveFrame) =>
@@ -749,10 +750,10 @@ displaySpad2Cmd l ==
   sayMessage msg
 
 displayMacros names ==
-  imacs := getInterpMacroNames()
-  pmacs := getParserMacroNames()
+  umacs := get_user_macro_names()
+  bmacs := get_builtin_macro_names()
   macros :=
-     null names => APPEND (imacs, pmacs)
+     null names => APPEND (bmacs, umacs)
      names
   macros := REMDUP macros
 
@@ -762,34 +763,33 @@ displayMacros names ==
 
   first := true
   for macro in macros repeat
-    macro in pmacs =>
+    macro in umacs =>
         if first then
             sayBrightly ['%l,'"User-defined macros:"]
             first := NIL
-        displayParserMacro macro
-    macro in imacs => 'iterate
+        display_user_macro(macro)
+    macro in bmacs => 'iterate
     sayBrightly (['"   ",'%b, macro, '%d, '" is not a known FriCAS macro."])
 
   -- now system ones
 
   first := true
   for macro in macros repeat
-    macro in imacs =>
-        macro in pmacs => 'iterate
-        if first then
-            sayBrightly ['%l,'"System-defined macros:"]
-            first := NIL
-        displayMacro macro
-    macro in pmacs => 'iterate
+      if macro in bmacs then
+          macro in umacs => 'iterate
+          if first then
+              sayBrightly ['%l,'"System-defined macros:"]
+              first := false
+          displayMacro(macro)
   NIL
 
-getParserMacroNames() ==
+get_user_macro_names() ==
   REMDUP [first mac for mac in getParserMacros()]
 
-clearParserMacro(macro) ==
-  -- first see if it is one
-  not IFCDR assoc(macro, ($pfMacros)) => NIL
-  $pfMacros := REMALIST($pfMacros, macro)
+clear_user_macro(n) ==
+    -- first see if it is one
+    not IFCDR assoc(n, ($pfMacros)) => NIL
+    $pfMacros := REMALIST($pfMacros, n)
 
 displayMacro name ==
   m := isInterpMacro name
@@ -804,17 +804,17 @@ displayMacro name ==
   mathprint outputMapTran(op, ['SPADMAP, [args, :body]])
 
 displayWorkspaceNames() ==
-  imacs := getInterpMacroNames()
-  pmacs := getParserMacroNames()
+  umacs := get_user_macro_names()
+  bmacs := get_builtin_macro_names()
   sayMessage '"Names of User-Defined Objects in the Workspace:"
-  names := MSORT append(getWorkspaceNames(),pmacs)
+  names := MSORT append(getWorkspaceNames(), umacs)
   if null names
     then sayBrightly '"   * None *"
     else sayAsManyPerLineAsPossible [object2String x for x in names]
-  imacs := SETDIFFERENCE(imacs,pmacs)
-  if imacs then
+  bmacs := SETDIFFERENCE(bmacs, umacs)
+  if bmacs then
     sayMessage '"Names of System-Defined Objects in the Workspace:"
-    sayAsManyPerLineAsPossible [object2String x for x in imacs]
+    sayAsManyPerLineAsPossible [object2String x for x in bmacs]
 
 
 getWorkspaceNames() ==
@@ -851,9 +851,9 @@ displayProperties(option,l) ==
   $dependentAlist : local := nil
   $dependeeAlist  : local := nil
   [opt,:vl]:= (l or ['properties])
-  imacs := getInterpMacroNames()
-  pmacs := getParserMacroNames()
-  macros := REMDUP append(imacs, pmacs)
+  umacs := get_user_macro_names()
+  bmacs := get_builtin_macro_names()
+  macros := REMDUP append(bmacs, umacs)
   if vl is ['all] or null vl then
     vl := MSORT append(getWorkspaceNames(),macros)
   if $frameMessages then sayKeyedMsg("S2IZ0065",[$interpreterFrameName])
@@ -875,10 +875,10 @@ displayProperties(option,l) ==
       v1 := fixObjectForPrinting(v)
       sayMSG ['"Properties of",:bright prefix2String v1,'":"]
       null pl =>
-        v in pmacs =>
+        v in umacs =>
             sayMSG '"   This is a user-defined macro."
-            displayParserMacro v
-        isInterpMacro v =>
+            display_user_macro(v)
+        v in bmacs =>
             sayMSG '"   This is a system-defined macro."
             displayMacro v
         sayMSG '"   none"
@@ -1009,6 +1009,10 @@ editSpad2Cmd l ==
   $edit_file := l
   rc := editFile l
   rc
+
+--% )fin
+
+fin() == THROW('SPAD_READER, nil)
 
 --% )help
 
@@ -1841,14 +1845,14 @@ loadSpad2Cmd args ==
 reportCount () ==
   centerAndHighlight('" Current Count Settings ",$LINELENGTH,specialChar 'hbar)
   SAY '" "
-  sayBrightly [:bright '" cache",fillerSpaces(30,'"."),'" ",$cacheCount]
+  sayBrightly [:bright('" cache"), filler_chars(30, '"."), '" ", $cacheCount]
   if $cacheAlist then
     for [a,:b] in $cacheAlist repeat
       aPart:= linearFormatName a
       n:= sayBrightlyLength aPart
-      sayBrightly concat('"     ",aPart,'" ",fillerSpaces(32-n,'"."),'" ",b)
+      sayBrightly concat('"     ",aPart,'" ",filler_chars(32 - n, '"."),'" ",b)
   SAY '" "
-  sayBrightly [:bright '" stream",fillerSpaces(29,'"."),'" ",$streamCount]
+  sayBrightly [:bright '" stream",filler_chars(29, '"."), '" ", $streamCount]
 
 --% )nopiles
 
@@ -2466,7 +2470,7 @@ printLabelledList(ls,label1,label2,prefix,patterns) ==
     if syn = '"%i" then syn := '"%i "
     wid := MAX(30 - (entryWidth syn),1)
     sayBrightly concat('%b,prefix,syn,'%d,
-      fillerSpaces(wid,'"."),'" ",prefix,comm)
+      filler_chars(wid, '"."), '" ", prefix, comm)
   sayBrightly '""
 
 whatCommands(patterns) ==

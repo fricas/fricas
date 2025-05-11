@@ -429,8 +429,8 @@ flowSegmentedMsg(msg, len, offset) ==
   potentialMarg := 0
   actualMarg    := 0
 
-  off := (offset <= 0 => '""; fillerSpaces(offset,'" "))
-  off1:= (offset <= 1 => '""; fillerSpaces(offset-1,'" "))
+  off := (offset <= 0 => '""; filler_spaces(offset))
+  off1:= (offset <= 1 => '""; filler_spaces(offset - 1))
   firstLine := true
 
   PAIRP msg =>
@@ -536,7 +536,7 @@ sayString(x, str) ==
 spadStartUpMsgs() ==
   -- messages displayed when the system starts up
   $LINELENGTH < 60 => NIL
-  bar := fillerSpaces($LINELENGTH,specialChar 'hbar)
+  bar := filler_chars($LINELENGTH, hbar_special_char())
   sayKeyedMsg("S2GL0001", [$build_version, $lisp_id_string, $build_date])
   sayMSG bar
   sayKeyedMsg("S2GL0018C",NIL)
@@ -676,7 +676,7 @@ brightPrintCenter(x, str, marg) ==
     wid := STRINGLENGTH x
     if wid < $LINELENGTH then
       f := DIVIDE($LINELENGTH - wid,2)
-      x := LIST(fillerSpaces(f.0,'" "),x)
+      x := LIST(filler_spaces(f.0), x)
     for y in x repeat
         marg := brightPrint0(y, str, marg)
     marg
@@ -690,7 +690,7 @@ brightPrintCenter(x, str, marg) ==
   wid := sayBrightlyLength y
   if wid < $LINELENGTH then
     f := DIVIDE($LINELENGTH - wid,2)
-    y := CONS(fillerSpaces(f.0,'" "),y)
+    y := CONS(filler_spaces(f.0), y)
   for z in y repeat
       marg := brightPrint0(z, str, marg)
   if x then
@@ -704,7 +704,7 @@ brightPrintRightJustify(x, str, marg) ==
     x := object2String x
     wid := STRINGLENGTH x
     wid < $LINELENGTH =>
-      x := LIST(fillerSpaces($LINELENGTH-wid,'" "),x)
+      x := LIST(filler_spaces($LINELENGTH - wid), x)
       for y in x repeat
           marg := brightPrint0(y, str, marg)
       marg
@@ -718,7 +718,7 @@ brightPrintRightJustify(x, str, marg) ==
   y := NREVERSE y
   wid := sayBrightlyLength y
   if wid < $LINELENGTH then
-    y := CONS(fillerSpaces($LINELENGTH-wid,'" "),y)
+    y := CONS(filler_spaces($LINELENGTH - wid), y)
   for z in y repeat
       marg := brightPrint0(z, str, marg)
   if x then
@@ -763,7 +763,7 @@ sayAsManyPerLineAsPossible l ==
   str := '""
   for i in 0..(n-1) repeat
     [c,:l] := l
-    str := STRCONC(str,c,fillerSpaces(w - #c,'" "))
+    str := STRCONC(str,c,filler_spaces(w - #c))
     REMAINDER(i+1,p) = 0 => (sayMSG str ; str := '"" )
   if str ~= '"" then sayMSG str
   NIL
@@ -801,7 +801,7 @@ say2PerLineThatFit l ==
   while l repeat
     sayBrightlyNT first l
     sayBrightlyNT
-      fillerSpaces((QUOTIENT($LINELENGTH, 2) - sayDisplayWidth first l), '" ")
+      filler_spaces((QUOTIENT($LINELENGTH, 2) - sayDisplayWidth first l))
     (l:= rest l) =>
       sayBrightlyNT first l
       l:= rest l
@@ -834,7 +834,7 @@ pp2Cols(al) ==
   nil
 
 ppPair(abb,name) ==
-    sayBrightlyNT [:bright abb,fillerSpaces(8-entryWidth abb," "),name]
+    sayBrightlyNT([:bright(abb), filler_spaces(8 - entryWidth(abb)), name])
 
 canFit2ndEntry(name,al) ==
   wid := QUOTIENT($LINELENGTH, 2) - 10

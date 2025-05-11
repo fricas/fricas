@@ -226,14 +226,14 @@ displaySetVariableSettings(setTree,label) ==
   sayBrightly ['"Variable     ",
                '"Description                                ",
                  '"Current Value"]
-  SAY fillerSpaces($LINELENGTH,specialChar 'hbar)
+  SAY filler_chars($LINELENGTH, hbar_special_char())
   subtree := nil
   for setData in setTree repeat
     null satisfiesUserLevel setData.setLevel => nil
     setOption := object2String setData.setName
-    setOption := STRCONC(setOption,fillerSpaces(13-#setOption,'" "),
+    setOption := STRCONC(setOption, filler_spaces(13 - #setOption),
                          setData.setLabel)
-    setOption := STRCONC(setOption,fillerSpaces(55-#setOption,'" "))
+    setOption := STRCONC(setOption, filler_spaces(55 - #setOption))
     st := setData.setType
     st = 'FUNCTION =>
       opt :=

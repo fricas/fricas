@@ -55,9 +55,6 @@ slot         description
  4           prop list for extra things
 )endif
 
-DEFPARAMETER($useParserSrcPos, NIL)
-DEFPARAMETER($transferParserSrcPos, NIL)
-
 DEFCONST($failure, GENSYM())
 DEFCONSTANT($immediateDataSymbol, "--immediateData--")
 
@@ -74,27 +71,9 @@ mkAtree x ==
   mkAtree1 mkAtreeExpandMacros x
 
 mkAtreeWithSrcPos(form, posnForm) ==
-    posnForm and $useParserSrcPos => pf2Atree(posnForm)
     transferSrcPosInfo(posnForm, mkAtree form)
 
-mkAtree1WithSrcPos(form, posnForm) ==
-  transferSrcPosInfo(posnForm, mkAtree1 form)
-
-mkAtreeNodeWithSrcPos(form, posnForm) ==
-  transferSrcPosInfo(posnForm, mkAtreeNode form)
-
-transferSrcPosInfo(pf, atree) ==
-    not (pf and $transferParserSrcPos) => atree
-    pos := pfPosOrNopos(pf)
-    pfNoPosition?(pos) => atree
-
-    -- following is a hack because parser code for getting filename
-    -- seems wrong.
-    fn := lnPlaceOfOrigin poGetLineObject(pos)
-    if NULL fn or fn = '"strings" then fn := '"console"
-
-    putSrcPos(atree, fn, pfSourceText(pf), pfLinePosn(pos), pfCharPosn(pos))
-    atree
+transferSrcPosInfo(pf, atree) == atree
 
 mkAtreeExpandMacros x ==
   -- handle macro expansion. if the macros have args we require that
@@ -239,10 +218,6 @@ mkAtree3(x,op,argl) ==
       lowTest
     mkAtree1 z
   x is ['IF,p,'noBranch,a] => mkAtree1 ['IF,['not,p],a,'noBranch]
-  x is ['MDEF,sym,junk1,junk2,val] =>
-    -- new macros look like  macro f ==  or macro f(x) ===
-    -- so transform into that format
-    mkAtree1 ['DEF,['macro,sym],junk1,junk2,val]
   x is ["+->",funargs,funbody] =>
     if funbody is [":",body,type] then
       types := [type]
@@ -266,8 +241,6 @@ mkAtree3(x,op,argl) ==
     [mkAtreeNode 'ADEF,[v.0,:r],if v.2 then v.2 else true,false]
   x is ["where", before, after] =>
     [mkAtreeNode "where", before, mkAtree1 after]
-  x is ['DEF,['macro,form],.,.,body] =>
-    [mkAtreeNode 'MDEF,form,body]
   x is ['DEF,a,:r] =>
     r := mkAtreeValueOf r
     a is [op,:arg] =>
@@ -726,10 +699,8 @@ srcPosDisplay(sp) ==
         STRINGIMAGE srcPosLine sp, '": ")
     sayBrightly [s, srcPosSource sp]
     col  := srcPosColumn sp
-    dots :=
-        col = 0 => '""
-        fillerSpaces(col, '".")
-    sayBrightly [fillerSpaces(#s, '" "), dots, '"^"]
+    dots := filler_chars(col, '".")
+    sayBrightly([filler_spaces(#s), dots, '"^"])
     true
 
 --% Functions on interpreter objects

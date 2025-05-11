@@ -461,7 +461,7 @@ constructor2ConstructorForm x ==
 rightJustifyString(x,maxWidth) ==
   size:= entryWidth x
   size > maxWidth => keyedSystemError("S2GE0014",[x])
-  [fillerSpaces(maxWidth-size,'" "),x]
+  [filler_spaces(maxWidth - size), x]
 
 -- Should be better, but ATM this must do
 domainEqualList(argl1, argl2) == EQUAL(argl1, argl2)

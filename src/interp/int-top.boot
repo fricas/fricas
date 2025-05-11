@@ -290,10 +290,10 @@ clearMacroTable() ==
 
 getParserMacros() == $pfMacros
 
-displayParserMacro m ==
-   m := ASSQ(m, $pfMacros)
-   NULL m => nil
-   pfPrintSrcLines(CADDR(m))
+display_user_macro(m) ==
+    m := ASSQ(m, $pfMacros)
+    NULL m => nil
+    pfPrintSrcLines(CADDR(m))
 
 intSetNeedToSignalSessionManager() ==
     $NeedToSignalSessionManager := true

@@ -289,6 +289,7 @@ specialChar(symbol) ==
 rbrkSch() == PNAME specialChar 'rbrk
 lbrkSch() == PNAME specialChar 'lbrk
 quadSch() == PNAME specialChar 'quad
+hbar_special_char() == PNAME(specialChar('hbar))
 
 isBinaryInfix x ==
     x in '(_= _+ _- _* _/ _*_* _^ "=" "+" "-" "*" "/" "**" "^")
@@ -340,7 +341,7 @@ appChar(string,x,y,d) ==
         RPLACSTR(line, x, n := #string, string, 0, n)
         d
   appChar(string, x, y, nconc(d,
-            [[y, :make_full_CVEC(10 + $LINELENGTH + $MARGIN)]]))
+            [[y, :filler_spaces(10 + $LINELENGTH + $MARGIN)]]))
 
 mathprintWithNumber x ==
   ioHook("startAlgebraOutput")
@@ -1350,7 +1351,7 @@ output(expr,domain) ==
   sayALGEBRA [:bright '"LISP",'"output:",'%l,expr or '"NIL"]
 
 outputNumber(start,linelength,num) ==
-  if start > 1 then blnks := fillerSpaces(start-1,'" ")
+  if start > 1 then blnks := filler_spaces(start - 1)
   else blnks := '""
   under:='"__"
   firsttime:=(linelength>3)
@@ -1374,7 +1375,7 @@ outputNumber(start,linelength,num) ==
     sayALGEBRA [blnks, num]
 
 outputString(start,linelength,str) ==
-  if start > 1 then blnks := fillerSpaces(start-1,'" ")
+  if start > 1 then blnks := filler_spaces(start - 1)
   else blnks := '""
   while SIZE(str) > linelength repeat
     if $collectOutput then
@@ -2014,7 +2015,7 @@ bracketagglist(u, start, linelength, tchr, open, close) ==
     null u => return(nil)
 
 prnd(start, op) ==
-  spcs := fillerSpaces(MAX(0,start - 1), '" ")
+  spcs := filler_spaces(MAX(0, start - 1))
   $collectOutput =>
     string := STRCONC(spcs, op)
     $outputLines := [string, :$outputLines]

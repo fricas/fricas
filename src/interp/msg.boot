@@ -53,7 +53,6 @@ $imPrTagGuys := ['unimple, 'bug, 'debug, 'say, 'warn]
 $toWhereGuys := ['fileOnly, 'screenOnly ]
 $imPrGuys    := ['imPr]
 $repGuys     := ['noRep, 'rep]
-$attrCats    := ['$imPrGuys, '$toWhereGuys, '$repGuys]
 
 
 $ncMsgList := nil
@@ -146,7 +145,7 @@ processChPosesForOneLine msgList ==
         posLetter := rest ASSOC(poCharPosn getMsgPos msg, chPosList)
         oldPre := getMsgPrefix msg
         setMsgPrefix (msg,STRCONC(oldPre,_
-                     make_full_CVEC($preLength - 4 - SIZE oldPre), posLetter))
+                     filler_spaces($preLength - 4 - SIZE(oldPre)), posLetter))
     leaderMsg := makeLeaderMsg chPosList
     NCONC(msgList,LIST leaderMsg)  --a back cons
 
@@ -210,11 +209,6 @@ putFTText (msg,chPosList) ==
            charMarker2,'") "]
        setMsgText(msg,[:markingText,:getMsgText msg])
 
-rep (c,n)  ==
-    n > 0 =>
-      make_full_CVEC2(n, c)
-    '""
-
 --called from parameter list of nc message functions
 From   pos == ['FROM,   pos]
 To     pos == ['TO,     pos]
@@ -260,7 +254,8 @@ getLinePos line  == first line
 getLineText line == rest line
 
 queueUpErrors(globalNumOfLine,msgList)==
-    thisPosMsgs  := []
+    thisPosMsgs := []
+    notThisPosMsgs := []
     for msg in msgList _
       while thisPosIsLess(getMsgPos msg,globalNumOfLine) repeat
     --these are msgs that refer to positions from earlier compilations
@@ -407,10 +402,10 @@ listDecideHowMuch(pos,oldPos) ==
     'NONE
 
 getPreStL optPre ==
-    null optPre => [make_full_CVEC(2)]
+    null optPre => [filler_spaces(2)]
     spses :=
       (extraPlaces := ($preLength - (SIZE optPre) - 3)) > 0 =>
-        make_full_CVEC(extraPlaces)
+            filler_spaces(extraPlaces)
       '""
     ['%b, optPre,spses,'":", '%d]
 
@@ -462,23 +457,15 @@ setMsgUnforcedAttr(msg,cat,attr) ==
 setMsgCatlessAttr(msg,attr) ==
     ncPutQ(msg,catless,CONS (attr, IFCDR ASSQ(catless, ncAlist msg)))
 
-whichCat attr ==
-    found := 'catless
-    for cat in $attrCats repeat
-        if ListMember? (attr,EVAL cat) then
-          found := cat
-          return found
-    found
-
 --------------------------------------
 --% these functions directly interact with the message object
 
 makeLeaderMsg chPosList ==
-    st := make_full_CVEC($preLength - 3)
+    st := filler_spaces($preLength - 3)
     oldPos := -1
     for [posNum,:posLetter] in reverse chPosList repeat
-        st := STRCONC(st, _
-            rep(char ".", (posNum - oldPos - 1)),posLetter)
+        st := STRCONC(st, filler_chars((posNum - oldPos - 1), '"."),
+                      posLetter)
         oldPos := posNum
     ['leader,$nopos,'nokey,NIL,NIL,[st]]
 
@@ -488,8 +475,7 @@ makeMsgFromLine line ==
     localNumOfLine  :=
         i := poLinePosn posOfLine
         stNum := STRINGIMAGE i
-        STRCONC(rep(char " ", ($preLength - 7 - SIZE stNum)),_
-         stNum)
+        STRCONC(filler_spaces($preLength - 7 - SIZE stNum), stNum)
     ['line,posOfLine,NIL,NIL, STRCONC('"Line", localNumOfLine),_
         textOfLine]
 

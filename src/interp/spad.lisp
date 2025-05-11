@@ -55,9 +55,6 @@
 ;         SYSTEM COMMANDS
 ;************************************************************************
 
-(defun |fin| ()
-  (THROW 'SPAD_READER NIL))
-
 (defun QUOTIENT2 (X Y) (values (TRUNCATE X Y)))
 
 (defun INTEXQUO(X Y)

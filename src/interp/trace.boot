@@ -1134,7 +1134,7 @@ monitor_print_value(val, name) ==
     if $mathTrace then TERPRI($trace_stream)
     PRINMATHOR0(val, $trace_stream)
 
-monitor_blanks(n) == PRINC(make_full_CVEC(n), $trace_stream)
+monitor_blanks(n) == PRINC(filler_spaces(n), $trace_stream)
 
 monitor_get_value(n, fg) ==
     n = 0 =>
