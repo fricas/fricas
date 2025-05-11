@@ -605,6 +605,7 @@ grepConstructorSearch(htPage, yes) == kPage(htpProperty(htPage, 'line), [])
 conSpecialString?(filter) == conSpecialString2?(filter, false)
 
 conSpecialString2?(filter, secondTime) ==
+  $ncMsgList : local := []
   parse :=
     words := string2Words filter is [s] => ncParseFromString s
     and/[not member(x,'("and" "or" "not")) for x in words] => ncParseFromString filter

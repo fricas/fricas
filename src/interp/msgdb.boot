@@ -355,6 +355,7 @@ say_msg_local(msg, args) ==
   sayMSG msg'
 
 throwKeyedErrorMsg(kind,key,args) ==
+  $noEvalTypeMsg => spadThrow()
   sayMSG '" "
   if $testingSystem then sayMSG $testingErrorPrefix
   sayKeyedMsg(key,args)
@@ -367,6 +368,7 @@ throwKeyedMsgSP(key,args,atree) ==
     throwKeyedMsg(key,args)
 
 throwKeyedMsg(key,args) ==
+  $noEvalTypeMsg => spadThrow()
   throwKeyedMsg1(key, args)
 
 throwKeyedMsg1(key,args) ==
