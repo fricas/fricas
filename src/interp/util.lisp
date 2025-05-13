@@ -61,6 +61,11 @@ at load time.
     (system:set-hole-size hole))
   nil)
 
+#+:GCL
+(defun |resetStackLimits| () (system:reset-stack-limits))
+#-:GCL
+(defun |resetStackLimits| () nil)
+
 #|
 The {\bf build-interpsys} function takes a list of files to load
 into the image ({\bf load-files}).

@@ -67,3 +67,28 @@
 
 (defun |make_string_code| (n code)
     (|make_string0| n (code-char code)))
+
+;------
+
+(defmacro |trapNumericErrors| (form)
+    `(handler-case (cons 0 ,form)
+         (arithmetic-error () |$spad_failure|)))
+
+#+:sbcl
+(progn
+(defun |do_timeout| (f ti)
+   (handler-case
+          (sb-ext:with-timeout ti (SPADCALL f))
+       (sb-ext:timeout (e)
+          (THROW '|trapSpadErrors| |$spad_failure|))
+   )
+)
+
+(defun |eval_with_timeout| (f ti)
+    (CATCH '|trapSpadErrors| (cons 0 (|do_timeout| f ti))))
+)
+
+#-:sbcl
+(defun |eval_with_timeout| (f ti) (|error| "unimplemented for this Lisp"))
+
+

@@ -49,6 +49,10 @@ DEFPARAMETER($AlgebraError, 'AlgebraError)
 
 DEFVAR($timedNameStack)
 
+error_format(c) ==
+    $BreakMode : local := 'break
+    FORMAT(nil, '"~a", c)
+
 spad_system_error_handler (c) ==
     $NeedToSignalSessionManager := true
     MEMQ($BreakMode,
