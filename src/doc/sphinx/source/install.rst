@@ -446,16 +446,23 @@ After a build of FriCAS, (suppose your build directory is under
 ``$BUILD``), you can build the documentation provided at
 the |home page| on your local installation.
 
+If you want only |PACKAGE_BOOK| (also known as the FriCAS User
+Guide) do
+::
+
+   make book
+
+This build |PACKAGE_BOOK| into ``src/doc/book.pdf''.
+
 The |home page| can be built via
 ::
 
-   cd $BUILD/src/doc
-   make doc
+   make webdoc
 
-This builds the full content of the |home page| including the
-|PACKAGE_BOOK| (also known as the FriCAS User Guide) into the
-directory ``src/doc/html`` from which it can be committed to the
-``gh-pages`` branch of the official |git repository|.
+This builds the full content of the |home page| into the directory
+``src/doc/html`` from which it can be committed to the ``gh-pages``
+branch of the official |git repository|.  This command also builds
+|PACKAGE_BOOK|.
 
 Most links also work fine if you start
 ::
@@ -466,7 +473,6 @@ but some links point to the web.  If you want the links referring only
 to the data on your computer, you call the compilation like this
 ::
 
-   cd $BUILD/src/doc
    make localdoc
 
 This will have broken references to the
@@ -490,7 +496,7 @@ refer to branch ``foo`` instead of ``master`` then do as follows
    make PACKAGE_SOURCE=https://github.com/hemmecke/fricas \
         BRANCH=foo \
         PACKAGE_URL=https://hemmecke.github.io/fricas \
-        doc
+        webdoc
 
 If you want to change the version information provided by default
 through ``configure.ac``, you can add a variable assignment like this
