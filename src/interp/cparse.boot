@@ -881,6 +881,9 @@ npDefinitionItem()==
                npEqPeek("==") =>
                   npRestore a
                   npDef()
+               npEqPeek("==>") =>
+                  npRestore a
+                  npMDEF()
                npRestore a
                npMacro() or npDefn()
           npTrap()
