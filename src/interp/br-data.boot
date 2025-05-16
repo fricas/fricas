@@ -553,6 +553,7 @@ ancestorsRecur(conform, domform, pred, firstTime?) ==
   if conform ~= originalConform then
     parents := SUBLISLIS(IFCDR conform,IFCDR originalConform,parents)
   for [newform,:p] in parents repeat
+    p is ['has, '%, newform] => "iterate"
     if domform and rest domform then
       newdomform := SUBLISLIS(rest domform,rest conform,newform)
       p          := SUBLISLIS(rest domform,rest conform,p)

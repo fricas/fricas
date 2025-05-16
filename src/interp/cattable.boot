@@ -248,6 +248,7 @@ mkCategoryExtensionAlist cform ==
   catlist := formalSubstitute(cform, first getConstructorExports(cform, true))
   extendsList:= nil
   for [cat,:pred] in catlist repeat
+    pred is ["has", "%", =cat] => "iterate"
     newList := getCategoryExtensionAlist0 cat
     finalList :=
       pred = 'T => newList
