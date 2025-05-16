@@ -208,7 +208,7 @@ npPPg() ==
     and npPush pfAppend npPop1()
 
 npPP(f) ==
-  $npPParg := f
+  $npPParg : local := f
   npParened function npPPf
     or npPileBracketed function npPPg and
       npPush pfEnSequence npPop1()
