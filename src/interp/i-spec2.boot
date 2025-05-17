@@ -568,18 +568,27 @@ upLETWithPatternOnLhs(t := [op,pattern,a]) ==
   $opIsIs : local := true
   [m] := bottomUp a
   putPvarModes(pattern,m)
-  object := evalis(op,[a,pattern],m)
+  a_val :=
+      $genValue => a
+      sym := GENSYM()
+      vv := mkAtreeNode(sym)
+      putModeSet(vv, [m])
+      putMode(vv, m)
+      putValue(vv, [m, :sym])
+      vv
+  object := evalis(op, [a_val, pattern], m)
   -- have to change code to return value of a
   failCode :=
     ['spadThrowBrightly,['concat,
       '"   Pattern",['QUOTE,bright form2String pattern],
         '"is not matched in assignment to right-hand side."]]
-  if $genValue
-    then
+  if $genValue then
       null objValUnwrap object => eval failCode
       putValue(op,getValue a)
-    else
-      code := ['COND,[objVal object,objVal getValue a],[''T,failCode]]
+  else
+      code := ["PROGN",
+          ["LET", sym, objVal(getValue(a))],
+          ["COND", [objVal(object), sym], [''T, failCode]]]
       putValue(op,objNew(code,m))
   putModeSet(op,[m])
 
