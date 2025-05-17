@@ -2792,6 +2792,13 @@ parseFromString(s) ==
    StreamNull s => nil
    pf2Sex macroExpanded first rest first s
 
-ncParseFromString(s) ==
+ncParseFromString1(s) ==
    $BreakMode : local := 'throw_reader
    CATCH('SPAD_READER, parseFromString(s))
+
+ncParseFromString0(s, macros) ==
+    $pfMacros : local := macros
+    ncParseFromString1(s)
+
+ncParseFromString(s) == ncParseFromString0(s, $pfMacros)
+

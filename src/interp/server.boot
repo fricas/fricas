@@ -171,7 +171,7 @@ parseAndEvalStr string ==
 parseAndEvalStr1 string ==
   string.0 = char '")" =>
     doSystemCommand SUBSEQ(string, 1)
-  sform := ncParseFromString string
+  sform := ncParseFromString1(string)
   $QuietCommand : local := $QuietCommand_tmp
   processInteractive(sform, NIL)
 
