@@ -138,8 +138,11 @@ install-src:
 	     || exit 1 ; \
 	done
 	echo '#!/bin/sh -' > '${COMMAND}'.tmp
-	echo exec_prefix='"$${FRICAS_PREFIX:-$(exec_prefix)}"' \
-               >> '${COMMAND}'.tmp
+	cat $(fricas_src_srcdir)/etc/resolvelinks.sh >> '${COMMAND}'.tmp
+	echo 'exec_prefix=$$(resolvelinks "$$0")' >> '${COMMAND}'.tmp
+	echo 'exec_prefix=$${exec_prefix%/*}'  >> '${COMMAND}'.tmp
+	echo 'exec_prefix=$${exec_prefix%/*}'  >> '${COMMAND}'.tmp
+	echo 'exec_prefix=$$(cd $$exec_prefix && pwd -P)' >> '${COMMAND}'.tmp
 	if test "$(fricas_lib)" != "$(libdir)" ;  then echo \
             FRICAS='"$${exec_prefix}/$(fricas_lib)/fricas/target/$(target)"' \
               >> '${COMMAND}'.tmp ; \
