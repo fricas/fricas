@@ -121,10 +121,12 @@ simpHasPred2(pred, options) == main where
     pred
   eval (pred := ['has,d,cat]) ==
     x := hasCat(first d, first cat)
+    if rest(d) then
+        x := EQSUBSTLIST(rest(d), $FormalMapVariableList, x)
     y := rest cat =>
       npred := or/[p for [args,:p] in x | y = args] => simp npred
       false  --if not there, it is false
-    x
+    simp(x)
 
 simpHasSignature(pred,conform,op,sig) == --eval w/o loading
   IDENTP conform => pred
