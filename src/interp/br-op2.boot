@@ -247,42 +247,49 @@ getSubstInsert(x,candidates) ==
 --                   Get Attribute/Operation Alist
 --=======================================================================
 
-koOps(conform, domname) == main where
---returns alist of form ((op (sig . pred) ...) ...)
-  main ==
-    $packageItem: local := nil
-    ours := fn(conform, domname)
-    listSort(function GLESSEQP,trim ours)
-  trim u == [pair for pair in u | IFCDR pair]
-  fn(conform,domname) ==
+try_eval(pred, ancestors) ==
+    pred is [op, :args] =>
+        op = "OR" =>
+            nargs := [v for arg in args | (v := try_eval(arg, ancestors))]
+            NULL(nargs) => false
+            member('T, nargs) => 'T
+            #nargs = 1 => first(nargs)
+            [op, :nargs]
+        op = "AND" =>
+            nargs := [v for arg in args |
+                      not((v := try_eval(arg, ancestors)) = 'T)]
+            NULL(nargs) => 'T
+            member(false, nargs) => false
+            #nargs = 1 => first(nargs)
+            [op, :nargs]
+        op = "has" and args is [="%", cat] =>
+            av := assoc(cat, ancestors)
+            NULL(av) => false
+            av is [cat, :'T] => 'T
+            pred
+        pred
+    pred
+
+simp_pred(pred, ancestors) ==
+    npred := simpHasPred(pred)
+    NULL(ancestors) => npred
+    NULL(npred) => npred
+    npred = 'T => npred
+    try_eval(npred, ancestors)
+
+-- returns alist with elements of form [op, :sigl] where
+-- sigl is list of elements of form [sig, pred, nil, nil]
+koOps(conform, domname) ==
+    conform0 := conform
     conform := domname or conform
     [conname,:args] := conform
-    subargs: local := args
-    ----------> new <------------------
-    u := koCatOps(conform,domname) => u
---    'category = get_database(conname, 'CONSTRUCTORKIND) =>
---        koCatOps(conform,domname)
-    asharpConstructorName? opOf conform => nil
-    ----------> new <------------------
-    exposureTail :=
-      null $packageItem => '(NIL NIL)
-      isExposedConstructor opOf conform => [conform,:'(T)]
-      [conform,:'(NIL)]
-    for [op,:u] in getOperationAlistFromLisplib conname repeat
-      op1 := zeroOneConvert op
-      acc :=
-          [[op1, :[[sig, npred, :exposureTail]
-                    for [sig, slot, pred, key, :.] in sublisFormal(subargs,u)
-                   | npred := simpHasPred(pred)]], :acc]
-    acc
-  merge(alist,alist1) == --alist1 takes precedence
-    for [op,:al] in alist1 repeat
-      u := LASSOC(op,alist) =>
-        for [sig,:item] in al | not LASSOC(sig,u) repeat
-          u := insertAlist(sig,item,u)
-        alist := insertAlist(op,u,DELASC(op,alist)) --add the merge of two alists
-      alist := insertAlist(op,al,alist)  --add the whole inner alist
-    alist
+    kind := get_database(conname, 'CONSTRUCTORKIND)
+    ancestors :=
+        kind = "domain" or kind = "package" =>
+            ancestorsOf(conform0, domname)
+        []
+    res := koCatOps(conform, domname, ancestors)
+    listSort(function GLESSEQP, res)
 
 zeroOneConvert x ==
   x = 'Zero => 0
@@ -301,14 +308,15 @@ kFormatSlotDomain1(x, infovec) ==
   op = 'QUOTE and atom CADR x => CADR x
   x
 
-koCatOps(conform,domname) ==
+koCatOps(conform, domname, ancestors) ==
   conname := opOf conform
   oplist := REVERSE(get_database(conname, 'OPERATIONALIST))
   oplist := sublisFormal(IFCDR domname or IFCDR conform ,oplist)
   --check below for INTEGERP key to avoid subsumed signatures
-  [[zeroOneConvert op,:nalist] for [op,:alist] in oplist | nalist := koCatOps1(alist)]
+  [[zeroOneConvert op,:nalist] for [op,:alist] in oplist
+      | nalist := koCatOps1(alist, ancestors)]
 
-koCatOps1 alist == [x for item in alist | x := pair] where
+koCatOps1(alist, ancestors) == [x for item in alist | x := pair] where
   pair ==
     [sig,:r] := item
     null r => [sig,true]
@@ -316,7 +324,7 @@ koCatOps1 alist == [x for item in alist | x := pair] where
     null (pred := IFCAR options) =>
       IFCAR IFCDR options = 'ASCONST => [sig,'ASCONST]
       [sig,true]
-    npred := simpHasPred pred => [sig,npred]
+    npred := simp_pred(pred, ancestors) => [sig, npred]
     false
 
 --=======================================================================
