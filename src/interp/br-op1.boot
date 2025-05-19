@@ -862,6 +862,7 @@ evalDomainOpPred(dom,pred) == process(dom,pred) where
     pred = 'T => true
     systemError nil
   convertCatArg p ==
+    SYMBOLP(p) and member(p, $FormalMapVariableList) => ["devaluate", p]
     atom p or #p = 1 => MKQ p
     ['LIST,MKQ first p,:[convertCatArg x for x in rest p]]
   evpred(dom,pred) ==
