@@ -2043,6 +2043,18 @@ reportOpsFromLisplib1(unitForm,u)  ==
   editFile showFile
   deleteFile(showFile)
 
+get_op_alist(form) ==
+    conname := first(form)
+    conform := getConstructorForm(conname)
+    ops := koOps(conform, form)
+    res := []
+    for op in ops repeat
+        [name, :sigs] := op
+        for sigm in sigs repeat
+            [sig, cond] := sigm
+            res := cons([[name, sig], cond, ["ELT", nil, nil]], res)
+    NREVERSE(res)
+
 reportOpsFromUnitDirectly unitForm ==
   isRecordOrUnion := unitForm is [a,:.] and a in '(Record Union)
   unit:= evalDomain unitForm
@@ -2072,35 +2084,21 @@ reportOpsFromUnitDirectly unitForm ==
           sigList := REMDUP MSORT [[[a,b],true,[c,0,1]] for
             [a,b,c] in funlist]
         else
-          sigList:= REMDUP MSORT getOplistForConstructorForm unitForm
+            sigList := get_op_alist(unitForm)
 
-      $commentedOps: local := 0
+      sigList := REMDUP(MSORT(sigList))
+
       ops := nil
 
-      if kind = 'category then
-        sigList := EQSUBSTLIST(argl,$FormalMapVariableList, sigList)
-        ops := [formatOperationWithPred(x) for x in sigList]
-      else
-        $predicateList : local := get_database(top, 'PREDICATES)
-        -- x.1 is the type predicate of operation x
-        sigList := [x for x in sigList | evalDomainOpPred(unit, x.1)]
-        -- first(first(x)) is the name of operation x
-        numOfNames := # REMDUP [first(first(x)) for x in sigList]
-        sayBrightly ['" ", numOfNames, '" Names for ", #sigList,
-                     '" Operations in this Domain."]
-
-        --new form is (<op> <signature> <slotNumber> <condition> <kind>)
-        ops := [formatOperation(x) for x in sigList]
+      numOfNames := # REMDUP [first(first(x)) for x in sigList]
+      sayBrightly(['" ", numOfNames, '" names for ", #sigList,
+                   '" operations in this ", PNAME(kind), "."])
+      ops := [formatOperationWithPred(x) for x in sigList]
 
       centerAndHighlight('"Operations", $LINELENGTH, specialChar 'hbar)
       sayBrightly '""
       say2PerLine ops
 
-      if $commentedOps ~= 0 then
-        sayBrightly
-          ['"Functions that are not yet implemented are preceded by",
-            :bright '"--"]
-        sayBrightly '""
   NIL
 
 reportOpsFromLisplib(op,u) ==
