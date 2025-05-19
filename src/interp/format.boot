@@ -245,9 +245,6 @@ formatOpSymbol(op,sig) ==
     n = 3 =>
       if op = 'SEGMENT then op := '".."
       op = "in" => [quad, '" ", op, '" ", quad]
--- stop exquo from being displayed as infix (since it is not accepted
--- as such by the interpreter)
-      op = 'exquo => op
       [quad,op,quad]
     n = 2 =>
       not GETL(op,"Nud") => [quad,op]
