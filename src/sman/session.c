@@ -287,7 +287,7 @@ kill_spad(void)
 static int
 accept_session_connection(Sock *server_sock)
 {
-  int sock_fd, ret_code;
+  int sock_fd;
   Sock_List *pls;
 
   /* Could be three things : KillSpad MenuServer InterpWindow  */

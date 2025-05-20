@@ -31,8 +31,6 @@
 
 )package "BOOT"
 
-oldCompilerAutoloadOnceTrigger() == nil
-
 compAtomWithModemap(x, m, e, v) ==
     res := nil
     v1 := nil

@@ -234,8 +234,7 @@ formatOpSymbol(op,sig) ==
   null sig => op
   quad := specialChar 'quad
   n := #sig
-  (op = 'elt) and (n = 3) =>
-    op
+  (op = 'elt) and (n = 3) => op
   STRINGP op or GETL(op,"Led") or GETL(op,"Nud") =>
     n = 3 =>
       if op = 'SEGMENT then op := '".."

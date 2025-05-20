@@ -146,8 +146,7 @@ optCall (x is ["call",:u]) ==
     (rplac(first x, "SPADCALL"); rplac(rest x, [:a, name]); x)
   fn is [q,R,n] and MEMQ(q,'(ELT QREFELT CONST)) =>
     not $bootStrapMode and (w:= optCallSpecially(x, n, R)) => w
-    q = "CONST" =>
-      ["spadConstant",R,n]
+    q = "CONST" => ["spadConstant", R, n]
     --putInLocalDomainReferences will change this to ELT or QREFELT
     rplac(first x, "SPADCALL")
     if $QuickCode then RPLACA(fn,"QREFELT")

@@ -43,8 +43,6 @@
 --   genSearch, for complete search
 --=======================================================================
 
-browserAutoloadOnceTrigger() == nil
-
 ----------------------> Global Variables <-----------------------
 $includeUnexposed? := true   --default setting
 $tick := char '_`            --field separator for database files

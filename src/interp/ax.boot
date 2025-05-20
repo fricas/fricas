@@ -100,8 +100,6 @@ $defaultFlag := false
 $baseForms := nil
 $literals  := nil
 
-spad2AxTranslatorAutoloadOnceTrigger any == true
-
 $foreignTag := 'Foreign
 setForeignStyle(tag) ==
     $foreignTag := tag

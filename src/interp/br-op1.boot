@@ -805,8 +805,6 @@ mathform2HtString form == escapeString
 --                Getting Operations from Domain
 --============================================================================
 
-getDomainOpTable(dom, fromIfTrue) == getDomainOpTable2(dom, fromIfTrue, [])
-
 getDomainOpTable2(dom, fromIfTrue, ops) ==
   $returnNowhereFromGoGet: local := true
   domname := dom.0
