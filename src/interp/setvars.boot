@@ -116,7 +116,6 @@ set1(l,setTree) ==
     -- allow the user to set the default
     setfunarg :=
       l.1 = 'DEFAULT => "%initialize%"
---    (arg2 := selectOption(l.1,['default],nil)) => "%initialize%"
       IFCDR l
     if functionp(setData.setVar)
       then FUNCALL( setData.setVar,setfunarg)

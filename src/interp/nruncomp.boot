@@ -191,15 +191,12 @@ genDeltaEntry(opMmPair, e) ==
         nsig := substitute('%, dc, substitute("$$", "%", sig))
 
     -- following hack needed to invert Rep to $ substitution
---  if odc = 'Rep and cform is [.,.,osig] then sig:=osig
   newimp := optDeltaEntry(op, nsig, dc, eltOrConst, e) => newimp
   setDifference(listOfBoundVars(dc, e), $functorLocalParameters) ~= [] =>
     ['applyFun,['compiledLookupCheck,MKQ op,
          mkList consSig(nsig, dc, e), consDomainForm(dc, nil, e)]]
   odc := dc
   if null atom dc then dc := substitute("$$", '%, dc)
- --   sig := substitute('%, dc, sig)
- --   cform := substitute('%, dc, cform)
   opModemapPair :=
     -- force pred to T
     [op, [dc, :[genDeltaSig(x, e) for x in nsig]], ['T,cform]]
@@ -689,7 +686,6 @@ deepChaseInferences1(pred, e) ==
         for p in preds repeat e := deepChaseInferences1(p, e)
         e
     pred is ['OR, pred1, :.] or pred is ['or, pred1, :.] => e
-    --    deepChaseInferences1(pred1, e)
     pred is 'T or pred is ['NOT, :.] or pred is ['not, :.] => e
     chaseInferences(pred, e)
 

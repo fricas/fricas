@@ -854,7 +854,6 @@ npDef()==
          npPush pfDefinition (op,pfPushBody(rt,arg,body))
     false
 
---npDefTail()== npEqKey "DEF" and npDefinitionOrStatement()
 npDefTail()== (npEqKey("==") or npEqKey("==>")) and npDefinitionOrStatement()
 
 npMdef()==

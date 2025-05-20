@@ -613,7 +613,6 @@ TruthP x ==
   x is ['QUOTE,:.] => true
   nil
 
---
 -- tests if x is an identifier beginning with #
 
 isSharpVar x ==

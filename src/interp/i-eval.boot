@@ -50,8 +50,6 @@ quoteNontypeArgs(t) ==
 
 evalType(t) == EVAL(quoteNontypeArgs(t))
 
----
-
 $noEvalTypeMsg := nil
 $evalDomain := nil
 
@@ -239,7 +237,6 @@ evalForm(op,opName,argl,mmS) ==
         _% : fluid := domain
         ['SPADCALL, :form, fun0]
   not form => nil
---  not form => throwKeyedMsg("S2IE0008",[opName])
   form='interpOnly => rewriteMap(op,opName,argl)
   targetType := CADR sig
   if CONTAINED('_#,targetType) then targetType := NRTtypeHack targetType
@@ -322,7 +319,6 @@ evalFormMkValue(op,form,tm) ==
       $genValue => wrap timedEVALFUN form
       form
     objNew(u,tm)
---+
   if $NRTmonitorIfTrue = true then
     sayBrightlyNT ['"Value of ",op.0,'" ===> "]
     pp unwrap u

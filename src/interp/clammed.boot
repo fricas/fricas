@@ -112,7 +112,6 @@ coerceConvertMmSelection(funName,m1,m2) ==
   $declaredMode : local:= NIL
   $reportBottomUpFlag : local:= NIL
   l := selectMms1(funName,m2,[m1],[m1],NIL)
-  --  mmS := [[sig,[targ,arg],:pred] for x in l | x is [sig,[.,arg],:pred] and
   mmS := [x for x in l | x is [sig,:.] and hasCorrectTarget(m2,sig) and
            sig is [dc,targ,oarg] and isEqualOrSubDomain(m1,oarg)]
   mmS and first mmS

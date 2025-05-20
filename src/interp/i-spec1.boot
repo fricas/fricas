@@ -109,9 +109,6 @@ upADEF t ==
       throwKeyedMsg("S2IS0059",NIL)
     if isPartialMode type  then throwKeyedMsg("S2IS0058",[type])
 
---  $localVars: local := nil
---  $freeVars:  local := nil
---  $env:       local := [[NIL]]
   $compilingMap : local := true
 
   -- if there is a predicate, merge it in with the body
@@ -198,7 +195,6 @@ compileTargetedADEF(t,vars,types,body) ==
   compileADEFBody(t,vars,types,body,computedResultType)
 
 compileADEFBody(t,vars,types,body,computedResultType) ==
---+
   $compiledOpNameList := [$mapName]
   minivectorName := makeInternalMapMinivectorName(PNAME $mapName)
   body := SUBST(minivectorName,"$$$",body)

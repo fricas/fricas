@@ -365,7 +365,6 @@ lfkey x==["key",keyword x]
 lfinteger x == ["integer", x]
 
 lfrinteger (r,x)==["integer",CONCAT (r,CONCAT('"r",x))]
---lfrfloat(a,w,v)==["rfloat",CONCAT(a,'"r.",v)]
 lffloat(a, w, e) == ["float", [a, w, e]]
 lfstring x==if #x=1 then ["char",x] else ["string",x]
 lfcomment (n, lp, x) == ["comment", x]
@@ -374,7 +373,6 @@ lferror x==["error",x]
 lfspaces x==["spaces",x]
 
 constoken1(ln, lp, b, n, nb) ==
---  [b.0,b.1,cons(lp,n)]
        a:=cons(b.0,b.1)
        if nb then ncPutQ(a, "nonblank", true)
        ncPutQ(a,"posn",cons(lp,n))

@@ -127,7 +127,6 @@ compareSigEqual(s,t,dollar,domain) ==
 
 NRT_opt_call(u, opName, sigTail,dcVector) ==
     dc := devaluate(dcVector)
-    -- sayBrightly(["NRT_opt_call ", u, opName, sigTail, dc])
     not MEMQ(IFCAR dc, $optimizableConstructorNames) => nil
     NULL(name := BPINAME(first u))  => nil
     fn := GETL(name, 'SPADreplace) =>
@@ -179,8 +178,6 @@ NRTisRecurrenceRelation(op,body,minivectorName) ==
   -- body should have a conditional expression which
   -- gives k boundary values, one general term plus possibly an
   -- "out of domain" condition
---pcl is [:.,[ ''T,:mess]] and not (CONTAINED('throwMessage,mess) or
---  CONTAINED('throwKeyedMsg,mess)) => NIL
   pcl := [x for x in pcl | not (x is [''T,:mess] and
     (CONTAINED('throwMessage,mess) or
       CONTAINED('throwKeyedMsg,mess)))]

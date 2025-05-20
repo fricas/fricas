@@ -275,7 +275,6 @@ buildGloss() ==  --called by buildDatabase (database.boot)
     PRINTEXP($tick,outstream)
     PRINTEXP(defP, outstream)
     TERPRI(outstream)
---  PRINTEXP('"\item\newline{\em \menuitemstyle{}}\tab{0}{\em ",htstream)
     PRINTEXP('"\item\newline{\em \menuitemstyle{}}{\em ",htstream)
     PRINTEXP(name,        htstream)
     PRINTEXP('"}\space{}",htstream)
@@ -411,7 +410,7 @@ getImports conname == --called by mkUsersHashTable
 --TTT next three lines: handles some tagged/untagged Union case.
         op = 'Union=>
           args is [['_:,:x1],:x2] =>
---          CAAR args = '_: => -- tagged!
+               -- tagged!
                ['Union,:[[":",CADR y,import(CADDR y,template)] for y in args]]
           [op,:[import(y,template) for y in args]]
 
@@ -627,7 +626,6 @@ transKCatAlist(conform,domname,s) == main where
           if hasArgsForm? then
             subargs := sublisFormal(IFCDR leftForm, args)
             hpred :=
---            $hasArgsList => mkHasArgsPred subargs
               ['hasArgs,:subargs]
             npred := quickAnd(hpred,npred)
           acc := [[leftForm,:npred],:acc]

@@ -427,7 +427,6 @@ resolveTCat1(t,c) ==
   -- does the hard work of looking at conditions on under domains
   -- if null (ut := getUnderModeOf(t)) then ut := last dt
   null (conds := getConditionsForCategoryOnType(t,c)) => NIL
---rest(conds) => NIL   -- will handle later
   cond := first conds
   cond isnt [.,['has, pat, c1],:.] => NIL
   rest(c1) => NIL      -- make it simple
@@ -693,7 +692,6 @@ resolveTMEq2(cm,argm,TL) ==
   argt0 := argt
   null TL and
     null argm => constructM(ct,argt)
---  null argm => NIL
     arg := NIL
     while argt and argm until not tt repeat
       x1 := first argt
@@ -747,16 +745,6 @@ getUnderModeOf d ==
   not PAIRP d => NIL
   for a in rest d for m in rest destructT d repeat
     if m then return a
-
---deconstructM(t) ==
---  -- M is a type, which may contain type variables
---  -- results in a pair (type constructor . mode arguments)
---  rest t and constructor? first t =>
---    dt := destructT first t
---    args := [ x for d in dt for y in t | ( x := d and y ) ]
---    c := [ x for d in dt for y in t | ( x := not d and y ) ]
---    CONS(c,args)
---  CONS(t,NIL)
 
 deconstructT(t) ==
   -- M is a type, which may contain type variables

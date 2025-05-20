@@ -215,11 +215,9 @@ checkRewrite(name, lines) ==    --similar to checkComments from c-doc
     u := checkSplit2Words u
     u := checkAddMacros u
     u := checkTexht u
---  checkBalance u
     checkArguments u
     if $checkErrorFlag then u := checkFixCommonProblem u
     checkRecordHash u
---  u := checkTranVerbatim u
     checkDecorateForHt u
 
 checkTexht u ==
@@ -346,58 +344,6 @@ checkGetStringBeforeRightBrace u ==
     x = $charRbrace => return "STRCONC"/(NREVERSE acc)
     acc := [x,:acc]
     u := rest u
-
---  checkTranVerbatim u ==
---    acc := nil
---    while u repeat
---      x := first u
---      x = '"\begin" and checkTranVerbatimMiddle u is [middle,:r] =>
---        acc := [$charRbrace,:middle,$charLbrace,'"\spadpaste",:acc]
---        u := r
---      if x = '"\spadcommand" then x := '"\spadpaste"
---      acc := [x,:acc]
---      u := rest u
---    NREVERSE acc
---
---  checkTranVerbatimMiddle u ==
---      (y := IFCAR (v := IFCDR u)) = $charLbrace and
---        (y := IFCAR (v := IFCDR v)) = '"verbatim" and
---          (y := IFCAR (v := IFCDR v)) = $charRbrace =>
---             w := IFCDR v
---             middle := nil
---             while w and (z := first w) ~= '"\end" repeat
---               middle := [z,:middle]
---               w := rest w
---             if (y := IFCAR (w := IFCDR w)) = $charLbrace and
---               (y := IFCAR (w := IFCDR w))  = '"verbatim" and
---                 (y := IFCAR (w := IFCDR w)) = $charRbrace then
---                    u := IFCDR w
---             else
---                checkDocError '"Missing \end{verbatim}"
---                u := w
---             [middle,:u]
---
---  checkTranVerbatim1 u ==
---    acc := nil
---    while u repeat
---      x := first u
---      x = '"\begin" and (y := IFCAR (v := IFCDR u)) = $charLbrace and
---        (y := IFCAR (v := IFCDR v)) = '"verbatim" and
---          (y := IFCAR (v := IFCDR v)) = $charRbrace =>
---             w := IFCDR v
---             middle := nil
---             while w and (z := first w) ~= '"\end" repeat
---               middle := [z,:middle]
---               w := rest w
---             if (y := IFCAR (w := IFCDR w)) = $charLbrace and
---               (y := IFCAR (w := IFCDR w))  = '"verbatim" and
---                 (y := IFCAR (w := IFCDR w)) = $charRbrace then
---                    u := IFCDR w
---             acc := [$charRbrace,:middle,$charLbrace,'"\spadpaste",:acc]
---      if x = '"\spadcommand" then x := '"\spadpaste"
---      acc := [x,:acc]
---      u := rest u
---    NREVERSE acc
 
 appendOver [head,:tail] ==
  acc := LASTNODE head

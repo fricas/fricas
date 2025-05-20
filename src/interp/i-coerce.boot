@@ -170,9 +170,6 @@ retract2Specialization object ==
     objNewWrap(1,['OrderedVariableList,[val']])
   type is ['OrderedVariableList,var] =>
     coerceInt(objNewWrap(var.(val'-1),$Symbol), '(Polynomial (Integer)))
--- !! following retract seems wrong and breaks ug13.input
---  type is ['Variable,var] =>
---    coerceInt(object,$Symbol)
   type is ['Polynomial,D] =>
     val' is [ =1,x,:.] =>
       vl := REMDUP reverse varsInPoly val'
@@ -202,8 +199,6 @@ retract2Specialization object ==
       D = $PositiveInteger => objNew(val,['List,$NonNegativeInteger])
       D = $NonNegativeInteger => objNew(val,['List,$Integer])
       null val' => nil
---        null (um := underDomainOf D) => nil
---        objNewWrap(nil,['List,um])
       vl := nil
       tl := nil
       bad := nil
@@ -301,7 +296,6 @@ retractByFunction(object,u) ==
   -- if the type belongs to the correct category.
   $reportBottomUpFlag: local := NIL
   t := objMode object
-  -- JHD/CRF not ofCategory(t,['RetractableTo,u]) => NIL
   val := objValUnwrap object
   -- try to get and apply the function "retractable?"
   target := ['Union,u,'"failed"]
@@ -317,10 +311,8 @@ retractByFunction(object,u) ==
   -- [[dc, :.], ., .] := first mms
   dc := CAAAR mms
   fun := interpLookup(funName, [target,t], dc)
---+
   NULL fun => NIL
   first(fun) = function Undef => NIL
---+
   object' := coerceUnion2Branch objNewWrap(SPADCALL(val,fun),target)
   u' := objMode object'
   u = u' => object'
@@ -378,7 +370,6 @@ algEqual(object1, object2, domain) ==
   -- sees if 2 objects of the same domain are equal by using the
   -- "=" from the domain
   -- objects should not be wrapped
---  eqfunc := getFunctionFromDomain("=",domain,[domain,domain])
   eqfunc := compiledLookupCheck("=", [$Boolean, '%, '%], evalDomain(domain))
   SPADCALL(object1,object2, eqfunc)
 
@@ -796,8 +787,6 @@ coerceInt0(triple,t2) ==
 
   val='_$fromCoerceable_$ => canCoerceFrom(t1,t2)
   t1 = t2 => triple
-  -- t1 is ['Mapping,:.] and t2 ~= '(Any) => NIL
-  -- note: may be able to coerce TO mapping
   -- treat Exit like Any
   -- handle case where we must generate code
   null(isWrapped val) and
@@ -1071,7 +1060,6 @@ coerceIntByMap(triple,t2) ==
   1 = #u1 => NIL
   CAAR u1 ~= CAAR u2 => nil  -- constructors not equal
   not valueArgsEqual?(t1, t2) => NIL
---  first u1 ~= first u2 => NIL
   top := CAAR u1
   u1 := underDomainOf t1
   u2 := underDomainOf t2

@@ -394,7 +394,6 @@ compSymbol(s,m,e) ==
   s = "iterate" => comp_iterate(s, m, e)
   s = m => [["QUOTE", s], s, e]
   v:= get(s,"value",e) =>
---+
     MEMQ(s,$functorLocalParameters) =>
         NRTgetLocalIndex(s, e)
         [s,v.mode,e] --s will be replaced by an ELT form in beforeCompile
@@ -621,8 +620,6 @@ setqSingle(id,val,m,E) ==
   m'':=
     get(id,'mode,E) or getmode(id,E) or
        (if m=$NoValueMode then $EmptyMode else m)
--- m'':= LASSOC("mode",currentProplist) or $EmptyMode
-       --for above line to work, line 3 of compNoStackingis required
   T:=
     eval or return nil where
       eval() ==
@@ -646,7 +643,6 @@ finish_setq_single(T, m, id, val, currentProplist) ==
     e':= augModemapsFromDomain1(id,val,e')
       --all we do now is to allocate a slot number for lhs
       --e.g. the LET form below will be changed by putInLocalDomainReferences
---+
   saveLocVarsTypeDecl(x, id, e')
 
   if (k := NRTassocIndex(id)) then
@@ -786,7 +782,6 @@ compConstruct(form is ["construct", :l], m, e) ==
 compQuote(expr is [QUOTE, e1], m, e) ==
   SYMBOLP(e1) => [expr, ["Symbol"], e]
   stackAndThrow ['"Strange argument to QUOTE", expr]
-  -- [expr,m,e]
 
 compList(l,m is ["List",mUnder],e) ==
   null l => [NIL,m,e]
@@ -1300,8 +1295,6 @@ coerceByModemap([x,m,e],m') ==
       for (modemap:= [map,cexpr]) in getModemapList("coerce",1,e) | map is [.,t,
         s] and (modeEqual(t,m') or isSubset(t,m',e))
            and (modeEqual(s,m) or isSubset(m,s,e))] or return nil
-
-  --mm:= (or/[mm for (mm:=[.,[cond,.]]) in u | cond=true]) or return nil
   mm:=first u  -- patch for non-trivial conditions
   fn :=
       genDeltaEntry(['coerce, :mm], e)

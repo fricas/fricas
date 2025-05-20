@@ -174,7 +174,6 @@ postComma u == postTuple comma2Tuple u
 comma2Tuple u == ["@Tuple", :postFlatten(u, ",")]
 
 postDef [defOp,lhs,rhs] ==
---+
   lhs is ["macro",name] => postMDef ["==>",name,rhs]
 
   recordHeaderDocumentation nil

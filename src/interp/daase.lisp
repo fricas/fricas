@@ -214,7 +214,6 @@ database.
 ;;       (set (foam::axiomxl-file-init-name (pathname-name sourcefile))
 ;;             NOPfuncall))))
  (set (foam::axiomxl-file-init-name "fricas") NOPfuncall)
-;; (set (foam::axiomxl-file-init-name "axclique") NOPfuncall)
  (set (foam::axiomxl-file-init-name "filecliq") NOPfuncall)
  (set (foam::axiomxl-file-init-name "attrib") NOPfuncall)
  (|createInitializers2|))
@@ -267,7 +266,6 @@ database.
 
 (defun getConstructor (file-fn asharp-name)
  (|CCall| file-fn)
-; (eval (cdr (assoc file-id (get name 'asharp-name) :test #'equal))))
  (eval asharp-name))
 
 (defun getop (dom op type)

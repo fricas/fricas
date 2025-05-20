@@ -512,7 +512,6 @@ throwKeyedMsgCannotCoerceWithValue(val,t1,t2) ==
 --% Some Standard Message Printing Functions
 
 bright x == ['"%b", :(PAIRP(x) and NULL rest LASTNODE x => x; [x]), '"%d"]
---bright x == ['%b,:(ATOM x => [x]; x),'%d]
 
 mkMessage msg ==
   msg and (PAIRP msg) and ((first msg) in '(%l "%l"))  and
@@ -543,15 +542,6 @@ spadStartUpMsgs() ==
   sayKeyedMsg("S2GL0018D",NIL)
   sayKeyedMsg("S2GL0003B",[$opSysName])
   sayMSG bar
---  sayKeyedMsg("S2GL0018A",NIL)
---  sayKeyedMsg("S2GL0018B",NIL)
---  sayKeyedMsg("S2GL0003C",NIL)
---  sayKeyedMsg("S2GL0003A",NIL)
---  if not $printTimeIfTrue then sayKeyedMsg("S2GL0004",NIL)
---  if not $printTypeIfTrue then sayKeyedMsg("S2GL0005",NIL)
-  --  if not $displaySetValue then sayKeyedMsg("S2GL0007",NIL)
---  if not $HiFiAccess then sayKeyedMsg("S2GL0008",NIL)
---  version()
   sayMSG '" "
 
 HELP() == sayKeyedMsg("S2GL0019",NIL)

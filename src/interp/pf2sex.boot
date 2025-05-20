@@ -80,7 +80,6 @@ pf2Sex1 pf ==
     ["pretend", pf2Sex1 pfPretendExpr pf, pf2Sex1 pfPretendType pf]
   pfFromdom? pf =>
     op := opTran  pf2Sex1 pfFromdomWhat pf
---  if op = "braceFromCurly" then op := "brace"
     if op = "braceFromCurly" then op := "SEQ"
     ["$elt", pf2Sex1 pfFromdomDomain pf, op]
   pfSequence? pf =>
@@ -219,7 +218,6 @@ pfApplication2Sex pf ==
     symEqual(op, "by") =>
       ["BY", :argSex]
     symEqual(op, "braceFromCurly") =>
---    ["brace", ["construct", :argSex]]
       argSex is ["SEQ",:.] => argSex
       ["SEQ", :argSex]
     op is [qt, realOp] and symEqual(qt, "QUOTE") =>
@@ -229,7 +227,6 @@ pfApplication2Sex pf ==
   op is [qt, realOp] and symEqual(qt, "QUOTE") =>
      ["applyQuote", op, pf2Sex1 args]
   symEqual(op, "braceFromCurly") =>
---  ["brace", ["construct", pf2Sex1 args]]
     x := pf2Sex1 args
     x is ["SEQ", :.] => x
     ["SEQ", x]

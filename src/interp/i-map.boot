@@ -120,8 +120,6 @@ addDefMap(['DEF,lhs,mapsig,.,rhs],pred) ==
       someDecs := true
       d' := evaluateType unabbrev d
       isPartialMode d' => throwKeyedMsg("S2IM0004",NIL)
---      tree := mkAtree d'
---      null (d' := isType tree) => throwKeyedMsg("S2IM0005",[d])
       mapmode := [d',:mapmode]
     else allDecs := false
   if allDecs then
@@ -425,8 +423,6 @@ simplifyMapConstructorRefs form ==
   op in '(_: _:_: _@) =>
     args is [obj,dom] =>
       dom' := prefix2String dom
-      --if ATOM dom' then dom' := [dom']
-      --[op,obj,APPLY('CONCAT,dom')]
       dom'' :=
           ATOM dom' => dom'
           NULL rest dom' => first dom'
@@ -635,8 +631,6 @@ interpMap(opName,tar) ==
   savedTimerStack := COPY $timedNameStack
   catchName := mapCatchName $mapName
   c := CATCH(catchName, interpret1(body,tar,nil))
---  $interpMapTag and $interpMapTag ~= mapCatchName $mapName =>
---    THROW($interpMapTag,c)
   while savedTimerStack ~= $timedNameStack repeat
     stopTimingProcess peekTimedName()
   c  -- better be a triple
@@ -1060,8 +1054,6 @@ getMapBody(op,mapDef) ==
   -- looks in $e for a map body; if not found it computes then stores it
   get0(op, 'mapBody, $e) or
     combineMapParts mapDef
---    $e:= putHist(op,'mapBody,body:= combineMapParts mapDef,$e)
---    body
 
 getLocalVars(op,body) ==
   -- looks in $e for local vars; if not found, computes then stores them

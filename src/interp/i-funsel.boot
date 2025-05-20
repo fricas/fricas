@@ -556,22 +556,6 @@ selectLocalMms(op,name,types,tar) ==
   obj and (objVal obj is ['SPADMAP, :mapDef]) and
     analyzeMap(op,types,mapDef,tar) and getLocalMms(name,types,tar)
 
--- next defn may be better, test when more time. RSS 3/11/94
--- selectLocalMms(op,name,types,tar) ==
---  mmS := getLocalMms(name,types,tar)
---  -- if no target, just return what we got
---  mmS and null tar => mmS
---  matchingMms := nil
---  for mm in mmS repeat
---    [., targ, :.] := mm
---    if tar = targ then matchingMms := cons(mm, matchingMms)
---  -- if we got some exact matches on the target, return them
---  matchingMms => nreverse matchingMms
---
---  obj := getValue op
---  obj and (objVal obj is ['SPADMAP, :mapDef]) and
---    analyzeMap(op,types,mapDef,tar) and getLocalMms(name,types,tar)
-
 getLocalMms(name,types,tar) ==
   -- looks for exact or subsumed local modemap in $e
   mmS := NIL
@@ -735,7 +719,6 @@ findUniqueOpInDomain(op,opName,dom) ==
   else mm := first mmList
   [sig,slot,:.] := mm
   fun :=
---+
       $genValue =>
          compiledLookupCheck(opName,sig,evalDomain dom)
       NRTcompileEvalForm(opName, sig, evalDomain dom)
@@ -869,7 +852,6 @@ findFunctionInCategory(op,dc,tar,args1,args2,$Coerce,$SubDom) ==
   dcName := first dc
   not MEMQ(dcName,'(Record Union Enumeration)) => NIL
   fun:= NIL
- --  cat := constructorCategory dc
   makeFunc := get_oplist_maker(dcName) or
       systemErrorHere '"findFunctionInCategory"
   [funlist, .] := FUNCALL(makeFunc, "%", dc, $CategoryFrame)
@@ -950,8 +932,6 @@ matchMmSigTar(t1,t2) ==
       if b='"failed" then return matchMmSigTar(t1, a)
     $Coerce and
       isPartialMode t1 => resolveTM(t2,t1)
--- I think this should be true  -SCM
---    true
       canCoerceFrom(t2,t1)
 
 constructSubst(d) ==
@@ -1083,7 +1063,6 @@ selectMmsGen(op,tar,args1,args2) ==
 
   if $reportBottomUpFlag then
     sayMSG ['%l,:bright '"Remaining General Modemaps"]
-  --  for mm in havenots for i in 1.. repeat sayModemapWithNumber(mm,i)
 
   if havenots then
     [havesNExact,havesNInexact] := exact?(havenots,tar,args1)
@@ -1370,7 +1349,6 @@ hasCate(dom,cat,SL) ==
     (p := ASSQ(dom, SL)) and ((NSL := hasCate(rest p, cat, SL)) ~= 'failed) =>
        NSL
     (p:= ASSQ(dom,$Subst)) or (p := ASSQ(dom, SL)) =>
---      S := hasCate(rest p, cat, augmentSub(first p, rest p, copy SL))
       S := hasCate1(rest p, cat, SL, dom)
       not (S='failed) => S
       hasCateSpecial(dom, rest p, cat, SL)
@@ -1433,7 +1411,6 @@ hasCateSpecialNew(v,dom,cat,SL) ==
         augmentSub(v, d, SL)
       alg =>
         d := '(AlgebraicNumber)
-        --d := defaultTargetFE $Integer
         augmentSub(v, d, SL)
       'failed
     underDomainOf dom = $ComplexInteger =>
@@ -1641,7 +1618,6 @@ unifyStructVar(v,s,SL) ==
             if (s3 ~= s1) and isPatternVar(s) then SL := augmentSub(s,s3,SL)
             SL
           'failed
---        isSubDomain(s,s0) => augmentSub(v,s0,SL)
         'failed
       'failed
     augmentSub(v,s,S)

@@ -138,15 +138,11 @@ orderPredTran(oldList,sig,skip) ==
 
   --(2a) lastDependList=list of all variables that lastPred forms depend upon
   lastDependList := "UNIONQ"/[listOfPatternIds x for x in lastPreds]
---sayBrightlyNT "lastDependList="
---pp lastDependList
 
   --(2b) dependList=list of all variables that isDom/ofCat forms depend upon
   dependList :=
     "UNIONQ"/[listOfPatternIds y for x in oldList |
       x is ['isDomain,.,y] or x is ['ofCategory,.,y]]
---sayBrightlyNT "dependList="
---pp dependList
 
   --(3a) newList= list of ofCat/isDom entries that don't depend on
   for x in oldList repeat
@@ -173,17 +169,12 @@ orderPredTran(oldList,sig,skip) ==
       (INTERSECTIONQ(indepvl,dependList) = nil) =>
         dependList:= setDifference(dependList,depvl)
         newList:= [:newList,x]
---  sayBrightlyNT "newList="
---  pp newList
 
   --(4) noldList= what is left over
     (noldList:= setDifference(oldList,newList)) = oldList =>
---    sayMSG '"NOTE: Parameters to domain have circular dependencies"
       newList := [:newList,:oldList]
       return nil
     oldList:=noldList
---  sayBrightlyNT "noldList="
---  pp noldList
 
   for pred in newList repeat
     if pred is ['isDomain,x,y] or x is ['ofCategory,x,y] then
@@ -197,8 +188,6 @@ orderPredTran(oldList,sig,skip) ==
 --substitute (isDomain ..) forms as completely as possible to avoid false paths
   newList := isDomainSubst newList
   answer := [['AND,:newList],:INTERSECTIONQ(fullDependList,sig)]
---sayBrightlyNT '"answer="
---pp answer
 
 isDomainSubst u == main where
   main ==

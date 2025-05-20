@@ -52,25 +52,18 @@ astran asyFile ==
   $docAlist : local :=
     [[con,:REMDUP asyDocumentation con] for con in conlist]
   $parentsHash : local := MAKE_HASHTABLE('EQUAL)
---$childrenHash: local := MAKE_HASHTABLE('EQUAL)
   for con in conlist repeat
     parents := asyParents con
     HPUT($parentsHash,con,asyParents con)
---  for [parent,:pred] in parents repeat
---    parentOp := opOf parent
---    HPUT($childrenHash,parentOp,insert([con,:pred],HGET($childrenHash,parentOp)))
   $newConlist := union(conlist, $newConlist)
   [[x,:asMakeAlist x] for x in HKEYS $conHash]
 
 asyParents(conform) ==
   acc := nil
   con:= opOf conform
---formals := TAKE(#formalParams,$TriangleVariableList)
   modemap := LASSOC(con,$mmAlist)
   $constructorCategory :local := asySubstMapping CADAR modemap
   for x in folks $constructorCategory repeat
---  x := SUBLISLIS(formalParams,formals,x)
---  x := SUBLISLIS(IFCDR conform,formalParams,x)
     acc := [:explodeIfs x,:acc]
   NREVERSE acc
 
@@ -86,7 +79,6 @@ asySubstMapping u ==
   u
 
 asyMkSignature(con,sig) ==
---  atom sig => ['TYPE,con,sig]
 -- following line converts constants into nullary functions
   atom sig => ['SIGNATURE,con,[sig]]
   ['SIGNATURE,con,sig]
@@ -95,14 +87,12 @@ asMakeAlist con ==
   record := HGET($conHash,con)
   [form,sig,predlist,kind,exposure,comments,typeCode,:filename] := first record
 --TTT in case we put the wrong thing in for niladic catgrs
---if ATOM(form) and kind='category then form:=[form]
   if ATOM(form) then form:=[form]
   kind = 'function => asMakeAlistForFunction con
   abb := asyAbbreviation(con, #(IFCDR sig))
   modemap := asySubstMapping LASSOC(con,$mmAlist)
   $constructorCategory :local := CADAR modemap
   parents := mySort HGET($parentsHash,con)
---children:= mySort HGET($childrenHash,con)
   alists  := HGET($opHash,con)
   opAlist := SUBLISLIS($FormalMapVariableList, IFCDR form, CDDR alists)
   ancestorAlist := SUBLISLIS($FormalMapVariableList, IFCDR form, first alists)
@@ -182,10 +172,6 @@ getAttributesFromCATEGORY catform ==
 --   bmt Mar 26, 1994  and executed by rss
 
 zeroOneConversion opAlist == opAlist
---   for u in opAlist repeat
---     [op,:.] := u
---     DIGITP (PNAME op).0 => RPLACA(u, string2Integer PNAME op)
---   opAlist
 
 asyDisplay(con,alist) ==
   banner := '"=============================="
@@ -213,7 +199,6 @@ asGetModemaps(opAlist,oform,kind,modemap) ==
   catPredList:=
     kind = 'function => [["isFreeFunction","*1",opOf form]]
     [['ofCategory,:u] for u in [:pred1,:domainList]]
---  for [op,:itemlist] in SUBLISLIS(rpvl, $FormalMapVariableList,opAlist) repeat
 --  the code seems to oscillate between generating $FormalMapVariableList
 --  and generating $TriangleVariableList
   for [op,:itemlist] in SUBLISLIS(rpvl, $FormalMapVariableList,opAlist) repeat
@@ -433,12 +418,10 @@ asytranForm(form,levels,local?) ==
 
 asytranForm1(form,levels,local?) ==
   form is ['With,left,cat] =>
---  left ~= nil       => error '"WITH cannot take a left argument yet"
     asytranCategory(form,levels,nil,local?)
   form is ['Apply,:.]   => asytranApply(form,levels,local?)
   form is ['Declare,:.] => asytranDeclaration(form,levels,nil,local?)
   form is ['Comma,:r]  => ['Comma,:[asytranForm(x,levels,local?) for x in r]]
---form is ['_-_>,:s] => asytranMapping(s,levels,local?)
   form is [op,a,b] and MEMQ(a,'(PretendTo RestrictTo)) =>
     asytranForm1(a,levels,local?)
   form is ['LitInteger,s] =>
@@ -604,7 +587,6 @@ asyAbbreviation(id,n) ==  chk(id,main) where   --> n = number of arguments
   main ==
     a := createAbbreviation id => a
     name := PNAME id
---  #name < 8 => INTERN UPCASE name
     parts := asySplit(name,MAXINDEX name)
     newname := "STRCONC"/[asyShorten x for x in parts]
     #newname < 8 => INTERN newname
@@ -723,7 +705,6 @@ asySig1(u,name?,target?) ==
         asySig1(typ, name?, target?)
     x is '(_%) => '(_%)
     [fn,:[asySig(x,name?) for x in r]]
---x = 'Type => '(Type)
   x = '_% => '_%
   x
 
@@ -748,10 +729,8 @@ asyType x ==
     fn = 'With  => asyCATEGORY r
     fn = '_-_> => asyTypeMapping r
     fn = 'Apply => r
---  fn = 'Declare and r is [name,typ,:.] => typ
     x is '(_%) => '(_%)
     x
---x = 'Type => '(Type)
   x = '_% => '_%
   x
 
@@ -820,7 +799,6 @@ asyTypeUnit x ==
     x is '(_%) => '(_%)
     [fn,:asyTypeUnitList r]
   get_database(x, 'NILADIC) => [x]
---x = 'Type => '(Type)
   x = '_% => '_%
   x
 
@@ -980,7 +958,6 @@ asyTypeJoinPartExport x ==
   [op,:items] := x
   for y in items repeat
     y isnt ["->",source,t] =>
---       sig := ['TYPE, op, asyTypeUnit y]
 -- converts constants to nullary functions (this code isn't dead)
        sig := ['SIGNATURE, op, [asyTypeUnit y]]
        $opStack := [[sig,:$predlist],:$opStack]

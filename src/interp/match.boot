@@ -89,20 +89,15 @@ logicalMatch?(pattern,subject) ==  --subject assumed to be DOWNCASEd
 patternCheck pattern == main where
  --checks for escape characters, maybe new $wildCard
   main ==
---  pattern := pmTransFilter pattern   --should no longer need this (rdj:10/1/91)
     u := pos(char '__,pattern)
     null u => pattern
     not(and/[equal(pattern,i + 1,$wildCard) for i in u]) =>
       sayBrightly ['"Invalid use of underscores in pattern: ",pattern]
       '"!!!!!!!!!!!!!!"
     c := wild(pattern,'(_$ _# _% _& _@))
---  sayBrightlyNT ['"Choosing new wild card"]
---  pp c
     $oldWild  :local := $wildCard
     $wildCard := c
     pattern := mknew(pattern,first u,rest u,SUBSTRING(pattern,0,first u))
---  sayBrightlyNT ['"Replacing pattern by"]
---  pp pattern
     pattern
   mknew(old,i,r,new) ==
     new := STRCONC(new,old.(i + 1))  --add underscored character to string

@@ -237,18 +237,9 @@ actOnInfo(u, e) ==
          --we are adding information about a category
       [catvec, ., e] := u
       [ocatvec, ., e] := compMakeCategoryObject(vmode, e)
-      -- member(vmode, first catvec.4) =>
-      --    JHD 82/08/08 01:40 This does not mean that we can ignore the
-      --    extension, since this may not be compatible with the view we
-      --    were passed
 
-      --we are adding a principal descendant of what was already known
-      --    $e:= augModemapsFromCategory(name,nil,catvec,$e)
-      --    SAY("augmenting ",name,": ",cat)
-      --    put(name, "value", (vval, cat, venv), $e)
       member(cat,first ocatvec.4) or
          assoc(cat, CADR ocatvec.4) is [., 'T, .] => e
-        --SAY("Category extension error:
         --cat shouldn't be a join
                       --what was being asserted is an ancestor of what was known
       -- augModemapsFromCategory asserts that domain is in scope,

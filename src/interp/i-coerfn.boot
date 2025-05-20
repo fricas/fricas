@@ -984,8 +984,6 @@ MpP2P(u,vl,PS,R) ==
     PR,[['SparseUnivariatePolynomial,PR],$Symbol])
   sup := [[e,:MpP2P(c,vl,PS,R)] for [e,:c] in ec]
   p := SPADCALL(sup,vl.(pos-1),multivariate)
-  --(p' :=coerceInt(objNewWrap(p,PS),['Polynomial,R])) or coercionFailure()
-  --objValUnwrap(p')
 
 Mp2Up(u,source is [mp,vl,S],target is [up,x,T]) ==
   u = '_$fromCoerceable_$ =>
@@ -1196,8 +1194,6 @@ P2Up(u,source is [.,S],target is [.,x,T]) ==
     source,[source,$Symbol])
   upU := SPADCALL(u,x,univariate)  -- we may assume this has type UPP
   SUP2Up_aux(upU, UPP, target)
-  -- (u' := coerceInt(objNewWrap(upU,UPP),target)) or coercionFailure()
-  -- objValUnwrap(u')
 
 --% Fraction
 
@@ -1261,12 +1257,6 @@ Qf2Qf(u0,[.,S],target is [.,T]) ==
       [objValUnwrap(a'),:objValUnwrap(b')]
     coercionFailure()
   coercionFailure()
-
--- partOf(x,i) ==
---   VECP x => x.i
---   i=0 => first x
---   i=1 => rest x
---   systemError '"partOf"
 
 --% RectangularMatrix
 

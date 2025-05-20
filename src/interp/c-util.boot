@@ -128,7 +128,6 @@ intersectionEnvironment(e,e') ==
   ce:= makeCommonEnvironment(e,e')
   ic := intersectionContour(deltaContour(e, ce), deltaContour(e', ce), ce)
   e'':= (ic => addContour(ic,ce); ce)
-  --$ie:= e''   this line is for debugging purposes only
 
 deltaContour([il1, :el],[il2, :el']) ==
   not el=el' => systemError '"deltaContour" --a cop out for now
@@ -194,12 +193,9 @@ intersectionContour(c, c', ce) ==
         pair':= assoc("mode",p') =>
           m'' := unifiable(rest pair, rest pair', ce) => LIST ["mode", :m'']
           stackWarning(['%b,$var,'%d,'"has two modes: "])
-       --stackWarning ("mode for",'%b,$var,'%d,"introduced conditionally")
         LIST ["conditionalmode",:rest pair]
         --LIST pair
-       --stackWarning ("mode for",'%b,$var,'%d,"introduced conditionally")
       pair':= assoc("mode",p') => LIST ["conditionalmode",:rest pair']
-        --LIST pair'
     unifiable(m1, m2, ce) ==
       m1=m2 => m1
         --we may need to add code to coerce up to tagged unions
@@ -361,8 +357,6 @@ isDomainInScope(domain,e) ==
     false
   (name:= first domain)="Category" => true
   ASSQ(name,domainList) => true
---   null rest domain or domainMember(domain,domainList) => true
---   false
   isFunctor name => false
   true --is not a functor
 
@@ -610,7 +604,6 @@ subst_in_cat(fp, ap, cv) ==
     sublis_vec(pp, cv)
 
 old2NewModemaps x ==
---  [[dcSig,pred] for [dcSig,[pred,:.],:.] in x]
   x is [dcSig,[pred,:.],:.]  =>  [dcSig,pred]
   x
 

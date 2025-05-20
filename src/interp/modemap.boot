@@ -71,8 +71,6 @@ getModemapListFromDomain(op,numOfArgs,D,e) ==
       numOfArgs]
 
 addModemapKnown(op, mc, sig, pred, fn, e) ==
---  if knownInfo pred then pred:=true
---  that line is handled elsewhere
   $insideCapsuleFunctionIfTrue=true =>
     $CapsuleModemapFrame :=
       addModemap0(op,mc,sig,pred,fn,$CapsuleModemapFrame)
@@ -92,23 +90,18 @@ addEltModemap(op,mc,sig,pred,fn,e) ==
       id:= INTERN sel
       e := makeLiteral(id, e)
       addModemap1(op,mc,[:lt,id],pred,fn,e)
-    -- atom sel => systemErrorHere '"addEltModemap"
     addModemap1(op,mc,sig,pred,fn,e)
   op = "setelt!" and sig is [:lt, sel, v] =>
     STRINGP sel =>
       id:= INTERN sel
       e := makeLiteral(id, e)
       addModemap1(op,mc,[:lt,id,v],pred,fn,e)
-    -- atom sel => systemError '"addEltModemap"
     addModemap1(op,mc,sig,pred,fn,e)
   systemErrorHere '"addEltModemap"
 
 addModemap1(op,mc,sig,pred,fn,e) ==
    --mc is the "mode of computation"; fn the "implementation"
   if mc='Rep then
---     if fn is [kind,'Rep,.] and
-               -- save old sig for NRUNTIME
---       (kind = 'ELT or kind = 'CONST) then fn:=[kind,'Rep,sig]
      sig:= substitute("%", 'Rep, sig)
   currentProplist:= getProplist(op,e) or nil
   newModemapList:=

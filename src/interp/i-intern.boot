@@ -255,15 +255,6 @@ mkAtree3(x,op,argl) ==
       r := [[first types,:at],:r']
       [mkAtreeNode 'DEF,[[op,:v.0],:r],if v.2 then v.2 else true,false]
     [mkAtreeNode 'DEF,[a,:r],true,false]
---x is ['when,y,pred] =>
---  y isnt ['DEF,a,:r] =>
---    keyedSystemError("S2II0003",['"when",y,'"improper argument form"])
---  a is [op,p1,:pr] =>
---    null pr => mkAtree1 ['DEF,[op,["|",p1,pred]],:r]
---    mkAtree1 ['DEF,[op,["|",['Tuple,p1,:pr],pred]],:r]
---  [mkAtreeNode 'DEF, rest y, pred, false]
---x is ['otherwise,u] =>
---  throwMessage '"   otherwise is no longer supported."
   z :=
     getBasicMode op =>
       v := mkAtreeNode $immediateDataSymbol

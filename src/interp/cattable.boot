@@ -261,7 +261,6 @@ mkCategoryExtensionAlist cform ==
 -- following code to handle Unions Records Mapping etc.
 mkCategoryExtensionAlistBasic cform ==
   cop := first cform
---category:= eval cform
   category :=      -- changed by RSS on 7/29/87
     macrop cop => eval cform
     APPLY(cop, rest cform)
@@ -327,8 +326,6 @@ makeCatPred(zz, cats, thePred) ==
   if zz is ['IF,curPred := ['has,z1,z2],ats,.] then
     ats := if ats is ['PROGN,:atl] then atl else [ats]
     for at in ats repeat
---      at is ['ATTRIBUTE,z3] =>
---          BREAK()
       if at is ['ATTRIBUTE,z3] and not atom z3 and
         constructor? first z3 then
           cats:= CONS(['IF,quickAnd(['has,z1,z2], thePred),z3,'noBranch],cats)

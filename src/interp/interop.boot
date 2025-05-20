@@ -444,7 +444,6 @@ lookupIncomplete(op,sig,dollar,env) ==
 --------------------> NEW DEFINITION (override in nrunfast.boot)
 lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
   if s = '% then
---  a = 0 => return true  --needed only if extra call in newGoGet to basicLookup
     s := devaluate dollar -- calls from HasCategory can have $s
   INTEGERP a =>
     not typeFlag => s = domain.a
@@ -471,7 +470,6 @@ lazyMatchArg2(s,a,dollar,domain,typeFlag) ==
   op = 'QUOTE => s = CADR a
   lazyMatch(s,a,dollar,domain)
   --above line is temporarily necessary until system is compiled 8/15/90
---s = a
 
 --------------------> NEW DEFINITION (override in nrunfast.boot)
 getOpCode(op,vec,max) ==
@@ -610,8 +608,6 @@ newHasCategory(domain,catform) ==
 
 --------------------> NEW DEFINITION (override in nrunfast.boot)
 lazyMatchAssocV(x,auxvec,catvec,domain) ==      --new style slot4
-  -- Does not work (triggers type error due to initialization by NIL)
-  -- n : FIXNUM := MAXINDEX catvec
   n := MAXINDEX catvec
   -- following call to hashType was missing 2nd arg. 0 added on 3/31/94 by RSS
   hashCode? x =>
@@ -622,7 +618,6 @@ lazyMatchAssocV(x,auxvec,catvec,domain) ==      --new style slot4
         x = hashType(newExpandLocalType(QVELT(catvec,i),domain,domain), percentHash)]
   xop := first x
   or/[ELT(auxvec,i) for i in 0..n |
-    --xop = first (lazyt := QVELT(catvec,i)) and lazyMatch(x,lazyt,domain,domain)]
     xop = first (lazyt := getCatForm(catvec, i, domain)) and
              lazyMatch(x, lazyt, domain, domain)]
 
@@ -657,8 +652,6 @@ lazyDomainSet(form, thisDomain, slot) ==
   if $monitorNewWorld then
     sayLooking1(concat(form2String devaluate thisDomain,
       '" activating lazy slot ",slot,'": "),slotDomain)
--- name := first form
---getInfovec name
   SETELT(thisDomain,slot,slotDomain)
 
 
@@ -710,8 +703,6 @@ getFunctionFromDomain1(op, dc, target, args) ==
   not constructor? first dc =>
       throwKeyedMsg("S2IF0003", [first dc])
   p:= findFunctionInDomain(op, dc, target, args, args, NIL, NIL) =>
---+
-    --sig := [NIL,:args]
     domain := evalDomain dc
     for mm in nreverse p until b repeat
       [[.,:osig],nsig,:.] := mm

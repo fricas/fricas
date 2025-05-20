@@ -328,10 +328,6 @@ bottomUpIdentifier(t,id) ==
   defaultType := ['Variable,id]
   -- This was meant to stop building silly symbols but had some unfortunate
   -- side effects, like not being able to say e:=foo in the interpreter.  MCD
---  defaultType :=
---    getModemapsFromDatabase(id,1) =>
---      userError ['"Cannot use operation name as a variable: ", id]
---    ['Variable, id]
   u := getValue t => --non-cached values MAY be re-evaluated
     tar := getTarget t
     expr:= objVal u

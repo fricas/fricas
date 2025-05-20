@@ -39,7 +39,6 @@ $whereList := nil
 --% Formatting modemaps
 
 sayModemap m ==
-  -- sayMSG formatModemap displayTranModemap m
   sayMSG formatModemap old2NewModemaps displayTranModemap m
 
 sayNewModemap(m) ==
@@ -236,10 +235,6 @@ formatOpSymbol(op,sig) ==
   quad := specialChar 'quad
   n := #sig
   (op = 'elt) and (n = 3) =>
-    -- (CADR(sig) = '_$) =>
-    --   STRINGP (sel := CADDR(sig)) =>
-    --    [quad,".",sel]
-    --  [quad,".",quad]
     op
   STRINGP op or GETL(op,"Led") or GETL(op,"Nud") =>
     n = 3 =>
@@ -597,7 +592,6 @@ tuple2String argl ==
         string
     fn2 x ==
       ATOM x => object2String x
-      -- [fn2 first x, :f rest x]
       [fn2 y for y in x]
 
 linearFormatName x ==
@@ -767,7 +761,6 @@ form2Fence1 x ==
     ['"(", FORMAT(NIL, '"|~a|", op),:"append"/[form2Fence1 y for y in argl],'")"]
   x = "%" => ["%"]
   IDENTP x => [FORMAT(NIL, '"|~a|", x)]
---  [x]
   ['"  ", x]
 
 form2FenceQuote x ==

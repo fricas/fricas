@@ -121,10 +121,6 @@ newLookupInTable(op,sig,dollar,[domain,opvec],flag) ==
       null atom slot =>
         EQ(QCAR slot,FUNCTION newGoGet) => someMatch:=true
                    --treat as if operation were not there
-        --if EQ(QCAR slot, function newGoGet) then
-        --  UNWIND_-PROTECT --break infinite recursion
-        --    ((SETELT(domain,loc,'skip); slot := replaceGoGetSlot QCDR slot),
-        --      if domain.loc = 'skip then domain.loc := slot)
         return (success := slot)
       slot = 'skip =>       --recursive call from above 'replaceGoGetSlot
         return (success := newLookupInAddChain(op,sig,domain,dollar))
@@ -208,8 +204,6 @@ newLookupInCategories(op, sig, dom, dollar, check_num) ==
               opvec.(code+2)
             check_num and not(nrunNumArgCheck(#(QCDR sig), byteVector,
                                               opvec.code, endPos)) => nil
-            --numOfArgs := byteVector.(opvec.code)
-            --numOfArgs ~= #(QCDR sig) => nil
             packageForm := [entry, '%, :rest(cat)]
             package := evalSlotDomain(packageForm,dom)
             packageVec.i := package
@@ -389,7 +383,6 @@ newHasTest(domform,catOrAtt) ==
     ofCategory(domform, catOrAtt)
   catOrAtt = '(Type) => true
   get_database(opOf(domform), 'ASHARP?) => fn(domform, catOrAtt) where
-  -- atom (infovec := getInfovec opOf domform) => fn(domform,catOrAtt) where
     fn(a,b) ==
       categoryForm?(a) => assoc(b, ancestors_of_cat(a, nil))
       isPartialMode a => throwKeyedMsg("S2IS0025",NIL)
@@ -403,9 +396,6 @@ newHasTest(domform,catOrAtt) ==
   isAtom := atom catOrAtt
   null isAtom and op = 'Join =>
     and/[newHasTest(domform,x) for x in rest catOrAtt]
--- we will refuse to say yes for 'Cat has Cat'
---get_database(opOf domform,'CONSTRUCTORKIND) = 'category => throwKeyedMsg("S2IS0025",NIL)
--- on second thoughts we won't!
   catOrAtt is [":", fun, ["Mapping", :sig1]] =>
       evaluateType ["Mapping", :sig1] is ["Mapping", :sig2]  =>
          not(null(HasSignature(domform, [fun, sig2])))
