@@ -504,6 +504,21 @@ printableArgModeSetList() ==
   if amsl then amsl := rest amsl
   amsl
 
+bottomUpRecordElt(t, op, m, argl, env) ==
+    pl := first(first(env))
+    not(argl is [x] and VECP(x) and #x = 5 and IDENTP(s := x.0)) => nil
+    not(member(s, getUnionOrRecordTags(m))) => nil
+    st := mkAtreeNode(s)
+    svt := ["Variable", s]
+    sv := [svt, "WRAPPED", :s]
+    putModeSet(st, [svt])
+    putValue(st, sv)
+    rplac(rest(t), [op, st])
+    rplac(first(t), mkAtreeNode("elt"))
+    spl := [s, ["value", :sv]]
+    $env : local := [[[spl, :pl], :rest(first(env))], :rest(env)]
+    bottomUp(t)
+
 bottomUpForm0(t,op,opName,argl,argModeSetList) ==
   op0 := op
   opName0 := opName
@@ -523,8 +538,8 @@ bottomUpForm0(t,op,opName,argl,argModeSetList) ==
     putModeSet(t,[rtype])
 
   m := getModeOrFirstModeSetIfThere op
-  m is ['Record,:.] and argModeSetList is [[['Variable,x]]] and
-      member(x,getUnionOrRecordTags m) and (u := bottomUpElt t) => u
+  (m is ['Record, :.] or m is ['Union, :.]) and
+      (u := bottomUpRecordElt(t, op, m, argl, $env)) => u
   m is ['Union,:.] and argModeSetList is [[['Variable,x]]] =>
       member(x,getUnionOrRecordTags m) and (u := bottomUpElt t) => u
       not $genValue =>
