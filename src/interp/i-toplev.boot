@@ -192,7 +192,7 @@ readSpadProfileIfThere() ==
     NIL
   efile =>
     $edit_file := efile
-    read_or_compile(true, efile)
+    CATCH('top_level, read_or_compile(true, efile))
   NIL
 
 --% Parser Output --> Interpreter
