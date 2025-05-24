@@ -52,6 +52,9 @@
   #+:GCL (force-output out)
 )
 
+(defun |get_home_dir|()
+    (|trim_directory_name| (namestring (user-homedir-pathname))))
+
 ;------
 
 (defun |maybe_gc|()

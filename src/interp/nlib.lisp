@@ -139,16 +139,6 @@
 (defun |make_full_namestring| (filearg)
   (namestring (merge-pathnames (|make_filename| filearg))))
 
-(defun |get_directory_list| (ft &aux (cd (|get_current_directory|)))
-  (cond ((member ft '("NRLIB" "DAASE") :test #'string=)
-           (if (eq |$UserLevel| '|development|)
-               (cons cd |$library_directory_list|)
-               |$library_directory_list|))
-        (t (adjoin cd
-              (adjoin (namestring (user-homedir-pathname)) |$directory_list|
-                      :test #'string=)
-              :test #'string=))))
-
 (defun |probe_name| (file)
   (if (|fricas_probe_file| file) (namestring file) nil))
 

@@ -60,10 +60,10 @@ intUnsetQuiet() ==
 -- The relative directory list specifies a search path for files
 -- for the current directory structure.
 
-$relative_directory_list := '("share/msgs/" "share/spadhelp/")
+$relative_directory_list := '("share/msgs" "share/spadhelp")
 -- The relative directory list specifies how to find the algebra
 -- directory from the current {\bf FRICAS} shell variable.
-$relative_library_directory_list := '("algebra/")
+$relative_library_directory_list := '("algebra")
 
 -- This is the system-wide list of directories to search.
 -- It is set up in the {\bf reroot} function.
@@ -192,7 +192,7 @@ readSpadProfileIfThere() ==
     NIL
   efile =>
     $edit_file := efile
-    CATCH('top_level, read_or_compile(true, efile))
+    read_or_compile(true, efile)
   NIL
 
 --% Parser Output --> Interpreter
