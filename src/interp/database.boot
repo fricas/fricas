@@ -444,38 +444,6 @@ REMOVER(lst,item) ==
 allLASSOCs(op,alist) ==
   [value for [key,:value] in alist | key = op]
 
---% Miscellaneous Stuff
-
-getOplistForConstructorForm (form := [op,:argl]) ==
-  --  The new form is an op-Alist which has entries (<op> . signature-Alist)
-  --    where signature-Alist has entries (<signature> . item)
-  --      where item has form (<slotNumber> <condition> <kind>)
-  --        where <kind> =  ELT | CONST | (XLAM..) ..
-  pairlis:= [[fv,:arg] for fv in $FormalMapVariableList for arg in argl]
-  opAlist := getOperationAlistFromLisplib op
-  [:getOplistWithUniqueSignatures(op,pairlis,signatureAlist)
-      for [op,:signatureAlist] in opAlist]
-
-getOplistWithUniqueSignatures(op,pairlis,signatureAlist) ==
-  alist:= nil
-  for [sig, :[slotNumber, pred, kind]] in signatureAlist repeat
-      key := SUBLIS(pairlis, [op, sig])
-      term := assoc(key, alist)
-      if null term then
-          alist := cons([key, pred, [kind, nil, slotNumber]], alist)
-      else
-          value := rest term
-          oldpred := first value
-          newpred :=
-              oldpred = true or pred = true => true
-              oldpred = pred => oldpred
-              oldpred is ['OR, :predl] =>
-                  member(pred, predl) => oldpred
-                  ['OR, pred, :predl]
-              ['OR, pred, oldpred]
-          RPLACA(value, newpred)
-  alist
-
 --% Exposure Group Code
 
 dropPrefix(fn) ==

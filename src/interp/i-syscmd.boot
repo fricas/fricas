@@ -2125,10 +2125,6 @@ reportOpsFromLisplib(op,u) ==
 
   for [opt] in $options repeat
     opt := selectOptionLC(opt,$showOptions,'optionError)
-    opt = 'layout =>
-      dc1 fn
-    opt = 'views => sayBrightly ['"To get",:bright '"views",
-      '"you must give parameters of constructor"]
     opt = 'operations => displayOperationsFromLisplib functorForm
     nil
 
