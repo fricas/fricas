@@ -1226,31 +1226,24 @@ SimpleFortranProgram(R, FS) : Exports == Implementation where
     fortran(fname, ftype, res) ==
       construct(fname, ftype, res)$Rep
 
-    nameOf(u : %) : Symbol == u . name
-
-    typeOf(u:%):Union(FST,"void") == u . type
-
-    bodyOf(u : %) : FS == u . body
-
-    argumentsOf(u : %) : List Symbol == variables(bodyOf u)$FS
+    argumentsOf(u : %) : List Symbol == variables(u.body)$FS
 
     coerce(u : %) : OutputForm ==
-      coerce(nameOf u)$Symbol
+      coerce(u.name)$Symbol
 
     outputAsFortran(u : %) : Void ==
       ftype := u.type
       ftype_s : String := checkType(ftype::String)
-      fname := nameOf(u)
+      fname := u.name
       args := argumentsOf(u)
       nargs := [arg::OutputForm for arg in args]$List(OutputForm)
-      val  := bodyOf(u)::OutputForm
+      val  := u.body::OutputForm
       fortFormatHead(fname, [ftype], args)
       fort_format_types(ftype_s, nargs)
-      dispfortexp1$Lisp ["="::OutputForm, fname::OutputForm,
-                         val]@List(OutputForm)
-      dispfortexp1$Lisp "RETURN"::OutputForm
-      dispfortexp1$Lisp "END"::OutputForm
-      void()$Void
+      o_val := fname::OutputForm = val
+      dispStatement(o_val)
+      dispStatement('RETURN::OutputForm)
+      dispStatement('END::OutputForm)
 
 )abbrev domain SWITCH Switch
 
