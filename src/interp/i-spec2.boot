@@ -1078,7 +1078,8 @@ upNullTuple(op,l,tar) ==
 --% Handler for typeOf
 
 uptypeOf form ==
-  form isnt [op, arg] => NIL
+  form isnt [op, arg] =>
+      systemError '"typeOf: 1 argument required"
   if VECP arg then transferPropsToNode(getUnname arg,arg)
   if m := isType(arg) then
     m :=
