@@ -162,6 +162,7 @@ clear_sorted_caches() ==
        SPADCALL(cc)
 
 clearConstructorCaches() ==
+  clearClams()
   clear_sorted_caches()
   clearCategoryCaches()
   CLRHASH $ConstructorCache
@@ -172,7 +173,6 @@ clearConstructorCache(cname) ==
     HREM($ConstructorCache,cname)
 
 clearConstructorAndLisplibCaches() ==
-  clearClams()
   clearConstructorCaches()
 
 clearCategoryCaches() ==
