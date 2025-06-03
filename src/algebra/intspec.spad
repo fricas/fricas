@@ -5,7 +5,7 @@
 ++ This package provides support functions for generating elliptic
 ++ integrals.
 GenerateEllipticIntegrals(F, UP, UPUP, R) : Exports == Implementation where
-  F : Field
+  F : Join(Field, RetractableTo(Fraction(Integer)))
   UP : UnivariatePolynomialCategory(F)
   RF ==> Fraction(UP)
   UPUP : UnivariatePolynomialCategory(RF)
@@ -95,6 +95,11 @@ GenerateEllipticIntegrals(F, UP, UPUP, R) : Exports == Implementation where
 
     if F has SpecialFunctionCategory then
 
+      negative?(a : F) : Boolean ==
+          ru := retractIfCan(a)@Union(Fraction(Integer), "failed")
+          ru case "failed" => false
+          (ru@Fraction(Integer)) < 0
+
       gen_ef4l(f_var : F, f_pol : UP, cf : F, ce : F) : F ==
         A := coefficient(f_pol, 0)
         B := coefficient(f_pol, 2)/A
@@ -122,6 +127,12 @@ GenerateEllipticIntegrals(F, UP, UPUP, R) : Exports == Implementation where
 
       gen_ef3(f_var : F, f_pol : UP, cf : F, ce : F) : F ==
         A := leadingCoefficient(f_pol)
+        s : F := 1
+        if negative?(A) then
+            A := -A
+            s := -1
+            cf := -cf
+            f_pol := eval(f_pol, d_var, monomial(s, 1)$UP)
         B := coefficient(f_pol, 2)
         shift := B/((3::F)*A)
         f_pol2 := eval(f_pol, d_var, monomial(1,1)$UP - shift::UP)
@@ -129,7 +140,7 @@ GenerateEllipticIntegrals(F, UP, UPUP, R) : Exports == Implementation where
         g2 := -coefficient(f_pol2, 1)
         g3 := -coefficient(f_pol2, 0)
         ca := (2::F)/fsqrt(A)
-        p_inv := weierstrassPInverse(g2, g3, f_var+shift)
+        p_inv := weierstrassPInverse(g2, g3, s*f_var + shift)
         fi := ca*((cf - ce*shift)*p_inv - ce*weierstrassZeta(g2, g3, p_inv))
         fi
 
