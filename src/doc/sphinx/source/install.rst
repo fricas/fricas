@@ -97,7 +97,12 @@ The jFriCAS_ interface needs a web server built into FRICASsys binary.
 This can be done by using Lisp (currently only SBCL_) containing
 the Hunchentoot_ web server.  You can provide your own Lisp with
 preloaded Hunchentoot_.  Or you can fetch the ``hsbcl-1.3.9.tar``
-tarball from FriCAS distribution area.  Then do
+tarball from FriCAS distribution area at
+::
+
+  https://sourceforge.net/projects/fricas/files/fricas/1.3.9/hsbcl-1.3.9.tar
+
+Then do
 ::
 
     tar -xf hsbcl-1.3.9.tar
