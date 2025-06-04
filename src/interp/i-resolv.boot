@@ -226,7 +226,6 @@ resolveTTSpecial(t1,t2) ==
       resolveTT1(['UnivariatePolynomial,x,'(Integer)],t2)
     t2 is ['Variable,y] =>
       x = y => t1
---    ['OrderedVariableList, MSORT [x,y]]
       $Symbol
     t2 = '(Symbol) => t2
     t2 is ['Polynomial,.] => t2

@@ -59,17 +59,7 @@ $category_stream_stamp := nil
 $interp_stream_stamp := nil
 $operation_stream_stamp := nil
 
-handle_daase_file2(stream, name, o_stream, o_stamp, display_messages, fun) ==
-    stamp := READ(stream)
-    stamp = o_stamp => [stream, o_stamp]
-    if display_messages then
-        FORMAT(true, '"   Re-reading ~a.daase", name)
-    FILE_-POSITION(stream, first(stamp))
-    FUNCALL(fun, stream)
-    FORMAT(true, '"~&")
-    [stream, stamp]
-
-handle_daase_file(name, fun, display_messages, o_stream, o_stamp) ==
+handle_daase_file(name, fun, display_messages, o_stamp) ==
     f_name := full_database_name(STRCONC(name, '".daase"))
     stream := OPEN(f_name)
     stamp := READ(stream)
@@ -177,8 +167,7 @@ interp_open2(stream) ==
 
 open_interp_db(display_messages) ==
     res := handle_daase_file('"interp", function interp_open2,
-                             display_messages, $interp_stream,
-                             $interp_stream_stamp)
+                             display_messages, $interp_stream_stamp)
     $interp_stream := first(res)
     $interp_stream_stamp := first(rest(res))
 
@@ -209,8 +198,7 @@ browse_open2(stream) ==
 
 open_browse_db(display_messages) ==
     res := handle_daase_file('"browse", function browse_open2,
-                             display_messages, $browse_stream,
-                             $browse_stream_stamp)
+                             display_messages, $browse_stream_stamp)
     $browse_stream := first(res)
     $browse_stream_stamp := first(rest(res))
 
@@ -222,8 +210,7 @@ category_open2(stream) ==
 
 open_category_db(display_messages) ==
     res := handle_daase_file('"category", function category_open2,
-                             display_messages, $category_stream,
-                             $category_stream_stamp)
+                             display_messages, $category_stream_stamp)
     $category_stream := first(res)
     $category_stream_stamp := first(rest(res))
 
@@ -236,8 +223,7 @@ operation_open2(stream) ==
 
 open_operation_db(display_messages) ==
     res := handle_daase_file('"operation", function operation_open2,
-                             display_messages, $operation_stream,
-                             $operation_stream_stamp)
+                             display_messages, $operation_stream_stamp)
     $operation_stream := first(res)
     $operation_stream_stamp := first(rest(res))
 

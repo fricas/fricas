@@ -1382,16 +1382,16 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             res1
         gammas1(nf, a, denf, denf1, gexp, n2, vlst, ulst, k, x, res1)
 
-    get_prims : (SREC, UP, UP, Z, K) -> List(F)
+    get_prims : (SREC, K) -> List(F)
 
     finish_special_integrate2(rr1f : F, csol : Vector(F), a1p : F,
                               as : Vector(F), scands : List(SREC),
-                              denf : UP, gexp : Z, k : K) : PSOL2 ==
+                              k : K) : PSOL2 ==
         cand_prims : List(F) := []
         ansp : F := 0
         for i in 1..#as repeat
             if empty?(cand_prims) then
-                cand_prims := get_prims(first(scands), denf, denf, gexp, k)
+                cand_prims := get_prims(first(scands), k)
                 scands := rest(scands)
             a1p := a1p - csol(i)*as(i)
             ansp := ansp + csol(i)*first(cand_prims)
@@ -1400,14 +1400,12 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
     finish_special_integrate(rr1f : F, a1p : F, vs : Vector(F),
                              as : Vector(F), scands : List(SREC),
-                             denf : UP, gexp : Z,
                              k : K, x : Symbol) : PSOL2 ==
         csolu := particularSolutionOverConstants(vs, rr1f,
                    [(c : F) : F +-> D(c, x)])$ConstantLinearDependence(R, F)
         csolu case "failed" => [0, 0, 0, false]
         csol := csolu@Vector(F)
-        finish_special_integrate2(rr1f, csol, a1p, as, scands, denf,
-                                  gexp, k)
+        finish_special_integrate2(rr1f, csol, a1p, as, scands, k)
 
 
     SHER ==> Record(answer : RF, specpart : RF)
@@ -1444,7 +1442,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
         part := partu@Param_Rec_F
         as := new(#scoeffs, 0)$Vector(F)
         finish_special_integrate2(g1, part.coeffs, part.ratpart, as,
-                                  scands, denf, gexp, k)
+                                  scands, k)
 
     PSOL3 ==> Record(ans : F, defect : F, sol? : Boolean)
 
@@ -1490,8 +1488,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             res2 := do_spde1(scoeff, nfp1, k, derivation)
             as(i) := inv_den1*res2.ans
             vs(i) := res2.defect
-        res3 := finish_special_integrate(rr1f, a1p, vs, as, scands, 1,
-                                         gexp, k, x)
+        res3 := finish_special_integrate(rr1f, a1p, vs, as, scands, k, x)
         not(res3.sol?) =>
             neg_deg > 0 => [a1, r1, ansp, false]
             [a1 + a1p, g - rr1f, ansp, false]
@@ -1610,7 +1607,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
             cndl := reverse!(cndl)
             vc := vector([first(ci) for ci in cil])$Vector(F)
             as := new(#cil, 0)$Vector(F)
-            finish_special_integrate2(r1, vc, a1, as, cndl, 1, 0, k)
+            finish_special_integrate2(r1, vc, a1, as, cndl, k)
         #(sol_rec.basis) = 1 =>
             -- FIXME: Unimplemented, at most two solutions
             [a1, r1, ansp, false]
@@ -2114,8 +2111,7 @@ ElementaryRischDEX(R, F) : Exports == Implementation where
 
         mk_erf(uc : F, ff : F) : F == mk_erf1(uc, ff)
 
-    get_prims(scand : SREC, denf : UP, denf1 : UP, gexp : Z,
-              k : K) : List(F) ==
+    get_prims(scand : SREC, k : K) : List(F) ==
         cfac := scand.alg_part
         vshift := scand.shift_part
         uc := scand.coeff

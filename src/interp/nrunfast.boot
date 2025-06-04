@@ -443,6 +443,3 @@ sayLooking1(prefix,dom) ==
   sayBrightly concat(prefix, '" ", form2String dollar)
   $monitorNewWorld := true
 
-cc() == -- don't remove this function
-  clearConstructorCaches()
-  clearClams()

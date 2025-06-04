@@ -1418,7 +1418,6 @@ hasCateSpecialNew(v,dom,cat,SL) ==
       hasCaty(d,cat,augmentSub(v, d, SL))
     (dom = $RationalNumber) and alg =>
       d := '(AlgebraicNumber)
-      --d := defaultTargetFE $Integer
       augmentSub(v, d, SL)
     fefull =>
       d := defaultTargetFE dom
