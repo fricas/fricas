@@ -42,6 +42,19 @@ jobs:
         name: FriCAS-linux-${{ env.ARCH }}-binary
         path: FriCAS-linux-${{ env.ARCH }}-${{ github.sha }}.tar.bz2
 
+    - name: make book
+      if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+      run: |
+        sudo apt-get install xvfb texlive-font-utils texlive-latex-extra texlive-science
+        make -j4 book
+
+    - name: Upload reference book
+      if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: fricas-reference-book-${{ env.ARCH }}
+        path: src/doc/book.pdf
+
     - name: Upload to nightly release
       if: ${{ github.event_name == 'push' && ( github.event.ref == 'refs/heads/master' || github.ref_type == 'tag' ) && github.repository == 'fricas/fricas' }}
       ## RELEASE_ID is:
