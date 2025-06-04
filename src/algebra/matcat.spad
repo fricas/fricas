@@ -60,6 +60,97 @@ of \spadfun{determinant} are a good example to look at.
 
 )endif
 
+)abbrev category MATOPC MatrixOperationsCategory
+MatrixOperationsCategory(R, Row, Col) : Category == Definition where
+  R : BasicType
+  Row : Type
+  Col : Type
+  Definition ==> with
+    --% Predicates
+
+    square?  : % -> Boolean
+      ++ \spad{square?(m)} returns true if m is a square matrix
+      ++ (i.e. if m has the same number of rows as columns) and
+      ++ false otherwise.
+    if R has AbelianMonoid then
+      diagonal? : % -> Boolean
+        ++ \spad{diagonal?(m)} returns true if the matrix m is square and
+        ++ diagonal (i.e. all entries of m not on the diagonal are zero) and
+        ++ false otherwise.
+      zero? : % -> Boolean
+        ++ \spad{zero?(m)} returns true if m is a zero matrix and
+        ++ false otherwise
+
+    symmetric? : % -> Boolean
+        ++ \spad{symmetric?(m)} returns true if the matrix m is square and
+        ++ symmetric (i.e. \spad{m[i, j] = m[j, i]} for all i and j) and false
+        ++ otherwise.
+    if R has AbelianGroup then
+        antisymmetric? : % -> Boolean
+          ++ \spad{antisymmetric?(m)} returns true if the matrix m is
+          ++ square and antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for
+          ++ all i and j) and false otherwise.
+
+    --% Arithmetic
+
+    if R has AbelianMonoid then
+
+       "+": (%, %) -> %
+          ++ \spad{x + y} is the sum of the matrices x and y.
+          ++ Error: if the dimensions are incompatible.
+
+    if R has AbelianGroup then
+
+        "-" : (%,%) -> %
+          ++ \spad{x - y} is the difference of the matrices x and y.
+          ++ Error: if the dimensions are incompatible.
+    if R has AbelianGroup then
+        "-" :  %    -> %
+          ++ \spad{-x} returns the negative of the matrix x.
+        "*" : (Integer, %) -> %
+          ++ \spad{n * x} is an integer multiple.
+
+    if R has SemiRng then
+        "*": (%,%) -> %
+          ++ \spad{x * y} is the product of the matrices x and y.
+          ++ Error: if the dimensions are incompatible.
+        "*": (R,%) -> %
+          ++ \spad{r*x} is the left scalar multiple of the scalar r and the
+          ++ matrix x.
+        "*": (%,R) -> %
+          ++ \spad{x * r} is the right scalar multiple of the scalar r and the
+          ++ matrix x.
+
+    if R has IntegralDomain then
+      "exquo": (%,R) -> Union(%,"failed")
+        ++ \spad{exquo(m, r)} computes the exact quotient of the elements
+        ++ of m by r, returning \spad{"failed"} if this is not possible.
+    if R has Field then
+      "/": (%,R) -> %
+        ++ \spad{m/r} divides the elements of m by r. Error: if \spad{r = 0}.
+
+    --% Linear algebra
+
+    if R has EuclideanDomain then
+      rowEchelon : % -> %
+        ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
+      columnSpace : % -> List Col
+        ++ \spad{columnSpace(m)} returns a sublist of columns of the matrix m
+        ++ forming a basis of its column space.
+    if R has IntegralDomain then
+      rank : % -> NonNegativeInteger
+        ++ \spad{rank(m)} returns the rank of the matrix m.
+      nullity : % -> NonNegativeInteger
+        ++ \spad{nullity(m)} returns the nullity of the matrix m. This is
+        ++ the dimension of the null space of the matrix m.
+      nullSpace : % -> List Col
+        ++ \spad{nullSpace(m)} returns a basis for the null space of
+        ++ the matrix m.  Note: null space is considered as vector space
+        ++ over quotient field of the ring.
+    map : (R -> R, %) -> %
+      ++ \spad{map(f, a)} returns b, where \spad{b(i, j) = a(i, j)}
+      ++ for all i, j.
+
 )abbrev category MATCAT MatrixCategory
 ++ Authors: Grabmeier, Gschnitzer, Williamson
 ++ Date Created: 1987
@@ -91,32 +182,10 @@ MatrixCategory(R, Row, Col) : Category == Definition where
   UR ==> Union(R, "one")
 
   Definition ==> Join(TwoDimensionalArrayCategory(R, Row, Col),
+      MatrixOperationsCategory(R, Row, Col),
       shallowlyMutable, finiteAggregate) with
 
---% Predicates
-
-     square?  : % -> Boolean
-       ++ \spad{square?(m)} returns true if m is a square matrix
-       ++ (i.e. if m has the same number of rows as columns) and false otherwise.
-     diagonal? : % -> Boolean
-       ++ \spad{diagonal?(m)} returns true if the matrix m is square and
-       ++ diagonal (i.e. all entries of m not on the diagonal are zero) and
-       ++ false otherwise.
-     symmetric? : % -> Boolean
-       ++ \spad{symmetric?(m)} returns true if the matrix m is square and
-       ++ symmetric (i.e. \spad{m[i, j] = m[j, i]} for all i and j) and false
-       ++ otherwise.
-     if R has AbelianGroup then
-         antisymmetric? : % -> Boolean
-           ++ \spad{antisymmetric?(m)} returns true if the matrix m is
-           ++ square and antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for
-           ++ all i and j) and false otherwise.
-
-     zero? : % -> Boolean
-       ++ \spad{zero?(m)} returns true if m is a zero matrix and
-       ++ false otherwise.
-
---% Creation
+     --% Creation
 
      zero : (NonNegativeInteger, NonNegativeInteger) -> %
        ++ \spad{zero(m, n)} returns an m-by-n zero matrix.
@@ -163,29 +232,9 @@ MatrixCategory(R, Row, Col) : Category == Definition where
      transpose : Row -> %
        ++ \spad{transpose(r)} converts the row r to a row matrix.
 
---% Arithmetic
+     --% Arithmetic
 
-     "+": (%,%) -> %
-       ++ \spad{x + y} is the sum of the matrices x and y.
-       ++ Error: if the dimensions are incompatible.
-     if R has AbelianGroup then
-         "-" : (%,%) -> %
-           ++ \spad{x - y} is the difference of the matrices x and y.
-           ++ Error: if the dimensions are incompatible.
-         "-" :  %    -> %
-           ++ \spad{-x} returns the negative of the matrix x.
-         "*" : (Integer, %) -> %
-           ++ \spad{n * x} is an integer multiple.
      if R has SemiRng then
-       "*": (%,%) -> %
-         ++ \spad{x * y} is the product of the matrices x and y.
-         ++ Error: if the dimensions are incompatible.
-       "*": (R,%) -> %
-         ++ \spad{r*x} is the left scalar multiple of the scalar r and the
-         ++ matrix x.
-       "*": (%,R) -> %
-         ++ \spad{x * r} is the right scalar multiple of the scalar r and the
-         ++ matrix x.
        "*": (%,Col) -> Col
          ++ \spad{x * c} is the product of the matrix x and the column
          ++ vector c.  Error: if the dimensions are incompatible.
@@ -200,31 +249,8 @@ MatrixCategory(R, Row, Col) : Category == Definition where
          "^": (%, NonNegativeInteger) -> %
            ++ \spad{x ^ n} computes a non-negative integral power of the
            ++ matrix x.  Error: if the matrix is not square.
-     if R has IntegralDomain then
-       "exquo": (%,R) -> Union(%,"failed")
-         ++ \spad{exquo(m, r)} computes the exact quotient of the elements
-         ++ of m by r, returning \spad{"failed"} if this is not possible.
-     if R has Field then
-       "/": (%,R) -> %
-         ++ \spad{m/r} divides the elements of m by r. Error: if \spad{r = 0}.
-
 --% Linear algebra
 
-     if R has EuclideanDomain then
-       rowEchelon : % -> %
-         ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
-       columnSpace : % -> List Col
-         ++ \spad{columnSpace(m)} returns a sublist of columns of the matrix m
-         ++ forming a basis of its column space
-     if R has IntegralDomain then
-       rank : % -> NonNegativeInteger
-         ++ \spad{rank(m)} returns the rank of the matrix m.
-       nullity : % -> NonNegativeInteger
-         ++ \spad{nullity(m)} returns the nullity of the matrix m. This is
-         ++ the dimension of the null space of the matrix m.
-       nullSpace : % -> List Col
-         ++ \spad{nullSpace(m)} returns a basis for the null space of
-         ++ the matrix m.
      if R has CommutativeRing then
        determinant : % -> R
          ++ \spad{determinant(m)} returns the determinant of the matrix m.
@@ -724,42 +750,18 @@ RectangularMatrixCategory(m, n, R, Row, Col) : Category == Definition where
   Row : DirectProductCategory(n, R)
   Col : DirectProductCategory(m, R)
 
-  Definition ==> Join(BiModule(R, R), HomogeneousAggregate(R), _
-      finiteAggregate) with
+  Definition ==> Join(BiModule(R, R), HomogeneousAggregate(R),
+      MatrixOperationsCategory(R, Row, Col), finiteAggregate) with
 
     if R has Finite then Finite
 
     if R has CommutativeRing then Module(R)
 
---% Matrix creation
+    --% Matrix creation
 
     matrix : List List R -> %
       ++ \spad{matrix(l)} converts the list of lists l to a matrix, where the
       ++ list of lists is viewed as a list of the rows of the matrix.
-
---% Predicates
-
-    square?  : % -> Boolean
-      ++ \spad{square?(m)} returns true if m is a square matrix (i.e. if m
-      ++ has the same number of rows as columns) and false otherwise.
-    diagonal? : % -> Boolean
-      ++ \spad{diagonal?(m)} returns true if the matrix m is square and diagonal
-      ++ (i.e. all entries of m not on the diagonal are zero) and false
-      ++ otherwise.
-    symmetric? : % -> Boolean
-      ++ \spad{symmetric?(m)} returns true if the matrix m is square and
-      ++ symmetric (i.e. \spad{m[i, j] = m[j, i]} for all \spad{i} and j) and
-      ++ false otherwise.
-    if R has AbelianGroup then
-        antisymmetric? : % -> Boolean
-          ++ \spad{antisymmetric?(m)} returns true if the matrix m is
-          ++ square and antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for
-          ++ all i and j) and false otherwise.
-
-    antisymmetric? : % -> Boolean
-      ++ \spad{antisymmetric?(m)} returns true if the matrix m is square and
-      ++ antisymmetric (i.e. \spad{m[i, j] = -m[j, i]} for all \spad{i} and j)
-      ++ and false otherwise.
 
 --% Size inquiries
 
@@ -808,39 +810,10 @@ RectangularMatrixCategory(m, n, R, Row, Col) : Category == Definition where
 
 --% Map and Zip
 
-    map : (R -> R, %) -> %
-      ++ \spad{map(f, a)} returns b, where \spad{b(i, j) = a(i, j)} for all i, j.
     map : ((R, R) -> R, %, %) -> %
       ++ \spad{map(f, a, b)} returns c, where c is such that
       ++ \spad{c(i, j) = f(a(i, j), b(i, j))} for all \spad{i}, j.
 
---% Arithmetic
-
-    if R has IntegralDomain then
-      "exquo": (%,R) -> Union(%,"failed")
-        ++ \spad{exquo(m, r)} computes the exact quotient of the elements
-        ++ of m by r, returning \spad{"failed"} if this is not possible.
-    if R has Field then
-      "/": (%,R) -> %
-        ++ \spad{m/r} divides the elements of m by r. Error: if \spad{r = 0}.
-
---% Linear algebra
-
-    if R has EuclideanDomain then
-      rowEchelon : % -> %
-        ++ \spad{rowEchelon(m)} returns the row echelon form of the matrix m.
-      columnSpace : % -> List Col
-        ++ \spad{columnSpace(m)} returns a sublist of columns of the matrix m
-        ++ forming a basis of its column space.
-    if R has IntegralDomain then
-      rank : % -> NonNegativeInteger
-        ++ \spad{rank(m)} returns the rank of the matrix m.
-      nullity : % -> NonNegativeInteger
-        ++ \spad{nullity(m)} returns the nullity of the matrix m. This is
-        ++ the dimension of the null space of the matrix m.
-      nullSpace : % -> List Col
-        ++ \spad{nullSpace(m)}+ returns a basis for the null space of
-        ++ the matrix m.
    add
 
      if R has Finite then

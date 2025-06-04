@@ -457,6 +457,7 @@
   (|Magma| . MAGMA)
   (|MagmaWithUnit| . MAGMAWU)
   (|MatrixCategory| . MATCAT)
+  (|MatrixOperationsCategory| . MATOPC)
   (|Module| . MODULE)
   (|Monoid| . MONOID)
   (|MonoidRingCategory| . MRCAT)
