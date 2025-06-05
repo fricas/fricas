@@ -55,14 +55,14 @@ For categories with parameters there is second layer of caching.
 Namely we produce a skeleton vector with name 'CategoryName;CAT'.
 The auxiliary function 'CategoryName;' checks if skeleton is
 valid (not nil).  If yes it just substitutes values of parameters
-into skeleton (using 'sublisV'), otherwise it first fills the
+into skeleton (using 'subst_in_cat'), otherwise it first fills the
 skeleton and performs substitution.  For 'Algebra' this gives:
 
 (DEFUN |Algebra;| (|t#1|)
   (SPROG ((#1=#:G617 NIL))
          (PROG1
              (LETT #1#
-                   (|sublisV| (PAIR '(|t#1|) (LIST (|devaluate| |t#1|)))
+                   (||subst_in_cat| (PAIR '(|t#1|) (LIST (|devaluate| |t#1|)))
                               (COND (|Algebra;CAT|)
                                     ('T
                                      (LETT |Algebra;CAT|
@@ -73,6 +73,11 @@ skeleton and performs substitution.  For 'Algebra' this gives:
                                            . #2=(|Algebra|)))))
                    . #2#)
            (SETELT #1# 0 (LIST '|Algebra| (|devaluate| |t#1|))))))
+
+There an extra complication: for non-type parameters we directly use
+the value.  However, for type parameters we need to call 'devalute'
+to obtain Lisp S-expression which evaluates back to domain vector.
+
 
 Actual skeleton is build either by 'mkCategory' function (which is the
 only way of creating categories from scratch) or by 'Join' (which

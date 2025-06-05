@@ -209,7 +209,6 @@
         (SETQ Y (CDR Y))
         (GO A)))
 
-; (defun QLASSQ (p a-list) (let ((y (assoc p a-list :test #'eq))) (if y (cdr y))))
 (defun QLASSQ (p a-list) (cdr (assq p a-list)))
 
 (defun MAKE_PAIRS (x y) (mapcar #'cons x y))
