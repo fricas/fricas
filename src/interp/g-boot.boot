@@ -504,7 +504,7 @@ COMP370(fn, comp370_apply) ==
         FUNCALL(comp370_apply, fname, nbody)
 
 MKPF(l, op) ==
-    if MEMQ(op, ["*", "+", "AND", "OR", "PROGN"]) then
+    if MEMQ(op, ["AND", "OR", "PROGN"]) then
         l := MKPFFLATTEN1(l, op, nil)
     MKPF1(l, op)
 
@@ -519,18 +519,6 @@ MKPFFLATTEN1(l, op, r) ==
     MKPFFLATTEN1(rest l, op, APPEND(r, (x is [=op, :r1] => r1; [x])))
 
 MKPF1(l, op) ==
-    op = "PLUS" => BREAK()
-    op = "TIMES" => BREAK()
-    op = "QUOTIENT" => BREAK()
-    op = "MINUS" => BREAK()
-    op = "DIFFERENCE" => BREAK()
-    op = "EXPT" =>
-        l is [x, y] =>
-            EQL(y, 0) => 1
-            EQL(y, 1) => x
-            member(x, '(0 1 (ZERO) (ONE))) => x
-            ["EXPT", :l]
-        FAIL()
     op = "OR" =>
         MEMBER(true, l) => ["QUOTE", true]
         l := REMOVE(false, l)
@@ -543,12 +531,6 @@ MKPF1(l, op) ==
         NULL(l) => false
         rest(l) => ["or", :l]
         first(l)
-    op = "NULL" =>
-        rest(l) => FAIL()
-        l is [["NULL", :l1]] => first(l1)
-        first(l) = true => false
-        NULL(first(l)) => ["QUOTE", true]
-        ["NULL", :l]
     op = "and" =>
         l := REMOVE(true, REMOVE("true", l))
         NULL(l) => true
@@ -564,14 +546,6 @@ MKPF1(l, op) ==
         NULL(l) => nil
         rest(l) => ["PROGN", :l]
         first(l)
-    op = "SEQ" =>
-        l is [["EXIT", :l1], :.] => first(l1)
-        rest(l) => ["SEQ", :l]
-        first(l)
-    op = "LIST" =>
-        l => ["LIST", :l]
-        nil
-    op = "CONS" =>
-        rest(l) => ["CONS", :l]
-        first(l)
-    [op, :l]
+    op = "not" =>
+        [op, :l]
+    BREAK()
