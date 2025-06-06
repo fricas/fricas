@@ -94,4 +94,10 @@
 #-:sbcl
 (defun |eval_with_timeout| (f ti) (|error| "unimplemented for this Lisp"))
 
+(defun |is_dir_sepatator?| (c)
+    (cond
+        #+:win32
+        ((equal c #\\) 'T)
+        ((equal c #\/) 'T)
+        (t nil)))
 

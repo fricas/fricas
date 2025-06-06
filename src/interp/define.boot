@@ -825,7 +825,7 @@ bootStrapError(functorForm,sourceFile) ==
     ['$bootStrapMode, _
         ['VECTOR,mkDomainConstructor functorForm,nil,nil,nil,nil,nil]],
     [''T, ['systemError, ['LIST, ''%b, MKQ first functorForm, ''%d, '"from", _
-      ''%b,MKQ namestring sourceFile,''%d,'"needs to be compiled"]]]]
+      ''%b, MKQ(sourceFile), ''%d, '"needs to be compiled"]]]]
 
 compAdd(['add,$addForm,capsule],m,e) ==
   addForm := $addForm
@@ -836,7 +836,7 @@ compAdd(['add,$addForm,capsule],m,e) ==
        ['$bootStrapMode, _
            code],_
        [''T, ['systemError, ['LIST, ''%b, MKQ first $functorForm, ''%d,
-         '"from", ''%b, MKQ namestring($edit_file), ''%d, _
+         '"from", ''%b, MKQ($edit_file), ''%d, _
          '"needs to be compiled"]]]],
      m, e]
   $addFormLhs: local:= addForm

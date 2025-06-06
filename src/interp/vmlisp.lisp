@@ -578,14 +578,14 @@
 
 (defun MAKE_INSTREAM (filespec)
    (cond
-         ((null filespec) (error "not handled yet"))
-         (t (open (|make_input_filename| filespec)
+         ((not (STRINGP filespec)) (error "not handled yet"))
+         (t (open (|make_input_filename1| filespec)
                   :direction :input :if-does-not-exist nil))))
 
 (defun MAKE_OUTSTREAM (filespec)
    (cond
-         ((null filespec) (error "not handled yet"))
-         (t (open (|make_filename| filespec) :direction :output
+         ((not (STRINGP filespec)) (error "not handled yet"))
+         (t (open filespec :direction :output
                #+(or :cmucl :openmcl :sbcl) :if-exists
                #+(or :cmucl :sbcl) :supersede
                #+:openmcl :ignored))))
@@ -595,8 +595,8 @@
 (defun MAKE_APPENDSTREAM (filespec)
  "fortran support"
  (cond
-  ((null filespec) (error "MAKE_APPENDSTREAM: not handled yet"))
-  (t (open (|make_filename| filespec) :direction :output
+  ((not (STRINGP filespec)) (error "MAKE_APPENDSTREAM: not handled yet"))
+  (t (open filespec :direction :output
           :if-exists :append :if-does-not-exist :create))))
 
 (defun |make_append_stream| (filespec)

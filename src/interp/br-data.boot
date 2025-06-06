@@ -83,7 +83,7 @@ buildLibdb(domainList) ==  --called by make-databases (daase.lisp)
   -- FIXME: This is confusing: result is in olibdb.text,
   -- but this is expected by save_browser_data
   run_shell_command '"sort temp.text -o olibdb.text"
-  deleteFile '"temp.text"
+  delete_file('"temp.text")
 
 buildLibdbConEntry conname ==
     NULL(get_database(conname, 'CONSTRUCTORMODEMAP)) => nil
@@ -198,7 +198,7 @@ dbHasExamplePage conname ==
   abb      := constructor? conname
   ucname   := UPCASE STRINGIMAGE abb
   pathname :=STRCONC($spadroot, '"/share/hypertex/pages/", ucname, '".ht")
-  isExistingFile pathname => INTERN STRCONC(sname,'"XmpPage")
+  fricas_probe_file(pathname) => INTERN STRCONC(sname,'"XmpPage")
   nil
 
 dbReadComments(n) ==
@@ -238,7 +238,7 @@ dbSplitLibdb() ==
   SHUT instream
   SHUT outstream
   SHUT comstream
-  deleteFile '"olibdb.text"
+  delete_file('"olibdb.text")
 
 dbSplit(line,n,k) ==
   k := charPosition($tick,line,k + 1)

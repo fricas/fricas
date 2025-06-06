@@ -1368,7 +1368,7 @@ compileSpad2Cmd args ==
     -- and is a file with file extension .spad.
 
     path := first(args)
-    pathnameType path ~= '"spad" => throwKeyedMsg("S2IZ0082", nil)
+    not(has_extention?(path, '"spad")) => throwKeyedMsg("S2IZ0082", nil)
     not(PROBE_-FILE(path)) => throwKeyedMsg("S2IL0003", [path])
 
     $edit_file := path

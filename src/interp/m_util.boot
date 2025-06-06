@@ -18,7 +18,7 @@ get_io_index_table(stream, io?) ==
 kaf_open(name, io?) ==
     full_name :=
         io? => make_full_namestring(name)
-        make_input_filename(name)
+        make_input_filename1(name)
     if io? then
         kind := file_kind(full_name)
         if kind = -1 then
@@ -108,3 +108,81 @@ filler_chars(n, char_str) ==
     make_string0(n, char_str.0)
 
 filler_spaces(n) == filler_chars(n, '" ")
+
+SNAME(s) ==
+    not(SYMBOLP(s)) => BREAK()
+    SYMBOL_-NAME(s)
+
+ext_position(n) ==
+    k := #n - 1
+    dot := '".".0
+    while k >= 0 and not(n.k = dot) repeat
+        is_dir_sepatator?(n.k) => k := -1
+        k := k - 1
+    k
+
+file_extention(n) ==
+    k := ext_position(n)
+    k < 0 => '""
+    SUBSTRING(n, k + 1, #n - 1 - k)
+
+drop_extention(n) ==
+    k := ext_position(n)
+    k < 0 => n
+    SUBSTRING(n, 0, k)
+
+has_extention?(s, e) ==
+    not((m := #e) < (n := #s)) => false
+    l := n - m
+    not(s.(l - 1) = '".".0) => false
+    res := true
+    for i in 0..(m - 1) while res repeat
+        res := s.(l + i) = e.i
+    res
+
+file_basename(n) ==
+    k := #n - 1
+    while k >=0 and not(is_dir_sepatator?(n.k)) repeat
+        k := k - 1
+    k := k + 1
+    l := ext_position(n)
+    l < 0 => SUBSTRING(n, k, #n - k)
+    SUBSTRING(n, k, l - k)
+
+file_directory(n) ==
+    k := #n - 1
+    while k >=0 and not(is_dir_sepatator?(n.k)) repeat
+        k := k - 1
+    k < 0 => '""
+    k = 0 => "/"
+    SUBSTRING(n, 0, k)
+
+make_filename2(n, e) ==
+    has_extention?(n, e) => n
+    CONCAT(n, '".", e)
+
+make_input_filename2(n, e) ==
+    make_input_filename1(make_filename2(n, e))
+
+erase_lib0(n, e) == erase_lib(make_filename2(n, e))
+
+make_fname(d, n, e) ==
+    n = '"" => throwMessage '"name part can not be empty"
+    n :=
+        e = '"" => n
+        CONCAT(n, '".", e)
+    d = '"" => n
+    n :=
+        is_dir_sepatator?(n.0) => SUBSTRING(n, 1, #n - 1)
+        n
+    is_dir_sepatator?(d.(#d - 1)) => CONCAT(d, n)
+    CONCAT(d, "/", n)
+
+is_system_path?(n) ==
+    #n < #(sr := $spadroot) => false
+    res := true
+    for i in 0..(#sr - 1) while res repeat
+        res := n.i = sr.i
+    res
+
+delete_file(f) == DELETE_-FILE(f)

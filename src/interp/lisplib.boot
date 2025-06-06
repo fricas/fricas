@@ -33,7 +33,7 @@
 
 $printLoadMsgs := false
 
-$spadLibFT := 'NRLIB
+$spadLibFT := '"NRLIB"
 $LISPLIB := false
 $libFile := nil
 
@@ -45,10 +45,10 @@ $lisplibOperationAlist := []
 
 --% Standard Library Creation Functions
 
-readLib(fn) == kaf_open(make_filename(fn), false)
+readLib(fn) == kaf_open(fn, false)
 
-writeLib(fn) == kaf_open(make_filename(fn), true)
-writeLib0(fn, ft) == kaf_open(make_filename0(fn, ft), true)
+writeLib(fn) == kaf_open(fn, true)
+writeLib0(fn, ft) == kaf_open(make_filename2(fn, ft), true)
 
 lisplibWrite(prop, val, lib_file) ==
   -- this may someday not write NIL keys, but it will now
@@ -66,7 +66,7 @@ loadLibIfNotLoaded libName ==
 loadLib cname ==
   startTimingProcess 'load
   fullLibName := get_database(cname, 'OBJECT) or return nil
-  systemdir? := isSystemDirectory(fullLibName)
+  systemdir? := is_system_path?(fullLibName)
   update? := not systemdir?
   loadLibNoUpdate1(cname, fullLibName)
   kind := get_database(cname, 'CONSTRUCTORKIND)
@@ -183,19 +183,20 @@ compDefineLisplib(df:=["DEF",[op,:.],:.],m,e,prefix,fal,fn) ==
   --will eventually become the "constructorCategory" property in lisplib
   --set in compDefineCategory1 if category, otherwise in finalizeLisplib
   libName := getConstructorAbbreviation op
+  name := SNAME(libName)
   sayMSG ['"   initializing ",$spadLibFT,:bright libName,
     '"for",:bright op]
   -- following guarantee's compiler output files get closed.
   UNWIND_-PROTECT(
-      PROGN(initializeLisplib libName,
+      PROGN(initializeLisplib(name),
             sayMSG ['"   compiling into ", $spadLibFT, :bright libName],
             res := FUNCALL(fn, df, m, e, prefix, fal),
             sayMSG ['"   finalizing ",$spadLibFT,:bright libName],
-            finalizeLisplib(libName, $libFile)),
+            finalizeLisplib($libFile)),
       PROGN(if $compiler_output_stream then CLOSE($compiler_output_stream),
             kaf_close($libFile)))
-  lisplibDoRename(libName)
-  compile_lib(make_full_namestring(make_filename0(libName, $spadLibFT)))
+  lisplibDoRename(name)
+  compile_lib(make_full_namestring(make_filename2(name, $spadLibFT)))
   FRESH_-LINE(get_algebra_stream())
   sayMSG(filler_chars(72, '"-"))
   merge_info_from_objects([get_database(op, 'ABBREVIATION)], [], false)
@@ -210,7 +211,7 @@ initializeLisplib libName ==
   $libFile:= writeLib0(libName,'"erlib")
   $compiler_output_stream := make_compiler_output_stream($libFile, libName)
 
-finalizeLisplib(libName, libFile) ==
+finalizeLisplib(libFile) ==
   lisplibWrite('"constructorForm", removeZeroOne($lisplibForm), libFile)
   lisplibWrite('"constructorKind", kind:=removeZeroOne $lisplibKind, libFile)
   lisplibWrite('"constructorModemap", removeZeroOne($lisplibModemap), libFile)
@@ -229,8 +230,8 @@ finalizeLisplib(libName, libFile) ==
   lisplibWrite('"documentation", finalizeDocumentation(), libFile)
 
 lisplibDoRename(libName) ==
-    replace_lib(make_filename0(libName, '"erlib"),
-                make_filename0(libName, $spadLibFT))
+    replace_lib(make_filename2(libName, '"erlib"),
+                make_filename2(libName, $spadLibFT))
 
 lisplibError(cname,fname,type,cn,fn,typ,error) ==
   $bootStrapMode and error = "wrongType" => nil

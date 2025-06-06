@@ -834,7 +834,7 @@ with this hack and will try to convince the GCL crowd to fix this.
     (|trim_directory_name| directory)))
 
 
-(defun |fricas_probe_file| (file)
+(defun |fricas_probe_file0| (file)
 #+(or :GCL :clisp)
        (let* ((fk (|file_kind| (namestring file)))
               (fname (|trim_directory_name| (namestring file)))
@@ -849,6 +849,11 @@ with this hack and will try to convince the GCL crowd to fix this.
 #+:sbcl (if (sbcl-file-kind file) (truename file))
 #+(or :abcl :ecl :lispworks :openmcl :poplog) (probe-file file)
          )
+
+(defun |fricas_probe_file| (file)
+     (let ((path (|fricas_probe_file0| file)))
+          (if path (namestring path)
+              nil)))
 
 #-:cmu
 (defun relative-to-absolute (name)

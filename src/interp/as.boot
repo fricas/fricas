@@ -44,7 +44,7 @@ astran asyFile ==
   $constantHash := MAKE_HASHTABLE('EQUAL)
   $niladics : local := nil
   $asyFile: local := asyFile
-  $asFilename: local := STRCONC(PATHNAME_-NAME asyFile,'".as")
+  $asFilename: local := STRCONC(file_basename(asyFile), '".as")
   asytran asyFile
   conlist := [x for x in HKEYS $conHash | HGET($conHash,x) isnt [.,.,"function",:.]]
   $mmAlist : local :=
@@ -100,7 +100,7 @@ asMakeAlist con ==
   attributeAlist := REMDUP [:CADR alists,:catAttrs]
   documentation :=
       SUBLISLIS($FormalMapVariableList, IFCDR form, LASSOC(con, $docAlist))
-  filestring := STRCONC(PATHNAME_-NAME STRINGIMAGE filename,'".as")
+  filestring := STRCONC(file_basename(STRINGIMAGE(filename)), '".as")
   constantPart := HGET($constantHash,con) and [['constant,:true]]
   niladicPart := MEMQ(con,$niladics) and [['NILADIC,:true]]
   falist := TAKE(#IFCDR form, $FormalMapVariableList)

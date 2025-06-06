@@ -110,45 +110,19 @@
   (compile-file fn))
 
 ;; cms file operations
-(defun |make_filename0|(filearg filetype)
-  (let ((filetype (if (and filetype (symbolp filetype))
-                      (symbol-name filetype)
-                      filetype)))
-    (cond
-     ((pathnamep filearg)
-      (cond ((or (null filetype)
-                 (pathname-type filearg))
-               (namestring filearg))
-            (t (namestring (make-pathname :directory (pathname-directory filearg)
-                                          :name (pathname-name filearg)
-                                          :type filetype)))))
-     ((and (stringp filearg) (null filetype)) filearg)
-     ((and (stringp filearg) (stringp filetype)
-           (pathname-type filearg)
-           (string-equal (pathname-type filearg) filetype))
-      filearg)
-     ((consp filearg) (BREAK))
-     (t (if (stringp filetype) (setq filetype (intern filetype "BOOT")))
-        (let ((ft (or (cdr (assoc filetype |$filetype_table|)) filetype)))
-          (if ft
-              (concatenate 'string (string filearg) "." (string ft))
-              (string filearg)))))))
-
-(defun |make_filename| (filearg) (|make_filename0| filearg nil))
 
 (defun |make_full_namestring| (filearg)
-  (namestring (merge-pathnames (|make_filename| filearg))))
+    (namestring (merge-pathnames filearg)))
 
 (defun |probe_name| (file)
   (if (|fricas_probe_file| file) (namestring file) nil))
 
-(defun |make_input_filename0|(filearg filetype)
-   (let*
-     ((filename  (|make_filename0| filearg filetype))
-      (dirname (pathname-directory filename))
-      (ft (pathname-type filename))
-      (dirs (|get_directory_list| ft))
-      (newfn nil))
+(defun |make_input_filename1|(filename)
+    (let*
+       ((dirname (pathname-directory filename))
+        (ft (pathname-type filename))
+        (dirs (|get_directory_list| ft))
+        (newfn nil))
     (if (or (null dirname) (eqcar dirname :relative))
         (dolist (dir dirs (|probe_name| filename))
                 (when
@@ -157,18 +131,9 @@
                  (return newfn)))
         (|probe_name| filename))))
 
-(defun |make_input_filename|(filearg)
-    (cond
-        ((consp filearg)
-            (|make_input_filename0| (car filearg) (cadr filearg)))
-        (t (|make_input_filename0| filearg nil))))
-
 (defun |find_file|(filespec filetypelist)
-  (let ((file-name (if (consp filespec) (car filespec) filespec))
-        (file-type (if (consp filespec) (cadr filespec) nil)))
-    (if file-type (push file-type filetypelist))
-    (some #'(lambda (ft) (|make_input_filename0| file-name ft))
-          filetypelist)))
+    (some #'(lambda (ft) (|make_input_filename2| filespec ft))
+          filetypelist))
 
 ;; ($ERASE filearg) -> 0 if succeeds else 1
 (defun |erase_lib|(filearg)
@@ -178,8 +143,6 @@
       #-:fricas_has_remove_directory
           (delete-directory filearg)
       1))
-
-(defun |erase_lib0|(fn ft) (|erase_lib| (|make_filename0| fn ft)))
 
 #+(or :abcl :clisp :cmu :ecl :gcl :lispworks :poplog)
 (defun delete-directory (dirname)
@@ -215,16 +178,6 @@
 (defun copy-lib-directory (name1 name2)
    (|run_program| "cp" (list "-r" name1 name2)))
 
-(defvar |$filetype_table|
-  '(
-    (HELPSPAD . |help|)
-    (INPUT . |input|)
-    (SPAD . |spad|)
-    (BOOT . |boot|)
-    (LISP . |lsp|)
-   )
-)
-
 ;;; moved from fname.lisp
 
 ;;
@@ -235,43 +188,13 @@
 
 
 ;; E.g.  "/"  "/u/smwatt"  "../src"
-(defun |DirToString| (d)
-  (cond
-    ((equal d '(:absolute)) "/")
-    ((null d) "")
-    ('t (string-right-trim "/" (namestring (make-pathname :directory d)))) ))
-
-(defun |StringToDir| (s)
-  (cond
-    ((string= s "/") '(:absolute))
-    ((string= s "")  nil)
-    ('t
-      (let ((lastc (aref s (- (length s) 1))))
-        (if (char= lastc #\/)
-          (pathname-directory (concat s "name.type"))
-          (pathname-directory (concat s "/name.type")) ))) ))
 
 (defun |myWritable?| (s)
   (if (not (stringp s)) (|error| "``myWritable?'' requires a string arg."))
   (if (string= s "") (setq s "."))
-  (if (not (|fnameExists?| s)) (setq s (|fnameDirectory| s)))
+  (if (not (|fnameExists?| s)) (setq s (|file_directory| s)))
   (if (string= s "") (setq s "."))
   (if (> (|writeablep| s) 0) 't nil) )
-
-(defun |fnameMake| (d n e)
-  (if (string= e "") (setq e nil))
-  (make-pathname :directory (|StringToDir| d) :name  n :type e))
-
-(defun |fnameDirectory| (f)
-  (|DirToString| (pathname-directory f)))
-
-(defun |fnameName| (f)
-  (let ((s (pathname-name f)))
-    (if s s "") ))
-
-(defun |fnameType| (f)
-  (let ((s (pathname-type f)))
-    (if s s "") ))
 
 (defun |fnameExists?| (f)
   (if (|fricas_probe_file| (namestring f)) 't nil))
@@ -284,13 +207,13 @@
   )
 
 (defun |fnameWritable?| (f)
-  (|myWritable?| (namestring f)) )
+    (|myWritable?| f))
 
 (defun |fnameNew| (d n e)
   (if (not (|myWritable?| d))
     nil
     (do ((fn))
         (nil)
-        (setq fn (|fnameMake| d (string (gensym n)) e))
+        (setq fn (|make_fname| d (string (gensym n)) e))
         (if (not (|fricas_probe_file| (namestring fn)))
            (return-from |fnameNew| fn)) )))

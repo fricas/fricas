@@ -296,13 +296,13 @@ get_database2(con, key, ind, stream) ==
         dbstruct.ind := data
     NULL(data) => nil
     if key = 'SOURCEFILE then
-        if NULL(PATHNAME_-DIRECTORY(data)) and
-           PATHNAME_-TYPE(data) = '"spad" then
+        if file_directory(data) = '"" and
+           has_extention?(data, '"spad") then
             data := STRCONC($spadroot, '"/../../src/algebra/", data)
     if key = 'OBJECT then
         if CONSP(data) then
             data := first(data)
-        if NULL(PATHNAME_-DIRECTORY(data)) then
+        if file_directory(data) = '"" then
             data := STRCONC($spadroot, '"/algebra/", data,
                            '".", $lisp_bin_filetype)
     data
@@ -446,7 +446,7 @@ store_con_data1(con, stream) ==
         CONSP(dob) => -- asharp code
             [PATHNAME_-NAME(first(dob)), :rest(dob)]
         not(NULL(dob)) =>
-            PATHNAME_-NAME(last(PATHNAME_-DIRECTORY(dob)))
+            file_basename(file_directory(dob))
         '"NIL"
     concategory := dbstruct.$constructorcategory_ind
     if concategory then
@@ -555,9 +555,10 @@ merge_info_from_objects(files, options, make_database?) ==
     asos := []
     if dir then
         CHDIR(STRING(dir))
-        nrlibs := DIRECTORY('"*.NRLIB/index.KAF")
-        asys := DIRECTORY('"*.asy")
-        skipasos := MAPCAN(function PATHNAME_-NAME, asys)
+        nrlibs := [NAMESTRING(fname) for fname in
+                   DIRECTORY('"*.NRLIB/index.KAF")]
+        asys := [NAMESTRING(fname) for fname in DIRECTORY('"*.asy")]
+        skipasos := MAPCAN(function file_basename, asys)
         -- asos := DIRECTORY('"*.ao)
         CHDIR(thisdir)
 
@@ -573,18 +574,18 @@ merge_info_from_objects(files, options, make_database?) ==
         FORMAT(true, '"   )library cannot find the file ~a.~%", fname)
 
     for fname in nreverse(nrlibs) repeat
-        key := PATHNAME_-NAME(last(PATHNAME_-DIRECTORY(fname)))
-        object := STRCONC(DIRECTORY_-NAMESTRING(fname), key)
+        key := file_basename(file_directory(fname))
+        object := STRCONC(file_directory(fname), "/", key)
         merge_info_from_nrlib(key, fname, object, make_database?, expose,
                               noquiet)
     for fname in nreverse(asys) repeat
-        object := STRCONC(DIRECTORY_-NAMESTRING(fname), PATHNAME_-NAME(fname))
+        object := drop_extention(fname)
         merge_info_from_asy(astran(fname), object, only, make_database?,
                             expose, noquiet)
     for fname in nreverse(asos) repeat
-        object := STRCONC(DIRECTORY_-NAMESTRING(fname), PATHNAME_-NAME(fname))
+        object := drop_extention(fname)
         ASHARP(fname)
-        file := astran(STRCONC(PATHNAME_-NAME(fname), ".asy"))
+        file := astran(STRCONC(file_basename(fname), ".asy"))
         merge_info_from_asy(file, object, only, make-database?, expose,
                             noquiet)
     clearConstructorCaches()
@@ -631,7 +632,7 @@ merge_info_from_asy(asy, object, only, make_database?, expose,
     for domain in asy repeat
         key := first(domain)
         alist := rest(domain)
-        asharp_name := asharp_global_name(PATHNAME_-NAME(object), key,
+        asharp_name := asharp_global_name(file_basename(object), key,
                                           LASSOC('typeCode, alist))
         #alist < 4 =>
             -- handle toplevel function object
@@ -691,7 +692,7 @@ merge_info_from_nrlib1(in_f, key, object, make_database?, expose,
     dbstruct := make_dbstruct()
     PUT(key, 'DATABASE, dbstruct)
     $all_constructors := ADJOIN(key, $all_constructors)
-    abbrev := INTERN(PATHNAME_-NAME(last(PATHNAME_-DIRECTORY(object))))
+    abbrev := INTERN(file_basename(file_directory(object)))
     ds := [alist, in_f]
     kind :=
         set_dbstruct(dbstruct, FUNCTION(fetch_data_from_file), ds,

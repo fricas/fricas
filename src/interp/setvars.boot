@@ -600,10 +600,12 @@ stream_close(st) ==
     if first(st) then CLOSE(rest(st))
 
 try_open(fn, ft, append) ==
-    if (ptype := pathnameType fn) then
-        fn := STRCONC(pathnameDirectory fn,pathnameName fn)
+    fn := PNAME(fn)
+    ft := PNAME(ft)
+    if not((ptype := file_extention(fn)) = '"") then
+        fn := drop_extention(fn)
         ft := ptype
-    filename := make_full_namestring(make_filename0(fn, ft))
+    filename := make_full_namestring(make_filename2(fn, ft))
     null filename => [NIL, NIL]
     (testStream := makeStream(append, filename)) => [testStream, filename]
     [NIL, NIL]
