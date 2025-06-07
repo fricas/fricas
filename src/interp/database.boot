@@ -485,14 +485,19 @@ isExposedConstructor name ==
   found
 
 displayExposedGroups() ==
-  sayKeyedMsg("S2IZ0049A",[$interpreterFrameName])
-  if null $localExposureData.0
-    then centerAndHighlight '"there are no exposed groups"
-    else for g in $localExposureData.0 repeat
-      centerAndHighlight g
+    say_msg("S2IZ0049A", CONCAT(
+      '"The following groups are explicitly exposed in the current",
+       '" frame (called %1b ):"), [$interpreterFrameName])
+    if null($localExposureData.0) then
+        centerAndHighlight '"there are no exposed groups"
+    else
+        for g in $localExposureData.0 repeat
+            centerAndHighlight g
 
 displayExposedConstructors() ==
-  sayKeyedMsg("S2IZ0049B",NIL)
+  say_msg("S2IZ0049B",
+    '"The following constructors are explicitly exposed in the current frame:",
+       nil)
   if null $localExposureData.1
     then centerAndHighlight
       '"there are no explicitly exposed constructors"
@@ -500,7 +505,9 @@ displayExposedConstructors() ==
       centerAndHighlight c
 
 displayHiddenConstructors() ==
-  sayKeyedMsg("S2IZ0049C",NIL)
+  say_msg("S2IZ0049C",
+    '"The following constructors are explicitly hidden in the current frame:",
+       nil)
   if null $localExposureData.2
     then centerAndHighlight
       '"there are no explicitly hidden constructors"

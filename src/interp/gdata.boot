@@ -538,7 +538,9 @@ merge_info_from_objects(files, options, make_database?) ==
         op1 = 'dir =>
             dir := first(rest(opt))
             if NULL(dir) then
-                sayKeyedMsg('S2IU0002, nil)
+                say_msg("S2IU0002", _
+  '"Ignoring )dir because an explicit directory was not given after )dir.",
+                   nil)
         op1 = 'noexpose =>
             expose := false
         op1 = 'quiet =>
@@ -677,7 +679,7 @@ merge_info_from_asy(asy, object, only, make_database?, expose,
                 set_asharp_autoload_functor(object, cname, asharp_name,
                                             dbstruct.$cosig_ind)
             if noquiet then
-                sayKeyedMsg('S2IU0001i, [cname, object])
+                sayKeyedMsg("S2IU0001", [cname, object])
 
 merge_info_from_nrlib1(in_f, key, object, make_database?, expose,
                        noquiet) ==

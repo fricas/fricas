@@ -77,7 +77,7 @@ loadLib cname ==
 loadLibNoUpdate1(cname, fullLibName) ==
   if $printLoadMsgs then
     kind := get_database(cname, 'CONSTRUCTORKIND)
-    sayKeyedMsg("S2IL0002", [fullLibName, kind, cname])
+    say_msg("S2IL0002", '"Loading %1 for %2 %3b", [fullLibName, kind, cname])
   load_quietly(fullLibName)
   clearConstructorCache cname
   installConstructor(cname)
@@ -105,7 +105,7 @@ loadLibIfNecessary(u,mustExist) ==
          y = 'category =>
             updateCategoryFrameForCategory u
          updateCategoryFrameForConstructor u
-      throwKeyedMsg("S2IL0005",[u])
+      throw_msg("S2IL0005", '"%1bp is not a known type.", [u])
   value
 
 convertOpAlist2compilerInfo(opalist) ==
@@ -237,10 +237,14 @@ lisplibError(cname,fname,type,cn,fn,typ,error) ==
   $bootStrapMode and error = "wrongType" => nil
   sayMSG bright ['"  Illegal ",$spadLibFT]
   error in '(duplicateAbb  wrongType) =>
-    sayKeyedMsg("S2IL0007",
-      [[fname,$spadLibFT], type, cname, typ, cn])
+    say_msg("S2IL0007", CONCAT(
+        '"%1b claims that its constructor name is the %2 %3b but %3b is",
+        '" already known to be the %d for %4 %5b .:"),
+        [[fname,$spadLibFT], type, cname, typ, cn])
   error is 'abbIsName =>
-    throwKeyedMsg("S2IL0008", [fname, typ, [fn,$spadLibFT]])
+      throw_msg("S2IL0008",
+          '"%1b is the name of a %2 constructor from %3b .",
+          [fname, typ, [fn,$spadLibFT]])
 
 getPartialConstructorModemapSig(c) ==
   (s := getConstructorSignature c) => rest s

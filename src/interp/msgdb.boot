@@ -84,8 +84,6 @@ $highlightAllowed := false
 
 DEFPARAMETER($testingErrorPrefix, '"Daly Bug")
 
-DEFPARAMETER($texFormatting, false)
-
 escape_strings(l) ==
     ATOM(l) => l
     res := []
@@ -140,6 +138,7 @@ cacheKeyedMsg(db_name) ==
     CATCH('DONE, handle_input_file(db_name, function cacheKeyedMsg1, []))
 
 getKeyedMsg(key) ==
+    STRINGP(key) => key
     if not($msg_hash) then
         $msg_hash := MAKE_HASHTABLE('EQ)
         cacheKeyedMsg($defaultMsgDatabaseName)
@@ -330,22 +329,12 @@ throwPatternMsg(key,args) ==
   sayPatternMsg(key,args)
   spadThrow()
 
-say_msg(msg, args) ==
-    ioHook("say_msg", msg, args)
-    say_msg_local(msg, args)
-    ioHook("end_say_msg", msg)
-
-throw_msg(msg, args) ==
-    sayMSG '" "
-    if $testingSystem then sayMSG $testingErrorPrefix
-    say_Msg(msg, args)
-    spadThrow()
-
-sayKeyedMsg(key,args) ==
-  $texFormatting: fluid := false
+say_msg(key, msg, args) ==
   ioHook("startKeyedMsg", key, args)
-  say_msg_local(getKeyedMsg key, args)
+  say_msg_local(msg, args)
   ioHook("endOfKeyedMsg", key)
+
+sayKeyedMsg(key, args) == say_msg(key, getKeyedMsg(key), args)
 
 say_msg_local(msg, args) ==
   msg := segmentKeyedMsg msg
@@ -354,12 +343,7 @@ say_msg_local(msg, args) ==
   if $printMsgsToFile then sayMSG2File msg'
   sayMSG msg'
 
-throwKeyedErrorMsg(kind,key,args) ==
-  $noEvalTypeMsg => spadThrow()
-  sayMSG '" "
-  if $testingSystem then sayMSG $testingErrorPrefix
-  sayKeyedMsg(key,args)
-  spadThrow()
+throwKeyedErrorMsg(kind, key, args) == throwKeyedMsg(key, args)
 
 throwKeyedMsgSP(key,args,atree) ==
     if atree and (sp := getSrcPos(atree)) then
@@ -367,15 +351,15 @@ throwKeyedMsgSP(key,args,atree) ==
         srcPosDisplay(sp)
     throwKeyedMsg(key,args)
 
-throwKeyedMsg(key,args) ==
-  $noEvalTypeMsg => spadThrow()
-  throwKeyedMsg1(key, args)
+throwKeyedMsg(key, args) ==
+    throw_msg(key, getKeyedMsg(key), args)
 
-throwKeyedMsg1(key,args) ==
-  sayMSG '" "
-  if $testingSystem then sayMSG $testingErrorPrefix
-  sayKeyedMsg(key,args)
-  spadThrow()
+throw_msg(key, msg, args) ==
+    $noEvalTypeMsg => spadThrow()
+    sayMSG '" "
+    if $testingSystem then sayMSG $testingErrorPrefix
+    say_msg(key, msg, args)
+    spadThrow()
 
 throwListOfKeyedMsgs(descKey,descArgs,l) ==
   -- idea is that descKey and descArgs are the message describing
@@ -538,9 +522,12 @@ spadStartUpMsgs() ==
   bar := filler_chars($LINELENGTH, hbar_special_char())
   sayKeyedMsg("S2GL0001", [$build_version, $lisp_id_string, $build_date])
   sayMSG bar
-  sayKeyedMsg("S2GL0018C",NIL)
-  sayKeyedMsg("S2GL0018D",NIL)
-  sayKeyedMsg("S2GL0003B",[$opSysName])
+  say_msg("S2GL0018C",
+      '"Issue %b )copyright %d to view copyright notices.", nil)
+  say_msg("S2GL0018D",
+      '"Issue %b )summary %d for a summary of useful system commands.", nil)
+  say_msg("S2GL0003B",
+      '"Issue %b )quit %d to leave FriCAS and return to %1 .", [$opSysName])
   sayMSG bar
   sayMSG '" "
 

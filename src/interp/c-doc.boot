@@ -91,20 +91,24 @@ finalizeDocumentation() ==
       signatures := [y,:signatures]
     name := first $lisplibForm
     if noHeading or signatures or unusedCommentLineNumbers then
-      say_msg('"%b Constructor documentation warnings (++ comments): %d", nil)
+      say_msg("S2CD0001",
+              '"%b Constructor documentation warnings (++ comments): %d", nil)
       bigcnt := 1
       if noHeading or signatures then
-        say_msg('"%1 The constructor %2b has missing documentation.",
-                [STRCONC(STRINGIMAGE bigcnt,'"."),name])
+        say_msg("S2CD0002",
+                '"%1 The constructor %2b has missing documentation.",
+                [STRCONC(STRINGIMAGE(bigcnt), '"."), name])
         bigcnt := bigcnt + 1
         litcnt := 1
         if noHeading then
-          say_msg('"%x3 %1 The constructor %2b is missing the heading description.",
-            [STRCONC('"(",STRINGIMAGE litcnt,'")"),name])
+          say_msg("S2CD0003",
+            '"%x3 %1 The constructor %2b is missing the heading description.",
+            [STRCONC('"(", STRINGIMAGE(litcnt), '")"), name])
           litcnt := litcnt + 1
         if signatures then
-          say_msg('"%x3 %1 The following functions do not have documentation:",
-                  [STRCONC('"(",STRINGIMAGE litcnt,'")")])
+          say_msg("S2CD0004",
+              '"%x3 %1 The following functions do not have documentation:",
+                  [STRCONC('"(", STRINGIMAGE(litcnt), '")")])
           litcnt := litcnt + 1
           for [op,sig] in signatures repeat
             s := formatOpSignature(op,sig)
@@ -112,7 +116,9 @@ finalizeDocumentation() ==
               atom s => ['%x9,s]
               ['%x9,:s]
       if unusedCommentLineNumbers then
-        say_msg('"%1 The constructor %2b has incorrectly placed documentation.",[STRCONC(STRINGIMAGE bigcnt,'"."),name])
+        say_msg("S2CD0006",
+            '"%1 The constructor %2b has incorrectly placed documentation.",
+                [STRCONC(STRINGIMAGE(bigcnt), '"."), name])
         for [n,r] in unusedCommentLineNumbers repeat
           sayMSG ['"   ",:bright n,'"   ",r]
   hn([[:fn(sig), :doc] for [sig, :doc] in docList]) where

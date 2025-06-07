@@ -316,13 +316,13 @@ typeTimePrin x ==
 printTime() ==
   $collectOutput => nil
   s := makeLongTimeString($interpreterTimedNames, $interpreterTimedClasses)
-  sayKeyedMsg("S2GL0013", [s])
+  say_msg("S2GL0013", '"%rjon Time: %1 %rjoff", [s])
 
 printStorage() ==
   $collectOutput => nil
   storeString :=
     makeLongSpaceString($interpreterTimedNames, $interpreterTimedClasses)
-  sayKeyedMsg("S2GL0016",[storeString])
+  say_msg("S2GL0016", '"%rjon Storage: %1 %rjoff", [storeString])
 
 --%  Interpreter Middle-Level Driver + Utilities
 

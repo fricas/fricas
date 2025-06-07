@@ -89,7 +89,9 @@ mkUserConstructorAbbreviation(c,a,type) ==
 abbQuery(x) ==
     abb := get_database(x, 'ABBREVIATION) =>
         sayKeyedMsg("S2IZ0001", [abb, get_database(x, 'CONSTRUCTORKIND), x])
-    sayKeyedMsg("S2IZ0003",[x])
+    say_msg("S2IZ0003",
+        '"%1b is neither a constructor name nor a constructor abbreviation.",
+            [x])
 
 installConstructor(cname) ==
   item := [cname, get_database(cname, 'ABBREVIATION), nil]
@@ -146,7 +148,7 @@ unabbrev1(u,modeIfTrue) ==
   [op,:arglist] := u
   op = 'Join => ['Join, :[unabbrev1(x, modeIfTrue) for x in arglist]]
   d:= isDomainValuedVariable op =>
-    throwKeyedMsg("S2IL0013",[op,d])
+      throw_msg("S2IL0013", '"Error: %1b has value %2bp .", [op, d])
   (r := unabbrevSpecialForms(op,arglist,modeIfTrue)) => r
   (cname := abbreviation? op) or (constructor?(op) and (cname := op)) =>
     (r := unabbrevSpecialForms(cname,arglist,modeIfTrue)) => r
@@ -181,8 +183,9 @@ condAbbrev(arglist,argtypes) ==
 
 condUnabbrev(op,arglist,argtypes,modeIfTrue) ==
   #arglist ~= #argtypes =>
-    throwKeyedMsg("S2IL0014",[op,plural(#argtypes,'"argument"),
-      bright(#arglist)])
+      throw_msg("S2IL0014",
+          '"The constructor %1b takes %2 and you have given %3b .",
+              [op, plural(#argtypes, '"argument"), bright(#arglist)])
   [newArg for arg in arglist for type in argtypes] where newArg ==
     categoryForm?(type) => unabbrev1(arg,modeIfTrue)
     arg
