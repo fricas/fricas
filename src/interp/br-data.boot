@@ -475,7 +475,6 @@ folks u == --called by getParents and getParentsForDomain
   u is [op,:v] and MEMQ(op,'(Join PROGN))
     or u is ['CATEGORY,a,:v] => "append"/[folks x for x in v]
   u is ['SIGNATURE,:.] => nil
-  u is ['TYPE,:.] => nil
   u is ['ATTRIBUTE,a] =>
     PAIRP a and constructor? opOf a => folks a
     nil

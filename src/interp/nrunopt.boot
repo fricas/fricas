@@ -178,10 +178,6 @@ predicateBitRef(x, et) ==
   x = 'T => 'T
   ['testBitVector, 'pv_$, predicateBitIndex(x, et)]
 
-makePrefixForm(u,op) ==
-  u := MKPF(u,op)
-  u = ''T => 'T
-  u
 --=======================================================================
 --               Generate Slot 3 Predicate Vector
 --=======================================================================
@@ -189,7 +185,7 @@ makePredicateBitVector(pl, et) ==   --called by buildFunctor
   if $insideCategoryPackageIfTrue = true then
     pl := union(pl,$categoryPredicateList)
   $predGensymAlist := nil
-  for p in removeAttributePredicates pl repeat
+  for p in pl repeat
     pred := simpBool(transHasCode(p, et))
     atom pred => 'skip                --skip over T and NIL
     if isHasDollarPred pred then
@@ -226,15 +222,6 @@ stripOutNonDollarPreds pred ==
     "append"/[stripOutNonDollarPreds x for x in r]
   not isHasDollarPred pred => [pred]
   nil
-
-removeAttributePredicates pl ==
-  [fn p for p in pl] where
-    fn p ==
-      p is [op,:argl] and op in '(AND and OR or NOT not) =>
-          makePrefixForm(fnl argl,op)
-      p is ['has, '%, ['ATTRIBUTE, a]] => BREAK()
-      p
-    fnl p == [fn x for x in p]
 
 transHasCode(x, et) ==
   atom x => x

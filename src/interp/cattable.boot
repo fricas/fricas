@@ -104,7 +104,6 @@ simpHasPred2(pred, options) == main where
         u is '(QUOTE T) => true
         simpBool u
       op = 'hasArgs => ($hasArgs => $hasArgs = r; pred)
-      null r and opOf op = 'has => simp first pred
       pred is '(QUOTE T) => true
       op1 := LASSOC(op,'((and . AND)(or . OR)(not . NOT))) => simp [op1,:r]
     pred in '(T etc) => pred

@@ -52,7 +52,6 @@ $specificMsgTags := []
 $imPrTagGuys := ['unimple, 'bug, 'debug, 'say, 'warn]
 $toWhereGuys := ['fileOnly, 'screenOnly ]
 $imPrGuys    := ['imPr]
-$repGuys     := ['noRep, 'rep]
 
 
 $ncMsgList := nil
@@ -218,7 +217,6 @@ FromTo (pos1,pos2) == ['FROMTO, pos1, pos2]
 --%processing error lists
 processMsgList (erMsgList,lineList) ==
     $outputList :local := []--grows in queueUp errors
-    $noRepList :local := []--grows in queueUp errors
     erMsgList  := erMsgSort erMsgList
     for line in lineList repeat
         msgLine := makeMsgFromLine line
@@ -274,18 +272,7 @@ queueUpErrors(globalNumOfLine,msgList)==
         $outputList := NCONC(notThisPosMsgs,$outputList)
     msgList
 
-redundant(msg,thisPosMsgs) ==
-    found := NIL
-    if msgNoRep? msg then
-        for item in $noRepList repeat
-            sameMsg?(msg,item) => return (found := true)
-        $noRepList := [msg,$noRepList]
-    found or MEMBER(msg,thisPosMsgs)
-
-sameMsg? (msg1,msg2) ==
-    (getMsgKey   msg1 = getMsgKey  msg2) and _
-    (getMsgArgL  msg1 = getMsgArgL msg2)
-
+redundant(msg, thisPosMsgs) == MEMBER(msg, thisPosMsgs)
 
 thisPosIsLess(pos,num) ==
     poNopos? pos => NIL
@@ -437,9 +424,6 @@ initToWhere msg  ==
 
 msgImPr? msg ==
     (getMsgCatAttr (msg,'$imPrGuys) = 'imPr)
-
-msgNoRep? msg ==
-    (getMsgCatAttr (msg,'$repGuys) = 'noRep)
 
 msgLeader? msg ==
     getMsgTag msg = 'leader

@@ -544,8 +544,6 @@ spadStartUpMsgs() ==
   sayMSG bar
   sayMSG '" "
 
-HELP() == sayKeyedMsg("S2GL0019",NIL)
-
 --% Some Advanced Formatting Functions
 
 brightPrint(x, str) ==
