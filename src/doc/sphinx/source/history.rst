@@ -40,7 +40,7 @@ Old Scratchpad Newsletters
 --------------------------
 
 The following Scratchpad newsletters are provided in the
-`Axiom <http://axiom.axiom-developer.org>`_
+`Axiom <https://www.nongnu.org/axiom/>`_
 `code repository <https://github.com/daly/axiom>`_.
 
 * `June 1984

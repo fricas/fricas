@@ -1077,7 +1077,7 @@ Known problems
 
 
 .. _Aldor: https://github.com/aldorlang/aldor
-.. _Axiom: http://axiom-developer.org/
+.. _Axiom: https://www.nongnu.org/axiom/
 .. _CLISP: http://clisp.cons.org
 .. _Clozure CL: http://ccl.clozure.com/manual/chapter2.2.html
 .. _CMUCL: https://www.cons.org/cmucl/

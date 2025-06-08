@@ -30,5 +30,5 @@ Current development goals:
 - make it easier for external programs to interface with FriCAS
 - support for using external mathematical routines from Spad
 
-.. _Axiom: http://axiom-developer.org
+.. _Axiom: https://www.nongnu.org/axiom/
 .. _FriCAS: https://fricas.github.io
