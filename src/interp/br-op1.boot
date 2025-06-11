@@ -350,8 +350,8 @@ dbGatherDataImplementation(htPage, opAlist) ==
   domainForm  := htpProperty(htPage,'domname)
   dom     := EVAL domainForm
   [nam, :.] := domainForm
-  $predicateList: local := get_database(nam, 'PREDICATES)
-  u := getDomainOpTable2(dom, true, ASSOCLEFT opAlist)
+  predicate_list := get_database(nam, 'PREDICATES)
+  u := getDomainOpTable2(dom, true, ASSOCLEFT(opAlist), predicate_list)
   --u has form ((op,sig,:implementor)...)
   --sort into 4 groups: domain exports, unexports, default exports, others
 
@@ -805,7 +805,7 @@ mathform2HtString form == escapeString
 --                Getting Operations from Domain
 --============================================================================
 
-getDomainOpTable2(dom, fromIfTrue, ops) ==
+getDomainOpTable2(dom, fromIfTrue, ops, predicates) ==
   $returnNowhereFromGoGet: local := true
   domname := dom.0
   conname := first domname
@@ -821,7 +821,7 @@ getDomainOpTable2(dom, fromIfTrue, ops) ==
       false
     fn ==
       sig1 := sublisFormal(rest domname,sig)
-      predValue := evalDomainOpPred(dom,pred)
+      predValue := evalDomainOpPred(dom, pred, predicates)
       info :=
         null predValue =>
           1   -- signifies not exported
@@ -838,41 +838,35 @@ getDomainOpTable2(dom, fromIfTrue, ops) ==
         'nowhere
       [sig1,:info]
 
-evalDomainOpPred2(dom, pred) ==
-    $predicateList : local := get_database(first(dom.0), 'PREDICATES)
-    evalDomainOpPred(dom,pred)
-
-evalDomainOpPred(dom,pred) == process(dom,pred) where
-  process(dom,pred) ==
-    u := convert(dom,pred)
+evalDomainOpPred(dom, pred, preds) == process(dom, pred, preds) where
+  process(dom, pred, preds) ==
+    u := convert(dom, pred)
     u = 'T => true
-    evpred(dom,u)
-  convert(dom,pred) ==
-    pred is [op,:argl] =>
-      MEMQ(op,'(AND and)) => ['AND,:[convert(dom,x) for x in argl]]
-      MEMQ(op,'(OR or))   => ['OR,:[convert(dom,x) for x in argl]]
-      MEMQ(op,'(NOT not)) => ['NOT,convert(dom,first argl)]
-      op = 'has =>
-        [arg,p] := argl
-        p is ['ATTRIBUTE,a] => BREAK()
-        ['HasCategory,arg,convertCatArg p]
-      systemError '"unknown predicate form"
-    pred = 'T => true
-    systemError nil
+    evpred(dom, u, preds)
+  convert(dom, pred) ==
+      pred is [op, :argl] =>
+          op = 'AND => ['AND, :[convert(dom, x) for x in argl]]
+          op = 'OR => ['OR, :[convert(dom, x) for x in argl]]
+          op = 'NOT => ['NOT, convert(dom, first(argl))]
+          op = 'has =>
+              [arg, p] := argl
+              ['HasCategory, arg, convertCatArg(p)]
+          systemError '"unknown predicate form"
+      pred = 'T => true
+      systemError([])
   convertCatArg p ==
     SYMBOLP(p) and member(p, $FormalMapVariableList) => ["devaluate", p]
     atom p or #p = 1 => MKQ p
     ['LIST,MKQ first p,:[convertCatArg x for x in rest p]]
-  evpred(dom,pred) ==
-    k := POSN1(pred,$predicateList) => testBitVector(dom.3,k + 1)
-    evpred1(dom,pred)
-  evpred1(dom,pred) ==
-    pred is [op,:argl] =>
-      MEMQ(op,'(AND and)) => "and"/[evpred1(dom,x) for x in argl]
-      MEMQ(op,'(OR or))   =>  "or"/[evpred1(dom,x) for x in argl]
-      op = 'NOT => not evpred1(dom,first argl)
-      k := POSN1(pred,$predicateList) => testBitVector(dom.3,k + 1)
-      op = 'HasAttribute => BREAK()
-      nil
-    pred = 'T => true
-    systemError '"unknown atomic predicate form"
+  evpred(dom, pred, preds) ==
+      k := POSN1(pred, preds) => testBitVector(dom.3, k + 1)
+      evpred1(dom, pred, preds)
+  evpred1(dom, pred, preds) ==
+      pred is [op,:argl] =>
+          op = 'AND => "and"/[evpred1(dom, x, preds) for x in argl]
+          op = 'OR  => "or"/[evpred1(dom, x, preds) for x in argl]
+          op = 'NOT => not evpred1(dom, first(argl), preds)
+          k := POSN1(pred, preds) => testBitVector(dom.3, k + 1)
+          nil
+      pred = 'T => true
+      systemError '"unknown atomic predicate form"

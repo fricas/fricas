@@ -176,7 +176,7 @@
        (|h|          . "help")
        (|hd|         . "system hypertex &")
        (|kclam|      . "boot clearClams ( )")
-       (|killcaches| . "boot clearConstructorAndLisplibCaches ( )")
+       (|killcaches| . "boot clearConstructorCaches()")
        (|prompt|     . "set message prompt")
        (|recurrence| . "set functions recurrence")
        (|restore|    . "history )restore")

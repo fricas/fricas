@@ -49,7 +49,7 @@ grepConstruct(s,key,:options) == --key = a o c d p x k (all) . (aok) w (doc)
 --All searches of the database call this function to get relevant lines
 --from libdb.text. Returns either a list of lines (usual case) or else
 --an alist of the form ((kind . <list of lines for that kind>) ...)
-  $localLibdb : local := fnameExists? '"libdb.text" and '"libdb.text"
+  $localLibdb : local := fricas_probe_file('"libdb.text") and '"libdb.text"
   lines := grepConstruct1(s,key)
   lines is ['error,:.] => lines
   IFCAR options => grepSplit(lines,key = 'w)    --leave now if a constructor
@@ -873,7 +873,7 @@ grepFile(pattern, key, option) ==
       command := STRCONC('"grep ", casepart, '" '", pattern, '"' ", source)
       run_shell_command STRCONC(command, '" > ",target)
       dbReadLines target
-      -- deleteFile target
+      -- delete_file(target)
   dbUnpatchLines lines
 
 dbUnpatchLines lines ==  --concatenate long lines together, skip blank lines

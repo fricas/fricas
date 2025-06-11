@@ -172,9 +172,6 @@ clearConstructorCache(cname) ==
     kind = 'category => clearCategoryCache cname
     HREM($ConstructorCache,cname)
 
-clearConstructorAndLisplibCaches() ==
-  clearConstructorCaches()
-
 clearCategoryCaches() ==
   for name in allConstructors() repeat
     if get_database(name, 'CONSTRUCTORKIND) = 'category then
