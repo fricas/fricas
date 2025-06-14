@@ -69,6 +69,8 @@ this symmetric resolution is done the following way:
    e.g. resolve P I and G I to P G I
 )endif
 
+$resolve_level := 0
+
 resolveTypeList u ==
   u is [a,:tail] =>
 
@@ -193,12 +195,25 @@ resolveTTSpecial(t1,t2) ==
   t1 = '(AlgebraicNumber) and t2 is ['Complex,.] =>
     resolveTT1('(Expression (Integer)), t2)
 
-  t1 = ['AlgebraicNumber] and t2 is ['Polynomial, ['Fraction, ['Integer]]] =>
-      ['Polynomial, ['AlgebraicNumber]]
+  t1 = ['AlgebraicNumber] and t2 is ['Polynomial, t3] and
+      (t4 := resolveTT1(t1, t3)) =>
+         t4 is ['Expression, .] => t4
+         ['Polynomial, t4]
 
-  t1 = ['AlgebraicNumber] and
-    t2 is ['Fraction, ['Polynomial, ['Fraction, ['Integer]]]] =>
-        ['Fraction, ['Polynomial, ['AlgebraicNumber]]]
+  t1 = ['AlgebraicNumber] and t2 is ['Fraction, ['Polynomial, t3]] and
+      (t4 := resolveTT1(t1, t3)) =>
+         t4 is ['Expression, .] => t4
+         ['Fraction, ['Polynomial, t4]]
+
+  t1 = ['Polynomial, ['AlgebraicNumber]] and t2 is ['Polynomial, t3] and
+      (t4 := resolveTT1(['AlgebraicNumber], t3)) =>
+         t4 is ['Expression, .] => t4
+         ['Polynomial, t4]
+
+  t1 = ['Polynomial, ['AlgebraicNumber]] and
+       t2 is ['Fraction, ['Polynomial, t3]] and (t4 := resolveTT1(t1, t3)) =>
+         t4 is ['Expression, .] => t4
+         ['Fraction, ['Polynomial, t4]]
 
   t1 is ['SimpleAlgebraicExtension,F,Rep,poly] =>
     t2 = Rep => t1
