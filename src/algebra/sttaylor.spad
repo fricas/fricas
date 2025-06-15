@@ -1,3 +1,285 @@
+)abbrev category STTAYOC StreamTaylorSeriesOperationsCategory
+++ Description:
+++  This is category specifying operations for Taylor series
+++  arithmetic, where a Taylor series is represented by a stream
+++  of its coefficients.  Relevant operations satisfy usual axioms
+++  like Ring and LeftModule.  This category was extracted and
+++  generalized from StreamTaylorSeriesOperations to factor out
+++  common interface.
+StreamTaylorSeriesOperationsCategory(R, M) : Category == Exports where
+  R : Ring
+  M : LeftModule(R)
+  RN ==> Fraction Integer
+  I  ==> Integer
+  ST ==> Stream
+  Exports ==> with
+    "+"          : (ST M, ST M) -> ST M
+      ++ a + b returns the power series sum of \spad{a} and \spad{b}:
+      ++ \spad{[a0, a1, ..] + [b0, b1, ..] = [a0 + b0, a1 + b1, ..]}
+    "-"          : (ST M, ST M) -> ST M
+      ++ a - b returns the power series difference of \spad{a} and
+      ++ \spad{b}: \spad{[a0, a1, ..] - [b0, b1, ..] = [a0 - b0, a1 - b1, ..]}
+    "-"          : ST M -> ST M
+      ++ - a returns the power series negative of \spad{a}:
+      ++ \spad{- [a0, a1, ...] = [- a0, - a1, ...]}
+    "*"          : (ST R, ST M) -> ST M
+      ++ a * b returns the power series (Cauchy) product of \spad{a} and b:
+      ++ \spad{[a0, a1, ...] * [b0, b1, ...] = [c0, c1, ...]} where
+      ++ \spad{ck = sum(i + j = k, ai * bk)}.
+    "*"          : (R, ST M) -> ST M
+      ++ r * a returns the power series scalar multiplication of r by \spad{a}:
+      ++ \spad{r * [a0, a1, ...] = [r * a0, r * a1, ...]}
+    if M has RightModule(R) then
+      "*"          : (ST M, R) -> ST M
+        ++ a * r returns the power series scalar multiplication of \spad{a} by
+        ++ r: \spad{[a0, a1, ...] * r = [a0 * r, a1 * r, ...]}
+      "*"          : (M, ST(R)) -> ST(M)
+      mapmult      : (ST M, ST R) -> ST M
+        ++ mapmult([a0, a1, ..], [b0, b1, ..])
+        ++ returns \spad{[a0*b0, a1*b1, ..]}.
+      eval         : (ST M, R) -> ST M
+        ++ eval(a, r) returns a stream of partial sums of the power series
+        ++ \spad{a} evaluated at the power series variable equal to r.
+      compose      : (ST M, ST R) -> ST M
+        ++ compose(a, b) composes the power series \spad{a} with
+        ++ the power series b.
+    monom        : (M, I) -> ST M
+      ++ monom(coef, deg) is a monomial of degree deg with coefficient
+      ++ coef.
+    integers     : I -> ST I
+      ++ integers(n) returns \spad{[n, n+1, n+2, ...]}.
+    oddintegers  : I -> ST I
+      ++ oddintegers(n) returns \spad{[n, n+2, n+4, ...]}.
+    int          : R -> ST R
+      ++ int(r) returns [r, r+1, r+2, ...], where r is a ring element.
+    mapmult      : (ST R, ST M) -> ST M
+      ++ mapmult([a0, a1, ..], [b0, b1, ..])
+      ++ returns \spad{[a0*b0, a1*b1, ..]}.
+    deriv        : ST M -> ST M
+      ++ deriv(a) returns the derivative of the power series with
+      ++ respect to the power series variable. Thus
+      ++ \spad{deriv([a0, a1, a2, ...])} returns \spad{[a1, 2 a2, 3 a3, ...]}.
+    gderiv       : (I -> R, ST M)  -> ST M
+      ++ gderiv(f, [a0, a1, a2, ..]) returns
+      ++ \spad{[f(0)*a0, f(1)*a1, f(2)*a2, ..]}.
+    coerce       : M -> ST M
+      ++ coerce(r) converts a module element r to a stream with one element.
+    addiag       : ST ST M -> ST M
+      ++ addiag(x) performs diagonal addition of a stream of streams.
+      ++ if \spad{x = [[a<0, 0>, a<0, 1>, ..], [a<1, 0>, a<1, 1>, ..],
+      ++ [a<2, 0>, a<2, 1>, ..], ..]} and \spad{addiag(x) = [b<0, b<1>, ...]},
+      ++ then \spad{b<k> = sum(i+j=k, a<i, j>)}.
+    multisect    : (I, I, ST M) -> ST M
+      ++ multisect(a, b, st)
+      ++ selects the coefficients of \spad{x^((a+b)*n+a)},
+      ++ and changes them to \spad{x^n}.
+    invmultisect : (I, I, ST M) -> ST M
+      ++ invmultisect(a, b, st) substitutes \spad{x^((a+b)*n)} for \spad{x^n}
+      ++ and multiplies by \spad{x^b}.
+    if R has Algebra RN then
+      integrate  : (M, ST M) -> ST M
+        ++ integrate(r, a) returns the integral of the power series \spad{a}
+        ++ with respect to the power series variable where
+        ++ r denotes the constant of integration. Thus
+        ++ \spad{integrate(a, [a0, a1, a2, ...]) = [a, a0, a1/2, a2/3, ...]}.
+      lazyIntegrate  : (M, () -> ST M) -> ST M
+        ++ lazyIntegrate(r, f) is a version of integrate
+        ++ used for fixed point computations.
+
+
+)abbrev package STTAYLO2 StreamTaylorSeriesOperations2
+++ Description:
+++  StreamTaylorSeriesOperations2 implements operations from
+++  StreamTaylorSeriesOperationsCategory, allowing operations
+++  on series having values in modules.  Operations were
+++  extracted and generalized from StreamTaylorSeriesOperations.
+StreamTaylorSeriesOperations2(R, M) : Exports == Implementation where
+  R : Ring
+  M : LeftModule(R)
+  RN ==> Fraction Integer
+  I  ==> Integer
+  NNI ==> NonNegativeInteger
+  ST ==> Stream
+  SP2 ==> StreamFunctions2
+
+  Exports ==> StreamTaylorSeriesOperationsCategory(R, M)
+
+  Implementation ==> add
+
+--% definitions
+
+    zro : () -> ST M
+    -- returns a zero power series
+    zro() == empty()$ST(M)
+
+--% arithmetic
+
+    x + y == delay
+      empty? y => x
+      empty? x => y
+      eq?(x, rst x) => map(z +-> frst x + z, y)
+      eq?(y, rst y) => map(z +-> frst y + z, x)
+      concat(frst x + frst y, rst x + rst y)
+
+    x - y == delay
+      empty? y => x
+      empty? x => -y
+      eq?(x, rst x) => map(z +-> frst x - z, y)
+      eq?(y, rst y) => map(z +-> z - frst y, x)
+      concat(frst x - frst y, rst x - rst y)
+
+    -y == map(z +-> -z, y)
+
+    (s : R) * (x : ST M) ==
+      zero? s => zro()
+      map(z +-> s*z, x)
+
+    pow_y(y : ST(R)) : ST(ST(R)) == stream(
+        t +-> y *$StreamTaylorSeriesOperations2(R, R) t, y)
+
+    if M has RightModule(R) then
+        (x : ST M) * (s : R) ==
+            zero? s => zro()
+            map(z +-> z*s, x)
+
+        ((m : M) * (x : ST(R))) : ST(M) ==
+            zero?(m) => zro()
+            map((z : R) : M +-> m*z, x)$SP2(R, M)
+
+        mul_and_trim(x : ST(M), n : NNI, ys : ST(ST(R))) : ST(ST(M)) == delay
+            empty?(x) or empty?(ys) => empty()
+            y1 := rest(frst(ys), n)
+            concat(frst(x)*y1, mul_and_trim(rst(x), n + 1, rst(ys)))
+
+        compose(x, y) == delay
+            empty?(x) => zro()
+            empty?(y) => concat(frst(x), zro())
+            not(zero?(frst(y))) => error
+                "compose: 2nd argument should have 0 constant coefficient"
+            ys := pow_y(y)
+            addiag(concat(frst(x)::ST(M), mul_and_trim(rst(x), 1, ys)))
+
+        mapmult(x : ST(M), y : ST(R)) : ST(M) == delay
+            empty? y => zro()
+            empty? x => zro()
+            concat(frst(x)*frst(y), mapmult(rst x, rst y))
+
+        eval(x, at) == scan(0, (y, z) +-> y + z,
+                       mapmult(x, stream(y +-> at * y, 1)))$SP2(M, M)
+
+--% multiplication
+
+    stmult(n0 : Integer, x0 : ST R, y0 : ST M, _
+           ll0 : List M) : ST M == delay
+        x := x0
+        y := y0
+        n := n0
+        ll := ll0
+        if empty? y then
+             n < 0 => return empty()
+             empty? x => return empty()
+             x := rst x
+        else
+             c := frst y
+             y := rst y
+             if n < 0 and c = 0 then
+                 return concat(0, stmult(n, x, y, ll))
+             else
+                 ll := cons(c, ll)
+                 n := n + 1
+        res : M := 0
+        xp := x
+        llp := ll
+        for i in 0..n repeat
+            empty? xp =>
+                i = 0 => return empty()
+                break
+            res := res + frst xp * first(llp)
+            llp := rest(llp)
+            xp := rst xp
+        -- make sure that when we multiply finite streams
+        -- tail is explicitly empty
+        explicitlyEmpty? rst x and
+          explicitlyEmpty? y => concat(res, empty())
+        concat(res, stmult(n, x, y, ll))
+
+    (x : ST R) * (y : ST M) == delay
+        empty? y => zro()
+        empty? x => zro()
+        stmult(-1, x, y, [])
+
+--% derivatives
+
+    integers z == stream(y +-> y + 1, z)
+
+    oddintegers z == stream(y +-> y + 2, z)
+
+    int s == stream(y +-> y + 1, s)
+
+    mapmult(x : ST(R), y : ST(M)) : ST(M) == delay
+      empty? y => zro()
+      empty? x => zro()
+      concat(frst x * frst y, mapmult(rst x, rst y))
+
+    deriv x ==
+      empty? x => zro()
+      mapmult(int 1, rest x)
+
+    gderiv(f, x) ==
+      empty? x => zro()
+      mapmult(map(f, integers 0)$SP2(I, R), x)
+
+--% coercions
+
+    coerce(s : M) ==
+      zero? s => zro()
+      concat(s, zro())
+
+--% lambert functions
+
+    addiag(ststa : ST ST M) == delay
+      empty? ststa => zro()
+      empty? frst ststa => concat(0, addiag rst ststa)
+      concat(frst(frst ststa), rst(frst ststa) + addiag(rst ststa))
+
+--% misc. functions
+
+    ms : (I, I, ST M) -> ST M
+    ms(m, n, s) == delay
+      empty? s => zro()
+      zero? n => concat(frst s, ms(m, m-1, rst s))
+      ms(m, n-1, rst s)
+
+    multisect(b, a, x) == ms(a+b, 0, rest(x, a :: NNI))
+
+    rpSt(z : I, s : M) : ST(M) == delay
+      z <= 0 => empty()
+      concat(s, rpSt(z-1, s))
+
+    monom(s,z) ==
+      z < 0 => error "monom: cannot create monomial of negative degree"
+      concat(rpSt(z,0),concat(s,zro()))
+
+    altn : (ST M, ST M) -> ST M
+    altn(zs, s) == delay
+      empty? s => zro()
+      concat(frst s, concat(zs, altn(zs, rst s)))
+
+    invmultisect(a, b, x) ==
+      concat(rpSt(b, 0), altn(rpSt(a + b - 1, 0), x))
+
+    if R has Algebra RN then
+      integre : (ST M, I) -> ST M
+      integre(x, n) == delay
+        empty? x => zro()
+        concat((1$I/n)::R * frst(x), integre(rst x, n + 1))
+
+      integ : ST M -> ST M
+      integ x == integre(x, 1)
+
+      integrate(a, x) == concat(a, integ x)
+      lazyIntegrate(s, xf) == concat(s, integ(delay xf))
+
 )abbrev package STTAYLOR StreamTaylorSeriesOperations
 ++ Author: William Burge, Stephen Watt, Clifton J. Williamson
 ++ Date Created: 1986
@@ -26,26 +308,7 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
   LA     ==> List A
   YS     ==> Y$ParadoxicalCombinatorsForStreams(A)
   UN     ==> Union(ST A,"failed")
-  Exports ==> with
-    "+"          : (ST A,ST A) -> ST A
-      ++ a + b returns the power series sum of \spad{a} and \spad{b}:
-      ++ \spad{[a0, a1, ..] + [b0, b1, ..] = [a0 + b0, a1 + b1, ..]}
-    "-"          : (ST A,ST A) -> ST A
-      ++ a - b returns the power series difference of \spad{a} and
-      ++ \spad{b}: \spad{[a0, a1, ..] - [b0, b1, ..] = [a0 - b0, a1 - b1, ..]}
-    "-"          : ST A -> ST A
-      ++ - a returns the power series negative of \spad{a}:
-      ++ \spad{- [a0, a1, ...] = [- a0, - a1, ...]}
-    "*"          : (ST A,ST A) -> ST A
-      ++ a * b returns the power series (Cauchy) product of \spad{a} and b:
-      ++ \spad{[a0, a1, ...] * [b0, b1, ...] = [c0, c1, ...]} where
-      ++ \spad{ck = sum(i + j = k, ai * bk)}.
-    "*"          : (A,ST A) -> ST A
-      ++ r * a returns the power series scalar multiplication of r by \spad{a}:
-      ++ \spad{r * [a0, a1, ...] = [r * a0, r * a1, ...]}
-    "*"          : (ST A,A) -> ST A
-      ++ a * r returns the power series scalar multiplication of \spad{a} by r:
-      ++ \spad{[a0, a1, ...] * r = [a0 * r, a1 * r, ...]}
+  Exports ==> StreamTaylorSeriesOperationsCategory(A, A) with
     "exquo"      : (ST A,ST A) -> Union(ST A,"failed")
       ++ exquo(a, b) returns the power series quotient of \spad{a} by b,
       ++ if the quotient exists, and "failed" otherwise
@@ -56,33 +319,6 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
     recip        : ST A -> UN
       ++ recip(a) returns the power series reciprocal of \spad{a}, or
       ++ "failed" if not possible.
-    monom        : (A, I) -> ST A
-      ++ monom(deg, coef) is a monomial of degree deg with coefficient
-      ++ coef.
-    integers     : I -> ST I
-      ++ integers(n) returns \spad{[n, n+1, n+2, ...]}.
-    oddintegers  : I -> ST I
-      ++ oddintegers(n) returns \spad{[n, n+2, n+4, ...]}.
-    int          : A -> ST A
-      ++ int(r) returns [r, r+1, r+2, ...], where r is a ring element.
-    mapmult      : (ST A, ST A) -> ST A
-      ++ mapmult([a0, a1, ..], [b0, b1, ..])
-      ++ returns \spad{[a0*b0, a1*b1, ..]}.
-    deriv        : ST A -> ST A
-      ++ deriv(a) returns the derivative of the power series with
-      ++ respect to the power series variable. Thus
-      ++ \spad{deriv([a0, a1, a2, ...])} returns \spad{[a1, 2 a2, 3 a3, ...]}.
-    gderiv       : (I -> A, ST A)  -> ST A
-      ++ gderiv(f, [a0, a1, a2, ..]) returns
-      ++ \spad{[f(0)*a0, f(1)*a1, f(2)*a2, ..]}.
-    coerce       : A -> ST A
-      ++ coerce(r) converts a ring element r to a stream with one element.
-    eval         : (ST A, A) -> ST A
-      ++ eval(a, r) returns a stream of partial sums of the power series
-      ++ \spad{a} evaluated at the power series variable equal to r.
-    compose      : (ST A, ST A) -> ST A
-      ++ compose(a, b) composes the power series \spad{a} with
-      ++ the power series b.
     lagrange     : ST A -> ST A
       ++ lagrange(g) produces the power series for f where f is
       ++ implicitly defined as \spad{f(z) = z*g(f(z))}.
@@ -91,10 +327,6 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       ++ with respect to composition.
       ++ the series should have constant coefficient 0 and invertible
       ++ first order coefficient.
-    addiag       : ST ST A -> ST A
-      ++ addiag(x) performs diagonal addition of a stream of streams. if x =
-      ++ \spad{[[a<0, 0>, a<0, 1>, ..], [a<1, 0>, a<1, 1>, ..], [a<2, 0>, a<2, 1>, ..], ..]}
-      ++ and \spad{addiag(x) = [b<0, b<1>, ...], then b<k> = sum(i+j=k, a<i, j>)}.
     prodiag : ST ST A -> ST A
       ++ prodiag(x) performs "diagonal" infinite product of a stream
       ++ of streams.  When \spad{x(i)} is interpreted as stream of
@@ -128,22 +360,7 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       ++ \spad{f(x^a)*f(x^(a + d))*f(x^(a + 2 d))* ...}.
       ++ \spad{f(x)} should have constant coefficient equal to one
       ++ and \spad{a} and d should be positive.
-    multisect    : (I, I, ST A) -> ST A
-      ++ multisect(a, b, st)
-      ++ selects the coefficients of \spad{x^((a+b)*n+a)},
-      ++ and changes them to \spad{x^n}.
-    invmultisect : (I, I, ST A) -> ST A
-      ++ invmultisect(a, b, st) substitutes \spad{x^((a+b)*n)} for \spad{x^n}
-      ++ and multiplies by \spad{x^b}.
     if A has Algebra RN then
-      integrate  : (A, ST A) -> ST A
-        ++ integrate(r, a) returns the integral of the power series \spad{a}
-        ++ with respect to the power series variable where
-        ++ r denotes the constant of integration. Thus
-        ++ \spad{integrate(a, [a0, a1, a2, ...]) = [a, a0, a1/2, a2/3, ...]}.
-      lazyIntegrate  : (A, () -> ST A) -> ST A
-        ++ lazyIntegrate(r, f) is a version of integrate
-        ++ used for fixed point computations.
       nlde       : ST ST A -> ST A
         ++ nlde(u) solves a
         ++ first order non-linear differential equation described by u of the
@@ -161,7 +378,7 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       power      : (A, ST A) -> ST A
         ++ power(a, f) returns the power series f raised to the power \spad{a}.
 
-  Implementation ==> add
+  Implementation ==> StreamTaylorSeriesOperations2(A, A) add
 
 --% definitions
 
@@ -170,30 +387,6 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
     zro() == empty()$ST(A)
 
 --% arithmetic
-
-    x + y == delay
-      empty? y => x
-      empty? x => y
-      eq?(x, rst x) => map(z +-> frst x + z, y)
-      eq?(y, rst y) => map(z +-> frst y + z, x)
-      concat(frst x + frst y, rst x + rst y)
-
-    x - y == delay
-      empty? y => x
-      empty? x => -y
-      eq?(x, rst x) => map(z +-> frst x - z, y)
-      eq?(y, rst y) => map(z +-> z - frst y, x)
-      concat(frst x - frst y, rst x - rst y)
-
-    -y == map(z +-> -z, y)
-
-    (s : A) * (x : ST A) ==
-      zero? s => zro()
-      map(z +-> s*z, x)
-
-    (x : ST A) * (s : A) ==
-      zero? s => zro()
-      map(z +-> z*s, x)
 
 -------------------------------------------------------------------
 
@@ -326,91 +519,6 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
       z <= 0 => empty()
       concat(s, rpSt(z-1, s))
 
-    monom(s, z) ==
-      z < 0 => error "monom: cannot create monomial of negative degree"
-      concat(rpSt(z, 0), concat(s, zro()))
-
---% some streams of integers
-    nnintegers : NNI -> ST NNI
-    nnintegers zz == stream(y +-> y + 1, zz)
-    integers z == stream(y +-> y + 1, z)
-    oddintegers z == stream(y +-> y + 2, z)
-    int s == stream(y +-> y + 1, s)
-
---% multiplication
-
-    stmult(n0 : Integer, x0 : ST A, y0 : ST A, _
-           ll0 : List A) : ST A == delay
-        x := x0
-        y := y0
-        n := n0
-        ll := ll0
-        if empty? y then
-             n < 0 => return empty()
-             empty? x => return empty()
-             x := rst x
-        else
-             c := frst y
-             y := rst y
-             if n < 0 and c = 0 then
-                 return concat(0, stmult(n, x, y, ll))
-             else
-                 ll := cons(c, ll)
-                 n := n + 1
-        res : A := 0
-        xp := x
-        llp := ll
-        for i in 0..n repeat
-            empty? xp =>
-                i = 0 => return empty()
-                break
-            res := res + frst xp * first(llp)
-            llp := rest(llp)
-            xp := rst xp
-        -- make sure that when we multiply finite streams
-        -- tail is explicitly empty
-        explicitlyEmpty? rst x and
-          explicitlyEmpty? y => concat(res, empty())
-        concat(res, stmult(n, x, y, ll))
-
-    (x : ST A) * (y : ST A) == delay
-        empty? y => zro()
-        empty? x => zro()
-        stmult(-1, x, y, [])
-
---% derivatives
-
-    mapmult(x, y) == delay
-      empty? y => zro()
-      empty? x => zro()
-      concat(frst x * frst y, mapmult(rst x, rst y))
-
-    deriv x ==
-      empty? x => zro()
-      mapmult(int 1, rest x)
-
-    gderiv(f, x) ==
-      empty? x => zro()
-      mapmult(map(f, integers 0)$SP2(I, A), x)
-
---% coercions
-
-    coerce(s : A) ==
-      zero? s => zro()
-      concat(s, zro())
-
---% evaluations and compositions
-
-    eval(x, at) == scan(0, (y, z) +-> y + z,
-                       mapmult(x, stream(y +-> at * y, 1)))$SP2(A, A)
-
-    compose(x, y) == delay
-      empty? y => concat(frst x, zro())
-      not zero? frst y =>
-        error "compose: 2nd argument should have 0 constant coefficient"
-      empty? x => zro()
-      concat(frst x, compose(rst x, y) * rst(y))
-
 --% reversion
 
     lagrangere : (ST A, ST A) -> ST A
@@ -440,11 +548,6 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
     prodiag(ststa : ST ST A) == concat(1, prodiag1(ststa, 1))
 
 --% lambert functions
-
-    addiag(ststa : ST ST A) == delay
-      empty? ststa => zro()
-      empty? frst ststa => concat(0, addiag rst ststa)
-      concat(frst(frst ststa), rst(frst ststa) + addiag(rst ststa))
 
 -- lambert operates on a series +/[a[i]x^i for i in 1..] , and produces
 -- the series +/[a[i](x^i/(1-x^i)) for i in 1..] i.e. forms the
@@ -508,22 +611,6 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
 
 --% misc. functions
 
-    ms : (I, I, ST A) -> ST A
-    ms(m, n, s) == delay
-      empty? s => zro()
-      zero? n => concat(frst s, ms(m, m-1, rst s))
-      ms(m, n-1, rst s)
-
-    multisect(b, a, x) == ms(a+b, 0, rest(x, a :: NNI))
-
-    altn : (ST A, ST A) -> ST A
-    altn(zs, s) == delay
-      empty? s => zro()
-      concat(frst s, concat(zs, altn(zs, rst s)))
-
-    invmultisect(a, b, x) ==
-      concat(rpSt(b, 0), altn(rpSt(a + b - 1, 0), x))
-
 -- comps(ststa, y) forms the composition of +/b[i, j]*y^i*x^j
 -- where y is a power series in y.
 
@@ -543,9 +630,6 @@ StreamTaylorSeriesOperations(A) : Exports == Implementation where
 
       integ : ST A -> ST A
       integ x == integre(x, 1)
-
-      integrate(a, x) == concat(a, integ x)
-      lazyIntegrate(s, xf) == concat(s, integ(delay xf))
 
       nldere : (ST ST A, ST A) -> ST A
       nldere(lslsa, c) == lazyIntegrate(0, addiag(comps(lslsa, c)))
