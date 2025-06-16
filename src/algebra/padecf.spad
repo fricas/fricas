@@ -1,0 +1,78 @@
+)abbrev package PADECF PadeContinuousFraction
+++ Author: W. Hebisch
+++ References: 
+++ A. Sokal, A simple algorithm for expanding a power series
+++ as a continued fraction, arXiv:206.15434v2
+++ Description:
+++  This package computes expansion into continuous C-fraction
+++  using Euler-Viskovatov method.
+
+PadeContinuousFraction(F : Field, xs : Symbol) : Exports == Implementation
+    where
+  R ==> UnivariatePolynomial(xs, F)
+  STF ==> Stream(F)
+  STR ==> Stream(R)
+  CFR ==> ContinuedFraction(R)
+  Exports ==> with
+      pade_stream : (STF, R) -> STR
+        ++ pade_stream(f, x) produces stream of coefficients of
+        ++ continuous C-fraction in variable x corresponding to Taylor
+        ++ series with coefficients f.
+      pade_stream2 : (STF, STF, R) -> STR
+        ++ pade_stream(f, g, x) produces stream of coefficients of
+        ++ continuous C-fraction in variable x corresponding to quotient
+        ++ \spad{n/d} of Taylor series n (d respecitively) with
+        ++ coefficients f (g respecitvely).
+      pade_cf : (STF, R) -> CFR
+        ++ pade_cf(f, x) produces continuous C-fraction in variable x
+        ++ corresponding to Taylor series with coefficients f.
+      pade_cf2 : (STF, STF, R) -> CFR
+        ++ pade_cf(f, g, x) produces continuous C-fraction in variable x
+        ++ corresponding to quotient \spad{n/d} of Taylor series n
+        ++ (d respecitively) with coefficients f (g respecitvely).
+ 
+  Implementation ==> add
+
+    import StreamTaylorSeriesOperations(F)
+
+    pade_stream1(st0 : STF, st1 : STF, x : R) : STR == delay
+        nn : NonNegativeInteger := 1
+        st2 := st1 - st0
+        empty?(st2) => error "impossible"
+        st2 := rst(st2)
+        repeat
+            empty?(st2) => empty()$STR
+            a1 := frst(st2)
+            if a1 = 0 then
+                nn := nn + 1
+                st2 := rst(st2)
+                iterate
+            st3 := (1/a1)*st2
+            st4 := pade_stream1(st1, st3, x)
+            return concat(a1*x^nn, st4)$STR
+
+    pade_stream0(st0 : STF, st : STF, x : R) : STR ==
+        empty?(st) => error "pade_stream: First term is 0"
+        b0 := frst(st)
+        b0 = 0 => error "pade_stream: First term is 0"
+        st1 := (1/b0)*st
+        import StreamTaylorSeriesOperations(R)
+        st2 := -pade_stream1(st0, st1, x)
+        return concat(b0::R, st2)$STR
+
+    pade_stream(st : STF, x : R) : STR ==
+        st0 := construct([1$F])$STF
+        pade_stream0(st0, st, x)
+
+    pade_stream2(stn : STF, std : STF, x : R) : STR ==
+        empty?(std) => error "pade_stream2: division by zero"
+        (b0 := frst(std)) = 0 => error "pade_stream2: division by zero"
+        pade_stream0((1/b0)*std, b0*stn, x)
+
+    pade_cf(st : STF, x : R) : CFR ==
+        st1 := pade_stream(st, x)
+        continuedFraction(0, st1, repeating([1$R]))$CFR
+
+    pade_cf2(stn : STF, std : STF, x : R) : CFR ==
+        st1 := pade_stream2(stn, std, x)
+        continuedFraction(0, st1, repeating([1$R]))$CFR
