@@ -358,30 +358,20 @@ isFreeFunctionFromMmCond cond ==
       if condition is ['isFreeFunction, :.] then iff := true
   iff
 
-getAllModemapsFromDatabase(op,nargs) ==
-  $getUnexposedOperations: local := true
-  startTimingProcess 'diskread
-  ans := getSystemModemaps(op,nargs)
-  stopTimingProcess 'diskread
-  ans
+getAllModemapsFromDatabase(op,nargs) == getSystemModemaps(op, nargs, true)
 
-getModemapsFromDatabase(op,nargs) ==
-  $getUnexposedOperations: local := false
-  startTimingProcess 'diskread
-  ans := getSystemModemaps(op,nargs)
-  stopTimingProcess 'diskread
-  ans
+getModemapsFromDatabase(op,nargs) == getSystemModemaps(op, nargs, false)
 
-getSystemModemaps(op,nargs) ==
-  mml:= get_database(op, 'OPERATION) =>
-    mms := NIL
+getSystemModemaps(op, nargs, include_unexposed?) ==
+    startTimingProcess('diskread)
+    mml := get_database(op, 'OPERATION)
+    mms := []
     for (x := [[.,:sig],.]) in mml repeat
-      (NUMBERP nargs) and (nargs ~= #QCDR sig) => 'iterate
-      $getUnexposedOperations or isFreeFunctionFromMm(x) or
-        isExposedConstructor(getDomainFromMm(x)) => mms := [x,:mms]
-      'iterate
+        (NUMBERP nargs) and (nargs ~= #QCDR sig) => 'iterate
+        if include_unexposed? or isFreeFunctionFromMm(x) or
+           isExposedConstructor(getDomainFromMm(x)) then mms := [x, :mms]
+    stopTimingProcess('diskread)
     mms
-  nil
 
 mkAlistOfExplicitCategoryOps target ==
   if target is ['add,a,:l] then
