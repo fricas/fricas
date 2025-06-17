@@ -33,7 +33,7 @@
 #|
 \section{Database structure}
 In order to understand this program you need to understand some details
-of the structure of the databases it reads. FriCAS has 5 databases,
+of the structure of the databases it reads. FriCAS has 4 databases,
 the interp.daase, operation.daase, category.daase, and
 browse.daase.
 
@@ -64,18 +64,6 @@ For instance, see src/share/algebra/USERS.DAASE/index.KAF
 One existing optimization is that if the data is a simple thing like a
 symbol then the nth-entry-byte-address is replaced by immediate data.
 
-Indeed, a faster optimization is to simply read the whole database
-into the image before it is saved. The system would be easier to
-understand and the interpreter would be faster.
-
-The system uses another optimization: database contains a stamp
-(consisting of offset to the main list and build time).  Before
-saving the image selected data is fetched to memory.  When the
-saved image starts it checks if the stamp of saved data matches
-in-core data -- in case of agreement in-core data is used.
-Parts of the datatabase which was not pre-loaded is still
-(lazily) fetched from the filesystem.
-
 \subsection{Database Files}
 
 Database files are very similar to KAF files except that there
@@ -87,6 +75,9 @@ the image the database is not needed (since the internal hash
 tables already contain all of the information). When the database
 is built the time stamp is saved in both the Lisp image and the
 database.
+
+Parts of the datatabase which was not pre-loaded is still
+(lazily) fetched from the filesystem.
 |#
 
 ;;TTT 7/2/97
@@ -137,54 +128,30 @@ database.
 ;    ....)
 ; This list is read at open time and hashed by the car of each item.
 
-; the system has been changed to use the property list of the
-; symbols rather than hash tables. since we already hashed once
+; For constructors the system has been changed to use the property list
+; of the symbols rather than hash tables. since we already hashed once
 ; to get the symbol we need only an offset to get the property
 ; list. this also has the advantage that eq hash tables no longer
 ; need to be moved during garbage collection.
-;  there are 3 potential speedups that could be done. the best
-; would be to use the value cell of the symbol rather than the
-; property list but i'm unable to determine all uses of the
-; value cell at the present time.
-;  a second speedup is to guarantee that the property list is
-; a single item, namely the database structure. this removes
-; an assoc but leaves one open to breaking the system if someone
-; adds something to the property list. this was not done because
-; of the danger mentioned.
-;  a third speedup is to make the get_database call go away, either
-; by making it a macro or eliding it entirely. this was not done
-; because we want to keep the flexibility of changing the database
-; forms.
 
-; the new design does not use hash tables. the database structure
-; contains an entry for each item that used to be in a hash table.
-; initially the structure contains file-position pointers and
-; these are replaced by real data when they are first looked up.
 ; the database structure is kept on the property list of the
 ; constructor, thus, (get '|DenavitHartenbergMatrix| 'database)
 ; will return the database structure object.
+; Initially the structure contains file-position pointers and
+; these are replaced by real data when they are first looked up.
 
-; each operation has a property on its symbol name called 'operation
-; which is a list of all of the signatures of operations with that name.
+; Access to info about operations is via $operation_hash.
+
+; Similarly $has_category_hash is used to answer the question "does
+; domain x have category y?". this is answered by constructing a pair
+; of (x . y) and doing an equal hash into this table.
 
 ; -- tim daly
 
 (in-package "BOOT")
 
-; this hash table is used to answer the question "does domain x
-; have category y?". this is answered by constructing a pair of
-; (x . y) and doing an equal hash into this table.
-
    ; note that constructorcategory information need only be kept for
-   ; items of type category. this will be fixed in the next iteration
-   ; when the need for the various caches are reviewed
-
-   ; note that the *modemaps-hash* information does not need to be kept
-   ; for system files. these are precomputed and kept in modemap.daase
-   ; however, for user-defined files these are needed.
-   ; currently these are added to the database for 2 reasons:
-   ;  there is a still-unresolved issue of user database extensions
-   ;  this information is used during database build time
+   ; items of type category.
 
 ;;;
 ;;; Below is support for files produced by Aldor compiler

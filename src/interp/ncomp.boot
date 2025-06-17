@@ -306,7 +306,7 @@ computeTargetMode(lhs, rhs) ==
                               (get_database returns value from hardcoded list)
  modemaps                   ; almost unused in the compiler -- used to
                               invalidate old modemaps when updating
-                              *operation-hash* (which in turn is used
+                              $operation_hash (which in turn is used
                               only in interpreter).
  niladic                    ; +
  object                     ; +-

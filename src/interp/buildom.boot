@@ -292,10 +292,6 @@ mkMappingFunList(nam,mapForm,e) ==
 mkRecordFunList(nam,['Record,:Alist],e) ==
   len:= #Alist
 
---  for (.,a,.) in Alist do
---    if getmode(a,e) then MOAN("Symbol: ",a,
---        " must not be both a variable and literal")
---    e:= put(a,"isLiteral","true",e)
   dc := GENSYM()
   sigFunAlist:=
      --:((a,(A,nam),('XLAM,("$1","$2"),('RECORDELT,"$1",i,len)))

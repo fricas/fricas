@@ -81,7 +81,6 @@ displayComp level ==
   $dim:= " >> "
   if $insideCapsuleFunctionIfTrue=true then
     sayBrightly ['"error in function",'%b,$op,'%d,'%l]
-  --mathprint removeZeroOne mkErrorExpr level
   pp removeZeroOne mkErrorExpr level
   sayBrightly ['"****** level",'%b,level,'%d,'" ******"]
   [x, m, f, $exitModeStack] := $s.(level - 1)
