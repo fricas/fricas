@@ -52,11 +52,11 @@
 
 (defmacro def-boot-val (p val where) `(defparameter ,p ,val ,where))
 
-(def-boot-val $escapeString  (string (code-char 27))
+(def-boot-val |$escape_val|  (string (code-char 27))
    "string for single escape character")
-(def-boot-val |$boldString| (concatenate 'string $escapeString "[1m")
+(def-boot-val |$boldString| (concatenate 'string |$escape_val| "[1m")
   "switch into bold font")
-(def-boot-val |$normalString| (concatenate 'string $escapeString "[0;10m")
+(def-boot-val |$normalString| (concatenate 'string |$escape_val| "[0;10m")
   "switch back into normal font")
 (def-boot-val |$BreakMode| '|query|                 "error.boot")
 

@@ -46,7 +46,7 @@ makeLongStatStringByProperty _
   if property = 'SpaceTotal then statsVec := $statsInfo.1
   otherStatTotal := statsVec.(GET('other, 'index))
   insignificantStat := 0
-  classStats := GETZEROVEC(1 + # listofclasses)
+  classStats := MAKEARR1(1 + # listofclasses, 0)
   for [name,class,:ab] in listofnames repeat
     n := statsVec.(GET(name, 'index))
     classStats.class := classStats.class + n
@@ -155,7 +155,7 @@ initializeTimedNames() ==
 initializeTimedStack() ==
   $timedNameStack := '(other)
   len := # $interpreterTimedNames
-  $statsInfo := VECTOR(GETZEROVEC len, GETZEROVEC len, get_run_time(), _
+  $statsInfo := VECTOR(MAKEARR1(len, 0), MAKEARR1(len, 0), get_run_time(), _
                        elapsedGcTime(), HEAPELAPSED())
   NIL
 

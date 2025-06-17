@@ -50,7 +50,6 @@
  (setf (symbol-function f) v))
 
 (define-function '|append| #'APPEND)
-(define-function 'LASTTAIL #'last)
 
 ;;; Used in constructors for evaluating conditions
 (define-function '|not| #'NOT)
@@ -128,11 +127,6 @@
 
 ; 13.3 Updating
 
-
-(defun RPLPAIR (pair1 pair2)
-  (RPLACA pair1 (CAR pair2))
-  (RPLACD pair1 (CDR pair2)) pair1)
-
 (defun RPLNODE (pair1 ca2 cd2)
  (RPLACA pair1 ca2)
  (RPLACD pair1 cd2) pair1)
@@ -165,9 +159,6 @@
 
 ;;; moved from union.lisp
 
-(defmacro RESETQ(a b)
- `(prog1 ,a (setq ,a ,b)))
-
 (DEFUN |intersection|  (LIST-OF-ITEMS-1 LIST-OF-ITEMS-2)
     (PROG (I H V)
       (SETQ V (SETQ H (CONS NIL NIL)))
@@ -181,7 +172,8 @@
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (RETURN (QCDR H)) )
         ( (|member|
-            (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
+            (PROG1 (SETF I (QCAR LIST-OF-ITEMS-1))
+                   (SETF LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1)))
             (QCDR H)) )
         ( (|member| I LIST-OF-ITEMS-2)
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
@@ -206,7 +198,8 @@
               (RETURN (QCDR H)) ) ) )
         ( (NOT
             (|member|
-              (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
+              (PROG1 (SETF I (QCAR LIST-OF-ITEMS-1))
+                     (SETF LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1)))
               (QCDR H)))
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
       (GO LP1) ) )
@@ -224,7 +217,8 @@
         ( (NOT (PAIRP LIST-OF-ITEMS-1))
           (RETURN (QCDR H)) )
         ( (|member|
-            (SETQ I (QCAR (RESETQ LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1))))
+            (PROG1 (SETF I (QCAR LIST-OF-ITEMS-1))
+                   (SETF LIST-OF-ITEMS-1 (QCDR LIST-OF-ITEMS-1)))
             (QCDR H)) )
         ( (NOT (|member| I LIST-OF-ITEMS-2))
           (QRPLACD V (SETQ V (CONS I NIL))) ) )
@@ -270,8 +264,6 @@
 
 (defun EFFACE (item list) (delete item list :count 1 :test #'equal))
 
-(defun NCONC2 (x y) (NCONC x y)) ;NCONC with exactly two arguments
-
 ; 14.6 Miscellaneous
 
 (defun SORTBY (keyfn l)
@@ -285,17 +277,7 @@
 
 (defun GETREFV (n) (make-array n :initial-element nil))
 
-(defun |makeVector| (els type)
- (make-array (length els) :element-type (or type t) :initial-contents els))
-
-(defun GETZEROVEC (n) (MAKE-ARRAY n :initial-element 0))
-
 (defun LIST2VEC (list) (coerce list 'vector))
-
-;;; At least in gcl 2.6.8 coerce is slow, so we roll our own version
-
-
-(define-function 'LIST2REFVEC #'LIST2VEC)
 
 ; 16.2 Accessing
 
@@ -304,8 +286,6 @@
   (cond ((vectorp l) (length l))
         ((consp l)   (list-length l))
         (t           0)))
-
-(define-function 'MOVEVEC #'replace)
 
 ; 17.0 Operations on Character and Bit Vectors
 

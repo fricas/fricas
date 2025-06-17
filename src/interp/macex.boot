@@ -85,7 +85,8 @@ macLambdaParameterHandling( replist , pform )  ==
 macSubstituteId( replist , pform ) ==
     ex := AlistAssocQ( pfIdSymbol pform , replist )
     ex =>
-        RPLPAIR(pform, rest ex)
+        RPLACA(pform, first(rest(ex)))
+        RPLACD(pform, CDR(rest(ex)))
         pform
     pform
 

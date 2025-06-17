@@ -198,7 +198,7 @@ compileADEFBody(t,vars,types,body,computedResultType) ==
   $compiledOpNameList := [$mapName]
   minivectorName := makeInternalMapMinivectorName(PNAME $mapName)
   body := SUBST(minivectorName,"$$$",body)
-  SET(minivectorName,LIST2REFVEC $minivector)
+  SET(minivectorName, LIST2VEC($minivector))
 
   -- The use of the three variables $definingMap, $genValue and $compilingMap
   -- is to cover the following cases:
@@ -865,7 +865,7 @@ checkForFreeVariables(v,locals) ==
       ["ELT","envArg",positionInVec(0,#($freeVariables))]
     v
   LISTP v =>
-    rest(LASTTAIL v) => -- Must be a better way to check for a genuine list?
+    rest(LASTNODE(v)) => -- Must be a better way to check for a genuine list?
       v
     [op,:args] := v
     LISTP op =>

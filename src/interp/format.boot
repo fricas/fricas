@@ -39,7 +39,7 @@ $whereList := nil
 --% Formatting modemaps
 
 sayModemap m ==
-  sayMSG formatModemap old2NewModemaps displayTranModemap m
+    sayMSG(formatModemap(displayTranModemap(m)))
 
 sayNewModemap(m) ==
     msg := formatModemap(displayTranModemap(m))
@@ -51,13 +51,6 @@ sayModemapWithNumber(m,n) ==
     STRCONC(lbrkSch(),object2String n,rbrkSch()),
       :formatModemap displayTranModemap m,"%u","%u"]
   sayMSG flowSegmentedMsg(reverse msg,$LINELENGTH,3)
-
-displayOpModemaps(op,modemaps) ==
-  TERPRI()
-  count:= #modemaps
-  phrase:= (count=1 => 'modemap;'modemaps)
-  sayMSG ['%b,count,'%d,phrase,'" for",'%b,op,'%d,'":"]
-  for modemap in modemaps repeat sayModemap modemap
 
 displayTranModemap (mm is [[x,:sig],[pred,:y],:z]) ==
   -- The next 8 lines are a HACK to deal with the "partial" definition

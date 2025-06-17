@@ -318,7 +318,7 @@ optSETRECORDELT ["SETRECORDELT",name,ind,len,expr] ==
 optRECORDCOPY ["RECORDCOPY",name,len] ==
   len=1 => ["LIST",["CAR",name]]
   len=2 => ["CONS",["CAR",name],["CDR",name]]
-  ["MOVEVEC", ["MAKE_VEC", len], name]
+  ["REPLACE", ["MAKEARR1", len, nil], name]
 
 optSuchthat [.,:u] == ["SUCHTHAT",:u]
 

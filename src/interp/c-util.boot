@@ -589,7 +589,7 @@ substituteOp(op',op,x) ==
  -- following is only intended for substituting in domains slots 1 and 4
  -- signatures and categories
 sublis_vec(p, e) ==
-  LIST2REFVEC [suba(p, e.i) for i in 0..MAXINDEX e] where
+  LIST2VEC [suba(p, e.i) for i in 0..MAXINDEX e] where
     suba(p,e) ==
       STRINGP e => e
       atom e => (y:= ASSQ(e,p) => rest y; e)
@@ -606,20 +606,3 @@ old2NewModemaps x ==
   x is [dcSig,[pred,:.],:.]  =>  [dcSig,pred]
   x
 
-displayProplist(x,alist) ==
-  sayBrightly ['"properties of",'%b,x,'%d,'":"]
-  fn alist where
-    fn alist ==
-      alist is [[prop,:val],:l] =>
-        if prop="value" then val:= [val.expr,val.mode,'"..."]
-        sayBrightly ['"   ",'%b,prop,'%d,'": ",val]
-        fn deleteAssoc(prop,l)
-
-displayModemaps E ==
-  listOfOperatorsSeenSoFar:= nil
-  for x in E for i in 1.. repeat
-    for y in x for j in 1.. repeat
-      for z in y | null member(first z,listOfOperatorsSeenSoFar) and
-        (modemaps:= LASSOC("modemap",rest z)) repeat
-          listOfOperatorsSeenSoFar:= [first z,:listOfOperatorsSeenSoFar]
-          displayOpModemaps(first z,modemaps)
