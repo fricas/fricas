@@ -33,11 +33,6 @@
 
 DEFPARAMETER($wildCard, char "*")
 
-maskMatch?(mask,subject) ==
-  null mask => true
-  if null STRINGP subject then subject := PNAME subject
-  or/[match?(pattern,subject) for pattern in mask]
-
 substring?(part, whole, startpos) ==
 --This function should be replaced by STRING<
   np := SIZE part
@@ -59,11 +54,6 @@ charPosition(c,t,startpos) ==
   for i in startpos .. n-1 repeat
     c = ELT(t,i) => return nil
     k := k+1
-  k
-
-rightCharPosition(c,t,startpos) == --startpos often equals MAXINDEX t (rightmost)
-  k := startpos
-  for i in startpos..0 by -1 while c ~= ELT(t,i) repeat (k := k - 1)
   k
 
 stringPosition(s,t,startpos) ==
@@ -161,48 +151,6 @@ basicMatch?(pattern,target) ==
 stringMatches?(pattern, subject) ==
     FIXP basicMatch?(pattern,subject) => true
     false
-
-matchSegment?(pattern,subject,k) ==
-  matchAnySegment?(pattern,DOWNCASE subject,k,nil)
-
-matchAnySegment?(pattern,target,k,nc) ==  --k = start position; nc=#chars or NIL
-  n := #pattern
-  p := charPosition($wildCard,pattern,0)
-  p = n =>
-    m := stringPosition(pattern,target,k)
-    m = #target => nil
-    null nc => true
-    m <= k + nc - n
-  if k ~= 0 and nc then
-    target := SUBSTRING(target,k,nc)
-    k := 0
-  if p ~= 0 then
-     -- pattern does not begin with a wild card
-     ans := 0
-     s := SUBSTRING(pattern,0,p) --[pattern.i for i in 0..p-1]
-     not substring?(s,target,k) => return false
-  else if n = 1 then return true
-  i := p + k  -- starting position for searching the target
-  q := charPosition($wildCard,pattern,p+1)
-  ltarget := #target
-  while q ~= n repeat
-     s := SUBSTRING(pattern,p+1,q-p-1) --[pattern.i for i in (p+1..q-1)]
-     i := stringPosition(s,target,i)
-     if i = ltarget then return (returnFlag := true)
-     i := i + #s
-     p := q
-     q := charPosition($wildCard,pattern,q+1)
-  returnFlag => false
-  if p ~= q-1 then
-     -- pattern does not end with a '&
-     s := SUBSTRING(pattern,p+1,q-p-1) --[pattern.i for i in (p+1..q-1)]
-     if not suffix?(s,target) then return false
-     if null ans then ans := 1  --pattern is a word preceded by a *
-  true
-
-infix?(s,t,x) == #s + #t >= #x and prefix?(s,x) and suffix?(t,x)
-
-prefix?(s,t) == substring?(s,t,0)
 
 suffix?(s,t) ==
   m := #s; n := #t

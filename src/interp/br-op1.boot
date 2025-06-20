@@ -429,7 +429,7 @@ dbReduceBySelection(opAlist,key,fn) ==
   NREVERSE acc
 
 dbContrivedForm(op,[sig,:.]) ==
-  dbMakeContrivedForm(op,sig)
+    dbMakeContrivedForm(op, sig, false)
 
 dbMakeSignature(op,[sig,:.]) == [op,sig]  --getDomainOpTable format
 

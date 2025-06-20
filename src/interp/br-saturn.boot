@@ -601,11 +601,7 @@ htShowPageStar() ==
 --------------> NEW DEFINITION (see br-op2.boot)
 displayDomainOp(htPage, which, origin, op, sig, predicate,
                 doc, index, chooseFn, unexposed?, $generalSearch?) ==
-  $chooseDownCaseOfType : local := true   --see dbGetContrivedForm
   $whereList  : local := nil
-  $NumberList : local := '(i j k l m n i1 j1 k1 l1 m1 n1 i2 j2 k2 l2 m2 n2 i3 j3 k3 l3 m3 n3 i4 j4 k4 l4 m4 n4 )
-  $ElementList: local := '(x y z u v w x1 y1 z1 u1 v1 w1 x2 y2 z2 u2 v2 w2 x3 y3 z3 u3 v3 w3 x4 y4 z4 u4 v4 w4 )
-  $FunctionList:local := '(f g h d e F G H)
   $DomainList:  local := '(D R S E T A B C M N P Q U V W)
   exactlyOneOpSig     := null index
   conform   := htpProperty(htPage,'domname) or htpProperty(htPage,'conform)
@@ -613,7 +609,7 @@ displayDomainOp(htPage, which, origin, op, sig, predicate,
   if $generalSearch? then $DomainList := rest $DomainList
   opform :=
     which = '"constructor" => origin
-    dbGetDisplayFormForOp(op,sig,doc)
+    dbGetDisplayFormForOp(op, sig, doc)
   htSayStandard('"\newline")
   -----------------------------------------------------------
   if exactlyOneOpSig then

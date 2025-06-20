@@ -132,7 +132,8 @@ htSayTuple t ==
   htSay '")"
 
 dbGetDisplayFormForOp(op,sig,doc) ==
-  dbGetFormFromDocumentation(op,sig,doc) or dbGetContrivedForm(op,sig)
+    dbGetFormFromDocumentation(op, sig, doc)
+        or dbMakeContrivedForm(op, sig, true)
 
 dbGetFormFromDocumentation(op,sig,x) ==
   $ncMsgList : local := nil
@@ -147,20 +148,16 @@ dbGetFormFromDocumentation(op,sig,x) ==
     parse is [=op,:.] and #parse = #sig => parse
   nil
 
-dbMakeContrivedForm(op, sig) ==
-  $chooseDownCaseOfType : local := false
+dbMakeContrivedForm(op, sig, down?) ==
   $NumberList : local := '(i j k l m n i1 j1 k1 l1 m1 n1 i2 j2 k2 l2 m2 n2 i3 j3 k3 l3 m3 n3 i4 j4 k4 l4 m4 n4 )
   $ElementList: local := '(x y z u v w x1 y1 z1 u1 v1 w1 x2 y2 z2 u2 v2 w2 x3 y3 z3 u3 v3 w3 x4 y4 z4 u4 v4 w4 )
   $FunctionList:local := '(f g h d e F G H)
   $DomainList:  local := '(R S D E T A B C M N P Q U V W)
-  dbGetContrivedForm(op,sig)
-
-dbGetContrivedForm(op,sig) ==
   op = '"0" => [0]
   op = '"1" => [1]
-  [op,:[dbChooseOperandName s for s in rest sig]]
+  [op, :[dbChooseOperandName(s, down?) for s in rest sig]]
 
-dbChooseOperandName(typ) ==
+dbChooseOperandName(typ, down?) ==
   typ is ['Mapping,:.] =>
     x := first $FunctionList
     $FunctionList := rest $FunctionList
@@ -176,7 +173,7 @@ dbChooseOperandName(typ) ==
       $NumberList := rest $NumberList
       x
     x :=
-      $chooseDownCaseOfType =>
+      down? =>
         y := DOWNCASE typ
         x :=
           member(y,$ElementList) => y
@@ -190,11 +187,6 @@ dbChooseOperandName(typ) ==
 
 getSubstSigIfPossible sig ==
   getSubstSignature sig or sig
-
---
---  while (u := getSubstSignature sig) repeat
---     sig := u
---  sig
 
 fullSubstitute(x,y,z) ==  --substitutes deeply: x for y in list z
   z = y => x
