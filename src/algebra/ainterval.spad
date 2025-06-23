@@ -71,7 +71,7 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
       abs : % -> %
         ++ abs(x) returns the tightest interval such that for all r
         ++ with contains?(x,r) it holds contains?(abs(x),abs(r)).
-    if R has OrderedSemiGroup then
+    if R has Join(OrderedSemiGroup, SemiRng) then
       SemiRng
       _* : (R, %) -> %
         ++ r*x creates the interval(r * inf x, r * sup x).
@@ -82,7 +82,7 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
       _^ : (%, PositiveInteger) -> %
         ++ x^n creates an interval such that for any elements u with
         ++ contains?(x,u) it holds contains?(x^n,u^n).
-    if R has OrderedMonoid then
+    if R has Join(OrderedMonoid, SemiRing) then
       SemiRing
       _^ : (%, NonNegativeInteger) -> %
         ++ x^n returns interval(1,1) if x is not zero and n=0.
@@ -90,7 +90,7 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
         ++ elements u and v with contains?(x,u) it holds
         ++ contains?(x^n,u^n).
 
-    if R has Field then
+    if R has Join(OrderedRing, Field) then
       unit? : % -> Boolean
         ++ unit?(x) returns true if every element in x can be
         ++ inverted, i.e. if not contains?(x,0).
@@ -160,13 +160,13 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
         leftRecip(x : %) : Union(%, "failed") == if one? x then x else "failed"
         rightRecip(x : %) : Union(%, "failed") == if one? x then x else "failed"
 
-    if R has Join(OrderedAbelianGroup, OrderedSemiGroup) then
+    if R has Join(OrderedAbelianGroup, OrderedSemiGroup, SemiRng) then
         ((x : %) ^ (n : PP)) : % ==
             contains?(x, 0$R) and even? n =>
                 qinterval(0, max(- inf(x), sup(x))^n)
             interval(inf(x)^n, sup(x)^n) -- will sort so that lower < upper
 
-    if R has Join(OrderedAbelianMonoid, OrderedMonoid) then
+    if R has Join(OrderedAbelianMonoid, OrderedMonoid, SemiRing) then
         ((x : %) ^ (n : NN)) : % ==
             zero? n =>
                 zero? x => error "cannot compute 0^0"
@@ -182,7 +182,7 @@ AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
             products : List R := sort [ix * iy, ix * sy, sx * iy, sx * sy]
             qinterval(first products, last products)
 
-    if R has Join(OrderedSemiGroup, Field) then
+    if R has Join(OrderedRing, Field) then
         unit?(x : %) : Boolean == not contains?(x, 0$R)
         inv(x : %) : % ==
             contains?(x, 0$R) => error "inv: interval contains 0"
