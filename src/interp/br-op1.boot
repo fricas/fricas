@@ -169,14 +169,6 @@ dbShowOpHeading(heading, branch) ==
 fromHeading htPage ==
   null htPage => '""
   $pn := [htPage.0,'"}{"]
-  updomain := htpProperty(htPage,'updomain) =>
-    dnForm  := dbExtractUnderlyingDomain updomain
-    dnString:= form2StringList dnForm
-    dnFence := form2Fence  dnForm
---  upString:= form2StringList updomain
-    upFence := form2Fence  updomain
-    upOp    := PNAME opOf  updomain
-    ['" {\em from} ",:dbConformGen dnForm,'" {\em under} \ops{",upOp,'"}{",:$pn,:upFence,'"}"]
   domname  := htpProperty(htPage,'domname)
   numberOfUnderlyingDomains :=
         #[x for x in rest(get_database(opOf(domname), 'COSIG)) | x]

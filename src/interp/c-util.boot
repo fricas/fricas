@@ -602,7 +602,3 @@ subst_in_cat(fp, ap, cv) ==
     pp := MAPCAR(FUNCTION CONS, fp, ap)
     sublis_vec(pp, cv)
 
-old2NewModemaps x ==
-  x is [dcSig,[pred,:.],:.]  =>  [dcSig,pred]
-  x
-

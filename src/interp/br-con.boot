@@ -450,22 +450,6 @@ mkConform(kind,name,argString) ==
 --=======================================================================
 --           Operation Page for a Domain Form from Scratch
 --=======================================================================
-conOpPage(htPage,conform) ==
-  updown := dbCompositeWithMap htPage
-  updown = '"DOWN" =>
-    domname := htpProperty(htPage,'domname)
-    conOpPage1(dbExtractUnderlyingDomain domname,[['updomain,:domname]])
-  domname := htpProperty(htPage,'updomain)
-  conOpPage1(domname,nil)
-
-dbCompositeWithMap htPage ==
-  htpProperty(htPage,'updomain) => '"UP"
-  domain := htpProperty(htPage,'domname)
-  null domain => false
-  opAlist := htpProperty(htPage,'opAlist)
---not LASSOC('map,opAlist) => false
-  dbExtractUnderlyingDomain htpProperty(htPage,'domname) => '"DOWN"
-  false
 
 dbExtractUnderlyingDomain domain == or/[x for x in IFCDR domain | isValidType x]
 
