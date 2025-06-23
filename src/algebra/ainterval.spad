@@ -1,0 +1,211 @@
+-------------------------------------------------------------------
+---
+--- FriCAS QEta
+--- Copyright (C) 2025,  Ralf Hemmecke <ralf@hemmecke.org>
+---
+-------------------------------------------------------------------
+
+)abbrev category AINTCAT AIntervalCategory
+++ Author: Ralf Hemmecke
+++ Description:
+++ AIntervalCategory(R) exports operations that can be done with
+++ intervals. Although these operations should be similar to the
+++ arithmetic operations of a Ring, we do not export Ring, since the
+++ ring axioms are not fulfilled.
+AIntervalCategory(R : OrderedAbelianSemiGroup) : Category ==
+  AbelianSemiGroup with
+    interval : (R, R) -> %
+      ++ interval(x,y) creates a new interval \spad{[x,y]}, if
+      ++ \spad{x<=y} and $\spad{[y,x]}, if \spad{y<x}.
+    qinterval : (R, R) -> %
+      ++ qinterval(inf,sup) creates a new interval without checking the
+      ++ ordering on the elements.
+    inf : % -> R
+      ++ inf(x) returns the infinum of \spad{x}.
+    sup : % -> R
+      ++ sup(x) returns the supremum of \spad{x}.
+    coerce : % -> List R
+      ++ coerce(x) returns [inf(x),sup(x)].
+    error? : % -> Boolean
+      ++ error?(x) returns true if the lower bound is bigger than the
+      ++ upper bound. That can happen if such an interval is created
+      ++ by the qinterval function.
+    _= : (%, %) -> Boolean
+      ++ x=y returns true iff inf(x)=inf(y) and sup(x)=sup(y).
+    contains? : (%, R) -> Boolean
+      ++ contains?(x,r) returns true if \spad{inf(x)<=r<=sup(x)} and
+      ++ false otherwise.
+    contains? : (%, %) -> Boolean
+      ++ contains?(x,y) returns true if \spad{inf(x)<=inf(y)} and
+      ++ \spad{sup(y)<=sup(x)} and false otherwise.
+    _+ : (%, R) -> %
+      ++ x+r creates the interval \spad{[inf x + r, sup x + r]}.
+    _+ : (%, %) -> %
+      ++ x+y creates the interval \spad{[inf x + inf y, sup x + sup y]}.
+      ++ x+y creates an interval such that for any u and v with
+      ++ contains?(x,u) and contains?(y,v) it holds
+      ++ contains?(x+y,u+v).
+    _* : (PositiveInteger, %) -> %
+      ++ z*x creates the interval \spad{[z * inf x, z * sup x]}.
+    if R has OrderedAbelianMonoid then
+      AbelianMonoid
+      0 : %
+        ++ 0 is interval(0,0).
+      zero? : % -> Boolean
+        ++ zero?(x) returns true if x=interval(0,0).
+      positive? : % -> Boolean
+        ++ positive?(x) returns \spad{true} iff u>0 for every
+        ++ element of u of x, i.e. 0<inf(x).
+      negative? : % -> Boolean
+        ++ negative?(u) returns \spad{true} iff u<0 for every
+        ++ element of u of x, i.e. sup(x)<0.
+    if R has OrderedAbelianGroup then
+      _- : % -> %
+        ++ -x creates the interval \spad{[- sup x, - inf x]}.
+      _- : (%, %) -> %
+        ++ x-y creates the interval \spad{x+(-y)}.
+      _* : (Integer, %) -> %
+        ++ z*x creates interval(z * inf x, z * sup x).
+      width : % -> R
+        ++ width(x) returns \spad{sup(x) - inf(x)}.
+      abs : % -> %
+        ++ abs(x) returns the tightest interval such that for all r
+        ++ with contains?(x,r) it holds contains?(abs(x),abs(r)).
+    if R has Join(OrderedSemiGroup, SemiRng) then
+      SemiRng
+      _* : (R, %) -> %
+        ++ r*x creates the interval(r * inf x, r * sup x).
+      _* : (%, %) -> %
+        ++ x*y creates an interval such that for any elements u and
+        ++ v with contains?(x,u) and contains?(y,v) it holds
+        ++ contains?(x*y,u*v).
+      _^ : (%, PositiveInteger) -> %
+        ++ x^n creates an interval such that for any elements u with
+        ++ contains?(x,u) it holds contains?(x^n,u^n).
+    if R has Join(OrderedMonoid, SemiRing) then
+      SemiRing
+      _^ : (%, NonNegativeInteger) -> %
+        ++ x^n returns interval(1,1) if x is not zero and n=0.
+        ++ Otherwise it creates an interval such that for any
+        ++ elements u and v with contains?(x,u) it holds
+        ++ contains?(x^n,u^n).
+
+    if R has Join(OrderedRing, Field) then
+      unit? : % -> Boolean
+        ++ unit?(x) returns true if every element in x can be
+        ++ inverted, i.e. if not contains?(x,0).
+      inv : % -> %
+        ++ inv(x) returns interval(1/sup(x),1/inf(x))
+        ++ if not contains?(x,0).
+        ++ It is an error, if the interval contains 0.
+      _/ : (%, %) -> %
+        ++ x/y returns x*inv(y). If positive?(x) and positive?(y),
+        ++ then this is equal to
+        ++ interval(inf(x)/sup(y),sup(x)/inf(y)).
+
+   add -- default implementation
+
+    PP ==> PositiveInteger
+    NN ==> NonNegativeInteger
+
+    interval(i : R, s : R) : % ==
+        s < i => qinterval(s, i)
+        qinterval(i, s)
+    ((z : PP) * (x : %)) : % == qinterval(z * inf x, z * sup x)
+    coerce(x : %) : List R == [inf x, sup x]
+    coerce(x : %) : OutputForm == x :: List(R) :: OutputForm
+    ((x : %) = (y : %)) : Boolean == inf x = inf y and sup x = sup y
+    error?(x : %) : Boolean == sup x < inf x
+    contains?(x : %, r : R) : Boolean == inf x <= r and r <= sup x
+    contains?(x : %, y : %) : Boolean == inf x <= inf y and sup y <= sup x
+
+    if R has OrderedAbelianMonoid then
+        sample : % == 0
+        zero?(x : %) : Boolean == zero? inf x and zero? sup x
+        ((z : NN) * (x : %)) : % == if zero? z then 0 else (z::PP) * x
+        positive?(x : %) : Boolean == 0 < inf x
+        negative?(x : %) : Boolean == sup x < 0
+        ((x : %) + (y : %)) : % ==
+            zero? x => y
+            zero? y => x
+            x = y => qinterval(2 * inf x, 2 * sup x)
+            qinterval(inf x + inf y, sup x + sup y)
+        ((x : %) + (r : R)) : % ==
+            zero? r => x
+            qinterval(inf x + r, sup x + r)
+        opposite?(x : %, y : %) : Boolean == zero?(x+y)
+
+    if R has OrderedAbelianGroup then
+        (-(x : %)) : % == qinterval(- sup x, - inf x)
+        width(x : %) : R == sup x - inf x
+        ((x : %) - (y : %)) : % ==
+            zero? x => - y
+            zero? y => x
+            qinterval(inf  x - sup y, sup x - inf y)
+        ((z : Integer) * (x : %)) : % ==
+            zero? z => 0
+            one? z or zero? x => x
+            z > 0 => qinterval(z * inf x, z * sup x)
+            qinterval(z * sup x, z * inf x)
+        abs(x : %) : % ==
+            positive? x => x
+            negative? x => -x
+            qinterval(0, max(- inf x, sup x))
+
+    if R has OrderedSemiGroup then
+        ((r : R) * (x : %)) : % == interval(r * inf x, r * sup x)
+
+    if R has Join(OrderedMonoid, SemiRing) then
+        one?(x : %) : Boolean == one? inf x and one? sup x
+        leftRecip(x : %) : Union(%, "failed") == if one? x then x else "failed"
+        rightRecip(x : %) : Union(%, "failed") == if one? x then x else "failed"
+
+    if R has Join(OrderedAbelianGroup, OrderedSemiGroup, SemiRng) then
+        ((x : %) ^ (n : PP)) : % ==
+            contains?(x, 0$R) and even? n =>
+                qinterval(0, max(- inf(x), sup(x))^n)
+            interval(inf(x)^n, sup(x)^n) -- will sort so that lower < upper
+
+    if R has Join(OrderedAbelianMonoid, OrderedMonoid, SemiRing) then
+        ((x : %) ^ (n : NN)) : % ==
+            zero? n =>
+                zero? x => error "cannot compute 0^0"
+                1
+            x^(n::PP)
+
+    if R has Join(OrderedAbelianGroup, OrderedMonoid, SemiRing) then
+        ((x : %) * (y : %)) : % ==
+            one? x => y
+            one? y => x
+            zero? x or zero? y => 0
+            ix := inf x; sx := sup x; iy := inf y; sy := sup y
+            products : List R := sort [ix * iy, ix * sy, sx * iy, sx * sy]
+            qinterval(first products, last products)
+
+    if R has Join(OrderedRing, Field) then
+        unit?(x : %) : Boolean == not contains?(x, 0$R)
+        inv(x : %) : % ==
+            contains?(x, 0$R) => error "inv: interval contains 0"
+            interval(inv sup x, inv inf x)
+        ((x : %) / (y : %)) : % == x * inv(y)
+
+
+
+)abbrev domain AINTRVL AInterval
+++ Author: Ralf Hemmecke
+++ Description:
+++ AInterval(R) implements arithmetic with intervals.
+AInterval(R : OrderedAbelianSemiGroup) : AIntervalCategory R == add
+    Rep ==> Record(Inf : R, Sup : R)
+    rep x ==> (x@%) pretend Rep
+    per x ==> (x@Rep) pretend %
+
+    inf(x : %) : R == rep(x).Inf
+    sup(x : %) : R == rep(x).Sup
+    qinterval(i : R, s : R) : % == per [i,s]
+
+    if R has AbelianMonoid then
+        0 : % == per [0, 0]
+
+    if R has Monoid then
+        1 : % == per [1, 1]
