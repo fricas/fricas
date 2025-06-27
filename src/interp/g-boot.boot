@@ -546,6 +546,8 @@ MKPF1(l, op) ==
         NULL(l) => nil
         rest(l) => ["PROGN", :l]
         first(l)
+    op = "NOT" =>
+        [op, :l]
     op = "not" =>
         [op, :l]
     BREAK()
