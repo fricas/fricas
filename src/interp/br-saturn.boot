@@ -269,7 +269,6 @@ kPage(line, options) == --any cat, dom, package, default package
   parts := dbXParts(line,7,1)
   [kind,name,nargs,xflag,sig,args,abbrev,comments] := parts
   form := IFCAR options
-  isFile := null kind
   kind := kind or '"package"
   RPLACA(parts,kind)
   conform         := mkConform(kind,name,args)

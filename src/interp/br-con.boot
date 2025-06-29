@@ -448,46 +448,6 @@ mkConform(kind,name,argString) ==
   [INTERN name,:rest ncParseFromString STRCONC(char 'd,argString)]  --& case
 
 --=======================================================================
---           Operation Page for a Domain Form from Scratch
---=======================================================================
-
-dbExtractUnderlyingDomain domain == or/[x for x in IFCDR domain | isValidType x]
-
---conform is atomic if no parameters, otherwise must be valid domain form
-conOpPage1(conform, options) ==
---constructors    Cname\#\E\sig \args   \abb \comments (C is C, D, P, X)
-  bindingsAlist := options
-  conname       := opOf conform
-  MEMQ(conname,$Primitives) =>
-     dbSpecialOperations conname
-  domname         :=                        --> !!note!! <--
-    null atom conform => conform
-    nil
-  line := conPageFastPath conname
-  [kind,name,nargs,xflag,sig,args,abbrev,comments]:=parts:= dbXParts(line,7,1)
-  isFile := null kind
-  kind := kind or '"package"
-  RPLACA(parts,kind)
-  constring       := STRCONC(name,args)
-  conform         := mkConform(kind,name,args)
-  capitalKind     := capitalize kind
-  signature       := ncParseFromString sig
-  emString        := ['"{\sf ",constring,'"}"]
-  heading := [capitalKind,'" ",:emString]
-  if not isExposedConstructor conname then heading := ['"Unexposed ",:heading]
-  page := htInitPage(heading,nil)
-  htpSetProperty(page,'isFile,true)
-  htpSetProperty(page,'fromConOpPage1,true)
-  htpSetProperty(page,'parts,parts)
-  htpSetProperty(page,'heading,heading)
-  htpSetProperty(page,'kind,kind)
-  htpSetProperty(page,'domname,domname)         --> !!note!! <--
-  htpSetProperty(page,'conform,conform)
-  htpSetProperty(page,'signature,signature)
-  for [a,:b] in bindingsAlist repeat htpSetProperty(page,a,b)
-  koPage(page)
-
---=======================================================================
 --           Operation Page from Main Page
 --=======================================================================
 koPage(htPage) ==
@@ -773,26 +733,6 @@ isAsharpFileName? con == false
 --=======================================================================
 --             Special Code for Union, Mapping, and Record
 --=======================================================================
-
-dbSpecialOperations(conname) ==
-  page := htInitPage(nil,nil)
-  conform := getConstructorForm conname
-  opAlist := dbSpecialExpandIfNecessary(conform,rest GETL(conname,'documentation))
-  fromHeading := ['" from domain {\sf ",form2HtString conform,'"}"]
-  htpSetProperty(page,'fromHeading,fromHeading)
-  htpSetProperty(page,'conform,conform)
-  htpSetProperty(page,'opAlist,opAlist)
-  htpSetProperty(page,'noUsage,true)
-  htpSetProperty(page,'condition?,'no)
-  dbShowOp1(page, opAlist, 'names)
-
-dbSpecialExpandIfNecessary(conform,opAlist) ==
-  opAlist is [[op,[sig,:r],:.],:.] and rest r => opAlist
-  for [op,:u] in opAlist repeat
-    for pair in u repeat
-      [sig,comments] := pair
-      RPLACD(pair,['T,conform,'T,comments]) --[sig,pred,origin,exposeFg,doc]
-  opAlist
 
 PUT('Record,'documentation,'(
   (constructor (NIL NIL))

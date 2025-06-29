@@ -310,11 +310,6 @@ cleanUpSegmentedMsg msg ==
     haveBlank := (x in blanks => true; NIL)
   msg1
 
-operationLink name ==
-  FORMAT(nil, '"\lispLink{\verb!(|oSearch| _"~a_")!}{~a}",
-         name,
-         escapeSpecialChars STRINGIMAGE name)
-
 ----------------------------------------
 sayPatternMsg(msg,args) ==
   ioHook("startPatternMsg", msg, args)

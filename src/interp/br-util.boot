@@ -453,16 +453,6 @@ splitConTable cons ==
     cond := [pair,:cond]
   [NREVERSE uncond,:NREVERSE cond]
 
-bcNameCountTable(u, fn, gn) ==
-  linkFunction := 'bcLispLinks
-  htSay '"\newline"
-  htBeginTable()
-  for i in 0.. for x in u repeat
-    htSay '"{"
-    htMakePage [[linkFunction,[FUNCALL(fn,x),'"",gn,i]]]
-    htSay '"}"
-  htEndTable()
-
 dbSayItems(countOrPrefix,singular,plural,:options) ==
   bcHt '"\newline "
   count :=

@@ -383,6 +383,7 @@ genSearch1(filter,reg,doc) ==
       htSayStandard '"\tab{2}"
       genSearchSay(pair,true,kind,i,'showDoc)
   htShowPageStar()
+
 searchDropUnexposedLines alist ==
   [[op,[pred for line in lines | pred],:lines] for [op,.,:lines] in alist] where
     pred ==
@@ -485,7 +486,6 @@ pluralSay(count,singular,plural) ==
 docSearch filter ==  --"Documentation" from HD (see man0.ht)
   null (filter := checkFilter filter) => nil  --in case of filter error
   filter = '"*" => htErrorStar()
-  key := removeSurroundingStars filter
   docSearchAlist := grepConstruct(filter,'w,true)
   docSearchAlist is ['error,:.] => bcErrorPage docSearchAlist
   docSearchAlist := [x for x in docSearchAlist | x.0 ~= char 'x] --drop defaults
@@ -515,26 +515,6 @@ removeSurroundingStars filter ==
   if key.0 = char '_* then key := SUBSTRING(key,1,nil)
   if key.(max := MAXINDEX key) = char '_* then key := SUBSTRING(key,0,max)
   key
-
-showNamedDoc([kind,:lines],index) ==
-  dbGather(kind,lines,index - 1,true)
-
-stripOffSegments(s,n) ==
-  progress := true
-  while n > 0 and progress = true repeat
-    n := n - 1
-    k := charPosition(char '_`,s,0)
-    new := SUBSTRING(s,k + 1,nil)
-    #new < #s => s := new
-    progress := false
-  n = 0 => s
-  nil
-
-replaceTicksBySpaces s ==
-  n := -1
-  max := MAXINDEX s
-  while (n := charPosition(char '_`,s,n + 1)) <= max repeat SETELT(s,n,char '_ )
-  s
 
 checkFilter filter ==
   filter := STRINGIMAGE filter
@@ -724,10 +704,6 @@ detailedSearch(filter) ==
           (text . "signature") (bcStrings (14 "*" consig EM))
           (text . "\vspace{1}\newline "))
           cons)
---      (   "\tab{3}{\em Documentation}"
---          ((text . "\tab{26}key")
---           (bcStrings (28 "*" docfilter EM)))
---          doc)
                 )
     (text . "\vspace{1}\newline\centerline{ ")
     (bcLinks ("\fbox{Search}" "" generalSearchDo NIL))
@@ -748,9 +724,6 @@ generalSearchDo(htPage,flag) ==
   npat := standardizeSignature generalSearchString(htPage,selectors.2)
   kindCode :=
     which = 'ops => char 'o
-    which = 'attrs =>
-        BREAK()
-        char 'a
     acc := '""
     if htButtonOn?(htPage,'cats) then acc := STRCONC(char 'c,acc)
     if htButtonOn?(htPage,'doms) then acc := STRCONC(char 'd,acc)
@@ -878,12 +851,9 @@ grepFile(pattern, key, option) ==
 
 dbUnpatchLines lines ==  --concatenate long lines together, skip blank lines
   dash := char '_-
-  acc := nil
+  acc := []
   while lines is [line, :lines] repeat
     #line = 0 => 'skip     --skip blank lines
-    acc :=
-      line.0 = dash and line.1 = dash =>
-        [STRCONC(first acc,SUBSTRING(line,2,nil)),:rest acc]
-      [line,:acc]
+    acc := [line, :acc]
   -- following call to NREVERSE needed to keep lines properly sorted
   NREVERSE acc  ------> added by BMT 12/95
