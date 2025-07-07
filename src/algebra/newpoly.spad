@@ -443,9 +443,6 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
          convert : Polynomial R -> %
            ++ \spad{convert(p)} returns the same as \spad{retract(p)}.
 
-         if R has RetractableTo(Integer) then
-             ConvertibleTo(String)
-
      if R has IntegralDomain then
        primPartElseUnitCanonical : % -> %
            ++ \spad{primPartElseUnitCanonical(p)} returns \spad{primitivePart(p)}
@@ -1269,55 +1266,6 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
 
              convert(pr : PR) ==
                retract(pr)@%
-
-         if (R has RetractableTo(INT))
-           then
-
-             convert(pol : %) : String ==
-               ground?(pol) => convert(retract(ground(pol))@INT)@String
-               ipol : % := init(pol)
-               vpol : V := mvar(pol)
-               dpol : NNI := mdeg(pol)
-               tpol : % := tail(pol)
-               sipol, svpol, sdpol, stpol : String
-               if (ipol = 1)
-                 then
-                   sipol := empty()$String
-                 else
-                   if ((-ipol) = 1)
-                     then
-                       sipol := "-"
-                     else
-                       sipol := convert(ipol)@String
-                       if not monomial?(ipol)
-                         then
-                           sipol := concat(["(",sipol,")*"])$String
-                         else
-                           sipol := concat(sipol,"*")$String
-               svpol := string(convert(vpol)@Symbol)
-               if (dpol = 1)
-                 then
-                   sdpol :=  empty()$String
-                 else
-                   sdpol := concat("^",convert(convert(dpol)@INT)@String )$String
-               if zero? tpol
-                 then
-                   stpol :=  empty()$String
-                 else
-                   if ground?(tpol)
-                     then
-                       n := retract(ground(tpol))@INT
-                       if n > 0
-                         then
-                           stpol :=  concat(" +",convert(n)@String)$String
-                         else
-                           stpol := convert(n)@String
-                     else
-                       stpol := convert(tpol)@String
-                       if not member?((stpol.1)::String,["+","-"])$(List String)
-                         then
-                           stpol :=  concat(" + ",stpol)$String
-               concat([sipol, svpol, sdpol, stpol])$String
 
 )abbrev domain NSMP NewSparseMultivariatePolynomial
 ++ Author: Marc Moreno Maza
