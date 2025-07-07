@@ -50,8 +50,7 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
      trivialIdeal? : % -> Boolean
          ++ \spad{trivialIdeal?(ps)} returns true iff \spad{ps} does
          ++ not contain non-zero elements.
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
        roughBase? : % -> Boolean
            ++ \spad{roughBase?(ps)} returns true iff for every pair \spad{{p, q}}
            ++ of polynomials in \spad{ps} their leading monomials are
@@ -132,8 +131,7 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
        while (not empty? lp) repeat
          p := first lp
          lp := rest lp
-         if (ground?(p)) or (mvar(p) < v)
-           then
+         if ground?(p) or mvar(p) < v then
              lq := cons(p, lq)
        construct(lq)$%
 
@@ -143,8 +141,7 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
        while (not empty? lp) repeat
          p := first lp
          lp := rest lp
-         if (not ground?(p)) and (mvar(p) > v)
-           then
+         if not(ground?(p)) and mvar(p) > v then
              lq := cons(p, lq)
        construct(lq)$%
 
@@ -154,8 +151,7 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
        while (not empty? lp) repeat
          p := first lp
          lp := rest lp
-         if (not ground?(p)) and (mvar(p) = v)
-           then
+         if not(ground?(p)) and mvar(p) = v then
              lq := cons(p, lq)
        construct(lq)$%
 
@@ -167,16 +163,15 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
        while (not empty? lp) repeat
          p := first lp
          lp := rest lp
-         if (ground?(p)) or (mvar(p) < v)
-           then
+         if ground?(p) or mvar(p) < v then
              us := cons(p, us)
-           else
-             if (mvar(p) = v)
-               then
+         else
+             if mvar(p) = v then
                  vs := cons(p, vs)
-               else
+             else
                  ws := cons(p, ws)
-       [construct(us)$%, construct(vs)$%, construct(ws)$%]$Record(under : %, floor : %, upper : %)
+       [construct(us)$%, construct(vs)$%, construct(ws)$%
+           ]$Record(under : %, floor : %, upper : %)
 
      ps1 = ps2 ==
        set([p for p in elements(ps1)]) =$(Set P)
@@ -206,8 +201,7 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
      trivialIdeal? ps ==
        empty?(remove(zero?, elements(ps))$(List(P)))$(List(P))
 
-     if R has IntegralDomain
-     then
+     if R has IntegralDomain then
 
        roughUnitIdeal? ps ==
          any?(ground?, remove(zero?, elements(ps))$(List(P)))$(List P)
@@ -238,17 +232,15 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
          ps1 =$% ps2 => true
          roughSubIdeal?(ps1, ps2) and roughSubIdeal?(ps2, ps1)
 
-     if (R has GcdDomain) and (VarSet has ConvertibleTo (Symbol))
-     then
+     if R has GcdDomain and VarSet has ConvertibleTo(Symbol) then
 
        LPR ==> List Polynomial R
        LS ==> List Symbol
 
-       if R has EuclideanDomain
-         then
+       if R has EuclideanDomain then
            iexactQuo(r : R, s : R) : R ==
              r quo$R s
-         else
+       else
            iexactQuo(r : R, s : R) : R ==
              (r exquo$R s)::R
 
@@ -264,14 +256,13 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
          e : Union(E, "failed")
          while (not zero? a) and (not empty? lp2) repeat
            p := first lp2
-           if ((e:= subtractIfCan(degree(a), degree(p))) case E)
-             then
+           if (e:= subtractIfCan(degree(a), degree(p))) case E then
                g := gcd((lca := leadingCoefficient(a)), (lcp := leadingCoefficient(p)))$R
                (lca, lcp) := (exactQuo(lca, g), exactQuo(lcp, g))
                a := lcp * reductum(a) - monomial(lca, e@E)$P * reductum(p)
                r := r * lcp
                lp2 := lp1
-             else
+           else
                lp2 := rest lp2
          [a, r]
 
@@ -310,13 +301,11 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
            p := first ps
            ps := rest ps
            p := (headRemainder(p, cs)).num
-           if not zero? p
-             then
-               if ground? p
-                 then
+           if not(zero?(p)) then
+               if ground?(p) then
                    ps := []
                    rs := [1$P]
-                 else
+               else
                    primitivePart! p
                    rs := cons(p, rs)
          removeDuplicates rs
@@ -332,13 +321,11 @@ PolynomialSetCategory(R : Ring, E : OrderedAbelianMonoidSup, _
            p := first ps
            ps := rest ps
            p := (remainder(p, cs)).polnum
-           if not zero? p
-             then
-               if ground? p
-                 then
+           if not(zero?(p)) then
+               if ground?(p) then
                    ps := []
                    rs := [1$P]
-                 else
+               else
                    rs := cons(unitCanonical(p), rs)
          removeDuplicates rs
 

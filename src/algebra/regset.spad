@@ -228,8 +228,7 @@ RegularTriangularSetCategory(R : GcdDomain, E : OrderedAbelianMonoidSup, _
          false
        false
 
-     if V has Finite
-     then
+     if V has Finite then
       purelyAlgebraic?(ts : %) : Boolean ==
          empty? ts => true
          size()$V = #ts => true
@@ -576,24 +575,20 @@ QuasiComponentPackage(R, E, V, P, TS) : Exports == Implementation where
          toSee := rest toSee
          toSave := []
          for lpwt2 in toSee repeat
-            if subCase?(lpwt1, lpwt2)
-              then
+            if subCase?(lpwt1, lpwt2) then
                 lpwt1 := lpwt2
-              else
-                if not subCase?(lpwt2, lpwt1)
-                  then
+            else
+                if not(subCase?(lpwt2, lpwt1)) then
                     toSave := cons(lpwt2, toSave)
-         if empty? maxcases
-           then
+         if empty?(maxcases) then
              headmaxcases := [lpwt1]
              maxcases := headmaxcases
-           else
+         else
              copymaxcases := maxcases
              while (not empty? copymaxcases) and _
                (not subCase?(lpwt1, first(copymaxcases))) repeat
                  copymaxcases := rest copymaxcases
-             if empty? copymaxcases
-               then
+             if empty?(copymaxcases) then
                  setrest!(headmaxcases, [lpwt1])
                  headmaxcases := rest headmaxcases
          toSee := reverse toSave
@@ -609,24 +604,20 @@ QuasiComponentPackage(R, E, V, P, TS) : Exports == Implementation where
          toSee := rest toSee
          toSave := []
          for us in toSee repeat
-            if subQuasiComponent?(ts, us)@B
-              then
+            if subQuasiComponent?(ts, us)@B then
                 ts := us
-              else
-                if not subQuasiComponent?(us, ts)@B
-                  then
+            else
+                if not subQuasiComponent?(us, ts)@B then
                     toSave := cons(us, toSave)
-         if empty? maxlts
-           then
+         if empty?(maxlts) then
              headmaxlts := [ts]
              maxlts := headmaxlts
-           else
+         else
              copymaxlts := maxlts
              while (not empty? copymaxlts) and _
                (not subQuasiComponent?(ts, first(copymaxlts))@B) repeat
                  copymaxlts := rest copymaxlts
-             if empty? copymaxlts
-               then
+             if empty?(copymaxlts) then
                  setrest!(headmaxlts, [ts])
                  headmaxlts := rest headmaxlts
          toSee := reverse toSave
@@ -635,49 +626,44 @@ QuasiComponentPackage(R, E, V, P, TS) : Exports == Implementation where
      removeAssociates (lp : LP) : LP ==
        removeDuplicates [primitivePart(p) for p in lp]
 
-     branchIfCan(leq : LP, ts : TS, lineq : LP, b1 : B, b2 : B, b3 : B, b4 : B, b5 : B) : UBF ==
+     branchIfCan(leq : LP, ts : TS, lineq : LP, b1 : B, b2 : B,
+                 b3 : B, b4 : B, b5 : B) : UBF ==
         -- ASSUME pols in leq are squarefree and mainly primitive
         -- if b1 then CLEAN UP leq
         -- if b2 then CLEAN UP lineq
         -- if b3 then SEARCH for ZERO in lineq with leq
         -- if b4 then SEARCH for ZERO in lineq with ts
         -- if b5 then SEARCH for ONE in leq with lineq
-        if b1
-          then
+        if b1 then
             leq := removeAssociates(leq)
             leq := remove(zero?, leq)
             any?(ground?, leq) =>
               return("failed"::Union(Branch,"failed"))
-        if b2
-          then
+        if b2 then
             any?(zero?, lineq) =>
               return("failed"::Union(Branch,"failed"))
             lineq := removeRedundantFactors(lineq)$polsetpack
-        if b3
-          then
+        if b3 then
             ps : PS := construct(leq)$PS
             for q in lineq repeat
               zero? remainder(q, ps).polnum =>
                 return("failed"::Union(Branch,"failed"))
         (empty? leq) or (empty? lineq) => ([leq, ts, lineq]$Branch)::UBF
-        if b4
-          then
+        if b4 then
             for q in lineq repeat
               zero? initiallyReduce(q, ts) =>
                 return("failed"::Union(Branch,"failed"))
-        if b5
-          then
+        if b5 then
             newleq : LP := []
             for p in leq repeat
               for q in lineq repeat
-                if mvar(p) = mvar(q)
-                  then
+                if mvar(p) = mvar(q) then
                     g := gcd(p, q)
                     newp := (p exquo g)::P
                     ground? newp =>
                       return("failed"::Union(Branch,"failed"))
                     newleq := cons(newp, newleq)
-                  else
+                else
                     newleq := cons(p, newleq)
             leq := newleq
         leq := sort(infRittWu?, removeDuplicates leq)
@@ -1009,12 +995,11 @@ RegularTriangularSetGcdPackage(R, E, V, P, TS) : Exports == Implementation where
          insert!(k, toSave)$HGcd
          return toSave
        toSee : List LpWT
-       if b1
-         then
+       if b1 then
            p3 := prem(p1, -p2)
            s : P := init(p2)^(mdeg(p1) - mdeg(p2))::N
            toSee := [[[p2, p3, s], ts]$LpWT]
-         else
+       else
            toSee := prepareSubResAlgo(p1, p2, ts)
        toSave := internalLastSubResultant(toSee, mvar(p1), b2)
        insert!(k, toSave)$HGcd
@@ -1164,11 +1149,12 @@ RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
        ts_v_- := collectUnder(ts, v)
        ts_v_+ := collectUpper(ts, v)
        ts_v := select(ts, v)::P
-       if mdeg(p) < mdeg(ts_v)
-         then
-           lgwt := internalLastSubResultant(ts_v, p, ts_v_-, true, false)$regsetgcdpack
-         else
-           lgwt := internalLastSubResultant(p, ts_v, ts_v_-, true, false)$regsetgcdpack
+       if mdeg(p) < mdeg(ts_v) then
+           lgwt := internalLastSubResultant(ts_v, p, ts_v_-, true, false
+                                           )$regsetgcdpack
+       else
+           lgwt := internalLastSubResultant(p, ts_v, ts_v_-, true, false
+                                           )$regsetgcdpack
        lts : Split := []
        llpwt : List LpWT := []
        for gwt in lgwt repeat
@@ -1188,17 +1174,18 @@ RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
               llpwt := cons([[f, p], vs]$LpWT, llpwt)
        [lts, llpwt]
 
-     transcendentalDecompose(p : P, ts : TS, bound : N) : Record(done : Split, todo : List LpWT) ==
+     transcendentalDecompose(p : P, ts : TS, bound : N
+                            ) : Record(done : Split, todo : List LpWT) ==
        lts : Split
-       if #ts < bound
-         then
+       if #ts < bound then
            lts := augment(p, ts)
-         else
+       else
            lts := []
        llpwt : List LpWT := []
        [lts, llpwt]
 
-     transcendentalDecompose(p : P, ts : TS) : Record(done : Split, todo : List LpWT) ==
+     transcendentalDecompose(p : P, ts : TS
+                            ) : Record(done : Split, todo : List LpWT) ==
        lts : Split:= augment(p, ts)
        llpwt : List LpWT := []
        [lts, llpwt]
@@ -1207,13 +1194,13 @@ RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
        clos? => internalDecompose(p, ts, bound)
        internalDecompose(p, ts)
 
-     internalDecompose(p : P, ts : TS, bound : N) : Record(done : Split, todo : List LpWT) ==
+     internalDecompose(p : P, ts : TS, bound : N
+                      ) : Record(done : Split, todo : List LpWT) ==
        -- ASSUME p not constant
        llpwt : List LpWT := []
        lts : Split := []
        -- EITHER mvar(p) is null
-       if (not zero? tail(p)) and (not ground? (lmp := leastMonomial(p)))
-         then
+       if not(zero?(tail(p))) and not(ground?(lmp := leastMonomial(p))) then
            llpwt := cons([[mvar(p)::P], ts]$LpWT, llpwt)
            p := (p exquo lmp)::P
        ip := squareFreePart init(p); tp := tail p
@@ -1222,10 +1209,9 @@ RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
        lbwt := invertible?(ip, ts)@(List BWT)
        for bwt in lbwt repeat
          bwt.val =>
-           if algebraic?(mvar(p), bwt.tower)
-             then
+           if algebraic?(mvar(p), bwt.tower) then
                rsl := algebraicDecompose(p, bwt.tower, true)
-             else
+           else
                rsl := transcendentalDecompose(p, bwt.tower, bound)
            lts := concat(rsl.done, lts)
            llpwt := concat(rsl.todo, llpwt)
@@ -1241,13 +1227,13 @@ RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
          llpwt := cons([[riv * mainMonomial(p) + tp], bwt.tower]$LpWT, llpwt)
        [lts, llpwt]
 
-     internalDecompose(p : P, ts : TS) : Record(done : Split, todo : List LpWT) ==
+     internalDecompose(p : P, ts : TS
+                      ) : Record(done : Split, todo : List LpWT) ==
        -- ASSUME p not constant
        llpwt : List LpWT := []
        lts : Split := []
        -- EITHER mvar(p) is null
-       if (not zero? tail(p)) and (not ground? (lmp := leastMonomial(p)))
-         then
+       if not(zero?(tail(p))) and not(ground?(lmp := leastMonomial(p))) then
            llpwt := cons([[mvar(p)::P], ts]$LpWT, llpwt)
            p := (p exquo lmp)::P
        ip := squareFreePart init(p); tp := tail p
@@ -1256,10 +1242,9 @@ RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
        lbwt := invertible?(ip, ts)@(List BWT)
        for bwt in lbwt repeat
          bwt.val =>
-           if algebraic?(mvar(p), bwt.tower)
-             then
+           if algebraic?(mvar(p), bwt.tower) then
                rsl := algebraicDecompose(p, bwt.tower, false)
-             else
+           else
                rsl := transcendentalDecompose(p, bwt.tower)
            lts := concat(rsl.done, lts)
            llpwt :=  concat(rsl.todo, llpwt)
@@ -1312,8 +1297,7 @@ RegularSetDecompositionPackage(R, E, V, P, TS) : Exports == Implementation where
          empty? lp =>
            toSave := cons(ts, toSave)
          p := first lp;  lp := rest lp
-         if rem? and (not ground? p) and (not empty? ts)
-            then
+         if rem? and not(ground?(p)) and not(empty?(ts)) then
               p := remainder(p, ts).polnum
          p := removeZero(p, ts)
          zero? p => toSee := cons([lp, ts]$LpWT, toSee)
@@ -1506,8 +1490,7 @@ RegularTriangularSet(R, E, V, P) : Exports == Implementation where
        (ground? p) or (empty? ts) => p
        v := mvar(p)
        ts_v_- := collectUnder(ts, v)
-       if algebraic?(v, ts)
-         then
+       if algebraic?(v, ts) then
            q := lazyPrem(p, select(ts, v)::P)
            zero? q => return q
            zero? removeZero(q, ts_v_-) => return 0
@@ -1543,11 +1526,10 @@ RegularTriangularSet(R, E, V, P) : Exports == Implementation where
        -- if rem? then p := reduceByQuasiMonic(p, ts_v_-)
        if red? then p := removeZero(p, ts_v_-)
        if prim? then p := mainPrimitivePart p
-       if sqfr?
-         then
+       if sqfr?  then
            lsfp := squareFreeFactors(p)$polsetpack
            lts : Split := [per(cons(f, rep(ts_v_-))) for f in lsfp]
-         else
+       else
            lts : Split := [per(cons(p, rep(ts_v_-)))]
        extend? => extend(members(ts_v_+), lts)
        [per(concat(rep(ts_v_+), rep(us))) for us in lts]
@@ -1609,22 +1591,20 @@ RegularTriangularSet(R, E, V, P) : Exports == Implementation where
        -- if info? then PRINT information
        -- if clos? then SOLVE in the closure sense
        -- if prep? then PREPROCESS the input system
-       if hash?
-         then
+       if hash?  then
            s1, s2, s3, dom1, dom2, dom3 : String
            e : String := empty()$String
            if info? then (s1,s2,s3) := ("w","g","i") else (s1,s2,s3) := (e,e,e)
-           if info?
-             then
-               (dom1, dom2, dom3) := ("QCMPACK", "REGSETGCD: Gcd", "REGSETGCD: Inv Set")
-             else
+           if info?  then
+               (dom1, dom2, dom3) := ("QCMPACK", "REGSETGCD: Gcd",
+                                      "REGSETGCD: Inv Set")
+           else
                (dom1, dom2, dom3) := (e, e, e)
            startTable!(s1,"W",dom1)$quasicomppack
            startTableGcd!(s2,"G",dom2)$regsetgcdpack
            startTableInvSet!(s3,"I",dom3)$regsetgcdpack
        lts := internalZeroSetSplit(lp, clos?, info?, prep?)
-       if hash?
-         then
+       if hash?  then
            stopTable!()$quasicomppack
            stopTableGcd!()$regsetgcdpack
            stopTableInvSet!()$regsetgcdpack
@@ -1634,12 +1614,11 @@ RegularTriangularSet(R, E, V, P) : Exports == Implementation where
        -- if info? then PRINT information
        -- if clos? then SOLVE in the closure sense
        -- if prep? then PREPROCESS the input system
-       if prep?
-         then
+       if prep?  then
            pp := pre_process(lp, clos?, info?)
            lp := pp.val
            lts := pp.towers
-         else
+       else
            ts : % := [[]]
            lts := [ts]
        lp := remove(zero?, lp)
@@ -1685,30 +1664,27 @@ RegularTriangularSet(R, E, V, P) : Exports == Implementation where
        lts : Split := decompose(lp1, [ts], clos?, info?)$regsetdecomppack
        probablyZeroDim?(lp)$polsetpack =>
           largeSystem?(lp) => return [lp2, lts]
-          if #lp > 7
-            then
+          if #lp > 7 then
               -- Butcher (8, 8) + Wu-Wang.2 (13, 16)
               lp2 := crushedSet(lp2)$polsetpack
               lp2 := remove(zero?, lp2)
               any?(ground?, lp2) => return [lp2, lts]
               lp3 := [p for p in lp2 | lin?(p)]
               lp4 := [p for p in lp2 | not lin?(p)]
-              if clos?
-                then
+              if clos?  then
                   lts := decompose(lp4, lts, clos?, info?)$regsetdecomppack
-                else
+              else
                   lp4 := sort(infRittWu?, lp4)
                   for p in lp4 repeat
                     lts := decompose([p], lts, clos?, info?)$regsetdecomppack
               lp2 := lp3
-            else
+          else
               lp2 := crushedSet(lp2)$polsetpack
               lp2 := remove(zero?, lp2)
               any?(ground?, lp2) => return [lp2, lts]
-          if clos?
-            then
+          if clos?  then
               lts := decompose(lp2, lts, clos?, info?)$regsetdecomppack
-            else
+          else
               lp2 := sort(infRittWu?, lp2)
               for p in lp2 repeat
                 lts := decompose([p], lts, clos?, info?)$regsetdecomppack
@@ -1718,17 +1694,15 @@ RegularTriangularSet(R, E, V, P) : Exports == Implementation where
        mediumSystem?(lp) => [crushedSet(lp2)$polsetpack, lts]
        lp3 := [p for p in lp2 | lin?(p)]
        lp4 := [p for p in lp2 | not lin?(p)]
-       if clos?
-         then
+       if clos?  then
            lts := decompose(lp4, lts, clos?, info?)$regsetdecomppack
-         else
+       else
            lp4 := sort(infRittWu?, lp4)
            for p in lp4 repeat
              lts := decompose([p], lts, clos?, info?)$regsetdecomppack
-       if clos?
-         then
+       if clos?  then
            lts := decompose(lp3, lts, clos?, info?)$regsetdecomppack
-         else
+       else
            lp3 := sort(infRittWu?, lp3)
            for p in lp3 repeat
              lts := decompose([p], lts, clos?, info?)$regsetdecomppack

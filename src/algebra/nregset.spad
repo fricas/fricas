@@ -105,8 +105,7 @@ NormalizationPackage(R, E, V, P, TS) : Exports == Implementation where
 
   Implementation == add
 
-     if TS has SquareFreeRegularTriangularSetCategory(R, E, V, P)
-     then
+     if TS has SquareFreeRegularTriangularSetCategory(R, E, V, P) then
 
        normInvertible?(p : P, ts : TS) : List BWT ==
          stoseInvertible?_sqfreg(p, ts)$regsetgcdpack
@@ -127,12 +126,13 @@ NormalizationPackage(R, E, V, P, TS) : Exports == Implementation where
      -- ASSUME mvar(p) is algebraic w.r.t. ts
        v := mvar(p)
        ts_v := select(ts, v)::P
-       if mdeg(p) < mdeg(ts_v)
-         then
-           hesrg : Record (gcd : P, coef2 : P)  := halfExtendedSubResultantGcd2(ts_v, p)$P
+       if mdeg(p) < mdeg(ts_v) then
+           hesrg : Record (gcd : P, coef2 : P) :=
+               halfExtendedSubResultantGcd2(ts_v, p)$P
            d : P :=  hesrg.gcd; n : P := hesrg.coef2
-         else
-           hesrg : Record (gcd : P, coef1 : P) := halfExtendedSubResultantGcd1(p, ts_v)$P
+       else
+           hesrg : Record (gcd : P, coef1 : P) :=
+               halfExtendedSubResultantGcd1(p, ts_v)$P
            d : P :=  hesrg.gcd; n : P := hesrg.coef1
        g := gcd(n, d)
        (n, d) := ((n exquo g)::P, (d exquo g)::P)
@@ -158,23 +158,21 @@ NormalizationPackage(R, E, V, P, TS) : Exports == Implementation where
        tp : P := 0
        while not ground?(ip) repeat
          v := mvar(ip)
-         if algebraic?(v, ts)
-           then
-             if v = vp
-               then
+         if algebraic?(v, ts) then
+             if v = vp then
                  ts_v := select(ts, v)::P
                  ip := lastSubResultant(ip, ts_v)$P
                  ip := remainder(ip, ts).polnum
                  -- ip := primitivePart stronglyReduce(ip, ts)
                  ip := primitivePart initiallyReduce(ip, ts)
-               else
+             else
                  qr := recip(ip, ts)
                  ip := qr.den
                  tp := qr.num * tp
                  zero? ip =>
                      outputArgs("p = ", " ts = ",p,ts)
                      error "in normalizedAssociate$NORMPK: should never happen !"
-           else
+         else
              tp := tail(ip) * mp + tp
              mp := mainMonomial(ip) * mp
              ip := init(ip)

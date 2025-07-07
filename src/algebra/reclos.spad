@@ -107,14 +107,12 @@ RealPolynomialUtilitiesPackage(TheField, ThePols) : PUB == PRIV where
        while (p2 ~= 0) repeat
          res := cons(p2 , res)
          (p1 , p2) := (p2 , -(p1 rem p2))
-       if degree(p1) > 0
-       then
+       if degree(p1) > 0 then
          p1 := unitCanonical(p1)
          res := [ term quo p1 for term in res ]
        reverse! res
 
-     if TheField has OrderedRing
-     then
+     if TheField has OrderedRing then
 
        boundOfCauchy(p) ==
          c : TheField := inv(leadingCoefficient(p))
@@ -153,14 +151,11 @@ RealPolynomialUtilitiesPackage(TheField, ThePols) : PUB == PRIV where
          empty?(l) =>
            if sl = sh then 0 else 1
          empty?(rest(l)) =>
-           if zero?(first(l))
-           then error "POLUTIL: lazyVariations: zero sign!"
+           if zero?(first(l)) then
+               error "POLUTIL: lazyVariations: zero sign!"
            else
-             if sl = sh
-             then
-               if (sl = sign(first(l)))
-               then 0
-               else 2
+             if sl = sh then
+                 if sl = sign(first(l)) then 0 else 2
              -- in this case we save one test
              else 1
          s := sign(l.2)
@@ -248,8 +243,7 @@ RealRootCharacterizationCategory(TheField, ThePols) : Category == PUB where
           defPol := definingPolynomial(rootChar)
           d := principalIdeal([defPol, toInv])
           zero?(d.generator,rootChar) => "failed"
-          if (degree(d.generator) ~= 0 )
-          then
+          if degree(d.generator) ~= 0 then
             defPol := (defPol exquo (d.generator))::ThePols
             d := principalIdeal([defPol, toInv])
           d.coef.2
@@ -377,8 +371,7 @@ RealClosedField : Category == PUB where
           n = 1 => x
           zero?(x) => 0
           one?(x) => 1
-          if odd?(n)
-          then
+          if odd?(n) then
             r := rootOf(monomial(1, n) - (x :: PME), 1)
           else
             r := rootOf(monomial(1, n) - (x :: PME), 2)
@@ -598,8 +591,7 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
         lt := cons(t.int , lt)
     vi := sturmVariationsOf(reverse! lt)$UTIL
     o : Z := n - vl + vi
-    if o > 0
-    then
+    if o > 0 then
        sturmNthRoot(lp, int, r, vi, vr, o::N)
     else
        sturmNthRoot(lp, l, int, vl, vi, n)
@@ -618,13 +610,12 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
      l1, l2 : List(TheField)
      (l1, l2) := ([] , [])
      for t in reverse(lp) repeat
-       if odd?(degree(t))
-       then
-        (l1, l2) := (cons(-leadingCoefficient(t), l1),
-                   cons(leadingCoefficient(t), l2))
-       else
-        (l1, l2) := (cons(leadingCoefficient(t), l1),
-                   cons(leadingCoefficient(t), l2))
+         if odd?(degree(t)) then
+             (l1, l2) := (cons(-leadingCoefficient(t), l1),
+                          cons(leadingCoefficient(t), l2))
+         else
+             (l1, l2) := (cons(leadingCoefficient(t), l1),
+                          cons(leadingCoefficient(t), l2))
      sturmIsolate(lp,
                   -b,
                   b,
@@ -640,13 +631,12 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
     l1, l2 : List(TheField)
     (l1, l2) := ([] , [])
     for t in reverse(ls) repeat
-      if odd?(degree(t))
-      then
-       (l1, l2) := (cons(leadingCoefficient(t), l1),
-                  cons(-leadingCoefficient(t), l2))
-      else
-       (l1, l2) := (cons(leadingCoefficient(t), l1),
-                  cons(leadingCoefficient(t), l2))
+        if odd?(degree(t)) then
+             (l1, l2) := (cons(leadingCoefficient(t), l1),
+                          cons(-leadingCoefficient(t), l2))
+        else
+             (l1, l2) := (cons(leadingCoefficient(t), l1),
+                          cons(leadingCoefficient(t), l2))
     res := sturmNthRoot(ls,
                         -b,
                         b,
@@ -716,10 +706,8 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
    linearRecip(toTest, rootChar) ==
       c := - inv(leadingCoefficient(toTest)) * coefficient(toTest, 0)
       r := recip(rootChar.defPol.c)
-      if (r case "failed")
-      then
-        if (c - rootChar.low) * (c - rootChar.high) <= 0
-        then
+      if (r case "failed") then
+        if (c - rootChar.low) * (c - rootChar.high) <= 0 then
           "failed"
         else
           newPol := (rootChar.defPol exquo toTest)::P
@@ -753,16 +741,13 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
    linearSign(toTest, rootChar) ==
       c := - inv(leadingCoefficient(toTest)) * coefficient(toTest, 0)
       ev := sign(rootChar.defPol.c)
-      if zero?(ev)
-      then
-        if (c - rootChar.low) * (c - rootChar.high) <= 0
-        then
+      if zero?(ev) then
+        if (c - rootChar.low) * (c - rootChar.high) <= 0 then
           0
         else
           sign(toTest.(rootChar.high))
       else
-        if (ev*sign(rootChar.defPol.(rootChar.high)) <= 0 )
-        then
+        if ev*sign(rootChar.defPol.(rootChar.high)) <= 0 then
           sign(toTest.(rootChar.high))
         else
           sign(toTest.(rootChar.low))
@@ -779,14 +764,12 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
                inv(leadingCoefficient(toTest))*reductum(toTest)
      delta := gcd(toTest, rootChar.defPol)
      newChar := [rootChar.low, rootChar.high, rootChar.defPol]$Rep
-     if degree(delta) > 0
-     then
-       if sign(delta.(rootChar.low) * delta.(rootChar.high)) <= 0
-       then
-        return(0)
-       else
-        newChar.defPol := (newChar.defPol exquo delta) :: P
-        toTest := toTest rem (newChar.defPol)
+     if degree(delta) > 0 then
+         if sign(delta.(rootChar.low) * delta.(rootChar.high)) <= 0 then
+             return(0)
+         else
+             newChar.defPol := (newChar.defPol exquo delta) :: P
+             toTest := toTest rem (newChar.defPol)
      degree(toTest) = 0 => s * sign(leadingCoefficient(toTest))
      degree(toTest) = 1 => s * linearSign(toTest, newChar)
      while mightHaveRoots(toTest, newChar) repeat
@@ -826,8 +809,7 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
           rootChar.low := int
           rootChar.defPol := monomial(1, 1) - int::P
           rootChar
-        if (s1*s2 < 0)
-        then
+        if s1*s2 < 0 then
           rootChar.high := int
         else
           rootChar.low := int
@@ -838,8 +820,7 @@ RightOpenIntervalRootCharacterization(TheField, ThePolDom) : PUB == PRIV where
         int := middle(rootChar)
         s := (rootChar.defPol).int * (rootChar.defPol).(rootChar.high)
         zero?(s) => [int, rootChar.high, monomial(1, 1)-int::P]
-        if s < 0
-        then
+        if s < 0 then
           [int, rootChar.high, rootChar.defPol]
         else
           [rootChar.low, int, rootChar.defPol]
@@ -1114,15 +1095,13 @@ RealClosure(TheField) : PUB == PRIV where
        x + y ==
           (x case TheField) and (y case TheField) => x +$TheField y
           (x case TheField) =>
-             if zero?(x)
-             then
+             if zero?(x) then
                y
              else
                nonNull([y.seg, x::PME+(y.val), y.outForm, y.order]$Rec)
              -- x is no longer TheField
           (y case TheField) =>
-             if zero?(y)
-             then
+             if zero?(y) then
                x
              else
                nonNull([x.seg, (x.val)+y::PME, x.outForm, x.order]$Rec)

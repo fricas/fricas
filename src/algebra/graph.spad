@@ -1801,11 +1801,10 @@ FiniteGraph(S) : Category == Definition where
         aa := getArrowIndex(s, a, arr.fromOb)
         d := routeArrowRecursive(s, arr.fromOb, b, concat(visited, a)$List(NNI))
         fullPath := concat(aa, d)
-        if shortest = [0]
-          then
+        if shortest = [0] then
             shortest := d
             shortestFullPath := fullPath
-          else if (d ~= [0]) and #fullPath < #shortestFullPath then
+        else if (d ~= [0]) and #fullPath < #shortestFullPath then
             shortest := d
             shortestFullPath := fullPath
     if shortest = [0] then return [0]
@@ -1951,8 +1950,7 @@ FiniteGraph(S) : Category == Definition where
       indexPointy := concat(indexPointy, y)
       -- if this is a second order graph then draw sub graphs
       -- otherwise draw vertex name
-      if S has DirectedGraph(String)
-       then
+      if S has DirectedGraph(String) then
         subgraph : DirectedGraph(String) := (i.value) pretend DirectedGraph(String)
         SHAPE ==> Record(shptype : Symbol, centre : PT, size : PT, fill : Boolean)
         sh:SHAPE := ["ellipse"::Symbol,sipnt(x,y)+svec(0.7::DF,0.7::DF),_
@@ -1960,7 +1958,7 @@ FiniteGraph(S) : Category == Definition where
         ellip := addSceneShape(sc, sh)
         tn := addSceneGraph(sc, subgraph, x, y, dispArrowName)
         indexBounds := concat(indexBounds, ellip)
-       else
+      else
         tn := addSceneText(sc, s, 32::NNI, sipnt(x, y)$PT)$Scene(PT)
         indexBounds := concat(indexBounds, tn)
     arrs : List ARROW := getArrows(n)
@@ -2038,11 +2036,10 @@ FiniteGraph(S) : Category == Definition where
         -- tells the scenegraph code to reduce the length of the arrow
         -- slightly to avoid overlapping the vertex label, this is only
         -- required if not second order graph.
-        if S has DirectedGraph(String)
-         then
+        if S has DirectedGraph(String) then
           arrNode := addSceneArrow(mt, fnode, tnode, offset, _
                      "fixed"::Symbol,0.1::DF,(diagramWidth(n)+10)::DF)
-         else
+        else
           arrNode := addSceneArrow(mt, fnode, tnode, offset, _
                      "proportional"::Symbol,0.1::DF,(diagramWidth(n)+10)::DF)
         -- print("fgraph subdiagramSvg sc="::Symbol << sc )
@@ -4689,10 +4686,9 @@ MultifunctionGraph(S) : Exports == Implementation where
         foundNew : Boolean := (not member?(p, gens2)) and (not member?(p, resu))
         if foundNew then
           resu := concat(resu, p)
-          if permutationNames
-           then
+          if permutationNames then
             resstr := concat(resstr, (math_to_string p)@String)
-           else
+          else
             resstr := concat(resstr, concat(stngs.i, stngs.j))
     [resu, resstr]
 
@@ -5066,11 +5062,10 @@ WeightedGraph(S, W) : Exports == Implementation where
   addWArrow!(s : %, nm : String, n1 : NNI, n2 : NNI, w : W) : % ==
     arrss : List WARROW := s.arrows
     a : WARROW := [nm, w, n1, n2, 0::Integer, 0::Integer, []]
-    if empty?(arrss)
-      then
+    if empty?(arrss) then
         s.arrows := [a]
         return s
-      else
+    else
         arrs : List WARROW := concat(arrss, a)
         s.arrows := arrs
         return s
@@ -5408,10 +5403,9 @@ WeightedGraph(S, W) : Exports == Implementation where
    for arr in getArrows(s) repeat
      if isDirectSuccessor?(s, a, arr.fromOb) then
        d := routeNodeRecursive(s, arr.fromOb, b, concat(visited, a)$List(NNI))
-       if shortest = []
-         then
+       if shortest = [] then
            shortest := d
-         else if (d ~= []) and_
+       else if (d ~= []) and_
            routeNodeWeight(s, concat(a, d)) < routeNodeWeight(s, concat(a, shortest)) then
              shortest := d
    if shortest = [] then
@@ -5446,11 +5440,10 @@ WeightedGraph(S, W) : Exports == Implementation where
        aa := getArrowIndex(s, a, arr.fromOb)
        d := routeArrowRecursive(s, arr.fromOb, b, concat(visited, a)$List(NNI))
        fullPath := concat(aa, d)
-       if shortest = [0]
-         then
+       if shortest = [0] then
            shortest := d
            shortestFullPath := fullPath
-         else if (d ~= [0]) and_
+       else if (d ~= [0]) and_
            routeArrowWeight(s, fullPath) < routeArrowWeight(s, shortestFullPath) then
              shortest := d
              shortestFullPath := fullPath
@@ -5480,15 +5473,13 @@ WeightedGraph(S, W) : Exports == Implementation where
     res : W := 0$W
     arrs := s.arrows
     for arr in arrs repeat
-      if isDisjoint
-        then
-          if (arr.fromOb = i1) and (arr.toOb = i2)
-            then
+      if isDisjoint then
+          if (arr.fromOb = i1) and (arr.toOb = i2) then
               res := arr.weight
               isDisjoint := false
-        else
-          if (arr.fromOb = i1) and (arr.toOb = i2) and (arr.weight < res)
-            then res := arr.weight
+      else
+          if (arr.fromOb = i1) and (arr.toOb = i2) and (arr.weight < res) then
+              res := arr.weight
     res
 
   -- the cumulative weight of a given route. The route is given

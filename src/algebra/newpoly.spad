@@ -538,32 +538,25 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
 
      coerce(p : %) : O ==
        ground? (p) => (ground(p))::O
-       if (((ip := init(p))) = 1)
-         then
-           if zero?((tp := tail(p)))
-             then
-               if (((dp := mdeg(p))) = 1)
-                 then
+       if (ip := init(p)) = 1 then
+           if zero?(tp := tail(p)) then
+               if (dp := mdeg(p)) = 1 then
                    return((mvar(p))::O)
-                 else
+               else
                    return(((mvar(p))::O ^$O (dp::O)))
-             else
-               if (((dp := mdeg(p))) = 1)
-                 then
+           else
+               if (dp := mdeg(p)) = 1 then
                    return((mvar(p))::O +$O (tp::O))
-                 else
+               else
                    return(((mvar(p))::O ^$O (dp::O)) +$O (tp::O))
-          else
-           if zero?((tp := tail(p)))
-             then
-               if (((dp := mdeg(p))) = 1)
-                 then
+       else
+           if zero?(tp := tail(p)) then
+               if (dp := mdeg(p)) = 1 then
                    return((ip::O) *$O  (mvar(p))::O)
-                 else
+               else
                    return((ip::O) *$O ((mvar(p))::O ^$O (dp::O)))
-             else
-               if ((mdeg(p)) = 1)
-                 then
+           else
+               if mdeg(p) = 1 then
                    return(((ip::O) *$O  (mvar(p))::O) +$O (tp::O))
        ((ip)::O *$O ((mvar(p))::O ^$O ((mdeg(p)::O))) +$O (tail(p)::O))
 
@@ -721,10 +714,9 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
        mvar(a) = mvar(b) => lazyPrem(a, b)
        while not reduced?((ha := head a), b) repeat
          lrc := lazyResidueClass(ha, b)
-         if zero? tail(a)
-           then
+         if zero?(tail(a)) then
              a := lrc.polnum
-           else
+         else
              a := lrc.polnum +  (lrc.polden)^(lrc.power) * tail(a)
        a
 
@@ -737,21 +729,17 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
        ma := 1$%
        ta := 0$%
        while (not ground?(ia)) and (mvar(ia) >= mvar(b)) repeat
-         if (mvar(ia) = mvar(b)) and (mdeg(ia) >= mdeg(b))
-           then
+         if mvar(ia) = mvar(b) and mdeg(ia) >= mdeg(b) then
              iamodb := lazyResidueClass(ia, b)
              ia := iamodb.polnum
-             if not zero? ta
-               then
+             if not(zero?(ta)) then
                  ta :=  (iamodb.polden)^(iamodb.power) * ta
-         if zero? ia
-           then
+         if zero?(ia) then
              ia := ta
              ma := 1$%
              ta := 0$%
-           else
-             if not ground?(ia)
-               then
+         else
+             if not(ground?(ia)) then
                  ta := tail(ia) * ma + ta
                  ma := mainMonomial(ia) * ma
                  ia := init(ia)
@@ -767,15 +755,14 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
        db : NNI := mdeg b
        test : INT := degree(a, xb)::INT - db
        delta : INT := max(test + 1$INT, 0$INT)
-       if xa = xb
-         then
+       if xa = xb then
            b := tail b
            while not zero?(a) and not negative?(test) repeat
              term := monomial(init(a), xb, test::NNI)
              a := lcb * tail(a) - term * b
              delta := delta - 1$INT
              test := degree(a, xb)::INT - db
-         else
+       else
            while not zero?(a) and not negative?(test) repeat
              term := monomial(leadingCoefficient(a, xb), xb, test::NNI)
              a := lcb * a - term * b
@@ -818,8 +805,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
        q := 0$%
        test : INT := degree(a, xb)::INT - db
        delta : INT := max(test + 1$INT, 0$INT)
-       if xa = xb
-         then
+       if xa = xb then
            b := tail b
            while not zero?(a) and not negative?(test) repeat
              term := monomial(init(a), xb, test::NNI)
@@ -827,7 +813,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
              q := lcb * q + term
              delta := delta - 1$INT
              test := degree(a, xb)::INT - db
-         else
+       else
            while not zero?(a) and not negative?(test) repeat
              term := monomial(leadingCoefficient(a, xb), xb, test::NNI)
              a := lcb * a - term * b
@@ -879,15 +865,14 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
        db : NNI := mdeg b
        test : INT := degree(a, xb)::INT - db
        pow : NNI := 0
-       if xa = xb
-         then
+       if xa = xb then
            b := tail b
            while not zero?(a) and not negative?(test) repeat
              term := monomial(init(a), xb, test::NNI)
              a := lcb * tail(a) - term * b
              pow := pow + 1$NNI
              test := degree(a, xb)::INT - db
-         else
+       else
            while not zero?(a) and not negative?(test) repeat
              term := monomial(leadingCoefficient(a, xb), xb, test::NNI)
              a := lcb * a - term * b
@@ -965,10 +950,9 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
 
          primitivePart! p ==
            zero? p => p
-           if ((cp := content(p)) = 1)
-             then
+           if (cp := content(p)) = 1 then
                p := unitCanonical p
-             else
+           else
                p := unitCanonical exactQuotient!(p, cp)
            p
 
@@ -1134,19 +1118,17 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
              convert(pq : PQ) ==
                retract(pq)@%
 
-             if not (R has QuotientFieldCategory(Integer))
-               then
+             if not (R has QuotientFieldCategory(Integer)) then
                  -- the only operation to implement is retractIfCan : PR -> Union(%,"failed")
                  -- when V does not have Finite
 
-                 if V has Finite
-                   then
+                 if V has Finite then
                      retractIfCan(pr : PR) ==
                        localRetractIfCan(pr)@Union(%,"failed")
 
                      retractIfCan(pq : PQ) ==
                        localRetractIfCanPQ(pq)@Union(%,"failed")
-                   else
+                 else
                      retractIfCan(pq : PQ) ==
                        pr : PR := PQToPR(pq)
                        retractIfCan(pr)@Union(%,"failed")
@@ -1163,7 +1145,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                  convert(pr : PR) ==
                    retract(pr)@%
 
-               else
+             else
                  -- the only operation to implement is retractIfCan : PQ -> Union(%,"failed")
                  -- when V does not have Finite
                  mpc2ZQ := MPolyCatFunctions2(Symbol, IES, IES, Z, Q, PZ, PQ)
@@ -1178,8 +1160,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                    pq : PQ := PZToPQ(pz)
                    retractIfCan(pq)@Union(%,"failed")
 
-                 if V has Finite
-                   then
+                 if V has Finite then
                      retractIfCan(pq : PQ) ==
                        localRetractIfCanPQ(pq)@Union(%,"failed")
 
@@ -1187,7 +1168,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                        lrif : Union(%,"failed") := localRetractIfCan(pr)@Union(%,"failed")
                        (lrif case "failed") => error "failed in convert: PR->% from RPOLCAT"
                        lrif
-                   else
+                 else
                      convert(pr : PR) ==
                        pq : PQ := PRToPQ(pr)
                        retract(pq)@%
@@ -1203,19 +1184,17 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
              convert(pz : PZ) ==
                retract(pz)@%
 
-             if not (R has IntegerNumberSystem)
-               then
+             if not (R has IntegerNumberSystem) then
                  -- the only operation to implement is retractIfCan : PR -> Union(%,"failed")
                  -- when V does not have Finite
 
-                 if V has Finite
-                   then
+                 if V has Finite then
                      retractIfCan(pr : PR) ==
                        localRetractIfCan(pr)@Union(%,"failed")
 
                      retractIfCan(pz : PZ) ==
                        localRetractIfCanPZ(pz)@Union(%,"failed")
-                   else
+                 else
                      retractIfCan(pz : PZ) ==
                        pr : PR := PZToPR(pz)
                        retractIfCan(pr)@Union(%,"failed")
@@ -1228,7 +1207,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                  convert(pr : PR) ==
                    retract(pr)@%
 
-               else
+             else
                  -- the only operation to implement is retractIfCan : PZ -> Union(%,"failed")
                  -- when V does not have Finite
 
@@ -1236,15 +1215,14 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
                  RToZ(r : R) : Z == retract(r)@Z
                  PRToPZ (pr : PR) : PZ == map(RToZ, pr)$mpc2RZ
 
-                 if V has Finite
-                   then
+                 if V has Finite then
                      convert(pr : PR) ==
                        lrif : Union(%,"failed") := localRetractIfCan(pr)@Union(%,"failed")
                        (lrif case "failed") => error "failed in convert: PR->% from RPOLCAT"
                        lrif
                      retractIfCan(pz : PZ) ==
                        localRetractIfCanPZ(pz)@Union(%,"failed")
-                   else
+                 else
                      convert(pr : PR) ==
                        pz : PZ := PRToPZ(pr)
                        retract(pz)@%
@@ -1254,8 +1232,7 @@ RecursivePolynomialCategory(R : Ring, E : OrderedAbelianMonoidSup, V : OrderedSe
            then
              -- the only operation to implement is retractIfCan : PR -> Union(%,"failed")
 
-             if V has Finite
-               then
+             if V has Finite then
                  retractIfCan(pr : PR) ==
                    localRetractIfCan(pr)@Union(%,"failed")
 
@@ -1377,15 +1354,13 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
        a case R => a
        a.v < b.v => a
        mM : %
-       if a.v > b.v
-         then
+       if a.v > b.v then
            m : D := map((a1 : %) : % +-> localMonicModulo(a1, b), a.ts)$SUP2
-         else
+       else
            m : D := monicModulo(a.ts, b.ts)$D
-       if ground?(m)$D
-          then
+       if ground?(m)$D then
             mM := (ground(m)$D)::Rep
-          else
+       else
             mM := ([a.v, m]$VPoly)::Rep
        mM
 
@@ -1395,8 +1370,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
        not ground?(ib)$% =>
          error "Error in monicModulo from NSMP : #2 is not monic"
        mM : %
-       if not ((ib) = 1)$%
-         then
+       if not(ib = 1) then
            r : R := ground(ib)$%
            rec : Union(R,"failed") := recip(r)$R
            (rec case "failed") =>
@@ -1405,7 +1379,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
            a := (rec@R) * a
            b := (rec@R) * b
            mM := ib * localMonicModulo (a, b)
-         else
+       else
            mM := localMonicModulo (a, b)
        mM
 
@@ -1587,8 +1561,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
            error "lastSubResultant$NSMP: mvar(#1) ~= mvar(#2)"
          PSimp(lastSubResultant(a.ts, b.ts), a.v)
 
-       if R has EuclideanDomain
-       then
+       if R has EuclideanDomain then
 
          exactQuotient (a : %, b : R) ==
            (b = 1) => a
@@ -1614,8 +1587,7 @@ NewSparseMultivariatePolynomial(R, VarSet) : Exports == Implementation where
            a.ts := map((a1 : %) : % +-> exactQuotient!(a1, b), a.ts)$SUP2
            a
 
-     if R has GcdDomain
-     then
+     if R has GcdDomain then
 
        localGcd(r : R, p : %) : R ==
          p case R => gcd(r, p@R)$R

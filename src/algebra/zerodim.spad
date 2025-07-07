@@ -265,11 +265,10 @@ LexTriangularPackage(R, ls) : Exports == Implementation where
            b := bwt.val; us := bwt.tower
            (not b) => toSee := cons([lp, us], toSee)
            lus : List TS
-           if norm?
-             then
+           if norm? then
                newp := normalizedAssociate(p, us)$normalizpackTS
                lus := [internalAugment(newp, us)$TS]
-             else
+           else
                newp := p
                lus := augment(newp, us)$TS
            newlp := lp
@@ -309,11 +308,10 @@ LexTriangularPackage(R, ls) : Exports == Implementation where
            b := bwt.val; us := bwt.tower
            (not b) => toSee := cons([lp, us], toSee)
            lus : List ST
-           if norm?
-             then
+           if norm? then
                newp := normalizedAssociate(p, us)$normalizpackST
                lus := augment(newp, us)$ST
-             else
+           else
                lus := augment(p, us)$ST
            newlp := lp
            while (not empty? newlp) and (mvar(first newlp) = v) repeat
@@ -436,8 +434,7 @@ InternalRationalUnivariateRepresentationPackage(R, E, V, P, TS) : Exports == Imp
        lp := sort(infRittWu?, lp)
        newts : TS := convert(r, true)@TS
        s := remainder(s, newts).polnum
-       if univ?
-         then
+       if univ? then
            s := normalizedAssociate(s, newts)$normpack
        for p in lp repeat
          p := lazyPrem(eval(p, z, c), s)
@@ -482,8 +479,7 @@ InternalRationalUnivariateRepresentationPackage(R, E, V, P, TS) : Exports == Imp
            for fr in irreducibleFactors([r])$polsetpack repeat
              ground? fr => iterate
              toSave := cons(makeMonic(z, c, fr, ts, s, univ?), toSave)
-         if info?
-           then
+         if info? then
              output("Unlucky lambda")$OutputPackage
              output(h::OutputForm)$OutputPackage
              output(r::OutputForm)$OutputPackage
@@ -501,8 +497,7 @@ InternalRationalUnivariateRepresentationPackage(R, E, V, P, TS) : Exports == Imp
          p := first lp; lp := rest lp
          xi : V := mvar(p)
          p := remainder(p, ts).polnum
-         if not univ?
-           then
+         if not univ? then
              p := primitivePart stronglyReduce(p, ts)
          ground?(p) or (mvar(p) < xi) =>
            error "rur$IRUROK: should never happen"
@@ -619,8 +614,7 @@ RationalUnivariateRepresentationPackage(R, ls) : Exports == Implementation where
          lsfqwt : List QWT := squareFreePart(q, ts)
          for qwt in lsfqwt repeat
            q := qwt.val; ts := qwt.tower
-           if not ground? init(q)
-             then
+           if not(ground?(init(q))) then
                q := normalizedAssociate(q, ts)$normpack
            newts := internalAugment(q, ts)
            newlq := [remainder(q, newts).polnum for q in lq]
@@ -854,8 +848,7 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
          lsfqwt : List Q2WT := squareFreePart(q, st)$ST
          for sfqwt in lsfqwt repeat
            q := sfqwt.val; st := sfqwt.tower
-           if not ground? init(q)
-             then
+           if not ground? init(q) then
                q := normalizedAssociate(q, st)$normpack
            newts := internalAugment(q, st)$ST
            newlq := [remainder(q, newts).polnum for q in lq]
@@ -909,8 +902,7 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
             toSave := cons(reverse(lr), toSave)
          q2 := first lq2; lq2 := rest lq2
          qrc := convert(q2)@PRC
-         if not empty? lr
-           then
+         if not(empty?(lr)) then
              for r in reverse(lr) for v in reverse(lv) repeat
                qrc := eval(qrc, v, r)
          lv := cons((mainVariable(qrc) :: Symbol), lv)
@@ -923,10 +915,9 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
      realSolve(lp : List(P), info? : Boolean, check? : Boolean, lextri? : Boolean) : List REALSOL  ==
        lts : List TS
        lq : List(Q) := [convert(p)$Q for p in lp]
-       if lextri?
-         then
+       if lextri? then
            lts := zeroSetSplit(lq, false)$lextripack
-         else
+       else
            lts := zeroSetSplit(lq, true, info?)$TS
        lsts :  List ST := []
        for ts in lts repeat
@@ -943,8 +934,7 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
             toSave := cons(reverse(lr), toSave)
          q2 := first lq2; lq2 := rest lq2
          qrc := convert(q2)@PRC
-         if not empty? lr
-           then
+         if not(empty?(lr)) then
              for r in reverse(lr) for v in reverse(lv) repeat
                qrc := eval(qrc, v, r)
          lv := cons((mainVariable(qrc) :: Symbol), lv)
@@ -952,8 +942,7 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
          urcRoots := allRootsOf(urc)$RC
          for urcRoot in urcRoots repeat
            toSee := cons([cons(urcRoot, lr), lv, lq2]$WIP, toSee)
-       if check?
-         then
+       if check? then
            for p in lp repeat
              for realsol in toSave repeat
                prc : PRC := convert(p)@PRC
@@ -985,26 +974,23 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
             toSave := cons(reverse(lr), toSave)
          q2 := first lq2; lq2 := rest lq2
          qrc := convert(q2)@PRC
-         if not empty? lr
-           then
+         if not(empty?(lr)) then
              for r in reverse(lr) for v in reverse(lv) repeat
                qrc := eval(qrc, v, r)
          lv := cons((mainVariable(qrc) :: Symbol), lv)
          urc : URC := univariate(qrc)@URC
          urcRoots := allRootsOf(urc)$RC
          for urcRoot in urcRoots repeat
-           if positive? urcRoot
-             then
+           if positive?(urcRoot) then
                toSee := cons([cons(urcRoot, lr), lv, lq2]$WIP, toSee)
        toSave
 
      positiveSolve(lp : List(P), info? : Boolean, lextri? : Boolean) : List REALSOL  ==
        lts : List TS
        lq : List(Q) := [convert(p)$Q for p in lp]
-       if lextri?
-         then
+       if lextri? then
            lts := zeroSetSplit(lq, false)$lextripack
-         else
+       else
            lts := zeroSetSplit(lq, true, info?)$TS
        lsts :  List ST := []
        for ts in lts repeat
@@ -1021,16 +1007,14 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
             toSave := cons(reverse(lr), toSave)
          q2 := first lq2; lq2 := rest lq2
          qrc := convert(q2)@PRC
-         if not empty? lr
-           then
+         if not(empty?(lr)) then
              for r in reverse(lr) for v in reverse(lv) repeat
                qrc := eval(qrc, v, r)
          lv := cons((mainVariable(qrc) :: Symbol), lv)
          urc : URC := univariate(qrc)@URC
          urcRoots := allRootsOf(urc)$RC
          for urcRoot in urcRoots repeat
-           if positive? urcRoot
-             then
+           if positive?(urcRoot) then
                toSee := cons([cons(urcRoot, lr), lv, lq2]$WIP, toSee)
        toSave
 
@@ -1054,24 +1038,21 @@ ZeroDimensionalSolvePackage(R, ls, ls2) : Exports == Implementation where
      univariateSolve(lp : List(P), info? : Boolean, check? : Boolean, lextri? : Boolean) : List RUR ==
        lts : List TS
        lq : List(Q) := [convert(p)$Q for p in lp]
-       if lextri?
-         then
+       if lextri? then
            lts := zeroSetSplit(lq, false)$lextripack
-         else
+       else
            lts := zeroSetSplit(lq, true, info?)$TS
        toSee :  List ST := []
        for ts in lts repeat
          toSee := concat(squareFree(ts), toSee)
        toSee := removeSuperfluousQuasiComponents(toSee)$quasicomppack
        toSave : List RUR := []
-       if check?
-         then
+       if check? then
            lq2 : List(Q2) := [convert(p)$Q2 for p in lp]
        for st in toSee repeat
          lus : List ST := rur(st, true)$rurpack
          for us in lus repeat
-            if check?
-              then
+            if check? then
                 rems : List(Q2) := [removeZero(q2, us)$ST for q2 in lq2]
                 not every?(zero?, rems) =>
                   output(st::OutputForm)$OutputPackage
