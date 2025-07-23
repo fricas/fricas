@@ -872,8 +872,7 @@ checkForFreeVariables(v,locals) ==
       -- Might have a mode at the front of a list, or be calling a function
       -- which returns a function.
       [checkForFreeVariables(op,locals),:[checkForFreeVariables(a,locals) for a in args]]
-    op = "LETT" => -- Expands to a SETQ.
-      ["SETF",:[checkForFreeVariables(a,locals) for a in args]]
+    op = "LETT" => BREAK()
     op = "COLLECT" => -- Introduces a new bound variable?
         checkIterationForFreeVariables(op, args, locals)
     op = "REPEAT" => -- Introduces a new bound variable?
@@ -1297,10 +1296,6 @@ isDomainValuedVariable form ==
 evalCategory(d,c) ==
   -- tests whether domain d has category c
   isPartialMode d or ofCategory(d,c)
-
-isOkInterpMode m ==
-  isPartialMode(m) => isLegitimateMode(m,nil,nil)
-  isValidType(m) and isLegitimateMode(m,nil,nil)
 
 isLegitimateRecordOrTaggedUnion u ==
   and/[x is [":",.,d] and isLegitimateMode(d,nil,nil) for x in u]

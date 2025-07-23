@@ -465,7 +465,7 @@ isExposedConstructor name ==
   -- check if it is explicitly exposed
   MEMQ(name,$localExposureData.1) => true
   -- check if it is in an exposed group
-  found := NIL
+  found := false
   if null($globalExposureHash) then
       initExposureHash()
   exd := HGET($globalExposureHash, name)
