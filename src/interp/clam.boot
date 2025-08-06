@@ -166,6 +166,7 @@ clearConstructorCaches() ==
   clear_sorted_caches()
   clearCategoryCaches()
   CLRHASH $ConstructorCache
+  clear_callbacks()
 
 clearConstructorCache(cname) ==
   (kind := get_database(cname, 'CONSTRUCTORKIND)) =>
@@ -183,6 +184,10 @@ clearCategoryCaches() ==
 clearCategoryCache catName ==
   cacheName := INTERNL1(PNAME(catName), '";AL")
   SET(cacheName,nil)
+
+clear_callbacks() ==
+    $SPADRREAD_fun := [0, nil]
+    $SPADRWRITE_fun := [0, nil]
 
 displayHashtable x ==
   l:= NREVERSE SORTBY('CAR,[[opOf HGET(x,key),key] for key in HKEYS x])

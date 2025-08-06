@@ -791,6 +791,16 @@
 (defmacro |spadConstant| (dollar n)
  `(SPADCALL (svref ,dollar (the fixnum ,n))))
 
+(defmacro |SpadFun|(id get_expr)
+    `(let ((cnt (car ,id)))
+        (cond
+           ((< cnt 2)
+            (let ((fun1 ,get_expr))
+                 (setf (car ,id) (+ cnt 1))
+                 (setf (cdr ,id) fun1)
+                 fun1))
+            ('T (cdr ,id)))))
+
 (defmacro |SPADfirst| (l)
   (let ((tem (gensym)))
     `(let ((,tem ,l)) (if ,tem (car ,tem) (first_error)))))

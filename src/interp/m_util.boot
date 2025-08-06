@@ -90,7 +90,7 @@ rkeys(name) ==
     kaf_close(kaf)
     res
 
-  -- File operations 
+  -- File operations
 get_directory_list(ft) ==
     cd := get_current_directory()
     member(ft, ['"NRLIB", '"DAASE"]) =>
