@@ -90,6 +90,7 @@ rkeys(name) ==
     kaf_close(kaf)
     res
 
+  -- File operations 
 get_directory_list(ft) ==
     cd := get_current_directory()
     member(ft, ['"NRLIB", '"DAASE"]) =>
@@ -140,11 +141,18 @@ has_extention?(s, e) ==
         res := s.(l + i) = e.i
     res
 
-file_basename(n) ==
+last_dir_separator(n) ==
     k := #n - 1
     while k >=0 and not(is_dir_sepatator?(n.k)) repeat
         k := k - 1
-    k := k + 1
+    k
+
+drop_directory_part(n) ==
+    k := last_dir_separator(n) + 1
+    SUBSTRING(n, k, #n - k)
+
+file_basename(n) ==
+    k := last_dir_separator(n) + 1
     l := ext_position(n)
     l < 0 => SUBSTRING(n, k, #n - k)
     SUBSTRING(n, k, l - k)
