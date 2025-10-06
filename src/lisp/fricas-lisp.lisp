@@ -112,8 +112,12 @@ with this hack and will try to convince the GCL crowd to fix this.
                        (funcall restart-fun)
                        (sb-impl::toplevel-repl nil)))
          (save-options-keyword (find-symbol "SAVE-RUNTIME-OPTIONS" "KEYWORD"))
+         (accept-options-keyword (find-symbol "ACCEPT-RUNTIME-OPTIONS" "KEYWORD"))
          (save-options-arg
-             (if save-options-keyword (list save-options-keyword t) nil))
+             (if save-options-keyword
+                 (list save-options-keyword
+                       (if accept-options-keyword accept-options-keyword t))
+                 nil))
         )
         (uninstall-gmp-multiplication)
         (apply #'sb-ext::save-lisp-and-die
