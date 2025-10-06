@@ -196,6 +196,17 @@ else
     :
 fi
 
+FRICAS_SAVE_EXEC=t
+AC_ARG_ENABLE([lisp-core],
+            [AS_HELP_STRING([--enable-lisp-core],
+               [build FriCAS as a Lisp core image instead of standalone executable, only support SBCL, CLISP, ClozureCL, CMUCL])],
+            [case $enableval in
+               yes) FRICAS_SAVE_EXEC=nil ;;
+               no) FRICAS_SAVE_EXEC=t ;;
+               *) AC_MSG_ERROR([--enable-lisp-core only allows yes or no as an argument]) ;;
+             esac])
+AC_SUBST(FRICAS_SAVE_EXEC)
+
 AC_ARG_WITH([lisp-flavor],
             [AS_HELP_STRING([--with-lisp-flavor=F],
                            [obsolete and ignored])],
@@ -452,18 +463,22 @@ case $fricas_lisp_flavor in
        fricas_eval_flags='--eval'
        sbcl_memory_size=`echo "(princ (sb-ext:dynamic-space-size))" | $fricas_lisp $fricas_quiet_flags`
        test $sbcl_memory_size -gt 4294967296 || fricas_quiet_flags="--dynamic-space-size 4096 $fricas_quiet_flags"
+       fricas_image_flags='--core'
        ;;
     cmucl)
        fricas_quiet_flags='-batch -nositeinit -noinit'
        fricas_eval_flags='-eval'
+       fricas_image_flags='-core'
        ;;
     clisp)
        fricas_quiet_flags='--quiet -norc'
        fricas_eval_flags='-x'
+       fricas_image_flags='-M'
        ;;
     openmcl)
        fricas_quiet_flags='--no-init'
        fricas_eval_flags='--eval'
+       fricas_image_flags='-I'
        ;;
     lispworks)
        fricas_quiet_flags=
@@ -472,6 +487,7 @@ case $fricas_lisp_flavor in
     *) AC_MSG_ERROR([We do not know how to build FriCAS with this Lisp: $fricas_lisp]) ;;
 esac
 AC_SUBST(fricas_quiet_flags)
+AC_SUBST(fricas_image_flags)
 
 fricas_debug_compiler='no'
 

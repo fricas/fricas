@@ -680,6 +680,7 @@ fricas_has_directory_operations
 fricas_all_prerequisites
 fricas_algebra_optimization
 fricas_debug_compiler
+fricas_image_flags
 fricas_quiet_flags
 fricas_gcl_rsym_hack
 GMP_EXT
@@ -694,6 +695,7 @@ fricas_lisp_version
 fricas_lisp_flavor
 fricas_fasl_type2
 fricas_fasl_type
+FRICAS_SAVE_EXEC
 FRICAS_LISP
 PREGENERATED
 AWK_FOR_TARGET
@@ -777,6 +779,7 @@ ac_user_opts='
 enable_option_checking
 with_pre_generated
 with_lisp
+enable_lisp_core
 with_lisp_flavor
 with_gmp
 with_gmp_include
@@ -1425,6 +1428,9 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-lisp-core      build FriCAS as a Lisp core image instead of
+                          standalone executable, only support SBCL, CLISP,
+                          ClozureCL, CMUCL
   --enable-gmp            use gmp for bignums with SBCL or Clozure CL
   --enable-debug-compiler (for BOOT or SPAD compiler developers) add debug
                           information to every component of a compiler
@@ -4648,6 +4654,19 @@ else
     :
 fi
 
+FRICAS_SAVE_EXEC=t
+# Check whether --enable-lisp-core was given.
+if test ${enable_lisp_core+y}
+then :
+  enableval=$enable_lisp_core; case $enableval in
+               yes) FRICAS_SAVE_EXEC=nil ;;
+               no) FRICAS_SAVE_EXEC=t ;;
+               *) as_fn_error $? "--enable-lisp-core only allows yes or no as an argument" "$LINENO" 5 ;;
+             esac
+fi
+
+
+
 
 # Check whether --with-lisp-flavor was given.
 if test ${with_lisp_flavor+y}
@@ -5008,18 +5027,22 @@ case $fricas_lisp_flavor in
        fricas_eval_flags='--eval'
        sbcl_memory_size=`echo "(princ (sb-ext:dynamic-space-size))" | $fricas_lisp $fricas_quiet_flags`
        test $sbcl_memory_size -gt 4294967296 || fricas_quiet_flags="--dynamic-space-size 4096 $fricas_quiet_flags"
+       fricas_image_flags='--core'
        ;;
     cmucl)
        fricas_quiet_flags='-batch -nositeinit -noinit'
        fricas_eval_flags='-eval'
+       fricas_image_flags='-core'
        ;;
     clisp)
        fricas_quiet_flags='--quiet -norc'
        fricas_eval_flags='-x'
+       fricas_image_flags='-M'
        ;;
     openmcl)
        fricas_quiet_flags='--no-init'
        fricas_eval_flags='--eval'
+       fricas_image_flags='-I'
        ;;
     lispworks)
        fricas_quiet_flags=
@@ -5027,6 +5050,7 @@ case $fricas_lisp_flavor in
        ;;
     *) as_fn_error $? "We do not know how to build FriCAS with this Lisp: $fricas_lisp" "$LINENO" 5 ;;
 esac
+
 
 
 fricas_debug_compiler='no'

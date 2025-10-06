@@ -228,11 +228,14 @@ After this function is called the image is clean and can be saved.
 )
 
 
-(defun spad-save (save-file do-restart)
+(defun spad-save (save-file do-restart save-exec)
+  ;; if the parameter "save-exec" is t, FriCAS will be saved as a standalone
+  ;; executable; if nil, FriCAS will be saved as a Lisp core file.
   (setq |$SpadServer| nil)
   (setq $openServerIfTrue t)
-  (FRICAS-LISP::save-core-restart save-file
-         (if do-restart #'boot::|fricas_restart| nil))
+  (FRICAS-LISP::save-core-restart
+         (if save-exec save-file (strconc save-file ".core"))
+         (if do-restart #'boot::|fricas_restart| nil) save-exec)
 )
 
 (defun |mkAutoLoad| (cname)

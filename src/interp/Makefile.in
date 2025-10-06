@@ -4,6 +4,9 @@ subdir = src/interp/
 DOC=$(fricas_target_docdir)/src/interp
 
 fricas_debug_compiler=@fricas_debug_compiler@
+fricas_quiet_flags = @fricas_quiet_flags@
+fricas_image_flags = @fricas_image_flags@
+FRICAS_SAVE_EXEC = @FRICAS_SAVE_EXEC@
 
 LISP_ID_STRING=$(FRICAS_LISP_FLAVOR) $(FRICAS_LISP_VERSION)
 
@@ -141,7 +144,7 @@ ${SAVESYS}:
 	     '(load "makeint.lisp") #-:ecl(BOOT::reclaim)' \
              '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
              '#+:gcl(progn (setq si::*code-block-reserve* "")(si::gbc t)(setq si::*code-block-reserve* (make-array 10000000 :element-type (quote character) :static t) si::*optimize-maximum-pages* t))' \
-             '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' | \
+             '#-:ecl(BOOT::spad-save "$(BASE)$@" t t)' | \
            DAASE='$(fricas_src_datadir)' ${BOOTSYS}
 	ls $@
 	@ echo 6 ${SAVESYS} created
@@ -162,8 +165,12 @@ ${FRICASSYS}: ../etc/stamp-databases
 	   '#+:cmu (setq *compile-print* nil)' \
 	   '#+:cmu (declaim (optimize (ext:inhibit-warnings 3)))' \
 	   '#+:ecl(FRICAS-LISP::make-program "$(BASE)$@" nil)' \
-	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t)' \
+	   '#-:ecl(BOOT::spad-save "$(BASE)$@" t $(FRICAS_SAVE_EXEC))' \
              | DAASE="$(BASE)$(fricas_targetdir)" ${BOOTSYS}
+	if test x"$(FRICAS_SAVE_EXEC)" = xnil ; then \
+	    echo -e '#! /bin/sh\n$(FRICAS_LISP) $(fricas_image_flags) $${FRICAS}/bin/FRICASsys.core $(fricas_quiet_flags) "$$@"' > $(BASE)$@ ; \
+	    chmod a+x $(BASE)$@ ; \
+	fi
 	@ echo 6a ${FRICASSYS} created
 
 exposed.lsp: $(fricas_src_algdir)/exposed.lsp
