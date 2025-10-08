@@ -1,4 +1,4 @@
-name: FriCAS CI on macOS on ECL
+name: FriCAS CI on macOS on CLISP
 
 on: workflow_dispatch
 permissions: {}
@@ -17,13 +17,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: download and install ECL
-      run: brew install ecl
+    - name: download and install CLISP
+      run: |
+        brew update
+        brew install clisp
 
     - name: configure
       run: |
         mkdir ../build && cd ../build
-        ../fricas/configure --with-lisp=ecl || cat config.log
+        ../fricas/configure --with-lisp=clisp || cat config.log
 
     - name: make
       run: cd ../build && make -j4
@@ -38,10 +40,10 @@ jobs:
         make dist-macos
         ## reduce chance of error caused by "hdiutil: Resource busy"
         make dist-macos-dmg || make dist-macos-dmg
-        mv FriCAS.dmg ../fricas/FriCAS-macOS-ECL-${ARCH}-${{ github.sha }}.dmg
+        mv FriCAS.dmg ../fricas/FriCAS-macOS-CLISP-${ARCH}-${{ github.sha }}.dmg
 
     - name: Upload macOS binary
       uses: actions/upload-artifact@v4
       with:
-        name: FriCAS-macOS-ECL-${{ env.ARCH }}-binary
-        path: FriCAS-macOS-ECL-${{ env.ARCH }}-${{ github.sha }}.dmg
+        name: FriCAS-macOS-CLISP-${{ env.ARCH }}-binary
+        path: FriCAS-macOS-CLISP-${{ env.ARCH }}-${{ github.sha }}.dmg
