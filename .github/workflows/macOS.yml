@@ -32,13 +32,9 @@ jobs:
     - name: make
       run: cd ../build && make -j4
 
-    - name: make check
-      run: cd ../build && make check -j4
-
     - name: Create artifact archives
       run: |
         cd ../build
-        test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
         make dist-macos
         cp -v `brew list gmp | grep libgmp.10.dylib` FriCAS.app/Contents/Resources/usr/local/lib/fricas/target/*/lib/
         ## reduce chance of error caused by "hdiutil: Resource busy"
@@ -50,6 +46,9 @@ jobs:
       with:
         name: FriCAS-macOS-${{ env.ARCH }}-binary
         path: FriCAS-macOS-${{ env.ARCH }}-${{ github.sha }}.dmg
+
+    - name: make check
+      run: cd ../build && make check -j4
 
     - name: Upload to nightly release
       if: ${{ github.event_name == 'push' && ( github.event.ref == 'refs/heads/master' || github.ref_type == 'tag' ) && github.repository == 'fricas/fricas' }}

@@ -26,12 +26,8 @@ jobs:
         ../fricas/configure --with-lisp=`pwd`/ccl/wx86cl64.exe --enable-gmp || cat config.log
         make -j4 --output-sync
 
-    - name: make check
-      run: cd ../build && make check -j4 --output-sync
-
     - name: Create artifact archives
       run: |
-        test "$GITHUB_REF_TYPE" != "tag" && rm -r ../build/target/*/src
         rm ../build/target/x86_64-w64-mingw32/bin/{fricas,fricas-readline}
         mv ../build/target/x86_64-w64-mingw32 FriCAS-windows-x86_64
         cp /mingw64/bin/libgmp-10.dll FriCAS-windows-x86_64/lib/
@@ -42,3 +38,6 @@ jobs:
       with:
         name: FriCAS-windows-CCL-x86_64-binary
         path: FriCAS-windows-CCL-x86_64-${{ github.sha }}.zip
+
+    - name: make check
+      run: cd ../build && make check -j4 --output-sync

@@ -28,12 +28,8 @@ jobs:
         ./configure --with-lisp=gcl --with-x || cat config.log
         make -j4 --output-sync
 
-    - name: make check
-      run: make check -j4 --output-sync
-
     - name: Create artifact archives
       run: |
-        test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
         tar -cjf FriCAS-linux-GCL-${{ env.ARCH }}-${{ github.sha }}.tar.bz2 target/
 
     - name: Upload Linux binary
@@ -41,3 +37,6 @@ jobs:
       with:
         name: FriCAS-linux-GCL-${{ env.ARCH }}-binary
         path: FriCAS-linux-GCL-${{ env.ARCH }}-${{ github.sha }}.tar.bz2
+
+    - name: make check
+      run: make check -j4 --output-sync

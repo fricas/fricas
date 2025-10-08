@@ -30,13 +30,9 @@ jobs:
     - name: make
       run: cd ../build && make -j4
 
-    - name: make check
-      run: cd ../build && make check -j4
-
     - name: Create artifact archives
       run: |
         cd ../build
-        test "$GITHUB_REF_TYPE" != "tag" && rm -r target/*/src
         make dist-macos
         ## reduce chance of error caused by "hdiutil: Resource busy"
         make dist-macos-dmg || make dist-macos-dmg
@@ -47,3 +43,6 @@ jobs:
       with:
         name: FriCAS-macOS-CLISP-${{ env.ARCH }}-binary
         path: FriCAS-macOS-CLISP-${{ env.ARCH }}-${{ github.sha }}.dmg
+
+    - name: make check
+      run: cd ../build && make check -j4
