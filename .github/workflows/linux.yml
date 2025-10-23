@@ -72,3 +72,9 @@ jobs:
             "${URL}?name=${FILENAME}" \
             --data-binary "@FriCAS-linux-${ARCH}-${{ github.sha }}.tar.bz2" \
             -H "Content-Type: application/x-bzip2" || true
+        test -f src/doc/book.pdf && test $ARCH = x86-64 && \
+          curl -v -X POST -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.releasetoken }}" \
+            "${URL}?name=fricas-${GITHUB_REF_NAME}-reference-book.pdf" \
+            --data-binary "@./src/doc/book.pdf" \
+            -H "Content-Type: application/pdf" || true
