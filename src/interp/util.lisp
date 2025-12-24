@@ -173,6 +173,7 @@ After this function is called the image is clean and can be saved.
 #+:GCL (setq compiler::*compile-verbose* nil)
 #+:GCL (setq compiler::*suppress-compiler-warnings* t)
 #+:GCL (setq compiler::*suppress-compiler-notes* t)
+#+:GCL (when (fboundp 'si::readline-off) (si::readline-off))  ;; Disable GCL readline to avoid double-prompt issue
   (in-package "BOOT")
   (|initroot|)
 #+:poplog (setf POPLOG:*READ-PROMPT* "") ;; Turn off Poplog read prompts
