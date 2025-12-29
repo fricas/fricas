@@ -1030,9 +1030,6 @@ compJoin(["Join",:argl],m,e) ==
                 atom y =>
                   isDomainForm(y,e) => LIST y
                   nil
-                y is ['LENGTH,y'] =>
-                  BREAK()
-                  [y,y']
                 LIST y
           x
         x is ["DomainSubstitutionMacro",pl,body] =>

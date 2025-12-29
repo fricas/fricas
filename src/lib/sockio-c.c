@@ -1065,10 +1065,8 @@ int
 server_switch(void)
 {
   int ret_val, i, cmd = 0;
-  fd_set rd, wr, ex, fds_mask;
+  fd_set rd, fds_mask;
   FD_ZERO(&rd);
-  FD_ZERO(&wr);
-  FD_ZERO(&ex);
   fds_mask = server_mask;
   cmd = 0;
   if (purpose_table[SessionManager] != NULL) {
