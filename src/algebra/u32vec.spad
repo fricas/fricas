@@ -1035,4 +1035,217 @@ VectorPolynomialOperationsF(K : FiniteFieldCategory
                        + res
             res
 
+)abbrev package MATOP32 ModularU32MatrixOperations
+ModularU32MatrixOperations() : Exports == Implementation where
+    I ==> Integer
+    SI ==> SingleInteger
+    M ==> U32Matrix
+    PA ==> U32Vector
+    Exports ==> with
+        lower_triangular_inverse : (M, PA, I) -> M
+          ++ lower_triangular_inverse(m, piv, p) computes transpose
+          ++ of the inverse of m modulo p.  m is assumed lower
+          ++ triangular, piv should contains inverses of diagonal
+          ++ elements of m.
+        triangular_multiply : (M, M, PA, I) -> M
+          ++ triangular_multiply(m1, m2, pa, p) multiplies m1 by
+          ++ transpose of m2 modulo p.  After that columns of
+          ++ the product are permuted, column j of the product goes
+          ++ to column pa(j) of the result.  m1 and m2 are assumed
+          ++ upper triangular.
+        mmul : (M, M, I, I) -> M
+          ++ mmul(m1, m2, d, p) multiplies m1 by ncols(m1) times d part of
+          ++ transpose of m2 modulo p.  Error if m2 is too small.
+        mul_mv : (PA, M, PA, I) -> Void
+          ++ mul_mv(vr, m, v, p) multiples v by m modulo p and puts the
+          ++ result in vr.
+        copy_mat_part : (M, I, I) -> M
+          ++ copy_mat_part(m, nr, nc) returns a copy of inital nr by
+          ++ nc part of m.
+        shift_mat! : (M, I, I, I) -> Void
+          ++ shift_mat!(m, sa, nr, nc) replace entries in inital nr by
+          ++ nc part of m by corresonding entries with row index
+          ++ increaded by sa.
+        inverse: (M, I) -> Union(M, "failed")
+          ++ inverse(m, p) computes inverse of m modulo p.
+          ++ Returns "failed" when m is not invertible.
+        lup_decomposition : (M, I) -> Record(lpart : M, upart : M, _
+                                            udinv : PA, ppart : PA)
+          ++ lup_decomposition(m, p) computes LUP decomposition of
+          ++ m modulo p, that us [l, u, ud, pp] such that
+          ++ l*transpose(u) equals to permutation of rows of m
+          ++ given by pp, l and u are lower triangular and
+          ++ l has ones at diagonal.  ud gives inverses of pivots
+          ++ (zero if there is no pivot in a given column).
 
+    Implementation ==> add
+
+        NNI ==> NonNegativeInteger
+
+        modInverse ==> invmod
+        muladd ==> (QSMULADD64_32$Lisp)
+        Qrem ==> QSMOD64_32$Lisp
+        mul_mod(x, y, p) ==> Qrem(muladd(x, y, 0), p)
+        q_sub ==> sub_SI$Lisp
+        min_ind ==> 0$Integer
+        row_major_index ==> QMAJ_INDEX_U32$Lisp
+        row_major_aref ==> QMAJ_AREF_U32$Lisp
+        add_si ==> add_SI$Lisp
+
+        q_dot(m1 : M, m2 : M, row1 : I, row2 : I, col1 : I, col2 : I,
+             cnt : I, s: I, p : I) : I ==
+            cns := qconvert(cnt)$SingleInteger
+            ss := qconvert(s)$U64Int
+            kk1 : Integer := row_major_index(m1, row1, col1)
+            kk2 : Integer := row_major_index(m2, row2, col2)
+            for i in 0..(cns - 1) repeat
+                ss := muladd(row_major_aref(m1, add_si(kk1, i)),
+                             row_major_aref(m2, add_si(kk2, i)), ss)
+            Qrem(ss, p) pretend I
+
+        -- compute transpose of the inverse
+        lower_triangular_inverse(m : M, ipivs : PA, p : I) : M ==
+            nc := ncols(m)
+            im := new(nc, nc, 0)$M
+            for i in 0..(nc - 1) repeat
+                qsetelt!(im, i + min_ind, i + min_ind, ipivs(i))
+                for j in (i + 1)..(nc - 1) repeat
+                    s : I
+                    s := q_dot(m, im, j + min_ind, i + min_ind,
+                               i + min_ind, i + min_ind, q_sub(j, i),
+                               0$Integer, p)
+                    s := q_sub(p, s)
+                    im(i, j) := mul_mod(ipivs(j), s, p)
+            im
+
+        -- multiply m1 by transpose of m2
+        triangular_multiply(m1 : M, m2 : M, pa: PA, p : I) : M ==
+            nc := ncols(m1)
+            nc1 := nc - 1
+            mr := new(nc, nc, 0)$M
+            for i in 0..nc1 repeat
+                for j in 0..nc1 repeat
+                    kk := max(i, j)
+                    s : I := 0
+                    s := q_dot(m1, m2, i, j, kk,
+                               kk, inc_SI(q_sub(nc1, kk))$Lisp,
+                               0@Integer, p)
+                    mr(i, pa(j)) := s
+            mr
+
+        mmul(m1 : M, m2 : M, d2 : I, p : I) : M ==
+            nr1 := nrows(m1)
+            nc1 := ncols(m1)
+            ncols(m2) < nc1 => error "mmul: m2 too small"
+            nrows(m2) < d2 => error "mmul: m2 too small"
+            nr2 := qcoerce(d2)@NNI
+            res := new(nr1, nr2, 0)$M
+            for i in 0..(nr1 - 1) repeat
+                for j in 0..(nr2 - 1) repeat
+                    s : I := 0
+                    s := q_dot(m1, m2, i, j, 0, 0, nc1, s, p)
+                    res(i, j) := s
+            res
+
+        mul_mv(vr : PA, m : M, v : PA, p : I) : Void ==
+            nr := #vr
+            nc := ncols(m)
+            kk : I := 0
+            for i in 0..(nr - 1) repeat
+                ss : Integer := 0
+                for j in 0..(nc - 1) repeat
+                    ss := muladd(row_major_aref(m, add_si(kk, j)), v(j), ss)
+                kk := kk + nc
+                vr(i) := Qrem(ss, p)
+
+        copy_mat_part(m : M, nr : I, nc : I) : M ==
+            res := new(qcoerce(nr)@NNI, qcoerce(nc)@NNI, 0)$M
+            for i in 0..(nr - 1) repeat
+                for j in 0..(nc - 1) repeat
+                    res(i, j) := m(i, j)
+            res
+
+        shift_mat!(m : M, sa : I, nr : I, nc : I) : Void ==
+            for i in 0..(nr - 1) repeat
+                for j in 0..(nc - 1) repeat
+                    m(i, j) := m(i + sa, j)
+
+        inverse(m, p) ==
+            nc := ncols(m)
+            nc ~= nrows(m) => error "invere: matrix not square"
+            lud := lup_decomposition(m, p)
+            lm := lud.lpart
+            ipivs := lud.udinv
+            tup := lud.upart
+            pa := lud.ppart
+            for j in 0..(nc - 1) repeat
+                ipivs(j) = 0 => return "failed"
+            upi := lower_triangular_inverse(tup, ipivs, p)
+            nc := ncols(m)
+            for j in 0..(nc - 1) repeat
+                ipivs(j) := 1
+            tlmi := lower_triangular_inverse(lm, ipivs, p)
+            triangular_multiply(upi, tlmi, pa, p)
+
+        swapRows(m : M, i : I, j : I) : Void ==
+            nc := ncols(m)
+            for k in min_ind..(nc + min_ind - 1) repeat
+                tmp := qelt(m, i, k)
+                qsetelt!(m, i, k, qelt(m, j, k))
+                qsetelt!(m, j, k, tmp)
+
+        lup_decomposition(m, p) ==
+            nc := ncols(m)
+            nr := nrows(m)
+            nm := min(nc, nr)
+            nc1 := qconvert(nc - 1)@SI
+            nr1 := qconvert(nr - 1)@SI
+            nm1 := qconvert(nm - 1)@SI
+            lm := new(nr, nm, 0)$M
+            um := new(nc, nm, 0)$M
+            pa0 := new(nr, 0)$PA
+            ipivs := new(nm, 0)$PA
+            i : SI
+            j : SI
+            for j in 0..nr1 repeat
+                pa0(j) := j
+            for i in 0..nm1 repeat
+                j0 : SI := -1
+                -- First stage elimination on column i, put in lm
+                for j in i..nr1 repeat
+                    s : I := q_sub(p, qelt(m, pa0(j), i))
+                    s := q_dot(lm, um, j, i, min_ind,
+                               min_ind, i, s, p)
+                    s :=
+                        s = 0 => 0
+                        q_sub(p, s)
+                    qsetelt!(lm, j, i, s)
+                    -- Choose pivot
+                    if j0 < 0 and s ~= 0 then j0 := qconvert(j)@SI
+                if j0 >= 0 and j0 ~= i then
+                    tmpi := pa0(i)
+                    pa0(i) := pa0(j0)
+                    pa0(j0) := tmpi
+                    swapRows(lm, i, j0)
+                -- Update column i of lm
+                piv := qelt(lm, i, i)
+                qsetelt!(lm, i, i, 1)
+                i1 : SI := qconvert(i + 1)
+                if j0 >= 0 then
+                    ipiv := modInverse(piv, p)
+                    ipivs(i) := ipiv
+                    for j in i1..nr1 repeat
+                        lm(j, i) := mul_mod(ipiv, qelt(lm, j, i), p)
+                else
+                    ipivs(i) := 0
+                -- Compute row i of um
+                qsetelt!(um, i, i, piv)
+                for j in i1..nc1 repeat
+                    s : I := q_sub(p, qelt(m, pa0(i), j))
+                    s := q_dot(lm, um, i, j, min_ind,
+                               min_ind, i, s, p)
+                    s :=
+                        s = 0 => 0
+                        q_sub(p, s)
+                    qsetelt!(um, j, i, s)
+            [lm, um, ipivs, pa0]

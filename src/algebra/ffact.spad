@@ -273,37 +273,11 @@ ModularFactorizationTools1 : Exports == Implementation where
 
     empty_mat?(mat) == empty?(mat)$U32Matrix
 
-    -- multiply m1 by transpose of m2
-    mmul(m1 : U32Matrix, m2 : U32Matrix, d2 : Integer, p : Integer
-         ) : U32Matrix ==
-        nr1 := nrows(m1)
-        nc1 := ncols(m1)
-        ncols(m2) < nc1 => error "mmul: m2 too small"
-        nrows(m2) < d2 => error "mmul: m2 too small"
-        nr2 := qcoerce(d2)@NNI
-        res := new(nr1, nr2, 0)$U32Matrix
-        for i in 0..(nr1 - 1) repeat
-            for j in 0..(nr2 - 1) repeat
-                ss : Integer := 0
-                for k in 0..(nc1 - 1) repeat
-                    ss := Qmuladd(m1(i, k), m2(j, k), ss)
-                res(i, j) := Qrem(ss, p)
-        res
-
     copy_mat_part(m : U32Matrix, nr : Integer) : U32Matrix ==
-        nc : Integer := min(ncols(m), nr)
-        res := new(qcoerce(nr)@NNI, qcoerce(nc)@NNI, 0)$U32Matrix
-        for i in 0..(nr - 1) repeat
-            for j in 0..(nc - 1) repeat
-                res(i, j) := m(i, j)
-        res
+        copy_mat_part(m, nr, min(ncols(m), nr))$ModularU32MatrixOperations
 
-    shift_mat!(m : U32Matrix, sa : Integer,
-               nr : Integer) : Void ==
-        nc : Integer := min(ncols(m), nr)
-        for i in 0..(nr - 1) repeat
-            for j in 0..(nc - 1) repeat
-                m(i, j) := m(i + sa, j)
+    shift_mat!(m : U32Matrix, sa : Integer, nr : Integer) : Void ==
+        shift_mat!(m, sa, nr, min(ncols(m), nr))$ModularU32MatrixOperations
 
     trim_mat!(m : U32Matrix, nr0 : Integer, nr1 : Integer,
               rdata : LIPr) : Void ==
@@ -380,7 +354,7 @@ ModularFactorizationTools1 : Exports == Implementation where
             for k in 0..l1s while i < dps1 repeat
                 m1(j, k) := pol(i)
                 i := i + 1
-        m2 := mmul(m1, pm, n, p)
+        m2 := mmul(m1, pm, n, p)$ModularU32MatrixOperations
         ncols(m2) ~= n => error "modular_compose: unexpected dimension of m2"
         p1 := new(n, 0)$U32Vector
         res := new(n, 0)$U32Vector

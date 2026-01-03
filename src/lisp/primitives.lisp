@@ -190,6 +190,13 @@
    `(setf (aref (the (simple-array (,',b_spec ,',nb) (* *)) ,v) ,i ,j)
           ,s))
 
+(defmacro ,(suffixed_name QMAJ_AREF_ nbn) (v i)
+   `(ROW-MAJOR-AREF (the (simple-array (,',b_spec ,',nb) (* *)) ,v) ,i))
+
+(defmacro ,(suffixed_name QMAJ_INDEX_ nbn) (v i j)
+    `(ARRAY-ROW-MAJOR-INDEX (the (simple-array (,',b_spec ,',nb) (* *)) ,v)
+      ,i ,j))
+
 (defmacro ,(suffixed_name ANROWS_ nbn) (v)
     `(array-dimension (the (simple-array (,',b_spec ,',nb) (* *)) ,v) 0))
 

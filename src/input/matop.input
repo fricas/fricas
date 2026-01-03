@@ -10,4 +10,37 @@ m1 := matrix([[1, 2], [3, 4]])$U32Matrix
 testTrue("(m2 := map(c +-> c, m1)$mp; true)")
 testEquals("members(m1)", "members(m2)")
 
+testcase "lup_decomposition"
+m1 := matrix([[1, 0], [17, 1]])$U32Matrix
+r1 := lup_decomposition(m1, 30011)$ModularU32MatrixOperations
+testEquals("r1.lpart", "m1")
+testEquals("r1.upart", "matrix([[1, 0], [0, 1]])$U32Matrix")
+testEquals("r1.udinv", "construct([1, 1])$U32Vector")
+testEquals("r1.ppart", "construct([0, 1])$U32Vector")
+
+m2 := matrix([[0, 1], [17, 1]])$U32Matrix
+r2 := lup_decomposition(m2, 30011)$ModularU32MatrixOperations
+testEquals("r2.lpart*transpose(r2.upart)", "m2(entries(r2.ppart), [0, 1])")
+
+m3 := matrix([[1, 2, 3], [2, 4, 8]])$U32Matrix
+r3 := lup_decomposition(m3, 30011)$ModularU32MatrixOperations
+testEquals("r3.lpart*transpose(r3.upart)", "m3")
+
+m4 := matrix([[0, 0, 3], [2, 4, 8]])$U32Matrix
+r4 := lup_decomposition(m4, 30011)$ModularU32MatrixOperations
+testEquals("r4.lpart*transpose(r4.upart)", "m4(entries(r4.ppart), [0, 1, 2])")
+testEquals("r4.udinv", "construct([15006, 0])$U32Vector")
+
+m5 := matrix([[1, 7, 1], [0, 0, 0], [0, 0, 5]])$U32Matrix
+r5 := lup_decomposition(m5, 30011)$ModularU32MatrixOperations
+testEquals("r5.lpart*transpose(r5.upart)", "m5")
+testEquals("r5.udinv", "construct([1, 0, 24009])$U32Vector")
+
+testcase "inverse"
+
+m1 := matrix([[860, 758], [750, 889]])$U32Matrix
+minv := (inverse(m1, 30011)$ModularU32MatrixOperations)
+testEquals("mmul(m1, transpose(minv), 2, 30011)$ModularU32MatrixOperations",
+           "matrix([[1, 0], [0, 1]])$U32Matrix")
+
 statistics()
