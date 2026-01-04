@@ -1,0 +1,321 @@
+)abbrev package TEXSCAN TeXScanner
+++ Author: Waldek Hebisch
+++ Description: This package implements a scanner for TeX.
+TeXScanner : Exports == Implementation where
+  State ==> Record(str : String, pos : Integer)
+  Token ==> Union(text : String, lbrace : "lbrace", rbrace : "rbrace",
+                  tmath : "tmath", dmath : "dmath",
+                  macro_name : Record(name : String), eos : "eos",
+                  error : "error")
+  Exports ==> with
+      at_eos? : State -> Boolean
+        ++ at_eos?(s) returns true if and only if input is at the end
+        ++ of string.
+      get_token! : State -> Token
+        ++ get_token!(s) gets new token from the string and moves
+        ++ input position after retruned token.
+
+  Implementation ==> add
+
+      import Character
+
+      char_lbrace := char("{")
+      char_rbrace := char("}")
+      char_backslash := char("\")
+      char_slash := char("/")
+      char_dollar := char("$")
+      char_percent := char("%")
+      char_newline := newline()$Character
+
+      at_eos?(st : State) : Boolean ==
+          #(st.str) < st.pos
+
+      handle_verb(st : State) : Token ==
+          c_pos := st.pos
+          s := st.str
+          #s < c_pos =>
+              error "handle_verb: Unexpected end of string"
+          c0 := s(c_pos)
+          o_pos := c_pos := c_pos + 1
+          repeat
+              #s < c_pos =>
+                  error "handle_verb: Unexpected end of string"
+              s(c_pos) = c0 =>
+                  st.pos := c_pos + 1
+                  return [s(o_pos..(c_pos - 1))]
+              c_pos := c_pos + 1
+
+      skip_comment(st : State) : Void ==
+          s := st.str
+          c_pos := st.pos
+          while not(#s < c_pos) repeat
+             cc := s(c_pos)
+             c_pos := c_pos + 1
+             cc = char_newline => break
+          st.pos := c_pos
+
+      get_token!(st : State) : Token ==
+          o_pos := c_pos := st.pos
+          s := st.str
+          #s < c_pos => ["eos"]
+          cc := s(c_pos)
+          c_pos := c_pos + 1
+          if cc = char_percent then
+              st.pos := c_pos
+              skip_comment(st)
+              c_pos := st.pos
+              #s < c_pos => return ["eos"]
+              cc := s(c_pos)
+              c_pos := c_pos + 1
+          cc = char_lbrace =>
+              st.pos := c_pos
+              ["lbrace"]
+          cc = char_rbrace =>
+              st.pos := c_pos
+              ["rbrace"]
+          cc = char_dollar =>
+              st.pos := c_pos
+              #s < c_pos => ["tmath"]
+              cc := s(c_pos)
+              not(cc = char_dollar) => ["tmath"]
+              st.pos := c_pos + 1
+              ["dmath"]
+          cc = char_backslash =>
+              #s < c_pos => ["error"]
+              cc := s(c_pos)
+              not(alphabetic?(cc)) =>
+                  st.pos := c_pos + 1
+                  [[s(o_pos..c_pos)]$Record(name : String)]
+              repeat
+                  c_pos := c_pos + 1
+                  (#s < c_pos or not(alphabetic?(s(c_pos)))) =>
+                      st.pos := c_pos
+                      name := s(o_pos..(c_pos - 1))
+                      name = "\verb" =>
+                          return handle_verb(st)
+                      return [[name]$Record(name : String)]
+          repeat
+              if cc = char_slash and not(#s < c_pos) and
+                    s(c_pos) = char_backslash then
+                  c_pos := c_pos + 1
+              #s < c_pos or (cc := s(c_pos)) = char_lbrace
+                         or cc = char_rbrace or cc = char_backslash
+                            or cc = char_percent or cc = char_dollar =>
+                  st.pos := c_pos
+                  return [s(o_pos..(c_pos - 1))]
+              c_pos := c_pos + 1
+
+)abbrev domain TEXTREE TeXTree
+++ Author: Waldek Hebisch
+++ Description: This domain represents TeX parse tree.
+TeXTree : Exports == Implementation where
+  M_rec ==> Record(name : String, args : List(%))
+  Exports ==> with
+    group : List(%) -> %
+      ++ group(l) builds group node from a list l.
+    group? : % -> Boolean
+      ++ group(t) returns true if and only if t is a group node.
+    ungroup : % -> List(%)
+      ++ ungroup(t) extracts underlying list from a group node.
+    m_call : (String, List(%)) -> %
+      ++ m_call(s, l) builds macro call node for macro with name
+      ++ s and with actual arguments l.
+    m_call? : % -> Boolean
+      ++ m_call?(t) returns true if and only if t is a macro call node.
+    get_call : % -> M_rec
+      ++ get_call(t) extracts name and actual arguments from a macro
+      ++ call node.
+    text_math : % -> %
+      ++ text_math(t) builds a text math node with content t.
+    text_math? : % -> Boolean
+      ++ text_math?(t) returns true if and only if t is a text math node.
+    display_math : % -> %
+      ++ diplay_math(t) builds a display math node with content t.
+    display_math? : % -> Boolean
+      ++ display_math?(t) returns true if and only if t is a display
+      ++ math node.
+    get_math : % -> %
+      ++ get_math(t) extracts content of text or display math node.
+    text : String -> %
+      ++ text(s) build a node representing text s.
+    text? : % -> Boolean
+      ++ text?(t) returns true if and only if t is a node representing text.
+    get_text : % -> String
+      ++ get_text(t) extracts text from a node representing text.
+
+  Implementation ==> add
+
+    Rep := Union(group : List(%), m_rec : M_rec, tmath : %, dmath : %,
+                 text : String)
+
+    group(l : List(%)) : % == [group == l]@Rep
+    group?(x : %) : Boolean == x case group
+    ungroup(x : %) : List(%) == x.group
+
+    m_call(s : String, args : List(%)) : % ==
+        [m_rec == [s, args]$M_rec]
+    m_call?(x : %) : Boolean == x case m_rec
+    get_call(x : %) : M_rec == x.m_rec
+
+    text_math(x : %) : % == [tmath == x]
+    text_math?(x : %) : Boolean == x case tmath
+
+    display_math(x : %) : % == [dmath == x]
+    display_math?(x : %) : Boolean == x case dmath
+
+    get_math(x : %) : % ==
+        x case dmath => x.dmath
+        x.tmath
+
+    text(s : String) : % == [text == s]
+    text?(x : %) : Boolean == x case text
+    get_text(x : %) : String == x.text
+
+)abbrev package TEXPARSE TexParser
+++ Author: Waldek Hebisch
+++ Description: This package implement TeX parser, currently limited
+++ to constructs appearing in docstrings.
+TexParser : Exports == Implementation where
+  Exports ==> with
+    parse : String -> TeXTree
+      ++ parse(s) parses s and returns resulting parse tree.
+    parse : TextFile -> TeXTree
+      ++ parse(f) parses f and returns resulting parse tree.
+
+  Implementation ==> add
+
+    Scan_state ==> Record(str : String, pos : Integer)
+
+    Token ==> Union(text : String, lbrace : "lbrace", rbrace : "rbrace",
+                    tmath : "tmath", dmath : "dmath",
+                    macro_name : Record(name : String), eos : "eos",
+                    error : "error")
+    Tex_mode ==> Union("normal", "tmath", "dmath")
+
+    Scan_rec ==> Record(st : Scan_state, n_tok : SingleInteger,
+                        tex_mode : Tex_mode, next_tok : Token)
+
+    peek_token(sr : Scan_rec) : Token ==
+        sr.n_tok = 0 =>
+            sr.n_tok := 1
+            tok := get_token!(sr.st)$TeXScanner
+            sr.next_tok := tok
+            tok
+        sr.next_tok
+
+    unget_token(sr : Scan_rec, tok : Token) : Void ==
+        sr.n_tok > 0 => error "unget_token: already have look-ahead token"
+        sr.n_tok := 1
+        sr.next_tok := tok
+
+    get_token(sr : Scan_rec) : Token ==
+        sr.n_tok = 0 => get_token!(sr.st)$TeXScanner
+        sr.n_tok := 0
+        sr.next_tok
+
+    parse_items : Scan_rec -> List(TeXTree)
+
+    M_rec ==> Record(name : String, args : List(TeXTree))
+    parse_macro : (Scan_rec, String) -> M_rec
+
+    parse_item(sr : Scan_rec) : TeXTree ==
+        tok := get_token(sr)
+        tok case eos =>
+            error "parse_item: Unexpected end of string"
+        tok case rbrace =>
+            error "parse_item: Unexpected right brace"
+        tok case lbrace =>
+            lv := parse_items(sr)
+            tok := get_token(sr)
+            tok case rbrace => group(lv)
+            error "parse_item: Braced group did not end in right brace"
+        tok case tmath =>
+            sr.tex_mode = "tmath" or sr.tex_mode = "dmath" =>
+                error "parse_item: internal error, math mode re-entered"
+            sr.tex_mode := "tmath"
+            v := group(parse_items(sr))
+            tok := get_token(sr)
+            sr.tex_mode := "normal"
+            tok case tmath => text_math(v)
+            error "parse_item: text math did not end in a $"
+        tok case dmath =>
+            sr.tex_mode = "tmath" or sr.tex_mode = "dmath" =>
+                error "parse_item: internal error, math mode re-entered"
+            sr.tex_mode := "dmath"
+            v := group(parse_items(sr))
+            tok := get_token(sr)
+            sr.tex_mode := "normal"
+            tok case dmath => display_math(v)
+            error "parse_item: display math did not end in a $$"
+        tok case macro_name =>
+            cr := parse_macro(sr, tok.macro_name.name)
+            not(empty?(cr.args)) =>
+                error "parse_item: Macro call needing arguments"
+            m_call(cr.name, cr.args)
+        tok case text =>
+            text(tok.text)
+
+    parse_items(sr : Scan_rec) : List(TeXTree) ==
+        lv : List(TeXTree) := []
+        repeat
+            tok := get_token(sr)
+            tok case macro_name =>
+                name := tok.macro_name.name
+                cr := parse_macro(sr, tok.macro_name.name)
+                lv := cons(m_call(cr.name, cr.args), lv)
+            unget_token(sr, tok)
+            tok case rbrace or tok case eos or (sr.tex_mode = "tmath" or
+              sr.tex_mode = "dmath") and (tok case tmath or tok case dmath)
+                 => return reverse!(lv)
+            lv := cons(parse_item(sr), lv)
+
+    macro0 : List(String) := ["\blankline", "\newline", "\em", "\it",
+          "\undocumented", "\LaTeX", "\TeX", "\sigma", "\delta", "\times",
+            "\leq", "\pi", "\sum", "\Language", "\$", "\%", "\#", "\^", "\~",
+        "\{", "\}", "\_"", "\=", "\/", "\\", "\<", "\dot", "\item", "\int",
+          "\par"]
+
+    macro1 : List(String) := ["\spad", "\spadop", "\spadfun", "\spadtype",
+           "\tab", "\space", "\spadignore", "\spadgloss", "\spadvar",
+             "\userfun", "\spadsys", "\url", "\centerline", "\begin", "\end",
+         "\indent", "\pspadfun"]
+
+    macro2 : List(String) := ["\spadfunFrom", "\spadopFrom", "\indented",
+          "\spadglossSee"]
+
+    parse_macro(sr : Scan_rec, name : String) : M_rec ==
+        n : Integer :=
+            member?(name, macro0) => 0
+            member?(name, macro1) => 1
+            member?(name, macro2) => 2
+            print(message(name)$OutputForm)$OutputForm
+            error "parse_macro: unknown macro name"
+        args : List(TeXTree) := []
+        for i in 1..n repeat
+            args := cons(parse_item(sr), args)
+        args := reverse!(args)
+        [name, args]$M_rec
+
+    parse(s : String) : TeXTree ==
+        sr := [[s, 1]$Scan_state, 0, "normal", [eos]]$Scan_rec
+        lv := parse_items(sr)
+        tok := get_token(sr)
+        tok case rbrace =>
+            error "parse: Spurious right brace"
+        not(tok case eos) =>
+            error "parse: not all string parsed"
+        #lv = 1 => first(lv)
+        group(lv)
+
+    parse(f : TextFile) : TeXTree ==
+        ls : List(String) := []
+        nls := new(1, newline()$Character)$String
+        repeat
+            su := readLineIfCan!(f)
+            su case "failed" => break
+            ls := cons(su::String, ls)
+            ls := cons(nls, ls)
+        ls := reverse!(ls)
+        s := concat(ls)
+        parse(s)
+
