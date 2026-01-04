@@ -449,7 +449,36 @@ InvestigateConditions(catvecListMaker, base_shell, e) ==
               old
         list2
   list:= ICformat_loop(list, secondaries, e)
-  [true,:[LASSOC(ms,list) for ms in masterSecondaries]]
+  cons(true, [find_cond(ms, list) for ms in masterSecondaries])
+
+-- This is a hack to compensate for the fact that compiler may transform
+-- cat.
+find_cond(cat, cl) ==
+    (res := LASSOC(cat, cl)) => res
+    not CONTAINED("LENGTH", cat) => res
+    not (cat is [op1, :args1]) => res
+    found := false
+    for cp in cl while not(found) repeat
+        not(cp is [cat2, :cnd]) => "iterate"
+        not(cat2 is [op2, :args2]) => "iterate"
+        not (op1 = op2) => "iterate"
+        not (#args1 = #args2) => "iterate"
+        if hacky_match_list(args1, args2) then
+            res := cnd
+            found := true
+    res
+
+hacky_match_list(l1, l2) ==
+    ok := true
+    for i1 in l1 for i2 in l2 while ok repeat
+        ok := hacky_match(i1, i2)
+    ok
+
+hacky_match(i1, i2) ==
+    -- Possibly add here other special cases
+    i1 is ["call", "LENGTH", v] and i2 is ["#", =v] => true
+    ATOM(i1) => i1 = i2
+    hacky_match_list(i1, i2)
 
 ICformat_loop(list, secondaries, e) ==
   $ICformat_hash : local := MAKE_HASHTABLE('EQUAL)
