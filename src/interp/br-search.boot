@@ -311,8 +311,9 @@ oPageFrom(opname,conname) == --called by \spadfunFrom{opname}{conname}
   opAlist := [itemlist]
   dbShowOperationsFromConform(htPage, opAlist)
 
-spadType(x) ==  --called by \spadtype{x} from HyperDoc
-  s := PNAME x
+spadType(s) ==  --called by \spadtype{x} from HyperDoc
+  if SYMBOLP(s) then
+      s := PNAME(s)
   form := ncParseFromString s or
             systemError ['"Argument: ",s,'" to spadType won't parse"]
   if atom form then form := [form]
