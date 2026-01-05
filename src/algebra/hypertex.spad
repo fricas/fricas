@@ -1,0 +1,927 @@
+)abbrev package BRINFO BrowserInformation
+++ Author: Waldek Hebisch
+++ Description: This package makes available information about Spad
+++ constructors and operations.
+BrowserInformation : Exports == Implementation where
+  SE ==> SExpression
+  SY ==> Symbol
+  Con_form ==> SE
+  Cond_rec ==> Record(form : SE, condition : SE)
+  Cond_con_lst ==> List(Cond_rec)
+  Grp_con_rec ==> Record(grp_tag : SE, constrs : Cond_con_lst)
+  Grp_con_lst ==> List(Grp_con_rec)
+  Sig_doc ==> Record(signature : SE, condition : SE, origin : SE,
+                     documentation : String)
+  Op_rec ==> Record(name : SY, sdl : List(Sig_doc))
+  Op_lst ==> List(Op_rec)
+  Grp_rec ==> Record(grp_tag : SE, ops : Op_lst)
+  Grp_lst ==> List(Grp_rec)
+  Exp_rec ==> Record(cats : Cond_con_lst, ops : Op_lst)
+  Split_rec ==> Record(categories : List(SY), domains : List(SY),
+                       packages : List(SY))
+  Gen_rec ==> Record(con_info : Split_rec, op_info : Op_lst)
+  Err_ind ==> SE
+  Con_res ==> Union(Split_rec, Err_ind)
+  Gen_res ==> Union(Gen_rec, Err_ind)
+  Op_res ==> Union(Op_lst, Err_ind)
+
+  Exports ==> with
+     constructor_documentation : SY -> String
+       ++ constructor_documentation(n) gives documentation string for
+       ++ constructor with name s.  Returns emp[ty string for
+       ++ undocumented constructors.
+     constructor_form : SY -> SE
+       ++ constructor_form(n) gives constructor form, that is
+       ++ S-expression (list) with constructor name and argument names
+       ++ for constructor with name s.
+     constructor_kind : SY -> SY
+       ++ constructor_kind(s) gives constructor kind, that is one of
+       ++ category, domain, package.
+     constructor_name? : SY -> Boolean
+       ++ constructor_name?(s) returns true if and only if s is a name
+       ++ of existing constructor.
+     constructor_signature : (SY, List(SE)) -> SE
+       ++ constructor_signature(s) gives constructor signature, that
+       ++ is S-expression (list) giving type of constructor and types
+       ++ of arguments.
+     default_name? : SY -> Boolean
+       ++ default_name?(s) returns true if and only if s has format
+       ++ of name of a default package, that is name of s ends in
+       ++ an ampersand.
+     exposed_constructor? : SY -> Boolean
+       ++ exposed_constructor?(s) returns true if and only if s is
+       ++ a name of an exposed constructor.
+     exports : Con_form -> Exp_rec
+       ++ exports(c) gives explicit exports of a constructor.
+     ancestors : (Con_form, Boolean) -> Cond_con_lst
+       ++ ancestors(c, use_args?) computes ancestors of a constructor.
+     parents : Con_form -> Cond_con_lst
+       ++ parents(c) gives parents (that is direct ancestors) of a
+       ++ constructor.
+     operations : (Con_form, Boolean) -> Op_lst
+       ++ operations(c, use_args?) computes operation list of a
+       ++ constructor.
+     simp_ops_conditions : (Op_lst, SE, SE) -> Op_lst
+       ++ simp_ops_conditions(ol, cf, df) simplifies conditions of
+       ++ operations in ol after arguments in df are substituded for
+       ++ arguments in cf.
+     all_constructors : () -> Split_rec
+       ++ all_constructors() gives list of all constructor names,
+       ++ split into categories, domains and packages.
+     search_constructors : (String, SY) -> Con_res
+       ++ search_constructors(n, t) searches for constructors with
+       ++ name matching n.  t may be k (meaning all constructors),
+       ++ c, d p or p meaning only categories, domains or packages
+       ++ are returned).
+     search_operations : String -> Op_res
+       ++ search_operations(n) searches for operations with name
+       ++ matching n.
+     search_documentation : String -> Gen_res
+       ++ search_documentation(n) searches for constructors and
+       ++ operations with documentation string matching n.
+     search_general : String -> Gen_res
+       ++ search_general(n) searches or constructors and operations
+       ++ with name matching n.
+     group_by_condition : Cond_con_lst -> Grp_con_lst
+       ++ group_by_condition(ol) splits list of constructors with
+       ++ conditions depending on their conditions.
+     group_by_origin : Op_lst -> Grp_lst
+       ++ group_by_origin(ol) splits list of operations depending
+       ++ on their origin.
+     group_by_condition : Op_lst -> Grp_lst
+       ++ group_by_condition(ol) splits list of operations depending
+       ++ on their conditions.
+     group_by_implementation : (List(SE), Con_form, Op_lst) -> Grp_lst
+       ++ group_by_condition(al, df, ol) splits list of operations ol
+       ++ depending on their implementation.  ol must be a list of
+       ++ operations from a domain with form df, al must fully specify
+       ++ operations to the domain.
+     search_opl : (String, Op_lst) -> Op_res
+       ++ search_opl(n, ol) gives list of operations from ol with
+       ++ names matching n.
+     is_error? : SE -> Boolean
+       ++ is_error?(e) returns true if and only if e is result of
+       ++ search which ended with an error.
+     convert_pattern : String -> SE
+       ++ convert_pattern(n) converts search pattern n to an internal
+       ++ form used by \spad{do_match}.
+     do_match : (SE, String) -> Boolean
+       ++ do_match(p, s) returns true if and only if s matches to
+       ++ pattern p.
+     filter_ops : (SE, Op_lst) -> Op_lst
+       ++ filter_ops(p, ol) gives list of operations from ol with
+       ++ names matching p.
+     filter_symbols : (SE, List(SY)) -> List(SY)
+       ++ filter_symbols(p, sl) gives list of symbols from sl with
+       ++ names matching p.
+     ops_from_exports : () -> Op_lst
+       ++ ops_from_exports() gives list of all exported operations
+       ++ computed from constructor exports.
+     ops_from_libdb : () -> Op_lst
+       ++ ops_from_libdb() gives list of all exported operations
+       ++ from libdb.
+       ++ This operation is present only to check compatibility with
+       ++ old code and will be removed in the future.
+     search_operations_libdb : String -> Op_res
+       ++ search_operations_libdb(n) searches for all operations with
+       ++ name matching n using old code.
+       ++ This operation is present only to check compatibility with
+       ++ old code and will be removed in the future.
+     downcase : String -> String
+       ++ downcase(s) converts s to lower case
+
+  Implementation ==> add
+
+    constructor_signature(conname : SY, args : List(SE)) : SE ==
+        sig : SE := getConstructorSignature(conname)$Lisp
+        get_database(conname, 'CONSTRUCTORKIND)$Lisp = 'category =>
+            SUBLISLIS(args, _$TriangleVariableList$Lisp, sig)$Lisp
+        sublisFormal(args, sig)$Lisp
+
+    char_a := char("a")$Character
+    char_A := char("A")$Character
+    char_Z := char("Z")$Character
+    char_lpar := char("(")$Character
+    char_star := char("*")$Character
+    char_tick := char("`")$Character
+
+    downcase(s : String) : String ==
+        res := new(#s, space()$Character)
+        shift := ord(char_a) - ord(char_A)
+        for i in 1..#s repeat
+            c := s(i)
+            res(i) :=
+                 c >= char_A and c <= char_Z => char(ord(c) + shift)
+                 c
+        res
+
+    is_error?(se : SE) : Boolean ==
+        list?(se) and (l := destruct(se); not(empty?(l)) and
+            (e1 := first(l); e1 = convert('error)))
+
+    convert_pattern(pat : String) : SE ==
+        pmTransFilter(pat)$Lisp
+
+    do_match(pat : SE, s : String) : Boolean ==
+        res1 : SExpression := superMatch?(pat, downcase(s))$Lisp
+        not(null?(res1))
+
+    filter_ops(pat : SE, opl : Op_lst ) : Op_lst ==
+        res := []$Op_lst
+        for opr in opl repeat
+            if do_match(pat, string(opr.name)) then
+                res := cons(opr, res)
+        reverse!(res)
+
+    search_opl(pat : String, opl : Op_lst) : Op_res ==
+        pc := convert_pattern(pat)
+        is_error?(pc) => pc pretend Err_ind
+        filter_ops(pc, opl)
+
+    constructor_name?(name : SY) : Boolean ==
+        res1 : SE := constructor?(name)$Lisp
+        not(null?(res1))
+
+    exposed_constructor?(name : Symbol) : Boolean ==
+        res1 : SExpression := isExposedConstructor(name)$Lisp
+        not(null?(res1))
+
+    simp_ops_conditions(opl : Op_lst, con_form : SE, dom_form : SE
+                       ) : Op_lst ==
+        res : Op_lst := []
+        cl: List(SE) := cons(con_form, rest(destruct(con_form)))
+        dl : List(SE) := cons(dom_form, rest(destruct(dom_form)))
+        for opr in opl repeat
+            res1 : List(Sig_doc) := []
+            for sd in opr.sdl repeat
+                r1 : Sig_doc :=
+                    sd.condition = (true pretend SE) => sd
+                    np : SE := SUBLISLIS(dl, cl, sd.condition)$Lisp
+                    np := simpHasPred(np)$Lisp
+                    null?(np) => iterate
+                    [sd.signature, np, sd.origin, sd.documentation]
+                res1 := cons(r1, res1)
+            if not(empty?(res1)) then
+                res := cons([opr.name, reverse!(res1)], res)
+        reverse!(res)
+
+    operations(form : SE, use_args? : Boolean) : Op_lst ==
+        dom_form : SE :=
+            -- use_args? => form
+            convert([])
+        form := constructor_form(symbol(car(form)))
+        SETF(_$docTableHash$Lisp, MAKE_HASHTABLE('EQUAL)$Lisp)$Lisp
+        docTable : None := dbDocTable(form)$Lisp
+        lst1 : List(SE) := koOps(form, dom_form)$Lisp
+        res : Op_lst := []
+        for op_mm in lst1 repeat
+            ope := car(op_mm)
+            op : SY :=
+                symbol?(ope) => symbol(ope)
+                integer?(ope) =>
+                    k := integer(ope)
+                    k = 0 => "0"::SY
+                    k = 1 => "1"::SY
+                    error "unexpected integer as operator"
+                error "unexpected operator form"
+            mms := destruct(cdr(op_mm))
+            -- print(op_mm::OutputForm)$OutputForm
+            res1 : List(Sig_doc) := []
+            for mm1 in mms repeat
+                (sig, cond) := destruct(mm1)
+                nd : SE := dbGetDocTable(ope, sig, docTable)$Lisp
+                -- print(nd::OutputForm)$OutputForm
+                doc : SE := convert([])
+                if null?(nd) then
+                    print(message("operations: op not found in doc table"
+                                 )$OutputForm)$OutputForm
+                    print(op_mm::OutputForm)$OutputForm
+                    print(mm1::OutputForm)$OutputForm
+                    -- error "operations: op not found in doc table"
+                    ori := form
+                else
+                    ori := car(nd)
+                    doc := cdr(nd)
+                doc_s : String :=
+                    null?(doc) => ""
+                    string(car(doc))
+                res1 := cons([sig, cond, ori, doc_s], res1)
+            res := cons([op, reverse!(res1)], res)
+        -- print(res::OutputForm)$OutputForm
+        reverse!(res)
+
+    Gr_rec ==> Record(grp_tag : SE, i : Integer, name : SY, sd : Sig_doc)
+    Aux_op_rec ==> Record(i : Integer, name : SY, sd : Sig_doc)
+
+    -- The allowed atoms are symbols, integers and strings.  Lists should
+    -- be proper.
+    sex_order(s1 : SE, s2 : SE) : Boolean ==
+        list?(s1) =>
+            not(list?(s2)) => true
+            sl1 := destruct(s1)
+            sl2 := destruct(s2)
+            repeat
+                empty?(sl1) => return not(empty?(sl2))
+                empty?(sl2) => return false
+                e1 := first(sl1)
+                e2 := first(sl2)
+                e1 = e2 =>
+                    sl1 := rest(sl1)
+                    sl2 := rest(sl2)
+                return sex_order(e1, e2)
+        list?(s2) => false
+        string?(s1) =>
+             not(string?(s2)) => true
+             string(s1) < string(s2)
+        string?(s2) => false
+        integer?(s1) =>
+             not(integer?(s2)) => true
+             integer(s1) < integer(s2)
+        integer?(s2) => false
+        string(symbol(s1)) < string(symbol(s2))
+
+    gr1_ord(g1 : Gr_rec, g2 : Gr_rec) : Boolean ==
+        sex_order(g1.grp_tag, g2.grp_tag)
+
+    gr2_ord(a1 : Aux_op_rec, a2 : Aux_op_rec) : Boolean ==
+        a1.i < a2.i
+
+    group_data1(lst : List(Aux_op_rec)) : Op_lst ==
+        lst := sort(gr2_ord, lst)
+        a0 := first(lst)
+        lst := rest(lst)
+        on := a0.name
+        res1 : List(Sig_doc) := [a0.sd]
+        res : Op_lst := []
+        for a1 in lst repeat
+            on = a1.name =>
+                res1 := cons(a1.sd, res1)
+            res := cons([on, reverse!(res1)], res)
+            on := a1.name
+            res1 := [a1.sd]
+        res := cons([on, res1], res)
+        reverse!(res)
+
+    group_data(grd : List(Gr_rec)) : Grp_lst ==
+        empty?(grd) => []
+        grd := sort(gr1_ord, grd)
+        e1 := first(grd)
+        ot := e1.grp_tag
+        res1 : List(Aux_op_rec) := [[e1.i, e1.name, e1.sd]$Aux_op_rec]
+        res : Grp_lst := []
+        for gr in grd repeat
+            t := gr.grp_tag
+            r1 := [gr.i, gr.name, gr.sd]$Aux_op_rec
+            t = ot =>
+                res1 := cons(r1, res1)
+            opl1 := group_data1(res1)
+            res := cons([ot, opl1]$Grp_rec, res)
+            ot := t
+            res1 := [r1]
+        opl1 := group_data1(res1)
+        reverse!(cons([ot, opl1], res))
+
+    group_by_field(opl : Op_lst, field : Sig_doc -> SE) : Grp_lst ==
+        grd : List(Gr_rec) := []
+        i : Integer := 1
+        for opr in opl repeat
+            name := opr.name
+            for sd in opr.sdl repeat
+                r1 := [field(sd), i, name, sd]$Gr_rec
+                i := i + 1
+                grd := cons(r1, grd)
+        group_data(grd)
+
+    group_by_condition(opl : Op_lst) : Grp_lst ==
+        group_by_field(opl, sd +-> sd.condition)
+
+    group_by_origin(opl : Op_lst) : Grp_lst ==
+        group_by_field(opl, sd +-> sd.origin)
+
+    group_by_implementation(args : List(SE), dom_form : SE, opl : Op_lst
+                           ) : Grp_lst ==
+        con_name := symbol(car(dom_form))
+        dom : None := EVAL(dom_form)$Lisp
+        pred_lst : List(SE) := get_database(con_name, 'PREDICATES)$Lisp
+        grd : List(Gr_rec) := []
+        i : Integer := 1
+        for opr in opl repeat
+            name := opr.name
+            for sd in opr.sdl repeat
+                op : SY :=
+                    name = "0"::SY => "Zero"::SY
+                    name = "1"::SY => "One"::SY
+                    name
+                sig_imp : SE := get_op_implementation(op, sd.signature,
+                              sd.condition, pred_lst, args, dom)$Lisp
+                r1 := [cdr(sig_imp), i, name, sd]$Gr_rec
+                i := i + 1
+                grd := cons(r1, grd)
+        group_data(grd)
+
+    find_symbol(name : String) : Union(SY, "failed") ==
+        find_symbol(name)$Lisp
+
+    get_ops_doc(name : Symbol) : List(SE) ==
+        doc : List(SE) := get_database(name, 'DOCUMENTATION)$Lisp
+        empty?(doc) => doc
+        con_doc := destruct(first(doc))
+        e1 := first(con_doc)
+        not(symbol(e1) = 'constructor) => doc
+        con_doc := destruct(con_doc(2))
+        e1 := first(con_doc)
+        not(null?(e1)) => doc
+        rest(doc)
+
+    Sig_rec ==> Record(signature : SE, condition : SE)
+    Op_rec2 ==> Record(name : SY, sigs : List(Sig_rec))
+
+    unpack_sig_cond(r1 : SE) : Sig_rec ==
+        [car(r1), cdr(r1)]
+
+    sd_cmp(sd1 : Sig_doc, sd2 : Sig_doc) : Boolean ==
+        sig1 := sd1.signature
+        sig2 := sd2.signature
+        sig1 = sig2 =>
+            orig1 := sd1.origin
+            orig2 := sd2.origin
+            orig1 = orig2 => sex_order(sd1.condition, sd2.condition)
+            sex_order(orig1, orig2)
+        sex_order(sig1, sig2)
+
+    sdl_cmp(sdl1 : List(Sig_doc), sdl2 : List(Sig_doc)) : Boolean ==
+        repeat
+            empty?(sdl1) => not(empty?(sdl2))
+            empty?(sdl2) => return false
+            sd1 := first(sdl1)
+            sd2 := first(sdl2)
+            sd1 = sd2 =>
+                sdl1 := rest(sdl1)
+                sdl2 := rest(sdl2)
+            return sd_cmp(sd1, sd2)
+
+    opr_cmp(r1 : Op_rec, r2 : Op_rec) : Boolean ==
+        n1 := r1.name
+        n2 := r2.name
+        n1 = n2 => sdl_cmp(r1.sdl, r2.sdl)
+        n1 < n2
+
+    sig_cmp(r1 : Sig_rec, r2 : Sig_rec) : Boolean ==
+        sig1 := r1.signature
+        sig2 := r2.signature
+        sig1 = sig2 =>
+            sex_order(r1.condition, r2.condition)
+        sex_order(sig1, sig2)
+
+    sigs_cmp(l1 : List(Sig_rec), l2 : List(Sig_rec)) : Boolean ==
+        repeat
+            empty?(l1) => not(empty?(l2))
+            empty?(l2) => return false
+            r1 := first(l1)
+            r2 := first(l2)
+            r1 = r2 =>
+                l1 := rest(l1)
+                l2 := rest(l2)
+            return sig_cmp(r1, r2)
+
+    opr2_cmp(r1 : Op_rec2, r2 : Op_rec2) : Boolean ==
+        n1 := r1.name
+        n2 := r2.name
+        n1 = n2 => sigs_cmp(r1.sigs, r2.sigs)
+        n1 < n2
+
+    convert_opl(opl1 : List(SE)) : List(Op_rec2) ==
+        empty?(opl1) => []
+        r1 := first(opl1)
+        opl1 := rest(opl1)
+        need_sort := false
+        oname := symbol(car(r1))
+        oname :=
+            oname = "Zero"::SY =>
+                need_sort := true
+                "0"::SY
+            oname = "One"::SY =>
+                need_sort := true
+                "1"::SY
+            oname
+        res1 : List(Sig_rec) := [unpack_sig_cond(cdr(r1))]
+        opl : List(Op_rec2) := []
+        for r1 in opl1 repeat
+            name := symbol(car(r1))
+            name :=
+                name = "Zero"::SY =>
+                    need_sort := true
+                    "0"::SY
+                name = "One"::SY =>
+                    need_sort := true
+                    "1"::SY
+                name
+            r2 := unpack_sig_cond(cdr(r1))
+            name = oname =>
+                res1 := cons(r2, res1)
+            opl := cons([oname, reverse!(res1)], opl)
+            oname := name
+            res1 := [r2]
+        opl := cons([oname, reverse!(res1)], opl)
+        need_sort => sort(opr2_cmp, opl)
+        reverse!(opl)
+
+    convert_doc1(d1 : SE) : SE ==
+        symbol?(name := car(d1)) => d1
+        new_name : SE :=
+            not(list?(name)) or not(null?(cdr(name))) =>
+                error "convert_doc1: unexpected name form"
+            ns := symbol(car(name))
+            ns = "Zero"::SY => convert("0"::SY)
+            ns = "One"::SY => convert("1"::SY)
+            error "convert_doc1: unexpected name form"
+        dl := rest(destruct(d1))
+        convert(cons(new_name, dl))
+
+    convert_doc(doc : List(SE)) : List(SE) ==
+        good? := true
+        for d1 in doc while good? repeat
+            good? := symbol?(car(d1))
+        if not(good?) then
+            doc := [convert_doc1(d1) for d1 in doc]
+        -- mySort(doc)$Lisp
+        sort(sex_order, doc)
+
+    add_origin(sigs : List(Sig_rec), form : SE) : List(Sig_doc) ==
+        [[sig.signature, sig.condition, form, ""] for sig in sigs]
+
+    merge_doc1(sigs : List(Sig_rec), doc1 : List(SE), form : SE
+              ) : List(Sig_doc) ==
+        res : List(Sig_doc) := []
+        for sig in sigs repeat
+            found := false
+            r1 : Sig_doc := [sig.signature, sig.condition, form, ""]
+            for d1 in doc1 while not(found) repeat
+               if car(d1) = sig.signature then
+                   r1.documentation := string(car(cdr(d1)))
+                   found := true
+            res := cons(r1, res)
+        reverse!(res)
+
+    is_attribute_doc?(d1 : SE) : Boolean ==
+        -- print(message("is_attribute_doc?")$OutputForm)$OutputForm
+        sdl := destruct(cdr(d1))
+        #sdl = 1 and (sig := car(first(sdl));
+                      sig = convert([convert('attribute)$SE]))
+
+    merge_doc(opl1 : List(SE), doc : List(SE), form : SE) : Op_lst ==
+        -- print(doc::OutputForm)$OutputForm
+        empty?(opl1) => []
+        opl2 := convert_opl(opl1)
+        res : Op_lst := []
+        for r1 in opl2 repeat
+            name := r1.name
+            name :=
+                name = "Zero"::SY => "0"::SY
+                name = "One"::SY => "1"::SY
+                name
+            sdl : List(Sig_doc) :=
+                empty?(doc) => sdl := add_origin(r1.sigs, form)
+                d1 := first(doc)
+                dname := symbol(car(d1))
+                while dname < name repeat
+                    print(d1::OutputForm)$OutputForm
+                    -- not(is_attribute_doc?(d1)) =>
+                    --    error "merge_doc: unused documentation 1"
+                    doc := rest(doc)
+                    empty?(doc) => break
+                    d1 := first(doc)
+                    dname := symbol(car(d1))
+                name = dname =>
+                    doc := rest(doc)
+                    merge_doc1(r1.sigs, destruct(cdr(d1)), form)
+                add_origin(r1.sigs, form)
+            res := cons([name, sdl], res)
+        for d1 in doc repeat
+            print(d1::OutputForm)$OutputForm
+            -- if not(is_attribute_doc?(d1)) then
+            --    error "merge_doc: unused documentation 2"
+        reverse!(res)
+
+    exports(c : Con_form) : Exp_rec ==
+        con_name := symbol(car(c))
+        r1 : SE := getConstructorExports(constructor_form(con_name), true)$Lisp
+        cl := car(r1) pretend Cond_con_lst
+        opl1 := destruct(cdr(r1))
+        -- print(opl1::OutputForm)$OutputForm
+        doc : List(SE) := convert_doc(get_ops_doc(con_name))
+        opl := merge_doc(opl1, doc, c)
+        [cl, opl]
+
+    con_exports(c : SY) : Exp_rec ==
+        cf : SE := constructor_form(c)
+        null?(cf) =>
+            print(c::OutputForm)$OutputForm
+            error "con_exports: not form"
+        exports(cf)
+
+    Fun_rec ==> Record(name : SY, sd : Sig_doc)
+
+    flaten_opll(ll : List(Op_lst)) : List(Fun_rec) ==
+        empty?(ll) => []
+        res1 : List(Fun_rec) := []
+        for l1 in ll repeat
+            for r1 in l1 repeat
+                name := r1.name
+                for sd in r1.sdl repeat
+                    res1 := cons([name, sd], res1)
+        res1
+
+    fun_cmp(f1 : Fun_rec, f2 : Fun_rec) : Boolean ==
+        n1 := f1.name
+        n2 := f2.name
+        n1 = n2 =>
+            sd1 := f1.sd
+            sd2 := f2.sd
+            sig1 := sd1.signature
+            sig2 := sd2.signature
+            sig1 = sig2 =>
+                orig1 := sd1.origin
+                orig2 := sd2.origin
+                orig1 = orig2 => sex_order(sd1.condition, sd2.condition)
+                sex_order(orig1, orig2)
+            sex_order(sig1, sig2)
+        n1 < n2
+
+    group_funs(fl : List(Fun_rec)) : Op_lst ==
+        f1 := first(fl)
+        oname := f1.name
+        sdl := [f1.sd]
+        res : Op_lst := []
+        for f1 in rest(fl) repeat
+            name := f1.name
+            name = oname =>
+                sdl := cons(f1.sd, sdl)
+            res := cons([oname, reverse!(sdl)], res)
+            oname := name
+            sdl := [f1.sd]
+        res := cons([oname, reverse!(sdl)], res)
+        reverse!(res)
+
+    mangle_signature(sig : SE) : SE ==
+        sl := destruct(sig)
+        res : List(SE) := []
+        for s1 in sl repeat
+           ns1 :=
+               list?(s1) and not(null?(s1)) and null?(cdr(s1))
+                 and (s11 := car(s1); symbol?(s11)) => s11
+               list?(s1) => mangle_signature(s1)
+               s1
+           res := cons(ns1, res)
+        convert(reverse!(res))
+
+    mangle_condition(c : SE, args : List(SE)) : SE ==
+        cl := destruct(c)
+        if first(cl) = convert('AND) then
+            cl := cons(convert('and), rest(cl))
+        sublisFormal(args, mangle_signature(convert(cl)))$Lisp
+
+    fix_args(args : SE) : List(SE) ==
+        al := destruct(args)
+        res : List(SE) := []
+        for a1 in al repeat
+            as := symbol(a1)
+            na : SE :=
+                as = "T$"::SY => convert("T"::SY)
+                a1
+            res := cons(na, res)
+        reverse!(res)
+
+    mangle_signatures(fl : List(Fun_rec)) : Void ==
+        for f1 in fl repeat
+            sd := f1.sd
+            args := fix_args(cdr(sd.origin))
+            sd.signature := sublisFormal(args,
+                                         mangle_signature(sd.signature))$Lisp
+            sd.condition = (true pretend SE) => iterate
+            -- sd.condition := sublisFormal(args,
+            --                             mangle_signature(sd.condition))$Lisp
+            sd.condition := mangle_condition(sd.condition, args)
+
+    convert_opll(ll : List(Op_lst)) : Op_lst ==
+        empty?(ll) => []
+        fl := flaten_opll(ll)
+        mangle_signatures(fl)
+        fl := sort(fun_cmp, fl)
+        group_funs(fl)
+
+    all_con_names() : List(SY) == allConstructors()$Lisp
+
+    ops_from_exports() : Op_lst ==
+        cl : List(SY) := all_con_names()
+        cfl : List(SE) := []
+        for c in cl repeat
+            default_name?(c) => iterate
+            cf := constructor_form(c)
+            null?(cf) => iterate
+            cfl := cons(cf, cfl)
+        -- cfl : List(SE) := [cf for c in cl | not(default_name?(c)) and (
+        --                       cf := constructor_form(c); not(null?(cf)))]
+        opll : List(Op_lst) := [exports(cf).ops for cf in cfl]
+        convert_opll(opll)
+
+    all_ops : Op_lst := []
+    all_ops_initialized := false
+
+    search_operations(pat : String) : Op_res ==
+        if not(all_ops_initialized) then
+            all_ops := ops_from_exports()
+            all_ops_initialized := true
+        search_opl(pat, all_ops)
+
+    string_to_integer(s : String) : Union(Integer, "failed") ==
+        res : SExpression := string2Integer(s)$Lisp
+        null?(res) => "failed"
+        integer(res)
+
+    load_docs(fl : List(Fun_rec)) : Void ==
+        for f1 in fl repeat
+            sd := f1.sd
+            ds := sd.documentation
+            ds = "" => iterate
+            ku := string_to_integer(ds)
+            if ku case Integer then
+                k := ku@Integer
+                ds :=
+                    k < 2 => ""
+                    dbReadComments(k)$Lisp
+                sd.documentation := ds
+
+    ops_from_libdb() : Op_lst ==
+        res1 := search_operations_libdb("*")
+        res1 case Err_ind => error "ops_from_libdb: search failed"
+        opl1 := res1@Op_lst
+        fl := flaten_opll([opl1])
+        load_docs(fl)
+        fl := sort(fun_cmp, fl)
+        group_funs(fl)
+
+    constructor_kind(name : SY) : SY ==
+        get_database(name, 'CONSTRUCTORKIND)$Lisp
+
+    ancestors(form : Con_form, use_args? : Boolean) : Cond_con_lst ==
+        domname : SE :=
+            use_args? => form
+            convert([])$SE
+        ancestorsOf(form, domname)$Lisp
+
+    parents(form : Con_form) : Cond_con_lst ==
+        symbol?(form) => parentsOf(form)$Lisp
+        parentsOfForm(form)$Lisp
+
+    default_name?(n : SY) : Boolean ==
+        ns := string(n)
+        ns(#ns) = char("&")
+
+    split_constructors(lst : List(SY)) : Split_rec ==
+        cats := doms := packs := []$List(SY)
+        for n in lst repeat
+            default_name?(n) => iterate
+            n = 'Category => iterate
+            kind := constructor_kind(n)
+            kind = 'category => cats := cons(n, cats)
+            kind = 'domain => doms := cons(n, doms)
+            kind = 'package => packs := cons(n, packs)
+            error "split_constructors: Unknown constructor kind"
+        cats := reverse!(cats)
+        doms := reverse!(doms)
+        packs := reverse!(packs)
+        [cats, doms, packs]
+
+    all_constructors() : Split_rec ==
+        cnl := [cn for cn in all_con_names() | not(default_name?(cn))]
+        split_constructors(sort(cnl))
+
+    split_ops(lst : List(String)
+             ) : Record(con : List(SY), opl : List(String)) ==
+        opl : List(String) := []
+        cnl : List(Symbol) := []
+        opl : List(String) := []
+        for str in lst repeat
+            str(1) = char("o") => opl := cons(str, opl)
+            k := position(char_tick, str)
+            sym := str(2..(k - 1))::SY
+            cnl := cons(sym, cnl)
+        cnl := reverse!(cnl)
+        opl := reverse!(opl)
+        [cnl, opl]
+
+)if false
+    search_constructors(pat : String, tag : Symbol) : Con_res ==
+        res1 : List(SExpression) := grepConstruct(pat, tag)$Lisp
+        empty?(res1) => [[], [], []]
+        not(STRINGP(first(res1))$Lisp) => res1 pretend Err_ind
+        (res2, opl) := split_ops(res1 pretend List(String))
+        not(empty?(opl)) => error "grep_constructors: found operations"
+        split_constructors(res2)
+)endif
+
+    filter_symbols(pc : SE, sl : List(SY)) : List(SY) ==
+        res := []$List(SY)
+        for sy in sl repeat
+            if do_match(pc, string(sy)) then
+                res := cons(sy, res)
+        reverse!(res)
+
+    search_constructors(pat : String, tag : Symbol) : Con_res ==
+        pc := convert_pattern(pat)
+        is_error?(pc) => pc pretend Err_ind
+        cnl := [cn for cn in all_con_names() | not(default_name?(cn))]
+        cnl2 := filter_symbols(pc, cnl)
+        res1 := split_constructors(sort(cnl2))
+        tag = 'k => res1
+        tag = 'c => [res1.categories, [], []]
+        tag = 'd => [[], res1.domains, []]
+        tag = 'p => [[], [], res1.packages]
+        error "unimplemented"
+
+    get_conname(form : String) : String ==
+        k := position(char_lpar, form)
+        k < 1 => form(2..#form)
+        form(2..(k - 1))
+
+    constructor_form(name : SY) : SE ==
+        getConstructorForm(name)$Lisp
+
+    get_constructor_args(name : Symbol) : List(SExpression) ==
+        form := destruct(constructor_form(name))
+        rest(form)
+
+    constructor_documentation(name : SY) : String ==
+        doc : List(SExpression) := get_database(name, 'DOCUMENTATION)$Lisp
+        empty?(doc) => ""
+        doc := destruct(first(doc))
+        e1 := first(doc)
+        not(symbol(e1) = 'constructor) => ""
+        doc := destruct(doc(2))
+        string(doc(2))
+
+    expand_op_line(l1 : String) : Record(name : SY, opr : Sig_doc) ==
+        els : List(String) := dbParts(l1, 7, 1)$Lisp
+        (name_s, nargs, xflag, sig_s, origs, pred_s, doc) := els
+        name := name_s::SY
+        pred := parse(pred_s)$InputForm pretend SE
+        if null?(pred) then
+            pred := true pretend SE
+        sig := (parse(sig_s)$InputForm) pretend SE
+        car(sig) ~= convert('Mapping) =>
+                    error "expand_op_lines: unexpected signature"
+        sig := cdr(sig)
+        con_sym := get_conname(origs)::Symbol
+        orig_l := cons(convert(con_sym),
+                         get_constructor_args(con_sym)
+                      )$List(SExpression)
+        [name, [sig, pred, convert(orig_l), doc]]
+
+    expand_op_lines(lst : List(String)) : Op_lst ==
+        empty?(lst) => []
+        lst := sort(lst)
+        res : Op_lst := []
+        (oname, sig1) := expand_op_line(first(lst))
+        lst := rest(lst)
+        res1 : List(Sig_doc) := [sig1]
+        for l1 in lst repeat
+            (name, sig1) := expand_op_line(l1)
+            name = oname =>
+                res1 := cons(sig1, res1)
+            res := cons([oname, reverse!(res1)], res)
+            oname := name
+            res1 := [sig1]
+        res := cons([oname, reverse!(res1)], res)
+        reverse!(res)
+
+    search_operations_libdb(pat : String) : Op_res ==
+        res1 : List(SExpression) := grepConstruct(pat, 'o)$Lisp
+        empty?(res1) => []
+        not(STRINGP(first(res1))$Lisp) => res1 pretend Err_ind
+        expand_op_lines(res1 pretend List(String))
+
+)if false
+    get_libdb_lines(lst1 : List(String)) : List(String) ==
+        lfn : String := concat(_$spadroot$Lisp, "/algebra/libdb.text")
+        lf := open(lfn::FileName, "input")$BasicFile
+        res : List(String) := []
+        for l1 in lst1 repeat
+            ptr_pos := position(char_tick, l1)
+            c1 := l1(1..(ptr_pos - 1))
+            nr := parse_integer(c1)$ScanningUtilities
+            if nr > 0 then
+                FILE_-POSITION(lf, nr)$Lisp
+                l2u : None := read_line(lf)$Lisp
+                NULL(l2u)$Lisp => iterate
+                res := cons(l2u pretend String, res)
+        close!(lf)
+        REMOVE_-DUPLICATES(reverse!(res))$Lisp
+
+    do_grep(pat : String, tag : SY) : Gen_res ==
+        res1 : List(SExpression) := grepConstruct(pat, tag)$Lisp
+        empty?(res1) => [[[], [], []], []]
+        not(STRINGP(first(res1))$Lisp) => res1 pretend Err_ind
+        res2 := res1 pretend List(String)
+        if tag = 'w then
+            res2 := get_libdb_lines(res2)
+        (res_c, opl) := split_ops(res2)
+        [split_constructors(res_c), expand_op_lines(opl)]
+
+    search_documentation(pat : String) : Gen_res ==
+        do_grep(removeSurroundingStars(pat)$Lisp, 'w)
+)endif
+
+    add_stars(pc : SE) : SE ==
+        string?(pc) =>
+            pat1 := string(pc)
+            pre : String :=
+                pat1(1) = char_star => ""
+                "*"
+            post : String :=
+                pat1(#pat1) = char_star => ""
+                "*"
+            convert(concat([pre, pat1, post]))
+        list?(pc) =>
+            op := car(pc)
+            args := destruct(cdr(pc))
+            args := [add_stars(arg) for arg in args]
+            convert(cons(op, args))
+        error "add_stars: unimplemented"
+
+    search_ops_doc(pc : SE) : Op_lst ==
+        if not(all_ops_initialized) then
+            all_ops := ops_from_exports()
+            all_ops_initialized := true
+        res : List(Fun_rec) := []
+        for opr in all_ops repeat
+            name := opr.name
+            for sd in opr.sdl repeat
+                if do_match(pc, sd.documentation) then
+                    res := cons([name, sd], res)
+        group_funs(reverse!(res))
+
+    search_con_doc(pc : SE) : Split_rec ==
+        cnl := [cn for cn in all_con_names() | not(default_name?(cn))]
+        res1 : List(SY) := []
+        for cn in cnl repeat
+            doc := constructor_documentation(cn)
+            if do_match(pc, constructor_documentation(cn)) then
+                res1 := cons(cn, res1)
+        split_constructors(sort(res1))
+
+    search_documentation(pat : String) : Gen_res ==
+        pc := convert_pattern(pat)
+        is_error?(pc) => pc pretend Err_ind
+        pc := add_stars(pc)
+        cl := search_con_doc(pc)
+        opl := search_ops_doc(pc)
+        [cl, opl]$Gen_rec
+
+    search_general(pat : String) : Gen_res ==
+        cu := search_constructors(pat, 'k)
+        cu case Err_ind => cu@Err_ind
+        ou := search_operations(pat)
+        ou case Err_ind => ou@Err_ind
+        [cu@Split_rec, ou@Op_lst]$Gen_rec
+
