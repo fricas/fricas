@@ -647,7 +647,7 @@ checkDecorate u ==
             acc
       x = char '_$ or x = '"$"  => ['"\$",:acc]
       x = char '_% or x = '"%"  => ['"\%",:acc]
-      x = char '_, or x = '","  => ['",{}",:acc]
+      x = char '_, or x = '","  => ['",",:acc]
       x = '"\spad" => ['"\spad",:acc]
       STRINGP x and DIGITP x.0 => [x,:acc]
       null spadflag and
