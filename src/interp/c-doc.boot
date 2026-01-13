@@ -300,7 +300,8 @@ checkRecordHash u ==
             checkDocError ['"Unknown \spadtype: ", s]
           atom key => 'ok
           checkDocError ['"Wrong number of arguments: ",form2HtString key]
-      else if member(x,'("\spadop" "\keyword")) and (u := checkLookForLeftBrace IFCDR u) and (u := IFCDR u) then
+      else if x = '"\spadop" and (u := checkLookForLeftBrace IFCDR u) and
+              (u := IFCDR u) then
           x := intern checkGetStringBeforeRightBrace u
           not (GETL(x,'Led) or GETL(x,'Nud)) =>
             checkDocError ['"Unknown \spadop: ",x]
