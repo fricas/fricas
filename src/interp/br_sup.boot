@@ -1,3 +1,5 @@
+)package "BOOT"
+
 get_op_implementation(op, sig, pred, predicates, dom, domname) ==
     $returnNowhereFromGoGet: local := true
     predValue := evalDomainOpPred(dom, pred, predicates)
