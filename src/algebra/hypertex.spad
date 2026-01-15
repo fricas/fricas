@@ -129,14 +129,20 @@ BrowserInformation : Exports == Implementation where
        ++ old code and will be removed in the future.
      downcase : String -> String
        ++ downcase(s) converts s to lower case
+     sublis_formal : (List(SE), SE) -> SE
+       ++ sublis_formal(args, expr) replaces formal variable symbols
+       ++ in expr by corresponding elements of args.
 
   Implementation ==> add
+
+    sublis_formal(args : List(SE), expr : SE) : SE ==
+        sublisFormal(args, expr)$Lisp
 
     constructor_signature(conname : SY, args : List(SE)) : SE ==
         sig : SE := getConstructorSignature(conname)$Lisp
         get_database(conname, 'CONSTRUCTORKIND)$Lisp = 'category =>
             SUBLISLIS(args, _$TriangleVariableList$Lisp, sig)$Lisp
-        sublisFormal(args, sig)$Lisp
+        sublis_formal(args, sig)
 
     char_a := char("a")$Character
     char_A := char("A")$Character
@@ -342,6 +348,7 @@ BrowserInformation : Exports == Implementation where
                            ) : Grp_lst ==
         con_name := symbol(car(dom_form))
         dom : None := EVAL(dom_form)$Lisp
+        dom_name : SE := ELT(dom, 0$Integer)$Lisp
         pred_lst : List(SE) := get_database(con_name, 'PREDICATES)$Lisp
         grd : List(Gr_rec) := []
         i : Integer := 1
@@ -352,9 +359,11 @@ BrowserInformation : Exports == Implementation where
                     name = "0"::SY => "Zero"::SY
                     name = "1"::SY => "One"::SY
                     name
-                sig_imp : SE := get_op_implementation(op, sd.signature,
-                              sd.condition, pred_lst, args, dom)$Lisp
-                r1 := [cdr(sig_imp), i, name, sd]$Gr_rec
+                sig1 : SE := sublisFormal(cdr(dom_name), sd.signature,
+                                          args)$Lisp
+                sig_imp : SE := get_op_implementation(op, sig1, sd.condition,
+                                    pred_lst, dom, dom_name)$Lisp
+                r1 := [sig_imp, i, name, sd]$Gr_rec
                 i := i + 1
                 grd := cons(r1, grd)
         group_data(grd)
@@ -619,7 +628,7 @@ BrowserInformation : Exports == Implementation where
         cl := destruct(c)
         if first(cl) = convert('AND) then
             cl := cons(convert('and), rest(cl))
-        sublisFormal(args, mangle_signature(convert(cl)))$Lisp
+        sublis_formal(args, mangle_signature(convert(cl)))
 
     fix_args(args : SE) : List(SE) ==
         al := destruct(args)
@@ -636,11 +645,10 @@ BrowserInformation : Exports == Implementation where
         for f1 in fl repeat
             sd := f1.sd
             args := fix_args(cdr(sd.origin))
-            sd.signature := sublisFormal(args,
-                                         mangle_signature(sd.signature))$Lisp
+            sd.signature := sublis_formal(args, mangle_signature(sd.signature))
             sd.condition = (true pretend SE) => iterate
-            -- sd.condition := sublisFormal(args,
-            --                             mangle_signature(sd.condition))$Lisp
+            -- sd.condition := sublis_formal(args,
+            --                               mangle_signature(sd.condition))
             sd.condition := mangle_condition(sd.condition, args)
 
     convert_opll(ll : List(Op_lst)) : Op_lst ==
