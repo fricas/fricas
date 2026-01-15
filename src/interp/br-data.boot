@@ -266,7 +266,7 @@ buildGloss() ==  --called by buildDatabase (database.boot)
   for [name,:line] in pairs repeat
     outP  := FILE_-POSITION outstream
     defP  := FILE_-POSITION defstream
-    lines := spreadGlossText transformAndRecheckComments(name,[line])
+    lines := [transformAndRecheckComments(name,[line])]
     PRINTEXP(name, outstream)
     PRINTEXP($tick,outstream)
     PRINTEXP(defP, outstream)
