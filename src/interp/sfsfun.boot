@@ -45,13 +45,6 @@ fracpart(x) ==
 intpart(x) ==
         first(MULTIPLE_-VALUE_-LIST(FLOOR(x)))
 
-negintp(x) ==
-        if ZEROP IMAGPART(x) and x<0.0 and ZEROP fracpart(x)
-        then
-                true
-        else
-                false
-
 -- Lisp PI is a long float and causes type errors, here we give
 -- enough digits to have double accuracy even after conversion
 -- to binary
@@ -76,9 +69,6 @@ r_gamma (x) ==
 
 r_lngamma (x) ==
         if x>20 then lnrgammaRatapprox(x) else LOG(gammaRatapprox(x))
-
-cbeta(z,w) ==
-        cgamma(z)*cgamma(w)/(cgamma(z+w))
 
 gammaStirling(x) ==
        EXP(r_lngamma(x))
@@ -173,9 +163,6 @@ cgamma (z) ==
                 result := EXP(result)
         result
 
-lncgamma(z) ==
-   clngamma(REALPART z, IMAGPART z, z)
-
 clngamma(z1,z2,z) ==
         --- conjugate of gamma is gamma of conjugate.  map 2nd and 4th quads
         --- to first and third quadrants
@@ -254,208 +241,6 @@ cgammaBernsum (z) ==
                 zterm := zterm*zsquaredinv
                 sum := sum + el*zterm
         sum
-
-
-
-
---- nth derivatives of ln gamma for real x, n = 0,1,....
---- requires files floatutils, rgamma
-$PsiAsymptoticBern := VECTOR(0.0, 0.1666666666666667, -0.03333333333333333, 0.02380952380952381,_
-              -0.03333333333333333, 0.07575757575757576, -0.2531135531135531, 1.166666666666667,_
-              -7.092156862745098, 54.97117794486216, -529.1242424242424, 6192.123188405797,_
-              -86580.25311355311, 1425517.166666667, -27298231.06781609, 601580873.9006424,_
-              -15116315767.09216, 429614643061.1667, -13711655205088.33, 488332318973593.2,_
-              -19296579341940070.0,  841693047573682600.0, -40338071854059460000.0)
-
-
-PsiAsymptotic(n,x) ==
-        xn := x^n
-        xnp1 := xn*x
-        xsq := x*x
-        xterm := xsq
-        factterm := r_gamma(n+2)/2.0/r_gamma(float(n+1))
-        --- initialize to 1/n!
-        sum := AREF($PsiAsymptoticBern,1)*factterm/xterm
-        for k in 2..22 repeat
-                xterm := xterm * xsq
-                if n=0 then factterm := 1.0/float(2*k)
-                else if n=1 then factterm := 1
-                else factterm := factterm * float(2*k+n-1)*float(2*k+n-2)/(float(2*k)*float(2*k-1))
-                sum := sum + AREF($PsiAsymptoticBern,k)*factterm/xterm
-        PsiEps(n,x) + 1.0/(2.0*xnp1) + 1.0/xn * sum
-
-
-PsiEps(n,x) ==
-        if n = 0
-        then
-                result := -LOG(x)
-        else
-                result :=  1.0/(float(n)*(x^n))
-        result
-
-PsiAsymptoticOrder(n,x,nterms) ==
-        sum := 0
-        xterm := 1.0
-        np1 := n+1
-        for k in 0..nterms repeat
-                xterm := (x+float(k))^np1
-                sum := sum + 1.0/xterm
-        sum
-
-
-r_psi(n,x) ==
-        if x<=0.0
-        then
-                if ZEROP fracpart(x)
-                then FloatError('"singularity encountered at ~D",x)
-                else
-                        m := MOD(n,2)
-                        sign := (-1)^m
-                        if fracpart(x)=.5
-                        then
-                                skipit := 1
-                        else
-                                skipit := 0
-                        sign*((dfPi^(n + 1))*cotdiffeval(n, dfPi*(-x), skipit)
-                            + r_psi(n, 1.0 - x))
-        else if n=0
-        then
-                - rPsiW(n,x)
-        else
-                r_gamma(float(n+1))*rPsiW(n,x)*(-1)^MOD(n+1,2)
-
----Amos' w function, with w(0,x) picked to be -psi(x) for x>0
-rPsiW(n,x) ==
-        if (x <=0 or n < 0)
-        then
-                HardError('"rPsiW not implemented for negative n or non-positive x")
-        nd := 6         -- magic number for number of digits in a word?
-        alpha := 3.5 + .40*nd
-        beta := 0.21 + (.008677e-3)*(nd-3) + (.0006038e-4)*(nd-3)^2
-        xmin := float(FLOOR(alpha + beta*n) + 1)
-        if n>0
-        then
-                a := MIN(0,1.0/float(n)*LOG(DOUBLE_-FLOAT_-EPSILON/MIN(1.0,x)))
-                c := EXP(a)
-                if ABS(a) >= 0.001
-                then
-                        fln := x/c*(1.0-c)
-                else
-                        fln := -x*a/c
-                bign := FLOOR(fln) + 1
---- Amos says to use alternative series for large order if ordinary
---- backwards recurrence too expensive
-                if (bign < 15) and (xmin > 7.0+x)
-                then
-                        return PsiAsymptoticOrder(n,x,bign)
-        if x>= xmin
-        then
-                return PsiAsymptotic(n,x)
----ordinary case -- use backwards recursion
-        PsiBack(n,x,xmin)
-
-PsiBack(n,x,xmin) ==
-        xintpart := PsiIntpart(x)
-        x0 := x-xintpart                ---frac part of x
-        result := PsiAsymptotic(n,x0+xmin+1.0)
-        for k in xmin..xintpart by -1 repeat
---- Why not decrement from x?   See Amos p. 498
-                result := result + 1.0/((x0 + float(k))^(n+1))
-        result
-
-
-PsiIntpart(x) ==
-        if x<0
-        then
-                result :=  -PsiInpart(-x)
-        else
-                result := FLOOR(x)
-        return result
-
-
----Code for computation of derivatives of cot(z), necessary for
---- polygamma reflection formula.  If you want to compute n-th derivatives of
----cot(Pi*x), you have to multiply the result of cotdiffeval by Pi^n.
-
--- MCD: This is defined at the Lisp Level.
--- COT(z) ==
---         1.0/TAN(z)
-
-cotdiffeval(n,z,skipit) ==
----skip=1 if arg z is known to be an exact multiple of Pi/2
-        a := MAKE_-ARRAY(n+2)
-        SETF(AREF(a,0),0.0)
-        SETF(AREF(a,1),1.0)
-        for i in 2..n repeat
-                SETF(AREF(a,i),0.0)
-        for l in 1..n repeat
-                m := MOD(l+1,2)
-                for k in m..l+1 by 2 repeat
-                        if k<1
-                        then
-                                t1 := 0
-                        else
-                                t1 := -AREF(a,k-1)*(k-1)
-                        if k>l
-                        then
-                                t2 := 0
-                        else
-                                t2 := -AREF(a,k+1)*(k+1)
-                        SETF(AREF(a,k), t1+t2)
-        --- evaluate d^N/dX^N cot(z) via Horner-like rule
-        v := COT(z)
-        sq := v^2
-        s := AREF(a,n+1)
-        for i in (n-1)..0 by -2 repeat
-                s := s*sq + AREF(a,i)
-        m := MOD(n,2)
-        if m=0
-        then
-                s := s*v
-        if skipit=1
-        then
-                if m=0
-                then
-                        return 0
-                else
-                        return AREF(a,0)
-        else
-                return s
---- nth derivatives of ln gamma for complex z, n=0,1,...
---- requires files rpsi (and dependents), floaterrors
---- currently defined only in right half plane until reflection formula
---- works
-
---- B. Char, June, 1990.
-
-cPsi(n,z) ==
-        x := REALPART(z)
-        y := IMAGPART(z)
-        if ZEROP y
-        then    --- call real function if real
-                return r_psi(n, x)
-        if y<0.0
-        then    -- if imagpart(z) negative, take conjugate of conjugate
-                conjresult := cPsi(n,COMPLEX(x,-y))
-                return COMPLEX(REALPART(conjresult),-IMAGPART(conjresult))
-        nterms := 22
-        bound := 10.0
-        if x<0.0 --- and ABS(z)>bound and ABS(y)<bound
-        then
-                FloatError('"Psi implementation can't compute at ~S ",[n,z])
----             return cpsireflect(n,x,y,z)
-        else if (x>0.0 and ABS(z)>bound ) --- or (x<0.0 and ABS(y)>bound)
-        then
-                return PsiXotic(n,PsiAsymptotic(n,z))
-        else            --- use recursion formula
-                m := CEILING(SQRT(bound*bound - y*y) - x + 1.0)
-                result := COMPLEX(0.0,0.0)
-                for k in 0..(m-1) repeat
-                        result := result + 1.0/((z + float(k))^(n+1))
-                return PsiXotic(n,result+PsiAsymptotic(n,z+m))
-
-PsiXotic(n,result) ==
-        r_gamma(float(n+1))*(-1)^MOD(n+1,2)*result
 
 --- c parameter to 0F1, possibly complex
 --- z argument to 0F1
@@ -782,31 +567,6 @@ BesselJAsympt (v,z) ==
         SQRT(2.0/(pi*z))*EXP(BesselasymptA(mu,zsqr,zfth))*_
                 COS(BesselasymptB(mu,z,zsqr,zfth) - pi*v/2.0 - pi/4.0)
 
-
----Asymptotic series for I.  See Whittaker, p. 373.
---- valid for -3/2 Pi < arg z < 1/2 Pi
-
-BesselIAsympt(v,z,n) ==
-        i := COMPLEX(0.0, 1.0)
-        if (REALPART(z) = 0.0)
-        then return EXPT(i,v)*BesselJ(v,-IMAGPART(z))
-        sum1 := 0.0
-        sum2 := 0.0
-        fourvsq := 4.0*v^2
-        two := 2.0
-        eight := 8.0
-        term1 := 1.0
----             sum1, sum2, fourvsq,two,i,eight,term1])
-        for r in 1..n repeat
-                term1 := -term1 *(fourvsq-(two*float(r)-1.0)^2)/_
-                        (float(r)*eight*z)
-                sum1 := sum1 + term1
-                sum2 := sum2 + ABS(term1)
-        sqrttwopiz := SQRT(two*dfPi*z)
-        EXP(z)/sqrttwopiz*(1.0 + sum1 ) +_
-                EXP(-(float(n)+.5)*dfPi*i)*EXP(-z)/sqrttwopiz*(1.0+ sum2)
-
-
 ---Asymptotic formula for BesselJ when order is large comes from
 ---Debye (1909).  See Olver, Asymptotics and Special Functions, p. 134.
 ---Expansion good for 0<=phase(v)<Pi
@@ -842,53 +602,6 @@ BesselJAsymptOrder(v,z) ==
                                                                 ca2)*ca4*ca2/(4815794995200.0*v*v*v*v*v*v))
 
 
----  See Olver, p. 376-382.
-BesselIAsymptOrder(v,vz) ==
-        z := vz/v
-        Pi := dfPi
----     Use reflection formula (Atlas, p. 492)  if v not in right half plane;  Is this always accurate?
-        if REALPART(v)<0.0
-        then return BesselIAsymptOrder(-v,vz) + 2.0/Pi*SIN(-v*Pi)*BesselKAsymptOrder(-v,vz)
----     Use the reflection formula (Atlas, p. 496) if z not in right half plane;
-        if REALPART(vz) < 0.0
-        then return EXPT(-1.0,v)*BesselIAsymptOrder(v,-vz)
-        vinv := 1.0/v
-        opzsqroh := SQRT(1.0+z*z)
-        eta := opzsqroh + LOG(z/(1.0+opzsqroh))
-        p := 1.0/opzsqroh
-        p2 := p*p
-        p4 := p2*p2
-        u0p := 1.
-        u1p := 1.0/8.0*p-5.0/24.0*p*p2
-        u2p := (9.0/128.0+(-77.0/192.0+385.0/1152.0*p2)*p2)*p2
-        u3p := (75.0/1024.0+(-4563.0/5120.0+(17017.0/9216.0-85085.0/82944.0*p2)_
-                *p2)*p2)*p2*p
-        u4p := (3675.0/32768.0+(-96833.0/40960.0+(144001.0/16384.0+(-7436429.0/663552.0+37182145.0/7962624.0*p2)*p2)*p2)*p2)*p4
-        u5p := (59535.0/262144.0+(-67608983.0/9175040.0+(250881631.0/5898240.0+(-108313205.0/1179648.0+(5391411025.0/63700992.0-5391411025.0/191102976.0*p2)*p2)*p2)*p2)*p2)*p4*p
-        hornerresult := horner([u5p,u4p,u3p,u2p,u1p,u0p],vinv)
-        EXP(v*eta)/(SQRT(2.0*Pi*v)*SQRT(opzsqroh))*hornerresult
-
-
----See also Olver, pp. 376-382
-BesselKAsymptOrder (v,vz) ==
-        z := vz/v
-        vinv := 1.0/v
-        opzsqroh := SQRT(1.0+z*z)
-        eta := opzsqroh + LOG(z/(1.0+opzsqroh))
-        p := 1.0/opzsqroh
-        p2 := p^2
-        p4 := p2^2
-        u0p := 1.
-        u1p := (1.0/8.0*p-5.0/24.0*p^3)*(-1.0)
-        u2p := (9.0/128.0+(-77.0/192.0+385.0/1152.0*p2)*p2)*p2
-        u3p := ((75.0/1024.0+(-4563.0/5120.0+(17017.0/9216.0-85085.0/82944.0*p2)_
-                *p2)*p2)*p2*p)*(-1.0)
-        u4p := (3675.0/32768.0+(-96833.0/40960.0+(144001.0/16384.0+(-7436429.0/663552.0+37182145.0/7962624.0*p2)*p2)*p2)*p2)*p4
-        u5p := ((59535.0/262144.0+(-67608983.0/9175040.0+(250881631.0/5898240.0+(-108313205.0/1179648.0+(5391411025.0/63700992.0-5391411025.0/191102976.0*p2)*p2)*p2)*p2)*p2)*p4*p)*(-1.0)
-        hornerresult := horner([u5p,u4p,u3p,u2p,u1p,u0p],vinv)
-        SQRT(dfPi/(2.0*v))*EXP(-v*eta)/(SQRT(opzsqroh))*hornerresult
-
-
 -- Conversion between spad and lisp complex representations
 s_to_c(c) == COMPLEX(first c, CDR c)
 c_to_s(c) == CONS(REALPART c, IMAGPART c)
@@ -903,11 +616,6 @@ c_to_r(c) ==
 c_to_rf(c) == COERCE(c_to_r(c), 'DOUBLE_-FLOAT)
 
 -- Wrappers for functions in the special function package
-c_lngamma(z) ==  c_to_s(lncgamma(s_to_c z))
-
-c_gamma(z) ==  c_to_s(cgamma (s_to_c z))
-
-c_psi(n, z) == c_to_s(cPsi(n, s_to_c(z)))
 
 r_besselj(n, x) == c_to_r(BesselJ(n, x))
 c_besselj(v, z) == c_to_s(BesselJ(s_to_c(v), s_to_c(z)))
