@@ -1,3 +1,12 @@
+)abbrev domain ERRIND ErrorIndicator
+ErrorIndicator : Join(RetractableTo(List(String)),
+                      CoercibleTo(OutputForm)) == add
+    LS ==> List(String)
+    coerce(l : LS) : % == l pretend %
+    retract(x : %) : LS == x pretend LS
+    retractIfCan(x : %) : Union(LS, "failed") == retract(x)
+    coerce(x : %) : OutputForm == coerce(retract(x))$LS
+
 )abbrev package BRINFO BrowserInformation
 ++ Author: Waldek Hebisch
 ++ Description: This package makes available information about Spad
@@ -20,7 +29,7 @@ BrowserInformation : Exports == Implementation where
   Split_rec ==> Record(categories : List(SY), domains : List(SY),
                        packages : List(SY))
   Gen_rec ==> Record(con_info : Split_rec, op_info : Op_lst)
-  Err_ind ==> SE
+  Err_ind ==> ErrorIndicator
   Con_res ==> Union(Split_rec, Err_ind)
   Gen_res ==> Union(Gen_rec, Err_ind)
   Op_res ==> Union(Op_lst, Err_ind)
@@ -99,10 +108,7 @@ BrowserInformation : Exports == Implementation where
      search_opl : (String, Op_lst) -> Op_res
        ++ search_opl(n, ol) gives list of operations from ol with
        ++ names matching n.
-     is_error? : SE -> Boolean
-       ++ is_error?(e) returns true if and only if e is result of
-       ++ search which ended with an error.
-     convert_pattern : String -> SE
+     convert_pattern : String -> Union(SE, Err_ind)
        ++ convert_pattern(n) converts search pattern n to an internal
        ++ form used by \spad{do_match}.
      do_match : (SE, String) -> Boolean
@@ -165,8 +171,10 @@ BrowserInformation : Exports == Implementation where
         list?(se) and (l := destruct(se); not(empty?(l)) and
             (e1 := first(l); e1 = convert('error)))
 
-    convert_pattern(pat : String) : SE ==
-        pmTransFilter(pat)$Lisp
+    convert_pattern(pat : String) : Union(SE, Err_ind) ==
+        pc : SE := pmTransFilter(pat)$Lisp
+        is_error?(pc) => cdr(pc) pretend Err_ind
+        pc
 
     do_match(pat : SE, s : String) : Boolean ==
         res1 : SExpression := superMatch?(pat, downcase(s))$Lisp
@@ -181,7 +189,7 @@ BrowserInformation : Exports == Implementation where
 
     search_opl(pat : String, opl : Op_lst) : Op_res ==
         pc := convert_pattern(pat)
-        is_error?(pc) => pc pretend Err_ind
+        pc case Err_ind => pc@Err_ind
         filter_ops(pc, opl)
 
     constructor_name?(name : SY) : Boolean ==
@@ -493,7 +501,6 @@ BrowserInformation : Exports == Implementation where
             good? := symbol?(car(d1))
         if not(good?) then
             doc := [convert_doc1(d1) for d1 in doc]
-        -- mySort(doc)$Lisp
         sort(sex_order, doc)
 
     add_origin(sigs : List(Sig_rec), form : SE) : List(Sig_doc) ==
@@ -759,16 +766,6 @@ BrowserInformation : Exports == Implementation where
         opl := reverse!(opl)
         [cnl, opl]
 
-)if false
-    search_constructors(pat : String, tag : Symbol) : Con_res ==
-        res1 : List(SExpression) := grepConstruct(pat, tag)$Lisp
-        empty?(res1) => [[], [], []]
-        not(STRINGP(first(res1))$Lisp) => res1 pretend Err_ind
-        (res2, opl) := split_ops(res1 pretend List(String))
-        not(empty?(opl)) => error "grep_constructors: found operations"
-        split_constructors(res2)
-)endif
-
     filter_symbols(pc : SE, sl : List(SY)) : List(SY) ==
         res := []$List(SY)
         for sy in sl repeat
@@ -778,7 +775,7 @@ BrowserInformation : Exports == Implementation where
 
     search_constructors(pat : String, tag : Symbol) : Con_res ==
         pc := convert_pattern(pat)
-        is_error?(pc) => pc pretend Err_ind
+        pc case Err_ind => pc@Err_ind
         cnl := [cn for cn in all_con_names() | not(default_name?(cn))]
         cnl2 := filter_symbols(pc, cnl)
         res1 := split_constructors(sort(cnl2))
@@ -846,39 +843,8 @@ BrowserInformation : Exports == Implementation where
     search_operations_libdb(pat : String) : Op_res ==
         res1 : List(SExpression) := grepConstruct(pat, 'o)$Lisp
         empty?(res1) => []
-        not(STRINGP(first(res1))$Lisp) => res1 pretend Err_ind
+        not(STRINGP(first(res1))$Lisp) => rest(res1) pretend Err_ind
         expand_op_lines(res1 pretend List(String))
-
-)if false
-    get_libdb_lines(lst1 : List(String)) : List(String) ==
-        lfn : String := concat(_$spadroot$Lisp, "/algebra/libdb.text")
-        lf := open(lfn::FileName, "input")$BasicFile
-        res : List(String) := []
-        for l1 in lst1 repeat
-            ptr_pos := position(char_tick, l1)
-            c1 := l1(1..(ptr_pos - 1))
-            nr := parse_integer(c1)$ScanningUtilities
-            if nr > 0 then
-                FILE_-POSITION(lf, nr)$Lisp
-                l2u : None := read_line(lf)$Lisp
-                NULL(l2u)$Lisp => iterate
-                res := cons(l2u pretend String, res)
-        close!(lf)
-        REMOVE_-DUPLICATES(reverse!(res))$Lisp
-
-    do_grep(pat : String, tag : SY) : Gen_res ==
-        res1 : List(SExpression) := grepConstruct(pat, tag)$Lisp
-        empty?(res1) => [[[], [], []], []]
-        not(STRINGP(first(res1))$Lisp) => res1 pretend Err_ind
-        res2 := res1 pretend List(String)
-        if tag = 'w then
-            res2 := get_libdb_lines(res2)
-        (res_c, opl) := split_ops(res2)
-        [split_constructors(res_c), expand_op_lines(opl)]
-
-    search_documentation(pat : String) : Gen_res ==
-        do_grep(removeSurroundingStars(pat)$Lisp, 'w)
-)endif
 
     add_stars(pc : SE) : SE ==
         string?(pc) =>
@@ -919,9 +885,9 @@ BrowserInformation : Exports == Implementation where
         split_constructors(sort(res1))
 
     search_documentation(pat : String) : Gen_res ==
-        pc := convert_pattern(pat)
-        is_error?(pc) => pc pretend Err_ind
-        pc := add_stars(pc)
+        pcu := convert_pattern(pat)
+        pcu case Err_ind => pcu@Err_ind
+        pc := add_stars(pcu)
         cl := search_con_doc(pc)
         opl := search_ops_doc(pc)
         [cl, opl]$Gen_rec
