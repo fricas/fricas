@@ -145,7 +145,7 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
     physicalLength(r) == qcoerce(r.physLen)@NonNegativeInteger
     physicalLength!(r, n) ==
        r.physLen = 0  => error "flexible array must be non-empty"
-       growWith(r, n, r.f.0)
+       growWith(r, n, (r.f)(0))
 
     empty()      == [0, 0, empty()]
     #r           == (r.logLen)::N
@@ -162,20 +162,21 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
     flexibleArray l ==
        n := #l
        n = 0 => empty()
-       x := l.1
+       x := l(1)
        a := new(n, x)
-       for i in mn + 1..mn + n-1 for y in rest l repeat a.i := y
+       for i in mn + 1..mn + n-1 for y in rest l repeat
+           a(i) := y
        a
 
     -- local utility operations
     newa(n, a) ==
        zero? n => empty()
-       new(n, a.0)
+       new(n, a(0))
 
     growAdding(r, b, s) ==
        b = 0 => r
-       #r > 0 => growAndFill(r, b, (r.f).0)
-       #s > 0 => growAndFill(r, b, (s.f).0)
+       #r > 0 => growAndFill(r, b, (r.f)(0))
+       #s > 0 => growAndFill(r, b, (s.f)(0))
        error "no default filler element"
 
     growAndFill(r, b, x) ==
@@ -188,7 +189,8 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
     growWith(r, n, x) ==
        y := new(n::N, x)$PrimitiveArray(S)
        a := r.f
-       for k in 0 .. r.physLen-1 repeat y.k := a.k
+       for k in 0 .. r.physLen-1 repeat
+           y(k) := a(k)
        r.physLen := n
        r.f := y
        r
@@ -201,7 +203,8 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
        n = 0 => empty()
        r.physLen := n
        y := newa(n::N, a := r.f)
-       for k in 0 .. n-1 repeat y.k := a.k
+       for k in 0 .. n-1 repeat
+           y(k) := a(k)
        r.f := y
        r
 
@@ -209,26 +212,27 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
        n := #r
        a := r.f
        v := newa(n, a := r.f)
-       for k in 0..n-1 repeat v.k := a.k
+       for k in 0..n-1 repeat
+           v(k) := a(k)
        [n, n, v]
 
 
     elt(r : %, i : I) ==
        i < mn or i >= r.logLen + mn =>
            error "index out of range"
-       r.f.(i-mn)
+       (r.f)(i - mn)
 
     setelt!(r : %, i : I, x : S) ==
        i < mn or i >= r.logLen + mn =>
            error "index out of range"
-       r.f.(i-mn) := x
+       (r.f)(i - mn) := x
 
     -- operations inherited from extensible aggregate
     merge(g, a, b)   == merge!(g, copy a, b)
 
     concat!(r : %, x : S) ==
        growAndFill(r, 1, x)
-       r.f.(r.logLen-1) := x
+       (r.f)(r.logLen - 1) := x
        r
 
     concat!(a : %, b : %) ==
@@ -240,20 +244,24 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
     remove!(g : (S->Boolean), a : %) ==
        k : I := 0
        for i in 0..maxIndex a - mn repeat
-          if not g(a.i) then (a.k := a.i; k := k+1)
+          if not g(a(i)) then
+              a(k) := a(i)
+              k := k+1
        shrink(a, #a - k)
 
     delete!(r : %, i1 : I) ==
        i := i1 - mn
        i < 0 or i > r.logLen => error "index out of range"
-       for k in i..r.logLen-2 repeat r.f.k := r.f.(k+1)
+       for k in i..r.logLen-2 repeat
+           (r.f)(k) := (r.f)(k + 1)
        shrink(r, 1)
 
     delete!(r : %, i : U) ==
        l := low(i) - mn; m := maxIndex r - mn
        h := (hasHi i => high(i) - mn; m)
        l < 0 or h > m => error "index out of range"
-       for j in l.. for k in h+1..m repeat r.f.j := r.f.k
+       for j in l.. for k in h+1..m repeat
+           (r.f)(j) := (r.f)(k)
        shrink(r, max(0, h-l+1))
 
     insert!(x : S, r : %, i1 : I) : % ==
@@ -261,33 +269,46 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
        n := r.logLen
        i < 0 or i > n => error "index out of range"
        growAndFill(r, 1, x)
-       for k in n-1 .. i by -1 repeat r.f.(k+1) := r.f.k
-       r.f.i := x
+       for k in n-1 .. i by -1 repeat
+           (r.f)(k + 1) := (r.f)(k)
+       (r.f)(i) := x
        r
 
     insert!(a : %, b : %, i1 : I) : % ==
        i := i1 - mn
-       if eq?(a, b) then b := copy b
+       if eq?(a, b) then
+           b := copy b
        m := #a; n := #b
        i < 0 or i > n => error "index out of range"
        growAdding(b, m, a)
-       for k in n-1 .. i by -1 repeat b.f.(m+k) := b.f.k
-       for k in m-1 .. 0 by -1 repeat b.f.(i+k) := a.f.k
+       for k in n-1 .. i by -1 repeat
+           (b.f)(m + k) := (b.f)(k)
+       for k in m-1 .. 0 by -1 repeat
+           (b.f)(i + k) := (a.f)(k)
        b
 
     merge!(g, a, b) ==
        m := #a; n := #b; growAdding(a, n, b)
-       for i in m-1..0 by -1 for j in m+n-1.. by -1 repeat a.f.j := a.f.i
+       for i in m-1..0 by -1 for j in m+n-1.. by -1 repeat
+           (a.f)(j) := (a.f)(i)
        i := n; j := 0
        for k in 0.. while i < n+m and j < n repeat
-          if g(a.f.i, b.f.j) then (a.f.k := a.f.i; i := i+1)
-          else (a.f.k := b.f.j; j := j+1)
-       for k in k.. for j in j..n-1 repeat a.f.k := b.f.j
+          if g((a.f)(i), (b.f)(j)) then
+              (a.f)(k) := (a.f)(i)
+              i := i + 1
+          else
+              (a.f)(k) := (b.f)(j)
+              j := j + 1
+       for k in k.. for j in j..n-1 repeat
+           (a.f)(k) := (b.f)(j)
        a
 
     select!(g : (S->Boolean), a : %) ==
        k : I := 0
-       for i in 0..maxIndex a - mn repeat if g(a.f.i) then (a.f.k := a.f.i;k := k+1)
+       for i in 0..maxIndex a - mn repeat
+           if g((a.f)(i)) then
+               (a.f)(k) := (a.f)(i)
+               k := k + 1
        shrink(a, #a - k)
 
     if S has BasicType then
@@ -300,8 +321,8 @@ IndexedFlexibleArray(S : Type, mn : Integer) : Exports == Implementation where
          nlim0 := nlim
          while i < nlim repeat
             j := i+1
-            for k in j..nlim-1 | a.k ~= a.i repeat
-                a.j := a.k
+            for k in j..nlim-1 | a(k) ~= a(i) repeat
+                a(j) := a(k)
                 j := j+1
             nlim := j
             i := i+1

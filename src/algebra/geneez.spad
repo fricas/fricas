@@ -103,10 +103,10 @@ GenExEuclid(R, BP) : C == T
         repeat
             euclideanSize(lmodk) > bound => return "failed"
             d := degree err
-            sln : L FP := [0$FP for xx in ftab.1 ]
+            sln : L FP := [0$FP for xx in ftab(1)]
             for i in 0 .. d | (cc := coefficient(err, i)) ~= 0 repeat
                 sln := [slp + reduce(cc::BP, lmod)*pp
-                        for pp in ftab.(i+1) for slp in sln]
+                        for pp in ftab(i + 1) for slp in sln]
             nsol := [f - lmodk*reduction(g::BP, lmod) for f in oldsol
                                                       for g in sln]
             lmodk := lmod*lmodk
@@ -138,20 +138,20 @@ GenExEuclid(R, BP) : C == T
         multiE := multiEuclidean(listPol, 1$BP)
         multiE case "failed" => "failed"
         ptable : Vector L BP := new(mdeg+1, [])
-        ptable.1 := multiE
+        ptable(1) := multiE
         x : BP := monomial(1, 1)
-        for i in 2..mdeg repeat ptable.i :=
-            [tpol*x rem fpol for tpol in ptable.(i-1) for fpol in listPol]
-        ptable.(mdeg+1) := makeProducts listPol
+        for i in 2..mdeg repeat ptable(i) :=
+            [tpol*x rem fpol for tpol in ptable(i - 1) for fpol in listPol]
+        ptable(mdeg + 1) := makeProducts listPol
         ptable
 
       solveid(m:BP,pmod:R,table:Vector L BP) : Union(L BP,"failed") ==
             -- Actually, there's no possibility of failure
-        d := degree m
-        sln : L BP := [0$BP for xx in table.1]
+        d := degree(m)
+        sln : L BP := [0$BP for xx in table(1)]
         for i in 0 .. d | coefficient(m, i) ~= 0 repeat
           sln := [slp+coefficient(m, i)*pp
-                for pp in table.(i+1) for slp in sln]
+                for pp in table(i + 1) for slp in sln]
         sln
 
     else
@@ -164,23 +164,24 @@ GenExEuclid(R, BP) : C == T
         multiE case "failed" => "failed"
         ftable : Vector L FP := new(mdeg+1, [])
         fl : L FP := multiE@L(FP)
-        ftable.1 := fl
+        ftable(1) := fl
         x : FP := reduce(monomial(1, 1), pmod)
-        for i in 2..mdeg repeat ftable.i :=
-            [tpol*x rem fpol for tpol in ftable.(i-1) for fpol in listP]
+        for i in 2..mdeg repeat ftable(i) :=
+            [tpol*x rem fpol for tpol in ftable(i - 1) for fpol in listP]
         ptable := map(coerceLFP, ftable)$VectorFunctions2(List FP, List BP)
-        ptable.(mdeg+1) := makeProducts listPol
+        ptable(mdeg + 1) := makeProducts listPol
         ptable
 
-      solveid(m:BP,pmod:R,table:Vector L BP) : Union(L BP,"failed") ==
-        d := degree m
+      solveid(m : BP, pmod : R, table : Vector L(BP)
+             ) : Union(L(BP), "failed") ==
+        d := degree(m)
         ftab : Vector L FP :=
           map(x+->reduceList(x, pmod), table)$VectorFunctions2(List BP, List FP)
         lpolys : L BP := table.(#table)
-        sln : L FP := [0$FP for xx in ftab.1]
+        sln : L FP := [0$FP for xx in ftab(1)]
         for i in 0 .. d | coefficient(m, i) ~= 0 repeat
           sln := [slp+reduce(coefficient(m, i)::BP, pmod)*pp
-                for pp in ftab.(i+1) for slp in sln]
+                for pp in ftab(i + 1) for slp in sln]
         soln := [slp::BP for slp in sln]
         (fs := +/[f*g for f in lpolys for g in soln]) = m=> soln
         -- Compute bound

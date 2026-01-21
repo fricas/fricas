@@ -400,7 +400,7 @@ FortranCode() : public == private where
       labelValue
 
     commaSep(l : List String) : List(String) ==
-      [(l.1),:[:[",",u] for u in rest(l)]]
+        [l(1), :[:[",",u] for u in rest(l)]]
 
     getReturn(rec : RETURN) : LS ==
       returnToken : O := "RETURN"::Symbol::O
@@ -1013,12 +1013,12 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
        => error "the axis of concatenation must be i,j or k"
       mat1Dim := matrixDimensions(mat1)
       mat2Dim := matrixDimensions(mat2)
-      iDim1 := mat1Dim.1
-      jDim1 := mat1Dim.2
-      kDim1 := mat1Dim.3
-      iDim2 := mat2Dim.1
-      jDim2 := mat2Dim.2
-      kDim2 := mat2Dim.3
+      iDim1 := mat1Dim(1)
+      jDim1 := mat1Dim(2)
+      kDim1 := mat1Dim(3)
+      iDim2 := mat2Dim(1)
+      jDim2 := mat2Dim(2)
+      kDim2 := mat2Dim(3)
       matRep1 : (PA PA PA R) := copy(mat1 :: (PA PA PA R))$(PA PA PA R)
       matRep2 : (PA PA PA R) := copy(mat2 :: (PA PA PA R))$(PA PA PA R)
       retVal : %
@@ -1065,9 +1065,9 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
       matRep3 : (PA R) := elt(matRep2, 0)$(PA PA R)
       kDim : NNI := (#matRep3)$(PA R)
       retVal : Vector NNI := new(3, 0)$(Vector NNI)
-      retVal.1 := iDim
-      retVal.2 := jDim
-      retVal.3 := kDim
+      retVal(1) := iDim
+      retVal(2) := jDim
+      retVal(3) := kDim
       retVal
 
     coerce(matrixRep : (PA PA PA R)) : % == matrixRep pretend %
@@ -1077,22 +1077,23 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
     -- i, j, k must be with in the bounds of the matrix
     elt(mat : %, i : NNI, j : NNI, k : NNI) : R ==
       matDims := matrixDimensions(mat)
-      iLength := matDims.1
-      jLength := matDims.2
-      kLength := matDims.3
-      ((i > iLength) or (j > jLength) or (k > kLength) or (i = 0) or (j = 0) or_
-(k = 0)) => error "coordinates must be within the bounds of the matrix"
+      iLength := matDims(1)
+      jLength := matDims(2)
+      kLength := matDims(3)
+      ((i > iLength) or (j > jLength) or (k > kLength) or (i = 0) or
+                        (j = 0) or (k = 0)) =>
+          error "coordinates must be within the bounds of the matrix"
       matrixRep : PA PA PA R := mat :: (PA PA PA R)
       elt(elt(elt(matrixRep, i-1)$(PA PA PA R), j-1)$(PA PA R), k-1)$(PA R)
 
-    setelt!(mat : %, i : NNI, j : NNI, k : NNI, val : R)_
-        : R ==
+    setelt!(mat : %, i : NNI, j : NNI, k : NNI, val : R) : R ==
       matDims := matrixDimensions(mat)
-      iLength := matDims.1
-      jLength := matDims.2
-      kLength := matDims.3
-      ((i > iLength) or (j > jLength) or (k > kLength) or (i = 0) or (j = 0) or_
-(k = 0)) => error "coordinates must be within the bounds of the matrix"
+      iLength := matDims(1)
+      jLength := matDims(2)
+      kLength := matDims(3)
+      ((i > iLength) or (j > jLength) or (k > kLength) or (i = 0) or
+                        (j = 0) or (k = 0)) =>
+          error "coordinates must be within the bounds of the matrix"
       matrixRep : PA PA PA R := mat :: (PA PA PA R)
       row2 : PA PA R := copy(elt(matrixRep, i-1)$(PA PA PA R))$(PA PA R)
       row1 : PA R := copy(elt(row2, j-1)$(PA PA R))$(PA R)
@@ -1121,20 +1122,20 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
 
 
       plus(mat1 : %, mat2 : %) : % ==
-
         mat1Dims := matrixDimensions(mat1)
-        iLength1 := mat1Dims.1
-        jLength1 := mat1Dims.2
-        kLength1 := mat1Dims.3
+        iLength1 := mat1Dims(1)
+        jLength1 := mat1Dims(2)
+        kLength1 := mat1Dims(3)
 
         mat2Dims := matrixDimensions(mat2)
-        iLength2 := mat2Dims.1
-        jLength2 := mat2Dims.2
-        kLength2 := mat2Dims.3
+        iLength2 := mat2Dims(1)
+        jLength2 := mat2Dims(2)
+        kLength2 := mat2Dims(3)
 
         -- check that the dimensions are the same
-        (not (iLength1 = iLength2) or not (jLength1 = jLength2) or not(kLength1 = kLength2))_
-         => error "error the matrices are different sizes"
+        (not (iLength1 = iLength2) or not (jLength1 = jLength2) or
+              not(kLength1 = kLength2)) =>
+            error "error the matrices are different sizes"
 
         sum : R
         row1 : (PA R) := new(kLength1, 0$R)$(PA R)
@@ -1156,11 +1157,11 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
     construct(listRep : L L L R) : % ==
 
       (#listRep)$(L L L R) = 0 => error "empty list"
-      (#(listRep.1))$(L L R) = 0 => error "empty list"
-      (#((listRep.1).1))$(L R) = 0 => error "empty list"
+      (#(listRep(1)))$(L L R) = 0 => error "empty list"
+      (#((listRep(1))(1)))$(L R) = 0 => error "empty list"
       iLength := (#listRep)$(L L L R)
-      jLength := (#(listRep.1))$(L L R)
-      kLength := (#((listRep.1).1))$(L R)
+      jLength := (#(listRep(1)))$(L L R)
+      kLength := (#((listRep(1))(1)))$(L R)
 
       --first check that the matrix is in the correct form
       for subList in listRep repeat
@@ -1170,7 +1171,7 @@ ThreeDimensionalMatrix(R) : Exports == Implementation where
           not((#(subSubList))$(L R) = kLength) => error_
  "can not have an irregular shaped matrix"
 
-      row1 : (PA R) := new(kLength, ((listRep.1).1).1)$(PA R)
+      row1 : (PA R) := new(kLength, ((listRep(1))(1))(1))$(PA R)
       row2 : (PA PA R) := new(jLength, copy(row1)$(PA R))$(PA PA R)
       row3 : (PA PA PA R) := new(iLength, copy(row2)$(PA PA R))$(PA PA PA R)
 

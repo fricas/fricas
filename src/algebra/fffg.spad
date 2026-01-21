@@ -282,24 +282,24 @@ FractionFreeFastGaussian(D, V) : Exports == Implementation where
       pos := position(x +-> x < p, v)
       zero? pos => return "failed"
       if pos = 1 then
-        sum : Integer := v.1
+        sum : Integer := v(1)
         for i in 2..n repeat
-          if v.i < p and sum > 0 then
-            v.i := v.i + 1
+          if v(i) < p and sum > 0 then
+            v(i) := v(i) + 1
             sum := sum - 1
             for j in 1..i-1 repeat
               if sum > p then
-                v.j := p
+                v(j) := p
                 sum := sum - p
               else
-                v.j := sum::NonNegativeInteger
+                v(j) := sum::NonNegativeInteger
                 sum := 0
             return v
-          else sum := sum + v.i
+          else sum := sum + v(i)
         return "failed"
       else
-        v.pos     := v.pos + 1
-        v.(pos-1) := (v.(pos-1) - 1)::NonNegativeInteger
+        v(pos)     := v(pos) + 1
+        v(pos-1) := (v(pos-1) - 1)::NonNegativeInteger
 
       v
 
@@ -392,12 +392,12 @@ is [[maxEta]] and $k$ is the remainder of [[sumEta]] divided by
         error "interpolate: number of points and values must match"
       if N <= d then
         error "interpolate: numerator degree must be smaller than number of data points"
-      c : cFunction := (s, u) +-> y.s * elt(u.2, x.s) - elt(u.1, x.s)
+      c : cFunction := (s, u) +-> y(s) * elt(u(2), x(s)) - elt(u(1), x(s))
       eta : List NonNegativeInteger := [d, (N-d)::NonNegativeInteger]
       M := fffg(x, c, eta)
 
-      if zero?(M.(2, 1)) then M.(1, 2)/M.(2, 2)
-                        else M.(1, 1)/M.(2, 1)
+      if zero?(M(2, 1)) then M(1, 2)/M(2, 2)
+                        else M(1, 1)/M(2, 1)
 
 )if false
 
@@ -617,8 +617,8 @@ NewtonInterpolation F : Exports == Implementation where
 -- we assume x=[1, 2, 3, ..., n]
       newtonAux(k : F, fact : F, yl : List F) : SparseUnivariatePolynomial(F) ==
         if empty? rest yl
-        then ((yl.1) exquo fact)::F::SparseUnivariatePolynomial(F)
-        else ((yl.1) exquo fact)::F::SparseUnivariatePolynomial(F)
+        then ((yl(1)) exquo fact)::F::SparseUnivariatePolynomial(F)
+        else ((yl(1)) exquo fact)::F::SparseUnivariatePolynomial(F)
              + (z-k::SparseUnivariatePolynomial(F)) _
                * newtonAux(k+1$F, fact*k, differences yl)
 
