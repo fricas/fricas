@@ -181,30 +181,24 @@ QueryEquation() : Exports == Implementation where
 MergeThing(S : OrderedSet) : Exports == Implementation where
   Exports == with
     mergeDifference : (List(S), List(S)) -> List(S)
-        ++ mergeDifference(l1, l2) returns a list of elements in l1 not present in l2.
-        ++ Assumes lists are ordered and all x in l2 are also in l1.
+        ++ mergeDifference(l1, l2) returns a list of elements in l1 not
+        ++ present in l2.  Assumes lists are ordered.
   Implementation == add
-    mergeDifference1 : (List S, S, List S) -> List S
+
     mergeDifference(x, y) ==
-      empty?(x) or empty?(y) => x
-      mergeDifference1(x, y.first, y.rest)
-      x.first = y.first => x.rest
-      x
-    mergeDifference1(x, fy, ry) ==
-      rx := x
-      while not(empty?(rx)) repeat
-        rx := rx.rest
-        frx := rx.first
-        while fy < frx repeat
-          empty?(ry) => return x
-          fy := first ry
-          ry := rest ry
-        frx = fy =>
-          x.rest := rx.rest
-          empty?(ry) => return x
-          fy := ry.first
-          ry := ry.rest
-        x := rx
+        res : List(S) := []
+        while not(empty?(x) or empty?(y)) repeat
+            fx := first(x)
+            fy := first(y)
+            fx < fy =>
+                res := cons(fx, res)
+                x := rest(x)
+            y := rest(y)
+            if fy = fx then
+                x := rest(x)
+        for fx in x repeat
+            res := cons(fx, res)
+        reverse!(res)
 
 )abbrev package OPQUERY OperationsQuery
 ++ This package exports tools to create FriCAS Library information databases.
