@@ -56,10 +56,12 @@ the FriCAS developers, but by other volunteers.
 * `Debian package <https://packages.debian.org/stable/math/fricas>`_
   (build on GCL_)
 
-* `ArchLinux package <https://aur.archlinux.org/packages/fricas/>`_
+* `ArchLinux package <https://archlinux.org/packages/extra/x86_64/fricas/>`_
 * `Gentoo package <https://packages.gentoo.org/packages/sci-mathematics/fricas>`_
-* `NetBSD package <http://pkgsrc.se/math/fricas>`_
-* `MacPort <https://github.com/macports/macports-ports/tree/master/math/fricas>`_
+* `FreeBSD package <https://ports.freebsd.org/cgi/ports.cgi?stype=pkg&query=math/fricas>`_
+* `NetBSD package <https://pkgsrc.se/math/fricas>`_
+* `MacPorts <https://ports.macports.org/port/fricas/>`_
+* `Homebrew <https://formulae.brew.sh/formula/fricas>`_
 
 
 Nightly builds

@@ -23,6 +23,7 @@ computer algebra system.
    api/index
    features
    download
+   install
    help
    examples
    development
