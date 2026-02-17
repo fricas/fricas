@@ -38,79 +38,137 @@ IndexCard() : Exports == Implementation where
       ++ display(ic) prints a summary of the information contained in \spad{ic}.
     fullDisplay : % -> Void
       ++ fullDisplay(ic) prints all of the information contained in \spad{ic}.
-    coerce : String -> %
-      ++ coerce(s) converts \spad{s} into an \spad{IndexCard}.  Warning: if
-      ++ \spad{s} is not of the right format then an error will occur when using
-      ++ it.
   Implementation == add
+    SE ==> SExpression
+    SY ==> Symbol
+    BRI ==> BrowserInformation
+    Sig_doc ==> Record(signature : SE, condition : SE, origin : SE,
+                     documentation : String)
+    Rr ==> Record(name : SY, kind : SY, sd : Sig_doc)
 
-    import from OutputForm
+    Rep := Rr
 
-    x < y == (x pretend String) < (y pretend String)
-    x = y == (x pretend String) = (y pretend String)
+    get_db_info(x, y) ==> get_database(x, y)$Lisp
 
-    db_name ==> dbName$Lisp
+    sig_to_string(sig : SE) : String ==
+        sl := cons(convert('Mapping), destruct(sig))
+        form2LispString(sl)$Lisp
 
-    db_part(x : %, n : Integer, k : Integer) : String ==
-        dbPart(x, n, k)$Lisp
+    get_origin_op(xr : Rep) : SY ==
+        symbol(car(xr.sd.origin))
 
-    alql_get_kind(x : %) : String ==
-        xs := x pretend String
-        xs(1) = char("a") or xs(1) = char("o") =>
-            db_part(x, 5, 1)(1..1)
-        xs(1..1)
+    get_abbreviation(xr : Rep) : String ==
+        xr.kind = 'o => ""
+        abbr : SE := get_db_info(xr.name, 'ABBREVIATION)
+        not(null?(abbr)) => string(symbol(abbr))
+        ""
 
-    alql_get_origin(x : %) : String ==
-        field := db_part(x, 5, 1)
-        k := position(char("("), field, 3)
-        k < 1 => field(2..)
-        field(2..(k - 1))
+    get_condition(xr : Rep) : String ==
+        not(xr.kind = 'o) => ""
+        xr.sd.condition = (true pretend SE) => ""
+        form2LispString(xr.sd.condition)$Lisp
 
-    alql_get_params(x : %) : String ==
-        field := db_part(x, 5, 1)
-        k := position(char("("), field)
-        k < 1 => ""
-        field(k..)
+    get_exposed1(c : SY) : String ==
+        exposed_constructor?(c)$BRI => "x"
+        "n"
+
+    get_exposed(xr : Rep) : String ==
+        not(xr.kind = 'o) => get_exposed1(xr.name)
+        get_exposed1(get_origin_op(xr))
+
+    get_kind(xr : Rep) : String ==
+        not(xr.kind = 'o) => string(xr.kind)
+        o_kind := constructor_kind(get_origin_op(xr))$BRI
+        o_kind = 'category => "c"
+        o_kind = 'domain => "d"
+        o_kind = 'package => "p"
+        error "get_kind: impossible"
+
+    get_origin(xr : Rep) : String ==
+        not(xr.kind = 'o) => ""
+        oe := xr.sd.origin
+        not(list?(oe)) => ""
+        os := car(oe)
+        symbol?(os) => string(symbol(os))
+        ""
+
+    get_params(xr : Rep) : String ==
+        xr.kind = 'o =>
+            s1 : String := form2LispString(xr.sd.origin)$Lisp
+            k := position(char("("), s1)
+            k < 1 => ""
+            s1(k..)
+        al := rest(destruct(xr.sd.signature))
+        empty?(al) => ""
+        s2 : String := form2LispString(cons(convert('f), al))$Lisp
+        s2(2..)
+
+    short_oform(xr : Rep) : OutputForm ==
+        hconcat([xr.name::OutputForm, message(" : ")$OutputForm,
+                        message(sig_to_string(xr.sd.signature)
+                               )$OutputForm])$OutputForm
 
     display(x) ==
-        name : OutputForm := db_name(x)
-        type : OutputForm := message(db_part(x, 4, 1))
-        output(hconcat(name, hconcat(message(" : "), type)))$OutputPackage
+        xr : Rep := x
+        output(short_oform(xr))$OutputPackage
 
     fullDisplay(x) ==
-        name : OutputForm := db_name(x)
-        type : OutputForm := message(db_part(x, 4, 1))
-        origin : OutputForm := hconcat(message(alql_get_origin(x)),
-                                       message(alql_get_params(x)))
-        fromPart : OutputForm := hconcat(message(" from "), origin)
-        condition : String := db_part(x, 6, 1)
-        ifPart : OutputForm :=
-            condition = "" => empty()
-            hconcat(message(" if "), message(condition))
-        exposed? : String := db_part(x, 3, 1)(1..1)
-        exposedPart : OutputForm :=
-            exposed? = "n" => message(" (unexposed)")
+        xr : Rep := x
+        of1 := short_oform(xr)
+        not(xr.kind = 'o) =>
+            output(of1)$OutputPackage
+        ef : OutputForm :=
+            get_exposed(xr) = "n" => message(" (unexposed)")
             empty()
-        firstPart := hconcat(name, hconcat(message(" : "), type))
-        secondPart := hconcat(fromPart, hconcat(ifPart, exposedPart))
-        output(hconcat(firstPart, secondPart))$OutputPackage
+        cf : OutputForm :=
+            cs := get_condition(xr)
+            cs = "" => empty()
+            hconcat(message(" if "), message(cs))
+        ef : OutputForm :=
+            get_exposed(xr) = "n" => message(" (unexposed)")
+            empty()
+        os : String := form2LispString(xr.sd.origin)$Lisp
+        ff : OutputForm := hconcat(message(" from "), message(os))
+        of2 : OutputForm := hconcat([ff, cf, ef])
+        output(hconcat(of1, of2))$OutputPackage
 
-    coerce(s : String) : % == (s pretend %)
+    x = y ==
+        not(x < y) and not(y < x)
 
-    coerce(x) : OutputForm == (x pretend String)::OutputForm
+    x < y ==
+        xr : Rep := x
+        yr : Rep := y
+        not(xr.kind = yr.kind) => xr.kind < yr.kind
+        not(xr.name = yr.name) => xr.name < yr.name
+        not((nx := #(xr.sd.signature)) = (ny := #(yr.sd.signature))) =>
+            nx < ny
+        not((xe := get_exposed(xr)) = (ye := get_exposed(yr))) =>
+            xe < ye
+        not((xs := sig_to_string(xr.sd.signature)) =
+            (ys := sig_to_string(yr.sd.signature))) => xs < ys
+        not((xo := get_origin(xr)) = (yo := get_origin(yr))) =>
+            xo < yo
+        not((xp := get_params(xr)) = (yp := get_params(yr))) =>
+            xp < yp
+        not((xc := get_condition(xr)) = (yc := get_condition(yr))) =>
+            xc < yc
+        xr.sd.documentation < yr.sd.documentation
+
+    coerce(x) : OutputForm ==
+        (x pretend Rr)::OutputForm
 
     elt(x, s) ==
-        s = 'name => db_name(x)
-        s = 'nargs => db_part(x, 2, 1)
-        s = 'exposed => db_part(x, 3, 1)(1..1)
-        s = 'type => db_part(x, 4, 1)
-        s = 'abbreviation => db_part(x, 6, 1)
-        s = 'kind => alql_get_kind(x)
-        s = 'origin => alql_get_origin(x)
-        s = 'params => alql_get_params(x)
-        s = 'condition => db_part(x, 6, 1)
-        s = 'doc => dbComments(x)$Lisp
-        error "unknown selector"
+        xr : Rep := x
+        s = 'abbreviation => get_abbreviation(xr)
+        s = 'condition => get_condition(xr)
+        s = 'exposed => get_exposed(xr)
+        s = 'doc => xr.sd.documentation
+        s = 'kind => get_kind(xr)
+        s = 'name => string(xr.name)
+        s = 'nargs => convert(#(xr.sd.signature) - 1)
+        s = 'origin => get_origin(xr)
+        s = 'params => get_params(xr)
+        s = 'type => sig_to_string(xr.sd.signature)
 
 )abbrev domain DBASE Database
 ++ Description: This domain implements a simple view of a database
@@ -209,7 +267,53 @@ OperationsQuery() : Exports == Implementation where
       ++ browser database.  The legal values for "char" are "o" (operations),
       ++ "k" (constructors), "d" (domains), "c" (categories) or "p" (packages).
   Implementation == add
-    getDatabase(s) == getBrowseDatabase(s)$Lisp
+    BRI ==> BrowserInformation
+    SE ==> SExpression
+    SY ==> Symbol
+    Sig_doc ==> Record(signature : SE, condition : SE, origin : SE,
+                     documentation : String)
+    Rr ==> Record(name : SY, kind : SY, sd : Sig_doc)
+    Op_rec ==> Record(name : SY, sdl : List(Sig_doc))
+    Op_lst ==> List(Op_rec)
+
+    get_constructors(cl : List(SY), ck : SY, acc : List(Rr)) : List(Rr) ==
+        for c in cl repeat
+            cf := constructor_form(c)$BRI
+            cs := constructor_signature(c, rest(destruct(cf)))$BRI
+            doc := constructor_documentation(c)$BRI
+            sd := [cs, convert([]), cdr(cf), doc]$Sig_doc
+            acc := cons([c, ck, sd], acc)
+        acc
+
+    getDatabase1(s : String) : List(Rr) ==
+        res : List(Rr) := []
+        s = "o" =>
+            opl := ops_from_exports()$BRI
+            for opr in opl repeat
+                name := opr.name
+                for sd in opr.sdl repeat
+                    res := cons([name, 'o, sd], res)
+            reverse!(res)
+        cr := all_constructors()$BRI
+        s = "k" =>
+            res := get_constructors(cr.categories, 'c, res)
+            res := get_constructors(cr.domains, 'd, res)
+            res := get_constructors(cr.packages, 'p, res)
+            reverse!(res)
+        s = "c" =>
+            res := get_constructors(cr.categories, 'c, res)
+            reverse!(res)
+        s = "d" =>
+            res := get_constructors(cr.domains, 'd, res)
+            reverse!(res)
+        s = "p" =>
+            res := get_constructors(cr.packages, 'p, res)
+            reverse!(res)
+        error "getDatabase: wrong argument"
+
+    getDatabase(s) ==
+        db1 := getDatabase1(s) pretend List(IndexCard)
+        sort!(db1) pretend Database(IndexCard)
 
 --Copyright (c) 1991-2002, The Numerical ALgorithms Group Ltd.
 --All rights reserved.
