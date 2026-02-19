@@ -2562,6 +2562,7 @@ $xDf(x)$.
             error "Guess: no support for the Shift operator with displayAsGF"
     --                   and maxPower>1"
         degrees := ADEdegreeStream partitions
+        x_inv := recip(1 - monomial(1, 1)$DIFFSPEC1F)::DIFFSPEC1F
         [degrees, _
             (z1 : UFPSF) : Stream UFPSF +-> _
                 ADEguessStream2(z1, partitions, ShiftSS,
@@ -2570,8 +2571,7 @@ $xDf(x)$.
                 ADEguessModGen2(entries complete first(partitions, o),
                                 degrees.o), _
             (l : List PositiveInteger) : FPSGEN +->
-                ADEtestGen2([partitions.i for i in l], ShiftSF,
-                             (1-monomial(1, 1))^(-1)), _
+                ADEtestGen2([partitions.i for i in l], ShiftSF, x_inv), _
             (z1 : EXPRR, z2 : Symbol) : Stream EXPRR +-> _
                 ADEEXPRRStream(z1, z2, partitions, ShiftSX, diff1X), _
             'shiftHP, 'dummy, ShiftA, ShiftAF, ShiftAX, ShiftC]$HPSPEC
@@ -2691,12 +2691,13 @@ u(n)$ and so on.
                     )::PositiveInteger
 
                 newPartition : PositiveInteger
+                x_inv := recip(1 - monomial(1, 1)$DIFFSPEC1F)::DIFFSPEC1F
                 for p in l repeat
                     newPartition := (ceiling(p/(maxMD+1))$Fraction(Integer)
                                     )::PositiveInteger
                     if newPartition > oldPartition then
                         f0 := termAsUFPSSUPF2(f, partitions.oldPartition,
-                                              ShiftSF, (1-monomial(1, 1))^(-1))
+                                              ShiftSF, x_inv)
                         res := concat([f0(((q::F)^i)::SMPF*monomial(1, 1))
                                        for i in exponents],
                                       res)
@@ -2707,7 +2708,7 @@ u(n)$ and so on.
                                       exponents)
 
                 f0 := termAsUFPSSUPF2(f, partitions.oldPartition,
-                                      ShiftSF, (1-monomial(1, 1))^(-1))
+                                      ShiftSF, x_inv)
                 res := concat([f0(((q::F)^i)::SMPF*monomial(1, 1))
                                for i in exponents],
                               res)
@@ -2728,17 +2729,18 @@ u(n)$ and so on.
             partitions := FilteredPartitionStream l1
             maxMD : NNI := maxMixedDegree(l1)$GOPT0
             if zero?(maxMD) then
+                x_inv1 := recip(1 - monomial(1, 1)$DIFFSPEC1)::DIFFSPEC1
+                x_inv2 := recip(1 - monomial(1, 1)$DIFFSPEC1F)::DIFFSPEC1F
                 degrees := ADEdegreeStream partitions
                 [degrees, _
                  (z1 : UFPSF) : Stream UFPSF +-> _
-                    ADEguessStream2(z1, partitions, ShiftSS, _
-                                    (1-monomial(1, 1))^(-1)), _
+                    ADEguessStream2(z1, partitions, ShiftSS, x_inv1), _
                  (o : NNI) : SEQGEN +-> _
                     ADEguessModGen2(entries complete first(partitions, o), _
                                        degrees.o), _
                  (l : List PositiveInteger) : FPSGEN +-> _
                     ADEtestGen2([partitions.i for i in l],
-                                 ShiftSF, (1-monomial(1, 1))^(-1)), _
+                                 ShiftSF, x_inv2), _
                  (z1 : EXPRR, z2 : Symbol) : Stream EXPRR +-> _
                     ADEEXPRRStream(z1, z2, partitions, ShiftSX, diff1X), _
                  'qshiftHP, q, _
