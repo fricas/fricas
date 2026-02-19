@@ -2042,7 +2042,7 @@ get_op_alist(form) ==
         [name, :sigs] := op
         for sigm in sigs repeat
             [sig, cond] := sigm
-            res := cons([[name, sig], cond, ["ELT", nil, nil]], res)
+            res := cons([[name, sig], cond], res)
     NREVERSE(res)
 
 reportOpsFromUnitDirectly unitForm ==
@@ -2063,18 +2063,16 @@ reportOpsFromUnitDirectly unitForm ==
       '"exposed in this frame."]
 
   for [opt] in $options repeat
-    opt := selectOptionLC(opt,$showOptions,'optionError)
-    opt = 'operations =>
-      if isRecordOrUnion
-        then
+      opt := selectOptionLC(opt, $showOptions, 'optionError)
+      not(opt = 'operations) => "iterate"
+      if isRecordOrUnion then
           constructorFunction := get_oplist_maker(top) or
             systemErrorHere '"reportOpsFromUnitDirectly"
           [funlist, .] := FUNCALL(constructorFunction, "%", unitForm,
                                   $CategoryFrame)
-          sigList := REMDUP MSORT [[[a,b],true,[c,0,1]] for
-            [a,b,c] in funlist]
-        else
-            sigList := get_op_alist(unitForm)
+          sigList := [[[a, b], true] for [a, b, c] in funlist]
+      else
+          sigList := get_op_alist(unitForm)
 
       sigList := REMDUP(MSORT(sigList))
 
