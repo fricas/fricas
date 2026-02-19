@@ -147,7 +147,9 @@ evaluateType1 form ==
   [op,:argl]:= form
   constructor? op =>
     null (sig := getConstructorSignature form) =>
-       throwEvalTypeMsg("S2IE0005",[form])
+        throw_eval_type_msg("S2IE0005",
+            '"You cannot now use %1bp in the context you have it.",
+            [form])
     [.,:ml] := sig
     ml := replaceSharps(ml,form)
     # argl ~= #ml => throwEvalTypeMsg("S2IE0003",[form,form])
@@ -167,10 +169,13 @@ evaluateType1 form ==
     [op,:NREVERSE typeList]
   throwEvalTypeMsg("S2IE0007",[op])
 
-throwEvalTypeMsg(msg, args) ==
+throw_eval_type_msg(key, msg, args) ==
   $justUnparseType : local := true
   $noEvalTypeMsg => spadThrow()
-  throwKeyedMsg(msg, args)
+  throw_msg(key, msg, args)
+
+throwEvalTypeMsg(key, args) ==
+    throw_eval_type_msg(key, getKeyedMsg(key), args)
 
 makeOrdinal i ==
   ('(first second third fourth fifth sixth seventh eighth ninth tenth)).(i-1)

@@ -338,13 +338,19 @@ say_msg_local(msg, args) ==
   if $printMsgsToFile then sayMSG2File msg'
   sayMSG msg'
 
-throwKeyedErrorMsg(kind, key, args) == throwKeyedMsg(key, args)
+throw_error_msg(kind, key, msg, args) == throw_msg(key, msg, args)
 
-throwKeyedMsgSP(key,args,atree) ==
-    if atree and (sp := getSrcPos(atree)) then
+throwKeyedErrorMsg(kind, key, args) ==
+    throw_error_msg(kind, key, getKeyedMsg(key), args)
+
+throw_msg_pos(key, msg, args, tree) ==
+    if tree and (sp := getSrcPos(tree)) then
         sayMSG '" "
         srcPosDisplay(sp)
-    throwKeyedMsg(key,args)
+    throw_msg(key, msg, args)
+
+throwKeyedMsgSP(key, args, atree) ==
+    throw_msg_pos(key, getKeyedMsg(key), args, atree)
 
 throwKeyedMsg(key, args) ==
     throw_msg(key, getKeyedMsg(key), args)
@@ -373,28 +379,32 @@ throwListOfKeyedMsgs(descKey,descArgs,l) ==
 --  breakKeyedMsg is like throwKeyedMsg except that the user is given
 --  a chance to play around in a break loop if $BreakMode is not 'nobreak
 
-breakKeyedMsg(key,args) ==
-  sayKeyedMsg(key,args)
-  handleLispBreakLoop($BreakMode)
+break_msg(key, msg, args) ==
+    say_msg(key, msg, args)
+    handleLispBreakLoop($BreakMode)
 
-keyedSystemError(key,args) ==
-  keyedSystemError1(key, args)
+system_error(key, msg, args) ==
+    say_msg("S2GE0000", '"Internal Error", NIL)
+    break_msg(key, msg, args)
 
-keyedSystemError1(key,args) ==
-  sayKeyedMsg("S2GE0000",NIL)
-  breakKeyedMsg(key,args)
+keyedSystemError(key, args) == system_error(key, getKeyedMsg(key), args)
 
-systemErrorHere functionName ==
-  keyedSystemError("S2GE0017",[functionName])
+systemErrorHere(fname) ==
+    system_error("S2GE0017",
+                 '"Unexpected error in call to system function %1b", [fname])
 
-queryUserKeyedMsg(key,args) ==
+queryUserKeyedMsg(key, args) == query_user_msg(key, getKeyedMsg(key), args)
+
+query_user_msg(key, msg, args) ==
   -- display message and return reply
   conStream := get_console_input()
-  sayKeyedMsg(key,args)
+  say_msg(key, msg, args)
   ioHook("startQueryUser")
   ans := read_line conStream
   ioHook("endOfQueryUser")
   ans
+
+queryUserKeyedMsg(key, args) == query_user_msg(key, getKeyedMsg(key), args)
 
 flowSegmentedMsg(msg, len, offset) ==
   -- tries to break a sayBrightly-type input msg into multiple
@@ -455,38 +465,39 @@ flowSegmentedMsg(msg, len, offset) ==
 
 --% Other handy things
 
-keyedMsgCompFailure(key,args) ==
+msg_comp_failure1(key, msg, args, tree) ==
   -- Called when compilation fails in such a way that interpret-code
   --  mode might be of some use.
   not $useCoerceOrCroak =>   THROW('coerceOrCroaker, 'croaked)
   if not($Coerce) and  $reportInterpOnly then
-    sayKeyedMsg(key,args)
-    sayKeyedMsg("S2IB0009",NIL)
+      if tree and  (sp := getSrcPos(tree)) then
+          sayMSG '" "
+          srcPosDisplay(sp)
+      say_msg(key, msg, args)
+      say_msg("S2IB0009",
+          '"FriCAS will attempt to step through and interpret the code.", [])
   null $compilingMap => THROW('loopCompiler,'tryInterpOnly)
   THROW('mapCompiler,'tryInterpOnly)
 
-keyedMsgCompFailureSP(key,args,atree) ==
-  -- Called when compilation fails in such a way that interpret-code
-  --  mode might be of some use.
-  not $useCoerceOrCroak =>   THROW('coerceOrCroaker, 'croaked)
-  if not($Coerce) and  $reportInterpOnly then
-    if atree and (sp := getSrcPos(atree)) then
-        sayMSG '" "
-        srcPosDisplay(sp)
-    sayKeyedMsg(key,args)
-    sayKeyedMsg("S2IB0009",NIL)
-  null $compilingMap => THROW('loopCompiler,'tryInterpOnly)
-  THROW('mapCompiler,'tryInterpOnly)
+msg_comp_failure(key, msg, args) == msg_comp_failure1(key, msg, args, [])
+
+keyedMsgCompFailure(key, args) ==
+    msg_comp_failure(key, getKeyedMsg(key), args)
+
+keyedMsgCompFailureSP(key, args, atree) ==
+    msg_comp_failure1(key, getKeyedMsg(key), args, atree)
 
 throwKeyedMsgCannotCoerceWithValue(val,t1,t2) ==
   val' :=
      not($genValue) => nil
      coerceInteractive(mkObj(val,t1),$OutputForm)
   if not(isWrapped(val')) then val' := nil
-  null (val') =>
-    throwKeyedMsg("S2IC0002",[t1,t2])
+  null (val') => throw_msg("S2IC0002",
+        '"Cannot convert the value from type %1bp to %2bp .", [t1, t2])
   val' := objValUnwrap(val')
-  throwKeyedMsg("S2IC0003",[t1,t2,val'])
+  throw_msg("S2IC0003",
+            '"Cannot convert from type %1bp to %2bp for value %3m",
+            [t1, t2, val'])
 
 --% Some Standard Message Printing Functions
 
@@ -515,7 +526,10 @@ spadStartUpMsgs() ==
   -- messages displayed when the system starts up
   $LINELENGTH < 60 => NIL
   bar := filler_chars($LINELENGTH, hbar_special_char())
-  sayKeyedMsg("S2GL0001", [$build_version, $lisp_id_string, $build_date])
+  say_msg("S2GL0001", CONCAT(
+      '"%ceon %b FriCAS Computer Algebra System %d %l",
+      '" Version: %1 built with %2 %l Timestamp: %3 %ceoff"),
+      [$build_version, $lisp_id_string, $build_date])
   sayMSG bar
   say_msg("S2GL0018C",
       '"Issue %b )copyright %d to view copyright notices.", nil)

@@ -39,6 +39,8 @@ $dotdot := INTERN('"..", '"BOOT")
 -- output is an old-parser-style s-expression
 
 pf2Sex pf ==
+  -- This and rule below control output, but this is wrong place,
+  -- we should do this after evaluation.
   intUnsetQuiet()
   $insideRule:local := false
   $insideApplication: local := false
@@ -97,7 +99,7 @@ pf2Sex1 pf ==
     ["WHILE", pf2Sex1 pfWhileCond pf]
   pfSuchthat? pf =>
     $insideRule = 'left =>
-      keyedSystemError("S2GE0017", ['"pf2Sex1: pfSuchThat"])
+      systemErrorHere('"pf2Sex1: pfSuchThat")
     ["|", pf2Sex1 pfSuchthatCond pf]
   pfDo? pf =>
     pf2Sex1 pfDoBody pf
@@ -154,7 +156,7 @@ pf2Sex1 pf ==
   -- the user to figure out what happened.
   pfAbSynOp(pf) = "command" => tokPart(pf)
 
-  keyedSystemError("S2GE0017", ['"pf2Sex1"])
+  systemErrorHere('"pf2Sex1")
 
 pfLiteral2Sex pf ==
   type := pfLiteralClass pf
@@ -171,7 +173,7 @@ pfLiteral2Sex pf ==
     pfSymbolSymbol pf
   type = 'expression =>
       ["QUOTE", pfLeafToken pf]
-  keyedSystemError("S2GE0017", ['"pfLiteral2Sex: unexpected form"])
+  systemErrorHere('"pfLiteral2Sex: unexpected form")
 
 symEqual(sym, sym2) == EQ(sym, sym2)
 
