@@ -112,6 +112,13 @@ PrimGCD() : Exports == Implementation where
           ++ lz is list of algebraic variables, lv is list of
           ++ independent (polynomial) variables.  Other variables
           ++ serve as parameters.
+        alg_exquo : (MP, MP, LMP, List OV, List OV) -> Union(MP, "failed")
+          ++ alg_exquo(x, y, lm, lv, lz) computes quotient of x by y
+          ++ in algebraic extension defined by lm.  lz is list of algebraic
+          ++ variables, lv is list of independent (polynomial) variables.
+          ++ Other variables serve as parameters.
+          ++ Returns a mutiple of quotient in algebraic variables and
+          ++ parameters or "failed" if x is not divisible by y.
 
     Implementation ==> add
 
@@ -186,22 +193,34 @@ PrimGCD() : Exports == Implementation where
                 p := alg_reduce0(p, m, xvars, z)
             p
 
-        alg_trial_division(a : MP, b : MP, lm : LMP, xvars : List OV, _
-            zvars : List OV) : Boolean ==
+        trial_div0(a : MP, b : MP, lm : LMP, xvars : List OV,
+                   zvars : List OV, do_quo : Boolean
+                  ) : Union(MP, "failed") ==
             blcr := lcx0(b, xvars)
             blc := blcr.lcx0lc
             blm := blcr.lcx0m
+            res : MP := 0
             repeat
-                a = 0 => return true
+                a = 0 => return res
                 alcr := lcx0(a, xvars)
                 alc := alcr.lcx0lc
                 alm := alcr.lcx0m
                 mquo := alm exquo blm
-                (mquo case "failed") => return false
+                (mquo case "failed") => return "failed"
                 g := gcd(cons(blc, coeffs1(alc, zvars)))
                 alc := (alc exquo g) :: MP
                 s := (blc exquo g) :: MP
+                if do_quo then
+                    res := alg_reduce(alc*mquo + s*res, lm, xvars, zvars)
                 a := alg_reduce(s*a - alc*mquo*b, lm, xvars, zvars)
+
+        alg_trial_division(a : MP, b : MP, lm : LMP, xvars : List OV, _
+                          zvars : List OV) : Boolean ==
+            not(trial_div0(a, b, lm, xvars, zvars, false) case "failed")
+
+        alg_exquo(a : MP, b : MP, lm : LMP, xvars : List OV,
+                  zvars : List OV) : Union(MP, "failed") ==
+            trial_div0(a, b, lm, xvars, zvars, true)
 
 )abbrev package MAGCD2 ModularAlgebraicGcd2
 ++ Description: This package computes gcd over field of algebraic
