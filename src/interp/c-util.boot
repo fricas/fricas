@@ -479,7 +479,7 @@ stackWarning msg ==
 
 unStackWarning msg ==
   if $insideCapsuleFunctionIfTrue then msg:= [$op,": ",:msg]
-  $warningStack:= EFFACE(msg,$warningStack)
+  $warningStack:= NREMOVE($warningStack, msg)
   nil
 
 stackMessage msg ==

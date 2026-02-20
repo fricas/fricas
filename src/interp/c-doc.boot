@@ -136,7 +136,6 @@ finalizeDocumentation() ==
 --=======================================================================
 transDocList($constructorName,doclist) == --returns ((key line)...)
 --called ONLY by finalizeDocumentation
---if $exposeFlag then messages go to file $outStream; flag=nil by default
   sayBrightly ['"   Processing ",$constructorName,'" for Browser database:"]
   commentList := transDoc($constructorName,doclist)
   acc := nil
@@ -146,7 +145,7 @@ transDocList($constructorName,doclist) == --returns ((key line)...)
       conEntry := entry
     acc := [entry,:acc]
   conEntry => [conEntry,:acc]
-  checkDocError1 ['"Missing Description"]
+  checkDocError ['"Missing Description"]
   acc
 
 transDoc(conname,doclist) ==
@@ -158,7 +157,7 @@ transDoc(conname,doclist) ==
     $attribute? : local := $x is [.,[key]] and key = 'attribute
     null lines =>
       $attribute? => nil
-      checkDocError1 ['"Not documented!!!!"]
+      checkDocError ['"Not documented!!!!"]
     u := checkTrim($x,(STRINGP lines => [lines]; $x = 'constructor => first lines; lines))
     $argl : local := nil    --set by checkGetArgs
     longline :=
@@ -1054,10 +1053,6 @@ checkAlphabetic c ==
 --=======================================================================
 --             Report Documentation Error
 --=======================================================================
-checkDocError1 u ==
---when compiling for documentation, ignore certain errors
-  BOUNDP '$compileDocumentation and $compileDocumentation => nil
-  checkDocError u
 
 checkDocError u ==
   $checkErrorFlag := true
@@ -1068,12 +1063,9 @@ checkDocError u ==
     $constructorName => checkDocMessage u
     u
   if $exposeFlag and $exposeFlagHeading then
-    sayBrightly1($exposeFlagHeading,$outStream)
     sayBrightly $exposeFlagHeading
     $exposeFlagHeading := nil
   sayBrightly msg
-  if $exposeFlag then sayBrightly1(msg,$outStream)
-  --if called by checkDocFile (see file checkdoc.boot)
 
 checkDocMessage u ==
   sourcefile := get_database($constructorName, 'SOURCEFILE)

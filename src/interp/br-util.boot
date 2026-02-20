@@ -645,4 +645,3 @@ htStringPad(n,w) ==
   ws := #s
   STRCONC('"\space{",STRINGIMAGE (w - ws + 1),'"}",s)
 
-htMkName(s,n) == STRCONC(s,STRINGIMAGE n)

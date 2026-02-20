@@ -262,8 +262,6 @@
 (defun NREMOVE (list item)
     (delete item list :test #'equal))
 
-(defun EFFACE (item list) (delete item list :count 1 :test #'equal))
-
 ; 14.6 Miscellaneous
 
 (defun SORTBY (keyfn l)

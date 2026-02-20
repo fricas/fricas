@@ -31,12 +31,6 @@
 
 )package "BOOT"
 
--- from alql.boot
-getBrowseDatabase(kind) ==
-    $includeUnexposed? : local := true
-    not member(kind,'("o" "k" "c" "d" "p")) => nil
-    grepConstruct('"*", INTERN kind)
-
 --=======================================================================
 --              Grepping Database libdb.text
 -- Redone 12/95 for Saturn; previous function grep renamed as grepFile

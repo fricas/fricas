@@ -90,8 +90,7 @@ optFunctorBody x ==
       [CondClause u for u in l | u and first u] where
         CondClause [pred,:conseq] ==
           [optFunctorBody pred,:optFunctorPROGN conseq]
-    l:= EFFACE('((QUOTE T)),l)
-                   --delete any trailing ("T)
+    l := NREMOVE(l, '((QUOTE T)))
     null l => nil
     CAAR l='(QUOTE T) =>
       (null CDAR l => nil; null CDDAR l => CADAR l; ["PROGN",:CDAR l])
@@ -412,7 +411,7 @@ InvestigateConditions(catvecListMaker, base_shell, e) ==
       code is ['CATEGORY,:l] => "union"/[Conds(u,previous) for u in l]
       code is ['Join,:l] => "union"/[Conds(u,previous) for u in l]
       [previous]
-  Conditions := EFFACE(nil, [EFFACE(nil, u) for u in Conditions])
+  Conditions := [v for u in Conditions | v := [w for w in u | w]]
   partList:=
     [getViewsConditions(partPessimise(principal, cond), e)
          for cond in Conditions]
