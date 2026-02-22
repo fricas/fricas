@@ -166,8 +166,6 @@ process_arguments(int argc,char ** argv)
       start_spadclient = 0;
     else if (strcmp(argv[arg], "-ws")          == 0)
       ws_path = argv[++arg];
-    else if (strcmp(argv[arg], "-comp")        == 0)
-      ws_path = "$FRICAS/etc/images/comp";
     else if (strcmp(argv[arg], "-nox")         == 0)
       {
         use_X = 0;
@@ -217,7 +215,7 @@ process_arguments(int argc,char ** argv)
     }
     else {
       fprintf(stderr, "Usage: sman <-clef|-noclef> \
-<-gr|-nogr> <-ht|-noht> <-iw|-noiw> <-nox> <-comp> <-ws spad_workspace> \
+<-gr|-nogr> <-ht|-noht> <-iw|-noiw> <-nox> <-ws spad_workspace> \
 <-grprog path> <-htprog path> <-clefprog path> <-sessionprog path> \
 <-clientprog path>\n");
       exit(-1);
