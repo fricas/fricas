@@ -144,9 +144,6 @@ int_loop () ==
 SpadInterpretStream(step_num, source, interactive?) ==
     pile?                    := not interactive?
 
-    $newcompErrorCount: local := 0 -- SMW Feb 2/90.
-                                   -- Used in highComplete, ncHardError etc.
-
     $inclAssertions: local := ["AIX", "CommonLisp"] -- Jan 28/90
 
 
@@ -163,7 +160,6 @@ SpadInterpretStream(step_num, source, interactive?) ==
     []
 
 interpret_block(code) ==
-    $newcompErrorCount : local := 0
     $inclAssertions : local := []
     $ncMsgList : local := []
     $erMsgToss : local := false

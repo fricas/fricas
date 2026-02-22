@@ -35,21 +35,15 @@
 )package "BOOT"
 
 syGeneralErrorHere() ==
-   sySpecificErrorHere('S2CY0002, [])
-
-sySpecificErrorHere(key, args) ==
-   sySpecificErrorAtToken($stok, key, args)
-
-sySpecificErrorAtToken(tok, key, args) ==
-   pos := tokPosn tok
-   ncSoftError(pos, key, args)
+   pos := tokPosn($tok)
+   ncSoftError(pos, 'S2CY0002, [])
 
 syIgnoredFromTo(pos1, pos2) ==
   if pfGlobalLinePosn pos1 = pfGlobalLinePosn pos2 then
-      ncSoftError(FromTo(pos1,pos2), 'S2CY0005, [])
+      ncSoftError(position_from_to(pos1, pos2), 'S2CY0005, [])
   else
-      ncSoftError(From pos1, 'S2CY0003, [])
-      ncSoftError(To   pos2, 'S2CY0004, [])
+      ncSoftError(position_from(pos1), 'S2CY0003, [])
+      ncSoftError(position_to(pos2), 'S2CY0004, [])
 
 npMissingMate(close,open)==
    ncSoftError(tokPosn open, 'S2CY0008, [])

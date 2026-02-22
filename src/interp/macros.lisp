@@ -150,9 +150,6 @@
         (SETQ FORM (CDR FORM))
         (GO LP)))
 
-(defun SUBLISLIS (newl oldl form)
-   (sublis (mapcar #'cons oldl newl) form))
-
 ; 15.5 Using Lists as Sets
 
 (DEFUN |set_sum| (X Y)
@@ -211,8 +208,6 @@
 
 (defun QLASSQ (p a-list) (cdr (assq p a-list)))
 
-(defun MAKE_PAIRS (x y) (mapcar #'cons x y))
-
 ;;; Operations on Association Sets (AS)
 
 (defun AS_INSERT (A B L)
@@ -259,10 +254,6 @@
       (if (NULL X) NIL (progn (PRINC " . ") (MESSAGEPRINT-1 X)))
       (progn (PRINC " ") (MESSAGEPRINT-1 (CAR X)) (MESSAGEPRINT-2 (CDR X)))))
 
-(DEFUN BLANKS (N &optional (stream *standard-output*)) "Print N blanks."
-    (do ((i 1 (the fixnum(1+ i))))
-        ((> i N))(declare (fixnum i n)) (princ " " stream)))
-
 ; 24 ERRORS
 
 ; 24.2 Specialized Error-Signalling Forms and Macros
@@ -273,17 +264,12 @@
 
 ; 25 MISCELLANEOUS FEATURES
 
-(defun MAKE_REASONABLE (Z)
-   (if (> (length Z) 30) (CONCAT "expression beginning " (subseq Z 0 20)) Z))
-
 (defun DROPTRAILINGBLANKS  (LINE)
      (let ((l (length LINE)))
          (if (and (> l 0)
                   (char= (char LINE (1- l)) #\ ))
              (string-right-trim " " LINE)
              LINE)))
-
-(defun eval-defun (name body) (eval (macroexpandall body)))
 
 ; This function was modified by Greg Vanuxem on March 31, 2005
 ; to handle the special case of #'(lambda ..... which expands
@@ -331,13 +317,6 @@
       sexpr))
   ('else
     (mapcar #'macroexpandall sexpr))))
-
-
-(DEFUN |leftBindingPowerOf| (X IND &AUX (Y (GET X IND)))
-   (IF Y (ELEMN Y 3 0) 0))
-
-(DEFUN |rightBindingPowerOf| (X IND &AUX (Y (GET X IND)))
-   (IF Y (ELEMN Y 4 105) 105))
 
 (defun |print_full2| (expr stream)
    (let ((*print-circle* t) (*print-array* t) *print-level* *print-length*)
@@ -418,16 +397,12 @@ This function respects intermediate #\Newline characters and drops
 
 ;;; Common Block section
 
-(defun |comp_quietly_using_driver| (driver fn)
-  (let ((|comp370_apply|
-         (if |$InteractiveMode|
-             (if |$compileDontDefineFunctions| #'|compile_defun| #'eval-defun)
-           #'|print_defun|))
+(defun |do_comp_quietly| (driver fn |comp370_apply|)
+  (let ((*compile-verbose* nil)
      ;; following creates a null outputstream if $InteractiveMode
         (*standard-output*
          (if |$InteractiveMode| (make-broadcast-stream)
-           *standard-output*))
-        (*compile-verbose* nil))
+           *standard-output*)))
     (handler-bind ((warning #'muffle-warning)
                    #+:sbcl (sb-ext::compiler-note #'muffle-warning))
       (funcall driver fn |comp370_apply|)

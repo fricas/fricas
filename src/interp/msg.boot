@@ -39,15 +39,10 @@ $compErrorPrefix :=    '"Error"
 
 --error message facility
 $nopos   := ['noposition]
-$showKeyNum   :=        NIL
-
--- Miscellaneous nonsense.
-$newcompErrorCount :=           0
 
 -- Items from MSG BOOT I
 $preLength := 11
 $LOGLENGTH := $LINELENGTH - 6
-$specificMsgTags := []
 
 $imPrTagGuys := ['unimple, 'bug, 'debug, 'say, 'warn]
 $toWhereGuys := ['fileOnly, 'screenOnly ]
@@ -61,24 +56,19 @@ $ncMsgList := nil
 -- The program being compiled has a minor error.
 -- Give a message and continue processing.
 ncSoftError(pos, erMsgKey, erArgL) ==
-  $newcompErrorCount := $newcompErrorCount + 1
-  desiredMsg erMsgKey =>
-    processKeyedError _
-       msgCreate ('error, pos, erMsgKey, erArgL, $compErrorPrefix)
+    processKeyedError(
+       msgCreate('error, pos, erMsgKey, erArgL, $compErrorPrefix))
 
 -- The program being compiled is seriously incorrect.
 -- Give message and throw to a recovery point.
 ncHardError(pos, erMsgKey, erArgL) ==
-  $newcompErrorCount := $newcompErrorCount + 1
-  desiredMsg erMsgKey =>
-      processKeyedError(
+    processKeyedError(
           msgCreate('error, pos, erMsgKey, erArgL, $compErrorPrefix))
-  ncError()
+    ncError()
 
 -- Bug in the compiler: something which shouldn't have happened did.
-ncBug (erMsgKey, erArgL) ==
-  $newcompErrorCount := $newcompErrorCount + 1
-  processKeyedError (
+ncBug(erMsgKey, erArgL) ==
+  processKeyedError(
         msgCreate('bug, $nopos, erMsgKey, erArgL, $compBugPrefix))
   -- The next line is to try to deal with some reported cases of unwanted
   -- backtraces appearing, MCD.
@@ -100,7 +90,6 @@ ncBug (erMsgKey, erArgL) ==
 --          text -- the actual text
 
 msgCreate(tag,posWTag,key,argL,optPre) ==
-    if PAIRP key then tag := 'old
     msg := [tag,posWTag,key,argL,optPre,NIL]
     putDatabaseStuff msg
     initImPr    msg
@@ -108,12 +97,6 @@ msgCreate(tag,posWTag,key,argL,optPre) ==
     msg
 
 processKeyedError msg ==
-    getMsgTag? msg = 'old  =>                                 --temp
-        erMsg := getMsgKey msg                                --temp
-        if pre := getMsgPrefix? msg then                      --temp
-          erMsg := ['%b, pre, '%d, :erMsg]                    --temp
-        sayBrightly ['"old msg from ",_
-          CallerName 4,:erMsg]                  --temp
     msgImPr? msg =>
       msgOutputter msg
     $ncMsgList := cons (msg, $ncMsgList)
@@ -125,12 +108,12 @@ putDatabaseStuff msg ==
     setMsgText(msg,text)
 
 getMsgInfoFromKey msg ==
-    msgText :=
+    text :=
         msgKey := getMsgKey? msg =>   --temp  oldmsgs use key tostoretext
            getKeyedMsg msgKey
         getMsgKey msg                  --temp oldmsgs
-    msgText := segmentKeyedMsg  msgText
-    substituteSegmentedMsg(msgText, getMsgArgL msg)
+    text := segmentKeyedMsg(text)
+    substituteSegmentedMsg(text, getMsgArgL(msg))
 
 
 -----------------------
@@ -209,14 +192,14 @@ putFTText (msg,chPosList) ==
        setMsgText(msg,[:markingText,:getMsgText msg])
 
 --called from parameter list of nc message functions
-From   pos == ['FROM,   pos]
-To     pos == ['TO,     pos]
-FromTo (pos1,pos2) == ['FROMTO, pos1, pos2]
+position_from(pos) == ['FROM,   pos]
+position_to(pos) == ['TO,     pos]
+position_from_to(pos1, pos2) == ['FROMTO, pos1, pos2]
 
 ------------------------
 --%processing error lists
-processMsgList (erMsgList,lineList) ==
-    $outputList :local := []--grows in queueUp errors
+processMsgList(erMsgList, lineList) ==
+    $outputList : local := []--grows in queueUp errors
     erMsgList  := erMsgSort erMsgList
     for line in lineList repeat
         msgLine := makeMsgFromLine line
@@ -309,33 +292,18 @@ alreadyOpened? msg ==
        not msgImPr? msg
 
 getStFromMsg msg ==
-    $optKeyBlanks : local := '""  --set in setOptKeyBlanks()
-    setOptKeyBlanks()
     preStL := getPreStL getMsgPrefix? msg
     getMsgTag  msg = 'line =>
-          [$optKeyBlanks, '"%x1" , :preStL,_
+          ['"%x1" , :preStL,_
            getMsgText msg]
     posStL := getPosStL msg
-    optKey :=
-        $showKeyNum =>
-            msgKey := getMsgKey? msg => PNAME msgKey
-            '"no key  "
-        '""
-    st :=[posStL,getMsgLitSym msg,_
-          optKey,:preStL,_
-          tabbing msg,:getMsgText msg]
+    [posStL, getMsgLitSym(msg), :preStL, tabbing(msg), :getMsgText(msg)]
 
 tabbing msg ==
     chPos := 2
     if getMsgPrefix? msg then
       chPos := chPos + $preLength - 1
-    if $showKeyNum then chPos := chPos + 8
     ["%t",:chPos]
-
-setOptKeyBlanks() ==
-    $optKeyBlanks :=
-        $showKeyNum => '"%x8"
-        '""
 
 getPosStL msg ==
     not showMsgPos? msg => '""
@@ -349,11 +317,11 @@ getPosStL msg ==
     printedFileName :=  ['"%x2",'"[",:remLine fullPrintedPos,'"]" ]
     printedLineNum  :=  ['"%x2",'"[",:remFile fullPrintedPos,'"]" ]
     printedOrigin   :=  ['"%x2",'"[",:fullPrintedPos,'"]" ]
-    howMuch  = 'ORG  => [$optKeyBlanks,:printedOrigin, '%l]
-    howMuch  = 'LINE => [$optKeyBlanks,:printedLineNum, '%l]
-    howMuch  = 'FILE => [$optKeyBlanks,:printedFileName, '%l]
-    howMuch  = 'ALL  => [$optKeyBlanks,:printedFileName, '%l,_
-                         $optKeyBlanks,:printedLineNum,  '%l]
+    howMuch  = 'ORG  => [:printedOrigin, '%l]
+    howMuch  = 'LINE => [:printedLineNum, '%l]
+    howMuch  = 'FILE => [:printedFileName, '%l]
+    howMuch  = 'ALL  => [:printedFileName, '%l,_
+                         :printedLineNum,  '%l]
     '""
 
 showMsgPos? msg ==
@@ -395,21 +363,6 @@ getPreStL optPre ==
             filler_spaces(extraPlaces)
       '""
     ['%b, optPre,spses,'":", '%d]
-
--------------------
---%   a-list stuff
-desiredMsg (erMsgKey,:optCatFlag) ==
-    isKeyQualityP(erMsgKey,'show)   => true
-    isKeyQualityP(erMsgKey,'stifle) => false
-    not null optCatFlag  => first optCatFlag
-    true
-
-isKeyQualityP (key,qual)  ==
-    --returns pair if found, else NIL
-    found := false
-    while not found and (qualPair := ASSOC(key,$specificMsgTags)) repeat
-        if rest qualPair = qual then found := true
-    qualPair
 
 -----------------------------
 --% these functions handle the attributes

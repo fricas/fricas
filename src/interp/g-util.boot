@@ -628,3 +628,13 @@ isSharpVarWithNum x ==
     ok := DIGITP d => c := 10*c + DIG2FIX d
   if ok then c else nil
 
+MAKE_REASONABLE(s) ==
+    30 < #s => CONCAT('"expression beginning ", SUBSEG(s, 0, 20))
+    s
+
+SUBLISLIS(newl, oldl, form) ==
+    SUBLIS(MAPCAR(FUNCTION CONS, oldl, newl), form)
+
+BLANKS(n) ==
+    for i in 1..n repeat
+        PRINC(" ")

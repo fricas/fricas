@@ -137,7 +137,6 @@ dbGetDisplayFormForOp(op,sig,doc) ==
 
 dbGetFormFromDocumentation(op,sig,x) ==
   $ncMsgList : local := nil
-  $newcompErrorCount : local := 0
   doc := (STRINGP x => x; first x)
   STRINGP doc and
      (stringPrefix?('"\spad{",doc) and (k := 6) or

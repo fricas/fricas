@@ -84,6 +84,9 @@ compile_defun(name, body) ==
    EVAL(body)
    COMPILE(name)
 
+eval_defun(name, body) ==
+   EVAL(MACROEXPANDALL(body))
+
 comp_and_define(form) ==
    COMP0(form, FUNCTION print_and_eval_defun)
 
@@ -97,6 +100,14 @@ compile_file_quietly(fn) ==
 
 compile_quietly(fn) ==
     comp_quietly_using_driver(FUNCTION COMP370, fn)
+
+comp_quietly_using_driver(driver, fn) ==
+    comp370_apply :=
+        $InteractiveMode =>
+            $compileDontDefineFunctions => FUNCTION compile_defun
+            FUNCTION eval_defun
+        FUNCTION print_defun
+    do_comp_quietly(driver, fn, comp370_apply)
 
 COMP_1(x) ==
   [fname, lamex, :.] := x
