@@ -40,6 +40,10 @@ ComplexCategory(R : CommutativeRing) : Category ==
        abs : % -> %
          ++ abs(x) returns the absolute value of x = sqrt(norm(x)).
      if R has arbitraryPrecision then arbitraryPrecision
+     if R has Field and R has OrderedRing and R has RadicalCategory then
+        sqrt : % -> %
+          ++ sqrt(x) returns the square root of x.  The branch cut lies
+          ++ along the negative real axis, continuous with quadrant II.
      if R has TranscendentalFunctionCategory then
        TranscendentalFunctionCategory
        argument : % -> R  ++ argument(x) returns the angle made by (1, 0) and x.
@@ -331,6 +335,21 @@ ComplexCategory(R : CommutativeRing) : Category ==
                   if sizeLess?(x2, b) then b := x2 + r
               y1 := (complex(a, b) exquo y1)::%
               [((x - y1) exquo y)::%, y1]
+
+       if R has Field and R has OrderedRing and R has RadicalCategory then
+
+            sqrt(x : %) : % ==
+                c := real(x)
+                d := imag(x)
+                d = 0 =>
+                    c < 0 => complex(0, sqrt(-c))
+                    complex(sqrt(c), 0)
+                del := c*c + d*d
+                d2 := sqrt(del)
+                s := (c + d2)/(2::R)
+                b := 2*(s - c)/d
+                s2 := sqrt(s)
+                complex(s2, s2*b)
 
        if R has TranscendentalFunctionCategory then
          half := recip(2::R)::R
