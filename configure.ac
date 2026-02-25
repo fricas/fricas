@@ -44,7 +44,7 @@ if echo "$fricas_pwd" | grep ' ' ; then
     AC_MSG_WARN([and name of build directory does not contain spaces.])
     AC_MSG_ERROR([Name of build directory contains space.])
 fi
-if echo "$srcdir" | grep ' ' || echo "fricas_top_srcdir" | grep ' ' ; then
+if echo "$srcdir" | grep ' ' || echo "$fricas_top_srcdir" | grep ' ' ; then
     AC_MSG_WARN([Please make sure that name of source directory])
     AC_MSG_WARN([and name of build directory does not contain spaces.])
     AC_MSG_ERROR([Name of source directory contains space.])
