@@ -289,15 +289,14 @@ else
      openmcl)
         if echo $fricas_lisp_version | grep '^1\.1[[0-9]]' > /dev/null ; then
             true
-        else if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
+        elif echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
            echo $fricas_lisp_version | grep '^1\.[[01]]' > /dev/null ; then
              AC_MSG_ERROR([openmcl $fricas_lisp_version is too old])
-             fi
         fi
         ;;
      sbcl)
         if echo $fricas_lisp_version | grep '^0\.' > /dev/null || \
-           echo $fricas_lisp_version | grep '^1\.0.[[0-6]]$' > /dev/null ; then
+           echo $fricas_lisp_version | grep '^1\.0\.[[0-6]]$' > /dev/null ; then
              AC_MSG_ERROR([sbcl $fricas_lisp_version is too old])
         fi
         case $(uname -m) in
