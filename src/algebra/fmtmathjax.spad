@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 ---
 --- FriCAS FormatMathJax
---- Copyright (C) 2020, 2024  Ralf Hemmecke <ralf@hemmecke.org>
+--- Copyright (C) 2020, 2024, 2026  Ralf Hemmecke <ralf@hemmecke.org>
 ---
 -------------------------------------------------------------------
 -- Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 -- STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 -- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 -- OF THE POSSIBILITY OF SUCH DAMAGE.
--- -------------------------------------------------------------------
+-------------------------------------------------------------------
 )if LiterateDoc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,7 +87,6 @@ look up more documentation there.
 FormatMathJax: Exports == Implementation where
   E   ==> OutputForm
   Z   ==> Integer
-  N   ==> NonNegativeInteger
   S   ==> String
   LE  ==> List E
   BOX ==> OutputBox
@@ -144,7 +143,7 @@ In order to keep spaces, we also escape spaces by a backslash.
 
     -- local functions: texEscape, tex1, tex1Escape, tex2
     texEscapeString(s: S): S == -- local function
-        cc: CharacterClass := charClass " \{}$^_%~#&" --$
+        cc: CharacterClass := charClass " \{}$^_%~#&_"" --$
         p: Integer := position(cc, s, 1)
         zero? p => s
         str: S := ""
@@ -154,6 +153,7 @@ In order to keep spaces, we also escape spaces by a backslash.
             n := p+1
             c := s.p
             esc := concat("\", s.p)
+            if c = char "_"" then esc := "\texttt{_"}"
             if c = char "^" then esc := "{\wedge}"
             if c = char "\" then esc := "{\backslash}"
             if c = char "~" then esc := "{\tilde{}}"
@@ -167,19 +167,8 @@ In order to keep spaces, we also escape spaces by a backslash.
 
     -- Take category default for formatInteger
     formatFloat(s: S): BOX == box remove(char "__", s)
-    duplicateBackslashes(s: S): S ==
-        m: Z := 1 -- minIndex(s)
-        p: Z := position(char "\", s)
-        p < m => s
-        t: S := s(1..p)
-        while (q := position(char "\", s, p+1)) >= m repeat
-            t := concat(t, s(p..q))
-            p := q
-        concat(t, s(p..#s))
-    formatString(s: S): BOX ==
-        -- The backslash must be escaped by a second backslash.
-        tex1("\texttt", box duplicateBackslashes s)
-    formatSymbol(s: S): BOX == box texEscapeString s
+    formatString(s: S): BOX == tex1Escape("\mathtt", s)
+    formatSymbol(s: S): BOX == tex1Escape("", s)
     formatFunctionSymbol(s: S): BOX ==
         b := box texEscapeString s
         if one? width b then b else tex1("\operatorname", b)
@@ -212,7 +201,7 @@ In order to keep spaces, we also escape spaces by a backslash.
 
     -- local
     operatorWithLimits(s: S, p: Z): H == (prec: Z, args: LE): BOX +->
-        -- We can assume #args>=2, but the first argument can be empty
+        -- We can assume #args>=2, but the first argument can be empty.
         bl: BOX := formatExpression(args.1, MIN) -- lower limit
         bu: BOX := empty() -- upper limit
         ba: BOX := formatExpression(args.2, MIN) -- upper limit or arg
@@ -348,7 +337,7 @@ x_{a\vphantom{{a}{1}{\frac{1}{3}}}}^{b\vphantom{{b}{2+b}{4}}}
         n: Z := numberOfPrimes(args.2)
         n < 0 => error "error in PRIME expression"
         if n < 4 then
-            b2: BOX := box(new(n::N, char("'")$Character)$String)
+            b2: BOX := box(new(n::NonNegativeInteger, char("'")$Character)$S)
           else
             r: S := lowerCase(FormatRoman(n::PositiveInteger)$NumberFormats)--$
             b2: BOX := box concat ["^{(", r, ")}"]
@@ -463,7 +452,7 @@ data structure.
         o(1, "-",           prefix("-",       710, FE 715))
         o(1, "not",         prefix("\lnot ",  710, FE 715))
 
-        o(1, "QUOTE",       prefix("\texttt{'}", 710,  FE 960))
+        o(1, "QUOTE",       prefix("\mathtt{'}", 710,  FE 960))
         o(1, "OVERBAR",     overbar(MAX,  FE MIN))
         o(1, "BOX",         box FE MIN)
         o(1, "Aleph",       bracket("\aleph__{", "}", FE MIN))
@@ -507,9 +496,9 @@ data structure.
         o(2, "and",         nary("\land ",     300, FE 300))
         o(2, "or",          nary("\lor ",      200, FE 200))
         o(2, "LET",         nary(":=",         125, FE 125))
-        o(2, "->",          nary("\to ",       1001, FE 1001))
-        o(2, "~>",          nary("\leadsto ",  100, FE 100))
-        o(2, "+->",         nary("\mapsto ",   100, FE 100))
+        o(2, "->",          nary("\to ",       990, FE 990))
+        o(2, "~>",          nary("\leadsto ",  100, FE 110))
+        o(2, "+->",         nary("\mapsto ",   100, FE 110))
         o(2, "|",           nary("\mid ",      100, FE 100))
 
         o(2, "SIGMA",       sum 750)

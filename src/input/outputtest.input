@@ -60,6 +60,17 @@ E ==> Expression Integer
 OF ==> OutputForm
 macro R == Record(OUTPUTFORM: OF, SEXPRESSION: SExpression)
 flt x ==> (empty?(rhxl:=lines(format(format(x::OF)$FLT)))=>"";rhxl.1)
+fmj x ==> (empty?(rhxl:=lines(format(format(x::OF)$FMJ)))=>"";rhxl.1)
+
+-- Use the first macro for "e" in jFriCAS.
+
+macro e x == (_
+    o:=x::OF;_
+    print(([o, outputTran(o)$Lisp]$R)::OF);_
+    print(message(fmj x)$OF);_
+    display(o::FMJ);_
+    print(message("plain")$OF);_
+    x)
 
 macro e x == (_
     o:=x::OF;_
@@ -114,19 +125,37 @@ e message("\ ")$OF
 
 e message("\\")$OF
 
-e message("~")$OF
-
-e message("^")$OF
-
 e message("_"")$OF
 
 e message("__")$OF
+
+e message("a_b")$OF
+
+e message("a__b")$OF
+
+e message("a_"_b")$OF
+
+e message("a_&_b")$OF
+
+e message("a_\b")$OF
+
+e message("a_\\b")$OF
+
+e message("mod_+")$OF
 
 e message("%pi")$OF
 
 e message(" %pi")$OF
 
 e message("%pi ")$OF
+
+e message("~")$OF
+
+e message("^")$OF
+
+e message("x^y")$OF
+
+e message("x~y")$OF
 
 
 e outputForm("Hello World!")$OF
@@ -149,46 +178,33 @@ e outputForm("_"")$OF
 
 e outputForm("__")$OF
 
+e outputForm("a_b")$OF
+
+e outputForm("a__b")$OF
+
+e outputForm("a_"_b")$OF
+
+e outputForm("a_&_b")$OF
+
+e outputForm("a_\b")$OF
+
+e outputForm("a_\\b")$OF
+
+e outputForm("mod_+")$OF
+
 e outputForm("%pi")$OF
 
 e outputForm(" %pi")$OF
 
 e outputForm("%pi ")$OF
 
-e outputForm("\")$OF
+e outputForm("~")$OF
 
 e outputForm("^")$OF
 
 e outputForm("x^y")$OF
 
 e outputForm("x~y")$OF
-
-
-e outputForm("Hello World!"::Symbol)$OF
-
-e outputForm(""::Symbol)$OF
-
-e outputForm("%"::Symbol)$OF
-
-e outputForm("\"::Symbol)$OF
-
-e outputForm("_""::Symbol)$OF
-
-e outputForm("__"::Symbol)$OF
-
-e outputForm("%pi"::Symbol)$OF
-
-e outputForm(" %pi"::Symbol)$OF
-
-e outputForm("%pi "::Symbol)$OF
-
-e outputForm("\"::Symbol)$OF
-
-e outputForm("^"::Symbol)$OF
-
-e outputForm("x^y"::Symbol)$OF
-
-e outputForm("x~y"::Symbol)$OF
 
 
 e %pi
@@ -390,6 +406,7 @@ e eq_fn(a, b)
 e eq_fn(a^2, b)
 
 e (a +-> b)
+e (a +-> b +-> aa)
 e (moebius(5,4,1,1)$MoebiusTransform(Fraction Integer))
 
 TERM ==> Record(k:Integer,c:Integer)
@@ -702,8 +719,9 @@ e(s1::S4)
 e [[i/j for i in j+1..] for j in 1..]
 
 mersenne i == 2^i - 1
-mersenne
+e mersenne
 
+e mod_+
 
 e(x +-> if x < 0 then -x else x)
 
@@ -787,3 +805,6 @@ g(n|n>1 and odd? n, t | t > 9) == tanh n + t
 e g
 
 )clear prop f g
+
+e(Integer -> String -> Integer)
+e((Integer -> String) -> (Integer->Integer))
