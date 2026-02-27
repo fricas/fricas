@@ -826,14 +826,14 @@ setOutputTexmacs arg ==
       stream_close($texmacsOutputStream)
       $texmacsOutputStream := testStream
       $texmacsOutputFile := filename
-      sayKeyedMsg("S2IV0004",['"Texmacs",$texmacsOutputFile])
+      sayKeyedMsg("S2IV0004",['"TeXmacs",$texmacsOutputFile])
     sayKeyedMsg("S2IV0003",[fn,ft])
 
   sayKeyedMsg("S2IV0005",NIL)
   describeSetOutputTexmacs()
 
 describeSetOutputTexmacs() == describeSetOutputU(
-    '"texmacs", '"Texmacs", '"stmx", false, setOutputTexmacs "%display%")
+    '"texmacs", '"TeXmacs", '"stmx", false, setOutputTexmacs "%display%")
 
 
 setOutputHtml arg ==

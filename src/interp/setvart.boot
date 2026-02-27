@@ -554,17 +554,17 @@ DEFPARAMETER($setOptions, '(
         "console"))
       NIL)
      (texmacs
-      "create output in Texmacs style"
+      "create output in TeXmacs style"
       interpreter
       FUNCTION
       setOutputTexmacs
-      (("create output in Texmacs format"
+      (("create output in TeXmacs format"
         LITERALS
         $texmacsFormat
         (off on)
         off)
        (break $texmacsFormat)
-       ("where Texmacs output goes (enter {\em console} or a pathname)"
+       ("where TeXmacs output goes (enter {\em console} or a pathname)"
         FILENAME
         $texmacsOutputFile
         chkOutputFileName

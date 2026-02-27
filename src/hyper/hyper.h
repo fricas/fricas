@@ -348,7 +348,7 @@ typedef struct {
   int border_width;             /* Width of the border                   */
   HyperDocPage *page;           /* currently displayed page              */
   int width, height;            /* in pixels                             */
-  int columns;                  /* Width in characters, only setable     */
+  int columns;                  /* Width in characters, only settable    */
                                 /*      for form pages                   */
   HyperDocPage **fMemoStack;    /* stack of memo links */
   HyperDocPage **fDownLinkStack;/* stack of down links */
