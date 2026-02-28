@@ -6,10 +6,17 @@ permissions: {}
 jobs:
   build:
 
-    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-11-arm]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
-      SBCL_VER: 2.3.2
+      SBCL_VER: ${{ matrix.os == 'windows-2022' && '2.3.2' || '2.6.2' }}
+      ARCH: ${{ matrix.os == 'windows-2022' && 'x86-64' || 'arm64' }}
+      MSYSTEM: ${{ matrix.os == 'windows-2022' && 'UCRT64' || 'CLANGARM64' }}
+      INSTALL_PREFIX : ${{ matrix.os == 'windows-2022' && 'mingw-w64-ucrt-x86_64' || 'mingw-w64-clang-aarch64' }}
     defaults:
       run:
         shell: msys2 {0}
@@ -17,12 +24,12 @@ jobs:
     steps:
     - uses: msys2/setup-msys2@v2
       with:
-        msystem: UCRT64
-        install: make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gmp gmp-devel zip
+        msystem: ${{env.MSYSTEM}}
+        install: make ${{env.INSTALL_PREFIX}}-gcc ${{env.INSTALL_PREFIX}}-gmp gmp-devel zip
     - name: download and install SBCL
       run: |
-        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-x86-64-windows-binary.msi
-        msiexec -i sbcl-${SBCL_VER}-x86-64-windows-binary.msi -passive
+        wget https://downloads.sourceforge.net/project/sbcl/sbcl/${SBCL_VER}/sbcl-${SBCL_VER}-${ARCH}-windows-binary.msi
+        msiexec -i sbcl-${SBCL_VER}-${ARCH}-windows-binary.msi -passive
 
     - uses: actions/checkout@v4
     - name: configure and make
@@ -35,16 +42,16 @@ jobs:
 
     - name: Create artifact archives
       run: |
-        cp -rp ../build/target/x86_64-w64-mingw32 FriCAS-windows-x86_64
-        rm FriCAS-windows-x86_64/bin/{fricas,fricas-readline}
-        cp /ucrt64/bin/libgmp-10.dll FriCAS-windows-x86_64/lib/
-        zip -r FriCAS-windows-x86_64-${{ github.sha }}.zip FriCAS-windows-x86_64
+        cp -rp ../build/target/*/ FriCAS-windows-${ARCH}
+        rm FriCAS-windows-${ARCH}/bin/{fricas,fricas-readline}
+        cp ${MINGW_PREFIX}/bin/libgmp-10.dll FriCAS-windows-${ARCH}/lib/
+        zip -r FriCAS-windows-${ARCH}-${{ github.sha }}.zip FriCAS-windows-${ARCH}
 
     - name: Upload Windows binary
       uses: actions/upload-artifact@v4
       with:
-        name: FriCAS-windows-x86_64-binary
-        path: FriCAS-windows-x86_64-${{ github.sha }}.zip
+        name: FriCAS-windows-${{env.ARCH}}-binary
+        path: FriCAS-windows-${{env.ARCH}}-${{ github.sha }}.zip
 
     - name: make check
       run: cd ../build && make check -j4 --output-sync
@@ -58,12 +65,12 @@ jobs:
         export RELEASE_ID=74905307
         export TIMESTAMP=$(date +%Y-%m-%dT%H.%M)
         export SHA=$(echo ${{ github.sha }} | cut -c 1-8)
-        export FILENAME1=FriCAS-${TIMESTAMP}-windows-x86_64-${SHA}.zip
-        export FILENAME2=fricas-${GITHUB_REF_NAME}-windows-x64.zip
+        export FILENAME1=FriCAS-${TIMESTAMP}-windows-${ARCH}-${SHA}.zip
+        export FILENAME2=fricas-${GITHUB_REF_NAME}-windows-${ARCH}.zip
         export FILENAME=$(test "$GITHUB_REF_TYPE" != "tag" && echo $FILENAME1 || echo $FILENAME2)
         export URL=https://uploads.github.com/${REPO_URL}/${RELEASE_ID}/assets
         curl -v -X POST -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.releasetoken }}" \
             "${URL}?name=${FILENAME}" \
-            --data-binary "@FriCAS-windows-x86_64-${{ github.sha }}.zip" \
+            --data-binary "@FriCAS-windows-${ARCH}-${{ github.sha }}.zip" \
             -H "Content-Type: application/zip" || true
