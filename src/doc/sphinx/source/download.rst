@@ -15,7 +15,7 @@ Binary distribution
 ^^^^^^^^^^^^^^^^^^^
 
 - ``fricas-x.y.z.amd64.tar.bz2`` (64-bit binary for amd64 (x86_64) Linux)
-- ``fricas-1.3.13-windows-x86-64.zip`` (64-bit binary for Windows)
+- ``fricas-x.y.z-windows-x86-64.zip`` (64-bit binary for Windows)
 
 On MacOS you should consider using Homebrew.
 

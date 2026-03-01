@@ -12,7 +12,7 @@ following BibTeX entry to refer to |PACKAGE_NAME| in any publication.
    |   author = {{FriCAS team}},
    |   year =   {|PACKAGE_YEAR|},
    |   title =  {{FriCAS} |PACKAGE_VERSION|---an advanced computer algebra system},
-   |   note =   {Available at \url{http://fricas.github.io}}
+   |   note =   {Available at \\url{https://fricas.github.io}}
    | }
 
 

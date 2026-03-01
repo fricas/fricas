@@ -633,10 +633,10 @@ the BOOT package. To restart FriCAS type
 Note: for ECL you need to type ``(in-package "BOOT")`` before ``(|runspad|)``.
 
 
-Is there exeption handling in FriCAS?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Is there exception handling in FriCAS?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can use a constructions like
+You can use a construction like
 ::
 
    foo() ==

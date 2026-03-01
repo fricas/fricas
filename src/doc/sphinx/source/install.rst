@@ -70,25 +70,29 @@ on the console, do the following.
    xset fp rehash
 
 
-Quick installation (MacOS)
+Quick installation (macOS)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The provided tarball contains Mac OSX application bundle which should
-just work after unpacking.
+The provided tarball from the `Nightly Builds
+<https://github.com/fricas/fricas-nightly-builds/releases/tag/nightly>`_
+contains unsigned macOS application bundle that should just work
+after unpacking.
 
-Note: FriCAS is also available via MacPorts and homebrew, those may be
-preferable to binaries available
-from https://github.com/fricas/fricas/releases/.
+FriCAS is also available via MacPorts and homebrew, those may be
+preferable to binaries available from
+the `release page <https://github.com/fricas/fricas/releases/>`_.
 
 
 Quick installation (Windows)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Just download the Windows zip file, decompress it, and double click
-``FRICASsys.exe`` in the ``bin`` directory.
+Just download the
+`Windows zip file <https://github.com/fricas/fricas/releases>`_,
+decompress it, and double click ``FRICASsys.exe`` in the ``bin``
+directory.
 
-Note: Windows binaries do not support X11, so there is no graphic support
-and no HyperDoc).
+Note: Windows binaries do not support X11, so there is no graphic
+support and no HyperDoc).
 
 
 Quick installation from source (Linux)
