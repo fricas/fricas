@@ -29,6 +29,9 @@ functionality. As of April 2013, in the src/algebra subdirectory,
 which hosts mathematical functionality about 25% of code was added
 after the fork.
 
+See also
+`FriCAS advantages <https://wiki.fricas.org/FriCASAdvantages>`_
+
 
 What does the FriCAS name mean?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -110,6 +113,21 @@ specify all parameters. Then click on 'Operations' and finally on
 'Implementations'. If you are interested in a single operation, after
 clicking on 'Operations' click on an operation name and then click on
 'Implementations'.
+
+In a direct way you can just type the function name with a full
+specification from which domain, for example::
+
+  antiCommutator $ Polynomial(Integer)
+
+The output will be
+::
+
+   theMap(NASRNG-;antiCommutator;3S;1,10)
+
+The part between ``(`` and the first ``;`` is an abbreviation of the
+domain in which the function is implemented. In the above case
+``NASRNG-`` stands for the default package of the category
+``NonAssociativeSemiRng``.
 
 
 Clef does not work.  Is there an alternative?
@@ -613,3 +631,62 @@ the BOOT package. To restart FriCAS type
    BOOT> (|runspad|)
 
 Note: for ECL you need to type ``(in-package "BOOT")`` before ``(|runspad|)``.
+
+
+Is there exception handling in FriCAS?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can use a construction like
+::
+
+   foo() ==
+       l := bits()$Float;
+       try
+            -- set new precision
+            bits(128)
+            -- do your work
+        finally
+            bits(l)
+
+to temporarily set the floating poing precision and have it reset
+after the computation even if the computation (your work) results in
+an error.
+
+
+Can I run a function under a time constraint?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Checkout the
+`TimeoutPackage <http://fricas.github.io/api/TimeoutPackage.html>`_.
+
+
+How can I compile fspace.spad?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The file ``fspace.spad`` needs a special bootstrap sequence:
+::
+
+   )boot $bootStrapMode := true
+   )compile fspace.spad
+   )boot $bootStrapMode := false
+   )compile fspace.spad
+
+When developing similar changes you need to recompile all things which
+depend on the change and which you want to use, directly or
+indirectly.
+
+Full build takes care of bootstrapping and recompiles everything, so
+after that things works in expected way.
+
+
+
+Are there things in FriCAS that do not work properly?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Yes, there are certainly, a number of them. We list here a few.
+
+* Functions that have types as their parameters work in in the
+  compiler, but not in the interpreter.
+
+  See
+  https://groups.google.com/d/msgid/fricas-devel/aUgPGQyo6_coDs5q%40fricas.org.
