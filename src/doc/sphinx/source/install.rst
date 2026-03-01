@@ -29,7 +29,6 @@ systems. They should work correctly on many different Linux
 distributions.
 
 
-
 Root install
 """"""""""""
 
