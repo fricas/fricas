@@ -10,6 +10,8 @@ Note: this text is mostly about installation from sources.
 If you fetched compiled binaries skip to section about
 binary distribution.
 
+
+
 Quick installation from binary release tarball
 ----------------------------------------------
 
@@ -17,15 +19,16 @@ Quick installation (Linux)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 FriCAS offers release binaries for Linux on Intel/AMD processors.
-Get the respective binary tarball.
+Get the respective binary tarball (replace `x.y.z` by |PACKAGE_VERSION|).
+
 ::
 
-   V=1.3.7
+   V=x.y.z
    wget https://github.com/fricas/fricas/releases/download/$V/fricas-$V.amd64.tar.bz2
 
 Binaries have only few dependencies: libc, libm, libutil, libXpm,
 libSM, libICE, libX11 which should be present in all desktop Linux
-systems. They should work correctly on many different Linux
+systems.  They should work correctly on many different Linux
 distributions.
 
 
@@ -74,12 +77,13 @@ Quick installation (macOS)
 
 The provided tarball from the `Nightly Builds
 <https://github.com/fricas/fricas-nightly-builds/releases/tag/nightly>`_
-contains unsigned macOS application bundle that should just work
-after unpacking.
+contains unsigned macOS application bundle.
 
-FriCAS is also available via MacPorts and homebrew, those may be
-preferable to binaries available from
-the `release page <https://github.com/fricas/fricas/releases/>`_.
+FriCAS is also available via
+`MacPorts <https://ports.macports.org/port/fricas/>`_
+and
+`Homebrew <https://formulae.brew.sh/formula/fricas>`_,
+those are the preferred way to do installation.
 
 
 Quick installation (Windows)
@@ -92,6 +96,7 @@ directory.
 
 Note: Windows binaries do not support X11, so there is no graphic
 support and no HyperDoc).
+
 
 
 Quick installation from source (Linux)
@@ -107,70 +112,6 @@ should work.  The above will install FriCAS files into
 ``/usr/local/lib/fricas/``  and put the ``fricas`` command into
 ``/usr/local/bin/``.
 You can give arguments to ``configure`` to change those locations.
-
-
-Recommended installation for Xubuntu 24.04
-------------------------------------------
-
-FriCAS has a number of prerequisites. Do the following for a
-recommended full installation (including documentation and Aldor
-library). See below for a more fine-grained explanation.
-::
-
-   sudo apt install libx11-dev libxt-dev libice-dev \
-                    libsm-dev libxau-dev libxdmcp-dev libxpm-dev \
-                    xfonts-100dpi \
-                    libgmp-dev \
-                    sbcl \
-                    git emacs \
-                    texlive auctex dvipng xvfb sphinx-doc
-   xset fp rehash
-
-Modify the line
-::
-
-   <policy domain="coder" rights="read|write" pattern="PS" />
-
-in ``/etc/ImageMagick-6/policy.xml``.
-::
-
-   sudo emacs /etc/ImageMagick-6/policy.xml
-
-Install the LaTeX packages
-::
-
-   amsmath
-   breqn
-   tensor
-   mleftright
-   epsf
-   verbatim
-   hyperref
-   color
-   listings
-   makeidx
-   xparse
-   tikz
-
-As ordinary user
-::
-
-   cd $HOME
-   mkdir -p software
-   git clone --depth 1 https://github.com/fricas/fricas
-   BUILD=$HOME/fr-build
-   mkdir -p $BUILD
-   cd $BUILD
-   ../fricas/configure --with-lisp="sbcl --dynamic-space-size 4096" --prefix=$HOME/software --enable-gmp --enable-aldor
-   make -j8
-   make install
-
-   # add 'PATH=$HOME/software:$PATH' to your .bashrc.
-   emacs $HOME/.bashrc
-   cd src/doc   # then in: fr-build/src/doc
-   make localdoc
-   cd html      # then in: fr-build/
-   git clone -b gh-pages https://github.com/fricas/fricas-notebooks
 
 
 
@@ -275,7 +216,7 @@ X libraries (optional, but needed for graphics and HyperDoc)
 On Debian (or Ubuntu) install the following packages.
 ::
 
-   sudo apt install libx11-dev libxt-dev libice-dev
+   sudo apt install libx11-dev libxt-dev libice-dev \
                     libsm-dev libxau-dev libxdmcp-dev libxpm-dev \
                     xfonts-100dpi
 
@@ -316,33 +257,30 @@ to show rendered TeX output.  For that to work, you need the following.
 
    sudo apt install texlive auctex dvipng
 
-
 In order to build the |PACKAGE_BOOK|, you also need the following
-LaTeX packages (available from CTAN_).
+LaTeX packages (available from CTAN_) or your package manager.
 ::
 
-   amsmath
-   amssymb
-   breqn
-   color
-   epstopdf
-   framed
-   graphicx
-   hyperref
-   listings
-   makeidx
-   tensor
-   tikz
-   verbatim
-   xparse
+   amsmath hyperref verbatim xparse (texlive-latex-base)
+   breqn listings                   (texlive-latex-recommended)
+   color framed makeidx mleftright  (texlive-latex-extra)
+   tensor                           (texlive-science)
+   tikz                             (texlive-pictures)
 
-For security reasons, ImageMagick fails for some conversion.
-For compiling images you must, therefore, relax the policy. Modify the
-respective line in the file ``/etc/ImageMagick-6/policy.xml`` to
+The respective package can be searched for on
+`Ubuntu package search <https://packages.ubuntu.com/>`_.
 ::
 
-   <policy domain="coder" rights="read|write" pattern="PS" />
+   sudo apt install texlive-latex-base \
+                    texlive-latex-recommended \
+                    texlive-latex-extra \
+                    texlive-science \
+                    texlive-pictures
 
+Additionally you need the ``epstopdf`` converter.
+::
+
+   sudo apt install texlive-font-utils
 
 
 SphinxDoc (optional)
@@ -353,6 +291,11 @@ The documentation is built via Sphinx_.
 
    sudo apt install python3 python3-pip
    pip3 install -U Sphinx
+
+or use your package manager.
+::
+
+   sudo apt install sphinx-common
 
 
 Aldor (optional)
@@ -403,7 +346,7 @@ Detailed installation instructions
 
 We assume that you have installed all necessary prerequisites.
 
-0. Change to a directory with enough (0.8 GB) free space.
+0. Change to a directory with enough (1.5 GB) free space.
 
 1. Fetch sources.
    ::
@@ -415,8 +358,8 @@ We assume that you have installed all necessary prerequisites.
 2. Create build directory and change to it
    ::
 
-      mkdir fr-build
-      cd fr-build
+      mkdir fricas-build
+      cd fricas-build
 
 3. Configure.  Assuming that you want fricas files to be installed in
    ``/tmp/usr``.
@@ -428,7 +371,8 @@ We assume that you have installed all necessary prerequisites.
    type
    ::
 
-      ../fricas/configure --with-lisp="sbcl --dynamic-space-size 4096" --prefix=/tmp/usr --enable-gmp --enable-aldor
+      ../fricas/configure --with-lisp="sbcl --dynamic-space-size 4096" \
+                          --prefix=/tmp/usr --enable-gmp --enable-aldor
 
    to build with SBCL_ and 4 GiB dynamic space, use GMP_, and enable the
    build of the Aldor_ library ``libfricas.al``.
@@ -477,8 +421,8 @@ that the source tree is in ``$HOME/fricas``, you build in
 Currently ``--with-lisp`` option accepts all supported lisp variants,
 namely SBCL, CLISP, ECL, GCL and Clozure CL (openmcl).  Note: the
 argument is just a command to invoke the respective Lisp variant.
-Build machinery will automatically detect which Lisp is in use and
-adjust as needed.
+The build machinery will automatically detect which Lisp is in use
+and adjust as needed.
 
 Note that jFriCAS_ has currently only been tested to work with SBCL_.
 
@@ -490,7 +434,7 @@ If you compile FriCAS from the |git repository|, and ``configure``
 does not detect the ``xvfb-run`` program, then graphic examples will
 not be built.  This results in broken HyperDoc pages -- all graphic
 examples will be missing (and trying to access them will crash
-hypertex).
+HyperDoc).
 
 To get working graphic examples login into X and replace ``make``
 above by the following
@@ -537,8 +481,8 @@ safety.  However, some FriCAS users want different tradeoff.  The
    --enable-algebra-optimization=S
 
 option to configure allows changing this setting: S is a Lisp
-expression specifying speed/safety tradeoff used by Lisp compiler.  For
-example
+expression specifying speed/safety tradeoff used by Lisp compiler.
+For example
 ::
 
   --enable-algebra-optimization="((speed 3) (safety 0))"
@@ -608,6 +552,23 @@ Build extra documentation (book and website)
 After a build of FriCAS, (suppose your build directory is under
 ``$BUILD``), you can build the documentation provided at
 the |home page| on your local installation.
+
+Currently, you need the ``imagemagick`` program.
+::
+
+   sudo apt install imagemagick
+
+For security reasons, ImageMagick fails for some conversion.
+For compiling images you must, therefore, relax the policy.
+Modify to the line
+::
+
+   <policy domain="coder" rights="read|write" pattern="PS" />
+
+in ``/etc/ImageMagick-6/policy.xml`` (maybe you have to add it).
+::
+
+   sudo emacs /etc/ImageMagick-6/policy.xml
 
 If you want only |PACKAGE_BOOK| (also known as the FriCAS User
 Guide) do
@@ -762,8 +723,8 @@ Install jFriCAS
 
 There are a couple of things to install.
 
-#. Jupyter
-#. jFriCAS
+#. Jupyter_
+#. jFriCAS_
 
 The simplest way to install jFriCAS_ is via `pip` as follows
 ::
@@ -1006,8 +967,7 @@ to your ``.emacs`` or ``.emacs.d/init.el`` file.
 To start a FriCAS_ session use
 ::
 
-   M-x run-fricas
-
+   M-x frimacs-run-fricas
 
 
 
@@ -1019,15 +979,15 @@ build sources, taking care to build Hyperdoc pages and graphic
 examples.  Make sure that text of help pages is available in some
 directory (they are **not** part of source tree, some are generated,
 but the rest is copied to tarball).  Assuming that you build FriCAS
-in ``fr-build`` and ``$SRC`` point to FriCAS source tree do
+in ``fricas-build`` and ``$SRC`` point to FriCAS source tree do
 ::
 
-   cd fr-build
+   cd fricas-build
    $SRC/src/scripts/mkdist.sh --copy_lisp --copy_phts \
      --copy_help=/full/path/to/help/files
-   mv dist ../fricas-X.Y.Z
+   mv dist ../fricas-x.y.z
    cd ..
-   tar -cjf fricas-X.Y.Z.tar.bz2 fricas-X.Y.Z
+   tar -cjf fricas-x.y.z.tar.bz2 fricas-x.y.z
 
 Note: FriCAS source distributions are created from a branch which
 differs from trunk, namely release branch has version number, trunk
@@ -1038,12 +998,13 @@ The binary distribution can be created as follows.  First fetch and
 unpack source tarball in work directory.  Then in work directory
 ::
 
-   mkdir fr-build
-   ../fricas-X.Y.Z/configure --enable--gmp --with-lisp=/path/to/hsbcl
+   mkdir fricas-build
+   ../fricas-x.y.z/configure --enable--gmp --with-lisp=/path/to/hsbcl
    make -j 7 > makelog 2>&1
    make DESTDIR=/full/path/to/auxiliary/dir install
    cd /full/path/to/auxiliary/dir
    tar -cjf fricas-x.y.z.amd64.tar.bz2 usr
+
 
 
 Installation from binary distribution
@@ -1061,7 +1022,7 @@ course, you can set ``FDIR`` to anything you like).
 
 If before running ``tar`` you change to the root directory and do
 this command as ``root``, then you will get a ready-to-run FriCAS in
-the ``/usr/local`` subtree of the filesystem.  This puts FriCAS files
+the ``/usr/local`` subtree of the filesystem.  This puts FriCAS_ files
 in the same places as running ``install`` after build from source
 using default settings.
 
@@ -1094,8 +1055,7 @@ That is, however, not necessary, if you do not intend to use HyperDoc
 a lot and rather look at the FriCAS_ homepage in order to find
 relevant information.
 
-Optionally, set the PATH in ``$HOME/.bashrc``:
-
+Optionally, set the PATH in ``$HOME/.bashrc``.
 Edit the file ``$HOME/.bashrc`` (or whatever your shell initialization
 resource is) and put in something like the following in order to make
 all fricas scripts available.

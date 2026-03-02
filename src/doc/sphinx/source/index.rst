@@ -20,7 +20,6 @@ computer algebra system.
 .. toctree::
    :maxdepth: 1
 
-   api/index
    features
    download
    install
