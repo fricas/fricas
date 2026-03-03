@@ -544,31 +544,12 @@ These options also implicitly set ``--enable-gmp``.  However, if
 Post-compilation steps (optional)
 ---------------------------------
 
-
 Build extra documentation (book and website)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 After a build of FriCAS, (suppose your build directory is under
 ``$BUILD``), you can build the documentation provided at
 the |home page| on your local installation.
-
-Currently, you need the ``imagemagick`` program.
-::
-
-   sudo apt install imagemagick
-
-For security reasons, ImageMagick fails for some conversion.
-For compiling images you must, therefore, relax the policy.
-Modify to the line
-::
-
-   <policy domain="coder" rights="read|write" pattern="PS" />
-
-in ``/etc/ImageMagick-6/policy.xml`` (maybe you have to add it).
-::
-
-   sudo emacs /etc/ImageMagick-6/policy.xml
 
 If you want only |PACKAGE_BOOK| (also known as the FriCAS User
 Guide) do
