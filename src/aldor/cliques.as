@@ -454,7 +454,6 @@ MakefileGeneration: with {
 		-- grep '^MEMBERS_.* = .* .*' cliques.mk
 		initfricas := fileMap."initfricas";
 		for c in cliques repeat writeVariables(c, initfricas);
-		for c in cliques repeat writeTargets c;
 	}
 
 	local writeVariables(clq: Clique, initfricas: List S): () == {
@@ -505,27 +504,6 @@ MakefileGeneration: with {
 		import from List Clique;
 		for d in dependencies clq repeat out << " " << name d << ".ao";
 		out << nl;
-	}
-
-	local writeTargets(clq: Clique): () == {
-		import from List Clique;
-		name: S := name clq;
-		libfricas := "al/libfricas.al";
-		libname  := "al/libfricas__" + name + ".al";
-		depmember:= "($(DEPS__" + name + "))";
-
-		-- Each member depends on the corresponding .ao file.
-		empty? dependencies clq => {
-			out << libname << ":" << nl;
-			out << tab << "ar cr $@" << nl;
-		}
-		-- Now we know that there is at least one dependency.
-		-- What goes into the temporary library...
-		-- The order of members in the temporary library is
-		-- as in libfricas.al.
-		out << libname << ": ";
-		out << "$(patsubst %,ao/%,$(DEPS__" + name + "))" << nl;
-		out << tab << "ar r $@ $+" << nl;
 	}
 
 	---------------------------------------------------
