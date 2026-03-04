@@ -19,6 +19,12 @@ default: al/libfricas.al
 include cliques.mk
 FRICAS_CLIQUES=$(filter-out $(aldor_srcs), $(CLIQUES))
 
+define clq_template
+ao/$1.ao: $(patsubst %,ao/%,$(DEPS_$1))
+endef
+
+$(foreach l,$(CLIQUES), $(eval $(call clq_template,$(l))))
+
 ###################################################################
 # Now we create an .ap file for each clique.
 $(patsubst %,ap/%.ap,$(FRICAS_CLIQUES)): ap/%.ap: ap/%.lsp tmp/.dir
@@ -45,8 +51,10 @@ al/libfricas.al: $(libfricas_members)
 $(patsubst %,ao/%.ao,$(aldor_src)): extra_ao_options=
 $(patsubst %,ao/%.ao,$(FRICAS_CLIQUES)): extra_ao_options=-Wname=fricas -Mno-abbrev -Mpreview
 .PRECIOUS: ao/%.ao
-ao/%.ao: ap/%.ap al/libfricas_%.al ao/.dir
+ao/%.ao: ap/%.ap
+	ar r libfricas_$*.al $(patsubst %,ao/%,$(DEPS_$*))
 	$(ALDOR) $(extra_ao_options) -Y al -L FriCASLib=fricas_$* -fao=$@ $< 2>&1 | tee tmp/$*_ao.out
+	rm libfricas_$*.al
 
 # We compile a separate temporary library for the compilation of each
 # .ao file in order to avoid trouble with big libraries and the aldor
