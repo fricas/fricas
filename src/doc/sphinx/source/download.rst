@@ -17,9 +17,9 @@ Binary distribution
 - ``fricas-x.y.z.amd64.tar.bz2`` (64-bit binary for amd64 (x86_64) Linux)
 - ``fricas-x.y.z-windows-x86-64.zip`` (64-bit binary for Windows)
 
-On MacOS you should consider using Homebrew.
+On MacOS you should consider using
+`Homebrew <https://formulae.brew.sh/formula/fricas/>`_.
 
-https://formulae.brew.sh/formula/fricas/
 
 Source distribution
 ^^^^^^^^^^^^^^^^^^^
@@ -41,10 +41,12 @@ you like.
 
    git clone https://github.com/fricas/fricas.git
 
+
 Alternative distribution platform (includes older releases)
 -----------------------------------------------------------
 
 https://sourceforge.net/projects/fricas/files/fricas/
+
 
 Other forms of distribution
 ---------------------------
@@ -70,6 +72,7 @@ Nightly builds
 --------------
 
 https://github.com/fricas/fricas-nightly-builds/releases/tag/nightly
+
 
 Installation Guide
 ------------------

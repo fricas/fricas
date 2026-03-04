@@ -147,6 +147,13 @@ In the following we list publications mentioning FriCAS.
   `Free Fractions: An Invitation to (applied) Free Fields
   <https://arxiv.org/abs/1809.05425>`_
 
+* **Konrad Schrempf**
+  (2019):
+  `A factorization theory for some free fields
+  <https://www.ieja.net/files/papers/volume-28/2-V28-2020.pdf>`_
+  (DOI: `10.24330/ieja.768114
+  <https://doi.org/https://doi.org/10.24330/ieja.768114>`_)
+
 * **Ralf Hemmecke**, **Silviu Radu**, and **Liangjie Ye**
   (2019):
   `The Generators of all Polynomial Relations Among Jacobi Theta
@@ -207,8 +214,6 @@ In the following we list publications mentioning FriCAS.
   `Computer-assisted Construction of Ramanujan-Sato Series for 1 over π,
   <https://doi.org/10.1007/s11139-026-01352-2>`_
 
-
-
 * `Sage <http://www.sagemath.org>`_ provides an
   `interface to FriCAS
   <http://doc.sagemath.org/html/en/reference/interfaces/sage/interfaces/fricas.html>`_.
@@ -222,3 +227,23 @@ In the following we list publications mentioning FriCAS.
 
 * `Old collection of online articles connected to FriCAS and Axiom
   <http://wiki.fricas.org/public/refs/articles.html>`_
+
+
+Related articles
+----------------
+
+* **Erik Poll and Simon Thompson**:
+  `Adding the axioms to Axiom
+  <https://kar.kent.ac.uk/21662/2/Adding_the_axioms_to_Axiom_Towards_a_system_of_automated_reasoning_in_Aldor.pdf>`_
+
+
+* **Martin Dunstan, Tom Kelsey, Steve Linton, and Ursula Martin**
+  (1999):
+  `Formal Methods for Extensions to CAS
+  <https://link.springer.com/content/pdf/10.1007/3-540-48118-4_43.pdf>`_
+  (DOI: `10.1007/3-540-48118-4_43
+  <https://doi.org/10.1007/3-540-48118-4_43>`_)
+
+* **Martin Dunstan, Tom Kelsey, Steve Linton, and Ursula Martin**
+  `Lightweight Formal Methods for Computer Algebra Systems
+  <https://doi.org/10.1145/281508.281560>`_
