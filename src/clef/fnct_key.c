@@ -194,14 +194,20 @@ get_str(int fd,char * string) {
     int count = 0;
     char *trace = string;
 
-    read(fd, &c, 1);
+    if (read(fd, &c, 1) != 1) {
+        *trace = '\0';
+        return 0;
+    }
     while (c == ' ') {
-        read(fd, &c, 1);
+        if (read(fd, &c, 1) != 1) {
+            *trace = '\0';
+            return count;
+        }
     }
     while (c != '\n') {
         count++;
         *trace++ = c;
-        if (read(fd, &c, 1) == 0) {
+        if (read(fd, &c, 1) != 1) {
             break;
         }
     }

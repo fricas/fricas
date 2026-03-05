@@ -296,10 +296,14 @@ main(int argc, char *argv[])
         /* now do the printing to the screen */
         if(MODE!= CLEFRAW) {
             back_up_and_blank(buff_pntr);
-            write(1,out_buff, num_read);
+            if (write(1, out_buff, num_read) == -1) {
+              perror("clef write stdout");
+            }
             print_whole_buff();    /* reprint the input buffer */
         } else {
-            write(1,out_buff, num_read);
+            if (write(1, out_buff, num_read) == -1) {
+              perror("clef write stdout");
+            }
         }
       }
     } /* done the child stuff */
@@ -313,7 +317,9 @@ main(int argc, char *argv[])
 #endif
         check_flip();
         if(MODE == CLEFRAW )
-          write(contNum, in_buff, num_read);
+          if (write(contNum, in_buff, num_read) == -1) {
+            perror("clef write child");
+          }
         else
           do_reading();
       }
