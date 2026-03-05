@@ -854,7 +854,7 @@ insert_bitmap_file(TextNode * node)
             image->height = image->image.xi->height;
             image->filename = (char *) halloc(sizeof(char) * strlen(filename) +1,"Image Filename");
             /* strcpy(image->filename, filename); */
-            sprintf(image->filename, "%s", filename);
+            snprintf(image->filename, strlen(filename) + 1, "%s", filename);
             hash_insert(&gImageHashTable, (char *)image, image->filename);
         }
         node->width = image->width;
@@ -901,7 +901,7 @@ insert_pixmap_file(TextNode * node)
             image->filename = (char *) halloc(sizeof(char) * strlen(filename) +1,
                                               "insert_pixmap--filename");
             /* strcpy(image->filename, filename); */
-            sprintf(image->filename, "%s", filename);
+            snprintf(image->filename, strlen(filename) + 1, "%s", filename);
             image->image.xi = xi;
             hash_insert(&gImageHashTable, (char *)image, image->filename);
         }

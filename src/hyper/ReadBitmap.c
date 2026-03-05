@@ -251,7 +251,7 @@ insert_image_struct(char *filename)
 
         /* strcpy(image->filename, filename); */
 
-        sprintf(image->filename, "%s", filename);
+        snprintf(image->filename, strlen(filename) + 1, "%s", filename);
         hash_insert(&gImageHashTable,(char *) image, image->filename);
     }
     return image;

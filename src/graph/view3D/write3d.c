@@ -66,11 +66,11 @@ writeViewport (int thingsToWrite)
                     command[300];
 
   XGetWindowAttributes(dsply,viewport->titleWindow,&vwInfo);
-  fricas_sprintf_to_buf2(viewDirName, "%s%s", filename, ".VIEW");
-  fricas_sprintf_to_buf3(command, "%s%s%s", "rm -r ", viewDirName,
+  fricas_snprintf_to_buf2(viewDirName, "%s%s", filename, ".VIEW");
+  fricas_snprintf_to_buf3(command, "%s%s%s", "rm -r ", viewDirName,
                          " >  /dev/null 2>&1");
   code = system(command);
-  fricas_sprintf_to_buf3(command, "%s%s%s", "mkdir ", viewDirName,
+  fricas_snprintf_to_buf3(command, "%s%s%s", "mkdir ", viewDirName,
                          " > /dev/null 2>&1");
   system(command);
   if (0) {
@@ -79,7 +79,7 @@ writeViewport (int thingsToWrite)
   } else {
 
             /*** Create the data file ***/
-    fricas_sprintf_to_buf2(viewDataFilename, "%s%s", viewDirName, "/data");
+    fricas_snprintf_to_buf2(viewDataFilename, "%s%s", viewDirName, "/data");
     if ((viewDataFile = fopen(viewDataFilename,"w")) == NULL) {
       fprintf(stderr,"   Error: Cannot create %s\n",viewDataFilename);
       perror("fopen");
@@ -139,7 +139,7 @@ writeViewport (int thingsToWrite)
         switch (ii) {
         case Bitmap:
             /*** Create the pixmap (bitmaps need leaf name) ***/
-          fricas_sprintf_to_buf2(viewBitmapFilename, "%s%s",
+          fricas_snprintf_to_buf2(viewBitmapFilename, "%s%s",
                                  viewDirName, "/image.bm");
           XGetWindowAttributes(dsply,viewport->viewWindow,&vwInfo);
           code = XWriteBitmapFile(dsply,viewBitmapFilename,
@@ -149,7 +149,7 @@ writeViewport (int thingsToWrite)
 
         case Pixmap:
             /*** Create the pixmap (bitmaps need leaf name) ***/
-          fricas_sprintf_to_buf2(viewPixmapFilename, "%s%s",
+          fricas_snprintf_to_buf2(viewPixmapFilename, "%s%s",
                                  viewDirName, "/image.xpm");
           XGetWindowAttributes(dsply,viewport->viewWindow,&vwInfo);
           write_pixmap_file(dsply,scrn,viewPixmapFilename,
@@ -160,7 +160,7 @@ writeViewport (int thingsToWrite)
         case Image:
             /*** Create the image (bitmaps need leaf name) ***/
           writeImage = yes;
-          fricas_sprintf_to_buf2(viewPixmapFilename, "%s%s",
+          fricas_snprintf_to_buf2(viewPixmapFilename, "%s%s",
                                  viewDirName, "/image.xpm");
           XResizeWindow(dsply,viewport->titleWindow,300,300+titleHeight);
           XResizeWindow(dsply,viewport->viewWindow,300,300);
@@ -184,7 +184,7 @@ writeViewport (int thingsToWrite)
           firstTime = 1;
           drawViewport(Xoption);
           writeTitle();
-          fricas_sprintf_to_buf2(viewBitmapFilename, "%s%s",
+          fricas_snprintf_to_buf2(viewBitmapFilename, "%s%s",
                                  viewDirName, "/image.bm");
           code = XWriteBitmapFile(dsply,viewBitmapFilename,
                                   viewport->titleWindow,vwInfo.width,
@@ -195,7 +195,7 @@ writeViewport (int thingsToWrite)
 
         case Postscript:
             /*** Create postscript output for viewport (in image.ps) ***/
-         fricas_sprintf_to_buf2(PSfilename, "%s%s", viewDirName,
+         fricas_snprintf_to_buf2(PSfilename, "%s%s", viewDirName,
                                 "/image.ps");
          if (PSInit(viewport->viewWindow,viewport->titleWindow) == psError)
            return(-1);

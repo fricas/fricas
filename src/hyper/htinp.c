@@ -366,8 +366,9 @@ get_graph_output(char *command,char *pagename,int com_type)
     for (i = 0; i < n; i++) {
         get_string_buf(spad_socket, buf, 1024);
     }
-    sprintf(buf, "(|processInteractive| '(|write| |%s| \"%s%d\" \"image\") NIL)", "%",
-            pagename, example_number);
+    snprintf(buf, sizeof(buf),
+             "(|processInteractive| '(|write| |%s| \"%s%d\" \"image\") NIL)", "%",
+             pagename, example_number);
     send_lisp_command(buf);
     send_lisp_command("(|setViewportProcess|)");
     send_lisp_command("(|processInteractive| '(|close| (|%%| -3)) NIL)");
@@ -381,14 +382,14 @@ send_command(char *command,int com_type)
 
     if (com_type != Spadsrc) {
         escape_string(command);
-        sprintf(buf, "(|parseAndEvalToHypertex| '\"%s\")", command);
+        snprintf(buf, sizeof(buf), "(|parseAndEvalToHypertex| '\"%s\")", command);
         send_lisp_command(buf);
     }
     else {
         FILE *f;
         char name[512], str[512]/*, *c*/;
 
-        sprintf(name, "/tmp/hyper%s.input", getenv("SPADNUM"));
+        snprintf(name, sizeof(name), "/tmp/hyper%s.input", getenv("SPADNUM"));
         f = fopen(name, "w");
         if (f == NULL) {
             fprintf(stderr, "Can't open temporary input file %s\n", name);
@@ -396,7 +397,7 @@ send_command(char *command,int com_type)
         }
         fprintf(f, "%s", command);
         fclose(f);
-        sprintf(str, "(|parseAndEvalToHypertex| '\")read %s\")", name);
+        snprintf(str, sizeof(str), "(|parseAndEvalToHypertex| '\")read %s\")", name);
         send_lisp_command(str);
     }
 }

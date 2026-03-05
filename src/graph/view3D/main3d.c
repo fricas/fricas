@@ -568,7 +568,7 @@ main(void)
   /** send acknowledgement to viewport manager**/
   i = 345;
 
-  fricas_sprintf_to_buf1(errorStr, "%s",
+  fricas_snprintf_to_buf1(errorStr, "%s",
                          "sending window info to viewport manager");
   check(write(Socket,&(viewport->viewWindow),sizeof(Window)));
 

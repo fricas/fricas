@@ -113,7 +113,7 @@ send_pile(Sock *sock,char * str)
     FILE *f;
     char name[40], command[60];
 
-    sprintf(name, "/tmp/hyper%s.input", getenv("SPADNUM"));
+    snprintf(name, sizeof(name), "/tmp/hyper%s.input", getenv("SPADNUM"));
     f = fopen(name, "w");
     if (f == NULL) {
         fprintf(stderr, "Can't open temporary input file %s\n", name);
@@ -121,7 +121,7 @@ send_pile(Sock *sock,char * str)
     }
     fprintf(f, "%s", str);
     fclose(f);
-    sprintf(command, ")read %s\n", name);
+    snprintf(command, sizeof(command), ")read %s\n", name);
     send_string(sock, command);
 }
 static void
@@ -196,8 +196,8 @@ start_user_buffer(HyperDocPage *page)
     if (TERM == NULL) {
         TERM = "xterm";
     }
-    sprintf(spadbuf, "%s/lib/spadbuf", SPAD);
-    sprintf(complfile, "%s/lib/command.list", SPAD);
+    snprintf(spadbuf, sizeof(spadbuf), "%s/lib/spadbuf", SPAD);
+    snprintf(complfile, sizeof(complfile), "%s/lib/command.list", SPAD);
     title = print_to_string(page->title);
     if (access(complfile, R_OK) == 0)
 
@@ -205,13 +205,13 @@ start_user_buffer(HyperDocPage *page)
          * TTT says : why not invoke with "-name fricasclient" and set any
          * defaults in the usual way
          */
-        sprintf(buf,
-        "%s -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
-                TERM, title, title, spadbuf, page->name, complfile);
+        snprintf(buf, sizeof(buf),
+             "%s -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s %s %s&",
+             TERM, title, title, spadbuf, page->name, complfile);
     else
-        sprintf(buf,
-         "%s -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s '%s'&",
-                TERM, title, title, spadbuf, page->name);
+        snprintf(buf, sizeof(buf),
+             "%s -sb -sl 500 -name fricasclient -n '%s' -T '%s' -e  %s '%s'&",
+             TERM, title, title, spadbuf, page->name);
     ret_val = system(buf);
     if (ret_val == -1 || ret_val == 127) {
 

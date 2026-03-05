@@ -116,7 +116,7 @@ do_x_tick(Window vw, int jj, int ii, XWindowAttributes vwInfo,
     GDrawLine(unitGC, vw, jj, vwInfo.height - 8,
               jj, vwInfo.height - 4, dFlag);
 
-    fricas_sprintf_to_buf1(aunit, "%0.3g", ii*graphArray[0].spadUnitX);
+    fricas_snprintf_to_buf1(aunit, "%0.3g", ii*graphArray[0].spadUnitX);
     strlength = strlen(aunit);
     halflength = XTextWidth(unitFont,aunit,strlength)/2;
 
@@ -160,7 +160,7 @@ do_y_tick(Window vw, int jj, int ii, XWindowAttributes vwInfo,
     GDrawLine(unitGC, vw, 2, jj,
               6, jj, dFlag);
 
-    fricas_sprintf_to_buf1(aunit, "%0.3g", ii*graphArray[0].spadUnitY);
+    fricas_snprintf_to_buf1(aunit, "%0.3g", ii*graphArray[0].spadUnitY);
     strlength = strlen(aunit);
     XTextExtents(unitFont, aunit, strlength, &dummyInt,
                  &ascent, &descent, &overall);

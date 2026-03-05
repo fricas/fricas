@@ -157,7 +157,7 @@ parse_condnode(void)
         {
             char eb[128];
             token_name(token.type);
-            sprintf(eb, "Unexpected Token %s\n", ebuffer);
+            snprintf(eb, sizeof(eb), "Unexpected Token %s\n", ebuffer);
             htperror(eb, HTCONDNODE);
         }
         break;

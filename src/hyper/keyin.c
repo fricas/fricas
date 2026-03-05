@@ -121,7 +121,7 @@ handle_key(XEvent *event)
     if (event->xkey.state & ShiftMask) {
       name = gWindow->page->name;
       filename = gWindow->page->filename;
-      sprintf(buffer, "htadd -l %s\n", filename);
+      snprintf(buffer, sizeof(buffer), "htadd -l %s\n", filename);
       system(buffer);
       filehandle = (FILE *) hash_find(&gFileHashTable, filename);
       fclose(filehandle);

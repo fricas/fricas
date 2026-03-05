@@ -75,9 +75,9 @@ zzopen(char *file,char * mode)
 
     if (file_exists(file))
         return fopen(file, mode);
-    fricas_sprintf_to_buf1(zfile, "%s.Z", file);
+    fricas_snprintf_to_buf1(zfile, "%s.Z", file);
     if (file_exists(zfile)) {
-        fricas_sprintf_to_buf1(com, "gunzip -c %s.Z 2>/dev/null", file);
+        fricas_snprintf_to_buf1(com, "gunzip -c %s.Z 2>/dev/null", file);
         return popen(com, mode);
     }
     return NULL;
@@ -114,10 +114,11 @@ read_pixmap_file(Display *display, int screen, char *filename,
   if (file_exists(filename)) {
       real_filename = filename;
   } else {
-      real_filename = halloc (strlen(filename)+4, "read_pixmap_file");
-      sprintf(real_filename, "%s.gz", filename);
+      size_t real_filename_size = strlen(filename) + 4;
+      real_filename = halloc(real_filename_size, "read_pixmap_file");
+      snprintf(real_filename, real_filename_size, "%s.gz", filename);
       if (!file_exists (real_filename)) {
-          sprintf(real_filename, "%s.Z", filename);
+        snprintf(real_filename, real_filename_size, "%s.Z", filename);
       }
   }
   status=XpmReadFileToImage(display,real_filename,xi,&xireturn, &attr );

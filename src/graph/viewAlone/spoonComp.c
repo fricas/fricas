@@ -65,7 +65,7 @@ spoonView3D(int type)
   LPoint *anLPoint;
   int *anIndex;
 
-  fricas_sprintf_to_buf1(errorStr, "%s", "creating pipes");
+  fricas_snprintf_to_buf1(errorStr, "%s", "creating pipes");
   check(pipe(pipe0));
   check(pipe(pipe1));
   switch(fork()) {
@@ -75,7 +75,7 @@ spoonView3D(int type)
     exit(-1);
   case 0:
     /*  Child  */
-    fricas_sprintf_to_buf1(errorStr, "%s",
+    fricas_snprintf_to_buf1(errorStr, "%s",
             "(viewAlone) mapping of pipes to standard I/O for view3D");
     check(dup2(pipe0[0],0));
     check(dup2(pipe1[1],1));
@@ -84,7 +84,7 @@ spoonView3D(int type)
     close(pipe1[0]);
     close(pipe1[1]);
 
-    fricas_sprintf_to_buf1(errorStr, "%s",
+    fricas_snprintf_to_buf1(errorStr, "%s",
             "(viewAlone) execution of the ThreeDimensionalViewport process");
     env_fricas = getenv("FRICAS");
     {
